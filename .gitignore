@@ -1,0 +1,18 @@
+﻿# builds
+node_modules
+.next
+dist
+.out
+
+# secrets
+.env
+.env.*
+*.env
+*.env.*
+docker.env
+
+# keys/certs
+*.pem
+*.key
+*.p12
+*.crt
