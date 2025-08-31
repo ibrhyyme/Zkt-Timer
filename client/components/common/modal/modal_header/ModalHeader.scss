@@ -1,0 +1,31 @@
+@import '../../../../styles/config';
+
+.#{$namespace}-modal-header {
+	width: calc(100% - 3rem);
+	color: rgba(248, 250, 252, 1); // slate-50
+	margin-bottom: 1.5rem;
+	padding-bottom: 0.75rem;
+	border-bottom: 1px solid rgba(148, 163, 184, 0.1); // slate-400/10
+
+	h2 {
+		color: inherit;
+		font-family: Kontora, Poppins, Arial, 'Helvetica Neue', Helvetica, sans-serif;
+		font-weight: 700;
+		font-size: 1.875rem; // text-3xl
+		letter-spacing: -0.025em; // tracking-tight
+		margin: 0;
+		line-height: 1.2;
+
+		span {
+			color: rgba(99, 102, 241, 1); // indigo-500
+		}
+	}
+
+	p {
+		color: rgba(148, 163, 184, 1); // slate-400
+		font-size: 1rem;
+		line-height: 1.5;
+		margin: 0.5rem 0 0 0;
+		opacity: 0.9;
+	}
+}

@@ -1,0 +1,104 @@
+@import '../../../../styles/config';
+
+.#{$namespace}-common-dropdown {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+
+	> button {
+		padding: 0;
+	}
+
+	&__custom-handle {
+		width: 100%;
+		display: table;
+	}
+
+	&__body {
+		position: absolute;
+		right: 0;
+		top: calc(100% + 5px);
+		max-height: 400px;
+		overflow-y: auto;
+		display: flex;
+		padding: 8px;
+		border-radius: 16px;
+		box-sizing: border-box;
+		min-width: 160px;
+		box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+		flex-direction: column;
+		z-index: 1000000;
+		background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(51, 65, 85, 0.95));
+		backdrop-filter: blur(16px);
+		border: 1px solid rgba(148, 163, 184, 0.1);
+
+		> button,
+		> .#{$namespace}-common-button__wrapper > button,
+		> a {
+			display: flex;
+			flex-direction: row;
+			width: 100%;
+			align-items: center;
+			color: rgba(226, 232, 240, 1) !important; // slate-200
+			text-align: left !important;
+			border-radius: 10px;
+			justify-content: flex-start;
+			padding: 10px 12px;
+			box-sizing: border-box;
+			white-space: nowrap;
+			transition: all 0.15s ease-in-out;
+			font-size: 0.95rem;
+			font-weight: 500;
+			background-color: transparent;
+			border: none;
+
+			&:disabled {
+				opacity: 0.4 !important;
+				background-color: transparent !important;
+				cursor: unset !important;
+			}
+
+			i {
+				opacity: 0.8;
+				margin-right: 8px;
+				width: 20px;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				color: rgba(148, 163, 184, 1); // slate-400
+			}
+
+			span {
+				display: table;
+				color: inherit;
+			}
+
+			&:hover:not(:disabled) {
+				background-color: rgba(99, 102, 241, 0.15) !important; // indigo-500/15
+				color: rgba(248, 250, 252, 1) !important; // slate-50
+				transform: translateY(-1px);
+				box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+			}
+
+			&:active:not(:disabled) {
+				transform: translateY(0);
+				box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+			}
+		}
+
+		&--up {
+			top: unset !important;
+			bottom: calc(100% + 5px);
+		}
+
+		&--left {
+			right: unset;
+			left: 0 !important;
+		}
+
+		&--fullwidth {
+			min-width: 100%;
+		}
+	}
+}

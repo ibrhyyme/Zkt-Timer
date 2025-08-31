@@ -1,0 +1,130 @@
+@import '../../../styles/config';
+
+.#{$namespace}-modal {
+	$self: &;
+
+	position: fixed;
+	top: 0;
+	left: 0;
+	opacity: 0;
+	width: 100vw;
+	height: 100vh;
+	background: linear-gradient(135deg, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.5));
+	backdrop-filter: blur(12px);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 1rem;
+	transition: all 0.2s ease-in-out;
+	// It's over 9000!
+	z-index: 100000;
+
+	#{$self} {
+		z-index: 100000;
+	}
+
+	&--active {
+		opacity: 1;
+
+		#{$self}__center {
+			transform: translateY(0) scale(1);
+		}
+	}
+
+	&-confirm {
+		width: 100%;
+
+		p {
+			color: rgb(var(--text-color));
+			margin-bottom: 30px;
+			line-height: 1.4rem;
+			opacity: 0.9;
+		}
+
+		b {
+			font-weight: bold;
+			color: inherit;
+		}
+
+		a {
+			display: inline;
+			color: rgb(var(--primary-color));
+		}
+
+		input {
+			width: 100% !important;
+			max-width: none !important;
+		}
+	}
+
+	&__description {
+		font-size: 1rem;
+		color: rgba(226, 232, 240, 1); // slate-200
+		margin: 15px 0;
+		opacity: 0.9;
+		line-height: 1.4rem;
+	}
+
+	&__center {
+		width: 90%;
+		max-width: 700px;
+		overflow: visible;
+		padding: 1.5rem;
+		background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(51, 65, 85, 0.95)); // slate-900/95 to slate-800/95
+		backdrop-filter: blur(32px);
+		border: 1px solid rgba(148, 163, 184, 0.1); // slate-400/10
+		border-radius: 24px;
+		box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+		transition: all 0.3s ease-in-out;
+		position: relative;
+		transform: translateY(20px) scale(0.95);
+		box-sizing: border-box;
+	}
+
+	&__close-button {
+		position: absolute;
+		top: 1.5rem;
+		right: 1.5rem;
+		width: 36px;
+		height: 36px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		background: rgba(71, 85, 105, 0.7); // slate-600/70
+		color: rgba(226, 232, 240, 1); // slate-200
+		border: 1px solid rgba(148, 163, 184, 0.3); // slate-400/30
+		border-radius: 12px;
+		backdrop-filter: blur(8px);
+		box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+		transition: all 0.2s ease-in-out;
+		z-index: 10000;
+		font-size: 1.125rem;
+
+		&:hover {
+			background: rgba(100, 116, 139, 0.9); // slate-500/90
+			color: rgba(248, 250, 252, 1); // slate-50
+			border-color: rgba(148, 163, 184, 0.5); // slate-400/50
+			transform: translateY(-1px) scale(1.05);
+			box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+		}
+
+		&:active {
+			transform: translateY(0) scale(1);
+			box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+		}
+	}
+
+	&--fullSize {
+		width: 100% !important;
+		max-width: unset !important;
+		height: 100%;
+
+		#{$self}__center {
+			max-width: none !important;
+			width: 100% !important;
+			height: 100% !important;
+			margin: 0 !important;
+			border-radius: 0 !important;
+		}
+	}
+}
