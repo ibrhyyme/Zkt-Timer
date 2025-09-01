@@ -4,7 +4,11 @@
 	grid-column: span 2;
 
 	&__section {
-		padding: 15px;
+		padding: 10px;
+	}
+
+	@media (max-width: 1200px) {
+		grid-column: span 1;
 	}
 
 	&__pills {
@@ -19,13 +23,13 @@
 	}
 
 	&__pill {
-		padding: 15px 10px 15px 15px;
+		padding: 10px 8px 10px 12px;
 		background-color: rgb(var(--button-color));
 		border: 3px solid rgb(var(--theme-button-opposite), 0.1);
-		border-radius: 23px;
+		border-radius: 20px;
 
 		span {
-			font-size: 1.1rem;
+			font-size: 0.95rem;
 		}
 	}
 
@@ -48,10 +52,10 @@
 	}
 
 	&__pill-value {
-		padding: 6px 13px;
-		margin-left: 10px;
+		padding: 4px 10px;
+		margin-left: 8px;
 		background-color: rgb(var(--secondary-color));
-		border-radius: 15px;
+		border-radius: 12px;
 		color: rgb(var(--theme-secondary-opposite));
 	}
 

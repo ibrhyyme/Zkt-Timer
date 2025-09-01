@@ -1,0 +1,68 @@
+@import '../../styles/config';
+
+.#{$namespace}-trainer {
+	&__notice {
+		margin-bottom: 1.5rem;
+		padding: 1rem;
+		background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(234, 88, 12, 0.2)); // amber to orange
+		backdrop-filter: blur(8px);
+		border: 1px solid rgba(245, 158, 11, 0.3); // amber border
+		border-radius: 12px;
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+
+		&__dot {
+			width: 12px;
+			height: 12px;
+			background-color: rgb(245, 158, 11); // amber-400
+			border-radius: 50%;
+			animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+		}
+
+		&__text {
+			color: rgb(252, 211, 77); // amber-300
+			font-weight: 500;
+			margin: 0;
+		}
+	}
+	&__filter {
+		display: flex;
+		flex-direction: row;
+		> * {
+			margin-right: 10px;
+		}
+	}
+
+	&__create-custom {
+		position: absolute;
+		top: 0;
+		right: 0;
+	}
+
+	&__algos {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+		grid-gap: 20px;
+
+		&--empty {
+			grid-template-columns: 1fr !important;
+		}
+	}
+
+	&__header {
+		display: flex;
+		flex-direction: row;
+		align-items: flex-start;
+		justify-content: space-between;
+	}
+}
+
+@keyframes pulse {
+	0%, 100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.5;
+	}
+}

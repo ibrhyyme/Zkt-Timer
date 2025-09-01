@@ -29,10 +29,22 @@ export async function getPaginatedResponse<T>(input: PaginatedRequestInput): Pro
 	prismaPayload.take = pageSize + 1;
 
 	try {
+		logger.info(`Fetching paginated data for table: ${tableName}`, {
+			tableName,
+			paginationArgs,
+			prismaPayload
+		});
+
 		const [total, items] = await Promise.all([
 			getPaginatedResponseTotalCount(input),
 			getPrisma()[tableName].findMany(prismaPayload),
 		]);
+
+		logger.info(`Successfully fetched paginated data`, {
+			tableName,
+			totalCount: total,
+			itemsLength: items.length
+		});
 
 		let hasMore = false;
 		if (items.length > pageSize) {
@@ -50,6 +62,8 @@ export async function getPaginatedResponse<T>(input: PaginatedRequestInput): Pro
 			tableName,
 			paginationArgs: input,
 			error: e,
+			errorMessage: e.message,
+			errorStack: e.stack
 		});
 
 		return null;

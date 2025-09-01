@@ -14,6 +14,10 @@ interface Props {
 export default function UserSummary(props: Props) {
 	const {summary} = props;
 
+	if (!summary) {
+		return <div className={b()}>No summary data available</div>;
+	}
+
 	function getPill(title: string, value: string) {
 		return (
 			<div className={b('pill')}>
@@ -54,7 +58,9 @@ export default function UserSummary(props: Props) {
 		return list;
 	}
 
-	const matchWinPercent = 100 - Math.floor((summary.matches.losses / summary.matches.count) * 100) / 10;
+	const matchWinPercent = summary.matches?.count > 0 
+		? 100 - Math.floor((summary.matches.losses / summary.matches.count) * 100) / 10
+		: 0;
 
 	return (
 		<div className={b()}>
@@ -65,9 +71,9 @@ export default function UserSummary(props: Props) {
 					{getPill('Bans', summary.bans.toLocaleString())}
 					{getPill('Reports Received', summary.reports_for.toLocaleString())}
 					{getPill('Reports Created', summary.reports_created.toLocaleString())}
-					{getPill('Matches Played', summary.matches.count.toLocaleString())}
-					{getPill('Matches Won', summary.matches.wins.toLocaleString())}
-					{getPill('Matches Lost', summary.matches.losses.toLocaleString())}
+					{getPill('Matches Played', summary.matches?.count?.toLocaleString() || '0')}
+					{getPill('Matches Won', summary.matches?.wins?.toLocaleString() || '0')}
+					{getPill('Matches Lost', summary.matches?.losses?.toLocaleString() || '0')}
 					{getPill('Match Win %', matchWinPercent + '%')}
 				</div>
 			</div>

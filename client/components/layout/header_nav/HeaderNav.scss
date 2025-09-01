@@ -33,6 +33,11 @@
 		}
 	}
 
+	&__cube-logo {
+		color: rgb(var(--primary-color));
+		filter: drop-shadow(0 2px 8px rgba(var(--primary-color), 0.3));
+	}
+
 	&__center {
 		display: flex;
 		justify-content: center;
@@ -138,6 +143,24 @@
 		to {
 			opacity: 1;
 			transform: translateY(0);
+		}
+	}
+
+	@keyframes cubeFloat {
+		0%, 100% {
+			transform: translateY(0px);
+		}
+		50% {
+			transform: translateY(-3px);
+		}
+	}
+
+	@keyframes cubeRotate {
+		from {
+			transform: rotate(0deg);
+		}
+		to {
+			transform: rotate(360deg);
 		}
 	}
 

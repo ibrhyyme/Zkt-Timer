@@ -15,10 +15,128 @@ import {UserAccountForAdmin} from '../../../../server/schemas/UserAccount.schema
 const b = block('manage-user');
 
 const GET_USER_FOR_ADMIN = gql`
-	${USER_FOR_ADMIN_FRAGMENT}
-	query Query($userId: String) {
+	query getUserAccountForAdmin($userId: String) {
 		getUserAccountForAdmin(userId: $userId) {
-			...UserForAdminFragment
+			id
+			username
+			email
+			verified
+			created_at
+			banned_forever
+			is_pro
+			banned_until
+			admin
+			mod
+			offline_hash
+			pro_status
+			join_country
+			join_ip
+			integrations {
+				id
+				service_name
+			}
+			profile {
+				id
+				bio
+				three_method
+				three_goal
+				main_three_cube
+				favorite_event
+				youtube_link
+				twitter_link
+				reddit_link
+				twitch_link
+				pfp_image {
+					id
+					user_id
+					storage_path
+				}
+				header_image {
+					id
+					user_id
+					storage_path
+				}
+			}
+			settings {
+				id
+				focus_mode
+				freeze_time
+				inspection
+				manual_entry
+				inspection_delay
+				inverse_time_list
+				hide_time_when_solving
+				nav_collapsed
+				timer_decimal_points
+				pb_confetti
+				play_inspection_sound
+				zero_out_time_after_solve
+				confirm_delete_solve
+				use_space_with_smart_cube
+				require_period_in_manual_time_entry
+				beta_tester
+				cube_type
+			}
+			reports_for {
+				id
+				reason
+				created_at
+				created_by {
+					id
+					username
+				}
+			}
+			bans {
+				id
+				reason
+				created_at
+				banned_until
+				forever
+				active
+				created_by {
+					id
+					username
+				}
+			}
+			chat_messages {
+				id
+				message
+				created_at
+			}
+			summary {
+				solves
+				reports_for
+				reports_created
+				profile_views
+				bans
+				matches {
+					count
+					wins
+					losses
+				}
+				match_solves {
+					count
+					average
+					min_time
+					max_time
+					sum
+					cube_type
+				}
+				timer_solves {
+					count
+					average
+					min_time
+					max_time
+					sum
+					cube_type
+				}
+			}
+			notification_preferences {
+				friend_request
+				friend_request_accept
+				marketing_emails
+				elo_refund
+			}
 		}
 	}
 `;
@@ -41,6 +159,10 @@ export default function ManageUser(props: Props) {
 
 	if (loading) {
 		return <Loading />;
+	}
+
+	if (!userData) {
+		return <Empty text="Kullanıcı bulunamadı" />;
 	}
 
 	function getGenericTable(title: string, obj) {

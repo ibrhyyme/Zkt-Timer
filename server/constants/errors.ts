@@ -1,10 +1,10 @@
 export enum ErrorMessage {
-	INVALID_LOGIN = 'Invalid login',
-	FORBIDDEN = 'You do not have access to this resource',
-	RESOURCE_NOT_FOUND = 'Could not find resource',
-	BAD_INPUT = 'Invalid input',
-	BANNED = 'You are banned',
-	NO_ID_IN_INPUT = 'ID cannot be provided in create or update inputs',
+	INVALID_LOGIN = 'Geçersiz giriş',	
+	FORBIDDEN = 'Bu kaynağa erişim yetkiniz yok',
+	RESOURCE_NOT_FOUND = 'Kaynak bulunamadı',
+	BAD_INPUT = 'Geçersiz giriş',
+	BANNED = 'Yasaklandınız',
+	NO_ID_IN_INPUT = 'Oluşturma veya güncelleme işlemlerinde ID sağlanamaz',
 }
 
 export enum ErrorCode {

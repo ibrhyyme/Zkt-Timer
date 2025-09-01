@@ -6,6 +6,7 @@ import Forgot from './forgot/Forgot';
 import {resourceUri} from '../../util/storage';
 import {useRouteMatch, Link} from 'react-router-dom';
 import block from '../../styles/bem';
+import {Cube, Gear, Clock, Lightning} from 'phosphor-react';
 
 const b = block('login');
 
@@ -205,38 +206,61 @@ export default function LoginWrapper() {
 				}}
 			/>
 				
-							{/* COSMIC LOGO - KOSMİK LOGO! 🌟 */}
+							{/* ANIMATED CUBE LOGO - ANİMASYONLU KÜP LOGO! 🧩 */}
 			<div className="flex justify-center mb-6 relative">
 				<div className="relative">
-					{/* Orbital Ring */}
-					<div className="absolute inset-0 w-16 h-16 rounded-full animate-spin"
+					{/* Cube Container */}
+					<div className="relative inline-block"
 						style={{
-							background: `conic-gradient(from 0deg, transparent, var(--cosmic-glow), transparent)`,
-							animation: 'spin 8s linear infinite'
-						}}
-					/>
-					
-					{/* Text-Based Logo as Fallback */}
-					<div className="w-16 h-16 rounded-full relative z-10 flex items-center justify-center text-center"
-						style={{
-							background: `linear-gradient(135deg, var(--cosmic-glow) 0%, var(--plasma-purple) 100%)`,
-							boxShadow: '0 0 30px rgba(79, 195, 247, 0.4), 0 0 60px rgba(79, 195, 247, 0.2), inset 0 0 20px rgba(79, 195, 247, 0.1)',
-							border: '2px solid rgba(79, 195, 247, 0.5)'
+							animation: 'cubeFloat 6s ease-in-out infinite'
 						}}
 					>
-						<div className="text-white font-bold text-xs leading-tight">
-							<div className="text-sm">ZKT</div>
-							<div className="text-xs opacity-80">Timer</div>
+						<Cube 
+							size={64} 
+							style={{
+								color: 'var(--cosmic-glow)',
+								filter: 'drop-shadow(0 10px 30px rgba(79, 195, 247, 0.3))',
+								animation: 'cubeRotate 12s linear infinite'
+							}}
+						/>
+						
+						{/* Floating Icons */}
+						<div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+							<Gear 
+								size={16} 
+								className="absolute"
+								style={{
+									color: 'var(--plasma-purple)',
+									opacity: 0.8,
+									top: '-40px',
+									left: '-40px',
+									animation: 'iconOrbit 8s linear infinite, iconSpin 4s linear infinite'
+								}}
+							/>
+							<Clock 
+								size={16} 
+								className="absolute"
+								style={{
+									color: 'var(--plasma-purple)',
+									opacity: 0.8,
+									top: '-40px',
+									right: '-40px',
+									animation: 'iconOrbit 10s linear infinite reverse, iconBounce 2s ease-in-out infinite'
+								}}
+							/>
+							<Lightning 
+								size={16} 
+								className="absolute"
+								style={{
+									color: 'var(--plasma-purple)',
+									opacity: 0.8,
+									bottom: '-40px',
+									left: '0',
+									animation: 'iconOrbit 12s linear infinite, iconFlash 3s ease-in-out infinite'
+								}}
+							/>
 						</div>
 					</div>
-					
-					{/* Energy Pulse */}
-					<div className="absolute inset-0 w-16 h-16 rounded-full opacity-60"
-						style={{
-							background: `radial-gradient(circle, rgba(79, 195, 247, 0.2) 0%, transparent 70%)`,
-							animation: 'pulse 3s ease-in-out infinite'
-						}}
-					/>
 				</div>
 			</div>
 				

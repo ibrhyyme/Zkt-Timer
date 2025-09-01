@@ -41,7 +41,7 @@ export class AdminResolver {
 			paginationArgs: pageArgs,
 			tableName: 'userAccount',
 			prismaPayload: {
-				where: {
+				where: pageArgs.searchQuery ? {
 					OR: [
 						{
 							username: {
@@ -56,7 +56,7 @@ export class AdminResolver {
 							},
 						},
 					],
-				},
+				} : {},
 				...publicUserInclude,
 			},
 		};

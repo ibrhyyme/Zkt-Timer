@@ -7,6 +7,7 @@ import {
 	ArrowRight,
 	List,
 	X,
+	Cube,
 } from 'phosphor-react';
 import Notifications from '../nav/notifications/Notifications';
 import Logo from '../../common/logo/Logo';
@@ -181,9 +182,16 @@ export default function HeaderNav() {
 	return (
 		<div className={b()}>
 			<div className={b('container')}>
-				{/* Left side - Brand Link */}
+				{/* Left side - Brand Link with Animated Cube */}
 				<div className={b('left')}>
-					<Link to="/" className="text-white/90 hover:text-white font-bold tracking-tight select-none text-2xl">
+					<Link to="/" className="text-white/90 hover:text-white font-bold tracking-tight select-none text-2xl flex items-center gap-2">
+						<Cube 
+							size={28} 
+							className={b('cube-logo')}
+							style={{
+								animation: 'cubeFloat 4s ease-in-out infinite, cubeRotate 8s linear infinite'
+							}}
+						/>
 						Zkt-Timer
 					</Link>
 				</div>
