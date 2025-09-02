@@ -1,7 +1,7 @@
 services:
 
   app-builder:
-    image: node:20
+    image: node:16
     working_dir: /app
     volumes:
       - ./:/app
@@ -51,7 +51,7 @@ services:
   postgres:
     image: postgres:14
     environment:
-      POSTGRES_DB: zkttimer
+      POSTGRES_DB: Zkt-Timer
       POSTGRES_USER: root
       POSTGRES_PASSWORD: root
     ports:

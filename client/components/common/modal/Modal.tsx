@@ -21,6 +21,7 @@ export interface IModalProps {
 	hideCloseButton?: boolean;
 	children?: ReactNode;
 	fullSize?: boolean;
+	disableBackdropClick?: boolean;
 }
 
 export default function Modal(props: IModalProps) {
@@ -36,6 +37,7 @@ export default function Modal(props: IModalProps) {
 		onClose,
 		noPadding,
 		onComplete,
+		disableBackdropClick,
 	} = props;
 
 	const modalRef = useRef<HTMLDivElement>(null);
@@ -69,6 +71,10 @@ export default function Modal(props: IModalProps) {
 	}
 
 	function handleBackdropClick(e: React.MouseEvent) {
+		if (disableBackdropClick) {
+			return;
+		}
+		
 		if (e.target === e.currentTarget) {
 			clickClose();
 		}

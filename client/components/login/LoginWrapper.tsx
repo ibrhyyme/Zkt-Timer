@@ -24,6 +24,7 @@ export default function LoginWrapper() {
 		currentTab = 'signup';
 	} else if (path.startsWith('/forgot')) {
 		body = <Forgot />;
+		currentTab = 'forgot';
 	}
 
 	// CSS custom properties for SPACE THEME - UZAY AMBIYONSU! 🌌
@@ -52,17 +53,7 @@ export default function LoginWrapper() {
 		'--focus': 'rgba(79, 195, 247, 0.70)'
 	} as React.CSSProperties;
 
-	// Use old wrapper for forgot password
-	if (path.startsWith('/forgot')) {
-		return (
-			<div className={b('wrapper')}>
-				<div className={b('header')}>
-					<h1>Zkt-Timer</h1>
-				</div>
-				{body}
-			</div>
-		);
-	}
+
 
 	return (
 		<div 
@@ -266,7 +257,7 @@ export default function LoginWrapper() {
 				
 							{/* COSMIC WELCOME - KOSMİK KARŞILAMA! */}
 			<h1 className="text-2xl font-semibold mb-6 text-center bg-gradient-to-r from-cyan-200 via-blue-200 to-purple-200 bg-clip-text text-transparent">
-				Hoş geldin
+				{currentTab === 'forgot' ? 'Şifre Sıfırla' : 'Hoş geldin'}
 			</h1>
 				
 							{/* NAVIGATION CONSOLE - NAVİGASYON KONSOL! */}

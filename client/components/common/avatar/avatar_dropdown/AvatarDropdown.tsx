@@ -49,6 +49,7 @@ export default function AvatarDropdown(props: Props) {
 		dispatch(
 			openModal(<EditProfile profile={profile} />, {
 				title: 'Profili Düzenle',
+				disableBackdropClick: true,
 			})
 		);
 	}
