@@ -26,7 +26,29 @@ export async function linkOAuthAccount(intType: IntegrationType, user: InternalU
 
 	const integration = await createIntegration(user, intType, accessToken, refreshToken, createdAt + expiresIn);
 
+	// For WCA integration, fetch and store the WCA ID
+	if (intType === 'wca') {
+		try {
+			// Fetch user data from WCA me endpoint
+			const res = await axios.get(service.meEndpoint, {
+				headers: {
+					Authorization: 'Bearer ' + accessToken,
+				},
+			});
 
+			const wcaData = res?.data?.me || res?.data;
+			const wcaId = wcaData?.wca_id;
+
+			if (wcaId) {
+				// Update the integration with WCA ID
+				await updateIntegration(integration, { wca_id: wcaId });
+				console.log('WCA ID saved:', wcaId);
+			}
+		} catch (error) {
+			// Swallow the error and proceed - WCA ID will remain null
+			console.warn('Failed to fetch WCA ID:', error.message);
+		}
+	}
 
 	return integration;
 }

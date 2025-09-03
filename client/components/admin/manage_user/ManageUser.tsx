@@ -34,6 +34,7 @@ const GET_USER_FOR_ADMIN = gql`
 			integrations {
 				id
 				service_name
+				wca_id
 			}
 			profile {
 				id
@@ -229,7 +230,17 @@ export default function ManageUser(props: Props) {
 
 	function getSettings() {
 		const settings = userData.settings;
-		return getGenericTable('Settings', settings);
+		
+		// Add WCA ID to settings display
+		const wcaIntegration = userData.integrations?.find(int => int.service_name === 'wca');
+		const wcaId = wcaIntegration?.wca_id || '—';
+		
+		const settingsWithWca = {
+			...settings,
+			wca_id: wcaId
+		};
+		
+		return getGenericTable('Settings', settingsWithWca);
 	}
 
 	function getBans() {

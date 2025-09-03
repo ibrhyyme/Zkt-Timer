@@ -30,6 +30,9 @@ export class Integration {
 	@Field(() => GraphQLBigInt)
 	auth_expires_at: bigint;
 
+	@Field(() => String, { nullable: true })
+	wca_id?: string;
+
 	@Field()
 	created_at: Date;
 

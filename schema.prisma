@@ -100,6 +100,7 @@ model Integration {
   auth_token      String
   refresh_token   String
   auth_expires_at BigInt
+  wca_id          String?
   created_at      DateTime    @default(now())
   user            UserAccount @relation(fields: [user_id], references: [id], onDelete: Cascade)
 

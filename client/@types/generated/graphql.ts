@@ -498,6 +498,7 @@ export type Integration = {
   service_name?: Maybe<IntegrationType>;
   user?: Maybe<PublicUserAccount>;
   user_id?: Maybe<Scalars['String']>;
+  wca_id?: Maybe<Scalars['String']>;
 };
 
 export enum IntegrationType {
