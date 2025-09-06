@@ -1,7 +1,7 @@
-import {useState} from 'react';
-import {useEventListener} from '../event_handler';
+import {useDataContext} from '../../providers/DataProvider';
 
 export function useSessionDb() {
-	const [changeCounter, setChangeCounter] = useState(0);
-	useEventListener('sessionsDbUpdatedEvent', () => setChangeCounter(changeCounter + 1));
+	const { sessionDbChangeCounter } = useDataContext();
+	
+	return sessionDbChangeCounter;
 }

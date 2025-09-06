@@ -95,8 +95,8 @@ export default function BarGraph(props: Props) {
 								{data.map((d) => {
 									const date = getX(d);
 									const yVal = yScale(getY(d)) ?? 0;
-									const barWidth = xScale.bandwidth() - 6;
-									const barHeight = parent.height - yVal;
+									const barWidth = Math.max(0, xScale.bandwidth() - 6);
+									const barHeight = Math.max(0, parent.height - yVal);
 
 									const barX = xScale(date);
 									const barY = yScale(getY(d));

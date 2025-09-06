@@ -1,0 +1,37 @@
+.publish-wca-records {
+  .wca-records-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+
+    h3 {
+      margin: 0;
+    }
+  }
+
+  .cd-table {
+    width: 100%;
+    margin-bottom: 1rem;
+
+    td {
+      vertical-align: middle;
+
+      small {
+        display: block;
+        color: #666;
+        margin-top: 0.25rem;
+      }
+    }
+  }
+
+  .wca-records-footer {
+    text-align: center;
+    margin-top: 1rem;
+
+    p {
+      margin-bottom: 1rem;
+      color: #666;
+    }
+  }
+}

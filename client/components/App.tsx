@@ -26,6 +26,7 @@ delete window.__STORE__;
 import '../styles/index.scss';
 import {mapSingleRoute} from './map_route';
 import {ApolloProvider} from '@apollo/client';
+import {DataProvider} from '../providers/DataProvider';
 
 Sentry.init({
 	dsn: 'https://feee16c821834f408ae2453577b10f9e@o637154.ingest.sentry.io/5756098',
@@ -39,17 +40,21 @@ ReactDOM.hydrate(
 	<ApolloProvider client={apolloClient}>
 		<Provider store={store as any}>
 			<Router>
-				<Switch>{routes.map((route) => mapSingleRoute(route))}</Switch>
+				<DataProvider>
+					<Switch>{routes.map((route) => mapSingleRoute(route))}</Switch>
+				</DataProvider>
 			</Router>
 		</Provider>
 	</ApolloProvider>,
 	document.getElementById('app')
 );
 
-// Register Service Worker for PWA
-if ('serviceWorker' in navigator) {
+// Register Service Worker for PWA (only in production)
+if (typeof window !== "undefined" && 
+    "serviceWorker" in navigator && 
+    process.env.NODE_ENV === "production") {
 	window.addEventListener('load', () => {
-		navigator.serviceWorker.register('/sw.js').catch(console.error);
+		navigator.serviceWorker.register('/sw.js').catch(err => console.error('SW register failed:', err));
 	});
 }
 /* eslint-enable */

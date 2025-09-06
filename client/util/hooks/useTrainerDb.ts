@@ -1,9 +1,7 @@
-import {useState} from 'react';
-import {useEventListener} from '../event_handler';
+import {useDataContext} from '../../providers/DataProvider';
 
 export function useTrainerDb() {
-	const [changeCounter, setChangeCounter] = useState(0);
-	useEventListener('trainerDbUpdatedEvent', () => setChangeCounter(changeCounter + 1));
+	const { trainerDbChangeCounter } = useDataContext();
 
-	return changeCounter;
+	return trainerDbChangeCounter;
 }

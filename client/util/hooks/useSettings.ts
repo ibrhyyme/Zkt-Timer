@@ -1,11 +1,12 @@
 import {AllSettings, getSetting} from '../../db/settings/query';
-import {useState} from 'react';
-import {useEventListener} from '../event_handler';
+import {useDataContext} from '../../providers/DataProvider';
 
 export function useSettings<T extends keyof AllSettings>(key: T): AllSettings[T] {
-	const [changeCounter, setChangeCounter] = useState(0);
+	const { settingsChangeCounter } = useDataContext();
 	const value = getSetting(key);
-	useEventListener('settingsDbUpdatedEvent', () => setChangeCounter(changeCounter + 1));
+	
+	// Re-render when settings change (via global context)
+	// settingsChangeCounter is used to trigger re-renders
 
 	return value;
 }

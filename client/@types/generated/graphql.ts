@@ -751,6 +751,7 @@ export type Mutation = {
   deleteUserAccount?: Maybe<PublicUserAccount>;
   downloadCustomTrainer?: Maybe<CustomTrainer>;
   editBadgeType?: Maybe<BadgeType>;
+  fetchWcaRecords?: Maybe<Array<Maybe<WcaRecord>>>;
   generateBuyLink?: Maybe<Scalars['String']>;
   likeCustomTrainer?: Maybe<CustomTrainerLike>;
   logOut: PublicUserAccount;
@@ -758,6 +759,7 @@ export type Mutation = {
   mergeSessions?: Maybe<Session>;
   publishTopAverages?: Maybe<TopAverage>;
   publishTopSolve?: Maybe<TopSolve>;
+  publishWcaRecord?: Maybe<WcaRecord>;
   removeBadgeFromUser?: Maybe<Badge>;
   reorderSessions?: Maybe<Scalars['Void']>;
   reportProfile?: Maybe<Report>;
@@ -771,6 +773,7 @@ export type Mutation = {
   unbanUserAccount?: Maybe<UserAccount>;
   unfriend?: Maybe<Friendship>;
   unlikeCustomTrainer?: Maybe<CustomTrainerLike>;
+  unpublishWcaRecord?: Maybe<WcaRecord>;
   unsubEmails?: Maybe<Scalars['Boolean']>;
   updateAlgorithmOverride?: Maybe<AlgorithmOverride>;
   updateCustomTrainer?: Maybe<CustomTrainer>;
@@ -1027,6 +1030,11 @@ export type MutationPublishTopSolveArgs = {
 };
 
 
+export type MutationPublishWcaRecordArgs = {
+  recordId?: InputMaybe<Scalars['String']>;
+};
+
+
 export type MutationRemoveBadgeFromUserArgs = {
   badgeTypeId?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
@@ -1087,6 +1095,11 @@ export type MutationUnfriendArgs = {
 
 export type MutationUnlikeCustomTrainerArgs = {
   customTrainerId?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationUnpublishWcaRecordArgs = {
+  recordId?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -1335,6 +1348,7 @@ export type Query = {
   membership?: Maybe<Membership>;
   membershipOptions?: Maybe<MembershipOptions>;
   myEloLeaderboardsPosition?: Maybe<Scalars['Int']>;
+  myWcaRecords?: Maybe<Array<Maybe<WcaRecord>>>;
   notificationPreferences?: Maybe<NotificationPreference>;
   notifications?: Maybe<Array<Maybe<Notification>>>;
   profile: Profile;
@@ -1358,6 +1372,7 @@ export type Query = {
   unreadNotificationCount?: Maybe<Scalars['Int']>;
   userSearch?: Maybe<PaginatedUserAccounts>;
   wcaMe?: Maybe<WcaAccount>;
+  wcaRecords?: Maybe<Array<Maybe<WcaRecord>>>;
 };
 
 
@@ -1497,6 +1512,11 @@ export type QueryTopSolvesArgs = {
 
 export type QueryUserSearchArgs = {
   pageArgs?: InputMaybe<PaginationArgsInput>;
+};
+
+
+export type QueryWcaRecordsArgs = {
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type Report = {
@@ -1927,6 +1947,28 @@ export type WcaAccount = {
   id?: Maybe<Scalars['String']>;
   url?: Maybe<Scalars['String']>;
   wca_id?: Maybe<Scalars['String']>;
+};
+
+export type WcaRecord = {
+  __typename?: 'WcaRecord';
+  average_continent_rank?: Maybe<Scalars['Float']>;
+  average_country_rank?: Maybe<Scalars['Float']>;
+  average_record?: Maybe<Scalars['Float']>;
+  average_world_rank?: Maybe<Scalars['Float']>;
+  created_at?: Maybe<Scalars['DateTime']>;
+  fetched_at?: Maybe<Scalars['DateTime']>;
+  id?: Maybe<Scalars['ID']>;
+  integration?: Maybe<Integration>;
+  integration_id?: Maybe<Scalars['String']>;
+  published?: Maybe<Scalars['Boolean']>;
+  single_continent_rank?: Maybe<Scalars['Float']>;
+  single_country_rank?: Maybe<Scalars['Float']>;
+  single_record?: Maybe<Scalars['Float']>;
+  single_world_rank?: Maybe<Scalars['Float']>;
+  updated_at?: Maybe<Scalars['DateTime']>;
+  user?: Maybe<PublicUserAccount>;
+  user_id?: Maybe<Scalars['String']>;
+  wca_event?: Maybe<Scalars['String']>;
 };
 
 export type MiniSolveFragmentFragment = { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, session_id?: string | null, trainer_name?: string | null, bulk?: boolean | null, scramble?: string | null, from_timer?: boolean | null, training_session_id?: string | null, dnf?: boolean | null, plus_two?: boolean | null, is_smart_cube?: boolean | null, created_at?: any | null, started_at?: any | null, ended_at?: any | null };

@@ -304,6 +304,8 @@ type Query {
   eloLeaderboards(pageArgs: PaginationArgsInput): PaginatedEloLeaderboards
   myEloLeaderboardsPosition: Int
   statsModule: StatsModule
+  wcaRecords(userId: String): [WcaRecord]
+  myWcaRecords: [WcaRecord]
 }
 
 type Mutation {
@@ -386,6 +388,9 @@ type Mutation {
   adminDeleteUserAccount(userId: String): UserAccount
   updateStatsModuleBlocks(blocks: [StatsModuleBlockInput]): StatsModule
   createDemoSolve(input: DemoSolveInput): DemoSolve
+  fetchWcaRecords: [WcaRecord]
+  publishWcaRecord(recordId: String): WcaRecord
+  unpublishWcaRecord(recordId: String): WcaRecord
 }
 
 type SmartDevice {
@@ -1199,6 +1204,27 @@ type DemoSolve {
   ended_at: BigInt
   updated_at: DateTime
   created_at: DateTime
+}
+
+type WcaRecord {
+  id: ID
+  user_id: String
+  integration_id: String
+  wca_event: String
+  single_record: Float
+  average_record: Float
+  single_world_rank: Float
+  average_world_rank: Float
+  single_continent_rank: Float
+  average_continent_rank: Float
+  single_country_rank: Float
+  average_country_rank: Float
+  published: Boolean
+  fetched_at: DateTime
+  created_at: DateTime
+  updated_at: DateTime
+  integration: Integration
+  user: PublicUserAccount
 }
 
 type Notification {

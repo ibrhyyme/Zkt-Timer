@@ -22,11 +22,9 @@ const b = block('sub-stats');
 const SUB_STATS_COLOR = '#6D7D90';
 
 interface Props {
-	proOnly?: boolean;
 }
 
 export default function SubStats(props: Props) {
-	const {proOnly} = props;
 
 	const context = useContext(StatsContext);
 	const {filterOptions} = context;
@@ -56,7 +54,6 @@ export default function SubStats(props: Props) {
 			<NumberBlock
 				small
 				center
-				proOnly={proOnly}
 				icon={<CaretDoubleRight weight="bold" />}
 				title="Çözüm Serisi"
 				value={`${streak.currentStreak} gün`}
@@ -65,7 +62,6 @@ export default function SubStats(props: Props) {
 			<NumberBlock
 				small
 				center
-				proOnly={proOnly}
 				icon={<CaretDoubleUp weight="bold" />}
 				title="En Yüksek Seri"
 				value={`${streak.highestStreak} gün`}
@@ -74,7 +70,6 @@ export default function SubStats(props: Props) {
 			<NumberBlock
 				small
 				center
-				proOnly={proOnly}
 				icon={<WarningOctagon weight="bold" />}
 				title="DNFs"
 				value={`${subStats.dnfCount} (${subStats.dnfPercent}%)`}
@@ -83,7 +78,6 @@ export default function SubStats(props: Props) {
 			<NumberBlock
 				small
 				center
-				proOnly={proOnly}
 				icon={<Warning weight="bold" />}
 				title="+2s"
 				value={`${subStats.plusTwoCount} (${subStats.plusTwoPercent}%)`}
@@ -92,7 +86,6 @@ export default function SubStats(props: Props) {
 			<NumberBlock
 				small
 				center
-				proOnly={proOnly}
 				icon={<Calculator weight="bold" />}
 				title="Ort. Çözüm / Seans"
 				value={avgSolvesPerSession}
@@ -101,7 +94,6 @@ export default function SubStats(props: Props) {
 			<NumberBlock
 				small
 				center
-				proOnly={proOnly}
 				icon={<NumberSquareOne weight="bold" />}
 				title="İlk Çözüm"
 				value={firstSolveTime}

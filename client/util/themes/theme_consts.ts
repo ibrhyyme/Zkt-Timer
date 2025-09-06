@@ -1,4 +1,4 @@
-export const Preset = ['dark', 'light'] as const;
+export const Preset = ['dark'] as const;
 export type PresetKey = typeof Preset[number];
 
 export interface PresetTheme {
@@ -28,18 +28,6 @@ export const APP_THEME_PRESETS: PresetThemeValues = {
 			text_color: '255, 255, 255',
 		},
 	},
-	light: {
-		name: 'Light',
-		proOnly: false,
-		values: {
-			background_color: '255, 255, 255',
-			button_color: '212, 212, 212',
-			module_color: '242, 243, 245',
-			primary_color: '36, 107, 253',
-			secondary_color: '65, 176, 88',
-			text_color: '26, 29, 33',
-		},
-	},
 };
 
 const DEFAULT_THEME: PresetKey = 'dark';
@@ -48,6 +36,6 @@ export const LEGACY_KEYS = new Set([
 ]);
 
 export function coercePresetKey(k?: string | null): PresetKey {
-  if (k === 'light' || k === 'dark') return k;
+  if (k === 'dark') return k;
   return DEFAULT_THEME;
 }

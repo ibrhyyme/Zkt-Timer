@@ -9,13 +9,10 @@ import CubeStatAverages from './averages/CubeStatAverages';
 import {StatsContext} from '../Stats';
 import SubStats from '../common/sub_stats/SubStats';
 import SolvesPerDay from '../../modules/solves_per_day/SolvesPerDay';
-import {useMe} from '../../../util/hooks/useMe';
-import {isNotPro} from '../../../util/pro';
 
 const b = block('cube-stats');
 
 export default function CubeStats() {
-	const me = useMe();
 	const context = useContext(StatsContext);
 	const filter = context.filterOptions;
 
@@ -35,12 +32,12 @@ export default function CubeStats() {
 					<TimeChart filterOptions={filter} />
 				</StatModule>
 			</StatSection>
-			<StatSection proOnly title="Daha Fazla İstatistik" className={b('sub-stats')}>
-				<SubStats proOnly />
+			<StatSection title="Daha Fazla İstatistik" className={b('sub-stats')}>
+				<SubStats />
 			</StatSection>
-			<StatSection proOnly colSpan="all" title="Tutarlılık" className={b('consistency')}>
+			<StatSection colSpan="all" title="Tutarlılık" className={b('consistency')}>
 				<StatModule>
-					<SolvesPerDay proOnly filterOptions={filter} days={60} dummy={isNotPro(me)} />
+					<SolvesPerDay filterOptions={filter} days={60} />
 				</StatModule>
 			</StatSection>
 		</div>

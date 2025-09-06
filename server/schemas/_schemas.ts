@@ -28,4 +28,5 @@ export * from './EloRating.schema';
 export * from './EloLog.schema';
 export * from './StatsModule.schema';
 export * from './DemoSolve.schema';
+export * from './WcaRecord.schema';
 

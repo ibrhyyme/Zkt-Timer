@@ -59,9 +59,16 @@
 		z-index: 1000;
 		right: 0;
 		justify-content: flex-end;
+		transition: all 0.3s ease;
 
 		> * {
 			margin-left: 10px;
+		}
+
+		&--blurred {
+			opacity: 0.1;
+			filter: blur(8px);
+			pointer-events: none;
 		}
 	}
 
@@ -156,9 +163,83 @@
 		}
 	}
 
+	&__records-header {
+		margin-bottom: 20px;
+	}
+
+	&__records-tabs {
+		display: flex;
+		gap: 0;
+		border-bottom: 2px solid rgb(var(--border-color));
+	}
+
+	&__tab {
+		background: none;
+		border: none;
+		padding: 16px 32px;
+		font-size: 1.2rem;
+		font-weight: 600;
+		color: rgb(var(--text-color));
+		opacity: 0.6;
+		cursor: pointer;
+		border-bottom: 3px solid transparent;
+		transition: all 0.2s ease;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+
+		&:hover {
+			opacity: 0.8;
+		}
+
+		&--active {
+			opacity: 1;
+			border-bottom-color: rgb(var(--primary-color));
+		}
+	}
+
+	&__wca-logo {
+		width: 20px;
+		height: 20px;
+		opacity: 1;
+		vertical-align: middle;
+		// Dark tema için logoyu görünür yap
+		filter: none;
+	}
+
+	&__records-content {
+		margin-top: 20px;
+	}
+
+	&__no-records {
+		text-align: center;
+		padding: 40px;
+		color: rgb(var(--text-color));
+		opacity: 0.6;
+		
+		p {
+			margin: 0;
+			font-size: 1.1rem;
+		}
+	}
+
 	&__pbs {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(300px, auto));
 		grid-gap: 20px;
+	}
+
+	&__publish-buttons {
+		display: flex;
+		gap: 15px;
+		justify-content: center;
+		flex-wrap: wrap;
+		transition: all 0.3s ease;
+
+		&--blurred {
+			opacity: 0.1;
+			filter: blur(8px);
+			pointer-events: none;
+		}
 	}
 }

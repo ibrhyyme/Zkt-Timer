@@ -1,9 +1,7 @@
-import {useState} from 'react';
-import {useEventListener} from '../event_handler';
+import {useDataContext} from '../../providers/DataProvider';
 
 export function useSolveDb() {
-	const [changeCounter, setChangeCounter] = useState(0);
-	useEventListener('solveDbUpdatedEvent', () => setChangeCounter(changeCounter + 1));
+	const { solveDbChangeCounter } = useDataContext();
 
-	return changeCounter;
+	return solveDbChangeCounter;
 }

@@ -44,6 +44,7 @@ export default function ColorPicker(props: Props) {
 
 	function colorChange(c: Color) {
 		setColor(c);
+		onChange(getAnyColorStringAsRawRgbString(c));
 	}
 
 	let resetButton = null;
@@ -85,6 +86,13 @@ export default function ColorPicker(props: Props) {
 					dark={backgroundTheme.isDark}
 					hideHSV
 				/>
+				<div style={{padding: '8px', textAlign: 'center'}}>
+					<Button
+						small
+						text="Kapat"
+						onClick={() => toggleShowPicker()}
+					/>
+				</div>
 			</div>
 		</div>
 	);

@@ -134,7 +134,7 @@ export default function PbCard(props: Props) {
 	}
 
 	return (
-		<button className={b()} onClick={openSolve}>
+		<div className={b()} onClick={openSolve}>
 			{actions}
 			<div className={b('time')}>
 				<span>{getTimeString(time, 2)}</span>
@@ -146,6 +146,6 @@ export default function PbCard(props: Props) {
 				</div>
 				<Tag small text={`${cubeType.name} ${single ? 'Single' : 'Average'}`} />
 			</div>
-		</button>
+		</div>
 	);
 }

@@ -77,6 +77,7 @@ model UserAccount {
   top_solves                    TopSolve[]
   trainer_favorite              TrainerFavorite[]
   user_feature_state            UserFeatureState?
+  wca_records                   WcaRecord[]
 
   @@map("user_account")
 }
@@ -103,6 +104,7 @@ model Integration {
   wca_id          String?
   created_at      DateTime    @default(now())
   user            UserAccount @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  wca_records     WcaRecord[]
 
   @@index([user_id])
   @@map("integration")
@@ -843,6 +845,33 @@ model CustomCubeType {
 
   @@index([user_id])
   @@map("custom_cube_type")
+}
+
+model WcaRecord {
+  id                     String      @id @default(uuid())
+  user_id                String
+  integration_id         String
+  wca_event              String // 333, 222, 444, etc.
+  single_record          Int? // WCA time in centiseconds
+  average_record         Int? // WCA average in centiseconds  
+  single_world_rank      Int? // World ranking for single
+  average_world_rank     Int? // World ranking for average
+  single_continent_rank  Int? // Continental ranking for single
+  average_continent_rank Int? // Continental ranking for average
+  single_country_rank    Int? // Country ranking for single
+  average_country_rank   Int? // Country ranking for average
+  published              Boolean     @default(false) // Whether user chose to publish this record
+  fetched_at             DateTime    @default(now()) // When this record was last fetched from WCA
+  created_at             DateTime    @default(now())
+  updated_at             DateTime    @updatedAt
+  integration            Integration @relation(fields: [integration_id], references: [id], onDelete: Cascade)
+  user                   UserAccount @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, wca_event])
+  @@index([user_id])
+  @@index([integration_id])
+  @@index([published])
+  @@map("wca_record")
 }
 
 enum GameType {

@@ -323,6 +323,7 @@ export async function createUserAccount(
 			password: hashedPassword,
 			join_ip: ip || '',
 			join_country: country,
+			is_pro: true, // PRO sistemi kaldırıldı - herkes otomatik PRO
 		},
 	});
 }

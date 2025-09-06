@@ -52,7 +52,7 @@ export default function SettingsModal(props: Props) {
 			onClick={handleBackdropClick}
 		>
 			<div 
-				className="max-w-2xl w-full max-h-[75vh] rounded-3xl bg-gradient-to-br from-slate-900/95 to-slate-800/95 backdrop-blur-2xl border border-white/10 shadow-2xl shadow-black/50 transform transition-all duration-300 flex flex-col"
+				className="max-w-5xl w-full max-h-[85vh] rounded-3xl bg-gradient-to-br from-slate-900/95 to-slate-800/95 backdrop-blur-2xl border border-white/10 shadow-2xl shadow-black/50 transform transition-all duration-300 flex flex-col"
 				onClick={(e) => e.stopPropagation()}
 			>
 				{/* Sticky Header */}

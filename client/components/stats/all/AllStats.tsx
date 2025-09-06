@@ -31,13 +31,13 @@ export default function AllStats() {
 					<CubeDistro />
 				</StatModule>
 			</StatSection>
-			<StatSection title="Tutarlılık" proOnly>
+			<StatSection title="Tutarlılık">
 				<StatModule>
-					<SolvesPerDay filterOptions={filterOptions} days={30} dummy={isNotPro(me)} />
+					<SolvesPerDay filterOptions={filterOptions} days={30} />
 				</StatModule>
 			</StatSection>
-			<StatSection proOnly title="Daha Fazla İstatistik">
-				<SubStats proOnly />
+			<StatSection title="Daha Fazla İstatistik">
+				<SubStats />
 			</StatSection>
 		</div>
 	);

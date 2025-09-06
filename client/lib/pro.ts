@@ -14,68 +14,38 @@ export const isProEnabled = (): boolean => {
 
 /**
  * Check if user has Pro status
- * Returns false when Pro features are disabled
+ * PRO sistemi kaldırıldı - herkes otomatik PRO
  */
 export function isPro(user?: UserAccount | PublicUserAccount): boolean {
-	if (!isProEnabled()) {
-		return false;
-	}
-
-	if (!user) {
-		return false;
-	}
-
-	// Development: Enable Pro features for all users when enabled
-	if (process.env.NODE_ENV !== 'production' || (typeof window !== 'undefined' && window.location.hostname === 'localhost')) {
-		return true;
-	}
-
-	return !!user.is_pro;
+	// PRO sistemi kaldırıldı - herkes otomatik PRO
+	return true;
 }
 
 /**
  * Check if user does NOT have Pro status
- * Returns true when Pro features are disabled
+ * PRO sistemi kaldırıldı - kimse NOT-PRO değil
  */
 export function isNotPro(user?: UserAccount | PublicUserAccount): boolean {
-	return !isPro(user);
+	// PRO sistemi kaldırıldı - kimse NOT-PRO değil
+	return false;
 }
 
 /**
  * Check if user is logged in AND has Pro status
- * Returns false when Pro features are disabled
+ * PRO sistemi kaldırıldı - giriş yapan herkes PRO
  */
 export function isLoggedInAndPro(user?: UserAccount): boolean {
-	if (!isProEnabled()) {
-		return false;
-	}
-
-	if (!user) {
-		return false;
-	}
-
-	// Development: Enable Pro features for all logged in users when enabled
-	if (process.env.NODE_ENV !== 'production' || (typeof window !== 'undefined' && window.location.hostname === 'localhost')) {
-		return true;
-	}
-
-	return user.is_pro;
+	// Kullanıcı giriş yapmışsa PRO
+	return !!user;
 }
 
 /**
  * Check if user is logged in and does NOT have Pro status
- * Returns true when Pro features are disabled
+ * PRO sistemi kaldırıldı - kimse NOT-PRO değil
  */
 export function isLoggedInAndNotPro(user?: UserAccount): boolean {
-	if (!isProEnabled()) {
-		return true;
-	}
-
-	if (!user) {
-		return true;
-	}
-
-	return !user.is_pro;
+	// PRO sistemi kaldırıldı - kimse NOT-PRO değil
+	return false;
 }
 
 /**

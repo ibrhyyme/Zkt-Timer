@@ -14,7 +14,7 @@ import Header from '../layout/header/Header';
 import WCA from './wca/WCA';
 import FriendshipRequest from './friendship_request/FriendshipRequest';
 import Avatar from '../common/avatar/Avatar';
-import {getStorageURL} from '../../util/storage';
+import {getStorageURL, resourceUri} from '../../util/storage';
 import {Image, Profile as ProfileSchema, PublicUserAccount, TopAverage, TopSolve} from '../../@types/generated/graphql';
 import {useRouteMatch} from 'react-router-dom';
 import {useSsr} from '../../util/hooks/useSsr';
@@ -26,6 +26,8 @@ import ProfileElo from './elo/ProfileElo';
 import AvatarDropdown from '../common/avatar/avatar_dropdown/AvatarDropdown';
 import {openModal} from '../../actions/general';
 import PublishSolves from './publish_solves/PublishSolves';
+import PublishWcaRecords from './publish_wca_records/PublishWcaRecords';
+import WcaPbCard from './wca_pb_card/WcaPbCard';
 import Button from '../common/button/Button';
 import LoadingIcon from '../common/LoadingIcon';
 
@@ -100,9 +102,12 @@ export default function Profile() {
 
 	const me = useMe();
 	const mobileMode = useGeneral('mobile_mode');
+	const settingsModalOpen = useGeneral('settings_modal_open');
 	const [ssrProfile, setSsrProfile] = useSsr<IProfileData>(matchUsername);
 	const [loading, setLoading] = useState(!ssrProfile);
 	const [profileData, setProfileData] = useState<IProfileData>(ssrProfile);
+	const [recordsTab, setRecordsTab] = useState<'pb' | 'wca'>('pb');
+	const [wcaRecords, setWcaRecords] = useState([]);
 
 	const username = matchUsername;
 	const user = profileData?.user;
@@ -125,6 +130,39 @@ export default function Profile() {
 			setLoading(false);
 		});
 	}, [matchUsername]);
+
+	useEffect(() => {
+		// WCA rekorlarını çek
+		if (user?.id) {
+			loadWcaRecords();
+		}
+	}, [user?.id]);
+
+	async function loadWcaRecords() {
+		try {
+			const query = gql`
+				query WcaRecords($userId: String) {
+					wcaRecords(userId: $userId) {
+						id
+						wca_event
+						single_record
+						average_record
+						single_world_rank
+						average_world_rank
+						single_country_rank
+						average_country_rank
+						published
+					}
+				}
+			`;
+
+			const res = await gqlQuery(query, { userId: user?.id });
+			setWcaRecords((res.data as any).wcaRecords || []);
+		} catch (error) {
+			console.error('Failed to load WCA records:', error);
+			setWcaRecords([]);
+		}
+	}
 
 	async function uploadProfileHeader(variables) {
 		const query = gql`
@@ -155,6 +193,16 @@ export default function Profile() {
 			openModal(<PublishSolves />, {
 				title: 'PB\'lerinizi Yayınlayın',
 				description: 'Lütfen aşağıdaki çözümlerin meşru ve size ait olduğundan emin olun.',
+				onComplete: () => window.location.reload(),
+			})
+		);
+	}
+
+	function openPublishWcaRecords() {
+		dispatch(
+			openModal(<PublishWcaRecords />, {
+				title: 'WCA Rekorlarınızı Yayınlayın',
+				description: 'WCA resmi rekorlarınızı profilinizde gösterin.',
 				onComplete: () => window.location.reload(),
 			})
 		);
@@ -227,14 +275,56 @@ export default function Profile() {
 		);
 	}
 
+	// WCA Cards oluştur
+	const wcaCards = wcaRecords.map((record: any) => (
+		<WcaPbCard key={record.id} record={record} />
+	));
+
 	let pbsDiv = null;
-	if (pbCards.length) {
+	if (pbCards.length || wcaCards.length) {
 		pbsDiv = (
 			<>
 				<hr />
 				<div>
-					<h2>Kişisel Rekorlar</h2>
-					<div className={b('pbs')}>{pbCards}</div>
+					<div className={b('records-header')}>
+						<div className={b('records-tabs')}>
+							<button 
+								className={b('tab', {active: recordsTab === 'pb'})}
+								onClick={() => setRecordsTab('pb')}
+							>
+								Kişisel Rekorlar
+							</button>
+							<button 
+								className={b('tab', {active: recordsTab === 'wca'})}
+								onClick={() => setRecordsTab('wca')}
+							>
+								<img 
+									src={resourceUri('/images/logos/wca_logo.svg')} 
+									alt="WCA" 
+									style={{ width: '20px', height: '20px' }}
+								/>
+								WCA Resmi Rekorlar
+							</button>
+						</div>
+					</div>
+					<div className={b('records-content')}>
+						{recordsTab === 'pb' && pbCards.length > 0 && (
+							<div className={b('pbs')}>{pbCards}</div>
+						)}
+						{recordsTab === 'wca' && wcaCards.length > 0 && (
+							<div className={b('pbs')}>{wcaCards}</div>
+						)}
+						{recordsTab === 'pb' && pbCards.length === 0 && (
+							<div className={b('no-records')}>
+								<p>Henüz yayınlanmış kişisel rekorunuz yok.</p>
+							</div>
+						)}
+						{recordsTab === 'wca' && wcaCards.length === 0 && (
+							<div className={b('no-records')}>
+								<p>Henüz yayınlanmış WCA rekorunuz yok.</p>
+							</div>
+						)}
+					</div>
 				</div>
 			</>
 		);
@@ -243,12 +333,15 @@ export default function Profile() {
 	let publishSolves = null;
 	if (myProfile) {
 		publishSolves = (
-			<Button primary icon={<Plus weight="bold" />} text="PB'lerinizi Yayınlayın" onClick={openPublishSolves} />
+			<div className={b('publish-buttons', {blurred: settingsModalOpen})}>
+				<Button primary icon={<Plus weight="bold" />} text="PB'lerinizi Yayınlayın" onClick={openPublishSolves} />
+				<Button primary icon={<Plus weight="bold" />} text="WCA Rekorlarınızı Yayınlayın" onClick={openPublishWcaRecords} />
+			</div>
 		);
 	}
 
 	return (
-		<div className={b('wrapper', {standalone: !me, mobile: mobileMode})}>
+		<div className={b('wrapper', {standalone: !me, mobile: mobileMode, blurred: settingsModalOpen})}>
 			<Header
 				path={`/profile/${username}`}
 				title={user.username + ' Profile | Zkt-Timer'}
@@ -265,7 +358,7 @@ export default function Profile() {
 					</div>
 				</div>
 				<div className={b('content')}>
-					<div className={b('header-actions')}>
+					<div className={b('header-actions', {blurred: settingsModalOpen})}>
 						<FriendshipRequest user={user as any} fetchData />
 						{publishSolves}
 						<AvatarDropdown user={user as any} />

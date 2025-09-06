@@ -36,7 +36,7 @@ export default (payload: HtmlPagePayload) => {
 				<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 				<meta name="apple-mobile-web-app-title" content="Zkt-Timer">
 				<link rel="apple-touch-icon" href="/icons/apple-touch-icon-180.svg">
-				<script async defer data-domain="zkt-timer.io" src="https://plausible.io/js/plausible.js"></script>
+				${process.env.NODE_ENV === "production" ? `<script async defer data-domain="zkt-timer.io" src="https://plausible.io/js/plausible.js"></script>` : ""}
 				<script async defer src="https://www.googletagmanager.com/gtag/js?id=AW-354788011"></script>
 				<script>
 				  window.dataLayer = window.dataLayer || [];
