@@ -1,16 +1,16 @@
 import React from 'react';
 import MicAccess from '../mic_access/MicAccess';
 import StackMatPicker from '../stackmat_picker/StackMatPicker';
-import {openModal} from '../../../actions/general';
+import { openModal } from '../../../actions/general';
 import CubeTypes from '../cube_types/CubeTypes';
 import SettingRow from '../setting/row/SettingRow';
 import Dropdown from '../../common/inputs/dropdown/Dropdown';
-import {useDispatch} from 'react-redux';
+import { useDispatch } from 'react-redux';
 import SettingSection from '../setting/section/SettingSection';
-import Button, {CommonType} from '../../common/button/Button';
-import {setSetting} from '../../../db/settings/update';
-import {useSettings} from '../../../util/hooks/useSettings';
-import {AllSettings} from '../../../db/settings/query';
+import Button, { CommonType } from '../../common/button/Button';
+import { setSetting } from '../../../db/settings/update';
+import { useSettings } from '../../../util/hooks/useSettings';
+import { AllSettings } from '../../../db/settings/query';
 
 export const TIMER_INPUT_TYPE_NAMES = {
 	keyboard: 'Klavye',
@@ -113,8 +113,8 @@ export default function TimerSettings() {
 			/>
 			<SettingRow title="Çözerken süreyi gizle" settingName="hide_time_when_solving" isSwitch />
 			<SettingRow
-				title="Çözümden sonra süreı sıfırla"
-				description="Son çözümünüzün süresini göstermek yerine, Timer çözümden sonra 0.00'a sıfırlanacak."
+				title="Çözümden sonra süreyi sıfırla"
+				description="Son çözümünüzün süresini göstermek yerine, timer çözümden sonra 0.00 olarak güncellenir."
 				settingName="zero_out_time_after_solve"
 				isSwitch
 			/>
