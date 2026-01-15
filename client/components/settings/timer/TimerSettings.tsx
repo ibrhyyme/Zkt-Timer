@@ -36,7 +36,7 @@ export default function TimerSettings() {
 			openModal(<CubeTypes />, {
 				title: 'Küp Türlerini Yönet',
 				description:
-					"Varsayılan olarak listelenmemiş özel etkinlikler için özel karıştırma türleri kullanabilirsiniz. Örneğin 8x8 veya Examinx.",
+					"Varsayılan olarak listelenmemiş özel etkinlikler için özel karıştırma türleri kullanabilirsiniz. Örneğin 8x8 veya Examinx Ya da aklına ne geliyorsa",
 			})
 		);
 	}
