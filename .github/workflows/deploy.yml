@@ -1,0 +1,24 @@
+name: ZKTimer Deploy
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Deploy to GCP
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.REMOTE_HOST }}
+        username: ${{ secrets.REMOTE_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        script: |
+          cd /home/ibrahimyldz77/Zkt-Timer
+          
+          # 1. En güncel kodları çek
+          git pull origin main
+          
+          # 2. Docker'ı yeniden başlat (npm falan yok, sadece bu var)
+          docker-compose up -d --build
