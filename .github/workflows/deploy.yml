@@ -15,8 +15,13 @@ jobs:
         username: ${{ secrets.REMOTE_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
-            cd /home/ibrahimyldz77/Zkt-Timer
-            git pull origin main
-            # --no-cache ekleyerek Docker'ı her şeyi sıfırdan kurmaya zorluyoruz
-            docker-compose build --no-cache
-            docker-compose up -d
+          cd /home/ibrahimyldz77/Zkt-Timer
+          
+          # 1. Yeni kodları çek
+          git pull origin main
+          
+          # 2. ÖNEMLİ: Cache kullanmadan sıfırdan inşa et (Değişiklikleri görmesi için şart)
+          docker-compose build --no-cache
+          
+          # 3. Yeni imajı ayağa kaldır
+          docker-compose up -d
