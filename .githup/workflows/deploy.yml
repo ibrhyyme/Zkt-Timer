@@ -1,0 +1,27 @@
+name: ZKTimer Docker Auto Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sunucuya Baglan ve Docker'i Guncelle
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /home/ibrahimyldz77/Zkt-Timer
+            
+            # 1. GitHub'dan en güncel kodları çek
+            git pull origin main
+            
+            # 2. Docker konteynerlerini durdurmadan güncelle ve yeniden başlat
+            # --build: Değişen kodlara göre imajı yeniden hazırlar
+            # -d: Arka planda çalışmaya devam eder
+            docker-compose up -d --build
