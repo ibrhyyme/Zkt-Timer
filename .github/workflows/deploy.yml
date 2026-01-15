@@ -15,10 +15,8 @@ jobs:
         username: ${{ secrets.REMOTE_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
-          cd /home/ibrahimyldz77/Zkt-Timer
-          
-          # 1. En güncel kodları çek
-          git pull origin main
-          
-          # 2. Docker'ı yeniden başlat (npm falan yok, sadece bu var)
-          docker-compose up -d --build
+            cd /home/ibrahimyldz77/Zkt-Timer
+            git pull origin main
+            # --no-cache ekleyerek Docker'ı her şeyi sıfırdan kurmaya zorluyoruz
+            docker-compose build --no-cache
+            docker-compose up -d
