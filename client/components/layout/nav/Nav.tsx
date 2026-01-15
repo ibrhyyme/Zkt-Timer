@@ -1,9 +1,9 @@
-import React, {useEffect} from 'react';
-import {useDispatch} from 'react-redux';
-import {Link, useRouteMatch} from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { Link, useRouteMatch } from 'react-router-dom';
 import './Nav.scss';
-import {setSetting} from '../../../db/settings/update';
-import {setGeneral} from '../../../actions/general';
+import { setSetting } from '../../../db/settings/update';
+import { setGeneral } from '../../../actions/general';
 import {
 	ArrowLeft,
 	Sword,
@@ -19,18 +19,18 @@ import {
 import Notifications from './notifications/Notifications';
 import Logo from '../../common/logo/Logo';
 import MobileNav from './mobile_nav/MobileNav';
-import {useGeneral} from '../../../util/hooks/useGeneral';
-import {useWindowListener} from '../../../util/hooks/useListener';
-import {useSettings} from '../../../util/hooks/useSettings';
-import {useTheme} from '../../../util/hooks/useTheme';
+import { useGeneral } from '../../../util/hooks/useGeneral';
+import { useWindowListener } from '../../../util/hooks/useListener';
+import { useSettings } from '../../../util/hooks/useSettings';
+import { useTheme } from '../../../util/hooks/useTheme';
 import block from '../../../styles/bem';
 import AccountDropdown from './account_dropdown/AccountDropdown';
-import {useMe} from '../../../util/hooks/useMe';
+import { useMe } from '../../../util/hooks/useMe';
 import NavLink from './NavLink';
 import Button from '../../common/button/Button';
 import LoginNav from './LoginNav';
-import {resourceUri} from '../../../util/storage';
-import {isPro} from '../../../util/pro';
+import { resourceUri } from '../../../util/storage';
+import { isPro } from '../../../util/pro';
 
 const b = block('nav');
 
@@ -156,7 +156,7 @@ export default function Nav() {
 	let getPro = null;
 
 	return (
-		<div className={b({collapsed: navClosed})}>
+		<div className={b({ collapsed: navClosed })}>
 			<div className={b('wrapper')}>
 				<div className={b('body')}>
 					<div className={b('top-section')}>
@@ -164,7 +164,6 @@ export default function Nav() {
 							<Logo large={true} dark={!moduleColor.isDark} />
 							<Logo dark={!moduleColor.isDark} />
 							<div className={b('header-actions')}>
-								{notifications}
 								<AccountDropdown />
 							</div>
 						</div>
@@ -200,7 +199,7 @@ interface SocialIconInterface {
 }
 
 function SocialIcon(props: SocialIconInterface) {
-	const {darkPath, name, href, lightPath} = props;
+	const { darkPath, name, href, lightPath } = props;
 	const moduleColor = useTheme('module_color');
 
 	let path = darkPath;

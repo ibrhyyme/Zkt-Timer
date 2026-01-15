@@ -1,14 +1,14 @@
 import React from 'react';
 import './Notifications.scss';
-import {Bell} from 'phosphor-react';
-import {connect} from 'react-redux';
+import { Bell } from 'phosphor-react';
+import { connect } from 'react-redux';
 import OldDropdown from '../../../common/dropdown/OldDropdown';
 import Loading from '../../../common/loading/Loading';
 import Empty from '../../../common/empty/Empty';
 import Notif from './notif/Notif';
-import {NOTIFICATION_FRAGMENT} from '../../../../util/graphql/fragments';
-import {gqlQuery} from '../../../api';
-import {gql} from '@apollo/client';
+import { NOTIFICATION_FRAGMENT } from '../../../../util/graphql/fragments';
+import { gqlQuery } from '../../../api';
+import { gql } from '@apollo/client';
 
 class Notifications extends React.Component {
 	constructor() {
@@ -67,7 +67,7 @@ class Notifications extends React.Component {
 	};
 
 	getNotifications = async (resetList, updateCount) => {
-		const {page} = this.state;
+		const { page } = this.state;
 
 		this.setState({
 			loading: true,
@@ -190,8 +190,8 @@ class Notifications extends React.Component {
 	};
 
 	render() {
-		const {right} = this.props;
-		const {notifications, unreadCount, endOfList, loading} = this.state;
+		const { right } = this.props;
+		const { notifications, unreadCount, endOfList, loading } = this.state;
 
 		let body = null;
 		let loadingBody = loading ? (
