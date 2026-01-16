@@ -21,6 +21,12 @@
         color: rgb(var(--text-color));
         line-height: 1.2;
         white-space: nowrap;
+
+        &--mobile-hide {
+            @media (max-width: 768px) {
+                display: none;
+            }
+        }
     }
 
     &__pfp {

@@ -20,17 +20,21 @@
 		color: rgb(var(--text-color)) !important;
 		font-family: 'Roboto Mono', monospace;
 		line-height: clamp(1.5rem, 2vw, 2rem);
-		
+
 		// Küçük ekranlarda wrap edebilir
 		@media (max-width: 1200px) {
 			flex-wrap: wrap;
 			font-size: clamp(0.9rem, 2vw, 1.2rem);
 			line-height: clamp(1.2rem, 2.5vw, 1.8rem);
 		}
-		
+
 		@media (max-width: 768px) {
-			font-size: clamp(0.8rem, 3vw, 1rem);
-			line-height: clamp(1rem, 3.5vw, 1.4rem);
+			font-size: clamp(0.85rem, 3vw, 1rem);
+			line-height: 1.4;
+			margin-bottom: 3vh;
+			padding: 0 5vw;
+			max-width: 100%;
+			word-break: break-word;
 		}
 
 		textarea {
@@ -56,7 +60,7 @@
 			z-index: -100;
 		}
 
-		> span {
+		>span {
 			color: inherit;
 			line-height: inherit;
 			font-family: inherit;
@@ -65,7 +69,7 @@
 			text-shadow: 0 1px 7px rgba(black, 0.2);
 		}
 
-		> span:not(:last-of-type) {
+		>span:not(:last-of-type) {
 			margin-right: 0.8rem;
 		}
 
@@ -100,8 +104,27 @@
 			display: none !important;
 		}
 
-		> *:not(:last-child) {
+		>*:not(:last-child) {
 			margin-right: 10px;
+		}
+	}
+
+	&__mobile-extra-actions {
+		display: none; // Desktop'ta gizli
+
+		@media (max-width: 768px) {
+			display: flex;
+			flex-direction: row;
+			gap: clamp(6px, 2vw, 10px);
+			align-items: center;
+			justify-content: center;
+			padding: clamp(6px, 1.5vh, 10px) 0;
+			margin-top: clamp(4px, 1vh, 8px);
+
+			button {
+				font-size: clamp(0.85rem, 2.5vw, 0.95rem) !important;
+				padding: clamp(4px, 1vw, 6px) clamp(10px, 3vw, 14px) !important;
+			}
 		}
 	}
 }

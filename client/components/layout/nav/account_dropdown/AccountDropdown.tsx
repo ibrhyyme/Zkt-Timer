@@ -57,7 +57,6 @@ export default function AccountDropdown() {
 	return (
 		<div className={b()}>
 			<Dropdown
-				openLeft
 				noMargin
 				options={aviDropDownOptions}
 				handle={
@@ -65,7 +64,7 @@ export default function AccountDropdown() {
 						<div className={b('pfp')}>
 							<AvatarImage user={me} profile={me.profile} />
 						</div>
-						<span className={b('username')}>{me.username}</span>
+						<span className={b('username', { mobile: 'hide' })}>{me.username}</span>
 					</div>
 				}
 			/>

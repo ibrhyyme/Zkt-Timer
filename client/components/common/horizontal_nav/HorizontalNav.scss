@@ -6,8 +6,12 @@
 		flex-direction: row;
 		flex-wrap: wrap;
 
-		> *:not(:last-of-type) {
+		>*:not(:last-of-type) {
 			margin-right: 13px;
+		}
+
+		>* {
+			margin-bottom: 10px;
 		}
 	}
 }

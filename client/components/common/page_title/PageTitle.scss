@@ -39,4 +39,31 @@
 			background-color: rgb(var(--secondary-color));
 		}
 	}
+
+	&--account-dropdown-mobile {
+		margin-left: 12px;
+		display: none;
+
+		@media (max-width: 768px) {
+			display: block;
+		}
+
+		// Adjust inner dropdown styles for this context if needed
+		.#{$namespace}-nav-account-dropdown {
+			padding: 0;
+			height: auto;
+			border-left: none;
+			margin-left: 0;
+
+			&__handle {
+				padding: 0;
+			}
+
+			&__pfp {
+				margin-right: 0;
+				width: 32px;
+				height: 32px;
+			}
+		}
+	}
 }

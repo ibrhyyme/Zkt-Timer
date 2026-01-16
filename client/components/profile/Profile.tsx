@@ -1,35 +1,36 @@
-import React, {useEffect, useState} from 'react';
-import {useDispatch} from 'react-redux';
+import React, { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import './Profile.scss';
-import {CircleWavyCheck, Plus} from 'phosphor-react';
-import {gql} from '@apollo/client';
-import {gqlMutate, gqlQuery} from '../api';
-import {PROFILE_FRAGMENT} from '../../util/graphql/fragments';
+import { CircleWavyCheck, Plus } from 'phosphor-react';
+import { gql } from '@apollo/client';
+import { gqlMutate, gqlQuery } from '../api';
+import { PROFILE_FRAGMENT } from '../../util/graphql/fragments';
 import PbCard from './pb_card/PbCard';
 import PFP from './pfp/PFP';
 import UploadCover from '../common/upload_cover/UploadCover';
 import About from './about/About';
-import {setSsrValue} from '../../actions/ssr';
+import { setSsrValue } from '../../actions/ssr';
 import Header from '../layout/header/Header';
 import WCA from './wca/WCA';
 import FriendshipRequest from './friendship_request/FriendshipRequest';
 import Avatar from '../common/avatar/Avatar';
-import {getStorageURL, resourceUri} from '../../util/storage';
-import {Image, Profile as ProfileSchema, PublicUserAccount, TopAverage, TopSolve} from '../../@types/generated/graphql';
-import {useRouteMatch} from 'react-router-dom';
-import {useSsr} from '../../util/hooks/useSsr';
+import { getStorageURL, resourceUri } from '../../util/storage';
+import { Image, Profile as ProfileSchema, PublicUserAccount, TopAverage, TopSolve } from '../../@types/generated/graphql';
+import { useRouteMatch } from 'react-router-dom';
+import { useSsr } from '../../util/hooks/useSsr';
 import block from '../../styles/bem';
-import {useMe} from '../../util/hooks/useMe';
-import {useGeneral} from '../../util/hooks/useGeneral';
-import {getMe} from '../../actions/account';
+import { useMe } from '../../util/hooks/useMe';
+import { useGeneral } from '../../util/hooks/useGeneral';
+import { getMe } from '../../actions/account';
 import ProfileElo from './elo/ProfileElo';
 import AvatarDropdown from '../common/avatar/avatar_dropdown/AvatarDropdown';
-import {openModal} from '../../actions/general';
+import { openModal } from '../../actions/general';
 import PublishSolves from './publish_solves/PublishSolves';
 import PublishWcaRecords from './publish_wca_records/PublishWcaRecords';
 import WcaPbCard from './wca_pb_card/WcaPbCard';
 import Button from '../common/button/Button';
 import LoadingIcon from '../common/LoadingIcon';
+import MobileNav from '../layout/nav/mobile_nav/MobileNav';
 
 const b = block('profile');
 
@@ -56,7 +57,7 @@ export async function getProfileData(username: string): Promise<IProfileData> {
 		}
 	`;
 
-	const result = await gqlQuery<{profile: ProfileSchema}>(query, {
+	const result = await gqlQuery<{ profile: ProfileSchema }>(query, {
 		username,
 	} as any);
 
@@ -174,10 +175,10 @@ export default function Profile() {
 			}
 		`;
 
-		const res = await gqlMutate<{uploadProfileHeader: Image}>(query, variables);
+		const res = await gqlMutate<{ uploadProfileHeader: Image }>(query, variables);
 		const storagePath = res.data.uploadProfileHeader.storage_path;
 
-		const newProfileData = {...profileData};
+		const newProfileData = { ...profileData };
 		newProfileData.headerImage = res.data.uploadProfileHeader;
 		setProfileData(newProfileData);
 
@@ -215,7 +216,7 @@ export default function Profile() {
 
 	if (loading) {
 		return (
-			<div className={b({loading})}>
+			<div className={b({ loading })}>
 				<LoadingIcon />
 			</div>
 		);
@@ -258,7 +259,7 @@ export default function Profile() {
 
 	if (mobileMode) {
 		pfp = (
-			<div className={b('pfp', {mobile: mobileMode})}>
+			<div className={b('pfp', { mobile: mobileMode })}>
 				<Avatar user={user as any} profile={profile as any} />
 			</div>
 		);
@@ -288,19 +289,19 @@ export default function Profile() {
 				<div>
 					<div className={b('records-header')}>
 						<div className={b('records-tabs')}>
-							<button 
-								className={b('tab', {active: recordsTab === 'pb'})}
+							<button
+								className={b('tab', { active: recordsTab === 'pb' })}
 								onClick={() => setRecordsTab('pb')}
 							>
 								Kişisel Rekorlar
 							</button>
-							<button 
-								className={b('tab', {active: recordsTab === 'wca'})}
+							<button
+								className={b('tab', { active: recordsTab === 'wca' })}
 								onClick={() => setRecordsTab('wca')}
 							>
-								<img 
-									src={resourceUri('/images/logos/wca_logo.svg')} 
-									alt="WCA" 
+								<img
+									src={resourceUri('/images/logos/wca_logo.svg')}
+									alt="WCA"
 									style={{ width: '20px', height: '20px' }}
 								/>
 								WCA Resmi Rekorlar
@@ -333,7 +334,7 @@ export default function Profile() {
 	let publishSolves = null;
 	if (myProfile) {
 		publishSolves = (
-			<div className={b('publish-buttons', {blurred: settingsModalOpen})}>
+			<div className={b('publish-buttons', { blurred: settingsModalOpen })}>
 				<Button primary icon={<Plus weight="bold" />} text="PB'lerinizi Yayınlayın" onClick={openPublishSolves} />
 				<Button primary icon={<Plus weight="bold" />} text="WCA Rekorlarınızı Yayınlayın" onClick={openPublishWcaRecords} />
 			</div>
@@ -341,13 +342,13 @@ export default function Profile() {
 	}
 
 	return (
-		<div className={b('wrapper', {standalone: !me, mobile: mobileMode, blurred: settingsModalOpen})}>
+		<div className={b('wrapper', { standalone: !me, mobile: mobileMode, blurred: settingsModalOpen })}>
 			<Header
 				path={`/profile/${username}`}
 				title={user.username + ' Profile | Zkt-Timer'}
 				description={`Check out ${user.username}'s Zkt-Timer profile to see their fastest speedcubing times. See their WCA profile, cubing bio, social links, and more`}
 			/>
-			<div className={b({me: myProfile})}>
+			<div className={b({ me: myProfile })}>
 				<div className={b('header')}>
 					<WCA myProfile={myProfile} user={user} />
 					{pfp}
@@ -358,10 +359,29 @@ export default function Profile() {
 					</div>
 				</div>
 				<div className={b('content')}>
-					<div className={b('header-actions', {blurred: settingsModalOpen})}>
+					<div className={b('header-actions', { blurred: settingsModalOpen, mobile: mobileMode })}>
 						<FriendshipRequest user={user as any} fetchData />
-						{publishSolves}
-						<AvatarDropdown user={user as any} />
+						{mobileMode ? (
+							<div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+								<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+									{/* Override justify-content for mobile to align left */}
+									{publishSolves && React.cloneElement(publishSolves, {
+										style: { justifyContent: 'flex-start', flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }
+									})}
+								</div>
+								<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '12px' }}>
+									<div className="cd-nav-mobile-hamburger" style={{ display: 'flex' }}>
+										<MobileNav />
+									</div>
+									<AvatarDropdown user={user as any} />
+								</div>
+							</div>
+						) : (
+							<>
+								{publishSolves}
+								<AvatarDropdown user={user as any} />
+							</>
+						)}
 					</div>
 					<About profile={profile} />
 					{eloBody}

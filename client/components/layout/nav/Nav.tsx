@@ -135,17 +135,33 @@ export default function Nav() {
 
 	const navClosed = navCollapsed || forceNavCollapsed;
 
-	if (focusMode && !mobileMode) {
+	if (focusMode) {
 		return null;
 	}
 
-	let notifications = <Notifications />;
-	if (!me) {
-		notifications = null;
-	}
-
 	if (mobileMode) {
-		return <MobileNav />;
+		return (
+			<div
+				className={b('mobile-header')}
+				style={{
+					position: 'absolute',
+					top: 0,
+					right: 0,
+					zIndex: 1000,
+					display: 'flex',
+					padding: '12px 20px',
+					pointerEvents: 'none',
+					justifyContent: 'flex-end',
+					width: '100%',
+					boxSizing: 'border-box'
+				}}
+			>
+				<div style={{ pointerEvents: 'auto', display: 'flex', gap: '12px', alignItems: 'center' }}>
+					<MobileNav />
+					<AccountDropdown />
+				</div>
+			</div>
+		);
 	}
 
 	const navLinks = NAV_LINKS.map((link) => (

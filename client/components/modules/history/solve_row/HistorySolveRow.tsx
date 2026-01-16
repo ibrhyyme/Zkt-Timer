@@ -1,15 +1,16 @@
 import React from 'react';
-import {X, Bluetooth} from 'phosphor-react';
+import { X, Bluetooth } from 'phosphor-react';
 import './HistorySolveRow.scss';
 import block from '../../../../styles/bem';
-import {getTimeString} from '../../../../util/time';
-import {useDispatch} from 'react-redux';
-import {openModal} from '../../../../actions/general';
+import { getTimeString } from '../../../../util/time';
+import { useDispatch } from 'react-redux';
+import { openModal } from '../../../../actions/general';
 import SolveInfo from '../../../solve_info/SolveInfo';
-import {deleteSolveDb} from '../../../../db/solves/update';
-import {toggleDnfSolveDb, togglePlusTwoSolveDb} from '../../../../db/solves/operations';
+import { deleteSolveDb } from '../../../../db/solves/update';
+import { toggleDnfSolveDb, togglePlusTwoSolveDb } from '../../../../db/solves/operations';
 import Button from '../../../common/button/Button';
-import {Solve} from '../../../../../server/schemas/Solve.schema';
+import { Solve } from '../../../../../server/schemas/Solve.schema';
+import { useGeneral } from '../../../../util/hooks/useGeneral';
 
 const b = block('history-solve-row');
 
@@ -20,7 +21,8 @@ interface Props {
 }
 
 export default function HistorySolveRow(props: Props) {
-	const {index, solve, disabled} = props;
+	const { index, solve, disabled } = props;
+	const mobileMode = useGeneral('mobile_mode');
 
 	const dispatch = useDispatch();
 
@@ -55,43 +57,57 @@ export default function HistorySolveRow(props: Props) {
 
 	let actions = null;
 	if (!disabled) {
-		actions = (
-			<>
-				<Button
-					title="Plus two solve"
-					className={b('action', {active: plusTwo})}
-					text="+2"
-					flat
-					white
-					warning={plusTwo}
-					onClick={plusTwoSolve}
-				/>
-				<Button
-					title="DNF solve"
-					className={b('action', {active: dnf})}
-					flat
-					white
-					danger={dnf}
-					text="DNF"
-					onClick={dnfSolve}
-				/>
+		// Mobilde sadece delete butonu, Desktop'ta tüm butonlar
+		if (mobileMode) {
+			actions = (
 				<Button
 					title="Delete solve"
-					className={b('action', {active: true})}
+					className={b('action', { active: true })}
 					icon={<X />}
 					flat
 					white
 					onClick={deleteSolve}
 				/>
-			</>
-		);
+			);
+		} else {
+			actions = (
+				<>
+					<Button
+						title="Plus two solve"
+						className={b('action', { active: plusTwo })}
+						text="+2"
+						flat
+						white
+						warning={plusTwo}
+						onClick={plusTwoSolve}
+					/>
+					<Button
+						title="DNF solve"
+						className={b('action', { active: dnf })}
+						flat
+						white
+						danger={dnf}
+						text="DNF"
+						onClick={dnfSolve}
+					/>
+					<Button
+						title="Delete solve"
+						className={b('action', { active: true })}
+						icon={<X />}
+						flat
+						white
+						onClick={deleteSolve}
+					/>
+				</>
+			);
+		}
 	}
 
 	return (
-		<div className={b()} key={id}>
+		<div className={b({ mobile: mobileMode })} key={id}>
 			<div className={b('index')}>{(index + 1).toLocaleString()}.</div>
 			<div>
-				<button className={b('time', {plusTwo, dnf})} onClick={openSolve}>
+				<button className={b('time', { plusTwo, dnf })} onClick={openSolve}>
 					<span>{time}</span>
 					{bluetoothIcon}
 				</button>

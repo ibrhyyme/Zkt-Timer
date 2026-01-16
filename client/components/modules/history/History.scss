@@ -28,11 +28,14 @@
 
 	&__list {
 		// Height and overflow controlled by Tailwind classes in component
-		
-		// Mobile versiyonda History modülünün yüksekliğini sınırla
-		.cd-timer-footer__body--mobile & {
-			max-height: 135px;
+
+		// Mobile versiyonda History modülünün yüksekliğini parent'a göre ayarla
+		.cd-timer-footer__mobile-history & {
+			height: 100%;
+			max-height: none;
 			overflow-y: auto;
+			overflow-x: hidden;
+			padding-right: 5px;
 		}
 	}
 

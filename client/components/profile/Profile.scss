@@ -61,6 +61,16 @@
 		justify-content: flex-end;
 		transition: all 0.3s ease;
 
+		@media (max-width: 768px) {
+			position: relative;
+			flex-wrap: wrap;
+			margin-bottom: 20px;
+			justify-content: center;
+
+			// Bir alt satıra geçmesi gerekirse diye
+			gap: 10px;
+		}
+
 		>* {
 			margin-left: 10px;
 		}

@@ -1,33 +1,33 @@
-import React, {createContext, ReactNode, useEffect, useState} from 'react';
-import {RootStateOrAny, useDispatch, useSelector} from 'react-redux';
+import React, { createContext, ReactNode, useEffect, useState } from 'react';
+import { RootStateOrAny, useDispatch, useSelector } from 'react-redux';
 import './Timer.scss';
-import {ArrowRight, CaretUp, CaretDown} from 'phosphor-react';
+import { ArrowRight, CaretUp, CaretDown } from 'phosphor-react';
 import HeaderControl from './header_control/HeaderControl';
 import TimerFooter from './footer/TimerFooter';
 import TimeDisplay from './time_display/TimeDisplay';
 import TimerScramble from './time_display/timer_scramble/TimerScramble';
 import KeyWatcher from './key_watcher/KeyWatcher';
-import {TimerProps, TimerStore} from './@types/interfaces';
-import {getStorageURL} from '../../util/storage';
+import { TimerProps, TimerStore } from './@types/interfaces';
+import { getStorageURL } from '../../util/storage';
 import block from '../../styles/bem';
-import {useGeneral} from '../../util/hooks/useGeneral';
-import {useMe} from '../../util/hooks/useMe';
-import {initTimer} from './helpers/init';
-import {stopAllTimers} from './helpers/timers';
-import {useSettings} from '../../util/hooks/useSettings';
-import {listenForPbEvents} from './helpers/pb';
-import {useWindowListener} from '../../util/hooks/useListener';
+import { useGeneral } from '../../util/hooks/useGeneral';
+import { useMe } from '../../util/hooks/useMe';
+import { initTimer } from './helpers/init';
+import { stopAllTimers } from './helpers/timers';
+import { useSettings } from '../../util/hooks/useSettings';
+import { listenForPbEvents } from './helpers/pb';
+import { useWindowListener } from '../../util/hooks/useListener';
 import SmartCube from './smart_cube/SmartCube';
-import {Link} from 'react-router-dom';
-import {isNotPro} from '../../util/pro';
-import {QuickControlsProvider} from '../quick-controls/useQuickControlsModal';
+import { Link } from 'react-router-dom';
+import { isNotPro } from '../../util/pro';
+import { QuickControlsProvider } from '../quick-controls/useQuickControlsModal';
 import QuickControlsModal from '../quick-controls/QuickControlsModal';
 import Button from '../common/button/Button';
-import {setSetting} from '../../db/settings/update';
+import { setSetting } from '../../db/settings/update';
 
 const b = block('timer');
 
-export interface ITimerContext extends TimerProps, TimerStore {}
+export interface ITimerContext extends TimerProps, TimerStore { }
 
 export const TimerContext = createContext<ITimerContext>(null);
 
@@ -107,7 +107,7 @@ export default function Timer(props: TimerProps) {
 		} else if (window.innerHeight > 780 && heightSmall) {
 			setHeightSmall(false);
 		}
-		
+
 		// Width kontrolü - 1200px altında bottom layout'a geç
 		if (window.innerWidth <= 1200 && !widthSmall) {
 			setWidthSmall(true);
@@ -132,24 +132,11 @@ export default function Timer(props: TimerProps) {
 	// Pro features are now available to everyone
 	let timerFooterAd = null;
 
-	// Mobile footer toggle button
+	// Mobile footer toggle button removed - footer always visible in mobile mode
 	let mobileFooterToggle = null;
-	if (mobileMode && !context.focusMode) {
-		mobileFooterToggle = (
-			<div className={b('mobile-footer-toggle')}>
-				<Button
-					text={hideMobileTimerFooter ? 'Çözümler Göster' : 'Çözümler Gizle'}
-					icon={hideMobileTimerFooter ? <CaretUp /> : <CaretDown />}
-					onClick={toggleMobileHideButton}
-					white
-					flat
-				/>
-			</div>
-		);
-	}
 
 	const timeBar = (
-		<div className={b('main', {mobile: mobileMode})}>
+		<div className={b('main', { mobile: mobileMode })}>
 			<div className={b('main-center')}>
 				<TimerScramble />
 				<div

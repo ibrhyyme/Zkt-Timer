@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from 'react';
 import './HeaderControl.scss';
-import { MagnifyingGlassPlus, FrameCorners, CrosshairSimple, Keyboard, Plus, X, CaretDown, Gear } from 'phosphor-react';
+import { MagnifyingGlassPlus, FrameCorners, CrosshairSimple, Keyboard, Plus, X, CaretDown, Gear, List } from 'phosphor-react';
 import { GlobalHotKeys } from 'react-hotkeys';
 import { setCubeType, setSetting } from '../../../db/settings/update';
 import CubePicker from '../../common/cube_picker/CubePicker';
@@ -23,6 +23,10 @@ import { AllSettings } from '../../../db/settings/query';
 import { useMe } from '../../../util/hooks/useMe';
 import screenfull from '../../../util/vendor/screenfull';
 import { useQuickControlsModal } from '../../quick-controls/useQuickControlsModal';
+import AccountDropdown from '../../layout/nav/account_dropdown/AccountDropdown';
+import { NAV_LINKS } from '../../layout/nav/Nav';
+import { useRouteMatch } from 'react-router-dom';
+import MobileNav from '../../layout/nav/mobile_nav/MobileNav';
 
 const b = block('timer-header-control');
 
@@ -34,6 +38,7 @@ export default function HeaderControl() {
 	const context = useContext(TimerContext);
 	const { focusMode, cubeType } = context;
 	const headerOptions = context.headerOptions || {};
+	const match = useRouteMatch();
 
 	const mobileMode = useGeneral('mobile_mode');
 	const manualEntry = useSettings('manual_entry');
@@ -118,6 +123,29 @@ export default function HeaderControl() {
 
 	if (focusMode) {
 		topRightButton = <Button noMargin transparent icon={<X />} onClick={() => toggleSetting('focus_mode')} />;
+	}
+
+	// Mobile: minimal header with account dropdown on right
+	if (mobileMode && !focusMode) {
+		// Hamburger menu için NAV_LINKS
+		const hamburgerMenu = <MobileNav />;
+
+		return (
+			<GlobalHotKeys handlers={handlers} keyMap={HOTKEY_MAP}>
+				<div className={b()}>
+					<div className={b('left-controls')}>
+						{cubePicker}
+						{sessionSwitcher}
+						{gearButton}
+					</div>
+					<div />
+					<div className={b('right-controls')}>
+						{hamburgerMenu}
+						<AccountDropdown />
+					</div>
+				</div>
+			</GlobalHotKeys>
+		);
 	}
 
 	return (

@@ -1,28 +1,28 @@
-import React, {useState} from 'react';
-import {useDispatch} from 'react-redux';
+import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
 import './Sessions.scss';
-import {Plus} from 'phosphor-react';
+import { Plus } from 'phosphor-react';
 import CubePicker from '../common/cube_picker/CubePicker';
 import TimeChart from '../modules/time_chart/TimeChart';
 import History from '../modules/history/History';
 import Input from '../common/inputs/input/Input';
-import {openModal} from '../../actions/general';
+import { openModal } from '../../actions/general';
 import CreateNewSession from './new_session/CreateNewSession';
-import {SortableContainer, SortableElement} from 'react-sortable-hoc';
+import { SortableContainer, SortableElement } from 'react-sortable-hoc';
 import arrayMove from 'array-move';
 import Session from './session/Session';
-import {fetchSessionById, fetchSessions, getCubeTypesFromSession} from '../../db/sessions/query';
-import {fetchLastCubeTypeForSession} from '../../db/solves/query';
-import {reorderSessions, updateSessionDb} from '../../db/sessions/update';
-import {useGeneral} from '../../util/hooks/useGeneral';
+import { fetchSessionById, fetchSessions, getCubeTypesFromSession } from '../../db/sessions/query';
+import { fetchLastCubeTypeForSession } from '../../db/solves/query';
+import { reorderSessions, updateSessionDb } from '../../db/sessions/update';
+import { useGeneral } from '../../util/hooks/useGeneral';
 import block from '../../styles/bem';
-import {useSessionDb} from '../../util/hooks/useSessionDb';
-import {CubeType} from '../../util/cubes/cube_types';
+import { useSessionDb } from '../../util/hooks/useSessionDb';
+import { CubeType } from '../../util/cubes/cube_types';
 import PageTitle from '../common/page_title/PageTitle';
 import Button from '../common/button/Button';
 import Module from '../common/module/Module';
 import TimeDistro from '../modules/time_distro/TimeDistro';
-import {useSettings} from '../../util/hooks/useSettings';
+import { useSettings } from '../../util/hooks/useSettings';
 
 const b = block('sessions');
 
@@ -40,7 +40,7 @@ interface SortableListProps {
 	setSelectedSessionId: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const SortableItem = SortableElement<SortableItemProps>(({session, selectedSessionId, selectSession, setSelectedSessionId}) => (
+const SortableItem = SortableElement<SortableItemProps>(({ session, selectedSessionId, selectSession, setSelectedSessionId }) => (
 	<Session
 		setSelectedSessionId={setSelectedSessionId}
 		session={session}
@@ -49,7 +49,7 @@ const SortableItem = SortableElement<SortableItemProps>(({session, selectedSessi
 	/>
 ));
 
-const SortableList = SortableContainer<SortableListProps>(({sessions, selectedSessionId, selectSession, setSelectedSessionId}) => {
+const SortableList = SortableContainer<SortableListProps>(({ sessions, selectedSessionId, selectSession, setSelectedSessionId }) => {
 	return (
 		<div className={b('list')}>
 			{sessions.map((s, index) => (
@@ -116,7 +116,7 @@ export default function Sessions() {
 		);
 	}
 
-	function onSortEnd({oldIndex, newIndex}) {
+	function onSortEnd({ oldIndex, newIndex }) {
 		const sessions = arrayMove(allSessions, oldIndex, newIndex);
 		const sessionIds = sessions.map((s) => s.id);
 
@@ -184,13 +184,13 @@ export default function Sessions() {
 	);
 
 	return (
-		<div className={b({mobile: mobileMode})}>
+		<div className={b({ mobile: mobileMode })}>
 			<PageTitle pageName="Sezonlar">
 				<Button
 					primary
 					glow
 					style={{
-						top: 0,
+						top: mobileMode ? '55px' : 0,
 						right: 0,
 						position: 'absolute',
 					}}

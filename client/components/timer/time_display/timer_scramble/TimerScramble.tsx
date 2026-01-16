@@ -1,19 +1,21 @@
-import React, {ReactNode, useContext, useEffect, useRef} from 'react';
+import React, { ReactNode, useContext, useEffect, useRef } from 'react';
 import './TimerScramble.scss';
-import {ArrowClockwise, Lock, PencilSimple} from 'phosphor-react';
+import { ArrowClockwise, Lock, PencilSimple } from 'phosphor-react';
 import TextareaAutosize from 'react-textarea-autosize';
 import CopyText from '../../../common/copy_text/CopyText';
-import {MOBILE_FONT_SIZE_MULTIPLIER} from '../../../../db/settings/update';
-import {useGeneral} from '../../../../util/hooks/useGeneral';
+import { MOBILE_FONT_SIZE_MULTIPLIER } from '../../../../db/settings/update';
+import { useGeneral } from '../../../../util/hooks/useGeneral';
 import Button from '../../../common/button/Button';
-import {TimerContext} from '../../Timer';
+import { TimerContext } from '../../Timer';
 import block from '../../../../styles/bem';
-import {resetScramble} from '../../helpers/scramble';
+import { resetScramble } from '../../helpers/scramble';
 import SmartScramble from './smart_scramble/SmartScramble';
-import {setTimerParam} from '../../helpers/params';
-import {smartCubeSelected} from '../../helpers/util';
-import {useSettings} from '../../../../util/hooks/useSettings';
-import {setSetting} from '../../../../db/settings/update';
+import { setTimerParam } from '../../helpers/params';
+import { smartCubeSelected } from '../../helpers/util';
+import { useSettings } from '../../../../util/hooks/useSettings';
+import { setSetting } from '../../../../db/settings/update';
+import { toggleDnfSolveDb, togglePlusTwoSolveDb } from '../../../../db/solves/operations';
+import { useLatestSolve } from '../../../../util/hooks/useLatestSolve';
 
 const b = block('timer-scramble');
 
@@ -31,9 +33,12 @@ export default function TimerScramble() {
 		timerScrambleSize *= MOBILE_FONT_SIZE_MULTIPLIER;
 	}
 
-	const {editScramble, scrambleLocked, notification, hideScramble, timeStartedAt} = context;
+	const { editScramble, scrambleLocked, notification, hideScramble, timeStartedAt } = context;
 	let scramble = context.scramble;
 	const lockedScramble = useSettings('locked_scramble');
+
+	// Son solve için +2 ve DNF
+	const latestSolve = useLatestSolve();
 
 	useEffect(() => {
 		if (lockedScramble && !timeStartedAt) {
@@ -70,6 +75,18 @@ export default function TimerScramble() {
 		setTimerParam('scramble', e.target.value);
 	}
 
+	function handlePlusTwo() {
+		if (latestSolve) {
+			togglePlusTwoSolveDb(latestSolve);
+		}
+	}
+
+	function handleDNF() {
+		if (latestSolve) {
+			toggleDnfSolveDb(latestSolve);
+		}
+	}
+
 	const isSmart = smartCubeSelected(context);
 
 	if (hideScramble) {
@@ -84,7 +101,7 @@ export default function TimerScramble() {
 			minRows={1}
 			placeholder={hideScramble ? '' : 'scramble'}
 			ref={scrambleInput}
-			className={b({edit: editScramble})}
+			className={b({ edit: editScramble })}
 		/>
 	);
 
@@ -92,6 +109,8 @@ export default function TimerScramble() {
 	if (isSmart && !timeStartedAt && scramble) {
 		scrambleBody = <SmartScramble />;
 	}
+
+	// +2 ve DNF butonları artık üstteki actions alanında, aşağıda duplike yok
 
 	return (
 		<div className={b()}>
@@ -107,7 +126,7 @@ export default function TimerScramble() {
 			>
 				{scrambleBody}
 			</div>
-			<div className={b('actions', {focused: focusMode})}>
+			<div className={b('actions', { focused: focusMode })}>
 				<Button
 					onClick={toggleEditScramble}
 					title="Edit scramble"
@@ -116,6 +135,24 @@ export default function TimerScramble() {
 					disabled={isSmart || scrambleLocked}
 					icon={<PencilSimple weight="bold" />}
 				/>
+				{latestSolve && (
+					<>
+						<Button
+							onClick={handlePlusTwo}
+							title="Plus two solve"
+							text="+2"
+							transparent
+							warning={latestSolve.plus_two}
+						/>
+						<Button
+							onClick={handleDNF}
+							title="DNF solve"
+							transparent
+							danger={latestSolve.dnf}
+							text="DNF"
+						/>
+					</>
+				)}
 				<Button
 					transparent
 					onClick={toggleScrambleLock}

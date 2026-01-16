@@ -52,3 +52,38 @@
 		justify-content: flex-end;
 	}
 }
+
+// Mobil özel stiller
+@media (max-width: 768px) {
+	.#{$namespace}-timer-header-control {
+		padding: 10px 12px !important;
+
+		&__left-controls {
+			background: rgba(var(--module-color), 0.9);
+			backdrop-filter: blur(20px);
+			-webkit-backdrop-filter: blur(20px);
+			border: 1px solid rgba(255, 255, 255, 0.1);
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+			padding: 3px;
+			gap: 3px;
+		}
+
+		&__right-controls {
+			display: flex;
+			align-items: center !important;
+			gap: clamp(10px, 3vw, 16px);
+		}
+	}
+}
+
+// Küçük ekranlar (iPhone SE, iPhone 12 mini vb.)
+@media (max-width: 390px) {
+	.#{$namespace}-timer-header-control {
+		padding: 8px 10px !important;
+
+		&__left-controls {
+			padding: 2px;
+			gap: 2px;
+		}
+	}
+}

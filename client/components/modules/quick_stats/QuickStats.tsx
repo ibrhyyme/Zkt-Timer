@@ -1,24 +1,32 @@
-import React, {useMemo} from 'react';
-import {FilterSolvesOptions} from '../../../db/solves/query';
-import {RootStateOrAny, useDispatch, useSelector} from 'react-redux';
-import {useSolveDb} from '../../../util/hooks/useSolveDb';
+import React, { useMemo } from 'react';
+import { FilterSolvesOptions } from '../../../db/solves/query';
+import { RootStateOrAny, useDispatch, useSelector } from 'react-redux';
+import { useSolveDb } from '../../../util/hooks/useSolveDb';
 import Button from '../../common/button/Button';
 import QuickStatsBlock from './QuickStatsBlock';
-import {getQuickStatsGridSizes} from './util';
-import {openModal} from '../../../actions/general';
+import { getQuickStatsGridSizes } from './util';
+import { openModal } from '../../../actions/general';
 import CustomizeStats from './customize_stats/CustomizeStats';
-import {StatsModuleBlock} from '../../../../server/schemas/StatsModule.schema';
+import { StatsModuleBlock } from '../../../../server/schemas/StatsModule.schema';
+import { useGeneral } from '../../../util/hooks/useGeneral';
 
 interface Props {
 	filterOptions: FilterSolvesOptions;
 }
 
 export default function QuickStats(props: Props) {
-	const {filterOptions} = props;
+	const { filterOptions } = props;
 	const dispatch = useDispatch();
 
 	const stats = useSelector((state: RootStateOrAny) => state?.stats);
-	const statsModuleBlocks = stats.blocks as StatsModuleBlock[];
+	const mobileMode = useGeneral('mobile_mode');
+	let statsModuleBlocks = (stats.blocks as StatsModuleBlock[]) || [];
+
+	// Mobilde sadece 4 blok göster: AO5 best, AO12 best, PB, Worst
+	if (mobileMode && statsModuleBlocks.length > 4) {
+		statsModuleBlocks = statsModuleBlocks.slice(0, 4);
+	}
+
 	const blockCount = statsModuleBlocks.length;
 	const blockSizes = useMemo(() => getQuickStatsGridSizes(blockCount), [blockCount]);
 

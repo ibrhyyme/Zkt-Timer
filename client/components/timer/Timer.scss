@@ -23,9 +23,11 @@
 
 	position: relative;
 	min-height: calc(100vh - var(--nav-h));
+
 	@supports(height: 100dvh) {
 		min-height: calc(100dvh - var(--nav-h));
 	}
+
 	background-color: rgb(var(--background-color));
 	color: rgb(var(--text-color));
 	margin: 0 auto;
@@ -60,14 +62,14 @@
 				justify-content: space-between;
 				align-items: center;
 
-				> div {
+				>div {
 					width: 50% !important;
 				}
 			}
 		}
 
 		&--mobile {
-			border-bottom: 3px dashed rgb(var(--theme-background-opposite), 0.3);
+			// Border removed for more timer space
 			user-select: none;
 			-webkit-user-select: none;
 			-webkit-touch-callout: none;
@@ -83,7 +85,7 @@
 		left: 50%;
 		transform: translateX(-50%);
 		z-index: 1000;
-		
+
 		button {
 			background: rgba(255, 255, 255, 0.1) !important;
 			border: 1px solid rgba(255, 255, 255, 0.2) !important;
@@ -94,7 +96,7 @@
 			transition: all 0.2s ease !important;
 			backdrop-filter: blur(10px) !important;
 			box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
-			
+
 			&:hover {
 				background: rgba(255, 255, 255, 0.2) !important;
 				border-color: rgba(255, 255, 255, 0.3) !important;
@@ -146,6 +148,7 @@
 				top: 30px;
 				opacity: 0;
 			}
+
 			to {
 				opacity: 1;
 				top: 0;
@@ -161,6 +164,7 @@
 					top: 0;
 					opacity: 1;
 				}
+
 				to {
 					opacity: 0;
 					top: 30px;
@@ -171,13 +175,37 @@
 
 	&--mobile {
 		#{$self}__header-control {
-			top: 70px;
-			padding: 10px !important;
+			top: 0;
+			padding: 8px 12px !important;
+			position: fixed;
+			width: 100%;
+			z-index: 100;
+			background: rgba(var(--background-color), 0.95);
+			backdrop-filter: blur(10px);
 		}
-		min-height: calc(100vh - 70px);
-		@supports(height: 100dvh) {
-			min-height: calc(100dvh - 70px);
+
+		// Viewport responsive layout
+		display: flex;
+		flex-direction: column;
+		min-height: 100vh;
+		min-height: 100dvh; // Dynamic viewport height
+
+		#{$self}__main {
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			padding-top: 60px; // Header yüksekliği
+			overflow-y: auto;
 		}
+
+		#{$self}__main-center {
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+			min-height: 0;
+		}
+
 		#{$self}__time {
 			user-select: none;
 
@@ -201,6 +229,7 @@
 	}
 
 	&--focused {
+
 		// Modify main body
 		#{$self}__wrapper {
 			grid-template-rows: unset !important;
@@ -231,6 +260,7 @@
 			pointer-events: none;
 			opacity: 0.3;
 		}
+
 		#{$self}-bottom-info,
 		#{$self}-scramble,
 		#{$self}-footer {
