@@ -1,14 +1,14 @@
-import React, {ReactNode, useContext} from 'react';
+import React, { ReactNode, useContext } from 'react';
 import block from '../../../../../styles/bem';
-import {isTwo, processSmartTurns, rawTurnIsSame, reverseScramble} from '../../../../../util/smart_scramble';
-import {TimerContext} from '../../../Timer';
+import { isTwo, processSmartTurns, rawTurnIsSame, reverseScramble } from '../../../../../util/smart_scramble';
+import { TimerContext } from '../../../Timer';
 
 const b = block('timer-scramble');
 
 export default function SmartScramble() {
 	const context = useContext(TimerContext);
 
-	const {smartTurns, scramble, smartCanStart} = context;
+	const { smartTurns, scramble, smartCanStart } = context;
 
 	const smartScramble = processSmartTurns(smartTurns);
 	const failedMoves = [];
@@ -34,7 +34,7 @@ export default function SmartScramble() {
 		return (
 			<span
 				key={`${turn}-${i}`}
-				className={b('body', {
+				className={b('turn', {
 					green,
 					orange,
 					red,
@@ -47,16 +47,16 @@ export default function SmartScramble() {
 
 	if (failedMoves.length) {
 		scrambleBody = reverseScramble(failedMoves).map((turn, i) => (
-			<span key={`${turn}-${i}`} className={b('body', {red: true})}>
+			<span key={`${turn}-${i}`} className={b('turn', { red: true })}>
 				{turn}
 			</span>
 		));
 	}
 
 	if (smartCanStart) {
-		scrambleBody = <span className={b('body', {green: true})}>Ready to start</span>;
+		scrambleBody = <span className={b('turn', { green: true })}>Ready to start</span>;
 	} else if (failedMoves.length > 7) {
-		scrambleBody = <span className={b('body', {red: true})}>Solve cube to proceed</span>;
+		scrambleBody = <span className={b('turn', { red: true })}>Solve cube to proceed</span>;
 	}
 
 	return <>{scrambleBody}</>;

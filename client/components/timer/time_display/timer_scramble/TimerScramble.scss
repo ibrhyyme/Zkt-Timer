@@ -90,6 +90,28 @@
 		}
 	}
 
+	&__turn {
+		color: inherit;
+		line-height: inherit;
+		font-family: inherit;
+		font-size: inherit;
+		transition: all 0.1s ease-in-out;
+		text-shadow: 0 1px 7px rgba(black, 0.2);
+		margin-right: 0.8rem;
+
+		&--green {
+			color: $primaryGreen !important;
+		}
+
+		&--red {
+			color: $primaryRed !important;
+		}
+
+		&--orange {
+			color: $primaryOrange !important;
+		}
+	}
+
 	&--edit {
 		border: 2px solid rgba(var(--text-color), 0.2) !important;
 		z-index: 100 !important;
