@@ -62,13 +62,7 @@ export default class GAN extends SmartCube {
 			await this.conn.sendCubeCommand({ type: "REQUEST_BATTERY" });
 			await this.conn.sendCubeCommand({ type: "REQUEST_HARDWARE" });
 
-			const dummyServer = {
-				device: {
-					name: this.hardwareName,
-					id: this.device.mac
-				}
-			};
-			this.alertConnected(dummyServer);
+			// Not: alertConnected artık HARDWARE event'i alındıktan sonra çağrılıyor
 		} catch (error) {
 			console.error('Gan connection error:', error);
 			alert(`Connection failed: ${error.message || error}`);
@@ -99,10 +93,21 @@ export default class GAN extends SmartCube {
 			this.gyroSupported = event.gyroSupported;
 			// Jiroskop desteği durumunu bildir
 			this.alertGyroSupported(event.gyroSupported);
+
+			// HARDWARE bilgisi alındıktan sonra bağlantıyı tamamla
+			const deviceId = this.conn?.deviceMAC || this.device?.id || 'unknown';
+			const dummyServer = {
+				device: {
+					name: this.hardwareName || this.device?.name || 'GAN Cube',
+					id: deviceId
+				}
+			};
+			this.alertConnected(dummyServer);
 		} else if (event.type == 'BATTERY') {
-			this.alertBatteryLevel(this.batteryLevel);
+			this.alertBatteryLevel(event.batteryLevel);
 		} else if (event.type == 'DISCONNECT') {
 			this.alertDisconnected();
 		}
 	};
 }
+
