@@ -148,6 +148,12 @@ export default function HeaderNav() {
 							src="/public/images/zkt-logo.png"
 							alt="Zeka Küpü Türkiye"
 							className="w-20 h-20 object-contain"
+							style={{
+								imageRendering: 'auto',
+								filter: 'brightness(1.1) contrast(1.05)',
+								WebkitBackfaceVisibility: 'hidden',
+								transform: 'translateZ(0)'
+							}}
 						/>
 						Zkt-Timer
 					</Link>

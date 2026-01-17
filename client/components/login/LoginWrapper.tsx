@@ -195,6 +195,12 @@ export default function LoginWrapper() {
                             alt="Zeka Küpü Türkiye"
                             // Removed drop-shadow from image to prevent "shining" or altering the logo pixels
                             className="w-32 h-32 object-contain relative z-10"
+                            style={{
+                                imageRendering: 'auto',
+                                filter: 'brightness(1.1) contrast(1.05)',
+                                WebkitBackfaceVisibility: 'hidden',
+                                transform: 'translateZ(0)'
+                            }}
                         />
                         {/* Pure dark backdrop for contrast, no glow */}
                         <div className="absolute inset-0 bg-black/60 blur-2xl rounded-full -z-0"></div>
