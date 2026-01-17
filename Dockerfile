@@ -2,79 +2,54 @@ FROM node:20.19-slim AS builder
 
 WORKDIR /app
 
+# AWS CLI ve Python gereksiz olduğu için kaldırıldı, sadece openssl ve temel araçlar kaldı
 RUN apt-get update && \
-    apt-get install -y  \
-        openssl \
-        zip \
-        python3 \
-        python3-pip \
-        python3-setuptools \
-        groff \
-        less && \
-    pip3 install --upgrade pip && \
-    apt-get clean && \
-    pip3 --no-cache-dir install --upgrade awscli
+    apt-get install -y openssl zip && \
+    apt-get clean
 
 ARG ENV
-ARG AWS_ACCESS_KEY_ID
-ARG AWS_SECRET_ACCESS_KEY
-ARG AWS_DEFAULT_REGION
 ARG RELEASE_NAME
 ARG RESOURCES_BASE_URI
 ARG DEPLOYMENT_ID
 ARG SENTRY_AUTH_TOKEN
 
-ENV ENV=$ENV
-ENV AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-ENV AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-ENV AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION
-ENV RESOURCES_BASE_URI=$RESOURCES_BASE_URI
-ENV RELEASE_NAME=$RELEASE_NAME
-ENV DEPLOYMENT_ID=$DEPLOYMENT_ID
+ENV ENV=\$ENV
+ENV RESOURCES_BASE_URI=\$RESOURCES_BASE_URI
+ENV RELEASE_NAME=\$RELEASE_NAME
+ENV DEPLOYMENT_ID=\$DEPLOYMENT_ID
 ENV DEPLOYING=true
 
-ENV SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN
+# Sentry ayarları korunuyor
+ENV SENTRY_AUTH_TOKEN=\$SENTRY_AUTH_TOKEN
 ENV SENTRY_ORG=zkttimer
-ENV SENTRY_ENVIRONMENT=$ENV
+ENV SENTRY_ENVIRONMENT=\$ENV
+ENV NODE_ENV=production
 
 COPY package.json yarn.lock ./
-
 RUN yarn --frozen-lockfile
 
 COPY . .
 
-ENV NODE_ENV=production
+# Build işlemleri (Prisma ve frontend derleme)
+RUN npx prisma generate && \
+    yarn build
 
-RUN rm -rf build && \
-    mkdir build && \
-    npx prisma generate && \
-    yarn deploy
+# AWS S3'e yükleme yapan satırlar tamamen kaldırıldı
 
-RUN find ./dist -name "*.map" -type f -delete && \
-    find ./build -name "*.map" -type f -delete
+# Gereksiz dosyaların temizlenmesi ve klasör düzenleme
+RUN find ./dist -name "*.map" -type f -delete 
 
-RUN aws s3 cp dist s3://zkttimer/dist --recursive --cache-control max-age=604800  && \
-    aws s3 sync public s3://zkttimer/static --cache-control max-age=604800
-
+# Production için temizlik
 RUN npm prune --production
 
-RUN cp -r ./server/resources/mjml_templates ./build/server/resources/mjml_templates
-RUN cp ./server/resources/not_found.html ./build/server/resources/not_found.html
-
-RUN rm -rf ./client ./server ./shared ./test ./dist ./public && \
-    mv ./build/server ./server && \
-    mv ./build/client ./client && \
-    mv ./build/shared ./shared
-
 FROM node:20.19-slim
-
 ENV NODE_ENV=production
 RUN apt-get update && \
     apt-get install -y openssl
 
 WORKDIR /app
-
 COPY --from=builder /app /app
 
 EXPOSE 3000
-ENTRYPOINT ["node", "server/app.js"]
+# Not: docker-compose içinde bu komutu ezebiliriz veya buna güvenebiliriz
+ENTRYPOINT ["yarn", "server"]
