@@ -139,13 +139,15 @@ export default function HeaderNav() {
 			<div className={b('container')}>
 				{/* Left side - Brand Link with Animated Cube */}
 				<div className={b('left')}>
-					<Link to="/" className="text-white/90 hover:text-white font-bold tracking-tight select-none text-2xl flex items-center gap-2">
-						<Cube
-							size={28}
-							className={b('cube-logo')}
-							style={{
-								animation: 'cubeFloat 4s ease-in-out infinite, cubeRotate 8s linear infinite'
-							}}
+					<Link
+						to="/"
+						className="text-white hover:text-cyan-50 font-bold tracking-tight select-none text-2xl flex items-center gap-2"
+						style={{ textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}
+					>
+						<img
+							src="/public/images/zkt-logo.png"
+							alt="Zeka Küpü Türkiye"
+							className="w-20 h-20 object-contain"
 						/>
 						Zkt-Timer
 					</Link>

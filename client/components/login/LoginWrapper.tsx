@@ -187,57 +187,17 @@ export default function LoginWrapper() {
                     style={{ background: `radial-gradient(circle at bottom left, var(--plasma-purple) 0%, transparent 70%)` }}
                 />
 
-                {/* ANIMATED CUBE LOGO */}
-                <div className="flex justify-center mb-6 relative">
-                    <div className="relative">
-                        {/* Cube Container */}
-                        <div className="relative inline-block" style={{ animation: 'cubeFloat 6s ease-in-out infinite' }}>
-                            <Cube
-                                size={64}
-                                style={{
-                                    color: 'var(--cosmic-glow)',
-                                    filter: 'drop-shadow(0 10px 30px rgba(79, 195, 247, 0.3))',
-                                    animation: 'cubeRotate 12s linear infinite'
-                                }}
-                            />
-
-                            {/* Floating Icons */}
-                            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none">
-                                <Gear
-                                    size={16}
-                                    className="absolute"
-                                    style={{
-                                        color: 'var(--plasma-purple)',
-                                        opacity: 0.8,
-                                        top: '-40px',
-                                        left: '-40px',
-                                        animation: 'iconOrbit 8s linear infinite, iconSpin 4s linear infinite'
-                                    }}
-                                />
-                                <Clock
-                                    size={16}
-                                    className="absolute"
-                                    style={{
-                                        color: 'var(--plasma-purple)',
-                                        opacity: 0.8,
-                                        top: '-40px',
-                                        right: '-40px',
-                                        animation: 'iconOrbit 10s linear infinite reverse, iconBounce 2s ease-in-out infinite'
-                                    }}
-                                />
-                                <Lightning
-                                    size={16}
-                                    className="absolute"
-                                    style={{
-                                        color: 'var(--plasma-purple)',
-                                        opacity: 0.8,
-                                        bottom: '-40px',
-                                        left: '0',
-                                        animation: 'iconOrbit 12s linear infinite, iconFlash 3s ease-in-out infinite'
-                                    }}
-                                />
-                            </div>
-                        </div>
+                {/* PROJECT LOGO - STATIC */}
+                <div className="flex justify-center mb-6 relative"> {/* Restored mb-6 for spacing */}
+                    <div className="relative animate-float-slow p-4"> {/* Added padding to separate logo from shadow edge */}
+                        <img
+                            src="/public/images/zkt-logo.png"
+                            alt="Zeka Küpü Türkiye"
+                            // Removed drop-shadow from image to prevent "shining" or altering the logo pixels
+                            className="w-32 h-32 object-contain relative z-10"
+                        />
+                        {/* Pure dark backdrop for contrast, no glow */}
+                        <div className="absolute inset-0 bg-black/60 blur-2xl rounded-full -z-0"></div>
                     </div>
                 </div>
 
@@ -294,6 +254,47 @@ export default function LoginWrapper() {
                     <span className="text-sm font-medium text-cyan-200 group-hover:text-white transition-colors">Kararsız mısın? Bir göz at</span>
                     {/* ArrowRight ikonu eklemek için Phosphor import'una eklenmesi gerek, şimdilik basit metin */}
                 </Link>
+            </div>
+
+            {/* FOOTER - CREDITS */}
+            <div className="fixed bottom-4 w-full px-4 sm:px-8 flex flex-col sm:flex-row justify-between items-center z-10 text-[10px] sm:text-xs text-gray-400 font-light tracking-wider opacity-60 hover:opacity-100 transition-opacity duration-300 select-none gap-2 sm:gap-0">
+                <div className="flex items-center gap-2">
+                    <span style={{ color: 'var(--text-dim)' }}>Created and Designed by</span>
+                    <a
+                        href="https://www.worldcubeassociation.org/persons/2025YILD01"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium text-cyan-200 hover:text-cyan-100 hover:underline transition-all cursor-pointer"
+                        style={{ textShadow: '0 0 10px rgba(79,195,247,0.3)' }}
+                    >
+                        ibrhyyme
+                    </a>
+                </div>
+                <div className="flex flex-col sm:flex-row items-center gap-1 text-center sm:text-right">
+                    <div className="flex items-center gap-1">
+                        <a
+                            href="https://www.instagram.com/zekakuputurkiye/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-cyan-200 transition-colors cursor-pointer"
+                            style={{ color: 'var(--text-dim)' }}
+                        >
+                            Zeka Küpü Türkiye
+                        </a>
+                        <span style={{ color: 'var(--text-dim)' }}>/</span>
+                        <a
+                            href="https://www.instagram.com/zktakademi/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-cyan-200 transition-colors cursor-pointer"
+                            style={{ color: 'var(--text-dim)' }}
+                        >
+                            ZKT-Academy
+                        </a>
+                    </div>
+                    <span className="hidden sm:inline mx-2 text-cyan-500/50">|</span>
+                    <span style={{ color: 'var(--text-dim)' }}>© 2026 All Rights Reserved</span>
+                </div>
             </div>
         </div>
     );

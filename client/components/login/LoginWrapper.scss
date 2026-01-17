@@ -66,23 +66,29 @@
 	0% {
 		background-position: 0% 50%, 25% 25%, 75% 75%, 0% 0%;
 	}
+
 	50% {
 		background-position: 100% 50%, 75% 75%, 25% 25%, 0% 0%;
 	}
+
 	100% {
 		background-position: 0% 50%, 25% 25%, 75% 75%, 0% 0%;
 	}
 }
 
 @keyframes float {
-	0%, 100% {
+
+	0%,
+	100% {
 		transform: translateY(0px) translateX(0px);
 		opacity: 0.6;
 	}
+
 	33% {
 		transform: translateY(-20px) translateX(10px);
 		opacity: 1;
 	}
+
 	66% {
 		transform: translateY(-10px) translateX(-5px);
 		opacity: 0.8;
@@ -93,6 +99,7 @@
 	0% {
 		transform: translateX(0) translateY(0);
 	}
+
 	100% {
 		transform: translateX(50px) translateY(50px);
 	}
@@ -102,15 +109,19 @@
 	from {
 		transform: rotate(0deg);
 	}
+
 	to {
 		transform: rotate(360deg);
 	}
 }
 
 @keyframes cubeFloat {
-	0%, 100% {
+
+	0%,
+	100% {
 		transform: translateY(0px);
 	}
+
 	50% {
 		transform: translateY(-15px);
 	}
@@ -120,6 +131,7 @@
 	from {
 		transform: rotate(0deg);
 	}
+
 	to {
 		transform: rotate(360deg);
 	}
@@ -129,27 +141,38 @@
 	from {
 		transform: rotate(0deg) translateX(50px) rotate(0deg);
 	}
+
 	to {
 		transform: rotate(360deg) translateX(50px) rotate(-360deg);
 	}
 }
 
 @keyframes iconBounce {
-	0%, 100% {
+
+	0%,
+	100% {
 		transform: translateY(0);
 	}
+
 	50% {
 		transform: translateY(-8px);
 	}
 }
 
 @keyframes iconFlash {
-	0%, 100% {
+
+	0%,
+	100% {
 		opacity: 0.8;
 		transform: scale(1);
 	}
+
 	50% {
 		opacity: 1;
 		transform: scale(1.1);
 	}
+}
+
+.animate-float-slow {
+	animation: float 6s ease-in-out infinite;
 }

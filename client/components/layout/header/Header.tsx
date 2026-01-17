@@ -1,6 +1,6 @@
-import React, {ReactNode} from 'react';
+import React, { ReactNode } from 'react';
 import Helmet from 'react-helmet';
-import {resourceUri} from '../../../util/storage';
+import { resourceUri } from '../../../util/storage';
 // process.env variables are defined by esbuild, no need to import process
 
 interface Props {
@@ -25,6 +25,7 @@ export default function Header(props: Props) {
 	return (
 		<Helmet>
 			<title>{title}</title>
+			<link rel="icon" type="image/png" href="/public/images/zkt-logo.png" />
 			<meta name="description" content={description} />
 			<meta name="twitter:title" content={title} />
 			<meta name="twitter:description" content={description} />
