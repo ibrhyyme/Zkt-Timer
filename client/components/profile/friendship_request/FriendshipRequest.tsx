@@ -168,7 +168,7 @@ export default function FriendshipRequest(props: Props) {
 		/>
 	);
 
-	if (loading || !user || !me || user.id === me.id) {
+	if (loading || !user || !me || user.id === me.id || friendButtonParams.text === 'Add Friend') {
 		friendButton = null;
 	}
 

@@ -1,7 +1,7 @@
-import {getJwtString} from '../util/auth';
+import { getJwtString } from '../util/auth';
 import GraphQLError from '../util/graphql_error';
-import {checkPassword} from '../util/password';
-import {getUserByEmail, sanitizeUser} from '../models/user_account';
+import { checkPassword } from '../util/password';
+import { getUserByEmail, sanitizeUser } from '../models/user_account';
 
 const gqlMutation = `
 	logOut: PublicUserAccount!
@@ -9,23 +9,23 @@ const gqlMutation = `
 `;
 
 const mutateActions = {
-	authenticateUser: async (_, {email, password}, {res}) => {
+	authenticateUser: async (_, { email, password }, { res }) => {
 		const user = await getUserByEmail(email);
 		if (!user) {
-			throw new GraphQLError(400, 'Invalid login');
+			throw new GraphQLError(400, 'Geçersiz kullanıcı adı veya şifre');
 		}
 
 		const goodPass = await checkPassword(password, user.password);
 		if (!goodPass) {
-			throw new GraphQLError(400, 'Invalid login');
+			throw new GraphQLError(400, 'Geçersiz kullanıcı adı veya şifre');
 		}
 
 		const jwt = getJwtString(user);
-		res.cookie('session', jwt, {maxAge: 2147483647, httpOnly: true});
+		res.cookie('session', jwt, { maxAge: 2147483647, httpOnly: true });
 
 		return sanitizeUser(user);
 	},
-	logOut: async (_, params, {res, user}) => {
+	logOut: async (_, params, { res, user }) => {
 		res.clearCookie('session');
 		return sanitizeUser(user);
 	},

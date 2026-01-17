@@ -1,15 +1,16 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import Input from '../../common/inputs/input/Input';
-import {Link} from 'react-router-dom';
-import {gql} from '@apollo/client/core';
-import {validateStrongPassword} from '../../../util/auth/password';
+import { Link } from 'react-router-dom';
+import { gql } from '@apollo/client/core';
+import { validateStrongPassword } from '../../../util/auth/password';
 import PasswordStrength from '../../common/password_strength/PasswordStrength';
-import {getLoginLink, getRedirectLink} from '../../../util/auth/login';
+import { getLoginLink, getRedirectLink } from '../../../util/auth/login';
 import block from '../../../styles/bem';
-import {useInput} from '../../../util/hooks/useInput';
-import {useMutation} from '@apollo/client';
-import {UserAccount} from '../../../@types/generated/graphql';
+import { useInput } from '../../../util/hooks/useInput';
+import { useMutation } from '@apollo/client';
+import { UserAccount } from '../../../@types/generated/graphql';
 import Button from '../../common/button/Button';
+import { Eye, EyeSlash } from 'phosphor-react';
 
 const b = block('login');
 
@@ -34,9 +35,10 @@ export default function SignUp() {
 	const [password, setPassword] = useInput('');
 	const [username, setUsername] = useInput('');
 	const [error, setError] = useState('');
+	const [showPassword, setShowPassword] = useState(false);
 
 	const [createAccount, createAccountData] = useMutation<
-		{createUserAccount: UserAccount},
+		{ createUserAccount: UserAccount },
 		{
 			firstName: string;
 			lastName: string;
@@ -86,8 +88,8 @@ export default function SignUp() {
 			<form onSubmit={signUp} className="space-y-4">
 				{/* First Name Input */}
 				<div>
-					<label 
-						htmlFor="firstName" 
+					<label
+						htmlFor="firstName"
 						className="block text-sm mb-1"
 						style={{ color: 'var(--text-dim)' }}
 					>
@@ -110,8 +112,8 @@ export default function SignUp() {
 
 				{/* Last Name Input */}
 				<div>
-					<label 
-						htmlFor="lastName" 
+					<label
+						htmlFor="lastName"
 						className="block text-sm mb-1"
 						style={{ color: 'var(--text-dim)' }}
 					>
@@ -134,8 +136,8 @@ export default function SignUp() {
 
 				{/* Email Input */}
 				<div>
-					<label 
-						htmlFor="email" 
+					<label
+						htmlFor="email"
 						className="block text-sm mb-1"
 						style={{ color: 'var(--text-dim)' }}
 					>
@@ -158,8 +160,8 @@ export default function SignUp() {
 
 				{/* Username Input */}
 				<div>
-					<label 
-						htmlFor="username" 
+					<label
+						htmlFor="username"
 						className="block text-sm mb-1"
 						style={{ color: 'var(--text-dim)' }}
 					>
@@ -181,27 +183,40 @@ export default function SignUp() {
 				</div>
 
 				{/* Password Input */}
-				<div>
-					<label 
-						htmlFor="password" 
+				<div className="relative">
+					<label
+						htmlFor="password"
 						className="block text-sm mb-1"
 						style={{ color: 'var(--text-dim)' }}
 					>
 						Şifre
 					</label>
-					<input
-						id="password"
-						type="password"
-						value={password}
-						onChange={setPassword}
-						placeholder=""
-						className="w-full h-11 px-4 rounded-2xl border focus:outline-none focus:ring-2 focus:ring-indigo-400/70 transition"
-						style={{
-							backgroundColor: 'var(--input-bg)',
-							borderColor: 'var(--input-stroke)',
-							color: 'var(--text)'
-						} as React.CSSProperties}
-					/>
+					<div className="relative">
+						<input
+							id="password"
+							type={showPassword ? 'text' : 'password'}
+							value={password}
+							onChange={setPassword}
+							placeholder=""
+							className="w-full h-11 px-4 pr-12 rounded-2xl border focus:outline-none focus:ring-2 focus:ring-indigo-400/70 transition"
+							style={{
+								backgroundColor: 'var(--input-bg)',
+								borderColor: 'var(--input-stroke)',
+								color: 'var(--text)'
+							} as React.CSSProperties}
+						/>
+						<button
+							type="button"
+							onClick={() => setShowPassword(!showPassword)}
+							className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-cyan-200 transition-colors"
+						>
+							{showPassword ? (
+								<EyeSlash size={20} weight="light" />
+							) : (
+								<Eye size={20} weight="light" />
+							)}
+						</button>
+					</div>
 				</div>
 
 				{/* Error Message */}
@@ -238,7 +253,7 @@ export default function SignUp() {
 
 			{/* Link */}
 			<div className="text-center text-sm pt-2">
-				<Link 
+				<Link
 					to={getLoginLink()}
 					className="hover:text-white transition"
 					style={{ color: 'var(--text-dim)' }}
