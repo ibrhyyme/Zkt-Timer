@@ -18,6 +18,10 @@
 		flex-direction: row;
 		justify-content: space-between;
 
+		@media only screen and (max-width: 600px) {
+			flex-direction: column;
+		}
+
 		&--vertical {
 			flex-direction: column;
 			justify-content: flex-start;
@@ -37,16 +41,22 @@
 		box-sizing: border-box;
 		display: table;
 		text-align: left;
+		text-align: left;
 		width: 300px;
 
-		> legend {
+		@media only screen and (max-width: 600px) {
+			width: 100%;
+			margin-bottom: 10px;
+		}
+
+		>legend {
 			font-size: 1.2rem;
 			color: rgb(var(--text-color));
 		}
 	}
 
 	&--sub {
-		#{$self}__text > legend {
+		#{$self}__text>legend {
 			font-size: 1.1rem;
 			font-weight: normal;
 			line-height: 1.5rem;
@@ -61,7 +71,19 @@
 	&__body {
 		display: flex;
 		flex-direction: column;
+		flex-direction: column;
 		align-items: flex-end;
+
+		@media only screen and (max-width: 600px) {
+			width: 100%;
+			align-items: flex-start;
+
+			// Ensure inputs/selects use full width if they usually don't
+			select,
+			input {
+				max-width: 100%;
+			}
+		}
 	}
 
 	p {

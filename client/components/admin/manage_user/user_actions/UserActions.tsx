@@ -1,15 +1,15 @@
 import React from 'react';
 import './UserActions.scss';
-import {gql} from '@apollo/client';
-import {gqlMutate} from '../../../api';
-import {openModal} from '../../../../actions/general';
-import {PUBLIC_USER_WITH_ELO_FRAGMENT} from '../../../../util/graphql/fragments';
+import { gql } from '@apollo/client';
+import { gqlMutate } from '../../../api';
+import { openModal } from '../../../../actions/general';
+import { PUBLIC_USER_WITH_ELO_FRAGMENT } from '../../../../util/graphql/fragments';
 import BanUser from '../ban_user/BanUser';
 import block from '../../../../styles/bem';
 import Button from '../../../common/button/Button';
-import {toastSuccess} from '../../../../util/toast';
-import {useDispatch} from 'react-redux';
-import {UserAccountForAdmin} from '../../../../../server/schemas/UserAccount.schema';
+import { toastSuccess } from '../../../../util/toast';
+import { useDispatch } from 'react-redux';
+import { UserAccountForAdmin } from '../../../../../server/schemas/UserAccount.schema';
 
 const b = block('manage-user-actions');
 
@@ -21,7 +21,7 @@ interface Props {
 export default function UserActions(props: Props) {
 	const dispatch = useDispatch();
 
-	const {user, updateUser} = props;
+	const { user, updateUser } = props;
 	const banned = user.banned_forever || user.banned_until;
 
 	async function unbanUser() {
@@ -43,10 +43,10 @@ export default function UserActions(props: Props) {
 
 	async function toggleVerifyUser() {
 		const query = gql`
-			${PUBLIC_USER_WITH_ELO_FRAGMENT}
 			mutation Mutate($userId: String, $verified: Boolean) {
 				setVerifiedStatus(userId: $userId, verified: $verified) {
-					...PublicUserWithEloFragment
+					id
+					verified
 				}
 			}
 		`;

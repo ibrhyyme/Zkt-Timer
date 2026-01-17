@@ -1,28 +1,28 @@
 import React from 'react';
-import {connect} from 'react-redux';
-import {Warning} from 'phosphor-react';
+import { connect } from 'react-redux';
+import { Warning } from 'phosphor-react';
 import './Banned.scss';
-import {getDateFromNow} from '../../../util/dates';
+import { getDateFromNow } from '../../../util/dates';
 import Button from '../../common/button/Button';
-import {logOut} from '../../../util/auth/logout';
+import { logOut } from '../../../util/auth/logout';
 
 class Banned extends React.Component {
 	render() {
-		const {me} = this.props;
+		const { me } = this.props;
 
 		let bannedText;
 
 		if (me.banned_forever) {
 			bannedText = (
 				<p>
-					You account has been <span>permanently</span> banned
+					Hesabınız <span>kalıcı olarak</span> yasaklandı
 				</p>
 			);
 		} else {
 			const until = getDateFromNow(me.banned_until);
 			bannedText = (
 				<p>
-					Ban will be automatically lifted <span>{until}</span>
+					Yasak <span>{until}</span> tarihinde otomatik olarak kaldırılacak
 				</p>
 			);
 		}
@@ -32,24 +32,24 @@ class Banned extends React.Component {
 			const ban = me.bans[0];
 			reason = ban.reason;
 		} else {
-			reason = <i>No reason provided</i>;
+			reason = <i>Sebep belirtilmedi</i>;
 		}
 
 		return (
 			<div className="cd-banned">
 				<div className="cd-banned__body">
 					<Warning weight="bold" />
-					<h4>Account banned</h4>
+					<h4>Hesap Yasaklandı</h4>
 					{bannedText}
 					<div className="cd-banned__body__reason">
-						<span>Reason</span>
+						<span>Sebep</span>
 						<p>{reason}</p>
 					</div>
 					<p>
-						If you believe this is a mistake, please email{' '}
+						Bunun bir hata olduğunu düşünüyorsanız lütfen iletişime geçin:{' '}
 						<a href="mailto:ibrhyyme@icloud.com">ibrhyyme@icloud.com</a>
 					</p>
-					<Button text="Log out" onClick={logOut} />
+					<Button text="Çıkış yap" onClick={logOut} />
 				</div>
 			</div>
 		);

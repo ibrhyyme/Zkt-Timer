@@ -38,6 +38,10 @@
 		filter: drop-shadow(0 2px 8px rgba(var(--primary-color), 0.3));
 	}
 
+	&__logo {
+		animation: cubeRotate 10s linear infinite;
+	}
+
 	&__center {
 		display: flex;
 		justify-content: center;
@@ -140,6 +144,7 @@
 			opacity: 0;
 			transform: translateY(-10px);
 		}
+
 		to {
 			opacity: 1;
 			transform: translateY(0);
@@ -147,9 +152,12 @@
 	}
 
 	@keyframes cubeFloat {
-		0%, 100% {
+
+		0%,
+		100% {
 			transform: translateY(0px);
 		}
+
 		50% {
 			transform: translateY(-3px);
 		}
@@ -159,6 +167,7 @@
 		from {
 			transform: rotate(0deg);
 		}
+
 		to {
 			transform: rotate(360deg);
 		}
@@ -178,7 +187,7 @@
 	@media (max-width: 900px) {
 		#{$self}__nav {
 			gap: 4px;
-			
+
 			a {
 				span:last-child {
 					display: none;
