@@ -1,4 +1,4 @@
-import {EloRatingMock} from './elo_rating.mock';
+import { EloRatingMock } from './elo_rating.mock';
 
 export const UserMock = {
 	id: 'e4de5533-7c34-42c1-ae57-93ad0cb5b3d8',
@@ -11,7 +11,7 @@ export const UserMock = {
 	admin: true,
 	mod: false,
 	integrations: [
-		{id: '2af51adc-5b9d-4ab9-89a6-1a6f4fab3b6a', service_name: 'wca', __typename: 'Integration'},
+		{ id: '2af51adc-5b9d-4ab9-89a6-1a6f4fab3b6a', service_name: 'wca', __typename: 'Integration' },
 	],
 	profile: {
 		pfp_image: {

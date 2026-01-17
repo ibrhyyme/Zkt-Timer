@@ -343,7 +343,7 @@ export default function Terms() {
 				</li>
 			</ul>
 			<p>
-				You can contact our copyright agent via email at kash@cubedesk.io. Upon receipt of a notification, the
+				You can contact our copyright agent via email at . Upon receipt of a notification, the
 				Company will take whatever action, in its sole discretion, it deems appropriate, including removal of
 				the challenged content from the Service.
 			</p>
@@ -502,7 +502,7 @@ export default function Terms() {
 			<h1>Contact Us</h1>
 			<p>If you have any questions about these Terms and Conditions, You can contact us:</p>
 			<ul>
-				<li>By email: kash@cubedesk.io</li>
+				<li>By email: support@zkt-timer.com</li>
 			</ul>
 		</div>
 	);

@@ -1,14 +1,14 @@
-import React, {useContext, useEffect, useRef, useState} from 'react';
-import {getTimeString} from '../../../util/time';
+import React, { useContext, useEffect, useRef, useState } from 'react';
+import { getTimeString } from '../../../util/time';
 import './TimeDisplay.scss';
 import Manual from './manual/Manual';
-import {preflightChecks} from '../smart_cube/preflight';
-import {MOBILE_FONT_SIZE_MULTIPLIER} from '../../../db/settings/update';
-import {useGeneral} from '../../../util/hooks/useGeneral';
-import {smartCubeSelected} from '../helpers/util';
-import {TimerContext} from '../Timer';
+import { preflightChecks } from '../smart_cube/preflight';
+import { MOBILE_FONT_SIZE_MULTIPLIER } from '../../../db/settings/update';
+import { useGeneral } from '../../../util/hooks/useGeneral';
+import { smartCubeSelected } from '../helpers/util';
+import { TimerContext } from '../Timer';
 import block from '../../../styles/bem';
-import {useSettings} from '../../../util/hooks/useSettings';
+import { useSettings } from '../../../util/hooks/useSettings';
 import StartInstructions from './start_instructions/StartInstructions';
 import StackMat from './stackmat/StackMat';
 import GanTimer from './gantimer/GanTimer';
@@ -133,13 +133,13 @@ export default function TimeDisplay() {
 		if (preflightChecks(smartTurns, scramble)) {
 			bottomInfo = (
 				<StartInstructions>
-					Turn <span>smart cube</span> to start
+					Başlamak için <span>akıllı küpü</span> çevir
 				</StartInstructions>
 			);
 		} else {
 			bottomInfo = (
 				<StartInstructions>
-					Scramble <span>smart cube</span> to start
+					Başlamak için <span>akıllı küpü</span> karıştır
 				</StartInstructions>
 			);
 		}
@@ -148,7 +148,7 @@ export default function TimeDisplay() {
 	let body = (
 		<>
 			<h1
-				style={{fontSize: timerTimeSize + 'px', fontFamily: timerFontFamily + ', monospace'}}
+				style={{ fontSize: timerTimeSize + 'px', fontFamily: timerFontFamily + ', monospace' }}
 				className={b({
 					gray: inInspection,
 					green: canStart,

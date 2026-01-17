@@ -1,10 +1,10 @@
 import React from 'react';
 import './ManageSmartCubes.scss';
-import {gql, useMutation, useQuery} from '@apollo/client';
+import { gql, useMutation, useQuery } from '@apollo/client';
 import Loading from '../../../common/loading/Loading';
 import Empty from '../../../common/empty/Empty';
 import SmartManage from './smart_manage/SmartManage';
-import {SmartDevice} from '../../../../@types/generated/graphql';
+import { SmartDevice } from '../../../../@types/generated/graphql';
 import block from '../../../../styles/bem';
 
 const b = block('manage-smart-cubes');
@@ -37,9 +37,9 @@ const ADD_NEW_SMART_DEVICE_MUTATION = gql`
 `;
 
 export default function ManageSmartCubes() {
-	const {data: smartDevices} = useQuery<{smartDevices: SmartDevice[]}>(SMART_DEVICES_QUERY);
+	const { data: smartDevices } = useQuery<{ smartDevices: SmartDevice[] }>(SMART_DEVICES_QUERY);
 	const [addDevice, addDeviceData] = useMutation<
-		{addNewSmartDevice: SmartDevice},
+		{ addNewSmartDevice: SmartDevice },
 		{
 			originalName: string;
 			deviceId: string;
@@ -59,7 +59,7 @@ export default function ManageSmartCubes() {
 	if (!smartDevices?.smartDevices) {
 		body = <Loading />;
 	} else if (!smartDevices.smartDevices.length) {
-		body = <Empty text="You have not connected any smart cubes yet" />;
+		body = <Empty text="Henüz akıllı küp bağlamadın" />;
 	} else {
 		body = smartDevices?.smartDevices.map((sc) => <SmartManage key={sc.id} cube={sc} />);
 	}

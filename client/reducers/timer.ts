@@ -1,4 +1,4 @@
-import {TimerStore} from '../components/timer/@types/interfaces';
+import { TimerStore } from '../components/timer/@types/interfaces';
 
 const smartState = {
 	smartCubeConnected: false,
@@ -8,6 +8,9 @@ const smartState = {
 	smartDeviceId: '',
 	smartCurrentState: 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB',
 	smartSolvedState: 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB',
+	smartGyroQuaternion: null,
+	smartGyroVelocity: null,
+	smartGyroSupported: false,
 };
 
 const defaultTimerState = {
@@ -50,7 +53,7 @@ export default (state = initialState, action) => {
 		}
 
 		case 'SET_TIMER_PARAM': {
-			const {params} = action.payload;
+			const { params } = action.payload;
 
 			return {
 				...state,
@@ -60,7 +63,7 @@ export default (state = initialState, action) => {
 
 		case 'TURN_SMART_CUBE': {
 			const {
-				payload: {turn, completedAt},
+				payload: { turn, completedAt },
 			} = action;
 			const smartTurns = [...state.smartTurns];
 
@@ -76,7 +79,7 @@ export default (state = initialState, action) => {
 		}
 
 		case 'SET_TIMER_DISABLED': {
-			const {disabled} = action.payload;
+			const { disabled } = action.payload;
 
 			return {
 				...state,
@@ -85,7 +88,7 @@ export default (state = initialState, action) => {
 		}
 
 		case 'SET_START_ENABLED': {
-			const {payload} = action;
+			const { payload } = action;
 
 			return {
 				...state,

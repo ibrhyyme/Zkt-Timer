@@ -1,20 +1,20 @@
 import React from 'react';
-import {gql} from '@apollo/client/core';
-import {gqlMutate} from '../../components/api';
-import {getSolveDb} from './init';
-import {emitEvent} from '../../util/event_handler';
-import {clearSolveStatCache} from './stats/solves/caching';
-import {toastError} from '../../util/toast';
-import {getStore} from '../../components/store';
-import {openModal} from '../../actions/general';
+import { gql } from '@apollo/client/core';
+import { gqlMutate } from '../../components/api';
+import { getSolveDb } from './init';
+import { emitEvent } from '../../util/event_handler';
+import { clearSolveStatCache } from './stats/solves/caching';
+import { toastError } from '../../util/toast';
+import { getStore } from '../../components/store';
+import { openModal } from '../../actions/general';
 import ConfirmModal from '../../components/common/confirm_modal/ConfirmModal';
-import {checkForPB} from './stats/solves/pb';
-import {updateOfflineHash} from '../../components/layout/offline';
-import {getSetting} from '../settings/query';
-import {Solve} from '../../../server/schemas/Solve.schema';
-import {checkForWorst} from './stats/solves/worst';
-import {sanitizeSolve} from '../../../shared/solve';
-import {checkForCurrentAverageUpdate} from './stats/solves/cache/average_cache';
+import { checkForPB } from './stats/solves/pb';
+import { updateOfflineHash } from '../../components/layout/offline';
+import { getSetting } from '../settings/query';
+import { Solve } from '../../../server/schemas/Solve.schema';
+import { checkForWorst } from './stats/solves/worst';
+import { sanitizeSolve } from '../../../shared/solve';
+import { checkForCurrentAverageUpdate } from './stats/solves/cache/average_cache';
 
 export async function createSolveDb(solveInput: Solve) {
 	const solveDb = getSolveDb();
@@ -40,7 +40,7 @@ export async function createSolveDb(solveInput: Solve) {
 				input: solve,
 			});
 		} catch (e) {
-			toastError('Çözüm kaydedilemedi. Lütfen internet bağlantınızı kontrol edin.');
+			toastError('Çözüm sunucuya gönderilemedi (Yerel olarak saklandı).');
 		}
 	} else {
 		await createDemoSolve(solve);

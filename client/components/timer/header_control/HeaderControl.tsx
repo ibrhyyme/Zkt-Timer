@@ -26,7 +26,7 @@ import { useQuickControlsModal } from '../../quick-controls/useQuickControlsModa
 import AccountDropdown from '../../layout/nav/account_dropdown/AccountDropdown';
 import { NAV_LINKS } from '../../layout/nav/Nav';
 import { useRouteMatch } from 'react-router-dom';
-import MobileNav from '../../layout/nav/mobile_nav/MobileNav';
+
 
 const b = block('timer-header-control');
 
@@ -128,7 +128,20 @@ export default function HeaderControl() {
 	// Mobile: minimal header with account dropdown on right
 	if (mobileMode && !focusMode) {
 		// Hamburger menu için NAV_LINKS
-		const hamburgerMenu = <MobileNav />;
+		const navOptions = NAV_LINKS.map((link) => ({
+			link: link.link,
+			text: link.name,
+			icon: link.icon,
+			disabled: link.match.test(match.path),
+		}));
+
+		const hamburgerMenu = (
+			<Dropdown
+				icon={<List />}
+				dropdownButtonProps={{ gray: true }}
+				options={navOptions}
+			/>
+		);
 
 		return (
 			<GlobalHotKeys handlers={handlers} keyMap={HOTKEY_MAP}>
@@ -137,10 +150,10 @@ export default function HeaderControl() {
 						{cubePicker}
 						{sessionSwitcher}
 						{gearButton}
+						{hamburgerMenu}
 					</div>
 					<div />
 					<div className={b('right-controls')}>
-						{hamburgerMenu}
 						<AccountDropdown />
 					</div>
 				</div>

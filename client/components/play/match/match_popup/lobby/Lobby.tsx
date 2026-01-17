@@ -1,10 +1,10 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import './Lobby.scss';
-import {UsersThree} from 'phosphor-react';
+import { UsersThree } from 'phosphor-react';
 import block from '../../../../../styles/bem';
-import {socketClient} from '../../../../../util/socket/socketio';
+import { socketClient } from '../../../../../util/socket/socketio';
 import Button from '../../../../common/button/Button';
-import {GameType} from '../../../../../../shared/match/consts';
+import { GameType } from '../../../../../../shared/match/consts';
 
 const b = block('match-join-lobby');
 
@@ -14,7 +14,7 @@ interface Props {
 }
 
 export default function Lobby(props: Props) {
-	const {onCancel} = props;
+	const { onCancel } = props;
 	const [updatedDots, setUpdatedDots] = useState(3);
 
 	useEffect(() => {
@@ -47,8 +47,8 @@ export default function Lobby(props: Props) {
 		<div className={b()}>
 			<div className={b('body')}>
 				<UsersThree weight="fill" />
-				<p>Looking for players{dots}</p>
-				<Button text="Cancel" onClick={cancelSearch} />
+				<p>Oyuncular aranıyor{dots}</p>
+				<Button text="İptal" onClick={cancelSearch} />
 			</div>
 		</div>
 	);

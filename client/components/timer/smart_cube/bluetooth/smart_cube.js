@@ -1,10 +1,10 @@
-import {setTimerParams} from '../../helpers/params';
-import {getStore} from '../../../store';
-import {turnSmartCube} from '../../../../actions/timer';
-import {toastError} from '../../../../util/toast';
-import {gql} from '@apollo/client';
-import {gqlMutate} from '../../../api';
-import {openModal} from '../../../../actions/general';
+import { setTimerParams } from '../../helpers/params';
+import { getStore } from '../../../store';
+import { turnSmartCube } from '../../../../actions/timer';
+import { toastError } from '../../../../util/toast';
+import { gql } from '@apollo/client';
+import { gqlMutate } from '../../../api';
+import { openModal } from '../../../../actions/general';
 import React from 'react';
 import SolveCheck from '../solve_check/SolveCheck';
 
@@ -16,7 +16,7 @@ export default class SmartCube {
 	};
 
 	alertDisconnected = () => {
-		toastError('Smart cube disconnected');
+		toastError('Akıllı küp bağlantısı kesildi');
 
 		setTimerParams({
 			smartCubeConnecting: false,
@@ -68,17 +68,27 @@ export default class SmartCube {
 
 	alertConnected = async (server) => {
 		let dev;
-		const exists = await this.smartCubeInDb(server);
-		if (!exists) {
-			dev = await this.addSmartCubeToDb(server.device.name, server.device.id);
-		} else {
-			dev = exists;
+		try {
+			const exists = await this.smartCubeInDb(server);
+			if (!exists) {
+				dev = await this.addSmartCubeToDb(server.device.name, server.device.id);
+			} else {
+				dev = exists;
+			}
+		} catch (error) {
+			console.error('Smart Cube DB Error (continuing offline):', error);
+			// Fallback device object if DB fails
+			dev = {
+				id: server.device.id, // Use MAC/ID as makeshift DB ID
+				name: server.device.name,
+				device_id: server.device.id
+			};
 		}
 
 		getStore().dispatch(
 			openModal(<SolveCheck />, {
-				title: 'Confirm that cube is solved',
-				description: 'Please confirm that your smart cube is solved before proceeding.',
+				title: 'Küpün çözüldüğünü doğrulayın.',
+				description: 'Lütfen devam etmeden önce küpünüzün çözüldüğünü doğrulayın.',
 				hideCloseButton: true,
 				onComplete: () => this.confirmConnected(dev),
 			})
@@ -101,9 +111,9 @@ export default class SmartCube {
 
 	alertTurnCube = (move) => {
 		const store = getStore();
-		if (store.getState().timer.smartCubeConnecting) {
-			return;
-		}
+		// if (store.getState().timer.smartCubeConnecting) {
+		// 	return;
+		// }
 
 		store.dispatch(turnSmartCube(move.replace(/\s/g, ''), new Date()));
 	};
@@ -116,6 +126,25 @@ export default class SmartCube {
 
 		setTimerParams({
 			smartCurrentState: state,
+		});
+	};
+
+	alertGyroData = (quaternion, velocity) => {
+		setTimerParams({
+			smartGyroQuaternion: quaternion,
+			smartGyroVelocity: velocity || null,
+		});
+	};
+
+	alertGyroSupported = (supported) => {
+		setTimerParams({
+			smartGyroSupported: supported,
+		});
+	};
+
+	resetGyro = () => {
+		setTimerParams({
+			smartGyroQuaternion: null,
 		});
 	};
 }

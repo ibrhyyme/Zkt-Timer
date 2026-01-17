@@ -1,22 +1,22 @@
-import React, {useContext, useEffect, useRef, useState} from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import './SmartCube.scss';
 import Emblem from '../../common/emblem/Emblem';
 import Battery from './battery/Battery';
 import Connect from './bluetooth/connect';
-import {setTimerParams} from '../helpers/params';
-import {Bluetooth, DotsThree} from 'phosphor-react';
-import {preflightChecks} from './preflight';
-import {openModal} from '../../../actions/general';
+import { setTimerParams } from '../helpers/params';
+import { Bluetooth, DotsThree } from 'phosphor-react';
+import { preflightChecks } from './preflight';
+import { openModal } from '../../../actions/general';
 import ManageSmartCubes from './manage_smart_cubes/ManageSmartCubes';
 import Cube from 'cubejs';
 import block from '../../../styles/bem';
-import {TimerContext} from '../Timer';
-import {useSettings} from '../../../util/hooks/useSettings';
-import {useDispatch} from 'react-redux';
+import { TimerContext } from '../Timer';
+import { useSettings } from '../../../util/hooks/useSettings';
+import { useDispatch } from 'react-redux';
 import Dropdown from '../../common/inputs/dropdown/Dropdown';
 import Button from '../../common/button/Button';
-import {toastError} from '../../../util/toast';
-import {endTimer, startTimer} from '../helpers/events';
+import { toastError } from '../../../util/toast';
+import { endTimer, startTimer } from '../helpers/events';
 import BluetoothErrorMessage from '../common/BluetoothErrorMessage';
 
 const b = block('smart-cube');
@@ -50,6 +50,8 @@ export default function SmartCube() {
 		smartSolvedState,
 		smartCubeConnected,
 		timeStartedAt,
+		smartGyroQuaternion,
+		smartGyroSupported,
 	} = context;
 
 	useEffect(() => {
@@ -66,7 +68,7 @@ export default function SmartCube() {
 	}, []);
 
 	useEffect(() => {
-		if (!smartCubeConnecting && smartTurns.length) {
+		if (smartTurns.length) {
 			const turn = smartTurns[smartTurns.length - 1].turn;
 			cubejs.current.move(turn);
 
@@ -78,13 +80,20 @@ export default function SmartCube() {
 		if (!useSpaceWithSmartCube && isSolved && smartTurns.length) {
 			resetMoves();
 		}
-	}, [smartTurns, smartCubeConnecting, smartSolvedState]);
+	}, [smartTurns, smartSolvedState]);
+
+	// Jiroskop verisini küpe uygula
+	useEffect(() => {
+		if (cube.current && smartGyroQuaternion) {
+			cube.current.setGyroQuaternion(smartGyroQuaternion);
+		}
+	}, [smartGyroQuaternion]);
 
 	function initVisualCube() {
 		// eslint-disable-next-line @typescript-eslint/no-var-requires
 		const RubiksCube = require('./visual').default;
 		// eslint-disable-next-line @typescript-eslint/no-var-requires
-		const {materials} = require('./visual');
+		const { materials } = require('./visual');
 
 		if (turnInterval.current) {
 			clearInterval(turnInterval.current);
@@ -96,11 +105,11 @@ export default function SmartCube() {
 			canvasRef.current.width = 200;
 			canvasRef.current.height = 200;
 
-			cube.current = new RubiksCube(canvasRef.current, materials.classic, 0, '400px', '400px', smartCurrentState);
+			cube.current = new RubiksCube(canvasRef.current, materials.classic, 120, '400px', '400px', smartCurrentState);
 		}
 
 		setTimeout(() => {
-			initCubeTurner();
+			processQueue();
 		}, 500);
 	}
 
@@ -109,7 +118,7 @@ export default function SmartCube() {
 	}
 
 	function checkForStartAfterTurn() {
-		if (useSpaceWithSmartCube) {
+		if (useSpaceWithSmartCube || smartCubeConnecting) {
 			return;
 		}
 
@@ -133,9 +142,12 @@ export default function SmartCube() {
 		}
 	}
 
+	const processingTurns = useRef(false);
+
 	function addTurn(...t) {
 		checkForStartAfterTurn();
 		turns.current = [...turns.current, ...t];
+		processQueue();
 	}
 
 	function resetMoves(markSolved: boolean = false) {
@@ -161,62 +173,47 @@ export default function SmartCube() {
 		}, 50);
 	}
 
-	function initCubeTurner() {
-		turnInterval.current = setInterval(() => {
-			if (document.hasFocus()) {
-				if (turns.current.length > turnIndex.current) {
-					execTurn();
-				} else if (turns.current.length) {
-					turns.current = [];
-					turnIndex.current = 0;
-				}
-			}
-		}, 60);
-	}
+	// Replaced interval with direct async queue processing
+	const processQueue = async () => {
+		if (processingTurns.current) return;
 
-	function execTurn() {
-		let turn = turns.current[turnIndex.current];
+		processingTurns.current = true;
 
-		const prime = !(turn.indexOf("'") > -1);
-		turn = turn.replace(/'|\s/g, '');
+		while (turns.current.length > turnIndex.current) {
+			await execTurn();
+		}
+
+		// Cleanup if needed
+		if (turns.current.length && turns.current.length === turnIndex.current) {
+			turns.current = [];
+			turnIndex.current = 0;
+		}
+
+		processingTurns.current = false;
+	};
+
+	async function execTurn() {
+		const turnRaw = turns.current[turnIndex.current];
+
+		const prime = !(turnRaw.indexOf("'") > -1);
+		const turn = turnRaw.replace(/'|\s/g, '');
+
+		if (!cube.current) {
+			turnIndex.current += 1;
+			return;
+		}
 
 		switch (turn) {
-			case 'R': {
-				cube.current.R(prime);
-				break;
-			}
-			case 'L': {
-				cube.current.L(!prime);
-				break;
-			}
-			case 'D': {
-				cube.current.D(!prime);
-				break;
-			}
-			case 'F': {
-				cube.current.F(prime);
-				break;
-			}
-			case 'U': {
-				cube.current.U(prime);
-				break;
-			}
-			case 'B': {
-				cube.current.B(!prime);
-				break;
-			}
-			case 'x': {
-				cube.current.x(prime);
-				break;
-			}
-			case 'y': {
-				cube.current.y(prime);
-				break;
-			}
-			case 'z': {
-				cube.current.z(prime);
-				break;
-			}
+			case 'R': await cube.current.R(prime); break;
+			case 'L': await cube.current.L(!prime); break;
+			case 'D': await cube.current.D(!prime); break;
+			case 'F': await cube.current.F(prime); break;
+			case 'U': await cube.current.U(!prime); break;
+			case 'B': await cube.current.B(!prime); break;
+			case 'x': await cube.current.x(prime); break;
+			case 'y': await cube.current.y(prime); break;
+			case 'z': await cube.current.z(prime); break;
+			default: break;
 		}
 
 		turnIndex.current += 1;
@@ -250,9 +247,20 @@ export default function SmartCube() {
 	function toggleManageSmartCubes() {
 		dispatch(
 			openModal(<ManageSmartCubes />, {
-				title: 'Manage smart cubes',
+				title: 'Akıllı küpleri yönet',
 			})
 		);
+	}
+
+	// Jiroskop sıfırlama fonksiyonu
+	function resetGyro() {
+		if (cube.current) {
+			cube.current.resetGyroBasis();
+		}
+		// Redux state'ini de sıfırla ki bir sonraki veri geldiğinde yeni basis oluşsun
+		setTimerParams({
+			smartGyroQuaternion: null,
+		});
 	}
 
 	let actionButton = null;
@@ -264,18 +272,24 @@ export default function SmartCube() {
 			icon={<DotsThree />}
 			options={[
 				{
-					text: 'Mark as solved',
+					text: 'Çözülmüş olarak işaretle',
 					hidden: !smartCubeConnected,
 					disabled: !!timeStartedAt,
 					onClick: () => resetMoves(true),
 				},
 				{
-					text: 'Disconnect',
+					text: 'Jiroskop sıfırla',
+					hidden: !smartCubeConnected || !smartGyroSupported,
+					disabled: !!timeStartedAt,
+					onClick: resetGyro,
+				},
+				{
+					text: 'Bağlantıyı kes',
 					hidden: !smartCubeConnected,
 					disabled: !!timeStartedAt,
 					onClick: disconnectBluetooth,
 				},
-				{text: 'Manage smart cubes', disabled: !!timeStartedAt, onClick: toggleManageSmartCubes},
+				{ text: 'Akıllı küpleri yönet', disabled: !!timeStartedAt, onClick: toggleManageSmartCubes },
 			]}
 		/>
 	);
@@ -284,13 +298,13 @@ export default function SmartCube() {
 	let emblem;
 	if (smartCubeConnecting) {
 		emblem = <Emblem small orange icon={<Bluetooth />} />;
-		actionButton = <Button text="Connecting..." disabled />;
+		actionButton = <Button text="Bağlanıyor..." disabled />;
 		battery = null;
 	} else if (smartCubeConnected) {
 		emblem = <Emblem small green icon={<Bluetooth />} />;
 	} else {
 		emblem = <Emblem small red icon={<Bluetooth />} />;
-		actionButton = <Button text="Connect" onClick={connectBluetooth} />;
+		actionButton = <Button text="Bağlan" onClick={connectBluetooth} />;
 		battery = null;
 	}
 

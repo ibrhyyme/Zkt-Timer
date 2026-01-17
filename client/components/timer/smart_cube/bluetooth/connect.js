@@ -14,22 +14,22 @@ export default class Connect extends SmartCube {
 		window.navigator.bluetooth
 			.requestDevice({
 				filters: [
-					{namePrefix: 'Gi'},
-					{namePrefix: 'Mi Smart Magic Cube'},
-					{namePrefix: 'GAN'},
-					{namePrefix: 'Gan'},
-					{namePrefix: 'gan'},
-					{namePrefix: 'GoCube'},
-					{namePrefix: 'Rubiks'},
+					{ namePrefix: 'Gi' },
+					{ namePrefix: 'Mi Smart Magic Cube' },
+					{ namePrefix: 'GAN' },
+					{ namePrefix: 'Gan' },
+					{ namePrefix: 'gan' },
+					{ namePrefix: 'GoCube' },
+					{ namePrefix: 'Rubiks' },
 
 					// Giiker
-					{services: ['0000aadb-0000-1000-8000-00805f9b34fb']},
-					{services: ['0000aaaa-0000-1000-8000-00805f9b34fb']},
-					{services: ['0000fe95-0000-1000-8000-00805f9b34fb']},
+					{ services: ['0000aadb-0000-1000-8000-00805f9b34fb'] },
+					{ services: ['0000aaaa-0000-1000-8000-00805f9b34fb'] },
+					{ services: ['0000fe95-0000-1000-8000-00805f9b34fb'] },
 
 					// Gan
-					{services: ['0000fff0-0000-1000-8000-00805f9b34fb']},
-					{services: ['00001805-0000-1000-8000-00805f9b34fb']},
+					{ services: ['0000fff0-0000-1000-8000-00805f9b34fb'] },
+					{ services: ['00001805-0000-1000-8000-00805f9b34fb'] },
 				],
 				optionalServices: [
 					'0000180a-0000-1000-8000-00805f9b34fb',

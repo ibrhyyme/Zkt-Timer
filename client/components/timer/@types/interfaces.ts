@@ -1,10 +1,10 @@
-import {ReactComponentElement, ReactNode} from 'react';
-import {Match} from '../../../@types/generated/graphql';
-import {ChallengerProps} from '../../play/target/challengers/challenger/Challenger';
-import {TimerModuleDropdownOptions, TimerModuleType} from './enums';
-import {ITimerContext} from '../Timer';
-import {TimerLayoutPosition} from '../../../db/settings/query';
-import {Solve} from '../../../../server/schemas/Solve.schema';
+import { ReactComponentElement, ReactNode } from 'react';
+import { Match } from '../../../@types/generated/graphql';
+import { ChallengerProps } from '../../play/target/challengers/challenger/Challenger';
+import { TimerModuleDropdownOptions, TimerModuleType } from './enums';
+import { ITimerContext } from '../Timer';
+import { TimerLayoutPosition } from '../../../db/settings/query';
+import { Solve } from '../../../../server/schemas/Solve.schema';
 
 interface TimerHeaderOptions {
 	hide?: boolean; // Hides the whole header
@@ -87,6 +87,9 @@ export interface TimerStore {
 	smartDeviceId?: string;
 	smartCurrentState?: string;
 	smartSolvedState?: string;
+	smartGyroQuaternion?: { x: number; y: number; z: number; w: number } | null;
+	smartGyroVelocity?: { x: number; y: number; z: number } | null;
+	smartGyroSupported?: boolean;
 	scramble?: string;
 	disabled?: boolean;
 }

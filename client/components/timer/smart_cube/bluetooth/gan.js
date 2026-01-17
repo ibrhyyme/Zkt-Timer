@@ -1,10 +1,10 @@
 import SmartCube from './smart_cube';
-import {isEqual} from 'lodash';
+import { isEqual } from 'lodash';
 import LZString from './lz_string';
 import aes128 from './ae128';
 
-import {	
-  connectGanCube,
+import {
+	connectGanCube,
 } from 'gan-web-bluetooth';
 
 export default class GAN extends SmartCube {
@@ -17,43 +17,88 @@ export default class GAN extends SmartCube {
 	}
 
 	customMacAddressProvider = async (device, isFallbackCall) => {
-		if (isFallbackCall) {
-			return prompt('Unable do determine cube MAC address!\nPlease enter MAC address manually:');
-		} else {
-			return typeof device.watchAdvertisements == 'function'
-				? null
-				: prompt(
-						'Seems like your browser does not support Web Bluetooth watchAdvertisements() API. Enable following flag in Chrome:\n\nchrome://flags/#enable-experimental-web-platform-features\n\nor enter cube MAC address manually:'
-				  );
+		const CACHE_KEY = 'gan_cube_mac';
+		const cachedMac = localStorage.getItem(CACHE_KEY);
+
+		// If we have a cached MAC and this is NOT a fallback call (meaning first attempt), try using it.
+		// If it's a fallback call, it means the first attempt (potentially with cached MAC) failed, so we must ask.
+		if (cachedMac && !isFallbackCall) {
+			return cachedMac;
 		}
+
+		let macAddress;
+		if (isFallbackCall) {
+			// If fallback, pre-fill prompt with cached one if available, or empty
+			macAddress = prompt('Unable do determine cube MAC address!\nPlease enter MAC address manually:', cachedMac || '');
+		} else {
+			macAddress =
+				typeof device.watchAdvertisements == 'function'
+					? null
+					: prompt(
+						'Seems like your browser does not support Web Bluetooth watchAdvertisements() API. Enable following flag in Chrome:\n\nchrome://flags/#enable-experimental-web-platform-features\n\nor enter cube MAC address manually:',
+						cachedMac || ''
+					);
+		}
+
+		if (macAddress) {
+			const cleanedMac = macAddress.trim().toUpperCase();
+			localStorage.setItem(CACHE_KEY, cleanedMac);
+			return cleanedMac;
+		}
+		return macAddress;
 	};
 
 	init = async () => {
-		this.conn = await connectGanCube(this.customMacAddressProvider, this.device);
-		this.conn.events$.subscribe(this.handleCubeEvent);
+		try {
+			console.log('Attempting to connect to Gan cube...');
+			this.conn = await connectGanCube(async (device, isFallback) => {
+				const mac = await this.customMacAddressProvider(device, isFallback);
+				console.log('MAC Address provided:', mac);
+				return mac;
+			}, this.device);
 
-		await this.conn.sendCubeCommand({ type: "REQUEST_BATTERY" });
-		await this.conn.sendCubeCommand({ type: "REQUEST_HARDWARE" });
+			this.conn.events$.subscribe(this.handleCubeEvent);
 
-		const dummyServer = {
-			device: {
-				name: this.hardwareName,
-				id: this.device.mac
-			}
-		};
-		this.alertConnected(dummyServer);
+			await this.conn.sendCubeCommand({ type: "REQUEST_BATTERY" });
+			await this.conn.sendCubeCommand({ type: "REQUEST_HARDWARE" });
+
+			const dummyServer = {
+				device: {
+					name: this.hardwareName,
+					id: this.device.mac
+				}
+			};
+			this.alertConnected(dummyServer);
+		} catch (error) {
+			console.error('Gan connection error:', error);
+			alert(`Connection failed: ${error.message || error}`);
+			this.alertDisconnected();
+		}
 	};
 
 	handleCubeEvent = (event) => {
 		if (event.type != 'GYRO' && event.type != 'FACELETS') console.log('GanCubeEvent', event);
+
 		if (event.type == 'MOVE') {
-			this.alertTurnCube(event.move);
-		}  else if (event.type == 'HARDWARE') {
+			if (event.move) {
+				console.log('Move detected:', event.move);
+				this.alertTurnCube(event.move);
+			} else {
+				console.warn('Move event received but no move property found:', event);
+			}
+		} else if (event.type == 'GYRO') {
+			// Jiroskop verilerini işle
+			if (event.quaternion) {
+				this.alertGyroData(event.quaternion, event.velocity);
+			}
+		} else if (event.type == 'HARDWARE') {
 			this.hardwareName = event.hardwareName;
 			this.hardwareVersion = event.hardwareVersion;
 			this.softwareVersion = event.softwareVersion;
 			this.productDate = event.productDate;
 			this.gyroSupported = event.gyroSupported;
+			// Jiroskop desteği durumunu bildir
+			this.alertGyroSupported(event.gyroSupported);
 		} else if (event.type == 'BATTERY') {
 			this.alertBatteryLevel(this.batteryLevel);
 		} else if (event.type == 'DISCONNECT') {

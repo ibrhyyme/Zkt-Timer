@@ -1,6 +1,6 @@
 import React from 'react';
 import LandingInfo from '../info/LandingInfo';
-import {resourceUri} from '../../../util/storage';
+import { resourceUri } from '../../../util/storage';
 
 export default function AboutZktTimer() {
 	return (
@@ -10,8 +10,8 @@ export default function AboutZktTimer() {
 				<h3>Zkt-Timer started as an advanced speedcubing timer for the community.</h3>
 				<p>
 					While we were all in lockdown, I (
-					<a target="_blank" href="/user/kash">
-						@kash
+					<a target="_blank" href="/user/">
+						@ibrhyyme
 					</a>
 					) decided to pick up cubing. It had been several years since I had picked up a cube, but I could
 					still figure out how to solve one, albeit not as fast as I used to.

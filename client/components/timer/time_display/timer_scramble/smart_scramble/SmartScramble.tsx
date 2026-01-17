@@ -54,9 +54,9 @@ export default function SmartScramble() {
 	}
 
 	if (smartCanStart) {
-		scrambleBody = <span className={b('turn', { green: true })}>Ready to start</span>;
+		scrambleBody = <span className={b('turn', { green: true })}>Başlamaya Hazırsın</span>;
 	} else if (failedMoves.length > 7) {
-		scrambleBody = <span className={b('turn', { red: true })}>Solve cube to proceed</span>;
+		scrambleBody = <span className={b('turn', { red: true })}>Başlamak için küpü çöz</span>;
 	}
 
 	return <>{scrambleBody}</>;
