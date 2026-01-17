@@ -9,13 +9,20 @@ export interface LokiFetchOptions {
 	offset?: number;
 }
 
+export interface ExtendedLokiConfigOptions extends Partial<LokiConfigOptions> {
+	disableAdapter?: boolean;
+}
+
 let db: Loki;
-export function initLokiDb(op?: Partial<LokiConfigOptions>) {
+export function initLokiDb(op?: ExtendedLokiConfigOptions) {
 	let options = undefined;
 	let autoSave = true;
 
 	let adapter = null;
-	if (typeof indexedDB === 'undefined') {
+	if (op?.disableAdapter) {
+		adapter = null;
+		autoSave = false;
+	} else if (typeof indexedDB === 'undefined') {
 		autoSave = false;
 	} else {
 		adapter = new LokiIndexDbAdaptor();
@@ -40,7 +47,7 @@ export function getLokiDb() {
 }
 
 export function stripLokiJsMetadata(record) {
-	const cleanRec = {...record};
+	const cleanRec = { ...record };
 	delete cleanRec['meta'];
 	delete cleanRec['$loki'];
 	return cleanRec;

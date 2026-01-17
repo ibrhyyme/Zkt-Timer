@@ -1,6 +1,6 @@
 import React from 'react';
-import {useMe} from '../../../util/hooks/useMe';
-import {useGeneral} from '../../../util/hooks/useGeneral';
+import { useMe } from '../../../util/hooks/useMe';
+import { useGeneral } from '../../../util/hooks/useGeneral';
 
 export default function DemoWarning() {
 	const me = useMe();
@@ -22,9 +22,9 @@ export default function DemoWarning() {
 	return (
 		<div className={classNames.join(' ')}>
 			<span>
-				Demo Mode. No data being saved.
+				Demo Modu. Veriler kaydedilmiyor.
 				<a className="ml-1 underline hover:opacity-100 opacity-75" href="/signup">
-					Sign up
+					Kayıt Ol
 				</a>
 			</span>
 		</div>

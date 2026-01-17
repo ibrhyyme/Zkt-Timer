@@ -24,17 +24,6 @@ export default function AccountDropdown() {
 		dispatch(setGeneral('settings_modal_open', true));
 	}
 
-	function openNotifications() {
-		// Since Notifications component is a dropdown, we currently can't easily open it as a modal without refactoring.
-		// For now, we will just show the dropdown content if we could, but let's try to open a modal with it 
-		// or maybe just a placeholder until refactored.
-		// Actually, the user asked to move it. 
-		// Let's assume Notifications component can be rendered or we create a wrapper.
-		// For now, let's just trigger a toast or something, or better, render it in a modal but wrapped.
-		// But Notifications.js uses OldDropdown which renders a trigger.
-		// Let's just add the option.
-	}
-
 	const aviDropDownOptions: IDropdownOption[] = [];
 
 	aviDropDownOptions.push({ link: '/account/personal-info', text: 'Hesap' });
@@ -42,12 +31,9 @@ export default function AccountDropdown() {
 
 	// Add new options
 	aviDropDownOptions.push({ onClick: openSettings, text: 'Genel Ayarlar', icon: <Gear weight="bold" /> });
-	// aviDropDownOptions.push({onClick: openNotifications, text: 'Bildirimler', icon: <Bell weight="bold" />});
-	// Actually for Notifications, simply moving it inside is weird because it's a live indicator. 
-	// But the user requested it. Let's add it. 
-	// To make it functional, we likely need a dedicated Notification page or a modal that fetches notifications.
-	// I'll add the item.
-	aviDropDownOptions.push({ link: '/notifications', text: 'Bildirimler', icon: <Bell weight="bold" /> });
+	// Bildirimler header'daki zil ikonunda dropdown olarak mevcut
+	// Burada bildirim ayarları sayfasına yönlendiriyoruz
+	aviDropDownOptions.push({ link: '/account/notifications', text: 'Bildirim Ayarları', icon: <Bell weight="bold" /> });
 
 	if (me.admin) {
 		aviDropDownOptions.push({ link: '/admin/reports', text: 'Yönetici' });

@@ -1,16 +1,16 @@
 import React from 'react';
 import './ReportProfile.scss';
-import {gql} from '@apollo/client/core';
-import {toastSuccess} from '../../../util/toast';
+import { gql } from '@apollo/client/core';
+import { toastSuccess } from '../../../util/toast';
 import Button from '../../common/button/Button';
-import {PublicUserAccount, UserAccount, UserAccountForAdmin} from '../../../../server/schemas/UserAccount.schema';
-import {useMutation} from '@apollo/client';
-import {useInput} from '../../../util/hooks/useInput';
-import {IModalProps} from '../../common/modal/Modal';
+import { PublicUserAccount, UserAccount, UserAccountForAdmin } from '../../../../server/schemas/UserAccount.schema';
+import { useMutation } from '@apollo/client';
+import { useInput } from '../../../util/hooks/useInput';
+import { IModalProps } from '../../common/modal/Modal';
 import TextArea from '../../common/inputs/textarea/TextArea';
 import block from '../../../styles/bem';
 import ModalHeader from '../../common/modal/modal_header/ModalHeader';
-import {Profile} from '../../../../server/schemas/Profile.schema';
+import { Profile } from '../../../../server/schemas/Profile.schema';
 
 const b = block('report-profile');
 
@@ -27,11 +27,11 @@ interface Props extends IModalProps {
 }
 
 export default function ReportUser(props: Props) {
-	const {user} = props;
+	const { user } = props;
 
 	const [reason, setReason] = useInput('');
 	const [reportUser, reportUserData] = useMutation<
-		{reportProfile: Profile},
+		{ reportProfile: Profile },
 		{
 			userId: string;
 			reason: string;
@@ -62,7 +62,7 @@ export default function ReportUser(props: Props) {
 		<div className={b()}>
 			<ModalHeader
 				title={`Report ${user.username}`}
-				description="If you believe that this user has done something report-worthy, please provide a brief reason below and submit the report. We will look into all reports in a fair manner and will take action if needed."
+				description="Bu kullanıcının şikayete değer bir şey yaptığını düşünüyorsanız, lütfen aşağıya kısa bir gerekçe yazın ve şikayeti gönderin. Tüm şikayetleri adil bir şekilde inceleyeceğiz ve gerekirse harekete geçeceğiz."
 			/>
 			<TextArea legend="Reason" value={reason} name="reason" onChange={setReason} />
 			<Button
@@ -73,7 +73,7 @@ export default function ReportUser(props: Props) {
 				disabled={disabled}
 				loading={reportUserData?.loading}
 				error={reportUserData?.error?.message}
-				text="Report profile"
+				text="Şikayet Et"
 				onClick={reportProfile}
 			/>
 		</div>

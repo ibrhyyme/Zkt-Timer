@@ -1,6 +1,6 @@
-import React, {ReactNode, useContext, useEffect} from 'react';
-import {HOTKEY_MAP} from '../../../util/timer/hotkeys';
-import {GlobalHotKeys} from 'react-hotkeys';
+import React, { ReactNode, useContext, useEffect } from 'react';
+import { HOTKEY_MAP } from '../../../util/timer/hotkeys';
+import { GlobalHotKeys } from 'react-hotkeys';
 import {
 	clearInspectionTimers,
 	getTimer,
@@ -9,17 +9,17 @@ import {
 	START_TIMEOUT,
 	stopTimer,
 } from '../helpers/timers';
-import {getCubeTypeInfoById} from '../../../util/cubes/util';
-import {configureHotkeys} from '../helpers/hotkeys';
-import {TimerContext} from '../Timer';
-import {smartCubeSelected} from '../helpers/util';
-import {setTimerParam, setTimerParams} from '../helpers/params';
+import { getCubeTypeInfoById } from '../../../util/cubes/util';
+import { configureHotkeys } from '../helpers/hotkeys';
+import { TimerContext } from '../Timer';
+import { smartCubeSelected } from '../helpers/util';
+import { setTimerParam, setTimerParams } from '../helpers/params';
 import block from '../../../styles/bem';
-import {endTimer, resetTimerParams, startTimer, startInspection} from '../helpers/events';
-import {useDocumentListener, useWindowListener} from '../../../util/hooks/useListener';
-import {useSettings} from '../../../util/hooks/useSettings';
-import {useGeneral} from '../../../util/hooks/useGeneral';
-import {getSettings} from '../../../db/settings/query';
+import { endTimer, resetTimerParams, startTimer, startInspection } from '../helpers/events';
+import { useDocumentListener, useWindowListener } from '../../../util/hooks/useListener';
+import { useSettings } from '../../../util/hooks/useSettings';
+import { useGeneral } from '../../../util/hooks/useGeneral';
+import { getSettings } from '../../../db/settings/query';
 
 const timerClass = block('timer');
 

@@ -1,9 +1,9 @@
-import React, {useEffect, useState} from 'react';
-import {X, Plus, Timer, Check} from 'phosphor-react';
-import {addFriendship, removeFriendship} from '../../../actions/account';
-import {toastSuccess} from '../../../util/toast';
-import {gqlMutate, gqlMutateTyped, gqlQueryTyped} from '../../api';
-import Button, {ButtonProps} from '../../common/button/Button';
+import React, { useEffect, useState } from 'react';
+import { X, Plus, Timer, Check } from 'phosphor-react';
+import { addFriendship, removeFriendship } from '../../../actions/account';
+import { toastSuccess } from '../../../util/toast';
+import { gqlMutate, gqlMutateTyped, gqlQueryTyped } from '../../api';
+import Button, { ButtonProps } from '../../common/button/Button';
 import {
 	FriendshipRequest as FriendshipRequestSchema,
 	AcceptFriendshipRequestDocument,
@@ -13,9 +13,9 @@ import {
 	SentFriendshipRequestsToUserDocument,
 	SendFriendshipRequestDocument,
 } from '../../../@types/generated/graphql';
-import {useDispatch, useSelector} from 'react-redux';
-import {useMe} from '../../../util/hooks/useMe';
-import {PublicUserAccount} from '../../../../server/schemas/UserAccount.schema';
+import { useDispatch, useSelector } from 'react-redux';
+import { useMe } from '../../../util/hooks/useMe';
+import { PublicUserAccount } from '../../../../server/schemas/UserAccount.schema';
 
 interface Props {
 	user: PublicUserAccount;
@@ -27,7 +27,7 @@ interface Props {
 export default function FriendshipRequest(props: Props) {
 	const dispatch = useDispatch();
 
-	const {user, fetchData} = props;
+	const { user, fetchData } = props;
 
 	const me = useMe();
 	const friends = useSelector((state: any) => state.account?.friends);
@@ -38,11 +38,16 @@ export default function FriendshipRequest(props: Props) {
 	const [overFriendButton, setOverFriendButton] = useState(false);
 
 	useEffect(() => {
-		getFriendshipRequests(user.id).then(({sentRequest, receivedRequest}) => {
-			setLoading(false);
-			setFriendRequestSent(sentRequest);
-			setFriendRequestReceived(receivedRequest);
-		});
+		getFriendshipRequests(user.id)
+			.then(({ sentRequest, receivedRequest }) => {
+				setLoading(false);
+				setFriendRequestSent(sentRequest);
+				setFriendRequestReceived(receivedRequest);
+			})
+			.catch((error) => {
+				console.error('Failed to fetch friendship requests:', error);
+				setLoading(false);
+			});
 	}, []);
 
 	async function getFriendshipRequests(userId: string) {
@@ -61,11 +66,11 @@ export default function FriendshipRequest(props: Props) {
 		const sentRequest = setReqs && setReqs.length ? setReqs[0] : null;
 		const receivedRequest = requestedReqs && requestedReqs.length ? requestedReqs[0] : null;
 
-		return {sentRequest, receivedRequest};
+		return { sentRequest, receivedRequest };
 	}
 
 	async function friendshipButton() {
-		if (friends[user.id]) {
+		if (friends && friends[user.id]) {
 			await gqlMutate(UnfriendDocument, {
 				targetUserId: user.id,
 			});
@@ -90,7 +95,7 @@ export default function FriendshipRequest(props: Props) {
 			});
 
 			toastSuccess(`Accepted ${user.username}'s friend request`);
-			dispatch(addFriendship(res.data.acceptFriendshipRequest));
+			dispatch(addFriendship(res.data.acceptFriendshipRequest as any));
 
 			setFriendRequestReceived(null);
 			setFriendRequestSent(null);
@@ -113,7 +118,7 @@ export default function FriendshipRequest(props: Props) {
 			gray: true,
 		};
 
-		if (friends[user.id]) {
+		if (friends && friends[user.id]) {
 			friendButtonParams = {
 				text: 'Friends',
 				icon: <Check weight="bold" />,

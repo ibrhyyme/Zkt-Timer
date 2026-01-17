@@ -1,4 +1,4 @@
-import {gql} from '@apollo/client';
+import { gql } from '@apollo/client';
 import {
 	FRIENDSHIP_FRAGMENT,
 	MINI_SOLVE_FRAGMENT,
@@ -6,28 +6,28 @@ import {
 	SETTING_FRAGMENT,
 	STATS_MODULE_BLOCK_FRAGMENT,
 } from '../../util/graphql/fragments';
-import {gqlQuery, removeTypename} from '../api';
-import {initSessionCollection, initSessionDb} from '../../db/sessions/init';
-import {Dispatch} from 'redux';
-import {addFriendships} from '../../actions/account';
-import {clearOfflineData, initOfflineData, updateOfflineHash} from './offline';
-import {initSettingsDb, SettingValue} from '../../db/settings/init';
-import {getDefaultSettings} from '../../db/settings/query';
-import {initLokiDb} from '../../db/lokijs';
-import {initSolveDb, initSolvesCollection} from '../../db/solves/init';
-import {initTrainerData} from '../trainer/util/init';
-import {getNewScramble} from '../timer/helpers/scramble';
-import {Solve} from '../../../server/schemas/Solve.schema';
-import {StatsModule} from '../../../server/schemas/StatsModule.schema';
-import {initStatsModuleStore} from '../../actions/stats';
-import {Session} from '../../../server/schemas/Session.schema';
-import {Setting} from '../../../server/schemas/Setting.schema';
-import {Friendship} from '../../../server/schemas/Friendship.schema';
-import {UserAccount} from '../../../server/schemas/UserAccount.schema';
-import {getAllLocalSettings} from '../../db/settings/local';
-import {getStore} from '../store';
-import {setGeneral} from '../../actions/general';
-import {generateId} from '../../../shared/code';
+import { gqlQuery, removeTypename } from '../api';
+import { initSessionCollection, initSessionDb } from '../../db/sessions/init';
+import { Dispatch } from 'redux';
+import { addFriendships } from '../../actions/account';
+import { clearOfflineData, initOfflineData, updateOfflineHash } from './offline';
+import { initSettingsDb, SettingValue } from '../../db/settings/init';
+import { getDefaultSettings } from '../../db/settings/query';
+import { initLokiDb } from '../../db/lokijs';
+import { initSolveDb, initSolvesCollection } from '../../db/solves/init';
+import { initTrainerData } from '../trainer/util/init';
+import { getNewScramble } from '../timer/helpers/scramble';
+import { Solve } from '../../../server/schemas/Solve.schema';
+import { StatsModule } from '../../../server/schemas/StatsModule.schema';
+import { initStatsModuleStore } from '../../actions/stats';
+import { Session } from '../../../server/schemas/Session.schema';
+import { Setting } from '../../../server/schemas/Setting.schema';
+import { Friendship } from '../../../server/schemas/Friendship.schema';
+import { UserAccount } from '../../../server/schemas/UserAccount.schema';
+import { getAllLocalSettings } from '../../db/settings/local';
+import { getStore } from '../store';
+import { setGeneral } from '../../actions/general';
+import { generateId } from '../../../shared/code';
 
 export function initAnonymousAppData(callback) {
 	if (typeof window === 'undefined') {
@@ -39,6 +39,7 @@ export function initAnonymousAppData(callback) {
 		autosave: false,
 		autosaveInterval: undefined,
 		adapter: undefined,
+		disableAdapter: true, // Demo modunda veri saklanmasın
 	});
 
 	const localSettings = getAllLocalSettings('demo');
@@ -124,7 +125,7 @@ export async function initAllSolves(forceRefresh = false) {
 	`;
 
 	try {
-		const res = await gqlQuery<{solves: Solve[]}>(query);
+		const res = await gqlQuery<{ solves: Solve[] }>(query);
 		const solves = res.data.solves;
 
 		initSolveDb(solves, forceRefresh);
@@ -157,7 +158,7 @@ async function getAllSessions() {
 		}
 	`;
 
-	const res = await gqlQuery<{sessions: Session[]}>(query);
+	const res = await gqlQuery<{ sessions: Session[] }>(query);
 	initSessionDb(res.data.sessions);
 }
 
@@ -174,7 +175,7 @@ async function getStatsModule(disatch: Dispatch<any>) {
 		}
 	`;
 
-	const res = await gqlQuery<{statsModule: StatsModule}>(query);
+	const res = await gqlQuery<{ statsModule: StatsModule }>(query);
 	disatch(initStatsModuleStore(removeTypename(res.data.statsModule)));
 }
 
@@ -189,11 +190,11 @@ async function getAllSettings(userId: string) {
 		}
 	`;
 
-	const backendSettings = (await gqlQuery<{settings: Setting}>(query)).data.settings;
+	const backendSettings = (await gqlQuery<{ settings: Setting }>(query)).data.settings;
 
 	const settings: SettingValue[] = [];
 	const localSettings = getAllLocalSettings(userId);
-	const defaultSettings = {...getDefaultSettings()};
+	const defaultSettings = { ...getDefaultSettings() };
 
 	for (const key of Object.keys(defaultSettings)) {
 		const setting = {
@@ -226,6 +227,6 @@ async function getAllFriends(dispatch) {
 		}
 	`;
 
-	const res = await gqlQuery<{allFriendships: Friendship[]}>(query);
+	const res = await gqlQuery<{ allFriendships: Friendship[] }>(query);
 	return dispatch(addFriendships(res.data.allFriendships));
 }

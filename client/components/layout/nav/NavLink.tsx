@@ -1,9 +1,9 @@
 import React from 'react';
-import {Link} from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Tag from '../../common/tag/Tag';
-import {Lock} from 'phosphor-react';
-import {useMe} from '../../../util/hooks/useMe';
-import {NavLinkProps} from './Nav';
+import { Lock } from 'phosphor-react';
+import { useMe } from '../../../util/hooks/useMe';
+import { NavLinkProps } from './Nav';
 
 interface Props extends NavLinkProps {
 	collapsed?: boolean;
@@ -11,7 +11,7 @@ interface Props extends NavLinkProps {
 }
 
 export default function NavLink(props: Props) {
-	const {name, icon, newTag, loginRequired, collapsed, selected} = props;
+	const { name, icon, newTag, loginRequired, collapsed, selected } = props;
 	let link = props.link;
 
 	const me = useMe();
@@ -23,9 +23,9 @@ export default function NavLink(props: Props) {
 		infoTag = <Tag text="new" textColor="orange" />;
 	}
 
-	if (link === '/' && !me) {
-		link = '/demo';
-	}
+	// if (link === '/' && !me) {
+	// 	link = '/demo';
+	// }
 
 	const wrapperClasses = ['transition-all', 'group', 'rounded'];
 

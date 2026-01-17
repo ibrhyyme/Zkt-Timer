@@ -47,7 +47,7 @@ export const NAV_LINKS: NavLinkProps[] = [
 	{
 		name: 'Timer',
 		icon: <Timer weight="bold" />,
-		match: /(^\/$|^$)|(^\/demo$|^$)/,
+		match: /(^\/$|^$)/,
 		link: '/',
 	},
 	{
@@ -62,12 +62,14 @@ export const NAV_LINKS: NavLinkProps[] = [
 		icon: <ChartPie weight="bold" />,
 		match: /^\/stats/,
 		link: '/stats',
+		loginRequired: true,
 	},
 	{
 		name: 'Topluluk',
 		icon: <Users weight="bold" />,
 		match: /^\/community/,
 		link: '/community/leaderboards',
+		loginRequired: true,
 	},
 	{
 		name: 'Trainer',
@@ -81,6 +83,7 @@ export const NAV_LINKS: NavLinkProps[] = [
 		icon: <ListBullets weight="bold" />,
 		match: /^\/solves/,
 		link: '/solves',
+		loginRequired: false,
 	},
 	{
 		name: 'Sezonlar',

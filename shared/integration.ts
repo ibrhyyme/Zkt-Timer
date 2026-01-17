@@ -1,4 +1,4 @@
-import {resourceUri} from '../client/util/storage';
+import { resourceUri } from '../client/util/storage';
 
 export type IntegrationType = 'wca';
 
@@ -28,7 +28,7 @@ export const LINKED_SERVICES: Record<IntegrationType, LinkedServiceData> = {
 	wca: {
 		id: 'wca',
 		name: 'WCA',
-		description: 'Add a layer of authenticity by adding your WCA account and showing off your official times.',
+		description: 'WCA hesabınızı ekleyerek ve resmi derecelerinizi göstererek güvenilirliği artırın.',
 		logoSrc: resourceUri('/images/logos/wca_logo.svg'),
 		tokenEndpoint: 'https://www.worldcubeassociation.org/oauth/token',
 		revokeEndpoint: 'https://www.worldcubeassociation.org/oauth/revoke',

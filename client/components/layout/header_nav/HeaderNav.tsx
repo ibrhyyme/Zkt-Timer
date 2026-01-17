@@ -35,9 +35,9 @@ function HeaderNavLink(props: HeaderNavLinkProps) {
 	let link = props.link;
 	const me = useMe();
 
-	if (link === '/' && !me) {
-		link = '/demo';
-	}
+	// if (link === '/' && !me) {
+	// 	link = '/demo';
+	// }
 
 	const linkClasses = [
 		'inline-flex',
