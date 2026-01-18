@@ -17,19 +17,21 @@ jobs:
         script: |
           cd /home/ibrahimyldz77/Zkt-Timer
           
-          # 1. Çakışmaları temizle ve GitHub'daki sürümü zorla çek
+          # 1. Yeni kodu çek
           git fetch --all
           git reset --hard origin/main
           
-          # 2. Docker Compose'u başlat
+          # 2. Container'ları yeniden build et ve başlat
+          docker compose build --no-cache app-server
+          docker compose down
           docker compose up -d
           
-          # 3. Build işlemini başlat
-          docker exec zkt-timer-app-server-1 sh -c "yarn build"
+          # 3. İzinleri düzelt
+          sudo chmod -R 755 public/uploads/
           
-          # 4. İzinleri düzelt (Sudo artık şifre istemeyecek)
-          sudo chmod -R 755 dist/ public/
+          # 4. Nginx'i yenile
+          sudo systemctl reload nginx
           
-          # 5. Nginx ve App'i tazele
-          sudo systemctl restart nginx
-          docker compose restart app-server
+          # 5. Container loglarını kontrol et
+          echo "Deployment tamamlandı! Container durumu:"
+          docker compose ps
