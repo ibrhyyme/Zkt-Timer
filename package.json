@@ -204,7 +204,7 @@
 		"cssnano": "^5.1.12",
 		"esbuild": "^0.15.16",
 		"esbuild-sass-plugin": "^2.6.0",
-		"esbuild-style-plugin": "^1.6.0",
+		"esbuild-style-plugin": "^1.6.3",
 		"eslint": "7.14.0",
 		"jest": "^28.1.0",
 		"jest-mock-extended": "^2.0.6",
