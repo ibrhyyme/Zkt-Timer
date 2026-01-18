@@ -2,8 +2,9 @@ services:
   app-server:
     build: .
     container_name: zkt-timer-app-server-1
+    env_file:
+      - .env
     volumes:
-      - .:/app
       - ./public/uploads:/app/public/uploads
     ports:
       - "3000:3000"
@@ -12,13 +13,6 @@ services:
       - NODE_ENV=production
       - HOST=0.0.0.0
       - PORT=3000
-      - DEPLOYING=true
-      - AWS_EC2_METADATA_DISABLED=true
-      - AWS_ACCESS_KEY_ID=null
-      - AWS_SECRET_ACCESS_KEY=null
-      - AWS_REGION=us-east-1
-    # Dosyaları zaten Dockerfile içinde build ettiğimiz için komutu sadeleştiriyoruz
-    command: sh -c "npx prisma migrate deploy && node build/server/app.js"
     depends_on:
       - postgres
       - redis
