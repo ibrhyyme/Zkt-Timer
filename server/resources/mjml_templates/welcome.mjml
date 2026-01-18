@@ -1,0 +1,80 @@
+<mjml>
+	<mj-body>
+		<mj-section>
+			<mj-column>
+				<mj-image
+					href="https://zktimer.app"
+					width="100px"
+					src="https://zktimer.app/public/images/zkt-logo.png"
+				></mj-image>
+
+				<mj-divider border-color="#246bfd"></mj-divider>
+
+				<mj-text font-size="24px" font-weight="bold" color="#246bfd" font-family="helvetica">
+					Hoş Geldin {{user.first_name}}! 🎉
+				</mj-text>
+
+				<mj-text line-height="27px" font-size="18px" color="#444444" font-family="helvetica">
+					Zkt-Timer ailesine katıldığın için çok mutluyuz! Artık dünyanın en gelişmiş Rubik Küp kronometre
+					uygulamasının tüm özelliklerine erişebilirsin.
+				</mj-text>
+
+				<mj-divider border-color="#eeeeee"></mj-divider>
+
+				<mj-text font-size="20px" font-weight="bold" color="#246bfd" font-family="helvetica">
+					✨ Zkt-Timer ile Neler Yapabilirsin?
+				</mj-text>
+
+				<mj-text line-height="24px" font-size="16px" color="#444444" font-family="helvetica">
+					⏱️ <strong>Gelişmiş Kronometre:</strong> Tüm WCA küpleri için özel karıştırma algoritmaları<br/>
+					<br/>
+					📊 <strong>Detaylı İstatistikler:</strong> Ao5, Ao12, Ao100 ve kişisel rekorlarını takip et<br/>
+					<br/>
+					🎮 <strong>1v1 Mücadele:</strong> Arkadaşlarınla canlı yarışmalar yap ve ELO puanı kazan<br/>
+					<br/>
+					👥 <strong>Topluluk:</strong> Liderlik tablolarında yerine gör ve arkadaşlarını takip et<br/>
+					<br/>
+					📚 <strong>Algoritma Eğitimi:</strong> F2L, OLL, PLL ve daha fazlası için eğitim modülleri<br/>
+					<br/>
+					📱 <strong>Akıllı Küp Desteği:</strong> Bluetooth küplerini bağla ve hareketlerini analiz et<br/>
+					<br/>
+					🎨 <strong>Özelleştirme:</strong> Temalar, arka planlar ve kişisel ayarlar
+				</mj-text>
+
+				<mj-divider border-color="#eeeeee"></mj-divider>
+
+				<mj-text font-size="18px" color="#444444" font-family="helvetica">
+					<strong>🚀 Hemen Başla:</strong>
+				</mj-text>
+
+				<mj-button href="https://zktimer.app" background-color="#246bfd" color="#ffffff" font-size="16px">
+					Kronometreyi Başlat
+				</mj-button>
+
+				<mj-text line-height="24px" font-size="14px" color="#666666" font-family="helvetica">
+					💡 <strong>İpucu:</strong> Ayarlar menüsünden uygulamayı kişiselleştirebilir, tercih ettiğin küp
+					tiplerini seçebilir ve bildirim ayarlarını düzenleyebilirsin.
+				</mj:text>
+
+				<mj-divider border-color="#444"></mj-divider>
+
+				<mj-text line-height="24px" font-size="14px" color="#666666" font-family="helvetica">
+					Herhangi bir sorun yaşarsan veya önerilerin varsa bize ulaşmaktan çekinme!
+				</mj-text>
+
+				<mj-text font-size="18px" padding-bottom="0" color="#444444" font-family="helvetica">
+					Bol rekorlar! 🏆<br />
+				</mj-text>
+
+				<mj-text font-size="18px" color="#444444" font-family="helvetica">
+					Zkt-Timer Ekibi
+				</mj-text>
+
+				<mj-text font-size="12px" color="#999999" font-family="helvetica">
+					<a href="https://zktimer.app" style="color: #246bfd;">zktimer.app</a> | 
+					Bu maili almak istemiyor musun? <a href="https://zktimer.app/settings" style="color: #246bfd;">Bildirim ayarlarından</a> değiştirebilirsin.
+				</mj-text>
+			</mj-column>
+		</mj-section>
+	</mj-body>
+</mjml>

@@ -9,12 +9,13 @@ import {
 	updateUserAccount,
 	updateUserAccountPassword,
 } from '../models/user_account';
-import {createSetting} from '../models/settings';
-import {checkLoggedIn, getJwtString} from '../util/auth';
-import {checkPassword} from '../util/password';
-import {createNotificationPreference} from '../models/notification_preference';
-import {GraphQLContext} from '../@types/interfaces/server.interface';
-import {ErrorCode} from '../constants/errors';
+import { sendEmailWithTemplate } from '../services/ses';
+import { createSetting } from '../models/settings';
+import { checkLoggedIn, getJwtString } from '../util/auth';
+import { checkPassword } from '../util/password';
+import { createNotificationPreference } from '../models/notification_preference';
+import { GraphQLContext } from '../@types/interfaces/server.interface';
+import { ErrorCode } from '../constants/errors';
 
 export const gqlQuery = `
 	me: UserAccount!
@@ -28,7 +29,7 @@ export const gqlMutation = `
 `;
 
 export const queryActions = {
-	me: async (a: any, b: any, {user}: GraphQLContext) => {
+	me: async (a: any, b: any, { user }: GraphQLContext) => {
 		return await getUserByIdWithProfile(user.id);
 	},
 };
@@ -49,8 +50,8 @@ type UpdatePasswordInput = {
 export const mutateActions = {
 	createUserAccount: async (
 		_: any,
-		{first_name, last_name, email, username, password}: CreateAccountInput,
-		{req, res}: GraphQLContext
+		{ first_name, last_name, email, username, password }: CreateAccountInput,
+		{ req, res }: GraphQLContext
 	) => {
 		let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
@@ -86,16 +87,29 @@ export const mutateActions = {
 		await createSetting(user);
 		await createNotificationPreference(user);
 
+		// Hoş geldin maili gönder
+		try {
+			await sendEmailWithTemplate(
+				user,
+				'Zkt-Timer\'a Hoş Geldin! 🎉',
+				'welcome',
+				{}
+			);
+		} catch (error) {
+			// Mail gönderimi başarısız olsa bile kayıt işlemi devam etsin
+			console.error('Welcome email could not be sent:', error);
+		}
+
 		const jwt = getJwtString(user);
-		res.cookie('session', jwt, {maxAge: 2147483647, httpOnly: true});
+		res.cookie('session', jwt, { maxAge: 2147483647, httpOnly: true });
 
 		return sanitizeUser(user);
 	},
 
 	updateUserAccount: async (
 		_: any,
-		{first_name, last_name, email, username}: CreateAccountInput,
-		{user}: GraphQLContext
+		{ first_name, last_name, email, username }: CreateAccountInput,
+		{ user }: GraphQLContext
 	) => {
 		checkLoggedIn(user);
 
@@ -132,7 +146,7 @@ export const mutateActions = {
 		return await updateUserAccount(user.id, first_name, last_name, email, username);
 	},
 
-	updateUserPassword: async (_: any, {old_password, new_password}: UpdatePasswordInput, {user}: GraphQLContext) => {
+	updateUserPassword: async (_: any, { old_password, new_password }: UpdatePasswordInput, { user }: GraphQLContext) => {
 		checkLoggedIn(user);
 
 		const goodPass = await checkPassword(old_password, user.password);
@@ -143,7 +157,7 @@ export const mutateActions = {
 		return await updateUserAccountPassword(user.id, new_password);
 	},
 
-	deleteUserAccount: async (_: any, params: any, {user}: GraphQLContext) => {
+	deleteUserAccount: async (_: any, params: any, { user }: GraphQLContext) => {
 		checkLoggedIn(user);
 
 		try {
