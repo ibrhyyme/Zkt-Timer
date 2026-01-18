@@ -2,11 +2,34 @@
 	<mj-body>
 		<mj-section>
 			<mj-column>
-				<mj-image width="100px" src="/assets/img/logo-small.png"></mj-image>
+				<mj-image
+					href="https://zktimer.app"
+					width="80px"
+					src="https://zktimer.app/public/images/zkt-logo.png"
+				></mj-image>
 
-				<mj-divider border-color="#F45E43"></mj-divider>
+				<mj-divider border-color="#444"></mj-divider>
 
-				<mj-text font-size="20px" color="#F45E43" font-family="helvetica">Hello World</mj-text>
+				<mj-text font-size="20px" color="#444444" font-family="helvetica">Merhaba {{user.first_name}},</mj-text>
+				<mj-text line-height="27px" font-size="20px" color="#444444" font-family="helvetica"
+					>Arkadaşın {{friend.username}} yeni bir rekor kırdı!</mj-text
+				>
+				<mj-text
+					font-weight="bold"
+					font-size="20px"
+					color="#246bfd"
+					text-decoration="underline"
+					font-family="helvetica"
+				>
+					<a font-weight="700" href="{{link}}">Rekoru Görüntüle</a>
+				</mj-text>
+				<mj-divider border-color="#444"></mj-divider>
+
+				<mj-text font-size="20px" padding-bottom="0" color="#444444" font-family="helvetica"
+					>Sevgiler,<br />
+				</mj-text>
+
+				<mj-text font-size="20px" color="#444444" font-family="helvetica">Zkt-Timer Ekibi</mj-text>
 			</mj-column>
 		</mj-section>
 	</mj-body>

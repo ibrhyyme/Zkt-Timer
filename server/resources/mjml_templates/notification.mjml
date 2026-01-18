@@ -3,14 +3,14 @@
 		<mj-section>
 			<mj-column>
 				<mj-image
-					href="https://www.zkt-timer.io"
-					width="200px"
-					src="https://zktimer.app/storage/logo_text_black.png"
+					href="https://zktimer.app"
+					width="80px"
+					src="https://zktimer.app/public/images/zkt-logo.png"
 				></mj-image>
 
 				<mj-divider border-color="#444"></mj-divider>
 
-				<mj-text font-size="20px" color="#444444" font-family="helvetica">Hey {{user.first_name}},</mj-text>
+				<mj-text font-size="20px" color="#444444" font-family="helvetica">Merhaba {{user.first_name}},</mj-text>
 				<mj-text line-height="27px" font-size="20px" color="#444444" font-family="helvetica"
 					>{{message}}</mj-text
 				>
@@ -26,10 +26,10 @@
 				<mj-divider border-color="#444"></mj-divider>
 
 				<mj-text font-size="20px" padding-bottom="0" color="#444444" font-family="helvetica"
-					>Cheers,<br />
+					>Sevgiler,<br />
 				</mj-text>
 
-				<mj-text font-size="20px" color="#444444" font-family="helvetica">Team Zkt-Timer</mj-text>
+				<mj-text font-size="20px" color="#444444" font-family="helvetica">Zkt-Timer Ekibi</mj-text>
 			</mj-column>
 		</mj-section>
 	</mj-body>
