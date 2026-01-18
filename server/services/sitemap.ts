@@ -5,7 +5,6 @@ import { getPrisma } from '../database';
 import process from 'process';
 import { PageContext, routes } from '../../client/components/layout/Routes';
 import { uploadObject } from './storage';
-import { invalidateCloudFrontCache } from './cloudfront';
 import { logger } from './logger';
 
 const SITEMAP_REDIS_KEY = createRedisKey(RedisNamespace.SITEMAP);
@@ -56,7 +55,7 @@ export async function initSiteMapGeneration() {
 
 	const allSiteMapUrls = [defaultSiteMapUrl, ...profileSiteMapUrls];
 	await writeSiteMapIndices(allSiteMapUrls);
-	await invalidateSiteMapCache();
+	// Cache invalidation removed - not needed for local storage
 
 	deleteLocalSiteMapSchemasFolder();
 
@@ -64,20 +63,6 @@ export async function initSiteMapGeneration() {
 	logger.info('Generated sitemap', {
 		timeToGenerateSeconds: (endTime - startTime) / 1000,
 	});
-}
-
-async function invalidateSiteMapCache() {
-	try {
-		const res = await invalidateCloudFrontCache([SITEMAP_S3_PATH + '/*']);
-
-		logger.info('Invalidated CloudFront cache', {
-			location: res.Location,
-		});
-	} catch (e) {
-		logger.warn('Could not invalidate CloudFront cache', {
-			error: e,
-		});
-	}
 }
 
 function createLocalSiteMapSchemasFolder() {

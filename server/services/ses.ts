@@ -1,12 +1,13 @@
-import {SendEmailResponse, SES} from '@aws-sdk/client-ses';
+import { Resend } from 'resend';
 import path from 'path'
 import fs from 'fs';
 import Handlebars from 'handlebars';
 import mjml2html from 'mjml';
-import {createEmailLog} from '../models/email_log';
-import {UserAccount} from '../schemas/UserAccount.schema';
+import { createEmailLog } from '../models/email_log';
+import { UserAccount } from '../schemas/UserAccount.schema';
 
-const ses = new SES({region: 'us-west-2'});
+// Resend client initialization
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 type MjmlTemplate = {
 	[key: string]: string
@@ -28,7 +29,7 @@ export function initMjmlTemplates(): void {
 	});
 }
 
-export async function sendEmailWithTemplate(user: UserAccount, subject: string, template: string, vars: EmailTemplateVars): Promise<SendEmailResponse> {
+export async function sendEmailWithTemplate(user: UserAccount, subject: string, template: string, vars: EmailTemplateVars): Promise<any> {
 	let variables = vars || {};
 	const source = mjmlTemplates[template];
 
@@ -51,21 +52,17 @@ async function sendEmail(email: string, subject: string, body: string) {
 		content = body.join('<br/>');
 	}
 
-	const sesParams = {
-		Destination: {
-			ToAddresses: [email],
-		},
-		Message: {
-			Body: {
-				Html: {
-					Data: content,
-				},
-			},
+	try {
+		const data = await resend.emails.send({
+			from: 'Zkt-Timer <noreply@zktimer.app>',
+			to: [email],
+			subject: subject,
+			html: content,
+		});
 
-			Subject: {Data: subject},
-		},
-		Source: 'Zkt-Timer <noreply@zkt-timer.io>',
-	};
-
-	return ses.sendEmail(sesParams);
+		return data;
+	} catch (error) {
+		console.error('Error sending email with Resend:', error);
+		throw error;
+	}
 }
