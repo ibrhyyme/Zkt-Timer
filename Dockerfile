@@ -31,10 +31,7 @@ RUN yarn install --production=false
 COPY . .
 
 # Build işlemleri (Prisma ve frontend derleme)
-RUN npx prisma generate && \
-    npx graphql-codegen && yarn build
-
-# AWS S3'e yükleme yapan satırlar tamamen kaldırıldı
+RUN npx prisma generate && yarn deploy
 
 # Gereksiz dosyaların temizlenmesi ve klasör düzenleme
 RUN find ./dist -name "*.map" -type f -delete 

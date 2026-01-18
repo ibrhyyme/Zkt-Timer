@@ -18,7 +18,7 @@ services:
       - AWS_SECRET_ACCESS_KEY=null
       - AWS_REGION=us-east-1
     # Dosyaları zaten Dockerfile içinde build ettiğimiz için komutu sadeleştiriyoruz
-    command: sh -c "npx prisma migrate deploy && yarn server"
+    command: sh -c "npx prisma migrate deploy && node build/server/app.js"
     depends_on:
       - postgres
       - redis
