@@ -5,7 +5,7 @@
 				<mj-image
 					href="https://www.zkt-timer.io"
 					width="200px"
-					src="https://cdn.zkt-timer.io/storage/logo_text_black.png"
+					src="https://zktimer.app/storage/logo_text_black.png"
 				></mj-image>
 
 				<mj-divider border-color="#444"></mj-divider>

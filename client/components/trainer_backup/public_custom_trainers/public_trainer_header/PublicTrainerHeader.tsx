@@ -1,9 +1,9 @@
 import React from 'react';
 import './PublicTrainerHeader.scss';
-import {ArrowLeft} from 'phosphor-react';
+import { ArrowLeft } from 'phosphor-react';
 import block from '../../../../styles/bem';
 import LinkButton from '../../../common/button/LinkButton';
-import {CommonType} from '../../../common/button/Button';
+import { CommonType } from '../../../common/button/Button';
 
 const b = block('public-trainer-header');
 
@@ -27,7 +27,7 @@ export default function PublicTrainerHeader() {
 			<img
 				alt="Floating Rubik's cube"
 				className={b('background')}
-				src="https://cdn.zkt-timer.io/storage/public_trainer_header.jpg"
+				src="https://zktimer.app/storage/public_trainer_header.jpg"
 			/>
 		</div>
 	);

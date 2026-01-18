@@ -1,12 +1,12 @@
-import {Profile} from '../schemas/Profile.schema';
+import { Profile } from '../schemas/Profile.schema';
 import fs from 'fs';
-import {acquireRedisLock, createRedisKey, RedisNamespace} from './redis';
-import {getPrisma} from '../database';
+import { acquireRedisLock, createRedisKey, RedisNamespace } from './redis';
+import { getPrisma } from '../database';
 import process from 'process';
-import {PageContext, routes} from '../../client/components/layout/Routes';
-import {uploadObject} from './storage';
-import {invalidateCloudFrontCache} from './cloudfront';
-import {logger} from './logger';
+import { PageContext, routes } from '../../client/components/layout/Routes';
+import { uploadObject } from './storage';
+import { invalidateCloudFrontCache } from './cloudfront';
+import { logger } from './logger';
 
 const SITEMAP_REDIS_KEY = createRedisKey(RedisNamespace.SITEMAP);
 const SITEMAP_SCHEMAS_DIR = __dirname + '/sitemap_schemas';
@@ -88,7 +88,7 @@ function createLocalSiteMapSchemasFolder() {
 
 function deleteLocalSiteMapSchemasFolder() {
 	if (fs.existsSync(SITEMAP_SCHEMAS_DIR)) {
-		fs.rmSync(SITEMAP_SCHEMAS_DIR, {recursive: true, force: true});
+		fs.rmSync(SITEMAP_SCHEMAS_DIR, { recursive: true, force: true });
 	}
 }
 
@@ -137,7 +137,7 @@ async function uploadSiteMapToS3(fileName: string) {
 		});
 	}
 
-	return `https://cdn.zkt-timer.io/${cdnPath}`;
+	return `https://zktimer.app/${cdnPath}`;
 }
 
 function getDefaultSiteMapUrls() {
