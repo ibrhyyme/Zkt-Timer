@@ -8,7 +8,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-    - name: Deploy to GCP via SSH
+    - name: Deploy to GCP
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.REMOTE_HOST }}
@@ -17,18 +17,19 @@ jobs:
         script: |
           cd /home/ibrahimyldz77/Zkt-Timer
           
-          # 1. Yeni kodları çek (Sadece kod değişir, .env korunur)
-          git pull origin main
+          # 1. Çakışmaları temizle ve GitHub'daki sürümü zorla çek
+          git fetch --all
+          git reset --hard origin/main
           
-          # 2. Docker Compose'u güncelle (Eğer yml dosyası değiştiyse)
-          sudo docker compose up -d --remove-orphans
+          # 2. Docker Compose'u başlat
+          docker compose up -d
           
-          # 3. Konteyner içinde build işlemini başlat (Kek fırına veriliyor)
-          # Servis adının 'app-server' olduğundan emin ol
-          sudo docker exec zkt-timer-app-server-1 sh -c "yarn build"
+          # 3. Build işlemini başlat
+          docker exec zkt-timer-app-server-1 sh -c "yarn build"
           
-          # 4. Dosya izinlerini tazele (Nginx'in okuyabilmesi için)
+          # 4. İzinleri düzelt (Sudo artık şifre istemeyecek)
           sudo chmod -R 755 dist/ public/
           
-          # 5. Uygulamayı yeni dosyalarla başlat
-          sudo docker compose restart app-server
+          # 5. Nginx ve App'i tazele
+          sudo systemctl restart nginx
+          docker compose restart app-server
