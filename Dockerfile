@@ -26,13 +26,13 @@ ENV SENTRY_ENVIRONMENT=\$ENV
 ENV NODE_ENV=production
 
 COPY package.json yarn.lock ./
-RUN yarn --frozen-lockfile
+RUN yarn install --production=false
 
 COPY . .
 
 # Build işlemleri (Prisma ve frontend derleme)
 RUN npx prisma generate && \
-    yarn build
+    npx graphql-codegen && yarn build
 
 # AWS S3'e yükleme yapan satırlar tamamen kaldırıldı
 
@@ -40,7 +40,7 @@ RUN npx prisma generate && \
 RUN find ./dist -name "*.map" -type f -delete 
 
 # Production için temizlik
-RUN npm prune --production
+RUN npm prune --production --legacy-peer-deps
 
 FROM node:20.19-slim
 ENV NODE_ENV=production
@@ -52,4 +52,3 @@ COPY --from=builder /app /app
 
 EXPOSE 3000
 # Not: docker-compose içinde bu komutu ezebiliriz veya buna güvenebiliriz
-ENTRYPOINT ["yarn", "server"]
