@@ -39,9 +39,6 @@ RUN npx prisma generate && \
 # Gereksiz dosyaların temizlenmesi ve klasör düzenleme
 RUN find ./dist -name "*.map" -type f -delete 
 
-# Production için temizlik
-RUN npm prune --production --legacy-peer-deps
-
 FROM node:20.19-slim
 ENV NODE_ENV=production
 RUN apt-get update && \
