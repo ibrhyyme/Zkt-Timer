@@ -8518,7 +8518,7 @@ esbuild-sass-plugin@^2.6.0:
     resolve "^1.22.6"
     sass "^1.7.3"
 
-esbuild-style-plugin@^1.6.0:
+esbuild-style-plugin@^1.6.3:
   version "1.6.3"
   resolved "https://registry.yarnpkg.com/esbuild-style-plugin/-/esbuild-style-plugin-1.6.3.tgz#123c994047f1393bee6896c1c37bd4f1942c425f"
   integrity sha512-XPEKf4FjLjEVLv/dJH4UxDzXCrFHYpD93DBO8B+izdZARW5b7nNKQbnKv3J+7VDWJbgCU+hzfgIh2AuIZzlmXQ==
