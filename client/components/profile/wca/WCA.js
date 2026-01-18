@@ -2,9 +2,9 @@ import React from 'react';
 import './WCA.scss';
 import LinkButton from '../../common/button/LinkButton';
 import Emblem from '../../common/emblem/Emblem';
-import {gql} from '@apollo/client';
-import {Check} from 'phosphor-react';
-import {gqlQuery} from '../../api';
+import { gql } from '@apollo/client';
+import { Check } from 'phosphor-react';
+import { gqlQuery } from '../../api';
 
 export default class WCA extends React.Component {
 	constructor(props) {
@@ -46,8 +46,8 @@ export default class WCA extends React.Component {
 	};
 
 	render() {
-		const {wcaMe} = this.state;
-		const {myProfile, user} = this.props;
+		const { wcaMe } = this.state;
+		const { myProfile, user } = this.props;
 		const wcaInt = WCA.getWcaIntegration(user);
 
 		let body;
@@ -62,7 +62,7 @@ export default class WCA extends React.Component {
 			}
 		} else if (myProfile) {
 			const redirectUri = window.location.origin + '/oauth/wca';
-			const clientId = 'sMMsypt_sP1zDaRv6Cx45XKtDI16QobZ3MiDqEjtFC4'; // Must match WCA_CLIENT_ID from .docker.env
+			const clientId = 'wY1dbmwDjPLkRtZVzLJXAcIGWkap1QNbVnuK-ulkDSY'; // Must match WCA_CLIENT_ID from .docker.env
 			const u = new URL('https://www.worldcubeassociation.org/oauth/authorize');
 			u.searchParams.set('client_id', clientId);
 			u.searchParams.set('redirect_uri', redirectUri);

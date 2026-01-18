@@ -34,7 +34,7 @@ export const LINKED_SERVICES: Record<IntegrationType, LinkedServiceData> = {
 		revokeEndpoint: 'https://www.worldcubeassociation.org/oauth/revoke',
 		authEndpoint: 'https://www.worldcubeassociation.org/oauth/authorize',
 		meEndpoint: 'https://www.worldcubeassociation.org/api/v0/me',
-		clientId: 'sMMsypt_sP1zDaRv6Cx45XKtDI16QobZ3MiDqEjtFC4', // Updated to match .docker.env
+		clientId: 'wY1dbmwDjPLkRtZVzLJXAcIGWkap1QNbVnuK-ulkDSY', // Updated to match .docker.env
 		responseType: 'code',
 		scope: ['public'],
 	},
