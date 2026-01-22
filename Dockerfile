@@ -64,6 +64,13 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/schema.prisma ./schema.prisma
 
+# KRITIK: Server kodu, runtime'da 'client/util/algorithms' klasörüne ihtiyaç duyuyor.
+# Bu yüzden derlenmiş client kodunu (build/client) değil, orijinal client kaynak kodunun bir kısmını da kopyalamalıyız.
+# Ancak build edilen server dosyasının içinde require yolu '../../../client/...' şeklindedir.
+# Bu yapıya uymak için 'client' klasörünü oluşturup içine gerekli dosyaları koymalıyız.
+# Not: 'build/client' zaten derlenmiş JS dosyalarıdır, server bunları kullanabilir.
+COPY --from=builder /app/build/client ./client
+
 EXPOSE 3000
 
 # ts-node yerine derlenmiş JS kodunu çalıştırıyoruz
