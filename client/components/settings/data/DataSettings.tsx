@@ -1,18 +1,18 @@
-import React, {useState} from 'react';
-import {CaretDown} from 'phosphor-react';
-import {useDispatch} from 'react-redux';
-import ImportData, {ImportDataType} from './import_data/ImportData';
+import React, { useState } from 'react';
+import { CaretDown } from 'phosphor-react';
+import { useDispatch } from 'react-redux';
+import ImportData, { ImportDataType } from './import_data/ImportData';
 import fileDownload from 'js-file-download';
-import {gql} from '@apollo/client/core';
-import {gqlMutate, removeTypename} from '../../api';
-import {openModal} from '../../../actions/general';
-import {fetchSessions} from '../../../db/sessions/query';
-import {fetchSolves} from '../../../db/solves/query';
-import {toastError, toastSuccess} from '../../../util/toast';
+import { gql } from '@apollo/client/core';
+import { gqlMutate, removeTypename } from '../../api';
+import { openModal } from '../../../actions/general';
+import { fetchSessions } from '../../../db/sessions/query';
+import { fetchSolves } from '../../../db/solves/query';
+import { toastError, toastSuccess } from '../../../util/toast';
 import SettingRow from '../setting/row/SettingRow';
 import Dropdown from '../../common/inputs/dropdown/Dropdown';
-import Button, {CommonType} from '../../common/button/Button';
-import {clearOfflineData} from '../../layout/offline';
+import Button, { CommonType } from '../../common/button/Button';
+import { clearOfflineData } from '../../layout/offline';
 
 export default function DataSettings() {
 	const dispatch = useDispatch();
@@ -52,10 +52,10 @@ export default function DataSettings() {
 	async function exportData() {
 		setExportingData(true);
 
-		const sessions = fetchSessions().map((s) => removeTypename({...s}, true));
+		const sessions = fetchSessions().map((s) => removeTypename({ ...s }, true));
 		const solves = fetchSolves({
 			from_timer: true,
-		}).map((s) => removeTypename({...s}, true));
+		}).map((s) => removeTypename({ ...s }, true));
 
 		const data = JSON.stringify({
 			sessions,
@@ -91,8 +91,8 @@ export default function DataSettings() {
 					text="Veri içe aktar"
 					icon={<CaretDown weight="bold" />}
 					options={[
-						{text: 'csTimer\'dan içe aktar', onClick: () => openImportModal(ImportDataType.CS_TIMER)},
-						{text: 'CubeDesk\'den içe aktar', onClick: () => openImportModal(ImportDataType.CUBEDESK)},
+						{ text: 'csTimer\'dan içe aktar', onClick: () => openImportModal(ImportDataType.CS_TIMER) },
+						{ text: 'Zkt-Timer Yedekten içe aktar', onClick: () => openImportModal(ImportDataType.CUBEDESK) },
 					]}
 				/>
 			</SettingRow>

@@ -79,6 +79,11 @@ model UserAccount {
   user_feature_state            UserFeatureState?
   wca_records                   WcaRecord[]
 
+  // Friendly Room relations
+  friendly_rooms_created        FriendlyRoom[]            @relation("friendly_room_creator")
+  friendly_room_participations  FriendlyRoomParticipant[]
+  friendly_room_chat_messages   FriendlyRoomChat[]        @relation("friendly_room_chat_user")
+
   @@map("user_account")
 }
 
@@ -883,3 +888,102 @@ enum GameType {
 enum MetricLogType {
   DELETE_USER_ACCOUNT
 }
+
+// ==========================================
+// FRIENDLY ROOMS - Dostluk Odaları Sistemi
+// ==========================================
+
+enum FriendlyRoomStatus {
+  WAITING
+  ACTIVE
+  CLOSED
+}
+
+model FriendlyRoom {
+  id               String                    @id @default(uuid())
+  name             String
+  password         String?
+  cube_type        String                    @default("333")
+  max_players      Int                       @default(8)
+  created_by_id    String
+  is_private       Boolean                   @default(false)
+  current_scramble String?
+  scramble_index   Int                       @default(0)
+  status           FriendlyRoomStatus        @default(WAITING)
+  created_at       DateTime                  @default(now())
+  updated_at       DateTime                  @updatedAt
+
+  created_by       UserAccount               @relation("friendly_room_creator", fields: [created_by_id], references: [id], onDelete: Cascade)
+  participants     FriendlyRoomParticipant[]
+  solves           FriendlyRoomSolve[]
+  chat_messages    FriendlyRoomChat[]
+
+  @@index([created_by_id])
+  @@index([status])
+  @@map("friendly_room")
+}
+
+model FriendlyRoomParticipant {
+  id           String              @id @default(uuid())
+  room_id      String
+  user_id      String
+  is_ready     Boolean             @default(false)
+  is_spectator Boolean             @default(false)
+  joined_at    DateTime            @default(now())
+
+  room      FriendlyRoom        @relation(fields: [room_id], references: [id], onDelete: Cascade)
+  user      UserAccount         @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  solves    FriendlyRoomSolve[]
+
+  @@unique([room_id, user_id])
+  @@index([room_id])
+  @@index([user_id])
+  @@map("friendly_room_participant")
+}
+
+model FriendlyRoomSolve {
+  id             String                  @id @default(uuid())
+  room_id        String
+  participant_id String
+  scramble_index Int
+  time           Float
+  dnf            Boolean                 @default(false)
+  plus_two       Boolean                 @default(false)
+  created_at     DateTime                @default(now())
+
+  room           FriendlyRoom            @relation(fields: [room_id], references: [id], onDelete: Cascade)
+  participant    FriendlyRoomParticipant @relation(fields: [participant_id], references: [id], onDelete: Cascade)
+
+  @@index([room_id])
+  @@index([participant_id])
+  @@index([scramble_index])
+  @@map("friendly_room_solve")
+}
+
+model FriendlyRoomChat {
+  id         String       @id @default(uuid())
+  room_id    String
+  user_id    String
+  message    String
+  created_at DateTime     @default(now())
+
+  room       FriendlyRoom @relation(fields: [room_id], references: [id], onDelete: Cascade)
+  user       UserAccount  @relation("friendly_room_chat_user", fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([room_id])
+  @@index([user_id])
+  @@map("friendly_room_chat")
+}
+
+model FriendlyRoomBan {
+  id         String       @id @default(uuid())
+  room_id    String
+  user_id    String
+  banned_at  DateTime     @default(now())
+
+  @@unique([room_id, user_id])
+  @@index([room_id])
+  @@index([user_id])
+  @@map("friendly_room_ban")
+}
+

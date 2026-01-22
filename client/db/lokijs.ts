@@ -39,7 +39,7 @@ export function initLokiDb(op?: ExtendedLokiConfigOptions) {
 		options = _.omitBy(options, _.isNil);
 	}
 
-	db = new Loki('cubedesk.db', options);
+	db = new Loki('zkttimer.db', options);
 }
 
 export function getLokiDb() {

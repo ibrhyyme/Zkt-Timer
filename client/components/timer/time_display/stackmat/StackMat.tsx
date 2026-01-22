@@ -1,9 +1,9 @@
-import React, {useContext, useEffect, useRef, useState} from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import StartInstructions from '../start_instructions/StartInstructions';
-import {ITimerContext, TimerContext} from '../../Timer';
-import {useSettings} from '../../../../util/hooks/useSettings';
+import { ITimerContext, TimerContext } from '../../Timer';
+import { useSettings } from '../../../../util/hooks/useSettings';
 import Stackmat from '../../../../util/vendor/stackmat';
-import {endTimer, startTimer} from '../../helpers/events';
+import { endTimer, startTimer } from '../../helpers/events';
 
 export default function StackMat() {
 	const stackMatId = useSettings('stackmat_id');
@@ -64,7 +64,7 @@ export default function StackMat() {
 
 	return (
 		<StartInstructions>
-			Place hands on <span>StackMat</span> to start
+			Başlamak için ellerinizi <span>StackMat</span> üzerine koyun
 		</StartInstructions>
 	);
 }

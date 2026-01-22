@@ -79,6 +79,14 @@
 		position: relative;
 		transform: translateY(20px) scale(0.95);
 		box-sizing: border-box;
+
+		// When noPadding is used, make wrapper transparent so child can define its own styling
+		&[style*="padding: 0"] {
+			background: transparent !important;
+			border: none !important;
+			box-shadow: none !important;
+			backdrop-filter: none !important;
+		}
 	}
 
 	&__close-button {

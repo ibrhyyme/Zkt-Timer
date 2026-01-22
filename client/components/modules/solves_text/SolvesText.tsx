@@ -1,15 +1,15 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import './SolvesText.scss';
 import block from '../../../styles/bem';
-import {Download} from 'phosphor-react';
-import Button, {CommonType} from '../../common/button/Button';
+import { Download } from 'phosphor-react';
+import Button, { CommonType } from '../../common/button/Button';
 import CopyText from '../../common/copy_text/CopyText';
 import dayjs from 'dayjs';
-import {getTimeString} from '../../../util/time';
+import { getTimeString } from '../../../util/time';
 import Checkbox from '../../common/checkbox/Checkbox';
 import fileDownload from 'js-file-download';
-import {getCubeTypeName} from '../../../util/cubes/util';
-import {Solve} from '../../../../server/schemas/Solve.schema';
+import { getCubeTypeName } from '../../../util/cubes/util';
+import { Solve } from '../../../../server/schemas/Solve.schema';
 
 const b = block('solves-text');
 
@@ -21,7 +21,7 @@ interface Props {
 }
 
 export default function SolvesText(props: Props) {
-	const {solves, reverseOrder, description, time} = props;
+	const { solves, reverseOrder, description, time } = props;
 
 	const [includeScramble, setIncludeScramble] = useState(true);
 	const [wrapText, setWrapText] = useState(false);
@@ -90,7 +90,7 @@ export default function SolvesText(props: Props) {
 		const lines = [keys.join(','), ...getSolveRows(true)];
 
 		const encodedUri = lines.join('\r\n');
-		const filename = `cubedesk_${fileName}.csv`;
+		const filename = `zkttimer_${fileName}.csv`;
 
 		fileDownload(encodedUri, filename);
 	}
@@ -136,7 +136,7 @@ export default function SolvesText(props: Props) {
 					/>
 					<Checkbox text="Metni kaydır" onChange={() => setWrapText(!wrapText)} checked={wrapText} />
 				</div>
-				<div className={b('text', {wrapText})}>{solvesText}</div>
+				<div className={b('text', { wrapText })}>{solvesText}</div>
 			</div>
 			<div className={b('actions')}>
 				<CopyText

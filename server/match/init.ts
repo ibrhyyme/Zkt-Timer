@@ -1,18 +1,19 @@
-import {Server, Socket} from 'socket.io';
-import {genericIoListen} from './match_types/generic';
-import {getRedisPubClient, getRedisSubClient} from '../services/redis';
+import { Server, Socket } from 'socket.io';
+import { genericIoListen } from './match_types/generic';
+import { getRedisPubClient, getRedisSubClient } from '../services/redis';
 import Elimination from './match_types/elimination';
 import MatchTypeLogic from './match_types/match_type_interface';
 import HeadToHead from './match_types/head_to_head';
-import {createAdapter} from '@socket.io/redis-adapter';
-import {ClientToServerEvents, ServerToClientEvents} from '../../shared/match/socketio.types';
-import {Match} from '../schemas/Match.schema';
-import {listenForSolveEvents} from './listeners/solve_events';
-import {listenForJoinEvents} from './listeners/join_events';
-import {listenForLeaveEvents} from './listeners/leave_events';
-import {listenForChatEvents} from './listeners/chat_events';
-import {GameType} from '../../shared/match/consts';
-import {listenForHeartbeatEvent} from './listeners/heartbeat';
+import { createAdapter } from '@socket.io/redis-adapter';
+import { ClientToServerEvents, ServerToClientEvents } from '../../shared/match/socketio.types';
+import { Match } from '../schemas/Match.schema';
+import { listenForSolveEvents } from './listeners/solve_events';
+import { listenForJoinEvents } from './listeners/join_events';
+import { listenForLeaveEvents } from './listeners/leave_events';
+import { listenForChatEvents } from './listeners/chat_events';
+import { GameType } from '../../shared/match/consts';
+import { listenForHeartbeatEvent } from './listeners/heartbeat';
+import { listenForFriendlyRoomEvents } from '../friendly_room';
 
 export type SocketClient = Socket<ClientToServerEvents, ServerToClientEvents>;
 let io: Server<ClientToServerEvents, ServerToClientEvents>;
@@ -46,6 +47,9 @@ export function initSocket(server) {
 		listenForJoinEvents(client);
 		listenForLeaveEvents(client);
 		listenForChatEvents(client);
+
+		// Friendly Room events
+		listenForFriendlyRoomEvents(client);
 	});
 }
 

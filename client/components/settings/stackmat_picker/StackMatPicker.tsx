@@ -1,21 +1,21 @@
-import React, {useEffect, useState} from 'react';
-import {CaretDown} from 'phosphor-react';
-import {setSetting} from '../../../db/settings/update';
+import React, { useEffect, useState } from 'react';
+import { CaretDown } from 'phosphor-react';
+import { setSetting } from '../../../db/settings/update';
 import Dropdown from '../../common/inputs/dropdown/Dropdown';
-import {useSettings} from '../../../util/hooks/useSettings';
+import { useSettings } from '../../../util/hooks/useSettings';
 import Button from '../../common/button/Button';
-import {IModalProps} from '../../common/modal/Modal';
+import { IModalProps } from '../../common/modal/Modal';
 import ModalHeader from '../../common/modal/modal_header/ModalHeader';
 
 export default function StackMatPicker(props: IModalProps) {
-	const {onComplete} = props;
+	const { onComplete } = props;
 
 	const stackMatId = useSettings('stackmat_id');
 	const [selectedStackMatId, setSelectedStackMatId] = useState(stackMatId);
 	const [options, setOptions] = useState<MediaDeviceInfo[]>([]);
 	const [error, setError] = useState();
 
-	useEffect(() => {
+	function loadDevices() {
 		if (
 			typeof navigator === 'undefined' ||
 			!navigator ||
@@ -48,7 +48,23 @@ export default function StackMatPicker(props: IModalProps) {
 			.catch((err) => {
 				setError(err.message);
 			});
+	}
+
+	useEffect(() => {
+		loadDevices();
 	}, []);
+
+	function requestPermission() {
+		navigator.mediaDevices
+			.getUserMedia({ audio: true })
+			.then((stream) => {
+				stream.getTracks().forEach((track) => track.stop());
+				loadDevices();
+			})
+			.catch((err) => {
+				setError(err.message);
+			});
+	}
 
 	function getStackMatFromId(id: string): MediaDeviceInfo {
 		let stackMat = null;
@@ -109,7 +125,10 @@ export default function StackMatPicker(props: IModalProps) {
 					}))}
 				/>
 			</div>
-			<Button large glow text="Kaydet" primary disabled={disabled} onClick={saveSelectedAudio} error={error} />
+			<div className="flex gap-2">
+				<Button large glow text="Kaydet" primary disabled={disabled} onClick={saveSelectedAudio} error={error} />
+				<Button large text="İzin İste" onClick={requestPermission} />
+			</div>
 		</div>
 	);
 }

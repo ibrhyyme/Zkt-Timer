@@ -7,6 +7,7 @@ import { setGeneral } from '../../../actions/general';
 import {
 	ArrowLeft,
 	Sword,
+	Handshake,
 	ChartPie,
 	LadderSimple,
 	Users,
@@ -55,6 +56,13 @@ export const NAV_LINKS: NavLinkProps[] = [
 		icon: <Sword weight="bold" />,
 		match: /^\/play/,
 		link: '/play',
+		loginRequired: true,
+	},
+	{
+		name: 'Odalar',
+		icon: <Handshake weight="bold" />,
+		match: /^\/rooms/,
+		link: '/rooms',
 		loginRequired: true,
 	},
 	{

@@ -37,8 +37,8 @@ import DefaultTimer from '../timer/DefaultTimer';
 import AdminUsers from '../admin/users/AdminUsers';
 import UnsubEmails from '../unsub/UnsubEmails';
 import EloBoard from '../community/EloBoard';
-
-// LandingHome import kaldırıldı çünkü dosya veya tip bildirimi bulunamadı.
+import RoomsList from '../rooms/RoomsList';
+import FriendlyRoom from '../rooms/FriendlyRoom';
 
 interface PageOptions {
 	restricted: boolean;
@@ -146,6 +146,10 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/play/elimination/:linkCode', App, PlayWrapper, Elimination),
 	route('/play/head-to-head', App, PlayWrapper, HeadToHead),
 	route('/play/head-to-head/:linkCode', App, PlayWrapper, HeadToHead),
+
+	// Friendly Rooms
+	route('/rooms', null, App, RoomsList, false),
+	route('/rooms/:roomId', null, App, FriendlyRoom, false),
 
 	// Admin
 	route('/admin/reports', App, Admin, Reports, true, false, true),

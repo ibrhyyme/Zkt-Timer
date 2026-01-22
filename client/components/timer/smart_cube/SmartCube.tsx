@@ -16,7 +16,7 @@ import { useDispatch } from 'react-redux';
 import Dropdown from '../../common/inputs/dropdown/Dropdown';
 import Button from '../../common/button/Button';
 import { toastError } from '../../../util/toast';
-import { endTimer, startTimer } from '../helpers/events';
+import { endTimer, startTimer, startInspection } from '../helpers/events';
 import BluetoothErrorMessage from '../common/BluetoothErrorMessage';
 
 const b = block('smart-cube');
@@ -40,6 +40,7 @@ export default function SmartCube() {
 	const [inspectionTime, setInspectionTime] = useState(0);
 
 	const useSpaceWithSmartCube = useSettings('use_space_with_smart_cube');
+	const inspectionEnabled = useSettings('inspection');
 	const {
 		scramble,
 		smartTurns,
@@ -123,6 +124,7 @@ export default function SmartCube() {
 		}
 
 		if (scrambleCompletedAt) {
+			// First move after scramble is complete - start timer
 			startTimer();
 
 			let it = (new Date().getTime() - scrambleCompletedAt.getTime()) / 1000;
@@ -134,11 +136,17 @@ export default function SmartCube() {
 				smartCanStart: false,
 			});
 		} else if (preflightChecks(smartTurns, scramble)) {
+			// Scramble is complete
 			setScrambleCompletedAt(new Date());
 			setTimerParams({
 				smartCanStart: true,
 			});
 			resetMoves();
+
+			// If inspection is enabled, start WCA inspection countdown
+			if (inspectionEnabled) {
+				startInspection();
+			}
 		}
 	}
 

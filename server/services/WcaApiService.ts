@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {Integration} from '../schemas/Integration.schema';
+import { Integration } from '../schemas/Integration.schema';
 
 export interface WcaPersonalRecord {
 	single?: {

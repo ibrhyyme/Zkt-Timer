@@ -1,5 +1,5 @@
-import {getSetting} from '../db/settings/query';
-import {Solve} from '../../server/schemas/Solve.schema';
+import { getSetting } from '../db/settings/query';
+import { Solve } from '../../server/schemas/Solve.schema';
 
 export function getNumberToDecimalPoints(number: number, decimalPoints: number): number {
 	const pow = Math.pow(10, decimalPoints);
@@ -173,7 +173,12 @@ export function convertTimeStringToSeconds(timeString: string, requirePeriod: bo
 	}
 
 	if (!requirePeriod && parts.length === 1) {
-		timeSeconds /= 100;
+		const val = parseInt(parts[0], 10);
+		const centiseconds = val % 100;
+		const seconds = Math.floor((val % 10000) / 100);
+		const minutes = Math.floor(val / 10000);
+
+		timeSeconds = minutes * 60 + seconds + centiseconds / 100;
 	}
 
 	const timeMilli = Math.floor(timeSeconds * 1000);

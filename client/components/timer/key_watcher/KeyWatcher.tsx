@@ -65,6 +65,23 @@ export default function KeyWatcher(props: Props) {
 		setTimerParam('startEnabled', true);
 	}, []);
 
+	const touchStartX = React.useRef<number | null>(null);
+	const touchStartY = React.useRef<number | null>(null);
+
+	function handleContextMenu(e) {
+		let target = e.target;
+		while (target.parentNode) {
+			if (target.classList.contains(timerClass('main'))) {
+				e.preventDefault();
+				return;
+			}
+			target = target.parentNode;
+		}
+	}
+
+	useWindowListener('contextmenu', handleContextMenu);
+	useWindowListener('touchmove', touchMove);
+
 	function touchStart(e) {
 		let target = e.target;
 
@@ -74,6 +91,10 @@ export default function KeyWatcher(props: Props) {
 			}
 
 			if (target.classList.contains(timerClass('main'))) {
+				if (e.touches && e.touches[0]) {
+					touchStartX.current = e.touches[0].clientX;
+					touchStartY.current = e.touches[0].clientY;
+				}
 				keydownSpace(e, true);
 				return;
 			}
@@ -83,6 +104,8 @@ export default function KeyWatcher(props: Props) {
 	}
 
 	function touchEnd(e) {
+		touchStartX.current = null;
+		touchStartY.current = null;
 		let target = e.target;
 
 		while (target.parentNode) {
@@ -92,6 +115,33 @@ export default function KeyWatcher(props: Props) {
 			}
 
 			target = target.parentNode;
+		}
+	}
+
+	function touchMove(e) {
+		if (touchStartX.current === null || touchStartY.current === null) return;
+		if (!spaceTimerStarted && !inInspection) return; // Only if we are holding to start or in inspection?
+		// Actually, spaceTimerStarted > 0 means we are holding down to start.
+		// If we slide, we want to cancel this hold.
+
+		const x = e.touches[0].clientX;
+		const y = e.touches[0].clientY;
+		const diffX = Math.abs(x - touchStartX.current);
+		const diffY = Math.abs(y - touchStartY.current);
+
+		if (diffX > 20 || diffY > 20) {
+			// Cancel the timer start hold
+			if (spaceTimerStarted) {
+				setTimerParams({
+					spaceTimerStarted: 0,
+					canStart: false,
+				});
+				if (getTimer(START_TIMEOUT)) {
+					stopTimer(START_TIMEOUT);
+				}
+			}
+			touchStartX.current = null;
+			touchStartY.current = null;
 		}
 	}
 
@@ -208,23 +258,33 @@ export default function KeyWatcher(props: Props) {
 	 * @param e
 	 */
 	function escapePressed(e) {
-		if (ganTimerOn || e.code !== 'Escape') {
+		if (ganTimerOn || (e.code !== 'Escape' && e.keyCode !== 27)) {
 			return;
 		}
 
 		e.preventDefault();
 
+		// Case 1: Priming (Holding space/touch to start)
+		if (spaceTimerStarted) {
+			if (getTimer(START_TIMEOUT)) {
+				stopTimer(START_TIMEOUT);
+			}
+			setTimerParams({
+				spaceTimerStarted: 0,
+				canStart: false,
+			});
+			return;
+		}
+
+		// Case 2: Inspection
 		if (inInspection) {
 			clearInspectionTimers(true, true);
-		} else if (smartCubeSelected(context) || timeStartedAt) {
-			setTimerParams({
-				solving: false,
-				finalTime: -1,
-			});
+			return;
+		}
 
-			setTimeout(() => {
-				resetTimerParams(context);
-			}, 10);
+		// Case 3: Timing (or Smart Cube solving)
+		if (smartCubeSelected(context) || timeStartedAt) {
+			resetTimerParams(context);
 		}
 	}
 

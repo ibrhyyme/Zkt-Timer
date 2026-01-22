@@ -11,10 +11,10 @@ interface Props {
 	children?: ReactNode;
 }
 
-const DEFAULT_TITLE = 'Zkt-Timer';
+const DEFAULT_TITLE = 'Zkt-Timer | Profesyonel Zeka Küpü Timer';
 const DEFAULT_DESCRIPTION =
-	"Zkt-Timer is an advanced Rubik's Cube timer that offers 1v1, alg trainer, leaderboards, mini-games, and more.";
-const DEFAULT_FEATURED_IMAGE = resourceUri('/images/site/cubedesk_og_image.png');
+	"Türkiye'nin en gelişmiş zeka küpü timer sitesi! Canlı mücadele odalarında yarış, Türkiye rekorlarını takip et ve algoritma öğreticisi ile yeni teknikler öğren. %100 Türkçe.";
+const DEFAULT_FEATURED_IMAGE = resourceUri('/public/images/zkt-logo.png');
 
 export default function Header(props: Props) {
 	const url = process.env.BASE_URI + props.path;
@@ -25,6 +25,7 @@ export default function Header(props: Props) {
 	return (
 		<Helmet>
 			<title>{title}</title>
+			<link rel="canonical" href={process.env.BASE_URI + props.path} />
 			<link rel="icon" type="image/png" href="/public/images/zkt-logo.png" />
 			<meta name="description" content={description} />
 			<meta name="twitter:title" content={title} />

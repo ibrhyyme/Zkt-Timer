@@ -62,3 +62,19 @@ h1 {
         overscroll-behavior: none;
     }
 }
+
+/* Hide scrollbar globally but allow scrolling */
+* {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none !important;
+    /* Firefox */
+}
+
+*::-webkit-scrollbar {
+    display: none !important;
+    /* Chrome, Safari and Opera */
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+}

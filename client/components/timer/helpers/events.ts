@@ -1,4 +1,4 @@
-import {setTimerParams} from './params';
+import { setTimerParams } from './params';
 import {
 	setTimer,
 	stopTimer,
@@ -7,14 +7,14 @@ import {
 	INSPECTION_TIMEOUT,
 	INSPECTION_INTERVAL
 } from './timers';
-import {emitEvent} from '../../../util/event_handler';
-import {saveSolve} from './save';
-import {resetScramble} from './scramble';
-import {ITimerContext} from '../Timer';
-import {SolveInput} from '../../../../server/schemas/Solve.schema';
-import {getSettings} from '../../../db/settings/query';
-import {getTimerStore} from '../../../util/store/getTimer';
-import {resourceUri} from '../../../util/storage';
+import { emitEvent } from '../../../util/event_handler';
+import { saveSolve } from './save';
+import { resetScramble } from './scramble';
+import { ITimerContext } from '../Timer';
+import { SolveInput } from '../../../../server/schemas/Solve.schema';
+import { getSettings } from '../../../db/settings/query';
+import { getTimerStore } from '../../../util/store/getTimer';
+import { resourceUri } from '../../../util/storage';
 
 let endLocked = false;
 
@@ -39,7 +39,7 @@ export function startTimer() {
 
 export function endTimer(context: ITimerContext, finalTimeMilli?: number, overrides?: Partial<SolveInput>) {
 
-	const {scramble, timeStartedAt} = context;
+	const { scramble, timeStartedAt } = context;
 
 	if (endLocked || !timeStartedAt) {
 		return;
@@ -120,9 +120,11 @@ export function startInspection() {
 			const insTimer = getTimerStore('inspectionTimer');
 			if (playInspectionSound) {
 				let audio;
-				if (inspectionDelay - insTimer === 5) {
+				// Play sounds at 8 and 12 seconds (inspectionDelay - remaining time)
+				const elapsed = inspectionDelay + 2 - insTimer;
+				if (elapsed >= 5 && elapsed < 5.1) {
 					audio = new Audio(resourceUri('/audio/8_sec.mp3'));
-				} else if (inspectionDelay - insTimer === 9) {
+				} else if (elapsed >= 9 && elapsed < 9.1) {
 					audio = new Audio(resourceUri('/audio/12_sec.mp3'));
 				}
 				if (audio) {
@@ -135,10 +137,10 @@ export function startInspection() {
 				addTwoToSolve = true;
 			}
 			setTimerParams({
-				inspectionTimer: insTimer - 1,
+				inspectionTimer: Math.max(insTimer - 0.1, 0), // Decrement by 0.1 for smooth display
 				addTwoToSolve,
 			});
-		}, 1000)
+		}, 100) // Update every 100ms for smooth decimal display
 	);
 
 }

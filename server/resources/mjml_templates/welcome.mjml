@@ -15,7 +15,7 @@
 				</mj-text>
 
 				<mj-text line-height="27px" font-size="18px" color="#444444" font-family="helvetica">
-					Zkt-Timer ailesine katıldığın için çok mutluyuz! Artık dünyanın en gelişmiş Rubik Küp kronometre
+					Zkt-Timer ailesine katıldığın için çok mutluyuz! Artık dünyanın en gelişmiş Rubik Küp timer
 					uygulamasının tüm özelliklerine erişebilirsin.
 				</mj-text>
 
@@ -26,7 +26,7 @@
 				</mj-text>
 
 				<mj-text line-height="24px" font-size="16px" color="#444444" font-family="helvetica">
-					⏱️ <strong>Gelişmiş Kronometre:</strong> Tüm WCA küpleri için özel karıştırma algoritmaları<br/>
+					⏱️ <strong>Gelişmiş timer:</strong> Tüm WCA küpleri için özel karıştırma algoritmaları<br/>
 					<br/>
 					📊 <strong>Detaylı İstatistikler:</strong> Ao5, Ao12, Ao100 ve kişisel rekorlarını takip et<br/>
 					<br/>
@@ -48,7 +48,7 @@
 				</mj-text>
 
 				<mj-button href="https://zktimer.app" background-color="#246bfd" color="#ffffff" font-size="16px">
-					Kronometreyi Başlat
+					timeryi Başlat
 				</mj-button>
 
 				<mj-text line-height="24px" font-size="14px" color="#666666" font-family="helvetica">

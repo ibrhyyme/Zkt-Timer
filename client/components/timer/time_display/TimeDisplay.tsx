@@ -111,7 +111,8 @@ export default function TimeDisplay() {
 		if (inspectionTimer <= 2) {
 			timeStr = '+2';
 		} else {
-			timeStr = String(inspectionTimer - 2);
+			// Show inspection time with decimals (00.00 format)
+			timeStr = (inspectionTimer - 2).toFixed(2);
 		}
 	} else {
 		timeStr = getTimeString(time);
