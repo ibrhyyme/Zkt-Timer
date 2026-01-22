@@ -18,6 +18,7 @@ COPY . .
 
 # Production ortamı değişkenleri
 ENV NODE_ENV=production
+ENV DEPLOYING=true
 
 # Derleme işlemi (Typescript -> Javascript)
 # 1. build klasörünü oluştur
