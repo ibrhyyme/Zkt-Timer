@@ -6,6 +6,10 @@ services:
       - .env
     volumes:
       - ./public/uploads:/app/public/uploads
+      # Frontend build dosyalarını host ile paylaş (Nginx için)
+      - ./dist:/app/dist
+      # Public dosyalarını da paylaş
+      - ./public:/app/public
     ports:
       - "3000:3000"
     restart: always
