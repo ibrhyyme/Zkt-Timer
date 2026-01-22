@@ -28,7 +28,7 @@ import { toastError } from '../../util/toast';
 import { connectGanTimer, GanTimerConnection } from 'gan-web-bluetooth';
 import Connect from '../timer/smart_cube/bluetooth/connect';
 import { preflightChecks } from '../timer/smart_cube/preflight';
-import { processSmartTurns, SmartTurn, isTwo, rawTurnIsSame } from '../../util/smart_scramble';
+import { processSmartTurns, SmartTurn, isTwo, rawTurnIsSame, reverseScramble } from '../../util/smart_scramble';
 import Cube from 'cubejs';
 import NotificationLog, { NotificationItem } from './NotificationLog';
 import './FriendlyRoom.scss';
@@ -958,14 +958,13 @@ export default function FriendlyRoom() {
                             {alreadySolvedThisRound ? (
                                 <span className="text-gray-500 animate-pulse">Diğer kullanıcılar bekleniyor...</span>
                             ) : timerType === 'smart' && smartCubeConnected ? (
-                                // Smart cube: show colored scramble
+                                // Smart cube: show colored scramble with correction hints
                                 (() => {
                                     const currentSessionTurns = smartTurns.slice(sessionStartRef.current);
                                     const smartScramble = processSmartTurns(currentSessionTurns);
                                     const scrambleParts = room.current_scramble.split(' ');
+                                    const failedMoves: string[] = [];
                                     let orangeMiddle = false;
-                                    let hasFailedMoves = false;
-
 
                                     if (smartScrambleCompletedAt) {
                                         return (
@@ -976,18 +975,60 @@ export default function FriendlyRoom() {
                                         );
                                     }
 
+                                    // First pass: detect failed moves
+                                    for (let i = 0; i < scrambleParts.length; i++) {
+                                        const turn = scrambleParts[i];
+                                        const smartTurn = smartScramble[i];
+
+                                        if (failedMoves.length === 0 && smartScramble.length > i && smartTurn === turn && !orangeMiddle) {
+                                            // Green - correct
+                                        } else if (smartScramble.length > i && rawTurnIsSame(smartTurn, turn) && isTwo(turn) && !orangeMiddle) {
+                                            // Orange - half done
+                                            orangeMiddle = true;
+                                        } else if (smartScramble.length > i) {
+                                            // Red - wrong move, add to failedMoves
+                                            failedMoves.push(smartTurn);
+                                        }
+                                    }
+
+                                    // If there are failed moves, show correction (reverse of failed moves)
+                                    if (failedMoves.length > 0) {
+                                        // Too many wrong moves - just tell user to solve the cube
+                                        if (failedMoves.length > 7) {
+                                            return (
+                                                <span className="text-red-400 font-bold animate-pulse">
+                                                    Başlamak için küpü çöz
+                                                </span>
+                                            );
+                                        }
+
+                                        // Show correction moves
+                                        const correctionMoves = reverseScramble(failedMoves);
+                                        return (
+                                            <div className="flex flex-col items-center gap-1">
+                                                <span className="text-gray-500 text-xs uppercase tracking-wider">Düzeltme:</span>
+                                                <div>
+                                                    {correctionMoves.map((move, i) => (
+                                                        <span key={`fix-${move}-${i}`} className="text-red-400 font-bold">
+                                                            {move}{' '}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        );
+                                    }
+
+                                    // Normal display with colors
+                                    orangeMiddle = false;
                                     return scrambleParts.map((turn, i) => {
                                         const smartTurn = smartScramble[i];
                                         let colorClass = 'text-gray-200'; // default
 
-                                        if (!hasFailedMoves && smartScramble.length > i && smartTurn === turn && !orangeMiddle) {
+                                        if (smartScramble.length > i && smartTurn === turn && !orangeMiddle) {
                                             colorClass = 'text-green-400'; // completed
                                         } else if (smartScramble.length > i && rawTurnIsSame(smartTurn, turn) && isTwo(turn) && !orangeMiddle) {
                                             colorClass = 'text-orange-400'; // half done (X2 moves)
                                             orangeMiddle = true;
-                                        } else if (smartScramble.length > i) {
-                                            colorClass = 'text-red-400'; // wrong move
-                                            hasFailedMoves = true;
                                         }
 
                                         return (

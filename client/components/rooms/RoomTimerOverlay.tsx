@@ -97,6 +97,8 @@ export default function RoomTimerOverlay({
     const stackmatRef = useRef<Stackmat | null>(null);
     const stackmatStarted = useRef(false);
     const holdStartTimeRef = useRef<number>(0);
+    const touchDelayTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const isTouchScrollingRef = useRef(false);
 
     // Keep statusRef in sync and broadcast status changes
     useEffect(() => {
@@ -241,7 +243,7 @@ export default function RoomTimerOverlay({
     const tickInspection = () => {
         // Handle Inspecting Priming logic via interval instead of timeout to avoid race conditions
         if (statusRef.current === STATUS.INSPECTING_WAITING && holdStartTimeRef.current > 0) {
-            if (performance.now() - holdStartTimeRef.current >= 200) {
+            if (performance.now() - holdStartTimeRef.current >= 100) { // 100ms for inspection to timing
                 setStatus(STATUS.INSPECTING_PRIMING);
                 statusRef.current = STATUS.INSPECTING_PRIMING;
                 if (navigator.vibrate) navigator.vibrate(50);
@@ -372,11 +374,13 @@ export default function RoomTimerOverlay({
     // Keyboard/Touch timer controls
     const simulateSpaceDown = useCallback(() => {
         if (alreadySolvedThisRound) return;
-        // Only block keyboard if device is actually connected
-        if (timerType === 'stackmat' && stackmatConnected) return;
-        if (timerType === 'gantimer' && ganTimerConnected) return;
-        // Smart cube - block keyboard entirely ONLY if connected
-        if (timerType === 'smart' && smartCubeConnected) return;
+
+        // STRICT timer type enforcement: Only keyboard mode allows keyboard/touch input
+        // Other modes should ONLY work with their respective devices
+        if (timerType === 'stackmat') return; // Stackmat mode: only stackmat works
+        if (timerType === 'gantimer') return; // GAN Timer mode: only GAN timer works
+        if (timerType === 'smart') return; // Smart cube mode: only smart cube works
+
         if (keyIsDown.current) return;
 
         const currentStatus = statusRef.current;
@@ -422,11 +426,11 @@ export default function RoomTimerOverlay({
 
     const simulateSpaceUp = useCallback(() => {
         if (alreadySolvedThisRound) return;
-        // Only block keyboard if device is actually connected
-        if (timerType === 'stackmat' && stackmatConnected) return;
-        if (timerType === 'gantimer' && ganTimerConnected) return;
-        // Smart cube - block keyboard entirely
-        if (timerType === 'smart' && smartCubeConnected) return;
+
+        // STRICT timer type enforcement
+        if (timerType === 'stackmat') return;
+        if (timerType === 'gantimer') return;
+        if (timerType === 'smart') return;
 
         keyIsDown.current = false;
 
@@ -591,11 +595,27 @@ export default function RoomTimerOverlay({
         };
 
         // Touch event handlers
-        const handleTouchStart = (e: TouchEvent) => {
-            if ((e.target as HTMLElement).closest('button, input, label, textarea, a')) return;
+        // Check if touch target is in a scrollable area (like the results table)
+        const isScrollableArea = (target: HTMLElement): boolean => {
+            const scrollableSelectors = [
+                '[class*="overflow-y-auto"]',
+                '[class*="overflow-x-auto"]',
+                '.room-table',
+                '.chat-messages',
+                '[data-scrollable]'
+            ];
+            return scrollableSelectors.some(sel => target.closest(sel) !== null);
+        };
 
-            // Prevent default to avoid scrolling/zooming while interacting with timer
-            if (e.cancelable) e.preventDefault();
+        const handleTouchStart = (e: TouchEvent) => {
+            const target = e.target as HTMLElement;
+
+            // Allow interaction with buttons, inputs, and scrollable areas
+            if (target.closest('button, input, label, textarea, a')) return;
+
+            // NOTE: Timer can now start on scrollable areas (like results table) too
+            // The 200ms delay gives user time to start scrolling before timer activates
+            isTouchScrollingRef.current = false;
 
             // ALWAYS record start position for slide-cancel logic
             touchStartX.current = e.touches[0].clientX;
@@ -604,31 +624,45 @@ export default function RoomTimerOverlay({
 
             const currentStatus = statusRef.current;
 
+            // If timer is running, stop immediately (no delay needed)
             if (currentStatus === STATUS.TIMING) {
+                if (e.cancelable) e.preventDefault();
                 simulateSpaceDown();
-                // We don't need to hold to stop
                 return;
             }
 
-            // Trigger holding immediately - space down logic handles the delay now
-            simulateSpaceDown();
+            // For starting timer: Add 300ms delay to allow scrolling
+            // This prevents accidental timer starts when user wants to scroll
+            if (touchDelayTimeoutRef.current) {
+                clearTimeout(touchDelayTimeoutRef.current);
+            }
+
+            touchDelayTimeoutRef.current = setTimeout(() => {
+                // Only trigger if finger is still down and hasn't moved much
+                if (touchStartedRef.current && !isTouchScrollingRef.current) {
+                    simulateSpaceDown();
+                }
+            }, 200); // 200ms delay before timer activation
         };
 
         const handleTouchMove = (e: TouchEvent) => {
             if (touchStartX.current === null || touchStartY.current === null) return;
-
-            // Only prevent scrolling if we are actively holding the timer (priming/inspecting)
-            if (keyIsDown.current && e.cancelable) {
-                e.preventDefault();
-            }
 
             const x = e.touches[0].clientX;
             const y = e.touches[0].clientY;
             const diffX = Math.abs(x - touchStartX.current);
             const diffY = Math.abs(y - touchStartY.current);
 
-            // Use 20px like KeyWatcher for consistency
+            // If user moved more than 20px, they're scrolling, not holding timer
             if (diffX > 20 || diffY > 20) {
+                isTouchScrollingRef.current = true;
+
+                // Clear the delay timeout - user is scrolling
+                if (touchDelayTimeoutRef.current) {
+                    clearTimeout(touchDelayTimeoutRef.current);
+                    touchDelayTimeoutRef.current = null;
+                }
+
                 if (primingTimeoutRef.current) {
                     clearTimeout(primingTimeoutRef.current);
                     primingTimeoutRef.current = null;
@@ -646,21 +680,40 @@ export default function RoomTimerOverlay({
                 touchStartedRef.current = false;
                 touchStartX.current = null;
                 touchStartY.current = null;
+            } else {
+                // Only prevent scrolling if we are actively holding the timer (priming/inspecting)
+                if (keyIsDown.current && e.cancelable) {
+                    e.preventDefault();
+                }
             }
         };
 
         const handleTouchEnd = (e: TouchEvent) => {
-            if ((e.target as HTMLElement).closest('button, input, label, textarea, a')) return;
+            const target = e.target as HTMLElement;
+            if (target.closest('button, input, label, textarea, a')) return;
+
+            // Clear delay timeout
+            if (touchDelayTimeoutRef.current) {
+                clearTimeout(touchDelayTimeoutRef.current);
+                touchDelayTimeoutRef.current = null;
+            }
 
             if (keyIsDown.current) {
                 simulateSpaceUp();
             }
             touchStartedRef.current = false;
+            isTouchScrollingRef.current = false;
             touchStartX.current = null;
             touchStartY.current = null;
         };
 
         const handleTouchCancel = (e: TouchEvent) => {
+            // Clear delay timeout
+            if (touchDelayTimeoutRef.current) {
+                clearTimeout(touchDelayTimeoutRef.current);
+                touchDelayTimeoutRef.current = null;
+            }
+
             if (primingTimeoutRef.current) {
                 clearTimeout(primingTimeoutRef.current);
                 primingTimeoutRef.current = null;
@@ -675,6 +728,7 @@ export default function RoomTimerOverlay({
             }
 
             touchStartedRef.current = false;
+            isTouchScrollingRef.current = false;
             touchStartX.current = null;
             touchStartY.current = null;
         };
@@ -1120,9 +1174,12 @@ export default function RoomTimerOverlay({
     // OR if smart cube is active (solving/inspecting/reviewing)
     const smartCubeShowOverlay = timerType === 'smart' && (smartInspecting || smartTiming || smartReviewing);
 
+    // FIX: Don't show overlay for WAITING status to prevent flash
+    // WAITING is the brief moment between touch and PRIMING - showing it causes visual flicker
+    // Also: For TIMING status, we trust the status itself - don't check time/startedAt which can cause flash
     const shouldShowOverlay = isActive && (
         (activeTimerStatuses.includes(status) &&
-            (status !== STATUS.TIMING || time > 0 || startedAt !== null)) ||
+            status !== STATUS.WAITING) || // Skip WAITING to prevent flash
         smartCubeShowOverlay
     );
 

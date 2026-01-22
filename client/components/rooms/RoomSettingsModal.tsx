@@ -162,6 +162,13 @@ export default function RoomSettingsModal({ isOpen, onClose, cubeType }: RoomSet
         },
     ];
 
+    // Inspection availability based on timer type
+    // Stackmat: inspection disabled (timer handles it physically)
+    // Smart cube: inspection always enabled (required)
+    // Keyboard/GAN Timer: user can toggle
+    const inspectionDisabled = timerType === 'stackmat';
+    const inspectionForced = timerType === 'smart';
+
     const extrasOptions = [
         {
             label: 'Tam Ekran',
@@ -179,10 +186,14 @@ export default function RoomSettingsModal({ isOpen, onClose, cubeType }: RoomSet
         },
         {
             label: 'İnceleme Süresi',
-            isActive: inspection,
+            isActive: inspectionForced ? true : inspection,
             hidden: false,
-            disabled: false,
-            onClick: () => toggleSetting('inspection'),
+            disabled: inspectionDisabled || inspectionForced,
+            onClick: () => {
+                if (!inspectionDisabled && !inspectionForced) {
+                    toggleSetting('inspection');
+                }
+            },
         },
     ];
 
