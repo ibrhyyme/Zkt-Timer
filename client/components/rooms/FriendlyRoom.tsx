@@ -13,6 +13,7 @@ import {
 import Button from '../common/button/Button';
 import { useMe } from '../../util/hooks/useMe';
 import { useSettings } from '../../util/hooks/useSettings';
+import { setSetting } from '../../db/settings/update';
 import RoomParticipants from './RoomParticipants';
 import RoomChat from './RoomChat';
 import PasswordModal from './PasswordModal';
@@ -84,6 +85,43 @@ export default function FriendlyRoom() {
 
     // GAN Timer connection state
     const [ganTimerConnected, setGanTimerConnected] = useState(false);
+
+    // Set default settings when joining a room
+    const defaultsAppliedRef = useRef(false);
+    useEffect(() => {
+        if (room?.id && !defaultsAppliedRef.current) {
+            setSetting('timer_type', 'keyboard');
+            setSetting('manual_entry', false);
+            setSetting('inspection', true);
+            defaultsAppliedRef.current = true;
+        }
+    }, [room?.id]);
+
+    // Check and enforce allowed timer types
+    useEffect(() => {
+        if (!room?.allowed_timer_types) return;
+
+        // Define current effective type
+        let currentTypeKey: string = timerType;
+        if (manualEntry) currentTypeKey = 'manual';
+
+        // Check if allowed
+        if (room.allowed_timer_types.length > 0 && !room.allowed_timer_types.includes(currentTypeKey)) {
+            // Find first allowed valid type to switch to
+            // Priority: keyboard -> manual -> stackmat -> smart -> gantimer
+            const allTypes = ['keyboard', 'manual', 'stackmat', 'smart', 'gantimer'];
+            const targetType = allTypes.find(t => room.allowed_timer_types.includes(t)) || room.allowed_timer_types[0];
+
+            if (targetType === 'manual') {
+                setSetting('manual_entry', true);
+            } else {
+                setSetting('manual_entry', false);
+                setSetting('timer_type', targetType as any);
+            }
+            // Notify user once
+            // toastError(`Timer türü bu oda için "${targetType}" olarak değiştirildi.`);
+        }
+    }, [room?.allowed_timer_types, timerType, manualEntry]);
     const [ganTimerConnecting, setGanTimerConnecting] = useState(false);
     const ganTimerRef = useRef<GanTimerConnection | null>(null);
 
@@ -1341,6 +1379,7 @@ export default function FriendlyRoom() {
                 isOpen={settingsOpen}
                 onClose={() => setSettingsOpen(false)}
                 cubeType={room.cube_type}
+                allowedTimerTypes={room.allowed_timer_types}
             />
             {/* New Modals */}
             <EditRoomModal
@@ -1348,8 +1387,14 @@ export default function FriendlyRoom() {
                 onClose={() => setEditModalOpen(false)}
                 currentName={room.name}
                 isPrivate={room.is_private}
-                onSubmit={(name, isPrivate, password) => {
-                    getSocket().emit(FriendlyRoomClientEvent.UPDATE_ROOM, roomId, { name, is_private: isPrivate, password });
+                currentAllowedTypes={room.allowed_timer_types}
+                onSubmit={(name, isPrivate, password, allowedTypes) => {
+                    getSocket().emit(FriendlyRoomClientEvent.UPDATE_ROOM, roomId, {
+                        name,
+                        is_private: isPrivate,
+                        password,
+                        allowed_timer_types: allowedTypes
+                    });
                 }}
             />
             <ManageUsersModal

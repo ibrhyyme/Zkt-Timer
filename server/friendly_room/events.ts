@@ -34,9 +34,25 @@ import { logger } from '../services/logger';
 const io = (): any => getSocketIO();
 
 export function listenForFriendlyRoomEvents(client: Socket) {
+    // Generic join/leave room for Lobby updates
+    client.on('joinRoom', (roomName: string) => {
+        if (roomName === FriendlyRoomSocketRoom.LOBBY) {
+            joinRoom(client, roomName);
+        }
+    });
+
+    client.on('leaveRoom', (roomName: string) => {
+        if (roomName === FriendlyRoomSocketRoom.LOBBY) {
+            leaveRoom(client, roomName);
+        }
+    });
+
     // Get all rooms
     client.on(FriendlyRoomClientEvent.GET_ROOMS, async () => {
         try {
+            // Also join the lobby room for updates
+            joinRoom(client, FriendlyRoomSocketRoom.LOBBY);
+
             const rooms = await getAllActiveRooms();
             client.emit(FriendlyRoomServerEvent.ROOMS_LIST, rooms);
         } catch (error) {
@@ -328,7 +344,7 @@ export function listenForFriendlyRoomEvents(client: Socket) {
     });
 
     // Update room settings (room creator or site admin)
-    client.on(FriendlyRoomClientEvent.UPDATE_ROOM, async (roomId: string, updates: { name?: string; is_private?: boolean; password?: string }) => {
+    client.on(FriendlyRoomClientEvent.UPDATE_ROOM, async (roomId: string, updates: { name?: string; is_private?: boolean; password?: string; allowed_timer_types?: string[] }) => {
         try {
             const { user } = await getDetailedClientInfo(client);
             if (!user) return;
@@ -345,7 +361,7 @@ export function listenForFriendlyRoomEvents(client: Socket) {
             }
         } catch (error) {
             logger.error('Error updating room', { error });
-            client.emit(FriendlyRoomServerEvent.ERROR, 'Could not update room');
+            client.emit(FriendlyRoomServerEvent.NOTIFICATION, { type: 'error', message: 'Oda güncellenemedi (Veritabanı hatası olabilir).' });
         }
     });
 

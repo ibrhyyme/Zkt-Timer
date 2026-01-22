@@ -100,7 +100,7 @@ export async function createRoom(input: CreateFriendlyRoomInput, user: PublicUse
 
 // Get room by ID
 export async function getRoom(roomId: string) {
-    return prisma().friendlyRoom.findUnique({
+    const room = await prisma().friendlyRoom.findUnique({
         where: { id: roomId },
         include: {
             created_by: { select: { id: true, username: true } },
@@ -112,6 +112,20 @@ export async function getRoom(roomId: string) {
             },
         },
     });
+
+    // Fallback: Manually fetch allowed_timer_types if missing from Prisma types (outdated generated client)
+    if (room && !('allowed_timer_types' in room)) {
+        try {
+            const result: any = await prisma().$queryRaw`SELECT allowed_timer_types FROM "friendly_room" WHERE id = ${roomId}`;
+            if (result && result.length > 0 && result[0].allowed_timer_types) {
+                (room as any).allowed_timer_types = result[0].allowed_timer_types;
+            }
+        } catch (e) {
+            // Column might not exist yet
+        }
+    }
+
+    return room;
 }
 
 // Get room formatted for client
@@ -328,7 +342,7 @@ export async function deleteRoom(roomId: string, userId: string, isAdmin: boolea
 export async function updateRoom(
     roomId: string,
     userId: string,
-    updates: { name?: string; is_private?: boolean; password?: string },
+    updates: { name?: string; is_private?: boolean; password?: string; allowed_timer_types?: string[] },
     isAdmin: boolean = false
 ): Promise<FriendlyRoomData | null> {
     const room = await getRoom(roomId);
@@ -346,11 +360,20 @@ export async function updateRoom(
         // Clear password if switching to public
         data.password = null;
     }
+    // Note: allowed_timer_types is handled via raw query below to support outdated Prisma Client
 
     await prisma().friendlyRoom.update({
         where: { id: roomId },
         data,
     });
+
+    if (updates.allowed_timer_types) {
+        try {
+            await prisma().$executeRaw`UPDATE "friendly_room" SET allowed_timer_types = ${updates.allowed_timer_types} WHERE id = ${roomId}`;
+        } catch (e) {
+            console.error('Raw update allowed_timer_types failed', e);
+        }
+    }
 
     const updatedRoom = await getRoom(roomId);
     return mapRoomToData(updatedRoom);
@@ -426,6 +449,7 @@ function mapRoomToData(room: any): FriendlyRoomData {
         cube_type: room.cube_type,
         max_players: room.max_players,
         is_private: room.is_private,
+        allowed_timer_types: room.allowed_timer_types || ['keyboard', 'stackmat', 'smart', 'gantimer', 'manual'],
         current_scramble: room.current_scramble,
         scramble_index: room.scramble_index,
         status: room.status,

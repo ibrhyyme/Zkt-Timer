@@ -907,6 +907,7 @@ model FriendlyRoom {
   max_players      Int                       @default(8)
   created_by_id    String
   is_private       Boolean                   @default(false)
+  allowed_timer_types String[]               @default(["keyboard", "stackmat", "smart", "gantimer", "manual"])
   current_scramble String?
   scramble_index   Int                       @default(0)
   status           FriendlyRoomStatus        @default(WAITING)

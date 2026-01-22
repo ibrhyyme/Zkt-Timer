@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X } from 'phosphor-react';
+import { X, Lock } from 'phosphor-react';
 import { useDispatch } from 'react-redux';
 import { openModal } from '../../actions/general';
 import { useSettings } from '../../util/hooks/useSettings';
@@ -12,7 +12,7 @@ import './RoomSettingsModal.scss';
 
 // TimerTab.tsx'ten alınan özel TimerOption stili
 interface TimerOptionProps {
-    label: string;
+    label: string | React.ReactNode;
     isActive: boolean;
     disabled?: boolean;
     onClick: () => void;
@@ -83,9 +83,10 @@ interface RoomSettingsModalProps {
     isOpen: boolean;
     onClose: () => void;
     cubeType?: string;
+    allowedTimerTypes?: string[];
 }
 
-export default function RoomSettingsModal({ isOpen, onClose, cubeType }: RoomSettingsModalProps) {
+export default function RoomSettingsModal({ isOpen, onClose, cubeType, allowedTimerTypes }: RoomSettingsModalProps) {
     const dispatch = useDispatch();
     const [activeTab, setActiveTab] = useState<'timer' | 'extras'>('timer');
 
@@ -161,6 +162,35 @@ export default function RoomSettingsModal({ isOpen, onClose, cubeType }: RoomSet
             onClick: toggleManualEntry,
         },
     ];
+
+    // Disable disallowed types based on room settings
+    const finalTimerOptions = timerOptions.map(option => {
+        let typeKey = '';
+        if (option.label === 'Klavye') typeKey = 'keyboard';
+        else if (option.label === 'StackMat') typeKey = 'stackmat';
+        else if (option.label === 'Akıllı Küp') typeKey = 'smart';
+        else if (option.label === 'GAN Akıllı Timer') typeKey = 'gantimer';
+        else if (option.label === 'Manuel Giriş') typeKey = 'manual';
+
+        const isAllowed = !allowedTimerTypes || allowedTimerTypes.includes(typeKey);
+
+        if (!isAllowed) {
+            return {
+                ...option,
+                disabled: true,
+                label: (
+                    <span className="flex items-center gap-2">
+                        {option.label}
+                        <span className="text-xs text-red-400 bg-red-400/10 px-1.5 py-0.5 rounded flex items-center gap-1">
+                            <Lock size={10} weight="fill" />
+                            İzin Verilmiyor
+                        </span>
+                    </span>
+                ) as any
+            };
+        }
+        return option;
+    });
 
     // Inspection availability based on timer type
     // Stackmat: inspection disabled (timer handles it physically)
@@ -242,10 +272,10 @@ export default function RoomSettingsModal({ isOpen, onClose, cubeType }: RoomSet
                                     Timer türünü seçin (sadece bir tane aktif olabilir)
                                 </p>
                             </div>
-                            {timerOptions.map((option) => (
+                            {finalTimerOptions.map((option) => (
                                 <TimerOption
-                                    key={option.label}
-                                    label={option.label}
+                                    key={typeof option.label === 'string' ? option.label : 'locked-' + Math.random()}
+                                    label={option.label as string}
                                     isActive={option.isActive}
                                     disabled={option.disabled}
                                     onClick={option.onClick}

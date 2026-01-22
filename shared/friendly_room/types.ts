@@ -6,6 +6,7 @@ export interface FriendlyRoomData {
     cube_type: string;
     max_players: number;
     is_private: boolean;
+    allowed_timer_types: string[]; // JSON array of allowed types: 'keyboard', 'stackmat', 'smart', 'gantimer'
     current_scramble: string | null;
     scramble_index: number;
     status: FriendlyRoomStatus;
