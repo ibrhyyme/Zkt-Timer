@@ -4,40 +4,40 @@ import express from 'express';
 import https from 'https';
 import http from 'http';
 import fs from 'fs';
-import {getPrisma, initPrisma} from './database';
+import { getPrisma, initPrisma } from './database';
 import requestIp from 'request-ip';
-import {initLogger, logger} from './services/logger';
-import {ApolloServer} from 'apollo-server-express';
-import {baseResolvers, baseScalars} from './graphql';
+import { initLogger, logger } from './services/logger';
+import { ApolloServer } from 'apollo-server-express';
+import { baseResolvers, baseScalars } from './graphql';
 import * as Sentry from '@sentry/node';
 import '@sentry/tracing';
 
-import {initLLStates} from './util/solve/ll_states';
-import {initSocket} from './match/init';
+import { initLLStates } from './util/solve/ll_states';
+import { initSocket } from './match/init';
 import 'seedrandom';
-import {initMjmlTemplates} from './services/ses';
+import { initMjmlTemplates } from './services/ses';
 import GraphQLError from './util/graphql_error';
 import colors from 'colors';
-import {buildSchema} from 'type-graphql';
-import {mergeSchemas} from '@graphql-tools/schema';
-import {mapPathToPage} from './router';
-import {getMe} from './util/auth';
+import { buildSchema } from 'type-graphql';
+import { mergeSchemas } from '@graphql-tools/schema';
+import { mapPathToPage } from './router';
+import { getMe } from './util/auth';
 import * as resolverList from './resolvers/_resolvers';
 import * as schemaList from './schemas/_schemas';
 import cookieParser from 'cookie-parser';
 import * as models from './api/_index';
 import bodyParser from 'body-parser';
-import {customAuthChecker} from './middlewares/auth';
-import {GraphQLUpload, graphqlUploadExpress} from 'graphql-upload';
-import {ErrorCode, ErrorMessage} from './constants/errors';
-import {printSchema} from 'graphql';
-import {initRedisClient} from './services/redis';
+import { customAuthChecker } from './middlewares/auth';
+import { GraphQLUpload, graphqlUploadExpress } from 'graphql-upload';
+import { ErrorCode, ErrorMessage } from './constants/errors';
+import { printSchema } from 'graphql';
+import { initRedisClient } from './services/redis';
 
-import {initCronJobs} from './services/cron';
-import {initWebhookListeners, initWebhookListenersRaw} from './webhooks';
-import {exposeResourcesForSearchEngines} from './middlewares/search_engines';
-import {initSearch} from './services/search';
-import {getWcaRedirectUri} from '../shared/integration';
+import { initCronJobs } from './services/cron';
+import { initWebhookListeners, initWebhookListenersRaw } from './webhooks';
+import { exposeResourcesForSearchEngines } from './middlewares/search_engines';
+import { initSearch } from './services/search';
+import { getWcaRedirectUri } from '../shared/integration';
 
 initPrisma();
 
@@ -50,7 +50,7 @@ const isDev = env === 'development';
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-BigInt.prototype.toJSON = function() {
+BigInt.prototype.toJSON = function () {
 	return this.toString();
 };
 
@@ -72,7 +72,7 @@ initLogger();
 // This must be before the bodyparser before RAW data needs to be passed to Stripe
 initWebhookListenersRaw();
 
-app.use(bodyParser.json({limit: '200mb'}));
+app.use(bodyParser.json({ limit: '200mb' }));
 app.use(cookieParser());
 
 initWebhookListeners();
@@ -83,12 +83,9 @@ app.use((req, res, next) => {
 	next();
 });
 
-if (isDev) {
-	app.use('/dist', express.static(`${__dirname}/../dist`));
-	app.use('/public', express.static(`${__dirname}/../public`));
-	// Development ortamında uploads klasörünü serve et
-	app.use('/public/uploads', express.static(`${__dirname}/../public/uploads`));
-}
+app.use('/dist', express.static(`${__dirname}/../dist`));
+app.use('/public', express.static(`${__dirname}/../public`));
+app.use('/public/uploads', express.static(`${__dirname}/../public/uploads`));
 
 mapPathToPage();
 
@@ -98,7 +95,7 @@ const gqlMutations: any[] = [];
 let gqlMutationActions = {};
 let gqlQueryActions = {};
 
-function parseList(l: {[key: string]: any}) {
+function parseList(l: { [key: string]: any }) {
 	const modelKeys = [...Object.keys(l)];
 
 	for (const key of modelKeys) {
@@ -154,8 +151,8 @@ if (!isDev) {
 	const oldResolver = {
 		...baseResolvers,
 		Upload: GraphQLUpload,
-		Query: {...gqlQueryActions},
-		Mutation: {...gqlMutationActions}
+		Query: { ...gqlQueryActions },
+		Mutation: { ...gqlMutationActions }
 	};
 
 	const newSchema = await buildSchema({
@@ -179,7 +176,7 @@ if (!isDev) {
 		uploads: false,
 		schema: mergedSchema,
 		playground: isDev,
-		context: async ({req, res}) => {
+		context: async ({ req, res }) => {
 			const user = await getMe(req);
 			const ipAddress = requestIp.getClientIp(req);
 
@@ -187,14 +184,14 @@ if (!isDev) {
 				throw new GraphQLError(ErrorCode.FORBIDDEN, ErrorMessage.BANNED);
 			}
 
-			return {user, ipAddress, req, res, prisma: getPrisma()};
+			return { user, ipAddress, req, res, prisma: getPrisma() };
 		}
 	});
 
 	const path = '/graphql';
 
 	app.use(graphqlUploadExpress());
-	server.applyMiddleware({app, path});
+	server.applyMiddleware({ app, path });
 
 	// Setup code
 	initLLStates();
@@ -206,7 +203,7 @@ if (!isDev) {
 		secret: !!process.env.WCA_CLIENT_SECRET,
 		redirect: getWcaRedirectUri(),
 	});
-	
+
 	// Debug: Show actual env values with quotes
 	console.log('DEBUG - Raw env values:', {
 		WCA_CLIENT_ID: `"${process.env.WCA_CLIENT_ID}"`,

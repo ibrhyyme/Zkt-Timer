@@ -1,21 +1,21 @@
-import React, {ReactNode} from 'react';
+import React, { ReactNode } from 'react';
 import thunk from 'redux-thunk';
 import ReactDOM from 'react-dom/server';
 import promise from 'redux-promise-middleware';
-import {applyMiddleware, createStore, Store} from 'redux';
-import {Provider} from 'react-redux';
-import {StaticRouter, Switch} from 'react-router-dom';
-import {minify} from 'html-minifier';
-import {PageContext, routes} from '../client/components/layout/Routes';
-import htmlTemplate, {HtmlPagePayload} from './html_template';
+import { applyMiddleware, createStore, Store } from 'redux';
+import { Provider } from 'react-redux';
+import { StaticRouter, Switch } from 'react-router-dom';
+import { minify } from 'html-minifier';
+import { PageContext, routes } from '../client/components/layout/Routes';
+import htmlTemplate, { HtmlPagePayload } from './html_template';
 import reducers from '../client/reducers/reducers';
-import {initUserAccount} from './models/store';
+import { initUserAccount } from './models/store';
 
-import {Helmet} from 'react-helmet';
-import {mapSingleRoute} from '../client/components/map_route';
-import {ApolloClient, ApolloProvider, InMemoryCache} from '@apollo/client';
-import {logger} from './services/logger';
-import {ErrorCode} from './constants/errors';
+import { Helmet } from 'react-helmet';
+import { mapSingleRoute } from '../client/components/map_route';
+import { ApolloClient, ApolloProvider, InMemoryCache } from '@apollo/client';
+import { logger } from './services/logger';
+import { ErrorCode } from './constants/errors';
 
 const mappedRoutes: ReactNode[] = [];
 
@@ -37,8 +37,8 @@ function renderFullPage(html, helmet, preloadedState) {
 		html,
 		helmet,
 		cleanState,
-		distBase: process.env.DIST_BASE_URI,
-		resourceBase: process.env.RESOURCES_BASE_URI,
+		distBase: process.env.DIST_BASE_URI || '/dist',
+		resourceBase: process.env.RESOURCES_BASE_URI || '/public',
 		jsFileName: `${deploymentId}.min.js`,
 		cssFileName: `${deploymentId}.min.css`,
 	};
@@ -57,7 +57,7 @@ function createComponents(req, store) {
 			<ApolloProvider client={client}>
 				<Provider store={store}>
 					<Switch>
-						{routes.map((route: {[key: string]: any}) => {
+						{routes.map((route: { [key: string]: any }) => {
 							route.exact = true;
 							return mapSingleRoute(route);
 						})}
@@ -73,7 +73,7 @@ function createComponents(req, store) {
 
 	// Get html and minify it
 	const fullHtml = renderFullPage(markup, helmet, preloaded);
-	return minify(fullHtml, {collapseWhitespace: true, minifyJS: true, minifyCSS: true});
+	return minify(fullHtml, { collapseWhitespace: true, minifyJS: true, minifyCSS: true });
 }
 
 function appUseRouteForPage(routePath, route: PageContext) {

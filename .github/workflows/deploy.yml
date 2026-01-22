@@ -21,8 +21,21 @@ jobs:
           git fetch --all
           git reset --hard origin/main
           
-          # 2. Container'ları yeniden build et ve başlat
+          # 2. Container'ları yeniden build et
           docker compose build --no-cache app-server
+          
+          # 2.5. Frontend dosyalarını host'a kopyala (Nginx için)
+          # Geçici bir container oluşturup içindeki /dist klasörünü dışarı alıyoruz
+          docker create --name temp_extract zkt-timer-app-server-1
+          rm -rf dist_new
+          docker cp temp_extract:/app/dist ./dist_new
+          docker rm temp_extract
+          
+          # Yeni dosyaları yerine koy (kesinti olmaması için atomik işlem yapmaya çalışıyoruz)
+          rm -rf dist
+          mv dist_new dist
+          
+          # 3. Servisleri yeniden başlat
           docker compose down
           docker compose up -d
           

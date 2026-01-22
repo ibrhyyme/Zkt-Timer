@@ -1,30 +1,69 @@
-FROM node:20.19-slim
+# --- Stage 1: Builder ---
+FROM node:20.19-slim AS builder
 
 WORKDIR /app
 
-# Install system dependencies
+# Sistem bağımlılıkları (Python, make, g++ gerekebilir node-gyp için)
+RUN apt-get update && \
+    apt-get install -y openssl python3 make g++ && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Bağımlılıkları yükle
+COPY package.json yarn.lock ./
+RUN yarn install --frozen-lockfile
+
+# Kaynak kodları kopyala
+COPY . .
+
+# Production ortamı değişkenleri
+ENV NODE_ENV=production
+
+# Derleme işlemi (Typescript -> Javascript)
+# 1. build klasörünü oluştur
+# 2. Prisma ve GraphQL kodlarını üret
+# 3. yarn deploy (build, compile-server, compile-shared çalıştırır)
+RUN rm -rf build && \
+    mkdir build && \
+    npx prisma generate && \
+    yarn deploy
+
+# Gereksiz typescript kaynaklarını temizle ve build edilenleri yerine taşı
+# DİKKAT: 'dist' klasörünü silmiyoruz, Nginx için gerekli!
+RUN cp -r ./server/resources/mjml_templates ./build/server/resources/mjml_templates && \
+    cp ./server/resources/not_found.html ./build/server/resources/not_found.html
+
+# --- Stage 2: Runtime (Final Image) ---
+FROM node:20.19-slim
+
+ENV NODE_ENV=production
+
+WORKDIR /app
+
+# Runtime için gerekli sistem kütüphaneleri (Prisma için openssl şart)
 RUN apt-get update && \
     apt-get install -y openssl && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-# Copy package files
+# Sadece production bağımlılıklarını yüklemek için package.json
 COPY package.json yarn.lock ./
+RUN yarn install --production --frozen-lockfile && yarn cache clean
 
-# Install ALL dependencies (dev included, for ts-node-dev)
-RUN yarn install --frozen-lockfile
-
-# Copy application code
-COPY . .
-
-# Generate Prisma client AND GraphQL types
-RUN npx prisma generate && \
-    npx graphql-codegen
-
-# Set environment
-ENV NODE_ENV=production
+# Builder aşamasından derlenmiş dosyaları al
+# 1. Server kodu (Compiled JS)
+COPY --from=builder /app/build/server ./server
+# 2. Shared kodu (Compiled JS)
+COPY --from=builder /app/build/shared ./shared
+# 3. Client build dosyaları (Nginx için gerekli statik dosyalar)
+COPY --from=builder /app/dist ./dist
+# 4. Public klasörü (Resimler vs. için)
+COPY --from=builder /app/public ./public
+# 5. Prisma şeması ve client (Runtime'da gerekebilir)
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/schema.prisma ./schema.prisma
 
 EXPOSE 3000
 
-# Use ts-node-dev to run TypeScript directly (no build step)
-CMD ["yarn", "server"]
+# ts-node yerine derlenmiş JS kodunu çalıştırıyoruz
+CMD ["node", "server/app.js"]
