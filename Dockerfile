@@ -71,7 +71,11 @@ COPY --from=builder /app/schema.prisma ./schema.prisma
 # Not: 'build/client' zaten derlenmiş JS dosyalarıdır, server bunları kullanabilir.
 COPY --from=builder /app/build/client ./client
 
+# Entrypoint script - container başlarken prisma db push çalıştırır
+COPY docker-entrypoint.sh ./docker-entrypoint.sh
+RUN chmod +x ./docker-entrypoint.sh
+
 EXPOSE 3000
 
-# ts-node yerine derlenmiş JS kodunu çalıştırıyoruz
-CMD ["node", "server/app.js"]
+# Entrypoint kullan - önce DB sync, sonra sunucu başlatma
+ENTRYPOINT ["./docker-entrypoint.sh"]
