@@ -1,4 +1,4 @@
-import {HelmetData} from 'react-helmet';
+import { HelmetData } from 'react-helmet';
 
 export interface HtmlPagePayload {
 	html: string;
@@ -11,7 +11,10 @@ export interface HtmlPagePayload {
 }
 
 export default (payload: HtmlPagePayload) => {
-	const {html, cleanState, helmet, distBase, resourceBase, cssFileName, jsFileName} = payload;
+	const { html, cleanState, helmet, distBase, resourceBase, cssFileName, jsFileName } = payload;
+
+	// Cache-busting: Her deployment'ta tarayıcılar yeni dosyaları indirsin
+	const version = process.env.RELEASE_NAME || Date.now().toString();
 
 	return `
 		<!DOCTYPE html>
@@ -23,7 +26,7 @@ export default (payload: HtmlPagePayload) => {
 				<link rel="preconnect" href="https://fonts.gstatic.com">
 				<link rel="preload stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Mono&family=Fira+Sans&family=JetBrains+Mono&family=Kiwi+Maru&family=Montserrat&family=Poppins&family=Roboto+Mono&family=Space+Mono&display=swap">
 				<link rel="preload stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,500;0,600;0,700;0,800;0,900;1,500;1,600;1,700;1,900&display=swap">
-				<link rel="stylesheet" href="${distBase}/${cssFileName}">
+				<link rel="stylesheet" href="${distBase}/${cssFileName}?v=${version}">
 				<link rel="shortcut icon" href="${resourceBase}/favicon.ico" type="image/x-icon">  
 				<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 				
@@ -59,7 +62,7 @@ export default (payload: HtmlPagePayload) => {
 			<script type="text/javascript">
 				window.__STORE__ = ${cleanState};
 			</script>
-			<script src="${distBase}/${jsFileName}"></script>
+			<script src="${distBase}/${jsFileName}?v=${version}"></script>
 		</html>
 	`;
 };
