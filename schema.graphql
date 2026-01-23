@@ -354,6 +354,7 @@ type Mutation {
   deleteFriendshipRequest(friendshipRequestId: String): FriendshipRequest
   unfriend(targetUserId: String): Friendship
   createSolve(input: SolveInput): Solve
+  deleteAllSolvesInSession(sessionId: String): Void
   createSession(input: SessionInput): Session
   updateSession(input: SessionInput, id: String): Session
   reorderSessions(ids: [String]): Void
@@ -579,12 +580,14 @@ type Setting {
   play_inspection_sound: Boolean
   zero_out_time_after_solve: Boolean
   confirm_delete_solve: Boolean
+  confirm_delete_season: Boolean
   require_period_in_manual_time_entry: Boolean
   use_space_with_smart_cube: Boolean
   timer_decimal_points: Int
   cube_type: String
   session_id: String
   beta_tester: Boolean
+  smart_cube_size: Int
   custom_cube_types: [CustomCubeType]
 }
 
@@ -1317,12 +1320,14 @@ input SettingInput {
   play_inspection_sound: Boolean
   zero_out_time_after_solve: Boolean
   confirm_delete_solve: Boolean
+  confirm_delete_season: Boolean
   require_period_in_manual_time_entry: Boolean
   use_space_with_smart_cube: Boolean
   timer_decimal_points: Int
   cube_type: String
   session_id: String
   beta_tester: Boolean
+  smart_cube_size: Int
 }
 
 input GameOptionsInput {

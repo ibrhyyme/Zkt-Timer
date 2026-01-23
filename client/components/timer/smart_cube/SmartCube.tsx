@@ -41,6 +41,8 @@ export default function SmartCube() {
 
 	const useSpaceWithSmartCube = useSettings('use_space_with_smart_cube');
 	const inspectionEnabled = useSettings('inspection');
+	const smartCubeSize = useSettings('smart_cube_size'); // From settings
+
 	const {
 		scramble,
 		smartTurns,
@@ -56,6 +58,12 @@ export default function SmartCube() {
 	} = context;
 
 	useEffect(() => {
+		return () => {
+			connect.current.disconnect();
+		};
+	}, []);
+
+	useEffect(() => {
 		initVisualCube();
 
 		return () => {
@@ -63,10 +71,8 @@ export default function SmartCube() {
 				clearInterval(turnInterval.current);
 				turnInterval.current = null;
 			}
-
-			connect.current.disconnect();
 		};
-	}, []);
+	}, [smartCubeSize]); // Re-init when size changes
 
 	useEffect(() => {
 		if (smartTurns.length) {
@@ -103,10 +109,17 @@ export default function SmartCube() {
 		}
 
 		if (canvasRef.current) {
-			canvasRef.current.width = 200;
-			canvasRef.current.height = 200;
+			canvasRef.current.width = smartCubeSize;
+			canvasRef.current.height = smartCubeSize;
 
-			cube.current = new RubiksCube(canvasRef.current, materials.classic, 120, '400px', '400px', smartCurrentState);
+			cube.current = new RubiksCube(
+				canvasRef.current,
+				materials.classic,
+				80,
+				`${smartCubeSize}px`,
+				`${smartCubeSize}px`,
+				smartCurrentState
+			);
 		}
 
 		setTimeout(() => {

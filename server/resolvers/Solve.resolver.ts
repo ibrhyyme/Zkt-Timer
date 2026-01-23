@@ -1,16 +1,19 @@
-import {Arg, Authorized, Ctx, Mutation, Query, Resolver} from 'type-graphql';
-import {GraphQLContext} from '../@types/interfaces/server.interface';
-import {Role} from '../middlewares/auth';
-import {Solve, SolveInput} from '../schemas/Solve.schema';
-import {getMatchById} from '../models/match';
-import {createSolve, updateSolve} from '../models/solve';
-import {getSolveSteps} from '../util/solve/solve_method';
-import {createSolveMethodSteps} from '../models/solve_method_step';
-import {logger} from '../services/logger';
-import {updateUserAccountWithParams} from '../models/user_account';
+import { Arg, Authorized, Ctx, Mutation, Query, Resolver } from 'type-graphql';
+import { GraphQLContext } from '../@types/interfaces/server.interface';
+import { Role } from '../middlewares/auth';
+import { Solve, SolveInput } from '../schemas/Solve.schema';
+import { getMatchById } from '../models/match';
+import { createSolve, updateSolve } from '../models/solve';
+import { getSolveSteps } from '../util/solve/solve_method';
+import { createSolveMethodSteps } from '../models/solve_method_step';
+import { logger } from '../services/logger';
+import { updateUserAccountWithParams } from '../models/user_account';
+import { GraphQLVoid } from 'graphql-scalars';
+import GraphQLError from '../util/graphql_error';
+import { ErrorCode } from '../constants/errors';
 
 function getSolvesByUserId(context: GraphQLContext, userId: string) {
-	const {prisma} = context;
+	const { prisma } = context;
 
 	return prisma.solve.findMany({
 		where: {
@@ -31,7 +34,7 @@ export class SolveResolver {
 	@Authorized([Role.LOGGED_IN])
 	@Mutation(() => Solve)
 	async createSolve(@Ctx() context: GraphQLContext, @Arg('input') input: SolveInput) {
-		const {user} = context;
+		const { user } = context;
 
 		if (input.match_id) {
 			const match = await getMatchById(input.match_id);
@@ -66,5 +69,33 @@ export class SolveResolver {
 		});
 
 		return createdSolve;
+	}
+
+	@Authorized([Role.LOGGED_IN])
+	@Mutation(() => GraphQLVoid)
+	async deleteAllSolvesInSession(@Ctx() context: GraphQLContext, @Arg('sessionId') sessionId: string) {
+		const { prisma, user } = context;
+
+		const session = await prisma.session.findFirst({
+			where: {
+				id: sessionId,
+				user_id: user.id,
+			},
+		});
+
+		if (!session) {
+			throw new GraphQLError(ErrorCode.NOT_FOUND, 'Session not found');
+		}
+
+		await prisma.solve.deleteMany({
+			where: {
+				session_id: sessionId,
+				user_id: user.id,
+			},
+		});
+
+		await updateUserAccountWithParams(user.id, {
+			last_solve_at: new Date(),
+		});
 	}
 }

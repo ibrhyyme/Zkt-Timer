@@ -109,7 +109,11 @@ export default function RoomTable({ participants, scrambleIndex, userStatuses = 
     }, [stats]);
 
     return (
-        <div ref={scrollRef} className="h-full w-full overflow-y-auto overflow-x-auto bg-[#1E1E1E] text-gray-300 font-sans border border-[#333] select-none text-sm">
+        <div
+            ref={scrollRef}
+            className="h-full w-full overflow-y-auto overflow-x-auto bg-[#1E1E1E] text-gray-300 font-sans border border-[#333] text-sm min-h-0"
+            style={{ touchAction: 'pan-y', overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}
+        >
             <div className="flex flex-col min-w-full w-max md:w-full">
 
                 {/* Header (Sticky) */}

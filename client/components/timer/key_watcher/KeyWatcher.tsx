@@ -20,6 +20,8 @@ import { useDocumentListener, useWindowListener } from '../../../util/hooks/useL
 import { useSettings } from '../../../util/hooks/useSettings';
 import { useGeneral } from '../../../util/hooks/useGeneral';
 import { getSettings } from '../../../db/settings/query';
+import { fetchLastSolve } from '../../../db/solves/query';
+import { deleteAllSolvesInSessionDb, deleteSolveDb, updateSolveDb } from '../../../db/solves/update';
 
 const timerClass = block('timer');
 
@@ -56,6 +58,7 @@ export default function KeyWatcher(props: Props) {
 
 	useWindowListener('keyup', keyupSpace);
 	useWindowListener('keydown', keydownSpace);
+	useWindowListener('keydown', handleGlobalShortcuts);
 	useDocumentListener('keyup', escapePressed);
 	useWindowListener('touchstart', touchStart);
 	useWindowListener('touchend', touchEnd);
@@ -285,6 +288,41 @@ export default function KeyWatcher(props: Props) {
 		// Case 3: Timing (or Smart Cube solving)
 		if (smartCubeSelected(context) || timeStartedAt) {
 			resetTimerParams(context);
+			return;
+		}
+
+	}
+
+	function handleGlobalShortcuts(e) {
+		if (modals.length > 0) return;
+
+		const target = e.target;
+		if (target.nodeName === 'INPUT' || target.nodeName === 'TEXTAREA' || target.isContentEditable) return;
+
+		if (timeStartedAt || inInspection || spaceTimerStarted || smartCubeSelected(context)) {
+			return;
+		}
+
+		const sessId = getSettings().session_id;
+
+		// +2
+		if (e.key === '2') {
+			const lastSolve = fetchLastSolve({ session_id: sessId });
+			if (lastSolve) updateSolveDb(lastSolve, { plus_two: !lastSolve.plus_two });
+		}
+		// DNF
+		else if (e.key.toLowerCase() === 'd') {
+			const lastSolve = fetchLastSolve({ session_id: sessId });
+			if (lastSolve) updateSolveDb(lastSolve, { dnf: !lastSolve.dnf });
+		}
+		// Delete (Backspace)
+		else if (e.key === 'Backspace') {
+			if (e.ctrlKey) {
+				deleteAllSolvesInSessionDb(sessId);
+			} else {
+				const lastSolve = fetchLastSolve({ session_id: sessId });
+				if (lastSolve) deleteSolveDb(lastSolve);
+			}
 		}
 	}
 

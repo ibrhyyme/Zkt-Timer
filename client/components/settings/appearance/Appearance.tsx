@@ -1,17 +1,17 @@
 import React from 'react';
-import {getTimeString} from '../../../util/time';
+import { getTimeString } from '../../../util/time';
 import Slider from '../../common/slider/Slider';
 import LayoutSelector from './layout_selector/LayoutSelector';
 import TimerBackground from './timer_background/TimerBackground';
 import SettingRow from '../setting/row/SettingRow';
 import Dropdown from '../../common/inputs/dropdown/Dropdown';
 import SettingSection from '../setting/section/SettingSection';
-import {setSetting} from '../../../db/settings/update';
-import {useSettings} from '../../../util/hooks/useSettings';
+import { setSetting } from '../../../db/settings/update';
+import { useSettings } from '../../../util/hooks/useSettings';
 import Button from '../../common/button/Button';
 import ThemeOptions from './theme_options/ThemeOptions';
-import {AllSettings, getDefaultSetting} from '../../../db/settings/query';
-import {CaretDown} from 'phosphor-react';
+import { AllSettings, getDefaultSetting } from '../../../db/settings/query';
+import { CaretDown } from 'phosphor-react';
 
 const DEFAULT_FONT_FAMILY = 'Roboto Mono';
 
@@ -34,6 +34,7 @@ export default function Appearance() {
 	const timerDecimalPoints = useSettings('timer_decimal_points');
 	const timerFontFamily = useSettings('timer_font_family');
 	const timerModuleCount = useSettings('timer_module_count');
+	const smartCubeSize = useSettings('smart_cube_size');
 
 	function updateSetting(name: keyof AllSettings, value: any) {
 		setSetting(name, value);
@@ -139,6 +140,26 @@ export default function Appearance() {
 						D' R2 B2 R2 U' F2 R2 U' L2 U2 L2 R2 F' D' L D' F' D' F D' R' U
 					</h3>
 				</div>
+			</SettingSection>
+			<SettingSection>
+				<SettingRow
+					title="Akıllı Küp Boyutu"
+					description="Anasayfadaki akıllı küpün boyutunu ayarlayın."
+				>
+					<Slider
+						min={100}
+						value={String(smartCubeSize)}
+						max={600}
+						onChange={(e) => updateSetting('smart_cube_size', parseInt(e.target.value, 10))}
+					/>
+					<Button
+						hidden={smartCubeSize === getDefaultSetting('smart_cube_size')}
+						text="Sıfırla"
+						warning
+						flat
+						onClick={() => updateSetting('smart_cube_size', getDefaultSetting('smart_cube_size'))}
+					/>
+				</SettingRow>
 			</SettingSection>
 		</>
 	);

@@ -181,3 +181,45 @@ export function updateSolveTime(solve: Solve) {
 		solve.time = solve.raw_time;
 	}
 }
+
+export async function deleteAllSolvesInSessionDb(sessionId: string, confirmed: boolean = false) {
+	const store = getStore();
+	const confirmDelete = getSetting('confirm_delete_season');
+
+	if (confirmDelete && !confirmed) {
+		store.dispatch(
+			openModal(
+				<ConfirmModal
+					description="Bu sezondaki TÜM çözümleri silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
+					buttonText="Tümünü Sil"
+					hideInput
+					title="Sezonu Temizle"
+					triggerAction={() => deleteAllSolvesInSessionDb(sessionId, true)}
+				/>
+			)
+		);
+		return;
+	}
+
+	const solveDb = getSolveDb();
+	const solvesToRemove = solveDb.find({ session_id: sessionId });
+
+	solveDb.removeWhere({ session_id: sessionId });
+
+	// İstatistikleri temizle
+	solvesToRemove.forEach(solve => clearSolveStatCache({ solve: solve as any }));
+	emitEvent('solveDbUpdatedEvent', null);
+	updateOfflineHash();
+
+	const query = gql`
+		mutation Mutate($sessionId: String!) {
+			deleteAllSolvesInSession(sessionId: $sessionId)
+		}
+	`;
+
+	try {
+		await gqlMutate(query, { sessionId });
+	} catch (e) {
+		// Log
+	}
+}

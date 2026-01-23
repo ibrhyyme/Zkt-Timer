@@ -1,7 +1,7 @@
-import {getSettingsDb, SettingValue} from './init';
-import {CustomCubeType} from '../../@types/generated/graphql';
-import {TimerModuleType} from '../../components/timer/@types/enums';
-import {APP_THEME_PRESETS} from '../../util/themes/theme_consts';
+import { getSettingsDb, SettingValue } from './init';
+import { CustomCubeType } from '../../@types/generated/graphql';
+import { TimerModuleType } from '../../components/timer/@types/enums';
+import { APP_THEME_PRESETS } from '../../util/themes/theme_consts';
 
 export type TimerLayoutPosition = 'bottom' | 'left' | 'right';
 
@@ -21,6 +21,7 @@ export interface AllSettings {
 	play_inspection_sound: boolean;
 	zero_out_time_after_solve: boolean;
 	confirm_delete_solve: boolean;
+	confirm_delete_season: boolean;
 	use_space_with_smart_cube: boolean;
 	require_period_in_manual_time_entry: boolean;
 	beta_tester: boolean;
@@ -28,6 +29,7 @@ export interface AllSettings {
 	session_id: string;
 	custom_cube_types: CustomCubeType[];
 	locked_scramble: string;
+	smart_cube_size: number;
 
 	// Local
 	timer_type: 'keyboard' | 'smart' | 'stackmat' | 'gantimer';
@@ -71,6 +73,7 @@ const defaultSettings: AllSettings = {
 	play_inspection_sound: false,
 	zero_out_time_after_solve: false,
 	confirm_delete_solve: false,
+	confirm_delete_season: false,
 	use_space_with_smart_cube: false,
 	require_period_in_manual_time_entry: false,
 	beta_tester: false,
@@ -110,6 +113,8 @@ const defaultSettings: AllSettings = {
 	timer_avg_4: 'ao5pb',
 	timer_avg_5: 'ao10',
 	timer_avg_6: 'ao50',
+
+	smart_cube_size: 400,
 };
 
 export function getDefaultSetting<T extends keyof AllSettings>(key: T): AllSettings[T] {
@@ -126,7 +131,7 @@ export function getSettings(): AllSettings {
 
 	let settingsData: any = settingsDb?.data;
 	if (!settingsDb || !settingsData) {
-		settingsData = Object.keys(defaultSettings).map((key) => ({id: key, value: defaultSettings[key]}));
+		settingsData = Object.keys(defaultSettings).map((key) => ({ id: key, value: defaultSettings[key] }));
 	}
 	settingsData.forEach((setting) => {
 		settings[setting.id] = setting.value;

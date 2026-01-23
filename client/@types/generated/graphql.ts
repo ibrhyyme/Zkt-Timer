@@ -731,6 +731,7 @@ export type Mutation = {
   createUserAccount?: Maybe<PublicUserAccount>;
   deleteAlgorithmOverride?: Maybe<AlgorithmOverride>;
   deleteAllSolves?: Maybe<Scalars['Void']>;
+  deleteAllSolvesInSession?: Maybe<Scalars['Void']>;
   deleteAllTrainingSolves?: Maybe<Scalars['Void']>;
   deleteBadgeType?: Maybe<BadgeType>;
   deleteCustomCubeType?: Maybe<CustomCubeType>;
@@ -910,6 +911,11 @@ export type MutationCreateUserAccountArgs = {
 
 export type MutationDeleteAlgorithmOverrideArgs = {
   algoKey?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationDeleteAllSolvesInSessionArgs = {
+  sessionId?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -1559,6 +1565,7 @@ export type SessionInput = {
 export type Setting = {
   __typename?: 'Setting';
   beta_tester?: Maybe<Scalars['Boolean']>;
+  confirm_delete_season?: Maybe<Scalars['Boolean']>;
   confirm_delete_solve?: Maybe<Scalars['Boolean']>;
   created_at?: Maybe<Scalars['DateTime']>;
   cube_type?: Maybe<Scalars['String']>;
@@ -1576,6 +1583,7 @@ export type Setting = {
   play_inspection_sound?: Maybe<Scalars['Boolean']>;
   require_period_in_manual_time_entry?: Maybe<Scalars['Boolean']>;
   session_id?: Maybe<Scalars['String']>;
+  smart_cube_size?: Maybe<Scalars['Int']>;
   timer_decimal_points?: Maybe<Scalars['Int']>;
   use_space_with_smart_cube?: Maybe<Scalars['Boolean']>;
   user_id?: Maybe<Scalars['String']>;
@@ -1584,6 +1592,7 @@ export type Setting = {
 
 export type SettingInput = {
   beta_tester?: InputMaybe<Scalars['Boolean']>;
+  confirm_delete_season?: InputMaybe<Scalars['Boolean']>;
   confirm_delete_solve?: InputMaybe<Scalars['Boolean']>;
   cube_type?: InputMaybe<Scalars['String']>;
   focus_mode?: InputMaybe<Scalars['Boolean']>;
@@ -1598,6 +1607,7 @@ export type SettingInput = {
   play_inspection_sound?: InputMaybe<Scalars['Boolean']>;
   require_period_in_manual_time_entry?: InputMaybe<Scalars['Boolean']>;
   session_id?: InputMaybe<Scalars['String']>;
+  smart_cube_size?: InputMaybe<Scalars['Int']>;
   timer_decimal_points?: InputMaybe<Scalars['Int']>;
   use_space_with_smart_cube?: InputMaybe<Scalars['Boolean']>;
   zero_out_time_after_solve?: InputMaybe<Scalars['Boolean']>;

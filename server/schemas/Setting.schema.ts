@@ -1,5 +1,5 @@
-import {Field, ObjectType, InputType, Int, Float} from 'type-graphql';
-import {CustomCubeType} from './CustomCubeType.schema';
+import { Field, ObjectType, InputType, Int, Float } from 'type-graphql';
+import { CustomCubeType } from './CustomCubeType.schema';
 
 @ObjectType()
 export class Setting {
@@ -49,6 +49,9 @@ export class Setting {
 	confirm_delete_solve: boolean;
 
 	@Field()
+	confirm_delete_season: boolean;
+
+	@Field()
 	require_period_in_manual_time_entry: boolean;
 
 	@Field()
@@ -65,6 +68,9 @@ export class Setting {
 
 	@Field()
 	beta_tester: boolean;
+
+	@Field(() => Int, { nullable: true })
+	smart_cube_size?: number;
 
 	@Field(() => [CustomCubeType])
 	custom_cube_types?: CustomCubeType[];
@@ -109,6 +115,9 @@ export class SettingInput implements Partial<Setting> {
 	confirm_delete_solve: boolean;
 
 	@Field()
+	confirm_delete_season: boolean;
+
+	@Field()
 	require_period_in_manual_time_entry: boolean;
 
 	@Field()
@@ -125,4 +134,7 @@ export class SettingInput implements Partial<Setting> {
 
 	@Field()
 	beta_tester: boolean;
+
+	@Field(() => Int, { nullable: true })
+	smart_cube_size?: number;
 }

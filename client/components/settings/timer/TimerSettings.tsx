@@ -125,9 +125,15 @@ export default function TimerSettings() {
 				isSwitch
 			/>
 			<SettingRow
-				title="Çözüm silmeyi onayla"
-				description="Bir çözümü silmeden önce onay kutusu alın"
+				title="Son çözümü silmek için onay gereksin"
+				description="Bir çözümü silmeden önce onay kutusu göster"
 				settingName="confirm_delete_solve"
+				isSwitch
+			/>
+			<SettingRow
+				title="Sezonu silmek için onay gereksin"
+				description="Seçili sezondaki tüm çözümleri silmeden önce onay kutusu göster"
+				settingName="confirm_delete_season"
 				isSwitch
 			/>
 			<SettingRow
