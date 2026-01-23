@@ -686,6 +686,34 @@ export default function FriendlyRoom() {
         }
     }, [me, roomId, needsPassword]);
 
+    // Handle browser/tab close - automatically leave room
+    useEffect(() => {
+        if (!room || !me) return;
+
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            // Send leave room event
+            getSocket().emit(FriendlyRoomClientEvent.LEAVE_ROOM, roomId);
+        };
+
+        const handleVisibilityChange = () => {
+            // Handle page visibility changes (mobile browsers)
+            if (document.visibilityState === 'hidden') {
+                // User is leaving the page - send leave event
+                getSocket().emit(FriendlyRoomClientEvent.LEAVE_ROOM, roomId);
+            }
+        };
+
+        // Add event listeners
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            // Cleanup listeners
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, [room, me, roomId]);
+
     function handlePasswordSubmit(password: string) {
         const input: JoinFriendlyRoomInput = { room_id: roomId, password };
         getSocket().emit(FriendlyRoomClientEvent.JOIN_ROOM, input);

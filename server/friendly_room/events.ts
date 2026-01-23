@@ -488,6 +488,55 @@ export function listenForFriendlyRoomEvents(client: Socket) {
             client.emit(FriendlyRoomServerEvent.ERROR, 'Oda silinirken hata oluştu');
         }
     });
+
+    // Handle disconnect - automatically remove user from room when they close browser/tab
+    client.on('disconnect', async () => {
+        try {
+            const { user } = await getDetailedClientInfo(client);
+            if (!user) return;
+
+            // Get all active rooms and check if user is in any
+            const rooms = await getAllActiveRooms();
+            for (const room of rooms) {
+                const isInRoom = room.participants.some((p) => p.user_id === user.id);
+                if (isInRoom) {
+                    const result = await removeParticipant(room.id, user.id);
+                    const socketRoom = getFriendlyRoomSocketRoom(room.id);
+
+                    if (result.deleted) {
+                        // Room was deleted (no more participants)
+                        io().to(socketRoom).emit(FriendlyRoomServerEvent.ROOM_DELETED, room.id);
+                    } else if (result.room) {
+                        // Notify remaining participants
+                        io().to(socketRoom).emit(FriendlyRoomServerEvent.PLAYER_LEFT, {
+                            room_id: room.id,
+                            user_id: user.id,
+                        });
+
+                        // NOTIFICATION: User Disconnected
+                        io().to(socketRoom).emit(FriendlyRoomServerEvent.NOTIFICATION, {
+                            type: 'LEAVE',
+                            message: `${user.username} ayrıldı (bağlantı kesildi)`
+                        });
+
+                        // If admin changed, notify everyone
+                        if (result.newAdminId) {
+                            io().to(socketRoom).emit(FriendlyRoomServerEvent.ADMIN_CHANGED, {
+                                room_id: room.id,
+                                new_admin_id: result.newAdminId,
+                            });
+                        }
+                    }
+
+                    // Update lobby
+                    const updatedRooms = await getAllActiveRooms();
+                    io().to(FriendlyRoomSocketRoom.LOBBY).emit(FriendlyRoomServerEvent.ROOMS_LIST, updatedRooms);
+                }
+            }
+        } catch (error) {
+            logger.error('Error handling disconnect in friendly room', { error });
+        }
+    });
 }
 
 // Join lobby for receiving room list updates
