@@ -1,13 +1,14 @@
-import {gql} from '@apollo/client';
-import {gqlMutate} from '../../api';
-import {snakifyObject} from '../../../util/strings/snakify';
-import {IGameContext} from '../game/Game';
-import {PlayerStatus} from '../../../shared/match/types';
-import {GameSession, Match} from '../../../@types/generated/graphql';
-import {SOLVE_FRAGMENT} from '../../../util/graphql/fragments';
-import {Solve} from '../../../../server/schemas/Solve.schema';
+import { gql } from '@apollo/client';
+import { gqlMutate } from '../../api';
+import { snakifyObject } from '../../../util/strings/snakify';
+import { IGameContext } from '../game/Game';
+import { PlayerStatus } from '../../../shared/match/types';
+import { GameSession } from '../../../@types/generated/graphql';
+import { Match as MatchServer } from '../../../../server/schemas/Match.schema';
+import { SOLVE_FRAGMENT } from '../../../util/graphql/fragments';
+import { Solve } from '../../../../server/schemas/Solve.schema';
 
-export default async function onSolve(solve: Solve, context: IGameContext, match?: Match) {
+export default async function onSolve(solve: Solve, context: IGameContext, match?: MatchServer) {
 	const {
 		sessionId,
 		gameType,
@@ -36,7 +37,7 @@ export default async function onSolve(solve: Solve, context: IGameContext, match
 				}
 			`;
 
-			gqlMutate<{createGameSession: GameSession}>(query, {
+			gqlMutate<{ createGameSession: GameSession }>(query, {
 				gameType,
 				matchId: match?.id || null,
 			}).then((res) => {
@@ -64,7 +65,7 @@ export default async function onSolve(solve: Solve, context: IGameContext, match
 			gameSessionId = await getSessionId();
 		}
 
-		const data = await gqlMutate<{createSolve: Solve}>(query, {
+		const data = await gqlMutate<{ createSolve: Solve }>(query, {
 			input: {
 				...snakifyObject(solve),
 				game_session_id: gameSessionId,

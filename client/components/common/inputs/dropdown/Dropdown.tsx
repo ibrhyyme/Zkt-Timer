@@ -1,11 +1,11 @@
-import React, {ReactNode, useState} from 'react';
+import React, { ReactNode, useState } from 'react';
 import './Dropdown.scss';
 import block from '../../../../styles/bem';
 import CSS from 'csstype';
-import {CaretDown} from 'phosphor-react';
-import DropdownOption, {IDropdownOption} from './dropdown_option/DropdownOption';
-import GenericInput, {GenericInputProps, InputProps} from '../generic_input/GenericInput';
-import Button, {ButtonProps} from '../../button/Button';
+import { CaretDown } from 'phosphor-react';
+import DropdownOption, { IDropdownOption } from './dropdown_option/DropdownOption';
+import GenericInput, { GenericInputProps, InputProps } from '../generic_input/GenericInput';
+import Button, { ButtonProps } from '../../button/Button';
 
 const b = block('common-dropdown');
 
@@ -19,7 +19,7 @@ export interface DropdownProps extends GenericInputProps<HTMLDivElement> {
 	flat?: boolean;
 	openLeft?: boolean;
 	handle?: ReactNode;
-	icon?: JSX.Element;
+	icon?: React.ReactElement;
 	text?: string;
 	dropdownButtonProps?: ButtonProps;
 	fullWidth?: boolean;
@@ -106,7 +106,7 @@ export default function Dropdown(props: InputProps<DropdownProps>) {
 		}));
 
 		body = (
-			<div className={b('body', {up: openUp, left: openLeft, fullwidth: fullWidth})} style={style}>
+			<div className={b('body', { up: openUp, left: openLeft, fullwidth: fullWidth })} style={style}>
 				{wrappedOptions.map((op, index) => (
 					<DropdownOption key={`${op.text}-${index}`} option={op} />
 				))}

@@ -2,17 +2,15 @@ import React from 'react';
 import ProfileRow from '../profile_row/ProfileRow';
 import FriendshipRequest from '../../profile/friendship_request/FriendshipRequest';
 import PaginatedList from '../../common/paginated_list/PaginatedList';
-import {gqlQueryTyped} from '../../api';
-import {PublicUserAccount} from '../../../../server/schemas/UserAccount.schema';
-import {UserSearchDocument} from '../../../@types/generated/graphql';
-import {PaginationArgsInput} from '../../../../server/schemas/Pagination.schema';
+import { gqlQueryTyped } from '../../api';
+import { PublicUserAccount, UserSearchDocument, PaginationArgsInput } from '../../../@types/generated/graphql';
 
 interface Props {
 	query: string;
 }
 
 export default function UserSearch(props: Props) {
-	const {query} = props;
+	const { query } = props;
 
 	async function fetchData(pageArgs: PaginationArgsInput) {
 		const res = await gqlQueryTyped(
@@ -25,7 +23,12 @@ export default function UserSearch(props: Props) {
 			}
 		);
 
-		return res.data.userSearch;
+		const userSearch = res.data.userSearch;
+		return {
+			items: (userSearch?.items || []) as PublicUserAccount[],
+			hasMore: userSearch?.hasMore || false,
+			total: userSearch?.total || 0,
+		};
 	}
 
 	return (

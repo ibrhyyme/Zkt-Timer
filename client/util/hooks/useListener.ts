@@ -1,4 +1,4 @@
-import {useEffect, useRef} from 'react';
+import { useEffect, useRef } from 'react';
 type EventHandler = (data: any) => void;
 
 export function useDocumentListener(eventName, handler: EventHandler, deps: any[] = []) {
@@ -34,7 +34,7 @@ export function useWindowClickAwayListener(ignoreClassName: string, handler: Eve
 }
 
 export function useElementListener(elem, eventName, handler: EventHandler, deps: any[] = []) {
-	const savedHandler = useRef<EventHandler>();
+	const savedHandler = useRef<EventHandler | undefined>(undefined);
 
 	useEffect(() => {
 		savedHandler.current = handler;

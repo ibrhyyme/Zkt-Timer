@@ -1,9 +1,9 @@
-import {Field, ObjectType, InputType, Float, Int} from 'type-graphql';
-import {GraphQLBigInt} from 'graphql-scalars';
-import {PublicUserAccount} from './UserAccount.schema';
-import {SolveMethodStep} from './SolveStepMethod.schema';
-import {SolveView} from './SolveView.schema';
-import {SmartDevice} from './SmartDevice.schema';
+import { Field, ObjectType, InputType, Float, Int } from 'type-graphql';
+import { GraphQLBigInt } from 'graphql-scalars';
+import { PublicUserAccount } from './UserAccount.schema';
+import { SolveMethodStep } from './SolveStepMethod.schema';
+import { SolveView } from './SolveView.schema';
+import { SmartDevice } from './SmartDevice.schema';
 
 @InputType()
 export class SolveInput {
@@ -29,10 +29,10 @@ export class SolveInput {
 	session_id?: string;
 
 	@Field(() => GraphQLBigInt)
-	started_at?: bigint;
+	started_at?: number;
 
 	@Field(() => GraphQLBigInt)
-	ended_at?: bigint;
+	ended_at?: number;
 
 	@Field()
 	dnf?: boolean;
@@ -172,7 +172,7 @@ export class Solve {
 	@Field(() => [SolveView])
 	solve_views?: SolveView[];
 
-	@Field(() => SmartDevice, {nullable: true})
+	@Field(() => SmartDevice, { nullable: true })
 	smart_device?: SmartDevice;
 
 	@Field(() => PublicUserAccount)

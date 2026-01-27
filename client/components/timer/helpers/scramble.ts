@@ -1,7 +1,7 @@
-import {getCubeTypeInfoById, getScrambleTypeById} from '../../../util/cubes/util';
-import {Scrambow} from 'scrambow';
-import {ITimerContext} from '../Timer';
-import {setTimerParam} from './params';
+import { getCubeTypeInfoById, getScrambleTypeById } from '../../../util/cubes/util';
+import { Scrambow } from 'scrambow';
+import { ITimerContext } from '../Timer';
+import { setTimerParam } from './params';
 
 export function getNewScramble(scrambleTypeId: string, seed?: number) {
 	const scrambleType = getScrambleTypeById(scrambleTypeId);
@@ -59,7 +59,7 @@ function getBlindWideMove() {
 }
 
 export function resetScramble(context: ITimerContext) {
-	const {cubeType, scrambleLocked, customScrambleFunc} = context;
+	const { cubeType, scrambleLocked, customScrambleFunc } = context;
 	const ct = getCubeTypeInfoById(cubeType);
 
 	let newScramble;

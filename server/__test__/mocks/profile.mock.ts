@@ -1,6 +1,8 @@
-import {UserMock} from './user.mock';
-import {TopSolveMock} from './top_solve.mock';
-import {TopAverageMock} from './top_average.mock';
+import { UserMock } from './user.mock';
+import { TopSolveMock } from './top_solve.mock';
+import { TopAverageMock } from './top_average.mock';
+
+import { ImageMock } from './image.mock';
 
 export const ProfileMock = {
 	id: 'ffd1aa3d-1606-4b34-8fba-519fe99c2750',
@@ -22,5 +24,5 @@ export const ProfileMock = {
 		user_id: 'e4de5533-7c34-42c1-ae57-93ad0cb5b3d8',
 		storage_path: 'images/XF4T2Z1C18.jpeg',
 	},
-	pfp_image: ImageM,
+	pfp_image: ImageMock,
 };

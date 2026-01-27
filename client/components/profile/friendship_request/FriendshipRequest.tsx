@@ -12,13 +12,17 @@ import {
 	ReceivedFriendshipRequestsFromUserDocument,
 	SentFriendshipRequestsToUserDocument,
 	SendFriendshipRequestDocument,
+	PublicUserAccount as GqlPublicUserAccount,
 } from '../../../@types/generated/graphql';
 import { useDispatch, useSelector } from 'react-redux';
 import { useMe } from '../../../util/hooks/useMe';
 import { PublicUserAccount } from '../../../../server/schemas/UserAccount.schema';
 
+// Combined type for user prop
+type FriendshipRequestUser = PublicUserAccount | GqlPublicUserAccount;
+
 interface Props {
-	user: PublicUserAccount;
+	user: FriendshipRequestUser;
 	fetchData?: boolean;
 	friendRequestSent?: FriendshipRequestSchema;
 	friendRequestReceived?: FriendshipRequestSchema;

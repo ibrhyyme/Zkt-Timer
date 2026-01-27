@@ -8,11 +8,11 @@ import {
 	QueryOptions,
 } from '@apollo/client';
 import _ from 'lodash';
-import {TypedDocumentNode} from '@graphql-typed-document-node/core';
-import {createUploadLink} from 'apollo-upload-client';
+import { TypedDocumentNode } from '@graphql-typed-document-node/core';
+import { createUploadLink } from 'apollo-upload-client';
 import nodeFetch from 'node-fetch';
 // process.env variables are defined by esbuild, no need to import process
-import {MutationFetchPolicy} from '@apollo/client/core/watchQueryOptions';
+import { MutationFetchPolicy } from '@apollo/client/core/watchQueryOptions';
 
 let client: ApolloClient<NormalizedCacheObject>;
 
@@ -50,12 +50,16 @@ export function initApollo() {
 	return client;
 }
 
-export async function gqlQuery<T>(gql: DocumentNode, variables?: T, fetchPolicy: FetchPolicy = 'no-cache') {
+export async function gqlQuery<TData = any, TVariables = any>(
+	gql: DocumentNode,
+	variables?: TVariables,
+	fetchPolicy: FetchPolicy = 'no-cache'
+) {
 	if (!client) {
 		initApollo();
 	}
 
-	return await client.query<T>({
+	return await client.query<TData, TVariables>({
 		query: gql,
 		fetchPolicy,
 		variables,
@@ -78,12 +82,16 @@ export async function gqlQueryTyped<T = any, V = Record<string, any>>(
 	});
 }
 
-export async function gqlMutate<T>(gql: DocumentNode, variables?: T, fetchPolicy: MutationFetchPolicy = 'no-cache') {
+export async function gqlMutate<TData = any, TVariables = any>(
+	gql: DocumentNode,
+	variables?: TVariables,
+	fetchPolicy: MutationFetchPolicy = 'no-cache'
+) {
 	if (!client) {
 		initApollo();
 	}
 
-	return await client.mutate<T>({
+	return await client.mutate<TData, TVariables>({
 		mutation: gql,
 		fetchPolicy,
 		variables,

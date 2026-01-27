@@ -1,20 +1,20 @@
-import React, {ReactNode, useContext} from 'react';
-import {CaretDown} from 'phosphor-react';
-import {TimerModuleDropdownOptions, TimerModuleType} from '../@types/enums';
-import {FooterModuleData, TimerCustomModuleOptions} from '../@types/interfaces';
+import React, { ReactNode, useContext } from 'react';
+import { CaretDown } from 'phosphor-react';
+import { TimerModuleDropdownOptions, TimerModuleType } from '../@types/enums';
+import { FooterModuleData, TimerCustomModuleOptions } from '../@types/interfaces';
 import History from '../../modules/history/History';
 import LastSolve from '../../modules/last_solve/LastSolve';
 import Scramble from '../../modules/scramble/ScrambleVisual';
 import TimeChart from '../../modules/time_chart/TimeChart';
 import TimeDistro from '../../modules/time_distro/TimeDistro';
 import SolvesPerDay from '../../modules/solves_per_day/SolvesPerDay';
-import {snakeCase} from 'change-case';
+import { snakeCase } from 'change-case';
 import Dropdown from '../../common/inputs/dropdown/Dropdown';
 import ProOnly from '../../common/pro_only/ProOnly';
-import {TimerContext} from '../Timer';
-import {setSetting} from '../../../db/settings/update';
-import {useSettings} from '../../../util/hooks/useSettings';
-import {useMe} from '../../../util/hooks/useMe';
+import { TimerContext } from '../Timer';
+import { setSetting } from '../../../db/settings/update';
+import { useSettings } from '../../../util/hooks/useSettings';
+import { useMe } from '../../../util/hooks/useMe';
 import QuickStats from '../../modules/quick_stats/QuickStats';
 
 interface Props {
@@ -24,11 +24,11 @@ interface Props {
 }
 
 export default function TimerModule(props: Props) {
-	const {index, moduleType, customOptions} = props;
+	const { index, moduleType, customOptions } = props;
 
 	const me = useMe();
 	const context = useContext(TimerContext);
-	const {scramble, cubeType, solvesFilter} = context;
+	const { scramble, cubeType, solvesFilter } = context;
 
 	const timerModules = useSettings('timer_modules');
 
@@ -72,7 +72,7 @@ export default function TimerModule(props: Props) {
 			proOnly: false,
 		},
 		[TimerModuleType.CONSISTENCY]: {
-			module: <SolvesPerDay dummy={false} filterOptions={solvesFilter} days={14} />,
+			module: <SolvesPerDay filterOptions={solvesFilter} days={14} />,
 			proOnly: false,
 		},
 		[TimerModuleType.NONE]: {
@@ -83,14 +83,14 @@ export default function TimerModule(props: Props) {
 	};
 
 	const moduleDropdownOptions: TimerModuleDropdownOptions[] = customOptions?.dropdownOptions || [
-		{label: 'Çözümler', value: TimerModuleType.HISTORY},
-		{label: 'İstatistikler', value: TimerModuleType.STATS},
-		{label: 'Son Çözüm', value: TimerModuleType.LAST_SOLVE},
-		{label: 'Karıştırma', value: TimerModuleType.SCRAMBLE},
-		{label: 'Tutarlılık', value: TimerModuleType.CONSISTENCY},
-		{label: 'süre Grafiği', value: TimerModuleType.SOLVE_GRAPH},
-		{label: 'süre Dağılımı', value: TimerModuleType.TIME_DISTRO},
-		{label: 'Hiçbiri', value: TimerModuleType.NONE},
+		{ label: 'Çözümler', value: TimerModuleType.HISTORY },
+		{ label: 'İstatistikler', value: TimerModuleType.STATS },
+		{ label: 'Son Çözüm', value: TimerModuleType.LAST_SOLVE },
+		{ label: 'Karıştırma', value: TimerModuleType.SCRAMBLE },
+		{ label: 'Tutarlılık', value: TimerModuleType.CONSISTENCY },
+		{ label: 'süre Grafiği', value: TimerModuleType.SOLVE_GRAPH },
+		{ label: 'süre Dağılımı', value: TimerModuleType.TIME_DISTRO },
+		{ label: 'Hiçbiri', value: TimerModuleType.NONE },
 	];
 
 	const currentModuleName = moduleDropdownOptions.find((option) => option.value === moduleType)?.label;

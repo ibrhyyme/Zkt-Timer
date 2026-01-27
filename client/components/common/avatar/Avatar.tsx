@@ -1,19 +1,36 @@
 import React from 'react';
 import './Avatar.scss';
 import AvatarImage from './avatar_image/AvatarImage';
-import {CircleWavyCheck} from 'phosphor-react';
-import {Link} from 'react-router-dom';
+import { CircleWavyCheck } from 'phosphor-react';
+import { Link } from 'react-router-dom';
 import Badges from './badges/Badges';
-import {PublicUserAccount, UserAccount, UserAccountForAdmin} from '../../../../server/schemas/UserAccount.schema';
+import { PublicUserAccount, UserAccount, UserAccountForAdmin } from '../../../../server/schemas/UserAccount.schema';
+import {
+	PublicUserAccount as GqlPublicUserAccount,
+	UserAccount as GqlUserAccount,
+	UserAccountForAdmin as GqlUserAccountForAdmin,
+	Profile as GqlProfile,
+} from '../../../@types/generated/graphql';
 import block from '../../../styles/bem';
 import AvatarDropdown from './avatar_dropdown/AvatarDropdown';
-import {Profile} from '../../../../server/schemas/Profile.schema';
+import { Profile } from '../../../../server/schemas/Profile.schema';
 
 const b = block('avatar');
 
+// Combined type that accepts both server schema types and GraphQL generated types
+type AvatarUser =
+	| UserAccountForAdmin
+	| PublicUserAccount
+	| UserAccount
+	| GqlUserAccountForAdmin
+	| GqlPublicUserAccount
+	| GqlUserAccount;
+
+type AvatarProfile = Profile | GqlProfile;
+
 interface Props {
-	user?: UserAccountForAdmin | PublicUserAccount | UserAccount;
-	profile?: Profile;
+	user?: AvatarUser;
+	profile?: AvatarProfile;
 	small?: boolean;
 	tiny?: boolean;
 	large?: boolean;
@@ -28,7 +45,7 @@ interface Props {
 
 export default function Avatar(props: Props) {
 	const user = props.user as UserAccountForAdmin;
-	const {small, large, vertical, showOptions, showEloType, tiny, showEmail, hideBadges, target, noLink} = props;
+	const { small, large, vertical, showOptions, showEloType, tiny, showEmail, hideBadges, target, noLink } = props;
 
 	function onClick(e) {
 		if (noLink) {
@@ -89,7 +106,7 @@ export default function Avatar(props: Props) {
 	return (
 		<div className={b('wrapper')}>
 			<div className={b('body')}>
-				<Link target={target || '_self'} className={b({vertical})} onClick={onClick} to={link}>
+				<Link target={target || '_self'} className={b({ vertical })} onClick={onClick} to={link}>
 					<AvatarImage large={large} tiny={tiny} small={small} user={user} profile={profile} />
 					<div className={b('info')}>
 						{nameSpan}

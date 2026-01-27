@@ -1,10 +1,16 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import './AvatarImage.scss';
-import {getStorageURL, resourceUri} from '../../../../util/storage';
+import { getStorageURL, resourceUri } from '../../../../util/storage';
 import block from '../../../../styles/bem';
-import {PublicUserAccount, UserAccount, UserAccountForAdmin} from '../../../../../server/schemas/UserAccount.schema';
-import {Profile} from '../../../../../server/schemas/Profile.schema';
-import {isPro} from '../../../../util/pro';
+import { PublicUserAccount, UserAccount, UserAccountForAdmin } from '../../../../../server/schemas/UserAccount.schema';
+import { Profile } from '../../../../../server/schemas/Profile.schema';
+import {
+	PublicUserAccount as GqlPublicUserAccount,
+	UserAccount as GqlUserAccount,
+	UserAccountForAdmin as GqlUserAccountForAdmin,
+	Profile as GqlProfile,
+} from '../../../../@types/generated/graphql';
+import { isPro } from '../../../../util/pro';
 
 const b = block('avatar-image');
 
@@ -54,9 +60,20 @@ const COLORS = [
 	'#4C5355',
 ];
 
+// Combined types for props
+type AvatarImageUser =
+	| UserAccountForAdmin
+	| PublicUserAccount
+	| UserAccount
+	| GqlUserAccountForAdmin
+	| GqlPublicUserAccount
+	| GqlUserAccount;
+
+type AvatarImageProfile = Profile | GqlProfile;
+
 interface Props {
-	user?: UserAccountForAdmin | PublicUserAccount | UserAccount;
-	profile?: Profile;
+	user?: AvatarImageUser;
+	profile?: AvatarImageProfile;
 	image?: string;
 	small?: boolean;
 	tiny?: boolean;
@@ -64,7 +81,7 @@ interface Props {
 }
 
 export default function AvatarImage(props: Props) {
-	const {large, tiny, small, image} = props;
+	const { large, tiny, small, image } = props;
 	const [imageError, setImageError] = useState(false);
 
 	const user = props.user || props.profile?.user;
@@ -72,14 +89,14 @@ export default function AvatarImage(props: Props) {
 
 	// Check if we have a profile image and it hasn't failed to load
 	const hasProfileImage = ((profile && profile.pfp_image) || image) && !imageError;
-	
+
 	let avatar;
 	if (hasProfileImage) {
 		const avatarSrc = image || getStorageURL(profile?.pfp_image?.storage_path);
-		
+
 		avatar = (
 			<div className={b()}>
-				<div className={b('body', {large, small, tiny})}>
+				<div className={b('body', { large, small, tiny })}>
 					<img
 						src={avatarSrc}
 						alt={`Profile picture of ${user?.username || 'user'}`}
@@ -97,7 +114,7 @@ export default function AvatarImage(props: Props) {
 		const lastLetter = user?.id?.[user.id.length - 1] || 'a';
 		const lastIndex = 'abcdefghijklmnopqrstuvwxyz0123456789'.indexOf(lastLetter);
 		const backgroundColor = COLORS[lastIndex % COLORS.length];
-		
+
 		// Get user initials
 		const getInitials = (name?: string) => {
 			if (!name) return '?';
@@ -105,16 +122,16 @@ export default function AvatarImage(props: Props) {
 			const [a, b] = [parts[0]?.[0], parts[1]?.[0]];
 			return (a || '').toUpperCase() + (b || '').toUpperCase();
 		};
-		
+
 		const initials = getInitials(user?.username || (user as any)?.first_name);
 
 		avatar = (
 			<div className={b()}>
 				<div
-					className={b('body', {default: true, large, small, tiny})}
-					style={{backgroundColor}}
+					className={b('body', { default: true, large, small, tiny })}
+					style={{ backgroundColor }}
 				>
-					<div 
+					<div
 						style={{
 							display: 'flex',
 							alignItems: 'center',

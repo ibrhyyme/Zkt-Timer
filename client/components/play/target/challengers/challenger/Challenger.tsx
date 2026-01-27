@@ -1,18 +1,18 @@
-import React, {useContext, useEffect, useRef, useState} from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import './Challenger.scss';
-import {Placeholder, WifiSlash, Check, Clock, X, Trophy} from 'phosphor-react';
-import {addEventListener} from '../../../../../util/event_handler';
-import {getTimeString} from '../../../../../util/time';
+import { Placeholder, WifiSlash, Check, Clock, X, Trophy } from 'phosphor-react';
+import { addEventListener } from '../../../../../util/event_handler';
+import { getTimeString } from '../../../../../util/time';
 import Avatar from '../../../../common/avatar/Avatar';
 import Emblem from '../../../../common/emblem/Emblem';
-import {getMatchClientEvent} from '../../../../../shared/match/client_events';
-import {MatchClientEvent} from '../../../../../shared/match/events';
+import { getMatchClientEvent } from '../../../../../shared/match/client_events';
+import { MatchClientEvent } from '../../../../../shared/match/events';
 import block from '../../../../../styles/bem';
-import {MatchStanding, PlayerStatus} from '../../../../../shared/match/types';
-import {MatchContext} from '../../../match/Match';
-import {Solve} from '../../../../../../server/schemas/Solve.schema';
-import {PublicUserAccount} from '../../../../../../server/schemas/UserAccount.schema';
-import {useMe} from '../../../../../util/hooks/useMe';
+import { MatchStanding, PlayerStatus } from '../../../../../shared/match/types';
+import { MatchContext } from '../../../match/Match';
+import { Solve } from '../../../../../../server/schemas/Solve.schema';
+import { PublicUserAccount } from '../../../../../../server/schemas/UserAccount.schema';
+import { useMe } from '../../../../../util/hooks/useMe';
 
 const b = block('challenger');
 
@@ -36,7 +36,7 @@ const statusIconMap = {
 };
 
 export default function Challenger(props: ChallengerProps) {
-	const {challenger, onSelect, selectedChallengerId, selectable} = props;
+	const { challenger, onSelect, selectedChallengerId, selectable } = props;
 
 	const matchContext = useContext(MatchContext);
 	const [standing, setStanding] = useState<MatchStanding>(null);
@@ -74,7 +74,7 @@ export default function Challenger(props: ChallengerProps) {
 		setLeaveCounter(null);
 	}
 
-	function leaveMatch({secondsToReturn}) {
+	function leaveMatch({ secondsToReturn }) {
 		if (!secondsToReturn) {
 			return;
 		}
@@ -91,7 +91,7 @@ export default function Challenger(props: ChallengerProps) {
 		setLeaveCounter(null);
 	}
 
-	function updateLastSolve({solve}) {
+	function updateLastSolve({ solve }) {
 		const newSolves = [...solves];
 		newSolves.pop();
 		newSolves.push(solve);
@@ -100,7 +100,7 @@ export default function Challenger(props: ChallengerProps) {
 		setTime(solve.time);
 	}
 
-	function solveAddedToHistory({solve}) {
+	function solveAddedToHistory({ solve }) {
 		const newSolves = [...solves];
 		newSolves.push(solve);
 
@@ -117,7 +117,7 @@ export default function Challenger(props: ChallengerProps) {
 		setStanding(data);
 	}
 
-	function startTimer({startedAt}) {
+	function startTimer({ startedAt }) {
 		if (timerCounter.current) {
 			return;
 		}
@@ -204,7 +204,7 @@ export default function Challenger(props: ChallengerProps) {
 			<div className={b('footer')}>
 				<div className={b('status')}>{statusIcon}</div>
 				<div>
-					<span className={b('time', {solving: solving || done})}>{timeStr}</span>
+					<span className={b('time', { solving: solving || done })}>{timeStr}</span>
 				</div>
 			</div>
 		</div>

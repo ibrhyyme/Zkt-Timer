@@ -1,18 +1,18 @@
-import React, {ReactNode} from 'react';
+import React, { ReactNode } from 'react';
 import './Button.scss';
-import {Link} from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Error from '../inputs/error/Error';
 import CSS from 'csstype';
 import block from '../../../styles/bem';
 import InputInfo from '../inputs/input/input_info/InputInfo';
-import {CommonType} from './Button';
+import { CommonType } from './Button';
 
 const b = block('common-button');
 
 interface Props {
 	to: string;
 	text?: string;
-	icon?: JSX.Element;
+	icon?: React.ReactElement;
 	info?: string;
 	small?: boolean;
 	target?: string;
@@ -112,7 +112,7 @@ export default function LinkButton(props: Props) {
 	}
 
 	return (
-		<div className={b('wrapper', {fullWidth, alignRight, nomargin: noMargin})}>
+		<div className={b('wrapper', { fullWidth, alignRight, nomargin: noMargin })}>
 			{anchor}
 			<Error text={error} />
 			<InputInfo text={info} />

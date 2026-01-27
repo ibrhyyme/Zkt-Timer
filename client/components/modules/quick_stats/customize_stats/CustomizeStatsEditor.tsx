@@ -1,17 +1,17 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import HorizontalNav from '../../../common/horizontal_nav/HorizontalNav';
-import {useToggle} from '../../../../util/hooks/useToggle';
-import {Check} from 'phosphor-react';
+import { useToggle } from '../../../../util/hooks/useToggle';
+import { Check } from 'phosphor-react';
 import Input from '../../../common/inputs/input/Input';
 import Checkbox from '../../../common/checkbox/Checkbox';
 import InputLegend from '../../../common/inputs/input/input_legend/InputLegend';
-import colorPalette, {ColorName} from '../../../../../shared/colors';
+import colorPalette, { ColorName } from '../../../../../shared/colors';
 import CustomizeStatsColor from './CustomizeStatsColor';
-import {StatsModuleBlock} from '../../../../../server/schemas/StatsModule.schema';
+import { StatsModuleBlock } from '../../../../../server/schemas/StatsModule.schema';
 import ProOnly from '../../../common/pro_only/ProOnly';
-import {getStatsBlockDescription, saveStatsModuleBlocks} from '../util';
-import {useDispatch} from 'react-redux';
-import {updateStatsModuleBlock} from '../../../../actions/stats';
+import { getStatsBlockDescription, saveStatsModuleBlocks } from '../util';
+import { useDispatch } from 'react-redux';
+import { updateStatsModuleBlock } from '../../../../actions/stats';
 import Tag from '../../../common/tag/Tag';
 import Button from '../../../common/button/Button';
 import FormSection from '../../../common/form/FormSection';
@@ -24,15 +24,15 @@ interface Props {
 }
 
 export default function CustomizeStatsEditor(props: Props) {
-	const {stat, index, removeStatsBlock, hideRemoveButton} = props;
+	const { stat, index, removeStatsBlock, hideRemoveButton } = props;
 
 	const effectiveAverageCountStr = String(
 		typeof stat?.averageCount === 'number' ? Math.max(stat.averageCount, 0) : 50
 	);
 
 	const dispatch = useDispatch();
-	const currentIndex = useRef<number>(null);
-	const saveStatusTimer = useRef<NodeJS.Timeout>();
+	const currentIndex = useRef<number | null>(null);
+	const saveStatusTimer = useRef<NodeJS.Timeout | undefined>(undefined);
 	const [averageAll, setAverageAll] = useState<boolean>(effectiveAverageCountStr === '0');
 	const [savedStatus, setSavedStatus] = useState<null | 'saved' | 'saving'>();
 	const [error, setError] = useState<string>(null);
@@ -200,8 +200,8 @@ export default function CustomizeStatsEditor(props: Props) {
 						tabId={statType}
 						onChange={(val) => selectStatType(val)}
 						tabs={[
-							{id: 'single', value: 'Tekil'},
-							{id: 'average', value: 'Ortalama'},
+							{ id: 'single', value: 'Tekil' },
+							{ id: 'average', value: 'Ortalama' },
 						]}
 					/>
 				</FormSection>
@@ -213,9 +213,9 @@ export default function CustomizeStatsEditor(props: Props) {
 						tabId={sortBy}
 						onChange={(val) => setSortBy(val as any)}
 						tabs={[
-							{id: 'current', value: 'Güncel', skip: statType !== 'average'},
-							{id: 'best', value: 'En İyi'},
-							{id: 'worst', value: 'En Kötü'},
+							{ id: 'current', value: 'Güncel', skip: statType !== 'average' },
+							{ id: 'best', value: 'En İyi' },
+							{ id: 'worst', value: 'En Kötü' },
 						]}
 					/>
 				</FormSection>

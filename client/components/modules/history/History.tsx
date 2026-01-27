@@ -1,16 +1,16 @@
 import React from 'react';
 import ReactList from 'react-list';
-import {GlobalHotKeys} from 'react-hotkeys';
+import { GlobalHotKeys } from 'react-hotkeys';
 import './History.scss';
 import Empty from '../../common/empty/Empty';
-import {HOTKEY_MAP} from '../../../util/timer/hotkeys';
-import {FilterSolvesOptions, fetchSolves, fetchLastSolve} from '../../../db/solves/query';
+import { HOTKEY_MAP } from '../../../util/timer/hotkeys';
+import { FilterSolvesOptions, fetchSolves, fetchLastSolve } from '../../../db/solves/query';
 import HistorySolveRow from './solve_row/HistorySolveRow';
-import {toggleDnfSolveDb, togglePlusTwoSolveDb, setOkSolveDb} from '../../../db/solves/operations';
-import {deleteSolveDb} from '../../../db/solves/update';
-import {useSolveDb} from '../../../util/hooks/useSolveDb';
-import {Solve} from '../../../@types/generated/graphql';
-import {useGeneral} from '../../../util/hooks/useGeneral';
+import { toggleDnfSolveDb, togglePlusTwoSolveDb, setOkSolveDb } from '../../../db/solves/operations';
+import { deleteSolveDb } from '../../../db/solves/update';
+import { useSolveDb } from '../../../util/hooks/useSolveDb';
+import { Solve } from '../../../../server/schemas/Solve.schema';
+import { useGeneral } from '../../../util/hooks/useGeneral';
 
 interface Props {
 	solves?: Solve[];
@@ -22,7 +22,7 @@ interface Props {
 
 // TODO NOW hotkeys for History
 export default function History(props: Props) {
-	const {solves: parentSolves, reverseOrder, disabled, filterOptions, hotKeysEnabled} = props;
+	const { solves: parentSolves, reverseOrder, disabled, filterOptions, hotKeysEnabled } = props;
 
 	useSolveDb();
 	const modals = useGeneral('modals');

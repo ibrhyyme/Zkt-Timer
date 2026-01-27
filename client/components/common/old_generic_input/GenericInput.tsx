@@ -1,4 +1,4 @@
-import React, {isValidElement, ReactElement, ReactNode, useState} from 'react';
+import React, { isValidElement, ReactElement, ReactNode, useState } from 'react';
 import './GenericInput.scss';
 import block from '../../../styles/bem';
 import CSS from 'csstype';
@@ -90,7 +90,7 @@ export default function GenericInput<T extends HTMLInputElement>(props: GenericI
 
 	let inputWithProps: ReactNode = input;
 	if (isValidElement(input)) {
-		inputWithProps = React.cloneElement(input as JSX.Element, {
+		inputWithProps = React.cloneElement(input as React.ReactElement<any>, {
 			value: val,
 			type,
 			name,
@@ -108,7 +108,7 @@ export default function GenericInput<T extends HTMLInputElement>(props: GenericI
 	}
 
 	return (
-		<div style={style} className={b({noMargin, fullWidth})}>
+		<div style={style} className={b({ noMargin, fullWidth })}>
 			{headerBody}
 			{inputBody}
 			{footer}

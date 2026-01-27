@@ -1,4 +1,4 @@
-﻿# builds
+# builds
 node_modules
 .next
 dist
@@ -18,3 +18,8 @@ docker.env
 *.crt
 
 !.env.example
+PROJECT_INFO_MAP.md
+
+# Backend tests
+server/**/*.test.ts
+server/**/__test__/

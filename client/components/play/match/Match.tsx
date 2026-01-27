@@ -1,31 +1,31 @@
-import React, {createContext, useContext, useEffect, useRef, useState} from 'react';
-import {useDispatch} from 'react-redux';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import './Match.scss';
-import {isSocketConnected, socketClient} from '../../../util/socket/socketio';
+import { isSocketConnected, socketClient } from '../../../util/socket/socketio';
 import Modal from '../../common/modal/Modal';
 import Timer from '../../timer/Timer';
 import ChatBox from '../../modules/chat/ChatBox';
-import {Match as MatchSchema} from '../../../../server/schemas/Match.schema';
-import {TimerProps} from '../../timer/@types/interfaces';
-import {reactState} from '../../../@types/react';
+import { Match as MatchSchema } from '../../../../server/schemas/Match.schema';
+import { TimerProps } from '../../timer/@types/interfaces';
+import { reactState } from '../../../@types/react';
 import Listeners from './Listeners';
-import {MatchConst} from '../../../shared/match/consts';
-import {ChallengerProps} from '../target/challengers/challenger/Challenger';
-import {openModal} from '../../../actions/general';
+import { MatchConst } from '../../../shared/match/consts';
+import { ChallengerProps } from '../target/challengers/challenger/Challenger';
+import { openModal } from '../../../actions/general';
 import History from '../../modules/history/History';
-import {updateMatchState} from './helpers/state';
-import {GameContext} from '../game/Game';
-import {useMe} from '../../../util/hooks/useMe';
+import { updateMatchState } from './helpers/state';
+import { GameContext } from '../game/Game';
+import { useMe } from '../../../util/hooks/useMe';
 import Dropdown from '../../common/inputs/dropdown/Dropdown';
-import {getMatchLinkBase} from './match_popup/custom_match/CustomMatch';
-import {toastSuccess} from '../../../util/toast';
-import {Prohibit, CaretDown, Copy, Flag} from 'phosphor-react';
-import {copyText} from '../../common/copy_text/CopyText';
+import { getMatchLinkBase } from './match_popup/custom_match/CustomMatch';
+import { toastSuccess } from '../../../util/toast';
+import { Prohibit, CaretDown, Copy, Flag } from 'phosphor-react';
+import { copyText } from '../../common/copy_text/CopyText';
 import MatchOver from './match_over/MatchOver';
-import {MatchSession} from '../../../../server/schemas/MatchSession.schema';
-import {PublicUserAccount} from '../../../../server/schemas/UserAccount.schema';
-import {GameType} from '../../../../shared/match/consts';
-import {Solve} from '../../../@types/generated/graphql';
+import { MatchSession } from '../../../../server/schemas/MatchSession.schema';
+import { PublicUserAccount } from '../../../../server/schemas/UserAccount.schema';
+import { GameType } from '../../../../shared/match/consts';
+import { Solve } from '../../../../server/schemas/Solve.schema';
 
 interface MatchProps {
 	matchPath: string;
@@ -75,7 +75,7 @@ export interface IMatchContext extends MatchProps {
 export const MatchContext = createContext<IMatchContext>(null);
 
 export default function Match(props: MatchProps) {
-	const {linkCode, matchType, matchPath, onSolve, timerParams} = props;
+	const { linkCode, matchType, matchPath, onSolve, timerParams } = props;
 
 	const gameContext = useContext(GameContext);
 	const dispatch = useDispatch();
@@ -221,8 +221,8 @@ export default function Match(props: MatchProps) {
 					text="Match Options"
 					icon={<CaretDown weight="bold" />}
 					options={[
-						{text: 'Copy Spectate Link', icon: <Copy weight="bold" />, onClick: copySpectateLink},
-						{text: 'Copy Play Link', icon: <Copy weight="bold" />, onClick: copyPlayLink},
+						{ text: 'Copy Spectate Link', icon: <Copy weight="bold" />, onClick: copySpectateLink },
+						{ text: 'Copy Play Link', icon: <Copy weight="bold" />, onClick: copyPlayLink },
 						{
 							text: 'Resign',
 							disabled: !!match?.ended_at,
@@ -260,7 +260,7 @@ export default function Match(props: MatchProps) {
 						module: (
 							<ChatBox
 								matchType={matchType}
-								messages={matchSession?.chat_messages || []}
+								messages={(matchSession?.chat_messages as any) || []}
 								match={match}
 								disabled={spectating}
 							/>

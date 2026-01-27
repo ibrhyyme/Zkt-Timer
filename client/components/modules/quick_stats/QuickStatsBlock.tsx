@@ -1,18 +1,18 @@
-import React, {useEffect, useMemo, useRef, useState} from 'react';
-import {FilterSolvesOptions} from '../../../db/solves/query';
-import {StatsModuleBlock} from '../../../../server/schemas/StatsModule.schema';
-import {getStatsBlockDescription, getStatsBlockValueFromFilter} from './util';
-import {useColor} from '../../../util/hooks/useTheme';
-import {useMe} from '../../../util/hooks/useMe';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { FilterSolvesOptions } from '../../../db/solves/query';
+import { StatsModuleBlock } from '../../../../server/schemas/StatsModule.schema';
+import { getStatsBlockDescription, getStatsBlockValueFromFilter } from './util';
+import { useColor } from '../../../util/hooks/useTheme';
+import { useMe } from '../../../util/hooks/useMe';
 import jsonStr from 'json-stable-stringify';
-import {useSettings} from '../../../util/hooks/useSettings';
-import {getTimeString} from '../../../util/time';
-import {useDispatch} from 'react-redux';
-import {openModal} from '../../../actions/general';
+import { useSettings } from '../../../util/hooks/useSettings';
+import { getTimeString } from '../../../util/time';
+import { useDispatch } from 'react-redux';
+import { openModal } from '../../../actions/general';
 import SolveInfo from '../../solve_info/SolveInfo';
 import HistoryModal from '../history/history_modal/HistoryModal';
 import CSS from 'csstype';
-import {useSolveDb} from '../../../util/hooks/useSolveDb';
+import { useSolveDb } from '../../../util/hooks/useSolveDb';
 
 interface Props {
 	filterOptions?: FilterSolvesOptions;
@@ -22,13 +22,13 @@ interface Props {
 }
 
 export default function QuickStatsBlock(props: Props) {
-	const {rowSpan, filterOptions, colSpan, statOptions} = props;
+	const { rowSpan, filterOptions, colSpan, statOptions } = props;
 
 	const dispatch = useDispatch();
 	const sessionId = useSettings('session_id');
 	const [fontSize, setFontSize] = useState(25);
 	const me = useMe();
-	const statsBlockDiv = useRef<HTMLDivElement>();
+	const statsBlockDiv = useRef<HTMLDivElement>(null);
 	const solveDb = useSolveDb();
 
 	const [statsBlockSolvesFilter, statsBlockDescription] = useMemo(() => {
@@ -131,13 +131,13 @@ interface DescProps {
 }
 
 function StatDescription(props: DescProps) {
-	const {statOptions} = props;
+	const { statOptions } = props;
 
 	if (!statOptions) {
 		return null;
 	}
 
-	const {statType, averageCount, sortBy, session} = statOptions;
+	const { statType, averageCount, sortBy, session } = statOptions;
 
 	const text = [];
 	if (session) {

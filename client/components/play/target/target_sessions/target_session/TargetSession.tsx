@@ -1,15 +1,15 @@
-import React, {ReactNode} from 'react';
+import React, { ReactNode } from 'react';
 import './TargetSession.scss';
 import History from '../../../../modules/history/History';
 import Avatar from '../../../../common/avatar/Avatar';
 import Emblem from '../../../../common/emblem/Emblem';
 import LinkButton from '../../../../common/button/LinkButton';
-import {useDispatch} from 'react-redux';
-import {openModal} from '../../../../../actions/general';
-import {getGameLink} from '../../../game/Game';
+import { useDispatch } from 'react-redux';
+import { openModal } from '../../../../../actions/general';
+import { getGameLink } from '../../../game/Game';
 import Button from '../../../../common/button/Button';
-import {GameSession} from '../../../../../../server/schemas/Game.schema';
-import {GameType} from '../../../../../../shared/match/consts';
+import { GameSession } from '../../../../../../server/schemas/Game.schema';
+import { GameType } from '../../../../../../shared/match/consts';
 
 interface Props {
 	gameType: GameType;
@@ -17,7 +17,7 @@ interface Props {
 }
 
 export default function TargetSession(props: Props) {
-	const {session, gameType} = props;
+	const { session, gameType } = props;
 
 	const dispatch = useDispatch();
 
@@ -63,7 +63,7 @@ export default function TargetSession(props: Props) {
 
 	return (
 		<div className="cd-community__sessions__session">
-			{openModal}
+
 			<div className="cd-community__sessions__session__info">
 				<h4>
 					<span>{gameSolves.length}</span>

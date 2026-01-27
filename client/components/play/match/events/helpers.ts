@@ -1,9 +1,9 @@
-import {getExistingMatch} from '../../helpers/match';
-import {IMatchContext} from '../Match';
-import {IGameContext} from '../../game/Game';
-import {UserAccount} from '../../../../@types/generated/graphql';
-import {socketClient} from '../../../../util/socket/socketio';
-import {updateMatchState} from '../helpers/state';
+import { getExistingMatch } from '../../helpers/match';
+import { IMatchContext } from '../Match';
+import { IGameContext } from '../../game/Game';
+import { UserAccount } from '../../../../../server/schemas/UserAccount.schema';
+import { socketClient } from '../../../../util/socket/socketio';
+import { updateMatchState } from '../helpers/state';
 
 export async function setExistingMatchData(
 	me: UserAccount,
@@ -12,7 +12,7 @@ export async function setExistingMatchData(
 	forceFetch?: boolean,
 	linkCode?: string
 ) {
-	const {matchLoaded, spectating, matchOver, setMatchOver, watchingPlayerId, setMatch, setMatchSession} = matchContext;
+	const { matchLoaded, spectating, matchOver, setMatchOver, watchingPlayerId, setMatch, setMatchSession } = matchContext;
 
 	const matchLinkCode = linkCode || gameContext.linkCode;
 	if (matchLoaded.current && !forceFetch) {

@@ -1,26 +1,30 @@
-import React, {ReactNode, useState} from 'react';
-import {useDispatch} from 'react-redux';
+import React, { ReactNode, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import './ProfileRow.scss';
-import {Trash, Eye, User} from 'phosphor-react';
+import { Trash, Eye, User } from 'phosphor-react';
 import Avatar from '../../common/avatar/Avatar';
-import {DocumentNode, gql} from '@apollo/client';
-import {gqlMutate} from '../../api';
-import {getTimeString} from '../../../util/time';
-import {useGeneral} from '../../../util/hooks/useGeneral';
+import { DocumentNode, gql } from '@apollo/client';
+import { gqlMutate } from '../../api';
+import { getTimeString } from '../../../util/time';
+import { useGeneral } from '../../../util/hooks/useGeneral';
 import Dropdown from '../../common/inputs/dropdown/Dropdown';
 import block from '../../../styles/bem';
-import {openModal} from '../../../actions/general';
+import { openModal } from '../../../actions/general';
 import ReportUser from '../../profile/report/ReportUser';
-import {useMe} from '../../../util/hooks/useMe';
-import {Solve} from '../../../../server/schemas/Solve.schema';
-import {PublicUserAccount} from '../../../../server/schemas/UserAccount.schema';
+import { useMe } from '../../../util/hooks/useMe';
+import { Solve } from '../../../../server/schemas/Solve.schema';
+import { PublicUserAccount } from '../../../../server/schemas/UserAccount.schema';
+import { PublicUserAccount as GqlPublicUserAccount } from '../../../@types/generated/graphql';
 
 const b = block('profile-row');
+
+// Combined type for user prop
+type ProfileRowUser = PublicUserAccount | GqlPublicUserAccount;
 
 interface ProfileRowProps {
 	solve?: Solve;
 	index?: number;
-	user: PublicUserAccount;
+	user: ProfileRowUser;
 	recordType?: 'top_solve' | 'top_average';
 	openSolve?: any;
 	getRightMessage?: ReactNode;
@@ -31,8 +35,8 @@ export default function ProfileRow(props: ProfileRowProps) {
 	const dispatch = useDispatch();
 	const [deleted, setDeleted] = useState(false);
 
-	const {solve, index, user, openSolve, hideDropdown, recordType} = props;
-	let {getRightMessage} = props;
+	const { solve, index, user, openSolve, hideDropdown, recordType } = props;
+	let { getRightMessage } = props;
 
 	const me = useMe();
 	const mobileMode = useGeneral('mobile_mode');
@@ -99,8 +103,8 @@ export default function ProfileRow(props: ProfileRowProps) {
 			<Dropdown
 				noMargin
 				options={[
-					{text: 'View details', icon: <Eye />, onClick: () => openSolve(solve)},
-					{text: 'View profile', icon: <User />, link: `/user/${user.username}`},
+					{ text: 'View details', icon: <Eye />, onClick: () => openSolve(solve) },
+					{ text: 'View profile', icon: <User />, link: `/user/${user.username}` },
 					{
 						text: 'Delete solve',
 						hidden: !(solve && (me.admin || me.id === user.id)),
@@ -122,7 +126,7 @@ export default function ProfileRow(props: ProfileRowProps) {
 	}
 
 	return (
-		<div className={b({me: amSolver})}>
+		<div className={b({ me: amSolver })}>
 			<div className={b('name')}>
 				{indexSpan}
 				<Avatar showOptions small={mobileMode} profile={user.profile} user={user} />

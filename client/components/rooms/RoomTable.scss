@@ -1,1 +1,8 @@
-// Migrated to Tailwind CSS in RoomTable.tsx
+@import '../../../styles/variables';
+
+// Container for the table to allow scrolling
+.room-table-container {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}

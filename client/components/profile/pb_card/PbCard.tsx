@@ -1,21 +1,21 @@
-import React, {useMemo, useState} from 'react';
+import React, { useMemo, useState } from 'react';
 import './PbCard.scss';
-import {getTimeString} from '../../../util/time';
+import { getTimeString } from '../../../util/time';
 import Scramble from '../../modules/scramble/ScrambleVisual';
 import SolveInfo from '../../solve_info/SolveInfo';
-import {getCubeTypeInfoById} from '../../../util/cubes/util';
+import { getCubeTypeInfoById } from '../../../util/cubes/util';
 import block from '../../../styles/bem';
-import {PublicUserAccount, TopAverage, TopSolve} from '../../../@types/generated/graphql';
-import {useDispatch} from 'react-redux';
-import {openModal} from '../../../actions/general';
+import { PublicUserAccount, TopAverage, TopSolve } from '../../../@types/generated/graphql';
+import { useDispatch } from 'react-redux';
+import { openModal } from '../../../actions/general';
 import HistoryModal from '../../modules/history/history_modal/HistoryModal';
 import Tag from '../../common/tag/Tag';
-import {getAverage} from '../../../db/solves/stats/solves/average/average';
+import { getAverage } from '../../../db/solves/stats/solves/average/average';
 import Button from '../../common/button/Button';
-import {gql, useMutation} from '@apollo/client';
-import {toastError} from '../../../util/toast';
-import {useMe} from '../../../util/hooks/useMe';
-import {Solve} from '../../../../server/schemas/Solve.schema';
+import { gql, useMutation } from '@apollo/client';
+import { toastError } from '../../../util/toast';
+import { useMe } from '../../../util/hooks/useMe';
+import { Solve } from '../../../../server/schemas/Solve.schema';
 
 const b = block('profile-pb-card');
 
@@ -46,7 +46,7 @@ interface Props {
 }
 
 export default function PbCard(props: Props) {
-	const {solves, user, topRecord} = props;
+	const { solves, user, topRecord } = props;
 
 	const single = solves.length === 1;
 	const firstSolve = solves[0];
@@ -56,10 +56,10 @@ export default function PbCard(props: Props) {
 	const me = useMe();
 	const [deleted, setDeleted] = useState(false);
 
-	const [deleteSolveMut, deleteSolveMutData] = useMutation<{deleteTopSolve: TopSolve}, deleteVarInput>(
+	const [deleteSolveMut, deleteSolveMutData] = useMutation<{ deleteTopSolve: TopSolve }, deleteVarInput>(
 		DELETE_TOP_SOLVE_MUTATION
 	);
-	const [deleteAvgMut, deleteAvgMutData] = useMutation<{deleteTopSolve: TopAverage}, deleteVarInput>(
+	const [deleteAvgMut, deleteAvgMutData] = useMutation<{ deleteTopSolve: TopAverage }, deleteVarInput>(
 		DELETE_TOP_AVERAGE_MUTATION
 	);
 
@@ -71,7 +71,7 @@ export default function PbCard(props: Props) {
 		return getAverage(solves);
 	}, []);
 
-	const createdAt = parseInt(solves[solves.length - 1].started_at);
+	const createdAt = solves[solves.length - 1].started_at;
 
 	function openSolve() {
 		if (single) {

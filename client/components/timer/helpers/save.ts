@@ -1,9 +1,9 @@
-import {v4 as uuid} from 'uuid';
-import {createSolveDb} from '../../../db/solves/update';
-import {ITimerContext} from '../Timer';
-import {emitEvent} from '../../../util/event_handler';
-import {setTimerParam} from './params';
-import {Solve, SolveInput} from '../../../../server/schemas/Solve.schema';
+import { v4 as uuid } from 'uuid';
+import { createSolveDb } from '../../../db/solves/update';
+import { ITimerContext } from '../Timer';
+import { emitEvent } from '../../../util/event_handler';
+import { setTimerParam } from './params';
+import { Solve, SolveInput } from '../../../../server/schemas/Solve.schema';
 
 export function saveSolve(
 	context: ITimerContext,
@@ -15,7 +15,7 @@ export function saveSolve(
 	plusTwo = false,
 	overrides: Partial<SolveInput> = {}
 ) {
-	const {onSolve, addTwoToSolve, cubeType, dnfTime, demoMode} = context;
+	const { onSolve, addTwoToSolve, cubeType, dnfTime, demoMode } = context;
 
 	plusTwo = plusTwo || (addTwoToSolve && !dnfTime);
 	dnf = dnf || dnfTime;
@@ -37,7 +37,7 @@ export function saveSolve(
 		...context.solvesFilter,
 		...context.solvesSaveOverride,
 		...overrides,
-	};
+	} as Solve;
 
 	if (onSolve) {
 		onSolve(solveObject);

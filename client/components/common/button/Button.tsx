@@ -1,14 +1,14 @@
-import React, {ReactNode} from 'react';
+import React, { ReactNode } from 'react';
 import './Button.scss';
-import {Link} from 'react-router-dom';
-import {CircleNotch} from 'phosphor-react';
+import { Link } from 'react-router-dom';
+import { CircleNotch } from 'phosphor-react';
 import Error from '../inputs/error/Error';
-import ConfirmModal, {ConfirmModalProps} from '../confirm_modal/ConfirmModal';
-import {openModal} from '../../../actions/general';
+import ConfirmModal, { ConfirmModalProps } from '../confirm_modal/ConfirmModal';
+import { openModal } from '../../../actions/general';
 import CSS from 'csstype';
 import block from '../../../styles/bem';
 import InputInfo from '../inputs/input/input_info/InputInfo';
-import {useDispatch} from 'react-redux';
+import { useDispatch } from 'react-redux';
 
 const b = block('common-button');
 
@@ -47,7 +47,7 @@ export interface ButtonProps {
 	alignRight?: boolean;
 	type?: 'reset' | 'submit' | 'button';
 	className?: string;
-	icon?: JSX.Element;
+	icon?: React.ReactElement;
 	flatBorder?: boolean;
 	style?: CSS.Properties;
 	loading?: boolean;
@@ -241,7 +241,7 @@ export default function Button(props: ButtonProps) {
 	}
 
 	return (
-		<div style={style || {}} className={b('wrapper', {fullWidth, alignRight, noMargin: noMargin})}>
+		<div style={style || {}} className={b('wrapper', { fullWidth, alignRight, noMargin: noMargin })}>
 			{button}
 			<Error text={error} />
 			<InputInfo text={info} />

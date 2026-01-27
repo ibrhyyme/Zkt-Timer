@@ -1,30 +1,30 @@
-import React, {useEffect, useState} from 'react';
-import {getTimeString} from '../../util/time';
+import React, { useEffect, useState } from 'react';
+import { getTimeString } from '../../util/time';
 import './SolveInfo.scss';
-import {Cube, Bluetooth} from 'phosphor-react';
+import { Cube, Bluetooth } from 'phosphor-react';
 import HorizontalNav from '../common/horizontal_nav/HorizontalNav';
 import ScrambleInfo from './scramble_info/ScrambleInfo';
 import SolutionInfo from './solution_info/SolutionInfo';
 import StatsInfo from './stats_info/StatsInfo';
 import NotesInfo from './notes_info/NotesInfo';
-import {gql} from '@apollo/client';
-import {gqlQuery} from '../api';
+import { gql } from '@apollo/client';
+import { gqlQuery } from '../api';
 import Loading from '../common/loading/Loading';
-import {SOLVE_WITH_USER_FRAGMENT} from '../../util/graphql/fragments';
+import { SOLVE_WITH_USER_FRAGMENT } from '../../util/graphql/fragments';
 import CopyText from '../common/copy_text/CopyText';
 import Avatar from '../common/avatar/Avatar';
-import {toggleDnfSolveDb, togglePlusTwoSolveDb} from '../../db/solves/operations';
-import {fetchSolve} from '../../db/solves/query';
-import {deleteSolveDb, updateSolveDb} from '../../db/solves/update';
-import {useSolveDb} from '../../util/hooks/useSolveDb';
-import {IModalProps} from '../common/modal/Modal';
-import {getCubeTypeInfoById} from '../../util/cubes/util';
+import { toggleDnfSolveDb, togglePlusTwoSolveDb } from '../../db/solves/operations';
+import { fetchSolve } from '../../db/solves/query';
+import { deleteSolveDb, updateSolveDb } from '../../db/solves/update';
+import { useSolveDb } from '../../util/hooks/useSolveDb';
+import { IModalProps } from '../common/modal/Modal';
+import { getCubeTypeInfoById } from '../../util/cubes/util';
 import block from '../../styles/bem';
 import Button from '../common/button/Button';
 import Tag from '../common/tag/Tag';
-import {Solve} from '../../../server/schemas/Solve.schema';
-import {getFullFormattedDate} from '../../util/dates';
-import {demoUser} from './demo_user';
+import { Solve } from '../../../server/schemas/Solve.schema';
+import { getFullFormattedDate } from '../../util/dates';
+import { demoUser } from './demo_user';
 
 const b = block('solve-info');
 
@@ -36,7 +36,7 @@ interface Props extends IModalProps {
 }
 
 export default function SolveInfo(props: Props) {
-	const {solveId, disabled, onComplete} = props;
+	const { solveId, disabled, onComplete } = props;
 
 	const demoSolve = props.solve?.demo_mode;
 
@@ -71,7 +71,7 @@ export default function SolveInfo(props: Props) {
 			}
 		`;
 
-		const solveQuery = gqlQuery<{solve: Solve}>(
+		const solveQuery = gqlQuery<{ solve: Solve }>(
 			query,
 			{
 				id: solveId,

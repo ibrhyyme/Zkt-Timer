@@ -4,6 +4,11 @@ import { gql } from '@apollo/client/core';
 import { toastSuccess } from '../../../util/toast';
 import Button from '../../common/button/Button';
 import { PublicUserAccount, UserAccount, UserAccountForAdmin } from '../../../../server/schemas/UserAccount.schema';
+import {
+	PublicUserAccount as GqlPublicUserAccount,
+	UserAccount as GqlUserAccount,
+	UserAccountForAdmin as GqlUserAccountForAdmin,
+} from '../../../@types/generated/graphql';
 import { useMutation } from '@apollo/client';
 import { useInput } from '../../../util/hooks/useInput';
 import { IModalProps } from '../../common/modal/Modal';
@@ -22,8 +27,17 @@ const REPORT_PROFILE_MUTATION = gql`
 	}
 `;
 
+// Combined type for user prop
+type ReportUserType =
+	| UserAccountForAdmin
+	| PublicUserAccount
+	| UserAccount
+	| GqlUserAccountForAdmin
+	| GqlPublicUserAccount
+	| GqlUserAccount;
+
 interface Props extends IModalProps {
-	user?: UserAccountForAdmin | PublicUserAccount | UserAccount;
+	user?: ReportUserType;
 }
 
 export default function ReportUser(props: Props) {

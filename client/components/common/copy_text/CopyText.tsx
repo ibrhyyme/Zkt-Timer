@@ -1,7 +1,7 @@
-import React, {useRef, useState} from 'react';
-import {Copy, Check} from 'phosphor-react';
-import Button, {ButtonProps} from '../button/Button';
-import {toastSuccess} from '../../../util/toast';
+import React, { useRef, useState } from 'react';
+import { Copy, Check } from 'phosphor-react';
+import Button, { ButtonProps } from '../button/Button';
+import { toastSuccess } from '../../../util/toast';
 
 export function copyText(source: string) {
 	const el = document.createElement('textarea');
@@ -23,9 +23,9 @@ interface Props {
 }
 
 export default function CopyText(props: Props) {
-	const {text, buttonProps, onCopy, toastifyMessageOnCopy} = props;
+	const { text, buttonProps, onCopy, toastifyMessageOnCopy } = props;
 
-	const textCopiedTimeout = useRef<NodeJS.Timeout>();
+	const textCopiedTimeout = useRef<NodeJS.Timeout | null>(null);
 	const [textCopied, setTextCopied] = useState(false);
 
 	function onClick(e) {

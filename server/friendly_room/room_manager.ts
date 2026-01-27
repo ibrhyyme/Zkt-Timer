@@ -11,46 +11,66 @@ import * as bcrypt from 'bcryptjs';
 
 const prisma = () => getPrisma();
 
-// Simple scramble generator for server-side use
+import { Scrambow } from 'scrambow';
+
+// Scramble definitions mapping our internal IDs to Scrambow types and lengths
+const SCRAMBLE_MAP: Record<string, { type: string, length: number }> = {
+    '222': { type: '222', length: 9 },
+    '333': { type: '333', length: 20 },
+    '333bl': { type: '333', length: 20 }, // Treated as 333 but with extra logic
+    '333oh': { type: '333', length: 20 },
+    '333mirror': { type: '333', length: 20 },
+    '222oh': { type: '222', length: 9 },
+    '444': { type: '444', length: 46 },
+    '555': { type: '555', length: 60 },
+    '666': { type: '666', length: 89 },
+    '777': { type: '777', length: 100 },
+    'pyram': { type: 'pyraminx', length: 11 }, // Adjusted length to standard
+    'skewb': { type: 'skewb', length: 10 },    // Adjusted length to standard
+    'sq1': { type: 'square1', length: 12 },    // Adjusted length to standard
+    'clock': { type: 'clock', length: 0 },     // Clock usually handles its own length in scrambow or is fixed
+    'minx': { type: 'megaminx', length: 70 },
+};
+
+function getBlindWideMove() {
+    const moves = ['Uw', 'Lw', 'Rw', 'Fw'];
+    const move = moves[Math.floor(Math.random() * moves.length)];
+    const randState = Math.random();
+
+    if (randState < 0.33) {
+        return `${move}'`;
+    } else if (randState < 0.66) {
+        return `${move}2`;
+    }
+
+    return move;
+}
+
+// Robust scramble generator using Scrambow
 function generateScrambleForCubeType(cubeType: string): string {
-    const moves3x3 = ['U', "U'", 'U2', 'D', "D'", 'D2', 'R', "R'", 'R2', 'L', "L'", 'L2', 'F', "F'", 'F2', 'B', "B'", 'B2'];
-    const moves2x2 = ['U', "U'", 'U2', 'R', "R'", 'R2', 'F', "F'", 'F2'];
+    const def = SCRAMBLE_MAP[cubeType];
 
-    let moves: string[];
-    let length: number;
 
-    switch (cubeType) {
-        case '222':
-            moves = moves2x2;
-            length = 9;
-            break;
-        case '444':
-            moves = moves3x3;
-            length = 40;
-            break;
-        case '555':
-            moves = moves3x3;
-            length = 60;
-            break;
-        default:
-            moves = moves3x3;
-            length = 20;
+    let scrambowType = def ? def.type : '333';
+    const length = def ? def.length : 20;
+
+
+    let scrambo = new Scrambow(scrambowType);
+
+    if (!['pyraminx', 'clock', 'skewb'].includes(scrambowType)) {
+        scrambo = scrambo.setLength(length);
     }
 
-    const scramble: string[] = [];
-    let lastMove = '';
+    const scrambleOb = scrambo.get();
+    let scramble = scrambleOb[0].scramble_string;
 
-    for (let i = 0; i < length; i++) {
-        let move: string;
-        do {
-            move = moves[Math.floor(Math.random() * moves.length)];
-        } while (move.charAt(0) === lastMove.charAt(0));
+    scramble = scramble.replace(/\s+/g, ' ').trim();
 
-        scramble.push(move);
-        lastMove = move;
+    if (cubeType === '333bl') {
+        scramble += ' ' + getBlindWideMove();
     }
 
-    return scramble.join(' ');
+    return scramble;
 }
 
 // Create a new room
@@ -75,6 +95,7 @@ export async function createRoom(input: CreateFriendlyRoomInput, user: PublicUse
             scramble_index: 1,
             status: 'WAITING',
             created_by_id: user.id,
+            original_creator_id: user.id,
             participants: {
                 create: {
                     user_id: user.id,
@@ -113,12 +134,12 @@ export async function getRoom(roomId: string) {
         },
     });
 
-    // Fallback: Manually fetch allowed_timer_types if missing from Prisma types (outdated generated client)
     if (room && !('allowed_timer_types' in room)) {
         try {
-            const result: any = await prisma().$queryRaw`SELECT allowed_timer_types FROM "friendly_room" WHERE id = ${roomId}`;
-            if (result && result.length > 0 && result[0].allowed_timer_types) {
-                (room as any).allowed_timer_types = result[0].allowed_timer_types;
+            const result: any = await prisma().$queryRaw`SELECT allowed_timer_types, original_creator_id FROM "friendly_room" WHERE id = ${roomId}`;
+            if (result && result.length > 0) {
+                if (result[0].allowed_timer_types) (room as any).allowed_timer_types = result[0].allowed_timer_types;
+                if (result[0].original_creator_id) (room as any).original_creator_id = result[0].original_creator_id;
             }
         } catch (e) {
             // Column might not exist yet
@@ -202,6 +223,14 @@ export async function addParticipant(
             is_ready: false,
         },
     });
+
+    // Check if the joining user is the original creator and restore admin rights
+    if ((room as any).original_creator_id === user.id && room.created_by_id !== user.id) {
+        await prisma().friendlyRoom.update({
+            where: { id: roomId },
+            data: { created_by_id: user.id },
+        });
+    }
 
     const updatedRoom = await getRoom(roomId);
     return { room: mapRoomToData(updatedRoom), isNew: true };

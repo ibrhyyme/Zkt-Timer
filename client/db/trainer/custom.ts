@@ -1,9 +1,9 @@
-import {getTrainerDb} from './init';
-import {emitEvent} from '../../util/event_handler';
-import {CustomTrainer, CustomTrainerCreateInput} from '../../@types/generated/graphql';
-import {gql} from '@apollo/client/core';
-import {gqlMutate} from '../../components/api';
-import {CUSTOM_TRAINER_FRAGMENT} from '../../util/graphql/fragments';
+import { getTrainerDb } from './init';
+import { emitEvent } from '../../util/event_handler';
+import { CustomTrainer, CustomTrainerCreateInput } from '../../@types/generated/graphql';
+import { gql } from '@apollo/client/core';
+import { gqlMutate } from '../../components/api';
+import { CUSTOM_TRAINER_FRAGMENT } from '../../util/graphql/fragments';
 
 export async function updateCustomTrainerDb(id: string, input: CustomTrainerCreateInput) {
 	const trainerDb = getTrainerDb();
@@ -48,7 +48,7 @@ export async function createCustomTrainerDb(trainer: CustomTrainerCreateInput) {
 
 	emitEvent('trainerDbUpdatedEvent', trainer);
 
-	const res = await gqlMutate<{createCustomTrainer: CustomTrainer}>(query, {
+	const res = await gqlMutate<{ createCustomTrainer: CustomTrainer }>(query, {
 		input: trainer,
 	});
 
@@ -59,7 +59,7 @@ export async function createCustomTrainerDb(trainer: CustomTrainerCreateInput) {
 	emitEvent('trainerDbUpdatedEvent', trainer);
 }
 
-export async function deleteCustomTrainer(id: string) {
+export async function deleteCustomTrainer(id: string): Promise<any> {
 	const trainerDb = getTrainerDb();
 	const trainer = trainerDb.findOne({
 		id,

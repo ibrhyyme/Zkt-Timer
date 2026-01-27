@@ -153,6 +153,8 @@ export default function RoomTimerOverlay({
         }
     }, [smartReviewing]);
 
+
+
     // Initialize Stackmat with Retry Logic
     /* Stackmat initialization logic moved to connectStackmat below */
 
@@ -561,12 +563,7 @@ export default function RoomTimerOverlay({
                 return;
             }
 
-            // Enter to submit
-            if ((e.key === 'Enter' || e.keyCode === 13) && currentStatus === STATUS.SUBMITTING) {
-                e.preventDefault();
-                submitTime();
-                return;
-            }
+
 
             // Space
             if (e.key === ' ' || e.keyCode === 32) {
@@ -616,6 +613,8 @@ export default function RoomTimerOverlay({
             // NOTE: Timer can now start on scrollable areas (like results table) too
             // The 200ms delay gives user time to start scrolling before timer activates
             isTouchScrollingRef.current = false;
+
+
 
             // ALWAYS record start position for slide-cancel logic
             touchStartX.current = e.touches[0].clientX;

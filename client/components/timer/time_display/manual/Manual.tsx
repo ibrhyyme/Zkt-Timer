@@ -1,24 +1,25 @@
-import React, {useContext, useRef, useState} from 'react';
+import React, { useContext, useRef, useState } from 'react';
 import './Manual.scss';
-import {convertTimeStringToSeconds} from '../../../../util/time';
-import {TimerContext} from '../../Timer';
+import { convertTimeStringToSeconds } from '../../../../util/time';
+import { TimerContext } from '../../Timer';
 import block from '../../../../styles/bem';
-import {resetScramble} from '../../helpers/scramble';
-import {saveSolve} from '../../helpers/save';
+import { resetScramble } from '../../helpers/scramble';
+import { saveSolve } from '../../helpers/save';
 import StartInstructions from '../start_instructions/StartInstructions';
-import {useSettings} from '../../../../util/hooks/useSettings';
-import {useElementListener} from '../../../../util/hooks/useListener';
+import { useSettings } from '../../../../util/hooks/useSettings';
+import { useElementListener } from '../../../../util/hooks/useListener';
 
 const b = block('manual-time-entry');
 
 export default function Manual() {
-	const manualInput = useRef<HTMLInputElement>();
+	const manualInput = useRef<HTMLInputElement>(null);
 
 	const [manualTime, setManualTime] = useState('');
 	const [error, setError] = useState(false);
 
+
 	const context = useContext(TimerContext);
-	const {scramble, disabled, hideTime} = context;
+	const { scramble, disabled, hideTime } = context;
 
 	const timerTimeSize = useSettings('timer_time_size');
 	const timerFontFamily = useSettings('timer_font_family');
@@ -90,8 +91,9 @@ export default function Manual() {
 	return (
 		<div className={b('wrapper')}>
 			{input}
+
 			{hideTime ? null : (
-				<StartInstructions>Manually enter time. Append "+2" or enter "DNF" if needed</StartInstructions>
+				<StartInstructions>Manually enter time.</StartInstructions>
 			)}
 		</div>
 	);

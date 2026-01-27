@@ -1,9 +1,9 @@
-import {EventEmitter} from 'events';
-import {useEffect, useRef} from 'react';
-import {TrainerAlgorithmExtended} from '../db/trainer/init';
-import {SettingValue} from '../db/settings/init';
-import {Session} from '../../server/schemas/Session.schema';
-import {Solve} from '../../server/schemas/Solve.schema';
+import { EventEmitter } from 'events';
+import { useEffect, useRef } from 'react';
+import { TrainerAlgorithmExtended } from '../db/trainer/init';
+import { SettingValue } from '../db/settings/init';
+import { Session } from '../../server/schemas/Session.schema';
+import { Solve } from '../../server/schemas/Solve.schema';
 
 const ee = new EventEmitter();
 
@@ -50,7 +50,7 @@ export function useEventListener<T extends keyof ClientEvent>(
 	handler: (data: ClientEvent[T]) => void,
 	deps: any[] = []
 ) {
-	const savedHandler = useRef<(data: ClientEvent[T]) => void>();
+	const savedHandler = useRef<(data: ClientEvent[T]) => void>(undefined);
 
 	useEffect(() => {
 		savedHandler.current = handler;

@@ -1,9 +1,9 @@
-import {gqlMutateTyped} from '../../components/api';
-import {getSessionDb} from './init';
-import {emitEvent} from '../../util/event_handler';
-import {getSolveDb} from '../solves/init';
-import {clearSolveStatCache} from '../solves/stats/solves/caching';
-import {Session} from '../../../server/schemas/Session.schema';
+import { gqlMutateTyped } from '../../components/api';
+import { getSessionDb } from './init';
+import { emitEvent } from '../../util/event_handler';
+import { getSolveDb } from '../solves/init';
+import { clearSolveStatCache } from '../solves/stats/solves/caching';
+import { Session } from '../../../server/schemas/Session.schema';
 import {
 	CreateSessionDocument,
 	DeleteSessionDocument,
@@ -11,8 +11,8 @@ import {
 	ReorderSessionsDocument,
 	UpdateSessionDocument,
 } from '../../@types/generated/graphql';
-import {fetchSessionById, fetchSessions} from './query';
-import {updateOfflineHash} from '../../components/layout/offline';
+import { fetchSessionById, fetchSessions } from './query';
+import { updateOfflineHash } from '../../components/layout/offline';
 
 export async function createSessionDb(sessionInput: Partial<Session>) {
 	const sessionDb = getSessionDb();
@@ -25,7 +25,7 @@ export async function createSessionDb(sessionInput: Partial<Session>) {
 			},
 		});
 
-		session = res.data.createSession;
+		session = res.data.createSession as Session;
 	}
 
 	sessionDb.insert({

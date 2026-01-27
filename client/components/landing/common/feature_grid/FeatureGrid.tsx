@@ -8,7 +8,7 @@ interface GridItem {
 	title: string;
 	description: string;
 	iconColor?: string;
-	icon?: JSX.Element;
+	icon?: React.ReactElement;
 	imgSrc: string;
 	imgAlt: string;
 }
@@ -18,7 +18,7 @@ interface Props {
 }
 
 export default function FeatureGrid(props: Props) {
-	const {gridItems} = props;
+	const { gridItems } = props;
 
 	const rows = [];
 	for (let i = 0; i < gridItems.length; i++) {
@@ -39,7 +39,7 @@ export default function FeatureGrid(props: Props) {
 		}
 
 		rows.push(
-			<div key={`${item.title}`} className={b('item', {odd})}>
+			<div key={`${item.title}`} className={b('item', { odd })}>
 				<div className={b('text')}>
 					{iconSpan}
 					<h4>{item.title}</h4>

@@ -1,13 +1,13 @@
 import React from 'react';
-import {ColorName} from '../../../../shared/colors';
+import { ColorName } from '../../../../shared/colors';
 import CSS from 'csstype';
-import {CircleNotch} from 'phosphor-react';
-import {useColor} from '../../../util/hooks/useTheme';
+import { CircleNotch } from 'phosphor-react';
+import { useColor } from '../../../util/hooks/useTheme';
 
 export interface TagProps {
 	text?: string;
 	title?: string;
-	icon?: JSX.Element;
+	icon?: React.ReactElement;
 	large?: boolean;
 	bold?: boolean;
 	glow?: boolean;
@@ -20,7 +20,7 @@ export interface TagProps {
 }
 
 export default function Tag(props: TagProps) {
-	const {textColor, text, backgroundColor, bold, loading, title, icon, small, large, glow} = props;
+	const { textColor, text, backgroundColor, bold, loading, title, icon, small, large, glow } = props;
 
 	const backgroundColorProps = useColor(backgroundColor);
 	const textColorProps = useColor(textColor);

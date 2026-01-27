@@ -5,8 +5,7 @@ import AlertContainer from '../common/alert_container/AlertContainer';
 export default function UnsubEmails() {
 	const body = (
 		<p>
-			You are now unsubscribed from all Zkt-Timer tips, updates, and marketing emails. You can opt back in at any
-			time on the <a href="/account/notifications">Notifications</a> page.
+			Artık tüm Zkt-Timer ipuçları, güncellemeleri ve pazarlama e-postalarından abonelikten çıktınız. <a href="/account/notifications">Bildirimler</a> sayfasından dilediğiniz zaman tekrar abone olabilirsiniz.
 		</p>
 	);
 

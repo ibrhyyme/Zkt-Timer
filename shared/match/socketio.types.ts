@@ -1,10 +1,11 @@
-import {SocketReservedEventsMap} from 'socket.io/dist/socket';
-import {GameOptionsInput} from '../../server/schemas/GameOptions.schema';
-import {PublicUserAccount} from '../../server/schemas/UserAccount.schema';
-import {MatchInputChatMessage, MatchUpdate, MatchUpdateChat, UpdateRoomInfo} from '../../client/shared/match/types';
-import {Solve} from '../../client/@types/generated/graphql';
+import { GameOptionsInput } from '../../server/schemas/GameOptions.schema';
+import { PublicUserAccount } from '../../server/schemas/UserAccount.schema';
+import { MatchInputChatMessage, MatchUpdate, MatchUpdateChat, UpdateRoomInfo } from '../../client/shared/match/types';
+import { Solve } from '../../server/schemas/Solve.schema';
+import { GameType } from './consts';
 
-export interface ServerToClientEvents extends SocketReservedEventsMap {
+export interface ServerToClientEvents {
+	roomSizeUpdate: (data: Partial<Record<GameType, { lobby: number; match: number }>>) => void;
 	opponentStartedSolve: (opponent: PublicUserAccount, startedAtUnix: number) => void;
 	opponentEndedSolve: (opponent: PublicUserAccount, endedAtUnix: number, finalTimeMillis: number) => void;
 	newMatchChatMessage: (data: MatchUpdateChat) => void;
@@ -22,7 +23,7 @@ export interface ServerToClientEvents extends SocketReservedEventsMap {
 	solveTakingTooLongWarning: (opponent: PublicUserAccount, secondsToFinish: number) => void;
 }
 
-export interface ClientToServerEvents extends SocketReservedEventsMap {
+export interface ClientToServerEvents {
 	playerJoinedLobby: (gameOptions: GameOptionsInput) => void;
 	playerLeftLobby: () => void;
 	playerEnteredMatch: (matchId: string) => void;
@@ -40,4 +41,6 @@ export interface ClientToServerEvents extends SocketReservedEventsMap {
 	playerJoinedMatchByLinkCode: (linkCode: string) => void;
 	playerJoinedSpectateMode: (spectateCode: string) => void;
 	rejoinMyRooms: (rooms: string[]) => void;
+	WatchRoomSizes: () => void;
+	StopWatchingRoomSizes: () => void;
 }

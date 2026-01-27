@@ -94,6 +94,20 @@ export default function KeyWatcher(props: Props) {
 			}
 
 			if (target.classList.contains(timerClass('main'))) {
+				if (e.touches && e.touches.length > 1) {
+					// Multi-touch - cancel
+					touchStartX.current = null;
+					touchStartY.current = null;
+					setTimerParams({
+						spaceTimerStarted: 0,
+						canStart: false,
+					});
+					if (getTimer(START_TIMEOUT)) {
+						stopTimer(START_TIMEOUT);
+					}
+					return;
+				}
+
 				if (e.touches && e.touches[0]) {
 					touchStartX.current = e.touches[0].clientX;
 					touchStartY.current = e.touches[0].clientY;
@@ -132,7 +146,7 @@ export default function KeyWatcher(props: Props) {
 		const diffX = Math.abs(x - touchStartX.current);
 		const diffY = Math.abs(y - touchStartY.current);
 
-		if (diffX > 20 || diffY > 20) {
+		if (diffX > 60 || diffY > 60) {
 			// Cancel the timer start hold
 			if (spaceTimerStarted) {
 				setTimerParams({
@@ -143,6 +157,16 @@ export default function KeyWatcher(props: Props) {
 					stopTimer(START_TIMEOUT);
 				}
 			}
+
+			// Explicit Swipe Up Cancel
+			if (touchStartY.current && touchStartY.current - y > 100) {
+				// Already cancelled above, but just ensuring logic consistency
+				setTimerParams({
+					spaceTimerStarted: 0,
+					canStart: false,
+				});
+			}
+
 			touchStartX.current = null;
 			touchStartY.current = null;
 		}

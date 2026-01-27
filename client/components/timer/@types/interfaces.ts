@@ -1,5 +1,5 @@
 import { ReactComponentElement, ReactNode } from 'react';
-import { Match } from '../../../@types/generated/graphql';
+import { Match } from '../../../../server/schemas/Match.schema';
 import { ChallengerProps } from '../../play/target/challengers/challenger/Challenger';
 import { TimerModuleDropdownOptions, TimerModuleType } from './enums';
 import { ITimerContext } from '../Timer';

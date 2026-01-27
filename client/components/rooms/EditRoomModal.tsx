@@ -5,17 +5,20 @@ import { X, Lock, Check } from 'phosphor-react';
 import Button from '../common/button/Button';
 
 
+
 interface EditRoomModalProps {
     isOpen: boolean;
     onClose: () => void;
     currentName: string;
     isPrivate: boolean;
     currentAllowedTypes?: string[];
-    onSubmit: (newName: string, isPrivate: boolean, newPassword?: string, allowedTimerTypes?: string[]) => void;
+    cubeType?: string;
+    onSubmit: (newName: string, isPrivate: boolean, newPassword?: string, allowedTimerTypes?: string[], cubeType?: string) => void;
 }
 
-export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate, currentAllowedTypes, onSubmit }: EditRoomModalProps) {
+export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate, currentAllowedTypes, cubeType, onSubmit }: EditRoomModalProps) {
     const [name, setName] = useState(currentName);
+    const [selectedCubeType, setSelectedCubeType] = useState(cubeType || '333');
     const [privateRoom, setPrivateRoom] = useState(isPrivate);
     const [password, setPassword] = useState('');
 
@@ -75,6 +78,8 @@ export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate,
                         />
                     </div>
 
+
+
                     {/* Private Toggle */}
                     <div className="flex items-center gap-3">
                         <button
@@ -112,8 +117,8 @@ export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate,
                                     key={type}
                                     onClick={() => toggleType(type)}
                                     className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all ${allowedTypes.includes(type)
-                                            ? 'bg-blue-500/10 border-blue-500/50'
-                                            : 'bg-[#0a0b0e] border-gray-800 hover:border-gray-700'
+                                        ? 'bg-blue-500/10 border-blue-500/50'
+                                        : 'bg-[#0a0b0e] border-gray-800 hover:border-gray-700'
                                         }`}
                                 >
                                     <span className={`text-sm font-medium ${allowedTypes.includes(type) ? 'text-blue-200' : 'text-gray-400'}`}>

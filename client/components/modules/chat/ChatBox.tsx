@@ -1,17 +1,17 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
-import {useDispatch} from 'react-redux';
+import { useDispatch } from 'react-redux';
 import './ChatBox.scss';
 import ChatMessage from './message/ChatMessage';
-import {setTimerDisabled} from '../../../actions/timer';
-import {socketClient} from '../../../util/socket/socketio';
-import {cleanBadWords} from '../../../util/strings/chat_filter';
-import {MatchConst} from '../../../shared/match/consts';
+import { setTimerDisabled } from '../../../actions/timer';
+import { socketClient } from '../../../util/socket/socketio';
+import { cleanBadWords } from '../../../util/strings/chat_filter';
+import { MatchConst } from '../../../shared/match/consts';
 import block from '../../../styles/bem';
-import {MatchUpdateChat} from '../../../shared/match/types';
-import {useSocketListener} from '../../../util/hooks/useSocketListener';
-import {GameType} from '../../../../shared/match/consts';
-import {Match} from '../../../../server/schemas/Match.schema';
+import { MatchUpdateChat } from '../../../shared/match/types';
+import { useSocketListener } from '../../../util/hooks/useSocketListener';
+import { GameType } from '../../../../shared/match/consts';
+import { Match } from '../../../../server/schemas/Match.schema';
 
 const b = block('chat-box');
 
@@ -25,15 +25,15 @@ interface Props {
 export default function ChatBox(props: Props) {
 	const dispatch = useDispatch();
 
-	const {disabled, match} = props;
+	const { disabled, match } = props;
 
 	const [message, setMessage] = useState('');
 	const [textBoxHeight, setTextBoxHeight] = useState(25);
 	const [messageFocused, setMessageFocused] = useState(false);
 	const [messages, setMessages] = useState<MatchUpdateChat[]>(props.messages);
 
-	const messageInput = useRef<HTMLTextAreaElement>();
-	const chatList = useRef<HTMLDivElement>();
+	const messageInput = useRef<HTMLTextAreaElement>(null);
+	const chatList = useRef<HTMLDivElement>(null);
 
 	useSocketListener('newMatchChatMessage', addMessage, [messages]);
 

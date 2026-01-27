@@ -1,20 +1,20 @@
-import React, {useContext} from 'react';
+import React, { useContext } from 'react';
 import './TrainerAlgo.scss';
-import {CaretRight, Pencil, Trash} from 'phosphor-react';
+import { CaretRight, Pencil, Trash } from 'phosphor-react';
 import block from '../../../styles/bem';
 import Button from '../../common/button/Button';
 import Module from '../../common/module/Module';
-import {CUSTOM_TRAINER_ALGO_TYPE, TrainerContext} from '../Trainer';
-import {openModal} from '../../../actions/general';
-import {useDispatch} from 'react-redux';
-import {Link} from 'react-router-dom';
-import {cleanTrainerAlgorithm} from '../util/clean';
+import { CUSTOM_TRAINER_ALGO_TYPE, TrainerContext } from '../../trainer_backup/Trainer';
+import { openModal } from '../../../actions/general';
+import { useDispatch } from 'react-redux';
+import { Link } from 'react-router-dom';
+import { cleanTrainerAlgorithm } from '../util/clean';
 import EditAlgo from '../edit_algo/EditAlgo';
-import {TrainerAlgorithmExtended} from '../../../db/trainer/init';
+import { TrainerAlgorithmExtended } from '../../../db/trainer/init';
 import TrainerFavButton from './trainer_fav_button/TrainerFavButton';
 import AddCustom from '../add_custom/AddCustom';
-import {deleteCustomTrainer} from '../../../db/trainer/custom';
-import {CustomTrainer} from '../../../@types/generated/graphql';
+import { deleteCustomTrainer } from '../../../db/trainer/custom';
+import { CustomTrainer } from '../../../@types/generated/graphql';
 import CustomVisual from '../custom_visual/CustomVisual';
 
 const b = block('trainer-algo');
@@ -37,8 +37,8 @@ export default function TrainerAlgo(props: Props) {
 		context.openTrainer('single', algoExt);
 	}
 
-	function deleteCustom() {
-		deleteCustomTrainer(algoExt.id);
+	async function deleteCustom() {
+		return await deleteCustomTrainer(algoExt.id);
 	}
 
 	function editAlgo() {
@@ -87,7 +87,7 @@ export default function TrainerAlgo(props: Props) {
 						/>
 					</div>
 				</div>
-				<div className={b('right', {threeD: algoExt.three_d})}>
+				<div className={b('right', { threeD: algoExt.three_d })}>
 					<CustomVisual
 						cubeletSize={20}
 						colors={algoExt.colors}

@@ -1,15 +1,15 @@
-import React, {ReactNode} from 'react';
+import React, { ReactNode } from 'react';
 import './NumberBlock.scss';
 import block from '../../../../styles/bem';
 import CSS from 'csstype';
 import StatModule from '../stat_module/StatModule';
-import {useMe} from '../../../../util/hooks/useMe';
-import {isNotPro} from '../../../../util/pro';
+import { useMe } from '../../../../util/hooks/useMe';
+import { isNotPro } from '../../../../util/pro';
 
 const b = block('number-block');
 
 interface Props {
-	icon: JSX.Element;
+	icon: React.ReactElement;
 	title: string;
 	color: string;
 	value: string | number;
@@ -70,11 +70,11 @@ export default function NumberBlock(props: Props) {
 	}
 
 	return (
-		<StatModule className={b({center, vertical, noPadding, large, small, button: !!onClick})} style={style}>
+		<StatModule className={b({ center, vertical, noPadding, large, small, button: !!onClick })} style={style}>
 			<div className={b('body')}>
-				<button className={b('value', {clickable: !!onClick})} onClick={onClick}>
+				<button className={b('value', { clickable: !!onClick })} onClick={onClick}>
 					<div className={b('header')}>
-						<div className={b('icon', {darkIcon})} style={{backgroundColor: color}}>
+						<div className={b('icon', { darkIcon })} style={{ backgroundColor: color }}>
 							{icon}
 						</div>
 						<p>{title}</p>

@@ -1,14 +1,14 @@
 import React from 'react';
 import './FeatureText.scss';
 import block from '../../../../../styles/bem';
-import {Check} from 'phosphor-react';
+import { Check } from 'phosphor-react';
 import SignUpButton from '../../signup_button/SignUpButton';
 
 const b = block('landing-feature-text');
 
 interface FeatureItem {
 	text: string;
-	icon?: JSX.Element;
+	icon?: React.ReactElement;
 }
 
 export interface IFeatureTextProps {
@@ -18,13 +18,13 @@ export interface IFeatureTextProps {
 	secondaryColor?: string;
 	whiteText?: boolean;
 	vertical?: boolean;
-	icon?: JSX.Element;
+	icon?: React.ReactElement;
 	signUpButton?: boolean;
 	featureList?: FeatureItem[];
 }
 
 export default function FeatureText(props: IFeatureTextProps) {
-	const {vertical, signUpButton, primaryColor, whiteText, secondaryColor, featureList, title, description, icon} =
+	const { vertical, signUpButton, primaryColor, whiteText, secondaryColor, featureList, title, description, icon } =
 		props;
 
 	let headerD = null;
@@ -38,7 +38,7 @@ export default function FeatureText(props: IFeatureTextProps) {
 					{featureList.map((item, index) => {
 						return (
 							<li key={index}>
-								<div style={{color: primaryColor}}>{item.icon || <Check weight="bold" />}</div>
+								<div style={{ color: primaryColor }}>{item.icon || <Check weight="bold" />}</div>
 								<span>{item.text}</span>
 							</li>
 						);
@@ -50,8 +50,8 @@ export default function FeatureText(props: IFeatureTextProps) {
 
 	const descSeparator = (
 		<div className={b('desc-separator')}>
-			<span style={{backgroundColor: primaryColor}} />
-			<span style={{backgroundColor: secondaryColor}} />
+			<span style={{ backgroundColor: primaryColor }} />
+			<span style={{ backgroundColor: secondaryColor }} />
 		</div>
 	);
 
@@ -73,7 +73,7 @@ export default function FeatureText(props: IFeatureTextProps) {
 	}
 
 	return (
-		<div className={b({vertical, whiteText})}>
+		<div className={b({ vertical, whiteText })}>
 			{headerD}
 			{descriptionD}
 			{descSeparator}

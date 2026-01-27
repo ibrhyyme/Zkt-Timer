@@ -1,19 +1,19 @@
 import React from 'react';
 import './Input.scss';
 import block from '../../../../styles/bem';
-import GenericInput, {GenericInputProps, InputProps} from '../generic_input/GenericInput';
+import GenericInput, { GenericInputProps, InputProps } from '../generic_input/GenericInput';
 import Icon from '../generic_input/icon/Icon';
 
 const b = block('common-input');
 
 interface Props extends GenericInputProps<HTMLInputElement> {
-	icon?: JSX.Element;
+	icon?: React.ReactElement;
 	step?: number;
 	type?: React.HTMLInputTypeAttribute;
 }
 
 export default function Input(props: InputProps<Props>) {
-	const {icon, type, step} = props;
+	const { icon, type, step } = props;
 	const ref = React.useRef<HTMLInputElement>(null);
 
 	return (
@@ -27,7 +27,7 @@ export default function Input(props: InputProps<Props>) {
 							step={step}
 							type={type || 'text'}
 							ref={ref}
-							className={b({icon: !!icon})}
+							className={b({ icon: !!icon })}
 							{...inputProps}
 						/>
 					</div>
