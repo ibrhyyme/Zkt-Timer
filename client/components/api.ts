@@ -13,6 +13,12 @@ import { createUploadLink } from 'apollo-upload-client';
 import nodeFetch from 'node-fetch';
 // process.env variables are defined by esbuild, no need to import process
 import { MutationFetchPolicy } from '@apollo/client/core/watchQueryOptions';
+import { loadErrorMessages, loadDevMessages } from "@apollo/client/dev";
+
+if (process.env.NODE_ENV !== "production") {
+	loadDevMessages();
+	loadErrorMessages();
+}
 
 let client: ApolloClient<NormalizedCacheObject>;
 
@@ -42,9 +48,7 @@ export function initApollo() {
 	client = new ApolloClient({
 		cache: new InMemoryCache(),
 		ssrMode: typeof window === 'undefined',
-		credentials: 'same-origin',
 		link,
-		uri,
 	});
 
 	return client;

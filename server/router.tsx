@@ -13,9 +13,15 @@ import { initUserAccount } from './models/store';
 
 import { Helmet } from 'react-helmet';
 import { mapSingleRoute } from '../client/components/map_route';
-import { ApolloClient, ApolloProvider, InMemoryCache } from '@apollo/client';
+import { ApolloClient, ApolloProvider, InMemoryCache, ApolloLink } from '@apollo/client';
+import { loadErrorMessages, loadDevMessages } from "@apollo/client/dev";
 import { logger } from './services/logger';
 import { ErrorCode } from './constants/errors';
+
+if (process.env.NODE_ENV !== "production") {
+	loadDevMessages();
+	loadErrorMessages();
+}
 
 const mappedRoutes: ReactNode[] = [];
 
@@ -50,6 +56,7 @@ function createComponents(req, store) {
 	const client = new ApolloClient({
 		ssrMode: true,
 		cache: new InMemoryCache(),
+		link: ApolloLink.empty(),
 	});
 
 	const staticRouter = (
