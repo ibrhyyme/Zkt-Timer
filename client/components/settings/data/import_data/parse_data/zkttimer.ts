@@ -1,9 +1,9 @@
-import {v4 as uuid} from 'uuid';
-import {IImportDataContext, ImportableData} from '../ImportData';
-import {Session} from '../../../../../@types/generated/graphql';
-import {fetchSessions} from '../../../../../db/sessions/query';
-import {parseZktTimerLegacyData} from './cubedesk_legacy';
-import {Solve} from '../../../../../../server/schemas/Solve.schema';
+import { v4 as uuid } from 'uuid';
+import { IImportDataContext, ImportableData } from '../ImportData';
+import { Session } from '../../../../../@types/generated/graphql';
+import { fetchSessions } from '../../../../../db/sessions/query';
+import { parseZktTimerLegacyData } from './zkttimer_legacy';
+import { Solve } from '../../../../../../server/schemas/Solve.schema';
 
 interface ZktTimerExportSchema {
 	solves: Solve[];

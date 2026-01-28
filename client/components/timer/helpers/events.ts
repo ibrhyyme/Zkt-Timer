@@ -15,6 +15,7 @@ import { SolveInput } from '../../../../server/schemas/Solve.schema';
 import { getSettings } from '../../../db/settings/query';
 import { getTimerStore } from '../../../util/store/getTimer';
 import { resourceUri } from '../../../util/storage';
+import { smartCubeSelected } from './util';
 
 let endLocked = false;
 
@@ -61,7 +62,32 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 
 	resetTimerParams(context);
 	setTimeout(() => {
-		saveSolve(context, finalTime, scramble, timeStartedAt.getTime(), now.getTime(), false, false, overrides);
+		const overridesCombined = { ...overrides };
+
+
+		// Auto-detect smart cube data if not explicitly provided
+		if (smartCubeSelected(context) && !overridesCombined.is_smart_cube) {
+			const startTime = timeStartedAt.getTime();
+			// Filter out turns that happened before the timer started (scramble moves)
+			const solutionTurns = (context.smartTurns || []).filter((t: any) => t.completedAt >= startTime);
+
+			overridesCombined.is_smart_cube = true;
+			overridesCombined.smart_device_id = context.smartDeviceId;
+			overridesCombined.smart_turn_count = solutionTurns.length;
+			overridesCombined.smart_turns = JSON.stringify(solutionTurns);
+		}
+
+		if (context.smartPickUpTime) {
+			overridesCombined.smart_pick_up_time = context.smartPickUpTime;
+		}
+
+		if (context.lastSmartMoveTime) {
+			let pd = (now.getTime() - context.lastSmartMoveTime) / 1000;
+			if (pd < 0) pd = 0;
+			overridesCombined.smart_put_down_time = pd;
+		}
+
+		saveSolve(context, finalTime, scramble, timeStartedAt.getTime(), now.getTime(), false, false, overridesCombined);
 		endLocked = false;
 	}, 10);
 }
@@ -75,6 +101,10 @@ export function resetTimerParams(context: ITimerContext) {
 		solving: false,
 		canStart: false,
 		timeStartedAt: null,
+		// Reset smart cube data
+		smartTurns: [],
+		smartPickUpTime: 0,
+		lastSmartMoveTime: 0,
 	});
 }
 

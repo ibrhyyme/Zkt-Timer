@@ -33,3 +33,9 @@ $warningColorDark: #d44707;
 $infoColorBackground: #a8d6f5;
 $infoColor: #42a5f5;
 $infoColorDark: #1565c0;
+
+@mixin md {
+	@media (min-width: 768px) {
+		@content;
+	}
+}

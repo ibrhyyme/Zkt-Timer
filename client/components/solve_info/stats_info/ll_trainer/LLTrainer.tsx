@@ -1,9 +1,9 @@
 import React from 'react';
 import './LLTrainer.scss';
-import {fetchTrainerAlgorithmById} from '../../../../db/trainer/query';
+import { fetchTrainerAlgorithmById } from '../../../../db/trainer/query';
 import AlgoVisual from '../../../trainer/algo_visual/AlgoVisual';
 import block from '../../../../styles/bem';
-import {Solve} from '../../../../../server/schemas/Solve.schema';
+import { Solve } from '../../../../../server/schemas/Solve.schema';
 
 const b = block('solve-info-ll-trainer');
 
@@ -12,7 +12,7 @@ interface Props {
 }
 
 export default function LLTrainer(props: Props) {
-	const {solve} = props;
+	const { solve } = props;
 	const ollPll = getOllAndPllFromSolve(solve);
 
 	if (!ollPll) {
@@ -24,16 +24,20 @@ export default function LLTrainer(props: Props) {
 
 	return (
 		<div className={b()}>
-			<div className={b('row')}>
-				<h3>OLL</h3>
-				<AlgoVisual colors={ollAlgo.colors} rotate={ollAlgo.rotate} cubeType={ollAlgo.cube_type} />
-				<p>{ollAlgo.name}</p>
-			</div>
-			<div className={b('row')}>
-				<h3>PLL</h3>
-				<AlgoVisual colors={pllAlgo.colors} rotate={pllAlgo.rotate} cubeType={pllAlgo.cube_type} />
-				<p>{pllAlgo.name}</p>
-			</div>
+			{ollAlgo ? (
+				<div className={b('row')}>
+					<h3>OLL</h3>
+					<AlgoVisual colors={ollAlgo.colors} rotate={ollAlgo.rotate} cubeType={ollAlgo.cube_type} />
+					<p>{ollAlgo.name}</p>
+				</div>
+			) : null}
+			{pllAlgo ? (
+				<div className={b('row')}>
+					<h3>PLL</h3>
+					<AlgoVisual colors={pllAlgo.colors} rotate={pllAlgo.rotate} cubeType={pllAlgo.cube_type} />
+					<p>{pllAlgo.name}</p>
+				</div>
+			) : null}
 		</div>
 	);
 }

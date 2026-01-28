@@ -1,9 +1,9 @@
-import React, {useContext} from 'react';
+import React, { useContext } from 'react';
 import './ProcessData.scss';
 import block from '../../../../../styles/bem';
-import {useDropzone} from 'react-dropzone';
-import {ImportDataContext} from '../ImportData';
-import {toastError} from '../../../../../util/toast';
+import { useDropzone } from 'react-dropzone';
+import { ImportDataContext } from '../ImportData';
+import { toastError } from '../../../../../util/toast';
 import ImportSection from '../import_section/ImportSection';
 
 const b = block('process-data');
@@ -12,7 +12,7 @@ export default function ProcessData() {
 	const context = useContext(ImportDataContext);
 	const timerImportData = context.timerImportData;
 
-	const {getRootProps, getInputProps, isDragActive} = useDropzone({
+	const { getRootProps, getInputProps, isDragActive } = useDropzone({
 		onDrop,
 		accept: timerImportData.acceptedFileTypes,
 		maxFiles: 1,
@@ -52,11 +52,11 @@ export default function ProcessData() {
 	return (
 		<div className={b()}>
 			<hr />
-			<ImportSection title="Select file to import" />
+			<ImportSection title="Import edilecek dosyayı seçin" />
 
-			<div className={b('drop', {active: isDragActive})} {...getRootProps()}>
+			<div className={b('drop', { active: isDragActive })} {...getRootProps()}>
 				<input {...getInputProps()} />
-				<p>Drag and drop your file here, or click to select</p>
+				<p>Sürükle bırak veya tıklayarak seçin</p>
 			</div>
 		</div>
 	);

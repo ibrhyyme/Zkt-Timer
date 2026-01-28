@@ -341,6 +341,7 @@ model Solve {
   inspection_time      Float?            @default(0.0)
   is_smart_cube        Boolean           @default(false)
   smart_put_down_time  Float?            @default(0.0)
+  smart_pick_up_time   Float?            @default(0.0)
   smart_turns          String?
   smart_turn_count     Int?
   smart_device_id      String?

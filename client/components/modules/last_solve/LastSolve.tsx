@@ -1,17 +1,17 @@
 import React from 'react';
 import './LastSolve.scss';
-import {useDispatch} from 'react-redux';
-import {Info} from 'phosphor-react';
-import {openModal} from '../../../actions/general';
+import { useDispatch } from 'react-redux';
+import { Info } from 'phosphor-react';
+import { openModal } from '../../../actions/general';
 import SolveInfo from '../../solve_info/SolveInfo';
 import Scramble from '../scramble/ScrambleVisual';
-import {getTimeString} from '../../../util/time';
-import {fetchLastSolve, fetchSolve, FilterSolvesOptions} from '../../../db/solves/query';
-import {toggleDnfSolveDb, togglePlusTwoSolveDb} from '../../../db/solves/operations';
-import {deleteSolveDb} from '../../../db/solves/update';
+import { getTimeString } from '../../../util/time';
+import { fetchLastSolve, fetchSolve, FilterSolvesOptions } from '../../../db/solves/query';
+import { toggleDnfSolveDb, togglePlusTwoSolveDb } from '../../../db/solves/operations';
+import { deleteSolveDb } from '../../../db/solves/update';
 import block from '../../../styles/bem';
-import {useSolveDb} from '../../../util/hooks/useSolveDb';
-import {getCubeTypeInfoById} from '../../../util/cubes/util';
+import { useSolveDb } from '../../../util/hooks/useSolveDb';
+import { getCubeTypeInfoById } from '../../../util/cubes/util';
 import Button from '../../common/button/Button';
 
 const b = block('last-solve');
@@ -25,7 +25,7 @@ function LastSolve(props: Props) {
 
 	useSolveDb();
 
-	const {filterOptions} = props;
+	const { filterOptions } = props;
 	const lastSolve = fetchLastSolve(filterOptions);
 
 	if (!lastSolve) {
@@ -51,7 +51,7 @@ function LastSolve(props: Props) {
 	}
 
 	function showSolveInfo() {
-		dispatch(openModal(<SolveInfo solveId={lastSolve.id} />));
+		dispatch(openModal(<SolveInfo solveId={lastSolve.id} />, { width: 1000 }));
 	}
 
 	function deleteAction() {
@@ -62,7 +62,7 @@ function LastSolve(props: Props) {
 	return (
 		<div className={b()}>
 			<div className={b('top')}>
-				<div className={b('time', {dnf, plusTwo})}>
+				<div className={b('time', { dnf, plusTwo })}>
 					<h5>Last Solve</h5>
 					<h4>{time}</h4>
 					<h6>{cubeTypeName}</h6>

@@ -1,21 +1,21 @@
-import React, {createContext, ReactNode, useState} from 'react';
+import React, { createContext, ReactNode, useState } from 'react';
 import './ImportData.scss';
-import {reactState} from '../../../../@types/react';
-import {SessionInput, SolveInput} from '../../../../@types/generated/graphql';
+import { reactState } from '../../../../@types/react';
+import { SessionInput, SolveInput } from '../../../../@types/generated/graphql';
 import ProcessData from './process/ProcessData';
 import CsTimerInstructions from './instructions/CsTimerInstructions';
-import {parseZktTimerData} from './parse_data/cubedesk';
-import ZktTimerInstructions from './instructions/CubeDeskInstructions';
+import { parseZktTimerData } from './parse_data/zkttimer';
+import ZktTimerInstructions from './instructions/ZktTimerInstructions';
 import ModalHeader from '../../../common/modal/modal_header/ModalHeader';
 import block from '../../../../styles/bem';
 import ReviewImport from './review_import/ReviewImport';
-import {parseCsTimerData} from './parse_data/cstimer';
+import { parseCsTimerData } from './parse_data/cstimer';
 
 const b = block('import-data');
 
 export enum ImportDataType {
 	CS_TIMER,
-	CUBEDESK,
+	ZKT_TIMER,
 }
 
 export interface ImportableData {
@@ -55,7 +55,7 @@ interface Props {
 }
 
 export default function ImportData(props: Props) {
-	const {importType} = props;
+	const { importType } = props;
 
 	const [file, setFile] = useState<File>(null);
 	const [importableData, setImportableData] = useState<ImportableData>(null);
@@ -72,7 +72,7 @@ export default function ImportData(props: Props) {
 				instructions: <CsTimerInstructions />,
 			};
 			break;
-		case ImportDataType.CUBEDESK:
+		case ImportDataType.ZKT_TIMER:
 			timerImportData = {
 				name: 'Zkt-Timer',
 				getImportableData: parseZktTimerData,
@@ -101,7 +101,7 @@ export default function ImportData(props: Props) {
 				<ModalHeader
 					title={
 						<>
-							Import data from <span>{timerImportData.name}</span>
+							<span>{timerImportData.name}</span> verisini içe aktar
 						</>
 					}
 				/>

@@ -1,10 +1,41 @@
 @import '../../../styles/config';
 
 .#{$namespace}-solve-info-stats-info {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+	max-height: 70vh;
+	overflow-y: auto;
+	padding-right: 5px;
+
+	@include md {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		grid-gap: 20px;
+
+		hr {
+			display: none; // Hide HRs in grid layout
+		}
+
+		// Make the top cards section span full width
+		>div:first-child {
+			grid-column: 1 / -1;
+		}
+
+		// Make LLTrainer (if present) span full width
+		>div:last-child {
+			grid-column: 1 / -1;
+		}
+	}
+
 	&__cards {
 		display: grid;
-		grid-template-columns: 1fr 1fr 1fr;
+		grid-template-columns: 1fr 1fr; // Mobile 2 cols
 		grid-gap: 10px;
+
+		@include md {
+			grid-template-columns: repeat(5, 1fr); // Desktop 5 cols for 5 cards
+		}
 	}
 
 	hr {
@@ -15,7 +46,7 @@
 		margin: 20px 0;
 	}
 
-	> div:last-of-type {
+	>div:last-of-type {
 		padding-bottom: 0 !important;
 	}
 
@@ -24,6 +55,9 @@
 		position: relative;
 		box-sizing: border-box;
 		padding: 0;
+		// Ensure sections take full height to match in grid
+		display: flex;
+		flex-direction: column;
 
 		h3 {
 			font-weight: 600;
@@ -40,14 +74,20 @@
 		padding: 15px;
 		box-sizing: border-box;
 		color: rgb(var(--text-color));
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start; // Align content left
+		justify-content: space-between;
 
 		i {
 			font-size: 2rem;
 			color: rgb(var(--secondary-color));
+			margin-bottom: 10px;
 		}
 
 		p {
-			margin-top: 10px;
+			margin-top: 0;
+			margin-bottom: 5px;
 			color: inherit;
 			opacity: 0.7;
 			font-size: 0.85rem;
@@ -55,8 +95,9 @@
 
 		h4 {
 			font-weight: bold;
-			font-size: 1.9rem;
+			font-size: 1.5rem; // Slightly smaller font for better fit
 			color: inherit;
+			margin: 0;
 		}
 	}
 }

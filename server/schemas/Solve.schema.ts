@@ -77,6 +77,9 @@ export class SolveInput {
 	smart_put_down_time?: number;
 
 	@Field(() => Float)
+	smart_pick_up_time?: number;
+
+	@Field(() => Float)
 	inspection_time?: number;
 }
 
@@ -156,6 +159,9 @@ export class Solve {
 
 	@Field(() => Float)
 	smart_put_down_time: number;
+
+	@Field(() => Float)
+	smart_pick_up_time: number;
 
 	@Field(() => Float)
 	inspection_time: number;

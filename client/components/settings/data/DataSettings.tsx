@@ -67,7 +67,7 @@ export default function DataSettings() {
 		fileDownload(data, filename);
 
 		setExportingData(false);
-		toastSuccess('Successfully download all solve and session data');
+		toastSuccess('Tüm çözüm ve oturum verileri başarıyla indirildi.');
 	}
 
 	return (
@@ -92,7 +92,7 @@ export default function DataSettings() {
 					icon={<CaretDown weight="bold" />}
 					options={[
 						{ text: 'csTimer\'dan içe aktar', onClick: () => openImportModal(ImportDataType.CS_TIMER) },
-						{ text: 'Zkt-Timer Yedekten içe aktar', onClick: () => openImportModal(ImportDataType.CUBEDESK) },
+						{ text: 'Zkt-Timer Yedekten içe aktar', onClick: () => openImportModal(ImportDataType.ZKT_TIMER) },
 					]}
 				/>
 			</SettingRow>

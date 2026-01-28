@@ -1,6 +1,10 @@
 @import '../../../../styles/config';
 
 .#{$namespace}-import-data {
+	max-height: 70vh;
+	overflow-y: auto;
+	padding-right: 5px; // Avoid scrollbar overlap purely visually if needed
+
 	hr {
 		width: 100%;
 		border: none;

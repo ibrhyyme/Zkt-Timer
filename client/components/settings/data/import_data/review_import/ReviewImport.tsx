@@ -1,15 +1,15 @@
-import React, {ReactNode, useContext} from 'react';
+import React, { ReactNode, useContext } from 'react';
 import './ReviewImport.scss';
 import block from '../../../../../styles/bem';
-import {X} from 'phosphor-react';
-import {ImportDataContext} from '../ImportData';
+import { X } from 'phosphor-react';
+import { ImportDataContext } from '../ImportData';
 import Button from '../../../../common/button/Button';
-import {gql} from '@apollo/client/core';
-import {gqlMutate} from '../../../../api';
-import {toastError} from '../../../../../util/toast';
-import {SessionInput, SolveInput} from '../../../../../@types/generated/graphql';
+import { gql } from '@apollo/client/core';
+import { gqlMutate } from '../../../../api';
+import { toastError } from '../../../../../util/toast';
+import { SessionInput, SolveInput } from '../../../../../@types/generated/graphql';
 import ImportSection from '../import_section/ImportSection';
-import {clearOfflineData} from '../../../../layout/offline';
+import { clearOfflineData } from '../../../../layout/offline';
 import CubePicker from '../../../../common/cube_picker/CubePicker';
 import Input from '../../../../common/inputs/input/Input';
 import InputLegend from '../../../../common/inputs/input/input_legend/InputLegend';
@@ -155,21 +155,21 @@ export default function ReviewImport() {
 		<div className={b()}>
 			<hr />
 			<ImportSection
-				title="Review & import"
-				description="Please make sure that the number below look correct. Then click Import data!"
+				title="İncele ve içe aktar"
+				description="Aşağıdaki sayıların doğru olduğundan emin olun. Ardından verileri içe aktarın!"
 			>
 				<div className={b('stats')}>
 					<h4>
-						Solves: <span>{data.solves.length.toLocaleString()}</span>
+						Çözümler: <span>{data.solves.length.toLocaleString()}</span>
 					</h4>
 					<h4>
-						Sessions: <span>{data.sessions.length.toLocaleString()}</span>
+						Sezons: <span>{data.sessions.length.toLocaleString()}</span>
 					</h4>
 					{sessionMapper}
 				</div>
 				<Button
 					loading={context.importing}
-					text="Import data"
+					text="İçe aktar"
 					primary
 					large
 					glow

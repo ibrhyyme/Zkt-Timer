@@ -431,6 +431,7 @@ type Solve {
   smart_turn_count: Int
   smart_turns: String
   smart_put_down_time: Float
+  smart_pick_up_time: Float
   inspection_time: Float
   demo_mode: Boolean
   share_code: String
@@ -1279,6 +1280,7 @@ input SolveInput {
   smart_turn_count: Int
   smart_turns: String
   smart_put_down_time: Float
+  smart_pick_up_time: Float
   inspection_time: Float
 }
 

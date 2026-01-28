@@ -1,13 +1,13 @@
-import React, {ReactNode} from 'react';
+import React, { ReactNode } from 'react';
 import './SolutionInfo.scss';
 import CopyText from '../../common/copy_text/CopyText';
-import {getTimeString} from '../../../util/time';
-import {getSolveStepsWithChildren} from '../util/solution';
-import {STEP_NAME_MAP} from '../util/consts';
-import {processSmartTurns} from '../../../util/smart_scramble';
-import {SolveMethodStep} from '../../../@types/generated/graphql';
+import { getTimeString } from '../../../util/time';
+import { getSolveStepsWithChildren } from '../util/solution';
+import { STEP_NAME_MAP } from '../util/consts';
+import { processSmartTurns } from '../../../util/smart_scramble';
+import { SolveMethodStep } from '../../../@types/generated/graphql';
 import block from '../../../styles/bem';
-import {Solve} from '../../../../server/schemas/Solve.schema';
+import { Solve } from '../../../../server/schemas/Solve.schema';
 
 const b = block('solve-info-solution-info');
 
@@ -16,7 +16,7 @@ interface Props {
 }
 
 export default function SolutionInfo(props: Props) {
-	const {solve} = props;
+	const { solve } = props;
 	const steps = getSolveStepsWithChildren(solve);
 
 	function getTps() {
@@ -25,7 +25,7 @@ export default function SolutionInfo(props: Props) {
 
 	function getStep(step: SolveMethodStep, isChild: boolean, children?: ReactNode[]) {
 		return (
-			<div key={step.step_name} className={b('step', {child: isChild})}>
+			<div key={step.step_name} className={b('step', { child: isChild })}>
 				<div className={b('header')}>
 					<div className={b('header-left')}>
 						<legend>{STEP_NAME_MAP[step.step_name]}</legend>
@@ -39,7 +39,7 @@ export default function SolutionInfo(props: Props) {
 					<CopyText
 						text={step.turns}
 						buttonProps={{
-							text: 'Copy moves',
+							text: 'Hamleleri kopyala',
 						}}
 					/>
 				</div>
@@ -48,16 +48,16 @@ export default function SolutionInfo(props: Props) {
 		);
 	}
 
-	const turns = JSON.parse(solve.smart_turns);
+	const turns = solve.smart_turns ? JSON.parse(solve.smart_turns) : [];
 	const solution = processSmartTurns(
-		turns.map((turn) => turn.turn),
+		(turns || []).map((turn) => turn.turn),
 		true
 	).join(' ');
 
 	const stepsBody = [];
 	for (const step of steps) {
 		let children = null;
-		if (step.children.length) {
+		if (step.children && step.children.length) {
 			children = step.children.map((child) => getStep(child, true));
 		}
 

@@ -11,6 +11,8 @@ const smartState = {
 	smartGyroQuaternion: null,
 	smartGyroVelocity: null,
 	smartGyroSupported: false,
+	smartPickUpTime: 0,
+	lastSmartMoveTime: 0,
 };
 
 const defaultTimerState = {
@@ -72,9 +74,23 @@ export default (state = initialState, action) => {
 				completedAt,
 			});
 
+			const now = completedAt || Date.now();
+			let newPickUpTime = state.smartPickUpTime;
+			let { lastSmartMoveTime } = state;
+
+			if (state.timeStartedAt) {
+				// Timer is running
+				if (state.smartTurns.length === 0 && newPickUpTime === 0) {
+					newPickUpTime = (now - new Date(state.timeStartedAt).getTime()) / 1000;
+				}
+				lastSmartMoveTime = now;
+			}
+
 			return {
 				...state,
 				smartTurns,
+				smartPickUpTime: newPickUpTime,
+				lastSmartMoveTime,
 			};
 		}
 

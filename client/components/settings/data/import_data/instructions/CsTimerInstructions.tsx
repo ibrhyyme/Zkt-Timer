@@ -1,8 +1,8 @@
-import React, {useContext} from 'react';
+import React, { useContext } from 'react';
 import block from '../../../../../styles/bem';
 import CubePicker from '../../../../common/cube_picker/CubePicker';
-import {ImportDataContext} from '../ImportData';
-import {ButtonProps} from '../../../../common/button/Button';
+import { ImportDataContext } from '../ImportData';
+import { ButtonProps } from '../../../../common/button/Button';
 import ImportSection from '../import_section/ImportSection';
 
 const b = block('import-instructions');
@@ -18,21 +18,21 @@ export default function CsTimerInstructions() {
 	};
 
 	if (!context.cubeType) {
-		dropdownButtonProps.text = 'Select cube type';
+		dropdownButtonProps.text = 'Küp türünü seçin';
 	}
 
 	return (
 		<div className={b()}>
-			<ImportSection title="How to export data from csTimer">
+			<ImportSection title="csTimer'dan veriler nasıl dışa aktarılır">
 				<ol>
 					<li>
-						Go to{' '}
 						<a href="https://cstimer.net" target="_blank">
 							cstimer.net
-						</a>
+						</a>{' '}
+						adresine gidin
 					</li>
-					<li>Click the "Export" icon (next to the Settings button)</li>
-					<li>Click "Export to file"</li>
+					<li>"Dışa Aktar" simgesine tıklayın (Ayarlar butonunun yanında)</li>
+					<li>"Dosyaya aktar"a tıklayın</li>
 				</ol>
 			</ImportSection>
 		</div>

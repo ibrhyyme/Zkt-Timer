@@ -20,12 +20,12 @@
 		width: 100%;
 		flex-direction: column;
 
-		> div:not(:last-of-type) {
+		>div:not(:last-of-type) {
 			margin-bottom: 15px;
 		}
 	}
 
-	> hr {
+	>hr {
 		width: 100%;
 		height: 2px;
 		background-color: rgb(var(--button-color));
@@ -73,6 +73,9 @@
 		p {
 			margin-top: 6px;
 			font-family: Roboto Mono, monospace;
+			word-break: break-all;
+			white-space: pre-wrap;
+			line-height: 1.4;
 		}
 	}
 
@@ -82,7 +85,7 @@
 		flex-wrap: wrap;
 		margin-top: 6px;
 
-		> span {
+		>span {
 			display: table;
 			margin-right: 12px;
 			color: rgb(var(--text-color));
@@ -93,15 +96,15 @@
 			border-top: 3px solid transparent;
 		}
 
-		> span:nth-of-type(1) {
+		>span:nth-of-type(1) {
 			border-color: rgb(var(--info-color));
 		}
 
-		> span:nth-of-type(2) {
+		>span:nth-of-type(2) {
 			border-color: rgb(var(--success-color));
 		}
 
-		> span:nth-of-type(3) {
+		>span:nth-of-type(3) {
 			border-color: rgb(var(--warning-color));
 		}
 	}

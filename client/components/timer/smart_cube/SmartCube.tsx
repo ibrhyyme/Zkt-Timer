@@ -185,6 +185,8 @@ export default function SmartCube() {
 		setTimerParams({
 			smartSolvedState: markSolved ? cubejs.current.asString() : smartSolvedState,
 			smartTurns: [],
+			smartPickUpTime: 0,
+			lastSmartMoveTime: 0,
 		});
 
 		setTimeout(() => {

@@ -1652,6 +1652,7 @@ export type Solve = {
   share_code?: Maybe<Scalars['String']>;
   smart_device?: Maybe<SmartDevice>;
   smart_device_id?: Maybe<Scalars['String']>;
+  smart_pick_up_time?: Maybe<Scalars['Float']>;
   smart_put_down_time?: Maybe<Scalars['Float']>;
   smart_turn_count?: Maybe<Scalars['Int']>;
   smart_turns?: Maybe<Scalars['String']>;
@@ -1683,6 +1684,7 @@ export type SolveInput = {
   scramble?: InputMaybe<Scalars['String']>;
   session_id?: InputMaybe<Scalars['String']>;
   smart_device_id?: InputMaybe<Scalars['String']>;
+  smart_pick_up_time?: InputMaybe<Scalars['Float']>;
   smart_put_down_time?: InputMaybe<Scalars['Float']>;
   smart_turn_count?: InputMaybe<Scalars['Int']>;
   smart_turns?: InputMaybe<Scalars['String']>;

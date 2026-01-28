@@ -39,7 +39,7 @@ export default function HistorySolveRow(props: Props) {
 	}
 
 	function openSolve() {
-		dispatch(openModal(<SolveInfo solve={solve} solveId={solve.id} disabled={disabled} />));
+		dispatch(openModal(<SolveInfo solve={solve} solveId={solve.id} disabled={disabled} />, { width: 1000 }));
 	}
 
 	const solveTime = solve.time;

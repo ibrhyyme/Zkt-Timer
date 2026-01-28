@@ -55,6 +55,7 @@ export default function KeyWatcher(props: Props) {
 	const ganTimerOn = timerType === 'gantimer';
 	const inspection = useSettings('inspection');
 	const manualEntry = useSettings('manual_entry');
+	const useSpaceWithSmartCube = useSettings('use_space_with_smart_cube');
 
 	useWindowListener('keyup', keyupSpace);
 	useWindowListener('keydown', keydownSpace);
@@ -157,7 +158,7 @@ export default function KeyWatcher(props: Props) {
 		const solveOpen = modals.length > 1 || (!inModal && modals.length);
 
 		// Checking for various conditions where we don't want to start the timer
-		if (ganTimerOn || solveOpen || !startEnabled || timerDisabled || disabled || editScramble || smartCubeSelected(context)) {
+		if (ganTimerOn || solveOpen || !startEnabled || timerDisabled || disabled || editScramble || (smartCubeSelected(context) && !useSpaceWithSmartCube)) {
 			return;
 		}
 

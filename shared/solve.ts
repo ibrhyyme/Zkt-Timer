@@ -1,7 +1,7 @@
-import {Solve} from '../server/schemas/Solve.schema';
+import { Solve } from '../server/schemas/Solve.schema';
 
 export function sanitizeSolve(s: Solve): Solve {
-	const solve = {...s};
+	const solve = { ...s };
 	delete solve.created_at;
 
 	let startedAt: number | bigint = solve.started_at;
@@ -33,6 +33,10 @@ export function sanitizeSolve(s: Solve): Solve {
 
 	if (!solve.smart_put_down_time) {
 		solve.smart_put_down_time = 0;
+	}
+
+	if (!solve.smart_pick_up_time) {
+		solve.smart_pick_up_time = 0;
 	}
 
 	solve.from_timer = true;
