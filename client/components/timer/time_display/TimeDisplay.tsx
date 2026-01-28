@@ -97,7 +97,7 @@ export default function TimeDisplay() {
 		}, 10);
 	}
 
-	if (manualEntry && timerType !== 'smart') {
+	if (manualEntry) {
 		return <Manual />;
 	}
 

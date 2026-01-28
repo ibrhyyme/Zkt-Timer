@@ -1,10 +1,10 @@
 import React from 'react';
-import {useDispatch} from 'react-redux';
-import {setSetting, toggleSetting} from '../../../db/settings/update';
-import {useSettings} from '../../../util/hooks/useSettings';
-import {openModal} from '../../../actions/general';
+import { useDispatch } from 'react-redux';
+import { setSetting, toggleSetting } from '../../../db/settings/update';
+import { useSettings } from '../../../util/hooks/useSettings';
+import { openModal } from '../../../actions/general';
 import StackMatPicker from '../../settings/stackmat_picker/StackMatPicker';
-import {AllSettings} from '../../../db/settings/query';
+import { AllSettings } from '../../../db/settings/query';
 
 interface TimerOptionProps {
 	label: string;
@@ -13,7 +13,7 @@ interface TimerOptionProps {
 	onClick: () => void;
 }
 
-function TimerOption({label, isActive, disabled = false, onClick}: TimerOptionProps) {
+function TimerOption({ label, isActive, disabled = false, onClick }: TimerOptionProps) {
 	return (
 		<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-gradient-to-r from-slate-800/30 to-slate-700/30 border border-slate-700/50 hover:border-slate-600/50 transition-all duration-200 hover:shadow-lg hover:shadow-black/10">
 			<span className={`font-medium transition-colors ${disabled ? 'text-slate-500' : 'text-slate-200 group-hover:text-white'}`}>
@@ -22,17 +22,15 @@ function TimerOption({label, isActive, disabled = false, onClick}: TimerOptionPr
 			<button
 				type="button"
 				disabled={disabled}
-				className={`relative h-6 w-11 rounded-full border transition-all duration-300 transform hover:scale-105 ${
-					isActive
-						? 'bg-gradient-to-r from-indigo-500 to-purple-500 border-indigo-400 shadow-lg shadow-indigo-500/30'
-						: 'bg-slate-600/50 border-slate-500/50 hover:bg-slate-500/50'
-				} ${disabled ? 'opacity-30 cursor-not-allowed transform-none' : 'cursor-pointer'}`}
+				className={`relative h-6 w-11 rounded-full border transition-all duration-300 transform hover:scale-105 ${isActive
+					? 'bg-gradient-to-r from-indigo-500 to-purple-500 border-indigo-400 shadow-lg shadow-indigo-500/30'
+					: 'bg-slate-600/50 border-slate-500/50 hover:bg-slate-500/50'
+					} ${disabled ? 'opacity-30 cursor-not-allowed transform-none' : 'cursor-pointer'}`}
 				onClick={onClick}
 			>
 				<div
-					className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-lg transition-all duration-300 ${
-						isActive ? 'translate-x-5 shadow-white/20' : 'translate-x-0.5'
-					}`}
+					className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-lg transition-all duration-300 ${isActive ? 'translate-x-5 shadow-white/20' : 'translate-x-0.5'
+						}`}
 				/>
 			</button>
 		</div>
@@ -41,16 +39,16 @@ function TimerOption({label, isActive, disabled = false, onClick}: TimerOptionPr
 
 export default function TimerTab() {
 	const dispatch = useDispatch();
-	
+
 	const timerType = useSettings('timer_type');
 	const manualEntry = useSettings('manual_entry');
 	const cubeType = useSettings('cube_type');
 
 	let manualDisabled = false;
 	// Smart cube selection disables manual entry only for 3x3
-	if (timerType === 'smart' && cubeType === '333') {
-		manualDisabled = true;
-	}
+	// if (timerType === 'smart' && cubeType === '333') {
+	// 	manualDisabled = true;
+	// }
 
 	function selectTimerType(newTimerType: AllSettings['timer_type']) {
 		// Turn off all timer types first, then turn on the selected one
