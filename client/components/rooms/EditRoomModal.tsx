@@ -1,8 +1,10 @@
 
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Lock, Check } from 'phosphor-react';
+import { X, Lock, Check, Cube } from 'phosphor-react';
 import Button from '../common/button/Button';
+import { ALLOWED_CUBE_TYPES } from '../../../shared/friendly_room/consts';
+import { getCubeTypeInfoById } from '../../util/cubes/util';
 
 
 
@@ -80,6 +82,28 @@ export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate,
 
 
 
+                    {/* Cube Type Selector */}
+                    <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block">Küp Tipi</label>
+                        <div className="relative">
+                            <select
+                                value={selectedCubeType}
+                                onChange={(e) => setSelectedCubeType(e.target.value)}
+                                className="w-full bg-[#0a0b0e] border border-gray-800 rounded-lg px-4 py-3 text-white appearance-none focus:outline-none focus:border-blue-500 transition-colors"
+                            >
+                                {ALLOWED_CUBE_TYPES.map((ct) => {
+                                    const info = getCubeTypeInfoById(ct);
+                                    return (
+                                        <option key={ct} value={ct}>
+                                            {info ? info.name : ct.toUpperCase()}
+                                        </option>
+                                    );
+                                })}
+                            </select>
+                            <Cube className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={20} />
+                        </div>
+                    </div>
+
                     {/* Private Toggle */}
                     <div className="flex items-center gap-3">
                         <button
@@ -140,7 +164,12 @@ export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate,
                         İptal
                     </button>
                     <Button onClick={() => {
-                        onSubmit(name, privateRoom, password.trim(), allowedTypes);
+                        if (selectedCubeType !== cubeType) {
+                            if (!window.confirm('Event/Küp tipi değişince odadaki tüm çözümler ve skorlar sıfırlanacaktır. Onaylıyor musunuz?')) {
+                                return;
+                            }
+                        }
+                        onSubmit(name, privateRoom, password.trim(), allowedTypes, selectedCubeType);
                         onClose();
                     }} primary className="px-6 py-2">
                         Kaydet

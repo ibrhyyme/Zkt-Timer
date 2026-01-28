@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import { socketClient } from '../../util/socket/socketio';
 import { FriendlyRoomClientEvent, CreateFriendlyRoomInput } from '../../../shared/friendly_room';
 import { FriendlyRoomConst, ALLOWED_CUBE_TYPES } from '../../../shared/friendly_room/consts';
+import { getCubeTypeInfoById } from '../../util/cubes/util';
 import { closeModal } from '../../actions/general';
 import { Cube, Users, Lock, LockOpen, Sparkle, GameController, X } from 'phosphor-react';
 import './CreateRoomModal.scss';
@@ -105,11 +106,14 @@ function CreateRoomForm({ onClose }: CreateRoomFormProps) {
                                 value={cubeType}
                                 onChange={(e) => setCubeType(e.target.value)}
                             >
-                                {ALLOWED_CUBE_TYPES.map((ct) => (
-                                    <option key={ct} value={ct}>
-                                        {ct.toUpperCase()}
-                                    </option>
-                                ))}
+                                {ALLOWED_CUBE_TYPES.map((ct) => {
+                                    const info = getCubeTypeInfoById(ct);
+                                    return (
+                                        <option key={ct} value={ct}>
+                                            {info ? info.name : ct.toUpperCase()}
+                                        </option>
+                                    );
+                                })}
                             </select>
                             <Cube className="create-room-modal__select-icon" weight="fill" size={18} />
                         </div>

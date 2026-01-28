@@ -3,15 +3,16 @@ import 'seedrandom';
 import thunk from 'redux-thunk';
 import ReactDOM from 'react-dom';
 import * as Sentry from '@sentry/browser';
-import {Integrations} from '@sentry/tracing';
+import { Integrations } from '@sentry/tracing';
 import promise from 'redux-promise-middleware';
-import {applyMiddleware, createStore} from 'redux';
-import {Provider} from 'react-redux';
-import {Switch, BrowserRouter as Router} from 'react-router-dom';
-import {routes} from './layout/Routes';
+import { applyMiddleware, createStore } from 'redux';
+import { Provider } from 'react-redux';
+// Force HMR check
+import { Route, Switch, useLocation, BrowserRouter as Router } from 'react-router-dom';
+import { routes } from './layout/Routes';
 import reducers from '../reducers/reducers';
-import {setStore} from './store';
-import {initApollo} from './api';
+import { setStore } from './store';
+import { initApollo } from './api';
 
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -24,9 +25,9 @@ setStore(store);
 delete window.__STORE__;
 
 import '../styles/index.scss';
-import {mapSingleRoute} from './map_route';
-import {ApolloProvider} from '@apollo/client';
-import {DataProvider} from '../providers/DataProvider';
+import { mapSingleRoute } from './map_route';
+import { ApolloProvider } from '@apollo/client';
+import { DataProvider } from '../providers/DataProvider';
 
 Sentry.init({
 	dsn: 'https://feee16c821834f408ae2453577b10f9e@o637154.ingest.sentry.io/5756098',
@@ -50,9 +51,9 @@ ReactDOM.hydrate(
 );
 
 // Register Service Worker for PWA (only in production)
-if (typeof window !== "undefined" && 
-    "serviceWorker" in navigator && 
-    process.env.NODE_ENV === "production") {
+if (typeof window !== "undefined" &&
+	"serviceWorker" in navigator &&
+	process.env.NODE_ENV === "production") {
 	window.addEventListener('load', () => {
 		navigator.serviceWorker.register('/sw.js').catch(err => console.error('SW register failed:', err));
 	});

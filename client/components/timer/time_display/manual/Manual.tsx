@@ -17,7 +17,6 @@ export default function Manual() {
 	const [manualTime, setManualTime] = useState('');
 	const [error, setError] = useState(false);
 
-
 	const context = useContext(TimerContext);
 	const { scramble, disabled, hideTime } = context;
 
@@ -25,7 +24,7 @@ export default function Manual() {
 	const timerFontFamily = useSettings('timer_font_family');
 	const requirePeriodInManualTimeEntry = useSettings('require_period_in_manual_time_entry');
 
-	useElementListener(manualInput.current, 'keypress', addManualTime, [manualInput?.current]);
+	useElementListener(manualInput.current, 'keydown', addManualTime, [manualInput?.current, manualTime]);
 
 	function addManualTime(e) {
 		if (e.key !== 'Enter' || error) {
@@ -78,6 +77,7 @@ export default function Manual() {
 			}}
 			onChange={handleManualEntryChange}
 			value={manualTime}
+			inputMode="decimal"
 			className={b({
 				error: error && !!manualTime,
 			})}
@@ -92,7 +92,7 @@ export default function Manual() {
 		<div className={b('wrapper')}>
 			{input}
 
-			{hideTime ? null : (
+			{!hideTime && (
 				<StartInstructions>Manually enter time.</StartInstructions>
 			)}
 		</div>

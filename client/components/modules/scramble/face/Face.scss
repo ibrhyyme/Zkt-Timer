@@ -8,11 +8,11 @@
 	max-width: 100%;
 	max-height: 100%;
 	display: grid;
-	grid-gap: 3px;
+	grid-gap: 3%;
 
 	> span {
 		background-color: rgb(var(--module-color));
-		border-radius: 2px;
+		border-radius: 10%;
 		width: 100%;
 		box-sizing: border-box;
 		height: 100%;

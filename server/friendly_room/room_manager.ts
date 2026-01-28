@@ -182,7 +182,7 @@ export async function addParticipant(
     roomId: string,
     user: PublicUserAccount,
     password?: string
-): Promise<{ room: FriendlyRoomData | null; isNew: boolean }> {
+): Promise<{ room: FriendlyRoomData | null; isNew: boolean; newAdminId?: string }> {
     const room = await getRoom(roomId);
     if (!room) {
         throw new Error('Room not found');
@@ -225,15 +225,17 @@ export async function addParticipant(
     });
 
     // Check if the joining user is the original creator and restore admin rights
+    let newAdminId: string | undefined;
     if ((room as any).original_creator_id === user.id && room.created_by_id !== user.id) {
         await prisma().friendlyRoom.update({
             where: { id: roomId },
             data: { created_by_id: user.id },
         });
+        newAdminId = user.id;
     }
 
     const updatedRoom = await getRoom(roomId);
-    return { room: mapRoomToData(updatedRoom), isNew: true };
+    return { room: mapRoomToData(updatedRoom), isNew: true, newAdminId };
 }
 
 // Remove participant from room
@@ -371,7 +373,7 @@ export async function deleteRoom(roomId: string, userId: string, isAdmin: boolea
 export async function updateRoom(
     roomId: string,
     userId: string,
-    updates: { name?: string; is_private?: boolean; password?: string; allowed_timer_types?: string[] },
+    updates: { name?: string; is_private?: boolean; password?: string; allowed_timer_types?: string[], cube_type?: string },
     isAdmin: boolean = false
 ): Promise<FriendlyRoomData | null> {
     const room = await getRoom(roomId);
@@ -389,6 +391,19 @@ export async function updateRoom(
         // Clear password if switching to public
         data.password = null;
     }
+
+    // Handle Cube Type Change (RESET ROOM)
+    if (updates.cube_type && updates.cube_type !== room.cube_type) {
+        data.cube_type = updates.cube_type;
+        data.current_scramble = generateScrambleForCubeType(updates.cube_type);
+        data.scramble_index = 1;
+
+        // Reset all solves
+        await prisma().friendlyRoomSolve.deleteMany({
+            where: { room_id: roomId }
+        });
+    }
+
     // Note: allowed_timer_types is handled via raw query below to support outdated Prisma Client
 
     await prisma().friendlyRoom.update({

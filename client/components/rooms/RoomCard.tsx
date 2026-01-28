@@ -136,8 +136,14 @@ export default function RoomCard({ room, onJoin, isAdmin = false }: RoomCardProp
                         onClose={() => setEditModalOpen(false)}
                         currentName={room.name}
                         isPrivate={room.is_private}
-                        onSubmit={(name, isPrivate, password) => {
-                            getSocket().emit(FriendlyRoomClientEvent.UPDATE_ROOM, room.id, { name, is_private: isPrivate, password });
+                        cubeType={room.cube_type}
+                        onSubmit={(name, isPrivate, password, _, cubeType) => {
+                            getSocket().emit(FriendlyRoomClientEvent.UPDATE_ROOM, room.id, {
+                                name,
+                                is_private: isPrivate,
+                                password,
+                                cube_type: cubeType
+                            });
                         }}
                     />
                     <ManageUsersModal

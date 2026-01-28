@@ -94,6 +94,9 @@ export function listenForFriendlyRoomEvents(client: Socket) {
                 disconnectTimers.delete(user.id);
             }
 
+            // Cache user ID for disconnect handling
+            (client as any).userId = user.id;
+
             const room = await createRoom(input, user);
             const socketRoom = getFriendlyRoomSocketRoom(room.id);
 
@@ -127,6 +130,9 @@ export function listenForFriendlyRoomEvents(client: Socket) {
                 disconnectTimers.delete(user.id);
             }
 
+            // Cache user ID for disconnect handling
+            (client as any).userId = user.id;
+
             // Check if user is banned from this room
             const banned = await isUserBanned(input.room_id, user.id);
             if (banned) {
@@ -148,6 +154,14 @@ export function listenForFriendlyRoomEvents(client: Socket) {
             // Send room data to joining user
             client.emit(FriendlyRoomServerEvent.ROOM_DATA, result.room);
 
+            // Sticky Admin: Notify everyone if admin changed
+            if (result.newAdminId) {
+                io().to(socketRoom).emit(FriendlyRoomServerEvent.ADMIN_CHANGED, {
+                    room_id: result.room.id,
+                    new_admin_id: result.newAdminId,
+                });
+            }
+
             // Only notify other participants if this is a new participant
             if (result.isNew) {
                 const participant = result.room.participants.find((p) => p.user_id === user.id);
@@ -166,6 +180,14 @@ export function listenForFriendlyRoomEvents(client: Socket) {
                 // Update lobby
                 const updatedRooms = await getAllActiveRooms();
                 io().to(FriendlyRoomSocketRoom.LOBBY).emit(FriendlyRoomServerEvent.ROOMS_LIST, updatedRooms);
+            } else {
+                // User is reconnecting (rejoining) - Clear DISCONNECTED status
+                const socketRoom = getFriendlyRoomSocketRoom(result.room.id);
+                io().to(socketRoom).emit(FriendlyRoomServerEvent.USER_STATUS, {
+                    room_id: result.room.id,
+                    user_id: user.id,
+                    status: 'IDLE',
+                });
             }
         } catch (error) {
             logger.error('Error joining friendly room', { error });
@@ -359,7 +381,7 @@ export function listenForFriendlyRoomEvents(client: Socket) {
     });
 
     // Update room settings (room creator or site admin)
-    client.on(FriendlyRoomClientEvent.UPDATE_ROOM, async (roomId: string, updates: { name?: string; is_private?: boolean; password?: string; allowed_timer_types?: string[] }) => {
+    client.on(FriendlyRoomClientEvent.UPDATE_ROOM, async (roomId: string, updates: { name?: string; is_private?: boolean; password?: string; allowed_timer_types?: string[], cube_type?: string }) => {
         try {
             const { user } = await getDetailedClientInfo(client);
             if (!user) return;
@@ -507,74 +529,142 @@ export function listenForFriendlyRoomEvents(client: Socket) {
     // Handle disconnect - automatically remove user from room when they close browser/tab
     client.on('disconnect', async () => {
         try {
-            // We need to fetch user, but client might be disconnected. 
-            // getDetailedClientInfo usually relies on session from handshake.
             let user: any = null;
             try {
                 const info = await getDetailedClientInfo(client);
                 user = info.user;
             } catch (e) {
-                // If session fetch fails, maybe use cached userId
                 if ((client as any).userId) {
-                    user = { id: (client as any).userId, username: 'Unknown' }; // Minimal user
+                    user = { id: (client as any).userId, username: 'Unknown' };
                 }
             }
-
-            if (!user) return;
-
-            // Start grace period
-            const timer = setTimeout(async () => {
-                disconnectTimers.delete(user.id);
-                try {
-                    // Get all active rooms and check if user is in any
-                    const rooms = await getAllActiveRooms();
-                    for (const room of rooms) {
-                        const isInRoom = room.participants.some((p) => p.user_id === user.id);
-                        if (isInRoom) {
-                            const result = await removeParticipant(room.id, user.id);
-                            const socketRoom = getFriendlyRoomSocketRoom(room.id);
-
-                            if (result.deleted) {
-                                // Room was deleted (no more participants)
-                                io().to(socketRoom).emit(FriendlyRoomServerEvent.ROOM_DELETED, room.id);
-                            } else if (result.room) {
-                                // Notify remaining participants
-                                io().to(socketRoom).emit(FriendlyRoomServerEvent.PLAYER_LEFT, {
-                                    room_id: room.id,
-                                    user_id: user.id,
-                                });
-
-                                // NOTIFICATION: User Disconnected
-                                io().to(socketRoom).emit(FriendlyRoomServerEvent.NOTIFICATION, {
-                                    type: 'LEAVE',
-                                    message: `${user.username || 'Bir kullanıcı'} ayrıldı (bağlantı kesildi)`
-                                });
-
-                                // If admin changed, notify everyone
-                                if (result.newAdminId) {
-                                    io().to(socketRoom).emit(FriendlyRoomServerEvent.ADMIN_CHANGED, {
-                                        room_id: room.id,
-                                        new_admin_id: result.newAdminId,
-                                    });
-                                }
-                            }
-
-                            // Update lobby
-                            const updatedRooms = await getAllActiveRooms();
-                            io().to(FriendlyRoomSocketRoom.LOBBY).emit(FriendlyRoomServerEvent.ROOMS_LIST, updatedRooms);
-                        }
-                    }
-                } catch (innerError) {
-                    logger.error('Error handling disconnect timeout', { error: innerError });
-                }
-            }, 5000); // 5 seconds grace period
-
-            disconnectTimers.set(user.id, timer);
-
+            if (user) await startGracePeriod(user);
         } catch (error) {
             logger.error('Error handling disconnect in friendly room', { error });
         }
     });
+
+    // Handle "Away" signal (Tab switch/minimize)
+    client.on(FriendlyRoomClientEvent.SIGNAL_AWAY, async () => {
+        try {
+            const { user } = await getDetailedClientInfo(client);
+            if (user) await startGracePeriod(user);
+        } catch (error) {
+            logger.error('Error handling away signal', { error });
+        }
+    });
+
+    // Handle "Back" signal (Tab visible)
+    client.on(FriendlyRoomClientEvent.SIGNAL_BACK, async () => {
+        try {
+            const { user } = await getDetailedClientInfo(client);
+            if (user) await cancelGracePeriod(user);
+        } catch (error) {
+            logger.error('Error handling back signal', { error });
+        }
+    });
+}
+
+// Helper: Start Grace Period (Disconnect or Away)
+async function startGracePeriod(user: any) {
+    if (!user) return;
+
+    logger.info('Starting friendly room grace period', { userId: user.id, username: user.username });
+
+    // Mark user as DISCONNECTED immediately in all their rooms
+    const expireTime = Date.now() + 45000; // 45s from now
+    try {
+        const rooms = await getAllActiveRooms();
+        for (const room of rooms) {
+            const isInRoom = room.participants.some((p: any) => p.user_id === user.id);
+            if (isInRoom) {
+                const socketRoom = getFriendlyRoomSocketRoom(room.id);
+                io().to(socketRoom).emit(FriendlyRoomServerEvent.USER_STATUS, {
+                    room_id: room.id,
+                    user_id: user.id,
+                    status: `DISCONNECTED|${expireTime}`,
+                });
+            }
+        }
+    } catch (err) {
+        logger.error('Error broadcasting disconnect status', { error: err });
+    }
+
+    // Cancel existing timer if any (restart it)
+    if (disconnectTimers.has(user.id)) {
+        clearTimeout(disconnectTimers.get(user.id)!);
+    }
+
+    // Start removal timer
+    const timer = setTimeout(async () => {
+        disconnectTimers.delete(user.id);
+        try {
+            const rooms = await getAllActiveRooms();
+            for (const room of rooms) {
+                const isInRoom = room.participants.some((p: any) => p.user_id === user.id);
+                if (isInRoom) {
+                    const result = await removeParticipant(room.id, user.id);
+                    const socketRoom = getFriendlyRoomSocketRoom(room.id);
+
+                    if (result.deleted) {
+                        io().to(socketRoom).emit(FriendlyRoomServerEvent.ROOM_DELETED, room.id);
+                    } else if (result.room) {
+                        io().to(socketRoom).emit(FriendlyRoomServerEvent.PLAYER_LEFT, {
+                            room_id: room.id,
+                            user_id: user.id,
+                        });
+
+                        io().to(socketRoom).emit(FriendlyRoomServerEvent.NOTIFICATION, {
+                            type: 'LEAVE',
+                            message: `${user.username || 'Bir kullanıcı'} ayrıldı (bağlantı kesildi - zaman aşımı)`
+                        });
+
+                        if (result.newAdminId) {
+                            io().to(socketRoom).emit(FriendlyRoomServerEvent.ADMIN_CHANGED, {
+                                room_id: room.id,
+                                new_admin_id: result.newAdminId,
+                            });
+                        }
+                    }
+
+                    const updatedRooms = await getAllActiveRooms();
+                    io().to(FriendlyRoomSocketRoom.LOBBY).emit(FriendlyRoomServerEvent.ROOMS_LIST, updatedRooms);
+                }
+            }
+        } catch (innerError) {
+            logger.error('Error handling disconnect timeout', { error: innerError });
+        }
+    }, 45000); // 45s
+
+    disconnectTimers.set(user.id, timer);
+}
+
+// Helper: Cancel Grace Period (Reconnected or Back)
+async function cancelGracePeriod(user: any) {
+    if (!user) return;
+
+    if (disconnectTimers.has(user.id)) {
+        clearTimeout(disconnectTimers.get(user.id)!);
+        disconnectTimers.delete(user.id);
+
+        // Restore status to IDLE in all rooms
+        try {
+            const rooms = await getAllActiveRooms();
+            for (const room of rooms) {
+                const isInRoom = room.participants.some((p: any) => p.user_id === user.id);
+                if (isInRoom) {
+                    const socketRoom = getFriendlyRoomSocketRoom(room.id);
+                    io().to(socketRoom).emit(FriendlyRoomServerEvent.USER_STATUS, {
+                        room_id: room.id,
+                        user_id: user.id,
+                        status: 'IDLE',
+                    });
+                }
+            }
+        } catch (err) {
+            logger.error('Error restoring status', { error: err });
+        }
+    }
 }
 
 // Join lobby for receiving room list updates

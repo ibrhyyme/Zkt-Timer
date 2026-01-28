@@ -94,20 +94,6 @@ export default function KeyWatcher(props: Props) {
 			}
 
 			if (target.classList.contains(timerClass('main'))) {
-				if (e.touches && e.touches.length > 1) {
-					// Multi-touch - cancel
-					touchStartX.current = null;
-					touchStartY.current = null;
-					setTimerParams({
-						spaceTimerStarted: 0,
-						canStart: false,
-					});
-					if (getTimer(START_TIMEOUT)) {
-						stopTimer(START_TIMEOUT);
-					}
-					return;
-				}
-
 				if (e.touches && e.touches[0]) {
 					touchStartX.current = e.touches[0].clientX;
 					touchStartY.current = e.touches[0].clientY;
@@ -121,6 +107,8 @@ export default function KeyWatcher(props: Props) {
 	}
 
 	function touchEnd(e) {
+		if (e.touches && e.touches.length > 0) return;
+
 		touchStartX.current = null;
 		touchStartY.current = null;
 		let target = e.target;
@@ -137,16 +125,14 @@ export default function KeyWatcher(props: Props) {
 
 	function touchMove(e) {
 		if (touchStartX.current === null || touchStartY.current === null) return;
-		if (!spaceTimerStarted && !inInspection) return; // Only if we are holding to start or in inspection?
-		// Actually, spaceTimerStarted > 0 means we are holding down to start.
-		// If we slide, we want to cancel this hold.
+		if (!spaceTimerStarted && !inInspection) return;
 
-		const x = e.touches[0].clientX;
 		const y = e.touches[0].clientY;
-		const diffX = Math.abs(x - touchStartX.current);
-		const diffY = Math.abs(y - touchStartY.current);
+		// const diffX = Math.abs(e.touches[0].clientX - touchStartX.current); // No longer needed for logic
 
-		if (diffX > 60 || diffY > 60) {
+		// Only cancel if swiping UP significantly (e.g. > 100px)
+		// This allows user to jitter their finger or move side-to-side without cancelling
+		if (touchStartY.current - y > 100) {
 			// Cancel the timer start hold
 			if (spaceTimerStarted) {
 				setTimerParams({
@@ -156,15 +142,6 @@ export default function KeyWatcher(props: Props) {
 				if (getTimer(START_TIMEOUT)) {
 					stopTimer(START_TIMEOUT);
 				}
-			}
-
-			// Explicit Swipe Up Cancel
-			if (touchStartY.current && touchStartY.current - y > 100) {
-				// Already cancelled above, but just ensuring logic consistency
-				setTimerParams({
-					spaceTimerStarted: 0,
-					canStart: false,
-				});
 			}
 
 			touchStartX.current = null;

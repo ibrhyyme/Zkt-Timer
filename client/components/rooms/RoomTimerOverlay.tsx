@@ -4,7 +4,7 @@ import { useSettings } from '../../util/hooks/useSettings';
 import { useDispatch, useSelector } from 'react-redux';
 import { convertTimeStringToSeconds } from '../../util/time';
 import { openModal } from '../../actions/general';
-import { Bluetooth, Timer, Keyboard, X } from 'phosphor-react';
+import { Bluetooth, Timer, Keyboard, X, Check } from 'phosphor-react';
 import Stackmat from '../../util/vendor/stackmat';
 import { GanTimerConnection, GanTimerEvent, GanTimerState, connectGanTimer } from 'gan-web-bluetooth';
 import BluetoothErrorMessage from '../timer/common/BluetoothErrorMessage';
@@ -42,6 +42,7 @@ interface RoomTimerOverlayProps {
     smartReviewing?: boolean;
     smartFinalTime?: number;
     warning?: string;
+    isMobile?: boolean;
 }
 
 // Module-scoped GAN Timer connection
@@ -63,6 +64,7 @@ export default function RoomTimerOverlay({
     smartReviewing = false,
     smartFinalTime = 0,
     warning,
+    isMobile = false,
 }: RoomTimerOverlayProps) {
     const dispatch = useDispatch();
 
@@ -297,6 +299,13 @@ export default function RoomTimerOverlay({
             clearInterval(timerRef.current);
             timerRef.current = null;
         }
+
+        // FIX: Force focus back to window to ensure keyboard shortcuts work immediately (Mac fix)
+        // We blur the active element (like the submit button) because it's about to be removed from DOM
+        if (document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+        }
+        window.focus();
     };
 
     const getFinalTime = () => {
@@ -552,7 +561,7 @@ export default function RoomTimerOverlay({
 
             // Smart Review Keyboard Support
             if (smartReviewing) {
-                if (e.key === 'Enter' || e.keyCode === 13) { // Enter
+                if (e.key === 'Enter' || e.keyCode === 13 || e.key === ' ' || e.keyCode === 32) { // Enter or Space
                     e.preventDefault();
                     const sec = smartFinalTime / 1000;
                     const { inspection: inspPenalty, inspectionDNF, AUF, DNF } = penalties;
@@ -563,7 +572,14 @@ export default function RoomTimerOverlay({
                 return;
             }
 
-
+            // Normal Submission Keyboard Support (Enter or Space to save)
+            if (currentStatus === STATUS.SUBMITTING) {
+                if (e.key === 'Enter' || e.keyCode === 13 || e.key === ' ' || e.keyCode === 32) {
+                    e.preventDefault();
+                    submitTime();
+                    return;
+                }
+            }
 
             // Space
             if (e.key === ' ' || e.keyCode === 32) {
@@ -610,6 +626,17 @@ export default function RoomTimerOverlay({
             // Allow interaction with buttons, inputs, and scrollable areas
             if (target.closest('button, input, label, textarea, a')) return;
 
+            const currentStatus = statusRef.current;
+
+            // Mobile: Strict check for timer touch area ONLY FOR STARTING
+            // If timer is already running (TIMING) or Inspecting, allow touch anywhere to stop/start
+            if (isMobile) {
+                const isRunning = currentStatus === STATUS.TIMING || currentStatus === STATUS.INSPECTING || currentStatus === STATUS.INSPECTING_PRIMING || currentStatus === STATUS.INSPECTING_WAITING;
+                if (!isRunning && !target.closest('.timer-touch-area')) {
+                    return;
+                }
+            }
+
             // NOTE: Timer can now start on scrollable areas (like results table) too
             // The 200ms delay gives user time to start scrolling before timer activates
             isTouchScrollingRef.current = false;
@@ -621,7 +648,7 @@ export default function RoomTimerOverlay({
             touchStartY.current = e.touches[0].clientY;
             touchStartedRef.current = true;
 
-            const currentStatus = statusRef.current;
+            // const currentStatus = statusRef.current; // Removed duplicate
 
             // If timer is running, stop immediately (no delay needed)
             if (currentStatus === STATUS.TIMING) {
@@ -649,14 +676,14 @@ export default function RoomTimerOverlay({
 
             const x = e.touches[0].clientX;
             const y = e.touches[0].clientY;
-            const diffX = Math.abs(x - touchStartX.current);
-            const diffY = Math.abs(y - touchStartY.current);
+            // const diffX = Math.abs(x - touchStartX.current);
+            // const diffY = Math.abs(y - touchStartY.current);
 
-            // If user moved more than 20px, they're scrolling, not holding timer
-            if (diffX > 20 || diffY > 20) {
+            // Only cancel if swiping UP significantly (e.g. > 100px)
+            if (touchStartY.current - y > 100) {
                 isTouchScrollingRef.current = true;
 
-                // Clear the delay timeout - user is scrolling
+                // Clear the delay timeout - user is scrolling/cancelling
                 if (touchDelayTimeoutRef.current) {
                     clearTimeout(touchDelayTimeoutRef.current);
                     touchDelayTimeoutRef.current = null;
@@ -690,6 +717,10 @@ export default function RoomTimerOverlay({
         const handleTouchEnd = (e: TouchEvent) => {
             const target = e.target as HTMLElement;
             if (target.closest('button, input, label, textarea, a')) return;
+
+            // FIX: If there are still fingers on the screen, do NOT start the timer yet.
+            // This handles the case where a user accidentally touches with a 2nd finger and lifts one.
+            if (e.touches.length > 0) return;
 
             // Clear delay timeout
             if (touchDelayTimeoutRef.current) {
@@ -759,7 +790,7 @@ export default function RoomTimerOverlay({
                 clearTimeout(primingTimeoutRef.current);
             }
         };
-    }, [isActive, alreadySolvedThisRound, effectiveInspection, submitTime, simulateSpaceDown, simulateSpaceUp, isManualMode]);
+    }, [isActive, alreadySolvedThisRound, effectiveInspection, submitTime, simulateSpaceDown, simulateSpaceUp, isManualMode, isMobile]);
 
     // Connect GAN Timer
     const connectGanTimerDevice = async () => {
@@ -994,7 +1025,11 @@ export default function RoomTimerOverlay({
 
             try {
                 const parsed = convertTimeStringToSeconds(manualTimeInput, false);
-                onSubmit(parsed.timeSeconds, parsed.plusTwo, parsed.dnf);
+                const finalDnf = parsed.dnf || penalties.DNF;
+                // Treat Inspection checkbox as +2 penalty
+                const finalPlusTwo = parsed.plusTwo || penalties.AUF || penalties.inspection;
+
+                onSubmit(parsed.timeSeconds, finalPlusTwo, finalDnf);
                 setManualTimeInput('');
                 setManualTimeError(false);
                 reset();
@@ -1016,6 +1051,7 @@ export default function RoomTimerOverlay({
                 <input
                     ref={manualInputRef}
                     type="text"
+                    inputMode="decimal"
                     onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                             e.preventDefault();
@@ -1027,17 +1063,37 @@ export default function RoomTimerOverlay({
                     value={manualTimeInput}
                     onChange={handleManualChange}
                     onKeyPress={handleKeyPress}
-                    placeholder="1:23.45 veya DNF"
+                    placeholder="1:23.45"
                     autoFocus
                 />
-                <p className="room-timer-overlay__manual-hint">
-                    Formatlar: 12.34 | 1:23.45 | DNF | 12.34+2
-                </p>
-                {effectiveInspection && (
-                    <p className="room-timer-overlay__manual-hint">
-                        İnceleme için Space tuşunu basılı tutun
-                    </p>
-                )}
+
+                <div className="room-timer-overlay__penalties" style={{ marginTop: '1.5rem', marginBottom: '0.5rem', justifyContent: 'center' }}>
+                    <label className="room-timer-overlay__checkbox">
+                        <input
+                            type="checkbox"
+                            checked={penalties.AUF || false}
+                            onChange={() => flipPenalty('AUF')}
+                        />
+                        <span>AUF</span>
+                    </label>
+                    <label className="room-timer-overlay__checkbox">
+                        <input
+                            type="checkbox"
+                            checked={penalties.DNF || false}
+                            onChange={() => flipPenalty('DNF')}
+                        />
+                        <span>DNF</span>
+                    </label>
+                    <label className="room-timer-overlay__checkbox">
+                        <input
+                            type="checkbox"
+                            checked={penalties.inspection || false}
+                            onChange={() => flipPenalty('inspection')}
+                        />
+                        <span>INSPECTION</span>
+                    </label>
+                </div>
+
                 <button
                     className="room-timer-overlay__btn"
                     onClick={handleManualSubmit}

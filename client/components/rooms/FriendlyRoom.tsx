@@ -23,7 +23,7 @@ import RoomTimerOverlay from './RoomTimerOverlay';
 import RoomSettingsModal from './RoomSettingsModal';
 import EditRoomModal from './EditRoomModal';
 import ManageUsersModal from './ManageUsersModal';
-import { Gear, List, PencilSimple, Users, Trash, BluetoothConnected, Bluetooth, CheckCircle, CircleNotch } from 'phosphor-react';
+import { Gear, List, PencilSimple, Users, Trash, BluetoothConnected, Bluetooth, CheckCircle, CircleNotch, Check } from 'phosphor-react';
 import { getTimeString, convertTimeStringToSeconds } from '../../util/time';
 import { toastError } from '../../util/toast';
 import { connectGanTimer, GanTimerConnection } from 'gan-web-bluetooth';
@@ -61,10 +61,10 @@ export default function FriendlyRoom() {
     const [notifications, setNotifications] = useState<NotificationItem[]>([]);
 
     // Responsive state
-    const [isMobile, setIsMobile] = useState(window.innerWidth < 1024); // lg breakpoint
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768); // md breakpoint
 
     useEffect(() => {
-        const handleResize = () => setIsMobile(window.innerWidth < 1024);
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
@@ -72,6 +72,7 @@ export default function FriendlyRoom() {
     // Manual entry state
     const [manualTimeInput, setManualTimeInput] = useState('');
     const [manualTimeError, setManualTimeError] = useState(false);
+    const [penalties, setPenalties] = useState({ AUF: false, DNF: false, inspection: false });
     const [manualInspecting, setManualInspecting] = useState(false);
     const [manualInspectionTime, setManualInspectionTime] = useState(15000); // ms
     const manualInspectionRef = useRef<NodeJS.Timeout | null>(null);
@@ -86,16 +87,11 @@ export default function FriendlyRoom() {
     // GAN Timer connection state
     const [ganTimerConnected, setGanTimerConnected] = useState(false);
 
-    // Set default settings when joining a room
-    const defaultsAppliedRef = useRef(false);
-    useEffect(() => {
-        if (room?.id && !defaultsAppliedRef.current) {
-            setSetting('timer_type', 'keyboard');
-            setSetting('manual_entry', false);
-            setSetting('inspection', true);
-            defaultsAppliedRef.current = true;
-        }
-    }, [room?.id]);
+
+    // Settings Persistence Note:
+    // We previously forced default settings (inspection: true) here on room join.
+    // This was removed to allow user preferences to persist across rooms and sessions.
+    // The global default for inspection is 'false', so it will be off by default unless enabled by the user.
 
     // Check and enforce allowed timer types
     useEffect(() => {
@@ -686,31 +682,26 @@ export default function FriendlyRoom() {
         }
     }, [me, roomId, needsPassword]);
 
-    // Handle browser/tab close - automatically leave room
+    // Handle visibility change (tab switch/minimize) logic for Grace Period
     useEffect(() => {
         if (!room || !me) return;
 
-        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-            // Send leave room event
-            getSocket().emit(FriendlyRoomClientEvent.LEAVE_ROOM, roomId);
-        };
-
         const handleVisibilityChange = () => {
-            // Handle page visibility changes (mobile browsers)
             if (document.visibilityState === 'hidden') {
-                // User is leaving the page - send leave event
-                getSocket().emit(FriendlyRoomClientEvent.LEAVE_ROOM, roomId);
+                // User switched tab or minimized - Signal AWAY (starts 45s timer)
+                getSocket().emit(FriendlyRoomClientEvent.SIGNAL_AWAY);
+            } else if (document.visibilityState === 'visible') {
+                // User returned - Signal BACK (cancels timer)
+                getSocket().emit(FriendlyRoomClientEvent.SIGNAL_BACK);
             }
         };
 
-        // Add event listeners
-        window.addEventListener('beforeunload', handleBeforeUnload);
         document.addEventListener('visibilitychange', handleVisibilityChange);
 
         return () => {
-            // Cleanup listeners
-            window.removeEventListener('beforeunload', handleBeforeUnload);
             document.removeEventListener('visibilitychange', handleVisibilityChange);
+            // If component unmounts (leaving room page), we don't need to manually send anything 
+            // because socket disconnect or navigation LEAVE_ROOM will handle cleanup.
         };
     }, [room, me, roomId]);
 
@@ -900,10 +891,25 @@ export default function FriendlyRoom() {
                             </div>
                         ) : null}
 
-                        <h1 className="text-xl font-bold tracking-tight text-white m-0 leading-none">
-                            {room.name}
-                        </h1>
-                        <span className="rounded-full bg-white/20 px-2 py-0.5 text-xs font-semibold text-white backdrop-blur-sm">
+                        <div className="flex items-center gap-2">
+                            <h1 className="text-xl font-bold tracking-tight text-white m-0 leading-none">
+                                {room.name}
+                            </h1>
+                            {isHost && (
+                                <button
+                                    onClick={() => setEditModalOpen(true)}
+                                    className="p-1 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-white/10 focus:outline-none"
+                                    title="Odayı Düzenle"
+                                >
+                                    <PencilSimple size={18} weight="bold" />
+                                </button>
+                            )}
+                        </div>
+                        <span
+                            onClick={() => isHost && setEditModalOpen(true)}
+                            className={`rounded-full bg-white/20 px-2 py-0.5 text-xs font-semibold text-white backdrop-blur-sm transition-colors ${isHost ? 'cursor-pointer hover:bg-white/30' : ''}`}
+                            title={isHost ? "Etkinliği değiştirmek için tıkla" : undefined}
+                        >
                             {room.cube_type.toUpperCase()}
                         </span>
 
@@ -1126,93 +1132,129 @@ export default function FriendlyRoom() {
                                                 (manualInspectionTime / 1000).toFixed(2)}
                                     </div>
                                 ) : (
-                                    // Show input field
-                                    <form
-                                        className="w-full"
-                                        noValidate
-                                        onSubmit={(e) => {
-                                            e.preventDefault();
-                                            if (!manualTimeError && manualTimeInput.trim() && !alreadySolvedThisRound) {
-                                                try {
-                                                    const parsed = convertTimeStringToSeconds(manualTimeInput, false);
-                                                    handleSolveSubmit(parsed.timeSeconds, parsed.plusTwo, parsed.dnf);
-                                                    setManualTimeInput('');
-                                                    setManualTimeError(false);
-                                                } catch {
-                                                    setManualTimeError(true);
-                                                }
-                                            }
-                                        }}
-                                    >
-                                        <input
-                                            type="text"
-                                            // iOS gets standard text keyboard to avoid "PIN/Bank" feel
-                                            // Android gets decimal for easier number entry
-                                            inputMode={/iPhone|iPad|iPod/.test(navigator.userAgent) ? "text" : "decimal"}
-                                            pattern="[0-9]*"
-                                            className={`w-full px-4 py-3 text-2xl md:text-3xl font-mono text-center rounded-lg bg-[#1a1b1f] border-2 ${manualTimeError && manualTimeInput
-                                                ? 'border-red-500 focus:border-red-400'
-                                                : 'border-gray-700 focus:border-blue-500'
-                                                } text-white placeholder-gray-500 outline-none transition-colors appearance-none`}
-                                            placeholder={alreadySolvedThisRound ? "✓ Çözüm kaydedildi" : "1234 veya DNF"}
-                                            value={manualTimeInput}
-                                            disabled={alreadySolvedThisRound}
-                                            enterKeyHint="go"
-                                            autoComplete="off"
-                                            autoCorrect="off"
-                                            autoCapitalize="none"
-                                            spellCheck="false"
-                                            onChange={(e) => {
-                                                const val = e.target.value;
-                                                setManualTimeInput(val);
-                                                try {
-                                                    const parsed = convertTimeStringToSeconds(val, false);
-                                                    setManualTimeError(parsed.timeSeconds <= 0 && !parsed.dnf);
-                                                } catch {
-                                                    setManualTimeError(true);
+                                    <>
+                                        {/* Show input field */}
+                                        <form
+                                            className="w-full flex gap-2"
+                                            noValidate
+                                            onSubmit={(e) => {
+                                                e.preventDefault();
+                                                if (!manualTimeError && manualTimeInput.trim() && !alreadySolvedThisRound) {
+                                                    try {
+                                                        const parsed = convertTimeStringToSeconds(manualTimeInput, false);
+                                                        const finalDnf = parsed.dnf || penalties.DNF;
+                                                        const finalPlusTwo = parsed.plusTwo || penalties.AUF || penalties.inspection;
+
+                                                        handleSolveSubmit(parsed.timeSeconds, finalPlusTwo, finalDnf);
+                                                        setManualTimeInput('');
+                                                        setManualTimeError(false);
+                                                        setPenalties({ AUF: false, DNF: false, inspection: false });
+                                                    } catch {
+                                                        setManualTimeError(true);
+                                                    }
                                                 }
                                             }}
-                                            onKeyDown={(e) => {
-                                                // Space key for inspection
-                                                if (e.key === ' ' && inspection && !alreadySolvedThisRound && !manualTimeInput) {
-                                                    e.preventDefault();
-                                                    // Start inspection
-                                                    setManualInspecting(true);
-                                                    setManualInspectionTime(15000);
-                                                    manualInspectionStartRef.current = performance.now();
-                                                    manualInspectionRef.current = setInterval(() => {
-                                                        if (manualInspectionStartRef.current) {
-                                                            const elapsed = performance.now() - manualInspectionStartRef.current;
-                                                            const remaining = 15000 - elapsed;
-                                                            setManualInspectionTime(remaining);
-                                                            // Auto-stop at DNF
-                                                            if (remaining < -2000) {
-                                                                if (manualInspectionRef.current) clearInterval(manualInspectionRef.current);
-                                                                setManualInspecting(false);
-                                                                // Auto-submit DNF
-                                                                handleSolveSubmit(0, false, true);
+                                        >
+                                            <input
+                                                type="text"
+                                                inputMode="decimal"
+                                                pattern="[0-9]*"
+                                                className={`flex-1 min-w-0 px-4 py-3 text-2xl md:text-3xl font-mono text-center rounded-lg bg-[#1a1b1f] border-2 ${manualTimeError && manualTimeInput
+                                                    ? 'border-red-500 focus:border-red-400'
+                                                    : 'border-gray-700 focus:border-blue-500'
+                                                    } text-white placeholder-gray-500 outline-none transition-colors appearance-none`}
+                                                placeholder={alreadySolvedThisRound ? "Kaydedildi" : "12.34"}
+                                                value={manualTimeInput}
+                                                disabled={alreadySolvedThisRound}
+                                                enterKeyHint="done"
+                                                autoComplete="off"
+                                                autoCorrect="off"
+                                                autoCapitalize="none"
+                                                spellCheck="false"
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    setManualTimeInput(val);
+                                                    try {
+                                                        const parsed = convertTimeStringToSeconds(val, false);
+                                                        setManualTimeError(parsed.timeSeconds <= 0 && !parsed.dnf);
+                                                    } catch {
+                                                        setManualTimeError(true);
+                                                    }
+                                                }}
+                                                onKeyDown={(e) => {
+                                                    // Space key for inspection
+                                                    if (e.key === ' ' && inspection && !alreadySolvedThisRound && !manualTimeInput) {
+                                                        e.preventDefault();
+                                                        // Start inspection
+                                                        setManualInspecting(true);
+                                                        setManualInspectionTime(15000);
+                                                        manualInspectionStartRef.current = performance.now();
+                                                        manualInspectionRef.current = setInterval(() => {
+                                                            if (manualInspectionStartRef.current) {
+                                                                const elapsed = performance.now() - manualInspectionStartRef.current;
+                                                                const remaining = 15000 - elapsed;
+                                                                setManualInspectionTime(remaining);
+                                                                // Auto-stop at DNF
+                                                                if (remaining < -2000) {
+                                                                    if (manualInspectionRef.current) clearInterval(manualInspectionRef.current);
+                                                                    setManualInspecting(false);
+                                                                    // Auto-submit DNF
+                                                                    handleSolveSubmit(0, false, true);
+                                                                }
                                                             }
-                                                        }
-                                                    }, 50);
-                                                }
-                                            }}
-                                            onKeyUp={(e) => {
-                                                // Space release ends inspection
-                                                if (e.key === ' ' && manualInspecting) {
-                                                    e.preventDefault();
-                                                    if (manualInspectionRef.current) clearInterval(manualInspectionRef.current);
-                                                    setManualInspecting(false);
-                                                }
-                                            }}
-                                        />
-                                    </form>
+                                                        }, 50);
+                                                    }
+                                                }}
+                                                onKeyUp={(e) => {
+                                                    // Space release ends inspection
+                                                    if (e.key === ' ' && manualInspecting) {
+                                                        e.preventDefault();
+                                                        if (manualInspectionRef.current) clearInterval(manualInspectionRef.current);
+                                                        setManualInspecting(false);
+                                                    }
+                                                }}
+                                            />
+
+                                            {/* Submit Button for iOS/Touch */}
+                                            <button
+                                                type="submit"
+                                                disabled={!manualTimeInput || alreadySolvedThisRound || manualTimeError}
+                                                className="shrink-0 w-[56px] flex items-center justify-center bg-blue-600 active:bg-blue-700 disabled:bg-gray-800 disabled:text-gray-600 text-white rounded-lg transition-colors"
+                                            >
+                                                <Check size={28} weight="bold" />
+                                            </button>
+                                        </form>
+
+                                        {/* Penalties Checkboxes */}
+                                        {!alreadySolvedThisRound && (
+                                            <div className="flex items-center gap-6 mt-4 justify-center">
+                                                <label className="flex items-center gap-2 cursor-pointer group text-gray-400 hover:text-white transition-colors">
+                                                    <div className={`w-6 h-6 rounded flex items-center justify-center border-2 transition-colors ${penalties.AUF ? 'bg-amber-500 border-amber-500' : 'border-gray-600 group-hover:border-gray-400'}`}>
+                                                        {penalties.AUF && <Check size={16} weight="bold" className="text-white" />}
+                                                    </div>
+                                                    <span className={`font-bold text-lg select-none ${penalties.AUF ? 'text-white' : ''}`}>AUF</span>
+                                                    <input type="checkbox" className="hidden" checked={penalties.AUF} onChange={() => setPenalties(p => ({ ...p, AUF: !p.AUF }))} />
+                                                </label>
+
+                                                <label className="flex items-center gap-2 cursor-pointer group text-gray-400 hover:text-white transition-colors">
+                                                    <div className={`w-6 h-6 rounded flex items-center justify-center border-2 transition-colors ${penalties.DNF ? 'bg-rose-500 border-rose-500' : 'border-gray-600 group-hover:border-gray-400'}`}>
+                                                        {penalties.DNF && <Check size={16} weight="bold" className="text-white" />}
+                                                    </div>
+                                                    <span className={`font-bold text-lg select-none ${penalties.DNF ? 'text-white' : ''}`}>DNF</span>
+                                                    <input type="checkbox" className="hidden" checked={penalties.DNF} onChange={() => setPenalties(p => ({ ...p, DNF: !p.DNF }))} />
+                                                </label>
+
+                                                <label className="flex items-center gap-2 cursor-pointer group text-gray-400 hover:text-white transition-colors">
+                                                    <div className={`w-6 h-6 rounded flex items-center justify-center border-2 transition-colors ${penalties.inspection ? 'bg-amber-500 border-amber-500' : 'border-gray-600 group-hover:border-gray-400'}`}>
+                                                        {penalties.inspection && <Check size={16} weight="bold" className="text-white" />}
+                                                    </div>
+                                                    <span className={`font-bold text-lg select-none ${penalties.inspection ? 'text-white' : ''}`}>INSPECTION</span>
+                                                    <input type="checkbox" className="hidden" checked={penalties.inspection} onChange={() => setPenalties(p => ({ ...p, inspection: !p.inspection }))} />
+                                                </label>
+                                            </div>
+                                        )}
+                                    </>
                                 )}
-                                <p className="text-xs text-gray-500">
-                                    {inspection && !alreadySolvedThisRound
-                                        ? 'Space: İnceleme | 1234 | DNF | +2 → Enter'
-                                        : '1234 | 12345 | DNF | 1234+2 → Enter'
-                                    }
-                                </p>
                             </div>
                         )}
                     </div>
@@ -1242,6 +1284,34 @@ export default function FriendlyRoom() {
                                     currentUserId={me?.id}
                                 />
                             </div>
+
+                            {/* Mobile Timer Touch Area - Fixed at bottom of Timer Tab */}
+                            {isMobile && timerType === 'keyboard' && !isManualMode && (
+                                <div className="timer-touch-area shrink-0 h-32 w-full bg-[#15161A] border-t border-[#333] flex flex-col items-center justify-center select-none touch-none cursor-pointer active:bg-[#1a1c22] transition-colors relative z-20">
+                                    <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">
+                                        SON ÇÖZÜM
+                                    </span>
+                                    <span className="text-4xl font-mono font-medium text-gray-200 tracking-tight">
+                                        {(() => {
+                                            const myParticipant = room.participants.find(p => p.user_id === me?.id);
+                                            if (!myParticipant || myParticipant.solves.length === 0) return '0.00';
+
+                                            // Find last solve (highest scramble index)
+                                            const lastSolve = myParticipant.solves.reduce((prev, current) =>
+                                                (prev.scramble_index > current.scramble_index) ? prev : current
+                                            );
+
+                                            // Format time
+                                            if (lastSolve.dnf) return 'DNF';
+                                            const time = lastSolve.plus_two ? lastSolve.time + 2 : lastSolve.time;
+                                            return time.toFixed(2);
+                                        })()}
+                                    </span>
+                                    <span className="text-gray-600 text-[9px] font-medium mt-1">
+                                        BAŞLATMAK İÇİN BASILI TUT
+                                    </span>
+                                </div>
+                            )}
 
                         </div>
 
@@ -1364,8 +1434,8 @@ export default function FriendlyRoom() {
                             </div>
                         </div>
 
-                        {/* Cube Preview */}
-                        <div className="w-[100px] md:w-[120px] aspect-[4/3] flex items-center justify-center bg-transparent ml-4">
+                        {/* Cube Preview (Restored & Resized) */}
+                        <div className="h-[80px] md:h-[100px] w-auto aspect-[4/3] flex items-center justify-center bg-transparent ml-4 shrink-0">
                             <ScrambleVisual
                                 scramble={room.current_scramble}
                                 cubeType={room.cube_type}
@@ -1400,6 +1470,7 @@ export default function FriendlyRoom() {
                 smartReviewing={smartReviewing}
                 smartFinalTime={smartFinalTime}
                 warning={smartWarning}
+                isMobile={isMobile}
             />
 
             {/* Settings Modal */}
@@ -1416,12 +1487,14 @@ export default function FriendlyRoom() {
                 currentName={room.name}
                 isPrivate={room.is_private}
                 currentAllowedTypes={room.allowed_timer_types}
-                onSubmit={(name, isPrivate, password, allowedTypes) => {
+                cubeType={room.cube_type}
+                onSubmit={(name, isPrivate, password, allowedTypes, cubeType) => {
                     getSocket().emit(FriendlyRoomClientEvent.UPDATE_ROOM, roomId, {
                         name,
                         is_private: isPrivate,
                         password,
-                        allowed_timer_types: allowedTypes
+                        allowed_timer_types: allowedTypes,
+                        cube_type: cubeType
                     });
                 }}
             />
