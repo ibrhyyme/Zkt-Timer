@@ -1,10 +1,10 @@
-import {PlayerStatus} from '../match/types';
-import {GameSolveRow, PlayerStatusInfo} from '../../components/play/game/Game';
-import {getTimeString} from '../../util/time';
-import {MatchConst} from '../match/consts';
-import {Solve} from '../../../server/schemas/Solve.schema';
-import {MatchParticipant} from '../../../server/schemas/MatchParticipant.schema';
-import {Match} from '../../../server/schemas/Match.schema';
+import { PlayerStatus } from '../match/types';
+import { GameSolveRow, PlayerStatusInfo } from '../../components/play/game/Game';
+import { getTimeString } from '../../util/time';
+import { MatchConst } from '../match/consts';
+import { Solve } from '../../../server/schemas/Solve.schema';
+import { MatchParticipant } from '../../../server/schemas/MatchParticipant.schema';
+import { Match } from '../../../server/schemas/Match.schema';
 
 interface RoundStatus {
 	playerStatus: PlayerStatus;
@@ -22,7 +22,7 @@ export function getHeadToHeadPlayerStatusInfo(
 
 	const info: PlayerStatusInfo = {
 		status: PlayerStatus.Playing,
-		statusPrompt: `First to ${MatchConst.HEAD_TO_HEAD_FIRST_TO_COUNT} wins`,
+		statusPrompt: `İlk ${MatchConst.HEAD_TO_HEAD_FIRST_TO_COUNT} yapan kazanır`,
 		statusBody: '0',
 		points: 0,
 	};
@@ -98,7 +98,7 @@ export function getHeadToHeadSolveRowInfo(
 	// Match is required for Head to Head
 	if (!match || !solves || !solves.length) {
 		info.indexText = '';
-		info.solveDescription = `Round ${timeIndex + 1}`;
+		info.solveDescription = `Tur ${timeIndex + 1}`;
 		return info;
 	}
 
@@ -108,11 +108,11 @@ export function getHeadToHeadSolveRowInfo(
 		const fastestTime = getTimeString(currentRoundStatus.fastestSolve.time, 2);
 
 		if (currentRoundStatus.playerStatus === PlayerStatus.Tie) {
-			info.solveDescription = 'Tie';
+			info.solveDescription = 'Berabere';
 		} else if (currentRoundStatus.fastestPlayer.user.id === mySolve.user_id) {
-			info.solveDescription = 'You won!';
+			info.solveDescription = 'Kazandın!';
 		} else {
-			info.solveDescription = `${currentRoundStatus.fastestPlayer.user.username} won`;
+			info.solveDescription = `${currentRoundStatus.fastestPlayer.user.username} kazandı`;
 			if (match.participants.length > 2) {
 				info.solveDescription += ` (${fastestTime})`;
 			}
@@ -122,7 +122,7 @@ export function getHeadToHeadSolveRowInfo(
 		currentRoundStatus.playerStatus === PlayerStatus.Playing
 	) {
 		info.indexText = '';
-		info.solveDescription = `Round ${timeIndex + 1}`;
+		info.solveDescription = `Tur ${timeIndex + 1}`;
 	}
 
 	info.solveStatus = currentRoundStatus.playerStatus;

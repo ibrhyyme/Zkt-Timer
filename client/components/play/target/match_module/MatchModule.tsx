@@ -1,10 +1,10 @@
-import React, {useContext} from 'react';
+import React, { useContext } from 'react';
 import './MatchModule.scss';
-import {GameContext} from '../../game/Game';
+import { GameContext } from '../../game/Game';
 import block from '../../../../styles/bem';
-import {PlayerStatus} from '../../../../shared/match/types';
-import {MatchContext} from '../../match/Match';
-import {useMe} from '../../../../util/hooks/useMe';
+import { PlayerStatus } from '../../../../shared/match/types';
+import { MatchContext } from '../../match/Match';
+import { useMe } from '../../../../util/hooks/useMe';
 import Button from '../../../common/button/Button';
 import Challengers from '../challengers/Challengers';
 
@@ -16,7 +16,7 @@ export default function MatchModule() {
 	const matchContext = useContext(MatchContext);
 	const me = useMe();
 
-	const {matchOpen, retrySolve, solves, getPlayerStatusInfo, timeIndex} = gameContext;
+	const { matchOpen, retrySolve, solves, getPlayerStatusInfo, timeIndex } = gameContext;
 	const playerStatus = getPlayerStatusInfo(me.id, timeIndex, solves, matchContext?.match);
 	const status = playerStatus.status;
 
@@ -26,19 +26,19 @@ export default function MatchModule() {
 	switch (status) {
 		case PlayerStatus.Lost: {
 			timeAlert = (
-				<span className={b('alert', {red: true})}>
-					You completed {solves.length} solve{solves.length === 1 ? '' : 's'}
+				<span className={b('alert', { red: true })}>
+					{solves.length} çözüm tamamladın
 				</span>
 			);
 
 			// Can't retry solves in multiplayer
 			if (!matchOpen) {
-				retryAlert = <Button text="Retry failed solve" onClick={retrySolve} />;
+				retryAlert = <Button text="Başarısız çözümü tekrarla" onClick={retrySolve} />;
 			}
 			break;
 		}
 		case PlayerStatus.Won: {
-			timeAlert = <span className={b('alert', {green: true})}>Congrats! You won!</span>;
+			timeAlert = <span className={b('alert', { green: true })}>Tebrikler! Kazandın!</span>;
 			break;
 		}
 	}

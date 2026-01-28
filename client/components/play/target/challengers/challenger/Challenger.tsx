@@ -197,7 +197,7 @@ export default function Challenger(props: ChallengerProps) {
 				<div className={b('data')}>
 					<div className={b('points')}>
 						<span className={b('points-val')}>{standing?.points || 0}</span>
-						<span className={b('points-label')}>POINT{standing?.points === 1 ? '' : 'S'}</span>
+						<span className={b('points-label')}>PUAN</span>
 					</div>
 				</div>
 			</div>

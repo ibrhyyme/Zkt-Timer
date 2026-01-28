@@ -35,46 +35,73 @@ export default function TimerFooter() {
 
 	const modules = [];
 	if (mobileMode) {
-		// Mobil için özel 3 bölümlü layout
-		// Sol: Çözümler (History)
-		modules.push(
-			<div key="mobile-history" className="cd-timer-footer__mobile-history">
-				<TimerModule
-					index={0}
-					moduleType={TimerModuleType.HISTORY}
-					customOptions={{
-						hideAllOptions: true,
-						moduleType: TimerModuleType.HISTORY
-					}}
-				/>
-			</div>
-		);
-		// Sağ üst: İstatistikler (4 blok)
-		modules.push(
-			<div key="mobile-stats" className="cd-timer-footer__mobile-stats">
-				<TimerModule
-					index={1}
-					moduleType={TimerModuleType.STATS}
-					customOptions={{
-						hideAllOptions: true,
-						moduleType: TimerModuleType.STATS
-					}}
-				/>
-			</div>
-		);
-		// Sağ alt: Scramble görseli
-		modules.push(
-			<div key="mobile-scramble" className="cd-timer-footer__mobile-scramble">
-				<TimerModule
-					index={2}
-					moduleType={TimerModuleType.SCRAMBLE}
-					customOptions={{
-						hideAllOptions: true,
-						moduleType: TimerModuleType.SCRAMBLE
-					}}
-				/>
-			</div>
-		);
+		// Custom modules (Match etc.) for mobile
+		if (customModules && customModules.length) {
+			customModules.forEach((mod, i) => {
+				let className = '';
+				let style = {};
+
+				// Map modules to grid
+				// Index 0: History -> Left Column
+				// Index 1: Points/Stats -> Right Column (Full Height now)
+				// Index 2: Chat/Scramble -> HIDDEN on mobile as per request
+				if (i === 0) {
+					className = 'cd-timer-footer__mobile-history';
+				} else if (i === 1) {
+					className = 'cd-timer-footer__mobile-stats';
+					style = { gridRow: '1 / 3' }; // Make it take full height of the right column
+				} else {
+					return; // Skip other modules (Chat/Scramble)
+				}
+
+				modules.push(
+					<div key={`mobile-custom-${i}`} className={className} style={style}>
+						<TimerModule index={i} customOptions={mod} />
+					</div>
+				);
+			});
+		} else {
+			// Mobil için özel 3 bölümlü layout (Default)
+			// Sol: Çözümler (History)
+			modules.push(
+				<div key="mobile-history" className="cd-timer-footer__mobile-history">
+					<TimerModule
+						index={0}
+						moduleType={TimerModuleType.HISTORY}
+						customOptions={{
+							hideAllOptions: true,
+							moduleType: TimerModuleType.HISTORY,
+						}}
+					/>
+				</div>
+			);
+			// Sağ üst: İstatistikler (4 blok)
+			modules.push(
+				<div key="mobile-stats" className="cd-timer-footer__mobile-stats">
+					<TimerModule
+						index={1}
+						moduleType={TimerModuleType.STATS}
+						customOptions={{
+							hideAllOptions: true,
+							moduleType: TimerModuleType.STATS,
+						}}
+					/>
+				</div>
+			);
+			// Sağ alt: Scramble görseli
+			modules.push(
+				<div key="mobile-scramble" className="cd-timer-footer__mobile-scramble">
+					<TimerModule
+						index={2}
+						moduleType={TimerModuleType.SCRAMBLE}
+						customOptions={{
+							hideAllOptions: true,
+							moduleType: TimerModuleType.SCRAMBLE,
+						}}
+					/>
+				</div>
+			);
+		}
 	} else {
 		// Desktop versiyonda normal modülleri göster
 		if (customModules && customModules?.length) {
