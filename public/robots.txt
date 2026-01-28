@@ -6,4 +6,4 @@ Disallow: /force-log-out/
 Disallow: /admin/
 Disallow: /dist/
 
-Sitemap: https://zktimer.app/public/uploads/site/sitemaps/sitemap_site.xml
+Sitemap: https://zktimer.app/public/uploads/site/sitemaps/sitemap.xml

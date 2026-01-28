@@ -122,7 +122,8 @@ async function uploadSiteMapToS3(fileName: string) {
 		});
 	}
 
-	return `https://zktimer.app/${cdnPath}`;
+	// Returns the public URL
+	return `https://zktimer.app/public/uploads/${cdnPath}`;
 }
 
 function getDefaultSiteMapUrls() {
