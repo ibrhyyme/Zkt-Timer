@@ -35,6 +35,8 @@
 			max-height: none;
 			overflow-y: auto;
 			overflow-x: hidden;
+			-webkit-overflow-scrolling: touch;
+			touch-action: pan-y;
 			padding-right: 5px;
 		}
 	}

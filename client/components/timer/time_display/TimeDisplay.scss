@@ -10,6 +10,12 @@
 	width: 100%;
 	align-items: center;
 
+	// Prevent accidental selection/context menu on touch devices
+	user-select: none;
+	-webkit-user-select: none;
+	touch-action: manipulation;
+	-webkit-touch-callout: none;
+
 	h1 {
 		font-family: 'Roboto Mono', monospace;
 		font-size: clamp(3rem, 7vw, 7rem); // Responsive font-size
@@ -17,12 +23,12 @@
 		color: rgb(var(--text-color));
 		font-weight: 500;
 		margin: 0 0 10px;
-		
+
 		// Küçük ekranlarda daha uygun boyut
 		@media (max-width: 1200px) {
 			font-size: clamp(2.5rem, 8vw, 5rem);
 		}
-		
+
 		@media (max-width: 768px) {
 			font-size: clamp(2rem, 10vw, 4rem);
 		}

@@ -24,10 +24,9 @@
 			gap: clamp(8px, 2vw, 12px);
 			border-radius: 12px;
 			overflow: visible !important;
-			height: auto;
-			// Daha küçük footer için height azaltıldı
-			min-height: clamp(140px, 18vh, 180px);
-			max-height: clamp(150px, 20vh, 200px);
+			overflow: visible !important;
+			// Definite height required for child percentage heights to work (scrolling)
+			height: clamp(140px, 18vh, 180px) !important;
 			padding: clamp(8px, 2vw, 12px);
 			background: transparent;
 			margin-bottom: 2vh;
@@ -39,7 +38,7 @@
 			}
 
 			>* {
-				height: auto !important;
+				height: 100% !important;
 				min-height: 100% !important;
 				overflow: hidden !important;
 				border-radius: clamp(10px, 2vw, 12px);

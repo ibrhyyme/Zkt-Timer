@@ -231,7 +231,7 @@ export default function KeyWatcher(props: Props) {
 		}
 
 		if (inspection && !inInspection) {
-			startInspection();
+			startInspection(context);
 			setTimerParams({
 				spaceTimerStarted: 0,
 				canStart: false,
@@ -249,6 +249,9 @@ export default function KeyWatcher(props: Props) {
 		if (now.getTime() - spaceTimerStarted < freezeTime * 1000) return;
 
 		if (inInspection || !inspection) {
+			if (inInspection && context.dnfTime) {
+				return;
+			}
 			startTimer();
 		}
 	}

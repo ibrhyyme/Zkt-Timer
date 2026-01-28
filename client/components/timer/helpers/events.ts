@@ -112,7 +112,7 @@ export function cancelInspection() {
 	clearInspectionTimers(true, true);
 }
 
-export function startInspection() {
+export function startInspection(context: ITimerContext) {
 
 	const {
 		inspection_delay: inspectionDelay,
@@ -136,11 +136,22 @@ export function startInspection() {
 		setTimeout(() => {
 			if (inspectionAutoStart && !ganTimerOn && !stackMatOn) {
 				startTimer();
+				return;
 			}
+
+			// DNF logic
+			const now = Date.now();
+
 			setTimerParams({
 				dnfTime: true,
 				addTwoToSolve: false,
 			});
+
+			saveSolve(context, 0, context.scramble, now, now, true, false);
+
+			setTimeout(() => {
+				resetTimerParams(context);
+			}, 2000);
 		}, inspectionDelay * 1000 + 2000)
 	);
 
