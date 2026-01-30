@@ -7,31 +7,40 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
     - name: Deploy to GCP
-      uses: appleboy/ssh-action@master
+      uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.REMOTE_HOST }}
         username: ${{ secrets.REMOTE_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
+        command_timeout: 10m
         script: |
+          set -e
+          
           cd /home/ibrahimyldz77/Zkt-Timer
           
           # 1. Yeni kodu çek
           git fetch --all
           git reset --hard origin/main
           
-          # 2. Container'ları yeniden build et ve başlat
-          docker compose build --no-cache app-server
-          docker compose down
-          docker compose up -d
+          # 2. Sadece değişen container'ı yeniden build et
+          docker compose build app-server
           
-          # 3. İzinleri düzelt
+          # 3. Zero-downtime restart
+          docker compose up -d --no-deps --build app-server
+          
+          # 4. İzinleri düzelt
           sudo chmod -R 755 public/uploads/
           
-          # 4. Nginx'i yenile
+          # 5. Nginx'i yenile
           sudo systemctl reload nginx
           
-          # 5. Container loglarını kontrol et
-          echo "Deployment tamamlandı! Container durumu:"
+          # 6. Container durumunu kontrol et
+          echo "Deployment tamamlandı!"
           docker compose ps
+          
+    - name: Notify on failure
+      if: failure()
+      run: echo "Deployment failed!"

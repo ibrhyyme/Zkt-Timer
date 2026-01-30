@@ -93,7 +93,7 @@ export default function Manual() {
 			{input}
 
 			{!hideTime && (
-				<StartInstructions>Manually enter time.</StartInstructions>
+				<StartInstructions>Zamanı manuel olarak girin.</StartInstructions>
 			)}
 		</div>
 	);
