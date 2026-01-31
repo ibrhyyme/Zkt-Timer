@@ -117,7 +117,7 @@ export default function TimeDisplay() {
 	let timeStr;
 	let bottomInfo = null;
 	if (inspectionOn) {
-		bottomInfo = <StartInstructions>Inspection on</StartInstructions>;
+		bottomInfo = <StartInstructions>İnceleme Açık</StartInstructions>;
 	}
 
 	if (inInspection) {

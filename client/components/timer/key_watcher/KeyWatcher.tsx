@@ -21,7 +21,8 @@ import { useSettings } from '../../../util/hooks/useSettings';
 import { useGeneral } from '../../../util/hooks/useGeneral';
 import { getSettings } from '../../../db/settings/query';
 import { fetchLastSolve } from '../../../db/solves/query';
-import { deleteAllSolvesInSessionDb, deleteSolveDb, updateSolveDb } from '../../../db/solves/update';
+import { deleteAllSolvesInSessionDb, deleteSolveDb } from '../../../db/solves/update';
+import { toggleDnfSolveDb, togglePlusTwoSolveDb } from '../../../db/solves/operations';
 
 const timerClass = block('timer');
 
@@ -313,12 +314,12 @@ export default function KeyWatcher(props: Props) {
 		// +2
 		if (e.key === '2') {
 			const lastSolve = fetchLastSolve({ session_id: sessId });
-			if (lastSolve) updateSolveDb(lastSolve, { plus_two: !lastSolve.plus_two });
+			togglePlusTwoSolveDb(lastSolve);
 		}
 		// DNF
 		else if (e.key.toLowerCase() === 'd') {
 			const lastSolve = fetchLastSolve({ session_id: sessId });
-			if (lastSolve) updateSolveDb(lastSolve, { dnf: !lastSolve.dnf });
+			toggleDnfSolveDb(lastSolve);
 		}
 		// Delete (Backspace)
 		else if (e.key === 'Backspace') {

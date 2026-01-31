@@ -14,6 +14,7 @@ import { useGeneral } from '../../util/hooks/useGeneral';
 import { useMe } from '../../util/hooks/useMe';
 import { initTimer } from './helpers/init';
 import { stopAllTimers } from './helpers/timers';
+import { endTimer } from './helpers/events';
 import { useSettings } from '../../util/hooks/useSettings';
 import { listenForPbEvents } from './helpers/pb';
 import { useWindowListener } from '../../util/hooks/useListener';
@@ -185,6 +186,13 @@ export default function Timer(props: TimerProps) {
 				<TimerContext.Provider value={context}>
 					<KeyWatcher>
 						<HeaderControl />
+						{/* Timer çalışırken mobilde tüm ekrana dokunarak durdurma overlay'i */}
+						{mobileMode && context.timeStartedAt && (
+							<div
+								className={b('touch-overlay')}
+								onTouchEnd={() => endTimer(context)}
+							/>
+						)}
 						<div
 							className={b('wrapper', {
 								[timerLayout || 'bottom']: true,

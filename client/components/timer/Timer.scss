@@ -37,6 +37,18 @@
 	padding: 0 0 10px 0;
 	padding-bottom: calc(10px + env(safe-area-inset-bottom));
 
+	// Timer çalışırken tüm ekranı kaplayan görünmez overlay (mobil dokunma için)
+	&__touch-overlay {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 9999;
+		background: transparent;
+		-webkit-tap-highlight-color: transparent;
+	}
+
 	&__main {
 		position: relative;
 		display: flex;
