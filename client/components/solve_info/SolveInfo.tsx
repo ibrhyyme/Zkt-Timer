@@ -95,8 +95,13 @@ export default function SolveInfo(props: Props) {
 	}
 
 	function deleteSolve() {
-		deleteSolveDb(dbSolve);
-		onComplete();
+		const solveToDelete = dbSolve || solve;
+		if (!solveToDelete) return;
+
+		// confirmed: true ile geçiyoruz çünkü zaten modal içindeyiz
+		// iç içe modal açmak sorun yaratıyor
+		deleteSolveDb(solveToDelete, true);
+		onComplete?.();
 	}
 
 	function handleChange(e) {

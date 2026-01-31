@@ -1,15 +1,15 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import './StepPie.scss';
-import {ParentSize} from '@visx/responsive';
-import {Group} from '@visx/group';
-import {Pie} from '@visx/shape';
-import {getSolveStepsWithoutParents} from '../../util/solution';
-import {STEP_NAME_MAP} from '../../util/consts';
-import {scaleOrdinal} from '@visx/scale';
+import { ParentSize } from '@visx/responsive';
+import { Group } from '@visx/group';
+import { Pie } from '@visx/shape';
+import { getSolveStepsWithoutParents } from '../../util/solution';
+import { STEP_NAME_MAP } from '../../util/consts';
+import { scaleOrdinal } from '@visx/scale';
 import HorizontalNav from '../../../common/horizontal_nav/HorizontalNav';
-import {getTimeString} from '../../../../util/time';
+import { getTimeString } from '../../../../util/time';
 import block from '../../../../styles/bem';
-import {Solve} from '../../../../../server/schemas/Solve.schema';
+import { Solve } from '../../../../../server/schemas/Solve.schema';
 
 const b = block('solve-info-step-pie');
 
@@ -33,7 +33,7 @@ interface Props {
 }
 
 export default function StepPie(props: Props) {
-	const {solve} = props;
+	const { solve } = props;
 
 	const [chartType, setChartType] = useState('time');
 
@@ -81,7 +81,7 @@ export default function StepPie(props: Props) {
 			<HorizontalNav onChange={changeChartType} tabs={CHART_TYPES} tabId={chartType} />
 
 			<ParentSize
-				className={b('pie')}
+				className={b('pie').toString()}
 				parentSizeStyles={{
 					minHeight: '200px',
 					height: 190,
@@ -92,7 +92,7 @@ export default function StepPie(props: Props) {
 					const radius = Math.min(parent.height, parent.width) / 2;
 
 					return (
-						<svg width={parent.width} height={parent.height} style={{overflow: 'visible'}}>
+						<svg width={parent.width} height={parent.height} style={{ overflow: 'visible' }}>
 							<Group top={0} left={0}>
 								<Pie
 									data={data}
@@ -104,7 +104,7 @@ export default function StepPie(props: Props) {
 								>
 									{(pie) =>
 										pie.arcs.map((arc, index) => {
-											const {value} = arc.data;
+											const { value } = arc.data;
 											const [centroidX, centroidY] = pie.path.centroid(arc);
 											const hasSpaceForLabel = arc.endAngle - arc.startAngle >= 0.1;
 											const arcPath = pie.path(arc);
