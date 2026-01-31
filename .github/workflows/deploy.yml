@@ -7,7 +7,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 45
     steps:
     - name: Deploy to GCP
       uses: appleboy/ssh-action@v1.0.3
@@ -15,7 +15,7 @@ jobs:
         host: ${{ secrets.REMOTE_HOST }}
         username: ${{ secrets.REMOTE_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
-        command_timeout: 10m
+        command_timeout: 40m
         script: |
           set -e
           
