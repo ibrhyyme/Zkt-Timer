@@ -25,7 +25,7 @@ jobs:
           git fetch --all
           git reset --hard origin/main
           
-          # 2. Container'ı yeniden build et (cache kullanarak)
+          # 2. Sadece değişen container'ı yeniden build et
           docker compose build app-server
           
           # 3. Zero-downtime restart
