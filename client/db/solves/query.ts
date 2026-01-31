@@ -1,8 +1,8 @@
-import {getSolveDb} from './init';
-import {LokiFetchOptions} from '../lokijs';
-import {cleanFilterOptions} from '../util';
-import {getCubeTypeInfoById} from '../../util/cubes/util';
-import {Solve} from '../../../server/schemas/Solve.schema';
+import { getSolveDb } from './init';
+import { LokiFetchOptions } from '../lokijs';
+import { cleanFilterOptions } from '../util';
+import { getCubeTypeInfoById } from '../../util/cubes/util';
+import { Solve } from '../../../server/schemas/Solve.schema';
 
 export type FilterSolvesOptions = LokiQuery<Solve>;
 
@@ -70,7 +70,7 @@ export function fetchAllCubeTypesSolved(defaultsOnly: boolean = false) {
 	const solves = fetchSolves({
 		dnf: false,
 		from_timer: true,
-		time: {$gt: 0},
+		time: { $gt: 0 },
 	});
 
 	for (const solve of solves) {
@@ -124,4 +124,29 @@ export function fetchSolves(options: FilterSolvesOptions = {}, fetchOptions?: Lo
 	}
 
 	return out.data();
+}
+
+export function fetchAdjacentSolve(currentSolve: Solve): Solve | null {
+	const solveDb = getSolveDb();
+	const sessionId = currentSolve.session_id;
+
+	// fetch all solves in session, sorted by started_at DESC (same as main list)
+	const solves = solveDb.chain()
+		.find({ session_id: sessionId })
+		.simplesort('started_at', true)
+		.data() as Solve[];
+
+	const currentIndex = solves.findIndex(s => s.id === currentSolve.id);
+
+	if (currentIndex === -1) return null;
+
+	// Try extracting the NEXT solve (index + 1) which corresponds to the "previous" solve in chrono order (e.g. 100 -> 99)
+	let nextSolve = solves[currentIndex + 1];
+
+	// If there is no next solve (we deleted the oldest one/last in list), try the one before (index - 1)
+	if (!nextSolve) {
+		nextSolve = solves[currentIndex - 1];
+	}
+
+	return nextSolve || null;
 }

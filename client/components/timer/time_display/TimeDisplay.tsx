@@ -63,6 +63,14 @@ export default function TimeDisplay() {
 		}
 	}, [solving, finalTime, timeStartedAt]);
 
+	// Dışarıdan finalTime değiştiğinde (çözüm silindiğinde vs.) time'ı güncelle
+	useEffect(() => {
+		// Timer çalışmıyorken ve yeni bir finalTime geldiğinde
+		if (!timeStartedAt && !solving && finalTime >= 0) {
+			setTime(finalTime / 1000);
+		}
+	}, [finalTime]);
+
 	function stopInterval() {
 		timerLocked.current = true;
 

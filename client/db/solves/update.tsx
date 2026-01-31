@@ -15,6 +15,8 @@ import { Solve } from '../../../server/schemas/Solve.schema';
 import { checkForWorst } from './stats/solves/worst';
 import { sanitizeSolve } from '../../../shared/solve';
 import { checkForCurrentAverageUpdate } from './stats/solves/cache/average_cache';
+import { fetchLastSolve } from './query';
+import { setTimerParam } from '../../components/timer/helpers/params';
 
 export async function createSolveDb(solveInput: Solve) {
 	const solveDb = getSolveDb();
@@ -97,6 +99,15 @@ export async function deleteSolveDb(solve: Solve, confirmed: boolean = false) {
 
 	solveDb.remove(solve);
 	postProcessDbUpdate(solve, false);
+
+	// Silme sonrası timer'daki son süreyi güncelle
+	const newLastSolve = fetchLastSolve({ session_id: solve.session_id });
+	if (newLastSolve) {
+		setTimerParam('finalTime', newLastSolve.time * 1000);
+	} else {
+		// Hiç çözüm kalmadı, timer'ı sıfırla
+		setTimerParam('finalTime', 0);
+	}
 
 	if (!solve.demo_mode) {
 		const query = gql`

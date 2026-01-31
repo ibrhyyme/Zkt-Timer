@@ -14,7 +14,7 @@ import { SOLVE_WITH_USER_FRAGMENT } from '../../util/graphql/fragments';
 import CopyText from '../common/copy_text/CopyText';
 import Avatar from '../common/avatar/Avatar';
 import { toggleDnfSolveDb, togglePlusTwoSolveDb } from '../../db/solves/operations';
-import { fetchSolve } from '../../db/solves/query';
+import { fetchSolve, fetchAdjacentSolve } from '../../db/solves/query';
 import { deleteSolveDb, updateSolveDb } from '../../db/solves/update';
 import { useSolveDb } from '../../util/hooks/useSolveDb';
 import { IModalProps } from '../common/modal/Modal';
@@ -60,7 +60,8 @@ export default function SolveInfo(props: Props) {
 		user = demoUser;
 	}
 
-	function updateSolve() {
+	function updateSolve(targetSolveId?: string) {
+		const id = targetSolveId || solveId;
 		const query = gql`
 			${SOLVE_WITH_USER_FRAGMENT}
 
@@ -74,13 +75,13 @@ export default function SolveInfo(props: Props) {
 		const solveQuery = gqlQuery<{ solve: Solve }>(
 			query,
 			{
-				id: solveId,
+				id,
 			},
 			'no-cache'
 		);
 
 		solveQuery.then((res) => {
-			setDbSolve(fetchSolve(solveId));
+			setDbSolve(fetchSolve(id));
 			setSolve(res.data.solve);
 			setLoading(false);
 		});
@@ -94,14 +95,25 @@ export default function SolveInfo(props: Props) {
 		toggleDnfSolveDb(dbSolve);
 	}
 
-	function deleteSolve() {
+	async function deleteSolve() {
 		const solveToDelete = dbSolve || solve;
 		if (!solveToDelete) return;
 
+		// Silmeden ÖNCE bir sonraki çözümü al
+		const adjacentSolve = fetchAdjacentSolve(solveToDelete);
+
 		// confirmed: true ile geçiyoruz çünkü zaten modal içindeyiz
 		// iç içe modal açmak sorun yaratıyor
-		deleteSolveDb(solveToDelete, true);
-		onComplete?.();
+		await deleteSolveDb(solveToDelete, true);
+
+		// Eğer bir sonraki çözüm varsa ona geç
+		if (adjacentSolve) {
+			setLoading(true);
+			updateSolve(adjacentSolve.id);
+		} else {
+			// Son çözüm silinmiş, modal'ı kapat
+			onComplete?.();
+		}
 	}
 
 	function handleChange(e) {
