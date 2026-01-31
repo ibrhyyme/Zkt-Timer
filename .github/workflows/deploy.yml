@@ -25,19 +25,22 @@ jobs:
           git fetch --all
           git reset --hard origin/main
           
-          # 2. Sadece değişen container'ı yeniden build et
+          # 2. Docker builder cache'ini temizle (bozuk cache sorunu için)
+          docker builder prune -f
+          
+          # 3. Container'ı yeniden build et
           docker compose build app-server
           
-          # 3. Zero-downtime restart
+          # 4. Zero-downtime restart
           docker compose up -d --no-deps --build app-server
           
-          # 4. İzinleri düzelt
+          # 5. İzinleri düzelt
           sudo chmod -R 755 public/uploads/
           
-          # 5. Nginx'i yenile
+          # 6. Nginx'i yenile
           sudo systemctl reload nginx
           
-          # 6. Container durumunu kontrol et
+          # 7. Container durumunu kontrol et
           echo "Deployment tamamlandı!"
           docker compose ps
           
