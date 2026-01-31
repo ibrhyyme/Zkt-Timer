@@ -54,11 +54,13 @@ export default function TimeDisplay() {
 	}
 
 	useEffect(() => {
-		if (timerCounter.current && !solving && finalTime) {
+		// Timer durma koşulu: solving false olduğunda interval'i durdur
+		if (timerCounter.current && !solving) {
 			stopInterval();
 		} else if (!timerCounter.current && timeStartedAt) {
 			startInterval();
-		} if (!solving && finalTime < 0) {
+		}
+		if (!solving && finalTime < 0) {
 			setTime(0);
 		}
 	}, [solving, finalTime, timeStartedAt]);
@@ -74,17 +76,20 @@ export default function TimeDisplay() {
 	function stopInterval() {
 		timerLocked.current = true;
 
-		if (finalTime < 0) {
+		// ESC ile iptal durumunda (finalTime 0 veya negatif) süreyi sıfırla
+		if (!finalTime || finalTime <= 0) {
 			setTime(0);
 		} else {
 			setTime(finalTime / 1000);
 		}
 
-		clearTimeout(timerCounter.current);
+		if (timerCounter.current) {
+			clearInterval(timerCounter.current);
+		}
 		timerCounter.current = null;
 		timerLocked.current = false;
 
-		if (zeroOutTimeAfterSolve) {
+		if (zeroOutTimeAfterSolve && finalTime > 0) {
 			setTime(0);
 		}
 	}
