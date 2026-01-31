@@ -26,6 +26,7 @@ export default function TimerScramble() {
 	const mobileMode = useGeneral('mobile_mode');
 	const sessionId = useSettings('session_id');
 	const cubeType = context.cubeType;
+	const isMegaminx = cubeType === 'minx' || cubeType === 'megaminx';
 	let timerScrambleSize = useSettings('timer_scramble_size');
 
 	const focusMode = context.focusMode;
@@ -91,6 +92,12 @@ export default function TimerScramble() {
 
 	if (hideScramble) {
 		scramble = '';
+	} else if (isMegaminx && scramble) {
+		// Megaminx formatting: Force newlines after each line (usually ending in U or U')
+		// Standard WCA scramble format usually has 7 lines
+		if (!scramble.includes('\n')) {
+			scramble = scramble.replace(/ (U'?)( |$)/g, ' $1\n').trim();
+		}
 	}
 
 	let scrambleBody: ReactNode = (
@@ -108,6 +115,9 @@ export default function TimerScramble() {
 	// Is smart cube
 	if (isSmart && !timeStartedAt && scramble) {
 		scrambleBody = <SmartScramble />;
+	} else if (isSmart && timeStartedAt) {
+		// Timer çalışırken scramble'ı gizle
+		scrambleBody = null;
 	}
 
 	// +2 ve DNF butonları artık üstteki actions alanında, aşağıda duplike yok
@@ -118,6 +128,7 @@ export default function TimerScramble() {
 			<div
 				className={b('body', {
 					smart: isSmart,
+					megaminx: isMegaminx,
 				})}
 				style={{
 					fontSize: timerScrambleSize + 'px',

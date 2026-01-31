@@ -1,6 +1,6 @@
 import React, { ReactNode, useContext } from 'react';
 import block from '../../../../../styles/bem';
-import { isTwo, processSmartTurns, rawTurnIsSame, reverseScramble } from '../../../../../util/smart_scramble';
+import { processSmartTurns, reverseScramble, matchScrambleWithCommutative } from '../../../../../util/smart_scramble';
 import { TimerContext } from '../../../Timer';
 
 const b = block('timer-scramble');
@@ -10,26 +10,29 @@ export default function SmartScramble() {
 
 	const { smartTurns, scramble, smartCanStart } = context;
 
-	const smartScramble = processSmartTurns(smartTurns);
-	const failedMoves = [];
-	let orangeMiddle = false;
+	const userMoves = processSmartTurns(smartTurns);
+	const expectedMoves = scramble.split(' ').filter(m => m.trim());
 
-	const scrambleParts = scramble.split(' ');
-	let scrambleBody: ReactNode = scrambleParts.map((turn, i) => {
-		const smartTurn = smartScramble[i];
+	// Use new matching function that handles commutative moves
+	const { matchStatus } = matchScrambleWithCommutative(expectedMoves, userMoves);
 
-		let green = false;
-		let orange = false;
-		let red = false;
-		if (!failedMoves.length && smartScramble.length > i && smartTurn === turn && !orangeMiddle) {
-			green = true;
-		} else if (smartScramble.length > i && rawTurnIsSame(smartTurn, turn) && isTwo(turn) && !orangeMiddle) {
-			orange = true;
-			orangeMiddle = true;
-		} else if (smartScramble.length > i) {
-			red = true;
-			failedMoves.push(smartTurn);
+	// Find failed moves (wrong status)
+	const failedMoves: string[] = [];
+	const wrongStartIdx = matchStatus.findIndex(s => s === 'wrong');
+	if (wrongStartIdx >= 0) {
+		// Get user moves that don't match
+		const consumedCount = matchStatus.filter(s => s === 'perfect' || s === 'half').length;
+		for (let i = consumedCount; i < userMoves.length; i++) {
+			failedMoves.push(userMoves[i]);
 		}
+	}
+
+	let scrambleBody: ReactNode = expectedMoves.map((turn, i) => {
+		const status = matchStatus[i];
+
+		let green = status === 'perfect';
+		let orange = status === 'half';
+		let red = status === 'wrong';
 
 		return (
 			<span

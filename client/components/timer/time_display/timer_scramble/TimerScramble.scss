@@ -31,8 +31,8 @@
 		@media (max-width: 768px) {
 			font-size: clamp(0.85rem, 3vw, 1rem);
 			line-height: 1.4;
-			margin-bottom: 3vh;
-			padding: 0 5vw;
+			margin-bottom: 2vh;
+			padding: 0 10px;
 			max-width: 100%;
 			word-break: break-word;
 		}
@@ -87,6 +87,24 @@
 
 		&--smart {
 			width: auto;
+		}
+
+		&--megaminx {
+			white-space: pre-wrap;
+			text-align: center;
+			font-weight: 600;
+			line-height: 1.5;
+
+			textarea {
+				width: 100%;
+				text-align: center;
+			}
+
+			@media (max-width: 768px) {
+				font-size: 0.75rem !important; // Smaller font to fit width
+				line-height: 1.2 !important;
+				overflow-x: auto;
+			}
 		}
 	}
 

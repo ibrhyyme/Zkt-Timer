@@ -1,7 +1,10 @@
-import {processSmartTurns, SmartTurn} from '../../../util/smart_scramble';
+import { processSmartTurns, SmartTurn, matchScrambleWithCommutative } from '../../../util/smart_scramble';
 
 export function preflightChecks(smartTurns: SmartTurn[], scramble: string) {
-	const smartScramble = processSmartTurns(smartTurns).join(' ');
+	const userMoves = processSmartTurns(smartTurns);
+	const expectedMoves = scramble.split(' ').filter(m => m.trim());
 
-	return scramble === smartScramble;
+	// Use new matching function that handles commutative moves
+	const { matched } = matchScrambleWithCommutative(expectedMoves, userMoves);
+	return matched;
 }

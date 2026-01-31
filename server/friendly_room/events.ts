@@ -569,7 +569,8 @@ export function listenForFriendlyRoomEvents(client: Socket) {
 async function startGracePeriod(user: any) {
     if (!user) return;
 
-    logger.info('Starting friendly room grace period', { userId: user.id, username: user.username });
+    // Reduced log level to debug to avoid spamming terminal during dev (frequent tab switches/HMR)
+    logger.debug('Starting friendly room grace period', { userId: user.id, username: user.username });
 
     // Mark user as DISCONNECTED immediately in all their rooms
     const expireTime = Date.now() + 45000; // 45s from now

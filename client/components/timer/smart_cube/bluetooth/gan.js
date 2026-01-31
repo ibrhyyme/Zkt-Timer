@@ -71,11 +71,8 @@ export default class GAN extends SmartCube {
 	};
 
 	handleCubeEvent = (event) => {
-		if (event.type != 'GYRO' && event.type != 'FACELETS') console.log('GanCubeEvent', event);
-
 		if (event.type == 'MOVE') {
 			if (event.move) {
-				console.log('Move detected:', event.move);
 				this.alertTurnCube(event.move);
 			} else {
 				console.warn('Move event received but no move property found:', event);

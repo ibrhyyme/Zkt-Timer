@@ -19,7 +19,7 @@ export function processSmartTurns(smartTurns: SmartTurn[], skipCompress: boolean
 }
 
 export function getSmartTurnsAsString(smartTurns: SmartTurn[]) {
-	const output = smartTurns.map(({turn}) => turn);
+	const output = smartTurns.map(({ turn }) => turn);
 
 	return output.join(' ');
 }
@@ -106,4 +106,140 @@ function removeTwo(turn: string): string {
 
 function getRawTurn(turn: string): string {
 	return turn.replace(/('|2)/g, '');
+}
+
+// Commutative pairs: Moves on opposite faces that don't affect each other
+// U/D, L/R, F/B - these can be swapped without changing the cube state
+const COMMUTATIVE_PAIRS: Record<string, string> = {
+	'U': 'D', 'D': 'U',
+	'L': 'R', 'R': 'L',
+	'F': 'B', 'B': 'F',
+};
+
+/**
+ * Check if two moves are commutative (can be done in any order)
+ */
+export function areCommutative(turn1: string, turn2: string): boolean {
+	const raw1 = getRawTurn(turn1);
+	const raw2 = getRawTurn(turn2);
+	return COMMUTATIVE_PAIRS[raw1] === raw2;
+}
+
+/**
+ * Matches user moves against expected scramble, allowing commutative reordering.
+ * Returns an array of matched moves in the order they should be displayed,
+ * along with match status for each position.
+ * 
+ * Example: Expected ["U", "D", "L"], User did ["D", "U", "L"]
+ * Since U and D are commutative, this should match successfully.
+ */
+export function matchScrambleWithCommutative(
+	expectedMoves: string[],
+	userMoves: string[]
+): { matched: boolean; matchStatus: ('perfect' | 'half' | 'wrong' | 'pending')[] } {
+	const matchStatus: ('perfect' | 'half' | 'wrong' | 'pending')[] = [];
+
+	// Track which user moves have been consumed
+	const userConsumed: boolean[] = new Array(userMoves.length).fill(false);
+	let userSearchStart = 0;
+
+	for (let expIdx = 0; expIdx < expectedMoves.length; expIdx++) {
+		const expectedMove = expectedMoves[expIdx];
+
+		// Try to find a matching user move
+		let foundIdx = -1;
+		let isHalf = false;
+
+		// First, try exact match or half match (like R vs R2) starting from userSearchStart
+		for (let uIdx = userSearchStart; uIdx < userMoves.length; uIdx++) {
+			if (userConsumed[uIdx]) continue;
+
+			const userMove = userMoves[uIdx];
+
+			// Check if all moves between userSearchStart and uIdx are commutative with expectedMove
+			let canReach = true;
+			for (let between = userSearchStart; between < uIdx; between++) {
+				if (userConsumed[between]) continue;
+				if (!areCommutative(expectedMove, userMoves[between])) {
+					canReach = false;
+					break;
+				}
+			}
+
+			if (!canReach) continue;
+
+			// Check for exact match
+			if (userMove === expectedMove) {
+				foundIdx = uIdx;
+				break;
+			}
+
+			// Check for half match (same base, one is x2)
+			if (rawTurnIsSame(userMove, expectedMove) && (isTwo(expectedMove) || isTwo(userMove))) {
+				foundIdx = uIdx;
+				isHalf = true;
+				break;
+			}
+		}
+
+		if (foundIdx >= 0) {
+			userConsumed[foundIdx] = true;
+			matchStatus.push(isHalf ? 'half' : 'perfect');
+
+			// Advance search start past all consumed moves
+			while (userSearchStart < userMoves.length && userConsumed[userSearchStart]) {
+				userSearchStart++;
+			}
+		} else if (userSearchStart < userMoves.length) {
+			// User made a move but it doesn't match
+			matchStatus.push('wrong');
+			// Mark remaining as wrong
+			for (let i = expIdx + 1; i < expectedMoves.length; i++) {
+				matchStatus.push('wrong');
+			}
+			return { matched: false, matchStatus };
+		} else {
+			// User hasn't made this move yet
+			matchStatus.push('pending');
+		}
+	}
+
+	// Check if all user moves were consumed (no extra wrong moves)
+	const allConsumed = userConsumed.slice(0, userMoves.length).every(c => c);
+	// Half matches are NOT considered complete - only perfect matches count
+	const allPerfect = matchStatus.every(s => s === 'perfect');
+
+	return {
+		matched: allConsumed && allPerfect,
+		matchStatus
+	};
+}
+
+/**
+ * Legacy canonicalize function - kept for backwards compatibility
+ * but the new matchScrambleWithCommutative is preferred
+ */
+export function canonicalizeMoves(moves: string[]): string[] {
+	if (moves.length < 2) return [...moves];
+
+	const result = [...moves];
+	let changed = true;
+
+	while (changed) {
+		changed = false;
+		for (let i = 0; i < result.length - 1; i++) {
+			const rawA = getRawTurn(result[i]);
+			const rawB = getRawTurn(result[i + 1]);
+
+			if (COMMUTATIVE_PAIRS[rawA] === rawB) {
+				// Sort by alphabetical order for consistency
+				if (rawA > rawB) {
+					[result[i], result[i + 1]] = [result[i + 1], result[i]];
+					changed = true;
+				}
+			}
+		}
+	}
+
+	return result;
 }
