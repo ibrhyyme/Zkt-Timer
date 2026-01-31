@@ -25,10 +25,7 @@ jobs:
           git fetch --all
           git reset --hard origin/main
           
-          # 2. Sadece değişen container'ı yeniden build et
-          docker compose build app-server
-          
-          # 3. Zero-downtime restart
+          # 2. Build et ve başlat (tek adımda)
           docker compose up -d --no-deps --build app-server
           
           # 4. İzinleri düzelt
