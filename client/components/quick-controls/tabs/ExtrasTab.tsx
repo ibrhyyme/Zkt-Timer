@@ -1,6 +1,6 @@
-import React, {useEffect, useState} from 'react';
-import {toggleSetting} from '../../../db/settings/update';
-import {useSettings} from '../../../util/hooks/useSettings';
+import React, { useEffect, useState } from 'react';
+import { toggleSetting } from '../../../db/settings/update';
+import { useSettings } from '../../../util/hooks/useSettings';
 import screenfull from '../../../util/vendor/screenfull';
 
 interface ExtrasOptionProps {
@@ -11,7 +11,7 @@ interface ExtrasOptionProps {
 	onClick: () => void;
 }
 
-function ExtrasOption({label, isActive, disabled = false, hidden = false, onClick}: ExtrasOptionProps) {
+function ExtrasOption({ label, isActive, disabled = false, hidden = false, onClick }: ExtrasOptionProps) {
 	if (hidden) {
 		return null;
 	}
@@ -24,17 +24,15 @@ function ExtrasOption({label, isActive, disabled = false, hidden = false, onClic
 			<button
 				type="button"
 				disabled={disabled}
-				className={`relative h-6 w-11 rounded-full border transition-all duration-300 transform hover:scale-105 ${
-					isActive
-						? 'bg-gradient-to-r from-emerald-500 to-teal-500 border-emerald-400 shadow-lg shadow-emerald-500/30'
-						: 'bg-slate-600/50 border-slate-500/50 hover:bg-slate-500/50'
-				} ${disabled ? 'opacity-30 cursor-not-allowed transform-none' : 'cursor-pointer'}`}
+				className={`relative h-6 w-11 rounded-full border transition-all duration-300 transform hover:scale-105 ${isActive
+					? 'bg-gradient-to-r from-emerald-500 to-teal-500 border-emerald-400 shadow-lg shadow-emerald-500/30'
+					: 'bg-slate-700 border-slate-600 hover:bg-slate-600'
+					} ${disabled ? 'opacity-30 cursor-not-allowed transform-none' : 'cursor-pointer'}`}
 				onClick={onClick}
 			>
 				<div
-					className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-lg transition-all duration-300 ${
-						isActive ? 'translate-x-5 shadow-white/20' : 'translate-x-0.5'
-					}`}
+					className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-lg transition-all duration-300 ${isActive ? 'translate-x-5 shadow-white/20' : 'translate-x-0.5'
+						}`}
 				/>
 			</button>
 		</div>
@@ -44,7 +42,8 @@ function ExtrasOption({label, isActive, disabled = false, hidden = false, onClic
 export default function ExtrasTab() {
 	const focusMode = useSettings('focus_mode');
 	const inspection = useSettings('inspection');
-	
+	const hideTimeWhenSolving = useSettings('hide_time_when_solving');
+
 	const [fullScreenMode, setFullScreenMode] = useState(false);
 
 	// Track fullscreen state
@@ -75,6 +74,12 @@ export default function ExtrasTab() {
 			isActive: inspection,
 			hidden: false,
 			onClick: () => toggleSetting('inspection'),
+		},
+		{
+			label: 'Çözerken Süreyi Gizle',
+			isActive: hideTimeWhenSolving,
+			hidden: false,
+			onClick: () => toggleSetting('hide_time_when_solving'),
 		},
 	];
 

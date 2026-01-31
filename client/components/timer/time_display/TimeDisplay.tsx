@@ -136,7 +136,7 @@ export default function TimeDisplay() {
 	}
 
 	if (hideTimeWhenSolving && timeStartedAt) {
-		timeStr = 'solve';
+		timeStr = 'ÇÖZ';
 	}
 
 	if (stackMatOn) {
