@@ -1,6 +1,6 @@
-import React, { ReactNode, useContext, useEffect, useRef } from 'react';
+import React, { ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import './TimerScramble.scss';
-import { ArrowClockwise, Lock, PencilSimple } from 'phosphor-react';
+import { ArrowClockwise, CaretLeft, CaretRight, Lock, PencilSimple } from 'phosphor-react';
 import TextareaAutosize from 'react-textarea-autosize';
 import CopyText from '../../../common/copy_text/CopyText';
 import { MOBILE_FONT_SIZE_MULTIPLIER } from '../../../../db/settings/update';
@@ -8,7 +8,7 @@ import { useGeneral } from '../../../../util/hooks/useGeneral';
 import Button from '../../../common/button/Button';
 import { TimerContext } from '../../Timer';
 import block from '../../../../styles/bem';
-import { resetScramble } from '../../helpers/scramble';
+import { getNewScramble, resetScramble } from '../../helpers/scramble';
 import SmartScramble from './smart_scramble/SmartScramble';
 import { setTimerParam } from '../../helpers/params';
 import { smartCubeSelected } from '../../helpers/util';
@@ -16,8 +16,12 @@ import { useSettings } from '../../../../util/hooks/useSettings';
 import { setSetting } from '../../../../db/settings/update';
 import { toggleDnfSolveDb, togglePlusTwoSolveDb } from '../../../../db/solves/operations';
 import { useLatestSolve } from '../../../../util/hooks/useLatestSolve';
+import { getCubeTypeInfoById } from '../../../../util/cubes/util';
 
 const b = block('timer-scramble');
+
+// Scramble history için max geri adım sayısı
+const MAX_HISTORY_BACK_STEPS = 2;
 
 export default function TimerScramble() {
 	const context = useContext(TimerContext);
@@ -40,6 +44,39 @@ export default function TimerScramble() {
 
 	// Son solve için +2 ve DNF
 	const latestSolve = useLatestSolve();
+
+	// Scramble history state
+	const [scrambleHistory, setScrambleHistory] = useState<string[]>([]);
+	const [currentIndex, setCurrentIndex] = useState(-1);
+	const lastCubeTypeRef = useRef(cubeType);
+	const isNavigatingRef = useRef(false);
+
+	// Kategori değiştiğinde history'yi sıfırla
+	useEffect(() => {
+		if (lastCubeTypeRef.current !== cubeType) {
+			setScrambleHistory([]);
+			setCurrentIndex(-1);
+			lastCubeTypeRef.current = cubeType;
+		}
+	}, [cubeType]);
+
+	// Scramble değiştiğinde (navigasyon dışında) history'ye ekle
+	useEffect(() => {
+		if (scramble && !isNavigatingRef.current) {
+			setScrambleHistory((prev) => {
+				// Eğer currentIndex ortadaysa, ondan sonrasını sil ve yeni ekle
+				let newHistory = prev.slice(0, currentIndex + 1);
+				newHistory.push(scramble);
+				// Sadece son 3 scramble'ı tut (mevcut + max 2 geri)
+				if (newHistory.length > MAX_HISTORY_BACK_STEPS + 1) {
+					newHistory = newHistory.slice(-MAX_HISTORY_BACK_STEPS - 1);
+				}
+				return newHistory;
+			});
+			setCurrentIndex((prev) => Math.min(prev + 1, MAX_HISTORY_BACK_STEPS));
+		}
+		isNavigatingRef.current = false;
+	}, [scramble]);
 
 	useEffect(() => {
 		if (lockedScramble && !timeStartedAt) {
@@ -88,7 +125,66 @@ export default function TimerScramble() {
 		}
 	}
 
+	// Önceki scramble'a git (max 2 adım geri)
+	const handlePreviousScramble = useCallback(() => {
+		if (timeStartedAt || scrambleLocked) return;
+
+		if (currentIndex > 0) {
+			isNavigatingRef.current = true;
+			const newIndex = currentIndex - 1;
+			setCurrentIndex(newIndex);
+			const previousScramble = scrambleHistory[newIndex];
+			setTimerParam('scramble', previousScramble);
+		}
+	}, [currentIndex, scrambleHistory, timeStartedAt, scrambleLocked]);
+
+	// Sonraki scramble'a git veya yeni üret
+	const handleNextScramble = useCallback(() => {
+		if (timeStartedAt || scrambleLocked) return;
+
+		// Eğer geçmişte bir yerdeyse, ileri git
+		if (currentIndex < scrambleHistory.length - 1) {
+			isNavigatingRef.current = true;
+			const newIndex = currentIndex + 1;
+			setCurrentIndex(newIndex);
+			const nextScramble = scrambleHistory[newIndex];
+			setTimerParam('scramble', nextScramble);
+		} else {
+			// En sondaysa, yeni scramble üret
+			const ct = getCubeTypeInfoById(cubeType);
+			const newScramble = getNewScramble(ct.scramble);
+			setTimerParam('scramble', newScramble);
+		}
+	}, [currentIndex, scrambleHistory, timeStartedAt, scrambleLocked, cubeType]);
+
+	// Klavye kısayolları (Sol/Sağ ok tuşları)
+	useEffect(() => {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			// Input/Textarea odaklıysa çalışma
+			const target = e.target as HTMLElement;
+			if (target.closest('input, textarea')) return;
+			// Timer çalışırken çalışma
+			if (timeStartedAt) return;
+
+			if (e.key === 'ArrowLeft') {
+				e.preventDefault();
+				handlePreviousScramble();
+			} else if (e.key === 'ArrowRight') {
+				e.preventDefault();
+				handleNextScramble();
+			}
+		};
+
+		window.addEventListener('keydown', handleKeyDown);
+		return () => window.removeEventListener('keydown', handleKeyDown);
+	}, [handlePreviousScramble, handleNextScramble, timeStartedAt]);
+
 	const isSmart = smartCubeSelected(context);
+
+	// Navigasyon butonları için disable durumları
+	const minHistoryIndex = Math.max(0, scrambleHistory.length - 1 - MAX_HISTORY_BACK_STEPS);
+	const canGoPrevious = currentIndex > minHistoryIndex && !scrambleLocked && !timeStartedAt;
+	const canGoNext = !scrambleLocked && !timeStartedAt;
 
 	if (hideScramble) {
 		scramble = '';
@@ -125,6 +221,29 @@ export default function TimerScramble() {
 	return (
 		<div className={b()}>
 			{notification}
+			{/* Scramble navigasyon butonları - timer çalışmıyorken göster */}
+			{!timeStartedAt && !focusMode && (
+				<div className={b('nav')}>
+					<button
+						className={b('nav-btn', { disabled: !canGoPrevious })}
+						onClick={handlePreviousScramble}
+						disabled={!canGoPrevious}
+						title="Önceki scramble (← Sol Ok)"
+					>
+						<CaretLeft weight="bold" />
+						<span>Önceki</span>
+					</button>
+					<button
+						className={b('nav-btn')}
+						onClick={handleNextScramble}
+						disabled={!canGoNext}
+						title="Sonraki scramble (→ Sağ Ok)"
+					>
+						<span>Sonraki</span>
+						<CaretRight weight="bold" />
+					</button>
+				</div>
+			)}
 			<div
 				className={b('body', {
 					smart: isSmart,
