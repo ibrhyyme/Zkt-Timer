@@ -30,6 +30,8 @@ export interface AllSettings {
 	custom_cube_types: CustomCubeType[];
 	locked_scramble: string;
 	smart_cube_size: number;
+	stackmat_auto_inspection: number; // 0 = kapalı, >0 = gecikme süresi (saniye)
+	stackmat_auto_inspection_warning_shown: boolean; // Uyarı modalı gösterildi mi?
 
 	// Local
 	timer_type: 'keyboard' | 'smart' | 'stackmat' | 'gantimer';
@@ -115,6 +117,8 @@ const defaultSettings: AllSettings = {
 	timer_avg_6: 'ao50',
 
 	smart_cube_size: 400,
+	stackmat_auto_inspection: 0, // 0 = kapalı, aktifken varsayılan 2 saniye
+	stackmat_auto_inspection_warning_shown: false,
 };
 
 export function getDefaultSetting<T extends keyof AllSettings>(key: T): AllSettings[T] {

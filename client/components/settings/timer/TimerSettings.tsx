@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import MicAccess from '../mic_access/MicAccess';
 import StackMatPicker from '../stackmat_picker/StackMatPicker';
 import { openModal } from '../../../actions/general';
@@ -11,6 +11,10 @@ import Button, { CommonType } from '../../common/button/Button';
 import { setSetting } from '../../../db/settings/update';
 import { useSettings } from '../../../util/hooks/useSettings';
 import { AllSettings } from '../../../db/settings/query';
+import Switch from '../../common/switch/Switch';
+import Input from '../../common/inputs/input/Input';
+import ModalHeader from '../../common/modal/modal_header/ModalHeader';
+import Checkbox from '../../common/checkbox/Checkbox';
 
 export const TIMER_INPUT_TYPE_NAMES = {
 	keyboard: 'Klavye',
@@ -19,6 +23,58 @@ export const TIMER_INPUT_TYPE_NAMES = {
 	gantimer: 'GAN Akıllı Timer',
 };
 
+// Uyarı modalı componenti
+function AutoInspectionWarningModal({ onComplete }: { onComplete?: () => void }) {
+	const [dontShowAgain, setDontShowAgain] = useState(false);
+
+	function handleClose() {
+		if (dontShowAgain) {
+			setSetting('stackmat_auto_inspection_warning_shown', true);
+		}
+		if (onComplete) {
+			onComplete();
+		}
+	}
+
+	return (
+		<div style={{ maxWidth: '500px' }}>
+			<ModalHeader
+				title="StackMat Otomatik İnceleme Uyarısı"
+				description="Bu özellik hakkında bilmeniz gereken önemli bir bilgi var."
+			/>
+			<div style={{ marginBottom: '16px', lineHeight: '1.6' }}>
+				<p style={{ marginBottom: '12px' }}>
+					<strong>Bu özellik nasıl çalışır:</strong>
+				</p>
+				<ul style={{ paddingLeft: '20px', marginBottom: '12px' }}>
+					<li>Çözümünüzü tamamladıktan sonra mat'ta reset tuşuna basın</li>
+					<li>Belirlediğiniz süre (varsayılan 2 saniye) sonra inceleme otomatik başlar</li>
+					<li>Eğer bu süre içinde timer'ı başlatırsanız, inceleme iptal olur</li>
+				</ul>
+				<p style={{ marginBottom: '12px', padding: '10px', backgroundColor: 'rgba(255,150,0,0.15)', borderRadius: '8px', border: '1px solid rgba(255,150,0,0.3)' }}>
+					<strong>⚠️ Önemli Sınırlama:</strong> ESC tuşu ile incelemeyi iptal ederseniz, mat'tan yeni bir sinyal gelmediği için tekrar reset'e bassanız bile inceleme başlamaz. Bu durumda klavyeden (Space) inceleme başlatmanız gerekir veya yeni bir çözüm yapmanız gerekir.
+				</p>
+				<p style={{ color: '#888', fontSize: '13px' }}>
+					Bu sınırlama StackMat protokolünden kaynaklanmaktadır ve yazılımsal olarak çözümü yoktur.
+				</p>
+			</div>
+			<div style={{ marginBottom: '16px' }}>
+				<Checkbox
+					checked={dontShowAgain}
+					onChange={() => setDontShowAgain(!dontShowAgain)}
+					text="Bir daha gösterme"
+				/>
+			</div>
+			<Button
+				text="Anladım"
+				primary
+				large
+				onClick={handleClose}
+			/>
+		</div>
+	);
+}
+
 export default function TimerSettings() {
 	const dispatch = useDispatch();
 
@@ -26,9 +82,26 @@ export default function TimerSettings() {
 	const inspection = useSettings('inspection');
 	const stackMatId = useSettings('stackmat_id');
 	const timerType = useSettings('timer_type');
+	const stackMatAutoInspection = useSettings('stackmat_auto_inspection');
+	const stackMatAutoInspectionWarningShown = useSettings('stackmat_auto_inspection_warning_shown');
+	const [autoInspectionDelay, setAutoInspectionDelay] = useState(String(stackMatAutoInspection || 2));
 
 	function updateSetting(name: keyof AllSettings, value: any) {
 		setSetting(name, value);
+	}
+
+	function handleAutoInspectionToggle(on: boolean) {
+		if (on) {
+			const delay = parseInt(autoInspectionDelay) || 2;
+			setSetting('stackmat_auto_inspection', delay);
+
+			// Uyarı gösterilmediyse göster
+			if (!stackMatAutoInspectionWarningShown) {
+				dispatch(openModal(<AutoInspectionWarningModal />));
+			}
+		} else {
+			setSetting('stackmat_auto_inspection', 0);
+		}
 	}
 
 	function toggleCubeTypes() {
@@ -160,6 +233,38 @@ export default function TimerSettings() {
 				/>
 				<SettingRow sub title="Mikrofona erişime izin ver (StackMat'ın veri iletim yöntemi)">
 					<MicAccess />
+				</SettingRow>
+				<SettingRow
+					sub
+					title="Otomatik İnceleme Başlat"
+					description="Mat sıfırlandıktan sonra otomatik olarak inceleme süresini başlatır."
+				>
+					<div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+						<Switch
+							on={stackMatAutoInspection > 0}
+							onChange={handleAutoInspectionToggle}
+						/>
+						{stackMatAutoInspection > 0 && (
+							<>
+								<Input
+									type="number"
+									value={autoInspectionDelay}
+									name="auto_inspection_delay"
+									onChange={(e) => setAutoInspectionDelay(e.target.value)}
+									style={{ width: '60px' }}
+								/>
+								<Button
+									text="Kaydet"
+									gray
+									onClick={() => {
+										const delay = parseInt(autoInspectionDelay) || 2;
+										setSetting('stackmat_auto_inspection', delay);
+									}}
+								/>
+								<span style={{ fontSize: '12px', color: '#888' }}>saniye</span>
+							</>
+						)}
+					</div>
 				</SettingRow>
 				<SettingRow sub title={`StackMat cihazınızı seçin. Genellikle "USB Audio Device" olarak adlandırılır`}>
 					<Button
