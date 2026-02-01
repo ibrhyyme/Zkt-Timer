@@ -12,6 +12,7 @@ import Button from '../../common/button/Button';
 import ThemeOptions from './theme_options/ThemeOptions';
 import { AllSettings, getDefaultSetting } from '../../../db/settings/query';
 import { CaretDown } from 'phosphor-react';
+import { useIsMobile } from '../../../util/hooks/useIsMobile';
 
 const DEFAULT_FONT_FAMILY = 'Roboto Mono';
 
@@ -35,6 +36,7 @@ export default function Appearance() {
 	const timerFontFamily = useSettings('timer_font_family');
 	const timerModuleCount = useSettings('timer_module_count');
 	const smartCubeSize = useSettings('smart_cube_size');
+	const isMobile = useIsMobile();
 
 	function updateSetting(name: keyof AllSettings, value: any) {
 		setSetting(name, value);
@@ -48,6 +50,7 @@ export default function Appearance() {
 				description="Timer sayfasında gösterilen modül sayısını değiştirin. Bunun gösterilen *maksimum* modül sayısı olduğunu unutmayın (pencere boyutunuza göre)."
 			>
 				<Dropdown
+					openLeft={isMobile}
 					text={String(timerModuleCount)}
 					noMargin
 					icon={<CaretDown />}
@@ -68,6 +71,7 @@ export default function Appearance() {
 			</SettingRow>
 			<SettingRow title="Timer yazı tipi" description="Timer sayfasında gördüğünüz büyük Timernın yazı tipi">
 				<Dropdown
+					openLeft={isMobile}
 					text={timerFontFamily}
 					noMargin
 					icon={<CaretDown />}

@@ -15,6 +15,7 @@ import Switch from '../../common/switch/Switch';
 import Input from '../../common/inputs/input/Input';
 import ModalHeader from '../../common/modal/modal_header/ModalHeader';
 import Checkbox from '../../common/checkbox/Checkbox';
+import { useIsMobile } from '../../../util/hooks/useIsMobile';
 
 export const TIMER_INPUT_TYPE_NAMES = {
 	keyboard: 'Klavye',
@@ -85,6 +86,7 @@ export default function TimerSettings() {
 	const stackMatAutoInspection = useSettings('stackmat_auto_inspection');
 	const stackMatAutoInspectionWarningShown = useSettings('stackmat_auto_inspection_warning_shown');
 	const [autoInspectionDelay, setAutoInspectionDelay] = useState(String(stackMatAutoInspection || 2));
+	const isMobile = useIsMobile();
 
 	function updateSetting(name: keyof AllSettings, value: any) {
 		setSetting(name, value);
@@ -147,6 +149,7 @@ export default function TimerSettings() {
 		<>
 			<SettingRow title="Timer ondalık basamakları" description="Timer sayfasında kaç ondalık basamak gösterileceği">
 				<Dropdown
+					openLeft={isMobile}
 					icon={null}
 					text={`${timerDecimalPoints} ondalık basamak`}
 					options={[0, 1, 2, 3].map((c) => ({
@@ -160,6 +163,7 @@ export default function TimerSettings() {
 				description="Timeryı başlatmak için klavyeniz (boşluk tuşu), StackMat veya Akıllı Küp kullanımı arasında seçim yapın."
 			>
 				<Dropdown
+					openLeft={isMobile}
 					icon={null}
 					text={getTimerTypeName(timerType)}
 					options={['keyboard', 'stackmat', 'smart', 'gantimer'].map((c) => ({
