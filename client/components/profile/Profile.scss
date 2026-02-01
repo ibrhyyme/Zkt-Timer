@@ -21,6 +21,7 @@
 				margin: auto;
 			}
 		}
+
 	}
 
 	&--loading {
@@ -93,6 +94,11 @@
 		flex-direction: row;
 		margin-bottom: 7px;
 		padding: 25px;
+
+		@media (max-width: 768px) {
+			padding: 10px;
+			height: 200px;
+		}
 	}
 
 	&__background {
@@ -159,6 +165,12 @@
 		margin: auto;
 		width: 100%;
 		max-width: 1200px;
+		box-sizing: border-box;
+
+		@media (max-width: 768px) {
+			padding: 0 12px;
+			max-width: 100%;
+		}
 
 		>hr {
 			margin: 30px auto;
@@ -197,6 +209,11 @@
 		display: flex;
 		align-items: center;
 		gap: 8px;
+
+		@media (max-width: 768px) {
+			padding: 12px 16px;
+			font-size: 1rem;
+		}
 
 		&:hover {
 			opacity: 0.8;
@@ -237,6 +254,11 @@
 		display: grid;
 		grid-template-columns: repeat(2, 1fr);
 		grid-gap: 20px;
+
+		@media (max-width: 768px) {
+			grid-template-columns: 1fr;
+			grid-gap: 12px;
+		}
 	}
 
 	&__publish-buttons {

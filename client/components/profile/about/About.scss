@@ -14,10 +14,15 @@
 		grid-template-columns: repeat(auto-fit, minmax(400px, auto));
 		grid-gap: 30px;
 		margin-top: 10px;
+
+		@media (max-width: 768px) {
+			grid-template-columns: 1fr;
+			grid-gap: 20px;
+		}
 	}
 
 	&__header {
-		> *:not(:last-child) {
+		>*:not(:last-child) {
 			margin-bottom: 10px;
 		}
 	}
@@ -51,7 +56,7 @@
 		flex-direction: column;
 		align-items: flex-start;
 
-		> span {
+		>span {
 			display: table;
 			margin-top: 5px;
 			font-size: 1.3rem;
