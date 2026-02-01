@@ -14,7 +14,7 @@
         flex-direction: column;
         max-width: 1600px;
         margin: 0 auto;
-        padding: 0 2rem;
+        // padding removed to align with global wrapper
     }
 
     &__header {
@@ -22,7 +22,7 @@
         display: flex;
         justify-content: space-between;
         align-items: flex-end;
-        padding: 2rem 0;
+        // padding removed to align with global wrapper
         margin-bottom: 1rem;
     }
 
@@ -101,9 +101,7 @@
         min-height: 100vh;
         overflow: visible;
 
-        &__container {
-            padding: 1rem;
-        }
+
 
         &__header {
             flex-direction: column;
