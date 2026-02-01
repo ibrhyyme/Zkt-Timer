@@ -14,13 +14,25 @@
 		align-items: center;
 		justify-content: space-between;
 
-		> div {
+		>div {
 			display: flex;
 			flex-direction: row;
 
-			> *:not(:first-child) {
+			>*:not(:first-child) {
 				margin-left: 10px;
 			}
+		}
+
+		// Mobil düzeltme: X butonuyla çakışmayı önle
+		@media (max-width: 500px) {
+			position: relative;
+			width: 100%;
+			right: auto;
+			left: 0;
+			flex-wrap: wrap;
+			gap: 8px;
+			padding-top: 30px; // X butonu için alan
+			margin-bottom: 10px;
 		}
 	}
 
@@ -79,10 +91,11 @@
 		display: flex;
 		flex-direction: row;
 
-		> *:not(:last-child) {
+		>*:not(:last-child) {
 			margin-right: 10px;
 		}
-		> div:last-of-type {
+
+		>div:last-of-type {
 			margin-right: 0 !important;
 		}
 	}
@@ -130,7 +143,7 @@
 		flex-direction: column;
 		align-items: center;
 
-		> * {
+		>* {
 			width: 100%;
 		}
 	}

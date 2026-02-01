@@ -1,8 +1,13 @@
-import {updateSolveDb} from './update';
-import {Solve} from '../../../server/schemas/Solve.schema';
+import { updateSolveDb } from './update';
+import { Solve } from '../../../server/schemas/Solve.schema';
 
 export function toggleDnfSolveDb(solve: Solve) {
 	if (!solve) {
+		return;
+	}
+
+	// Sistem DNF'i ise (inspection timeout - raw_time 0) kaldırmaya izin verme
+	if (solve.dnf && solve.raw_time === 0) {
 		return;
 	}
 
@@ -25,6 +30,11 @@ export function togglePlusTwoSolveDb(solve: Solve) {
 
 export function setOkSolveDb(solve: Solve) {
 	if (!solve) {
+		return;
+	}
+
+	// Sistem DNF'i ise (inspection timeout) OK'a izin verme
+	if (solve.dnf && solve.raw_time === 0) {
 		return;
 	}
 

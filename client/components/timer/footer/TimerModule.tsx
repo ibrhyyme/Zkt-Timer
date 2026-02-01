@@ -104,22 +104,24 @@ export default function TimerModule(props: Props) {
 	}
 
 	let dropdown: ReactNode = (
-		<div className="absolute z-40 opacity-0 group-hover:opacity-100">
-			<Dropdown
-				openLeft
-				noMargin
-				dropdownButtonProps={{
-					primary: true,
-					glow: true,
-				}}
-				dropdownMaxHeight={200}
-				icon={<CaretDown />}
-				text={currentModuleName}
-				options={moduleDropdownOptions.map((option) => ({
-					text: option.label,
-					onClick: () => selectVisual(option.value),
-				}))}
-			/>
+		<div className="absolute inset-0 z-40 flex items-start justify-center opacity-0 group-hover:opacity-100 pointer-events-none">
+			<div className="pointer-events-auto">
+				<Dropdown
+					openLeft
+					noMargin
+					dropdownButtonProps={{
+						primary: true,
+						glow: true,
+					}}
+					dropdownMaxHeight={200}
+					icon={<CaretDown />}
+					text={currentModuleName}
+					options={moduleDropdownOptions.map((option) => ({
+						text: option.label,
+						onClick: () => selectVisual(option.value),
+					}))}
+				/>
+			</div>
 		</div>
 	);
 
@@ -127,7 +129,7 @@ export default function TimerModule(props: Props) {
 		dropdown = null;
 	}
 
-	const wrapperClass = ['group', 'h-full', 'w-full', 'p-3', 'overflow-hidden'];
+	const wrapperClass = ['group', 'h-full', 'w-full', 'p-3', 'overflow-hidden', 'relative'];
 	if (index % 2 !== 0) {
 		wrapperClass.push('rounded-lg', 'border-4', 'border-tmo-background/10', 'bg-tm-module/10');
 	}

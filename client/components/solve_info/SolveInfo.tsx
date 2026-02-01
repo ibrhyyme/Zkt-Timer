@@ -150,6 +150,7 @@ export default function SolveInfo(props: Props) {
 	const endedAt = new Date(Number(solve.ended_at));
 	const isSmartCube = solve.is_smart_cube;
 	const smartDevice = solve.smart_device;
+	const isSystemDnf = effSolve.dnf && effSolve.raw_time === 0; // Inspection timeout DNF'i
 
 	const time = getTimeString(effSolve.time);
 
@@ -178,8 +179,8 @@ export default function SolveInfo(props: Props) {
 		/>
 	);
 
-	let plusTwoButton = <Button gray text="+2" disabled={disabled} onClick={togglePlusTwo} warning={plusTwo} />;
-	let dnfButton = <Button gray text="DNF" disabled={disabled} onClick={toggleDnf} danger={dnf} />;
+	let plusTwoButton = <Button gray text="+2" disabled={disabled || isSystemDnf} onClick={togglePlusTwo} warning={plusTwo} />;
+	let dnfButton = <Button gray text="DNF" disabled={disabled || isSystemDnf} onClick={toggleDnf} danger={dnf} />;
 	let deleteButton = <Button gray title="Çözümü sil" text="Sil" onClick={deleteSolve} />;
 
 	if (disabled) {
