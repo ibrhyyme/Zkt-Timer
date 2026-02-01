@@ -1,4 +1,4 @@
-import React, { ReactNode, useState } from 'react';
+import React, { ReactNode, useState, useRef } from 'react';
 import './Dropdown.scss';
 import block from '../../../../styles/bem';
 import CSS from 'csstype';
@@ -43,17 +43,11 @@ export default function Dropdown(props: InputProps<DropdownProps>) {
 		dropdownMaxHeight,
 	} = props;
 	const [open, setOpen] = useState(false);
+	const containerRef = useRef<HTMLDivElement>(null);
 
 	function closeDropdown(e) {
-		if (preventCloseOnInnerClick) {
-			let target = e.target;
-			while (target) {
-				if (target && target.classList && target.classList.contains(b())) {
-					return;
-				}
-
-				target = target.parentNode;
-			}
+		if (preventCloseOnInnerClick && containerRef.current && containerRef.current.contains(e.target)) {
+			return;
 		}
 
 		if (onClose) {
@@ -136,7 +130,7 @@ export default function Dropdown(props: InputProps<DropdownProps>) {
 		<GenericInput
 			{...props}
 			inputWrapper={() => (
-				<div className={b()}>
+				<div ref={containerRef} className={b()}>
 					{handleDiv}
 					{body}
 				</div>
