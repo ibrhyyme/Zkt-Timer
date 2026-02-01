@@ -1,11 +1,11 @@
 import React from 'react';
-import {EloLeaderboardsDocument} from '../../@types/generated/graphql';
+import { EloLeaderboardsDocument } from '../../@types/generated/graphql';
 import EloRow from './EloRow';
 import Header from '../layout/header/Header';
 import PaginatedList from '../common/paginated_list/PaginatedList';
-import {gqlQueryTyped} from '../api';
-import {PaginationArgs} from '../../../server/schemas/Pagination.schema';
-import {EloRating, PaginatedEloLeaderboards} from '../../../server/schemas/EloRating.schema';
+import { gqlQueryTyped } from '../api';
+import { PaginationArgs } from '../../../server/schemas/Pagination.schema';
+import { EloRating, PaginatedEloLeaderboards } from '../../../server/schemas/EloRating.schema';
 
 export default function EloBoard() {
 	async function fetchData(pageArgs: PaginationArgs): Promise<PaginatedEloLeaderboards> {
@@ -23,7 +23,7 @@ export default function EloBoard() {
 	}
 
 	return (
-		<div className="w-full p-2">
+		<div className="w-full p-2 overflow-hidden">
 			<Header path="/community/leaderboards" title="Zkt-Timer - Leaderboards" />
 			<div className="w-full max-w-4xl mx-auto">
 				<PaginatedList<EloRating>

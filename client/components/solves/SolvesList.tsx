@@ -1,26 +1,26 @@
-import React, {ReactNode, useEffect, useState} from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 import './Solves.scss';
 import CubePicker from '../common/cube_picker/CubePicker';
 import Empty from '../common/empty/Empty';
-import {SortAscending, SortDescending, Share, Funnel} from 'phosphor-react';
+import { SortAscending, SortDescending, Share, Funnel } from 'phosphor-react';
 import SolveListRow from './solve_row/SolveListRow';
 import Loading from '../common/loading/Loading';
-import {numberWithCommas} from '../../util/strings/util';
-import {fetchSolveCount, fetchSolves, FilterSolvesOptions} from '../../db/solves/query';
-import {useSolveDb} from '../../util/hooks/useSolveDb';
+import { numberWithCommas } from '../../util/strings/util';
+import { fetchSolveCount, fetchSolves, FilterSolvesOptions } from '../../db/solves/query';
+import { useSolveDb } from '../../util/hooks/useSolveDb';
 import jsonStr from 'json-stable-stringify';
-import {CubeType} from '../../util/cubes/cube_types';
-import Button, {CommonType} from '../common/button/Button';
+import { CubeType } from '../../util/cubes/cube_types';
+import Button, { CommonType } from '../common/button/Button';
 import Dropdown from '../common/inputs/dropdown/Dropdown';
-import {IDropdownOption} from '../common/inputs/dropdown/dropdown_option/DropdownOption';
+import { IDropdownOption } from '../common/inputs/dropdown/dropdown_option/DropdownOption';
 import block from '../../styles/bem';
-import {openModal} from '../../actions/general';
+import { openModal } from '../../actions/general';
 import HistoryModal from '../modules/history/history_modal/HistoryModal';
-import {useDispatch} from 'react-redux';
-import {useMe} from '../../util/hooks/useMe';
+import { useDispatch } from 'react-redux';
+import { useMe } from '../../util/hooks/useMe';
 import PageTitle from '../common/page_title/PageTitle';
-import {LokiFetchOptions} from '../../db/lokijs';
-import {Solve} from '../../../server/schemas/Solve.schema';
+import { LokiFetchOptions } from '../../db/lokijs';
+import { Solve } from '../../../server/schemas/Solve.schema';
 import ResultCount from '../common/result_count/ResultCount';
 
 
@@ -91,7 +91,7 @@ export default function SolvesList() {
 	}
 
 	function toggleFilter(name: string, not: boolean = false) {
-		const filt = {...filters};
+		const filt = { ...filters };
 		const currentValue = filt[name];
 
 		if ((currentValue === false && not) || (currentValue === true && !not)) {
@@ -165,8 +165,8 @@ export default function SolvesList() {
 		<div className={b()}>
 			<PageTitle pageName="Çözümler" />
 
-			<div className="container mx-auto flex max-w-2xl flex-col gap-2">
-				<div className="container mb-2 flex flex-row items-center gap-2">
+			<div className="w-full px-2 mx-auto flex max-w-2xl flex-col gap-2">
+				<div className="w-full mb-2 flex flex-row flex-wrap items-center gap-2">
 					<CubePicker
 						dropdownProps={{
 							openLeft: true,

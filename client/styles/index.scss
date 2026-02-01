@@ -78,3 +78,9 @@ h1 {
     height: 0 !important;
     background: transparent !important;
 }
+
+html,
+body {
+    width: 100%;
+    overflow-x: hidden;
+}

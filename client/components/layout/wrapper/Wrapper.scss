@@ -18,9 +18,14 @@
 
 		// Full mode and mobile mode - no changes needed for header layout
 
-		&:not(&--noPadding) > &__content {
+		&:not(&--noPadding)>&__content {
 			padding: 30px;
 			box-sizing: border-box;
+			overflow-x: hidden; // Prevent horizontal scroll from children
+
+			@media (max-width: 768px) {
+				padding: 15px; // Reduced padding for mobile
+			}
 		}
 	}
 }
