@@ -852,11 +852,11 @@ export default function FriendlyRoom() {
             {/* 1. Header & Scramble (Fixed) */}
             <div className="shrink-0 flex flex-col">
                 {/* Top Bar - Native App Header Style */}
-                <div className="flex items-center justify-between bg-blue-600 px-4 py-3 shadow-lg z-10 relative">
-                    <div className="flex items-center gap-3">
+                <div className="flex items-center justify-between bg-blue-600 px-3 md:px-4 py-2 md:py-3 shadow-lg z-10 relative gap-2">
+                    <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0 overflow-hidden">
                         {/* Hamburger Menu (Only for Host) */}
                         {isHost ? (
-                            <div className="relative group z-50">
+                            <div className="relative group z-50 shrink-0">
                                 <button className="p-1 text-white hover:bg-white/10 rounded-md transition-colors">
                                     <List size={24} weight="bold" />
                                 </button>
@@ -891,14 +891,14 @@ export default function FriendlyRoom() {
                             </div>
                         ) : null}
 
-                        <div className="flex items-center gap-2">
-                            <h1 className="text-xl font-bold tracking-tight text-white m-0 leading-none">
+                        <div className="flex items-center gap-2 min-w-0 overflow-hidden">
+                            <h1 className="text-lg md:text-xl font-bold tracking-tight text-white m-0 leading-none truncate block">
                                 {room.name}
                             </h1>
                             {isHost && (
                                 <button
                                     onClick={() => setEditModalOpen(true)}
-                                    className="p-1 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-white/10 focus:outline-none"
+                                    className="shrink-0 p-1 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-white/10 focus:outline-none"
                                     title="Odayı Düzenle"
                                 >
                                     <PencilSimple size={18} weight="bold" />
@@ -907,26 +907,27 @@ export default function FriendlyRoom() {
                         </div>
                         <span
                             onClick={() => isHost && setEditModalOpen(true)}
-                            className={`rounded-full bg-white/20 px-2 py-0.5 text-xs font-semibold text-white backdrop-blur-sm transition-colors ${isHost ? 'cursor-pointer hover:bg-white/30' : ''}`}
+                            className={`shrink-0 rounded-full bg-white/20 px-2 py-0.5 text-xs font-semibold text-white backdrop-blur-sm transition-colors ${isHost ? 'cursor-pointer hover:bg-white/30' : ''}`}
                             title={isHost ? "Etkinliği değiştirmek için tıkla" : undefined}
                         >
                             {room.cube_type.toUpperCase()}
                         </span>
 
-                        {/* Spectator/Competing Mode Toggle */}
+                        {/* Spectator/Competing Mode Toggle - Hidden on very small screens if needed, but important */}
                         {isActive && myParticipant && (
                             <button
                                 onClick={() => getSocket().emit(FriendlyRoomClientEvent.TOGGLE_SPECTATOR, roomId)}
-                                className={`ml-2 px-3 py-1 text-xs font-bold rounded-full transition-all shadow-sm ${myParticipant.is_spectator
+                                className={`shrink-0 ml-1 md:ml-2 px-2 md:px-3 py-1 text-xs font-bold rounded-full transition-all shadow-sm ${myParticipant.is_spectator
                                     ? 'bg-red-500 hover:bg-red-600 text-white'
                                     : 'bg-green-500 hover:bg-green-600 text-white'
                                     }`}
                             >
-                                {myParticipant.is_spectator ? 'İzleyici' : 'Mücadele'}
+                                <span className="hidden md:inline">{myParticipant.is_spectator ? 'İzleyici' : 'Mücadele'}</span>
+                                <span className="md:hidden">{myParticipant.is_spectator ? 'View' : 'Play'}</span>
                             </button>
                         )}
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 md:gap-2 shrink-0">
                         {/* Bluetooth Connect Button for GAN Timer */}
                         {timerType === 'gantimer' && (
                             <button
@@ -945,7 +946,7 @@ export default function FriendlyRoom() {
                                 ) : (
                                     <Bluetooth size={16} weight="bold" />
                                 )}
-                                {ganTimerConnecting ? 'Bağlanıyor...' : ganTimerConnected ? 'Timer Bağlı' : 'Timer Bağla'}
+                                <span className="hidden md:inline">{ganTimerConnecting ? 'Bağlanıyor...' : ganTimerConnected ? 'Timer Bağlı' : 'Timer Bağla'}</span>
                             </button>
                         )}
 
@@ -967,12 +968,12 @@ export default function FriendlyRoom() {
                                 ) : (
                                     <Bluetooth size={16} weight="bold" />
                                 )}
-                                {smartCubeConnecting ? 'Bağlanıyor...' : smartCubeConnected ? 'Küp Bağlı' : 'Küp Bağla'}
+                                <span className="hidden md:inline">{smartCubeConnecting ? 'Bağlanıyor...' : smartCubeConnected ? 'Küp Bağlı' : 'Küp Bağla'}</span>
                             </button>
                         )}
                         <button
                             onClick={() => setSettingsOpen(true)}
-                            className="p-2 text-white/90 hover:text-white transition-colors"
+                            className="p-1 md:p-2 text-white/90 hover:text-white transition-colors"
                         >
                             <Gear weight="bold" size={20} />
                         </button>
@@ -1288,10 +1289,7 @@ export default function FriendlyRoom() {
                             {/* Mobile Timer Touch Area - Fixed at bottom of Timer Tab */}
                             {isMobile && timerType === 'keyboard' && !isManualMode && (
                                 <div className="timer-touch-area shrink-0 h-32 w-full bg-[#15161A] border-t border-[#333] flex flex-col items-center justify-center select-none touch-none cursor-pointer active:bg-[#1a1c22] transition-colors relative z-20">
-                                    <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-1">
-                                        SON ÇÖZÜM
-                                    </span>
-                                    <span className="text-4xl font-mono font-medium text-gray-200 tracking-tight">
+                                    <span className="text-6xl font-mono font-medium text-gray-200 tracking-tight">
                                         {(() => {
                                             const myParticipant = room.participants.find(p => p.user_id === me?.id);
                                             if (!myParticipant || myParticipant.solves.length === 0) return '0.00';
@@ -1306,9 +1304,6 @@ export default function FriendlyRoom() {
                                             const time = lastSolve.plus_two ? lastSolve.time + 2 : lastSolve.time;
                                             return time.toFixed(2);
                                         })()}
-                                    </span>
-                                    <span className="text-gray-600 text-[9px] font-medium mt-1">
-                                        BAŞLATMAK İÇİN BASILI TUT
                                     </span>
                                 </div>
                             )}
