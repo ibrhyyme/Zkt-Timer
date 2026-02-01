@@ -1,15 +1,15 @@
-import React, {useMemo, useState} from 'react';
+import React, { useMemo, useState } from 'react';
 import QuickStatsBlock from '../QuickStatsBlock';
-import {getQuickStatsGridSizes, saveStatsModuleBlocks, STATS_GRID_SIZE} from '../util';
+import { getQuickStatsGridSizes, saveStatsModuleBlocks, STATS_GRID_SIZE } from '../util';
 import Button from '../../../common/button/Button';
 import CustomizeStatsEditor from './CustomizeStatsEditor';
 import HorizontalLine from '../../../common/horizontal_line/HorizontalLine';
-import {StatsModuleBlock} from '../../../../../server/schemas/StatsModule.schema';
-import {RootStateOrAny, useDispatch, useSelector} from 'react-redux';
-import {addStatsModuleBlock, removeStatsModuleBlock} from '../../../../actions/stats';
-import {defaultStatsModuleBlocks} from '../../../../reducers/stats';
-import {toastError} from '../../../../util/toast';
-import {FilterSolvesOptions} from '../../../../db/solves/query';
+import { StatsModuleBlock } from '../../../../../server/schemas/StatsModule.schema';
+import { RootStateOrAny, useDispatch, useSelector } from 'react-redux';
+import { addStatsModuleBlock, removeStatsModuleBlock } from '../../../../actions/stats';
+import { defaultStatsModuleBlocks } from '../../../../reducers/stats';
+import { toastError } from '../../../../util/toast';
+import { FilterSolvesOptions } from '../../../../db/solves/query';
 import jsonStr from 'json-stable-stringify';
 
 interface Props {
@@ -17,7 +17,7 @@ interface Props {
 }
 
 export default function CustomizeStats(props: Props) {
-	const {filterOptions} = props;
+	const { filterOptions } = props;
 
 	const dispatch = useDispatch();
 	const [selectedIndex, setSelectedIndex] = useState(0);
@@ -108,7 +108,7 @@ export default function CustomizeStats(props: Props) {
 	const selectedStatOptions = statsModuleBlocks[selectedIndex];
 
 	return (
-		<div>
+		<div className="md:max-h-[65vh] md:overflow-y-auto md:pr-2">
 			<div className="mb-4 table w-full">
 				<div className={className}>{blocks}</div>
 				<div className="mx-auto mt-4 table">
