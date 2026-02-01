@@ -158,7 +158,7 @@ export default function SmartCube() {
 
 			// If inspection is enabled, start WCA inspection countdown
 			if (inspectionEnabled) {
-				startInspection();
+				startInspection(context);
 			}
 		}
 	}
