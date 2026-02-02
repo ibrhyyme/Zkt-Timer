@@ -38,7 +38,7 @@ export default function TimerScramble() {
 		timerScrambleSize *= MOBILE_FONT_SIZE_MULTIPLIER;
 	}
 
-	const { editScramble, scrambleLocked, notification, hideScramble, timeStartedAt } = context;
+	const { editScramble, scrambleLocked, notification, hideScramble, timeStartedAt, matchMode } = context;
 	let scramble = context.scramble;
 	const lockedScramble = useSettings('locked_scramble');
 
@@ -221,8 +221,8 @@ export default function TimerScramble() {
 	return (
 		<div className={b()}>
 			{notification}
-			{/* Scramble navigasyon butonları - timer çalışmıyorken göster */}
-			{!timeStartedAt && !focusMode && (
+			{/* Scramble navigasyon butonları - timer çalışmıyorken ve maç modunda değilken göster */}
+			{!timeStartedAt && !focusMode && !matchMode && (
 				<div className={b('nav')}>
 					<button
 						className={b('nav-btn', { disabled: !canGoPrevious })}
@@ -257,14 +257,17 @@ export default function TimerScramble() {
 				{scrambleBody}
 			</div>
 			<div className={b('actions', { focused: focusMode })}>
-				<Button
-					onClick={toggleEditScramble}
-					title="Edit scramble"
-					white={!isSmart && editScramble}
-					transparent
-					disabled={isSmart || scrambleLocked}
-					icon={<PencilSimple weight="bold" />}
-				/>
+				{/* Maç modunda sadece +2 ve DNF göster */}
+				{!matchMode && (
+					<Button
+						onClick={toggleEditScramble}
+						title="Edit scramble"
+						white={!isSmart && editScramble}
+						transparent
+						disabled={isSmart || scrambleLocked}
+						icon={<PencilSimple weight="bold" />}
+					/>
+				)}
 				{latestSolve && (
 					<>
 						<Button
@@ -283,27 +286,31 @@ export default function TimerScramble() {
 						/>
 					</>
 				)}
-				<Button
-					transparent
-					onClick={toggleScrambleLock}
-					title="Lock scramble"
-					white={scrambleLocked}
-					icon={<Lock weight="bold" />}
-				/>
-				<CopyText
-					text={scramble}
-					buttonProps={{
-						gray: false,
-						transparent: true,
-					}}
-				/>
-				<Button
-					disabled={scrambleLocked}
-					onClick={() => resetScramble(context)}
-					transparent
-					title="Reset scramble"
-					icon={<ArrowClockwise weight="bold" />}
-				/>
+				{!matchMode && (
+					<>
+						<Button
+							transparent
+							onClick={toggleScrambleLock}
+							title="Lock scramble"
+							white={scrambleLocked}
+							icon={<Lock weight="bold" />}
+						/>
+						<CopyText
+							text={scramble}
+							buttonProps={{
+								gray: false,
+								transparent: true,
+							}}
+						/>
+						<Button
+							disabled={scrambleLocked}
+							onClick={() => resetScramble(context)}
+							transparent
+							title="Reset scramble"
+							icon={<ArrowClockwise weight="bold" />}
+						/>
+					</>
+				)}
 			</div>
 		</div>
 	);

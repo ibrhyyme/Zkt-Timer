@@ -14,7 +14,7 @@ const b = block('timer-footer');
 
 export default function TimerFooter() {
 	const context = useContext(TimerContext);
-	const { timerLayout, cubeType, scramble } = context;
+	const { timerLayout, cubeType, scramble, matchMode } = context;
 
 	// Fetch modules from settings or set defaults (if not set)
 	const mobileMode = useGeneral('mobile_mode');
@@ -36,30 +36,43 @@ export default function TimerFooter() {
 	const modules = [];
 	if (mobileMode) {
 		// Custom modules (Match etc.) for mobile
+
 		if (customModules && customModules.length) {
-			customModules.forEach((mod, i) => {
-				let className = '';
-				let style = {};
 
-				// Map modules to grid
-				// Index 0: History -> Left Column
-				// Index 1: Points/Stats -> Right Column (Full Height now)
-				// Index 2: Chat/Scramble -> HIDDEN on mobile as per request
-				if (i === 0) {
-					className = 'cd-timer-footer__mobile-history';
-				} else if (i === 1) {
-					className = 'cd-timer-footer__mobile-stats';
-					style = { gridRow: '1 / 3' }; // Make it take full height of the right column
-				} else {
-					return; // Skip other modules (Chat/Scramble)
-				}
-
+			// Maç modunda özel layout: Sadece ilk modülü (Tur Listesi) tam ekran göster
+			if (matchMode && customModules.length > 0) {
+				const mod = customModules[0];
 				modules.push(
-					<div key={`mobile-custom-${i}`} className={className} style={style}>
-						<TimerModule index={i} customOptions={mod} />
+					<div key="mobile-match-history" className="cd-timer-footer__mobile-match-history">
+						<TimerModule index={0} customOptions={mod} />
 					</div>
 				);
-			});
+			} else {
+				// Normal, non-match custom modules layout (eski mantık)
+				customModules.forEach((mod, i) => {
+					let className = '';
+					let style = {};
+
+					// Map modules to grid
+					// Index 0: History -> Left Column
+					// Index 1: Points/Stats -> Right Column (Full Height now)
+					// Index 2: Chat/Scramble -> HIDDEN on mobile as per request
+					if (i === 0) {
+						className = 'cd-timer-footer__mobile-history';
+					} else if (i === 1) {
+						className = 'cd-timer-footer__mobile-stats';
+						style = { gridRow: '1 / 3' }; // Make it take full height of the right column
+					} else {
+						return; // Skip other modules (Chat/Scramble)
+					}
+
+					modules.push(
+						<div key={`mobile-custom-${i}`} className={className} style={style}>
+							<TimerModule index={i} customOptions={mod} />
+						</div>
+					);
+				});
+			}
 		} else {
 			// Mobil için özel 3 bölümlü layout (Default)
 			// Sol: Çözümler (History)
@@ -120,11 +133,11 @@ export default function TimerFooter() {
 	}
 
 	// Footer always visible in mobile mode
-	const body = <div className={b('body', { mobile: mobileMode, layout: timerLayout })}>{modules}</div>;
+	const body = <div className={b('body', { mobile: mobileMode, layout: timerLayout, match: matchMode })}>{modules}</div>;
 
 
 	return (
-		<div className={b({ layout: timerLayout })}>
+		<div className={b({ layout: timerLayout, match: matchMode })}>
 			{body}
 		</div>
 	);

@@ -18,11 +18,30 @@
 
 		// Mobil yeni layout için wrapper stillerini sıfırla
 		&--mobileNewLayout {
-			display: block;
+			display: flex;
+			flex-direction: column;
 			padding: 0;
 			gap: 0;
 			min-height: 100vh;
 			min-height: 100dvh;
+
+			// Üst kısım (Timer + Scramble): Kalan alanı doldur
+			.#{$namespace}-timer__main {
+				flex: 1;
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+				overflow: hidden;
+				width: 100%;
+			}
+
+			// Alt kısım (Footer/History): %35 yükseklik
+			.#{$namespace}-timer-footer,
+			.cd-timer-footer {
+				height: 35vh;
+				flex: 0 0 auto;
+				width: 100% !important;
+			}
 		}
 
 		&--right,

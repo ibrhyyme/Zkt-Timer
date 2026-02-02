@@ -20,6 +20,7 @@ import Dropdown from '../../common/inputs/dropdown/Dropdown';
 import { getMatchLinkBase } from './match_popup/custom_match/CustomMatch';
 import { toastSuccess } from '../../../util/toast';
 import { Prohibit, CaretDown, Copy, Flag } from 'phosphor-react';
+import { useGeneral } from '../../../util/hooks/useGeneral';
 import { copyText } from '../../common/copy_text/CopyText';
 import MatchOver from './match_over/MatchOver';
 import { MatchSession } from '../../../../server/schemas/MatchSession.schema';
@@ -93,10 +94,12 @@ export default function Match(props: MatchProps) {
 	const [match, setMatch] = useState<MatchSchema>(null);
 	const [matchSession, setMatchSession] = useState<MatchSession>(null);
 
+	// Refs
 	const winnerId = useRef('');
 	const watchingPlayerId = useRef('');
 
 	const me = useMe();
+	const mobileMode = useGeneral('mobile_mode');
 
 	function exitMatch() {
 		history.replaceState({}, null, window.location.origin + matchPath);
@@ -253,21 +256,24 @@ export default function Match(props: MatchProps) {
 		let timerBody = <div />;
 
 		if (!hideTimer) {
-			params.timerCustomFooterModules[params.timerCustomFooterModules.length - 1] = {
-				hideAllOptions: true,
-				customBody: () => {
-					return {
-						module: (
-							<ChatBox
-								matchType={matchType}
-								messages={(matchSession?.chat_messages as any) || []}
-								match={match}
-								disabled={spectating}
-							/>
-						),
-					};
-				},
-			};
+			// Sadece masaüstünde (mobileMode değilse) ChatBox'ı footer'a koy
+			if (!mobileMode) {
+				params.timerCustomFooterModules[params.timerCustomFooterModules.length - 1] = {
+					hideAllOptions: true,
+					customBody: () => {
+						return {
+							module: (
+								<ChatBox
+									matchType={matchType}
+									messages={(matchSession?.chat_messages as any) || []}
+									match={match}
+									disabled={spectating}
+								/>
+							),
+						};
+					},
+				};
+			}
 
 			timerBody = (
 				<Timer
@@ -276,6 +282,7 @@ export default function Match(props: MatchProps) {
 					scramble={params.disabled ? ' ' : scramble}
 					disabled={params.disabled || spectating}
 					hideScramble={params.disabled}
+					inModal={true}
 				/>
 			);
 		}

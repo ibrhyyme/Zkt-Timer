@@ -42,8 +42,10 @@ export interface TimerProps {
 	hideScramble?: boolean;
 	hideTime?: boolean;
 	inModal?: boolean;
+	matchMode?: boolean; // Maç modunda gereksiz UI elementlerini gizle
 	cubeType?: string;
 	timerLayout?: TimerLayoutPosition;
+	forceMobileLayout?: boolean;
 
 	customScrambleFunc?: (context: ITimerContext) => string;
 	headerOptions?: TimerHeaderOptions;

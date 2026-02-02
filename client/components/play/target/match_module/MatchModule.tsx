@@ -7,6 +7,7 @@ import { MatchContext } from '../../match/Match';
 import { useMe } from '../../../../util/hooks/useMe';
 import Button from '../../../common/button/Button';
 import Challengers from '../challengers/Challengers';
+import { useGeneral } from '../../../../util/hooks/useGeneral';
 
 const b = block('match-module');
 
@@ -15,6 +16,7 @@ export default function MatchModule() {
 	const gameContext = useContext(GameContext);
 	const matchContext = useContext(MatchContext);
 	const me = useMe();
+	const mobileMode = useGeneral('mobile_mode');
 
 	const { matchOpen, retrySolve, solves, getPlayerStatusInfo, timeIndex } = gameContext;
 	const playerStatus = getPlayerStatusInfo(me.id, timeIndex, solves, matchContext?.match);
@@ -45,11 +47,15 @@ export default function MatchModule() {
 
 	return (
 		<div className={b()}>
-			<div className={b('header')}>
-				<span className={b('objective')}>{playerStatus.statusPrompt}</span>
-				<div className={b('retry')}>{retryAlert}</div>
-			</div>
+			{/* Mobilde header'ı gizle, sadece tur tablosunu göster */}
+			{!mobileMode && (
+				<div className={b('header')}>
+					<span className={b('objective')}>{playerStatus.statusPrompt}</span>
+					<div className={b('retry')}>{retryAlert}</div>
+				</div>
+			)}
 			<Challengers />
 		</div>
 	);
 }
+

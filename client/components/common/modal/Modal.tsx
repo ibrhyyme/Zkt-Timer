@@ -1,9 +1,9 @@
-import React, {ReactNode, useEffect, useRef, useState} from 'react';
+import React, { ReactNode, useEffect, useRef, useState } from 'react';
 import CSS from 'csstype';
-import {useDispatch} from 'react-redux';
+import { useDispatch } from 'react-redux';
 import './Modal.scss';
-import {X} from 'phosphor-react';
-import {closeModal} from '../../../actions/general';
+import { X } from 'phosphor-react';
+import { closeModal } from '../../../actions/general';
 import ModalHeader from './modal_header/ModalHeader';
 import block from '../../../styles/bem';
 
@@ -74,7 +74,7 @@ export default function Modal(props: IModalProps) {
 		if (disableBackdropClick) {
 			return;
 		}
-		
+
 		if (e.target === e.currentTarget) {
 			clickClose();
 		}
@@ -114,14 +114,16 @@ export default function Modal(props: IModalProps) {
 	}
 
 	return (
-		<div className={b({active, fullSize})} style={style} onClick={handleBackdropClick}>
+		<div className={b({ active, fullSize })} style={style} onClick={handleBackdropClick}>
 			<div className={b('center')} style={centerStyle} onClick={(e) => e.stopPropagation()}>
 				<ModalHeader title={title} description={description} />
 				{closeButton}
-				{React.cloneElement(children as any, {
-					onClose: clickClose,
-					onComplete: clickComplete,
-				})}
+				{React.isValidElement(children) && typeof (children as any).type !== 'string'
+					? React.cloneElement(children as any, {
+						onClose: clickClose,
+						onComplete: clickComplete,
+					})
+					: children}
 			</div>
 		</div>
 	);

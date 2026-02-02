@@ -36,7 +36,7 @@ export default function HeaderControl() {
 
 	const me = useMe();
 	const context = useContext(TimerContext);
-	const { focusMode, cubeType } = context;
+	const { focusMode, cubeType, matchMode } = context;
 	const headerOptions = context.headerOptions || {};
 	const match = useRouteMatch();
 
@@ -107,7 +107,8 @@ export default function HeaderControl() {
 
 	const sessionSwitcher = !focusMode && !headerOptions.hideSessionSelector && <SessionSwitcher />;
 
-	const gearButton = !focusMode && (
+	// Maç modunda gear butonunu gizle
+	const gearButton = !focusMode && !matchMode && (
 		<Button
 			gray
 			icon={<Gear weight="bold" />}
@@ -135,7 +136,8 @@ export default function HeaderControl() {
 			disabled: link.match.test(match.path),
 		}));
 
-		const hamburgerMenu = (
+		// Maç modunda hamburger menüyü gizle
+		const hamburgerMenu = !matchMode && (
 			<Dropdown
 				icon={<List />}
 				dropdownButtonProps={{ gray: true }}

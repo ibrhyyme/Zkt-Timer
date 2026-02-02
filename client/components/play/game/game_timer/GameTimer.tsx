@@ -8,11 +8,13 @@ import { TimerProps } from '../../../timer/@types/interfaces';
 import { PlayerStatus } from '../../../../shared/match/types';
 import { Match as MatchSchema } from '../../../../../server/schemas/Match.schema';
 import { useMe } from '../../../../util/hooks/useMe';
+import { useGeneral } from '../../../../util/hooks/useGeneral';
 
 export default function GameTimer() {
 	const context = useContext(GameContext);
 	const matchContext = useContext(MatchContext);
 	const me = useMe();
+	const mobileMode = useGeneral('mobile_mode');
 
 	const {
 		cubeType,
@@ -52,10 +54,44 @@ export default function GameTimer() {
 
 	const disabled = playerStatus.status === PlayerStatus.Lost;
 
+	// Mobilde sadece visual1 (tur tablosu) göster, visual2 (MatchModule) gizle
+	const footerModules = [
+		{
+			customBody: () => ({
+				module: visual1Param,
+			}),
+			hideAllOptions: true,
+		},
+	];
+
+	// Masaüstünde visual2 ekle
+	if (!mobileMode) {
+		footerModules.push({
+			customBody: () => ({
+				module: visual2Param,
+			}),
+			hideAllOptions: true,
+		});
+	}
+
+	// visual3 (Scramble/Chat) masaüstünde her zaman ekle
+	if (!mobileMode) {
+		footerModules.push({
+			customBody: () => ({
+				module: visual3Param,
+			}),
+			hideAllOptions: true,
+		});
+	}
+
+
+
 	const timerParams: TimerProps = {
 		scramble: disabled ? ' ' : scramble,
 		scrambleLocked: true,
 		inModal: true,
+		matchMode: true,
+		forceMobileLayout: mobileMode,
 		disabled,
 		ignorePbEvents: true,
 		solvesFilter: {
@@ -68,26 +104,7 @@ export default function GameTimer() {
 			hideNewSession: true,
 			hideCubeType: true,
 		},
-		timerCustomFooterModules: [
-			{
-				customBody: () => ({
-					module: visual1Param,
-				}),
-				hideAllOptions: true,
-			},
-			{
-				customBody: () => ({
-					module: visual2Param,
-				}),
-				hideAllOptions: true,
-			},
-			{
-				customBody: () => ({
-					module: visual3Param,
-				}),
-				hideAllOptions: true,
-			},
-		],
+		timerCustomFooterModules: footerModules,
 	};
 
 	if (matchOpen) {

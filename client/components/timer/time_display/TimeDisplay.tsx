@@ -37,6 +37,7 @@ export default function TimeDisplay() {
 		spaceTimerStarted,
 		inInspection,
 		inspectionTimer,
+		matchMode,
 	} = context;
 
 	const inspectionOn = useSettings('inspection');
@@ -180,7 +181,7 @@ export default function TimeDisplay() {
 			>
 				{timeStr}
 			</h1>
-			<SolveDiff />
+			{!matchMode && <SolveDiff />}
 			<div className={bi()}>{bottomInfo}</div>
 			{subTimerActions}
 		</>

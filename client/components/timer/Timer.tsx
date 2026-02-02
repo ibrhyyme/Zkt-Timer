@@ -39,10 +39,11 @@ export const TimerContext = createContext<ITimerContext>(null);
 
 export default function Timer(props: TimerProps) {
 	const dispatch = useDispatch();
+	const _mobileMode = useGeneral('mobile_mode');
+	const mobileMode = props.forceMobileLayout ?? _mobileMode;
 
 	const [loading, setLoading] = useState(true);
 	const timerStore = useSelector((state: RootStateOrAny) => state.timer) as TimerStore;
-	const mobileMode = useGeneral('mobile_mode');
 	const cubeType = useSettings('cube_type');
 	const hideMobileTimerFooter = useSettings('hide_mobile_timer_footer');
 	const timerType = useSettings('timer_type');
@@ -183,15 +184,19 @@ export default function Timer(props: TimerProps) {
 		</div>
 	);
 
+	// Mobil modda her zaman TimeBar üstte, Footer altta olmalı
+	const renderFirst = (mobileMode || timerLayout !== 'left') ? timeBar : <TimerFooter />;
+	const renderSecond = (mobileMode || timerLayout !== 'left') ? <TimerFooter /> : timeBar;
+
 	let body = (
 		<>
-			{timerLayout === 'left' ? <TimerFooter /> : timeBar}
-			{timerLayout === 'left' ? timeBar : <TimerFooter />}
+			{renderFirst}
+			{renderSecond}
 		</>
 	);
 
-	// Mobil modda yeni layout'u kullan
-	if (mobileMode) {
+	// Mobil modda yeni layout'u kullan (maç modunda PC layout kullan)
+	if (mobileMode && !props.inModal) {
 		body = mobileTimeBar;
 	}
 
@@ -212,7 +217,7 @@ export default function Timer(props: TimerProps) {
 			<div
 				className={b({
 					started: !!context.timeStartedAt,
-					mobile: mobileMode,
+					mobile: mobileMode && !props.inModal,
 					focused: context.focusMode && !mobileMode,
 					focusedWeb: context.focusMode && !mobileMode,
 				})}

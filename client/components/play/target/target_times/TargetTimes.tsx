@@ -1,18 +1,18 @@
-import React, {ReactNode, useContext} from 'react';
-import {useDispatch} from 'react-redux';
+import React, { ReactNode, useContext } from 'react';
+import { useDispatch } from 'react-redux';
 import './TargetTimes.scss';
-import {getTimeString} from '../../../../util/time';
-import {openModal} from '../../../../actions/general';
+import { getTimeString } from '../../../../util/time';
+import { openModal } from '../../../../actions/general';
 import SolveInfo from '../../../solve_info/SolveInfo';
-import {GameContext} from '../../game/Game';
+import { GameContext } from '../../game/Game';
 import block from '../../../../styles/bem';
-import {MatchContext} from '../../match/Match';
-import {PlayerStatus} from '../../../../shared/match/types';
+import { MatchContext } from '../../match/Match';
+import { PlayerStatus } from '../../../../shared/match/types';
 import Button from '../../../common/button/Button';
-import {socketClient} from '../../../../util/socket/socketio';
-import {updateSolveDb} from '../../../../db/solves/update';
-import {useMe} from '../../../../util/hooks/useMe';
-import {Solve} from '../../../../../server/schemas/Solve.schema';
+import { socketClient } from '../../../../util/socket/socketio';
+import { updateSolveDb } from '../../../../db/solves/update';
+import { useMe } from '../../../../util/hooks/useMe';
+import { Solve } from '../../../../../server/schemas/Solve.schema';
 
 const b = block('target-times');
 
@@ -27,9 +27,11 @@ export default function TargetTimes(props: Props) {
 	const matchContext = useContext(MatchContext);
 	const me = useMe();
 
-	const {reverse} = props;
+	const { reverse } = props;
 	const match = matchContext?.match;
-	const {timeIndex, getSolveRowInfo, solves} = gameContext;
+	const { timeIndex, getSolveRowInfo, solves } = gameContext;
+
+
 
 	function openSolve(solve) {
 		dispatch(openModal(<SolveInfo disabled solveId={solve.id} />));
@@ -77,7 +79,7 @@ export default function TargetTimes(props: Props) {
 	const body = new Array(targetTimeCount);
 
 	for (let i = 0; i < targetTimeCount; i += 1) {
-		const {id, indexText, solveDescription, targetTime, solve, solveStatus} = getSolveRowInfo(
+		const { id, indexText, solveDescription, targetTime, solve, solveStatus } = getSolveRowInfo(
 			me.id,
 			i,
 			solves,
@@ -99,7 +101,7 @@ export default function TargetTimes(props: Props) {
 			const tie = solveStatus === PlayerStatus.Tie;
 
 			solveInfo = (
-				<button onClick={() => openSolve(solve)} className={b('button', {dnf, plusTwo, failed, tie})}>
+				<button onClick={() => openSolve(solve)} className={b('button', { dnf, plusTwo, failed, tie })}>
 					{time}
 					{targetSuffix}
 				</button>
@@ -135,7 +137,7 @@ export default function TargetTimes(props: Props) {
 		}
 
 		const content = (
-			<div className={b('row', {unsolved: false})} key={id}>
+			<div className={b('row', { unsolved: false })} key={id}>
 				<div className={b('desc')}>
 					{indexText} <span>{solveDescription}</span>
 				</div>
