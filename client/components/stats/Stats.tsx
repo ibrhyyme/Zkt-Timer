@@ -1,18 +1,18 @@
-import React, {createContext, useMemo} from 'react';
+import React, { createContext, useMemo } from 'react';
 import './Stats.scss';
 import block from '../../styles/bem';
-import {useSolveDb} from '../../util/hooks/useSolveDb';
+import { useSolveDb } from '../../util/hooks/useSolveDb';
 import PageTitle from '../common/page_title/PageTitle';
 import HorizontalNav from '../common/horizontal_nav/HorizontalNav';
 import CubeStats from './cube_stats/CubeStats';
-import {fetchAllCubeTypesSolved, FilterSolvesOptions} from '../../db/solves/query';
-import {getCubeTypeInfoById} from '../../util/cubes/util';
-import {CubeType} from '../../util/cubes/cube_types';
+import { fetchAllCubeTypesSolved, FilterSolvesOptions } from '../../db/solves/query';
+import { getCubeTypeInfoById } from '../../util/cubes/util';
+import { CubeType } from '../../util/cubes/cube_types';
 import AllStats from './all/AllStats';
-import {gql, useQuery} from '@apollo/client';
-import {Stats as StatsSchema} from '../../@types/generated/graphql';
-import {STATS_FRAGMENT} from '../../util/graphql/fragments';
-import {useMe} from '../../util/hooks/useMe';
+import { gql, useQuery } from '@apollo/client';
+import { Stats as StatsSchema } from '../../@types/generated/graphql';
+import { STATS_FRAGMENT } from '../../util/graphql/fragments';
+import { useMe } from '../../util/hooks/useMe';
 
 const b = block('stats');
 
@@ -45,7 +45,7 @@ export const StatsContext = createContext<IStatsContext>(null);
 export default function Stats() {
 	const me = useMe();
 
-	const {data: statsData} = useQuery<StatsQueryData>(STATS_QUERY, {
+	const { data: statsData } = useQuery<StatsQueryData>(STATS_QUERY, {
 		fetchPolicy: 'no-cache',
 		skip: !me,
 	});
@@ -106,10 +106,12 @@ export default function Stats() {
 	return (
 		<StatsContext.Provider value={context}>
 			<div className={b()}>
-				<PageTitle pageName="İstatistikler">
-					<HorizontalNav tabs={tabs} tabId={tabId} />
-				</PageTitle>
-				{body}
+				<div className={b('shell')}>
+					<PageTitle pageName="İstatistikler">
+						<HorizontalNav tabs={tabs} tabId={tabId} />
+					</PageTitle>
+					{body}
+				</div>
 			</div>
 		</StatsContext.Provider>
 	);

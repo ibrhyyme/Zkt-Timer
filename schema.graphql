@@ -355,6 +355,7 @@ type Mutation {
   unfriend(targetUserId: String): Friendship
   createSolve(input: SolveInput): Solve
   deleteAllSolvesInSession(sessionId: String): Void
+  deleteSolves(ids: [String]): Void
   createSession(input: SessionInput): Session
   updateSession(input: SessionInput, id: String): Session
   reorderSessions(ids: [String]): Void

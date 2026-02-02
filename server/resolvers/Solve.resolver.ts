@@ -98,4 +98,23 @@ export class SolveResolver {
 			last_solve_at: new Date(),
 		});
 	}
+
+	@Authorized([Role.LOGGED_IN])
+	@Mutation(() => GraphQLVoid)
+	async deleteSolves(@Ctx() context: GraphQLContext, @Arg('ids', () => [String]) ids: string[]) {
+		const { prisma, user } = context;
+
+		await prisma.solve.deleteMany({
+			where: {
+				id: {
+					in: ids,
+				},
+				user_id: user.id,
+			},
+		});
+
+		await updateUserAccountWithParams(user.id, {
+			last_solve_at: new Date(),
+		});
+	}
 }

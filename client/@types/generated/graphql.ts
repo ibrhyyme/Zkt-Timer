@@ -743,6 +743,7 @@ export type Mutation = {
   deleteSession?: Maybe<Session>;
   deleteSmartDevice?: Maybe<SmartDevice>;
   deleteSolve: Solve;
+  deleteSolves?: Maybe<Scalars['Void']>;
   deleteSolvesByCubeType?: Maybe<Scalars['Void']>;
   deleteTimerBackground: TimerBackground;
   deleteTopAverage?: Maybe<TopAverage>;
@@ -966,6 +967,11 @@ export type MutationDeleteSmartDeviceArgs = {
 
 export type MutationDeleteSolveArgs = {
   id?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationDeleteSolvesArgs = {
+  ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 

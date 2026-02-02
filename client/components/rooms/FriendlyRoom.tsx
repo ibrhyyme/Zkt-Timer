@@ -60,6 +60,10 @@ export default function FriendlyRoom() {
     const [mobileTab, setMobileTab] = useState<'timer' | 'chat'>('timer');
     const [notifications, setNotifications] = useState<NotificationItem[]>([]);
 
+    // Host menu state
+    const [hostMenuOpen, setHostMenuOpen] = useState(false);
+    const hostMenuRef = useRef<HTMLDivElement>(null);
+
     // Responsive state
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768); // md breakpoint
 
@@ -67,6 +71,19 @@ export default function FriendlyRoom() {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    // Handle click outside for host menu
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (hostMenuRef.current && !hostMenuRef.current.contains(event.target as Node)) {
+                setHostMenuOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
     }, []);
 
     // Manual entry state
@@ -853,26 +870,35 @@ export default function FriendlyRoom() {
             <div className="shrink-0 flex flex-col">
                 {/* Top Bar - Native App Header Style */}
                 <div className="flex items-center justify-between bg-blue-600 px-3 md:px-4 py-2 md:py-3 shadow-lg z-10 relative gap-2">
-                    <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0 overflow-hidden">
-                        {/* Hamburger Menu (Only for Host) */}
-                        {isHost ? (
-                            <div className="relative group z-50 shrink-0">
-                                <button className="p-1 text-white hover:bg-white/10 rounded-md transition-colors">
-                                    <List size={24} weight="bold" />
-                                </button>
+                    {/* Hamburger Menu (Only for Host) */}
+                    {isHost ? (
+                        <div className="relative z-50 shrink-0" ref={hostMenuRef}>
+                            <button
+                                className={`p-1 text-white hover:bg-white/10 rounded-md transition-colors ${hostMenuOpen ? 'bg-white/10' : ''}`}
+                                onClick={() => setHostMenuOpen(!hostMenuOpen)}
+                            >
+                                <List size={24} weight="bold" />
+                            </button>
 
-                                {/* Dropdown Menu */}
-                                <div className="absolute top-full left-0 mt-2 w-56 bg-[#1a1b1f] border border-gray-800 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all transform origin-top-left z-50 overflow-hidden">
+                            {/* Dropdown Menu */}
+                            {hostMenuOpen && (
+                                <div className="absolute top-full left-0 mt-2 w-56 bg-[#1a1b1f] border border-gray-800 rounded-lg shadow-xl transition-all transform origin-top-left z-50 overflow-hidden">
                                     <div className="py-1">
                                         <button
-                                            onClick={() => setEditModalOpen(true)}
+                                            onClick={() => {
+                                                setEditModalOpen(true);
+                                                setHostMenuOpen(false);
+                                            }}
                                             className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-white/5 hover:text-white flex items-center gap-3 transition-colors"
                                         >
                                             <PencilSimple size={18} />
                                             Odayı Düzenle
                                         </button>
                                         <button
-                                            onClick={() => setManageUsersModalOpen(true)}
+                                            onClick={() => {
+                                                setManageUsersModalOpen(true);
+                                                setHostMenuOpen(false);
+                                            }}
                                             className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-white/5 hover:text-white flex items-center gap-3 transition-colors"
                                         >
                                             <Users size={18} />
@@ -888,9 +914,11 @@ export default function FriendlyRoom() {
                                         </button>
                                     </div>
                                 </div>
-                            </div>
-                        ) : null}
+                            )}
+                        </div>
+                    ) : null}
 
+                    <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0 overflow-hidden">
                         <div className="flex items-center gap-2 min-w-0 overflow-hidden">
                             <h1 className="text-lg md:text-xl font-bold tracking-tight text-white m-0 leading-none truncate block">
                                 {room.name}
