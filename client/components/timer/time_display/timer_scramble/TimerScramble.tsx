@@ -274,6 +274,7 @@ export default function TimerScramble() {
 							onClick={handlePlusTwo}
 							title="Plus two solve"
 							text="+2"
+							transparent
 							warning={latestSolve.plus_two}
 						/>
 						<Button
