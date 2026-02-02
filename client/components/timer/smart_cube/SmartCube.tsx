@@ -12,6 +12,7 @@ import Cube from 'cubejs';
 import block from '../../../styles/bem';
 import { TimerContext } from '../Timer';
 import { useSettings } from '../../../util/hooks/useSettings';
+import { useGeneral } from '../../../util/hooks/useGeneral';
 import { useDispatch } from 'react-redux';
 import Dropdown from '../../common/inputs/dropdown/Dropdown';
 import Button from '../../common/button/Button';
@@ -41,7 +42,13 @@ export default function SmartCube() {
 
 	const useSpaceWithSmartCube = useSettings('use_space_with_smart_cube');
 	const inspectionEnabled = useSettings('inspection');
-	const smartCubeSize = useSettings('smart_cube_size'); // From settings
+	const mobileMode = useGeneral('mobile_mode');
+
+	let smartCubeSize = useSettings('smart_cube_size'); // From settings
+	if (mobileMode) {
+		// Mobil modda sabit boyut kullan (CSS scale yerine native canvas boyutu)
+		smartCubeSize = 300;
+	}
 
 	const {
 		scramble,

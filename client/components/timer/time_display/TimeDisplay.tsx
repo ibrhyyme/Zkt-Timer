@@ -50,7 +50,14 @@ export default function TimeDisplay() {
 	const mobileMode = useGeneral('mobile_mode');
 	let timerTimeSize = useSettings('timer_time_size');
 	if (mobileMode) {
-		timerTimeSize *= MOBILE_FONT_SIZE_MULTIPLIER;
+		// Mobil için boyut mantığı:
+		// Sadece "Akıllı Küp" modundaysak (ekran ikiye bölünüyorsa) 50px (sığması için)
+		// Diğer modlarda (Klavye, Stackmat, Gan vb.) tek başına durduğu için büyük olsun (100px ~%75 genişlik)
+		if (smartCubeSelected(context)) {
+			timerTimeSize = 50;
+		} else {
+			timerTimeSize = 100;
+		}
 	}
 
 	useEffect(() => {

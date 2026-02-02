@@ -1,4 +1,6 @@
 import React, { useContext, useRef, useState } from 'react';
+import { Check } from 'phosphor-react';
+import Button from '../../../common/button/Button';
 import './Manual.scss';
 import { convertTimeStringToSeconds } from '../../../../util/time';
 import { TimerContext } from '../../Timer';
@@ -8,6 +10,8 @@ import { saveSolve } from '../../helpers/save';
 import StartInstructions from '../start_instructions/StartInstructions';
 import { useSettings } from '../../../../util/hooks/useSettings';
 import { useElementListener } from '../../../../util/hooks/useListener';
+import { useGeneral } from '../../../../util/hooks/useGeneral';
+import { MOBILE_FONT_SIZE_MULTIPLIER } from '../../../../db/settings/update';
 
 const b = block('manual-time-entry');
 
@@ -20,18 +24,18 @@ export default function Manual() {
 	const context = useContext(TimerContext);
 	const { scramble, disabled, hideTime } = context;
 
-	const timerTimeSize = useSettings('timer_time_size');
+	const mobileMode = useGeneral('mobile_mode');
+	let timerTimeSize = useSettings('timer_time_size');
+	if (mobileMode) {
+		timerTimeSize *= MOBILE_FONT_SIZE_MULTIPLIER;
+	}
 	const timerFontFamily = useSettings('timer_font_family');
 	const requirePeriodInManualTimeEntry = useSettings('require_period_in_manual_time_entry');
 
 	useElementListener(manualInput.current, 'keydown', addManualTime, [manualInput?.current, manualTime]);
 
-	function addManualTime(e) {
-		if (e.key !== 'Enter' || error) {
-			return;
-		}
-
-		e.preventDefault();
+	function submitTime() {
+		if (error) return;
 
 		try {
 			const seconds = convertTimeStringToSeconds(manualTime, requirePeriodInManualTimeEntry);
@@ -43,8 +47,18 @@ export default function Manual() {
 
 			setManualTime('');
 			setError(false);
+
+			// Klavyeyi kapat
+			manualInput.current?.blur();
 		} catch (err) {
 			// Do nothing
+		}
+	}
+
+	function addManualTime(e) {
+		if (e.key === 'Enter') {
+			e.preventDefault();
+			submitTime();
 		}
 	}
 
@@ -90,7 +104,17 @@ export default function Manual() {
 
 	return (
 		<div className={b('wrapper')}>
-			{input}
+			<div className={b('input-container')}>
+				{input}
+				{!hideTime && (
+					<Button
+						onClick={submitTime}
+						icon={<Check weight="bold" />}
+						className={b('submit-btn')}
+						title="Onayla"
+					/>
+				)}
+			</div>
 
 			{!hideTime && (
 				<StartInstructions>Zamanı manuel olarak girin.</StartInstructions>

@@ -7,6 +7,7 @@ import { getCubeTypeInfoById } from '../../../util/cubes/util';
 import { getSetting } from '../../../db/settings/query';
 import { fetchLastSolve } from '../../../db/solves/query';
 import { setTimerParam } from './params';
+import { resetScramble } from './scramble';
 
 // Creates session if none exist already
 export async function initTimer(dispatch: Dispatch<any>, context: ITimerContext) {
@@ -42,5 +43,8 @@ export async function initTimer(dispatch: Dispatch<any>, context: ITimerContext)
 	if (lastSolve) {
 		setTimerParam('finalTime', lastSolve.time * 1000);
 	}
+
+	// Sayfa ilk yüklendiğinde scramble generate et
+	resetScramble(context);
 }
 

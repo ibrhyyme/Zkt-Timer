@@ -100,9 +100,17 @@ export default function HeaderNav() {
 	}, []);
 
 	function windowResize() {
-		if (window.innerWidth <= 768 && !mobileMode) {
+		// Basit bir User Agent kontrolü ile mobil/tablet tespiti
+		const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+		const isMobileDevice = /android|ipad|iphone|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase());
+
+		// 1. Ekran 768px veya altındaysa
+		// 2. Veya cihaz bir mobil/tablet cihazıysa (genişlik ne olursa olsun mobil modda kalsın isteniyor)
+		const shouldBeMobile = window.innerWidth <= 768 || isMobileDevice;
+
+		if (shouldBeMobile && !mobileMode) {
 			dispatch(setGeneral('mobile_mode', true));
-		} else if (window.innerWidth > 768 && mobileMode) {
+		} else if (!shouldBeMobile && mobileMode) {
 			dispatch(setGeneral('mobile_mode', false));
 		}
 	}

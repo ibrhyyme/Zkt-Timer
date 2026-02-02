@@ -25,6 +25,11 @@ import { QuickControlsProvider } from '../quick-controls/useQuickControlsModal';
 import QuickControlsModal from '../quick-controls/QuickControlsModal';
 import Button from '../common/button/Button';
 import { setSetting } from '../../db/settings/update';
+// Yeni mobil layout componentleri
+import TimerControls from './TimerControls';
+import Dashboard from './Dashboard';
+import StatsBar from './StatsBar';
+import MobileTimerScramble from './MobileTimerScramble';
 
 const b = block('timer');
 
@@ -47,17 +52,13 @@ export default function Timer(props: TimerProps) {
 	const [heightSmall, setHeightSmall] = useState(false);
 	const [widthSmall, setWidthSmall] = useState(false);
 
-	// Tarayıcı çok küçükse otomatik bottom layout
+	// Tarayıcı çok küçükse otomatik bottom layout (Masaüstü responsive için)
 	if ((timerLayout === 'left' || timerLayout === 'right') && widthSmall && !mobileMode) {
 		timerLayout = 'bottom';
 	}
 
 	if (timerLayout === 'bottom' && heightSmall && !mobileMode && !widthSmall) {
 		timerLayout = 'right';
-	}
-
-	if (mobileMode) {
-		timerLayout = 'bottom';
 	}
 
 	const me = useMe();
@@ -117,10 +118,6 @@ export default function Timer(props: TimerProps) {
 		}
 	}
 
-	function toggleMobileHideButton() {
-		setSetting('hide_mobile_timer_footer', !hideMobileTimerFooter);
-	}
-
 	let smartCubeVisual: ReactNode = null;
 	if (timerType === 'smart' && cubeType === '333') {
 		smartCubeVisual = <SmartCube />;
@@ -130,12 +127,7 @@ export default function Timer(props: TimerProps) {
 		return null;
 	}
 
-	// Pro features are now available to everyone
-	let timerFooterAd = null;
-
-	// Mobile footer toggle button removed - footer always visible in mobile mode
-	let mobileFooterToggle = null;
-
+	// Masaüstü için ana timer alanı
 	const timeBar = (
 		<div className={b('main', { mobile: mobileMode })}>
 			<div className={b('main-center')}>
@@ -149,8 +141,42 @@ export default function Timer(props: TimerProps) {
 					{smartCubeVisual}
 				</div>
 			</div>
-			{timerFooterAd}
-			{mobileFooterToggle}
+		</div>
+	);
+
+	// Mobil için yeni vertical layout
+	const mobileTimeBar = (
+		<div className={b('mobile-layout')}>
+			{/* Scramble alanı - sadece metin, tıkla kopyala */}
+			<MobileTimerScramble />
+
+			{/* Akıllı küp modunda timer ve küp yan yana, normal modda sadece timer */}
+			{timerType === 'smart' && cubeType === '333' ? (
+				<div className={b('mobile-smart-row')}>
+					{/* Timer alanı - sol taraf */}
+					<div className={`${b('mobile-timer', { smart: true })} ${b('main', { mobile: true })}`}>
+						<TimeDisplay />
+					</div>
+					{/* SmartCube alanı - sağ taraf */}
+					<div className={b('mobile-smart-cube')}>
+						{smartCubeVisual}
+					</div>
+				</div>
+			) : (
+				/* Normal mod - timer tam genişlik */
+				<div className={`${b('mobile-timer')} ${b('main', { mobile: true })}`}>
+					<TimeDisplay />
+				</div>
+			)}
+
+			{/* Kontrol çubuğu */}
+			<TimerControls />
+
+			{/* Orta panel - Son çözümler ve Scramble görseli */}
+			<Dashboard />
+
+			{/* Alt istatistik çubuğu */}
+			<StatsBar />
 		</div>
 	);
 
@@ -160,6 +186,11 @@ export default function Timer(props: TimerProps) {
 			{timerLayout === 'left' ? timeBar : <TimerFooter />}
 		</>
 	);
+
+	// Mobil modda yeni layout'u kullan
+	if (mobileMode) {
+		body = mobileTimeBar;
+	}
 
 	if (context.focusMode) {
 		body = timeBar;
@@ -197,6 +228,7 @@ export default function Timer(props: TimerProps) {
 							className={b('wrapper', {
 								[timerLayout || 'bottom']: true,
 								mobileFooterHidden: hideMobileTimerFooter && mobileMode,
+								mobileNewLayout: mobileMode,
 							})}
 						>
 							{body}
