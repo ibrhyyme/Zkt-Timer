@@ -139,6 +139,9 @@ export default function SmartCube() {
 	// Audio ref
 	const successAudioRef = useRef<HTMLAudioElement | null>(null);
 
+	// Audio throttle to prevent multiple triggers
+	const audioThrottleRef = useRef(false);
+
 	// Audio ref removed in favor of direct instantiation to ensure playback
 	// useEffect(() => { ... }, []);
 
@@ -167,13 +170,19 @@ export default function SmartCube() {
 			});
 
 			// Play success sound
-			console.log('SUCCESS CONDITION MET - PLAYING SOUND');
-			try {
-				const audio = new Audio(resourceUri('audio/success.mp3'));
-				audio.volume = 1.0;
-				audio.play().catch(e => console.warn('Audio play failed:', e));
-			} catch (err) {
-				console.error('Audio init error:', err);
+			// Use a throttle ref to prevent multiple triggers (machine gun effect)
+			if (!audioThrottleRef.current) {
+				audioThrottleRef.current = true;
+				setTimeout(() => { audioThrottleRef.current = false; }, 2000); // 2s cooldown
+
+				console.log('Playing success sound (Throttled)');
+				try {
+					const audio = new Audio(resourceUri('audio/success.mp3'));
+					audio.volume = 1.0;
+					audio.play().catch(e => console.warn('Audio play failed:', e));
+				} catch (err) {
+					console.error('Audio init error:', err);
+				}
 			}
 
 			resetMoves();
