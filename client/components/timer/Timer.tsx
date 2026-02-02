@@ -146,36 +146,39 @@ export default function Timer(props: TimerProps) {
 
 	// Mobil için yeni vertical layout
 	const mobileTimeBar = (
-		<div className={b('mobile-layout')}>
-			{/* Scramble alanı - sadece metin, tıkla kopyala */}
-			<MobileTimerScramble />
+		<div className={b('mobile-container')}>
+			{/* Scroll edilebilir içerik alanı */}
+			<div className={b('mobile-layout')}>
+				{/* Scramble alanı - sadece metin, tıkla kopyala */}
+				<MobileTimerScramble />
 
-			{/* Akıllı küp modunda timer ve küp yan yana, normal modda sadece timer */}
-			{timerType === 'smart' && cubeType === '333' ? (
-				<div className={b('mobile-smart-row')}>
-					{/* Timer alanı - sol taraf */}
-					<div className={`${b('mobile-timer', { smart: true })} ${b('main', { mobile: true })}`}>
+				{/* Akıllı küp modunda timer ve küp yan yana, normal modda sadece timer */}
+				{timerType === 'smart' && cubeType === '333' ? (
+					<div className={b('mobile-smart-row')}>
+						{/* Timer alanı - sol taraf */}
+						<div className={`${b('mobile-timer', { smart: true })} ${b('main', { mobile: true })}`}>
+							<TimeDisplay />
+						</div>
+						{/* SmartCube alanı - sağ taraf */}
+						<div className={b('mobile-smart-cube')}>
+							{smartCubeVisual}
+						</div>
+					</div>
+				) : (
+					/* Normal mod - timer tam genişlik */
+					<div className={`${b('mobile-timer')} ${b('main', { mobile: true })}`}>
 						<TimeDisplay />
 					</div>
-					{/* SmartCube alanı - sağ taraf */}
-					<div className={b('mobile-smart-cube')}>
-						{smartCubeVisual}
-					</div>
-				</div>
-			) : (
-				/* Normal mod - timer tam genişlik */
-				<div className={`${b('mobile-timer')} ${b('main', { mobile: true })}`}>
-					<TimeDisplay />
-				</div>
-			)}
+				)}
 
-			{/* Kontrol çubuğu */}
-			<TimerControls />
+				{/* Kontrol çubuğu */}
+				<TimerControls />
 
-			{/* Orta panel - Son çözümler ve Scramble görseli */}
-			<Dashboard />
+				{/* Orta panel - Son çözümler ve Scramble görseli */}
+				<Dashboard />
+			</div>
 
-			{/* Alt istatistik çubuğu */}
+			{/* Sabit alt istatistik çubuğu */}
 			<StatsBar />
 		</div>
 	);
