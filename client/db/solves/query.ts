@@ -8,7 +8,7 @@ export type FilterSolvesOptions = LokiQuery<Solve>;
 
 export function fetchLastSolve(options: FilterSolvesOptions = {}) {
 	const solveDb = getSolveDb();
-	const data = solveDb.chain().find(cleanFilterOptions(options)).simplesort('started_at', true).limit(1).data();
+	const data = solveDb.chain().find(cleanFilterOptions(options)).simplesort('ended_at', true).limit(1).data();
 
 	if (data && data.length) {
 		return data[0];
@@ -37,7 +37,7 @@ export function fetchLastCubeTypeForSession(sessionId: string): string {
 		.find({
 			session_id: sessionId,
 		})
-		.simplesort('started_at', true)
+		.simplesort('ended_at', true)
 		.limit(1)
 		.data();
 
@@ -112,7 +112,7 @@ export function fetchSolves(options: FilterSolvesOptions = {}, fetchOptions?: Lo
 			desc: !!fetchOptions.sortInverse || false,
 		});
 	} else {
-		out = out.simplesort('started_at', true);
+		out = out.simplesort('ended_at', true);
 	}
 
 	if (fetchOptions?.offset) {
@@ -130,10 +130,10 @@ export function fetchAdjacentSolve(currentSolve: Solve): Solve | null {
 	const solveDb = getSolveDb();
 	const sessionId = currentSolve.session_id;
 
-	// fetch all solves in session, sorted by started_at DESC (same as main list)
+	// fetch all solves in session, sorted by ended_at DESC (same as main list)
 	const solves = solveDb.chain()
 		.find({ session_id: sessionId })
-		.simplesort('started_at', true)
+		.simplesort('ended_at', true)
 		.data() as Solve[];
 
 	const currentIndex = solves.findIndex(s => s.id === currentSolve.id);
