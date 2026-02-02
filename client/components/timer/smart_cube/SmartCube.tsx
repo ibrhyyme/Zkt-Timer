@@ -20,6 +20,7 @@ import Button from '../../common/button/Button';
 import { toastError } from '../../../util/toast';
 import { endTimer, startTimer, startInspection } from '../helpers/events';
 import BluetoothErrorMessage from '../common/BluetoothErrorMessage';
+import { resourceUri } from '../../../util/storage';
 
 const b = block('smart-cube');
 
@@ -135,9 +136,11 @@ export default function SmartCube() {
 		}, 500);
 	}
 
-	function cubeIsSolved() {
-		return cubejs.current.asString() === smartSolvedState;
-	}
+	// Audio ref
+	const successAudioRef = useRef<HTMLAudioElement | null>(null);
+
+	// Audio ref removed in favor of direct instantiation to ensure playback
+	// useEffect(() => { ... }, []);
 
 	function checkForStartAfterTurn() {
 		if (useSpaceWithSmartCube || smartCubeConnecting) {
@@ -162,6 +165,17 @@ export default function SmartCube() {
 			setTimerParams({
 				smartCanStart: true,
 			});
+
+			// Play success sound
+			console.log('SUCCESS CONDITION MET - PLAYING SOUND');
+			try {
+				const audio = new Audio(resourceUri('audio/success.mp3'));
+				audio.volume = 1.0;
+				audio.play().catch(e => console.warn('Audio play failed:', e));
+			} catch (err) {
+				console.error('Audio init error:', err);
+			}
+
 			resetMoves();
 
 			// If inspection is enabled, start WCA inspection countdown

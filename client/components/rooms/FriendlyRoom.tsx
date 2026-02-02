@@ -26,6 +26,7 @@ import ManageUsersModal from './ManageUsersModal';
 import { Gear, List, PencilSimple, Users, Trash, BluetoothConnected, Bluetooth, CheckCircle, CircleNotch, Check } from 'phosphor-react';
 import { getTimeString, convertTimeStringToSeconds } from '../../util/time';
 import { toastError } from '../../util/toast';
+import { resourceUri } from '../../util/storage';
 import { connectGanTimer, GanTimerConnection } from 'gan-web-bluetooth';
 import Connect from '../timer/smart_cube/bluetooth/connect';
 import { preflightChecks } from '../timer/smart_cube/preflight';
@@ -303,6 +304,18 @@ export default function FriendlyRoom() {
         }
     }, [inspection, smartInspecting]);
 
+    // Audio ref
+    const successAudioRef = useRef<HTMLAudioElement | null>(null);
+
+    useEffect(() => {
+        try {
+            successAudioRef.current = new Audio(resourceUri('audio/success.mp3'));
+            successAudioRef.current.load();
+        } catch (e) {
+            console.error('Audio init error', e);
+        }
+    }, []);
+
     // 2. Process turns & Handle Timer Logic (Main Loop)
     useEffect(() => {
         if (!smartCubeConnected || !room?.current_scramble || !me) return;
@@ -371,6 +384,13 @@ export default function FriendlyRoom() {
             if (!smartScrambleCompletedAt && currentSessionTurns.length > 0) {
                 if (preflightChecks(currentSessionTurns, room.current_scramble)) {
                     setSmartScrambleCompletedAt(new Date());
+
+                    // Play success sound
+                    if (successAudioRef.current) {
+                        successAudioRef.current.currentTime = 0;
+                        successAudioRef.current.play().catch(e => console.warn('Audio play failed:', e));
+                    }
+
                     scrambleTurnCountRef.current = smartTurns.length; // Record absolute index
 
                     // Start inspection if enabled
