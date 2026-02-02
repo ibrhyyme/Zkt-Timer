@@ -9,6 +9,7 @@ import Stackmat from '../../util/vendor/stackmat';
 import { GanTimerConnection, GanTimerEvent, GanTimerState, connectGanTimer } from 'gan-web-bluetooth';
 import BluetoothErrorMessage from '../timer/common/BluetoothErrorMessage';
 import StackMatPicker from '../settings/stackmat_picker/StackMatPicker';
+import SmartStats from '../timer/smart_cube/stats/SmartStats';
 import './RoomTimerOverlay.scss';
 
 // Timer phases
@@ -41,6 +42,7 @@ interface RoomTimerOverlayProps {
     smartElapsedTime?: number;
     smartReviewing?: boolean;
     smartFinalTime?: number;
+    smartStats?: { turns: number; tps: number };
     warning?: string;
     isMobile?: boolean;
 }
@@ -63,6 +65,7 @@ export default function RoomTimerOverlay({
     smartElapsedTime = 0,
     smartReviewing = false,
     smartFinalTime = 0,
+    smartStats,
     warning,
     isMobile = false,
 }: RoomTimerOverlayProps) {
@@ -959,6 +962,12 @@ export default function RoomTimerOverlay({
 
         return (
             <div className="room-timer-overlay__result">
+                {smartStats && (
+                    <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'center' }}>
+                        {/* We use the same component but centered */}
+                        <SmartStats stats={smartStats} mobile={isMobile} />
+                    </div>
+                )}
                 <div className={`room-timer-overlay__time room-timer-overlay__time--white ${isCalculation ? 'room-timer-overlay__time--calculation' : ''}`}>
                     {displayTime}
                 </div>

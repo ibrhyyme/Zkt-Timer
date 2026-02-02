@@ -225,6 +225,7 @@ export default function FriendlyRoom() {
     const [smartElapsedTime, setSmartElapsedTime] = useState(0);
     const [smartReviewing, setSmartReviewing] = useState(false);
     const [smartFinalTime, setSmartFinalTime] = useState(0);
+    const [smartStats, setSmartStats] = useState<{ turns: number; tps: number } | null>(null);
     const [smartWarning, setSmartWarning] = useState<string | undefined>(undefined);
     const smartInspectionIntervalRef = useRef<NodeJS.Timeout | null>(null);
     const smartTimerIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -349,6 +350,14 @@ export default function FriendlyRoom() {
 
             // Enter review mode
             setSmartFinalTime(timeMs);
+
+            // Calculate stats
+            const solutionTurns = smartTurns.slice(scrambleTurnCountRef.current);
+            const turnCount = solutionTurns.length;
+            const timeInSeconds = timeMs / 1000;
+            const tps = timeInSeconds > 0 ? Number((turnCount / timeInSeconds).toFixed(2)) : 0;
+
+            setSmartStats({ turns: turnCount, tps });
             setSmartReviewing(true);
             return;
         }
@@ -1492,6 +1501,7 @@ export default function FriendlyRoom() {
                 smartElapsedTime={smartElapsedTime}
                 smartReviewing={smartReviewing}
                 smartFinalTime={smartFinalTime}
+                smartStats={smartStats || undefined}
                 warning={smartWarning}
                 isMobile={isMobile}
             />
