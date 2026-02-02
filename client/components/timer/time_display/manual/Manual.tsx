@@ -12,6 +12,7 @@ import { useSettings } from '../../../../util/hooks/useSettings';
 import { useElementListener } from '../../../../util/hooks/useListener';
 import { useGeneral } from '../../../../util/hooks/useGeneral';
 import { MOBILE_FONT_SIZE_MULTIPLIER } from '../../../../db/settings/update';
+import SolveDiff from '../SolveDiff';
 
 const b = block('manual-time-entry');
 
@@ -119,6 +120,7 @@ export default function Manual() {
 			{!hideTime && (
 				<StartInstructions>Zamanı manuel olarak girin.</StartInstructions>
 			)}
+			<SolveDiff />
 		</div>
 	);
 }

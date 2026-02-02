@@ -12,6 +12,7 @@ import { useSettings } from '../../../util/hooks/useSettings';
 import StartInstructions from './start_instructions/StartInstructions';
 import StackMat from './stackmat/StackMat';
 import GanTimer from './gantimer/GanTimer';
+import SolveDiff from './SolveDiff';
 
 const b = block('time-display');
 const bi = block('timer-bottom-info');
@@ -179,6 +180,7 @@ export default function TimeDisplay() {
 			>
 				{timeStr}
 			</h1>
+			<SolveDiff />
 			<div className={bi()}>{bottomInfo}</div>
 			{subTimerActions}
 		</>
