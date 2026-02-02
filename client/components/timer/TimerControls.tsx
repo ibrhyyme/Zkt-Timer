@@ -167,15 +167,17 @@ export default function TimerControls() {
         <div className={b({ mobile: mobileMode })}>
             {/* Sol grup: Edit, +2, DNF, Delete, Lock, Refresh */}
             <div className={b('left')}>
-                <Button
-                    onClick={toggleEditScramble}
-                    title="Karıştırmayı düzenle"
-                    white={editScramble}
-                    transparent
-                    disabled={scrambleLocked}
-                    icon={<PencilSimple weight="bold" />}
-                    text={!mobileMode ? 'Düzenle' : undefined}
-                />
+                {!mobileMode && (
+                    <Button
+                        onClick={toggleEditScramble}
+                        title="Karıştırmayı düzenle"
+                        white={editScramble}
+                        transparent
+                        disabled={scrambleLocked}
+                        icon={<PencilSimple weight="bold" />}
+                        text="Düzenle"
+                    />
+                )}
                 {latestSolve && (
                     <>
                         <Button
