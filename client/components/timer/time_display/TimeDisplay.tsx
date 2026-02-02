@@ -152,7 +152,7 @@ export default function TimeDisplay() {
 		bottomInfo = <StackMat />;
 	} else if (ganTimerOn) {
 		bottomInfo = <GanTimer />;
-	} else if (smartCubeSelected(context)) {
+	} else if (smartCubeSelected(context) && !mobileMode) {
 		if (preflightChecks(smartTurns, scramble)) {
 			bottomInfo = (
 				<StartInstructions>
