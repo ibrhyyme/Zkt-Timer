@@ -159,7 +159,7 @@ export default function TimeDisplay() {
 					Başlamak için <span>akıllı küpü</span> çevir
 				</StartInstructions>
 			);
-		} else {
+		} else if (!mobileMode) {
 			bottomInfo = (
 				<StartInstructions>
 					Başlamak için <span>akıllı küpü</span> karıştır
