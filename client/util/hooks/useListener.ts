@@ -1,16 +1,16 @@
 import { useEffect, useRef } from 'react';
 type EventHandler = (data: any) => void;
 
-export function useDocumentListener(eventName, handler: EventHandler, deps: any[] = []) {
-	useElementListener(document, eventName, handler, deps);
+export function useDocumentListener(eventName, handler: EventHandler, deps: any[] = [], options?: boolean | AddEventListenerOptions) {
+	useElementListener(document, eventName, handler, deps, options);
 }
 
-export function useWindowListener(eventName, handler: EventHandler, deps: any[] = []) {
+export function useWindowListener(eventName, handler: EventHandler, deps: any[] = [], options?: boolean | AddEventListenerOptions) {
 	if (typeof window === 'undefined') {
 		return;
 	}
 
-	useElementListener(window, eventName, handler, deps);
+	useElementListener(window, eventName, handler, deps, options);
 }
 
 /**
@@ -33,7 +33,13 @@ export function useWindowClickAwayListener(ignoreClassName: string, handler: Eve
 	useWindowListener('click', clickChecker);
 }
 
-export function useElementListener(elem, eventName, handler: EventHandler, deps: any[] = []) {
+export function useElementListener(
+	elem,
+	eventName,
+	handler: EventHandler,
+	deps: any[] = [],
+	options?: boolean | AddEventListenerOptions
+) {
 	const savedHandler = useRef<EventHandler | undefined>(undefined);
 
 	useEffect(() => {
@@ -46,10 +52,10 @@ export function useElementListener(elem, eventName, handler: EventHandler, deps:
 		}
 
 		const eventListener = (event) => savedHandler.current(event);
-		elem.addEventListener(eventName, eventListener);
+		elem.addEventListener(eventName, eventListener, options);
 
 		return () => {
-			elem.removeEventListener(eventName, eventListener);
+			elem.removeEventListener(eventName, eventListener, options);
 		};
-	}, [eventName, elem, ...deps]);
+	}, [eventName, elem, options, ...deps]);
 }

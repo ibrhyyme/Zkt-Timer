@@ -62,8 +62,9 @@ export default function KeyWatcher(props: Props) {
 	useWindowListener('keydown', keydownSpace);
 	useWindowListener('keydown', handleGlobalShortcuts);
 	useDocumentListener('keyup', escapePressed);
-	useWindowListener('touchstart', touchStart);
-	useWindowListener('touchend', touchEnd);
+	// Touch start/move/end needs passive: false to allow e.preventDefault()
+	useWindowListener('touchstart', touchStart, [], { passive: false });
+	useWindowListener('touchend', touchEnd, [], { passive: false });
 
 	useEffect(() => {
 		configureHotkeys();
@@ -85,7 +86,7 @@ export default function KeyWatcher(props: Props) {
 	}
 
 	useWindowListener('contextmenu', handleContextMenu);
-	useWindowListener('touchmove', touchMove);
+	useWindowListener('touchmove', touchMove, [], { passive: false });
 
 	function touchStart(e) {
 		let target = e.target;

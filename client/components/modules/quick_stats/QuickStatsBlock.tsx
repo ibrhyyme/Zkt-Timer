@@ -99,6 +99,10 @@ export default function QuickStatsBlock(props: Props) {
 			dispatch(
 				openModal(
 					<HistoryModal
+						// Live update için gerekli parametreler
+						statOptions={statOptions}
+						filterOptions={filterOptions}
+						// Fallback değerler
 						time={statsBlockSolvesFilter?.time}
 						solves={statsBlockSolvesFilter.solves}
 						description={statsBlockDescription}

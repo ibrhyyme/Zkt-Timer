@@ -1,12 +1,14 @@
 import React, { useContext, useMemo } from 'react';
-import { RootStateOrAny, useSelector } from 'react-redux';
+import { RootStateOrAny, useSelector, useDispatch } from 'react-redux';
 import { TimerContext } from './Timer';
 import { useGeneral } from '../../util/hooks/useGeneral';
 import { useSettings } from '../../util/hooks/useSettings';
 import { useSolveDb } from '../../util/hooks/useSolveDb';
-import { getStatsBlockValueFromFilter } from '../modules/quick_stats/util';
+import { getStatsBlockValueFromFilter, getStatsBlockDescription } from '../modules/quick_stats/util';
 import { getTimeString } from '../../util/time';
 import { StatsModuleBlock } from '../../../server/schemas/StatsModule.schema';
+import { openModal } from '../../actions/general';
+import HistoryModal from '../modules/history/history_modal/HistoryModal';
 import block from '../../styles/bem';
 import './StatsBar.scss';
 
@@ -29,6 +31,7 @@ const DEFAULT_STATS: StatsModuleBlock[] = [
 ];
 
 export default function StatsBar() {
+    const dispatch = useDispatch();
     const context = useContext(TimerContext);
     const { solvesFilter, timeStartedAt, focusMode } = context;
 
@@ -52,8 +55,26 @@ export default function StatsBar() {
         const timeStr = getTimeString(statValue?.time);
         const label = getStatLabel(statBlock);
 
+        // Modal açma fonksiyonu
+        const handleClick = () => {
+            if (statValue && statValue.solves && statValue.solves.length > 0) {
+                const description = getStatsBlockDescription(statBlock, solvesFilter);
+                dispatch(openModal(
+                    <HistoryModal
+                        // Live update için gerekli parametreler
+                        statOptions={statBlock}
+                        filterOptions={solvesFilter}
+                        // Fallback olarak mevcut değerler
+                        time={statValue.time}
+                        solves={statValue.solves}
+                        description={description}
+                    />
+                ));
+            }
+        };
+
         return (
-            <div key={index} className={b('item')}>
+            <div key={index} className={b('item')} onClick={handleClick} style={{ cursor: 'pointer' }}>
                 <span className={b('label')}>{label}</span>
                 <span
                     className={b('value')}

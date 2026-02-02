@@ -23,9 +23,11 @@ interface Props {
 export default function SolvesText(props: Props) {
 	const { solves, reverseOrder, description, time } = props;
 
+	const isSingle = solves.length === 1;
+	// Single solve için tarih varsayılan açık olsun
 	const [includeScramble, setIncludeScramble] = useState(true);
 	const [wrapText, setWrapText] = useState(false);
-	const [includeDate, setIncludeDate] = useState(false);
+	const [includeDate, setIncludeDate] = useState(isSingle);
 	const [includeCubeType, setIncludeCubeType] = useState(false);
 	const [includeNotes, setIncludeNotes] = useState(false);
 
@@ -117,25 +119,27 @@ export default function SolvesText(props: Props) {
 	return (
 		<div className={b()}>
 			<div className={b('top')}>
-				<div className={b('options')}>
-					<Checkbox
-						text="Karıştırmayı ekle"
-						onChange={() => setIncludeScramble(!includeScramble)}
-						checked={includeScramble}
-					/>
-					<Checkbox
-						text="Küp türünü ekle"
-						onChange={() => setIncludeCubeType(!includeCubeType)}
-						checked={includeCubeType}
-					/>
-					<Checkbox text="Tarihi ekle" onChange={() => setIncludeDate(!includeDate)} checked={includeDate} />
-					<Checkbox
-						text="Notları ekle"
-						onChange={() => setIncludeNotes(!includeNotes)}
-						checked={includeNotes}
-					/>
-					<Checkbox text="Metni kaydır" onChange={() => setWrapText(!wrapText)} checked={wrapText} />
-				</div>
+				{!isSingle && (
+					<div className={b('options')}>
+						<Checkbox
+							text="Karıştırmayı ekle"
+							onChange={() => setIncludeScramble(!includeScramble)}
+							checked={includeScramble}
+						/>
+						<Checkbox
+							text="Küp türünü ekle"
+							onChange={() => setIncludeCubeType(!includeCubeType)}
+							checked={includeCubeType}
+						/>
+						<Checkbox text="Tarihi ekle" onChange={() => setIncludeDate(!includeDate)} checked={includeDate} />
+						<Checkbox
+							text="Notları ekle"
+							onChange={() => setIncludeNotes(!includeNotes)}
+							checked={includeNotes}
+						/>
+						<Checkbox text="Metni kaydır" onChange={() => setWrapText(!wrapText)} checked={wrapText} />
+					</div>
+				)}
 				<div className={b('text', { wrapText })}>{solvesText}</div>
 			</div>
 			<div className={b('actions')}>
