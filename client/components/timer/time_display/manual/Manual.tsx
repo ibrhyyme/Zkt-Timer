@@ -1,4 +1,4 @@
-import React, { useContext, useRef, useState } from 'react';
+import React, { useContext, useRef, useState, useEffect } from 'react';
 import { Check } from 'phosphor-react';
 import Button from '../../../common/button/Button';
 import './Manual.scss';
@@ -33,6 +33,12 @@ export default function Manual() {
 	const timerFontFamily = useSettings('timer_font_family');
 	const requirePeriodInManualTimeEntry = useSettings('require_period_in_manual_time_entry');
 
+	useEffect(() => {
+		if (!disabled && manualInput.current) {
+			manualInput.current.focus();
+		}
+	}, [disabled]);
+
 	useElementListener(manualInput.current, 'keydown', addManualTime, [manualInput?.current, manualTime]);
 
 	function submitTime() {
@@ -49,8 +55,8 @@ export default function Manual() {
 			setManualTime('');
 			setError(false);
 
-			// Klavyeyi kapat
-			manualInput.current?.blur();
+			// Odağı koru
+			manualInput.current?.focus();
 		} catch (err) {
 			// Do nothing
 		}
@@ -85,6 +91,12 @@ export default function Manual() {
 	let input = (
 		<input
 			ref={manualInput}
+			autoFocus
+			onBlur={(e) => {
+				if (!e.relatedTarget && !disabled) {
+					e.target.focus();
+				}
+			}}
 			disabled={disabled}
 			style={{
 				fontSize: timerTimeSize + 'px',
