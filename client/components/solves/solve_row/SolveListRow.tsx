@@ -1,29 +1,38 @@
 import React from 'react';
-import {useDispatch} from 'react-redux';
+import { useDispatch } from 'react-redux';
 import './SolveListRow.scss';
-import {getTimeString} from '../../../util/time';
-import {openModal} from '../../../actions/general';
+import { getTimeString } from '../../../util/time';
+import { openModal } from '../../../actions/general';
 import SolveInfo from '../../solve_info/SolveInfo';
 import Emblem from '../../common/emblem/Emblem';
-import {getDateFromNow} from '../../../util/dates';
+import { getDateFromNow } from '../../../util/dates';
 import Scramble from '../../modules/scramble/ScrambleVisual';
-import {getCubeTypeName} from '../../../util/cubes/util';
+import { getCubeTypeName } from '../../../util/cubes/util';
 import block from '../../../styles/bem';
 import Tag from '../../common/tag/Tag';
-import {Solve} from '../../../../server/schemas/Solve.schema';
+import { Solve } from '../../../../server/schemas/Solve.schema';
+
+import Checkbox from '../../common/checkbox/Checkbox';
 
 const b = block('solve-list-row');
 
 interface Props {
 	solve: Solve;
+	selectionMode?: boolean;
+	isSelected?: boolean;
+	onToggleSelect?: () => void;
 }
 
 export default function SolveListRow(props: Props) {
-	const {solve} = props;
+	const { solve, selectionMode, isSelected, onToggleSelect } = props;
 
 	const dispatch = useDispatch();
 
 	function openSolve() {
+		if (selectionMode) {
+			onToggleSelect && onToggleSelect();
+			return;
+		}
 		dispatch(openModal(<SolveInfo solveId={solve.id} />));
 	}
 
@@ -52,9 +61,25 @@ export default function SolveListRow(props: Props) {
 	}
 
 	return (
-		<div className={b()} onClick={openSolve}>
+		<div className={b({ selecting: selectionMode })} onClick={openSolve}>
+			{selectionMode && (
+				<div
+					className={b('checkbox-area')}
+					onClick={(e) => {
+						e.stopPropagation();
+						onToggleSelect && onToggleSelect();
+					}}
+					style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+				>
+					<Checkbox
+						text=""
+						checked={!!isSelected}
+						onChange={() => { }} // Handle by div click
+					/>
+				</div>
+			)}
 			<div className={b('left')}>
-				<h4 className={b('time', {dnf, plusTwo})}>{time}</h4>
+				<h4 className={b('time', { dnf, plusTwo })}>{time}</h4>
 				<span>{createdAt}</span>
 			</div>
 			<div className={b('center')}>

@@ -234,3 +234,59 @@ export async function deleteAllSolvesInSessionDb(sessionId: string, confirmed: b
 		// Log
 	}
 }
+
+export async function deleteMultipleSolvesDb(solves: Solve[], confirmed: boolean = false) {
+	const store = getStore();
+
+	const confirmDelete = getSetting('confirm_delete_solve');
+	if (confirmDelete && !confirmed) {
+		store.dispatch(
+			openModal(
+				<ConfirmModal
+					description={`Seçilen ${solves.length} çözümü silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.`}
+					buttonText="Seçilenleri Sil"
+					hideInput
+					title="Çözümleri Sil"
+					triggerAction={() => deleteMultipleSolvesDb(solves, true)}
+				/>
+			)
+		);
+		return;
+	}
+
+	const solveDb = getSolveDb();
+	const ids = solves.map(s => s.id);
+
+	// Remove from local DB
+	solveDb.removeWhere(s => ids.includes(s.id));
+
+	if (solves.length > 0) {
+		postProcessDbUpdate(solves[0], false);
+
+		const session_id = solves[0].session_id;
+		const newLastSolve = fetchLastSolve({ session_id });
+		if (newLastSolve) {
+			setTimerParam('finalTime', newLastSolve.time * 1000);
+		} else {
+			setTimerParam('finalTime', 0);
+		}
+	}
+
+	const solvesToDeleteFromServer = solves.filter(s => !s.demo_mode);
+
+	if (solvesToDeleteFromServer.length > 0) {
+		const query = gql`
+			mutation Mutate($ids: [String!]!) {
+				deleteSolves(ids: $ids)
+			}
+		`;
+
+		try {
+			await gqlMutate(query, {
+				ids: solvesToDeleteFromServer.map(s => s.id),
+			});
+		} catch (e) {
+			toastError('Bazı çözümler sunucudan silinemedi.');
+		}
+	}
+}

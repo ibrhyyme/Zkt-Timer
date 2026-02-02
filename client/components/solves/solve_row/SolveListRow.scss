@@ -11,6 +11,11 @@
 	grid-template-columns: 1fr 1fr 1fr;
 	cursor: pointer;
 
+	&--selecting {
+		grid-template-columns: 40px 1fr 1fr 1fr;
+		cursor: default;
+	}
+
 	&__left {
 		h4 {
 			font-weight: bold;
@@ -58,7 +63,7 @@
 		left: 50%;
 		transform: translate(-50%, 0);
 
-		> * {
+		>* {
 			margin-left: 5px;
 		}
 	}
