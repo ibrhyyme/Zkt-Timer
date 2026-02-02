@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import './Match.scss';
+import './MatchOverride.css';
 import { isSocketConnected, socketClient } from '../../../util/socket/socketio';
 import Modal from '../../common/modal/Modal';
 import Timer from '../../timer/Timer';
@@ -102,8 +103,7 @@ export default function Match(props: MatchProps) {
 	const mobileMode = useGeneral('mobile_mode');
 
 	function exitMatch() {
-		history.replaceState({}, null, window.location.origin + matchPath);
-		window.location.reload();
+		window.location.href = '/play';
 	}
 
 	useEffect(() => {
@@ -200,13 +200,13 @@ export default function Match(props: MatchProps) {
 	function copySpectateLink() {
 		const link = getMatchLinkBase(matchType) + match.spectate_code;
 		copyText(link);
-		toastSuccess('Successfully copied Spectate link');
+		toastSuccess('İzleyici linki kopyalandı');
 	}
 
 	function copyPlayLink() {
 		const link = getMatchLinkBase(matchType) + match.link_code;
 		copyText(link);
-		toastSuccess('Successfully copied Play link');
+		toastSuccess('Davet linki kopyalandı');
 	}
 
 	// Timer
@@ -221,19 +221,19 @@ export default function Match(props: MatchProps) {
 			customHeadersLeft: (
 				<Dropdown
 					openLeft
-					text="Match Options"
+					text="Maç Seçenekleri"
 					icon={<CaretDown weight="bold" />}
 					options={[
-						{ text: 'Copy Spectate Link', icon: <Copy weight="bold" />, onClick: copySpectateLink },
-						{ text: 'Copy Play Link', icon: <Copy weight="bold" />, onClick: copyPlayLink },
+						{ text: 'İzleyici Linkini Kopyala', icon: <Copy weight="bold" />, onClick: copySpectateLink },
+						{ text: 'Davet Linkini Kopyala', icon: <Copy weight="bold" />, onClick: copyPlayLink },
 						{
-							text: 'Resign',
+							text: 'Çekil',
 							disabled: !!match?.ended_at,
 							icon: <Flag weight="bold" />,
 							onClick: resignGame,
 						},
 						{
-							text: 'Abort',
+							text: 'İptal Et',
 							disabled: anySolves || !!match?.ended_at,
 							icon: <Prohibit weight="bold" />,
 							onClick: abortGame,
@@ -242,6 +242,7 @@ export default function Match(props: MatchProps) {
 				/>
 			),
 		},
+		subTimerActions: null, // Disable any sub-timer actions (buttons) passed from parent
 	};
 
 	if (timerDisabled || winnerId.current || match?.ended_at || !isSocketConnected()) {

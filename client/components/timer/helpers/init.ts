@@ -40,7 +40,7 @@ export async function initTimer(dispatch: Dispatch<any>, context: ITimerContext)
 	// Sayfa yüklendiğinde son çözümün süresini timer'a yükle
 	const currentSessionId = getSetting('session_id');
 	const lastSolve = fetchLastSolve({ session_id: currentSessionId });
-	if (lastSolve) {
+	if (lastSolve && !inModal) {
 		setTimerParam('finalTime', lastSolve.time * 1000);
 	}
 

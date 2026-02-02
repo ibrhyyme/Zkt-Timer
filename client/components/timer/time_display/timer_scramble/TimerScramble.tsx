@@ -268,13 +268,12 @@ export default function TimerScramble() {
 						icon={<PencilSimple weight="bold" />}
 					/>
 				)}
-				{latestSolve && (
+				{latestSolve && !matchMode && (
 					<>
 						<Button
 							onClick={handlePlusTwo}
 							title="Plus two solve"
 							text="+2"
-							transparent
 							warning={latestSolve.plus_two}
 						/>
 						<Button

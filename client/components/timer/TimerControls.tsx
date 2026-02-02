@@ -178,7 +178,7 @@ export default function TimerControls() {
                         text="Düzenle"
                     />
                 )}
-                {latestSolve && (
+                {latestSolve && !context.inModal && (
                     <>
                         <Button
                             onClick={handlePlusTwo}

@@ -1,17 +1,17 @@
-import React, {ReactNode, useMemo, useState} from 'react';
+import React, { ReactNode, useMemo, useState, useEffect } from 'react';
 import './MatchOver.scss';
 import block from '../../../../styles/bem';
-import {Sword} from 'phosphor-react';
+import { Sword } from 'phosphor-react';
 import Button from '../../../common/button/Button';
 import Avatar from '../../../common/avatar/Avatar';
-import {useMe} from '../../../../util/hooks/useMe';
-import {socketClient} from '../../../../util/socket/socketio';
-import {Match} from '../../../../../server/schemas/Match.schema';
+import { useMe } from '../../../../util/hooks/useMe';
+import { socketClient } from '../../../../util/socket/socketio';
+import { Match } from '../../../../../server/schemas/Match.schema';
 import Lobby from '../match_popup/lobby/Lobby';
-import {IModalProps} from '../../../common/modal/Modal';
+import { IModalProps } from '../../../common/modal/Modal';
 import EloChange from './elo_change/EloChange';
-import {GameType} from '../../../../../shared/match/consts';
-import {MatchEndedBy} from '../../../../shared/match/types';
+import { GameType } from '../../../../../shared/match/consts';
+import { MatchEndedBy } from '../../../../shared/match/types';
 
 const b = block('match-over');
 
@@ -26,7 +26,7 @@ export default function MatchOver(props: Props) {
 
 	const [rematchRequested, setRematchRequested] = useState(false);
 	const [newMatch, setNewMatch] = useState(false);
-	const {match, matchType, exitMatch} = props;
+	const { match, matchType, exitMatch } = props;
 
 	const endReason = useMemo(() => {
 		if (match.aborted) {
@@ -83,7 +83,7 @@ export default function MatchOver(props: Props) {
 	}
 
 	const players = (match?.participants || []).map((player) => (
-		<div key={player.id} className={b('player', {won: player.won})}>
+		<div key={player.id} className={b('player', { won: player.won })}>
 			<Avatar hideBadges showEloType="333" target="_blank" vertical user={player.user} />
 		</div>
 	));
@@ -115,6 +115,17 @@ export default function MatchOver(props: Props) {
 		endedBy = <span className={b('ended-by')}>{endedBy}</span>;
 	}
 
+	// 10 saniye içinde işlem yapılmazsa otomatik çıkış
+	useEffect(() => {
+		if (newMatch || rematchRequested) return;
+
+		const timer = setTimeout(() => {
+			exitMatch();
+		}, 10000);
+
+		return () => clearTimeout(timer);
+	}, [newMatch, rematchRequested, exitMatch]);
+
 	let rematchText = 'Rövanş';
 	let rematchDisabled = false;
 	if (rematchRequested) {
@@ -125,10 +136,10 @@ export default function MatchOver(props: Props) {
 	}
 
 	return (
-		<div className={b({won: isWinner, aborted: match.aborted})}>
-			<div className={b('header', {won: isWinner})}>
+		<div className={b({ won: isWinner, aborted: match.aborted })}>
+			<div className={b('header', { won: isWinner })}>
 				<div>
-					<h3 className={b('winner', {won: winner})}>{header}</h3>
+					<h3 className={b('winner', { won: winner })}>{header}</h3>
 					{endedBy}
 				</div>
 			</div>

@@ -1,0 +1,17 @@
+/* Force hide +2 and DNF buttons in match mode (inside modal) */
+.cd-match .cd-timer-controls__left,
+.cd-match .cd-timer-controls__right {
+    display: none !important;
+}
+
+/* Hide buttons that appear inside the time display (SubTimerActions/SmartCube prompts) */
+.cd-match .cd-time-display .cd-button {
+    display: none !important;
+}
+
+/* Also ensure timer controls container is cleaner */
+.cd-match .cd-timer-controls {
+    justify-content: center !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+}
