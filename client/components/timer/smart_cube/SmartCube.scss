@@ -12,7 +12,7 @@
 		margin-bottom: -8%;
 	}
 
-	> div:last-child {
+	>div:last-child {
 		z-index: 100;
 	}
 
@@ -43,7 +43,7 @@
 			align-content: center;
 		}
 
-		> *:not(:last-child) {
+		>*:not(:last-child) {
 			margin-bottom: 10px;
 		}
 
@@ -61,6 +61,33 @@
 			i {
 				margin-top: 3px;
 				margin-left: 1px;
+			}
+		}
+	}
+
+	// Mobile Styling - Controls below cube horizontally
+	&--mobile {
+		.#{ $namespace }-smart-cube__info {
+			position: relative; // Absolute yerine akışa ekle
+			top: auto;
+			right: auto;
+			flex-direction: row; // Yatay sırala
+			justify-content: center;
+			width: 100%;
+			margin-top: -10px; // Küpe yaklaştır
+			gap: 15px; // Öğeler arası boşluk
+
+			>*:not(:last-child) {
+				margin-bottom: 0; // Dikey boşluğu sıfırla
+			}
+
+			// Dropdown menüyü aşağı doğru aç
+			.cd-dropdown__content {
+				top: 100%;
+				bottom: auto;
+				left: 50%;
+				transform: translateX(-50%);
+				margin-top: 10px;
 			}
 		}
 	}

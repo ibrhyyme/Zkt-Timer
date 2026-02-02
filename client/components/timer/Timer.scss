@@ -315,6 +315,12 @@
 		height: 100%;
 		flex: 1;
 		padding-top: 56px;
+
+		@media (max-height: 745px) {
+			padding-top: 45px; // Header'a yaklaştır
+			gap: 0.2rem; // Öğeler arası boşluğu azalt
+		}
+
 		overflow-y: auto;
 		overflow-x: hidden;
 		gap: 0.5rem;
@@ -325,7 +331,14 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		flex: 1;
+		flex: 0 0 auto; // flex: 1 kaldırıldı, diğer öğelere yer açılsın
+		padding: 3vh 0; // Timer'a biraz boşluk
+
+		@media (max-height: 745px) {
+			padding: 1vh 0; // Küçük ekranlarda boşluğu iyice azalt
+			min-height: 100px;
+		}
+
 		min-height: 150px;
 		user-select: none;
 		-webkit-user-select: none;
@@ -352,7 +365,9 @@
 		padding: 0;
 		min-height: 180px;
 		box-sizing: border-box;
-		overflow: hidden;
+		overflow: visible; // Dropdown menü taşabilsin diye visible yapıldı
+		position: relative;
+		z-index: 50; // Alttaki elemanların (TimerControls) üstünde görünsün
 	}
 
 	&__mobile-smart-cube {

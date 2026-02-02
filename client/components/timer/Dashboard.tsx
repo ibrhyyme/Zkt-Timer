@@ -22,7 +22,8 @@ export default function Dashboard() {
 
     // Son çözümleri al (Mobilde scroll edilebilsin diye 50 tane)
     const solves = fetchSolves(solvesFilter);
-    const recentSolves = solves.slice(0, 50);
+    // Limit logic
+    const recentSolves = solves.slice(0, 50); // Mobil ekranlarda alan kalırsa dolsun diye artırıldı
 
     // Focus modunda gizle
     if (focusMode) {

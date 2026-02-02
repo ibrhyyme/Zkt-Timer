@@ -14,10 +14,9 @@
         grid-template-columns: 1fr 1fr;
         gap: 0.5rem;
         padding: 0 0.5rem;
-        min-height: 180px;
-        height: 180px; // Kesin yükseklik, max-height bazı tarayıcılarda grid ile sorun çıkarabiliyor
-        max-height: 180px;
-        overflow: hidden; // Taşan içeriği kesinlikle gizle
+        min-height: 160px;
+        flex: 1; // Boş alan varsa genişle
+        // height/max-height kaldırıldı
     }
 
     &__section {
@@ -48,7 +47,8 @@
                 canvas,
                 img {
                     max-width: 100% !important;
-                    max-height: 140px !important;
+                    max-height: 100% !important; // Sabit 140px yerine container'a uy
+                    border-radius: 4px;
                     height: auto !important;
                 }
             }

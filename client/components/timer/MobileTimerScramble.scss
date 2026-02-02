@@ -8,6 +8,11 @@
 
     // Max height constraint (approx 35% of screen height) to ensure timer visibility
     min-height: 140px; // 3 satırlık 3x3 scramble için sabit alan (zıplamayı önler)
+
+    @media (max-height: 745px) {
+        min-height: 100px;
+    }
+
     max-height: 35vh;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch; // Smooth scrolling on iOS

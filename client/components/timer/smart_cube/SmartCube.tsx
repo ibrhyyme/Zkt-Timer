@@ -339,7 +339,7 @@ export default function SmartCube() {
 	}
 
 	return (
-		<div className={b()}>
+		<div className={b({ mobile: mobileMode })}>
 			<div className={b('wrapper')}>
 				<div className={b('cube')}>
 					<canvas width="200px" height="200px" ref={canvasRef} />
