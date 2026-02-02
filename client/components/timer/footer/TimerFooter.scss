@@ -27,7 +27,7 @@
 
 			// Maç modunda tam yükseklik
 			&.cd-timer-footer__body--match {
-				height: 100%;
+				height: 40vh !important;
 				max-height: unset !important;
 				grid-template-rows: 1fr;
 				grid-template-columns: 1fr;

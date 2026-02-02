@@ -156,7 +156,7 @@ export default function HeaderControl() {
 					</div>
 					<div />
 					<div className={b('right-controls')}>
-						<AccountDropdown />
+						{!matchMode && <AccountDropdown />}
 					</div>
 				</div>
 			</GlobalHotKeys>
