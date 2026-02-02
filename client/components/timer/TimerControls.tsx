@@ -159,8 +159,9 @@ export default function TimerControls() {
 
     // Navigation disable states
     const minHistoryIndex = Math.max(0, scrambleHistory.length - 1 - MAX_HISTORY_BACK_STEPS);
-    const canGoPrevious = currentIndex > minHistoryIndex && !scrambleLocked && !timeStartedAt;
-    const canGoNext = !scrambleLocked && !timeStartedAt;
+    const disableControls = !!timeStartedAt || !!context.inInspection; // Timer veya Inspection sırasında kontrolleri kilitle
+    const canGoPrevious = currentIndex > minHistoryIndex && !scrambleLocked && !disableControls;
+    const canGoNext = !scrambleLocked && !disableControls;
 
     return (
         <div className={b({ mobile: mobileMode })}>
@@ -213,7 +214,7 @@ export default function TimerControls() {
                         onClick={handleRefresh}
                         title="Yeni karıştırma"
                         transparent
-                        disabled={scrambleLocked}
+                        disabled={scrambleLocked || disableControls}
                         icon={<ArrowClockwise weight="bold" />}
                     />
                 )}

@@ -95,7 +95,7 @@ export default function KeyWatcher(props: Props) {
 				return;
 			}
 
-			if (target.classList.contains(timerClass('main'))) {
+			if (target.classList.contains(timerClass('main')) || target.classList.contains(timerClass('touch-overlay'))) {
 				if (e.touches && e.touches[0]) {
 					touchStartX.current = e.touches[0].clientX;
 					touchStartY.current = e.touches[0].clientY;
@@ -116,7 +116,7 @@ export default function KeyWatcher(props: Props) {
 		let target = e.target;
 
 		while (target.parentNode) {
-			if (target.classList.contains(timerClass('main'))) {
+			if (target.classList.contains(timerClass('main')) || target.classList.contains(timerClass('touch-overlay'))) {
 				keyupSpace(e, true);
 				return;
 			}

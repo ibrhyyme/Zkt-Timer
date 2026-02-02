@@ -35,9 +35,15 @@
 	flex-direction: column;
 	box-sizing: border-box;
 	padding: 0 0 10px 0;
+	padding: 0 0 10px 0;
 	padding-bottom: calc(10px + env(safe-area-inset-bottom));
 
-	// Timer çalışırken tüm ekranı kaplayan görünmez overlay (mobil dokunma için)
+	// Browser native behaviors disable (Copy/Paste menu, Selection)
+	user-select: none;
+	-webkit-user-select: none;
+	-webkit-touch-callout: none;
+	-webkit-user-drag: none;
+
 	&__touch-overlay {
 		position: fixed;
 		top: 0;
@@ -47,6 +53,11 @@
 		z-index: 9999;
 		background: transparent;
 		-webkit-tap-highlight-color: transparent;
+		pointer-events: none; // Pasifken tıklamaları engelleme
+
+		&--active {
+			pointer-events: auto; // Aktifken (Timer/Inspection) dokunmaları yakala
+		}
 	}
 
 	&__main {

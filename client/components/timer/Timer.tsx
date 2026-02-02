@@ -13,7 +13,7 @@ import block from '../../styles/bem';
 import { useGeneral } from '../../util/hooks/useGeneral';
 import { useMe } from '../../util/hooks/useMe';
 import { initTimer } from './helpers/init';
-import { stopAllTimers } from './helpers/timers';
+import { stopAllTimers, clearInspectionTimers } from './helpers/timers';
 import { endTimer } from './helpers/events';
 import { useSettings } from '../../util/hooks/useSettings';
 import { listenForPbEvents } from './helpers/pb';
@@ -217,11 +217,31 @@ export default function Timer(props: TimerProps) {
 				<TimerContext.Provider value={context}>
 					<KeyWatcher>
 						<HeaderControl />
-						{/* Timer çalışırken mobilde tüm ekrana dokunarak durdurma overlay'i */}
-						{mobileMode && context.timeStartedAt && (
+						<HeaderControl />
+						{/* Timer çalışırken mobilde tüm ekrana dokunarak durdurma overlay'i ve Inspection iptali */}
+						{mobileMode && (
 							<div
-								className={b('touch-overlay')}
-								onTouchEnd={() => endTimer(context)}
+								className={b('touch-overlay', { active: !!context.timeStartedAt || !!context.inInspection })}
+								onTouchStart={(e) => {
+									if (context.inInspection) {
+										// Swipe için başlangıç noktasını kaydet
+										// @ts-ignore
+										e.target.touchStartY = e.touches[0].clientY;
+									}
+								}}
+								onTouchEnd={(e) => {
+									if (context.timeStartedAt) {
+										endTimer(context);
+									} else if (context.inInspection) {
+										// Swipe yukarı algıla
+										// @ts-ignore
+										const startY = e.target.touchStartY;
+										const endY = e.changedTouches[0].clientY;
+										if (startY - endY > 50) { // 50px yukarı kaydırma
+											clearInspectionTimers(true, true);
+										}
+									}
+								}}
 							/>
 						)}
 						<div
