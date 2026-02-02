@@ -12,7 +12,15 @@ import './StatsBar.scss';
 
 const b = block('stats-bar');
 
-// Varsayılan istatistik blokları - şablona uygun: PB, AO5, AO12, Mean
+// İstenen mobil istatistikleri: AO5, AO12, AO100, Mean
+const MOBILE_STATS: StatsModuleBlock[] = [
+    { statType: 'average', sortBy: 'current', averageCount: 5, session: true, colorName: 'primary' },
+    { statType: 'average', sortBy: 'current', averageCount: 12, session: true, colorName: 'primary' },
+    { statType: 'average', sortBy: 'current', averageCount: 100, session: true, colorName: 'primary' },
+    { statType: 'average', sortBy: 'current', averageCount: null, session: true, colorName: 'primary' },
+];
+
+// Varsayılan istatistik blokları
 const DEFAULT_STATS: StatsModuleBlock[] = [
     { statType: 'single', sortBy: 'best', averageCount: undefined, session: true, colorName: 'primary' },
     { statType: 'average', sortBy: 'current', averageCount: 5, session: true, colorName: 'primary' },
@@ -26,6 +34,7 @@ export default function StatsBar() {
 
     const mobileMode = useGeneral('mobile_mode');
     const sessionId = useSettings('session_id');
+    const timerFontFamily = useSettings('timer_font_family');
     const stats = useSelector((state: RootStateOrAny) => state?.stats);
 
     useSolveDb();
@@ -35,13 +44,8 @@ export default function StatsBar() {
         return null;
     }
 
-    // User'ın özelleştirilmiş bloklarını veya varsayılanları kullan
-    let statsBlocks = (stats?.blocks as StatsModuleBlock[]) || DEFAULT_STATS;
-
-    // Mobilde sadece ilk 4'ünü göster
-    if (mobileMode && statsBlocks.length > 4) {
-        statsBlocks = statsBlocks.slice(0, 4);
-    }
+    // Mobilde kesinlikle sabit liste kullan
+    let statsBlocks = mobileMode ? MOBILE_STATS : ((stats?.blocks as StatsModuleBlock[]) || DEFAULT_STATS);
 
     const statItems = statsBlocks.map((statBlock, index) => {
         const statValue = getStatsBlockValueFromFilter(statBlock, solvesFilter, sessionId);
@@ -51,7 +55,12 @@ export default function StatsBar() {
         return (
             <div key={index} className={b('item')}>
                 <span className={b('label')}>{label}</span>
-                <span className={b('value')}>{timeStr}</span>
+                <span
+                    className={b('value')}
+                    style={{ fontFamily: timerFontFamily ? `${timerFontFamily}, monospace` : 'inherit' }}
+                >
+                    {timeStr}
+                </span>
             </div>
         );
     });
