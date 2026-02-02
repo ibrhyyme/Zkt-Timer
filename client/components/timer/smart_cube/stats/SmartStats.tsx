@@ -8,17 +8,23 @@ const b = block('smart-stats');
 interface Props {
     time?: number; // Optional time override from parent
     mobile?: boolean;
+    stats?: {
+        turns: number;
+        tps: number | string;
+    };
 }
 
-export default function SmartStats({ time: propTime, mobile }: Props) {
+export default function SmartStats({ time: propTime, mobile, stats: propStats }: Props) {
     const context = useContext(TimerContext);
-    const { lastSmartSolveStats } = context;
 
-    if (!lastSmartSolveStats) {
+    // Use prop stats if available, otherwise try context
+    const stats = propStats || context.lastSmartSolveStats;
+
+    if (!stats) {
         return null;
     }
 
-    const { turns, tps } = lastSmartSolveStats;
+    const { turns, tps } = stats;
 
     return (
         <div className={b({ mobile })}>
