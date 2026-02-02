@@ -1,9 +1,8 @@
 User-agent: *
 Allow: /
-Disallow: /settings/
-Disallow: /sessions/
-Disallow: /force-log-out/
-Disallow: /admin/
-Disallow: /dist/
+Allow: /community/leaderboards
+Allow: /trainer/public-trainers
+Allow: /play
+Allow: /rooms
 
-Sitemap: https://zktimer.app/public/uploads/site/sitemaps/sitemap.xml
+Sitemap: https://zktimer.app/site/sitemaps/sitemap.xml
