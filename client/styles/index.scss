@@ -52,14 +52,19 @@ h1 {
     color: rgb(var(--text-color));
 }
 
-* {
+/* 
+ * Global transition kaldırıldı: Mobilde scroll performansını ciddi düşürür.
+ * İhtiyaç duyulan componentlerde (Button, Link vb.) özel olarak tanımlanmalı.
+ */
+/* * {
     transition: color 0.1s ease-in-out, background-color 0.1s ease-in-out;
-}
+} */
 
-/* PWA Standalone Display Mode */
+/* PWA Standalone Display Mode - Yaylanma efektini koru */
 @media (display-mode: standalone) {
     body {
-        overscroll-behavior: none;
+        /* overscroll-behavior: none; bu özellik kaldırıldı, native his geri geldi */
+        overscroll-behavior-y: auto;
     }
 }
 
