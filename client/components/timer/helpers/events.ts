@@ -29,6 +29,7 @@ export function startTimer() {
 		timeStartedAt,
 		solving: true,
 		finalTime: 0,
+		lastSmartSolveStats: null,
 	});
 
 	setTimeout(() => {
@@ -59,6 +60,32 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 		solving: false,
 		finalTime,
 	});
+
+	// Calculate and persist stats for the finished solve
+	if (smartCubeSelected(context)) {
+		let turnCount = 0;
+
+		// If overrides provided (e.g. from SmartCube auto-finish), use them
+		if (overrides && overrides.smart_turn_count !== undefined) {
+			turnCount = overrides.smart_turn_count;
+		} else {
+			// Otherwise calculate from context with leniency for the first move
+			const startTime = timeStartedAt.getTime();
+			// Allow moves up to 500ms before timer start (to catch the starting move)
+			const solutionTurns = (context.smartTurns || []).filter((t: any) => t.completedAt >= startTime - 500);
+			turnCount = solutionTurns.length;
+		}
+
+		const timeInSeconds = finalTime / 1000;
+		const tps = timeInSeconds > 0 ? Number((turnCount / timeInSeconds).toFixed(2)) : 0;
+
+		setTimerParams({
+			lastSmartSolveStats: {
+				turns: turnCount,
+				tps,
+			},
+		});
+	}
 
 	resetTimerParams(context);
 	setTimeout(() => {

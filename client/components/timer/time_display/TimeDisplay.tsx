@@ -12,6 +12,7 @@ import { useSettings } from '../../../util/hooks/useSettings';
 import StartInstructions from './start_instructions/StartInstructions';
 import StackMat from './stackmat/StackMat';
 import GanTimer from './gantimer/GanTimer';
+import SmartStats from '../smart_cube/stats/SmartStats';
 import SolveDiff from './SolveDiff';
 
 const b = block('time-display');
@@ -52,9 +53,7 @@ export default function TimeDisplay() {
 	const mobileMode = useGeneral('mobile_mode');
 	let timerTimeSize = useSettings('timer_time_size');
 	if (mobileMode) {
-		// Mobil için boyut mantığı:
-		// Sadece "Akıllı Küp" modundaysak (ekran ikiye bölünüyorsa) 50px (sığması için)
-		// Diğer modlarda (Klavye, Stackmat, Gan vb.) tek başına durduğu için büyük olsun (100px ~%75 genişlik)
+
 		if (smartCubeSelected(context)) {
 			timerTimeSize = 50;
 		} else {
@@ -63,7 +62,6 @@ export default function TimeDisplay() {
 	}
 
 	useEffect(() => {
-		// Timer durma koşulu: solving false olduğunda interval'i durdur
 		if (timerCounter.current && !solving) {
 			stopInterval();
 		} else if (!timerCounter.current && timeStartedAt) {
@@ -74,9 +72,7 @@ export default function TimeDisplay() {
 		}
 	}, [solving, finalTime, timeStartedAt]);
 
-	// Dışarıdan finalTime değiştiğinde (çözüm silindiğinde vs.) time'ı güncelle
 	useEffect(() => {
-		// Timer çalışmıyorken ve yeni bir finalTime geldiğinde
 		if (!timeStartedAt && !solving && finalTime >= 0) {
 			setTime(finalTime / 1000);
 		}
@@ -85,7 +81,6 @@ export default function TimeDisplay() {
 	function stopInterval() {
 		timerLocked.current = true;
 
-		// ESC ile iptal durumunda (finalTime 0 veya negatif) süreyi sıfırla
 		if (!finalTime || finalTime <= 0) {
 			setTime(0);
 		} else {
@@ -179,6 +174,12 @@ export default function TimeDisplay() {
 					disabled,
 				})}
 			>
+				{/* Mobile: Stats above time */}
+				{mobileMode && smartCubeSelected(context) && (
+					<div style={{ marginBottom: '-5px', marginLeft: '10px' }}>
+						<SmartStats time={time} mobile={true} />
+					</div>
+				)}
 				{timeStr}
 			</h1>
 			{!matchMode && <SolveDiff />}

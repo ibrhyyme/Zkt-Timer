@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import './SmartCube.scss';
+import SmartStats from './stats/SmartStats';
 import Emblem from '../../common/emblem/Emblem';
 import Battery from './battery/Battery';
 import Connect from './bluetooth/connect';
@@ -344,6 +345,12 @@ export default function SmartCube() {
 				<div className={b('cube')}>
 					<canvas width="200px" height="200px" ref={canvasRef} />
 				</div>
+				{/* Desktop: Stats next to cube */}
+				{!mobileMode && (
+					<div className={b('stats-container')}>
+						<SmartStats />
+					</div>
+				)}
 				<div className={b('info')}>
 					{battery}
 					{emblem}

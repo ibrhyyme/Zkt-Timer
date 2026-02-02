@@ -25,6 +25,14 @@
 		height: 100px;
 	}
 
+	&__stats-container {
+		position: absolute;
+		top: 50%;
+		right: -130px;
+		transform: translateY(-50%);
+		z-index: 10;
+	}
+
 	&__info {
 		position: absolute;
 		top: 7px;
@@ -65,23 +73,22 @@
 		}
 	}
 
-	// Mobile Styling - Controls below cube horizontally
+
 	&--mobile {
 		.#{ $namespace }-smart-cube__info {
-			position: relative; // Absolute yerine akışa ekle
+			position: relative;
 			top: auto;
 			right: auto;
-			flex-direction: row; // Yatay sırala
+			flex-direction: row;
 			justify-content: center;
 			width: 100%;
-			margin-top: -10px; // Küpe yaklaştır
-			gap: 15px; // Öğeler arası boşluk
+			margin-top: -10px;
+			gap: 15px;
 
 			>*:not(:last-child) {
-				margin-bottom: 0; // Dikey boşluğu sıfırla
+				margin-bottom: 0;
 			}
 
-			// Dropdown menüyü aşağı doğru aç
 			.cd-dropdown__content {
 				top: 100%;
 				bottom: auto;

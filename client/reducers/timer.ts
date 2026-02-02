@@ -13,6 +13,7 @@ const smartState = {
 	smartGyroSupported: false,
 	smartPickUpTime: 0,
 	lastSmartMoveTime: 0,
+	lastSmartSolveStats: null,
 };
 
 const defaultTimerState = {

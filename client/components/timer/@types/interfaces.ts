@@ -96,4 +96,8 @@ export interface TimerStore {
 	disabled?: boolean;
 	smartPickUpTime?: number;
 	lastSmartMoveTime?: number;
+	lastSmartSolveStats?: {
+		turns: number;
+		tps: number;
+	} | null;
 }
