@@ -43,12 +43,12 @@ export default (payload: HtmlPagePayload) => {
 				<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 				<meta name="apple-mobile-web-app-title" content="Zkt-Timer">
 				<!-- iOS Ana Ekran İkonu (Mutlaka PNG olmalı, SVG desteklenmez) -->
-				<link rel="apple-touch-icon" href="/public/images/zkt-logo.png">
-				<link rel="apple-touch-icon" sizes="152x152" href="/public/images/zkt-logo.png">
-				<link rel="apple-touch-icon" sizes="180x180" href="/public/images/zkt-logo.png">
-				<link rel="apple-touch-icon" sizes="167x167" href="/public/images/zkt-logo.png">
+				<link rel="apple-touch-icon" href="${resourceBase}/images/apple-touch-icon.png">
+				<link rel="apple-touch-icon" sizes="152x152" href="${resourceBase}/images/apple-touch-icon.png">
+				<link rel="apple-touch-icon" sizes="180x180" href="${resourceBase}/images/apple-touch-icon.png">
+				<link rel="apple-touch-icon" sizes="167x167" href="${resourceBase}/images/apple-touch-icon.png">
 				<!-- iOS Açılış Ekranı (Splash Screen benzeri etki için) -->
-				<link rel="apple-touch-startup-image" href="/public/images/zkt-logo.png">
+				<link rel="apple-touch-startup-image" href="${resourceBase}/images/apple-touch-icon.png">
 				${process.env.NODE_ENV === "production" ? `<script async defer data-domain="zkt-timer.io" src="https://plausible.io/js/plausible.js"></script>` : ""}
 				<script async defer src="https://www.googletagmanager.com/gtag/js?id=AW-354788011"></script>
 				<script>
