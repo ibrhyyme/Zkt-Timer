@@ -27,7 +27,7 @@ export default function Header(props: Props) {
 	// Eğer component'e özel title/desc gelmediyse, path'e göre belirle
 	if (!pageTitle) {
 		if (currentPath === '/' || currentPath === '') {
-			pageTitle = 'Zkt-Timer | Profesyonel Zeka Küpü Zamanlayıcısı';
+			pageTitle = 'Zkt-Timer | Profesyonel Cubing Timer';
 			pageDesc = "Türkiye'nin en gelişmiş zeka küpü timer sitesi! Canlı mücadele odalarında yarış, Türkiye rekorlarını takip et ve algoritma öğreticisi ile yeni teknikler öğren. %100 Türkçe.";
 		} else if (currentPath === '/login') {
 			pageTitle = 'Giriş Yap - Zkt-Timer';
