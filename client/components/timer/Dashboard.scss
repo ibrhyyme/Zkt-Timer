@@ -16,6 +16,7 @@
         padding: 0 0.5rem;
         min-height: 160px;
         flex: 1; // Boş alan varsa genişle
+        max-height: unset; // Ensure it can grow
         // height/max-height kaldırıldı
     }
 
