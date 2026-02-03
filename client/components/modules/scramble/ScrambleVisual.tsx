@@ -1,22 +1,32 @@
-import React, { useMemo, useState } from 'react';
+// Import React and dynamic
+import React, { useState, Suspense, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import './ScrambleVisual.scss';
-import { layoutScramble } from '../../../util/vendor/scramble_layout';
-import Face from './face/Face';
 import block from '../../../styles/bem';
-import { getCubeTypeInfoById, getScrambleTypeById } from '../../../util/cubes/util';
 import { useGeneral } from '../../../util/hooks/useGeneral';
+
+// Dynamically import TwistyPlayerWrapper
+const TwistyPlayerWrapper = React.lazy(() => import('./TwistyPlayerWrapper'));
 
 const b = block('scramble-visual');
 
-export const COLOR_MAP = {
-	O: '#FF9826',
-	G: '#43FF43',
-	R: '#FF4343',
-	B: '#246BFD',
-	Y: '#FFFF49',
-	W: '#FFFFFF',
-	D: '#3F464F',
+// Map for TwistyPlayer identifiers
+const PUZZLE_MAPPING: Record<string, string> = {
+	'333': '3x3x3',
+	'222': '2x2x2',
+	'444': '4x4x4',
+	'555': '5x5x5',
+	'666': '6x6x6',
+	'777': '7x7x7',
+	'clock': 'clock',
+	'minx': 'megaminx',
+	'pyram': 'pyraminx',
+	'sq1': 'square1',
+	'skewb': 'skewb',
+	'333oh': '3x3x3',
+	'333bl': '3x3x3',
+	'333mirror': '3x3x3',
+	'222oh': '2x2x2',
 };
 
 interface Props {
@@ -27,116 +37,151 @@ interface Props {
 }
 
 export default function ScrambleVisual(props: Props) {
-	const { cubeType, scramble, frontFace } = props;
+	const { cubeType, scramble } = props;
 	const [isExpanded, setIsExpanded] = useState(false);
 	const mobileMode = useGeneral('mobile_mode');
-
 	const width = props.width || '100%';
 
-	function scrambleIsSupported(scrambleType) {
-		return ['222', '333', '333bl', '444', '555', '666', '777'].indexOf(scrambleType) > -1;
-	}
-
-	const ct = getCubeTypeInfoById(cubeType);
-	const cubeScramble = getScrambleTypeById(ct?.scramble);
-
-	const visual = useMemo(() => {
-		if (!cubeType || !scramble) {
-			return;
-		}
-
-		if (!scrambleIsSupported(cubeScramble.id)) {
-			return;
-		}
-
-		if (scramble) {
-			return layoutScramble(scramble, cubeScramble.size);
-		}
-	}, [cubeType, scramble]);
-
-	const cubeSize = cubeScramble?.size;
-
-	const supported = scrambleIsSupported(cubeScramble?.id);
-	if (!supported) {
-		return <div className={b('invalid')}>No visual</div>;
-	}
-
-	if (!visual) {
-		return null;
-	}
-
-	// Mobilde tıklama işlevi
-	const handleClick = () => {
-		if (mobileMode) {
-			setIsExpanded(true);
-		}
-	};
+	// Determine puzzle details for TwistyPlayer
+	const puzzleId = PUZZLE_MAPPING[cubeType] || cubeType;
+	const isClock = puzzleId === 'clock';
+	const isSq1 = puzzleId === 'square1';
+	const visualizationVal = isClock ? '2D' : '3D';
 
 	const closeModal = (e: React.MouseEvent) => {
 		e.stopPropagation();
 		setIsExpanded(false);
 	};
 
-	// Büyük modal görünümü - Portal ile body'e render edilir
+	// --- HANDLERS (Long Press & Swipe) ---
+	const [clockFace, setClockFace] = useState<'front' | 'back'>('front');
+	const touchStartX = useRef<number | null>(null);
+	const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+
+	const handleTouchStart = (e: React.TouchEvent) => {
+		touchStartX.current = e.touches[0].clientX;
+		// Start long press timer
+		longPressTimer.current = setTimeout(() => {
+			if (mobileMode) setIsExpanded(true);
+		}, 500);
+	};
+
+	const handleTouchMove = (e: React.TouchEvent) => {
+		if (touchStartX.current !== null) {
+			const diff = Math.abs(e.touches[0].clientX - touchStartX.current);
+			// If moved more than 10px, cancel long press (it's a swipe/scroll)
+			if (diff > 10 && longPressTimer.current) {
+				clearTimeout(longPressTimer.current);
+				longPressTimer.current = null;
+			}
+		}
+	};
+
+	const handleTouchEnd = (e: React.TouchEvent) => {
+		// Clear timer on release (if it hasn't fired yet)
+		if (longPressTimer.current) {
+			clearTimeout(longPressTimer.current);
+			longPressTimer.current = null;
+		}
+
+		if (touchStartX.current === null) return;
+		const diff = touchStartX.current - e.changedTouches[0].clientX;
+		if (Math.abs(diff) > 30) { // Swipe threshold
+			if (diff > 0) setClockFace('back'); // Swipe left -> show back
+			else setClockFace('front'); // Swipe right -> show front
+		}
+		touchStartX.current = null;
+	};
+
+	// --- MODAL CONTENT ---
 	const expandedModalContent = isExpanded && mobileMode ? (
 		<div className={b('expanded-overlay')} onClick={closeModal}>
 			<div className={b('expanded-content')} onClick={(e) => e.stopPropagation()}>
 				<div className={b('expanded-close')} onClick={closeModal}>✕</div>
-				<div className={b()} key={`expanded-${cubeSize}`}>
-					<Face width="100%" key={`e1-${cubeSize}`} />
-					<Face width="100%" key={`e2-${cubeSize}`} size={cubeSize} data={visual.U} />
-					<Face width="100%" key={`e3-${cubeSize}`} />
-					<Face width="100%" key={`e4-${cubeSize}`} />
-					<Face width="100%" key={`e5-${cubeSize}`} size={cubeSize} data={visual.L} />
-					<Face width="100%" key={`e6-${cubeSize}`} size={cubeSize} data={visual.F} />
-					<Face width="100%" key={`e7-${cubeSize}`} size={cubeSize} data={visual.R} />
-					<Face width="100%" key={`e8-${cubeSize}`} size={cubeSize} data={visual.B} />
-					<Face width="100%" key={`e9-${cubeSize}`} />
-					<Face width="100%" key={`e10-${cubeSize}`} size={cubeSize} data={visual.D} />
-					<Face width="100%" key={`e11-${cubeSize}`} />
-					<Face width="100%" key={`e12-${cubeSize}`} />
+				<div className={b('expanded-twisty-container')} style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+					<Suspense fallback={<div>Yükleniyor...</div>}>
+						<TwistyPlayerWrapper
+							puzzle={puzzleId}
+							alg={scramble}
+							visualization={visualizationVal}
+							className={b('twisty-player-expanded')}
+						/>
+					</Suspense>
 				</div>
 			</div>
 		</div>
 	) : null;
 
-	// Portal kullanarak modal'ı document.body'e render et
 	const expandedModal = expandedModalContent && typeof document !== 'undefined'
 		? ReactDOM.createPortal(expandedModalContent, document.body)
 		: null;
 
-	if (frontFace) {
-		return (
-			<>
-				<div className={b('wrapper', { clickable: mobileMode })} onClick={handleClick}>
-					<Face width={width} key={`6-${cubeSize}`} size={cubeSize} data={visual.F} />
-				</div>
-				{expandedModal}
-			</>
-		);
+	// Clock Dimensions
+	const CLOCK_FULL_WIDTH = 340;
+	const CLOCK_HALF_WIDTH = CLOCK_FULL_WIDTH / 2;
+
+	// Clock Mobile Logic (Swipe View)
+	const isClockMobile = isClock && mobileMode;
+
+	const containerStyle: React.CSSProperties = isClockMobile
+		? {
+			width: `${CLOCK_HALF_WIDTH}px`, // Show only one face
+			overflow: 'hidden',
+			display: 'flex',
+			justifyContent: 'flex-start', // Start from left to allow sliding
+			margin: '0 auto',
+			position: 'relative',
+			touchAction: 'pan-y' // Allow vertical scroll, capture horizontal
+		}
+		: isClock
+			? { width: '100%', overflowX: 'auto', display: 'flex', justifyContent: 'center' }
+			: { width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' };
+
+	const innerStyle: React.CSSProperties = isClockMobile
+		? {
+			minWidth: `${CLOCK_FULL_WIDTH}px`,
+			transform: clockFace === 'back' ? `translateX(-${CLOCK_HALF_WIDTH}px)` : 'translateX(0)',
+			transition: 'transform 0.3s ease-in-out',
+			display: 'flex',
+			justifyContent: 'center'
+		}
+		: isClock
+			? { minWidth: `${CLOCK_FULL_WIDTH}px` }
+			: isSq1
+				? { maxWidth: '120px', width: '100%' } // Reduced further for Square-1
+				: { width: '100%' };
+
+	if (puzzleId === 'other') {
+		return <div className={b('invalid')}>No visual</div>;
 	}
 
 	return (
-		<>
-			<div className={b('wrapper', { clickable: mobileMode })} onClick={handleClick}>
-				<div className={b()} key={`body-${cubeSize}`}>
-					<Face width={width} key={`1-${cubeSize}`} />
-					<Face width={width} key={`2-${cubeSize}`} size={cubeSize} data={visual.U} />
-					<Face width={width} key={`3-${cubeSize}`} />
-					<Face width={width} key={`4-${cubeSize}`} />
-					<Face width={width} key={`5-${cubeSize}`} size={cubeSize} data={visual.L} />
-					<Face width={width} key={`6-${cubeSize}`} size={cubeSize} data={visual.F} />
-					<Face width={width} key={`7-${cubeSize}`} size={cubeSize} data={visual.R} />
-					<Face width={width} key={`8-${cubeSize}`} size={cubeSize} data={visual.B} />
-					<Face width={width} key={`9-${cubeSize}`} />
-					<Face width={width} key={`10-${cubeSize}`} size={cubeSize} data={visual.D} />
-					<Face width={width} key={`11-${cubeSize}`} />
-					<Face width={width} key={`12-${cubeSize}`} />
+		<div className={b('wrapper', { clickable: false })} style={{ width: width }}>
+			<div
+				style={containerStyle}
+				onTouchStart={handleTouchStart}
+				onTouchMove={handleTouchMove}
+				onTouchEnd={handleTouchEnd}
+			>
+				<div style={innerStyle}>
+					<Suspense fallback={<div className={b('loading')}>Yükleniyor...</div>}>
+						<TwistyPlayerWrapper
+							puzzle={puzzleId}
+							alg={scramble}
+							visualization={visualizationVal}
+							className={b('twisty-player')}
+						/>
+					</Suspense>
 				</div>
 			</div>
+			{/* Dots indicator for Clock Mobile */}
+			{isClockMobile && (
+				<div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '8px' }}>
+					<div style={{ width: '8px', height: '8px', borderRadius: '50%', background: clockFace === 'front' ? '#fff' : '#ffffff40' }} />
+					<div style={{ width: '8px', height: '8px', borderRadius: '50%', background: clockFace === 'back' ? '#fff' : '#ffffff40' }} />
+				</div>
+			)}
 			{expandedModal}
-		</>
+		</div>
 	);
 }
-
-
