@@ -27,7 +27,7 @@ export default function SolvesText(props: Props) {
 	// Single solve için tarih varsayılan açık olsun
 	const [includeScramble, setIncludeScramble] = useState(true);
 	const [wrapText, setWrapText] = useState(false);
-	const [includeDate, setIncludeDate] = useState(isSingle);
+	const [includeDate, setIncludeDate] = useState(false);
 	const [includeCubeType, setIncludeCubeType] = useState(false);
 	const [includeNotes, setIncludeNotes] = useState(false);
 
@@ -99,7 +99,8 @@ export default function SolvesText(props: Props) {
 
 	function getSolvesText() {
 		const lines = [];
-		lines.push('ZKT-Timer tarafından ' + dayjs().format('YYYY-MM-DD') + ' tarihinde oluşturuldu');
+		const dateStr = isSingle ? dayjs(solves[0].started_at).format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD');
+		lines.push('ZKT-Timer tarafından ' + dateStr + ' tarihinde oluşturuldu');
 
 		let desc = description;
 		if (time && getTimeString(time)) {

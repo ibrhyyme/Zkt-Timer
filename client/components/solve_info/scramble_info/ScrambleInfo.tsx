@@ -35,7 +35,7 @@ export default function ScrambleInfo(props: Props) {
 				<HistoryModal
 					solves={[solve]}
 					showAsText={true}
-					description="Time List"
+					description="Tek Çözüm"
 					time={solve.time}
 				/>
 			)
