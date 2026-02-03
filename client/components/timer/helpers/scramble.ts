@@ -2,8 +2,10 @@ import { getCubeTypeInfoById, getScrambleTypeById } from '../../../util/cubes/ut
 import { Scrambow } from 'scrambow';
 import { ITimerContext } from '../Timer';
 import { setTimerParam } from './params';
+import { getSubsetsForCube } from '../../../util/cubes/scramble_subsets';
 
-export function getNewScramble(scrambleTypeId: string, seed?: number) {
+
+export function getNewScramble(scrambleTypeId: string, seed?: number, subset?: string) {
 	const scrambleType = getScrambleTypeById(scrambleTypeId);
 
 	if (!scrambleType || scrambleType.id === 'none') {
@@ -19,9 +21,31 @@ export function getNewScramble(scrambleTypeId: string, seed?: number) {
 		blindThree = true;
 	}
 
-	let scrambo = new Scrambow(scrambowType);
 
-	if (!['pyram', 'clock', 'skewb'].includes(scrambowType)) {
+
+	// Use subset if provided, otherwise default to mapped type
+	// Security check: If subset is provided, ensure it matches the base type
+	let typeToUse = scrambowType;
+	if (subset && !subset.startsWith('h_')) {
+		// Validation: Verify this subset actually belongs to the current cube type
+		const allowedSubsets = getSubsetsForCube(scrambowType);
+		const isValid = allowedSubsets.some(s => s.id === subset);
+
+		if (isValid) {
+			typeToUse = subset;
+		} else {
+			console.warn(`Invalid subset '${subset}' for cube type '${scrambowType}', falling back to default.`);
+		}
+	}
+
+	// Custom WCA Clock Scrambler
+	if (scrambowType === 'clock' && !subset) {
+		return generateClockScramble();
+	}
+
+	let scrambo = new Scrambow(typeToUse);
+
+	if (!['pyram', 'clock', 'skewb'].includes(scrambowType) && !subset) {
 		scrambo = scrambo.setLength(scrambleLength);
 	}
 
@@ -33,8 +57,8 @@ export function getNewScramble(scrambleTypeId: string, seed?: number) {
 
 	let scramble = scrambleOb[0].scramble_string;
 	scramble = scramble.replace(/\s+/g, ' ').trim();
-	if (scrambowType === '222' && scramble.split(' ').length <= 5) {
-		return getNewScramble(scrambowType);
+	if (scrambowType === '222' && scramble.split(' ').length <= 5 && !subset) {
+		return getNewScramble(scrambowType, seed, subset);
 	}
 
 	if (blindThree) {
@@ -42,6 +66,43 @@ export function getNewScramble(scrambleTypeId: string, seed?: number) {
 	}
 
 	return scramble;
+}
+
+function generateClockScramble(): string {
+	const side1Pins = ['UR', 'DR', 'DL', 'UL', 'U', 'R', 'D', 'L', 'ALL'];
+	const side2Pins = ['U', 'R', 'D', 'L', 'ALL'];
+	const finalPins = ['UR', 'DR', 'DL', 'UL'];
+
+	const moves: string[] = [];
+
+	const getTurn = () => {
+		const val = Math.floor(Math.random() * 12) - 5; // -5, ... 6 (WCA standard is usually -5 to 6)
+		if (val === 0) return null;
+		return val > 0 ? `${val}+` : `${Math.abs(val)}-`;
+	};
+
+	// Side 1
+	side1Pins.forEach(pin => {
+		const turn = getTurn();
+		if (turn) moves.push(`${pin}${turn}`);
+	});
+
+	moves.push('y2');
+
+	// Side 2
+	side2Pins.forEach(pin => {
+		const turn = getTurn();
+		if (turn) moves.push(`${pin}${turn}`);
+	});
+
+	// Final Pin State (Randomize which pins are UP)
+	finalPins.forEach(pin => {
+		if (Math.random() > 0.5) {
+			moves.push(pin);
+		}
+	});
+
+	return moves.join(' ');
 }
 
 function getBlindWideMove() {
@@ -59,7 +120,7 @@ function getBlindWideMove() {
 }
 
 export function resetScramble(context: ITimerContext) {
-	const { cubeType, scrambleLocked, customScrambleFunc } = context;
+	const { cubeType, scrambleLocked, customScrambleFunc, scrambleSubset } = context;
 	const ct = getCubeTypeInfoById(cubeType);
 
 	let newScramble;
@@ -68,7 +129,7 @@ export function resetScramble(context: ITimerContext) {
 	} else if (scrambleLocked) {
 		return;
 	} else {
-		newScramble = getNewScramble(ct.scramble);
+		newScramble = getNewScramble(ct.scramble, undefined, scrambleSubset);
 	}
 
 	setTimerParam('scramble', newScramble);

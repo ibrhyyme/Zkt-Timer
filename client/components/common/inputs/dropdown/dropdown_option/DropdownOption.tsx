@@ -14,6 +14,7 @@ export interface IDropdownOption {
 	on?: boolean;
 	disabled?: boolean;
 	hidden?: boolean;
+	header?: boolean;
 	onClick?: React.MouseEventHandler<HTMLButtonElement>;
 	onChange?: React.ChangeEventHandler<HTMLInputElement>;
 }
@@ -23,7 +24,7 @@ interface Props {
 }
 
 export default function DropdownOption(props: Props) {
-	const { text, hidden, checkbox, onChange, disabled, link, icon, on, onClick } = props.option;
+	const { text, hidden, checkbox, onChange, disabled, link, icon, on, onClick, header } = props.option;
 
 	const body = (
 		<>
@@ -53,6 +54,14 @@ export default function DropdownOption(props: Props) {
 	} else if (checkbox) {
 		return <Checkbox onChange={onChange} text={text} checked={on} />;
 	} else {
+		if (header) {
+			return (
+				<div className={`${b({})} px-4 py-2 text-gray-500 font-bold text-xs uppercase cursor-default opacity-70 select-none bg-black/20`} style={{ pointerEvents: 'none' }}>
+					{body}
+				</div>
+			);
+		}
+
 		return (
 			<button disabled={disabled} className={b({ on })} onClick={onClick}>
 				{body}

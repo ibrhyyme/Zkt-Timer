@@ -47,17 +47,18 @@ function getBlindWideMove() {
 }
 
 // Robust scramble generator using Scrambow
-function generateScrambleForCubeType(cubeType: string): string {
+function generateScrambleForCubeType(cubeType: string, subset?: string | null): string {
     const def = SCRAMBLE_MAP[cubeType];
 
 
     let scrambowType = def ? def.type : '333';
     const length = def ? def.length : 20;
 
+    // Use subset if provided, otherwise default to mapped type
+    const typeToUse = subset || scrambowType;
+    let scrambo = new Scrambow(typeToUse);
 
-    let scrambo = new Scrambow(scrambowType);
-
-    if (!['pyraminx', 'clock', 'skewb'].includes(scrambowType)) {
+    if (!['pyraminx', 'clock', 'skewb'].includes(scrambowType) && !subset) {
         scrambo = scrambo.setLength(length);
     }
 
@@ -82,13 +83,17 @@ export async function createRoom(input: CreateFriendlyRoomInput, user: PublicUse
     }
 
     // Generate initial scramble
-    const initialScramble = generateScrambleForCubeType(input.cube_type || FriendlyRoomConst.DEFAULT_CUBE_TYPE);
+    // Generate initial scramble
+    const initialScramble = generateScrambleForCubeType(
+        input.cube_type || FriendlyRoomConst.DEFAULT_CUBE_TYPE
+    );
 
     const room = await prisma().friendlyRoom.create({
         data: {
             name: input.name.slice(0, FriendlyRoomConst.MAX_ROOM_NAME_LENGTH),
             password: hashedPassword,
             cube_type: input.cube_type || FriendlyRoomConst.DEFAULT_CUBE_TYPE,
+
             max_players: Math.min(input.max_players || FriendlyRoomConst.DEFAULT_MAX_PLAYERS, FriendlyRoomConst.MAX_PLAYERS),
             is_private: input.is_private || false,
             current_scramble: initialScramble,
@@ -395,6 +400,7 @@ export async function updateRoom(
     // Handle Cube Type Change (RESET ROOM)
     if (updates.cube_type && updates.cube_type !== room.cube_type) {
         data.cube_type = updates.cube_type;
+
         data.current_scramble = generateScrambleForCubeType(updates.cube_type);
         data.scramble_index = 1;
 

@@ -93,6 +93,7 @@ export interface TimerStore {
 	smartGyroVelocity?: { x: number; y: number; z: number } | null;
 	smartGyroSupported?: boolean;
 	scramble?: string;
+	scrambleSubset?: string;
 	disabled?: boolean;
 	smartPickUpTime?: number;
 	lastSmartMoveTime?: number;

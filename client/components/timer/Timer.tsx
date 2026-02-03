@@ -48,6 +48,7 @@ export default function Timer(props: TimerProps) {
 	const hideMobileTimerFooter = useSettings('hide_mobile_timer_footer');
 	const timerType = useSettings('timer_type');
 	const focusMode = useSettings('focus_mode');
+	const scrambleSubset = useSettings('scramble_subset');
 	let timerLayout = props.timerLayout || useSettings('timer_layout');
 
 	const [heightSmall, setHeightSmall] = useState(false);
@@ -68,6 +69,7 @@ export default function Timer(props: TimerProps) {
 	const context: ITimerContext = {
 		cubeType,
 		focusMode,
+		scrambleSubset,
 		...timerStore,
 		...props,
 		timerLayout,

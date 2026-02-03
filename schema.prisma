@@ -833,6 +833,7 @@ model Setting {
   use_space_with_smart_cube           Boolean          @default(false)
   inspection_auto_start               Boolean          @default(false)
   stats_module_json                   String?
+  scramble_subset                     String?
   custom_cube_types                   CustomCubeType[] @relation("custom_cube_type_setting")
   user                                UserAccount      @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
@@ -911,6 +912,7 @@ model FriendlyRoom {
   allowed_timer_types String[]               @default(["keyboard", "stackmat", "smart", "gantimer", "manual"])
   original_creator_id String?
   current_scramble String?
+  scramble_subset  String?
   scramble_index   Int                       @default(0)
   status           FriendlyRoomStatus        @default(WAITING)
   created_at       DateTime                  @default(now())

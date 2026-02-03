@@ -1,5 +1,5 @@
-import {getPrisma} from '../database';
-import {generateUUID} from '../../shared/code';
+import { getPrisma } from '../database';
+import { generateUUID } from '../../shared/code';
 
 export function deleteSolveMethodSteps(solve) {
 	return getPrisma().solveMethodStep.deleteMany({
@@ -14,6 +14,10 @@ export function createSolveMethodSteps(solve, steps) {
 
 	for (const step of Object.keys(steps)) {
 		const method = steps[step];
+
+		if (!method) {
+			continue;
+		}
 
 		data.push({
 			id: generateUUID(),

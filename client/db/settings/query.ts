@@ -58,6 +58,7 @@ export interface AllSettings {
 	timer_avg_4: string;
 	timer_avg_5: string;
 	timer_avg_6: string;
+	scramble_subset: string | null;
 }
 
 const defaultSettings: AllSettings = {
@@ -119,6 +120,7 @@ const defaultSettings: AllSettings = {
 	smart_cube_size: 400,
 	stackmat_auto_inspection: 0, // 0 = kapalı, aktifken varsayılan 2 saniye
 	stackmat_auto_inspection_warning_shown: false,
+	scramble_subset: null,
 };
 
 export function getDefaultSetting<T extends keyof AllSettings>(key: T): AllSettings[T] {

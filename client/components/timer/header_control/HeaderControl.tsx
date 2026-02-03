@@ -19,13 +19,18 @@ import block from '../../../styles/bem';
 import StackMatPicker from '../../settings/stackmat_picker/StackMatPicker';
 import { TIMER_INPUT_TYPE_NAMES } from '../../settings/timer/TimerSettings';
 import { useSettings } from '../../../util/hooks/useSettings';
-import { AllSettings } from '../../../db/settings/query';
+import { AllSettings, getSetting } from '../../../db/settings/query';
 import { useMe } from '../../../util/hooks/useMe';
 import screenfull from '../../../util/vendor/screenfull';
 import { useQuickControlsModal } from '../../quick-controls/useQuickControlsModal';
 import AccountDropdown from '../../layout/nav/account_dropdown/AccountDropdown';
 import { NAV_LINKS } from '../../layout/nav/Nav';
 import { useRouteMatch } from 'react-router-dom';
+import SubsetPicker from './SubsetPicker';
+import { getSubsetsForCube } from '../../../util/cubes/scramble_subsets';
+import { getNewScramble } from '../helpers/scramble';
+import { getCubeTypeInfoById } from '../../../util/cubes/util';
+import { setTimerParam } from '../helpers/params';
 
 
 const b = block('timer-header-control');
@@ -61,6 +66,19 @@ export default function HeaderControl() {
 
 	function changeCubeType(cubeTypeId: string) {
 		setCubeType(cubeTypeId);
+		// Küp değiştiğinde subset'i sıfırla
+		setSetting('scramble_subset', null);
+	}
+
+	function handleSubsetChange(subset: string | null) {
+		setSetting('scramble_subset', subset);
+		setTimerParam('scrambleSubset', subset);
+
+		const ct = getCubeTypeInfoById(cubeType);
+		if (ct) {
+			const newScramble = getNewScramble(ct.scramble, undefined, subset);
+			setTimerParam('scramble', newScramble);
+		}
 	}
 
 	function selectTimerType(timerType: AllSettings['timer_type']) {
@@ -95,11 +113,19 @@ export default function HeaderControl() {
 	}
 
 	const cubePicker = !focusMode && !headerOptions.hideCubeType && (
-		<CubePicker
-			dropdownProps={{ openLeft: true, noMargin: true }}
-			value={cubeType}
-			onChange={(ct) => changeCubeType(ct.id)}
-		/>
+		<div className="flex items-center gap-2">
+			<CubePicker
+				dropdownProps={{ openLeft: true, noMargin: true }}
+				value={cubeType}
+				onChange={(ct) => changeCubeType(ct.id)}
+			/>
+			<SubsetPicker
+				subsets={getSubsetsForCube(cubeType)}
+				selectedSubset={useSettings('scramble_subset')}
+				onChange={handleSubsetChange}
+				mobile={mobileMode}
+			/>
+		</div>
 	);
 
 	// Timer type dropdown moved to Quick Controls modal
