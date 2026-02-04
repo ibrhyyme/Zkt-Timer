@@ -5707,6 +5707,11 @@ combined-stream@^1.0.6, combined-stream@^1.0.8, combined-stream@~1.0.6:
   dependencies:
     delayed-stream "~1.0.0"
 
+comlink@^4.4.1:
+  version "4.4.2"
+  resolved "https://registry.yarnpkg.com/comlink/-/comlink-4.4.2.tgz#cbbcd82742fbebc06489c28a183eedc5c60a2bca"
+  integrity sha512-OxGdvBmJuNKSCMO4NTl1L47VRp6xn2wG4F/2hYzB6tiCb709otOxtEYCSvK80PtjODfXXZu8ds+Nw5kVCjqd2g==
+
 command-line-args@^6.0.1:
   version "6.0.1"
   resolved "https://registry.npmjs.org/command-line-args/-/command-line-args-6.0.1.tgz"
@@ -6199,15 +6204,16 @@ cubejs@^1.3.2:
   dependencies:
     npm "^6.0.0"
 
-cubing@^0.63.0:
-  version "0.63.0"
-  resolved "https://registry.yarnpkg.com/cubing/-/cubing-0.63.0.tgz#f5ed502295e30d7ef83cd6a019f6f9cdd1a1ce6c"
-  integrity sha512-TbtZKVRcy6H4u6/wKAOa3thdJsU5vv08xJrag7QUPrl0FE0CtOyMvZkxMK/v93g8WpOVGV8+kdKgD1PM54ysVw==
+cubing@0.62.0:
+  version "0.62.0"
+  resolved "https://registry.yarnpkg.com/cubing/-/cubing-0.62.0.tgz#e0de5ad33ff36ccefb22dc5528b926592fdec142"
+  integrity sha512-iivgGVc/yH/Ga805j1DmRJlfFpptlEXFXIsAkC06AdCVobhxfxvhzjK9XaFLQ07dSjK3xquNYPm6+ZBK/IuVcw==
   dependencies:
     "@optique/core" v0.9.0-dev.187
     "@optique/run" v0.9.0-dev.187
     "@types/three" "^0.169.0"
     "@types/web-bluetooth" "^0.0.20"
+    comlink "^4.4.1"
     random-uint-below v3.3.0
     three "^0.170.0"
     type-fest "^5.2.0"
