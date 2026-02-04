@@ -174,6 +174,11 @@ export default function Timer(props: TimerProps) {
 					</div>
 				)}
 
+				{/* Mobile Smart Phases Portal Container */}
+				{mobileMode && timerType === 'smart' && (
+					<div id="mobile-smart-phases-container" style={{ width: '100%', padding: '0 10px' }}></div>
+				)}
+
 				{/* Kontrol çubuğu */}
 				<TimerControls />
 

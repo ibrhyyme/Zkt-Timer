@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
+import ReactDOM from 'react-dom';
 import './SmartCube.scss';
 import SmartStats from './stats/SmartStats';
 import Emblem from '../../common/emblem/Emblem';
@@ -13,6 +14,7 @@ import Cube from 'cubejs';
 import block from '../../../styles/bem';
 import { TimerContext } from '../Timer';
 import { useSettings } from '../../../util/hooks/useSettings';
+import LiveAnalysisOverlay from './LiveAnalysisOverlay';
 import { useGeneral } from '../../../util/hooks/useGeneral';
 import { useDispatch } from 'react-redux';
 import Dropdown from '../../common/inputs/dropdown/Dropdown';
@@ -40,6 +42,10 @@ export default function SmartCube() {
 	const turns = useRef([]);
 
 	const [scrambleCompletedAt, setScrambleCompletedAt] = useState(null);
+	const [domReady, setDomReady] = useState(false);
+	useEffect(() => setDomReady(true), []);
+
+	const [startState, setStartState] = useState<string>(null); // Live Analysis Logic coverage
 	const [inspectionTime, setInspectionTime] = useState(0);
 
 	const useSpaceWithSmartCube = useSettings('use_space_with_smart_cube');
@@ -95,6 +101,13 @@ export default function SmartCube() {
 
 		if (!useSpaceWithSmartCube && isSolved && smartTurns.length) {
 			resetMoves();
+		}
+
+		// Live Analysis Sync
+		if (smartTurns.length === 0 && cubejs.current) {
+			const current = cubejs.current.asString();
+			// console.log('[SmartCube] Setting Start State:', current);
+			setStartState(current);
 		}
 	}, [smartTurns, smartSolvedState]);
 
@@ -175,7 +188,7 @@ export default function SmartCube() {
 				audioThrottleRef.current = true;
 				setTimeout(() => { audioThrottleRef.current = false; }, 2000); // 2s cooldown
 
-				console.log('Playing success sound (Throttled)');
+				// console.log('Playing success sound (Throttled)');
 				try {
 					const audio = new Audio(resourceUri('audio/success.mp3'));
 					audio.volume = 1.0;
@@ -268,6 +281,18 @@ export default function SmartCube() {
 			case 'y': await cube.current.y(prime); break;
 			case 'z': await cube.current.z(prime); break;
 			default: break;
+		}
+
+		// Live Analysis: Update logical state during scramble (when smartTurns is empty)
+		if (smartTurns.length === 0 && cubejs.current) {
+			try {
+				cubejs.current.move(turnRaw);
+				const current = cubejs.current.asString();
+				// console.log('[SmartCube] Scramble Move Applied:', turnRaw, 'State:', current);
+				setStartState(current);
+			} catch (err) {
+				console.warn('[SmartCube] Logical move error:', err);
+			}
 		}
 
 		turnIndex.current += 1;
@@ -369,11 +394,23 @@ export default function SmartCube() {
 					<canvas width="200px" height="200px" ref={canvasRef} />
 				</div>
 				{/* Desktop: Stats next to cube */}
+				{/* Desktop: Stats next to cube */}
 				{!mobileMode && (
 					<div className={b('stats-container')}>
+						<LiveAnalysisOverlay startState={startState || (cubejs.current ? cubejs.current.asString() : null)} />
 						<SmartStats />
 					</div>
 				)}
+
+				{/* Mobile: Stats rendered via Portal to #mobile-smart-phases-container in Timer.tsx */}
+				{mobileMode && domReady && ReactDOM.createPortal(
+					<LiveAnalysisOverlay
+						startState={startState || (cubejs.current ? cubejs.current.asString() : null)}
+						mobile={true}
+					/>,
+					document.getElementById('mobile-smart-phases-container') || document.body
+				)}
+
 				<div className={b('info')}>
 					{battery}
 					{emblem}

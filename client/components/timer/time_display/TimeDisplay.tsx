@@ -165,24 +165,36 @@ export default function TimeDisplay() {
 
 	let body = (
 		<>
-			<h1
-				style={{ fontSize: timerTimeSize + 'px', fontFamily: timerFontFamily + ', monospace' }}
-				className={b({
-					gray: inInspection,
-					green: canStart,
-					orange: !!spaceTimerStarted,
-					disabled,
-				})}
-			>
-				{/* Mobile: Stats above time */}
+			<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+				<h1
+					style={{
+						fontSize: timerTimeSize + 'px',
+						fontFamily: timerFontFamily + ', monospace',
+						marginBottom: mobileMode ? '0px' : '10px', // Reduce bottom margin on mobile
+						lineHeight: '1',
+					}}
+					className={b({
+						gray: inInspection,
+						green: canStart,
+						orange: !!spaceTimerStarted,
+						disabled,
+					})}
+				>
+					{timeStr}
+				</h1>
+
+				{/* Diff underneath timer, close to it */}
+				<div style={{ marginTop: mobileMode ? '-5px' : '0' }}>
+					{!matchMode && <SolveDiff />}
+				</div>
+
+				{/* Mobile: Stats below time & diff */}
 				{mobileMode && smartCubeSelected(context) && (
-					<div style={{ marginBottom: '-5px', marginLeft: '10px' }}>
+					<div style={{ marginTop: '5px' }}>
 						<SmartStats time={time} mobile={true} />
 					</div>
 				)}
-				{timeStr}
-			</h1>
-			{!matchMode && <SolveDiff />}
+			</div>
 			<div className={bi()}>{bottomInfo}</div>
 			{subTimerActions}
 		</>

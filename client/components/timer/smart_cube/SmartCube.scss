@@ -27,10 +27,12 @@
 
 	&__stats-container {
 		position: absolute;
-		top: 50%;
-		right: -130px;
+		top: 40%; // Higher up
+		right: -290px;
 		transform: translateY(-50%);
 		z-index: 10;
+		text-align: left;
+		pointer-events: none;
 	}
 
 	&__info {

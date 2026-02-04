@@ -1,5 +1,6 @@
 export interface SmartTurn {
-	turn: string
+	turn: string;
+	time?: number;
 }
 
 export function processSmartTurns(smartTurns: SmartTurn[], skipCompress: boolean = false) {

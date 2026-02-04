@@ -1,0 +1,69 @@
+.live-analysis {
+    display: flex;
+    flex-direction: column;
+    gap: 0; // Very tight vertical stacking
+    margin-bottom: 20px;
+
+    font-family: 'Roboto Mono', monospace;
+    pointer-events: none;
+
+    &__table {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    &__row {
+        display: flex;
+        flex-direction: row;
+        align-items: baseline;
+        gap: 0; // Reset gap
+        white-space: nowrap;
+
+        font-size: 3rem;
+        font-weight: 700;
+        line-height: 0.9;
+
+        opacity: 0.5;
+        transition: opacity 0.2s;
+
+        &--done {
+            opacity: 1;
+        }
+
+        &--active {
+            opacity: 1;
+        }
+    }
+
+    &__symbol {
+        color: #fff;
+        min-width: 0; // Reset width
+        text-align: right;
+        font-weight: 400;
+        margin-right: 2px; // Tiny gap if needed, or 0
+    }
+
+    &__time-val {
+        color: #60a5fa; // Time is Light Blue (matching stats)
+        letter-spacing: -2px;
+        font-variant-numeric: tabular-nums;
+    }
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(0.9);
+        opacity: 0.7;
+    }
+
+    50% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(0.9);
+        opacity: 0.7;
+    }
+}
