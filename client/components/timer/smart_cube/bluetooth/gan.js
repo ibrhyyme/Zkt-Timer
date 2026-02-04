@@ -16,19 +16,31 @@ export default class GAN extends SmartCube {
 		this.device = device;
 	}
 
+	retryCount = 0;
+
 	customMacAddressProvider = async (device, isFallbackCall) => {
 		const CACHE_KEY = 'gan_cube_mac';
 		const cachedMac = localStorage.getItem(CACHE_KEY);
 
 		// If we have a cached MAC and this is NOT a fallback call (meaning first attempt), try using it.
-		// If it's a fallback call, it means the first attempt (potentially with cached MAC) failed, so we must ask.
 		if (cachedMac && !isFallbackCall) {
+			this.retryCount = 0; // Reset retry count on fresh attempt
+			return cachedMac;
+		}
+
+		// AUTO-RETRY LOGIC:
+		// If the first attempt failed (isFallbackCall=true) but we have a valid-looking cached MAC,
+		// try it one more time automatically before bothering the user. 
+		// Connection flakiness is common with Web Bluetooth.
+		if (isFallbackCall && cachedMac && this.retryCount < 1) {
+			console.log('Connection failed, retrying with cached MAC automatically...');
+			this.retryCount++;
 			return cachedMac;
 		}
 
 		let macAddress;
 		if (isFallbackCall) {
-			// If fallback, pre-fill prompt with cached one if available, or empty
+			// If fallback (and we exhausted retries), prompt user
 			macAddress = prompt('Unable do determine cube MAC address!\nPlease enter MAC address manually:', cachedMac || '');
 		} else {
 			macAddress =
