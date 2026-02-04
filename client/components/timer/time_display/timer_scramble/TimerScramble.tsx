@@ -30,6 +30,7 @@ export default function TimerScramble() {
 	const mobileMode = useGeneral('mobile_mode');
 	const sessionId = useSettings('session_id');
 	const cubeType = context.cubeType;
+	const scrambleSubset = context.scrambleSubset;
 	const isMegaminx = cubeType === 'minx' || cubeType === 'megaminx';
 	let timerScrambleSize = useSettings('timer_scramble_size');
 
@@ -49,16 +50,18 @@ export default function TimerScramble() {
 	const [scrambleHistory, setScrambleHistory] = useState<string[]>([]);
 	const [currentIndex, setCurrentIndex] = useState(-1);
 	const lastCubeTypeRef = useRef(cubeType);
+	const lastScrambleSubsetRef = useRef(scrambleSubset);
 	const isNavigatingRef = useRef(false);
 
 	// Kategori değiştiğinde history'yi sıfırla
 	useEffect(() => {
-		if (lastCubeTypeRef.current !== cubeType) {
+		if (lastCubeTypeRef.current !== cubeType || lastScrambleSubsetRef.current !== scrambleSubset) {
 			setScrambleHistory([]);
 			setCurrentIndex(-1);
 			lastCubeTypeRef.current = cubeType;
+			lastScrambleSubsetRef.current = scrambleSubset;
 		}
-	}, [cubeType]);
+	}, [cubeType, scrambleSubset]);
 
 	// Scramble değiştiğinde (navigasyon dışında) history'ye ekle
 	useEffect(() => {
@@ -152,10 +155,10 @@ export default function TimerScramble() {
 		} else {
 			// En sondaysa, yeni scramble üret
 			const ct = getCubeTypeInfoById(cubeType);
-			const newScramble = getNewScramble(ct.scramble);
+			const newScramble = getNewScramble(ct.scramble, undefined, scrambleSubset);
 			setTimerParam('scramble', newScramble);
 		}
-	}, [currentIndex, scrambleHistory, timeStartedAt, scrambleLocked, cubeType]);
+	}, [currentIndex, scrambleHistory, timeStartedAt, scrambleLocked, cubeType, scrambleSubset]);
 
 	// Klavye kısayolları (Sol/Sağ ok tuşları)
 	useEffect(() => {
