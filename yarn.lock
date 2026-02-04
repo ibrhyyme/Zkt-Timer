@@ -2513,18 +2513,6 @@
   resolved "https://registry.npmjs.org/@opentelemetry/semantic-conventions/-/semantic-conventions-1.28.0.tgz"
   integrity sha512-lp4qAiMTD4sNWW4DbKLBkfiMZ4jbAboJIGOQr5DvciMRI494OapieI9qiODpOt0XBr1LjIDy1xAGAnVs5supTA==
 
-"@optique/core@0.9.0-dev.187+992128e2", "@optique/core@v0.9.0-dev.187":
-  version "0.9.0-dev.187"
-  resolved "https://registry.yarnpkg.com/@optique/core/-/core-0.9.0-dev.187.tgz#74da9ea37e80aa67e4184c48d5b6dde4fcd98d4f"
-  integrity sha512-wBTFbWaESwRTjF+429xzFueIBcsJ/xaD66pSwhJaIo1f7vljRfXa51R0H+EyY2tkNeFsM68YFcPPXw8TLtRuZw==
-
-"@optique/run@v0.9.0-dev.187":
-  version "0.9.0-dev.187"
-  resolved "https://registry.yarnpkg.com/@optique/run/-/run-0.9.0-dev.187.tgz#a4b35319a8ef14af6901a7b7e5975544f39d0a11"
-  integrity sha512-JBV2icMvuoc/3W6/LxcGyRv93PCvLW0KsRtKXGz4xcEMgD08hPMuKM+xBQR4+waHUjq9cofyqst854lFx4ud5A==
-  dependencies:
-    "@optique/core" "0.9.0-dev.187+992128e2"
-
 "@parcel/watcher-android-arm64@2.5.1":
   version "2.5.1"
   resolved "https://registry.yarnpkg.com/@parcel/watcher-android-arm64/-/watcher-android-arm64-2.5.1.tgz#507f836d7e2042f798c7d07ad19c3546f9848ac1"
@@ -5344,6 +5332,11 @@ chalk@^4.0.0, chalk@^4.1.0, chalk@^4.1.1, chalk@^4.1.2:
     ansi-styles "^4.1.0"
     supports-color "^7.1.0"
 
+chalk@^5.3.0:
+  version "5.6.2"
+  resolved "https://registry.yarnpkg.com/chalk/-/chalk-5.6.2.tgz#b1238b6e23ea337af71c7f8a295db5af0c158aea"
+  integrity sha512-7NzBL0rN6fMUW+f7A6Io4h40qQlG+xGmtMxfbnH/K7TAtt8JQWVQK+6g0UXKMeVJoyV5EkkNsErQ8pVD3bLHbA==
+
 chance@^1.1.8:
   version "1.1.13"
   resolved "https://registry.npmjs.org/chance/-/chance-1.1.13.tgz"
@@ -5613,6 +5606,16 @@ cmd-shim@^3.0.0, cmd-shim@^3.0.3:
   dependencies:
     graceful-fs "^4.1.2"
     mkdirp "~0.5.0"
+
+cmd-ts-too@^0.15.3:
+  version "0.15.3"
+  resolved "https://registry.yarnpkg.com/cmd-ts-too/-/cmd-ts-too-0.15.3.tgz#090fac6dc5bd0898a945d4cbfbaa525145666446"
+  integrity sha512-B16GQEn0fENaOfFXxJRJDecYjDxs8Mcm2cU4jhMwxl+fbgTnLjoD+dIw/yTdMDDNQssgoDqbiTSCKcXTitisvA==
+  dependencies:
+    chalk "^5.3.0"
+    debug "^4.3.7"
+    didyoumean "^1.2.2"
+    strip-ansi "^7.1.0"
 
 co@^4.6.0:
   version "4.6.0"
@@ -6204,19 +6207,17 @@ cubejs@^1.3.2:
   dependencies:
     npm "^6.0.0"
 
-cubing@0.62.0:
-  version "0.62.0"
-  resolved "https://registry.yarnpkg.com/cubing/-/cubing-0.62.0.tgz#e0de5ad33ff36ccefb22dc5528b926592fdec142"
-  integrity sha512-iivgGVc/yH/Ga805j1DmRJlfFpptlEXFXIsAkC06AdCVobhxfxvhzjK9XaFLQ07dSjK3xquNYPm6+ZBK/IuVcw==
+cubing@0.56.0:
+  version "0.56.0"
+  resolved "https://registry.yarnpkg.com/cubing/-/cubing-0.56.0.tgz#5b085154e9e65e6c1aec59c767cf57777cd3611e"
+  integrity sha512-8CabQLEkWA2iCy4LeyCPN5fCUnfjmz3QJ/Zo6EInEdPX/X/QNHbLhjljfumNHFoM234davupDj/i6D+ml7wAVQ==
   dependencies:
-    "@optique/core" v0.9.0-dev.187
-    "@optique/run" v0.9.0-dev.187
     "@types/three" "^0.169.0"
     "@types/web-bluetooth" "^0.0.20"
+    cmd-ts-too "^0.15.3"
     comlink "^4.4.1"
     random-uint-below v3.3.0
     three "^0.170.0"
-    type-fest "^5.2.0"
 
 cyclist@^1.0.1:
   version "1.0.2"
@@ -6376,6 +6377,13 @@ debug@4, debug@^4.0.1, debug@^4.1.0, debug@^4.1.1, debug@^4.3.1, debug@^4.3.4, d
   version "4.4.1"
   resolved "https://registry.npmjs.org/debug/-/debug-4.4.1.tgz"
   integrity sha512-KcKCqiftBJcZr++7ykoDIEwSa3XWowTfNPo92BYxjXiyYEVrUQh2aLyhxBCwww+heortUFxEJYcRzosstTEBYQ==
+  dependencies:
+    ms "^2.1.3"
+
+debug@^4.3.7:
+  version "4.4.3"
+  resolved "https://registry.yarnpkg.com/debug/-/debug-4.4.3.tgz#c6ae432d9bd9662582fce08709b038c58e9e3d6a"
+  integrity sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==
   dependencies:
     ms "^2.1.3"
 
@@ -14868,6 +14876,13 @@ strip-ansi@^7.0.1:
   dependencies:
     ansi-regex "^6.0.1"
 
+strip-ansi@^7.1.0:
+  version "7.1.2"
+  resolved "https://registry.yarnpkg.com/strip-ansi/-/strip-ansi-7.1.2.tgz#132875abde678c7ea8d691533f2e7e22bb744dba"
+  integrity sha512-gmBGslpoQJtgnMAvOVqGZpEz9dyoKTCzy2nfz/n8aIFhN/jCE/rCmcxabB6jOOHV+0WNnylOxaxBQPSvcWklhA==
+  dependencies:
+    ansi-regex "^6.0.1"
+
 strip-bom@^3.0.0:
   version "3.0.0"
   resolved "https://registry.npmjs.org/strip-bom/-/strip-bom-3.0.0.tgz"
@@ -15052,11 +15067,6 @@ table@^5.2.3:
     lodash "^4.17.14"
     slice-ansi "^2.1.0"
     string-width "^3.0.0"
-
-tagged-tag@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/tagged-tag/-/tagged-tag-1.0.0.tgz#a0b5917c2864cba54841495abfa3f6b13edcf4d6"
-  integrity sha512-yEFYrVhod+hdNyx7g5Bnkkb0G6si8HJurOoOEgC8B/O0uXLHlaey/65KRv6cuWBNhBgHKAROVpc7QyYqE5gFng==
 
 tailwindcss@^3.1.4:
   version "3.4.17"
@@ -15475,13 +15485,6 @@ type-fest@^0.8.1:
   version "0.8.1"
   resolved "https://registry.npmjs.org/type-fest/-/type-fest-0.8.1.tgz"
   integrity sha512-4dbzIzqvjtgiM5rw1k5rEHtBANKmdudhGyBEajN01fEyhaAIhsoKNy6y7+IN93IfpFtwY9iqi7kD+xwKhQsNJA==
-
-type-fest@^5.2.0:
-  version "5.4.3"
-  resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-5.4.3.tgz#b4c7e028da129098911ee2162a0c30df8a1be904"
-  integrity sha512-AXSAQJu79WGc79/3e9/CR77I/KQgeY1AhNvcShIH4PTcGYyC4xv6H4R4AUOwkPS5799KlVDAu8zExeCrkGquiA==
-  dependencies:
-    tagged-tag "^1.0.0"
 
 type-graphql@^1.1.1:
   version "1.1.1"
