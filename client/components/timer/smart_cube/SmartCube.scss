@@ -26,9 +26,9 @@
 	}
 
 	&__stats-container {
-		position: absolute;
-		top: 40%; // Higher up
-		right: -290px;
+		position: fixed;
+		top: 35%;
+		right: 20px; // Ekranın en sağına sabitle
 		transform: translateY(-50%);
 		z-index: 10;
 		text-align: left;

@@ -10,9 +10,13 @@ const b = block('live-analysis');
 export default function LiveAnalysisOverlay({ startState, mobile }: { startState?: string, mobile?: boolean }) {
     const { smartTurns, timeStartedAt } = useContext(TimerContext);
     const analysisMode = useSettings('smart_cube_analysis_mode') || 'cffffop';
+    const cubeType = useSettings('cube_type');
+    const scrambleSubset = useSettings('scramble_subset');
 
-    // Only run if timer is running or we have turns
-    const shouldRun = !!timeStartedAt || (smartTurns && smartTurns.length > 0);
+    // Only run if timer is running or we have turns AND it is Standard 3x3 (WCA)
+    // Subsets (OLL, PLL, ZBLL etc.) should NOT trigger live analysis
+    const isStandard3x3 = cubeType === '333' && (!scrambleSubset || scrambleSubset === '');
+    const shouldRun = (!!timeStartedAt || (smartTurns && smartTurns.length > 0)) && isStandard3x3;
 
     const [cachedAnalysis, setCachedAnalysis] = React.useState<any>(null);
     const prevStartState = React.useRef(startState);
@@ -60,7 +64,7 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
     // This prevents the "wrong move" glitch from showing garbage live stats during scramble.
     const displayAnalysis = timeStartedAt && shouldRun ? analysis : cachedAnalysis;
 
-    if (!displayAnalysis || analysisMode === 'none') return null;
+    if (!displayAnalysis || analysisMode === 'none' || !isStandard3x3) return null;
 
     const formatTime = (t?: number) => t ? t.toFixed(2) : '-';
 
