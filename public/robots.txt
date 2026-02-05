@@ -39,8 +39,5 @@ Disallow: /graphql
 Disallow: /_next/
 Disallow: /public/uploads/temp/
 
-# Crawl hızını düşür (sunucu yükünü azalt)
-Crawl-delay: 1
-
 # Sitemap konumu
 Sitemap: https://zktimer.app/public/uploads/site/sitemaps/sitemap.xml
