@@ -841,19 +841,17 @@ export default function FriendlyRoom() {
         return myParticipant.solves.find((s) => s.scramble_index === room.scramble_index);
     })();
 
-    // Smart cube: When solve finishes, submit to room
-    useEffect(() => {
-        if (timerType === 'smart' && smartCubeConnected && smartCubeFinalTime > 0 && !smartCubeSolveSubmittedRef.current && !alreadySolvedThisRound) {
-            // Smart cube solve finished - submit the time
-            smartCubeSolveSubmittedRef.current = true;
-            handleSolveSubmit(smartCubeFinalTime / 1000, false, false); // Convert ms to seconds
-        }
-    }, [smartCubeFinalTime, timerType, smartCubeConnected, alreadySolvedThisRound]);
+    // Smart cube: isSpectator check for various logic
+    const isSpectator = room?.participants.find((p) => p.user_id === me?.id)?.is_spectator;
 
-    // Smart cube: Reset submit flag on new scramble
+    // NOTE: Smart cube auto-submit REMOVED - user must manually click KAYDET in review screen
+    // This allows user to choose DNF, +2, or İPTAL before saving
+
+    // Smart cube: Reset submit flag on new scramble or scramble index change
+    // FIX: Also reset on scramble_index to handle spectator mode changes
     useEffect(() => {
         smartCubeSolveSubmittedRef.current = false;
-    }, [room?.current_scramble]);
+    }, [room?.current_scramble, room?.scramble_index]);
 
     if (loading) {
         return (
@@ -1549,7 +1547,19 @@ export default function FriendlyRoom() {
                 }}
                 onRedo={() => {
                     handleSolveRedo();
+                    // FIX: Full smart cube state reset for re-solve
                     setSmartReviewing(false);
+                    setSmartScrambleCompletedAt(null);
+                    setSmartFinalTime(0);
+                    setSmartStats(null);
+                    setSmartTiming(false);
+                    setSmartElapsedTime(0);
+                    // Reset turn processing to current position
+                    sessionStartRef.current = smartTurns.length;
+                    processedTurnsRef.current = smartTurns.length;
+                    scrambleTurnCountRef.current = 0;
+                    // Reset virtual cube for fresh scramble matching
+                    cubejsRef.current = new Cube();
                 }}
                 onStatusChange={handleStatusChange}
                 onOpenSettings={() => setSettingsOpen(true)}

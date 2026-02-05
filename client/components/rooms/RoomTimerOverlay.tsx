@@ -81,6 +81,10 @@ export default function RoomTimerOverlay({
         DNF?: boolean;
     }>({});
 
+    // Keyboard navigation for submission screen
+    // 0: +2, 1: DNF, 2: KAYDET, 3: İPTAL
+    const [focusedButtonIndex, setFocusedButtonIndex] = useState(2); // Default to KAYDET
+
     // Manual entry state
     const [manualTimeInput, setManualTimeInput] = useState('');
     const [manualTimeError, setManualTimeError] = useState(false);
@@ -126,8 +130,9 @@ export default function RoomTimerOverlay({
     const smartCubeInspectionTimer = useSelector((state: any) => state.timer?.inspectionTimer ?? 17);
     const smartCubeConnected = useSelector((state: any) => state.timer?.smartCubeConnected || false);
 
-    // Smart cube requires inspection, manual entry shows input directly
-    const effectiveInspection = timerType === 'smart' ? true : inspection;
+    // FIX: Removed forced inspection for smart cube - let user decide
+    // Previously: timerType === 'smart' ? true : inspection
+    const effectiveInspection = inspection;
     const isManualMode = manualEntry && timerType !== 'smart';
 
     // Clear timers on unmount
@@ -151,10 +156,11 @@ export default function RoomTimerOverlay({
         }
     }, [scramble, isManualMode, isActive, alreadySolvedThisRound]);
 
-    // Reset penalties when entering smart review mode
+    // Reset penalties and focus when entering smart review mode
     useEffect(() => {
         if (smartReviewing) {
             setPenalties({});
+            setFocusedButtonIndex(2); // Always default to KAYDET button
         }
     }, [smartReviewing]);
 
@@ -564,12 +570,43 @@ export default function RoomTimerOverlay({
 
             // Smart Review Keyboard Support
             if (smartReviewing) {
-                if (e.key === 'Enter' || e.keyCode === 13 || e.key === ' ' || e.keyCode === 32) { // Enter or Space
+                // FIX: ESC to cancel smart cube solve
+                if (e.key === 'Escape' || e.keyCode === 27) {
                     e.preventDefault();
-                    const sec = smartFinalTime / 1000;
-                    const { inspection: inspPenalty, inspectionDNF, AUF, DNF } = penalties;
-                    const isDNF = DNF || inspectionDNF;
-                    onSubmit(sec, AUF || false, isDNF || false);
+                    onRedo();
+                    return;
+                }
+                // Arrow keys for button navigation
+                if (e.key === 'ArrowLeft' || e.keyCode === 37) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setFocusedButtonIndex(prev => prev > 0 ? prev - 1 : 3);
+                    return;
+                }
+                if (e.key === 'ArrowRight' || e.keyCode === 39) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setFocusedButtonIndex(prev => prev < 3 ? prev + 1 : 0);
+                    return;
+                }
+                // Enter or Space to activate focused button
+                if (e.key === 'Enter' || e.keyCode === 13 || e.key === ' ' || e.keyCode === 32) {
+                    e.preventDefault();
+                    // 0: +2, 1: DNF, 2: KAYDET, 3: İPTAL
+                    if (focusedButtonIndex === 0) {
+                        flipPenalty('AUF');
+                    } else if (focusedButtonIndex === 1) {
+                        flipPenalty('DNF');
+                    } else if (focusedButtonIndex === 2) {
+                        if (!warning) {
+                            const sec = smartFinalTime / 1000;
+                            const { inspection: inspPenalty, inspectionDNF, AUF, DNF } = penalties;
+                            const isDNF = DNF || inspectionDNF;
+                            onSubmit(sec, AUF || false, isDNF || false);
+                        }
+                    } else if (focusedButtonIndex === 3) {
+                        onRedo();
+                    }
                     return;
                 }
                 return;
@@ -977,7 +1014,7 @@ export default function RoomTimerOverlay({
                     </div>
                 )}
                 <div className="room-timer-overlay__penalties">
-                    <label className="room-timer-overlay__checkbox">
+                    <label className={`room-timer-overlay__checkbox ${focusedButtonIndex === 0 ? 'room-timer-overlay__checkbox--focused' : ''}`}>
                         <input
                             type="checkbox"
                             checked={AUF || false}
@@ -986,7 +1023,7 @@ export default function RoomTimerOverlay({
                         />
                         <span>+2</span>
                     </label>
-                    <label className="room-timer-overlay__checkbox">
+                    <label className={`room-timer-overlay__checkbox ${focusedButtonIndex === 1 ? 'room-timer-overlay__checkbox--focused' : ''}`}>
                         <input
                             type="checkbox"
                             checked={isDNF || false}
@@ -995,10 +1032,10 @@ export default function RoomTimerOverlay({
                         />
                         <span>DNF</span>
                     </label>
-                    <button className="room-timer-overlay__btn" onClick={handleSmartSubmit} disabled={!!warning}>
+                    <button className={`room-timer-overlay__btn ${focusedButtonIndex === 2 ? 'room-timer-overlay__btn--focused' : ''}`} onClick={handleSmartSubmit} disabled={!!warning}>
                         KAYDET
                     </button>
-                    <button className="room-timer-overlay__btn room-timer-overlay__btn--secondary" onClick={onRedo}>
+                    <button className={`room-timer-overlay__btn room-timer-overlay__btn--secondary ${focusedButtonIndex === 3 ? 'room-timer-overlay__btn--focused' : ''}`} onClick={onRedo}>
                         İPTAL
                     </button>
                 </div>
