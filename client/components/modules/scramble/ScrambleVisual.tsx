@@ -156,7 +156,7 @@ export default function ScrambleVisual(props: Props) {
 	}
 
 	return (
-		<div className={b('wrapper', { clickable: false })} style={{ width: width }}>
+		<div className={`${b('wrapper', { clickable: false })} ${b()}`} style={{ width: width }}>
 			<div
 				style={containerStyle}
 				onTouchStart={handleTouchStart}
