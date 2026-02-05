@@ -8,6 +8,7 @@ import Emblem from '../../common/emblem/Emblem';
 import { getDateFromNow } from '../../../util/dates';
 import Scramble from '../../modules/scramble/ScrambleVisual';
 import { getCubeTypeName } from '../../../util/cubes/util';
+import { useGeneral } from '../../../util/hooks/useGeneral';
 import block from '../../../styles/bem';
 import Tag from '../../common/tag/Tag';
 import { Solve } from '../../../../server/schemas/Solve.schema';
@@ -27,7 +28,10 @@ export default function SolveListRow(props: Props) {
 	const { solve, selectionMode, isSelected, onToggleSelect } = props;
 
 	const dispatch = useDispatch();
+	const mobileMode = useGeneral('mobile_mode');
 
+	// Responsive scramble size: 100px mobile, 130px desktop
+	const scrambleSize = mobileMode ? '100px' : '130px';
 	function openSolve() {
 		if (selectionMode) {
 			onToggleSelect && onToggleSelect();
@@ -87,7 +91,7 @@ export default function SolveListRow(props: Props) {
 			</div>
 			<div className={b('scramble')}>
 				<div className={b('scramble-body')}>
-					<Scramble frontFace width="60px" scramble={scramble} cubeType={solve.cube_type} />
+					<Scramble frontFace width={scrambleSize} scramble={scramble} cubeType={solve.cube_type} />
 				</div>
 			</div>
 			<div className={b('badges')}>
