@@ -1,8 +1,46 @@
+# ZKT Timer Robots.txt
+# https://zktimer.app
+
 User-agent: *
+
+# Ana sayfalar - İzin ver
 Allow: /
+Allow: /login
+Allow: /signup
+Allow: /rooms
+Allow: /solves
+Allow: /stats
+Allow: /play
 Allow: /community/leaderboards
 Allow: /trainer/public-trainers
-Allow: /play
-Allow: /rooms
+Allow: /terms
+Allow: /privacy
 
-Sitemap: https://zktimer.app/site/sitemaps/sitemap.xml
+# Kullanıcı profilleri - İzin ver
+Allow: /user/
+
+# İndekslenmemesi gereken sayfalar - Engelle
+Disallow: /settings
+Disallow: /settings/
+Disallow: /sessions
+Disallow: /account
+Disallow: /account/
+Disallow: /admin
+Disallow: /admin/
+Disallow: /oauth
+Disallow: /oauth/
+Disallow: /force-log-out
+Disallow: /forgot
+Disallow: /unsub-emails
+
+# Teknik ve API endpointleri - Engelle
+Disallow: /api/
+Disallow: /graphql
+Disallow: /_next/
+Disallow: /public/uploads/temp/
+
+# Crawl hızını düşür (sunucu yükünü azalt)
+Crawl-delay: 1
+
+# Sitemap konumu
+Sitemap: https://zktimer.app/public/uploads/site/sitemaps/sitemap.xml

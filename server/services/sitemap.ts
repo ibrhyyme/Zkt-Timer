@@ -53,7 +53,7 @@ export async function initSiteMapGeneration() {
 		profileSiteMapUrlCount: profileSiteMapUrls.length,
 	});
 
-	const allSiteMapUrls = [defaultSiteMapUrl, ...profileSiteMapUrls];
+	const allSiteMapUrls = [defaultSiteMapUrl, ...profileSiteMapUrls].filter(Boolean) as string[];
 	await writeSiteMapIndices(allSiteMapUrls);
 	// Cache invalidation removed - not needed for local storage
 
@@ -130,6 +130,18 @@ function getDefaultSiteMapUrls() {
 	const baseUri = process.env.BASE_URI;
 	const urls: SiteMapUrl[] = [];
 
+	// Sitemap'e dahil edilmemesi gereken path'ler
+	const excludedPaths = [
+		'/settings',
+		'/sessions',
+		'/force-log-out',
+		'/forgot',
+		'/unsub-emails',
+		'/account',
+		'/oauth',
+		'/admin',
+	];
+
 	for (let i = 0; i < routes.length; i += 1) {
 		const priority = Math.floor((1 - ((1 / routes.length) * i) / 10) * 1000) / 1000;
 		const route = routes[i] as PageContext;
@@ -139,6 +151,11 @@ function getDefaultSiteMapUrls() {
 		}
 
 		if (route.admin || route.restricted || route.path.includes(':')) {
+			continue;
+		}
+
+		// Exclude paths that should not be indexed
+		if (excludedPaths.some(excluded => route.path.startsWith(excluded))) {
 			continue;
 		}
 
@@ -190,7 +207,17 @@ async function processUserProfileBatch(batchIndex: number, profiles: Profile[]) 
 	const urlsToStore = [];
 
 	for (const profile of profiles) {
-		urlsToStore.push(getSchemaFromProfile(profile));
+		// Sadece anlamlı içeriği olan profilleri sitemap'e ekle
+		// Bu, Google'ın "dizine eklenmeyen" sayfa sayısını azaltır
+		const hasContent = shouldIncludeProfile(profile);
+		if (hasContent) {
+			urlsToStore.push(getSchemaFromProfile(profile));
+		}
+	}
+
+	// Eğer bu batch'te eklenecek URL yoksa, boş sitemap oluşturma
+	if (urlsToStore.length === 0) {
+		return null;
 	}
 
 	const fileName = `sitemap_${batchIndex}.xml`;
@@ -198,6 +225,33 @@ async function processUserProfileBatch(batchIndex: number, profiles: Profile[]) 
 	fs.writeFileSync(getSiteMapFilePath(fileName), dataToWrite);
 
 	return uploadSiteMapToS3(fileName);
+}
+
+// Profili sitemap'e dahil etmeli miyiz?
+function shouldIncludeProfile(profile: Profile): boolean {
+	// Son 30 gün içinde aktif mi?
+	const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000;
+	const nowTime = Date.now();
+	const isRecentlyActive = profile.user.last_solve_at
+		? (nowTime - new Date(profile.user.last_solve_at).getTime()) < thirtyDaysInMs
+		: false;
+
+	// Profil tamamlanmış mı? (en az biri olmalı)
+	const hasProfileContent = !!(
+		profile.bio ||
+		profile.pfp_image_id ||
+		profile.header_image_id ||
+		profile.twitch_link ||
+		profile.twitter_link ||
+		profile.youtube_link ||
+		profile?.top_solves?.length
+	);
+
+	// Pro kullanıcı mı?
+	const isPro = profile.user.is_pro;
+
+	// Dahil etme kriteri: aktif VEYA profil içeriği var VEYA pro
+	return isRecentlyActive || hasProfileContent || isPro;
 }
 
 // Range 0.7 - 0.8
