@@ -235,6 +235,11 @@ export function listenForFriendlyRoomEvents(client: Socket) {
             // Update lobby
             const updatedRooms = await getAllActiveRooms();
             io().to(FriendlyRoomSocketRoom.LOBBY).emit(FriendlyRoomServerEvent.ROOMS_LIST, updatedRooms);
+
+            // Check if remaining participants have finished the round
+            if (result.room) {
+                await checkAllSolvedAndNextScramble(roomId, io());
+            }
         } catch (error) {
             logger.error('Error leaving friendly room', { error });
         }
@@ -630,6 +635,11 @@ async function startGracePeriod(user: any) {
 
                     const updatedRooms = await getAllActiveRooms();
                     io().to(FriendlyRoomSocketRoom.LOBBY).emit(FriendlyRoomServerEvent.ROOMS_LIST, updatedRooms);
+
+                    // Check if remaining participants have finished the round
+                    if (result.room) {
+                        await checkAllSolvedAndNextScramble(room.id, io());
+                    }
                 }
             }
         } catch (innerError) {

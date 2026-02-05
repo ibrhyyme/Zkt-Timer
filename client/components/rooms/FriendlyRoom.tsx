@@ -717,16 +717,53 @@ export default function FriendlyRoom() {
         };
     }, [roomId, history, me]);
 
-    // Join room on mount (if user is logged in) to ensure socket subscription
+    // Join room on mount (if user is logged in) and on Reconnect
+    // Also handles the case where user disconnects for > 45s (server timeout) -> Redirect to /rooms instead of rejoining
+    const lastDisconnectRef = useRef<number | null>(null);
+
     useEffect(() => {
         if (!me) return;
 
-        // Always attempt to join to ensure socket is in the right channel (idempotent)
-        if (!needsPassword) {
-            const input: JoinFriendlyRoomInput = { room_id: roomId };
-            getSocket().emit(FriendlyRoomClientEvent.JOIN_ROOM, input);
-        }
-    }, [me, roomId, needsPassword]);
+        const socket = getSocket();
+
+        const joinRoom = () => {
+            // If we were disconnected for more than 45 seconds (server grace period), 
+            // we have likely been kicked by the server. 
+            // In this case, do NOT rejoin, but redirect to /rooms to reflect the kick.
+            if (lastDisconnectRef.current) {
+                const elapsed = Date.now() - lastDisconnectRef.current;
+                // Use slightly less than 45s to be safe? No, server is 45s. 
+                // If we are definitely over 45s, we are kicked.
+                if (elapsed > 45000) {
+                    history.push('/rooms');
+                    return;
+                }
+            }
+
+            lastDisconnectRef.current = null; // Reset
+
+            if (!needsPassword) {
+                const input: JoinFriendlyRoomInput = { room_id: roomId };
+                socket.emit(FriendlyRoomClientEvent.JOIN_ROOM, input);
+            }
+        };
+
+        const onDisconnect = () => {
+            lastDisconnectRef.current = Date.now();
+        };
+
+        // Join immediately on mount
+        joinRoom();
+
+        // Listen for events
+        socket.on('connect', joinRoom);
+        socket.on('disconnect', onDisconnect);
+
+        return () => {
+            socket.off('connect', joinRoom);
+            socket.off('disconnect', onDisconnect);
+        };
+    }, [me, roomId, needsPassword, history]);
 
     // Handle visibility change (tab switch/minimize) logic for Grace Period
     useEffect(() => {
@@ -735,6 +772,8 @@ export default function FriendlyRoom() {
         const handleVisibilityChange = () => {
             if (document.visibilityState === 'hidden') {
                 // User switched tab or minimized - Signal AWAY (starts 45s timer)
+                // Note: If this eventually causes a disconnect (mobile sleep), the disconnect handler above takes over timing.
+                // If socket stays alive, server sends PLAYER_LEFT after 45s, which is handled by the main event listener.
                 getSocket().emit(FriendlyRoomClientEvent.SIGNAL_AWAY);
             } else if (document.visibilityState === 'visible') {
                 // User returned - Signal BACK (cancels timer)
@@ -746,7 +785,7 @@ export default function FriendlyRoom() {
 
         return () => {
             document.removeEventListener('visibilitychange', handleVisibilityChange);
-            // If component unmounts (leaving room page), we don't need to manually send anything 
+            // If component unmounts (leaving room page), we don't need to manual send anything 
             // because socket disconnect or navigation LEAVE_ROOM will handle cleanup.
         };
     }, [room, me, roomId]);
