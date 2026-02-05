@@ -147,9 +147,7 @@ export default function ScrambleVisual(props: Props) {
 		}
 		: isClock
 			? { minWidth: `${CLOCK_FULL_WIDTH}px` }
-			: isSq1
-				? { maxWidth: '120px', width: '100%' } // Reduced further for Square-1
-				: { width: '100%' };
+			: { width: '100%' };
 
 	if (puzzleId === 'other') {
 		return <div className={b('invalid')}>No visual</div>;

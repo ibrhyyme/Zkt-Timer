@@ -25,22 +25,24 @@ export default function TimerControls() {
     const lockedScramble = useSettings('locked_scramble');
     const latestSolve = useLatestSolve();
 
-    const { scramble, scrambleLocked, editScramble, timeStartedAt, cubeType, focusMode } = context;
+    const { scramble, scrambleLocked, editScramble, timeStartedAt, cubeType, focusMode, scrambleSubset } = context;
 
     // Scramble history state
     const [scrambleHistory, setScrambleHistory] = useState<string[]>([]);
     const [currentIndex, setCurrentIndex] = useState(-1);
     const lastCubeTypeRef = useRef(cubeType);
+    const lastScrambleSubsetRef = useRef(scrambleSubset);
     const isNavigatingRef = useRef(false);
 
-    // Kategori değiştiğinde history'yi sıfırla
+    // Kategori veya alt dal değiştiğinde history'yi sıfırla
     useEffect(() => {
-        if (lastCubeTypeRef.current !== cubeType) {
+        if (lastCubeTypeRef.current !== cubeType || lastScrambleSubsetRef.current !== scrambleSubset) {
             setScrambleHistory([]);
             setCurrentIndex(-1);
             lastCubeTypeRef.current = cubeType;
+            lastScrambleSubsetRef.current = scrambleSubset;
         }
-    }, [cubeType]);
+    }, [cubeType, scrambleSubset]);
 
     // Scramble değiştiğinde (navigasyon dışında) history'ye ekle
     useEffect(() => {
@@ -127,10 +129,10 @@ export default function TimerControls() {
             setTimerParam('scramble', nextScramble);
         } else {
             const ct = getCubeTypeInfoById(cubeType);
-            const newScramble = getNewScramble(ct.scramble);
+            const newScramble = getNewScramble(ct.scramble, undefined, scrambleSubset);
             setTimerParam('scramble', newScramble);
         }
-    }, [currentIndex, scrambleHistory, timeStartedAt, scrambleLocked, cubeType]);
+    }, [currentIndex, scrambleHistory, timeStartedAt, scrambleLocked, cubeType, scrambleSubset]);
 
     // Keyboard shortcuts
     useEffect(() => {
