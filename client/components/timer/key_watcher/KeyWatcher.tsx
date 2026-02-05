@@ -306,7 +306,8 @@ export default function KeyWatcher(props: Props) {
 		const target = e.target;
 		if (target.nodeName === 'INPUT' || target.nodeName === 'TEXTAREA' || target.isContentEditable) return;
 
-		if (timeStartedAt || inInspection || spaceTimerStarted || smartCubeSelected(context)) {
+		// Block shortcuts only during active timer/inspection (not when smart cube is idle)
+		if (timeStartedAt || inInspection || spaceTimerStarted) {
 			return;
 		}
 
