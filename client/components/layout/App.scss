@@ -3,6 +3,8 @@
 body,
 html {
 	background-color: rgb(var(--background-color));
+	overscroll-behavior: contain;
+	-webkit-overflow-scrolling: touch;
 }
 
 .cd {
@@ -31,6 +33,7 @@ html {
 		top: 0;
 		width: 100%;
 		height: 30px;
+		user-select: none;
 		-webkit-user-select: none;
 		-webkit-app-region: drag;
 	}
@@ -149,7 +152,7 @@ html {
 		flex-direction: row;
 		justify-content: flex-end;
 
-		> * {
+		>* {
 			margin-left: 7px;
 		}
 	}

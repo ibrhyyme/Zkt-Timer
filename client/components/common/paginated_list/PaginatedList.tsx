@@ -1,12 +1,15 @@
-import React, {ReactNode, useEffect, useState} from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
+import './PaginatedList.scss';
 import Empty from '../empty/Empty';
 import Loading from '../loading/Loading';
-import {numberWithCommas} from '../../../util/strings/util';
-import {useHistory, useRouteMatch} from 'react-router-dom';
+import { numberWithCommas } from '../../../util/strings/util';
+import { useHistory, useRouteMatch } from 'react-router-dom';
 import Button from '../button/Button';
-import {PaginationArgs, PaginationOutput} from '../../../../server/schemas/Pagination.schema';
-import {useUrlParamNumber} from '../../../util/hooks/useUrlParam';
+import { PaginationArgs, PaginationOutput } from '../../../../server/schemas/Pagination.schema';
+import { useUrlParamNumber } from '../../../util/hooks/useUrlParam';
+import block from '../../../styles/bem';
 
+const b = block('paginated-list');
 const DEFAULT_PAGE_SIZE = 50;
 
 interface Props<T> {
@@ -16,7 +19,7 @@ interface Props<T> {
 }
 
 export default function PaginatedList<T>(props: Props<T>) {
-	const {getItemRow, fetchData, searchQuery} = props;
+	const { getItemRow, fetchData, searchQuery } = props;
 
 	const match = useRouteMatch();
 	const history = useHistory();
@@ -102,7 +105,7 @@ export default function PaginatedList<T>(props: Props<T>) {
 	const totalPages = Math.ceil(totalResults / DEFAULT_PAGE_SIZE);
 
 	return (
-		<div className="w-full">
+		<div className={b()}>
 			<div className="w-full">
 				{resultCount}
 				<div className="">{body}</div>

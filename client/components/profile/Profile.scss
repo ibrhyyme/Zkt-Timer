@@ -9,6 +9,9 @@
 	padding-bottom: 100px;
 
 	&__wrapper {
+		overscroll-behavior-y: contain;
+		touch-action: pan-y;
+
 		&--standalone {
 			background-color: rgb(var(--background-color));
 			padding: 100px 0 150px;
@@ -166,6 +169,7 @@
 		width: 100%;
 		max-width: 1200px;
 		box-sizing: border-box;
+		overscroll-behavior-y: contain;
 
 		@media (max-width: 768px) {
 			padding: 0 12px;
