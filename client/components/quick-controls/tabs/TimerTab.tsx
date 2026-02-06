@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { setSetting, toggleSetting } from '../../../db/settings/update';
 import { useSettings } from '../../../util/hooks/useSettings';
@@ -43,6 +43,15 @@ export default function TimerTab() {
 	const timerType = useSettings('timer_type');
 	const manualEntry = useSettings('manual_entry');
 	const cubeType = useSettings('cube_type');
+
+	// Küp türü değiştiğinde smart cube uyumluluğunu kontrol et
+	useEffect(() => {
+		const smartCubeSupportedTypes = ['333', '333oh', '333bl', '333mirror'];
+
+		if (timerType === 'smart' && !smartCubeSupportedTypes.includes(cubeType)) {
+			setSetting('timer_type', 'keyboard');
+		}
+	}, [cubeType, timerType]);
 
 	let manualDisabled = false;
 	// Smart cube selection disables manual entry only for 3x3

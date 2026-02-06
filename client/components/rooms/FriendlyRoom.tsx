@@ -136,6 +136,21 @@ export default function FriendlyRoom() {
             // toastError(`Timer türü bu oda için "${targetType}" olarak değiştirildi.`);
         }
     }, [room?.allowed_timer_types, timerType, manualEntry]);
+
+    // Oda küp türü değiştiğinde smart cube uyumluluğunu kontrol et
+    useEffect(() => {
+        if (!room?.cube_type) return;
+
+        const smartCubeSupportedTypes = ['333', '333oh', '333bl', '333mirror'];
+
+        if (timerType === 'smart' && !smartCubeSupportedTypes.includes(room.cube_type)) {
+            // Smart cube bağlantısını kes
+            disconnectSmartCube();
+            // Timer türünü klavyeye çevir
+            setSetting('timer_type', 'keyboard');
+        }
+    }, [room?.cube_type, timerType]);
+
     const [ganTimerConnecting, setGanTimerConnecting] = useState(false);
     const ganTimerRef = useRef<GanTimerConnection | null>(null);
 
