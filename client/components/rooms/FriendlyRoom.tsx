@@ -74,6 +74,13 @@ export default function FriendlyRoom() {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    // Component unmount olduğunda (odadan çıkış) smart cube bağlantısını kes
+    useEffect(() => {
+        return () => {
+            disconnectSmartCube();
+        };
+    }, []);
+
     // Handle click outside for host menu
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -96,6 +103,7 @@ export default function FriendlyRoom() {
     const manualInspectionRef = useRef<NodeJS.Timeout | null>(null);
     const manualInspectionStartRef = useRef<number | null>(null);
     const manualTimeInputRef = useRef<HTMLInputElement>(null); // ✅ Manuel input ref
+    const prevTimerTypeRef = useRef<string | null>(null); // ✅ Önceki timer türünü takip et
 
     // Settings
     const manualEntry = useSettings('manual_entry');
@@ -151,6 +159,17 @@ export default function FriendlyRoom() {
             setSetting('timer_type', 'keyboard');
         }
     }, [room?.cube_type, timerType]);
+
+    // Timer türü smart cube'dan başka bir türe değiştiğinde Bluetooth bağlantısını kes
+    useEffect(() => {
+        // Eğer önceki tür 'smart' idiyse ve şimdi başka bir şeyse, disconnect et
+        if (prevTimerTypeRef.current === 'smart' && timerType !== 'smart') {
+            disconnectSmartCube();
+        }
+
+        // Şimdiki timer türünü kaydet
+        prevTimerTypeRef.current = timerType;
+    }, [timerType]);
 
     const [ganTimerConnecting, setGanTimerConnecting] = useState(false);
     const ganTimerRef = useRef<GanTimerConnection | null>(null);

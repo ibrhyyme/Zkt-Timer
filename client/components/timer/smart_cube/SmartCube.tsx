@@ -50,6 +50,7 @@ export default function SmartCube() {
 
 	const useSpaceWithSmartCube = useSettings('use_space_with_smart_cube');
 	const inspectionEnabled = useSettings('inspection');
+	const timerType = useSettings('timer_type'); // ✅ Timer türünü takip et
 	const mobileMode = useGeneral('mobile_mode');
 
 	let smartCubeSize = useSettings('smart_cube_size'); // From settings
@@ -77,6 +78,18 @@ export default function SmartCube() {
 			connect.current.disconnect();
 		};
 	}, []);
+
+	// Timer türü smart cube'dan başka bir türe değiştiğinde Bluetooth bağlantısını kes
+	const prevTimerTypeRef = useRef<string | null>(null);
+	useEffect(() => {
+		// Eğer önceki tür 'smart' idiyse ve şimdi başka bir şeyse, disconnect et
+		if (prevTimerTypeRef.current === 'smart' && timerType !== 'smart') {
+			disconnectBluetooth();
+		}
+
+		// Şimdiki timer türünü kaydet
+		prevTimerTypeRef.current = timerType;
+	}, [timerType]);
 
 	useEffect(() => {
 		initVisualCube();
