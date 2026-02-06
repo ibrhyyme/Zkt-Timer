@@ -144,7 +144,7 @@ export default function PbCard(props: Props) {
 				<div className={b('scramble-visual')}>
 					<Scramble frontFace scramble={scramble} cubeType={cubeType.id} />
 				</div>
-				<Tag small text={`${cubeType.name} ${single ? 'Single' : 'Average'}`} />
+				<Tag large text={`${cubeType.name} ${single ? 'Single' : 'Average'}`} />
 			</div>
 		</div>
 	);

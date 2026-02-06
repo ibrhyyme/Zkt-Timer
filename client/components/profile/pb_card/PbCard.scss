@@ -27,13 +27,13 @@
 	}
 
 	&__time {
-		> span:first-of-type {
+		>span:first-of-type {
 			color: rgb(var(--text-color));
 			font-size: 3rem;
 			font-weight: bold;
 		}
 
-		> span:last-of-type {
+		>span:last-of-type {
 			font-size: 0.85rem;
 			color: rgb(var(--text-color));
 			display: table;
