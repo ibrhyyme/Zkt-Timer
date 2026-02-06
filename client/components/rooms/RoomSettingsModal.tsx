@@ -112,10 +112,7 @@ export default function RoomSettingsModal({ isOpen, onClose, cubeType, allowedTi
     }
 
     // Timer logic copied from TimerTab.tsx
-    let manualDisabled = false;
-    if (timerType === 'smart' && cubeType === '333') {
-        manualDisabled = true;
-    }
+    // REMOVED: Manuel entry artık her zaman kullanılabilir (smart cube aktifken de)
 
     function selectTimerType(newTimerType: AllSettings['timer_type']) {
         setSetting('manual_entry', false);
@@ -158,7 +155,7 @@ export default function RoomSettingsModal({ isOpen, onClose, cubeType, allowedTi
         {
             label: 'Manuel Giriş',
             isActive: manualEntry,
-            disabled: manualDisabled,
+            disabled: false, // ✅ Artık hiçbir zaman disabled değil
             onClick: toggleManualEntry,
         },
     ];

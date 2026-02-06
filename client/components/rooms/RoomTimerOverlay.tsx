@@ -156,13 +156,24 @@ export default function RoomTimerOverlay({
         }
     }, [scramble, isManualMode, isActive, alreadySolvedThisRound]);
 
-    // Reset penalties and focus when entering smart review mode
+    // Reset penalties and focus when entering smart review mode OR normal submission mode
     useEffect(() => {
-        if (smartReviewing) {
+        if (smartReviewing || status === STATUS.SUBMITTING) {
             setPenalties({});
             setFocusedButtonIndex(2); // Always default to KAYDET button
         }
-    }, [smartReviewing]);
+    }, [smartReviewing, status]);
+
+    // Manuel giriş modunda input'a otomatik focus
+    useEffect(() => {
+        if (status === STATUS.MANUAL_INPUT && manualInputRef.current) {
+            // Küçük delay ile focus - React render cycle'ını bekle
+            const timer = setTimeout(() => {
+                manualInputRef.current?.focus();
+            }, 100);
+            return () => clearTimeout(timer);
+        }
+    }, [status]);
 
 
 
@@ -337,14 +348,14 @@ export default function RoomTimerOverlay({
         reset();
     }, [penalties, time, onSubmit]);
 
-    const handleRedo = () => {
-        reset();
-        onRedo();
-    };
+    const flipPenalty = useCallback((penalty: 'AUF' | 'DNF' | 'inspection') => {
+        setPenalties((prev) => ({ ...prev, [penalty]: !prev[penalty] }));
+    }, []);
 
-    const flipPenalty = (penalty: string) => {
-        setPenalties((prev) => ({ ...prev, [penalty]: !prev[penalty as keyof typeof prev] }));
-    };
+    const handleRedo = useCallback(() => {
+        reset();
+        onRedo?.();
+    }, [onRedo]);
 
     const connectStackmat = useCallback(async () => {
         if (timerType !== 'stackmat' || !isActive) return;
@@ -614,10 +625,40 @@ export default function RoomTimerOverlay({
 
             // Normal Submission Keyboard Support (Enter or Space to save)
             if (currentStatus === STATUS.SUBMITTING) {
+                // Arrow keys for button navigation
+                if (e.key === 'ArrowLeft' || e.keyCode === 37) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setFocusedButtonIndex(prev => prev > 0 ? prev - 1 : 3);
+                    return;
+                }
+                if (e.key === 'ArrowRight' || e.keyCode === 39) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setFocusedButtonIndex(prev => prev < 3 ? prev + 1 : 0);
+                    return;
+                }
+                // Enter or Space to activate focused button
                 if (e.key === 'Enter' || e.keyCode === 13 || e.key === ' ' || e.keyCode === 32) {
                     e.preventDefault();
-                    submitTime();
-                    return;
+                    // 0: +2, 1: DNF - Toggle ve KAYDET'e odaklan
+                    if (focusedButtonIndex === 0 || focusedButtonIndex === 1) {
+                        const penalty = focusedButtonIndex === 0 ? 'AUF' : 'DNF';
+                        flipPenalty(penalty);
+                        // Checkbox'ı toggle et, KAYDET'e odaklan
+                        setFocusedButtonIndex(2);
+                        return;
+                    }
+                    // 2: KAYDET
+                    if (focusedButtonIndex === 2) {
+                        submitTime();
+                        return;
+                    }
+                    // 3: İPTAL
+                    if (focusedButtonIndex === 3) {
+                        handleRedo();
+                        return;
+                    }
                 }
             }
 
@@ -830,7 +871,7 @@ export default function RoomTimerOverlay({
                 clearTimeout(primingTimeoutRef.current);
             }
         };
-    }, [isActive, alreadySolvedThisRound, effectiveInspection, submitTime, simulateSpaceDown, simulateSpaceUp, isManualMode, isMobile]);
+    }, [isActive, alreadySolvedThisRound, effectiveInspection, submitTime, simulateSpaceDown, simulateSpaceUp, isManualMode, isMobile, focusedButtonIndex, penalties]);
 
     // Connect GAN Timer
     const connectGanTimerDevice = async () => {
@@ -937,7 +978,7 @@ export default function RoomTimerOverlay({
                     {displayTime}
                 </div>
                 <div className="room-timer-overlay__penalties">
-                    <label className="room-timer-overlay__checkbox">
+                    <label className={`room-timer-overlay__checkbox ${focusedButtonIndex === 0 ? 'room-timer-overlay__checkbox--focused' : ''}`}>
                         <input
                             type="checkbox"
                             checked={AUF || false}
@@ -946,7 +987,7 @@ export default function RoomTimerOverlay({
                         />
                         <span>+2</span>
                     </label>
-                    <label className="room-timer-overlay__checkbox">
+                    <label className={`room-timer-overlay__checkbox ${focusedButtonIndex === 1 ? 'room-timer-overlay__checkbox--focused' : ''}`}>
                         <input
                             type="checkbox"
                             checked={isDNF || false}
@@ -955,10 +996,10 @@ export default function RoomTimerOverlay({
                         />
                         <span>DNF</span>
                     </label>
-                    <button className="room-timer-overlay__btn" onClick={submitTime}>
+                    <button className={`room-timer-overlay__btn ${focusedButtonIndex === 2 ? 'room-timer-overlay__btn--focused' : ''}`} onClick={submitTime}>
                         KAYDET
                     </button>
-                    <button className="room-timer-overlay__btn room-timer-overlay__btn--secondary" onClick={handleRedo}>
+                    <button className={`room-timer-overlay__btn room-timer-overlay__btn--secondary ${focusedButtonIndex === 3 ? 'room-timer-overlay__btn--focused' : ''}`} onClick={handleRedo}>
                         İPTAL
                     </button>
                 </div>
@@ -1079,6 +1120,11 @@ export default function RoomTimerOverlay({
                 setManualTimeInput('');
                 setManualTimeError(false);
                 reset();
+
+                // ✅ Submit sonrası input'a tekrar focus
+                setTimeout(() => {
+                    manualInputRef.current?.focus();
+                }, 150);
             } catch {
                 setManualTimeError(true);
             }
@@ -1098,6 +1144,12 @@ export default function RoomTimerOverlay({
                     ref={manualInputRef}
                     type="text"
                     inputMode="decimal"
+                    onBlur={(e) => {
+                        // ✅ Blur olduğunda tekrar focus (normal timer'daki gibi)
+                        if (!e.relatedTarget) {
+                            e.target.focus();
+                        }
+                    }}
                     onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                             e.preventDefault();

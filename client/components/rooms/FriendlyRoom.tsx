@@ -95,6 +95,7 @@ export default function FriendlyRoom() {
     const [manualInspectionTime, setManualInspectionTime] = useState(15000); // ms
     const manualInspectionRef = useRef<NodeJS.Timeout | null>(null);
     const manualInspectionStartRef = useRef<number | null>(null);
+    const manualTimeInputRef = useRef<HTMLInputElement>(null); // ✅ Manuel input ref
 
     // Settings
     const manualEntry = useSettings('manual_entry');
@@ -1259,6 +1260,11 @@ export default function FriendlyRoom() {
                                                         setManualTimeInput('');
                                                         setManualTimeError(false);
                                                         setPenalties({ AUF: false, DNF: false, inspection: false });
+
+                                                        // ✅ Submit sonrası input'a tekrar focus
+                                                        setTimeout(() => {
+                                                            manualTimeInputRef.current?.focus();
+                                                        }, 150);
                                                     } catch {
                                                         setManualTimeError(true);
                                                     }
@@ -1266,6 +1272,7 @@ export default function FriendlyRoom() {
                                             }}
                                         >
                                             <input
+                                                ref={manualTimeInputRef}
                                                 type="text"
                                                 inputMode="decimal"
                                                 pattern="[0-9]*"
@@ -1273,7 +1280,7 @@ export default function FriendlyRoom() {
                                                     ? 'border-red-500 focus:border-red-400'
                                                     : 'border-gray-700 focus:border-blue-500'
                                                     } text-white placeholder-gray-500 outline-none transition-colors appearance-none`}
-                                                placeholder={alreadySolvedThisRound ? "Kaydedildi" : "12.34"}
+                                                placeholder={alreadySolvedThisRound ? "Kaydedildi" : "1234"}
                                                 value={manualTimeInput}
                                                 disabled={alreadySolvedThisRound}
                                                 enterKeyHint="done"
@@ -1281,6 +1288,12 @@ export default function FriendlyRoom() {
                                                 autoCorrect="off"
                                                 autoCapitalize="none"
                                                 spellCheck="false"
+                                                onBlur={(e) => {
+                                                    // ✅ Blur olduğunda tekrar focus (normal timer'daki gibi)
+                                                    if (!e.relatedTarget && !alreadySolvedThisRound) {
+                                                        e.target.focus();
+                                                    }
+                                                }}
                                                 onChange={(e) => {
                                                     const val = e.target.value;
                                                     setManualTimeInput(val);
