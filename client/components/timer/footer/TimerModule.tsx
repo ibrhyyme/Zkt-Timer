@@ -133,6 +133,10 @@ export default function TimerModule(props: Props) {
 	if (index % 2 !== 0) {
 		wrapperClass.push('rounded-lg', 'border-4', 'border-tmo-background/10', 'bg-tm-module/10');
 	}
+	// Clock küpü için özel class
+	if (moduleType === TimerModuleType.SCRAMBLE && cubeType === 'clock') {
+		wrapperClass.push('clock-scramble');
+	}
 
 	return (
 		<div className={wrapperClass.join(' ')}>

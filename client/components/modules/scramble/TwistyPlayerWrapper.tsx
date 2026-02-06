@@ -14,7 +14,13 @@ const TwistyPlayerWrapper: React.FC<Props> = ({ puzzle, alg, visualization = '2D
 
     useEffect(() => {
         // Check if we are in a browser environment
-        if (typeof window !== 'undefined' && containerRef.current && !playerRef.current) {
+        if (typeof window !== 'undefined' && containerRef.current) {
+            // Cleanup previous instance if it exists (safety check, though return cleanup handles it)
+            if (playerRef.current) {
+                containerRef.current.innerHTML = '';
+                playerRef.current = null;
+            }
+
             playerRef.current = new TwistyPlayer({
                 puzzle: puzzle,
                 visualization: visualization,
@@ -27,25 +33,23 @@ const TwistyPlayerWrapper: React.FC<Props> = ({ puzzle, alg, visualization = '2D
             containerRef.current.appendChild(playerRef.current);
         }
 
-        // Cleanup: we don't necessarily want to destroy it on every re-render, 
-        // but on unmount we should clean up if necessary.
-        // However, since we are appending the element, we should remove it.
         return () => {
-            // eslint-disable-next-line react-hooks/exhaustive-deps
-            if (containerRef.current && playerRef.current) {
+            if (containerRef.current) {
                 containerRef.current.innerHTML = '';
                 playerRef.current = null;
             }
         };
-    }, []);
+        // Re-initialize when puzzle or visualization changes. 
+        // We include 'alg' in the init, but we handle dynamic alg updates separately below to avoid re-creation.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [puzzle, visualization]);
 
+    // Handle scramble updates without re-creating the player
     useEffect(() => {
         if (playerRef.current) {
-            playerRef.current.puzzle = puzzle;
             playerRef.current.alg = alg;
-            playerRef.current.visualization = visualization;
         }
-    }, [puzzle, alg, visualization]);
+    }, [alg]);
 
     return <div ref={containerRef} className={className} style={{ display: 'flex', justifyContent: 'center', width: '100%' }} />;
 };

@@ -37,7 +37,7 @@ interface Props {
 }
 
 export default function ScrambleVisual(props: Props) {
-	const { cubeType, scramble } = props;
+	const { cubeType, scramble, frontFace } = props;
 	const [isExpanded, setIsExpanded] = useState(false);
 	const mobileMode = useGeneral('mobile_mode');
 	const width = props.width || '100%';
@@ -121,7 +121,7 @@ export default function ScrambleVisual(props: Props) {
 	const CLOCK_HALF_WIDTH = CLOCK_FULL_WIDTH / 2;
 
 	// Clock Mobile Logic (Swipe View)
-	const isClockMobile = isClock && mobileMode;
+	const isClockMobile = isClock && mobileMode && !frontFace;
 
 	const containerStyle: React.CSSProperties = isClockMobile
 		? {
@@ -133,9 +133,17 @@ export default function ScrambleVisual(props: Props) {
 			position: 'relative',
 			touchAction: 'pan-y' // Allow vertical scroll, capture horizontal
 		}
-		: isClock
-			? { width: '100%', overflowX: 'auto', display: 'flex', justifyContent: 'center' }
-			: { width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' };
+		: (isClock && frontFace)
+			? {
+				width: '100%',
+				overflow: 'hidden',
+				display: 'flex',
+				justifyContent: 'flex-start',
+				alignItems: 'center'
+			}
+			: isClock
+				? { width: '100%', overflowX: 'auto', display: 'flex', justifyContent: 'center' }
+				: { width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' };
 
 	const innerStyle: React.CSSProperties = isClockMobile
 		? {
@@ -145,9 +153,15 @@ export default function ScrambleVisual(props: Props) {
 			display: 'flex',
 			justifyContent: 'center'
 		}
-		: isClock
-			? { minWidth: `${CLOCK_FULL_WIDTH}px` }
-			: { width: '100%' };
+		: (isClock && frontFace)
+			? {
+				width: '200%', // Force 200% width to show one face in 100% container
+				transform: 'translateX(0)', // Always show from left (front face)
+				display: 'flex',
+			}
+			: isClock
+				? { width: '100%', display: 'flex', justifyContent: 'center' } // Normal Clock - center both faces
+				: { width: '100%' };
 
 	if (puzzleId === 'other') {
 		return <div className={b('invalid')}>No visual</div>;
