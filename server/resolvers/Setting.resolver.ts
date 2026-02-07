@@ -8,7 +8,7 @@ import {ErrorCode} from '../constants/errors';
 import {v4 as uuid} from 'uuid';
 import {UserAccount} from '../schemas/UserAccount.schema';
 import {getPrisma} from '../database';
-import {isProEnabled} from '../lib/pro';
+
 
 export async function getSettingsByUserId(userId: string) {
 	return getPrisma().setting.findUnique({
@@ -75,11 +75,6 @@ export class SettingResolver {
 		let setting;
 
 		for (const key of keys) {
-			// Need to check for Pro settings
-			if (key === 'beta_tester' && isProEnabled() && !user.is_pro) {
-				continue;
-			}
-
 			setting = await setSetting(user.id, key, input[key]);
 		}
 

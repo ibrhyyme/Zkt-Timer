@@ -2,7 +2,7 @@ import {Authorized, Ctx, Query, Resolver} from 'type-graphql';
 import {GraphQLContext} from '../@types/interfaces/server.interface';
 import {Role} from '../middlewares/auth';
 import {Stats} from '../schemas/Stats.schema';
-import {isProEnabled} from '../lib/pro';
+
 
 export async function getStatsByUserId(context: GraphQLContext, userId: string) {
 	const {prisma, user} = context;
@@ -78,13 +78,6 @@ export async function getStatsByUserId(context: GraphQLContext, userId: string) 
 	let matchSolveCount = promises[3];
 	let matchMaxWinStreak = maxWinStreak;
 	let solveViews = promises[4];
-
-	if (isProEnabled() && !user.is_pro) {
-		profileViews = 0;
-		matchSolveCount = 0;
-		matchMaxWinStreak = 0;
-		solveViews = 0;
-	}
 
 	return {
 		friend_count: friendCount,

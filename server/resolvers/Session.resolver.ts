@@ -35,6 +35,7 @@ async function bulkCreateSessions(context: GraphQLContext, input: SessionInput[]
 
 	return prisma.session.createMany({
 		data,
+		skipDuplicates: true,
 	});
 }
 

@@ -189,6 +189,7 @@ export function bulkCreateSolves(user: UserAccount, solves: SolveInput[]) {
 
 	return getPrisma().solve.createMany({
 		data,
+		skipDuplicates: true,
 	});
 }
 

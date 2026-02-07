@@ -12,40 +12,20 @@ export const isProEnabled = (): boolean => {
 	return false;
 };
 
-/**
- * Check if user has Pro status
- * PRO sistemi kaldırıldı - herkes otomatik PRO
- */
 export function isPro(user?: UserAccount | PublicUserAccount): boolean {
-	// PRO sistemi kaldırıldı - herkes otomatik PRO
-	return true;
+	return user?.is_pro ?? false;
 }
 
-/**
- * Check if user does NOT have Pro status
- * PRO sistemi kaldırıldı - kimse NOT-PRO değil
- */
 export function isNotPro(user?: UserAccount | PublicUserAccount): boolean {
-	// PRO sistemi kaldırıldı - kimse NOT-PRO değil
-	return false;
+	return !user?.is_pro;
 }
 
-/**
- * Check if user is logged in AND has Pro status
- * PRO sistemi kaldırıldı - giriş yapan herkes PRO
- */
 export function isLoggedInAndPro(user?: UserAccount): boolean {
-	// Kullanıcı giriş yapmışsa PRO
-	return !!user;
+	return !!user && !!user.is_pro;
 }
 
-/**
- * Check if user is logged in and does NOT have Pro status
- * PRO sistemi kaldırıldı - kimse NOT-PRO değil
- */
 export function isLoggedInAndNotPro(user?: UserAccount): boolean {
-	// PRO sistemi kaldırıldı - kimse NOT-PRO değil
-	return false;
+	return !!user && !user.is_pro;
 }
 
 /**
