@@ -664,6 +664,8 @@ export default function RoomTimerOverlay({
 
             // Space
             if (e.key === ' ' || e.keyCode === 32) {
+                if (isTyping()) return; // Don't trigger timer if typing
+
                 e.preventDefault();
                 e.stopPropagation();
                 simulateSpaceDown();
@@ -682,6 +684,8 @@ export default function RoomTimerOverlay({
             if (alreadySolvedThisRound) return;
 
             if (e.keyCode === 32) {
+                if (isTyping()) return; // Don't trigger timer if typing
+
                 e.preventDefault();
                 e.stopPropagation();
                 simulateSpaceUp();

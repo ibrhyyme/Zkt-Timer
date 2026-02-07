@@ -164,6 +164,12 @@ export default function KeyWatcher(props: Props) {
 			return;
 		}
 
+		// Don't trigger if user is typing in an input
+		const target = e.target as HTMLElement;
+		if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+			return;
+		}
+
 		const validCubeType = getCubeTypeInfoById(cubeType);
 
 		if (!validCubeType) {
@@ -225,6 +231,12 @@ export default function KeyWatcher(props: Props) {
 
 	function keyupSpace(e, touch = false) {
 		const freezeTime = getSettings().freeze_time;
+
+		// Don't trigger if user is typing in an input
+		const target = e.target as HTMLElement;
+		if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) {
+			return;
+		}
 
 		if (ganTimerOn || (e.keyCode !== 32 && !touch) || !spaceTimerStarted || manualEntry) return;
 
