@@ -1,4 +1,4 @@
-import React, {ReactNode, useEffect} from 'react';
+import React, {ReactNode, useEffect, useState} from 'react';
 import {useDispatch} from 'react-redux';
 import './App.scss';
 import Wrapper from './wrapper/Wrapper';
@@ -16,6 +16,9 @@ import {updateThemeColors} from './themes';
 import {updateSettingsBasedOnProStatus} from './pro_audit';
 import {initSocketIO} from '../../util/socket/socketio';
 import SettingsModal from '../settings/modal/SettingsModal';
+import AnnouncementCarousel from '../announcements/AnnouncementCarousel';
+import {GetActiveAnnouncementsDocument, Announcement} from '../../@types/generated/graphql';
+import {gqlQueryTyped} from '../api';
 
 interface Props {
 	path?: string;
@@ -34,6 +37,9 @@ export default function App(props: Props = {}) {
 	const appLoaded = useGeneral('app_loaded');
 	const settingsModalOpen = useGeneral('settings_modal_open');
 	const me = useMe();
+
+	const [unseenAnnouncements, setUnseenAnnouncements] = useState<Announcement[]>([]);
+	const [loadingAnnouncements, setLoadingAnnouncements] = useState(false);
 
 	function appInitiated() {
 		setBrowserSessionId(dispatch);
@@ -56,6 +62,31 @@ export default function App(props: Props = {}) {
 		initSocketIO();
 		initAppData(me, dispatch, appInitiated);
 	}, []);
+
+	// Fetch announcements when user logs in
+	useEffect(() => {
+		if (!me || !appLoaded) return;
+
+		const fetchAnnouncements = async () => {
+			setLoadingAnnouncements(true);
+			try {
+				const res = await gqlQueryTyped(GetActiveAnnouncementsDocument, {}, {
+					fetchPolicy: 'network-only'
+				});
+
+				const announcements = res.data?.getActiveAnnouncements || [];
+				if (announcements.length > 0) {
+					setUnseenAnnouncements(announcements);
+				}
+			} catch (error) {
+				console.error('Failed to fetch announcements:', error);
+			} finally {
+				setLoadingAnnouncements(false);
+			}
+		};
+
+		fetchAnnouncements();
+	}, [me, appLoaded]);
 
 	if (typeof window !== 'undefined') {
 		if (!me && restricted) {
@@ -111,6 +142,12 @@ export default function App(props: Props = {}) {
 				<SettingsModal
 					isOpen={settingsModalOpen}
 					onClose={() => dispatch(setGeneral('settings_modal_open', false))}
+				/>
+			)}
+			{unseenAnnouncements.length > 0 && !loadingAnnouncements && (
+				<AnnouncementCarousel
+					announcements={unseenAnnouncements}
+					onClose={() => setUnseenAnnouncements([])}
 				/>
 			)}
 			{appLoaded ? <Wrapper {...wrapperProps}>{children}</Wrapper> : null}

@@ -84,6 +84,9 @@ model UserAccount {
   friendly_room_participations  FriendlyRoomParticipant[]
   friendly_room_chat_messages   FriendlyRoomChat[]        @relation("friendly_room_chat_user")
 
+  // Announcement relations
+  announcementViews             AnnouncementView[]
+
   @@map("user_account")
 }
 
@@ -990,5 +993,53 @@ model FriendlyRoomBan {
   @@index([room_id])
   @@index([user_id])
   @@map("friendly_room_ban")
+}
+
+// ==========================================
+// ANNOUNCEMENTS - Duyuru Sistemi
+// ==========================================
+
+enum AnnouncementCategory {
+  FEATURE    // Yenilik
+  BUGFIX     // Düzeltme
+  IMPORTANT  // Önemli
+  INFO       // Bilgilendirme
+
+  @@map("announcement_category")
+}
+
+model Announcement {
+  id          String                @id @default(uuid())
+  title       String
+  content     String                @db.Text  // Markdown content
+  category    AnnouncementCategory  @default(INFO)
+  priority    Int                   @default(0)  // Yüksek = daha önemli (0-10)
+  imageUrl    String?               @map("image_url")  // Opsiyonel header resmi
+  isDraft     Boolean               @default(false) @map("is_draft")  // Taslak mı?
+  createdAt   DateTime              @default(now()) @map("created_at")
+  publishedAt DateTime?             @map("published_at")  // Yayınlanma tarihi
+  isActive    Boolean               @default(true) @map("is_active")
+
+  views AnnouncementView[]
+
+  @@index([isActive])
+  @@index([isDraft])
+  @@index([publishedAt])
+  @@map("announcements")
+}
+
+model AnnouncementView {
+  id             String       @id @default(uuid())
+  userId         String       @map("user_id")
+  announcementId String       @map("announcement_id")
+  viewedAt       DateTime     @default(now()) @map("viewed_at")
+
+  user         UserAccount  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  announcement Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, announcementId])
+  @@index([userId])
+  @@index([announcementId])
+  @@map("announcement_views")
 }
 

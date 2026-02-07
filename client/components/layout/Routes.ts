@@ -31,6 +31,7 @@ import SettingsRedirect from '../settings/redirect/SettingsRedirect';
 import LinkedAccounts from '../account/linked_accounts/LinkedAccounts';
 import OAuthService from '../oauth/OAuthService';
 import ForceSignOut from '../login/force_sign_out/ForceSignOut';
+import AnnouncementHistory from '../profile/AnnouncementHistory';
 import type { Store } from 'redux';
 import Reports from '../admin/reports/Reports';
 import DefaultTimer from '../timer/DefaultTimer';
@@ -39,6 +40,7 @@ import UnsubEmails from '../unsub/UnsubEmails';
 import EloBoard from '../community/EloBoard';
 import RoomsList from '../rooms/RoomsList';
 import FriendlyRoom from '../rooms/FriendlyRoom';
+import AdminAnnouncements from '../admin/announcements/AdminAnnouncements';
 
 interface PageOptions {
 	restricted: boolean;
@@ -133,6 +135,7 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/account/password', App, Account, Password),
 	route('/account/linked-accounts', App, Account, LinkedAccounts),
 	route('/account/notifications', App, Account, NotificationPreferences),
+	route('/account/announcements', App, Account, AnnouncementHistory),
 
 	// Community
 	route('/community/leaderboards', App, Community, EloBoard, false),
@@ -154,6 +157,7 @@ export const routes: (PageContext | RedirectPath)[] = [
 	// Admin
 	route('/admin/reports', App, Admin, Reports, true, false, true),
 	route('/admin/users', App, Admin, AdminUsers, true, false, true),
+	route('/admin/announcements', App, Admin, AdminAnnouncements, true, false, true),
 
 	// OAuth
 	route('/oauth/:integrationType', null, App, OAuthService, true, true, false, true),

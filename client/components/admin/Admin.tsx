@@ -17,6 +17,11 @@ const TABS = [
 		link: '/admin/users',
 		value: 'Users',
 	},
+	{
+		id: 'announcements',
+		link: '/admin/announcements',
+		value: 'Duyurular',
+	},
 ];
 
 interface Props {

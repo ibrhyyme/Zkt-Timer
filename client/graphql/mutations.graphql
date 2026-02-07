@@ -50,3 +50,29 @@ mutation deleteSession($id: String) {
 mutation reorderSessions($ids: [String]!) {
 	reorderSessions(ids: $ids)
 }
+
+mutation createAnnouncement($input: CreateAnnouncementInput!) {
+	createAnnouncement(input: $input) {
+		id
+		title
+		category
+		isDraft
+	}
+}
+
+mutation updateAnnouncement($id: String!, $input: UpdateAnnouncementInput!) {
+	updateAnnouncement(id: $id, input: $input) {
+		id
+		title
+		category
+		isDraft
+	}
+}
+
+mutation markAnnouncementAsViewed($announcementId: String!) {
+	markAnnouncementAsViewed(announcementId: $announcementId)
+}
+
+mutation deleteAnnouncement($id: String!) {
+	deleteAnnouncement(id: $id)
+}

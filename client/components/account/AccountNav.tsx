@@ -28,6 +28,11 @@ const TABS = [
 		value: 'Bağlı Hesaplar',
 	},
 	{
+		id: 'announcements',
+		link: '/account/announcements',
+		value: 'Duyurular',
+	},
+	{
 		id: 'danger-zone',
 		link: '/account/danger-zone',
 		value: 'Riskli Alan',

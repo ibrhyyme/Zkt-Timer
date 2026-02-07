@@ -28,4 +28,5 @@ export * from './EloLeaderboards.resolver';
 export * from './StatsModule.resolver';
 export * from './DemoSolve.resolver';
 export * from './WcaRecord.resolver';
+export * from './Announcement.resolver';
 

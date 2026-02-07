@@ -51,3 +51,50 @@ query adminUserSearch($pageArgs: PaginationArgsInput) {
 		}
 	}
 }
+
+query getActiveAnnouncements {
+	getActiveAnnouncements {
+		id
+		title
+		content
+		category
+		priority
+		imageUrl
+		createdAt
+		hasViewed
+	}
+}
+
+query getUnreadAnnouncementCount {
+	getUnreadAnnouncementCount {
+		count
+	}
+}
+
+query getAllAnnouncements($filter: AnnouncementFilterInput) {
+	getAllAnnouncements(filter: $filter) {
+		id
+		title
+		content
+		category
+		priority
+		imageUrl
+		isDraft
+		isActive
+		createdAt
+		publishedAt
+		viewCount
+	}
+}
+
+query getMyAnnouncementHistory($limit: Int!, $offset: Int!) {
+	getMyAnnouncementHistory(limit: $limit, offset: $offset) {
+		id
+		title
+		content
+		category
+		priority
+		imageUrl
+		createdAt
+	}
+}

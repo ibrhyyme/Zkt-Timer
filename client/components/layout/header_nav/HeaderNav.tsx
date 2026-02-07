@@ -23,6 +23,7 @@ import Button from '../../common/button/Button';
 import LoginNav from '../nav/LoginNav';
 import { resourceUri } from '../../../util/storage';
 import { isPro } from '../../../util/pro';
+import AnnouncementBell from '../../announcements/AnnouncementBell';
 
 const b = block('header-nav');
 
@@ -177,6 +178,7 @@ export default function HeaderNav() {
 				{/* Right side - Pro button, notifications, account */}
 				<div className={b('right')}>
 					{getPro}
+					{me && <AnnouncementBell />}
 					<AccountDropdown />
 					{me && <LoginNav collapsed={false} />}
 				</div>

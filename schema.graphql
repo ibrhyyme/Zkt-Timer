@@ -306,6 +306,10 @@ type Query {
   statsModule: StatsModule
   wcaRecords(userId: String): [WcaRecord]
   myWcaRecords: [WcaRecord]
+  getActiveAnnouncements: [Announcement]
+  getUnreadAnnouncementCount: UnreadAnnouncementCount
+  getAllAnnouncements(filter: AnnouncementFilterInput): [Announcement]
+  getMyAnnouncementHistory(offset: Int = 0, limit: Int = 20): [Announcement]
 }
 
 type Mutation {
@@ -393,6 +397,10 @@ type Mutation {
   fetchWcaRecords: [WcaRecord]
   publishWcaRecord(recordId: String): WcaRecord
   unpublishWcaRecord(recordId: String): WcaRecord
+  createAnnouncement(input: CreateAnnouncementInput): Announcement
+  updateAnnouncement(input: UpdateAnnouncementInput, id: String): Announcement
+  markAnnouncementAsViewed(announcementId: String): Boolean
+  deleteAnnouncement(id: String): Boolean
 }
 
 type SmartDevice {
@@ -1453,6 +1461,31 @@ input PaginationArgsInput {
   searchQuery: String = ""
 }
 
+type Announcement {
+  id: String
+  title: String
+  content: String
+  category: String
+  priority: Int
+  imageUrl: String
+  isDraft: Boolean
+  createdAt: DateTime
+  publishedAt: DateTime
+  isActive: Boolean
+  viewCount: Int
+  hasViewed: Boolean
+}
+
+type UnreadAnnouncementCount {
+  count: Int
+}
+
+input AnnouncementFilterInput {
+  category: String
+  isActive: Boolean
+  isDraft: Boolean
+}
+
 input CustomTrainerCreateInput {
   solution: String!
   colors: String
@@ -1472,4 +1505,23 @@ input BanUserInput {
   minutes: Int
   delete_published_solves: Boolean
   cheating_in_1v1: Boolean
+}
+
+input CreateAnnouncementInput {
+  title: String
+  content: String
+  category: String
+  priority: Int = 0
+  imageUrl: String
+  isDraft: Boolean = false
+}
+
+input UpdateAnnouncementInput {
+  title: String
+  content: String
+  category: String
+  priority: Int
+  imageUrl: String
+  isDraft: Boolean
+  isActive: Boolean
 }
