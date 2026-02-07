@@ -3,6 +3,7 @@ import { Scrambow } from 'scrambow';
 import { ITimerContext } from '../Timer';
 import { setTimerParam } from './params';
 import { getSubsetsForCube } from '../../../util/cubes/scramble_subsets';
+import { generate222Scramble } from '../../../util/cubes/scramble_222';
 
 
 export function getNewScramble(scrambleTypeId: string, seed?: number, subset?: string) {
@@ -36,6 +37,11 @@ export function getNewScramble(scrambleTypeId: string, seed?: number, subset?: s
 		} else {
 			console.warn(`Invalid subset '${subset}' for cube type '${scrambowType}', falling back to default.`);
 		}
+	}
+
+	// Custom 2x2 subset scrambler (ported from cstimer)
+	if (scrambowType === '222' && subset) {
+		return generate222Scramble(subset);
 	}
 
 	// Custom WCA Clock Scrambler

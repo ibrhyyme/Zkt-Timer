@@ -12,6 +12,7 @@ import * as bcrypt from 'bcryptjs';
 const prisma = () => getPrisma();
 
 import { Scrambow } from 'scrambow';
+import { generate222Scramble } from '../../client/util/cubes/scramble_222';
 
 // Scramble definitions mapping our internal IDs to Scrambow types and lengths
 const SCRAMBLE_MAP: Record<string, { type: string, length: number }> = {
@@ -50,9 +51,13 @@ function getBlindWideMove() {
 function generateScrambleForCubeType(cubeType: string, subset?: string | null): string {
     const def = SCRAMBLE_MAP[cubeType];
 
-
     let scrambowType = def ? def.type : '333';
     const length = def ? def.length : 20;
+
+    // Custom 2x2 subset scrambler (ported from cstimer)
+    if (scrambowType === '222' && subset) {
+        return generate222Scramble(subset);
+    }
 
     // Use subset if provided, otherwise default to mapped type
     const typeToUse = subset || scrambowType;

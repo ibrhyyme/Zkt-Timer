@@ -7,6 +7,24 @@ export interface ScrambleSubset {
 
 // Küp tipine göre subset haritası
 export const SCRAMBLE_SUBSETS: Record<string, ScrambleSubset[]> = {
+    '222': [
+        { id: 'h_std', label: '=== STANDART ===', isHeader: true },
+        { id: '', label: 'Rastgele Durum (WCA)' },
+        { id: '222o', label: 'Optimal' },
+        { id: '2223', label: '3-tür (3-gen)' },
+        { id: '222nb', label: 'Çubuk Yok (No Bar)' },
+        { id: 'h_eg', label: '=== EG ===', isHeader: true },
+        { id: '222eg', label: 'EG (Tümü)' },
+        { id: '222eg0', label: 'CLL' },
+        { id: '222eg1', label: 'EG1' },
+        { id: '222eg2', label: 'EG2' },
+        { id: 'h_tcll', label: '=== TCLL ===', isHeader: true },
+        { id: '222tcp', label: 'TCLL+' },
+        { id: '222tcn', label: 'TCLL-' },
+        { id: '222tc', label: 'TCLL' },
+        { id: 'h_ls', label: '=== LS ===', isHeader: true },
+        { id: '222lsall', label: 'LS (Last Slot)' },
+    ],
     '333': [
         { id: 'h_std', label: '=== STANDART (WCA) ===', isHeader: true },
         { id: '', label: 'WCA' },
@@ -41,7 +59,7 @@ export const SCRAMBLE_SUBSETS: Record<string, ScrambleSubset[]> = {
         { id: 'rud', label: 'RUD (3-Gen)' },
         { id: 'rul', label: 'RUL (3-Gen)' },
     ],
-    // 2x2 subsets (EG, etc.) not natively supported by Scrambow v1.7.0
+    // 2x2 subsets are handled by custom scramble_222.ts generator (ported from cstimer)
 };
 
 export const getSubsetsForCube = (cubeType: string): ScrambleSubset[] => {
