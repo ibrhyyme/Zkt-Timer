@@ -531,6 +531,39 @@ export function listenForFriendlyRoomEvents(client: Socket) {
         }
     });
 
+    // Admin view room stats (site admins only - read-only, no join)
+    client.on(FriendlyRoomClientEvent.ADMIN_VIEW_ROOM, async (roomId: string) => {
+        try {
+            const { user } = await getDetailedClientInfo(client);
+
+            if (!user) {
+                client.emit(FriendlyRoomServerEvent.ERROR, 'Giriş yapmalısınız');
+                return;
+            }
+
+            if (!user.admin) {
+                client.emit(FriendlyRoomServerEvent.ERROR, 'Sadece adminler odaları görüntüleyebilir');
+                return;
+            }
+
+            const room = await getRoomForClient(roomId);
+            if (!room) {
+                client.emit(FriendlyRoomServerEvent.ERROR, 'Oda bulunamadı');
+                return;
+            }
+
+            // Send room data to admin (participants, scramble index, etc.)
+            client.emit(FriendlyRoomServerEvent.ADMIN_ROOM_DATA, {
+                participants: room.participants,
+                scrambleIndex: room.scramble_index,
+                userStatuses: {}, // No live statuses for admin view
+            });
+        } catch (error) {
+            logger.error('Error admin viewing room', { error });
+            client.emit(FriendlyRoomServerEvent.ERROR, 'Oda görüntülenemedi');
+        }
+    });
+
     // Handle disconnect - automatically remove user from room when they close browser/tab
     client.on('disconnect', async () => {
         try {

@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { FriendlyRoomData, FriendlyRoomClientEvent } from '../../../shared/friendly_room';
 import Button from '../common/button/Button';
-import { Users, Lock, LockOpen, Cube, DotsThreeVertical, Trash, PencilSimple, UserList } from 'phosphor-react';
+import { Users, Lock, LockOpen, Cube, DotsThreeVertical, Trash, PencilSimple, UserList, Eye } from 'phosphor-react';
 import { socketClient } from '../../util/socket/socketio';
 import EditRoomModal from './EditRoomModal';
 import ManageUsersModal from './ManageUsersModal';
+import ViewRoomStatsModal from './ViewRoomStatsModal';
 import './RoomCard.scss';
 
 interface RoomCardProps {
@@ -17,6 +18,7 @@ export default function RoomCard({ room, onJoin, isAdmin = false }: RoomCardProp
     const [menuOpen, setMenuOpen] = useState(false);
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [manageUsersModalOpen, setManageUsersModalOpen] = useState(false);
+    const [viewStatsModalOpen, setViewStatsModalOpen] = useState(false);
 
     const participantCount = room.participants.length;
     const isFull = participantCount >= room.max_players;
@@ -33,12 +35,26 @@ export default function RoomCard({ room, onJoin, isAdmin = false }: RoomCardProp
     };
 
     const handleAdminEditRoom = () => {
+        // Close other modals first
+        setViewStatsModalOpen(false);
+        setManageUsersModalOpen(false);
         setEditModalOpen(true);
         setMenuOpen(false);
     };
 
     const handleAdminManageUsers = () => {
+        // Close other modals first
+        setViewStatsModalOpen(false);
+        setEditModalOpen(false);
         setManageUsersModalOpen(true);
+        setMenuOpen(false);
+    };
+
+    const handleAdminViewStats = () => {
+        // Close other modals first
+        setEditModalOpen(false);
+        setManageUsersModalOpen(false);
+        setViewStatsModalOpen(true);
         setMenuOpen(false);
     };
 
@@ -108,6 +124,10 @@ export default function RoomCard({ room, onJoin, isAdmin = false }: RoomCardProp
                             <>
                                 <div className="room-card__admin-overlay" onClick={() => setMenuOpen(false)} />
                                 <div className="room-card__admin-dropdown">
+                                    <button onClick={handleAdminViewStats}>
+                                        <Eye size={16} />
+                                        Odayı Görüntüle
+                                    </button>
                                     <button onClick={handleAdminEditRoom}>
                                         <PencilSimple size={16} />
                                         Odayı Düzenle
@@ -156,6 +176,12 @@ export default function RoomCard({ room, onJoin, isAdmin = false }: RoomCardProp
                         onBan={(userId) => {
                             getSocket().emit(FriendlyRoomClientEvent.BAN_USER, room.id, userId);
                         }}
+                    />
+                    <ViewRoomStatsModal
+                        isOpen={viewStatsModalOpen}
+                        onClose={() => setViewStatsModalOpen(false)}
+                        roomId={room.id}
+                        roomName={room.name}
                     />
                 </>
             )}
