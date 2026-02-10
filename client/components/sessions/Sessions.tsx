@@ -36,6 +36,7 @@ interface SortableItemProps {
 	selectedSessionId: string;
 	selectSession: (e: any, id: any) => void;
 	setSelectedSessionId: React.Dispatch<React.SetStateAction<string>>;
+	multiSelectedIds: Set<string>;
 }
 
 interface SortableListProps {
@@ -43,18 +44,20 @@ interface SortableListProps {
 	selectedSessionId: string;
 	selectSession: (e: any, id: any) => void;
 	setSelectedSessionId: React.Dispatch<React.SetStateAction<string>>;
+	multiSelectedIds: Set<string>;
 }
 
-const SortableItem = SortableElement<SortableItemProps>(({ session, selectedSessionId, selectSession, setSelectedSessionId }) => (
+const SortableItem = SortableElement<SortableItemProps>(({ session, selectedSessionId, selectSession, setSelectedSessionId, multiSelectedIds }) => (
 	<Session
 		setSelectedSessionId={setSelectedSessionId}
 		session={session}
 		selectedSessionId={selectedSessionId}
 		selectSession={selectSession}
+		isMultiSelected={multiSelectedIds.has(session.id)}
 	/>
 ));
 
-const SortableList = SortableContainer<SortableListProps>(({ sessions, selectedSessionId, selectSession, setSelectedSessionId }) => {
+const SortableList = SortableContainer<SortableListProps>(({ sessions, selectedSessionId, selectSession, setSelectedSessionId, multiSelectedIds }) => {
 	return (
 		<div className={b('list')}>
 			{sessions.map((s, index) => (
@@ -63,6 +66,7 @@ const SortableList = SortableContainer<SortableListProps>(({ sessions, selectedS
 					session={s}
 					selectedSessionId={selectedSessionId}
 					selectSession={selectSession}
+					multiSelectedIds={multiSelectedIds}
 					key={s.id}
 					index={index}
 				/>
@@ -80,6 +84,8 @@ export default function Sessions() {
 	const currentSessionId = useSettings('session_id');
 
 	const [selectedSessionId, setSelectedSessionId] = useState<string>(currentSessionId);
+	const [multiSelectedIds, setMultiSelectedIds] = useState<Set<string>>(new Set());
+	const [pendingBulkDelete, setPendingBulkDelete] = useState<string[] | null>(null);
 	const [cubeType, setCubeType] = useState('');
 	const [isEditingName, setIsEditingName] = useState(false);
 	const [tempSessionName, setTempSessionName] = useState('');
@@ -111,8 +117,24 @@ export default function Sessions() {
 			target = target.parentNode;
 		}
 
+		// Ctrl+Click: çoklu seçim
+		if (e && (e.ctrlKey || e.metaKey)) {
+			setMultiSelectedIds((prev) => {
+				const next = new Set(prev);
+				if (next.has(id)) {
+					next.delete(id);
+				} else {
+					next.add(id);
+				}
+				return next;
+			});
+			return;
+		}
+
+		// Normal tıklama: çoklu seçimi temizle
+		setMultiSelectedIds(new Set());
 		setSelectedSessionId(id);
-		setIsEditingName(false); // Sezon değiştiğinde edit modunu kapat
+		setIsEditingName(false);
 
 		const lastCubeType = fetchLastCubeTypeForSession(id);
 		setCubeType(lastCubeType || '333');
@@ -223,6 +245,86 @@ export default function Sessions() {
 		);
 	}
 
+	async function deleteSelectedSessions() {
+		const idsToDelete = Array.from(multiSelectedIds);
+		const remainingCount = allSessions.length - idsToDelete.length;
+
+		if (remainingCount < 1) {
+			toastError("Tüm sezonları silemezsiniz! En az bir sezon kalmalıdır.");
+			return;
+		}
+
+		const sessionNames = idsToDelete
+			.map((id) => allSessions.find((s) => s.id === id)?.name)
+			.filter(Boolean)
+			.join(', ');
+
+		dispatch(
+			openModal(
+				<ConfirmModal
+					title="Seçili Sezonları Sil"
+					description={`${idsToDelete.length} sezon silinecek: ${sessionNames}. Bu işlem geri alınamaz.`}
+					triggerAction={async () => {
+						// İlk onay geçti, pending state'e kaydet — ikinci modal useEffect ile açılacak
+						setPendingBulkDelete(idsToDelete);
+					}}
+					buttonText="Sezonları Sil"
+					buttonProps={{
+						danger: true,
+					}}
+				/>
+			)
+		);
+	}
+
+	// İkinci onay modalı: pendingBulkDelete set edildiğinde açılır
+	useEffect(() => {
+		if (!pendingBulkDelete) return;
+
+		const idsToDelete = pendingBulkDelete;
+		setPendingBulkDelete(null);
+
+		dispatch(
+			openModal(
+				<ConfirmModal
+					title="Emin misiniz?"
+					description="Birden fazla sezon siliyorsunuz. Bu işlem geri alınamaz. Devam etmek istiyor musunuz?"
+					hideInput
+					triggerAction={async () => {
+						let updatedSessionId = currentSessionId;
+						const deletingCurrent = idsToDelete.includes(currentSessionId);
+
+						if (deletingCurrent) {
+							const newId = uuid();
+							await createSessionDb({
+								name: 'Yeni Sezon',
+								id: newId,
+							});
+							setCurrentSession(newId);
+							setCubeType('333');
+							updatedSessionId = newId;
+						}
+
+						for (const id of idsToDelete) {
+							const ses = allSessions.find((s) => s.id === id);
+							if (ses) {
+								await deleteSessionDb(ses);
+							}
+						}
+
+						setMultiSelectedIds(new Set());
+						setSelectedSessionId(updatedSessionId);
+						toastSuccess(`${idsToDelete.length} sezon başarıyla silindi`);
+					}}
+					buttonText="Evet, Sil"
+					buttonProps={{
+						danger: true,
+					}}
+				/>
+			)
+		);
+	}, [pendingBulkDelete]);
+
 	if (!session || !allSessions || !allSessions.length) {
 		return null;
 	}
@@ -298,6 +400,14 @@ export default function Sessions() {
 							<Button
 								text="Sezonu Sil"
 								onClick={deleteSession}
+								danger
+								noMargin
+							/>
+						)}
+						{!isEditingName && multiSelectedIds.size > 1 && (
+							<Button
+								text={`Seçili ${multiSelectedIds.size} Sezonu Sil`}
+								onClick={deleteSelectedSessions}
 								danger
 								noMargin
 							/>
@@ -402,6 +512,7 @@ export default function Sessions() {
 							setSelectedSessionId={setSelectedSessionId}
 							sessions={allSessions}
 							selectedSessionId={selectedSessionId}
+							multiSelectedIds={multiSelectedIds}
 							onSortEnd={onSortEnd}
 						/>
 					</div>
