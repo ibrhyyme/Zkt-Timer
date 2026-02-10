@@ -1,0 +1,136 @@
+@import '../../../styles/config';
+
+.#{$namespace}-timer-header-control {
+	display: grid;
+	flex-direction: row;
+	grid-template-columns: 1fr 1fr 1fr;
+	transition: opacity 0.2s ease-in-out;
+	justify-content: space-between;
+	padding: 20px;
+	box-sizing: border-box;
+	top: 0;
+	width: 100%;
+	z-index: 30;
+	position: absolute;
+
+	&:focus-within {
+		z-index: 10000;
+	}
+
+	>div {
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+		align-items: flex-start;
+
+		>*:not(:last-child) {
+			margin-right: 10px;
+		}
+	}
+
+	&__left-controls {
+		// Dark Glassmorphism - Premium look
+		background: rgba(var(--button-color), 0.6);
+		border: 1px solid rgba(255, 255, 255, 0.05);
+		padding: 4px;
+		border-radius: 10px;
+		align-items: center !important;
+		gap: 4px;
+		backdrop-filter: blur(10px);
+		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); // Biraz daha belirgin gölge
+		width: fit-content;
+
+		>* {
+			margin-right: 0 !important;
+		}
+
+		// Button Overrides - Neutral Dark Glass
+		.cd-common-button--theme-gray {
+			background: rgba(255, 255, 255, 0.08) !important;
+			border: 1px solid rgba(255, 255, 255, 0.05) !important;
+			color: rgba(255, 255, 255, 0.9) !important;
+			box-shadow: none !important;
+			transition: all 0.2s ease !important;
+
+			&:hover:not(:disabled) {
+				background: rgba(255, 255, 255, 0.15) !important;
+				border-color: rgba(255, 255, 255, 0.2) !important;
+				transform: translateY(-1px);
+				box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+			}
+
+			&:active:not(:disabled) {
+				transform: translateY(0);
+				background: rgba(255, 255, 255, 0.1) !important;
+			}
+		}
+
+		// Dropdown Overrides - Neutral Dark Glass
+		.cd-common-dropdown {
+			&__body {
+				background: rgba(30, 36, 44, 0.95) !important; // --button-color opaque
+				backdrop-filter: blur(16px) !important;
+				border: 1px solid rgba(255, 255, 255, 0.08) !important;
+				box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4) !important;
+
+				>button,
+				>.cd-common-button__wrapper>button {
+					color: rgba(255, 255, 255, 0.8) !important;
+
+					i {
+						color: rgba(255, 255, 255, 0.5) !important;
+					}
+
+					&:hover:not(:disabled) {
+						background-color: rgba(255, 255, 255, 0.1) !important;
+						color: rgba(255, 255, 255, 1) !important;
+						box-shadow: none !important;
+					}
+				}
+			}
+		}
+	}
+
+	>div:first-of-type {
+		justify-content: flex-start;
+	}
+
+	>div:last-of-type {
+		justify-content: flex-end;
+	}
+}
+
+// Mobil özel stiller
+@media (max-width: 768px) {
+	.#{$namespace}-timer-header-control {
+		padding: 10px 12px !important;
+
+		&__left-controls {
+			background: rgba(var(--module-color), 0.9);
+			backdrop-filter: blur(20px);
+			-webkit-backdrop-filter: blur(20px);
+			border: 1px solid rgba(255, 255, 255, 0.1);
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+			padding: 3px;
+			gap: 3px;
+		}
+
+		&__right-controls {
+			display: flex;
+			align-items: center !important;
+			gap: clamp(10px, 3vw, 16px);
+		}
+	}
+}
+
+// Küçük ekranlar (iPhone SE, iPhone 12 mini vb.)
+@media (max-width: 390px) {
+	.#{$namespace}-timer-header-control {
+		padding: 8px 10px !important;
+
+		&__left-controls {
+			padding: 2px;
+			gap: 2px;
+		}
+	}
+}

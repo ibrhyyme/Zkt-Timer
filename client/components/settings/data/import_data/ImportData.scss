@@ -1,0 +1,16 @@
+@import '../../../../styles/config';
+
+.#{$namespace}-import-data {
+	max-height: 70vh;
+	overflow-y: auto;
+	padding-right: 5px; // Avoid scrollbar overlap purely visually if needed
+
+	hr {
+		width: 100%;
+		border: none;
+		height: 3px;
+		padding: 0;
+		margin: 30px 0;
+		background-color: rgb(var(--button-color));
+	}
+}

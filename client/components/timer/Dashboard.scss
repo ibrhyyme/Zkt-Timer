@@ -1,0 +1,71 @@
+@import '../../styles/config';
+
+.cd-timer-dashboard {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    padding: 0 0.75rem;
+    width: 100%;
+    min-height: 160px;
+    max-height: 200px;
+
+    &--mobile {
+        // Mobilde de yan yana - şablona uygun
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+        padding: 0 0.5rem;
+        min-height: 160px;
+        flex: 1; // Boş alan varsa genişle
+        max-height: unset; // Ensure it can grow
+        // height/max-height kaldırıldı
+    }
+
+    &__section {
+        display: flex;
+        flex-direction: column;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 8px;
+        overflow: hidden;
+
+        &--history {
+            height: 100%; // Parent yüksekliğini doldur
+            max-height: 100%;
+            overflow-y: auto;
+        }
+
+        &--scramble {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem;
+
+            // ScrambleVisual componentinin boyutunu ayarla
+            .cd-scramble-visual {
+                width: 150%;
+                max-width: 220px;
+                margin: 0 auto;
+                max-height: 150px;
+
+                svg,
+                canvas,
+                img {
+                    max-width: 100% !important;
+                    max-height: 100% !important; // Sabit 140px yerine container'a uy
+                    border-radius: 4px;
+                    height: auto !important;
+                }
+            }
+        }
+    }
+
+    &__section-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 0.25rem;
+    }
+
+    &__history-list {
+        display: flex;
+        flex-direction: column;
+    }
+}

@@ -1,0 +1,28 @@
+# builds
+node_modules
+.next
+dist
+.out
+
+# secrets
+.env
+.env.*
+*.env
+*.env.*
+docker.env
+
+# keys/certs
+*.pem
+*.key
+*.p12
+*.crt
+
+!.env.example
+PROJECT_INFO_MAP.md
+
+# Backend tests
+server/**/*.test.ts
+server/**/__test__/
+
+# Auto-generated files
+schema.graphql

@@ -1,0 +1,263 @@
+@import '../../../styles/config';
+
+.#{$namespace}-timer-footer {
+	$self: &;
+
+	height: 100%;
+	padding: 0 15px 0;
+	box-sizing: border-box;
+
+	&__body {
+		height: inherit;
+		box-sizing: border-box;
+		border-radius: 15px;
+		background-color: rgba(var(--module-color), 0.8);
+
+		>* {
+			border: 5px solid transparent;
+		}
+
+		&--mobile {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			grid-template-rows: 1.5fr 1fr;
+			gap: clamp(8px, 2vw, 12px);
+			border-radius: 12px;
+			overflow: visible !important;
+
+			// Maç modunda tam yükseklik
+			&.cd-timer-footer__body--match {
+				height: 40vh !important;
+				max-height: unset !important;
+				grid-template-rows: 1fr;
+				grid-template-columns: 1fr;
+				padding: 0;
+				margin-bottom: 0;
+			}
+
+			// Definite height required for child percentage heights to work (scrolling)
+			height: clamp(140px, 18vh, 180px) !important;
+			padding: clamp(8px, 2vw, 12px);
+			background: transparent;
+			margin-bottom: 2vh;
+
+			#{$self}__visual-picker {
+				opacity: 1 !important;
+				top: -40px;
+				left: 0;
+			}
+
+			>* {
+				height: 100% !important;
+				min-height: 100% !important;
+				overflow: hidden !important;
+				border-radius: clamp(10px, 2vw, 12px);
+				background: rgba(var(--module-color), 0.8);
+				border: 1px solid rgba(255, 255, 255, 0.08);
+				backdrop-filter: blur(10px);
+				-webkit-backdrop-filter: blur(10px);
+				box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+			}
+
+			// Maç modunda tek sütun (Tur Listesi tam ekran)
+			#{$self}__mobile-match-history {
+				grid-column: 1 / 3; // Tüm genişlik
+				grid-row: 1 / 3; // Tüm yükseklik
+				display: flex;
+				flex-direction: column;
+				height: 100%;
+				max-height: 100%;
+				overflow: hidden;
+
+				// İçerik fontunu biraz büyüt
+				font-size: clamp(0.8rem, 2.5vw, 0.95rem);
+			}
+
+			// Sol: History (çözümler) - 2 satır boyunca
+			#{$self}__mobile-history {
+				grid-column: 1;
+				grid-row: 1 / 3;
+				display: flex;
+				flex-direction: column;
+				font-size: clamp(0.7rem, 2vw, 0.85rem);
+			}
+
+			// Sağ üst: Stats (istatistikler)
+			#{$self}__mobile-stats {
+				grid-column: 2;
+				grid-row: 1;
+				display: flex;
+				flex-direction: column;
+				padding: clamp(6px, 1.5vw, 8px);
+			}
+
+			// Sağ alt: Scramble görseli
+			#{$self}__mobile-scramble {
+				grid-column: 2;
+				grid-row: 2;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				padding: 0; // Padding kaldırıldı, tam sığması için
+
+				// TimerModule wrapper'ın default padding'ini kaldır
+				>div {
+					padding: 0 !important;
+				}
+
+				// Scramble görselini bloğa sığdır
+				.cd-scramble-visual {
+					height: 90%;
+					width: auto;
+					max-width: 100%;
+					aspect-ratio: 4/3;
+
+					// Karelerin yuvarlak görünmemesi ve aralarının çok açık olmaması için
+					.cd-scramble-face {
+						grid-gap: 1px !important;
+					}
+
+					.cd-scramble-face>span {
+						border-radius: 0.5px !important;
+					}
+				}
+			}
+		}
+
+		&--layout-bottom {
+			display: grid;
+			overflow: hidden;
+			grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+			height: 300px;
+
+			&.cd-timer-footer__body--mobile {
+				grid-template-columns: 50% 50%;
+				grid-template-rows: 1.5fr 1fr;
+				height: auto;
+				min-height: 180px;
+				max-height: 220px;
+				gap: 12px;
+				overflow: visible;
+			}
+		}
+	}
+
+	&__mobile-hide-button {
+		width: 100%;
+		opacity: 0.9;
+		align-items: center;
+		height: 40px;
+		display: flex;
+		justify-content: center;
+		margin-bottom: 10px;
+
+		button {
+			background: rgba(255, 255, 255, 0.1) !important;
+			border: 1px solid rgba(255, 255, 255, 0.2) !important;
+			border-radius: 8px !important;
+			padding: 8px 16px !important;
+			color: white !important;
+			font-weight: 500 !important;
+			transition: all 0.2s ease !important;
+
+			&:hover {
+				background: rgba(255, 255, 255, 0.2) !important;
+				border-color: rgba(255, 255, 255, 0.3) !important;
+				transform: translateY(-1px) !important;
+			}
+		}
+	}
+
+	// Maç modunda (parent wrapper) kendini genişletmeli
+	&.cd-timer-footer--match {
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+	}
+
+	&__wrapper {
+		padding: 0;
+		box-sizing: border-box;
+		height: 100%;
+		position: relative;
+		overflow: hidden;
+
+		&:hover {
+			#{$self}__visual-picker {
+				opacity: 1 !important;
+			}
+		}
+
+		&--none {
+			border: none !important;
+		}
+
+		&--disabled {
+			pointer-events: none;
+		}
+	}
+
+	&__visual {
+		height: 100%;
+		padding: 10px;
+		position: relative;
+		box-sizing: border-box;
+
+		&-picker {
+			position: absolute;
+			top: 5px;
+			left: 5px;
+			z-index: 1000;
+			transition: opacity 0.1s ease-in-out;
+			opacity: 0;
+		}
+	}
+
+	&--layout-left,
+	&--layout-right {
+		padding: 0 0 10px;
+		height: 100%;
+
+		#{$self}__visual-wrapper:nth-child(1) {
+			grid-column: unset !important;
+		}
+
+		#{$self}__body {
+			display: grid;
+			grid-template-columns: 1fr !important;
+			grid-template-rows: repeat(3, minmax(0, 1fr)) !important;
+			height: 100%;
+			overflow: hidden;
+
+			@media (max-height: 900px) {
+				grid-template-rows: repeat(2, minmax(0, 1fr)) !important;
+
+				>div:nth-child(3) {
+					display: none !important;
+				}
+			}
+
+			@media (max-height: 650px) {
+				grid-template-rows: repeat(1, minmax(0, 1fr)) !important;
+
+				>div:nth-child(2) {
+					display: none !important;
+				}
+			}
+		}
+	}
+}
+
+// Clock küpü için özel stiller (Desktop TimerFooter)
+.clock-scramble {
+	.cd-scramble-visual {
+		max-width: 600px !important; // Clock için çok daha geniş alan
+		width: 100% !important;
+		max-height: none !important;
+
+		twisty-player {
+			width: 100% !important;
+			height: 100% !important;
+		}
+	}
+}

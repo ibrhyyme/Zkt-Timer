@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="/dist/app.min.css">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#0F142B">
+
+    <!-- iOS -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Zkt-Timer">
+    <link rel="apple-touch-icon" href="/public/images/apple-touch-icon.png">
+
+    <title>ZKT-Timer - Offline Mode</title>
+
+    <style>
+        /* Offline loading indicator */
+        .offline-shell {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #050505;
+            color: #fff;
+            font-family: 'Poppins', -apple-system, sans-serif;
+            z-index: 9999;
+        }
+
+        .offline-shell__spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #246bfd;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .offline-shell__text {
+            margin-top: 1.5rem;
+            font-size: 16px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .offline-shell__hint {
+            margin-top: 0.5rem;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- React root -->
+    <div id="app">
+        <!-- Offline fallback - will be replaced once React hydrates -->
+        <div class="offline-shell">
+            <div class="offline-shell__spinner"></div>
+            <div class="offline-shell__text">ZKT-Timer Yükleniyor...</div>
+            <div class="offline-shell__hint">Offline mode</div>
+        </div>
+    </div>
+
+    <!-- Redux initial state -->
+    <script type="text/javascript">
+        window.__STORE__ = "{}";
+    </script>
+
+    <!-- Main app bundle -->
+    <script src="/dist/app.min.js"></script>
+</body>
+
+</html>

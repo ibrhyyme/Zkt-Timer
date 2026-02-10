@@ -1,0 +1,309 @@
+@import '../../../../styles/config.scss';
+
+.cd-welcome-hero {
+	position: relative;
+	padding: 8rem 2rem 16rem;
+	text-align: center;
+	overflow: hidden;
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+
+	// ============================================
+	// Logo
+	// ============================================
+
+	&__logo {
+		width: 180px;
+		height: 180px;
+		object-fit: contain;
+		margin: 0 auto 2rem;
+		display: block;
+		animation: fadeInUp 0.8s ease-out, spin 8s linear infinite 0.8s;
+		filter: drop-shadow(0 4px 12px rgba(124, 58, 237, 0.4));
+
+		@media (max-width: 768px) {
+			width: 140px;
+			height: 140px;
+			margin-bottom: 1.5rem;
+		}
+	}
+
+	// ============================================
+	// Background Effects
+	// ============================================
+
+	&__background {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		pointer-events: none;
+	}
+
+	&__background-orb {
+		position: absolute;
+		width: 70vw;
+		height: 70vw;
+		max-width: 800px;
+		max-height: 800px;
+		border-radius: 50%;
+		filter: blur(100px);
+		opacity: 0.1;
+		animation: pulse 4s ease-in-out infinite;
+
+		&--position-left {
+			top: -20%;
+			left: -10%;
+			background: radial-gradient(circle, rgba(124, 58, 237, 0.8), transparent);
+		}
+
+		&--position-right {
+			bottom: -20%;
+			right: -10%;
+			background: radial-gradient(circle, rgba(59, 130, 246, 0.8), transparent);
+			animation-delay: 2s;
+		}
+	}
+
+	&__background-noise {
+		position: absolute;
+		inset: 0;
+		opacity: 0.03;
+		background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+	}
+
+	// ============================================
+	// Content
+	// ============================================
+
+	&__content {
+		position: relative;
+		z-index: 10;
+		max-width: 1280px;
+		margin: 0 auto;
+		padding: 0 1.5rem;
+	}
+
+	&__badge {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.5rem 1rem;
+		border-radius: 9999px;
+		background: rgba(255, 255, 255, 0.05);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		font-size: 0.75rem;
+		font-weight: 500;
+		color: rgba(192, 132, 252, 1);
+		margin-bottom: 2rem;
+		animation: fadeInUp 0.6s ease-out;
+	}
+
+	&__badge-dot {
+		width: 0.5rem;
+		height: 0.5rem;
+		border-radius: 50%;
+		background: #a855f7;
+		animation: pulse 2s ease-in-out infinite;
+	}
+
+	&__title {
+		font-size: clamp(2.5rem, 8vw, 5rem);
+		font-weight: 700;
+		line-height: 1.1;
+		letter-spacing: -0.02em;
+		margin-bottom: 1.5rem;
+		max-width: 60rem;
+		margin-left: auto;
+		margin-right: auto;
+		background: linear-gradient(to bottom, white, rgba(255, 255, 255, 0.6));
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		animation: fadeInUp 0.8s ease-out 0.1s backwards;
+	}
+
+	&__title-highlight {
+		color: white;
+		-webkit-text-fill-color: white;
+	}
+
+	&__description {
+		font-size: clamp(1rem, 2vw, 1.25rem);
+		color: rgba(255, 255, 255, 0.6);
+		line-height: 1.7;
+		max-width: 42rem;
+		margin: 0 auto 2.5rem;
+		animation: fadeInUp 1s ease-out 0.2s backwards;
+	}
+
+	&__actions {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		justify-content: center;
+		align-items: center;
+		margin-bottom: 4rem;
+		animation: fadeInUp 1.2s ease-out 0.3s backwards;
+
+		@media (min-width: 640px) {
+			flex-direction: row;
+		}
+	}
+
+	// ============================================
+	// Device Mockup
+	// ============================================
+
+	&__device-mockup {
+		position: relative;
+		max-width: 1200px;
+		margin: 0 auto;
+		animation: scaleIn 1s ease-out 0.5s backwards;
+	}
+
+	&__device-mockup-desktop {
+		position: relative;
+		z-index: 2;
+		border-radius: 12px;
+		border: 8px solid #1a1d21;
+		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+		overflow: hidden;
+		transition: transform 0.3s ease;
+
+		&:hover {
+			transform: scale(1.02);
+		}
+
+		// Mac-style top bar
+		&::before {
+			content: '';
+			position: absolute;
+			top: -8px;
+			left: -8px;
+			right: -8px;
+			height: 30px;
+			background: linear-gradient(to bottom, #2a2d31, #1a1d21);
+			border-radius: 12px 12px 0 0;
+			z-index: 10;
+		}
+
+		// Mac traffic lights
+		&::after {
+			content: '';
+			position: absolute;
+			top: 3px;
+			left: 12px;
+			width: 12px;
+			height: 12px;
+			border-radius: 50%;
+			background: #ff5f57;
+			box-shadow:
+				16px 0 0 #ffbd2e,
+				32px 0 0 #28c840;
+			z-index: 11;
+		}
+
+		img {
+			display: block;
+			width: 100%;
+			height: auto;
+			border-radius: 4px;
+			position: relative;
+			z-index: 2;
+		}
+	}
+
+	&__device-mockup-mobile {
+		position: absolute;
+		bottom: -50px;
+		right: 10%;
+		z-index: 3;
+		width: 250px;
+		border: 12px solid #1a1d21;
+		border-radius: 35px;
+		box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+		overflow: hidden;
+		transition: transform 0.3s ease;
+
+		&:hover {
+			transform: translateY(-10px) scale(1.05);
+		}
+
+		// iPhone notch
+		&::before {
+			content: '';
+			position: absolute;
+			top: -12px;
+			left: 50%;
+			transform: translateX(-50%);
+			width: 100px;
+			height: 24px;
+			background: #1a1d21;
+			border-radius: 0 0 20px 20px;
+			z-index: 10;
+		}
+
+		img {
+			display: block;
+			width: 100%;
+			height: auto;
+		}
+	}
+
+	// ============================================
+	// Responsive
+	// ============================================
+
+	@media (max-width: 1024px) {
+		&__device-mockup-mobile {
+			width: 200px;
+			right: 5%;
+			bottom: -40px;
+		}
+	}
+
+	@media (max-width: 768px) {
+		padding: 6rem 1rem 10rem;
+
+		&__navbar-actions {
+			gap: 1rem;
+		}
+
+		&__navbar-link {
+			display: none;
+		}
+
+		&__device-mockup-mobile {
+			position: static;
+			width: 180px;
+			margin: 2rem auto 0;
+		}
+
+		&__actions {
+			margin-bottom: 2rem;
+		}
+	}
+
+	@media (max-width: 640px) {
+		&__title {
+			font-size: 2.5rem;
+		}
+
+		&__description {
+			font-size: 1rem;
+		}
+	}
+}
+
+// Spin Animation for Logo
+@keyframes spin {
+	from {
+		transform: rotate(0deg);
+	}
+
+	to {
+		transform: rotate(360deg);
+	}
+}

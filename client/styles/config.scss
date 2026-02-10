@@ -1,0 +1,50 @@
+$namespace: 'cd';
+
+$defaultFontFamily: 'Lato', 'Helvetica Neue', Helvetica, Roboto, Arial, sans-serif;
+
+:root {
+	--link-color: 36, 107, 253;
+	--nav-h: 80px;
+}
+
+$primaryColor: #246bfd;
+$secondaryGreen: #66bb6a;
+$primaryGreen: #66bb6a;
+$buttonColor: #313438;
+$primaryOrange: #ef6c00;
+$primaryBackground: #1a1d21;
+$primaryRed: #e53935;
+$searchHeight: 60px;
+$navWidth: 18rem;
+
+$statsGridRowHeight: 200px;
+
+$successColor: #2dbd61;
+$successColorDark: #2a3f31;
+
+$errorColorBackground: #ffced7;
+$errorColor: #e23343;
+$errorColorDark: #970912;
+
+$warningColorBackground: #ffd1b9;
+$warningColor: #ee6a26;
+$warningColorDark: #d44707;
+
+$infoColorBackground: #a8d6f5;
+$infoColor: #42a5f5;
+$infoColorDark: #1565c0;
+
+@mixin md {
+	@media (min-width: 768px) {
+		@content;
+	}
+}
+
+
+@mixin dark-glass($opacity: 0.6, $blur: 10px, $border-opacity: 0.05) {
+	background: rgba(30, 36, 44, $opacity) !important;
+	backdrop-filter: blur($blur) !important;
+	-webkit-backdrop-filter: blur($blur) !important;
+	border: 1px solid rgba(255, 255, 255, $border-opacity) !important;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+}

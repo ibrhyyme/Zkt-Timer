@@ -1,0 +1,50 @@
+services:
+  app-server:
+    build: .
+    container_name: zkt-timer-app-server-1
+    env_file:
+      - .env
+    volumes:
+      # Sadece kullanıcı yüklediği dosyaları persist et
+      - ./public/uploads:/app/public/uploads
+    ports:
+      - "3000:3000"
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - HOST=0.0.0.0
+      - PORT=3000
+    depends_on:
+      - postgres
+      - redis
+      - elasticsearch
+
+  postgres:
+    image: postgres:14
+    container_name: zkt-timer-postgres-1
+    environment:
+      POSTGRES_DB: Zkt-Timer
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    container_name: zkt-timer-redis-1
+    volumes:
+      - redis_data:/data
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.2
+    container_name: zkt-timer-elasticsearch-1
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+
+volumes:
+  postgres_data:
+  redis_data:
+  npm_cache:
+  yarn_cache:

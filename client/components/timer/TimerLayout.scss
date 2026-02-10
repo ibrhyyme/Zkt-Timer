@@ -1,0 +1,133 @@
+@import '../../styles/config';
+
+.#{$namespace}-timer {
+	$self: &;
+
+	justify-content: flex-end;
+
+	&__wrapper {
+		$gridGap: 15px;
+
+		box-sizing: border-box;
+		min-height: calc(100vh - var(--nav-h));
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		gap: $gridGap;
+		z-index: 10;
+
+		// Mobil yeni layout için wrapper stillerini sıfırla
+		&--mobileNewLayout {
+			display: flex;
+			flex-direction: column;
+			padding: 0;
+			gap: 0;
+			min-height: 100vh;
+			min-height: 100dvh;
+
+			// Üst kısım (Timer + Scramble): Kalan alanı doldur
+			.#{$namespace}-timer__main {
+				flex: 1;
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+				overflow: hidden;
+				width: 100%;
+			}
+
+			// Alt kısım (Footer/History): %35 yükseklik
+			.#{$namespace}-timer-footer,
+			.cd-timer-footer {
+				height: 35vh;
+				flex: 0 0 auto;
+				width: 100% !important;
+			}
+		}
+
+		&--right,
+		&--left {
+			padding: 0 10px 10px !important;
+			flex-direction: row;
+			gap: $gridGap;
+			height: calc(100vh - var(--nav-h));
+
+			// Tarayıcı çok küçüldüğünde bottom layout'a geç
+			@media (max-width: 1200px) {
+				flex-direction: column !important;
+
+				>*:first-child,
+				>*:last-child {
+					width: 100% !important;
+					flex: none !important;
+				}
+
+				>*:last-child {
+					height: 300px !important;
+					max-height: 300px !important;
+				}
+
+				#{$self}__main {
+					&-center {
+						padding-top: 20px !important;
+					}
+				}
+			}
+
+			>*:first-child {
+				flex: 1;
+				height: 100%;
+				max-height: calc(100vh - var(--nav-h));
+			}
+
+			>*:last-child {
+				width: 350px;
+				height: 100%;
+				max-height: calc(100vh - var(--nav-h));
+			}
+
+			#{$self}__main {
+				&-center {
+					margin-top: 0;
+					padding-top: 80px; // HeaderControl için alan bırak
+				}
+			}
+		}
+
+		&--left {
+			padding: 0 0 10px 10px !important;
+
+			// Tarayıcı çok küçüldüğünde bottom layout'a geç
+			@media (max-width: 1200px) {
+				flex-direction: column !important;
+
+				>*:first-child,
+				>*:last-child {
+					width: 100% !important;
+					flex: none !important;
+				}
+
+				>*:first-child {
+					height: 300px !important;
+					max-height: 300px !important;
+					order: 2 !important; // Footer'ı alta taşı
+				}
+
+				>*:last-child {
+					order: 1 !important; // Timer'ı üste taşı
+				}
+			}
+
+			>*:first-child {
+				width: 350px;
+				height: 100%;
+				max-height: calc(100vh - var(--nav-h));
+			}
+
+			>*:last-child {
+				flex: 1;
+				height: 100%;
+				max-height: calc(100vh - var(--nav-h));
+			}
+		}
+	}
+}

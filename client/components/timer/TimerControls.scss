@@ -1,0 +1,29 @@
+@import '../../styles/config';
+
+.cd-timer-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+    gap: 0.5rem;
+
+    &--mobile {
+        padding: 0.25rem 0.5rem;
+        gap: 0.25rem;
+    }
+
+    &__left,
+    &__right {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    &__left {
+        flex-wrap: wrap;
+    }
+
+    &__right {
+        flex-shrink: 0;
+    }
+}

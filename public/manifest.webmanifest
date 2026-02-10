@@ -1,0 +1,40 @@
+{
+  "name": "Zkt-Timer",
+  "short_name": "ZktTimer",
+  "description": "Speedcubing timer & tools",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": [
+    "standalone"
+  ],
+  "orientation": "portrait",
+  "background_color": "#0F142B",
+  "theme_color": "#0F142B",
+  "icons": [
+    {
+      "src": "/images/zkt-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/zkt-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/zkt-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/images/zkt-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

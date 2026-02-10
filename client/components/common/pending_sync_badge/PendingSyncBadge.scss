@@ -1,0 +1,86 @@
+@import '../../../styles/config';
+
+.pending-sync-badge {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 9999;
+
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    padding: 8px 12px;
+    background: rgba(255, 165, 0, 0.9);
+    border-radius: 20px;
+
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+    &:hover {
+        background: rgba(255, 165, 0, 1);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 165, 0, 0.4);
+    }
+
+    &--syncing {
+        background: rgba(0, 150, 255, 0.9);
+        cursor: wait;
+
+        &:hover {
+            background: rgba(0, 150, 255, 1);
+            transform: none;
+        }
+    }
+
+    &__icon {
+        font-size: 16px;
+        line-height: 1;
+    }
+
+    &__count {
+        font-size: 13px;
+        line-height: 1;
+        min-width: 16px;
+        text-align: center;
+    }
+
+    &__spinner {
+        font-size: 14px;
+        line-height: 1;
+        animation: spin 1s linear infinite;
+    }
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+// Mobil için pozisyon ayarı
+@media (max-width: 768px) {
+    .pending-sync-badge {
+        top: 12px;
+        right: 12px;
+        padding: 6px 10px;
+        font-size: 12px;
+
+        &__icon {
+            font-size: 14px;
+        }
+
+        &__count {
+            font-size: 12px;
+        }
+    }
+}

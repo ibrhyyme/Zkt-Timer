@@ -1,0 +1,49 @@
+@import '../../../../styles/config';
+
+// Global floating hamburger menu
+.#{$namespace}-nav-mobile-hamburger {
+	//position: fixed;
+	//top: clamp(12px, 3vw, 20px);
+	//right: clamp(12px, 3vw, 20px);
+	z-index: 999;
+	display: flex;
+	align-items: center;
+
+	// Sadece mobilde görünür
+	@media (min-width: 769px) {
+		display: none;
+	}
+
+	// Dropdown butonu stilleri - Düzeltme: Doğru class
+	.cd-common-button--theme-gray {
+		background: rgba(var(--module-color), 0.95) !important;
+		backdrop-filter: blur(20px) !important;
+		-webkit-backdrop-filter: blur(20px) !important;
+		border: 1px solid rgba(255, 255, 255, 0.15) !important;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+		width: clamp(40px, 10vw, 48px);
+		height: clamp(40px, 10vw, 48px);
+		border-radius: 12px !important;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: rgb(var(--text-color)) !important;
+		transition: all 0.2s ease !important;
+		padding: 0 !important;
+
+		&:hover {
+			background: rgba(var(--module-color), 1) !important;
+			border-color: rgba(255, 255, 255, 0.25) !important;
+			transform: scale(1.05);
+		}
+
+		&:active {
+			transform: scale(0.95);
+		}
+
+		svg {
+			width: 24px;
+			height: 24px;
+		}
+	}
+}

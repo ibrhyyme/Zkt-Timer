@@ -1,0 +1,54 @@
+@import '../../styles/config';
+
+.cd-stats-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); // 4 Eşit kolon
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    width: 100%;
+    margin-top: auto;
+    box-sizing: border-box;
+
+    &--mobile {
+        padding: 0.75rem 0.5rem;
+        padding-bottom: calc(0.75rem + env(safe-area-inset-bottom)); // Alt safe area koruması
+        background: rgba(0, 0, 0, 0.2); // Alt kısma hafif koyuluk
+        margin-bottom: 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    &__item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 0.6rem 0.2rem;
+        background: rgba(255, 255, 255, 0.03); // Hafif kart efekti
+        border-radius: 8px;
+        transition: transform 0.2s ease, background 0.2s ease;
+        border: 1px solid rgba(255, 255, 255, 0.02);
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.07);
+            transform: translateY(-2px);
+        }
+    }
+
+    &__label {
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: rgba(255, 255, 255, 0.4);
+        margin-bottom: 0.3rem;
+    }
+
+    &__value {
+        font-size: 1rem;
+        font-weight: 600; // Timer ile uyumlu ağırlık
+        color: rgb(var(--text-color)); // Mavi yerine Timer rengi (Beyaz/Tema)
+        // font-family: TSX'ten inline geliyor
+        letter-spacing: 0;
+        text-shadow: none; // Mavi glow kaldırıldı
+    }
+}

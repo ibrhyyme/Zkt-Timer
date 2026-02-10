@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" />
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+		rel="stylesheet" />
+	<script async defer data-domain="zkt-timer.io" src="https://plausible.io/js/plausible.js"></script>
+	<link rel="shortcut icon" href="https://zktimer.app/static/favicon.ico" type="image/x-icon" />
+
+	<script async src="https://www.googletagmanager.com/gtag/js?id=AW-354788011"></script>
+	<script>
+		window.dataLayer = window.dataLayer || [];
+		function gtag() {
+			dataLayer.push(arguments);
+		}
+		gtag('js', new Date());
+		gtag('config', 'AW-354788011');
+	</script>
+
+	<title>404 - Sayfa Bulunamadı | Zkt-Timer</title>
+
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+
+		body,
+		html {
+			height: 100%;
+			width: 100%;
+			font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+			overflow: hidden;
+		}
+
+		.container {
+			width: 100%;
+			height: 100%;
+			background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 50%, #0f1419 100%);
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			position: relative;
+			overflow: hidden;
+		}
+
+		/* Animated background particles */
+		.particles {
+			position: absolute;
+			width: 100%;
+			height: 100%;
+			overflow: hidden;
+		}
+
+		.particle {
+			position: absolute;
+			width: 4px;
+			height: 4px;
+			background: rgba(0, 217, 90, 0.3);
+			border-radius: 50%;
+			animation: float 15s infinite;
+		}
+
+		.particle:nth-child(1) {
+			left: 10%;
+			animation-delay: 0s;
+			animation-duration: 12s;
+		}
+
+		.particle:nth-child(2) {
+			left: 20%;
+			animation-delay: 2s;
+			animation-duration: 14s;
+		}
+
+		.particle:nth-child(3) {
+			left: 30%;
+			animation-delay: 4s;
+			animation-duration: 16s;
+		}
+
+		.particle:nth-child(4) {
+			left: 40%;
+			animation-delay: 1s;
+			animation-duration: 13s;
+		}
+
+		.particle:nth-child(5) {
+			left: 50%;
+			animation-delay: 3s;
+			animation-duration: 15s;
+		}
+
+		.particle:nth-child(6) {
+			left: 60%;
+			animation-delay: 5s;
+			animation-duration: 11s;
+		}
+
+		.particle:nth-child(7) {
+			left: 70%;
+			animation-delay: 2.5s;
+			animation-duration: 17s;
+		}
+
+		.particle:nth-child(8) {
+			left: 80%;
+			animation-delay: 0.5s;
+			animation-duration: 14s;
+		}
+
+		.particle:nth-child(9) {
+			left: 90%;
+			animation-delay: 3.5s;
+			animation-duration: 12s;
+		}
+
+		.particle:nth-child(10) {
+			left: 15%;
+			animation-delay: 1.5s;
+			animation-duration: 16s;
+		}
+
+		@keyframes float {
+			0% {
+				transform: translateY(100vh) scale(0);
+				opacity: 0;
+			}
+
+			10% {
+				opacity: 1;
+			}
+
+			90% {
+				opacity: 1;
+			}
+
+			100% {
+				transform: translateY(-100vh) scale(1);
+				opacity: 0;
+			}
+		}
+
+		/* Glowing orb */
+		.glow-orb {
+			position: absolute;
+			width: 400px;
+			height: 400px;
+			background: radial-gradient(circle, rgba(0, 217, 90, 0.15) 0%, transparent 70%);
+			border-radius: 50%;
+			animation: pulse 4s ease-in-out infinite;
+		}
+
+		@keyframes pulse {
+
+			0%,
+			100% {
+				transform: scale(1);
+				opacity: 0.5;
+			}
+
+			50% {
+				transform: scale(1.2);
+				opacity: 0.8;
+			}
+		}
+
+		.content {
+			text-align: center;
+			z-index: 10;
+			max-width: 600px;
+			padding: 40px;
+			animation: fadeInUp 0.8s ease-out;
+		}
+
+		@keyframes fadeInUp {
+			from {
+				opacity: 0;
+				transform: translateY(30px);
+			}
+
+			to {
+				opacity: 1;
+				transform: translateY(0);
+			}
+		}
+
+		/* 3D Cube Animation */
+		.cube-container {
+			perspective: 600px;
+			width: 120px;
+			height: 120px;
+			margin: 0 auto 40px;
+		}
+
+		.cube {
+			width: 100%;
+			height: 100%;
+			position: relative;
+			transform-style: preserve-3d;
+			animation: rotateCube 8s linear infinite;
+		}
+
+		@keyframes rotateCube {
+			0% {
+				transform: rotateX(-20deg) rotateY(0deg);
+			}
+
+			100% {
+				transform: rotateX(-20deg) rotateY(360deg);
+			}
+		}
+
+		.cube-face {
+			position: absolute;
+			width: 100px;
+			height: 100px;
+			border: 3px solid rgba(255, 255, 255, 0.15);
+			border-radius: 12px;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			font-size: 2.5rem;
+			font-weight: 900;
+			color: rgba(255, 255, 255, 0.9);
+			box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.3);
+		}
+
+		.cube-face--front {
+			background: linear-gradient(135deg, #00d95a, #00b74a);
+			transform: translateZ(50px);
+		}
+
+		.cube-face--back {
+			background: linear-gradient(135deg, #246bfd, #0052cc);
+			transform: rotateY(180deg) translateZ(50px);
+		}
+
+		.cube-face--right {
+			background: linear-gradient(135deg, #ff4757, #cc2f2f);
+			transform: rotateY(90deg) translateZ(50px);
+		}
+
+		.cube-face--left {
+			background: linear-gradient(135deg, #ff9500, #cc7700);
+			transform: rotateY(-90deg) translateZ(50px);
+		}
+
+		.cube-face--top {
+			background: linear-gradient(135deg, #ffffff, #e6e6e6);
+			transform: rotateX(90deg) translateZ(50px);
+			color: #333;
+		}
+
+		.cube-face--bottom {
+			background: linear-gradient(135deg, #ffeb3b, #ffd600);
+			transform: rotateX(-90deg) translateZ(50px);
+			color: #333;
+		}
+
+		.error-code {
+			font-size: 8rem;
+			font-weight: 900;
+			letter-spacing: -0.05em;
+			margin-bottom: 10px;
+			display: flex;
+			justify-content: center;
+			gap: 5px;
+		}
+
+		.error-code span:nth-child(1),
+		.error-code span:nth-child(3) {
+			color: #00d95a;
+			text-shadow: 0 0 40px rgba(0, 217, 90, 0.4);
+		}
+
+		.error-code span:nth-child(2) {
+			background: linear-gradient(135deg, #ff4757, #ff9500);
+			-webkit-background-clip: text;
+			-webkit-text-fill-color: transparent;
+			background-clip: text;
+		}
+
+		.title {
+			font-size: 1.8rem;
+			font-weight: 700;
+			color: #ffffff;
+			margin-bottom: 15px;
+		}
+
+		.description {
+			font-size: 1.1rem;
+			color: rgba(255, 255, 255, 0.6);
+			line-height: 1.6;
+			margin-bottom: 40px;
+		}
+
+		.buttons {
+			display: flex;
+			gap: 15px;
+			justify-content: center;
+			flex-wrap: wrap;
+		}
+
+		.btn {
+			display: inline-flex;
+			align-items: center;
+			gap: 10px;
+			padding: 14px 28px;
+			border-radius: 12px;
+			font-size: 1rem;
+			font-weight: 600;
+			text-decoration: none;
+			transition: all 0.3s ease;
+			cursor: pointer;
+			border: none;
+		}
+
+		.btn--primary {
+			background: linear-gradient(135deg, #00d95a, #00b74a);
+			color: #fff;
+			box-shadow: 0 4px 20px rgba(0, 217, 90, 0.3);
+		}
+
+		.btn--primary:hover {
+			transform: translateY(-3px);
+			box-shadow: 0 8px 30px rgba(0, 217, 90, 0.4);
+		}
+
+		.btn--secondary {
+			background: rgba(255, 255, 255, 0.08);
+			color: rgba(255, 255, 255, 0.8);
+			border: 1px solid rgba(255, 255, 255, 0.15);
+		}
+
+		.btn--secondary:hover {
+			background: rgba(255, 255, 255, 0.12);
+			transform: translateY(-3px);
+			border-color: rgba(255, 255, 255, 0.25);
+		}
+
+		.quick-links {
+			margin-top: 50px;
+			padding-top: 30px;
+			border-top: 1px solid rgba(255, 255, 255, 0.1);
+		}
+
+		.quick-links-title {
+			font-size: 0.85rem;
+			color: rgba(255, 255, 255, 0.4);
+			text-transform: uppercase;
+			letter-spacing: 0.15em;
+			margin-bottom: 20px;
+		}
+
+		.quick-links-list {
+			display: flex;
+			gap: 10px;
+			justify-content: center;
+			flex-wrap: wrap;
+		}
+
+		.quick-link {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			padding: 10px 18px;
+			background: rgba(255, 255, 255, 0.05);
+			border: 1px solid rgba(255, 255, 255, 0.08);
+			border-radius: 8px;
+			color: rgba(255, 255, 255, 0.6);
+			font-size: 0.9rem;
+			text-decoration: none;
+			transition: all 0.2s ease;
+		}
+
+		.quick-link:hover {
+			background: rgba(0, 217, 90, 0.1);
+			border-color: rgba(0, 217, 90, 0.3);
+			color: #00d95a;
+			transform: translateY(-2px);
+		}
+
+		.quick-link svg {
+			width: 18px;
+			height: 18px;
+		}
+
+		/* Responsive */
+		@media (max-width: 600px) {
+			.error-code {
+				font-size: 5rem;
+			}
+
+			.title {
+				font-size: 1.4rem;
+			}
+
+			.description {
+				font-size: 1rem;
+			}
+
+			.cube-container {
+				width: 100px;
+				height: 100px;
+			}
+
+			.cube-face {
+				width: 80px;
+				height: 80px;
+				font-size: 1.8rem;
+			}
+
+			.cube-face--front {
+				transform: translateZ(40px);
+			}
+
+			.cube-face--back {
+				transform: rotateY(180deg) translateZ(40px);
+			}
+
+			.cube-face--right {
+				transform: rotateY(90deg) translateZ(40px);
+			}
+
+			.cube-face--left {
+				transform: rotateY(-90deg) translateZ(40px);
+			}
+
+			.cube-face--top {
+				transform: rotateX(90deg) translateZ(40px);
+			}
+
+			.cube-face--bottom {
+				transform: rotateX(-90deg) translateZ(40px);
+			}
+		}
+	</style>
+</head>
+
+<body>
+	<div class="container">
+		<!-- Background particles -->
+		<div class="particles">
+			<div class="particle"></div>
+			<div class="particle"></div>
+			<div class="particle"></div>
+			<div class="particle"></div>
+			<div class="particle"></div>
+			<div class="particle"></div>
+			<div class="particle"></div>
+			<div class="particle"></div>
+			<div class="particle"></div>
+			<div class="particle"></div>
+		</div>
+
+		<!-- Glowing orb -->
+		<div class="glow-orb"></div>
+
+		<div class="content">
+			<!-- 3D Cube -->
+			<div class="cube-container">
+				<div class="cube">
+					<div class="cube-face cube-face--front">?</div>
+					<div class="cube-face cube-face--back">!</div>
+					<div class="cube-face cube-face--right">×</div>
+					<div class="cube-face cube-face--left">∅</div>
+					<div class="cube-face cube-face--top">404</div>
+					<div class="cube-face cube-face--bottom">⚠</div>
+				</div>
+			</div>
+
+			<!-- Error code -->
+			<div class="error-code">
+				<span>4</span>
+				<span>0</span>
+				<span>4</span>
+			</div>
+
+			<h1 class="title">Sayfa Bulunamadı</h1>
+			<p class="description">
+				Aradığınız sayfa mevcut değil veya taşınmış olabilir.<br>
+				Belki de karıştırma algoritması bu sefer yanlış çalıştı? 🎲
+			</p>
+
+			<div class="buttons">
+				<a href="/" class="btn btn--primary">
+					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+						viewBox="0 0 256 256">
+						<path
+							d="M219.31,108.68l-80-80a16,16,0,0,0-22.62,0l-80,80A15.87,15.87,0,0,0,32,120v96a8,8,0,0,0,8,8h64a8,8,0,0,0,8-8V168h32v48a8,8,0,0,0,8,8h64a8,8,0,0,0,8-8V120A15.87,15.87,0,0,0,219.31,108.68Z" />
+					</svg>
+					Ana Sayfaya Dön
+				</a>
+				<a href="javascript:history.back()" class="btn btn--secondary">
+					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
+						viewBox="0 0 256 256">
+						<path
+							d="M224,128a8,8,0,0,1-8,8H59.31l58.35,58.34a8,8,0,0,1-11.32,11.32l-72-72a8,8,0,0,1,0-11.32l72-72a8,8,0,0,1,11.32,11.32L59.31,120H216A8,8,0,0,1,224,128Z" />
+					</svg>
+					Geri Dön
+				</a>
+			</div>
+
+			<div class="quick-links">
+				<div class="quick-links-title">Hızlı Erişim</div>
+				<div class="quick-links-list">
+					<a href="/" class="quick-link">
+						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
+							viewBox="0 0 256 256">
+							<path
+								d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm56,112H136v48a8,8,0,0,1-16,0V136H72a8,8,0,0,1,0-16h48V72a8,8,0,0,1,16,0v48h48a8,8,0,0,1,0,16Z" />
+						</svg>
+						Zamanlayıcı
+					</a>
+					<a href="/sessions" class="quick-link">
+						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
+							viewBox="0 0 256 256">
+							<path
+								d="M208,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32ZM64,80v96H48V80Zm48,0v96H96V80Zm48,0v96H144V80Zm48,96H192V80h16Z" />
+						</svg>
+						Oturumlar
+					</a>
+					<a href="/stats" class="quick-link">
+						<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
+							viewBox="0 0 256 256">
+							<path
+								d="M232,208a8,8,0,0,1-8,8H32a8,8,0,0,1-8-8V48a8,8,0,0,1,16,0V156.69l50.34-50.35a8,8,0,0,1,11.32,0L128,132.69l50.34-50.35a8,8,0,0,1,11.32,11.32l-56,56a8,8,0,0,1-11.32,0L96,123.31,48,171.31V200H224A8,8,0,0,1,232,208Z" />
+						</svg>
+						İstatistikler
+					</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+
+</html>
