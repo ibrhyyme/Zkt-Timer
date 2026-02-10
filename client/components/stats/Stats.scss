@@ -1,0 +1,17 @@
+@import '../../styles/config';
+
+.#{$namespace}-stats {
+    width: 100%;
+
+    &__shell {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 16px;
+        width: 100%;
+        box-sizing: border-box;
+
+        @include md {
+            padding: 0 32px;
+        }
+    }
+}

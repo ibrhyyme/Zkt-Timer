@@ -1,0 +1,19 @@
+@import '../../../styles/config';
+
+.cd-solve-diff {
+    font-size: 1.5rem; // Küçük ama okunabilir
+    font-weight: bold;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    text-align: center;
+    font-family: monospace; // Hizalama için
+    display: block; // Garanti olsun
+
+    &--better {
+        color: RGB(var(--success-color)); // Yeşil
+    }
+
+    &--worse {
+        color: RGB(var(--error-color)); // Kırmızı
+    }
+}

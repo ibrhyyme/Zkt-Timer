@@ -1,0 +1,158 @@
+@import '../../../../styles/config.scss';
+
+.cd-welcome-mobile-grid {
+	position: relative;
+	padding: 4rem 0;
+	background: linear-gradient(to bottom, transparent, rgba(10, 10, 10, 0.5));
+	border-radius: 24px;
+
+	&__container {
+		max-width: 1280px;
+		margin: 0 auto;
+		padding: 0 1.5rem;
+	}
+
+	// ============================================
+	// Header
+	// ============================================
+
+	&__header {
+		text-align: center;
+		margin-bottom: 4rem;
+		opacity: 0;
+
+		.cd-welcome-mobile-grid--visible & {
+			animation: fadeInUp 0.6s ease-out forwards;
+		}
+	}
+
+	&__title {
+		font-size: 2.5rem;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+		margin-bottom: 1rem;
+		line-height: 1.2;
+
+		@media (max-width: 768px) {
+			font-size: 2rem;
+		}
+	}
+
+	&__description {
+		font-size: 1.125rem;
+		color: rgba(var(--text-color), 0.7);
+		max-width: 600px;
+		margin: 0 auto;
+		line-height: 1.7;
+
+		@media (max-width: 768px) {
+			font-size: 1rem;
+		}
+	}
+
+	// ============================================
+	// Grid
+	// ============================================
+
+	&__grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+		gap: 2rem;
+		justify-items: center;
+
+		@media (max-width: 768px) {
+			grid-template-columns: repeat(2, 1fr);
+			gap: 1.5rem;
+		}
+
+		@media (max-width: 480px) {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	// ============================================
+	// Grid Items
+	// ============================================
+
+	&__item {
+		opacity: 0;
+		width: 100%;
+		max-width: 250px;
+
+		.cd-welcome-mobile-grid--visible & {
+			animation: fadeInUp 0.6s ease-out forwards;
+		}
+	}
+
+	// ============================================
+	// Phone Frame (iPhone Style)
+	// ============================================
+
+	&__phone-frame {
+		position: relative;
+		width: 100%;
+		aspect-ratio: 9 / 19.5;
+		margin: 0 auto;
+
+		// iPhone frame border
+		border: 10px solid #1a1d21;
+		border-radius: 35px;
+		padding: 20px 10px;
+		@include dark-glass(0.05, 8px, 0.1);
+		overflow: hidden;
+
+		// iPhone notch
+		&::before {
+			content: '';
+			position: absolute;
+			top: -10px;
+			left: 50%;
+			transform: translateX(-50%);
+			width: 80px;
+			height: 20px;
+			background: #1a1d21;
+			border-radius: 0 0 15px 15px;
+			z-index: 10;
+		}
+
+		img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			border-radius: 25px;
+			display: block;
+		}
+
+		// Hover lift effect
+		transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+		&:hover {
+			transform: translateY(-8px) scale(1.02);
+			box-shadow: 0 20px 60px rgba(36, 107, 253, 0.2);
+		}
+	}
+
+	&__label {
+		text-align: center;
+		margin-top: 1rem;
+		font-size: 0.875rem;
+		color: rgba(var(--text-color), 0.6);
+		font-weight: 500;
+	}
+
+	// ============================================
+	// Responsive Adjustments
+	// ============================================
+
+	@media (max-width: 768px) {
+		&__phone-frame {
+			max-width: 180px;
+		}
+	}
+
+	@media (max-width: 480px) {
+		&__phone-frame {
+			max-width: 220px;
+		}
+	}
+}

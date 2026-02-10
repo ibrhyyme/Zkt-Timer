@@ -1,0 +1,46 @@
+name: ZKTimer Deploy
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+    - name: Deploy to GCP
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.REMOTE_HOST }}
+        username: ${{ secrets.REMOTE_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        command_timeout: 40m
+        script: |
+          set -e
+          
+          cd /home/ibrahimyldz77/Zkt-Timer
+          
+          # 1. Yeni kodu çek
+          git fetch --all
+          git reset --hard origin/main
+          
+          # 2. Build et ve başlat (tek adımda)
+          docker compose up -d --no-deps --build app-server
+          
+          # 3. İzinleri düzelt
+          sudo chmod -R 755 public/uploads/
+          
+          # 4. Nginx'i yenile
+          sudo systemctl reload nginx
+          
+          # 5. Container durumunu kontrol et
+          echo "Deployment tamamlandı!"
+          docker compose ps
+          
+          # 6. Eski Docker image'larını temizle (disk şişmesin)
+          docker image prune -f
+          
+    - name: Notify on failure
+      if: failure()
+      run: echo "Deployment failed!"

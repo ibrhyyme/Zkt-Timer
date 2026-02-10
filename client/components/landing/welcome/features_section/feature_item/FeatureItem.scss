@@ -1,0 +1,201 @@
+@import '../../../../../styles/config.scss';
+
+.cd-welcome-feature-item {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 4rem;
+	align-items: center;
+	opacity: 0;
+
+	// ============================================
+	// Position variants (zig-zag layout)
+	// ============================================
+
+	&--position-right {
+		.cd-welcome-feature-item__text {
+			order: 2;
+		}
+
+		.cd-welcome-feature-item__image-wrapper {
+			order: 1;
+		}
+	}
+
+	&--position-left {
+		.cd-welcome-feature-item__text {
+			order: 1;
+		}
+
+		.cd-welcome-feature-item__image-wrapper {
+			order: 2;
+		}
+	}
+
+	// ============================================
+	// Visible state (scroll animation)
+	// ============================================
+
+	&--visible {
+		animation: fadeInUp 0.6s ease-out forwards;
+
+		.cd-welcome-feature-item__text {
+			animation: fadeInLeft 0.8s ease-out 0.2s forwards;
+			opacity: 0;
+		}
+
+		.cd-welcome-feature-item__image-wrapper {
+			opacity: 0;
+		}
+
+		// Left position: image slides from LEFT
+		&.cd-welcome-feature-item--position-left {
+			.cd-welcome-feature-item__image-wrapper {
+				animation: fadeInLeft 0.8s ease-out 0.3s forwards;
+			}
+		}
+
+		// Right position: image slides from RIGHT
+		&.cd-welcome-feature-item--position-right {
+			.cd-welcome-feature-item__image-wrapper {
+				animation: fadeInRight 0.8s ease-out 0.3s forwards;
+			}
+		}
+	}
+
+	// ============================================
+	// Text Content
+	// ============================================
+
+	&__icon {
+		margin-bottom: 1rem;
+		display: inline-block;
+	}
+
+	&__title {
+		font-size: 2.5rem;
+		font-weight: 700;
+		margin-bottom: 1rem;
+		color: rgb(var(--text-color));
+		line-height: 1.2;
+
+		@media (max-width: 768px) {
+			font-size: 2rem;
+		}
+	}
+
+	&__description {
+		font-size: 1.125rem;
+		color: rgba(var(--text-color), 0.7);
+		margin-bottom: 1.5rem;
+		line-height: 1.7;
+
+		@media (max-width: 768px) {
+			font-size: 1rem;
+		}
+	}
+
+	&__bullets {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+
+		li {
+			display: flex;
+			align-items: center;
+			gap: 0.75rem;
+			margin-bottom: 0.75rem;
+			color: rgba(var(--text-color), 0.8);
+			font-size: 1rem;
+
+			&:last-child {
+				margin-bottom: 0;
+			}
+		}
+	}
+
+	&__bullet-icon {
+		font-weight: 700;
+		font-size: 1.25rem;
+		flex-shrink: 0;
+	}
+
+	// ============================================
+	// Image Content
+	// ============================================
+
+	&__image-wrapper {
+		position: relative;
+		aspect-ratio: 16 / 10;
+		border-radius: 16px;
+		overflow: hidden;
+	}
+
+	&__image-glow {
+		position: absolute;
+		inset: -40px;
+		opacity: 0.4;
+		filter: blur(60px);
+		transition: opacity 0.3s ease;
+		pointer-events: none;
+	}
+
+	&__image {
+		position: relative;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		border-radius: 16px;
+		border: 1px solid rgba(255, 255, 255, 0.05);
+		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+		transition: transform 0.3s ease, box-shadow 0.3s ease;
+	}
+
+	// ============================================
+	// Hover Effects
+	// ============================================
+
+	&:hover {
+		.cd-welcome-feature-item__image {
+			transform: scale(1.02);
+			box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+		}
+
+		.cd-welcome-feature-item__image-glow {
+			opacity: 0.6;
+		}
+	}
+
+	// ============================================
+	// Responsive
+	// ============================================
+
+	@media (max-width: 1024px) {
+		gap: 3rem;
+	}
+
+	@media (max-width: 768px) {
+		grid-template-columns: 1fr;
+		gap: 2rem;
+
+		// Force order on mobile: text first, image second
+		.cd-welcome-feature-item__text,
+		.cd-welcome-feature-item__image-wrapper {
+			order: initial !important;
+		}
+
+		.cd-welcome-feature-item__text {
+			order: 1 !important;
+		}
+
+		.cd-welcome-feature-item__image-wrapper {
+			order: 2 !important;
+			aspect-ratio: 16 / 9; // Daha geniş oran mobil için
+		}
+
+		// Mobilde görseli zoom yapmadan tam göster
+		.cd-welcome-feature-item__image {
+			object-fit: contain;
+			background: rgba(255, 255, 255, 0.02);
+		}
+	}
+}

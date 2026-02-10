@@ -1,0 +1,65 @@
+@import '../../../../styles/config';
+
+.#{$namespace}-manage-user-summary {
+	grid-column: span 2;
+
+	&__section {
+		padding: 10px;
+	}
+
+	@media (max-width: 1200px) {
+		grid-column: span 1;
+	}
+
+	&__pills {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+
+		> * {
+			margin-right: 10px;
+			margin-bottom: 10px;
+		}
+	}
+
+	&__pill {
+		padding: 10px 8px 10px 12px;
+		background-color: rgb(var(--button-color));
+		border: 3px solid rgb(var(--theme-button-opposite), 0.1);
+		border-radius: 20px;
+
+		span {
+			font-size: 0.95rem;
+		}
+	}
+
+	&__solve-cubetype {
+		> span {
+			color: rgb(var(--text-color));
+			opacity: 0.8;
+			font-size: 1.1rem;
+			margin: 5px 0 10px;
+			font-style: italic;
+		}
+
+		&:not(:last-child) {
+			margin-bottom: 15px;
+		}
+	}
+
+	&__pill-title {
+		color: rgb(var(--theme-button-opposite));
+	}
+
+	&__pill-value {
+		padding: 4px 10px;
+		margin-left: 8px;
+		background-color: rgb(var(--secondary-color));
+		border-radius: 12px;
+		color: rgb(var(--theme-secondary-opposite));
+	}
+
+	> *:not(:last-child) {
+		border-bottom: 2px solid rgb(var(--theme-module-opposite), 0.2);
+	}
+}

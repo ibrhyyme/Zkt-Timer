@@ -1,0 +1,61 @@
+@import '../../../styles/config';
+
+.#{$namespace}-common-switch {
+	$switchSize: 25px;
+	$switchSizeSmall: 15px;
+
+	background-color: #334155 !important; // slate-700
+	border: 1px solid #475569; // slate-600
+	border-radius: 20px;
+	position: relative;
+	transition: all 0.3s ease;
+
+	width: calc(#{$switchSize} * 2.4);
+	height: calc(#{$switchSize} + 5px);
+
+	&:hover {
+		background-color: #475569 !important; // slate-600
+	}
+
+	&__wrapper {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+	}
+
+	span {
+		position: absolute;
+		display: table;
+		height: $switchSize;
+		width: $switchSize;
+		background-color: white;
+		border-radius: 50px;
+		top: 50%;
+		left: 4px;
+		right: 0;
+		transform: translate(0, -50%);
+		box-shadow: 0 2px 10px rgba(black, 0.15);
+		transition: all 0.3s ease;
+	}
+
+	&--small {
+		width: calc(#{$switchSizeSmall} * 2.6);
+		height: calc(#{$switchSizeSmall} + 5px);
+
+		span {
+			height: $switchSizeSmall;
+			width: $switchSizeSmall;
+		}
+	}
+
+	&--on {
+		background: linear-gradient(to right, #10b981, #14b8a6) !important; // emerald-500 to teal-500
+		border-color: #34d399; // emerald-400
+		box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+
+		span {
+			right: 3px;
+			left: unset;
+		}
+	}
+}

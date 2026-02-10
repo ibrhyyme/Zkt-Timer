@@ -1,0 +1,71 @@
+@import '../../styles/config';
+
+.cd-mobile-timer-scramble {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    text-align: center;
+    box-sizing: border-box;
+
+    // Max height constraint (approx 35% of screen height) to ensure timer visibility
+    min-height: 140px; // 3 satırlık 3x3 scramble için sabit alan (zıplamayı önler)
+
+    @media (max-height: 745px) {
+        min-height: 100px;
+    }
+
+    max-height: 35vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch; // Smooth scrolling on iOS
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    // SmartScramble wrapper - flex-wrap ile alt satıra geçsin
+    &__smart-scramble {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 0.3rem 0.5rem;
+        line-height: 1.6;
+    }
+
+    // SmartScramble span'ları için wrap
+    .cd-timer-scramble__turn {
+        display: inline;
+    }
+
+    &__text {
+        color: rgba(255, 255, 255, 0.85);
+        font-family: 'Inter', monospace;
+        white-space: pre-wrap;
+        word-break: break-word;
+        cursor: pointer;
+        transition: color 0.15s ease;
+        position: relative;
+        display: inline-block;
+
+        &:hover {
+            color: rgba(255, 255, 255, 1);
+        }
+
+        &--megaminx {
+            font-size: 0.85em !important;
+            line-height: 1.4 !important;
+        }
+
+        &--copied {
+            color: rgb(var(--primary-color));
+        }
+    }
+
+    &__copied-icon {
+        position: absolute;
+        right: -24px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: rgb(var(--primary-color));
+        font-size: 1.2em;
+    }
+}

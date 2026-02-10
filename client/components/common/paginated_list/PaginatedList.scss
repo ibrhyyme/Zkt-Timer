@@ -1,0 +1,6 @@
+@import '../../../styles/config';
+
+.#{$namespace}-paginated-list {
+    overscroll-behavior-y: contain;
+    touch-action: pan-y;
+}

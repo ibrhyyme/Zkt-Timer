@@ -1,0 +1,64 @@
+@import '../../../../styles/config';
+
+.#{$namespace}-settings-theme-options {
+	&__theme-controls {
+		display: flex;
+		flex-direction: column;
+		gap: 15px;
+	}
+
+	&__presets {
+		display: flex;
+		justify-content: flex-end;
+		flex-wrap: wrap;
+		gap: 10px;
+		width: 100%;
+	}
+
+	&__theme-actions {
+		display: flex;
+		gap: 10px;
+		justify-content: flex-start;
+		flex-wrap: wrap;
+
+		.#{$namespace}-button {
+			min-width: 140px;
+		}
+	}
+
+	&__customize {
+		display: grid;
+		box-sizing: border-box;
+		width: 100%;
+		grid-gap: 10px;
+		grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+
+		> * {
+			padding: 0 !important;
+		}
+
+		.#{$namespace}-common-color-picker {
+			margin-top: 5px;
+			position: relative;
+
+			// Renk paletlerinin üst üste açılmasını engelle
+			&:nth-child(1) .#{$namespace}-common-color-picker__palette { z-index: 1004; }
+			&:nth-child(2) .#{$namespace}-common-color-picker__palette { z-index: 1003; }
+			&:nth-child(3) .#{$namespace}-common-color-picker__palette { z-index: 1002; }
+			&:nth-child(4) .#{$namespace}-common-color-picker__palette { z-index: 1001; }
+		}
+	}
+
+	&__actions {
+		display: flex;
+		gap: 15px;
+		justify-content: center;
+		margin-top: 20px;
+		padding: 15px;
+		border-top: 1px solid rgba(var(--text-color), 0.1);
+
+		.#{$namespace}-button {
+			min-width: 180px;
+		}
+	}
+}

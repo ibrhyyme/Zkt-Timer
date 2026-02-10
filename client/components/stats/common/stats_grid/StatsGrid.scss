@@ -1,0 +1,14 @@
+@import '../../../../styles/config';
+
+.#{$namespace}-stats-grid {
+    width: 100%;
+    display: grid;
+    grid-gap: 12px;
+    height: 100%;
+
+    @media only screen and (max-width: 768px) {
+        grid-template-columns: 1fr !important;
+        grid-template-rows: auto !important;
+        height: auto !important;
+    }
+}

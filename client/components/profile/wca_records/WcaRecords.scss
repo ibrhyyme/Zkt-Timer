@@ -1,0 +1,111 @@
+.wca-records {
+  margin-bottom: 2rem;
+
+  h2 {
+    margin-bottom: 1rem;
+    color: var(--color-text);
+  }
+
+  &.loading {
+    text-align: center;
+    padding: 2rem;
+    color: var(--color-text-muted);
+  }
+
+
+  .wca-records-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .wca-record-card {
+    background: var(--color-background-secondary);
+    border-radius: 8px;
+    padding: 1rem;
+    border: 1px solid var(--color-border);
+
+    .event-name {
+      margin-bottom: 0.75rem;
+      text-align: center;
+    }
+
+    .records-row {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .record-item {
+      text-align: center;
+      min-width: 100px;
+      flex: 1;
+
+      .record-type {
+        font-size: 0.8rem;
+        color: var(--color-text-muted);
+        margin-bottom: 0.25rem;
+        text-transform: uppercase;
+        font-weight: 600;
+      }
+
+      .record-time {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: var(--color-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.25rem;
+        margin-bottom: 0.25rem;
+        white-space: nowrap;
+
+        svg {
+          width: 16px;
+          height: 16px;
+          min-width: 16px;
+        }
+      }
+
+      .record-rank {
+        font-size: 0.7rem;
+        color: var(--color-text-muted);
+        font-weight: 500;
+        white-space: nowrap;
+      }
+    }
+  }
+
+  // Mobile responsive
+  @media (max-width: 768px) {
+    .wca-records-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .wca-record-card {
+      .records-row {
+        // Keeping flex-row default but allowing wrap handles it, 
+        // but explicit column is better for very small screens if needed.
+        // However, with flex-wrap: wrap above, we might not strictly need column direction 
+        // unless we want to force vertical stack.
+        // Let's keep existing mobile behavior but slightly improved?
+        // Actually, the previous code forced column on mobile.
+        // Let's stick to what works but allow wrapping generally.
+        // If screen is < 768, usually grid-template-columns is 1fr (full width).
+        // If full width card (e.g. 500px), row is better.
+        // If mobile phone (350px), row might wrap.
+
+        // Let's remove the forced flex-direction: column for <768px unless really small,
+        // OR better, let the wrap handle it naturally.
+        flex-wrap: wrap;
+      }
+
+      .record-item {
+        .record-time {
+          font-size: 1.1rem;
+        }
+      }
+    }
+  }
+}

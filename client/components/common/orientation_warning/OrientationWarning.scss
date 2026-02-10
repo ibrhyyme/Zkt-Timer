@@ -1,0 +1,61 @@
+@import '../../../styles/config';
+
+.cd-orientation-warning {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgb(var(--background-color));
+    z-index: 99999;
+
+    // Default hidden
+    display: none;
+
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+    text-align: center;
+    color: rgb(var(--text-color));
+
+    &__icon {
+        font-size: 64px;
+        color: rgb(var(--primary-color));
+        animation: rotate-phone 2s infinite ease-in-out;
+    }
+
+    &__title {
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+
+    &__text {
+        font-size: 1rem;
+        color: rgba(var(--text-color), 0.7);
+        max-width: 400px;
+    }
+
+    @keyframes rotate-phone {
+        0% {
+            transform: rotate(90deg);
+        }
+
+        50% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(90deg);
+        }
+    }
+}
+
+// Show only when orientation is landscape AND screen height is cramped (<600px)
+// Component JS ensures it's only on mobile
+@media screen and (orientation: landscape) and (max-height: 600px) {
+    .cd-orientation-warning {
+        display: flex;
+    }
+}
