@@ -5,8 +5,8 @@ import { PaginationArgsInput } from '../../../../server/schemas/Pagination.schem
 import Input from '../../common/inputs/input/Input';
 import { useInput } from '../../../util/hooks/useInput';
 import { gql } from '@apollo/client';
-import { resourceUri } from '../../../util/storage';
 import dayjs from 'dayjs';
+import AvatarImage from '../../common/avatar/avatar_image/AvatarImage';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/tr';
 import { useDispatch } from 'react-redux';
@@ -67,9 +67,7 @@ const ADMIN_USER_SEARCH_QUERY = gql`
 function UserTableRow({ user }: { user: UserAccountData }) {
 	const dispatch = useDispatch();
 
-	const pfpUrl = user.profile?.pfp_image?.storage_path
-		? resourceUri(user.profile.pfp_image.storage_path)
-		: '/images/default-pfp.png';
+
 
 	const badges = [];
 	if (user.admin) badges.push({ label: 'Admin', color: 'red' });
@@ -86,7 +84,9 @@ function UserTableRow({ user }: { user: UserAccountData }) {
 		<tr className="cd-admin-users__row">
 			<td className="cd-admin-users__cell cd-admin-users__cell--user">
 				<div className="cd-admin-users__user-info">
-					<img src={pfpUrl} alt={user.username} className="cd-admin-users__avatar" />
+					<div className="cd-admin-users__avatar-wrapper">
+						<AvatarImage user={user} profile={user.profile} />
+					</div>
 					<div className="cd-admin-users__user-details">
 						<div className="cd-admin-users__username">{user.username}</div>
 						<div className="cd-admin-users__email">{user.email}</div>
