@@ -1,0 +1,66 @@
+server {
+    listen 80;
+    server_name zktimer.app www.zktimer.app;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    server_name zktimer.app www.zktimer.app;
+
+    ssl_certificate /etc/letsencrypt/live/zktimer.app/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/zktimer.app/privkey.pem;
+
+    # Fix: 413 Payload Too Large (Import için)
+    client_max_body_size 50M;
+
+    # Fix: Service Worker 404
+    location = /sw.js {
+        alias /home/ibrahimyldz77/Zkt-Timer/public/sw.js;
+        access_log off;
+        expires 0;
+        add_header Cache-Control "no-cache";
+    }
+
+    # 1. Ana Uygulama
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    # 2. JS/CSS Dosyaları
+    location /dist/ {
+        alias /home/ibrahimyldz77/Zkt-Timer/dist/;
+        access_log off;
+        expires max;
+    }
+
+    # 3. Profil Resimleri Köprüsü (EN KRİTİK KISIM)
+    # Tarayıcı /images/ istediğinde sunucudaki uploads/images klasörüne bakacak
+    location /images/ {
+        root /home/ibrahimyldz77/Zkt-Timer/public/uploads;
+        access_log off;
+        expires 30d;
+        add_header Cache-Control "public, no-transform";
+    }
+
+    # 4. Zamanlayıcı Arka Planları
+    location /timer_backgrounds/ {
+        root /home/ibrahimyldz77/Zkt-Timer/public/uploads;
+        access_log off;
+        expires 30d;
+    }
+
+    # 5. Genel Statik Dosyalar
+    location /public/ {
+        alias /home/ibrahimyldz77/Zkt-Timer/public/;
+        access_log off;
+        expires max;
+    }
+} # Server bloğunun en sonundaki süslü parantezi unutma!

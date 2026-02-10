@@ -1,0 +1,10 @@
+@import '../../../styles/config';
+
+.#{$namespace}-cube-stats {
+	width: 100%;
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+	grid-auto-rows: minmax(350px, auto);
+	grid-column-gap: 30px;
+	grid-row-gap: 30px;
+}

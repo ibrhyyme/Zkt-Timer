@@ -1,0 +1,362 @@
+.room-timer-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100;
+    background: rgb(var(--background-color));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.1s ease-out;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    // Close button (top right)
+    &__close-btn {
+        position: absolute;
+        top: 1.5rem;
+        right: 1.5rem;
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 12px;
+        color: rgba(var(--text-color), 0.7);
+        cursor: pointer;
+        transition: all 0.2s;
+        z-index: 10;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: rgb(var(--text-color));
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+    }
+
+    &__content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+        padding: 2rem;
+        width: 100%;
+        max-width: 600px;
+    }
+
+    &__time {
+        font-size: 10rem;
+        font-weight: 400;
+        font-family: 'Roboto Mono', 'Courier New', monospace;
+        font-variant-numeric: tabular-nums;
+        user-select: none;
+        transition: color 0.1s ease;
+        letter-spacing: -0.02em;
+
+        &--white {
+            color: rgb(var(--text-color));
+        }
+
+        &--red {
+            color: #ef5350;
+        }
+
+        &--orange {
+            color: #ff9800;
+        }
+
+        &--green {
+            color: #66bb6a;
+        }
+
+        @media (max-width: 768px) {
+            font-size: 5rem;
+        }
+
+        @media (max-width: 480px) {
+            font-size: 3.5rem;
+        }
+
+        &--calculation {
+            font-size: 5rem;
+            white-space: nowrap;
+
+            @media (max-width: 768px) {
+                font-size: 2.5rem;
+            }
+
+            @media (max-width: 480px) {
+                font-size: 1.8rem;
+            }
+        }
+    }
+
+    &__result {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    &__penalties {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    &__checkbox {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        cursor: pointer;
+        color: rgba(var(--text-color), 0.9);
+        font-size: 1rem;
+        font-weight: 500;
+        padding: 0.5rem 0.75rem;
+        border-radius: 8px;
+        border: 2px solid transparent;
+        transition: all 0.15s;
+
+        &--focused {
+            border-color: rgb(var(--primary-color));
+            box-shadow: 0 0 8px rgba(var(--primary-color), 0.4);
+        }
+
+        input[type='checkbox'] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: rgb(var(--primary-color));
+        }
+    }
+
+    &__btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        border: 2px solid rgba(var(--text-color), 0.4);
+        border-radius: 8px;
+        background: transparent;
+        color: rgb(var(--text-color));
+        cursor: pointer;
+        transition: all 0.15s;
+
+        &:hover:not(:disabled) {
+            background: rgba(var(--text-color), 0.1);
+            border-color: rgba(var(--text-color), 0.6);
+        }
+
+        &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        &--focused {
+            border-color: rgb(var(--primary-color));
+            box-shadow: 0 0 8px rgba(var(--primary-color), 0.4);
+        }
+
+        &--secondary {
+            border-color: rgba(var(--text-color), 0.25);
+            color: rgba(var(--text-color), 0.8);
+
+            &:hover:not(:disabled) {
+                border-color: rgba(var(--text-color), 0.5);
+                color: rgb(var(--text-color));
+            }
+        }
+
+        &--primary {
+            background: rgb(var(--primary-color));
+            border-color: rgb(var(--primary-color));
+            color: white;
+
+            &:hover:not(:disabled) {
+                background: rgba(var(--primary-color), 0.8);
+            }
+        }
+
+        &--link {
+            background: transparent;
+            border: none;
+            color: rgb(var(--primary-color));
+            text-decoration: underline;
+            padding: 0.5rem 1rem;
+
+            &:hover {
+                color: rgba(var(--primary-color), 0.8);
+                background: transparent;
+            }
+        }
+    }
+
+    &__hint {
+        color: rgba(var(--text-color), 0.5);
+        font-size: 0.85rem;
+        margin: 0.5rem 0 0 0;
+        text-align: center;
+    }
+
+    // Manual entry styles
+    &__manual {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        padding: 2rem;
+        width: 100%;
+    }
+
+    &__manual-label {
+        font-size: 1.5rem;
+        font-weight: 500;
+        color: rgba(var(--text-color), 0.8);
+        margin: 0;
+    }
+
+    &__manual-input {
+        width: 100%;
+        max-width: 400px;
+        padding: 1.25rem 1.5rem;
+        font-size: 3rem;
+        font-family: 'Roboto Mono', 'Courier New', monospace;
+        font-weight: 400;
+        text-align: center;
+        color: rgb(var(--text-color));
+        background: rgba(255, 255, 255, 0.05);
+        border: 2px solid rgba(255, 255, 255, 0.15);
+        border-radius: 12px;
+        outline: none;
+        transition: all 0.2s;
+
+        &::placeholder {
+            color: rgba(var(--text-color), 0.3);
+        }
+
+        &:focus {
+            border-color: rgb(var(--primary-color));
+            background: rgba(var(--primary-color), 0.05);
+        }
+
+        &--error {
+            border-color: #ef5350 !important;
+            background: rgba(239, 83, 80, 0.08);
+        }
+
+        @media (max-width: 768px) {
+            font-size: 2rem;
+            padding: 1rem;
+        }
+    }
+
+    &__manual-hint {
+        font-size: 0.9rem;
+        color: rgba(var(--text-color), 0.4);
+        margin: 0;
+        text-align: center;
+    }
+
+    // Device connection styles
+    &__device {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+        text-align: center;
+        padding: 2rem;
+
+        h3 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: rgb(var(--text-color));
+        }
+    }
+
+    &__device-icon {
+        width: 100px;
+        height: 100px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 24px;
+        color: rgba(var(--text-color), 0.6);
+        margin-bottom: 0.5rem;
+    }
+
+    &__device-status {
+        font-size: 1rem;
+        color: rgba(var(--text-color), 0.5);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        &--connected {
+            color: #66bb6a;
+        }
+
+        &--error {
+            color: #ef5350;
+        }
+    }
+
+    // Overlay mode variants
+    &--manual {
+        background: rgba(var(--background-color), 0.98);
+    }
+
+    &--device {
+        background: rgba(var(--background-color), 0.98);
+    }
+
+    // Status-specific styles
+    &--inspecting {
+        .room-timer-overlay__time {
+            color: #ef5350;
+        }
+    }
+
+    &--inspecting_waiting {
+        .room-timer-overlay__time {
+            color: #ef5350;
+        }
+    }
+
+    &--priming,
+    &--inspecting_priming {
+        .room-timer-overlay__time {
+            color: #66bb6a !important;
+        }
+    }
+
+    &--timing {
+        .room-timer-overlay__time {
+            color: rgb(var(--text-color));
+        }
+    }
+}

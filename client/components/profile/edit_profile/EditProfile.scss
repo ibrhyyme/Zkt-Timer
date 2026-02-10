@@ -1,0 +1,91 @@
+.cd-profile__edit {
+	&__bio {
+		grid-column: span 2;
+	}
+
+	&__grid {
+        margin-bottom: 1.25rem;
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 1.25rem;
+	}
+
+	// Modal içindeki input, textarea ve button'lar için özel stiller
+	:global(.cd-common-input) {
+		.cd-common-input__input {
+			background-color: rgba(71, 85, 105, 0.8) !important; // slate-600/80
+			color: rgba(226, 232, 240, 1) !important; // slate-200
+			border: 1px solid rgba(148, 163, 184, 0.3) !important; // slate-400/30
+			border-radius: 12px !important;
+			backdrop-filter: blur(8px);
+			transition: all 0.2s ease-in-out !important;
+
+			&:focus {
+				border-color: rgba(99, 102, 241, 0.7) !important; // indigo-500/70
+				box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3) !important; // indigo-500/30 glow
+			}
+
+			&::placeholder {
+				color: rgba(148, 163, 184, 0.7) !important; // slate-400/70
+			}
+		}
+	}
+
+	:global(.cd-common-textarea) {
+		.cd-common-textarea__input {
+			background-color: rgba(71, 85, 105, 0.8) !important; // slate-600/80
+			color: rgba(226, 232, 240, 1) !important; // slate-200
+			border: 1px solid rgba(148, 163, 184, 0.3) !important; // slate-400/30
+			border-radius: 12px !important;
+			backdrop-filter: blur(8px);
+			transition: all 0.2s ease-in-out !important;
+
+			&:focus {
+				border-color: rgba(99, 102, 241, 0.7) !important; // indigo-500/70
+				box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3) !important; // indigo-500/30 glow
+			}
+
+			&::placeholder {
+				color: rgba(148, 163, 184, 0.7) !important; // slate-400/70
+			}
+		}
+	}
+
+	// Legend'lar için
+	:global(.cd-common-input__legend),
+	:global(.cd-common-textarea__legend) {
+		color: rgba(248, 250, 252, 1) !important; // slate-50
+		font-weight: 500 !important;
+		margin-bottom: 0.5rem !important;
+	}
+
+	// Info text'ler için
+	:global(.cd-common-input__info),
+	:global(.cd-common-textarea__info) {
+		color: rgba(148, 163, 184, 1) !important; // slate-400
+		font-size: 0.875rem !important;
+		margin-top: 0.25rem !important;
+	}
+
+	// Button için
+	:global(.cd-button) {
+		&:not(:global(.cd-button--primary)):not(:global(.cd-button--danger)):not(:global(.cd-button--warning)) {
+			background: linear-gradient(135deg, rgba(71, 85, 105, 0.8), rgba(100, 116, 139, 0.8)) !important; // slate-600/80 to slate-500/80
+			color: rgba(226, 232, 240, 1) !important; // slate-200
+			border: 1px solid rgba(148, 163, 184, 0.3) !important; // slate-400/30
+			border-radius: 12px !important;
+			backdrop-filter: blur(8px);
+			box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+			transition: all 0.2s ease-in-out !important;
+			font-weight: 500 !important;
+
+			&:hover:not(:disabled) {
+				background: linear-gradient(135deg, rgba(100, 116, 139, 0.9), rgba(71, 85, 105, 0.9)) !important; // slate-500/90 to slate-600/90
+				color: rgba(248, 250, 252, 1) !important; // slate-50
+				border-color: rgba(148, 163, 184, 0.5) !important; // slate-400/50
+				transform: translateY(-1px);
+				box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+			}
+		}
+	}
+}

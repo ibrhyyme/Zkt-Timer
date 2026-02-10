@@ -1,0 +1,255 @@
+@import '../../styles/config.scss';
+
+.#{$namespace}-login {
+	// ============================================
+	// Wrapper - Main Container
+	// ============================================
+
+	&__wrapper {
+		min-height: 100vh;
+		background: #050505;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		padding: 2rem;
+		position: relative;
+		overflow: hidden;
+	}
+
+	// ============================================
+	// Background Effects
+	// ============================================
+
+	&__background {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		pointer-events: none;
+	}
+
+	&__orb {
+		position: absolute;
+		width: 70vw;
+		height: 70vw;
+		max-width: 600px;
+		max-height: 600px;
+		border-radius: 50%;
+		filter: blur(100px);
+		opacity: 0.08;
+		animation: pulse 4s ease-in-out infinite;
+
+		&--position-left {
+			top: -20%;
+			left: -10%;
+			background: radial-gradient(circle, rgba(124, 58, 237, 0.8), transparent);
+		}
+
+		&--position-right {
+			bottom: -20%;
+			right: -10%;
+			background: radial-gradient(circle, rgba(59, 130, 246, 0.8), transparent);
+			animation-delay: 2s;
+		}
+	}
+
+	&__cube-pattern {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		justify-content: space-around;
+		align-items: space-around;
+		flex-wrap: wrap;
+		gap: 10rem;
+		padding: 3rem;
+	}
+
+	&__cube-float {
+		color: rgba(124, 58, 237, 0.15);
+		animation: cubeFloat 6s ease-in-out infinite;
+		position: relative;
+
+		&:nth-child(even) {
+			color: rgba(59, 130, 246, 0.12);
+			animation-direction: reverse;
+		}
+	}
+
+	// ============================================
+	// Main Card
+	// ============================================
+
+	&__card {
+		@include dark-glass(0.6, 20px, 0.15);
+		max-width: 450px;
+		width: 100%;
+		border-radius: 24px;
+		padding: 3rem 2.5rem;
+		position: relative;
+		z-index: 10;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+
+		@media (max-width: 640px) {
+			padding: 2rem 1.5rem;
+		}
+	}
+
+	// ============================================
+	// Logo
+	// ============================================
+
+	&__logo-container {
+		display: flex;
+		justify-content: center;
+		margin-bottom: 2rem;
+	}
+
+	&__logo {
+		width: 100px;
+		height: 100px;
+		object-fit: contain;
+		filter: drop-shadow(0 4px 12px rgba(124, 58, 237, 0.3));
+		animation: fadeInUp 0.8s ease-out;
+
+		@media (max-width: 640px) {
+			width: 80px;
+			height: 80px;
+		}
+	}
+
+	// ============================================
+	// Title
+	// ============================================
+
+	&__title {
+		font-size: 2rem;
+		font-weight: 700;
+		text-align: center;
+		margin-bottom: 2rem;
+		background: linear-gradient(to bottom, white, rgba(255, 255, 255, 0.7));
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+		animation: fadeInUp 0.8s ease-out 0.1s backwards;
+
+		@media (max-width: 640px) {
+			font-size: 1.75rem;
+		}
+	}
+
+	// ============================================
+	// Tabs
+	// ============================================
+
+	&__tabs {
+		display: flex;
+		justify-content: center;
+		gap: 3rem;
+		margin-bottom: 2.5rem;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+	}
+
+	&__tab {
+		font-size: 1rem;
+		font-weight: 500;
+		color: rgba(255, 255, 255, 0.5);
+		text-decoration: none;
+		padding-bottom: 0.75rem;
+		position: relative;
+		transition: color 0.3s ease;
+
+		&:hover {
+			color: rgba(255, 255, 255, 0.8);
+		}
+
+		&--active {
+			color: rgb(var(--primary-color));
+			font-weight: 600;
+
+			&::after {
+				content: '';
+				position: absolute;
+				bottom: -1px;
+				left: 0;
+				right: 0;
+				height: 2px;
+				background: linear-gradient(
+					to right,
+					transparent,
+					rgb(var(--primary-color)),
+					transparent
+				);
+			}
+		}
+	}
+
+	// ============================================
+	// Form Content
+	// ============================================
+
+	&__form-content {
+		animation: fadeInUp 1s ease-out 0.2s backwards;
+	}
+
+	// ============================================
+	// Back Home Link
+	// ============================================
+
+	&__back-home {
+		margin-top: 2rem;
+		color: rgba(255, 255, 255, 0.6);
+		text-decoration: none;
+		font-size: 0.9rem;
+		transition: color 0.3s ease;
+		position: relative;
+		z-index: 10;
+		padding: 0.75rem 1.5rem;
+		border-radius: 12px;
+		background: rgba(255, 255, 255, 0.02);
+		border: 1px solid rgba(255, 255, 255, 0.05);
+
+		&:hover {
+			color: rgba(255, 255, 255, 0.9);
+			background: rgba(255, 255, 255, 0.05);
+			border-color: rgba(124, 58, 237, 0.3);
+		}
+	}
+}
+
+// ============================================
+// Animations
+// ============================================
+
+@keyframes pulse {
+	0%,
+	100% {
+		transform: scale(1);
+		opacity: 0.08;
+	}
+	50% {
+		transform: scale(1.1);
+		opacity: 0.12;
+	}
+}
+
+@keyframes cubeFloat {
+	0%,
+	100% {
+		transform: translateY(0) rotate(0deg);
+	}
+	50% {
+		transform: translateY(-20px) rotate(10deg);
+	}
+}
+
+@keyframes fadeInUp {
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}

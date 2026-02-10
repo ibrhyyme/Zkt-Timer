@@ -1,0 +1,106 @@
+@import '../../../../styles/config';
+
+.#{$namespace}-common-dropdown {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+
+	>button {
+		padding: 0;
+	}
+
+	&__custom-handle {
+		width: 100%;
+		display: table;
+	}
+
+	&__body {
+		position: absolute;
+		right: 0;
+		top: calc(100% + 5px);
+		max-height: 400px;
+		overflow-y: auto;
+		display: flex;
+		padding: 6px;
+		border-radius: 12px;
+		box-sizing: border-box;
+		min-width: 160px;
+		@include dark-glass(0.95, 16px, 0.08); // Global Dark Glass Dropdown
+		flex-direction: column;
+		z-index: 1000000;
+		// Removed previous background/border styles as they are in mixin
+
+		>button,
+		>.#{$namespace}-common-button__wrapper>button,
+		>a {
+			display: flex;
+			flex-direction: row;
+			width: 100%;
+			align-items: center;
+			color: rgba(255, 255, 255, 0.8) !important; // Neutral text
+			text-align: left !important;
+			border-radius: 8px;
+			justify-content: flex-start;
+			padding: 10px 12px;
+			box-sizing: border-box;
+			white-space: nowrap;
+			transition: all 0.15s ease-in-out;
+			font-size: 0.95rem;
+			font-weight: 500;
+			background-color: transparent;
+			border: none;
+
+			&:disabled {
+				opacity: 0.4 !important;
+				background-color: transparent !important;
+				cursor: unset !important;
+			}
+
+			i {
+				opacity: 0.8;
+				margin-right: 8px;
+				width: 20px;
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				color: rgba(255, 255, 255, 0.5) !important; // Dimmed icon
+			}
+
+			span {
+				display: table;
+				color: inherit;
+			}
+
+			&:hover:not(:disabled) {
+				background-color: rgba(255, 255, 255, 0.1) !important; // Neutral hover
+				color: rgba(255, 255, 255, 1) !important;
+				transform: translateY(-1px);
+				box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+
+				i {
+					color: rgba(255, 255, 255, 0.9) !important;
+				}
+			}
+
+			&:active:not(:disabled) {
+				transform: translateY(0);
+				background-color: rgba(255, 255, 255, 0.05) !important;
+			}
+		}
+
+		&--up {
+			top: unset !important;
+			bottom: calc(100% + 5px);
+		}
+
+		&--left {
+			right: unset;
+			left: 0 !important;
+		}
+
+		&--fullwidth {
+			min-width: 100%;
+		}
+	}
+}
