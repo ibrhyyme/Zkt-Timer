@@ -22,13 +22,14 @@ interface Props {
 	selectedSessionId: string;
 	session: SessionSchema;
 	selectSession: (e, id) => void;
+	isMultiSelected?: boolean;
 }
 
 export default function Session(props: Props) {
 	const currentSessionId = useSettings('session_id');
 	const dispatch = useDispatch();
 
-	const { session, selectedSessionId, selectSession } = props;
+	const { session, selectedSessionId, selectSession, isMultiSelected } = props;
 
 	const currentSession = fetchSessionById(currentSessionId);
 	const sessionIsSelected = selectedSessionId === session.id;
@@ -99,7 +100,7 @@ export default function Session(props: Props) {
 	return (
 		<div
 			key={session.id}
-			className={b({ selected: sessionIsSelected })}
+			className={b({ selected: sessionIsSelected, 'multi-selected': isMultiSelected })}
 			onClick={(e) => selectSession(e, session.id)}
 		>
 			<div className={b('info')}>
