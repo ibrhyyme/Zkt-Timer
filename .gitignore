@@ -24,5 +24,3 @@ PROJECT_INFO_MAP.md
 server/**/*.test.ts
 server/**/__test__/
 
-# Auto-generated files
-schema.graphql
