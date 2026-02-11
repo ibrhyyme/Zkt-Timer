@@ -39,32 +39,19 @@
             z-index: 9999;
         }
 
-        .offline-shell__spinner {
-            width: 50px;
-            height: 50px;
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            border-top-color: #246bfd;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+        .offline-shell__logo {
+            width: 120px;
+            height: auto;
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
 
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
             }
-        }
-
-        .offline-shell__text {
-            margin-top: 1.5rem;
-            font-size: 16px;
-            font-weight: 500;
-            color: rgba(255, 255, 255, 0.9);
-        }
-
-        .offline-shell__hint {
-            margin-top: 0.5rem;
-            font-size: 13px;
-            color: rgba(255, 255, 255, 0.5);
+            50% {
+                opacity: .5;
+            }
         }
     </style>
 </head>
@@ -74,9 +61,7 @@
     <div id="app">
         <!-- Offline fallback - will be replaced once React hydrates -->
         <div class="offline-shell">
-            <div class="offline-shell__spinner"></div>
-            <div class="offline-shell__text">ZKT-Timer Yükleniyor...</div>
-            <div class="offline-shell__hint">Offline mode</div>
+            <img src="/public/images/zkt-logo.png" alt="ZKT-Timer" class="offline-shell__logo" />
         </div>
     </div>
 

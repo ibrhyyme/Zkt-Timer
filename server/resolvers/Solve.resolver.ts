@@ -28,8 +28,20 @@ export class SolveResolver {
 	@Authorized([Role.LOGGED_IN])
 	@Query(() => [Solve])
 	async solves(@Ctx() context: GraphQLContext) {
-		return getSolvesByUserId(context, context.user.id);
+		const { prisma } = context;
+
+		return prisma.solve.findMany({
+			where: {
+				user_id: context.user.id,
+				game_session_id: null,
+			},
+			orderBy: {
+				created_at: 'desc', // Ensure we get the most recent ones first when limiting
+			},
+		});
 	}
+
+
 
 	@Authorized([Role.LOGGED_IN])
 	@Mutation(() => Solve)
