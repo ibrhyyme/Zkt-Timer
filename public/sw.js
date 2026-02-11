@@ -1,11 +1,11 @@
-const CACHE = 'zkt-v1';
+const CACHE = 'zkt-v3';
 const CORE = [
-  '/index.html',
-  '/manifest.webmanifest',
+  '/',
+  '/public/manifest.webmanifest',
   '/dist/app.min.js',
   '/dist/app.min.css',
   '/public/images/apple-touch-icon.png',
-  '/public/favicon.ico'
+  '/public/images/zkt-logo.png'
 ];
 
 self.addEventListener('install', (e) => {
@@ -13,10 +13,10 @@ self.addEventListener('install', (e) => {
   self.skipWaiting();
   e.waitUntil(
     caches.open(CACHE).then(c =>
-      c.addAll(CORE).catch(err => {
-        console.warn('[SW] Cache install failed for some assets:', err);
-        // İlk install'da bazı asset'ler yoksa skip et
-      })
+      // Cache each asset individually so one failure doesn't prevent others
+      Promise.allSettled(
+        CORE.map(url => c.add(url).catch(err => console.warn('[SW] Cache failed for:', url, err)))
+      )
     )
   );
 });
@@ -34,6 +34,11 @@ self.addEventListener('fetch', (e) => {
 
   // Sadece same-origin request'leri handle et
   if (url.origin !== self.location.origin) {
+    return;
+  }
+
+  // Socket.IO ve HMR polling isteklerini yoksay (network error'ları önlemek için)
+  if (url.pathname.startsWith('/socket.io/') || url.pathname.includes('hot-update')) {
     return;
   }
 
@@ -56,7 +61,7 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // HTML pages: Network-first, fallback to index.html for SPA
+  // HTML pages: Network-first, fallback to cached page or root
   if (req.mode === 'navigate') {
     e.respondWith(
       fetch(req)
@@ -65,18 +70,22 @@ self.addEventListener('fetch', (e) => {
           caches.open(CACHE).then(c => c.put(req, copy));
           return res;
         })
-        .catch(() => caches.match('/index.html'))
+        .catch(() => caches.match(req).then(cached => cached || caches.match('/')))
     );
     return;
   }
 
   // Static assets (JS, CSS, images): Cache-first with network update
+  // Strip query strings for cache matching (handles ?v=xxx cache busting)
   if (req.method === 'GET') {
+    const cacheUrl = url.pathname;
     e.respondWith(
-      caches.match(req).then(hit => {
+      caches.match(cacheUrl).then(hit => {
         const fetchPromise = fetch(req).then(res => {
-          const copy = res.clone();
-          caches.open(CACHE).then(c => c.put(req, copy));
+          if (res.ok) {
+            const copy = res.clone();
+            caches.open(CACHE).then(c => c.put(cacheUrl, copy));
+          }
           return res;
         }).catch(() => hit); // Network fail -> return cached
 

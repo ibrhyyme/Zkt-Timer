@@ -48,4 +48,29 @@ export function initSolveDb(solveList: Solve[], forceRefresh = false) {
 	emitEvent('solveDbUpdatedEvent');
 }
 
+export function appendSolvesToDb(solveList: Solve[]) {
+	if (typeof window === 'undefined' || !solveList.length) {
+		return;
+	}
+
+	const db = getSolveDb();
+	let added = 0;
+
+	for (const solve of solveList) {
+		// Skip if already exists
+		const existing = db.findOne({ id: solve.id });
+		if (existing) continue;
+
+		solve.started_at = parseInt(String(solve.started_at), 10);
+		solve.ended_at = parseInt(String(solve.ended_at), 10);
+
+		db.insert(stripLokiJsMetadata(solve));
+		added++;
+	}
+
+	if (added > 0) {
+		emitEvent('solveDbUpdatedEvent');
+	}
+}
+
 
