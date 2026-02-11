@@ -1,5 +1,25 @@
 import { gql } from '@apollo/client';
 
+export const MICRO_SOLVE_FRAGMENT = gql`
+	fragment MicroSolveFragment on Solve {
+		id
+		time
+		raw_time
+		cube_type
+		session_id
+		trainer_name
+		bulk
+		from_timer
+		training_session_id
+		dnf
+		plus_two
+		is_smart_cube
+		created_at
+		started_at
+		ended_at
+	}
+`;
+
 export const MINI_SOLVE_FRAGMENT = gql`
 	fragment MiniSolveFragment on Solve {
 		id
@@ -242,6 +262,26 @@ export const CHAT_MESSAGE_FRAGMENT = gql`
 		user {
 			...PublicUserWithEloFragment
 		}
+	}
+`;
+
+export const MINI_FRIENDSHIP_FRAGMENT = gql`
+	${IMAGE_FRAGMENT}
+
+	fragment MiniFriendshipFragment on Friendship {
+		id
+		user_id
+		other_user_id
+		other_user {
+			id
+			username
+			profile {
+				pfp_image {
+					...ImageFragment
+				}
+			}
+		}
+		created_at
 	}
 `;
 

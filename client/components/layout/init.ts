@@ -1,7 +1,7 @@
 import { gql } from '@apollo/client';
 import {
-	FRIENDSHIP_FRAGMENT,
-	MINI_SOLVE_FRAGMENT,
+	MICRO_SOLVE_FRAGMENT,
+	MINI_FRIENDSHIP_FRAGMENT,
 	SESSION_FRAGMENT,
 	SETTING_FRAGMENT,
 	STATS_MODULE_BLOCK_FRAGMENT,
@@ -61,8 +61,6 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 
 	console.time('loadedFromOffline');
 	await initOfflineData(me, async (passed) => {
-		const promises: Promise<any>[] = [];
-
 		if (!passed) {
 			try {
 				await clearOfflineData();
@@ -72,48 +70,54 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 			initLokiDb({
 				autoload: false,
 			});
-
-			promises.push(getAllSessions());
 		} else {
 			console.timeEnd('loadedFromOffline');
 		}
 
-		// initAllSolves is now critical for avoiding "pop-in", so we load it here.
-		// It will run in parallel with other fetches.
-		// If data was passed from offline cache (passed=true), we MIGHT still want to sync but without blocking?
-		// For now, consistent behavior: always fetch solves during load to ensure correct state.
-		// If "passed" is true, solves are already in Loki (hydrated), so maybe we don't *need* to block?
-		// But user request specifically asked to load solves during loading screen to avoid jump.
-		// So we push it to promises.
+		// PHASE 1: Critical data only — blocks the loading screen
+		// Timer only needs settings, sessions, and a scramble to render
+		const criticalPromises: Promise<any>[] = [];
 		if (!passed) {
-			promises.push(initAllSolves());
+			criticalPromises.push(getAllSessions());
 		}
-
-		promises.push(getStatsModule(dispatch));
-		promises.push(getAllSettings(me?.id));
-		promises.push(getAllFriends(dispatch));
-		promises.push(initNewScramble());
+		criticalPromises.push(getAllSettings(me?.id));
+		criticalPromises.push(initNewScramble());
 
 		try {
-			console.time('loadedFromDatabase');
-			await Promise.all(promises);
-			console.timeEnd('loadedFromDatabase');
+			console.time('criticalDataLoaded');
+			await Promise.all(criticalPromises);
+			console.timeEnd('criticalDataLoaded');
 
+			// Initialize solves collection (empty if not from cache) so timer can render
 			initSolvesCollection();
-
-			updateOfflineHash(true);
 		} catch (e) {
 			console.error(e);
 		}
 
+		// UI is ready — hide LoadingCover immediately
 		callback();
 
-		// Load background syncs if checking for updates
-		if (passed) {
-			// If we hydrated from offline, we might want to silently update in background
-			initAllSolves();
-		}
+		// PHASE 2: Non-critical data — loads in background after UI is visible
+		loadNonCriticalData(me, dispatch, passed);
 	});
+}
+
+async function loadNonCriticalData(_me: UserAccount, dispatch: Dispatch<any>, _passedFromOffline: boolean) {
+	try {
+		const bgPromises: Promise<any>[] = [];
+
+		// Always fetch solves (fresh from server or background sync after offline hydration)
+		bgPromises.push(initAllSolves());
+		bgPromises.push(getStatsModule(dispatch));
+		bgPromises.push(getAllFriends(dispatch));
+
+		await Promise.all(bgPromises);
+
+		// Only call updateOfflineHash ONCE, after all background work completes
+		updateOfflineHash(true);
+	} catch (e) {
+		console.error(e);
+	}
 }
 
 /**
@@ -127,26 +131,24 @@ async function initNewScramble() {
 	});
 }
 
-export async function initAllSolves() {
+export async function initAllSolves(take?: number) {
 	const query = gql`
-		${MINI_SOLVE_FRAGMENT}
+		${MICRO_SOLVE_FRAGMENT}
 
-		query Query {
-			solves {
-				...MiniSolveFragment
+		query Query($take: Int) {
+			solves(take: $take) {
+				...MicroSolveFragment
 			}
 		}
 	`;
 
 	try {
-		const res = await gqlQuery<{ solves: Solve[] }>(query);
+		const res = await gqlQuery<{ solves: Solve[] }>(query, { take: take || 500 });
 		const solves = res.data.solves;
 
 		initSolveDb(solves);
 	} catch (e) {
 		console.error("Failed to load solves", e);
-	} finally {
-		await updateOfflineHash();
 	}
 }
 
@@ -232,11 +234,11 @@ async function getAllSettings(userId: string) {
 
 async function getAllFriends(dispatch) {
 	const query = gql`
-		${FRIENDSHIP_FRAGMENT}
+		${MINI_FRIENDSHIP_FRAGMENT}
 
 		query Query {
 			allFriendships {
-				...FriendshipFragment
+				...MiniFriendshipFragment
 			}
 		}
 	`;

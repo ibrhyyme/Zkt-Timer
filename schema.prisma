@@ -382,6 +382,7 @@ model Solve {
   @@index([training_session_id])
   @@index([trainer_name])
   @@index([user_id])
+  @@index([user_id, game_session_id, created_at])
   @@map("solve")
 }
 

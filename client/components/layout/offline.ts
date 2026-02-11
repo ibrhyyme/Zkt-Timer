@@ -17,7 +17,7 @@ export async function initOfflineData(me, callback) {
 	// If for whatever reason this is not resolved, fallback to db
 	const fallbackTimeout = setTimeout(async () => {
 		callback(false);
-	}, 5000);
+	}, 2000);
 
 	initLokiDb({ autoload: true });
 
