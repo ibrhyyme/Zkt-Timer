@@ -78,6 +78,17 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 			console.timeEnd('loadedFromOffline');
 		}
 
+		// initAllSolves is now critical for avoiding "pop-in", so we load it here.
+		// It will run in parallel with other fetches.
+		// If data was passed from offline cache (passed=true), we MIGHT still want to sync but without blocking?
+		// For now, consistent behavior: always fetch solves during load to ensure correct state.
+		// If "passed" is true, solves are already in Loki (hydrated), so maybe we don't *need* to block?
+		// But user request specifically asked to load solves during loading screen to avoid jump.
+		// So we push it to promises.
+		if (!passed) {
+			promises.push(initAllSolves());
+		}
+
 		promises.push(getStatsModule(dispatch));
 		promises.push(getAllSettings(me?.id));
 		promises.push(getAllFriends(dispatch));
@@ -97,8 +108,9 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 
 		callback();
 
-		// Load heavy data in background after app is rendered
-		if (!passed) {
+		// Load background syncs if checking for updates
+		if (passed) {
+			// If we hydrated from offline, we might want to silently update in background
 			initAllSolves();
 		}
 	});
@@ -115,7 +127,7 @@ async function initNewScramble() {
 	});
 }
 
-export async function initAllSolves(forceRefresh = false) {
+export async function initAllSolves() {
 	const query = gql`
 		${MINI_SOLVE_FRAGMENT}
 
@@ -130,9 +142,9 @@ export async function initAllSolves(forceRefresh = false) {
 		const res = await gqlQuery<{ solves: Solve[] }>(query);
 		const solves = res.data.solves;
 
-		initSolveDb(solves, forceRefresh);
+		initSolveDb(solves);
 	} catch (e) {
-		initSolveDb([], forceRefresh);
+		console.error("Failed to load solves", e);
 	} finally {
 		await updateOfflineHash();
 	}

@@ -1,7 +1,7 @@
-import {getLokiDb, stripLokiJsMetadata} from '../lokijs';
-import {SolveStat} from './stats/solves/caching';
-import {Solve} from '../../../server/schemas/Solve.schema';
-import {emitEvent} from '../../util/event_handler';
+import { getLokiDb, stripLokiJsMetadata } from '../lokijs';
+import { SolveStat } from './stats/solves/caching';
+import { Solve } from '../../../server/schemas/Solve.schema';
+import { emitEvent } from '../../util/event_handler';
 
 export function getSolveDb(): Collection<Solve> {
 	const db = getLokiDb();
@@ -47,3 +47,5 @@ export function initSolveDb(solveList: Solve[], forceRefresh = false) {
 
 	emitEvent('solveDbUpdatedEvent');
 }
+
+
