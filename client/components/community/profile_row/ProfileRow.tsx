@@ -103,10 +103,10 @@ export default function ProfileRow(props: ProfileRowProps) {
 			<Dropdown
 				noMargin
 				options={[
-					{ text: 'View details', icon: <Eye />, onClick: () => openSolve(solve) },
-					{ text: 'View profile', icon: <User />, link: `/user/${user.username}` },
+					{ text: 'Detayları gör', icon: <Eye />, onClick: () => openSolve(solve) },
+					{ text: 'Profili gör', icon: <User />, link: `/user/${user.username}` },
 					{
-						text: 'Delete solve',
+						text: 'Çözümü sil',
 						hidden: !(solve && (me.admin || me.id === user.id)),
 						icon: <Trash />,
 						onClick: deleteSolve,

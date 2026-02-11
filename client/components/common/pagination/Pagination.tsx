@@ -1,13 +1,13 @@
-import React, {ReactNode, useEffect, useMemo, useState} from 'react';
+import React, { ReactNode, useEffect, useMemo, useState } from 'react';
 import './Pagination.scss';
 import HorizontalNav from '../horizontal_nav/HorizontalNav';
 import Empty from '../empty/Empty';
 import Loading from '../loading/Loading';
-import {MagnifyingGlass} from 'phosphor-react';
-import {numberWithCommas} from '../../../util/strings/util';
-import {DocumentNode, gql} from '@apollo/client';
-import {gqlQuery} from '../../api';
-import {useRouteMatch} from 'react-router-dom';
+import { MagnifyingGlass } from 'phosphor-react';
+import { numberWithCommas } from '../../../util/strings/util';
+import { DocumentNode, gql } from '@apollo/client';
+import { gqlQuery } from '../../api';
+import { useRouteMatch } from 'react-router-dom';
 import block from '../../../styles/bem';
 import Input from '../inputs/input/Input';
 import Button from '../button/Button';
@@ -41,7 +41,7 @@ interface Props {
 }
 
 export default function Pagination<T>(props: Props) {
-	const {tabs, itemRow, searchable, prefetchData, searchQuery: parentSearchQuery} = props;
+	const { tabs, itemRow, searchable, prefetchData, searchQuery: parentSearchQuery } = props;
 
 	const [hasMore, setHasMore] = useState(false);
 	const [totalResults, setTotalResults] = useState(0);
@@ -129,7 +129,7 @@ export default function Pagination<T>(props: Props) {
 				page,
 				pageSize: DEFAULT_PAGE_SIZE,
 				searchQuery: finalSearchQuery,
-			}).then(({data}) => {
+			}).then(({ data }) => {
 				resolve(data[dataQueryName]);
 			});
 		});
@@ -164,8 +164,8 @@ export default function Pagination<T>(props: Props) {
 
 	let resultCount = (
 		<span>
-			{numberWithCommas(totalResults)} result{totalResults === 1 ? '' : 's'}
-			{finalSearchQuery ? ` for "${finalSearchQuery}"` : ''}
+			{numberWithCommas(totalResults)} sonuç
+			{finalSearchQuery ? ` ("${finalSearchQuery}" için)` : ''}
 		</span>
 	);
 
@@ -174,7 +174,7 @@ export default function Pagination<T>(props: Props) {
 	if (items && items.length) {
 		body = items.map((item) => itemRow(item, currentTab));
 	} else if (items && !items.length) {
-		body = <Empty text={`Could not find any ${currentTab.plural}`} />;
+		body = <Empty text={`Hiçbir ${currentTab.plural} bulunamadı`} />;
 	} else {
 		body = <Loading />;
 		resultCount = null;
