@@ -80,7 +80,7 @@ export default function FriendshipRequest(props: Props) {
 			});
 
 			dispatch(removeFriendship(user.id));
-			toastSuccess(`Successfully unfriended ${user.username}`);
+			toastSuccess(`${user.username} arkadaşlıktan çıkarıldı`);
 
 			setFriendRequestReceived(null);
 			setFriendRequestSent(null);
@@ -89,7 +89,7 @@ export default function FriendshipRequest(props: Props) {
 				friendshipRequestId: friendRequestSent.id,
 			});
 
-			toastSuccess(`Cancelled friend request for ${user.username}`);
+			toastSuccess(`${user.username} kullanıcısına gönderilen istek iptal edildi`);
 
 			setFriendRequestReceived(null);
 			setFriendRequestSent(null);
@@ -98,7 +98,7 @@ export default function FriendshipRequest(props: Props) {
 				friendshipRequestId: friendRequestReceived.id,
 			});
 
-			toastSuccess(`Accepted ${user.username}'s friend request`);
+			toastSuccess(`${user.username} kullanıcısının arkadaşlık isteği kabul edildi`);
 			dispatch(addFriendship(res.data.acceptFriendshipRequest as any));
 
 			setFriendRequestReceived(null);
@@ -108,7 +108,7 @@ export default function FriendshipRequest(props: Props) {
 				toUserId: user.id,
 			});
 
-			toastSuccess(`Friend request sent to ${user.username}`);
+			toastSuccess(`${user.username} kullanıcısına arkadaşlık isteği gönderildi`);
 
 			setFriendRequestReceived(null);
 			setFriendRequestSent(request.data.sendFriendshipRequest);
@@ -117,41 +117,41 @@ export default function FriendshipRequest(props: Props) {
 
 	function getFriendButtonParams(): ButtonProps {
 		let friendButtonParams: ButtonProps = {
-			text: 'Add Friend',
+			text: 'Arkadaş Ekle',
 			icon: <Plus weight="bold" />,
 			gray: true,
 		};
 
 		if (friends && friends[user.id]) {
 			friendButtonParams = {
-				text: 'Friends',
+				text: 'Arkadaşlar',
 				icon: <Check weight="bold" />,
 				gray: true,
 			};
 
 			if (overFriendButton) {
 				friendButtonParams = {
-					text: 'Remove Friend',
+					text: 'Arkadaşlıktan Çıkar',
 					icon: <X weight="bold" />,
 					danger: true,
 				};
 			}
 		} else if (friendRequestReceived) {
 			friendButtonParams = {
-				text: 'Accept Friend Request',
+				text: 'İsteği Kabul Et',
 				icon: <Plus weight="bold" />,
 				primary: true,
 			};
 		} else if (friendRequestSent) {
 			friendButtonParams = {
-				text: 'Friend Request Sent',
+				text: 'İstek Gönderildi',
 				icon: <Timer weight="bold" />,
 				warning: true,
 			};
 
 			if (overFriendButton) {
 				friendButtonParams = {
-					text: 'Cancel Friend Request',
+					text: 'İsteği İptal Et',
 					icon: <X weight="bold" />,
 					danger: true,
 				};
@@ -172,7 +172,7 @@ export default function FriendshipRequest(props: Props) {
 		/>
 	);
 
-	if (loading || !user || !me || user.id === me.id || friendButtonParams.text === 'Add Friend') {
+	if (loading || !user || !me || user.id === me.id) {
 		friendButton = null;
 	}
 
