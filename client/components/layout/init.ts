@@ -73,7 +73,6 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 				autoload: false,
 			});
 
-			promises.push(initAllSolves());
 			promises.push(getAllSessions());
 		} else {
 			console.timeEnd('loadedFromOffline');
@@ -97,6 +96,11 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 		}
 
 		callback();
+
+		// Load heavy data in background after app is rendered
+		if (!passed) {
+			initAllSolves();
+		}
 	});
 }
 

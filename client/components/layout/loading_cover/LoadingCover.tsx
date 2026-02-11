@@ -1,7 +1,7 @@
-import React, {useEffect} from 'react';
+import React, { useEffect } from 'react';
 import './LoadingCover.scss';
 import block from '../../../styles/bem';
-import {getLocalStorage} from '../../../util/data/local_storage';
+import { getLocalStorage } from '../../../util/data/local_storage';
 import CSS from 'csstype';
 import LoadingIcon from '../../common/LoadingIcon';
 
@@ -12,7 +12,7 @@ interface Props {
 }
 
 export default function LoadingCover(props: Props) {
-	const {fadeOut} = props;
+	const { fadeOut } = props;
 
 	const [style, setStyle] = React.useState<CSS.Properties>({});
 
@@ -39,9 +39,11 @@ export default function LoadingCover(props: Props) {
 				fadeOut,
 			})}
 		>
-			<span className="text-3xl text-slate-600">
-				<LoadingIcon />
-			</span>
+			<img
+				src="/public/images/zkt-logo.png"
+				alt="ZKT-Timer"
+				className="w-32 animate-pulse"
+			/>
 		</div>
 	);
 }
