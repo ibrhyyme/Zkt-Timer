@@ -27,7 +27,10 @@ function getSolvesByUserId(context: GraphQLContext, userId: string) {
 export class SolveResolver {
 	@Authorized([Role.LOGGED_IN])
 	@Query(() => [Solve])
-	async solves(@Ctx() context: GraphQLContext) {
+	async solves(
+		@Ctx() context: GraphQLContext,
+		@Arg('take', () => Int, { nullable: true }) take?: number
+	) {
 		const { prisma } = context;
 
 		return prisma.solve.findMany({
@@ -36,8 +39,9 @@ export class SolveResolver {
 				game_session_id: null,
 			},
 			orderBy: {
-				created_at: 'desc', // Ensure we get the most recent ones first when limiting
+				created_at: 'desc',
 			},
+			...(take ? { take } : {}),
 		});
 	}
 
