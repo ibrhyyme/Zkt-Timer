@@ -29,7 +29,8 @@ export class SolveResolver {
 	@Query(() => [Solve])
 	async solves(
 		@Ctx() context: GraphQLContext,
-		@Arg('take', () => Int, { nullable: true }) take?: number
+		@Arg('take', () => Int, { nullable: true }) take?: number,
+		@Arg('skip', () => Int, { nullable: true }) skip?: number
 	) {
 		const { prisma } = context;
 
@@ -42,6 +43,7 @@ export class SolveResolver {
 				created_at: 'desc',
 			},
 			...(take ? { take } : {}),
+			...(skip ? { skip } : {}),
 		});
 	}
 

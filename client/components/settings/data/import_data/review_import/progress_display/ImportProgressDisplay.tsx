@@ -7,9 +7,7 @@ interface Props {
 }
 
 export default function ImportProgressDisplay({ progress }: Props) {
-	const { type, currentChunk, totalChunks, itemsProcessed, totalItems, percentComplete } = progress;
-
-	const typeText = type === 'sessions' ? 'Sezonlar' : 'Çözümler';
+	const { percentComplete } = progress;
 
 	return (
 		<div className="import-progress">
@@ -18,12 +16,6 @@ export default function ImportProgressDisplay({ progress }: Props) {
 					className="import-progress__bar"
 					style={{ width: `${percentComplete}%` }}
 				/>
-			</div>
-			<div className="import-progress__text">
-				{typeText} içe aktarılıyor: Chunk {currentChunk}/{totalChunks} ({itemsProcessed}/{totalItems})
-			</div>
-			<div className="import-progress__percentage">
-				%{percentComplete} tamamlandı
 			</div>
 		</div>
 	);

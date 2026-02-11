@@ -14,7 +14,7 @@ import { clearOfflineData, initOfflineData, updateOfflineHash } from './offline'
 import { initSettingsDb, SettingValue } from '../../db/settings/init';
 import { getDefaultSettings } from '../../db/settings/query';
 import { initLokiDb } from '../../db/lokijs';
-import { initSolveDb, initSolvesCollection } from '../../db/solves/init';
+import { appendSolvesToDb, initSolveDb, initSolvesCollection } from '../../db/solves/init';
 import { getNewScramble } from '../timer/helpers/scramble';
 import { Solve } from '../../../server/schemas/Solve.schema';
 import { StatsModule } from '../../../server/schemas/StatsModule.schema';
@@ -131,24 +131,57 @@ async function initNewScramble() {
 	});
 }
 
-export async function initAllSolves(take?: number) {
+const SOLVE_BATCH_SIZE = 500;
+const INITIAL_SOLVE_COUNT = 100;
+
+export async function initAllSolves() {
 	const query = gql`
 		${MICRO_SOLVE_FRAGMENT}
 
-		query Query($take: Int) {
-			solves(take: $take) {
+		query Query($take: Int, $skip: Int) {
+			solves(take: $take, skip: $skip) {
 				...MicroSolveFragment
 			}
 		}
 	`;
 
 	try {
-		const res = await gqlQuery<{ solves: Solve[] }>(query, { take: take || 500 });
+		// First batch: load most recent solves quickly for immediate display
+		const res = await gqlQuery<{ solves: Solve[] }>(query, { take: INITIAL_SOLVE_COUNT, skip: 0 });
 		const solves = res.data.solves;
-
 		initSolveDb(solves);
+
+		// If we got less than requested, there are no more solves
+		if (solves.length < INITIAL_SOLVE_COUNT) {
+			return;
+		}
+
+		// Load remaining solves in background batches
+		loadRemainingSolves(query);
 	} catch (e) {
 		console.error("Failed to load solves", e);
+	}
+}
+
+async function loadRemainingSolves(query: ReturnType<typeof gql>) {
+	let skip = INITIAL_SOLVE_COUNT;
+
+	while (true) {
+		try {
+			const res = await gqlQuery<{ solves: Solve[] }>(query, { take: SOLVE_BATCH_SIZE, skip });
+			const solves = res.data.solves;
+
+			if (!solves.length) break;
+
+			appendSolvesToDb(solves);
+			skip += SOLVE_BATCH_SIZE;
+
+			// If we got less than the batch size, we've loaded everything
+			if (solves.length < SOLVE_BATCH_SIZE) break;
+		} catch (e) {
+			console.error("Failed to load solve batch at skip=" + skip, e);
+			break;
+		}
 	}
 }
 
@@ -174,8 +207,13 @@ async function getAllSessions() {
 		}
 	`;
 
-	const res = await gqlQuery<{ sessions: Session[] }>(query);
-	initSessionDb(res.data.sessions);
+	try {
+		const res = await gqlQuery<{ sessions: Session[] }>(query);
+		initSessionDb(res.data.sessions);
+	} catch (error) {
+		console.warn('Offline: Could not fetch sessions', error);
+		initSessionDb([]);
+	}
 }
 
 async function getStatsModule(disatch: Dispatch<any>) {
@@ -206,7 +244,13 @@ async function getAllSettings(userId: string) {
 		}
 	`;
 
-	const backendSettings = (await gqlQuery<{ settings: Setting }>(query)).data.settings;
+	let backendSettings: any = {};
+	try {
+		const res = await gqlQuery<{ settings: Setting }>(query);
+		backendSettings = res.data.settings;
+	} catch (error) {
+		console.warn('Offline: Could not fetch settings, using defaults', error);
+	}
 
 	const settings: SettingValue[] = [];
 	const localSettings = getAllLocalSettings(userId);

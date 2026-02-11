@@ -1,7 +1,7 @@
-import React, { useContext, useMemo } from 'react';
+import React, { useCallback, useContext, useMemo, useRef, useState } from 'react';
 import { TimerContext } from './Timer';
 import { useGeneral } from '../../util/hooks/useGeneral';
-import { fetchSolves } from '../../db/solves/query';
+import { fetchSolves, fetchSolveCount } from '../../db/solves/query';
 import { useSolveDb } from '../../util/hooks/useSolveDb';
 import { useSettings } from '../../util/hooks/useSettings';
 import Scramble from '../modules/scramble/ScrambleVisual';
@@ -11,6 +11,7 @@ import block from '../../styles/bem';
 import './Dashboard.scss';
 
 const b = block('timer-dashboard');
+const PAGE_SIZE = 50;
 
 export default function Dashboard() {
     const context = useContext(TimerContext);
@@ -19,25 +20,34 @@ export default function Dashboard() {
     const sessionId = useSettings('session_id');
 
     const dbVersion = useSolveDb();
+    const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+    const listRef = useRef<HTMLDivElement>(null);
 
-    // Son çözümleri al (Mobilde scroll edilebilsin diye 50 tane) - Memoized
-    // dbVersion dependency ensures re-fetch when DB changes
-    const solves = useMemo(() => fetchSolves(solvesFilter), [solvesFilter, dbVersion]);
-    // Limit logic
-    const recentSolves = useMemo(() => solves.slice(0, 50), [solves]); // Mobil ekranlarda alan kalırsa dolsun diye artırıldı
+    const totalSolveCount = useMemo(() => fetchSolveCount(solvesFilter), [solvesFilter, dbVersion]);
+    const solves = useMemo(() => fetchSolves(solvesFilter, { limit: visibleCount }), [solvesFilter, dbVersion, visibleCount]);
+    const hasMore = visibleCount < totalSolveCount;
+
+    const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+        const target = e.currentTarget;
+        const nearBottom = target.scrollHeight - target.scrollTop - target.clientHeight < 200;
+
+        if (nearBottom && hasMore) {
+            setVisibleCount((prev) => prev + PAGE_SIZE);
+        }
+    }, [hasMore]);
 
     // Focus modunda gizle
     if (focusMode) {
         return null;
     }
 
-    const historyContent = recentSolves.length > 0 ? (
-        <div className={b('history-list')}>
-            {recentSolves.map((solve, index) => (
+    const historyContent = solves.length > 0 ? (
+        <div className={b('history-list')} ref={listRef} onScroll={handleScroll}>
+            {solves.map((solve, index) => (
                 <HistorySolveRow
                     key={solve.id}
                     solve={solve}
-                    index={solves.length - index - 1}
+                    index={totalSolveCount - index - 1}
                     disabled={false}
                 />
             ))}
