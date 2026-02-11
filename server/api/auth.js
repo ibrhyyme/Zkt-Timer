@@ -22,11 +22,11 @@ const mutateActions = {
 
 		const jwt = getJwtString(user);
 
-		// If remember me is true, set cookie for 24 days approx (2147483647 ms is ~24 days)
-		// If false, set session cookie (no maxAge)
+		// If remember me is true, set cookie for 10 years (effectively forever)
+		// If false, set cookie for 1 year (also effectively forever for normal users unless they clear cookies)
 		const cookieOptions = {
 			httpOnly: true,
-			...(remember ? { maxAge: 2147483647 } : {})
+			maxAge: remember ? 315360000000 : 31536000000 // 10 years vs 1 year
 		};
 
 		res.cookie('session', jwt, cookieOptions);

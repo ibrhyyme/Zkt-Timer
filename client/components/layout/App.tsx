@@ -69,13 +69,13 @@ export default function App(props: Props = {}) {
 						// If me is still null after fetch, auth truly failed
 						if (!getMeFromStore()) {
 							localStorage.removeItem('zkt_has_auth');
-							initAnonymousAppData(appInitiated);
+							window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
 						}
 						// If me exists, useEffect will re-run (me dependency changed)
 					})
 					.catch(() => {
 						localStorage.removeItem('zkt_has_auth');
-						initAnonymousAppData(appInitiated);
+						window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
 					});
 				return;
 			}
