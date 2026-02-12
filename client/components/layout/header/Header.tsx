@@ -11,16 +11,16 @@ interface Props {
 	children?: ReactNode;
 }
 
-const DEFAULT_TITLE = 'Zkt-Timer | Türkiye\'nin #1 Zeka Küpü Timer Sitesi';
-const DEFAULT_DESCRIPTION =
+export const DEFAULT_TITLE = 'Zkt-Timer | Türkiye\'nin #1 Zeka Küpü Timer Sitesi';
+export const DEFAULT_DESCRIPTION =
 	"Türkiye'nin en gelişmiş zeka küpü timer sitesi! Rubik küp çözüm sürenizi ölçün, canlı mücadele odalarında yarışın, Türkiye rekorlarını takip edin. Speedcubing, 3x3, 2x2, 4x4 ve tüm WCA kategorileri. %100 Türkçe cubing platformu.";
-const DEFAULT_KEYWORDS = 'zeka küpü, rubik küp, rubiks cube, küp timer, speedcubing, cubing türkiye, zeka küpü timer, rubik küp çözümü, 3x3 küp, 2x2 küp, 4x4 küp, WCA türkiye, zeka küpü yarışması, küp çözme, rubik türkiye, speedcubing türkiye, cubing timer, zeka küpü nasıl çözülür, rubik küp algoritma';
-const DEFAULT_FEATURED_IMAGE = resourceUri('/public/images/zkt-logo.png');
-const SITE_URL = 'https://zktimer.app';
-const LOGO_URL = `${SITE_URL}/public/images/zkt-logo.png`;
+export const DEFAULT_KEYWORDS = 'zeka küpü, rubik küp, rubiks cube, küp timer, speedcubing, cubing türkiye, zeka küpü timer, rubik küp çözümü, 3x3 küp, 2x2 küp, 4x4 küp, WCA türkiye, zeka küpü yarışması, küp çözme, rubik türkiye, speedcubing türkiye, cubing timer, zeka küpü nasıl çözülür, rubik küp algoritma';
+export const DEFAULT_FEATURED_IMAGE = resourceUri('/public/images/zkt-logo.png');
+export const SITE_URL = 'https://zktimer.app';
+export const LOGO_URL = `${SITE_URL}/public/images/zkt-logo.png`;
 
 // JSON-LD Schema for Google Sitelinks
-const getStructuredData = (currentPath: string, finalTitle: string, finalDesc: string) => {
+export const getStructuredData = (currentPath: string, finalTitle: string, finalDesc: string) => {
 	// WebSite schema - enables sitelinks search box
 	const websiteSchema = {
 		'@context': 'https://schema.org',
