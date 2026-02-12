@@ -5,7 +5,7 @@ import Tag from '../../common/tag/Tag';
 
 export default function DemoRestricted() {
 	return (
-		<div className="mx-auto mt-16 mb-3 w-full max-w-md rounded-lg bg-module py-10 px-6">
+		<div className="mx-auto mt-16 mb-3 w-full max-w-md rounded-lg bg-module py-10 px-6" data-nosnippet="true">
 			<div className="mx-auto flex flex-col items-center">
 				<span className="mb-3 text-xl text-red-500">
 					<Lock weight="fill" />

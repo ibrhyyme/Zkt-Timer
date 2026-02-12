@@ -1,4 +1,4 @@
-import {GeneralAllParams} from '../util/hooks/useGeneral';
+import { GeneralAllParams } from '../util/hooks/useGeneral';
 
 const initialState: GeneralAllParams = {
 	app_loaded: false,
@@ -12,7 +12,7 @@ const initialState: GeneralAllParams = {
 export default (state = initialState, action) => {
 	switch (action.type) {
 		case 'SET_GENERAL': {
-			const {key, value} = action.payload;
+			const { key, value } = action.payload;
 
 			return {
 				...state,
