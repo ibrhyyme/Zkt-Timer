@@ -64,6 +64,7 @@ export default (payload: HtmlPagePayload) => {
 				${helmet.title.toString()}
 				${helmet.meta.toString()}
 				${helmet.link.toString()}
+				${helmet.script.toString()}
 			</head>
 		
 			<body>
