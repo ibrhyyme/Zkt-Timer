@@ -11,6 +11,8 @@ import { useMe } from '../../../util/hooks/useMe';
 import { useHistory } from 'react-router-dom';
 import { useEffect } from 'react';
 
+import { getStructuredData, SITE_URL, DEFAULT_TITLE, DEFAULT_DESCRIPTION, DEFAULT_FEATURED_IMAGE, DEFAULT_KEYWORDS } from '../../layout/header/Header';
+
 export default function Welcome() {
 	const me = useMe();
 	const history = useHistory();
@@ -26,30 +28,36 @@ export default function Welcome() {
 		return null;
 	}
 
+	const title = "ZKT-Timer - Profesyonel Speedcubing Timer";
+	const desc = "ZKT-Timer ile speedcubing becerilerinizi geliştirin. Bulut tabanlı istatistikler, gerçek zamanlı yarışmalar, akıllı küp desteği ve profesyonel zamanlama. Türkiye'nin en hızlı speedcubing topluluğuna katılın.";
+
+	const { websiteSchema, organizationSchema, softwareSchema, navigationSchema, faqSchema } = getStructuredData('/', title, desc);
+
 	return (
 		<>
 			<Helmet>
-				<title>ZKT-Timer - Profesyonel Speedcubing Timer</title>
-				<meta
-					name="description"
-					content="ZKT-Timer ile speedcubing becerilerinizi geliştirin. Bulut tabanlı istatistikler, gerçek zamanlı yarışmalar, akıllı küp desteği ve profesyonel zamanlama. Türkiye'nin en hızlı speedcubing topluluğuna katılın."
-				/>
-				<meta
-					name="keywords"
-					content="speedcubing, zeka küpü, rubik küp, timer, WCA, akıllı küp, bluetooth küp, online timer, cubing timer, zkt timer"
-				/>
+				<title>{title}</title>
+				<meta name="description" content={desc} />
+				<meta name="keywords" content={DEFAULT_KEYWORDS} />
 
 				{/* Open Graph */}
-				<meta property="og:title" content="ZKT-Timer - Profesyonel Speedcubing Timer" />
+				<meta property="og:title" content={title} />
 				<meta property="og:description" content="Profesyonel araçlarla speedcubing becerilerinizi geliştirin" />
 				<meta property="og:image" content="/public/welcome/web/timer.jpeg" />
 				<meta property="og:type" content="website" />
 
 				{/* Twitter Card */}
 				<meta name="twitter:card" content="summary_large_image" />
-				<meta name="twitter:title" content="ZKT-Timer - Profesyonel Speedcubing Timer" />
+				<meta name="twitter:title" content={title} />
 				<meta name="twitter:description" content="Profesyonel araçlarla speedcubing becerilerinizi geliştirin" />
 				<meta name="twitter:image" content="/public/welcome/web/timer.jpeg" />
+
+				{/* JSON-LD Structured Data */}
+				<script type="application/ld+json">{JSON.stringify(websiteSchema)}</script>
+				<script type="application/ld+json">{JSON.stringify(organizationSchema)}</script>
+				<script type="application/ld+json">{JSON.stringify(softwareSchema)}</script>
+				<script type="application/ld+json">{JSON.stringify(navigationSchema)}</script>
+				{faqSchema && <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>}
 			</Helmet>
 
 			<div className="cd-welcome min-h-screen bg-[#050505] text-white">
