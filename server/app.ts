@@ -85,7 +85,7 @@ app.use((req, res, next) => {
 
 app.use('/dist', express.static(`${__dirname}/../dist`));
 app.use('/public', express.static(`${__dirname}/../public`));
-app.use(express.static(`${__dirname}/../public`));
+app.use(express.static(`${__dirname}/../public`, { index: false }));
 app.use('/public/uploads', express.static(`${__dirname}/../public/uploads`));
 
 mapPathToPage();
