@@ -20,7 +20,7 @@ export default function DemoWarning() {
 	}
 
 	return (
-		<div className={classNames.join(' ')}>
+		<div className={classNames.join(' ')} data-nosnippet="true">
 			<span>
 				Demo Modu. Veriler kaydedilmiyor.
 				<a className="ml-1 underline hover:opacity-100 opacity-75" href="/signup">
