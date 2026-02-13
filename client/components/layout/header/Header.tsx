@@ -121,30 +121,30 @@ export const getStructuredData = (currentPath: string, finalTitle: string, final
 			{
 				'@type': 'SiteNavigationElement',
 				'position': 2,
-				'name': 'Giriş Yap',
-				'description': 'Hesabına giriş yap',
-				'url': `${SITE_URL}/login`
-			},
-			{
-				'@type': 'SiteNavigationElement',
-				'position': 3,
-				'name': 'Odalar',
-				'description': 'Canlı yarış odaları',
+				'name': 'Canlı Yarışma Odaları',
+				'description': 'Arkadaşlarınla veya diğer küpçülerle canlı yarış.',
 				'url': `${SITE_URL}/rooms`
 			},
 			{
 				'@type': 'SiteNavigationElement',
+				'position': 3,
+				'name': 'Türkiye Sıralaması',
+				'description': 'Türkiye\'nin en hızlı speedcuber listesi ve rekorları.',
+				'url': `${SITE_URL}/community/leaderboards`
+			},
+			{
+				'@type': 'SiteNavigationElement',
 				'position': 4,
-				'name': 'Çözümler',
-				'description': 'Tüm çözümlerini görüntüle',
-				'url': `${SITE_URL}/solves`
+				'name': 'Algoritma Eğitmeni',
+				'description': 'OLL, PLL ve ZBLL algoritmalarını interaktif öğren.',
+				'url': `${SITE_URL}/trainer`
 			},
 			{
 				'@type': 'SiteNavigationElement',
 				'position': 5,
-				'name': 'Şifre Sıfırla',
-				'description': 'Şifreni sıfırla',
-				'url': `${SITE_URL}/forgot`
+				'name': 'Ücretsiz Kayıt Ol',
+				'description': 'İstatistiklerini bulutta sakla ve analiz et.',
+				'url': `${SITE_URL}/signup`
 			},
 			{
 				'@type': 'SiteNavigationElement',
