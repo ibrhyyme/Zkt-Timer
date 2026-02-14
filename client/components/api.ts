@@ -31,7 +31,9 @@ export function initApollo() {
 
 	let hostname = '';
 	if (typeof window === 'undefined' && typeof process !== 'undefined') {
-		hostname = process.env.BASE_URI;
+		// SSR: dahili istekler için localhost kullan, dış ağ döngüsünden kaçın
+		const port = process.env.PORT || 3000;
+		hostname = `http://localhost:${port}`;
 		fetchType = nodeFetch as unknown as FetchType;
 	} else if (typeof window !== 'undefined') {
 		// Both web browser and native app now share the same origin (https://zktimer.app)

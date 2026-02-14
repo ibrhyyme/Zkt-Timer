@@ -124,14 +124,26 @@ function appUseRouteForPage(routePath, route: PageContext) {
 			await Promise.all(promises.map((f) => f(store, req)));
 		} catch (e) {
 			const errors = e?.graphQLErrors || [];
+			let isNotFound = false;
 
 			for (const graphErr of errors) {
 				const errCode = graphErr?.extensions?.code;
 				if (errCode === ErrorCode.NOT_FOUND) {
-					res.status(404).sendFile(`${__dirname}/resources/not_found.html`);
-					return;
+					isNotFound = true;
+					break;
 				}
 			}
+
+			if (isNotFound) {
+				res.status(404).sendFile(`${__dirname}/resources/not_found.html`);
+				return;
+			}
+
+			// GraphQL dışı hatalar için logla ve sayfayı prefetch verisi olmadan render et
+			logger.warn('SSR prefetch failed, rendering without prefetched data', {
+				path: routePath,
+				error: e?.message || e,
+			});
 		}
 
 		// Initiates the whole store

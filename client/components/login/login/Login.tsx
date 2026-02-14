@@ -85,8 +85,8 @@ export default function Login() {
 	}
 
 	return (
-		<div className="space-y-4">
-			<form onSubmit={login} className="space-y-4">
+		<div className="space-y-3">
+			<form onSubmit={login} className="space-y-3">
 				{/* E-posta Input */}
 				<div>
 					<label

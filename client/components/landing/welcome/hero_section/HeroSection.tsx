@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useHistory } from 'react-router-dom';
 import './HeroSection.scss';
 import block from '../../../../styles/bem';
@@ -37,8 +37,8 @@ export default function HeroSection() {
 					Profesyonel zamanlayıcı, detaylı analizler ve canlı yarışmalarla potansiyelini açığa çıkar.
 				</p>
 
-				{/* CTA Buttons */}
-				<div className={b('actions')}>
+				{/* Desktop CTA - hidden on mobile via CSS */}
+				<div className={b('actions-desktop')}>
 					<Button
 						primary
 						large
@@ -46,6 +46,25 @@ export default function HeroSection() {
 						onClick={() => history.push('/timer')}
 					>
 						Timer'ı Başlat →
+					</Button>
+				</div>
+
+				{/* Mobile CTA - hidden on desktop via CSS */}
+				<div className={b('actions-mobile')}>
+					<Button
+						large
+						glow
+						onClick={() => window.location.href = '/signup'}
+					>
+						Kayıt Ol
+					</Button>
+					<Button
+						primary
+						large
+						glow
+						onClick={() => window.location.href = '/login'}
+					>
+						Giriş Yap
 					</Button>
 				</div>
 

@@ -1,5 +1,6 @@
 import React, { ReactNode, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
+import { useLocation } from 'react-router-dom';
 import './App.scss';
 import Wrapper from './wrapper/Wrapper';
 import LoadingCover from './loading_cover/LoadingCover';
@@ -39,6 +40,7 @@ export default function App(props: Props = {}) {
 	const { path, standalone, children, hideTopNav, restricted } = props;
 
 	const dispatch = useDispatch();
+	const location = useLocation();
 	const modals = useGeneral('modals');
 	const appLoaded = useGeneral('app_loaded');
 	const settingsModalOpen = useGeneral('settings_modal_open');
@@ -204,7 +206,7 @@ export default function App(props: Props = {}) {
 
 	return (
 		<>
-			<Header path={path} />
+			<Header path={location.pathname} />
 			<LoadingCover fadeOut={appLoaded} />
 			{modalOutput}
 			{settingsModalOpen && (

@@ -15,6 +15,11 @@
 		padding: 2rem;
 		position: relative;
 		overflow: hidden;
+
+		@media (max-width: 600px) {
+			padding: 1rem;
+			min-height: 100dvh;
+		}
 	}
 
 	// ============================================
@@ -93,6 +98,11 @@
 		@media (max-width: 640px) {
 			padding: 2rem 1.5rem;
 		}
+
+		@media (max-width: 600px) {
+			padding: 1.5rem 1.25rem;
+			border-radius: 20px;
+		}
 	}
 
 	// ============================================
@@ -103,6 +113,10 @@
 		display: flex;
 		justify-content: center;
 		margin-bottom: 2rem;
+
+		@media (max-width: 600px) {
+			margin-bottom: 1rem;
+		}
 	}
 
 	&__logo {
@@ -115,6 +129,11 @@
 		@media (max-width: 640px) {
 			width: 80px;
 			height: 80px;
+		}
+
+		@media (max-width: 600px) {
+			width: 60px;
+			height: 60px;
 		}
 	}
 
@@ -136,6 +155,11 @@
 		@media (max-width: 640px) {
 			font-size: 1.75rem;
 		}
+
+		@media (max-width: 600px) {
+			font-size: 1.5rem;
+			margin-bottom: 1.25rem;
+		}
 	}
 
 	// ============================================
@@ -148,6 +172,10 @@
 		gap: 3rem;
 		margin-bottom: 2.5rem;
 		border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+
+		@media (max-width: 600px) {
+			margin-bottom: 1.5rem;
+		}
 	}
 
 	&__tab {

@@ -92,7 +92,7 @@ export async function getProfileData(username: string): Promise<IProfileData> {
 
 export async function prefetchProfileData(store, req) {
 	const profileData = await getProfileData(req.params.username);
-	return store.dispatch(setSsrValue(profileData.user.username, profileData));
+	return store.dispatch(setSsrValue(req.params.username, profileData));
 }
 
 export default function Profile() {
@@ -344,7 +344,7 @@ export default function Profile() {
 	return (
 		<div className={b('wrapper', { standalone: !me, mobile: mobileMode, blurred: settingsModalOpen })}>
 			<Header
-				path={`/profile/${username}`}
+				path={`/user/${username}`}
 				title={user.username + ' Profile | Zkt-Timer'}
 				description={`Check out ${user.username}'s Zkt-Timer profile to see their fastest speedcubing times. See their WCA profile, cubing bio, social links, and more`}
 			/>
