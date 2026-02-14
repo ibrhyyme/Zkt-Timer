@@ -24,3 +24,6 @@ PROJECT_INFO_MAP.md
 server/**/*.test.ts
 server/**/__test__/
 
+# Windows artifacts
+nul
+

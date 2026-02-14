@@ -34,13 +34,16 @@ export function initApollo() {
 		hostname = process.env.BASE_URI;
 		fetchType = nodeFetch as unknown as FetchType;
 	} else if (typeof window !== 'undefined') {
+		// Both web browser and native app now share the same origin (https://zktimer.app)
+		// because capacitor.config.ts uses server.url to load directly from the remote server
 		hostname = window.location.origin;
 		fetchType = fetch as FetchType;
 	}
 
 	const uri = `${hostname}/graphql`;
+	const credentials = 'same-origin';
 	const link = createUploadLink({
-		credentials: 'same-origin',
+		credentials,
 		uri,
 		fetch: fetchType,
 	});

@@ -40,6 +40,11 @@
 	"license": "Zkt-Timer, Inc. All Rights Reserved",
 	"dependencies": {
 		"@apollo/client": "^3.3.13",
+		"@capacitor/android": "^6.0.0",
+		"@capacitor/cli": "^6.0.0",
+		"@capacitor/core": "^6.0.0",
+		"@capacitor/ios": "^6.0.0",
+		"@capacitor/splash-screen": "^6.0.0",
 		"@elastic/elasticsearch": "^8.2.1",
 		"@graphql-tools/schema": "^8.3.1",
 		"@graphql-typed-document-node/core": "^3.1.2",

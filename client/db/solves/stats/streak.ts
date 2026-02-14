@@ -115,6 +115,6 @@ export function getSolveStreak(filter: FilterSolvesOptions): SolveStreak {
 		highestStreakSolves,
 		highestStartDate,
 		highestEndDate,
-		avgSolvesPerSession: Math.floor(mean(solvesPerSession)),
+		avgSolvesPerSession: solvesPerSession.length ? Math.floor(mean(solvesPerSession)) : 0,
 	};
 }

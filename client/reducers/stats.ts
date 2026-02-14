@@ -33,8 +33,11 @@ const initialState: StatsModule = {
 export default (state = initialState, action) => {
 	switch (action.type) {
 		case 'INIT_STATS_MODULE': {
+			const payload = action.payload || {};
 			return {
-				...action.payload,
+				...initialState,
+				...payload,
+				blocks: payload.blocks || initialState.blocks,
 			};
 		}
 

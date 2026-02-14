@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Zkt-Timer</string>
+    <string name="title_activity_main">Zkt-Timer</string>
+    <string name="package_name">com.zktimer.app</string>
+    <string name="custom_url_scheme">com.zktimer.app</string>
+</resources>

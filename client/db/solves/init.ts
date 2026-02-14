@@ -48,7 +48,7 @@ export function initSolveDb(solveList: Solve[], forceRefresh = false) {
 	emitEvent('solveDbUpdatedEvent');
 }
 
-export function appendSolvesToDb(solveList: Solve[]) {
+export function appendSolvesToDb(solveList: Solve[], silent = false) {
 	if (typeof window === 'undefined' || !solveList.length) {
 		return;
 	}
@@ -68,7 +68,7 @@ export function appendSolvesToDb(solveList: Solve[]) {
 		added++;
 	}
 
-	if (added > 0) {
+	if (added > 0 && !silent) {
 		emitEvent('solveDbUpdatedEvent');
 	}
 }
