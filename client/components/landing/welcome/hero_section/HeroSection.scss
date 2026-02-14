@@ -138,17 +138,30 @@
 		animation: fadeInUp 1s ease-out 0.2s backwards;
 	}
 
-	&__actions {
+	&__actions-desktop {
 		display: flex;
-		flex-direction: column;
 		gap: 1rem;
 		justify-content: center;
 		align-items: center;
 		margin-bottom: 4rem;
 		animation: fadeInUp 1.2s ease-out 0.3s backwards;
 
-		@media (min-width: 640px) {
-			flex-direction: row;
+		@media (max-width: 600px) {
+			display: none;
+		}
+	}
+
+	&__actions-mobile {
+		display: none;
+		flex-direction: row;
+		gap: 1rem;
+		justify-content: center;
+		align-items: center;
+		margin-bottom: 4rem;
+		animation: fadeInUp 1.2s ease-out 0.3s backwards;
+
+		@media (max-width: 600px) {
+			display: flex;
 		}
 	}
 
@@ -281,7 +294,7 @@
 			margin: 2rem auto 0;
 		}
 
-		&__actions {
+		&__actions-desktop {
 			margin-bottom: 2rem;
 		}
 	}

@@ -6,6 +6,10 @@
 	width: 100%;
 	box-sizing: border-box;
 	height: 100%;
+
+	@media (max-width: 600px) {
+		padding-top: 0;
+	}
 }
 
 .#{$namespace}-landing-features {

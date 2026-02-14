@@ -285,7 +285,7 @@ export default function Header(props: Props) {
 		} else if (currentPath.startsWith('/user/')) {
 			const parts = currentPath.split('/');
 			const username = parts[2] || 'Kullanıcı';
-			pageTitle = `${username} - Küpçü Profili | Zkt-Timer`;
+			pageTitle = `${username} - Cuber Profili | Zkt-Timer`;
 			pageDesc = `${username} kullanıcısının zeka küpü profili. Rekorları, çözüm istatistikleri ve yarışma geçmişi.`;
 		} else if (currentPath.startsWith('/trainer')) {
 			pageTitle = 'Algoritma Eğitmeni - Zkt-Timer';

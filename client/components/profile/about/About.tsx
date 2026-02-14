@@ -1,10 +1,10 @@
 import React from 'react';
 import './About.scss';
-import {YoutubeLogo, TwitterLogo, TwitchLogo} from 'phosphor-react';
+import { YoutubeLogo, TwitterLogo, TwitchLogo } from 'phosphor-react';
 import Emblem from '../../common/emblem/Emblem';
-import {Profile} from '../../../@types/generated/graphql';
+import { Profile } from '../../../@types/generated/graphql';
 import block from '../../../styles/bem';
-import {resourceUri} from '../../../util/storage';
+import { resourceUri } from '../../../util/storage';
 
 const b = block('profile-about');
 
@@ -13,7 +13,7 @@ interface Props {
 }
 
 export default function About(props: Props) {
-	const {profile} = props;
+	const { profile } = props;
 
 	function addSocial(list, key, name, icon: React.ReactElement, background, color) {
 		if (!profile[key]) {
@@ -44,9 +44,9 @@ export default function About(props: Props) {
 
 	// WCA logo component
 	const WCAIcon = () => (
-		<img 
-			src={resourceUri('/images/logos/wca_logo.svg')} 
-			alt="WCA" 
+		<img
+			src={resourceUri('/images/logos/wca_logo.svg')}
+			alt="WCA"
 			style={{ width: '16px', height: '16px' }}
 		/>
 	);

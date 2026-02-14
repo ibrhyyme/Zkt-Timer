@@ -85,8 +85,8 @@ export default function SignUp() {
 
 
 	return (
-		<div className="space-y-4">
-			<form onSubmit={signUp} className="space-y-4">
+		<div className="space-y-3">
+			<form onSubmit={signUp} className="space-y-3">
 				{/* First Name & Last Name - Yan Yana */}
 				<div className="grid grid-cols-2 gap-4">
 					{/* First Name Input */}

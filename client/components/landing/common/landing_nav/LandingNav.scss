@@ -16,6 +16,10 @@
 	border-bottom: 2px solid transparent;
 	color: #fff;
 
+	@media (max-width: 600px) {
+		display: none;
+	}
+
 	&--scrolled {
 		border-color: rgba(255, 255, 255, 0.1);
 	}
