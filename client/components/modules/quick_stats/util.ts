@@ -118,6 +118,10 @@ export function getStatValueColorHex(colorName: ColorName, appTheme: AppTheme): 
 }
 
 export function getQuickStatsGridSizes(blockCount: number) {
+	if (blockCount <= 0) {
+		return [];
+	}
+
 	// First number is col span, second number is row span
 	const blockSizes: [number, number][] = [];
 	const totalGridSize = STATS_GRID_SIZE * STATS_GRID_SIZE;

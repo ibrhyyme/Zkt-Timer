@@ -23,6 +23,8 @@ import { GetActiveAnnouncementsDocument, Announcement } from '../../@types/gener
 import { gqlQueryTyped } from '../api';
 import PendingSyncBadge from '../common/pending_sync_badge/PendingSyncBadge';
 import { initOfflineSyncListener } from './offline-listener';
+import { Capacitor } from '@capacitor/core';
+import { SplashScreen } from '@capacitor/splash-screen';
 
 interface Props {
 	path?: string;
@@ -52,6 +54,11 @@ export default function App(props: Props = {}) {
 		updateSettingsBasedOnProStatus(me);
 		initOfflineSyncListener(); // Offline sync başlat
 		dispatch(setGeneral('app_loaded', true));
+
+		// Capacitor native'de splash screen'i kapat (uygulama hazır)
+		if (Capacitor.isNativePlatform()) {
+			SplashScreen.hide();
+		}
 	}
 
 	useEffect(() => {

@@ -21,6 +21,18 @@ export function getSubStats(filter: FilterSolvesOptions): SubStats {
 		}
 	);
 
+	if (!solves.length) {
+		return {
+			firstSolve: null,
+			lastSolve: null,
+			totalCount: 0,
+			dnfCount: 0,
+			dnfPercent: 0,
+			plusTwoCount: 0,
+			plusTwoPercent: 0,
+		};
+	}
+
 	const dnfs = fetchSolves({
 		...filter,
 		dnf: true,
@@ -31,12 +43,8 @@ export function getSubStats(filter: FilterSolvesOptions): SubStats {
 		plus_two: true,
 	});
 
-	let dnfPercent = 0;
-	let plusTwoPercent = 0;
-	if (solves.length) {
-		dnfPercent = Math.floor((dnfs.length / solves.length) * 100);
-		plusTwoPercent = Math.floor((dnfs.length / solves.length) * 100);
-	}
+	const dnfPercent = Math.floor((dnfs.length / solves.length) * 100);
+	const plusTwoPercent = Math.floor((plusTwos.length / solves.length) * 100);
 
 	return {
 		firstSolve: solves[0],

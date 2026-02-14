@@ -27,6 +27,7 @@ import { getAllLocalSettings } from '../../db/settings/local';
 import { getStore } from '../store';
 import { setGeneral } from '../../actions/general';
 import { generateId } from '../../../shared/code';
+import { emitEvent } from '../../util/event_handler';
 
 export function initAnonymousAppData(callback) {
 	if (typeof window === 'undefined') {
@@ -75,7 +76,6 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 		}
 
 		// PHASE 1: Critical data only — blocks the loading screen
-		// Timer only needs settings, sessions, and a scramble to render
 		const criticalPromises: Promise<any>[] = [];
 		if (!passed) {
 			criticalPromises.push(getAllSessions());
@@ -90,6 +90,13 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 
 			// Initialize solves collection (empty if not from cache) so timer can render
 			initSolvesCollection();
+
+			// Cache miss ise tüm solve'ları yükle (loading ekranı kapanmadan önce)
+			if (!passed) {
+				console.time('allSolvesLoaded');
+				await initAllSolves();
+				console.timeEnd('allSolvesLoaded');
+			}
 		} catch (e) {
 			console.error(e);
 		}
@@ -102,12 +109,18 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 	});
 }
 
-async function loadNonCriticalData(_me: UserAccount, dispatch: Dispatch<any>, _passedFromOffline: boolean) {
+async function loadNonCriticalData(_me: UserAccount, dispatch: Dispatch<any>, passedFromOffline: boolean) {
 	try {
 		const bgPromises: Promise<any>[] = [];
 
-		// Always fetch solves (fresh from server or background sync after offline hydration)
-		bgPromises.push(initAllSolves());
+		if (passedFromOffline) {
+			// Cache'ten yüklendi → solve'lar zaten mevcut, UI'ı güncelle
+			emitEvent('solveDbUpdatedEvent');
+			// Arka planda sadece yeni solve'ları kontrol et
+			bgPromises.push(syncNewSolves());
+		}
+		// Cache miss durumunda solve'lar Phase 1'de zaten yüklendi
+
 		bgPromises.push(getStatsModule(dispatch));
 		bgPromises.push(getAllFriends(dispatch));
 
@@ -131,8 +144,29 @@ async function initNewScramble() {
 	});
 }
 
-const SOLVE_BATCH_SIZE = 500;
-const INITIAL_SOLVE_COUNT = 100;
+const SYNC_SOLVE_COUNT = 500;
+
+async function syncNewSolves() {
+	const query = gql`
+		${MICRO_SOLVE_FRAGMENT}
+
+		query Query($take: Int, $skip: Int) {
+			solves(take: $take, skip: $skip) {
+				...MicroSolveFragment
+			}
+		}
+	`;
+
+	try {
+		const res = await gqlQuery<{ solves: Solve[] }>(query, { take: SYNC_SOLVE_COUNT, skip: 0 });
+		const solves = res.data.solves;
+		if (solves.length) {
+			appendSolvesToDb(solves);
+		}
+	} catch (e) {
+		console.error("Failed to sync new solves", e);
+	}
+}
 
 export async function initAllSolves() {
 	const query = gql`
@@ -146,42 +180,12 @@ export async function initAllSolves() {
 	`;
 
 	try {
-		// First batch: load most recent solves quickly for immediate display
-		const res = await gqlQuery<{ solves: Solve[] }>(query, { take: INITIAL_SOLVE_COUNT, skip: 0 });
+		// Tüm solve'ları tek istekte çek (take: 0 → sunucu limit uygulamaz)
+		const res = await gqlQuery<{ solves: Solve[] }>(query, { take: 0, skip: 0 });
 		const solves = res.data.solves;
 		initSolveDb(solves);
-
-		// If we got less than requested, there are no more solves
-		if (solves.length < INITIAL_SOLVE_COUNT) {
-			return;
-		}
-
-		// Load remaining solves in background batches
-		loadRemainingSolves(query);
 	} catch (e) {
 		console.error("Failed to load solves", e);
-	}
-}
-
-async function loadRemainingSolves(query: ReturnType<typeof gql>) {
-	let skip = INITIAL_SOLVE_COUNT;
-
-	while (true) {
-		try {
-			const res = await gqlQuery<{ solves: Solve[] }>(query, { take: SOLVE_BATCH_SIZE, skip });
-			const solves = res.data.solves;
-
-			if (!solves.length) break;
-
-			appendSolvesToDb(solves);
-			skip += SOLVE_BATCH_SIZE;
-
-			// If we got less than the batch size, we've loaded everything
-			if (solves.length < SOLVE_BATCH_SIZE) break;
-		} catch (e) {
-			console.error("Failed to load solve batch at skip=" + skip, e);
-			break;
-		}
 	}
 }
 
