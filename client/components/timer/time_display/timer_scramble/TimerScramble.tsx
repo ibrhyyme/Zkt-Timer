@@ -1,6 +1,6 @@
 import React, { ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import './TimerScramble.scss';
-import { ArrowClockwise, CaretLeft, CaretRight, Lock, PencilSimple } from 'phosphor-react';
+import { ArrowClockwise, CaretLeft, CaretRight, Lock, LockSimple, PencilSimple } from 'phosphor-react';
 import TextareaAutosize from 'react-textarea-autosize';
 import CopyText from '../../../common/copy_text/CopyText';
 import { MOBILE_FONT_SIZE_MULTIPLIER } from '../../../../db/settings/update';
@@ -227,6 +227,11 @@ export default function TimerScramble() {
 		<div className={b()}>
 			{notification}
 			{/* Scramble navigasyon butonları - timer çalışmıyorken ve maç modunda değilken göster */}
+			{scrambleLocked && !timeStartedAt && !focusMode && !matchMode && (
+				<div className={b('locked-banner')}>
+					🔒 Karıştırma kilitli
+				</div>
+			)}
 			{!timeStartedAt && !focusMode && !matchMode && !isSmartScrambling && (
 				<div className={b('nav')}>
 					<button
@@ -294,11 +299,11 @@ export default function TimerScramble() {
 				{!matchMode && (
 					<>
 						<Button
-							transparent
+							transparent={!scrambleLocked}
+							warning={scrambleLocked}
 							onClick={toggleScrambleLock}
 							title="Lock scramble"
-							white={scrambleLocked}
-							icon={<Lock weight="bold" />}
+							icon={scrambleLocked ? <LockSimple weight="fill" /> : <Lock weight="bold" />}
 						/>
 						<CopyText
 							text={scramble}
