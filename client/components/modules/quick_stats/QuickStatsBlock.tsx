@@ -50,6 +50,9 @@ export default function QuickStatsBlock(props: Props) {
 		'p-1.5',
 	];
 
+	// "Session Mean" identify -> session: true AND (no averageCount OR averageCount 0)
+	const isSessionMean = statOptions.session && !statOptions.averageCount;
+
 	const buttonClasses = [
 		'relative',
 		'border-b-2',
@@ -64,6 +67,10 @@ export default function QuickStatsBlock(props: Props) {
 		'text-left',
 		'text-text',
 	];
+
+	if (isSessionMean) {
+		buttonClasses.push('pointer-events-none');
+	}
 
 	const buttonStyle: CSS.Properties = {
 		fontSize: `${fontSize}px`,
@@ -95,6 +102,17 @@ export default function QuickStatsBlock(props: Props) {
 	}, [rowSpan, colSpan]);
 
 	function openSolve(e) {
+		// En iyi/kötü süre veya AO5/12 gibi istatistikler açılabilir.
+		// ANCAK: Kullanıcı isteği üzerine "Session Mean" (tüm oturum ortalaması) açılmamalıdır.
+		// Çünkü çok fazla veri olduğunda modal açılması performans sorunu yaratabilir veya istenmiyor.
+		// "Session Mean" -> session: true ve averageCount yok (veya 0)
+		const isSessionMean = statOptions.session && !statOptions.averageCount;
+
+		if (isSessionMean) {
+			e.preventDefault();
+			return;
+		}
+
 		if (solveCount > 1) {
 			dispatch(
 				openModal(
@@ -122,9 +140,15 @@ export default function QuickStatsBlock(props: Props) {
 				<StatDescription statOptions={statOptions} />
 			</div>
 			<div className="relative w-full h-full flex items-start justify-center">
-				<button onClick={openSolve} className={buttonClasses.join(' ')} style={buttonStyle}>
-					{statValue}
-				</button>
+				{isSessionMean ? (
+					<div className={buttonClasses.join(' ')} style={buttonStyle}>
+						{statValue}
+					</div>
+				) : (
+					<button onClick={openSolve} className={buttonClasses.join(' ')} style={buttonStyle}>
+						{statValue}
+					</button>
+				)}
 			</div>
 		</div>
 	);

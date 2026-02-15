@@ -3,12 +3,26 @@
 .#{$namespace}-solve-info {
 	padding-top: 20px;
 	position: relative;
+	background-color: rgb(var(--background-color));
+	color: #fff;
+	padding: 24px;
+	border-radius: 24px;
+
+	&__web-done {
+		position: absolute;
+		top: 16px;
+		right: 20px;
+		font-size: 1rem;
+		font-weight: 600;
+		color: #4a9eff;
+		cursor: pointer;
+		z-index: 10;
+	}
 
 	&__top-actions {
-		position: absolute;
-		top: 0;
-		width: calc(100% - 45px);
-		right: 45px;
+		position: relative;
+		width: 100%;
+		margin-top: 18px;
 		display: flex;
 		flex-direction: row;
 		align-items: center;
@@ -23,6 +37,28 @@
 			}
 		}
 
+		button {
+			background-color: #1c1c1e !important;
+			border-radius: 10px !important;
+			color: #4a9eff !important;
+			font-weight: 600 !important;
+			border: none !important;
+
+			svg {
+				color: #4a9eff !important;
+			}
+
+			&.cd-common-button--theme-warning {
+				background-color: rgb(var(--warning-color)) !important;
+				color: white !important;
+			}
+
+			&.cd-common-button--theme-danger {
+				background-color: rgb(var(--error-color)) !important;
+				color: white !important;
+			}
+		}
+
 		// Mobil düzeltme: X butonuyla çakışmayı önle
 		@media (max-width: 500px) {
 			position: relative;
@@ -31,7 +67,7 @@
 			left: 0;
 			flex-wrap: wrap;
 			gap: 8px;
-			padding-top: 30px; // X butonu için alan
+			padding-top: 30px;
 			margin-bottom: 10px;
 		}
 	}
@@ -39,15 +75,15 @@
 	h2 {
 		width: 100%;
 		font-size: 4.3rem;
-		font-family: Roboto Mono, monospace;
+		font-family: 'SF Mono', 'Roboto Mono', 'Fira Code', monospace;
 		font-weight: bold;
 		text-align: center;
-		color: rgb(var(--text-color));
+		color: #fff;
 		margin: 20px 0 0;
 	}
 
 	p {
-		color: rgb(var(--text-color));
+		color: #fff;
 		margin: 7px 0;
 
 		i {
@@ -61,7 +97,7 @@
 		align-items: center;
 		width: 100%;
 		margin: 20px auto 25px;
-		border-bottom: 2px solid rgb(var(--button-color));
+		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 		padding-bottom: 25px;
 
 		.cd-common__emblem {
@@ -90,9 +126,9 @@
 		align-items: center;
 		display: flex;
 		flex-direction: row;
-		padding: 10px;
-		border-radius: 12px;
-		@include dark-glass(0.6, 10px, 0.05); // Solve Info Actions
+		padding: 10px 16px;
+		border-radius: 10px;
+		background-color: #1c1c1e;
 
 		>*:not(:last-child) {
 			margin-right: 10px;
@@ -100,6 +136,37 @@
 
 		>div:last-of-type {
 			margin-right: 0 !important;
+		}
+
+		button {
+			background-color: #2c2c2e !important;
+			border-radius: 8px !important;
+			color: #4a9eff !important;
+			font-weight: 600 !important;
+			border: none !important;
+
+			// +2 aktif: turuncu arka plan
+			&.cd-common-button--theme-warning {
+				background-color: rgb(var(--warning-color)) !important;
+				color: white !important;
+			}
+
+			// DNF aktif: kırmızı arka plan
+			&.cd-common-button--theme-danger {
+				background-color: rgb(var(--error-color)) !important;
+				color: white !important;
+			}
+		}
+	}
+
+	&__date-info {
+		width: 100%;
+		padding-top: 12px;
+		text-align: center;
+
+		span {
+			color: #888;
+			font-size: 0.875rem;
 		}
 	}
 
@@ -117,14 +184,14 @@
 			width: 100%;
 			padding: 0;
 			opacity: 0.9;
-			color: rgb(var(--text-color));
+			color: #fff;
 		}
 
 		i {
 			width: 100%;
 			opacity: 0.7;
 			text-align: center;
-			color: rgb(var(--text-color));
+			color: #888;
 		}
 	}
 
@@ -137,7 +204,7 @@
 		margin-bottom: 4px;
 		width: 100%;
 		text-align: center;
-		color: rgb(var(--text-color));
+		color: #fff;
 		font-weight: bold;
 	}
 
@@ -160,7 +227,7 @@
 
 	&__date {
 		padding-top: 15px;
-		border-top: 2px solid rgb(var(--button-color));
+		border-top: 1px solid rgba(255, 255, 255, 0.1);
 		display: grid;
 		grid-template-columns: 1fr 1fr;
 		grid-gap: 20px;
@@ -168,7 +235,80 @@
 
 		span {
 			text-align: center;
-			color: rgb(var(--text-color));
+			color: #888;
 		}
 	}
+
+	// -------------------------------------------------------------
+	// MOBILE FULLSCREEN
+	// -------------------------------------------------------------
+	&--mobile {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100vw;
+		height: 100vh;
+		z-index: 9999;
+		background-color: rgb(var(--background-color));
+		color: #fff;
+		overflow-y: auto;
+		padding: 0 20px;
+		padding-top: env(safe-area-inset-top, 20px);
+		border-radius: 0;
+
+		.#{$namespace}-solve-info__top-actions {
+			position: relative;
+			width: 100%;
+			right: auto;
+			left: 0;
+			flex-wrap: wrap;
+			gap: 8px;
+			padding-top: 0;
+			margin-bottom: 10px;
+		}
+	}
+
+	&__mobile-header-top {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		position: relative;
+		margin-bottom: 16px;
+		height: 40px;
+	}
+
+	&__mobile-title {
+		font-size: 1.1rem;
+		font-weight: 600;
+		color: #fff;
+	}
+
+	&__mobile-done {
+		position: absolute;
+		right: 0;
+		top: 50%;
+		transform: translateY(-50%);
+		font-size: 1rem;
+		font-weight: 600;
+		color: #4a9eff;
+		cursor: pointer;
+	}
+}
+
+// Modal'ın dark-glass arka planını kaldır, bileşenin kendi stilini göster
+.cd-modal__center:has(> .cd-solve-info),
+.cd-modal__center:has(> .cd-solve-info--mobile) {
+	padding: 0 !important;
+	background: transparent !important;
+	border: none !important;
+	box-shadow: none !important;
+	backdrop-filter: none !important;
+	border-radius: 24px !important;
+	overflow: hidden;
+}
+
+// X butonunu gizle - bileşenin kendi "Bitti" butonunu kullanıyoruz
+.cd-modal__center:has(> .cd-solve-info)>button,
+.cd-modal__center:has(> .cd-solve-info--mobile)>button {
+	display: none !important;
 }

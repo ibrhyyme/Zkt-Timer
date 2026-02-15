@@ -4,8 +4,12 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	padding-top: 50px;
+	padding-top: 0;
 	position: relative;
+	color: #fff;
+	background-color: rgb(var(--background-color));
+	padding: 24px;
+	border-radius: 24px;
 
 	&__header {
 		display: flex;
@@ -31,14 +35,321 @@
 		max-height: 500px;
 	}
 
-	&__toggle-text {
-		position: absolute;
-		top: 0;
-		left: 0;
-	}
-
 	&__body {
 		margin-top: 40px;
 		width: 100%;
 	}
+
+	// -------------------------------------------------------------
+	// MOBILE REDESIGN (Stats Detail Style)
+	// -------------------------------------------------------------
+	&--mobile {
+		// Fix "Page within page" - Break out of the modal container
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100vw;
+		height: 100vh;
+		z-index: 9999; // Ensure it's on top of everything including the parent modal
+		background-color: rgb(var(--background-color));
+		color: #fff;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		padding: 0;
+		overflow: hidden; // Prevent whole page scroll, rely on child scroll
+		border-radius: 0; // Full screen, no radius
+
+		// HACK: Hide the parent modal's close button if it's visible underneath or around
+		// We can't reach parent selectors easily in scoped SCSS, 
+		// but since this element covers the screen, the X (usually Z-indexed high) might still show?
+		// If the X is in the same stacking context, Z-index 9999 should cover it unless X is 10000.
+		// If X is outside, we rely on coverage.
+	}
+
+	// 1. HEADER AREA
+	&__mobile-header {
+		width: 100%;
+		padding: 16px 20px;
+		margin-bottom: 0;
+		background-color: rgb(var(--background-color));
+		padding-top: env(safe-area-inset-top, 20px); // Handle iOS notch
+		flex-shrink: 0; // Don't shrink
+		z-index: 10;
+	}
+
+	&__mobile-header-top {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		position: relative;
+		margin-bottom: 24px;
+		height: 40px;
+	}
+
+	&__mobile-title {
+		font-size: 1.1rem;
+		font-weight: 600;
+		color: #fff;
+	}
+
+	&__mobile-done {
+		position: absolute;
+		right: 0;
+		top: 50%;
+		transform: translateY(-50%);
+		font-size: 1rem;
+		font-weight: 600;
+		color: #4a9eff;
+		cursor: pointer;
+	}
+
+	&__mobile-header-main {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	&__mobile-time {
+		font-size: 3.5rem;
+		font-weight: 700;
+		color: #fff;
+		line-height: 1.1;
+		font-family: 'SF Mono', 'Roboto Mono', 'Fira Code', monospace;
+		margin-bottom: 8px;
+	}
+
+	&__mobile-desc {
+		font-size: 0.95rem;
+		color: #888;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+
+		span {
+			text-transform: capitalize;
+		}
+	}
+
+	// 2. ACTIONS
+	&__mobile-actions {
+		display: flex;
+		gap: 12px;
+		width: 100%;
+		padding: 0 20px;
+		margin-bottom: 24px;
+		flex-shrink: 0; // Don't shrink
+
+		>* {
+			flex: 1;
+		}
+
+		button {
+			background-color: #1c1c1e !important;
+			border-radius: 10px !important;
+			height: 44px !important;
+			color: #4a9eff !important;
+			font-weight: 600 !important;
+			border: none !important;
+
+			svg {
+				color: #4a9eff !important;
+			}
+		}
+	}
+
+	// 3. TIMES SECTION
+	&__mobile-section-title {
+		width: 100%;
+		padding: 0 20px;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: #888;
+		text-transform: uppercase;
+		margin-bottom: 8px;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+		padding-bottom: 8px;
+		flex-shrink: 0; // Don't shrink
+		background-color: rgb(var(--background-color)); // Ensure opacity if it were sticky
+	}
+
+	&__mobile-solves {
+		width: 100%;
+		padding: 0 20px;
+		padding-bottom: 40px; // Bottom padding for scroll
+		overflow-y: auto; // Main scrollable area
+		flex: 1; // Fill remaining height
+		min-height: 0; // Required for nested flex scroll
+		-webkit-overflow-scrolling: touch; // Smooth scroll iOS
+	}
+
+	&__mobile-row {
+		display: flex;
+		flex-direction: column;
+		padding: 12px 0;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+
+		&:last-child {
+			border-bottom: none;
+		}
+	}
+
+	&__mobile-row-header {
+		display: flex;
+		align-items: baseline;
+		gap: 12px;
+	}
+
+	&__mobile-row-index {
+		color: #4a9eff;
+		font-size: 1rem;
+		font-weight: 600;
+		min-width: 24px;
+	}
+
+	&__mobile-row-time {
+		font-size: 1.25rem;
+		font-weight: 600;
+		color: #fff;
+		font-family: 'SF Mono', 'Roboto Mono', 'Fira Code', monospace;
+
+		&--trimmed {
+			opacity: 0.5;
+		}
+
+		&--dnf {
+			color: rgb(var(--error-color));
+		}
+
+		&--plusTwo {
+			color: rgb(var(--warning-color));
+		}
+
+		&--best {
+			color: #2e7d32; // Dark Green
+		}
+
+		&--worst {
+			color: #c62828; // Dark Red
+		}
+	}
+
+	&__mobile-row-date {
+		margin-left: auto;
+		font-size: 0.85rem;
+		color: #666;
+	}
+
+	&__mobile-row-scramble {
+		margin-top: 6px;
+		font-size: 1rem; // Larger
+		color: #fff; // White
+		opacity: 0.9; // High visibility
+		font-family: 'SF Mono', 'Roboto Mono', 'Fira Code', monospace;
+		line-height: 1.4;
+		padding-left: 0;
+		letter-spacing: 0.03em;
+	}
+
+	// -------------------------------------------------------------
+	// WEB CARD LAYOUT (Same design as mobile, but inline in modal)
+	// -------------------------------------------------------------
+	&--card {
+		background-color: rgb(var(--background-color));
+		color: #fff;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		padding: 24px;
+		border-radius: 24px;
+	}
+
+	&__card-header {
+		width: 100%;
+		margin-bottom: 20px;
+	}
+
+	&__card-time {
+		font-size: 3.5rem;
+		font-weight: 700;
+		color: #fff;
+		line-height: 1.1;
+		font-family: 'SF Mono', 'Roboto Mono', 'Fira Code', monospace;
+		margin-bottom: 8px;
+	}
+
+	&__card-desc {
+		font-size: 0.95rem;
+		color: #888;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+
+		span {
+			text-transform: capitalize;
+		}
+	}
+
+	&__card-actions {
+		display: flex;
+		gap: 12px;
+		width: 100%;
+		margin-bottom: 24px;
+
+		>* {
+			flex: 1;
+		}
+
+		button {
+			background-color: #1c1c1e !important;
+			border-radius: 10px !important;
+			height: 44px !important;
+			color: #4a9eff !important;
+			font-weight: 600 !important;
+			border: none !important;
+
+			svg {
+				color: #4a9eff !important;
+			}
+		}
+	}
+
+	&__card-section-title {
+		width: 100%;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: #888;
+		text-transform: uppercase;
+		margin-bottom: 8px;
+		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+		padding-bottom: 8px;
+	}
+
+	&__card-solves {
+		width: 100%;
+		max-height: 500px;
+		overflow-y: auto;
+		padding-bottom: 20px;
+		-webkit-overflow-scrolling: touch;
+	}
+}
+
+// Modal'ın dark-glass arka planını kaldır, bileşenin kendi stilini göster
+.cd-modal__center:has(> .cd-history-modal),
+.cd-modal__center:has(> .cd-history-modal--card),
+.cd-modal__center:has(> .cd-history-modal--mobile) {
+	padding: 0 !important;
+	background: transparent !important;
+	border: none !important;
+	box-shadow: none !important;
+	backdrop-filter: none !important;
+	border-radius: 24px !important;
+	overflow: hidden;
+}
+
+// X butonunu gizle - bileşenin kendi "Bitti" butonunu kullanıyoruz
+.cd-modal__center:has(> .cd-history-modal) > button,
+.cd-modal__center:has(> .cd-history-modal--card) > button,
+.cd-modal__center:has(> .cd-history-modal--mobile) > button {
+	display: none !important;
 }

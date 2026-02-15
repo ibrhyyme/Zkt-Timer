@@ -24,6 +24,9 @@ import Button from '../common/button/Button';
 import Tag from '../common/tag/Tag';
 import { Solve } from '../../../server/schemas/Solve.schema';
 import { getFullFormattedDate } from '../../util/dates';
+import { useGeneral } from '../../util/hooks/useGeneral';
+import { useDispatch } from 'react-redux';
+import { closeModal } from '../../actions/general';
 import { demoUser } from './demo_user';
 
 const b = block('solve-info');
@@ -38,6 +41,8 @@ interface Props extends IModalProps {
 export default function SolveInfo(props: Props) {
 	const { solveId, disabled, onComplete } = props;
 
+	const dispatch = useDispatch();
+	const mobileMode = useGeneral('mobile_mode');
 	const demoSolve = props.solve?.demo_mode;
 
 	const [page, setPage] = useState('scramble');
@@ -238,8 +243,21 @@ export default function SolveInfo(props: Props) {
 
 	const cubeTypeInfo = getCubeTypeInfoById(cubeType);
 
+	function handleDone() {
+		dispatch(closeModal());
+	}
+
 	return (
-		<div className={b()}>
+		<div className={b({ mobile: mobileMode })}>
+			{mobileMode && (
+				<div className={b('mobile-header-top')}>
+					<div className={b('mobile-title')}>Çözüm Detayı</div>
+					<div className={b('mobile-done')} onClick={handleDone}>Bitti</div>
+				</div>
+			)}
+			{!mobileMode && (
+				<div className={b('web-done')} onClick={handleDone}>Bitti</div>
+			)}
 			<div className={b('top-actions')}>
 				<div>{shareLink}</div>
 				<div>
@@ -266,8 +284,8 @@ export default function SolveInfo(props: Props) {
 						{plusTwoButton}
 						{dnfButton}
 					</div>
-					<div className="w-full pt-5">
-						<span className="m-auto table text-sm text-text/60">{getFullFormattedDate(endedAt)}</span>
+					<div className={b('date-info')}>
+						<span>{getFullFormattedDate(endedAt)}</span>
 					</div>
 				</div>
 				<div className={b('info')}>

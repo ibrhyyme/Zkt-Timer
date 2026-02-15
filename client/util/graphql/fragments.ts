@@ -13,6 +13,7 @@ export const MICRO_SOLVE_FRAGMENT = gql`
 		training_session_id
 		dnf
 		plus_two
+		scramble
 		is_smart_cube
 		created_at
 		started_at
