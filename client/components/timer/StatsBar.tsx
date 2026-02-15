@@ -55,8 +55,12 @@ export default function StatsBar() {
         const timeStr = getTimeString(statValue?.time);
         const label = getStatLabel(statBlock);
 
+        // Mean (tüm çözümler) için modal açmayı engelle - performans sorunu
+        const isSessionMean = statBlock.session && !statBlock.averageCount;
+
         // Modal açma fonksiyonu
         const handleClick = () => {
+            if (isSessionMean) return;
             if (statValue && statValue.solves && statValue.solves.length > 0) {
                 const description = getStatsBlockDescription(statBlock, solvesFilter);
                 dispatch(openModal(
@@ -74,7 +78,7 @@ export default function StatsBar() {
         };
 
         return (
-            <div key={index} className={b('item')} onClick={handleClick} style={{ cursor: 'pointer' }}>
+            <div key={index} className={b('item')} onClick={handleClick} style={{ cursor: isSessionMean ? 'default' : 'pointer' }}>
                 <span className={b('label')}>{label}</span>
                 <span
                     className={b('value')}

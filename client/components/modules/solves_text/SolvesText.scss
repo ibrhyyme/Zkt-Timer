@@ -3,13 +3,13 @@
 .#{$namespace}-solves-text {
 	&__text {
 		margin-top: 10px;
-		border-radius: 5px;
-		color: rgb(var(--text-color));
-		background-color: rgb(var(--module-color));
+		border-radius: 10px;
+		color: #fff;
+		background-color: #1c1c1e;
 		padding: 15px;
 		box-sizing: border-box;
 		font-size: 1rem;
-		font-family: Roboto Mono, monospace;
+		font-family: 'SF Mono', 'Roboto Mono', 'Fira Code', monospace;
 		margin-bottom: 15px;
 		overflow-x: auto;
 		max-height: 600px;
@@ -36,6 +36,19 @@
 
 		> * {
 			margin-right: 15px;
+		}
+
+		button {
+			background-color: #1c1c1e !important;
+			border-radius: 10px !important;
+			height: 44px !important;
+			color: #4a9eff !important;
+			font-weight: 600 !important;
+			border: none !important;
+
+			svg {
+				color: #4a9eff !important;
+			}
 		}
 	}
 }
