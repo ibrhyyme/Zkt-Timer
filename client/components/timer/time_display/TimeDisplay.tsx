@@ -128,8 +128,8 @@ export default function TimeDisplay() {
 		if (inspectionTimer <= 2) {
 			timeStr = '+2';
 		} else {
-			// Show inspection time with decimals (00.00 format)
-			timeStr = (inspectionTimer - 2).toFixed(2);
+			// İnceleme süresinde ondalık gösterme — tam sayı geri sayım
+			timeStr = Math.ceil(inspectionTimer - 2).toString();
 		}
 	} else {
 		timeStr = getTimeString(time);
