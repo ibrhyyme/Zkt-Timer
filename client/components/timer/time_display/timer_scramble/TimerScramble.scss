@@ -8,6 +8,34 @@
 	position: relative;
 	transition: opacity 0.1s ease-in-out;
 
+	// Kilit aktif banner
+	&__locked-banner {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 4px;
+		padding: 4px 12px;
+		margin-bottom: 6px;
+		font-size: 0.75rem;
+		font-weight: 600;
+		color: #fff;
+		background: rgba(var(--warning-color), 0.85);
+		border-radius: 6px;
+		animation: lockedBannerPulse 2s ease-in-out infinite;
+	}
+
+	@keyframes lockedBannerPulse {
+
+		0%,
+		100% {
+			opacity: 0.85;
+		}
+
+		50% {
+			opacity: 1;
+		}
+	}
+
 	// Scramble navigasyon butonları
 	&__nav {
 		display: flex;

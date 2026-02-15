@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { ArrowClockwise, CaretLeft, CaretRight, Lock, PencilSimple, Trash } from 'phosphor-react';
+import { ArrowClockwise, CaretLeft, CaretRight, Lock, LockSimple, PencilSimple, Trash } from 'phosphor-react';
 import Button from '../common/button/Button';
 import { TimerContext } from './Timer';
 import { useGeneral } from '../../util/hooks/useGeneral';
@@ -214,9 +214,9 @@ export default function TimerControls() {
                 <Button
                     onClick={toggleScrambleLock}
                     title="Karıştırmayı kilitle"
-                    white={scrambleLocked}
-                    transparent
-                    icon={<Lock weight="bold" />}
+                    transparent={!scrambleLocked}
+                    warning={scrambleLocked}
+                    icon={scrambleLocked ? <LockSimple weight="fill" /> : <Lock weight="bold" />}
                 />
                 {!mobileMode && (
                     <Button
