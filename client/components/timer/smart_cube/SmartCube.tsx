@@ -430,13 +430,16 @@ export default function SmartCube() {
 
 	async function connectBluetooth() {
 		try {
+			console.log('[BLE] connectBluetooth called, isNative:', isNative());
 			let bluetoothAvailable = isNative() || (!!navigator.bluetooth && (await navigator.bluetooth.getAvailability()));
+			console.log('[BLE] bluetoothAvailable:', bluetoothAvailable);
 			if (bluetoothAvailable) {
 				connect.current.connect();
 			} else {
 				dispatch(openModal(<BluetoothErrorMessage />));
 			}
 		} catch (e) {
+			console.error('[BLE] connectBluetooth error:', e);
 			toastError('Web Bluetooth API error' + (e ? `: ${e}` : ''));
 		}
 	}
