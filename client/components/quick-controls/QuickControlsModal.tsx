@@ -25,17 +25,17 @@ export default function QuickControlsModal() {
 			onClick={handleBackdropClick}
 		>
 			<div 
-				className="max-w-lg w-full rounded-3xl bg-gradient-to-br from-slate-900/95 to-slate-800/95 backdrop-blur-2xl border border-white/10 shadow-2xl shadow-black/50 p-8 transform transition-all duration-300"
+				className="max-w-lg w-full rounded-3xl bg-[#12141c] border border-white/[0.08] shadow-2xl shadow-black/50 p-8 transform transition-all duration-300"
 				onClick={(e) => e.stopPropagation()}
 			>
 				{/* Header */}
 				<div className="flex items-center justify-between mb-8">
-					<div className="flex items-center space-x-1 bg-slate-800/50 rounded-full p-1">
+					<div className="flex items-center space-x-1 bg-[#1c1c1e] rounded-full p-1">
 						<button
 							type="button"
 							className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
 								activeTab === 'timer'
-									? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/25'
+									? 'bg-[#4a9eff] text-white'
 									: 'text-slate-300 hover:text-white hover:bg-slate-700/50'
 							}`}
 							onClick={() => setActiveTab('timer')}
@@ -46,7 +46,7 @@ export default function QuickControlsModal() {
 							type="button"
 							className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
 								activeTab === 'extras'
-									? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/25'
+									? 'bg-[#4a9eff] text-white'
 									: 'text-slate-300 hover:text-white hover:bg-slate-700/50'
 							}`}
 							onClick={() => setActiveTab('extras')}
@@ -57,7 +57,7 @@ export default function QuickControlsModal() {
 					<button
 						ref={closeButtonRef}
 						type="button"
-						className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-700/50 hover:bg-slate-600/50 text-slate-300 hover:text-white transition-all duration-200 hover:scale-105"
+						className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#1c1c1e] hover:bg-[#2a2a2e] text-slate-300 hover:text-white transition-all duration-200"
 						onClick={close}
 						aria-label="Kapat"
 					>
