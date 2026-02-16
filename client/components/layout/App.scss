@@ -90,6 +90,10 @@ html {
 	&--warning {
 		background-color: $warningColor !important;
 	}
+
+	&--info {
+		background-color: $infoColor !important;
+	}
 }
 
 .app-html {
