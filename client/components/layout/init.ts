@@ -24,6 +24,7 @@ import { Setting } from '../../../server/schemas/Setting.schema';
 import { Friendship } from '../../../server/schemas/Friendship.schema';
 import { UserAccount } from '../../../server/schemas/UserAccount.schema';
 import { getAllLocalSettings } from '../../db/settings/local';
+import { getLocalStorage, setLocalStorageObject } from '../../util/data/local_storage';
 import { getStore } from '../store';
 import { setGeneral } from '../../actions/general';
 import { generateId } from '../../../shared/code';
@@ -186,6 +187,7 @@ export async function initAllSolves() {
 		initSolveDb(solves);
 	} catch (e) {
 		console.error("Failed to load solves", e);
+		initSolveDb([]);
 	}
 }
 
@@ -252,6 +254,18 @@ async function getAllSettings(userId: string) {
 	try {
 		const res = await gqlQuery<{ settings: Setting }>(query);
 		backendSettings = res.data.settings;
+
+		// Sunucu settings'lerini localStorage'a yedekle (offline fallback)
+		if (backendSettings && Object.keys(backendSettings).length > 0) {
+			const allSettingsVal = getLocalStorage('settings') || {};
+			if (!allSettingsVal[userId]) {
+				allSettingsVal[userId] = {};
+			}
+			for (const key of Object.keys(backendSettings)) {
+				allSettingsVal[userId][key] = backendSettings[key];
+			}
+			setLocalStorageObject('settings', allSettingsVal);
+		}
 	} catch (error) {
 		console.warn('Offline: Could not fetch settings, using defaults', error);
 	}

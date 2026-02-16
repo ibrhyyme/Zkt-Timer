@@ -14,6 +14,7 @@ import StackMat from './stackmat/StackMat';
 import GanTimer from './gantimer/GanTimer';
 import SmartStats from '../smart_cube/stats/SmartStats';
 import SolveDiff from './SolveDiff';
+import OfflineModeIndicator from './OfflineModeIndicator';
 
 const b = block('time-display');
 const bi = block('timer-bottom-info');
@@ -166,6 +167,7 @@ export default function TimeDisplay() {
 	let body = (
 		<>
 			<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+				<OfflineModeIndicator />
 				<h1
 					style={{
 						fontSize: timerTimeSize + 'px',

@@ -1,6 +1,6 @@
 /**
  * Offline Sync Manager
- * 
+ *
  * Queue'daki mutation'ları işleme ve sync etme
  */
 
@@ -9,13 +9,46 @@ import { gqlMutate } from '../components/api';
 import { getAllQueued, removeFromQueue, incrementRetryCount, clearQueue } from './offline-queue';
 import { toastSuccess, toastError, toastInfo } from './toast';
 import { emitEvent } from './event_handler';
+import { deleteLocalStorage } from './data/local_storage';
 
 const MAX_RETRIES = 3;
+
+/**
+ * Sunucuya gerçekten erişilebildiğini doğrula
+ */
+async function isReallyOnline(): Promise<boolean> {
+    try {
+        const res = await fetch('/graphql', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: '{ __typename }' }),
+        });
+        return res.ok;
+    } catch {
+        return false;
+    }
+}
+
+/**
+ * GraphQL mutation sonucunu kontrol et - errors varsa hata fırlat
+ */
+function assertNoGraphQLErrors(result: any): void {
+    if (result.errors && result.errors.length > 0) {
+        throw new Error(result.errors[0].message);
+    }
+}
 
 /**
  * Queue'yu işle ve tüm pending mutation'ları sync et
  */
 export async function processQueue(): Promise<void> {
+    if (!navigator.onLine) return;
+
+    // Gerçekten sunucuya erişilebildiğini doğrula
+    const reallyOnline = await isReallyOnline();
+    if (!reallyOnline) return;
+
     const queued = await getAllQueued();
 
     if (queued.length === 0) {
@@ -39,7 +72,7 @@ export async function processQueue(): Promise<void> {
             if (mutation.retryCount >= MAX_RETRIES) {
                 await removeFromQueue(mutation.id);
                 failCount++;
-                toastError(`Bir çözüm ${MAX_RETRIES} denemeden sonra silinemedi.`);
+                toastError(`Bir çözüm ${MAX_RETRIES} denemeden sonra senkronize edilemedi.`);
             } else {
                 // Retry count artır
                 await incrementRetryCount(mutation.id);
@@ -49,6 +82,10 @@ export async function processQueue(): Promise<void> {
 
     if (successCount > 0) {
         toastSuccess(`${successCount} çözüm senkronize edildi!`);
+
+        // Sayfa yenilenince sunucudan taze veri çekilsin diye offlineHash'i sil
+        deleteLocalStorage('offlineHash');
+
         emitEvent('offlineSyncCompleted', { successCount, failCount });
     }
 
@@ -90,7 +127,8 @@ async function executeCreateSolve(variables: any): Promise<void> {
 		}
 	`;
 
-    await gqlMutate(query, variables);
+    const result = await gqlMutate(query, variables);
+    assertNoGraphQLErrors(result);
 }
 
 async function executeUpdateSolve(variables: any): Promise<void> {
@@ -102,7 +140,8 @@ async function executeUpdateSolve(variables: any): Promise<void> {
 		}
 	`;
 
-    await gqlMutate(query, variables);
+    const result = await gqlMutate(query, variables);
+    assertNoGraphQLErrors(result);
 }
 
 async function executeDeleteSolve(variables: any): Promise<void> {
@@ -114,7 +153,8 @@ async function executeDeleteSolve(variables: any): Promise<void> {
 		}
 	`;
 
-    await gqlMutate(query, variables);
+    const result = await gqlMutate(query, variables);
+    assertNoGraphQLErrors(result);
 }
 
 async function executeDeleteSolves(variables: any): Promise<void> {
@@ -124,7 +164,8 @@ async function executeDeleteSolves(variables: any): Promise<void> {
 		}
 	`;
 
-    await gqlMutate(query, variables);
+    const result = await gqlMutate(query, variables);
+    assertNoGraphQLErrors(result);
 }
 
 /**

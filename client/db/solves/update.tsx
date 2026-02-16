@@ -20,6 +20,18 @@ import { setTimerParam } from '../../components/timer/helpers/params';
 import { addToQueue } from '../../util/offline-queue';
 import { toastInfo } from '../../util/toast';
 
+let offlineToastShown = false;
+if (typeof window !== 'undefined') {
+	window.addEventListener('online', () => { offlineToastShown = false; });
+}
+
+function showOfflineToastOnce() {
+	if (!offlineToastShown) {
+		toastInfo('Çözüm offline kaydedildi. İnternet bağlandığında senkronize edilecek.');
+		offlineToastShown = true;
+	}
+}
+
 export async function createSolveDb(solveInput: Solve) {
 	const solveDb = getSolveDb();
 
@@ -46,7 +58,7 @@ export async function createSolveDb(solveInput: Solve) {
 		} catch (e) {
 			// Offline queue'ya ekle
 			await addToQueue('createSolve', { input: solve });
-			toastInfo('Çözüm offline kaydedildi. İnternet bağlandığında senkronize edilecek.');
+			showOfflineToastOnce();
 		}
 	} else {
 		await createDemoSolve(solve);
@@ -129,7 +141,7 @@ export async function deleteSolveDb(solve: Solve, confirmed: boolean = false) {
 		} catch (e) {
 			// Offline queue'ya ekle
 			await addToQueue('deleteSolve', { id: solve.id });
-			toastInfo('Silme işlemi offline kaydedildi. İnternet bağlandığında senkronize edilecek.');
+			showOfflineToastOnce();
 		}
 	}
 }
@@ -167,7 +179,7 @@ export async function updateSolveDb(solve: Solve, input: Partial<Solve> = {}, up
 		} catch (e) {
 			// Offline queue'ya ekle
 			await addToQueue('updateSolve', { id: solve.id, input: { ...input, time: solve.time } });
-			toastInfo('Güncelleme offline kaydedildi. İnternet bağlandığında senkronize edilecek.');
+			showOfflineToastOnce();
 		}
 	}
 }
@@ -304,7 +316,7 @@ export async function deleteMultipleSolvesDb(solves: Solve[], confirmed: boolean
 
 			// Offline queue'ya ekle
 			await addToQueue('deleteSolves', { ids: solvesToDeleteFromServer.map(s => s.id) });
-			toastInfo('Silme işlemleri offline kaydedildi. İnternet bağlandığında senkronize edilecek.');
+			showOfflineToastOnce();
 		}
 	}
 }
