@@ -27,16 +27,14 @@ export default class Connect extends SmartCube {
 					'00001805-0000-1000-8000-00805f9b34fb',
 				],
 				optionalServices: [
-					'0000180a-0000-1000-8000-00805f9b34fb',
-					'0000180f-0000-1000-8000-00805f9b34fb',
+					'0000180a-0000-1000-8000-00805f9b34fb', // device_information
+					'0000180f-0000-1000-8000-00805f9b34fb', // battery_service
 					'9fa480e0-4967-4542-9390-d343dc5d04ae',
 					'00001805-0000-1000-8000-00805f9b34fb',
 					'd0611e78-bbb4-4591-a5f8-487910ae4366',
 					'6e400001-b5a3-f393-e0a9-e50e24dc4179',
 					'f95a48e6-a721-11e9-a2a3-022ae2dbcce4',
-					'battery_service',
-					'generic_access',
-					'device_information',
+					'00001800-0000-1000-8000-00805f9b34fb', // generic_access
 					...Particula.opServices,
 					// GAN
 					'0000fff0-0000-1000-8000-00805f9b34fb',
