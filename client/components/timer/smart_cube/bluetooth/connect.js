@@ -3,6 +3,7 @@ import SmartCube from './smart_cube';
 import GAN from './gan';
 import Giiker from './giiker';
 import { getBleAdapter } from '../../../../util/ble';
+import { isNative } from '../../../../util/platform';
 
 export default class Connect extends SmartCube {
 	device = null;
@@ -10,7 +11,9 @@ export default class Connect extends SmartCube {
 
 	connect = async () => {
 		try {
+			console.log('[BLE] connect() called, isNative:', isNative());
 			this.adapter = await getBleAdapter();
+			console.log('[BLE] adapter type:', this.adapter.constructor.name);
 
 			const device = await this.adapter.requestDevice({
 				nameFilters: ['Gi', 'Mi Smart Magic Cube', 'GAN', 'Gan', 'gan', 'GoCube', 'Rubiks'],
@@ -50,6 +53,7 @@ export default class Connect extends SmartCube {
 				],
 			});
 
+			console.log('[BLE] device found:', device.name, device.deviceId);
 			this.device = device;
 			this.alertConnecting();
 

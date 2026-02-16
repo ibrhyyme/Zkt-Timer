@@ -7,17 +7,21 @@ export class CapacitorBleAdapter implements BleAdapter {
 
 	private async ensureInitialized(): Promise<void> {
 		if (!this.initialized) {
-			await BleClient.initialize();
+			console.log('[BLE] CapacitorBleAdapter: initializing BleClient...');
+			await BleClient.initialize({ androidNeverForLocation: true });
 			this.initialized = true;
+			console.log('[BLE] CapacitorBleAdapter: initialized successfully');
 		}
 	}
 
 	async requestDevice(options: BleRequestDeviceOptions): Promise<BleDevice> {
 		await this.ensureInitialized();
 
+		console.log('[BLE] CapacitorBleAdapter: requestDevice called');
 		const device = await BleClient.requestDevice({
 			services: options.serviceFilters,
 			optionalServices: options.optionalServices,
+			namePrefix: options.nameFilters?.[0] || undefined,
 		});
 
 		return {

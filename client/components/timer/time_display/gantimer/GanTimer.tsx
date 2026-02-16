@@ -75,7 +75,9 @@ export default function GanTimer() {
 			conn = null;
 			setConnected(false);
 		} else {
+			console.log('[BLE] GanTimer handleConnectButton, isNative:', isNative());
 			let bluetoothAvailable = isNative() || (!!navigator.bluetooth && (await navigator.bluetooth.getAvailability()));
+			console.log('[BLE] GanTimer bluetoothAvailable:', bluetoothAvailable);
 			if (bluetoothAvailable) {
 				conn = await connectGanTimer();
 				conn.events$.subscribe((evt) => evt.state == GanTimerState.DISCONNECT && (conn = null));
