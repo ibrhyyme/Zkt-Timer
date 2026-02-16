@@ -132,43 +132,52 @@ class EventEmitter {
 
 export default class GiikerUtil extends EventEmitter {
 	_device;
+	_adapter;
 
-	constructor(device) {
+	constructor(device, adapter) {
 		super();
 
 		this._device = device;
+		this._adapter = adapter;
 		this._onCharacteristicValueChanged = this._onCharacteristicValueChanged.bind(this);
 		this._onDisconnected = this._onDisconnected.bind(this);
 	}
 
 	async connect() {
-		const server = await this._device.gatt.connect();
-		const service = await server.getPrimaryService(SERVICE_UUID);
-		const characteristic = await service.getCharacteristic(CHARACTERISTIC_UUID);
-		await characteristic.startNotifications();
-		let value = await characteristic.readValue();
+		await this._adapter.connect(this._device, this._onDisconnected);
+
+		await this._adapter.startNotifications(
+			this._device,
+			SERVICE_UUID,
+			CHARACTERISTIC_UUID,
+			this._onCharacteristicValueChanged
+		);
+
+		const value = await this._adapter.readCharacteristic(
+			this._device,
+			SERVICE_UUID,
+			CHARACTERISTIC_UUID
+		);
 
 		this._state = (await this._parseCubeValue(value)).state;
 
-		characteristic.addEventListener('characteristicvaluechanged', this._onCharacteristicValueChanged);
-
-		this._systemService = await server.getPrimaryService(SYSTEM_SERVICE_UUID);
-
-		this._device.addEventListener('gattserverdisconnected', this._onDisconnected);
+		const dummyServer = {
+			device: {
+				name: this._device.name,
+				id: this._device.deviceId,
+			},
+		};
 
 		setTimeout(() => {
-			this.emit('connected', server);
+			this.emit('connected', dummyServer);
 		}, 250);
 	}
 
-	/**
-	 * Disconnects from the GiiKER cube. Will fire the `disconnected` event once done.
-	 */
 	disconnect() {
 		if (!this._device) {
 			return;
 		}
-		this._device.gatt.disconnect();
+		this._adapter.disconnect(this._device);
 	}
 
 	_onDisconnected() {
@@ -176,50 +185,30 @@ export default class GiikerUtil extends EventEmitter {
 		this.emit('disconnected');
 	}
 
-	/**
-	 * Returns a promise that will resolve to the battery level
-	 */
 	async getBatteryLevel() {
-		const readCharacteristic = await this._systemService.getCharacteristic(SYSTEM_READ_UUID);
-		const writeCharacteristic = await this._systemService.getCharacteristic(SYSTEM_WRITE_UUID);
-		await readCharacteristic.startNotifications();
-		const data = new Uint8Array([0xb5]).buffer;
-		writeCharacteristic.writeValue(data);
-
 		return new Promise((resolve) => {
-			const listener = (event) => {
-				const value = event.target.value;
-				readCharacteristic.removeEventListener('characteristicvaluechanged', listener);
-				readCharacteristic.stopNotifications();
+			const listener = (value) => {
+				this._adapter.stopNotifications(this._device, SYSTEM_SERVICE_UUID, SYSTEM_READ_UUID);
 				resolve(value.getUint8(1));
 			};
-			readCharacteristic.addEventListener('characteristicvaluechanged', listener);
+
+			this._adapter.startNotifications(
+				this._device,
+				SYSTEM_SERVICE_UUID,
+				SYSTEM_READ_UUID,
+				listener
+			).then(() => {
+				const data = new Uint8Array([0xb5]).buffer;
+				this._adapter.writeCharacteristic(
+					this._device,
+					SYSTEM_SERVICE_UUID,
+					SYSTEM_WRITE_UUID,
+					data
+				);
+			});
 		});
 	}
 
-	/**
-	 * Returns the current state of the cube as arrays of corners and edges.
-	 *
-	 * Example how to interpret the state:
-	 *
-	 * Corner:
-	 * ```
-	 *   {
-	 *     position: ['D', 'R', 'F'],
-	 *     colors: ['yellow', 'red', 'green']
-	 *   }
-	 * ```
-	 * The corner in position DRF has the colors yellow on D, red on R and green ON F.
-	 *
-	 * Edge:
-	 * ```
-	 *   {
-	 *     position: ['F', 'U'],
-	 *     colors: ['green', 'white']
-	 *   }
-	 * ```
-	 * The edge in position FU has the colors green on F and white on U.
-	 */
 	get state() {
 		const state = {
 			corners: [],
@@ -247,11 +236,6 @@ export default class GiikerUtil extends EventEmitter {
 		return state;
 	}
 
-	/**
-	 * Returns the current state of the cube as a string compatible with cubejs.
-	 *
-	 * See https://github.com/ldez/cubejs#cubefromstringstr
-	 */
 	get stateString() {
 		const cornerFaceIndices = [
 			[29, 15, 26],
@@ -313,8 +297,7 @@ export default class GiikerUtil extends EventEmitter {
 		return faces.join('');
 	}
 
-	_onCharacteristicValueChanged = async (event) => {
-		const value = event.target.value;
+	_onCharacteristicValueChanged = async (value) => {
 		const {state, move} = await this._parseCubeValue(value);
 
 		this._state = state;
