@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import Button from '../../common/button/Button';
+import {isNative} from '../../../util/platform';
 
 export default function MicAccess() {
 	const [status, setStatus] = useState(null);
@@ -11,7 +12,7 @@ export default function MicAccess() {
 	}, []);
 
 	function updateStatus() {
-		if (typeof navigator === 'undefined' || !navigator?.permissions) {
+		if (isNative() || typeof navigator === 'undefined' || !navigator?.permissions) {
 			return;
 		}
 
@@ -21,7 +22,7 @@ export default function MicAccess() {
 	}
 
 	function clickAllow() {
-		if (typeof navigator === 'undefined') {
+		if (isNative() || typeof navigator === 'undefined') {
 			return;
 		}
 
@@ -38,7 +39,10 @@ export default function MicAccess() {
 	let disabled = false;
 	let error = '';
 	let info = '';
-	if (status === 'granted') {
+	if (isNative()) {
+		disabled = true;
+		error = 'StackMat zamanlayıcı mobil uygulamada desteklenmiyor';
+	} else if (status === 'granted') {
 		disabled = true;
 		info = 'İzin verildi';
 	} else if (status === 'denied' || status === 'denied') {

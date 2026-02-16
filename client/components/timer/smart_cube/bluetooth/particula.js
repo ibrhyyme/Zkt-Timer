@@ -2,12 +2,8 @@ import SmartCube from './smart_cube';
 
 export default class Particula extends SmartCube {
 	device;
+	adapter;
 	batteryInterval;
-
-	_server;
-	_service;
-	_read;
-	_write;
 
 	WRITE_BATTERY = 50;
 	WRITE_STATE = 51;
@@ -29,23 +25,15 @@ export default class Particula extends SmartCube {
 	curBatteryLevel = -1;
 	batteryResolveList = [];
 
-	constructor(device) {
+	constructor(device, adapter) {
 		super();
 
 		this.device = device;
+		this.adapter = adapter;
 	}
 
 	init = async () => {
-		this._server = await this.device.gatt.connect();
-		this._service = await this._server.getPrimaryService(Particula.SERVICE_UUID);
-		this._write = await this._service.getCharacteristic(this.CHRCT_UUID_WRITE);
-		this._read = await this._service.getCharacteristic(this.CHRCT_UUID_READ);
-
-		await this._read.startNotifications();
-		await this._read.addEventListener('characteristicvaluechanged', this.onStateChanged);
-		await this._write.writeValue(new Uint8Array([this.WRITE_STATE]).buffer);
-
-		this.device.addEventListener('gattserverdisconnected', (event) => {
+		await this.adapter.connect(this.device, () => {
 			if (this.batteryInterval) {
 				clearInterval(this.batteryInterval);
 				this.batteryInterval = null;
@@ -54,7 +42,27 @@ export default class Particula extends SmartCube {
 			this.alertDisconnected();
 		});
 
-		await this.alertConnected(this._server);
+		await this.adapter.startNotifications(
+			this.device,
+			Particula.SERVICE_UUID,
+			this.CHRCT_UUID_READ,
+			(value) => this.parseData(value)
+		);
+
+		await this.adapter.writeCharacteristic(
+			this.device,
+			Particula.SERVICE_UUID,
+			this.CHRCT_UUID_WRITE,
+			new Uint8Array([this.WRITE_STATE]).buffer
+		);
+
+		const dummyServer = {
+			device: {
+				name: this.device.name,
+				id: this.device.deviceId,
+			},
+		};
+		await this.alertConnected(dummyServer);
 
 		this.batteryInterval = setInterval(async () => {
 			this.batteryIntervalStarted = true;
@@ -129,11 +137,6 @@ export default class Particula extends SmartCube {
 		return facelet.join('');
 	};
 
-	onStateChanged = (event) => {
-		const value = event.target.value;
-		this.parseData(value);
-	};
-
 	toHexVal = (value) => {
 		const valhex = [];
 		for (let i = 0; i < value.byteLength; i++) {
@@ -144,11 +147,21 @@ export default class Particula extends SmartCube {
 	};
 
 	updateState = () => {
-		this._write.writeValue(new Uint8Array([this.WRITE_STATE]).buffer);
+		this.adapter.writeCharacteristic(
+			this.device,
+			Particula.SERVICE_UUID,
+			this.CHRCT_UUID_WRITE,
+			new Uint8Array([this.WRITE_STATE]).buffer
+		);
 	};
 
 	getBatteryLevel = async () => {
-		this._write.writeValue(new Uint8Array([this.WRITE_BATTERY]).buffer);
+		this.adapter.writeCharacteristic(
+			this.device,
+			Particula.SERVICE_UUID,
+			this.CHRCT_UUID_WRITE,
+			new Uint8Array([this.WRITE_BATTERY]).buffer
+		);
 		return new Promise((resolve) => {
 			this.batteryResolveList.push(resolve);
 		});

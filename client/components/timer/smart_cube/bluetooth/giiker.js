@@ -3,21 +3,23 @@ import GiikerUtil from './giiker_util';
 
 export default class Giiker extends SmartCube {
 	device;
+	adapter;
 	connected = false;
 	batteryInterval = null;
 	giiker = null;
 
-	constructor(device) {
+	constructor(device, adapter) {
 		super();
 
 		this.device = device;
+		this.adapter = adapter;
 	}
 
 	static SERVICE_UUID = '0000aadb-0000-1000-8000-00805f9b34fb';
 	static opServices = [Giiker.SERVICE_UUID];
 
 	init = async () => {
-		const giiker = new GiikerUtil(this.device);
+		const giiker = new GiikerUtil(this.device, this.adapter);
 		await giiker.connect();
 		giiker.on('move', (a) => {
 			if (this.connected) {

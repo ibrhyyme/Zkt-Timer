@@ -4,6 +4,7 @@ import LZString from './lz_string';
 import aes128 from './ae128';
 import { Subject } from 'rxjs';
 import { ModeOfOperation } from 'aes-js';
+import { isNative } from '../../../../util/platform';
 
 // GAN service and characteristic UUIDs
 const GAN_GEN2_SERVICE = '6e400001-b5a3-f393-e0a9-e50e24dc4179';
@@ -600,42 +601,43 @@ class GanGen4ProtocolDriver {
 }
 
 // ============================================================================
-// CONNECTION CLASS
+// CONNECTION CLASS (Adapter-based)
 // ============================================================================
 
 class GanCubeClassicConnection {
-	constructor(device, commandCharacteristic, stateCharacteristic, encrypter, driver) {
+	constructor(adapter, device, serviceUuid, commandCharUuid, stateCharUuid, encrypter, driver) {
+		this.adapter = adapter;
 		this.device = device;
-		this.commandCharacteristic = commandCharacteristic;
-		this.stateCharacteristic = stateCharacteristic;
+		this.serviceUuid = serviceUuid;
+		this.commandCharUuid = commandCharUuid;
+		this.stateCharUuid = stateCharUuid;
 		this.encrypter = encrypter;
 		this.driver = driver;
 		this.events$ = new Subject();
+		this._disconnected = false;
 
-		this.onStateUpdate = async (evt) => {
-			const characteristic = evt.target;
-			const eventMessage = characteristic.value;
-			if (eventMessage && eventMessage.byteLength >= 16) {
-				const decryptedMessage = this.encrypter.decrypt(new Uint8Array(eventMessage.buffer));
+		this.onStateUpdate = async (value) => {
+			if (value && value.byteLength >= 16) {
+				const decryptedMessage = this.encrypter.decrypt(new Uint8Array(value.buffer));
 				const cubeEvents = await this.driver.handleStateEvent(this, decryptedMessage);
 				cubeEvents.forEach((e) => this.events$.next(e));
 			}
 		};
 
 		this.onDisconnect = async () => {
-			this.device.removeEventListener('gattserverdisconnected', this.onDisconnect);
-			this.stateCharacteristic.removeEventListener('characteristicvaluechanged', this.onStateUpdate);
+			if (this._disconnected) return;
+			this._disconnected = true;
+			try {
+				await this.adapter.stopNotifications(this.device, this.serviceUuid, this.stateCharUuid);
+			} catch (e) { }
 			this.events$.next({ timestamp: now(), type: 'DISCONNECT' });
 			this.events$.unsubscribe();
-			return this.stateCharacteristic.stopNotifications().catch(() => { });
 		};
 	}
 
-	static async create(device, commandCharacteristic, stateCharacteristic, encrypter, driver) {
-		const conn = new GanCubeClassicConnection(device, commandCharacteristic, stateCharacteristic, encrypter, driver);
-		conn.device.addEventListener('gattserverdisconnected', conn.onDisconnect);
-		conn.stateCharacteristic.addEventListener('characteristicvaluechanged', conn.onStateUpdate);
-		await conn.stateCharacteristic.startNotifications();
+	static async create(adapter, device, serviceUuid, commandCharUuid, stateCharUuid, encrypter, driver) {
+		const conn = new GanCubeClassicConnection(adapter, device, serviceUuid, commandCharUuid, stateCharUuid, encrypter, driver);
+		await adapter.startNotifications(device, serviceUuid, stateCharUuid, conn.onStateUpdate);
 		return conn;
 	}
 
@@ -649,7 +651,7 @@ class GanCubeClassicConnection {
 
 	async sendCommandMessage(message) {
 		const encryptedMessage = this.encrypter.encrypt(message);
-		return this.commandCharacteristic.writeValue(encryptedMessage);
+		return this.adapter.writeCharacteristic(this.device, this.serviceUuid, this.commandCharUuid, encryptedMessage.buffer);
 	}
 
 	async sendCubeCommand(command) {
@@ -661,9 +663,9 @@ class GanCubeClassicConnection {
 
 	async disconnect() {
 		await this.onDisconnect();
-		if (this.device.gatt?.connected) {
-			this.device.gatt?.disconnect();
-		}
+		try {
+			await this.adapter.disconnect(this.device);
+		} catch (e) { }
 	}
 }
 
@@ -693,29 +695,14 @@ function extractMAC(manufacturerData) {
 	return mac.join(':');
 }
 
-// Auto-retrieve MAC address using watchAdvertisements API
-async function autoRetrieveMacAddress(device) {
-	return new Promise((resolve) => {
-		if (typeof device.watchAdvertisements !== 'function') {
-			resolve(null);
-			return;
-		}
-		const abortController = new AbortController();
-		const onAdvEvent = (evt) => {
-			device.removeEventListener('advertisementreceived', onAdvEvent);
-			abortController.abort();
-			const mac = extractMAC(evt.manufacturerData);
-			resolve(mac || null);
-		};
-		const onAbort = () => {
-			device.removeEventListener('advertisementreceived', onAdvEvent);
-			abortController.abort();
-			resolve(null);
-		};
-		device.addEventListener('advertisementreceived', onAdvEvent);
-		device.watchAdvertisements({ signal: abortController.signal }).catch(onAbort);
-		setTimeout(onAbort, 10000);
-	});
+// Auto-retrieve MAC address using adapter's watchAdvertisements
+async function autoRetrieveMacAddress(adapter, device) {
+	if (!adapter.watchAdvertisements) return null;
+
+	const manufacturerData = await adapter.watchAdvertisements(device);
+	if (!manufacturerData) return null;
+
+	return extractMAC(manufacturerData) || null;
 }
 
 // ============================================================================
@@ -724,10 +711,12 @@ async function autoRetrieveMacAddress(device) {
 
 export default class GAN extends SmartCube {
 	device;
+	adapter;
 
-	constructor(device) {
+	constructor(device, adapter) {
 		super();
 		this.device = device;
+		this.adapter = adapter;
 		this.gyroListeners = [];
 		// Move batching properties
 		this.moveQueue = [];
@@ -747,6 +736,12 @@ export default class GAN extends SmartCube {
 	customMacAddressProvider = async (device, isFallbackCall) => {
 		const CACHE_KEY = 'gan_cube_mac';
 		const cachedMac = localStorage.getItem(CACHE_KEY);
+
+		// Capacitor Android: deviceId is the MAC address
+		if (isNative() && device.deviceId && device.deviceId.includes(':')) {
+			localStorage.setItem(CACHE_KEY, device.deviceId);
+			return device.deviceId;
+		}
 
 		// If we have a cached MAC and this is NOT a fallback call (meaning first attempt), try using it.
 		if (cachedMac && !isFallbackCall) {
@@ -769,13 +764,18 @@ export default class GAN extends SmartCube {
 			// If fallback (and we exhausted retries), prompt user
 			macAddress = prompt('Unable do determine cube MAC address!\nPlease enter MAC address manually:', cachedMac || '');
 		} else {
-			macAddress =
-				typeof device.watchAdvertisements === 'function'
-					? null
-					: prompt(
-						'Seems like your browser does not support Web Bluetooth watchAdvertisements() API. Enable following flag in Chrome:\n\nchrome://flags/#enable-experimental-web-platform-features\n\nor enter cube MAC address manually:',
-						cachedMac || ''
-					);
+			// On native, watchAdvertisements won't work, skip the prompt about chrome flags
+			if (isNative()) {
+				macAddress = null;
+			} else {
+				macAddress =
+					this.adapter.watchAdvertisements
+						? null
+						: prompt(
+							'Seems like your browser does not support Web Bluetooth watchAdvertisements() API. Enable following flag in Chrome:\n\nchrome://flags/#enable-experimental-web-platform-features\n\nor enter cube MAC address manually:',
+							cachedMac || ''
+						);
+			}
 		}
 
 		if (macAddress) {
@@ -787,14 +787,13 @@ export default class GAN extends SmartCube {
 	};
 
 	/**
-	 * Connect to GAN cube using the already-selected BluetoothDevice
-	 * This avoids the SecurityError by not calling requestDevice() again
+	 * Connect to GAN cube using the already-selected BleDevice
 	 */
 	connectWithExistingDevice = async (device, macAddressProvider) => {
 		// Retrieve cube MAC address needed for key salting
 		let mac =
 			(macAddressProvider && (await macAddressProvider(device, false))) ||
-			(await autoRetrieveMacAddress(device)) ||
+			(await autoRetrieveMacAddress(this.adapter, device)) ||
 			(macAddressProvider && (await macAddressProvider(device, true)));
 
 		if (!mac) {
@@ -810,38 +809,37 @@ export default class GAN extends SmartCube {
 				.reverse()
 		);
 
-		// Connect to GATT and get device primary services
-		const gatt = await device.gatt.connect();
-		const services = await gatt.getPrimaryServices();
+		// Connect via adapter and get device primary services
+		await this.adapter.connect(device, () => {
+			// onDisconnect callback
+			if (this.conn) {
+				this.conn.onDisconnect();
+			}
+		});
+		const services = await this.adapter.getServices(device);
 
 		let conn = null;
 
 		// Resolve type of connected cube device and setup appropriate encryption / protocol driver
-		for (const service of services) {
-			const serviceUUID = service.uuid.toLowerCase();
-			if (serviceUUID === GAN_GEN2_SERVICE) {
-				const commandCharacteristic = await service.getCharacteristic(GAN_GEN2_COMMAND_CHARACTERISTIC);
-				const stateCharacteristic = await service.getCharacteristic(GAN_GEN2_STATE_CHARACTERISTIC);
+		for (const serviceUUID of services) {
+			const svcLower = serviceUUID.toLowerCase();
+			if (svcLower === GAN_GEN2_SERVICE) {
 				const key = device.name?.startsWith('AiCube') ? GAN_ENCRYPTION_KEYS[1] : GAN_ENCRYPTION_KEYS[0];
 				const encrypter = new GanGen2CubeEncrypter(new Uint8Array(key.key), new Uint8Array(key.iv), salt);
 				const driver = new GanGen2ProtocolDriver();
-				conn = await GanCubeClassicConnection.create(device, commandCharacteristic, stateCharacteristic, encrypter, driver);
+				conn = await GanCubeClassicConnection.create(this.adapter, device, svcLower, GAN_GEN2_COMMAND_CHARACTERISTIC, GAN_GEN2_STATE_CHARACTERISTIC, encrypter, driver);
 				break;
-			} else if (serviceUUID === GAN_GEN3_SERVICE) {
-				const commandCharacteristic = await service.getCharacteristic(GAN_GEN3_COMMAND_CHARACTERISTIC);
-				const stateCharacteristic = await service.getCharacteristic(GAN_GEN3_STATE_CHARACTERISTIC);
+			} else if (svcLower === GAN_GEN3_SERVICE) {
 				const key = GAN_ENCRYPTION_KEYS[0];
 				const encrypter = new GanGen3CubeEncrypter(new Uint8Array(key.key), new Uint8Array(key.iv), salt);
 				const driver = new GanGen3ProtocolDriver();
-				conn = await GanCubeClassicConnection.create(device, commandCharacteristic, stateCharacteristic, encrypter, driver);
+				conn = await GanCubeClassicConnection.create(this.adapter, device, svcLower, GAN_GEN3_COMMAND_CHARACTERISTIC, GAN_GEN3_STATE_CHARACTERISTIC, encrypter, driver);
 				break;
-			} else if (serviceUUID === GAN_GEN4_SERVICE) {
-				const commandCharacteristic = await service.getCharacteristic(GAN_GEN4_COMMAND_CHARACTERISTIC);
-				const stateCharacteristic = await service.getCharacteristic(GAN_GEN4_STATE_CHARACTERISTIC);
+			} else if (svcLower === GAN_GEN4_SERVICE) {
 				const key = GAN_ENCRYPTION_KEYS[0];
 				const encrypter = new GanGen4CubeEncrypter(new Uint8Array(key.key), new Uint8Array(key.iv), salt);
 				const driver = new GanGen4ProtocolDriver();
-				conn = await GanCubeClassicConnection.create(device, commandCharacteristic, stateCharacteristic, encrypter, driver);
+				conn = await GanCubeClassicConnection.create(this.adapter, device, svcLower, GAN_GEN4_COMMAND_CHARACTERISTIC, GAN_GEN4_STATE_CHARACTERISTIC, encrypter, driver);
 				break;
 			}
 		}
@@ -915,7 +913,7 @@ export default class GAN extends SmartCube {
 			this.alertGyroSupported(event.gyroSupported);
 
 			// HARDWARE bilgisi alındıktan sonra bağlantıyı tamamla
-			const deviceId = this.conn?.deviceMAC || this.device?.id || 'unknown';
+			const deviceId = this.conn?.deviceMAC || this.device?.deviceId || 'unknown';
 			const dummyServer = {
 				device: {
 					name: this.hardwareName || this.device?.name || 'GAN Cube',

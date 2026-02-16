@@ -6,6 +6,7 @@ import { useSettings } from '../../../util/hooks/useSettings';
 import Button from '../../common/button/Button';
 import { IModalProps } from '../../common/modal/Modal';
 import ModalHeader from '../../common/modal/modal_header/ModalHeader';
+import { isNative } from '../../../util/platform';
 
 export default function StackMatPicker(props: IModalProps) {
 	const { onComplete } = props;
@@ -17,6 +18,7 @@ export default function StackMatPicker(props: IModalProps) {
 
 	function loadDevices() {
 		if (
+			isNative() ||
 			typeof navigator === 'undefined' ||
 			!navigator ||
 			!navigator.mediaDevices ||
