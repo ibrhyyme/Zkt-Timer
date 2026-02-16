@@ -21,7 +21,6 @@ export class CapacitorBleAdapter implements BleAdapter {
 		const device = await BleClient.requestDevice({
 			services: options.serviceFilters,
 			optionalServices: options.optionalServices,
-			namePrefix: options.nameFilters?.[0] || undefined,
 		});
 
 		return {
