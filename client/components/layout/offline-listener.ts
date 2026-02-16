@@ -1,6 +1,6 @@
 /**
  * Global Offline Sync Listener
- * 
+ *
  * Online/offline event'lerini dinler ve automatik sync yapar
  */
 
@@ -32,6 +32,12 @@ export function initOfflineSyncListener() {
 async function handleOnline() {
     // Zaten sync yapılıyorsa skip
     if (syncInProgress) return;
+
+    // Service Worker'ın online durumu algılaması için kısa gecikme
+    await new Promise(r => setTimeout(r, 2000));
+
+    // Gecikme sonrası hala online mı kontrol et
+    if (!navigator.onLine) return;
 
     // Pending yoksa skip
     const pendingCount = await getPendingCount();

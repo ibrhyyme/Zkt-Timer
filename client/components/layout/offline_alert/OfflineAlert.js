@@ -1,41 +1,48 @@
-import React from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import './OfflineAlert.scss';
-import { Offline } from 'react-detect-offline';
+import { useEventListener } from '../../../util/event_handler';
 
-export default class OfflineAlert extends React.Component {
-	constructor(props) {
-		super(props);
-		this.state = {
-			show: false
+let bannerShownThisOfflinePeriod = false;
+
+if (typeof window !== 'undefined') {
+	window.addEventListener('online', () => { bannerShownThisOfflinePeriod = false; });
+}
+
+export default function OfflineAlert() {
+	const [visible, setVisible] = useState(false);
+	const hideTimer = useRef(null);
+
+	useEventListener('solveDbUpdatedEvent', () => {
+		if (navigator.onLine || bannerShownThisOfflinePeriod) return;
+
+		bannerShownThisOfflinePeriod = true;
+		setVisible(true);
+
+		if (hideTimer.current) clearTimeout(hideTimer.current);
+		hideTimer.current = setTimeout(() => {
+			setVisible(false);
+		}, 5000);
+	});
+
+	useEffect(() => {
+		function handleOnline() {
+			setVisible(false);
+			if (hideTimer.current) clearTimeout(hideTimer.current);
+		}
+
+		window.addEventListener('online', handleOnline);
+
+		return () => {
+			window.removeEventListener('online', handleOnline);
+			if (hideTimer.current) clearTimeout(hideTimer.current);
 		};
-	}
+	}, []);
 
-	componentDidMount() {
-		// Delay showing the alert to prevent false positives during initial load
-		this.timeout = setTimeout(() => {
-			this.setState({ show: true });
-		}, 2000);
-	}
+	if (!visible) return null;
 
-	componentWillUnmount() {
-		if (this.timeout) clearTimeout(this.timeout);
-	}
-
-	render() {
-		if (typeof window !== 'undefined' && window.location.href.indexOf('localhost') > -1) {
-			return null;
-		}
-
-		if (!this.state.show) {
-			return null;
-		}
-
-		return (
-			<Offline>
-				<div className="cd-offline">
-					<p>Şu anda çevrimdışısınız. Zkt-timer'ı kullanmaya devam edebilirsiniz, ancak hiçbir değişiklik kaydedilmeyecektir..</p>
-				</div>
-			</Offline>
-		);
-	}
+	return (
+		<div className="cd-offline">
+			<p>Çevrimdışısınız. Çözümleriniz kaydediliyor, internet bağlandığında senkronize edilecek.</p>
+		</div>
+	);
 }

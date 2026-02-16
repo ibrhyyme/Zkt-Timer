@@ -7,9 +7,10 @@ import { getLokiDb, initLokiDb } from '../../db/lokijs';
 import { initSolvesCollection } from '../../db/solves/init';
 
 export async function initOfflineData(me, callback) {
-	const offlineData = !(await shouldFetchDataFromDb(me));
+	const shouldFetch = await shouldFetchDataFromDb(me);
+	const offlineData = !shouldFetch;
 
-	if (!offlineData) {
+	if (!offlineData && navigator.onLine) {
 		callback(false);
 		return;
 	}
@@ -81,13 +82,15 @@ export async function updateOfflineHash(nonInternal = false) {
 
 	try {
 		const hash = uuid();
-		setLocalStorage('offlineHash', hash);
 
 		await gqlMutate(query, {
 			hash,
 		});
+
+		// Sadece sunucu başarılı olursa hash'i kaydet (offline'da tutarsızlık önlenir)
+		setLocalStorage('offlineHash', hash);
 	} catch (e) {
-		console.error(e);
+		// Offline — hash güncellenmez, sonraki online'da tekrar denenecek
 	}
 }
 
