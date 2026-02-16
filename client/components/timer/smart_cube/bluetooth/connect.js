@@ -17,15 +17,7 @@ export default class Connect extends SmartCube {
 
 			const device = await this.adapter.requestDevice({
 				nameFilters: ['Gi', 'Mi Smart Magic Cube', 'GAN', 'Gan', 'gan', 'GoCube', 'Rubiks'],
-				serviceFilters: [
-					// Giiker
-					'0000aadb-0000-1000-8000-00805f9b34fb',
-					'0000aaaa-0000-1000-8000-00805f9b34fb',
-					'0000fe95-0000-1000-8000-00805f9b34fb',
-					// Gan
-					'0000fff0-0000-1000-8000-00805f9b34fb',
-					'00001805-0000-1000-8000-00805f9b34fb',
-				],
+				serviceFilters: [], // GAN küpler advertisement paketinde servis UUID yayınlamadığı için filtre kaldırıldı
 				optionalServices: [
 					'0000180a-0000-1000-8000-00805f9b34fb', // device_information
 					'0000180f-0000-1000-8000-00805f9b34fb', // battery_service
