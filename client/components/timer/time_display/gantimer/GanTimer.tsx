@@ -8,6 +8,7 @@ import {useSettings} from '../../../../util/hooks/useSettings';
 import {useDispatch} from 'react-redux';
 import {openModal} from '../../../../actions/general';
 import BluetoothErrorMessage from '../../common/BluetoothErrorMessage';
+import {isNative} from '../../../../util/platform';
 
 import {SubscriptionLike} from 'rxjs';
 import {GanTimerConnection, GanTimerEvent, GanTimerState, connectGanTimer} from 'gan-web-bluetooth';
@@ -74,7 +75,7 @@ export default function GanTimer() {
 			conn = null;
 			setConnected(false);
 		} else {
-			let bluetoothAvailable = !!navigator.bluetooth && (await navigator.bluetooth.getAvailability());
+			let bluetoothAvailable = isNative() || (!!navigator.bluetooth && (await navigator.bluetooth.getAvailability()));
 			if (bluetoothAvailable) {
 				conn = await connectGanTimer();
 				conn.events$.subscribe((evt) => evt.state == GanTimerState.DISCONNECT && (conn = null));

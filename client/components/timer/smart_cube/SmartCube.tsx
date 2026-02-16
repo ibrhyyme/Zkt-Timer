@@ -23,6 +23,7 @@ import Button from '../../common/button/Button';
 import { toastError } from '../../../util/toast';
 import { endTimer, startTimer, startInspection } from '../helpers/events';
 import BluetoothErrorMessage from '../common/BluetoothErrorMessage';
+import { isNative } from '../../../util/platform';
 import { resourceUri } from '../../../util/storage';
 import type { TwistyPlayer } from 'cubing/twisty';
 import * as THREE from 'three';
@@ -429,7 +430,7 @@ export default function SmartCube() {
 
 	async function connectBluetooth() {
 		try {
-			let bluetoothAvailable = !!navigator.bluetooth && (await navigator.bluetooth.getAvailability());
+			let bluetoothAvailable = isNative() || (!!navigator.bluetooth && (await navigator.bluetooth.getAvailability()));
 			if (bluetoothAvailable) {
 				connect.current.connect();
 			} else {
