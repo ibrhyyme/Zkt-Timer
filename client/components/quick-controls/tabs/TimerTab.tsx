@@ -15,7 +15,7 @@ interface TimerOptionProps {
 
 function TimerOption({ label, isActive, disabled = false, onClick }: TimerOptionProps) {
 	return (
-		<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-gradient-to-r from-slate-800/30 to-slate-700/30 border border-slate-700/50 hover:border-slate-600/50 transition-all duration-200 hover:shadow-lg hover:shadow-black/10">
+		<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-[#1c1c1e] border border-white/[0.08] hover:border-white/[0.15] transition-all duration-200">
 			<span className={`font-medium transition-colors ${disabled ? 'text-slate-500' : 'text-slate-200 group-hover:text-white'}`}>
 				{label}
 			</span>
@@ -23,8 +23,8 @@ function TimerOption({ label, isActive, disabled = false, onClick }: TimerOption
 				type="button"
 				disabled={disabled}
 				className={`relative h-6 w-11 rounded-full border transition-all duration-300 transform hover:scale-105 ${isActive
-					? 'bg-gradient-to-r from-indigo-500 to-purple-500 border-indigo-400 shadow-lg shadow-indigo-500/30'
-					: 'bg-slate-600/50 border-slate-500/50 hover:bg-slate-500/50'
+					? 'bg-[#4a9eff] border-[#4a9eff] shadow-lg shadow-[#4a9eff]/30'
+					: 'bg-[#2a2a2e] border-white/[0.1] hover:bg-[#3a3a3e]'
 					} ${disabled ? 'opacity-30 cursor-not-allowed transform-none' : 'cursor-pointer'}`}
 				onClick={onClick}
 			>
@@ -110,8 +110,8 @@ export default function TimerTab() {
 	return (
 		<div className="space-y-3">
 			<div className="flex items-center space-x-2 mb-6">
-				<div className="h-2 w-2 bg-gradient-to-r from-indigo-400 to-purple-400 rounded-full"></div>
-				<p className="text-slate-300 text-sm font-medium">
+				<div className="h-2 w-2 bg-[#4a9eff] rounded-full"></div>
+				<p className="text-[#888] text-sm font-medium">
 					Timer türünü seçin (sadece bir tane aktif olabilir)
 				</p>
 			</div>

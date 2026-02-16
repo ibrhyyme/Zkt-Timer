@@ -18,16 +18,16 @@ function ExtrasOption({ label, isActive, disabled = false, hidden = false, onCli
 	}
 
 	return (
-		<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-gradient-to-r from-slate-800/30 to-slate-700/30 border border-slate-700/50 hover:border-slate-600/50 transition-all duration-200 hover:shadow-lg hover:shadow-black/10">
-			<span className={`font-medium transition-colors ${disabled ? 'text-slate-500' : 'text-slate-200 group-hover:text-white'}`}>
+		<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-[#1c1c1e] border border-white/[0.08] hover:border-white/[0.15] transition-all duration-200">
+			<span className={`font-medium transition-colors ${disabled ? 'text-[#555]' : 'text-slate-200 group-hover:text-white'}`}>
 				{label}
 			</span>
 			<button
 				type="button"
 				disabled={disabled}
 				className={`relative h-6 w-11 rounded-full border transition-all duration-300 transform hover:scale-105 ${isActive
-					? 'bg-gradient-to-r from-emerald-500 to-teal-500 border-emerald-400 shadow-lg shadow-emerald-500/30'
-					: 'bg-slate-700 border-slate-600 hover:bg-slate-600'
+					? 'bg-[#4a9eff] border-[#4a9eff] shadow-lg shadow-[#4a9eff]/30'
+					: 'bg-[#2a2a2e] border-white/[0.1] hover:bg-[#3a3a3e]'
 					} ${disabled ? 'opacity-30 cursor-not-allowed transform-none' : 'cursor-pointer'}`}
 				onClick={onClick}
 			>
@@ -70,7 +70,7 @@ function ExtrasSelect({ label, value, options, hidden, onChange }: ExtrasSelectP
 	const selectedLabel = options.find(o => o.value === value)?.label || value;
 
 	return (
-		<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-gradient-to-r from-slate-800/30 to-slate-700/30 border border-slate-700/50 transition-all duration-200 hover:border-slate-600/50 hover:shadow-lg hover:shadow-black/10">
+		<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-[#1c1c1e] border border-white/[0.08] transition-all duration-200 hover:border-white/[0.15]">
 			<span className="font-medium text-slate-200 group-hover:text-white transition-colors">
 				{label}
 			</span>
@@ -79,23 +79,23 @@ function ExtrasSelect({ label, value, options, hidden, onChange }: ExtrasSelectP
 					type="button"
 					onClick={() => setIsOpen(!isOpen)}
 					className={`flex items-center space-x-2 rounded-lg px-3 py-1.5 text-sm transition-all duration-200 min-w-[120px] justify-between border ${isOpen
-							? 'bg-slate-700 border-emerald-500/50 text-white shadow-[0_0_10px_rgba(16,185,129,0.1)]'
-							: 'bg-slate-800/50 border-slate-600/50 text-slate-300 hover:bg-slate-700 hover:text-white hover:border-slate-500'
+							? 'bg-[#2a2a2e] border-[#4a9eff]/50 text-white'
+							: 'bg-[#2a2a2e] border-white/[0.1] text-slate-300 hover:bg-[#3a3a3e] hover:text-white hover:border-white/[0.15]'
 						}`}
 				>
 					<span>{selectedLabel}</span>
-					{isOpen ? <CaretUp weight="bold" className="text-emerald-400" /> : <CaretDown weight="bold" className="text-slate-400 group-hover:text-slate-200" />}
+					{isOpen ? <CaretUp weight="bold" className="text-[#4a9eff]" /> : <CaretDown weight="bold" className="text-[#888] group-hover:text-slate-200" />}
 				</button>
 
 				{isOpen && (
-					<div className="absolute right-0 mt-2 w-48 rounded-xl bg-[#1e293b] border border-slate-600/50 shadow-xl shadow-black/40 z-50 overflow-hidden text-sm animate-in fade-in zoom-in-95 duration-100 origin-top-right">
+					<div className="absolute right-0 mt-2 w-48 rounded-xl bg-[#1c1c1e] border border-white/[0.1] shadow-xl shadow-black/40 z-50 overflow-hidden text-sm animate-in fade-in zoom-in-95 duration-100 origin-top-right">
 						<div className="py-1">
 							{options.map((option) => (
 								<button
 									key={option.value}
 									className={`w-full text-left px-4 py-2.5 transition-colors flex items-center justify-between group/item ${option.value === value
-											? 'bg-emerald-500/10 text-emerald-400 font-medium'
-											: 'text-slate-300 hover:bg-slate-700/50 hover:text-white'
+											? 'bg-[#4a9eff]/10 text-[#4a9eff] font-medium'
+											: 'text-slate-300 hover:bg-white/[0.05] hover:text-white'
 										}`}
 									onClick={() => {
 										onChange(option.value);
@@ -103,7 +103,7 @@ function ExtrasSelect({ label, value, options, hidden, onChange }: ExtrasSelectP
 									}}
 								>
 									<span>{option.label}</span>
-									{option.value === value && <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]"></div>}
+									{option.value === value && <div className="w-1.5 h-1.5 rounded-full bg-[#4a9eff] shadow-[0_0_8px_rgba(74,158,255,0.5)]"></div>}
 								</button>
 							))}
 						</div>
@@ -171,8 +171,8 @@ export default function ExtrasTab() {
 	return (
 		<div className="space-y-3">
 			<div className="flex items-center space-x-2 mb-6">
-				<div className="h-2 w-2 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full"></div>
-				<p className="text-slate-300 text-sm font-medium">
+				<div className="h-2 w-2 bg-[#4a9eff] rounded-full"></div>
+				<p className="text-[#888] text-sm font-medium">
 					Ek özellikleri aç/kapat (birden fazla seçilebilir)
 				</p>
 			</div>

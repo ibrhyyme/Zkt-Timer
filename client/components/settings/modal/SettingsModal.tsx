@@ -52,19 +52,19 @@ export default function SettingsModal(props: Props) {
 			onClick={handleBackdropClick}
 		>
 			<div 
-				className="max-w-5xl w-full max-h-[85vh] rounded-3xl bg-gradient-to-br from-slate-900/95 to-slate-800/95 backdrop-blur-2xl border border-white/10 shadow-2xl shadow-black/50 transform transition-all duration-300 flex flex-col"
+				className="max-w-5xl w-full max-h-[85vh] rounded-3xl bg-[#12141c] border border-white/[0.08] shadow-2xl shadow-black/50 transform transition-all duration-300 flex flex-col"
 				onClick={(e) => e.stopPropagation()}
 			>
 				{/* Sticky Header */}
-				<div className="sticky top-0 z-10 bg-gradient-to-br from-slate-900/98 to-slate-800/98 backdrop-blur-xl border-b border-white/5 rounded-t-3xl p-6 pb-4">
+				<div className="sticky top-0 z-10 bg-[#12141c] border-b border-white/[0.08] rounded-t-3xl p-6 pb-4">
 					<div className="flex items-center justify-between">
-						<div className="flex items-center space-x-1 bg-slate-800/70 rounded-full p-1 shadow-lg">
+						<div className="flex items-center space-x-1 bg-[#1c1c1e] rounded-full p-1">
 							<button
 								type="button"
 								className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
 									activeTab === 'timer'
-										? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/25'
-										: 'text-slate-200 hover:text-white hover:bg-slate-600/70'
+										? 'bg-[#4a9eff] text-white'
+										: 'text-[#888] hover:text-white hover:bg-[#2a2a2e]'
 								}`}
 								onClick={() => setActiveTab('timer')}
 							>
@@ -74,8 +74,8 @@ export default function SettingsModal(props: Props) {
 								type="button"
 								className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
 									activeTab === 'appearance'
-										? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/25'
-										: 'text-slate-200 hover:text-white hover:bg-slate-600/70'
+										? 'bg-[#4a9eff] text-white'
+										: 'text-[#888] hover:text-white hover:bg-[#2a2a2e]'
 								}`}
 								onClick={() => setActiveTab('appearance')}
 							>
@@ -85,8 +85,8 @@ export default function SettingsModal(props: Props) {
 								type="button"
 								className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
 									activeTab === 'data'
-										? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/25'
-										: 'text-slate-200 hover:text-white hover:bg-slate-600/70'
+										? 'bg-[#4a9eff] text-white'
+										: 'text-[#888] hover:text-white hover:bg-[#2a2a2e]'
 								}`}
 								onClick={() => setActiveTab('data')}
 							>
@@ -96,7 +96,7 @@ export default function SettingsModal(props: Props) {
 						<button
 							ref={closeButtonRef}
 							type="button"
-							className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-700/70 hover:bg-slate-600/70 text-slate-200 hover:text-white transition-all duration-200 hover:scale-105 shadow-lg"
+							className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#1c1c1e] hover:bg-[#2a2a2e] text-slate-300 hover:text-white transition-all duration-200"
 							onClick={handleClose}
 							aria-label="Kapat"
 						>
