@@ -8,6 +8,7 @@ import { Bluetooth, Timer, Keyboard, X, Check } from 'phosphor-react';
 import Stackmat from '../../util/vendor/stackmat';
 import { GanTimerConnection, GanTimerEvent, GanTimerState, connectGanTimer } from 'gan-web-bluetooth';
 import BluetoothErrorMessage from '../timer/common/BluetoothErrorMessage';
+import { isNative } from '../../util/platform';
 import StackMatPicker from '../settings/stackmat_picker/StackMatPicker';
 import SmartStats from '../timer/smart_cube/stats/SmartStats';
 import './RoomTimerOverlay.scss';
@@ -882,7 +883,9 @@ export default function RoomTimerOverlay({
         try {
             let bluetoothAvailable = false;
 
-            if (navigator.bluetooth) {
+            if (isNative()) {
+                bluetoothAvailable = true;
+            } else if (navigator.bluetooth) {
                 // Check if getAvailability exists
                 if (typeof navigator.bluetooth.getAvailability === 'function') {
                     bluetoothAvailable = await navigator.bluetooth.getAvailability();
