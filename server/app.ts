@@ -24,6 +24,7 @@ import { mapPathToPage } from './router';
 import { getMe } from './util/auth';
 import * as resolverList from './resolvers/_resolvers';
 import * as schemaList from './schemas/_schemas';
+import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import * as models from './api/_index';
 import bodyParser from 'body-parser';
@@ -72,6 +73,7 @@ initLogger();
 // This must be before the bodyparser before RAW data needs to be passed to Stripe
 initWebhookListenersRaw();
 
+app.use(compression());
 app.use(bodyParser.json({ limit: '200mb' }));
 app.use(cookieParser());
 
