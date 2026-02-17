@@ -15,9 +15,12 @@ export interface ExtendedLokiConfigOptions extends Partial<LokiConfigOptions> {
 
 let db: Loki;
 export function initLokiDb(op?: ExtendedLokiConfigOptions) {
-	// Eski instance'in autosave timer'ini durdur (IndexedDB write conflict onlemi)
+	// Eski instance'in autosave timer'ini durdur ve IndexedDB baglantisini kapat
 	if (db) {
 		db.autosaveDisable();
+		if (db.persistenceAdapter && db.persistenceAdapter.closeDatabase) {
+			db.persistenceAdapter.closeDatabase();
+		}
 	}
 
 	let options = undefined;
