@@ -46,33 +46,43 @@ export async function shouldFetchDataFromDb(me: UserAccount): Promise<boolean> {
 	return me.offline_hash !== offlineHash;
 }
 
-export async function updateOfflineHash(nonInternal = false) {
-	setTimeout(() => {
+export async function updateOfflineHash() {
+	// DB'yi IndexedDB'ye kaydet ve TAMAMLANMASINI bekle
+	const dbSaved = await new Promise<boolean>((resolve) => {
 		try {
 			const db = getLokiDb();
-			if (db) {
-				if (nonInternal) {
-					db.saveDatabase((err) => {
-						if (err) console.error("Error saving database (non-internal):", err);
-					});
-				} else {
-					// @ts-ignore - saveDatabaseInternal might be private or missing in types
-					if (typeof db.saveDatabaseInternal === 'function') {
-						// @ts-ignore
-						db.saveDatabaseInternal((err) => {
-							if (err) console.error("Error saving database (internal):", err);
-						});
-					} else {
-						db.saveDatabase((err) => {
-							if (err) console.error("Error saving database (fallback):", err);
-						});
-					}
-				}
+			if (!db) {
+				console.warn('[Offline] DB save skipped: no db instance');
+				resolve(false);
+				return;
 			}
+
+			const timeout = setTimeout(() => {
+				console.warn('[Offline] DB save timed out after 5s');
+				resolve(false);
+			}, 5000);
+
+			db.saveDatabase((err) => {
+				clearTimeout(timeout);
+				if (err) {
+					console.error('[Offline] DB save failed:', err);
+					resolve(false);
+				} else {
+					console.log('[Offline] DB saved successfully');
+					resolve(true);
+				}
+			});
 		} catch (e) {
-			console.error("Failed to save database:", e);
+			console.error('[Offline] DB save exception:', e);
+			resolve(false);
 		}
 	});
+
+	// DB kaydedilemezse hash'i guncelleme — tutarsizlik onlenir
+	if (!dbSaved) {
+		console.warn('[Offline] Skipping hash update because DB save failed');
+		return;
+	}
 
 	const query = gql`
 		mutation Mutate($hash: String!) {
@@ -87,21 +97,25 @@ export async function updateOfflineHash(nonInternal = false) {
 			hash,
 		});
 
-		// Sadece sunucu başarılı olursa hash'i kaydet (offline'da tutarsızlık önlenir)
 		setLocalStorage('offlineHash', hash);
+		console.log('[Offline] Hash updated successfully');
 	} catch (e) {
 		// Offline — hash güncellenmez, sonraki online'da tekrar denenecek
 	}
 }
 
 export async function clearOfflineData() {
+	console.log('[Offline] clearOfflineData: start');
 	return new Promise((resolve) => {
 		deleteLocalStorage('offlineHash');
-		if (getLokiDb() && getLokiDb().listCollections().length) {
-			getLokiDb().deleteDatabase(() => {
+		const db = getLokiDb();
+		if (db && db.listCollections().length) {
+			db.deleteDatabase(() => {
+				console.log('[Offline] clearOfflineData: done');
 				resolve(null);
 			});
 		} else {
+			console.log('[Offline] clearOfflineData: nothing to clear');
 			resolve(null);
 		}
 	});

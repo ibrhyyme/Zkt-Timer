@@ -36,8 +36,8 @@ export function initLokiDb(op?: ExtendedLokiConfigOptions) {
 			...op,
 		};
 
-		// Remove undefined/null values
-		options = _.omitBy(options, _.isNil);
+		// Remove undefined values only (null must be preserved for adapter: null)
+		options = _.omitBy(options, _.isUndefined);
 	}
 
 	// Ensure options is an object if it was undefined to avoid passing undefined to Loki constructor if it expects optional
