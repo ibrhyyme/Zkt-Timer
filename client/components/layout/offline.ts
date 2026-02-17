@@ -20,12 +20,12 @@ export async function initOfflineData(me, callback) {
 		callback(false);
 	}, 2000);
 
-	initLokiDb({ autoload: true });
+	initLokiDb({ autoload: false });
 
 	getLokiDb().loadDatabase(undefined, (err) => {
 		clearTimeout(fallbackTimeout);
 
-		const requiredCollections = ['solves', 'trainer', 'settings', 'sessions'];
+		const requiredCollections = ['solves', 'settings', 'sessions'];
 		const requiredCollectionsExist = requiredCollections.every((name) => !!getLokiDb().getCollection(name));
 
 		if (!err && requiredCollectionsExist) {
@@ -55,6 +55,16 @@ export async function updateOfflineHash() {
 				console.warn('[Offline] DB save skipped: no db instance');
 				resolve(false);
 				return;
+			}
+
+			// Eski adapter baglantisini kapat ve catalog'u sifirla
+			// Boylece save her zaman temiz bir IndexedDB baglantisi acar (ilk save gibi)
+			const adapter = db.persistenceAdapter;
+			if (adapter) {
+				if (adapter.closeDatabase) {
+					adapter.closeDatabase();
+				}
+				adapter.catalog = null;
 			}
 
 			const timeout = setTimeout(() => {
