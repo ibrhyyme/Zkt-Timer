@@ -30,6 +30,13 @@ import { setGeneral } from '../../actions/general';
 import { generateId } from '../../../shared/code';
 import { emitEvent } from '../../util/event_handler';
 
+async function timedTask(label: string, fn: () => Promise<any>) {
+	console.time(label);
+	const result = await fn();
+	console.timeEnd(label);
+	return result;
+}
+
 export function initAnonymousAppData(callback) {
 	if (typeof window === 'undefined') {
 		return;
@@ -61,8 +68,11 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 		return;
 	}
 
-	console.time('loadedFromOffline');
+	console.time('[PERF] offlineCheck');
 	await initOfflineData(me, async (passed) => {
+		console.timeEnd('[PERF] offlineCheck');
+		console.log('[PERF] offlineCache:', passed ? 'HIT' : 'MISS');
+
 		if (!passed) {
 			try {
 				await clearOfflineData();
@@ -72,31 +82,29 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 			initLokiDb({
 				autoload: false,
 			});
-		} else {
-			console.timeEnd('loadedFromOffline');
 		}
 
 		// PHASE 1: Critical data only — blocks the loading screen
 		const criticalPromises: Promise<any>[] = [];
 		if (!passed) {
-			criticalPromises.push(getAllSessions());
+			criticalPromises.push(timedTask('[PERF] sessions', getAllSessions));
 		}
-		criticalPromises.push(getAllSettings(me?.id));
-		criticalPromises.push(initNewScramble());
+		criticalPromises.push(timedTask('[PERF] settings', () => getAllSettings(me?.id)));
+		criticalPromises.push(timedTask('[PERF] scramble', initNewScramble));
 
 		try {
-			console.time('criticalDataLoaded');
+			console.time('[PERF] criticalTotal');
 			await Promise.all(criticalPromises);
-			console.timeEnd('criticalDataLoaded');
+			console.timeEnd('[PERF] criticalTotal');
 
 			// Initialize solves collection (empty if not from cache) so timer can render
 			initSolvesCollection();
 
 			// Cache miss ise tüm solve'ları yükle (loading ekranı kapanmadan önce)
 			if (!passed) {
-				console.time('allSolvesLoaded');
+				console.time('[PERF] allSolvesTotal');
 				await initAllSolves();
-				console.timeEnd('allSolvesLoaded');
+				console.timeEnd('[PERF] allSolvesTotal');
 			}
 		} catch (e) {
 			console.error(e);
@@ -112,23 +120,23 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 
 async function loadNonCriticalData(_me: UserAccount, dispatch: Dispatch<any>, passedFromOffline: boolean) {
 	try {
+		console.time('[PERF] phase2:total');
 		const bgPromises: Promise<any>[] = [];
 
 		if (passedFromOffline) {
-			// Cache'ten yüklendi → solve'lar zaten mevcut, UI'ı güncelle
 			emitEvent('solveDbUpdatedEvent');
-			// Arka planda sadece yeni solve'ları kontrol et
-			bgPromises.push(syncNewSolves());
+			bgPromises.push(timedTask('[PERF] syncNewSolves', syncNewSolves));
 		}
-		// Cache miss durumunda solve'lar Phase 1'de zaten yüklendi
 
-		bgPromises.push(getStatsModule(dispatch));
-		bgPromises.push(getAllFriends(dispatch));
+		bgPromises.push(timedTask('[PERF] statsModule', () => getStatsModule(dispatch)));
+		bgPromises.push(timedTask('[PERF] friends', () => getAllFriends(dispatch)));
 
 		await Promise.all(bgPromises);
 
-		// Only call updateOfflineHash ONCE, after all background work completes
+		console.time('[PERF] offlineHashUpdate');
 		updateOfflineHash(true);
+		console.timeEnd('[PERF] offlineHashUpdate');
+		console.timeEnd('[PERF] phase2:total');
 	} catch (e) {
 		console.error(e);
 	}
@@ -181,10 +189,16 @@ export async function initAllSolves() {
 	`;
 
 	try {
-		// Tüm solve'ları tek istekte çek (take: 0 → sunucu limit uygulamaz)
+		console.time('[PERF] solves:fetch');
 		const res = await gqlQuery<{ solves: Solve[] }>(query, { take: 0, skip: 0 });
+		console.timeEnd('[PERF] solves:fetch');
+
 		const solves = res.data.solves;
+		console.log(`[PERF] solves:count = ${solves.length}`);
+
+		console.time('[PERF] solves:dbInsert');
 		initSolveDb(solves);
+		console.timeEnd('[PERF] solves:dbInsert');
 	} catch (e) {
 		console.error("Failed to load solves", e);
 		initSolveDb([]);
