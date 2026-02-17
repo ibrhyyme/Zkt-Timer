@@ -7,6 +7,7 @@ export interface BleRequestDeviceOptions {
 	nameFilters: string[];
 	serviceFilters: string[];
 	optionalServices: string[];
+	excludeDeviceIds?: string[];
 }
 
 export interface BleAdapter {

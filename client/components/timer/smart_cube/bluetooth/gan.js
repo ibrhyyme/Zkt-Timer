@@ -852,26 +852,20 @@ export default class GAN extends SmartCube {
 	};
 
 	init = async () => {
-		try {
-			console.log('Attempting to connect to Gan cube with existing device...');
-			// Use the existing device instead of calling connectGanCube which triggers a new requestDevice
-			this.conn = await this.connectWithExistingDevice(this.device, async (device, isFallback) => {
-				const mac = await this.customMacAddressProvider(device, isFallback);
-				console.log('MAC Address provided:', mac);
-				return mac;
-			});
+		console.log('Attempting to connect to Gan cube with existing device...');
+		// Use the existing device instead of calling connectGanCube which triggers a new requestDevice
+		this.conn = await this.connectWithExistingDevice(this.device, async (device, isFallback) => {
+			const mac = await this.customMacAddressProvider(device, isFallback);
+			console.log('MAC Address provided:', mac);
+			return mac;
+		});
 
-			this.conn.events$.subscribe(this.handleCubeEvent);
+		this.conn.events$.subscribe(this.handleCubeEvent);
 
-			await this.conn.sendCubeCommand({ type: 'REQUEST_BATTERY' });
-			await this.conn.sendCubeCommand({ type: 'REQUEST_HARDWARE' });
+		await this.conn.sendCubeCommand({ type: 'REQUEST_BATTERY' });
+		await this.conn.sendCubeCommand({ type: 'REQUEST_HARDWARE' });
 
-			// Not: alertConnected artık HARDWARE event'i alındıktan sonra çağrılıyor
-		} catch (error) {
-			console.error('Gan connection error:', error);
-			alert(`Connection failed: ${error.message || error}`);
-			this.alertDisconnected();
-		}
+		// Not: alertConnected artık HARDWARE event'i alındıktan sonra çağrılıyor
 	};
 
 	handleCubeEvent = (event) => {

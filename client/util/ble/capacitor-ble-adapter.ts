@@ -17,7 +17,9 @@ export class CapacitorBleAdapter implements BleAdapter {
 	async requestDevice(options: BleRequestDeviceOptions): Promise<BleDevice> {
 		await this.ensureInitialized();
 
-		console.log('[BLE] CapacitorBleAdapter: scanning with nameFilters:', options.nameFilters);
+		const excludeIds = new Set(options.excludeDeviceIds || []);
+		console.log('[BLE] CapacitorBleAdapter: scanning with nameFilters:', options.nameFilters,
+			excludeIds.size > 0 ? 'excluding:' : '', excludeIds.size > 0 ? [...excludeIds] : '');
 
 		return new Promise<BleDevice>(async (resolve, reject) => {
 			let resolved = false;
@@ -38,6 +40,8 @@ export class CapacitorBleAdapter implements BleAdapter {
 
 						const name = result.device.name || result.localName || '';
 						if (!name) return;
+
+						if (excludeIds.has(result.device.deviceId)) return;
 
 						const matches = options.nameFilters.some(
 							(prefix) =>
