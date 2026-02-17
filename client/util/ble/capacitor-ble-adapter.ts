@@ -1,4 +1,4 @@
-import { BleClient, numberToUUID } from '@capacitor-community/bluetooth-le';
+import { BleClient } from '@capacitor-community/bluetooth-le';
 import { BleAdapter, BleDevice, BleRequestDeviceOptions } from './ble-adapter';
 
 export class CapacitorBleAdapter implements BleAdapter {
@@ -17,16 +17,54 @@ export class CapacitorBleAdapter implements BleAdapter {
 	async requestDevice(options: BleRequestDeviceOptions): Promise<BleDevice> {
 		await this.ensureInitialized();
 
-		console.log('[BLE] CapacitorBleAdapter: requestDevice called');
-		const device = await BleClient.requestDevice({
-			services: options.serviceFilters,
-			optionalServices: options.optionalServices,
-		});
+		console.log('[BLE] CapacitorBleAdapter: scanning with nameFilters:', options.nameFilters);
 
-		return {
-			deviceId: device.deviceId,
-			name: device.name || '',
-		};
+		return new Promise<BleDevice>(async (resolve, reject) => {
+			let resolved = false;
+
+			const timeout = setTimeout(() => {
+				if (!resolved) {
+					resolved = true;
+					BleClient.stopLEScan();
+					reject(new Error('BLE taramasi zaman asimina ugradi. Kubun acik ve yakin oldugundan emin olun.'));
+				}
+			}, 15000);
+
+			try {
+				await BleClient.requestLEScan(
+					{ allowDuplicates: false },
+					(result) => {
+						if (resolved) return;
+
+						const name = result.device.name || result.localName || '';
+						if (!name) return;
+
+						const matches = options.nameFilters.some(
+							(prefix) =>
+								name.startsWith(prefix) ||
+								name.toLowerCase().startsWith(prefix.toLowerCase())
+						);
+
+						if (matches) {
+							resolved = true;
+							clearTimeout(timeout);
+							BleClient.stopLEScan();
+							console.log('[BLE] Matching device found:', name, result.device.deviceId);
+							resolve({
+								deviceId: result.device.deviceId,
+								name: name,
+							});
+						}
+					}
+				);
+			} catch (error) {
+				if (!resolved) {
+					resolved = true;
+					clearTimeout(timeout);
+					reject(error);
+				}
+			}
+		});
 	}
 
 	async connect(device: BleDevice, onDisconnect?: () => void): Promise<void> {
