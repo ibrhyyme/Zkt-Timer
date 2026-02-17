@@ -79,6 +79,8 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 			} catch (e) {
 				console.error(e);
 			}
+			// IndexedDB delete transaction'in tamamen kapanmasi icin bekle
+			await new Promise(r => setTimeout(r, 100));
 			initLokiDb({
 				autoload: false,
 			});
@@ -134,7 +136,7 @@ async function loadNonCriticalData(_me: UserAccount, dispatch: Dispatch<any>, pa
 		await Promise.all(bgPromises);
 
 		console.time('[PERF] offlineHashUpdate');
-		updateOfflineHash(true);
+		await updateOfflineHash();
 		console.timeEnd('[PERF] offlineHashUpdate');
 		console.timeEnd('[PERF] phase2:total');
 	} catch (e) {
