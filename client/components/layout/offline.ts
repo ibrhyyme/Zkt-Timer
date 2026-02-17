@@ -57,23 +57,25 @@ export async function updateOfflineHash() {
 				return;
 			}
 
-			// Eski adapter baglantisini kapat ve catalog'u sifirla
-			// Boylece save her zaman temiz bir IndexedDB baglantisi acar (ilk save gibi)
-			const adapter = db.persistenceAdapter;
-			if (adapter) {
-				if (adapter.closeDatabase) {
-					adapter.closeDatabase();
-				}
-				adapter.catalog = null;
+			if (!db.persistenceAdapter) {
+				console.warn('[Offline] DB save skipped: no adapter');
+				resolve(false);
+				return;
 			}
+
+			// throttledSaves bypass — onceki basarisiz save'den kalan kuyruk tikanmasini onler
+			const origThrottled = db.throttledSaves;
+			db.throttledSaves = false;
 
 			const timeout = setTimeout(() => {
 				console.warn('[Offline] DB save timed out after 5s');
+				db.throttledSaves = origThrottled;
 				resolve(false);
 			}, 5000);
 
 			db.saveDatabase((err) => {
 				clearTimeout(timeout);
+				db.throttledSaves = origThrottled;
 				if (err) {
 					console.error('[Offline] DB save failed:', err);
 					resolve(false);

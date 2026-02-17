@@ -24,23 +24,17 @@ export function initLokiDb(op?: ExtendedLokiConfigOptions) {
 	}
 
 	let options = undefined;
-	let autoSave = true;
-
 	let adapter = null;
 	if (op?.disableAdapter) {
 		adapter = null;
-		autoSave = false;
-	} else if (typeof indexedDB === 'undefined') {
-		autoSave = false;
-	} else {
+	} else if (typeof indexedDB !== 'undefined') {
 		adapter = new LokiIndexDbAdaptor();
 	}
 
 	if (typeof localStorage !== 'undefined') {
 		options = {
 			adapter,
-			autosave: autoSave,
-			autosaveInterval: 4000,
+			autosave: false,
 			...op,
 		};
 
