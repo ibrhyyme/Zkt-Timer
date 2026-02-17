@@ -15,6 +15,11 @@ export interface ExtendedLokiConfigOptions extends Partial<LokiConfigOptions> {
 
 let db: Loki;
 export function initLokiDb(op?: ExtendedLokiConfigOptions) {
+	// Eski instance'in autosave timer'ini durdur (IndexedDB write conflict onlemi)
+	if (db) {
+		db.autosaveDisable();
+	}
+
 	let options = undefined;
 	let autoSave = true;
 
