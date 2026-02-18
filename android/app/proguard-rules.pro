@@ -19,3 +19,13 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Capacitor ProGuard Rules
+-keep public class com.getcapacitor.BridgeActivity { *; }
+-keep public class com.getcapacitor.Plugin { *; }
+-keep public class * extends com.getcapacitor.Plugin
+-keep public class com.getcapacitor.PluginMethod { *; }
+-keep public class com.getcapacitor.MessageHandler { *; }
+-keep public class com.getcapacitor.BridgeWebViewClient { *; }
+-keep public class com.getcapacitor.WebViewLocalServer { *; }
+
