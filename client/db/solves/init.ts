@@ -36,19 +36,14 @@ export function initSolveDb(solveList: Solve[], forceRefresh = false) {
 		return;
 	}
 
-	console.time('[PERF] solves:collectionInit');
 	initSolvesCollection(forceRefresh);
-	console.timeEnd('[PERF] solves:collectionInit');
 
-	console.log(`[PERF] solves:inserting ${solveList.length} records into LokiJS`);
-	console.time('[PERF] solves:insertLoop');
 	for (const solve of solveList) {
 		solve.started_at = parseInt(String(solve.started_at), 10);
 		solve.ended_at = parseInt(String(solve.ended_at), 10);
 
 		getSolveDb().insert(stripLokiJsMetadata(solve));
 	}
-	console.timeEnd('[PERF] solves:insertLoop');
 
 	emitEvent('solveDbUpdatedEvent');
 }
