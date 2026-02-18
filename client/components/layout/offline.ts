@@ -51,14 +51,7 @@ export async function updateOfflineHash() {
 	const dbSaved = await new Promise<boolean>((resolve) => {
 		try {
 			const db = getLokiDb();
-			if (!db) {
-				console.warn('[Offline] DB save skipped: no db instance');
-				resolve(false);
-				return;
-			}
-
-			if (!db.persistenceAdapter) {
-				console.warn('[Offline] DB save skipped: no adapter');
+			if (!db || !db.persistenceAdapter) {
 				resolve(false);
 				return;
 			}
@@ -76,13 +69,7 @@ export async function updateOfflineHash() {
 			db.saveDatabase((err) => {
 				clearTimeout(timeout);
 				db.throttledSaves = origThrottled;
-				if (err) {
-					console.error('[Offline] DB save failed:', err);
-					resolve(false);
-				} else {
-					console.log('[Offline] DB saved successfully');
-					resolve(true);
-				}
+				resolve(!err);
 			});
 		} catch (e) {
 			console.error('[Offline] DB save exception:', e);
