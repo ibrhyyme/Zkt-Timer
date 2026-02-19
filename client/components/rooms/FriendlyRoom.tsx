@@ -868,6 +868,15 @@ export default function FriendlyRoom() {
         return myParticipant.solves.some((s) => s.scramble_index === room.scramble_index);
     })();
 
+    // Yeni round başladığında (alreadySolvedThisRound false olunca) input'a focus ver
+    useEffect(() => {
+        if (!alreadySolvedThisRound && isManualMode && room?.status === 'ACTIVE') {
+            requestAnimationFrame(() => {
+                manualTimeInputRef.current?.focus();
+            });
+        }
+    }, [alreadySolvedThisRound, isManualMode]);
+
     // Get current user's last solve time for display
     const myCurrentSolve = (() => {
         if (!room || !me) return null;
@@ -1279,11 +1288,6 @@ export default function FriendlyRoom() {
                                                         setManualTimeInput('');
                                                         setManualTimeError(false);
                                                         setPenalties({ AUF: false, DNF: false, inspection: false });
-
-                                                        // ✅ Submit sonrası input'a tekrar focus
-                                                        setTimeout(() => {
-                                                            manualTimeInputRef.current?.focus();
-                                                        }, 150);
                                                     } catch {
                                                         setManualTimeError(true);
                                                     }
@@ -1308,9 +1312,15 @@ export default function FriendlyRoom() {
                                                 autoCapitalize="none"
                                                 spellCheck="false"
                                                 onBlur={(e) => {
-                                                    // ✅ Blur olduğunda tekrar focus (normal timer'daki gibi)
-                                                    if (!e.relatedTarget && !alreadySolvedThisRound) {
-                                                        e.target.focus();
+                                                    const target = e.target as HTMLInputElement;
+                                                    if (!alreadySolvedThisRound) {
+                                                        const refocus = () => {
+                                                            if (!target.disabled && (document.activeElement === document.body || !document.activeElement)) {
+                                                                target.focus();
+                                                            }
+                                                        };
+                                                        requestAnimationFrame(refocus);
+                                                        setTimeout(refocus, 50);
                                                     }
                                                 }}
                                                 onChange={(e) => {

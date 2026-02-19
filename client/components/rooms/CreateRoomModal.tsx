@@ -20,7 +20,7 @@ function CreateRoomForm({ onClose }: CreateRoomFormProps) {
 
     const [name, setName] = useState('');
     const [cubeType, setCubeType] = useState('333');
-    const [maxPlayers, setMaxPlayers] = useState(8);
+    const [maxPlayers, setMaxPlayers] = useState(FriendlyRoomConst.DEFAULT_MAX_PLAYERS);
     const [isPrivate, setIsPrivate] = useState(false);
     const [password, setPassword] = useState('');
     const [creating, setCreating] = useState(false);
@@ -130,7 +130,7 @@ function CreateRoomForm({ onClose }: CreateRoomFormProps) {
                                 value={maxPlayers}
                                 onChange={(e) => setMaxPlayers(parseInt(e.target.value))}
                             >
-                                {Array.from({ length: 15 }, (_, i) => i + 2).map((num) => (
+                                {Array.from({ length: FriendlyRoomConst.MAX_PLAYERS - FriendlyRoomConst.MIN_PLAYERS + 1 }, (_, i) => i + FriendlyRoomConst.MIN_PLAYERS).map((num) => (
                                     <option key={num} value={num}>
                                         {num} Oyuncu
                                     </option>

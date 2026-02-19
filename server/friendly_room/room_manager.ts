@@ -99,7 +99,7 @@ export async function createRoom(input: CreateFriendlyRoomInput, user: PublicUse
             password: hashedPassword,
             cube_type: input.cube_type || FriendlyRoomConst.DEFAULT_CUBE_TYPE,
 
-            max_players: Math.min(input.max_players || FriendlyRoomConst.DEFAULT_MAX_PLAYERS, FriendlyRoomConst.MAX_PLAYERS),
+            max_players: Math.max(FriendlyRoomConst.MIN_PLAYERS, Math.min(input.max_players || FriendlyRoomConst.DEFAULT_MAX_PLAYERS, FriendlyRoomConst.MAX_PLAYERS)),
             is_private: input.is_private || false,
             current_scramble: initialScramble,
             scramble_index: 1,
@@ -198,20 +198,20 @@ export async function addParticipant(
         throw new Error('Room not found');
     }
 
-    // Check if room is full
-    if (room.participants.length >= room.max_players) {
-        throw new Error('Room is full');
-    }
-
     // Check if room is closed
     if (room.status === 'CLOSED') {
         throw new Error('Room is closed');
     }
 
-    // Check if already in room
+    // Check if already in room (BEFORE capacity check so reconnecting users are not rejected)
     const existingParticipant = room.participants.find((p) => p.user_id === user.id);
     if (existingParticipant) {
         return { room: mapRoomToData(room), isNew: false };
+    }
+
+    // Check if room is full (only for genuinely new participants)
+    if (room.participants.length >= room.max_players) {
+        throw new Error('Room is full');
     }
 
     // Check password if room is private (skip if user is creator)
@@ -225,14 +225,23 @@ export async function addParticipant(
         }
     }
 
-    // Add participant
-    await prisma().friendlyRoomParticipant.create({
-        data: {
-            room_id: roomId,
-            user_id: user.id,
-            is_ready: false,
-        },
-    });
+    // Add participant (with unique constraint safety for race conditions)
+    try {
+        await prisma().friendlyRoomParticipant.create({
+            data: {
+                room_id: roomId,
+                user_id: user.id,
+                is_ready: false,
+            },
+        });
+    } catch (error: any) {
+        // If unique constraint violation (P2002), user was added by a concurrent request
+        if (error.code === 'P2002') {
+            const updatedRoom = await getRoom(roomId);
+            return { room: mapRoomToData(updatedRoom), isNew: false };
+        }
+        throw error;
+    }
 
     // Check if the joining user is the original creator and restore admin rights
     let newAdminId: string | undefined;

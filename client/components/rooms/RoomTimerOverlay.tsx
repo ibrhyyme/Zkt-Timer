@@ -321,12 +321,10 @@ export default function RoomTimerOverlay({
             timerRef.current = null;
         }
 
-        // FIX: Force focus back to window to ensure keyboard shortcuts work immediately (Mac fix)
-        // We blur the active element (like the submit button) because it's about to be removed from DOM
-        if (document.activeElement instanceof HTMLElement) {
+        // Sadece overlay'e ait elementleri blur'la, parent component'lerin input'una dokunma
+        if (document.activeElement instanceof HTMLElement && rootRef.current?.contains(document.activeElement)) {
             document.activeElement.blur();
         }
-        window.focus();
     };
 
     const getFinalTime = () => {

@@ -2,7 +2,7 @@
 
 export const FriendlyRoomConst = {
     // Room settings
-    MIN_PLAYERS: 2,
+    MIN_PLAYERS: 8,
     MAX_PLAYERS: 16,
     DEFAULT_MAX_PLAYERS: 8,
     DEFAULT_CUBE_TYPE: '333',
