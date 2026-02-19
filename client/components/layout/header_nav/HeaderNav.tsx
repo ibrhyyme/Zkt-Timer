@@ -107,7 +107,8 @@ export default function HeaderNav() {
 
 		// 1. Ekran 768px veya altındaysa
 		// 2. Veya cihaz bir mobil/tablet cihazıysa (genişlik ne olursa olsun mobil modda kalsın isteniyor)
-		const shouldBeMobile = window.innerWidth <= 768 || isMobileDevice;
+		// 3. Veya ekran yüksekliği 500px altındaysa (landscape telefon)
+		const shouldBeMobile = window.innerWidth <= 768 || isMobileDevice || window.innerHeight <= 500;
 
 		if (shouldBeMobile && !mobileMode) {
 			dispatch(setGeneral('mobile_mode', true));
