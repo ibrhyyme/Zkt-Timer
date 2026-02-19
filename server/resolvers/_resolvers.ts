@@ -26,3 +26,4 @@ export * from './Announcement.resolver';
 export * from './AlgorithmOverride.resolver';
 export * from './CustomTrainer.resolver';
 export * from './BulkEmail.resolver';
+export * from './PushToken.resolver';

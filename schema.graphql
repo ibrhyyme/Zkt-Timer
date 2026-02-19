@@ -391,6 +391,8 @@ type Mutation {
   createCustomTrainer(input: CustomTrainerCreateInput): CustomTrainer
   updateCustomTrainer(input: CustomTrainerCreateInput, id: String): CustomTrainer
   deleteCustomTrainer(id: String): CustomTrainer
+  registerPushToken(input: RegisterPushTokenInput): PushTokenResult
+  unregisterPushToken(token: String): PushTokenResult
 }
 
 type SmartDevice {
@@ -1480,6 +1482,7 @@ input CreateAnnouncementInput {
   priority: Int = 0
   imageUrl: String
   isDraft: Boolean = false
+  sendNotification: Boolean = false
 }
 
 input UpdateAnnouncementInput {
@@ -1490,4 +1493,13 @@ input UpdateAnnouncementInput {
   imageUrl: String
   isDraft: Boolean
   isActive: Boolean
+}
+
+type PushTokenResult {
+  success: Boolean
+}
+
+input RegisterPushTokenInput {
+  token: String
+  platform: String
 }

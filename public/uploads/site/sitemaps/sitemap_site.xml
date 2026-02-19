@@ -1,0 +1,102 @@
+
+		<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+			
+		<url>
+			<loc>https://zktimer.app/</loc>
+			<priority>1</priority>
+			
+		</url>
+	
+
+		<url>
+			<loc>https://zktimer.app/timer</loc>
+			<priority>0.998</priority>
+			
+		</url>
+	
+
+		<url>
+			<loc>https://zktimer.app/signup</loc>
+			<priority>0.996</priority>
+			
+		</url>
+	
+
+		<url>
+			<loc>https://zktimer.app/login</loc>
+			<priority>0.994</priority>
+			
+		</url>
+	
+
+		<url>
+			<loc>https://zktimer.app/solves</loc>
+			<priority>0.988</priority>
+			
+		</url>
+	
+
+		<url>
+			<loc>https://zktimer.app/stats</loc>
+			<priority>0.986</priority>
+			
+		</url>
+	
+
+		<url>
+			<loc>https://zktimer.app/terms</loc>
+			<priority>0.974</priority>
+			
+		</url>
+	
+
+		<url>
+			<loc>https://zktimer.app/privacy</loc>
+			<priority>0.972</priority>
+			
+		</url>
+	
+
+		<url>
+			<loc>https://zktimer.app/credits</loc>
+			<priority>0.97</priority>
+			
+		</url>
+	
+
+		<url>
+			<loc>https://zktimer.app/welcome</loc>
+			<priority>0.968</priority>
+			
+		</url>
+	
+
+		<url>
+			<loc>https://zktimer.app/trainer</loc>
+			<priority>0.96</priority>
+			
+		</url>
+	
+
+		<url>
+			<loc>https://zktimer.app/community/leaderboards</loc>
+			<priority>0.946</priority>
+			
+		</url>
+	
+
+		<url>
+			<loc>https://zktimer.app/play</loc>
+			<priority>0.938</priority>
+			
+		</url>
+	
+
+		<url>
+			<loc>https://zktimer.app/rooms</loc>
+			<priority>0.928</priority>
+			
+		</url>
+			  
+		</urlset> 
+	

@@ -87,6 +87,9 @@ model UserAccount {
   // Announcement relations
   announcementViews             AnnouncementView[]
 
+  // Push notification tokens
+  pushTokens                    PushToken[]
+
   @@map("user_account")
 }
 
@@ -1042,5 +1045,31 @@ model AnnouncementView {
   @@index([userId])
   @@index([announcementId])
   @@map("announcement_views")
+}
+
+// ==========================================
+// PUSH NOTIFICATIONS - Bildirim Token'lari
+// ==========================================
+
+enum PushTokenPlatform {
+  WEB
+  ANDROID
+  IOS
+
+  @@map("push_token_platform")
+}
+
+model PushToken {
+  id        String             @id @default(uuid())
+  userId    String             @map("user_id")
+  token     String             @unique
+  platform  PushTokenPlatform  @default(WEB)
+  createdAt DateTime           @default(now()) @map("created_at")
+  updatedAt DateTime           @updatedAt @map("updated_at")
+
+  user UserAccount @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("push_tokens")
 }
 

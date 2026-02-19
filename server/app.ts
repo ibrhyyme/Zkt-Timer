@@ -16,6 +16,7 @@ import { initLLStates } from './util/solve/ll_states';
 import { initSocket } from './match/init';
 import 'seedrandom';
 import { initMjmlTemplates } from './services/ses';
+import { initFirebase } from './services/push';
 import GraphQLError from './util/graphql_error';
 import colors from 'colors';
 import { buildSchema } from 'type-graphql';
@@ -199,6 +200,7 @@ if (!isDev) {
 	// Setup code
 	initLLStates();
 	initMjmlTemplates();
+	initFirebase();
 
 	// Log WCA environment variables presence for debugging
 	console.log('WCA env present:', {

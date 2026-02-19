@@ -239,6 +239,7 @@ export type CreateAnnouncementInput = {
   imageUrl?: InputMaybe<Scalars['String']>;
   isDraft?: InputMaybe<Scalars['Boolean']>;
   priority?: InputMaybe<Scalars['Int']>;
+  sendNotification?: InputMaybe<Scalars['Boolean']>;
   title?: InputMaybe<Scalars['String']>;
 };
 
@@ -766,6 +767,7 @@ export type Mutation = {
   publishTopAverages?: Maybe<TopAverage>;
   publishTopSolve?: Maybe<TopSolve>;
   publishWcaRecord?: Maybe<WcaRecord>;
+  registerPushToken?: Maybe<PushTokenResult>;
   removeBadgeFromUser?: Maybe<Badge>;
   reorderSessions?: Maybe<Scalars['Void']>;
   reportProfile?: Maybe<Report>;
@@ -779,6 +781,7 @@ export type Mutation = {
   unbanUserAccount?: Maybe<UserAccount>;
   unfriend?: Maybe<Friendship>;
   unpublishWcaRecord?: Maybe<WcaRecord>;
+  unregisterPushToken?: Maybe<PushTokenResult>;
   unsubEmails?: Maybe<Scalars['Boolean']>;
   updateAlgorithmOverride?: Maybe<AlgorithmOverride>;
   updateAnnouncement?: Maybe<Announcement>;
@@ -1047,6 +1050,11 @@ export type MutationPublishWcaRecordArgs = {
 };
 
 
+export type MutationRegisterPushTokenArgs = {
+  input?: InputMaybe<RegisterPushTokenInput>;
+};
+
+
 export type MutationRemoveBadgeFromUserArgs = {
   badgeTypeId?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
@@ -1107,6 +1115,11 @@ export type MutationUnfriendArgs = {
 
 export type MutationUnpublishWcaRecordArgs = {
   recordId?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationUnregisterPushTokenArgs = {
+  token?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -1333,6 +1346,11 @@ export type PublicUserAccount = IPublicUserAccount & {
   verified?: Maybe<Scalars['Boolean']>;
 };
 
+export type PushTokenResult = {
+  __typename?: 'PushTokenResult';
+  success?: Maybe<Scalars['Boolean']>;
+};
+
 export type Query = {
   __typename?: 'Query';
   adminUserSearch?: Maybe<PaginatedUserAccountsForAdmin>;
@@ -1533,6 +1551,11 @@ export type QueryUserSearchArgs = {
 
 export type QueryWcaRecordsArgs = {
   userId?: InputMaybe<Scalars['String']>;
+};
+
+export type RegisterPushTokenInput = {
+  platform?: InputMaybe<Scalars['String']>;
+  token?: InputMaybe<Scalars['String']>;
 };
 
 export type Report = {

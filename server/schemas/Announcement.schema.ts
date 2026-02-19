@@ -64,6 +64,9 @@ export class CreateAnnouncementInput {
 
 	@Field({ defaultValue: false })
 	isDraft: boolean;
+
+	@Field({ defaultValue: false })
+	sendNotification: boolean;
 }
 
 @InputType()

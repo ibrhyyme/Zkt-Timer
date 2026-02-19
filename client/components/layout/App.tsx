@@ -26,6 +26,7 @@ import PendingSyncBadge from '../common/pending_sync_badge/PendingSyncBadge';
 import { initOfflineSyncListener } from './offline-listener';
 import { Capacitor } from '@capacitor/core';
 import { SplashScreen } from '@capacitor/splash-screen';
+import { initPushNotifications } from '../../util/push-notifications';
 
 interface Props {
 	path?: string;
@@ -121,6 +122,7 @@ export default function App(props: Props = {}) {
 		}
 
 		initSocketIO();
+		initPushNotifications();
 		initAppData(me, dispatch, appInitiated);
 	}, [me]);
 

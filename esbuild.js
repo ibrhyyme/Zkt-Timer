@@ -36,6 +36,11 @@ require('esbuild')
 			'process.env.NODE_ENV': JSON.stringify(nodeEnv),
 			'process.env.BASE_URI': JSON.stringify(process.env.BASE_URI || 'http://localhost:3000'),
 			'process.env.PRO_ENABLED': JSON.stringify(process.env.PRO_ENABLED || 'false'),
+			'process.env.FIREBASE_WEB_API_KEY': JSON.stringify(process.env.FIREBASE_WEB_API_KEY || ''),
+			'process.env.FIREBASE_PROJECT_ID': JSON.stringify(process.env.FIREBASE_PROJECT_ID || ''),
+			'process.env.FIREBASE_MESSAGING_SENDER_ID': JSON.stringify(process.env.FIREBASE_MESSAGING_SENDER_ID || ''),
+			'process.env.FIREBASE_APP_ID': JSON.stringify(process.env.FIREBASE_APP_ID || ''),
+			'process.env.FIREBASE_VAPID_KEY': JSON.stringify(process.env.FIREBASE_VAPID_KEY || ''),
 		},
 		loader: {'.js': 'jsx'},
 		plugins: [
