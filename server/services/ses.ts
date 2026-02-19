@@ -46,6 +46,31 @@ export async function sendEmailWithTemplate(user: UserAccount, subject: string, 
 	return sendEmail(user.email, subject, body);
 }
 
+export async function sendBulkEmailDirect(
+	users: UserAccount[],
+	subject: string,
+	content: string
+): Promise<{ successCount: number; failCount: number }> {
+	let successCount = 0;
+	let failCount = 0;
+
+	for (const user of users) {
+		try {
+			await sendEmailWithTemplate(user, subject, 'notification', {
+				message: content,
+				link: 'https://zktimer.app',
+				linkText: "Zkt-Timer'a Git"
+			});
+			successCount++;
+		} catch (error) {
+			console.error(`Error sending email to ${user.email}:`, error);
+			failCount++;
+		}
+	}
+
+	return { successCount, failCount };
+}
+
 async function sendEmail(email: string, subject: string, body: string) {
 	let content = body;
 	if (Array.isArray(body)) {

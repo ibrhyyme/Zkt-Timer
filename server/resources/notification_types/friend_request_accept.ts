@@ -1,6 +1,6 @@
 import Notification from './notification';
-import {NotificationInput} from '../../@types/interfaces/server.interface';
-import {NotificationType} from '../../@types/enums';
+import { NotificationInput } from '../../@types/interfaces/server.interface';
+import { NotificationType } from '../../@types/enums';
 
 export default class FriendRequestAcceptNotification extends Notification {
 	constructor(input: NotificationInput) {
@@ -12,15 +12,15 @@ export default class FriendRequestAcceptNotification extends Notification {
 	}
 
 	subject() {
-		return `${this.input.triggeringUser.username} accepted your friend request on Zkt-Timer`;
+		return `${this.input.triggeringUser.username} Zkt-Timer'da arkadaşlık isteğini kabul etti`;
 	}
 
 	inAppMessage() {
-		return `${this.input.triggeringUser.username} accepted your friend request`;
+		return `${this.input.triggeringUser.username} arkadaşlık isteğini kabul etti`;
 	}
 
 	message() {
-		return `Good news! ${this.input.triggeringUser.username} accepted your friend request. Click the link below to view their profile.`;
+		return `Güzel haber! ${this.input.triggeringUser.username} arkadaşlık isteğini kabul etti. Profilini görüntülemek için aşağıdaki bağlantıya tıkla.`;
 	}
 
 	icon() {
@@ -32,7 +32,7 @@ export default class FriendRequestAcceptNotification extends Notification {
 	}
 
 	linkText() {
-		return `View profile →`;
+		return `Profili görüntüle →`;
 	}
 
 	categoryName() {

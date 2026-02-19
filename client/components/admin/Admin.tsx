@@ -22,6 +22,11 @@ const TABS = [
 		link: '/admin/announcements',
 		value: 'Duyurular',
 	},
+	{
+		id: 'email',
+		link: '/admin/email',
+		value: 'Mail',
+	},
 ];
 
 interface Props {

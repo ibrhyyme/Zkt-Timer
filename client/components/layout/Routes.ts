@@ -41,6 +41,7 @@ import EloBoard from '../community/EloBoard';
 import RoomsList from '../rooms/RoomsList';
 import FriendlyRoom from '../rooms/FriendlyRoom';
 import AdminAnnouncements from '../admin/announcements/AdminAnnouncements';
+import AdminEmail from '../admin/email/AdminEmail';
 import Welcome from '../landing/welcome/Welcome';
 import RootRedirect from '../landing/root_redirect/RootRedirect';
 
@@ -162,6 +163,7 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/admin/reports', App, Admin, Reports, true, false, true),
 	route('/admin/users', App, Admin, AdminUsers, true, false, true),
 	route('/admin/announcements', App, Admin, AdminAnnouncements, true, false, true),
+	route('/admin/email', App, Admin, AdminEmail, true, false, true),
 
 	// OAuth
 	route('/oauth/:integrationType', null, App, OAuthService, true, true, false, true),

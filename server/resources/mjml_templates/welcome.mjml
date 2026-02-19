@@ -1,80 +1,133 @@
 <mjml>
-	<mj-body>
-		<mj-section>
-			<mj-column>
-				<mj-image
-					href="https://zktimer.app"
-					width="100px"
-					src="https://zktimer.app/public/images/zkt-logo.png"
-				></mj-image>
+  <mj-head>
+    <mj-title>Zkt-Timer'a Hoş Geldin!</mj-title>
+    <mj-font name="Roboto" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700" />
+    <mj-attributes>
+      <mj-all font-family="Roboto, Helvetica, Arial, sans-serif" />
+      <mj-text font-size="16px" color="#444444" line-height="24px" />
+      <mj-section padding="20px 0" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body background-color="#f4f4f4">
+    <mj-section background-color="#ffffff" padding-bottom="0">
+      <mj-column>
+        <mj-image href="https://zktimer.app" width="100px" src="https://zktimer.app/public/images/zkt-logo-dark.png" alt="Zkt-Timer Logo"></mj-image>
+        <mj-divider border-color="#246bfd" border-width="2px"></mj-divider>
+      </mj-column>
+    </mj-section>
 
-				<mj-divider border-color="#246bfd"></mj-divider>
+    <mj-section background-color="#ffffff" padding-top="0">
+      <mj-column>
+        <mj-text font-size="24px" font-weight="bold" color="#246bfd" align="center">
+          Hoş Geldin {{user.first_name}}! 🎉
+        </mj-text>
+        <mj-text align="center">
+          Zkt-Timer ailesine katıldığın için mutluyuz. Profesyonel speedcuber'lar için geliştirilmiş, dünyanın en gelişmiş küp çözüm platformuna adım attın.
+        </mj-text>
+      </mj-column>
+    </mj-section>
 
-				<mj-text font-size="24px" font-weight="bold" color="#246bfd" font-family="helvetica">
-					Hoş Geldin {{user.first_name}}! 🎉
-				</mj-text>
+    <!-- About Section -->
+    <mj-section background-color="#ffffff">
+      <mj-column>
+        <mj-text font-weight="bold" font-size="18px" color="#246bfd">Bu Uygulama Hakkında</mj-text>
+        <mj-text>
+          • <strong>Modern Tasarım:</strong> Temiz, sezgisel ve kolay kullanım.<br/>
+          • <strong>Bulut Tabanlı:</strong> Çözümleriniz ve ayarlarınız asla kaybolmaz.<br/>
+          • <strong>WCA Standartları:</strong> Tüm resmi bulmacalar (3x3, 4x4, Megaminx vb.) için random-state karıştırmalar.<br/>
+          • <strong>3D Ön İzleme:</strong> Her karıştırmayı 3 boyutlu inceleyin.<br/>
+          • <strong>Akıllı Küp:</strong> Antrenmanlarınızı dijital çağa taşıyın.
+        </mj-text>
+      </mj-column>
+    </mj-section>
 
-				<mj-text line-height="27px" font-size="18px" color="#444444" font-family="helvetica">
-					Zkt-Timer ailesine katıldığın için çok mutluyuz! Artık dünyanın en gelişmiş Rubik Küp timer
-					uygulamasının tüm özelliklerine erişebilirsin.
-				</mj-text>
+    <!-- Smart Cube -->
+    <mj-section background-color="#f8f9fa">
+      <mj-column>
+        <mj-text font-weight="bold" font-size="18px" color="#246bfd">📱 Akıllı Küp ve Jiroskop Entegrasyonu</mj-text>
+        <mj-text>
+          GAN Cube (Gen2, Gen3, Gen4, GAN12 uiM vb.) modelleriyle tam uyumlu! Jiroskop verilerini kullanarak rotasyon ve hızınızı anlık takip eder, fiziksel hareketlerinizi ekrana yansıtır.
+        </mj-text>
+      </mj-column>
+    </mj-section>
 
-				<mj-divider border-color="#eeeeee"></mj-divider>
+    <!-- Phase Analysis -->
+    <mj-section background-color="#ffffff">
+      <mj-column>
+        <mj-text font-weight="bold" font-size="18px" color="#246bfd">📊 Evre Analizi (Phase Analysis)</mj-text>
+        <mj-text>
+          Sadece toplam sürenizi değil, çözümünüzün her adımını (Cross, F2L, OLL, PLL) milisaniyelik hassasiyetle analiz edin. "Basit" veya "Detaylı (2-Look)" analiz modlarıyla ustalaşın.
+        </mj-text>
+      </mj-column>
+    </mj-section>
 
-				<mj-text font-size="20px" font-weight="bold" color="#246bfd" font-family="helvetica">
-					✨ Zkt-Timer ile Neler Yapabilirsin?
-				</mj-text>
+    <!-- Multiplayer -->
+    <mj-section background-color="#f8f9fa">
+      <mj-column>
+        <mj-text font-weight="bold" font-size="18px" color="#246bfd">👥 Arkadaş Odaları (Multiplayer)</mj-text>
+        <mj-text>
+          Yalnız çözmekten sıkıldınız mı?
+        </mj-text>
+        <mj-text>
+          • <strong>Ortak Karıştırma:</strong> Herkes aynı scramble'ı çözer.<br/>
+          • <strong>Canlı Takip:</strong> Kimin ne yaptığını anlık görün.<br/>
+          • <strong>Sohbet:</strong> Oda içi mesajlaşın ve sonuçları karşılaştırın.
+        </mj-text>
+      </mj-column>
+    </mj-section>
 
-				<mj-text line-height="24px" font-size="16px" color="#444444" font-family="helvetica">
-					⏱️ <strong>Gelişmiş timer:</strong> Tüm WCA küpleri için özel karıştırma algoritmaları<br/>
-					<br/>
-					📊 <strong>Detaylı İstatistikler:</strong> Ao5, Ao12, Ao100 ve kişisel rekorlarını takip et<br/>
-					<br/>
-					🎮 <strong>1v1 Mücadele:</strong> Arkadaşlarınla canlı yarışmalar yap ve ELO puanı kazan<br/>
-					<br/>
-					👥 <strong>Topluluk:</strong> Liderlik tablolarında yerine gör ve arkadaşlarını takip et<br/>
-					<br/>
-					📚 <strong>Algoritma Eğitimi:</strong> F2L, OLL, PLL ve daha fazlası için eğitim modülleri<br/>
-					<br/>
-					📱 <strong>Akıllı Küp Desteği:</strong> Bluetooth küplerini bağla ve hareketlerini analiz et<br/>
-					<br/>
-					🎨 <strong>Özelleştirme:</strong> Temalar, arka planlar ve kişisel ayarlar
-				</mj-text>
+    <!-- Data & Progress -->
+    <mj-section background-color="#ffffff">
+      <mj-column>
+        <mj-text font-weight="bold" font-size="18px" color="#246bfd">📈 Gelişiminizi Takip Edin</mj-text>
+        <mj-text>
+          Her bulmaca ve kategori için onlarca istatistik. En iyi (PB) ve en kötü derecelerinizi, Ao5, Ao12 ve Ao100 ortalamalarınızı takip edin. Detaylı grafiklerle gelişiminizi görselleştirin. Mobil uyumlu arayüzle performansınıza her yerden hakim olun.
+        </mj-text>
+      </mj-column>
+    </mj-section>
 
-				<mj-divider border-color="#eeeeee"></mj-divider>
+    <!-- Customization -->
+    <mj-section background-color="#f8f9fa">
+      <mj-column>
+        <mj-text font-weight="bold" font-size="18px" color="#246bfd">🎨 Tarzınızı Yansıtın</mj-text>
+        <mj-text>
+          Özel <strong>"Underground"</strong> karanlık tema ile gözlerinizi yormayın. Fontları (Roboto, JetBrains Mono vb.), renkleri ve tüm düzeni kendinize göre kişiselleştirin.
+        </mj-text>
+      </mj-column>
+    </mj-section>
 
-				<mj-text font-size="18px" color="#444444" font-family="helvetica">
-					<strong>🚀 Hemen Başla:</strong>
-				</mj-text>
+     <!-- 3D Visualization -->
+    <mj-section background-color="#ffffff">
+      <mj-column>
+        <mj-text font-weight="bold" font-size="18px" color="#246bfd">🧊 3D Karıştırma Görselleştirmesi</mj-text>
+        <mj-text>
+          TwistyPlayer desteği ile karıştırma durumunu 3 boyutlu görün, ekrana dokunarak küpü çevirin ve çözüme başlamadan önce durum analizi yapın.
+        </mj-text>
+      </mj-column>
+    </mj-section>
 
-				<mj-button href="https://zktimer.app" background-color="#246bfd" color="#ffffff" font-size="16px">
-					Timeri Başlat
-				</mj-button>
-
-				<mj-text line-height="24px" font-size="14px" color="#666666" font-family="helvetica">
-					💡 <strong>İpucu:</strong> Ayarlar menüsünden uygulamayı kişiselleştirebilir, tercih ettiğin küp
-					tiplerini seçebilir ve bildirim ayarlarını düzenleyebilirsin.
-				</mj:text>
-
-				<mj-divider border-color="#444"></mj-divider>
-
-				<mj-text line-height="24px" font-size="14px" color="#666666" font-family="helvetica">
-					Herhangi bir sorun yaşarsan veya önerilerin varsa bize ulaşmaktan çekinme!
-				</mj-text>
-
-				<mj-text font-size="18px" padding-bottom="0" color="#444444" font-family="helvetica">
-					Bol rekorlar! 🏆<br />
-				</mj-text>
-
-				<mj-text font-size="18px" color="#444444" font-family="helvetica">
-					Zkt-Timer Ekibi
-				</mj-text>
-
-				<mj-text font-size="12px" color="#999999" font-family="helvetica">
-					<a href="https://zktimer.app" style="color: #246bfd;">zktimer.app</a> | 
-					Bu maili almak istemiyor musun? <a href="https://zktimer.app/settings" style="color: #246bfd;">Bildirim ayarlarından</a> değiştirebilirsin.
-				</mj-text>
-			</mj-column>
-		</mj-section>
-	</mj-body>
+    <!-- Footer Features -->
+    <mj-section background-color="#e9ecef">
+      <mj-column>
+        <mj-text font-weight="bold" font-size="16px" color="#444444">Ve Çok Daha Fazlası...</mj-text>
+        <mj-text font-size="14px">
+          • <strong>StackMat Desteği:</strong> Donanımınızı bağlayın ve süreleri otomatik kaydedin.<br/>
+          • <strong>Manuel Giriş:</strong> Timer yanınızda yoksa süreleri el ile girin.<br/>
+          • <strong>WCA Standartları:</strong> Resmi kurallara uygun muayene (inspection) süresi.<br/>
+          • <strong>Paylaşım:</strong> Özel kodlar ile çözümlerinizi paylaşın.
+        </mj-text>
+        <mj-button href="https://zktimer.app" background-color="#246bfd" color="#ffffff" font-size="16px" font-weight="bold" border-radius="8px">
+          Timer'ı Başlat
+        </mj-button>
+        <mj-divider border-color="#cbd5e0" border-width="1px"></mj-divider>
+         <mj-text font-size="12px" align="center" color="#999999">
+          Zkt-Timer Ekibi<br/>
+          <a href="https://zktimer.app" style="color: #246bfd; text-decoration: none;">zktimer.app</a>
+        </mj-text>
+        <mj-text font-size="12px" align="center" color="#999999">
+          Bu maili almak istemiyorsanız <a href="https://zktimer.app/settings" style="color: #246bfd; text-decoration: none;">bildirim ayarlarınızı</a> değiştirebilirsiniz.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
 </mjml>
