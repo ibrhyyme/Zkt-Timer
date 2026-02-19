@@ -46,4 +46,7 @@
 
     <!-- Mikrofon (StackMat Timer) -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <!-- Push Notifications (API 33+ / Android 13+) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 </manifest>

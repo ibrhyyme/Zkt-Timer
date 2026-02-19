@@ -10,6 +10,7 @@ dist
 *.env
 *.env.*
 docker.env
+firebase-service-account.json
 
 # keys/certs
 *.pem

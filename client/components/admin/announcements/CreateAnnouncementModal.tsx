@@ -1,8 +1,17 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'phosphor-react';
-import { CreateAnnouncementDocument } from '../../../@types/generated/graphql';
-import { gqlMutateTyped } from '../../api';
+import { gql } from '@apollo/client';
+import { gqlMutate } from '../../api';
+
+const CREATE_ANNOUNCEMENT = gql`
+	mutation CreateAnnouncement($input: CreateAnnouncementInput) {
+		createAnnouncement(input: $input) {
+			id
+			title
+		}
+	}
+`;
 
 interface CreateAnnouncementModalProps {
 	onClose: () => void;
@@ -16,7 +25,8 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 		category: 'INFO',
 		priority: 0,
 		imageUrl: '',
-		isDraft: false
+		isDraft: false,
+		sendNotification: false
 	});
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState('');
@@ -27,7 +37,7 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 		try {
 			setLoading(true);
 			setError('');
-			await gqlMutateTyped(CreateAnnouncementDocument, {
+			await gqlMutate(CREATE_ANNOUNCEMENT, {
 				input: {
 					...formData,
 					priority: parseInt(formData.priority.toString())
@@ -120,10 +130,27 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 									type="checkbox"
 									id="isDraft"
 									checked={formData.isDraft}
-									onChange={(e) => setFormData({ ...formData, isDraft: e.target.checked })}
+									onChange={(e) => setFormData({ ...formData, isDraft: e.target.checked, sendNotification: false })}
 									className="w-4 h-4"
 								/>
 								<label htmlFor="isDraft" className="text-sm">Taslak olarak kaydet</label>
+							</div>
+
+							<div className="flex items-center gap-2">
+								<input
+									type="checkbox"
+									id="sendNotification"
+									checked={formData.sendNotification}
+									onChange={(e) => setFormData({ ...formData, sendNotification: e.target.checked })}
+									className="w-4 h-4"
+									disabled={formData.isDraft}
+								/>
+								<label htmlFor="sendNotification" className={`text-sm ${formData.isDraft ? 'text-zinc-500' : ''}`}>
+									Bildirim olarak da gönder
+								</label>
+								{formData.isDraft && (
+									<span className="text-xs text-zinc-500">(Taslak duyurular için bildirim gönderilemez)</span>
+								)}
 							</div>
 						</div>
 

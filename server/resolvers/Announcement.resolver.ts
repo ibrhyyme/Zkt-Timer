@@ -10,6 +10,7 @@ import {
 import GraphQLError from '../util/graphql_error';
 import { ErrorCode } from '../constants/errors';
 import { Role } from '../middlewares/auth';
+import { sendPushToAll } from '../services/push';
 
 @Resolver()
 export class AnnouncementResolver {
@@ -176,6 +177,13 @@ export class AnnouncementResolver {
 					_count: { select: { views: true } }
 				}
 			});
+
+			// Bildirim gonder (fire-and-forget, duyuru olusturmayı bloklamaz)
+			if (input.sendNotification && !input.isDraft) {
+				sendPushToAll(announcement.title, announcement.content.substring(0, 200)).catch((err) => {
+					console.error('[Push] Failed to send push for announcement:', err);
+				});
+			}
 
 			return {
 				...announcement,

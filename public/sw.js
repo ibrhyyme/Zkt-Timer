@@ -140,3 +140,36 @@ async function openQueueDB() {
   });
 }
 
+// ==========================================
+// PUSH NOTIFICATIONS
+// ==========================================
+
+self.addEventListener('push', (event) => {
+  const data = event.data ? event.data.json() : {};
+  const title = (data.notification && data.notification.title) || 'Zkt-Timer';
+  const options = {
+    body: (data.notification && data.notification.body) || '',
+    icon: '/public/images/zkt-logo.png',
+    badge: '/public/images/apple-touch-icon.png',
+    data: { url: '/' }
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(windowClients) {
+      // Acik pencere varsa fokusla
+      for (var i = 0; i < windowClients.length; i++) {
+        var client = windowClients[i];
+        if ('focus' in client) {
+          return client.focus();
+        }
+      }
+      // Yoksa yeni pencere ac
+      return self.clients.openWindow('/');
+    })
+  );
+});
+
