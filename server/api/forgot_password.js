@@ -3,10 +3,10 @@ import {
 	sanitizeUser,
 	updateUserAccountPassword
 } from '../models/user_account';
-import {sendEmail, sendEmailWithTemplate} from '../services/ses';
-import {claimForgotPassword, createForgotPassword, getForgotPassword} from '../models/forgot_password';
+import { sendEmail, sendEmailWithTemplate } from '../services/ses';
+import { claimForgotPassword, createForgotPassword, getForgotPassword } from '../models/forgot_password';
 import GraphQLError from '../util/graphql_error';
-import {getJwtString} from '../util/auth';
+import { getJwtString } from '../util/auth';
 
 export const gqlMutation = `
 	sendForgotPasswordCode(email: String): Void
@@ -22,19 +22,19 @@ function forgotPasswordLessThan15Min(fp) {
 }
 
 export const mutateActions = {
-	sendForgotPasswordCode: async (_, {email}) => {
+	sendForgotPasswordCode: async (_, { email }) => {
 		const user = await getUserByEmail(email);
 
 		if (user) {
 			const fp = await createForgotPassword(user);
 
-			sendEmailWithTemplate(user, 'Reset Your Zkt-Timer Password', 'forgot_password', {
+			sendEmailWithTemplate(user, 'Zkt-Timer Şifre Sıfırlama', 'forgot_password', {
 				code: fp.code,
-				message: 'Please use the code below to reset your password:',
+				message: 'Şifrenizi sıfırlamak için lütfen aşağıdaki kodu kullanın:',
 			});
 		}
 	},
-	checkForgotPasswordCode: async (_, {email, code}) => {
+	checkForgotPasswordCode: async (_, { email, code }) => {
 		const user = await getUserByEmail(email);
 
 		if (!user) {
@@ -49,7 +49,7 @@ export const mutateActions = {
 
 		return fp && fp.code === code && forgotPasswordLessThan15Min(fp);
 	},
-	updateForgotPassword: async (_, {email, code, password}, {res}) => {
+	updateForgotPassword: async (_, { email, code, password }, { res }) => {
 		const user = await getUserByEmail(email);
 
 		if (!user) {
@@ -70,7 +70,7 @@ export const mutateActions = {
 		await updateUserAccountPassword(user.id, password);
 
 		const jwt = getJwtString(user);
-		res.cookie('session', jwt, {maxAge: 2147483647, httpOnly: true});
+		res.cookie('session', jwt, { maxAge: 2147483647, httpOnly: true });
 
 		return sanitizeUser(user);
 	},

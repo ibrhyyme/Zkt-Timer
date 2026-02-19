@@ -1,6 +1,6 @@
 import Notification from './notification';
-import {NotificationInput} from '../../@types/interfaces/server.interface';
-import {NotificationType} from '../../@types/enums';
+import { NotificationInput } from '../../@types/interfaces/server.interface';
+import { NotificationType } from '../../@types/enums';
 
 interface EloRefundNotificationInputData {
 	eloRefunded: number;
@@ -21,20 +21,20 @@ export default class EloRefundNotification extends Notification {
 
 	subject() {
 		const refunded = this.eloData.eloRefunded.toLocaleString();
-		return `${refunded} ELO refunded to your Zkt-Timer account`;
+		return `Zkt-Timer hesabına ${refunded} ELO iade edildi`;
 	}
 
 	inAppMessage() {
 		const refunded = this.eloData.eloRefunded.toLocaleString();
-		return `${refunded} ELO refunded to your Zkt-Timer account`;
+		return `Zkt-Timer hesabına ${refunded} ELO iade edildi`;
 	}
 
 	message() {
 		const refunded = this.eloData.eloRefunded.toLocaleString();
 		const games = this.eloData.numberOfGames;
-		const gamesLocale = `${games} game${games === 1 ? '' : 's'}`;
+		const gamesLocale = `${games} oyun`;
 		const cheater = this.input.triggeringUser.username;
-		return `You were refunded ${refunded} ELO for losing ${gamesLocale} to ${cheater}, who was cheating.`;
+		return `${cheater} adlı kullanıcının hile yaptığı tespit edildiği için, ona kaybettiğin ${gamesLocale} karşılığında ${refunded} ELO hesabına iade edildi.`;
 	}
 
 	icon() {
@@ -46,7 +46,7 @@ export default class EloRefundNotification extends Notification {
 	}
 
 	linkText() {
-		return `View your profile →`;
+		return `Profilini görüntüle →`;
 	}
 
 	categoryName() {
