@@ -11,6 +11,8 @@ dist
 *.env.*
 docker.env
 firebase-service-account.json
+google-services.json
+GoogleService-Info.plist
 
 # keys/certs
 *.pem
