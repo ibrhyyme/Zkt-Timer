@@ -44,7 +44,7 @@
 		margin-left: 12px;
 		display: none;
 
-		@media (max-width: 768px) {
+		@media (max-width: 768px), (max-height: 500px) {
 			display: block;
 		}
 

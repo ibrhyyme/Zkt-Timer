@@ -9,8 +9,8 @@
 	display: flex;
 	align-items: center;
 
-	// Sadece mobilde görünür
-	@media (min-width: 769px) {
+	// Sadece masaüstünde gizle (landscape telefonda görünür kalsın)
+	@media (min-width: 769px) and (min-height: 500px) {
 		display: none;
 	}
 
