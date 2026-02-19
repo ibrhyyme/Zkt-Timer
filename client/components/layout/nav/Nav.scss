@@ -7,13 +7,15 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	padding-top: 20px;
+	padding-top: calc(20px + var(--safe-area-inset-top));
 	box-sizing: border-box;
 	width: $navWidth;
 	height: 100vh; // fallback, eventually should be removed
+
 	@supports(height: 100dvh) {
 		height: 100dvh;
 	}
+
 	z-index: 1000;
 	top: 0;
 	left: 0;
@@ -65,10 +67,12 @@
 		width: 80px !important;
 
 		ul li {
-			> a,
-			> button {
+
+			>a,
+			>button {
 				justify-content: center;
 			}
+
 			span {
 				display: none !important;
 			}
@@ -78,11 +82,11 @@
 			flex-direction: column;
 			justify-content: center;
 
-			> img:first-of-type {
+			>img:first-of-type {
 				display: none;
 			}
 
-			> img:nth-of-type(2) {
+			>img:nth-of-type(2) {
 				display: unset !important;
 			}
 		}
@@ -90,7 +94,7 @@
 		#{$self}__header-actions {
 			flex-direction: column;
 
-			> *:not(:last-child) {
+			>*:not(:last-child) {
 				margin-right: 0;
 				margin-bottom: 10px;
 			}
@@ -99,7 +103,7 @@
 		#{$self}__links {
 			flex-direction: column;
 
-			> *:not(:last-child) {
+			>*:not(:last-child) {
 				margin-bottom: 10px;
 			}
 		}
@@ -139,11 +143,11 @@
 		justify-content: space-between;
 		margin-bottom: 10px;
 
-		> img:nth-of-type(2) {
+		>img:nth-of-type(2) {
 			display: none;
 		}
 
-		> img:nth-of-type(1) {
+		>img:nth-of-type(1) {
 			width: 120px !important;
 		}
 	}
@@ -153,7 +157,7 @@
 		flex-direction: row;
 		align-items: center;
 
-		> *:not(:last-child) {
+		>*:not(:last-child) {
 			margin-right: 10px;
 		}
 	}

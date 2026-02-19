@@ -19,12 +19,12 @@
 		// Full mode and mobile mode - no changes needed for header layout
 
 		&:not(&--noPadding)>&__content {
-			padding: 30px;
+			padding: calc(30px + var(--safe-area-inset-top)) calc(30px + var(--safe-area-inset-right)) calc(30px + var(--safe-area-inset-bottom)) calc(30px + var(--safe-area-inset-left));
 			box-sizing: border-box;
 			overflow-x: hidden; // Prevent horizontal scroll from children
 
 			@media (max-width: 768px) {
-				padding: 15px; // Reduced padding for mobile
+				padding: calc(15px + var(--safe-area-inset-top)) calc(15px + var(--safe-area-inset-right)) calc(15px + var(--safe-area-inset-bottom)) calc(15px + var(--safe-area-inset-left)); // Reduced padding for mobile
 			}
 		}
 	}

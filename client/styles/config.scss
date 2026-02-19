@@ -5,6 +5,12 @@ $defaultFontFamily: 'Lato', 'Helvetica Neue', Helvetica, Roboto, Arial, sans-ser
 :root {
 	--link-color: 36, 107, 253;
 	--nav-h: 80px;
+
+	// Safe Area Insets (for notched phones like iPhone X, Galaxy Fold, etc.)
+	--safe-area-inset-top: env(safe-area-inset-top, 0px);
+	--safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+	--safe-area-inset-left: env(safe-area-inset-left, 0px);
+	--safe-area-inset-right: env(safe-area-inset-right, 0px);
 }
 
 $primaryColor: #246bfd;
