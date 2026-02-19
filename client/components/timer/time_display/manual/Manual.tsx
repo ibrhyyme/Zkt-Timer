@@ -55,8 +55,10 @@ export default function Manual() {
 			setManualTime('');
 			setError(false);
 
-			// Odağı koru
-			manualInput.current?.focus();
+			// Odağı koru - React state güncellemelerinin tamamlanmasını bekle
+			requestAnimationFrame(() => {
+				manualInput.current?.focus();
+			});
 		} catch (err) {
 			// Do nothing
 		}
@@ -93,8 +95,15 @@ export default function Manual() {
 			ref={manualInput}
 			autoFocus
 			onBlur={(e) => {
-				if (!e.relatedTarget && !disabled) {
-					e.target.focus();
+				const target = e.target;
+				if (!disabled) {
+					const refocus = () => {
+						if (document.activeElement === document.body || !document.activeElement) {
+							target.focus();
+						}
+					};
+					requestAnimationFrame(refocus);
+					setTimeout(refocus, 50);
 				}
 			}}
 			disabled={disabled}

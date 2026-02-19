@@ -102,6 +102,7 @@ export default function Login() {
 						value={email}
 						onChange={setEmail}
 						placeholder="E-postanı gir"
+						autoComplete="off"
 						className="w-full h-11 px-4 rounded-2xl border focus:outline-none focus:ring-2 focus:ring-indigo-400/70 transition"
 						style={{
 							backgroundColor: 'rgba(255, 255, 255, 0.05)',
