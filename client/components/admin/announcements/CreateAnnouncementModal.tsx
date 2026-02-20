@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { X } from 'phosphor-react';
 import { gql } from '@apollo/client';
 import { gqlMutate } from '../../api';
+import Checkbox from '../../common/checkbox/Checkbox';
 
 const CREATE_ANNOUNCEMENT = gql`
 	mutation CreateAnnouncement($input: CreateAnnouncementInput) {
@@ -125,33 +126,23 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 								/>
 							</div>
 
-							<div className="flex items-center gap-2">
-								<input
-									type="checkbox"
-									id="isDraft"
-									checked={formData.isDraft}
-									onChange={(e) => setFormData({ ...formData, isDraft: e.target.checked, sendNotification: false })}
-									className="w-4 h-4"
-								/>
-								<label htmlFor="isDraft" className="text-sm">Taslak olarak kaydet</label>
-							</div>
+							<Checkbox
+								text="Taslak olarak kaydet"
+								checked={formData.isDraft}
+								onChange={(e) => setFormData({ ...formData, isDraft: e.target.checked, sendNotification: false })}
+								noMargin
+							/>
 
-							<div className="flex items-center gap-2">
-								<input
-									type="checkbox"
-									id="sendNotification"
-									checked={formData.sendNotification}
-									onChange={(e) => setFormData({ ...formData, sendNotification: e.target.checked })}
-									className="w-4 h-4"
-									disabled={formData.isDraft}
-								/>
-								<label htmlFor="sendNotification" className={`text-sm ${formData.isDraft ? 'text-zinc-500' : ''}`}>
-									Bildirim olarak da gönder
-								</label>
-								{formData.isDraft && (
-									<span className="text-xs text-zinc-500">(Taslak duyurular için bildirim gönderilemez)</span>
-								)}
-							</div>
+							<Checkbox
+								text="Bildirim olarak da gönder"
+								checked={formData.sendNotification}
+								disabled={formData.isDraft}
+								onChange={(e) => setFormData({ ...formData, sendNotification: e.target.checked })}
+								noMargin
+							/>
+							{formData.isDraft && (
+								<span className="text-xs text-zinc-500 -mt-1">(Taslak duyurular için bildirim gönderilemez)</span>
+							)}
 						</div>
 
 						{/* Right - Live Preview */}
