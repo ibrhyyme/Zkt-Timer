@@ -70,6 +70,8 @@ COPY --from=builder /app/schema.prisma ./schema.prisma
 # Bu yapıya uymak için 'client' klasörünü oluşturup içine gerekli dosyaları koymalıyız.
 # Not: 'build/client' zaten derlenmiş JS dosyalarıdır, server bunları kullanabilir.
 COPY --from=builder /app/build/client ./client
+# i18n çeviri JSON dosyaları (Babel bunları derlemiyor, runtime'da require ile yükleniyor)
+COPY --from=builder /app/client/i18n/locales ./client/i18n/locales
 
 # Entrypoint script - container başlarken prisma db push çalıştırır
 COPY docker-entrypoint.sh ./docker-entrypoint.sh
