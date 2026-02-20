@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect, useState } from 'react';
+import React, { ReactNode, useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import './App.scss';
@@ -122,8 +122,15 @@ export default function App(props: Props = {}) {
 		}
 
 		initSocketIO();
-		initPushNotifications();
 		initAppData(me, dispatch, appInitiated);
+	}, [me]);
+
+	// Push notifications - separate from main init so it works even after login
+	const pushInitRef = useRef(false);
+	useEffect(() => {
+		if (!me || pushInitRef.current) return;
+		pushInitRef.current = true;
+		initPushNotifications();
 	}, [me]);
 
 	// Fetch announcements when user logs in
