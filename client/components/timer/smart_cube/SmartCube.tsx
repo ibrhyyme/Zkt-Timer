@@ -9,7 +9,7 @@ import Connect from './bluetooth/connect';
 import { setTimerParams } from '../helpers/params';
 import { Bluetooth, DotsThree } from 'phosphor-react';
 
-import { openModal } from '../../../actions/general';
+import { openModal, closeModal } from '../../../actions/general';
 import ManageSmartCubes from './manage_smart_cubes/ManageSmartCubes';
 import Cube from 'cubejs';
 import block from '../../../styles/bem';
@@ -24,6 +24,7 @@ import Button from '../../common/button/Button';
 import { toastError } from '../../../util/toast';
 import { endTimer, startTimer, startInspection } from '../helpers/events';
 import BluetoothErrorMessage from '../common/BluetoothErrorMessage';
+import BleScanningModal from './ble_scanning_modal/BleScanningModal';
 import { isNative } from '../../../util/platform';
 import { resourceUri } from '../../../util/storage';
 import type { TwistyPlayer } from 'cubing/twisty';
@@ -71,6 +72,7 @@ export default function SmartCube() {
 		scramble,
 		smartTurns,
 		smartDeviceId,
+		smartCubeScanning,
 		smartCubeConnecting,
 		smartCubeBatteryLevel,
 		smartSolvedState,
@@ -436,6 +438,21 @@ export default function SmartCube() {
 			let bluetoothAvailable = isNative() || (!!navigator.bluetooth && (await navigator.bluetooth.getAvailability()));
 			console.log('[BLE] bluetoothAvailable:', bluetoothAvailable);
 			if (bluetoothAvailable) {
+				if (isNative()) {
+					dispatch(openModal(
+						<BleScanningModal
+							mode="smartcube"
+							onCancel={cancelBleScan}
+							onRetry={retryBleScan}
+						/>,
+						{
+							title: t('smart_cube.ble_scan_title'),
+							hideCloseButton: true,
+							disableBackdropClick: true,
+							width: 400,
+						}
+					));
+				}
 				connect.current.connect();
 			} else {
 				dispatch(openModal(<BluetoothErrorMessage />));
@@ -444,6 +461,24 @@ export default function SmartCube() {
 			console.error('[BLE] connectBluetooth error:', e);
 			toastError('Web Bluetooth API error' + (e ? `: ${e}` : ''));
 		}
+	}
+
+	function cancelBleScan() {
+		connect.current.cancelScan();
+		dispatch(closeModal());
+		setTimerParams({
+			smartCubeScanning: false,
+			smartCubeConnecting: false,
+			smartCubeScanError: null,
+		});
+	}
+
+	function retryBleScan() {
+		setTimerParams({
+			smartCubeScanning: true,
+			smartCubeScanError: null,
+		});
+		connect.current.connect();
 	}
 
 	function disconnectBluetooth() {
@@ -496,7 +531,11 @@ export default function SmartCube() {
 
 	let battery = <Battery level={smartCubeBatteryLevel} />;
 	let emblem;
-	if (smartCubeConnecting) {
+	if (smartCubeScanning) {
+		emblem = <Emblem small orange icon={<Bluetooth />} />;
+		actionButton = <Button text={t('smart_cube.scanning_short')} disabled />;
+		battery = null;
+	} else if (smartCubeConnecting) {
 		emblem = <Emblem small orange icon={<Bluetooth />} />;
 		actionButton = <Button text={t('smart_cube.connecting')} disabled />;
 		battery = null;

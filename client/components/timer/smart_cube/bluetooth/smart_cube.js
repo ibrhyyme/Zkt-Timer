@@ -4,14 +4,30 @@ import { turnSmartCube, turnSmartCubeBatch } from '../../../../actions/timer';
 import { toastError } from '../../../../util/toast';
 import { gql } from '@apollo/client';
 import { gqlMutate } from '../../../api';
-import { openModal } from '../../../../actions/general';
+import { openModal, closeModal } from '../../../../actions/general';
 import React from 'react';
 import SolveCheck from '../solve_check/SolveCheck';
 
 export default class SmartCube {
+	alertScanning = () => {
+		setTimerParams({
+			smartCubeScanning: true,
+			smartCubeScanError: null,
+		});
+	};
+
+	alertScanError = (errorMessage) => {
+		setTimerParams({
+			smartCubeScanning: false,
+			smartCubeScanError: errorMessage,
+		});
+	};
+
 	alertConnecting = () => {
 		setTimerParams({
+			smartCubeScanning: false,
 			smartCubeConnecting: true,
+			smartCubeScanError: null,
 		});
 	};
 
@@ -19,8 +35,10 @@ export default class SmartCube {
 		toastError('Akıllı küp bağlantısı kesildi');
 
 		setTimerParams({
+			smartCubeScanning: false,
 			smartCubeConnecting: false,
 			smartCubeConnected: false,
+			smartCubeScanError: null,
 		});
 	};
 
@@ -85,7 +103,14 @@ export default class SmartCube {
 			};
 		}
 
-		getStore().dispatch(
+		const store = getStore();
+
+		// Scanning modal açıksa kapat
+		if (store.getState().general.modals.length > 0) {
+			store.dispatch(closeModal());
+		}
+
+		store.dispatch(
 			openModal(<SolveCheck />, {
 				title: 'Küpün çözüldüğünü doğrulayın.',
 				description: 'Lütfen devam etmeden önce küpünüzün çözüldüğünü doğrulayın.',

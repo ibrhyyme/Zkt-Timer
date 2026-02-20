@@ -6,9 +6,11 @@ import {startTimer, endTimer, startInspection, cancelInspection} from '../../hel
 import {setTimerParams} from '../../helpers/params';
 import {useSettings} from '../../../../util/hooks/useSettings';
 import {useDispatch} from 'react-redux';
-import {openModal} from '../../../../actions/general';
+import {openModal, closeModal} from '../../../../actions/general';
 import BluetoothErrorMessage from '../../common/BluetoothErrorMessage';
+import BleScanningModal from '../../smart_cube/ble_scanning_modal/BleScanningModal';
 import {isNative} from '../../../../util/platform';
+import {useTranslation} from 'react-i18next';
 
 import {SubscriptionLike} from 'rxjs';
 import {GanTimerConnection, GanTimerEvent, GanTimerState, connectGanTimer} from 'gan-web-bluetooth';
@@ -21,8 +23,10 @@ let subs: SubscriptionLike | null = null;
 
 export default function GanTimer() {
 	const dispatch = useDispatch();
+	const {t} = useTranslation();
 	const inspectionEnabled = useSettings('inspection');
 	const [connected, setConnected] = useState(false);
+	const [scanning, setScanning] = useState(false);
 
 	const context = useContext(TimerContext);
 	const contextRef = useRef<ITimerContext>(context);
@@ -69,6 +73,11 @@ export default function GanTimer() {
 		}
 	}
 
+	function cancelGanScan() {
+		dispatch(closeModal());
+		setScanning(false);
+	}
+
 	async function handleConnectButton() {
 		if (conn) {
 			conn.disconnect();
@@ -79,24 +88,57 @@ export default function GanTimer() {
 			let bluetoothAvailable = isNative() || (!!navigator.bluetooth && (await navigator.bluetooth.getAvailability()));
 			console.log('[BLE] GanTimer bluetoothAvailable:', bluetoothAvailable);
 			if (bluetoothAvailable) {
-				conn = await connectGanTimer();
-				conn.events$.subscribe((evt) => evt.state == GanTimerState.DISCONNECT && (conn = null));
-				subs = conn.events$.subscribe(handleTimerEvent);
-				setConnected(true);
+				if (isNative()) {
+					setScanning(true);
+					dispatch(openModal(
+						<BleScanningModal
+							mode="gantimer"
+							onCancel={cancelGanScan}
+						/>,
+						{
+							title: t('smart_cube.ble_scan_title'),
+							hideCloseButton: true,
+							disableBackdropClick: true,
+							width: 400,
+						}
+					));
+				}
+				try {
+					conn = await connectGanTimer();
+					if (isNative()) {
+						dispatch(closeModal());
+					}
+					conn.events$.subscribe((evt) => evt.state == GanTimerState.DISCONNECT && (conn = null));
+					subs = conn.events$.subscribe(handleTimerEvent);
+					setConnected(true);
+				} catch (e) {
+					console.error('[BLE] GanTimer connection error:', e);
+					if (isNative()) {
+						dispatch(closeModal());
+					}
+				} finally {
+					setScanning(false);
+				}
 			} else {
 				dispatch(openModal(<BluetoothErrorMessage />));
 			}
 		}
 	}
 
+	let emblemText = connected ? t('smart_cube.connecting').replace('...', '') : t('smart_cube.connect');
+	if (scanning) {
+		emblemText = t('smart_cube.scanning_short');
+	}
+
 	return (
-		<div onClick={handleConnectButton} style={{userSelect: 'none', cursor: 'pointer'}}>
+		<div onClick={scanning ? undefined : handleConnectButton} style={{userSelect: 'none', cursor: scanning ? 'default' : 'pointer'}}>
 			<Emblem
 				icon={<Bluetooth />}
-				text={connected ? 'Connected' : 'Connect to Timer'}
+				text={emblemText}
 				small
-				red={!connected}
+				red={!connected && !scanning}
 				green={connected}
+				orange={scanning}
 			/>
 		</div>
 	);

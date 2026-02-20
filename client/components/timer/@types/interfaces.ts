@@ -83,6 +83,8 @@ export interface TimerStore {
 	canStart?: boolean;
 	smartCubeConnected?: boolean;
 	smartCubeConnecting?: boolean;
+	smartCubeScanning?: boolean;
+	smartCubeScanError?: string | null;
 	smartCubeBatteryLevel?: number;
 	smartCanStart?: boolean;
 	smartTurns?: any; // TODO fix

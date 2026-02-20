@@ -3,6 +3,8 @@ import { TimerStore } from '../components/timer/@types/interfaces';
 const smartState = {
 	smartCubeConnected: false,
 	smartCubeConnecting: false,
+	smartCubeScanning: false,
+	smartCubeScanError: null,
 	smartCanStart: false,
 	smartTurns: [],
 	smartDeviceId: '',
