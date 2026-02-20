@@ -1,3 +1,4 @@
+require('dotenv').config();
 const postCssPlugin = require('esbuild-style-plugin');
 const {sassPlugin} = require('esbuild-sass-plugin');
 
