@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import StartInstructions from '../start_instructions/StartInstructions';
 import { ITimerContext, TimerContext } from '../../Timer';
 import { useSettings } from '../../../../util/hooks/useSettings';
@@ -7,6 +8,7 @@ import { endTimer, startTimer, startInspection } from '../../helpers/events';
 import { setTimerParams } from '../../helpers/params';
 
 export default function StackMat() {
+	const { t } = useTranslation();
 	const stackMatId = useSettings('stackmat_id');
 	const stackMatAutoInspection = useSettings('stackmat_auto_inspection');
 	const inspectionEnabled = useSettings('inspection');
@@ -126,7 +128,7 @@ export default function StackMat() {
 
 	return (
 		<StartInstructions>
-			Başlamak için ellerinizi <span>StackMat</span> üzerine koyun
+			{t('timer_modules.stackmat_place_hands')}
 		</StartInstructions>
 	);
 }

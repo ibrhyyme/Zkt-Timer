@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { setSetting, toggleSetting } from '../../../db/settings/update';
 import { useSettings } from '../../../util/hooks/useSettings';
 import screenfull from '../../../util/vendor/screenfull';
@@ -115,6 +116,7 @@ function ExtrasSelect({ label, value, options, hidden, onChange }: ExtrasSelectP
 }
 
 export default function ExtrasTab() {
+	const { t } = useTranslation();
 	const focusMode = useSettings('focus_mode');
 	const inspection = useSettings('inspection');
 	const hideTimeWhenSolving = useSettings('hide_time_when_solving');
@@ -135,25 +137,25 @@ export default function ExtrasTab() {
 
 	const extrasOptions = [
 		{
-			label: 'Full Screen',
+			label: t('quick_controls.full_screen'),
 			isActive: fullScreenMode,
 			hidden: !screenfull.isEnabled,
 			onClick: () => screenfull.toggle(),
 		},
 		{
-			label: 'Odak Modu',
+			label: t('quick_controls.focus_mode'),
 			isActive: focusMode,
 			hidden: false,
 			onClick: () => toggleSetting('focus_mode'),
 		},
 		{
-			label: 'İnceleme',
+			label: t('quick_controls.inspection'),
 			isActive: inspection,
 			hidden: false,
 			onClick: () => toggleSetting('inspection'),
 		},
 		{
-			label: 'Çözerken Süreyi Gizle',
+			label: t('quick_controls.hide_time_when_solving'),
 			isActive: hideTimeWhenSolving,
 			hidden: false,
 			onClick: () => toggleSetting('hide_time_when_solving'),
@@ -161,7 +163,7 @@ export default function ExtrasTab() {
 	];
 
 	const analysisOptions = [
-		{ label: 'Yok', value: 'none' },
+		{ label: t('quick_controls.none'), value: 'none' },
 		{ label: 'CFOP', value: 'cfop' },
 		{ label: 'CF+OP', value: 'cf_plus_op' }, // Multi-phase (4 steps: Cross, F2L, OLL, PLL)
 		{ label: 'CFFFFOP', value: 'cffffop' }, // F2L Split (Cross, F2L1, F2L2, F2L3, F2L4, OLL, PLL)
@@ -173,7 +175,7 @@ export default function ExtrasTab() {
 			<div className="flex items-center space-x-2 mb-6">
 				<div className="h-2 w-2 bg-[#4a9eff] rounded-full"></div>
 				<p className="text-[#888] text-sm font-medium">
-					Ek özellikleri aç/kapat (birden fazla seçilebilir)
+					{t('quick_controls.extras_description')}
 				</p>
 			</div>
 			{extrasOptions.map((option) => (
@@ -187,7 +189,7 @@ export default function ExtrasTab() {
 			))}
 
 			<ExtrasSelect
-				label="Multi-Evre"
+				label={t('quick_controls.multi_phase')}
 				value={analysisMode || 'none'}
 				options={analysisOptions}
 				hidden={timerType !== 'smart'} // Only show if Smart Cube is selected

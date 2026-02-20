@@ -30,8 +30,10 @@ import { useMe } from '../../../util/hooks/useMe';
 import NavLink from './NavLink';
 import Button from '../../common/button/Button';
 import LoginNav from './LoginNav';
+import LanguageSwitcher from '../../common/language_switcher/LanguageSwitcher';
 import { resourceUri } from '../../../util/storage';
 import { isPro } from '../../../util/pro';
+import { useTranslation } from 'react-i18next';
 
 const b = block('nav');
 
@@ -46,55 +48,55 @@ export interface NavLinkProps {
 
 export const NAV_LINKS: NavLinkProps[] = [
 	{
-		name: 'Timer',
+		name: 'nav.timer',
 		icon: <Timer weight="bold" />,
 		match: /(^\/$|^$|^\/timer)/,
 		link: '/timer',
 	},
 	{
-		name: 'Online',
+		name: 'nav.online',
 		icon: <Sword weight="bold" />,
 		match: /^\/play/,
 		link: '/play',
 		loginRequired: true,
 	},
 	{
-		name: 'Odalar',
+		name: 'nav.rooms',
 		icon: <Handshake weight="bold" />,
 		match: /^\/rooms/,
 		link: '/rooms',
 		loginRequired: true,
 	},
 	{
-		name: 'İstatistikler',
+		name: 'nav.stats',
 		icon: <ChartPie weight="bold" />,
 		match: /^\/stats/,
 		link: '/stats',
 		loginRequired: true,
 	},
 	{
-		name: 'Topluluk',
+		name: 'nav.community',
 		icon: <Users weight="bold" />,
 		match: /^\/community/,
 		link: '/community/leaderboards',
 		loginRequired: true,
 	},
 	{
-		name: 'Trainer',
+		name: 'nav.trainer',
 		icon: <LadderSimple weight="bold" />,
 		match: /^\/trainer/,
 		link: '/trainer',
 		loginRequired: true,
 	},
 	{
-		name: 'Çözümler',
+		name: 'nav.solves',
 		icon: <ListBullets weight="bold" />,
 		match: /^\/solves/,
 		link: '/solves',
 		loginRequired: false,
 	},
 	{
-		name: 'Sezonlar',
+		name: 'nav.sessions',
 		icon: <Rows weight="bold" />,
 		match: /^\/sessions/,
 		link: '/sessions',
@@ -104,6 +106,7 @@ export const NAV_LINKS: NavLinkProps[] = [
 
 export default function Nav() {
 	const dispatch = useDispatch();
+	const { t } = useTranslation();
 
 	const match = useRouteMatch();
 	const me = useMe();
@@ -168,6 +171,7 @@ export default function Nav() {
 				}}
 			>
 				<div style={{ pointerEvents: 'auto', display: 'flex', gap: '12px', alignItems: 'center' }}>
+					<LanguageSwitcher />
 					<MobileNav />
 					<AccountDropdown />
 				</div>
@@ -199,12 +203,12 @@ export default function Nav() {
 						<LoginNav collapsed={navClosed} />
 					</div>
 					<div className={b('bottom-section')}>
-
+						<LanguageSwitcher />
 						<Button
 							large
 							iconFirst
 							hidden={forceNavCollapsed}
-							text={navCollapsed ? '' : 'Daralt'}
+							text={navCollapsed ? '' : t('nav.collapse')}
 							icon={navCollapsed ? <ArrowRight weight="fill" /> : <ArrowLeft weight="fill" />}
 							transparent
 							className={b('collapse-button')}

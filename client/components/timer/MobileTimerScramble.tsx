@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
+import {useTranslation} from 'react-i18next';
 import { Check } from 'phosphor-react';
 import { copyText } from '../common/copy_text/CopyText';
 import { TimerContext } from './Timer';
@@ -20,6 +21,7 @@ const b = block('mobile-timer-scramble');
  * Tüm butonlar (Edit, +2, DNF, Lock, Refresh) TimerControls'a taşındı.
  */
 export default function MobileTimerScramble() {
+    const {t} = useTranslation();
     const context = useContext(TimerContext);
     const mobileMode = useGeneral('mobile_mode');
     const cubeType = context.cubeType;
@@ -103,9 +105,9 @@ export default function MobileTimerScramble() {
                     lineHeight: timerScrambleSize * 1.6 + 'px',
                 }}
                 onClick={handleCopy}
-                title="Kopyalamak için tıkla"
+                title={t('mobile_scramble.click_to_copy')}
             >
-                {scramble || 'Karıştırma yükleniyor...'}
+                {scramble || t('mobile_scramble.loading_scramble')}
                 {copied && <Check className={b('copied-icon')} weight="bold" />}
             </div>
         </div>

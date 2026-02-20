@@ -8,12 +8,14 @@ import {useDispatch} from 'react-redux';
 import {getGameMetaData} from '../../Play';
 import Button from '../../../common/button/Button';
 import {socketClient} from '../../../../util/socket/socketio';
+import {useTranslation} from 'react-i18next';
 
 const b = block('games-intro-challenge');
 
 export default function GameChallenger() {
 	const dispatch = useDispatch();
 	const {gameType, multiplayerOnly, multiplayer} = useContext(GameContext);
+	const {t} = useTranslation();
 	const gameTypeData = getGameMetaData(gameType);
 
 	if (!multiplayer) {
@@ -34,7 +36,7 @@ export default function GameChallenger() {
 					matchType={gameType}
 				/>,
 				{
-					title: `${gameTypeData.name} Oyna`,
+					title: t('play.play_game', {name: gameTypeData.name}),
 					onClose: () => {
 						socketClient().emit('playerLeftLobby');
 					},
@@ -44,11 +46,11 @@ export default function GameChallenger() {
 	}
 
 	let joinLobbyButton = null;
-	const challengeButton = <Button flat primary text="Meydan Oku" large fullWidth onClick={() => openMatch(false)} />;
+	const challengeButton = <Button flat primary text={t('play.challenge')} large fullWidth onClick={() => openMatch(false)} />;
 
 	// Custom styling on plain button when multiplayer only
 	if (multiplayerOnly) {
-		joinLobbyButton = <Button primary large fullWidth text="Lobiye Katıl" onClick={() => openMatch(true)} />;
+		joinLobbyButton = <Button primary large fullWidth text={t('play.join_lobby')} onClick={() => openMatch(true)} />;
 	}
 
 	return (

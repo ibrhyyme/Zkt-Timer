@@ -1,4 +1,5 @@
 import React, { ReactNode, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import './Pagination.scss';
 import HorizontalNav from '../horizontal_nav/HorizontalNav';
 import Empty from '../empty/Empty';
@@ -41,6 +42,7 @@ interface Props {
 }
 
 export default function Pagination<T>(props: Props) {
+	const { t } = useTranslation();
 	const { tabs, itemRow, searchable, prefetchData, searchQuery: parentSearchQuery } = props;
 
 	const [hasMore, setHasMore] = useState(false);
@@ -164,8 +166,9 @@ export default function Pagination<T>(props: Props) {
 
 	let resultCount = (
 		<span>
-			{numberWithCommas(totalResults)} sonuç
-			{finalSearchQuery ? ` ("${finalSearchQuery}" için)` : ''}
+			{finalSearchQuery
+				? t('common.results_count_for', { count: totalResults, query: finalSearchQuery })
+				: t('common.results_count', { count: totalResults })}
 		</span>
 	);
 
@@ -174,7 +177,7 @@ export default function Pagination<T>(props: Props) {
 	if (items && items.length) {
 		body = items.map((item) => itemRow(item, currentTab));
 	} else if (items && !items.length) {
-		body = <Empty text={`Hiçbir ${currentTab.plural} bulunamadı`} />;
+		body = <Empty text={t('common.no_items_found', { items: currentTab.plural })} />;
 	} else {
 		body = <Loading />;
 		resultCount = null;
@@ -206,7 +209,7 @@ export default function Pagination<T>(props: Props) {
 		inputQuery = (
 			<div className={b('header')}>
 				<Input
-					placeholder={`${currentTab.plural} ara`}
+					placeholder={t('common.search_placeholder', { items: currentTab.plural })}
 					icon={<MagnifyingGlass weight="bold" />}
 					value={searchQuery}
 					onChange={(e) => setSearchQuery(e.target.value)}
@@ -224,11 +227,11 @@ export default function Pagination<T>(props: Props) {
 				{resultCount}
 				<div className={b('list')}>{body}</div>
 				<div className={b('pagination')}>
-					<Button onClick={prevPage} text="Önceki" disabled={page === 0} primary={page > 0} />
+					<Button onClick={prevPage} text={t('common.previous')} disabled={page === 0} primary={page > 0} />
 					<p>
-						Sayfa {page + 1} / {Math.ceil(totalResults / 25) || 1}
+						{t('common.page_info', { current: page + 1, total: Math.ceil(totalResults / 25) || 1 })}
 					</p>
-					<Button onClick={nextPage} text="Sonraki" disabled={!hasMore} primary={hasMore} />
+					<Button onClick={nextPage} text={t('common.next')} disabled={!hasMore} primary={hasMore} />
 				</div>
 			</div>
 		</div>

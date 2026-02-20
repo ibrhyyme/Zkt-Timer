@@ -6,6 +6,7 @@
 
 import { processQueue, registerBackgroundSync, isOnline } from '../../util/offline-sync';
 import { getPendingCount } from '../../util/offline-queue';
+import i18n from '../../i18n/i18n';
 
 let syncInProgress = false;
 
@@ -74,7 +75,7 @@ async function registerServiceWorker() {
                 newWorker?.addEventListener('statechange', () => {
                     if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                         // Yeni versiyon var, kullanıcıyı bilgilendir
-                        if (confirm('Yeni bir versiyon mevcut. Sayfayı yenilemek ister misiniz?')) {
+                        if (confirm(i18n.t('common.new_version_available'))) {
                             window.location.reload();
                         }
                     }

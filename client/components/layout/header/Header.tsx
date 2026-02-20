@@ -1,4 +1,5 @@
 import React, { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import Helmet from 'react-helmet';
 import { resourceUri } from '../../../util/storage';
 // process.env variables are defined by esbuild, no need to import process
@@ -252,6 +253,7 @@ export const getStructuredData = (currentPath: string, finalTitle: string, final
 };
 
 export default function Header(props: Props) {
+	const { t } = useTranslation();
 	const currentPath = props.path || '';
 	const fullUrl = `https://zktimer.app${currentPath}`;
 
@@ -262,46 +264,46 @@ export default function Header(props: Props) {
 	// Eğer component'e özel title/desc gelmediyse, path'e göre belirle
 	if (!pageTitle) {
 		if (currentPath === '/' || currentPath === '') {
-			pageTitle = 'Zkt-Timer | Türkiye\'nin En Gelişmiş Zeka Küpü Platformu';
-			pageDesc = "Türkiye'nin en gelişmiş zeka küpü ve rubik küp platformu! Profesyonel timer, canlı yarış odaları, akıllı küp desteği, detaylı istatistikler ve Türkiye sıralaması. 3x3, 2x2, 4x4 ve tüm WCA kategorileri. %100 Türkçe speedcubing deneyimi.";
+			pageTitle = t('seo.home_title');
+			pageDesc = t('seo.home_description');
 		} else if (currentPath === '/timer') {
-			pageTitle = 'Timer - Zkt-Timer';
-			pageDesc = 'Profesyonel zeka küpü timer. Milisaniye hassasiyetinde ölçüm, WCA scramble algoritmaları, akıllı küp desteği ve detaylı performans analizi. Speedcubing için en iyi timer.';
+			pageTitle = t('seo.timer_title');
+			pageDesc = t('seo.timer_description');
 		} else if (currentPath === '/login') {
-			pageTitle = 'Giriş Yap - Zkt-Timer';
-			pageDesc = 'ZKT Timer hesabına giriş yap. Çözümlerini kaydet, istatistiklerini takip et ve Türkiye sıralamasında yerini al.';
+			pageTitle = t('seo.login_title');
+			pageDesc = t('seo.login_description');
 		} else if (currentPath === '/signup') {
-			pageTitle = 'Ücretsiz Hesap Oluştur - Zkt-Timer';
-			pageDesc = 'Türkiye\'nin en büyük zeka küpü topluluğuna katıl! Ücretsiz hesap oluştur, çözümlerini kaydet ve diğer küpçülerle yarış.';
+			pageTitle = t('seo.signup_title');
+			pageDesc = t('seo.signup_description');
 		} else if (currentPath === '/forgot-password') {
-			pageTitle = 'Şifre Sıfırla - Zkt-Timer';
-			pageDesc = 'ZKT Timer hesabının şifresini sıfırla. E-posta adresine gönderilecek bağlantı ile yeni şifre belirle.';
+			pageTitle = t('seo.forgot_password_title');
+			pageDesc = t('seo.forgot_password_description');
 		} else if (currentPath.startsWith('/rooms')) {
-			pageTitle = 'Canlı Yarışma Odaları - Zkt-Timer';
-			pageDesc = 'Diğer küpçülerle gerçek zamanlı yarış! Arkadaşlarınla oda oluştur veya açık odalara katıl. Speedcubing mücadelesi için en iyi platform.';
+			pageTitle = t('seo.rooms_title');
+			pageDesc = t('seo.rooms_description');
 		} else if (currentPath === '/settings') {
-			pageTitle = 'Kullanıcı Ayarları - Zkt-Timer';
-			pageDesc = 'Timer ayarlarını, görünümü ve hesap tercihlerini kişiselleştir.';
+			pageTitle = t('seo.settings_title');
+			pageDesc = t('seo.settings_description');
 		} else if (currentPath.startsWith('/user/')) {
 			const parts = currentPath.split('/');
-			const username = parts[2] || 'Kullanıcı';
-			pageTitle = `${username} - Cuber Profili | Zkt-Timer`;
-			pageDesc = `${username} kullanıcısının zeka küpü profili. Rekorları, çözüm istatistikleri ve yarışma geçmişi.`;
+			const username = parts[2] || t('seo.user_fallback');
+			pageTitle = t('seo.user_profile_title', { username });
+			pageDesc = t('seo.user_profile_description', { username });
 		} else if (currentPath.startsWith('/trainer')) {
-			pageTitle = 'Algoritma Eğitmeni - Zkt-Timer';
-			pageDesc = 'F2L, OLL, PLL ve daha fazla algoritma öğren. İnteraktif 3D küp ile antrenman yap ve hızını artır.';
+			pageTitle = t('seo.trainer_title');
+			pageDesc = t('seo.trainer_description');
 		} else if (currentPath === '/stats') {
-			pageTitle = 'Çözüm İstatistikleri - Zkt-Timer';
-			pageDesc = 'Zeka küpü performansını analiz et. Ortalamalar, en iyi süreler, grafiker ve detaylı istatistikler.';
+			pageTitle = t('seo.stats_title');
+			pageDesc = t('seo.stats_description');
 		} else if (currentPath === '/solves') {
-			pageTitle = 'Çözüm Geçmişi - Zkt-Timer';
-			pageDesc = 'Tüm zeka küpü çözümlerini görüntüle. Scramble, süre ve çözüm detayları ile performans analizi.';
+			pageTitle = t('seo.solves_title');
+			pageDesc = t('seo.solves_description');
 		} else if (currentPath === '/community/leaderboards') {
-			pageTitle = 'Türkiye Sıralaması - Zkt-Timer';
-			pageDesc = 'Türkiye\'nin en hızlı zeka küpü çözücüleri! Single ve Average rekorları, kategori bazlı sıralamalar.';
+			pageTitle = t('seo.leaderboards_title');
+			pageDesc = t('seo.leaderboards_description');
 		} else if (currentPath === '/demo') {
-			pageTitle = 'Demo Modu - Zkt-Timer';
-			pageDesc = 'ZKT Timer\'ı ücretsiz dene! Hesap oluşturmadan timer özelliklerini keşfet.';
+			pageTitle = t('seo.demo_title');
+			pageDesc = t('seo.demo_description');
 		}
 	}
 

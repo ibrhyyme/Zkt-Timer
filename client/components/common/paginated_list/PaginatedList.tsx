@@ -1,4 +1,5 @@
 import React, { ReactNode, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import './PaginatedList.scss';
 import Empty from '../empty/Empty';
 import Loading from '../loading/Loading';
@@ -19,6 +20,7 @@ interface Props<T> {
 }
 
 export default function PaginatedList<T>(props: Props<T>) {
+	const { t } = useTranslation();
 	const { getItemRow, fetchData, searchQuery } = props;
 
 	const match = useRouteMatch();
@@ -83,8 +85,9 @@ export default function PaginatedList<T>(props: Props<T>) {
 
 	let resultCount = (
 		<span className="text-text">
-			{numberWithCommas(totalResults)} sonuç
-			{searchQuery ? ` "${searchQuery}" için` : ''}
+			{searchQuery
+				? t('common.results_count_for', { count: totalResults, query: searchQuery })
+				: t('common.results_count', { count: totalResults })}
 		</span>
 	);
 
@@ -96,7 +99,7 @@ export default function PaginatedList<T>(props: Props<T>) {
 			return getItemRow(item, itemIndex);
 		});
 	} else if (items && !items.length) {
-		body = <Empty text={`Herhangi bir kayıt bulunamadı`} />;
+		body = <Empty text={t('common.no_results')} />;
 	} else {
 		body = <Loading />;
 		resultCount = null;
@@ -110,11 +113,11 @@ export default function PaginatedList<T>(props: Props<T>) {
 				{resultCount}
 				<div className="">{body}</div>
 				<div className="flex flex-row items-center justify-center w-full max-w-36 mx-auto mt-8">
-					<Button onClick={prevPage} text="Önceki" disabled={page === 0} primary={page > 0} />
+					<Button onClick={prevPage} text={t('common.previous')} disabled={page === 0} primary={page > 0} />
 					<p className="m-0 mx-3">
-						Sayfa {page + 1} / {totalPages}
+						{t('common.page_info', { current: page + 1, total: totalPages })}
 					</p>
-					<Button onClick={nextPage} text="Sonraki" disabled={!hasMore} primary={hasMore} />
+					<Button onClick={nextPage} text={t('common.next')} disabled={!hasMore} primary={hasMore} />
 				</div>
 			</div>
 		</div>

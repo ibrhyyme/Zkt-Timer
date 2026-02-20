@@ -14,6 +14,7 @@ import { IModalProps } from '../../../common/modal/Modal';
 import ModalHeader from '../../../common/modal/modal_header/ModalHeader';
 import { BanUserInput } from '../../../../../server/schemas/BanLog.schema';
 import { UserAccount, UserAccountForAdmin } from '../../../../../server/schemas/UserAccount.schema';
+import { useTranslation } from 'react-i18next';
 
 const b = block('ban-user');
 
@@ -31,6 +32,7 @@ interface Props extends IModalProps {
 
 export default function BanUser(props: Props) {
 	const { user } = props;
+	const { t } = useTranslation();
 
 	const [cheatingIn1v1, toggleCheatingIn1v1] = useToggle(false);
 	const [deletePublishedSolves, toggleDeletePublishedSolves] = useToggle(true);
@@ -80,7 +82,7 @@ export default function BanUser(props: Props) {
 		let durationText = `${duration} ${durationUnit}${duration === 1 ? '' : 's'}`;
 
 		if (forever) {
-			durationText = 'sonsuza kadar';
+			durationText = t('admin_users.forever');
 			minutes = -1;
 		}
 
@@ -108,7 +110,7 @@ export default function BanUser(props: Props) {
 			},
 		});
 
-		toastSuccess(`${user.username} kullanıcı ${durationText} süresiyle yasaklandı`);
+		toastSuccess(t('admin_users.user_banned', { username: user.username, duration: durationText }));
 		props.onComplete();
 	}
 
@@ -117,21 +119,21 @@ export default function BanUser(props: Props) {
 	return (
 		<div className={b()}>
 			<ModalHeader
-				title={`${user.username} Kullanıcısını Yasakla`}
-				description="Bu kullanıcı bir kuralı ihlal ettiyse, buradan yasaklayabilirsiniz. Belirli bir süre veya süresiz olarak yasaklayabilirsiniz"
+				title={t('admin_users.ban_user', { username: user.username })}
+				description={t('admin_users.ban_description')}
 			/>
 			<TextArea
 				autoSize
 				fullWidth
 				onChange={setReason}
 				name="reason"
-				legend="Sebep (kullanıcıya gösterilecek)"
+				legend={t('admin_users.ban_reason')}
 				value={reason}
 			/>
 			<div className={b('duration', { forever })}>
 				<Input
 					disabled={forever}
-					legend="Süre"
+					legend={t('admin_users.duration')}
 					type="number"
 					name="durationCount"
 					value={durationCount}
@@ -139,34 +141,34 @@ export default function BanUser(props: Props) {
 				/>
 				<Select
 					disabled={forever}
-					legend="Süre birimi"
+					legend={t('admin_users.duration_unit')}
 					name="durationType"
 					value={durationUnit}
 					onChange={setDurationUnit}
 				>
-					<option value="minute">Dakika</option>
-					<option value="hour">Saat</option>
-					<option value="day">Gün</option>
-					<option value="week">Hafta</option>
-					<option value="month">Ay</option>
-					<option value="year">Yıl</option>
+					<option value="minute">{t('admin_users.minute')}</option>
+					<option value="hour">{t('admin_users.hour')}</option>
+					<option value="day">{t('admin_users.day')}</option>
+					<option value="week">{t('admin_users.week')}</option>
+					<option value="month">{t('admin_users.month')}</option>
+					<option value="year">{t('admin_users.year')}</option>
 				</Select>
 			</div>
 			<div className={b('options')}>
 				<Checkbox
-					text="Yayınlanan tüm çözümleri sil"
+					text={t('admin_users.delete_published_solves')}
 					onChange={() => toggleDeletePublishedSolves()}
 					checked={deletePublishedSolves}
 				/>
-				<Checkbox text="Kullanıcıyı süresiz yasakla" onChange={() => toggleForever()} checked={forever} />
+				<Checkbox text={t('admin_users.ban_permanently')} onChange={() => toggleForever()} checked={forever} />
 				<Checkbox
-					text="Kullanıcı 1v1'de hile yaptı (ELO iadesi yap)"
+					text={t('admin_users.cheater_elo_refund')}
 					onChange={() => toggleCheatingIn1v1()}
 					checked={cheatingIn1v1}
 				/>
 			</div>
 			<Button
-				text="Kullanıcıyı Yasakla"
+				text={t('admin_users.ban_button')}
 				disabled={disabled}
 				danger
 				large

@@ -5,6 +5,7 @@ import block from '../../../../../styles/bem';
 import { socketClient } from '../../../../../util/socket/socketio';
 import Button from '../../../../common/button/Button';
 import { GameType } from '../../../../../../shared/match/consts';
+import { useTranslation } from 'react-i18next';
 
 const b = block('match-join-lobby');
 
@@ -15,6 +16,7 @@ interface Props {
 
 export default function Lobby(props: Props) {
 	const { onCancel } = props;
+	const { t } = useTranslation();
 	const [updatedDots, setUpdatedDots] = useState(3);
 
 	useEffect(() => {
@@ -47,8 +49,8 @@ export default function Lobby(props: Props) {
 		<div className={b()}>
 			<div className={b('body')}>
 				<UsersThree weight="fill" />
-				<p>Oyuncular aranıyor{dots}</p>
-				<Button text="İptal" onClick={cancelSearch} />
+				<p>{t('match.searching_players')}{dots}</p>
+				<Button text={t('match.cancel')} onClick={cancelSearch} />
 			</div>
 		</div>
 	);

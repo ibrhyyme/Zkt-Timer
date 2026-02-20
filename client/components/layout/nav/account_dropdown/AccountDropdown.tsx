@@ -9,12 +9,14 @@ import { useMe } from '../../../../util/hooks/useMe';
 import { useDispatch } from 'react-redux';
 import { setGeneral } from '../../../../actions/general';
 import { Gear, Bell } from 'phosphor-react';
+import { useTranslation } from 'react-i18next';
 
 const b = block('nav-account-dropdown');
 
 export default function AccountDropdown() {
 	const me = useMe();
 	const dispatch = useDispatch();
+	const { t } = useTranslation();
 
 	if (!me) {
 		return null;
@@ -26,19 +28,16 @@ export default function AccountDropdown() {
 
 	const aviDropDownOptions: IDropdownOption[] = [];
 
-	aviDropDownOptions.push({ link: '/account/personal-info', text: 'Hesap' });
-	aviDropDownOptions.push({ link: `/user/${me.username}`, text: 'Profil' });
+	aviDropDownOptions.push({ link: '/account/personal-info', text: t('account_dropdown.account') });
+	aviDropDownOptions.push({ link: `/user/${me.username}`, text: t('account_dropdown.profile') });
 
-	// Add new options
-	aviDropDownOptions.push({ onClick: openSettings, text: 'Genel Ayarlar', icon: <Gear weight="bold" /> });
-	// Bildirimler header'daki zil ikonunda dropdown olarak mevcut
-	// Burada bildirim ayarları sayfasına yönlendiriyoruz
-	aviDropDownOptions.push({ link: '/account/notifications', text: 'Bildirim Ayarları', icon: <Bell weight="bold" /> });
+	aviDropDownOptions.push({ onClick: openSettings, text: t('account_dropdown.general_settings'), icon: <Gear weight="bold" /> });
+	aviDropDownOptions.push({ link: '/account/notifications', text: t('account_dropdown.notification_settings'), icon: <Bell weight="bold" /> });
 
 	if (me.admin) {
-		aviDropDownOptions.push({ link: '/admin/reports', text: 'Yönetici' });
+		aviDropDownOptions.push({ link: '/admin/reports', text: t('account_dropdown.admin') });
 	}
-	aviDropDownOptions.push({ onClick: logOut, text: 'Çıkış Yap' });
+	aviDropDownOptions.push({ onClick: logOut, text: t('account_dropdown.logout') });
 
 	return (
 		<div className={b()}>

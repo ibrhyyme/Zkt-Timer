@@ -1,4 +1,5 @@
 import React from 'react';
+import {useTranslation} from 'react-i18next';
 import './ReportSummary.scss';
 import {Report, ReportSummary as ReportSummarySchema} from '../../../../@types/generated/graphql';
 import block from '../../../../styles/bem';
@@ -21,6 +22,7 @@ interface Props {
 }
 
 export default function ReportSummary(props: Props) {
+	const {t} = useTranslation();
 	const {reportSummary} = props;
 
 	const [resolveReports, resolveReportsData] = useMutation<
@@ -35,8 +37,8 @@ export default function ReportSummary(props: Props) {
 	const topInfo = (
 		<div className={b('top-info')}>
 			<Tag backgroundColor="orange" text={`${count} report${count === 1 ? '' : 's'}`} />
-			<Tag small text={`Son rapor ${getDateFromNow(reportSummary.last_report)}`} />
-			<Tag small text={`İlk rapor ${getDateFromNow(reportSummary.first_report)}`} />
+			<Tag small text={t('report.last_report', { date: getDateFromNow(reportSummary.last_report) })} />
+			<Tag small text={t('report.first_report', { date: getDateFromNow(reportSummary.first_report) })} />
 		</div>
 	);
 
@@ -62,7 +64,7 @@ export default function ReportSummary(props: Props) {
 				<div className={b('rows')}>{rows}</div>
 				<div className={b('actions')}>
 					<Button
-						text="Çözüldü Olarak İşaretle"
+						text={t('report.mark_as_resolved')}
 						loading={resolveReportsData?.loading}
 						onClick={markAsResolved}
 						primary

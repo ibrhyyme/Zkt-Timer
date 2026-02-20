@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import Login from './login/Login';
 import SignUp from './sign_up/SignUp';
 import Forgot from './forgot/Forgot';
@@ -11,6 +12,7 @@ import { Cube } from 'phosphor-react';
 const b = block('login');
 
 export default function LoginWrapper() {
+	const { t } = useTranslation();
 	const match = useRouteMatch();
 	const path = match.path;
 
@@ -33,9 +35,9 @@ export default function LoginWrapper() {
 				path={path}
 				title={
 					currentTab === 'login'
-						? 'Zkt-Timer | Giriş Yap'
+						? t('login_wrapper.login_title')
 						: currentTab === 'signup'
-							? 'Zkt-Timer | Kayıt Ol'
+							? t('login_wrapper.signup_title')
 							: undefined
 				}
 			/>
@@ -65,17 +67,17 @@ export default function LoginWrapper() {
 
 					{/* Title */}
 					<h1 className={b('title')}>
-						{currentTab === 'forgot' ? 'Şifreni Sıfırla' : 'Hoş Geldin'}
+						{currentTab === 'forgot' ? t('login_wrapper.reset_password') : t('login_wrapper.welcome')}
 					</h1>
 
 					{/* Tabs */}
 					{(currentTab === 'login' || currentTab === 'signup') && (
 						<div className={b('tabs')}>
 							<Link to="/login" className={b('tab', { active: currentTab === 'login' })}>
-								Giriş
+								{t('login_wrapper.login')}
 							</Link>
 							<Link to="/signup" className={b('tab', { active: currentTab === 'signup' })}>
-								Kayıt Ol
+								{t('login_wrapper.signup')}
 							</Link>
 						</div>
 					)}

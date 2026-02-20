@@ -3,6 +3,7 @@ import './ActivePlayers.scss';
 import {socketClient} from '../../../../util/socket/socketio';
 import {GameType} from '../../../../@types/generated/graphql';
 import {SocketConst} from '../../../../shared/socket_costs';
+import {useTranslation} from 'react-i18next';
 
 interface Props {
 	matchType: GameType;
@@ -10,6 +11,7 @@ interface Props {
 
 export default function ActivePlayers(props: Props) {
 	const {matchType} = props;
+	const {t} = useTranslation();
 
 	const [loaded, setLoaded] = useState(false);
 	const [playersInQueue, setPlayersInQueue] = useState(0);
@@ -30,7 +32,7 @@ export default function ActivePlayers(props: Props) {
 	}, []);
 
 	function getPlayerName(c) {
-		return c + ' ' + (c === 1 ? 'player' : 'players');
+		return c + ' ' + (c === 1 ? t('match.player') : t('match.players_label'));
 	}
 
 	function startWatching() {
@@ -43,7 +45,7 @@ export default function ActivePlayers(props: Props) {
 
 	let body;
 	if (loaded) {
-		body = `${getPlayerName(playersInQueue)} in lobby / ${getPlayerName(playersInMatch)} in a match`;
+		body = `${getPlayerName(playersInQueue)} ${t('match.in_lobby')} / ${getPlayerName(playersInMatch)} ${t('match.in_match')}`;
 	} else {
 		return null;
 	}

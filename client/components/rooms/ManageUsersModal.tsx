@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { createPortal } from 'react-dom';
 import { X, User, ShieldSlash, Prohibit } from 'phosphor-react';
 import { FriendlyRoomParticipantData } from '../../../shared/friendly_room';
@@ -13,6 +14,7 @@ interface ManageUsersModalProps {
 }
 
 export default function ManageUsersModal({ isOpen, onClose, participants, onKick, onBan }: ManageUsersModalProps) {
+    const { t } = useTranslation();
     if (!isOpen) return null;
 
     return createPortal(
@@ -21,7 +23,7 @@ export default function ManageUsersModal({ isOpen, onClose, participants, onKick
 
                 {/* Header */}
                 <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-white/5 bg-[#1a1b1f]">
-                    <h3 className="text-lg font-bold text-white">Kullanıcıları Yönet</h3>
+                    <h3 className="text-lg font-bold text-white">{t('rooms.manage_users')}</h3>
                     <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
                         <X size={20} />
                     </button>
@@ -32,7 +34,7 @@ export default function ManageUsersModal({ isOpen, onClose, participants, onKick
 
                     {/* In Room Section */}
                     <div>
-                        <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Odada Olanlar</h4>
+                        <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">{t('rooms.in_room')}</h4>
                         <div className="space-y-2">
                             {participants.map(p => (
                                 <div key={p.id} className="flex items-center justify-between p-3 bg-[#0a0b0e] border border-gray-800 rounded-lg group hover:border-gray-700 transition-colors">
@@ -51,7 +53,7 @@ export default function ManageUsersModal({ isOpen, onClose, participants, onKick
                                                 {/* Using check icon actually */}
                                                 <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20"><path d="M0 11l2-2 5 5L18 3l2 2L7 18z" /></svg>
                                             </div>
-                                            <span className="text-sm text-gray-300">Yarışıyor</span>
+                                            <span className="text-sm text-gray-300">{t('rooms.competing')}</span>
                                         </label>
 
                                         <div className="h-4 w-px bg-gray-800 mx-2" />
@@ -60,13 +62,13 @@ export default function ManageUsersModal({ isOpen, onClose, participants, onKick
                                             onClick={() => onKick(p.user_id)}
                                             className="text-xs font-bold text-red-500 hover:text-red-400 uppercase tracking-wider px-2 py-1 hover:bg-red-500/10 rounded transition-colors"
                                         >
-                                            AT
+                                            {t('rooms.kick')}
                                         </button>
                                         <button
                                             onClick={() => onBan(p.user_id)}
                                             className="text-xs font-bold text-gray-500 hover:text-gray-400 uppercase tracking-wider px-2 py-1 hover:bg-gray-800 rounded transition-colors"
                                         >
-                                            YASAKLA
+                                            {t('rooms.ban')}
                                         </button>
                                     </div>
                                 </div>
@@ -76,17 +78,17 @@ export default function ManageUsersModal({ isOpen, onClose, participants, onKick
 
                     {/* Not In Room Section (Placeholder) */}
                     <div>
-                        <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Odada Olmayanlar</h4>
+                        <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">{t('rooms.not_in_room')}</h4>
                         <div className="p-8 text-center border border-dashed border-gray-800 rounded-lg">
-                            <span className="text-gray-600 text-sm">Görüntelenecek kullanıcı yok</span>
+                            <span className="text-gray-600 text-sm">{t('rooms.no_users')}</span>
                         </div>
                     </div>
 
                     {/* Banned Section (Placeholder) */}
                     <div>
-                        <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Yasaklılar</h4>
+                        <h4 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">{t('rooms.banned')}</h4>
                         <div className="p-8 text-center border border-dashed border-gray-800 rounded-lg">
-                            <span className="text-gray-600 text-sm">Yasaklı kullanıcı yok</span>
+                            <span className="text-gray-600 text-sm">{t('rooms.no_banned')}</span>
                         </div>
                     </div>
 
@@ -95,7 +97,7 @@ export default function ManageUsersModal({ isOpen, onClose, participants, onKick
                 {/* Footer */}
                 <div className="shrink-0 flex items-center justify-end px-6 py-4 border-t border-white/5 bg-[#1a1b1f]">
                     <button onClick={onClose} className="text-sm font-bold text-gray-400 hover:text-white transition-colors uppercase tracking-wider">
-                        KAPAT
+                        {t('rooms.close')}
                     </button>
                 </div>
             </div>

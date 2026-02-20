@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { FilterSolvesOptions } from '../../../db/solves/query';
 import { RootStateOrAny, useDispatch, useSelector } from 'react-redux';
 import { useSolveDb } from '../../../util/hooks/useSolveDb';
@@ -16,6 +17,7 @@ interface Props {
 
 export default function QuickStats(props: Props) {
 	const { filterOptions } = props;
+	const { t } = useTranslation();
 	const dispatch = useDispatch();
 
 	const stats = useSelector((state: RootStateOrAny) => state?.stats);
@@ -63,7 +65,7 @@ export default function QuickStats(props: Props) {
 	function openCustomizer() {
 		dispatch(
 			openModal(<CustomizeStats filterOptions={filterOptions} />, {
-				title: 'İstatistikleri Özelleştir',
+				title: t('timer_modules.customize_stats'),
 				description: 'Burada özelleştir ve hemen gör',
 			})
 		);
@@ -73,7 +75,7 @@ export default function QuickStats(props: Props) {
 		<div className="w-full h-full relative group">
 			<div className={className}>{blocks}</div>
 			<div className="absolute top-0 right-0 group-hover:opacity-100 opacity-0">
-				<Button onClick={openCustomizer} text="İstatistikleri Özelleştir" secondary glow />
+				<Button onClick={openCustomizer} text={t('timer_modules.customize_stats')} secondary glow />
 			</div>
 		</div>
 	);

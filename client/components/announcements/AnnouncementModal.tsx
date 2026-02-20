@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { createPortal } from 'react-dom';
 import { X, CaretRight } from 'phosphor-react';
 import { Announcement } from '../../@types/generated/graphql';
@@ -18,7 +19,7 @@ interface CategoryConfig {
 	text: string;
 	border: string;
 	headerBg: string;
-	label: string;
+	labelKey: string;
 	accent: string;
 }
 
@@ -28,7 +29,7 @@ const CATEGORY_CONFIG: Record<string, CategoryConfig> = {
 		text: 'text-indigo-300',
 		border: 'border-indigo-400/30',
 		headerBg: 'from-indigo-600/30 via-purple-600/15 to-zinc-900',
-		label: '🎉 Yenilik',
+		labelKey: 'announcement_modal.feature',
 		accent: 'bg-indigo-500'
 	},
 	BUGFIX: {
@@ -36,7 +37,7 @@ const CATEGORY_CONFIG: Record<string, CategoryConfig> = {
 		text: 'text-emerald-300',
 		border: 'border-emerald-400/30',
 		headerBg: 'from-emerald-600/30 via-emerald-600/10 to-zinc-900',
-		label: '🔧 Düzeltme',
+		labelKey: 'announcement_modal.bugfix',
 		accent: 'bg-emerald-500'
 	},
 	IMPORTANT: {
@@ -44,7 +45,7 @@ const CATEGORY_CONFIG: Record<string, CategoryConfig> = {
 		text: 'text-amber-300',
 		border: 'border-amber-400/30',
 		headerBg: 'from-amber-600/30 via-amber-600/10 to-zinc-900',
-		label: '⚠️ Önemli',
+		labelKey: 'announcement_modal.important',
 		accent: 'bg-amber-500'
 	},
 	INFO: {
@@ -52,12 +53,13 @@ const CATEGORY_CONFIG: Record<string, CategoryConfig> = {
 		text: 'text-sky-300',
 		border: 'border-sky-400/30',
 		headerBg: 'from-sky-600/30 via-sky-600/10 to-zinc-900',
-		label: 'ℹ️ Bilgi',
+		labelKey: 'announcement_modal.info',
 		accent: 'bg-sky-500'
 	}
 };
 
 export default function AnnouncementModal(props: AnnouncementModalProps) {
+	const { t } = useTranslation();
 	const {
 		announcement,
 		onClose,
@@ -99,7 +101,7 @@ export default function AnnouncementModal(props: AnnouncementModalProps) {
 
 					{/* Category badge */}
 					<div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border ${config.bg} ${config.text} ${config.border} mb-4`}>
-						<span className="text-xs font-semibold tracking-wide uppercase">{config.label}</span>
+						<span className="text-xs font-semibold tracking-wide uppercase">{t(config.labelKey)}</span>
 					</div>
 
 					{/* Title */}
@@ -154,13 +156,13 @@ export default function AnnouncementModal(props: AnnouncementModalProps) {
 									onClick={onClose}
 									className="px-4 py-2.5 rounded-xl text-sm font-medium text-zinc-400 hover:text-white hover:bg-zinc-800 transition"
 								>
-									Kapat
+									{t('announcement_modal.close')}
 								</button>
 								<button
 									onClick={onNext}
 									className="px-5 py-2.5 rounded-xl text-sm font-medium bg-indigo-600 hover:bg-indigo-500 text-white transition flex items-center gap-2 shadow-lg shadow-indigo-500/20"
 								>
-									Sonraki
+									{t('announcement_modal.next')}
 									<CaretRight size={16} weight="bold" />
 								</button>
 							</>
@@ -169,7 +171,7 @@ export default function AnnouncementModal(props: AnnouncementModalProps) {
 								onClick={onClose}
 								className="px-6 py-2.5 rounded-xl text-sm font-medium bg-indigo-600 hover:bg-indigo-500 text-white transition shadow-lg shadow-indigo-500/20"
 							>
-								Anladım
+								{t('announcement_modal.got_it')}
 							</button>
 						)}
 					</div>

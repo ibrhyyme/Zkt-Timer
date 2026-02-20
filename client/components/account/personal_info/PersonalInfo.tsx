@@ -1,4 +1,5 @@
 import React from 'react';
+import {useTranslation} from 'react-i18next';
 import Input from '../../common/inputs/input/Input';
 import {gql} from '@apollo/client/core';
 import {useMe} from '../../../util/hooks/useMe';
@@ -18,6 +19,7 @@ const UPDATE_ME_MUTATION = gql`
 `;
 
 export default function PersonalInfo() {
+	const {t} = useTranslation();
 	const me = useMe();
 
 	const [firstName, setFirstName] = useInput(me.first_name);
@@ -54,11 +56,11 @@ export default function PersonalInfo() {
 
 	return (
 		<div>
-			<Input value={firstName} legend="Ad" onChange={setFirstName} name="firstName" />
-			<Input value={lastName} legend="Soyad" onChange={setLastName} name="lastName" />
-			<Input value={username} legend="Kullanıcı adı" onChange={setUsername} name="username" />
-			<Input value={email} legend="E-posta" onChange={setEmail} name="email" />
-			<Button primary large glow text="Bilgileri Güncelle" onClick={clickUpdate} />
+			<Input value={firstName} legend={t('personal_info.first_name')} onChange={setFirstName} name="firstName" />
+			<Input value={lastName} legend={t('personal_info.last_name')} onChange={setLastName} name="lastName" />
+			<Input value={username} legend={t('personal_info.username')} onChange={setUsername} name="username" />
+			<Input value={email} legend={t('personal_info.email')} onChange={setEmail} name="email" />
+			<Button primary large glow text={t('personal_info.update_button')} onClick={clickUpdate} />
 		</div>
 	);
 }

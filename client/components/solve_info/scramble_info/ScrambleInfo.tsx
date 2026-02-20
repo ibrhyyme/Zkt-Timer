@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { openModal } from '../../../actions/general';
 import './ScrambleInfo.scss';
@@ -18,6 +19,7 @@ interface Props {
 }
 
 export default function ScrambleInfo(props: Props) {
+	const { t } = useTranslation();
 	const { solve, editMode, handleChange } = props;
 	const scramble = solve.scramble;
 	const cubeType = solve.cube_type;
@@ -35,7 +37,7 @@ export default function ScrambleInfo(props: Props) {
 				<HistoryModal
 					solves={[solve]}
 					showAsText={true}
-					description="Tek Çözüm"
+					description={t('solve_info.single_solve')}
 					time={solve.time}
 				/>
 			)
@@ -52,7 +54,7 @@ export default function ScrambleInfo(props: Props) {
 			)}
 			<div className="w-full flex justify-center mt-4">
 				<Button
-					text="1-(Stats) Olarak Görüntüle"
+					text={t('solve_info.view_as_stats')}
 					onClick={openTextModal}
 				/>
 			</div>

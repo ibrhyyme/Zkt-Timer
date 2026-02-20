@@ -1,4 +1,5 @@
 import React from 'react';
+import {useTranslation} from 'react-i18next';
 import { DeviceMobile } from 'phosphor-react';
 import './OrientationWarning.scss';
 import block from '../../../styles/bem';
@@ -7,6 +8,7 @@ import { useGeneral } from '../../../util/hooks/useGeneral';
 const b = block('orientation-warning');
 
 export default function OrientationWarning() {
+    const {t} = useTranslation();
     const mobileMode = useGeneral('mobile_mode');
 
     if (!mobileMode) {
@@ -19,10 +21,10 @@ export default function OrientationWarning() {
                 <DeviceMobile weight="bold" />
             </div>
             <h2 className={b('title')}>
-                Lütfen Cihazınızı Döndürün
+                {t('orientation_warning.title')}
             </h2>
             <p className={b('text')}>
-                ZKT-Timer en iyi deneyim için mobil cihazlarda dikey (portrait) modda kullanılmak üzere tasarlanmıştır.
+                {t('orientation_warning.text')}
             </p>
         </div>
     );

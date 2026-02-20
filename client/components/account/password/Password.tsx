@@ -1,4 +1,5 @@
 import React, {useState} from 'react';
+import {useTranslation} from 'react-i18next';
 import {gql} from '@apollo/client/core';
 import {validateStrongPassword} from '../../../util/auth/password';
 import PasswordStrength from '../../common/password_strength/PasswordStrength';
@@ -18,6 +19,7 @@ const UPDATE_PASSWORD_MUTATION = gql`
 `;
 
 export default function Password() {
+	const {t} = useTranslation();
 	const [oldPassword, setOldPassword] = useInput('');
 	const [password, setPassword] = useInput('');
 	const [error, setError] = useState('');
@@ -37,7 +39,7 @@ export default function Password() {
 
 		const validate = validateStrongPassword(password);
 		if (!validate.number1Check || !validate.cap1Check || !validate.char8Check) {
-			setError('Zayıf şifre');
+			setError(t('password_page.weak_password'));
 			return;
 		}
 
@@ -49,7 +51,7 @@ export default function Password() {
 				},
 			});
 
-			toastSuccess('Şifre başarıyla güncellendi');
+			toastSuccess(t('password_page.success'));
 		} catch (err) {
 			setError(err.message);
 		}
@@ -57,14 +59,14 @@ export default function Password() {
 
 	return (
 		<div>
-			<Input type="password" value={oldPassword} legend="Mevcut Şifre" onChange={setOldPassword} />
-			<Input type="password" value={password} legend="Yeni Şifre" onChange={setPassword} />
+			<Input type="password" value={oldPassword} legend={t('password_page.current_password')} onChange={setOldPassword} />
+			<Input type="password" value={password} legend={t('password_page.new_password')} onChange={setPassword} />
 			<PasswordStrength password={password} />
 			<Button
 				primary
 				glow
 				large
-				text="Şifre Değiştir"
+				text={t('password_page.change_button')}
 				error={error}
 				loading={updatePasswordData?.loading}
 				onClick={changePassword}

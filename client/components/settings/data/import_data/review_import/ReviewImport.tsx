@@ -1,4 +1,5 @@
 import React, { ReactNode, useContext } from 'react';
+import { useTranslation } from 'react-i18next';
 import './ReviewImport.scss';
 import block from '../../../../../styles/bem';
 import { X } from 'phosphor-react';
@@ -17,6 +18,7 @@ import InputLegend from '../../../../common/inputs/input/input_legend/InputLegen
 const b = block('review-import');
 
 export default function ReviewImport() {
+	const { t } = useTranslation();
 	const context = useContext(ImportDataContext);
 
 	const data = context.importableData;
@@ -43,7 +45,7 @@ export default function ReviewImport() {
 			if (sessionResult.failureCount > 0) {
 				context.setImporting(false);
 				context.setImportResults(sessionResult);
-				toastError(`Session import başarısız: ${sessionResult.failureCount} chunk hatası! Solve import'u iptal edildi.`);
+				toastError(t('data_settings.session_import_failed', { count: sessionResult.failureCount }));
 				console.error('[Import] Session import errors:', sessionResult.errors);
 				return;
 			}
@@ -71,7 +73,7 @@ export default function ReviewImport() {
 				// Complete success
 				console.log('[Import] All chunks imported successfully!');
 				await clearOfflineData();
-				toastSuccess(`${data.sessions.length} sezon ve ${data.solves.length} çözüm başarıyla aktarıldı!`);
+				toastSuccess(t('data_settings.import_success', { sessions: data.sessions.length, solves: data.solves.length }));
 				setTimeout(() => {
 					window.location.href = '/sessions';
 				}, 1500);
@@ -79,7 +81,7 @@ export default function ReviewImport() {
 				// Partial failure - show error summary
 				console.error('[Import] Some chunks failed:', combinedResults.errors);
 				context.setImporting(false);
-				toastError(`İçe aktarma başarısız: ${combinedResults.failureCount} chunk hatası!`);
+				toastError(t('data_settings.import_failed', { count: combinedResults.failureCount }));
 			}
 
 		} catch (e) {
@@ -94,7 +96,7 @@ export default function ReviewImport() {
 		if (!results || results.errors.length === 0) return;
 
 		context.setImporting(true);
-		toastWarning('Başarısız chunk\'lar için dosyayı tekrar yükleyin');
+		toastWarning(t('data_settings.retry_failed_chunks'));
 		context.setImporting(false);
 	}
 
@@ -180,7 +182,7 @@ export default function ReviewImport() {
 			0,
 			0,
 			<div className={b('session-header')} key="session-header-row">
-				<InputLegend large text="Sezon İsmi" />
+				<InputLegend large text={t('data_settings.session_name')} />
 				<InputLegend large text="Cube Type" />
 				<InputLegend large text="Remove" />
 			</div>
@@ -191,15 +193,15 @@ export default function ReviewImport() {
 		<div className={b()}>
 			<hr />
 			<ImportSection
-				title="İncele ve içe aktar"
-				description="Aşağıdaki sayıların doğru olduğundan emin olun. Ardından verileri içe aktarın!"
+				title={t('data_settings.review_and_import')}
+				description={t('data_settings.review_description')}
 			>
 				<div className={b('stats')}>
 					<h4>
-						Çözümler: <span>{data.solves.length.toLocaleString()}</span>
+						{t('data_settings.solves_count', { count: data.solves.length.toLocaleString() })}
 					</h4>
 					<h4>
-						Sezons: <span>{data.sessions.length.toLocaleString()}</span>
+						{t('data_settings.sessions_count', { count: data.sessions.length.toLocaleString() })}
 					</h4>
 					{sessionMapper}
 				</div>
@@ -215,8 +217,8 @@ export default function ReviewImport() {
 				<Button
 					loading={context.importing}
 					text={context.importProgress
-						? `İçe aktarılıyor... %${context.importProgress.percentComplete}`
-						: "İçe aktar"
+						? t('data_settings.importing_progress', { percent: context.importProgress.percentComplete })
+						: t('data_settings.import')
 					}
 					primary
 					large

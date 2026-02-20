@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { FriendlyRoomParticipantData } from '../../../shared/friendly_room';
 import { Crown, Check, Timer } from 'phosphor-react';
 import { getTimeString } from '../../util/time';
@@ -10,6 +11,7 @@ interface RoomParticipantsProps {
 }
 
 export default function RoomParticipants({ participants, currentScrambleIndex, hostId }: RoomParticipantsProps) {
+    const { t } = useTranslation();
     // Sort participants: host first, then by solve count
     const sortedParticipants = [...participants].sort((a, b) => {
         if (a.user_id === hostId) return -1;
@@ -20,7 +22,7 @@ export default function RoomParticipants({ participants, currentScrambleIndex, h
     return (
         <div className="flex flex-col w-full h-full bg-[#15161A]">
             <div className="shrink-0 p-3 border-b border-gray-800 bg-[#15161A] text-xs font-bold uppercase tracking-wider text-gray-400">
-                KATILIMCILAR ({participants.length})
+                {t('rooms.participants')} ({participants.length})
             </div>
             <div className="flex-1 overflow-y-auto p-2 space-y-2 scroll-smooth">
                 {sortedParticipants.map((participant) => {

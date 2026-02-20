@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { setSetting, toggleSetting } from '../../../db/settings/update';
 import { useSettings } from '../../../util/hooks/useSettings';
@@ -38,6 +39,7 @@ function TimerOption({ label, isActive, disabled = false, onClick }: TimerOption
 }
 
 export default function TimerTab() {
+	const { t } = useTranslation();
 	const dispatch = useDispatch();
 
 	const timerType = useSettings('timer_type');
@@ -79,28 +81,28 @@ export default function TimerTab() {
 
 	const timerOptions = [
 		{
-			label: 'Klavye',
+			label: t('quick_controls.keyboard'),
 			isActive: timerType === 'keyboard' && !manualEntry,
 			onClick: () => selectTimerType('keyboard'),
 		},
 		{
-			label: 'StackMat',
+			label: t('quick_controls.stackmat'),
 			isActive: timerType === 'stackmat' && !manualEntry,
 			onClick: openStackMat,
 		},
 		{
-			label: 'Akıllı Küp',
+			label: t('quick_controls.smart_cube'),
 			isActive: timerType === 'smart' && !manualEntry,
 			disabled: cubeType !== '333',
 			onClick: () => selectTimerType('smart'),
 		},
 		{
-			label: 'GAN Akıllı Timer',
+			label: t('quick_controls.gan_smart_timer'),
 			isActive: timerType === 'gantimer' && !manualEntry,
 			onClick: () => selectTimerType('gantimer'),
 		},
 		{
-			label: 'Manuel Giriş',
+			label: t('quick_controls.manual_entry'),
 			isActive: manualEntry,
 			disabled: manualDisabled,
 			onClick: toggleManualEntry,
@@ -112,7 +114,7 @@ export default function TimerTab() {
 			<div className="flex items-center space-x-2 mb-6">
 				<div className="h-2 w-2 bg-[#4a9eff] rounded-full"></div>
 				<p className="text-[#888] text-sm font-medium">
-					Timer türünü seçin (sadece bir tane aktif olabilir)
+					{t('quick_controls.timer_type_description')}
 				</p>
 			</div>
 			{timerOptions.map((option) => (

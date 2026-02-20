@@ -4,6 +4,7 @@ import { X, MagnifyingGlass, Check } from 'phosphor-react';
 import { gqlQueryTyped } from '../../api';
 import { gql } from '@apollo/client';
 import AvatarImage from '../../common/avatar/avatar_image/AvatarImage';
+import { useTranslation } from 'react-i18next';
 
 const ADMIN_USER_SEARCH_QUERY = gql`
 	query AdminUserSearch($pageArgs: PaginationArgsInput) {
@@ -64,6 +65,7 @@ interface RecipientSelectorProps {
 
 export default function RecipientSelector(props: RecipientSelectorProps) {
 	const { selectedUsers: initialSelected, onConfirm, onClose } = props;
+	const { t } = useTranslation();
 
 	const [search, setSearch] = useState('');
 	const [users, setUsers] = useState<UserData[]>([]);
@@ -163,9 +165,9 @@ export default function RecipientSelector(props: RecipientSelectorProps) {
 				{/* Header */}
 				<div className="p-5 border-b border-zinc-700 flex justify-between items-center shrink-0">
 					<div>
-						<h2 className="text-lg font-bold text-white">Alici Sec</h2>
+						<h2 className="text-lg font-bold text-white">{t('admin_email.select_recipient')}</h2>
 						<p className="text-sm text-gray-400 mt-0.5">
-							{selected.size} kisi secildi — Toplam {total} kullanici
+							{t('admin_email.selection_info', { selected: selected.size, total })}
 						</p>
 					</div>
 					<button onClick={onClose} className="p-2 hover:bg-zinc-700 rounded-lg transition">
@@ -181,7 +183,7 @@ export default function RecipientSelector(props: RecipientSelectorProps) {
 							type="text"
 							value={search}
 							onChange={(e) => setSearch(e.target.value)}
-							placeholder="Kullanici adi veya email ara..."
+							placeholder={t('admin_email.search_users')}
 							className="w-full pl-10 pr-4 py-2.5 bg-zinc-900 border border-zinc-700 rounded-lg text-white placeholder-gray-500 text-sm focus:outline-none focus:border-blue-500"
 						/>
 					</div>
@@ -192,7 +194,7 @@ export default function RecipientSelector(props: RecipientSelectorProps) {
 					{loading ? (
 						<div className="flex items-center justify-center py-16 text-gray-400">
 							<div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mr-3" />
-							Yukleniyor...
+							{t('admin_email.loading')}
 						</div>
 					) : (
 						<table className="w-full text-left">
@@ -210,9 +212,9 @@ export default function RecipientSelector(props: RecipientSelectorProps) {
 											{allPageSelected && <Check size={12} weight="bold" className="text-white" />}
 										</div>
 									</th>
-									<th className="p-3">Kullanici</th>
-									<th className="p-3">Email</th>
-									<th className="p-3">Durum</th>
+									<th className="p-3">{t('admin_email.user')}</th>
+									<th className="p-3">{t('admin_email.email')}</th>
+									<th className="p-3">{t('admin_email.status')}</th>
 								</tr>
 							</thead>
 							<tbody className="divide-y divide-zinc-700/50">
@@ -265,7 +267,7 @@ export default function RecipientSelector(props: RecipientSelectorProps) {
 												)}
 												{user.verified && (
 													<span className="text-[10px] px-1.5 py-0.5 rounded bg-green-500/20 text-green-400 border border-green-500/20">
-														Dogrulanmis
+														{t('admin_email.verified')}
 													</span>
 												)}
 											</div>
@@ -275,7 +277,7 @@ export default function RecipientSelector(props: RecipientSelectorProps) {
 								{users.length === 0 && !loading && (
 									<tr>
 										<td colSpan={4} className="p-8 text-center text-gray-500">
-											Kullanici bulunamadi
+											{t('admin_email.no_users_found')}
 										</td>
 									</tr>
 								)}
@@ -292,15 +294,15 @@ export default function RecipientSelector(props: RecipientSelectorProps) {
 							disabled={page === 0}
 							className="px-3 py-1.5 text-sm border border-zinc-700 rounded-lg hover:bg-zinc-700 transition disabled:opacity-30 disabled:cursor-not-allowed"
 						>
-							Onceki
+							{t('admin_email.previous')}
 						</button>
-						<span className="text-sm text-gray-400">Sayfa {page + 1}</span>
+						<span className="text-sm text-gray-400">{t('admin_email.page', { page: page + 1 })}</span>
 						<button
 							onClick={handleNextPage}
 							disabled={!hasMore}
 							className="px-3 py-1.5 text-sm border border-zinc-700 rounded-lg hover:bg-zinc-700 transition disabled:opacity-30 disabled:cursor-not-allowed"
 						>
-							Sonraki
+							{t('admin_email.next')}
 						</button>
 					</div>
 					<div className="flex items-center gap-3">
@@ -308,13 +310,13 @@ export default function RecipientSelector(props: RecipientSelectorProps) {
 							onClick={onClose}
 							className="px-4 py-2 text-sm border border-zinc-700 rounded-lg hover:bg-zinc-700 transition"
 						>
-							Iptal
+							{t('admin_email.cancel')}
 						</button>
 						<button
 							onClick={() => onConfirm(selected)}
 							className="px-5 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium"
 						>
-							{selected.size} Kisi Sec
+							{t('admin_email.select_people', { count: selected.size })}
 						</button>
 					</div>
 				</div>

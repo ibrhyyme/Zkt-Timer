@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { getTimeString } from '../../util/time';
 import './SolveInfo.scss';
 import { Cube, Bluetooth } from 'phosphor-react';
@@ -41,6 +42,7 @@ interface Props extends IModalProps {
 export default function SolveInfo(props: Props) {
 	const { solveId, disabled, onComplete } = props;
 
+	const { t } = useTranslation();
 	const dispatch = useDispatch();
 	const mobileMode = useGeneral('mobile_mode');
 	const demoSolve = props.solve?.demo_mode;
@@ -176,7 +178,7 @@ export default function SolveInfo(props: Props) {
 
 	let editButton = (
 		<Button
-			text={editMode ? 'Kaydet' : 'Düzenle'}
+			text={editMode ? t('solve_info.save') : t('solve_info.edit')}
 			className={b('edit')}
 			gray
 			primary={editMode}
@@ -186,7 +188,7 @@ export default function SolveInfo(props: Props) {
 
 	let plusTwoButton = <Button gray text="+2" disabled={disabled || isSystemDnf} onClick={togglePlusTwo} warning={plusTwo} />;
 	let dnfButton = <Button gray text="DNF" disabled={disabled || isSystemDnf} onClick={toggleDnf} danger={dnf} />;
-	let deleteButton = <Button gray title="Çözümü sil" text="Sil" onClick={deleteSolve} />;
+	let deleteButton = <Button gray title={t('solve_info.delete')} text={t('solve_info.delete')} onClick={deleteSolve} />;
 
 	if (disabled) {
 		deleteButton = null;
@@ -205,11 +207,11 @@ export default function SolveInfo(props: Props) {
 	let smartPages = [
 		{
 			id: 'solution',
-			value: 'Çözüm',
+			value: t('solve_info.solve_tab'),
 		},
 		{
 			id: 'stats',
-			value: 'İstatistikler',
+			value: t('solve_info.stats_tab'),
 		},
 	];
 
@@ -220,12 +222,12 @@ export default function SolveInfo(props: Props) {
 	const pages = [
 		{
 			id: 'scramble',
-			value: 'Karıştırma',
+			value: t('solve_info.scramble_tab'),
 		},
 		...smartPages,
 		{
 			id: 'notes',
-			value: 'Notlar',
+			value: t('solve_info.notes_tab'),
 		},
 	];
 
@@ -234,7 +236,7 @@ export default function SolveInfo(props: Props) {
 		shareLink = (
 			<CopyText
 				buttonProps={{
-					text: 'Linki Paylaş',
+					text: t('solve_info.share_link'),
 				}}
 				text={window.location.origin + '/solve/' + solve.share_code}
 			/>
@@ -251,12 +253,12 @@ export default function SolveInfo(props: Props) {
 		<div className={b({ mobile: mobileMode })}>
 			{mobileMode && (
 				<div className={b('mobile-header-top')}>
-					<div className={b('mobile-title')}>Çözüm Detayı</div>
-					<div className={b('mobile-done')} onClick={handleDone}>Bitti</div>
+					<div className={b('mobile-title')}>{t('solve_info.solve_detail')}</div>
+					<div className={b('mobile-done')} onClick={handleDone}>{t('solve_info.done')}</div>
 				</div>
 			)}
 			{!mobileMode && (
-				<div className={b('web-done')} onClick={handleDone}>Bitti</div>
+				<div className={b('web-done')} onClick={handleDone}>{t('solve_info.done')}</div>
 			)}
 			<div className={b('top-actions')}>
 				<div>{shareLink}</div>

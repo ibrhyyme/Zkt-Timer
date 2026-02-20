@@ -28,6 +28,7 @@ import { MatchSession } from '../../../../server/schemas/MatchSession.schema';
 import { PublicUserAccount } from '../../../../server/schemas/UserAccount.schema';
 import { GameType } from '../../../../shared/match/consts';
 import { Solve } from '../../../../server/schemas/Solve.schema';
+import { useTranslation } from 'react-i18next';
 
 interface MatchProps {
 	matchPath: string;
@@ -100,6 +101,7 @@ export default function Match(props: MatchProps) {
 	const watchingPlayerId = useRef('');
 
 	const me = useMe();
+	const { t } = useTranslation();
 	const mobileMode = useGeneral('mobile_mode');
 
 	function exitMatch() {
@@ -134,7 +136,7 @@ export default function Match(props: MatchProps) {
 		dispatch(
 			openModal(<History disabled solves={solves} />, {
 				width: 600,
-				title: `${challenger.username}'s Times`,
+				title: t('match.player_times', { username: challenger.username }),
 			})
 		);
 	}
@@ -200,13 +202,13 @@ export default function Match(props: MatchProps) {
 	function copySpectateLink() {
 		const link = getMatchLinkBase(matchType) + match.spectate_code;
 		copyText(link);
-		toastSuccess('İzleyici linki kopyalandı');
+		toastSuccess(t('match.spectator_link_copied'));
 	}
 
 	function copyPlayLink() {
 		const link = getMatchLinkBase(matchType) + match.link_code;
 		copyText(link);
-		toastSuccess('Davet linki kopyalandı');
+		toastSuccess(t('match.invite_link_copied'));
 	}
 
 	// Timer
@@ -221,19 +223,19 @@ export default function Match(props: MatchProps) {
 			customHeadersLeft: (
 				<Dropdown
 					openLeft
-					text="Maç Seçenekleri"
+					text={t('match.match_options')}
 					icon={<CaretDown weight="bold" />}
 					options={[
-						{ text: 'İzleyici Linkini Kopyala', icon: <Copy weight="bold" />, onClick: copySpectateLink },
-						{ text: 'Davet Linkini Kopyala', icon: <Copy weight="bold" />, onClick: copyPlayLink },
+						{ text: t('match.copy_spectator_link'), icon: <Copy weight="bold" />, onClick: copySpectateLink },
+						{ text: t('match.copy_invite_link'), icon: <Copy weight="bold" />, onClick: copyPlayLink },
 						{
-							text: 'Çekil',
+							text: t('match.resign'),
 							disabled: !!match?.ended_at,
 							icon: <Flag weight="bold" />,
 							onClick: resignGame,
 						},
 						{
-							text: 'İptal Et',
+							text: t('match.abort'),
 							disabled: anySolves || !!match?.ended_at,
 							icon: <Prohibit weight="bold" />,
 							onClick: abortGame,

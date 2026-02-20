@@ -1,4 +1,5 @@
 import React, {useState, useEffect} from 'react';
+import { useTranslation } from 'react-i18next';
 import {gql} from '@apollo/client';
 import {IModalProps} from '../../common/modal/Modal';
 import {gqlMutate, gqlQuery} from '../../api';
@@ -22,6 +23,7 @@ interface WcaRecord {
 }
 
 export default function PublishWcaRecords(props: IModalProps) {
+	const { t } = useTranslation();
 	const {onComplete} = props;
 	const me = useMe();
 	
@@ -85,7 +87,7 @@ export default function PublishWcaRecords(props: IModalProps) {
 
 			const res = await gqlMutate(mutation);
 			setRecords((res.data as any).fetchWcaRecords || []);
-			toastSuccess('WCA rekorları başarıyla güncellendi!');
+			toastSuccess(t('profile.wca_records_updated'));
 		} catch (error) {
 			toastError(error.message);
 		} finally {
@@ -123,7 +125,7 @@ export default function PublishWcaRecords(props: IModalProps) {
 					: r
 			));
 
-			toastSuccess(record.published ? 'Rekord gizlendi' : 'Rekord yayınlandı');
+			toastSuccess(record.published ? t('profile.record_hidden') : t('profile.record_published'));
 		} catch (error) {
 			toastError(error.message);
 		} finally {
@@ -171,16 +173,16 @@ export default function PublishWcaRecords(props: IModalProps) {
 	}
 
 	if (loading) {
-		return <div>WCA rekorları yükleniyor...</div>;
+		return <div>{t('profile.wca_records_loading')}</div>;
 	}
 
 	if (!records.length) {
 		return (
 			<div className="publish-wca-records">
-				<p>Henüz WCA rekorunuz yok veya rekorlar henüz yüklenmemiş.</p>
-				<Button 
-					primary 
-					text="WCA Rekorlarını Getir" 
+				<p>{t('profile.no_wca_records_yet')}</p>
+				<Button
+					primary
+					text={t('profile.fetch_wca_records')} 
 					loading={fetching}
 					onClick={fetchWcaRecords}
 				/>
@@ -215,7 +217,7 @@ export default function PublishWcaRecords(props: IModalProps) {
 			</td>
 			<td>
 				<Button
-					text={record.published ? "Gizle" : "Yayınla"}
+					text={record.published ? t('profile.hide') : t('profile.publish')}
 					small
 					primary={!record.published}
 					loading={publishing}
@@ -229,9 +231,9 @@ export default function PublishWcaRecords(props: IModalProps) {
 	return (
 		<div className="publish-wca-records">
 			<div className="wca-records-header">
-				<h3>WCA Resmi Rekorlarınız</h3>
-				<Button 
-					text="Rekorları Güncelle" 
+				<h3>{t('profile.your_wca_official_records')}</h3>
+				<Button
+					text={t('profile.update_records')} 
 					loading={fetching}
 					onClick={fetchWcaRecords}
 				/>
@@ -240,10 +242,10 @@ export default function PublishWcaRecords(props: IModalProps) {
 			<table className="cd-table">
 				<thead>
 					<tr>
-						<th>Event</th>
-						<th>Single PB</th>
-						<th>Average PB</th>
-						<th>Durum</th>
+						<th>{t('profile.event')}</th>
+						<th>{t('profile.single_pb')}</th>
+						<th>{t('profile.average_pb')}</th>
+						<th>{t('profile.status')}</th>
 					</tr>
 				</thead>
 				<tbody>{rows}</tbody>
@@ -252,13 +254,12 @@ export default function PublishWcaRecords(props: IModalProps) {
 			<div className="wca-records-footer">
 				<p>
 					<small>
-						Rekorlarınız WCA veritabanından otomatik olarak çekilir. 
-						Sadece yayınlamak istediğiniz rekorları seçin.
+						{t('profile.wca_records_info')}
 					</small>
 				</p>
 				<Button
 					primary
-					text="Tamam"
+					text={t('profile.ok')}
 					onClick={onComplete}
 				/>
 			</div>

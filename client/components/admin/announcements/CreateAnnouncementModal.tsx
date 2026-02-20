@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import {useTranslation} from 'react-i18next';
 import { createPortal } from 'react-dom';
 import { X } from 'phosphor-react';
 import { gql } from '@apollo/client';
@@ -19,6 +20,7 @@ interface CreateAnnouncementModalProps {
 }
 
 export default function CreateAnnouncementModal(props: CreateAnnouncementModalProps) {
+	const {t} = useTranslation();
 	const { onClose } = props;
 	const [formData, setFormData] = useState({
 		title: '',
@@ -47,7 +49,7 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 			onClose();
 		} catch (err) {
 			console.error('Failed to create announcement:', err);
-			setError('Duyuru oluşturulamadı');
+			setError(t('create_announcement.error'));
 		} finally {
 			setLoading(false);
 		}
@@ -57,7 +59,7 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 		<div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60">
 			<div className="bg-zinc-800 border border-zinc-700 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
 				<div className="p-6 border-b border-zinc-700 flex justify-between items-center">
-					<h2 className="text-xl font-bold">Yeni Duyuru Oluştur</h2>
+					<h2 className="text-xl font-bold">{t('create_announcement.title')}</h2>
 					<button onClick={onClose} className="p-2 hover:bg-zinc-700 rounded">
 						<X size={20} />
 					</button>
@@ -68,7 +70,7 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 						{/* Left - Form */}
 						<div className="space-y-4">
 							<div>
-								<label className="block text-sm font-medium mb-2">Başlık</label>
+								<label className="block text-sm font-medium mb-2">{t('create_announcement.field_title')}</label>
 								<input
 									type="text"
 									value={formData.title}
@@ -79,21 +81,21 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 							</div>
 
 							<div>
-								<label className="block text-sm font-medium mb-2">Kategori</label>
+								<label className="block text-sm font-medium mb-2">{t('create_announcement.field_category')}</label>
 								<select
 									value={formData.category}
 									onChange={(e) => setFormData({ ...formData, category: e.target.value })}
 									className="w-full px-4 py-2 bg-zinc-900 border border-zinc-700 rounded-lg"
 								>
-									<option value="FEATURE">🎉 Yenilik</option>
-									<option value="BUGFIX">🔧 Düzeltme</option>
-									<option value="IMPORTANT">⚠️ Önemli</option>
-									<option value="INFO">ℹ️ Bilgi</option>
+									<option value="FEATURE">{t('create_announcement.category_feature')}</option>
+									<option value="BUGFIX">{t('create_announcement.category_bugfix')}</option>
+									<option value="IMPORTANT">{t('create_announcement.category_important')}</option>
+									<option value="INFO">{t('create_announcement.category_info')}</option>
 								</select>
 							</div>
 
 							<div>
-								<label className="block text-sm font-medium mb-2">Öncelik (0-10)</label>
+								<label className="block text-sm font-medium mb-2">{t('create_announcement.field_priority')}</label>
 								<input
 									type="number"
 									min="0"
@@ -105,7 +107,7 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 							</div>
 
 							<div>
-								<label className="block text-sm font-medium mb-2">Resim URL (Opsiyonel)</label>
+								<label className="block text-sm font-medium mb-2">{t('create_announcement.field_image_url')}</label>
 								<input
 									type="url"
 									value={formData.imageUrl}
@@ -116,45 +118,45 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 							</div>
 
 							<div>
-								<label className="block text-sm font-medium mb-2">İçerik</label>
+								<label className="block text-sm font-medium mb-2">{t('create_announcement.field_content')}</label>
 								<textarea
 									value={formData.content}
 									onChange={(e) => setFormData({ ...formData, content: e.target.value })}
 									className="w-full px-4 py-2 bg-zinc-900 border border-zinc-700 rounded-lg h-64 font-mono text-sm"
 									required
-									placeholder="Duyuru içeriğini yazın..."
+									placeholder={t('create_announcement.content_placeholder')}
 								/>
 							</div>
 
 							<Checkbox
-								text="Taslak olarak kaydet"
+								text={t('create_announcement.save_as_draft')}
 								checked={formData.isDraft}
 								onChange={(e) => setFormData({ ...formData, isDraft: e.target.checked, sendNotification: false })}
 								noMargin
 							/>
 
 							<Checkbox
-								text="Bildirim olarak da gönder"
+								text={t('create_announcement.send_notification')}
 								checked={formData.sendNotification}
 								disabled={formData.isDraft}
 								onChange={(e) => setFormData({ ...formData, sendNotification: e.target.checked })}
 								noMargin
 							/>
 							{formData.isDraft && (
-								<span className="text-xs text-zinc-500 -mt-1">(Taslak duyurular için bildirim gönderilemez)</span>
+								<span className="text-xs text-zinc-500 -mt-1">{t('create_announcement.draft_notification_warning')}</span>
 							)}
 						</div>
 
 						{/* Right - Live Preview */}
 						<div className="border border-zinc-700 rounded-lg p-4 bg-zinc-900">
-							<h3 className="font-semibold mb-4">Önizleme</h3>
+							<h3 className="font-semibold mb-4">{t('create_announcement.preview')}</h3>
 							<div className="prose prose-invert prose-sm max-w-none">
-								<h4>{formData.title || 'Başlık'}</h4>
+								<h4>{formData.title || t('create_announcement.field_title')}</h4>
 								{formData.imageUrl && (
 									<img src={formData.imageUrl} alt="Preview" className="rounded-lg mb-4" />
 								)}
 								<div className="whitespace-pre-wrap">
-									{formData.content || 'İçerik buraya gelecek'}
+									{formData.content || t('create_announcement.content_preview_placeholder')}
 								</div>
 							</div>
 						</div>
@@ -168,14 +170,14 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 						onClick={onClose}
 						className="px-4 py-2 border border-zinc-700 rounded-lg hover:bg-zinc-700 transition"
 					>
-						İptal
+						{t('create_announcement.cancel')}
 					</button>
 					<button
 						onClick={handleSubmit}
 						disabled={loading}
 						className="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition disabled:opacity-50"
 					>
-						{loading ? 'Oluşturuluyor...' : formData.isDraft ? 'Taslak Kaydet' : 'Yayınla'}
+						{loading ? t('create_announcement.creating') : formData.isDraft ? t('create_announcement.save_draft') : t('create_announcement.publish')}
 					</button>
 				</div>
 			</div>

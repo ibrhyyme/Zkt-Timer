@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import './About.scss';
 import { YoutubeLogo, TwitterLogo, TwitchLogo } from 'phosphor-react';
 import Emblem from '../../common/emblem/Emblem';
@@ -13,6 +14,7 @@ interface Props {
 }
 
 export default function About(props: Props) {
+	const { t } = useTranslation();
 	const { profile } = props;
 
 	function addSocial(list, key, name, icon: React.ReactElement, background, color) {
@@ -59,7 +61,7 @@ export default function About(props: Props) {
 	if (socialLinks.length) {
 		social = (
 			<div>
-				<Emblem text="Socials" />
+				<Emblem text={t('profile.socials')} />
 				<div className="flex flex-row flex-wrap">{socialLinks}</div>
 			</div>
 		);
@@ -67,31 +69,31 @@ export default function About(props: Props) {
 
 	return (
 		<div className={b()}>
-			<h2>Hakkımda</h2>
+			<h2>{t('profile.about_me')}</h2>
 			<div className={b('body')}>
 				<div className={b('header')}>
 					{social}
 					<div className={b('bio')}>
-						<Emblem text="Biyografi" />
-						<p>{profile.bio || <i>Henüz biyografi yok</i>}</p>
+						<Emblem text={t('profile.biography')} />
+						<p>{profile.bio || <i>{t('profile.no_bio')}</i>}</p>
 					</div>
 				</div>
 
 				<div className={b('details')}>
 					<div className={b('detail-block')}>
-						<Emblem text="3x3 Yöntemi" />
+						<Emblem text={t('profile.method_3x3')} />
 						<span>{profile.three_method || '-'}</span>
 					</div>
 					<div className={b('detail-block')}>
-						<Emblem text="3x3 Hedefi" />
+						<Emblem text={t('profile.goal_3x3')} />
 						<span>{profile.three_goal || '-'}</span>
 					</div>
 					<div className={b('detail-block')}>
-						<Emblem text="Ana 3x3 Küpü" />
+						<Emblem text={t('profile.main_3x3_cube')} />
 						<span>{profile.main_three_cube || '-'}</span>
 					</div>
 					<div className={b('detail-block')}>
-						<Emblem text="Favori Etkinlik" />
+						<Emblem text={t('profile.favorite_event')} />
 						<span>{profile.favorite_event || '-'}</span>
 					</div>
 				</div>

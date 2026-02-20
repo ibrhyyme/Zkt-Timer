@@ -1,4 +1,5 @@
 import React, {useState, useEffect} from 'react';
+import {useTranslation} from 'react-i18next';
 import './ThemeOptions.scss';
 import block from '../../../../styles/bem';
 import SettingRow from '../../setting/row/SettingRow';
@@ -20,6 +21,7 @@ function rgbToHex(rgbString: string): string {
 }
 
 export default function ThemeOptions() {
+	const {t} = useTranslation();
 	const primaryColor = useSettings('primary_color');
 	const secondaryColor = useSettings('secondary_color');
 	const backgroundColor = useSettings('background_color');
@@ -91,31 +93,31 @@ export default function ThemeOptions() {
 
 	return (
 		<>
-			<SettingRow vertical title="Temel tema özelleştirmesi">
+			<SettingRow vertical title={t('theme_options.basic_customization')}>
 				<div className={b('customize')}>
 											<ColorPicker
 							hideReset
-							name="Ana renk"
+							name={t('theme_options.primary_color')}
 							selectedColorHex={primaryColor}
 							resetToRgb={getDefaultSetting('primary_color')}
 							onChange={(color) => updateSetting('primary_color', color)}
 						/>
 											<ColorPicker
 							hideReset
-							name="İkincil renk"
+							name={t('theme_options.secondary_color')}
 							selectedColorHex={secondaryColor}
 							resetToRgb={getDefaultSetting('secondary_color')}
 							onChange={(color) => updateSetting('secondary_color', color)}
 						/>
 				</div>
 			</SettingRow>
-			<SettingRow vertical title="Gelişmiş tema özelleştirmesi"
-				description="Renk paletini açıp rengi seçtikten sonra, paletin dışına tıklayarak kapatın. Ardından 'Değişiklikleri Uygula' butonuna basın.">
+			<SettingRow vertical title={t('theme_options.advanced_customization')}
+				description={t('theme_options.advanced_desc')}>
 				<div className={b('customize')}>
 											<ColorPicker
 							openUp
 							hideReset
-							name="Arkaplan rengi"
+							name={t('theme_options.background_color')}
 							selectedColorHex={rgbToHex(tempColors.background_color)}
 							resetToRgb={getDefaultSetting('background_color')}
 							onChange={(color) => updateTempColor('background_color', color)}
@@ -123,7 +125,7 @@ export default function ThemeOptions() {
 											<ColorPicker
 							openUp
 							hideReset
-							name="Modül rengi"
+							name={t('theme_options.module_color')}
 							selectedColorHex={rgbToHex(tempColors.module_color)}
 							resetToRgb={getDefaultSetting('module_color')}
 							onChange={(color) => updateTempColor('module_color', color)}
@@ -131,7 +133,7 @@ export default function ThemeOptions() {
 											<ColorPicker
 							openUp
 							hideReset
-							name="Metin rengi"
+							name={t('theme_options.text_color')}
 							selectedColorHex={rgbToHex(tempColors.text_color)}
 							resetToRgb={getDefaultSetting('text_color')}
 							onChange={(color) => updateTempColor('text_color', color)}
@@ -139,7 +141,7 @@ export default function ThemeOptions() {
 											<ColorPicker
 							openUp
 							hideReset
-							name="Buton rengi"
+							name={t('theme_options.button_color')}
 							selectedColorHex={rgbToHex(tempColors.button_color)}
 							resetToRgb={getDefaultSetting('button_color')}
 							onChange={(color) => updateTempColor('button_color', color)}
@@ -148,13 +150,13 @@ export default function ThemeOptions() {
 				<div className={b('actions')}>
 					<Button 
 						primary
-						text="Değişiklikleri Uygula"
+						text={t('theme_options.apply_changes')}
 						disabled={!hasChanges}
 						onClick={applyChanges}
 					/>
 					<Button 
 						warning
-						text="Varsayılana Geri Dön"
+						text={t('theme_options.reset_to_defaults')}
 						onClick={resetToDefaults}
 					/>
 				</div>

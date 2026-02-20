@@ -1,4 +1,5 @@
 import React, { ReactNode, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import './ProfileRow.scss';
 import { Trash, Eye, User } from 'phosphor-react';
@@ -32,6 +33,7 @@ interface ProfileRowProps {
 }
 
 export default function ProfileRow(props: ProfileRowProps) {
+	const { t } = useTranslation();
 	const dispatch = useDispatch();
 	const [deleted, setDeleted] = useState(false);
 
@@ -103,10 +105,10 @@ export default function ProfileRow(props: ProfileRowProps) {
 			<Dropdown
 				noMargin
 				options={[
-					{ text: 'Detayları gör', icon: <Eye />, onClick: () => openSolve(solve) },
-					{ text: 'Profili gör', icon: <User />, link: `/user/${user.username}` },
+					{ text: t('common.view_details'), icon: <Eye />, onClick: () => openSolve(solve) },
+					{ text: t('common.view_profile'), icon: <User />, link: `/user/${user.username}` },
 					{
-						text: 'Çözümü sil',
+						text: t('common.delete_solve'),
 						hidden: !(solve && (me.admin || me.id === user.id)),
 						icon: <Trash />,
 						onClick: deleteSolve,

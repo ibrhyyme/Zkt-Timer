@@ -1,4 +1,5 @@
 import React, { ReactNode, useContext } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CaretDown } from 'phosphor-react';
 import { TimerModuleDropdownOptions, TimerModuleType } from '../@types/enums';
 import { FooterModuleData, TimerCustomModuleOptions } from '../@types/interfaces';
@@ -26,6 +27,7 @@ interface Props {
 export default function TimerModule(props: Props) {
 	const { index, moduleType, customOptions } = props;
 
+	const { t } = useTranslation();
 	const me = useMe();
 	const context = useContext(TimerContext);
 	const { scramble, originalScramble, cubeType, solvesFilter } = context;
@@ -83,14 +85,14 @@ export default function TimerModule(props: Props) {
 	};
 
 	const moduleDropdownOptions: TimerModuleDropdownOptions[] = customOptions?.dropdownOptions || [
-		{ label: 'Çözümler', value: TimerModuleType.HISTORY },
-		{ label: 'İstatistikler', value: TimerModuleType.STATS },
-		{ label: 'Son Çözüm', value: TimerModuleType.LAST_SOLVE },
-		{ label: 'Karıştırma', value: TimerModuleType.SCRAMBLE },
-		{ label: 'Tutarlılık', value: TimerModuleType.CONSISTENCY },
-		{ label: 'süre Grafiği', value: TimerModuleType.SOLVE_GRAPH },
-		{ label: 'süre Dağılımı', value: TimerModuleType.TIME_DISTRO },
-		{ label: 'Hiçbiri', value: TimerModuleType.NONE },
+		{ label: t('timer_modules.history'), value: TimerModuleType.HISTORY },
+		{ label: t('timer_modules.stats'), value: TimerModuleType.STATS },
+		{ label: t('timer_modules.last_solve'), value: TimerModuleType.LAST_SOLVE },
+		{ label: t('timer_modules.scramble'), value: TimerModuleType.SCRAMBLE },
+		{ label: t('timer_modules.consistency'), value: TimerModuleType.CONSISTENCY },
+		{ label: t('timer_modules.solve_graph'), value: TimerModuleType.SOLVE_GRAPH },
+		{ label: t('timer_modules.time_distro'), value: TimerModuleType.TIME_DISTRO },
+		{ label: t('timer_modules.none'), value: TimerModuleType.NONE },
 	];
 
 	const currentModuleName = moduleDropdownOptions.find((option) => option.value === moduleType)?.label;

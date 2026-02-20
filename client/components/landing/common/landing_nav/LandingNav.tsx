@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import {useTranslation} from 'react-i18next';
 import './LandingNav.scss';
 import block from '../../../../styles/bem';
 import {useWindowListener} from '../../../../util/hooks/useListener';
@@ -20,22 +21,23 @@ interface NavLinkProps {
 	permanent?: boolean;
 }
 
-const NAV_REST_LINKS: NavLinkProps[] = [
-	{
-		label: 'Giriş Yap',
-		link: '/login',
-		permanent: true,
-	},
-	{
-		label: 'Kayıt Ol',
-		link: '/signup',
-		color: 'primary',
-		permanent: true,
-	},
-];
-
 export default function LandingNav(props: Props) {
 	const {showBorder} = props;
+	const {t} = useTranslation();
+
+	const NAV_REST_LINKS: NavLinkProps[] = [
+		{
+			label: t('landing_nav.login'),
+			link: '/login',
+			permanent: true,
+		},
+		{
+			label: t('landing_nav.signup'),
+			link: '/signup',
+			color: 'primary',
+			permanent: true,
+		},
+	];
 
 	const [navSmall, setNavSmall] = useState(false);
 	const [scrolled, setScrolled] = useState(showBorder);

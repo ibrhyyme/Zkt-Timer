@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import {useTranslation} from 'react-i18next';
 import { Plus, Trash, PencilSimple, Eye } from 'phosphor-react';
 import { GetAllAnnouncementsDocument, DeleteAnnouncementDocument, Announcement } from '../../../@types/generated/graphql';
 import { gqlQueryTyped, gqlMutateTyped } from '../../api';
@@ -6,6 +7,7 @@ import CreateAnnouncementModal from './CreateAnnouncementModal';
 import AnnouncementModal from '../../announcements/AnnouncementModal';
 
 export default function AdminAnnouncements() {
+	const {t} = useTranslation();
 	const [announcements, setAnnouncements] = useState<Announcement[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [showCreateModal, setShowCreateModal] = useState(false);
@@ -32,36 +34,36 @@ export default function AdminAnnouncements() {
 
 	const handleDelete = async (e: React.MouseEvent, id: string) => {
 		e.stopPropagation();
-		if (!confirm('Bu duyuruyu silmek istediğinize emin misiniz?')) return;
+		if (!confirm(t('admin_announcements.delete_confirm'))) return;
 
 		try {
 			await gqlMutateTyped(DeleteAnnouncementDocument, { id });
 			fetchAnnouncements();
 		} catch (error) {
-			alert('Duyuru silinemedi');
+			alert(t('admin_announcements.delete_error'));
 		}
 	};
 
 	const CATEGORY_LABELS: Record<string, string> = {
-		FEATURE: '🎉 Yenilik',
-		BUGFIX: '🔧 Düzeltme',
-		IMPORTANT: '⚠️ Önemli',
-		INFO: 'ℹ️ Bilgi'
+		FEATURE: t('admin_announcements.category_feature'),
+		BUGFIX: t('admin_announcements.category_bugfix'),
+		IMPORTANT: t('admin_announcements.category_important'),
+		INFO: t('admin_announcements.category_info')
 	};
 
 	return (
 		<div className="p-8 max-w-7xl mx-auto">
 			<div className="flex justify-between items-end mb-8">
 				<div>
-					<h1 className="text-3xl font-bold text-white mb-2">Duyuru Yönetimi</h1>
-					<p className="text-gray-400">Sistemdeki tüm duyuruları buradan yönetebilirsiniz.</p>
+					<h1 className="text-3xl font-bold text-white mb-2">{t('admin_announcements.title')}</h1>
+					<p className="text-gray-400">{t('admin_announcements.subtitle')}</p>
 				</div>
 				<button
 					onClick={() => setShowCreateModal(true)}
 					className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-medium transition-all shadow-lg hover:shadow-indigo-500/25 active:scale-95"
 				>
 					<Plus size={20} weight="bold" />
-					Yeni Duyuru Oluştur
+					{t('admin_announcements.create_button')}
 				</button>
 			</div>
 
@@ -72,11 +74,11 @@ export default function AdminAnnouncements() {
 					onChange={(e) => setFilter({ ...filter, category: e.target.value })}
 					className="px-4 py-2 bg-transparent text-gray-300 border-r border-white/5 focus:outline-none focus:text-white"
 				>
-					<option value="">Tüm Kategoriler</option>
-					<option value="FEATURE">Yenilik</option>
-					<option value="BUGFIX">Düzeltme</option>
-					<option value="IMPORTANT">Önemli</option>
-					<option value="INFO">Bilgi</option>
+					<option value="">{t('admin_announcements.filter_all_categories')}</option>
+					<option value="FEATURE">{t('admin_announcements.filter_feature')}</option>
+					<option value="BUGFIX">{t('admin_announcements.filter_bugfix')}</option>
+					<option value="IMPORTANT">{t('admin_announcements.filter_important')}</option>
+					<option value="INFO">{t('admin_announcements.filter_info')}</option>
 				</select>
 
 				<select
@@ -84,9 +86,9 @@ export default function AdminAnnouncements() {
 					onChange={(e) => setFilter({ ...filter, isDraft: e.target.value === '' ? undefined : e.target.value === 'true' })}
 					className="px-4 py-2 bg-transparent text-gray-300 focus:outline-none focus:text-white"
 				>
-					<option value="">Tümü</option>
-					<option value="true">Taslaklar</option>
-					<option value="false">Yayınlananlar</option>
+					<option value="">{t('admin_announcements.filter_all')}</option>
+					<option value="true">{t('admin_announcements.filter_drafts')}</option>
+					<option value="false">{t('admin_announcements.filter_published')}</option>
 				</select>
 			</div>
 
@@ -95,27 +97,27 @@ export default function AdminAnnouncements() {
 				{loading ? (
 					<div className="flex flex-col items-center justify-center py-20 text-gray-400">
 						<div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4" />
-						<p>Duyurular yükleniyor...</p>
+						<p>{t('admin_announcements.loading')}</p>
 					</div>
 				) : (
 					<div className="overflow-x-auto">
 						<table className="w-full text-left border-collapse">
 							<thead>
 								<tr className="bg-white/5 border-b border-white/5 text-gray-400 text-xs uppercase tracking-wider">
-									<th className="p-5 font-semibold">Duyuru Başlığı</th>
-									<th className="p-5 font-semibold">Kategori</th>
-									<th className="p-5 font-semibold text-center">Öncelik</th>
-									<th className="p-5 font-semibold">Durum</th>
-									<th className="p-5 font-semibold">Görüntülenme</th>
-									<th className="p-5 font-semibold">Tarih</th>
-									<th className="p-5 font-semibold text-right">İşlemler</th>
+									<th className="p-5 font-semibold">{t('admin_announcements.th_title')}</th>
+									<th className="p-5 font-semibold">{t('admin_announcements.th_category')}</th>
+									<th className="p-5 font-semibold text-center">{t('admin_announcements.th_priority')}</th>
+									<th className="p-5 font-semibold">{t('admin_announcements.th_status')}</th>
+									<th className="p-5 font-semibold">{t('admin_announcements.th_views')}</th>
+									<th className="p-5 font-semibold">{t('admin_announcements.th_date')}</th>
+									<th className="p-5 font-semibold text-right">{t('admin_announcements.th_actions')}</th>
 								</tr>
 							</thead>
 							<tbody className="divide-y divide-white/5">
 								{announcements.length === 0 ? (
 									<tr>
 										<td colSpan={7} className="p-12 text-center text-gray-500">
-											Henüz hiç duyuru bulunmuyor.
+											{t('admin_announcements.no_announcements')}
 										</td>
 									</tr>
 								) : (
@@ -133,7 +135,7 @@ export default function AdminAnnouncements() {
 													</span>
 													{announcement.isDraft && (
 														<span className="text-[10px] bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded-full border border-yellow-500/20 font-medium">
-															TASLAK
+															{t('admin_announcements.draft_badge')}
 														</span>
 													)}
 												</div>
@@ -151,7 +153,7 @@ export default function AdminAnnouncements() {
 													? 'bg-green-500/10 text-green-400 border-green-500/20'
 													: 'bg-red-500/10 text-red-400 border-red-500/20'
 													}`}>
-													{announcement.isActive ? 'Yayında' : 'Pasif'}
+													{announcement.isActive ? t('admin_announcements.status_active') : t('admin_announcements.status_inactive')}
 												</span>
 											</td>
 											<td className="p-5">
@@ -168,7 +170,7 @@ export default function AdminAnnouncements() {
 													<button
 														onClick={(e) => handleDelete(e, announcement.id)}
 														className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition border border-red-500/20"
-														title="Sil"
+														title={t('admin_announcements.delete_button')}
 													>
 														<Trash size={18} />
 													</button>

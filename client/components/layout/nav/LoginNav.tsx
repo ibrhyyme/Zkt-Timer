@@ -1,5 +1,6 @@
 import React from 'react';
 import {SignIn} from 'phosphor-react';
+import { useTranslation } from 'react-i18next';
 import Button from '../../common/button/Button';
 import {useMe} from '../../../util/hooks/useMe';
 
@@ -8,6 +9,7 @@ interface Props {
 }
 
 export default function LoginNav(props: Props) {
+	const { t } = useTranslation();
 	const me = useMe();
 
 	if (me) {
@@ -24,8 +26,8 @@ export default function LoginNav(props: Props) {
 
 	return (
 		<div className="mt-4 flex w-full flex-row gap-2">
-			<Button text="Log in" to="/login" fullWidth gray />
-			<Button text="Sign up" to="/signup" fullWidth primary />
+			<Button text={t('nav.login')} to="/login" fullWidth gray />
+			<Button text={t('nav.signup')} to="/signup" fullWidth primary />
 		</div>
 	);
 }

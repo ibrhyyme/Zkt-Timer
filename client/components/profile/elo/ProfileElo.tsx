@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import './ProfileElo.scss';
 import block from '../../../styles/bem';
 import {EloRating} from '../../../@types/generated/graphql';
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export default function ProfileElo(props: Props) {
+	const { t } = useTranslation();
 	const {eloRating} = props;
 
 	const cubeTypes = ['222', '333', '444'];
@@ -29,7 +31,7 @@ export default function ProfileElo(props: Props) {
 				<span className={b('elo-cubetype')}>{ctInfo.name}</span>
 				<span className={b('elo-number')}>{eloNum}</span>
 				<span className={b('game-count')}>
-					{gameCount} oyun
+					{t('profile.games_count', { count: gameCount })}
 				</span>
 			</div>
 		);

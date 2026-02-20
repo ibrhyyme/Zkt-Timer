@@ -1,4 +1,5 @@
 import React, {useState} from 'react';
+import {useTranslation} from 'react-i18next';
 import Button, {ButtonProps, CommonType} from '../button/Button';
 import {IModalProps} from '../modal/Modal';
 import ModalHeader from '../modal/modal_header/ModalHeader';
@@ -23,6 +24,7 @@ export interface ConfirmModalProps extends IModalProps {
 }
 
 export default function ConfirmModal(props: ConfirmModalProps) {
+	const {t} = useTranslation();
 	const {buttonProps, infoBoxes, proOnly, title, description, triggerAction, buttonText, hideInput, onComplete} =
 		props;
 
@@ -53,8 +55,8 @@ export default function ConfirmModal(props: ConfirmModalProps) {
 
 		setLoading(true);
 
-		if (confirm.toLowerCase() !== 'onayla' && !hideInput) {
-			setError('Devam etmek için "onayla" yazın');
+		if (confirm.toLowerCase() !== t('confirm_modal.confirm_word') && !hideInput) {
+			setError(t('confirm_modal.confirm_prompt'));
 			return;
 		}
 
@@ -74,15 +76,15 @@ export default function ConfirmModal(props: ConfirmModalProps) {
 
 	let input = (
 		<Input
-			placeholder="onayla"
-			info={`Devam etmek için "onayla" yazın`}
+			placeholder={t('confirm_modal.confirm_word')}
+			info={t('confirm_modal.confirm_prompt')}
 			onChange={handleChange}
 			name="confirm"
 			value={confirm}
 		/>
 	);
 
-	let disabled = confirm.toLowerCase() !== 'onayla';
+	let disabled = confirm.toLowerCase() !== t('confirm_modal.confirm_word');
 	if (hideInput) {
 		input = null;
 		disabled = false;

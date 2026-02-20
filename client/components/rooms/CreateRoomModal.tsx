@@ -7,6 +7,7 @@ import { getCubeTypeInfoById } from '../../util/cubes/util';
 import { closeModal } from '../../actions/general';
 import { Cube, Users, Lock, LockOpen, Sparkle, GameController, X } from 'phosphor-react';
 import './CreateRoomModal.scss';
+import { useTranslation } from 'react-i18next';
 
 // Helper to get socket with any cast
 const getSocket = () => socketClient() as any;
@@ -16,6 +17,7 @@ interface CreateRoomFormProps {
 }
 
 function CreateRoomForm({ onClose }: CreateRoomFormProps) {
+    const { t } = useTranslation();
     const dispatch = useDispatch();
 
     const [name, setName] = useState('');
@@ -61,8 +63,8 @@ function CreateRoomForm({ onClose }: CreateRoomFormProps) {
                         <GameController weight="fill" size={28} />
                     </div>
                     <div>
-                        <h2 className="create-room-modal__title">Yeni Oda Oluştur</h2>
-                        <p className="create-room-modal__subtitle">Arkadaşlarınla yarış!</p>
+                        <h2 className="create-room-modal__title">{t('create_room.title')}</h2>
+                        <p className="create-room-modal__subtitle">{t('create_room.subtitle')}</p>
                     </div>
                 </div>
                 <button className="create-room-modal__close" onClick={handleClose}>
@@ -76,7 +78,7 @@ function CreateRoomForm({ onClose }: CreateRoomFormProps) {
                 <div className="create-room-modal__field">
                     <label className="create-room-modal__label">
                         <Sparkle weight="fill" size={14} />
-                        Oda Adı
+                        {t('create_room.room_name')}
                     </label>
                     <div className="create-room-modal__input-wrapper">
                         <input
@@ -84,7 +86,7 @@ function CreateRoomForm({ onClose }: CreateRoomFormProps) {
                             className="create-room-modal__input"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            placeholder="Harika bir isim seç..."
+                            placeholder={t('create_room.room_name_placeholder')}
                             maxLength={FriendlyRoomConst.MAX_ROOM_NAME_LENGTH}
                         />
                         <span className="create-room-modal__input-count">
@@ -98,7 +100,7 @@ function CreateRoomForm({ onClose }: CreateRoomFormProps) {
                     <div className="create-room-modal__field">
                         <label className="create-room-modal__label">
                             <Cube weight="fill" size={14} />
-                            Küp Tipi
+                            {t('create_room.cube_type')}
                         </label>
                         <div className="create-room-modal__select-wrapper">
                             <select
@@ -122,7 +124,7 @@ function CreateRoomForm({ onClose }: CreateRoomFormProps) {
                     <div className="create-room-modal__field">
                         <label className="create-room-modal__label">
                             <Users weight="fill" size={14} />
-                            Maksimum Oyuncu
+                            {t('create_room.max_players')}
                         </label>
                         <div className="create-room-modal__select-wrapper">
                             <select
@@ -132,7 +134,7 @@ function CreateRoomForm({ onClose }: CreateRoomFormProps) {
                             >
                                 {Array.from({ length: FriendlyRoomConst.MAX_PLAYERS - FriendlyRoomConst.MIN_PLAYERS + 1 }, (_, i) => i + FriendlyRoomConst.MIN_PLAYERS).map((num) => (
                                     <option key={num} value={num}>
-                                        {num} Oyuncu
+                                        {num} {t('create_room.players_suffix')}
                                     </option>
                                 ))}
                             </select>
@@ -153,10 +155,10 @@ function CreateRoomForm({ onClose }: CreateRoomFormProps) {
                         </div>
                         <div className="create-room-modal__privacy-text">
                             <span className="create-room-modal__privacy-title">
-                                {isPrivate ? 'Şifreli Oda' : 'Açık Oda'}
+                                {isPrivate ? t('create_room.private_room') : t('create_room.public_room')}
                             </span>
                             <span className="create-room-modal__privacy-desc">
-                                {isPrivate ? 'Sadece şifreyi bilenler katılabilir' : 'Herkes katılabilir'}
+                                {isPrivate ? t('create_room.private_desc') : t('create_room.public_desc')}
                             </span>
                         </div>
                         <div className={`create-room-modal__privacy-switch ${isPrivate ? 'create-room-modal__privacy-switch--on' : ''}`}>
@@ -170,7 +172,7 @@ function CreateRoomForm({ onClose }: CreateRoomFormProps) {
                     <div className="create-room-modal__field">
                         <label className="create-room-modal__label">
                             <Lock weight="fill" size={14} />
-                            Oda Şifresi
+                            {t('create_room.room_password')}
                         </label>
                         <div className="create-room-modal__input-wrapper">
                             <input
@@ -178,7 +180,7 @@ function CreateRoomForm({ onClose }: CreateRoomFormProps) {
                                 className="create-room-modal__input"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                placeholder="Güçlü bir şifre belirle..."
+                                placeholder={t('create_room.password_placeholder')}
                             />
                         </div>
                     </div>
@@ -188,7 +190,7 @@ function CreateRoomForm({ onClose }: CreateRoomFormProps) {
             {/* Footer Actions */}
             <div className="create-room-modal__footer">
                 <button className="create-room-modal__btn create-room-modal__btn--secondary" onClick={handleClose}>
-                    İptal
+                    {t('create_room.cancel')}
                 </button>
                 <button
                     className={`create-room-modal__btn create-room-modal__btn--primary ${creating ? 'create-room-modal__btn--loading' : ''}`}
@@ -198,12 +200,12 @@ function CreateRoomForm({ onClose }: CreateRoomFormProps) {
                     {creating ? (
                         <>
                             <span className="create-room-modal__btn-spinner" />
-                            Oluşturuluyor...
+                            {t('create_room.creating')}
                         </>
                     ) : (
                         <>
                             <Sparkle weight="fill" size={18} />
-                            Oda Oluştur
+                            {t('create_room.create_button')}
                         </>
                     )}
                 </button>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import './ManageSmartCubes.scss';
 import { gql, useMutation, useQuery } from '@apollo/client';
 import Loading from '../../../common/loading/Loading';
@@ -37,6 +38,7 @@ const ADD_NEW_SMART_DEVICE_MUTATION = gql`
 `;
 
 export default function ManageSmartCubes() {
+	const { t } = useTranslation();
 	const { data: smartDevices } = useQuery<{ smartDevices: SmartDevice[] }>(SMART_DEVICES_QUERY);
 	const [addDevice, addDeviceData] = useMutation<
 		{ addNewSmartDevice: SmartDevice },
@@ -59,7 +61,7 @@ export default function ManageSmartCubes() {
 	if (!smartDevices?.smartDevices) {
 		body = <Loading />;
 	} else if (!smartDevices.smartDevices.length) {
-		body = <Empty text="Henüz akıllı küp bağlamadın" />;
+		body = <Empty text={t('smart_cube.no_smart_cubes_yet')} />;
 	} else {
 		body = smartDevices?.smartDevices.map((sc) => <SmartManage key={sc.id} cube={sc} />);
 	}

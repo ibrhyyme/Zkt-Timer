@@ -11,6 +11,7 @@ import { useMutation } from '@apollo/client';
 import { UserAccount } from '../../../@types/generated/graphql';
 import Button from '../../common/button/Button';
 import { Eye, EyeSlash } from 'phosphor-react';
+import { useTranslation } from 'react-i18next';
 
 const b = block('login');
 
@@ -29,6 +30,7 @@ const CREATE_USER_ACCOUNT_MUTATION = gql`
 `;
 
 export default function SignUp() {
+	const { t } = useTranslation();
 	const [firstName, setFirstName] = useInput('');
 	const [lastName, setLastName] = useInput('');
 	const [email, setEmail] = useInput('');
@@ -96,7 +98,7 @@ export default function SignUp() {
 							className="block text-sm mb-1"
 							style={{ color: 'rgba(255, 255, 255, 0.7)' }}
 						>
-							Ad
+							{t('signup.first_name')}
 						</label>
 						<input
 							id="firstName"
@@ -120,7 +122,7 @@ export default function SignUp() {
 							className="block text-sm mb-1"
 							style={{ color: 'rgba(255, 255, 255, 0.7)' }}
 						>
-							Soyad
+							{t('signup.last_name')}
 						</label>
 						<input
 							id="lastName"
@@ -145,7 +147,7 @@ export default function SignUp() {
 						className="block text-sm mb-1"
 						style={{ color: 'rgba(255, 255, 255, 0.7)' }}
 					>
-						E-posta
+						{t('signup.email')}
 					</label>
 					<input
 						id="email"
@@ -169,7 +171,7 @@ export default function SignUp() {
 						className="block text-sm mb-1"
 						style={{ color: 'rgba(255, 255, 255, 0.7)' }}
 					>
-						Kullanıcı Adı
+						{t('signup.username')}
 					</label>
 					<input
 						id="username"
@@ -193,7 +195,7 @@ export default function SignUp() {
 						className="block text-sm mb-1"
 						style={{ color: 'rgba(255, 255, 255, 0.7)' }}
 					>
-						Şifre
+						{t('signup.password')}
 					</label>
 					<div className="relative">
 						<input
@@ -250,7 +252,7 @@ export default function SignUp() {
 							<div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
 						</div>
 					) : (
-						'Kayıt Ol'
+						t('signup.signup_button')
 					)}
 				</button>
 			</form>
@@ -262,7 +264,7 @@ export default function SignUp() {
 					className="hover:text-white transition"
 					style={{ color: 'rgba(255, 255, 255, 0.6)' }}
 				>
-					Hesabın var mı? Giriş yap
+					{t('signup.has_account')}
 				</Link>
 			</div>
 		</div>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CaretDown } from 'phosphor-react';
 import { useDispatch } from 'react-redux';
 import ImportData, { ImportDataType } from './import_data/ImportData';
@@ -15,6 +16,7 @@ import Button, { CommonType } from '../../common/button/Button';
 import { clearOfflineData } from '../../layout/offline';
 
 export default function DataSettings() {
+	const { t } = useTranslation();
 	const dispatch = useDispatch();
 
 	const [exportingData, setExportingData] = useState(false);
@@ -67,48 +69,47 @@ export default function DataSettings() {
 		fileDownload(data, filename);
 
 		setExportingData(false);
-		toastSuccess('Tüm çözüm ve oturum verileri başarıyla indirildi.');
+		toastSuccess(t('data_settings.export_success'));
 	}
 
 	return (
 		<>
 			<SettingRow
 				loggedInOnly
-				title="Zorla yeniden yükle"
-				description="Verileriniz veya ayarlarınız senkronize değilse, veritabanıyla yeniden senkronize etmek için zorla yeniden yükleme yapabilirsiniz."
+				title={t('data_settings.force_reload')}
+				description={t('data_settings.force_reload_desc')}
 			>
-				<Button theme={CommonType.GRAY} text="Zorla yeniden yükle" onClick={hardReload} />
+				<Button theme={CommonType.GRAY} text={t('data_settings.force_reload_button')} onClick={hardReload} />
 			</SettingRow>
 			<SettingRow
 				loggedInOnly
-				title="Çözüm ve oturum verilerini dışa aktar"
-				description="Bu veriler, gerektiğinde daha sonra içe aktarılabilecek çözüm ve oturum verileriniz için yedek görevi görebilir."
+				title={t('data_settings.export_data')}
+				description={t('data_settings.export_data_desc')}
 			>
-				<Button theme={CommonType.GRAY} loading={exportingData} text="Verileri dışa aktar" onClick={exportData} />
+				<Button theme={CommonType.GRAY} loading={exportingData} text={t('data_settings.export_button')} onClick={exportData} />
 			</SettingRow>
-			<SettingRow loggedInOnly title="Veri içe aktar" description="csTimer veya Zkt-Timer'dan veri içe aktarın">
+			<SettingRow loggedInOnly title={t('data_settings.import_data')} description={t('data_settings.import_data_desc')}>
 				<Dropdown
-					text="Veri içe aktar"
+					text={t('data_settings.import_button')}
 					icon={<CaretDown weight="bold" />}
 					options={[
-						{ text: 'csTimer\'dan içe aktar', onClick: () => openImportModal(ImportDataType.CS_TIMER) },
-						{ text: 'Zkt-Timer Yedekten içe aktar', onClick: () => openImportModal(ImportDataType.ZKT_TIMER) },
+						{ text: t('data_settings.import_cstimer'), onClick: () => openImportModal(ImportDataType.CS_TIMER) },
+						{ text: t('data_settings.import_zkttimer'), onClick: () => openImportModal(ImportDataType.ZKT_TIMER) },
 					]}
 				/>
 			</SettingRow>
 			<SettingRow
 				loggedInOnly
-				title="Ayarları sıfırla"
-				description="Ayarlardaki her şeyi varsayılan değerlere sıfırla (özel küp türleri hariç)"
+				title={t('data_settings.reset_settings')}
+				description={t('data_settings.reset_settings_desc')}
 			>
 				<Button
 					theme={CommonType.DANGER}
-					text="Ayarları sıfırla"
+					text={t('data_settings.reset_settings_button')}
 					confirmModalProps={{
-						description:
-							'Dikkatli olun. Ayarlarınızı varsayılan değerlere sıfırlamak üzeresiniz. Özel küp türleri etkilenmeyecek.',
-						title: 'Ayarları sıfırla',
-						buttonText: 'Ayarları sıfırla',
+						description: t('data_settings.reset_settings_confirm_desc'),
+						title: t('data_settings.reset_settings'),
+						buttonText: t('data_settings.reset_settings_button'),
 						triggerAction: resetSettings,
 					}}
 				/>

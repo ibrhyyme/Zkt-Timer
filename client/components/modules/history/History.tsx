@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import ReactList from 'react-list';
 import { GlobalHotKeys } from 'react-hotkeys';
 import './History.scss';
@@ -24,6 +25,7 @@ interface Props {
 export default function History(props: Props) {
 	const { solves: parentSolves, reverseOrder, disabled, filterOptions, hotKeysEnabled } = props;
 
+	const { t } = useTranslation();
 	useSolveDb();
 	const modals = useGeneral('modals');
 
@@ -77,7 +79,7 @@ export default function History(props: Props) {
 	if (!solves.length) {
 		return (
 			<div className="cd-history">
-				<Empty text="Henüz çözüm yok" />
+				<Empty text={t('timer_modules.no_solves_yet')} />
 			</div>
 		);
 	}

@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
+import { useTranslation } from 'react-i18next';
 import './SmartCube.scss';
 import SmartStats from './stats/SmartStats';
 import Emblem from '../../common/emblem/Emblem';
@@ -31,6 +32,7 @@ import * as THREE from 'three';
 const b = block('smart-cube');
 
 export default function SmartCube() {
+	const { t } = useTranslation();
 	const dispatch = useDispatch();
 	const context = useContext(TimerContext);
 
@@ -456,7 +458,7 @@ export default function SmartCube() {
 	}
 
 	function toggleManageSmartCubes() {
-		dispatch(openModal(<ManageSmartCubes />, { title: 'Akıllı küpleri yönet' }));
+		dispatch(openModal(<ManageSmartCubes />, { title: t('smart_cube.manage_smart_cubes') }));
 	}
 
 	function resetGyro() {
@@ -470,24 +472,24 @@ export default function SmartCube() {
 			icon={<DotsThree />}
 			options={[
 				{
-					text: 'Çözülmüş olarak işaretle',
+					text: t('smart_cube.mark_as_solved'),
 					hidden: !smartCubeConnected,
 					disabled: !!timeStartedAt,
 					onClick: () => resetMoves(true),
 				},
 				{
-					text: 'Jiroskop sıfırla',
+					text: t('smart_cube.reset_gyro'),
 					hidden: !smartCubeConnected || !smartGyroSupported,
 					disabled: !!timeStartedAt,
 					onClick: resetGyro,
 				},
 				{
-					text: 'Bağlantıyı kes',
+					text: t('smart_cube.disconnect'),
 					hidden: !smartCubeConnected,
 					disabled: !!timeStartedAt,
 					onClick: disconnectBluetooth,
 				},
-				{ text: 'Akıllı küpleri yönet', disabled: !!timeStartedAt, onClick: toggleManageSmartCubes },
+				{ text: t('smart_cube.manage_smart_cubes'), disabled: !!timeStartedAt, onClick: toggleManageSmartCubes },
 			]}
 		/>
 	);
@@ -496,13 +498,13 @@ export default function SmartCube() {
 	let emblem;
 	if (smartCubeConnecting) {
 		emblem = <Emblem small orange icon={<Bluetooth />} />;
-		actionButton = <Button text="Bağlanıyor..." disabled />;
+		actionButton = <Button text={t('smart_cube.connecting')} disabled />;
 		battery = null;
 	} else if (smartCubeConnected) {
 		emblem = <Emblem small green icon={<Bluetooth />} />;
 	} else {
 		emblem = <Emblem small red icon={<Bluetooth />} />;
-		actionButton = <Button text="Bağlan" onClick={connectBluetooth} />;
+		actionButton = <Button text={t('smart_cube.connect')} onClick={connectBluetooth} />;
 		battery = null;
 	}
 

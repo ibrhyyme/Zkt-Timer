@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
+import {useTranslation} from 'react-i18next';
 import { getTimeString } from '../../../util/time';
 import './TimeDisplay.scss';
 import Manual from './manual/Manual';
@@ -20,6 +21,7 @@ const b = block('time-display');
 const bi = block('timer-bottom-info');
 
 export default function TimeDisplay() {
+	const {t} = useTranslation();
 	const context = useContext(TimerContext);
 	const [time, setTime] = useState(0);
 	const timerCounter = useRef<NodeJS.Timeout>(null);
@@ -122,7 +124,7 @@ export default function TimeDisplay() {
 	let timeStr;
 	let bottomInfo = null;
 	if (inspectionOn) {
-		bottomInfo = <StartInstructions>İnceleme Açık</StartInstructions>;
+		bottomInfo = <StartInstructions>{t('time_display.inspection_on')}</StartInstructions>;
 	}
 
 	if (inInspection) {
@@ -141,7 +143,7 @@ export default function TimeDisplay() {
 	}
 
 	if (hideTimeWhenSolving && timeStartedAt) {
-		timeStr = 'ÇÖZ';
+		timeStr = t('time_display.solve');
 	}
 
 	if (stackMatOn) {
@@ -152,13 +154,13 @@ export default function TimeDisplay() {
 		if (preflightChecks(smartTurns, scramble)) {
 			bottomInfo = (
 				<StartInstructions>
-					Başlamak için <span>akıllı küpü</span> çevir
+					{t('time_display.turn_smart_cube_to_start')}
 				</StartInstructions>
 			);
 		} else {
 			bottomInfo = (
 				<StartInstructions>
-					Başlamak için <span>akıllı küpü</span> karıştır
+					{t('time_display.scramble_smart_cube_to_start')}
 				</StartInstructions>
 			);
 		}

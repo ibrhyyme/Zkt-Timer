@@ -1,8 +1,10 @@
 import React, {useEffect, useState} from 'react';
+import {useTranslation} from 'react-i18next';
 import Button from '../../common/button/Button';
 import {isNative} from '../../../util/platform';
 
 export default function MicAccess() {
+	const {t} = useTranslation();
 	const [status, setStatus] = useState(null);
 
 	// not-determined, granted, denied, restricted or unknown.
@@ -41,16 +43,16 @@ export default function MicAccess() {
 	let info = '';
 	if (isNative()) {
 		disabled = true;
-		error = 'StackMat zamanlayıcı mobil uygulamada desteklenmiyor';
+		error = t('stackmat.not_supported_mobile');
 	} else if (status === 'granted') {
 		disabled = true;
-		info = 'İzin verildi';
+		info = t('stackmat.permission_granted');
 	} else if (status === 'denied' || status === 'denied') {
 		disabled = true;
-		error = 'İzin reddedildi. OS ayarlarınızdan mikrofon erişimine izin verin';
+		error = t('stackmat.permission_denied');
 	} else if (status === 'not-determined') {
 		disabled = false;
 	}
 
-	return <Button onClick={clickAllow} primary text="Mikrofon Erişimi Ver" disabled={disabled} info={info} error={error} />;
+	return <Button onClick={clickAllow} primary text={t('stackmat.grant_mic_access')} disabled={disabled} info={info} error={error} />;
 }

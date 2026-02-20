@@ -1,4 +1,5 @@
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ArrowClockwise, CaretLeft, CaretRight, Lock, LockSimple, PencilSimple, Trash } from 'phosphor-react';
 import Button from '../common/button/Button';
 import { TimerContext } from './Timer';
@@ -21,6 +22,7 @@ const b = block('timer-controls');
 const MAX_HISTORY_BACK_STEPS = 2;
 
 export default function TimerControls() {
+    const { t } = useTranslation();
     const context = useContext(TimerContext);
     const mobileMode = useGeneral('mobile_mode');
     const lockedScramble = useSettings('locked_scramble');
@@ -177,19 +179,19 @@ export default function TimerControls() {
                 {!mobileMode && (
                     <Button
                         onClick={toggleEditScramble}
-                        title="Karıştırmayı düzenle"
+                        title={t('timer_modules.edit_scramble')}
                         white={editScramble}
                         transparent
                         disabled={scrambleLocked}
                         icon={<PencilSimple weight="bold" />}
-                        text="Düzenle"
+                        text={t('timer_modules.edit')}
                     />
                 )}
                 {latestSolve && !context.inModal && (
                     <>
                         <Button
                             onClick={handlePlusTwo}
-                            title="+2 ceza"
+                            title={t('timer_modules.plus_two_penalty')}
                             transparent
                             warning={latestSolve.plus_two}
                             text="+2"
@@ -204,7 +206,7 @@ export default function TimerControls() {
                         {!mobileMode && (
                             <Button
                                 onClick={handleDelete}
-                                title="Son çözümü sil"
+                                title={t('timer_modules.delete_last_solve')}
                                 transparent
                                 icon={<Trash weight="bold" />}
                             />
@@ -213,7 +215,7 @@ export default function TimerControls() {
                 )}
                 <Button
                     onClick={toggleScrambleLock}
-                    title="Karıştırmayı kilitle"
+                    title={t('timer_modules.lock_scramble')}
                     transparent={!scrambleLocked}
                     warning={scrambleLocked}
                     icon={scrambleLocked ? <LockSimple weight="fill" /> : <Lock weight="bold" />}
@@ -221,7 +223,7 @@ export default function TimerControls() {
                 {!mobileMode && (
                     <Button
                         onClick={handleRefresh}
-                        title="Yeni karıştırma"
+                        title={t('timer_modules.new_scramble')}
                         transparent
                         disabled={scrambleLocked || disableControls}
                         icon={<ArrowClockwise weight="bold" />}
@@ -234,18 +236,18 @@ export default function TimerControls() {
                 <Button
                     onClick={handlePreviousScramble}
                     disabled={!canGoPrevious}
-                    title="Önceki karıştırma"
+                    title={t('timer_modules.previous_scramble')}
                     transparent
                     icon={<CaretLeft weight="bold" />}
-                    text={!mobileMode ? 'Önceki' : undefined}
+                    text={!mobileMode ? t('common.previous') : undefined}
                 />
                 <Button
                     onClick={handleNextScramble}
                     disabled={!canGoNext}
-                    title="Sonraki karıştırma"
+                    title={t('timer_modules.next_scramble')}
                     transparent
                     icon={<CaretRight weight="bold" />}
-                    text={!mobileMode ? 'Sonraki' : undefined}
+                    text={!mobileMode ? t('common.next') : undefined}
                 />
             </div>
         </div>

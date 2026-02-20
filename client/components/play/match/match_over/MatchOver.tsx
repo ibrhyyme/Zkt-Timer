@@ -12,6 +12,7 @@ import { IModalProps } from '../../../common/modal/Modal';
 import EloChange from './elo_change/EloChange';
 import { GameType } from '../../../../../shared/match/consts';
 import { MatchEndedBy } from '../../../../shared/match/types';
+import { useTranslation } from 'react-i18next';
 
 const b = block('match-over');
 
@@ -23,6 +24,7 @@ interface Props extends IModalProps {
 
 export default function MatchOver(props: Props) {
 	const me = useMe();
+	const { t } = useTranslation();
 
 	const [rematchRequested, setRematchRequested] = useState(false);
 	const [newMatch, setNewMatch] = useState(false);
@@ -90,23 +92,23 @@ export default function MatchOver(props: Props) {
 
 	let header;
 	if (match.aborted) {
-		header = 'Çözüm iptal edildi';
+		header = t('match.solve_aborted');
 	} else if (isWinner) {
-		header = 'Kazandın!';
+		header = t('match.you_won');
 	} else if (winner) {
-		header = `${winner.username} kazandı!`;
+		header = t('match.player_won', { username: winner.username });
 	} else {
-		header = 'Maç bitti';
+		header = t('match.match_ended');
 	}
 
 	let endedBy: ReactNode = null;
 	switch (endReason) {
 		case MatchEndedBy.RESIGNATION: {
-			endedBy = 'çekilme ile';
+			endedBy = t('match.by_resignation');
 			break;
 		}
 		case MatchEndedBy.FORFEITURE: {
-			endedBy = 'hükmen yenilgi ile';
+			endedBy = t('match.by_forfeiture');
 			break;
 		}
 	}
@@ -126,10 +128,10 @@ export default function MatchOver(props: Props) {
 		return () => clearTimeout(timer);
 	}, [newMatch, rematchRequested, exitMatch]);
 
-	let rematchText = 'Rövanş';
+	let rematchText = t('match.rematch');
 	let rematchDisabled = false;
 	if (rematchRequested) {
-		rematchText = 'Rövanş istendi';
+		rematchText = t('match.rematch_requested');
 		rematchDisabled = true;
 	} else if (!match?.ended_at) {
 		rematchDisabled = true;
@@ -150,10 +152,10 @@ export default function MatchOver(props: Props) {
 			<div className={b('players')}>{players}</div>
 			<div className={b('actions')}>
 				<div className={b('main-actions')}>
-					<Button gray large text="Lobiye Katıl" onClick={() => setNewMatch(true)} />
+					<Button gray large text={t('play.join_lobby')} onClick={() => setNewMatch(true)} />
 					<Button primary glow large text={rematchText} disabled={rematchDisabled} onClick={requestRematch} />
 				</div>
-				<Button text="Çıkış" onClick={exitModal} flat white />
+				<Button text={t('match.exit')} onClick={exitModal} flat white />
 			</div>
 		</div>
 	);

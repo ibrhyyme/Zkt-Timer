@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import './HistoryModal.scss';
 import { Copy, ShareNetwork } from 'phosphor-react';
 import block from '../../../../styles/bem';
@@ -54,6 +55,7 @@ function getTrimmedSolveIds(solves: Solve[]): Set<string> {
 }
 
 export default function HistoryModal(props: Props) {
+	const { t } = useTranslation();
 	const { description, showAsText, statOptions, filterOptions } = props;
 	// Default to ascending (oldest first, 1..N) for mobile to match reference
 	// But let's check: reference shows "1. 0.514", "2. 0.394"... and dates are 12/02/26
@@ -167,8 +169,8 @@ export default function HistoryModal(props: Props) {
 			<div className={b({ mobile: true })}>
 				<div className={b('mobile-header')}>
 					<div className={b('mobile-header-top')}>
-						<div className={b('mobile-title')}>İstatistik Detayı</div>
-						<div className={b('mobile-done')} onClick={handleDone}>Bitti</div>
+						<div className={b('mobile-title')}>{t('solve_info.stat_detail')}</div>
+						<div className={b('mobile-done')} onClick={handleDone}>{t('solve_info.done')}</div>
 					</div>
 					<div className={b('mobile-header-main')}>
 						<div className={b('mobile-time')}>{timeString}</div>
@@ -199,7 +201,7 @@ export default function HistoryModal(props: Props) {
 					/>
 				</div>
 
-				<div className={b('mobile-section-title')}>SÜRELER</div>
+				<div className={b('mobile-section-title')}>{t('solve_info.times')}</div>
 				<div className={b('mobile-solves')}>
 					{displaySolves.map((solve, i) => {
 						const displayIndex = reverseOrder ? i + 1 : solves.length - i;
@@ -224,7 +226,7 @@ export default function HistoryModal(props: Props) {
 									<div className={b('mobile-row-date')}>{date}</div>
 								</div>
 								<div className={b('mobile-row-scramble')}>
-									{solve.scramble || 'Karıştırma verisi yok'}
+									{solve.scramble || t('solve_info.no_scramble_data')}
 								</div>
 							</div>
 						);
@@ -245,7 +247,7 @@ export default function HistoryModal(props: Props) {
 			<div className={b({ card: true })}>
 				<div className={b('card-header')}>
 					<div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 16 }}>
-						<div style={{ fontSize: '1rem', fontWeight: 600, color: '#4a9eff', cursor: 'pointer' }} onClick={handleDone}>Bitti</div>
+						<div style={{ fontSize: '1rem', fontWeight: 600, color: '#4a9eff', cursor: 'pointer' }} onClick={handleDone}>{t('solve_info.done')}</div>
 					</div>
 					<div className={b('card-time')}>{timeString}</div>
 					<div className={b('card-desc')}>
@@ -274,7 +276,7 @@ export default function HistoryModal(props: Props) {
 	return (
 		<div className={b({ card: true })}>
 			<div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%', marginBottom: 8 }}>
-				<div style={{ fontSize: '1rem', fontWeight: 600, color: '#4a9eff', cursor: 'pointer' }} onClick={handleDone}>Bitti</div>
+				<div style={{ fontSize: '1rem', fontWeight: 600, color: '#4a9eff', cursor: 'pointer' }} onClick={handleDone}>{t('solve_info.done')}</div>
 			</div>
 			<div className={b('card-header')}>
 				<div className={b('card-time')}>{timeString}</div>
@@ -304,7 +306,7 @@ export default function HistoryModal(props: Props) {
 				/>
 			</div>
 
-			<div className={b('card-section-title')}>SÜRELER</div>
+			<div className={b('card-section-title')}>{t('solve_info.times')}</div>
 			<div className={b('card-solves')}>
 				{displaySolves.map((solve, i) => {
 					const displayIndex = reverseOrder ? i + 1 : solves.length - i;
@@ -327,7 +329,7 @@ export default function HistoryModal(props: Props) {
 								<div className={b('mobile-row-date')}>{date}</div>
 							</div>
 							<div className={b('mobile-row-scramble')}>
-								{solve.scramble || 'Karıştırma verisi yok'}
+								{solve.scramble || t('solve_info.no_scramble_data')}
 							</div>
 						</div>
 					);

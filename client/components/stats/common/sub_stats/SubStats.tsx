@@ -1,4 +1,5 @@
 import React, {useContext, useMemo} from 'react';
+import {useTranslation} from 'react-i18next';
 import './SubStats.scss';
 import {
 	WarningOctagon,
@@ -25,6 +26,7 @@ interface Props {
 }
 
 export default function SubStats(props: Props) {
+	const { t } = useTranslation();
 
 	const context = useContext(StatsContext);
 	const {filterOptions} = context;
@@ -55,16 +57,16 @@ export default function SubStats(props: Props) {
 				small
 				center
 				icon={<CaretDoubleRight weight="bold" />}
-				title="Çözüm Serisi"
-				value={`${streak.currentStreak} gün`}
+				title={t('stats_page.solve_streak')}
+				value={`${streak.currentStreak} ${t('stats_page.days')}`}
 				color={SUB_STATS_COLOR}
 			/>
 			<NumberBlock
 				small
 				center
 				icon={<CaretDoubleUp weight="bold" />}
-				title="En Yüksek Seri"
-				value={`${streak.highestStreak} gün`}
+				title={t('stats_page.highest_streak')}
+				value={`${streak.highestStreak} ${t('stats_page.days')}`}
 				color={SUB_STATS_COLOR}
 			/>
 			<NumberBlock
@@ -87,7 +89,7 @@ export default function SubStats(props: Props) {
 				small
 				center
 				icon={<Calculator weight="bold" />}
-				title="Ort. Çözüm / Seans"
+				title={t('stats_page.avg_solves_per_session')}
 				value={avgSolvesPerSession}
 				color={SUB_STATS_COLOR}
 			/>
@@ -95,7 +97,7 @@ export default function SubStats(props: Props) {
 				small
 				center
 				icon={<NumberSquareOne weight="bold" />}
-				title="İlk Çözüm"
+				title={t('stats_page.first_solve')}
 				value={firstSolveTime}
 				color={SUB_STATS_COLOR}
 			/>

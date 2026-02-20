@@ -4,6 +4,7 @@ import { X, PaperPlaneRight, UsersThree, EnvelopeSimple, WarningCircle, Check } 
 import { gql } from '@apollo/client';
 import { gqlMutateTyped } from '../../api';
 import RecipientSelector, { SelectedUser } from './RecipientSelector';
+import { useTranslation } from 'react-i18next';
 
 const SEND_BULK_EMAIL_MUTATION = gql`
 	mutation SendBulkEmail($input: SendBulkEmailInput!) {
@@ -20,6 +21,7 @@ interface BulkEmailResult {
 }
 
 export default function AdminEmail() {
+	const { t } = useTranslation();
 	const [recipients, setRecipients] = useState<Map<string, SelectedUser>>(new Map());
 	const [sendToAll, setSendToAll] = useState(false);
 	const [subject, setSubject] = useState('');
@@ -41,8 +43,8 @@ export default function AdminEmail() {
 	const handleSend = async () => {
 		if (!canSend) return;
 
-		const recipientCount = sendToAll ? 'tum kullanicilara' : `${recipientList.length} kisiye`;
-		if (!confirm(`${recipientCount} mail gonderilecek. Devam etmek istiyor musunuz?`)) {
+		const recipientCount = sendToAll ? t('admin_email.to_all_users') : recipientList.length;
+		if (!confirm(t('admin_email.send_confirm', { count: recipientCount }))) {
 			return;
 		}
 
@@ -65,7 +67,7 @@ export default function AdminEmail() {
 			}
 		} catch (err) {
 			console.error('Failed to send bulk email:', err);
-			setError('Mail gonderimi basarisiz oldu. Lutfen tekrar deneyin.');
+			setError(t('admin_email.send_error'));
 		} finally {
 			setSending(false);
 		}
@@ -84,8 +86,8 @@ export default function AdminEmail() {
 		<div className="p-8 max-w-7xl mx-auto">
 			{/* Header */}
 			<div className="mb-8">
-				<h1 className="text-3xl font-bold text-white mb-2">Mail Gonder</h1>
-				<p className="text-gray-400">Kullanicilara toplu veya tekil mail gonderin.</p>
+				<h1 className="text-3xl font-bold text-white mb-2">{t('admin_email.page_title')}</h1>
+				<p className="text-gray-400">{t('admin_email.subtitle')}</p>
 			</div>
 
 			{/* Result Banner */}
@@ -93,15 +95,15 @@ export default function AdminEmail() {
 				<div className="mb-6 p-4 rounded-xl border bg-[#1e1e24] border-white/5">
 					<div className="flex items-center gap-3 mb-2">
 						<EnvelopeSimple size={22} className="text-green-400" weight="bold" />
-						<h3 className="font-semibold text-white">Gonderim Tamamlandi</h3>
+						<h3 className="font-semibold text-white">{t('admin_email.send_complete')}</h3>
 					</div>
 					<div className="flex gap-6 text-sm">
 						<span className="text-green-400">
-							{result.successCount} basarili
+							{t('admin_email.success_count', { count: result.successCount })}
 						</span>
 						{result.failCount > 0 && (
 							<span className="text-red-400">
-								{result.failCount} basarisiz
+								{t('admin_email.fail_count', { count: result.failCount })}
 							</span>
 						)}
 					</div>
@@ -109,7 +111,7 @@ export default function AdminEmail() {
 						onClick={handleReset}
 						className="mt-3 text-sm text-blue-400 hover:text-blue-300 transition"
 					>
-						Yeni mail olustur
+						{t('admin_email.new_email')}
 					</button>
 				</div>
 			)}
@@ -118,7 +120,7 @@ export default function AdminEmail() {
 			<div className="bg-[#1e1e24] rounded-2xl border border-white/5 overflow-hidden shadow-xl">
 				{/* Recipients Section */}
 				<div className="p-6 border-b border-white/5">
-					<label className="block text-sm font-medium text-gray-300 mb-3">Alicilar</label>
+					<label className="block text-sm font-medium text-gray-300 mb-3">{t('admin_email.recipients')}</label>
 
 					<div className="flex items-center gap-4 mb-3 flex-wrap">
 						<div
@@ -134,7 +136,7 @@ export default function AdminEmail() {
 							>
 								{sendToAll && <Check size={12} weight="bold" className="text-white" />}
 							</div>
-							<span className="text-sm text-gray-300">Tum kullanicilara gonder</span>
+							<span className="text-sm text-gray-300">{t('admin_email.send_to_all')}</span>
 						</div>
 					</div>
 
@@ -158,7 +160,7 @@ export default function AdminEmail() {
 									))}
 									{recipientList.length > 20 && (
 										<span className="inline-flex items-center px-2.5 py-1 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-gray-500">
-											+{recipientList.length - 20} daha
+											{t('admin_email.more_recipients', { count: recipientList.length - 20 })}
 										</span>
 									)}
 								</div>
@@ -169,7 +171,7 @@ export default function AdminEmail() {
 								className="flex items-center gap-2 px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-gray-300 hover:bg-zinc-700 hover:text-white transition"
 							>
 								<UsersThree size={18} />
-								Kisi Ekle
+								{t('admin_email.add_person')}
 							</button>
 						</>
 					)}
@@ -177,12 +179,12 @@ export default function AdminEmail() {
 
 				{/* Subject */}
 				<div className="p-6 border-b border-white/5">
-					<label className="block text-sm font-medium text-gray-300 mb-2">Konu</label>
+					<label className="block text-sm font-medium text-gray-300 mb-2">{t('admin_email.subject')}</label>
 					<input
 						type="text"
 						value={subject}
 						onChange={(e) => setSubject(e.target.value)}
-						placeholder="Mail konusunu yazin..."
+						placeholder={t('admin_email.subject_placeholder')}
 						className="w-full px-4 py-2.5 bg-zinc-900 border border-zinc-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition"
 					/>
 				</div>
@@ -191,11 +193,11 @@ export default function AdminEmail() {
 				<div className="p-6 grid grid-cols-2 gap-6">
 					{/* Left - Content */}
 					<div>
-						<label className="block text-sm font-medium text-gray-300 mb-2">Icerik</label>
+						<label className="block text-sm font-medium text-gray-300 mb-2">{t('admin_email.content')}</label>
 						<textarea
 							value={content}
 							onChange={(e) => setContent(e.target.value)}
-							placeholder="Mail icerigini yazin..."
+							placeholder={t('admin_email.content_placeholder')}
 							className="w-full px-4 py-3 bg-zinc-900 border border-zinc-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition resize-none font-mono text-sm"
 							style={{ minHeight: '350px' }}
 						/>
@@ -203,18 +205,18 @@ export default function AdminEmail() {
 						<div className="mt-3 space-y-1.5">
 							<p className="text-xs text-gray-500 flex items-center gap-1.5">
 								<WarningCircle size={12} />
-								Konu satirinda BUYUK HARF ve asiri unlem (!!!) kullanmayin
+								{t('admin_email.tip_subject')}
 							</p>
 							<p className="text-xs text-gray-500 flex items-center gap-1.5">
 								<WarningCircle size={12} />
-								Linklerin zktimer.app adresine yonlendirdiginden emin olun
+								{t('admin_email.tip_links')}
 							</p>
 						</div>
 					</div>
 
 					{/* Right - Preview */}
 					<div>
-						<label className="block text-sm font-medium text-gray-300 mb-2">Onizleme</label>
+						<label className="block text-sm font-medium text-gray-300 mb-2">{t('admin_email.preview')}</label>
 						<div className="border border-zinc-700 rounded-lg bg-white p-6 overflow-y-auto" style={{ minHeight: '350px' }}>
 							{/* Email Preview */}
 							<div style={{ fontFamily: 'helvetica, arial, sans-serif', maxWidth: '500px', margin: '0 auto' }}>
@@ -225,17 +227,17 @@ export default function AdminEmail() {
 								</div>
 								<div style={{ borderTop: '2px solid #444', paddingTop: '16px', marginBottom: '12px' }} />
 								<p style={{ fontSize: '20px', color: '#444', marginBottom: '16px' }}>
-									Merhaba <strong>Kullanici</strong>,
+									{t('admin_email.email_greeting')}
 								</p>
 								<div style={{ fontSize: '20px', color: '#444', lineHeight: '1.7', whiteSpace: 'pre-wrap', marginBottom: '20px' }}>
-									{content || 'Mail icerigi burada gorunecek...'}
+									{content || t('admin_email.content_preview_placeholder')}
 								</div>
 								<p style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '20px' }}>
-									<a href="https://zktimer.app" style={{ color: '#246bfd', textDecoration: 'underline' }}>Zkt-Timer'a Git</a>
+									<a href="https://zktimer.app" style={{ color: '#246bfd', textDecoration: 'underline' }}>{t('admin_email.go_to_zkttimer')}</a>
 								</p>
 								<div style={{ borderTop: '2px solid #444', paddingTop: '12px', marginTop: '20px' }}>
-									<p style={{ fontSize: '20px', color: '#444', marginBottom: '4px' }}>Sevgiler,</p>
-									<p style={{ fontSize: '20px', color: '#444', fontWeight: 'bold' }}>Zkt-Timer Ekibi</p>
+									<p style={{ fontSize: '20px', color: '#444', marginBottom: '4px' }}>{t('admin_email.regards')}</p>
+									<p style={{ fontSize: '20px', color: '#444', fontWeight: 'bold' }}>{t('admin_email.team')}</p>
 								</div>
 							</div>
 						</div>
@@ -254,7 +256,7 @@ export default function AdminEmail() {
 							onClick={handleReset}
 							className="px-4 py-2 border border-zinc-700 rounded-lg text-sm text-gray-300 hover:bg-zinc-700 transition"
 						>
-							Temizle
+							{t('admin_email.clear')}
 						</button>
 						<button
 							onClick={handleSend}
@@ -264,12 +266,12 @@ export default function AdminEmail() {
 							{sending ? (
 								<>
 									<div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-									Gonderiliyor...
+									{t('admin_email.sending')}
 								</>
 							) : (
 								<>
 									<PaperPlaneRight size={18} weight="bold" />
-									Mail Gonder
+									{t('admin_email.send_button')}
 								</>
 							)}
 						</button>

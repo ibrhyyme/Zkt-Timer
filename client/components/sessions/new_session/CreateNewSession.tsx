@@ -1,4 +1,5 @@
 import React, {useState} from 'react';
+import { useTranslation } from 'react-i18next';
 import './CreateNewSession.scss';
 import Input from '../../common/inputs/input/Input';
 import {setCubeType, setCurrentSession} from '../../../db/settings/update';
@@ -17,6 +18,7 @@ const b = block('create-new-session');
 
 export default function CreateNewSession(props: IModalProps) {
 	const {onComplete} = props;
+	const { t } = useTranslation();
 
 	const [loading, setLoading] = useState(false);
 	const [sessionCubeType, setSessionCubeType] = useState('333');
@@ -41,7 +43,7 @@ export default function CreateNewSession(props: IModalProps) {
 			onComplete(session);
 		} catch (e) {
 			setLoading(false);
-			toastError('Sunucu Hatası: Oturum oluşturulamadı');
+			toastError(t('sessions.create_session_error'));
 		}
 	}
 
@@ -50,22 +52,22 @@ export default function CreateNewSession(props: IModalProps) {
 	return (
 		<div className={b()}>
 			<ModalHeader
-				title="Yeni oturum oluştur"
-				description="Zkt-Timer'da oturumlar birden fazla küp türüne sahip olabilir. Oturumları istediğiniz gibi bölebilirsiniz: küp türüne göre, güne göre, vb."
+				title={t('sessions.create_new_session_title')}
+				description={t('sessions.create_new_session_desc')}
 			/>
 			<div className="w-full">
 				<Input
-					placeholder="Yeni Oturum"
+					placeholder={t('sessions.new_session_placeholder')}
 					maxLength={200}
-					legend="Oturum Adı"
+					legend={t('sessions.session_name')}
 					value={name}
 					onChange={setName}
 				/>
 			</div>
 			<CubePicker
 				dropdownProps={{
-					legend: 'Cube Türü',
-					info: 'Korkma:) Bu daha sonra değiştirilebilir',
+					legend: t('sessions.cube_type'),
+					info: t('sessions.cube_type_info'),
 					openLeft: true,
 				}}
 				onChange={onCubeTypeChange}
@@ -76,7 +78,7 @@ export default function CreateNewSession(props: IModalProps) {
 					glow
 					primary
 					large
-					text="Sezon Oluştur"
+					text={t('sessions.create_session')}
 					onClick={createSession}
 					disabled={disabled}
 					loading={loading}

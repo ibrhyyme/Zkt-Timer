@@ -6,6 +6,7 @@ import {gql, useMutation} from '@apollo/client';
 import {useInput} from '../../../util/hooks/useInput';
 import {getRedirectLink} from '../../../util/auth/login';
 import {UserAccount} from '../../../@types/generated/graphql';
+import {useTranslation} from 'react-i18next';
 
 enum ForgotStage {
 	EnterEmail,
@@ -34,6 +35,7 @@ const UPDATE_FORGOT_PASSWORD_MUTATION = gql`
 `;
 
 export default function Forgot() {
+	const { t } = useTranslation();
 	const [stage, setStage] = useState<ForgotStage>(ForgotStage.EnterEmail);
 	const [code, setCode] = useInput('');
 	const [email, setEmail] = useInput('');
@@ -74,7 +76,7 @@ export default function Forgot() {
 		switch (stage) {
 			case ForgotStage.EnterEmail: {
 				if (!email.trim()) {
-					setError('Lütfen e-posta adresinizi girin');
+					setError(t('forgot.enter_email_error'));
 					return;
 				}
 
@@ -84,7 +86,7 @@ export default function Forgot() {
 			}
 			case ForgotStage.EnterCode: {
 				if (!code) {
-					setError('Lütfen kodu girin');
+					setError(t('forgot.enter_code_error'));
 					return;
 				}
 
@@ -120,14 +122,14 @@ export default function Forgot() {
 							className="block text-sm mb-1"
 							style={{ color: 'rgba(255, 255, 255, 0.7)' }}
 						>
-							E-posta
+							{t('forgot.email')}
 						</label>
 						<input
 							id="email"
 							type="email"
 							value={email}
 							onChange={setEmail}
-							placeholder="E-postanı gir"
+							placeholder={t('forgot.email_placeholder')}
 							className="w-full h-11 px-4 rounded-2xl border focus:outline-none focus:ring-2 focus:ring-indigo-400/70 transition"
 							style={{
 								backgroundColor: 'rgba(255, 255, 255, 0.05)',
@@ -159,7 +161,7 @@ export default function Forgot() {
 								<div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
 							</div>
 						) : (
-							'Kod Gönder'
+							t('forgot.send_code')
 						)}
 					</button>
 				</form>
@@ -171,14 +173,14 @@ export default function Forgot() {
 						className="hover:text-white transition"
 						style={{ color: 'rgba(255, 255, 255, 0.6)' }}
 					>
-						Giriş yap
+						{t('forgot.login_link')}
 					</Link>
 					<Link
 						to="/signup"
 						className="hover:text-white transition"
 						style={{ color: 'rgba(255, 255, 255, 0.6)' }}
 					>
-						Kayıt ol
+						{t('forgot.signup_link')}
 					</Link>
 				</div>
 			</div>
@@ -191,7 +193,7 @@ export default function Forgot() {
 			<div className="space-y-4">
 				<div className="text-center mb-4">
 					<p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-						E-postanızı kontrol edin. Şifrenizi sıfırlamak için bir kod almış olmalısınız.
+						{t('forgot.check_email')}
 					</p>
 				</div>
 
@@ -203,14 +205,14 @@ export default function Forgot() {
 							className="block text-sm mb-1"
 							style={{ color: 'rgba(255, 255, 255, 0.7)' }}
 						>
-							Doğrulama Kodu
+							{t('forgot.verification_code')}
 						</label>
 						<input
 							id="code"
 							type="text"
 							value={code}
 							onChange={setCode}
-							placeholder="6 haneli kodu girin"
+							placeholder={t('forgot.code_placeholder')}
 							className="w-full h-11 px-4 rounded-2xl border focus:outline-none focus:ring-2 focus:ring-indigo-400/70 transition"
 							style={{
 								backgroundColor: 'rgba(255, 255, 255, 0.05)',
@@ -242,7 +244,7 @@ export default function Forgot() {
 								<div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
 							</div>
 						) : (
-							'Kodu Doğrula'
+							t('forgot.verify_code')
 						)}
 					</button>
 				</form>
@@ -254,7 +256,7 @@ export default function Forgot() {
 						className="text-sm hover:text-white transition"
 						style={{ color: 'rgba(255, 255, 255, 0.6)' }}
 					>
-						Geri dön
+						{t('forgot.back')}
 					</button>
 				</div>
 			</div>
@@ -267,7 +269,7 @@ export default function Forgot() {
 			<div className="space-y-4">
 				<div className="text-center mb-4">
 					<p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-						Lütfen yeni şifrenizi belirleyin.
+						{t('forgot.set_new_password')}
 					</p>
 				</div>
 
@@ -279,14 +281,14 @@ export default function Forgot() {
 							className="block text-sm mb-1"
 							style={{ color: 'rgba(255, 255, 255, 0.7)' }}
 						>
-							Yeni Şifre
+							{t('forgot.new_password')}
 						</label>
 						<input
 							id="newPassword"
 							type="password"
 							value={newPassword}
 							onChange={setNewPassword}
-							placeholder="Yeni şifrenizi girin"
+							placeholder={t('forgot.new_password_placeholder')}
 							className="w-full h-11 px-4 rounded-2xl border focus:outline-none focus:ring-2 focus:ring-indigo-400/70 transition"
 							style={{
 								backgroundColor: 'rgba(255, 255, 255, 0.05)',
@@ -303,14 +305,14 @@ export default function Forgot() {
 							className="block text-sm mb-1"
 							style={{ color: 'rgba(255, 255, 255, 0.7)' }}
 						>
-							Şifre Tekrarı
+							{t('forgot.confirm_password')}
 						</label>
 						<input
 							id="confirmPassword"
 							type="password"
 							value={confirmPassword}
 							onChange={setConfirmPassword}
-							placeholder="Şifrenizi tekrar girin"
+							placeholder={t('forgot.confirm_password_placeholder')}
 							className="w-full h-11 px-4 rounded-2xl border focus:outline-none focus:ring-2 focus:ring-indigo-400/70 transition"
 							style={{
 								backgroundColor: 'rgba(255, 255, 255, 0.05)',
@@ -347,7 +349,7 @@ export default function Forgot() {
 								<div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
 							</div>
 						) : (
-							'Şifreyi Değiştir'
+							t('forgot.change_password')
 						)}
 					</button>
 				</form>
@@ -359,7 +361,7 @@ export default function Forgot() {
 						className="text-sm hover:text-white transition"
 						style={{ color: 'rgba(255, 255, 255, 0.6)' }}
 					>
-						Geri dön
+						{t('forgot.back')}
 					</button>
 				</div>
 			</div>
