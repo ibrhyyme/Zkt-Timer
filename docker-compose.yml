@@ -7,6 +7,8 @@ services:
     volumes:
       # Sadece kullanıcı yüklediği dosyaları persist et
       - ./public/uploads:/app/public/uploads
+      # Firebase service account (push notifications için)
+      - ./server/config/firebase-service-account.json:/app/firebase-service-account.json:ro
     ports:
       - "3000:3000"
     restart: always
