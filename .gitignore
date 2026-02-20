@@ -27,6 +27,9 @@ PROJECT_INFO_MAP.md
 server/**/*.test.ts
 server/**/__test__/
 
+# Uploads (Docker volume)
+public/uploads/
+
 # Windows artifacts
 nul
 
