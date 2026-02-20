@@ -21,7 +21,7 @@ import { useGeneral } from '../../../util/hooks/useGeneral';
 import { useDispatch } from 'react-redux';
 import Dropdown from '../../common/inputs/dropdown/Dropdown';
 import Button from '../../common/button/Button';
-import { toastError } from '../../../util/toast';
+import { toastError, toastInfo } from '../../../util/toast';
 import { endTimer, startTimer, startInspection } from '../helpers/events';
 import BluetoothErrorMessage from '../common/BluetoothErrorMessage';
 import BleScanningModal from './ble_scanning_modal/BleScanningModal';
@@ -435,10 +435,12 @@ export default function SmartCube() {
 	async function connectBluetooth() {
 		try {
 			console.log('[BLE] connectBluetooth called, isNative:', isNative());
+			toastInfo(`DEBUG: isNative=${isNative()}`);
 			let bluetoothAvailable = isNative() || (!!navigator.bluetooth && (await navigator.bluetooth.getAvailability()));
 			console.log('[BLE] bluetoothAvailable:', bluetoothAvailable);
 			if (bluetoothAvailable) {
 				if (isNative()) {
+					toastInfo('DEBUG: Modal açılıyor');
 					dispatch(openModal(
 						<BleScanningModal
 							mode="smartcube"

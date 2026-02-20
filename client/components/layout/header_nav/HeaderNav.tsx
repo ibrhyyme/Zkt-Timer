@@ -182,9 +182,9 @@ export default function HeaderNav() {
 				{/* Right side - Pro button, notifications, account */}
 				<div className={b('right')}>
 					{getPro}
-					<LanguageSwitcher />
 					{me && <AnnouncementBell />}
 					<AccountDropdown />
+					<LanguageSwitcher />
 					{me && <LoginNav collapsed={false} />}
 				</div>
 			</div>
