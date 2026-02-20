@@ -1,4 +1,5 @@
 import React, {useContext, useMemo} from 'react';
+import {useTranslation} from 'react-i18next';
 import {ArrowFatLinesUp, Hash, Timer} from 'phosphor-react';
 import {StatsContext} from '../../Stats';
 import {useSolveDb} from '../../../../util/hooks/useSolveDb';
@@ -10,6 +11,7 @@ import {getTimeString} from '../../../../util/time';
 import StatsGrid from '../../common/stats_grid/StatsGrid';
 
 export default function AllStatsFeatured() {
+	const { t } = useTranslation();
 	const context = useContext(StatsContext);
 
 	const solveUpdate = useSolveDb();
@@ -37,7 +39,7 @@ export default function AllStatsFeatured() {
 				center
 				colSpan={1}
 				icon={<Timer weight="bold" />}
-				title="Küp Çözme Süresi"
+				title={t('stats_page.cubing_time')}
 				value={getTimeString(timeSpentCubing)}
 				color="#23C586"
 			/>
@@ -45,7 +47,7 @@ export default function AllStatsFeatured() {
 				center
 				colSpan={1}
 				icon={<Hash weight="bold" />}
-				title="Toplam Çözüm"
+				title={t('stats_page.total_solves')}
 				value={totalSolves}
 				color="#54ACE4"
 			/>
@@ -53,7 +55,7 @@ export default function AllStatsFeatured() {
 				center
 				colSpan={1}
 				icon={<Hash weight="bold" />}
-				title="Etkinlik Sayısı"
+				title={t('stats_page.event_count')}
 				value={cubeTypes.length}
 				color="#6D7D90"
 			/>
@@ -61,7 +63,7 @@ export default function AllStatsFeatured() {
 				center
 				colSpan={1}
 				icon={<ArrowFatLinesUp weight="bold" />}
-				title="En Popüler Etkinlik"
+				title={t('stats_page.most_popular_event')}
 				value={topCubeType?.name || '-'}
 				color="#6D7D90"
 			/>

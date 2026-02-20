@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import './Sessions.scss';
 import { Plus, CaretDown } from 'phosphor-react';
 import CubePicker from '../common/cube_picker/CubePicker';
@@ -77,6 +78,7 @@ const SortableList = SortableContainer<SortableListProps>(({ sessions, selectedS
 
 export default function Sessions() {
 	const dispatch = useDispatch();
+	const { t } = useTranslation();
 
 	useSessionDb();
 
@@ -188,13 +190,13 @@ export default function Sessions() {
 		dispatch(
 			openModal(
 				<ConfirmModal
-					title="Sezonları Birleştir"
-					description={`Dikkatli olun. "${session.name}" sezonunu "${currentSession.name}" içine birleştirmek üzeresiniz. "${session.name}" birleştirme sonrası silinecek.`}
+					title={t('sessions.merge_sessions_title')}
+					description={t('sessions.merge_confirm_desc', { source: session.name, target: currentSession.name })}
 					triggerAction={async () => {
 						await mergeSessionsDb(selectedSessionId, currentSessionId);
 						setSelectedSessionId(currentSessionId);
 					}}
-					buttonText="Sezonları Birleştir"
+					buttonText={t('sessions.merge_sessions')}
 					buttonProps={{
 						danger: true,
 					}}
@@ -205,7 +207,7 @@ export default function Sessions() {
 
 	async function deleteSession() {
 		if (allSessions.length <= 1) {
-			toastError("Son kalan sezonu silemezsiniz!");
+			toastError(t('sessions.cannot_delete_last'));
 			return;
 		}
 
@@ -218,7 +220,7 @@ export default function Sessions() {
 				const newId = uuid();
 
 				await createSessionDb({
-					name: 'Yeni Sezon',
+					name: t('sessions.new_session'),
 					id: newId,
 				});
 
@@ -230,16 +232,16 @@ export default function Sessions() {
 
 			setSelectedSessionId(updatedSessionId);
 			await deleteSessionDb(session);
-			toastSuccess(`"${name}" sezonu başarıyla silindi`);
+			toastSuccess(t('sessions.session_deleted', { name }));
 		}
 
 		dispatch(
 			openModal(
 				<ConfirmModal
-					title="Sezonu Sil"
-					description={`Dikkatli olun. "${session.name}" sezonunu silmek üzeresiniz. Bu işlem geri alınamaz.`}
+					title={t('sessions.delete_session')}
+					description={t('sessions.delete_confirm_desc', { name: session.name })}
 					triggerAction={triggerAction}
-					buttonText="Sezonu Sil"
+					buttonText={t('sessions.delete_session')}
 				/>
 			)
 		);
@@ -250,7 +252,7 @@ export default function Sessions() {
 		const remainingCount = allSessions.length - idsToDelete.length;
 
 		if (remainingCount < 1) {
-			toastError("Tüm sezonları silemezsiniz! En az bir sezon kalmalıdır.");
+			toastError(t('sessions.cannot_delete_all'));
 			return;
 		}
 
@@ -262,13 +264,13 @@ export default function Sessions() {
 		dispatch(
 			openModal(
 				<ConfirmModal
-					title="Seçili Sezonları Sil"
-					description={`${idsToDelete.length} sezon silinecek: ${sessionNames}. Bu işlem geri alınamaz.`}
+					title={t('sessions.delete_selected_title')}
+					description={t('sessions.delete_selected_desc', { count: idsToDelete.length, names: sessionNames })}
 					triggerAction={async () => {
 						// İlk onay geçti, pending state'e kaydet — ikinci modal useEffect ile açılacak
 						setPendingBulkDelete(idsToDelete);
 					}}
-					buttonText="Sezonları Sil"
+					buttonText={t('sessions.delete_sessions')}
 					buttonProps={{
 						danger: true,
 					}}
@@ -287,8 +289,8 @@ export default function Sessions() {
 		dispatch(
 			openModal(
 				<ConfirmModal
-					title="Emin misiniz?"
-					description="Birden fazla sezon siliyorsunuz. Bu işlem geri alınamaz. Devam etmek istiyor musunuz?"
+					title={t('sessions.are_you_sure')}
+					description={t('sessions.bulk_delete_confirm')}
 					hideInput
 					triggerAction={async () => {
 						let updatedSessionId = currentSessionId;
@@ -297,7 +299,7 @@ export default function Sessions() {
 						if (deletingCurrent) {
 							const newId = uuid();
 							await createSessionDb({
-								name: 'Yeni Sezon',
+								name: t('sessions.new_session'),
 								id: newId,
 							});
 							setCurrentSession(newId);
@@ -314,9 +316,9 @@ export default function Sessions() {
 
 						setMultiSelectedIds(new Set());
 						setSelectedSessionId(updatedSessionId);
-						toastSuccess(`${idsToDelete.length} sezon başarıyla silindi`);
+						toastSuccess(t('sessions.sessions_deleted', { count: idsToDelete.length }));
 					}}
-					buttonText="Evet, Sil"
+					buttonText={t('sessions.yes_delete')}
 					buttonProps={{
 						danger: true,
 					}}
@@ -344,17 +346,17 @@ export default function Sessions() {
 		<div className={b('info')}>
 			<Module>
 				<div className={b('info-container')}>
-					<h3 className={b('info-title')}>Sezon Ayarları</h3>
+					<h3 className={b('info-title')}>{t('sessions.settings_title')}</h3>
 
 					{/* Sezon Adı */}
 					<div className={b('info-section')}>
-						<label className={b('info-label')}>Sezon Adı</label>
+						<label className={b('info-label')}>{t('sessions.session_name')}</label>
 						{isEditingName ? (
 							<Input
 								type="text"
 								noMargin
 								maxWidth
-								placeholder="Sezon İsmi Girin"
+								placeholder={t('sessions.session_name_placeholder')}
 								value={tempSessionName}
 								onChange={handleNameChange}
 							/>
@@ -367,14 +369,14 @@ export default function Sessions() {
 					<div className={b('info-actions')}>
 						{isEditingName ? (
 							<Button
-								text="Tamamlandı"
+								text={t('sessions.done')}
 								onClick={saveSessionName}
 								primary
 								noMargin
 							/>
 						) : (
 							<Button
-								text="Yeniden Adlandır"
+								text={t('sessions.rename')}
 								onClick={startEditingName}
 								primary
 								noMargin
@@ -382,7 +384,7 @@ export default function Sessions() {
 						)}
 						{!isCurrentSession && !isEditingName && (
 							<Button
-								text="Geçerli Yap"
+								text={t('sessions.make_current')}
 								onClick={makeCurrent}
 								primary
 								noMargin
@@ -390,7 +392,7 @@ export default function Sessions() {
 						)}
 						{!isCurrentSession && !isEditingName && (
 							<Button
-								text="Sezonu Birleştir"
+								text={t('sessions.merge_session')}
 								onClick={mergeSessions}
 								warning
 								noMargin
@@ -398,7 +400,7 @@ export default function Sessions() {
 						)}
 						{!isEditingName && (
 							<Button
-								text="Sezonu Sil"
+								text={t('sessions.delete_session')}
 								onClick={deleteSession}
 								danger
 								noMargin
@@ -406,7 +408,7 @@ export default function Sessions() {
 						)}
 						{!isEditingName && multiSelectedIds.size > 1 && (
 							<Button
-								text={`Seçili ${multiSelectedIds.size} Sezonu Sil`}
+								text={t('sessions.delete_selected_button', { count: multiSelectedIds.size })}
 								onClick={deleteSelectedSessions}
 								danger
 								noMargin
@@ -420,7 +422,7 @@ export default function Sessions() {
 			<Module>
 				<div className={b('stats-header')}>
 					<div className={b('stats-picker')}>
-						<label className={b('stats-label')}>İstatistikler</label>
+						<label className={b('stats-label')}>{t('sessions.statistics')}</label>
 						<CubePicker
 							handlePrefix=""
 							excludeSelected
@@ -464,7 +466,7 @@ export default function Sessions() {
 
 	return (
 		<div className={b({ mobile: mobileMode })}>
-			<PageTitle pageName="Sezonlar" />
+			<PageTitle pageName={t('sessions.page_title')} />
 			<div className={b('body')}>
 				{mobileMode ? (
 					// Mobil: Dropdown + Yeni Sezon butonu
@@ -472,7 +474,7 @@ export default function Sessions() {
 						<Module>
 							<div className={b('mobile-session-header')}>
 								<div className={b('mobile-session-picker')}>
-									<label className={b('mobile-session-label')}>Sezon Seç</label>
+									<label className={b('mobile-session-label')}>{t('sessions.select_session')}</label>
 									<Dropdown
 										noMargin
 										text={session.name}
@@ -483,7 +485,7 @@ export default function Sessions() {
 								<Button
 									primary
 									glow
-									text="Yeni Sezon"
+									text={t('sessions.new_session')}
 									onClick={openCreateNewSession}
 									type="button"
 									icon={<Plus weight="bold" />}
@@ -499,7 +501,7 @@ export default function Sessions() {
 							primary
 							glow
 							large
-							text="Yeni Sezon"
+							text={t('sessions.new_session')}
 							onClick={openCreateNewSession}
 							type="button"
 							icon={<Plus weight="bold" />}

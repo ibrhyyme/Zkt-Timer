@@ -1,4 +1,5 @@
 import React, {useContext} from 'react';
+import {useTranslation} from 'react-i18next';
 import './AllStats.scss';
 import block from '../../../styles/bem';
 import StatSection from '../common/stat_section/StatSection';
@@ -15,28 +16,29 @@ import {isNotPro} from '../../../util/pro';
 const b = block('overall-stats');
 
 export default function AllStats() {
+	const { t } = useTranslation();
 	const me = useMe();
 	const {filterOptions} = useContext(StatsContext);
 
 	return (
 		<div className={b()}>
-			<StatSection title="Genel Bakış">
+			<StatSection title={t('stats_page.overview')}>
 				<AllStatsFeatured />
 			</StatSection>
-			<StatSection rowSpan={2} title="Topluluk">
+			<StatSection rowSpan={2} title={t('stats_page.community')}>
 				<AllStatsCommunity />
 			</StatSection>
-			<StatSection title="Etkinlik Dağılımı">
+			<StatSection title={t('stats_page.event_distribution')}>
 				<StatModule>
 					<CubeDistro />
 				</StatModule>
 			</StatSection>
-			<StatSection title="Tutarlılık">
+			<StatSection title={t('stats_page.consistency')}>
 				<StatModule>
 					<SolvesPerDay filterOptions={filterOptions} days={30} />
 				</StatModule>
 			</StatSection>
-			<StatSection title="Daha Fazla İstatistik">
+			<StatSection title={t('stats_page.more_stats')}>
 				<SubStats />
 			</StatSection>
 		</div>

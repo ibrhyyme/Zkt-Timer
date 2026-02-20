@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import {useTranslation} from 'react-i18next';
 import { X, Plus, Timer, Check } from 'phosphor-react';
 import { addFriendship, removeFriendship } from '../../../actions/account';
 import { toastSuccess } from '../../../util/toast';
@@ -29,6 +30,7 @@ interface Props {
 }
 
 export default function FriendshipRequest(props: Props) {
+	const {t} = useTranslation();
 	const dispatch = useDispatch();
 
 	const { user, fetchData } = props;
@@ -80,7 +82,7 @@ export default function FriendshipRequest(props: Props) {
 			});
 
 			dispatch(removeFriendship(user.id));
-			toastSuccess(`${user.username} arkadaşlıktan çıkarıldı`);
+			toastSuccess(t('friendship.unfriended', { username: user.username }));
 
 			setFriendRequestReceived(null);
 			setFriendRequestSent(null);
@@ -89,7 +91,7 @@ export default function FriendshipRequest(props: Props) {
 				friendshipRequestId: friendRequestSent.id,
 			});
 
-			toastSuccess(`${user.username} kullanıcısına gönderilen istek iptal edildi`);
+			toastSuccess(t('friendship.request_cancelled', { username: user.username }));
 
 			setFriendRequestReceived(null);
 			setFriendRequestSent(null);
@@ -98,7 +100,7 @@ export default function FriendshipRequest(props: Props) {
 				friendshipRequestId: friendRequestReceived.id,
 			});
 
-			toastSuccess(`${user.username} kullanıcısının arkadaşlık isteği kabul edildi`);
+			toastSuccess(t('friendship.request_accepted', { username: user.username }));
 			dispatch(addFriendship(res.data.acceptFriendshipRequest as any));
 
 			setFriendRequestReceived(null);
@@ -108,7 +110,7 @@ export default function FriendshipRequest(props: Props) {
 				toUserId: user.id,
 			});
 
-			toastSuccess(`${user.username} kullanıcısına arkadaşlık isteği gönderildi`);
+			toastSuccess(t('friendship.request_sent', { username: user.username }));
 
 			setFriendRequestReceived(null);
 			setFriendRequestSent(request.data.sendFriendshipRequest);
@@ -117,41 +119,41 @@ export default function FriendshipRequest(props: Props) {
 
 	function getFriendButtonParams(): ButtonProps {
 		let friendButtonParams: ButtonProps = {
-			text: 'Arkadaş Ekle',
+			text: t('friendship.add_friend'),
 			icon: <Plus weight="bold" />,
 			gray: true,
 		};
 
 		if (friends && friends[user.id]) {
 			friendButtonParams = {
-				text: 'Arkadaşlar',
+				text: t('friendship.friends'),
 				icon: <Check weight="bold" />,
 				gray: true,
 			};
 
 			if (overFriendButton) {
 				friendButtonParams = {
-					text: 'Arkadaşlıktan Çıkar',
+					text: t('friendship.unfriend'),
 					icon: <X weight="bold" />,
 					danger: true,
 				};
 			}
 		} else if (friendRequestReceived) {
 			friendButtonParams = {
-				text: 'İsteği Kabul Et',
+				text: t('friendship.accept_request'),
 				icon: <Plus weight="bold" />,
 				primary: true,
 			};
 		} else if (friendRequestSent) {
 			friendButtonParams = {
-				text: 'İstek Gönderildi',
+				text: t('friendship.request_sent_status'),
 				icon: <Timer weight="bold" />,
 				warning: true,
 			};
 
 			if (overFriendButton) {
 				friendButtonParams = {
-					text: 'İsteği İptal Et',
+					text: t('friendship.cancel_request'),
 					icon: <X weight="bold" />,
 					danger: true,
 				};

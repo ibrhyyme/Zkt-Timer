@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { getTimeString } from '../../../util/time';
 import Slider from '../../common/slider/Slider';
 import LayoutSelector from './layout_selector/LayoutSelector';
@@ -31,6 +32,7 @@ const FONT_FAMILIES = [
 ];
 
 export default function Appearance() {
+	const { t } = useTranslation();
 	const timerTimeSize = useSettings('timer_time_size');
 	const timerScrambleSize = useSettings('timer_scramble_size');
 	const timerDecimalPoints = useSettings('timer_decimal_points');
@@ -49,8 +51,8 @@ export default function Appearance() {
 			<ThemeOptions />
 			{!mobileMode && (
 				<SettingRow
-					title="Timer modülleri"
-					description="Timer sayfasında gösterilen modül sayısını değiştirin. Bunun gösterilen *maksimum* modül sayısı olduğunu unutmayın (pencere boyutunuza göre)."
+					title={t('appearance.timer_modules')}
+					description={t('appearance.timer_modules_desc')}
 				>
 					<Dropdown
 						openLeft={isMobile}
@@ -58,7 +60,7 @@ export default function Appearance() {
 						noMargin
 						icon={<CaretDown />}
 						options={[1, 2, 3, 4, 5, 6].map((count) => ({
-							text: String(count) + (count === 3 ? ' (Varsayılan)' : ''),
+							text: String(count) + (count === 3 ? ` ${t('appearance.default_suffix')}` : ''),
 							onClick: () => updateSetting('timer_module_count', count),
 						}))}
 					/>
@@ -66,16 +68,16 @@ export default function Appearance() {
 			)}
 			{!mobileMode && (
 				<SettingRow
-					title="Timer düzeni"
-					description="Timernızın görünümünü değiştirin. Daha küçük ekranınız varsa, modülleri sola veya sağa koymak isteyebilirsiniz."
+					title={t('appearance.timer_layout')}
+					description={t('appearance.timer_layout_desc')}
 				>
 					<LayoutSelector />
 				</SettingRow>
 			)}
-			<SettingRow title="Timer arka planı" description="Timernın arka plan rengini veya resmini değiştirin.">
+			<SettingRow title={t('appearance.timer_background')} description={t('appearance.timer_background_desc')}>
 				<TimerBackground />
 			</SettingRow>
-			<SettingRow title="Timer yazı tipi" description="Timer sayfasında gördüğünüz büyük Timernın yazı tipi">
+			<SettingRow title={t('appearance.timer_font')} description={t('appearance.timer_font_desc')}>
 				<Dropdown
 					openLeft={isMobile}
 					text={timerFontFamily}
@@ -88,7 +90,7 @@ export default function Appearance() {
 				/>
 				<Button
 					hidden={timerFontFamily === DEFAULT_FONT_FAMILY}
-					text="Sıfırla"
+					text={t('appearance.reset')}
 					warning
 					flat
 					onClick={() => updateSetting('timer_font_family', DEFAULT_FONT_FAMILY)}
@@ -96,7 +98,7 @@ export default function Appearance() {
 			</SettingRow>
 			{!mobileMode && (
 				<SettingSection>
-					<SettingRow title="Timer yazı boyutu" description="Timer sayfasında gördüğünüz büyük sürenin yazı boyutu">
+					<SettingRow title={t('appearance.timer_font_size')} description={t('appearance.timer_font_size_desc')}>
 						<Slider
 							min={35}
 							value={String(timerTimeSize)}
@@ -105,7 +107,7 @@ export default function Appearance() {
 						/>
 						<Button
 							hidden={timerTimeSize === getDefaultSetting('timer_time_size')}
-							text="Sıfırla"
+							text={t('appearance.reset')}
 							warning
 							flat
 							onClick={() => updateSetting('timer_time_size', getDefaultSetting('timer_time_size'))}
@@ -127,8 +129,8 @@ export default function Appearance() {
 			{!mobileMode && (
 				<SettingSection>
 					<SettingRow
-						title="Karıştırma yazı boyutu"
-						description="Timer sayfasında gördüğünüz karıştırmanın yazı boyutu"
+						title={t('appearance.scramble_font_size')}
+						description={t('appearance.scramble_font_size_desc')}
 					>
 						<Slider
 							min={10}
@@ -138,7 +140,7 @@ export default function Appearance() {
 						/>
 						<Button
 							hidden={timerScrambleSize === getDefaultSetting('timer_scramble_size')}
-							text="Sıfırla"
+							text={t('appearance.reset')}
 							warning
 							flat
 							onClick={() => updateSetting('timer_scramble_size', getDefaultSetting('timer_scramble_size'))}
@@ -158,8 +160,8 @@ export default function Appearance() {
 			{!mobileMode && (
 				<SettingSection>
 					<SettingRow
-						title="Akıllı Küp Boyutu"
-						description="Anasayfadaki akıllı küpün boyutunu ayarlayın."
+						title={t('appearance.smart_cube_size')}
+						description={t('appearance.smart_cube_size_desc')}
 					>
 						<Slider
 							min={100}
@@ -169,7 +171,7 @@ export default function Appearance() {
 						/>
 						<Button
 							hidden={smartCubeSize === getDefaultSetting('smart_cube_size')}
-							text="Sıfırla"
+							text={t('appearance.reset')}
 							warning
 							flat
 							onClick={() => updateSetting('smart_cube_size', getDefaultSetting('smart_cube_size'))}

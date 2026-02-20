@@ -7,11 +7,13 @@ import {MatchPopupContext, MatchPopupPage} from '../../MatchPopup';
 import CubePicker from '../../../../../common/cube_picker/CubePicker';
 import {CubeType} from '../../../../../../util/cubes/cube_types';
 import Button from '../../../../../common/button/Button';
+import {useTranslation} from 'react-i18next';
 
 const b = block('custom-match-options');
 
 export default function CustomMatchOptions() {
 	const context = useContext(MatchPopupContext);
+	const {t} = useTranslation();
 
 	function selectPlayerCount(val: string) {
 		const count = parseInt(val);
@@ -31,7 +33,7 @@ export default function CustomMatchOptions() {
 		<div className={b()}>
 			<div className={b('option')}>
 				<div className={b('label')}>
-					<h3>Küp Türü</h3>
+					<h3>{t('match.cube_type')}</h3>
 				</div>
 				<CubePicker
 					excludeCustomCubeTypes
@@ -50,9 +52,9 @@ export default function CustomMatchOptions() {
 			</div>
 			<div className={b('option')}>
 				<div className={b('label')}>
-					<h3>Oyuncular</h3>
+					<h3>{t('match.players')}</h3>
 					<p>
-						Bu maçta oynayacak oyuncu sayısı. Bu kadar oyuncunun maç başlamadan önce katılması *gerekir*.
+						{t('match.players_description')}
 					</p>
 				</div>
 				<HorizontalNav
@@ -65,7 +67,7 @@ export default function CustomMatchOptions() {
 				/>
 			</div>
 			<div className={b('actions')}>
-				<Button onClick={createMatch} text="Özel maç oluştur" icon={<ArrowRight />} primary glow large />
+				<Button onClick={createMatch} text={t('match.create_custom_match')} icon={<ArrowRight />} primary glow large />
 			</div>
 		</div>
 	);

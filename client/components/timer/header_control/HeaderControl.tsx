@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import './HeaderControl.scss';
 import { MagnifyingGlassPlus, FrameCorners, CrosshairSimple, Keyboard, Plus, X, CaretDown, Gear, List } from 'phosphor-react';
 import { GlobalHotKeys } from 'react-hotkeys';
@@ -17,7 +18,7 @@ import { smartCubeSelected } from '../helpers/util';
 import Button from '../../common/button/Button';
 import block from '../../../styles/bem';
 import StackMatPicker from '../../settings/stackmat_picker/StackMatPicker';
-import { TIMER_INPUT_TYPE_NAMES } from '../../settings/timer/TimerSettings';
+import { TIMER_INPUT_TYPE_KEYS } from '../../settings/timer/TimerSettings';
 import { useSettings } from '../../../util/hooks/useSettings';
 import { AllSettings, getSetting } from '../../../db/settings/query';
 import { useMe } from '../../../util/hooks/useMe';
@@ -36,6 +37,7 @@ import { setTimerParam, setTimerParams } from '../helpers/params';
 const b = block('timer-header-control');
 
 export default function HeaderControl() {
+	const { t } = useTranslation();
 	const dispatch = useDispatch();
 	const quickControls = useQuickControlsModal();
 
@@ -105,7 +107,7 @@ export default function HeaderControl() {
 		CHANGE_CUBE_OTHER: () => changeCubeType('other'),
 	};
 
-	const timerTypeName = TIMER_INPUT_TYPE_NAMES[timerType];
+	const timerTypeName = t(TIMER_INPUT_TYPE_KEYS[timerType]);
 
 	let manualDisabled = false;
 	if (smartCubeSelected(context)) {
@@ -157,7 +159,7 @@ export default function HeaderControl() {
 		// Hamburger menu için NAV_LINKS
 		const navOptions = NAV_LINKS.map((link) => ({
 			link: link.link,
-			text: link.name,
+			text: t(link.name),
 			icon: link.icon,
 			disabled: link.match.test(match.path),
 		}));

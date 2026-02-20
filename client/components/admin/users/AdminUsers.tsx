@@ -12,6 +12,7 @@ import 'dayjs/locale/tr';
 import { useDispatch } from 'react-redux';
 import { openModal } from '../../../actions/general';
 import ManageUser from '../manage_user/ManageUser';
+import { useTranslation } from 'react-i18next';
 
 dayjs.extend(relativeTime);
 dayjs.locale('tr');
@@ -66,15 +67,14 @@ const ADMIN_USER_SEARCH_QUERY = gql`
 
 function UserTableRow({ user }: { user: UserAccountData }) {
 	const dispatch = useDispatch();
-
-
+	const { t } = useTranslation();
 
 	const badges = [];
 	if (user.admin) badges.push({ label: 'Admin', color: 'red' });
 	if (user.mod) badges.push({ label: 'Mod', color: 'orange' });
 	if (user.is_pro) badges.push({ label: 'Pro', color: 'purple' });
-	if (user.verified) badges.push({ label: 'Doğrulanmış', color: 'green' });
-	if (user.banned_forever || user.banned_until) badges.push({ label: 'Banlı', color: 'gray' });
+	if (user.verified) badges.push({ label: t('admin_users.verified'), color: 'green' });
+	if (user.banned_forever || user.banned_until) badges.push({ label: t('admin_users.banned'), color: 'gray' });
 
 	const handleManage = () => {
 		dispatch(openModal(<ManageUser userId={user.id} />));
@@ -112,7 +112,7 @@ function UserTableRow({ user }: { user: UserAccountData }) {
 						</div>
 					</>
 				) : (
-					<span className="cd-admin-users__no-data">Hiç çözmedi</span>
+					<span className="cd-admin-users__no-data">{t('admin_users.never_solved')}</span>
 				)}
 			</td>
 			<td className="cd-admin-users__cell cd-admin-users__cell--country">
@@ -132,7 +132,7 @@ function UserTableRow({ user }: { user: UserAccountData }) {
 			</td>
 			<td className="cd-admin-users__cell cd-admin-users__cell--actions">
 				<button className="cd-admin-users__manage-btn" onClick={handleManage}>
-					Yönet
+					{t('admin_users.manage')}
 				</button>
 			</td>
 		</tr>
@@ -140,6 +140,7 @@ function UserTableRow({ user }: { user: UserAccountData }) {
 }
 
 export default function AdminUsers() {
+	const { t } = useTranslation();
 	const [query, setQuery] = useInput('');
 	const [users, setUsers] = React.useState<UserAccountData[]>([]);
 	const [loading, setLoading] = React.useState(false);
@@ -204,33 +205,33 @@ export default function AdminUsers() {
 		<div className="cd-admin-users">
 			<div className="cd-admin-users__container">
 				<div className="cd-admin-users__header">
-					<h1 className="cd-admin-users__title">Kullanıcı Yönetimi</h1>
+					<h1 className="cd-admin-users__title">{t('admin_users.page_title')}</h1>
 					<div className="cd-admin-users__search">
 						<Input
 							value={query}
 							onChange={setQuery}
-							placeholder="Kullanıcı adı veya email ara..."
+							placeholder={t('admin_users.search_placeholder')}
 						/>
 					</div>
 					<div className="cd-admin-users__stats">
-						Toplam {total} kullanıcı
+						{t('admin_users.total_users', { count: total })}
 					</div>
 				</div>
 
 				{loading ? (
-					<div className="cd-admin-users__loading">Yükleniyor...</div>
+					<div className="cd-admin-users__loading">{t('admin_users.loading')}</div>
 				) : (
 					<>
 						<div className="cd-admin-users__table-wrapper">
 							<table className="cd-admin-users__table">
 								<thead>
 									<tr className="cd-admin-users__header-row">
-										<th className="cd-admin-users__header-cell">Kullanıcı</th>
-										<th className="cd-admin-users__header-cell">Kayıt Tarihi</th>
-										<th className="cd-admin-users__header-cell">Son Çözüm</th>
-										<th className="cd-admin-users__header-cell">Ülke</th>
-										<th className="cd-admin-users__header-cell">Durum</th>
-										<th className="cd-admin-users__header-cell">İşlemler</th>
+										<th className="cd-admin-users__header-cell">{t('admin_users.user')}</th>
+										<th className="cd-admin-users__header-cell">{t('admin_users.register_date')}</th>
+										<th className="cd-admin-users__header-cell">{t('admin_users.last_solve')}</th>
+										<th className="cd-admin-users__header-cell">{t('admin_users.country')}</th>
+										<th className="cd-admin-users__header-cell">{t('admin_users.status')}</th>
+										<th className="cd-admin-users__header-cell">{t('admin_users.actions')}</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -242,7 +243,7 @@ export default function AdminUsers() {
 						</div>
 
 						{users.length === 0 && !loading && (
-							<div className="cd-admin-users__empty">Kullanıcı bulunamadı</div>
+							<div className="cd-admin-users__empty">{t('admin_users.no_users_found')}</div>
 						)}
 
 						<div className="cd-admin-users__pagination">
@@ -251,17 +252,17 @@ export default function AdminUsers() {
 								disabled={page === 0}
 								className="cd-admin-users__pagination-btn"
 							>
-								← Önceki
+								{t('admin_users.previous')}
 							</button>
 							<span className="cd-admin-users__pagination-info">
-								Sayfa {page + 1}
+								{t('admin_users.page', { page: page + 1 })}
 							</span>
 							<button
 								onClick={handleNextPage}
 								disabled={!hasMore}
 								className="cd-admin-users__pagination-btn"
 							>
-								Sonraki →
+								{t('admin_users.next')}
 							</button>
 						</div>
 					</>

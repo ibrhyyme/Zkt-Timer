@@ -1,4 +1,5 @@
 import React, { ReactNode, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import {useTranslation} from 'react-i18next';
 import './TimerScramble.scss';
 import { ArrowClockwise, CaretLeft, CaretRight, Lock, LockSimple, PencilSimple } from 'phosphor-react';
 import TextareaAutosize from 'react-textarea-autosize';
@@ -24,6 +25,7 @@ const b = block('timer-scramble');
 const MAX_HISTORY_BACK_STEPS = 2;
 
 export default function TimerScramble() {
+	const {t} = useTranslation();
 	const context = useContext(TimerContext);
 
 	const scrambleInput = useRef(null);
@@ -229,7 +231,7 @@ export default function TimerScramble() {
 			{/* Scramble navigasyon butonları - timer çalışmıyorken ve maç modunda değilken göster */}
 			{scrambleLocked && !timeStartedAt && !focusMode && !matchMode && (
 				<div className={b('locked-banner')}>
-					🔒 Karıştırma kilitli
+					{t('timer_scramble.scramble_locked')}
 				</div>
 			)}
 			{!timeStartedAt && !focusMode && !matchMode && !isSmartScrambling && (
@@ -238,18 +240,18 @@ export default function TimerScramble() {
 						className={b('nav-btn', { disabled: !canGoPrevious })}
 						onClick={handlePreviousScramble}
 						disabled={!canGoPrevious}
-						title="Önceki scramble (← Sol Ok)"
+						title={t('timer_scramble.previous_tooltip')}
 					>
 						<CaretLeft weight="bold" />
-						<span>Önceki</span>
+						<span>{t('timer_scramble.previous')}</span>
 					</button>
 					<button
 						className={b('nav-btn')}
 						onClick={handleNextScramble}
 						disabled={!canGoNext}
-						title="Sonraki scramble (→ Sağ Ok)"
+						title={t('timer_scramble.next_tooltip')}
 					>
-						<span>Sonraki</span>
+						<span>{t('timer_scramble.next')}</span>
 						<CaretRight weight="bold" />
 					</button>
 				</div>

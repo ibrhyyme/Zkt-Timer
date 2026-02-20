@@ -14,6 +14,8 @@ import { initUserAccount } from './models/store';
 import { Helmet } from 'react-helmet';
 import { mapSingleRoute } from '../client/components/map_route';
 import { ApolloClient, ApolloProvider, InMemoryCache, ApolloLink } from '@apollo/client';
+import { I18nextProvider } from 'react-i18next';
+import { createI18nInstance } from './i18n_server';
 import { loadErrorMessages, loadDevMessages } from "@apollo/client/dev";
 import { logger } from './services/logger';
 import { ErrorCode } from './constants/errors';
@@ -33,7 +35,7 @@ function safeStringify(object) {
 		.replace(/\u2029/g, '\\u2029');
 }
 
-function renderFullPage(html, helmet, preloadedState) {
+function renderFullPage(html, helmet, preloadedState, lang: string = 'tr') {
 	let cleanState = JSON.stringify(preloadedState).replace(/</g, '\\u003c');
 	cleanState = safeStringify(cleanState);
 
@@ -47,12 +49,17 @@ function renderFullPage(html, helmet, preloadedState) {
 		resourceBase: process.env.RESOURCES_BASE_URI || '/public',
 		jsFileName: `${deploymentId}.min.js`,
 		cssFileName: `${deploymentId}.min.css`,
+		lang,
 	};
 
 	return htmlTemplate(payload);
 }
 
 function createComponents(req, store) {
+	// Detect language from cookie for SSR
+	const lng = req.cookies?.zkt_language || 'tr';
+	const i18nInstance = createI18nInstance(lng);
+
 	const client = new ApolloClient({
 		ssrMode: true,
 		cache: new InMemoryCache(),
@@ -61,16 +68,18 @@ function createComponents(req, store) {
 
 	const staticRouter = (
 		<StaticRouter location={req.url} context={{}}>
-			<ApolloProvider client={client}>
-				<Provider store={store}>
-					<Switch>
-						{routes.map((route: { [key: string]: any }) => {
-							route.exact = true;
-							return mapSingleRoute(route);
-						})}
-					</Switch>
-				</Provider>
-			</ApolloProvider>
+			<I18nextProvider i18n={i18nInstance}>
+				<ApolloProvider client={client}>
+					<Provider store={store}>
+						<Switch>
+							{routes.map((route: { [key: string]: any }) => {
+								route.exact = true;
+								return mapSingleRoute(route);
+							})}
+						</Switch>
+					</Provider>
+				</ApolloProvider>
+			</I18nextProvider>
 		</StaticRouter>
 	);
 
@@ -79,7 +88,7 @@ function createComponents(req, store) {
 	const preloaded = store.getState();
 
 	// Get html and minify it
-	const fullHtml = renderFullPage(markup, helmet, preloaded);
+	const fullHtml = renderFullPage(markup, helmet, preloaded, lng);
 	return minify(fullHtml, { collapseWhitespace: true, minifyJS: true, minifyCSS: true });
 }
 

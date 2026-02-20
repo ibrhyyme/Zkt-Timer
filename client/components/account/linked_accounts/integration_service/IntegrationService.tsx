@@ -1,4 +1,5 @@
 import React, {useMemo} from 'react';
+import {useTranslation} from 'react-i18next';
 import './IntegrationService.scss';
 import {Integration} from '../../../../@types/generated/graphql';
 import block from '../../../../styles/bem';
@@ -37,6 +38,7 @@ interface Props {
 }
 
 export default function IntegrationService(props: Props) {
+	const {t} = useTranslation();
 	const {integrationType} = props;
 	const [revokeMutate] = useMutation(REVOKE_INTEGRATION_MUTATION);
 	const {data, loading} = useQuery<{integration: Integration}>(INTEGRATION_QUERY, {
@@ -86,14 +88,14 @@ export default function IntegrationService(props: Props) {
 	if (integration) {
 		revokeButton = (
 			<Button
-				text="Bağlantıyı kes"
+				text={t('integration.disconnect')}
 				flat
 				danger
 				confirmModalProps={{
 					hideInput: true,
-					title: `${service.name} hesabının bağlantısını kes`,
-					description: 'Bu hesabın bağlantısını kesmek istediğinizden emin misiniz?',
-					buttonText: 'Hesap bağlantısını kes',
+					title: t('integration.disconnect_title', { name: service.name }),
+					description: t('integration.disconnect_confirm'),
+					buttonText: t('integration.disconnect_button'),
 					triggerAction: removeIntegration,
 				}}
 			/>
@@ -107,7 +109,7 @@ export default function IntegrationService(props: Props) {
 				<h4>{service.name}</h4>
 			</div>
 			<div className={b('description')}>
-				<p>{service.description}</p>
+				<p>{t(`integration.${integrationType}_description`)}</p>
 			</div>
 			<div className={b('actions')}>
 				<Button
@@ -115,7 +117,7 @@ export default function IntegrationService(props: Props) {
 					large
 					primary
 					disabled={!!integration}
-					text={integration ? 'Hesap Bağlı' : 'Hesap Bağla'}
+					text={integration ? t('integration.account_linked') : t('integration.link_account')}
 					icon={integration ? <Check /> : <ArrowRight />}
 					to={serviceUri}
 				/>

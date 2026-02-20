@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import './Profile.scss';
 import { CircleWavyCheck, Plus } from 'phosphor-react';
@@ -96,6 +97,7 @@ export async function prefetchProfileData(store, req) {
 }
 
 export default function Profile() {
+	const { t } = useTranslation();
 	const dispatch = useDispatch();
 	const match = useRouteMatch() as any;
 
@@ -192,8 +194,8 @@ export default function Profile() {
 	function openPublishSolves() {
 		dispatch(
 			openModal(<PublishSolves />, {
-				title: 'PB\'lerinizi Yayınlayın',
-				description: 'Lütfen aşağıdaki çözümlerin meşru ve size ait olduğundan emin olun.',
+				title: t('profile.publish_pbs'),
+				description: t('profile.publish_pbs_desc'),
 				onComplete: () => window.location.reload(),
 			})
 		);
@@ -202,8 +204,8 @@ export default function Profile() {
 	function openPublishWcaRecords() {
 		dispatch(
 			openModal(<PublishWcaRecords />, {
-				title: 'WCA Rekorlarınızı Yayınlayın',
-				description: 'WCA resmi rekorlarınızı profilinizde gösterin.',
+				title: t('profile.publish_wca_records'),
+				description: t('profile.publish_wca_records_desc'),
 				onComplete: () => window.location.reload(),
 			})
 		);
@@ -252,7 +254,7 @@ export default function Profile() {
 					{user.username}
 					{user.verified ? <CircleWavyCheck weight="fill" /> : null}
 				</h2>
-				<h3>Katılım: {new Date(user.created_at).toLocaleDateString('tr-TR')}</h3>
+				<h3>{t('profile.joined')} {new Date(user.created_at).toLocaleDateString('tr-TR')}</h3>
 			</div>
 		</div>
 	);
@@ -293,7 +295,7 @@ export default function Profile() {
 								className={b('tab', { active: recordsTab === 'pb' })}
 								onClick={() => setRecordsTab('pb')}
 							>
-								Kişisel Rekorlar
+								{t('profile.personal_records')}
 							</button>
 							<button
 								className={b('tab', { active: recordsTab === 'wca' })}
@@ -304,7 +306,7 @@ export default function Profile() {
 									alt="WCA"
 									style={{ width: '20px', height: '20px' }}
 								/>
-								WCA Resmi Rekorlar
+								{t('profile.wca_official_records')}
 							</button>
 						</div>
 					</div>
@@ -317,12 +319,12 @@ export default function Profile() {
 						)}
 						{recordsTab === 'pb' && pbCards.length === 0 && (
 							<div className={b('no-records')}>
-								<p>Henüz yayınlanmış kişisel rekorunuz yok.</p>
+								<p>{t('profile.no_personal_records')}</p>
 							</div>
 						)}
 						{recordsTab === 'wca' && wcaCards.length === 0 && (
 							<div className={b('no-records')}>
-								<p>Henüz yayınlanmış WCA rekorunuz yok.</p>
+								<p>{t('profile.no_wca_records')}</p>
 							</div>
 						)}
 					</div>
@@ -335,8 +337,8 @@ export default function Profile() {
 	if (myProfile) {
 		publishSolves = (
 			<div className={b('publish-buttons', { blurred: settingsModalOpen })}>
-				<Button primary icon={<Plus weight="bold" />} text="PB'lerinizi Yayınlayın" onClick={openPublishSolves} />
-				<Button primary icon={<Plus weight="bold" />} text="WCA Rekorlarınızı Yayınlayın" onClick={openPublishWcaRecords} />
+				<Button primary icon={<Plus weight="bold" />} text={t('profile.publish_pbs')} onClick={openPublishSolves} />
+				<Button primary icon={<Plus weight="bold" />} text={t('profile.publish_wca_records')} onClick={openPublishWcaRecords} />
 			</div>
 		);
 	}

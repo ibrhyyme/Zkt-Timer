@@ -1,4 +1,5 @@
 import React, {useContext} from 'react';
+import {useTranslation} from 'react-i18next';
 import './CubeStats.scss';
 import block from '../../../styles/bem';
 import CubeStatsFeatured from './featured/CubeStatsFeatured';
@@ -13,6 +14,7 @@ import SolvesPerDay from '../../modules/solves_per_day/SolvesPerDay';
 const b = block('cube-stats');
 
 export default function CubeStats() {
+	const { t } = useTranslation();
 	const context = useContext(StatsContext);
 	const filter = context.filterOptions;
 
@@ -21,21 +23,21 @@ export default function CubeStats() {
 
 	return (
 		<div className={b()}>
-			<StatSection title="Genel Bakış" className={b('featured')}>
+			<StatSection title={t('stats_page.overview')} className={b('featured')}>
 				<CubeStatsFeatured />
 			</StatSection>
-			<StatSection title="Ortalamalar" className={b('averages')}>
+			<StatSection title={t('stats_page.averages')} className={b('averages')}>
 				<CubeStatAverages />
 			</StatSection>
-			<StatSection minWidth="400px" title="Çözüm süreleri" className={b('solve-times')}>
+			<StatSection minWidth="400px" title={t('stats_page.solve_times')} className={b('solve-times')}>
 				<StatModule>
 					<TimeChart filterOptions={filter} />
 				</StatModule>
 			</StatSection>
-			<StatSection title="Daha Fazla İstatistik" className={b('sub-stats')}>
+			<StatSection title={t('stats_page.more_stats')} className={b('sub-stats')}>
 				<SubStats />
 			</StatSection>
-			<StatSection colSpan="all" title="Tutarlılık" className={b('consistency')}>
+			<StatSection colSpan="all" title={t('stats_page.consistency')} className={b('consistency')}>
 				<StatModule>
 					<SolvesPerDay filterOptions={filter} days={60} />
 				</StatModule>

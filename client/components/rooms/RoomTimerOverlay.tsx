@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useSettings } from '../../util/hooks/useSettings';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { convertTimeStringToSeconds } from '../../util/time';
 import { openModal } from '../../actions/general';
 import { Bluetooth, Timer, Keyboard, X, Check } from 'phosphor-react';
@@ -71,6 +72,7 @@ export default function RoomTimerOverlay({
     isMobile = false,
 }: RoomTimerOverlayProps) {
     const dispatch = useDispatch();
+    const { t } = useTranslation();
 
     const [status, setStatus] = useState(STATUS.RESTING);
     const [time, setTime] = useState(0); // milliseconds
@@ -1002,14 +1004,14 @@ export default function RoomTimerOverlay({
                         <span>DNF</span>
                     </label>
                     <button className={`room-timer-overlay__btn ${focusedButtonIndex === 2 ? 'room-timer-overlay__btn--focused' : ''}`} onClick={submitTime}>
-                        KAYDET
+                        {t('room_timer.save')}
                     </button>
                     <button className={`room-timer-overlay__btn room-timer-overlay__btn--secondary ${focusedButtonIndex === 3 ? 'room-timer-overlay__btn--focused' : ''}`} onClick={handleRedo}>
-                        İPTAL
+                        {t('room_timer.cancel')}
                     </button>
                 </div>
                 <p className="room-timer-overlay__hint">
-                    Süreyi kaydetmek için Enter'a basın
+                    {t('room_timer.press_enter_to_save')}
                 </p>
             </div>
         );
@@ -1079,10 +1081,10 @@ export default function RoomTimerOverlay({
                         <span>DNF</span>
                     </label>
                     <button className={`room-timer-overlay__btn ${focusedButtonIndex === 2 ? 'room-timer-overlay__btn--focused' : ''}`} onClick={handleSmartSubmit} disabled={!!warning}>
-                        KAYDET
+                        {t('room_timer.save')}
                     </button>
                     <button className={`room-timer-overlay__btn room-timer-overlay__btn--secondary ${focusedButtonIndex === 3 ? 'room-timer-overlay__btn--focused' : ''}`} onClick={onRedo}>
-                        İPTAL
+                        {t('room_timer.cancel')}
                     </button>
                 </div>
             </div>
@@ -1144,7 +1146,7 @@ export default function RoomTimerOverlay({
 
         return (
             <div className="room-timer-overlay__manual">
-                <p className="room-timer-overlay__manual-label">Süreyi girin:</p>
+                <p className="room-timer-overlay__manual-label">{t('room_timer.enter_time')}</p>
                 <input
                     ref={manualInputRef}
                     type="text"
@@ -1202,7 +1204,7 @@ export default function RoomTimerOverlay({
                     onClick={handleManualSubmit}
                     disabled={manualTimeError || !manualTimeInput.trim()}
                 >
-                    KAYDET
+                    {t('room_timer.save')}
                 </button>
             </div>
         );
@@ -1216,26 +1218,26 @@ export default function RoomTimerOverlay({
                     <div className="room-timer-overlay__device-icon">
                         <Timer size={48} weight={ganTimerConnected ? 'fill' : 'regular'} />
                     </div>
-                    <h3>GAN Akıllı Timer</h3>
+                    <h3>{t('room_timer.gan_smart_timer')}</h3>
                     {ganTimerConnected ? (
                         <>
                             <p className="room-timer-overlay__device-status room-timer-overlay__device-status--connected">
-                                <Bluetooth size={16} weight="fill" /> Bağlı
+                                <Bluetooth size={16} weight="fill" /> {t('room_timer.connected')}
                             </p>
                             <button className="room-timer-overlay__btn room-timer-overlay__btn--secondary" onClick={disconnectGanTimer}>
-                                Bağlantıyı Kes
+                                {t('room_timer.disconnect')}
                             </button>
                             <p className="room-timer-overlay__hint">
-                                Timer'a ellerinizi koyarak başlayın
+                                {t('room_timer.place_hands_on_timer')}
                             </p>
                         </>
                     ) : (
                         <>
                             <p className="room-timer-overlay__device-status">
-                                Bağlı değil
+                                {t('room_timer.not_connected')}
                             </p>
                             <button className="room-timer-overlay__btn" onClick={connectGanTimerDevice}>
-                                <Bluetooth size={18} /> Bağlan
+                                <Bluetooth size={18} /> {t('room_timer.connect')}
                             </button>
                         </>
                     )}
@@ -1253,24 +1255,24 @@ export default function RoomTimerOverlay({
                     {stackmatConnected ? (
                         <>
                             <p className="room-timer-overlay__device-status room-timer-overlay__device-status--connected">
-                                Bağlı
+                                {t('room_timer.connected')}
                             </p>
                             <p className="room-timer-overlay__hint">
-                                StackMat timer'a ellerinizi koyarak başlayın
+                                {t('room_timer.place_hands_on_stackmat')}
                             </p>
                         </>
                     ) : (
                         <>
                             <p className="room-timer-overlay__device-status">
-                                {stackmatId ? 'Bağlanıyor...' : 'Yapılandırılmamış'}
+                                {stackmatId ? t('room_timer.connecting') : t('room_timer.not_configured')}
                             </p>
                             {stackmatId && (
                                 <button className="room-timer-overlay__btn room-timer-overlay__btn--primary" onClick={() => connectStackmat()} style={{ marginBottom: '0.5rem' }}>
-                                    StackMat Bağlan
+                                    {t('room_timer.connect_stackmat')}
                                 </button>
                             )}
                             <button className="room-timer-overlay__btn" onClick={openStackmatPicker}>
-                                StackMat Ayarla
+                                {t('room_timer.setup_stackmat')}
                             </button>
                         </>
                     )}
@@ -1285,18 +1287,18 @@ export default function RoomTimerOverlay({
                     <div className="room-timer-overlay__device-icon">
                         <Bluetooth size={48} />
                     </div>
-                    <h3>Akıllı Küp</h3>
+                    <h3>{t('room_timer.smart_cube')}</h3>
                     {!isSupported ? (
                         <p className="room-timer-overlay__device-status room-timer-overlay__device-status--error">
-                            Akıllı küp sadece 3x3x3 için destekleniyor
+                            {t('room_timer.smart_cube_3x3_only')}
                         </p>
                     ) : (
                         <>
                             <p className="room-timer-overlay__device-status">
-                                Şu an oda içinde desteklenmiyor
+                                {t('room_timer.not_supported_in_room')}
                             </p>
                             <p className="room-timer-overlay__hint">
-                                Klavye veya manuel giriş kullanın
+                                {t('room_timer.use_keyboard_or_manual')}
                             </p>
                         </>
                     )}

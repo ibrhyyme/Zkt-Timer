@@ -14,6 +14,7 @@ import {getCubeTypeInfoById} from '../../../../../util/cubes/util';
 import Tag from '../../../../common/tag/Tag';
 import {GameType} from '../../../../../../shared/match/consts';
 import {Match} from '../../../../../../server/schemas/Match.schema';
+import {useTranslation} from 'react-i18next';
 
 const b = block('custom-match');
 
@@ -26,6 +27,7 @@ export function getMatchLinkBase(gameType: GameType) {
 
 export default function CustomMatch() {
 	const {minPlayers, maxPlayers, cubeType, matchType} = useContext(MatchPopupContext);
+	const {t} = useTranslation();
 
 	const [showChallengeLink, setShowChallengeLink] = useState(false);
 	const [creatingLink, setCreatingLink] = useState(false);
@@ -111,19 +113,19 @@ export default function CustomMatch() {
 				<div className={b('play')}>
 					<div className={b('config')}>
 						<Tag backgroundColor="secondary" text={ct.name} />
-						<Tag backgroundColor="secondary" text={`${minPlayers} Players`} />
+						<Tag backgroundColor="secondary" text={t('match.player_count', {count: minPlayers})} />
 					</div>
 					<div className={b('link')}>{getMatchLinkBody()}</div>
 					<div className={b('actions')}>
 						<Button
-							text="Show Link"
+							text={t('match.show_link')}
 							onClick={toggleShowChallengeLink}
 							icon={<Eye weight="bold" />}
 							white={showChallengeLink}
 						/>
 						<CopyText
 							buttonProps={{
-								text: 'Copy Link',
+								text: t('match.copy_link'),
 								primary: true,
 							}}
 							text={matchLink}
@@ -133,13 +135,13 @@ export default function CustomMatch() {
 				<div className={b('bottom')}>
 					<CopyText
 						buttonProps={{
-							text: 'Copy Spectate Link',
+							text: t('match.copy_spectate_link'),
 							large: true,
 							gray: true,
 						}}
 						text={spectateLink}
 					/>
-					<Button icon={<ArrowRight />} primary glow large text="Join Match" to={matchLink} />
+					<Button icon={<ArrowRight />} primary glow large text={t('match.join_match')} to={matchLink} />
 				</div>
 			</div>
 		);

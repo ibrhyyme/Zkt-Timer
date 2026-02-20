@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import MicAccess from '../mic_access/MicAccess';
 import StackMatPicker from '../stackmat_picker/StackMatPicker';
 import { openModal } from '../../../actions/general';
@@ -17,15 +18,16 @@ import ModalHeader from '../../common/modal/modal_header/ModalHeader';
 import Checkbox from '../../common/checkbox/Checkbox';
 import { useIsMobile } from '../../../util/hooks/useIsMobile';
 
-export const TIMER_INPUT_TYPE_NAMES = {
-	keyboard: 'Klavye',
-	stackmat: 'StackMat',
-	smart: 'Akıllı Küp',
-	gantimer: 'GAN Akıllı Timer',
+export const TIMER_INPUT_TYPE_KEYS = {
+	keyboard: 'timer_settings.input_keyboard',
+	stackmat: 'timer_settings.input_stackmat',
+	smart: 'timer_settings.input_smart',
+	gantimer: 'timer_settings.input_gantimer',
 };
 
 // Uyarı modalı componenti
 function AutoInspectionWarningModal({ onComplete }: { onComplete?: () => void }) {
+	const { t } = useTranslation();
 	const [dontShowAgain, setDontShowAgain] = useState(false);
 
 	function handleClose() {
@@ -40,37 +42,37 @@ function AutoInspectionWarningModal({ onComplete }: { onComplete?: () => void })
 	return (
 		<div style={{ maxWidth: '500px' }}>
 			<ModalHeader
-				title="StackMat Otomatik İnceleme Uyarısı"
-				description="Bu özellik hakkında bilmeniz gereken önemli bir bilgi var."
+				title={t('timer_settings.stackmat_warning_title')}
+				description={t('timer_settings.stackmat_warning_desc')}
 			/>
 			<div style={{ marginBottom: '16px', lineHeight: '1.6' }}>
 				<p style={{ marginBottom: '12px' }}>
-					<strong>Bu özellik nasıl çalışır:</strong>
+					<strong>{t('timer_settings.stackmat_warning_how_it_works')}</strong>
 				</p>
 				<ul style={{ paddingLeft: '20px', marginBottom: '12px' }}>
-					<li>Çözümünüzü tamamladıktan sonra mat'ta reset tuşuna basın</li>
-					<li>Belirlediğiniz süre (varsayılan 2 saniye) sonra inceleme otomatik başlar</li>
-					<li>Eğer bu süre içinde timer'ı başlatırsanız, inceleme iptal olur</li>
+					<li>{t('timer_settings.stackmat_warning_step1')}</li>
+					<li>{t('timer_settings.stackmat_warning_step2')}</li>
+					<li>{t('timer_settings.stackmat_warning_step3')}</li>
 				</ul>
 				<p style={{ marginBottom: '12px', padding: '10px', backgroundColor: 'rgba(255,150,0,0.15)', borderRadius: '8px', border: '1px solid rgba(255,150,0,0.3)' }}>
-					<strong>⚠️ Önemli Sınırlama:</strong> ESC tuşu ile incelemeyi iptal ederseniz, mat'tan yeni bir sinyal gelmediği için tekrar reset'e bassanız bile inceleme başlamaz. Bu durumda klavyeden (Space) inceleme başlatmanız gerekir veya yeni bir çözüm yapmanız gerekir.
+					<strong>{t('timer_settings.stackmat_warning_limitation_title')}</strong> {t('timer_settings.stackmat_warning_limitation_desc')}
 				</p>
 				<p style={{ marginTop: '12px', fontWeight: 'bold' }}>
-					Bu sınırlama StackMat protokolünden kaynaklanmaktadır ve yazılımsal olarak çözümü yoktur.
+					{t('timer_settings.stackmat_warning_protocol_note')}
 				</p>
 				<p style={{ marginTop: '12px', padding: '10px', backgroundColor: 'rgba(255,0,0,0.1)', color: '#d32f2f', borderRadius: '8px', border: '1px solid rgba(255,0,0,0.3)', fontWeight: 'bold' }}>
-					⚠️ KRİTİK UYARI: Lütfen StackMat üzerinde çözüm bittikten sonra süre tam duruncaya kadar RESETLEMEYİN. Bu durum StackMat sinyalinin yanlış senkronize olmasına sebep olabilir ve inceleme süresinde bazı hatalara sebebiyet verebilir. Elimizde olmayan bu protokol hatalarından ötürü özür dileriz.
+					{t('timer_settings.stackmat_warning_critical')}
 				</p>
 			</div>
 			<div style={{ marginBottom: '16px' }}>
 				<Checkbox
 					checked={dontShowAgain}
 					onChange={() => setDontShowAgain(!dontShowAgain)}
-					text="Bir daha gösterme"
+					text={t('timer_settings.dont_show_again')}
 				/>
 			</div>
 			<Button
-				text="Anladım"
+				text={t('timer_settings.understood')}
 				primary
 				large
 				onClick={handleClose}
@@ -80,6 +82,7 @@ function AutoInspectionWarningModal({ onComplete }: { onComplete?: () => void })
 }
 
 export default function TimerSettings() {
+	const { t } = useTranslation();
 	const dispatch = useDispatch();
 
 	const timerDecimalPoints = useSettings('timer_decimal_points');
@@ -112,9 +115,8 @@ export default function TimerSettings() {
 	function toggleCubeTypes() {
 		dispatch(
 			openModal(<CubeTypes />, {
-				title: 'Küp Türlerini Yönet',
-				description:
-					"Varsayılan olarak listelenmemiş özel etkinlikler için özel karıştırma türleri kullanabilirsiniz. Örneğin 8x8 veya Examinx Ya da aklına ne geliyorsa",
+				title: t('timer_settings.manage_cube_types'),
+				description: t('timer_settings.manage_cube_types_desc'),
 			})
 		);
 	}
@@ -124,23 +126,23 @@ export default function TimerSettings() {
 	}
 
 	function getTimerTypeName(tt: string) {
-		return TIMER_INPUT_TYPE_NAMES[tt];
+		return t(TIMER_INPUT_TYPE_KEYS[tt]);
 	}
 
 	let inspectionBody = null;
 	if (inspection) {
 		inspectionBody = (
 			<>
-				<SettingRow title="İnceleme süresi (sn)" settingName="inspection_delay" isNumberInput />
+				<SettingRow title={t('timer_settings.inspection_time')} settingName="inspection_delay" isNumberInput />
 				<SettingRow
-					title="Ses çal"
-					description="8 ve 12 saniye geçtiğinde sesli uyarı ver"
+					title={t('timer_settings.play_sound')}
+					description={t('timer_settings.play_sound_desc')}
 					settingName="play_inspection_sound"
 					isSwitch
 				/>
 				<SettingRow
-					title="İnceleme otomatik başlat"
-					description="İnceleme süresi bittiğinde otomatik başlat"
+					title={t('timer_settings.inspection_auto_start')}
+					description={t('timer_settings.inspection_auto_start_desc')}
 					settingName="inspection_auto_start"
 					isSwitch
 				/>
@@ -150,11 +152,11 @@ export default function TimerSettings() {
 
 	return (
 		<>
-			<SettingRow title="Timer ondalık basamakları" description="Timer sayfasında kaç ondalık basamak gösterileceği">
+			<SettingRow title={t('timer_settings.decimal_points')} description={t('timer_settings.decimal_points_desc')}>
 				<Dropdown
 					openLeft={isMobile}
 					icon={null}
-					text={`${timerDecimalPoints} ondalık basamak`}
+					text={`${timerDecimalPoints} ${t('timer_settings.decimal_suffix')}`}
 					options={[0, 1, 2, 3].map((c) => ({
 						text: String(c),
 						onClick: () => updateSetting('timer_decimal_points', c),
@@ -162,8 +164,8 @@ export default function TimerSettings() {
 				/>
 			</SettingRow>
 			<SettingRow
-				title="Timer giriş türü"
-				description="Timeryı başlatmak için klavyeniz (boşluk tuşu), StackMat veya Akıllı Küp kullanımı arasında seçim yapın."
+				title={t('timer_settings.input_type')}
+				description={t('timer_settings.input_type_desc')}
 			>
 				<Dropdown
 					openLeft={isMobile}
@@ -176,57 +178,57 @@ export default function TimerSettings() {
 				/>
 			</SettingRow>
 			<SettingRow
-				title="Dondurma süresi (sn)"
-				description="Timer başlamadan önce boşluk tuşunu kaç saniye basılı tutacağınız."
+				title={t('timer_settings.freeze_time')}
+				description={t('timer_settings.freeze_time_desc')}
 				settingName="freeze_time"
 				isNumberInput
 				step={0.1}
 			/>
-			<SettingRow loggedInOnly title="Küp Türleri" description="Karıştırmalı veya karıştırmasız özel küp türleri ekleyin">
-				<Button theme={CommonType.GRAY} text="Küp Türlerini Yönet" onClick={toggleCubeTypes} />
+			<SettingRow loggedInOnly title={t('timer_settings.cube_types')} description={t('timer_settings.cube_types_desc')}>
+				<Button theme={CommonType.GRAY} text={t('timer_settings.manage_cube_types')} onClick={toggleCubeTypes} />
 			</SettingRow>
 			<SettingRow
-				title="Akıllı küplerle boşluk tuşu kullan"
-				description="Akıllı küp hareketleriyle çözümün ne süre başladığını/bittiğini algılamak yerine, normal küpler gibi boşluk tuşunu kullanın."
+				title={t('timer_settings.use_space_with_smart_cube')}
+				description={t('timer_settings.use_space_with_smart_cube_desc')}
 				settingName="use_space_with_smart_cube"
 				isSwitch
 			/>
-			<SettingRow title="Çözerken süreyi gizle" settingName="hide_time_when_solving" isSwitch />
+			<SettingRow title={t('timer_settings.hide_time_when_solving')} settingName="hide_time_when_solving" isSwitch />
 			<SettingRow
-				title="Çözümden sonra süreyi sıfırla"
-				description="Son çözümünüzün süresini göstermek yerine, timer çözümden sonra 0.00 olarak güncellenir."
+				title={t('timer_settings.zero_out_time_after_solve')}
+				description={t('timer_settings.zero_out_time_after_solve_desc')}
 				settingName="zero_out_time_after_solve"
 				isSwitch
 			/>
 			<SettingRow
-				title="Manuel girişte nokta gerektir"
-				description="Manuel olarak girdiğiniz sürelerin otomatik olarak 100'e bölünmesini istiyorsanız bunu kapatın"
+				title={t('timer_settings.require_period')}
+				description={t('timer_settings.require_period_desc')}
 				settingName="require_period_in_manual_time_entry"
 				isSwitch
 			/>
 			<SettingRow
-				title="Son çözümü silmek için onay gereksin"
-				description="Bir çözümü silmeden önce onay kutusu göster"
+				title={t('timer_settings.confirm_delete_solve')}
+				description={t('timer_settings.confirm_delete_solve_desc')}
 				settingName="confirm_delete_solve"
 				isSwitch
 			/>
 			<SettingRow
-				title="Sezonu silmek için onay gereksin"
-				description="Seçili sezondaki tüm çözümleri silmeden önce onay kutusu göster"
+				title={t('timer_settings.confirm_delete_season')}
+				description={t('timer_settings.confirm_delete_season_desc')}
 				settingName="confirm_delete_season"
 				isSwitch
 			/>
 			<SettingRow
-				title="Kişisel rekor konfetisi"
-				description="Kişisel rekor kırdığınızda konfeti göster"
+				title={t('timer_settings.pb_confetti')}
+				description={t('timer_settings.pb_confetti_desc')}
 				settingName="pb_confetti"
 				isSwitch
 			/>
 			<SettingSection>
 				<SettingRow
 					parent
-					title="İnceleme"
-					description="İnceleme süresini sınırla. Yarışmalara hazırlanmak için iyidir."
+					title={t('timer_settings.inspection')}
+					description={t('timer_settings.inspection_desc')}
 					settingName="inspection"
 					isSwitch
 				/>
@@ -235,16 +237,16 @@ export default function TimerSettings() {
 			<SettingSection>
 				<SettingRow
 					parent
-					title="StackMat Seçenekleri"
-					description="Bu seçenekler Timer giriş türünüz StackMat olarak ayarlandığında kullanılacaktır"
+					title={t('timer_settings.stackmat_options')}
+					description={t('timer_settings.stackmat_options_desc')}
 				/>
-				<SettingRow sub title="Mikrofona erişime izin ver (StackMat'ın veri iletim yöntemi)">
+				<SettingRow sub title={t('timer_settings.mic_access')}>
 					<MicAccess />
 				</SettingRow>
 				<SettingRow
 					sub
-					title="Otomatik İnceleme Başlat"
-					description="Mat sıfırlandıktan sonra otomatik olarak inceleme süresini başlatır."
+					title={t('timer_settings.auto_inspection_start')}
+					description={t('timer_settings.auto_inspection_start_desc')}
 				>
 					<div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
 						<Switch
@@ -261,30 +263,30 @@ export default function TimerSettings() {
 									style={{ width: '60px' }}
 								/>
 								<Button
-									text="Kaydet"
+									text={t('timer_settings.save')}
 									gray
 									onClick={() => {
 										const delay = parseInt(autoInspectionDelay) || 2;
 										setSetting('stackmat_auto_inspection', delay);
 									}}
 								/>
-								<span style={{ fontSize: '12px', color: '#888' }}>saniye</span>
+								<span style={{ fontSize: '12px', color: '#888' }}>{t('timer_settings.seconds')}</span>
 							</>
 						)}
 					</div>
 				</SettingRow>
-				<SettingRow sub title={`StackMat cihazınızı seçin. Genellikle "USB Audio Device" olarak adlandırılır`}>
+				<SettingRow sub title={t('timer_settings.stackmat_select_device')}>
 					<Button
 						gray
 						primary={!stackMatId}
-						text={stackMatId ? `Seçildi - Giriş Cihazını Değiştir` : 'StackMat Seç'}
+						text={stackMatId ? t('timer_settings.stackmat_change_device') : t('timer_settings.stackmat_select')}
 						onClick={openStackMatPicker}
 					/>
 				</SettingRow>
 			</SettingSection>
 			<SettingRow
-				title="Beta test kullanıcısı"
-				description="Hâlâ beta aşamasındaki özellikleri açın. UYARI: Bu verilerinizle sorun yaratabilir. Bunu sadece bazı şeylerin bozulmasıyla sorun yaşamayacaksanız açın."
+				title={t('timer_settings.beta_tester')}
+				description={t('timer_settings.beta_tester_desc')}
 				settingName="beta_tester"
 				isSwitch
 			/>

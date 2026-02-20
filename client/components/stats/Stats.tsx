@@ -13,6 +13,7 @@ import { gql, useQuery } from '@apollo/client';
 import { Stats as StatsSchema } from '../../@types/generated/graphql';
 import { STATS_FRAGMENT } from '../../util/graphql/fragments';
 import { useMe } from '../../util/hooks/useMe';
+import { useTranslation } from 'react-i18next';
 
 const b = block('stats');
 
@@ -43,6 +44,7 @@ const STATS_QUERY = gql`
 export const StatsContext = createContext<IStatsContext>(null);
 
 export default function Stats() {
+	const { t } = useTranslation();
 	const me = useMe();
 
 	const { data: statsData } = useQuery<StatsQueryData>(STATS_QUERY, {
@@ -85,7 +87,7 @@ export default function Stats() {
 	const tabs = [
 		{
 			id: ALL_TAB_ID,
-			value: 'Tümü',
+			value: t('stats.all'),
 			link: '/stats',
 		},
 		...cubeTypeTabs,
@@ -107,7 +109,7 @@ export default function Stats() {
 		<StatsContext.Provider value={context}>
 			<div className={b()}>
 				<div className={b('shell')}>
-					<PageTitle pageName="İstatistikler">
+					<PageTitle pageName={t('stats.page_title')}>
 						<HorizontalNav tabs={tabs} tabId={tabId} />
 					</PageTitle>
 					{body}

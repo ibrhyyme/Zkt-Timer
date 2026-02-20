@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+import {useTranslation} from 'react-i18next';
 import './MatchModule.scss';
 import { GameContext } from '../../game/Game';
 import block from '../../../../styles/bem';
@@ -13,6 +14,7 @@ const b = block('match-module');
 
 // Center module that shows game/match status
 export default function MatchModule() {
+	const {t} = useTranslation();
 	const gameContext = useContext(GameContext);
 	const matchContext = useContext(MatchContext);
 	const me = useMe();
@@ -29,18 +31,18 @@ export default function MatchModule() {
 		case PlayerStatus.Lost: {
 			timeAlert = (
 				<span className={b('alert', { red: true })}>
-					{solves.length} çözüm tamamladın
+					{t('match_module.solves_completed', { count: solves.length })}
 				</span>
 			);
 
 			// Can't retry solves in multiplayer
 			if (!matchOpen) {
-				retryAlert = <Button text="Başarısız çözümü tekrarla" onClick={retrySolve} />;
+				retryAlert = <Button text={t('match_module.retry_failed_solve')} onClick={retrySolve} />;
 			}
 			break;
 		}
 		case PlayerStatus.Won: {
-			timeAlert = <span className={b('alert', { green: true })}>Tebrikler! Kazandın!</span>;
+			timeAlert = <span className={b('alert', { green: true })}>{t('match_module.congratulations')}</span>;
 			break;
 		}
 	}

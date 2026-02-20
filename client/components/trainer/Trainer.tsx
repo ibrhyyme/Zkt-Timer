@@ -5,15 +5,17 @@ import PageTitle from '../common/page_title/PageTitle';
 import block from '../../styles/bem';
 import Header from '../layout/header/Header';
 import { useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const b = block('trainer');
 
 export default function Trainer() {
+	const { t } = useTranslation();
 	const location = useLocation();
 
 	return (
 		<div className={b()}>
-			<Header title="Zkt-Timer | Algoritma Öğreticisi" path={location.pathname} />
+			<Header title={t('trainer.page_title')} path={location.pathname} />
 			<PageTitle pageName="Trainer" />
 			<div className={b('coming-soon')}>
 				{/* Hero Section */}
@@ -31,14 +33,12 @@ export default function Trainer() {
 
 					<div className={b('content')}>
 						<h1 className={b('title')}>
-							<span className={b('title-line')}>Algoritma Eğiticisi</span>
-							<span className={b('title-line', { highlight: true })}>Coming Soon!</span>
+							<span className={b('title-line')}>{t('trainer.title')}</span>
+							<span className={b('title-line', { highlight: true })}>{t('trainer.coming_soon')}</span>
 						</h1>
 
 						<p className={b('description')}>
-							Bu sayfa çok yakında kullanıma açılacak! 🚀
-							F2, OLL, PLL, ZBLL ve daha fazla algoritma seti, akıllı küp desteği ve gelişmiş
-							performans izleme özellikleri yakında!
+							{t('trainer.description')}
 						</p>
 
 						<div className={b('features')}>
@@ -47,8 +47,8 @@ export default function Trainer() {
 									<Cube size={32} />
 								</div>
 								<div className={b('feature__content')}>
-									<h3>Kapsamlı Algoritma Koleksiyonu</h3>
-									<p>OLL, PLL, ZBLL ve daha fazla algoritma seti</p>
+									<h3>{t('trainer.feature_algorithms_title')}</h3>
+									<p>{t('trainer.feature_algorithms_desc')}</p>
 								</div>
 							</div>
 
@@ -57,8 +57,8 @@ export default function Trainer() {
 									<Lightning size={32} />
 								</div>
 								<div className={b('feature__content')}>
-									<h3>Akıllı Küp Entegrasyonu</h3>
-									<p>GAN akıllı küp desteği ile gerçek zamanlı analiz</p>
+									<h3>{t('trainer.feature_smart_cube_title')}</h3>
+									<p>{t('trainer.feature_smart_cube_desc')}</p>
 								</div>
 							</div>
 
@@ -67,8 +67,8 @@ export default function Trainer() {
 									<Clock size={32} />
 								</div>
 								<div className={b('feature__content')}>
-									<h3>Gelişmiş Performans İzleme</h3>
-									<p>Detaylı istatistikler ve ilerleme takibi</p>
+									<h3>{t('trainer.feature_performance_title')}</h3>
+									<p>{t('trainer.feature_performance_desc')}</p>
 								</div>
 							</div>
 						</div>
@@ -77,14 +77,14 @@ export default function Trainer() {
 							<div className={b('progress__bar')}>
 								<div className={b('progress__fill')}></div>
 							</div>
-							<p className={b('progress__text')}>Geliştirme İlerlemesi: %75</p>
+							<p className={b('progress__text')}>{t('trainer.progress_text')}</p>
 						</div>
 					</div>
 				</div>
 
 				{/* Footer */}
 				<div className={b('footer')}>
-					<p>Bu sayfa çok yakında kullanıma açılacak! 🚀</p>
+					<p>{t('trainer.footer')}</p>
 				</div>
 			</div>
 		</div>

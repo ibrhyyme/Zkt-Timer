@@ -1,5 +1,6 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import './Session.scss';
 import { setCubeType, setCurrentSession } from '../../../db/settings/update';
 import { v4 as uuid } from 'uuid';
@@ -28,6 +29,7 @@ interface Props {
 export default function Session(props: Props) {
 	const currentSessionId = useSettings('session_id');
 	const dispatch = useDispatch();
+	const { t } = useTranslation();
 
 	const { session, selectedSessionId, selectSession, isMultiSelected } = props;
 
@@ -46,13 +48,13 @@ export default function Session(props: Props) {
 		dispatch(
 			openModal(
 				<ConfirmModal
-					title="Merge sessions"
-					description={`Be careful here. You are about to merge "${session.name}" into "${currentSession.name}". "${session.name}" will be deleted after the merge.`}
+					title={t('sessions.merge_sessions_title')}
+					description={t('sessions.merge_confirm_desc', { source: session.name, target: currentSession.name })}
 					triggerAction={async () => {
 						await mergeSessionsDb(session.id, currentSessionId);
 						props.setSelectedSessionId(currentSessionId);
 					}}
-					buttonText="Merge sessions"
+					buttonText={t('sessions.merge_sessions')}
 					buttonProps={{
 						danger: true,
 					}}
@@ -70,7 +72,7 @@ export default function Session(props: Props) {
 				const newId = uuid();
 
 				await createSessionDb({
-					name: 'Yeni Sezon',
+					name: t('sessions.new_session'),
 					id: newId,
 				});
 
@@ -82,16 +84,16 @@ export default function Session(props: Props) {
 
 			props.setSelectedSessionId(updatedSessionId);
 			await deleteSessionDb(session);
-			toastSuccess(`"${name}" sezonu başarıyla silindi`);
+			toastSuccess(t('sessions.session_deleted', { name }));
 		}
 
 		dispatch(
 			openModal(
 				<ConfirmModal
-					title="Sezonu sil"
-					description={`Dikkatli olun. "${session.name}" sezonunu silmek üzeresiniz. Bu işlem geri alınamaz.`}
+					title={t('sessions.delete_session')}
+					description={t('sessions.delete_confirm_desc', { name: session.name })}
 					triggerAction={triggerAction}
-					buttonText="Sezonu sil"
+					buttonText={t('sessions.delete_session')}
 				/>
 			)
 		);
@@ -105,7 +107,7 @@ export default function Session(props: Props) {
 		>
 			<div className={b('info')}>
 				<h4>{session.name}</h4>
-				<span>Oluşturuldu {getDateFromNow(session.created_at)}</span>
+				<span>{t('sessions.created')} {getDateFromNow(session.created_at)}</span>
 			</div>
 		</div>
 	);

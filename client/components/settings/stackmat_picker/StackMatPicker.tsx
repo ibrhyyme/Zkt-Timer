@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CaretDown } from 'phosphor-react';
 import { setSetting } from '../../../db/settings/update';
 import Dropdown from '../../common/inputs/dropdown/Dropdown';
@@ -9,6 +10,7 @@ import ModalHeader from '../../common/modal/modal_header/ModalHeader';
 import { isNative } from '../../../util/platform';
 
 export default function StackMatPicker(props: IModalProps) {
+	const { t } = useTranslation();
 	const { onComplete } = props;
 
 	const stackMatId = useSettings('stackmat_id');
@@ -91,7 +93,7 @@ export default function StackMatPicker(props: IModalProps) {
 		setSelectedStackMatId(selectedId);
 	}
 
-	let name = 'StackMat Seç';
+	let name = t('stackmat.select_stackmat');
 	let disabled = !selectedStackMatId;
 
 	if (selectedStackMatId) {
@@ -100,7 +102,7 @@ export default function StackMatPicker(props: IModalProps) {
 		if (stackMat) {
 			name = stackMat.label;
 		} else {
-			name = 'Hiçbiri';
+			name = t('stackmat.none');
 			disabled = true;
 		}
 	}
@@ -108,8 +110,8 @@ export default function StackMatPicker(props: IModalProps) {
 	return (
 		<div>
 			<ModalHeader
-				title="StackMat Girişi Seç"
-				description={`StackMat bilgisayarınıza ses girişi ile bağlanır. Aşağıdaki açılır menüye tıklayın, StackMat'ınızı seçin. Giriş adının "StackMat" değil "USB Audio Device" gibi bir şey olabileceğini unutmayın.`}
+				title={t('stackmat.select_input')}
+				description={t('stackmat.description')}
 			/>
 			<div className="mb-2">
 				<Dropdown
@@ -128,8 +130,8 @@ export default function StackMatPicker(props: IModalProps) {
 				/>
 			</div>
 			<div className="flex gap-2">
-				<Button large glow text="Kaydet" primary disabled={disabled} onClick={saveSelectedAudio} error={error} />
-				<Button large text="İzin İste" onClick={requestPermission} />
+				<Button large glow text={t('stackmat.save')} primary disabled={disabled} onClick={saveSelectedAudio} error={error} />
+				<Button large text={t('stackmat.request_permission')} onClick={requestPermission} />
 			</div>
 		</div>
 	);

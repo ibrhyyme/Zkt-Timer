@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import HorizontalNav from '../../../common/horizontal_nav/HorizontalNav';
 import { useToggle } from '../../../../util/hooks/useToggle';
 import { Check } from 'phosphor-react';
@@ -24,6 +25,7 @@ interface Props {
 }
 
 export default function CustomizeStatsEditor(props: Props) {
+	const { t } = useTranslation();
 	const { stat, index, removeStatsBlock, hideRemoveButton } = props;
 
 	const effectiveAverageCountStr = String(
@@ -196,7 +198,7 @@ export default function CustomizeStatsEditor(props: Props) {
 				<FormSection removePaddingTop>
 					<HorizontalNav
 						showBackgroundForUnselectedTabs
-						legend="İstatistik türü"
+						legend={t('timer_modules.stat_type')}
 						tabId={statType}
 						onChange={(val) => selectStatType(val)}
 						tabs={[
@@ -209,7 +211,7 @@ export default function CustomizeStatsEditor(props: Props) {
 				<FormSection>
 					<HorizontalNav
 						showBackgroundForUnselectedTabs
-						legend="İstatistik sonucu"
+						legend={t('timer_modules.stat_result')}
 						tabId={sortBy}
 						onChange={(val) => setSortBy(val as any)}
 						tabs={[
@@ -224,7 +226,7 @@ export default function CustomizeStatsEditor(props: Props) {
 					<Checkbox text="Sadece seans çözümleri" checked={session} onChange={() => toggleSession()} />
 				</FormSection>
 				<FormSection>
-					<InputLegend text="İstatistik rengi" />
+					<InputLegend text={t('timer_modules.stat_color')} />
 					<div className="flex flex-row flex-wrap gap-2">{colorOptions}</div>
 				</FormSection>
 				<div className="mt-3">

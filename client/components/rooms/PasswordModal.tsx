@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Button from '../common/button/Button';
 import { Lock as LockIcon } from 'phosphor-react';
 import './PasswordModal.scss';
@@ -9,6 +10,7 @@ interface PasswordModalProps {
 }
 
 export default function PasswordModal({ onSubmit, onCancel }: PasswordModalProps) {
+    const { t } = useTranslation();
     const [password, setPassword] = useState('');
 
     function handleSubmit(e: React.FormEvent) {
@@ -24,8 +26,8 @@ export default function PasswordModal({ onSubmit, onCancel }: PasswordModalProps
                 <div className="password-modal__icon-wrapper">
                     <LockIcon size={32} weight="fill" />
                 </div>
-                <h2>Şifreli Oda</h2>
-                <p>Bu oda korumalıdır. Katılmak için lütfen giriş şifresini yazın.</p>
+                <h2>{t('rooms.protected_room')}</h2>
+                <p>{t('rooms.password_required')}</p>
                 <form onSubmit={handleSubmit}>
                     <div className="password-modal__input-wrapper">
                         <LockIcon size={20} className="password-modal__input-icon" />
@@ -34,16 +36,16 @@ export default function PasswordModal({ onSubmit, onCancel }: PasswordModalProps
                             className="password-modal__input"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            placeholder="Şifre..."
+                            placeholder={t('rooms.password_placeholder')}
                             autoFocus
                         />
                     </div>
                     <div className="password-modal__actions">
                         <Button type="button" onClick={onCancel} className="password-modal__btn-cancel">
-                            İptal
+                            {t('rooms.cancel')}
                         </Button>
                         <Button primary type="submit" disabled={!password.trim()} className="password-modal__btn-submit">
-                            Katıl
+                            {t('rooms.join')}
                         </Button>
                     </div>
                 </form>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { FriendlyRoomData, FriendlyRoomClientEvent } from '../../../shared/friendly_room';
 import Button from '../common/button/Button';
 import { Users, Lock, LockOpen, Cube, DotsThreeVertical, Trash, PencilSimple, UserList, Eye } from 'phosphor-react';
@@ -15,6 +16,7 @@ interface RoomCardProps {
 }
 
 export default function RoomCard({ room, onJoin, isAdmin = false }: RoomCardProps) {
+    const { t } = useTranslation();
     const [menuOpen, setMenuOpen] = useState(false);
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [manageUsersModalOpen, setManageUsersModalOpen] = useState(false);
@@ -22,13 +24,13 @@ export default function RoomCard({ room, onJoin, isAdmin = false }: RoomCardProp
 
     const participantCount = room.participants.length;
     const isFull = participantCount >= room.max_players;
-    const statusText = room.status === 'WAITING' ? 'BEKLİYOR' : 'AKTİF';
+    const statusText = room.status === 'WAITING' ? t('rooms.waiting') : t('rooms.active');
     const statusClass = room.status === 'WAITING' ? 'waiting' : 'active';
 
     const getSocket = () => socketClient() as any;
 
     const handleAdminDeleteRoom = () => {
-        if (window.confirm(`"${room.name}" odasını silmek istediğinizden emin misiniz?`)) {
+        if (window.confirm(t('rooms.delete_confirm', { name: room.name }))) {
             getSocket().emit(FriendlyRoomClientEvent.ADMIN_DELETE_ROOM, room.id);
         }
         setMenuOpen(false);
@@ -107,7 +109,7 @@ export default function RoomCard({ room, onJoin, isAdmin = false }: RoomCardProp
                     small
                     onClick={onJoin}
                 >
-                    {isFull ? 'Dolu' : 'Katıl'}
+                    {isFull ? t('rooms.full') : t('rooms.join')}
                 </Button>
 
                 {/* Admin Menu */}
@@ -126,20 +128,20 @@ export default function RoomCard({ room, onJoin, isAdmin = false }: RoomCardProp
                                 <div className="room-card__admin-dropdown">
                                     <button onClick={handleAdminViewStats}>
                                         <Eye size={16} />
-                                        Odayı Görüntüle
+                                        {t('rooms.view_room')}
                                     </button>
                                     <button onClick={handleAdminEditRoom}>
                                         <PencilSimple size={16} />
-                                        Odayı Düzenle
+                                        {t('rooms.edit_room')}
                                     </button>
                                     <button onClick={handleAdminManageUsers}>
                                         <UserList size={16} />
-                                        Kullanıcıları Yönet
+                                        {t('rooms.manage_users')}
                                     </button>
                                     <div className="room-card__admin-divider" />
                                     <button onClick={handleAdminDeleteRoom} className="room-card__admin-danger">
                                         <Trash size={16} />
-                                        Odayı Sil
+                                        {t('rooms.delete_room')}
                                     </button>
                                 </div>
                             </>

@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import {useTranslation} from 'react-i18next';
 import Checkbox from '../../common/checkbox/Checkbox';
 import {NOTIFICATION_PREFERENCE_FRAGMENT} from '../../../util/graphql/fragments';
 import {gqlMutate} from '../../api';
@@ -16,6 +17,7 @@ const NOTIFICATION_PREFERENCES_QUERY = gql`
 `;
 
 export default function NotificationPreferences() {
+	const {t} = useTranslation();
 	const [prefs, setPrefs] = useState({});
 	const {data} = useQuery<{notificationPreferences: NotificationPreference}>(NOTIFICATION_PREFERENCES_QUERY);
 
@@ -50,19 +52,19 @@ export default function NotificationPreferences() {
 	const notificationTypeNames = [
 		{
 			key: 'friend_request',
-			label: 'Arkadaş isteği kabul edildi',
+			label: t('notification_prefs.friend_request_accepted'),
 		},
 		{
 			key: 'friend_request_accept',
-			label: 'Arkadaş isteği alındı',
+			label: t('notification_prefs.friend_request_received'),
 		},
 		{
 			key: 'elo_refund',
-			label: 'Hileci ile oynandıktan sonra ELO iadesi',
+			label: t('notification_prefs.elo_refund'),
 		},
 		{
 			key: 'marketing_emails',
-			label: 'Zkt-Timer\'dan ipucı, güncellemeler ve diğer e-postalar',
+			label: t('notification_prefs.marketing_emails'),
 		},
 	];
 
@@ -80,7 +82,7 @@ export default function NotificationPreferences() {
 
 	return (
 		<div>
-			<InputLegend text="E-posta Bildirimleri" />
+			<InputLegend text={t('notification_prefs.email_notifications')} />
 			{checkboxes}
 		</div>
 	);

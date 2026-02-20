@@ -8,17 +8,18 @@ export interface HtmlPagePayload {
 	resourceBase: string;
 	cssFileName: string;
 	jsFileName: string;
+	lang: string;
 }
 
 export default (payload: HtmlPagePayload) => {
-	const { html, cleanState, helmet, distBase, resourceBase, cssFileName, jsFileName } = payload;
+	const { html, cleanState, helmet, distBase, resourceBase, cssFileName, jsFileName, lang } = payload;
 
 	// Cache-busting: Her deployment'ta tarayıcılar yeni dosyaları indirsin
 	const version = process.env.RELEASE_NAME || Date.now().toString();
 
 	return `
 		<!DOCTYPE html>
-		<html lang="tr">
+		<html lang="${lang}">
 			<head>
 				<meta charset="UTF-8" />
 				<meta name="viewport" content="width=device-width, initial-scale=1.0" />

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Lock } from 'phosphor-react';
 import { useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { openModal } from '../../actions/general';
 import { useSettings } from '../../util/hooks/useSettings';
 import { setSetting, toggleSetting } from '../../db/settings/update';
@@ -87,6 +88,7 @@ interface RoomSettingsModalProps {
 }
 
 export default function RoomSettingsModal({ isOpen, onClose, cubeType, allowedTimerTypes }: RoomSettingsModalProps) {
+    const { t } = useTranslation();
     const dispatch = useDispatch();
     const [activeTab, setActiveTab] = useState<'timer' | 'extras'>('timer');
 
@@ -132,28 +134,33 @@ export default function RoomSettingsModal({ isOpen, onClose, cubeType, allowedTi
 
     const timerOptions = [
         {
-            label: 'Klavye',
+            typeKey: 'keyboard',
+            label: t('room_settings.keyboard'),
             isActive: timerType === 'keyboard' && !manualEntry,
             onClick: () => selectTimerType('keyboard'),
         },
         {
+            typeKey: 'stackmat',
             label: 'StackMat',
             isActive: timerType === 'stackmat' && !manualEntry,
             onClick: openStackMatPicker,
         },
         {
-            label: 'Akıllı Küp',
+            typeKey: 'smart',
+            label: t('room_settings.smart_cube'),
             isActive: timerType === 'smart' && !manualEntry,
             disabled: cubeType !== '333',
             onClick: () => selectTimerType('smart'),
         },
         {
-            label: 'GAN Akıllı Timer',
+            typeKey: 'gantimer',
+            label: t('room_settings.gan_smart_timer'),
             isActive: timerType === 'gantimer' && !manualEntry,
             onClick: () => selectTimerType('gantimer'),
         },
         {
-            label: 'Manuel Giriş',
+            typeKey: 'manual',
+            label: t('room_settings.manual_entry'),
             isActive: manualEntry,
             disabled: false, // ✅ Artık hiçbir zaman disabled değil
             onClick: toggleManualEntry,
@@ -162,14 +169,7 @@ export default function RoomSettingsModal({ isOpen, onClose, cubeType, allowedTi
 
     // Disable disallowed types based on room settings
     const finalTimerOptions = timerOptions.map(option => {
-        let typeKey = '';
-        if (option.label === 'Klavye') typeKey = 'keyboard';
-        else if (option.label === 'StackMat') typeKey = 'stackmat';
-        else if (option.label === 'Akıllı Küp') typeKey = 'smart';
-        else if (option.label === 'GAN Akıllı Timer') typeKey = 'gantimer';
-        else if (option.label === 'Manuel Giriş') typeKey = 'manual';
-
-        const isAllowed = !allowedTimerTypes || allowedTimerTypes.includes(typeKey);
+        const isAllowed = !allowedTimerTypes || allowedTimerTypes.includes(option.typeKey);
 
         if (!isAllowed) {
             return {
@@ -180,7 +180,7 @@ export default function RoomSettingsModal({ isOpen, onClose, cubeType, allowedTi
                         {option.label}
                         <span className="text-xs text-red-400 bg-red-400/10 px-1.5 py-0.5 rounded flex items-center gap-1">
                             <Lock size={10} weight="fill" />
-                            İzin Verilmiyor
+                            {t('room_settings.not_allowed')}
                         </span>
                     </span>
                 ) as any
@@ -197,21 +197,21 @@ export default function RoomSettingsModal({ isOpen, onClose, cubeType, allowedTi
 
     const extrasOptions = [
         {
-            label: 'Tam Ekran',
+            label: t('room_settings.full_screen'),
             isActive: fullScreenMode,
             hidden: !screenfull.isEnabled,
             disabled: false,
             onClick: () => screenfull.toggle(),
         },
         {
-            label: 'Odak Modu',
+            label: t('room_settings.focus_mode'),
             isActive: focusMode,
             hidden: false,
             disabled: false,
             onClick: () => toggleSetting('focus_mode'),
         },
         {
-            label: 'İnceleme Süresi',
+            label: t('room_settings.inspection_time'),
             isActive: inspection,
             hidden: false,
             disabled: inspectionDisabled,
@@ -246,14 +246,14 @@ export default function RoomSettingsModal({ isOpen, onClose, cubeType, allowedTi
                             className={`room-settings-modal__tab ${activeTab === 'extras' ? 'room-settings-modal__tab--active' : ''}`}
                             onClick={() => setActiveTab('extras')}
                         >
-                            Ek Ayarlar
+                            {t('room_settings.extras')}
                         </button>
                     </div>
                     <button
                         type="button"
                         className="room-settings-modal__close"
                         onClick={onClose}
-                        aria-label="Kapat"
+                        aria-label={t('room_settings.close')}
                     >
                         <X size={18} />
                     </button>
@@ -265,7 +265,7 @@ export default function RoomSettingsModal({ isOpen, onClose, cubeType, allowedTi
                             <div className="flex items-center space-x-2 mb-4 px-1">
                                 <div className="h-2 w-2 bg-gradient-to-r from-indigo-400 to-purple-400 rounded-full"></div>
                                 <p className="text-slate-300 text-sm font-medium">
-                                    Timer türünü seçin (sadece bir tane aktif olabilir)
+                                    {t('room_settings.select_timer_type')}
                                 </p>
                             </div>
                             {finalTimerOptions.map((option) => (
@@ -286,7 +286,7 @@ export default function RoomSettingsModal({ isOpen, onClose, cubeType, allowedTi
                                 <div className="flex items-center space-x-2 mb-4 px-1">
                                     <div className="h-2 w-2 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full"></div>
                                     <p className="text-slate-300 text-sm font-medium">
-                                        Hızlı ek özellikleri aktifleştirin
+                                        {t('room_settings.enable_extra_features')}
                                     </p>
                                 </div>
                                 {extrasOptions.map((option) => (

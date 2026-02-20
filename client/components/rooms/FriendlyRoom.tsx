@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { useParams, useHistory } from 'react-router-dom';
 import { socketClient } from '../../util/socket/socketio';
@@ -46,6 +47,7 @@ const getSocket = () => socketClient() as any;
 const STATUS_THROTTLE_MS = 100;
 
 export default function FriendlyRoom() {
+    const { t } = useTranslation();
     const { roomId } = useParams<ParamsType>();
     const history = useHistory();
     const me = useMe();
@@ -235,8 +237,8 @@ export default function FriendlyRoom() {
             console.error('Smart Cube connection failed:', err);
             // Show user friendly error for Bluetooth cancellation or missing support
             const msg = err.name === 'NotFoundError' || err.message?.includes('cancelled')
-                ? 'Bağlantı iptal edildi.'
-                : 'Bağlantı hatası: ' + (err.message || 'Bilinmeyen hata');
+                ? t('rooms.connection_cancelled')
+                : t('rooms.connection_error') + ': ' + (err.message || t('rooms.unknown_error'));
             toastError(msg);
             setSmartCubeConnecting(false);
         }
@@ -383,7 +385,7 @@ export default function FriendlyRoom() {
         const isSolvedAnytime = currentCubeState === reduxSmartSolvedState;
 
         // Warning if user messes up cube during review
-        const warning = smartReviewing && !isSolvedAnytime ? 'Yeni karıştırma için küpü çözün!' : undefined;
+        const warning = smartReviewing && !isSolvedAnytime ? t('rooms.solve_cube_for_scramble') : undefined;
         setSmartWarning(warning);
 
 
@@ -900,7 +902,7 @@ export default function FriendlyRoom() {
     if (loading) {
         return (
             <div className="flex h-[100dvh] w-full items-center justify-center bg-[#0f1014] text-white">
-                <div className="text-lg font-medium animate-pulse">Oda yükleniyor...</div>
+                <div className="text-lg font-medium animate-pulse">{t('rooms.room_loading')}</div>
             </div>
         );
     }
@@ -920,9 +922,9 @@ export default function FriendlyRoom() {
         return (
             <div className="flex h-[100dvh] w-full flex-col items-center justify-center bg-[#0f1014] text-white p-4 text-center">
                 <div className="text-red-400 mb-4 text-lg">
-                    {error || 'Oda bulunamadı'}
+                    {error || t('rooms.room_not_found')}
                 </div>
-                <Button onClick={() => history.push('/rooms')}>Odalara Dön</Button>
+                <Button onClick={() => history.push('/rooms')}>{t('rooms.back_to_rooms')}</Button>
             </div>
         );
     }
@@ -1002,7 +1004,7 @@ export default function FriendlyRoom() {
                                             className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-white/5 hover:text-white flex items-center gap-3 transition-colors"
                                         >
                                             <PencilSimple size={18} />
-                                            Odayı Düzenle
+                                            {t('rooms.edit_room')}
                                         </button>
                                         <button
                                             onClick={() => {
@@ -1012,7 +1014,7 @@ export default function FriendlyRoom() {
                                             className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-white/5 hover:text-white flex items-center gap-3 transition-colors"
                                         >
                                             <Users size={18} />
-                                            Kullanıcıları Yönet
+                                            {t('rooms.manage_users')}
                                         </button>
                                         <div className="h-px bg-gray-800 my-1" />
                                         <button
@@ -1020,7 +1022,7 @@ export default function FriendlyRoom() {
                                             className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 flex items-center gap-3 transition-colors"
                                         >
                                             <Trash size={18} />
-                                            Odayı Sil
+                                            {t('rooms.delete_room')}
                                         </button>
                                     </div>
                                 </div>
@@ -1037,7 +1039,7 @@ export default function FriendlyRoom() {
                                 <button
                                     onClick={() => setEditModalOpen(true)}
                                     className="shrink-0 p-1 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-white/10 focus:outline-none"
-                                    title="Odayı Düzenle"
+                                    title={t('rooms.edit_room')}
                                 >
                                     <PencilSimple size={18} weight="bold" />
                                 </button>
@@ -1046,7 +1048,7 @@ export default function FriendlyRoom() {
                         <span
                             onClick={() => isHost && setEditModalOpen(true)}
                             className={`shrink-0 rounded-full bg-white/20 px-2 py-0.5 text-xs font-semibold text-white backdrop-blur-sm transition-colors ${isHost ? 'cursor-pointer hover:bg-white/30' : ''}`}
-                            title={isHost ? "Etkinliği değiştirmek için tıkla" : undefined}
+                            title={isHost ? t('rooms.click_to_change_event') : undefined}
                         >
                             {room.cube_type.toUpperCase()}
                         </span>
@@ -1060,8 +1062,8 @@ export default function FriendlyRoom() {
                                     : 'bg-green-500 hover:bg-green-600 text-white'
                                     }`}
                             >
-                                <span className="hidden md:inline">{myParticipant.is_spectator ? 'İzleyici' : 'Mücadele'}</span>
-                                <span className="md:hidden">{myParticipant.is_spectator ? 'View' : 'Play'}</span>
+                                <span className="hidden md:inline">{myParticipant.is_spectator ? t('rooms.spectator') : t('rooms.compete')}</span>
+                                <span className="md:hidden">{myParticipant.is_spectator ? t('rooms.spectator') : t('rooms.compete')}</span>
                             </button>
                         )}
                     </div>
@@ -1077,14 +1079,14 @@ export default function FriendlyRoom() {
                                         ? 'bg-blue-400 text-white cursor-wait'
                                         : 'bg-blue-500 hover:bg-blue-600 text-white'
                                     }`}
-                                title={ganTimerConnected ? 'Bağlantıyı Kes' : 'GAN Timer Bağla'}
+                                title={ganTimerConnected ? t('rooms.disconnect') : t('rooms.connect_timer')}
                             >
                                 {ganTimerConnected ? (
                                     <BluetoothConnected size={16} weight="bold" />
                                 ) : (
                                     <Bluetooth size={16} weight="bold" />
                                 )}
-                                <span className="hidden md:inline">{ganTimerConnecting ? 'Bağlanıyor...' : ganTimerConnected ? 'Timer Bağlı' : 'Timer Bağla'}</span>
+                                <span className="hidden md:inline">{ganTimerConnecting ? t('rooms.connecting') : ganTimerConnected ? t('rooms.timer_connected') : t('rooms.connect_timer')}</span>
                             </button>
                         )}
 
@@ -1099,14 +1101,14 @@ export default function FriendlyRoom() {
                                         ? 'bg-blue-400 text-white cursor-wait'
                                         : 'bg-blue-500 hover:bg-blue-600 text-white'
                                     }`}
-                                title={smartCubeConnected ? 'Bağlantıyı Kes' : 'Akıllı Küp Bağla'}
+                                title={smartCubeConnected ? t('rooms.disconnect') : t('rooms.connect_smart_cube')}
                             >
                                 {smartCubeConnected ? (
                                     <BluetoothConnected size={16} weight="bold" />
                                 ) : (
                                     <Bluetooth size={16} weight="bold" />
                                 )}
-                                <span className="hidden md:inline">{smartCubeConnecting ? 'Bağlanıyor...' : smartCubeConnected ? 'Küp Bağlı' : 'Küp Bağla'}</span>
+                                <span className="hidden md:inline">{smartCubeConnecting ? t('rooms.connecting') : smartCubeConnected ? t('rooms.cube_connected') : t('rooms.connect_cube')}</span>
                             </button>
                         )}
                         <button
@@ -1120,9 +1122,9 @@ export default function FriendlyRoom() {
                             <button
                                 onClick={handleNextScramble}
                                 className={`${isMobile ? 'h-8 px-2 text-[10px]' : 'px-3 py-1.5 text-xs'} bg-blue-600 hover:bg-blue-700 text-white font-bold rounded transition-colors shadow-sm whitespace-nowrap`}
-                                title="Herkesi bir sonraki karıştırmaya geçir"
+                                title={t('rooms.next_scramble_tooltip')}
                             >
-                                {isMobile ? 'Karıştır' : 'Yeni Karıştırma'}
+                                {isMobile ? t('rooms.scramble') : t('rooms.new_scramble')}
                             </button>
                         )}
 
@@ -1130,7 +1132,7 @@ export default function FriendlyRoom() {
                             onClick={handleLeaveRoom}
                             className={`${isMobile ? 'h-8 px-2 text-[10px]' : 'px-3 py-1.5 text-xs'} bg-red-500 hover:bg-red-600 text-white font-bold rounded transition-colors shadow-sm`}
                         >
-                            Çıkış
+                            {t('rooms.exit')}
                         </button>
                     </div>
                 </div>
@@ -1143,7 +1145,7 @@ export default function FriendlyRoom() {
                                 }`}
                             onClick={() => setMobileTab('timer')}
                         >
-                            Timer
+                            {t('rooms.timer_tab')}
                             {mobileTab === 'timer' && (
                                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
                             )}
@@ -1153,7 +1155,7 @@ export default function FriendlyRoom() {
                                 }`}
                             onClick={() => setMobileTab('chat')}
                         >
-                            Sohbet
+                            {t('rooms.chat_tab')}
                             {mobileTab === 'chat' && (
                                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
                             )}
@@ -1167,7 +1169,7 @@ export default function FriendlyRoom() {
                         {/* Scramble Display - colored for smart cube */}
                         <div className="text-center font-mono text-base md:text-3xl leading-relaxed font-medium select-all px-1">
                             {alreadySolvedThisRound ? (
-                                <span className="text-gray-500 animate-pulse">Diğer kullanıcılar bekleniyor...</span>
+                                <span className="text-gray-500 animate-pulse">{t('rooms.waiting_for_others')}</span>
                             ) : timerType === 'smart' && smartCubeConnected ? (
                                 // Smart cube: show colored scramble with correction hints
                                 (() => {
@@ -1180,8 +1182,8 @@ export default function FriendlyRoom() {
                                     if (smartScrambleCompletedAt) {
                                         return (
                                             <div className="flex flex-col items-center justify-center py-4 animate-pulse">
-                                                <span className="text-green-500 text-4xl md:text-6xl font-black tracking-[0.2em]">HAZIR</span>
-                                                <span className="text-green-500/50 text-xs md:text-sm font-bold tracking-widest mt-1">ÇÖZMEYE BAŞLA</span>
+                                                <span className="text-green-500 text-4xl md:text-6xl font-black tracking-[0.2em]">{t('rooms.ready')}</span>
+                                                <span className="text-green-500/50 text-xs md:text-sm font-bold tracking-widest mt-1">{t('rooms.start_solving')}</span>
                                             </div>
                                         );
                                     }
@@ -1208,7 +1210,7 @@ export default function FriendlyRoom() {
                                         if (failedMoves.length > 7) {
                                             return (
                                                 <span className="text-red-400 font-bold animate-pulse">
-                                                    Başlamak için küpü çöz
+                                                    {t('rooms.solve_cube_to_start')}
                                                 </span>
                                             );
                                         }
@@ -1217,7 +1219,7 @@ export default function FriendlyRoom() {
                                         const correctionMoves = reverseScramble(failedMoves);
                                         return (
                                             <div className="flex flex-col items-center gap-1">
-                                                <span className="text-gray-500 text-xs uppercase tracking-wider">Düzeltme:</span>
+                                                <span className="text-gray-500 text-xs uppercase tracking-wider">{t('rooms.correction')}:</span>
                                                 <div>
                                                     {correctionMoves.map((move, i) => (
                                                         <span key={`fix-${move}-${i}`} className="text-red-400 font-bold">
@@ -1303,7 +1305,7 @@ export default function FriendlyRoom() {
                                                     ? 'border-red-500 focus:border-red-400'
                                                     : 'border-gray-700 focus:border-blue-500'
                                                     } text-white placeholder-gray-500 outline-none transition-colors appearance-none`}
-                                                placeholder={alreadySolvedThisRound ? "Kaydedildi" : "1234"}
+                                                placeholder={alreadySolvedThisRound ? t('rooms.saved') : "1234"}
                                                 value={manualTimeInput}
                                                 disabled={alreadySolvedThisRound}
                                                 enterKeyHint="done"
@@ -1400,7 +1402,7 @@ export default function FriendlyRoom() {
                                                     <div className={`w-6 h-6 rounded flex items-center justify-center border-2 transition-colors ${penalties.inspection ? 'bg-amber-500 border-amber-500' : 'border-gray-600 group-hover:border-gray-400'}`}>
                                                         {penalties.inspection && <Check size={16} weight="bold" className="text-white" />}
                                                     </div>
-                                                    <span className={`font-bold text-lg select-none ${penalties.inspection ? 'text-white' : ''}`}>INSPECTION</span>
+                                                    <span className={`font-bold text-lg select-none ${penalties.inspection ? 'text-white' : ''}`}>{t('rooms.inspection')}</span>
                                                     <input type="checkbox" className="hidden" checked={penalties.inspection} onChange={() => setPenalties(p => ({ ...p, inspection: !p.inspection }))} />
                                                 </label>
                                             </div>
@@ -1486,12 +1488,12 @@ export default function FriendlyRoom() {
                         {/* Waiting Room Header */}
                         <div className="shrink-0 text-center mt-6 md:mt-12 mb-6 md:mb-12 space-y-3 px-4">
                             <h2 className="text-2xl md:text-4xl font-bold text-white tracking-tight">
-                                Oyuncular Bekleniyor
+                                {t('rooms.waiting_for_players')}
                             </h2>
                             <p className="text-gray-400 text-sm md:text-base">
                                 {isHost
-                                    ? 'Hazır olduğunuzda "Başlat" butonuna tıklayın.'
-                                    : 'Host odayı başlatana kadar bekleyin.'}
+                                    ? t('rooms.host_start_instruction')
+                                    : t('rooms.guest_wait_instruction')}
                             </p>
                         </div>
 
@@ -1528,7 +1530,7 @@ export default function FriendlyRoom() {
                                             className="relative overflow-hidden w-48 md:w-56 h-12 md:h-14 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-[0_0_20px_rgba(37,99,235,0.3)] hover:shadow-[0_0_30px_rgba(37,99,235,0.5)] transition-all active:scale-95 group"
                                         >
                                             <span className="relative z-10 flex items-center justify-center gap-2">
-                                                Odayı Başlat
+                                                {t('rooms.start_room')}
                                             </span>
                                             {/* Fire Animation Layer */}
                                             <div
@@ -1540,7 +1542,7 @@ export default function FriendlyRoom() {
                                 ) : (
                                     <div className="flex flex-col items-center gap-2 animate-pulse">
                                         <div className="w-12 h-12 rounded-full border-2 border-gray-700 border-t-blue-500 animate-spin" />
-                                        <span className="text-gray-500 text-sm font-medium tracking-wider">YÖNETİCİ BEKLENİYOR</span>
+                                        <span className="text-gray-500 text-sm font-medium tracking-wider">{t('rooms.waiting_for_host')}</span>
                                     </div>
                                 )}
                             </div>
@@ -1564,16 +1566,16 @@ export default function FriendlyRoom() {
                         <div className="flex flex-col gap-1 text-xs md:text-sm">
                             <div className="grid grid-cols-[50px_repeat(3,minmax(40px,1fr))] gap-x-2 gap-y-1 items-center">
                                 <span className="text-gray-500 font-semibold text-[10px] uppercase tracking-wider"></span>
-                                <span className="text-blue-400 font-bold text-center text-[10px] uppercase tracking-wider">SINGLE</span>
-                                <span className="text-blue-400 font-bold text-center text-[10px] uppercase tracking-wider">AO5</span>
-                                <span className="text-blue-400 font-bold text-center text-[10px] uppercase tracking-wider">AO12</span>
+                                <span className="text-blue-400 font-bold text-center text-[10px] uppercase tracking-wider">{t('rooms.single')}</span>
+                                <span className="text-blue-400 font-bold text-center text-[10px] uppercase tracking-wider">{t('rooms.ao5')}</span>
+                                <span className="text-blue-400 font-bold text-center text-[10px] uppercase tracking-wider">{t('rooms.ao12')}</span>
 
-                                <span className="text-gray-400 font-medium text-left">Güncel</span>
+                                <span className="text-gray-400 font-medium text-left">{t('rooms.current')}</span>
                                 <span className="text-gray-200 font-mono text-center">{formatStat(times.length > 0 ? times[times.length - 1] : null)}</span>
                                 <span className="text-gray-200 font-mono text-center">{formatStat(ao5)}</span>
                                 <span className="text-gray-200 font-mono text-center">{formatStat(ao12)}</span>
 
-                                <span className="text-gray-400 font-medium text-left">En İyi</span>
+                                <span className="text-gray-400 font-medium text-left">{t('rooms.best')}</span>
                                 <span className="text-gray-200 font-mono text-center">{formatStat(single)}</span>
                                 <span className="text-gray-200 font-mono text-center">{formatStat(bestAo5)}</span>
                                 <span className="text-gray-200 font-mono text-center">{formatStat(bestAo12)}</span>

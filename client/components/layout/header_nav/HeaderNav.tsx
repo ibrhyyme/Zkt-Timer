@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Link, useRouteMatch } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import './HeaderNav.scss';
 import { setGeneral } from '../../../actions/general';
 import {
@@ -21,6 +22,7 @@ import { useMe } from '../../../util/hooks/useMe';
 import { NAV_LINKS, NavLinkProps } from '../nav/Nav';
 import Button from '../../common/button/Button';
 import LoginNav from '../nav/LoginNav';
+import LanguageSwitcher from '../../common/language_switcher/LanguageSwitcher';
 import { resourceUri } from '../../../util/storage';
 import { isPro } from '../../../util/pro';
 import AnnouncementBell from '../../announcements/AnnouncementBell';
@@ -34,6 +36,7 @@ interface HeaderNavLinkProps extends NavLinkProps {
 function HeaderNavLink(props: HeaderNavLinkProps) {
 	const { name, icon, newTag, loginRequired, selected } = props;
 	let link = props.link;
+	const { t } = useTranslation();
 	const me = useMe();
 
 	// if (link === '/' && !me) {
@@ -79,7 +82,7 @@ function HeaderNavLink(props: HeaderNavLinkProps) {
 	return (
 		<Link to={link} className={linkClasses.join(' ')}>
 			<span className="text-lg">{icon}</span>
-			<span>{name}</span>
+			<span>{t(name)}</span>
 		</Link>
 	);
 }
@@ -179,6 +182,7 @@ export default function HeaderNav() {
 				{/* Right side - Pro button, notifications, account */}
 				<div className={b('right')}>
 					{getPro}
+					<LanguageSwitcher />
 					{me && <AnnouncementBell />}
 					<AccountDropdown />
 					{me && <LoginNav collapsed={false} />}

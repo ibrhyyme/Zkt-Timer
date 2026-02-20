@@ -1,4 +1,5 @@
 import React, { useCallback, useContext, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { TimerContext } from './Timer';
 import { useGeneral } from '../../util/hooks/useGeneral';
 import { fetchSolves, fetchSolveCount } from '../../db/solves/query';
@@ -14,6 +15,7 @@ const b = block('timer-dashboard');
 const PAGE_SIZE = 50;
 
 export default function Dashboard() {
+    const { t } = useTranslation();
     const context = useContext(TimerContext);
     const { scramble, originalScramble, cubeType, solvesFilter, timeStartedAt, focusMode } = context;
     const mobileMode = useGeneral('mobile_mode');
@@ -53,7 +55,7 @@ export default function Dashboard() {
             ))}
         </div>
     ) : (
-        <Empty text="Henüz çözüm yok" />
+        <Empty text={t('timer_modules.no_solves_yet')} />
     );
 
     return (

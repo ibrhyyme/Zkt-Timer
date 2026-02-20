@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Tag from '../../common/tag/Tag';
 import { Lock } from 'phosphor-react';
 import { useMe } from '../../../util/hooks/useMe';
@@ -14,6 +15,7 @@ export default function NavLink(props: Props) {
 	const { name, icon, newTag, loginRequired, collapsed, selected } = props;
 	let link = props.link;
 
+	const { t } = useTranslation();
 	const me = useMe();
 
 	let infoTag = null;
@@ -47,7 +49,7 @@ export default function NavLink(props: Props) {
 		linkClasses.push('group-hover:opacity-100');
 	}
 
-	let navLabel = <span className="ml-4 font-roboto text-text">{name}</span>;
+	let navLabel = <span className="ml-4 font-roboto text-text">{t(name)}</span>;
 	if (collapsed) {
 		navLabel = null;
 		infoTag = null;

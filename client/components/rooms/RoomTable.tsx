@@ -1,4 +1,5 @@
 import React, { useMemo, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { FriendlyRoomParticipantData } from '../../../shared/friendly_room';
 import { getTimeString } from '../../util/time';
 import { WifiSlash } from 'phosphor-react';
@@ -26,29 +27,30 @@ const DisconnectTimer = ({ expireTime }: { expireTime: number }) => {
     return <>{timeLeft}sn</>;
 };
 
-// Map status to Turkish display text
-const getStatusText = (status: string): string => {
-    if (status.startsWith('DISCONNECTED')) return 'Koptu';
-    switch (status) {
-        case 'PRIMING':
-            return 'Hazır'; // Shortened for mobile
-        case 'INSPECTING':
-        case 'INSPECTING_PRIMING':
-            return 'İnceliyor';
-        case 'TIMING':
-            return 'Çözüyor';
-        case 'SUBMITTING':
-        case 'SUBMITTING_DOWN':
-            return 'Bitirdi';
-        case 'DISCONNECTED':
-            return 'Koptu';
-        default:
-            return '';
-    }
-};
-
 export default function RoomTable({ participants, scrambleIndex, userStatuses = {}, currentUserId }: RoomTableProps) {
-    // ... (rest is same until render)
+    const { t } = useTranslation();
+
+    // Map status to display text
+    const getStatusText = (status: string): string => {
+        if (status.startsWith('DISCONNECTED')) return t('room_table.disconnected');
+        switch (status) {
+            case 'PRIMING':
+                return t('room_table.ready');
+            case 'INSPECTING':
+            case 'INSPECTING_PRIMING':
+                return t('room_table.inspecting');
+            case 'TIMING':
+                return t('room_table.solving');
+            case 'SUBMITTING':
+            case 'SUBMITTING_DOWN':
+                return t('room_table.finished');
+            case 'DISCONNECTED':
+                return t('room_table.disconnected');
+            default:
+                return '';
+        }
+    };
+
     const tableRef = useRef<HTMLDivElement>(null);
     const contentRef = useRef<HTMLDivElement>(null);
 
@@ -275,7 +277,7 @@ export default function RoomTable({ participants, scrambleIndex, userStatuses = 
                                                         <div className="flex items-center gap-1.5 text-rose-500 animate-pulse bg-rose-500/10 px-2 py-0.5 rounded-sm">
                                                             <WifiSlash size={12} weight="bold" />
                                                             <span className="text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
-                                                                Koptu
+                                                                {t('room_table.disconnected')}
                                                                 {expireTime > 0 && (
                                                                     <span className="opacity-90 font-mono">
                                                                         (<DisconnectTimer expireTime={expireTime} />)

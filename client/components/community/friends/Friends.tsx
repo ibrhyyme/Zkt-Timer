@@ -1,4 +1,5 @@
 import React from 'react';
+import {useTranslation} from 'react-i18next';
 import './Friends.scss';
 import {FRIENDSHIP_FRAGMENT, FRIENDSHIP_REQUEST_FRAGMENT} from '../../../util/graphql/fragments';
 import ProfileRow from '../profile_row/ProfileRow';
@@ -15,37 +16,38 @@ const tabIdToOtherUserMap = {
 	sent: 'to_user',
 };
 
-const tabs: PaginationTab[] = [
-	{
-		id: 'friends',
-		value: 'Arkadaşlar',
-		dataQueryName: 'friendships',
-		queryFragment: FRIENDSHIP_FRAGMENT,
-		queryFragmentName: 'FriendshipFragment',
-		link: '/community/friends/list',
-		plural: 'arkadaş',
-	},
-	{
-		id: 'received',
-		value: 'Gelen',
-		dataQueryName: 'friendshipRequestsReceived',
-		queryFragment: FRIENDSHIP_REQUEST_FRAGMENT,
-		queryFragmentName: 'FriendshipRequestFragment',
-		link: '/community/friends/received',
-		plural: 'gelen istek',
-	},
-	{
-		id: 'sent',
-		value: 'Gönderilen',
-		dataQueryName: 'friendshipRequestsSent',
-		queryFragment: FRIENDSHIP_REQUEST_FRAGMENT,
-		queryFragmentName: 'FriendshipRequestFragment',
-		link: '/community/friends/sent',
-		plural: 'gönderilen istek',
-	},
-];
-
 export default function Friends() {
+	const {t} = useTranslation();
+
+	const tabs: PaginationTab[] = [
+		{
+			id: 'friends',
+			value: t('friends.friends_tab'),
+			dataQueryName: 'friendships',
+			queryFragment: FRIENDSHIP_FRAGMENT,
+			queryFragmentName: 'FriendshipFragment',
+			link: '/community/friends/list',
+			plural: t('friends.friends_count'),
+		},
+		{
+			id: 'received',
+			value: t('friends.received_tab'),
+			dataQueryName: 'friendshipRequestsReceived',
+			queryFragment: FRIENDSHIP_REQUEST_FRAGMENT,
+			queryFragmentName: 'FriendshipRequestFragment',
+			link: '/community/friends/received',
+			plural: t('friends.received_count'),
+		},
+		{
+			id: 'sent',
+			value: t('friends.sent_tab'),
+			dataQueryName: 'friendshipRequestsSent',
+			queryFragment: FRIENDSHIP_REQUEST_FRAGMENT,
+			queryFragmentName: 'FriendshipRequestFragment',
+			link: '/community/friends/sent',
+			plural: t('friends.sent_count'),
+		},
+	];
 	return (
 		<div className={b()}>
 			<Pagination

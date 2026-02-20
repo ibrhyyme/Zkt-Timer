@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import './SolvesText.scss';
 import block from '../../../styles/bem';
 import { Download } from 'phosphor-react';
@@ -23,6 +24,7 @@ interface Props {
 export default function SolvesText(props: Props) {
 	const { solves, reverseOrder, description, time } = props;
 
+	const { t } = useTranslation();
 	const isSingle = solves.length === 1;
 	// Single solve için tarih varsayılan açık olsun
 	const [includeScramble, setIncludeScramble] = useState(true);
@@ -100,7 +102,7 @@ export default function SolvesText(props: Props) {
 	function getSolvesText() {
 		const lines = [];
 		const dateStr = isSingle ? dayjs(solves[0].started_at).format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD');
-		lines.push('ZKT-Timer tarafından ' + dateStr + ' tarihinde oluşturuldu');
+		lines.push(t('solve_info.generated_by', { date: dateStr }));
 
 		let desc = description;
 		if (time && getTimeString(time)) {
@@ -109,7 +111,7 @@ export default function SolvesText(props: Props) {
 
 		lines.push(desc);
 		lines.push('');
-		lines.push('Çözümler:');
+		lines.push(t('solve_info.solves_colon'));
 		lines.push(...getSolveRows());
 
 		return lines.join('\n');
@@ -123,22 +125,22 @@ export default function SolvesText(props: Props) {
 				{!isSingle && (
 					<div className={b('options')}>
 						<Checkbox
-							text="Karıştırmayı ekle"
+							text={t('solve_info.add_scramble')}
 							onChange={() => setIncludeScramble(!includeScramble)}
 							checked={includeScramble}
 						/>
 						<Checkbox
-							text="Küp türünü ekle"
+							text={t('solve_info.add_cube_type')}
 							onChange={() => setIncludeCubeType(!includeCubeType)}
 							checked={includeCubeType}
 						/>
-						<Checkbox text="Tarihi ekle" onChange={() => setIncludeDate(!includeDate)} checked={includeDate} />
+						<Checkbox text={t('solve_info.add_date')} onChange={() => setIncludeDate(!includeDate)} checked={includeDate} />
 						<Checkbox
-							text="Notları ekle"
+							text={t('solve_info.add_notes')}
 							onChange={() => setIncludeNotes(!includeNotes)}
 							checked={includeNotes}
 						/>
-						<Checkbox text="Metni kaydır" onChange={() => setWrapText(!wrapText)} checked={wrapText} />
+						<Checkbox text={t('solve_info.wrap_text')} onChange={() => setWrapText(!wrapText)} checked={wrapText} />
 					</div>
 				)}
 				<div className={b('text', { wrapText })}>{solvesText}</div>

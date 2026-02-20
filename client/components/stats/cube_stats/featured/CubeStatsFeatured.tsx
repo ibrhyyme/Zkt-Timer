@@ -1,4 +1,5 @@
 import React, {useContext, useMemo} from 'react';
+import {useTranslation} from 'react-i18next';
 import './CubeStatsFeatured.scss';
 import {Timer, Hash, Trophy, CalendarBlank} from 'phosphor-react';
 import block from '../../../../styles/bem';
@@ -18,6 +19,7 @@ import {Solve} from '../../../../../server/schemas/Solve.schema';
 const b = block('stats-featured');
 
 export default function CubeStatsFeatured() {
+	const { t } = useTranslation();
 	const dispatch = useDispatch();
 	const context = useContext(StatsContext);
 
@@ -77,14 +79,14 @@ export default function CubeStatsFeatured() {
 				<NumberBlock
 					center
 					icon={<Hash weight="bold" />}
-					title="Toplam Çözüm"
+					title={t('stats_page.total_solves')}
 					value={totalSolves}
 					color="#54ACE4"
 				/>
 				<NumberBlock
 					center
 					icon={<Timer weight="bold" />}
-					title="Küp Çözme Süresi"
+					title={t('stats_page.cubing_time')}
 					value={getTimeString(timeSpentCubing)}
 					color="#6D7D90"
 				/>

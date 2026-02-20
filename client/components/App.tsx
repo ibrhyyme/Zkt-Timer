@@ -1,3 +1,4 @@
+import '../i18n/i18n';
 import React from 'react';
 import 'seedrandom';
 import thunk from 'redux-thunk';

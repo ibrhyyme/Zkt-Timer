@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Button from '../common/button/Button';
 import { socketClient } from '../../util/socket/socketio';
 import {
@@ -17,6 +18,7 @@ import PageTitle from '../common/page_title/PageTitle';
 import './RoomsList.scss';
 
 export default function RoomsList() {
+    const { t } = useTranslation();
     const [rooms, setRooms] = useState<FriendlyRoomData[]>([]);
     const [loading, setLoading] = useState(true);
     const history = useHistory();
@@ -87,28 +89,28 @@ export default function RoomsList() {
             <div className="rooms-list-page__container">
                 <div className="rooms-list-page__header">
                     <div className="rooms-list-page__title-section">
-                        <PageTitle pageName="Odalar" />
+                        <PageTitle pageName={t('rooms.page_title')} />
                         <p className="rooms-list-page__description">
-                            Arkadaşlarınla mücadele etmek için bir oda oluştur veya mevcut bir odaya katıl.
+                            {t('rooms.description')}
                         </p>
                     </div>
                     <Button primary onClick={openCreateRoomModal} className="rooms-list-page__create-btn">
-                        Yeni Oda Oluştur
+                        {t('rooms.create_room')}
                     </Button>
                 </div>
 
                 <div className="rooms-list-page__content">
                     {loading ? (
-                        <div className="rooms-list-page__loading">Odalar yükleniyor...</div>
+                        <div className="rooms-list-page__loading">{t('rooms.loading')}</div>
                     ) : (
                         <>
                             {publicRooms.length === 0 && privateRooms.length === 0 ? (
                                 <div className="rooms-list-page__empty">
                                     <div className="rooms-list-page__empty-icon">🎮</div>
-                                    <h3>Henüz oda yok</h3>
-                                    <p>Yeni bir oda oluşturarak eğlenceyi başlat!</p>
+                                    <h3>{t('rooms.no_rooms')}</h3>
+                                    <p>{t('rooms.no_rooms_desc')}</p>
                                     <Button primary onClick={openCreateRoomModal}>
-                                        ilk Odayı Oluştur
+                                        {t('rooms.create_first_room')}
                                     </Button>
                                 </div>
                             ) : (
@@ -116,7 +118,7 @@ export default function RoomsList() {
                                     {publicRooms.length > 0 && (
                                         <div className="rooms-list-page__section">
                                             <h3 className="rooms-list-page__section-title">
-                                                Açık Odalar
+                                                {t('rooms.public_rooms')}
                                             </h3>
                                             <div className="rooms-list-page__grid">
                                                 {publicRooms.map((room) => (
@@ -134,7 +136,7 @@ export default function RoomsList() {
                                     {privateRooms.length > 0 && (
                                         <div className="rooms-list-page__section">
                                             <h3 className="rooms-list-page__section-title">
-                                                Şifreli Odalar
+                                                {t('rooms.private_rooms')}
                                             </h3>
                                             <div className="rooms-list-page__grid">
                                                 {privateRooms.map((room) => (

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import {useTranslation} from 'react-i18next';
 import { GetActiveAnnouncementsDocument, Announcement } from '../../@types/generated/graphql';
 import { gqlQueryTyped } from '../api';
 import AnnouncementCarousel from './AnnouncementCarousel';
@@ -9,6 +10,7 @@ interface AnnouncementDropdownProps {
 }
 
 export default function AnnouncementDropdown(props: AnnouncementDropdownProps) {
+	const {t} = useTranslation();
 	const { onClose, unreadCount } = props;
 	const [showCarousel, setShowCarousel] = useState(false);
 	const [announcements, setAnnouncements] = useState<Announcement[]>([]);
@@ -59,25 +61,25 @@ export default function AnnouncementDropdown(props: AnnouncementDropdownProps) {
 			{/* Dropdown */}
 			<div className="absolute right-0 top-full mt-2 w-80 bg-zinc-800 border border-zinc-700 rounded-xl shadow-xl z-[201] overflow-hidden">
 				<div className="p-4 border-b border-zinc-700">
-					<h3 className="font-semibold">Duyurular</h3>
+					<h3 className="font-semibold">{t('announcement_dropdown.title')}</h3>
 					{unreadCount > 0 && (
 						<p className="text-sm text-zinc-400 mt-1">
-							{unreadCount} okunmamış duyuru
+							{t('announcement_dropdown.unread_count', { count: unreadCount })}
 						</p>
 					)}
 				</div>
 
 				{loading ? (
 					<div className="p-8 text-center text-zinc-400">
-						Yükleniyor...
+						{t('announcement_dropdown.loading')}
 					</div>
 				) : error ? (
 					<div className="p-8 text-center text-red-400">
-						Duyurular yüklenemedi
+						{t('announcement_dropdown.load_error')}
 					</div>
 				) : announcements.length === 0 ? (
 					<div className="p-8 text-center text-zinc-400">
-						Yeni duyuru yok
+						{t('announcement_dropdown.no_announcements')}
 					</div>
 				) : (
 					<>
@@ -101,7 +103,7 @@ export default function AnnouncementDropdown(props: AnnouncementDropdownProps) {
 								onClick={() => setShowCarousel(true)}
 								className="w-full text-center text-sm text-blue-400 hover:text-blue-300 transition"
 							>
-								Tümünü Görüntüle ({announcements.length})
+								{t('announcement_dropdown.view_all', { count: announcements.length })}
 							</button>
 						</div>
 					</>

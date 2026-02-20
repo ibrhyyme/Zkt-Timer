@@ -1,4 +1,5 @@
 import React, {useState} from 'react';
+import { useTranslation } from 'react-i18next';
 import {gql} from '@apollo/client';
 import {gqlMutate} from '../../api';
 import Emblem from '../../common/emblem/Emblem';
@@ -18,6 +19,7 @@ import {toastError, toastSuccess} from '../../../util/toast';
 const b = block('select-times');
 
 export default function PublishSolves(props: IModalProps) {
+	const { t } = useTranslation();
 	const {onComplete} = props;
 
 	const cubeTypes = fetchAllCubeTypesSolved(true);
@@ -125,13 +127,13 @@ export default function PublishSolves(props: IModalProps) {
 	if (!me.username) {
 		exception = (
 			<p>
-				You must <a href="/account/personal-info">set a username</a> before you can publish your times
+				{t('profile.set_username_first')} <a href="/account/personal-info">{t('profile.set_username_link')}</a>
 			</p>
 		);
 	} else if (!rows.length) {
 		exception = (
 			<p>
-				Henüz hiç çözümünüz yok. <a href="/">Timer Sayfası</a>'na gidin ve çözmeye başlayın başlayın!
+				{t('profile.no_solves_to_publish')} <a href="/">{t('profile.timer_page')}</a>
 			</p>
 		);
 	}
@@ -144,9 +146,9 @@ export default function PublishSolves(props: IModalProps) {
 					<table className="cd-table mb-3">
 						<thead>
 							<tr>
-								<th>Cube Type</th>
-								<th>Single</th>
-								<th>Average</th>
+								<th>{t('profile.cube_type')}</th>
+								<th>{t('profile.single')}</th>
+								<th>{t('profile.average')}</th>
 							</tr>
 						</thead>
 						<tbody>{rows}</tbody>
@@ -155,7 +157,7 @@ export default function PublishSolves(props: IModalProps) {
 						primary
 						glow
 						large
-						text="Publish to Profile"
+						text={t('profile.publish_to_profile')}
 						error={error}
 						loading={publishing}
 						onClick={publishTimes}

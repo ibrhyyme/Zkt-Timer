@@ -8,6 +8,7 @@ import { getSetting } from '../../../db/settings/query';
 import { fetchLastSolve } from '../../../db/solves/query';
 import { setTimerParam } from './params';
 import { resetScramble } from './scramble';
+import i18n from '../../../i18n/i18n';
 
 // Creates session if none exist already
 export async function initTimer(dispatch: Dispatch<any>, context: ITimerContext) {
@@ -26,7 +27,7 @@ export async function initTimer(dispatch: Dispatch<any>, context: ITimerContext)
 	} else if (!inModal) {
 		if (!sessionId || (sessionId && !fetchSessionById(sessionId))) {
 			const session = await createSessionDb({
-				name: 'Yeni Sezon',
+				name: i18n.t('sessions.new_session'),
 			});
 			setSetting('session_id', session.id);
 		}

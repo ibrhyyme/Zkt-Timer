@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { GetMyAnnouncementHistoryDocument, Announcement } from '../../@types/generated/graphql';
 import { gqlQueryTyped } from '../api';
 import AnnouncementModal from '../announcements/AnnouncementModal';
 
 export default function AnnouncementHistory() {
+	const { t } = useTranslation();
 	const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
 	const [announcements, setAnnouncements] = useState<Announcement[]>([]);
 	const [loading, setLoading] = useState(true);
@@ -36,20 +38,20 @@ export default function AnnouncementHistory() {
 	};
 
 	const CATEGORY_LABELS: Record<string, string> = {
-		FEATURE: '🎉 Yenilik',
-		BUGFIX: '🔧 Düzeltme',
-		IMPORTANT: '⚠️ Önemli',
-		INFO: 'ℹ️ Bilgi'
+		FEATURE: t('profile.category_feature'),
+		BUGFIX: t('profile.category_bugfix'),
+		IMPORTANT: t('profile.category_important'),
+		INFO: t('profile.category_info')
 	};
 
-	if (loading) return <div className="text-center py-12">Yükleniyor...</div>;
-	if (error) return <div className="text-center py-12 text-red-400">Geçmiş yüklenemedi</div>;
+	if (loading) return <div className="text-center py-12">{t('profile.loading')}</div>;
+	if (error) return <div className="text-center py-12 text-red-400">{t('profile.history_load_error')}</div>;
 
 	return (
 		<div>
 			{announcements.length === 0 ? (
 				<div className="text-center py-12 text-zinc-400">
-					Henüz duyuru görüntülemediniz
+					{t('profile.no_announcement_history')}
 				</div>
 			) : (
 				<div className="space-y-4">
@@ -81,13 +83,13 @@ export default function AnnouncementHistory() {
 						disabled={page === 0}
 						className="px-4 py-2 border border-zinc-700 rounded-lg disabled:opacity-50"
 					>
-						Önceki
+						{t('profile.previous')}
 					</button>
 					<button
 						onClick={() => setPage(p => p + 1)}
 						className="px-4 py-2 border border-zinc-700 rounded-lg"
 					>
-						Sonraki
+						{t('profile.next')}
 					</button>
 				</div>
 			)}

@@ -9,6 +9,7 @@ import block from '../../../styles/bem';
 import Button from '../../common/button/Button';
 import { useInput } from '../../../util/hooks/useInput';
 import { Eye, EyeSlash, Check } from 'phosphor-react';
+import { useTranslation } from 'react-i18next';
 
 const b = block('login');
 
@@ -21,6 +22,7 @@ const AUTHENTICATE_USER_MUTATION = gql`
 `;
 
 export default function Login() {
+	const { t } = useTranslation();
 	const [email, setEmail] = useInput('');
 	const [password, setPassword] = useInput('');
 	const [error, setError] = useState('');
@@ -94,14 +96,14 @@ export default function Login() {
 						className="block text-sm mb-1"
 						style={{ color: 'rgba(255, 255, 255, 0.7)' }}
 					>
-						E-posta
+						{t('login.email')}
 					</label>
 					<input
 						id="email"
 						type="email"
 						value={email}
 						onChange={setEmail}
-						placeholder="E-postanı gir"
+						placeholder={t('login.email_placeholder')}
 						autoComplete="off"
 						className="w-full h-11 px-4 rounded-2xl border focus:outline-none focus:ring-2 focus:ring-indigo-400/70 transition"
 						style={{
@@ -119,7 +121,7 @@ export default function Login() {
 						className="block text-sm mb-1"
 						style={{ color: 'rgba(255, 255, 255, 0.7)' }}
 					>
-						Şifre
+						{t('login.password')}
 					</label>
 					<div className="relative">
 						<input
@@ -127,7 +129,7 @@ export default function Login() {
 							type={showPassword ? 'text' : 'password'}
 							value={password}
 							onChange={setPassword}
-							placeholder="Şifreni gir"
+							placeholder={t('login.password_placeholder')}
 							className="w-full h-11 px-4 pr-12 rounded-2xl border focus:outline-none focus:ring-2 focus:ring-indigo-400/70 transition"
 							style={{
 								backgroundColor: 'rgba(255, 255, 255, 0.05)',
@@ -174,7 +176,7 @@ export default function Login() {
 						className="text-sm cursor-pointer select-none"
 						style={{ color: 'rgba(255, 255, 255, 0.7)' }}
 					>
-						Beni anımsa
+						{t('login.remember_me')}
 					</label>
 				</div>
 
@@ -200,7 +202,7 @@ export default function Login() {
 							<div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
 						</div>
 					) : (
-						'Giriş Yap'
+						t('login.login_button')
 					)}
 				</button>
 			</form>
@@ -212,14 +214,14 @@ export default function Login() {
 					className="hover:text-white transition"
 					style={{ color: 'rgba(255, 255, 255, 0.6)' }}
 				>
-					Şifreni mi unuttun?
+					{t('login.forgot_password')}
 				</Link>
 				<Link
 					to={getSignUpLink()}
 					className="hover:text-white transition"
 					style={{ color: 'rgba(255, 255, 255, 0.6)' }}
 				>
-					Hesabın yok mu? Kayıt ol
+					{t('login.no_account')}
 				</Link>
 			</div>
 		</div>
