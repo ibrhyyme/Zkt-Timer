@@ -18,28 +18,32 @@ jobs:
         command_timeout: 40m
         script: |
           set -e
-          
+
           cd /home/ibrahimyldz77/Zkt-Timer
-          
-          # 1. Yeni kodu çek
+
+          # 1. Upload izinlerini düzelt (Docker root olarak yazıyor)
+          sudo chown -R ibrahimyldz77:ibrahimyldz77 public/uploads/ || true
+
+          # 2. Yeni kodu çek
           git fetch --all
           git reset --hard origin/main
-          
-          # 2. Build et ve başlat (tek adımda)
+
+          # 3. Docker temizlik (disk dolmasın)
+          docker builder prune -af
+          docker image prune -af
+
+          # 4. Build et ve başlat
           docker compose up -d --no-deps --build app-server
-          
-          # 3. İzinleri düzelt
+
+          # 5. İzinleri düzelt
           sudo chmod -R 755 public/uploads/
-          
-          # 4. Nginx'i yenile
+
+          # 6. Nginx'i yenile
           sudo systemctl reload nginx
-          
-          # 5. Container durumunu kontrol et
+
+          # 7. Container durumunu kontrol et
           echo "Deployment tamamlandı!"
           docker compose ps
-          
-          # 6. Eski Docker image'larını temizle (disk şişmesin)
-          docker image prune -f
           
     - name: Notify on failure
       if: failure()
