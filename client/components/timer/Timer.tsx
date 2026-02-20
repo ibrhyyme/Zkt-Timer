@@ -18,6 +18,7 @@ import { endTimer } from './helpers/events';
 import { useSettings } from '../../util/hooks/useSettings';
 import { listenForPbEvents } from './helpers/pb';
 import { useWindowListener } from '../../util/hooks/useListener';
+import { useStableViewportHeight } from '../../util/hooks/useStableViewportHeight';
 import SmartCube from './smart_cube/SmartCube';
 import { Link } from 'react-router-dom';
 import { isNotPro } from '../../util/pro';
@@ -38,6 +39,7 @@ export interface ITimerContext extends TimerProps, TimerStore { }
 export const TimerContext = createContext<ITimerContext>(null);
 
 export default function Timer(props: TimerProps) {
+	useStableViewportHeight();
 	const dispatch = useDispatch();
 	const _mobileMode = useGeneral('mobile_mode');
 	const mobileMode = props.forceMobileLayout ?? _mobileMode;
