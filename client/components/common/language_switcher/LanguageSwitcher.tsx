@@ -12,7 +12,8 @@ export default function LanguageSwitcher() {
 		dayjs.locale(lng);
 	}
 
-	const currentLang = i18n.language?.startsWith('en') ? 'en' : 'tr';
+	const supportedLangs = ['tr', 'en', 'es', 'ru'];
+	const currentLang = supportedLangs.find((s) => i18n.language?.startsWith(s)) || 'tr';
 
 	return (
 		<Dropdown
@@ -29,6 +30,16 @@ export default function LanguageSwitcher() {
 					text: t('language.english'),
 					onClick: () => changeLanguage('en'),
 					disabled: currentLang === 'en',
+				},
+				{
+					text: t('language.spanish'),
+					onClick: () => changeLanguage('es'),
+					disabled: currentLang === 'es',
+				},
+				{
+					text: t('language.russian'),
+					onClick: () => changeLanguage('ru'),
+					disabled: currentLang === 'ru',
 				},
 			]}
 		/>

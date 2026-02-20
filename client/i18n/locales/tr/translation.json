@@ -381,7 +381,9 @@
 		"label": "Dil",
 		"description": "Uygulama dilini seçin",
 		"turkish": "Türkçe",
-		"english": "English"
+		"english": "English",
+		"spanish": "Español",
+		"russian": "Русский"
 	},
 	"timer_modules": {
 		"history": "Çözümler",
