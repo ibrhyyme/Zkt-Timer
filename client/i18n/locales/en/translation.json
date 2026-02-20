@@ -381,7 +381,9 @@
 		"label": "Language",
 		"description": "Select application language",
 		"turkish": "Türkçe",
-		"english": "English"
+		"english": "English",
+		"spanish": "Español",
+		"russian": "Русский"
 	},
 	"timer_modules": {
 		"history": "Solves",

@@ -13,6 +13,8 @@ interface LanguageOption {
 const LANGUAGES: LanguageOption[] = [
 	{code: 'tr', labelKey: 'language.turkish', nativeName: 'Türkçe'},
 	{code: 'en', labelKey: 'language.english', nativeName: 'English'},
+	{code: 'es', labelKey: 'language.spanish', nativeName: 'Español'},
+	{code: 'ru', labelKey: 'language.russian', nativeName: 'Русский'},
 ];
 
 export default function LanguageSettings() {
