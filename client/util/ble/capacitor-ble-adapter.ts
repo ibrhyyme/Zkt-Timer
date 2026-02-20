@@ -4,6 +4,9 @@ import { BleAdapter, BleDevice, BleRequestDeviceOptions } from './ble-adapter';
 export class CapacitorBleAdapter implements BleAdapter {
 	private initialized = false;
 	private disconnectCallbacks = new Map<string, () => void>();
+	private scanRejectFn: ((reason: Error) => void) | null = null;
+	private scanTimeoutId: ReturnType<typeof setTimeout> | null = null;
+	private scanResolved = false;
 
 	private async ensureInitialized(): Promise<void> {
 		if (!this.initialized) {
@@ -14,21 +17,41 @@ export class CapacitorBleAdapter implements BleAdapter {
 		}
 	}
 
+	abortScan(): void {
+		if (!this.scanResolved) {
+			this.scanResolved = true;
+			if (this.scanTimeoutId) {
+				clearTimeout(this.scanTimeoutId);
+				this.scanTimeoutId = null;
+			}
+			BleClient.stopLEScan();
+			if (this.scanRejectFn) {
+				this.scanRejectFn(new Error('BLE_SCAN_ABORTED'));
+				this.scanRejectFn = null;
+			}
+		}
+	}
+
 	async requestDevice(options: BleRequestDeviceOptions): Promise<BleDevice> {
 		await this.ensureInitialized();
+
+		this.scanResolved = false;
+		this.scanRejectFn = null;
+		this.scanTimeoutId = null;
 
 		const excludeIds = new Set(options.excludeDeviceIds || []);
 		console.log('[BLE] CapacitorBleAdapter: scanning with nameFilters:', options.nameFilters,
 			excludeIds.size > 0 ? 'excluding:' : '', excludeIds.size > 0 ? [...excludeIds] : '');
 
 		return new Promise<BleDevice>(async (resolve, reject) => {
-			let resolved = false;
+			this.scanRejectFn = reject;
 
-			const timeout = setTimeout(() => {
-				if (!resolved) {
-					resolved = true;
+			this.scanTimeoutId = setTimeout(() => {
+				if (!this.scanResolved) {
+					this.scanResolved = true;
+					this.scanRejectFn = null;
 					BleClient.stopLEScan();
-					reject(new Error('BLE taramasi zaman asimina ugradi. Kubun acik ve yakin oldugundan emin olun.'));
+					reject(new Error('BLE_SCAN_TIMEOUT'));
 				}
 			}, 15000);
 
@@ -36,7 +59,7 @@ export class CapacitorBleAdapter implements BleAdapter {
 				await BleClient.requestLEScan(
 					{ allowDuplicates: false },
 					(result) => {
-						if (resolved) return;
+						if (this.scanResolved) return;
 
 						const name = result.device.name || result.localName || '';
 						if (!name) return;
@@ -50,8 +73,12 @@ export class CapacitorBleAdapter implements BleAdapter {
 						);
 
 						if (matches) {
-							resolved = true;
-							clearTimeout(timeout);
+							this.scanResolved = true;
+							if (this.scanTimeoutId) {
+								clearTimeout(this.scanTimeoutId);
+								this.scanTimeoutId = null;
+							}
+							this.scanRejectFn = null;
 							BleClient.stopLEScan();
 							console.log('[BLE] Matching device found:', name, result.device.deviceId);
 							resolve({
@@ -62,9 +89,13 @@ export class CapacitorBleAdapter implements BleAdapter {
 					}
 				);
 			} catch (error) {
-				if (!resolved) {
-					resolved = true;
-					clearTimeout(timeout);
+				if (!this.scanResolved) {
+					this.scanResolved = true;
+					if (this.scanTimeoutId) {
+						clearTimeout(this.scanTimeoutId);
+						this.scanTimeoutId = null;
+					}
+					this.scanRejectFn = null;
 					reject(error);
 				}
 			}

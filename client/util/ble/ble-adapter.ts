@@ -25,4 +25,5 @@ export interface BleAdapter {
 	): Promise<void>;
 	stopNotifications(device: BleDevice, serviceUuid: string, characteristicUuid: string): Promise<void>;
 	watchAdvertisements?(device: BleDevice): Promise<Map<number, DataView> | null>;
+	abortScan?(): void;
 }

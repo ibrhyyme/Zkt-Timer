@@ -886,8 +886,17 @@
 		"reset_gyro": "Jiroskop sıfırla",
 		"disconnect": "Bağlantıyı kes",
 		"connecting": "Bağlanıyor...",
+		"connecting_desc": "Akıllı küpünüzle eşleştiriliyor...",
 		"connect": "Bağlan",
-		"no_smart_cubes_yet": "Henüz akıllı küp bağlamadın"
+		"no_smart_cubes_yet": "Henüz akıllı küp bağlamadın",
+		"ble_scan_title": "Cihaz Bağla",
+		"scanning": "Cihaz aranıyor...",
+		"scanning_short": "Aranıyor...",
+		"scanning_desc": "Cihazınızın açık ve yakınızda olduğundan emin olun.",
+		"scan_failed": "Cihaz bulunamadı",
+		"scan_failed_desc": "Yakınızda desteklenen bir cihaz bulunamadı. Cihazınızın açık ve yakınızda olduğundan emin olun.",
+		"cancel_scan": "İptal",
+		"retry": "Tekrar Dene"
 	},
 	"stackmat": {
 		"select_stackmat": "StackMat Seç",

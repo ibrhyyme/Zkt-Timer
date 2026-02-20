@@ -4,11 +4,12 @@ import { useSettings } from '../../util/hooks/useSettings';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { convertTimeStringToSeconds } from '../../util/time';
-import { openModal } from '../../actions/general';
+import { openModal, closeModal } from '../../actions/general';
 import { Bluetooth, Timer, Keyboard, X, Check } from 'phosphor-react';
 import Stackmat from '../../util/vendor/stackmat';
 import { GanTimerConnection, GanTimerEvent, GanTimerState, connectGanTimer } from 'gan-web-bluetooth';
 import BluetoothErrorMessage from '../timer/common/BluetoothErrorMessage';
+import BleScanningModal from '../timer/smart_cube/ble_scanning_modal/BleScanningModal';
 import { isNative } from '../../util/platform';
 import StackMatPicker from '../settings/stackmat_picker/StackMatPicker';
 import SmartStats from '../timer/smart_cube/stats/SmartStats';
@@ -896,17 +897,41 @@ export default function RoomTimerOverlay({
             }
 
             if (bluetoothAvailable) {
-                const conn = await connectGanTimer();
-                ganTimerRef.current = conn;
-
-                conn.events$.subscribe((evt) => {
-                    if (evt.state === GanTimerState.DISCONNECT) {
-                        ganTimerRef.current = null;
-                        setGanTimerConnected(false);
+                if (isNative()) {
+                    dispatch(openModal(
+                        <BleScanningModal
+                            mode="gantimer"
+                            onCancel={() => dispatch(closeModal())}
+                        />,
+                        {
+                            title: t('smart_cube.ble_scan_title'),
+                            hideCloseButton: true,
+                            disableBackdropClick: true,
+                            width: 400,
+                        }
+                    ));
+                }
+                try {
+                    const conn = await connectGanTimer();
+                    if (isNative()) {
+                        dispatch(closeModal());
                     }
-                });
-                conn.events$.subscribe(handleGanTimerEvent);
-                setGanTimerConnected(true);
+                    ganTimerRef.current = conn;
+
+                    conn.events$.subscribe((evt) => {
+                        if (evt.state === GanTimerState.DISCONNECT) {
+                            ganTimerRef.current = null;
+                            setGanTimerConnected(false);
+                        }
+                    });
+                    conn.events$.subscribe(handleGanTimerEvent);
+                    setGanTimerConnected(true);
+                } catch (e) {
+                    console.error('GAN Timer connection error:', e);
+                    if (isNative()) {
+                        dispatch(closeModal());
+                    }
+                }
             } else {
                 dispatch(openModal(<BluetoothErrorMessage />));
             }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useParams, useHistory } from 'react-router-dom';
 import { socketClient } from '../../util/socket/socketio';
 import {
@@ -29,6 +29,9 @@ import { getTimeString, convertTimeStringToSeconds } from '../../util/time';
 import { toastError } from '../../util/toast';
 import { resourceUri } from '../../util/storage';
 import { connectGanTimer, GanTimerConnection } from 'gan-web-bluetooth';
+import { openModal, closeModal } from '../../actions/general';
+import BleScanningModal from '../timer/smart_cube/ble_scanning_modal/BleScanningModal';
+import { isNative } from '../../util/platform';
 import Connect from '../timer/smart_cube/bluetooth/connect';
 import { preflightChecks } from '../timer/smart_cube/preflight';
 import { processSmartTurns, SmartTurn, isTwo, rawTurnIsSame, reverseScramble } from '../../util/smart_scramble';
@@ -51,6 +54,7 @@ export default function FriendlyRoom() {
     const { roomId } = useParams<ParamsType>();
     const history = useHistory();
     const me = useMe();
+    const dispatch = useDispatch();
 
     const [room, setRoom] = useState<FriendlyRoomData | null>(null);
     const [loading, setLoading] = useState(true);
@@ -179,13 +183,37 @@ export default function FriendlyRoom() {
     const handleConnectGanTimer = async () => {
         if (ganTimerConnecting) return;
         setGanTimerConnecting(true);
+
+        if (isNative()) {
+            dispatch(openModal(
+                <BleScanningModal
+                    mode="gantimer"
+                    onCancel={() => {
+                        dispatch(closeModal());
+                        setGanTimerConnecting(false);
+                    }}
+                />,
+                {
+                    title: t('smart_cube.ble_scan_title'),
+                    hideCloseButton: true,
+                    disableBackdropClick: true,
+                    width: 400,
+                }
+            ));
+        }
+
         try {
             const conn = await connectGanTimer();
+            if (isNative()) {
+                dispatch(closeModal());
+            }
             ganTimerRef.current = conn;
             setGanTimerConnected(true);
-            // TODO: Add event listeners for timer events
         } catch (err) {
             console.error('GAN Timer connection failed:', err);
+            if (isNative()) {
+                dispatch(closeModal());
+            }
         } finally {
             setGanTimerConnecting(false);
         }

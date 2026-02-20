@@ -4,10 +4,12 @@ import GAN from './gan';
 import Giiker from './giiker';
 import { getBleAdapter } from '../../../../util/ble';
 import { isNative } from '../../../../util/platform';
+import { setTimerParams } from '../../helpers/params';
 
 export default class Connect extends SmartCube {
 	device = null;
 	adapter = null;
+	_cancelled = false;
 
 	_deviceOptions = {
 		nameFilters: ['Gi', 'Mi Smart Magic Cube', 'GAN', 'Gan', 'gan', 'GoCube', 'Rubiks'],
@@ -56,17 +58,25 @@ export default class Connect extends SmartCube {
 	connect = async () => {
 		const MAX_RETRIES = 3;
 		const excludeDeviceIds = [];
+		this._cancelled = false;
 
 		try {
 			console.log('[BLE] connect() called, isNative:', isNative());
 			this.adapter = await getBleAdapter();
 			console.log('[BLE] adapter type:', this.adapter.constructor.name);
 
+			this.alertScanning();
+
 			for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
 				const device = await this.adapter.requestDevice({
 					...this._deviceOptions,
 					excludeDeviceIds,
 				});
+
+				if (this._cancelled) {
+					try { await this.adapter.disconnect(device); } catch (e) { /* ignore */ }
+					return;
+				}
 
 				console.log('[BLE] device found:', device.name, device.deviceId, `(attempt ${attempt + 1})`);
 				this.device = device;
@@ -84,11 +94,32 @@ export default class Connect extends SmartCube {
 						throw error; // Son deneme de başarısız, hatayı fırlat
 					}
 					console.log('[BLE] Retrying with next device...');
+					this.alertScanning();
 				}
 			}
 		} catch (error) {
 			console.log('Bluetooth connection cancelled or failed:', error);
-			this.alertDisconnected();
+
+			if (error.message === 'BLE_SCAN_ABORTED') {
+				// Kullanıcı iptal etti, sessizce sıfırla
+				setTimerParams({
+					smartCubeScanning: false,
+					smartCubeConnecting: false,
+					smartCubeScanError: null,
+				});
+			} else if (error.message === 'BLE_SCAN_TIMEOUT') {
+				// Zaman aşımı - modal'da hata göster
+				this.alertScanError('timeout');
+			} else {
+				this.alertDisconnected();
+			}
+		}
+	};
+
+	cancelScan = () => {
+		this._cancelled = true;
+		if (this.adapter && typeof this.adapter.abortScan === 'function') {
+			this.adapter.abortScan();
 		}
 	};
 
