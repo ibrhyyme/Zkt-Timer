@@ -4,7 +4,7 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	padding: 20px;
+	padding: 24px 20px;
 	text-align: center;
 
 	&__icon {
@@ -14,11 +14,11 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		margin-bottom: 20px;
+		margin-bottom: 24px;
 
 		&--scanning {
-			background-color: rgba($primaryColor, 0.15);
-			color: $primaryColor;
+			background-color: rgba(#4a9eff, 0.15);
+			color: #4a9eff;
 			animation: ble-pulse 2s ease-in-out infinite;
 		}
 
@@ -36,7 +36,7 @@
 	&__title {
 		font-size: 1.2rem;
 		font-weight: 600;
-		color: var(--text-color);
+		color: #fff;
 		margin-bottom: 8px;
 
 		&--error {
@@ -46,23 +46,23 @@
 
 	&__description {
 		font-size: 0.9rem;
-		color: var(--text-color);
-		opacity: 0.7;
-		margin-bottom: 20px;
+		color: #888;
+		margin-bottom: 24px;
 		max-width: 280px;
+		line-height: 1.4;
 	}
 
 	&__dots {
 		display: flex;
 		gap: 8px;
-		margin-bottom: 24px;
+		margin-bottom: 28px;
 	}
 
 	&__dot {
 		width: 8px;
 		height: 8px;
 		border-radius: 50%;
-		background-color: $primaryColor;
+		background-color: #4a9eff;
 		animation: ble-dot-bounce 1.4s ease-in-out infinite;
 
 		&:nth-child(2) {
@@ -80,6 +80,27 @@
 		gap: 10px;
 		width: 100%;
 		max-width: 250px;
+
+		button {
+			background-color: #1c1c1e !important;
+			border-radius: 10px !important;
+			color: #4a9eff !important;
+			font-weight: 600 !important;
+			border: none !important;
+
+			svg {
+				color: #4a9eff !important;
+			}
+
+			&.cd-common-button--theme-primary {
+				background-color: #4a9eff !important;
+				color: #fff !important;
+
+				svg {
+					color: #fff !important;
+				}
+			}
+		}
 	}
 }
 
