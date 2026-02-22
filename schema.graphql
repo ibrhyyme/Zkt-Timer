@@ -585,10 +585,10 @@ type Setting {
   confirm_delete_season: Boolean
   require_period_in_manual_time_entry: Boolean
   use_space_with_smart_cube: Boolean
+  use_2d_scramble_visual: Boolean
   timer_decimal_points: Int
   cube_type: String
   session_id: String
-  beta_tester: Boolean
   smart_cube_size: Int
   custom_cube_types: [CustomCubeType]
 }
@@ -1355,10 +1355,10 @@ input SettingInput {
   confirm_delete_season: Boolean
   require_period_in_manual_time_entry: Boolean
   use_space_with_smart_cube: Boolean
+  use_2d_scramble_visual: Boolean
   timer_decimal_points: Int
   cube_type: String
   session_id: String
-  beta_tester: Boolean
   smart_cube_size: Int
 }
 

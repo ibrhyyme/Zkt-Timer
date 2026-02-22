@@ -44,6 +44,7 @@ import AdminAnnouncements from '../admin/announcements/AdminAnnouncements';
 import AdminEmail from '../admin/email/AdminEmail';
 import Welcome from '../landing/welcome/Welcome';
 import RootRedirect from '../landing/root_redirect/RootRedirect';
+import ProPage from '../pro_page/ProPage';
 
 interface PageOptions {
 	restricted: boolean;
@@ -130,6 +131,9 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/solve/:shareCode', null, App, SolvePage, false, false, false, false, false, [prefetchSolveData]),
 	route('/user/:username', null, App, Profile, false, false, false, false, false, [prefetchProfileData]),
 	route('/unsub-emails', null, App, UnsubEmails, false, true, false, true, false),
+
+	// Pro
+	route('/pro', null, App, ProPage, false),
 
 	// Trainer
 	route('/trainer', null, App, Trainer, false),

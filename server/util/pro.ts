@@ -8,7 +8,6 @@ import {
 	SubscriptionStatus,
 } from '../services/stripe';
 import {updateUserAccountWithParams} from '../models/user_account';
-import {setSetting} from '../models/settings';
 import {isProEnabled} from '../lib/pro';
 
 type SubscriptionData = {
@@ -73,9 +72,6 @@ export async function getProSubscriptionAndUpdateUserProStatus(user: InternalUse
 		} else {
 			// Went from Pro to free
 			await handleCancelPro(user);
-
-			// Beta tester is a Pro-only feature. Needs to be turned off in case its on
-			await setSetting(user, 'beta_tester', false);
 		}
 	}
 

@@ -23,8 +23,8 @@ export interface AllSettings {
 	confirm_delete_solve: boolean;
 	confirm_delete_season: boolean;
 	use_space_with_smart_cube: boolean;
+	use_2d_scramble_visual: boolean;
 	require_period_in_manual_time_entry: boolean;
-	beta_tester: boolean;
 	cube_type: string;
 	session_id: string;
 	custom_cube_types: CustomCubeType[];
@@ -79,8 +79,8 @@ const defaultSettings: AllSettings = {
 	confirm_delete_solve: false,
 	confirm_delete_season: false,
 	use_space_with_smart_cube: false,
+	use_2d_scramble_visual: false,
 	require_period_in_manual_time_entry: false,
-	beta_tester: false,
 	cube_type: '333',
 	session_id: null,
 	locked_scramble: null,

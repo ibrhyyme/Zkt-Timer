@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom';
 import './ScrambleVisual.scss';
 import block from '../../../styles/bem';
 import { useGeneral } from '../../../util/hooks/useGeneral';
+import { useSettings } from '../../../util/hooks/useSettings';
 
 // Dynamically import TwistyPlayerWrapper
 const TwistyPlayerWrapper = React.lazy(() => import('./TwistyPlayerWrapper'));
@@ -29,6 +30,8 @@ const PUZZLE_MAPPING: Record<string, string> = {
 	'222oh': '2x2x2',
 };
 
+const NXN_PUZZLE_IDS = new Set(['2x2x2', '3x3x3', '4x4x4', '5x5x5', '6x6x6', '7x7x7']);
+
 interface Props {
 	cubeType: string;
 	scramble: string;
@@ -40,13 +43,15 @@ function ScrambleVisual(props: Props) {
 	const { cubeType, scramble, frontFace } = props;
 	const [isExpanded, setIsExpanded] = useState(false);
 	const mobileMode = useGeneral('mobile_mode');
+	const use2dScramble = useSettings('use_2d_scramble_visual');
 	const width = props.width || '100%';
 
 	// Determine puzzle details for TwistyPlayer
 	const puzzleId = PUZZLE_MAPPING[cubeType] || cubeType;
 	const isClock = puzzleId === 'clock';
 	const isSq1 = puzzleId === 'square1';
-	const visualizationVal = isClock ? '2D' : '3D';
+	const isNxN = NXN_PUZZLE_IDS.has(puzzleId);
+	const visualizationVal = isClock ? '2D' : (use2dScramble && isNxN) ? '2D' : '3D';
 
 	const closeModal = (e: React.MouseEvent) => {
 		e.stopPropagation();

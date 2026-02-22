@@ -1,5 +1,6 @@
 import React, {ReactNode} from 'react';
-import {isProEnabled} from '../../../lib/pro';
+import {isProEnabled, isPro} from '../../../lib/pro';
+import {useMe} from '../../../util/hooks/useMe';
 
 interface Props {
 	forceShow?: boolean;
@@ -10,14 +11,23 @@ interface Props {
 }
 
 export default function ProOnly(props: Props) {
-	const {children} = props;
-	
-	// When Pro is disabled globally, show content to everyone
-	if (!isProEnabled()) {
+	const {children, ignore, forceShow} = props;
+	const me = useMe();
+
+	// When Pro is disabled globally or explicitly ignored, show content to everyone
+	if (!isProEnabled() || ignore) {
 		return <>{children}</>;
 	}
-	
-	// When Pro is enabled, this component would show Pro-gated content
-	// For now, since we're soft-disabling, still show to everyone
-	return <>{children}</>;
+
+	// Force show overrides Pro check
+	if (forceShow) {
+		return <>{children}</>;
+	}
+
+	// When Pro is enabled, only show to Pro users
+	if (isPro(me)) {
+		return <>{children}</>;
+	}
+
+	return null;
 }
