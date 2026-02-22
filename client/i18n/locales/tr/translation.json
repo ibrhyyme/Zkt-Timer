@@ -898,7 +898,15 @@
 		"scan_failed": "Cihaz bulunamadı",
 		"scan_failed_desc": "Yakınızda desteklenen bir cihaz bulunamadı. Cihazınızın açık ve yakınızda olduğundan emin olun.",
 		"cancel_scan": "İptal",
-		"retry": "Tekrar Dene"
+		"retry": "Tekrar Dene",
+		"abort_solve": "Bu çözümü iptal et",
+		"abort_confirm_heading": "İptal onayı",
+		"abort_confirm_title": "Bu çözümü iptal etmek istediğinize emin misiniz?",
+		"abort_save_dnf": "Evet, DNF olarak kaydet",
+		"abort_discard": "Evet, ama bu çözümü kaydetme",
+		"abort_continue": "Hayır, devam edeyim",
+		"cube_mismatch_message": "Devam edebilmemiz için küpün çözülmüş olması gerekiyor",
+		"reset_cube_state": "Küp durumunu sıfırla"
 	},
 	"stackmat": {
 		"select_stackmat": "StackMat Seç",

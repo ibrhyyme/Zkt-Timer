@@ -16,6 +16,7 @@ import { initTimer } from './helpers/init';
 import { stopAllTimers, clearInspectionTimers } from './helpers/timers';
 import { endTimer } from './helpers/events';
 import { useSettings } from '../../util/hooks/useSettings';
+import { smartCubeSelected } from './helpers/util';
 import { listenForPbEvents } from './helpers/pb';
 import { useWindowListener } from '../../util/hooks/useListener';
 import { useStableViewportHeight } from '../../util/hooks/useStableViewportHeight';
@@ -50,6 +51,7 @@ export default function Timer(props: TimerProps) {
 	const hideMobileTimerFooter = useSettings('hide_mobile_timer_footer');
 	const timerType = useSettings('timer_type');
 	const focusMode = useSettings('focus_mode');
+	const useSpaceWithSmartCube = useSettings('use_space_with_smart_cube');
 	const scrambleSubset = useSettings('scramble_subset');
 	let timerLayout = props.timerLayout || useSettings('timer_layout');
 
@@ -259,7 +261,11 @@ export default function Timer(props: TimerProps) {
 								}}
 								onTouchEnd={(e) => {
 									if (context.timeStartedAt) {
-										endTimer(context);
+										// Don't stop timer on touch when smart cube auto-detect is active
+										const isSmartAutoDetect = smartCubeSelected(context) && !useSpaceWithSmartCube;
+										if (!isSmartAutoDetect) {
+											endTimer(context);
+										}
 									} else if (context.inInspection) {
 										// Swipe yukarı algıla
 										// @ts-ignore

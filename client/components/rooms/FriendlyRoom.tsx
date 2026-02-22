@@ -37,6 +37,8 @@ import { preflightChecks } from '../timer/smart_cube/preflight';
 import { processSmartTurns, SmartTurn, isTwo, rawTurnIsSame, reverseScramble } from '../../util/smart_scramble';
 import Cube from 'cubejs';
 import NotificationLog, { NotificationItem } from './NotificationLog';
+import AbortSolveOverlay from '../timer/smart_cube/abort_solve/AbortSolveOverlay';
+import ReactDOM from 'react-dom';
 import './FriendlyRoom.scss';
 
 interface ParamsType {
@@ -236,6 +238,9 @@ export default function FriendlyRoom() {
     const reduxSolving = useSelector((state: any) => state.timer?.solving || false);
     const reduxFinalTime = useSelector((state: any) => state.timer?.finalTime || 0);
     const reduxSmartSolvedState = useSelector((state: any) => state.timer?.smartSolvedState || 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB');
+    const reduxSmartPhysicallySolved = useSelector((state: any) => state.timer?.smartPhysicallySolved || false);
+    const reduxLastSmartMoveTime = useSelector((state: any) => state.timer?.lastSmartMoveTime || 0);
+    const reduxSmartStateSeq = useSelector((state: any) => state.timer?.smartStateSeq || 0);
 
     const [smartCubeConnecting, setSmartCubeConnecting] = useState(false);
     const smartConnectRef = useRef<Connect | null>(null);
@@ -293,6 +298,13 @@ export default function FriendlyRoom() {
     const [smartFinalTime, setSmartFinalTime] = useState(0);
     const [smartStats, setSmartStats] = useState<{ turns: number; tps: number } | null>(null);
     const [smartWarning, setSmartWarning] = useState<string | undefined>(undefined);
+    // AbortSolve state
+    const [showAbortDialog, setShowAbortDialog] = useState(false);
+    const [abortResetCount, setAbortResetCount] = useState(0);
+    const [smartAbortVisible, setSmartAbortVisible] = useState(false);
+    const [needsCubeReset, setNeedsCubeReset] = useState(false);
+    const inactivityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const INACTIVITY_TIMEOUT_MS = 5000;
     const smartInspectionIntervalRef = useRef<NodeJS.Timeout | null>(null);
     const smartTimerIntervalRef = useRef<NodeJS.Timeout | null>(null);
     const cubejsRef = useRef(new Cube());
@@ -409,8 +421,8 @@ export default function FriendlyRoom() {
         }
 
         const currentCubeState = (smartTiming || smartReviewing) ? cubejsRef.current.asString() : '';
-        const isSolved = smartTiming ? currentCubeState === reduxSmartSolvedState : false;
-        const isSolvedAnytime = currentCubeState === reduxSmartSolvedState;
+        const isSolved = smartTiming ? (currentCubeState === reduxSmartSolvedState || reduxSmartPhysicallySolved) : false;
+        const isSolvedAnytime = currentCubeState === reduxSmartSolvedState || reduxSmartPhysicallySolved;
 
         // Warning if user messes up cube during review
         const warning = smartReviewing && !isSolvedAnytime ? t('rooms.solve_cube_for_scramble') : undefined;
@@ -422,7 +434,9 @@ export default function FriendlyRoom() {
         // If timer is running and cube is solved
         if (smartTiming && isSolved && smartTimerStartedAt) {
             setSmartTiming(false);
-            const timeMs = Date.now() - smartTimerStartedAt;
+            const timeMs = (reduxSmartPhysicallySolved && reduxLastSmartMoveTime)
+                ? reduxLastSmartMoveTime - smartTimerStartedAt
+                : Date.now() - smartTimerStartedAt;
             setSmartTimerStartedAt(null);
             if (smartTimerIntervalRef.current) clearInterval(smartTimerIntervalRef.current);
 
@@ -505,6 +519,71 @@ export default function FriendlyRoom() {
             }
         }
     }, [smartTurns, smartCubeConnected, room?.current_scramble, smartTiming, smartScrambleCompletedAt, smartInspecting, inspection, smartTimerStartedAt, smartReviewing, reduxSmartSolvedState]);
+
+    // M' hamle güvenlik ağı: fiziksel küp çözüldüyse timer durdur
+    // Ana useEffect'te reduxSmartPhysicallySolved dependency'de yok, bu yüzden ayrı useEffect
+    useEffect(() => {
+        if (
+            reduxSmartPhysicallySolved &&
+            smartTiming &&
+            smartTimerStartedAt
+        ) {
+            console.log('[FriendlyRoom] Safety net: STOPPING TIMER (physically solved)');
+            setSmartTiming(false);
+            const timeMs = (reduxLastSmartMoveTime || Date.now()) - smartTimerStartedAt;
+            setSmartTimerStartedAt(null);
+            if (smartTimerIntervalRef.current) clearInterval(smartTimerIntervalRef.current);
+
+            setSmartFinalTime(timeMs);
+
+            // İstatistik hesapla
+            const solutionTurns = smartTurns.slice(scrambleTurnCountRef.current);
+            const turnCount = solutionTurns.length;
+            const timeInSeconds = timeMs / 1000;
+            const tps = timeInSeconds > 0 ? Number((turnCount / timeInSeconds).toFixed(2)) : 0;
+
+            setSmartStats({ turns: turnCount, tps });
+            setSmartReviewing(true);
+        }
+    }, [reduxSmartStateSeq, smartTiming]);
+
+    // Fiziksel küp çözüldüğünde mismatch bayrağını otomatik temizle
+    useEffect(() => {
+        if (reduxSmartPhysicallySolved && needsCubeReset) {
+            setNeedsCubeReset(false);
+            sessionStartRef.current = smartTurns.length;
+            processedTurnsRef.current = smartTurns.length;
+            scrambleTurnCountRef.current = 0;
+            cubejsRef.current = new Cube();
+        }
+    }, [reduxSmartStateSeq]);
+
+    // 5 saniye hareketsizlik → abort butonu göster
+    useEffect(() => {
+        if (inactivityTimerRef.current) {
+            clearTimeout(inactivityTimerRef.current);
+            inactivityTimerRef.current = null;
+        }
+
+        if (!smartTiming || !smartTimerStartedAt) {
+            setSmartAbortVisible(false);
+            setShowAbortDialog(false);
+            return;
+        }
+
+        // Yeni hamle geldiğinde abort butonunu gizle
+        if (smartAbortVisible) {
+            setSmartAbortVisible(false);
+        }
+
+        inactivityTimerRef.current = setTimeout(() => {
+            setSmartAbortVisible(true);
+        }, INACTIVITY_TIMEOUT_MS);
+
+        return () => {
+            if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
+        };
+    }, [smartTiming, smartTimerStartedAt, smartTurns.length, abortResetCount]);
 
     // Broadcast Smart Cube Status
     useEffect(() => {
@@ -662,6 +741,7 @@ export default function FriendlyRoom() {
                     clearInterval(manualInspectionRef.current);
                     manualInspectionRef.current = null;
                 }
+                setNeedsCubeReset(false);
             }
         });
 
@@ -888,6 +968,65 @@ export default function FriendlyRoom() {
 
     function handleSolveRedo() {
         // User wants to redo - do nothing, timer overlay handles the reset
+    }
+
+    // Smart Cube Abort Handlers
+    function handleSmartAbortClick() {
+        setShowAbortDialog(true);
+    }
+
+    function handleSmartAbortDnf() {
+        if (!smartTimerStartedAt || !room) return;
+        // DNF olarak submit et
+        const solveData: FriendlyRoomSolveData = {
+            time: 0,
+            dnf: true,
+            plus_two: false,
+            scramble_index: room.scramble_index,
+        };
+        getSocket().emit(FriendlyRoomClientEvent.SUBMIT_SOLVE, roomId, solveData);
+
+        // Timer state'i sıfırla
+        setSmartTiming(false);
+        setSmartTimerStartedAt(null);
+        setSmartElapsedTime(0);
+        if (smartTimerIntervalRef.current) clearInterval(smartTimerIntervalRef.current);
+        setShowAbortDialog(false);
+        setSmartAbortVisible(false);
+        setNeedsCubeReset(true);
+    }
+
+    function handleSmartAbortDiscard() {
+        // Timer'ı sıfırla, submit yapma (redo gibi)
+        setSmartTiming(false);
+        setSmartTimerStartedAt(null);
+        setSmartElapsedTime(0);
+        setSmartFinalTime(0);
+        setSmartStats(null);
+        setSmartScrambleCompletedAt(null);
+        if (smartTimerIntervalRef.current) clearInterval(smartTimerIntervalRef.current);
+        // Turn processing'i sıfırla - yeniden scramble yapabilsin
+        sessionStartRef.current = smartTurns.length;
+        processedTurnsRef.current = smartTurns.length;
+        scrambleTurnCountRef.current = 0;
+        cubejsRef.current = new Cube();
+        setShowAbortDialog(false);
+        setSmartAbortVisible(false);
+        setNeedsCubeReset(true);
+    }
+
+    function handleSmartAbortContinue() {
+        setShowAbortDialog(false);
+        setSmartAbortVisible(false);
+        setAbortResetCount(c => c + 1);
+    }
+
+    function handleSmartResetCubeState() {
+        setNeedsCubeReset(false);
+        sessionStartRef.current = smartTurns.length;
+        processedTurnsRef.current = smartTurns.length;
+        scrambleTurnCountRef.current = 0;
+        cubejsRef.current = new Cube();
     }
 
     // Check if user already solved this round
@@ -1198,6 +1337,16 @@ export default function FriendlyRoom() {
                         <div className="text-center font-mono text-base md:text-3xl leading-relaxed font-medium select-all px-1">
                             {alreadySolvedThisRound ? (
                                 <span className="text-gray-500 animate-pulse">{t('rooms.waiting_for_others')}</span>
+                            ) : needsCubeReset && timerType === 'smart' && smartCubeConnected ? (
+                                <div className="flex flex-col items-center gap-3 py-2">
+                                    <span className="text-orange-400 font-bold text-lg md:text-2xl">{t('smart_cube.cube_mismatch_message')}</span>
+                                    <button
+                                        onClick={handleSmartResetCubeState}
+                                        className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-bold rounded-lg transition-colors"
+                                    >
+                                        {t('smart_cube.reset_cube_state')}
+                                    </button>
+                                </div>
                             ) : timerType === 'smart' && smartCubeConnected ? (
                                 // Smart cube: show colored scramble with correction hints
                                 (() => {
@@ -1622,7 +1771,21 @@ export default function FriendlyRoom() {
                 </div>
             )}
 
-            {/* Full-screen Timer Overlay */}
+            {/* Smart Cube Abort Solve Overlay */}
+            {timerType === 'smart' && smartCubeConnected && ReactDOM.createPortal(
+                <AbortSolveOverlay
+                    showAbortButton={smartAbortVisible && smartTiming}
+                    showDialog={showAbortDialog}
+                    showMismatchBanner={false}
+                    onAbortClick={handleSmartAbortClick}
+                    onDnf={handleSmartAbortDnf}
+                    onDiscard={handleSmartAbortDiscard}
+                    onContinue={handleSmartAbortContinue}
+                    onResetCubeState={handleSmartResetCubeState}
+                />,
+                document.body
+            )}
+
             {/* Full-screen Timer Overlay */}
             <RoomTimerOverlay
                 isActive={isActive}

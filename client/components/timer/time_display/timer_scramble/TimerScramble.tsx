@@ -221,6 +221,9 @@ export default function TimerScramble() {
 	} else if (isSmart && timeStartedAt) {
 		// Timer çalışırken scramble'ı gizle
 		scrambleBody = null;
+	} else if (isSmart && !scramble) {
+		// Abort sonrası scramble boşken gizle (mismatch banner ile çakışmasın)
+		scrambleBody = null;
 	}
 
 	// +2 ve DNF butonları artık üstteki actions alanında, aşağıda duplike yok

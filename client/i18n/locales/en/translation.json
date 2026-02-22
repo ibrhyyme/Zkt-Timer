@@ -898,7 +898,15 @@
 		"scan_failed": "Device not found",
 		"scan_failed_desc": "No supported device was found nearby. Make sure your device is turned on and close to your phone.",
 		"cancel_scan": "Cancel",
-		"retry": "Try Again"
+		"retry": "Try Again",
+		"abort_solve": "Abort this solve",
+		"abort_confirm_heading": "Abort confirmation",
+		"abort_confirm_title": "Do you really want to abort this solve?",
+		"abort_save_dnf": "Yes, save as DNF",
+		"abort_discard": "Yes, but don't save this solve",
+		"abort_continue": "No, let me continue",
+		"cube_mismatch_message": "The cube needs to be solved before we can proceed",
+		"reset_cube_state": "Reset cube state"
 	},
 	"stackmat": {
 		"select_stackmat": "Select StackMat",

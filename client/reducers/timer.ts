@@ -18,6 +18,10 @@ const smartState = {
 	lastSmartSolveStats: null,
 	originalScramble: '',
 	smartTurnOffset: 0,
+	smartAbortVisible: false,
+	smartMismatchDetected: false,
+	smartStateSeq: 0,
+	smartPhysicallySolved: false,
 };
 
 const defaultTimerState = {
@@ -102,6 +106,12 @@ export default (state = initialState, action) => {
 		case 'TURN_SMART_CUBE_BATCH': {
 			const { moves } = action.payload;
 			if (!moves || moves.length === 0) return state;
+
+			// Fiziksel küp çözüldüyse ve timer çalışıyorsa, yeni hamle kabul etme
+			// (sessizlik penceresi sırasında gelen ekstra hamleleri engeller)
+			if (state.smartPhysicallySolved && state.timeStartedAt) {
+				return state;
+			}
 
 			// Single immutable copy for batch
 			const smartTurns = [...state.smartTurns, ...moves];

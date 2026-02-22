@@ -898,7 +898,15 @@
 		"scan_failed": "Dispositivo no encontrado",
 		"scan_failed_desc": "No se encontró ningún dispositivo compatible cerca. Asegúrate de que tu dispositivo esté encendido y cerca de tu teléfono.",
 		"cancel_scan": "Cancelar",
-		"retry": "Intentar de nuevo"
+		"retry": "Intentar de nuevo",
+		"abort_solve": "Cancelar esta resolución",
+		"abort_confirm_heading": "Confirmación de cancelación",
+		"abort_confirm_title": "¿Realmente quieres cancelar esta resolución?",
+		"abort_save_dnf": "Sí, guardar como DNF",
+		"abort_discard": "Sí, pero no guardar esta resolución",
+		"abort_continue": "No, déjame continuar",
+		"cube_mismatch_message": "El cubo debe estar resuelto antes de poder continuar",
+		"reset_cube_state": "Restablecer estado del cubo"
 	},
 	"stackmat": {
 		"select_stackmat": "Seleccionar StackMat",

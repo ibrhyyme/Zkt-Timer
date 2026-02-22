@@ -1,0 +1,87 @@
+@import '../../../../styles/config';
+
+.#{$namespace}-abort-solve-overlay {
+	&__button-container {
+		position: fixed;
+		top: 25%;
+		left: 50%;
+		transform: translateX(-50%);
+		z-index: 10000;
+		animation: abortFadeIn 0.3s ease-in;
+	}
+
+	&__dialog-overlay {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: rgba(0, 0, 0, 0.7);
+		z-index: 10001;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	&__dialog {
+		background: rgb(var(--module-color));
+		color: rgb(var(--text-color));
+		border-radius: 12px;
+		padding: 24px;
+		max-width: 450px;
+		width: 90%;
+	}
+
+	&__dialog-title {
+		font-size: 1.2rem;
+		font-weight: 700;
+		margin: 0 0 8px 0;
+	}
+
+	&__dialog-description {
+		font-size: 0.9rem;
+		opacity: 0.8;
+		margin: 0 0 20px 0;
+	}
+
+	&__dialog-buttons {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+	}
+
+	&__mismatch-banner {
+		position: fixed;
+		top: 25%;
+		left: 50%;
+		transform: translateX(-50%);
+		z-index: 10000;
+		background: rgba(var(--module-color), 0.95);
+		color: rgb(var(--text-color));
+		padding: 14px 20px;
+		border-radius: 10px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 12px;
+		max-width: 90vw;
+		animation: abortFadeIn 0.3s ease-in;
+		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+	}
+
+	&__mismatch-text {
+		font-size: 0.95rem;
+		font-weight: 600;
+	}
+}
+
+@keyframes abortFadeIn {
+	from {
+		opacity: 0;
+		transform: translateX(-50%) translateY(-5px);
+	}
+	to {
+		opacity: 1;
+		transform: translateX(-50%) translateY(0);
+	}
+}
