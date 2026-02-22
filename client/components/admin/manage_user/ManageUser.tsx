@@ -75,7 +75,6 @@ const GET_USER_FOR_ADMIN = gql`
 				confirm_delete_solve
 				use_space_with_smart_cube
 				require_period_in_manual_time_entry
-				beta_tester
 				cube_type
 			}
 			reports_for {

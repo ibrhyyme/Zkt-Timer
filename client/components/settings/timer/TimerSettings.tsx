@@ -224,6 +224,12 @@ export default function TimerSettings() {
 				settingName="pb_confetti"
 				isSwitch
 			/>
+			<SettingRow
+				title={t('timer_settings.use_2d_scramble_visual')}
+				description={t('timer_settings.use_2d_scramble_visual_desc')}
+				settingName="use_2d_scramble_visual"
+				isSwitch
+			/>
 			<SettingSection>
 				<SettingRow
 					parent
@@ -284,12 +290,6 @@ export default function TimerSettings() {
 					/>
 				</SettingRow>
 			</SettingSection>
-			<SettingRow
-				title={t('timer_settings.beta_tester')}
-				description={t('timer_settings.beta_tester_desc')}
-				settingName="beta_tester"
-				isSwitch
-			/>
 		</>
 	);
 }

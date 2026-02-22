@@ -169,8 +169,8 @@ export const SETTING_FRAGMENT = gql`
 		zero_out_time_after_solve
 		confirm_delete_solve
 		use_space_with_smart_cube
+		use_2d_scramble_visual
 		require_period_in_manual_time_entry
-		beta_tester
 		cube_type
 		custom_cube_types {
 			...CustomCubeTypeFragment

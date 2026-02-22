@@ -57,6 +57,9 @@ export class Setting {
 	@Field()
 	use_space_with_smart_cube: boolean;
 
+	@Field()
+	use_2d_scramble_visual: boolean;
+
 	@Field(() => Int)
 	timer_decimal_points: number;
 
@@ -65,9 +68,6 @@ export class Setting {
 
 	@Field()
 	session_id: string;
-
-	@Field()
-	beta_tester: boolean;
 
 	@Field(() => Int, { nullable: true })
 	smart_cube_size?: number;
@@ -123,6 +123,9 @@ export class SettingInput implements Partial<Setting> {
 	@Field()
 	use_space_with_smart_cube: boolean;
 
+	@Field()
+	use_2d_scramble_visual: boolean;
+
 	@Field(() => Int)
 	timer_decimal_points: number;
 
@@ -131,9 +134,6 @@ export class SettingInput implements Partial<Setting> {
 
 	@Field()
 	session_id: string;
-
-	@Field()
-	beta_tester: boolean;
 
 	@Field(() => Int, { nullable: true })
 	smart_cube_size?: number;

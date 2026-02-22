@@ -72,29 +72,36 @@
 	
 
 		<url>
-			<loc>https://zktimer.app/trainer</loc>
+			<loc>https://zktimer.app/pro</loc>
 			<priority>0.96</priority>
 			
 		</url>
 	
 
 		<url>
+			<loc>https://zktimer.app/trainer</loc>
+			<priority>0.958</priority>
+			
+		</url>
+	
+
+		<url>
 			<loc>https://zktimer.app/community/leaderboards</loc>
-			<priority>0.946</priority>
+			<priority>0.945</priority>
 			
 		</url>
 	
 
 		<url>
 			<loc>https://zktimer.app/play</loc>
-			<priority>0.938</priority>
+			<priority>0.937</priority>
 			
 		</url>
 	
 
 		<url>
 			<loc>https://zktimer.app/rooms</loc>
-			<priority>0.928</priority>
+			<priority>0.927</priority>
 			
 		</url>
 			  
