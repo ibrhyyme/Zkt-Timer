@@ -162,8 +162,18 @@ export default class SmartCube {
 			return;
 		}
 
+		const seq = (store.getState().timer.smartStateSeq || 0) + 1;
+		const defaultSolved = state === store.getState().timer.smartSolvedState;
+		const ganSolved = this._ganInitialFacelets && state === this._ganInitialFacelets;
+		const isPhysicallySolved = defaultSolved || ganSolved;
+
+		if (isPhysicallySolved) {
+		}
+
 		setTimerParams({
 			smartCurrentState: state,
+			smartStateSeq: seq,
+			smartPhysicallySolved: isPhysicallySolved,
 		});
 	};
 

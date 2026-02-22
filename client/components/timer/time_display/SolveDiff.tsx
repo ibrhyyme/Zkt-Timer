@@ -21,22 +21,27 @@ function SolveDiff() {
         return null;
     }
 
-    const solves = fetchSolves({ session_id: sessionId }, { limit: 2 });
+    const solves = fetchSolves({ session_id: sessionId }, { limit: 20 });
 
     if (!solves || solves.length < 2) {
         return null;
     }
 
     const current = solves[0];
-    const previous = solves[1];
+
+    // If current solve is DNF, no valid time to compare
+    if (current.dnf) {
+        return <div className={b()} style={{ fontSize: '1rem', opacity: 0.7 }}>(N/A)</div>;
+    }
+
+    // Find the most recent non-DNF solve before current for comparison
+    const previous = solves.find((s, idx) => idx > 0 && !s.dnf);
+    if (!previous) {
+        return <div className={b()} style={{ fontSize: '1rem', opacity: 0.7 }}>(N/A)</div>;
+    }
 
     const currTime = Number(current.time) || 0;
     const prevTime = Number(previous.time) || 0;
-
-    // DNF Handling
-    if (current.dnf || previous.dnf) {
-        return <div className={b()} style={{ fontSize: '1rem', opacity: 0.7 }}>(N/A)</div>;
-    }
 
     const diff = currTime - prevTime;
     const absDiff = Math.abs(diff);

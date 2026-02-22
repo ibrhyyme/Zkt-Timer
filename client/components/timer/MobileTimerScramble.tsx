@@ -96,6 +96,11 @@ export default function MobileTimerScramble() {
         );
     }
 
+    // Abort sonrası scramble boşken gizle (mismatch banner ile çakışmasın)
+    if (isSmart && !scramble) {
+        return null;
+    }
+
     return (
         <div className={b()}>
             <div

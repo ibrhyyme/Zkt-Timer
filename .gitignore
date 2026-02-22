@@ -33,3 +33,5 @@ public/uploads/
 # Windows artifacts
 nul
 
+# Claude config/skills
+.claude/

@@ -61,9 +61,7 @@ export default class Connect extends SmartCube {
 		this._cancelled = false;
 
 		try {
-			console.log('[BLE] connect() called, isNative:', isNative());
 			this.adapter = await getBleAdapter();
-			console.log('[BLE] adapter type:', this.adapter.constructor.name);
 
 			this.alertScanning();
 
@@ -78,7 +76,6 @@ export default class Connect extends SmartCube {
 					return;
 				}
 
-				console.log('[BLE] device found:', device.name, device.deviceId, `(attempt ${attempt + 1})`);
 				this.device = device;
 				this.alertConnecting();
 
@@ -86,19 +83,16 @@ export default class Connect extends SmartCube {
 					await this._initCube(device);
 					return; // Başarılı, çık
 				} catch (error) {
-					console.warn(`[BLE] Connection failed for ${device.name} (${device.deviceId}):`, error.message);
 					excludeDeviceIds.push(device.deviceId);
 					try { await this.adapter.disconnect(device); } catch (e) { /* ignore */ }
 
 					if (attempt === MAX_RETRIES - 1) {
 						throw error; // Son deneme de başarısız, hatayı fırlat
 					}
-					console.log('[BLE] Retrying with next device...');
 					this.alertScanning();
 				}
 			}
 		} catch (error) {
-			console.log('Bluetooth connection cancelled or failed:', error);
 
 			if (error.message === 'BLE_SCAN_ABORTED') {
 				// Kullanıcı iptal etti, sessizce sıfırla

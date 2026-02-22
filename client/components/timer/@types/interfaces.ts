@@ -105,4 +105,8 @@ export interface TimerStore {
 		turns: number;
 		tps: number;
 	} | null;
+	smartAbortVisible?: boolean;
+	smartMismatchDetected?: boolean;
+	smartStateSeq?: number;
+	smartPhysicallySolved?: boolean;
 }

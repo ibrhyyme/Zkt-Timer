@@ -22,7 +22,11 @@ import { useDispatch } from 'react-redux';
 import Dropdown from '../../common/inputs/dropdown/Dropdown';
 import Button from '../../common/button/Button';
 import { toastError } from '../../../util/toast';
-import { endTimer, startTimer, startInspection } from '../helpers/events';
+import { endTimer, startTimer, startInspection, resetTimerParams } from '../helpers/events';
+import { stopTimer, clearInspectionTimers, START_TIMEOUT } from '../helpers/timers';
+import { resetScramble } from '../helpers/scramble';
+import { saveSolve } from '../helpers/save';
+import AbortSolveOverlay from './abort_solve/AbortSolveOverlay';
 import BluetoothErrorMessage from '../common/BluetoothErrorMessage';
 import BleScanningModal from './ble_scanning_modal/BleScanningModal';
 import { isNative } from '../../../util/platform';
@@ -31,6 +35,7 @@ import type { TwistyPlayer } from 'cubing/twisty';
 import * as THREE from 'three';
 
 const b = block('smart-cube');
+const DEFAULT_SOLVED_STATE = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
 
 export default function SmartCube() {
 	const { t } = useTranslation();
@@ -57,6 +62,11 @@ export default function SmartCube() {
 
 	const [startState, setStartState] = useState<string>(null);
 	const [inspectionTime, setInspectionTime] = useState(0);
+	const [showAbortDialog, setShowAbortDialog] = useState(false);
+	const [abortResetCount, setAbortResetCount] = useState(0);
+	const [needsCubeReset, setNeedsCubeReset] = useState(false);
+	const inactivityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const INACTIVITY_TIMEOUT_MS = 5000; // 5 seconds
 
 	const useSpaceWithSmartCube = useSettings('use_space_with_smart_cube');
 	const inspectionEnabled = useSettings('inspection');
@@ -81,7 +91,21 @@ export default function SmartCube() {
 		smartGyroSupported,
 		originalScramble,
 		smartTurnOffset,
+		lastSmartMoveTime,
+		smartCurrentState,
+		smartAbortVisible,
+		smartStateSeq,
+		smartPhysicallySolved,
 	} = context;
+
+	// Polling safety refs (avoid stale closures in setInterval)
+	const needsCubeResetRef = useRef(needsCubeReset);
+	needsCubeResetRef.current = needsCubeReset;
+	const smartPhysicallySolvedRef = useRef(smartPhysicallySolved);
+	smartPhysicallySolvedRef.current = smartPhysicallySolved;
+	const lastSmartMoveTimeRef = useRef(lastSmartMoveTime);
+	lastSmartMoveTimeRef.current = lastSmartMoveTime;
+	const resetMovesRef = useRef<(markSolved?: boolean, isScrambleFinish?: boolean, endTimestamp?: number) => void>(null);
 
 	useEffect(() => {
 		initSmartSolver();
@@ -212,8 +236,18 @@ export default function SmartCube() {
 			checkForStartAfterTurnBatch(smartTurns);
 
 			const isSolved = cubejs.current.asString() === smartSolvedState;
-			if (!useSpaceWithSmartCube && isSolved && smartTurns.length) {
-				resetMoves();
+			// Yedek: cubejs yanlışsa (cascading gap) ama fiziksel küp çözüldüyse
+			if (!useSpaceWithSmartCube && (isSolved || (smartPhysicallySolved && timeStartedAt)) && smartTurns.length) {
+				// smartPhysicallySolved yolunda lastSmartMoveTime kullan (sessizlik gecikmesini çıkar)
+				const endTs = (smartPhysicallySolved && !isSolved) ? (lastSmartMoveTime || undefined) : undefined;
+				if (needsCubeReset) {
+					// Post-abort: physical cube solved, reset and generate new scramble
+					resetMoves(true, false, endTs);
+					setNeedsCubeReset(false);
+					resetScramble(context);
+				} else {
+					resetMoves(false, false, endTs);
+				}
 			}
 
 			// Live Analysis Sync
@@ -249,6 +283,45 @@ export default function SmartCube() {
 		}
 	}, [smartTurns, smartSolvedState]);
 
+	// FACELETS güvenlik ağı: fiziksel küp çözüldüyse timer durdur
+	// cubejs'e DOKUNMAZ - sadece fiziksel durumu kontrol eder
+	// BLE'den son hamle düşerse, 1.5s sessizlik sonrası FACELETS ile yakalanır
+	useEffect(() => {
+		if (timeStartedAt && smartTurns.length > 0) {
+		}
+		if (
+			smartPhysicallySolved &&
+			timeStartedAt &&
+			smartTurns.length > 0 &&
+			!useSpaceWithSmartCube
+		) {
+			if (needsCubeReset) {
+				resetMoves(true, false, lastSmartMoveTime || undefined);
+				setNeedsCubeReset(false);
+				resetScramble(context);
+			} else {
+				resetMoves(false, false, lastSmartMoveTime || undefined);
+			}
+		}
+	}, [smartStateSeq, timeStartedAt]);
+
+	// Polling safety: check every 1s if physical cube is solved (bypasses React dependency issues)
+	useEffect(() => {
+		if (!timeStartedAt || useSpaceWithSmartCube) return;
+
+		const interval = setInterval(() => {
+			if (smartPhysicallySolvedRef.current) {
+				if (needsCubeResetRef.current) {
+					resetMovesRef.current?.(true, false, lastSmartMoveTimeRef.current || undefined);
+				} else {
+					resetMovesRef.current?.(false, false, lastSmartMoveTimeRef.current || undefined);
+				}
+			}
+		}, 1000);
+
+		return () => clearInterval(interval);
+	}, [timeStartedAt, useSpaceWithSmartCube]);
+
 	// Direct Gyro Subscription (Bylassing Redux)
 	useEffect(() => {
 		if (!connect.current || !connect.current.activeCube) return;
@@ -279,6 +352,7 @@ export default function SmartCube() {
 	useEffect(() => {
 		return () => {
 			connect.current.disconnect();
+			if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
 		};
 	}, []);
 
@@ -290,6 +364,42 @@ export default function SmartCube() {
 		}
 		prevTimerTypeRef.current = timerType;
 	}, [timerType]);
+
+	// Inactivity detection: show abort button after 10s of no moves during solve.
+	// Uses setTimeout + smartTurns.length dependency. Each new move resets the timer.
+	// abortResetCount triggers a re-schedule after user dismisses the abort dialog.
+	useEffect(() => {
+		// Clear existing timer
+		if (inactivityTimerRef.current) {
+			clearTimeout(inactivityTimerRef.current);
+			inactivityTimerRef.current = null;
+		}
+
+		// Reset abort UI when solve ends or space mode is on
+		if (!timeStartedAt || useSpaceWithSmartCube) {
+			if (smartAbortVisible) {
+				setTimerParams({ smartAbortVisible: false });
+			}
+			setShowAbortDialog(false);
+			return;
+		}
+
+		// Hide abort button when a new move is detected (user resumed activity)
+		if (smartAbortVisible) {
+			setTimerParams({ smartAbortVisible: false });
+		}
+
+		// Schedule abort button to appear after INACTIVITY_TIMEOUT_MS
+		inactivityTimerRef.current = setTimeout(() => {
+			setTimerParams({ smartAbortVisible: true });
+		}, INACTIVITY_TIMEOUT_MS);
+
+		return () => {
+			if (inactivityTimerRef.current) {
+				clearTimeout(inactivityTimerRef.current);
+			}
+		};
+	}, [timeStartedAt, useSpaceWithSmartCube, smartTurns.length, abortResetCount]);
 
 	// Audio ref
 	const audioThrottleRef = useRef(false);
@@ -394,10 +504,14 @@ export default function SmartCube() {
 		}, 250);
 	}
 
-	function resetMoves(markSolved: boolean = false, isScrambleFinish: boolean = false) {
+	function resetMoves(markSolved: boolean = false, isScrambleFinish: boolean = false, endTimestamp?: number) {
 		const isSolveEnd = !!timeStartedAt;
 		if (isSolveEnd) {
-			endTimer(context, null, {
+			// endTimestamp: Safety net'ten geliyorsa son hamle zamanını kullan (sessizlik gecikmesini çıkar)
+			const finalTimeMilli = endTimestamp && timeStartedAt
+				? endTimestamp - timeStartedAt.getTime()
+				: null;
+			endTimer(context, finalTimeMilli, {
 				inspection_time: inspectionTime,
 				smart_device_id: smartDeviceId,
 				is_smart_cube: true,
@@ -418,7 +532,7 @@ export default function SmartCube() {
 		}
 
 		setTimerParams({
-			smartSolvedState: markSolved ? cubejs.current.asString() : smartSolvedState,
+			smartSolvedState: markSolved ? DEFAULT_SOLVED_STATE : smartSolvedState,
 			smartTurns: [],
 			smartPickUpTime: 0,
 			lastSmartMoveTime: 0,
@@ -432,11 +546,90 @@ export default function SmartCube() {
 		// Note: Visual cube and CubeJS reset is handled in the useEffect detecting smartTurns change
 	}
 
+	// Update resetMoves ref every render (for polling interval)
+	resetMovesRef.current = resetMoves;
+
+	// Abort solve handlers
+	function handleAbortClick() {
+		setShowAbortDialog(true);
+	}
+
+	function handleAbortDnf() {
+		if (!timeStartedAt) return;
+		const now = new Date();
+
+		// Pass time=0 so raw_time=0, which locks the DNF (cannot be toggled off)
+		saveSolve(
+			context,
+			0,
+			context.scramble,
+			timeStartedAt.getTime(),
+			now.getTime(),
+			true, // dnf
+			false,
+			{
+				is_smart_cube: true,
+				smart_device_id: smartDeviceId,
+				smart_turn_count: smartTurns.length,
+				smart_turns: JSON.stringify(smartTurns),
+			}
+		);
+
+		// Reset timer WITHOUT generating a new scramble or clearing smartTurns.
+		// smartTurns is kept so cubejs continues tracking the physical cube state.
+		// When the user physically solves the cube, the solve detection will fire.
+		stopTimer(START_TIMEOUT);
+		clearInspectionTimers(false, true);
+		setTimerParams({
+			timeStartedAt: null,
+			solving: false,
+			canStart: false,
+			spaceTimerStarted: 0,
+			scramble: '',
+			smartPickUpTime: 0,
+			lastSmartMoveTime: 0,
+			smartAbortVisible: false,
+		});
+		setShowAbortDialog(false);
+		setNeedsCubeReset(true);
+	}
+
+	function handleAbortDiscard() {
+		// Reset timer WITHOUT generating a new scramble or clearing smartTurns.
+		// smartTurns is kept so cubejs continues tracking the physical cube state.
+		stopTimer(START_TIMEOUT);
+		clearInspectionTimers(false, true);
+		setTimerParams({
+			timeStartedAt: null,
+			solving: false,
+			canStart: false,
+			spaceTimerStarted: 0,
+			scramble: '',
+			smartPickUpTime: 0,
+			lastSmartMoveTime: 0,
+			smartAbortVisible: false,
+		});
+		setShowAbortDialog(false);
+		setNeedsCubeReset(true);
+	}
+
+	function handleAbortContinue() {
+		setShowAbortDialog(false);
+		setTimerParams({ smartAbortVisible: false });
+		setAbortResetCount(c => c + 1); // Restart inactivity timer
+	}
+
+	function handleResetCubeState() {
+		resetMoves(true);
+		setShowAbortDialog(false);
+		setTimerParams({ smartAbortVisible: false });
+		setNeedsCubeReset(false);
+		resetScramble(context);
+	}
+
 	async function connectBluetooth() {
 		try {
-			console.log('[BLE] connectBluetooth called, isNative:', isNative());
 			let bluetoothAvailable = isNative() || (!!navigator.bluetooth && (await navigator.bluetooth.getAvailability()));
-			console.log('[BLE] bluetoothAvailable:', bluetoothAvailable);
 			if (bluetoothAvailable) {
 				if (isNative()) {
 					dispatch(openModal(
@@ -547,6 +740,10 @@ export default function SmartCube() {
 		battery = null;
 	}
 
+	// Mismatch banner: show after aborting a solve, when the physical cube
+	// still needs to be solved before a new scramble can be generated
+	const showCubeMismatch = needsCubeReset && !timeStartedAt;
+
 	return (
 		<div className={b({ mobile: mobileMode })}>
 			<div className={b('wrapper')}>
@@ -573,6 +770,19 @@ export default function SmartCube() {
 				</div>
 			</div>
 			{actionButton}
+			{domReady && ReactDOM.createPortal(
+				<AbortSolveOverlay
+					showAbortButton={!!smartAbortVisible && !!timeStartedAt}
+					showDialog={showAbortDialog}
+					showMismatchBanner={showCubeMismatch}
+					onAbortClick={handleAbortClick}
+					onDnf={handleAbortDnf}
+					onDiscard={handleAbortDiscard}
+					onContinue={handleAbortContinue}
+					onResetCubeState={handleResetCubeState}
+				/>,
+				document.body
+			)}
 		</div>
 	);
 }

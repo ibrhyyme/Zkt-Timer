@@ -5,6 +5,14 @@ import aes128 from './ae128';
 import { Subject } from 'rxjs';
 import { ModeOfOperation } from 'aes-js';
 import { isNative } from '../../../../util/platform';
+import Cube from 'cubejs';
+
+// Hamle ters çevirme: R → R', R' → R, R2 → R2
+function invertMove(move) {
+	if (move.endsWith("'")) return move.slice(0, -1);
+	if (move.endsWith('2')) return move;
+	return move + "'";
+}
 
 // GAN service and characteristic UUIDs
 const GAN_GEN2_SERVICE = '6e400001-b5a3-f393-e0a9-e50e24dc4179';
@@ -360,6 +368,19 @@ class GanGen3ProtocolDriver {
 				if (this.lastSerial != -1) {
 					let cubeTimestamp = msg.getBitWord(24, 32, true);
 					let serial = (this.serial = msg.getBitWord(56, 16, true));
+
+					// Seri boşluk kontrolü - kaçırılmış hamle algılama (8-bit wrap: 255→0)
+					const gap = (serial - this.lastSerial) & 0xFF;
+					if (gap > 1) {
+						cubeEvents.push({
+							type: 'SERIAL_GAP',
+							serial: serial,
+							lastSerial: this.lastSerial,
+							missedCount: gap - 1,
+							timestamp: timestamp,
+						});
+					}
+
 					let direction = msg.getBitWord(72, 2);
 					let face = [2, 32, 8, 1, 16, 4].indexOf(msg.getBitWord(74, 6));
 					let move = 'URFDLB'.charAt(face) + " '".charAt(direction);
@@ -374,13 +395,14 @@ class GanGen3ProtocolDriver {
 							direction: direction,
 							move: move.trim(),
 						});
-						this.lastSerial = serial;
 					}
+					// lastSerial'ı HER ZAMAN güncelle (face < 0 olsa bile cascading gap önlemek için)
+					this.lastSerial = serial;
 				}
 			} else if (eventType == 0x02) {
 				// FACELETS
 				let serial = (this.serial = msg.getBitWord(24, 16, true));
-				if (this.lastSerial == -1) this.lastSerial = serial;
+				this.lastSerial = serial;
 				let cp = [];
 				let co = [];
 				let ep = [];
@@ -479,6 +501,19 @@ class GanGen4ProtocolDriver {
 			if (this.lastSerial != -1) {
 				let cubeTimestamp = msg.getBitWord(16, 32, true);
 				let serial = (this.serial = msg.getBitWord(48, 16, true));
+
+				// Seri boşluk kontrolü - kaçırılmış hamle algılama (8-bit wrap: 255→0)
+				const gap = (serial - this.lastSerial) & 0xFF;
+				if (gap > 1) {
+					cubeEvents.push({
+						type: 'SERIAL_GAP',
+						serial: serial,
+						lastSerial: this.lastSerial,
+						missedCount: gap - 1,
+						timestamp: timestamp,
+					});
+				}
+
 				let direction = msg.getBitWord(64, 2);
 				let face = [2, 32, 8, 1, 16, 4].indexOf(msg.getBitWord(66, 6));
 				let move = 'URFDLB'.charAt(face) + " '".charAt(direction);
@@ -493,13 +528,14 @@ class GanGen4ProtocolDriver {
 						direction: direction,
 						move: move.trim(),
 					});
-					this.lastSerial = serial;
 				}
+				// lastSerial'ı HER ZAMAN güncelle (face < 0 olsa bile cascading gap önlemek için)
+				this.lastSerial = serial;
 			}
 		} else if (eventType == 0xed) {
 			// FACELETS
 			let serial = (this.serial = msg.getBitWord(16, 16, true));
-			if (this.lastSerial == -1) this.lastSerial = serial;
+			this.lastSerial = serial;
 			let cp = [];
 			let co = [];
 			let ep = [];
@@ -722,6 +758,25 @@ export default class GAN extends SmartCube {
 		this.moveQueue = [];
 		this.moveFlushTimeout = null;
 		this.BATCH_FLUSH_DELAY = 8; // 8ms - daha responsive (live analysis için)
+		// FACELETS resync flag
+		this._resyncPending = false;
+		// Kayıp hamle kurtarma sistemi
+		this._trackerCube = new Cube(); // BLE'den alınan tüm hamleleri takip eder
+		this._holdingForResync = false; // SERIAL_GAP sonrası hamle tutma modu
+		this._heldMoveEvents = []; // Bekletilen hamle event'leri
+		this._holdTimeoutId = null; // Zaman aşımı güvenliği
+		// Sessizlik algılayıcı: son hamleden 1.5s sonra FACELETS iste
+		// Son çözme hamlesi BLE'den düşerse bile timer'ın durmasını sağlar
+		this._silenceTimeoutId = null;
+		this._SILENCE_TIMEOUT = 500; // 0.5 saniye
+		// Otomatik kalibrasyon: ilk FACELETS = çözülmüş durum referansı
+		this._ganInitialFacelets = null;
+		// cubeTimestamp → Date.now() kalibrasyon ofseti
+		this._cubeTimeOffset = null;
+		// SERIAL_GAP tespit zamanı (inferred move timestamp için)
+		this._gapDetectedAt = null;
+		// Bekleyen FACELETS istek sayacı (stale yanıt filtreleme)
+		this._pendingFaceletsRequests = 0;
 	}
 
 	subscribeGyro(callback) {
@@ -754,7 +809,6 @@ export default class GAN extends SmartCube {
 		// try it one more time automatically before bothering the user.
 		// Connection flakiness is common with Web Bluetooth.
 		if (isFallbackCall && cachedMac && this.retryCount < 1) {
-			console.log('Connection failed, retrying with cached MAC automatically...');
 			this.retryCount++;
 			return cachedMac;
 		}
@@ -852,11 +906,9 @@ export default class GAN extends SmartCube {
 	};
 
 	init = async () => {
-		console.log('Attempting to connect to Gan cube with existing device...');
 		// Use the existing device instead of calling connectGanCube which triggers a new requestDevice
 		this.conn = await this.connectWithExistingDevice(this.device, async (device, isFallback) => {
 			const mac = await this.customMacAddressProvider(device, isFallback);
-			console.log('MAC Address provided:', mac);
 			return mac;
 		});
 
@@ -864,6 +916,7 @@ export default class GAN extends SmartCube {
 
 		await this.conn.sendCubeCommand({ type: 'REQUEST_BATTERY' });
 		await this.conn.sendCubeCommand({ type: 'REQUEST_HARDWARE' });
+		await this.conn.sendCubeCommand({ type: 'REQUEST_FACELETS' }); // Tracker'ı fiziksel durumla senkronize et
 
 		// Not: alertConnected artık HARDWARE event'i alındıktan sonra çağrılıyor
 	};
@@ -871,13 +924,42 @@ export default class GAN extends SmartCube {
 	handleCubeEvent = (event) => {
 		if (event.type == 'MOVE') {
 			if (event.move) {
-				// Queue move instead of direct dispatch
+				// cubeTimestamp kalibrasyonu: küp dahili saatini yerel zamana eşle
+				if (event.cubeTimestamp != null) {
+					const localNow = Date.now();
+					if (this._cubeTimeOffset === null) {
+						this._cubeTimeOffset = localNow - event.cubeTimestamp;
+					} else {
+						// Drift kontrolü: 2 saniyeden fazla sapma varsa yeniden kalibre et
+						const expectedLocal = event.cubeTimestamp + this._cubeTimeOffset;
+						if (Math.abs(localNow - expectedLocal) > 2000) {
+							this._cubeTimeOffset = localNow - event.cubeTimestamp;
+						}
+					}
+				}
+
+				// Kalibre edilmiş timestamp hesapla
+				const moveTimestamp = (event.cubeTimestamp != null && this._cubeTimeOffset !== null)
+					? event.cubeTimestamp + this._cubeTimeOffset
+					: Date.now();
+
+				// Tracker küpü HER ZAMAN güncelle (kayıp hamle hesaplaması için)
+				this._trackerCube.move(event.move);
+
+				if (this._holdingForResync) {
+					// SERIAL_GAP sonrası FACELETS bekleniyor - hamleyi beklet
+					event._receivedAt = moveTimestamp;
+					this._heldMoveEvents.push(event);
+					return;
+				}
+
+				// Normal işlem: queue'ya ekle
 				this.moveQueue.push({
 					move: event.move,
-					timestamp: Date.now()
+					timestamp: moveTimestamp
 				});
 
-				// Debounced flush - 16ms içinde gelen tüm hamleler batch'lenir
+				// Debounced flush - 8ms içinde gelen tüm hamleler batch'lenir
 				if (this.moveFlushTimeout) {
 					clearTimeout(this.moveFlushTimeout);
 				}
@@ -885,9 +967,171 @@ export default class GAN extends SmartCube {
 					() => this.flushMoveQueue(),
 					this.BATCH_FLUSH_DELAY
 				);
+
+				// Sessizlik algılayıcı: son hamleden 1.5s sonra FACELETS iste
+				// Son çözme hamlesi BLE'den düşerse bile timer'ın durmasını sağlar
+				if (this._silenceTimeoutId) clearTimeout(this._silenceTimeoutId);
+				this._silenceTimeoutId = setTimeout(() => {
+					this.requestFaceletsResync();
+				}, this._SILENCE_TIMEOUT);
 			} else {
-				console.warn('Move event received but no move property found:', event);
 			}
+		} else if (event.type == 'SERIAL_GAP') {
+
+			if (this._holdingForResync) {
+				// Zaten bekleniyor - ek boşluk, FACELETS yanıtını bekle
+				return;
+			}
+
+			// Bekleyen hamleleri hemen flush et (gap öncesi hamleler)
+			if (this.moveFlushTimeout) {
+				clearTimeout(this.moveFlushTimeout);
+			}
+			this.flushMoveQueue();
+
+			// Hamle tutma modunu başlat
+			this._holdingForResync = true;
+			this._heldMoveEvents = [];
+			this._gapDetectedAt = Date.now();
+
+			// Bekleyen sessizlik timer'ını iptal et
+			// Stale FACELETS yanıtının resync FACELETS'i ile çakışmasını önler
+			if (this._silenceTimeoutId) {
+				clearTimeout(this._silenceTimeoutId);
+				this._silenceTimeoutId = null;
+			}
+
+			// Zaman aşımı güvenliği - 2 saniye içinde FACELETS gelmezse FACELETS tekrar iste
+			if (this._holdTimeoutId) clearTimeout(this._holdTimeoutId);
+			this._holdTimeoutId = setTimeout(() => {
+				if (this._holdingForResync) {
+					this._holdingForResync = false;
+					// Held hamleleri ATIL - FACELETS geldiğinde doğru durum alınacak
+					this._heldMoveEvents = [];
+					// Tekrar FACELETS iste
+					this.requestFaceletsResync();
+				}
+			}, 2000);
+
+			// FACELETS isteği ile küpün gerçek durumunu al
+			// force=true: debounce'u atla (sessizlik timer'ı zaten bir istek göndermiş olabilir)
+			this.requestFaceletsResync(true);
+		} else if (event.type == 'FACELETS') {
+			// Bekleyen FACELETS istek sayacını güncelle
+			this._pendingFaceletsRequests = Math.max(0, this._pendingFaceletsRequests - 1);
+
+			if (this._holdingForResync) {
+				// Stale FACELETS kontrolü: hala bekleyen yanıtlar varsa bu eski bir yanıt
+				// Sessizlik timer'ı SERIAL_GAP'ten önce FACELETS istemiş olabilir
+				// ve o eski yanıt resync yanıtımızdan önce gelmiş olabilir
+				if (this._pendingFaceletsRequests > 0) {
+					return; // Holding mode'da kal, resync işleme
+				}
+
+				// Zaman aşımı timer'ını temizle (doğru resync yanıtı alındı)
+				if (this._holdTimeoutId) {
+					clearTimeout(this._holdTimeoutId);
+					this._holdTimeoutId = null;
+				}
+
+				this._holdingForResync = false;
+
+				const faceletsState = event.facelets;
+				const trackerState = this._trackerCube.asString();
+
+				if (trackerState !== faceletsState) {
+					// Kayıp hamle(ler) var - matematiksel olarak hesapla
+					// tracker = preGap * heldMoves (kayıp hamle yok)
+					// FACELETS = preGap * kayıpHamle * heldMoves (fiziksel sıra)
+					try {
+						// Adım 1: Held hamleleri tracker'dan geri al → preGap durumu
+						const preGapCube = Cube.fromString(trackerState);
+						for (let i = this._heldMoveEvents.length - 1; i >= 0; i--) {
+							preGapCube.move(invertMove(this._heldMoveEvents[i].move));
+						}
+
+						// Adım 2: Held hamleleri FACELETS'den geri al → preGap + kayıp durumu
+						const postMissedCube = Cube.fromString(faceletsState);
+						for (let i = this._heldMoveEvents.length - 1; i >= 0; i--) {
+							postMissedCube.move(invertMove(this._heldMoveEvents[i].move));
+						}
+
+						// Adım 3: preGap'e 18 hamle uygula, postMissed'e eşleşeni bul
+						const possibleMoves = [
+							'U', "U'", 'U2', 'R', "R'", 'R2',
+							'D', "D'", 'D2', 'L', "L'", 'L2',
+							'F', "F'", 'F2', 'B', "B'", 'B2'
+						];
+						const preGapState = preGapCube.asString();
+						const postMissedState = postMissedCube.asString();
+						let foundMove = null;
+						for (const move of possibleMoves) {
+							const test = Cube.fromString(preGapState);
+							test.move(move);
+							if (test.asString() === postMissedState) {
+								foundMove = move;
+								break;
+							}
+						}
+
+						if (foundMove) {
+							// Sentetik MOVE olarak queue'ya ekle (held hamlelerden ÖNCE)
+							// Gap tespit zamanını kullan (FACELETS RTT gecikmesi yerine)
+							this.moveQueue.push({ move: foundMove, timestamp: this._gapDetectedAt || Date.now() });
+						} else {
+						}
+					} catch (e) {
+					}
+
+					// Tracker'ı fiziksel duruma düzelt
+					try {
+						this._trackerCube = Cube.fromString(faceletsState);
+					} catch (e) {
+					}
+				}
+
+				// Held hamleleri dispatch et (cubejs doğru takip edebilsin)
+				// FACELETS resync useEffect kaldırıldı, bu yüzden double-counting yok
+				// cubejs sadece smartTurns'deki hamlelerle güncellenir
+				for (const heldEvent of this._heldMoveEvents) {
+					this.moveQueue.push({
+						move: heldEvent.move,
+						// Orijinal varış zamanını kullan (FACELETS RTT gecikmesi yerine)
+						timestamp: heldEvent._receivedAt || Date.now(),
+					});
+				}
+				this._heldMoveEvents = [];
+
+				// Sentetik + held hamleleri flush et
+				if (this.moveFlushTimeout) clearTimeout(this.moveFlushTimeout);
+				this.flushMoveQueue();
+			} else {
+				// Zaman aşımı timer'ını temizle (holding değilse de temizle)
+				if (this._holdTimeoutId) {
+					clearTimeout(this._holdTimeoutId);
+					this._holdTimeoutId = null;
+				}
+
+				// Holding değil - tracker'ı fiziksel duruma senkronize et
+				try {
+					this._trackerCube = Cube.fromString(event.facelets);
+				} catch (e) {
+				}
+			}
+
+			// Otomatik kalibrasyon: ilk FACELETS'i çözülmüş durum referansı olarak kaydet
+			if (!this._ganInitialFacelets) {
+				this._ganInitialFacelets = event.facelets;
+			}
+
+
+			// Redux'a her durumda bildir (SmartCube.tsx'deki güvenlik ağı için)
+			this.alertCubeState(event.facelets);
+
+			// NOT: FACELETS sonrası yeniden polling YAPILMIYOR
+			// Sessizlik timer'ı sadece MOVE event'lerinden başlatılıyor (satır ~980)
+			// Bu, stale FACELETS yanıtının SERIAL_GAP resync'i ile çakışmasını önler
+			// ve idle durumda sürekli SOLVED dispatch spam'ini engeller
 		} else if (event.type == 'GYRO') {
 			// Jiroskop verilerini işle
 			if (event.quaternion) {
@@ -934,19 +1178,50 @@ export default class GAN extends SmartCube {
 		this.alertTurnCubeBatch(batch);
 	};
 
+	requestFaceletsResync = async (force = false) => {
+		if (this._resyncPending && !force) return;
+		this._resyncPending = true;
+		this._pendingFaceletsRequests++;
+		try {
+			if (this.conn) {
+				await this.conn.sendCubeCommand({ type: 'REQUEST_FACELETS' });
+			}
+		} catch (e) {
+			this._pendingFaceletsRequests = Math.max(0, this._pendingFaceletsRequests - 1);
+		} finally {
+			setTimeout(() => { this._resyncPending = false; }, 100);
+		}
+	};
+
 	disconnect = async () => {
+		// Held hamleleri temizle (dispatch etme - double-counting önle)
+		if (this._holdingForResync) {
+			this._holdingForResync = false;
+			this._heldMoveEvents = [];
+		}
+		if (this._holdTimeoutId) {
+			clearTimeout(this._holdTimeoutId);
+			this._holdTimeoutId = null;
+		}
+		if (this._silenceTimeoutId) {
+			clearTimeout(this._silenceTimeoutId);
+			this._silenceTimeoutId = null;
+		}
+
 		// Flush pending moves before disconnect
 		if (this.moveFlushTimeout) {
 			clearTimeout(this.moveFlushTimeout);
 			this.flushMoveQueue();
 		}
 
+		// Tracker sıfırla
+		this._trackerCube = new Cube();
+
 		// Disconnect connection if exists
 		if (this.conn) {
 			try {
 				await this.conn.disconnect();
 			} catch (error) {
-				console.error('Disconnect error:', error);
 			}
 		}
 	};
