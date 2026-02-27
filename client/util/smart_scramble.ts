@@ -1,5 +1,6 @@
 import Cube from 'cubejs';
 import { getReverseTurns } from './solve/turns';
+import { solveAsync } from './solver_worker_manager';
 
 export interface SmartTurn {
 	turn: string;
@@ -83,6 +84,42 @@ export function computeCorrectionPath(originalScramble: string, userMovesRaw: st
 
 	// solve() returns moves from current state to solved = U⁻¹ × S = correction
 	const solution = diffCube.solve();
+	if (!solution || !solution.trim()) return [];
+
+	return solution.trim().split(' ').filter(m => m.trim());
+}
+
+// Memoize inverse scramble — originalScramble is constant per session
+let _cachedScramble = '';
+let _cachedInverse: string[] = [];
+
+/**
+ * Async version: runs Cube.solve() in a Web Worker so the main thread stays free.
+ * Falls back to sync solve if Worker is unavailable.
+ */
+export async function computeCorrectionPathAsync(originalScramble: string, userMovesRaw: string[]): Promise<string[]> {
+	// Build diff cube on main thread (fast — just move() calls, ~1ms)
+	const diffCube = new Cube();
+
+	if (originalScramble !== _cachedScramble) {
+		_cachedInverse = getReverseTurns(originalScramble);
+		_cachedScramble = originalScramble;
+	}
+	for (const move of _cachedInverse) {
+		diffCube.move(move);
+	}
+
+	for (const move of userMovesRaw) {
+		diffCube.move(move);
+	}
+
+	const SOLVED = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
+	if (diffCube.asString() === SOLVED) {
+		return [];
+	}
+
+	// Send only the expensive solve() to the worker
+	const solution = await solveAsync(diffCube.toJSON());
 	if (!solution || !solution.trim()) return [];
 
 	return solution.trim().split(' ').filter(m => m.trim());
@@ -297,6 +334,181 @@ export function matchScrambleWithCommutative(
 		matched: allConsumed && allPerfect,
 		matchStatus
 	};
+}
+
+/**
+ * Incremental move compressor: maintains an output stack and only processes
+ * newly appended turns, reducing per-batch cost from O(n) to O(k).
+ */
+export class IncrementalCompressor {
+	private output: string[] = [];
+	private processedCount = 0;
+
+	processNew(allTurns: (SmartTurn | string)[], skipCompress = false): string[] {
+		for (let i = this.processedCount; i < allTurns.length; i++) {
+			let turn = allTurns[i] as string;
+			if (typeof turn === 'object') {
+				turn = (turn as SmartTurn).turn;
+			}
+
+			if (this.output.length > 0) {
+				const lastTurn = this.output[this.output.length - 1];
+
+				if (turn === lastTurn) {
+					if (isTwo(turn) && !skipCompress) {
+						this.output.pop();
+					} else {
+						this.output[this.output.length - 1] = removePrime(turn) + '2';
+					}
+					continue;
+				}
+
+				if (rawTurnIsSame(turn, lastTurn) && !skipCompress) {
+					if (!isTwo(turn) && !isTwo(lastTurn)) {
+						this.output.pop();
+					} else if (isTwo(turn) || isTwo(lastTurn)) {
+						if (isPrime(turn) || isPrime(lastTurn)) {
+							this.output[this.output.length - 1] = getRawTurn(turn);
+						} else {
+							this.output[this.output.length - 1] = getRawTurn(turn) + "'";
+						}
+					}
+					continue;
+				}
+			}
+
+			this.output.push(turn);
+		}
+
+		this.processedCount = allTurns.length;
+		return this.output;
+	}
+
+	getOutput(): string[] {
+		return this.output;
+	}
+
+	reset(): void {
+		this.output = [];
+		this.processedCount = 0;
+	}
+}
+
+/**
+ * Incremental scramble matcher: caches match progress so each batch only checks
+ * newly compressed moves, reducing per-batch cost from O(n²) to O(k²).
+ */
+export class IncrementalMatcher {
+	private expectedMoves: string[];
+	private matchStatus: ('perfect' | 'half' | 'wrong' | 'pending')[];
+	private userConsumed: boolean[] = [];
+	private userSearchStart = 0;
+	private lastExpIdx = 0;
+	private lastUserLength = 0;
+	private failed = false;
+
+	constructor(expectedMoves: string[]) {
+		this.expectedMoves = expectedMoves;
+		this.matchStatus = new Array(expectedMoves.length).fill('pending');
+	}
+
+	update(userMoves: string[]): {matched: boolean; matchStatus: ('perfect' | 'half' | 'wrong' | 'pending')[]} {
+		if (this.failed) {
+			return {matched: false, matchStatus: this.matchStatus};
+		}
+
+		// If compressed output shrank (cancellation cascade), we must re-evaluate
+		if (userMoves.length < this.lastUserLength) {
+			this.fullReset(userMoves);
+		}
+
+		// Extend consumed tracking
+		while (this.userConsumed.length < userMoves.length) {
+			this.userConsumed.push(false);
+		}
+
+		for (let expIdx = this.lastExpIdx; expIdx < this.expectedMoves.length; expIdx++) {
+			const expectedMove = this.expectedMoves[expIdx];
+
+			let foundIdx = -1;
+			let isHalf = false;
+
+			for (let uIdx = this.userSearchStart; uIdx < userMoves.length; uIdx++) {
+				if (this.userConsumed[uIdx]) continue;
+
+				let canReach = true;
+				for (let between = this.userSearchStart; between < uIdx; between++) {
+					if (this.userConsumed[between]) continue;
+					if (!areCommutative(expectedMove, userMoves[between])) {
+						canReach = false;
+						break;
+					}
+				}
+				if (!canReach) continue;
+
+				if (userMoves[uIdx] === expectedMove) {
+					foundIdx = uIdx;
+					break;
+				}
+
+				if (rawTurnIsSame(userMoves[uIdx], expectedMove) && (isTwo(expectedMove) || isTwo(userMoves[uIdx]))) {
+					foundIdx = uIdx;
+					isHalf = true;
+					break;
+				}
+			}
+
+			if (foundIdx >= 0) {
+				this.userConsumed[foundIdx] = true;
+				this.matchStatus[expIdx] = isHalf ? 'half' : 'perfect';
+
+				while (this.userSearchStart < userMoves.length && this.userConsumed[this.userSearchStart]) {
+					this.userSearchStart++;
+				}
+				this.lastExpIdx = expIdx + 1;
+			} else if (this.userSearchStart < userMoves.length) {
+				this.matchStatus[expIdx] = 'wrong';
+				for (let i = expIdx + 1; i < this.expectedMoves.length; i++) {
+					this.matchStatus[i] = 'wrong';
+				}
+				this.failed = true;
+				this.lastUserLength = userMoves.length;
+				return {matched: false, matchStatus: this.matchStatus};
+			} else {
+				break;
+			}
+		}
+
+		this.lastUserLength = userMoves.length;
+
+		const allConsumed = this.userConsumed.slice(0, userMoves.length).every(c => c);
+		const allPerfect = this.matchStatus.every(s => s === 'perfect');
+
+		return {matched: allConsumed && allPerfect, matchStatus: this.matchStatus};
+	}
+
+	/** Full reset when compressed output shrinks (rare cancellation cascade) */
+	private fullReset(userMoves: string[]): void {
+		this.matchStatus = new Array(this.expectedMoves.length).fill('pending');
+		this.userConsumed = new Array(userMoves.length).fill(false);
+		this.userSearchStart = 0;
+		this.lastExpIdx = 0;
+		this.lastUserLength = 0;
+		this.failed = false;
+	}
+
+	reset(): void {
+		this.matchStatus = new Array(this.expectedMoves.length).fill('pending');
+		this.userConsumed = [];
+		this.userSearchStart = 0;
+		this.lastExpIdx = 0;
+		this.lastUserLength = 0;
+		this.failed = false;
+	}
+
+	isFailed(): boolean {
+		return this.failed;
+	}
 }
 
 /**

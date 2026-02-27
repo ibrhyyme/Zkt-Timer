@@ -14,12 +14,13 @@ server {
     # Fix: 413 Payload Too Large (Import için)
     client_max_body_size 50M;
 
-    # Fix: Service Worker 404
+    # Fix: Service Worker 404 + her zaman güncel versiyon
     location = /sw.js {
         alias /home/ibrahimyldz77/Zkt-Timer/public/sw.js;
         access_log off;
-        expires 0;
-        add_header Cache-Control "no-cache";
+        expires -1;
+        add_header Cache-Control "no-cache, no-store, must-revalidate";
+        add_header Pragma "no-cache";
     }
 
     # 1. Ana Uygulama

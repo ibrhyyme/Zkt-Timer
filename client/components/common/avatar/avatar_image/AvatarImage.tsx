@@ -10,7 +10,7 @@ import {
 	UserAccountForAdmin as GqlUserAccountForAdmin,
 	Profile as GqlProfile,
 } from '../../../../@types/generated/graphql';
-import { isPro } from '../../../../util/pro';
+import { isPro, isProEnabled } from '../../../../util/pro';
 
 const b = block('avatar-image');
 
@@ -87,6 +87,8 @@ export default function AvatarImage(props: Props) {
 	const user = props.user || props.profile?.user;
 	const profile = props.profile || props.user?.profile;
 
+	const showProRing = isProEnabled() && isPro(user);
+
 	// Check if we have a profile image and it hasn't failed to load
 	const hasProfileImage = ((profile && profile.pfp_image) || image) && !imageError;
 
@@ -95,7 +97,7 @@ export default function AvatarImage(props: Props) {
 		const avatarSrc = image || getStorageURL(profile?.pfp_image?.storage_path);
 
 		avatar = (
-			<div className={b()}>
+			<div className={b({pro: showProRing})}>
 				<div className={b('body', { large, small, tiny })}>
 					<img
 						src={avatarSrc}
@@ -126,7 +128,7 @@ export default function AvatarImage(props: Props) {
 		const initials = getInitials(user?.username || (user as any)?.first_name);
 
 		avatar = (
-			<div className={b()}>
+			<div className={b({pro: showProRing})}>
 				<div
 					className={b('body', { default: true, large, small, tiny })}
 					style={{ backgroundColor }}

@@ -3,13 +3,10 @@ import {PublicUserAccount, UserAccount} from '../../server/schemas/UserAccount.s
 /**
  * Central Pro feature configuration
  * Set PRO_ENABLED=true in environment to enable Pro features
+ * Note: esbuild replaces process.env.PRO_ENABLED at build time (see esbuild.js define)
  */
 export const isProEnabled = (): boolean => {
-	if (typeof process !== 'undefined' && process.env) {
-		return process.env.PRO_ENABLED === 'true';
-	}
-	// Default to disabled
-	return false;
+	return process.env.PRO_ENABLED === 'true';
 };
 
 export function isPro(user?: UserAccount | PublicUserAccount): boolean {

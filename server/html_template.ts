@@ -30,6 +30,7 @@ export default (payload: HtmlPagePayload) => {
 				<link rel="preload" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,500;0,600;0,700;0,800;0,900;1,500;1,600;1,700;1,900&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
 				<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,500;0,600;0,700;0,800;0,900;1,500;1,600;1,700;1,900&display=swap"></noscript>
 				<link rel="stylesheet" href="${distBase}/${cssFileName}?v=${version}">
+				<link rel="stylesheet" href="https://cdn.cubing.net/v0/css/@cubing/icons/css">
 				<link rel="shortcut icon" href="${resourceBase}/favicon.ico" type="image/x-icon">  
 				<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
 				

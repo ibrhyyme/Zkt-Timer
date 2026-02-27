@@ -82,6 +82,18 @@ async function registerServiceWorker() {
                 });
             });
 
+            // Uygulama öne geldiğinde SW güncelleme kontrolü yap
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') {
+                    registration.update().catch(() => {});
+                }
+            });
+
+            // Her 5 dakikada bir periyodik güncelleme kontrolü
+            setInterval(() => {
+                registration.update().catch(() => {});
+            }, 5 * 60 * 1000);
+
             // Background Sync register et
             await registerBackgroundSync();
         } catch (error) {

@@ -1,9 +1,8 @@
-const CACHE = 'zkt-v3';
+const CACHE_VERSION = '__DEPLOY_VERSION__';
+const CACHE = 'zkt-' + CACHE_VERSION;
 const CORE = [
   '/',
   '/public/manifest.webmanifest',
-  '/dist/app.min.js',
-  '/dist/app.min.css',
   '/public/images/apple-touch-icon.png',
   '/public/images/zkt-logo.png'
 ];
@@ -42,6 +41,11 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
+  // Versiyon endpoint'ini her zaman network'ten al
+  if (url.pathname === '/api/version') {
+    return;
+  }
+
   // GraphQL API: Network-first, cache fallback
   if (url.pathname.startsWith('/graphql')) {
     e.respondWith(
@@ -75,8 +79,8 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // Static assets (JS, CSS, images): Cache-first with network update
-  // Strip query strings for cache matching (handles ?v=xxx cache busting)
+  // Static assets (JS, CSS, images): Cache-first, arka planda güncelle
+  // Yeni deploy'larda capacitor-update-checker versiyon farkını tespit edip cache'i temizler
   if (req.method === 'GET') {
     const cacheUrl = url.pathname;
     e.respondWith(
@@ -87,7 +91,7 @@ self.addEventListener('fetch', (e) => {
             caches.open(CACHE).then(c => c.put(cacheUrl, copy));
           }
           return res;
-        }).catch(() => hit); // Network fail -> return cached
+        }).catch(() => hit);
 
         return hit || fetchPromise;
       })

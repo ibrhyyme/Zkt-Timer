@@ -122,6 +122,12 @@ function appUseRouteForPage(routePath, route: PageContext) {
 			return;
 		}
 
+		// Admin sayfalarına sadece admin/mod erişebilir, geri kalanı 404 görür
+		if (route.admin && (!me || (!me.admin && !me.mod))) {
+			res.status(404).sendFile(`${__dirname}/resources/not_found.html`);
+			return;
+		}
+
 		// Redirect to home page if user is logged in and on login page
 		if (me && (routePath === '/login' || routePath === '/signup')) {
 			res.status(302).redirect('/timer');

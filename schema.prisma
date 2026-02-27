@@ -1023,6 +1023,7 @@ model Announcement {
   createdAt   DateTime              @default(now()) @map("created_at")
   publishedAt DateTime?             @map("published_at")  // Yayınlanma tarihi
   isActive    Boolean               @default(true) @map("is_active")
+  translations Json?                               // {"en": {"title":"...","content":"..."}, "es": {...}, "ru": {...}}
 
   views AnnouncementView[]
 

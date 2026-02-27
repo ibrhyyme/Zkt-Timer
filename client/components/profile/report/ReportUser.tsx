@@ -1,6 +1,7 @@
 import React from 'react';
 import './ReportProfile.scss';
 import { gql } from '@apollo/client/core';
+import { useTranslation } from 'react-i18next';
 import { toastSuccess } from '../../../util/toast';
 import Button from '../../common/button/Button';
 import { PublicUserAccount, UserAccount, UserAccountForAdmin } from '../../../../server/schemas/UserAccount.schema';
@@ -41,6 +42,7 @@ interface Props extends IModalProps {
 }
 
 export default function ReportUser(props: Props) {
+	const { t } = useTranslation();
 	const { user } = props;
 
 	const [reason, setReason] = useInput('');
@@ -64,7 +66,7 @@ export default function ReportUser(props: Props) {
 			},
 		});
 
-		toastSuccess(`Successfully reported ${user.username}. We will take care of the rest`);
+		toastSuccess(t('report_user.success', { username: user.username }));
 
 		if (props.onComplete) {
 			props.onComplete();
@@ -75,10 +77,10 @@ export default function ReportUser(props: Props) {
 	return (
 		<div className={b()}>
 			<ModalHeader
-				title={`Report ${user.username}`}
-				description="Bu kullanıcının şikayete değer bir şey yaptığını düşünüyorsanız, lütfen aşağıya kısa bir gerekçe yazın ve şikayeti gönderin. Tüm şikayetleri adil bir şekilde inceleyeceğiz ve gerekirse harekete geçeceğiz."
+				title={t('report_user.title', { username: user.username })}
+				description={t('report_user.description')}
 			/>
-			<TextArea legend="Reason" value={reason} name="reason" onChange={setReason} />
+			<TextArea legend={t('report_user.reason')} value={reason} name="reason" onChange={setReason} />
 			<Button
 				danger
 				large
@@ -87,7 +89,7 @@ export default function ReportUser(props: Props) {
 				disabled={disabled}
 				loading={reportUserData?.loading}
 				error={reportUserData?.error?.message}
-				text="Şikayet Et"
+				text={t('report_user.submit')}
 				onClick={reportProfile}
 			/>
 		</div>

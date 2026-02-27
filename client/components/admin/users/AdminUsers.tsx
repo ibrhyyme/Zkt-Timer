@@ -25,6 +25,7 @@ interface UserAccountData {
 	created_at: string;
 	last_solve_at?: string;
 	join_country?: string;
+	join_ip?: string;
 	banned_forever: boolean;
 	banned_until?: string;
 	is_pro: boolean;
@@ -50,6 +51,7 @@ const ADMIN_USER_SEARCH_QUERY = gql`
 				created_at
 				last_solve_at
 				join_country
+				join_ip
 				banned_forever
 				is_pro
 				banned_until
@@ -117,6 +119,9 @@ function UserTableRow({ user }: { user: UserAccountData }) {
 			</td>
 			<td className="cd-admin-users__cell cd-admin-users__cell--country">
 				{user.join_country || '-'}
+			</td>
+			<td className="cd-admin-users__cell cd-admin-users__cell--ip">
+				{user.join_ip || '-'}
 			</td>
 			<td className="cd-admin-users__cell cd-admin-users__cell--badges">
 				<div className="cd-admin-users__badges">
@@ -230,6 +235,7 @@ export default function AdminUsers() {
 										<th className="cd-admin-users__header-cell">{t('admin_users.register_date')}</th>
 										<th className="cd-admin-users__header-cell">{t('admin_users.last_solve')}</th>
 										<th className="cd-admin-users__header-cell">{t('admin_users.country')}</th>
+										<th className="cd-admin-users__header-cell">IP</th>
 										<th className="cd-admin-users__header-cell">{t('admin_users.status')}</th>
 										<th className="cd-admin-users__header-cell">{t('admin_users.actions')}</th>
 									</tr>

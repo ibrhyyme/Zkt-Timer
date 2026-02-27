@@ -15,6 +15,7 @@
 		height: $aviSize;
 		border-radius: 50%;
 		overflow: hidden;
+		z-index: 1;
 
 		img {
 			width: 100%;
@@ -37,4 +38,23 @@
 			height: $aviSizeLarge !important;
 		}
 	}
+
+	&--pro {
+		padding: 3px;
+		border-radius: 50%;
+
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 0;
+			border-radius: 50%;
+			background: conic-gradient(from 0deg, #246bfd, #a855f7, #66bb6a, #246bfd);
+			animation: pro-ring-spin 8s linear infinite;
+		}
+	}
+}
+
+@keyframes pro-ring-spin {
+	from { transform: rotate(0deg); }
+	to { transform: rotate(360deg); }
 }

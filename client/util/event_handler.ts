@@ -21,6 +21,8 @@ export interface ClientEvent {
 		successCount: number;
 		failCount: number;
 	};
+	trainerDbUpdatedEvent: void;
+	trainerDbDeletedEvent: void;
 }
 
 export function addEventListener<T extends keyof ClientEvent>(

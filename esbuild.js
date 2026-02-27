@@ -22,6 +22,20 @@ if (deploying) {
 	watch = false;
 }
 
+// Solver Web Worker build (cubejs Kociemba - runs off main thread)
+require('esbuild').build({
+	entryPoints: ['client/util/solver-worker-entry.ts'],
+	outfile: 'dist/solver-worker.js',
+	bundle: true,
+	logLevel: 'error',
+	minify: !dev,
+	resolveExtensions: ['.ts', '.js'],
+	format: 'iife',
+	loader: {'.js': 'jsx'},
+}).catch((err) => {
+	console.error('Solver worker build failed:', err);
+});
+
 require('esbuild')
 	.build({
 		entryPoints: ['client/components/App.tsx'],
@@ -45,9 +59,6 @@ require('esbuild')
 		},
 		loader: {'.js': 'jsx'},
 		plugins: [
-			// sassPlugin({
-			// 	type: 'style',
-			// }),
 			postCssPlugin({
 				postcss: {
 					plugins: [require('tailwindcss'), require('autoprefixer')],
@@ -58,4 +69,19 @@ require('esbuild')
 	})
 	.then((result) => {
 		console.info('Watching...');
+
+		// Temiz kapanma - zombie süreç bırakmaz
+		const cleanup = () => {
+			if (result.stop) {
+				result.stop();
+			}
+			process.exit(0);
+		};
+
+		process.on('SIGINT', cleanup);
+		process.on('SIGTERM', cleanup);
+	})
+	.catch((err) => {
+		console.error('Build failed:', err);
+		process.exit(1);
 	});

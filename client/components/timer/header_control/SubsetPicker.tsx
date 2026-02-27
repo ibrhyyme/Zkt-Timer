@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { CaretDown, ArrowDown } from 'phosphor-react';
 import Dropdown from '../../common/inputs/dropdown/Dropdown';
 import { IDropdownOption } from '../../common/inputs/dropdown/dropdown_option/DropdownOption';
@@ -12,14 +13,24 @@ interface Props {
 }
 
 export default function SubsetPicker({ subsets, selectedSubset, onChange, mobile }: Props) {
+    const { t } = useTranslation();
+
     if (!subsets || subsets.length === 0) return null;
 
     // Find current selection
     const currentSubset = subsets.find(s => s.id === selectedSubset);
 
+    // Translate label: if it's an i18n key (contains dot), translate it; otherwise use as-is
+    function translateLabel(label: string): string {
+        if (label.includes('.')) {
+            return t(label);
+        }
+        return label;
+    }
+
     // Build options
     const options: IDropdownOption[] = subsets.map(sub => ({
-        text: sub.label,
+        text: translateLabel(sub.label),
         disabled: sub.id === selectedSubset,
         header: sub.isHeader,
         onClick: () => {
@@ -32,7 +43,7 @@ export default function SubsetPicker({ subsets, selectedSubset, onChange, mobile
     }));
 
     const icon = mobile ? <ArrowDown weight="bold" /> : <CaretDown weight="bold" />;
-    const text = mobile ? undefined : (currentSubset?.label || 'WCA');
+    const text = mobile ? undefined : (currentSubset ? translateLabel(currentSubset.label) : 'WCA');
 
     return (
         <Dropdown

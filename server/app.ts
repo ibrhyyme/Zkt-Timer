@@ -253,6 +253,12 @@ if (!isDev) {
 	}
 })();
 
+// Cache-busting: Capacitor ve web istemciler güncel versiyonu kontrol eder
+app.get('/api/version', (req, res) => {
+	res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+	res.json({ version: process.env.RELEASE_NAME || '1.0' });
+});
+
 app.use((req, res, next) => {
 	if (req.path.startsWith('/graphql')) {
 		return next();

@@ -7,7 +7,7 @@ import {MatchPopupContext, MatchPopupPage} from '../../MatchPopup';
 import CubePicker from '../../../../../common/cube_picker/CubePicker';
 import {CubeType} from '../../../../../../util/cubes/cube_types';
 import Button from '../../../../../common/button/Button';
-import {useTranslation} from 'react-i18next';
+import {Trans, useTranslation} from 'react-i18next';
 
 const b = block('custom-match-options');
 
@@ -54,7 +54,7 @@ export default function CustomMatchOptions() {
 				<div className={b('label')}>
 					<h3>{t('match.players')}</h3>
 					<p>
-						{t('match.players_description')}
+						<Trans i18nKey="match.players_description" components={{bold: <strong />}} />
 					</p>
 				</div>
 				<HorizontalNav
