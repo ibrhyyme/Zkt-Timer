@@ -37,6 +37,9 @@ export class Announcement {
 
 	@Field({ nullable: true })
 	hasViewed?: boolean; // Kullanıcının gördüğü mü?
+
+	@Field({ nullable: true })
+	translations?: string; // JSON string: {"en": {"title":"...","content":"..."}, ...}
 }
 
 @ObjectType()
@@ -67,6 +70,9 @@ export class CreateAnnouncementInput {
 
 	@Field({ defaultValue: false })
 	sendNotification: boolean;
+
+	@Field({ nullable: true })
+	translations?: string; // JSON string
 }
 
 @InputType()
@@ -91,6 +97,9 @@ export class UpdateAnnouncementInput {
 
 	@Field({ nullable: true })
 	isActive?: boolean;
+
+	@Field({ nullable: true })
+	translations?: string; // JSON string
 }
 
 @InputType()

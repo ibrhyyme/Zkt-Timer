@@ -65,6 +65,7 @@ export class AdminResolver {
 					created_at: true,
 					last_solve_at: true,
 					join_country: true,
+					join_ip: true,
 					banned_forever: true,
 					banned_until: true,
 					is_pro: true,

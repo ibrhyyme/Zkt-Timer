@@ -12,6 +12,20 @@ import { ErrorCode } from '../constants/errors';
 import { Role } from '../middlewares/auth';
 import { sendPushToAll } from '../services/push';
 
+function getLocale(context: GraphQLContext): string {
+	return context.req.cookies?.zkt_language || 'tr';
+}
+
+function resolveLocale(announcement: any, lang: string) {
+	if (lang === 'tr' || !announcement.translations) return announcement;
+	const t = announcement.translations as Record<string, { title?: string; content?: string }>;
+	return {
+		...announcement,
+		title: t[lang]?.title || announcement.title,
+		content: t[lang]?.content || announcement.content,
+	};
+}
+
 @Resolver()
 export class AnnouncementResolver {
 
@@ -23,6 +37,8 @@ export class AnnouncementResolver {
 		}
 
 		try {
+			const lang = getLocale(context);
+
 			// N+1 problem'i önlemek için include kullanıyoruz
 			const announcements = await context.prisma.announcement.findMany({
 				where: {
@@ -47,12 +63,15 @@ export class AnnouncementResolver {
 			// Kullanıcının görmediklerini filtrele
 			return announcements
 				.filter(a => a.views.length === 0)
-				.map(a => ({
-					...a,
-					category: a.category as string,
-					viewCount: a._count.views,
-					hasViewed: false
-				}));
+				.map(a => {
+					const localized = resolveLocale(a, lang);
+					return {
+						...localized,
+						category: a.category as string,
+						viewCount: a._count.views,
+						hasViewed: false
+					};
+				});
 		} catch (error) {
 			throw new GraphQLError(ErrorCode.INTERNAL_SERVER_ERROR, 'Failed to fetch announcements');
 		}
@@ -84,7 +103,7 @@ export class AnnouncementResolver {
 		}
 	}
 
-	// Admin - Tüm duyurular (filtre ile)
+	// Admin - Tüm duyurular (filtre ile) — translations raw olarak döndürülür
 	@Authorized([Role.ADMIN])
 	@Query(() => [Announcement])
 	async getAllAnnouncements(
@@ -111,7 +130,8 @@ export class AnnouncementResolver {
 			return announcements.map(a => ({
 				...a,
 				category: a.category as string,
-				viewCount: a._count.views
+				viewCount: a._count.views,
+				translations: a.translations ? JSON.stringify(a.translations) : undefined
 			}));
 		} catch (error) {
 			throw new GraphQLError(ErrorCode.INTERNAL_SERVER_ERROR, 'Failed to fetch all announcements');
@@ -130,6 +150,8 @@ export class AnnouncementResolver {
 		}
 
 		try {
+			const lang = getLocale(context);
+
 			const viewedAnnouncements = await context.prisma.announcementView.findMany({
 				where: { userId: context.user.id },
 				include: {
@@ -144,12 +166,15 @@ export class AnnouncementResolver {
 				skip: offset
 			});
 
-			return viewedAnnouncements.map(v => ({
-				...v.announcement,
-				category: v.announcement.category as string,
-				viewCount: v.announcement._count.views,
-				hasViewed: true
-			}));
+			return viewedAnnouncements.map(v => {
+				const localized = resolveLocale(v.announcement, lang);
+				return {
+					...localized,
+					category: v.announcement.category as string,
+					viewCount: v.announcement._count.views,
+					hasViewed: true
+				};
+			});
 		} catch (error) {
 			throw new GraphQLError(ErrorCode.INTERNAL_SERVER_ERROR, 'Failed to fetch announcement history');
 		}
@@ -171,7 +196,8 @@ export class AnnouncementResolver {
 					priority: input.priority,
 					imageUrl: input.imageUrl,
 					isDraft: input.isDraft,
-					publishedAt: input.isDraft ? null : new Date()
+					publishedAt: input.isDraft ? null : new Date(),
+					translations: input.translations ? JSON.parse(input.translations) : undefined
 				},
 				include: {
 					_count: { select: { views: true } }
@@ -188,7 +214,8 @@ export class AnnouncementResolver {
 			return {
 				...announcement,
 				category: announcement.category as string,
-				viewCount: 0
+				viewCount: 0,
+				translations: announcement.translations ? JSON.stringify(announcement.translations) : undefined
 			};
 		} catch (error) {
 			throw new GraphQLError(ErrorCode.INTERNAL_SERVER_ERROR, 'Failed to create announcement');
@@ -215,6 +242,11 @@ export class AnnouncementResolver {
 				updateData.publishedAt = new Date();
 			}
 
+			// translations JSON string → object
+			if (updateData.translations) {
+				updateData.translations = JSON.parse(updateData.translations);
+			}
+
 			const announcement = await context.prisma.announcement.update({
 				where: { id },
 				data: updateData,
@@ -226,7 +258,8 @@ export class AnnouncementResolver {
 			return {
 				...announcement,
 				category: announcement.category as string,
-				viewCount: announcement._count.views
+				viewCount: announcement._count.views,
+				translations: announcement.translations ? JSON.stringify(announcement.translations) : undefined
 			};
 		} catch (error) {
 			if (error instanceof GraphQLError) throw error;

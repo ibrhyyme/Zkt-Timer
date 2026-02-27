@@ -1,4 +1,5 @@
 import React from 'react';
+import {useTranslation} from 'react-i18next';
 import './WcaPbCard.scss';
 import Scramble from '../../modules/scramble/ScrambleVisual';
 import {getCubeTypeInfoById} from '../../../util/cubes/util';
@@ -24,33 +25,15 @@ interface Props {
 }
 
 export default function WcaPbCard(props: Props) {
+	const {t} = useTranslation();
 	const {record} = props;
 
 	const cubeType = getCubeTypeInfoById(record.wca_event);
-	
-	function getEventName(eventCode: string): string {
-		const eventNames: Record<string, string> = {
-			'333': '3x3x3',
-			'222': '2x2x2',
-			'444': '4x4x4',
-			'555': '5x5x5',
-			'666': '6x6x6',
-			'777': '7x7x7',
-			'333bf': '3x3x3 Gözü Kapalı',
-			'333fm': '3x3x3 En Az Hamle',
-			'333oh': '3x3x3 Tek El',
-			'333ft': '3x3x3 Ayakla',
-			'minx': 'Megaminx',
-			'pyram': 'Pyraminx',
-			'clock': 'Clock',
-			'skewb': 'Skewb',
-			'sq1': 'Square-1',
-			'444bf': '4x4x4 Gözü Kapalı',
-			'555bf': '5x5x5 Gözü Kapalı',
-			'333mbf': '3x3x3 Çoklu Gözü Kapalı'
-		};
 
-		return eventNames[eventCode] || eventCode;
+	function getEventName(eventCode: string): string {
+		const key = `wca_events.${eventCode}`;
+		const translated = t(key);
+		return translated !== key ? translated : eventCode;
 	}
 
 	function getScrambleForVisual(eventCode: string): string {

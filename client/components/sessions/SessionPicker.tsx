@@ -1,6 +1,7 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {CaretDown} from 'phosphor-react';
 import {useDispatch} from 'react-redux';
+import {useTranslation} from 'react-i18next';
 import {setCubeType, setCurrentSession} from '../../db/settings/update';
 import {fetchSessionById, fetchSessions} from '../../db/sessions/query';
 import {fetchLastCubeTypeForSession} from '../../db/solves/query';
@@ -19,6 +20,7 @@ interface Props {
 
 export default function SessionPicker(props: Props) {
 	const dispatch = useDispatch();
+	const {t} = useTranslation();
 	const me = useMe();
 	const sessionId = useSettings('session_id');
 
@@ -49,7 +51,7 @@ export default function SessionPicker(props: Props) {
 		if (me && !stateless) {
 			return [
 				{
-					text: 'Yeni sezon +',
+					text: `${t('sessions.new_session')} +`,
 					onClick: toggleCreateNewSession,
 					separator: true, // Add separator after this item
 				},
@@ -58,7 +60,7 @@ export default function SessionPicker(props: Props) {
 		}
 
 		return sessionOptions;
-	}, [selectedSession, me, stateless]);
+	}, [selectedSession, me, stateless, t]);
 
 	function switchSession(session: Session) {
 		setSelectedSession(session);

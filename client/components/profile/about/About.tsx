@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import './About.scss';
-import { YoutubeLogo, TwitterLogo, TwitchLogo } from 'phosphor-react';
+import { YoutubeLogo, TwitchLogo } from 'phosphor-react';
 import Emblem from '../../common/emblem/Emblem';
 import { Profile } from '../../../@types/generated/graphql';
 import block from '../../../styles/bem';
@@ -36,7 +36,7 @@ export default function About(props: Props) {
 				href={profile[key]}
 			>
 				{icon}
-				<span className="ml-2 text-inherit">{name}</span>
+				{name && <span className="ml-2 text-inherit">{name}</span>}
 			</a>
 		);
 	}
@@ -55,7 +55,7 @@ export default function About(props: Props) {
 
 	addSocial(socialLinks, 'youtube_link', 'YouTube', <YoutubeLogo weight="fill" />, '#FF0000', 'white');
 	addSocial(socialLinks, 'twitch_link', 'Twitch', <TwitchLogo weight="fill" />, '#6441A4', 'white');
-	addSocial(socialLinks, 'twitter_link', 'Twitter', <TwitterLogo weight="fill" />, '#1DA1F2', 'white');
+	addSocial(socialLinks, 'twitter_link', '', <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>, '#000000', 'white');
 	addSocial(socialLinks, 'reddit_link', 'WCA', <WCAIcon />, '#1976D2', 'white');
 
 	if (socialLinks.length) {

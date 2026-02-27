@@ -13,7 +13,8 @@ import { openModal, closeModal } from '../../../actions/general';
 import ManageSmartCubes from './manage_smart_cubes/ManageSmartCubes';
 import Cube from 'cubejs';
 import block from '../../../styles/bem';
-import { initSmartSolver, ensureSolverReady, computeCorrectionPath, processSmartTurns, matchScrambleWithCommutative } from '../../../util/smart_scramble';
+import { initSmartSolver, computeCorrectionPathAsync, IncrementalCompressor, matchScrambleWithCommutative } from '../../../util/smart_scramble';
+import { initSolverWorker } from '../../../util/solver_worker_manager';
 import { TimerContext } from '../Timer';
 import { useSettings } from '../../../util/hooks/useSettings';
 import LiveAnalysisOverlay from './LiveAnalysisOverlay';
@@ -108,7 +109,8 @@ export default function SmartCube() {
 	const resetMovesRef = useRef<(markSolved?: boolean, isScrambleFinish?: boolean, endTimestamp?: number) => void>(null);
 
 	useEffect(() => {
-		initSmartSolver();
+		initSmartSolver();   // Sync fallback init (requestIdleCallback)
+		initSolverWorker();  // Worker init (background thread — no UI block)
 	}, []);
 
 	// Preservation ref to keep scrambled state when smartTurns is cleared
@@ -130,6 +132,14 @@ export default function SmartCube() {
 	}, [scramble]);
 
 	const correctionDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const correctionGenRef = useRef(0);
+	const compressorRef = useRef(new IncrementalCompressor());
+
+	// Reset incremental state when scramble or offset changes (new correction applied)
+	useEffect(() => {
+		compressorRef.current.reset();
+		validationCacheRef.current.lastValidatedLength = 0;
+	}, [scramble, smartTurnOffset]);
 
 	// Initialize TwistyPlayer
 	useEffect(() => {
@@ -279,6 +289,7 @@ export default function SmartCube() {
 			appliedTurnsRef.current = 0;
 			validationCacheRef.current.lastValidatedLength = 0;
 			validationCacheRef.current.lastMatchedIndex = 0;
+			compressorRef.current.reset();
 			setStartState(cubejs.current.asString());
 		}
 	}, [smartTurns, smartSolvedState]);
@@ -439,7 +450,9 @@ export default function SmartCube() {
 
 		const offset = smartTurnOffset || 0;
 		const relevantTurns = offset > 0 ? currentTurns.slice(offset) : currentTurns;
-		const userMoves = processSmartTurns(relevantTurns);
+
+		// Use incremental compressor — only processes new turns
+		const userMoves = compressorRef.current.processNew(relevantTurns);
 		const expectedMoves = scramble.split(' ').filter(m => m.trim());
 		const { matched, matchStatus } = matchScrambleWithCommutative(expectedMoves, userMoves);
 
@@ -472,28 +485,30 @@ export default function SmartCube() {
 		if (correctionDebounceRef.current) clearTimeout(correctionDebounceRef.current);
 		if (!originalScrambleRef.current && scramble) originalScrambleRef.current = scramble;
 
-		// Debounce increased to 250ms to prevent lag during fast scrambling (15-20 TPS bursts)
-		correctionDebounceRef.current = setTimeout(() => {
+		const gen = ++correctionGenRef.current;
+
+		// Debounce 250ms to prevent lag during fast scrambling (15-20 TPS bursts)
+		correctionDebounceRef.current = setTimeout(async () => {
 			const scrambleToUse = originalScrambleRef.current;
 			if (!scrambleToUse) return;
-			// Ensure solver is ready without blocking if possible
-			if (!ensureSolverReady()) return;
 
 			const allRawUserMoves = smartTurns.map(t => t.turn);
 
-			// Compute correction path (Heavy calculation)
-			const correctionMoves = computeCorrectionPath(scrambleToUse, allRawUserMoves);
+			// Async: runs Cube.solve() in Web Worker — no main thread blocking
+			const correctionMoves = await computeCorrectionPathAsync(scrambleToUse, allRawUserMoves);
+
+			// Discard stale result if a newer correction was triggered
+			if (gen !== correctionGenRef.current) return;
 
 			if (correctionMoves.length === 0) {
 				setTimerParams({ smartCanStart: true });
 				setScrambleCompletedAt(new Date());
-				resetMoves(false, true); // Pass true to preserve visual state
+				resetMoves(false, true);
 				return;
 			}
 
 			const newScramble = correctionMoves.join(' ');
 
-			// Only update if the correction actually changed (prevent unnecessary re-renders)
 			if (newScramble !== scramble) {
 				setTimerParams({
 					scramble: newScramble,
@@ -736,7 +751,7 @@ export default function SmartCube() {
 		emblem = <Emblem small green icon={<Bluetooth />} />;
 	} else {
 		emblem = <Emblem small red icon={<Bluetooth />} />;
-		actionButton = <Button text={t('smart_cube.connect')} onClick={connectBluetooth} />;
+		actionButton = <Button text={t('smart_cube.connect')} onClick={connectBluetooth} icon={<Bluetooth />} />;
 		battery = null;
 	}
 

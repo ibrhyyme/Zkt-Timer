@@ -40,18 +40,19 @@ export default class Connect extends SmartCube {
 	};
 
 	_initCube = async (device) => {
+		let cube;
 		if (device.name.startsWith('Gi') || device.name.startsWith('Mi Smart Magic Cube')) {
-			const cube = new Giiker(device, this.adapter);
-			await cube.init();
-			this.activeCube = cube;
+			cube = new Giiker(device, this.adapter);
 		} else if (device.name.toLowerCase().startsWith('gan')) {
-			const cube = new GAN(device, this.adapter);
-			await cube.init();
-			this.activeCube = cube;
+			cube = new GAN(device, this.adapter);
 		} else if (device.name.startsWith('GoCube') || device.name.startsWith('Rubiks')) {
-			const cube = new Particula(device, this.adapter);
-			await cube.init();
+			cube = new Particula(device, this.adapter);
+		}
+
+		if (cube) {
 			this.activeCube = cube;
+			if (this._onCubeCreated) this._onCubeCreated(cube);
+			await cube.init();
 		}
 	};
 
