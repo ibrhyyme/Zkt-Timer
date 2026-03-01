@@ -4,7 +4,9 @@ $defaultFontFamily: 'Lato', 'Helvetica Neue', Helvetica, Roboto, Arial, sans-ser
 
 :root {
 	--link-color: 36, 107, 253;
-	--nav-h: 80px;
+	--nav-h: 5.333rem;
+	--wrapper-padding: 2rem;
+	--wrapper-padding-mobile: 1rem;
 
 	// Safe Area Insets (for notched phones like iPhone X, Galaxy Fold, etc.)
 	--safe-area-inset-top: env(safe-area-inset-top, 0px);
@@ -20,10 +22,10 @@ $buttonColor: #313438;
 $primaryOrange: #ef6c00;
 $primaryBackground: #1a1d21;
 $primaryRed: #e53935;
-$searchHeight: 60px;
+$searchHeight: 4rem;
 $navWidth: 18rem;
 
-$statsGridRowHeight: 200px;
+$statsGridRowHeight: 13.333rem;
 
 $successColor: #2dbd61;
 $successColorDark: #2a3f31;
@@ -46,6 +48,23 @@ $infoColorDark: #1565c0;
 	}
 }
 
+@mixin lg {
+	@media (min-width: 1200px) {
+		@content;
+	}
+}
+
+@mixin xl {
+	@media (min-width: 1600px) {
+		@content;
+	}
+}
+
+@mixin xxl {
+	@media (min-width: 2000px) {
+		@content;
+	}
+}
 
 @mixin dark-glass($opacity: 0.6, $blur: 10px, $border-opacity: 0.05) {
 	background: rgba(30, 36, 44, $opacity) !important;

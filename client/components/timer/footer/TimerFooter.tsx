@@ -117,15 +117,20 @@ export default function TimerFooter() {
 		}
 	} else {
 		// Desktop versiyonda normal modülleri göster
+		// Right/left layout'ta dikey alan sınırlı → max 2 modül
+		const isVerticalLayout = timerLayout === 'right' || timerLayout === 'left';
+		const moduleLimit = isVerticalLayout ? 2 : timerModuleCount;
+
 		if (customModules && customModules?.length) {
-			for (let i = 0; i < customModules.length; i++) {
+			const limit = isVerticalLayout ? Math.min(customModules.length, 2) : customModules.length;
+			for (let i = 0; i < limit; i++) {
 				const customModule = customModules[i];
 				const moduleType = customModule.moduleType;
 
 				modules.push(<TimerModule key={`${i}-${moduleType}`} index={i} customOptions={customModule} />);
 			}
 		} else {
-			for (let i = 0; i < timerModuleCount; i++) {
+			for (let i = 0; i < moduleLimit; i++) {
 				const moduleType = timerModules[i % timerModules.length];
 				modules.push(<TimerModule key={`${i}-${moduleType}`} index={i} moduleType={moduleType} />);
 			}

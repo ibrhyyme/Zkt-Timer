@@ -128,6 +128,15 @@
 		aspect-ratio: 16 / 10;
 		border-radius: 16px;
 		overflow: hidden;
+
+		// iOS Safari fallback
+		@supports not (aspect-ratio: 16 / 10) {
+			&::before {
+				content: '';
+				display: block;
+				padding-bottom: 62.5%; // 10/16
+			}
+		}
 	}
 
 	&__image-glow {
@@ -140,7 +149,8 @@
 	}
 
 	&__image {
-		position: relative;
+		position: absolute;
+		inset: 0;
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
@@ -190,6 +200,15 @@
 		.cd-welcome-feature-item__image-wrapper {
 			order: 2 !important;
 			aspect-ratio: 16 / 9; // Daha geniş oran mobil için
+
+			// iOS Safari fallback
+			@supports not (aspect-ratio: 16 / 9) {
+				&::before {
+					content: '';
+					display: block;
+					padding-bottom: 56.25%; // 9/16
+				}
+			}
 		}
 
 		// Mobilde görseli zoom yapmadan tam göster

@@ -28,6 +28,11 @@ const SOLVED_STATE = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
  * Cleans up various quote characters, brackets, spacing, and ensures consistent format.
  */
 export function expandNotation(input: string): string {
+	// SQ1 notasyonu farkli format kullanir (/ -3,0 / 3,3 /) — cube cleanup'i bozar
+	if (input.includes('/')) {
+		return input.replace(/\s+/g, ' ').trim();
+	}
+
 	let output = input
 		.replace(/["´`']/g, "'")
 		.replace(/\[/g, '(')
@@ -211,7 +216,7 @@ function arraysEqual(arr1: number[], arr2: number[]): boolean {
  */
 export function getStickering(category: string): string {
 	const validStickering = [
-		'EOcross', 'LSOCLL', 'EOline', 'LSOLL', 'Daisy', 'Cross', 'ZBLS', 'ZBLL',
+		'OLLCP', 'EOcross', 'LSOCLL', 'EOline', 'LSOLL', 'Daisy', 'Cross', 'ZBLS', 'ZBLL',
 		'WVLS', 'OCLL', 'L6EO', 'L10P', 'EPLL', 'EOLL', 'CPLL', 'COLL', 'CMLL',
 		'VLS', 'PLL', 'OLL', 'L6E', 'F2L', 'ELS', 'ELL', 'CLS', 'CLL', 'LS', 'LL', 'EO',
 	];
@@ -236,6 +241,33 @@ export function getStickering(category: string): string {
 	}
 
 	return 'full';
+}
+
+/**
+ * Determine the cubing.js puzzle identifier for a given category.
+ */
+const CATEGORY_PUZZLE_TYPE: Record<string, string> = {
+	'Sarah Intermediate': 'skewb',
+	'Sarah Advanced': 'skewb',
+};
+
+export function getPuzzleType(category: string): string {
+	if (CATEGORY_PUZZLE_TYPE[category]) return CATEGORY_PUZZLE_TYPE[category];
+	if (category.startsWith('2x2')) return '2x2x2';
+	if (category.startsWith('4x4')) return '4x4x4';
+	if (category.startsWith('Pyraminx')) return 'pyraminx';
+	if (category.startsWith('SQ1')) return 'square1';
+	return '3x3x3';
+}
+
+const CUBE_SHAPE_PUZZLES = new Set(['3x3x3', '2x2x2', '4x4x4', 'skewb']);
+
+/**
+ * Cube-shaped puzzles support x,y,z rotations (orientation change).
+ * Pyraminx (tetrahedron) and Square-1 (bandaged) do not.
+ */
+export function isCubeShapePuzzle(category: string): boolean {
+	return CUBE_SHAPE_PUZZLES.has(getPuzzleType(category));
 }
 
 import type {CubeFace} from '../../components/trainer/types';
@@ -276,11 +308,74 @@ export function getAdjacentFaces(topFace: CubeFace): CubeFace[] {
  * Default front face for a given top face.
  */
 const DEFAULT_FRONT: Record<CubeFace, CubeFace> = {
-	U: 'F', D: 'F', F: 'D', B: 'U', R: 'F', L: 'F',
+	U: 'F', D: 'B', F: 'D', B: 'U', R: 'F', L: 'F',
 };
 
 export function getDefaultFrontFace(topFace: CubeFace): CubeFace {
 	return DEFAULT_FRONT[topFace];
+}
+
+/**
+ * Check if a category is a Last Layer category (OLL, PLL, COLL, OLLCP, ZBLL, etc.)
+ * LL categories don't need front face selection — only top face matters.
+ */
+export function isLLCategory(category: string): boolean {
+	if (!category) return false;
+	const puzzleType = getPuzzleType(category);
+	if (puzzleType !== '3x3x3') return false;
+	const stickering = getStickering(category);
+	return category.toLowerCase().includes('ll') || stickering === 'OLL';
+}
+
+/**
+ * 2D pattern rendering kullanan kategoriler.
+ * 3x3 LL ayri (LLPatternView), buradakiler puzzle_patterns.json'dan gelir.
+ */
+export function is2DPatternCategory(category: string): boolean {
+	if (!category) return false;
+	const puzzleType = getPuzzleType(category);
+	if (puzzleType === '2x2x2') {
+		// PBL 3D kalir, diger 2x2 subsetleri 2D
+		return !category.includes('PBL');
+	}
+	return ['4x4x4', 'pyraminx', 'skewb', 'square1'].includes(puzzleType);
+}
+
+/**
+ * Sadece top face secilebilen kategoriler (front face selector gizlenir).
+ * 3x3 LL + 2x2 non-PBL + 4x4
+ */
+export function isTopFaceOnlyCategory(category: string): boolean {
+	if (isLLCategory(category)) return true;
+	const puzzleType = getPuzzleType(category);
+	if (puzzleType === '2x2x2' && !category.includes('PBL')) return true;
+	if (puzzleType === '4x4x4') return true;
+	if (puzzleType === 'skewb') return true;
+	return false;
+}
+
+/**
+ * Puzzle pattern type'ini dondurur (puzzle-patterns.json key'i).
+ * null → 2D puzzle pattern kullanilmaz.
+ */
+export function getPuzzlePatternType(category: string): '2x2' | '4x4' | 'pyraminx' | 'skewb' | 'sq1' | null {
+	if (!is2DPatternCategory(category)) return null;
+	const puzzleType = getPuzzleType(category);
+	switch (puzzleType) {
+		case '2x2x2': return '2x2';
+		case '4x4x4': return '4x4';
+		case 'pyraminx': return 'pyraminx';
+		case 'skewb': return 'skewb';
+		case 'square1': return 'sq1';
+		default: return null;
+	}
+}
+
+/**
+ * SQ1 kategorilerinde bottom face mirror gerekip gerekmedigi.
+ */
+export function isSQ1MirrorCategory(category: string): boolean {
+	return category === 'SQ1 Cube Shape' || category === 'SQ1 CSP';
 }
 
 /**

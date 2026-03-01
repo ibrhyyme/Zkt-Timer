@@ -63,10 +63,9 @@ export default function TrainerTimer() {
 
 			if (timerState === 'RUNNING') {
 				stopTimer();
-			} else if (timerState === 'IDLE' || timerState === 'STOPPED') {
-				if (timerState === 'STOPPED') {
-					handleAdvance();
-				}
+			} else if (timerState === 'STOPPED') {
+				handleAdvance(); // ADVANCE_ALGORITHM reducer IDLE'a set eder
+			} else if (timerState === 'IDLE') {
 				dispatch({type: 'SET_TIMER_STATE', payload: 'READY'});
 			}
 		};

@@ -184,6 +184,7 @@
 		"feature_performance_desc": "Detaylı istatistikler ve ilerleme takibi",
 		"progress_text": "Geliştirme İlerlemesi: %75",
 		"footer": "Bu sayfa çok yakında kullanıma açılacak! 🚀",
+		"puzzle_type": "Bulmaca",
 		"category": "Kategori",
 		"subsets": "Alt Kümeler",
 		"algorithms": "Algoritmalar",
@@ -211,6 +212,12 @@
 		"option_flash_indicator": "Doğru/yanlış gösterge",
 		"top_layer": "Üst Katman",
 		"front_layer": "Ön Katman",
+		"f2l_slot": "Slot",
+		"f2l_slot_all": "Hepsi",
+		"f2l_slot_front_right": "Ön Sağ",
+		"f2l_slot_front_left": "Ön Sol",
+		"f2l_slot_back_right": "Arka Sağ",
+		"f2l_slot_back_left": "Arka Sol",
 		"face_u": "Beyaz (U)",
 		"face_d": "Sarı (D)",
 		"face_f": "Yeşil (F)",
@@ -237,7 +244,140 @@
 		"train_this": "Bunu Çalış",
 		"algorithm_management": "Algoritma Yönetimi",
 		"export_desc": "Tüm algoritmalarınızı ve istatistiklerinizi bir JSON dosyası olarak cihazınıza indirin. Bu dosyayı yedek olarak saklayabilir veya başka bir cihaza aktarabilirsiniz.",
-		"import_desc": "Daha önce dışa aktardığınız bir JSON dosyasını seçerek algoritmalarınızı geri yükleyin. Mevcut verileriniz dosyadaki verilerle değiştirilecektir."
+		"import_desc": "Daha önce dışa aktardığınız bir JSON dosyasını seçerek algoritmalarınızı geri yükleyin. Mevcut verileriniz dosyadaki verilerle değiştirilecektir.",
+		"alg_detail_edit": "Düzenle",
+		"alg_detail_save": "Kaydet",
+		"alg_detail_cancel": "İptal",
+		"alg_detail_reset": "Varsayılana Sıfırla",
+		"alg_detail_notation": "Algoritma",
+		"alg_detail_saved": "Algoritma kaydedildi",
+		"alg_detail_alternatives": "Alternatifler",
+		"cat_info": {
+			"pll": {
+				"title": "Son Katman Permütasyonu",
+				"desc": "PLL, CFOP yönteminin son aşamasıdır — üst katmandaki tüm parçalar doğru konumlarına yerleştirilir. Bu noktada ilk iki katman tamamlanmış ve üst yüz zaten yönlendirilmiş (OLL çözülmüş) olmalıdır. Toplamda 21 algoritma bulunur: Aa, Ab, E, F, Ga, Gb, Gc, Gd, H, Ja, Jb, Na, Nb, Ra, Rb, T, Ua, Ub, V, Y ve Z permleri.\n\nBirçok speedcuber, daha az vaka içerdiği ve solve sürelerini hemen iyileştirdiği için PLL'i OLL'den önce öğrenmeyi tercih eder. Recognition (tanıma) yöntemi olarak headlight'lara ve bloklara bakılır — headlight, aynı renk iki köşenin yan yana durmasıdır. AUF (Adjust U Face) çözümden önce ve sonra gerekebilir; doğru AUF yapmak PLL hızınızı doğrudan etkiler.\n\nÖğrenme sırası olarak önce kenar permlerinden (Ua, Ub, H, Z) başlayıp köşe permlerine (Aa, Ab, E) geçmek yaygın bir stratejidir. G permleri genelde en son öğrenilir çünkü recognition'ları diğerlerine kıyasla daha zordur. İyi bir PLL seti ile sub-2 PLL süreleri hedeflenebilir."
+			},
+			"oll": {
+				"title": "Son Katman Yönlendirme",
+				"desc": "OLL, CFOP'un üçüncü aşamasıdır. Amaç, üst katmandaki tüm parçaları yönlendirerek tek renkli bir üst yüz elde etmektir — örneğin beyaz cross ile başlıyorsanız, tüm sarı yüzü oluşturmak. Toplamda 57 vaka vardır ve bunlar edge orientasyonuna göre gruplandırılır: cross case'ler (4 edge oriented), L/T/P/W şekilleri (2 edge oriented) ve dot case'ler (0 edge oriented).\n\n2-Look OLL biliyorsanız bunların yaklaşık 9-10 tanesi zaten öğrenilmiş olur. Algoritmaların çoğu birbirinin aynası veya tersidir, bu da ezberlemeyi kolaylaştırır. Dot case'ler genelde en zor ve en yavaş olanlardır çünkü hiçbir edge yönlendirilmemiştir; bu yüzden birçok speedcuber dot case'leri en sona bırakır.\n\nÖğrenme stratejisi olarak cross case'lerden başlayıp T ve L şekillerine geçmek mantıklıdır. Fingertrick dostu algoritmalar seçmek uzun vadede büyük fark yaratır. Tam OLL setini öğrenmek, ortalama solve süresinden yaklaşık 1-2 saniye kazandırır."
+			},
+			"f2l": {
+				"title": "İlk İki Katman",
+				"desc": "F2L, CFOP'un ikinci aşamasıdır — bir köşe parçasını eşleşen kenar parçasıyla eşleyip doğru slot'a aynı anda yerleştirirsiniz. Bu, parçaları tek tek çözmekten çok daha hızlıdır. Toplamda 41 temel vaka ve bunların aynaları bulunur.\n\nAlgoritmaları ezberlemeden önce F2L'i sezgisel olarak öğrenmek şiddetle tavsiye edilir. Sezgisel F2L, her vakanın arkasındaki mantığı anlamanızı sağlar ve yeni durumlarla karşılaştığınızda çözüm üretebilmenize yardımcı olur. Algoritmik F2L ise sezgisel temelin üzerine inşa edilmeli — aksi halde vakaları hatırlamak çok zor olabilir.\n\nLookahead geliştirmek F2L hızını artırmanın en önemli yoludur. Mevcut pair'i yerleştirirken bir sonraki pair'in nerede olduğunu takip etmeye çalışın. Ayrıca gereksiz küp rotation'ları azaltmak kritik öneme sahiptir — iyi bir F2L, solve başına 4'ten az rotation kullanır. İleri seviyede, pair'leri yerleştirirken edge orientation'ı da kontrol eden VHLS veya ZBLS gibi tekniklere geçilebilir."
+			},
+			"2_look_pll": {
+				"title": "2 Adımlı PLL",
+				"desc": "2-Look PLL, son katman permütasyonuna başlangıç seviyesinde bir yaklaşımdır. Son katman iki aşamada çözülür: önce köşe permütasyonu, sonra kenar permütasyonu. Toplamda sadece 6 algoritma öğrenmek yeterlidir.\n\nİlk adımda köşeler doğru konumlarına yerleştirilir — bunun için A perm ve E perm gibi algoritmalar kullanılır. İkinci adımda kenarlar çözülür — Ua perm, Ub perm, H perm ve Z perm bu adım için yeterlidir. Köşeler zaten doğru yerdeyse ilk adım skip edilir, kenarlar zaten doğruysa ikinci adım skip edilir.\n\nTam PLL'e kıyasla her solve'de ortalama 1-2 saniye daha yavaş olsa da, 21 algoritma yerine 6 algoritmayla başlamak öğrenme sürecini çok daha yönetilebilir kılar. Birçok speedcuber sub-20 sürelerine 2-Look PLL ile ulaşır ve tam PLL'e geçiş kademeli olarak yapılabilir."
+			},
+			"2_look_oll": {
+				"title": "2 Adımlı OLL",
+				"desc": "2-Look OLL, son katman yönlendirmesine basitleştirilmiş bir yaklaşımdır. İlk iki katman çözüldükten sonra üst yüzü iki adımda yönlendirirsiniz: önce kenarları yönlendirerek cross oluşturursunuz, sonra köşeleri yönlendirirsiniz. Toplamda 9-10 algoritma öğrenmek yeterlidir.\n\nİlk adımda kenarlar yönlendirilir — dot, L şekli ve line case'leri için 3 algoritma gerekir. İkinci adımda köşeler yönlendirilir — Sune, Anti-Sune ve benzeri algoritmalar kullanılır. Bu adımda 6-7 vaka bulunur.\n\n57 algoritmalık tam OLL setine kıyasla öğrenmesi çok daha kolaydır ve başlangıç seviyesi speedcuber'lar için ideal bir geçiş noktasıdır. 2-Look OLL ile rahat olduktan sonra, en sık karşılaşılan tam OLL vakalarını teker teker öğrenerek kademeli geçiş yapabilirsiniz."
+			},
+			"coll": {
+				"title": "Son Katman Köşeleri",
+				"desc": "COLL, kenarlar zaten yönlendirilmişken son katman köşelerini hem yönlendiren hem de permüte eden bir tekniktir. Toplamda 42 algoritma ve 6 alt grup vardır: S (Sune), AS (Anti-Sune), T, U, L ve H (Pi). Her alt grup farklı bir köşe orientasyonu konfigürasyonuna karşılık gelir.\n\nTemel avantajı, köşeleri çözülmüş bir PLL garantilemesidir — yani PLL aşamasında yalnızca kenar permleri (Ua, Ub, H, Z) veya PLL skip kalır. PLL'i tamamen atlama olasılığı 1/12'dir ve yavaş G veya N permleri yerine hızlı U perm gelme ihtimali yüksektir. Bu, ortalama PLL süresini önemli ölçüde düşürür.\n\nCOLL, isteğe bağlı bir CFOP tekniğidir — çoğu cuber yalnızca uygun bir vaka çıktığında kullanır. Aynı zamanda ZBLL öğrenmeye geçiş için mükemmel bir basamaktır çünkü ZBLL alt grupları COLL alt gruplarına doğrudan karşılık gelir."
+			},
+			"ollcp": {
+				"title": "OLL + Köşe Permütasyonu",
+				"desc": "OLLCP, son katman yönlendirmesini ve köşe permütasyonunu tek adımda çözer. Yaklaşık 331 algoritma içeren çok büyük bir settir ve ağırlıklı olarak CFOP'ta kullanılan ileri düzey bir tekniktir. Tam seti öğrenmek nadirdir; çoğu speedcuber yalnızca belirli OLL case'leri için OLLCP algoritmalarını öğrenir.\n\nOLLCP'nin avantajı, PLL aşamasına köşeler çözülmüş olarak girmenizdir — tıpkı COLL gibi. Ancak COLL yalnızca cross case'lerde (kenarlar yönlendirilmiş) çalışırken, OLLCP tüm OLL vakalarını kapsar. Bu, daha fazla durumda avantajlı PLL elde etmenizi sağlar.\n\nOLLCP'ye geçmeden önce tam OLL ve PLL konusunda rahat olmanız ve tercihen COLL deneyiminizin bulunması önerilir. Genelde en sık karşılaşılan ve en fazla zaman kazandıran vakalardan başlanır."
+			},
+			"zbll": {
+				"title": "Zborowski-Bruchem Son Katman",
+				"desc": "ZBLL, tüm kenarlar yönlendirilmişken son katmanı tek bir algoritmada çözer. Toplamda 493 algoritma ve 7 alt grup vardır: T, U, L, H, Pi, S ve AS. Her alt grup, COLL alt gruplarına doğrudan karşılık gelir. Kenar yönlendirmesinin daha erken ele alındığı ZZ veya ZBLS sonrası gibi yöntemler için idealdir.\n\nCFOP, Roux ve ZZ dahil birçok yöntemde kullanılabilir, ancak en doğal uyumu ZZ yöntemiyledir çünkü ZZ'de tüm kenarlar EOLine aşamasında zaten yönlendirilir. Tam ZBLL öğrenmek büyük bir yatırımdır — çoğu speedcuber'ın tüm seti öğrenmesi 1-2 yıl sürer.\n\nÖğrenme stratejisi olarak önce COLL öğrenip ardından her alt grubun ZBLL vakalarını kademeli olarak eklemek en yaygın yaklaşımdır. T ve U alt grupları genelde ilk öğrenilir çünkü recognition'ları daha kolaydır. Tam ZBLL, her solve'de ortalama 1.5-2 saniye kazandırabilir."
+			},
+			"wvls": {
+				"title": "Winter Variation Son Yuva",
+				"desc": "WVLS (Winter Variation Last Slot), CFOP ve ZZ cuber'ları için ileri düzey bir tekniktir. Son F2L pair'i zaten eşleştirilmiş olmalı ve son katman kenarları yönlendirilmiş olmalıdır — bu koşullar sağlandığında uygulanır. Toplamda 27 vaka vardır.\n\nSon pair'in yerleştirmesini değiştirerek WVLS, son katman köşelerini aynı anda yönlendirir — OLL'yi etkili bir şekilde skip eder. Bu, doğrudan PLL'e veya COLL biliyorsanız avantajlı bir PLL'e geçmenizi sağlar. Winter Variation olarak da bilinen bu teknik, özellikle pair zaten eşleşmişken son slot'a yerleştirme anında uygulanır.\n\nWVLS öğrenmek için önce tam OLL ve PLL bilmeniz ve F2L pair'lerinizi rahatça takip edebilmeniz gerekir. 27 vaka görece küçük bir settir ve recognition genellikle son katman köşelerinin orientasyonuna bakarak yapılır."
+			},
+			"vhls": {
+				"title": "Vandenbergh-Harris Son Yuva",
+				"desc": "VHLS, son F2L pair'ini yerleştirirken aynı anda son katman kenarlarını yönlendiren bir tekniktir. Yalnızca 3 hamle veya daha az gerektiren insert case'lerini kapsar, bu sayede algoritma sayısı 32'de tutulur. Daha uzun insert'ler için standart F2L kullanılır.\n\nVHLS sonrasında yalnızca kenarları yönlendirilmiş OLL vakaları (cross case'ler) kalır, bu da OLL skip şansını 1/216'dan 1/27'ye yükseltir. Ayrıca kalan OLL vakaları genelde daha kısa ve daha hızlı algoritmalara sahiptir. COLL biliyorsanız, VHLS + COLL kombinasyonu çok güçlü bir son katman yaklaşımı oluşturur.\n\nVHLS, tam ZBLS'nin basitleştirilmiş bir alt kümesi olarak düşünülebilir. Öğrenmesi kolaydır çünkü çoğu vaka sezgiseldir — sadece son kenarın yönünü kontrol ederek doğru insert seçilir."
+			},
+			"zbls": {
+				"title": "Zborowski-Bruchem Son Yuva",
+				"desc": "ZBLS (EOLS olarak da bilinir), son F2L köşe-kenar pair'ini yerleştirirken aynı anda tüm son katman kenarlarını yönlendiren bir tekniktir. ZB method'un ilk adımıdır ve yaklaşık 302 vaka içerir.\n\nZBLS büyük bir öğrenme yatırımıdır, ancak ZBLL ile birleştirildiğinde son derece güçlü bir iki adımlı son katman yaklaşımı oluşturur: ZBLS ile kenarları yönlendirip pair'i yerleştirin, ardından ZBLL ile tüm son katmanı tek algoritmada çözün. Bu kombinasyon, teorik olarak en hızlı CFOP son katman yaklaşımlarından biridir.\n\nÖğrenme sırası olarak önce VHLS ile başlayıp ardından kalan ZBLS vakalarını eklemek yaygın bir stratejidir. ZBLS recognition'ı zordur çünkü hem pair pozisyonunu hem de edge orientation'ı aynı anda değerlendirmeniz gerekir."
+			},
+			"cmll": {
+				"title": "Roux Son Katman Köşeleri",
+				"desc": "CMLL, Roux yönteminin üçüncü adımıdır. İlk iki blok oluşturulduktan sonra, M slice'ı tamamen göz ardı ederek son katman köşelerini çözersiniz. Toplamda 42 algoritma ve 8 alt grup bulunur.\n\nCOLL'den farklı olarak CMLL, M slice'ı bozabilir — bu önemli bir ayrımdır çünkü M slice kısıtlaması olmadan genelde daha kısa ve daha verimli algoritmalar kullanılabilir. Bu da CMLL algoritmalarının COLL'e kıyasla genellikle daha hızlı olmasını sağlar.\n\nCMLL, Roux yönteminde hız kazanmanın en doğrudan yollarından biridir. İyi optimize edilmiş CMLL algoritmaları ile sub-1.5 saniye CMLL süreleri hedeflenebilir. CMLL sonrasında kalan L6E (Son 6 Kenar) aşaması büyük ölçüde sezgiseldir ve M/U hamleleriyle çözülür."
+			},
+			"2_look_cmll": {
+				"title": "2 Adımlı CMLL",
+				"desc": "2-Look CMLL, başlangıç ve orta seviye Roux cuber'ları için CMLL'in basitleştirilmiş versiyonudur. İlk iki blok oluşturulduktan sonra köşeleri iki adımda çözersiniz: önce yönlendirme, sonra permütasyon. Toplamda yaklaşık 9 algoritma öğrenmek yeterlidir.\n\nİlk adımda köşeler yönlendirilir — Sune, Anti-Sune ve birkaç ek algoritmayla tüm orientasyon vakaları çözülür. İkinci adımda köşeler permüte edilir — A perm, E perm vb. algoritmalar kullanılır. M slice'ı bozmanın serbest olduğunu unutmayın; bu COLL'den farklıdır.\n\nRoux'a yeni başlayanlar için 2-Look CMLL ideal bir başlangıç noktasıdır. İlk iki blok oluşturma ve L6E ile rahat olduktan sonra tam CMLL'e kademeli geçiş yapılabilir. 2-Look CMLL ile sub-25 Roux süreleri rahatlıkla mümkündür."
+			},
+			"oh_cmll": {
+				"title": "Tek El CMLL",
+				"desc": "OH-CMLL, Roux yönteminin CMLL adımı için tek elle (one-handed) çözmeye optimize edilmiş özel bir algoritma setidir. Aynı 42 vaka standart CMLL ile paylaşılır, ancak algoritmalar tek el fingertrick verimliliği ön planda tutularak seçilmiştir.\n\nTek el çözmede z ve x rotation'larından kaçınılması önemlidir çünkü bunlar küpü yeniden kavramayı gerektirir ve zaman kaybettirir. OH-CMLL algoritmaları genellikle R, U ve r (geniş R) hamleleri ağırlıklıdır. Sol elle çözenler için algoritmalar L, U ve l hamlelerine dönüştürülür.\n\nStandart CMLL algoritmalarını doğrudan tek elde kullanmak mümkündür ancak verimsizdir. OH-CMLL'e geçiş, tek el Roux solve'lerinde belirgin bir hız artışı sağlar. Önce standart CMLL'i iki elle öğrenip ardından OH varyantlarına geçmek tavsiye edilir."
+			},
+			"l6e_eo": {
+				"title": "Son 6 Kenar — Kenar Yönlendirme",
+				"desc": "L6E Kenar Yönlendirme, Roux yöntemindeki Son Altı Kenar (LSE) aşamasının ilk alt adımıdır (step 4a). Tam LSE aşaması üç bölümden oluşur: kenar yönlendirme, UL/UR kenarlarını çözme ve son orta kenarları çözme. Tüm aşama M ve U hamleleriyle çözülür.\n\nToplam 6 vaka vardır: 4 arrow case ve 2 non-arrow case. Arrow case'lerde üst katmanda bir ok şekli görülür — bu şekil, yönlendirilmiş ve yönlendirilmemiş kenarların pozisyonundan oluşur. Non-arrow case'ler daha nadir görülür.\n\nL6E EO, Roux'un en sezgisel bölümlerinden biridir. Vakaları tanımak için kenarların M slice'a ait olup olmadığına ve üst yüzlerinin rengine bakılır. Az sayıda vaka olduğu için hızlıca öğrenilir ve pratikle refleks haline gelir."
+			},
+			"l6e_eolr": {
+				"title": "Kenar Yönlendirme + Sol/Sağ",
+				"desc": "EOLR, kenar yönlendirmesi (step 4a) ile UL ve UR kenarlarının yerleştirilmesini (step 4b) tek adımda birleştiren ileri düzey bir Roux tekniğidir. Step 4a ve 4b'yi birleştirerek doğrudan step 4c öncesi pozisyon oluşturur.\n\nAmaç, tüm kenarları yönlendirirken UL ve UR kenarlarını alt katmana (DL ve DR pozisyonlarına) konumlandırmak, ardından M2 ile yerleştirmektir. EOLR büyük ölçüde sezgiseldir ve yoğun ezber gerektirmez — kenarların nerede olduğunu takip edip doğru M ve U hamlelerini seçmek yeterlidir.\n\nEOLR, orta-ileri seviye Roux cuber'ları için önemli bir hız kazanımı sağlar. Step 4a ve 4b'yi ayrı ayrı yapmak yerine birleştirmek hem hamle sayısını azaltır hem de daha akıcı bir çözüm sağlar. EOLR'yi öğrenmeden önce standart L6E EO ve LR adımlarını rahatça yapabiliyor olmanız gerekir."
+			},
+			"2x2_cll": {
+				"title": "2x2 Son Katman Köşeleri",
+				"desc": "CLL, 2x2 küpün son katmanını başlangıç yöntemlerindeki iki adım yerine tek adımda çözer. Toplamda 42 vaka vardır ve alt katmanın tamamen çözülmüş olması gerekir. CLL, 2x2'de rekabetçi çözmenin temel algoritma setidir.\n\nCLL öğrendikten sonra doğal sonraki adım EG1 ve EG2'dir — bunlar tam bir katman yerine yalnızca bir yüz tamamlandıktan sonra küpün tamamını çözmenizi sağlar. CLL + EG sistemi, bir yüz çözüldükten sonra olası tüm durumları kapsar: CLL ilk katman çözülmüş durumda, EG1 komşu takas durumunda, EG2 çapraz takas durumunda kullanılır.\n\nCLL recognition'ı için üst yüzdeki köşe renklerine ve yan yüzlerdeki desenlere bakılır. İyi recognition ile sub-1 saniye CLL süreleri hedeflenebilir."
+			},
+			"2x2_eg1": {
+				"title": "2x2 EG-1",
+				"desc": "EG1, CLL'den sonra öğrenilen ve 29 vaka içeren bir algoritma setidir. EG1, alt katmandaki köşelerin komşu takas (adjacent swap) durumunda olduğu vakaları kapsar. Bu, en sık karşılaşılan durumdur — olasılığı 4/6'dır (yaklaşık %67).\n\nCLL, EG1 ve EG2 birlikte 2x2'de bir yüz çözüldükten sonra olası tüm durumları kapsar. CLL: ilk katman tamamen çözülmüş (1/6 olasılık). EG1: komşu takas durumu (4/6 olasılık). EG2: çapraz takas durumu (1/6 olasılık). En sık karşılaşılan durum EG1 olduğu için, CLL'den sonra önce EG1 öğrenmek en çok zaman kazandıran yatırımdır.\n\nEG1 ile artık alt katmanda tam bir katman yerine sadece bir yüz çözmeniz yeterlidir. Bu, inspection süresinde daha iyi planlama yapmanızı ve daha kısa ilk adım çözümleri bulmanızı sağlar."
+			},
+			"2x2_eg2": {
+				"title": "2x2 EG-2",
+				"desc": "EG2 genellikle EG ailesinde son öğrenilen settir ve 29 vaka içerir. Alt katmandaki köşelerin çapraz takas (diagonal swap) durumunda olduğu vakaları kapsar. Bu en nadir durumdur — olasılığı 1/6'dır (yaklaşık %17).\n\nCLL ve EG1 ile birlikte, bir yüz çözüldükten sonra tüm 2x2 son katman çözümlerini tamamlar. CLL: ilk katman çözülmüş (1/6). EG1: komşu takas (4/6). EG2: çapraz takas (1/6). EG2'nin düşük olasılığı nedeniyle pratikte en az karşılaşılan durumdur, ancak tam EG bilmek her duruma hazırlıklı olmayı sağlar.\n\nEG2 öğrenmek, 2x2 çözüm ortalamanızı biraz daha düşürür ve inspection'da yüz çözme esnekliğinizi artırır. Diagonal swap recognition'ını hızlı yapmak EG2'nin etkinliğini doğrudan etkiler."
+			},
+			"2x2_pbl": {
+				"title": "Her İki Katman Permütasyonu",
+				"desc": "PBL, 2x2 küp için Ortega yönteminin son adımıdır. Tam bir ilk katman çözen başlangıç yönteminden farklı olarak, Ortega yalnızca bir yüz çözmeyi, karşı yüzü yönlendirmeyi ve son olarak PBL ile her iki katmanı permüte etmeyi gerektirir. Toplamda yalnızca 6 PBL vakası vardır.\n\nBu 6 vakadan ikisi (J perm ve Y perm) 3x3 çözmekten zaten tanıdık olabilir. Diğer vakalar arasında üst ve alt katmanın ayrı ayrı veya aynı anda permüte edildiği durumlar bulunur. Adjacent swap ve diagonal swap kombinasyonlarını tanımak PBL recognition'ının temelidir.\n\nOrtega, 2x2'de CLL/EG sistemine geçmeden önce en yaygın kullanılan orta seviye yöntemidir. PBL algoritmaları kısa ve fingertrick dostudur, bu da hızlı execution sağlar. Ortega ile sub-5 saniye 2x2 süreleri rahatlıkla ulaşılabilir."
+			},
+			"4x4_pll_parity": {
+				"title": "4x4 PLL Paritesi",
+				"desc": "PLL parity, 4x4 çözerken sık karşılaşılan bir sorundur — yaklaşık her 2 solve'de 1 kez ortaya çıkar. 3x3'te mümkün olmayan bir kenar permütasyonu durumu oluşur çünkü 4x4'ün iç yapısı farklı kenar eşleştirme kombinasyonlarına izin verir. OLL parity ayrı bir konudur ve PLL parity'den bağımsız olarak ele alınır.\n\nBu setteki algoritmalar (yaklaşık 22 adet) standart PLL kalıplarını parity düzeltmeleriyle birleştirerek her iki sorunu tek adımda verimli bir şekilde ele almanızı sağlar. Parity + PLL'i ayrı ayrı çözmek yerine birleştirilmiş algoritmalar kullanmak önemli zaman tasarrufu sağlar.\n\nPLL parity algoritmalarını öğrenme sırası olarak önce en sık karşılaşılan vakaları (parity + Ua, parity + Ub, parity + H) öğrenip daha nadir vakalara geçmek mantıklıdır. İyi bir parity algoritması seçimi, 4x4 solve sürelerinizde belirgin fark yaratır."
+			},
+			"pyraminx_ll": {
+				"title": "Pyraminx Son Katman",
+				"desc": "Bu algoritmalar, Katman Katman (LBL) yöntemiyle Pyraminx'in son katmanını çözer. LBL'in iki ana adımı vardır: ilk katmanı çöz, ardından son katmanı çöz. Bu adım Pyraminx topluluğunda Son 3 Kenar (L3E) olarak da bilinir ve toplamda sadece 5 vaka içerir.\n\nL3E vakaları basit ve hızlı öğrenilir — algoritmaların çoğu 3-5 hamle arasındadır. Recognition da son derece kolaydır çünkü sadece 3 kenarın durumunu değerlendirmeniz yeterlidir. Bu, Pyraminx'e yeni başlayanlar için ideal bir başlangıç noktasıdır.\n\nLBL ile rahat olduktan sonra daha ileri seviye teknikler olan L4E'ye veya sezgisel keyhole yöntemlerine geçilebilir. Ancak L3E bilgisi her durumda temel oluşturur ve yarışmalarda bile kullanışlıdır."
+			},
+			"pyraminx_l4e": {
+				"title": "Pyraminx Son 4 Kenar",
+				"desc": "L4E, iki adımlı ileri düzey bir Pyraminx tekniğidir: altta bir V şekli oluşturun, ardından kalan dört kenarı çözün. Toplamda 12 vaka içerir. Başlangıç LBL yaklaşımına kıyasla L4E daha hızlıdır çünkü V oluşturmak tam bir ilk katman çözmekten daha az kısıtlayıcıdır.\n\nV oluşturma aşamasında alt katmanda iki bitişik kenarı doğru konuma getirirsiniz. Bu, inspection süresinde planlanabilir. Ardından kalan 4 kenarı tek adımda çözen algoritmalar uygulanır. L4E recognition'ı için kenarların pozisyon ve orientasyonlarına bakılır.\n\nL4E, rekabetçi Pyraminx çözmenin standart yöntemidir ve çoğu hızlı Pyraminx cuber'ı bu tekniği kullanır. Sub-5 saniye Pyraminx süreleri için L4E bilgisi neredeyse zorunludur. Algoritmalar kısa olduğu için fingertrick optimizasyonu büyük fark yaratır."
+			},
+			"sarah_intermediate": {
+				"title": "Sarah Orta Seviye (Skewb)",
+				"desc": "Sarah Orta Seviye, başlangıç yönteminden bir adım ileri gitmek isteyen skewb cuber'ları için tasarlanmış bir yöntemdir. Yalnızca 10 vakayla, skewb sürelerinizi düşük çabayla iyileştirmenin etkili bir yolunu sunar.\n\nYöntem üç adımdan oluşur: bir yüzü çöz, karşı yüzü sledgehammer (R' F R F') ve hedgeslammer (F R' F' R) kombinasyonlarıyla çöz, ardından merkezleri çöz. Bu üç adımlı yaklaşım, başlangıç yöntemlerinin dört veya daha fazla adımlık yapısına kıyasla daha akıcıdır.\n\nSarah Orta Seviye, Sarah İleri Seviye'ye geçiş için doğal bir basamaktır. Sledgehammer ve hedgeslammer, skewb çözmenin temel yapı taşlarıdır ve bu yöntemle bu hareketlere aşina olursunuz. 10 vakalık küçük set, hızlıca öğrenilip pratiğe dökülür."
+			},
+			"sarah_advanced": {
+				"title": "Sarah İleri Seviye (Skewb)",
+				"desc": "Sarah İleri Seviye, sürelerini daha da ileriye taşımak isteyen cuber'lar için rekabetçi bir skewb yöntemidir. Çözmeyi sadece iki adıma indirger: bir yüzü çöz, ardından geri kalan her şeyi tek adımda çöz. İkinci adım için 134 vaka vardır.\n\nÇoğu çözüm sledgehammer (R' F R F') ve hedgeslammer (F R' F' R) kombinasyonlarını temel alır. Bu iki hareket, skewb algoritmalarının yapı taşıdır. Recognition için çözülmüş yüzün karşısındaki desenler ve yan yüzlerdeki renk kalıpları incelenir. 134 vaka büyük bir set gibi görünse de, birçok vaka birbirinin aynası veya tersidir.\n\nSarah İleri Seviye, rekabetçi skewb çözmenin standart yöntemidir ve dünya sıralamsındaki çoğu cuber bu yöntemi kullanır. Tam seti öğrenmek zaman alır ancak inspection'da planlama yapabilmek büyük avantaj sağlar. Sub-4 saniye skewb süreleri için bu yöntemin bilinmesi neredeyse zorunludur."
+			},
+			"sq1_cube_shape": {
+				"title": "Square-1 Küp Şekli",
+				"desc": "Cube Shape, hangi yöntemi kullanırsanız kullanın Square-1 çözümünün her zaman ilk adımıdır. Amaç, bulmacayı karışık şeklinden tekrar küp formuna dönüştürmektir. Farklı şekil grupları vardır: kite, scallop, square, mushroom, pawn gibi isimlerle anılan konfigürasyonlar. Toplamda yaklaşık 90 case bulunsa da çoğu aynı algoritma gruplarına düşer.\n\nCube Shape, Square-1'in en özgün aşamasıdır — diğer hiçbir WCA bulmacasında böyle bir adım yoktur. Üst ve alt katmanın şekillerini tanıyıp doğru algoritmayı uygulamak gerekir. Inspection süresinde şekli tanımak ve çözüm planlamak ileri seviye cuber'lar için önemlidir.\n\nCube Shape recognition'ı için üst ve alt katmandaki parça sayılarına ve şekillerine bakılır. Başlangıçta star → square → cube gibi genel bir strateji izlenebilir. İleri seviyede ise doğrudan optimal Cube Shape çözümleri öğrenilir."
+			},
+			"sq1_cp": {
+				"title": "Square-1 Köşe Permütasyonu",
+				"desc": "Köşe Permütasyonu, Cube Shape, Köşe Yönlendirme ve Kenar Yönlendirme tamamlandıktan sonra gerçekleştirilir. Bu adım tüm köşeleri doğru konumlarına yerleştirir. Toplamda 6 vaka vardır: adj-adj, adj-opp, opp-adj ve bunların varyantları.\n\nAdj (adjacent) komşu köşelerin takası, opp (opposite) çapraz köşelerin takası anlamına gelir. Üst ve alt katmandaki köşe takas durumlarının kombinasyonları bu 6 vakayı oluşturur. Recognition için köşelerin renklerine bakarak hangi takas durumunda olduğunuz belirlenir.\n\nCP algoritmalarını öğrenmek Square-1'de hız kazanmanın önemli adımlarından biridir. Doğru CP recognition'ı inspection sırasında bile yapılabilir ve bu planlama avantajı sağlar. İleri seviyede CSP (Cube Shape + Parity) ile birleştirilerek daha verimli çözümler elde edilebilir."
+			},
+			"sq1_csp": {
+				"title": "Square-1 Küp Şekli Paritesi",
+				"desc": "CSP, parity hatalarını Cube Shape adımında ele alan ileri düzey bir tekniktir. Temel avantajı, parity tespitinin inspection süresinde gerçekleştirilebilmesidir — ve inspection süresi çözüm zamanınıza sayılmaz. Bu, parity düzeltmesini solve içinde ayrı bir adım olarak yapmaya kıyasla önemli zaman tasarrufu sağlar.\n\nInspection'da parity tespiti yapmak için köşe ve kenar parçalarının pozisyonlarına bakılır. Parity varsa, Cube Shape adımında özel bir algoritma ile hem şekli düzeltir hem de parity'yi çözersiniz. Parity yoksa normal Cube Shape algoritmanızı uygularsınız.\n\nCSP öğrenmek, rekabetçi Square-1 çözümlerinde belirgin bir avantaj sağlar. Solve içindeki parity adımını tamamen ortadan kaldırarak daha kısa ve daha akıcı çözümler elde edersiniz. Ancak CSP, inspection'da hızlı parity tespiti yapabilmeyi gerektirir, bu da pratikle gelişir."
+			},
+			"sq1_eo": {
+				"title": "Square-1 Kenar Yönlendirme",
+				"desc": "Kenar Yönlendirme, Cube Shape ve Köşe Yönlendirme sonrasında gelir. Bu adım tüm kenarları doğru orientasyona getirir. Toplamda 5 temel vaka bulunur ve bu adım tamamlandığında üst ve alt yüzlerin renkleri tamamen doğru olmalıdır.\n\nEO vakaları, üst ve alt katmandaki yanlış yönlendirilmiş kenar sayılarına göre belirlenir. Recognition basittir — kenarların üst/alt yüz renklerinin doğru olup olmadığına bakılır. Algoritmalar genellikle kısa ve hızlıdır.\n\nEO bilgisi, Square-1'de daha ileri teknikler olan OBL (Orient Both Layers) öğrenmenin de temelini oluşturur. Standart EO'da kenar ve köşe orientasyonu ayrı ayrı ele alınırken, OBL bunları tek adımda birleştirir."
+			},
+			"sq1_ep": {
+				"title": "Square-1 Kenar Permütasyonu",
+				"desc": "Kenar Permütasyonu, Square-1 çözümünün genellikle son adımıdır — tüm kenarlar nihai konumlarına taşınır. 4 temel vaka bulunur ve parity varyantları da eklendiğinde toplam vaka sayısı artar.\n\nParity durumunda standart EP algoritmaları çalışmaz ve parity düzeltmesi uygulanması gerekir (CSP kullanılmadıysa). Parity + EP birleşik algoritmaları öğrenmek, ayrı ayrı çözmekten daha verimlidir. Non-parity EP vakaları genellikle kısa ve hızlıdır.\n\nEP recognition'ı için kenarların pozisyonlarına bakılır. İyi EP recognition'ı ile doğru algoritmayı hızlıca seçmek, Square-1 solve sürelerini doğrudan etkiler. EP, Square-1'in en az vaka içeren adımlarından biridir ancak parity faktörü nedeniyle dikkat gerektirir."
+			},
+			"sq1_obl": {
+				"title": "Square-1 Her İki Katmanı Yönlendir",
+				"desc": "OBL (Orient Both Layers), her iki katmanın köşe ve kenar orientasyonlarını aynı anda çözen ileri düzey bir tekniktir. Yaklaşık 17 vaka içerir. Daha basit yaklaşım CO (Corner Orientation) ve EO (Edge Orientation) adımlarını ayrı ayrı ele alırken, OBL bunları tek adımda birleştirerek daha hızlı çözüm sağlar.\n\nOBL recognition'ı için üst ve alt yüzdeki hem köşe hem de kenar renklerine aynı anda bakmanız gerekir. Bu, CO ve EO'yu ayrı ayrı tanımaktan daha zordur ancak pratikle gelişir. Her vakanın kendine özgü bir deseni vardır ve bu desenler zamanla tanıdık hale gelir.\n\nOBL öğrenmek, rekabetçi Square-1 cuber'ları için önemli bir hız kazanımıdır. Bir adımı tamamen ortadan kaldırarak solve başına belirgin zaman tasarrufu sağlar. Ancak önce standart CO ve EO adımlarını rahatça bilmeniz ve recognition'da kendinden emin olmanız önerilir."
+			}
+		}
 	},
 	"account_nav": {
 		"page_title": "Hesap",

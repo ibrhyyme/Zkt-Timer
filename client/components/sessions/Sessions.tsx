@@ -82,6 +82,7 @@ export default function Sessions() {
 
 	useSessionDb();
 
+
 	const mobileMode = useGeneral('mobile_mode');
 	const currentSessionId = useSettings('session_id');
 

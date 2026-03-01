@@ -1,4 +1,4 @@
-import React, { ReactElement } from 'react';
+import React, { ReactElement, useEffect } from 'react';
 import PageTitle from '../common/page_title/PageTitle';
 import Header from '../layout/header/Header';
 import { useLocation } from 'react-router-dom';
@@ -12,6 +12,15 @@ export default function PlayWrapper(props: Props) {
 	const { children } = props;
 	const location = useLocation();
 	const { t } = useTranslation();
+
+	useEffect(() => {
+		document.documentElement.style.overflow = 'hidden';
+		document.body.style.overflow = 'hidden';
+		return () => {
+			document.documentElement.style.overflow = '';
+			document.body.style.overflow = '';
+		};
+	}, []);
 
 	return (
 		<div>

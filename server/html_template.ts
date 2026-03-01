@@ -22,7 +22,6 @@ export default (payload: HtmlPagePayload) => {
 		<html lang="${lang}">
 			<head>
 				<meta charset="UTF-8" />
-				<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 				<meta http-equiv="X-UA-Compatible" content="ie=edge" />
 				<link rel="preconnect" href="https://fonts.gstatic.com">
 				<link rel="preload" href="https://fonts.googleapis.com/css2?family=Fira+Mono&family=Fira+Sans&family=JetBrains+Mono&family=Kiwi+Maru&family=Montserrat&family=Poppins&family=Roboto+Mono&family=Space+Mono&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -32,8 +31,7 @@ export default (payload: HtmlPagePayload) => {
 				<link rel="stylesheet" href="${distBase}/${cssFileName}?v=${version}">
 				<link rel="stylesheet" href="https://cdn.cubing.net/v0/css/@cubing/icons/css">
 				<link rel="shortcut icon" href="${resourceBase}/favicon.ico" type="image/x-icon">  
-				<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-				
+				<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 				<!-- PWA Manifest -->
 				<link rel="manifest" href="/public/manifest.webmanifest">
 				<!-- iOS PWA Uyumluluğu (Otomatik Splash Screen Oluşturucu) -->

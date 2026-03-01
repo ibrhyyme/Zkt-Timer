@@ -50,7 +50,8 @@ export default function LoadingCover(props: Props) {
 			<img
 				src="/public/images/zkt-logo.png"
 				alt="ZKT-Timer"
-				className="w-32 animate-pulse"
+				className="spin"
+				style={{ width: '8rem' }}
 			/>
 		</div>
 	);

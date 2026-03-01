@@ -16,16 +16,16 @@
 		p {
 			margin: 0;
 			color: #856404;
-			font-size: 14px;
+			font-size: 0.933rem;
 		}
 	}
 
 	&__errors {
-		margin-bottom: 20px;
+		margin-bottom: 1.333rem;
 
 		h4 {
-			margin: 0 0 10px 0;
-			font-size: 14px;
+			margin: 0 0 0.667rem 0;
+			font-size: 0.933rem;
 			color: #856404;
 		}
 	}
@@ -37,7 +37,7 @@
 		background: white;
 		border-radius: 4px;
 		margin-bottom: 8px;
-		font-size: 13px;
+		font-size: 0.867rem;
 
 		.error-label {
 			font-weight: bold;

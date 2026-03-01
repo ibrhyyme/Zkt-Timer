@@ -57,6 +57,7 @@ export default function Stats() {
 
 	useSolveDb();
 
+
 	const cubeTypes = useMemo(() => {
 		return fetchAllCubeTypesSolved();
 	}, []);
