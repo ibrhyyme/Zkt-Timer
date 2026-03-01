@@ -10,7 +10,7 @@ const PREFIX = 'trainer_';
 // Lazy-loaded default algorithms (fetched from /public/ instead of bundled)
 let defaultAlgsCache: Record<string, AlgorithmSubset[]> | null = null;
 
-async function fetchDefaultAlgs(): Promise<Record<string, AlgorithmSubset[]>> {
+export async function fetchDefaultAlgs(): Promise<Record<string, AlgorithmSubset[]>> {
 	if (defaultAlgsCache) return defaultAlgsCache;
 	const res = await fetch('/public/trainer/default-algs.json');
 	defaultAlgsCache = await res.json();

@@ -2,19 +2,19 @@
 
 .pending-sync-badge {
     position: fixed;
-    top: 16px;
-    right: 16px;
+    top: 1.067rem;
+    right: 1.067rem;
     z-index: 9999;
 
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 0.4rem;
 
-    padding: 8px 12px;
+    padding: 0.533rem 0.8rem;
     background: rgba(255, 165, 0, 0.9);
     border-radius: 20px;
 
-    font-size: 13px;
+    font-size: 0.867rem;
     font-weight: 600;
     color: #fff;
 
@@ -39,19 +39,19 @@
     }
 
     &__icon {
-        font-size: 16px;
+        font-size: 1.067rem;
         line-height: 1;
     }
 
     &__count {
-        font-size: 13px;
+        font-size: 0.867rem;
         line-height: 1;
-        min-width: 16px;
+        min-width: 1.067rem;
         text-align: center;
     }
 
     &__spinner {
-        font-size: 14px;
+        font-size: 0.933rem;
         line-height: 1;
         animation: spin 1s linear infinite;
     }

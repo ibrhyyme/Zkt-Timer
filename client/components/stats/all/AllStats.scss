@@ -4,11 +4,11 @@
 	width: 100%;
 	display: grid;
 	// Fix: 300px -> 280px for better fit on small screens
-	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+	grid-template-columns: repeat(auto-fill, minmax(18.667rem, 1fr));
 	// Fix: 350px -> minmax(350px, auto) for flexibility
-	grid-auto-rows: minmax(350px, auto);
-	grid-column-gap: 20px;
-	grid-row-gap: 20px;
+	grid-auto-rows: minmax(23.333rem, auto);
+	grid-column-gap: 1.333rem;
+	grid-row-gap: 1.333rem;
 
 	@media only screen and (max-width: 900px) {
 		grid-template-columns: 1fr;

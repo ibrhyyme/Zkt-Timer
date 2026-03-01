@@ -1,6 +1,7 @@
 export interface AlgorithmEntry {
 	name: string;
 	algorithm: string;
+	alternatives?: string[];
 }
 
 export interface AlgorithmSubset {
@@ -27,12 +28,9 @@ export type CubeFace = 'U' | 'D' | 'F' | 'B' | 'R' | 'L';
 
 export interface TrainerOptions {
 	randomOrder: boolean;
-	randomizeAUF: boolean;
 	prioritizeSlow: boolean;
-	prioritizeFailed: boolean;
 	selectLearning: boolean;
-	showAlgName: boolean;
-	flashIndicator: boolean;
+	randomizeAUF: boolean;
 	topFace: CubeFace;
 	frontFace: CubeFace;
 }
@@ -55,11 +53,7 @@ export interface TrainerSessionState {
 	currentTimerValue: number;
 	userAlg: string[];
 	originalUserAlg: string[];
-	inputMode: boolean;
 	isMoveMasked: boolean;
-
-	// Custom Algorithm Input
-	customAlg: string;
 
 	// Options
 	options: TrainerOptions;
@@ -82,10 +76,8 @@ export type TrainerAction =
 	| {type: 'SET_TIMER_VALUE'; payload: number}
 	| {type: 'SET_USER_ALG'; payload: string[]}
 	| {type: 'SET_ORIGINAL_USER_ALG'; payload: string[]}
-	| {type: 'SET_INPUT_MODE'; payload: boolean}
 	| {type: 'SET_MOVE_MASKED'; payload: boolean}
 	| {type: 'SET_OPTIONS'; payload: Partial<TrainerOptions>}
-	| {type: 'SET_CUSTOM_ALG'; payload: string}
 	| {type: 'RESET_TRAINING'}
 	| {type: 'SET_VIEW'; payload: TrainerView}
 	| {type: 'ADVANCE_ALGORITHM'};

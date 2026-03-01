@@ -1,4 +1,4 @@
-import React, { createContext, ReactNode, useEffect, useState, useMemo, useRef } from 'react';
+import React, { createContext, ReactNode, useEffect, useState, useMemo } from 'react';
 import { RootStateOrAny, useDispatch, useSelector, shallowEqual } from 'react-redux';
 import './Timer.scss';
 import { ArrowRight, CaretUp, CaretDown } from 'phosphor-react';
@@ -18,7 +18,6 @@ import { endTimer } from './helpers/events';
 import { useSettings } from '../../util/hooks/useSettings';
 import { smartCubeSelected } from './helpers/util';
 import { listenForPbEvents } from './helpers/pb';
-import { useWindowListener } from '../../util/hooks/useListener';
 import { useStableViewportHeight } from '../../util/hooks/useStableViewportHeight';
 import SmartCube from './smart_cube/SmartCube';
 import { Link } from 'react-router-dom';
@@ -55,19 +54,6 @@ export default function Timer(props: TimerProps) {
 	const scrambleSubset = useSettings('scramble_subset');
 	let timerLayout = props.timerLayout || useSettings('timer_layout');
 
-	const [heightSmall, setHeightSmall] = useState(false);
-	const [widthSmall, setWidthSmall] = useState(false);
-	const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-	// Tarayıcı çok küçükse otomatik bottom layout (Masaüstü responsive için)
-	if ((timerLayout === 'left' || timerLayout === 'right') && widthSmall && !mobileMode) {
-		timerLayout = 'bottom';
-	}
-
-	if (timerLayout === 'bottom' && heightSmall && !mobileMode && !widthSmall) {
-		timerLayout = 'right';
-	}
-
 	const me = useMe();
 
 	// All default values from the settings should go here - Memoized to prevent re-renders
@@ -82,13 +68,11 @@ export default function Timer(props: TimerProps) {
 
 	// Event listeners for single and AVG PBs
 	listenForPbEvents(context);
-	useWindowListener('resize', windowResizeThrottled);
 
 	// Initiating timer stuff
 	useEffect(() => {
 		toggleHtmlOverflow('hidden');
 		initTimer(dispatch, context);
-		windowResize();
 
 		setLoading(false);
 
@@ -108,32 +92,6 @@ export default function Timer(props: TimerProps) {
 		if (html) {
 			html.style.overflow = value;
 		}
-	}
-
-	function windowResize() {
-		// Height kontrolü
-		if (window.innerHeight <= 780 && !heightSmall) {
-			setHeightSmall(true);
-		} else if (window.innerHeight > 780 && heightSmall) {
-			setHeightSmall(false);
-		}
-
-		// Width kontrolü - 1200px altında bottom layout'a geç
-		if (window.innerWidth <= 1200 && !widthSmall) {
-			setWidthSmall(true);
-		} else if (window.innerWidth > 1200 && widthSmall) {
-			setWidthSmall(false);
-		}
-	}
-
-	function windowResizeThrottled() {
-		// Throttle resize events - 150ms debounce
-		if (resizeTimeoutRef.current) {
-			clearTimeout(resizeTimeoutRef.current);
-		}
-		resizeTimeoutRef.current = setTimeout(() => {
-			windowResize();
-		}, 150);
 	}
 
 	let smartCubeVisual: ReactNode = null;

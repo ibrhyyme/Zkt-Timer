@@ -304,168 +304,168 @@ export default function SolvesList() {
 
 	return (
 		<div className={b()}>
-			<PageTitle pageName={t('solves_list.page_title')} />
-
-			<div className="w-full px-2 mx-auto flex max-w-2xl flex-col gap-2">
-				<div className="w-full mb-2 flex flex-row flex-wrap items-center gap-2">
-					{/* Bulk Selection Toolbar */}
-					{isSelectionMode ? (
-						<div className="flex items-center gap-2 w-full animate-in fade-in slide-in-from-top-2 duration-200 p-2 bg-blue-900/20 rounded-lg border border-blue-500/30">
-							<Button
-								onClick={selectAllMatchingFilter}
-								text={t('solves_list.select_all', { count: totalResults })}
-								icon={<CheckSquare weight="bold" />}
-								small
-							/>
-							{selectedSolves.size > 0 && (
+			<PageTitle pageName={t('solves_list.page_title')}>
+					<div className="w-full mb-2 flex flex-row flex-wrap items-center gap-2">
+						{/* Bulk Selection Toolbar */}
+						{isSelectionMode ? (
+							<div className="flex items-center gap-2 w-full animate-in fade-in slide-in-from-top-2 duration-200 p-2 bg-blue-900/20 rounded-lg border border-blue-500/30">
 								<Button
-									onClick={clearSelection}
-									text={t('solves_list.clear')}
+									onClick={selectAllMatchingFilter}
+									text={t('solves_list.select_all', { count: totalResults })}
+									icon={<CheckSquare weight="bold" />}
+									small
+								/>
+								{selectedSolves.size > 0 && (
+									<Button
+										onClick={clearSelection}
+										text={t('solves_list.clear')}
+										gray
+										small
+									/>
+								)}
+								<div className="grow" />
+								<span className="text-sm font-bold text-blue-200 mr-2">
+									{t('solves_list.selected_count', { count: selectedSolves.size })}
+								</span>
+								<Button
+									onClick={deleteSelected}
+									text={t('solves_list.delete')}
+									theme={CommonType.DANGER}
+									icon={<Trash weight="bold" />}
+									disabled={selectedSolves.size === 0 || isDeleting}
+									loading={isDeleting}
+									small
+								/>
+								<Button
+									onClick={toggleSelectionMode}
+									icon={<X weight="bold" />}
 									gray
 									small
 								/>
-							)}
-							<div className="grow" />
-							<span className="text-sm font-bold text-blue-200 mr-2">
-								{t('solves_list.selected_count', { count: selectedSolves.size })}
-							</span>
-							<Button
-								onClick={deleteSelected}
-								text={t('solves_list.delete')}
-								theme={CommonType.DANGER}
-								icon={<Trash weight="bold" />}
-								disabled={selectedSolves.size === 0 || isDeleting}
-								loading={isDeleting}
-								small
-							/>
-							<Button
-								onClick={toggleSelectionMode}
-								icon={<X weight="bold" />}
-								gray
-								small
-							/>
-						</div>
-					) : (
-						// Standard Toolbar
-						<>
-							<CubePicker
-								dropdownProps={{
-									openLeft: true,
-								}}
-								value={cubeType}
-								onChange={changeCubeType}
-							/>
-							<Dropdown
-								openLeft
-								preventCloseOnInnerClick
-								text={filterText}
-								icon={<Funnel weight="bold" />}
-								options={[
-									getFilterOptionValue(t('solves_list.plus2_only'), 'plus_two'),
-									getFilterOptionValue(t('solves_list.no_plus2'), 'plus_two', true),
-									getFilterOptionValue(t('solves_list.dnf_only'), 'dnf'),
-									getFilterOptionValue(t('solves_list.no_dnf'), 'dnf', true),
-									getFilterOptionValue(t('solves_list.imported'), 'bulk'),
-									getFilterOptionValue(t('solves_list.not_imported'), 'bulk', true),
-									getFilterOptionValue(t('solves_list.smart_cube'), 'is_smart_cube'),
-									getFilterOptionValue(t('solves_list.not_smart_cube'), 'is_smart_cube', true),
-								]}
-							/>
-
-							{/* Time Filter */}
-							<div className="relative" ref={timeFilterRef}>
-								<Button
-									text={hasTimeFilter ? t('solves_list.time_selected') : t('solves_list.time')}
-									icon={<Timer weight="bold" />}
-									onClick={() => setShowTimeFilter(!showTimeFilter)}
-									gray={!hasTimeFilter}
-									theme={hasTimeFilter ? CommonType.PRIMARY : undefined}
-								/>
-								{showTimeFilter && (
-									<div className="absolute top-full left-0 mt-2 z-50 bg-gray-800 border border-gray-700 shadow-xl rounded-lg p-3 min-w-[280px] flex flex-col gap-2 animate-in fade-in zoom-in-95 duration-100">
-										<div className="flex flex-col gap-1">
-											<label className="text-xs text-gray-400 font-bold ml-1">{t('solves_list.min_time')}</label>
-											<input
-												type="text"
-												inputMode="numeric"
-												placeholder="700 = 7.00"
-												className="w-full bg-gray-900 border border-gray-600 rounded px-2 py-1 text-sm text-gray-200 focus:outline-none focus:border-blue-500"
-												value={minTime}
-												onChange={(e) => setMinTime(e.target.value)}
-												onKeyDown={(e) => e.key === 'Enter' && applyTimeFilter()}
-											/>
-										</div>
-										<div className="flex flex-col gap-1">
-											<label className="text-xs text-gray-400 font-bold ml-1">{t('solves_list.max_time')}</label>
-											<input
-												type="text"
-												inputMode="numeric"
-												placeholder="1152 = 11.52"
-												className="w-full bg-gray-900 border border-gray-600 rounded px-2 py-1 text-sm text-gray-200 focus:outline-none focus:border-blue-500"
-												value={maxTime}
-												onChange={(e) => setMaxTime(e.target.value)}
-												onKeyDown={(e) => e.key === 'Enter' && applyTimeFilter()}
-											/>
-										</div>
-										<div className="h-[1px] bg-gray-700 my-1" />
-										<div className="flex gap-2">
-											<Button
-												text={t('solves_list.clear')}
-												gray
-												small
-												fullWidth
-												onClick={clearTimeFilter}
-											/>
-											<Button
-												text={t('solves_list.apply')}
-												theme={CommonType.PRIMARY}
-												small
-												fullWidth
-												onClick={applyTimeFilter}
-											/>
-										</div>
-									</div>
-								)}
 							</div>
+						) : (
+							// Standard Toolbar
+							<>
+								<CubePicker
+									dropdownProps={{
+										openLeft: true,
+									}}
+									value={cubeType}
+									onChange={changeCubeType}
+								/>
+								<Dropdown
+									openLeft
+									preventCloseOnInnerClick
+									text={filterText}
+									icon={<Funnel weight="bold" />}
+									options={[
+										getFilterOptionValue(t('solves_list.plus2_only'), 'plus_two'),
+										getFilterOptionValue(t('solves_list.no_plus2'), 'plus_two', true),
+										getFilterOptionValue(t('solves_list.dnf_only'), 'dnf'),
+										getFilterOptionValue(t('solves_list.no_dnf'), 'dnf', true),
+										getFilterOptionValue(t('solves_list.imported'), 'bulk'),
+										getFilterOptionValue(t('solves_list.not_imported'), 'bulk', true),
+										getFilterOptionValue(t('solves_list.smart_cube'), 'is_smart_cube'),
+										getFilterOptionValue(t('solves_list.not_smart_cube'), 'is_smart_cube', true),
+									]}
+								/>
 
-							<Dropdown
-								text={t('solves_list.sort')}
-								openLeft
-								preventCloseOnInnerClick
-								icon={sortInverse ? <SortAscending weight="bold" /> : <SortDescending weight="bold" />}
-								options={[
-									{
-										text: t('solves_list.date'),
-										checkbox: true,
-										on: sortBy === 'started_at',
-										onChange: () => changeSortBy('started_at'),
-									},
-									{
-										text: t('solves_list.time'),
-										checkbox: true,
-										on: sortBy === 'time',
-										onChange: () => changeSortBy('time'),
-									},
-									{
-										text: t('solves_list.reverse_order'),
-										icon: sortInverse ? <SortDescending weight="bold" /> : <SortAscending weight="bold" />,
-										onClick: toggleSortByOrder,
-									},
-								]}
-							/>
-							<Button disabled={!solves?.length} gray icon={<Share weight="bold" />} onClick={viewAsText} />
-							<Button
-								text={t('solves_list.edit')}
-								icon={<ListChecks weight="bold" />}
-								onClick={toggleSelectionMode}
-								disabled={!solves?.length}
-							/>
-							<div className="grow" />
-							<ResultCount value={solveCountText} />
-						</>
-					)}
-				</div>
+								{/* Time Filter */}
+								<div className="relative" ref={timeFilterRef}>
+									<Button
+										text={hasTimeFilter ? t('solves_list.time_selected') : t('solves_list.time')}
+										icon={<Timer weight="bold" />}
+										onClick={() => setShowTimeFilter(!showTimeFilter)}
+										gray={!hasTimeFilter}
+										theme={hasTimeFilter ? CommonType.PRIMARY : undefined}
+									/>
+									{showTimeFilter && (
+										<div className="absolute top-full left-0 mt-2 z-50 bg-gray-800 border border-gray-700 shadow-xl rounded-lg p-3 min-w-[280px] flex flex-col gap-2 animate-in fade-in zoom-in-95 duration-100">
+											<div className="flex flex-col gap-1">
+												<label className="text-xs text-gray-400 font-bold ml-1">{t('solves_list.min_time')}</label>
+												<input
+													type="text"
+													inputMode="numeric"
+													placeholder="700 = 7.00"
+													className="w-full bg-gray-900 border border-gray-600 rounded px-2 py-1 text-sm text-gray-200 focus:outline-none focus:border-blue-500"
+													value={minTime}
+													onChange={(e) => setMinTime(e.target.value)}
+													onKeyDown={(e) => e.key === 'Enter' && applyTimeFilter()}
+												/>
+											</div>
+											<div className="flex flex-col gap-1">
+												<label className="text-xs text-gray-400 font-bold ml-1">{t('solves_list.max_time')}</label>
+												<input
+													type="text"
+													inputMode="numeric"
+													placeholder="1152 = 11.52"
+													className="w-full bg-gray-900 border border-gray-600 rounded px-2 py-1 text-sm text-gray-200 focus:outline-none focus:border-blue-500"
+													value={maxTime}
+													onChange={(e) => setMaxTime(e.target.value)}
+													onKeyDown={(e) => e.key === 'Enter' && applyTimeFilter()}
+												/>
+											</div>
+											<div className="h-[1px] bg-gray-700 my-1" />
+											<div className="flex gap-2">
+												<Button
+													text={t('solves_list.clear')}
+													gray
+													small
+													fullWidth
+													onClick={clearTimeFilter}
+												/>
+												<Button
+													text={t('solves_list.apply')}
+													theme={CommonType.PRIMARY}
+													small
+													fullWidth
+													onClick={applyTimeFilter}
+												/>
+											</div>
+										</div>
+									)}
+								</div>
 
+								<Dropdown
+									text={t('solves_list.sort')}
+									openLeft
+									preventCloseOnInnerClick
+									icon={sortInverse ? <SortAscending weight="bold" /> : <SortDescending weight="bold" />}
+									options={[
+										{
+											text: t('solves_list.date'),
+											checkbox: true,
+											on: sortBy === 'started_at',
+											onChange: () => changeSortBy('started_at'),
+										},
+										{
+											text: t('solves_list.time'),
+											checkbox: true,
+											on: sortBy === 'time',
+											onChange: () => changeSortBy('time'),
+										},
+										{
+											text: t('solves_list.reverse_order'),
+											icon: sortInverse ? <SortDescending weight="bold" /> : <SortAscending weight="bold" />,
+											onClick: toggleSortByOrder,
+										},
+									]}
+								/>
+								<Button disabled={!solves?.length} gray icon={<Share weight="bold" />} onClick={viewAsText} />
+								<Button
+									text={t('solves_list.edit')}
+									icon={<ListChecks weight="bold" />}
+									onClick={toggleSelectionMode}
+									disabled={!solves?.length}
+								/>
+								<div className="grow" />
+								<ResultCount value={solveCountText} />
+							</>
+						)}
+					</div>
+				</PageTitle>
+
+			<div className="w-full px-2 mx-auto flex max-w-2xl flex-col gap-2">
 				<div className={b('list')}>{body}</div>
 				<div className={b('pagination')}>
 					<Button

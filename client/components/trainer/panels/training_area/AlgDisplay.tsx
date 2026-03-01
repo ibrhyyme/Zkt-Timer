@@ -8,22 +8,15 @@ export default function AlgDisplay() {
 	const {state} = useTrainerContext();
 	const {userAlg, isMoveMasked} = state;
 
-	if (!userAlg.length) return null;
+	if (!userAlg.length || isMoveMasked) return null;
 
 	return (
 		<div className={b('alg-display')}>
-			{userAlg.map((move, index) => {
-				const masked = isMoveMasked;
-
-				return (
-					<span
-						key={`${move}-${index}`}
-						className={b('alg-move', {masked})}
-					>
-						{masked ? '?' : move}
-					</span>
-				);
-			})}
+			{userAlg.map((move, index) => (
+				<span key={`${move}-${index}`} className={b('alg-move')}>
+					{move}
+				</span>
+			))}
 		</div>
 	);
 }

@@ -14,6 +14,7 @@ import TrainerToolbar from './toolbar/TrainerToolbar';
 import {ensureCubingReady} from '../../util/trainer/algorithm_engine';
 import {ensureKPuzzleReady} from '../../util/trainer/pattern_utils';
 import {loadLLPatterns} from '../../util/trainer/ll_patterns';
+import {loadPuzzlePatterns} from '../../util/trainer/puzzle_patterns';
 import {useMe} from '../../util/hooks/useMe';
 import {isProEnabled, isPro} from '../../lib/pro';
 
@@ -121,8 +122,18 @@ export default function Trainer() {
 			ensureCubingReady();
 			ensureKPuzzleReady();
 			loadLLPatterns();
+			loadPuzzlePatterns();
 		}
 	}, [showFullTrainer]);
+
+	useEffect(() => {
+		document.documentElement.style.overflow = 'hidden';
+		document.body.style.overflow = 'hidden';
+		return () => {
+			document.documentElement.style.overflow = '';
+			document.body.style.overflow = '';
+		};
+	}, []);
 
 	if (!showFullTrainer) {
 		return (

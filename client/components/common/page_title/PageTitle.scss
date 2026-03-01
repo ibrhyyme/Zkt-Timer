@@ -2,9 +2,20 @@
 
 .#{$namespace}-page-title {
 	width: 100%;
-	margin-bottom: 20px;
-	padding-bottom: 20px;
-	position: relative;
+	position: sticky;
+	top: var(--nav-h);
+	z-index: 100;
+	background-color: rgb(var(--background-color));
+	margin-top: calc(-1 * var(--wrapper-padding));
+	padding-top: var(--wrapper-padding);
+	margin-bottom: 0;
+	padding-bottom: 2.667rem;
+
+	@media (max-width: 768px), (max-height: 500px) {
+		top: 0;
+		margin-top: calc(-15px - var(--safe-area-inset-top, 0px));
+		padding-top: calc(15px + var(--safe-area-inset-top, 0px));
+	}
 
 	&__title {
 		display: flex;
@@ -17,31 +28,31 @@
 		i {
 			position: relative;
 			top: 3px;
-			margin-right: 12px;
+			margin-right: 0.8rem;
 		}
 	}
 
 	&__lines {
 		display: flex;
 		flex-direction: row;
-		margin-bottom: 30px;
+		margin-bottom: 2rem;
 	}
 
 	&__line {
 		background-color: rgb(var(--primary-color));
 		height: 4px;
-		width: 50px;
+		width: 3.333rem;
 		border-radius: 4px;
-		margin-right: 5px;
+		margin-right: 0.333rem;
 
 		&--secondary {
-			width: 35px;
+			width: 2.333rem;
 			background-color: rgb(var(--secondary-color));
 		}
 	}
 
 	&--account-dropdown-mobile {
-		margin-left: 12px;
+		margin-left: 0.8rem;
 		display: none;
 
 		@media (max-width: 768px), (max-height: 500px) {

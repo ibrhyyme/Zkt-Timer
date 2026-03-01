@@ -75,6 +75,7 @@ const LL_FACELET_INDICES = [
 const LL_CATEGORIES = [
 	'PLL', 'OLL', '2-Look PLL', '2-Look OLL',
 	'COLL', 'OLLCP', 'ZBLL', 'CMLL',
+	'2-Look CMLL', 'OH-CMLL',
 ];
 
 /**
@@ -95,15 +96,15 @@ function cleanAlgorithm(alg) {
  */
 function expandNotation(input) {
 	let output = input
-		.replace(/["´`'\u2019]/g, "'")
+		.replace(/["´`']/g, "'")
 		.replace(/\[/g, '(')
 		.replace(/\]/g, ')')
 		.replace(/XYZ/g, 'xyz');
 	output = output.replace(/[^RLFBUDMESrlfbudxyz2()']/g, '');
 	output = output.replace(/\(/g, ' (');
 	output = output.replace(/\)(?!\s)/g, ') ');
-	output = output.replace(/'(?![\s)'])/g, "' ");
-	output = output.replace(/2(?![\s)'])/g, '2 ');
+	output = output.replace(/'(?![\s)])/g, "' ");
+	output = output.replace(/2(?![\s')])/g, '2 ');
 	output = output.replace(/([RLFBUDMESrlfbudxyz])(?![\s)'2])/g, '$1 ');
 	output = output.replace(/(\s)(?=2)/g, '');
 	output = output.replace(/'2/g, "2'");
@@ -131,27 +132,29 @@ async function main() {
 
 		let catCount = 0;
 		for (const subset of subsets) {
-			for (const { algorithm } of subset.algorithms) {
-				try {
-					const cleanAlg = cleanAlgorithm(algorithm);
-					const algObj = Alg.fromString(cleanAlg);
+			for (const entry of subset.algorithms) {
+				// Primary + alternatives hepsini isle
+				const allAlgs = [entry.algorithm, ...(entry.alternatives || [])];
 
-					// experimentalSetupAnchor: 'end' → setup state = solved.applyAlg(inverse)
-					const inverse = algObj.invert();
-					const setupState = solved.applyAlg(inverse);
+				for (const algorithm of allAlgs) {
+					try {
+						const cleanAlg = cleanAlgorithm(algorithm);
+						const algObj = Alg.fromString(cleanAlg);
 
-					const facelets = patternToFacelets(setupState);
-					const llPattern = LL_FACELET_INDICES.map(i => facelets[i]).join('');
+						const inverse = algObj.invert();
+						const setupState = solved.applyAlg(inverse);
 
-					// AlgorithmCard expandNotation(algorithm) ile alır,
-				// aynı key ile eşleşmesi için expanded versiyonu kullan
-				const expandedAlg = expandNotation(algorithm);
-				patterns[expandedAlg] = llPattern;
-					catCount++;
-					count++;
-				} catch (e) {
-					console.error(`  HATA [${category}] "${algorithm}":`, e.message);
-					errors++;
+						const facelets = patternToFacelets(setupState);
+						const llPattern = LL_FACELET_INDICES.map(i => facelets[i]).join('');
+
+						const expandedAlg = expandNotation(algorithm);
+						patterns[expandedAlg] = llPattern;
+						catCount++;
+						count++;
+					} catch (e) {
+						console.error(`  HATA [${category}] "${algorithm}":`, e.message);
+						errors++;
+					}
 				}
 			}
 		}

@@ -1,8 +1,14 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import block from '../../../../styles/bem';
-import { algToId, getStickering, getOrientationRotation } from '../../../../util/trainer/algorithm_engine';
-import { getLLPattern } from '../../../../util/trainer/ll_patterns';
+import { algToId, getStickering, getOrientationRotation, getPuzzleType, isCubeShapePuzzle, isLLCategory, getDefaultFrontFace, is2DPatternCategory, getPuzzlePatternType, isSQ1MirrorCategory } from '../../../../util/trainer/algorithm_engine';
+import { getLLPattern, isLLPatternsLoaded } from '../../../../util/trainer/ll_patterns';
+import { getPuzzlePattern, isPuzzlePatternsLoaded } from '../../../../util/trainer/puzzle_patterns';
+import { getRemappedMask } from '../../../../util/trainer/stickering_remap';
 import LLPatternView from '../LLPatternView';
+import CubeTopPatternView from '../CubeTopPatternView';
+import PyraminxPatternView from '../PyraminxPatternView';
+import SkewbPatternView from '../SkewbPatternView';
+import SQ1PatternView from '../SQ1PatternView';
 import { getBestTime, averageOfFive, getLearnedStatus, setLearnedStatus, getLastTimes } from '../../hooks/useAlgorithmData';
 import { useTrainerDb } from '../../../../util/hooks/useTrainerDb';
 import { BookmarkSimple, Check, Plus } from 'phosphor-react';
@@ -17,6 +23,7 @@ interface AlgorithmCardProps {
 	subset: string;
 	checked: boolean;
 	onToggle: (algorithm: string, name: string, checked: boolean) => void;
+	onDetail: (algorithm: string, name: string, category: string, subset: string) => void;
 	topFace: CubeFace;
 	frontFace: CubeFace;
 }
@@ -35,10 +42,12 @@ export default function AlgorithmCard({
 	subset,
 	checked,
 	onToggle,
+	onDetail,
 	topFace,
 	frontFace,
 }: AlgorithmCardProps) {
 	const dbVersion = useTrainerDb();
+	const effectiveFrontFace = isLLCategory(category) ? getDefaultFrontFace(topFace) : frontFace;
 	const algId = algToId(algorithm);
 	const best = getBestTime(algId);
 	const ao5 = averageOfFive(algId);
@@ -48,10 +57,25 @@ export default function AlgorithmCard({
 	const containerRef = useRef<HTMLDivElement>(null);
 	const [isVisible, setIsVisible] = useState(false);
 
-	// Kategori 2D-LL mi yoksa 3D mi?
-	const isLLCategory = category.toLowerCase().includes('ll') || getStickering(category) === 'OLL';
-	const llPattern = isLLCategory ? getLLPattern(algorithm) : null;
-	const use3D = !llPattern;
+	// Puzzle tipi ve 2D/3D secimi
+	const puzzleType = getPuzzleType(category);
+	const is3x3 = puzzleType === '3x3x3';
+	const isLL = isLLCategory(category);
+	const llPatternsLoaded = isLLPatternsLoaded();
+	const llPattern = isLL ? getLLPattern(algorithm) : null;
+
+	// Puzzle pattern (2x2, 4x4, pyraminx, skewb, sq1)
+	const is2DPuzzle = is2DPatternCategory(category);
+	const puzzlePatternType = getPuzzlePatternType(category);
+	const puzzlePatternsLoaded = isPuzzlePatternsLoaded();
+	const puzzlePattern = is2DPuzzle && puzzlePatternType ? getPuzzlePattern(puzzlePatternType, algorithm, category) : null;
+
+	// 3D gerekli mi?
+	const use3D = isLL
+		? (llPatternsLoaded ? !llPattern : false)
+		: is2DPuzzle
+			? (puzzlePatternsLoaded ? !puzzlePattern : false)
+			: true;
 
 	// Lazy load: sadece 3D (TwistyPlayer) gerektiren kartlar için IntersectionObserver
 	useEffect(() => {
@@ -83,12 +107,14 @@ export default function AlgorithmCard({
 			const { TwistyPlayer } = await import('cubing/twisty');
 			if (cancelled || !twistyRef.current) return;
 
-			const rotation = getOrientationRotation(topFace, frontFace);
-			const baseStickering = getStickering(category);
-			const stickering = rotation ? 'full' : baseStickering;
+			const isCube = isCubeShapePuzzle(category);
+			const rotation = isCube ? getOrientationRotation(topFace, effectiveFrontFace) : '';
+			const baseStickering = is3x3 ? getStickering(category) : 'full';
+			const needsRemap = !!rotation && topFace !== 'U' && baseStickering !== 'full';
+			const remappedMask = needsRemap ? await getRemappedMask(baseStickering, rotation) : null;
 
 			const player = new TwistyPlayer({
-				puzzle: '3x3x3',
+				puzzle: puzzleType as any,
 				visualization: '3D',
 				alg: algorithm,
 				experimentalSetupAnchor: 'end',
@@ -96,9 +122,13 @@ export default function AlgorithmCard({
 				hintFacelets: 'none',
 				experimentalDragInput: 'none',
 				background: 'none',
-				experimentalStickering: stickering as any,
+				...(!remappedMask ? { experimentalStickering: (needsRemap ? 'full' : baseStickering) as any } : {}),
 				...(rotation ? { experimentalSetupAlg: rotation } : {}),
 			});
+
+			if (remappedMask) {
+				(player as any).experimentalStickeringMaskOrbits = remappedMask;
+			}
 
 			if (!cancelled && twistyRef.current) {
 				twistyRef.current.innerHTML = '';
@@ -109,7 +139,7 @@ export default function AlgorithmCard({
 		return () => {
 			cancelled = true;
 		};
-	}, [use3D, isVisible, algorithm, category, topFace, frontFace]);
+	}, [use3D, isVisible, algorithm, category, topFace, effectiveFrontFace, puzzleType, is3x3]);
 
 	const cycleLearnedStatus = useCallback(
 		(e: React.MouseEvent) => {
@@ -130,6 +160,10 @@ export default function AlgorithmCard({
 			ref={containerRef}
 			className={b('alg-card', { checked })}
 			onClick={() => onToggle(algorithm, name, !checked)}
+			onDoubleClick={(e) => {
+				e.preventDefault();
+				onDetail(algorithm, name, category, subset);
+			}}
 		>
 			<div className={b('alg-card-header')}>
 				<span className={b('alg-card-name')} title={algorithm}>
@@ -138,6 +172,7 @@ export default function AlgorithmCard({
 				<button
 					className={b('alg-card-bookmark')}
 					onClick={cycleLearnedStatus}
+					onDoubleClick={(e) => e.stopPropagation()}
 					title="Learning status"
 				>
 					<BookmarkSimple
@@ -158,9 +193,31 @@ export default function AlgorithmCard({
 					<LLPatternView
 						pattern={llPattern}
 						topFace={topFace}
-						frontFace={frontFace}
+						frontFace={effectiveFrontFace}
 						stickering={stickering}
 					/>
+				) : puzzlePattern && puzzlePatternType ? (
+					<>
+						{puzzlePatternType === '2x2' && typeof puzzlePattern === 'string' && (
+							<CubeTopPatternView pattern={puzzlePattern} layers={2} topFace={topFace} />
+						)}
+						{puzzlePatternType === '4x4' && typeof puzzlePattern === 'string' && (
+							<CubeTopPatternView pattern={puzzlePattern} layers={4} topFace={topFace} />
+						)}
+						{puzzlePatternType === 'pyraminx' && typeof puzzlePattern === 'string' && (
+							<PyraminxPatternView pattern={puzzlePattern} />
+						)}
+						{puzzlePatternType === 'skewb' && typeof puzzlePattern === 'string' && (
+							<SkewbPatternView pattern={puzzlePattern} topFace={topFace} />
+						)}
+						{puzzlePatternType === 'sq1' && typeof puzzlePattern === 'object' && (
+							<SQ1PatternView
+								top={(puzzlePattern as any).t}
+								bottom={(puzzlePattern as any).b}
+								mirror={isSQ1MirrorCategory(category)}
+							/>
+						)}
+					</>
 				) : (
 					<div ref={twistyRef} style={{
 						width: '100%',

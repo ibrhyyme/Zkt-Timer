@@ -98,13 +98,20 @@ section {
 
 body,
 html {
-	height: 100%;
+	min-height: 100%;
 	width: 100%;
 	position: relative;
-	display: table;
 	font-size: 15px;
 	overscroll-behavior: none;
 	overscroll-behavior-y: none;
+}
+
+// Küçük viewport'larda (17.3" laptop vb.) genel boyutu küçült
+// Sabit breakpoint — vw yok, zoom'da reflow yaratmaz
+@media screen and (max-width: 1500px) and (min-width: 769px) {
+	html {
+		font-size: 14px;
+	}
 }
 
 div {
@@ -171,7 +178,6 @@ input:-webkit-autofill {
 #app {
 	position: relative;
 	width: 100%;
-	height: 100%;
 	padding: 0;
 	margin: 0;
 	min-height: 100%;

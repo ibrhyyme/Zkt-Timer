@@ -33,5 +33,9 @@ public/uploads/
 # Windows artifacts
 nul
 
+# External repos
+cubingapp-main/
+
 # Claude config/skills
 .claude/
+CLAUDE.md
