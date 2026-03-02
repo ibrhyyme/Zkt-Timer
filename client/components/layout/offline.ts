@@ -15,9 +15,19 @@ export async function initOfflineData(me, callback) {
 		return;
 	}
 
+	// Guard: callback'in birden fazla kez cagirilmasini engelle.
+	// loadDatabase 2s'den uzun surerse fallback timeout ateşlenir, sonra loadDatabase
+	// tamamlaninca callback tekrar cagirilir — bu tum init mantığini iki kez calistirir.
+	let callbackFired = false;
+	const safeCallback = (passed: boolean) => {
+		if (callbackFired) return;
+		callbackFired = true;
+		callback(passed);
+	};
+
 	// If for whatever reason this is not resolved, fallback to db
 	const fallbackTimeout = setTimeout(async () => {
-		callback(false);
+		safeCallback(false);
 	}, 2000);
 
 	initLokiDb({ autoload: false });
@@ -25,13 +35,17 @@ export async function initOfflineData(me, callback) {
 	getLokiDb().loadDatabase(undefined, (err) => {
 		clearTimeout(fallbackTimeout);
 
+		if (err) {
+			console.error('[Offline] loadDatabase error:', err);
+		}
+
 		const requiredCollections = ['solves', 'settings', 'sessions'];
 		const requiredCollectionsExist = requiredCollections.every((name) => !!getLokiDb().getCollection(name));
 
 		if (!err && requiredCollectionsExist) {
-			callback(true);
+			safeCallback(true);
 		} else {
-			callback(false);
+			safeCallback(false);
 		}
 	});
 }
@@ -69,6 +83,9 @@ export async function updateOfflineHash() {
 			db.saveDatabase((err) => {
 				clearTimeout(timeout);
 				db.throttledSaves = origThrottled;
+				if (err) {
+					console.error('[Offline] DB save error:', err);
+				}
 				resolve(!err);
 			});
 		} catch (e) {
