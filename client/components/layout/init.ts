@@ -13,7 +13,7 @@ import { addFriendships } from '../../actions/account';
 import { clearOfflineData, initOfflineData, updateOfflineHash } from './offline';
 import { initSettingsDb, SettingValue } from '../../db/settings/init';
 import { getDefaultSettings } from '../../db/settings/query';
-import { initLokiDb } from '../../db/lokijs';
+import { getLokiDb, initLokiDb } from '../../db/lokijs';
 import { appendSolvesToDb, initSolveDb, initSolvesCollection } from '../../db/solves/init';
 import { getNewScramble } from '../timer/helpers/scramble';
 import { Solve } from '../../../server/schemas/Solve.schema';
