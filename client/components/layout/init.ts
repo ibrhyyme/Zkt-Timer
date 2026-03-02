@@ -77,9 +77,19 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 			// LokiJS IndexedDB adapter'inin catalog'unu on-initialize et.
 			// Adapter'in saveDatabase metodu catalog null iken lazy-init yapiyor ama
 			// recursive cagridaki callback wrapping bug'i yuzunden save her zaman basarisiz oluyor.
-			// Bu bos loadDatabase cagrisi catalog'u hazir hale getirip bug'i bypass eder.
+			// getDatabaseList catalog'u initialize eder ama veri yuklemez (loadDatabase'den farki bu).
 			await new Promise<void>((resolve) => {
-				getLokiDb().loadDatabase(undefined, () => resolve());
+				const adapter = getLokiDb().persistenceAdapter as any;
+				const timeout = setTimeout(() => resolve(), 3000);
+				if (adapter?.getDatabaseList) {
+					adapter.getDatabaseList(() => {
+						clearTimeout(timeout);
+						resolve();
+					});
+				} else {
+					clearTimeout(timeout);
+					resolve();
+				}
 			});
 		}
 
