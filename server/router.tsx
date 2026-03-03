@@ -120,6 +120,12 @@ function appUseRouteForPage(routePath, route: PageContext) {
 			return;
 		}
 
+		// Redirect unauthenticated users from timer to welcome (Google sees demo as Soft 404)
+		if (routePath === '/timer' && !me) {
+			res.status(302).redirect('/welcome');
+			return;
+		}
+
 		// Redirect to /login if page is restricted and user is not logged in
 		if (route.restricted && !me) {
 			res.status(401).redirect('/login?redirect=' + encodeURIComponent(req.url));
