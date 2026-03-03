@@ -171,7 +171,7 @@ export default function SmartCube() {
 					cameraLatitude: 0,
 					cameraLongitude: 0,
 					cameraLatitudeLimit: 0,
-					tempoScale: 100  // Maksimum hız - hızlı hamlelerde instant hareket
+					tempoScale: 5  // Referans (gan-cube-sample) ile ayni — gorunur ama hizli animasyon
 				});
 
 				if (containerRef.current) {
@@ -216,7 +216,7 @@ export default function SmartCube() {
 			if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
 			if (containerRef.current) containerRef.current.innerHTML = '';
 		};
-	}, [smartCubeSize]);
+	}, []);
 
 	// Apply turns to TwistyPlayer - WITHOUT Animation Await (Fire and Forget)
 	const appliedTurnsRef = useRef<number>(0);
@@ -260,13 +260,15 @@ export default function SmartCube() {
 				}
 			}
 
-			// Live Analysis Sync
-			if (smartTurns.length === 0 && cubejs.current) {
-				const current = cubejs.current.asString();
-				setStartState(current);
-			}
+			// NOT: startState artik resetMoves(isScrambleFinish=true) icinde set ediliyor.
+			// Solve bittiginde burada set etmek yanlis: cubejs solved state olur ve
+			// bir sonraki cozumun faz takibi bozulur.
 		} else if (smartTurns.length === 0 && appliedTurnsRef.current > 0) {
 			// Reset detected
+			console.log('[ZKT:PHASE] smartTurns sifirlandi (reset detected)', {
+				preservedScramble: preservedScrambleRef.current ? 'VAR' : 'YOK',
+				appliedTurns: appliedTurnsRef.current,
+			});
 			cubejs.current = new Cube();
 
 			if (preservedScrambleRef.current) {
@@ -279,8 +281,13 @@ export default function SmartCube() {
 				for (const move of moves) {
 					cubejs.current.move(move);
 				}
+				console.log('[ZKT:PHASE] cubejs scrambled state\'e init edildi', {
+					moveCount: moves.length,
+					cubejsState: cubejs.current.asString().substring(0, 20) + '...',
+				});
 			} else {
 				// Solve finished or manual reset, initialize to solved state
+				console.log('[ZKT:PHASE] cubejs solved state\'e init edildi (solve bitti veya reset)');
 				if (twistyPlayerRef.current) {
 					twistyPlayerRef.current.alg = '';
 				}
@@ -291,6 +298,9 @@ export default function SmartCube() {
 			validationCacheRef.current.lastMatchedIndex = 0;
 			compressorRef.current.reset();
 			setStartState(cubejs.current.asString());
+			console.log('[ZKT:PHASE] startState guncellendi (reset useEffect)', {
+				startState: cubejs.current.asString().substring(0, 20) + '...',
+			});
 		}
 	}, [smartTurns, smartSolvedState]);
 
@@ -298,14 +308,18 @@ export default function SmartCube() {
 	// cubejs'e DOKUNMAZ - sadece fiziksel durumu kontrol eder
 	// BLE'den son hamle düşerse, 1.5s sessizlik sonrası FACELETS ile yakalanır
 	useEffect(() => {
-		if (timeStartedAt && smartTurns.length > 0) {
-		}
 		if (
 			smartPhysicallySolved &&
 			timeStartedAt &&
-			smartTurns.length > 0 &&
 			!useSpaceWithSmartCube
 		) {
+			console.log('[ZKT:SAFETY] FACELETS safety net TETIKLENDI!', {
+				smartStateSeq,
+				smartPhysicallySolved,
+				timeStartedAt: timeStartedAt?.toISOString(),
+				lastSmartMoveTime,
+				needsCubeReset,
+			});
 			if (needsCubeReset) {
 				resetMoves(true, false, lastSmartMoveTime || undefined);
 				setNeedsCubeReset(false);
@@ -313,6 +327,12 @@ export default function SmartCube() {
 			} else {
 				resetMoves(false, false, lastSmartMoveTime || undefined);
 			}
+		} else if (timeStartedAt) {
+			console.log('[ZKT:SAFETY] FACELETS safety net kontrol — henuz cozulmedi', {
+				smartStateSeq,
+				smartPhysicallySolved,
+				useSpaceWithSmartCube,
+			});
 		}
 	}, [smartStateSeq, timeStartedAt]);
 
@@ -322,6 +342,7 @@ export default function SmartCube() {
 
 		const interval = setInterval(() => {
 			if (smartPhysicallySolvedRef.current) {
+				console.log('[ZKT:SAFETY] Polling safety net TETIKLENDI! (1s interval)');
 				if (needsCubeResetRef.current) {
 					resetMovesRef.current?.(true, false, lastSmartMoveTimeRef.current || undefined);
 				} else {
@@ -347,7 +368,22 @@ export default function SmartCube() {
 					const quat = new THREE.Quaternion(qx, qz, -qy, qw).normalize();
 
 					if (!gyroBasisRef.current) {
-						gyroBasisRef.current = quat.clone().conjugate();
+						// Yaw-only basis: heading'i (kuzeye gore aci) duzelt, pitch/roll'u koru
+						// Boylece fiziksel kup sari ust tutulursa 3D model de sari ustu gosterir
+						const euler = new THREE.Euler().setFromQuaternion(quat, 'YXZ');
+						const yawOnly = new THREE.Quaternion().setFromEuler(
+							new THREE.Euler(0, euler.y, 0, 'YXZ')
+						);
+						gyroBasisRef.current = yawOnly.conjugate();
+						console.log('[ZKT:GYRO] Yaw-only basis yakalandi', {
+							rawPitch: (euler.x * 180 / Math.PI).toFixed(1),
+							rawYaw: (euler.y * 180 / Math.PI).toFixed(1),
+							rawRoll: (euler.z * 180 / Math.PI).toFixed(1),
+							basisX: gyroBasisRef.current.x.toFixed(4),
+							basisY: gyroBasisRef.current.y.toFixed(4),
+							basisZ: gyroBasisRef.current.z.toFixed(4),
+							basisW: gyroBasisRef.current.w.toFixed(4),
+						});
 					}
 
 					cubeQuaternion.current.copy(quat.premultiply(gyroBasisRef.current).premultiply(HOME_ORIENTATION.current));
@@ -478,6 +514,18 @@ export default function SmartCube() {
 			}
 		} else if (matchStatus.includes('wrong')) {
 			triggerSmartCorrection();
+		} else if (matchStatus.includes('half')) {
+			// Half match: kullanici R2 yerine R yapti (veya benzeri)
+			// Iki durum: (1) tum hamleler yapildi ama bazilari yarim, (2) yarim hamleden sonra devam etti
+			const noMorePending = !matchStatus.includes('pending');
+			const lastHalfIdx = matchStatus.lastIndexOf('half');
+			const hasPerfectAfterHalf = matchStatus.slice(lastHalfIdx + 1).includes('perfect');
+
+			if (noMorePending || hasPerfectAfterHalf) {
+				// Kullanici yarim hamleyi atlayip devam etmis — correction tetikle
+				triggerSmartCorrection();
+			}
+			// Aksi halde bekle — kullanici hala yarim hamleyi tamamlayabilir (R + R = R2)
 		}
 	}
 
@@ -521,11 +569,24 @@ export default function SmartCube() {
 
 	function resetMoves(markSolved: boolean = false, isScrambleFinish: boolean = false, endTimestamp?: number) {
 		const isSolveEnd = !!timeStartedAt;
+		console.log('[ZKT:PHASE] resetMoves cagirildi', {
+			markSolved,
+			isScrambleFinish,
+			isSolveEnd,
+			endTimestamp,
+			smartTurnsCount: smartTurns.length,
+			timeStartedAt: timeStartedAt?.toISOString(),
+		});
+
 		if (isSolveEnd) {
 			// endTimestamp: Safety net'ten geliyorsa son hamle zamanını kullan (sessizlik gecikmesini çıkar)
 			const finalTimeMilli = endTimestamp && timeStartedAt
 				? endTimestamp - timeStartedAt.getTime()
 				: null;
+			console.log('[ZKT:PHASE] Solve bitti — timer durduruluyor', {
+				finalTimeMilli,
+				smartTurnCount: smartTurns.length,
+			});
 			endTimer(context, finalTimeMilli, {
 				inspection_time: inspectionTime,
 				smart_device_id: smartDeviceId,
@@ -542,6 +603,15 @@ export default function SmartCube() {
 			// CRITICAL FIX: Use the ORIGINAL scramble (target state), not the current transient 'scramble'
 			// (which might be just a short correction path).
 			preservedScrambleRef.current = originalScrambleRef.current || scramble;
+
+			// Faz takibi icin: scramble bittigindeki kup durumunu kaydet
+			// Bu, LiveAnalysisOverlay'in dogru baslangic durumundan analiz yapmasini saglar
+			const scrambledState = cubejs.current.asString();
+			console.log('[ZKT:PHASE] Scramble bitti — startState kaydediliyor', {
+				startState: scrambledState.substring(0, 20) + '...',
+				preservedScramble: preservedScrambleRef.current,
+			});
+			setStartState(scrambledState);
 		} else {
 			preservedScrambleRef.current = null;
 		}
@@ -555,8 +625,15 @@ export default function SmartCube() {
 			...(isSolveEnd ? { originalScramble: '' } : {}),
 		});
 
-		// Reset Gyro Basis
-		gyroBasisRef.current = null;
+		// NOT: Gyro basis SIFIRLANMIYOR. Referans projede de (gan-cube-sample) basis
+		// tum session boyunca korunuyor. Sadece yeni BLE baglantisi veya kullanici
+		// "Reset Gyro" butonu ile sifirlanir. Bu sayede sanal kup her zaman
+		// fiziksel kupun gercek orientasyonunu yansitir.
+		console.log('[ZKT:GYRO] resetMoves cagirildi — basis korunuyor:', {
+			basisVar: !!gyroBasisRef.current,
+			isScrambleFinish,
+			isSolveEnd,
+		});
 
 		// Note: Visual cube and CubeJS reset is handled in the useEffect detecting smartTurns change
 	}

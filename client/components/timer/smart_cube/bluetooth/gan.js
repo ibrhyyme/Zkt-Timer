@@ -328,11 +328,13 @@ class GanGen2ProtocolDriver {
 	}
 }
 
-// Simplified Gen3 driver (subset of functionality)
+// Gen3 driver — moveBuffer + requestMoveHistory (gan-web-bluetooth referansından)
 class GanGen3ProtocolDriver {
 	constructor() {
 		this.serial = -1;
 		this.lastSerial = -1;
+		this.moveBuffer = [];
+		this.lastLocalTimestamp = null;
 	}
 	createCommandMessage(command) {
 		let msg = new Uint8Array(16).fill(0);
@@ -354,9 +356,93 @@ class GanGen3ProtocolDriver {
 		}
 		return msg;
 	}
+
+	isSerialInRange(start, end, serial, closedStart = false, closedEnd = false) {
+		return ((end - start) & 0xFF) >= ((serial - start) & 0xFF)
+			&& (closedStart || ((start - serial) & 0xFF) > 0)
+			&& (closedEnd || ((end - serial) & 0xFF) > 0);
+	}
+
+	async requestMoveHistory(conn, serial, count) {
+		if (this._historyInFlight) {
+			console.log('[ZKT:MOVEBUF] Gen3 requestMoveHistory ATLA — onceki istek devam ediyor');
+			return;
+		}
+		this._historyInFlight = true;
+		const msg = new Uint8Array(16).fill(0);
+		if (serial % 2 === 0) serial = (serial - 1) & 0xFF;
+		if (count % 2 === 1) count++;
+		count = Math.min(count, serial + 1);
+		console.log('[ZKT:MOVEBUF] Gen3 requestMoveHistory', { serial, count });
+		msg.set([0x68, 0x03, serial, 0, count, 0]);
+		return conn.sendCommandMessage(msg).catch((e) => {
+			console.warn('[ZKT:MOVEBUF] Gen3 requestMoveHistory GATT yazma hatasi', e?.message);
+		}).finally(() => {
+			this._historyInFlight = false;
+		});
+	}
+
+	async evictMoveBuffer(conn) {
+		const evictedEvents = [];
+		while (this.moveBuffer.length > 0) {
+			const bufferHead = this.moveBuffer[0];
+			const diff = this.lastSerial === -1 ? 1 : (bufferHead.serial - this.lastSerial) & 0xFF;
+			if (diff > 1) {
+				console.log('[ZKT:MOVEBUF] Gen3 GAP tespit edildi!', { lastSerial: this.lastSerial, bufferHeadSerial: bufferHead.serial, gap: diff, bufferLen: this.moveBuffer.length });
+				if (conn) await this.requestMoveHistory(conn, bufferHead.serial, diff);
+				break;
+			} else {
+				evictedEvents.push(this.moveBuffer.shift());
+				this.lastSerial = bufferHead.serial;
+			}
+		}
+		if (evictedEvents.length > 0) {
+			console.log('[ZKT:MOVEBUF] Gen3 evict:', evictedEvents.map(e => `${e.move}(s${e.serial})`).join(', '), `| bufferKalan: ${this.moveBuffer.length}`);
+		}
+		if (conn && this.moveBuffer.length > 16) {
+			console.error('[ZKT:MOVEBUF] Gen3 buffer overflow! Baglanti kesiliyor.', { bufferLen: this.moveBuffer.length });
+			conn.disconnect();
+		}
+		return evictedEvents;
+	}
+
+	injectMissedMoveToBuffer(move) {
+		if (move.type === 'MOVE') {
+			if (this.moveBuffer.length > 0) {
+				const bufferHead = this.moveBuffer[0];
+				if (this.moveBuffer.some(e => e.type === 'MOVE' && e.serial === move.serial)) {
+					console.log('[ZKT:MOVEBUF] Gen3 inject atla — serial zaten var:', move.serial);
+					return;
+				}
+				if (!this.isSerialInRange(this.lastSerial, bufferHead.serial, move.serial)) {
+					console.log('[ZKT:MOVEBUF] Gen3 inject atla — aralik disi:', { serial: move.serial, lastSerial: this.lastSerial, bufferHead: bufferHead.serial });
+					return;
+				}
+				if (move.serial === ((bufferHead.serial - 1) & 0xFF)) {
+					console.log('[ZKT:MOVEBUF] Gen3 inject basarili:', `${move.move}(s${move.serial})`);
+					this.moveBuffer.unshift(move);
+				}
+			} else {
+				if (this.isSerialInRange(this.lastSerial, this.serial, move.serial, false, true)) {
+					this.moveBuffer.unshift(move);
+				}
+			}
+		}
+	}
+
+	async checkIfMoveMissed(conn) {
+		const diff = (this.serial - this.lastSerial) & 0xFF;
+		if (diff > 0 && this.serial !== 0) {
+			console.log('[ZKT:MOVEBUF] Gen3 FACELETS sonrasi kayip hamle kontrolu', { serial: this.serial, lastSerial: this.lastSerial, diff });
+			const bufferHead = this.moveBuffer[0];
+			const startSerial = bufferHead ? bufferHead.serial : (this.serial + 1) & 0xFF;
+			await this.requestMoveHistory(conn, startSerial, diff + 1);
+		}
+	}
+
 	async handleStateEvent(conn, eventMessage) {
 		const timestamp = now();
-		const cubeEvents = [];
+		let cubeEvents = [];
 		const msg = new GanProtocolMessageView(eventMessage);
 		const magic = msg.getBitWord(0, 8);
 		const eventType = msg.getBitWord(8, 8);
@@ -364,28 +450,17 @@ class GanGen3ProtocolDriver {
 
 		if (magic == 0x55 && dataLength > 0) {
 			if (eventType == 0x01) {
-				// MOVE
+				// MOVE — buffer'a ekle, gap-free olanları evict et
 				if (this.lastSerial != -1) {
+					this.lastLocalTimestamp = timestamp;
 					let cubeTimestamp = msg.getBitWord(24, 32, true);
 					let serial = (this.serial = msg.getBitWord(56, 16, true));
-
-					// Seri boşluk kontrolü - kaçırılmış hamle algılama (8-bit wrap: 255→0)
-					const gap = (serial - this.lastSerial) & 0xFF;
-					if (gap > 1) {
-						cubeEvents.push({
-							type: 'SERIAL_GAP',
-							serial: serial,
-							lastSerial: this.lastSerial,
-							missedCount: gap - 1,
-							timestamp: timestamp,
-						});
-					}
-
 					let direction = msg.getBitWord(72, 2);
 					let face = [2, 32, 8, 1, 16, 4].indexOf(msg.getBitWord(74, 6));
 					let move = 'URFDLB'.charAt(face) + " '".charAt(direction);
+					console.log('[ZKT:GAN] Gen3 MOVE alindi:', move.trim(), `serial=${serial}`, `lastSerial=${this.lastSerial}`, `gap=${((serial - this.lastSerial) & 0xFF)}`);
 					if (face >= 0) {
-						cubeEvents.push({
+						this.moveBuffer.push({
 							type: 'MOVE',
 							serial: serial,
 							timestamp: timestamp,
@@ -396,13 +471,46 @@ class GanGen3ProtocolDriver {
 							move: move.trim(),
 						});
 					}
-					// lastSerial'ı HER ZAMAN güncelle (face < 0 olsa bile cascading gap önlemek için)
-					this.lastSerial = serial;
+					cubeEvents = await this.evictMoveBuffer(conn);
 				}
+			} else if (eventType == 0x06) {
+				// MOVE_HISTORY — kaçırılmış hamle yanıtı
+				let startSerial = msg.getBitWord(24, 8);
+				let count = (dataLength - 1) * 2;
+				console.log('[ZKT:MOVEBUF] Gen3 MOVE_HISTORY yaniti alindi!', { startSerial, count, dataLength });
+				for (let i = 0; i < count; i++) {
+					let face = [1, 5, 3, 0, 4, 2].indexOf(msg.getBitWord(32 + 4 * i, 3));
+					let direction = msg.getBitWord(35 + 4 * i, 1);
+					if (face >= 0) {
+						let move = 'URFDLB'.charAt(face) + " '".charAt(direction);
+						console.log('[ZKT:MOVEBUF] Gen3 kurtarilan hamle:', move.trim(), `serial=${(startSerial - i) & 0xFF}`);
+						this.injectMissedMoveToBuffer({
+							type: 'MOVE',
+							serial: (startSerial - i) & 0xFF,
+							timestamp: timestamp,
+							localTimestamp: null,
+							cubeTimestamp: null,
+							face: face,
+							direction: direction,
+							move: move.trim(),
+						});
+					}
+				}
+				cubeEvents = await this.evictMoveBuffer();
 			} else if (eventType == 0x02) {
 				// FACELETS
 				let serial = (this.serial = msg.getBitWord(24, 16, true));
-				this.lastSerial = serial;
+				console.log('[ZKT:GAN] Gen3 FACELETS alindi', { serial, lastSerial: this.lastSerial, bufferLen: this.moveBuffer.length });
+
+				if (this.lastSerial != -1) {
+					if (this.lastLocalTimestamp != null && (timestamp - this.lastLocalTimestamp) > 500) {
+						console.log('[ZKT:GAN] Gen3 FACELETS sessizlik sonrasi — kayip hamle kontrolu');
+						await this.checkIfMoveMissed(conn);
+					}
+				}
+
+				if (this.lastSerial == -1) this.lastSerial = serial;
+
 				let cp = [];
 				let co = [];
 				let ep = [];
@@ -461,12 +569,15 @@ class GanGen3ProtocolDriver {
 	}
 }
 
-// Simplified Gen4 driver
+// Gen4 driver — moveBuffer + requestMoveHistory (gan-web-bluetooth referansından)
+// Gap recovery doğrudan driver içinde yapılır. Consumer'a sadece gap-free MOVE event'leri gönderilir.
 class GanGen4ProtocolDriver {
 	constructor() {
 		this.serial = -1;
 		this.lastSerial = -1;
 		this.hwInfo = {};
+		this.moveBuffer = []; // FIFO buffer: gap'ler doldurulana kadar hamleleri tutar
+		this.lastLocalTimestamp = null;
 	}
 	createCommandMessage(command) {
 		let msg = new Uint8Array(20).fill(0);
@@ -489,36 +600,135 @@ class GanGen4ProtocolDriver {
 		}
 		return msg;
 	}
+
+	// Dairesel serial numarasının (mod 256) [start, end] aralığında olup olmadığını kontrol eder
+	isSerialInRange(start, end, serial, closedStart = false, closedEnd = false) {
+		return ((end - start) & 0xFF) >= ((serial - start) & 0xFF)
+			&& (closedStart || ((start - serial) & 0xFF) > 0)
+			&& (closedEnd || ((end - serial) & 0xFF) > 0);
+	}
+
+	// Küp donanımından kaçırılan hamleleri ister (Gen4: 0xD1 komutu)
+	async requestMoveHistory(conn, serial, count) {
+		// GATT race condition guard: onceki istek hala devam ediyorsa atla
+		if (this._historyInFlight) {
+			console.log('[ZKT:MOVEBUF] Gen4 requestMoveHistory ATLA — onceki istek devam ediyor');
+			return;
+		}
+		this._historyInFlight = true;
+		const msg = new Uint8Array(20).fill(0);
+		// Firmware kısıtı: tek serial + çift count gerekli
+		if (serial % 2 === 0) serial = (serial - 1) & 0xFF;
+		if (count % 2 === 1) count++;
+		// 255→0 sınırını geçme (firmware bug'ı: sınır ötesi hamleler 'D' olarak dönüyor)
+		count = Math.min(count, serial + 1);
+		console.log('[ZKT:MOVEBUF] Gen4 requestMoveHistory', { serial, count });
+		msg.set([0xD1, 0x04, serial, 0, count, 0]);
+		return conn.sendCommandMessage(msg).catch((e) => {
+			console.warn('[ZKT:MOVEBUF] Gen4 requestMoveHistory GATT yazma hatasi', e?.message);
+		}).finally(() => {
+			this._historyInFlight = false;
+		});
+	}
+
+	// FIFO buffer'dan gap-free hamleleri çıkar. Gap varsa requestMoveHistory çağır.
+	async evictMoveBuffer(conn) {
+		const evictedEvents = [];
+		while (this.moveBuffer.length > 0) {
+			const bufferHead = this.moveBuffer[0];
+			const diff = this.lastSerial === -1 ? 1 : (bufferHead.serial - this.lastSerial) & 0xFF;
+			if (diff > 1) {
+				// Gap var — kaçırılan hamleleri küpten iste
+				console.log('[ZKT:MOVEBUF] Gen4 GAP tespit edildi!', {
+					lastSerial: this.lastSerial,
+					bufferHeadSerial: bufferHead.serial,
+					gap: diff,
+					bufferLen: this.moveBuffer.length,
+				});
+				if (conn) {
+					await this.requestMoveHistory(conn, bufferHead.serial, diff);
+				}
+				break; // Gap doldurulana kadar eviction durdur
+			} else {
+				evictedEvents.push(this.moveBuffer.shift());
+				this.lastSerial = bufferHead.serial;
+			}
+		}
+		if (evictedEvents.length > 0) {
+			console.log('[ZKT:MOVEBUF] Gen4 evict:', evictedEvents.map(e => `${e.move}(s${e.serial})`).join(', '), `| bufferKalan: ${this.moveBuffer.length}`);
+		}
+		// Güvenlik: buffer çok büyürse bağlantıyı kes (bir şeyler yanlış gitti)
+		if (conn && this.moveBuffer.length > 16) {
+			console.error('[ZKT:MOVEBUF] Gen4 buffer overflow! Baglanti kesiliyor.', { bufferLen: this.moveBuffer.length });
+			conn.disconnect();
+		}
+		return evictedEvents;
+	}
+
+	// Kurtarılan hamleleri buffer'ın doğru pozisyonuna yerleştirir
+	injectMissedMoveToBuffer(move) {
+		if (move.type === 'MOVE') {
+			if (this.moveBuffer.length > 0) {
+				const bufferHead = this.moveBuffer[0];
+				// Aynı serial zaten varsa atla
+				if (this.moveBuffer.some(e => e.type === 'MOVE' && e.serial === move.serial)) {
+					console.log('[ZKT:MOVEBUF] Gen4 inject atla — serial zaten var:', move.serial);
+					return;
+				}
+				// Serial aralık dışındaysa atla
+				if (!this.isSerialInRange(this.lastSerial, bufferHead.serial, move.serial)) {
+					console.log('[ZKT:MOVEBUF] Gen4 inject atla — aralik disi:', { serial: move.serial, lastSerial: this.lastSerial, bufferHead: bufferHead.serial });
+					return;
+				}
+				// Buffer head'in hemen öncesiyse başa ekle
+				if (move.serial === ((bufferHead.serial - 1) & 0xFF)) {
+					console.log('[ZKT:MOVEBUF] Gen4 inject basarili:', `${move.move}(s${move.serial})`);
+					this.moveBuffer.unshift(move);
+				}
+			} else {
+				// Boş buffer: periyodik FACELETS ile kurtarılan hamle
+				if (this.isSerialInRange(this.lastSerial, this.serial, move.serial, false, true)) {
+					console.log('[ZKT:MOVEBUF] Gen4 inject (bos buffer):', `${move.move}(s${move.serial})`);
+					this.moveBuffer.unshift(move);
+				}
+			}
+		}
+	}
+
+	// Periyodik FACELETS event'i ile kaçırılan hamle kontrolü
+	async checkIfMoveMissed(conn) {
+		const diff = (this.serial - this.lastSerial) & 0xFF;
+		if (diff > 0 && this.serial !== 0) {
+			console.log('[ZKT:MOVEBUF] Gen4 FACELETS sonrasi kayip hamle kontrolu', {
+				serial: this.serial,
+				lastSerial: this.lastSerial,
+				diff,
+			});
+			const bufferHead = this.moveBuffer[0];
+			const startSerial = bufferHead ? bufferHead.serial : (this.serial + 1) & 0xFF;
+			await this.requestMoveHistory(conn, startSerial, diff + 1);
+		}
+	}
+
 	async handleStateEvent(conn, eventMessage) {
 		const timestamp = now();
-		const cubeEvents = [];
+		let cubeEvents = [];
 		const msg = new GanProtocolMessageView(eventMessage);
 		const eventType = msg.getBitWord(0, 8);
 		const dataLength = msg.getBitWord(8, 8);
 
 		if (eventType == 0x01) {
-			// MOVE
+			// MOVE — buffer'a ekle, gap-free olanları evict et
 			if (this.lastSerial != -1) {
+				this.lastLocalTimestamp = timestamp;
 				let cubeTimestamp = msg.getBitWord(16, 32, true);
 				let serial = (this.serial = msg.getBitWord(48, 16, true));
-
-				// Seri boşluk kontrolü - kaçırılmış hamle algılama (8-bit wrap: 255→0)
-				const gap = (serial - this.lastSerial) & 0xFF;
-				if (gap > 1) {
-					cubeEvents.push({
-						type: 'SERIAL_GAP',
-						serial: serial,
-						lastSerial: this.lastSerial,
-						missedCount: gap - 1,
-						timestamp: timestamp,
-					});
-				}
-
 				let direction = msg.getBitWord(64, 2);
 				let face = [2, 32, 8, 1, 16, 4].indexOf(msg.getBitWord(66, 6));
 				let move = 'URFDLB'.charAt(face) + " '".charAt(direction);
+				console.log('[ZKT:GAN] Gen4 MOVE alindi:', move.trim(), `serial=${serial}`, `lastSerial=${this.lastSerial}`, `gap=${((serial - this.lastSerial) & 0xFF)}`);
 				if (face >= 0) {
-					cubeEvents.push({
+					this.moveBuffer.push({
 						type: 'MOVE',
 						serial: serial,
 						timestamp: timestamp,
@@ -529,13 +739,49 @@ class GanGen4ProtocolDriver {
 						move: move.trim(),
 					});
 				}
-				// lastSerial'ı HER ZAMAN güncelle (face < 0 olsa bile cascading gap önlemek için)
-				this.lastSerial = serial;
+				// Gap-free hamleleri çıkar (gap varsa requestMoveHistory otomatik çağrılır)
+				cubeEvents = await this.evictMoveBuffer(conn);
 			}
+		} else if (eventType == 0xD1) {
+			// MOVE_HISTORY — küpten gelen kaçırılmış hamle yanıtı
+			let startSerial = msg.getBitWord(16, 8);
+			let count = (dataLength - 1) * 2;
+			console.log('[ZKT:MOVEBUF] Gen4 MOVE_HISTORY yaniti alindi!', { startSerial, count, dataLength });
+			for (let i = 0; i < count; i++) {
+				let face = [1, 5, 3, 0, 4, 2].indexOf(msg.getBitWord(24 + 4 * i, 3));
+				let direction = msg.getBitWord(27 + 4 * i, 1);
+				if (face >= 0) {
+					let move = 'URFDLB'.charAt(face) + " '".charAt(direction);
+					console.log('[ZKT:MOVEBUF] Gen4 kurtarilan hamle:', move.trim(), `serial=${(startSerial - i) & 0xFF}`);
+					this.injectMissedMoveToBuffer({
+						type: 'MOVE',
+						serial: (startSerial - i) & 0xFF,
+						timestamp: timestamp,
+						localTimestamp: null, // Kurtarılan hamlelerin yerel zaman damgası yok
+						cubeTimestamp: null,   // Enterpolasyon ile tahmin edilmeli
+						face: face,
+						direction: direction,
+						move: move.trim(),
+					});
+				}
+			}
+			// Gap dolmuş olabilir — tekrar evict et
+			cubeEvents = await this.evictMoveBuffer();
 		} else if (eventType == 0xed) {
 			// FACELETS
 			let serial = (this.serial = msg.getBitWord(16, 16, true));
-			this.lastSerial = serial;
+			console.log('[ZKT:GAN] Gen4 FACELETS alindi', { serial, lastSerial: this.lastSerial, bufferLen: this.moveBuffer.length });
+
+			// Periyodik FACELETS ile kaçırılan hamle kontrolü (500ms debounce)
+			if (this.lastSerial != -1) {
+				if (this.lastLocalTimestamp != null && (timestamp - this.lastLocalTimestamp) > 500) {
+					console.log('[ZKT:GAN] Gen4 FACELETS sessizlik sonrasi — kayip hamle kontrolu');
+					await this.checkIfMoveMissed(conn);
+				}
+			}
+
+			if (this.lastSerial == -1) this.lastSerial = serial;
+
 			let cp = [];
 			let co = [];
 			let ep = [];
@@ -760,23 +1006,16 @@ export default class GAN extends SmartCube {
 		this.BATCH_FLUSH_DELAY = 8; // 8ms - daha responsive (live analysis için)
 		// FACELETS resync flag
 		this._resyncPending = false;
-		// Kayıp hamle kurtarma sistemi
+		// Küp durumu takibi
 		this._trackerCube = new Cube(); // BLE'den alınan tüm hamleleri takip eder
-		this._holdingForResync = false; // SERIAL_GAP sonrası hamle tutma modu
-		this._heldMoveEvents = []; // Bekletilen hamle event'leri
-		this._holdTimeoutId = null; // Zaman aşımı güvenliği
-		// Sessizlik algılayıcı: son hamleden 1.5s sonra FACELETS iste
-		// Son çözme hamlesi BLE'den düşerse bile timer'ın durmasını sağlar
+		// Sessizlik algılayıcı: son hamleden sonra FACELETS iste (çözüm algılama güvenliği)
 		this._silenceTimeoutId = null;
+		this._silenceRetryId = null;
 		this._SILENCE_TIMEOUT = 500; // 0.5 saniye
 		// Otomatik kalibrasyon: ilk FACELETS = çözülmüş durum referansı
 		this._ganInitialFacelets = null;
 		// cubeTimestamp → Date.now() kalibrasyon ofseti
 		this._cubeTimeOffset = null;
-		// SERIAL_GAP tespit zamanı (inferred move timestamp için)
-		this._gapDetectedAt = null;
-		// Bekleyen FACELETS istek sayacı (stale yanıt filtreleme)
-		this._pendingFaceletsRequests = 0;
 	}
 
 	subscribeGyro(callback) {
@@ -924,15 +1163,18 @@ export default class GAN extends SmartCube {
 	handleCubeEvent = (event) => {
 		if (event.type == 'MOVE') {
 			if (event.move) {
+				console.log('[ZKT:GAN] handleCubeEvent MOVE:', event.move, `serial=${event.serial}`, `cubeTs=${event.cubeTimestamp}`);
+
 				// cubeTimestamp kalibrasyonu: küp dahili saatini yerel zamana eşle
 				if (event.cubeTimestamp != null) {
 					const localNow = Date.now();
 					if (this._cubeTimeOffset === null) {
 						this._cubeTimeOffset = localNow - event.cubeTimestamp;
+						console.log('[ZKT:GAN] cubeTime kalibrasyon baslangic:', { offset: this._cubeTimeOffset });
 					} else {
-						// Drift kontrolü: 2 saniyeden fazla sapma varsa yeniden kalibre et
 						const expectedLocal = event.cubeTimestamp + this._cubeTimeOffset;
 						if (Math.abs(localNow - expectedLocal) > 2000) {
+							console.log('[ZKT:GAN] cubeTime kalibrasyon DRIFT >2s, yeniden kalibre', { oldOffset: this._cubeTimeOffset, newOffset: localNow - event.cubeTimestamp });
 							this._cubeTimeOffset = localNow - event.cubeTimestamp;
 						}
 					}
@@ -943,23 +1185,19 @@ export default class GAN extends SmartCube {
 					? event.cubeTimestamp + this._cubeTimeOffset
 					: Date.now();
 
-				// Tracker küpü HER ZAMAN güncelle (kayıp hamle hesaplaması için)
+				// Tracker küpü güncelle
 				this._trackerCube.move(event.move);
 
-				if (this._holdingForResync) {
-					// SERIAL_GAP sonrası FACELETS bekleniyor - hamleyi beklet
-					event._receivedAt = moveTimestamp;
-					this._heldMoveEvents.push(event);
-					return;
-				}
+				// NOT: Driver artık gap recovery'yi dahili olarak yapıyor (moveBuffer + requestMoveHistory).
+				// Buraya sadece gap-free, sıralı MOVE event'leri gelir. Holding mode gereksiz.
 
-				// Normal işlem: queue'ya ekle
+				// Queue'ya ekle
 				this.moveQueue.push({
 					move: event.move,
 					timestamp: moveTimestamp
 				});
 
-				// Debounced flush - 8ms içinde gelen tüm hamleler batch'lenir
+				// Debounced flush
 				if (this.moveFlushTimeout) {
 					clearTimeout(this.moveFlushTimeout);
 				}
@@ -968,170 +1206,48 @@ export default class GAN extends SmartCube {
 					this.BATCH_FLUSH_DELAY
 				);
 
-				// Sessizlik algılayıcı: son hamleden 1.5s sonra FACELETS iste
-				// Son çözme hamlesi BLE'den düşerse bile timer'ın durmasını sağlar
+				// Sessizlik algılayıcı: son hamleden sonra FACELETS iste (çözüm algılama güvenliği)
 				if (this._silenceTimeoutId) clearTimeout(this._silenceTimeoutId);
+				if (this._silenceRetryId) clearTimeout(this._silenceRetryId);
 				this._silenceTimeoutId = setTimeout(() => {
+					console.log('[ZKT:GAN] Sessizlik timeout — FACELETS isteniyor');
 					this.requestFaceletsResync();
+					this._silenceRetryId = setTimeout(() => {
+						console.log('[ZKT:GAN] Sessizlik RETRY — FACELETS tekrar isteniyor');
+						this.requestFaceletsResync(true);
+					}, 1500);
 				}, this._SILENCE_TIMEOUT);
-			} else {
-			}
-		} else if (event.type == 'SERIAL_GAP') {
-
-			if (this._holdingForResync) {
-				// Zaten bekleniyor - ek boşluk, FACELETS yanıtını bekle
-				return;
 			}
 
-			// Bekleyen hamleleri hemen flush et (gap öncesi hamleler)
-			if (this.moveFlushTimeout) {
-				clearTimeout(this.moveFlushTimeout);
-			}
-			this.flushMoveQueue();
+		// NOT: SERIAL_GAP artık driver tarafından dahili olarak işleniyor.
+		// Driver moveBuffer + requestMoveHistory kullanarak gap recovery yapar.
+		// Consumer'a sadece gap-free MOVE event'leri gönderilir.
 
-			// Hamle tutma modunu başlat
-			this._holdingForResync = true;
-			this._heldMoveEvents = [];
-			this._gapDetectedAt = Date.now();
-
-			// Bekleyen sessizlik timer'ını iptal et
-			// Stale FACELETS yanıtının resync FACELETS'i ile çakışmasını önler
-			if (this._silenceTimeoutId) {
-				clearTimeout(this._silenceTimeoutId);
-				this._silenceTimeoutId = null;
-			}
-
-			// Zaman aşımı güvenliği - 2 saniye içinde FACELETS gelmezse FACELETS tekrar iste
-			if (this._holdTimeoutId) clearTimeout(this._holdTimeoutId);
-			this._holdTimeoutId = setTimeout(() => {
-				if (this._holdingForResync) {
-					this._holdingForResync = false;
-					// Held hamleleri ATIL - FACELETS geldiğinde doğru durum alınacak
-					this._heldMoveEvents = [];
-					// Tekrar FACELETS iste
-					this.requestFaceletsResync();
-				}
-			}, 2000);
-
-			// FACELETS isteği ile küpün gerçek durumunu al
-			// force=true: debounce'u atla (sessizlik timer'ı zaten bir istek göndermiş olabilir)
-			this.requestFaceletsResync(true);
 		} else if (event.type == 'FACELETS') {
-			// Bekleyen FACELETS istek sayacını güncelle
-			this._pendingFaceletsRequests = Math.max(0, this._pendingFaceletsRequests - 1);
+			const trackerState = this._trackerCube.asString();
+			const isSolved = event.facelets === this._ganInitialFacelets || event.facelets === 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
+			console.log('[ZKT:GAN] handleCubeEvent FACELETS', {
+				facelets: event.facelets.substring(0, 20) + '...',
+				trackerMatch: trackerState === event.facelets,
+				isSolved,
+				ganInitSet: !!this._ganInitialFacelets,
+			});
 
-			if (this._holdingForResync) {
-				// Stale FACELETS kontrolü: hala bekleyen yanıtlar varsa bu eski bir yanıt
-				// Sessizlik timer'ı SERIAL_GAP'ten önce FACELETS istemiş olabilir
-				// ve o eski yanıt resync yanıtımızdan önce gelmiş olabilir
-				if (this._pendingFaceletsRequests > 0) {
-					return; // Holding mode'da kal, resync işleme
-				}
-
-				// Zaman aşımı timer'ını temizle (doğru resync yanıtı alındı)
-				if (this._holdTimeoutId) {
-					clearTimeout(this._holdTimeoutId);
-					this._holdTimeoutId = null;
-				}
-
-				this._holdingForResync = false;
-
-				const faceletsState = event.facelets;
-				const trackerState = this._trackerCube.asString();
-
-				if (trackerState !== faceletsState) {
-					// Kayıp hamle(ler) var - matematiksel olarak hesapla
-					// tracker = preGap * heldMoves (kayıp hamle yok)
-					// FACELETS = preGap * kayıpHamle * heldMoves (fiziksel sıra)
-					try {
-						// Adım 1: Held hamleleri tracker'dan geri al → preGap durumu
-						const preGapCube = Cube.fromString(trackerState);
-						for (let i = this._heldMoveEvents.length - 1; i >= 0; i--) {
-							preGapCube.move(invertMove(this._heldMoveEvents[i].move));
-						}
-
-						// Adım 2: Held hamleleri FACELETS'den geri al → preGap + kayıp durumu
-						const postMissedCube = Cube.fromString(faceletsState);
-						for (let i = this._heldMoveEvents.length - 1; i >= 0; i--) {
-							postMissedCube.move(invertMove(this._heldMoveEvents[i].move));
-						}
-
-						// Adım 3: preGap'e 18 hamle uygula, postMissed'e eşleşeni bul
-						const possibleMoves = [
-							'U', "U'", 'U2', 'R', "R'", 'R2',
-							'D', "D'", 'D2', 'L', "L'", 'L2',
-							'F', "F'", 'F2', 'B', "B'", 'B2'
-						];
-						const preGapState = preGapCube.asString();
-						const postMissedState = postMissedCube.asString();
-						let foundMove = null;
-						for (const move of possibleMoves) {
-							const test = Cube.fromString(preGapState);
-							test.move(move);
-							if (test.asString() === postMissedState) {
-								foundMove = move;
-								break;
-							}
-						}
-
-						if (foundMove) {
-							// Sentetik MOVE olarak queue'ya ekle (held hamlelerden ÖNCE)
-							// Gap tespit zamanını kullan (FACELETS RTT gecikmesi yerine)
-							this.moveQueue.push({ move: foundMove, timestamp: this._gapDetectedAt || Date.now() });
-						} else {
-						}
-					} catch (e) {
-					}
-
-					// Tracker'ı fiziksel duruma düzelt
-					try {
-						this._trackerCube = Cube.fromString(faceletsState);
-					} catch (e) {
-					}
-				}
-
-				// Held hamleleri dispatch et (cubejs doğru takip edebilsin)
-				// FACELETS resync useEffect kaldırıldı, bu yüzden double-counting yok
-				// cubejs sadece smartTurns'deki hamlelerle güncellenir
-				for (const heldEvent of this._heldMoveEvents) {
-					this.moveQueue.push({
-						move: heldEvent.move,
-						// Orijinal varış zamanını kullan (FACELETS RTT gecikmesi yerine)
-						timestamp: heldEvent._receivedAt || Date.now(),
-					});
-				}
-				this._heldMoveEvents = [];
-
-				// Sentetik + held hamleleri flush et
-				if (this.moveFlushTimeout) clearTimeout(this.moveFlushTimeout);
-				this.flushMoveQueue();
-			} else {
-				// Zaman aşımı timer'ını temizle (holding değilse de temizle)
-				if (this._holdTimeoutId) {
-					clearTimeout(this._holdTimeoutId);
-					this._holdTimeoutId = null;
-				}
-
-				// Holding değil - tracker'ı fiziksel duruma senkronize et
-				try {
-					this._trackerCube = Cube.fromString(event.facelets);
-				} catch (e) {
-				}
+			// Tracker'ı fiziksel duruma senkronize et
+			try {
+				this._trackerCube = Cube.fromString(event.facelets);
+			} catch (e) {
+				console.error('[ZKT:GAN] FACELETS parse hatasi:', e?.message);
 			}
 
 			// Otomatik kalibrasyon: ilk FACELETS'i çözülmüş durum referansı olarak kaydet
 			if (!this._ganInitialFacelets) {
 				this._ganInitialFacelets = event.facelets;
+				console.log('[ZKT:GAN] ganInitialFacelets kaydedildi:', event.facelets.substring(0, 20) + '...');
 			}
 
-
-			// Redux'a her durumda bildir (SmartCube.tsx'deki güvenlik ağı için)
+			// Redux'a bildir (SmartCube.tsx güvenlik ağı için)
 			this.alertCubeState(event.facelets);
-
-			// NOT: FACELETS sonrası yeniden polling YAPILMIYOR
-			// Sessizlik timer'ı sadece MOVE event'lerinden başlatılıyor (satır ~980)
-			// Bu, stale FACELETS yanıtının SERIAL_GAP resync'i ile çakışmasını önler
-			// ve idle durumda sürekli SOLVED dispatch spam'ini engeller
 		} else if (event.type == 'GYRO') {
 			// Jiroskop verilerini işle
 			if (event.quaternion) {
@@ -1160,8 +1276,10 @@ export default class GAN extends SmartCube {
 			};
 			this.alertConnected(dummyServer);
 		} else if (event.type == 'BATTERY') {
+			console.log('[ZKT:GAN] BATTERY:', event.batteryLevel + '%');
 			this.alertBatteryLevel(event.batteryLevel);
 		} else if (event.type == 'DISCONNECT') {
+			console.log('[ZKT:GAN] DISCONNECT event alindi');
 			this.alertDisconnected();
 		}
 	};
@@ -1174,6 +1292,8 @@ export default class GAN extends SmartCube {
 		this.moveQueue = [];
 		this.moveFlushTimeout = null;
 
+		console.log('[ZKT:GAN] flushMoveQueue — Redux\'a gonderiliyor:', batch.map(m => m.move).join(' '), `(${batch.length} hamle)`);
+
 		// Tek batch olarak Redux'a gönder
 		this.alertTurnCubeBatch(batch);
 	};
@@ -1181,31 +1301,25 @@ export default class GAN extends SmartCube {
 	requestFaceletsResync = async (force = false) => {
 		if (this._resyncPending && !force) return;
 		this._resyncPending = true;
-		this._pendingFaceletsRequests++;
 		try {
 			if (this.conn) {
 				await this.conn.sendCubeCommand({ type: 'REQUEST_FACELETS' });
 			}
 		} catch (e) {
-			this._pendingFaceletsRequests = Math.max(0, this._pendingFaceletsRequests - 1);
+			// BLE yazma hatası sessizce yutulur
 		} finally {
 			setTimeout(() => { this._resyncPending = false; }, 100);
 		}
 	};
 
 	disconnect = async () => {
-		// Held hamleleri temizle (dispatch etme - double-counting önle)
-		if (this._holdingForResync) {
-			this._holdingForResync = false;
-			this._heldMoveEvents = [];
-		}
-		if (this._holdTimeoutId) {
-			clearTimeout(this._holdTimeoutId);
-			this._holdTimeoutId = null;
-		}
 		if (this._silenceTimeoutId) {
 			clearTimeout(this._silenceTimeoutId);
 			this._silenceTimeoutId = null;
+		}
+		if (this._silenceRetryId) {
+			clearTimeout(this._silenceRetryId);
+			this._silenceRetryId = null;
 		}
 
 		// Flush pending moves before disconnect

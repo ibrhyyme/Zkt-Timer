@@ -17,8 +17,8 @@ export function saveSolve(
 ) {
 	const { onSolve, addTwoToSolve, cubeType, dnfTime, demoMode } = context;
 
-	plusTwo = plusTwo || (addTwoToSolve && !dnfTime);
 	dnf = dnf || dnfTime;
+	plusTwo = dnf ? false : (plusTwo || (addTwoToSolve && !dnfTime));
 
 	time /= 1000;
 	const finalTime = dnf ? -1 : time + (plusTwo ? 2 : 0);
