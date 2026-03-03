@@ -104,9 +104,13 @@ function appUseRouteForPage(routePath, route: PageContext) {
 			return;
 		}
 
-		// Redirect root route to timer if authenticated
+		// Redirect root route to timer if authenticated, to welcome if not
 		if (routePath === '/' && me) {
 			res.status(302).redirect('/timer');
+			return;
+		}
+		if (routePath === '/' && !me) {
+			res.status(302).redirect('/welcome');
 			return;
 		}
 

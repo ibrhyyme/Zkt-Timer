@@ -1,5 +1,6 @@
 import React from 'react';
 import { useHistory } from 'react-router-dom';
+import {useTranslation} from 'react-i18next';
 import './HeroSection.scss';
 import block from '../../../../styles/bem';
 import Button from '../../../common/button/Button';
@@ -8,6 +9,7 @@ const b = block('welcome-hero');
 
 export default function HeroSection() {
 	const history = useHistory();
+	const {t} = useTranslation();
 
 	return (
 		<section className={b()}>
@@ -29,12 +31,12 @@ export default function HeroSection() {
 
 				{/* Headline */}
 				<h1 className={b('title')}>
-					Türkiye'nin en gelişmiş <span className={b('title-highlight')}>zeka küpü platformu</span>
+					{t('welcome_hero.title_start')} <span className={b('title-highlight')}>{t('welcome_hero.title_highlight')}</span>
 				</h1>
 
 				{/* Subheadline */}
 				<p className={b('description')}>
-					Profesyonel zamanlayıcı, detaylı analizler ve canlı yarışmalarla potansiyelini açığa çıkar.
+					{t('welcome_hero.description')}
 				</p>
 
 				{/* Desktop CTA - hidden on mobile via CSS */}
@@ -45,7 +47,7 @@ export default function HeroSection() {
 						glow
 						onClick={() => history.push('/timer')}
 					>
-						Timer'ı Başlat →
+						{t('welcome_hero.cta_start')}
 					</Button>
 				</div>
 
@@ -56,7 +58,7 @@ export default function HeroSection() {
 						glow
 						onClick={() => window.location.href = '/signup'}
 					>
-						Kayıt Ol
+						{t('welcome_hero.cta_signup')}
 					</Button>
 					<Button
 						primary
@@ -64,7 +66,7 @@ export default function HeroSection() {
 						glow
 						onClick={() => window.location.href = '/login'}
 					>
-						Giriş Yap
+						{t('welcome_hero.cta_login')}
 					</Button>
 				</div>
 

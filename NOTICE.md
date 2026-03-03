@@ -18,6 +18,7 @@ Several key features of **zkt-timer** were inspired by, adapted from, or impleme
 *   **Scramble Generation & Analysis:** The 2x2 subset scramble generation and the multi-phase analysis features were implemented by studying the open-source code of **cstimer** and **min2phase**, developed by **cs0x7f**.
 *   **Algorithm Tutorials:** The algorithm learning modules and smart cube support for tutorials are based on concepts and code from **cubedex** by **poliva**.
 *   **Smart Cube & Bluetooth Integration:** The Bluetooth connection handling and gyroscope/movement logic for smart cubes were supported by the examples and libraries provided in **gan-web-bluetooth** by **afedotov**.
+*   **Algorithm Database & Trainer Page:** The majority of the algorithm collections used in the Trainer page were sourced from **cubingapp** by **spencerchubb** and adapted for zkt-timer.
 
 ## Third-Party Libraries
 
@@ -34,6 +35,7 @@ Portions of this software may utilize code or concepts from the aforementioned p
 *   Copyright (c) 2023 **cs0x7f**
 *   Copyright (c) 2023 **poliva**
 *   Copyright (c) 2023 **afedotov**
+*   Copyright (c) 2023 **spencerchubb**
 
 **zkt-timer Modifications and New Features:**
 *   **Copyright (c) 2026 ibrhyyme**

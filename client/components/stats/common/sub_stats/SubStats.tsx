@@ -9,6 +9,7 @@ import {
 	Hash,
 	CaretDoubleRight,
 	CaretDoubleUp,
+	Eye,
 } from 'phosphor-react';
 import block from '../../../../styles/bem';
 import {StatsContext} from '../../Stats';
@@ -29,7 +30,7 @@ export default function SubStats(props: Props) {
 	const { t } = useTranslation();
 
 	const context = useContext(StatsContext);
-	const {filterOptions} = context;
+	const {filterOptions, stats} = context;
 
 	const solveUpdate = useSolveDb();
 
@@ -100,6 +101,22 @@ export default function SubStats(props: Props) {
 				title={t('stats_page.first_solve')}
 				value={firstSolveTime}
 				color={SUB_STATS_COLOR}
+			/>
+			<NumberBlock
+				small
+				center
+				icon={<Eye weight="bold" />}
+				title="Solve Views"
+				value={stats.solve_views || 0}
+				color="#667289"
+			/>
+			<NumberBlock
+				small
+				center
+				icon={<Eye weight="bold" />}
+				title="Profile Views"
+				value={stats.profile_views || 0}
+				color="#667289"
 			/>
 		</div>
 	);

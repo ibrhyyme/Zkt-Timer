@@ -4,6 +4,7 @@ import './LandingNav.scss';
 import block from '../../../../styles/bem';
 import {useWindowListener} from '../../../../util/hooks/useListener';
 import {ColorName} from '../../../../../shared/colors';
+import LanguageSwitcher from '../../../common/language_switcher/LanguageSwitcher';
 
 const b = block('landing-nav');
 
@@ -91,6 +92,7 @@ export default function LandingNav(props: Props) {
 		<div className={b({scrolled})}>
 			<div className={b('body')}>
 				<div className={b('links')}>
+					<LanguageSwitcher />
 					{showNavLinks}
 				</div>
 			</div>

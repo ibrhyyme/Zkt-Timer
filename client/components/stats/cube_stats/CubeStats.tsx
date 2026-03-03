@@ -29,7 +29,7 @@ export default function CubeStats() {
 			<StatSection title={t('stats_page.averages')} className={b('averages')}>
 				<CubeStatAverages />
 			</StatSection>
-			<StatSection minWidth="400px" title={t('stats_page.solve_times')} className={b('solve-times')}>
+			<StatSection colSpan={2} title={t('stats_page.solve_times')} className={b('solve-times')}>
 				<StatModule>
 					<TimeChart filterOptions={filter} />
 				</StatModule>
@@ -37,7 +37,7 @@ export default function CubeStats() {
 			<StatSection title={t('stats_page.more_stats')} className={b('sub-stats')}>
 				<SubStats />
 			</StatSection>
-			<StatSection colSpan="all" title={t('stats_page.consistency')} className={b('consistency')}>
+			<StatSection colSpan={3} title={t('stats_page.consistency')} className={b('consistency')}>
 				<StatModule>
 					<SolvesPerDay filterOptions={filter} days={60} />
 				</StatModule>

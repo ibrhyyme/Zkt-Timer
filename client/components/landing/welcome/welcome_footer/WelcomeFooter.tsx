@@ -1,5 +1,6 @@
 import React from 'react';
 import { useHistory } from 'react-router-dom';
+import {useTranslation} from 'react-i18next';
 import './WelcomeFooter.scss';
 import block from '../../../../styles/bem';
 import { InstagramLogo, YoutubeLogo } from 'phosphor-react';
@@ -8,15 +9,16 @@ const b = block('welcome-footer');
 
 export default function WelcomeFooter() {
 	const history = useHistory();
+	const {t} = useTranslation();
 
 	return (
 		<footer className={b()}>
 			<div className={b('container')}>
 				{/* Social Media Section */}
 				<div className={b('cta-card')}>
-					<h2 className={b('cta-title')}>Topluluğumuza Katılın</h2>
+					<h2 className={b('cta-title')}>{t('welcome_footer.cta_title')}</h2>
 					<p className={b('cta-description')}>
-						Sosyal medyada bizi takip edin, yeni içeriklerden haberdar olun ve speedcubing topluluğunun bir parçası olun!
+						{t('welcome_footer.cta_description')}
 					</p>
 
 					<div className={b('social-grid')}>
@@ -117,7 +119,7 @@ export default function WelcomeFooter() {
 				{/* Footer Links */}
 				<div className={b('links')}>
 					<div className={b('copyright')}>
-						© {new Date().getFullYear()} ZKT-Timer. Created and Designed by{' '}
+						{t('welcome_footer.copyright', { year: new Date().getFullYear() })}{' '}
 						<a
 							href="/user/ibrhyyme"
 							target="_blank"
@@ -129,13 +131,13 @@ export default function WelcomeFooter() {
 					</div>
 					<div className={b('nav')}>
 						<a onClick={() => history.push('/privacy')} className={b('nav-link')}>
-							Privacy
+							{t('welcome_footer.privacy')}
 						</a>
 						<a onClick={() => history.push('/terms')} className={b('nav-link')}>
-							Terms
+							{t('welcome_footer.terms')}
 						</a>
 						<a onClick={() => history.push('/credits')} className={b('nav-link')}>
-							Credits
+							{t('welcome_footer.credits')}
 						</a>
 					</div>
 				</div>

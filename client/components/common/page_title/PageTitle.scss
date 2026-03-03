@@ -51,6 +51,38 @@
 		}
 	}
 
+	&__content {
+		// Default: stil yok, mevcut davranisin aynisi
+	}
+
+	&--inline {
+		padding-bottom: 1.5rem;
+
+		@include md {
+			display: grid;
+			grid-template-columns: auto 1fr;
+			align-items: center;
+			column-gap: 2rem;
+
+			.#{$namespace}-page-title__title {
+				grid-column: 1;
+				grid-row: 1;
+			}
+
+			.#{$namespace}-page-title__content {
+				grid-column: 2;
+				grid-row: 1;
+				justify-self: start;
+			}
+
+			.#{$namespace}-page-title__lines {
+				grid-column: 1 / -1;
+				grid-row: 2;
+				margin-bottom: 0.5rem;
+			}
+		}
+	}
+
 	&--account-dropdown-mobile {
 		margin-left: 0.8rem;
 		display: none;
