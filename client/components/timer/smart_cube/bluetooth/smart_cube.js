@@ -32,6 +32,7 @@ export default class SmartCube {
 	};
 
 	alertDisconnected = () => {
+		console.log('[ZKT:SOLVED] BLE BAGLANTI KESILDI');
 		toastError('Akıllı küp bağlantısı kesildi');
 
 		setTimerParams({
@@ -85,6 +86,7 @@ export default class SmartCube {
 	};
 
 	alertConnected = async (server) => {
+		console.log('[ZKT:SOLVED] BLE BAGLANTI BASARILI', { deviceName: server.device.name, deviceId: server.device.id });
 		let dev;
 		try {
 			const exists = await this.smartCubeInDb(server);
@@ -121,6 +123,7 @@ export default class SmartCube {
 	};
 
 	confirmConnected = (dev) => {
+		console.log('[ZKT:SOLVED] confirmConnected — kup kullanima hazir', { devId: dev.id, devName: dev.name });
 		setTimerParams({
 			smartCubeConnecting: false,
 			smartCubeConnected: true,
@@ -159,15 +162,33 @@ export default class SmartCube {
 	alertCubeState = (state) => {
 		const store = getStore();
 		if (store.getState().timer.smartCubeConnecting) {
+			console.log('[ZKT:SOLVED] alertCubeState ATLA — hala baglaniyor');
 			return;
 		}
 
 		const seq = (store.getState().timer.smartStateSeq || 0) + 1;
-		const defaultSolved = state === store.getState().timer.smartSolvedState;
+		const smartSolvedState = store.getState().timer.smartSolvedState;
+		const defaultSolved = state === smartSolvedState;
 		const ganSolved = this._ganInitialFacelets && state === this._ganInitialFacelets;
 		const isPhysicallySolved = defaultSolved || ganSolved;
 
 		if (isPhysicallySolved) {
+			console.log('[ZKT:SOLVED] KUP COZULDU!', {
+				seq,
+				defaultSolved,
+				ganSolved,
+				timeStartedAt: !!store.getState().timer.timeStartedAt,
+			});
+		} else {
+			// Her FACELETS'te log basmasin, sadece ilk 5 ve sonra her 10'da bir
+			if (seq <= 5 || seq % 10 === 0) {
+				console.log('[ZKT:SOLVED] Kup henuz cozulmedi', {
+					seq,
+					statePrefix: state.substring(0, 12) + '...',
+					solvedPrefix: smartSolvedState ? smartSolvedState.substring(0, 12) + '...' : 'YOK',
+					ganInitPrefix: this._ganInitialFacelets ? this._ganInitialFacelets.substring(0, 12) + '...' : 'YOK',
+				});
+			}
 		}
 
 		setTimerParams({

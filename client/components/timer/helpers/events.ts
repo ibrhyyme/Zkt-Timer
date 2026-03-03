@@ -190,9 +190,9 @@ export function startInspection(context: ITimerContext) {
 				let audio;
 				// Play sounds at 8 and 12 seconds (inspectionDelay - remaining time)
 				const elapsed = inspectionDelay + 2 - insTimer;
-				if (elapsed >= 5 && elapsed < 5.1) {
+				if (elapsed >= 8 && elapsed < 8.1) {
 					audio = new Audio(resourceUri('/audio/8_sec.mp3'));
-				} else if (elapsed >= 9 && elapsed < 9.1) {
+				} else if (elapsed >= 12 && elapsed < 12.1) {
 					audio = new Audio(resourceUri('/audio/12_sec.mp3'));
 				}
 				if (audio) {
@@ -201,7 +201,7 @@ export function startInspection(context: ITimerContext) {
 				}
 			}
 			let addTwoToSolve = false;
-			if (insTimer <= 3) {
+			if (insTimer <= 2) {
 				addTwoToSolve = true;
 			}
 			setTimerParams({
