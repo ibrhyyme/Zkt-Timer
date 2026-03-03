@@ -6,7 +6,7 @@
 	// Fix: 300px -> 280px for better fit on small screens
 	grid-template-columns: repeat(auto-fill, minmax(18.667rem, 1fr));
 	// Fix: 350px -> minmax(350px, auto) for flexibility
-	grid-auto-rows: minmax(23.333rem, auto);
+	grid-auto-rows: minmax(20rem, auto);
 	grid-column-gap: 1.333rem;
 	grid-row-gap: 1.333rem;
 

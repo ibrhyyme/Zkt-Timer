@@ -10,10 +10,11 @@ interface Props {
 	pageName: string;
 	children?: ReactNode;
 	icon?: string;
+	inline?: boolean;
 }
 
 export default function PageTitle(props: Props) {
-	const { pageName, children, icon } = props;
+	const { pageName, children, icon, inline } = props;
 
 	let iconBody = null;
 	if (icon) {
@@ -21,7 +22,7 @@ export default function PageTitle(props: Props) {
 	}
 
 	return (
-		<div className={b()}>
+		<div className={b({ inline: !!inline })}>
 			<h1 className={b('title')}>
 				{iconBody}
 				{pageName}
@@ -37,7 +38,7 @@ export default function PageTitle(props: Props) {
 				<div className={b('line', { secondary: true })} />
 			</div>
 
-			{children}
+			{children ? <div className={b('content')}>{children}</div> : null}
 		</div>
 	);
 }

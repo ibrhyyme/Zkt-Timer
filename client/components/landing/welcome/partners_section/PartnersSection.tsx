@@ -1,4 +1,5 @@
 import React from 'react';
+import {useTranslation} from 'react-i18next';
 import './PartnersSection.scss';
 import block from '../../../../styles/bem';
 import { useInView } from '../hooks/useInView';
@@ -8,61 +9,61 @@ const b = block('welcome-partners');
 interface Partner {
     name: string;
     logo: string;
-    description: string;
+    descriptionKey: string;
     category: 'official' | 'timer' | 'smart-cube';
     badge?: string;
 }
-
-const CATEGORY_LABELS = {
-    official: '🏆 Resmi Standart',
-    timer: '⏱️ Timer Desteği',
-    'smart-cube': '🎯 Akıllı Küp',
-};
 
 const PARTNERS: Partner[] = [
     {
         name: 'WCA',
         logo: '/public/partners/wca.png',
-        description: 'Resmi WCA scramble algoritmaları ve kuralları',
+        descriptionKey: 'welcome_partners.wca_desc',
         category: 'official',
     },
     {
         name: 'GAN Timer',
         logo: '/public/partners/gan-timer.png',
-        description: 'Bluetooth bağlantı ile kablosuz ölçüm',
+        descriptionKey: 'welcome_partners.gan_timer_desc',
         category: 'timer',
     },
     {
         name: 'StackMat',
         logo: '/public/partners/stackmat.png',
-        description: 'WCA onaylı profesyonel timer desteği',
+        descriptionKey: 'welcome_partners.stackmat_desc',
         category: 'timer',
     },
     {
         name: 'GAN Cube',
         logo: '/public/partners/gan.png',
-        description: 'Gerçek zamanlı çözüm takibi ve analiz',
+        descriptionKey: 'welcome_partners.gan_cube_desc',
         category: 'smart-cube',
     },
     {
         name: 'MoYu',
         logo: '/public/partners/moyu.png',
-        description: 'AI destekli akıllı küp entegrasyonu',
+        descriptionKey: 'welcome_partners.moyu_desc',
         category: 'smart-cube',
     },
 ];
 
 export default function PartnersSection() {
     const { ref, isInView } = useInView({ threshold: 0.2, triggerOnce: true });
+    const {t} = useTranslation();
+
+    const CATEGORY_LABELS: Record<string, string> = {
+        official: t('welcome_partners.category_official'),
+        timer: t('welcome_partners.category_timer'),
+        'smart-cube': t('welcome_partners.category_smart_cube'),
+    };
 
     return (
         <section ref={ref as any} className={b({ visible: isInView })}>
             <div className={b('container')}>
                 <div className={b('header')}>
-                    <h2 className={b('title')}>Profesyonel Entegrasyonlar</h2>
+                    <h2 className={b('title')}>{t('welcome_partners.title')}</h2>
                     <p className={b('description')}>
-                        WCA standartları, akıllı küpler ve profesyonel timer'lar ile tam uyumlu.
-                        En gelişmiş speedcubing ekipmanlarıyla sorunsuz çalışır.
+                        {t('welcome_partners.description')}
                     </p>
                 </div>
 
@@ -79,12 +80,12 @@ export default function PartnersSection() {
                             <div className={b('card-logo')}>
                                 <img
                                     src={partner.logo}
-                                    alt={`${partner.name} - ${partner.description} - ZKT Timer entegrasyonu`}
+                                    alt={`${partner.name} - ${t(partner.descriptionKey)} - ZKT Timer`}
                                     loading="lazy"
                                 />
                             </div>
                             <h3 className={b('card-name')}>{partner.name}</h3>
-                            <p className={b('card-description')}>{partner.description}</p>
+                            <p className={b('card-description')}>{t(partner.descriptionKey)}</p>
                         </div>
                     ))}
                 </div>

@@ -10,12 +10,14 @@ import './Welcome.scss';
 import { useMe } from '../../../util/hooks/useMe';
 import { useHistory } from 'react-router-dom';
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
-import { getStructuredData, SITE_URL, DEFAULT_TITLE, DEFAULT_DESCRIPTION, DEFAULT_FEATURED_IMAGE, DEFAULT_KEYWORDS } from '../../layout/header/Header';
+import { getStructuredData, SITE_URL, DEFAULT_KEYWORDS } from '../../layout/header/Header';
 
 export default function Welcome() {
 	const me = useMe();
 	const history = useHistory();
+	const { t } = useTranslation();
 
 	useEffect(() => {
 		if (me) {
@@ -28,8 +30,9 @@ export default function Welcome() {
 		return null;
 	}
 
-	const title = "ZKT-Timer - Profesyonel Speedcubing Timer";
-	const desc = "ZKT-Timer ile speedcubing becerilerinizi geliştirin. Bulut tabanlı istatistikler, gerçek zamanlı yarışmalar, akıllı küp desteği ve profesyonel zamanlama. Türkiye'nin en hızlı speedcubing topluluğuna katılın.";
+	const title = t('seo.home_title');
+	const desc = t('seo.home_description');
+	const ogImage = `${SITE_URL}/public/welcome/web/timer.jpeg`;
 
 	const { websiteSchema, organizationSchema, softwareSchema, navigationSchema, faqSchema } = getStructuredData('/', title, desc);
 
@@ -39,18 +42,25 @@ export default function Welcome() {
 				<title>{title}</title>
 				<meta name="description" content={desc} />
 				<meta name="keywords" content={DEFAULT_KEYWORDS} />
+				<meta name="author" content="ZKT Timer" />
+				<link rel="canonical" href={`${SITE_URL}/welcome`} />
 
 				{/* Open Graph */}
 				<meta property="og:title" content={title} />
-				<meta property="og:description" content="Profesyonel araçlarla speedcubing becerilerinizi geliştirin" />
-				<meta property="og:image" content="/public/welcome/web/timer.jpeg" />
+				<meta property="og:description" content={desc} />
+				<meta property="og:image" content={ogImage} />
+				<meta property="og:image:secure_url" content={ogImage} />
+				<meta property="og:url" content={`${SITE_URL}/welcome`} />
+				<meta property="og:site_name" content="ZKT Timer - Zeka Küpü Timer" />
 				<meta property="og:type" content="website" />
+				<meta property="og:locale" content="tr_TR" />
 
 				{/* Twitter Card */}
 				<meta name="twitter:card" content="summary_large_image" />
 				<meta name="twitter:title" content={title} />
-				<meta name="twitter:description" content="Profesyonel araçlarla speedcubing becerilerinizi geliştirin" />
-				<meta name="twitter:image" content="/public/welcome/web/timer.jpeg" />
+				<meta name="twitter:description" content={desc} />
+				<meta name="twitter:image" content={ogImage} />
+				<meta name="twitter:url" content={`${SITE_URL}/welcome`} />
 
 				{/* JSON-LD Structured Data */}
 				<script type="application/ld+json">{JSON.stringify(websiteSchema)}</script>

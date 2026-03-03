@@ -22,10 +22,10 @@ export default function AllStats() {
 
 	return (
 		<div className={b()}>
-			<StatSection title={t('stats_page.overview')}>
+			<StatSection colSpan={2} title={t('stats_page.overview')}>
 				<AllStatsFeatured />
 			</StatSection>
-			<StatSection rowSpan={2} title={t('stats_page.community')}>
+			<StatSection title={t('stats_page.community')}>
 				<AllStatsCommunity />
 			</StatSection>
 			<StatSection title={t('stats_page.event_distribution')}>
@@ -33,13 +33,13 @@ export default function AllStats() {
 					<CubeDistro />
 				</StatModule>
 			</StatSection>
-			<StatSection title={t('stats_page.consistency')}>
+			<StatSection title={t('stats_page.more_stats')}>
+				<SubStats />
+			</StatSection>
+			<StatSection colSpan={3} title={t('stats_page.consistency')}>
 				<StatModule>
 					<SolvesPerDay filterOptions={filterOptions} days={30} />
 				</StatModule>
-			</StatSection>
-			<StatSection title={t('stats_page.more_stats')}>
-				<SubStats />
 			</StatSection>
 		</div>
 	);

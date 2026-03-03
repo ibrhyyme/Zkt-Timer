@@ -49,7 +49,7 @@ export default (payload: HtmlPagePayload) => {
 				<link rel="apple-touch-icon" sizes="167x167" href="${resourceBase}/images/apple-touch-icon.png">
 				<!-- iOS Açılış Ekranı (Splash Screen benzeri etki için) -->
 				<link rel="apple-touch-startup-image" href="${resourceBase}/images/apple-touch-icon.png">
-				${process.env.NODE_ENV === "production" ? `<script async defer data-domain="zkt-timer.io" src="https://plausible.io/js/plausible.js"></script>` : ""}
+				${process.env.NODE_ENV === "production" ? `<script async defer data-domain="zktimer.app" src="https://plausible.io/js/plausible.js"></script>` : ""}
 				<script async defer src="https://www.googletagmanager.com/gtag/js?id=AW-354788011"></script>
 				<script>
 				  window.dataLayer = window.dataLayer || [];
@@ -59,8 +59,6 @@ export default (payload: HtmlPagePayload) => {
 				  gtag('config', 'AW-354788011');
 				</script>
 	
-				<title>Zkt-Timer</title>
-				
 				${helmet.title.toString()}
 				${helmet.meta.toString()}
 				${helmet.link.toString()}

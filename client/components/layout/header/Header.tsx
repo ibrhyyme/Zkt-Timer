@@ -16,7 +16,7 @@ export const DEFAULT_TITLE = 'Zkt-Timer | Türkiye\'nin #1 Zeka Küpü Timer Sit
 export const DEFAULT_DESCRIPTION =
 	"Türkiye'nin en gelişmiş zeka küpü timer sitesi! Rubik küp çözüm sürenizi ölçün, canlı mücadele odalarında yarışın, Türkiye rekorlarını takip edin. Speedcubing, 3x3, 2x2, 4x4 ve tüm WCA kategorileri. %100 Türkçe cubing platformu.";
 export const DEFAULT_KEYWORDS = 'zeka küpü, rubik küp, rubiks cube, küp timer, speedcubing, cubing türkiye, zeka küpü timer, rubik küp çözümü, 3x3 küp, 2x2 küp, 4x4 küp, WCA türkiye, zeka küpü yarışması, küp çözme, rubik türkiye, speedcubing türkiye, cubing timer, zeka küpü nasıl çözülür, rubik küp algoritma';
-export const DEFAULT_FEATURED_IMAGE = resourceUri('/public/images/zkt-logo.png');
+export const DEFAULT_FEATURED_IMAGE = resourceUri('/images/zkt-logo.png');
 export const SITE_URL = 'https://zktimer.app';
 export const LOGO_URL = `${SITE_URL}/public/images/zkt-logo.png`;
 
@@ -310,7 +310,8 @@ export default function Header(props: Props) {
 	// Varsayılanlara geri dön (Hala boşsa)
 	const finalTitle = pageTitle || DEFAULT_TITLE;
 	const finalDesc = pageDesc || DEFAULT_DESCRIPTION;
-	const secureImage = props.featuredImage || DEFAULT_FEATURED_IMAGE;
+	const rawImage = props.featuredImage || DEFAULT_FEATURED_IMAGE;
+	const secureImage = rawImage.startsWith('http') ? rawImage : `${SITE_URL}${rawImage}`;
 
 	// İndekslenmemesi gereken sayfalar (NoIndex)
 	const noIndexPaths = ['/settings', '/sessions', '/force-log-out', '/account', '/oauth', '/admin'];

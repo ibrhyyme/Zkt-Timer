@@ -110,7 +110,7 @@ export default function Stats() {
 		<StatsContext.Provider value={context}>
 			<div className={b()}>
 				<div className={b('shell')}>
-					<PageTitle pageName={t('stats.page_title')}>
+					<PageTitle pageName={t('stats.page_title')} inline>
 						<HorizontalNav tabs={tabs} tabId={tabId} />
 					</PageTitle>
 					{body}

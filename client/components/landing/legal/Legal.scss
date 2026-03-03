@@ -1,21 +1,21 @@
 @import '../../../styles/config';
 
-.#{$namespace}-legal {
+.#{$namespace}-landing-legal {
 	width: 95%;
-	margin: auto;
 	max-width: 700px;
-	padding: 200px 0 100px;
-	background-color: white;
+	margin: 0;
+	padding: 100px 0 100px 40px;
+	color: rgba(255, 255, 255, 0.85);
 
 	h1 {
 		font-weight: bold;
 		font-size: 2rem;
-		color: #444;
+		color: white;
 		margin-bottom: 15px;
 	}
 
 	h2 {
-		color: #444;
+		color: white;
 		font-size: 1.3rem;
 		margin-top: 20px;
 		margin-bottom: 10px;
@@ -24,7 +24,7 @@
 	}
 
 	strong {
-		color: #444;
+		color: white;
 		font-weight: bold;
 	}
 
@@ -32,24 +32,33 @@
 	li {
 		margin-bottom: 15px;
 		line-height: 1.4rem;
-		opacity: 0.9;
-		color: #444;
+		color: rgba(255, 255, 255, 0.85);
 	}
 
 	ul {
 		list-style: disc;
 		padding-left: 15px;
+
 		li {
 			margin-bottom: 10px;
-		}
-
-		li:not(:last-of-type) {
 		}
 	}
 
 	a {
-		color: #444;
-		opacity: 0.8;
+		color: rgba(255, 255, 255, 0.8);
 		text-decoration: underline;
+
+		&:hover {
+			color: white;
+		}
+	}
+
+	hr {
+		border-color: rgba(255, 255, 255, 0.15);
+		margin: 40px 0;
+	}
+
+	code {
+		color: rgba(255, 255, 255, 0.9);
 	}
 }
