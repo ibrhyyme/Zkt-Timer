@@ -3,9 +3,10 @@ import {useDispatch as useReduxDispatch} from 'react-redux';
 import block from '../../../../styles/bem';
 import {useTrainerContext} from '../../TrainerContext';
 import {useAlgorithmData, getBestTime, getLearnedStatus} from '../../hooks/useAlgorithmData';
-import {algToId, expandNotation, getAdjacentFaces, getDefaultFrontFace, isCubeShapePuzzle, isLLCategory, isTopFaceOnlyCategory} from '../../../../util/trainer/algorithm_engine';
+import {algToId, expandNotation, getAdjacentFaces, getDefaultFrontFace, isCubeShapePuzzle, isLLCategory, isIsometricCategory, isTopFaceOnlyCategory} from '../../../../util/trainer/algorithm_engine';
 import {useLLPatternsReady} from '../../../../util/trainer/ll_patterns';
 import {usePuzzlePatternsReady} from '../../../../util/trainer/puzzle_patterns';
+import {useIsometricPatternsReady} from '../../../../util/trainer/isometric_patterns';
 import {openModal} from '../../../../actions/general';
 import AlgorithmCard from './AlgorithmCard';
 import Checkbox from '../../../common/checkbox/Checkbox';
@@ -54,12 +55,14 @@ export default function AlgorithmSelector() {
 	const {selectedCategory, selectedSubsets, checkedAlgorithms, options} = state;
 	const {categories, getSubsets, getAlgorithmsWithSubset} = useAlgorithmData();
 	const isLL = isLLCategory(selectedCategory);
-	const effectiveFrontFace = isLL ? getDefaultFrontFace(options.topFace) : options.frontFace;
+	const isIso = isIsometricCategory(selectedCategory);
+	const effectiveFrontFace = (isLL || isIso) ? getDefaultFrontFace(options.topFace) : options.frontFace;
 	const isF2L = selectedCategory === 'F2L';
 	const [slotFilter, setSlotFilter] = useState('all');
 	const [showCatInfo, setShowCatInfo] = useState(false);
 	useLLPatternsReady(); // Pattern yuklendiginde kartlari yeniden render et
 	usePuzzlePatternsReady(); // Puzzle pattern'leri yuklendiginde kartlari yeniden render et
+	useIsometricPatternsReady(); // Isometric pattern'leri yuklendiginde kartlari yeniden render et
 
 	// Derive cube types and filtered categories
 	const cubeTypes = useMemo(() => {

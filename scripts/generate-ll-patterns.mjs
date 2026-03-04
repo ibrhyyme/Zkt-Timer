@@ -82,11 +82,22 @@ const LL_CATEGORIES = [
  * cubing.js'in parse edebileceği formata dönüştürür.
  */
 function cleanAlgorithm(alg) {
-	return alg
+	let s = alg
 		.replace(/\+/g, ' ')    // D+U' → D U'
 		.replace(/\u2019/g, "'") // curly apostrophe
 		.replace(/["\u201C\u201D]/g, "'") // smart quotes
 		.replace(/'2/g, "2'");   // U'2 → U2' (cubing.js formatı)
+
+	// Wide move notasyonu: Rw → r, Lw → l, vb.
+	s = s.replace(/([RLFBUD])w/g, (_, m) => m.toLowerCase());
+
+	// Tek-move parantezler: (U2) → U2, (U') → U'
+	s = s.replace(/\(([RLFBUDMESrlfbudxyz][2']?)\)/g, '$1');
+
+	// Bosluk yoksa expandNotation ile ekle (ZBLS notasyonu)
+	s = expandNotation(s);
+
+	return s;
 }
 
 /**

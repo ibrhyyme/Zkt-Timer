@@ -215,13 +215,21 @@ function arraysEqual(arr1: number[], arr2: number[]): boolean {
  * Determine the appropriate stickering mode for a given category.
  */
 export function getStickering(category: string): string {
+	// Cubing.js'de birebir karsiligi olmayan kategoriler icin alias
+	const STICKERING_ALIASES: Record<string, string> = {
+		'vhls': 'VLS',
+	};
+
 	const validStickering = [
-		'OLLCP', 'EOcross', 'LSOCLL', 'EOline', 'LSOLL', 'Daisy', 'Cross', 'ZBLS', 'ZBLL',
+		'OLLCP', 'EOcross', 'LSOCLL', 'EOline', 'LSOLL', 'Daisy', 'Cross', 'ZBLL',
 		'WVLS', 'OCLL', 'L6EO', 'L10P', 'EPLL', 'EOLL', 'CPLL', 'COLL', 'CMLL',
 		'VLS', 'PLL', 'OLL', 'L6E', 'F2L', 'ELS', 'ELL', 'CLS', 'CLL', 'LS', 'LL', 'EO',
 	];
 
 	const categoryClean = category.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+
+	// Alias check
+	if (STICKERING_ALIASES[categoryClean]) return STICKERING_ALIASES[categoryClean];
 
 	// Direct match
 	for (const item of validStickering) {
@@ -324,7 +332,21 @@ export function isLLCategory(category: string): boolean {
 	const puzzleType = getPuzzleType(category);
 	if (puzzleType !== '3x3x3') return false;
 	const stickering = getStickering(category);
-	return category.toLowerCase().includes('ll') || stickering === 'OLL';
+	if (category.toLowerCase().includes('ll')) return true;
+	if (stickering === 'OLL') return true;
+	return false;
+}
+
+/**
+ * Isometric 3-yuz 2D gorunum kullanan kategoriler (WVLS, VHLS).
+ * Bu kategoriler ne LL (top-down) ne de 3D TwistyPlayer kullanir.
+ */
+export function isIsometricCategory(category: string): boolean {
+	if (!category) return false;
+	const puzzleType = getPuzzleType(category);
+	if (puzzleType !== '3x3x3') return false;
+	const stickering = getStickering(category);
+	return stickering === 'WVLS' || stickering === 'VLS';
 }
 
 /**
@@ -347,6 +369,7 @@ export function is2DPatternCategory(category: string): boolean {
  */
 export function isTopFaceOnlyCategory(category: string): boolean {
 	if (isLLCategory(category)) return true;
+	if (isIsometricCategory(category)) return true;
 	const puzzleType = getPuzzleType(category);
 	if (puzzleType === '2x2x2' && !category.includes('PBL')) return true;
 	if (puzzleType === '4x4x4') return true;

@@ -8,7 +8,7 @@ const smartState = {
 	smartCanStart: false,
 	smartTurns: [],
 	smartDeviceId: '',
-	smartCurrentState: 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB',
+	smartCurrentState: null,
 	smartSolvedState: 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB',
 	smartGyroQuaternion: null,
 	smartGyroVelocity: null,

@@ -32,10 +32,8 @@ export function startTimer() {
 		lastSmartSolveStats: null,
 	});
 
-	setTimeout(() => {
-		emitEvent('startTimerEvent', {
-			timeStartedAt,
-		});
+	emitEvent('startTimerEvent', {
+		timeStartedAt,
 	});
 }
 

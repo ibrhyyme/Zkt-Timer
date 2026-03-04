@@ -1,10 +1,12 @@
 import React, {useState, useEffect, useRef, useCallback} from 'react';
 import block from '../../../../styles/bem';
-import {algToId, getStickering, getOrientationRotation, getPuzzleType, isCubeShapePuzzle, expandNotation, isLLCategory, getDefaultFrontFace, is2DPatternCategory, getPuzzlePatternType, isSQ1MirrorCategory} from '../../../../util/trainer/algorithm_engine';
+import {algToId, getStickering, getOrientationRotation, getPuzzleType, isCubeShapePuzzle, expandNotation, isLLCategory, isIsometricCategory, getDefaultFrontFace, is2DPatternCategory, getPuzzlePatternType, isSQ1MirrorCategory} from '../../../../util/trainer/algorithm_engine';
 import {getLLPattern, isLLPatternsLoaded} from '../../../../util/trainer/ll_patterns';
+import {getIsometricPattern, isIsometricPatternsLoaded} from '../../../../util/trainer/isometric_patterns';
 import {getPuzzlePattern, isPuzzlePatternsLoaded} from '../../../../util/trainer/puzzle_patterns';
 import {getRemappedMask} from '../../../../util/trainer/stickering_remap';
 import LLPatternView from '../LLPatternView';
+import CubeIsometricView from '../CubeIsometricView';
 import CubeTopPatternView from '../CubeTopPatternView';
 import PyraminxPatternView from '../PyraminxPatternView';
 import SkewbPatternView from '../SkewbPatternView';
@@ -45,7 +47,8 @@ export default function AlgorithmDetailModal({
 }: AlgorithmDetailModalProps) {
 	const {t} = useTranslation();
 	const dbVersion = useTrainerDb();
-	const effectiveFrontFace = isLLCategory(category) ? getDefaultFrontFace(topFace) : frontFace;
+	const isIso = isIsometricCategory(category);
+	const effectiveFrontFace = (isLLCategory(category) || isIso) ? getDefaultFrontFace(topFace) : frontFace;
 
 	const [editedAlg, setEditedAlg] = useState(initialAlgorithm);
 	const [currentAlgorithm, setCurrentAlgorithm] = useState(initialAlgorithm);
@@ -82,17 +85,23 @@ export default function AlgorithmDetailModal({
 	const llPatternsLoaded = isLLPatternsLoaded();
 	const llPattern = isLL ? getLLPattern(editedAlg) : null;
 
+	// Isometric pattern (WVLS, VHLS)
+	const isometricPatternsLoaded = isIsometricPatternsLoaded();
+	const isometricPattern = isIso ? getIsometricPattern(editedAlg) : null;
+
 	// Puzzle pattern (2x2, 4x4, pyraminx, skewb, sq1)
 	const is2DPuzzle = is2DPatternCategory(category);
 	const puzzlePatternType = getPuzzlePatternType(category);
 	const puzzlePatternsLoaded = isPuzzlePatternsLoaded();
 	const puzzlePattern = is2DPuzzle && puzzlePatternType ? getPuzzlePattern(puzzlePatternType, editedAlg, category) : null;
 
-	const use3D = isLL
-		? (llPatternsLoaded ? !llPattern : false)
-		: is2DPuzzle
-			? (puzzlePatternsLoaded ? !puzzlePattern : false)
-			: true;
+	const use3D = isIso
+		? (isometricPatternsLoaded ? !isometricPattern : false)
+		: isLL
+			? (llPatternsLoaded ? !llPattern : false)
+			: is2DPuzzle
+				? (puzzlePatternsLoaded ? !puzzlePattern : false)
+				: true;
 
 	const twistyRef = useRef<HTMLDivElement>(null);
 
@@ -108,8 +117,7 @@ export default function AlgorithmDetailModal({
 			const isCube = isCubeShapePuzzle(category);
 			const rotation = isCube ? getOrientationRotation(topFace, effectiveFrontFace) : '';
 			const baseStickering = is3x3 ? getStickering(category) : 'full';
-			const needsRemap = !!rotation && topFace !== 'U' && baseStickering !== 'full';
-			const remappedMask = needsRemap ? await getRemappedMask(baseStickering, rotation) : null;
+			const customMask = baseStickering !== 'full' ? await getRemappedMask(baseStickering, rotation) : null;
 
 			const player = new TwistyPlayer({
 				puzzle: puzzleType as any,
@@ -120,17 +128,18 @@ export default function AlgorithmDetailModal({
 				hintFacelets: 'none',
 				experimentalDragInput: 'none',
 				background: 'none',
-				...(!remappedMask ? {experimentalStickering: (needsRemap ? 'full' : baseStickering) as any} : {}),
 				...(rotation ? {experimentalSetupAlg: rotation} : {}),
+				...(baseStickering !== 'full' ? { experimentalStickering: baseStickering as any } : {}),
 			});
-
-			if (remappedMask) {
-				(player as any).experimentalStickeringMaskOrbits = remappedMask;
-			}
 
 			if (!cancelled && twistyRef.current) {
 				twistyRef.current.innerHTML = '';
 				twistyRef.current.appendChild(player);
+
+				// Custom mask override: DOM'a eklendikten sonra uygula
+				if (customMask) {
+					(player as any).experimentalStickeringMaskOrbits = customMask;
+				}
 			}
 		})();
 
@@ -174,7 +183,13 @@ export default function AlgorithmDetailModal({
 	return (
 		<div className={b('alg-detail')}>
 			<div className={b('alg-detail-viewer')}>
-				{llPattern ? (
+				{isometricPattern ? (
+					<CubeIsometricView
+						pattern={isometricPattern}
+						topFace={topFace}
+						frontFace={effectiveFrontFace}
+					/>
+				) : llPattern ? (
 					<LLPatternView
 						pattern={llPattern}
 						topFace={topFace}
