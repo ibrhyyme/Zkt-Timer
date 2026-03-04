@@ -225,7 +225,7 @@ function removeTwo(turn: string): string {
 	return turn.replace(/2/g, '');
 }
 
-function getRawTurn(turn: string): string {
+export function getRawTurn(turn: string): string {
 	return turn.replace(/('|2)/g, '');
 }
 
