@@ -13,7 +13,7 @@ import { openModal, closeModal } from '../../../actions/general';
 import ManageSmartCubes from './manage_smart_cubes/ManageSmartCubes';
 import Cube from 'cubejs';
 import block from '../../../styles/bem';
-import { initSmartSolver, computeCorrectionPathAsync, IncrementalCompressor, matchScrambleWithCommutative } from '../../../util/smart_scramble';
+import { initSmartSolver, computeCorrectionPathAsync, IncrementalCompressor, matchScrambleWithCommutative, isTwo, getRawTurn, areCommutative } from '../../../util/smart_scramble';
 import { getReverseTurns } from '../../../util/solve/turns';
 import { initSolverWorker, solveAsync } from '../../../util/solver_worker_manager';
 import { TimerContext } from '../Timer';
@@ -141,6 +141,7 @@ export default function SmartCube() {
 	const targetFaceletsRef = useRef<string | null>(null);
 	const initialSyncMovesRef = useRef<string[]>([]);
 	const compressorRef = useRef(new IncrementalCompressor());
+	const intermediatesRef = useRef(new Set<string>());
 
 	// Reset incremental state when scramble or offset changes (new correction applied)
 	useEffect(() => {
@@ -164,6 +165,69 @@ export default function SmartCube() {
 			targetFaceletsRef.current = null;
 		}
 	}, [scramble, originalScramble]);
+
+	// Precompute intermediate states for state-based verification (cstimer checkInSeq approach)
+	// Orijinal scramble'in her adimindaki kup durumunu hesapla.
+	// Double move'lar icin CW/CCW sub-power durumlarini da ekle.
+	// Kommutatif ciftler icin ters sira alternatifini de ekle.
+	useEffect(() => {
+		const origScramble = originalScramble || scramble;
+		if (!origScramble) {
+			intermediatesRef.current = new Set();
+			return;
+		}
+
+		try {
+			const moves = origScramble.split(' ').filter(m => m.trim());
+			const states = new Set<string>();
+			const cube = new Cube();
+			const statesBefore: string[] = [];
+
+			for (let i = 0; i < moves.length; i++) {
+				statesBefore.push(cube.asString());
+				const move = moves[i];
+
+				if (isTwo(move)) {
+					// CW sub-power: state_before + bir CW ceyrek-donus (ornek: F2 icin sadece F)
+					const cwCube = Cube.fromString(statesBefore[i]);
+					cwCube.move(getRawTurn(move));
+					states.add(cwCube.asString());
+
+					// CCW sub-power: state_before + bir CCW ceyrek-donus (ornek: F2 icin sadece F')
+					const ccwCube = Cube.fromString(statesBefore[i]);
+					ccwCube.move(getRawTurn(move) + "'");
+					states.add(ccwCube.asString());
+				}
+
+				// Tam hamle sonrasi durum
+				cube.move(move);
+				states.add(cube.asString());
+
+				// Kommutatif alternatif: sonraki hamle ile yer degistirme
+				// Ornek: "U D" scramble'da kullanici D'yi once yaparsa, state_before_U + D
+				if (i < moves.length - 1 && areCommutative(moves[i], moves[i + 1])) {
+					const altCube = Cube.fromString(statesBefore[i]);
+					altCube.move(moves[i + 1]);
+					states.add(altCube.asString());
+
+					// Kommutatif hareketteki double-move sub-power'lari da ekle
+					if (isTwo(moves[i + 1])) {
+						const cwAlt = Cube.fromString(statesBefore[i]);
+						cwAlt.move(getRawTurn(moves[i + 1]));
+						states.add(cwAlt.asString());
+
+						const ccwAlt = Cube.fromString(statesBefore[i]);
+						ccwAlt.move(getRawTurn(moves[i + 1]) + "'");
+						states.add(ccwAlt.asString());
+					}
+				}
+			}
+
+			intermediatesRef.current = states;
+		} catch (e) {
+			intermediatesRef.current = new Set();
+		}
+	}, [originalScramble, scramble]);
 
 	// Initialize TwistyPlayer
 	useEffect(() => {
@@ -698,7 +762,12 @@ export default function SmartCube() {
 				startInspection(context);
 			}
 		} else if (matchStatus.includes('wrong')) {
-			triggerSmartCorrection();
+			// State-based dogrulama: cubejs hala orijinal scramble yolunda mi?
+			// Move matcher timing hatasi verebilir (compressor reset mid-double-move).
+			// cubejs her hamle event'inde senkron guncellenir — compressor'dan bagimsiz.
+			if (!intermediatesRef.current.has(cubejs.current.asString())) {
+				triggerSmartCorrection();
+			}
 		} else if (matchStatus.includes('half')) {
 			// Half match: kullanici R2 yerine R yapti (veya benzeri)
 			// Sadece correction display guncelleme icin — completion FACELETS'e dayanir
@@ -707,7 +776,11 @@ export default function SmartCube() {
 			const hasPerfectAfterHalf = matchStatus.slice(lastHalfIdx + 1).includes('perfect');
 
 			if (hasPerfectAfterHalf) {
-				triggerSmartCorrection();
+				// cubejs dogrulamasi: matcher hasPerfectAfterHalf dese bile,
+				// cubejs hala orijinal scramble yolundaysa correction gereksiz
+				if (!intermediatesRef.current.has(cubejs.current.asString())) {
+					triggerSmartCorrection();
+				}
 			} else if (noMorePending) {
 				// Son hamle yarim — ikinci yarisini bekle, 800ms timeout
 				if (halfMatchTimeoutRef.current) clearTimeout(halfMatchTimeoutRef.current);
@@ -729,21 +802,31 @@ export default function SmartCube() {
 			const scrambleToUse = originalScrambleRef.current;
 			if (!scrambleToUse) return;
 
-			// Ref kullan — setTimeout closure'da stale state onlenir
-			const currentSmartTurns = smartTurnsRef.current;
-
-			// Initial sync prefix: kup cozulmemis baglandiysa, SOLVED → fiziksel durum
-			// hamleleri eklenir. computeCorrectionPathAsync SOLVED baslangic varsayar,
-			// bu prefix gercek fiziksel baslangic durumunu saglar.
 			const prefix = initialSyncMovesRef.current || [];
-			const allRawUserMoves = [...prefix, ...currentSmartTurns.map(t => t.turn)];
+
+			// Ref kullan — setTimeout closure'da stale state onlenir
+			let currentSmartTurns = smartTurnsRef.current;
+			let allRawUserMoves = [...prefix, ...currentSmartTurns.map(t => t.turn)];
 
 			// Async: runs Cube.solve() in Web Worker — no main thread blocking
-			const correctionMoves = await computeCorrectionPathAsync(scrambleToUse, allRawUserMoves);
+			let correctionMoves = await computeCorrectionPathAsync(scrambleToUse, allRawUserMoves);
 
 			// Discard stale result if a newer correction was triggered
-			if (gen !== correctionGenRef.current) {
-				return;
+			if (gen !== correctionGenRef.current) return;
+
+			// BLE batch (8ms) + Redux dispatch + React render icin bekle.
+			// Double move'un ikinci yarisi bu sure icinde gelebilir.
+			await new Promise(resolve => setTimeout(resolve, 50));
+			if (gen !== correctionGenRef.current) return;
+
+			// Re-snapshot: async solve sirasinda yeni hamle geldiyse (double-move ikinci yarisi)
+			// guncel hamlelerle tekrar hesapla — stale offset onlenir
+			const latestTurns = smartTurnsRef.current;
+			if (latestTurns.length !== currentSmartTurns.length) {
+				currentSmartTurns = latestTurns;
+				allRawUserMoves = [...prefix, ...currentSmartTurns.map(t => t.turn)];
+				correctionMoves = await computeCorrectionPathAsync(scrambleToUse, allRawUserMoves);
+				if (gen !== correctionGenRef.current) return;
 			}
 
 			if (correctionMoves.length === 0) {
