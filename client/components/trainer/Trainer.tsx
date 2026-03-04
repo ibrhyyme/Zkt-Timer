@@ -15,6 +15,7 @@ import {ensureCubingReady} from '../../util/trainer/algorithm_engine';
 import {ensureKPuzzleReady} from '../../util/trainer/pattern_utils';
 import {loadLLPatterns} from '../../util/trainer/ll_patterns';
 import {loadPuzzlePatterns} from '../../util/trainer/puzzle_patterns';
+import {loadIsometricPatterns} from '../../util/trainer/isometric_patterns';
 import {useMe} from '../../util/hooks/useMe';
 import {isProEnabled, isPro} from '../../lib/pro';
 
@@ -123,6 +124,7 @@ export default function Trainer() {
 			ensureKPuzzleReady();
 			loadLLPatterns();
 			loadPuzzlePatterns();
+			loadIsometricPatterns();
 		}
 	}, [showFullTrainer]);
 

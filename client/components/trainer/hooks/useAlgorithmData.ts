@@ -46,9 +46,18 @@ export async function initializeDefaultAlgorithms() {
 	const saved = JSON.parse(existing) as Record<string, AlgorithmSubset[]>;
 	let changed = false;
 
+	// Yeni kategorileri ekle
 	for (const category of Object.keys(defaultAlgs)) {
 		if (!saved[category]) {
 			saved[category] = defaultAlgs[category];
+			changed = true;
+		}
+	}
+
+	// Defaults'tan kaldirilan kategorileri temizle
+	for (const category of Object.keys(saved)) {
+		if (!defaultAlgs[category]) {
+			delete saved[category];
 			changed = true;
 		}
 	}

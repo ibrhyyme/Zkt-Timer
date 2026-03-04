@@ -365,7 +365,6 @@ class GanGen3ProtocolDriver {
 
 	async requestMoveHistory(conn, serial, count) {
 		if (this._historyInFlight) {
-			console.log('[ZKT:MOVEBUF] Gen3 requestMoveHistory ATLA — onceki istek devam ediyor');
 			return;
 		}
 		this._historyInFlight = true;
@@ -373,7 +372,6 @@ class GanGen3ProtocolDriver {
 		if (serial % 2 === 0) serial = (serial - 1) & 0xFF;
 		if (count % 2 === 1) count++;
 		count = Math.min(count, serial + 1);
-		console.log('[ZKT:MOVEBUF] Gen3 requestMoveHistory', { serial, count });
 		msg.set([0x68, 0x03, serial, 0, count, 0]);
 		return conn.sendCommandMessage(msg).catch((e) => {
 			console.warn('[ZKT:MOVEBUF] Gen3 requestMoveHistory GATT yazma hatasi', e?.message);
@@ -388,16 +386,12 @@ class GanGen3ProtocolDriver {
 			const bufferHead = this.moveBuffer[0];
 			const diff = this.lastSerial === -1 ? 1 : (bufferHead.serial - this.lastSerial) & 0xFF;
 			if (diff > 1) {
-				console.log('[ZKT:MOVEBUF] Gen3 GAP tespit edildi!', { lastSerial: this.lastSerial, bufferHeadSerial: bufferHead.serial, gap: diff, bufferLen: this.moveBuffer.length });
 				if (conn) await this.requestMoveHistory(conn, bufferHead.serial, diff);
 				break;
 			} else {
 				evictedEvents.push(this.moveBuffer.shift());
 				this.lastSerial = bufferHead.serial;
 			}
-		}
-		if (evictedEvents.length > 0) {
-			console.log('[ZKT:MOVEBUF] Gen3 evict:', evictedEvents.map(e => `${e.move}(s${e.serial})`).join(', '), `| bufferKalan: ${this.moveBuffer.length}`);
 		}
 		if (conn && this.moveBuffer.length > 16) {
 			console.error('[ZKT:MOVEBUF] Gen3 buffer overflow! Baglanti kesiliyor.', { bufferLen: this.moveBuffer.length });
@@ -411,15 +405,12 @@ class GanGen3ProtocolDriver {
 			if (this.moveBuffer.length > 0) {
 				const bufferHead = this.moveBuffer[0];
 				if (this.moveBuffer.some(e => e.type === 'MOVE' && e.serial === move.serial)) {
-					console.log('[ZKT:MOVEBUF] Gen3 inject atla — serial zaten var:', move.serial);
 					return;
 				}
 				if (!this.isSerialInRange(this.lastSerial, bufferHead.serial, move.serial)) {
-					console.log('[ZKT:MOVEBUF] Gen3 inject atla — aralik disi:', { serial: move.serial, lastSerial: this.lastSerial, bufferHead: bufferHead.serial });
 					return;
 				}
 				if (move.serial === ((bufferHead.serial - 1) & 0xFF)) {
-					console.log('[ZKT:MOVEBUF] Gen3 inject basarili:', `${move.move}(s${move.serial})`);
 					this.moveBuffer.unshift(move);
 				}
 			} else {
@@ -433,7 +424,6 @@ class GanGen3ProtocolDriver {
 	async checkIfMoveMissed(conn) {
 		const diff = (this.serial - this.lastSerial) & 0xFF;
 		if (diff > 0 && this.serial !== 0) {
-			console.log('[ZKT:MOVEBUF] Gen3 FACELETS sonrasi kayip hamle kontrolu', { serial: this.serial, lastSerial: this.lastSerial, diff });
 			const bufferHead = this.moveBuffer[0];
 			const startSerial = bufferHead ? bufferHead.serial : (this.serial + 1) & 0xFF;
 			await this.requestMoveHistory(conn, startSerial, diff + 1);
@@ -458,7 +448,6 @@ class GanGen3ProtocolDriver {
 					let direction = msg.getBitWord(72, 2);
 					let face = [2, 32, 8, 1, 16, 4].indexOf(msg.getBitWord(74, 6));
 					let move = 'URFDLB'.charAt(face) + " '".charAt(direction);
-					console.log('[ZKT:GAN] Gen3 MOVE alindi:', move.trim(), `serial=${serial}`, `lastSerial=${this.lastSerial}`, `gap=${((serial - this.lastSerial) & 0xFF)}`);
 					if (face >= 0) {
 						this.moveBuffer.push({
 							type: 'MOVE',
@@ -477,13 +466,11 @@ class GanGen3ProtocolDriver {
 				// MOVE_HISTORY — kaçırılmış hamle yanıtı
 				let startSerial = msg.getBitWord(24, 8);
 				let count = (dataLength - 1) * 2;
-				console.log('[ZKT:MOVEBUF] Gen3 MOVE_HISTORY yaniti alindi!', { startSerial, count, dataLength });
 				for (let i = 0; i < count; i++) {
 					let face = [1, 5, 3, 0, 4, 2].indexOf(msg.getBitWord(32 + 4 * i, 3));
 					let direction = msg.getBitWord(35 + 4 * i, 1);
 					if (face >= 0) {
 						let move = 'URFDLB'.charAt(face) + " '".charAt(direction);
-						console.log('[ZKT:MOVEBUF] Gen3 kurtarilan hamle:', move.trim(), `serial=${(startSerial - i) & 0xFF}`);
 						this.injectMissedMoveToBuffer({
 							type: 'MOVE',
 							serial: (startSerial - i) & 0xFF,
@@ -500,11 +487,10 @@ class GanGen3ProtocolDriver {
 			} else if (eventType == 0x02) {
 				// FACELETS
 				let serial = (this.serial = msg.getBitWord(24, 16, true));
-				console.log('[ZKT:GAN] Gen3 FACELETS alindi', { serial, lastSerial: this.lastSerial, bufferLen: this.moveBuffer.length });
 
-				if (this.lastSerial != -1) {
+				// serial === lastSerial ise yeni hamle yok → kayip hamle olamaz, kontrol gereksiz
+				if (this.lastSerial != -1 && serial !== this.lastSerial) {
 					if (this.lastLocalTimestamp != null && (timestamp - this.lastLocalTimestamp) > 500) {
-						console.log('[ZKT:GAN] Gen3 FACELETS sessizlik sonrasi — kayip hamle kontrolu');
 						await this.checkIfMoveMissed(conn);
 					}
 				}
@@ -612,7 +598,6 @@ class GanGen4ProtocolDriver {
 	async requestMoveHistory(conn, serial, count) {
 		// GATT race condition guard: onceki istek hala devam ediyorsa atla
 		if (this._historyInFlight) {
-			console.log('[ZKT:MOVEBUF] Gen4 requestMoveHistory ATLA — onceki istek devam ediyor');
 			return;
 		}
 		this._historyInFlight = true;
@@ -622,7 +607,6 @@ class GanGen4ProtocolDriver {
 		if (count % 2 === 1) count++;
 		// 255→0 sınırını geçme (firmware bug'ı: sınır ötesi hamleler 'D' olarak dönüyor)
 		count = Math.min(count, serial + 1);
-		console.log('[ZKT:MOVEBUF] Gen4 requestMoveHistory', { serial, count });
 		msg.set([0xD1, 0x04, serial, 0, count, 0]);
 		return conn.sendCommandMessage(msg).catch((e) => {
 			console.warn('[ZKT:MOVEBUF] Gen4 requestMoveHistory GATT yazma hatasi', e?.message);
@@ -639,12 +623,6 @@ class GanGen4ProtocolDriver {
 			const diff = this.lastSerial === -1 ? 1 : (bufferHead.serial - this.lastSerial) & 0xFF;
 			if (diff > 1) {
 				// Gap var — kaçırılan hamleleri küpten iste
-				console.log('[ZKT:MOVEBUF] Gen4 GAP tespit edildi!', {
-					lastSerial: this.lastSerial,
-					bufferHeadSerial: bufferHead.serial,
-					gap: diff,
-					bufferLen: this.moveBuffer.length,
-				});
 				if (conn) {
 					await this.requestMoveHistory(conn, bufferHead.serial, diff);
 				}
@@ -653,9 +631,6 @@ class GanGen4ProtocolDriver {
 				evictedEvents.push(this.moveBuffer.shift());
 				this.lastSerial = bufferHead.serial;
 			}
-		}
-		if (evictedEvents.length > 0) {
-			console.log('[ZKT:MOVEBUF] Gen4 evict:', evictedEvents.map(e => `${e.move}(s${e.serial})`).join(', '), `| bufferKalan: ${this.moveBuffer.length}`);
 		}
 		// Güvenlik: buffer çok büyürse bağlantıyı kes (bir şeyler yanlış gitti)
 		if (conn && this.moveBuffer.length > 16) {
@@ -672,23 +647,19 @@ class GanGen4ProtocolDriver {
 				const bufferHead = this.moveBuffer[0];
 				// Aynı serial zaten varsa atla
 				if (this.moveBuffer.some(e => e.type === 'MOVE' && e.serial === move.serial)) {
-					console.log('[ZKT:MOVEBUF] Gen4 inject atla — serial zaten var:', move.serial);
 					return;
 				}
 				// Serial aralık dışındaysa atla
 				if (!this.isSerialInRange(this.lastSerial, bufferHead.serial, move.serial)) {
-					console.log('[ZKT:MOVEBUF] Gen4 inject atla — aralik disi:', { serial: move.serial, lastSerial: this.lastSerial, bufferHead: bufferHead.serial });
 					return;
 				}
 				// Buffer head'in hemen öncesiyse başa ekle
 				if (move.serial === ((bufferHead.serial - 1) & 0xFF)) {
-					console.log('[ZKT:MOVEBUF] Gen4 inject basarili:', `${move.move}(s${move.serial})`);
 					this.moveBuffer.unshift(move);
 				}
 			} else {
 				// Boş buffer: periyodik FACELETS ile kurtarılan hamle
 				if (this.isSerialInRange(this.lastSerial, this.serial, move.serial, false, true)) {
-					console.log('[ZKT:MOVEBUF] Gen4 inject (bos buffer):', `${move.move}(s${move.serial})`);
 					this.moveBuffer.unshift(move);
 				}
 			}
@@ -699,11 +670,6 @@ class GanGen4ProtocolDriver {
 	async checkIfMoveMissed(conn) {
 		const diff = (this.serial - this.lastSerial) & 0xFF;
 		if (diff > 0 && this.serial !== 0) {
-			console.log('[ZKT:MOVEBUF] Gen4 FACELETS sonrasi kayip hamle kontrolu', {
-				serial: this.serial,
-				lastSerial: this.lastSerial,
-				diff,
-			});
 			const bufferHead = this.moveBuffer[0];
 			const startSerial = bufferHead ? bufferHead.serial : (this.serial + 1) & 0xFF;
 			await this.requestMoveHistory(conn, startSerial, diff + 1);
@@ -726,7 +692,6 @@ class GanGen4ProtocolDriver {
 				let direction = msg.getBitWord(64, 2);
 				let face = [2, 32, 8, 1, 16, 4].indexOf(msg.getBitWord(66, 6));
 				let move = 'URFDLB'.charAt(face) + " '".charAt(direction);
-				console.log('[ZKT:GAN] Gen4 MOVE alindi:', move.trim(), `serial=${serial}`, `lastSerial=${this.lastSerial}`, `gap=${((serial - this.lastSerial) & 0xFF)}`);
 				if (face >= 0) {
 					this.moveBuffer.push({
 						type: 'MOVE',
@@ -746,13 +711,11 @@ class GanGen4ProtocolDriver {
 			// MOVE_HISTORY — küpten gelen kaçırılmış hamle yanıtı
 			let startSerial = msg.getBitWord(16, 8);
 			let count = (dataLength - 1) * 2;
-			console.log('[ZKT:MOVEBUF] Gen4 MOVE_HISTORY yaniti alindi!', { startSerial, count, dataLength });
 			for (let i = 0; i < count; i++) {
 				let face = [1, 5, 3, 0, 4, 2].indexOf(msg.getBitWord(24 + 4 * i, 3));
 				let direction = msg.getBitWord(27 + 4 * i, 1);
 				if (face >= 0) {
 					let move = 'URFDLB'.charAt(face) + " '".charAt(direction);
-					console.log('[ZKT:MOVEBUF] Gen4 kurtarilan hamle:', move.trim(), `serial=${(startSerial - i) & 0xFF}`);
 					this.injectMissedMoveToBuffer({
 						type: 'MOVE',
 						serial: (startSerial - i) & 0xFF,
@@ -770,12 +733,11 @@ class GanGen4ProtocolDriver {
 		} else if (eventType == 0xed) {
 			// FACELETS
 			let serial = (this.serial = msg.getBitWord(16, 16, true));
-			console.log('[ZKT:GAN] Gen4 FACELETS alindi', { serial, lastSerial: this.lastSerial, bufferLen: this.moveBuffer.length });
 
 			// Periyodik FACELETS ile kaçırılan hamle kontrolü (500ms debounce)
-			if (this.lastSerial != -1) {
+			// serial === lastSerial ise yeni hamle yok → kayip hamle olamaz, kontrol gereksiz
+			if (this.lastSerial != -1 && serial !== this.lastSerial) {
 				if (this.lastLocalTimestamp != null && (timestamp - this.lastLocalTimestamp) > 500) {
-					console.log('[ZKT:GAN] Gen4 FACELETS sessizlik sonrasi — kayip hamle kontrolu');
 					await this.checkIfMoveMissed(conn);
 				}
 			}
@@ -1012,8 +974,7 @@ export default class GAN extends SmartCube {
 		this._silenceTimeoutId = null;
 		this._silenceRetryId = null;
 		this._SILENCE_TIMEOUT = 500; // 0.5 saniye
-		// Otomatik kalibrasyon: ilk FACELETS = çözülmüş durum referansı
-		this._ganInitialFacelets = null;
+		// cubeTimestamp kalibrasyon (artik ganInitialFacelets kullanilmiyor — solved detection sadece smartSolvedState)
 		// cubeTimestamp → Date.now() kalibrasyon ofseti
 		this._cubeTimeOffset = null;
 	}
@@ -1163,18 +1124,14 @@ export default class GAN extends SmartCube {
 	handleCubeEvent = (event) => {
 		if (event.type == 'MOVE') {
 			if (event.move) {
-				console.log('[ZKT:GAN] handleCubeEvent MOVE:', event.move, `serial=${event.serial}`, `cubeTs=${event.cubeTimestamp}`);
-
 				// cubeTimestamp kalibrasyonu: küp dahili saatini yerel zamana eşle
 				if (event.cubeTimestamp != null) {
 					const localNow = Date.now();
 					if (this._cubeTimeOffset === null) {
 						this._cubeTimeOffset = localNow - event.cubeTimestamp;
-						console.log('[ZKT:GAN] cubeTime kalibrasyon baslangic:', { offset: this._cubeTimeOffset });
 					} else {
 						const expectedLocal = event.cubeTimestamp + this._cubeTimeOffset;
 						if (Math.abs(localNow - expectedLocal) > 2000) {
-							console.log('[ZKT:GAN] cubeTime kalibrasyon DRIFT >2s, yeniden kalibre', { oldOffset: this._cubeTimeOffset, newOffset: localNow - event.cubeTimestamp });
 							this._cubeTimeOffset = localNow - event.cubeTimestamp;
 						}
 					}
@@ -1210,10 +1167,8 @@ export default class GAN extends SmartCube {
 				if (this._silenceTimeoutId) clearTimeout(this._silenceTimeoutId);
 				if (this._silenceRetryId) clearTimeout(this._silenceRetryId);
 				this._silenceTimeoutId = setTimeout(() => {
-					console.log('[ZKT:GAN] Sessizlik timeout — FACELETS isteniyor');
 					this.requestFaceletsResync();
 					this._silenceRetryId = setTimeout(() => {
-						console.log('[ZKT:GAN] Sessizlik RETRY — FACELETS tekrar isteniyor');
 						this.requestFaceletsResync(true);
 					}, 1500);
 				}, this._SILENCE_TIMEOUT);
@@ -1225,13 +1180,8 @@ export default class GAN extends SmartCube {
 
 		} else if (event.type == 'FACELETS') {
 			const trackerState = this._trackerCube.asString();
-			const isSolved = event.facelets === this._ganInitialFacelets || event.facelets === 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
-			console.log('[ZKT:GAN] handleCubeEvent FACELETS', {
-				facelets: event.facelets.substring(0, 20) + '...',
-				trackerMatch: trackerState === event.facelets,
-				isSolved,
-				ganInitSet: !!this._ganInitialFacelets,
-			});
+			const SOLVED = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
+			const isSolved = event.facelets === SOLVED;
 
 			// Tracker'ı fiziksel duruma senkronize et
 			try {
@@ -1240,11 +1190,7 @@ export default class GAN extends SmartCube {
 				console.error('[ZKT:GAN] FACELETS parse hatasi:', e?.message);
 			}
 
-			// Otomatik kalibrasyon: ilk FACELETS'i çözülmüş durum referansı olarak kaydet
-			if (!this._ganInitialFacelets) {
-				this._ganInitialFacelets = event.facelets;
-				console.log('[ZKT:GAN] ganInitialFacelets kaydedildi:', event.facelets.substring(0, 20) + '...');
-			}
+			// NOT: ganInitialFacelets kaldirildi — solved detection sadece smartSolvedState kullanir
 
 			// Redux'a bildir (SmartCube.tsx güvenlik ağı için)
 			this.alertCubeState(event.facelets);
@@ -1276,10 +1222,8 @@ export default class GAN extends SmartCube {
 			};
 			this.alertConnected(dummyServer);
 		} else if (event.type == 'BATTERY') {
-			console.log('[ZKT:GAN] BATTERY:', event.batteryLevel + '%');
 			this.alertBatteryLevel(event.batteryLevel);
 		} else if (event.type == 'DISCONNECT') {
-			console.log('[ZKT:GAN] DISCONNECT event alindi');
 			this.alertDisconnected();
 		}
 	};
@@ -1291,8 +1235,6 @@ export default class GAN extends SmartCube {
 		const batch = [...this.moveQueue];
 		this.moveQueue = [];
 		this.moveFlushTimeout = null;
-
-		console.log('[ZKT:GAN] flushMoveQueue — Redux\'a gonderiliyor:', batch.map(m => m.move).join(' '), `(${batch.length} hamle)`);
 
 		// Tek batch olarak Redux'a gönder
 		this.alertTurnCubeBatch(batch);

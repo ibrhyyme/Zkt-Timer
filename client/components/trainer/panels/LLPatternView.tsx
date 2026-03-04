@@ -77,23 +77,20 @@ export default function LLPatternView({ pattern, topFace, frontFace, stickering,
 		// Top 9 stickers (indices 0-8)
 		// Grid: 0=TL corner, 1=T edge, 2=TR corner, 3=L edge, 4=center, 5=R edge, 6=BL corner, 7=B edge, 8=BR corner
 		for (let i = 0; i < 9; i++) {
+			const isCorner = i % 2 === 0 && i !== 4;
+			const isEdge = i % 2 === 1;
+
 			if (mode === 'OLL') {
-				// OLL: sadece oryantasyon (U = ust renk, diger = gri)
 				result.push(pattern[i] === 'U' ? getColor('U') : FACE_COLORS.X);
 			} else if (mode === 'OLLCP') {
-				// OLLCP: koseler gercek renk (permutasyon), kenarlar OLL oryantasyon
-				const isCorner = i % 2 === 0 && i !== 4;
 				if (isCorner) {
 					result.push(pattern[i] === 'U' ? getColor('U') : getColor(pattern[i]));
 				} else {
 					result.push(pattern[i] === 'U' ? getColor('U') : FACE_COLORS.X);
 				}
 			} else if (mode === 'CMLL') {
-				// CMLL: koseler + merkez renkli, kenarlar gri
-				const isEdge = i % 2 === 1;
 				result.push(isEdge ? FACE_COLORS.X : (pattern[i] === 'U' ? getColor('U') : getColor(pattern[i])));
 			} else {
-				// COLL, PLL, full: tam renkler
 				result.push(pattern[i] === 'U' ? getColor('U') : getColor(pattern[i]));
 			}
 		}
@@ -102,23 +99,20 @@ export default function LLPatternView({ pattern, topFace, frontFace, stickering,
 		// front: 9,10,11 — right: 12,13,14 — back: 15,16,17 — left: 18,19,20
 		// Her strip'te: pos 0 = kose, pos 1 = kenar, pos 2 = kose
 		for (let i = 9; i < 21; i++) {
+			const posInStrip = (i - 9) % 3;
+			const isEdgeStrip = posInStrip === 1;
+
 			if (mode === 'OLL') {
-				// OLL: U rengi varsa goster, yoksa gri
 				result.push(pattern[i] === 'U' ? getColor('U') : FACE_COLORS.X);
 			} else if (mode === 'COLL' || mode === 'CMLL') {
-				// COLL ve CMLL: koseler renkli, kenarlar gri
-				const posInStrip = (i - 9) % 3;
-				result.push(posInStrip === 1 ? FACE_COLORS.X : getColor(pattern[i]));
+				result.push(isEdgeStrip ? FACE_COLORS.X : getColor(pattern[i]));
 			} else if (mode === 'OLLCP') {
-				// OLLCP: koseler renkli (permutasyon), kenarlar U/gri (oryantasyon)
-				const posInStrip = (i - 9) % 3;
-				if (posInStrip === 1) {
+				if (isEdgeStrip) {
 					result.push(pattern[i] === 'U' ? getColor('U') : FACE_COLORS.X);
 				} else {
 					result.push(getColor(pattern[i]));
 				}
 			} else {
-				// PLL, full: tum renkler
 				result.push(getColor(pattern[i]));
 			}
 		}

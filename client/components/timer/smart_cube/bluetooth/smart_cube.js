@@ -4,9 +4,7 @@ import { turnSmartCube, turnSmartCubeBatch } from '../../../../actions/timer';
 import { toastError } from '../../../../util/toast';
 import { gql } from '@apollo/client';
 import { gqlMutate } from '../../../api';
-import { openModal, closeModal } from '../../../../actions/general';
-import React from 'react';
-import SolveCheck from '../solve_check/SolveCheck';
+import { closeModal } from '../../../../actions/general';
 
 export default class SmartCube {
 	alertScanning = () => {
@@ -32,7 +30,6 @@ export default class SmartCube {
 	};
 
 	alertDisconnected = () => {
-		console.log('[ZKT:SOLVED] BLE BAGLANTI KESILDI');
 		toastError('Akıllı küp bağlantısı kesildi');
 
 		setTimerParams({
@@ -40,6 +37,7 @@ export default class SmartCube {
 			smartCubeConnecting: false,
 			smartCubeConnected: false,
 			smartCubeScanError: null,
+			smartCurrentState: null,
 		});
 	};
 
@@ -86,7 +84,6 @@ export default class SmartCube {
 	};
 
 	alertConnected = async (server) => {
-		console.log('[ZKT:SOLVED] BLE BAGLANTI BASARILI', { deviceName: server.device.name, deviceId: server.device.id });
 		let dev;
 		try {
 			const exists = await this.smartCubeInDb(server);
@@ -112,18 +109,12 @@ export default class SmartCube {
 			store.dispatch(closeModal());
 		}
 
-		store.dispatch(
-			openModal(<SolveCheck />, {
-				title: 'Küpün çözüldüğünü doğrulayın.',
-				description: 'Lütfen devam etmeden önce küpünüzün çözüldüğünü doğrulayın.',
-				hideCloseButton: true,
-				onComplete: () => this.confirmConnected(dev),
-			})
-		);
+		// SolveCheck modali kaldirildi — direkt baglan
+		// Bozuk kup durumu SmartCube.tsx'te otomatik handle ediliyor (initial sync)
+		this.confirmConnected(dev);
 	};
 
 	confirmConnected = (dev) => {
-		console.log('[ZKT:SOLVED] confirmConnected — kup kullanima hazir', { devId: dev.id, devName: dev.name });
 		setTimerParams({
 			smartCubeConnecting: false,
 			smartCubeConnected: true,
@@ -161,35 +152,17 @@ export default class SmartCube {
 
 	alertCubeState = (state) => {
 		const store = getStore();
-		if (store.getState().timer.smartCubeConnecting) {
-			console.log('[ZKT:SOLVED] alertCubeState ATLA — hala baglaniyor');
+
+		// DEDUP: Ayni state tekrar geliyorsa Redux guncelleme
+		// Kup periyodik FACELETS gonderiyor (~1s) — state degismemisse gereksiz render onlenir
+		const currentState = store.getState().timer.smartCurrentState;
+		if (state === currentState) {
 			return;
 		}
 
 		const seq = (store.getState().timer.smartStateSeq || 0) + 1;
 		const smartSolvedState = store.getState().timer.smartSolvedState;
-		const defaultSolved = state === smartSolvedState;
-		const ganSolved = this._ganInitialFacelets && state === this._ganInitialFacelets;
-		const isPhysicallySolved = defaultSolved || ganSolved;
-
-		if (isPhysicallySolved) {
-			console.log('[ZKT:SOLVED] KUP COZULDU!', {
-				seq,
-				defaultSolved,
-				ganSolved,
-				timeStartedAt: !!store.getState().timer.timeStartedAt,
-			});
-		} else {
-			// Her FACELETS'te log basmasin, sadece ilk 5 ve sonra her 10'da bir
-			if (seq <= 5 || seq % 10 === 0) {
-				console.log('[ZKT:SOLVED] Kup henuz cozulmedi', {
-					seq,
-					statePrefix: state.substring(0, 12) + '...',
-					solvedPrefix: smartSolvedState ? smartSolvedState.substring(0, 12) + '...' : 'YOK',
-					ganInitPrefix: this._ganInitialFacelets ? this._ganInitialFacelets.substring(0, 12) + '...' : 'YOK',
-				});
-			}
-		}
+		const isPhysicallySolved = state === smartSolvedState;
 
 		setTimerParams({
 			smartCurrentState: state,

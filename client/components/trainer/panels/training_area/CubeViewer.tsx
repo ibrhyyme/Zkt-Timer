@@ -1,10 +1,12 @@
 import React, { useEffect, useRef } from 'react';
 import block from '../../../../styles/bem';
-import { getStickering, getOrientationRotation, getPuzzleType, isCubeShapePuzzle, isLLCategory as isLLCategoryFn, getDefaultFrontFace, is2DPatternCategory, getPuzzlePatternType, isSQ1MirrorCategory } from '../../../../util/trainer/algorithm_engine';
+import { getStickering, getOrientationRotation, getPuzzleType, isCubeShapePuzzle, isLLCategory as isLLCategoryFn, isIsometricCategory as isIsometricCategoryFn, getDefaultFrontFace, is2DPatternCategory, getPuzzlePatternType, isSQ1MirrorCategory } from '../../../../util/trainer/algorithm_engine';
 import { getLLPattern, isLLPatternsLoaded } from '../../../../util/trainer/ll_patterns';
+import { getIsometricPattern, isIsometricPatternsLoaded } from '../../../../util/trainer/isometric_patterns';
 import { getPuzzlePattern, isPuzzlePatternsLoaded } from '../../../../util/trainer/puzzle_patterns';
 import { getRemappedMask } from '../../../../util/trainer/stickering_remap';
 import LLPatternView from '../LLPatternView';
+import CubeIsometricView from '../CubeIsometricView';
 import CubeTopPatternView from '../CubeTopPatternView';
 import PyraminxPatternView from '../PyraminxPatternView';
 import SkewbPatternView from '../SkewbPatternView';
@@ -31,7 +33,12 @@ export default function CubeViewer({ algorithm, category, backView, topFace = 'U
 	const isCube = isCubeShapePuzzle(category);
 	const stickering = category === 'custom' ? 'full' : getStickering(category);
 	const isLL = isLLCategoryFn(category);
-	const effectiveFrontFace = isLL ? getDefaultFrontFace(topFace) : frontFace;
+	const isIsometric = isIsometricCategoryFn(category);
+	const effectiveFrontFace = (isLL || isIsometric) ? getDefaultFrontFace(topFace) : frontFace;
+
+	// Isometric pattern (WVLS, VHLS)
+	const isometricPatternsLoaded = isIsometricPatternsLoaded();
+	const isometricPattern = isIsometric ? getIsometricPattern(algorithm) : null;
 
 	// LL pattern (3x3)
 	const llPatternsLoaded = isLLPatternsLoaded();
@@ -44,11 +51,13 @@ export default function CubeViewer({ algorithm, category, backView, topFace = 'U
 	const puzzlePattern = is2DPuzzle && puzzlePatternType ? getPuzzlePattern(puzzlePatternType, algorithm, category) : null;
 
 	// 3D TwistyPlayer gerekli mi?
-	const use3D = isLL
-		? (llPatternsLoaded ? !llPattern : false)
-		: is2DPuzzle
-			? (puzzlePatternsLoaded ? !puzzlePattern : false)
-			: true;
+	const use3D = isIsometric
+		? (isometricPatternsLoaded ? !isometricPattern : false)
+		: isLL
+			? (llPatternsLoaded ? !llPattern : false)
+			: is2DPuzzle
+				? (puzzlePatternsLoaded ? !puzzlePattern : false)
+				: true;
 
 	// 3D TwistyPlayer
 	useEffect(() => {
@@ -67,8 +76,7 @@ export default function CubeViewer({ algorithm, category, backView, topFace = 'U
 
 			const rotation = isCube ? getOrientationRotation(topFace, effectiveFrontFace) : '';
 			const baseStickering = is3x3 ? stickering : 'full';
-			const needsRemap = !!rotation && topFace !== 'U' && baseStickering !== 'full';
-			const remappedMask = needsRemap ? await getRemappedMask(baseStickering, rotation) : null;
+			const customMask = baseStickering !== 'full' ? await getRemappedMask(baseStickering, rotation) : null;
 
 			const player = new TwistyPlayer({
 				puzzle: puzzleType as any,
@@ -79,13 +87,9 @@ export default function CubeViewer({ algorithm, category, backView, topFace = 'U
 				hintFacelets: 'none',
 				experimentalDragInput: 'none',
 				background: 'none',
-				...(!remappedMask ? { experimentalStickering: (needsRemap ? 'full' : baseStickering) as any } : {}),
 				...(rotation ? { experimentalSetupAlg: rotation } : {}),
+				...(baseStickering !== 'full' ? { experimentalStickering: baseStickering as any } : {}),
 			});
-
-			if (remappedMask) {
-				(player as any).experimentalStickeringMaskOrbits = remappedMask;
-			}
 
 			if (backView) {
 				player.backView = 'top-right';
@@ -94,6 +98,11 @@ export default function CubeViewer({ algorithm, category, backView, topFace = 'U
 			if (containerRef.current && !cancelled) {
 				containerRef.current.appendChild(player);
 				playerRef.current = player;
+
+				// Custom mask override: DOM'a eklendikten sonra uygula
+				if (customMask) {
+					(player as any).experimentalStickeringMaskOrbits = customMask;
+				}
 			}
 		})();
 
@@ -105,6 +114,20 @@ export default function CubeViewer({ algorithm, category, backView, topFace = 'U
 			playerRef.current = null;
 		};
 	}, [use3D, algorithm, category, backView, topFace, effectiveFrontFace, stickering, puzzleType, isCube, is3x3]);
+
+	// Isometric 3-yuz pattern (WVLS, VHLS)
+	if (isometricPattern) {
+		return (
+			<div className={b('cube-viewer')}>
+				<CubeIsometricView
+					pattern={isometricPattern}
+					topFace={topFace}
+					frontFace={effectiveFrontFace}
+					size={200}
+				/>
+			</div>
+		);
+	}
 
 	// 3x3 LL 2D pattern
 	if (llPattern) {
