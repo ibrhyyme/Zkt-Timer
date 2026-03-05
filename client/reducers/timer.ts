@@ -18,6 +18,7 @@ const smartState = {
 	lastSmartSolveStats: null,
 	originalScramble: '',
 	smartTurnOffset: 0,
+	smartUndoMoves: null,
 	smartAbortVisible: false,
 	smartMismatchDetected: false,
 	smartStateSeq: 0,

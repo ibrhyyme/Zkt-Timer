@@ -33,62 +33,6 @@ export function initSmartSolver(): void {
 	}
 }
 
-/**
- * Ensure solver is ready synchronously. Called when correction is actually needed.
- * If solver isn't ready yet, initializes it immediately (one-time cost).
- */
-export function ensureSolverReady(): boolean {
-	if (solverReady) return true;
-	if (solverInitializing) {
-		// Force immediate init
-		Cube.initSolver();
-		solverReady = true;
-		solverInitializing = false;
-		return true;
-	}
-	return false;
-}
-
-export function isSolverReady(): boolean {
-	return solverReady;
-}
-
-/**
- * Compute the correction path from user's current cube state to the target scramble state.
- * Uses cubejs Kociemba solver for optimal-ish solutions.
- *
- * Algorithm: diffCube = S⁻¹ × U, then solve(diffCube) = U⁻¹ × S = correction moves
- */
-export function computeCorrectionPath(originalScramble: string, userMovesRaw: string[]): string[] {
-	if (!solverReady) return [];
-
-	// Build diff cube: apply inverse of scramble, then apply user moves
-	const diffCube = new Cube();
-
-	// Apply S⁻¹ (inverse of original scramble)
-	const inverseScramble = getReverseTurns(originalScramble);
-	for (const move of inverseScramble) {
-		diffCube.move(move);
-	}
-
-	// Apply U (user's actual moves, uncompressed)
-	for (const move of userMovesRaw) {
-		diffCube.move(move);
-	}
-
-	// If diff is solved, user is already at target state
-	const SOLVED = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
-	if (diffCube.asString() === SOLVED) {
-		return [];
-	}
-
-	// solve() returns moves from current state to solved = U⁻¹ × S = correction
-	const solution = diffCube.solve();
-	if (!solution || !solution.trim()) return [];
-
-	return solution.trim().split(' ').filter(m => m.trim());
-}
-
 // Memoize inverse scramble — originalScramble is constant per session
 let _cachedScramble = '';
 let _cachedInverse: string[] = [];
@@ -137,13 +81,6 @@ export async function computeCorrectionPathAsync(
 	if (!solution || !solution.trim()) return [];
 
 	return solution.trim().split(' ').filter(m => m.trim());
-}
-
-/**
- * Build a corrected scramble string: uncompressed user history + correction moves.
- */
-export function buildCorrectedScramble(userMovesRaw: string[], correctionMoves: string[]): string {
-	return [...userMovesRaw, ...correctionMoves].join(' ');
 }
 
 export function processSmartTurns(smartTurns: SmartTurn[], skipCompress: boolean = false) {
@@ -217,6 +154,12 @@ export function reverseScramble(turns: string[]) {
 	}
 
 	return output;
+}
+
+export function invertMove(move: string): string {
+	if (isPrime(move)) return removePrime(move);
+	if (isTwo(move)) return move;
+	return move + "'";
 }
 
 export function rawTurnIsSame(turn1: string, turn2: string): boolean {
@@ -408,148 +351,3 @@ export class IncrementalCompressor {
 	}
 }
 
-/**
- * Incremental scramble matcher: caches match progress so each batch only checks
- * newly compressed moves, reducing per-batch cost from O(n²) to O(k²).
- */
-export class IncrementalMatcher {
-	private expectedMoves: string[];
-	private matchStatus: ('perfect' | 'half' | 'wrong' | 'pending')[];
-	private userConsumed: boolean[] = [];
-	private userSearchStart = 0;
-	private lastExpIdx = 0;
-	private lastUserLength = 0;
-	private failed = false;
-
-	constructor(expectedMoves: string[]) {
-		this.expectedMoves = expectedMoves;
-		this.matchStatus = new Array(expectedMoves.length).fill('pending');
-	}
-
-	update(userMoves: string[]): {matched: boolean; matchStatus: ('perfect' | 'half' | 'wrong' | 'pending')[]} {
-		if (this.failed) {
-			return {matched: false, matchStatus: this.matchStatus};
-		}
-
-		// If compressed output shrank (cancellation cascade), we must re-evaluate
-		if (userMoves.length < this.lastUserLength) {
-			this.fullReset(userMoves);
-		}
-
-		// Extend consumed tracking
-		while (this.userConsumed.length < userMoves.length) {
-			this.userConsumed.push(false);
-		}
-
-		for (let expIdx = this.lastExpIdx; expIdx < this.expectedMoves.length; expIdx++) {
-			const expectedMove = this.expectedMoves[expIdx];
-
-			let foundIdx = -1;
-			let isHalf = false;
-
-			for (let uIdx = this.userSearchStart; uIdx < userMoves.length; uIdx++) {
-				if (this.userConsumed[uIdx]) continue;
-
-				let canReach = true;
-				for (let between = this.userSearchStart; between < uIdx; between++) {
-					if (this.userConsumed[between]) continue;
-					if (!areCommutative(expectedMove, userMoves[between])) {
-						canReach = false;
-						break;
-					}
-				}
-				if (!canReach) continue;
-
-				if (userMoves[uIdx] === expectedMove) {
-					foundIdx = uIdx;
-					break;
-				}
-
-				if (rawTurnIsSame(userMoves[uIdx], expectedMove) && (isTwo(expectedMove) || isTwo(userMoves[uIdx]))) {
-					foundIdx = uIdx;
-					isHalf = true;
-					break;
-				}
-			}
-
-			if (foundIdx >= 0) {
-				this.userConsumed[foundIdx] = true;
-				this.matchStatus[expIdx] = isHalf ? 'half' : 'perfect';
-
-				while (this.userSearchStart < userMoves.length && this.userConsumed[this.userSearchStart]) {
-					this.userSearchStart++;
-				}
-				this.lastExpIdx = expIdx + 1;
-			} else if (this.userSearchStart < userMoves.length) {
-				this.matchStatus[expIdx] = 'wrong';
-				for (let i = expIdx + 1; i < this.expectedMoves.length; i++) {
-					this.matchStatus[i] = 'wrong';
-				}
-				this.failed = true;
-				this.lastUserLength = userMoves.length;
-				return {matched: false, matchStatus: this.matchStatus};
-			} else {
-				break;
-			}
-		}
-
-		this.lastUserLength = userMoves.length;
-
-		const allConsumed = this.userConsumed.slice(0, userMoves.length).every(c => c);
-		const allPerfect = this.matchStatus.every(s => s === 'perfect');
-
-		return {matched: allConsumed && allPerfect, matchStatus: this.matchStatus};
-	}
-
-	/** Full reset when compressed output shrinks (rare cancellation cascade) */
-	private fullReset(userMoves: string[]): void {
-		this.matchStatus = new Array(this.expectedMoves.length).fill('pending');
-		this.userConsumed = new Array(userMoves.length).fill(false);
-		this.userSearchStart = 0;
-		this.lastExpIdx = 0;
-		this.lastUserLength = 0;
-		this.failed = false;
-	}
-
-	reset(): void {
-		this.matchStatus = new Array(this.expectedMoves.length).fill('pending');
-		this.userConsumed = [];
-		this.userSearchStart = 0;
-		this.lastExpIdx = 0;
-		this.lastUserLength = 0;
-		this.failed = false;
-	}
-
-	isFailed(): boolean {
-		return this.failed;
-	}
-}
-
-/**
- * Legacy canonicalize function - kept for backwards compatibility
- * but the new matchScrambleWithCommutative is preferred
- */
-export function canonicalizeMoves(moves: string[]): string[] {
-	if (moves.length < 2) return [...moves];
-
-	const result = [...moves];
-	let changed = true;
-
-	while (changed) {
-		changed = false;
-		for (let i = 0; i < result.length - 1; i++) {
-			const rawA = getRawTurn(result[i]);
-			const rawB = getRawTurn(result[i + 1]);
-
-			if (COMMUTATIVE_PAIRS[rawA] === rawB) {
-				// Sort by alphabetical order for consistency
-				if (rawA > rawB) {
-					[result[i], result[i + 1]] = [result[i + 1], result[i]];
-					changed = true;
-				}
-			}
-		}
-	}
-
-	return result;
-}

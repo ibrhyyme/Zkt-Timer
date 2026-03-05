@@ -204,6 +204,24 @@
 		}
 	}
 
+	&__undo-move {
+		display: inline-block;
+		margin-left: 0.8rem;
+		padding: 2px 8px;
+		border-radius: 4px;
+		background: rgba($primaryRed, 0.15);
+		color: $primaryRed !important;
+		font-weight: 700;
+		font-size: inherit;
+		font-family: inherit;
+		animation: undoPulse 1s ease-in-out infinite;
+	}
+
+	@keyframes undoPulse {
+		0%, 100% { opacity: 0.7; }
+		50% { opacity: 1; }
+	}
+
 	&--edit {
 		border: 2px solid rgba(var(--text-color), 0.2) !important;
 		z-index: 100 !important;

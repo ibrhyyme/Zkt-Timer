@@ -1098,6 +1098,10 @@
 		"cube_mismatch_message": "El cubo debe estar resuelto antes de poder continuar",
 		"reset_cube_state": "Restablecer estado del cubo"
 	},
+	"smart_scramble": {
+		"ready": "Listo para Comenzar",
+		"too_many_wrong": "Resuelve el cubo para comenzar"
+	},
 	"stackmat": {
 		"select_stackmat": "Seleccionar StackMat",
 		"none": "Ninguno",

@@ -1098,6 +1098,10 @@
 		"cube_mismatch_message": "Куб должен быть собран, прежде чем мы сможем продолжить",
 		"reset_cube_state": "Сбросить состояние куба"
 	},
+	"smart_scramble": {
+		"ready": "Готов к старту",
+		"too_many_wrong": "Соберите куб для начала"
+	},
 	"stackmat": {
 		"select_stackmat": "Выбрать StackMat",
 		"none": "Нет",
