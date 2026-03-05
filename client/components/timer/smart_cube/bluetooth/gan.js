@@ -6,6 +6,8 @@ import { Subject } from 'rxjs';
 import { ModeOfOperation } from 'aes-js';
 import { isNative } from '../../../../util/platform';
 import Cube from 'cubejs';
+import { getStore } from '../../../store';
+import { setSmartSolveEndTime } from '../../helpers/events';
 
 // Hamle ters çevirme: R → R', R' → R, R2 → R2
 function invertMove(move) {
@@ -973,7 +975,7 @@ export default class GAN extends SmartCube {
 		// Sessizlik algılayıcı: son hamleden sonra FACELETS iste (çözüm algılama güvenliği)
 		this._silenceTimeoutId = null;
 		this._silenceRetryId = null;
-		this._SILENCE_TIMEOUT = 500; // 0.5 saniye
+		this._SILENCE_TIMEOUT = 200; // 0.2 saniye
 		// cubeTimestamp kalibrasyon (artik ganInitialFacelets kullanilmiyor — solved detection sadece smartSolvedState)
 		// cubeTimestamp → Date.now() kalibrasyon ofseti
 		this._cubeTimeOffset = null;
@@ -1144,6 +1146,14 @@ export default class GAN extends SmartCube {
 
 				// Tracker küpü güncelle
 				this._trackerCube.move(event.move);
+
+				// Senkron solved check: React render beklemeden timer display'i dondur
+				const solvedState = getStore().getState().timer.smartSolvedState;
+				if (solvedState && this._trackerCube.asString() === solvedState) {
+					setSmartSolveEndTime(moveTimestamp);
+				} else {
+					setSmartSolveEndTime(null);
+				}
 
 				// NOT: Driver artık gap recovery'yi dahili olarak yapıyor (moveBuffer + requestMoveHistory).
 				// Buraya sadece gap-free, sıralı MOVE event'leri gelir. Holding mode gereksiz.

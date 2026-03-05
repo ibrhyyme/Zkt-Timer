@@ -97,28 +97,42 @@ let _cachedInverse: string[] = [];
  * Async version: runs Cube.solve() in a Web Worker so the main thread stays free.
  * Falls back to sync solve if Worker is unavailable.
  */
-export async function computeCorrectionPathAsync(originalScramble: string, userMovesRaw: string[]): Promise<string[]> {
-	// Build diff cube on main thread (fast — just move() calls, ~1ms)
-	const diffCube = new Cube();
-
+export async function computeCorrectionPathAsync(
+	originalScramble: string,
+	userMovesRaw: string[],
+	physicalFacelets?: string
+): Promise<string[]> {
 	if (originalScramble !== _cachedScramble) {
 		_cachedInverse = getReverseTurns(originalScramble);
 		_cachedScramble = originalScramble;
 	}
+
+	const SOLVED = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
+
+	if (physicalFacelets) {
+		// Facelets-based: fiziksel durumdan baslayip ters scramble uygula
+		// BLE move kaybindan etkilenmez — gercek fiziksel durumu kullanir
+		const physCube = Cube.fromString(physicalFacelets);
+		for (const m of _cachedInverse) physCube.move(m);
+		if (physCube.asString() === SOLVED) return [];
+		const solution = await solveAsync(physCube.toJSON());
+		if (!solution || !solution.trim()) return [];
+		return solution.trim().split(' ').filter(m => m.trim());
+	}
+
+	// Replay-based (varsayilan): diffCube = S⁻¹ × U
+	const diffCube = new Cube();
 	for (const move of _cachedInverse) {
 		diffCube.move(move);
 	}
-
 	for (const move of userMovesRaw) {
 		diffCube.move(move);
 	}
 
-	const SOLVED = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
 	if (diffCube.asString() === SOLVED) {
 		return [];
 	}
 
-	// Send only the expensive solve() to the worker
 	const solution = await solveAsync(diffCube.toJSON());
 	if (!solution || !solution.trim()) return [];
 
