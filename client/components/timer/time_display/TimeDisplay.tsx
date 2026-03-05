@@ -7,6 +7,7 @@ import { preflightChecks } from '../smart_cube/preflight';
 import { MOBILE_FONT_SIZE_MULTIPLIER } from '../../../db/settings/update';
 import { useGeneral } from '../../../util/hooks/useGeneral';
 import { smartCubeSelected } from '../helpers/util';
+import { getSmartSolveEndTime } from '../helpers/events';
 import { TimerContext } from '../Timer';
 import block from '../../../styles/bem';
 import { useSettings } from '../../../util/hooks/useSettings';
@@ -110,6 +111,16 @@ export default function TimeDisplay() {
 
 			if (timerLocked.current || (!solving && !finalTime) || !timeStartedAt) {
 				return;
+			}
+
+			// Smart cube: BLE katmanında solved tespit edildiyse display'i dondur
+			const solveEnd = getSmartSolveEndTime();
+			if (solveEnd !== null && solveEnd > 0) {
+				const frozenTime = (solveEnd - timeStartedAt.getTime()) / 1000;
+				if (frozenTime > 0) {
+					setTime(frozenTime);
+					return;
+				}
 			}
 
 			const runningTime = (now.getTime() - timeStartedAt.getTime()) / 1000;

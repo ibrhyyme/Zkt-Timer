@@ -19,8 +19,21 @@ import { smartCubeSelected } from './util';
 
 let endLocked = false;
 
+// Smart cube: BLE katmanından senkron solved tespiti için
+// Timer display interval'ı bu değeri kontrol eder — React render beklemeden display donar
+let _smartSolveEndTime: number | null = null;
+
+export function getSmartSolveEndTime(): number | null {
+	return _smartSolveEndTime;
+}
+
+export function setSmartSolveEndTime(time: number | null) {
+	_smartSolveEndTime = time;
+}
+
 export function startTimer() {
 	const timeStartedAt = new Date();
+	_smartSolveEndTime = null;
 
 	clearInspectionTimers(false, true);
 	setTimerParams({
