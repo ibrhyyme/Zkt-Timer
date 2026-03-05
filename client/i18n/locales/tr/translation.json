@@ -1098,6 +1098,10 @@
 		"cube_mismatch_message": "Devam edebilmemiz için küpün çözülmüş olması gerekiyor",
 		"reset_cube_state": "Küp durumunu sıfırla"
 	},
+	"smart_scramble": {
+		"ready": "Başlamaya Hazırsın",
+		"too_many_wrong": "Başlamak için küpü çöz"
+	},
 	"stackmat": {
 		"select_stackmat": "StackMat Seç",
 		"none": "Hiçbiri",

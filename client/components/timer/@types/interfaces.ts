@@ -101,6 +101,7 @@ export interface TimerStore {
 	lastSmartMoveTime?: number;
 	originalScramble?: string;
 	smartTurnOffset?: number;
+	smartUndoMoves?: string[] | null;
 	lastSmartSolveStats?: {
 		turns: number;
 		tps: number;

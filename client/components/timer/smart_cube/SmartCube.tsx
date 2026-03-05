@@ -13,7 +13,7 @@ import { openModal, closeModal } from '../../../actions/general';
 import ManageSmartCubes from './manage_smart_cubes/ManageSmartCubes';
 import Cube from 'cubejs';
 import block from '../../../styles/bem';
-import { initSmartSolver, computeCorrectionPathAsync, IncrementalCompressor, matchScrambleWithCommutative, isTwo, getRawTurn, areCommutative } from '../../../util/smart_scramble';
+import { initSmartSolver, computeCorrectionPathAsync, IncrementalCompressor, matchScrambleWithCommutative, invertMove, isTwo, getRawTurn, areCommutative } from '../../../util/smart_scramble';
 import { getReverseTurns } from '../../../util/solve/turns';
 import { initSolverWorker, solveAsync } from '../../../util/solver_worker_manager';
 import { TimerContext } from '../Timer';
@@ -152,14 +152,12 @@ export default function SmartCube() {
 		}
 	}, [scramble]);
 
-	const correctionDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-	const correctionGenRef = useRef(0);
-	const halfMatchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const targetFaceletsRef = useRef<string | null>(null);
 	const initialSyncMovesRef = useRef<string[]>([]);
 	const compressorRef = useRef(new IncrementalCompressor());
 	const intermediatesRef = useRef(new Set<string>());
 	const lastFaceletsTimeRef = useRef<number>(0);
+
 
 	// Reset incremental state when scramble or offset changes (new correction applied)
 	useEffect(() => {
@@ -468,13 +466,16 @@ export default function SmartCube() {
 		if (scrambleCompletedAtRef.current) return;
 
 		if (smartCurrentState === targetFaceletsRef.current) {
-			dbgFace('FACELETS SCRAMBLE SAFETY NET tetiklendi — fiziksel kup hedefte (useEffect)');
-			if (halfMatchTimeoutRef.current) clearTimeout(halfMatchTimeoutRef.current);
-			if (correctionDebounceRef.current) clearTimeout(correctionDebounceRef.current);
+			dbgFace('FACELETS SCRAMBLE SAFETY NET tetiklendi — fiziksel kup hedefte (useEffect)',
+				`\n  facelets: ${smartCurrentState.slice(0, 27)}...`,
+				`\n  target:   ${targetFaceletsRef.current.slice(0, 27)}...`,
+				`\n  scramble: ${scramble?.slice(0, 50)}`,
+				`\n  origScramble: ${originalScramble || 'null'}`
+			);
 
 			scrambleCompletedAtRef.current = new Date();
 			setScrambleCompletedAt(scrambleCompletedAtRef.current);
-			setTimerParams({ smartCanStart: true });
+			setTimerParams({ smartCanStart: true, smartUndoMoves: null });
 
 			if (!audioThrottleRef.current) {
 				audioThrottleRef.current = true;
@@ -557,9 +558,11 @@ export default function SmartCube() {
 		// Kup cozukse — orijinal scramble'i oldugu gibi kullan, TwistyPlayer solved (alg='')
 		if (currentFacelets === SOLVED) {
 			dbgSync('Kup COZULMUS baglandi — sync gerekmez');
+
 			return;
 		}
 		dbgSync(`Kup KARISIK baglandi | facelets: ${currentFacelets.slice(0, 27)}...`);
+
 
 		// Hedef durumu hesapla (scramble'in son hali)
 		const targetCube = new Cube();
@@ -579,8 +582,7 @@ export default function SmartCube() {
 					? getReverseTurns(solveStr) as string[]
 					: [];
 
-				// Sonraki correction hesaplamalarinda kullanmak icin sakla
-				// (triggerSmartCorrection bu prefix'i BLE hamlelerinin onune ekler)
+				// Initial sync hamlelerini sakla (initial sync correction hesaplamasinda kullanilir)
 				initialSyncMovesRef.current = toCurrentMoves;
 				dbgSync(`Sync hamleler: [${toCurrentMoves.join(' ')}] (${toCurrentMoves.length} hamle)`);
 
@@ -607,11 +609,20 @@ export default function SmartCube() {
 				}
 
 				// 6. Kup bozuk ve hedefte degil — correction path hesapla
+				dbgSync(`Correction hesaplaniyor...`,
+					`\n  scramble (origScramble): ${scramble}`,
+					`\n  toCurrentMoves: [${toCurrentMoves.join(' ')}]`,
+					`\n  currentFacelets: ${currentFacelets}`,
+					`\n  targetFacelets: ${targetFacelets}`
+				);
 
 				const correctionMoves = await computeCorrectionPathAsync(scramble, toCurrentMoves);
 
+				dbgSync(`Correction sonucu: [${correctionMoves.join(' ')}] (${correctionMoves.length} hamle)`);
+
 				if (correctionMoves.length === 0) {
 					// Solver farki — aslinda hedefte
+					dbgSync('Correction bos — kup aslinda hedefte');
 					scrambleCompletedAtRef.current = new Date();
 					setScrambleCompletedAt(scrambleCompletedAtRef.current);
 					setTimerParams({ smartCanStart: true });
@@ -621,7 +632,7 @@ export default function SmartCube() {
 
 				// 7. Yeni scramble = correction path (current → target)
 				const newScramble = correctionMoves.join(' ');
-				dbgSync(`Sync correction path: ${newScramble}`);
+				dbgSync(`Sync correction path set ediliyor: ${newScramble} | offset: 0`);
 				setTimerParams({
 					scramble: newScramble,
 					smartTurnOffset: 0,
@@ -736,13 +747,10 @@ export default function SmartCube() {
 		// L2 = L'+L' gibi ikili hamleler, hatali hamleler vs. sorun yaratmaz.
 		if (targetFaceletsRef.current && smartCurrentState === targetFaceletsRef.current) {
 			dbgFace('FACELETS MATCH (checkForStart) — fiziksel kup hedefte!');
-			if (halfMatchTimeoutRef.current) clearTimeout(halfMatchTimeoutRef.current);
-			if (correctionDebounceRef.current) clearTimeout(correctionDebounceRef.current);
-
 
 			scrambleCompletedAtRef.current = new Date();
 			setScrambleCompletedAt(scrambleCompletedAtRef.current);
-			setTimerParams({ smartCanStart: true });
+			setTimerParams({ smartCanStart: true, smartUndoMoves: null });
 
 			if (!audioThrottleRef.current) {
 				audioThrottleRef.current = true;
@@ -787,22 +795,19 @@ export default function SmartCube() {
 			if (smartCubeConnected && targetFaceletsRef.current) {
 				const cubejsState = cubejs.current.asString();
 				if (cubejsState !== targetFaceletsRef.current) {
-					dbgMatch('MATCHED ama cubejs UYUSMUYOR — correction tetikleniyor',
+					// BLE move kaybi — FACELETS safety net yakalayacak
+					dbgMatch('MATCHED ama cubejs UYUSMUYOR — FACELETS safety net bekleniyor',
 						`\n  cubejs:  ${cubejsState.slice(0, 27)}...`,
 						`\n  target:  ${targetFaceletsRef.current.slice(0, 27)}...`);
-					triggerSmartCorrection();
 					return;
 				}
 				// cubejs eslesti — FACELETS geride olsa bile guvenli
 			}
 			dbgMatch('SCRAMBLE TAMAMLANDI (move matcher + cubejs onayladi)');
 
-			if (halfMatchTimeoutRef.current) clearTimeout(halfMatchTimeoutRef.current);
-			if (correctionDebounceRef.current) clearTimeout(correctionDebounceRef.current);
-			correctionGenRef.current++;
 			scrambleCompletedAtRef.current = new Date();
 			setScrambleCompletedAt(scrambleCompletedAtRef.current);
-			setTimerParams({ smartCanStart: true });
+			setTimerParams({ smartCanStart: true, smartUndoMoves: null });
 
 			if (!audioThrottleRef.current) {
 				audioThrottleRef.current = true;
@@ -821,163 +826,30 @@ export default function SmartCube() {
 				startInspection(context);
 			}
 		} else if (matchStatus.includes('wrong')) {
-			// State-based dogrulama: cubejs hala orijinal scramble yolunda mi?
-			const isOnTrack = intermediatesRef.current.has(cubejs.current.asString());
-			dbgCorr(`WRONG tespit | cubejs on-track: ${isOnTrack} | intermediates size: ${intermediatesRef.current.size}`);
-			if (!isOnTrack) {
-				dbgCorr('→ Correction TETIKLENIYOR (wrong + off-track)');
-				triggerSmartCorrection();
+			// Yanlis hamle tespit — undo sirasini hesapla ve goster
+			const firstWrongIdx = matchStatus.indexOf('wrong');
+			const wrongUserMoves = userMoves.slice(firstWrongIdx);
+
+			if (wrongUserMoves.length > 7) {
+				// 8+ yanlis hamle — kupu coz mesaji goster
+				dbgCorr(`WRONG tespit | ${wrongUserMoves.length} yanlis hamle — TOO_MANY`);
+				setTimerParams({ smartUndoMoves: ['TOO_MANY'] });
 			} else {
-				dbgCorr('→ Correction ATLANDI (wrong ama cubejs hala dogru yolda — compressor timing hatasi)');
+				const undoSequence = wrongUserMoves.slice().reverse().map(invertMove);
+				dbgCorr(`WRONG tespit | undo sirasi: [${undoSequence.join(' ')}]`);
+				setTimerParams({ smartUndoMoves: undoSequence });
 			}
 		} else if (matchStatus.includes('half')) {
-			const noMorePending = !matchStatus.includes('pending');
-			const lastHalfIdx = matchStatus.lastIndexOf('half');
-			const hasPerfectAfterHalf = matchStatus.slice(lastHalfIdx + 1).includes('perfect');
-			dbgCorr(`HALF tespit | noMorePending: ${noMorePending} | hasPerfectAfterHalf: ${hasPerfectAfterHalf}`);
-
-			if (hasPerfectAfterHalf) {
-				const isOnTrack = intermediatesRef.current.has(cubejs.current.asString());
-				dbgCorr(`  half+perfect | cubejs on-track: ${isOnTrack}`);
-				if (!isOnTrack) {
-					dbgCorr('  → Correction TETIKLENIYOR (half+perfect + off-track)');
-					triggerSmartCorrection();
-				} else {
-					dbgCorr('  → Correction ATLANDI (half+perfect ama cubejs dogru yolda)');
-				}
-			} else if (noMorePending) {
-				dbgCorr('  → 800ms timeout baslatiyor (son hamle yarim, ikinci yarisi bekleniyor)');
-				if (halfMatchTimeoutRef.current) clearTimeout(halfMatchTimeoutRef.current);
-				halfMatchTimeoutRef.current = setTimeout(() => {
-					dbgCorr('  → 800ms TIMEOUT doldu — correction tetikleniyor');
-					triggerSmartCorrection();
-				}, 800);
-			}
+			// Yarim esleme — turuncu renk yeterli bilgi veriyor
+			setTimerParams({ smartUndoMoves: null });
+		} else {
+			// Hepsi perfect veya pending — undo temizle
+			setTimerParams({ smartUndoMoves: null });
 		}
-	}
-
-	function triggerSmartCorrection() {
-		if (correctionDebounceRef.current) clearTimeout(correctionDebounceRef.current);
-		if (!originalScrambleRef.current && scramble) originalScrambleRef.current = scramble;
-
-		const gen = ++correctionGenRef.current;
-		dbgCorr(`triggerSmartCorrection() CAGIRILDI | gen: ${gen}`);
-
-		// Debounce 250ms to prevent lag during fast scrambling (15-20 TPS bursts)
-		correctionDebounceRef.current = setTimeout(async () => {
-			const scrambleToUse = originalScrambleRef.current;
-			if (!scrambleToUse) return;
-
-			const prefix = initialSyncMovesRef.current || [];
-
-			// Ref kullan — setTimeout closure'da stale state onlenir
-			let currentSmartTurns = smartTurnsRef.current;
-			let allRawUserMoves = [...prefix, ...currentSmartTurns.map(t => t.turn)];
-
-			dbgCorr(`[gen:${gen}] 250ms debounce PATLADI | prefix: [${prefix.join(' ')}] | smartTurns: ${currentSmartTurns.length}`,
-				`\n  kullanici hamleleri: [${allRawUserMoves.join(' ')}]`,
-				`\n  originalScramble: ${scrambleToUse}`);
-
-			// Async: runs Cube.solve() in Web Worker — no main thread blocking
-			let correctionMoves = await computeCorrectionPathAsync(scrambleToUse, allRawUserMoves);
-
-			// Discard stale result if a newer correction was triggered
-			if (gen !== correctionGenRef.current) {
-				dbgCorr(`[gen:${gen}] IPTAL — yeni gen: ${correctionGenRef.current}`);
-				return;
-			}
-
-			dbgCorr(`[gen:${gen}] 1. solve sonucu: [${correctionMoves.join(' ')}] (${correctionMoves.length} hamle)`);
-
-			// BLE batch (8ms) + Redux dispatch + React render icin bekle.
-			// Double move'un ikinci yarisi bu sure icinde gelebilir.
-			await new Promise(resolve => setTimeout(resolve, 50));
-			if (gen !== correctionGenRef.current) {
-				dbgCorr(`[gen:${gen}] IPTAL (50ms sonrasi) — yeni gen: ${correctionGenRef.current}`);
-				return;
-			}
-
-			// Re-snapshot: async solve sirasinda yeni hamle geldiyse (double-move ikinci yarisi)
-			// guncel hamlelerle tekrar hesapla — stale offset onlenir
-			const latestTurns = smartTurnsRef.current;
-			if (latestTurns.length !== currentSmartTurns.length) {
-				dbgCorr(`[gen:${gen}] RE-SNAPSHOT: ${currentSmartTurns.length} → ${latestTurns.length} hamle`,
-					`\n  yeni hamleler: [${latestTurns.slice(currentSmartTurns.length).map(t => t.turn).join(' ')}]`);
-				currentSmartTurns = latestTurns;
-				allRawUserMoves = [...prefix, ...currentSmartTurns.map(t => t.turn)];
-				correctionMoves = await computeCorrectionPathAsync(scrambleToUse, allRawUserMoves);
-				if (gen !== correctionGenRef.current) return;
-				dbgCorr(`[gen:${gen}] 2. solve sonucu: [${correctionMoves.join(' ')}] (${correctionMoves.length} hamle)`);
-			}
-
-			// Facelets-based dogrulama: replay sonucu fiziksel durumla tutarli mi?
-			// ONEMLI: GAN kuplerde FACELETS event'i sadece baglanti ve sessizlik (1.5s) sirasinda gelir.
-			// Aktif karistirmada FACELETS guncellenmez — stale veri ile karsilastirmak
-			// false "BLE MOVE KAYBI" algilar ve YANLIS correction path hesaplar.
-			// Bu yuzden sadece FACELETS taze oldugunda (son 500ms icinde guncellendi) karsilastir.
-			const physicalFacelets = smartCurrentStateRef.current;
-			const faceletsAge = Date.now() - lastFaceletsTimeRef.current;
-			if (physicalFacelets && correctionMoves.length > 0 && faceletsAge < 500) {
-				const replayedCube = new Cube();
-				for (const m of allRawUserMoves) replayedCube.move(m);
-
-				if (replayedCube.asString() !== physicalFacelets) {
-					dbgCorr(`[gen:${gen}] BLE MOVE KAYBI TESPIT (taze FACELETS) — facelets-based correction`,
-						`\n  replayed: ${replayedCube.asString().slice(0, 27)}...`,
-						`\n  physical: ${physicalFacelets.slice(0, 27)}...`,
-						`\n  facelets age: ${faceletsAge}ms`);
-					correctionMoves = await computeCorrectionPathAsync(
-						scrambleToUse, allRawUserMoves, physicalFacelets
-					);
-					if (gen !== correctionGenRef.current) return;
-					currentSmartTurns = smartTurnsRef.current;
-					dbgCorr(`[gen:${gen}] Facelets-based sonuc: [${correctionMoves.join(' ')}] (${correctionMoves.length} hamle)`);
-				}
-			} else if (physicalFacelets && correctionMoves.length > 0 && faceletsAge >= 500) {
-				dbgCorr(`[gen:${gen}] Facelets STALE (${faceletsAge}ms) — replay-based correction kullaniliyor`);
-			}
-
-			if (correctionMoves.length === 0) {
-				dbgCorr(`[gen:${gen}] SCRAMBLE TAMAMLANDI (correction sonucu bos — kup hedefte)`);
-				// Fiziksel kup hedefte — FACELETS safety net de yakalayacak
-				setTimerParams({ smartCanStart: true });
-				scrambleCompletedAtRef.current = new Date();
-				setScrambleCompletedAt(scrambleCompletedAtRef.current);
-				resetMoves(false, true);
-				return;
-			}
-
-			const newScramble = correctionMoves.join(' ');
-
-			if (newScramble !== scramble) {
-				dbgCorr(`[gen:${gen}] YENi SCRAMBLE SET EDILIYOR`,
-					`\n  eski scramble: ${scramble}`,
-					`\n  yeni scramble: ${newScramble}`,
-					`\n  smartTurnOffset: ${currentSmartTurns.length}`);
-				setTimerParams({
-					scramble: newScramble,
-					smartTurnOffset: currentSmartTurns.length,
-					originalScramble: scrambleToUse,
-				});
-			} else {
-				dbgCorr(`[gen:${gen}] Scramble degismedi — set etme gereksiz`);
-			}
-		}, 250);
 	}
 
 	function resetMoves(markSolved: boolean = false, isScrambleFinish: boolean = false, endTimestamp?: number) {
 		dbgReset(`resetMoves() | markSolved: ${markSolved} | isScrambleFinish: ${isScrambleFinish} | endTimestamp: ${endTimestamp || 'yok'} | isSolveEnd: ${!!timeStartedAt}`);
-		// In-flight async correction'lari iptal et — stale correction'in
-		// tamamlanmis scramble state'ini uzerine yazmasini onler
-		if (correctionDebounceRef.current) {
-			clearTimeout(correctionDebounceRef.current);
-			correctionDebounceRef.current = null;
-		}
-		if (halfMatchTimeoutRef.current) {
-			clearTimeout(halfMatchTimeoutRef.current);
-			halfMatchTimeoutRef.current = null;
-		}
-		correctionGenRef.current++;
 
 		const isSolveEnd = !!timeStartedAt;
 
@@ -1018,6 +890,7 @@ export default function SmartCube() {
 			smartPickUpTime: 0,
 			lastSmartMoveTime: 0,
 			smartTurnOffset: 0,
+			smartUndoMoves: null,
 			...(isSolveEnd ? { originalScramble: '' } : {}),
 		});
 
