@@ -24,7 +24,8 @@ import RoomTimerOverlay from './RoomTimerOverlay';
 import RoomSettingsModal from './RoomSettingsModal';
 import EditRoomModal from './EditRoomModal';
 import ManageUsersModal from './ManageUsersModal';
-import { Gear, List, PencilSimple, Users, Trash, BluetoothConnected, Bluetooth, CheckCircle, CircleNotch, Check } from 'phosphor-react';
+import { Gear, List, PencilSimple, Users, Trash, BluetoothConnected, Bluetooth, CheckCircle, CircleNotch, Check, MusicNote } from 'phosphor-react';
+import RoomMusicPlayer from './RoomMusicPlayer';
 import { getTimeString, convertTimeStringToSeconds } from '../../util/time';
 import { toastError } from '../../util/toast';
 import { resourceUri } from '../../util/storage';
@@ -68,6 +69,9 @@ export default function FriendlyRoom() {
     const [userStatuses, setUserStatuses] = useState<{ [userId: string]: string }>({});
     const [mobileTab, setMobileTab] = useState<'timer' | 'chat'>('timer');
     const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+
+    // Music player state
+    const [musicPlayerOpen, setMusicPlayerOpen] = useState(false);
 
     // Host menu state
     const [hostMenuOpen, setHostMenuOpen] = useState(false);
@@ -1284,6 +1288,13 @@ export default function FriendlyRoom() {
                         >
                             <Gear weight="bold" size={20} />
                         </button>
+                        <button
+                            onClick={() => setMusicPlayerOpen(!musicPlayerOpen)}
+                            className={`p-1 md:p-2 transition-colors ${musicPlayerOpen ? 'text-green-400' : 'text-white/90 hover:text-white'}`}
+                            title={t('rooms.music_player')}
+                        >
+                            <MusicNote weight="bold" size={20} />
+                        </button>
 
                         {isHost && isActive && (
                             <button
@@ -1870,6 +1881,10 @@ export default function FriendlyRoom() {
                 onBan={(userId) => {
                     getSocket().emit(FriendlyRoomClientEvent.BAN_USER, roomId, userId);
                 }}
+            />
+            <RoomMusicPlayer
+                isOpen={musicPlayerOpen}
+                onClose={() => setMusicPlayerOpen(false)}
             />
         </div>
     );

@@ -820,7 +820,15 @@
 		"best": "Лучший",
 		"single": "ОДИНОЧНАЯ",
 		"ao5": "AO5",
-		"ao12": "AO12"
+		"ao12": "AO12",
+		"music_player": "Музыкальный плеер",
+		"music_search_placeholder": "Поиск музыки...",
+		"music_searching": "Поиск...",
+		"music_no_results": "Ничего не найдено",
+		"music_now_playing": "Сейчас играет",
+		"music_volume": "Громкость",
+		"music_stop": "Стоп",
+		"music_rate_limit": "Подождите перед повторным поиском"
 	},
 	"profile": {
 		"about_me": "Обо мне",

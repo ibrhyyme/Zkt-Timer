@@ -820,7 +820,15 @@
 		"best": "Best",
 		"single": "SINGLE",
 		"ao5": "AO5",
-		"ao12": "AO12"
+		"ao12": "AO12",
+		"music_player": "Music Player",
+		"music_search_placeholder": "Search music...",
+		"music_searching": "Searching...",
+		"music_no_results": "No results found",
+		"music_now_playing": "Now Playing",
+		"music_volume": "Volume",
+		"music_stop": "Stop",
+		"music_rate_limit": "Please wait before searching again"
 	},
 	"profile": {
 		"about_me": "About Me",
