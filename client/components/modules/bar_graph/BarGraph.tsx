@@ -24,10 +24,11 @@ interface Props {
 	children?: ReactNode;
 	dummy?: boolean;
 	data: BarGraphData[];
+	goalLine?: number | null;
 }
 
 export default function BarGraph(props: Props) {
-	const { data, dummy } = props;
+	const { data, dummy, goalLine } = props;
 
 	const secondaryColor = useTheme('secondary_color');
 	const moduleColor = useTheme('module_color');
@@ -41,13 +42,14 @@ export default function BarGraph(props: Props) {
 	}
 
 	const maxY = max(data, getY);
+	const yMax = Math.max(maxY, goalLine || 0);
 
 	const xScale = scaleBand<string>({
 		domain: data.map(getX),
 	});
 
 	const yScale = scaleLinear<number>({
-		domain: [0, Math.max(1, maxY * 1.2)],
+		domain: [0, Math.max(1, yMax * 1.2)],
 	});
 
 	return (
@@ -132,6 +134,32 @@ export default function BarGraph(props: Props) {
 									);
 								})}
 							</Group>
+
+							{goalLine > 0 && !dummy && (
+								<g>
+									<line
+										x1={0}
+										x2={parent.width}
+										y1={yScale(goalLine) - 17}
+										y2={yScale(goalLine) - 17}
+										stroke="#4a9eff"
+										strokeWidth={1.5}
+										strokeDasharray="6,4"
+										opacity={0.7}
+									/>
+									<text
+										x={parent.width - 4}
+										y={yScale(goalLine) - 22}
+										textAnchor="end"
+										fill="#4a9eff"
+										fontSize={10}
+										fontWeight={600}
+										opacity={0.8}
+									>
+										{goalLine}
+									</text>
+								</g>
+							)}
 						</svg>
 					);
 				}}

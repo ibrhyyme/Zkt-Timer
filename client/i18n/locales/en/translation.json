@@ -1049,7 +1049,20 @@
 		"stackmat": "StackMat",
 		"smart_cube": "Smart Cube",
 		"gan_smart_timer": "GAN Smart Timer",
-		"manual_entry": "Manual Entry"
+		"manual_entry": "Manual Entry",
+		"goals": "Goals",
+		"goals_description": "Set daily solve targets per cube type",
+		"daily_goal": "Daily Goal",
+		"target_solves": "Target solve count",
+		"no_goal_set": "No goal set for this cube type",
+		"goal_reached": "Goal reached!",
+		"set_goal": "Set Goal",
+		"edit_goal": "Edit",
+		"remove_goal": "Remove Goal",
+		"other_goals": "Other Goals",
+		"reminders": "Reminders",
+		"goal_confetti": "Goal Confetti",
+		"solves_progress": "{{current}}/{{target}} solves"
 	},
 	"room_timer": {
 		"save": "SAVE",

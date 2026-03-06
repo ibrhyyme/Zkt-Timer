@@ -1,6 +1,6 @@
 import React, {createContext, ReactNode, useCallback, useContext, useEffect, useState} from 'react';
 
-export type QuickControlsTab = 'timer' | 'extras';
+export type QuickControlsTab = 'timer' | 'extras' | 'goals';
 
 interface QuickControlsContextValue {
 	isOpen: boolean;

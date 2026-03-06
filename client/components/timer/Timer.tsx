@@ -26,6 +26,8 @@ import { QuickControlsProvider } from '../quick-controls/useQuickControlsModal';
 import QuickControlsModal from '../quick-controls/QuickControlsModal';
 import Button from '../common/button/Button';
 import { setSetting } from '../../db/settings/update';
+import DailyGoalProgressBar from '../daily-goal/DailyGoalProgressBar';
+import { startReminderInterval } from '../daily-goal/helpers/reminder';
 // Yeni mobil layout componentleri
 import TimerControls from './TimerControls';
 import Dashboard from './Dashboard';
@@ -76,9 +78,12 @@ export default function Timer(props: TimerProps) {
 
 		setLoading(false);
 
+		const cleanupReminder = startReminderInterval();
+
 		// Go back to the default settings when user leaves page
 		return () => {
 			stopAllTimers();
+			cleanupReminder();
 			dispatch({
 				type: 'RESET_TIMER_PARAMS',
 			});
@@ -155,6 +160,9 @@ export default function Timer(props: TimerProps) {
 				{/* Kontrol çubuğu */}
 				<TimerControls />
 
+				{/* Günlük hedef progress bar */}
+				<DailyGoalProgressBar cubeType={cubeType} compact />
+
 				{/* Orta panel - Son çözümler ve Scramble görseli */}
 				<Dashboard />
 			</div>
@@ -171,6 +179,7 @@ export default function Timer(props: TimerProps) {
 	let body = (
 		<>
 			{renderFirst}
+			<DailyGoalProgressBar cubeType={cubeType} />
 			{renderSecond}
 		</>
 	);

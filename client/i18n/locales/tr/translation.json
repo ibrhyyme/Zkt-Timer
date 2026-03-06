@@ -1049,7 +1049,20 @@
 		"stackmat": "StackMat",
 		"smart_cube": "Akıllı Küp",
 		"gan_smart_timer": "GAN Akıllı Timer",
-		"manual_entry": "Manuel Giriş"
+		"manual_entry": "Manuel Giriş",
+		"goals": "Hedefler",
+		"goals_description": "Küp türüne göre günlük çözüm hedefi belirle",
+		"daily_goal": "Günlük Hedef",
+		"target_solves": "Hedef çözüm sayısı",
+		"no_goal_set": "Bu küp türü için hedef belirlenmedi",
+		"goal_reached": "Hedefe ulaşıldı!",
+		"set_goal": "Hedef Belirle",
+		"edit_goal": "Düzenle",
+		"remove_goal": "Hedefi Kaldır",
+		"other_goals": "Diğer Hedefler",
+		"reminders": "Hatırlatmalar",
+		"goal_confetti": "Hedefe Konfeti",
+		"solves_progress": "{{current}}/{{target}} çözüm"
 	},
 	"room_timer": {
 		"save": "KAYDET",

@@ -1607,7 +1607,16 @@ export default function FriendlyRoom() {
                         `}>
 
                             {/* Table Container - takes all remaining space */}
-                            <div className="flex-1 h-full w-full overflow-hidden bg-[#0f1014]">
+                            <div
+                                className={`flex-1 h-full w-full overflow-hidden bg-[#0f1014] ${
+                                    isMobile && timerType === 'keyboard' && !isManualMode ? 'timer-touch-area' : ''
+                                }`}
+                                style={isMobile && timerType === 'keyboard' && !isManualMode ? {
+                                    WebkitUserSelect: 'none',
+                                    userSelect: 'none' as any,
+                                    WebkitTouchCallout: 'none',
+                                } : undefined}
+                            >
                                 <RoomTable
                                     participants={room.participants}
                                     scrambleIndex={room.scramble_index}
@@ -1618,7 +1627,8 @@ export default function FriendlyRoom() {
 
                             {/* Mobile Timer Touch Area - Fixed at bottom of Timer Tab */}
                             {isMobile && timerType === 'keyboard' && !isManualMode && (
-                                <div className="timer-touch-area shrink-0 h-32 w-full bg-[#15161A] border-t border-[#333] flex flex-col items-center justify-center select-none touch-none cursor-pointer active:bg-[#1a1c22] transition-colors relative z-20">
+                                <div className="timer-touch-area shrink-0 h-32 w-full bg-[#15161A] border-t border-[#333] flex flex-col items-center justify-center select-none touch-none cursor-pointer active:bg-[#1a1c22] transition-colors relative z-20"
+                                     style={{ WebkitTouchCallout: 'none' }}>
                                     <span className="text-6xl font-mono font-medium text-gray-200 tracking-tight">
                                         {(() => {
                                             const myParticipant = room.participants.find(p => p.user_id === me?.id);
