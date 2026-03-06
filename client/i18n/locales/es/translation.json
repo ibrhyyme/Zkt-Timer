@@ -820,7 +820,15 @@
 		"best": "Mejor",
 		"single": "INDIVIDUAL",
 		"ao5": "AO5",
-		"ao12": "AO12"
+		"ao12": "AO12",
+		"music_player": "Reproductor de Música",
+		"music_search_placeholder": "Buscar música...",
+		"music_searching": "Buscando...",
+		"music_no_results": "Sin resultados",
+		"music_now_playing": "Reproduciendo",
+		"music_volume": "Volumen",
+		"music_stop": "Detener",
+		"music_rate_limit": "Espere antes de buscar de nuevo"
 	},
 	"profile": {
 		"about_me": "Sobre mí",

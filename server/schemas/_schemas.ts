@@ -30,3 +30,4 @@ export * from './StatsModule.schema';
 export * from './DemoSolve.schema';
 export * from './WcaRecord.schema';
 export * from './CustomTrainer.schema';
+export * from './YouTubeSearch.schema';

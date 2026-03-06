@@ -820,7 +820,15 @@
 		"best": "En İyi",
 		"single": "SINGLE",
 		"ao5": "AO5",
-		"ao12": "AO12"
+		"ao12": "AO12",
+		"music_player": "Müzik Oynatıcı",
+		"music_search_placeholder": "Şarkı ara...",
+		"music_searching": "Aranıyor...",
+		"music_no_results": "Sonuç bulunamadı",
+		"music_now_playing": "Şu An Çalınıyor",
+		"music_volume": "Ses Seviyesi",
+		"music_stop": "Durdur",
+		"music_rate_limit": "Tekrar aramadan önce bekleyin"
 	},
 	"profile": {
 		"about_me": "Hakkımda",
