@@ -763,11 +763,11 @@ export default function RoomTimerOverlay({
 
             const x = e.touches[0].clientX;
             const y = e.touches[0].clientY;
-            // const diffX = Math.abs(x - touchStartX.current);
-            // const diffY = Math.abs(y - touchStartY.current);
+            const dx = Math.abs(x - touchStartX.current);
+            const dy = Math.abs(y - touchStartY.current);
 
-            // Only cancel if swiping UP significantly (e.g. > 100px)
-            if (touchStartY.current - y > 100) {
+            // Cancel if moved more than 30px in any direction (user is scrolling)
+            if (dx > 30 || dy > 30) {
                 isTouchScrollingRef.current = true;
 
                 // Clear the delay timeout - user is scrolling/cancelling

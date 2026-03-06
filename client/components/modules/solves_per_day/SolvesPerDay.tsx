@@ -4,6 +4,7 @@ import {getSolveCountByDateData} from '../../../db/solves/stats/consistency';
 import BarGraph from '../bar_graph/BarGraph';
 import jsonStr from 'json-stable-stringify';
 import {FilterSolvesOptions} from '../../../db/solves/query';
+import {getGoalForCubeType} from '../../daily-goal/helpers/storage';
 
 interface Props {
 	days: number;
@@ -27,6 +28,8 @@ export default function SolvesPerDay(props: Props) {
 		});
 	}, [jsonStr(filterOptions), filterOptions, solveUpdate]);
 
+	const goal = getGoalForCubeType(filterOptions.cube_type as string);
+	const goalTarget = goal?.enabled ? goal.target : null;
 
-	return <BarGraph data={memoData} />;
+	return <BarGraph data={memoData} goalLine={goalTarget} />;
 }

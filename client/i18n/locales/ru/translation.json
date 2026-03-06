@@ -1049,7 +1049,20 @@
 		"stackmat": "StackMat",
 		"smart_cube": "Умный куб",
 		"gan_smart_timer": "Умный таймер GAN",
-		"manual_entry": "Ручной ввод"
+		"manual_entry": "Ручной ввод",
+		"goals": "Цели",
+		"goals_description": "Установите ежедневные цели по типу кубика",
+		"daily_goal": "Дневная цель",
+		"target_solves": "Количество сборок",
+		"no_goal_set": "Цель для этого типа кубика не установлена",
+		"goal_reached": "Цель достигнута!",
+		"set_goal": "Установить цель",
+		"edit_goal": "Изменить",
+		"remove_goal": "Удалить цель",
+		"other_goals": "Другие цели",
+		"reminders": "Напоминания",
+		"goal_confetti": "Конфетти при достижении цели",
+		"solves_progress": "{{current}}/{{target}} сборок"
 	},
 	"room_timer": {
 		"save": "СОХРАНИТЬ",

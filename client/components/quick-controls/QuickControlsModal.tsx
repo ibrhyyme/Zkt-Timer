@@ -5,6 +5,7 @@ import {X} from 'phosphor-react';
 import {useQuickControlsModal} from './useQuickControlsModal';
 import TimerTab from './tabs/TimerTab';
 import ExtrasTab from './tabs/ExtrasTab';
+import GoalsTab from './tabs/GoalsTab';
 
 export default function QuickControlsModal() {
 	const {t} = useTranslation();
@@ -55,6 +56,17 @@ export default function QuickControlsModal() {
 						>
 							{t('quick_controls.extras')}
 						</button>
+						<button
+							type="button"
+							className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+								activeTab === 'goals'
+									? 'bg-[#4a9eff] text-white'
+									: 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+							}`}
+							onClick={() => setActiveTab('goals')}
+						>
+							{t('quick_controls.goals')}
+						</button>
 					</div>
 					<button
 						ref={closeButtonRef}
@@ -71,6 +83,7 @@ export default function QuickControlsModal() {
 				<div className="min-h-[320px]">
 					{activeTab === 'timer' && <TimerTab />}
 					{activeTab === 'extras' && <ExtrasTab />}
+					{activeTab === 'goals' && <GoalsTab />}
 				</div>
 			</div>
 		</div>,

@@ -23,6 +23,7 @@ export interface ClientEvent {
 	};
 	trainerDbUpdatedEvent: void;
 	trainerDbDeletedEvent: void;
+	dailyGoalUpdatedEvent: void;
 }
 
 export function addEventListener<T extends keyof ClientEvent>(

@@ -1049,7 +1049,20 @@
 		"stackmat": "StackMat",
 		"smart_cube": "Cubo inteligente",
 		"gan_smart_timer": "GAN Smart Timer",
-		"manual_entry": "Entrada manual"
+		"manual_entry": "Entrada manual",
+		"goals": "Metas",
+		"goals_description": "Establece metas diarias de resolución por tipo de cubo",
+		"daily_goal": "Meta diaria",
+		"target_solves": "Cantidad objetivo",
+		"no_goal_set": "No hay meta para este tipo de cubo",
+		"goal_reached": "Meta alcanzada!",
+		"set_goal": "Establecer meta",
+		"edit_goal": "Editar",
+		"remove_goal": "Eliminar meta",
+		"other_goals": "Otras metas",
+		"reminders": "Recordatorios",
+		"goal_confetti": "Confeti de meta",
+		"solves_progress": "{{current}}/{{target}} resoluciones"
 	},
 	"room_timer": {
 		"save": "GUARDAR",
