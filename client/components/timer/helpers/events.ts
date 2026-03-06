@@ -67,12 +67,8 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 		finalTime = now.getTime() - timeStartedAt.getTime();
 	}
 
-	setTimerParams({
-		solving: false,
-		finalTime,
-	});
-
-	// Calculate and persist stats for the finished solve
+	// Smart cube stats hesapla (dispatch oncesi)
+	let smartStats: { turns: number; tps: number } | null = null;
 	if (smartCubeSelected(context)) {
 		let turnCount = 0;
 
@@ -89,16 +85,27 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 
 		const timeInSeconds = finalTime / 1000;
 		const tps = timeInSeconds > 0 ? Number((turnCount / timeInSeconds).toFixed(2)) : 0;
-
-		setTimerParams({
-			lastSmartSolveStats: {
-				turns: turnCount,
-				tps,
-			},
-		});
+		smartStats = { turns: turnCount, tps };
 	}
 
-	resetTimerParams(context);
+	// Yan etkileri calistir (timer/interval temizligi, yeni scramble fetch)
+	resetScramble(context);
+	stopTimer(START_TIMEOUT);
+	clearInspectionTimers(false, true);
+
+	// Tek dispatch: solving durumu + stats + timer reset — onceden 3 ayri dispatch'ti
+	setTimerParams({
+		solving: false,
+		finalTime,
+		spaceTimerStarted: 0,
+		canStart: false,
+		timeStartedAt: null,
+		smartTurns: [],
+		smartPickUpTime: 0,
+		lastSmartMoveTime: 0,
+		...(smartStats ? { lastSmartSolveStats: smartStats } : {}),
+	});
+
 	setTimeout(() => {
 		const overridesCombined = { ...overrides };
 

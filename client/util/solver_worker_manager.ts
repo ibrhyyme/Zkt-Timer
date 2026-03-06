@@ -103,10 +103,3 @@ export async function solveAsync(cubeJSON: CubeJSON): Promise<string> {
 		w.postMessage({cmd: 'solve', id, cube: cubeJSON});
 	});
 }
-
-/**
- * Check if the worker is available and initialized.
- */
-export function isWorkerReady(): boolean {
-	return worker !== null && initPromise !== null;
-}

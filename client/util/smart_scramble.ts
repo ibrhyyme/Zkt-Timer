@@ -43,8 +43,7 @@ let _cachedInverse: string[] = [];
  */
 export async function computeCorrectionPathAsync(
 	originalScramble: string,
-	userMovesRaw: string[],
-	physicalFacelets?: string
+	userMovesRaw: string[]
 ): Promise<string[]> {
 	if (originalScramble !== _cachedScramble) {
 		_cachedInverse = getReverseTurns(originalScramble);
@@ -53,18 +52,7 @@ export async function computeCorrectionPathAsync(
 
 	const SOLVED = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
 
-	if (physicalFacelets) {
-		// Facelets-based: fiziksel durumdan baslayip ters scramble uygula
-		// BLE move kaybindan etkilenmez — gercek fiziksel durumu kullanir
-		const physCube = Cube.fromString(physicalFacelets);
-		for (const m of _cachedInverse) physCube.move(m);
-		if (physCube.asString() === SOLVED) return [];
-		const solution = await solveAsync(physCube.toJSON());
-		if (!solution || !solution.trim()) return [];
-		return solution.trim().split(' ').filter(m => m.trim());
-	}
-
-	// Replay-based (varsayilan): diffCube = S⁻¹ × U
+	// Replay-based: diffCube = S⁻¹ × U
 	const diffCube = new Cube();
 	for (const move of _cachedInverse) {
 		diffCube.move(move);
@@ -88,12 +76,6 @@ export function processSmartTurns(smartTurns: SmartTurn[], skipCompress: boolean
 	// cancel/merge, the next input element checks against the new top.
 	// Adjacent output elements always have different raw turns, so no cascading needed.
 	return processSmartTurnsHelper(smartTurns, skipCompress);
-}
-
-export function getSmartTurnsAsString(smartTurns: SmartTurn[]) {
-	const output = smartTurns.map(({ turn }) => turn);
-
-	return output.join(' ');
 }
 
 function processSmartTurnsHelper(smartTurns: (SmartTurn | string)[], skipCompress: boolean = false) {
@@ -176,10 +158,6 @@ export function isTwo(turn: string): boolean {
 
 function removePrime(turn: string): string {
 	return turn.replace(/'/g, '');
-}
-
-function removeTwo(turn: string): string {
-	return turn.replace(/2/g, '');
 }
 
 export function getRawTurn(turn: string): string {
