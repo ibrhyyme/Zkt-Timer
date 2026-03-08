@@ -592,16 +592,6 @@ export const GAME_SESSION_FRAGMENT = gql`
 	}
 `;
 
-export const MEMBERSHIP_PRICING_FRAGMENT = gql`
-	fragment MembershipPricingFragment on MembershipPricing {
-		id
-		currency
-		unit_amount
-		interval_count
-		interval
-	}
-`;
-
 export const INTEGRATION_FRAGMENT = gql`
 	fragment IntegrationFragment on Integration {
 		id
@@ -610,37 +600,6 @@ export const INTEGRATION_FRAGMENT = gql`
 		created_at
 	}
 `;
-
-export const MEMBERSHIP_FRAGMENT = gql`
-	${MEMBERSHIP_PRICING_FRAGMENT}
-
-	fragment MembershipFragment on Membership {
-		status
-		canceled_at
-		ended_at
-		days_until_due
-		cancel_at_period_end
-		current_period_end
-		start_date
-		pricing {
-			...MembershipPricingFragment
-		}
-	}
-`;
-
-export const MEMBERSHIP_OPTIONS_FRAGMENT = gql`
-	${MEMBERSHIP_PRICING_FRAGMENT}
-
-	fragment MembershipOptionsFragment on MembershipOptions {
-		month {
-			...MembershipPricingFragment
-		}
-		year {
-			...MembershipPricingFragment
-		}
-	}
-`;
-
 
 export const TIMER_BACKGROUND_FRAGMENT = gql`
 	fragment TimerBackgroundFragment on TimerBackground {

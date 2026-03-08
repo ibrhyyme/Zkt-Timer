@@ -17,7 +17,6 @@ export * from './MatchSession.schema';
 export * from './Integration.schema';
 export * from './Match.schema';
 export * from './Report.schema';
-export * from './Membership.schema';
 export * from './CustomCubeType.schema';
 export * from './Store.schema';
 export * from './NotificationPreference.schema';

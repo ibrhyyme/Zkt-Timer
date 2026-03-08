@@ -28,7 +28,6 @@ const GET_USER_FOR_ADMIN = gql`
 			admin
 			mod
 			offline_hash
-			pro_status
 			join_country
 			join_ip
 			integrations {

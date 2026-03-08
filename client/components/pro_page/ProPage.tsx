@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import './ProPage.scss';
 import { useTranslation } from 'react-i18next';
 import {
@@ -13,7 +13,6 @@ import {
 	Star,
 } from 'phosphor-react';
 import block from '../../styles/bem';
-import Button from '../common/button/Button';
 
 const b = block('pro-page');
 
@@ -40,37 +39,25 @@ function FeatureItem({ icon, title, description, accent }: FeatureItemProps) {
 
 interface PricingCardProps {
 	title: string;
-	price: string;
-	perMonth: string;
+	comingSoon: string;
 	highlighted?: boolean;
 	badge?: string;
-	bonus?: string;
-	selected?: boolean;
-	onClick?: () => void;
 }
 
-function PricingCard({ title, price, perMonth, highlighted, badge, bonus, selected, onClick }: PricingCardProps) {
+function PricingCard({ title, comingSoon, highlighted, badge }: PricingCardProps) {
 	return (
-		<button
-			type="button"
-			className={b('plan-card', { highlighted, selected })}
-			onClick={onClick}
-		>
+		<div className={b('plan-card', { highlighted })}>
 			{badge && <div className={b('plan-badge')}><Star weight="fill" /> {badge}</div>}
 			<h3 className={b('plan-title')}>{title}</h3>
 			<div className={b('plan-price')}>
-				<span className={b('plan-price-amount')}>${price}</span>
-				<span className={b('plan-price-period')}>{perMonth}</span>
+				<span className={b('plan-price-amount')}>{comingSoon}</span>
 			</div>
-			{bonus && <div className={b('plan-bonus')}><Lightning weight="fill" /> {bonus}</div>}
-		</button>
+		</div>
 	);
 }
 
 export default function ProPage() {
 	const { t } = useTranslation();
-	const [selectedPlan, setSelectedPlan] = useState<'six_months' | 'one_year'>('one_year');
-
 	return (
 		<div className={b()}>
 			<div className={b('container')}>
@@ -137,31 +124,13 @@ export default function ProPage() {
 					<div className={b('plans')}>
 						<PricingCard
 							title={t('pro_page.six_months')}
-							price="2.99"
-							perMonth={t('pro_page.per_month')}
-							selected={selectedPlan === 'six_months'}
-							onClick={() => setSelectedPlan('six_months')}
+							comingSoon={t('pro_page.coming_soon')}
 						/>
 						<PricingCard
 							title={t('pro_page.one_year')}
-							price="1.99"
-							perMonth={t('pro_page.per_month')}
+							comingSoon={t('pro_page.coming_soon')}
 							highlighted
 							badge={t('pro_page.best_value')}
-							bonus={t('pro_page.bonus_months')}
-							selected={selectedPlan === 'one_year'}
-							onClick={() => setSelectedPlan('one_year')}
-						/>
-					</div>
-
-					{/* CTA */}
-					<div className={b('cta')}>
-						<Button
-							primary
-							glow
-							large
-							disabled
-							text={t('pro_page.coming_soon')}
 						/>
 					</div>
 

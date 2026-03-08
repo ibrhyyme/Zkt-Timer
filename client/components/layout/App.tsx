@@ -16,7 +16,6 @@ import { setGeneral } from '../../actions/general';
 import { getMe } from '../../actions/account';
 import { getMe as getMeFromStore } from '../store';
 import { updateThemeColors } from './themes';
-import { updateSettingsBasedOnProStatus } from './pro_audit';
 import { initSocketIO } from '../../util/socket/socketio';
 import SettingsModal from '../settings/modal/SettingsModal';
 import AnnouncementCarousel from '../announcements/AnnouncementCarousel';
@@ -54,7 +53,6 @@ export default function App(props: Props = {}) {
 		setBrowserSessionId(dispatch);
 		initPageTitleBlink();
 		updateThemeColors();
-		updateSettingsBasedOnProStatus(me);
 		initOfflineSyncListener(); // Offline sync başlat
 		dispatch(setGeneral('app_loaded', true));
 

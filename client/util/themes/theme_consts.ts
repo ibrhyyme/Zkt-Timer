@@ -10,7 +10,6 @@ export interface PresetTheme {
 		button_color: string;
 		module_color: string;
 	};
-	proOnly: boolean;
 	name: string;
 }
 export type PresetThemeValues = Record<PresetKey, PresetTheme>;
@@ -18,7 +17,6 @@ export type PresetThemeValues = Record<PresetKey, PresetTheme>;
 export const APP_THEME_PRESETS: PresetThemeValues = {
 	dark: {
 		name: 'Dark',
-		proOnly: false,
 		values: {
 			background_color: '18, 20, 28',
 			button_color: '30, 36, 44',

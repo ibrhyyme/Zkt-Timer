@@ -76,8 +76,8 @@ export default function KeyWatcher(props: Props) {
 
 	function handleContextMenu(e) {
 		let target = e.target;
-		while (target.parentNode) {
-			if (target.classList.contains(timerClass('main'))) {
+		while (target && target !== document) {
+			if (target.classList && target.classList.contains(timerClass())) {
 				e.preventDefault();
 				return;
 			}
@@ -90,22 +90,36 @@ export default function KeyWatcher(props: Props) {
 
 	function touchStart(e) {
 		let target = e.target;
+		let insideTimer = false;
 
-		while (target.parentNode) {
+		while (target && target !== document) {
 			if (target.nodeName === 'BUTTON' || target.nodeName === 'TEXTAREA' || target.nodeName === 'INPUT') {
 				return;
 			}
 
-			if (target.classList.contains(timerClass('main')) || target.classList.contains(timerClass('touch-overlay'))) {
-				if (e.touches && e.touches[0]) {
-					touchStartX.current = e.touches[0].clientX;
-					touchStartY.current = e.touches[0].clientY;
-				}
-				keydownSpace(e, true);
+			if (target.classList && (
+				target.classList.contains('cd-timer-controls__left') ||
+				target.classList.contains('cd-timer-controls__right') ||
+				target.classList.contains('cd-timer-header-control') ||
+				target.classList.contains('cd-timer-dashboard') ||
+				target.classList.contains('cd-stats-bar')
+			)) {
 				return;
 			}
 
+			if (target.classList && target.classList.contains(timerClass())) {
+				insideTimer = true;
+			}
+
 			target = target.parentNode;
+		}
+
+		if (insideTimer) {
+			if (e.touches && e.touches[0]) {
+				touchStartX.current = e.touches[0].clientX;
+				touchStartY.current = e.touches[0].clientY;
+			}
+			keydownSpace(e, true);
 		}
 	}
 
@@ -115,14 +129,32 @@ export default function KeyWatcher(props: Props) {
 		touchStartX.current = null;
 		touchStartY.current = null;
 		let target = e.target;
+		let insideTimer = false;
 
-		while (target.parentNode) {
-			if (target.classList.contains(timerClass('main')) || target.classList.contains(timerClass('touch-overlay'))) {
-				keyupSpace(e, true);
+		while (target && target !== document) {
+			if (target.nodeName === 'BUTTON' || target.nodeName === 'TEXTAREA' || target.nodeName === 'INPUT') {
 				return;
 			}
 
+			if (target.classList && (
+				target.classList.contains('cd-timer-controls__left') ||
+				target.classList.contains('cd-timer-controls__right') ||
+				target.classList.contains('cd-timer-header-control') ||
+				target.classList.contains('cd-timer-dashboard') ||
+				target.classList.contains('cd-stats-bar')
+			)) {
+				return;
+			}
+
+			if (target.classList && target.classList.contains(timerClass())) {
+				insideTimer = true;
+			}
+
 			target = target.parentNode;
+		}
+
+		if (insideTimer) {
+			keyupSpace(e, true);
 		}
 	}
 
