@@ -42,7 +42,7 @@ export default function DailyGoalProgressBar({cubeType, compact}: Props) {
 	const cubeName = cubeInfo?.name || cubeType;
 
 	return (
-		<div className={`w-full ${compact ? 'px-3 py-1' : 'px-4 py-2'}`}>
+		<div className={`cd-daily-goal-progress w-full ${compact ? 'px-3 py-1' : 'px-4 py-2'}`}>
 			<div className={`relative w-full ${compact ? 'h-5' : 'h-6'} bg-[#1c1c1e] rounded-full overflow-hidden border border-white/[0.06]`}>
 				{/* Fill bar */}
 				<div

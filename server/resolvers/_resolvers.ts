@@ -8,7 +8,6 @@ export * from './Session.resolver';
 export * from './Setting.resolver';
 export * from './Stats.resolver';
 export * from './Integration.resolver';
-export * from './Membership.resolver';
 export * from './Report.resolver';
 export * from './Leaderboards.resolver';
 export * from './CustomCubeType.resolver';

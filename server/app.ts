@@ -36,7 +36,7 @@ import { printSchema } from 'graphql';
 import { initRedisClient } from './services/redis';
 
 import { initCronJobs } from './services/cron';
-import { initWebhookListeners, initWebhookListenersRaw } from './webhooks';
+import { initWebhookListeners } from './webhooks';
 import { exposeResourcesForSearchEngines } from './middlewares/search_engines';
 import { initSearch } from './services/search';
 import { getWcaRedirectUri } from '../shared/integration';
@@ -70,9 +70,6 @@ process.on('SIGINT', () => {
 // Initialize logging
 initSearch();
 initLogger();
-
-// This must be before the bodyparser before RAW data needs to be passed to Stripe
-initWebhookListenersRaw();
 
 app.use(compression());
 app.use(bodyParser.json({ limit: '200mb' }));

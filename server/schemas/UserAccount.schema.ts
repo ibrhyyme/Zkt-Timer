@@ -8,7 +8,6 @@ import { Report } from './Report.schema';
 import { BanLog } from './BanLog.schema';
 import PaginatedResponse from './Pagination.schema';
 import { TimerBackground } from './TimerBackground.schema';
-import { SubscriptionStatus } from '../services/stripe';
 import { EloRating } from './EloRating.schema';
 import { NotificationPreference } from './NotificationPreference.schema';
 import { TopSolve } from './TopSolve.schema';
@@ -139,9 +138,6 @@ class IUserAccount extends IPublicUserAccount {
 	@Field()
 	offline_hash: string;
 
-	@Field(() => SubscriptionStatus)
-	pro_status?: SubscriptionStatus;
-
 	@Field()
 	join_country: string;
 
@@ -189,9 +185,6 @@ class IUserAccountForAdmin extends IUserAccount {
 class IInternalUserAccount extends IUserAccountForAdmin {
 	@Field()
 	password: string;
-
-	@Field()
-	stripe_customer_id: string;
 }
 
 @ObjectType({ implements: IPublicUserAccount })

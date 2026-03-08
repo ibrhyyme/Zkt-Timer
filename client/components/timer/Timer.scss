@@ -302,6 +302,11 @@
 			opacity: 0.3;
 		}
 
+		.cd-daily-goal-progress {
+			pointer-events: none;
+			opacity: 0.3;
+		}
+
 		// Timer çalışırken yeni mobil componentleri gizle
 		// Timer çalışırken yeni mobil componentleri silikleştir
 		#{$self}__mobile-layout {
@@ -309,7 +314,8 @@
 			.cd-timer-controls,
 			.cd-timer-dashboard,
 			.cd-stats-bar,
-			.cd-mobile-timer-scramble {
+			.cd-mobile-timer-scramble,
+			.cd-daily-goal-progress {
 				opacity: 0.05;
 				pointer-events: none;
 				transition: opacity 0.2s ease;

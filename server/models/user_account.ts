@@ -51,7 +51,6 @@ export function sanitizeUsers(users: InternalUserAccount[], forPublic = false): 
 		// User's password should never go to the front-end
 		delete user.password;
 		delete user.join_ip;
-		delete user.stripe_customer_id;
 
 		if (forPublic) {
 			return <PublicUserAccount>{
@@ -80,14 +79,6 @@ export async function getUserByIdOrThrow404(id: string) {
 		throw new GraphQLError(ErrorCode.NOT_FOUND, `Could not find user with ID ${id}`);
 	}
 	return user;
-}
-
-export function getUserByStripeCustomerId(stripeCustomerId: string): Promise<InternalUserAccount> {
-	return getPrisma().userAccount.findUnique({
-		where: {
-			stripe_customer_id: stripeCustomerId,
-		},
-	});
 }
 
 export function getUserById(id: string): Promise<InternalUserAccount> {

@@ -27,7 +27,6 @@ interface RoomMusicPlayerProps {
 	onClose: () => void;
 }
 
-const STORAGE_KEY = 'zkt_room_music_last_video';
 function formatTime(seconds: number): string {
 	const m = Math.floor(seconds / 60);
 	const s = Math.floor(seconds % 60);
@@ -55,7 +54,6 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 	const playerRef = useRef<any>(null);
 	const playerContainerRef = useRef<HTMLDivElement>(null);
 	const apiLoadedRef = useRef(false);
-	const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	const [searchYoutube, { data, loading, error }] = useLazyQuery<{ youtubeSearch: YouTubeVideoResult[] }>(YOUTUBE_SEARCH, {
 		fetchPolicy: 'no-cache',
@@ -80,21 +78,6 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 		apiLoadedRef.current = true;
 	}, []);
 
-	// localStorage'dan son videoyu yukle
-	useEffect(() => {
-		try {
-			const saved = localStorage.getItem(STORAGE_KEY);
-			if (saved) {
-				const parsed = JSON.parse(saved);
-				if (parsed?.videoId && parsed?.title) {
-					setCurrentVideo(parsed);
-				}
-			}
-		} catch {
-			// Bozuk veri — yoksay
-		}
-	}, []);
-
 	// Player olustur veya video degistir
 	useEffect(() => {
 		if (!currentVideo || !playerContainerRef.current) return;
@@ -103,7 +86,7 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 			if (!window.YT?.Player) return;
 
 			if (playerRef.current) {
-				playerRef.current.loadVideoById(currentVideo.videoId);
+				playerRef.current.loadVideoById({ videoId: currentVideo.videoId, suggestedQuality: 'tiny' });
 				return;
 			}
 
@@ -121,6 +104,9 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 				},
 				events: {
 					onReady: (event: any) => {
+						// Video kalitesini en dusuge zorla — bant genisligi tasarrufu
+						// Ses kalitesi video kalitesinden bagimsiz, etkilenmez
+						event.target.setPlaybackQuality('tiny');
 						event.target.playVideo();
 						setIsPlaying(true);
 					},
@@ -167,29 +153,12 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 		};
 	}, [isPlaying]);
 
-	// Debounced arama
-	const handleSearchChange = useCallback((value: string) => {
-		setSearchQuery(value);
-
-		if (debounceRef.current) {
-			clearTimeout(debounceRef.current);
+	// Arama — sadece Enter veya buton ile tetiklenir
+	const handleSearch = useCallback(() => {
+		if (searchQuery.trim().length >= 2) {
+			searchYoutube({ variables: { input: { query: searchQuery.trim() } } });
 		}
-
-		if (value.trim().length >= 2) {
-			debounceRef.current = setTimeout(() => {
-				searchYoutube({ variables: { input: { query: value.trim() } } });
-			}, 500);
-		}
-	}, [searchYoutube]);
-
-	// Cleanup
-	useEffect(() => {
-		return () => {
-			if (debounceRef.current) {
-				clearTimeout(debounceRef.current);
-			}
-		};
-	}, []);
+	}, [searchQuery, searchYoutube]);
 
 	const handleSelectVideo = (video: YouTubeVideoResult, index?: number) => {
 		const videoData = { videoId: video.videoId, title: video.title };
@@ -200,12 +169,6 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 		if (searchResults.length > 0) {
 			setPlaylist(searchResults);
 			setPlaylistIndex(index !== undefined ? index : searchResults.findIndex(v => v.videoId === video.videoId));
-		}
-
-		try {
-			localStorage.setItem(STORAGE_KEY, JSON.stringify(videoData));
-		} catch {
-			// localStorage dolu — yoksay
 		}
 	};
 
@@ -227,7 +190,6 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 		setCurrentVideo(null);
 		setPlaylist([]);
 		setPlaylistIndex(-1);
-		localStorage.removeItem(STORAGE_KEY);
 	};
 
 	const handleSeek = (value: number) => {
@@ -242,9 +204,6 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 		const prevVideo = playlist[prevIndex];
 		setPlaylistIndex(prevIndex);
 		setCurrentVideo({ videoId: prevVideo.videoId, title: prevVideo.title });
-		try {
-			localStorage.setItem(STORAGE_KEY, JSON.stringify({ videoId: prevVideo.videoId, title: prevVideo.title }));
-		} catch {}
 	};
 
 	const handleNext = () => {
@@ -254,9 +213,6 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 				const first = playlist[0];
 				setPlaylistIndex(0);
 				setCurrentVideo({ videoId: first.videoId, title: first.title });
-				try {
-					localStorage.setItem(STORAGE_KEY, JSON.stringify({ videoId: first.videoId, title: first.title }));
-				} catch {}
 			}
 			return;
 		}
@@ -264,9 +220,6 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 		const nextVideo = playlist[nextIndex];
 		setPlaylistIndex(nextIndex);
 		setCurrentVideo({ videoId: nextVideo.videoId, title: nextVideo.title });
-		try {
-			localStorage.setItem(STORAGE_KEY, JSON.stringify({ videoId: nextVideo.videoId, title: nextVideo.title }));
-		} catch {}
 	};
 
 	const hasPrev = playlist.length > 0 && playlistIndex > 0;
@@ -294,18 +247,28 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 
 				{/* Arama */}
 				<div className="px-3 py-2">
-					<div className="relative">
-						<MagnifyingGlass
-							size={14}
-							className="absolute left-2.5 top-1/2 -translate-y-1/2 text-white/40"
-						/>
-						<input
-							type="text"
-							value={searchQuery}
-							onChange={(e) => handleSearchChange(e.target.value)}
-							placeholder={t('rooms.music_search_placeholder')}
-							className="w-full bg-[#0f1014] border border-gray-800 rounded-md pl-8 pr-3 py-1.5 text-sm text-white placeholder-white/30 focus:outline-none focus:border-blue-500/50"
-						/>
+					<div className="relative flex gap-1.5">
+						<div className="relative flex-1">
+							<MagnifyingGlass
+								size={14}
+								className="absolute left-2.5 top-1/2 -translate-y-1/2 text-white/40"
+							/>
+							<input
+								type="text"
+								value={searchQuery}
+								onChange={(e) => setSearchQuery(e.target.value)}
+								onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+								placeholder={t('rooms.music_search_placeholder')}
+								className="w-full bg-[#0f1014] border border-gray-800 rounded-md pl-8 pr-3 py-1.5 text-sm text-white placeholder-white/30 focus:outline-none focus:border-blue-500/50"
+							/>
+						</div>
+						<button
+							onClick={handleSearch}
+							disabled={searchQuery.trim().length < 2 || loading}
+							className="px-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 disabled:text-white/30 text-white text-xs font-medium rounded-md transition-colors shrink-0"
+						>
+							<MagnifyingGlass size={14} weight="bold" />
+						</button>
 					</div>
 				</div>
 

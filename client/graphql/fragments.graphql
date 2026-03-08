@@ -219,7 +219,6 @@ fragment UserAccountFragment on IUserAccount {
 	...PublicUserFragment
 	email
 	offline_hash
-	pro_status
 }
 
 fragment SolveWithUserFragment on Solve {
@@ -486,41 +485,11 @@ fragment GameSessionFragment on GameSession {
 	}
 }
 
-fragment MembershipPricingFragment on MembershipPricing {
-	id
-	currency
-	unit_amount
-	interval_count
-	interval
-}
-
 fragment IntegrationFragment on Integration {
 	id
 	auth_expires_at
 	service_name
 	created_at
-}
-
-fragment MembershipFragment on Membership {
-	status
-	canceled_at
-	ended_at
-	days_until_due
-	cancel_at_period_end
-	current_period_end
-	start_date
-	pricing {
-		...MembershipPricingFragment
-	}
-}
-
-fragment MembershipOptionsFragment on MembershipOptions {
-	month {
-		...MembershipPricingFragment
-	}
-	year {
-		...MembershipPricingFragment
-	}
 }
 
 fragment CustomTrainerFragment on CustomTrainer {
