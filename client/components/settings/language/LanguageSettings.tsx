@@ -1,24 +1,23 @@
 import React from 'react';
-import {useTranslation} from 'react-i18next';
-import {Check} from 'phosphor-react';
-import SettingRow from '../setting/row/SettingRow';
+import { useTranslation } from 'react-i18next';
+import { Check } from 'phosphor-react';
 import dayjs from 'dayjs';
+import { TimerSettingsGroup } from '../timer/TimerSettingsRow';
 
 interface LanguageOption {
 	code: string;
-	labelKey: string;
 	nativeName: string;
 }
 
 const LANGUAGES: LanguageOption[] = [
-	{code: 'tr', labelKey: 'language.turkish', nativeName: 'Türkçe'},
-	{code: 'en', labelKey: 'language.english', nativeName: 'English'},
-	{code: 'es', labelKey: 'language.spanish', nativeName: 'Español'},
-	{code: 'ru', labelKey: 'language.russian', nativeName: 'Русский'},
+	{ code: 'tr', nativeName: 'Türkçe' },
+	{ code: 'en', nativeName: 'English' },
+	{ code: 'es', nativeName: 'Español' },
+	{ code: 'ru', nativeName: 'Русский' },
 ];
 
 export default function LanguageSettings() {
-	const {t, i18n} = useTranslation();
+	const { t, i18n } = useTranslation();
 
 	const currentLang = LANGUAGES.find((l) => i18n.language?.startsWith(l.code))?.code || 'tr';
 
@@ -28,36 +27,28 @@ export default function LanguageSettings() {
 	}
 
 	return (
-		<SettingRow title={t('language.label')} description={t('language.description')} vertical>
-			<div style={{display: 'flex', flexDirection: 'column', gap: '8px', width: '100%'}}>
-				{LANGUAGES.map((lang) => {
-					const isActive = currentLang === lang.code;
-					return (
-						<button
-							key={lang.code}
-							type="button"
-							onClick={() => changeLanguage(lang.code)}
-							style={{
-								display: 'flex',
-								alignItems: 'center',
-								justifyContent: 'space-between',
-								padding: '12px 16px',
-								borderRadius: '12px',
-								border: isActive ? '2px solid #4a9eff' : '2px solid rgba(255,255,255,0.08)',
-								background: isActive ? 'rgba(74,158,255,0.1)' : 'rgba(255,255,255,0.03)',
-								color: isActive ? '#fff' : '#888',
-								cursor: 'pointer',
-								transition: 'all 0.2s',
-								fontSize: '14px',
-								fontWeight: 500,
-							}}
-						>
-							<span>{lang.nativeName}</span>
-							{isActive && <Check size={18} weight="bold" color="#4a9eff" />}
-						</button>
-					);
-				})}
-			</div>
-		</SettingRow>
+		<div className="space-y-2">
+			<TimerSettingsGroup label={t('language.category_language')}>
+				<div className="space-y-2">
+					{LANGUAGES.map((lang) => {
+						const isActive = currentLang === lang.code;
+						return (
+							<button
+								key={lang.code}
+								type="button"
+								onClick={() => changeLanguage(lang.code)}
+								className={`w-full flex items-center justify-between py-4 px-4 rounded-xl border transition-all duration-200 cursor-pointer ${isActive
+									? 'bg-[#4a9eff]/10 border-[#4a9eff] text-white'
+									: 'bg-[#1c1c1e] border-white/[0.08] text-[#888] hover:border-white/[0.15] hover:text-slate-200'
+									}`}
+							>
+								<span className="font-medium">{lang.nativeName}</span>
+								{isActive && <Check size={18} weight="bold" className="text-[#4a9eff]" />}
+							</button>
+						);
+					})}
+				</div>
+			</TimerSettingsGroup>
+		</div>
 	);
 }

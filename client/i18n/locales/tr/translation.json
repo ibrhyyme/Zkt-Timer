@@ -455,7 +455,10 @@
 		"scramble_font_size": "Karıştırma yazı boyutu",
 		"scramble_font_size_desc": "Timer sayfasında gördüğünüz karıştırmanın yazı boyutu",
 		"smart_cube_size": "Akıllı Küp Boyutu",
-		"smart_cube_size_desc": "Anasayfadaki akıllı küpün boyutunu ayarlayın."
+		"smart_cube_size_desc": "Anasayfadaki akıllı küpün boyutunu ayarlayın.",
+		"category_theme": "Tema",
+		"category_layout": "Düzen",
+		"category_typography": "Yazı Tipi"
 	},
 	"timer_settings": {
 		"decimal_points": "Timer ondalık basamakları",
@@ -536,7 +539,12 @@
 		"stackmat_warning_limitation_title": "⚠️ Önemli Sınırlama:",
 		"stackmat_warning_limitation_desc": "ESC tuşu ile incelemeyi iptal ederseniz, mat'tan yeni bir sinyal gelmediği için tekrar reset'e bassanız bile inceleme başlamaz. Bu durumda klavyeden (Space) inceleme başlatmanız gerekir veya yeni bir çözüm yapmanız gerekir.",
 		"stackmat_warning_protocol_note": "Bu sınırlama StackMat protokolünden kaynaklanmaktadır ve yazılımsal olarak çözümü yoktur.",
-		"stackmat_warning_critical": "⚠️ KRİTİK UYARI: Lütfen StackMat üzerinde çözüm bittikten sonra süre tam duruncaya kadar RESETLEMEYİN. Bu durum StackMat sinyalinin yanlış senkronize olmasına sebep olabilir ve inceleme süresinde bazı hatalara sebebiyet verebilir. Elimizde olmayan bu protokol hatalarından ötürü özür dileriz."
+		"stackmat_warning_critical": "⚠️ KRİTİK UYARI: Lütfen StackMat üzerinde çözüm bittikten sonra süre tam duruncaya kadar RESETLEMEYİN. Bu durum StackMat sinyalinin yanlış senkronize olmasına sebep olabilir ve inceleme süresinde bazı hatalara sebebiyet verebilir. Elimizde olmayan bu protokol hatalarından ötürü özür dileriz.",
+		"category_general": "Genel",
+		"category_input": "Giriş",
+		"category_confirmations": "Onaylar",
+		"category_inspection": "İnceleme",
+		"category_stackmat": "StackMat"
 	},
 	"data_settings": {
 		"force_reload": "Zorla yeniden yükle",
@@ -579,7 +587,9 @@
 		"twistytimer_step_1": "Twisty Timer uygulamasını açın",
 		"twistytimer_step_2": "Sol üst menüden içe aktarmak istediğiniz küp türünü seçin",
 		"twistytimer_step_3": "Sağ üst köşedeki üç nokta menüsüne dokunun ve \"Dışa aktar\" seçin",
-		"twistytimer_step_4": "\"Dış kaynak olarak dışa aktar\" seçeneğini kullanarak dosyayı kaydedin"
+		"twistytimer_step_4": "\"Dış kaynak olarak dışa aktar\" seçeneğini kullanarak dosyayı kaydedin",
+		"category_management": "Veri Yönetimi",
+		"category_reset": "Sıfırlama"
 	},
 	"language": {
 		"label": "Dil",
@@ -587,7 +597,8 @@
 		"turkish": "Türkçe",
 		"english": "English",
 		"spanish": "Español",
-		"russian": "Русский"
+		"russian": "Русский",
+		"category_language": "Dil Seçimi"
 	},
 	"timer_modules": {
 		"history": "Çözümler",

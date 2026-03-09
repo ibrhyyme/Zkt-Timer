@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CaretDown } from 'phosphor-react';
 import { useDispatch } from 'react-redux';
 import ImportData, { ImportDataType } from './import_data/ImportData';
 import fileDownload from 'js-file-download';
@@ -10,10 +9,14 @@ import { openModal } from '../../../actions/general';
 import { fetchSessions } from '../../../db/sessions/query';
 import { fetchSolves } from '../../../db/solves/query';
 import { toastError, toastSuccess } from '../../../util/toast';
-import SettingRow from '../setting/row/SettingRow';
-import Dropdown from '../../common/inputs/dropdown/Dropdown';
-import Button, { CommonType } from '../../common/button/Button';
 import { clearOfflineData } from '../../layout/offline';
+import LoggedInOnly from '../../common/logged_in_only/LoggedInOnly';
+import ConfirmModal from '../../common/confirm_modal/ConfirmModal';
+import {
+	TimerSettingsGroup,
+	TimerSettingsAction,
+	TimerSettingsSelect,
+} from '../timer/TimerSettingsRow';
 
 export default function DataSettings() {
 	const { t } = useTranslation();
@@ -72,49 +75,88 @@ export default function DataSettings() {
 		toastSuccess(t('data_settings.export_success'));
 	}
 
+	function confirmResetSettings() {
+		dispatch(
+			openModal(
+				<ConfirmModal
+					title={t('data_settings.reset_settings')}
+					description={t('data_settings.reset_settings_confirm_desc')}
+					buttonText={t('data_settings.reset_settings_button')}
+					triggerAction={resetSettings}
+				/>
+			)
+		);
+	}
+
 	return (
-		<>
-			<SettingRow
-				loggedInOnly
-				title={t('data_settings.force_reload')}
-				description={t('data_settings.force_reload_desc')}
-			>
-				<Button theme={CommonType.GRAY} text={t('data_settings.force_reload_button')} onClick={hardReload} />
-			</SettingRow>
-			<SettingRow
-				loggedInOnly
-				title={t('data_settings.export_data')}
-				description={t('data_settings.export_data_desc')}
-			>
-				<Button theme={CommonType.GRAY} loading={exportingData} text={t('data_settings.export_button')} onClick={exportData} />
-			</SettingRow>
-			<SettingRow loggedInOnly title={t('data_settings.import_data')} description={t('data_settings.import_data_desc')}>
-				<Dropdown
-					text={t('data_settings.import_button')}
-					icon={<CaretDown weight="bold" />}
-					options={[
-						{ text: t('data_settings.import_cstimer'), onClick: () => openImportModal(ImportDataType.CS_TIMER) },
-						{ text: t('data_settings.import_zkttimer'), onClick: () => openImportModal(ImportDataType.ZKT_TIMER) },
-						{ text: t('data_settings.import_twistytimer'), onClick: () => openImportModal(ImportDataType.TWISTY_TIMER) },
-					]}
-				/>
-			</SettingRow>
-			<SettingRow
-				loggedInOnly
-				title={t('data_settings.reset_settings')}
-				description={t('data_settings.reset_settings_desc')}
-			>
-				<Button
-					theme={CommonType.DANGER}
-					text={t('data_settings.reset_settings_button')}
-					confirmModalProps={{
-						description: t('data_settings.reset_settings_confirm_desc'),
-						title: t('data_settings.reset_settings'),
-						buttonText: t('data_settings.reset_settings_button'),
-						triggerAction: resetSettings,
-					}}
-				/>
-			</SettingRow>
-		</>
+		<LoggedInOnly>
+			<div className="space-y-2">
+				{/* Veri Yönetimi */}
+				<TimerSettingsGroup label={t('data_settings.category_management')}>
+					<TimerSettingsAction
+						label={t('data_settings.force_reload')}
+						description={t('data_settings.force_reload_desc')}
+					>
+						<button
+							type="button"
+							onClick={hardReload}
+							className="px-3 py-1.5 rounded-lg text-sm font-medium bg-[#2a2a2e] border border-white/[0.1] text-slate-300 hover:bg-[#3a3a3e] hover:text-white hover:border-white/[0.15] transition-all duration-200 cursor-pointer"
+						>
+							{t('data_settings.force_reload_button')}
+						</button>
+					</TimerSettingsAction>
+					<TimerSettingsAction
+						label={t('data_settings.export_data')}
+						description={t('data_settings.export_data_desc')}
+					>
+						<button
+							type="button"
+							onClick={exportData}
+							disabled={exportingData}
+							className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all duration-200 ${exportingData
+								? 'bg-[#2a2a2e] border-white/[0.05] text-[#555] cursor-not-allowed'
+								: 'bg-[#2a2a2e] border-white/[0.1] text-slate-300 hover:bg-[#3a3a3e] hover:text-white hover:border-white/[0.15] cursor-pointer'
+								}`}
+						>
+							{exportingData ? '...' : t('data_settings.export_button')}
+						</button>
+					</TimerSettingsAction>
+					<TimerSettingsSelect
+						label={t('data_settings.import_data')}
+						description={t('data_settings.import_data_desc')}
+						value=""
+						options={[
+							{ label: t('data_settings.import_cstimer'), value: 'cstimer' },
+							{ label: t('data_settings.import_zkttimer'), value: 'zkttimer' },
+							{ label: t('data_settings.import_twistytimer'), value: 'twistytimer' },
+						]}
+						onChange={(v) => {
+							const typeMap: Record<string, ImportDataType> = {
+								cstimer: ImportDataType.CS_TIMER,
+								zkttimer: ImportDataType.ZKT_TIMER,
+								twistytimer: ImportDataType.TWISTY_TIMER,
+							};
+							if (typeMap[v]) openImportModal(typeMap[v]);
+						}}
+					/>
+				</TimerSettingsGroup>
+
+				{/* Sıfırlama */}
+				<TimerSettingsGroup label={t('data_settings.category_reset')}>
+					<TimerSettingsAction
+						label={t('data_settings.reset_settings')}
+						description={t('data_settings.reset_settings_desc')}
+					>
+						<button
+							type="button"
+							onClick={confirmResetSettings}
+							className="px-3 py-1.5 rounded-lg text-sm font-medium bg-red-500/20 border border-red-500/30 text-red-400 hover:bg-red-500/30 hover:text-red-300 hover:border-red-500/50 transition-all duration-200 cursor-pointer"
+						>
+							{t('data_settings.reset_settings_button')}
+						</button>
+					</TimerSettingsAction>
+				</TimerSettingsGroup>
+			</div>
+		</LoggedInOnly>
 	);
 }

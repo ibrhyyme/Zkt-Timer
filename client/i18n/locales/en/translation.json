@@ -455,7 +455,10 @@
 		"scramble_font_size": "Scramble font size",
 		"scramble_font_size_desc": "The font size of the scramble you see on the timer page",
 		"smart_cube_size": "Smart Cube Size",
-		"smart_cube_size_desc": "Adjust the size of the smart cube on the homepage."
+		"smart_cube_size_desc": "Adjust the size of the smart cube on the homepage.",
+		"category_theme": "Theme",
+		"category_layout": "Layout",
+		"category_typography": "Typography"
 	},
 	"timer_settings": {
 		"decimal_points": "Timer decimal points",
@@ -536,7 +539,12 @@
 		"stackmat_warning_limitation_title": "⚠️ Important Limitation:",
 		"stackmat_warning_limitation_desc": "If you cancel inspection with the ESC key, since no new signal comes from the mat, inspection won't start even if you press reset again. In this case, you need to start inspection from the keyboard (Space) or do a new solve.",
 		"stackmat_warning_protocol_note": "This limitation comes from the StackMat protocol and has no software solution.",
-		"stackmat_warning_critical": "⚠️ CRITICAL WARNING: Please DO NOT RESET on StackMat until the time has fully stopped after solving. This may cause the StackMat signal to synchronize incorrectly and may cause some errors in inspection time. We apologize for these protocol errors beyond our control."
+		"stackmat_warning_critical": "⚠️ CRITICAL WARNING: Please DO NOT RESET on StackMat until the time has fully stopped after solving. This may cause the StackMat signal to synchronize incorrectly and may cause some errors in inspection time. We apologize for these protocol errors beyond our control.",
+		"category_general": "General",
+		"category_input": "Input",
+		"category_confirmations": "Confirmations",
+		"category_inspection": "Inspection",
+		"category_stackmat": "StackMat"
 	},
 	"data_settings": {
 		"force_reload": "Force reload",
@@ -579,7 +587,9 @@
 		"twistytimer_step_1": "Open the Twisty Timer app",
 		"twistytimer_step_2": "Select the cube type you want to import from the top-left menu",
 		"twistytimer_step_3": "Tap the three-dot menu in the top-right corner and select \"Export\"",
-		"twistytimer_step_4": "Use the \"Export as external\" option to save the file"
+		"twistytimer_step_4": "Use the \"Export as external\" option to save the file",
+		"category_management": "Data Management",
+		"category_reset": "Reset"
 	},
 	"language": {
 		"label": "Language",
@@ -587,7 +597,8 @@
 		"turkish": "Türkçe",
 		"english": "English",
 		"spanish": "Español",
-		"russian": "Русский"
+		"russian": "Русский",
+		"category_language": "Language"
 	},
 	"timer_modules": {
 		"history": "Solves",

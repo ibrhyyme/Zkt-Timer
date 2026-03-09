@@ -455,7 +455,10 @@
 		"scramble_font_size": "Tamaño de fuente de la mezcla",
 		"scramble_font_size_desc": "El tamaño de fuente de la mezcla que ves en la página del timer",
 		"smart_cube_size": "Tamaño del cubo inteligente",
-		"smart_cube_size_desc": "Ajusta el tamaño del cubo inteligente en la página principal."
+		"smart_cube_size_desc": "Ajusta el tamaño del cubo inteligente en la página principal.",
+		"category_theme": "Tema",
+		"category_layout": "Diseño",
+		"category_typography": "Tipografía"
 	},
 	"timer_settings": {
 		"decimal_points": "Puntos decimales del timer",
@@ -536,7 +539,12 @@
 		"stackmat_warning_limitation_title": "⚠️ Limitación importante:",
 		"stackmat_warning_limitation_desc": "Si cancelas la inspección con la tecla ESC, como no llega una nueva señal del mat, la inspección no comenzará aunque presiones reiniciar de nuevo. En este caso, necesitas iniciar la inspección desde el teclado (Espacio) o hacer una nueva resolución.",
 		"stackmat_warning_protocol_note": "Esta limitación proviene del protocolo StackMat y no tiene solución por software.",
-		"stackmat_warning_critical": "⚠️ ADVERTENCIA CRÍTICA: Por favor NO REINICIES el StackMat hasta que el tiempo se haya detenido completamente después de resolver. Esto puede causar que la señal del StackMat se sincronice incorrectamente y puede causar algunos errores en el tiempo de inspección. Pedimos disculpas por estos errores de protocolo fuera de nuestro control."
+		"stackmat_warning_critical": "⚠️ ADVERTENCIA CRÍTICA: Por favor NO REINICIES el StackMat hasta que el tiempo se haya detenido completamente después de resolver. Esto puede causar que la señal del StackMat se sincronice incorrectamente y puede causar algunos errores en el tiempo de inspección. Pedimos disculpas por estos errores de protocolo fuera de nuestro control.",
+		"category_general": "General",
+		"category_input": "Entrada",
+		"category_confirmations": "Confirmaciones",
+		"category_inspection": "Inspección",
+		"category_stackmat": "StackMat"
 	},
 	"data_settings": {
 		"force_reload": "Forzar recarga",
@@ -579,7 +587,9 @@
 		"twistytimer_step_1": "Abre la aplicación Twisty Timer",
 		"twistytimer_step_2": "Selecciona el tipo de cubo que deseas importar desde el menú superior izquierdo",
 		"twistytimer_step_3": "Toca el menú de tres puntos en la esquina superior derecha y selecciona \"Exportar\"",
-		"twistytimer_step_4": "Usa la opción \"Exportar como externo\" para guardar el archivo"
+		"twistytimer_step_4": "Usa la opción \"Exportar como externo\" para guardar el archivo",
+		"category_management": "Gestión de datos",
+		"category_reset": "Restablecer"
 	},
 	"language": {
 		"label": "Idioma",
@@ -587,7 +597,8 @@
 		"turkish": "Türkçe",
 		"english": "English",
 		"spanish": "Español",
-		"russian": "Русский"
+		"russian": "Русский",
+		"category_language": "Idioma"
 	},
 	"timer_modules": {
 		"history": "Resoluciones",
