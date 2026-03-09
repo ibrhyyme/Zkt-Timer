@@ -1,20 +1,20 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { getTimeString } from '../../../util/time';
-import Slider from '../../common/slider/Slider';
 import LayoutSelector from './layout_selector/LayoutSelector';
 import TimerBackground from './timer_background/TimerBackground';
-import SettingRow from '../setting/row/SettingRow';
-import Dropdown from '../../common/inputs/dropdown/Dropdown';
-import SettingSection from '../setting/section/SettingSection';
 import { setSetting } from '../../../db/settings/update';
 import { useSettings } from '../../../util/hooks/useSettings';
-import Button from '../../common/button/Button';
 import ThemeOptions from './theme_options/ThemeOptions';
 import { AllSettings, getDefaultSetting } from '../../../db/settings/query';
-import { CaretDown } from 'phosphor-react';
-import { useIsMobile } from '../../../util/hooks/useIsMobile';
 import { useGeneral } from '../../../util/hooks/useGeneral';
+import {
+	TimerSettingsGroup,
+	TimerSettingsSelect,
+	TimerSettingsAction,
+	TimerSettingsPanel,
+	TimerSettingsSlider,
+} from '../timer/TimerSettingsRow';
 
 const DEFAULT_FONT_FAMILY = 'Roboto Mono';
 
@@ -39,7 +39,6 @@ export default function Appearance() {
 	const timerFontFamily = useSettings('timer_font_family');
 	const timerModuleCount = useSettings('timer_module_count');
 	const smartCubeSize = useSettings('smart_cube_size');
-	const isMobile = useIsMobile();
 	const mobileMode = useGeneral('mobile_mode');
 
 	function updateSetting(name: keyof AllSettings, value: any) {
@@ -47,138 +46,113 @@ export default function Appearance() {
 	}
 
 	return (
-		<>
-			<ThemeOptions />
-			{!mobileMode && (
-				<SettingRow
-					title={t('appearance.timer_modules')}
+		<div className="space-y-2">
+			{/* Tema */}
+			<TimerSettingsGroup label={t('appearance.category_theme')}>
+				<ThemeOptions />
+			</TimerSettingsGroup>
+
+			{/* Düzen */}
+			<TimerSettingsGroup label={t('appearance.category_layout')}>
+				<TimerSettingsSelect
+					label={t('appearance.timer_modules')}
 					description={t('appearance.timer_modules_desc')}
-				>
-					<Dropdown
-						openLeft={isMobile}
-						text={String(timerModuleCount)}
-						noMargin
-						icon={<CaretDown />}
-						options={[1, 2, 3, 4, 5, 6].map((count) => ({
-							text: String(count) + (count === 3 ? ` ${t('appearance.default_suffix')}` : ''),
-							onClick: () => updateSetting('timer_module_count', count),
-						}))}
-					/>
-				</SettingRow>
-			)}
-			{!mobileMode && (
-				<SettingRow
-					title={t('appearance.timer_layout')}
+					hidden={!!mobileMode}
+					value={String(timerModuleCount)}
+					options={[1, 2, 3, 4, 5, 6].map((c) => ({
+						label: c === 3 ? `${c} ${t('appearance.default_suffix')}` : String(c),
+						value: String(c),
+					}))}
+					onChange={(v) => updateSetting('timer_module_count', parseInt(v))}
+				/>
+				<TimerSettingsAction
+					label={t('appearance.timer_layout')}
 					description={t('appearance.timer_layout_desc')}
+					hidden={!!mobileMode}
 				>
 					<LayoutSelector />
-				</SettingRow>
-			)}
-			<SettingRow title={t('appearance.timer_background')} description={t('appearance.timer_background_desc')}>
-				<TimerBackground />
-			</SettingRow>
-			<SettingRow title={t('appearance.timer_font')} description={t('appearance.timer_font_desc')}>
-				<Dropdown
-					openLeft={isMobile}
-					text={timerFontFamily}
-					noMargin
-					icon={<CaretDown />}
+				</TimerSettingsAction>
+				<TimerSettingsAction
+					label={t('appearance.timer_background')}
+					description={t('appearance.timer_background_desc')}
+				>
+					<TimerBackground />
+				</TimerSettingsAction>
+			</TimerSettingsGroup>
+
+			{/* Yazı Tipi */}
+			<TimerSettingsGroup label={t('appearance.category_typography')}>
+				<TimerSettingsSelect
+					label={t('appearance.timer_font')}
+					description={t('appearance.timer_font_desc')}
+					value={timerFontFamily}
 					options={FONT_FAMILIES.map((ff) => ({
-						text: ff,
-						onClick: () => updateSetting('timer_font_family', ff),
+						label: ff,
+						value: ff,
 					}))}
+					onChange={(v) => updateSetting('timer_font_family', v)}
 				/>
-				<Button
-					hidden={timerFontFamily === DEFAULT_FONT_FAMILY}
-					text={t('appearance.reset')}
-					warning
-					flat
-					onClick={() => updateSetting('timer_font_family', DEFAULT_FONT_FAMILY)}
-				/>
-			</SettingRow>
-			{!mobileMode && (
-				<SettingSection>
-					<SettingRow title={t('appearance.timer_font_size')} description={t('appearance.timer_font_size_desc')}>
-						<Slider
-							min={35}
-							value={String(timerTimeSize)}
-							max={150}
-							onChange={(e) => updateSetting('timer_time_size', parseInt(e.target.value, 10))}
-						/>
-						<Button
-							hidden={timerTimeSize === getDefaultSetting('timer_time_size')}
-							text={t('appearance.reset')}
-							warning
-							flat
-							onClick={() => updateSetting('timer_time_size', getDefaultSetting('timer_time_size'))}
-						/>
-					</SettingRow>
-					<div className="cd-settings__text-size">
-						<h1
+				<TimerSettingsSlider
+					label={t('appearance.timer_font_size')}
+					description={t('appearance.timer_font_size_desc')}
+					hidden={!!mobileMode}
+					value={timerTimeSize}
+					min={35}
+					max={150}
+					showReset={timerTimeSize !== getDefaultSetting('timer_time_size')}
+					resetLabel={t('appearance.reset')}
+					onReset={() => updateSetting('timer_time_size', getDefaultSetting('timer_time_size'))}
+					onChange={(v) => updateSetting('timer_time_size', v)}
+				>
+					<div className="flex items-center justify-center py-2 rounded-lg bg-[#12141c] overflow-hidden">
+						<span
 							style={{
 								fontWeight: '500',
 								fontFamily: timerFontFamily,
-								fontSize: `${timerTimeSize}px`,
+								fontSize: `${Math.min(timerTimeSize, 80)}px`,
 							}}
+							className="text-white"
 						>
 							{getTimeString(23.074, timerDecimalPoints)}
-						</h1>
+						</span>
 					</div>
-				</SettingSection>
-			)}
-			{!mobileMode && (
-				<SettingSection>
-					<SettingRow
-						title={t('appearance.scramble_font_size')}
-						description={t('appearance.scramble_font_size_desc')}
-					>
-						<Slider
-							min={10}
-							value={String(timerScrambleSize)}
-							max={40}
-							onChange={(e) => updateSetting('timer_scramble_size', parseInt(e.target.value, 10))}
-						/>
-						<Button
-							hidden={timerScrambleSize === getDefaultSetting('timer_scramble_size')}
-							text={t('appearance.reset')}
-							warning
-							flat
-							onClick={() => updateSetting('timer_scramble_size', getDefaultSetting('timer_scramble_size'))}
-						/>
-					</SettingRow>
-					<div className="cd-settings__text-size">
-						<h3
-							style={{
-								fontSize: `${timerScrambleSize}px`,
-							}}
+				</TimerSettingsSlider>
+				<TimerSettingsSlider
+					label={t('appearance.scramble_font_size')}
+					description={t('appearance.scramble_font_size_desc')}
+					hidden={!!mobileMode}
+					value={timerScrambleSize}
+					min={10}
+					max={40}
+					showReset={timerScrambleSize !== getDefaultSetting('timer_scramble_size')}
+					resetLabel={t('appearance.reset')}
+					onReset={() => updateSetting('timer_scramble_size', getDefaultSetting('timer_scramble_size'))}
+					onChange={(v) => updateSetting('timer_scramble_size', v)}
+				>
+					<div className="flex items-center justify-center py-2 rounded-lg bg-[#12141c] overflow-hidden">
+						<span
+							style={{ fontSize: `${Math.min(timerScrambleSize, 24)}px` }}
+							className="text-slate-300 text-center leading-relaxed px-2"
 						>
 							D' R2 B2 R2 U' F2 R2 U' L2 U2 L2 R2 F' D' L D' F' D' F D' R' U
-						</h3>
+						</span>
 					</div>
-				</SettingSection>
-			)}
-			{!mobileMode && (
-				<SettingSection>
-					<SettingRow
-						title={t('appearance.smart_cube_size')}
-						description={t('appearance.smart_cube_size_desc')}
-					>
-						<Slider
-							min={100}
-							value={String(smartCubeSize)}
-							max={600}
-							onChange={(e) => updateSetting('smart_cube_size', parseInt(e.target.value, 10))}
-						/>
-						<Button
-							hidden={smartCubeSize === getDefaultSetting('smart_cube_size')}
-							text={t('appearance.reset')}
-							warning
-							flat
-							onClick={() => updateSetting('smart_cube_size', getDefaultSetting('smart_cube_size'))}
-						/>
-					</SettingRow>
-				</SettingSection>
-			)}
-		</>
+				</TimerSettingsSlider>
+			</TimerSettingsGroup>
+
+			{/* Akıllı Küp */}
+			<TimerSettingsSlider
+				label={t('appearance.smart_cube_size')}
+				description={t('appearance.smart_cube_size_desc')}
+				hidden={!!mobileMode}
+				value={smartCubeSize}
+				min={100}
+				max={600}
+				showReset={smartCubeSize !== getDefaultSetting('smart_cube_size')}
+				resetLabel={t('appearance.reset')}
+				onReset={() => updateSetting('smart_cube_size', getDefaultSetting('smart_cube_size'))}
+				onChange={(v) => updateSetting('smart_cube_size', v)}
+			/>
+		</div>
 	);
 }
