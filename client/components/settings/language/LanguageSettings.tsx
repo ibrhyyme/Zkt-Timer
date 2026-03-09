@@ -28,7 +28,7 @@ export default function LanguageSettings() {
 
 	return (
 		<div className="space-y-2">
-			<TimerSettingsGroup label={t('language.category_language')}>
+			<TimerSettingsGroup id="language-language" label={t('language.category_language')}>
 				<div className="space-y-2">
 					{LANGUAGES.map((lang) => {
 						const isActive = currentLang === lang.code;

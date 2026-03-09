@@ -144,7 +144,7 @@ export default function TimerSettings() {
 	return (
 		<div className="space-y-2">
 			{/* Genel */}
-			<TimerSettingsGroup label={t('timer_settings.category_general')}>
+			<TimerSettingsGroup id="timer-general" label={t('timer_settings.category_general')}>
 				<TimerSettingsSelect
 					label={t('timer_settings.decimal_points')}
 					description={t('timer_settings.decimal_points_desc')}
@@ -189,7 +189,7 @@ export default function TimerSettings() {
 			</TimerSettingsGroup>
 
 			{/* Giris */}
-			<TimerSettingsGroup label={t('timer_settings.category_input')}>
+			<TimerSettingsGroup id="timer-input" label={t('timer_settings.category_input')}>
 				<TimerSettingsSelect
 					label={t('timer_settings.input_type')}
 					description={t('timer_settings.input_type_desc')}
@@ -227,7 +227,7 @@ export default function TimerSettings() {
 			</TimerSettingsGroup>
 
 			{/* Onaylar */}
-			<TimerSettingsGroup label={t('timer_settings.category_confirmations')}>
+			<TimerSettingsGroup id="timer-confirmations" label={t('timer_settings.category_confirmations')}>
 				<TimerSettingsToggle
 					label={t('timer_settings.confirm_delete_solve')}
 					description={t('timer_settings.confirm_delete_solve_desc')}
@@ -243,7 +243,7 @@ export default function TimerSettings() {
 			</TimerSettingsGroup>
 
 			{/* Inceleme */}
-			<TimerSettingsGroup label={t('timer_settings.category_inspection')}>
+			<TimerSettingsGroup id="timer-inspection" label={t('timer_settings.category_inspection')}>
 				<TimerSettingsToggle
 					label={t('timer_settings.inspection')}
 					description={t('timer_settings.inspection_desc')}
@@ -277,7 +277,7 @@ export default function TimerSettings() {
 			</TimerSettingsGroup>
 
 			{/* StackMat */}
-			<TimerSettingsGroup label={t('timer_settings.category_stackmat')}>
+			<TimerSettingsGroup id="timer-stackmat" label={t('timer_settings.category_stackmat')}>
 				<TimerSettingsAction label={t('timer_settings.mic_access')}>
 					<MicAccess />
 				</TimerSettingsAction>
