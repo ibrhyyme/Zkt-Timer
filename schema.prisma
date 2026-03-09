@@ -90,6 +90,9 @@ model UserAccount {
   // Push notification tokens
   pushTokens                    PushToken[]
 
+  // Daily goals
+  daily_goals                   DailyGoal[]
+
   @@map("user_account")
 }
 
@@ -1058,6 +1061,21 @@ enum PushTokenPlatform {
   IOS
 
   @@map("push_token_platform")
+}
+
+model DailyGoal {
+  id         String      @id @default(uuid())
+  user_id    String
+  cube_type  String
+  target     Int
+  enabled    Boolean     @default(true)
+  created_at DateTime    @default(now())
+  updated_at DateTime    @updatedAt
+  user       UserAccount @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, cube_type])
+  @@index([user_id])
+  @@map("daily_goal")
 }
 
 model PushToken {
