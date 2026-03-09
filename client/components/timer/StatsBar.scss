@@ -45,10 +45,9 @@
 
     &__value {
         font-size: 1rem;
-        font-weight: 600; // Timer ile uyumlu ağırlık
-        color: rgb(var(--text-color)); // Mavi yerine Timer rengi (Beyaz/Tema)
-        // font-family: TSX'ten inline geliyor
+        font-weight: 600;
+        color: rgb(var(--text-color));
         letter-spacing: 0;
-        text-shadow: none; // Mavi glow kaldırıldı
+        text-shadow: none;
     }
 }

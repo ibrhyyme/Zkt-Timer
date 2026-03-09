@@ -3,6 +3,7 @@
 .#{$namespace}-overall-stats {
 	width: 100%;
 	display: grid;
+	overflow-x: hidden;
 	// Fix: 300px -> 280px for better fit on small screens
 	grid-template-columns: repeat(auto-fill, minmax(18.667rem, 1fr));
 	// Fix: 350px -> minmax(350px, auto) for flexibility

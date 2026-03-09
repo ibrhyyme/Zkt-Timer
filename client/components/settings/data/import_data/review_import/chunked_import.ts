@@ -11,17 +11,22 @@ export interface ImportProgress {
 	percentComplete: number;
 }
 
+export interface ChunkError {
+	type: 'sessions' | 'solves';
+	chunkIndex: number;
+	itemRange: string;
+	error: string;
+}
+
 export interface ChunkedImportResult {
 	successCount: number;
 	failureCount: number;
-	errors: Array<{
-		chunkIndex: number;
-		itemRange: string;
-		error: string;
-	}>;
+	errors: ChunkError[];
 }
 
 type ProgressCallback = (progress: ImportProgress) => void;
+
+export const CHUNK_SIZE = 100;
 
 // Helper: Split array into chunks
 export function chunkArray<T>(array: T[], chunkSize: number): T[][] {
@@ -37,7 +42,6 @@ export async function importSessionsInChunks(
 	sessions: SessionInput[],
 	onProgress: ProgressCallback
 ): Promise<ChunkedImportResult> {
-	const CHUNK_SIZE = 100;
 	const chunks = chunkArray(sessions, CHUNK_SIZE);
 	const totalChunks = chunks.length;
 
@@ -78,6 +82,7 @@ export async function importSessionsInChunks(
 			console.error(`[Sessions] Chunk ${i + 1} failed:`, error);
 			result.failureCount++;
 			result.errors.push({
+				type: 'sessions',
 				chunkIndex: i,
 				itemRange: `${startIdx + 1}-${endIdx}`,
 				error: error.message || String(error),
@@ -93,7 +98,6 @@ export async function importSolvesInChunks(
 	solves: SolveInput[],
 	onProgress: ProgressCallback
 ): Promise<ChunkedImportResult> {
-	const CHUNK_SIZE = 100; // User preference: conservative approach
 	const chunks = chunkArray(solves, CHUNK_SIZE);
 	const totalChunks = chunks.length;
 
@@ -134,6 +138,7 @@ export async function importSolvesInChunks(
 			console.error(`[Solves] Chunk ${i + 1} failed:`, error);
 			result.failureCount++;
 			result.errors.push({
+				type: 'solves',
 				chunkIndex: i,
 				itemRange: `${startIdx + 1}-${endIdx}`,
 				error: error.message || String(error),

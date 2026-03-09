@@ -79,7 +79,7 @@ const defaultSettings: AllSettings = {
 	confirm_delete_solve: false,
 	confirm_delete_season: false,
 	use_space_with_smart_cube: false,
-	use_2d_scramble_visual: false,
+	use_2d_scramble_visual: true,
 	require_period_in_manual_time_entry: false,
 	cube_type: '333',
 	session_id: null,

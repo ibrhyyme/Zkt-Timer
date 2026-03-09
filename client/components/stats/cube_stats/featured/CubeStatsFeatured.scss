@@ -3,7 +3,11 @@
 .#{$namespace}-stats-featured {
 	display: grid;
 	grid-gap: 10px;
-	grid-template-columns: repeat(auto-fit, minmax(200px, auto)) !important;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+
+	@media only screen and (max-width: 600px) {
+		grid-template-columns: 1fr;
+	}
 
 	&__right {
 		display: grid;

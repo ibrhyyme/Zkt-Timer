@@ -95,6 +95,7 @@ export default function DataSettings() {
 					options={[
 						{ text: t('data_settings.import_cstimer'), onClick: () => openImportModal(ImportDataType.CS_TIMER) },
 						{ text: t('data_settings.import_zkttimer'), onClick: () => openImportModal(ImportDataType.ZKT_TIMER) },
+						{ text: t('data_settings.import_twistytimer'), onClick: () => openImportModal(ImportDataType.TWISTY_TIMER) },
 					]}
 				/>
 			</SettingRow>

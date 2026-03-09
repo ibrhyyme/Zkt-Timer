@@ -121,6 +121,9 @@ export default function FriendlyRoom() {
     const manualEntry = useSettings('manual_entry');
     const timerType = useSettings('timer_type');
     const inspection = useSettings('inspection');
+    const inspectionDelay = useSettings('inspection_delay');
+    const requirePeriod = useSettings('require_period_in_manual_time_entry');
+    const timerDecimalPoints = useSettings('timer_decimal_points');
     const isManualMode = manualEntry && timerType !== 'smart';
 
     // GAN Timer connection state
@@ -364,7 +367,7 @@ export default function FriendlyRoom() {
 
         setSmartScrambleCompletedAt(null);
         setSmartInspecting(false);
-        setSmartInspectionTime(15);
+        setSmartInspectionTime(inspectionDelay ?? 15);
         setSmartTiming(false);
         setSmartTimerStartedAt(null);
         setSmartElapsedTime(0);
@@ -381,7 +384,7 @@ export default function FriendlyRoom() {
         if (!inspection && smartInspecting) {
             setSmartInspecting(false);
             if (smartInspectionIntervalRef.current) clearInterval(smartInspectionIntervalRef.current);
-            setSmartInspectionTime(15);
+            setSmartInspectionTime(inspectionDelay ?? 15);
         }
     }, [inspection, smartInspecting]);
 
@@ -478,12 +481,13 @@ export default function FriendlyRoom() {
 
                     // Start inspection if enabled
                     if (inspection && !smartInspectionIntervalRef.current) {
+                        const inspDelay = inspectionDelay ?? 15;
                         setSmartInspecting(true);
-                        setSmartInspectionTime(15);
+                        setSmartInspectionTime(inspDelay);
                         const inspectionStart = Date.now();
                         smartInspectionIntervalRef.current = setInterval(() => {
                             const elapsed = (Date.now() - inspectionStart) / 1000;
-                            const remaining = 15 - elapsed;
+                            const remaining = inspDelay - elapsed;
                             setSmartInspectionTime(remaining);
 
                             if (remaining <= -2) {
@@ -631,7 +635,7 @@ export default function FriendlyRoom() {
     useEffect(() => {
         setSmartScrambleCompletedAt(null);
         setSmartInspecting(false);
-        setSmartInspectionTime(15);
+        setSmartInspectionTime(inspectionDelay ?? 15);
         setSmartTiming(false);
         setSmartTimerStartedAt(null);
         setSmartElapsedTime(0);
@@ -1145,7 +1149,7 @@ export default function FriendlyRoom() {
     const bestAo5 = calculateBestAvg(times, 5);
     const bestAo12 = calculateBestAvg(times, 12);
 
-    const formatStat = (val: number | null) => val !== null ? (val / 1000).toFixed(2) : '-';
+    const formatStat = (val: number | null) => val !== null ? (val / 1000).toFixed(timerDecimalPoints ?? 2) : '-';
 
     return (
         <div className="fixed inset-0 z-[100] md:fixed md:inset-0 md:top-[var(--nav-h)] md:h-[calc(100vh-var(--nav-h))] flex flex-col bg-[#0f1014] text-white overflow-hidden font-sans">
@@ -1458,7 +1462,7 @@ export default function FriendlyRoom() {
                                     >
                                         {manualInspectionTime < -2000 ? 'DNF' :
                                             manualInspectionTime < 0 ? '+2' :
-                                                (manualInspectionTime / 1000).toFixed(2)}
+                                                (manualInspectionTime / 1000).toFixed(timerDecimalPoints ?? 2)}
                                     </div>
                                 ) : (
                                     <>
@@ -1470,7 +1474,7 @@ export default function FriendlyRoom() {
                                                 e.preventDefault();
                                                 if (!manualTimeError && manualTimeInput.trim() && !alreadySolvedThisRound) {
                                                     try {
-                                                        const parsed = convertTimeStringToSeconds(manualTimeInput, false);
+                                                        const parsed = convertTimeStringToSeconds(manualTimeInput, !!requirePeriod);
                                                         const finalDnf = parsed.dnf || penalties.DNF;
                                                         const finalPlusTwo = parsed.plusTwo || penalties.AUF || penalties.inspection;
 
@@ -1517,7 +1521,7 @@ export default function FriendlyRoom() {
                                                     const val = e.target.value;
                                                     setManualTimeInput(val);
                                                     try {
-                                                        const parsed = convertTimeStringToSeconds(val, false);
+                                                        const parsed = convertTimeStringToSeconds(val, !!requirePeriod);
                                                         setManualTimeError(parsed.timeSeconds <= 0 && !parsed.dnf);
                                                     } catch {
                                                         setManualTimeError(true);
@@ -1529,12 +1533,13 @@ export default function FriendlyRoom() {
                                                         e.preventDefault();
                                                         // Start inspection
                                                         setManualInspecting(true);
-                                                        setManualInspectionTime(15000);
+                                                        const inspDelayMs = (inspectionDelay ?? 15) * 1000;
+                                                        setManualInspectionTime(inspDelayMs);
                                                         manualInspectionStartRef.current = performance.now();
                                                         manualInspectionRef.current = setInterval(() => {
                                                             if (manualInspectionStartRef.current) {
                                                                 const elapsed = performance.now() - manualInspectionStartRef.current;
-                                                                const remaining = 15000 - elapsed;
+                                                                const remaining = inspDelayMs - elapsed;
                                                                 setManualInspectionTime(remaining);
                                                                 // Auto-stop at DNF
                                                                 if (remaining < -2000) {
@@ -1643,7 +1648,8 @@ export default function FriendlyRoom() {
                                     <span className="text-6xl font-mono font-medium text-gray-200 tracking-tight">
                                         {(() => {
                                             const myParticipant = room.participants.find(p => p.user_id === me?.id);
-                                            if (!myParticipant || myParticipant.solves.length === 0) return '0.00';
+                                            const dpVal = timerDecimalPoints ?? 2;
+                                            if (!myParticipant || myParticipant.solves.length === 0) return (0).toFixed(dpVal);
 
                                             // Find last solve (highest scramble index)
                                             const lastSolve = myParticipant.solves.reduce((prev, current) =>
@@ -1653,7 +1659,7 @@ export default function FriendlyRoom() {
                                             // Format time
                                             if (lastSolve.dnf) return 'DNF';
                                             const time = lastSolve.plus_two ? lastSolve.time + 2 : lastSolve.time;
-                                            return time.toFixed(2);
+                                            return time.toFixed(dpVal);
                                         })()}
                                     </span>
                                 </div>

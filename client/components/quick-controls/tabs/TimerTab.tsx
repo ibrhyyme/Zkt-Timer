@@ -111,9 +111,9 @@ export default function TimerTab() {
 
 	return (
 		<div className="space-y-3">
-			<div className="flex items-center space-x-2 mb-6">
-				<div className="h-2 w-2 bg-[#4a9eff] rounded-full"></div>
-				<p className="text-[#888] text-sm font-medium">
+			<div className="flex items-center space-x-1.5 mb-1">
+				<div className="h-1.5 w-1.5 bg-[#4a9eff] rounded-full"></div>
+				<p className="text-[#888] text-xs font-medium">
 					{t('quick_controls.timer_type_description')}
 				</p>
 			</div>

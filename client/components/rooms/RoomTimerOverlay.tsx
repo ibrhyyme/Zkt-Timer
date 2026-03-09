@@ -11,6 +11,7 @@ import { GanTimerConnection, GanTimerEvent, GanTimerState, connectGanTimer } fro
 import BluetoothErrorMessage from '../timer/common/BluetoothErrorMessage';
 import BleScanningModal from '../timer/smart_cube/ble_scanning_modal/BleScanningModal';
 import { isNative } from '../../util/platform';
+import { resourceUri } from '../../util/storage';
 import StackMatPicker from '../settings/stackmat_picker/StackMatPicker';
 import SmartStats from '../timer/smart_cube/stats/SmartStats';
 import './RoomTimerOverlay.scss';
@@ -111,6 +112,7 @@ export default function RoomTimerOverlay({
     const stackmatStarted = useRef(false);
     const holdStartTimeRef = useRef<number>(0);
     const touchDelayTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const inspectionSoundsPlayedRef = useRef<Set<number>>(new Set());
     const isTouchScrollingRef = useRef(false);
 
     // Keep statusRef in sync and broadcast status changes
@@ -126,6 +128,13 @@ export default function RoomTimerOverlay({
     const inspection = useSettings('inspection');
     const manualEntry = useSettings('manual_entry');
     const stackmatId = useSettings('stackmat_id');
+    const freezeTime = useSettings('freeze_time');
+    const inspectionDelay = useSettings('inspection_delay');
+    const timerDecimalPoints = useSettings('timer_decimal_points');
+    const hideTimeWhenSolving = useSettings('hide_time_when_solving');
+    const playInspectionSound = useSettings('play_inspection_sound');
+    const inspectionAutoStart = useSettings('inspection_auto_start');
+    const zeroOutTimeAfterSolve = useSettings('zero_out_time_after_solve');
 
     // Smart cube timer state from Redux
     const smartCubeTimeStartedAt = useSelector((state: any) => state.timer?.timeStartedAt || null);
@@ -245,11 +254,12 @@ export default function RoomTimerOverlay({
     const startInspection = () => {
         // Force reset any stuck keys
         keyIsDown.current = false;
+        inspectionSoundsPlayedRef.current.clear();
 
         setStatus(STATUS.INSPECTING);
         statusRef.current = STATUS.INSPECTING;
         setStartedAt(now());
-        setTime(15000);
+        setTime((inspectionDelay ?? 15) * 1000);
         if (timerRef.current) clearInterval(timerRef.current);
         timerRef.current = setInterval(() => tickInspection(), 30);
     };
@@ -284,15 +294,37 @@ export default function RoomTimerOverlay({
             if (!prevStarted) return prevStarted;
 
             const elapsed = now() - prevStarted;
-            const remaining = 15000 - elapsed;
+            const inspDelayMs = (inspectionDelay ?? 15) * 1000;
+            const remaining = inspDelayMs - elapsed;
             setTime(remaining);
 
+            // Inspection sound cues (8s and 12s)
+            if (playInspectionSound) {
+                const elapsedSec = elapsed / 1000;
+                if (elapsedSec >= 8 && !inspectionSoundsPlayedRef.current.has(8)) {
+                    inspectionSoundsPlayedRef.current.add(8);
+                    const audio = new Audio(resourceUri('/audio/8_sec.mp3'));
+                    audio.playbackRate = 2.3;
+                    audio.play().catch(() => {});
+                }
+                if (elapsedSec >= 12 && !inspectionSoundsPlayedRef.current.has(12)) {
+                    inspectionSoundsPlayedRef.current.add(12);
+                    const audio = new Audio(resourceUri('/audio/12_sec.mp3'));
+                    audio.playbackRate = 2.3;
+                    audio.play().catch(() => {});
+                }
+            }
+
             if (remaining < -2000) {
-                setPenalties((prev) => ({ ...prev, inspectionDNF: true }));
-                setTimeout(() => {
-                    if (timerRef.current) clearInterval(timerRef.current);
-                    setStatus(STATUS.SUBMITTING);
-                }, 1);
+                if (inspectionAutoStart) {
+                    startTiming();
+                } else {
+                    setPenalties((prev) => ({ ...prev, inspectionDNF: true }));
+                    setTimeout(() => {
+                        if (timerRef.current) clearInterval(timerRef.current);
+                        setStatus(STATUS.SUBMITTING);
+                    }, 1);
+                }
             } else if (remaining < 0) {
                 setPenalties((prev) => ({ ...prev, inspection: true }));
             }
@@ -428,7 +460,7 @@ export default function RoomTimerOverlay({
                     setStatus(STATUS.PRIMING);
                     statusRef.current = STATUS.PRIMING;
                     if (navigator.vibrate) navigator.vibrate(50);
-                }, 200); // Standard freeze time (reduced to 200ms)
+                }, (freezeTime ?? 0.2) * 1000);
                 break;
 
             case STATUS.INSPECTING:
@@ -455,7 +487,7 @@ export default function RoomTimerOverlay({
 
         holdStartTimeRef.current = performance.now();
         keyIsDown.current = true;
-    }, [alreadySolvedThisRound, timerType, effectiveInspection, stackmatConnected, ganTimerConnected]);
+    }, [alreadySolvedThisRound, timerType, effectiveInspection, stackmatConnected, ganTimerConnected, freezeTime]);
 
     const simulateSpaceUp = useCallback(() => {
         if (alreadySolvedThisRound) return;
@@ -484,7 +516,7 @@ export default function RoomTimerOverlay({
 
             case STATUS.INSPECTING_WAITING:
                 // Check if we held long enough (in case statusRef didn't update yet)
-                if (performance.now() - holdStartTimeRef.current >= 200) {
+                if (performance.now() - holdStartTimeRef.current >= (freezeTime ?? 0.2) * 1000) {
                     if (isManualMode) {
                         if (timerRef.current) clearInterval(timerRef.current);
                         setStatus(STATUS.MANUAL_INPUT);
@@ -526,7 +558,7 @@ export default function RoomTimerOverlay({
             default:
                 break;
         }
-    }, [alreadySolvedThisRound, timerType, effectiveInspection, isManualMode, stackmatConnected, ganTimerConnected]);
+    }, [alreadySolvedThisRound, timerType, effectiveInspection, isManualMode, stackmatConnected, ganTimerConnected, freezeTime]);
 
     // Keyboard handlers
     useEffect(() => {
@@ -952,14 +984,19 @@ export default function RoomTimerOverlay({
     };
 
     // Format time for display
+    const dp = timerDecimalPoints ?? 2;
+
     const getTimerText = () => {
         if (isInspectingStatus(status)) {
             if (time < -2000) return 'DNF';
             if (time < 0) return '+2';
-            // Show inspection time with decimals (00.00 format)
-            return (time / 1000).toFixed(2);
+            // Show inspection time with decimals
+            return Math.ceil(time / 1000).toString();
         }
-        return formatTime(time);
+        if (status === STATUS.TIMING && hideTimeWhenSolving) {
+            return t('time_display.solve');
+        }
+        return formatTime(time, dp);
     };
 
     // Get timer color based on status
@@ -989,7 +1026,7 @@ export default function RoomTimerOverlay({
         const { inspection: inspPenalty, inspectionDNF, AUF, DNF } = penalties;
         const isDNF = DNF || inspectionDNF;
 
-        const rawTime = formatTime(time);
+        const rawTime = formatTime(time, dp);
         let penaltyString = '';
         if ((inspPenalty || AUF || isDNF) && !inspectionDNF) {
             const parts = [];
@@ -1000,7 +1037,7 @@ export default function RoomTimerOverlay({
             penaltyString = parts.join(' ') + ' ';
         }
 
-        const finalTimeStr = isDNF ? 'DNF' : formatTime(getFinalTime());
+        const finalTimeStr = isDNF ? 'DNF' : formatTime(getFinalTime(), dp);
         const displayTime = inspectionDNF ? 'DNF' : (penaltyString + finalTimeStr);
         const isCalculation = !!penaltyString && !inspectionDNF;
 
@@ -1047,7 +1084,7 @@ export default function RoomTimerOverlay({
         const { inspection: inspPenalty, inspectionDNF, AUF, DNF } = penalties;
         const isDNF = DNF || inspectionDNF;
 
-        const rawTime = formatTime(smartFinalTime);
+        const rawTime = formatTime(smartFinalTime, dp);
         let penaltyString = '';
         if ((inspPenalty || AUF || isDNF) && !inspectionDNF) {
             const parts = [];
@@ -1061,7 +1098,7 @@ export default function RoomTimerOverlay({
         let effectiveTime = smartFinalTime;
         if (AUF) effectiveTime += 2000;
 
-        const finalTimeStr = isDNF ? 'DNF' : formatTime(effectiveTime);
+        const finalTimeStr = isDNF ? 'DNF' : formatTime(effectiveTime, dp);
         const displayTime = inspectionDNF ? 'DNF' : (penaltyString + finalTimeStr);
         const isCalculation = !!penaltyString && !inspectionDNF;
 
@@ -1388,11 +1425,11 @@ export default function RoomTimerOverlay({
                                 >
                                     {smartInspectionTime <= -2 ? 'DNF' :
                                         smartInspectionTime <= 0 ? '+2' :
-                                            (smartInspectionTime).toFixed(2)}
+                                            (smartInspectionTime).toFixed(dp)}
                                 </div>
                             ) : (
                                 <div className="room-timer-overlay__time">
-                                    {formatTime(smartElapsedTime)}
+                                    {formatTime(smartElapsedTime, dp)}
                                 </div>
                             )}
                         </div>
@@ -1418,7 +1455,7 @@ export default function RoomTimerOverlay({
 }
 
 // Helper function for time formatting
-function formatTime(ms: number): string {
+function formatTime(ms: number, dp: number = 2): string {
     if (ms < 0) ms = 0;
 
     const totalSeconds = ms / 1000;
@@ -1426,10 +1463,10 @@ function formatTime(ms: number): string {
     const seconds = totalSeconds % 60;
 
     if (minutes > 0) {
-        return `${minutes}:${seconds.toFixed(2).padStart(5, '0')}`;
+        return `${minutes}:${seconds.toFixed(dp).padStart(dp + 3, '0')}`;
     }
 
-    return seconds.toFixed(2);
+    return seconds.toFixed(dp);
 }
 
 

@@ -1,4 +1,5 @@
 import React, { createContext, ReactNode, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import './ImportData.scss';
 import { reactState } from '../../../../@types/react';
 import { SessionInput, SolveInput } from '../../../../@types/generated/graphql';
@@ -10,6 +11,8 @@ import ModalHeader from '../../../common/modal/modal_header/ModalHeader';
 import block from '../../../../styles/bem';
 import ReviewImport from './review_import/ReviewImport';
 import { parseCsTimerData } from './parse_data/cstimer';
+import { parseTwistyTimerData } from './parse_data/twistytimer';
+import TwistyTimerInstructions from './instructions/TwistyTimerInstructions';
 import { ImportProgress, ChunkedImportResult } from './review_import/chunked_import';
 
 const b = block('import-data');
@@ -17,6 +20,7 @@ const b = block('import-data');
 export enum ImportDataType {
 	CS_TIMER,
 	ZKT_TIMER,
+	TWISTY_TIMER,
 }
 
 export interface ImportableData {
@@ -63,6 +67,7 @@ interface Props {
 
 export default function ImportData(props: Props) {
 	const { importType } = props;
+	const { t } = useTranslation();
 
 	const [file, setFile] = useState<File>(null);
 	const [importableData, setImportableData] = useState<ImportableData>(null);
@@ -89,6 +94,14 @@ export default function ImportData(props: Props) {
 				instructions: <ZktTimerInstructions />,
 			};
 			break;
+		case ImportDataType.TWISTY_TIMER:
+			timerImportData = {
+				name: 'Twisty Timer',
+				getImportableData: parseTwistyTimerData,
+				acceptedFileTypes: ['.txt'],
+				instructions: <TwistyTimerInstructions />,
+			};
+			break;
 	}
 
 	const context: IImportDataContext = {
@@ -112,11 +125,7 @@ export default function ImportData(props: Props) {
 		<ImportDataContext.Provider value={context}>
 			<div className={b()}>
 				<ModalHeader
-					title={
-						<>
-							<span>{timerImportData.name}</span> verisini içe aktar
-						</>
-					}
+					title={t('data_settings.import_modal_title', { name: timerImportData.name })}
 				/>
 				{timerImportData.instructions}
 				<ProcessData />

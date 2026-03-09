@@ -217,7 +217,6 @@ function getSolveInputFromCsTimerSolve(csSolve: CsTimerSolve, session: CsTimerSe
 
 	// Handle scramble
 	let scramble = csSolve[1];
-	scramble.replace('\n', '');
 	scramble = scramble.replace(/\s+/g, ' ');
 	scramble = scramble.trim();
 

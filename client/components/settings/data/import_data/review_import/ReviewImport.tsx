@@ -6,7 +6,7 @@ import { X } from 'phosphor-react';
 import { ImportDataContext } from '../ImportData';
 import Button from '../../../../common/button/Button';
 import { toastError, toastSuccess, toastWarning } from '../../../../../util/toast';
-import { importSessionsInChunks, importSolvesInChunks } from './chunked_import';
+import { CHUNK_SIZE, importSessionsInChunks, importSolvesInChunks } from './chunked_import';
 import ImportProgressDisplay from './progress_display/ImportProgressDisplay';
 import ImportErrorSummary from './error_summary/ImportErrorSummary';
 import ImportSection from '../import_section/ImportSection';
@@ -96,8 +96,84 @@ export default function ReviewImport() {
 		if (!results || results.errors.length === 0) return;
 
 		context.setImporting(true);
-		toastWarning(t('data_settings.retry_failed_chunks'));
-		context.setImporting(false);
+		context.setImportProgress(null);
+		toastWarning(t('data_settings.retry_in_progress'));
+
+		try {
+			const sessionErrors = results.errors.filter((e) => e.type === 'sessions');
+			const solveErrors = results.errors.filter((e) => e.type === 'solves');
+
+			let retryResult = {
+				successCount: results.successCount,
+				failureCount: 0,
+				errors: [],
+			};
+
+			if (sessionErrors.length > 0) {
+				const failedSessions = [];
+				for (const err of sessionErrors) {
+					const start = err.chunkIndex * CHUNK_SIZE;
+					const end = start + CHUNK_SIZE;
+					failedSessions.push(...data.sessions.slice(start, end));
+				}
+
+				const sessionResult = await importSessionsInChunks(failedSessions, (progress) =>
+					context.setImportProgress(progress)
+				);
+
+				retryResult.successCount += sessionResult.successCount;
+				retryResult.failureCount += sessionResult.failureCount;
+				retryResult.errors.push(...sessionResult.errors);
+
+				if (sessionResult.failureCount > 0) {
+					context.setImportResults(retryResult);
+					context.setImporting(false);
+					toastError(t('data_settings.retry_partial_fail', { count: sessionResult.failureCount }));
+					return;
+				}
+
+				// Session'lar basarili oldu, simdi tum solve'lari import et
+				const solveResult = await importSolvesInChunks(data.solves, (progress) =>
+					context.setImportProgress(progress)
+				);
+
+				retryResult.successCount += solveResult.successCount;
+				retryResult.failureCount += solveResult.failureCount;
+				retryResult.errors.push(...solveResult.errors);
+			} else if (solveErrors.length > 0) {
+				const failedSolves = [];
+				for (const err of solveErrors) {
+					const start = err.chunkIndex * CHUNK_SIZE;
+					const end = start + CHUNK_SIZE;
+					failedSolves.push(...data.solves.slice(start, end));
+				}
+
+				const solveResult = await importSolvesInChunks(failedSolves, (progress) =>
+					context.setImportProgress(progress)
+				);
+
+				retryResult.successCount += solveResult.successCount;
+				retryResult.failureCount += solveResult.failureCount;
+				retryResult.errors.push(...solveResult.errors);
+			}
+
+			context.setImportResults(retryResult);
+
+			if (retryResult.failureCount === 0) {
+				await clearOfflineData();
+				toastSuccess(t('data_settings.retry_success'));
+				setTimeout(() => {
+					window.location.href = '/sessions';
+				}, 1500);
+			} else {
+				context.setImporting(false);
+				toastError(t('data_settings.retry_partial_fail', { count: retryResult.failureCount }));
+			}
+		} catch (e) {
+			console.error('[Import Retry] Fatal error:', e);
+			context.setImporting(false);
+			toastError(e.message);
+		}
 	}
 
 	function updateSessionName(sessionId: string, sessionName: string) {
@@ -183,8 +259,8 @@ export default function ReviewImport() {
 			0,
 			<div className={b('session-header')} key="session-header-row">
 				<InputLegend large text={t('data_settings.session_name')} />
-				<InputLegend large text="Cube Type" />
-				<InputLegend large text="Remove" />
+				<InputLegend large text={t('data_settings.cube_type')} />
+				<InputLegend large text={t('data_settings.remove')} />
 			</div>
 		);
 	}

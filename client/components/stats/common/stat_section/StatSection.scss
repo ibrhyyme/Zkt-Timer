@@ -7,6 +7,10 @@
 	height: 100%;
 	grid-template-rows: 32px minmax(0, auto);
 
+	@media only screen and (max-width: 900px) {
+		grid-column: 1 !important;
+	}
+
 	&__header {
 		margin-bottom: 0;
 

@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+import { useTranslation } from 'react-i18next';
 import './ProcessData.scss';
 import block from '../../../../../styles/bem';
 import { useDropzone } from 'react-dropzone';
@@ -9,6 +10,7 @@ import ImportSection from '../import_section/ImportSection';
 const b = block('process-data');
 
 export default function ProcessData() {
+	const { t } = useTranslation();
 	const context = useContext(ImportDataContext);
 	const timerImportData = context.timerImportData;
 
@@ -52,11 +54,11 @@ export default function ProcessData() {
 	return (
 		<div className={b()}>
 			<hr />
-			<ImportSection title="Import edilecek dosyayı seçin" />
+			<ImportSection title={t('data_settings.select_file')} />
 
 			<div className={b('drop', { active: isDragActive })} {...getRootProps()}>
 				<input {...getInputProps()} />
-				<p>Sürükle bırak veya tıklayarak seçin</p>
+				<p>{t('data_settings.drag_and_drop')}</p>
 			</div>
 		</div>
 	);

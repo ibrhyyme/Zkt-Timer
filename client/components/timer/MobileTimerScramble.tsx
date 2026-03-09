@@ -25,7 +25,7 @@ export default function MobileTimerScramble() {
     const context = useContext(TimerContext);
     const mobileMode = useGeneral('mobile_mode');
     const cubeType = context.cubeType;
-    const sessionId = useSettings('session_id');
+    const scrambleSubset = context.scrambleSubset;
     const isMegaminx = cubeType === 'minx' || cubeType === 'megaminx';
     const [copied, setCopied] = useState(false);
 
@@ -47,7 +47,7 @@ export default function MobileTimerScramble() {
 
     const isSmart = smartCubeSelected(context);
 
-    // Küp türü veya session değiştiğinde scramble generate et
+    // Küp türü veya subset değiştiğinde scramble generate et
     useEffect(() => {
         if (lockedScramble && !timeStartedAt) {
             setTimerParam('scramble', lockedScramble);
@@ -55,7 +55,7 @@ export default function MobileTimerScramble() {
         } else {
             resetScramble(context);
         }
-    }, [cubeType, sessionId]);
+    }, [cubeType, scrambleSubset]);
 
     // Focus modunda gizle
     if (focusMode) {

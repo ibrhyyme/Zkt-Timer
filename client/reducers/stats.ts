@@ -17,13 +17,14 @@ function statsModuleBlock(
 }
 
 export const defaultStatsModuleBlocks = [
-	statsModuleBlock('single', 'best', false, 'green', 0),
-	statsModuleBlock('single', 'worst', false, 'red', 0),
-	statsModuleBlock('average', 'current', false, 'text', 0),
-	statsModuleBlock('average', 'best', false, 'text', 5),
-	statsModuleBlock('average', 'current', false, 'text', 5),
-	statsModuleBlock('average', 'best', false, 'text', 12),
-	statsModuleBlock('average', 'current', false, 'text', 12),
+	statsModuleBlock('single', 'best', true, 'green', 0), // ses. pb
+	statsModuleBlock('average', 'current', true, 'text', 0), // ses. avg
+	statsModuleBlock('average', 'best', true, 'text', 5), // ses. ao5 pb
+	statsModuleBlock('average', 'current', true, 'text', 5), // ses. ao5
+	statsModuleBlock('average', 'best', true, 'text', 12), // ses. ao12 pb
+	statsModuleBlock('average', 'current', true, 'text', 12), // ses. ao12
+	statsModuleBlock('average', 'best', true, 'text', 100), // ses. ao100 pb
+	statsModuleBlock('average', 'best', false, 'text', 100), // ao100 pb (all-time)
 ];
 
 const initialState: StatsModule = {

@@ -28,11 +28,11 @@ export default function QuickControlsModal() {
 			onClick={handleBackdropClick}
 		>
 			<div 
-				className="max-w-lg w-full rounded-3xl bg-[#12141c] border border-white/[0.08] shadow-2xl shadow-black/50 p-8 transform transition-all duration-300"
+				className="max-w-lg w-full rounded-3xl bg-[#12141c] border border-white/[0.08] shadow-2xl shadow-black/50 px-6 py-5 transform transition-all duration-300"
 				onClick={(e) => e.stopPropagation()}
 			>
 				{/* Header */}
-				<div className="flex items-center justify-between mb-8">
+				<div className="flex items-center justify-between mb-2">
 					<div className="flex items-center space-x-1 bg-[#1c1c1e] rounded-full p-1">
 						<button
 							type="button"
@@ -80,7 +80,7 @@ export default function QuickControlsModal() {
 				</div>
 
 				{/* Tab Content */}
-				<div className="min-h-[320px]">
+				<div className="h-[420px] md:h-[420px] max-h-[60vh] overflow-y-auto">
 					{activeTab === 'timer' && <TimerTab />}
 					{activeTab === 'extras' && <ExtrasTab />}
 					{activeTab === 'goals' && <GoalsTab />}

@@ -1,7 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import './HistoryModal.scss';
-import { Copy, ShareNetwork } from 'phosphor-react';
+import { Copy, ShareNetwork, PencilSimple, CheckCircle } from 'phosphor-react';
 import block from '../../../../styles/bem';
 import { getTimeString } from '../../../../util/time';
 import SolvesText from '../../solves_text/SolvesText';
@@ -32,6 +32,7 @@ interface Props {
 	showAsText?: boolean;
 	statOptions?: StatsModuleBlock;
 	filterOptions?: FilterSolvesOptions;
+	onAoCountChange?: (newCount: number) => void;
 }
 
 function getTrimmedSolveIds(solves: Solve[]): Set<string> {
@@ -56,7 +57,7 @@ function getTrimmedSolveIds(solves: Solve[]): Set<string> {
 
 export default function HistoryModal(props: Props) {
 	const { t } = useTranslation();
-	const { description, showAsText, statOptions, filterOptions } = props;
+	const { description, showAsText, statOptions, filterOptions, onAoCountChange } = props;
 	// Default to ascending (oldest first, 1..N) for mobile to match reference
 	// But let's check: reference shows "1. 0.514", "2. 0.394"... and dates are 12/02/26
 	// This implies standard order (1 is first solve).
@@ -72,23 +73,35 @@ export default function HistoryModal(props: Props) {
 	const dispatch = useDispatch();
 	const mobileMode = useGeneral('mobile_mode');
 
+	const [editingAo, setEditingAo] = useState(false);
+	const [aoEditValue, setAoEditValue] = useState('');
+	const aoInputRef = useRef<HTMLInputElement>(null);
+	const [localStatOptions, setLocalStatOptions] = useState(statOptions);
+
+	useEffect(() => {
+		if (editingAo && aoInputRef.current) {
+			aoInputRef.current.focus();
+			aoInputRef.current.select();
+		}
+	}, [editingAo]);
+
 	const sessionId = useSettings('session_id');
 	useSolveDb(); // Trigger re-render on DB changes
 
 	// Live data calculation
 	const liveData = useMemo(() => {
-		if (statOptions) {
-			return getStatsBlockValueFromFilter(statOptions, filterOptions, sessionId);
+		if (localStatOptions) {
+			return getStatsBlockValueFromFilter(localStatOptions, filterOptions, sessionId);
 		}
 		return null;
-	}, [statOptions, filterOptions, sessionId, useSolveDb()]); // useSolveDb returns version/trigger
+	}, [localStatOptions, filterOptions, sessionId, useSolveDb()]); // useSolveDb returns version/trigger
 
 	// Eğer canlı moddaysak ve veri gelmiyorsa (örn: AO12 için 11 süre kaldıysa), modalı kapat
 	React.useEffect(() => {
-		if (statOptions && liveData === null) {
+		if (localStatOptions && liveData === null) {
 			dispatch(closeModal());
 		}
-	}, [statOptions, liveData]);
+	}, [localStatOptions, liveData]);
 
 	const effectiveSolves = liveData ? liveData.solves : props.solves;
 	const effectiveTime = liveData ? liveData.time : props.time;
@@ -145,6 +158,25 @@ export default function HistoryModal(props: Props) {
 		dispatch(closeModal());
 	}
 
+	function handleAoEditStart() {
+		if (!onAoCountChange || !localStatOptions?.averageCount) return;
+		setAoEditValue(String(localStatOptions.averageCount));
+		setEditingAo(true);
+	}
+
+	function handleAoEditCommit() {
+		const num = parseInt(aoEditValue, 10);
+		if (!isNaN(num) && num >= 1 && num <= 2000 && onAoCountChange && localStatOptions) {
+			onAoCountChange(num);
+			setLocalStatOptions({ ...localStatOptions, averageCount: num });
+		}
+		setEditingAo(false);
+	}
+
+	function handleAoEditCancel() {
+		setEditingAo(false);
+	}
+
 	function openSolve(solve: Solve) {
 		dispatch(openModal(<SolveInfo solve={solve} solveId={solve.id} />, { width: 1000 }));
 	}
@@ -177,6 +209,45 @@ export default function HistoryModal(props: Props) {
 						<div className={b('mobile-desc')}>
 							<span>{description} {cubeTypes.join(', ')}</span>
 						</div>
+						{onAoCountChange && (
+							<div className={b('edit-ao-section')}>
+								{!editingAo ? (
+									<div className={b('edit-ao-label')} onClick={handleAoEditStart}>
+										<span>Average Of {localStatOptions?.averageCount}</span>
+										<PencilSimple weight="fill" size={14} />
+									</div>
+								) : (
+									<div className={b('edit-ao-row')}>
+										<span className={b('edit-ao-prefix')}>Average Of</span>
+										<input
+											ref={aoInputRef}
+											className={b('edit-ao-input')}
+											type="number"
+											min={1}
+											max={2000}
+											value={aoEditValue}
+											onChange={(e) => {
+											const raw = e.target.value;
+											if (raw === '') {
+												setAoEditValue('');
+												return;
+											}
+											const num = parseInt(raw, 10);
+											if (isNaN(num)) return;
+											setAoEditValue(String(Math.min(2000, Math.max(0, num))));
+										}}
+											onKeyDown={(e) => {
+												if (e.key === 'Enter') handleAoEditCommit();
+												if (e.key === 'Escape') handleAoEditCancel();
+											}}
+										/>
+										<div className={b('edit-ao-confirm')} onClick={handleAoEditCommit}>
+											<CheckCircle weight="fill" size={24} />
+										</div>
+									</div>
+								)}
+							</div>
+						)}
 					</div>
 				</div>
 
