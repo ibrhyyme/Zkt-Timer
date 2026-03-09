@@ -5,12 +5,13 @@ import { CaretDown, CaretUp, Minus, Plus } from 'phosphor-react';
 
 interface TimerSettingsGroupProps {
 	label: string;
+	id?: string;
 	children: React.ReactNode;
 }
 
-export function TimerSettingsGroup({ label, children }: TimerSettingsGroupProps) {
+export function TimerSettingsGroup({ label, id, children }: TimerSettingsGroupProps) {
 	return (
-		<div className="mt-6 first:mt-0">
+		<div id={id} className="mt-6 first:mt-0">
 			<div className="flex items-center space-x-1.5 mb-2">
 				<div className="h-1.5 w-1.5 bg-[#4a9eff] rounded-full"></div>
 				<span className="text-[#888] text-xs font-medium uppercase tracking-wider">

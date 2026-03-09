@@ -48,12 +48,12 @@ export default function Appearance() {
 	return (
 		<div className="space-y-2">
 			{/* Tema */}
-			<TimerSettingsGroup label={t('appearance.category_theme')}>
+			<TimerSettingsGroup id="appearance-theme" label={t('appearance.category_theme')}>
 				<ThemeOptions />
 			</TimerSettingsGroup>
 
 			{/* Düzen */}
-			<TimerSettingsGroup label={t('appearance.category_layout')}>
+			<TimerSettingsGroup id="appearance-layout" label={t('appearance.category_layout')}>
 				<TimerSettingsSelect
 					label={t('appearance.timer_modules')}
 					description={t('appearance.timer_modules_desc')}
@@ -81,7 +81,7 @@ export default function Appearance() {
 			</TimerSettingsGroup>
 
 			{/* Yazı Tipi */}
-			<TimerSettingsGroup label={t('appearance.category_typography')}>
+			<TimerSettingsGroup id="appearance-typography" label={t('appearance.category_typography')}>
 				<TimerSettingsSelect
 					label={t('appearance.timer_font')}
 					description={t('appearance.timer_font_desc')}

@@ -92,7 +92,7 @@ export default function DataSettings() {
 		<LoggedInOnly>
 			<div className="space-y-2">
 				{/* Veri Yönetimi */}
-				<TimerSettingsGroup label={t('data_settings.category_management')}>
+				<TimerSettingsGroup id="data-management" label={t('data_settings.category_management')}>
 					<TimerSettingsAction
 						label={t('data_settings.force_reload')}
 						description={t('data_settings.force_reload_desc')}
@@ -142,7 +142,7 @@ export default function DataSettings() {
 				</TimerSettingsGroup>
 
 				{/* Sıfırlama */}
-				<TimerSettingsGroup label={t('data_settings.category_reset')}>
+				<TimerSettingsGroup id="data-reset" label={t('data_settings.category_reset')}>
 					<TimerSettingsAction
 						label={t('data_settings.reset_settings')}
 						description={t('data_settings.reset_settings_desc')}

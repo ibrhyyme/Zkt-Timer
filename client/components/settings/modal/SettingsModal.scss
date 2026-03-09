@@ -1,3 +1,10 @@
+// Scrollbar gizle utility
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
 // Settings Modal içerik styling - daha iyi görünürlük için
 
 .settings-content {
