@@ -1,0 +1,73 @@
+import { Resolver, Query, Mutation, Arg, Ctx, Authorized } from 'type-graphql';
+import { GraphQLContext } from '../@types/interfaces/server.interface';
+import { DailyGoalType, SetDailyGoalInput } from '../schemas/DailyGoal.schema';
+import GraphQLError from '../util/graphql_error';
+import { ErrorCode } from '../constants/errors';
+import { Role } from '../middlewares/auth';
+
+@Resolver()
+export class DailyGoalResolver {
+	@Authorized([Role.LOGGED_IN])
+	@Query(() => [DailyGoalType])
+	async dailyGoals(@Ctx() context: GraphQLContext): Promise<DailyGoalType[]> {
+		try {
+			return await context.prisma.dailyGoal.findMany({
+				where: { user_id: context.user.id },
+			});
+		} catch (error) {
+			throw new GraphQLError(ErrorCode.INTERNAL_SERVER_ERROR, 'Failed to fetch daily goals');
+		}
+	}
+
+	@Authorized([Role.LOGGED_IN])
+	@Mutation(() => DailyGoalType)
+	async setDailyGoal(
+		@Arg('input') input: SetDailyGoalInput,
+		@Ctx() context: GraphQLContext
+	): Promise<DailyGoalType> {
+		try {
+			return await context.prisma.dailyGoal.upsert({
+				where: {
+					user_id_cube_type: {
+						user_id: context.user.id,
+						cube_type: input.cube_type,
+					},
+				},
+				create: {
+					user_id: context.user.id,
+					cube_type: input.cube_type,
+					target: input.target,
+					enabled: input.enabled ?? true,
+				},
+				update: {
+					target: input.target,
+					enabled: input.enabled ?? undefined,
+				},
+			});
+		} catch (error) {
+			throw new GraphQLError(ErrorCode.INTERNAL_SERVER_ERROR, 'Failed to set daily goal');
+		}
+	}
+
+	@Authorized([Role.LOGGED_IN])
+	@Mutation(() => Boolean)
+	async removeDailyGoal(
+		@Arg('cubeType') cubeType: string,
+		@Ctx() context: GraphQLContext
+	): Promise<boolean> {
+		try {
+			await context.prisma.dailyGoal.delete({
+				where: {
+					user_id_cube_type: {
+						user_id: context.user.id,
+						cube_type: cubeType,
+					},
+				},
+			});
+			return true;
+		} catch (error) {
+			// Kayit yoksa sessizce true don
+			return true;
+		}
+	}
+}

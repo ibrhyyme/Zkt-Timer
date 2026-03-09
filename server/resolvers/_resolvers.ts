@@ -27,3 +27,4 @@ export * from './CustomTrainer.resolver';
 export * from './BulkEmail.resolver';
 export * from './PushToken.resolver';
 export * from './YouTubeSearch.resolver';
+export * from './DailyGoal.resolver';

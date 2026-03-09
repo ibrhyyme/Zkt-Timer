@@ -29,6 +29,7 @@ import { getStore } from '../store';
 import { setGeneral } from '../../actions/general';
 import { generateId } from '../../../shared/code';
 import { emitEvent } from '../../util/event_handler';
+import { syncDailyGoalsFromServer } from '../daily-goal/helpers/storage';
 
 export function initAnonymousAppData(callback) {
 	if (typeof window === 'undefined') {
@@ -130,6 +131,7 @@ async function loadNonCriticalData(_me: UserAccount, dispatch: Dispatch<any>, pa
 
 		bgPromises.push(getStatsModule(dispatch));
 		bgPromises.push(getAllFriends(dispatch));
+		bgPromises.push(syncDailyGoalsFromServer());
 
 		await Promise.all(bgPromises);
 		await updateOfflineHash();
