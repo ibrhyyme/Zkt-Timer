@@ -44,6 +44,28 @@
 			margin-right: 0 !important;
 		}
 
+		// Session name truncation
+		.cd-session-picker {
+			max-width: 160px;
+			min-width: 0;
+
+			.cd-common-dropdown,
+			.cd-common-button__wrapper {
+				max-width: 100%;
+			}
+
+			.cd-common-button {
+				max-width: 100%;
+
+				span {
+					display: block !important;
+					overflow: hidden;
+					text-overflow: ellipsis;
+					min-width: 0;
+				}
+			}
+		}
+
 		// Button Overrides - Neutral Dark Glass
 		.cd-common-button--theme-gray {
 			background: rgba(255, 255, 255, 0.08) !important;
@@ -113,6 +135,10 @@
 			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 			padding: 3px;
 			gap: 3px;
+
+			.cd-session-picker {
+				max-width: 100px;
+			}
 		}
 
 		&__right-controls {
@@ -131,6 +157,10 @@
 		&__left-controls {
 			padding: 2px;
 			gap: 2px;
+
+			.cd-session-picker {
+				max-width: 80px;
+			}
 		}
 	}
 }

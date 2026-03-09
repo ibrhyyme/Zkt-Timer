@@ -3,6 +3,7 @@
 .#{$namespace}-cube-stats {
 	width: 100%;
 	display: grid;
+	overflow-x: hidden;
 	grid-template-columns: repeat(auto-fill, minmax(18.667rem, 1fr));
 	grid-auto-rows: minmax(20rem, auto);
 	grid-column-gap: 1.333rem;

@@ -6,6 +6,7 @@ import {setCubeType, setCurrentSession} from '../../db/settings/update';
 import {fetchSessionById, fetchSessions} from '../../db/sessions/query';
 import {fetchLastCubeTypeForSession} from '../../db/solves/query';
 import {useSettings} from '../../util/hooks/useSettings';
+import {getSetting} from '../../db/settings/query';
 import Dropdown from '../common/inputs/dropdown/Dropdown';
 import {Session} from '../../../server/schemas/Session.schema';
 import {openModal} from '../../actions/general';
@@ -74,8 +75,11 @@ export default function SessionPicker(props: Props) {
 
 		setCurrentSession(session.id);
 
-		const lastCubeType = fetchLastCubeTypeForSession(session.id);
-		setCubeType(lastCubeType || '333');
+		const lastCubeType = fetchLastCubeTypeForSession(session.id) || '333';
+		const currentCubeType = getSetting('cube_type');
+		if (lastCubeType !== currentCubeType) {
+			setCubeType(lastCubeType);
+		}
 	}
 
 	let sessionName = 'Select Session';
@@ -84,7 +88,7 @@ export default function SessionPicker(props: Props) {
 	}
 
 	return (
-		<div>
+		<div className="cd-session-picker">
 			<Dropdown noMargin openLeft text={sessionName} icon={<CaretDown />} options={options} />
 		</div>
 	);

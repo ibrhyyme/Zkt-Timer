@@ -29,9 +29,9 @@ export default function GoalsTab() {
 	return (
 		<div className="space-y-3">
 			{/* Baslik */}
-			<div className="flex items-center space-x-2 mb-6">
-				<div className="h-2 w-2 bg-[#4a9eff] rounded-full"></div>
-				<p className="text-[#888] text-sm font-medium">{t('quick_controls.goals_description')}</p>
+			<div className="flex items-center space-x-1.5 mb-1">
+				<div className="h-1.5 w-1.5 bg-[#4a9eff] rounded-full"></div>
+				<p className="text-[#888] text-xs font-medium">{t('quick_controls.goals_description')}</p>
 			</div>
 
 			{/* Aktif kup turu icin hedef */}

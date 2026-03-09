@@ -30,7 +30,6 @@ export default function TimerScramble() {
 
 	const scrambleInput = useRef(null);
 	const mobileMode = useGeneral('mobile_mode');
-	const sessionId = useSettings('session_id');
 	const cubeType = context.cubeType;
 	const scrambleSubset = context.scrambleSubset;
 	const isMegaminx = cubeType === 'minx' || cubeType === 'megaminx';
@@ -94,7 +93,7 @@ export default function TimerScramble() {
 		} else {
 			resetScramble(context);
 		}
-	}, [cubeType, sessionId, scrambleSubset]);
+	}, [cubeType, scrambleSubset]);
 
 	function toggleScrambleLock() {
 		if (editScramble) {

@@ -1,0 +1,154 @@
+import { v4 as uuid } from 'uuid';
+import { IImportDataContext, ImportableData } from '../ImportData';
+import { SolveInput } from '../../../../../@types/generated/graphql';
+
+const TWISTY_TIMER_CUBETYPE_MAP: Record<string, string> = {
+	'222': '222',
+	'333': '333',
+	'444': '444',
+	'555': '555',
+	'666': '666',
+	'777': '777',
+	mega: 'minx',
+	pyra: 'pyraminx',
+	skewb: 'skewb',
+	clock: 'clock',
+	sq1: 'sq1',
+};
+
+// Filename pattern: Solves_{puzzleType}_{puzzleName}_{date}_{time}.txt
+const FILENAME_REGEX = /^Solves_(\w+)_(.+?)_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}\.txt$/;
+
+/**
+ * Parse Twisty Timer time string to seconds.
+ * Formats: "9.45" → 9.45, "1:23.45" → 83.45
+ */
+function parseTimeString(timeStr: string): number {
+	if (timeStr.includes(':')) {
+		const [minutes, seconds] = timeStr.split(':');
+		return parseFloat(minutes) * 60 + parseFloat(seconds);
+	}
+
+	return parseFloat(timeStr);
+}
+
+/**
+ * Parse a single CSV line with semicolon delimiter and quote wrapping.
+ * Returns array of unquoted field values.
+ */
+function parseLine(line: string): string[] {
+	const fields: string[] = [];
+	let current = '';
+	let inQuotes = false;
+
+	for (let i = 0; i < line.length; i++) {
+		const char = line[i];
+
+		if (char === '"') {
+			inQuotes = !inQuotes;
+		} else if (char === ';' && !inQuotes) {
+			fields.push(current);
+			current = '';
+		} else {
+			current += char;
+		}
+	}
+
+	fields.push(current);
+	return fields;
+}
+
+function getCubeTypeFromFilename(filename: string): { cubeType: string; puzzleName: string } | null {
+	const match = filename.match(FILENAME_REGEX);
+	if (!match) return null;
+
+	const ttCode = match[1].toLowerCase();
+	const puzzleName = match[2];
+	const cubeType = TWISTY_TIMER_CUBETYPE_MAP[ttCode];
+
+	if (!cubeType) return null;
+
+	return { cubeType, puzzleName };
+}
+
+export function parseTwistyTimerData(txt: string, context: IImportDataContext): ImportableData {
+	const lines = txt.split('\n').filter((line) => line.trim().length > 0);
+
+	if (lines.length === 0) {
+		throw new Error('Empty file. No solves found.');
+	}
+
+	// Detect cube type from filename
+	let cubeType = context.cubeType || '333';
+	let puzzleName = '3x3';
+
+	if (context.file?.name) {
+		const fileInfo = getCubeTypeFromFilename(context.file.name);
+		if (fileInfo) {
+			cubeType = fileInfo.cubeType;
+			puzzleName = fileInfo.puzzleName;
+		}
+	}
+
+	// If cubeType was set from context (user picked), use that
+	if (context.cubeType) {
+		cubeType = context.cubeType;
+	}
+
+	// Create a single session for this import
+	const sessionId = uuid();
+	const sessionName = `Twisty Timer - ${puzzleName}`;
+
+	const solves: SolveInput[] = [];
+
+	for (let i = 0; i < lines.length; i++) {
+		const line = lines[i];
+		const fields = parseLine(line);
+
+		if (fields.length < 3) {
+			console.warn(`[TwistyTimer] Skipping invalid line ${i + 1}: expected at least 3 fields, got ${fields.length}`);
+			continue;
+		}
+
+		const timeStr = fields[0];
+		const scramble = fields[1].replace(/\s+/g, ' ').trim();
+		const dateStr = fields[2];
+		const penalty = fields[3]?.trim();
+
+		const isDnf = penalty === 'DNF';
+		const rawTime = parseTimeString(timeStr);
+
+		if (isNaN(rawTime)) {
+			console.warn(`[TwistyTimer] Skipping line ${i + 1}: invalid time "${timeStr}"`);
+			continue;
+		}
+
+		const startedAt = new Date(dateStr).getTime();
+		const endedAt = startedAt + rawTime * 1000;
+
+		solves.push({
+			time: isDnf ? -1 : rawTime,
+			raw_time: rawTime,
+			plus_two: false,
+			dnf: isDnf,
+			scramble,
+			cube_type: cubeType,
+			session_id: sessionId,
+			started_at: startedAt,
+			ended_at: endedAt,
+		});
+	}
+
+	console.log(`[TwistyTimer] Parsed ${solves.length} solves (cube type: ${cubeType})`);
+
+	return {
+		solves,
+		sessions: [
+			{
+				id: sessionId,
+				name: sessionName,
+				order: 0,
+			},
+		],
+	};
+}

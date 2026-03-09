@@ -111,11 +111,14 @@
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
+		min-width: 0;
 
 		span {
 			color: inherit;
 			display: table;
 			font-size: 2.3rem;
+			overflow-wrap: break-word;
+			word-break: break-word;
 			line-height: 2.2rem;
 			font-weight: bold;
 			border-bottom: 3px solid transparent;

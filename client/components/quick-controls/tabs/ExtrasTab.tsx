@@ -3,7 +3,60 @@ import { useTranslation } from 'react-i18next';
 import { setSetting, toggleSetting } from '../../../db/settings/update';
 import { useSettings } from '../../../util/hooks/useSettings';
 import screenfull from '../../../util/vendor/screenfull';
-import { CaretDown, CaretUp } from 'phosphor-react';
+import { CaretDown, CaretUp, Minus, Plus } from 'phosphor-react';
+
+interface ExtrasNumberInputProps {
+	label: string;
+	value: number;
+	step: number;
+	min: number;
+	hidden?: boolean;
+	onChange: (val: number) => void;
+}
+
+function ExtrasNumberInput({ label, value, step, min, hidden, onChange }: ExtrasNumberInputProps) {
+	if (hidden) return null;
+
+	const decrement = () => {
+		const next = Math.round((value - step) * 100) / 100;
+		if (next >= min) onChange(next);
+	};
+
+	const increment = () => {
+		onChange(Math.round((value + step) * 100) / 100);
+	};
+
+	return (
+		<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-[#1c1c1e] border border-white/[0.08] hover:border-white/[0.15] transition-all duration-200">
+			<span className="font-medium text-slate-200 group-hover:text-white transition-colors">
+				{label}
+			</span>
+			<div className="flex items-center space-x-2">
+				<button
+					type="button"
+					onClick={decrement}
+					disabled={value <= min}
+					className={`h-7 w-7 rounded-lg flex items-center justify-center transition-all duration-200 border ${value <= min
+						? 'bg-[#2a2a2e] border-white/[0.05] text-[#555] cursor-not-allowed'
+						: 'bg-[#2a2a2e] border-white/[0.1] text-slate-300 hover:bg-[#3a3a3e] hover:text-white hover:border-white/[0.15] cursor-pointer'
+					}`}
+				>
+					<Minus weight="bold" size={12} />
+				</button>
+				<span className="text-sm font-medium text-[#4a9eff] min-w-[40px] text-center tabular-nums">
+					{value.toFixed(1)}
+				</span>
+				<button
+					type="button"
+					onClick={increment}
+					className="h-7 w-7 rounded-lg flex items-center justify-center bg-[#2a2a2e] border border-white/[0.1] text-slate-300 hover:bg-[#3a3a3e] hover:text-white hover:border-white/[0.15] transition-all duration-200 cursor-pointer"
+				>
+					<Plus weight="bold" size={12} />
+				</button>
+			</div>
+		</div>
+	);
+}
 
 interface ExtrasOptionProps {
 	label: string;
@@ -121,6 +174,7 @@ export default function ExtrasTab() {
 	const inspection = useSettings('inspection');
 	const hideTimeWhenSolving = useSettings('hide_time_when_solving');
 	const timerType = useSettings('timer_type');
+	const freezeTime = useSettings('freeze_time');
 	const analysisMode = useSettings('smart_cube_analysis_mode');
 
 	const [fullScreenMode, setFullScreenMode] = useState(false);
@@ -172,9 +226,9 @@ export default function ExtrasTab() {
 
 	return (
 		<div className="space-y-3">
-			<div className="flex items-center space-x-2 mb-6">
-				<div className="h-2 w-2 bg-[#4a9eff] rounded-full"></div>
-				<p className="text-[#888] text-sm font-medium">
+			<div className="flex items-center space-x-1.5 mb-1">
+				<div className="h-1.5 w-1.5 bg-[#4a9eff] rounded-full"></div>
+				<p className="text-[#888] text-xs font-medium">
 					{t('quick_controls.extras_description')}
 				</p>
 			</div>
@@ -187,6 +241,14 @@ export default function ExtrasTab() {
 					onClick={option.onClick}
 				/>
 			))}
+
+			<ExtrasNumberInput
+				label={t('quick_controls.freeze_time')}
+				value={freezeTime ?? 0.2}
+				step={0.1}
+				min={0}
+				onChange={(val) => setSetting('freeze_time', val)}
+			/>
 
 			<ExtrasSelect
 				label={t('quick_controls.multi_phase')}

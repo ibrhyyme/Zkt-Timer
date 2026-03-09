@@ -840,7 +840,7 @@ model Setting {
   session_id                          String?
   timer_decimal_points                Int              @default(2)
   use_space_with_smart_cube           Boolean          @default(false)
-  use_2d_scramble_visual              Boolean          @default(false)
+  use_2d_scramble_visual              Boolean          @default(true)
   inspection_auto_start               Boolean          @default(false)
   stats_module_json                   String?
   scramble_subset                     String?

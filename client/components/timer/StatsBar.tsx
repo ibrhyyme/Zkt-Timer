@@ -1,4 +1,4 @@
-import React, { useContext, useMemo } from 'react';
+import React, { useContext, useState } from 'react';
 import { RootStateOrAny, useSelector, useDispatch } from 'react-redux';
 import { TimerContext } from './Timer';
 import { useGeneral } from '../../util/hooks/useGeneral';
@@ -14,13 +14,34 @@ import './StatsBar.scss';
 
 const b = block('stats-bar');
 
-// İstenen mobil istatistikleri: AO5, AO12, AO100, Mean
-const MOBILE_STATS: StatsModuleBlock[] = [
-    { statType: 'average', sortBy: 'current', averageCount: 5, session: true, colorName: 'primary' },
-    { statType: 'average', sortBy: 'current', averageCount: 12, session: true, colorName: 'primary' },
-    { statType: 'average', sortBy: 'current', averageCount: 100, session: true, colorName: 'primary' },
-    { statType: 'average', sortBy: 'current', averageCount: null, session: true, colorName: 'primary' },
-];
+const MOBILE_STATS_LS_KEY = 'mobile_stats_ao';
+const DEFAULT_AO_COUNTS = [5, 12, 100];
+
+function loadMobileAoCounts(): number[] {
+    try {
+        const stored = localStorage.getItem(MOBILE_STATS_LS_KEY);
+        if (stored) {
+            const parsed = JSON.parse(stored);
+            if (Array.isArray(parsed) && parsed.length === 3 && parsed.every((n: any) => typeof n === 'number' && n >= 3 && n <= 10000)) {
+                return parsed;
+            }
+        }
+    } catch {}
+    return DEFAULT_AO_COUNTS;
+}
+
+function buildMobileStats(aoCounts: number[]): StatsModuleBlock[] {
+    return [
+        ...aoCounts.map((count) => ({
+            statType: 'average' as const,
+            sortBy: 'current' as const,
+            averageCount: count,
+            session: true,
+            colorName: 'primary' as const,
+        })),
+        { statType: 'average' as const, sortBy: 'current' as const, averageCount: null, session: true, colorName: 'primary' as const },
+    ];
+}
 
 // Varsayılan istatistik blokları
 const DEFAULT_STATS: StatsModuleBlock[] = [
@@ -40,6 +61,8 @@ export default function StatsBar() {
     const timerFontFamily = useSettings('timer_font_family');
     const stats = useSelector((state: RootStateOrAny) => state?.stats);
 
+    const [mobileAoCounts, setMobileAoCounts] = useState<number[]>(loadMobileAoCounts);
+
     useSolveDb();
 
     // Focus modunda gizle
@@ -47,8 +70,15 @@ export default function StatsBar() {
         return null;
     }
 
-    // Mobilde kesinlikle sabit liste kullan
-    let statsBlocks = mobileMode ? MOBILE_STATS : ((stats?.blocks as StatsModuleBlock[]) || DEFAULT_STATS);
+    const mobileStats = buildMobileStats(mobileAoCounts);
+    let statsBlocks = mobileMode ? mobileStats : ((stats?.blocks as StatsModuleBlock[]) || DEFAULT_STATS);
+
+    function handleAoCountChange(index: number, newCount: number) {
+        const newCounts = [...mobileAoCounts];
+        newCounts[index] = newCount;
+        setMobileAoCounts(newCounts);
+        localStorage.setItem(MOBILE_STATS_LS_KEY, JSON.stringify(newCounts));
+    }
 
     const statItems = statsBlocks.map((statBlock, index) => {
         const statValue = getStatsBlockValueFromFilter(statBlock, solvesFilter, sessionId);
@@ -57,6 +87,7 @@ export default function StatsBar() {
 
         // Mean (tüm çözümler) için modal açmayı engelle - performans sorunu
         const isSessionMean = statBlock.session && !statBlock.averageCount;
+        const isEditableAo = mobileMode && !isSessionMean && statBlock.statType === 'average' && index < 3;
 
         // Modal açma fonksiyonu
         const handleClick = () => {
@@ -65,13 +96,12 @@ export default function StatsBar() {
                 const description = getStatsBlockDescription(statBlock, solvesFilter);
                 dispatch(openModal(
                     <HistoryModal
-                        // Live update için gerekli parametreler
                         statOptions={statBlock}
                         filterOptions={solvesFilter}
-                        // Fallback olarak mevcut değerler
                         time={statValue.time}
                         solves={statValue.solves}
                         description={description}
+                        onAoCountChange={isEditableAo ? (newCount) => handleAoCountChange(index, newCount) : undefined}
                     />
                 ));
             }

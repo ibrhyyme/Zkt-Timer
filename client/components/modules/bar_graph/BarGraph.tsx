@@ -12,6 +12,8 @@ import { useTheme } from '../../../util/hooks/useTheme';
 
 const b = block('bar-graph');
 
+const MIN_BAR_WIDTH = 28;
+
 export interface BarGraphData {
 	x: string;
 	y: number;
@@ -41,25 +43,26 @@ export default function BarGraph(props: Props) {
 		chartOpacity = 0.1;
 	}
 
-	const maxY = max(data, getY);
-	const yMax = Math.max(maxY, goalLine || 0);
-
-	const xScale = scaleBand<string>({
-		domain: data.map(getX),
-	});
-
-	const yScale = scaleLinear<number>({
-		domain: [0, Math.max(1, yMax * 1.2)],
-	});
-
 	return (
 		<div className={b()}>
 			{props.children}
 			<ParentSize>
 				{(parent) => {
-					// update scale output ranges
-					xScale.range([0, parent.width]);
-					yScale.range([parent.height, 0]);
+					const maxBars = Math.max(1, Math.floor(parent.width / MIN_BAR_WIDTH));
+					const displayData = data.length > maxBars ? data.slice(-maxBars) : data;
+
+					const maxY = max(displayData, getY);
+					const yMax = Math.max(maxY, goalLine || 0);
+
+					const xScale = scaleBand<string>({
+						domain: displayData.map(getX),
+						range: [0, parent.width],
+					});
+
+					const yScale = scaleLinear<number>({
+						domain: [0, Math.max(1, yMax * 1.2)],
+						range: [parent.height, 0],
+					});
 
 					return (
 						<svg width={parent.width} height={parent.height}>
@@ -89,12 +92,12 @@ export default function BarGraph(props: Props) {
 								})}
 								left={-2}
 								strokeWidth={0}
-								numTicks={20}
+								numTicks={Math.min(20, displayData.length)}
 								top={parent.height - 20}
 							/>
 
 							<Group>
-								{data.map((d) => {
+								{displayData.map((d) => {
 									const date = getX(d);
 									const yVal = yScale(getY(d)) ?? 0;
 									const count = getY(d);

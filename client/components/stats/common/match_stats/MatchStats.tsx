@@ -24,7 +24,7 @@ export default function MatchStats() {
 	const lostPercent = Math.floor((losses / played) * 100);
 
 	return (
-		<StatModule rowSpan={1} colSpan={2} className={b()}>
+		<StatModule className={b()}>
 			<div className={b('upper')}>
 				<div className={b('pie')}>
 					<PieChart

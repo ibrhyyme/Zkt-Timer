@@ -119,6 +119,71 @@
 		margin-bottom: 8px;
 	}
 
+	&__edit-ao-section {
+		margin-top: 12px;
+	}
+
+	&__edit-ao-label {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		font-size: 0.95rem;
+		font-weight: 600;
+		color: rgba(255, 255, 255, 0.5);
+		cursor: pointer;
+
+		&:hover {
+			color: rgba(255, 255, 255, 0.7);
+		}
+	}
+
+	&__edit-ao-row {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+
+	&__edit-ao-prefix {
+		font-size: 0.95rem;
+		font-weight: 600;
+		color: rgba(255, 255, 255, 0.5);
+	}
+
+	&__edit-ao-input {
+		width: 6ch;
+		background: rgba(255, 255, 255, 0.08);
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		border-radius: 6px;
+		color: #fff;
+		font-size: 0.95rem;
+		font-weight: 600;
+		text-align: center;
+		outline: none;
+		padding: 4px 6px;
+		-moz-appearance: textfield;
+
+		&:focus {
+			border-color: #4a9eff;
+		}
+
+		&::-webkit-outer-spin-button,
+		&::-webkit-inner-spin-button {
+			-webkit-appearance: none;
+			margin: 0;
+		}
+	}
+
+	&__edit-ao-confirm {
+		color: #4a9eff;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+
+		&:hover {
+			color: #6bb3ff;
+		}
+	}
+
 	&__mobile-desc {
 		font-size: 0.95rem;
 		color: #888;

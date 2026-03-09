@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Lock } from 'phosphor-react';
+import { X, Lock, Minus, Plus } from 'phosphor-react';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { openModal } from '../../actions/general';
@@ -80,6 +80,59 @@ function ExtrasOption({ label, isActive, disabled = false, hidden = false, onCli
     );
 }
 
+interface ExtrasNumberInputProps {
+    label: string;
+    value: number;
+    step: number;
+    min: number;
+    hidden?: boolean;
+    onChange: (val: number) => void;
+}
+
+function ExtrasNumberInput({ label, value, step, min, hidden, onChange }: ExtrasNumberInputProps) {
+    if (hidden) return null;
+
+    const decrement = () => {
+        const next = Math.round((value - step) * 100) / 100;
+        if (next >= min) onChange(next);
+    };
+
+    const increment = () => {
+        onChange(Math.round((value + step) * 100) / 100);
+    };
+
+    return (
+        <div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-gradient-to-r from-slate-800/30 to-slate-700/30 border border-slate-700/50 hover:border-slate-600/50 transition-all duration-200 hover:shadow-lg hover:shadow-black/10">
+            <span className="font-medium text-slate-200 group-hover:text-white transition-colors">
+                {label}
+            </span>
+            <div className="flex items-center space-x-2">
+                <button
+                    type="button"
+                    onClick={decrement}
+                    disabled={value <= min}
+                    className={`h-7 w-7 rounded-lg flex items-center justify-center transition-all duration-200 border ${value <= min
+                        ? 'bg-slate-700/30 border-slate-600/30 text-slate-500 cursor-not-allowed'
+                        : 'bg-slate-700/50 border-slate-600/50 text-slate-300 hover:bg-slate-600/50 hover:text-white cursor-pointer'
+                    }`}
+                >
+                    <Minus weight="bold" size={12} />
+                </button>
+                <span className="text-sm font-medium text-emerald-400 min-w-[40px] text-center tabular-nums">
+                    {value.toFixed(1)}
+                </span>
+                <button
+                    type="button"
+                    onClick={increment}
+                    className="h-7 w-7 rounded-lg flex items-center justify-center bg-slate-700/50 border border-slate-600/50 text-slate-300 hover:bg-slate-600/50 hover:text-white transition-all duration-200 cursor-pointer"
+                >
+                    <Plus weight="bold" size={12} />
+                </button>
+            </div>
+        </div>
+    );
+}
+
 interface RoomSettingsModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -96,6 +149,8 @@ export default function RoomSettingsModal({ isOpen, onClose, cubeType, allowedTi
     const timerType = useSettings('timer_type');
     const manualEntry = useSettings('manual_entry');
     const focusMode = useSettings('focus_mode');
+    const hideTimeWhenSolving = useSettings('hide_time_when_solving');
+    const freezeTime = useSettings('freeze_time');
 
     const [fullScreenMode, setFullScreenMode] = useState(false);
 
@@ -221,6 +276,13 @@ export default function RoomSettingsModal({ isOpen, onClose, cubeType, allowedTi
                 }
             },
         },
+        {
+            label: t('quick_controls.hide_time_when_solving'),
+            isActive: hideTimeWhenSolving,
+            hidden: false,
+            disabled: false,
+            onClick: () => toggleSetting('hide_time_when_solving'),
+        },
     ];
 
     function handleBackdropClick(e: React.MouseEvent) {
@@ -262,9 +324,9 @@ export default function RoomSettingsModal({ isOpen, onClose, cubeType, allowedTi
                 <div className="room-settings-modal__content overflow-y-auto max-h-[70vh] px-2">
                     {activeTab === 'timer' && (
                         <div className="space-y-3">
-                            <div className="flex items-center space-x-2 mb-4 px-1">
-                                <div className="h-2 w-2 bg-gradient-to-r from-indigo-400 to-purple-400 rounded-full"></div>
-                                <p className="text-slate-300 text-sm font-medium">
+                            <div className="flex items-center space-x-1.5 mb-1 px-1">
+                                <div className="h-1.5 w-1.5 bg-gradient-to-r from-indigo-400 to-purple-400 rounded-full"></div>
+                                <p className="text-slate-300 text-xs font-medium">
                                     {t('room_settings.select_timer_type')}
                                 </p>
                             </div>
@@ -282,10 +344,10 @@ export default function RoomSettingsModal({ isOpen, onClose, cubeType, allowedTi
 
                     {activeTab === 'extras' && (
                         <div className="room-settings-modal__section">
-                            <div className="space-y-3 mb-6">
-                                <div className="flex items-center space-x-2 mb-4 px-1">
-                                    <div className="h-2 w-2 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full"></div>
-                                    <p className="text-slate-300 text-sm font-medium">
+                            <div className="space-y-3">
+                                <div className="flex items-center space-x-1.5 mb-1 px-1">
+                                    <div className="h-1.5 w-1.5 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full"></div>
+                                    <p className="text-slate-300 text-xs font-medium">
                                         {t('room_settings.enable_extra_features')}
                                     </p>
                                 </div>
@@ -299,6 +361,13 @@ export default function RoomSettingsModal({ isOpen, onClose, cubeType, allowedTi
                                         onClick={option.onClick}
                                     />
                                 ))}
+                                <ExtrasNumberInput
+                                    label={t('quick_controls.freeze_time')}
+                                    value={freezeTime ?? 0.2}
+                                    step={0.1}
+                                    min={0}
+                                    onChange={(val) => setSetting('freeze_time', val)}
+                                />
                             </div>
                         </div>
                     )}

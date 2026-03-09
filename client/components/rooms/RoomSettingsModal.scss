@@ -1,12 +1,12 @@
 .room-settings-modal {
-    max-width: 500px;
+    max-width: 512px;
     width: 100%;
     border-radius: 24px;
     background: linear-gradient(145deg, rgba(var(--module-color), 0.98), rgba(15, 17, 25, 0.98));
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.03);
-    padding: 2rem;
+    padding: 1.25rem 1.5rem;
     animation: modalSlideIn 0.25s ease-out;
 
     @keyframes modalSlideIn {
@@ -37,7 +37,7 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-bottom: 2rem;
+        margin-bottom: 0.5rem;
     }
 
     &__tabs {
@@ -93,7 +93,13 @@
     }
 
     &__content {
-        min-height: 320px;
+        height: 360px;
+    }
+
+    @media (max-width: 767px) {
+        &__content {
+            height: 50vh;
+        }
     }
 
     &__section {
