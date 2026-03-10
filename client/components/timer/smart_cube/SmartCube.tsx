@@ -13,9 +13,8 @@ import { openModal, closeModal } from '../../../actions/general';
 import ManageSmartCubes from './manage_smart_cubes/ManageSmartCubes';
 import Cube from 'cubejs';
 import block from '../../../styles/bem';
-import { initSmartSolver, computeCorrectionPathAsync, IncrementalCompressor, matchScrambleWithCommutative, invertMove } from '../../../util/smart_scramble';
-import { getReverseTurns } from '../../../util/solve/turns';
-import { initSolverWorker, solveAsync } from '../../../util/solver_worker_manager';
+import { initSmartSolver, IncrementalCompressor, matchScrambleWithCommutative, invertMove } from '../../../util/smart_scramble';
+import { initSolverWorker } from '../../../util/solver_worker_manager';
 import { TimerContext } from '../Timer';
 import { useSettings } from '../../../util/hooks/useSettings';
 import LiveAnalysisOverlay from './LiveAnalysisOverlay';
@@ -339,24 +338,12 @@ export default function SmartCube() {
 				// We DO NOT reset TwistyPlayer.alg here. We want to keep the visual state (orientation/rotations) as is.
 				// The user just finished scrambling, so the visual state IS the scrambled state.
 
-				// Smart cube: fiziksel FACELETS state'i kullan (kullanici correction sirasinda
-				// hata yapip duzeltmis olabilir — teorik scramble state'i fiziksel durumla uyusmayabilir)
-				if (smartCubeConnected && smartCurrentState) {
-					try {
-						cubejs.current = Cube.fromString(smartCurrentState);
-					} catch (e) {
-						// Fallback: scramble hamleleriyle init et
-						const moves = preservedScrambleRef.current.split(' ').filter(m => m.trim());
-						for (const move of moves) {
-							cubejs.current.move(move);
-						}
-					}
-				} else {
-					// Normal (non-smart) akis: scramble hamleleriyle init et
-					const moves = preservedScrambleRef.current.split(' ').filter(m => m.trim());
-					for (const move of moves) {
-						cubejs.current.move(move);
-					}
+				// Scramble hamleleriyle init et — FACELETS'e guvenme
+				// (bazi kup modellerinde FACELETS parsing hatali olabiliyor, move tracking daha guvenilir)
+				const targetScramble = originalScrambleRef.current || preservedScrambleRef.current;
+				const moves = targetScramble.split(' ').filter(m => m.trim());
+				for (const move of moves) {
+					cubejs.current.move(move);
 				}
 			} else {
 				// Solve finished or manual reset, initialize to solved state
@@ -523,85 +510,11 @@ export default function SmartCube() {
 
 			return;
 		}
-		dbgSync(`Kup KARISIK baglandi | facelets: ${currentFacelets.slice(0, 27)}...`);
-
-
-		// Hedef durumu hesapla (scramble'in son hali)
-		const targetCube = new Cube();
-		const scrambleMoves = scramble.split(' ').filter(m => m.trim());
-		scrambleMoves.forEach(m => targetCube.move(m));
-		const targetFacelets = targetCube.asString();
-
-		// Async: fiziksel durumu coz ve correction/sync hesapla
-		(async () => {
-			try {
-				// 1. Fiziksel durumu coz (current → solved)
-				const currentCube = Cube.fromString(currentFacelets);
-				const solveStr = await solveAsync(currentCube.toJSON());
-
-				// 2. Ters cevir: solved → current (sanal kullanici hamleleri)
-				const toCurrentMoves: string[] = (typeof solveStr === 'string' && solveStr.trim())
-					? getReverseTurns(solveStr) as string[]
-					: [];
-
-				dbgSync(`Sync hamleler: [${toCurrentMoves.join(' ')}] (${toCurrentMoves.length} hamle)`);
-
-				// 3. TwistyPlayer'i fiziksel duruma sync et
-				if (twistyPlayerRef.current && toCurrentMoves.length > 0) {
-					twistyPlayerRef.current.alg = toCurrentMoves.join(' ');
-					// Scene degisti — ref'leri sifirla, animation loop yeni scene'i fetch etsin
-					twistySceneRef.current = null;
-					twistyVantageRef.current = null;
-				}
-
-				// 4. cubejs'i de sync et
-				cubejs.current = Cube.fromString(currentFacelets);
-				appliedTurnsRef.current = 0;
-
-				// 5. Kup zaten hedef karisik durumda mi?
-				dbgSync(`Hedef facelets: ${targetFacelets.slice(0, 27)}... | eslesme: ${currentFacelets === targetFacelets}`);
-				if (currentFacelets === targetFacelets) {
-					scrambleCompletedAtRef.current = new Date();
-		
-					setTimerParams({ smartCanStart: true });
-					resetMoves(false, true);
-					return;
-				}
-
-				// 6. Kup bozuk ve hedefte degil — correction path hesapla
-				dbgSync(`Correction hesaplaniyor...`,
-					`\n  scramble (origScramble): ${scramble}`,
-					`\n  toCurrentMoves: [${toCurrentMoves.join(' ')}]`,
-					`\n  currentFacelets: ${currentFacelets}`,
-					`\n  targetFacelets: ${targetFacelets}`
-				);
-
-				const correctionMoves = await computeCorrectionPathAsync(scramble, toCurrentMoves);
-
-				dbgSync(`Correction sonucu: [${correctionMoves.join(' ')}] (${correctionMoves.length} hamle)`);
-
-				if (correctionMoves.length === 0) {
-					// Solver farki — aslinda hedefte
-					dbgSync('Correction bos — kup aslinda hedefte');
-					scrambleCompletedAtRef.current = new Date();
-		
-					setTimerParams({ smartCanStart: true });
-					resetMoves(false, true);
-					return;
-				}
-
-				// 7. Yeni scramble = correction path (current → target)
-				const newScramble = correctionMoves.join(' ');
-				dbgSync(`Sync correction path set ediliyor: ${newScramble} | offset: 0`);
-				setTimerParams({
-					scramble: newScramble,
-					smartTurnOffset: 0,
-					originalScramble: scramble,
-				});
-			} catch (error) {
-				console.error('[ZKT:SYNC] Initial sync hatasi:', error);
-			}
-		})();
+		// FACELETS solved degil — karisik kup baglanmis olabilir VEYA FACELETS parsing hatali.
+		// Bazi GAN modellerinde (orn. GAN 12) FACELETS byte offset'leri farkli olabiliyor,
+		// bu da cozulmus kupu karisik olarak gosteriyor. Correction path hesaplamak yerine
+		// solved olarak devam et. Gercekten karisiksa kullanici "Cozulmus olarak isaretle" butonunu kullanabilir.
+		dbgSync(`FACELETS ≠ SOLVED (${currentFacelets.slice(0, 18)}...) — correction path atlanıyor`);
 	}, [smartCubeConnected, smartCurrentState]);
 
 	// Disconnect olunca initial sync'i resetle (reconnect'te tekrar calissin)
@@ -1023,6 +936,36 @@ export default function SmartCube() {
 		dispatch(openModal(<ManageSmartCubes />, { title: t('smart_cube.manage_smart_cubes') }));
 	}
 
+	function markCubeAsSolved() {
+		resetMoves(true);
+
+		// Force state to solved
+		setTimerParams({
+			smartCurrentState: DEFAULT_SOLVED_STATE,
+			smartPhysicallySolved: true,
+		});
+
+		// Correction mode'daysa orijinal scramble'i restore et
+		if (originalScramble && scramble !== originalScramble) {
+			setTimerParams({
+				scramble: originalScramble,
+				originalScramble: '',
+				smartTurnOffset: 0,
+				smartUndoMoves: null,
+			});
+			originalScrambleRef.current = originalScramble;
+		} else {
+			setTimerParams({ originalScramble: '' });
+			originalScrambleRef.current = scramble;
+		}
+
+		// _trackerCube'u da solved'a resetle
+		const activeCube = (connect.current as any)?.activeCube;
+		if (activeCube && activeCube._trackerCube) {
+			activeCube._trackerCube = new Cube();
+		}
+	}
+
 	function resetGyro() {
 		gyroBasisRef.current = null;
 	}
@@ -1037,7 +980,7 @@ export default function SmartCube() {
 					text: t('smart_cube.mark_as_solved'),
 					hidden: !smartCubeConnected,
 					disabled: !!timeStartedAt,
-					onClick: () => resetMoves(true),
+					onClick: markCubeAsSolved,
 				},
 				{
 					text: t('smart_cube.reset_gyro'),

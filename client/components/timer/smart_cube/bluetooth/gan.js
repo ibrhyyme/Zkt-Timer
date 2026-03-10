@@ -736,6 +736,12 @@ class GanGen4ProtocolDriver {
 			// FACELETS
 			let serial = (this.serial = msg.getBitWord(16, 16, true));
 
+			// -- DEBUG: GAN FACELETS byte analizi --
+			if (this.GAN_DEBUG_FACELETS) {
+				console.log('[GAN-FACELETS] Raw bits (first 128):', msg.bits.slice(0, 128));
+				console.log('[GAN-FACELETS] Hardware:', this.hwInfo?.[0xfc] || 'unknown');
+			}
+
 			// Periyodik FACELETS ile kaçırılan hamle kontrolü (500ms debounce)
 			// serial === lastSerial ise yeni hamle yok → kayip hamle olamaz, kontrol gereksiz
 			if (this.lastSerial != -1 && serial !== this.lastSerial) {
@@ -762,6 +768,15 @@ class GanGen4ProtocolDriver {
 			}
 			ep.push(66 - sum(ep));
 			eo.push((2 - (sum(eo) % 2)) % 2);
+
+			if (this.GAN_DEBUG_FACELETS) {
+				const facelets = toKociembaFacelets(cp, co, ep, eo);
+				console.log('[GAN-FACELETS] CP:', cp, 'CO:', co);
+				console.log('[GAN-FACELETS] EP:', ep, 'EO:', eo);
+				console.log('[GAN-FACELETS] Result:', facelets);
+				console.log('[GAN-FACELETS] Solved?', facelets === 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB');
+			}
+
 			cubeEvents.push({
 				type: 'FACELETS',
 				serial: serial,
@@ -972,6 +987,7 @@ export default class GAN extends SmartCube {
 		this._resyncPending = false;
 		// Küp durumu takibi
 		this._trackerCube = new Cube(); // BLE'den alınan tüm hamleleri takip eder
+		this.GAN_DEBUG_FACELETS = false; // true yaparak FACELETS byte'larini logla
 		// Sessizlik algılayıcı: son hamleden sonra FACELETS iste (çözüm algılama güvenliği)
 		this._silenceTimeoutId = null;
 		this._silenceRetryId = null;
