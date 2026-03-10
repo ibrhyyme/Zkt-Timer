@@ -6,6 +6,8 @@ import { X } from 'phosphor-react';
 import { closeModal } from '../../../actions/general';
 import ModalHeader from './modal_header/ModalHeader';
 import block from '../../../styles/bem';
+import { useSwipeBack } from '../../../util/hooks/useSwipeBack';
+import { useGeneral } from '../../../util/hooks/useGeneral';
 
 const b = block('modal');
 
@@ -43,6 +45,7 @@ export default function Modal(props: IModalProps) {
 	const modalRef = useRef<HTMLDivElement>(null);
 	const [active, setActive] = useState(false);
 	const dispatch = useDispatch();
+	const mobileMode = useGeneral('mobile_mode');
 
 	useEffect(() => {
 		(document.activeElement as any)?.blur();
@@ -70,6 +73,14 @@ export default function Modal(props: IModalProps) {
 		}
 	}
 
+	const { translateX: swipeX, progress: swipeProgress, phase: swipePhase } = useSwipeBack({
+		containerRef: modalRef,
+		onSwipeBack: clickClose,
+		disabled: !mobileMode,
+		edgeWidth: 24,
+		threshold: 100,
+	});
+
 	function handleBackdropClick(e: React.MouseEvent) {
 		if (disableBackdropClick) {
 			return;
@@ -93,6 +104,14 @@ export default function Modal(props: IModalProps) {
 		centerStyle.padding = '0';
 	}
 
+	if (swipePhase !== 'idle') {
+		centerStyle.transform = `translateX(${swipeX}px)`;
+		centerStyle.opacity = String(1 - swipeProgress * 0.3);
+		centerStyle.transition = swipePhase === 'swiping'
+			? 'none'
+			: 'transform 0.25s ease, opacity 0.25s ease';
+	}
+
 	const style: CSS.Properties = {};
 	if (zIndex) {
 		style.zIndex = zIndex;
@@ -114,7 +133,7 @@ export default function Modal(props: IModalProps) {
 	}
 
 	return (
-		<div className={b({ active, fullSize })} style={style} onClick={handleBackdropClick}>
+		<div ref={modalRef} className={b({ active, fullSize })} style={style} onClick={handleBackdropClick}>
 			<div className={b('center')} style={centerStyle} onClick={(e) => e.stopPropagation()}>
 				<ModalHeader title={title} description={description} />
 				{closeButton}

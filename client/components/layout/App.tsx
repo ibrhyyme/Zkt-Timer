@@ -26,6 +26,7 @@ import { initOfflineSyncListener } from './offline-listener';
 import { Capacitor } from '@capacitor/core';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { initPushNotifications } from '../../util/push-notifications';
+import SwipeBackIndicator from '../common/swipe_back_indicator/SwipeBackIndicator';
 
 interface Props {
 	path?: string;
@@ -213,6 +214,7 @@ export default function App(props: Props = {}) {
 
 	return (
 		<>
+			<SwipeBackIndicator />
 			<Header path={location.pathname} />
 			<LoadingCover fadeOut={appLoaded} />
 			{modalOutput}

@@ -9,6 +9,7 @@ import Appearance from '../appearance/Appearance';
 import DataSettings from '../data/DataSettings';
 import LanguageSettings from '../language/LanguageSettings';
 import {useScrollSpy} from '../../../util/hooks/useScrollSpy';
+import {useSwipeBack} from '../../../util/hooks/useSwipeBack';
 
 interface SettingsSection {
 	id: string;
@@ -72,6 +73,7 @@ export default function SettingsModal(props: Props) {
 	const {t} = useTranslation();
 	const location = useLocation();
 	const scrollContainerRef = useRef<HTMLDivElement>(null);
+	const backdropRef = useRef<HTMLDivElement>(null);
 	const [isDesktop, setIsDesktop] = useState(false);
 	const initialPathRef = useRef(location.pathname);
 
@@ -89,6 +91,14 @@ export default function SettingsModal(props: Props) {
 		window.addEventListener('resize', check);
 		return () => window.removeEventListener('resize', check);
 	}, []);
+
+	const {translateX: swipeX, progress: swipeProgress, phase: swipePhase} = useSwipeBack({
+		containerRef: backdropRef,
+		onSwipeBack: () => onClose?.(),
+		disabled: isDesktop || !isOpen,
+		edgeWidth: 24,
+		threshold: 100,
+	});
 
 	const allSectionIds = useMemo(() => {
 		if (isDesktop) {
@@ -147,12 +157,18 @@ export default function SettingsModal(props: Props) {
 
 	return createPortal(
 		<div
+			ref={backdropRef}
 			className="fixed inset-0 z-[70] bg-gradient-to-br from-black/70 to-black/50 backdrop-blur-md flex items-center justify-center p-4 transition-opacity duration-200"
 			onClick={handleBackdropClick}
 		>
 			<div
 				className="max-w-4xl w-full max-h-[70vh] rounded-3xl bg-[#12141c] border border-white/[0.08] shadow-2xl shadow-black/50 transform transition-all duration-300 flex flex-col"
 				onClick={(e) => e.stopPropagation()}
+				style={swipePhase !== 'idle' ? {
+					transform: `translateX(${swipeX}px)`,
+					opacity: 1 - swipeProgress * 0.3,
+					transition: swipePhase === 'swiping' ? 'none' : 'transform 0.25s ease, opacity 0.25s ease',
+				} : undefined}
 			>
 				{/* Header: close button + mobile nav */}
 				<div className="sticky top-0 z-10 bg-[#12141c] border-b border-white/[0.08] rounded-t-3xl px-6 pt-4 pb-3">
