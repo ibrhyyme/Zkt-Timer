@@ -26,7 +26,7 @@ export default function SwipeBackIndicator() {
 		containerRef: indicatorRef,
 		onSwipeBack: () => history.goBack(),
 		disabled,
-		edgeWidth: 24,
+		edgeWidth: 36,
 		threshold: 120,
 		useWindow: true,
 	});
