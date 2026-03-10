@@ -57,6 +57,7 @@ require('esbuild')
 			'process.env.FIREBASE_APP_ID': JSON.stringify(process.env.FIREBASE_APP_ID || ''),
 			'process.env.FIREBASE_VAPID_KEY': JSON.stringify(process.env.FIREBASE_VAPID_KEY || ''),
 		},
+		pure: !dev ? ['console.log', 'console.warn', 'console.info'] : [],
 		loader: {'.js': 'jsx'},
 		plugins: [
 			postCssPlugin({
