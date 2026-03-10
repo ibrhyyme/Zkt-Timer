@@ -153,6 +153,8 @@
 			overflow-y: auto;
 			overflow-x: hidden;
 			transform: translateY(0) scale(1);
+			touch-action: pan-y;
+			will-change: transform, opacity;
 
 			// Scrollable content
 			>* {
