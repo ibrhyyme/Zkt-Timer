@@ -12,9 +12,9 @@ import Header from './header/Header';
 import { initAnonymousAppData, initAppData, setBrowserSessionId } from './init';
 import { useGeneral } from '../../util/hooks/useGeneral';
 import { useMe } from '../../util/hooks/useMe';
-import { setGeneral } from '../../actions/general';
+import { setGeneral, closeModal } from '../../actions/general';
 import { getMe } from '../../actions/account';
-import { getMe as getMeFromStore } from '../store';
+import { getMe as getMeFromStore, getStore } from '../store';
 import { updateThemeColors } from './themes';
 import { initSocketIO } from '../../util/socket/socketio';
 import SettingsModal from '../settings/modal/SettingsModal';
@@ -25,6 +25,7 @@ import PendingSyncBadge from '../common/pending_sync_badge/PendingSyncBadge';
 import { initOfflineSyncListener } from './offline-listener';
 import { Capacitor } from '@capacitor/core';
 import { SplashScreen } from '@capacitor/splash-screen';
+import { App as CapApp } from '@capacitor/app';
 import { initPushNotifications } from '../../util/push-notifications';
 import SwipeBackIndicator from '../common/swipe_back_indicator/SwipeBackIndicator';
 
@@ -57,9 +58,25 @@ export default function App(props: Props = {}) {
 		initOfflineSyncListener(); // Offline sync başlat
 		dispatch(setGeneral('app_loaded', true));
 
-		// Capacitor native'de splash screen'i kapat (uygulama hazır)
+		// Capacitor native'de splash screen'i kapat ve back gesture'ı yakala
 		if (Capacitor.isNativePlatform()) {
 			SplashScreen.hide();
+
+			CapApp.addListener('backButton', () => {
+				const state = getStore().getState();
+				const modals = state?.general?.modals || [];
+				const settingsOpen = state?.general?.settings_modal_open;
+
+				if (modals.length > 0) {
+					dispatch(closeModal() as any);
+				} else if (settingsOpen) {
+					dispatch(setGeneral('settings_modal_open', false));
+				} else if (window.history.length > 1) {
+					window.history.back();
+				} else {
+					CapApp.exitApp();
+				}
+			});
 		}
 	}
 
