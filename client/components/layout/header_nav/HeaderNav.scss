@@ -40,6 +40,10 @@
 
 	&__logo {
 		animation: cubeRotate 10s linear infinite;
+
+		@media (prefers-reduced-motion: reduce) {
+			animation: none;
+		}
 	}
 
 	&__center {

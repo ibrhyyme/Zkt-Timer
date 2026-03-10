@@ -3,6 +3,7 @@ import { Bell } from 'phosphor-react';
 import { GetUnreadAnnouncementCountDocument } from '../../@types/generated/graphql';
 import { gqlQueryTyped } from '../api';
 import AnnouncementDropdown from './AnnouncementDropdown';
+import { useAppVisible } from '../../util/hooks/useAppVisible';
 
 export default function AnnouncementBell() {
 	const [isOpen, setIsOpen] = useState(false);
@@ -21,14 +22,18 @@ export default function AnnouncementBell() {
 		}
 	};
 
+	const appVisible = useAppVisible();
+
 	useEffect(() => {
+		if (!appVisible) return;
+
 		fetchUnreadCount();
 
-		// Her 1 dakikada bir güncelle
+		// Her 1 dakikada bir guncelle — arka plandayken calismaz
 		const interval = setInterval(fetchUnreadCount, 60000);
 
 		return () => clearInterval(interval);
-	}, []);
+	}, [appVisible]);
 
 	return (
 		<div className="relative">

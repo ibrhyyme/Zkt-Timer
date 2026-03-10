@@ -33,6 +33,7 @@ import BluetoothErrorMessage from '../common/BluetoothErrorMessage';
 import BleScanningModal from './ble_scanning_modal/BleScanningModal';
 import { isNative } from '../../../util/platform';
 import { resourceUri } from '../../../util/storage';
+import { onVisibilityChange } from '../../../util/app-visibility';
 import type { TwistyPlayer } from 'cubing/twisty';
 import * as THREE from 'three';
 
@@ -223,8 +224,10 @@ export default function SmartCube() {
 				}
 
 				// Start Animation Loop for Gyro
+				let animRunning = true;
+
 				const animate = async () => {
-					if (cancelled) return;
+					if (cancelled || !animRunning) return;
 
 					if (!twistySceneRef.current || !twistyVantageRef.current) {
 						try {
@@ -245,15 +248,31 @@ export default function SmartCube() {
 				};
 				animate();
 
+				// Arka plana gecildiginde render loop'u durdur, on plana donulunce baslat
+				unsubVisibility = onVisibilityChange((visible) => {
+					if (visible && !animRunning && !cancelled) {
+						animRunning = true;
+						animate();
+					} else if (!visible) {
+						animRunning = false;
+						if (animFrameRef.current) {
+							cancelAnimationFrame(animFrameRef.current);
+							animFrameRef.current = null;
+						}
+					}
+				});
+
 			} catch (error) {
 				console.error("Failed to load TwistyPlayer:", error);
 			}
 		};
 
+		let unsubVisibility: (() => void) | undefined;
 		initTwisty();
 
 		return () => {
 			cancelled = true;
+			unsubVisibility?.();
 			if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
 			if (containerRef.current) containerRef.current.innerHTML = '';
 		};
@@ -598,6 +617,24 @@ export default function SmartCube() {
 			if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
 		};
 	}, []);
+
+	// Arka planda BLE pil yoklamasini durdur, on planda yeniden baslat
+	useEffect(() => {
+		const unsub = onVisibilityChange((visible) => {
+			const cube = connect.current?.activeCube as any;
+			if (!cube) return;
+			if (!visible && cube.batteryInterval) {
+				clearInterval(cube.batteryInterval);
+				cube.batteryInterval = null;
+			} else if (visible && !cube.batteryInterval && smartCubeConnected) {
+				const pollFn = cube.updateBattery || cube.getBatteryLevel;
+				if (pollFn) {
+					cube.batteryInterval = setInterval(() => pollFn.call(cube), 10000);
+				}
+			}
+		});
+		return unsub;
+	}, [smartCubeConnected]);
 
 	// Bluetooth disconnect on timer change
 	const prevTimerTypeRef = useRef<string | null>(null);
