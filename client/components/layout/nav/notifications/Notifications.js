@@ -29,13 +29,19 @@ class Notifications extends React.Component {
 		await this.getNotifications(false, true);
 
 		// Fetch notifications every 3 minutes
-		setInterval(() => {
+		this._notifInterval = setInterval(() => {
 			if (this.state.open) {
 				return;
 			}
 
 			this.getNotifications(true, true);
 		}, 1000 * 180);
+	}
+
+	componentWillUnmount() {
+		if (this._notifInterval) {
+			clearInterval(this._notifInterval);
+		}
 	}
 
 	updateNotificationCount = async () => {

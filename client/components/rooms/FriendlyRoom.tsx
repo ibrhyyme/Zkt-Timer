@@ -616,7 +616,7 @@ export default function FriendlyRoom() {
         if (smartTiming && smartTimerStartedAt) {
             smartTimerIntervalRef.current = setInterval(() => {
                 setSmartElapsedTime(Date.now() - smartTimerStartedAt);
-            }, 10);
+            }, 33);
         } else {
             if (smartTimerIntervalRef.current) {
                 clearInterval(smartTimerIntervalRef.current);

@@ -1,12 +1,14 @@
 import {getDailyGoalStorage, setDailyGoalStorage} from './storage';
 import {getDailyGoalProgress} from './progress';
 import {getCubeTypeInfoById} from '../../../util/cubes/util';
+import {isAppVisible} from '../../../util/app-visibility';
 
 const REMINDER_CHECK_INTERVAL = 60_000; // 60 saniye
 const REMINDER_COOLDOWN = 60 * 60 * 1000; // 1 saat
 
 export function startReminderInterval(): () => void {
 	const intervalId = setInterval(() => {
+		if (!isAppVisible()) return;
 		checkAndSendReminder();
 	}, REMINDER_CHECK_INTERVAL);
 

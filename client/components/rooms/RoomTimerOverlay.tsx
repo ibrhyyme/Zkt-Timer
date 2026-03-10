@@ -270,7 +270,7 @@ export default function RoomTimerOverlay({
         setStartedAt(now());
         setTime(0);
         if (timerRef.current) clearInterval(timerRef.current);
-        timerRef.current = setInterval(() => tickTiming(), 10);
+        timerRef.current = setInterval(() => tickTiming(), 33);
     };
 
     const stopTimer = () => {

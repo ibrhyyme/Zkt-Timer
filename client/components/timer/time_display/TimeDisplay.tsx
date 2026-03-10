@@ -11,6 +11,7 @@ import { getSmartSolveEndTime } from '../helpers/events';
 import { TimerContext } from '../Timer';
 import block from '../../../styles/bem';
 import { useSettings } from '../../../util/hooks/useSettings';
+import { onVisibilityChange } from '../../../util/app-visibility';
 import StartInstructions from './start_instructions/StartInstructions';
 import StackMat from './stackmat/StackMat';
 import GanTimer from './gantimer/GanTimer';
@@ -76,6 +77,19 @@ export default function TimeDisplay() {
 		}
 	}, [solving, finalTime, timeStartedAt]);
 
+	// Arka plana gecildiginde timer display interval'ini durdur
+	useEffect(() => {
+		const unsub = onVisibilityChange((visible) => {
+			if (!visible && timerCounter.current) {
+				clearInterval(timerCounter.current);
+				timerCounter.current = null;
+			} else if (visible && !timerCounter.current && timeStartedAt && solving) {
+				startInterval();
+			}
+		});
+		return unsub;
+	}, [solving, timeStartedAt]);
+
 	useEffect(() => {
 		if (!timeStartedAt && !solving && finalTime >= 0) {
 			setTime(finalTime / 1000);
@@ -125,7 +139,7 @@ export default function TimeDisplay() {
 
 			const runningTime = (now.getTime() - timeStartedAt.getTime()) / 1000;
 			setTime(runningTime);
-		}, 10);
+		}, 33);
 	}
 
 	if (manualEntry) {

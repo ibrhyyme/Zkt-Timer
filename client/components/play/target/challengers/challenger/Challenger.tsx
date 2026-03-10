@@ -128,7 +128,7 @@ export default function Challenger(props: ChallengerProps) {
 			if (timerStopped.current) return;
 
 			setTime(newTime);
-		}, 10);
+		}, 33);
 	}
 
 	function stopTimer(data) {

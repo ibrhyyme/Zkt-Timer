@@ -285,8 +285,25 @@ export class RubiksCube {
 	}
 
 	private reqId: number;
+	private paused = false;
+
+	public pause() {
+		this.paused = true;
+		if (this.reqId) {
+			cancelAnimationFrame(this.reqId);
+			this.reqId = null;
+		}
+	}
+
+	public resume() {
+		if (this.paused) {
+			this.paused = false;
+			this.render();
+		}
+	}
 
 	private render() {
+		if (this.paused) return;
 		this.reqId = window.requestAnimationFrame(this.render.bind(this));
 		// Jiroskop animasyonu için smooth interpolasyon
 		this.animateGyro();
