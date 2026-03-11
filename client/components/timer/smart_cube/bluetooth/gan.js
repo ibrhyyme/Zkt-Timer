@@ -1236,7 +1236,8 @@ export default class GAN extends SmartCube {
 				this.moveQueue.push({
 					move: event.move,
 					timestamp: moveTimestamp,
-					cubeTimestamp: event.cubeTimestamp ?? null
+					cubeTimestamp: event.cubeTimestamp ?? null,
+					localTimestamp: event.localTimestamp ?? null,
 				});
 
 				// Debounced flush

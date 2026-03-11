@@ -23,6 +23,7 @@ import { useDispatch } from 'react-redux';
 import Dropdown from '../../common/inputs/dropdown/Dropdown';
 import Button from '../../common/button/Button';
 import { toastError } from '../../../util/toast';
+import { cubeTimestampLinearFit } from '../../../util/smart_cube_timing';
 import { endTimer, startTimer, startInspection, getSmartCubeClockSkew } from '../helpers/events';
 import { stopTimer, clearInspectionTimers, START_TIMEOUT } from '../helpers/timers';
 import { resetScramble } from '../helpers/scramble';
@@ -744,36 +745,28 @@ export default function SmartCube() {
 		const isSolveEnd = !!timeStartedAt;
 
 		if (isSolveEnd) {
-			// Clock skew düzeltmesi: küp saati gerçek zamandan yavaş/hızlı çalışabilir
-			// correctedTime = rawDiff / (1 + skew/100) — GAN referans kütüphanesiyle aynı yaklaşım
-			const clockSkew = getSmartCubeClockSkew();
-			const slope = (clockSkew !== 0) ? (1 + clockSkew / 100) : 1;
+			// Per-solve post-solve linear fit: cstimer tsLinearFix / gan-cube-sample cubeTimestampLinearFit ile aynı yaklaşım
+			// Çözüm hamlelerinin (cubeTimestamp, localTimestamp) çiftleri üzerinde linear regression yaparak
+			// her hamlenin zamanını yeniden hesaplar — pre-solve tahminden çok daha doğru
+			const { correctedMoves, finalTimeMs } = cubeTimestampLinearFit(
+				smartTurns,
+				timeStartedAt.getTime()
+			);
 
-			let finalTimeMilli: number | null = null;
-			if (endTimestamp && timeStartedAt) {
-				const rawDiff = endTimestamp - timeStartedAt.getTime();
-				finalTimeMilli = Math.round(rawDiff / slope);
+			let finalTimeMilli: number | null = Math.round(finalTimeMs);
+
+			// Fallback: linear fit sonucu geçersizse ham fark kullan
+			if (finalTimeMilli <= 0 && endTimestamp && timeStartedAt) {
+				finalTimeMilli = endTimestamp - timeStartedAt.getTime();
 			}
 
-			// completedAt'leri orantılı olarak ölçekle — server adım sürelerini buradan hesaplıyor
-			// Her hamlenin zamanı: firstCompletedAt + (completedAt - firstCompletedAt) / slope
-			// Böylece adım süreleri toplamı = finalTimeMilli (timer ↔ stats tutarlılık)
-			let correctedTurns = smartTurns;
-			if (slope !== 1 && smartTurns.length > 0) {
-				const baseTime = smartTurns[0].completedAt;
-				correctedTurns = smartTurns.map(t => ({
-					...t,
-					completedAt: baseTime + (t.completedAt - baseTime) / slope,
-				}));
-			}
-
-			dbgTimer(`TIMER STOP | finalTimeMilli: ${finalTimeMilli} | clockSkew: ${clockSkew}%`);
+			dbgTimer(`TIMER STOP (linear fit) | finalTimeMilli: ${finalTimeMilli} | moves: ${correctedMoves.length}`);
 			endTimer(context, finalTimeMilli, {
 				inspection_time: inspectionTime,
 				smart_device_id: smartDeviceId,
 				is_smart_cube: true,
-				smart_turn_count: correctedTurns.length,
-				smart_turns: JSON.stringify(correctedTurns),
+				smart_turn_count: correctedMoves.length,
+				smart_turns: JSON.stringify(correctedMoves),
 			});
 		}
 

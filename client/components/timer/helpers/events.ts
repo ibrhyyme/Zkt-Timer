@@ -100,8 +100,7 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 		smartStats = { turns: turnCount, tps };
 	}
 
-	// Yan etkileri calistir (timer/interval temizligi, yeni scramble fetch)
-	resetScramble(context);
+	// Timer/interval temizligi — önce display güncelle, scramble üretimi defer edilecek
 	stopTimer(START_TIMEOUT);
 	clearInspectionTimers(false, true);
 
@@ -119,6 +118,9 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 	});
 
 	setTimeout(() => {
+		// Yeni scramble üretimi pahalı — display güncellendikten sonra defer et (kasma önleme)
+		resetScramble(context);
+
 		const overridesCombined = { ...overrides };
 
 
