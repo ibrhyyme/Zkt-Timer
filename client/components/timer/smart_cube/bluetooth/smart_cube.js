@@ -145,7 +145,8 @@ export default class SmartCube {
 		const formattedMoves = moves.map(m => ({
 			turn: (m.move || m.turn || '').replace(/\s/g, ''),
 			completedAt: m.timestamp || m.completedAt || Date.now(),
-			cubeTimestamp: m.cubeTimestamp ?? null
+			cubeTimestamp: m.cubeTimestamp ?? null,
+			localTimestamp: m.localTimestamp ?? null,
 		}));
 
 		store.dispatch(turnSmartCubeBatch(formattedMoves));
