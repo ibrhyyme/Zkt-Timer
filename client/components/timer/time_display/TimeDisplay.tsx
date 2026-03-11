@@ -77,6 +77,27 @@ export default function TimeDisplay() {
 		}
 	}, [solving, finalTime, timeStartedAt]);
 
+	// Smart cube: BLE solved tespiti anında display'i dondur (33ms interval tick'ini bekleme)
+	// Bu olmadan timer "ileri kaçıp geri düşme" efekti yaşanır
+	useEffect(() => {
+		const handleFreeze = () => {
+			const solveEnd = getSmartSolveEndTime();
+			if (solveEnd !== null && solveEnd > 0 && timeStartedAt) {
+				const frozenTime = (solveEnd - timeStartedAt.getTime()) / 1000;
+				if (frozenTime > 0) {
+					setTime(frozenTime);
+					// Interval'ı durdur — artık ticking gereksiz
+					if (timerCounter.current) {
+						clearInterval(timerCounter.current);
+						timerCounter.current = null;
+					}
+				}
+			}
+		};
+		window.addEventListener('smartSolveFreeze', handleFreeze);
+		return () => window.removeEventListener('smartSolveFreeze', handleFreeze);
+	}, [timeStartedAt]);
+
 	// Arka plana gecildiginde timer display interval'ini durdur
 	useEffect(() => {
 		const unsub = onVisibilityChange((visible) => {
@@ -97,6 +118,15 @@ export default function TimeDisplay() {
 	}, [finalTime]);
 
 	function stopInterval() {
+		// Smart cube: freeze handler interval'ı zaten temizledi
+		// finalTime ile display'i doğru değere güncelle (freeze yaklaşık, linear fit doğru)
+		if (!timerCounter.current && getSmartSolveEndTime() !== null) {
+			if (finalTime > 0) {
+				setTime(finalTime / 1000);
+			}
+			return;
+		}
+
 		timerLocked.current = true;
 
 		if (!finalTime || finalTime <= 0) {

@@ -134,7 +134,7 @@ export function cubeTimestampLinearFit(
 			const fittedLocal = slope * (m.cubeTimestamp - baseCube) + intercept + baseLocal;
 			return {
 				...m,
-				completedAt: fittedLocal,
+				completedAt: Math.round(fittedLocal),
 			};
 		}
 		// Hala null ise (tüm değerler null) — orijinal completedAt'i koru
