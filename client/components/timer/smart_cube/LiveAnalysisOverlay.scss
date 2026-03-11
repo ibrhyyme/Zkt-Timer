@@ -37,7 +37,7 @@
     }
 
     &__symbol {
-        color: #fff;
+        color: rgb(var(--text-color));
         min-width: 0; // Reset width
         text-align: right;
         font-weight: 400;
@@ -45,7 +45,7 @@
     }
 
     &__time-val {
-        color: #60a5fa; // Time is Light Blue (matching stats)
+        color: rgb(var(--primary-color));
         letter-spacing: -2px;
         font-variant-numeric: tabular-nums;
     }

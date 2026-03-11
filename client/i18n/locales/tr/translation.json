@@ -1265,6 +1265,8 @@
 		"loading_scramble": "Karıştırma yükleniyor..."
 	},
 	"theme_options": {
+		"themes_title": "Temalar",
+		"themes_desc": "Hazır temalardan birini seçin veya aşağıdaki bölümden kendi temanızı özelleştirin. *Uyarı*: Bu temalardan birini seçmek, ayarladığınız özel tema renk ayarlarını sıfırlar.",
 		"basic_customization": "Temel tema özelleştirmesi",
 		"primary_color": "Ana renk",
 		"secondary_color": "İkincil renk",
@@ -1526,5 +1528,9 @@
 		"privacy": "Gizlilik",
 		"terms": "Sözleşme",
 		"credits": "Teşekkürler"
+	},
+	"pro": {
+		"feature_title": "Pro Özellik",
+		"feature_description": "Bu özellik Pro kullanıcılara özeldir. Pro'ya yükselterek tüm temalara ve daha fazlasına erişebilirsiniz. (Yakında)"
 	}
 }

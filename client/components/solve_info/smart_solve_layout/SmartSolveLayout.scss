@@ -32,7 +32,7 @@
 		font-family: 'SF Mono', 'Roboto Mono', 'Fira Code', monospace;
 		font-weight: bold;
 		text-align: center;
-		color: #fff;
+		color: rgb(var(--text-color));
 		margin: 0;
 	}
 
@@ -46,8 +46,8 @@
 	}
 
 	&__card {
-		background-color: #1E1E1E;
-		border: 1px solid #333;
+		background-color: rgb(var(--module-color));
+		border: 1px solid rgba(var(--text-color), 0.12);
 		border-radius: 10px;
 		padding: 14px 12px;
 		display: flex;
@@ -59,7 +59,7 @@
 			font-weight: bold;
 			font-size: 1.4rem;
 			margin: 0 0 4px;
-			color: #fff;
+			color: rgb(var(--text-color));
 		}
 	}
 
@@ -86,8 +86,8 @@
 		gap: 12px;
 		width: 100%;
 		padding: 10px 14px;
-		background-color: #1E1E1E;
-		border: 1px solid #333;
+		background-color: rgb(var(--module-color));
+		border: 1px solid rgba(var(--text-color), 0.12);
 		border-radius: 10px;
 		margin-bottom: 12px;
 	}
@@ -97,7 +97,7 @@
 		font-size: 0.85rem;
 		line-height: 1.4;
 		margin: 0;
-		color: #fff;
+		color: rgb(var(--text-color));
 		opacity: 0.9;
 		word-break: break-word;
 

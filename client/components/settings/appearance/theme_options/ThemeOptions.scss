@@ -8,11 +8,12 @@
 	}
 
 	&__presets {
-		display: flex;
-		justify-content: flex-end;
-		flex-wrap: wrap;
-		gap: 10px;
+		display: grid;
+		box-sizing: border-box;
 		width: 100%;
+		grid-gap: 10px;
+		grid-template-columns: repeat(2, 1fr);
+		justify-items: stretch;
 	}
 
 	&__theme-actions {
@@ -40,12 +41,6 @@
 		.#{$namespace}-common-color-picker {
 			margin-top: 5px;
 			position: relative;
-
-			// Renk paletlerinin üst üste açılmasını engelle
-			&:nth-child(1) .#{$namespace}-common-color-picker__palette { z-index: 1004; }
-			&:nth-child(2) .#{$namespace}-common-color-picker__palette { z-index: 1003; }
-			&:nth-child(3) .#{$namespace}-common-color-picker__palette { z-index: 1002; }
-			&:nth-child(4) .#{$namespace}-common-color-picker__palette { z-index: 1001; }
 		}
 	}
 

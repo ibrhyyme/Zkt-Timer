@@ -23,7 +23,7 @@
     &__section {
         display: flex;
         flex-direction: column;
-        background: rgba(255, 255, 255, 0.03);
+        background: rgba(var(--text-color), 0.03);
         border-radius: 8px;
         overflow: hidden;
 

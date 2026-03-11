@@ -159,7 +159,7 @@ export default function SettingsModal(props: Props) {
 	return createPortal(
 		<div
 			ref={backdropRef}
-			className="fixed inset-0 z-[70] bg-gradient-to-br from-black/70 to-black/50 backdrop-blur-md flex items-center justify-center p-4 transition-opacity duration-200"
+			className="fixed inset-0 z-[100000] bg-gradient-to-br from-black/70 to-black/50 backdrop-blur-md flex items-center justify-center p-4 transition-opacity duration-200"
 			onClick={handleBackdropClick}
 		>
 			<div

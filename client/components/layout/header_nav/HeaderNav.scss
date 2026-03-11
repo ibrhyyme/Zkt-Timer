@@ -126,17 +126,17 @@
 			justify-content: flex-start !important;
 			border-radius: 12px;
 			font-size: 1.067rem;
-			background: rgba(71, 85, 105, 0.6); // slate-600/60
-			color: rgba(226, 232, 240, 1); // slate-200
-			border: 1px solid rgba(148, 163, 184, 0.3); // slate-400/30
+			background: rgba(var(--button-color), 0.6);
+			color: rgb(var(--text-color));
+			border: 1px solid rgba(var(--text-color), 0.15);
 			backdrop-filter: blur(8px);
 			transition: all 0.2s ease-in-out;
 			font-weight: 500;
 
 			&:hover {
-				background: rgba(100, 116, 139, 0.8); // slate-500/80
-				color: rgba(248, 250, 252, 1); // slate-50
-				border-color: rgba(148, 163, 184, 0.5); // slate-400/50
+				background: rgba(var(--button-color), 0.8);
+				color: rgb(var(--text-color));
+				border-color: rgba(var(--text-color), 0.25);
 				transform: translateY(-1px);
 				box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 			}

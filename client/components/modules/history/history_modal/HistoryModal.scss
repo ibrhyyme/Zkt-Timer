@@ -6,7 +6,7 @@
 	align-items: center;
 	padding-top: 0;
 	position: relative;
-	color: #fff;
+	color: rgb(var(--text-color));
 	background-color: rgb(var(--background-color));
 	padding: 24px;
 	border-radius: 24px;
@@ -52,7 +52,7 @@
 		height: 100vh;
 		z-index: 9999; // Ensure it's on top of everything including the parent modal
 		background-color: rgb(var(--background-color));
-		color: #fff;
+		color: rgb(var(--text-color));
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
@@ -90,7 +90,7 @@
 	&__mobile-title {
 		font-size: 1.1rem;
 		font-weight: 600;
-		color: #fff;
+		color: rgb(var(--text-color));
 	}
 
 	&__mobile-done {
@@ -113,7 +113,7 @@
 	&__mobile-time {
 		font-size: 3.5rem;
 		font-weight: 700;
-		color: #fff;
+		color: rgb(var(--text-color));
 		line-height: 1.1;
 		font-family: 'SF Mono', 'Roboto Mono', 'Fira Code', monospace;
 		margin-bottom: 8px;
@@ -129,11 +129,11 @@
 		gap: 6px;
 		font-size: 0.95rem;
 		font-weight: 600;
-		color: rgba(255, 255, 255, 0.5);
+		color: rgba(var(--text-color), 0.5);
 		cursor: pointer;
 
 		&:hover {
-			color: rgba(255, 255, 255, 0.7);
+			color: rgba(var(--text-color), 0.7);
 		}
 	}
 
@@ -146,15 +146,15 @@
 	&__edit-ao-prefix {
 		font-size: 0.95rem;
 		font-weight: 600;
-		color: rgba(255, 255, 255, 0.5);
+		color: rgba(var(--text-color), 0.5);
 	}
 
 	&__edit-ao-input {
 		width: 6ch;
-		background: rgba(255, 255, 255, 0.08);
-		border: 1px solid rgba(255, 255, 255, 0.2);
+		background: rgba(var(--text-color), 0.08);
+		border: 1px solid rgba(var(--text-color), 0.2);
 		border-radius: 6px;
-		color: #fff;
+		color: rgb(var(--text-color));
 		font-size: 0.95rem;
 		font-weight: 600;
 		text-align: center;
@@ -186,7 +186,7 @@
 
 	&__mobile-desc {
 		font-size: 0.95rem;
-		color: #888;
+		color: rgba(var(--text-color), 0.5);
 		display: flex;
 		align-items: center;
 		gap: 8px;
@@ -210,7 +210,7 @@
 		}
 
 		button {
-			background-color: #1c1c1e !important;
+			background-color: rgb(var(--module-color)) !important;
 			border-radius: 10px !important;
 			height: 44px !important;
 			color: #4a9eff !important;
@@ -229,10 +229,10 @@
 		padding: 0 20px;
 		font-size: 0.8rem;
 		font-weight: 600;
-		color: #888;
+		color: rgba(var(--text-color), 0.5);
 		text-transform: uppercase;
 		margin-bottom: 8px;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+		border-bottom: 1px solid rgba(var(--text-color), 0.1);
 		padding-bottom: 8px;
 		flex-shrink: 0; // Don't shrink
 		background-color: rgb(var(--background-color)); // Ensure opacity if it were sticky
@@ -252,7 +252,7 @@
 		display: flex;
 		flex-direction: column;
 		padding: 12px 0;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+		border-bottom: 1px solid rgba(var(--text-color), 0.08);
 
 		&:last-child {
 			border-bottom: none;
@@ -275,7 +275,7 @@
 	&__mobile-row-time {
 		font-size: 1.25rem;
 		font-weight: 600;
-		color: #fff;
+		color: rgb(var(--text-color));
 		font-family: 'SF Mono', 'Roboto Mono', 'Fira Code', monospace;
 
 		&--trimmed {
@@ -302,13 +302,13 @@
 	&__mobile-row-date {
 		margin-left: auto;
 		font-size: 0.85rem;
-		color: #666;
+		color: rgba(var(--text-color), 0.4);
 	}
 
 	&__mobile-row-scramble {
 		margin-top: 6px;
 		font-size: 1rem; // Larger
-		color: #fff; // White
+		color: rgb(var(--text-color));
 		opacity: 0.9; // High visibility
 		font-family: 'SF Mono', 'Roboto Mono', 'Fira Code', monospace;
 		line-height: 1.4;
@@ -321,7 +321,7 @@
 	// -------------------------------------------------------------
 	&--card {
 		background-color: rgb(var(--background-color));
-		color: #fff;
+		color: rgb(var(--text-color));
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
@@ -337,7 +337,7 @@
 	&__card-time {
 		font-size: 3.5rem;
 		font-weight: 700;
-		color: #fff;
+		color: rgb(var(--text-color));
 		line-height: 1.1;
 		font-family: 'SF Mono', 'Roboto Mono', 'Fira Code', monospace;
 		margin-bottom: 8px;
@@ -345,7 +345,7 @@
 
 	&__card-desc {
 		font-size: 0.95rem;
-		color: #888;
+		color: rgba(var(--text-color), 0.5);
 		display: flex;
 		align-items: center;
 		gap: 8px;
@@ -366,7 +366,7 @@
 		}
 
 		button {
-			background-color: #1c1c1e !important;
+			background-color: rgb(var(--module-color)) !important;
 			border-radius: 10px !important;
 			height: 44px !important;
 			color: #4a9eff !important;
@@ -383,10 +383,10 @@
 		width: 100%;
 		font-size: 0.8rem;
 		font-weight: 600;
-		color: #888;
+		color: rgba(var(--text-color), 0.5);
 		text-transform: uppercase;
 		margin-bottom: 8px;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+		border-bottom: 1px solid rgba(var(--text-color), 0.1);
 		padding-bottom: 8px;
 	}
 

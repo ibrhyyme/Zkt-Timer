@@ -30,8 +30,8 @@ export default function GoalsTab() {
 		<div className="space-y-3">
 			{/* Baslik */}
 			<div className="flex items-center space-x-1.5 mb-1">
-				<div className="h-1.5 w-1.5 bg-[#4a9eff] rounded-full"></div>
-				<p className="text-[#888] text-xs font-medium">{t('quick_controls.goals_description')}</p>
+				<div className="h-1.5 w-1.5 bg-primary rounded-full"></div>
+				<p className="text-text/50 text-xs font-medium">{t('quick_controls.goals_description')}</p>
 			</div>
 
 			{/* Aktif kup turu icin hedef */}
@@ -58,8 +58,8 @@ export default function GoalsTab() {
 			{otherGoals.length > 0 && (
 				<>
 					<div className="flex items-center space-x-2 mt-6 mb-3">
-						<div className="h-1.5 w-1.5 bg-[#888] rounded-full"></div>
-						<p className="text-[#666] text-xs font-medium uppercase tracking-wider">
+						<div className="h-1.5 w-1.5 bg-text/50 rounded-full"></div>
+						<p className="text-text/40 text-xs font-medium uppercase tracking-wider">
 							{t('quick_controls.other_goals')}
 						</p>
 					</div>
@@ -89,14 +89,14 @@ export default function GoalsTab() {
 
 			{/* Hatirlatma toggle */}
 			<div className="mt-4">
-				<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-[#1c1c1e] border border-white/[0.08] hover:border-white/[0.15] transition-all duration-200">
+				<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-module border border-text/[0.08] hover:border-text/[0.15] transition-all duration-200">
 					<div className="flex items-center space-x-3">
 						{storage.reminder_enabled ? (
-							<Bell size={18} weight="fill" className="text-[#4a9eff]" />
+							<Bell size={18} weight="fill" className="text-primary" />
 						) : (
-							<BellSlash size={18} className="text-[#555]" />
+							<BellSlash size={18} className="text-text/30" />
 						)}
-						<span className="font-medium text-slate-200 group-hover:text-white transition-colors">
+						<span className="font-medium text-text/80 group-hover:text-text transition-colors">
 							{t('quick_controls.reminders')}
 						</span>
 					</div>
@@ -104,8 +104,8 @@ export default function GoalsTab() {
 						type="button"
 						className={`relative h-6 w-11 rounded-full border transition-all duration-300 transform hover:scale-105 ${
 							storage.reminder_enabled
-								? 'bg-[#4a9eff] border-[#4a9eff] shadow-lg shadow-[#4a9eff]/30'
-								: 'bg-[#2a2a2e] border-white/[0.1] hover:bg-[#3a3a3e]'
+								? 'bg-primary border-primary shadow-lg shadow-primary/30'
+								: 'bg-button border-text/[0.1] hover:bg-button'
 						} cursor-pointer`}
 						onClick={async () => {
 							const newVal = !storage.reminder_enabled;
@@ -152,12 +152,12 @@ function CurrentCubeGoal({cubeType, goal, progress, onSave, onToggle, onRemove, 
 	}
 
 	return (
-		<div className="rounded-xl bg-[#1c1c1e] border border-white/[0.08] p-4 space-y-3">
+		<div className="rounded-xl bg-module border border-text/[0.08] p-4 space-y-3">
 			{/* Kup adi + baslik */}
 			<div className="flex items-center justify-between">
 				<div className="flex items-center space-x-2">
-					<Target size={18} weight="bold" className="text-[#4a9eff]" />
-					<span className="font-semibold text-white">{cubeInfo?.name || cubeType}</span>
+					<Target size={18} weight="bold" className="text-primary" />
+					<span className="font-semibold text-text">{cubeInfo?.name || cubeType}</span>
 				</div>
 				{goal && (
 					<div className="flex items-center space-x-2">
@@ -166,8 +166,8 @@ function CurrentCubeGoal({cubeType, goal, progress, onSave, onToggle, onRemove, 
 							type="button"
 							className={`relative h-5 w-9 rounded-full border transition-all duration-300 ${
 								goal.enabled
-									? 'bg-[#4a9eff] border-[#4a9eff] shadow-sm shadow-[#4a9eff]/30'
-									: 'bg-[#2a2a2e] border-white/[0.1]'
+									? 'bg-primary border-primary shadow-sm shadow-primary/30'
+									: 'bg-button border-text/[0.1]'
 							} cursor-pointer`}
 							onClick={onToggle}
 						>
@@ -181,7 +181,7 @@ function CurrentCubeGoal({cubeType, goal, progress, onSave, onToggle, onRemove, 
 						<button
 							type="button"
 							onClick={onRemove}
-							className="p-1 rounded-lg text-[#555] hover:text-red-400 hover:bg-red-400/10 transition-all"
+							className="p-1 rounded-lg text-text/30 hover:text-red-400 hover:bg-red-400/10 transition-all"
 						>
 							<Trash size={16} />
 						</button>
@@ -200,12 +200,12 @@ function CurrentCubeGoal({cubeType, goal, progress, onSave, onToggle, onRemove, 
 						onChange={(e) => setInputValue(e.target.value)}
 						onKeyDown={(e) => e.key === 'Enter' && handleSave()}
 						placeholder={t('quick_controls.target_solves')}
-						className="flex-1 bg-[#2a2a2e] border border-white/[0.1] rounded-lg px-3 py-2 text-white text-sm placeholder-[#555] focus:border-[#4a9eff]/50 focus:outline-none transition-colors"
+						className="flex-1 bg-button border border-text/[0.1] rounded-lg px-3 py-2 text-text text-sm placeholder-text/30 focus:border-primary/50 focus:outline-none transition-colors"
 					/>
 					<button
 						type="button"
 						onClick={handleSave}
-						className="px-4 py-2 rounded-lg bg-[#4a9eff] text-white text-sm font-medium hover:bg-[#3d8fe6] transition-colors"
+						className="px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-primary/80 transition-colors"
 					>
 						{t('quick_controls.set_goal')}
 					</button>
@@ -213,7 +213,7 @@ function CurrentCubeGoal({cubeType, goal, progress, onSave, onToggle, onRemove, 
 			) : (
 				<div className="space-y-2">
 					{/* Progress bar */}
-					<div className="flex items-center justify-between text-xs text-[#888]">
+					<div className="flex items-center justify-between text-xs text-text/50">
 						<span>
 							{t('quick_controls.solves_progress', {
 								current: progress?.current || 0,
@@ -222,10 +222,10 @@ function CurrentCubeGoal({cubeType, goal, progress, onSave, onToggle, onRemove, 
 						</span>
 						<span>{progress?.percentage || 0}%</span>
 					</div>
-					<div className="h-2 w-full bg-[#2a2a2e] rounded-full overflow-hidden">
+					<div className="h-2 w-full bg-button rounded-full overflow-hidden">
 						<div
 							className={`h-full rounded-full transition-all duration-500 ease-out ${
-								progress?.completed ? 'bg-green-500' : 'bg-[#4a9eff]'
+								progress?.completed ? 'bg-green-500' : 'bg-primary'
 							}`}
 							style={{width: `${progress?.percentage || 0}%`}}
 						/>
@@ -240,7 +240,7 @@ function CurrentCubeGoal({cubeType, goal, progress, onSave, onToggle, onRemove, 
 							setInputValue(goal.target.toString());
 							setEditing(true);
 						}}
-						className="text-[#4a9eff] text-xs hover:underline"
+						className="text-primary text-xs hover:underline"
 					>
 						{t('quick_controls.edit_goal')}
 					</button>
@@ -249,7 +249,7 @@ function CurrentCubeGoal({cubeType, goal, progress, onSave, onToggle, onRemove, 
 
 			{/* Hedef yoksa mesaj */}
 			{!goal && !editing && (
-				<p className="text-[#555] text-sm">{t('quick_controls.no_goal_set')}</p>
+				<p className="text-text/30 text-sm">{t('quick_controls.no_goal_set')}</p>
 			)}
 		</div>
 	);
@@ -265,19 +265,19 @@ interface OtherGoalRowProps {
 
 function OtherGoalRow({name, goal, progress, onToggle, onRemove}: OtherGoalRowProps) {
 	return (
-		<div className="group flex items-center justify-between py-3 px-4 rounded-xl bg-[#1c1c1e] border border-white/[0.08] hover:border-white/[0.15] transition-all duration-200">
+		<div className="group flex items-center justify-between py-3 px-4 rounded-xl bg-module border border-text/[0.08] hover:border-text/[0.15] transition-all duration-200">
 			<div className="flex items-center space-x-3 flex-1 min-w-0">
-				<span className={`font-medium text-sm ${goal.enabled ? 'text-slate-200' : 'text-[#555]'}`}>{name}</span>
+				<span className={`font-medium text-sm ${goal.enabled ? 'text-text/80' : 'text-text/30'}`}>{name}</span>
 				{progress && (
-					<span className="text-xs text-[#666]">
+					<span className="text-xs text-text/40">
 						{progress.current}/{goal.target}
 					</span>
 				)}
 				{/* Mini progress bar */}
 				{progress && (
-					<div className="h-1 w-16 bg-[#2a2a2e] rounded-full overflow-hidden">
+					<div className="h-1 w-16 bg-button rounded-full overflow-hidden">
 						<div
-							className={`h-full rounded-full ${progress.completed ? 'bg-green-500' : 'bg-[#4a9eff]'}`}
+							className={`h-full rounded-full ${progress.completed ? 'bg-green-500' : 'bg-primary'}`}
 							style={{width: `${progress.percentage}%`}}
 						/>
 					</div>
@@ -288,8 +288,8 @@ function OtherGoalRow({name, goal, progress, onToggle, onRemove}: OtherGoalRowPr
 					type="button"
 					className={`relative h-5 w-9 rounded-full border transition-all duration-300 ${
 						goal.enabled
-							? 'bg-[#4a9eff] border-[#4a9eff] shadow-sm shadow-[#4a9eff]/30'
-							: 'bg-[#2a2a2e] border-white/[0.1]'
+							? 'bg-primary border-primary shadow-sm shadow-primary/30'
+							: 'bg-button border-text/[0.1]'
 					} cursor-pointer`}
 					onClick={onToggle}
 				>
@@ -302,7 +302,7 @@ function OtherGoalRow({name, goal, progress, onToggle, onRemove}: OtherGoalRowPr
 				<button
 					type="button"
 					onClick={onRemove}
-					className="p-1 rounded-lg text-[#555] hover:text-red-400 hover:bg-red-400/10 transition-all opacity-0 group-hover:opacity-100"
+					className="p-1 rounded-lg text-text/30 hover:text-red-400 hover:bg-red-400/10 transition-all opacity-0 group-hover:opacity-100"
 				>
 					<Trash size={14} />
 				</button>

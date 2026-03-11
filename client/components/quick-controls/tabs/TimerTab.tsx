@@ -16,16 +16,16 @@ interface TimerOptionProps {
 
 function TimerOption({ label, isActive, disabled = false, onClick }: TimerOptionProps) {
 	return (
-		<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-[#1c1c1e] border border-white/[0.08] hover:border-white/[0.15] transition-all duration-200">
-			<span className={`font-medium transition-colors ${disabled ? 'text-slate-500' : 'text-slate-200 group-hover:text-white'}`}>
+		<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-module border border-text/[0.08] hover:border-text/[0.15] transition-all duration-200">
+			<span className={`font-medium transition-colors ${disabled ? 'text-text/40' : 'text-text/80 group-hover:text-text'}`}>
 				{label}
 			</span>
 			<button
 				type="button"
 				disabled={disabled}
 				className={`relative h-6 w-11 rounded-full border transition-all duration-300 transform hover:scale-105 ${isActive
-					? 'bg-[#4a9eff] border-[#4a9eff] shadow-lg shadow-[#4a9eff]/30'
-					: 'bg-[#2a2a2e] border-white/[0.1] hover:bg-[#3a3a3e]'
+					? 'bg-primary border-primary shadow-lg shadow-primary/30'
+					: 'bg-button border-text/[0.1] hover:bg-button'
 					} ${disabled ? 'opacity-30 cursor-not-allowed transform-none' : 'cursor-pointer'}`}
 				onClick={onClick}
 			>
@@ -112,8 +112,8 @@ export default function TimerTab() {
 	return (
 		<div className="space-y-3">
 			<div className="flex items-center space-x-1.5 mb-1">
-				<div className="h-1.5 w-1.5 bg-[#4a9eff] rounded-full"></div>
-				<p className="text-[#888] text-xs font-medium">
+				<div className="h-1.5 w-1.5 bg-primary rounded-full"></div>
+				<p className="text-text/50 text-xs font-medium">
 					{t('quick_controls.timer_type_description')}
 				</p>
 			</div>

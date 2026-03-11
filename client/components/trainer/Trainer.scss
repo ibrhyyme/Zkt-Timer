@@ -48,7 +48,7 @@
 		justify-content: space-between;
 		align-items: center;
 		padding: 0.5rem 0.75rem;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+		border-bottom: 1px solid rgba(var(--text-color), 0.05);
 	}
 
 	&__toolbar-left,
@@ -177,10 +177,10 @@
 		top: 100%;
 		right: 0;
 		margin-top: 4px;
-		background: rgba(30, 30, 40, 0.95);
+		background: rgba(var(--module-color), 0.95);
 		backdrop-filter: blur(10px);
 		border-radius: 8px;
-		border: 1px solid rgba(255, 255, 255, 0.1);
+		border: 1px solid rgba(var(--text-color), 0.1);
 		padding: 0.25rem 0;
 		min-width: 160px;
 		z-index: 100;
@@ -284,7 +284,7 @@
 		width: 100%;
 		padding: 0.5rem 2rem 0.5rem 0.75rem;
 		border-radius: 8px;
-		border: 1px solid rgba(255, 255, 255, 0.1);
+		border: 1px solid rgba(var(--text-color), 0.1);
 		background: rgba(var(--button-color), 0.3);
 		color: rgb(var(--text-color));
 		font-size: 0.9rem;
@@ -314,7 +314,7 @@
 		flex-direction: column;
 		gap: 0.25rem;
 		padding: 0.75rem;
-		border: 1px solid rgba(255, 255, 255, 0.08);
+		border: 1px solid rgba(var(--text-color), 0.08);
 		border-radius: 10px;
 		background: rgba(var(--button-color), 0.15);
 		white-space: nowrap;
@@ -330,7 +330,7 @@
 		flex: 1;
 		min-width: 0;
 		padding: 1rem 1.25rem;
-		border: 1px solid rgba(255, 255, 255, 0.06);
+		border: 1px solid rgba(var(--text-color), 0.06);
 		border-radius: 10px;
 		background: rgba(var(--button-color), 0.08);
 	}
@@ -374,7 +374,7 @@
 	&__cat-info-overlay {
 		position: fixed;
 		inset: 0;
-		background: rgba(0, 0, 0, 0.6);
+		background: rgba(var(--background-color), 0.6);
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -386,11 +386,11 @@
 		width: 90%;
 		max-width: 560px;
 		max-height: 80vh;
-		background: rgb(30, 30, 36);
+		background: rgb(var(--module-color));
 		border-radius: 12px;
 		padding: 1.5rem;
 		overflow-y: auto;
-		border: 1px solid rgba(255, 255, 255, 0.1);
+		border: 1px solid rgba(var(--text-color), 0.1);
 	}
 
 	&__cat-info-modal-header {
@@ -450,7 +450,7 @@
 		columns: 160px auto;
 		column-gap: 0.5rem;
 		padding: 0.75rem;
-		border: 1px solid rgba(255, 255, 255, 0.08);
+		border: 1px solid rgba(var(--text-color), 0.08);
 		border-radius: 10px;
 		background: rgba(var(--button-color), 0.15);
 
@@ -1008,7 +1008,7 @@
 		margin: 0;
 		text-align: center;
 		padding-bottom: 0.5rem;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+		border-bottom: 1px solid rgba(var(--text-color), 0.05);
 	}
 
 	&__stats-grid {
@@ -1064,7 +1064,7 @@
 
 		th, td {
 			padding: 0.3rem 0.4rem;
-			border: 1px solid rgba(255, 255, 255, 0.1);
+			border: 1px solid rgba(var(--text-color), 0.1);
 			text-align: center;
 		}
 
@@ -1102,7 +1102,7 @@
 	&__options-overlay {
 		position: fixed;
 		inset: 0;
-		background: rgba(0, 0, 0, 0.5);
+		background: rgba(var(--background-color), 0.5);
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -1124,7 +1124,7 @@
 		justify-content: space-between;
 		align-items: center;
 		padding: 1rem 1.25rem;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+		border-bottom: 1px solid rgba(var(--text-color), 0.05);
 
 		h3 {
 			margin: 0;
@@ -1158,7 +1158,7 @@
 
 	&__options-divider {
 		height: 1px;
-		background: rgba(255, 255, 255, 0.08);
+		background: rgba(var(--text-color), 0.08);
 		margin: 0.5rem 0;
 	}
 
@@ -1188,7 +1188,7 @@
 		gap: 0.4rem;
 		padding: 0.5rem 0.75rem;
 		border-radius: 8px;
-		border: 1px solid rgba(255, 255, 255, 0.1);
+		border: 1px solid rgba(var(--text-color), 0.1);
 		background: rgba(var(--button-color), 0.2);
 		color: rgb(var(--text-color));
 		cursor: pointer;
@@ -1198,7 +1198,7 @@
 
 		&:hover {
 			background: rgba(var(--button-color), 0.4);
-			border-color: rgba(255, 255, 255, 0.2);
+			border-color: rgba(var(--text-color), 0.2);
 		}
 	}
 
@@ -1468,7 +1468,7 @@
 				content: '';
 				position: absolute;
 				inset: 0;
-				background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+				background: linear-gradient(90deg, transparent, rgba(var(--text-color), 0.4), transparent);
 				animation: cs-shimmer 2.5s ease-in-out infinite;
 			}
 		}

@@ -20,7 +20,7 @@
 
         // Mavi kısımlar span içinde
         span.text-blue-400 {
-            color: #60a5fa; // Tailwind blue-400
+            color: rgb(var(--primary-color));
         }
     }
 

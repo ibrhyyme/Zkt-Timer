@@ -71,11 +71,11 @@ function HeaderNavLink(props: HeaderNavLinkProps) {
 		);
 	} else {
 		linkClasses.push(
-			'text-white/90',
-			'hover:text-white',
-			'bg-white/5',
-			'hover:bg-white/10',
-			'border-white/10'
+			'text-text/90',
+			'hover:text-text',
+			'bg-text/5',
+			'hover:bg-text/10',
+			'border-text/10'
 		);
 	}
 
@@ -96,6 +96,8 @@ export default function HeaderNav() {
 
 	const focusMode = useSettings('focus_mode');
 	const mobileMode = useGeneral('mobile_mode');
+	const bgTheme = useTheme('background_color');
+	const isLightTheme = bgTheme && !bgTheme.isDark;
 
 	useWindowListener('resize', windowResize, [mobileMode]);
 
@@ -146,6 +148,8 @@ export default function HeaderNav() {
 		return null;
 	}
 
+	const logoSrc = isLightTheme ? '/public/images/zkt-logo-dark.png' : '/public/images/zkt-logo.png';
+
 	// Desktop header
 	return (
 		<div className={b()}>
@@ -154,16 +158,16 @@ export default function HeaderNav() {
 				<div className={b('left')}>
 					<Link
 						to="/"
-						className="text-white hover:text-cyan-50 font-bold tracking-tight select-none text-2xl flex items-center gap-2"
-						style={{ textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}
+						className="text-text hover:text-text font-bold tracking-tight select-none text-2xl flex items-center gap-2"
+						style={{ textShadow: isLightTheme ? 'none' : '0 2px 4px rgba(0,0,0,0.5)' }}
 					>
 						<img
-							src="/public/images/zkt-logo.png"
+							src={logoSrc}
 							alt="Zeka Küpü Türkiye"
 							className={b('logo') + " w-20 h-20 object-contain"}
 							style={{
 								imageRendering: 'auto',
-								filter: 'brightness(1.1) contrast(1.05)',
+								filter: isLightTheme ? 'none' : 'brightness(1.1) contrast(1.05)',
 								WebkitBackfaceVisibility: 'hidden',
 								transform: 'translateZ(0)'
 							}}

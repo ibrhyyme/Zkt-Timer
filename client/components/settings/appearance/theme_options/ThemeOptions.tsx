@@ -4,10 +4,11 @@ import './ThemeOptions.scss';
 import block from '../../../../styles/bem';
 import SettingRow from '../../setting/row/SettingRow';
 import ColorPicker from '../../../common/color_picker/ColorPicker';
+import ThemeOption from './theme_option/ThemeOption';
 import {useSettings} from '../../../../util/hooks/useSettings';
 import {setSetting} from '../../../../db/settings/update';
 import {AllSettings, getDefaultSetting} from '../../../../db/settings/query';
-import {APP_THEME_PRESETS} from '../../../../util/themes/theme_consts';
+import {APP_THEME_PRESETS, Preset} from '../../../../util/themes/theme_consts';
 import Button from '../../../common/button/Button';
 import {getAnyColorStringAsRgbString} from '../../../../util/themes/theme_util';
 import tinycolor from 'tinycolor2';
@@ -37,7 +38,6 @@ export default function ThemeOptions() {
 		button_color: buttonColor,
 	});
 
-	// Hangi color picker'ın açık olduğunu takip et (şimdilik kullanmıyoruz)
 	const [activeColorPicker, setActiveColorPicker] = useState<string | null>(null);
 
 	// Settings değiştiğinde tempColors'ı güncelle
@@ -72,12 +72,14 @@ export default function ThemeOptions() {
 	}
 
 	function applyChanges() {
+		setActiveColorPicker(null);
 		Object.keys(tempColors).forEach(key => {
 			setSetting(key as keyof AllSettings, tempColors[key]);
 		});
 	}
 
 	function resetToDefaults() {
+		setActiveColorPicker(null);
 		const defaultTheme = APP_THEME_PRESETS.dark.values;
 		const resetValues = {
 			background_color: defaultTheme.background_color,
@@ -93,59 +95,86 @@ export default function ThemeOptions() {
 
 	return (
 		<>
+			<SettingRow
+				vertical
+				title={t('theme_options.themes_title')}
+				description={t('theme_options.themes_desc')}
+			>
+				<div className={b('presets')}>
+					{Preset.map((key) => (
+						<ThemeOption key={key} theme={key} />
+					))}
+				</div>
+			</SettingRow>
 			<SettingRow vertical title={t('theme_options.basic_customization')}>
 				<div className={b('customize')}>
-											<ColorPicker
-							hideReset
-							name={t('theme_options.primary_color')}
-							selectedColorHex={primaryColor}
-							resetToRgb={getDefaultSetting('primary_color')}
-							onChange={(color) => updateSetting('primary_color', color)}
-						/>
-											<ColorPicker
-							hideReset
-							name={t('theme_options.secondary_color')}
-							selectedColorHex={secondaryColor}
-							resetToRgb={getDefaultSetting('secondary_color')}
-							onChange={(color) => updateSetting('secondary_color', color)}
-						/>
+					<ColorPicker
+						openLeft
+						hideReset
+						isOpen={activeColorPicker === 'primary_color'}
+						onToggle={() => setActiveColorPicker(activeColorPicker === 'primary_color' ? null : 'primary_color')}
+						name={t('theme_options.primary_color')}
+						selectedColorHex={primaryColor}
+						resetToRgb={getDefaultSetting('primary_color')}
+						onChange={(color) => updateSetting('primary_color', color)}
+					/>
+					<ColorPicker
+						hideReset
+						isOpen={activeColorPicker === 'secondary_color'}
+						onToggle={() => setActiveColorPicker(activeColorPicker === 'secondary_color' ? null : 'secondary_color')}
+						name={t('theme_options.secondary_color')}
+						selectedColorHex={secondaryColor}
+						resetToRgb={getDefaultSetting('secondary_color')}
+						onChange={(color) => updateSetting('secondary_color', color)}
+					/>
 				</div>
 			</SettingRow>
 			<SettingRow vertical title={t('theme_options.advanced_customization')}
 				description={t('theme_options.advanced_desc')}>
 				<div className={b('customize')}>
-											<ColorPicker
-							openUp
-							hideReset
-							name={t('theme_options.background_color')}
-							selectedColorHex={rgbToHex(tempColors.background_color)}
-							resetToRgb={getDefaultSetting('background_color')}
-							onChange={(color) => updateTempColor('background_color', color)}
-						/>
-											<ColorPicker
-							openUp
-							hideReset
-							name={t('theme_options.module_color')}
-							selectedColorHex={rgbToHex(tempColors.module_color)}
-							resetToRgb={getDefaultSetting('module_color')}
-							onChange={(color) => updateTempColor('module_color', color)}
-						/>
-											<ColorPicker
-							openUp
-							hideReset
-							name={t('theme_options.text_color')}
-							selectedColorHex={rgbToHex(tempColors.text_color)}
-							resetToRgb={getDefaultSetting('text_color')}
-							onChange={(color) => updateTempColor('text_color', color)}
-						/>
-											<ColorPicker
-							openUp
-							hideReset
-							name={t('theme_options.button_color')}
-							selectedColorHex={rgbToHex(tempColors.button_color)}
-							resetToRgb={getDefaultSetting('button_color')}
-							onChange={(color) => updateTempColor('button_color', color)}
-						/>
+					<ColorPicker
+						openUp
+						openLeft
+						hideReset
+						isOpen={activeColorPicker === 'background_color'}
+						onToggle={() => setActiveColorPicker(activeColorPicker === 'background_color' ? null : 'background_color')}
+						name={t('theme_options.background_color')}
+						selectedColorHex={rgbToHex(tempColors.background_color)}
+						resetToRgb={getDefaultSetting('background_color')}
+						onChange={(color) => updateTempColor('background_color', color)}
+					/>
+					<ColorPicker
+						openUp
+						openLeft
+						hideReset
+						isOpen={activeColorPicker === 'module_color'}
+						onToggle={() => setActiveColorPicker(activeColorPicker === 'module_color' ? null : 'module_color')}
+						name={t('theme_options.module_color')}
+						selectedColorHex={rgbToHex(tempColors.module_color)}
+						resetToRgb={getDefaultSetting('module_color')}
+						onChange={(color) => updateTempColor('module_color', color)}
+					/>
+					<ColorPicker
+						openUp
+						hideReset
+						isOpen={activeColorPicker === 'text_color'}
+						onToggle={() => setActiveColorPicker(activeColorPicker === 'text_color' ? null : 'text_color')}
+						name={t('theme_options.text_color')}
+						selectedColorHex={rgbToHex(tempColors.text_color)}
+						resetToRgb={getDefaultSetting('text_color')}
+						onChange={(color) => updateTempColor('text_color', color)}
+					/>
+					<ColorPicker
+						openUp
+						openLeft
+						hideReset
+						isOpen={activeColorPicker === 'button_color'}
+						onToggle={() => setActiveColorPicker(activeColorPicker === 'button_color' ? null : 'button_color')}
+						name={t('theme_options.button_color')}
+						selectedColorHex={rgbToHex(tempColors.button_color)}
+						resetToRgb={getDefaultSetting('button_color')}
+						onChange={(color) => updateTempColor('button_color', color)}
+					/>
 				</div>
 				<div className={b('actions')}>
 					<Button 

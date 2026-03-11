@@ -37,7 +37,7 @@
     }
 
     &__text {
-        color: rgba(255, 255, 255, 0.85);
+        color: rgba(var(--text-color), 0.85);
         font-family: 'Inter', monospace;
         white-space: pre-wrap;
         word-break: break-word;
@@ -47,7 +47,7 @@
         display: inline-block;
 
         &:hover {
-            color: rgba(255, 255, 255, 1);
+            color: rgb(var(--text-color));
         }
 
         &--megaminx {

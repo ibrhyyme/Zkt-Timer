@@ -140,7 +140,7 @@
 		.-previous {
 			button {
 				background-color: rgb(var(--button-color));
-				color: white;
+				color: rgb(var(--text-color));
 				padding: 6px 7px;
 				border-radius: 5px;
 			}
@@ -201,7 +201,7 @@
 
 	.rt-resizable-header-content {
 		font-weight: bold;
-		color: #333;
+		color: rgb(var(--text-color));
 		font-size: 0.9rem;
 	}
 }

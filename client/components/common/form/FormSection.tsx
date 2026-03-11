@@ -28,9 +28,13 @@ export default function FormSection(props: Props) {
 		classes.push('border-b-4');
 	}
 
-	// Pro features are now available to everyone
 	let proTag = null;
 	let body = props.children;
+
+	if (proOnly && isNotPro(me)) {
+		proTag = <Tag text="PRO" textColor="orange" />;
+		body = <div className="opacity-40 pointer-events-none select-none">{props.children}</div>;
+	}
 
 	return (
 		<div className={classes.join(' ')}>
