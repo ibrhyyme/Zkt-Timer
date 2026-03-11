@@ -47,14 +47,6 @@ export function startTimer(smartStartTimestamp?: number) {
 	const timeStartedAt = smartStartTimestamp ? new Date(smartStartTimestamp) : new Date();
 	_smartSolveEndTime = null;
 
-	console.error('[TIMER DEBUG] startTimer called', {
-		smartStartTimestamp,
-		timeStartedAt: timeStartedAt.getTime(),
-		dateNow: Date.now(),
-		diff: smartStartTimestamp ? Date.now() - smartStartTimestamp : 0,
-		usedSmartTimestamp: !!smartStartTimestamp,
-	});
-
 	clearInspectionTimers(false, true);
 	setTimerParams({
 		editScramble: false,
