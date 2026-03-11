@@ -19,15 +19,28 @@ interface Props {
 	hideReset?: boolean;
 	onChange: (colorRgb: string) => void;
 	selectedColorHex: string;
+	isOpen?: boolean;
+	onToggle?: () => void;
 }
 
 export default function ColorPicker(props: Props) {
-	const {name, hideReset, onChange, openUp, openLeft, resetToRgb} = props;
+	const {name, hideReset, onChange, openUp, openLeft, resetToRgb, isOpen, onToggle} = props;
 	const selectedColorHex = props.selectedColorHex || '#000000';
 
+	const controlled = isOpen !== undefined;
 	const backgroundTheme = useTheme('background_color');
-	const [showPicker, toggleShowPicker] = useToggle(false);
+	const [showPickerInternal, toggleShowPickerInternal] = useToggle(false);
 	const [color, setColor] = useColor('rgb', getAnyColorStringAsRgb(selectedColorHex));
+
+	const showPicker = controlled ? isOpen : showPickerInternal;
+
+	function handleToggle() {
+		if (controlled && onToggle) {
+			onToggle();
+		} else {
+			toggleShowPickerInternal();
+		}
+	}
 
 	useEffect(() => {
 		const newColor = toColor('rgb', getAnyColorStringAsRgb(selectedColorHex));
@@ -36,9 +49,8 @@ export default function ColorPicker(props: Props) {
 
 	useWindowClickAwayListener(b(), () => {
 		if (showPicker) {
-			// Close picker and update parent
 			onChange(getAnyColorStringAsRawRgbString(color));
-			toggleShowPicker();
+			handleToggle();
 		}
 	});
 
@@ -66,7 +78,7 @@ export default function ColorPicker(props: Props) {
 
 	return (
 		<div className={b()}>
-			<button className={b('toggle')} onClick={() => toggleShowPicker()}>
+			<button className={b('toggle')} onClick={handleToggle}>
 				<span
 					className={b('color')}
 					style={{
@@ -90,7 +102,7 @@ export default function ColorPicker(props: Props) {
 					<Button
 						small
 						text="Kapat"
-						onClick={() => toggleShowPicker()}
+						onClick={handleToggle}
 					/>
 				</div>
 			</div>

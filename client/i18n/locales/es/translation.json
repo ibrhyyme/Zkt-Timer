@@ -1265,6 +1265,8 @@
 		"loading_scramble": "Cargando mezcla..."
 	},
 	"theme_options": {
+		"themes_title": "Temas",
+		"themes_desc": "Elige de una lista predefinida de temas o personaliza el tuyo en la sección de abajo. *Advertencia*: Seleccionar uno de estos temas restablecerá cualquier configuración de tema personalizada que hayas establecido.",
 		"basic_customization": "Personalización básica del tema",
 		"primary_color": "Color primario",
 		"secondary_color": "Color secundario",
@@ -1528,5 +1530,9 @@
 		"privacy": "Privacidad",
 		"terms": "Términos",
 		"credits": "Créditos"
+	},
+	"pro": {
+		"feature_title": "Función Pro",
+		"feature_description": "Esta función es exclusiva para usuarios Pro. Actualiza a Pro para acceder a todos los temas y más. (Próximamente)"
 	}
 }

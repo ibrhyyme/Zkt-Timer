@@ -19,7 +19,7 @@
 		background: rgba(var(--module-color), 0.95) !important;
 		backdrop-filter: blur(20px) !important;
 		-webkit-backdrop-filter: blur(20px) !important;
-		border: 1px solid rgba(255, 255, 255, 0.15) !important;
+		border: 1px solid rgba(var(--text-color), 0.15) !important;
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
 		width: clamp(40px, 10vw, 48px);
 		height: clamp(40px, 10vw, 48px);
@@ -33,7 +33,7 @@
 
 		&:hover {
 			background: rgba(var(--module-color), 1) !important;
-			border-color: rgba(255, 255, 255, 0.25) !important;
+			border-color: rgba(var(--text-color), 0.25) !important;
 			transform: scale(1.05);
 		}
 
@@ -57,7 +57,7 @@
 	background: rgba(var(--module-color), 0.95);
 	backdrop-filter: blur(20px);
 	-webkit-backdrop-filter: blur(20px);
-	border: 1px solid rgba(255, 255, 255, 0.15);
+	border: 1px solid rgba(var(--text-color), 0.15);
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 	width: clamp(40px, 10vw, 48px);
 	height: clamp(40px, 10vw, 48px);
@@ -73,7 +73,7 @@
 
 	&:hover {
 		background: rgba(var(--module-color), 1);
-		border-color: rgba(255, 255, 255, 0.25);
+		border-color: rgba(var(--text-color), 0.25);
 		transform: scale(1.05);
 	}
 

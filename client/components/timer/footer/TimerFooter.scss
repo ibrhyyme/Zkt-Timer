@@ -53,7 +53,7 @@
 				overflow: hidden !important;
 				border-radius: clamp(10px, 2vw, 12px);
 				background: rgba(var(--module-color), 0.8);
-				border: 1px solid rgba(255, 255, 255, 0.08);
+				border: 1px solid rgba(var(--text-color), 0.08);
 				backdrop-filter: blur(10px);
 				-webkit-backdrop-filter: blur(10px);
 				box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
@@ -152,17 +152,17 @@
 		margin-bottom: 10px;
 
 		button {
-			background: rgba(255, 255, 255, 0.1) !important;
-			border: 1px solid rgba(255, 255, 255, 0.2) !important;
+			background: rgba(var(--text-color), 0.1) !important;
+			border: 1px solid rgba(var(--text-color), 0.2) !important;
 			border-radius: 8px !important;
 			padding: 8px 16px !important;
-			color: white !important;
+			color: rgb(var(--text-color)) !important;
 			font-weight: 500 !important;
 			transition: all 0.2s ease !important;
 
 			&:hover {
-				background: rgba(255, 255, 255, 0.2) !important;
-				border-color: rgba(255, 255, 255, 0.3) !important;
+				background: rgba(var(--text-color), 0.2) !important;
+				border-color: rgba(var(--text-color), 0.3) !important;
 				transform: translateY(-1px) !important;
 			}
 		}

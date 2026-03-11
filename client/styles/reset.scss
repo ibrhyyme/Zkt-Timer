@@ -150,7 +150,7 @@ button {
 	border: 0;
 	font-size: 0.9rem;
 	padding: 4px 0;
-	color: #333;
+	color: rgb(var(--text-color));
 	background-color: transparent;
 	-webkit-tap-highlight-color: transparent;
 }
@@ -168,7 +168,8 @@ select {
 }
 
 input:-webkit-autofill {
-	-webkit-box-shadow: 0 0 0 1000px #fff inset;
+	-webkit-box-shadow: 0 0 0 1000px rgb(var(--module-color)) inset;
+	-webkit-text-fill-color: rgb(var(--text-color));
 }
 
 #confetti-canvas {

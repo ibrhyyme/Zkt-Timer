@@ -3,7 +3,7 @@
 	bottom: 20px;
 	right: 20px;
 	background-color: #d32f2f;
-	color: #ffffff;
+	color: rgb(var(--text-color));
 	padding: 15px;
 	border-radius: 5px;
 	width: 95%;
@@ -11,7 +11,7 @@
 	z-index: 100000000;
 
 	p {
-		color: #ffffff;
+		color: rgb(var(--text-color));
 		line-height: 1.4rem;
 		margin: 0;
 	}

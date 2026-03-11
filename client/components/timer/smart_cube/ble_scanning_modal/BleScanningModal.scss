@@ -17,8 +17,8 @@
 		margin-bottom: 24px;
 
 		&--scanning {
-			background-color: rgba(#4a9eff, 0.15);
-			color: #4a9eff;
+			background-color: rgba(var(--primary-color), 0.15);
+			color: rgb(var(--primary-color));
 			animation: ble-pulse 2s ease-in-out infinite;
 		}
 
@@ -36,7 +36,7 @@
 	&__title {
 		font-size: 1.2rem;
 		font-weight: 600;
-		color: #fff;
+		color: rgb(var(--text-color));
 		margin-bottom: 8px;
 
 		&--error {
@@ -46,7 +46,7 @@
 
 	&__description {
 		font-size: 0.9rem;
-		color: #888;
+		color: rgba(var(--text-color), 0.5);
 		margin-bottom: 24px;
 		max-width: 280px;
 		line-height: 1.4;
@@ -62,7 +62,7 @@
 		width: 8px;
 		height: 8px;
 		border-radius: 50%;
-		background-color: #4a9eff;
+		background-color: rgb(var(--primary-color));
 		animation: ble-dot-bounce 1.4s ease-in-out infinite;
 
 		&:nth-child(2) {
@@ -82,22 +82,22 @@
 		max-width: 250px;
 
 		button {
-			background-color: #1c1c1e !important;
+			background-color: rgb(var(--module-color)) !important;
 			border-radius: 10px !important;
-			color: #4a9eff !important;
+			color: rgb(var(--primary-color)) !important;
 			font-weight: 600 !important;
 			border: none !important;
 
 			svg {
-				color: #4a9eff !important;
+				color: rgb(var(--primary-color)) !important;
 			}
 
 			&.cd-common-button--theme-primary {
-				background-color: #4a9eff !important;
-				color: #fff !important;
+				background-color: rgb(var(--primary-color)) !important;
+				color: rgb(var(--text-color)) !important;
 
 				svg {
-					color: #fff !important;
+					color: rgb(var(--text-color)) !important;
 				}
 			}
 		}

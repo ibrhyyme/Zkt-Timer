@@ -20,7 +20,7 @@ html {
 		justify-content: center;
 		align-items: center;
 		font-size: 2rem;
-		color: white;
+		color: rgb(var(--text-color));
 		position: absolute;
 		left: 0;
 		top: 0;
@@ -61,14 +61,14 @@ html {
 }
 
 .Toastify__toast {
-	background-color: #1a1b2e;
+	background-color: rgb(var(--background-color));
 	z-index: 1000000000;
 	border-radius: 8px;
 	box-shadow: 0 3px 25px rgba(black, 0.1);
 
 	div {
 		font-weight: 600 !important;
-		color: white !important;
+		color: rgb(var(--text-color)) !important;
 		font-size: 1rem;
 	}
 

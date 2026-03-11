@@ -4,8 +4,8 @@
 	$switchSize: 25px;
 	$switchSizeSmall: 15px;
 
-	background-color: #334155 !important; // slate-700
-	border: 1px solid #475569; // slate-600
+	background-color: rgba(var(--button-color), 0.8) !important;
+	border: 1px solid rgba(var(--text-color), 0.15);
 	border-radius: 20px;
 	position: relative;
 	transition: all 0.3s ease;
@@ -14,7 +14,7 @@
 	height: calc(#{$switchSize} + 5px);
 
 	&:hover {
-		background-color: #475569 !important; // slate-600
+		background-color: rgba(var(--button-color), 1) !important;
 	}
 
 	&__wrapper {
@@ -28,7 +28,7 @@
 		display: table;
 		height: $switchSize;
 		width: $switchSize;
-		background-color: white;
+		background-color: rgb(var(--theme-button-opposite));
 		border-radius: 50px;
 		top: 50%;
 		left: 4px;
@@ -49,9 +49,9 @@
 	}
 
 	&--on {
-		background: linear-gradient(to right, #10b981, #14b8a6) !important; // emerald-500 to teal-500
-		border-color: #34d399; // emerald-400
-		box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+		background: linear-gradient(to right, rgb(var(--secondary-color)), rgb(var(--secondary-color))) !important;
+		border-color: rgb(var(--secondary-color));
+		box-shadow: 0 4px 15px rgba(var(--secondary-color), 0.3);
 
 		span {
 			right: 3px;

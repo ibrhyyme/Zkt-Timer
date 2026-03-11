@@ -6,7 +6,7 @@
 
 	&__meta-row {
 		font-size: 0.75rem;
-		color: rgba(255, 255, 255, 0.5);
+		color: rgba(var(--text-color), 0.5);
 		padding: 6px 12px;
 		text-align: center;
 	}
@@ -15,8 +15,8 @@
 		width: 100%;
 		border-collapse: collapse;
 		font-size: 0.8rem;
-		background-color: #1E1E1E;
-		border: 1px solid #333;
+		background-color: rgb(var(--module-color));
+		border: 1px solid rgba(var(--text-color), 0.12);
 		border-radius: 10px;
 		overflow: hidden;
 
@@ -31,13 +31,13 @@
 			font-weight: 600;
 			font-size: 0.72rem;
 			text-transform: uppercase;
-			color: #999;
-			background-color: #1a1a1a;
-			border-bottom: 1px solid #333;
+			color: rgba(var(--text-color), 0.5);
+			background-color: rgb(var(--module-color));
+			border-bottom: 1px solid rgba(var(--text-color), 0.12);
 		}
 
 		td {
-			color: #ddd;
+			color: rgba(var(--text-color), 0.85);
 			font-family: 'SF Mono', 'Roboto Mono', 'Fira Code', monospace;
 			font-size: 0.78rem;
 		}
@@ -52,14 +52,14 @@
 		}
 
 		tbody tr {
-			border-bottom: 1px solid #2a2a2a;
+			border-bottom: 1px solid rgba(var(--text-color), 0.08);
 
 			&:nth-child(odd) {
-				background-color: #252525;
+				background-color: rgba(var(--button-color), 0.3);
 			}
 
 			&:nth-child(even) {
-				background-color: #1E1E1E;
+				background-color: rgb(var(--module-color));
 			}
 
 			&:last-child {
@@ -69,16 +69,16 @@
 	}
 
 	&__cumulative {
-		color: #4caf50;
+		color: rgb(var(--secondary-color));
 		font-weight: 600;
 	}
 
 	&__total-row {
 		td {
 			font-weight: 700;
-			color: #4caf50;
-			border-top: 1px solid #444;
-			background-color: #1a1a1a !important;
+			color: rgb(var(--secondary-color));
+			border-top: 1px solid rgba(var(--text-color), 0.2);
+			background-color: rgb(var(--module-color)) !important;
 			padding-top: 10px;
 			padding-bottom: 10px;
 		}

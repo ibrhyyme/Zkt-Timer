@@ -7,8 +7,8 @@
 		width: 100%;
 		border-collapse: collapse;
 		font-size: 0.8rem;
-		background-color: #1E1E1E;
-		border: 1px solid #333;
+		background-color: rgb(var(--module-color));
+		border: 1px solid rgba(var(--text-color), 0.12);
 		border-radius: 10px;
 		overflow: hidden;
 
@@ -22,9 +22,9 @@
 			font-weight: 600;
 			font-size: 0.72rem;
 			text-transform: uppercase;
-			color: #999;
-			background-color: #1a1a1a;
-			border-bottom: 1px solid #333;
+			color: rgba(var(--text-color), 0.5);
+			background-color: rgb(var(--module-color));
+			border-bottom: 1px solid rgba(var(--text-color), 0.12);
 		}
 
 		th:first-child {
@@ -44,14 +44,14 @@
 		}
 
 		tbody tr {
-			border-bottom: 1px solid #2a2a2a;
+			border-bottom: 1px solid rgba(var(--text-color), 0.08);
 
 			&:nth-child(odd) {
-				background-color: #252525;
+				background-color: rgba(var(--button-color), 0.3);
 			}
 
 			&:nth-child(even) {
-				background-color: #1E1E1E;
+				background-color: rgb(var(--module-color));
 			}
 
 			&:last-child {
@@ -60,7 +60,7 @@
 
 			// Hover ile seçili satır
 			&:hover {
-				background-color: rgba(255, 255, 255, 0.05);
+				background-color: rgba(var(--text-color), 0.05);
 			}
 		}
 	}
@@ -68,20 +68,20 @@
 	&__step-name {
 		text-align: left;
 		font-weight: 500;
-		color: #ddd;
+		color: rgba(var(--text-color), 0.85);
 	}
 
 	&__step-turns {
 		text-align: center;
 		font-family: 'SF Mono', 'Roboto Mono', 'Fira Code', monospace;
 		font-size: 0.78rem;
-		color: #ddd;
+		color: rgba(var(--text-color), 0.85);
 		white-space: normal;
 		word-break: break-word;
 	}
 
 	&__rotation {
-		color: #4a9eff;
+		color: rgb(var(--primary-color));
 		font-weight: 600;
 		margin-right: 6px;
 	}

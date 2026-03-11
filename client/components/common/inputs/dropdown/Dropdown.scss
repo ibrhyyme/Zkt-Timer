@@ -38,7 +38,7 @@
 			flex-direction: row;
 			width: 100%;
 			align-items: center;
-			color: rgba(255, 255, 255, 0.8) !important; // Neutral text
+			color: rgba(var(--text-color), 0.8) !important;
 			text-align: left !important;
 			border-radius: 8px;
 			justify-content: flex-start;
@@ -64,7 +64,7 @@
 				display: flex;
 				justify-content: center;
 				align-items: center;
-				color: rgba(255, 255, 255, 0.5) !important; // Dimmed icon
+				color: rgba(var(--text-color), 0.5) !important;
 			}
 
 			span {
@@ -73,19 +73,19 @@
 			}
 
 			&:hover:not(:disabled) {
-				background-color: rgba(255, 255, 255, 0.1) !important; // Neutral hover
-				color: rgba(255, 255, 255, 1) !important;
+				background-color: rgba(var(--text-color), 0.1) !important;
+				color: rgb(var(--text-color)) !important;
 				transform: translateY(-1px);
 				box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 
 				i {
-					color: rgba(255, 255, 255, 0.9) !important;
+					color: rgba(var(--text-color), 0.9) !important;
 				}
 			}
 
 			&:active:not(:disabled) {
 				transform: translateY(0);
-				background-color: rgba(255, 255, 255, 0.05) !important;
+				background-color: rgba(var(--text-color), 0.05) !important;
 			}
 		}
 

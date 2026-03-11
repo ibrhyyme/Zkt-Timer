@@ -14,8 +14,8 @@
 	color: rgb(var(--text-color));
 
 	&--white {
-		background-color: white;
-		color: #444 !important;
+		background-color: rgb(var(--background-color));
+		color: rgb(var(--text-color)) !important;
 	}
 
 	&__logo {

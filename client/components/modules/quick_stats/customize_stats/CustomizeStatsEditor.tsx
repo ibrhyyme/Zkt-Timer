@@ -225,7 +225,7 @@ export default function CustomizeStatsEditor(props: Props) {
 					<InputLegend text="Seçenekler" />
 					<Checkbox text="Sadece seans çözümleri" checked={session} onChange={() => toggleSession()} />
 				</FormSection>
-				<FormSection>
+				<FormSection proOnly>
 					<InputLegend text={t('timer_modules.stat_color')} />
 					<div className="flex flex-row flex-wrap gap-2">{colorOptions}</div>
 				</FormSection>

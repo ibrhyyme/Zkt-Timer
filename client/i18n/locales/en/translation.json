@@ -1265,6 +1265,8 @@
 		"loading_scramble": "Loading scramble..."
 	},
 	"theme_options": {
+		"themes_title": "Themes",
+		"themes_desc": "Choose from a pre-defined list of themes or customize your own in the section below. *Warning*: Selecting one of these themes will reset any custom theme settings you may have set.",
 		"basic_customization": "Basic theme customization",
 		"primary_color": "Primary color",
 		"secondary_color": "Secondary color",
@@ -1528,5 +1530,9 @@
 		"privacy": "Privacy",
 		"terms": "Terms",
 		"credits": "Credits"
+	},
+	"pro": {
+		"feature_title": "Pro Feature",
+		"feature_description": "This feature is exclusive to Pro users. Upgrade to Pro to access all themes and more. (Coming Soon)"
 	}
 }

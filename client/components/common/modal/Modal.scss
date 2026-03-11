@@ -60,7 +60,7 @@
 
 	&__description {
 		font-size: 1rem;
-		color: rgba(255, 255, 255, 0.8); // Neutral text
+		color: rgba(var(--text-color), 0.8);
 		margin: 15px 0;
 		opacity: 0.9;
 		line-height: 1.4rem;
@@ -97,9 +97,9 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		background: rgba(71, 85, 105, 0.7); // slate-600/70
-		color: rgba(226, 232, 240, 1); // slate-200
-		border: 1px solid rgba(148, 163, 184, 0.3); // slate-400/30
+		background: rgba(var(--button-color), 0.7);
+		color: rgb(var(--text-color));
+		border: 1px solid rgba(var(--text-color), 0.2);
 		border-radius: 12px;
 		backdrop-filter: blur(4px);
 		will-change: transform;
@@ -109,9 +109,9 @@
 		font-size: 1.125rem;
 
 		&:hover {
-			background: rgba(100, 116, 139, 0.9); // slate-500/90
-			color: rgba(248, 250, 252, 1); // slate-50
-			border-color: rgba(148, 163, 184, 0.5); // slate-400/50
+			background: rgba(var(--button-color), 0.9);
+			color: rgb(var(--text-color));
+			border-color: rgba(var(--text-color), 0.3);
 			transform: translateY(-1px) scale(1.05);
 			box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 		}

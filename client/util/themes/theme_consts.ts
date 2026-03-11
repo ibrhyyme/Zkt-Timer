@@ -1,4 +1,4 @@
-export const Preset = ['dark'] as const;
+export const Preset = ['dark', 'light', 'tokyo', 'norman', 'save_the_bees', 'night_owl', 'cyberpunk', 'phd_student'] as const;
 export type PresetKey = typeof Preset[number];
 
 export interface PresetTheme {
@@ -11,6 +11,7 @@ export interface PresetTheme {
 		module_color: string;
 	};
 	name: string;
+	proOnly?: boolean;
 }
 export type PresetThemeValues = Record<PresetKey, PresetTheme>;
 
@@ -26,14 +27,94 @@ export const APP_THEME_PRESETS: PresetThemeValues = {
 			text_color: '255, 255, 255',
 		},
 	},
+	light: {
+		name: 'Light',
+		values: {
+			background_color: '255, 255, 255',
+			button_color: '212, 212, 212',
+			module_color: '242, 243, 245',
+			primary_color: '36, 107, 253',
+			secondary_color: '65, 176, 88',
+			text_color: '26, 29, 33',
+		},
+	},
+	cyberpunk: {
+		name: 'Cyberpunk',
+		proOnly: true,
+		values: {
+			background_color: '0, 0, 0',
+			button_color: '28, 49, 35',
+			module_color: '0, 7, 1',
+			primary_color: '240, 255, 43',
+			secondary_color: '30, 255, 242',
+			text_color: '86, 255, 75',
+		},
+	},
+	tokyo: {
+		name: 'Tokyo',
+		proOnly: true,
+		values: {
+			background_color: '26, 27, 39',
+			button_color: '43, 45, 82',
+			module_color: '22, 22, 31',
+			primary_color: '255, 66, 15',
+			secondary_color: '135, 100, 235',
+			text_color: '255, 255, 255',
+		},
+	},
+	norman: {
+		name: 'Norman',
+		proOnly: true,
+		values: {
+			background_color: '41, 45, 62',
+			button_color: '108, 141, 212',
+			module_color: '36, 40, 55',
+			primary_color: '126, 87, 194',
+			secondary_color: '248, 197, 103',
+			text_color: '255, 255, 255',
+		},
+	},
+	save_the_bees: {
+		name: 'Save the Bees',
+		proOnly: true,
+		values: {
+			background_color: '241, 243, 245',
+			button_color: '193, 204, 216',
+			module_color: '222, 226, 228',
+			primary_color: '255, 195, 80',
+			secondary_color: '55, 158, 255',
+			text_color: '3, 10, 63',
+		},
+	},
+	night_owl: {
+		name: 'Night Owl',
+		proOnly: true,
+		values: {
+			background_color: '1, 22, 39',
+			button_color: '14, 80, 134',
+			module_color: '1, 18, 32',
+			primary_color: '49, 145, 181',
+			secondary_color: '255, 198, 93',
+			text_color: '255, 255, 255',
+		},
+	},
+	phd_student: {
+		name: 'The PhD Student',
+		proOnly: true,
+		values: {
+			background_color: '254, 63, 255',
+			button_color: '144, 78, 0',
+			module_color: '0, 13, 255',
+			primary_color: '0, 36, 109',
+			secondary_color: '89, 255, 123',
+			text_color: '255, 228, 7',
+		},
+	},
 };
 
 const DEFAULT_THEME: PresetKey = 'dark';
-export const LEGACY_KEYS = new Set([
-  'tokyo','norman','save_the_bees','night_owl','cyberpunk','phd_student'
-]);
 
 export function coercePresetKey(k?: string | null): PresetKey {
-  if (k === 'dark') return k;
-  return DEFAULT_THEME;
+	if (k && Preset.includes(k as PresetKey)) return k as PresetKey;
+	return DEFAULT_THEME;
 }

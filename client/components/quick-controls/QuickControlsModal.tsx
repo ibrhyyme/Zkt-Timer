@@ -27,19 +27,19 @@ export default function QuickControlsModal() {
 			className="fixed inset-0 z-[70] bg-gradient-to-br from-black/70 to-black/50 backdrop-blur-md flex items-center justify-center p-4 transition-opacity duration-200"
 			onClick={handleBackdropClick}
 		>
-			<div 
-				className="max-w-lg w-full rounded-3xl bg-[#12141c] border border-white/[0.08] shadow-2xl shadow-black/50 px-6 py-5 transform transition-all duration-300"
+			<div
+				className="max-w-lg w-full rounded-3xl bg-background border border-text/[0.08] shadow-2xl shadow-black/50 px-6 py-5 transform transition-all duration-300"
 				onClick={(e) => e.stopPropagation()}
 			>
 				{/* Header */}
 				<div className="flex items-center justify-between mb-2">
-					<div className="flex items-center space-x-1 bg-[#1c1c1e] rounded-full p-1">
+					<div className="flex items-center space-x-1 bg-module rounded-full p-1">
 						<button
 							type="button"
 							className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
 								activeTab === 'timer'
-									? 'bg-[#4a9eff] text-white'
-									: 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+									? 'bg-primary text-white'
+									: 'text-text/70 hover:text-text hover:bg-button/50'
 							}`}
 							onClick={() => setActiveTab('timer')}
 						>
@@ -49,8 +49,8 @@ export default function QuickControlsModal() {
 							type="button"
 							className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
 								activeTab === 'extras'
-									? 'bg-[#4a9eff] text-white'
-									: 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+									? 'bg-primary text-white'
+									: 'text-text/70 hover:text-text hover:bg-button/50'
 							}`}
 							onClick={() => setActiveTab('extras')}
 						>
@@ -60,8 +60,8 @@ export default function QuickControlsModal() {
 							type="button"
 							className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
 								activeTab === 'goals'
-									? 'bg-[#4a9eff] text-white'
-									: 'text-slate-300 hover:text-white hover:bg-slate-700/50'
+									? 'bg-primary text-white'
+									: 'text-text/70 hover:text-text hover:bg-button/50'
 							}`}
 							onClick={() => setActiveTab('goals')}
 						>
@@ -71,7 +71,7 @@ export default function QuickControlsModal() {
 					<button
 						ref={closeButtonRef}
 						type="button"
-						className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#1c1c1e] hover:bg-[#2a2a2e] text-slate-300 hover:text-white transition-all duration-200"
+						className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-module hover:bg-button text-text/70 hover:text-text transition-all duration-200"
 						onClick={close}
 						aria-label={t('common.close')}
 					>

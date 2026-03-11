@@ -11,7 +11,7 @@ import ProOnlyModal from '../../../../common/pro_only/ProOnlyModal';
 import {Lock} from 'phosphor-react';
 import {getSetting} from '../../../../../db/settings/query';
 import {APP_THEME_PRESETS, PresetThemeValues} from '../../../../../util/themes/theme_consts';
-import {isNotPro} from '../../../../../util/pro';
+import {isNotPro, isProEnabled} from '../../../../../util/pro';
 
 const b = block('theme-option');
 
@@ -25,6 +25,7 @@ export default function ThemeOption(props: Props) {
 
 	const theme = APP_THEME_PRESETS[props.theme];
 	const selected = jsonStr(theme.values) === getCurrentTheme();
+	const locked = theme.proOnly && isProEnabled() && isNotPro(me);
 
 	function getCurrentTheme() {
 		const currentVals = {};
@@ -36,17 +37,18 @@ export default function ThemeOption(props: Props) {
 	}
 
 	function selectTheme() {
+		if (locked) {
+			dispatch(openModal(<ProOnlyModal />));
+			return;
+		}
 		for (const key of Object.keys(theme.values)) {
 			const col = theme.values[key];
 			setSetting(key as any, col);
 		}
 	}
 
-	// Pro features are now available to everyone
-	let proLock = null;
-
 	return (
-		<button className={b({selected})} onClick={selectTheme}>
+		<button className={b({selected, locked})} onClick={selectTheme}>
 			<div className={b('preview')}>
 				<div className={b('preview-body')}>
 					<span
@@ -63,7 +65,7 @@ export default function ThemeOption(props: Props) {
 				</div>
 			</div>
 			<p>{theme.name}</p>
-			{proLock}
+			{locked ? <Lock size={18} weight="fill" className={b('lock')} /> : null}
 		</button>
 	);
 }
