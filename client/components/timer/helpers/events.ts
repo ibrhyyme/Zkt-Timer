@@ -29,6 +29,11 @@ export function getSmartSolveEndTime(): number | null {
 
 export function setSmartSolveEndTime(time: number | null) {
 	_smartSolveEndTime = time;
+	// Anında display güncellemesi: 33ms interval tick'ini beklemeden TimeDisplay'e haber ver
+	// Bu olmadan timer "ileri kaçıp geri düşme" efekti yaşanır
+	if (time !== null) {
+		window.dispatchEvent(new CustomEvent('smartSolveFreeze'));
+	}
 }
 
 // Smart cube: clock skew düzeltme yüzdesi (linear regression ile hesaplanır)
