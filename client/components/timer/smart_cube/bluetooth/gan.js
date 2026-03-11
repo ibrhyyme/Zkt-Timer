@@ -7,7 +7,26 @@ import { ModeOfOperation } from 'aes-js';
 import { isNative } from '../../../../util/platform';
 import Cube from 'cubejs';
 import { getStore } from '../../../store';
-import { setSmartSolveEndTime } from '../../helpers/events';
+import { setSmartSolveEndTime, setSmartCubeClockSkew, getSmartCubeClockSkew } from '../../helpers/events';
+
+// Simple linear regression: y = slope * x + intercept
+// Returns [slope, intercept]
+function linregress(xs, ys) {
+	const n = xs.length;
+	if (n < 2) return [1, 0];
+	let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
+	for (let i = 0; i < n; i++) {
+		sumX += xs[i];
+		sumY += ys[i];
+		sumXY += xs[i] * ys[i];
+		sumX2 += xs[i] * xs[i];
+	}
+	const denom = n * sumX2 - sumX * sumX;
+	if (denom === 0) return [1, 0];
+	const slope = (n * sumXY - sumX * sumY) / denom;
+	const intercept = (sumY - slope * sumX) / n;
+	return [slope, intercept];
+}
 
 // Hamle ters çevirme: R → R', R' → R, R2 → R2
 function invertMove(move) {
@@ -995,6 +1014,9 @@ export default class GAN extends SmartCube {
 		// cubeTimestamp kalibrasyon (artik ganInitialFacelets kullanilmiyor — solved detection sadece smartSolvedState)
 		// cubeTimestamp → Date.now() kalibrasyon ofseti
 		this._cubeTimeOffset = null;
+		// Clock skew: (localTimestamp, cubeTimestamp) çiftleri — pre-solve hamlelerden toplanır
+		this._skewSamples = [];
+		this._SKEW_WINDOW = 50; // Son N örnek
 	}
 
 	subscribeGyro(callback) {
@@ -1145,14 +1167,39 @@ export default class GAN extends SmartCube {
 				// cubeTimestamp kalibrasyonu: küp dahili saatini yerel zamana eşle
 				if (event.cubeTimestamp != null) {
 					const localNow = Date.now();
+					const newOffset = localNow - event.cubeTimestamp;
+					const timerRunning = !!getStore().getState().timer.timeStartedAt;
+
 					if (this._cubeTimeOffset === null) {
-						this._cubeTimeOffset = localNow - event.cubeTimestamp;
-					} else {
-						const expectedLocal = event.cubeTimestamp + this._cubeTimeOffset;
-						if (Math.abs(localNow - expectedLocal) > 2000) {
-							this._cubeTimeOffset = localNow - event.cubeTimestamp;
+						this._cubeTimeOffset = newOffset;
+					} else if (!timerRunning) {
+						// Solve sırasında offset güncelleme — drift'i önle
+						const diff = Math.abs(newOffset - this._cubeTimeOffset);
+						if (diff > 2000) {
+							this._cubeTimeOffset = newOffset;
+							this._skewSamples = []; // Büyük sıçramada sample'ları sıfırla
+						} else {
+							this._cubeTimeOffset = this._cubeTimeOffset * 0.9 + newOffset * 0.1;
+						}
+
+						// Clock skew hesaplama: pre-solve hamlelerden (local, cube) çiftleri topla
+						this._skewSamples.push({ local: localNow, cube: event.cubeTimestamp });
+						if (this._skewSamples.length > this._SKEW_WINDOW) {
+							this._skewSamples.shift();
+						}
+						if (this._skewSamples.length >= 10) {
+							// Normalize: büyük timestamp'lerde floating-point hassasiyet kaybını önle
+							// Date.now() ~1.77e12, linregress'te ΣX² catastrophic cancellation yapar
+							const baseLocal = this._skewSamples[0].local;
+							const baseCube = this._skewSamples[0].cube;
+							const locals = this._skewSamples.map(s => s.local - baseLocal);
+							const cubes = this._skewSamples.map(s => s.cube - baseCube);
+							const [slope] = linregress(locals, cubes);
+							const skew = Math.round((slope - 1) * 100000) / 1000; // ör. -0.719
+							setSmartCubeClockSkew(skew);
 						}
 					}
+					// timerRunning === true ise offset freeze — BLE latency varyasyonu completedAt'lere sızmaz
 				}
 
 				// Kalibre edilmiş timestamp hesapla
@@ -1160,13 +1207,37 @@ export default class GAN extends SmartCube {
 					? event.cubeTimestamp + this._cubeTimeOffset
 					: Date.now();
 
+				// Debug: ilk birkaç hamle için timestamp detaylarını logla
+				if (!this._debugMoveCount) this._debugMoveCount = 0;
+				this._debugMoveCount++;
+				if (this._debugMoveCount <= 3 || this._debugMoveCount % 20 === 0) {
+					console.error(`[TIMER DEBUG] gan.js move #${this._debugMoveCount}`, {
+						move: event.move,
+						cubeTimestamp: event.cubeTimestamp,
+						offset: this._cubeTimeOffset,
+						moveTimestamp,
+						dateNow: Date.now(),
+					});
+				}
+
 				// Tracker küpü güncelle
 				this._trackerCube.move(event.move);
 
 				// Senkron solved check: React render beklemeden timer display'i dondur
 				const solvedState = getStore().getState().timer.smartSolvedState;
 				if (solvedState && this._trackerCube.asString() === solvedState) {
-					setSmartSolveEndTime(moveTimestamp);
+					// Clock skew düzeltmeli freeze: display = kayıt = GAN referans
+					// Böylece "ileri git → geri gel" efekti olmaz
+					const timerState = getStore().getState().timer;
+					const tsaMs = timerState.timeStartedAt?.getTime();
+					if (tsaMs) {
+						const rawDiff = moveTimestamp - tsaMs;
+						const skew = getSmartCubeClockSkew();
+						const slope = (skew !== 0) ? (1 + skew / 100) : 1;
+						setSmartSolveEndTime(tsaMs + rawDiff / slope);
+					} else {
+						setSmartSolveEndTime(moveTimestamp);
+					}
 				} else {
 					setSmartSolveEndTime(null);
 				}
@@ -1177,7 +1248,8 @@ export default class GAN extends SmartCube {
 				// Queue'ya ekle
 				this.moveQueue.push({
 					move: event.move,
-					timestamp: moveTimestamp
+					timestamp: moveTimestamp,
+					cubeTimestamp: event.cubeTimestamp ?? null
 				});
 
 				// Debounced flush

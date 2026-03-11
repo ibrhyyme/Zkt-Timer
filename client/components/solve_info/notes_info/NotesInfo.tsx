@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import './NotesInfo.scss';
 import block from '../../../styles/bem';
 import TextArea from '../../common/inputs/textarea/TextArea';
@@ -15,12 +16,13 @@ interface Props {
 
 export default function NotesInfo(props: Props) {
 	const { solve, editMode, handleChange } = props;
+	const { t } = useTranslation();
 
 	const [notes, setNotes] = useInput(solve.notes);
 
 	let notesBody = <p>{notes}</p>;
 	if (!notes) {
-		notesBody = <i>Bu çözüm için not bulunamadı</i>;
+		notesBody = <i>{t('solve_info.no_notes')}</i>;
 	}
 
 	return (

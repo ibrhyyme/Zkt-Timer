@@ -1,11 +1,10 @@
-import React, { ReactNode } from 'react';
+import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import './SolutionInfo.scss';
 import CopyText from '../../common/copy_text/CopyText';
-import { getTimeString } from '../../../util/time';
-import { getSolveStepsWithChildren } from '../util/solution';
+import { getSolveStepsWithoutParents } from '../util/solution';
+import { getCrossRotation, transformMoves, simplifyMoves } from '../util/cross_rotation';
 import { STEP_NAME_MAP } from '../util/consts';
-import { processSmartTurns } from '../../../util/smart_scramble';
-import { SolveMethodStep } from '../../../@types/generated/graphql';
 import block from '../../../styles/bem';
 import { Solve } from '../../../../server/schemas/Solve.schema';
 
@@ -17,67 +16,55 @@ interface Props {
 
 export default function SolutionInfo(props: Props) {
 	const { solve } = props;
-	const steps = getSolveStepsWithChildren(solve);
+	const { t } = useTranslation();
+	const steps = getSolveStepsWithoutParents(solve);
 
-	function getTps() {
-		return Math.floor((solve.smart_turn_count / solve.raw_time) * 100) / 100;
-	}
+	const crossStep = steps.find((s) => s.step_name === 'cross');
+	const rotation = useMemo(
+		() => (crossStep ? getCrossRotation(solve.scramble, crossStep.turns) : ''),
+		[solve.scramble, crossStep?.turns]
+	);
 
-	function getStep(step: SolveMethodStep, isChild: boolean, children?: ReactNode[]) {
-		return (
-			<div key={step.step_name} className={b('step', { child: isChild })}>
-				<div className={b('header')}>
-					<div className={b('header-left')}>
-						<legend>{STEP_NAME_MAP[step.step_name]}</legend>
-						<div className={b('step-stats')}>
-							<span>{getTimeString(step.total_time)}s</span>
-							<span>{step.turn_count} Turns</span>
-							<span>{step.tps} TPS</span>
-						</div>
-					</div>
-
-					<CopyText
-						text={step.turns}
-						buttonProps={{
-							text: 'Hamleleri kopyala',
-						}}
-					/>
-				</div>
-				{children ? <div className={b('children')}>{children}</div> : <p>{step.turns}</p>}
-			</div>
-		);
-	}
-
-	const turns = solve.smart_turns ? JSON.parse(solve.smart_turns) : [];
-	const solution = processSmartTurns(
-		(turns || []).map((turn) => turn.turn),
-		true
-	).join(' ');
-
-	const stepsBody = [];
-	for (const step of steps) {
-		let children = null;
-		if (step.children && step.children.length) {
-			children = step.children.map((child) => getStep(child, true));
-		}
-
-		stepsBody.push(getStep(step.step, false, children));
-	}
+	const allTurns = steps.map((s) => {
+		const t = rotation ? transformMoves(s.turns, rotation) : s.turns;
+		return simplifyMoves(t);
+	}).filter(Boolean).join(' ');
+	const allTurnsWithRotation = rotation ? `${rotation} ${allTurns}` : allTurns;
 
 	return (
 		<div className={b()}>
-			<div className={b('steps')}>{stepsBody}</div>
-			<hr />
-			{getStep(
-				{
-					step_name: 'full',
-					tps: getTps(),
-					turn_count: solve.smart_turn_count,
-					total_time: solve.time,
-					turns: solution,
-				},
-				false
-			)}
+			<table className={b('table')}>
+				<thead>
+					<tr>
+						<th>{t('solve_info.step')}</th>
+						<th>
+							{t('solve_info.turns')}
+							<CopyText
+								text={allTurnsWithRotation}
+								buttonProps={{ text: '' }}
+							/>
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+					{steps.map((step) => {
+						const isCross = step.step_name === 'cross';
+						const transformed = simplifyMoves(rotation ? transformMoves(step.turns, rotation) : step.turns);
+
+						return (
+							<tr key={step.step_name}>
+								<td className={b('step-name')}>{STEP_NAME_MAP[step.step_name] || step.step_name}</td>
+								<td className={b('step-turns')}>
+									{isCross && rotation && (
+										<span className={b('rotation')}>{rotation}</span>
+									)}
+									{transformed}
+								</td>
+							</tr>
+						);
+					})}
+				</tbody>
+			</table>
 		</div>
 	);
 }

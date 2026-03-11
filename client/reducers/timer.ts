@@ -74,13 +74,14 @@ export default (state = initialState, action) => {
 
 		case 'TURN_SMART_CUBE': {
 			const {
-				payload: { turn, completedAt },
+				payload: { turn, completedAt, cubeTimestamp },
 			} = action;
 			const smartTurns = [...state.smartTurns];
 
 			smartTurns.push({
 				turn,
 				completedAt,
+				cubeTimestamp: cubeTimestamp ?? null,
 			});
 
 			const now = completedAt || Date.now();

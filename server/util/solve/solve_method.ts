@@ -241,7 +241,9 @@ export function getSolveSteps(turns) {
 			const completedAt = new Date(realTurn.completedAt).getTime();
 
 			if (index === 0) {
-				lastStepCompletedAt = completedAt;
+				// Cross'un bitiş zamanını kullan — F2L pair 1 tanıma süresi dahil olsun
+				const lastCrossTurn = turns[turnIndex - 1];
+				lastStepCompletedAt = new Date(lastCrossTurn.completedAt).getTime();
 			}
 
 			cubejs.move(turn);

@@ -1,0 +1,101 @@
+@import '../../../../styles/config';
+
+.#{$namespace}-solve-info-steps-table {
+	width: 100%;
+	margin-bottom: 16px;
+
+	&__meta-row {
+		font-size: 0.75rem;
+		color: rgba(255, 255, 255, 0.5);
+		padding: 6px 12px;
+		text-align: center;
+	}
+
+	&__table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 0.8rem;
+		background-color: #1E1E1E;
+		border: 1px solid #333;
+		border-radius: 10px;
+		overflow: hidden;
+
+		th,
+		td {
+			padding: 8px 6px;
+			text-align: center;
+			white-space: nowrap;
+		}
+
+		th {
+			font-weight: 600;
+			font-size: 0.72rem;
+			text-transform: uppercase;
+			color: #999;
+			background-color: #1a1a1a;
+			border-bottom: 1px solid #333;
+		}
+
+		td {
+			color: #ddd;
+			font-family: 'SF Mono', 'Roboto Mono', 'Fira Code', monospace;
+			font-size: 0.78rem;
+		}
+
+		// İlk sütun (step adı) sol hizalı
+		th:first-child,
+		td:first-child {
+			text-align: left;
+			padding-left: 12px;
+			font-family: inherit;
+			font-weight: 500;
+		}
+
+		tbody tr {
+			border-bottom: 1px solid #2a2a2a;
+
+			&:nth-child(odd) {
+				background-color: #252525;
+			}
+
+			&:nth-child(even) {
+				background-color: #1E1E1E;
+			}
+
+			&:last-child {
+				border-bottom: none;
+			}
+		}
+	}
+
+	&__cumulative {
+		color: #4caf50;
+		font-weight: 600;
+	}
+
+	&__total-row {
+		td {
+			font-weight: 700;
+			color: #4caf50;
+			border-top: 1px solid #444;
+			background-color: #1a1a1a !important;
+			padding-top: 10px;
+			padding-bottom: 10px;
+		}
+	}
+
+	@media (max-width: 600px) {
+		&__table {
+			font-size: 0.72rem;
+
+			th,
+			td {
+				padding: 6px 4px;
+			}
+
+			td {
+				font-size: 0.7rem;
+			}
+		}
+	}
+}

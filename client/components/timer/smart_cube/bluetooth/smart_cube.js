@@ -144,7 +144,8 @@ export default class SmartCube {
 		// Format moves for Redux - IMPORTANT: property name is "turn" not "move"
 		const formattedMoves = moves.map(m => ({
 			turn: (m.move || m.turn || '').replace(/\s/g, ''),
-			completedAt: m.timestamp || m.completedAt || Date.now()
+			completedAt: m.timestamp || m.completedAt || Date.now(),
+			cubeTimestamp: m.cubeTimestamp ?? null
 		}));
 
 		store.dispatch(turnSmartCubeBatch(formattedMoves));

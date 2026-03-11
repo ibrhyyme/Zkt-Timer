@@ -8,6 +8,7 @@ import ModalHeader from './modal_header/ModalHeader';
 import block from '../../../styles/bem';
 import { useSwipeBack } from '../../../util/hooks/useSwipeBack';
 import { useGeneral } from '../../../util/hooks/useGeneral';
+import { isAndroidNative } from '../../../util/platform';
 
 const b = block('modal');
 
@@ -76,7 +77,7 @@ export default function Modal(props: IModalProps) {
 	const { translateX: swipeX, progress: swipeProgress, phase: swipePhase } = useSwipeBack({
 		containerRef: modalRef,
 		onSwipeBack: clickClose,
-		disabled: !mobileMode,
+		disabled: !mobileMode || isAndroidNative(),
 		edgeWidth: 24,
 		threshold: 100,
 	});

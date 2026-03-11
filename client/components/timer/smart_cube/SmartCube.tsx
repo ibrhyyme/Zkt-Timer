@@ -23,7 +23,7 @@ import { useDispatch } from 'react-redux';
 import Dropdown from '../../common/inputs/dropdown/Dropdown';
 import Button from '../../common/button/Button';
 import { toastError } from '../../../util/toast';
-import { endTimer, startTimer, startInspection } from '../helpers/events';
+import { endTimer, startTimer, startInspection, getSmartCubeClockSkew } from '../helpers/events';
 import { stopTimer, clearInspectionTimers, START_TIMEOUT } from '../helpers/timers';
 import { resetScramble } from '../helpers/scramble';
 import { saveSolve } from '../helpers/save';
@@ -619,7 +619,15 @@ export default function SmartCube() {
 
 		if (scrambleCompletedAtRef.current) {
 			dbgTimer('TIMER START — scramble onceden tamamlanmis, ilk hamle geldi');
-			startTimer();
+			const firstSolveTurn = currentTurns[currentTurns.length - 1];
+			console.error('[TIMER DEBUG] checkForStartAfterTurn', {
+				turnsLength: currentTurns.length,
+				firstSolveTurn: JSON.stringify(firstSolveTurn),
+				completedAt: firstSolveTurn?.completedAt,
+				cubeTimestamp: firstSolveTurn?.cubeTimestamp,
+				typeofCompletedAt: typeof firstSolveTurn?.completedAt,
+			});
+			startTimer(firstSolveTurn?.completedAt);
 			let it = (new Date().getTime() - scrambleCompletedAtRef.current.getTime()) / 1000;
 			it = Math.floor(it * 100) / 100;
 
@@ -743,17 +751,45 @@ export default function SmartCube() {
 		const isSolveEnd = !!timeStartedAt;
 
 		if (isSolveEnd) {
-			// endTimestamp: Safety net'ten geliyorsa son hamle zamanını kullan (sessizlik gecikmesini çıkar)
-			const finalTimeMilli = endTimestamp && timeStartedAt
-				? endTimestamp - timeStartedAt.getTime()
-				: null;
-			dbgTimer(`TIMER STOP | finalTimeMilli: ${finalTimeMilli} | endTimestamp: ${endTimestamp} | timeStartedAt: ${timeStartedAt?.getTime()} | gecikme: ${endTimestamp ? Date.now() - endTimestamp : 'N/A'}ms`);
+			// Clock skew düzeltmesi: küp saati gerçek zamandan yavaş/hızlı çalışabilir
+			// correctedTime = rawDiff / (1 + skew/100) — GAN referans kütüphanesiyle aynı yaklaşım
+			const clockSkew = getSmartCubeClockSkew();
+			const slope = (clockSkew !== 0) ? (1 + clockSkew / 100) : 1;
+
+			let finalTimeMilli: number | null = null;
+			if (endTimestamp && timeStartedAt) {
+				const rawDiff = endTimestamp - timeStartedAt.getTime();
+				finalTimeMilli = Math.round(rawDiff / slope);
+			}
+
+			// completedAt'leri orantılı olarak ölçekle — server adım sürelerini buradan hesaplıyor
+			// Her hamlenin zamanı: firstCompletedAt + (completedAt - firstCompletedAt) / slope
+			// Böylece adım süreleri toplamı = finalTimeMilli (timer ↔ stats tutarlılık)
+			let correctedTurns = smartTurns;
+			if (slope !== 1 && smartTurns.length > 0) {
+				const baseTime = smartTurns[0].completedAt;
+				correctedTurns = smartTurns.map(t => ({
+					...t,
+					completedAt: baseTime + (t.completedAt - baseTime) / slope,
+				}));
+			}
+
+			const _ft = smartTurns[0];
+			const _lt = smartTurns[smartTurns.length - 1];
+			console.error('[TIMER DEBUG] resetMoves — SOLVE END', {
+				smartTurnsCount: smartTurns.length,
+				cubeTimeDiff: (_ft?.cubeTimestamp && _lt?.cubeTimestamp) ? _lt.cubeTimestamp - _ft.cubeTimestamp : 'N/A',
+				rawDiff: endTimestamp && timeStartedAt ? endTimestamp - timeStartedAt.getTime() : 'N/A',
+				clockSkew,
+				correctedFinalTime: finalTimeMilli,
+			});
+			dbgTimer(`TIMER STOP | finalTimeMilli: ${finalTimeMilli} | clockSkew: ${clockSkew}% | gecikme: ${endTimestamp ? Date.now() - endTimestamp : 'N/A'}ms`);
 			endTimer(context, finalTimeMilli, {
 				inspection_time: inspectionTime,
 				smart_device_id: smartDeviceId,
 				is_smart_cube: true,
-				smart_turn_count: smartTurns.length,
-				smart_turns: JSON.stringify(smartTurns),
+				smart_turn_count: correctedTurns.length,
+				smart_turns: JSON.stringify(correctedTurns),
 			});
 		}
 

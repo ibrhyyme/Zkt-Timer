@@ -1,0 +1,72 @@
+@import '../../../../styles/config';
+
+$rec-color: #457b9d;
+$exec-color: #66bb6a;
+
+.#{$namespace}-solve-info-combined-timeline {
+	width: 100%;
+
+	&__step {
+		margin-bottom: 10px;
+
+		&:last-child {
+			margin-bottom: 0;
+		}
+	}
+
+	&__label {
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: rgba(255, 255, 255, 0.7);
+		margin-bottom: 4px;
+	}
+
+	&__bar-row {
+		display: flex;
+		height: 8px;
+		border-radius: 4px;
+		overflow: hidden;
+		background-color: rgba(255, 255, 255, 0.05);
+	}
+
+	&__segment {
+		height: 100%;
+		min-width: 2px;
+		transition: width 0.3s ease;
+
+		&--rec {
+			background-color: $rec-color;
+			border-radius: 4px 0 0 4px;
+		}
+
+		&--exec {
+			background-color: $exec-color;
+			border-radius: 0 4px 4px 0;
+		}
+
+		// Tek segment durumunda tam yuvarlak
+		&--rec:only-child {
+			border-radius: 4px;
+		}
+
+		&--exec:first-child {
+			border-radius: 4px;
+		}
+	}
+
+	&__values {
+		display: flex;
+		gap: 12px;
+		margin-top: 2px;
+		font-size: 0.8rem;
+		font-family: 'SF Mono', 'Roboto Mono', 'Fira Code', monospace;
+	}
+
+	&__val-rec {
+		color: $rec-color;
+	}
+
+	&__val-exec {
+		color: $exec-color;
+	}
+}

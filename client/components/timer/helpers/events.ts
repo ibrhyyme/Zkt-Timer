@@ -31,9 +31,29 @@ export function setSmartSolveEndTime(time: number | null) {
 	_smartSolveEndTime = time;
 }
 
-export function startTimer() {
-	const timeStartedAt = new Date();
+// Smart cube: clock skew düzeltme yüzdesi (linear regression ile hesaplanır)
+// Negatif = küp saati gerçek zamandan yavaş (ör. -0.719 → küp %0.719 yavaş)
+let _smartCubeClockSkew: number = 0;
+
+export function getSmartCubeClockSkew(): number {
+	return _smartCubeClockSkew;
+}
+
+export function setSmartCubeClockSkew(skew: number) {
+	_smartCubeClockSkew = skew;
+}
+
+export function startTimer(smartStartTimestamp?: number) {
+	const timeStartedAt = smartStartTimestamp ? new Date(smartStartTimestamp) : new Date();
 	_smartSolveEndTime = null;
+
+	console.error('[TIMER DEBUG] startTimer called', {
+		smartStartTimestamp,
+		timeStartedAt: timeStartedAt.getTime(),
+		dateNow: Date.now(),
+		diff: smartStartTimestamp ? Date.now() - smartStartTimestamp : 0,
+		usedSmartTimestamp: !!smartStartTimestamp,
+	});
 
 	clearInspectionTimers(false, true);
 	setTimerParams({
