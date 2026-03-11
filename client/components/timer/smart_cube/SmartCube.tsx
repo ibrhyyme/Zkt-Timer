@@ -620,13 +620,6 @@ export default function SmartCube() {
 		if (scrambleCompletedAtRef.current) {
 			dbgTimer('TIMER START — scramble onceden tamamlanmis, ilk hamle geldi');
 			const firstSolveTurn = currentTurns[currentTurns.length - 1];
-			console.error('[TIMER DEBUG] checkForStartAfterTurn', {
-				turnsLength: currentTurns.length,
-				firstSolveTurn: JSON.stringify(firstSolveTurn),
-				completedAt: firstSolveTurn?.completedAt,
-				cubeTimestamp: firstSolveTurn?.cubeTimestamp,
-				typeofCompletedAt: typeof firstSolveTurn?.completedAt,
-			});
 			startTimer(firstSolveTurn?.completedAt);
 			let it = (new Date().getTime() - scrambleCompletedAtRef.current.getTime()) / 1000;
 			it = Math.floor(it * 100) / 100;
@@ -774,16 +767,7 @@ export default function SmartCube() {
 				}));
 			}
 
-			const _ft = smartTurns[0];
-			const _lt = smartTurns[smartTurns.length - 1];
-			console.error('[TIMER DEBUG] resetMoves — SOLVE END', {
-				smartTurnsCount: smartTurns.length,
-				cubeTimeDiff: (_ft?.cubeTimestamp && _lt?.cubeTimestamp) ? _lt.cubeTimestamp - _ft.cubeTimestamp : 'N/A',
-				rawDiff: endTimestamp && timeStartedAt ? endTimestamp - timeStartedAt.getTime() : 'N/A',
-				clockSkew,
-				correctedFinalTime: finalTimeMilli,
-			});
-			dbgTimer(`TIMER STOP | finalTimeMilli: ${finalTimeMilli} | clockSkew: ${clockSkew}% | gecikme: ${endTimestamp ? Date.now() - endTimestamp : 'N/A'}ms`);
+			dbgTimer(`TIMER STOP | finalTimeMilli: ${finalTimeMilli} | clockSkew: ${clockSkew}%`);
 			endTimer(context, finalTimeMilli, {
 				inspection_time: inspectionTime,
 				smart_device_id: smartDeviceId,

@@ -1207,19 +1207,6 @@ export default class GAN extends SmartCube {
 					? event.cubeTimestamp + this._cubeTimeOffset
 					: Date.now();
 
-				// Debug: ilk birkaç hamle için timestamp detaylarını logla
-				if (!this._debugMoveCount) this._debugMoveCount = 0;
-				this._debugMoveCount++;
-				if (this._debugMoveCount <= 3 || this._debugMoveCount % 20 === 0) {
-					console.error(`[TIMER DEBUG] gan.js move #${this._debugMoveCount}`, {
-						move: event.move,
-						cubeTimestamp: event.cubeTimestamp,
-						offset: this._cubeTimeOffset,
-						moveTimestamp,
-						dateNow: Date.now(),
-					});
-				}
-
 				// Tracker küpü güncelle
 				this._trackerCube.move(event.move);
 
