@@ -1,16 +1,17 @@
 import {TimerStore} from '../components/timer/@types/interfaces';
 
-export function turnSmartCube(turn, completedAt) {
+export function turnSmartCube(turn, completedAt, cubeTimestamp?: number | null) {
 	return {
 		type: 'TURN_SMART_CUBE',
 		payload: {
 			turn,
 			completedAt,
+			cubeTimestamp: cubeTimestamp ?? null,
 		},
 	};
 }
 
-export function turnSmartCubeBatch(moves: Array<{ turn: string; completedAt: number }>) {
+export function turnSmartCubeBatch(moves: Array<{ turn: string; completedAt: number; cubeTimestamp?: number | null }>) {
 	return {
 		type: 'TURN_SMART_CUBE_BATCH',
 		payload: {

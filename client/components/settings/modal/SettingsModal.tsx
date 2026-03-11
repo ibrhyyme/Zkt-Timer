@@ -10,6 +10,7 @@ import DataSettings from '../data/DataSettings';
 import LanguageSettings from '../language/LanguageSettings';
 import {useScrollSpy} from '../../../util/hooks/useScrollSpy';
 import {useSwipeBack} from '../../../util/hooks/useSwipeBack';
+import {isAndroidNative} from '../../../util/platform';
 
 interface SettingsSection {
 	id: string;
@@ -95,7 +96,7 @@ export default function SettingsModal(props: Props) {
 	const {translateX: swipeX, progress: swipeProgress, phase: swipePhase} = useSwipeBack({
 		containerRef: backdropRef,
 		onSwipeBack: () => onClose?.(),
-		disabled: isDesktop || !isOpen,
+		disabled: isDesktop || !isOpen || isAndroidNative(),
 		edgeWidth: 24,
 		threshold: 100,
 	});

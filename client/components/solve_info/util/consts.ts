@@ -5,8 +5,8 @@ export const STEP_NAME_MAP = {
 	f2l: 'F2L',
 	oll: 'OLL',
 	pll: 'PLL',
-	f2l_1: 'Slot 1',
-	f2l_2: 'Slot 2',
-	f2l_3: 'Slot 3',
-	f2l_4: 'Slot 4',
+	f2l_1: 'F2L Slot 1',
+	f2l_2: 'F2L Slot 2',
+	f2l_3: 'F2L Slot 3',
+	f2l_4: 'F2L Slot 4',
 };

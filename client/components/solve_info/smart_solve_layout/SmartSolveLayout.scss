@@ -1,0 +1,139 @@
+@import '../../../styles/config';
+
+.#{$namespace}-solve-info-smart {
+	// --- Header: two containers side by side ---
+	&__header {
+		display: flex;
+		align-items: center;
+		gap: 24px;
+		width: 100%;
+		margin-bottom: 6px;
+	}
+
+	&__header-info {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		min-width: 0;
+	}
+
+	&__header-visual {
+		flex-shrink: 0;
+		width: 250px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	&__time {
+		width: 100%;
+		font-size: 3rem;
+		font-family: 'SF Mono', 'Roboto Mono', 'Fira Code', monospace;
+		font-weight: bold;
+		text-align: center;
+		color: #fff;
+		margin: 0;
+	}
+
+	// --- Summary Cards ---
+	&__summary-cards {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 8px;
+		width: 100%;
+		margin-bottom: 8px;
+	}
+
+	&__card {
+		background-color: #1E1E1E;
+		border: 1px solid #333;
+		border-radius: 10px;
+		padding: 14px 12px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+
+		h4 {
+			font-weight: bold;
+			font-size: 1.4rem;
+			margin: 0 0 4px;
+			color: #fff;
+		}
+	}
+
+	&__card-label {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		opacity: 0.6;
+
+		svg {
+			font-size: 1rem;
+		}
+
+		span {
+			font-size: 0.8rem;
+		}
+	}
+
+	// --- Scramble Row ---
+	&__scramble-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+		width: 100%;
+		padding: 10px 14px;
+		background-color: #1E1E1E;
+		border: 1px solid #333;
+		border-radius: 10px;
+		margin-bottom: 12px;
+	}
+
+	&__scramble-text {
+		font-family: 'Roboto Mono', monospace;
+		font-size: 0.85rem;
+		line-height: 1.4;
+		margin: 0;
+		color: #fff;
+		opacity: 0.9;
+		word-break: break-word;
+
+		span {
+			font-weight: 600;
+			opacity: 0.6;
+			margin-right: 6px;
+		}
+	}
+
+	// --- Mobile ---
+	@media (max-width: 600px) {
+		&__header {
+			flex-direction: column;
+			gap: 12px;
+		}
+
+		&__header-info {
+			align-items: center;
+		}
+
+		&__header-visual {
+			width: 180px;
+		}
+
+		&__time {
+			text-align: center;
+			font-size: 2.4rem;
+		}
+
+		&__card h4 {
+			font-size: 1.1rem;
+		}
+
+		&__card {
+			padding: 10px 8px;
+		}
+	}
+}

@@ -23,7 +23,7 @@ export function getSolveStepsWithChildren(solve: Solve): SolveStepWithChildren[]
 
 	for (const child of children) {
 		for (const [index, step] of steps.entries()) {
-			if (step.step_name === child.parent_name) {
+			if (step.step.step_name === child.parent_name) {
 				steps[index].children.push(child);
 				break;
 			}

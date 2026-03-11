@@ -4,6 +4,7 @@ import {CaretLeft} from 'phosphor-react';
 import './SwipeBackIndicator.scss';
 import {useSwipeBack} from '../../../util/hooks/useSwipeBack';
 import {useGeneral} from '../../../util/hooks/useGeneral';
+import {isAndroidNative} from '../../../util/platform';
 import block from '../../../styles/bem';
 
 const b = block('swipe-back-indicator');
@@ -20,7 +21,7 @@ export default function SwipeBackIndicator() {
 	const hasOpenModal = modals.length > 0 || settingsModalOpen;
 	const isRootPage = location.pathname === '/' || location.pathname === '/timer';
 
-	const disabled = !mobileMode || isTimerPage || hasOpenModal || isRootPage;
+	const disabled = !mobileMode || isTimerPage || hasOpenModal || isRootPage || isAndroidNative();
 
 	const {progress, phase} = useSwipeBack({
 		containerRef: indicatorRef,

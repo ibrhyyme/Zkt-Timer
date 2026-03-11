@@ -240,6 +240,31 @@
 	}
 
 	// -------------------------------------------------------------
+	// SMART CUBE: Kompakt header, scrollable
+	// -------------------------------------------------------------
+	&--smart {
+		max-height: 90vh;
+		overflow-y: auto;
+
+		.#{$namespace}-solve-info__sub-actions {
+			margin-top: 10px;
+			padding: 8px 12px;
+		}
+
+		.#{$namespace}-solve-info__date-info {
+			padding-top: 2px;
+		}
+
+		.#{$namespace}-solve-info__top-actions {
+			margin-top: 24px;
+		}
+
+		.#{$namespace}-solve-info__nav {
+			margin-bottom: 12px;
+		}
+	}
+
+	// -------------------------------------------------------------
 	// MOBILE FULLSCREEN
 	// -------------------------------------------------------------
 	&--mobile {
@@ -311,4 +336,14 @@
 .cd-modal__center:has(> .cd-solve-info)>button,
 .cd-modal__center:has(> .cd-solve-info--mobile)>button {
 	display: none !important;
+}
+
+// Normal çözüm: dar modal
+.cd-modal__center:has(> .cd-solve-info--normal) {
+	max-width: 600px !important;
+}
+
+// Smart cube çözüm: geniş modal
+.cd-modal__center:has(> .cd-solve-info--smart) {
+	max-width: 1000px !important;
 }

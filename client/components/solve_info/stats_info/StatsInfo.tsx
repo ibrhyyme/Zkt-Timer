@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import './StatsInfo.scss';
 import { Timer, ArrowCounterClockwise, ArrowsClockwise, CaretUp, CaretDown } from 'phosphor-react';
 import StepPie from './step_pie/StepPie';
@@ -11,10 +12,12 @@ const b = block('solve-info-stats-info');
 
 interface Props {
 	solve: Solve;
+	hideCards?: boolean;
 }
 
 export default function StatsInfo(props: Props) {
-	const { solve } = props;
+	const { solve, hideCards } = props;
+	const { t } = useTranslation();
 
 	const time = solve.raw_time;
 	const smartTurnCount = solve.smart_turn_count;
@@ -33,13 +36,15 @@ export default function StatsInfo(props: Props) {
 
 	return (
 		<div className={b()}>
-			<div className={b('card').mix(b('section'))}>
-				{getStatCard(<ArrowsClockwise />, 'Turns Per Second', tps)}
-				{getStatCard(<Timer />, 'Inspection Time', smartInspectionTime ? smartInspectionTime + 's' : '-')}
-				{getStatCard(<ArrowCounterClockwise />, 'Turns', smartTurnCount)}
-				{solve.smart_pick_up_time ? getStatCard(<CaretUp />, 'Pick Up', solve.smart_pick_up_time.toFixed(2) + 's') : null}
-				{solve.smart_put_down_time ? getStatCard(<CaretDown />, 'Pull Down', solve.smart_put_down_time.toFixed(2) + 's') : null}
-			</div>
+			{!hideCards && (
+				<div className={b('card').mix(b('section'))}>
+					{getStatCard(<ArrowsClockwise />, t('solve_info.tps'), tps)}
+					{getStatCard(<Timer />, t('solve_info.inspection'), smartInspectionTime ? smartInspectionTime + 's' : '-')}
+					{getStatCard(<ArrowCounterClockwise />, t('solve_info.turns'), smartTurnCount)}
+					{solve.smart_pick_up_time ? getStatCard(<CaretUp />, t('solve_info.pick_up'), solve.smart_pick_up_time.toFixed(2) + 's') : null}
+					{solve.smart_put_down_time ? getStatCard(<CaretDown />, t('solve_info.put_down'), solve.smart_put_down_time.toFixed(2) + 's') : null}
+				</div>
+			)}
 			<hr />
 			<div className={b('section')}>
 				<StepPie solve={solve} />

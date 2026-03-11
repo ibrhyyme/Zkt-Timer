@@ -1,19 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { getTimeString } from '../../util/time';
 import './SolveInfo.scss';
-import { Cube, Bluetooth } from 'phosphor-react';
-import HorizontalNav from '../common/horizontal_nav/HorizontalNav';
-import ScrambleInfo from './scramble_info/ScrambleInfo';
-import SolutionInfo from './solution_info/SolutionInfo';
-import StatsInfo from './stats_info/StatsInfo';
-import NotesInfo from './notes_info/NotesInfo';
 import { gql } from '@apollo/client';
 import { gqlQuery } from '../api';
 import Loading from '../common/loading/Loading';
 import { SOLVE_WITH_USER_FRAGMENT } from '../../util/graphql/fragments';
-import CopyText from '../common/copy_text/CopyText';
-import Avatar from '../common/avatar/Avatar';
 import { toggleDnfSolveDb, togglePlusTwoSolveDb } from '../../db/solves/operations';
 import { fetchSolve, fetchAdjacentSolve } from '../../db/solves/query';
 import { deleteSolveDb, updateSolveDb } from '../../db/solves/update';
@@ -21,16 +12,40 @@ import { useSolveDb } from '../../util/hooks/useSolveDb';
 import { IModalProps } from '../common/modal/Modal';
 import { getCubeTypeInfoById } from '../../util/cubes/util';
 import block from '../../styles/bem';
-import Button from '../common/button/Button';
-import Tag from '../common/tag/Tag';
 import { Solve } from '../../../server/schemas/Solve.schema';
-import { getFullFormattedDate } from '../../util/dates';
 import { useGeneral } from '../../util/hooks/useGeneral';
 import { useDispatch } from 'react-redux';
 import { closeModal } from '../../actions/general';
 import { demoUser } from './demo_user';
+import NormalSolveLayout from './normal_solve_layout/NormalSolveLayout';
+import SmartSolveLayout from './smart_solve_layout/SmartSolveLayout';
 
 const b = block('solve-info');
+
+export interface SolveLayoutProps {
+	solve: Solve;
+	dbSolve: Solve;
+	effSolve: Solve;
+	user: any;
+	disabled: boolean;
+	editMode: boolean;
+	mobileMode: boolean;
+	demoSolve: boolean;
+	toggleEditMode: () => void;
+	togglePlusTwo: () => void;
+	toggleDnf: () => void;
+	deleteSolve: () => void;
+	handleChange: (e: any) => void;
+	handleDone: () => void;
+	onComplete?: (data?: any) => void;
+	time: string;
+	cubeTypeInfo: any;
+	endedAt: Date;
+	isSystemDnf: boolean;
+	plusTwo: boolean;
+	dnf: boolean;
+	smartDevice: any;
+}
 
 interface Props extends IModalProps {
 	solveId: string;
@@ -42,12 +57,10 @@ interface Props extends IModalProps {
 export default function SolveInfo(props: Props) {
 	const { solveId, disabled, onComplete } = props;
 
-	const { t } = useTranslation();
 	const dispatch = useDispatch();
 	const mobileMode = useGeneral('mobile_mode');
 	const demoSolve = props.solve?.demo_mode;
 
-	const [page, setPage] = useState('scramble');
 	const [loading, setLoading] = useState(!demoSolve);
 	const [solve, setSolve] = useState<Solve>(props.solve);
 	const [editMode, setEditMode] = useState(false);
@@ -102,7 +115,7 @@ export default function SolveInfo(props: Props) {
 		toggleDnfSolveDb(dbSolve);
 	}
 
-	async function deleteSolve() {
+	async function handleDeleteSolve() {
 		const solveToDelete = dbSolve || solve;
 		if (!solveToDelete) return;
 
@@ -129,16 +142,16 @@ export default function SolveInfo(props: Props) {
 		});
 	}
 
-	function onPageChange(id) {
-		setPage(id);
-	}
-
 	function toggleEditMode() {
 		if (editMode) {
 			updateSolve();
 		}
 
 		setEditMode(!editMode);
+	}
+
+	function handleDone() {
+		dispatch(closeModal());
 	}
 
 	if (loading) {
@@ -157,146 +170,39 @@ export default function SolveInfo(props: Props) {
 	const endedAt = new Date(Number(solve.ended_at));
 	const isSmartCube = solve.is_smart_cube;
 	const smartDevice = solve.smart_device;
-	const isSystemDnf = effSolve.dnf && effSolve.raw_time === 0; // Inspection timeout DNF'i
+	const isSystemDnf = effSolve.dnf && effSolve.raw_time === 0;
 
 	const time = getTimeString(effSolve.time);
-
-	const childBody = {
-		editMode,
-		solve,
-		handleChange,
-	};
-
-	const pageMap = {
-		scramble: <ScrambleInfo {...childBody} />,
-		solution: <SolutionInfo {...childBody} />,
-		stats: <StatsInfo {...childBody} />,
-		notes: <NotesInfo {...childBody} />,
-	};
-
-	const infoBody = pageMap[page];
-
-	let editButton = (
-		<Button
-			text={editMode ? t('solve_info.save') : t('solve_info.edit')}
-			className={b('edit')}
-			gray
-			primary={editMode}
-			onClick={toggleEditMode}
-		/>
-	);
-
-	let plusTwoButton = <Button gray text="+2" disabled={disabled || isSystemDnf} onClick={togglePlusTwo} warning={plusTwo} />;
-	let dnfButton = <Button gray text="DNF" disabled={disabled || isSystemDnf} onClick={toggleDnf} danger={dnf} />;
-	let deleteButton = <Button gray title={t('solve_info.delete')} text={t('solve_info.delete')} onClick={deleteSolve} />;
-
-	if (disabled) {
-		deleteButton = null;
-		editButton = null;
-		plusTwoButton = null;
-		dnfButton = null;
-
-		if (plusTwo) {
-			plusTwoButton = <Tag text="+2" backgroundColor="orange" />;
-		}
-		if (dnf) {
-			dnfButton = <Tag text="DNF" backgroundColor="red" />;
-		}
-	}
-
-	let smartPages = [
-		{
-			id: 'solution',
-			value: t('solve_info.solve_tab'),
-		},
-		{
-			id: 'stats',
-			value: t('solve_info.stats_tab'),
-		},
-	];
-
-	if (!isSmartCube) {
-		smartPages = [];
-	}
-
-	const pages = [
-		{
-			id: 'scramble',
-			value: t('solve_info.scramble_tab'),
-		},
-		...smartPages,
-		{
-			id: 'notes',
-			value: t('solve_info.notes_tab'),
-		},
-	];
-
-	let shareLink = null;
-	if (typeof window !== 'undefined') {
-		shareLink = (
-			<CopyText
-				buttonProps={{
-					text: t('solve_info.share_link'),
-				}}
-				text={window.location.origin + '/solve/' + solve.share_code}
-			/>
-		);
-	}
-
 	const cubeTypeInfo = getCubeTypeInfoById(cubeType);
 
-	function handleDone() {
-		dispatch(closeModal());
+	const layoutProps: SolveLayoutProps = {
+		solve,
+		dbSolve,
+		effSolve,
+		user,
+		disabled: !!disabled,
+		editMode,
+		mobileMode,
+		demoSolve: !!demoSolve,
+		toggleEditMode,
+		togglePlusTwo,
+		toggleDnf,
+		deleteSolve: handleDeleteSolve,
+		handleChange,
+		handleDone,
+		onComplete,
+		time,
+		cubeTypeInfo,
+		endedAt,
+		isSystemDnf,
+		plusTwo: !!plusTwo,
+		dnf: !!dnf,
+		smartDevice,
+	};
+
+	if (isSmartCube) {
+		return <SmartSolveLayout {...layoutProps} />;
 	}
 
-	return (
-		<div className={b({ mobile: mobileMode })}>
-			{mobileMode && (
-				<div className={b('mobile-header-top')}>
-					<div className={b('mobile-title')}>{t('solve_info.solve_detail')}</div>
-					<div className={b('mobile-done')} onClick={handleDone}>{t('solve_info.done')}</div>
-				</div>
-			)}
-			{!mobileMode && (
-				<div className={b('web-done')} onClick={handleDone}>{t('solve_info.done')}</div>
-			)}
-			<div className={b('top-actions')}>
-				<div>{shareLink}</div>
-				<div>
-					{deleteButton}
-					{editButton}
-				</div>
-			</div>
-			<div className={b('body')}>
-				<h2>{time}</h2>
-				<div className={b('sub')}>
-					<Avatar small user={user} hideBadges profile={user?.profile} />
-					<div className={b('sub-actions')}>
-						{isSmartCube ? (
-							<Tag
-								icon={<Bluetooth />}
-								text={smartDevice?.name}
-								title="Smart cube"
-								large
-								backgroundColor="blue"
-							/>
-						) : null}
-
-						<Tag icon={<Cube weight="bold" />} backgroundColor="button" text={cubeTypeInfo.name} />
-						{plusTwoButton}
-						{dnfButton}
-					</div>
-					<div className={b('date-info')}>
-						<span>{getFullFormattedDate(endedAt)}</span>
-					</div>
-				</div>
-				<div className={b('info')}>
-					<div className={b('nav')}>
-						<HorizontalNav tabId={page} onChange={onPageChange} tabs={pages} />
-					</div>
-					{infoBody}
-				</div>
-			</div>
-		</div>
-	);
+	return <NormalSolveLayout {...layoutProps} />;
 }
