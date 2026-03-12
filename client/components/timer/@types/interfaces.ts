@@ -5,6 +5,7 @@ import { TimerModuleDropdownOptions, TimerModuleType } from './enums';
 import { ITimerContext } from '../Timer';
 import { TimerLayoutPosition } from '../../../db/settings/query';
 import { Solve } from '../../../../server/schemas/Solve.schema';
+import { LiveAnalysisResult } from '../../../util/solve/live_analysis_core';
 
 interface TimerHeaderOptions {
 	hide?: boolean; // Hides the whole header
@@ -105,6 +106,7 @@ export interface TimerStore {
 	lastSmartSolveStats?: {
 		turns: number;
 		tps: number;
+		correctedAnalysis?: LiveAnalysisResult;
 	} | null;
 	smartAbortVisible?: boolean;
 	smartStateSeq?: number;

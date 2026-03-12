@@ -24,6 +24,7 @@ import Dropdown from '../../common/inputs/dropdown/Dropdown';
 import Button from '../../common/button/Button';
 import { toastError } from '../../../util/toast';
 import { cubeTimestampLinearFit } from '../../../util/smart_cube_timing';
+import { analyzeCurrentState } from '../../../util/solve/live_analysis_core';
 import { endTimer, startTimer, startInspection, getSmartCubeClockSkew } from '../helpers/events';
 import { stopTimer, clearInspectionTimers, START_TIMEOUT } from '../helpers/timers';
 import { resetScramble } from '../helpers/scramble';
@@ -768,6 +769,21 @@ export default function SmartCube() {
 				smart_turn_count: correctedMoves.length,
 				smart_turns: JSON.stringify(correctedMoves),
 			});
+
+			// Düzeltilmiş evre analizi: LiveAnalysisOverlay'in doğru süreleri göstermesi için
+			// correctedMoves.completedAt linear fit ile düzeltilmiş — ham timestamp'lerden daha doğru
+			try {
+				const correctedTurns = correctedMoves.map(m => ({ ...m, time: m.completedAt }));
+				const correctedAnalysis = analyzeCurrentState(correctedTurns, startState);
+				const tps = finalTimeMilli > 0
+					? Number((correctedMoves.length / (finalTimeMilli / 1000)).toFixed(2))
+					: 0;
+				setTimerParams({
+					lastSmartSolveStats: { turns: correctedMoves.length, tps, correctedAnalysis }
+				});
+			} catch (e) {
+				// Analiz başarısız olursa endTimer'daki basit stats yeterli
+			}
 		}
 
 		if (isSolveEnd) originalScrambleRef.current = '';
