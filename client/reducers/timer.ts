@@ -22,6 +22,7 @@ const smartState = {
 	smartAbortVisible: false,
 	smartStateSeq: 0,
 	smartPhysicallySolved: false,
+	smartNeedsCubeReset: false,
 };
 
 const defaultTimerState = {

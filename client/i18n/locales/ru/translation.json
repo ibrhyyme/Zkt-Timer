@@ -1163,7 +1163,9 @@
 		"abort_discard": "Да, но не сохранять эту сборку",
 		"abort_continue": "Нет, продолжить",
 		"cube_mismatch_message": "Куб должен быть собран, прежде чем мы сможем продолжить",
-		"reset_cube_state": "Сбросить состояние куба"
+		"reset_cube_state": "Сбросить состояние куба",
+		"solve_cube_to_start": "Соберите куб для начала",
+		"solve_cube_for_scramble": "Соберите куб для нового скрамбла!"
 	},
 	"smart_scramble": {
 		"ready": "Готов к старту",

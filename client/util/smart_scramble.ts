@@ -242,6 +242,25 @@ export function matchScrambleWithCommutative(
 			userConsumed[foundIdx] = true;
 			matchStatus.push(isHalf ? 'half' : 'perfect');
 
+			if (isHalf) {
+				// Half match: user did one turn of a double move (e.g. R instead of R2).
+				// Don't proceed to next expected move — the double move must be completed first.
+				// If there are extra unconsumed user moves after this, the user moved on
+				// without completing the double move → wrong.
+				// If no extra moves, user may still complete it → pending.
+				const hasExtraMoves = userMoves.some((_, idx) => idx > foundIdx && !userConsumed[idx]);
+				if (hasExtraMoves) {
+					for (let i = expIdx + 1; i < expectedMoves.length; i++) {
+						matchStatus.push('wrong');
+					}
+					return { matched: false, matchStatus };
+				}
+				for (let i = expIdx + 1; i < expectedMoves.length; i++) {
+					matchStatus.push('pending');
+				}
+				return { matched: false, matchStatus };
+			}
+
 			// Advance search start past all consumed moves
 			while (userSearchStart < userMoves.length && userConsumed[userSearchStart]) {
 				userSearchStart++;

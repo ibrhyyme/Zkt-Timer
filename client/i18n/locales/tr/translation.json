@@ -1163,7 +1163,9 @@
 		"abort_discard": "Evet, ama bu çözümü kaydetme",
 		"abort_continue": "Hayır, devam edeyim",
 		"cube_mismatch_message": "Devam edebilmemiz için küpün çözülmüş olması gerekiyor",
-		"reset_cube_state": "Küp durumunu sıfırla"
+		"reset_cube_state": "Küp durumunu sıfırla",
+		"solve_cube_to_start": "Başlamak için küpü çöz",
+		"solve_cube_for_scramble": "Yeni karıştırma için küpü çözün!"
 	},
 	"smart_scramble": {
 		"ready": "Başlamaya Hazırsın",

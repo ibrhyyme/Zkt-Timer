@@ -111,4 +111,5 @@ export interface TimerStore {
 	smartAbortVisible?: boolean;
 	smartStateSeq?: number;
 	smartPhysicallySolved?: boolean;
+	smartNeedsCubeReset?: boolean;
 }
