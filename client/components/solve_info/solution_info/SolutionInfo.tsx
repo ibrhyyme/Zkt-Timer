@@ -25,11 +25,14 @@ export default function SolutionInfo(props: Props) {
 		[solve.scramble, crossStep?.turns]
 	);
 
-	const allTurns = steps.map((s) => {
-		const t = rotation ? transformMoves(s.turns, rotation) : s.turns;
-		return simplifyMoves(t);
-	}).filter(Boolean).join(' ');
-	const allTurnsWithRotation = rotation ? `${rotation} ${allTurns}` : allTurns;
+	const allTurnsWithRotation = steps.map((s) => {
+		const isCross = s.step_name === 'cross';
+		const transformed = simplifyMoves(rotation ? transformMoves(s.turns, rotation) : s.turns);
+		if (!transformed) return null;
+		const prefix = isCross && rotation ? `${rotation} ` : '';
+		const label = STEP_NAME_MAP[s.step_name] || s.step_name;
+		return `${prefix}${transformed} // ${label}`;
+	}).filter(Boolean).join('\n');
 
 	return (
 		<div className={b()}>

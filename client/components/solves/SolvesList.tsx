@@ -305,7 +305,7 @@ export default function SolvesList() {
 	return (
 		<div className={b()}>
 			<PageTitle pageName={t('solves_list.page_title')}>
-					<div className="w-full mb-2 flex flex-row flex-wrap items-center gap-2">
+					<div className="w-full mb-2 flex flex-row flex-wrap items-center justify-center gap-2">
 						{/* Bulk Selection Toolbar */}
 						{isSelectionMode ? (
 							<div className="flex items-center gap-2 w-full animate-in fade-in slide-in-from-top-2 duration-200 p-2 bg-blue-900/20 rounded-lg border border-blue-500/30">
@@ -458,7 +458,6 @@ export default function SolvesList() {
 									onClick={toggleSelectionMode}
 									disabled={!solves?.length}
 								/>
-								<div className="grow" />
 								<ResultCount value={solveCountText} />
 							</>
 						)}
