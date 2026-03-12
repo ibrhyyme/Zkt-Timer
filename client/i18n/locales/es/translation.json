@@ -1163,7 +1163,9 @@
 		"abort_discard": "Sí, pero no guardar esta resolución",
 		"abort_continue": "No, déjame continuar",
 		"cube_mismatch_message": "El cubo debe estar resuelto antes de poder continuar",
-		"reset_cube_state": "Restablecer estado del cubo"
+		"reset_cube_state": "Restablecer estado del cubo",
+		"solve_cube_to_start": "Resuelve el cubo para comenzar",
+		"solve_cube_for_scramble": "¡Resuelve el cubo para una nueva mezcla!"
 	},
 	"smart_scramble": {
 		"ready": "Listo para Comenzar",

@@ -31,13 +31,13 @@ function SolveDiff() {
 
     // If current solve is DNF, no valid time to compare
     if (current.dnf) {
-        return <div className={b()} style={{ fontSize: '1rem', opacity: 0.7 }}>(N/A)</div>;
+        return null;
     }
 
     // Find the most recent non-DNF solve before current for comparison
     const previous = solves.find((s, idx) => idx > 0 && !s.dnf);
     if (!previous) {
-        return <div className={b()} style={{ fontSize: '1rem', opacity: 0.7 }}>(N/A)</div>;
+        return null;
     }
 
     const currTime = Number(current.time) || 0;

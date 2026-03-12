@@ -1163,7 +1163,9 @@
 		"abort_discard": "Yes, but don't save this solve",
 		"abort_continue": "No, let me continue",
 		"cube_mismatch_message": "The cube needs to be solved before we can proceed",
-		"reset_cube_state": "Reset cube state"
+		"reset_cube_state": "Reset cube state",
+		"solve_cube_to_start": "Solve the cube to start",
+		"solve_cube_for_scramble": "Solve the cube for a new scramble!"
 	},
 	"smart_scramble": {
 		"ready": "Ready to Start",

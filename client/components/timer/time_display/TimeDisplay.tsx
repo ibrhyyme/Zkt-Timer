@@ -206,7 +206,13 @@ export default function TimeDisplay() {
 	} else if (ganTimerOn) {
 		bottomInfo = <GanTimer />;
 	} else if (smartCubeSelected(context) && !mobileMode) {
-		if (preflightChecks(smartTurns, scramble)) {
+		if (context.smartNeedsCubeReset) {
+			bottomInfo = (
+				<StartInstructions>
+					{t('smart_cube.solve_cube_to_start')}
+				</StartInstructions>
+			);
+		} else if (preflightChecks(smartTurns, scramble)) {
 			bottomInfo = (
 				<StartInstructions>
 					{t('time_display.turn_smart_cube_to_start')}

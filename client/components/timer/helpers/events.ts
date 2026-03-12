@@ -60,6 +60,7 @@ export function startTimer(smartStartTimestamp?: number) {
 		solving: true,
 		finalTime: 0,
 		lastSmartSolveStats: null,
+		dnfTime: false,
 	});
 
 	emitEvent('startTimerEvent', {
@@ -119,6 +120,8 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 		smartTurns: [],
 		smartPickUpTime: 0,
 		lastSmartMoveTime: 0,
+		dnfTime: false,
+		addTwoToSolve: false,
 		...(smartStats ? { lastSmartSolveStats: smartStats } : {}),
 	});
 
@@ -159,11 +162,12 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 export function resetTimerParams(context: ITimerContext) {
 	resetScramble(context);
 	stopTimer(START_TIMEOUT);
-	clearInspectionTimers(false, true);
+	clearInspectionTimers(true, true);
 	setTimerParams({
 		spaceTimerStarted: 0,
 		solving: false,
 		canStart: false,
+		smartCanStart: false,
 		timeStartedAt: null,
 		// Reset smart cube data
 		smartTurns: [],

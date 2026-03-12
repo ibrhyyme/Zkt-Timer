@@ -83,7 +83,13 @@ export default function SmartCube() {
 	const [inspectionTime, setInspectionTime] = useState(0);
 	const [showAbortDialog, setShowAbortDialog] = useState(false);
 	const [abortResetCount, setAbortResetCount] = useState(0);
-	const [needsCubeReset, setNeedsCubeReset] = useState(false);
+	const [needsCubeReset, _setNeedsCubeReset] = useState(false);
+	const [cubeResetFromAbort, setCubeResetFromAbort] = useState(false);
+	const setNeedsCubeReset = (val: boolean) => {
+		_setNeedsCubeReset(val);
+		setTimerParams({ smartNeedsCubeReset: val });
+		if (!val) setCubeResetFromAbort(false);
+	};
 	const inactivityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const INACTIVITY_TIMEOUT_MS = 5000; // 5 seconds
 
@@ -115,6 +121,7 @@ export default function SmartCube() {
 		smartAbortVisible,
 		smartStateSeq,
 		smartPhysicallySolved,
+		dnfTime,
 	} = context;
 
 	// Polling safety refs (avoid stale closures in setInterval)
@@ -164,7 +171,19 @@ export default function SmartCube() {
 		dbgCorr(`COMPRESSOR RESET | scramble: ${scramble?.slice(0, 40)}... | offset: ${smartTurnOffset}`);
 		compressorRef.current.reset();
 		validationCacheRef.current.lastValidatedLength = 0;
+		// Yeni scramble geldiginde eski scramble completion'i gecersiz — timer yanlislikla baslamasin
+		scrambleCompletedAtRef.current = null;
 	}, [scramble, smartTurnOffset]);
+
+	// Inspection timeout → dnfTime:true olunca scramble completion ref'i temizle
+	// ve kupu coz moduna gec (timer baslamasin, kullanici kupu cozsun)
+	useEffect(() => {
+		if (dnfTime && !timeStartedAt) {
+			scrambleCompletedAtRef.current = null;
+			setNeedsCubeReset(true);
+			setTimerParams({ smartCanStart: false, lastSmartSolveStats: null, smartUndoMoves: null });
+		}
+	}, [dnfTime]);
 
 	// Precompute target FACELETS (scramble'in hedef durumu)
 	// Her zaman originalScramble kullan — correction scramble degil, orijinal scramble
@@ -601,8 +620,8 @@ export default function SmartCube() {
 
 	// Batch validation wrapper with cache
 	function checkForStartAfterTurnBatch(currentTurns: any[]) {
-		// Skip if scrambling hasn't started
-		if (!scramble || timeStartedAt) return;
+		// Skip if scrambling hasn't started or cube needs reset (DNF/abort — user is solving cube, not scrambling)
+		if (!scramble || timeStartedAt || needsCubeReset) return;
 
 		// CACHE CHECK: Skip if no new moves since last validation
 		if (currentTurns.length === validationCacheRef.current.lastValidatedLength) {
@@ -854,7 +873,7 @@ export default function SmartCube() {
 		// smartTurns is kept so cubejs continues tracking the physical cube state.
 		// When the user physically solves the cube, the solve detection will fire.
 		stopTimer(START_TIMEOUT);
-		clearInspectionTimers(false, true);
+		clearInspectionTimers(true, true);
 		setTimerParams({
 			timeStartedAt: null,
 			solving: false,
@@ -866,6 +885,7 @@ export default function SmartCube() {
 			smartAbortVisible: false,
 		});
 		setShowAbortDialog(false);
+		setCubeResetFromAbort(true);
 		setNeedsCubeReset(true);
 	}
 
@@ -873,7 +893,7 @@ export default function SmartCube() {
 		// Reset timer WITHOUT generating a new scramble or clearing smartTurns.
 		// smartTurns is kept so cubejs continues tracking the physical cube state.
 		stopTimer(START_TIMEOUT);
-		clearInspectionTimers(false, true);
+		clearInspectionTimers(true, true);
 		setTimerParams({
 			timeStartedAt: null,
 			solving: false,
@@ -885,6 +905,7 @@ export default function SmartCube() {
 			smartAbortVisible: false,
 		});
 		setShowAbortDialog(false);
+		setCubeResetFromAbort(true);
 		setNeedsCubeReset(true);
 	}
 
@@ -1048,7 +1069,7 @@ export default function SmartCube() {
 
 	// Mismatch banner: show after aborting a solve, when the physical cube
 	// still needs to be solved before a new scramble can be generated
-	const showCubeMismatch = needsCubeReset && !timeStartedAt;
+	const showCubeMismatch = needsCubeReset && !timeStartedAt && cubeResetFromAbort;
 
 	return (
 		<div className={b({ mobile: mobileMode })}>

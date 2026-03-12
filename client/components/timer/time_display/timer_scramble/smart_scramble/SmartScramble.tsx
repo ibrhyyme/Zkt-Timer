@@ -10,7 +10,7 @@ export default function SmartScramble() {
 	const { t } = useTranslation();
 	const context = useContext(TimerContext);
 
-	const { smartTurns, scramble, smartCanStart, smartTurnOffset, smartUndoMoves } = context;
+	const { smartTurns, scramble, smartCanStart, smartTurnOffset, smartUndoMoves, smartNeedsCubeReset } = context;
 
 	// Only consider turns after the offset (turns before offset are from pre-correction history)
 	const offset = smartTurnOffset || 0;
@@ -55,7 +55,9 @@ export default function SmartScramble() {
 		);
 	});
 
-	if (smartCanStart) {
+	if (smartNeedsCubeReset) {
+		scrambleBody = <span className={b('turn', { orange: true })}>{t('smart_cube.solve_cube_for_scramble')}</span>;
+	} else if (smartCanStart) {
 		scrambleBody = <span className={b('turn', { green: true })}>{t('smart_scramble.ready')}</span>;
 	}
 
