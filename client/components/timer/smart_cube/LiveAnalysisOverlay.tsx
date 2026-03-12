@@ -8,7 +8,7 @@ import { useSettings } from '../../../util/hooks/useSettings';
 const b = block('live-analysis');
 
 export default function LiveAnalysisOverlay({ startState, mobile }: { startState?: string, mobile?: boolean }) {
-    const { smartTurns, timeStartedAt } = useContext(TimerContext);
+    const { smartTurns, timeStartedAt, lastSmartSolveStats } = useContext(TimerContext);
     const analysisMode = useSettings('smart_cube_analysis_mode') || 'cffffop';
     const cubeType = useSettings('cube_type');
     const scrambleSubset = useSettings('scramble_subset');
@@ -58,11 +58,14 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
         }
     }, [analysis, timeStartedAt]);
 
-    // Display Logic: 
-    // If Timer is RUNNING, show live 'analysis'. 
-    // Otherwise (Scramble/Inspection/Finished), show 'cachedAnalysis' (Result of last solve).
-    // This prevents the "wrong move" glitch from showing garbage live stats during scramble.
-    const displayAnalysis = timeStartedAt && shouldRun ? analysis : cachedAnalysis;
+    // Display Logic:
+    // If Timer is RUNNING, show live 'analysis'.
+    // Otherwise (Scramble/Inspection/Finished), show corrected analysis (linear fit) or cached.
+    // correctedAnalysis = linear fit ile düzeltilmiş evre süreleri (doğru)
+    // cachedAnalysis = ham BLE timestamp'lerinden hesaplanmış (yaklaşık)
+    const displayAnalysis = timeStartedAt && shouldRun
+        ? analysis
+        : (lastSmartSolveStats?.correctedAnalysis || cachedAnalysis);
 
     if (!displayAnalysis || analysisMode === 'none' || !isStandard3x3) return null;
 
