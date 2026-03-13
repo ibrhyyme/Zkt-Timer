@@ -2,6 +2,7 @@ export interface AlgorithmEntry {
 	name: string;
 	algorithm: string;
 	alternatives?: string[];
+	setup?: string;
 }
 
 export interface AlgorithmSubset {
