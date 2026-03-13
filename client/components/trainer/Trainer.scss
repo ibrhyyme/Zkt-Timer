@@ -825,12 +825,28 @@
 		font-size: 1rem;
 	}
 
+	&__training-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		width: 100%;
+		margin-bottom: 1rem;
+		gap: 1rem;
+	}
+
 	&__training-alg-name {
 		font-size: 1.2rem;
 		font-weight: 600;
 		color: rgb(var(--text-color));
-		margin-bottom: 1rem;
 		text-align: center;
+	}
+
+	&__training-setup code {
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 1.3rem;
+		font-weight: 600;
+		color: rgb(var(--text-color));
+		white-space: nowrap;
 	}
 
 	&__training-cube {
@@ -1228,9 +1244,17 @@
 			padding: 0.25rem 0.5rem;
 		}
 
+		&__training-header {
+			flex-wrap: wrap;
+			margin-bottom: 0.35rem;
+		}
+
 		&__training-alg-name {
 			font-size: 1rem;
-			margin-bottom: 0.35rem;
+		}
+
+		&__training-setup code {
+			font-size: 1rem;
 		}
 
 		&__training-cube {

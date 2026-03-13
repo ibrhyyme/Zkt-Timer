@@ -17,10 +17,12 @@ export default function TrainingArea() {
 	const {currentAlgorithm, options} = state;
 
 	const [alternatives, setAlternatives] = useState<string[]>([]);
+	const [setupAlg, setSetupAlg] = useState<string | null>(null);
 
 	useEffect(() => {
 		if (!currentAlgorithm) {
 			setAlternatives([]);
+			setSetupAlg(null);
 			return;
 		}
 
@@ -28,19 +30,22 @@ export default function TrainingArea() {
 			const subsets = defaults[currentAlgorithm.category];
 			if (!subsets) {
 				setAlternatives([]);
+				setSetupAlg(null);
 				return;
 			}
 
 			const expandedCurrent = expandNotation(currentAlgorithm.algorithm);
 			for (const sub of subsets) {
 				for (const alg of sub.algorithms) {
-					if (expandNotation(alg.algorithm) === expandedCurrent && alg.alternatives?.length) {
-						setAlternatives(alg.alternatives);
+					if (expandNotation(alg.algorithm) === expandedCurrent) {
+						setAlternatives(alg.alternatives?.length ? alg.alternatives : []);
+						setSetupAlg(alg.setup || null);
 						return;
 					}
 				}
 			}
 			setAlternatives([]);
+			setSetupAlg(null);
 		});
 	}, [currentAlgorithm]);
 
@@ -56,7 +61,14 @@ export default function TrainingArea() {
 
 	return (
 		<div className={b('training-area')}>
-			<div className={b('training-alg-name')}>{currentAlgorithm.name}</div>
+			<div className={b('training-header')}>
+				<div className={b('training-alg-name')}>{currentAlgorithm.name}</div>
+				{setupAlg && !state.isMoveMasked && (
+					<div className={b('training-setup')}>
+						<code>Setup: {setupAlg}</code>
+					</div>
+				)}
+			</div>
 
 			<div className={b('training-cube')}>
 				<CubeViewer
