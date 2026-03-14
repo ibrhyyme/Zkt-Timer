@@ -186,6 +186,25 @@ function trainerReducer(state: TrainerSessionState, action: TrainerAction): Trai
 				currentTimerValue: 0,
 			};
 
+		case 'SWAP_ALGORITHM': {
+			const {oldAlg, newAlg} = action.payload;
+			return {
+				...state,
+				currentAlgorithm: state.currentAlgorithm?.algorithm === oldAlg
+					? {...state.currentAlgorithm, algorithm: newAlg}
+					: state.currentAlgorithm,
+				checkedAlgorithms: state.checkedAlgorithms.map((a) =>
+					a.algorithm === oldAlg ? {...a, algorithm: newAlg} : a
+				),
+				algorithmQueue: state.algorithmQueue.map((a) =>
+					a.algorithm === oldAlg ? {...a, algorithm: newAlg} : a
+				),
+				timerState: 'IDLE',
+				currentTimerValue: 0,
+				...SMART_RESET,
+			};
+		}
+
 		case 'ADVANCE_ALGORITHM': {
 			const currentIdx = state.algorithmQueue.findIndex(
 				(a) => a.algorithm === state.currentAlgorithm?.algorithm

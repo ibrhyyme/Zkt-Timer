@@ -1115,6 +1115,66 @@
 		height: 120px;
 	}
 
+	// ==================== Alternatives Picker ====================
+	&__alt-picker {
+		padding: 0.75rem;
+		border-bottom: 1px solid rgba(var(--text-color), 0.05);
+	}
+
+	&__alt-picker-label {
+		font-size: 0.75rem;
+		font-weight: 600;
+		color: rgba(var(--text-color), 0.6);
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+		margin-bottom: 0.4rem;
+		display: block;
+	}
+
+	&__alt-picker-list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+		max-height: 160px;
+		overflow-y: auto;
+	}
+
+	&__alt-picker-item {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+		width: 100%;
+		padding: 0.4rem 0.6rem;
+		border-radius: 6px;
+		border: 1px solid rgba(var(--text-color), 0.1);
+		background: rgba(var(--text-color), 0.03);
+		cursor: pointer;
+		transition: all 0.15s;
+		text-align: left;
+
+		code {
+			font-family: 'JetBrains Mono', monospace;
+			font-size: 0.72rem;
+			color: rgba(var(--text-color), 0.85);
+			word-break: break-all;
+		}
+
+		&:hover {
+			background: rgba(var(--primary-color), 0.08);
+			border-color: rgba(var(--primary-color), 0.25);
+		}
+
+		&--selected {
+			background: rgba(var(--primary-color), 0.12);
+			border-color: rgba(var(--primary-color), 0.4);
+
+			code {
+				color: rgb(var(--primary-color));
+			}
+		}
+	}
+
 	// ==================== Options Modal ====================
 	&__options-overlay {
 		position: fixed;
@@ -1699,40 +1759,36 @@
 		justify-content: center;
 		gap: 4px;
 		font-family: 'JetBrains Mono', monospace;
-		font-size: 1.1rem;
+		font-size: 1.2rem;
+		font-weight: 600;
 		max-width: 400px;
 	}
 
 	&__smart-move {
 		padding: 2px 4px;
 		border-radius: 3px;
-		transition: color 0.15s, opacity 0.15s;
-		color: rgba(var(--text-color), 0.35);
+		transition: color 0.15s;
+		color: rgba(var(--text-color), 0.85);
 
 		&--green {
 			color: $successColor;
-			opacity: 1;
 		}
 
 		&--red {
 			color: $primaryRed;
 			text-decoration: line-through;
-			opacity: 1;
 		}
 
 		&--orange {
 			color: $primaryOrange;
-			opacity: 1;
 		}
 
 		&--current {
 			color: rgb(var(--text-color));
-			font-weight: bold;
-			opacity: 1;
 		}
 
 		&--dim {
-			opacity: 0.35;
+			color: rgba(var(--text-color), 0.85);
 		}
 	}
 

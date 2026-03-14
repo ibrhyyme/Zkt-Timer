@@ -110,4 +110,5 @@ export type TrainerAction =
 	| {type: 'SET_MATCHED_MOVE_COUNT'; payload: number}
 	| {type: 'SET_TOTAL_EXPECTED_MOVES'; payload: number}
 	| {type: 'SET_BAD_ALG'; payload: string[]}
+	| {type: 'SWAP_ALGORITHM'; payload: {oldAlg: string; newAlg: string}}
 	| {type: 'SMART_DISCONNECT'};

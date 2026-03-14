@@ -243,7 +243,7 @@ export default function TrainerSmartCube() {
 			// Issue 11: Yanlis algoritma toleransi — kup cozulduyse yine de gec
 			// En az 1 dogru hamle eslesmis olmali — yanlis+duzeltme ile solved'a
 			// donmek false positive yaratir (currentMoveIndex -1 ise hic ilerleme yok)
-			if (currentMoveIndexRef.current >= 0) {
+			if (currentMoveIndexRef.current > 0) {
 				checkSolvedFallback();
 			}
 		}
@@ -495,12 +495,15 @@ export default function TrainerSmartCube() {
 		setupPatterns();
 	}, [currentAlgorithm, options.randomizeAUF, options.topFace, options.frontFace, dispatch]);
 
-	// Cleanup timer on unmount
+	// Cleanup timer on unmount or external phase change (manuel stop)
 	useEffect(() => {
+		if (state.smartPhase === 'completed') {
+			stopTimerInterval();
+		}
 		return () => {
 			stopTimerInterval();
 		};
-	}, [stopTimerInterval]);
+	}, [state.smartPhase, stopTimerInterval]);
 
 	// -- Partial/wide match detection (CubeDex yaklasimi) --
 	// GAN kupler sadece 6 face move raporlar (URFDLB). Wide (r,l,f,b,u,d),
