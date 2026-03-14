@@ -2,24 +2,51 @@ import React, {useState, useCallback} from 'react';
 import block from '../../../styles/bem';
 import {useTrainerContext} from '../TrainerContext';
 import TrainerOptions from '../options/TrainerOptions';
+import {getPuzzleType} from '../../../util/trainer/algorithm_engine';
 import {useTranslation} from 'react-i18next';
 import {
 	GearSix,
 	Eye,
 	EyeSlash,
 	ArrowLeft,
+	Bluetooth,
+	BluetoothSlash,
 } from 'phosphor-react';
 
 const b = block('trainer');
 
 export default function TrainerToolbar() {
 	const {t} = useTranslation();
-	const {state, dispatch} = useTrainerContext();
+	const {state, dispatch, connectRef} = useTrainerContext();
 	const [showOptions, setShowOptions] = useState(false);
 
 	const toggleMask = useCallback(() => {
 		dispatch({type: 'SET_MOVE_MASKED', payload: !state.isMoveMasked});
 	}, [state.isMoveMasked, dispatch]);
+
+	const activeCategory = state.currentAlgorithm?.category || state.selectedCategory || '';
+	const is3x3Category = activeCategory !== '' && getPuzzleType(activeCategory) === '3x3x3';
+
+	const handleBleToggle = useCallback(async () => {
+		const conn = connectRef.current;
+		if (!conn) return;
+
+		if (state.smartConnected) {
+			conn.disconnect?.();
+			dispatch({type: 'SMART_DISCONNECT'});
+		} else {
+			try {
+				await conn.connect();
+			} catch (e) {
+				// connect hatalari alertScanError callback'inde handle ediliyor
+			}
+			// BLE_SCAN_ABORTED durumunda connect.js direkt setTimerParams cagirir,
+			// trainer state'ini sifirlamaz. Her durumda scanning/connecting resetle.
+			if (!state.smartConnected) {
+				dispatch({type: 'SMART_CONNECTION', payload: {scanning: false, connecting: false}});
+			}
+		}
+	}, [connectRef, state.smartConnected, dispatch]);
 
 	return (
 		<>
@@ -48,6 +75,20 @@ export default function TrainerToolbar() {
 				</div>
 
 				<div className={b('toolbar-right')}>
+					{is3x3Category && (
+						<button
+							className={b('toolbar-btn', {active: state.smartConnected})}
+							onClick={handleBleToggle}
+							disabled={state.smartScanning || state.smartConnecting}
+							title={state.smartConnected ? t('trainer.ble_disconnect') : t('trainer.ble_connect')}
+						>
+							{state.smartConnected ? <BluetoothSlash size={20} /> : <Bluetooth size={20} />}
+							{(state.smartScanning || state.smartConnecting) && (
+								<span className={b('toolbar-spinner')} />
+							)}
+						</button>
+					)}
+
 					{state.view === 'selection' && (
 						<button
 							className={b('toolbar-btn')}

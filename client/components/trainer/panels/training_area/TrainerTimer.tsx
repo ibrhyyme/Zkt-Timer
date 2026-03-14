@@ -2,13 +2,18 @@ import React, {useEffect, useRef, useCallback} from 'react';
 import block from '../../../../styles/bem';
 import {useTrainerContext} from '../../TrainerContext';
 import {addTime} from '../../hooks/useAlgorithmData';
-import {algToId} from '../../../../util/trainer/algorithm_engine';
+import {algToId, getPuzzleType} from '../../../../util/trainer/algorithm_engine';
+import {useTranslation} from 'react-i18next';
 
 const b = block('trainer');
 
 export default function TrainerTimer() {
+	const {t} = useTranslation();
 	const {state, dispatch} = useTrainerContext();
 	const {timerState, currentTimerValue, currentAlgorithm} = state;
+
+	const is3x3 = getPuzzleType(currentAlgorithm?.category || '') === '3x3x3';
+	const isSmartMode = state.smartConnected && is3x3;
 
 	const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 	const startTimeRef = useRef<number>(0);
@@ -61,6 +66,14 @@ export default function TrainerTimer() {
 			if (e.code !== 'Space' || e.repeat) return;
 			e.preventDefault();
 
+			if (isSmartMode) {
+				// Smart cube modunda spacebar sadece STOPPED -> ADVANCE
+				if (timerState === 'STOPPED') {
+					handleAdvance();
+				}
+				return;
+			}
+
 			if (timerState === 'RUNNING') {
 				stopTimer();
 			} else if (timerState === 'STOPPED') {
@@ -74,6 +87,8 @@ export default function TrainerTimer() {
 			if (e.code !== 'Space') return;
 			e.preventDefault();
 
+			if (isSmartMode) return;
+
 			if (timerState === 'READY') {
 				startTimer();
 			}
@@ -86,7 +101,7 @@ export default function TrainerTimer() {
 			window.removeEventListener('keydown', handleKeyDown);
 			window.removeEventListener('keyup', handleKeyUp);
 		};
-	}, [timerState, stopTimer, startTimer, handleAdvance, dispatch]);
+	}, [timerState, isSmartMode, stopTimer, startTimer, handleAdvance, dispatch]);
 
 	// Cleanup interval on unmount
 	useEffect(() => {
@@ -98,6 +113,10 @@ export default function TrainerTimer() {
 	}, []);
 
 	const handleTouch = useCallback(() => {
+		if (isSmartMode) {
+			if (timerState === 'STOPPED') handleAdvance();
+			return;
+		}
 		if (timerState === 'RUNNING') {
 			stopTimer();
 		} else if (timerState === 'STOPPED') {
@@ -105,7 +124,7 @@ export default function TrainerTimer() {
 		} else {
 			startTimer();
 		}
-	}, [timerState, stopTimer, startTimer, handleAdvance]);
+	}, [timerState, isSmartMode, stopTimer, startTimer, handleAdvance]);
 
 	return (
 		<div
@@ -117,8 +136,11 @@ export default function TrainerTimer() {
 			onClick={handleTouch}
 		>
 			<div className={b('timer-value')}>{formatTime(currentTimerValue)}</div>
-			{timerState === 'IDLE' && currentAlgorithm && (
+			{timerState === 'IDLE' && currentAlgorithm && !isSmartMode && (
 				<div className={b('timer-hint')}>Space</div>
+			)}
+			{isSmartMode && state.smartPhase === 'ready' && (
+				<div className={b('timer-hint')}>{t('trainer.ble_make_first_move')}</div>
 			)}
 		</div>
 	);

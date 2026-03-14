@@ -25,6 +25,16 @@ export interface CheckedAlgorithm {
 export type TimerState = 'IDLE' | 'READY' | 'RUNNING' | 'STOPPED';
 export type LearnedStatus = 0 | 1 | 2; // 0=not learned, 1=learning, 2=learned
 
+// Smart Cube Types
+export interface SmartTurn {
+	turn: string;
+	completedAt: number;
+	cubeTimestamp: number | null;
+	localTimestamp: number | null;
+}
+
+export type SmartPhase = 'idle' | 'ready' | 'solving' | 'completed';
+
 export type CubeFace = 'U' | 'D' | 'F' | 'B' | 'R' | 'L';
 
 export interface TrainerOptions {
@@ -58,11 +68,23 @@ export interface TrainerSessionState {
 
 	// Options
 	options: TrainerOptions;
+
+	// Smart Cube State
+	smartConnected: boolean;
+	smartConnecting: boolean;
+	smartScanning: boolean;
+	smartScanError: string | null;
+	smartBattery: number | null;
+	smartPhase: SmartPhase;
+	matchedMoveCount: number;
+	totalExpectedMoves: number;
+	badAlg: string[];
 }
 
 export interface TrainerContextType {
 	state: TrainerSessionState;
 	dispatch: React.Dispatch<TrainerAction>;
+	connectRef: React.MutableRefObject<any>;
 }
 
 export type TrainerAction =
@@ -81,4 +103,11 @@ export type TrainerAction =
 	| {type: 'SET_OPTIONS'; payload: Partial<TrainerOptions>}
 	| {type: 'RESET_TRAINING'}
 	| {type: 'SET_VIEW'; payload: TrainerView}
-	| {type: 'ADVANCE_ALGORITHM'};
+	| {type: 'ADVANCE_ALGORITHM'}
+	// Smart Cube Actions
+	| {type: 'SMART_CONNECTION'; payload: Partial<{scanning: boolean; connecting: boolean; connected: boolean; scanError: string | null; battery: number | null}>}
+	| {type: 'SMART_SET_PHASE'; payload: SmartPhase}
+	| {type: 'SET_MATCHED_MOVE_COUNT'; payload: number}
+	| {type: 'SET_TOTAL_EXPECTED_MOVES'; payload: number}
+	| {type: 'SET_BAD_ALG'; payload: string[]}
+	| {type: 'SMART_DISCONNECT'};

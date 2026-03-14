@@ -1573,6 +1573,179 @@
 		margin-bottom: 20px;
 		padding-bottom: 20px;
 	}
+
+	// Smart Cube
+	&__toolbar-spinner {
+		width: 14px;
+		height: 14px;
+		border: 2px solid rgba(var(--text-color), 0.2);
+		border-top-color: rgb(var(--primary-color));
+		border-radius: 50%;
+		animation: trainer-spin 0.8s linear infinite;
+		margin-left: 4px;
+	}
+
+	&__smart-cube-area {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 12px;
+		width: 100%;
+		position: relative;
+	}
+
+	&__smart-options {
+		position: absolute;
+		top: 0;
+		right: 0;
+		display: flex;
+		gap: 4px;
+		z-index: 2;
+
+		button {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			width: 28px;
+			height: 28px;
+			border: 1px dashed rgba(var(--text-color), 0.25);
+			border-radius: 6px;
+			background: transparent;
+			color: rgba(var(--text-color), 0.6);
+			cursor: pointer;
+			transition: color 0.15s, border-color 0.15s;
+
+			&:hover {
+				color: rgb(var(--text-color));
+				border-color: rgba(var(--text-color), 0.5);
+			}
+		}
+	}
+
+	&__smart-options-active {
+		color: rgb(var(--primary-color)) !important;
+		border-color: rgb(var(--primary-color)) !important;
+	}
+
+	&__smart-device-info {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		font-size: 0.8rem;
+		font-family: monospace;
+		color: rgba(var(--text-color), 0.7);
+		padding: 4px 10px;
+		border: 1px dashed rgba(var(--text-color), 0.15);
+		border-radius: 6px;
+	}
+
+	&__smart-cube-wrapper {
+		position: relative;
+	}
+
+	&__smart-cube-viewer {
+		border-radius: 8px;
+		overflow: hidden;
+	}
+
+	&__smart-camera-pad {
+		position: absolute;
+		bottom: 8px;
+		right: 8px;
+		width: 48px;
+		height: 48px;
+		border: 1px dashed rgba(var(--text-color), 0.2);
+		border-radius: 8px;
+		cursor: grab;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		touch-action: none;
+		z-index: 2;
+
+		&:active {
+			cursor: grabbing;
+		}
+	}
+
+	&__smart-camera-dot {
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: rgba(var(--text-color), 0.3);
+	}
+
+	&__smart-battery {
+		font-size: 0.8rem;
+		font-family: monospace;
+		opacity: 0.7;
+	}
+
+	&__smart-pattern-preview {
+		max-width: 80px;
+		max-height: 80px;
+		flex-shrink: 0;
+	}
+
+	&__training-alg-name-row {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+	}
+
+	&__smart-moves {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 4px;
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 1.1rem;
+		max-width: 400px;
+	}
+
+	&__smart-move {
+		padding: 2px 4px;
+		border-radius: 3px;
+		transition: color 0.15s, opacity 0.15s;
+		color: rgba(var(--text-color), 0.35);
+
+		&--green {
+			color: $successColor;
+			opacity: 1;
+		}
+
+		&--red {
+			color: $primaryRed;
+			text-decoration: line-through;
+			opacity: 1;
+		}
+
+		&--orange {
+			color: $primaryOrange;
+			opacity: 1;
+		}
+
+		&--current {
+			color: rgb(var(--text-color));
+			font-weight: bold;
+			opacity: 1;
+		}
+
+		&--dim {
+			opacity: 0.35;
+		}
+	}
+
+	&__smart-correction {
+		color: $primaryOrange;
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 0.9rem;
+		text-align: center;
+	}
+}
+
+@keyframes trainer-spin {
+	to { transform: rotate(360deg); }
 }
 
 // Coming Soon Animations
