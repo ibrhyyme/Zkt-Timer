@@ -10,6 +10,7 @@ import {TrainerProvider, useTrainerContext} from './TrainerContext';
 import AlgorithmSelector from './panels/algorithm_selector/AlgorithmSelector';
 import TrainingArea from './panels/training_area/TrainingArea';
 import StatsPanel from './panels/stats_panel/StatsPanel';
+import AlternativesPicker from './panels/stats_panel/AlternativesPicker';
 import TrainerToolbar from './toolbar/TrainerToolbar';
 import {ensureCubingReady} from '../../util/trainer/algorithm_engine';
 import {ensureKPuzzleReady} from '../../util/trainer/pattern_utils';
@@ -34,6 +35,7 @@ function TrainerContent() {
 						<TrainingArea />
 					</div>
 					<div className={b('panel', {right: true})}>
+						<AlternativesPicker />
 						<StatsPanel />
 					</div>
 				</div>

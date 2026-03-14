@@ -12,7 +12,6 @@ import {
 } from '../../hooks/useAlgorithmData';
 import {useTrainerDb} from '../../../../util/hooks/useTrainerDb';
 import {useTranslation} from 'react-i18next';
-import TrainerBarChart from './TrainerBarChart';
 import TrainerTimeChart from './TrainerTimeChart';
 
 const b = block('trainer');
@@ -90,13 +89,7 @@ export default function StatsPanel() {
 				</div>
 			</div>
 
-			{stats.times.length >= 2 && (
-			<div className={b('stats-chart')}>
-				<TrainerBarChart times={stats.times.slice(-10)} bestTime={stats.best} />
-			</div>
-		)}
-
-		{stats.times.length >= 5 && (
+			{stats.times.length >= 3 && (
 			<div className={b('stats-chart')}>
 				<TrainerTimeChart times={stats.times} />
 			</div>

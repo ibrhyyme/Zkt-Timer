@@ -67,9 +67,16 @@ export default function TrainerTimer() {
 			e.preventDefault();
 
 			if (isSmartMode) {
-				// Smart cube modunda spacebar sadece STOPPED -> ADVANCE
 				if (timerState === 'STOPPED') {
 					handleAdvance();
+				} else if (state.smartPhase === 'solving') {
+					// Manuel durdurma — kullanici kupu sezgisel cozduyse
+					dispatch({type: 'SET_TIMER_STATE', payload: 'STOPPED'});
+					dispatch({type: 'SMART_SET_PHASE', payload: 'completed'});
+					if (currentAlgorithm) {
+						addTime(algToId(currentAlgorithm.algorithm), currentTimerValue);
+					}
+					setTimeout(() => dispatch({type: 'ADVANCE_ALGORITHM'}), 150);
 				}
 				return;
 			}
@@ -101,7 +108,7 @@ export default function TrainerTimer() {
 			window.removeEventListener('keydown', handleKeyDown);
 			window.removeEventListener('keyup', handleKeyUp);
 		};
-	}, [timerState, isSmartMode, stopTimer, startTimer, handleAdvance, dispatch]);
+	}, [timerState, isSmartMode, stopTimer, startTimer, handleAdvance, dispatch, state.smartPhase, currentTimerValue, currentAlgorithm]);
 
 	// Cleanup interval on unmount
 	useEffect(() => {
@@ -114,7 +121,16 @@ export default function TrainerTimer() {
 
 	const handleTouch = useCallback(() => {
 		if (isSmartMode) {
-			if (timerState === 'STOPPED') handleAdvance();
+			if (timerState === 'STOPPED') {
+				handleAdvance();
+			} else if (state.smartPhase === 'solving') {
+				dispatch({type: 'SET_TIMER_STATE', payload: 'STOPPED'});
+				dispatch({type: 'SMART_SET_PHASE', payload: 'completed'});
+				if (currentAlgorithm) {
+					addTime(algToId(currentAlgorithm.algorithm), currentTimerValue);
+				}
+				setTimeout(() => dispatch({type: 'ADVANCE_ALGORITHM'}), 150);
+			}
 			return;
 		}
 		if (timerState === 'RUNNING') {
@@ -124,7 +140,7 @@ export default function TrainerTimer() {
 		} else {
 			startTimer();
 		}
-	}, [timerState, isSmartMode, stopTimer, startTimer, handleAdvance]);
+	}, [timerState, isSmartMode, stopTimer, startTimer, handleAdvance, state.smartPhase, currentTimerValue, currentAlgorithm, dispatch]);
 
 	return (
 		<div
