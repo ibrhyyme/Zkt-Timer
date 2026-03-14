@@ -12,8 +12,6 @@ import {
 } from '../../hooks/useAlgorithmData';
 import {useTrainerDb} from '../../../../util/hooks/useTrainerDb';
 import {useTranslation} from 'react-i18next';
-import TrainerTimeChart from './TrainerTimeChart';
-
 const b = block('trainer');
 
 function formatTimeShort(ms: number | null): string {
@@ -89,13 +87,7 @@ export default function StatsPanel() {
 				</div>
 			</div>
 
-			{stats.times.length >= 3 && (
-			<div className={b('stats-chart')}>
-				<TrainerTimeChart times={stats.times} />
-			</div>
-		)}
-
-		{lastFive.length > 0 && (
+			{lastFive.length > 0 && (
 				<div className={b('stats-times')}>
 					<h4 className={b('stats-subtitle')}>{t('trainer.recent_times')}</h4>
 					<table className={b('stats-table')}>

@@ -1,12 +1,15 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useMemo} from 'react';
 import block from '../../../../styles/bem';
 import {useTrainerContext} from '../../TrainerContext';
 import {useLLPatternsReady} from '../../../../util/trainer/ll_patterns';
-import {isLLCategory, getDefaultFrontFace, expandNotation, getPuzzleType} from '../../../../util/trainer/algorithm_engine';
-import {fetchDefaultAlgs} from '../../hooks/useAlgorithmData';
+import {isLLCategory, getDefaultFrontFace, getPuzzleType, algToId} from '../../../../util/trainer/algorithm_engine';
+import {fetchDefaultAlgs, getLastTimes} from '../../hooks/useAlgorithmData';
+import {useTrainerDb} from '../../../../util/hooks/useTrainerDb';
 import CubeViewer from './CubeViewer';
 import TrainerTimer from './TrainerTimer';
 import TrainerSmartCube from './TrainerSmartCube';
+import AlternativesPicker from '../stats_panel/AlternativesPicker';
+import TrainerTimeChart from '../stats_panel/TrainerTimeChart';
 import {useTranslation} from 'react-i18next';
 
 const b = block('trainer');
@@ -14,15 +17,14 @@ const b = block('trainer');
 export default function TrainingArea() {
 	const {t} = useTranslation();
 	const {state} = useTrainerContext();
-	useLLPatternsReady(); // Pattern yüklendiğinde CubeViewer'ı yeniden render et
+	useLLPatternsReady();
 	const {currentAlgorithm, options} = state;
+	const dbVersion = useTrainerDb();
 
-	const [alternatives, setAlternatives] = useState<string[]>([]);
 	const [setupAlg, setSetupAlg] = useState<string | null>(null);
 
 	useEffect(() => {
 		if (!currentAlgorithm) {
-			setAlternatives([]);
 			setSetupAlg(null);
 			return;
 		}
@@ -30,25 +32,25 @@ export default function TrainingArea() {
 		fetchDefaultAlgs().then((defaults) => {
 			const subsets = defaults[currentAlgorithm.category];
 			if (!subsets) {
-				setAlternatives([]);
 				setSetupAlg(null);
 				return;
 			}
 
-			const expandedCurrent = expandNotation(currentAlgorithm.algorithm);
 			for (const sub of subsets) {
-				for (const alg of sub.algorithms) {
-					if (expandNotation(alg.algorithm) === expandedCurrent) {
-						setAlternatives(alg.alternatives?.length ? alg.alternatives : []);
-						setSetupAlg(alg.setup || null);
-						return;
-					}
+				const entry = sub.algorithms.find((a: any) => a.name === currentAlgorithm.name);
+				if (entry) {
+					setSetupAlg(entry.setup || null);
+					return;
 				}
 			}
-			setAlternatives([]);
 			setSetupAlg(null);
 		});
-	}, [currentAlgorithm]);
+	}, [currentAlgorithm?.name, currentAlgorithm?.category]);
+
+	const chartTimes = useMemo(() => {
+		if (!currentAlgorithm) return [];
+		return getLastTimes(algToId(currentAlgorithm.algorithm));
+	}, [currentAlgorithm, dbVersion]);
 
 	if (!currentAlgorithm) {
 		return (
@@ -65,10 +67,36 @@ export default function TrainingArea() {
 
 	return (
 		<div className={b('training-area')}>
-			<div className={b('training-header')}>
-				<div className={b('training-alg-name-row')}>
-					{useSmartCube && (
-						<div className={b('smart-pattern-preview')}>
+			{/* Sol ust info panel: pattern + isim + alternatifler */}
+			<div className={b('training-info-panel')}>
+				<div className={b('training-info-header')}>
+					<div className={b('smart-pattern-preview')}>
+						<CubeViewer
+							algorithm={currentAlgorithm.algorithm}
+							category={currentAlgorithm.category}
+							topFace={options.topFace}
+							frontFace={isLLCategory(currentAlgorithm.category) ? getDefaultFrontFace(options.topFace) : options.frontFace}
+						/>
+					</div>
+					<div className={b('training-info-meta')}>
+						<div className={b('training-alg-name')}>{currentAlgorithm.name}</div>
+					</div>
+				</div>
+				<AlternativesPicker />
+			</div>
+
+			{/* Ana icerik: kup + hamleler + timer + grafik */}
+			<div className={b('training-main')}>
+				{useSmartCube ? (
+					<TrainerSmartCube />
+				) : (
+					<>
+						{setupAlg && !useSmartCube && (
+							<div className={b('training-setup')}>
+								<code>Setup: {setupAlg}</code>
+							</div>
+						)}
+						<div className={b('training-cube')}>
 							<CubeViewer
 								algorithm={currentAlgorithm.algorithm}
 								category={currentAlgorithm.category}
@@ -76,45 +104,38 @@ export default function TrainingArea() {
 								frontFace={isLLCategory(currentAlgorithm.category) ? getDefaultFrontFace(options.topFace) : options.frontFace}
 							/>
 						</div>
-					)}
-					<div className={b('training-alg-name')}>{currentAlgorithm.name}</div>
-				</div>
-				{setupAlg && !state.isMoveMasked && !useSmartCube && (
-					<div className={b('training-setup')}>
-						<code>Setup: {setupAlg}</code>
-					</div>
+						{!state.isMoveMasked && (
+							<div className={b('training-main-alg')}>
+								<code>{currentAlgorithm.algorithm}</code>
+							</div>
+						)}
+					</>
 				)}
-			</div>
 
-			<div className={b('training-cube')}>
-				{useSmartCube ? (
-					<TrainerSmartCube />
-				) : (
-					<CubeViewer
-						algorithm={currentAlgorithm.algorithm}
-						category={currentAlgorithm.category}
-						topFace={options.topFace}
-						frontFace={isLLCategory(currentAlgorithm.category) ? getDefaultFrontFace(options.topFace) : options.frontFace}
-					/>
-				)}
-			</div>
+				<TrainerTimer />
 
-			<TrainerTimer />
-
-			{!useSmartCube && !state.isMoveMasked && (
-				<>
-					<div className={b('training-main-alg')}>
-						<code>{currentAlgorithm.algorithm}</code>
-					</div>
-					{alternatives.length > 0 && (
-						<div className={b('training-alternatives')}>
-							{alternatives.map((alt, i) => (
-								<code key={i} className={b('training-alt-alg')}>{alt}</code>
-							))}
+				{chartTimes.length >= 3 && (
+					<div className={b('training-chart-row')}>
+						<div className={b('training-chart')}>
+							<TrainerTimeChart times={chartTimes} />
 						</div>
-					)}
-				</>
-			)}
+						<div className={b('training-chart-legend')}>
+							<div className={b('training-chart-legend-item')}>
+								<span className={b('training-chart-dot', {single: true})} />
+								<span>Single</span>
+							</div>
+							<div className={b('training-chart-legend-item')}>
+								<span className={b('training-chart-dot', {ao5: true})} />
+								<span>Ao5</span>
+							</div>
+							<div className={b('training-chart-legend-item')}>
+								<span className={b('training-chart-dot', {ao12: true})} />
+								<span>Ao12</span>
+							</div>
+						</div>
+					</div>
+				)}
+			</div>
 		</div>
 	);
 }
