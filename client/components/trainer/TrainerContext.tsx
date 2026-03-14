@@ -171,6 +171,21 @@ function trainerReducer(state: TrainerSessionState, action: TrainerAction): Trai
 			return {...state, isMoveMasked: action.payload};
 
 		case 'SET_VIEW':
+			if (action.payload === 'selection') {
+				return {
+					...state,
+					view: 'selection',
+					currentAlgorithm: null,
+					checkedAlgorithms: [],
+					algorithmQueue: [],
+					timerState: 'IDLE',
+					currentTimerValue: 0,
+					userAlg: [],
+					originalUserAlg: [],
+					badAlg: [],
+					...SMART_RESET,
+				};
+			}
 			return {...state, view: action.payload};
 
 		case 'SET_OPTIONS': {

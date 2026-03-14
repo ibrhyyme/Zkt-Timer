@@ -812,45 +812,85 @@
 	&__training-area {
 		display: flex;
 		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		padding: 2rem 1rem;
+		padding: 0.75rem;
 		width: 100%;
 		height: 100%;
+		position: relative;
 	}
 
 	&__training-empty {
 		text-align: center;
 		color: rgba(var(--text-color), 0.5);
 		font-size: 1rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		height: 100%;
 	}
 
-	&__training-header {
+	// -- Info Panel (sol ust: pattern + isim + alternatifler) --
+	&__training-info-panel {
+		position: absolute;
+		top: 0.75rem;
+		left: 0.75rem;
+		z-index: 10;
 		display: flex;
-		justify-content: space-between;
-		align-items: baseline;
-		width: 100%;
-		margin-bottom: 1rem;
-		gap: 1rem;
+		flex-direction: column;
+		max-width: 300px;
+		@include dark-glass(0.6, 10px, 0.08);
+		border-radius: 12px;
+		overflow: hidden;
+	}
+
+	&__training-info-header {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.75rem;
+		overflow: hidden;
+	}
+
+	&__training-info-meta {
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+		min-width: 0;
 	}
 
 	&__training-alg-name {
-		font-size: 1.2rem;
+		font-size: 1.1rem;
 		font-weight: 600;
 		color: rgb(var(--text-color));
-		text-align: center;
 	}
 
-	&__training-setup code {
-		font-family: 'JetBrains Mono', monospace;
-		font-size: 1.3rem;
-		font-weight: 600;
-		color: rgb(var(--text-color));
-		white-space: nowrap;
+	&__training-setup {
+		align-self: flex-end;
+		margin-bottom: 1rem;
+		max-width: 60%;
+		text-align: right;
+
+		code {
+			font-family: 'JetBrains Mono', monospace;
+			font-size: 1.15rem;
+			font-weight: 600;
+			color: rgb(var(--text-color));
+			word-wrap: break-word;
+			white-space: normal;
+		}
+	}
+
+	// -- Ana icerik (kup + hamleler + timer + grafik) --
+	&__training-main {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		flex: 1;
+		min-height: 0;
 	}
 
 	&__training-cube {
-		margin-bottom: 1.5rem;
+		margin-bottom: 0.75rem;
 	}
 
 	&__cube-viewer {
@@ -866,7 +906,7 @@
 	}
 
 	&__training-main-alg {
-		margin-top: 1.5rem;
+		margin-bottom: 0.5rem;
 		text-align: center;
 
 		code {
@@ -877,19 +917,55 @@
 		}
 	}
 
-	&__training-alternatives {
+	&__training-chart-row {
 		display: flex;
-		flex-direction: column;
-		gap: 0.25rem;
-		margin-top: 0.5rem;
 		align-items: center;
+		gap: 0.75rem;
+		margin-top: 0.75rem;
 	}
 
-	&__training-alt-alg {
-		font-family: 'JetBrains Mono', monospace;
-		font-size: 0.7rem;
-		color: rgba(var(--text-color), 0.4);
-		text-align: center;
+	&__training-chart {
+		flex: 1;
+		min-width: 200px;
+		max-width: 400px;
+		height: 100px;
+		border-radius: 8px;
+		background: rgba(var(--button-color), 0.15);
+		padding: 0.5rem;
+	}
+
+	&__training-chart-legend {
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
+	}
+
+	&__training-chart-legend-item {
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
+		font-size: 0.75rem;
+		color: rgba(var(--text-color), 0.6);
+		white-space: nowrap;
+	}
+
+	&__training-chart-dot {
+		width: 8px;
+		height: 8px;
+		border-radius: 50%;
+		flex-shrink: 0;
+
+		&--single {
+			background: rgb(var(--primary-color));
+		}
+
+		&--ao5 {
+			background: rgba(75, 192, 192, 0.9);
+		}
+
+		&--ao12 {
+			background: rgba(255, 159, 64, 0.9);
+		}
 	}
 
 	// ==================== Algorithm Display ====================
@@ -968,6 +1044,7 @@
 		padding: 1rem;
 		border-radius: 12px;
 		transition: all 0.15s;
+		position: relative;
 
 		&--ready {
 			.#{$namespace}-trainer__timer-value {
@@ -998,6 +1075,9 @@
 	}
 
 	&__timer-hint {
+		position: absolute;
+		left: 50%;
+		transform: translateX(-50%);
 		font-size: 0.85rem;
 		color: rgba(var(--text-color), 0.4);
 		margin-top: 0.5rem;
@@ -1117,8 +1197,8 @@
 
 	// ==================== Alternatives Picker ====================
 	&__alt-picker {
-		padding: 0.75rem;
-		border-bottom: 1px solid rgba(var(--text-color), 0.05);
+		padding: 0.6rem 0.75rem;
+		border-top: 1px solid rgba(var(--text-color), 0.08);
 	}
 
 	&__alt-picker-label {
@@ -1304,16 +1384,13 @@
 			padding: 0.25rem 0.5rem;
 		}
 
-		&__training-header {
-			flex-wrap: wrap;
-			margin-bottom: 0.35rem;
+		&__training-info-panel {
+			position: static;
+			max-width: 100%;
+			margin-bottom: 0.5rem;
 		}
 
 		&__training-alg-name {
-			font-size: 1rem;
-		}
-
-		&__training-setup code {
 			font-size: 1rem;
 		}
 
@@ -1331,7 +1408,16 @@
 		}
 
 		&__training-main-alg {
-			margin-top: 0.5rem;
+			margin-bottom: 0.25rem;
+		}
+
+		&__smart-cube-row {
+			flex-direction: column;
+			gap: 0.5rem;
+		}
+
+		&__training-chart {
+			max-width: 100%;
 		}
 
 		&__alg-display {
@@ -1649,15 +1735,35 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 12px;
 		width: 100%;
+	}
+
+	&__smart-cube-row {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 2rem;
+	}
+
+	&__smart-cube-col {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 8px;
 		position: relative;
+	}
+
+	&__smart-moves-col {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+		max-width: 260px;
 	}
 
 	&__smart-options {
 		position: absolute;
 		top: 0;
-		right: 0;
+		right: -4px;
 		display: flex;
 		gap: 4px;
 		z-index: 2;
@@ -1742,9 +1848,11 @@
 	}
 
 	&__smart-pattern-preview {
-		max-width: 80px;
-		max-height: 80px;
+		width: 72px;
+		height: 72px;
 		flex-shrink: 0;
+		overflow: hidden;
+		border-radius: 6px;
 	}
 
 	&__training-alg-name-row {
@@ -1756,12 +1864,10 @@
 	&__smart-moves {
 		display: flex;
 		flex-wrap: wrap;
-		justify-content: center;
 		gap: 4px;
 		font-family: 'JetBrains Mono', monospace;
-		font-size: 1.2rem;
+		font-size: 1.15rem;
 		font-weight: 600;
-		max-width: 400px;
 	}
 
 	&__smart-move {

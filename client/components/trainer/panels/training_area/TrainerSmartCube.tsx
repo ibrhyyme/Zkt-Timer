@@ -597,80 +597,80 @@ export default function TrainerSmartCube() {
 
 	return (
 		<div className={b('smart-cube-area')}>
-			{/* Issue 4a: Menu butonlari */}
-			<div className={b('smart-options')}>
-				<button onClick={handleResetState} title={t('smart_cube.mark_as_solved')}>
-					<ArrowCounterClockwise size={16} />
-				</button>
-				<button onClick={handleResetGyro} title={t('smart_cube.reset_gyro')}>
-					<Compass size={16} />
-				</button>
-				<button
-					onClick={() => setShowDeviceInfo(!showDeviceInfo)}
-					title={t('trainer.device_info')}
-					className={showDeviceInfo ? b('smart-options-active') : undefined}
-				>
-					<Info size={16} />
-				</button>
+			<div className={b('smart-cube-row')}>
+				{/* Sol: 3D Kup + kontroller */}
+				<div className={b('smart-cube-col')}>
+					<div className={b('smart-options')}>
+						<button onClick={handleResetState} title={t('smart_cube.mark_as_solved')}>
+							<ArrowCounterClockwise size={16} />
+						</button>
+						<button onClick={handleResetGyro} title={t('smart_cube.reset_gyro')}>
+							<Compass size={16} />
+						</button>
+						<button
+							onClick={() => setShowDeviceInfo(!showDeviceInfo)}
+							title={t('trainer.device_info')}
+							className={showDeviceInfo ? b('smart-options-active') : undefined}
+						>
+							<Info size={16} />
+						</button>
+					</div>
+
+					{showDeviceInfo && (
+						<div className={b('smart-device-info')}>
+							<span>{cubeName || t('smart_cube.unknown_device')}</span>
+							{state.smartBattery != null && <span>{state.smartBattery}%</span>}
+						</div>
+					)}
+
+					<div className={b('smart-cube-wrapper')}>
+						<div ref={containerRef} className={b('smart-cube-viewer')} style={{width: 260, height: 260}} />
+						<div
+							ref={padRef}
+							className={b('smart-camera-pad')}
+							onPointerDown={handlePadPointerDown}
+							onPointerMove={handlePadPointerMove}
+							onPointerUp={handlePadPointerUp}
+							onPointerCancel={handlePadPointerUp}
+						>
+							<div className={b('smart-camera-dot')} />
+						</div>
+					</div>
+
+					{!showDeviceInfo && state.smartBattery != null && (
+						<div className={b('smart-battery')}>{state.smartBattery}%</div>
+					)}
+				</div>
+
+				{/* Sag: Hamleler + duzeltme */}
+				{state.userAlg.length > 0 && !state.isMoveMasked && (
+					<div className={b('smart-moves-col')}>
+						<div className={b('smart-moves')}>
+							{state.userAlg.map((move, i) => {
+								let mod = 'dim';
+								if (i <= matchedIdx) {
+									mod = 'green';
+								} else if (state.badAlg.length > 0 && i === matchedIdx + 1) {
+									mod = isHalfMatch ? 'orange' : 'red';
+								} else if (i === matchedIdx + 1) {
+									mod = 'current';
+								}
+								return (
+									<span key={i} className={b('smart-move', {[mod]: true})}>
+										{move}
+									</span>
+								);
+							})}
+						</div>
+
+						{correctionText && (
+							<div className={b('smart-correction')}>
+								Fix: {correctionText}
+							</div>
+						)}
+					</div>
+				)}
 			</div>
-
-			{/* Device info popup */}
-			{showDeviceInfo && (
-				<div className={b('smart-device-info')}>
-					<span>{cubeName || t('smart_cube.unknown_device')}</span>
-					{state.smartBattery != null && <span>{state.smartBattery}%</span>}
-				</div>
-			)}
-
-			{/* 3D Kup */}
-			<div className={b('smart-cube-wrapper')}>
-				<div ref={containerRef} className={b('smart-cube-viewer')} style={{width: 280, height: 280}} />
-
-				{/* Issue 4b: Camera angle XY pad */}
-				<div
-					ref={padRef}
-					className={b('smart-camera-pad')}
-					onPointerDown={handlePadPointerDown}
-					onPointerMove={handlePadPointerMove}
-					onPointerUp={handlePadPointerUp}
-					onPointerCancel={handlePadPointerUp}
-				>
-					<div className={b('smart-camera-dot')} />
-				</div>
-			</div>
-
-			{/* Pil seviyesi (device info kapaliyken) */}
-			{!showDeviceInfo && state.smartBattery != null && (
-				<div className={b('smart-battery')}>{state.smartBattery}%</div>
-			)}
-
-			{/* Renkli hamle gosterimi */}
-			{state.userAlg.length > 0 && !state.isMoveMasked && (
-				<div className={b('smart-moves')}>
-					{state.userAlg.map((move, i) => {
-						let mod = 'dim';
-						if (i <= matchedIdx) {
-							mod = 'green';
-						} else if (state.badAlg.length > 0 && i === matchedIdx + 1) {
-							mod = isHalfMatch ? 'orange' : 'red';
-						} else if (i === matchedIdx + 1) {
-							mod = 'current';
-						}
-						return (
-							<span key={i} className={b('smart-move', {[mod]: true})}>
-								{move}
-							</span>
-						);
-					})}
-				</div>
-			)}
-
-			{/* Duzeltme ipucu */}
-			{correctionText && !state.isMoveMasked && (
-				<div className={b('smart-correction')}>
-					Fix: {correctionText}
-				</div>
-			)}
 		</div>
 	);
 }
