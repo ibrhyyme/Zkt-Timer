@@ -2,10 +2,11 @@ import React, {useState, useEffect} from 'react';
 import block from '../../../../styles/bem';
 import {useTrainerContext} from '../../TrainerContext';
 import {useLLPatternsReady} from '../../../../util/trainer/ll_patterns';
-import {isLLCategory, getDefaultFrontFace, expandNotation} from '../../../../util/trainer/algorithm_engine';
+import {isLLCategory, getDefaultFrontFace, expandNotation, getPuzzleType} from '../../../../util/trainer/algorithm_engine';
 import {fetchDefaultAlgs} from '../../hooks/useAlgorithmData';
 import CubeViewer from './CubeViewer';
 import TrainerTimer from './TrainerTimer';
+import TrainerSmartCube from './TrainerSmartCube';
 import {useTranslation} from 'react-i18next';
 
 const b = block('trainer');
@@ -59,11 +60,26 @@ export default function TrainingArea() {
 		);
 	}
 
+	const is3x3 = getPuzzleType(currentAlgorithm.category) === '3x3x3';
+	const useSmartCube = state.smartConnected && is3x3;
+
 	return (
 		<div className={b('training-area')}>
 			<div className={b('training-header')}>
-				<div className={b('training-alg-name')}>{currentAlgorithm.name}</div>
-				{setupAlg && !state.isMoveMasked && (
+				<div className={b('training-alg-name-row')}>
+					{useSmartCube && (
+						<div className={b('smart-pattern-preview')}>
+							<CubeViewer
+								algorithm={currentAlgorithm.algorithm}
+								category={currentAlgorithm.category}
+								topFace={options.topFace}
+								frontFace={isLLCategory(currentAlgorithm.category) ? getDefaultFrontFace(options.topFace) : options.frontFace}
+							/>
+						</div>
+					)}
+					<div className={b('training-alg-name')}>{currentAlgorithm.name}</div>
+				</div>
+				{setupAlg && !state.isMoveMasked && !useSmartCube && (
 					<div className={b('training-setup')}>
 						<code>Setup: {setupAlg}</code>
 					</div>
@@ -71,17 +87,21 @@ export default function TrainingArea() {
 			</div>
 
 			<div className={b('training-cube')}>
-				<CubeViewer
-					algorithm={currentAlgorithm.algorithm}
-					category={currentAlgorithm.category}
-					topFace={options.topFace}
-					frontFace={isLLCategory(currentAlgorithm.category) ? getDefaultFrontFace(options.topFace) : options.frontFace}
-				/>
+				{useSmartCube ? (
+					<TrainerSmartCube />
+				) : (
+					<CubeViewer
+						algorithm={currentAlgorithm.algorithm}
+						category={currentAlgorithm.category}
+						topFace={options.topFace}
+						frontFace={isLLCategory(currentAlgorithm.category) ? getDefaultFrontFace(options.topFace) : options.frontFace}
+					/>
+				)}
 			</div>
 
 			<TrainerTimer />
 
-			{!state.isMoveMasked && (
+			{!useSmartCube && !state.isMoveMasked && (
 				<>
 					<div className={b('training-main-alg')}>
 						<code>{currentAlgorithm.algorithm}</code>
