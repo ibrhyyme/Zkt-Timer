@@ -334,19 +334,16 @@ export function isLLCategory(category: string): boolean {
 	const stickering = getStickering(category);
 	if (category.toLowerCase().includes('ll')) return true;
 	if (stickering === 'OLL') return true;
+	if (stickering === 'WVLS' || stickering === 'VLS') return true;
 	return false;
 }
 
 /**
- * Isometric 3-yuz 2D gorunum kullanan kategoriler (WVLS, VHLS).
- * Bu kategoriler ne LL (top-down) ne de 3D TwistyPlayer kullanir.
+ * Isometric 3-yuz 2D gorunum kullanan kategoriler.
+ * Simdilik kullanilmiyor — WVLS/VHLS LL pattern'e gecti.
  */
-export function isIsometricCategory(category: string): boolean {
-	if (!category) return false;
-	const puzzleType = getPuzzleType(category);
-	if (puzzleType !== '3x3x3') return false;
-	const stickering = getStickering(category);
-	return stickering === 'WVLS' || stickering === 'VLS';
+export function isIsometricCategory(_category: string): boolean {
+	return false;
 }
 
 /**

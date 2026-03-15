@@ -64,8 +64,8 @@ const FILE_MAP = {
 const CATEGORY_ORDER = [
 	// 3x3
 	'PLL', 'OLL', 'F2L', '2-Look PLL', '2-Look OLL',
-	'COLL', 'OLLCP', 'ZBLL', 'CMLL', '2-Look CMLL', 'OH-CMLL',
-	'WVLS', 'L6E-EO', 'L6E-EOLR',
+	'COLL', 'OLLCP', 'ZBLL', 'ZBLS', 'CMLL', '2-Look CMLL', 'OH-CMLL',
+	'WVLS', 'VHLS', 'L6E-EO', 'L6E-EOLR',
 	// 2x2
 	'2x2 CLL', '2x2 EG1', '2x2 EG2', '2x2 PBL',
 	// 4x4

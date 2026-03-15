@@ -74,8 +74,8 @@ const LL_FACELET_INDICES = [
 // 2D-LL kategorileri (category name contains 'll' or has OLL stickering)
 const LL_CATEGORIES = [
 	'PLL', 'OLL', '2-Look PLL', '2-Look OLL',
-	'COLL', 'OLLCP', 'ZBLL', 'CMLL',
-	'2-Look CMLL', 'OH-CMLL',
+	'COLL', 'OLLCP', 'ZBLL', 'ZBLS', 'CMLL',
+	'2-Look CMLL', 'OH-CMLL', 'WVLS', 'VHLS',
 ];
 
 /**

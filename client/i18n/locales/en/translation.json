@@ -256,6 +256,9 @@
 		"alg_detail_notation": "Algorithm",
 		"alg_detail_saved": "Algorithm saved",
 		"alg_detail_alternatives": "Alternatives",
+		"smart_retry": "Retry",
+		"smart_reset_gyro": "Reset Gyro",
+		"smart_camera_angle": "Camera",
 		"cat_info": {
 			"pll": {
 				"title": "Permutation of Last Layer",
@@ -288,6 +291,10 @@
 			"zbll": {
 				"title": "Zborowski-Bruchem Last Layer",
 				"desc": "ZBLL solves the entire last layer — both orientation and permutation of all corners and edges — in a single algorithm, provided that all four edges are already oriented. This makes it ideal for methods where edge orientation is handled earlier in the solve, such as ZZ (which orients all edges during the first step) or CFOP with ZBLS/VHLS. The full set contains 493 algorithms divided across 7 subsets: T, U, L, H, Pi, S, and AS — each named after the corner orientation pattern on top, mirroring the COLL subsets.\n\nLearning full ZBLL is one of the largest commitments a speedcuber can make. Most cubers who pursue it spend 1-2 years to fully memorize and drill all 493 cases. The payoff is significant: you effectively reduce the last layer to a single algorithm execution, saving 2-4 seconds per solve compared to OLL+PLL. Recognition speed is critical — you need to identify the exact case from 493 possibilities quickly, which requires extensive pattern recognition practice beyond just memorizing the algorithms.\n\nThe recommended learning order is to start with the T and U subsets (which have the most ergonomic algorithms), then move to L and H, and finish with Pi, S, and AS. Many competitive ZZ solvers learn ZBLL subsets gradually over months, using COLL+PLL as a fallback for unlearned cases. Even partial ZBLL knowledge provides measurable improvement, since each learned subset eliminates a class of two-step solves."
+			},
+			"zbls": {
+				"title": "Zborowski-Bruchem Last Slot",
+				"desc": "ZBLS (Zborowski-Bruchem Last Slot) solves the last F2L pair while simultaneously orienting all last layer edges. It is the complete version of what VHLS partially covers — while VHLS only handles 3-move insertions (32 cases), ZBLS covers every possible last-slot situation, totaling over 300 algorithms across 42 subsets.\n\nAfter executing a ZBLS algorithm, all last layer edges are guaranteed to be oriented. This sets up perfectly for ZBLL, which can then solve the entire last layer in one step. The ZBLS → ZBLL pipeline is one of the most efficient last-layer approaches in speedcubing, reducing the entire last layer to just two algorithm executions regardless of the case.\n\nZBLS is primarily used in ZZ (where edge orientation is already handled) and advanced CFOP. The large algorithm count makes it a serious commitment, but many cubers learn subsets incrementally — starting with the most common F2L pair configurations. For cubers not ready for the full set, VHLS offers a practical subset covering the most frequent cases."
 			},
 			"wvls": {
 				"title": "Winter Variation Last Slot",
@@ -1378,6 +1385,7 @@
 		"no_bar": "No Bar",
 		"eg_all": "EG (All)",
 		"edges_only": "Edges Only",
+		"corners_only": "Corners Only",
 		"h_adv": "=== ADVANCED ===",
 		"h_var": "=== VARIATIONS ===",
 		"h_gen": "=== GEN (Restricted) ==="
