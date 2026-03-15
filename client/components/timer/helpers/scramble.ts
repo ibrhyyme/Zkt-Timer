@@ -5,6 +5,7 @@ import { setTimerParams } from './params';
 import { getSubsetsForCube } from '../../../util/cubes/scramble_subsets';
 import { generate222Scramble } from '../../../util/cubes/scramble_222';
 import { generateCornersScramble } from '../../../util/cubes/scramble_333_corners';
+import { generateClockScramble } from '../../../util/cubes/scramble_clock';
 
 
 export function getNewScramble(scrambleTypeId: string, seed?: number, subset?: string) {
@@ -78,43 +79,6 @@ export function getNewScramble(scrambleTypeId: string, seed?: number, subset?: s
 	}
 
 	return scramble;
-}
-
-function generateClockScramble(): string {
-	const side1Pins = ['UR', 'DR', 'DL', 'UL', 'U', 'R', 'D', 'L', 'ALL'];
-	const side2Pins = ['U', 'R', 'D', 'L', 'ALL'];
-	const finalPins = ['UR', 'DR', 'DL', 'UL'];
-
-	const moves: string[] = [];
-
-	const getTurn = () => {
-		const val = Math.floor(Math.random() * 12) - 5; // -5, ... 6 (WCA standard is usually -5 to 6)
-		if (val === 0) return null;
-		return val > 0 ? `${val}+` : `${Math.abs(val)}-`;
-	};
-
-	// Side 1
-	side1Pins.forEach(pin => {
-		const turn = getTurn();
-		if (turn) moves.push(`${pin}${turn}`);
-	});
-
-	moves.push('y2');
-
-	// Side 2
-	side2Pins.forEach(pin => {
-		const turn = getTurn();
-		if (turn) moves.push(`${pin}${turn}`);
-	});
-
-	// Final Pin State (Randomize which pins are UP)
-	finalPins.forEach(pin => {
-		if (Math.random() > 0.5) {
-			moves.push(pin);
-		}
-	});
-
-	return moves.join(' ');
 }
 
 function getBlindWideMove() {

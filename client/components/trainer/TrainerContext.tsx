@@ -4,6 +4,7 @@ import type {
 	TrainerAction,
 	TrainerContextType,
 	TrainerOptions,
+	TrainerMode,
 	CheckedAlgorithm,
 	SmartPhase,
 } from './types';
@@ -30,6 +31,17 @@ function loadOptions(): TrainerOptions {
 	return DEFAULT_OPTIONS;
 }
 
+function loadMode(): TrainerMode | null {
+	if (typeof window === 'undefined') return null;
+	try {
+		const raw = localStorage.getItem('trainer_mode');
+		if (raw === 'standard' || raw === 'smart') return raw;
+	} catch {
+		// ignore
+	}
+	return null;
+}
+
 const SMART_DEFAULTS = {
 	smartConnected: false,
 	smartConnecting: false,
@@ -43,8 +55,11 @@ const SMART_DEFAULTS = {
 	showCameraPad: false,
 };
 
+const savedMode = loadMode();
+
 const initialState: TrainerSessionState = {
-	view: 'selection',
+	view: savedMode ? 'selection' : 'landing',
+	mode: savedMode,
 	selectedCategory: '',
 	selectedSubsets: [],
 	checkedAlgorithms: [],
@@ -171,7 +186,34 @@ function trainerReducer(state: TrainerSessionState, action: TrainerAction): Trai
 		case 'SET_MOVE_MASKED':
 			return {...state, isMoveMasked: action.payload};
 
+		case 'SET_MODE':
+			localStorage.setItem('trainer_mode', action.payload);
+			return {
+				...state,
+				mode: action.payload,
+				view: 'selection',
+			};
+
 		case 'SET_VIEW':
+			if (action.payload === 'landing') {
+				try { localStorage.removeItem('trainer_mode'); } catch {}
+				return {
+					...state,
+					view: 'landing',
+					mode: null,
+					selectedCategory: '',
+					selectedSubsets: [],
+					currentAlgorithm: null,
+					checkedAlgorithms: [],
+					algorithmQueue: [],
+					timerState: 'IDLE',
+					currentTimerValue: 0,
+					userAlg: [],
+					originalUserAlg: [],
+					badAlg: [],
+					...SMART_RESET,
+				};
+			}
 			if (action.payload === 'selection') {
 				return {
 					...state,

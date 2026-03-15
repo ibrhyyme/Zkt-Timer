@@ -72,6 +72,15 @@ export default function Dropdown(props: InputProps<DropdownProps>) {
 		};
 	}, [open, preventCloseOnInnerClick, onClose]);
 
+	// Timer basladiginda acik dropdown'lari kapat
+	useEffect(() => {
+		if (!open) return;
+
+		const handleTimerStart = () => setOpen(false);
+		window.addEventListener('timerInteractionStart', handleTimerStart);
+		return () => window.removeEventListener('timerInteractionStart', handleTimerStart);
+	}, [open]);
+
 	function openDropdown(e) {
 		e.preventDefault();
 

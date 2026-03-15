@@ -55,6 +55,16 @@ export default function TrainerToolbar() {
 		<>
 			<div className={b('toolbar')}>
 				<div className={b('toolbar-left')}>
+					{state.view === 'selection' && (
+						<button
+							className={b('toolbar-back')}
+							onClick={() => dispatch({type: 'SET_VIEW', payload: 'landing'})}
+						>
+							<ArrowLeft size={18} />
+							{t(`trainer.landing_${state.mode}_title`)}
+						</button>
+					)}
+
 					{state.view === 'training' && (
 						<button
 							className={b('toolbar-back')}
@@ -104,14 +114,25 @@ export default function TrainerToolbar() {
 						</>
 					)}
 
-					{is3x3Category && (
+					{is3x3Category && state.mode === 'smart' && (
 						<button
-							className={b('toolbar-btn', {active: state.smartConnected})}
+							className={b('toolbar-ble', {
+								connected: state.smartConnected,
+								busy: state.smartScanning || state.smartConnecting,
+							})}
 							onClick={handleBleToggle}
 							disabled={state.smartScanning || state.smartConnecting}
-							title={state.smartConnected ? t('trainer.ble_disconnect') : t('trainer.ble_connect')}
 						>
-							{state.smartConnected ? <BluetoothSlash size={20} /> : <Bluetooth size={20} />}
+							{state.smartConnected ? <BluetoothSlash size={18} /> : <Bluetooth size={18} />}
+							<span className={b('toolbar-ble-label')}>
+								{state.smartScanning
+									? t('trainer.scanning')
+									: state.smartConnecting
+										? t('trainer.connecting')
+										: state.smartConnected
+											? t('trainer.disconnect_cube')
+											: t('trainer.connect_cube')}
+							</span>
 							{(state.smartScanning || state.smartConnecting) && (
 								<span className={b('toolbar-spinner')} />
 							)}

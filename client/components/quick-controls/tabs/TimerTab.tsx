@@ -68,7 +68,7 @@ export default function TimerTab() {
 	}
 
 	function openStackMat() {
-		dispatch(openModal(<StackMatPicker />));
+		dispatch(openModal(<StackMatPicker />, { width: 400, closeButtonText: t('sessions.done') }));
 	}
 
 	function toggleManualEntry() {

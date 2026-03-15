@@ -57,14 +57,6 @@ export default function TimeDisplay() {
 
 	const mobileMode = useGeneral('mobile_mode');
 	let timerTimeSize = useSettings('timer_time_size');
-	if (mobileMode) {
-
-		if (smartCubeSelected(context)) {
-			timerTimeSize = 50;
-		} else {
-			timerTimeSize = 100;
-		}
-	}
 
 	useEffect(() => {
 		if (timerCounter.current && !solving) {
@@ -199,6 +191,27 @@ export default function TimeDisplay() {
 
 	if (hideTimeWhenSolving && timeStartedAt) {
 		timeStr = t('time_display.solve');
+	}
+
+	// Mobilde karakter sayisina gore font boyutunu dinamik ayarla
+	if (mobileMode) {
+		const charCount = timeStr.length;
+		if (smartCubeSelected(context)) {
+			// Smart cube: container %45 genislik, daha agresif kucultme
+			const maxSize = 50;
+			if (charCount > 4) {
+				timerTimeSize = Math.max(Math.floor(maxSize * 4 / charCount), 22);
+			} else {
+				timerTimeSize = maxSize;
+			}
+		} else {
+			const maxSize = 100;
+			if (charCount > 5) {
+				timerTimeSize = Math.max(Math.floor(maxSize * 5 / charCount), 40);
+			} else {
+				timerTimeSize = maxSize;
+			}
+		}
 	}
 
 	if (stackMatOn) {

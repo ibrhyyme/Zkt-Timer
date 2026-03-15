@@ -23,6 +23,7 @@
 		color: rgb(var(--text-color));
 		font-weight: 500;
 		margin: 0 0 10px;
+		transition: font-size 0.15s ease;
 
 		// Küçük ekranlarda daha uygun boyut
 		@media (max-width: 1200px) {

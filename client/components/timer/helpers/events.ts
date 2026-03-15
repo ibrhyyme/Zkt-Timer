@@ -52,6 +52,9 @@ export function startTimer(smartStartTimestamp?: number) {
 	const timeStartedAt = smartStartTimestamp ? new Date(smartStartTimestamp) : new Date();
 	_smartSolveEndTime = null;
 
+	// Acik dropdown menuleri kapat (hamburger, kup secici vb.)
+	window.dispatchEvent(new CustomEvent('timerInteractionStart'));
+
 	clearInspectionTimers(false, true);
 	setTimerParams({
 		editScramble: false,
@@ -181,6 +184,8 @@ export function cancelInspection() {
 }
 
 export function startInspection(context: ITimerContext) {
+	// Acik dropdown menuleri kapat
+	window.dispatchEvent(new CustomEvent('timerInteractionStart'));
 
 	const {
 		inspection_delay: inspectionDelay,

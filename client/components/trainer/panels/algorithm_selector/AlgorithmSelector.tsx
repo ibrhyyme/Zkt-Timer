@@ -67,8 +67,13 @@ export default function AlgorithmSelector() {
 	// Derive cube types and filtered categories
 	const cubeTypes = useMemo(() => {
 		const available = new Set(categories.map(getCubeType));
-		return CUBE_TYPE_ORDER.filter((ct) => available.has(ct));
-	}, [categories]);
+		const types = CUBE_TYPE_ORDER.filter((ct) => available.has(ct));
+		// Smart modda sadece 3x3 ve 3x3 Roux (BLE sadece 3x3 kuplerde calisir)
+		if (state.mode === 'smart') {
+			return types.filter((ct) => ct === '3x3' || ct === '3x3 Roux');
+		}
+		return types;
+	}, [categories, state.mode]);
 
 	const currentCubeType = useMemo(
 		() => (selectedCategory ? getCubeType(selectedCategory) : cubeTypes[0] || '3x3'),

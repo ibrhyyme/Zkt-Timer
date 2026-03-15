@@ -225,6 +225,13 @@
 			flex-direction: column;
 			padding-top: 60px; // Header yüksekliği
 			overflow-y: auto;
+
+			// Manual entry modunda scroll'u tamamen engelle
+			&#{$self}__mobile-timer--manual {
+				overflow: hidden;
+				overscroll-behavior: none;
+				flex: 0 0 auto;
+			}
 		}
 
 		#{$self}__main-center {
@@ -348,6 +355,17 @@
 		overflow-y: auto; // İçeriği kendi içinde scroll et
 		overflow-x: hidden;
 		gap: 0.5rem;
+
+		&--manual {
+			overflow-y: hidden;
+			overscroll-behavior: none;
+			touch-action: pan-x;
+			gap: 0.15rem;
+
+			.cd-mobile-timer-scramble {
+				min-height: auto;
+			}
+		}
 	}
 
 	&__mobile-timer {
@@ -373,6 +391,11 @@
 			width: 45%;
 			max-width: 45%;
 			overflow: hidden;
+		}
+
+		&--manual {
+			padding: 0.5vh 0;
+			min-height: auto;
 		}
 	}
 

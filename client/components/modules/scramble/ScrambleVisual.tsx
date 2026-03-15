@@ -49,17 +49,17 @@ function ScrambleVisual(props: Props) {
 	// Determine puzzle details for TwistyPlayer
 	const puzzleId = PUZZLE_MAPPING[cubeType] || cubeType;
 	const isClock = puzzleId === 'clock';
+	const isPyram = puzzleId === 'pyraminx';
 	const isSq1 = puzzleId === 'square1';
 	const isNxN = NXN_PUZZLE_IDS.has(puzzleId);
-	const visualizationVal = isClock ? '2D' : (use2dScramble && isNxN) ? '2D' : '3D';
+	const visualizationVal = (isClock || isPyram) ? '2D' : (use2dScramble && isNxN) ? '2D' : '3D';
 
 	const closeModal = (e: React.MouseEvent) => {
 		e.stopPropagation();
 		setIsExpanded(false);
 	};
 
-	// --- HANDLERS (Long Press & Swipe) ---
-	const [clockFace, setClockFace] = useState<'front' | 'back'>('front');
+	// --- HANDLERS (Long Press) ---
 	const touchStartX = useRef<number | null>(null);
 	const longPressTimer = useRef<NodeJS.Timeout | null>(null);
 
@@ -82,18 +82,10 @@ function ScrambleVisual(props: Props) {
 		}
 	};
 
-	const handleTouchEnd = (e: React.TouchEvent) => {
-		// Clear timer on release (if it hasn't fired yet)
+	const handleTouchEnd = () => {
 		if (longPressTimer.current) {
 			clearTimeout(longPressTimer.current);
 			longPressTimer.current = null;
-		}
-
-		if (touchStartX.current === null) return;
-		const diff = touchStartX.current - e.changedTouches[0].clientX;
-		if (Math.abs(diff) > 30) { // Swipe threshold
-			if (diff > 0) setClockFace('back'); // Swipe left -> show back
-			else setClockFace('front'); // Swipe right -> show front
 		}
 		touchStartX.current = null;
 	};
@@ -121,52 +113,27 @@ function ScrambleVisual(props: Props) {
 		? ReactDOM.createPortal(expandedModalContent, document.body)
 		: null;
 
-	// Clock Dimensions
-	const CLOCK_FULL_WIDTH = 340;
-	const CLOCK_HALF_WIDTH = CLOCK_FULL_WIDTH / 2;
-
-	// Clock Mobile Logic (Swipe View)
-	const isClockMobile = isClock && mobileMode && !frontFace;
-
-	const containerStyle: React.CSSProperties = isClockMobile
+	const containerStyle: React.CSSProperties = (isClock && frontFace)
 		? {
-			width: `${CLOCK_HALF_WIDTH}px`, // Show only one face
+			width: '100%',
 			overflow: 'hidden',
 			display: 'flex',
-			justifyContent: 'flex-start', // Start from left to allow sliding
-			margin: '0 auto',
-			position: 'relative',
-			touchAction: 'pan-y' // Allow vertical scroll, capture horizontal
+			justifyContent: 'flex-start',
+			alignItems: 'center'
 		}
-		: (isClock && frontFace)
-			? {
-				width: '100%',
-				overflow: 'hidden',
-				display: 'flex',
-				justifyContent: 'flex-start',
-				alignItems: 'center'
-			}
-			: isClock
-				? { width: '100%', overflowX: 'auto', display: 'flex', justifyContent: 'center' }
-				: { width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' };
+		: isClock
+			? { width: '100%', overflow: 'hidden', display: 'flex', justifyContent: 'center' }
+			: { width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' };
 
-	const innerStyle: React.CSSProperties = isClockMobile
+	const innerStyle: React.CSSProperties = (isClock && frontFace)
 		? {
-			minWidth: `${CLOCK_FULL_WIDTH}px`,
-			transform: clockFace === 'back' ? `translateX(-${CLOCK_HALF_WIDTH}px)` : 'translateX(0)',
-			transition: 'transform 0.3s ease-in-out',
+			width: '200%',
+			transform: 'translateX(0)',
 			display: 'flex',
-			justifyContent: 'center'
 		}
-		: (isClock && frontFace)
-			? {
-				width: '200%', // Force 200% width to show one face in 100% container
-				transform: 'translateX(0)', // Always show from left (front face)
-				display: 'flex',
-			}
-			: isClock
-				? { width: '100%', display: 'flex', justifyContent: 'center' } // Normal Clock - center both faces
-				: { width: '100%' };
+		: isClock
+			? { width: '100%', display: 'flex', justifyContent: 'center' }
+			: { width: '100%' };
 
 	if (puzzleId === 'other') {
 		return <div className={b('invalid')}>No visual</div>;
@@ -191,13 +158,6 @@ function ScrambleVisual(props: Props) {
 					</Suspense>
 				</div>
 			</div>
-			{/* Dots indicator for Clock Mobile */}
-			{isClockMobile && (
-				<div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '8px' }}>
-					<div style={{ width: '8px', height: '8px', borderRadius: '50%', background: clockFace === 'front' ? '#fff' : '#ffffff40' }} />
-					<div style={{ width: '8px', height: '8px', borderRadius: '50%', background: clockFace === 'back' ? '#fff' : '#ffffff40' }} />
-				</div>
-			)}
 			{expandedModal}
 		</div>
 	);

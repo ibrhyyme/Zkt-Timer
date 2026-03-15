@@ -44,7 +44,18 @@ export default function Timer(props: TimerProps) {
 	useStableViewportHeight();
 	const dispatch = useDispatch();
 	const _mobileMode = useGeneral('mobile_mode');
-	const mobileMode = props.forceMobileLayout ?? _mobileMode;
+	// Timer sayfasi icin genisletilmis mobil breakpoint (1024px)
+	// Katlanan telefonlar (Z Fold ~884px) hala mobil layout kullanir
+	// Tabletler (iPad 1024px+) desktop layout alir
+	const [isTimerMobile, setIsTimerMobile] = useState(
+		typeof window !== 'undefined' && window.innerWidth < 1024
+	);
+	useEffect(() => {
+		const handler = () => setIsTimerMobile(window.innerWidth < 1024);
+		window.addEventListener('resize', handler);
+		return () => window.removeEventListener('resize', handler);
+	}, []);
+	const mobileMode = props.forceMobileLayout ?? (_mobileMode || isTimerMobile);
 
 	const [loading, setLoading] = useState(true);
 	const timerStore = useSelector((state: RootStateOrAny) => state.timer, shallowEqual) as TimerStore;
@@ -52,6 +63,7 @@ export default function Timer(props: TimerProps) {
 	const hideMobileTimerFooter = useSettings('hide_mobile_timer_footer');
 	const timerType = useSettings('timer_type');
 	const focusMode = useSettings('focus_mode');
+	const manualEntry = useSettings('manual_entry');
 	const useSpaceWithSmartCube = useSettings('use_space_with_smart_cube');
 	const scrambleSubset = useSettings('scramble_subset');
 	let timerLayout = props.timerLayout || useSettings('timer_layout');
@@ -129,7 +141,7 @@ export default function Timer(props: TimerProps) {
 	const mobileTimeBar = (
 		<div className={b('mobile-container')}>
 			{/* Scroll edilebilir içerik alanı */}
-			<div className={b('mobile-layout')}>
+			<div className={b('mobile-layout', { manual: manualEntry })}>
 				{/* Scramble alanı - sadece metin, tıkla kopyala */}
 				<MobileTimerScramble />
 
@@ -147,7 +159,7 @@ export default function Timer(props: TimerProps) {
 					</div>
 				) : (
 					/* Normal mod - timer tam genişlik */
-					<div className={`${b('mobile-timer')} ${b('main', { mobile: true })}`}>
+					<div className={`${b('mobile-timer', { manual: manualEntry })} ${b('main', { mobile: true })}`}>
 						<TimeDisplay />
 					</div>
 				)}

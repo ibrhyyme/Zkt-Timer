@@ -52,9 +52,9 @@
     }
 }
 
-// Show only when orientation is landscape AND screen height is cramped (<600px)
-// Component JS ensures it's only on mobile
-@media screen and (orientation: landscape) and (max-height: 600px) {
+// Telefon boyutundaki cihazlarda landscape'te goster
+// max-height: 500px → tum telefonlar (tablet'lerde gosterilmez)
+@media screen and (orientation: landscape) and (max-height: 500px) {
     .cd-orientation-warning {
         display: flex;
     }

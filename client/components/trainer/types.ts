@@ -22,6 +22,7 @@ export interface CheckedAlgorithm {
 	subset: string;
 }
 
+export type TrainerMode = 'standard' | 'smart';
 export type TimerState = 'IDLE' | 'READY' | 'RUNNING' | 'STOPPED';
 export type LearnedStatus = 0 | 1 | 2; // 0=not learned, 1=learning, 2=learned
 
@@ -46,11 +47,12 @@ export interface TrainerOptions {
 	frontFace: CubeFace;
 }
 
-export type TrainerView = 'selection' | 'training';
+export type TrainerView = 'landing' | 'selection' | 'training';
 
 export interface TrainerSessionState {
-	// View
+	// View & Mode
 	view: TrainerView;
+	mode: TrainerMode | null;
 
 	// Algorithm Selection
 	selectedCategory: string;
@@ -114,4 +116,5 @@ export type TrainerAction =
 	| {type: 'SET_BAD_ALG'; payload: string[]}
 	| {type: 'SWAP_ALGORITHM'; payload: {oldAlg: string; newAlg: string}}
 	| {type: 'SMART_DISCONNECT'}
-	| {type: 'SET_CAMERA_PAD'; payload: boolean};
+	| {type: 'SET_CAMERA_PAD'; payload: boolean}
+	| {type: 'SET_MODE'; payload: TrainerMode};
