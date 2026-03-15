@@ -256,6 +256,9 @@
 		"alg_detail_notation": "Algoritma",
 		"alg_detail_saved": "Algoritma kaydedildi",
 		"alg_detail_alternatives": "Alternatifler",
+		"smart_retry": "Yeniden Dene",
+		"smart_reset_gyro": "Jiroskop Sıfırla",
+		"smart_camera_angle": "Kamera",
 		"cat_info": {
 			"pll": {
 				"title": "Son Katman Permütasyonu",
@@ -288,6 +291,10 @@
 			"zbll": {
 				"title": "Zborowski-Bruchem Son Katman",
 				"desc": "ZBLL, tüm kenarlar yönlendirilmişken son katmanı tek bir algoritmada çözer. Toplamda 493 algoritma ve 7 alt grup vardır: T, U, L, H, Pi, S ve AS. Her alt grup, COLL alt gruplarına doğrudan karşılık gelir. Kenar yönlendirmesinin daha erken ele alındığı ZZ veya ZBLS sonrası gibi yöntemler için idealdir.\n\nCFOP, Roux ve ZZ dahil birçok yöntemde kullanılabilir, ancak en doğal uyumu ZZ yöntemiyledir çünkü ZZ'de tüm kenarlar EOLine aşamasında zaten yönlendirilir. Tam ZBLL öğrenmek büyük bir yatırımdır — çoğu speedcuber'ın tüm seti öğrenmesi 1-2 yıl sürer.\n\nÖğrenme stratejisi olarak önce COLL öğrenip ardından her alt grubun ZBLL vakalarını kademeli olarak eklemek en yaygın yaklaşımdır. T ve U alt grupları genelde ilk öğrenilir çünkü recognition'ları daha kolaydır. Tam ZBLL, her solve'de ortalama 1.5-2 saniye kazandırabilir."
+			},
+			"zbls": {
+				"title": "Zborowski-Bruchem Son Yuva",
+				"desc": "ZBLS (Zborowski-Bruchem Last Slot), son F2L pair'ini yerleştirirken aynı anda son katman kenarlarını yönlendirir. VHLS'nin kısmen kapsadığı şeyin tam versiyonudur — VHLS yalnızca 3 hamleli yerleştirmeleri (32 vaka) kapsarken, ZBLS tüm son yuva durumlarını kapsar ve 42 alt küme boyunca 300'den fazla algoritma içerir.\n\nBir ZBLS algoritması uygulandıktan sonra son katman kenarlarının tamamı yönlendirilmiş olur. Bu, son katmanı tek adımda çözebilen ZBLL için mükemmel bir hazırlık oluşturur. ZBLS → ZBLL hattı, speedcubing'deki en verimli son katman yaklaşımlarından biridir.\n\nZBLS ağırlıklı olarak ZZ ve ileri düzey CFOP'ta kullanılır. Yüksek algoritma sayısı ciddi bir yatırım gerektirir, ancak birçok cuber alt kümeleri kademeli olarak öğrenir. Tam set için hazır olmayanlar, en sık karşılaşılan vakaları kapsayan VHLS ile başlayabilir."
 			},
 			"wvls": {
 				"title": "Winter Variation Son Yuva",
@@ -1378,6 +1385,7 @@
 		"no_bar": "Çubuk Yok (No Bar)",
 		"eg_all": "EG (Tümü)",
 		"edges_only": "Sadece Kenarlar (Edges)",
+		"corners_only": "Sadece Köşeler (Corners)",
 		"h_adv": "=== İLERİ ===",
 		"h_var": "=== VARYASYONLAR ===",
 		"h_gen": "=== GEN (Kısıtlı) ==="

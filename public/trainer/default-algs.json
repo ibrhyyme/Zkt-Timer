@@ -7849,6 +7849,775 @@
 			]
 		}
 	],
+	"ZBLS": [
+		{
+			"subset": "Case 1",
+			"algorithms": [
+				{
+					"name": "ZBLS 1",
+					"algorithm": "y R' F' R U2 L R' F' L' R y'",
+					"alternatives": [
+						"(U2) R U' B U' B' R'",
+						"R' F R2 U R' U' F'",
+						"R' U' F U R2 U' R' F'",
+						"(U) R B U' B' R'",
+						"R' F R F'",
+						"(U) F' L' U' L F",
+						"(U) R U' R'"
+					],
+					"setup": "y R' L F R L' U2 R' F R y'"
+				}
+			]
+		},
+		{
+			"subset": "Case 2",
+			"algorithms": [
+				{
+					"name": "ZBLS 2",
+					"algorithm": "L F L' U2 R' L F R L'",
+					"alternatives": [
+						"(U2) F' U L' U L F",
+						"F R' F2 U' F U R",
+						"F U R' U' F2 U F R",
+						"(U') F' L' U L F",
+						"F R' F' R",
+						"(U') R B U B' R'",
+						"(U') F' U F"
+					],
+					"setup": "L R' F' L' R U2 L F' L'"
+				}
+			]
+		},
+		{
+			"subset": "Case 3",
+			"algorithms": [
+				{
+					"name": "ZBLS 3",
+					"algorithm": "F D B' R' B D' F2 U' F",
+					"alternatives": [
+						"(U2) F' U' L' U L U F",
+						"F' U2 L' U L F",
+						"F' U' L' U' L U F",
+						"(U) R U2 R' F R' F' R",
+						"(U) R U2 R' U' F' U F",
+						"F' U F U2 F R' F' R",
+						"F' U' F"
+					],
+					"setup": "F' U F2 D B' R B D' F'"
+				}
+			]
+		},
+		{
+			"subset": "Case 4",
+			"algorithms": [
+				{
+					"name": "ZBLS 4",
+					"algorithm": "R' D' L F L' D R2 U R'",
+					"alternatives": [
+						"(U2) R U B U' B' U' R'",
+						"R U2 B U' B' R'",
+						"R U B U B' U' R'",
+						"(U') F' U2 F R' F R F'",
+						"(U') F' U2 F U R U' R'",
+						"R U' R' U2 R' F R F'",
+						"R U R'"
+					],
+					"setup": "R U' R2 D' L F' L' D R"
+				}
+			]
+		},
+		{
+			"subset": "Case 5",
+			"algorithms": [
+				{
+					"name": "ZBLS 5",
+					"algorithm": "(U') F' U F R B U2 B' U R'",
+					"alternatives": [
+						"(U') L F R' F' L' R2 U2 R'",
+						"(U2) R B U B' U2 R'",
+						"(U') R U R' U R' F R F'",
+						"(U2) R' F R F' U2 F' U' F",
+						"F' B' U' R' U R B F",
+						"B L F' U' F U L' B'",
+						"(U') R U R' U' R U2 R'"
+					],
+					"setup": "R U' B U2 B' R' F' U' F U"
+				}
+			]
+		},
+		{
+			"subset": "Case 6",
+			"algorithms": [
+				{
+					"name": "ZBLS 6",
+					"algorithm": "(U) R U' R' F' L' U2 L U' F",
+					"alternatives": [
+						"(U) B' R' F R B F2 U2 F",
+						"(U2) F' L' U' L U2 F",
+						"(U) F' U' F U' F R' F' R",
+						"(U2) F R' F' R U2 R U R'",
+						"R L U F U' F' L' R'",
+						"L' B' R U R' U' B L",
+						"(U) F' U' F U2 F' U F"
+					],
+					"setup": "F' U L' U2 L F R U R' U'"
+				}
+			]
+		},
+		{
+			"subset": "Case 7",
+			"algorithms": [
+				{
+					"name": "ZBLS 7",
+					"algorithm": "L R' F' L' R U2 L F' L'",
+					"alternatives": [
+						"(U2) L U F U' F' L' R U' R'",
+						"(U') R U2 R' U R' F R F'",
+						"(U2) R U2 R2 U2 B' R' B U2 R",
+						"(U) R U B U2 B' U2 R'",
+						"(U) R2 U R B' R' B U' R2",
+						"R U B U2 B' U R'",
+						"(U') R U2 R' U' R U2 R'"
+					],
+					"setup": "L F L' U2 R' L F R L'"
+				}
+			]
+		},
+		{
+			"subset": "Case 8",
+			"algorithms": [
+				{
+					"name": "ZBLS 8",
+					"algorithm": "Rw U Rw' U' R U' M' U Rw'",
+					"alternatives": [
+						"(U2) B' U' R' U R B F' U F",
+						"(U) F' U2 F U' F R' F' R",
+						"(U2) F' U2 F2 U2 L F L' U2 F'",
+						"(U') F' U' L' U2 L U2 F",
+						"U R U' R' d R' U R U' R' U R y",
+						"F' U' L' U2 L U' F",
+						"(U) F' U2 F U2 F' U F"
+					],
+					"setup": "r U' M U R' U r U' r'"
+				}
+			]
+		},
+		{
+			"subset": "Case 9",
+			"algorithms": [
+				{
+					"name": "ZBLS 9",
+					"algorithm": "(U2) B' R B U2 B' F R' F' R' B",
+					"alternatives": [
+						"F' U L' U' L U2 F",
+						"F' R' F' U' F U R U2 F",
+						"(U) L R' D' F' D L' R2 U' R'",
+						"(U') R U' R' U F' U' F",
+						"(U) L F R' F' L' R2 U' R'",
+						"F R U R' U' F' R U' R'",
+						"(U) F' U' F U' F' U' F"
+					],
+					"setup": "B' R F R F' B U2 B' R' B U2"
+				}
+			]
+		},
+		{
+			"subset": "Case 10",
+			"algorithms": [
+				{
+					"name": "ZBLS 10",
+					"algorithm": "(U2) L F' L' U2 L R' F R F L'",
+					"alternatives": [
+						"R U' B U B' U2 R'",
+						"R F R U R' U' F' U2 R'",
+						"(U') F B' D R D' B F2 U F",
+						"(U) F' U F U' R U R'",
+						"(U') B' R' F R B F2 U F",
+						"R' F' U' F U R F' U F",
+						"(U') R U R' U R U R'"
+					],
+					"setup": "L F' R' F' R L' U2 L F L' U2"
+				}
+			]
+		},
+		{
+			"subset": "Case 11",
+			"algorithms": [
+				{
+					"name": "ZBLS 11",
+					"algorithm": "(U2) R B U2 B' U R' U' F' U F",
+					"alternatives": [
+						"R U2 R' U' F' L' U2 L F",
+						"F' U L' U2 L U2 F",
+						"(U2) F' U2 F U' R U' R' F' U' F",
+						"(U') R U2 R' U F' U' F",
+						"F' U' F2 U2 L F2 L' U2 F'",
+						"R' U' R2 U' R2 U2 R F' U F",
+						"F U2 F2 U' F2 U' F'"
+					],
+					"setup": "F' U' F U R U' B U2 B' R' U2"
+				}
+			]
+		},
+		{
+			"subset": "Case 12",
+			"algorithms": [
+				{
+					"name": "ZBLS 12",
+					"algorithm": "(U2) F' L' U2 L U' F U R U' R'",
+					"alternatives": [
+						"R U2 F U R U' R' F' R'",
+						"R U' B U2 B' U2 R'",
+						"(U2) R U2 R' U F' U F R U R'",
+						"(U) F' U2 F U' R U R'",
+						"R U R2 U2 B' R2 B U2 R",
+						"F U F2 U F2 U2 F' R U' R'",
+						"R' U2 R2 U R2 U R"
+					],
+					"setup": "R U R' U' F' U L' U2 L F U2"
+				}
+			]
+		},
+		{
+			"subset": "Case 13",
+			"algorithms": [
+				{
+					"name": "ZBLS 13",
+					"algorithm": "(U2) B' R B U' B' F R2 F' R' B",
+					"alternatives": [
+						"(U) B' U' R' U R B F' U' F",
+						"F' L U F U' F2 L' F2",
+						"(U) F U R U' R' F2 U' F",
+						"(U2) B' F' R' F R' F' R2 F B",
+						"(U) F' U B L' F' L' F L F B'",
+						"R U' R' U F' U2 F R U R'",
+						"(U) F' U F U' F' U' F"
+					],
+					"setup": "B' R F R2 F' B U B' R' B U2"
+				}
+			]
+		},
+		{
+			"subset": "Case 14",
+			"algorithms": [
+				{
+					"name": "ZBLS 14",
+					"algorithm": "(U2) L F' L' U L R' F2 R F L'",
+					"alternatives": [
+						"(U') L U F U' F' L' R U R'",
+						"R B' U' R' U R2 B R2",
+						"(U') R' U' F' U F R2 U R'",
+						"(U2) L R F R' F R F2 R' L'",
+						"(U') R U' L' B R B R' B' R' L",
+						"F' U F U' R U2 R' F' U' F",
+						"(U') R U' R' U R U R'"
+					],
+					"setup": "L F' R' F2 R L' U' L F L' U2"
+				}
+			]
+		},
+		{
+			"subset": "Case 15",
+			"algorithms": [
+				{
+					"name": "ZBLS 15",
+					"algorithm": "(U') F' U2 F R B U2 B' R'",
+					"alternatives": [
+						"R U B' R B R' U2 R'",
+						"R U R' U2 R U' R2 F R F'",
+						"(U2) F' U' F R B U2 B' R'",
+						"L R F U F' U' R' L'",
+						"F' U F U2 R U R'",
+						"R B L U' L' B' R'",
+						"R F U R' U' R F' U' R'"
+					],
+					"setup": "R B U2 B' R' F' U2 F U"
+				}
+			]
+		},
+		{
+			"subset": "Case 16",
+			"algorithms": [
+				{
+					"name": "ZBLS 16",
+					"algorithm": "(U) R U2 R' F' L' U2 L F",
+					"alternatives": [
+						"F' U' L F' L' F U2 F",
+						"F' U' F U2 F' U F2 R' F' R",
+						"(U2) R U R' F' L' U2 L F",
+						"F' B' R' U' R U B F",
+						"R U' R' U2 F' U' F",
+						"F' L' B' U B L F",
+						"F' R' U' F U F' R U F"
+					],
+					"setup": "F' L' U2 L F R U2 R' U'"
+				}
+			]
+		},
+		{
+			"subset": "Case 17",
+			"algorithms": [
+				{
+					"name": "ZBLS 17",
+					"algorithm": "(U') R U' B U' L U' L' B' R'",
+					"alternatives": [
+						"(U') R U2 R' U' F' U' F R U R'",
+						"(U) R U R U2 F R F' U2 R2",
+						"(U2) R2 U2 F R F' U2 R2",
+						"F' U F R U R' F R' F' R",
+						"(U2) R2 B2 L' B' L B' R2",
+						"F' U2 L F U F' U' L' F",
+						"R U2 R' U' R U R'"
+					],
+					"setup": "R B L U L' U B' U R' U"
+				}
+			]
+		},
+		{
+			"subset": "Case 18",
+			"algorithms": [
+				{
+					"name": "ZBLS 18",
+					"algorithm": "(U) F' U L' U B' U B L F",
+					"alternatives": [
+						"(U) F' U2 F U R U R' F' U' F",
+						"(U') F' U' F' U2 R' F' R U2 F2",
+						"(U2) F2 U2 R' F' R U2 F2",
+						"R U' R' F' U' F R' F R F'",
+						"(U2) F2 L2 B L B' L F2",
+						"R U2 B' R' U' R U B R'",
+						"F' U2 F U F' U' F"
+					],
+					"setup": "F' L' B' U' B U' L U' F U'"
+				}
+			]
+		},
+		{
+			"subset": "Case 19",
+			"algorithms": [
+				{
+					"name": "ZBLS 19",
+					"algorithm": "(U') R2 B' R' B2 U2 B' R'",
+					"alternatives": [
+						"(U) R U2 R2 F R F'",
+						"(U) R U R' F' U' F R U R'",
+						"(U) R U2 R' U R B U' B' R'",
+						"(U) F' U F2 R' F' R F' U F",
+						"(U) R U' R' F' U2 F R U2 R'",
+						"(U') R2 B' R' B2 U' B' U' R'",
+						"(U) R U2 R' U R U' R'"
+					],
+					"setup": "R B U2 B2 R B R2 U"
+				}
+			]
+		},
+		{
+			"subset": "Case 20",
+			"algorithms": [
+				{
+					"name": "ZBLS 20",
+					"algorithm": "(U) F2 L F L2 U2 L F",
+					"alternatives": [
+						"(U') F' U2 F2 R' F' R",
+						"(U') F' U' F R U R' F' U' F",
+						"(U') F' L' U2 L F U' R U R'",
+						"(U') R U' R2 F R F' R U' R'",
+						"(U') F' U F R U2 R' F' U2 F",
+						"(U) F2 L F L2 U L U F",
+						"(U') F' U2 F U' F' U F"
+					],
+					"setup": "F' L' U2 L2 F' L' F2 U'"
+				}
+			]
+		},
+		{
+			"subset": "Case 21",
+			"algorithms": [
+				{
+					"name": "ZBLS 21",
+					"algorithm": "(U2) F' L' U2 L2 F' L' F2",
+					"alternatives": [
+						"(U) F R U R2 U' F' U R",
+						"(U) R B U B' U R'",
+						"R B U2 B' R'",
+						"(U) R' F R F' U R' F R F'",
+						"(U2) R U R2 F R F'",
+						"R B U' B' U' R'",
+						"(U2) R U R' U R U' R'"
+					],
+					"setup": "F2 L F L2 U2 L F U2"
+				}
+			]
+		},
+		{
+			"subset": "Case 22",
+			"algorithms": [
+				{
+					"name": "ZBLS 22",
+					"algorithm": "(U2) R B U2 B2 R B R2",
+					"alternatives": [
+						"F' L' U' L U' F R U' R'",
+						"(U') F' L' U' L U' F",
+						"F' L' U2 L F",
+						"(U') F R' F' R U' F R' F' R",
+						"(U2) F' U' F2 R' F' R",
+						"F' L' U L U F",
+						"(U2) F' U' F U' F' U F"
+					],
+					"setup": "R2 B' R' B2 U2 B' R' U2"
+				}
+			]
+		},
+		{
+			"subset": "Case 23",
+			"algorithms": [
+				{
+					"name": "ZBLS 23",
+					"algorithm": "(U') F' L' B' U' B U' L U' F",
+					"alternatives": [
+						"(U') R U' B U' B' R' F' U' F",
+						"R U R B' R' B U2 R'",
+						"R U R' F' U F R U R'",
+						"(U') R B U' B' R' F' U' F",
+						"(U') F' U2 F' U' L' U L F2",
+						"(U') L F U F' U' L' F' U' F",
+						"(U2) R2 U2 R' U' R U' R2"
+					],
+					"setup": "F' U L' U B' U B L F U"
+				}
+			]
+		},
+		{
+			"subset": "Case 24",
+			"algorithms": [
+				{
+					"name": "ZBLS 24",
+					"algorithm": "(U) R B L U L' U B' U R'",
+					"alternatives": [
+						"(U) F' U L' U L F R U R'",
+						"(U) R U R U2 F R F' U2 R2",
+						"F' U' F R U' R' F' U' F",
+						"(U) F' L' U L F R U R'",
+						"(U) R U2 R U B U' B' R2",
+						"(U) B' R' U' R U B R U R'",
+						"U2 F2 U2 F U F' U F2"
+					],
+					"setup": "R U' B U' L U' L' B' R' U'"
+				}
+			]
+		},
+		{
+			"subset": "Case 25",
+			"algorithms": [
+				{
+					"name": "ZBLS 25",
+					"algorithm": "(U) R2 D L' B L D' R' U' R'",
+					"alternatives": [
+						"(U) B' R2 U' R U R2 B",
+						"B' R2 U' R' U R2 B",
+						"(U2) R U2 B U2 B' U2 R'",
+						"(U') F' U' F U R U R'",
+						"(U') F' U F U R U' R'",
+						"(U') F' U F R' F R F'",
+						"R' U' R' U' R' U R U R"
+					],
+					"setup": "R U R D L' B' L D' R2 U'"
+				}
+			]
+		},
+		{
+			"subset": "Case 26",
+			"algorithms": [
+				{
+					"name": "ZBLS 26",
+					"algorithm": "(U) R U R D L' B' L D' R2",
+					"alternatives": [
+						"y' (U') F R2 U R' U' R2 F' y",
+						"y' F R2 U R U' R2 F' y",
+						"(U2) F' U2 L' U2 L U2 F",
+						"(U) R U R' U' F' U' F",
+						"(U) R U' R' U' F' U F",
+						"(U) R U' R' F R' F' R",
+						"F U F U F U' F' U' F'"
+					],
+					"setup": "R2 D L' B L D' R' U' R' U'"
+				}
+			]
+		},
+		{
+			"subset": "Case 27",
+			"algorithms": [
+				{
+					"name": "ZBLS 27",
+					"algorithm": "y L' U2 L F U' R U' R' F' y'",
+					"alternatives": [
+						"U Rw' R2 U' R' U Rw U' R'",
+						"R U' R2 U' F U R U' F'",
+						"R U' R2 F R F'",
+						"F' U2 F R U2 R'",
+						"y' R' U2 R' F R F' R y",
+						"F' U' F U' R U2 R'",
+						"R U' R' U R U' R'"
+					],
+					"setup": "y F R U R' U F' L' U2 L y'"
+				}
+			]
+		},
+		{
+			"subset": "Case 28",
+			"algorithms": [
+				{
+					"name": "ZBLS 28",
+					"algorithm": "R U2 R2 F R F2 U2 F",
+					"alternatives": [
+						"(U2) F' U' L' U' L U' F",
+						"F' U F U' R B U B' R'",
+						"F' U F2 R' F' R",
+						"R U2 R' F' U2 F",
+						"F R' F' R F R' F' R",
+						"R U R' U F' U2 F",
+						"F' U F U' F' U F"
+					],
+					"setup": "F' U2 F2 R' F' R2 U2 R'"
+				}
+			]
+		},
+		{
+			"subset": "Case 29",
+			"algorithms": [
+				{
+					"name": "ZBLS 29",
+					"algorithm": "y' (U') R2 F R F2 U' F U2 R y",
+					"alternatives": [
+						"y' R' U' L F R' F' L' R2 y",
+						"(U) F' U L' U2 L F",
+						"y' (U2) R2 F R F' U2 R y",
+						"R' U' R2 U' R2 U2 R F' U' F",
+						"R' F R F' R' F R F'",
+						"(U2) R U' R' F' U' F",
+						"F' U' F U F' U' F"
+					],
+					"setup": "y' R' U2 F' U F2 R' F' R2 U y"
+				}
+			]
+		},
+		{
+			"subset": "Case 30",
+			"algorithms": [
+				{
+					"name": "ZBLS 30",
+					"algorithm": "(U) R2 B' R' y R2 U R' U2 F' y'",
+					"alternatives": [
+						"R U L' B' R B R2 L",
+						"(U') R U' B U2 B' R'",
+						"(U') F R' F' R2 U R'",
+						"(U) F' U' F U' F' U' F R U R'",
+						"F R' F' R F R' F' R",
+						"(U2) F' U F R U R'",
+						"R U R' U' R U R'"
+					],
+					"setup": "y F U2 R U' R2 y' R B R2 U'"
+				}
+			]
+		},
+		{
+			"subset": "Case 31",
+			"algorithms": [
+				{
+					"name": "ZBLS 31",
+					"algorithm": "y' R2 F R F2 U' F R y",
+					"alternatives": [
+						"R U' R2 F R F2 U2 F",
+						"R2 B' R' y R2 U2 R' U' F' y'",
+						"R2 B' R' y R2 U R' F' y'",
+						"R U' R' F' U2 F",
+						"F' U F R U2 R'",
+						"F' U2 F U' R U2 R'",
+						"R U2 R' U F' U2 F"
+					],
+					"setup": "y' R' F' U F2 R' F' R2 y"
+				}
+			]
+		},
+		{
+			"subset": "Case 32",
+			"algorithms": [
+				{
+					"name": "ZBLS 32",
+					"algorithm": "y F R2 U2 F R' F' U2 R2 F' y'",
+					"alternatives": [
+						"(U2) R U' B U B' U R'",
+						"r R U R2 U R2 U2 R' r'",
+						"(U2) F' U L' U' L U' F",
+						"R U R' U F' U F R U R'",
+						"(U) R U' B U2 B' U R'",
+						"(U') F' U L' U2 L U' F",
+						"R2 U R2 U R2 U2 R2"
+					],
+					"setup": "y F R2 U2 F R F' U2 R2 F' y'"
+				}
+			]
+		},
+		{
+			"subset": "Case 33",
+			"algorithms": [
+				{
+					"name": "ZBLS 33",
+					"algorithm": "(U') F R' F' R2 U2 R2 F R F'",
+					"alternatives": [
+						"(U') R U' R' U R' F R F'",
+						"y F R2 U R' U R U2 R2 F' y'",
+						"(U) R U B U B' U2 R'",
+						"(U2) R B U2 B' U2 R'",
+						"(U2) F' R L' U' L U R' F",
+						"(U') F' U2 L' U L U F",
+						"(U') R U' R' U2 R U' R'"
+					],
+					"setup": "F R' F' R2 U2 R2 F R F' U"
+				}
+			]
+		},
+		{
+			"subset": "Case 34",
+			"algorithms": [
+				{
+					"name": "ZBLS 34",
+					"algorithm": "y U' F R2 U2 F R F' U2 R2 F' y'",
+					"alternatives": [
+						"(U') F' U' L' U' L U2 F",
+						"(U) R F' U' L' U L F R'",
+						"(U) F' U F U' F R' F' R",
+						"(U) R U2 B U2 B' R'",
+						"(U) R U2 B U' B' U' R'",
+						"(U) F D R U R' U' D' F'",
+						"(U') R U2 R' U R U R'"
+					],
+					"setup": "y F R2 U2 F R' F' U2 R2 F' U y'"
+				}
+			]
+		},
+		{
+			"subset": "Case 35",
+			"algorithms": [
+				{
+					"name": "ZBLS 35",
+					"algorithm": "y' R2 D' L F' L' D R U' R y",
+					"alternatives": [
+						"(U') R U R2 U' F' U F2 R F'",
+						"(U) R' D' L F L' D R2 U2 R'",
+						"R U R' U R' F R F2 U' F",
+						"(U2) R U R' U' F' U F",
+						"(U') R U R' U F' U' F",
+						"(U2) R U' R' U' F' U' F",
+						"(U2) R U R' F R' F' R"
+					],
+					"setup": "y' R' U R' D' L F L' D R2 y"
+				}
+			]
+		},
+		{
+			"subset": "Case 36",
+			"algorithms": [
+				{
+					"name": "ZBLS 36",
+					"algorithm": "F' U' F U' F R' F' R2 U R'",
+					"alternatives": [
+						"F R' F' R2 U2 R' U2 F' U' F",
+						"(U') R2 U2 F R F' U2 R2 F' U F",
+						"R2 D L' B L D' R' U R'",
+						"(U) F' U' F U' R U R'",
+						"(U2) F' U' F U R U' R'",
+						"(U2) F' U' F R' F R F'",
+						"(U2) F' U F U R U R'"
+					],
+					"setup": "R U' R2 F R F' U F' U F"
+				}
+			]
+		},
+		{
+			"subset": "Case 37",
+			"algorithms": [
+				{
+					"name": "ZBLS 37",
+					"algorithm": "R U2 R2 F R F' U2 R' F R F'",
+					"alternatives": [
+						"F U R U' R' F'",
+						"F R U R' U' F'"
+					],
+					"setup": "F R' F' R U2 F R' F' R2 U2 R'"
+				}
+			]
+		},
+		{
+			"subset": "Case 38",
+			"algorithms": [
+				{
+					"name": "ZBLS 38",
+					"algorithm": "R2 B' R' U' y R2 U' R2 U2 R F' y'",
+					"alternatives": [
+						"R U' R U2 F R2 F' U2 R2"
+					],
+					"setup": "y F R' U2 R2 U R2 y' U R B R2"
+				}
+			]
+		},
+		{
+			"subset": "Case 39",
+			"algorithms": [
+				{
+					"name": "ZBLS 39",
+					"algorithm": "y F R U2 R2 F R y' R2 U R U R'",
+					"alternatives": [
+						"R U2 R U2 F R F' U2 R2",
+						"R U' R' U' R U B U' B' U R'",
+						"R2 U2 R' U' R U' R' U2 R'"
+					],
+					"setup": "R U' R' U' R2 y R' F' R2 U2 R' F' y'"
+				}
+			]
+		},
+		{
+			"subset": "Case 40",
+			"algorithms": [
+				{
+					"name": "ZBLS 40",
+					"algorithm": "R U' R' U' R2 B' R' y R2 U2 R' F' y'",
+					"alternatives": [
+						"R2 U2 F R' F' U2 R' U2 R'",
+						"y F R U2 R' U R U2 R' U F' y'",
+						"R U2 R U R' U R U2 R2"
+					],
+					"setup": "y F R U2 R2 y' R B R2 U R U R'"
+				}
+			]
+		},
+		{
+			"subset": "Case 41",
+			"algorithms": [
+				{
+					"name": "ZBLS 41",
+					"algorithm": "F' L' U2 L F R U R'",
+					"alternatives": [
+						"R U' R U B U' B' R2"
+					],
+					"setup": "R U' R' F' L' U2 L F"
+				}
+			]
+		},
+		{
+			"subset": "Case 42",
+			"algorithms": [
+				{
+					"name": "ZBLS 42",
+					"algorithm": "R U' R' F' L' U2 L F",
+					"alternatives": [
+						"R2 B U B' U' R' U R'"
+					],
+					"setup": "F' L' U2 L F R U R'"
+				}
+			]
+		}
+	],
 	"CMLL": [
 		{
 			"subset": "O",

@@ -11,6 +11,9 @@ import {
 	ArrowLeft,
 	Bluetooth,
 	BluetoothSlash,
+	ArrowCounterClockwise,
+	Compass,
+	Crosshair,
 } from 'phosphor-react';
 
 const b = block('trainer');
@@ -55,7 +58,7 @@ export default function TrainerToolbar() {
 					{state.view === 'training' && (
 						<button
 							className={b('toolbar-back')}
-							onClick={() => dispatch({type: 'SET_VIEW', payload: 'selection'})}
+							onClick={() => window.history.back()}
 						>
 							<ArrowLeft size={18} />
 							{t('trainer.back')}
@@ -75,6 +78,32 @@ export default function TrainerToolbar() {
 				</div>
 
 				<div className={b('toolbar-right')}>
+					{state.view === 'training' && state.smartConnected && (
+						<>
+							<button
+								className={b('toolbar-btn')}
+								onClick={() => window.dispatchEvent(new CustomEvent('trainer:smart-reset'))}
+								title={t('trainer.smart_retry')}
+							>
+								<ArrowCounterClockwise size={20} />
+							</button>
+							<button
+								className={b('toolbar-btn')}
+								onClick={() => window.dispatchEvent(new CustomEvent('trainer:smart-gyro-reset'))}
+								title={t('trainer.smart_reset_gyro')}
+							>
+								<Compass size={20} />
+							</button>
+							<button
+								className={b('toolbar-btn', {active: state.showCameraPad})}
+								onClick={() => dispatch({type: 'SET_CAMERA_PAD', payload: !state.showCameraPad})}
+								title={t('trainer.smart_camera_angle')}
+							>
+								<Crosshair size={20} />
+							</button>
+						</>
+					)}
+
 					{is3x3Category && (
 						<button
 							className={b('toolbar-btn', {active: state.smartConnected})}

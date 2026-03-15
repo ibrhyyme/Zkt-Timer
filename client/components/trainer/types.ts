@@ -79,6 +79,7 @@ export interface TrainerSessionState {
 	matchedMoveCount: number;
 	totalExpectedMoves: number;
 	badAlg: string[];
+	showCameraPad: boolean;
 }
 
 export interface TrainerContextType {
@@ -104,6 +105,7 @@ export type TrainerAction =
 	| {type: 'RESET_TRAINING'}
 	| {type: 'SET_VIEW'; payload: TrainerView}
 	| {type: 'ADVANCE_ALGORITHM'}
+	| {type: 'PREVIOUS_ALGORITHM'}
 	// Smart Cube Actions
 	| {type: 'SMART_CONNECTION'; payload: Partial<{scanning: boolean; connecting: boolean; connected: boolean; scanError: string | null; battery: number | null}>}
 	| {type: 'SMART_SET_PHASE'; payload: SmartPhase}
@@ -111,4 +113,5 @@ export type TrainerAction =
 	| {type: 'SET_TOTAL_EXPECTED_MOVES'; payload: number}
 	| {type: 'SET_BAD_ALG'; payload: string[]}
 	| {type: 'SWAP_ALGORITHM'; payload: {oldAlg: string; newAlg: string}}
-	| {type: 'SMART_DISCONNECT'};
+	| {type: 'SMART_DISCONNECT'}
+	| {type: 'SET_CAMERA_PAD'; payload: boolean};

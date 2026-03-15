@@ -64,7 +64,7 @@ export default function AlgorithmDetailModal({
 				if (sub.subset === subset) {
 					const entry = sub.algorithms.find((a: any) => a.name === name);
 					if (entry && (entry as any).alternatives) {
-						setAlternatives((entry as any).alternatives);
+						setAlternatives([entry.algorithm, ...(entry as any).alternatives]);
 					}
 					break;
 				}
@@ -263,7 +263,7 @@ export default function AlgorithmDetailModal({
 			{alternatives.length > 0 && (
 				<div className={b('alg-detail-alternatives')}>
 					<label className={b('alg-detail-alternatives-label')}>
-						{t('trainer.alg_detail_alternatives')} ({alternatives.length})
+						{t('trainer.alg_detail_alternatives')} ({alternatives.length - 1})
 					</label>
 					<div className={b('alg-detail-alternatives-list')}>
 						{alternatives.map((alt, i) => {

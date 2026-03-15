@@ -40,6 +40,7 @@ const SMART_DEFAULTS = {
 	matchedMoveCount: 0,
 	totalExpectedMoves: 0,
 	badAlg: [] as string[],
+	showCameraPad: false,
 };
 
 const initialState: TrainerSessionState = {
@@ -191,7 +192,8 @@ function trainerReducer(state: TrainerSessionState, action: TrainerAction): Trai
 		case 'SET_OPTIONS': {
 			const newOptions = {...state.options, ...action.payload};
 			localStorage.setItem('trainer_options', JSON.stringify(newOptions));
-			return {...state, options: newOptions};
+			const newQueue = buildQueue(state.checkedAlgorithms, newOptions);
+			return {...state, options: newOptions, algorithmQueue: newQueue};
 		}
 
 		case 'RESET_TRAINING':
@@ -246,6 +248,30 @@ function trainerReducer(state: TrainerSessionState, action: TrainerAction): Trai
 			};
 		}
 
+		case 'PREVIOUS_ALGORITHM': {
+			const prevIdx = state.algorithmQueue.findIndex(
+				(a) => a.algorithm === state.currentAlgorithm?.algorithm
+			);
+			if (prevIdx <= 0) {
+				// Kuyruk basindayiz, sona sar
+				const last = state.algorithmQueue[state.algorithmQueue.length - 1];
+				return {
+					...state,
+					currentAlgorithm: last ? {...last} : null,
+					timerState: 'IDLE',
+					currentTimerValue: 0,
+					...SMART_RESET,
+				};
+			}
+			return {
+				...state,
+				currentAlgorithm: {...state.algorithmQueue[prevIdx - 1]},
+				timerState: 'IDLE',
+				currentTimerValue: 0,
+				...SMART_RESET,
+			};
+		}
+
 		// Smart Cube Actions
 		case 'SMART_CONNECTION':
 			return {
@@ -274,6 +300,9 @@ function trainerReducer(state: TrainerSessionState, action: TrainerAction): Trai
 				...state,
 				...SMART_DEFAULTS,
 			};
+
+		case 'SET_CAMERA_PAD':
+			return {...state, showCameraPad: action.payload};
 
 		default:
 			return state;

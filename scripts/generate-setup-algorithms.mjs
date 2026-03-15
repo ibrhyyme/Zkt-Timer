@@ -40,7 +40,7 @@ const CANONICAL_CENTERS = JSON.stringify([0, 1, 2, 3, 4, 5]);
 
 const CATEGORIES_3X3 = [
 	'PLL', 'OLL', 'F2L', '2-Look PLL', '2-Look OLL',
-	'COLL', 'OLLCP', 'ZBLL', 'CMLL', '2-Look CMLL', 'OH-CMLL',
+	'COLL', 'OLLCP', 'ZBLL', 'ZBLS', 'CMLL', '2-Look CMLL', 'OH-CMLL',
 	'WVLS', 'L6E-EO', 'L6E-EOLR', 'VHLS',
 ];
 

@@ -13,6 +13,7 @@ const prisma = () => getPrisma();
 
 import { Scrambow } from 'scrambow';
 import { generate222Scramble } from '../../client/util/cubes/scramble_222';
+import { generateCornersScramble } from '../../client/util/cubes/scramble_333_corners';
 
 // Scramble definitions mapping our internal IDs to Scrambow types and lengths
 const SCRAMBLE_MAP: Record<string, { type: string, length: number }> = {
@@ -57,6 +58,11 @@ function generateScrambleForCubeType(cubeType: string, subset?: string | null): 
     // Custom 2x2 subset scrambler (ported from cstimer)
     if (scrambowType === '222' && subset) {
         return generate222Scramble(subset);
+    }
+
+    // Custom corners-only scrambler (cubejs Kociemba solver)
+    if (scrambowType === '333' && subset === 'corners') {
+        return generateCornersScramble();
     }
 
     // Use subset if provided, otherwise default to mapped type

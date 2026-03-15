@@ -256,6 +256,9 @@
 		"alg_detail_notation": "Algoritmo",
 		"alg_detail_saved": "Algoritmo guardado",
 		"alg_detail_alternatives": "Alternativas",
+		"smart_retry": "Reintentar",
+		"smart_reset_gyro": "Restablecer giroscopio",
+		"smart_camera_angle": "Cámara",
 		"cat_info": {
 			"pll": {
 				"title": "Permutación de la Última Capa",
@@ -288,6 +291,10 @@
 			"zbll": {
 				"title": "Zborowski-Bruchem Última Capa",
 				"desc": "ZBLL resuelve toda la última capa en un solo algoritmo cuando las aristas ya están orientadas (la cross está hecha). Es el set de algoritmos más grande del speedcubing para 3x3, con 493 casos divididos en 7 subsets: T, U, L, H, Pi, S y AS. ZBLL se utiliza en múltiples métodos incluyendo CFOP (después de VHLS/WVLS), ZZ (donde la orientación de aristas se maneja naturalmente) y como complemento de Roux.\n\nAprender ZBLL completo es un compromiso enorme que típicamente toma entre 1 y 2 años de estudio dedicado. La recompensa es significativa: eliminas un paso completo de la resolución, pasando de OLL + PLL (dos algoritmos) a un solo algoritmo para toda la última capa. En la práctica, esto ahorra entre 1 y 3 segundos por resolución para cubers que ya son rápidos, y permite resoluciones de una fluidez impresionante.\n\nLa estrategia de aprendizaje más efectiva es empezar por el subset H (que coincide con COLL cuando las aristas están orientadas), luego T y U (que tienen algoritmos relativamente cortos), y dejar L, Pi, S y AS para el final. Muchos speedcubers de nivel mundial como Tymon Kolasiński utilizan ZBLL parcial combinado con COLL para los subsets que aún no dominan, lo que permite obtener beneficios incrementales sin esperar a completar los 493 casos."
+			},
+			"zbls": {
+				"title": "Zborowski-Bruchem Última Ranura",
+				"desc": "ZBLS (Zborowski-Bruchem Last Slot) resuelve el último par F2L mientras orienta simultáneamente las aristas de la última capa. Es la versión completa de lo que VHLS cubre parcialmente — mientras VHLS solo maneja inserciones de 3 movimientos (32 casos), ZBLS cubre todas las situaciones posibles de la última ranura, con más de 300 algoritmos en 42 subconjuntos.\n\nDespués de ejecutar un algoritmo ZBLS, todas las aristas de la última capa quedan orientadas. Esto prepara perfectamente para ZBLL, que puede resolver toda la última capa en un solo paso. La secuencia ZBLS → ZBLL es uno de los enfoques más eficientes del speedcubing para la última capa.\n\nZBLS se usa principalmente en ZZ y CFOP avanzado. El alto número de algoritmos requiere un compromiso serio, pero muchos cubers aprenden subconjuntos de forma incremental. Para quienes no están listos para el set completo, VHLS ofrece un subconjunto práctico que cubre los casos más frecuentes."
 			},
 			"wvls": {
 				"title": "Winter Variation Última Ranura",
@@ -1378,6 +1385,7 @@
 		"no_bar": "Sin Barra (No Bar)",
 		"eg_all": "EG (Todos)",
 		"edges_only": "Solo Aristas (Edges)",
+		"corners_only": "Solo Esquinas (Corners)",
 		"h_adv": "=== AVANZADO ===",
 		"h_var": "=== VARIACIONES ===",
 		"h_gen": "=== GEN (Restringido) ==="

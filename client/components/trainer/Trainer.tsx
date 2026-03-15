@@ -24,7 +24,24 @@ const b = block('trainer');
 
 function TrainerContent() {
 	const {t} = useTranslation();
-	const {state} = useTrainerContext();
+	const {state, dispatch} = useTrainerContext();
+
+	// Training view'a girerken history entry push et,
+	// swipe back / browser back'te selection'a don
+	useEffect(() => {
+		if (state.view !== 'training') return;
+
+		window.history.pushState({trainerTraining: true}, '');
+
+		const handlePopState = () => {
+			dispatch({type: 'SET_VIEW', payload: 'selection'});
+		};
+
+		window.addEventListener('popstate', handlePopState);
+		return () => {
+			window.removeEventListener('popstate', handlePopState);
+		};
+	}, [state.view, dispatch]);
 
 	if (state.view === 'training') {
 		return (

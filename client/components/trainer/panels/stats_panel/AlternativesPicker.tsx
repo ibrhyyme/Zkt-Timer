@@ -28,19 +28,17 @@ export default function AlternativesPicker() {
 				return;
 			}
 
+			// Kategori icinde isme gore ara (isimler kategori icinde unique)
 			for (const sub of categoryData) {
-				if (sub.subset === currentAlgorithm.subset) {
-					const entry = sub.algorithms.find((a: any) => a.name === currentAlgorithm.name);
-					if (entry && (entry as any).alternatives?.length) {
-						setAlternatives((entry as any).alternatives);
-						return;
-					}
-					break;
+				const entry = sub.algorithms.find((a: any) => a.name === currentAlgorithm.name);
+				if (entry && (entry as any).alternatives?.length) {
+					setAlternatives([entry.algorithm, ...(entry as any).alternatives]);
+					return;
 				}
 			}
 			setAlternatives([]);
 		});
-	}, [currentAlgorithm?.name, currentAlgorithm?.category, currentAlgorithm?.subset]);
+	}, [currentAlgorithm?.name, currentAlgorithm?.category]);
 
 	const handleSelect = useCallback(
 		(alt: string) => {
@@ -60,7 +58,7 @@ export default function AlternativesPicker() {
 	return (
 		<div className={b('alt-picker')}>
 			<label className={b('alt-picker-label')}>
-				{t('trainer.alg_detail_alternatives')} ({alternatives.length})
+				{t('trainer.alg_detail_alternatives')} ({alternatives.length - 1})
 			</label>
 			<div className={b('alt-picker-list')}>
 				{alternatives.map((alt, i) => {

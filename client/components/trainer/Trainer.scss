@@ -1,12 +1,14 @@
 @import '../../styles/config';
 
 .#{$namespace}-trainer {
-	position: absolute;
-	inset: 0;
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
-	max-height: calc(100vh - var(--nav-h));
+	height: calc(100dvh - var(--nav-h));
+
+	@media (max-width: 768px) {
+		height: 100dvh;
+	}
 
 	// ==================== Layout ====================
 	&__selection-layout {
@@ -863,6 +865,47 @@
 		color: rgb(var(--text-color));
 	}
 
+	// -- Alg ismi + alternatifler toggle --
+	&__mobile-alg-header {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.35rem;
+		padding: 0.4rem 0.75rem;
+		cursor: pointer;
+		z-index: 10;
+
+		svg {
+			color: rgba(var(--text-color), 0.5);
+		}
+	}
+
+	&__mobile-alg-name {
+		font-size: 0.95rem;
+		font-weight: 600;
+		color: rgba(var(--text-color), 0.7);
+	}
+
+	&__mobile-alts-dropdown {
+		z-index: 10;
+		max-width: 400px;
+		margin: 0 auto;
+		display: none;
+
+		&--open {
+			display: block;
+			padding: 0 0.75rem 0.5rem;
+		}
+
+		.#{$namespace}-trainer__alt-picker {
+			background: rgba(var(--button-color), 0.5);
+			border-radius: 8px;
+			backdrop-filter: blur(8px);
+			padding: 0.5rem;
+			border-top: none;
+		}
+	}
+
 	&__training-setup {
 		align-self: flex-end;
 		margin-bottom: 1rem;
@@ -876,6 +919,38 @@
 			color: rgb(var(--text-color));
 			word-wrap: break-word;
 			white-space: normal;
+		}
+	}
+
+	// -- Onceki / Sonraki navigasyon butonlari --
+	&__training-nav {
+		position: absolute;
+		top: 50%;
+		transform: translateY(-50%);
+		z-index: 5;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 36px;
+		height: 64px;
+		border: none;
+		border-radius: 8px;
+		background: rgba(var(--button-color), 0.4);
+		color: rgba(var(--text-color), 0.6);
+		cursor: pointer;
+		transition: all 0.2s;
+
+		&:hover {
+			background: rgba(var(--button-color), 0.7);
+			color: rgb(var(--text-color));
+		}
+
+		&--prev {
+			left: 0.25rem;
+		}
+
+		&--next {
+			right: 0.25rem;
 		}
 	}
 
@@ -1376,22 +1451,50 @@
 		}
 
 		&__training-layout {
-			padding: 0.25rem;
-			gap: 0.25rem;
+			display: flex;
+			flex-direction: column;
+			padding: 0;
+			gap: 0;
+			overflow-y: auto;
 		}
 
 		&__training-area {
-			padding: 0.25rem 0.5rem;
+			padding: 0 0.5rem;
 		}
 
+		// ── Info panel: mobilde gizle (alg ismi zaten ortada gorunuyor) ──
 		&__training-info-panel {
-			position: static;
-			max-width: 100%;
-			margin-bottom: 0.5rem;
+			display: none;
 		}
 
-		&__training-alg-name {
-			font-size: 1rem;
+		&__panel--right {
+			max-height: none;
+			flex-shrink: 1;
+			overflow-y: auto;
+		}
+
+		// Alternatifler mobilde gizle (info-panel icinde)
+		&__alt-picker {
+			display: none;
+		}
+
+		// ── Mobil: alt-picker override (info-panel icindeki gizli, dropdown icindeki gorunsun) ──
+		&__mobile-alts-dropdown--open {
+			.#{$namespace}-trainer__alt-picker {
+				display: block;
+			}
+		}
+
+		// ── Nav butonlari mobil ──
+		&__training-nav {
+			width: 28px;
+			height: 48px;
+			border-radius: 6px;
+		}
+
+		// ── Standart mod ──
+		&__training-setup code {
+			font-size: 0.85rem;
 		}
 
 		&__training-cube {
@@ -1411,13 +1514,9 @@
 			margin-bottom: 0.25rem;
 		}
 
-		&__smart-cube-row {
-			flex-direction: column;
-			gap: 0.5rem;
-		}
-
-		&__training-chart {
-			max-width: 100%;
+		// Chart gizle (standart mod)
+		&__training-chart-row {
+			display: none;
 		}
 
 		&__alg-display {
@@ -1433,6 +1532,57 @@
 			font-size: 2.5rem;
 		}
 
+		&__timer-hint {
+			display: none;
+		}
+
+		// ── Smart cube mod ──
+		&__smart-cube-area {
+			gap: 0.25rem;
+		}
+
+		&__smart-cube-viewer {
+			width: 240px !important;
+			height: 240px !important;
+		}
+
+		&__smart-timer-row {
+			flex-direction: column;
+			gap: 0.5rem;
+		}
+
+		// Chart gizle (smart cube mod)
+		&__training-chart--compact {
+			display: none;
+		}
+
+		&__training-chart {
+			max-width: 100%;
+		}
+
+		// ── Stats panel: compact ──
+		&__stats-grid {
+			grid-template-columns: repeat(5, 1fr);
+			gap: 0.25rem;
+		}
+
+		&__stats-item {
+			padding: 0.25rem;
+		}
+
+		&__stats-label {
+			font-size: 0.55rem;
+		}
+
+		&__stats-value {
+			font-size: 0.85rem;
+		}
+
+		&__stats-table tr:nth-child(n + 6) {
+			display: none;
+		}
+
+		// ── Selector ──
 		&__selector-top {
 			flex-direction: column;
 		}
@@ -1718,6 +1868,11 @@
 		padding-top: 0;
 		margin-bottom: 20px;
 		padding-bottom: 20px;
+
+		@media (max-width: 768px) {
+			margin-bottom: 0;
+			padding-bottom: 0.5rem;
+		}
 	}
 
 	// Smart Cube
@@ -1736,73 +1891,7 @@
 		flex-direction: column;
 		align-items: center;
 		width: 100%;
-	}
-
-	&__smart-cube-row {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: 2rem;
-	}
-
-	&__smart-cube-col {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 8px;
-		position: relative;
-	}
-
-	&__smart-moves-col {
-		display: flex;
-		flex-direction: column;
-		gap: 0.75rem;
-		max-width: 260px;
-	}
-
-	&__smart-options {
-		position: absolute;
-		top: 0;
-		right: -4px;
-		display: flex;
-		gap: 4px;
-		z-index: 2;
-
-		button {
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			width: 28px;
-			height: 28px;
-			border: 1px dashed rgba(var(--text-color), 0.25);
-			border-radius: 6px;
-			background: transparent;
-			color: rgba(var(--text-color), 0.6);
-			cursor: pointer;
-			transition: color 0.15s, border-color 0.15s;
-
-			&:hover {
-				color: rgb(var(--text-color));
-				border-color: rgba(var(--text-color), 0.5);
-			}
-		}
-	}
-
-	&__smart-options-active {
-		color: rgb(var(--primary-color)) !important;
-		border-color: rgb(var(--primary-color)) !important;
-	}
-
-	&__smart-device-info {
-		display: flex;
-		align-items: center;
-		gap: 12px;
-		font-size: 0.8rem;
-		font-family: monospace;
-		color: rgba(var(--text-color), 0.7);
-		padding: 4px 10px;
-		border: 1px dashed rgba(var(--text-color), 0.15);
-		border-radius: 6px;
+		gap: 0.5rem;
 	}
 
 	&__smart-cube-wrapper {
@@ -1816,7 +1905,7 @@
 
 	&__smart-camera-pad {
 		position: absolute;
-		bottom: 8px;
+		top: 8px;
 		right: 8px;
 		width: 48px;
 		height: 48px;
@@ -1841,18 +1930,27 @@
 		background: rgba(var(--text-color), 0.3);
 	}
 
-	&__smart-battery {
-		font-size: 0.8rem;
-		font-family: monospace;
-		opacity: 0.7;
-	}
-
 	&__smart-pattern-preview {
-		width: 72px;
-		height: 72px;
+		width: 100px;
+		height: 100px;
 		flex-shrink: 0;
-		overflow: hidden;
 		border-radius: 6px;
+
+		// CubeViewer inline size=200 override — viewBox sayesinde scale olur
+		svg {
+			width: 100% !important;
+			height: 100% !important;
+		}
+
+		twisty-player {
+			width: 100% !important;
+			height: 100% !important;
+		}
+
+		// CubeViewer wrapper min-height override
+		.#{$namespace}-trainer__cube-viewer {
+			min-height: auto;
+		}
 	}
 
 	&__training-alg-name-row {
@@ -1865,9 +1963,11 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: 4px;
+		justify-content: center;
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 1.15rem;
 		font-weight: 600;
+		max-width: 500px;
 	}
 
 	&__smart-move {
@@ -1903,6 +2003,24 @@
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 0.9rem;
 		text-align: center;
+	}
+
+	// -- Smart cube: timer + chart yan yana --
+	&__smart-timer-row {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 1.5rem;
+		width: 100%;
+	}
+
+	&__training-chart--compact {
+		min-width: 180px;
+		max-width: 300px;
+		height: 80px;
+		border-radius: 8px;
+		background: rgba(var(--button-color), 0.15);
+		padding: 0.4rem;
 	}
 }
 

@@ -32,6 +32,7 @@ export const SCRAMBLE_SUBSETS: Record<string, ScrambleSubset[]> = {
         { id: 'pll', label: 'PLL' },
         { id: 'll', label: 'LL (Last Layer)' },
         { id: 'edges', label: 'scramble_subsets.edges_only' },
+        { id: 'corners', label: 'scramble_subsets.corners_only' },
 
         { id: 'h_adv', label: 'scramble_subsets.h_adv', isHeader: true },
         { id: 'zbll', label: 'ZBLL' },

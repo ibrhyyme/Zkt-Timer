@@ -4,6 +4,7 @@ import { ITimerContext } from '../Timer';
 import { setTimerParams } from './params';
 import { getSubsetsForCube } from '../../../util/cubes/scramble_subsets';
 import { generate222Scramble } from '../../../util/cubes/scramble_222';
+import { generateCornersScramble } from '../../../util/cubes/scramble_333_corners';
 
 
 export function getNewScramble(scrambleTypeId: string, seed?: number, subset?: string) {
@@ -42,6 +43,11 @@ export function getNewScramble(scrambleTypeId: string, seed?: number, subset?: s
 	// Custom 2x2 subset scrambler (ported from cstimer)
 	if (scrambowType === '222' && subset) {
 		return generate222Scramble(subset);
+	}
+
+	// Custom corners-only scrambler (cubejs Kociemba solver)
+	if (scrambowType === '333' && subset === 'corners') {
+		return generateCornersScramble();
 	}
 
 	// Custom WCA Clock Scrambler
