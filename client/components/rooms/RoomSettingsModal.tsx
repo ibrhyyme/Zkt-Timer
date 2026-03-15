@@ -165,7 +165,7 @@ export default function RoomSettingsModal({ isOpen, onClose, cubeType, allowedTi
     }
 
     function openStackMatPicker() {
-        dispatch(openModal(<StackMatPicker />));
+        dispatch(openModal(<StackMatPicker />, { width: 400, closeButtonText: t('sessions.done') }));
     }
 
     // Timer logic copied from TimerTab.tsx

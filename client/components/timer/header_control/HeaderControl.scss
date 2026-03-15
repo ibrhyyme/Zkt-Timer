@@ -44,6 +44,23 @@
 			margin-right: 0 !important;
 		}
 
+		// CubePicker truncation (first child is always CubePicker)
+		> .cd-generic-input:first-child {
+			max-width: 140px;
+			min-width: 0;
+
+			.cd-common-button {
+				max-width: 100%;
+
+				span {
+					display: block !important;
+					overflow: hidden;
+					text-overflow: ellipsis;
+					min-width: 0;
+				}
+			}
+		}
+
 		// Session name truncation
 		.cd-session-picker {
 			max-width: 160px;
@@ -136,6 +153,10 @@
 			padding: 3px;
 			gap: 3px;
 
+			> .cd-generic-input:first-child {
+				max-width: 110px;
+			}
+
 			.cd-session-picker {
 				max-width: 100px;
 			}
@@ -157,6 +178,10 @@
 		&__left-controls {
 			padding: 2px;
 			gap: 2px;
+
+			> .cd-generic-input:first-child {
+				max-width: 90px;
+			}
 
 			.cd-session-picker {
 				max-width: 80px;

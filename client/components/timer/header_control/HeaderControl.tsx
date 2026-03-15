@@ -88,7 +88,7 @@ export default function HeaderControl() {
 	}
 
 	function openStackMat() {
-		dispatch(openModal(<StackMatPicker />));
+		dispatch(openModal(<StackMatPicker />, { width: 400, closeButtonText: t('sessions.done') }));
 	}
 
 	const handlers = {

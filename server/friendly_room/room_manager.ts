@@ -14,6 +14,7 @@ const prisma = () => getPrisma();
 import { Scrambow } from 'scrambow';
 import { generate222Scramble } from '../../client/util/cubes/scramble_222';
 import { generateCornersScramble } from '../../client/util/cubes/scramble_333_corners';
+import { generateClockScramble } from '../../client/util/cubes/scramble_clock';
 
 // Scramble definitions mapping our internal IDs to Scrambow types and lengths
 const SCRAMBLE_MAP: Record<string, { type: string, length: number }> = {
@@ -63,6 +64,11 @@ function generateScrambleForCubeType(cubeType: string, subset?: string | null): 
     // Custom corners-only scrambler (cubejs Kociemba solver)
     if (scrambowType === '333' && subset === 'corners') {
         return generateCornersScramble();
+    }
+
+    // Custom WCA Clock Scrambler (random-state solver)
+    if (scrambowType === 'clock' && !subset) {
+        return generateClockScramble();
     }
 
     // Use subset if provided, otherwise default to mapped type

@@ -980,7 +980,7 @@ export default function RoomTimerOverlay({
 
     // Open Stackmat picker
     const openStackmatPicker = () => {
-        dispatch(openModal(<StackMatPicker />));
+        dispatch(openModal(<StackMatPicker />, { width: 400, closeButtonText: t('sessions.done') }));
     };
 
     // Format time for display

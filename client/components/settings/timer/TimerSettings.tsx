@@ -134,7 +134,7 @@ export default function TimerSettings() {
 	}
 
 	function openStackMatPickerModal() {
-		dispatch(openModal(<StackMatPicker />));
+		dispatch(openModal(<StackMatPicker />, { width: 400, closeButtonText: t('sessions.done') }));
 	}
 
 	function getTimerTypeName(tt: string) {

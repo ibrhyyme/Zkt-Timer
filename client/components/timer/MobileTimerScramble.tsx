@@ -31,11 +31,11 @@ export default function MobileTimerScramble() {
 
     // Dynamic font size calculation based on scramble length (ignoring user setting for mobile)
     const getResponsiveFontSize = (len: number) => {
-        if (len < 30) return 30; // 2x2, Skewb, Pyraminx
-        if (len < 60) return 24; // 3x3
-        if (len < 120) return 20; // 4x4, 5x5
-        if (len < 250) return 16; // Megaminx, 6x6
-        return 13; // 7x7 and larger
+        if (len < 30) return 26; // 2x2, Skewb, Pyraminx (1 satir)
+        if (len < 70) return 18; // 3x3, 3x3oh, 3x3bl (max 2 satir)
+        if (len < 120) return 16; // 4x4, 5x5
+        if (len < 250) return 13; // Megaminx, 6x6
+        return 11; // 7x7 and larger
     };
 
     const scrambleLength = context.scramble ? context.scramble.length : 0;
@@ -71,6 +71,11 @@ export default function MobileTimerScramble() {
         }
     }
 
+    // SQ1: "/" satirda kalsin, yeni satir "(" ile baslasin
+    if (cubeType === 'sq1' && scramble) {
+        scramble = scramble.replace(/ \/ /g, '\u00A0/ ');
+    }
+
     // Scramble'ı kopyala
     function handleCopy() {
         if (!scramble) return;
@@ -87,7 +92,7 @@ export default function MobileTimerScramble() {
                     className={b('smart-scramble')}
                     style={{
                         fontSize: timerScrambleSize + 'px',
-                        lineHeight: timerScrambleSize * 1.6 + 'px',
+                        lineHeight: timerScrambleSize * 1.4 + 'px',
                     }}
                 >
                     <SmartScramble />
@@ -107,7 +112,7 @@ export default function MobileTimerScramble() {
                 className={b('text', { megaminx: isMegaminx, copied })}
                 style={{
                     fontSize: timerScrambleSize + 'px',
-                    lineHeight: timerScrambleSize * 1.6 + 'px',
+                    lineHeight: timerScrambleSize * 1.4 + 'px',
                 }}
                 onClick={handleCopy}
                 title={t('mobile_scramble.click_to_copy')}

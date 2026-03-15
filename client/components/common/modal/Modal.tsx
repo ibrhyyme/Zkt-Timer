@@ -22,6 +22,7 @@ export interface IModalProps {
 	noPadding?: boolean;
 	overFlowHidden?: boolean;
 	hideCloseButton?: boolean;
+	closeButtonText?: string;
 	children?: ReactNode;
 	fullSize?: boolean;
 	disableBackdropClick?: boolean;
@@ -37,6 +38,7 @@ export default function Modal(props: IModalProps) {
 		fullSize,
 		description,
 		hideCloseButton,
+		closeButtonText,
 		onClose,
 		noPadding,
 		onComplete,
@@ -118,9 +120,17 @@ export default function Modal(props: IModalProps) {
 		style.zIndex = zIndex;
 	}
 
-	let closeButton = (
+	let closeButton = closeButtonText ? (
 		<button
-			className="absolute top-6 right-6 z-40 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-600/70 hover:bg-slate-500/90 text-slate-200 hover:text-slate-50 border border-slate-400/30 hover:border-slate-400/50 transition-all duration-200 hover:scale-105 hover:shadow-lg backdrop-blur-sm"
+			className={b('close-button', { text: true })}
+			type="button"
+			onClick={clickClose}
+		>
+			{closeButtonText}
+		</button>
+	) : (
+		<button
+			className={b('close-button')}
 			type="button"
 			onClick={clickClose}
 			aria-label="Kapat"

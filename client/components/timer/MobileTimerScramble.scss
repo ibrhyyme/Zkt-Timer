@@ -2,15 +2,16 @@
 
 .cd-mobile-timer-scramble {
     width: 100%;
-    padding: 0.5rem 1rem;
+    padding: 1.5rem 1rem 0.5rem; // Üstten header'a mesafe, alttan timer'a yakın
     text-align: center;
     box-sizing: border-box;
 
-    // Max height constraint (approx 35% of screen height) to ensure timer visibility
-    min-height: 140px; // 3 satırlık 3x3 scramble için sabit alan (zıplamayı önler)
+    // Esnek yükseklik — kısa scramble'lar aşağıda, uzunlar yukarı büyür
+    min-height: 80px;
 
     @media (max-height: 745px) {
-        min-height: 100px;
+        min-height: 60px;
+        padding-top: 1rem;
     }
 
     max-height: 35vh;
@@ -19,7 +20,7 @@
 
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-end; // Metin altta durur (timer'a yakın)
 
     // SmartScramble wrapper - flex-wrap ile alt satıra geçsin
     &__smart-scramble {
@@ -38,9 +39,10 @@
 
     &__text {
         color: rgba(var(--text-color), 0.85);
-        font-family: 'Inter', monospace;
+        font-family: 'Roboto Mono', monospace;
         white-space: pre-wrap;
         word-break: break-word;
+        word-spacing: -2px;
         cursor: pointer;
         transition: color 0.15s ease;
         position: relative;

@@ -107,6 +107,7 @@
 		transition: all 0.2s ease-in-out;
 		z-index: 10000;
 		font-size: 1.125rem;
+		cursor: pointer;
 
 		&:hover {
 			background: rgba(var(--button-color), 0.9);
@@ -119,6 +120,16 @@
 		&:active {
 			transform: translateY(0) scale(1);
 			box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+		}
+
+		&--text {
+			width: auto;
+			height: auto;
+			padding: 6px 16px;
+			font-size: 0.9rem;
+			font-weight: 600;
+			font-family: 'Source Sans Pro', sans-serif;
+			border-radius: 8px;
 		}
 	}
 
@@ -166,11 +177,11 @@
 			font-size: clamp(0.875rem, 2.5vw, 1rem);
 		}
 
-		// Close button mobilde üstte sağda sabit
-		.absolute {
-			position: sticky !important;
+		// Close button mobilde ustte sagda sabit
+		#{$self}__close-button {
+			position: sticky;
 			top: 1rem;
-			right: 1rem;
+			float: right;
 			z-index: 1000;
 		}
 	}
