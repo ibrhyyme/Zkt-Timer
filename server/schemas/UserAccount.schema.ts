@@ -36,6 +36,9 @@ class IPublicUserAccount {
 	@Field()
 	is_pro: boolean;
 
+	@Field()
+	is_premium: boolean;
+
 	@Field({ nullable: true })
 	last_solve_at?: Date;
 

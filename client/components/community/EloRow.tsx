@@ -14,9 +14,9 @@ export default function EloRow(props: Props) {
 
 	return (
 		<div className="mb-2 flex w-full max-w-full flex-row items-center justify-between rounded bg-module p-4">
-			<div className="flex flex-row items-center">
+			<div className="flex min-w-0 flex-1 flex-row items-center">
 				<div
-					className={classNames('flex h-10 w-10 items-center justify-center rounded text-text', {
+					className={classNames('flex h-10 w-10 shrink-0 items-center justify-center rounded text-text', {
 						'bg-button': rank > 3,
 						'bg-amber-300': rank === 1,
 						'text-amber-800': rank === 1,
@@ -28,11 +28,11 @@ export default function EloRow(props: Props) {
 				>
 					<span className="table text-xl">#{rank}</span>
 				</div>
-				<div className="ml-3">
+				<div className="ml-3 min-w-0">
 					<Avatar hideBadges user={user} />
 				</div>
 			</div>
-			<div className="flex flex-row items-center">
+			<div className="ml-4 flex shrink-0 flex-row items-center">
 				<div className="flex flex-col items-center">
 					<span className="table text-3xl font-bold text-primary">{elo_333_rating}</span>
 					<span className="table text-sm text-text/50">rating</span>

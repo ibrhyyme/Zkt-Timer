@@ -64,6 +64,44 @@ export default function UserActions(props: Props) {
 		toastSuccess(`Successfully ${flagMessage} user`);
 	}
 
+	async function toggleProStatus() {
+		const query = gql`
+			mutation Mutate($userId: String, $isPro: Boolean) {
+				setProStatus(userId: $userId, isPro: $isPro) {
+					id
+					is_pro
+				}
+			}
+		`;
+
+		await gqlMutate(query, {
+			userId: user.id,
+			isPro: !user.is_pro,
+		});
+
+		updateUser();
+		toastSuccess(`Successfully ${user.is_pro ? 'removed Pro from' : 'gave Pro to'} user`);
+	}
+
+	async function togglePremiumStatus() {
+		const query = gql`
+			mutation Mutate($userId: String, $isPremium: Boolean) {
+				setPremiumStatus(userId: $userId, isPremium: $isPremium) {
+					id
+					is_premium
+				}
+			}
+		`;
+
+		await gqlMutate(query, {
+			userId: user.id,
+			isPremium: !user.is_premium,
+		});
+
+		updateUser();
+		toastSuccess(`Successfully ${user.is_premium ? 'removed Premium from' : 'gave Premium to'} user`);
+	}
+
 	function toggleBan() {
 		if (banned) {
 			unbanUser();
@@ -84,6 +122,18 @@ export default function UserActions(props: Props) {
 				primary={!user.verified}
 				warning={user.verified}
 				onClick={toggleVerifyUser}
+			/>
+			<Button
+				text={user.is_pro ? 'Remove Pro' : 'Make Pro'}
+				primary={!user.is_pro}
+				warning={user.is_pro}
+				onClick={toggleProStatus}
+			/>
+			<Button
+				text={user.is_premium ? 'Remove Premium' : 'Make Premium'}
+				primary={!user.is_premium}
+				warning={user.is_premium}
+				onClick={togglePremiumStatus}
 			/>
 		</div>
 	);

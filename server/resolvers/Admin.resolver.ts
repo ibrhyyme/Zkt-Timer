@@ -69,6 +69,7 @@ export class AdminResolver {
 					banned_forever: true,
 					banned_until: true,
 					is_pro: true,
+					is_premium: true,
 					admin: true,
 					mod: true,
 					integrations: true,
@@ -160,6 +161,38 @@ export class AdminResolver {
 
 		await updateUserAccountWithParams(targetUser.id, {
 			verified,
+		});
+
+		return getUserById(userId);
+	}
+
+	@Authorized([Role.ADMIN])
+	@Mutation(() => UserAccount)
+	async setProStatus(
+		@Ctx() context: GraphQLContext,
+		@Arg('userId') userId: string,
+		@Arg('isPro') isPro: boolean
+	) {
+		const targetUser = await getUserByIdOrThrow404(userId);
+
+		await updateUserAccountWithParams(targetUser.id, {
+			is_pro: isPro,
+		});
+
+		return getUserById(userId);
+	}
+
+	@Authorized([Role.ADMIN])
+	@Mutation(() => UserAccount)
+	async setPremiumStatus(
+		@Ctx() context: GraphQLContext,
+		@Arg('userId') userId: string,
+		@Arg('isPremium') isPremium: boolean
+	) {
+		const targetUser = await getUserByIdOrThrow404(userId);
+
+		await updateUserAccountWithParams(targetUser.id, {
+			is_premium: isPremium,
 		});
 
 		return getUserById(userId);

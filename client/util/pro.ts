@@ -4,6 +4,10 @@ export {
 	isNotPro,
 	isLoggedInAndPro,
 	isLoggedInAndNotPro,
+	isPremium,
+	isNotPremium,
+	isLoggedInAndPremium,
+	isLoggedInAndNotPremium,
 	isProEnabled,
 	usePro
 } from '../lib/pro';

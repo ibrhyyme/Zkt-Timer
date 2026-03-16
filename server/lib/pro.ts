@@ -9,17 +9,33 @@ export const isProEnabled = (): boolean => {
 };
 
 export function isPro(user?: InternalUserAccount): boolean {
-	return user?.is_pro ?? false;
+	return user?.is_pro || user?.is_premium || false;
 }
 
 export function isNotPro(user?: InternalUserAccount): boolean {
-	return !user?.is_pro;
+	return !isPro(user);
 }
 
 export function isLoggedInAndPro(user?: InternalUserAccount): boolean {
-	return !!user && !!user.is_pro;
+	return !!user && isPro(user);
 }
 
 export function isLoggedInAndNotPro(user?: InternalUserAccount): boolean {
-	return !!user && !user.is_pro;
+	return !!user && !isPro(user);
+}
+
+export function isPremium(user?: InternalUserAccount): boolean {
+	return user?.is_premium ?? false;
+}
+
+export function isNotPremium(user?: InternalUserAccount): boolean {
+	return !isPremium(user);
+}
+
+export function isLoggedInAndPremium(user?: InternalUserAccount): boolean {
+	return !!user && isPremium(user);
+}
+
+export function isLoggedInAndNotPremium(user?: InternalUserAccount): boolean {
+	return !!user && !isPremium(user);
 }

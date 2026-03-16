@@ -78,4 +78,24 @@
 			}
 		}
 	}
+
+	@media (max-width: 768px) {
+		padding: 8px 12px;
+		border-width: 3px;
+		border-radius: 20px;
+
+		> p {
+			font-size: 0.95rem;
+		}
+
+		&__preview {
+			width: 30px;
+			height: 22px;
+			margin-right: 6px;
+		}
+
+		&__pro {
+			right: 12px;
+		}
+	}
 }
