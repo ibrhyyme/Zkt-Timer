@@ -7,6 +7,7 @@ export enum Role {
 	MOD = 'MOD',
 	LOGGED_IN = 'LOGGED_IN',
 	PRO = 'PRO',
+	PREMIUM = 'PREMIUM',
 	DOCUMENT_OWNER = 'DOCUMENT_OWNER',
 }
 
@@ -24,7 +25,15 @@ export const customAuthChecker: AuthChecker<GraphQLContext> = ({root, args, cont
 				if (!isProEnabled()) {
 					passed = passed && true;
 				} else {
-					passed = passed && context?.user?.is_pro;
+					passed = passed && (context?.user?.is_pro || context?.user?.is_premium);
+				}
+				break;
+			}
+			case Role.PREMIUM: {
+				if (!isProEnabled()) {
+					passed = passed && true;
+				} else {
+					passed = passed && context?.user?.is_premium;
 				}
 				break;
 			}

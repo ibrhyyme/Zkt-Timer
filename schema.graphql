@@ -748,6 +748,7 @@ type PublicUserAccount implements IPublicUserAccount {
   username: String
   verified: Boolean
   is_pro: Boolean
+  is_premium: Boolean
   last_solve_at: DateTime
   banned_forever: Boolean
   banned_until: DateTime
@@ -767,6 +768,7 @@ interface IPublicUserAccount {
   username: String
   verified: Boolean
   is_pro: Boolean
+  is_premium: Boolean
   last_solve_at: DateTime
   banned_forever: Boolean
   banned_until: DateTime
@@ -795,6 +797,7 @@ type UserAccount implements IPublicUserAccount & IUserAccount {
   username: String
   verified: Boolean
   is_pro: Boolean
+  is_premium: Boolean
   last_solve_at: DateTime
   banned_forever: Boolean
   banned_until: DateTime
@@ -822,6 +825,7 @@ interface IUserAccount implements IPublicUserAccount {
   username: String
   verified: Boolean
   is_pro: Boolean
+  is_premium: Boolean
   last_solve_at: DateTime
   banned_forever: Boolean
   banned_until: DateTime
@@ -875,6 +879,7 @@ type UserAccountForAdmin implements IPublicUserAccount & IUserAccount & IUserAcc
   username: String
   verified: Boolean
   is_pro: Boolean
+  is_premium: Boolean
   last_solve_at: DateTime
   banned_forever: Boolean
   banned_until: DateTime
@@ -908,6 +913,7 @@ interface IUserAccountForAdmin implements IUserAccount & IPublicUserAccount {
   username: String
   verified: Boolean
   is_pro: Boolean
+  is_premium: Boolean
   last_solve_at: DateTime
   banned_forever: Boolean
   banned_until: DateTime
@@ -941,6 +947,7 @@ type InternalUserAccount implements IPublicUserAccount & IUserAccount & IUserAcc
   username: String
   verified: Boolean
   is_pro: Boolean
+  is_premium: Boolean
   last_solve_at: DateTime
   banned_forever: Boolean
   banned_until: DateTime
@@ -976,6 +983,7 @@ interface IInternalUserAccount implements IUserAccountForAdmin & IUserAccount & 
   username: String
   verified: Boolean
   is_pro: Boolean
+  is_premium: Boolean
   last_solve_at: DateTime
   banned_forever: Boolean
   banned_until: DateTime

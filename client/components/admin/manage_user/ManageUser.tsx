@@ -24,6 +24,7 @@ const GET_USER_FOR_ADMIN = gql`
 			created_at
 			banned_forever
 			is_pro
+			is_premium
 			banned_until
 			admin
 			mod
