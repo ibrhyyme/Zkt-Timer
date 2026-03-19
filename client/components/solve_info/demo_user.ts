@@ -15,5 +15,6 @@ export const demoUser = {
 	banned_until: null,
 	badges: [],
 	is_pro: false,
+	is_premium: false,
 	last_solve_at: new Date(),
 };

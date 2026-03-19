@@ -12,7 +12,7 @@ import { saveSolve } from './save';
 import { resetScramble } from './scramble';
 import { ITimerContext } from '../Timer';
 import { SolveInput } from '../../../../server/schemas/Solve.schema';
-import { getSettings } from '../../../db/settings/query';
+import { getSettings, getSetting } from '../../../db/settings/query';
 import { getTimerStore } from '../../../util/store/getTimer';
 import { resourceUri } from '../../../util/storage';
 import { smartCubeSelected } from './util';
@@ -147,14 +147,20 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 			overridesCombined.smart_turns = JSON.stringify(solutionTurns);
 		}
 
-		if (context.smartPickUpTime) {
-			overridesCombined.smart_pick_up_time = context.smartPickUpTime;
-		}
+		// Alma/bırakma süreleri sadece use_space_with_smart_cube modunda anlamlı.
+		// Pure smart cube modunda timer ilk hamleyle başlayıp çözümle duruyor,
+		// bu değerler sadece React/BLE processing gecikmesini yansıtır.
+		const useSpaceWithSmart = getSetting('use_space_with_smart_cube');
+		if (useSpaceWithSmart) {
+			if (context.smartPickUpTime) {
+				overridesCombined.smart_pick_up_time = context.smartPickUpTime;
+			}
 
-		if (context.lastSmartMoveTime) {
-			let pd = (now.getTime() - context.lastSmartMoveTime) / 1000;
-			if (pd < 0) pd = 0;
-			overridesCombined.smart_put_down_time = pd;
+			if (context.lastSmartMoveTime) {
+				let pd = (now.getTime() - context.lastSmartMoveTime) / 1000;
+				if (pd < 0) pd = 0;
+				overridesCombined.smart_put_down_time = pd;
+			}
 		}
 
 		saveSolve(context, finalTime, scramble, timeStartedAt.getTime(), now.getTime(), false, false, overridesCombined);
