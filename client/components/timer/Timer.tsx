@@ -112,7 +112,7 @@ export default function Timer(props: TimerProps) {
 	}
 
 	let smartCubeVisual: ReactNode = null;
-	if (timerType === 'smart' && cubeType === '333') {
+	if (timerType === 'smart' && cubeType === '333' && !manualEntry) {
 		smartCubeVisual = <SmartCube />;
 	}
 
@@ -127,7 +127,7 @@ export default function Timer(props: TimerProps) {
 				<TimerScramble />
 				<div
 					className={b('main-time', {
-						smart: timerType === 'smart' && cubeType === '333',
+						smart: timerType === 'smart' && cubeType === '333' && !manualEntry,
 					})}
 				>
 					<TimeDisplay />
@@ -146,7 +146,7 @@ export default function Timer(props: TimerProps) {
 				<MobileTimerScramble />
 
 				{/* Akıllı küp modunda timer ve küp yan yana, normal modda sadece timer */}
-				{timerType === 'smart' && cubeType === '333' ? (
+				{timerType === 'smart' && cubeType === '333' && !manualEntry ? (
 					<div className={b('mobile-smart-row')}>
 						{/* Timer alanı - sol taraf */}
 						<div className={`${b('mobile-timer', { smart: true })} ${b('main', { mobile: true })}`}>
