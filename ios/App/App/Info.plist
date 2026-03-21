@@ -45,5 +45,9 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Zkt-Timer needs Bluetooth to connect to your smart cube for real-time solve tracking.</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>Zkt-Timer needs Bluetooth to communicate with smart cubes.</string>
 </dict>
 </plist>
