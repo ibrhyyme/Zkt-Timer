@@ -110,19 +110,13 @@ function appUseRouteForPage(routePath, route: PageContext) {
 			return;
 		}
 		if (routePath === '/' && !me) {
-			res.status(302).redirect('/welcome');
+			res.status(301).redirect('/welcome');
 			return;
 		}
 
 		// Redirect logged-in users from welcome page to timer
 		if (routePath === '/welcome' && me) {
 			res.status(302).redirect('/timer');
-			return;
-		}
-
-		// Redirect unauthenticated users from timer to welcome (Google sees demo as Soft 404)
-		if (routePath === '/timer' && !me) {
-			res.status(302).redirect('/welcome');
 			return;
 		}
 

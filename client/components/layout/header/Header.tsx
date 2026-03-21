@@ -80,19 +80,14 @@ export const getStructuredData = (currentPath: string, finalTitle: string, final
 		'alternateName': 'Zeka Küpü Timer',
 		'description': 'Türkiye\'nin en gelişmiş zeka küpü ve rubik küp timer uygulaması. Speedcubing timer\'ı.',
 		'url': SITE_URL,
-		'applicationCategory': 'UtilitiesApplication',
+		'applicationCategory': 'GameApplication',
+		'applicationSubCategory': 'PuzzleGame',
 		'operatingSystem': 'Web Browser, Android, iOS',
+		'installUrl': SITE_URL,
 		'offers': {
 			'@type': 'Offer',
 			'price': '0',
 			'priceCurrency': 'TRY'
-		},
-		'aggregateRating': {
-			'@type': 'AggregateRating',
-			'ratingValue': '4.8',
-			'ratingCount': '150',
-			'bestRating': '5',
-			'worstRating': '1'
 		},
 		'featureList': [
 			'Zeka küpü timer',
@@ -146,13 +141,6 @@ export const getStructuredData = (currentPath: string, finalTitle: string, final
 				'name': 'Ücretsiz Kayıt Ol',
 				'description': 'İstatistiklerini bulutta sakla ve analiz et.',
 				'url': `${SITE_URL}/signup`
-			},
-			{
-				'@type': 'SiteNavigationElement',
-				'position': 6,
-				'name': 'ibrhyyme Profili',
-				'description': 'Geliştiricinin profili',
-				'url': `${SITE_URL}/user/ibrhyyme`
 			}
 		]
 	};
@@ -331,18 +319,32 @@ export default function Header(props: Props) {
 			<meta name="description" content={finalDesc} />
 			<meta name="keywords" content={DEFAULT_KEYWORDS} />
 			<meta name="author" content="ZKT Timer" />
+
+			{/* Twitter Card */}
+			<meta name="twitter:card" content="summary_large_image" />
 			<meta name="twitter:title" content={finalTitle} />
 			<meta name="twitter:description" content={finalDesc} />
 			<meta name="twitter:url" content={fullUrl} />
 			<meta name="twitter:image" content={secureImage} />
+
+			{/* Open Graph */}
 			<meta property="og:title" content={finalTitle} />
 			<meta property="og:description" content={finalDesc} />
 			<meta property="og:url" content={fullUrl} />
 			<meta property="og:image" content={secureImage} />
 			<meta property="og:image:secure_url" content={secureImage} />
+			<meta property="og:image:width" content="1200" />
+			<meta property="og:image:height" content="630" />
 			<meta property="og:site_name" content="ZKT Timer - Zeka Küpü Timer" />
 			<meta property="og:type" content="website" />
 			<meta property="og:locale" content="tr_TR" />
+
+			{/* hreflang - Coklu dil destegi */}
+			<link rel="alternate" hrefLang="tr" href={fullUrl} />
+			<link rel="alternate" hrefLang="en" href={fullUrl} />
+			<link rel="alternate" hrefLang="es" href={fullUrl} />
+			<link rel="alternate" hrefLang="ru" href={fullUrl} />
+			<link rel="alternate" hrefLang="x-default" href={fullUrl} />
 
 			{/* JSON-LD Structured Data for Google Sitelinks */}
 			<script type="application/ld+json">

@@ -68,8 +68,20 @@ export default function BleScanningModal({ mode, onCancel, onRetry }: BleScannin
 
 			{phase === 'error' && (
 				<>
-					<h3 className={b('title', { error: true })}>{t('smart_cube.scan_failed')}</h3>
-					<p className={b('description')}>{t('smart_cube.scan_failed_desc')}</p>
+					<h3 className={b('title', { error: true })}>
+						{smartCubeScanError === 'permission'
+							? t('smart_cube.permission_denied')
+							: smartCubeScanError === 'disabled'
+								? t('smart_cube.bluetooth_disabled')
+								: t('smart_cube.scan_failed')}
+					</h3>
+					<p className={b('description')}>
+						{smartCubeScanError === 'permission'
+							? t('smart_cube.permission_denied_desc')
+							: smartCubeScanError === 'disabled'
+								? t('smart_cube.bluetooth_disabled_desc')
+								: t('smart_cube.scan_failed_desc')}
+					</p>
 					<div className={b('actions')}>
 						{onRetry && (
 							<Button

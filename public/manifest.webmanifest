@@ -1,7 +1,7 @@
 {
-  "name": "Zkt-Timer",
-  "short_name": "ZktTimer",
-  "description": "Speedcubing timer & tools",
+  "name": "ZKT Timer - Zeka Küpü Timer",
+  "short_name": "ZKT Timer",
+  "description": "Türkiye'nin en gelişmiş zeka küpü ve rubik küp timer platformu. Profesyonel timer, canlı yarış odaları, akıllı küp desteği, detaylı istatistikler ve Türkiye sıralaması.",
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
@@ -11,6 +11,8 @@
   "orientation": "portrait",
   "background_color": "#0F142B",
   "theme_color": "#0F142B",
+  "lang": "tr",
+  "categories": ["games", "utilities", "sports"],
   "icons": [
     {
       "src": "/images/zkt-logo.png",
@@ -36,5 +38,7 @@
       "type": "image/png",
       "purpose": "maskable"
     }
-  ]
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
 }
