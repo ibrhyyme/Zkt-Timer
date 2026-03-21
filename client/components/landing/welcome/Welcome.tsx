@@ -43,14 +43,16 @@ export default function Welcome() {
 				<meta name="description" content={desc} />
 				<meta name="keywords" content={DEFAULT_KEYWORDS} />
 				<meta name="author" content="ZKT Timer" />
-				<link rel="canonical" href={`${SITE_URL}/welcome`} />
+				<link rel="canonical" href={`${SITE_URL}/`} />
 
 				{/* Open Graph */}
 				<meta property="og:title" content={title} />
 				<meta property="og:description" content={desc} />
 				<meta property="og:image" content={ogImage} />
 				<meta property="og:image:secure_url" content={ogImage} />
-				<meta property="og:url" content={`${SITE_URL}/welcome`} />
+				<meta property="og:image:width" content="1200" />
+				<meta property="og:image:height" content="630" />
+				<meta property="og:url" content={`${SITE_URL}/`} />
 				<meta property="og:site_name" content="ZKT Timer - Zeka Küpü Timer" />
 				<meta property="og:type" content="website" />
 				<meta property="og:locale" content="tr_TR" />
@@ -60,7 +62,14 @@ export default function Welcome() {
 				<meta name="twitter:title" content={title} />
 				<meta name="twitter:description" content={desc} />
 				<meta name="twitter:image" content={ogImage} />
-				<meta name="twitter:url" content={`${SITE_URL}/welcome`} />
+				<meta name="twitter:url" content={`${SITE_URL}/`} />
+
+				{/* hreflang */}
+				<link rel="alternate" hrefLang="tr" href={`${SITE_URL}/`} />
+				<link rel="alternate" hrefLang="en" href={`${SITE_URL}/`} />
+				<link rel="alternate" hrefLang="es" href={`${SITE_URL}/`} />
+				<link rel="alternate" hrefLang="ru" href={`${SITE_URL}/`} />
+				<link rel="alternate" hrefLang="x-default" href={`${SITE_URL}/`} />
 
 				{/* JSON-LD Structured Data */}
 				<script type="application/ld+json">{JSON.stringify(websiteSchema)}</script>

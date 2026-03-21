@@ -197,14 +197,10 @@
 	}
 
 	&--mobile {
-		#{$self}__header-control {
-			top: 0;
-			padding: 8px 12px !important;
+		.#{$namespace}-timer-header-control {
 			position: fixed;
 			width: 100%;
 			z-index: 100;
-			background: rgba(var(--background-color), 0.95);
-			backdrop-filter: blur(10px);
 		}
 
 		// Viewport responsive layout (Strict locking)
@@ -345,10 +341,10 @@
 		flex-direction: column;
 		width: 100%;
 		flex: 1; // Kalan alanı doldur
-		padding-top: 56px;
+		padding-top: calc(56px + env(safe-area-inset-top, 0px));
 
 		@media (max-height: 745px) {
-			padding-top: 45px; // Header'a yaklaştır
+			padding-top: calc(45px + env(safe-area-inset-top, 0px)); // Header'a yaklaştır
 			gap: 0.2rem; // Öğeler arası boşluğu azalt
 		}
 

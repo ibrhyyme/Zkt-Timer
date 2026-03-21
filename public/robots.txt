@@ -3,8 +3,10 @@
 
 User-agent: *
 
-# Ana sayfalar - İzin ver
+# Ana sayfalar - Izin ver
 Allow: /
+Allow: /welcome
+Allow: /timer
 Allow: /login
 Allow: /signup
 Allow: /rooms
@@ -12,14 +14,16 @@ Allow: /solves
 Allow: /stats
 Allow: /play
 Allow: /community/leaderboards
-Allow: /trainer/public-trainers
+Allow: /trainer
+Allow: /pro
 Allow: /terms
 Allow: /privacy
+Allow: /credits
 
-# Kullanıcı profilleri - İzin ver
+# Kullanici profilleri - Izin ver
 Allow: /user/
 
-# İndekslenmemesi gereken sayfalar - Engelle
+# Indekslenmemesi gereken sayfalar - Engelle
 Disallow: /settings
 Disallow: /settings/
 Disallow: /sessions
@@ -32,11 +36,11 @@ Disallow: /oauth/
 Disallow: /force-log-out
 Disallow: /forgot
 Disallow: /unsub-emails
+Disallow: /demo
 
 # Teknik ve API endpointleri - Engelle
 Disallow: /api/
 Disallow: /graphql
-Disallow: /_next/
 Disallow: /public/uploads/temp/
 
 # Sitemap konumu

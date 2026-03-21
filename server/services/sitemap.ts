@@ -13,8 +13,9 @@ const SITEMAP_S3_PATH = 'site/sitemaps';
 
 interface SiteMapUrl {
 	location: string;
-	changeFrequency?: 'hourly' | 'daily' | 'weekly' | 'monthly';
+	changeFrequency?: 'hourly' | 'daily' | 'weekly' | 'monthly' | 'yearly';
 	priority?: number;
+	lastmod?: string;
 }
 
 // TODO need some sort of worker pool cuz there are lots of sync calls
@@ -46,14 +47,13 @@ export async function initSiteMapGeneration() {
 	createLocalSiteMapSchemasFolder();
 
 	const defaultSiteMapUrl = await uploadDefaultSiteMapUrls();
-	// Profil sayfalarını sitemap'ten çıkardık - sadece ana sayfalar önemli
-	// const profileSiteMapUrls = await fetchAndGenerateSiteMapForAllProfiles();
+	const profileSiteMapUrls = await fetchAndGenerateSiteMapForAllProfiles();
 
 	logger.info('Finished writing default sitemap', {
 		defaultSiteMapUrl,
 	});
 
-	const allSiteMapUrls = [defaultSiteMapUrl].filter(Boolean) as string[];
+	const allSiteMapUrls = [defaultSiteMapUrl, ...profileSiteMapUrls].filter(Boolean) as string[];
 	await writeSiteMapIndices(allSiteMapUrls);
 	// Cache invalidation removed - not needed for local storage
 
@@ -126,9 +126,21 @@ async function uploadSiteMapToS3(fileName: string) {
 	return `https://zktimer.app/public/uploads/${cdnPath}`;
 }
 
+function getChangeFrequency(path: string): SiteMapUrl['changeFrequency'] {
+	const dailyPaths = ['/', '/welcome', '/timer', '/trainer', '/rooms', '/play', '/community/leaderboards'];
+	const weeklyPaths = ['/pro', '/solves', '/stats'];
+	const yearlyPaths = ['/terms', '/privacy', '/credits'];
+
+	if (dailyPaths.includes(path)) return 'daily';
+	if (weeklyPaths.includes(path)) return 'weekly';
+	if (yearlyPaths.includes(path)) return 'yearly';
+	return 'monthly';
+}
+
 function getDefaultSiteMapUrls() {
 	const baseUri = process.env.BASE_URI;
 	const urls: SiteMapUrl[] = [];
+	const today = new Date().toISOString().split('T')[0];
 
 	// Sitemap'e dahil edilmemesi gereken path'ler
 	const excludedPaths = [
@@ -162,6 +174,8 @@ function getDefaultSiteMapUrls() {
 		urls.push({
 			location: `${baseUri}${route.path}`,
 			priority,
+			changeFrequency: getChangeFrequency(route.path),
+			lastmod: today,
 		});
 	}
 
@@ -304,12 +318,14 @@ function convertSchemaUrlToXml(url: SiteMapUrl) {
 	const location = url.location ? `<loc>${url.location}</loc>` : '';
 	const priority = url.priority ? `<priority>${url.priority}</priority>` : '';
 	const changeFreq = url.changeFrequency ? `<changefreq>${url.changeFrequency}</changefreq>` : '';
+	const lastmod = url.lastmod ? `<lastmod>${url.lastmod}</lastmod>` : '';
 
 	return `
 		<url>
 			${location}
 			${priority}
 			${changeFreq}
+			${lastmod}
 		</url>
 	`;
 }

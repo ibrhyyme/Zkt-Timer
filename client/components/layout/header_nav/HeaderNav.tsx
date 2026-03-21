@@ -106,14 +106,12 @@ export default function HeaderNav() {
 	}, []);
 
 	function windowResize() {
-		// Basit bir User Agent kontrolü ile mobil/tablet tespiti
-		const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
-		const isMobileDevice = /android|ipad|iphone|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase());
-
-		// 1. Ekran 768px veya altındaysa
-		// 2. Veya cihaz bir mobil/tablet cihazıysa (genişlik ne olursa olsun mobil modda kalsın isteniyor)
-		// 3. Veya ekran yüksekliği 500px altındaysa (landscape telefon)
-		const shouldBeMobile = window.innerWidth <= 768 || isMobileDevice || window.innerHeight <= 500;
+		// Ekran boyutuna göre mobil/desktop tespiti
+		// Telefon (portrait kilitli): genişlik < 768 → mobil
+		// Tablet (landscape kilitli): genişlik > 768 → desktop
+		// Web: pencere boyutuna göre karar verilir
+		// innerHeight <= 500: web browser'da landscape telefon tespiti
+		const shouldBeMobile = window.innerWidth <= 768 || window.innerHeight <= 500;
 
 		if (shouldBeMobile && !mobileMode) {
 			dispatch(setGeneral('mobile_mode', true));

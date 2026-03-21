@@ -226,7 +226,6 @@ export default function Timer(props: TimerProps) {
 				<TimerContext.Provider value={context}>
 					<KeyWatcher>
 						<HeaderControl />
-						<HeaderControl />
 						{/* Timer çalışırken mobilde tüm ekrana dokunarak durdurma overlay'i ve Inspection iptali */}
 						{mobileMode && (
 							<div

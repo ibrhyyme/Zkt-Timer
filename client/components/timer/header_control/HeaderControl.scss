@@ -143,6 +143,10 @@
 @media (max-width: 768px) {
 	.#{$namespace}-timer-header-control {
 		padding: calc(10px + env(safe-area-inset-top, 0px)) 12px 10px 12px !important;
+		grid-template-columns: 1fr 0px auto;
+		background: rgba(var(--background-color), 0.95);
+		backdrop-filter: blur(10px);
+		-webkit-backdrop-filter: blur(10px);
 
 		&__left-controls {
 			background: rgba(var(--module-color), 0.9);

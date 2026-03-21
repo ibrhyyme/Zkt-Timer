@@ -1,6 +1,7 @@
 export interface BleDevice {
 	deviceId: string;
 	name: string;
+	manufacturerData?: Map<number, DataView>;
 }
 
 export interface BleRequestDeviceOptions {

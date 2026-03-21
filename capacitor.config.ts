@@ -8,6 +8,9 @@ const config: CapacitorConfig = {
         url: 'https://zktimer.app',
         cleartext: false,
     },
+    android: {
+        webContentsDebuggingEnabled: true,
+    },
     plugins: {
         SplashScreen: {
             launchAutoHide: true,

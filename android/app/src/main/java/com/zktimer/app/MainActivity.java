@@ -1,5 +1,7 @@
 package com.zktimer.app;
 
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.View;
 import androidx.core.view.ViewCompat;
@@ -13,6 +15,12 @@ public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Telefon: sadece dikey, Tablet: sadece yatay
+        boolean isTablet = (getResources().getConfiguration().smallestScreenWidthDp >= 600);
+        setRequestedOrientation(isTablet
+            ? ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+            : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         // Status bar ve navigation bar ikonlarını açık renk yap (koyu tema için)
         WindowInsetsControllerCompat insetsController =
