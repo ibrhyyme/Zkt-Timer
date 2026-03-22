@@ -181,9 +181,9 @@ export default function TimerSettings() {
 					onClick={() => toggleSetting('pb_confetti')}
 				/>
 				<TimerSettingsToggle
-					label={t('timer_settings.use_2d_scramble_visual')}
-					description={t('timer_settings.use_2d_scramble_visual_desc')}
-					isActive={use2dScramble}
+					label={t('timer_settings.use_3d_scramble_visual')}
+					description={t('timer_settings.use_3d_scramble_visual_desc')}
+					isActive={!use2dScramble}
 					onClick={() => toggleSetting('use_2d_scramble_visual')}
 				/>
 			</TimerSettingsGroup>
