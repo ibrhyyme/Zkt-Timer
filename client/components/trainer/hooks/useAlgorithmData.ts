@@ -232,6 +232,49 @@ export function importAlgorithms(file: File): Promise<boolean> {
 	});
 }
 
+// --- Custom Alternatives ---
+
+const CUSTOM_ALTS_KEY = 'trainer_customAlternatives';
+
+function makeCustomAltKey(category: string, subset: string, name: string): string {
+	return `${category}::${subset}::${name}`;
+}
+
+export function getCustomAlternatives(category: string, subset: string, name: string): string[] {
+	try {
+		const data = JSON.parse(localStorage.getItem(CUSTOM_ALTS_KEY) || '{}');
+		return data[makeCustomAltKey(category, subset, name)] || [];
+	} catch {
+		return [];
+	}
+}
+
+export function addCustomAlternative(category: string, subset: string, name: string, algorithm: string) {
+	const data = JSON.parse(localStorage.getItem(CUSTOM_ALTS_KEY) || '{}');
+	const altKey = makeCustomAltKey(category, subset, name);
+	if (!data[altKey]) data[altKey] = [];
+
+	const expanded = expandNotation(algorithm);
+	if (data[altKey].some((a: string) => expandNotation(a) === expanded)) return;
+
+	data[altKey].push(algorithm);
+	localStorage.setItem(CUSTOM_ALTS_KEY, JSON.stringify(data));
+	emitEvent('trainerDbUpdatedEvent');
+}
+
+export function deleteCustomAlternative(category: string, subset: string, name: string, algorithm: string) {
+	const data = JSON.parse(localStorage.getItem(CUSTOM_ALTS_KEY) || '{}');
+	const altKey = makeCustomAltKey(category, subset, name);
+	if (!data[altKey]) return;
+
+	const expanded = expandNotation(algorithm);
+	data[altKey] = data[altKey].filter((a: string) => expandNotation(a) !== expanded);
+	if (data[altKey].length === 0) delete data[altKey];
+
+	localStorage.setItem(CUSTOM_ALTS_KEY, JSON.stringify(data));
+	emitEvent('trainerDbUpdatedEvent');
+}
+
 // --- React Hook ---
 
 export function useAlgorithmData() {

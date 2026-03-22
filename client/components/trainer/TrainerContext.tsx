@@ -265,6 +265,18 @@ function trainerReducer(state: TrainerSessionState, action: TrainerAction): Trai
 		}
 
 		case 'ADVANCE_ALGORITHM': {
+			// Tek kart: aynı algoritmayı tekrarla (queue rebuild yok, cycling riski yok)
+			// Spread ile yeni referans olustur — smart cube useEffect'i tetiklemek icin gerekli
+			if (state.algorithmQueue.length <= 1) {
+				return {
+					...state,
+					currentAlgorithm: state.currentAlgorithm ? {...state.currentAlgorithm} : null,
+					timerState: 'IDLE',
+					currentTimerValue: 0,
+					...SMART_RESET,
+				};
+			}
+
 			const currentIdx = state.algorithmQueue.findIndex(
 				(a) => a.algorithm === state.currentAlgorithm?.algorithm
 			);

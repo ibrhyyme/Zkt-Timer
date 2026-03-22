@@ -2,7 +2,7 @@ import React, {useState, useEffect, useCallback} from 'react';
 import block from '../../../../styles/bem';
 import {useTrainerContext} from '../../TrainerContext';
 import {expandNotation} from '../../../../util/trainer/algorithm_engine';
-import {fetchDefaultAlgs, saveAlgorithm} from '../../hooks/useAlgorithmData';
+import {fetchDefaultAlgs, saveAlgorithm, getCustomAlternatives} from '../../hooks/useAlgorithmData';
 import {useTranslation} from 'react-i18next';
 import {Check} from 'phosphor-react';
 
@@ -31,8 +31,18 @@ export default function AlternativesPicker() {
 			// Kategori icinde isme gore ara (isimler kategori icinde unique)
 			for (const sub of categoryData) {
 				const entry = sub.algorithms.find((a: any) => a.name === currentAlgorithm.name);
-				if (entry && (entry as any).alternatives?.length) {
-					setAlternatives([entry.algorithm, ...(entry as any).alternatives]);
+				if (entry) {
+					const defaultAlts = (entry as any).alternatives || [];
+					const customAlts = getCustomAlternatives(
+						currentAlgorithm.category,
+						sub.subset,
+						currentAlgorithm.name
+					);
+					if (defaultAlts.length > 0 || customAlts.length > 0) {
+						setAlternatives([entry.algorithm, ...defaultAlts, ...customAlts]);
+					} else {
+						setAlternatives([]);
+					}
 					return;
 				}
 			}

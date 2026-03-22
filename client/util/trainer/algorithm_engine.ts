@@ -500,3 +500,31 @@ export function formatTimeShort(ms: number | null): string {
 	const milliseconds = Math.floor(ms % 1000);
 	return `${totalSeconds}.${milliseconds.toString().padStart(3, '0')}`;
 }
+
+/**
+ * Clean algorithm input for cubing.js parsing.
+ * Handles wide moves (Rw→r), smart quotes, single-move parens.
+ * Port of generate-ll-patterns.mjs cleanAlgorithm().
+ */
+export function cleanAlgorithmForCubing(alg: string): string {
+	let s = alg
+		.replace(/\+/g, ' ')
+		.replace(/\u2019/g, "'")
+		.replace(/["\u201C\u201D]/g, "'")
+		.replace(/'2/g, "2'");
+
+	s = s.replace(/([RLFBUD])w/g, (_, m: string) => m.toLowerCase());
+	s = s.replace(/\(([RLFBUDMESrlfbudxyz][2']?)\)/g, '$1');
+	s = expandNotation(s);
+	return s;
+}
+
+/**
+ * Compute setup algorithm as inverse of the given algorithm.
+ * Uses cubing.js Alg.invert() for correctness (handles groupings).
+ */
+export async function computeSetupInverse(algorithm: string): Promise<string> {
+	await ensureCubingReady();
+	const cleaned = cleanAlgorithmForCubing(algorithm);
+	return _Alg.fromString(cleaned).invert().toString();
+}

@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef, useCallback} from 'react';
+import React, {useState, useEffect, useRef, useCallback, useMemo} from 'react';
 import block from '../../../../styles/bem';
 import {algToId, getStickering, getOrientationRotation, getPuzzleType, isCubeShapePuzzle, expandNotation, isLLCategory, isIsometricCategory, getDefaultFrontFace, is2DPatternCategory, getPuzzlePatternType, isSQ1MirrorCategory} from '../../../../util/trainer/algorithm_engine';
 import {getLLPattern, isLLPatternsLoaded} from '../../../../util/trainer/ll_patterns';
@@ -11,10 +11,12 @@ import CubeTopPatternView from '../CubeTopPatternView';
 import PyraminxPatternView from '../PyraminxPatternView';
 import SkewbPatternView from '../SkewbPatternView';
 import SQ1PatternView from '../SQ1PatternView';
-import {saveAlgorithm, fetchDefaultAlgs, getBestTime, averageOfFive, averageOfTwelve, getLastTimes} from '../../hooks/useAlgorithmData';
+import {saveAlgorithm, fetchDefaultAlgs, getBestTime, averageOfFive, averageOfTwelve, getLastTimes, getCustomAlternatives, addCustomAlternative, deleteCustomAlternative} from '../../hooks/useAlgorithmData';
+import {validateSameCase, generateLLPattern} from '../../../../util/trainer/pattern_utils';
+import {saveCustomPattern} from '../../../../util/trainer/ll_patterns';
 import {useTrainerDb} from '../../../../util/hooks/useTrainerDb';
 import {useTranslation} from 'react-i18next';
-import {Check} from 'phosphor-react';
+import {Check, X, CircleNotch} from 'phosphor-react';
 import type {CubeFace} from '../../types';
 
 const b = block('trainer');
@@ -53,8 +55,14 @@ export default function AlgorithmDetailModal({
 	const [editedAlg, setEditedAlg] = useState(initialAlgorithm);
 	const [currentAlgorithm, setCurrentAlgorithm] = useState(initialAlgorithm);
 	const [alternatives, setAlternatives] = useState<string[]>([]);
+	const [customAlts, setCustomAlts] = useState<string[]>([]);
+	const [newAltInput, setNewAltInput] = useState('');
+	const [validating, setValidating] = useState(false);
+	const [validationError, setValidationError] = useState<string | null>(null);
+	const [validationSuccess, setValidationSuccess] = useState(false);
+	const isLL = isLLCategory(category);
 
-	// Alternatifleri default-algs.json'dan yukle
+	// Alternatifleri default-algs.json'dan yukle (her zaman ana algortimayi dahil et)
 	useEffect(() => {
 		fetchDefaultAlgs().then((defaults) => {
 			const categoryData = defaults[category];
@@ -63,13 +71,85 @@ export default function AlgorithmDetailModal({
 			for (const sub of categoryData) {
 				if (sub.subset === subset) {
 					const entry = sub.algorithms.find((a: any) => a.name === name);
-					if (entry && (entry as any).alternatives) {
-						setAlternatives([entry.algorithm, ...(entry as any).alternatives]);
+					if (entry) {
+						const alts = (entry as any).alternatives || [];
+						setAlternatives([entry.algorithm, ...alts]);
 					}
 					break;
 				}
 			}
 		});
+	}, [category, subset, name]);
+
+	// Custom alternatifleri yukle
+	useEffect(() => {
+		setCustomAlts(getCustomAlternatives(category, subset, name));
+	}, [category, subset, name, dbVersion]);
+
+	// Birlesik alternatif listesi: default (ana dahil) + custom
+	const allAlternatives = useMemo(() => {
+		const combined = [...alternatives];
+		const customSet = new Set(customAlts.map(a => expandNotation(a)));
+		for (const alt of customAlts) {
+			if (!combined.some(a => expandNotation(a) === expandNotation(alt))) {
+				combined.push(alt);
+			}
+		}
+		return {list: combined, customSet};
+	}, [alternatives, customAlts]);
+
+	const handleAddCustomAlt = useCallback(async () => {
+		const trimmed = newAltInput.trim();
+		if (!trimmed || validating) return;
+
+		setValidating(true);
+		setValidationError(null);
+		setValidationSuccess(false);
+
+		try {
+			// Primary algortimayi bul
+			const defaults = await fetchDefaultAlgs();
+			const categoryData = defaults[category];
+			let primaryAlg = '';
+			for (const sub of categoryData || []) {
+				const entry = sub.algorithms.find((a: any) => a.name === name);
+				if (entry) {
+					primaryAlg = entry.algorithm;
+					break;
+				}
+			}
+
+			if (!primaryAlg) {
+				setValidationError('primary_not_found');
+				return;
+			}
+
+			// Dogrula
+			const result = await validateSameCase(primaryAlg, trimmed, category);
+			if (!result.valid) {
+				setValidationError(result.error || 'different_case');
+				return;
+			}
+
+			// LL pattern uret ve cache'le
+			const expanded = expandNotation(trimmed);
+			const pattern = await generateLLPattern(trimmed);
+			if (pattern) saveCustomPattern(expanded, pattern);
+
+			// Kaydet
+			addCustomAlternative(category, subset, name, trimmed);
+			setNewAltInput('');
+			setValidationSuccess(true);
+			setCustomAlts(getCustomAlternatives(category, subset, name));
+			setTimeout(() => setValidationSuccess(false), 2000);
+		} finally {
+			setValidating(false);
+		}
+	}, [newAltInput, validating, category, subset, name]);
+
+	const handleDeleteCustomAlt = useCallback((alt: string) => {
+		deleteCustomAlternative(category, subset, name, alt);
+		setCustomAlts(getCustomAlternatives(category, subset, name));
 	}, [category, subset, name]);
 
 	const algId = algToId(currentAlgorithm);
@@ -81,7 +161,6 @@ export default function AlgorithmDetailModal({
 	// 2D/3D secimi
 	const puzzleType = getPuzzleType(category);
 	const is3x3 = puzzleType === '3x3x3';
-	const isLL = isLLCategory(category);
 	const llPatternsLoaded = isLLPatternsLoaded();
 	const llPattern = isLL ? getLLPattern(editedAlg) : null;
 
@@ -260,26 +339,75 @@ export default function AlgorithmDetailModal({
 				</div>
 			</div>
 
-			{alternatives.length > 0 && (
+			{allAlternatives.list.length > 1 && (
 				<div className={b('alg-detail-alternatives')}>
 					<label className={b('alg-detail-alternatives-label')}>
-						{t('trainer.alg_detail_alternatives')} ({alternatives.length - 1})
+						{t('trainer.alg_detail_alternatives')} ({allAlternatives.list.length - 1})
 					</label>
 					<div className={b('alg-detail-alternatives-list')}>
-						{alternatives.map((alt, i) => {
+						{allAlternatives.list.map((alt, i) => {
 							const isSelected = expandNotation(alt) === expandNotation(editedAlg);
+							const isCustom = allAlternatives.customSet.has(expandNotation(alt));
 							return (
-								<button
-									key={i}
-									className={b('alg-detail-alt-item', {selected: isSelected})}
-									onClick={() => handleSelectAlternative(alt)}
-								>
-									<code>{alt}</code>
-									{isSelected && <Check size={14} weight="bold" />}
-								</button>
+								<div key={i} className={b('alg-detail-custom-alt-row')}>
+									<button
+										className={b('alg-detail-alt-item', {selected: isSelected})}
+										onClick={() => handleSelectAlternative(alt)}
+									>
+										<code>{alt}</code>
+										{isSelected && <Check size={14} weight="bold" />}
+									</button>
+									{isCustom && (
+										<button
+											className={b('alg-detail-alt-delete')}
+											onClick={() => handleDeleteCustomAlt(alt)}
+										>
+											<X size={14} />
+										</button>
+									)}
+								</div>
 							);
 						})}
 					</div>
+				</div>
+			)}
+
+			{isLL && (
+				<div className={b('alg-detail-custom-alts')}>
+					<div className={b('alg-detail-custom-input')}>
+						<input
+							type="text"
+							value={newAltInput}
+							onChange={(e) => {
+								setNewAltInput(e.target.value);
+								setValidationError(null);
+								setValidationSuccess(false);
+							}}
+							onKeyDown={(e) => {
+								if (e.key === 'Enter') handleAddCustomAlt();
+							}}
+							placeholder={t('trainer.custom_alt_placeholder')}
+							disabled={validating}
+						/>
+						<button
+							className={b('alg-detail-btn', {primary: true})}
+							onClick={handleAddCustomAlt}
+							disabled={validating || !newAltInput.trim()}
+						>
+							{validating ? <CircleNotch size={14} className={b('spinner')} /> : t('trainer.custom_alt_add')}
+						</button>
+					</div>
+
+					{validationError && (
+						<div className={b('alg-detail-validation', {error: true})}>
+							{t(`trainer.validation_${validationError}`)}
+						</div>
+					)}
+					{validationSuccess && (
+						<div className={b('alg-detail-validation', {success: true})}>
+							<Check size={14} /> {t('trainer.validation_success')}
+						</div>
+					)}
 				</div>
 			)}
 
