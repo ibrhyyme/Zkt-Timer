@@ -854,6 +854,103 @@
 		}
 	}
 
+	// ==================== Custom Alternatives ====================
+	&__alg-detail-custom-alts {
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
+		margin-top: 0.25rem;
+		padding-top: 0.5rem;
+		border-top: 1px solid rgba(var(--text-color), 0.08);
+	}
+
+	&__alg-detail-custom-alt-row {
+		display: flex;
+		align-items: center;
+		gap: 0.25rem;
+	}
+
+	&__alg-detail-alt-delete {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 28px;
+		height: 28px;
+		flex-shrink: 0;
+		border-radius: 6px;
+		border: none;
+		background: transparent;
+		color: rgba(var(--text-color), 0.4);
+		cursor: pointer;
+		transition: all 0.15s;
+
+		&:hover {
+			background: rgba(239, 83, 80, 0.1);
+			color: #ef5350;
+		}
+	}
+
+	&__alg-detail-custom-input {
+		display: flex;
+		gap: 0.35rem;
+
+		input {
+			flex: 1;
+			padding: 0.4rem 0.6rem;
+			border-radius: 6px;
+			border: 1px solid rgba(var(--text-color), 0.15);
+			background: rgba(var(--text-color), 0.05);
+			color: rgb(var(--text-color));
+			font-family: 'JetBrains Mono', monospace;
+			font-size: 0.78rem;
+			outline: none;
+
+			&:focus {
+				border-color: rgba(var(--primary-color), 0.5);
+			}
+
+			&:disabled {
+				opacity: 0.5;
+			}
+		}
+
+		button {
+			flex-shrink: 0;
+			padding: 0.4rem 0.8rem;
+			font-size: 0.78rem;
+
+			&:disabled {
+				opacity: 0.5;
+				cursor: not-allowed;
+			}
+		}
+	}
+
+	&__alg-detail-validation {
+		font-size: 0.75rem;
+		display: flex;
+		align-items: center;
+		gap: 0.3rem;
+
+		&--error {
+			color: #ef5350;
+		}
+
+		&--success {
+			color: rgb(var(--secondary-color));
+		}
+	}
+
+	&__spinner {
+		animation: trainer-spin 0.8s linear infinite;
+	}
+
+	@keyframes trainer-spin {
+		from { transform: rotate(0deg); }
+		to { transform: rotate(360deg); }
+	}
+
 	// ==================== Training Area ====================
 	&__training-area {
 		display: flex;

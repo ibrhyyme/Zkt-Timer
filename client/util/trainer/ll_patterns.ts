@@ -21,8 +21,24 @@ export function loadLLPatterns(): Promise<Record<string, string>> {
 	return loading;
 }
 
+const CUSTOM_PATTERNS_KEY = 'trainer_customPatterns';
+
+function getCustomPatterns(): Record<string, string> {
+	try {
+		return JSON.parse(localStorage.getItem(CUSTOM_PATTERNS_KEY) || '{}');
+	} catch {
+		return {};
+	}
+}
+
+export function saveCustomPattern(algorithm: string, pattern: string) {
+	const patterns = getCustomPatterns();
+	patterns[algorithm] = pattern;
+	localStorage.setItem(CUSTOM_PATTERNS_KEY, JSON.stringify(patterns));
+}
+
 export function getLLPattern(algorithm: string): string | null {
-	return cache?.[algorithm] ?? null;
+	return cache?.[algorithm] ?? getCustomPatterns()[algorithm] ?? null;
 }
 
 export function isLLPatternsLoaded(): boolean {

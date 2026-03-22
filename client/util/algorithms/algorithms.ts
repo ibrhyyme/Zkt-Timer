@@ -8052,7 +8052,7 @@ export default {
 		},
 		'333_zbll-u_50': {
 			key: '333_zbll-u_50',
-			defaultSolution: "L U L' U L U2 L2 U R U' L U R'",
+			Solution: "L U L' U L U2 L2 U R U' L U R'",
 			customSolution: '',
 			inverse: ["R U' L' U R' U' L2 U2 L' U' L U' L'"],
 			img: '',

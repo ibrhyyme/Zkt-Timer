@@ -2,7 +2,7 @@ import React, {useState, useEffect, useMemo, useCallback} from 'react';
 import block from '../../../../styles/bem';
 import {useTrainerContext} from '../../TrainerContext';
 import {useLLPatternsReady} from '../../../../util/trainer/ll_patterns';
-import {isLLCategory, getDefaultFrontFace, getPuzzleType, algToId} from '../../../../util/trainer/algorithm_engine';
+import {isLLCategory, getDefaultFrontFace, getPuzzleType, algToId, expandNotation, computeSetupInverse} from '../../../../util/trainer/algorithm_engine';
 import {fetchDefaultAlgs, getLastTimes} from '../../hooks/useAlgorithmData';
 import {useTrainerDb} from '../../../../util/hooks/useTrainerDb';
 import CubeViewer from './CubeViewer';
@@ -33,7 +33,11 @@ export default function TrainingArea() {
 			return;
 		}
 
-		fetchDefaultAlgs().then((defaults) => {
+		let cancelled = false;
+
+		fetchDefaultAlgs().then(async (defaults) => {
+			if (cancelled) return;
+
 			const subsets = defaults[currentAlgorithm.category];
 			if (!subsets) {
 				setSetupAlg(null);
@@ -43,13 +47,22 @@ export default function TrainingArea() {
 			for (const sub of subsets) {
 				const entry = sub.algorithms.find((a: any) => a.name === currentAlgorithm.name);
 				if (entry) {
-					setSetupAlg(entry.setup || null);
+					// Primary algoritma ise pre-computed Kociemba-optimized setup kullan
+					if (expandNotation(entry.algorithm) === expandNotation(currentAlgorithm.algorithm)) {
+						if (!cancelled) setSetupAlg(entry.setup || null);
+						return;
+					}
+					// Alternatif secilmisse runtime'da inverse hesapla
+					const inverse = await computeSetupInverse(currentAlgorithm.algorithm);
+					if (!cancelled) setSetupAlg(inverse);
 					return;
 				}
 			}
-			setSetupAlg(null);
+			if (!cancelled) setSetupAlg(null);
 		});
-	}, [currentAlgorithm?.name, currentAlgorithm?.category]);
+
+		return () => { cancelled = true; };
+	}, [currentAlgorithm?.name, currentAlgorithm?.category, currentAlgorithm?.algorithm]);
 
 	// Algoritma degistiginde mobil alternatifleri kapat
 	useEffect(() => {

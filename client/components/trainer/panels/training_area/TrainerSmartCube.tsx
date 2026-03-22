@@ -3,6 +3,7 @@ import block from '../../../../styles/bem';
 import {useTrainerContext} from '../../TrainerContext';
 import {
 	expandNotation,
+	cleanAlgorithmForCubing,
 	getOrientationRotation,
 	getStickering,
 	getPuzzleType,
@@ -420,7 +421,9 @@ export default function TrainerSmartCube() {
 			if (!kpuzzle) return;
 
 			// Algoritma hamlelerini parse et (AUF dahil)
-			const expandedAlg = expandNotation(currentAlgorithm.algorithm);
+			// cleanAlgorithmForCubing: Rw→r, smart quotes, tek-move parantezler normalize eder
+			// Custom alternatif algoritmalarda bu normalizasyon kritik
+			const expandedAlg = cleanAlgorithmForCubing(currentAlgorithm.algorithm);
 			const algMoves = buildRandomAUFAlg(
 				expandedAlg.split(/\s+/),
 				currentAlgorithm.category,

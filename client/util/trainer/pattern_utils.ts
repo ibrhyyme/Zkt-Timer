@@ -230,3 +230,123 @@ export function fixOrientation(pattern: KPattern): KPattern {
 	}
 	return pattern;
 }
+
+// --- Custom Algorithm Validation & Pattern Generation ---
+
+/**
+ * Kociemba facelet indices for the 21 visible 2D-LL positions.
+ * Ported from generate-ll-patterns.mjs.
+ * Top face (9): U0-U8
+ * Front top row (3): F18, F19, F20
+ * Right top row (3): R11, R10, R9 (back→front from above)
+ * Back top row (3): B47, B46, B45 (left→right from above)
+ * Left top row (3): L36, L37, L38
+ */
+export const LL_FACELET_INDICES = [
+	0, 1, 2, 3, 4, 5, 6, 7, 8,
+	18, 19, 20,
+	11, 10, 9,
+	47, 46, 45,
+	36, 37, 38,
+];
+
+/**
+ * Generate 21-char LL pattern for an algorithm on the client side.
+ * Uses patternToGANFacelets (center-independent — no fixOrientation needed).
+ */
+export async function generateLLPattern(algorithm: string): Promise<string | null> {
+	await ensureKPuzzleReady();
+	const kpuzzle = getKPuzzle();
+	if (!kpuzzle) return null;
+
+	try {
+		const [{Alg}, {cleanAlgorithmForCubing}] = await Promise.all([
+			import('cubing/alg'),
+			import('./algorithm_engine'),
+		]);
+		const cleaned = cleanAlgorithmForCubing(algorithm);
+		const inverse = Alg.fromString(cleaned).invert();
+		const solved = kpuzzle.defaultPattern();
+		const setupState = solved.applyAlg(inverse);
+		const facelets = patternToGANFacelets(setupState);
+		return LL_FACELET_INDICES.map(i => facelets[i]).join('');
+	} catch {
+		return null;
+	}
+}
+
+/**
+ * Rotate a 21-char LL pattern by U CW (90 degrees).
+ * Top face: standard 3x3 CW rotation.
+ * Sides: newF=oldL, newR=reverse(oldF), newB=oldR, newL=reverse(oldB).
+ * The alternating reversal comes from LL_FACELET_INDICES using different
+ * ordering directions per face (F/L normal, R/B reversed Kociemba order).
+ */
+export function rotateLLPatternCW(pattern: string): string {
+	const top = [6, 3, 0, 7, 4, 1, 8, 5, 2].map(i => pattern[i]).join('');
+	const F = pattern.slice(9, 12);
+	const R = pattern.slice(12, 15);
+	const B = pattern.slice(15, 18);
+	const L = pattern.slice(18, 21);
+
+	const newF = L;
+	const newR = F[2] + F[1] + F[0];
+	const newB = R;
+	const newL = B[2] + B[1] + B[0];
+
+	return top + newF + newR + newB + newL;
+}
+
+/**
+ * Validate whether a candidate algorithm solves the same case as the original.
+ * Pre-AUF: pattern rotation (4x CW) ile kontrol edilir.
+ * Post-AUF: candidate algoritmaya U/U2/U' eklenerek 4 varyasyon uretilir.
+ * Toplam 16 kombinasyon (4 post-AUF x 4 pre-AUF rotation) tam AUF coverage saglar.
+ * OLL/2-Look OLL: orientation mask karsilastirmasi (U vs non-U).
+ * PLL/ZBLL/COLL/CMLL/OLLCP/diger: full 21-char pattern karsilastirmasi.
+ */
+export async function validateSameCase(
+	originalAlg: string,
+	candidateAlg: string,
+	category: string
+): Promise<{valid: boolean; error?: string}> {
+	// Original + candidate'in 4 post-AUF varyasyonu paralel uretilir
+	const [origPattern, ...candPatterns] = await Promise.all([
+		generateLLPattern(originalAlg),
+		generateLLPattern(candidateAlg),
+		generateLLPattern(candidateAlg + ' U'),
+		generateLLPattern(candidateAlg + ' U2'),
+		generateLLPattern(candidateAlg + " U'"),
+	]);
+
+	if (!origPattern) return {valid: false, error: 'original_parse_error'};
+	if (candPatterns.every(p => p === null)) return {valid: false, error: 'candidate_parse_error'};
+
+	const lower = category.toLowerCase();
+	const isOLL = (lower === 'oll' || lower === '2-look oll');
+	const compare = isOLL ? compareOLLMasks : compareFullPatterns;
+
+	for (const candPattern of candPatterns) {
+		if (!candPattern) continue;
+
+		// 4 pre-AUF rotasyonu dene
+		let rotated = candPattern;
+		for (let i = 0; i < 4; i++) {
+			if (compare(origPattern, rotated)) return {valid: true};
+			rotated = rotateLLPatternCW(rotated);
+		}
+	}
+
+	return {valid: false, error: 'different_case'};
+}
+
+function compareFullPatterns(a: string, b: string): boolean {
+	return a === b;
+}
+
+function compareOLLMasks(a: string, b: string): boolean {
+	for (let i = 0; i < 21; i++) {
+		if ((a[i] === 'U') !== (b[i] === 'U')) return false;
+	}
+	return true;
+}
