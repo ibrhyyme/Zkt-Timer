@@ -31,6 +31,8 @@ const PUZZLE_MAPPING: Record<string, string> = {
 };
 
 const NXN_PUZZLE_IDS = new Set(['2x2x2', '3x3x3', '4x4x4', '5x5x5', '6x6x6', '7x7x7']);
+const ALWAYS_2D_PUZZLES = new Set(['clock']);
+const TOGGLE_PUZZLES = new Set([...NXN_PUZZLE_IDS, 'pyraminx', 'megaminx', 'skewb']);
 
 interface Props {
 	cubeType: string;
@@ -49,10 +51,11 @@ function ScrambleVisual(props: Props) {
 	// Determine puzzle details for TwistyPlayer
 	const puzzleId = PUZZLE_MAPPING[cubeType] || cubeType;
 	const isClock = puzzleId === 'clock';
-	const isPyram = puzzleId === 'pyraminx';
-	const isSq1 = puzzleId === 'square1';
-	const isNxN = NXN_PUZZLE_IDS.has(puzzleId);
-	const visualizationVal = (isClock || isPyram) ? '2D' : (use2dScramble && isNxN) ? '2D' : '3D';
+	const visualizationVal = ALWAYS_2D_PUZZLES.has(puzzleId)
+		? '2D'
+		: TOGGLE_PUZZLES.has(puzzleId)
+			? (use2dScramble ? '2D' : '3D')
+			: '3D';
 
 	const closeModal = (e: React.MouseEvent) => {
 		e.stopPropagation();
