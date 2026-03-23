@@ -1,0 +1,133 @@
+<mjml>
+  <mj-head>
+    <mj-title>Welcome to Zkt-Timer!</mj-title>
+    <mj-font name="Roboto" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700" />
+    <mj-attributes>
+      <mj-all font-family="Roboto, Helvetica, Arial, sans-serif" />
+      <mj-text font-size="16px" color="#444444" line-height="24px" />
+      <mj-section padding="20px 0" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body background-color="#f4f4f4">
+    <mj-section background-color="#ffffff" padding-bottom="0">
+      <mj-column>
+        <mj-image href="https://zktimer.app" width="100px" src="https://zktimer.app/public/images/zkt-logo-dark.png" alt="Zkt-Timer Logo"></mj-image>
+        <mj-divider border-color="#246bfd" border-width="2px"></mj-divider>
+      </mj-column>
+    </mj-section>
+
+    <mj-section background-color="#ffffff" padding-top="0">
+      <mj-column>
+        <mj-text font-size="24px" font-weight="bold" color="#246bfd" align="center">
+          Welcome {{user.first_name}}! 🎉
+        </mj-text>
+        <mj-text align="center">
+          We're happy you joined the Zkt-Timer family. You've just stepped into the world's most advanced cube solving platform, built for professional speedcubers.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- About Section -->
+    <mj-section background-color="#ffffff">
+      <mj-column>
+        <mj-text font-weight="bold" font-size="18px" color="#246bfd">About This App</mj-text>
+        <mj-text>
+          • <strong>Modern Design:</strong> Clean, intuitive, and easy to use.<br/>
+          • <strong>Cloud-Based:</strong> Your solves and settings are never lost.<br/>
+          • <strong>WCA Standards:</strong> Random-state scrambles for all official puzzles (3x3, 4x4, Megaminx, etc.).<br/>
+          • <strong>3D Preview:</strong> Inspect every scramble in 3D.<br/>
+          • <strong>Smart Cube:</strong> Bring your training into the digital age.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Smart Cube -->
+    <mj-section background-color="#f8f9fa">
+      <mj-column>
+        <mj-text font-weight="bold" font-size="18px" color="#246bfd">📱 Smart Cube & Gyroscope Integration</mj-text>
+        <mj-text>
+          Fully compatible with GAN Cube models (Gen2, Gen3, Gen4, GAN12 uiM, etc.)! Track your rotation and speed in real-time using gyroscope data, reflecting your physical movements on screen.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Phase Analysis -->
+    <mj-section background-color="#ffffff">
+      <mj-column>
+        <mj-text font-weight="bold" font-size="18px" color="#246bfd">📊 Phase Analysis</mj-text>
+        <mj-text>
+          Analyze not just your total time, but every step of your solve (Cross, F2L, OLL, PLL) with millisecond precision. Master your technique with "Simple" or "Detailed (2-Look)" analysis modes.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Multiplayer -->
+    <mj-section background-color="#f8f9fa">
+      <mj-column>
+        <mj-text font-weight="bold" font-size="18px" color="#246bfd">👥 Friend Rooms (Multiplayer)</mj-text>
+        <mj-text>
+          Tired of solving alone?
+        </mj-text>
+        <mj-text>
+          • <strong>Shared Scramble:</strong> Everyone solves the same scramble.<br/>
+          • <strong>Live Tracking:</strong> See what everyone is doing in real-time.<br/>
+          • <strong>Chat:</strong> Message in-room and compare results.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Data & Progress -->
+    <mj-section background-color="#ffffff">
+      <mj-column>
+        <mj-text font-weight="bold" font-size="18px" color="#246bfd">📈 Track Your Progress</mj-text>
+        <mj-text>
+          Dozens of statistics for every puzzle and category. Track your best (PB) and worst times, Ao5, Ao12, and Ao100 averages. Visualize your progress with detailed charts. Stay on top of your performance anywhere with a mobile-friendly interface.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Customization -->
+    <mj-section background-color="#f8f9fa">
+      <mj-column>
+        <mj-text font-weight="bold" font-size="18px" color="#246bfd">🎨 Express Your Style</mj-text>
+        <mj-text>
+          Rest your eyes with the custom <strong>"Underground"</strong> dark theme. Personalize fonts (Roboto, JetBrains Mono, etc.), colors, and the entire layout to your liking.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+     <!-- 3D Visualization -->
+    <mj-section background-color="#ffffff">
+      <mj-column>
+        <mj-text font-weight="bold" font-size="18px" color="#246bfd">🧊 3D Scramble Visualization</mj-text>
+        <mj-text>
+          View the scramble state in 3D with TwistyPlayer support, rotate the cube by touching the screen, and analyze the state before starting your solve.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Footer Features -->
+    <mj-section background-color="#e9ecef">
+      <mj-column>
+        <mj-text font-weight="bold" font-size="16px" color="#444444">And Much More...</mj-text>
+        <mj-text font-size="14px">
+          • <strong>StackMat Support:</strong> Connect your hardware and record times automatically.<br/>
+          • <strong>Manual Entry:</strong> Enter times manually when your timer isn't available.<br/>
+          • <strong>WCA Standards:</strong> Official inspection time compliant with regulations.<br/>
+          • <strong>Sharing:</strong> Share your solves with unique codes.
+        </mj-text>
+        <mj-button href="https://zktimer.app" background-color="#246bfd" color="#ffffff" font-size="16px" font-weight="bold" border-radius="8px">
+          Start the Timer
+        </mj-button>
+        <mj-divider border-color="#cbd5e0" border-width="1px"></mj-divider>
+         <mj-text font-size="12px" align="center" color="#999999">
+          Zkt-Timer Team<br/>
+          <a href="https://zktimer.app" style="color: #246bfd; text-decoration: none;">zktimer.app</a>
+        </mj-text>
+        <mj-text font-size="12px" align="center" color="#999999">
+          If you don't want to receive this email, you can change your <a href="https://zktimer.app/settings" style="color: #246bfd; text-decoration: none;">notification settings</a>.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

@@ -9,6 +9,7 @@ import Header from '../layout/header/Header';
 import { useRouteMatch, Link } from 'react-router-dom';
 import block from '../../styles/bem';
 import { Cube } from 'phosphor-react';
+import LanguageSwitcher from '../common/language_switcher/LanguageSwitcher';
 
 const b = block('login');
 
@@ -46,6 +47,11 @@ export default function LoginWrapper() {
 				}
 			/>
 			<div className={b('wrapper')}>
+				{/* Language Switcher */}
+				<div className={b('lang-switcher')}>
+					<LanguageSwitcher />
+				</div>
+
 				{/* Background Effects */}
 				<div className={b('background')}>
 					{/* Gradient Orbs */}

@@ -7,9 +7,10 @@ import { sendEmail, sendEmailWithTemplate } from '../services/ses';
 import { claimForgotPassword, createForgotPassword, getForgotPassword } from '../models/forgot_password';
 import GraphQLError from '../util/graphql_error';
 import { getJwtString } from '../util/auth';
+import { getEmailStrings } from '../util/email_translations';
 
 export const gqlMutation = `
-	sendForgotPasswordCode(email: String): Void
+	sendForgotPasswordCode(email: String, language: String): Void
 	checkForgotPasswordCode(email: String, code: String): Boolean
 	updateForgotPassword(email: String, code: String, password: String): PublicUserAccount
 `;
@@ -22,15 +23,19 @@ function forgotPasswordLessThan15Min(fp) {
 }
 
 export const mutateActions = {
-	sendForgotPasswordCode: async (_, { email }) => {
+	sendForgotPasswordCode: async (_, { email, language }) => {
 		const user = await getUserByEmail(email);
 
 		if (user) {
 			const fp = await createForgotPassword(user);
+			const emailStrings = getEmailStrings(language);
 
-			sendEmailWithTemplate(user, 'Zkt-Timer Şifre Sıfırlama', 'forgot_password', {
+			sendEmailWithTemplate(user, emailStrings.forgot_subject, 'forgot_password', {
 				code: fp.code,
-				message: 'Şifrenizi sıfırlamak için lütfen aşağıdaki kodu kullanın:',
+				message: emailStrings.forgot_message,
+				greeting: emailStrings.greeting,
+				closing: emailStrings.closing,
+				team: emailStrings.team,
 			});
 		}
 	},

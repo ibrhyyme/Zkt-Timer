@@ -15,8 +15,8 @@ enum ForgotStage {
 }
 
 const SENT_FORGOT_PASSWORD_CODE_MUTATION = gql`
-	mutation Mutate($email: String!) {
-		sendForgotPasswordCode(email: $email)
+	mutation Mutate($email: String!, $language: String) {
+		sendForgotPasswordCode(email: $email, language: $language)
 	}
 `;
 
@@ -35,7 +35,7 @@ const UPDATE_FORGOT_PASSWORD_MUTATION = gql`
 `;
 
 export default function Forgot() {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	const [stage, setStage] = useState<ForgotStage>(ForgotStage.EnterEmail);
 	const [code, setCode] = useInput('');
 	const [email, setEmail] = useInput('');
@@ -43,7 +43,7 @@ export default function Forgot() {
 	const [confirmPassword, setConfirmPassword] = useInput('');
 	const [error, setError] = useState('');
 
-	const [forgotCode, forgotCodeData] = useMutation<{sendForgotPasswordCode: void}, {email: string}>(
+	const [forgotCode, forgotCodeData] = useMutation<{sendForgotPasswordCode: void}, {email: string; language: string}>(
 		SENT_FORGOT_PASSWORD_CODE_MUTATION
 	);
 	const [checkForgot, checkForgotData] = useMutation<
@@ -80,7 +80,7 @@ export default function Forgot() {
 					return;
 				}
 
-				await forgotCode({variables: {email: email.trim()}});
+				await forgotCode({variables: {email: email.trim(), language: i18n.language}});
 				setStage(ForgotStage.EnterCode);
 				break;
 			}
