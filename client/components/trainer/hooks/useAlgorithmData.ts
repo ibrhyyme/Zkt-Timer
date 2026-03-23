@@ -2,7 +2,7 @@ import {useState, useCallback, useEffect} from 'react';
 import {useTrainerDb} from '../../../util/hooks/useTrainerDb';
 import {emitEvent} from '../../../util/event_handler';
 import {algToId, expandNotation} from '../../../util/trainer/algorithm_engine';
-import type {AlgorithmEntry, AlgorithmSubset, LearnedStatus} from '../types';
+import type {AlgorithmEntry, AlgorithmSubset, LearnedStatus, TrainerSolveRecord} from '../types';
 
 const STORAGE_KEY = 'trainer_savedAlgorithms';
 const PREFIX = 'trainer_';
@@ -82,24 +82,76 @@ export function setBestTime(algId: string, time: number) {
 	emitEvent('trainerDbUpdatedEvent');
 }
 
-export function getLastTimes(algId: string): number[] {
+export function getLastTimes(algId: string): TrainerSolveRecord[] {
 	const raw = localStorage.getItem(PREFIX + 'LastTimes-' + algId);
-	return raw ? raw.split(',').map((n) => Number(n.trim())) : [];
+	if (!raw) return [];
+	// Eski format: "338,293,338" — auto-migrate
+	if (!raw.startsWith('[')) {
+		const records: TrainerSolveRecord[] = raw.split(',').map((n) => ({t: Number(n.trim())}));
+		localStorage.setItem(PREFIX + 'LastTimes-' + algId, JSON.stringify(records));
+		return records;
+	}
+	return JSON.parse(raw);
+}
+
+function saveRecords(algId: string, records: TrainerSolveRecord[]) {
+	localStorage.setItem(PREFIX + 'LastTimes-' + algId, JSON.stringify(records));
+}
+
+export function getEffectiveTime(record: TrainerSolveRecord): number | null {
+	if (record.dnf) return null;
+	return record.t + (record.p2 ? 2000 : 0);
+}
+
+function recalculateBest(algId: string) {
+	const records = getLastTimes(algId);
+	const validTimes = records.filter((r) => !r.dnf).map((r) => r.t + (r.p2 ? 2000 : 0));
+	if (validTimes.length === 0) {
+		localStorage.removeItem(PREFIX + 'Best-' + algId);
+		emitEvent('trainerDbUpdatedEvent');
+	} else {
+		setBestTime(algId, Math.min(...validTimes));
+	}
 }
 
 export function addTime(algId: string, time: number) {
-	const times = getLastTimes(algId);
-	times.push(time);
-	// Keep last 100 times
-	const trimmed = times.slice(-100);
-	localStorage.setItem(PREFIX + 'LastTimes-' + algId, trimmed.join(','));
+	const records = getLastTimes(algId);
+	records.push({t: time, ts: Date.now()});
+	const trimmed = records.slice(-100);
+	saveRecords(algId, trimmed);
+	recalculateBest(algId);
+}
 
-	const best = getBestTime(algId);
-	if (best === null || time < best) {
-		setBestTime(algId, time);
-	} else {
-		emitEvent('trainerDbUpdatedEvent');
-	}
+export function deleteTrainerSolve(algId: string, index: number) {
+	const records = getLastTimes(algId);
+	if (index < 0 || index >= records.length) return;
+	records.splice(index, 1);
+	saveRecords(algId, records);
+	recalculateBest(algId);
+}
+
+export function toggleTrainerPlusTwo(algId: string, index: number) {
+	const records = getLastTimes(algId);
+	if (index < 0 || index >= records.length) return;
+	records[index].p2 = !records[index].p2;
+	if (!records[index].p2) delete records[index].p2;
+	saveRecords(algId, records);
+	recalculateBest(algId);
+}
+
+export function toggleTrainerDnf(algId: string, index: number) {
+	const records = getLastTimes(algId);
+	if (index < 0 || index >= records.length) return;
+	records[index].dnf = !records[index].dnf;
+	if (!records[index].dnf) delete records[index].dnf;
+	saveRecords(algId, records);
+	recalculateBest(algId);
+}
+
+export function resetTrainerSeason(algId: string) {
+	localStorage.removeItem(PREFIX + 'LastTimes-' + algId);
+	localStorage.removeItem(PREFIX + 'Best-' + algId);
+	emitEvent('trainerDbUpdatedEvent');
 }
 
 export function getLearnedStatus(algId: string): LearnedStatus {
@@ -114,43 +166,49 @@ export function setLearnedStatus(algId: string, status: LearnedStatus) {
 }
 
 /**
- * Rolling Ao5 at position idx in the times array.
+ * Rolling Ao5 at position idx in the records array.
  * Trims best and worst, averages middle 3.
+ * DNF iceren average null dondurur.
  */
-export function rollingAo5(times: number[], idx: number): number | null {
+export function rollingAo5(records: TrainerSolveRecord[], idx: number): number | null {
 	if (idx < 4) return null;
-	const slice = times.slice(idx - 4, idx + 1).sort((a, b) => a - b);
-	const trimmed = slice.slice(1, 4);
+	const slice = records.slice(idx - 4, idx + 1);
+	const effTimes = slice.map((r) => getEffectiveTime(r));
+	// 1+ DNF varsa average null
+	if (effTimes.some((t) => t === null)) return null;
+	const sorted = (effTimes as number[]).sort((a, b) => a - b);
+	const trimmed = sorted.slice(1, 4);
 	return trimmed.reduce((sum, t) => sum + t, 0) / 3;
 }
 
 /**
- * Rolling Ao12 at position idx in the times array.
+ * Rolling Ao12 at position idx in the records array.
  * Trims best and worst, averages middle 10.
+ * 2+ DNF varsa average null.
  */
-export function rollingAo12(times: number[], idx: number): number | null {
+export function rollingAo12(records: TrainerSolveRecord[], idx: number): number | null {
 	if (idx < 11) return null;
-	const slice = times.slice(idx - 11, idx + 1).sort((a, b) => a - b);
-	const trimmed = slice.slice(1, 11);
+	const slice = records.slice(idx - 11, idx + 1);
+	const effTimes = slice.map((r) => getEffectiveTime(r));
+	const dnfCount = effTimes.filter((t) => t === null).length;
+	if (dnfCount > 1) return null;
+	// DNF'yi Infinity olarak say (trim'de en kotu olarak cikar)
+	const sorted = effTimes.map((t) => t ?? Infinity).sort((a, b) => a - b);
+	const trimmed = sorted.slice(1, 11);
+	if (trimmed.some((t) => t === Infinity)) return null;
 	return trimmed.reduce((sum, t) => sum + t, 0) / 10;
 }
 
 export function averageOfFive(algId: string): number | null {
-	const times = getLastTimes(algId);
-	if (times.length < 5) return null;
-	const last5 = times.slice(-5).sort((a, b) => a - b);
-	// Trim best and worst, average middle 3
-	const trimmed = last5.slice(1, 4);
-	return trimmed.reduce((sum, t) => sum + t, 0) / 3;
+	const records = getLastTimes(algId);
+	if (records.length < 5) return null;
+	return rollingAo5(records, records.length - 1);
 }
 
 export function averageOfTwelve(algId: string): number | null {
-	const times = getLastTimes(algId);
-	if (times.length < 12) return null;
-	const last12 = times.slice(-12).sort((a, b) => a - b);
-	// Trim best and worst, average middle 10
-	const trimmed = last12.slice(1, 11);
-	return trimmed.reduce((sum, t) => sum + t, 0) / 10;
+	const records = getLastTimes(algId);
+	if (records.length < 12) return null;
+	return rollingAo12(records, records.length - 1);
 }
 
 // --- Algorithm CRUD ---

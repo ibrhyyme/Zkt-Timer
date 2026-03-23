@@ -1,11 +1,9 @@
-import React, {useState, useCallback} from 'react';
+import React, {useCallback} from 'react';
 import block from '../../../styles/bem';
 import {useTrainerContext} from '../TrainerContext';
-import TrainerOptions from '../options/TrainerOptions';
 import {getPuzzleType} from '../../../util/trainer/algorithm_engine';
 import {useTranslation} from 'react-i18next';
 import {
-	GearSix,
 	Eye,
 	EyeSlash,
 	ArrowLeft,
@@ -21,8 +19,6 @@ const b = block('trainer');
 export default function TrainerToolbar() {
 	const {t} = useTranslation();
 	const {state, dispatch, connectRef} = useTrainerContext();
-	const [showOptions, setShowOptions] = useState(false);
-
 	const toggleMask = useCallback(() => {
 		dispatch({type: 'SET_MOVE_MASKED', payload: !state.isMoveMasked});
 	}, [state.isMoveMasked, dispatch]);
@@ -139,19 +135,8 @@ export default function TrainerToolbar() {
 						</button>
 					)}
 
-					{state.view === 'selection' && (
-						<button
-							className={b('toolbar-btn')}
-							onClick={() => setShowOptions(true)}
-							title={t('trainer.options')}
-						>
-							<GearSix size={20} />
-						</button>
-					)}
-				</div>
+					</div>
 			</div>
-
-			{showOptions && <TrainerOptions onClose={() => setShowOptions(false)} />}
 		</>
 	);
 }

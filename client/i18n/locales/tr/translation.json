@@ -199,6 +199,8 @@
 		"moves": "Hamle",
 		"total_solves": "Toplam Çözüm",
 		"recent_times": "Son Süreler",
+		"reset_season": "Sezonu Sıfırla",
+		"reset_season_confirm": "Bu algoritmanın tüm çözüm geçmişini silmek istediğinize emin misiniz?",
 		"options": "Seçenekler",
 		"export": "Dışa Aktar",
 		"import": "İçe Aktar",

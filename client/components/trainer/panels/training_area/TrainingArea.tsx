@@ -3,7 +3,7 @@ import block from '../../../../styles/bem';
 import {useTrainerContext} from '../../TrainerContext';
 import {useLLPatternsReady} from '../../../../util/trainer/ll_patterns';
 import {isLLCategory, getDefaultFrontFace, getPuzzleType, algToId, expandNotation, computeSetupInverse} from '../../../../util/trainer/algorithm_engine';
-import {fetchDefaultAlgs, getLastTimes} from '../../hooks/useAlgorithmData';
+import {fetchDefaultAlgs, getLastTimes, getEffectiveTime, deleteTrainerSolve} from '../../hooks/useAlgorithmData';
 import {useTrainerDb} from '../../../../util/hooks/useTrainerDb';
 import CubeViewer from './CubeViewer';
 import TrainerTimer from './TrainerTimer';
@@ -84,7 +84,8 @@ export default function TrainingArea() {
 
 	const chartTimes = useMemo(() => {
 		if (!currentAlgorithm) return [];
-		return getLastTimes(algToId(currentAlgorithm.algorithm));
+		const records = getLastTimes(algToId(currentAlgorithm.algorithm));
+		return records.map((r) => getEffectiveTime(r)).filter((t): t is number => t !== null);
 	}, [currentAlgorithm, dbVersion]);
 
 	if (!currentAlgorithm) {
@@ -120,24 +121,30 @@ export default function TrainingArea() {
 		dispatch({type: 'ADVANCE_ALGORITHM'});
 	}, [state.timerState, dispatch]);
 
-	// Sol/sag ok klavye kisayollari
+	// Sol/sag ok + Backspace klavye kisayollari
 	useEffect(() => {
-		if (!hasMultipleAlgorithms) return;
-
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if (state.timerState === 'RUNNING') return;
-			if (e.code === 'ArrowLeft') {
+
+			if (hasMultipleAlgorithms && e.code === 'ArrowLeft') {
 				e.preventDefault();
 				dispatch({type: 'PREVIOUS_ALGORITHM'});
-			} else if (e.code === 'ArrowRight') {
+			} else if (hasMultipleAlgorithms && e.code === 'ArrowRight') {
 				e.preventDefault();
 				dispatch({type: 'ADVANCE_ALGORITHM'});
+			} else if (e.code === 'Backspace' && currentAlgorithm) {
+				e.preventDefault();
+				const algId = algToId(currentAlgorithm.algorithm);
+				const records = getLastTimes(algId);
+				if (records.length > 0) {
+					deleteTrainerSolve(algId, records.length - 1);
+				}
 			}
 		};
 
 		window.addEventListener('keydown', handleKeyDown);
 		return () => window.removeEventListener('keydown', handleKeyDown);
-	}, [hasMultipleAlgorithms, state.timerState, dispatch]);
+	}, [hasMultipleAlgorithms, state.timerState, dispatch, currentAlgorithm]);
 
 	return (
 		<div className={b('training-area')} onClick={handleAreaTouch}>

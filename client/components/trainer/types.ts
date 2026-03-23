@@ -26,6 +26,13 @@ export type TrainerMode = 'standard' | 'smart';
 export type TimerState = 'IDLE' | 'READY' | 'RUNNING' | 'STOPPED';
 export type LearnedStatus = 0 | 1 | 2; // 0=not learned, 1=learning, 2=learned
 
+export interface TrainerSolveRecord {
+	t: number;       // time in ms
+	p2?: boolean;    // plus_two (only present if true)
+	dnf?: boolean;   // (only present if true)
+	ts?: number;     // timestamp (Date.now())
+}
+
 // Smart Cube Types
 export interface SmartTurn {
 	turn: string;

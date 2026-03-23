@@ -199,6 +199,8 @@
 		"moves": "Moves",
 		"total_solves": "Total Solves",
 		"recent_times": "Recent Times",
+		"reset_season": "Reset Season",
+		"reset_season_confirm": "Are you sure you want to delete all solve history for this algorithm?",
 		"options": "Options",
 		"option_random_order": "Random order",
 		"option_random_auf": "Random AUF",
