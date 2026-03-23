@@ -20,6 +20,7 @@ model UserAccount {
   last_name          String
   username           String?     @unique
   verified           Boolean     @default(false)
+  email_verified     Boolean     @default(false)
   banned_forever     Boolean     @default(false)
   banned_until       DateTime?
   stripe_customer_id String?     @unique
@@ -47,6 +48,7 @@ model UserAccount {
   elo_rating                    EloRating?
   email_log                     EmailLog[]
   forgot_password               ForgotPassword[]
+  email_verifications           EmailVerification[]
   friendships_other             Friendship[]            @relation("friendship_other_user")
   friendships                   Friendship[]            @relation("friendship_user")
   friendship_requests_sent      FriendshipRequest[]     @relation("friendship_request_from_user")
@@ -331,6 +333,18 @@ model ForgotPassword {
 
   @@index([user_id])
   @@map("forgot_password")
+}
+
+model EmailVerification {
+  id         String      @id @default(uuid())
+  user_id    String
+  code       String
+  claimed    Boolean     @default(false)
+  created_at DateTime    @default(now())
+  user       UserAccount @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@map("email_verification")
 }
 
 model Solve {

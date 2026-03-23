@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import Login from './login/Login';
 import SignUp from './sign_up/SignUp';
 import Forgot from './forgot/Forgot';
+import EmailVerification from './email_verification/EmailVerification';
 import './LoginWrapper.scss';
 import Header from '../layout/header/Header';
 import { useRouteMatch, Link } from 'react-router-dom';
@@ -27,6 +28,9 @@ export default function LoginWrapper() {
 	} else if (path.startsWith('/forgot')) {
 		body = <Forgot />;
 		currentTab = 'forgot';
+	} else if (path.startsWith('/verify-email')) {
+		body = <EmailVerification />;
+		currentTab = 'verify';
 	}
 
 	return (
@@ -67,7 +71,11 @@ export default function LoginWrapper() {
 
 					{/* Title */}
 					<h1 className={b('title')}>
-						{currentTab === 'forgot' ? t('login_wrapper.reset_password') : t('login_wrapper.welcome')}
+						{currentTab === 'forgot'
+						? t('login_wrapper.reset_password')
+						: currentTab === 'verify'
+							? t('email_verification.title')
+							: t('login_wrapper.welcome')}
 					</h1>
 
 					{/* Tabs */}

@@ -75,8 +75,7 @@ export default function SignUp() {
 					password,
 				},
 			});
-			localStorage.setItem('zkt_has_auth', 'true');
-			window.location.href = getRedirectLink();
+			window.location.href = `/verify-email?email=${encodeURIComponent(email.trim())}`;
 		} catch (e) {
 			setError(e.message);
 		}

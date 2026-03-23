@@ -20,6 +20,10 @@ const mutateActions = {
 			throw new GraphQLError(400, 'Geçersiz kullanıcı adı veya şifre');
 		}
 
+		if (!user.email_verified) {
+			throw new GraphQLError(400, 'Lütfen önce e-posta adresinizi doğrulayın');
+		}
+
 		const jwt = getJwtString(user);
 
 		// If remember me is true, set cookie for 10 years (effectively forever)
