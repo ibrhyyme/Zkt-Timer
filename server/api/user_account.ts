@@ -18,13 +18,14 @@ import { createEmailVerification } from '../models/email_verification';
 import { GraphQLContext } from '../@types/interfaces/server.interface';
 import { ErrorCode } from '../constants/errors';
 import { getPrisma } from '../database';
+import { getEmailStrings } from '../util/email_translations';
 
 export const gqlQuery = `
 	me: UserAccount!
 `;
 
 export const gqlMutation = `
-	createUserAccount(first_name: String!, last_name: String!, email: String!, username: String!, password: String!): PublicUserAccount
+	createUserAccount(first_name: String!, last_name: String!, email: String!, username: String!, password: String!, language: String): PublicUserAccount
 	updateUserAccount(first_name: String!, last_name: String!, email: String!, username: String!): PublicUserAccount
 	updateUserPassword(old_password: String!, new_password: String!): PublicUserAccount
 	deleteUserAccount: PublicUserAccount
@@ -42,6 +43,7 @@ type CreateAccountInput = {
 	email: string;
 	username: string;
 	password: string;
+	language?: string;
 };
 
 type UpdatePasswordInput = {
@@ -52,7 +54,7 @@ type UpdatePasswordInput = {
 export const mutateActions = {
 	createUserAccount: async (
 		_: any,
-		{ first_name, last_name, email, username, password }: CreateAccountInput,
+		{ first_name, last_name, email, username, password, language }: CreateAccountInput,
 		{ req, res }: GraphQLContext
 	) => {
 		let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
@@ -96,10 +98,15 @@ export const mutateActions = {
 
 		// Dogrulama kodu olustur ve mail gonder
 		const ev = await createEmailVerification(user);
+		const emailStrings = getEmailStrings(language);
 		try {
-			await sendEmailWithTemplate(user, 'Zkt-Timer E-posta Doğrulama', 'email_verification', {
+			await sendEmailWithTemplate(user, emailStrings.verification_subject, 'email_verification', {
 				code: ev.code,
-				message: 'Hesabınızı doğrulamak için lütfen aşağıdaki kodu kullanın:',
+				message: emailStrings.verification_message,
+				greeting: emailStrings.greeting,
+				code_expiry: emailStrings.code_expiry,
+				closing: emailStrings.closing,
+				team: emailStrings.team,
 			});
 		} catch (error) {
 			console.error('Verification email could not be sent:', error);

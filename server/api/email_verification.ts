@@ -6,10 +6,11 @@ import {sendEmailWithTemplate} from '../services/ses';
 import {getJwtString} from '../util/auth';
 import {ErrorCode} from '../constants/errors';
 import {GraphQLContext} from '../@types/interfaces/server.interface';
+import {getEmailStrings, getWelcomeTemplateName} from '../util/email_translations';
 
 export const gqlMutation = `
-	resendEmailVerificationCode(email: String!): Void
-	verifyEmailCode(email: String!, code: String!): PublicUserAccount
+	resendEmailVerificationCode(email: String!, language: String): Void
+	verifyEmailCode(email: String!, code: String!, language: String): PublicUserAccount
 `;
 
 function verificationLessThan30Min(ev) {
@@ -20,20 +21,25 @@ function verificationLessThan30Min(ev) {
 }
 
 export const mutateActions = {
-	resendEmailVerificationCode: async (_: any, {email}: {email: string}) => {
+	resendEmailVerificationCode: async (_: any, {email, language}: {email: string; language?: string}) => {
 		const user = await getUserByEmail(email);
 
 		if (user && !user.email_verified) {
 			const ev = await createEmailVerification(user);
+			const emailStrings = getEmailStrings(language);
 
-			sendEmailWithTemplate(user, 'Zkt-Timer E-posta Doğrulama', 'email_verification', {
+			sendEmailWithTemplate(user, emailStrings.verification_subject, 'email_verification', {
 				code: ev.code,
-				message: 'Hesabınızı doğrulamak için lütfen aşağıdaki kodu kullanın:',
+				message: emailStrings.verification_message,
+				greeting: emailStrings.greeting,
+				code_expiry: emailStrings.code_expiry,
+				closing: emailStrings.closing,
+				team: emailStrings.team,
 			});
 		}
 	},
 
-	verifyEmailCode: async (_: any, {email, code}: {email: string; code: string}, {res}: GraphQLContext) => {
+	verifyEmailCode: async (_: any, {email, code, language}: {email: string; code: string; language?: string}, {res}: GraphQLContext) => {
 		const user = await getUserByEmail(email);
 
 		if (!user) {
@@ -58,8 +64,9 @@ export const mutateActions = {
 		await updateUserAccountWithParams(user.id, {email_verified: true});
 
 		// Hosgeldin mailini dogrulama sonrasi gonder
+		const emailStrings = getEmailStrings(language);
 		try {
-			await sendEmailWithTemplate(user, "Zkt-Timer'a Hoş Geldin! 🎉", 'welcome', {});
+			await sendEmailWithTemplate(user, emailStrings.welcome_subject, getWelcomeTemplateName(language), {});
 		} catch (error) {
 			console.error('Welcome email could not be sent:', error);
 		}

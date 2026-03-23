@@ -6,21 +6,21 @@ import {UserAccount} from '../../../@types/generated/graphql';
 import {useTranslation} from 'react-i18next';
 
 const VERIFY_EMAIL_CODE_MUTATION = gql`
-	mutation Mutate($email: String!, $code: String!) {
-		verifyEmailCode(email: $email, code: $code) {
+	mutation Mutate($email: String!, $code: String!, $language: String) {
+		verifyEmailCode(email: $email, code: $code, language: $language) {
 			id
 		}
 	}
 `;
 
 const RESEND_EMAIL_VERIFICATION_CODE_MUTATION = gql`
-	mutation Mutate($email: String!) {
-		resendEmailVerificationCode(email: $email)
+	mutation Mutate($email: String!, $language: String) {
+		resendEmailVerificationCode(email: $email, language: $language)
 	}
 `;
 
 export default function EmailVerification() {
-	const {t} = useTranslation();
+	const {t, i18n} = useTranslation();
 	const [code, setCode] = useInput('');
 	const [error, setError] = useState('');
 	const [resent, setResent] = useState(false);
@@ -28,11 +28,11 @@ export default function EmailVerification() {
 	const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
 	const email = urlParams?.get('email') || '';
 
-	const [verifyCode, verifyCodeData] = useMutation<{verifyEmailCode: UserAccount}, {email: string; code: string}>(
+	const [verifyCode, verifyCodeData] = useMutation<{verifyEmailCode: UserAccount}, {email: string; code: string; language: string}>(
 		VERIFY_EMAIL_CODE_MUTATION
 	);
 
-	const [resendCode, resendCodeData] = useMutation<{resendEmailVerificationCode: void}, {email: string}>(
+	const [resendCode, resendCodeData] = useMutation<{resendEmailVerificationCode: void}, {email: string; language: string}>(
 		RESEND_EMAIL_VERIFICATION_CODE_MUTATION
 	);
 
@@ -50,7 +50,7 @@ export default function EmailVerification() {
 		}
 
 		try {
-			await verifyCode({variables: {email, code: code.trim()}});
+			await verifyCode({variables: {email, code: code.trim(), language: i18n.language}});
 			localStorage.setItem('zkt_has_auth', 'true');
 			window.location.href = getRedirectLink();
 		} catch (e) {
@@ -61,7 +61,7 @@ export default function EmailVerification() {
 	async function handleResend() {
 		if (loading) return;
 		try {
-			await resendCode({variables: {email}});
+			await resendCode({variables: {email, language: i18n.language}});
 			setResent(true);
 			setTimeout(() => setResent(false), 5000);
 		} catch (e) {

@@ -1,0 +1,133 @@
+<mjml>
+  <mj-head>
+    <mj-title>Добро пожаловать в Zkt-Timer!</mj-title>
+    <mj-font name="Roboto" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700" />
+    <mj-attributes>
+      <mj-all font-family="Roboto, Helvetica, Arial, sans-serif" />
+      <mj-text font-size="16px" color="#444444" line-height="24px" />
+      <mj-section padding="20px 0" />
+    </mj-attributes>
+  </mj-head>
+  <mj-body background-color="#f4f4f4">
+    <mj-section background-color="#ffffff" padding-bottom="0">
+      <mj-column>
+        <mj-image href="https://zktimer.app" width="100px" src="https://zktimer.app/public/images/zkt-logo-dark.png" alt="Zkt-Timer Logo"></mj-image>
+        <mj-divider border-color="#246bfd" border-width="2px"></mj-divider>
+      </mj-column>
+    </mj-section>
+
+    <mj-section background-color="#ffffff" padding-top="0">
+      <mj-column>
+        <mj-text font-size="24px" font-weight="bold" color="#246bfd" align="center">
+          Добро пожаловать, {{user.first_name}}! 🎉
+        </mj-text>
+        <mj-text align="center">
+          Мы рады, что вы присоединились к семье Zkt-Timer. Вы только что вошли в самую продвинутую в мире платформу для сборки кубиков, созданную для профессиональных спидкуберов.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- About Section -->
+    <mj-section background-color="#ffffff">
+      <mj-column>
+        <mj-text font-weight="bold" font-size="18px" color="#246bfd">О приложении</mj-text>
+        <mj-text>
+          • <strong>Современный дизайн:</strong> Чистый, интуитивный и простой в использовании.<br/>
+          • <strong>Облачное хранение:</strong> Ваши сборки и настройки никогда не потеряются.<br/>
+          • <strong>Стандарты WCA:</strong> Random-state скрамблы для всех официальных головоломок (3x3, 4x4, Megaminx и др.).<br/>
+          • <strong>3D предпросмотр:</strong> Просматривайте каждый скрамбл в 3D.<br/>
+          • <strong>Умный куб:</strong> Перенесите тренировки в цифровую эпоху.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Smart Cube -->
+    <mj-section background-color="#f8f9fa">
+      <mj-column>
+        <mj-text font-weight="bold" font-size="18px" color="#246bfd">📱 Умный куб и интеграция гироскопа</mj-text>
+        <mj-text>
+          Полная совместимость с моделями GAN Cube (Gen2, Gen3, Gen4, GAN12 uiM и др.)! Отслеживайте вращение и скорость в реальном времени с помощью данных гироскопа, отражая физические движения на экране.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Phase Analysis -->
+    <mj-section background-color="#ffffff">
+      <mj-column>
+        <mj-text font-weight="bold" font-size="18px" color="#246bfd">📊 Анализ фаз</mj-text>
+        <mj-text>
+          Анализируйте не только общее время, но и каждый этап сборки (Cross, F2L, OLL, PLL) с точностью до миллисекунд. Совершенствуйте технику с режимами анализа «Простой» или «Детальный (2-Look)».
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Multiplayer -->
+    <mj-section background-color="#f8f9fa">
+      <mj-column>
+        <mj-text font-weight="bold" font-size="18px" color="#246bfd">👥 Комнаты друзей (мультиплеер)</mj-text>
+        <mj-text>
+          Устали собирать в одиночку?
+        </mj-text>
+        <mj-text>
+          • <strong>Общий скрамбл:</strong> Все решают один и тот же скрамбл.<br/>
+          • <strong>Отслеживание в реальном времени:</strong> Следите за действиями каждого в реальном времени.<br/>
+          • <strong>Чат:</strong> Общайтесь в комнате и сравнивайте результаты.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Data & Progress -->
+    <mj-section background-color="#ffffff">
+      <mj-column>
+        <mj-text font-weight="bold" font-size="18px" color="#246bfd">📈 Отслеживайте прогресс</mj-text>
+        <mj-text>
+          Десятки статистик для каждой головоломки и категории. Отслеживайте лучшие (PB) и худшие времена, средние Ao5, Ao12 и Ao100. Визуализируйте прогресс с помощью детальных графиков. Контролируйте свои результаты с любого устройства через мобильный интерфейс.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Customization -->
+    <mj-section background-color="#f8f9fa">
+      <mj-column>
+        <mj-text font-weight="bold" font-size="18px" color="#246bfd">🎨 Выразите свой стиль</mj-text>
+        <mj-text>
+          Берегите глаза с пользовательской тёмной темой <strong>«Underground»</strong>. Настраивайте шрифты (Roboto, JetBrains Mono и др.), цвета и весь интерфейс по своему вкусу.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+     <!-- 3D Visualization -->
+    <mj-section background-color="#ffffff">
+      <mj-column>
+        <mj-text font-weight="bold" font-size="18px" color="#246bfd">🧊 3D визуализация скрамблов</mj-text>
+        <mj-text>
+          Просматривайте состояние скрамбла в 3D с поддержкой TwistyPlayer, вращайте куб касанием экрана и анализируйте состояние перед началом сборки.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+
+    <!-- Footer Features -->
+    <mj-section background-color="#e9ecef">
+      <mj-column>
+        <mj-text font-weight="bold" font-size="16px" color="#444444">И многое другое...</mj-text>
+        <mj-text font-size="14px">
+          • <strong>Поддержка StackMat:</strong> Подключите оборудование и записывайте время автоматически.<br/>
+          • <strong>Ручной ввод:</strong> Вводите время вручную, когда таймера нет под рукой.<br/>
+          • <strong>Стандарты WCA:</strong> Официальное время инспекции в соответствии с правилами.<br/>
+          • <strong>Поделиться:</strong> Делитесь сборками с помощью уникальных кодов.
+        </mj-text>
+        <mj-button href="https://zktimer.app" background-color="#246bfd" color="#ffffff" font-size="16px" font-weight="bold" border-radius="8px">
+          Запустить таймер
+        </mj-button>
+        <mj-divider border-color="#cbd5e0" border-width="1px"></mj-divider>
+         <mj-text font-size="12px" align="center" color="#999999">
+          Команда Zkt-Timer<br/>
+          <a href="https://zktimer.app" style="color: #246bfd; text-decoration: none;">zktimer.app</a>
+        </mj-text>
+        <mj-text font-size="12px" align="center" color="#999999">
+          Если вы не хотите получать это письмо, вы можете изменить <a href="https://zktimer.app/settings" style="color: #246bfd; text-decoration: none;">настройки уведомлений</a>.
+        </mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>

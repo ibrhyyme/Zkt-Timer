@@ -13,7 +13,7 @@ export default function LanguageSwitcher() {
 	}
 
 	const supportedLangs = ['tr', 'en', 'es', 'ru'];
-	const currentLang = supportedLangs.find((s) => i18n.language?.startsWith(s)) || 'tr';
+	const currentLang = supportedLangs.find((s) => i18n.language?.startsWith(s)) || 'en';
 
 	return (
 		<Dropdown

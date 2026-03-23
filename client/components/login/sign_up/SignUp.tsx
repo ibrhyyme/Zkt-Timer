@@ -16,13 +16,14 @@ import { useTranslation } from 'react-i18next';
 const b = block('login');
 
 const CREATE_USER_ACCOUNT_MUTATION = gql`
-	mutation Mutate($firstName: String!, $lastName: String!, $email: String!, $username: String!, $password: String!) {
+	mutation Mutate($firstName: String!, $lastName: String!, $email: String!, $username: String!, $password: String!, $language: String) {
 		createUserAccount(
 			first_name: $firstName
 			last_name: $lastName
 			email: $email
 			username: $username
 			password: $password
+			language: $language
 		) {
 			id
 		}
@@ -30,7 +31,7 @@ const CREATE_USER_ACCOUNT_MUTATION = gql`
 `;
 
 export default function SignUp() {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	const [firstName, setFirstName] = useInput('');
 	const [lastName, setLastName] = useInput('');
 	const [email, setEmail] = useInput('');
@@ -47,6 +48,7 @@ export default function SignUp() {
 			username: string;
 			email: string;
 			password: string;
+			language: string;
 		}
 	>(CREATE_USER_ACCOUNT_MUTATION);
 
@@ -73,6 +75,7 @@ export default function SignUp() {
 					email: email.trim(),
 					username: username.trim(),
 					password,
+					language: i18n.language,
 				},
 			});
 			window.location.href = `/verify-email?email=${encodeURIComponent(email.trim())}`;
