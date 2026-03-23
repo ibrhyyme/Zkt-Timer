@@ -199,6 +199,8 @@
 		"moves": "Movimientos",
 		"total_solves": "Resoluciones totales",
 		"recent_times": "Tiempos recientes",
+		"reset_season": "Reiniciar temporada",
+		"reset_season_confirm": "¿Estás seguro de que quieres eliminar todo el historial de resoluciones de este algoritmo?",
 		"options": "Opciones",
 		"export": "Exportar",
 		"import": "Importar",

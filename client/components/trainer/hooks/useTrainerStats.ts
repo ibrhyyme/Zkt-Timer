@@ -2,13 +2,14 @@ import {useMemo} from 'react';
 import {useTrainerDb} from '../../../util/hooks/useTrainerDb';
 import {algToId} from '../../../util/trainer/algorithm_engine';
 import {getBestTime, getLastTimes, averageOfFive, averageOfTwelve} from './useAlgorithmData';
+import type {TrainerSolveRecord} from '../types';
 
 export interface AlgorithmStats {
 	algId: string;
 	bestTime: number | null;
 	ao5: number | null;
 	ao12: number | null;
-	lastTimes: number[];
+	lastTimes: TrainerSolveRecord[];
 	totalSolves: number;
 	tps: number | null;
 }
