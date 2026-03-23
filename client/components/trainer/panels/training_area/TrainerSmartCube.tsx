@@ -33,6 +33,64 @@ import * as THREE from 'three';
 
 const b = block('trainer');
 
+// Algoritmadaki rotasyon/wide/slice hamlelerinden net fiziksel kubus donusunu hesaplar.
+// Face turn'ler (R,L,U,D,F,B) core'u dondurmez — jiroskop etkilenmez.
+// Rotasyonlar (x,y,z), wide move'lar (r,l,u,d,f,b) ve slice move'lar (M,E,S)
+// core'u dondurur — jiroskop bu hamlelerden etkilenir.
+function calculateNetRotationQuat(moves: string[]): THREE.Quaternion {
+	const result = new THREE.Quaternion();
+	const HALF_PI = Math.PI / 2;
+
+	const X_AXIS = new THREE.Vector3(1, 0, 0);
+	const Y_AXIS = new THREE.Vector3(0, 1, 0);
+	const Z_AXIS = new THREE.Vector3(0, 0, 1);
+
+	for (const rawMove of moves) {
+		const move = rawMove.replace(/[()]/g, '');
+		const base = move.replace(/['2]/g, '');
+		const isPrime = move.includes("'");
+		const isDouble = move.includes('2');
+
+		// Hangi eksen etrafinda, hangi yonde donuyor?
+		// dir = -1: CW (ornegin x = R yonu, saat yonu)
+		// dir = +1: CCW (ornegin l = L yonu = x' yonu)
+		let axis: THREE.Vector3 | null = null;
+		let dir = -1;
+
+		switch (base) {
+			// Rotasyonlar
+			case 'x': axis = X_AXIS; dir = -1; break;
+			case 'y': axis = Y_AXIS; dir = -1; break;
+			case 'z': axis = Z_AXIS; dir = -1; break;
+			// Wide move'lar (core donuyor)
+			case 'r': axis = X_AXIS; dir = -1; break;
+			case 'l': axis = X_AXIS; dir = 1; break;
+			case 'u': axis = Y_AXIS; dir = -1; break;
+			case 'd': axis = Y_AXIS; dir = 1; break;
+			case 'f': axis = Z_AXIS; dir = -1; break;
+			case 'b': axis = Z_AXIS; dir = 1; break;
+			// Slice move'lar (core orta katmanda — o da donuyor)
+			case 'M': axis = X_AXIS; dir = 1; break;  // M = L yonu = x'
+			case 'E': axis = Y_AXIS; dir = 1; break;  // E = D yonu = y'
+			case 'S': axis = Z_AXIS; dir = -1; break;  // S = F yonu = z
+			default: continue;
+		}
+
+		let angle: number;
+		if (isDouble) {
+			angle = Math.PI;
+		} else if (isPrime) {
+			angle = -dir * HALF_PI;
+		} else {
+			angle = dir * HALF_PI;
+		}
+
+		result.multiply(new THREE.Quaternion().setFromAxisAngle(axis, angle));
+	}
+
+	return result;
+}
+
 export default function TrainerSmartCube() {
 	const {state, dispatch, connectRef} = useTrainerContext();
 	const {currentAlgorithm, options} = state;
@@ -55,6 +113,10 @@ export default function TrainerSmartCube() {
 	const cubeQuaternion = useRef(HOME_ORIENTATION.current.clone());
 	const animFrameRef = useRef<number | null>(null);
 	const unsubGyroRef = useRef<(() => void) | null>(null);
+	// Net rotation-aware gyro reset: onceki algoritmanin net rotasyonunu
+	// yeni basis hesabinda kullanarak drift'i duzeltirken oryantasyonu korur
+	const netRotationQuatRef = useRef<THREE.Quaternion>(new THREE.Quaternion());
+	const pendingNetRotRef = useRef<THREE.Quaternion | null>(null);
 
 	// KPattern matching refs
 	const myKpatternRef = useRef<KPattern | null>(null);
@@ -254,7 +316,18 @@ export default function TrainerSmartCube() {
 				const {x: qx, y: qy, z: qz, w: qw} = event.quaternion;
 				const quat = new THREE.Quaternion(qx, qz, -qy, qw).normalize();
 				if (!gyroBasisRef.current) {
-					gyroBasisRef.current = quat.clone().conjugate();
+					// Lazy basis yakalama — ilk gyro event'inde tetiklenir.
+					// pendingNetRot varsa: basis = netRot × conj(quat)
+					// Boylece display = HOME × netRot × conj(quat) × quat = HOME × netRot
+					// (onceki algoritmanin net rotasyonu korunur, drift duzeltilir)
+					const baseConj = quat.clone().conjugate();
+					const pending = pendingNetRotRef.current;
+					if (pending) {
+						gyroBasisRef.current = pending.clone().multiply(baseConj);
+						pendingNetRotRef.current = null;
+					} else {
+						gyroBasisRef.current = baseConj;
+					}
 				}
 				cubeQuaternion.current.copy(
 					quat.premultiply(gyroBasisRef.current).premultiply(HOME_ORIENTATION.current)
@@ -435,8 +508,12 @@ export default function TrainerSmartCube() {
 			const initialState = kpuzzle.defaultPattern();
 			myKpatternRef.current = initialState;
 
-			// Algoritma gecisinde jiroskop sifirla — slice/rotation hamlelerden
-			// sonra gyro kayar, yeni algoritmada temiz baslamak saglikli
+			// Net rotation-aware gyro reset:
+			// Onceki algoritmanin net rotasyonunu kaydet, sonra basis'i null yap.
+			// Gyro callback'te ilk event geldiginde, pendingNetRot kullanilarak
+			// yeni basis = netRot × conj(hardwareQuat) hesaplanir.
+			// Boylece drift duzeltilir ama algoritmanin net rotasyonu korunur.
+			pendingNetRotRef.current = netRotationQuatRef.current.clone();
 			gyroBasisRef.current = null;
 
 			// patternStates olustur
@@ -452,6 +529,11 @@ export default function TrainerSmartCube() {
 
 			patternStatesRef.current = pStates;
 			algPatternStatesRef.current = apStates;
+
+			// Bu algoritmanin net rotasyonunu hesapla ve sakla.
+			// Sonraki algoritma gecisinde gyro basis'i buna gore ayarlanacak.
+			netRotationQuatRef.current = calculateNetRotationQuat(algMoves);
+
 			currentMoveIndexRef.current = -1;
 			badAlgRef.current = [];
 			lastMovesRef.current = [];
@@ -573,6 +655,7 @@ export default function TrainerSmartCube() {
 
 	const handleResetGyro = useCallback(() => {
 		gyroBasisRef.current = null;
+		pendingNetRotRef.current = null; // Manuel reset — net rotation kompanzasyonu yok
 	}, []);
 
 	// -- Toolbar event listeners (reset/gyro from toolbar buttons) --
