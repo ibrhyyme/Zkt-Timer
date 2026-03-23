@@ -11,11 +11,13 @@ import {
 } from '../models/user_account';
 import { sendEmailWithTemplate } from '../services/ses';
 import { createSetting } from '../models/settings';
-import { checkLoggedIn, getJwtString } from '../util/auth';
+import { checkLoggedIn } from '../util/auth';
 import { checkPassword } from '../util/password';
 import { createNotificationPreference } from '../models/notification_preference';
+import { createEmailVerification } from '../models/email_verification';
 import { GraphQLContext } from '../@types/interfaces/server.interface';
 import { ErrorCode } from '../constants/errors';
+import { getPrisma } from '../database';
 
 export const gqlQuery = `
 	me: UserAccount!
@@ -55,9 +57,14 @@ export const mutateActions = {
 	) => {
 		let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
-		const newEmail = await getUserByEmail(email);
-		if (newEmail) {
-			throw new GraphQLError(ErrorCode.BAD_INPUT, 'That email address is already in use');
+		const existingUser = await getUserByEmail(email);
+		if (existingUser) {
+			if (!existingUser.email_verified) {
+				// Dogrulanmamis hesabi sil, yeni kayda izin ver
+				await getPrisma().userAccount.delete({where: {id: existingUser.id}});
+			} else {
+				throw new GraphQLError(ErrorCode.BAD_INPUT, 'That email address is already in use');
+			}
 		}
 
 		if (username.length < 2) {
@@ -87,21 +94,16 @@ export const mutateActions = {
 		await createSetting(user);
 		await createNotificationPreference(user);
 
-		// Hoş geldin maili gönder
+		// Dogrulama kodu olustur ve mail gonder
+		const ev = await createEmailVerification(user);
 		try {
-			await sendEmailWithTemplate(
-				user,
-				'Zkt-Timer\'a Hoş Geldin! 🎉',
-				'welcome',
-				{}
-			);
+			await sendEmailWithTemplate(user, 'Zkt-Timer E-posta Doğrulama', 'email_verification', {
+				code: ev.code,
+				message: 'Hesabınızı doğrulamak için lütfen aşağıdaki kodu kullanın:',
+			});
 		} catch (error) {
-			// Mail gönderimi başarısız olsa bile kayıt işlemi devam etsin
-			console.error('Welcome email could not be sent:', error);
+			console.error('Verification email could not be sent:', error);
 		}
-
-		const jwt = getJwtString(user);
-		res.cookie('session', jwt, { maxAge: 2147483647, httpOnly: true });
 
 		return sanitizeUser(user);
 	},

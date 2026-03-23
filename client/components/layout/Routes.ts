@@ -109,6 +109,7 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/signup', null, App, LoginWrapper, false, true, false, true),
 	route('/login', null, App, LoginWrapper, false, true, false, true),
 	route('/forgot', null, App, LoginWrapper, false, true, false, true),
+	route('/verify-email', null, App, LoginWrapper, false, true, false, true),
 	route('/sessions', null, App, Sessions, false),
 	route('/solves', null, App, Solves, false),
 	route('/stats', null, App, Stats, false),

@@ -1263,10 +1263,21 @@
 		"link_account": "Vincular cuenta",
 		"wca_description": "Aumenta la credibilidad vinculando tu cuenta WCA y mostrando tus récords oficiales."
 	},
+	"email_verification": {
+		"title": "Verificación de correo",
+		"check_email": "Hemos enviado un código de verificación a tu correo. Revisa tu bandeja de entrada.",
+		"verification_code": "Código de verificación",
+		"code_placeholder": "Ingresa el código de 6 dígitos",
+		"enter_code_error": "Por favor ingresa el código de verificación",
+		"verify_button": "Verificar",
+		"resend_code": "Reenviar código",
+		"code_resent": "¡Código reenviado!"
+	},
 	"login_wrapper": {
 		"login_title": "Zkt-Timer | Iniciar sesión",
 		"signup_title": "Zkt-Timer | Registrarse",
 		"reset_password": "Restablecer contraseña",
+		"verify_email": "Verificación de correo",
 		"welcome": "Bienvenido",
 		"login": "Iniciar sesión",
 		"signup": "Registrarse"

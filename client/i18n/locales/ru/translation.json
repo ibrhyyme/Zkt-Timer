@@ -1263,10 +1263,21 @@
 		"link_account": "Привязать аккаунт",
 		"wca_description": "Повысьте доверие, привязав аккаунт WCA и отображая официальные записи."
 	},
+	"email_verification": {
+		"title": "Подтверждение почты",
+		"check_email": "Мы отправили код подтверждения на вашу электронную почту. Проверьте входящие.",
+		"verification_code": "Код подтверждения",
+		"code_placeholder": "Введите 6-значный код",
+		"enter_code_error": "Пожалуйста, введите код подтверждения",
+		"verify_button": "Подтвердить",
+		"resend_code": "Отправить код повторно",
+		"code_resent": "Код отправлен повторно!"
+	},
 	"login_wrapper": {
 		"login_title": "Zkt-Timer | Вход",
 		"signup_title": "Zkt-Timer | Регистрация",
 		"reset_password": "Сброс пароля",
+		"verify_email": "Подтверждение почты",
 		"welcome": "Добро пожаловать",
 		"login": "Вход",
 		"signup": "Регистрация"

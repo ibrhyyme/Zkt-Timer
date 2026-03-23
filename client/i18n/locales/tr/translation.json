@@ -1263,10 +1263,21 @@
 		"link_account": "Hesap Bağla",
 		"wca_description": "WCA hesabınızı ekleyerek ve resmi derecelerinizi göstererek güvenilirliği artırın."
 	},
+	"email_verification": {
+		"title": "E-posta Doğrulama",
+		"check_email": "E-posta adresinize bir doğrulama kodu gönderdik. Lütfen gelen kutunuzu kontrol edin.",
+		"verification_code": "Doğrulama Kodu",
+		"code_placeholder": "6 haneli kodu girin",
+		"enter_code_error": "Lütfen doğrulama kodunu girin",
+		"verify_button": "Doğrula",
+		"resend_code": "Kodu tekrar gönder",
+		"code_resent": "Kod tekrar gönderildi!"
+	},
 	"login_wrapper": {
 		"login_title": "Zkt-Timer | Giriş Yap",
 		"signup_title": "Zkt-Timer | Kayıt Ol",
 		"reset_password": "Şifreni Sıfırla",
+		"verify_email": "E-posta Doğrulama",
 		"welcome": "Hoş Geldin",
 		"login": "Giriş",
 		"signup": "Kayıt Ol"

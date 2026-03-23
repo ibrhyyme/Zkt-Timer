@@ -8,6 +8,7 @@ import * as notifications from './notification';
 import * as adminBadge from './admin/badge';
 import * as smartDevice from './smart_device';
 import * as matchSession from './match_session';
+import * as emailVerification from './email_verification';
 
 export {
 	solve,
@@ -20,4 +21,5 @@ export {
 	matchSession,
 	adminBadge,
 	forgotPassword,
+	emailVerification,
 };
