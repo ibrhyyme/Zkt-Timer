@@ -1,6 +1,6 @@
 import React, {useState, useEffect, useRef, useCallback, useMemo} from 'react';
 import block from '../../../../styles/bem';
-import {algToId, getStickering, getOrientationRotation, getPuzzleType, isCubeShapePuzzle, expandNotation, isLLCategory, isIsometricCategory, getDefaultFrontFace, is2DPatternCategory, getPuzzlePatternType, isSQ1MirrorCategory} from '../../../../util/trainer/algorithm_engine';
+import {algToId, getStickering, getOrientationRotation, getPuzzleType, isCubeShapePuzzle, expandNotation, isLLCategory, isIsometricCategory, getDefaultFrontFace, is2DPatternCategory, getPuzzlePatternType, isSQ1MirrorCategory, computeSetupInverse} from '../../../../util/trainer/algorithm_engine';
 import {getLLPattern, isLLPatternsLoaded} from '../../../../util/trainer/ll_patterns';
 import {getIsometricPattern, isIsometricPatternsLoaded} from '../../../../util/trainer/isometric_patterns';
 import {getPuzzlePattern, isPuzzlePatternsLoaded} from '../../../../util/trainer/puzzle_patterns';
@@ -17,6 +17,9 @@ import {saveCustomPattern} from '../../../../util/trainer/ll_patterns';
 import {useTrainerDb} from '../../../../util/hooks/useTrainerDb';
 import {useTranslation} from 'react-i18next';
 import {Check, X, CircleNotch} from 'phosphor-react';
+import {gqlMutateTyped, gqlQueryTyped} from '../../../api';
+import {useMe} from '../../../../util/hooks/useMe';
+import {CreateTrainerAlternativeDocument, TrainerAlternativesDocument} from '../../../../@types/generated/graphql';
 import type {CubeFace} from '../../types';
 
 const b = block('trainer');
@@ -49,6 +52,7 @@ export default function AlgorithmDetailModal({
 }: AlgorithmDetailModalProps) {
 	const {t} = useTranslation();
 	const dbVersion = useTrainerDb();
+	const me = useMe();
 	const isIso = isIsometricCategory(category);
 	const effectiveFrontFace = (isLLCategory(category) || isIso) ? getDefaultFrontFace(topFace) : frontFace;
 
@@ -56,6 +60,7 @@ export default function AlgorithmDetailModal({
 	const [currentAlgorithm, setCurrentAlgorithm] = useState(initialAlgorithm);
 	const [alternatives, setAlternatives] = useState<string[]>([]);
 	const [customAlts, setCustomAlts] = useState<string[]>([]);
+	const [dbAlts, setDbAlts] = useState<string[]>([]);
 	const [newAltInput, setNewAltInput] = useState('');
 	const [validating, setValidating] = useState(false);
 	const [validationError, setValidationError] = useState<string | null>(null);
@@ -81,22 +86,48 @@ export default function AlgorithmDetailModal({
 		});
 	}, [category, subset, name]);
 
-	// Custom alternatifleri yukle
+	// Custom alternatifleri yukle (localStorage)
 	useEffect(() => {
 		setCustomAlts(getCustomAlternatives(category, subset, name));
 	}, [category, subset, name, dbVersion]);
 
-	// Birlesik alternatif listesi: default (ana dahil) + custom
+	// DB alternatifleri yukle (giris yapmis kullanicilar icin)
+	useEffect(() => {
+		if (!me || !isLL) return;
+		gqlQueryTyped(TrainerAlternativesDocument, {category, caseName: name}).then((res) => {
+			if (res?.data?.trainerAlternatives) {
+				setDbAlts(res.data.trainerAlternatives.map((a) => a.original_input));
+			}
+		}).catch(() => {});
+	}, [me, category, name, isLL]);
+
+	// Birlesik alternatif listesi: default (ana dahil) + DB + localStorage custom
 	const allAlternatives = useMemo(() => {
 		const combined = [...alternatives];
+		const seen = new Set(combined.map(a => expandNotation(a)));
 		const customSet = new Set(customAlts.map(a => expandNotation(a)));
-		for (const alt of customAlts) {
-			if (!combined.some(a => expandNotation(a) === expandNotation(alt))) {
+		const dbSet = new Set(dbAlts.map(a => expandNotation(a)));
+
+		// DB alternatiflerini ekle
+		for (const alt of dbAlts) {
+			const exp = expandNotation(alt);
+			if (!seen.has(exp)) {
 				combined.push(alt);
+				seen.add(exp);
 			}
 		}
-		return {list: combined, customSet};
-	}, [alternatives, customAlts]);
+
+		// localStorage custom alternatiflerini ekle (DB'de olmayanlari)
+		for (const alt of customAlts) {
+			const exp = expandNotation(alt);
+			if (!seen.has(exp)) {
+				combined.push(alt);
+				seen.add(exp);
+			}
+		}
+
+		return {list: combined, customSet, dbSet};
+	}, [alternatives, customAlts, dbAlts]);
 
 	const handleAddCustomAlt = useCallback(async () => {
 		const trimmed = newAltInput.trim();
@@ -136,16 +167,47 @@ export default function AlgorithmDetailModal({
 			const pattern = await generateLLPattern(trimmed);
 			if (pattern) saveCustomPattern(expanded, pattern);
 
-			// Kaydet
-			addCustomAlternative(category, subset, name, trimmed);
+			// Giris yapmissa DB'ye kaydet, localStorage'a yazma (DB global havuz yeterli)
+			if (me) {
+				try {
+					let setup: string | undefined;
+					try {
+						setup = await computeSetupInverse(trimmed);
+					} catch {}
+
+					await gqlMutateTyped(CreateTrainerAlternativeDocument, {
+						input: {
+							category,
+							subset,
+							case_name: name,
+							algorithm: expanded,
+							original_input: trimmed,
+							setup: setup || null,
+							ll_pattern: pattern || null,
+						},
+					});
+
+					// DB listesini guncelle
+					setDbAlts((prev) => [...prev, trimmed]);
+				} catch (err: any) {
+					const errMsg = err?.graphQLErrors?.[0]?.message || err?.message || '';
+					if (errMsg === 'ALGORITHM_ALREADY_EXISTS') {
+						// Zaten havuzda — sorun yok
+					}
+				}
+			} else {
+				// Giris yapmamissa sadece localStorage'a kaydet
+				addCustomAlternative(category, subset, name, trimmed);
+				setCustomAlts(getCustomAlternatives(category, subset, name));
+			}
+
 			setNewAltInput('');
 			setValidationSuccess(true);
-			setCustomAlts(getCustomAlternatives(category, subset, name));
 			setTimeout(() => setValidationSuccess(false), 2000);
 		} finally {
 			setValidating(false);
 		}
-	}, [newAltInput, validating, category, subset, name]);
+	}, [newAltInput, validating, category, subset, name, me]);
 
 	const handleDeleteCustomAlt = useCallback((alt: string) => {
 		deleteCustomAlternative(category, subset, name, alt);
@@ -346,8 +408,11 @@ export default function AlgorithmDetailModal({
 					</label>
 					<div className={b('alg-detail-alternatives-list')}>
 						{allAlternatives.list.map((alt, i) => {
-							const isSelected = expandNotation(alt) === expandNotation(editedAlg);
-							const isCustom = allAlternatives.customSet.has(expandNotation(alt));
+							const exp = expandNotation(alt);
+							const isSelected = exp === expandNotation(editedAlg);
+							const isCustomLocal = allAlternatives.customSet.has(exp);
+							const isFromDb = allAlternatives.dbSet.has(exp);
+							const showDelete = isCustomLocal && !isFromDb;
 							return (
 								<div key={i} className={b('alg-detail-custom-alt-row')}>
 									<button
@@ -357,7 +422,7 @@ export default function AlgorithmDetailModal({
 										<code>{alt}</code>
 										{isSelected && <Check size={14} weight="bold" />}
 									</button>
-									{isCustom && (
+									{showDelete && (
 										<button
 											className={b('alg-detail-alt-delete')}
 											onClick={() => handleDeleteCustomAlt(alt)}

@@ -98,3 +98,31 @@ query getMyAnnouncementHistory($limit: Int!, $offset: Int!) {
 		createdAt
 	}
 }
+
+query trainerAlternatives($category: String!, $caseName: String!) {
+	trainerAlternatives(category: $category, caseName: $caseName) {
+		id
+		algorithm
+		original_input
+		setup
+		ll_pattern
+		created_at
+	}
+}
+
+query adminTrainerAlternatives($category: String, $page: Int, $pageSize: Int) {
+	adminTrainerAlternatives(category: $category, page: $page, pageSize: $pageSize) {
+		items {
+			id
+			category
+			subset
+			case_name
+			algorithm
+			original_input
+			user_id
+			created_at
+		}
+		total
+		hasMore
+	}
+}

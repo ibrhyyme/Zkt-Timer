@@ -305,6 +305,8 @@ type Query {
   algorithmOverrides: [AlgorithmOverride]
   customTrainers(pageArgs: PaginationArgsInput): [CustomTrainer]
   customTrainer(id: String): CustomTrainer
+  trainerAlternatives(category: String!, caseName: String!): [TrainerAlternative!]!
+  adminTrainerAlternatives(category: String, page: Int = 0, pageSize: Int = 25): PaginatedTrainerAlternatives!
 }
 
 type Mutation {
@@ -393,6 +395,8 @@ type Mutation {
   deleteCustomTrainer(id: String): CustomTrainer
   registerPushToken(input: RegisterPushTokenInput): PushTokenResult
   unregisterPushToken(token: String): PushTokenResult
+  createTrainerAlternative(input: TrainerAlternativeCreateInput!): TrainerAlternative!
+  adminDeleteTrainerAlternative(id: String!): TrainerAlternative!
 }
 
 type SmartDevice {
@@ -1510,4 +1514,33 @@ type PushTokenResult {
 input RegisterPushTokenInput {
   token: String
   platform: String
+}
+
+type TrainerAlternative {
+  id: String!
+  category: String!
+  subset: String!
+  case_name: String!
+  algorithm: String!
+  original_input: String!
+  setup: String
+  ll_pattern: String
+  user_id: String!
+  created_at: DateTime!
+}
+
+type PaginatedTrainerAlternatives {
+  items: [TrainerAlternative!]!
+  total: Int!
+  hasMore: Boolean!
+}
+
+input TrainerAlternativeCreateInput {
+  category: String!
+  subset: String!
+  case_name: String!
+  algorithm: String!
+  original_input: String!
+  setup: String
+  ll_pattern: String
 }

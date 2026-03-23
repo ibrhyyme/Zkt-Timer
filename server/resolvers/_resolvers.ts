@@ -24,6 +24,7 @@ export * from './WcaRecord.resolver';
 export * from './Announcement.resolver';
 export * from './AlgorithmOverride.resolver';
 export * from './CustomTrainer.resolver';
+export * from './TrainerAlternative.resolver';
 export * from './BulkEmail.resolver';
 export * from './PushToken.resolver';
 export * from './YouTubeSearch.resolver';

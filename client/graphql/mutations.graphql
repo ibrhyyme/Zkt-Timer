@@ -76,3 +76,19 @@ mutation markAnnouncementAsViewed($announcementId: String!) {
 mutation deleteAnnouncement($id: String!) {
 	deleteAnnouncement(id: $id)
 }
+
+mutation createTrainerAlternative($input: TrainerAlternativeCreateInput!) {
+	createTrainerAlternative(input: $input) {
+		id
+		algorithm
+		original_input
+		setup
+		ll_pattern
+	}
+}
+
+mutation adminDeleteTrainerAlternative($id: String!) {
+	adminDeleteTrainerAlternative(id: $id) {
+		id
+	}
+}
