@@ -42,6 +42,7 @@ import RoomsList from '../rooms/RoomsList';
 import FriendlyRoom from '../rooms/FriendlyRoom';
 import AdminAnnouncements from '../admin/announcements/AdminAnnouncements';
 import AdminEmail from '../admin/email/AdminEmail';
+import AdminAlgorithms from '../admin/algorithms/AdminAlgorithms';
 import Welcome from '../landing/welcome/Welcome';
 import RootRedirect from '../landing/root_redirect/RootRedirect';
 import ProPage from '../pro_page/ProPage';
@@ -168,6 +169,7 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/admin/users', App, Admin, AdminUsers, true, false, true),
 	route('/admin/announcements', App, Admin, AdminAnnouncements, true, false, true),
 	route('/admin/email', App, Admin, AdminEmail, true, false, true),
+	route('/admin/algorithms', App, Admin, AdminAlgorithms, true, false, true),
 
 	// OAuth
 	route('/oauth/:integrationType', null, App, OAuthService, true, true, false, true),

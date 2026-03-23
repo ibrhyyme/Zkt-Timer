@@ -27,6 +27,11 @@ const TABS = [
 		link: '/admin/email',
 		value: 'Mail',
 	},
+	{
+		id: 'algorithms',
+		link: '/admin/algorithms',
+		value: 'Algoritmalar',
+	},
 ];
 
 interface Props {

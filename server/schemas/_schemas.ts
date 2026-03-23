@@ -22,6 +22,7 @@ export * from './Store.schema';
 export * from './NotificationPreference.schema';
 export * from './Stats.schema';
 export * from './TrainerAlgorithm.schema';
+export * from './TrainerAlternative.schema';
 export * from './GameOptions.schema';
 export * from './EloRating.schema';
 export * from './EloLog.schema';

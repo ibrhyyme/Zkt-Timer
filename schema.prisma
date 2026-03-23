@@ -77,6 +77,7 @@ model UserAccount {
   top_average                   TopAverage[]
   top_solves                    TopSolve[]
   trainer_favorite              TrainerFavorite[]
+  trainer_alternatives          TrainerAlternative[]
   user_feature_state            UserFeatureState?
   wca_records                   WcaRecord[]
 
@@ -803,6 +804,25 @@ model TrainerFavorite {
 
   @@index([user_id])
   @@map("trainer_favorite")
+}
+
+model TrainerAlternative {
+  id             String      @id @default(uuid())
+  category       String
+  subset         String
+  case_name      String
+  algorithm      String
+  original_input String
+  setup          String?
+  ll_pattern     String?
+  user_id        String
+  created_at     DateTime    @default(now())
+  user           UserAccount @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([category, case_name, algorithm])
+  @@index([category, case_name])
+  @@index([user_id])
+  @@map("trainer_alternative")
 }
 
 model AlgorithmOverride {
