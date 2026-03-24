@@ -2,7 +2,7 @@
 set -e
 
 echo "🔄 Running Prisma database sync..."
-npx prisma db push --accept-data-loss
+npx prisma db push
 
 echo "🚀 Starting server..."
 exec node server/app.js

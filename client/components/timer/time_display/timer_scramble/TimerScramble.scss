@@ -44,6 +44,8 @@
 		justify-content: center;
 		gap: 20px;
 		margin-bottom: 8px;
+		position: relative;
+		z-index: 35; // HeaderControl z-index: 30'un üstünde kal
 	}
 
 	&__nav-btn {
