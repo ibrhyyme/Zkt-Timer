@@ -1595,6 +1595,11 @@
 	},
 	"pro": {
 		"feature_title": "Pro Özellik",
-		"feature_description": "Bu özellik Pro kullanıcılara özeldir. Pro'ya yükselterek tüm temalara ve daha fazlasına erişebilirsiniz. (Yakında)"
+		"feature_description": "Bu özellik Pro kullanıcılara özeldir. Pro'ya yükselterek tüm temalara ve daha fazlasına erişebilirsiniz. (Yakında)",
+		"music_title": "Odalarda Müzik Dinle",
+		"music_description": "Arkadaşlarınla küp çözerken birlikte müzik dinle! Pro üyelere özel bu özellikle odalarında müzik keyfi yap.",
+		"music_youtube": "YouTube'dan sınırsız, reklamsız müzik",
+		"music_friends": "Arkadaşlarınla birlikte dinle",
+		"music_unlimited": "Sınırsız şarkı arama ve çalma"
 	}
 }

@@ -22,7 +22,7 @@ setInterval(() => {
 
 @Resolver()
 export class YouTubeSearchResolver {
-	@Authorized([Role.LOGGED_IN])
+	@Authorized([Role.PRO])
 	@Query(() => [YouTubeVideoResult])
 	async youtubeSearch(
 		@Ctx() context: GraphQLContext,

@@ -26,6 +26,7 @@ import EditRoomModal from './EditRoomModal';
 import ManageUsersModal from './ManageUsersModal';
 import { Gear, List, PencilSimple, Users, Trash, BluetoothConnected, Bluetooth, CheckCircle, CircleNotch, Check, MusicNote } from 'phosphor-react';
 import RoomMusicPlayer from './RoomMusicPlayer';
+import MusicProModal from './MusicProModal';
 import { getTimeString, convertTimeStringToSeconds } from '../../util/time';
 import { toastError } from '../../util/toast';
 import { resourceUri } from '../../util/storage';
@@ -40,6 +41,7 @@ import Cube from 'cubejs';
 import NotificationLog, { NotificationItem } from './NotificationLog';
 import AbortSolveOverlay from '../timer/smart_cube/abort_solve/AbortSolveOverlay';
 import ReactDOM from 'react-dom';
+import { isPro } from '../../lib/pro';
 import './FriendlyRoom.scss';
 
 interface ParamsType {
@@ -1293,7 +1295,13 @@ export default function FriendlyRoom() {
                             <Gear weight="bold" size={20} />
                         </button>
                         <button
-                            onClick={() => setMusicPlayerOpen(!musicPlayerOpen)}
+                            onClick={() => {
+                                if (isPro(me)) {
+                                    setMusicPlayerOpen(!musicPlayerOpen);
+                                } else {
+                                    dispatch(openModal(<MusicProModal />));
+                                }
+                            }}
                             className={`p-1 md:p-2 transition-colors ${musicPlayerOpen ? 'text-green-400' : 'text-white/90 hover:text-white'}`}
                             title={t('rooms.music_player')}
                         >

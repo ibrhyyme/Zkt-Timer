@@ -1597,6 +1597,11 @@
 	},
 	"pro": {
 		"feature_title": "Pro Feature",
-		"feature_description": "This feature is exclusive to Pro users. Upgrade to Pro to access all themes and more. (Coming Soon)"
+		"feature_description": "This feature is exclusive to Pro users. Upgrade to Pro to access all themes and more. (Coming Soon)",
+		"music_title": "Music in Rooms",
+		"music_description": "Listen to music together while solving cubes with friends! This feature is exclusive to Pro members.",
+		"music_youtube": "Unlimited, ad-free music from YouTube",
+		"music_friends": "Listen together with friends",
+		"music_unlimited": "Unlimited song search and playback"
 	}
 }
