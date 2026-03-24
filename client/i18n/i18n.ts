@@ -19,14 +19,15 @@ i18n
 	.use(initReactI18next)
 	.init({
 		resources,
-		fallbackLng: 'en',
+		fallbackLng: 'tr',
 		supportedLngs: ['tr', 'en', 'es', 'ru'],
 		interpolation: {
 			escapeValue: false,
 		},
 		detection: {
-			order: ['localStorage', 'navigator'],
+			order: ['localStorage', 'cookie', 'navigator'],
 			lookupLocalStorage: 'zkt_language',
+			lookupCookie: 'zkt_language',
 			caches: ['localStorage'],
 		},
 		react: {
@@ -37,7 +38,7 @@ i18n
 // Client-side: update HTML lang attribute and set cookie for SSR
 const SUPPORTED_LANGS = ['tr', 'en', 'es', 'ru'];
 function resolveLang(lng: string): string {
-	return SUPPORTED_LANGS.find((s) => lng?.startsWith(s)) || 'en';
+	return SUPPORTED_LANGS.find((s) => lng?.startsWith(s)) || 'tr';
 }
 
 if (typeof document !== 'undefined') {
