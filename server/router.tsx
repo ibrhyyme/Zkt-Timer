@@ -94,6 +94,11 @@ function createComponents(req, store) {
 
 function appUseRouteForPage(routePath, route: PageContext) {
 	global.app.all(routePath, async (req, res) => {
+		// İlk ziyarette dil cookie'si yoksa tr olarak set et (Google bot dahil)
+		if (!req.cookies?.zkt_language) {
+			res.cookie('zkt_language', 'tr', { maxAge: 365 * 24 * 60 * 60 * 1000, path: '/' });
+		}
+
 		const store = createStore(reducers, {}, applyMiddleware(promise(), thunk));
 		const promises: ((store: Store<any>, req: Request) => Promise<any>)[] = route.prefetchData || [];
 		const me = await initUserAccount(store, req);
