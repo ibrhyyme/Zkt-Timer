@@ -44,6 +44,24 @@
 			}
 		}
 
+		// Desktop bottom layout: Viewport'a sığdır, timer/footer oransal
+		&--bottom:not(#{$self}__wrapper--mobileNewLayout) {
+			height: calc(100vh - var(--nav-h));
+
+			#{$self}__main {
+				flex: 3;
+				min-height: 0;
+				overflow: hidden;
+			}
+
+			.#{$namespace}-timer-footer,
+			.cd-timer-footer {
+				flex: 2;
+				min-height: 0;
+				overflow-y: auto;
+			}
+		}
+
 		&--right,
 		&--left {
 			padding: 0 0.667rem 0.667rem !important;
