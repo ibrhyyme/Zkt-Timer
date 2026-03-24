@@ -102,6 +102,27 @@ export default function UserActions(props: Props) {
 		toastSuccess(`Successfully ${user.is_premium ? 'removed Premium from' : 'gave Premium to'} user`);
 	}
 
+	async function deleteUser() {
+		if (!window.confirm(`"${user.username}" kullanıcısını silmek istediğine emin misin? Bu işlem geri alınamaz.`)) {
+			return;
+		}
+
+		const query = gql`
+			mutation Mutate($userId: String!) {
+				adminDeleteUserAccount(userId: $userId) {
+					id
+				}
+			}
+		`;
+
+		await gqlMutate(query, {
+			userId: user.id,
+		});
+
+		toastSuccess('User account deleted');
+		updateUser();
+	}
+
 	function toggleBan() {
 		if (banned) {
 			unbanUser();
@@ -135,6 +156,7 @@ export default function UserActions(props: Props) {
 				warning={user.is_premium}
 				onClick={togglePremiumStatus}
 			/>
+			<Button text="Delete user" danger onClick={deleteUser} />
 		</div>
 	);
 }
