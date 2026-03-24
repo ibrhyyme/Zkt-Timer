@@ -1597,6 +1597,11 @@
 	},
 	"pro": {
 		"feature_title": "Función Pro",
-		"feature_description": "Esta función es exclusiva para usuarios Pro. Actualiza a Pro para acceder a todos los temas y más. (Próximamente)"
+		"feature_description": "Esta función es exclusiva para usuarios Pro. Actualiza a Pro para acceder a todos los temas y más. (Próximamente)",
+		"music_title": "Música en Salas",
+		"music_description": "Escucha música junto a tus amigos mientras resuelven cubos. Esta función es exclusiva para miembros Pro.",
+		"music_youtube": "Música ilimitada y sin anuncios de YouTube",
+		"music_friends": "Escucha junto con amigos",
+		"music_unlimited": "Búsqueda y reproducción ilimitada"
 	}
 }
