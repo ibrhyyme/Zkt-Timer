@@ -1,7 +1,5 @@
-import { Profile } from '../schemas/Profile.schema';
 import fs from 'fs';
 import { acquireRedisLock, createRedisKey, RedisNamespace } from './redis';
-import { getPrisma } from '../database';
 import process from 'process';
 import { PageContext, routes } from '../../client/components/layout/Routes';
 import { uploadObject } from './storage';
@@ -47,13 +45,12 @@ export async function initSiteMapGeneration() {
 	createLocalSiteMapSchemasFolder();
 
 	const defaultSiteMapUrl = await uploadDefaultSiteMapUrls();
-	const profileSiteMapUrls = await fetchAndGenerateSiteMapForAllProfiles();
 
 	logger.info('Finished writing default sitemap', {
 		defaultSiteMapUrl,
 	});
 
-	const allSiteMapUrls = [defaultSiteMapUrl, ...profileSiteMapUrls].filter(Boolean) as string[];
+	const allSiteMapUrls = [defaultSiteMapUrl].filter(Boolean) as string[];
 	await writeSiteMapIndices(allSiteMapUrls);
 	// Cache invalidation removed - not needed for local storage
 
@@ -182,127 +179,6 @@ function getDefaultSiteMapUrls() {
 	return urls;
 }
 
-async function fetchUserProfiles(offset: number, limit: number) {
-	return getPrisma().profile.findMany({
-		skip: offset,
-		take: limit,
-		orderBy: {
-			id: 'desc',
-		},
-		include: {
-			user: true,
-		},
-	});
-}
-
-async function fetchAndGenerateSiteMapForAllProfiles() {
-	const limit = 500;
-	let offset = 0;
-	let batchIndex = 0;
-	let lastUserProfileBatch: Profile[] = [];
-	const processedUrls = [];
-
-	do {
-		if (lastUserProfileBatch && lastUserProfileBatch.length) {
-			const url = await processUserProfileBatch(batchIndex, lastUserProfileBatch);
-			processedUrls.push(url);
-		}
-
-		lastUserProfileBatch = await fetchUserProfiles(offset, limit);
-
-		offset += limit;
-		batchIndex += 1;
-	} while (lastUserProfileBatch.length);
-
-	return processedUrls;
-}
-
-async function processUserProfileBatch(batchIndex: number, profiles: Profile[]) {
-	const urlsToStore = [];
-
-	for (const profile of profiles) {
-		// Sadece anlamlı içeriği olan profilleri sitemap'e ekle
-		// Bu, Google'ın "dizine eklenmeyen" sayfa sayısını azaltır
-		const hasContent = shouldIncludeProfile(profile);
-		if (hasContent) {
-			urlsToStore.push(getSchemaFromProfile(profile));
-		}
-	}
-
-	// Eğer bu batch'te eklenecek URL yoksa, boş sitemap oluşturma
-	if (urlsToStore.length === 0) {
-		return null;
-	}
-
-	const fileName = `sitemap_${batchIndex}.xml`;
-	const dataToWrite = getSiteMapXmlFromSchemaUrlList(urlsToStore);
-	fs.writeFileSync(getSiteMapFilePath(fileName), dataToWrite);
-
-	return uploadSiteMapToS3(fileName);
-}
-
-// Profili sitemap'e dahil etmeli miyiz?
-function shouldIncludeProfile(profile: Profile): boolean {
-	// Son 30 gün içinde aktif mi?
-	const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000;
-	const nowTime = Date.now();
-	const isRecentlyActive = profile.user.last_solve_at
-		? (nowTime - new Date(profile.user.last_solve_at).getTime()) < thirtyDaysInMs
-		: false;
-
-	// Profil tamamlanmış mı? (en az biri olmalı)
-	const hasProfileContent = !!(
-		profile.bio ||
-		profile.pfp_image_id ||
-		profile.header_image_id ||
-		profile.twitch_link ||
-		profile.twitter_link ||
-		profile.youtube_link ||
-		profile?.top_solves?.length
-	);
-
-	// Pro kullanıcı mı?
-	const isPro = profile.user.is_pro;
-
-	// Dahil etme kriteri: aktif VEYA profil içeriği var VEYA pro
-	return isRecentlyActive || hasProfileContent || isPro;
-}
-
-// Range 0.7 - 0.8
-function getProfilePriority(profile: Profile) {
-	let isActive = false;
-	if (profile.user.last_solve_at) {
-		const sevenDaysInMs = 7 * 60 * 60 * 24 * 1000;
-		const nowTime = Date.now();
-
-		const delta = nowTime - new Date(profile.user.last_solve_at).getTime();
-		isActive = delta < sevenDaysInMs;
-	}
-
-	const conditions = {
-		hasBio: !!profile.bio,
-		hasPublishedSolves: !!profile?.top_solves?.length,
-		hasTwitch: !!profile.twitch_link,
-		hasTwitter: !!profile.twitter_link,
-		hasYouTube: !!profile.youtube_link,
-		hasHeaderImag: !!profile.header_image_id,
-		hasPfp: !!profile.pfp_image_id,
-		isPro: profile.user.is_pro,
-		isActive,
-	};
-
-	const totalConditions = Object.keys(conditions).length;
-	let conditionsMet = 0;
-
-	for (const val of Object.values(conditions)) {
-		if (val) {
-			conditionsMet += 1;
-		}
-	}
-
-	const conditionMetPerc = Math.floor((conditionsMet / totalConditions / 10) * 1000) / 1000;
-	return 0.7 + conditionMetPerc;
-}
 
 function getSiteMapXmlFromSchemaUrlList(urls: SiteMapUrl[]): string {
 	const urlListInXml = urls.map((url) => convertSchemaUrlToXml(url)).join('\n');
@@ -330,13 +206,3 @@ function convertSchemaUrlToXml(url: SiteMapUrl) {
 	`;
 }
 
-function getSchemaFromProfile(profile: Profile): SiteMapUrl {
-	const baseUri = process.env.BASE_URI;
-	const url = `${baseUri}/user/${profile.user.username}`;
-
-	return {
-		location: url,
-		priority: getProfilePriority(profile),
-		changeFrequency: 'weekly',
-	};
-}
