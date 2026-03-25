@@ -1197,6 +1197,11 @@
   resolved "https://registry.npmjs.org/@capacitor/ios/-/ios-6.2.1.tgz"
   integrity sha512-tbMlQdQjxe1wyaBvYVU1yTojKJjgluZQsJkALuJxv/6F8QTw5b6vd7X785O/O7cMpIAZfUWo/vtAHzFkRV+kXw==
 
+"@capacitor/keyboard@^8.0.1":
+  version "8.0.1"
+  resolved "https://registry.yarnpkg.com/@capacitor/keyboard/-/keyboard-8.0.1.tgz#f694a06eca5f140d33d68165b4738df88146f504"
+  integrity sha512-HDf4qrvvhLRMsgBoqeqIld6hP8JMK/WPbCYMvz8ajhY6TaibYt6B+NQyky4oIPCOfHTz5OcVsuHkbb8fQvGDAg==
+
 "@capacitor/push-notifications@^6.0.0":
   version "6.0.5"
   resolved "https://registry.yarnpkg.com/@capacitor/push-notifications/-/push-notifications-6.0.5.tgz#c98d893d724abc20a879318af7a4de3a719b807e"
