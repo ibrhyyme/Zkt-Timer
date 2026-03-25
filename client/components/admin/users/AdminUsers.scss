@@ -103,6 +103,13 @@
 		&--country {
 			min-width: 80px;
 			font-weight: 500;
+			color: rgb(var(--text-color));
+		}
+
+		&--ip {
+			color: rgb(var(--text-color));
+			font-family: monospace;
+			font-size: 0.85rem;
 		}
 
 		&--badges {
@@ -199,6 +206,11 @@
 		&--green {
 			background-color: rgba(34, 197, 94, 0.15);
 			color: #22c55e;
+		}
+
+		&--blue {
+			background-color: rgba(59, 130, 246, 0.15);
+			color: #3b82f6;
 		}
 
 		&--gray {

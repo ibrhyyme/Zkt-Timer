@@ -1034,6 +1034,7 @@
 		"status": "Durum",
 		"actions": "İşlemler",
 		"verified": "Doğrulanmış",
+		"approved": "Onaylı",
 		"banned": "Banlı",
 		"never_solved": "Hiç çözmedi",
 		"manage": "Yönet",

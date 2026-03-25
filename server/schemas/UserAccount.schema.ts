@@ -157,6 +157,9 @@ class IUserAccountForAdmin extends IUserAccount {
 	email: string;
 
 	@Field()
+	email_verified: boolean;
+
+	@Field()
 	first_name: string;
 
 	@Field()
