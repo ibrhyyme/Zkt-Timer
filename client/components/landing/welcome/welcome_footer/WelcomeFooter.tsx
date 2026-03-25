@@ -1,27 +1,37 @@
 import React from 'react';
 import { useHistory } from 'react-router-dom';
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
 import './WelcomeFooter.scss';
 import block from '../../../../styles/bem';
 import { InstagramLogo, YoutubeLogo } from 'phosphor-react';
+import { fadeInUp, staggerContainer, hoverScaleSubtle, tapScale } from '../motion-variants';
 
 const b = block('welcome-footer');
 
 export default function WelcomeFooter() {
 	const history = useHistory();
-	const {t} = useTranslation();
+	const { t } = useTranslation();
 
 	return (
 		<footer className={b()}>
 			<div className={b('container')}>
 				{/* Social Media Section */}
-				<div className={b('cta-card')}>
-					<h2 className={b('cta-title')}>{t('welcome_footer.cta_title')}</h2>
-					<p className={b('cta-description')}>
+				<motion.div
+					className={b('cta-card')}
+					variants={staggerContainer}
+					initial="hidden"
+					whileInView="visible"
+					viewport={{ once: true, amount: 0.2 }}
+				>
+					<motion.h2 className={b('cta-title')} variants={fadeInUp}>
+						{t('welcome_footer.cta_title')}
+					</motion.h2>
+					<motion.p className={b('cta-description')} variants={fadeInUp}>
 						{t('welcome_footer.cta_description')}
-					</p>
+					</motion.p>
 
-					<div className={b('social-grid')}>
+					<motion.div className={b('social-grid')} variants={fadeInUp}>
 						{/* Instagram Accounts */}
 						<div className={b('social-category')}>
 							<h3 className={b('social-category-title')}>
@@ -29,42 +39,48 @@ export default function WelcomeFooter() {
 								Instagram
 							</h3>
 							<div className={b('social-links')}>
-								<a
+								<motion.a
 									href="https://www.instagram.com/zekakuputurkiye/"
 									target="_blank"
 									rel="noopener noreferrer"
 									className={b('social-link')}
+									whileHover={hoverScaleSubtle}
+									whileTap={tapScale}
 								>
 									<InstagramLogo size={32} weight="duotone" />
 									<div className={b('social-link-text')}>
 										<span className={b('social-link-name')}>Zeka Küpü Türkiye</span>
 										<span className={b('social-link-handle')}>@zekakuputurkiye</span>
 									</div>
-								</a>
-								<a
+								</motion.a>
+								<motion.a
 									href="https://www.instagram.com/mertsagdinc/"
 									target="_blank"
 									rel="noopener noreferrer"
 									className={b('social-link')}
+									whileHover={hoverScaleSubtle}
+									whileTap={tapScale}
 								>
 									<InstagramLogo size={32} weight="duotone" />
 									<div className={b('social-link-text')}>
 										<span className={b('social-link-name')}>Mert Sağdınç</span>
 										<span className={b('social-link-handle')}>@mertsagdinc</span>
 									</div>
-								</a>
-								<a
+								</motion.a>
+								<motion.a
 									href="https://www.instagram.com/isoq58/"
 									target="_blank"
 									rel="noopener noreferrer"
 									className={b('social-link')}
+									whileHover={hoverScaleSubtle}
+									whileTap={tapScale}
 								>
 									<InstagramLogo size={32} weight="duotone" />
 									<div className={b('social-link-text')}>
 										<span className={b('social-link-name')}>İskender Aznavur</span>
 										<span className={b('social-link-handle')}>@isoq58</span>
 									</div>
-								</a>
+								</motion.a>
 							</div>
 						</div>
 
@@ -75,46 +91,52 @@ export default function WelcomeFooter() {
 								YouTube
 							</h3>
 							<div className={b('social-links')}>
-								<a
+								<motion.a
 									href="https://www.youtube.com/@ibrhyyme"
 									target="_blank"
 									rel="noopener noreferrer"
 									className={b('social-link')}
+									whileHover={hoverScaleSubtle}
+									whileTap={tapScale}
 								>
 									<YoutubeLogo size={32} weight="duotone" />
 									<div className={b('social-link-text')}>
 										<span className={b('social-link-name')}>İbrahim Yıldız</span>
 										<span className={b('social-link-handle')}>@ibrhyyme</span>
 									</div>
-								</a>
-								<a
+								</motion.a>
+								<motion.a
 									href="https://www.youtube.com/@AlgoMert"
 									target="_blank"
 									rel="noopener noreferrer"
 									className={b('social-link')}
+									whileHover={hoverScaleSubtle}
+									whileTap={tapScale}
 								>
 									<YoutubeLogo size={32} weight="duotone" />
 									<div className={b('social-link-text')}>
 										<span className={b('social-link-name')}>Mert Sağdınç</span>
 										<span className={b('social-link-handle')}>@AlgoMert</span>
 									</div>
-								</a>
-								<a
+								</motion.a>
+								<motion.a
 									href="https://www.youtube.com/@isoq58/videos"
 									target="_blank"
 									rel="noopener noreferrer"
 									className={b('social-link')}
+									whileHover={hoverScaleSubtle}
+									whileTap={tapScale}
 								>
 									<YoutubeLogo size={32} weight="duotone" />
 									<div className={b('social-link-text')}>
 										<span className={b('social-link-name')}>İskender Aznavur</span>
 										<span className={b('social-link-handle')}>@isoq58</span>
 									</div>
-								</a>
+								</motion.a>
 							</div>
 						</div>
-					</div>
-				</div>
+					</motion.div>
+				</motion.div>
 
 				{/* Footer Links */}
 				<div className={b('links')}>
