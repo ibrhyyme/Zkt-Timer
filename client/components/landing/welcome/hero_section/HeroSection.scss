@@ -36,7 +36,7 @@
 		object-fit: contain;
 		margin: 0 auto 2rem;
 		display: block;
-		animation: fadeInUp 0.8s ease-out, spin 8s linear infinite 0.8s;
+		animation: spin 8s linear infinite 0.8s;
 		filter: drop-shadow(0 4px 12px rgba(124, 58, 237, 0.4));
 
 		@media (max-width: 768px) {
@@ -113,7 +113,6 @@
 		font-weight: 500;
 		color: rgba(192, 132, 252, 1);
 		margin-bottom: 2rem;
-		animation: fadeInUp 0.6s ease-out;
 	}
 
 	&__badge-dot {
@@ -137,7 +136,6 @@
 		-webkit-background-clip: text;
 		-webkit-text-fill-color: transparent;
 		background-clip: text;
-		animation: fadeInUp 0.8s ease-out 0.1s backwards;
 	}
 
 	&__title-highlight {
@@ -151,7 +149,6 @@
 		line-height: 1.7;
 		max-width: 42rem;
 		margin: 0 auto 2.5rem;
-		animation: fadeInUp 1s ease-out 0.2s backwards;
 	}
 
 	&__actions-desktop {
@@ -160,7 +157,6 @@
 		justify-content: center;
 		align-items: center;
 		margin-bottom: 4rem;
-		animation: fadeInUp 1.2s ease-out 0.3s backwards;
 
 		@media (max-width: 600px) {
 			display: none;
@@ -174,7 +170,6 @@
 		justify-content: center;
 		align-items: center;
 		margin-bottom: 4rem;
-		animation: fadeInUp 1.2s ease-out 0.3s backwards;
 
 		@media (max-width: 600px) {
 			display: flex;
@@ -189,7 +184,6 @@
 		position: relative;
 		max-width: 1200px;
 		margin: 0 auto;
-		animation: scaleIn 1s ease-out 0.5s backwards;
 	}
 
 	&__device-mockup-desktop {

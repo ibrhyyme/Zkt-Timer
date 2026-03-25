@@ -19,11 +19,6 @@
 	&__header {
 		text-align: center;
 		margin-bottom: 4rem;
-		opacity: 0;
-
-		.cd-welcome-mobile-grid--visible & {
-			animation: fadeInUp 0.6s ease-out forwards;
-		}
 	}
 
 	&__title {
@@ -75,13 +70,8 @@
 	// ============================================
 
 	&__item {
-		opacity: 0;
 		width: 100%;
 		max-width: 250px;
-
-		.cd-welcome-mobile-grid--visible & {
-			animation: fadeInUp 0.6s ease-out forwards;
-		}
 	}
 
 	// ============================================

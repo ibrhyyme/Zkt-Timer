@@ -114,9 +114,6 @@
         border: 1px solid rgba(255, 255, 255, 0.05);
         transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
         cursor: pointer;
-        opacity: 0;
-        transform: translateY(40px) scale(0.95);
-        animation: cardFadeIn 0.8s ease-out forwards;
         perspective: 1000px;
         transform-style: preserve-3d;
 
@@ -150,7 +147,6 @@
         }
 
         &:hover {
-            transform: translateY(-16px) scale(1.05) rotateX(5deg);
             border-color: rgba(99, 102, 241, 0.3);
             background: rgba(255, 255, 255, 0.06);
             box-shadow:
@@ -313,18 +309,6 @@
 
         50% {
             filter: drop-shadow(0 0 30px rgba(168, 85, 247, 0.5));
-        }
-    }
-
-    @keyframes cardFadeIn {
-        0% {
-            opacity: 0;
-            transform: translateY(40px) scale(0.95);
-        }
-
-        100% {
-            opacity: 1;
-            transform: translateY(0) scale(1);
         }
     }
 

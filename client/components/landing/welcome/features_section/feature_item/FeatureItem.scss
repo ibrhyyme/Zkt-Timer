@@ -5,7 +5,6 @@
 	grid-template-columns: 1fr 1fr;
 	gap: 4rem;
 	align-items: center;
-	opacity: 0;
 
 	// ============================================
 	// Position variants (zig-zag layout)
@@ -28,37 +27,6 @@
 
 		.cd-welcome-feature-item__image-wrapper {
 			order: 2;
-		}
-	}
-
-	// ============================================
-	// Visible state (scroll animation)
-	// ============================================
-
-	&--visible {
-		animation: fadeInUp 0.6s ease-out forwards;
-
-		.cd-welcome-feature-item__text {
-			animation: fadeInLeft 0.8s ease-out 0.2s forwards;
-			opacity: 0;
-		}
-
-		.cd-welcome-feature-item__image-wrapper {
-			opacity: 0;
-		}
-
-		// Left position: image slides from LEFT
-		&.cd-welcome-feature-item--position-left {
-			.cd-welcome-feature-item__image-wrapper {
-				animation: fadeInLeft 0.8s ease-out 0.3s forwards;
-			}
-		}
-
-		// Right position: image slides from RIGHT
-		&.cd-welcome-feature-item--position-right {
-			.cd-welcome-feature-item__image-wrapper {
-				animation: fadeInRight 0.8s ease-out 0.3s forwards;
-			}
 		}
 	}
 
