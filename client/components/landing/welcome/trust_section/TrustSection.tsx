@@ -10,15 +10,24 @@ if (typeof window !== 'undefined') {
 
 const b = block('welcome-trust');
 
+const STATS = [
+	{ value: 5000, suffix: '+', label: 'Cuber' },
+	{ value: 250000, suffix: '+', label: 'Çözüm' },
+	{ value: 17, suffix: '', label: 'Küp Türü' },
+	{ value: 50, suffix: '+', label: 'Ülke' },
+];
+
 export default function TrustSection() {
 	const sectionRef = useRef<HTMLElement>(null);
 	const bgRef = useRef<HTMLDivElement>(null);
 	const headerRef = useRef<HTMLDivElement>(null);
+	const statsRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
 		const section = sectionRef.current;
 		const bg = bgRef.current;
 		const header = headerRef.current;
+		const stats = statsRef.current;
 		if (!section) return;
 
 		const tweens: gsap.core.Tween[] = [];
@@ -60,6 +69,59 @@ export default function TrustSection() {
 			);
 		}
 
+		// Animated counters
+		if (stats) {
+			const counterEls = stats.querySelectorAll('[data-counter]');
+			counterEls.forEach((el) => {
+				const target = parseInt(el.getAttribute('data-counter') || '0', 10);
+				const suffix = el.getAttribute('data-suffix') || '';
+				const obj = { val: 0 };
+
+				tweens.push(
+					gsap.to(obj, {
+						val: target,
+						duration: 2,
+						ease: 'power2.out',
+						scrollTrigger: {
+							trigger: stats,
+							start: 'top 80%',
+							toggleActions: 'play none none none',
+						},
+						onUpdate() {
+							const formatted = target >= 1000
+								? Math.floor(obj.val).toLocaleString('tr-TR')
+								: Math.floor(obj.val).toString();
+							el.textContent = formatted + suffix;
+						},
+					})
+				);
+			});
+
+			// Stats card entrance
+			const cards = stats.querySelectorAll('[data-stat-card]');
+			if (cards.length) {
+				tweens.push(
+					gsap.fromTo(
+						cards,
+						{ opacity: 0, y: 30, scale: 0.9 },
+						{
+							opacity: 1,
+							y: 0,
+							scale: 1,
+							duration: 0.6,
+							stagger: 0.1,
+							ease: 'back.out(1.2)',
+							scrollTrigger: {
+								trigger: stats,
+								start: 'top 80%',
+								toggleActions: 'play none none none',
+							},
+						}
+					)
+				);
+			}
+		}
+
 		return () => {
 			tweens.forEach((tw) => {
 				tw.scrollTrigger?.kill();
@@ -82,6 +144,21 @@ export default function TrustSection() {
 						<p className={b('description')}>
 							Ulusal ve Dünya rekorlarına anında erişin. Resmi WCA karıştırmaları ile güncel kalın.
 						</p>
+					</div>
+
+					<div ref={statsRef} className={b('stats')}>
+						{STATS.map((stat, i) => (
+							<div key={i} className={b('stat-card')} data-stat-card style={{ opacity: 0 }}>
+								<span
+									className={b('stat-value')}
+									data-counter={stat.value}
+									data-suffix={stat.suffix}
+								>
+									0{stat.suffix}
+								</span>
+								<span className={b('stat-label')}>{stat.label}</span>
+							</div>
+						))}
 					</div>
 				</div>
 			</div>

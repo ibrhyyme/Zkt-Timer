@@ -84,7 +84,59 @@
 	}
 
 	// ============================================
-	// Features Grid
+	// Stats Grid
+	// ============================================
+
+	&__stats {
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		gap: 1.5rem;
+
+		@media (max-width: 768px) {
+			grid-template-columns: repeat(2, 1fr);
+			gap: 1rem;
+		}
+	}
+
+	&__stat-card {
+		@include dark-glass(0.5, 15px, 0.15);
+		border-radius: 16px;
+		padding: 2rem 1.5rem;
+		text-align: center;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.5rem;
+		transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+		&:hover {
+			transform: translateY(-6px);
+			box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3);
+		}
+	}
+
+	&__stat-value {
+		font-size: 2.5rem;
+		font-weight: 800;
+		color: rgb(var(--text-color));
+		line-height: 1;
+		font-variant-numeric: tabular-nums;
+
+		@media (max-width: 768px) {
+			font-size: 2rem;
+		}
+	}
+
+	&__stat-label {
+		font-size: 0.875rem;
+		color: rgba(var(--text-color), 0.6);
+		font-weight: 500;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+	}
+
+	// ============================================
+	// Features Grid (legacy)
 	// ============================================
 
 	&__features {
@@ -99,10 +151,6 @@
 			margin: 0 auto;
 		}
 	}
-
-	// ============================================
-	// Feature Cards
-	// ============================================
 
 	&__feature-card {
 		@include dark-glass(0.6, 15px, 0.12);
