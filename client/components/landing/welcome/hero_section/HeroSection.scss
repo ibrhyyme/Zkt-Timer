@@ -11,6 +11,22 @@
 	justify-content: center;
 
 	// ============================================
+	// Mobile Language Switcher
+	// ============================================
+
+	&__mobile-lang {
+		display: none;
+		position: absolute;
+		top: 1rem;
+		right: 1rem;
+		z-index: 20;
+
+		@media (max-width: 600px) {
+			display: block;
+		}
+	}
+
+	// ============================================
 	// Logo
 	// ============================================
 

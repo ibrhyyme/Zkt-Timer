@@ -4,6 +4,7 @@ import {useTranslation} from 'react-i18next';
 import './HeroSection.scss';
 import block from '../../../../styles/bem';
 import Button from '../../../common/button/Button';
+import LanguageSwitcher from '../../../common/language_switcher/LanguageSwitcher';
 
 const b = block('welcome-hero');
 
@@ -18,6 +19,11 @@ export default function HeroSection() {
 				<div className={b('background-orb', { position: 'left' })} />
 				<div className={b('background-orb', { position: 'right' })} />
 				<div className={b('background-noise')} />
+			</div>
+
+			{/* Mobile Language Switcher - visible only on mobile where LandingNav is hidden */}
+			<div className={b('mobile-lang')}>
+				<LanguageSwitcher />
 			</div>
 
 			{/* Hero Content */}
