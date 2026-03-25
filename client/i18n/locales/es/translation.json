@@ -1034,6 +1034,7 @@
 		"status": "Estado",
 		"actions": "Acciones",
 		"verified": "Verificado",
+		"approved": "Aprobado",
 		"banned": "Prohibido",
 		"never_solved": "Nunca ha resuelto",
 		"manage": "Gestionar",

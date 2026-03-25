@@ -22,6 +22,7 @@ interface UserAccountData {
 	username: string;
 	email: string;
 	verified: boolean;
+	email_verified: boolean;
 	created_at: string;
 	last_solve_at?: string;
 	join_country?: string;
@@ -48,6 +49,7 @@ const ADMIN_USER_SEARCH_QUERY = gql`
 				username
 				email
 				verified
+				email_verified
 				created_at
 				last_solve_at
 				join_country
@@ -75,7 +77,8 @@ function UserTableRow({ user }: { user: UserAccountData }) {
 	if (user.admin) badges.push({ label: 'Admin', color: 'red' });
 	if (user.mod) badges.push({ label: 'Mod', color: 'orange' });
 	if (user.is_pro) badges.push({ label: 'Pro', color: 'purple' });
-	if (user.verified) badges.push({ label: t('admin_users.verified'), color: 'green' });
+	if (user.email_verified) badges.push({ label: t('admin_users.verified'), color: 'green' });
+	if (user.verified) badges.push({ label: t('admin_users.approved'), color: 'blue' });
 	if (user.banned_forever || user.banned_until) badges.push({ label: t('admin_users.banned'), color: 'gray' });
 
 	const handleManage = () => {

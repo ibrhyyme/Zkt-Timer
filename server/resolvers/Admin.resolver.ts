@@ -62,6 +62,7 @@ export class AdminResolver {
 					username: true,
 					email: true,
 					verified: true,
+					email_verified: true,
 					created_at: true,
 					last_solve_at: true,
 					join_country: true,
@@ -79,6 +80,10 @@ export class AdminResolver {
 						},
 					},
 				},
+				orderBy: [
+					{ admin: 'desc' },
+					{ created_at: 'desc' },
+				],
 			},
 		};
 
