@@ -4,6 +4,7 @@ import { ITimerContext } from '../Timer';
 import { emitEvent } from '../../../util/event_handler';
 import { setTimerParam } from './params';
 import { Solve, SolveInput } from '../../../../server/schemas/Solve.schema';
+import { requestInAppReview } from '../../../util/native-plugins';
 
 export function saveSolve(
 	context: ITimerContext,
@@ -45,6 +46,12 @@ export function saveSolve(
 		createSolveDb(solveObject);
 	}
 
-	setTimerParam('sessionSolveCount', context.sessionSolveCount + 1);
+	const newCount = context.sessionSolveCount + 1;
+	setTimerParam('sessionSolveCount', newCount);
 	emitEvent('solveSavedEvent', solveObject);
+
+	// Her 50 cozumde bir review istegi (session basina 1 kez, plugin kontrol ediyor)
+	if (newCount === 50) {
+		requestInAppReview();
+	}
 }

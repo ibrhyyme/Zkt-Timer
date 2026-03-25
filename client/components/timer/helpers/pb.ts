@@ -7,6 +7,7 @@ import { FilterSolvesOptions } from '../../../db/solves/query';
 import { displayTimerAlert } from './notification';
 import { getCubeTypeInfoById } from '../../../util/cubes/util';
 import { getSetting } from '../../../db/settings/query';
+import { hapticNotification, requestInAppReview } from '../../../util/native-plugins';
 
 let lastConfetti: Date = null;
 
@@ -24,19 +25,22 @@ export function listenForPbEvents(context: ITimerContext) {
 	getSinglePB(pbFilter);
 	getAveragePB(pbFilter, 5);
 
-	function pbEventCallback(msg: string) {
+	function pbEventCallback(msg: string, cubeTypeName: string) {
 		triggerConfetti();
+		hapticNotification('success');
 		displayTimerAlert({
 			text: msg,
 			backgroundColor: 'green',
 		});
+		// PB mutlu an — kullanicidan degerlendirme iste (session basina 1 kez)
+		setTimeout(() => requestInAppReview(), 3000);
 	}
 
 	useEventListener(
 		'singlePbEvent',
 		(ct) => {
 			const cubeType = getCubeTypeInfoById(ct);
-			pbEventCallback(`Yeni ${cubeType.name} Single PB!`);
+			pbEventCallback(`Yeni ${cubeType.name} Single PB!`, cubeType.name);
 		},
 		[context.cubeType]
 	);
@@ -45,7 +49,7 @@ export function listenForPbEvents(context: ITimerContext) {
 		'avgPbEvent',
 		(ct) => {
 			const cubeType = getCubeTypeInfoById(ct);
-			pbEventCallback(`Yeni ${cubeType.name} Average of 5 PB!`);
+			pbEventCallback(`Yeni ${cubeType.name} Average of 5 PB!`, cubeType.name);
 		},
 		[context.cubeType]
 	);
@@ -54,7 +58,7 @@ export function listenForPbEvents(context: ITimerContext) {
 		'singleAndAvgPbEvent',
 		(ct) => {
 			const cubeType = getCubeTypeInfoById(ct);
-			pbEventCallback(`Yeni ${cubeType.name} Single ve Average of 5 PB!`);
+			pbEventCallback(`Yeni ${cubeType.name} Single ve Average of 5 PB!`, cubeType.name);
 		},
 		[context.cubeType]
 	);

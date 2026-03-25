@@ -28,6 +28,7 @@ import Button from '../common/button/Button';
 import { setSetting } from '../../db/settings/update';
 import DailyGoalProgressBar from '../daily-goal/DailyGoalProgressBar';
 import { startReminderInterval } from '../daily-goal/helpers/reminder';
+import { keepScreenAwake, allowScreenSleep } from '../../util/native-plugins';
 // Yeni mobil layout componentleri
 import TimerControls from './TimerControls';
 import Dashboard from './Dashboard';
@@ -87,6 +88,7 @@ export default function Timer(props: TimerProps) {
 	useEffect(() => {
 		toggleHtmlOverflow('hidden');
 		initTimer(dispatch, context);
+		keepScreenAwake();
 
 		setLoading(false);
 
@@ -96,6 +98,7 @@ export default function Timer(props: TimerProps) {
 		return () => {
 			stopAllTimers();
 			cleanupReminder();
+			allowScreenSleep();
 			dispatch({
 				type: 'RESET_TIMER_PARAMS',
 			});

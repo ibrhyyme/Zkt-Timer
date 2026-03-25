@@ -1152,6 +1152,21 @@
   dependencies:
     "@types/web-bluetooth" "^0.0.20"
 
+"@capacitor-community/in-app-review@^8.0.0":
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/@capacitor-community/in-app-review/-/in-app-review-8.0.0.tgz#5b643a7397ed2677fba4b4ab42a7d087956d7e6b"
+  integrity sha512-AYpEkIjdv27WGS3hnlc7xAQ1BhaBvD2svgQBfHF4P2Olw1N6a7MSCOQC6O4SuxmdBdJ2fM6uFeo1jyNjKLtIPw==
+
+"@capacitor-community/keep-awake@^8.0.0":
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/@capacitor-community/keep-awake/-/keep-awake-8.0.0.tgz#1d312ab062db6039aa0c9105ab95fd6edc4de99d"
+  integrity sha512-+bNAILA4R8PU+rm6OuKfgW6T4N24oAb2Idut5whfX5JAz09j7UBKFBEmT5C0QFJ7S8NZzp9d/yBsbIhLj+JkAA==
+
+"@capacitor-community/safe-area@^8.0.1":
+  version "8.0.1"
+  resolved "https://registry.yarnpkg.com/@capacitor-community/safe-area/-/safe-area-8.0.1.tgz#21553e2395a2e0140f4e41a0e1aafed3b6d747a9"
+  integrity sha512-zVVQ7k94DbOff1mHP8qrZGTJZWyhGZnKHD2eXdcobIoOBFW9CeVphLNZYDCop/DBsHXfv6r8k0/Ac8xMIlwT+A==
+
 "@capacitor/android@^6.0.0":
   version "6.2.1"
   resolved "https://registry.npmjs.org/@capacitor/android/-/android-6.2.1.tgz"
@@ -1192,6 +1207,11 @@
   dependencies:
     tslib "^2.1.0"
 
+"@capacitor/haptics@^8.0.1":
+  version "8.0.1"
+  resolved "https://registry.yarnpkg.com/@capacitor/haptics/-/haptics-8.0.1.tgz#2076f92554fff68a3d429901a675fcbe727beb44"
+  integrity sha512-8v8rowLBMeb3CryqoQvXndwyUsoi4pPXf0qFw7IGA4D32Uk7+K6juN2SjRowqunoovkvvbFmU9TD7JIAz2zmFw==
+
 "@capacitor/ios@^6.0.0":
   version "6.2.1"
   resolved "https://registry.npmjs.org/@capacitor/ios/-/ios-6.2.1.tgz"
@@ -1202,15 +1222,45 @@
   resolved "https://registry.yarnpkg.com/@capacitor/keyboard/-/keyboard-8.0.1.tgz#f694a06eca5f140d33d68165b4738df88146f504"
   integrity sha512-HDf4qrvvhLRMsgBoqeqIld6hP8JMK/WPbCYMvz8ajhY6TaibYt6B+NQyky4oIPCOfHTz5OcVsuHkbb8fQvGDAg==
 
+"@capacitor/local-notifications@^8.0.2":
+  version "8.0.2"
+  resolved "https://registry.yarnpkg.com/@capacitor/local-notifications/-/local-notifications-8.0.2.tgz#3c78fed1357e02457cb2649d32fa24d942613bc6"
+  integrity sha512-X7KE/I4ZutMTGVHNUyTjIugYcQEcHJRLks+TsPnOriuS+lo0geSTuaRln6zAZlJSSXSoVMSSzHexdSbIjR/8iw==
+
+"@capacitor/network@^8.0.1":
+  version "8.0.1"
+  resolved "https://registry.yarnpkg.com/@capacitor/network/-/network-8.0.1.tgz#463b2639db2a5a0837f3ae0c0e2ed3f46ce1bb0e"
+  integrity sha512-9xK/FHFmzKGanB6BdoSZOzXk8vF0OFVQSQ4PAsIrzAzLuXHryO317qy8dcHVpgxYeuZq2noI0My9z1DvVDi/9w==
+
 "@capacitor/push-notifications@^6.0.0":
   version "6.0.5"
   resolved "https://registry.yarnpkg.com/@capacitor/push-notifications/-/push-notifications-6.0.5.tgz#c98d893d724abc20a879318af7a4de3a719b807e"
   integrity sha512-CsRmb0cnZd9Uwx24ym4My5fNKrQvwI4D51aMEph5pUZy+LAjp6q0y4NJe8DEgwaVdAqVLbb4rqn75AZ4WSiFYg==
 
+"@capacitor/share@^8.0.1":
+  version "8.0.1"
+  resolved "https://registry.yarnpkg.com/@capacitor/share/-/share-8.0.1.tgz#8941ce371a6239685db010098a5e60d0795666da"
+  integrity sha512-3cSBKBCJVon54rKDROP2rqGyeGks4pBh9TbaEk9S375Kbek/ZHe72N50zIa0Vn9Eac/SuhwgehO/mmA4CsUOiw==
+
 "@capacitor/splash-screen@^6.0.0":
   version "6.0.4"
   resolved "https://registry.npmjs.org/@capacitor/splash-screen/-/splash-screen-6.0.4.tgz"
   integrity sha512-uJXR+28cdaie7zIIUBvgkWgHim6Gr1itJym9voIMTmrjXkOaPtejwxYJsdQWPJz9zgGnSbXuC1mNNibLgv3OpQ==
+
+"@capacitor/status-bar@^8.0.1":
+  version "8.0.1"
+  resolved "https://registry.yarnpkg.com/@capacitor/status-bar/-/status-bar-8.0.1.tgz#a20642b4563c827e8b0f520468ec44b077af6fea"
+  integrity sha512-OR59dlbwvmrV5dKsC9lvwv48QaGbqcbSTBpk+9/WXWxXYSdXXdzJZU9p8oyNPAkuJhCdnSa3XmU43fZRPBJJ5w==
+
+"@capacitor/text-zoom@^8.0.1":
+  version "8.0.1"
+  resolved "https://registry.yarnpkg.com/@capacitor/text-zoom/-/text-zoom-8.0.1.tgz#daba15513c513163cb2195ee2c485182e479e7b4"
+  integrity sha512-hib9Srjme4DRmbzGYfwAWB5OIl0C3ihjXQNTpMMSVqBUxlHfm3O35H/In6FtNrbJ78ro13Zb0NDDK8o3kLPEnQ==
+
+"@capacitor/toast@^8.0.1":
+  version "8.0.1"
+  resolved "https://registry.yarnpkg.com/@capacitor/toast/-/toast-8.0.1.tgz#2326e203594c4ed0e19305053d8ce1dd97cb63e2"
+  integrity sha512-0uoyftoAeFjtOMiozBo7YXEo+zcpQCAxtBONSvrljJ05SKdlb1A8OFHaV/DZfIpGt+19kzUGaEaUemLdll4wUw==
 
 "@colors/colors@1.6.0", "@colors/colors@^1.6.0":
   version "1.6.0"

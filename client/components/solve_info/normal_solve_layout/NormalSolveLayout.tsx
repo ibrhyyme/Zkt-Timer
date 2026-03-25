@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
-import { Cube } from 'phosphor-react';
+import { Cube, ShareNetwork } from 'phosphor-react';
 import { openModal } from '../../../actions/general';
 import ScrambleVisual from '../../modules/scramble/ScrambleVisual';
 import TextArea from '../../common/inputs/textarea/TextArea';
@@ -14,6 +14,7 @@ import block from '../../../styles/bem';
 import { useInput } from '../../../util/hooks/useInput';
 import { getFullFormattedDate } from '../../../util/dates';
 import { SolveLayoutProps } from '../SolveInfo';
+import { shareContent } from '../../../util/native-plugins';
 import './NormalSolveLayout.scss';
 
 const b = block('solve-info');
@@ -33,13 +34,29 @@ export default function NormalSolveLayout(props: SolveLayoutProps) {
 	const scramble = solve.scramble;
 	const cubeType = solve.cube_type;
 
+	function handleShare() {
+		const solveUrl = window.location.origin + '/solve/' + solve.share_code;
+		shareContent({
+			title: `${cubeTypeInfo.name} - ${time}`,
+			text: `${cubeTypeInfo.name}: ${time} | ${scramble}`,
+			url: solveUrl,
+		});
+	}
+
 	let shareLink = null;
 	if (typeof window !== 'undefined') {
 		shareLink = (
-			<CopyText
-				buttonProps={{ text: t('solve_info.share_link') }}
-				text={window.location.origin + '/solve/' + solve.share_code}
-			/>
+			<>
+				<CopyText
+					buttonProps={{ text: t('solve_info.share_link') }}
+					text={window.location.origin + '/solve/' + solve.share_code}
+				/>
+				<Button
+					gray
+					icon={<ShareNetwork weight="bold" />}
+					onClick={handleShare}
+				/>
+			</>
 		);
 	}
 

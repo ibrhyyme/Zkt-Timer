@@ -2,6 +2,7 @@ import {getDailyGoalStorage, setDailyGoalStorage} from './storage';
 import {getDailyGoalProgress} from './progress';
 import {getCubeTypeInfoById} from '../../../util/cubes/util';
 import {isAppVisible} from '../../../util/app-visibility';
+import {scheduleLocalNotification} from '../../../util/native-plugins';
 
 const REMINDER_CHECK_INTERVAL = 60_000; // 60 saniye
 const REMINDER_COOLDOWN = 60 * 60 * 1000; // 1 saat
@@ -16,8 +17,6 @@ export function startReminderInterval(): () => void {
 }
 
 function checkAndSendReminder() {
-	if (typeof Notification === 'undefined') return;
-
 	const storage = getDailyGoalStorage();
 	if (!storage.reminder_enabled) return;
 
@@ -34,17 +33,14 @@ function checkAndSendReminder() {
 		});
 
 	if (incompleteGoals.length === 0) return;
-	if (Notification.permission !== 'granted') return;
 
 	// Ilk tamamlanmamis hedef icin bildirim gonder
 	const goal = incompleteGoals[0];
 	const progress = getDailyGoalProgress(goal.cube_type);
 	const cubeInfo = getCubeTypeInfoById(goal.cube_type);
 
-	new Notification('Zkt-Timer', {
-		body: `${cubeInfo?.name || goal.cube_type}: ${progress.current}/${progress.target}`,
-		icon: '/favicon.ico',
-	});
+	const body = `${cubeInfo?.name || goal.cube_type}: ${progress.current}/${progress.target}`;
+	scheduleLocalNotification({ title: 'Zkt-Timer', body });
 
 	// Son bildirim zamanini guncelle
 	storage.last_reminder_time = now;

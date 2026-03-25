@@ -27,6 +27,7 @@ import { Capacitor } from '@capacitor/core';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { App as CapApp } from '@capacitor/app';
 import { initPushNotifications } from '../../util/push-notifications';
+import { initStatusBar, lockTextZoom, initSafeArea } from '../../util/native-plugins';
 import SwipeBackIndicator from '../common/swipe_back_indicator/SwipeBackIndicator';
 
 interface Props {
@@ -58,9 +59,12 @@ export default function App(props: Props = {}) {
 		initOfflineSyncListener(); // Offline sync başlat
 		dispatch(setGeneral('app_loaded', true));
 
-		// Capacitor native'de splash screen'i kapat ve back gesture'ı yakala
+		// Capacitor native'de splash screen'i kapat ve native pluginleri baslat
 		if (Capacitor.isNativePlatform()) {
 			SplashScreen.hide();
+			initStatusBar();
+			lockTextZoom();
+			initSafeArea();
 
 			CapApp.addListener('backButton', () => {
 				const state = getStore().getState();

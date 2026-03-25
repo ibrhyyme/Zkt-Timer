@@ -14,6 +14,7 @@ import { getCubeTypeInfoById } from '../../util/cubes/util';
 import { smartCubeSelected } from './helpers/util';
 import { setSetting } from '../../db/settings/update';
 import block from '../../styles/bem';
+import { hapticNotification } from '../../util/native-plugins';
 import './TimerControls.scss';
 
 const b = block('timer-controls');
@@ -70,6 +71,7 @@ export default function TimerControls() {
     // +2 toggle
     function handlePlusTwo() {
         if (latestSolve) {
+            hapticNotification('warning');
             togglePlusTwoSolveDb(latestSolve);
         }
     }
@@ -77,6 +79,7 @@ export default function TimerControls() {
     // DNF toggle
     function handleDNF() {
         if (latestSolve) {
+            hapticNotification('error');
             toggleDnfSolveDb(latestSolve);
         }
     }
@@ -84,6 +87,7 @@ export default function TimerControls() {
     // Delete last solve
     function handleDelete() {
         if (latestSolve) {
+            hapticNotification('error');
             deleteSolveDb(latestSolve);
         }
     }

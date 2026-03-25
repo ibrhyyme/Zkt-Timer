@@ -1,4 +1,6 @@
 import { toast, ToastOptions } from 'react-toastify';
+import { showNativeToast } from './native-plugins';
+import { isNative } from './platform';
 
 const toastOptions: ToastOptions = {
 	position: 'bottom-left',
@@ -30,14 +32,26 @@ export function toastDismiss() {
 }
 
 export function toastSuccess(message: string) {
+	if (isNative()) {
+		showNativeToast(message);
+		return;
+	}
 	toast.success(message, toastOptions);
 }
 
 export function toastWarning(message: string) {
+	if (isNative()) {
+		showNativeToast(message);
+		return;
+	}
 	toast.warning(message, toastOptions);
 }
 
 export function toastInfo(message: string) {
+	if (isNative()) {
+		showNativeToast(message);
+		return;
+	}
 	toast.info(message, toastOptions);
 }
 
@@ -47,5 +61,9 @@ export function toastError(message: string | Error) {
 		msg = message.message
 	}
 
+	if (isNative()) {
+		showNativeToast(msg as string, 'long');
+		return;
+	}
 	toast.error(msg as string, toastOptions);
 }
