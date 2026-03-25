@@ -10,6 +10,7 @@ import { getAllQueued, removeFromQueue, incrementRetryCount, clearQueue } from '
 import { toastSuccess, toastError, toastInfo } from './toast';
 import { emitEvent } from './event_handler';
 import { deleteLocalStorage } from './data/local_storage';
+import { getNetworkStatus } from './native-plugins';
 
 const MAX_RETRIES = 3;
 
@@ -43,7 +44,8 @@ function assertNoGraphQLErrors(result: any): void {
  * Queue'yu işle ve tüm pending mutation'ları sync et
  */
 export async function processQueue(): Promise<void> {
-    if (!navigator.onLine) return;
+    const online = await getNetworkStatus();
+    if (!online) return;
 
     // Gerçekten sunucuya erişilebildiğini doğrula
     const reallyOnline = await isReallyOnline();

@@ -16,6 +16,7 @@ import { getSettings, getSetting } from '../../../db/settings/query';
 import { getTimerStore } from '../../../util/store/getTimer';
 import { resourceUri } from '../../../util/storage';
 import { smartCubeSelected } from './util';
+import { hapticImpact } from '../../../util/native-plugins';
 
 let endLocked = false;
 
@@ -51,6 +52,7 @@ export function setSmartCubeClockSkew(skew: number) {
 export function startTimer(smartStartTimestamp?: number) {
 	const timeStartedAt = smartStartTimestamp ? new Date(smartStartTimestamp) : new Date();
 	_smartSolveEndTime = null;
+	hapticImpact('light');
 
 	// Acik dropdown menuleri kapat (hamburger, kup secici vb.)
 	window.dispatchEvent(new CustomEvent('timerInteractionStart'));
@@ -72,6 +74,7 @@ export function startTimer(smartStartTimestamp?: number) {
 }
 
 export function endTimer(context: ITimerContext, finalTimeMilli?: number, overrides?: Partial<SolveInput>) {
+	hapticImpact('medium');
 
 	const { scramble, timeStartedAt } = context;
 

@@ -6,6 +6,7 @@
 
 import { processQueue, registerBackgroundSync, isOnline } from '../../util/offline-sync';
 import { getPendingCount } from '../../util/offline-queue';
+import { initNetworkListener, getNetworkStatus } from '../../util/native-plugins';
 import i18n from '../../i18n/i18n';
 
 let syncInProgress = false;
@@ -16,6 +17,11 @@ let syncInProgress = false;
 export function initOfflineSyncListener() {
     // Online olunca sync et
     window.addEventListener('online', handleOnline);
+
+    // Native network listener — navigator.onLine'dan daha guvenilir
+    initNetworkListener((connected) => {
+        if (connected) handleOnline();
+    });
 
     // Service Worker message listener
     if ('serviceWorker' in navigator) {
@@ -38,7 +44,8 @@ async function handleOnline() {
     await new Promise(r => setTimeout(r, 2000));
 
     // Gecikme sonrası hala online mı kontrol et
-    if (!navigator.onLine) return;
+    const online = await getNetworkStatus();
+    if (!online) return;
 
     // Pending yoksa skip
     const pendingCount = await getPendingCount();
