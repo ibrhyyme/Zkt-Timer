@@ -125,11 +125,16 @@
 			display: block;
 		}
 
-		// Hover lift effect
-		transition: transform 0.3s ease, box-shadow 0.3s ease;
+		// Tilt + hover effects
+		transition: transform 0.15s ease-out, box-shadow 0.3s ease;
+		transform-style: preserve-3d;
+		will-change: transform;
+
+		img {
+			transition: transform 0.15s ease-out;
+		}
 
 		&:hover {
-			transform: translateY(-8px) scale(1.02);
 			box-shadow: 0 20px 60px rgba(36, 107, 253, 0.2);
 		}
 	}

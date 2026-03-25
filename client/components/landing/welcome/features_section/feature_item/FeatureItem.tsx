@@ -174,6 +174,15 @@ export default function FeatureItem(props: FeatureItemProps) {
 					className={b('image')}
 					loading="lazy"
 				/>
+				{/* CSS 3D Mini Cube Decoration */}
+				<div className={b('mini-cube')} style={{ '--cube-color': color } as React.CSSProperties}>
+					<div className={b('mini-cube-face', { side: 'front' })} />
+					<div className={b('mini-cube-face', { side: 'back' })} />
+					<div className={b('mini-cube-face', { side: 'left' })} />
+					<div className={b('mini-cube-face', { side: 'right' })} />
+					<div className={b('mini-cube-face', { side: 'top' })} />
+					<div className={b('mini-cube-face', { side: 'bottom' })} />
+				</div>
 			</div>
 		</div>
 	);

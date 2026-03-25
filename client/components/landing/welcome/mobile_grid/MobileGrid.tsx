@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -18,10 +18,39 @@ const MOBILE_SCREENS = [
 	{ src: '/public/welcome/mobile/setting_mobile.png', labelKey: 'welcome_mobile.label_settings' },
 ];
 
+const TILT_MAX = 15; // degrees
+
 export default function MobileGrid() {
 	const containerRef = useRef<HTMLElement>(null);
 	const headerRef = useRef<HTMLDivElement>(null);
 	const { t } = useTranslation();
+
+	const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+		const el = e.currentTarget;
+		const rect = el.getBoundingClientRect();
+		const x = (e.clientX - rect.left) / rect.width;
+		const y = (e.clientY - rect.top) / rect.height;
+
+		const rotateY = (x - 0.5) * TILT_MAX * 2;
+		const rotateX = (0.5 - y) * TILT_MAX * 2;
+
+		el.style.transform = `perspective(600px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.03, 1.03, 1.03)`;
+
+		// Inner image parallax
+		const img = el.querySelector('img') as HTMLImageElement;
+		if (img) {
+			img.style.transform = `translateX(${(x - 0.5) * 6}px) translateY(${(y - 0.5) * 6}px)`;
+		}
+	}, []);
+
+	const handleMouseLeave = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+		const el = e.currentTarget;
+		el.style.transform = '';
+		const img = el.querySelector('img') as HTMLImageElement;
+		if (img) {
+			img.style.transform = '';
+		}
+	}, []);
 
 	useEffect(() => {
 		const container = containerRef.current;
@@ -95,7 +124,11 @@ export default function MobileGrid() {
 				<div className={b('grid')}>
 					{MOBILE_SCREENS.map((screen, index) => (
 						<div key={index} className={b('item')} data-grid-item style={{ opacity: 0 }}>
-							<div className={b('phone-frame')}>
+							<div
+								className={b('phone-frame')}
+								onMouseMove={handleMouseMove}
+								onMouseLeave={handleMouseLeave}
+							>
 								<img src={screen.src} alt={t(screen.labelKey)} loading="lazy" />
 							</div>
 							<p className={b('label')}>{t(screen.labelKey)}</p>
