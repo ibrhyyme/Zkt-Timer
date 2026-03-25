@@ -1154,7 +1154,7 @@ export default function FriendlyRoom() {
     const formatStat = (val: number | null) => val !== null ? (val / 1000).toFixed(timerDecimalPoints ?? 2) : '-';
 
     return (
-        <div className="fixed inset-0 z-[100] md:fixed md:inset-0 md:top-[var(--nav-h)] md:h-[calc(100vh-var(--nav-h))] flex flex-col bg-[#0f1014] text-white overflow-hidden font-sans">
+        <div className="fixed inset-0 z-[100] md:fixed md:inset-0 md:top-[var(--nav-h)] md:h-[calc(100vh-var(--nav-h))] flex flex-col bg-[#0f1014] text-white overflow-hidden font-sans pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
             {/* 1. Header & Scramble (Fixed) */}
             <div className="shrink-0 flex flex-col">
                 {/* Top Bar - Native App Header Style */}

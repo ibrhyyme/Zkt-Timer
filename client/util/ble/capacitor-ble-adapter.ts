@@ -10,22 +10,19 @@ export class CapacitorBleAdapter implements BleAdapter {
 
 	private async ensureInitialized(): Promise<void> {
 		if (!this.initialized) {
-			console.log('[BLE] CapacitorBleAdapter: requesting BLE permissions...');
+			console.log('[BLE] CapacitorBleAdapter: initializing...');
 			try {
-				await BleClient.requestPermissions();
-				console.log('[BLE] CapacitorBleAdapter: permissions granted');
-			} catch (e) {
-				console.error('[BLE] CapacitorBleAdapter: permission request HATA:', e);
-				throw new Error('BLE_PERMISSION_DENIED');
-			}
-
-			console.log('[BLE] CapacitorBleAdapter: initializing BleClient (androidNeverForLocation: true)...');
-			try {
+				// iOS: Bu cagri Bluetooth izin dialog'unu otomatik tetikler
+				// Android: androidNeverForLocation: true ile konum izni sormaz
 				await BleClient.initialize({ androidNeverForLocation: true });
 				this.initialized = true;
 				console.log('[BLE] CapacitorBleAdapter: initialized successfully');
 			} catch (e) {
-				console.error('[BLE] CapacitorBleAdapter: initialize HATA:', e);
+				const msg = e instanceof Error ? e.message : String(e);
+				console.error('[BLE] CapacitorBleAdapter: initialize HATA:', msg);
+				if (msg.includes('permission') || msg.includes('unauthorized')) {
+					throw new Error('BLE_PERMISSION_DENIED');
+				}
 				throw e;
 			}
 

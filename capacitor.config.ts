@@ -18,6 +18,10 @@ const config: CapacitorConfig = {
             launchFadeOutDuration: 300,
             androidScaleType: 'CENTER_CROP',
         },
+        Keyboard: {
+            resize: 'none',
+            scrollPadding: false,
+        },
     },
 };
 
