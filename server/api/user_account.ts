@@ -99,18 +99,16 @@ export const mutateActions = {
 		// Dogrulama kodu olustur ve mail gonder
 		const ev = await createEmailVerification(user);
 		const emailStrings = getEmailStrings(language);
-		try {
-			await sendEmailWithTemplate(user, emailStrings.verification_subject, 'email_verification', {
-				code: ev.code,
-				message: emailStrings.verification_message,
-				greeting: emailStrings.greeting,
-				code_expiry: emailStrings.code_expiry,
-				closing: emailStrings.closing,
-				team: emailStrings.team,
-			});
-		} catch (error) {
+		sendEmailWithTemplate(user, emailStrings.verification_subject, 'email_verification', {
+			code: ev.code,
+			message: emailStrings.verification_message,
+			greeting: emailStrings.greeting,
+			code_expiry: emailStrings.code_expiry,
+			closing: emailStrings.closing,
+			team: emailStrings.team,
+		}).catch(error => {
 			console.error('Verification email could not be sent:', error);
-		}
+		});
 
 		return sanitizeUser(user);
 	},
