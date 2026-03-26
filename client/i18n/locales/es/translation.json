@@ -37,7 +37,10 @@
 		"username": "Nombre de usuario",
 		"password": "Contraseña",
 		"signup_button": "Registrarse",
-		"has_account": "¿Ya tienes una cuenta? Inicia sesión"
+		"has_account": "¿Ya tienes una cuenta? Inicia sesión",
+		"email_suggestion": "¿Quisiste decir {{domain}}?",
+		"email_invalid_chars": "La dirección de correo contiene caracteres no válidos.",
+		"invalid_email_domain": "Este dominio de correo no parece aceptar correos. Por favor, verifica tu dirección."
 	},
 	"forgot": {
 		"email": "Correo electrónico",

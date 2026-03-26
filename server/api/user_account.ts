@@ -19,6 +19,7 @@ import { GraphQLContext } from '../@types/interfaces/server.interface';
 import { ErrorCode } from '../constants/errors';
 import { getPrisma } from '../database';
 import { getEmailStrings } from '../util/email_translations';
+import { validateEmailMx } from '../util/email_validation';
 
 export const gqlQuery = `
 	me: UserAccount!
@@ -67,6 +68,11 @@ export const mutateActions = {
 			} else {
 				throw new GraphQLError(ErrorCode.BAD_INPUT, 'That email address is already in use');
 			}
+		}
+
+		const hasMx = await validateEmailMx(email);
+		if (!hasMx) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'This email domain does not appear to accept emails. Please check your email address.');
 		}
 
 		if (username.length < 2) {

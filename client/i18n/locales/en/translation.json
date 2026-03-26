@@ -37,7 +37,10 @@
 		"username": "Username",
 		"password": "Password",
 		"signup_button": "Sign Up",
-		"has_account": "Already have an account? Log in"
+		"has_account": "Already have an account? Log in",
+		"email_suggestion": "Did you mean {{domain}}?",
+		"email_invalid_chars": "Email address contains invalid characters.",
+		"invalid_email_domain": "This email domain does not appear to accept emails. Please check your email address."
 	},
 	"forgot": {
 		"email": "Email",

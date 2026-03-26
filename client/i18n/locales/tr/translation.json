@@ -37,7 +37,10 @@
 		"username": "Kullanıcı Adı",
 		"password": "Şifre",
 		"signup_button": "Kayıt Ol",
-		"has_account": "Hesabın var mı? Giriş yap"
+		"has_account": "Hesabın var mı? Giriş yap",
+		"email_suggestion": "{{domain}} mu demek istediniz?",
+		"email_invalid_chars": "E-posta adresi geçersiz karakter içeriyor.",
+		"invalid_email_domain": "Bu e-posta adresi geçersiz görünüyor. Lütfen kontrol edin."
 	},
 	"forgot": {
 		"email": "E-posta",
