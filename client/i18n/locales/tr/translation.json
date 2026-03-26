@@ -1407,8 +1407,8 @@
 		"success": "{{username}} başarıyla şikayet edildi. Gerisini biz hallederiz"
 	},
 	"wca_events": {
-		"333": "3x3x3",
 		"222": "2x2x2",
+		"333": "3x3x3",
 		"444": "4x4x4",
 		"555": "5x5x5",
 		"666": "6x6x6",
@@ -1559,12 +1559,14 @@
 		"cookie_contact": "Daha fazla bilgi veya sorularınız için <a href=\"mailto:ibrhyyme@icloud.com\">ibrhyyme@icloud.com</a> adresine e-posta gönderebilirsiniz."
 	},
 	"welcome_hero": {
-		"title_start": "Türkiye'nin en gelişmiş",
-		"title_highlight": "zeka küpü platformu",
+		"title_start": "Profesyonel",
+		"title_highlight": "Rubik's Cube Timer",
 		"description": "Profesyonel zamanlayıcı, detaylı analizler ve canlı yarışmalarla potansiyelini açığa çıkar.",
 		"cta_start": "Timer'ı Başlat →",
 		"cta_signup": "Kayıt Ol",
-		"cta_login": "Giriş Yap"
+		"cta_login": "Giriş Yap",
+		"title_highlight_2": "Speedcubing Platformu",
+		"title_highlight_3": "Çözüm ve Analiz Aracı"
 	},
 	"welcome_mobile": {
 		"title": "Her Zaman Yanınızda",

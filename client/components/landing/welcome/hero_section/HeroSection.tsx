@@ -8,6 +8,7 @@ import Button from '../../../common/button/Button';
 import LanguageSwitcher from '../../../common/language_switcher/LanguageSwitcher';
 import HeroCube from './HeroCube';
 import ParticleCanvas from './ParticleCanvas';
+import TextType from '../text_type/TextType';
 import { staggerContainer, fadeInUp, fadeInScale, fadeInLeft, fadeInRight, hoverScale, tapScale } from '../motion-variants';
 
 const b = block('welcome-hero');
@@ -53,7 +54,20 @@ export default function HeroSection() {
 					<motion.h1 className={b('title')} variants={fadeInLeft}>
 						{t('welcome_hero.title_start')}{' '}
 						<span className={b('title-highlight')}>
-							{t('welcome_hero.title_highlight')}
+							<TextType
+								text={[
+									t('welcome_hero.title_highlight'),
+									t('welcome_hero.title_highlight_2'),
+									t('welcome_hero.title_highlight_3'),
+								]}
+								typingSpeed={60}
+								deletingSpeed={35}
+								pauseDuration={2500}
+								initialDelay={1200}
+								loop
+								showCursor
+								cursorCharacter="|"
+							/>
 						</span>
 					</motion.h1>
 
