@@ -1,3 +1,5 @@
+import i18n from '../i18n/i18n';
+
 const VERSION_KEY = 'zkt_app_version';
 
 async function checkForUpdate(): Promise<void> {
@@ -10,21 +12,23 @@ async function checkForUpdate(): Promise<void> {
 
 		if (storedVersion && storedVersion !== version) {
 			console.log('[UpdateChecker] Yeni versiyon tespit edildi:', storedVersion, '->', version);
-
-			// SW cache'lerini temizle
-			if ('caches' in window) {
-				const keys = await caches.keys();
-				await Promise.all(keys.map((k) => caches.delete(k)));
-			}
-
-			// SW'yi unregister et
-			if ('serviceWorker' in navigator) {
-				const registrations = await navigator.serviceWorker.getRegistrations();
-				await Promise.all(registrations.map((r) => r.unregister()));
-			}
-
 			localStorage.setItem(VERSION_KEY, version);
-			window.location.reload();
+
+			if (confirm(i18n.t('common.new_version_available'))) {
+				// SW cache'lerini temizle
+				if ('caches' in window) {
+					const keys = await caches.keys();
+					await Promise.all(keys.map((k) => caches.delete(k)));
+				}
+
+				// SW'yi unregister et
+				if ('serviceWorker' in navigator) {
+					const registrations = await navigator.serviceWorker.getRegistrations();
+					await Promise.all(registrations.map((r) => r.unregister()));
+				}
+
+				window.location.reload();
+			}
 			return;
 		}
 
