@@ -3,6 +3,7 @@ import Input from '../../common/inputs/input/Input';
 import { Link } from 'react-router-dom';
 import { gql } from '@apollo/client/core';
 import { validateStrongPassword } from '../../../util/auth/password';
+import { suggestEmailDomain, EmailSuggestion } from '../../../util/auth/email';
 import PasswordStrength from '../../common/password_strength/PasswordStrength';
 import { getLoginLink, getRedirectLink } from '../../../util/auth/login';
 import block from '../../../styles/bem';
@@ -39,6 +40,7 @@ export default function SignUp() {
 	const [username, setUsername] = useInput('');
 	const [error, setError] = useState('');
 	const [showPassword, setShowPassword] = useState(false);
+	const [emailSuggestion, setEmailSuggestion] = useState<EmailSuggestion | null>(null);
 
 	const [createAccount, createAccountData] = useMutation<
 		{ createUserAccount: UserAccount },
@@ -81,6 +83,18 @@ export default function SignUp() {
 			window.location.href = `/verify-email?email=${encodeURIComponent(email.trim())}`;
 		} catch (e) {
 			setError(e.message);
+		}
+	}
+
+	function handleEmailChange(e: React.ChangeEvent<HTMLInputElement>) {
+		setEmail(e);
+		setEmailSuggestion(suggestEmailDomain(e.target.value.trim()));
+	}
+
+	function acceptEmailSuggestion() {
+		if (emailSuggestion) {
+			setEmail(emailSuggestion.fullEmail);
+			setEmailSuggestion(null);
 		}
 	}
 
@@ -155,7 +169,7 @@ export default function SignUp() {
 						id="email"
 						type="email"
 						value={email}
-						onChange={setEmail}
+						onChange={handleEmailChange}
 						placeholder=""
 						className="w-full h-11 px-4 rounded-2xl border focus:outline-none focus:ring-2 focus:ring-indigo-400/70 transition"
 						style={{
@@ -164,6 +178,25 @@ export default function SignUp() {
 							color: '#ffffff'
 						} as React.CSSProperties}
 					/>
+					{emailSuggestion && (
+						<div className="mt-1 text-xs text-amber-300">
+							{emailSuggestion.hasInvalidChars && (
+								<span>{t('signup.email_invalid_chars')} </span>
+							)}
+							{emailSuggestion.suggestedDomain ? (
+								<>
+									{t('signup.email_suggestion', { domain: emailSuggestion.suggestedDomain })}{' '}
+									<button
+										type="button"
+										onClick={acceptEmailSuggestion}
+										className="underline text-cyan-300 hover:text-cyan-100 transition-colors cursor-pointer"
+									>
+										{emailSuggestion.suggestedDomain}
+									</button>
+								</>
+							) : null}
+						</div>
+					)}
 				</div>
 
 				{/* Username Input */}
