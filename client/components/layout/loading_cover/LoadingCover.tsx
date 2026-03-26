@@ -4,12 +4,8 @@ import block from '../../../styles/bem';
 import { getLocalStorage } from '../../../util/data/local_storage';
 import CSS from 'csstype';
 import LoadingIcon from '../../common/LoadingIcon';
-import { Capacitor } from '@capacitor/core';
 
 const b = block('loading-cover');
-
-// Capacitor native'de LoadingCover gösterme (native splash screen zaten gösteriyor)
-const isCapacitorNative = typeof window !== 'undefined' && Capacitor.isNativePlatform();
 
 interface Props {
 	fadeOut?: boolean;
@@ -21,24 +17,21 @@ export default function LoadingCover(props: Props) {
 	const [style, setStyle] = React.useState<CSS.Properties>({});
 
 	useEffect(() => {
-		if (isCapacitorNative || fadeOut || typeof localStorage === 'undefined') return;
+		if (fadeOut || typeof localStorage === 'undefined') return;
 
 		const backgroundColor = getLocalStorage('background_color');
 		const textColor = getLocalStorage('text_color');
 
+		const newStyle: CSS.Properties = {};
 		if (backgroundColor && backgroundColor.includes(',')) {
-			style.backgroundColor = `rgb(${backgroundColor})`;
+			newStyle.backgroundColor = `rgb(${backgroundColor})`;
 		}
 		if (textColor && textColor.includes(',')) {
-			style.color = `rgb(${textColor})`;
+			newStyle.color = `rgb(${textColor})`;
 		}
 
-		setStyle(style);
+		setStyle(newStyle);
 	}, [typeof localStorage]);
-
-	if (isCapacitorNative) {
-		return null;
-	}
 
 	return (
 		<div

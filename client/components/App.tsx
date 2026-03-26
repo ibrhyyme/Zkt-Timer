@@ -52,15 +52,6 @@ ReactDOM.hydrate(
 	document.getElementById('app')
 );
 
-// Register Service Worker for PWA (only in production)
-if (typeof window !== "undefined" &&
-	"serviceWorker" in navigator &&
-	process.env.NODE_ENV === "production") {
-	window.addEventListener('load', () => {
-		navigator.serviceWorker.register('/sw.js').catch(err => console.error('SW register failed:', err));
-	});
-}
-
 // Capacitor ve web: Uygulama öne geldiğinde versiyon kontrolü yap
 if (typeof window !== "undefined" && process.env.NODE_ENV === "production") {
 	initCapacitorUpdateChecker();
