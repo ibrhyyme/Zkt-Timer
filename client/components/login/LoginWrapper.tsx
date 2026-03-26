@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { motion, AnimatePresence } from 'framer-motion';
 import Login from './login/Login';
 import SignUp from './sign_up/SignUp';
 import Forgot from './forgot/Forgot';
@@ -10,6 +11,7 @@ import { useRouteMatch, Link } from 'react-router-dom';
 import block from '../../styles/bem';
 import { Cube } from 'phosphor-react';
 import LanguageSwitcher from '../common/language_switcher/LanguageSwitcher';
+import SplitText from '../common/split_text/SplitText';
 
 const b = block('login');
 
@@ -33,6 +35,12 @@ export default function LoginWrapper() {
 		body = <EmailVerification />;
 		currentTab = 'verify';
 	}
+
+	const titleText = currentTab === 'forgot'
+		? t('login_wrapper.reset_password')
+		: currentTab === 'verify'
+			? t('email_verification.title')
+			: t('login_wrapper.welcome');
 
 	return (
 		<React.Fragment>
@@ -75,13 +83,9 @@ export default function LoginWrapper() {
 						<img src="/public/images/zkt-logo.png" alt="ZKT-Timer Logo" className={b('logo')} />
 					</div>
 
-					{/* Title */}
+					{/* Title — SplitText stagger animation */}
 					<h1 className={b('title')}>
-						{currentTab === 'forgot'
-						? t('login_wrapper.reset_password')
-						: currentTab === 'verify'
-							? t('email_verification.title')
-							: t('login_wrapper.welcome')}
+						<SplitText key={titleText} text={titleText} delay={0.15} />
 					</h1>
 
 					{/* Tabs */}
@@ -96,8 +100,20 @@ export default function LoginWrapper() {
 						</div>
 					)}
 
-					{/* Form Content */}
-					<div className={b('form-content')}>{body}</div>
+					{/* Form Content — animated tab transitions */}
+					<div className={b('form-content')}>
+						<AnimatePresence exitBeforeEnter initial={false}>
+							<motion.div
+								key={currentTab}
+								initial={{ opacity: 0, y: 12 }}
+								animate={{ opacity: 1, y: 0 }}
+								exit={{ opacity: 0, y: -12 }}
+								transition={{ duration: 0.25, ease: 'easeInOut' }}
+							>
+								{body}
+							</motion.div>
+						</AnimatePresence>
+					</div>
 				</div>
 			</div>
 		</React.Fragment>
