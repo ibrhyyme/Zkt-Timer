@@ -26,3 +26,9 @@ export class SetDailyGoalInput {
 	@Field({ nullable: true })
 	enabled?: boolean;
 }
+
+@ObjectType()
+export class DailyGoalReminderResult {
+	@Field()
+	enabled: boolean;
+}

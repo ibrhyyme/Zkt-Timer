@@ -27,7 +27,6 @@ import QuickControlsModal from '../quick-controls/QuickControlsModal';
 import Button from '../common/button/Button';
 import { setSetting } from '../../db/settings/update';
 import DailyGoalProgressBar from '../daily-goal/DailyGoalProgressBar';
-import { startReminderInterval } from '../daily-goal/helpers/reminder';
 import { keepScreenAwake, allowScreenSleep } from '../../util/native-plugins';
 // Yeni mobil layout componentleri
 import TimerControls from './TimerControls';
@@ -92,12 +91,9 @@ export default function Timer(props: TimerProps) {
 
 		setLoading(false);
 
-		const cleanupReminder = startReminderInterval();
-
 		// Go back to the default settings when user leaves page
 		return () => {
 			stopAllTimers();
-			cleanupReminder();
 			allowScreenSleep();
 			dispatch({
 				type: 'RESET_TIMER_PARAMS',

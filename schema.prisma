@@ -29,8 +29,10 @@ model UserAccount {
   mod                Boolean     @default(false)
   offline_hash       String?
   unsub_id           String?     @default(uuid())
-  last_solve_at      DateTime?
-  action_log         ActionLog[]
+  last_solve_at              DateTime?
+  daily_goal_reminder        Boolean     @default(false)
+  last_daily_goal_reminder   DateTime?
+  action_log                 ActionLog[]
 
   algorithm_override            AlgorithmOverride[]
   badges                        Badge[]
@@ -879,6 +881,8 @@ model Setting {
   inspection_auto_start               Boolean          @default(false)
   stats_module_json                   String?
   scramble_subset                     String?
+  locale                              String           @default("tr")
+  goal_reminder_enabled               Boolean          @default(false)
   custom_cube_types                   CustomCubeType[] @relation("custom_cube_type_setting")
   user                                UserAccount      @relation(fields: [user_id], references: [id], onDelete: Cascade)
 

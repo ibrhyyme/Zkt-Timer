@@ -1,6 +1,6 @@
 import { Resolver, Query, Mutation, Arg, Ctx, Authorized } from 'type-graphql';
 import { GraphQLContext } from '../@types/interfaces/server.interface';
-import { DailyGoalType, SetDailyGoalInput } from '../schemas/DailyGoal.schema';
+import { DailyGoalType, SetDailyGoalInput, DailyGoalReminderResult } from '../schemas/DailyGoal.schema';
 import GraphQLError from '../util/graphql_error';
 import { ErrorCode } from '../constants/errors';
 import { Role } from '../middlewares/auth';
@@ -17,6 +17,16 @@ export class DailyGoalResolver {
 		} catch (error) {
 			throw new GraphQLError(ErrorCode.INTERNAL_SERVER_ERROR, 'Failed to fetch daily goals');
 		}
+	}
+
+	@Authorized([Role.LOGGED_IN])
+	@Query(() => DailyGoalReminderResult)
+	async dailyGoalReminderStatus(@Ctx() context: GraphQLContext): Promise<DailyGoalReminderResult> {
+		const user = await context.prisma.userAccount.findUnique({
+			where: { id: context.user.id },
+			select: { daily_goal_reminder: true },
+		});
+		return { enabled: user?.daily_goal_reminder ?? false };
 	}
 
 	@Authorized([Role.LOGGED_IN])
@@ -47,6 +57,19 @@ export class DailyGoalResolver {
 		} catch (error) {
 			throw new GraphQLError(ErrorCode.INTERNAL_SERVER_ERROR, 'Failed to set daily goal');
 		}
+	}
+
+	@Authorized([Role.LOGGED_IN])
+	@Mutation(() => DailyGoalReminderResult)
+	async setDailyGoalReminder(
+		@Arg('enabled') enabled: boolean,
+		@Ctx() context: GraphQLContext
+	): Promise<DailyGoalReminderResult> {
+		await context.prisma.userAccount.update({
+			where: { id: context.user.id },
+			data: { daily_goal_reminder: enabled },
+		});
+		return { enabled };
 	}
 
 	@Authorized([Role.LOGGED_IN])
