@@ -57,6 +57,18 @@
 		display: flex;
 		align-items: center;
 		gap: 0.533rem;
+		position: relative;
+	}
+
+	&__pill {
+		position: absolute;
+		top: 0;
+		left: 0;
+		border-radius: 0.5rem;
+		background: linear-gradient(to right, rgba(99, 102, 241, 0.7), rgba(217, 70, 239, 0.6));
+		box-shadow: 0 8px 24px rgba(99, 102, 241, 0.25);
+		pointer-events: none;
+		z-index: 0;
 	}
 
 	&__right {

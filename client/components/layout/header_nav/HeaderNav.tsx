@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { Link, useRouteMatch } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
 import './HeaderNav.scss';
 import { setGeneral } from '../../../actions/general';
 import {
@@ -31,17 +32,16 @@ const b = block('header-nav');
 
 interface HeaderNavLinkProps extends NavLinkProps {
 	selected?: boolean;
+	hovered?: boolean;
+	onHoverStart?: (e: React.MouseEvent<HTMLAnchorElement>) => void;
+	onHoverEnd?: () => void;
 }
 
 function HeaderNavLink(props: HeaderNavLinkProps) {
-	const { name, icon, newTag, loginRequired, selected } = props;
+	const { name, icon, newTag, loginRequired, selected, hovered, onHoverStart, onHoverEnd } = props;
 	let link = props.link;
 	const { t } = useTranslation();
 	const me = useMe();
-
-	// if (link === '/' && !me) {
-	// 	link = '/demo';
-	// }
 
 	const linkClasses = [
 		'inline-flex',
@@ -51,23 +51,20 @@ function HeaderNavLink(props: HeaderNavLinkProps) {
 		'px-3',
 		'rounded-lg',
 		'border',
-		'transition',
-		'transition-transform',
+		'transition-all',
 		'focus:outline-none',
 		'focus-visible:ring-2',
 		'focus-visible:ring-indigo-400/70',
 		'hover:-translate-y-[1px]',
 		'active:translate-y-0',
+		'relative',
+		'z-[1]',
 	];
 
-	if (selected) {
+	if (selected || hovered) {
 		linkClasses.push(
 			'text-white',
-			'bg-gradient-to-r',
-			'from-indigo-500/70',
-			'to-fuchsia-500/60',
 			'border-transparent',
-			'shadow-[0_8px_24px_rgba(99,102,241,0.25)]'
 		);
 	} else {
 		linkClasses.push(
@@ -80,7 +77,13 @@ function HeaderNavLink(props: HeaderNavLinkProps) {
 	}
 
 	return (
-		<Link to={link} className={linkClasses.join(' ')}>
+		<Link
+			to={link}
+			className={linkClasses.join(' ')}
+			data-active={selected || undefined}
+			onMouseEnter={onHoverStart}
+			onMouseLeave={onHoverEnd}
+		>
 			<span className="text-lg">{icon}</span>
 			<span>{t(name)}</span>
 		</Link>
@@ -98,6 +101,10 @@ export default function HeaderNav() {
 	const mobileMode = useGeneral('mobile_mode');
 	const bgTheme = useTheme('background_color');
 	const isLightTheme = bgTheme && !bgTheme.isDark;
+
+	// Pill nav state
+	const navRef = useRef<HTMLElement>(null);
+	const [pillPos, setPillPos] = useState({ left: 0, top: 0, width: 0, height: 0, ready: false });
 
 	useWindowListener('resize', windowResize, [mobileMode]);
 
@@ -125,6 +132,48 @@ export default function HeaderNav() {
 		pathname = match.path;
 	}
 
+	// Measure a given element for the pill position
+	const measureElement = useCallback((el: HTMLElement) => {
+		setPillPos({
+			left: el.offsetLeft,
+			top: el.offsetTop,
+			width: el.offsetWidth,
+			height: el.offsetHeight,
+			ready: true,
+		});
+	}, []);
+
+	// Measure active nav link for sliding pill
+	const measureActive = useCallback(() => {
+		if (!navRef.current) return;
+		const activeEl = navRef.current.querySelector('[data-active]') as HTMLElement;
+		if (activeEl) {
+			measureElement(activeEl);
+		} else {
+			setPillPos((prev) => ({ ...prev, ready: false }));
+		}
+	}, [measureElement]);
+
+	// Hover handlers
+	const [hoveredLink, setHoveredLink] = useState<string | null>(null);
+
+	const handleHoverStart = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
+		const el = e.currentTarget;
+		setHoveredLink(el.getAttribute('href') || '');
+		measureElement(el);
+	}, [measureElement]);
+
+	const handleHoverEnd = useCallback(() => {
+		setHoveredLink(null);
+		measureActive();
+	}, [measureActive]);
+
+	useEffect(() => {
+		measureActive();
+		window.addEventListener('resize', measureActive);
+		return () => window.removeEventListener('resize', measureActive);
+	}, [pathname, measureActive]);
+
 	if (focusMode) {
 		return null;
 	}
@@ -135,7 +184,14 @@ export default function HeaderNav() {
 	}
 
 	const navLinks = NAV_LINKS.map((link) => (
-		<HeaderNavLink {...link} key={link.name} selected={link.match.test(pathname)} />
+		<HeaderNavLink
+			{...link}
+			key={link.name}
+			selected={link.match.test(pathname)}
+			hovered={hoveredLink === link.link}
+			onHoverStart={handleHoverStart}
+			onHoverEnd={handleHoverEnd}
+		/>
 	));
 
 	// Pro features are now available to everyone
@@ -176,7 +232,25 @@ export default function HeaderNav() {
 
 				{/* Center - Navigation Links */}
 				<div className={b('center')}>
-					<nav className={b('nav')}>
+					<nav ref={navRef} className={b('nav')}>
+						{/* Sliding pill indicator */}
+						<motion.div
+							className={b('pill')}
+							initial={false}
+							animate={{
+								x: pillPos.left,
+								y: pillPos.top,
+								width: pillPos.width,
+								height: pillPos.height,
+								opacity: pillPos.ready ? 1 : 0,
+							}}
+							transition={{
+								type: 'spring',
+								stiffness: 500,
+								damping: 35,
+								opacity: { duration: 0.15 },
+							}}
+						/>
 						{navLinks}
 					</nav>
 				</div>
