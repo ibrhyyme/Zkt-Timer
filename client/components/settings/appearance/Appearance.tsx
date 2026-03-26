@@ -95,7 +95,6 @@ export default function Appearance() {
 				<TimerSettingsSlider
 					label={t('appearance.timer_font_size')}
 					description={t('appearance.timer_font_size_desc')}
-					hidden={!!mobileMode}
 					value={timerTimeSize}
 					min={35}
 					max={150}
@@ -120,7 +119,6 @@ export default function Appearance() {
 				<TimerSettingsSlider
 					label={t('appearance.scramble_font_size')}
 					description={t('appearance.scramble_font_size_desc')}
-					hidden={!!mobileMode}
 					value={timerScrambleSize}
 					min={10}
 					max={40}
@@ -144,7 +142,6 @@ export default function Appearance() {
 			<TimerSettingsSlider
 				label={t('appearance.smart_cube_size')}
 				description={t('appearance.smart_cube_size_desc')}
-				hidden={!!mobileMode}
 				value={smartCubeSize}
 				min={100}
 				max={600}

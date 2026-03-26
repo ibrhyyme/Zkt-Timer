@@ -98,10 +98,7 @@ export default function SmartCube() {
 	const timerType = useSettings('timer_type');
 	const mobileMode = useGeneral('mobile_mode');
 
-	let smartCubeSize = useSettings('smart_cube_size');
-	if (mobileMode) {
-		smartCubeSize = 240;
-	}
+	const smartCubeSize = useSettings('smart_cube_size');
 
 	const {
 		scramble,
