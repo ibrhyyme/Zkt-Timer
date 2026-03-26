@@ -30,14 +30,14 @@ export default (payload: HtmlPagePayload) => {
 				<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,500;0,600;0,700;0,800;0,900;1,500;1,600;1,700;1,900&display=swap"></noscript>
 				<link rel="stylesheet" href="${distBase}/${cssFileName}?v=${version}">
 				<link rel="stylesheet" href="https://cdn.cubing.net/v0/css/@cubing/icons/css">
-				<link rel="shortcut icon" href="${resourceBase}/favicon.ico" type="image/x-icon">  
+				<link rel="shortcut icon" href="${resourceBase}/favicon.ico" type="image/x-icon">
 				<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 				<!-- PWA Manifest -->
 				<link rel="manifest" href="/public/manifest.webmanifest">
 				<!-- iOS PWA Uyumluluğu (Otomatik Splash Screen Oluşturucu) -->
 				<script async src="https://cdn.jsdelivr.net/npm/pwacompat" crossorigin="anonymous"></script>
 				<meta name="theme-color" content="#0F142B">
-				
+
 				<!-- iOS -->
 				<meta name="mobile-web-app-capable" content="yes">
 				<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -55,18 +55,36 @@ export default (payload: HtmlPagePayload) => {
 				  window.dataLayer = window.dataLayer || [];
 				  function gtag(){dataLayer.push(arguments);}
 				  gtag('js', new Date());
-				
+
 				  gtag('config', 'AW-354788011');
 				</script>
-	
+
 				${helmet.title.toString()}
 				${helmet.meta.toString()}
 				${helmet.link.toString()}
 				${helmet.script.toString()}
 			</head>
-		
-			<body>
+
+			<body style="background-color:#12141C;color:#fff;margin:0;">
+				<div id="app-preloader" style="position:fixed;inset:0;z-index:99999999;display:flex;justify-content:center;align-items:center;background-color:#12141C;">
+					<img src="${resourceBase}/images/zkt-logo.png" alt="" style="width:8rem;animation:zkt-spin 1.2s linear infinite;">
+				</div>
+				<style>@keyframes zkt-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}</style>
 				<div id="app">${html}</div>
+				<script>
+					(function(){
+						var obs=new MutationObserver(function(){
+							var el=document.getElementById('app-preloader');
+							if(el&&document.querySelector('.cd-loading-cover--fadeOut')){
+								el.style.transition='opacity 0.3s';
+								el.style.opacity='0';
+								setTimeout(function(){el.remove();obs.disconnect();},350);
+							}
+						});
+						obs.observe(document.getElementById('app'),{attributes:true,subtree:true,childList:true});
+						setTimeout(function(){var el=document.getElementById('app-preloader');if(el)el.remove();},30000);
+					})();
+				</script>
 			</body>
 			<script type="text/javascript">
 				window.__STORE__ = ${cleanState};
