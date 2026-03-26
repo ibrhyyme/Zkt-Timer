@@ -1407,8 +1407,8 @@
 		"success": "{{username}} ha sido reportado exitosamente. Nosotros nos encargaremos del resto"
 	},
 	"wca_events": {
-		"333": "3x3x3",
 		"222": "2x2x2",
+		"333": "3x3x3",
 		"444": "4x4x4",
 		"555": "5x5x5",
 		"666": "6x6x6",
@@ -1561,12 +1561,14 @@
 		"legal_notice": "La versión legalmente vinculante de este documento está en turco."
 	},
 	"welcome_hero": {
-		"title_start": "La plataforma de cubos",
-		"title_highlight": "más avanzada",
+		"title_start": "Profesional",
+		"title_highlight": "cronómetro de cubos",
 		"description": "Desbloquea tu potencial con un cronómetro profesional, análisis detallados y competencias en vivo.",
 		"cta_start": "Iniciar Timer →",
 		"cta_signup": "Registrarse",
-		"cta_login": "Iniciar sesión"
+		"cta_login": "Iniciar sesión",
+		"title_highlight_2": "plataforma speedcubing",
+		"title_highlight_3": "herramienta de análisis"
 	},
 	"welcome_mobile": {
 		"title": "Siempre a Tu Lado",

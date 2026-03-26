@@ -1407,8 +1407,8 @@
 		"success": "Successfully reported {{username}}. We will take care of the rest"
 	},
 	"wca_events": {
-		"333": "3x3x3",
 		"222": "2x2x2",
+		"333": "3x3x3",
 		"444": "4x4x4",
 		"555": "5x5x5",
 		"666": "6x6x6",
@@ -1561,12 +1561,14 @@
 		"legal_notice": "The legally binding version of this document is in Turkish."
 	},
 	"welcome_hero": {
-		"title_start": "The most advanced",
-		"title_highlight": "cube timer platform",
+		"title_start": "Professional",
+		"title_highlight": "Rubik's Cube Timer",
 		"description": "Unlock your potential with a professional timer, detailed analytics, and live competitions.",
 		"cta_start": "Start Timer →",
 		"cta_signup": "Sign Up",
-		"cta_login": "Log In"
+		"cta_login": "Log In",
+		"title_highlight_2": "speedcubing platform",
+		"title_highlight_3": "solve & analytics tool"
 	},
 	"welcome_mobile": {
 		"title": "Always By Your Side",

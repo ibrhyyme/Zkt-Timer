@@ -1,0 +1,21 @@
+.cd-text-type {
+	display: inline-grid;
+
+	&__sizer,
+	&__content {
+		grid-area: 1 / 1;
+		white-space: pre-wrap;
+	}
+
+	&__sizer {
+		visibility: hidden;
+		pointer-events: none;
+	}
+
+	&__cursor {
+		margin-left: 2px;
+		display: inline-block;
+		opacity: 1;
+		font-weight: 300;
+	}
+}
