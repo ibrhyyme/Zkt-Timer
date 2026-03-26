@@ -339,13 +339,6 @@ export default function Header(props: Props) {
 			<meta property="og:type" content="website" />
 			<meta property="og:locale" content="tr_TR" />
 
-			{/* hreflang - Coklu dil destegi */}
-			<link rel="alternate" hrefLang="tr" href={fullUrl} />
-			<link rel="alternate" hrefLang="en" href={fullUrl} />
-			<link rel="alternate" hrefLang="es" href={fullUrl} />
-			<link rel="alternate" hrefLang="ru" href={fullUrl} />
-			<link rel="alternate" hrefLang="x-default" href={fullUrl} />
-
 			{/* JSON-LD Structured Data for Google Sitelinks */}
 			<script type="application/ld+json">
 				{JSON.stringify(websiteSchema)}

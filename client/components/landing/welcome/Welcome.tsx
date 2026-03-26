@@ -64,13 +64,6 @@ export default function Welcome() {
 				<meta name="twitter:image" content={ogImage} />
 				<meta name="twitter:url" content={`${SITE_URL}/`} />
 
-				{/* hreflang */}
-				<link rel="alternate" hrefLang="tr" href={`${SITE_URL}/`} />
-				<link rel="alternate" hrefLang="en" href={`${SITE_URL}/`} />
-				<link rel="alternate" hrefLang="es" href={`${SITE_URL}/`} />
-				<link rel="alternate" hrefLang="ru" href={`${SITE_URL}/`} />
-				<link rel="alternate" hrefLang="x-default" href={`${SITE_URL}/`} />
-
 				{/* JSON-LD Structured Data */}
 				<script type="application/ld+json">{JSON.stringify(websiteSchema)}</script>
 				<script type="application/ld+json">{JSON.stringify(organizationSchema)}</script>

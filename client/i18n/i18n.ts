@@ -25,7 +25,7 @@ i18n
 			escapeValue: false,
 		},
 		detection: {
-			order: ['localStorage', 'cookie', 'navigator'],
+			order: ['localStorage', 'cookie'],
 			lookupLocalStorage: 'zkt_language',
 			lookupCookie: 'zkt_language',
 			caches: ['localStorage'],
