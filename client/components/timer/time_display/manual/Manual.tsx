@@ -11,6 +11,7 @@ import StartInstructions from '../start_instructions/StartInstructions';
 import { useSettings } from '../../../../util/hooks/useSettings';
 import { useElementListener } from '../../../../util/hooks/useListener';
 import { useGeneral } from '../../../../util/hooks/useGeneral';
+import { isNative, isAndroidNative } from '../../../../util/platform';
 import { MOBILE_FONT_SIZE_MULTIPLIER } from '../../../../db/settings/update';
 import SolveDiff from '../SolveDiff';
 import Scramble from '../../../modules/scramble/ScrambleVisual';
@@ -58,9 +59,29 @@ export default function Manual() {
 
 	useEffect(() => {
 		if (!disabled && manualInput.current) {
-			manualInput.current.focus();
+			manualInput.current.focus({ preventScroll: true });
 		}
 	}, [disabled]);
+
+	// iOS: Klavye acildiginda sayfayi scroll etmeyi engelle
+	useEffect(() => {
+		if (!isNative() || isAndroidNative()) return;
+
+		const resetScroll = () => {
+			window.scrollTo(0, 0);
+			document.documentElement.scrollTop = 0;
+			document.body.scrollTop = 0;
+		};
+
+		window.addEventListener('scroll', resetScroll, { passive: false });
+		// visualViewport resize da klavye acilisini yakalar
+		window.visualViewport?.addEventListener('resize', resetScroll);
+
+		return () => {
+			window.removeEventListener('scroll', resetScroll);
+			window.visualViewport?.removeEventListener('resize', resetScroll);
+		};
+	}, []);
 
 	useElementListener(manualInput.current, 'keydown', addManualTime, [manualInput?.current, manualTime]);
 
@@ -80,7 +101,7 @@ export default function Manual() {
 
 			// Odağı koru - React state güncellemelerinin tamamlanmasını bekle
 			requestAnimationFrame(() => {
-				manualInput.current?.focus();
+				manualInput.current?.focus({ preventScroll: true });
 			});
 		} catch (err) {
 			// Do nothing
@@ -116,13 +137,12 @@ export default function Manual() {
 	let input = (
 		<input
 			ref={manualInput}
-			autoFocus
 			onBlur={(e) => {
 				const target = e.target;
 				if (!disabled) {
 					const refocus = () => {
 						if (document.activeElement === document.body || !document.activeElement) {
-							target.focus();
+							target.focus({ preventScroll: true });
 						}
 					};
 					requestAnimationFrame(refocus);
