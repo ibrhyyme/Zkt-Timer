@@ -4,7 +4,12 @@ import { Globe } from 'phosphor-react';
 import Dropdown from '../inputs/dropdown/Dropdown';
 import dayjs from 'dayjs';
 
-export default function LanguageSwitcher() {
+interface Props {
+	openLeft?: boolean;
+}
+
+export default function LanguageSwitcher(props: Props = {}) {
+	const {openLeft} = props;
 	const { i18n, t } = useTranslation();
 
 	function changeLanguage(lng: string) {
@@ -18,6 +23,7 @@ export default function LanguageSwitcher() {
 	return (
 		<Dropdown
 			noMargin
+			openLeft={openLeft}
 			icon={<Globe weight="bold" />}
 			text={currentLang.toUpperCase()}
 			options={[
