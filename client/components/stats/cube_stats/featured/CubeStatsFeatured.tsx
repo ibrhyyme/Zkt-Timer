@@ -88,6 +88,7 @@ export default function CubeStatsFeatured() {
 					icon={<Timer weight="bold" />}
 					title={t('stats_page.cubing_time')}
 					value={getTimeString(timeSpentCubing)}
+					animateSeconds={timeSpentCubing}
 					color="#6D7D90"
 				/>
 			</div>

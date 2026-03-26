@@ -41,6 +41,7 @@ export default function AllStatsFeatured() {
 				icon={<Timer weight="bold" />}
 				title={t('stats_page.cubing_time')}
 				value={getTimeString(timeSpentCubing)}
+				animateSeconds={timeSpentCubing}
 				color="#23C586"
 			/>
 			<NumberBlock
