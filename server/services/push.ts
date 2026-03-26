@@ -103,3 +103,49 @@ export async function sendPushToAll(title: string, body: string, data?: Record<s
 		logger.error('[Push] sendPushToAll error:', error);
 	}
 }
+
+/**
+ * Belirli bir kullanicinin tum cihazlarina push notification gonder.
+ */
+export async function sendPushToUser(userId: string, title: string, body: string, data?: Record<string, string>): Promise<void> {
+	if (!firebaseInitialized) return;
+
+	try {
+		const prisma = getPrisma();
+		const tokens = await prisma.pushToken.findMany({
+			where: { userId },
+			select: { token: true },
+		});
+
+		if (tokens.length === 0) return;
+
+		const tokenStrings = tokens.map((t) => t.token);
+		const response = await admin.messaging().sendEachForMulticast({
+			tokens: tokenStrings,
+			notification: { title, body },
+			data: data || {},
+		});
+
+		// Gecersiz token'lari temizle
+		const tokensToRemove: string[] = [];
+		response.responses.forEach((resp, idx) => {
+			if (resp.error) {
+				const code = resp.error.code;
+				if (
+					code === 'messaging/registration-token-not-registered' ||
+					code === 'messaging/invalid-registration-token'
+				) {
+					tokensToRemove.push(tokenStrings[idx]);
+				}
+			}
+		});
+
+		if (tokensToRemove.length > 0) {
+			await prisma.pushToken.deleteMany({
+				where: { token: { in: tokensToRemove } },
+			});
+		}
+	} catch (error) {
+		logger.error(`[Push] sendPushToUser error (userId: ${userId}):`, error);
+	}
+}

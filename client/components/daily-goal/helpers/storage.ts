@@ -78,6 +78,7 @@ export function setReminderEnabled(enabled: boolean): void {
 	const storage = getDailyGoalStorage();
 	storage.reminder_enabled = enabled;
 	setDailyGoalStorage(storage);
+	syncReminderToServer(enabled);
 }
 
 // --- Server sync (fire-and-forget) ---
@@ -99,6 +100,23 @@ function syncGoalToServer(cubeType: string, target: number, enabled: boolean): v
 
 	gqlMutate(mutation, {input: {cube_type: cubeType, target, enabled}}).catch((e) => {
 		console.error('Failed to sync daily goal to server', e);
+	});
+}
+
+function syncReminderToServer(enabled: boolean): void {
+	const me = getMe();
+	if (!me) return;
+
+	const mutation = gql`
+		mutation SetDailyGoalReminder($enabled: Boolean!) {
+			setDailyGoalReminder(enabled: $enabled) {
+				enabled
+			}
+		}
+	`;
+
+	gqlMutate(mutation, {enabled}).catch((e) => {
+		console.error('Failed to sync reminder setting to server', e);
 	});
 }
 
@@ -129,18 +147,31 @@ export async function syncDailyGoalsFromServer(): Promise<void> {
 				target
 				enabled
 			}
+			dailyGoalReminderStatus {
+				enabled
+			}
 		}
 	`;
 
 	try {
-		const res = await gqlQuery<{dailyGoals: Array<{id: string; cube_type: string; target: number; enabled: boolean}>}>(query);
+		const res = await gqlQuery<{
+			dailyGoals: Array<{id: string; cube_type: string; target: number; enabled: boolean}>;
+			dailyGoalReminderStatus: {enabled: boolean};
+		}>(query);
 		const serverGoals = res.data.dailyGoals;
 		const storage = getDailyGoalStorage();
+
+		// Reminder durumunu server'dan al
+		storage.reminder_enabled = res.data.dailyGoalReminderStatus.enabled;
 
 		if (serverGoals.length === 0 && storage.goals.length > 0) {
 			// Migration: localStorage'da goal var ama server bos → push et
 			for (const goal of storage.goals) {
 				syncGoalToServer(goal.cube_type, goal.target, goal.enabled);
+			}
+			// localStorage'daki reminder_enabled'i da server'a push et
+			if (storage.reminder_enabled) {
+				syncReminderToServer(true);
 			}
 		} else if (serverGoals.length > 0) {
 			// Server'dan gelen goals ile localStorage'i guncelle
@@ -149,9 +180,10 @@ export async function syncDailyGoalsFromServer(): Promise<void> {
 				target: g.target,
 				enabled: g.enabled,
 			}));
-			setDailyGoalStorage(storage);
-			emitEvent('dailyGoalUpdatedEvent');
 		}
+
+		setDailyGoalStorage(storage);
+		emitEvent('dailyGoalUpdatedEvent');
 	} catch (e) {
 		console.error('Failed to sync daily goals from server', e);
 	}
