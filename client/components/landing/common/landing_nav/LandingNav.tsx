@@ -92,7 +92,7 @@ export default function LandingNav(props: Props) {
 		<div className={b({scrolled})}>
 			<div className={b('body')}>
 				<div className={b('links')}>
-					<LanguageSwitcher />
+					<LanguageSwitcher openLeft />
 					{showNavLinks}
 				</div>
 			</div>
