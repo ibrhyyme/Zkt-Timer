@@ -63,23 +63,40 @@ export default function Manual() {
 		}
 	}, [disabled]);
 
-	// iOS: Klavye acildiginda sayfayi scroll etmeyi engelle
+	// iOS: Klavye acildiginda WKWebView'un viewport'u scroll etmesini engelle
+	// window.scrollTo(0,0) yeterli degil — scroll WKWebView'un UIScrollView katmaninda oluyor
+	// html/body'yi position:fixed yaparak iOS'un scroll edecek bir sey bulmasini engelliyoruz
 	useEffect(() => {
 		if (!isNative() || isAndroidNative()) return;
 
+		const html = document.documentElement;
+		const body = document.body;
+
+		html.style.position = 'fixed';
+		html.style.overflow = 'hidden';
+		html.style.width = '100%';
+		html.style.height = '100%';
+		body.style.position = 'fixed';
+		body.style.overflow = 'hidden';
+		body.style.width = '100%';
+		body.style.height = '100%';
+
+		// Ekstra guvenlik: scroll olursa sifirla
 		const resetScroll = () => {
 			window.scrollTo(0, 0);
-			document.documentElement.scrollTop = 0;
-			document.body.scrollTop = 0;
 		};
-
-		window.addEventListener('scroll', resetScroll, { passive: false });
-		// visualViewport resize da klavye acilisini yakalar
-		window.visualViewport?.addEventListener('resize', resetScroll);
+		window.addEventListener('scroll', resetScroll);
 
 		return () => {
+			html.style.position = '';
+			html.style.overflow = '';
+			html.style.width = '';
+			html.style.height = '';
+			body.style.position = '';
+			body.style.overflow = '';
+			body.style.width = '';
+			body.style.height = '';
 			window.removeEventListener('scroll', resetScroll);
-			window.visualViewport?.removeEventListener('resize', resetScroll);
 		};
 	}, []);
 
