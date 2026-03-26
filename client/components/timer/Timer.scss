@@ -361,6 +361,12 @@
 			.cd-mobile-timer-scramble {
 				min-height: auto;
 			}
+
+			// iOS: Manuel entry'de alt safe area paddingini kaldir
+			// Klavye zaten alt alani kapliyor, ekstra padding sayfayi gereksiz uzatir
+			.cd-stats-bar--mobile {
+				padding-bottom: 0.75rem;
+			}
 		}
 	}
 
