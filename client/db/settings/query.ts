@@ -125,7 +125,21 @@ const defaultSettings: AllSettings = {
 	smart_cube_analysis_mode: 'cffffop', // 'none' | 'cfop' | 'cf_plus_op' | 'cffffop' | 'cffffoopp'
 };
 
+// Mobil cihazlar icin responsive varsayilan degerler
+const mobileDefaultOverrides: Partial<AllSettings> = {
+	timer_time_size: 60,
+	timer_scramble_size: 15,
+	smart_cube_size: 240,
+};
+
+function isMobileViewport(): boolean {
+	return typeof window !== 'undefined' && window.innerWidth < 768;
+}
+
 export function getDefaultSetting<T extends keyof AllSettings>(key: T): AllSettings[T] {
+	if (isMobileViewport() && key in mobileDefaultOverrides) {
+		return mobileDefaultOverrides[key] as AllSettings[T];
+	}
 	return defaultSettings[key];
 }
 
@@ -139,7 +153,7 @@ export function getSettings(): AllSettings {
 
 	let settingsData: any = settingsDb?.data;
 	if (!settingsDb || !settingsData) {
-		settingsData = Object.keys(defaultSettings).map((key) => ({ id: key, value: defaultSettings[key] }));
+		settingsData = Object.keys(defaultSettings).map((key) => ({ id: key, value: getDefaultSetting(key as keyof AllSettings) }));
 	}
 	settingsData.forEach((setting) => {
 		settings[setting.id] = setting.value;
@@ -155,7 +169,7 @@ export function getSetting<T extends keyof AllSettings>(key: T): AllSettings[T] 
 		return null;
 	}
 
-	const defaultValue = defaultSettings[key];
+	const defaultValue = getDefaultSetting(key);
 	if (!settingsDb) {
 		return defaultValue;
 	}
