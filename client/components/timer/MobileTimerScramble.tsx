@@ -3,9 +3,7 @@ import {useTranslation} from 'react-i18next';
 import { Check } from 'phosphor-react';
 import { copyText } from '../common/copy_text/CopyText';
 import { TimerContext } from './Timer';
-import { useGeneral } from '../../util/hooks/useGeneral';
 import { useSettings } from '../../util/hooks/useSettings';
-import { MOBILE_FONT_SIZE_MULTIPLIER } from '../../db/settings/update';
 import { smartCubeSelected } from './helpers/util';
 import SmartScramble from './time_display/timer_scramble/smart_scramble/SmartScramble';
 import block from '../../styles/bem';
@@ -23,23 +21,12 @@ const b = block('mobile-timer-scramble');
 export default function MobileTimerScramble() {
     const {t} = useTranslation();
     const context = useContext(TimerContext);
-    const mobileMode = useGeneral('mobile_mode');
     const cubeType = context.cubeType;
     const scrambleSubset = context.scrambleSubset;
     const isMegaminx = cubeType === 'minx' || cubeType === 'megaminx';
     const [copied, setCopied] = useState(false);
 
-    // Dynamic font size calculation based on scramble length (ignoring user setting for mobile)
-    const getResponsiveFontSize = (len: number) => {
-        if (len < 30) return 26; // 2x2, Skewb, Pyraminx (1 satir)
-        if (len < 70) return 18; // 3x3, 3x3oh, 3x3bl (max 2 satir)
-        if (len < 120) return 16; // 4x4, 5x5
-        if (len < 250) return 13; // Megaminx, 6x6
-        return 11; // 7x7 and larger
-    };
-
-    const scrambleLength = context.scramble ? context.scramble.length : 0;
-    const timerScrambleSize = getResponsiveFontSize(scrambleLength);
+    const timerScrambleSize = useSettings('timer_scramble_size');
 
     const { hideScramble, timeStartedAt, focusMode, scrambleLocked } = context;
     let scramble = context.scramble;

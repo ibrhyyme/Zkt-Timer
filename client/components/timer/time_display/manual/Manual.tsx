@@ -12,7 +12,6 @@ import { useSettings } from '../../../../util/hooks/useSettings';
 import { useElementListener } from '../../../../util/hooks/useListener';
 import { useGeneral } from '../../../../util/hooks/useGeneral';
 import { isNative, isAndroidNative } from '../../../../util/platform';
-import { MOBILE_FONT_SIZE_MULTIPLIER } from '../../../../db/settings/update';
 import SolveDiff from '../SolveDiff';
 import Scramble from '../../../modules/scramble/ScrambleVisual';
 import { getStatsBlockValueFromFilter } from '../../../modules/quick_stats/util';
@@ -31,10 +30,6 @@ export default function Manual() {
 	const { scramble, originalScramble, disabled, hideTime, cubeType, solvesFilter } = context;
 
 	const mobileMode = useGeneral('mobile_mode');
-	let timerTimeSize = useSettings('timer_time_size');
-	if (mobileMode) {
-		timerTimeSize *= MOBILE_FONT_SIZE_MULTIPLIER;
-	}
 	const timerFontFamily = useSettings('timer_font_family');
 	const requirePeriodInManualTimeEntry = useSettings('require_period_in_manual_time_entry');
 	const sessionId = useSettings('session_id');
@@ -156,7 +151,7 @@ export default function Manual() {
 			}}
 			disabled={disabled}
 			style={{
-				fontSize: timerTimeSize + 'px',
+				fontSize: '42px',
 				fontFamily: timerFontFamily,
 			}}
 			onChange={handleManualEntryChange}
