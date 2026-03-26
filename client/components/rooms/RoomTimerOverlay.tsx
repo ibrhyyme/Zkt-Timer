@@ -456,11 +456,17 @@ export default function RoomTimerOverlay({
                 statusRef.current = STATUS.WAITING;
 
                 // Wait for freeze time before turning green
-                primingTimeoutRef.current = setTimeout(() => {
+                if (freezeTime === 0) {
                     setStatus(STATUS.PRIMING);
                     statusRef.current = STATUS.PRIMING;
                     if (navigator.vibrate) navigator.vibrate(50);
-                }, (freezeTime ?? 0.2) * 1000);
+                } else {
+                    primingTimeoutRef.current = setTimeout(() => {
+                        setStatus(STATUS.PRIMING);
+                        statusRef.current = STATUS.PRIMING;
+                        if (navigator.vibrate) navigator.vibrate(50);
+                    }, (freezeTime ?? 0.2) * 1000);
+                }
                 break;
 
             case STATUS.INSPECTING:
