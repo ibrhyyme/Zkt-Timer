@@ -7,6 +7,7 @@
 import { processQueue, registerBackgroundSync, isOnline } from '../../util/offline-sync';
 import { getPendingCount } from '../../util/offline-queue';
 import { initNetworkListener, getNetworkStatus } from '../../util/native-plugins';
+import { isNative } from '../../util/platform';
 import i18n from '../../i18n/i18n';
 
 let syncInProgress = false;
@@ -89,12 +90,28 @@ async function registerServiceWorker() {
                 });
             });
 
-            // Uygulama öne geldiğinde SW güncelleme kontrolü yap
-            document.addEventListener('visibilitychange', () => {
+            // controllerchange: yeni SW devraldiginda reload
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
                 if (document.visibilityState === 'visible') {
-                    registration.update().catch(() => {});
+                    window.location.reload();
                 }
             });
+
+            // SW guncelleme kontrolu -- platform'a gore
+            if (isNative()) {
+                import('@capacitor/app').then(({ App }) => {
+                    App.addListener('appStateChange', ({ isActive }) => {
+                        if (isActive) registration.update().catch(() => {});
+                    });
+                });
+            } else {
+                document.addEventListener('visibilitychange', () => {
+                    if (document.visibilityState === 'visible') registration.update().catch(() => {});
+                });
+                window.addEventListener('pageshow', (e) => {
+                    if ((e as PageTransitionEvent).persisted) registration.update().catch(() => {});
+                });
+            }
 
             // Her 5 dakikada bir periyodik güncelleme kontrolü
             setInterval(() => {
