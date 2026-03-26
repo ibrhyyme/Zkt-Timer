@@ -65,26 +65,8 @@ export default (payload: HtmlPagePayload) => {
 				${helmet.script.toString()}
 			</head>
 
-			<body style="background-color:#12141C;color:#fff;margin:0;">
-				<div id="app-preloader" style="position:fixed;inset:0;z-index:99999999;display:flex;justify-content:center;align-items:center;background-color:#12141C;">
-					<img src="${resourceBase}/images/zkt-logo.png" alt="" style="width:8rem;animation:zkt-spin 1.2s linear infinite;">
-				</div>
-				<style>@keyframes zkt-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}</style>
+			<body>
 				<div id="app">${html}</div>
-				<script>
-					(function(){
-						var obs=new MutationObserver(function(){
-							var el=document.getElementById('app-preloader');
-							if(el&&document.querySelector('.cd-loading-cover--fadeOut')){
-								el.style.transition='opacity 0.3s';
-								el.style.opacity='0';
-								setTimeout(function(){el.remove();obs.disconnect();},350);
-							}
-						});
-						obs.observe(document.getElementById('app'),{attributes:true,subtree:true,childList:true});
-						setTimeout(function(){var el=document.getElementById('app-preloader');if(el)el.remove();},30000);
-					})();
-				</script>
 			</body>
 			<script type="text/javascript">
 				window.__STORE__ = ${cleanState};
