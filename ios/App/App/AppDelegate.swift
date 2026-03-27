@@ -1,13 +1,30 @@
 import UIKit
 import Capacitor
+import Network
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
+    private let networkMonitor = NWPathMonitor()
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        // iOS ilk acilista network izin diyalogu gosterir.
+        // WKWebView'in ilk istegi bu yuzden basarisiz olur.
+        // Network geldiginde sayfayi otomatik tekrar yukle.
+        networkMonitor.pathUpdateHandler = { [weak self] path in
+            guard path.status == .satisfied else { return }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                if let vc = self?.window?.rootViewController as? CAPBridgeViewController,
+                   let webView = vc.webView,
+                   webView.url == nil || webView.url?.absoluteString == "about:blank" {
+                    webView.reload()
+                }
+            }
+            self?.networkMonitor.cancel()
+        }
+        networkMonitor.start(queue: DispatchQueue.global(qos: .utility))
+
         return true
     }
 
