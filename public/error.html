@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover">
+<style>
+  body{margin:0;background:#12141C;color:#fff;font-family:-apple-system,BlinkMacSystemFont,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;text-align:center}
+  .c{padding:2rem}
+  img{width:6rem;margin-bottom:1.5rem}
+  h2{font-size:1.2rem;font-weight:600;margin:0 0 0.5rem}
+  p{color:#888;font-size:0.9rem;margin:0 0 1.5rem}
+  .spinner{width:2rem;height:2rem;border:3px solid rgba(255,255,255,0.2);border-top-color:#6C63FF;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 1rem}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  button{background:#6C63FF;color:#fff;border:none;padding:0.8rem 2rem;border-radius:8px;font-size:1rem;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  button:active{opacity:0.8}
+</style>
+</head>
+<body>
+<div class="c">
+  <img src="/public/images/zkt-logo.png" alt="Zkt-Timer">
+  <div class="spinner"></div>
+  <h2>Baglanti bekleniyor...</h2>
+  <p id="status">Otomatik olarak tekrar deneniyor</p>
+  <button onclick="tryReload()">Tekrar Dene</button>
+</div>
+<script>
+  var attempt = 0;
+  function tryReload() {
+    attempt++;
+    document.getElementById('status').textContent = 'Deneme #' + attempt + '...';
+    window.location.href = '/';
+  }
+  // 3 saniyede bir otomatik retry
+  setInterval(tryReload, 3000);
+</script>
+</body>
+</html>
