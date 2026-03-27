@@ -1,13 +1,13 @@
 {
 	"nav": {
 		"timer": "Timer",
-		"online": "Online",
 		"rooms": "Rooms",
 		"stats": "Statistics",
 		"community": "Community",
 		"trainer": "Trainer",
 		"solves": "Solves",
 		"sessions": "Sessions",
+		"battle": "Battle",
 		"collapse": "Collapse",
 		"login": "Log in",
 		"signup": "Sign up"
@@ -464,7 +464,6 @@
 		"email_notifications": "Email Notifications",
 		"friend_request_accepted": "Friend request accepted",
 		"friend_request_received": "Friend request received",
-		"elo_refund": "ELO refund after playing with a cheater",
 		"marketing_emails": "Tips, updates, and other emails from Zkt-Timer"
 	},
 	"announcement_dropdown": {
@@ -783,50 +782,6 @@
 		"page_info": "Page {{current}} / {{total}}",
 		"no_solves_found": "No solves found"
 	},
-	"play": {
-		"page_title": "Play",
-		"1v1_description": "Play head-to-head with another user. First to 5 wins takes it.",
-		"elimination": "Elimination",
-		"elimination_description": "Start with 30 seconds, go 5% faster with each solve. How many can you do?",
-		"join_lobby": "Join Lobby",
-		"challenge": "Challenge",
-		"play_game": "Play {{name}}",
-		"create_new_game": "Create New Game"
-	},
-	"match": {
-		"match_options": "Match Options",
-		"copy_spectator_link": "Copy Spectator Link",
-		"copy_invite_link": "Copy Invite Link",
-		"resign": "Resign",
-		"abort": "Abort",
-		"spectator_link_copied": "Spectator link copied",
-		"invite_link_copied": "Invite link copied",
-		"player_times": "{{username}}'s Times",
-		"searching_players": "Searching for players",
-		"cancel": "Cancel",
-		"show_link": "Show Link",
-		"copy_link": "Copy Link",
-		"copy_spectate_link": "Copy Spectate Link",
-		"join_match": "Join Match",
-		"player_count": "{{count}} Players",
-		"cube_type": "Cube Type",
-		"players": "Players",
-		"players_description": "The number of players in this match. This many players <bold>must</bold> join before the match starts.",
-		"create_custom_match": "Create custom match",
-		"solve_aborted": "Solve aborted",
-		"you_won": "You won!",
-		"player_won": "{{username}} won!",
-		"match_ended": "Match ended",
-		"by_resignation": "by resignation",
-		"by_forfeiture": "by forfeiture",
-		"rematch": "Rematch",
-		"rematch_requested": "Rematch requested",
-		"exit": "Exit",
-		"player": "player",
-		"players_label": "players",
-		"in_lobby": "in lobby",
-		"in_match": "in a match"
-	},
 	"rooms": {
 		"page_title": "Rooms",
 		"description": "Create a room to compete with your friends or join an existing one.",
@@ -1059,7 +1014,6 @@
 		"forever": "forever",
 		"delete_published_solves": "Delete all published solves",
 		"ban_permanently": "Ban user permanently",
-		"cheater_elo_refund": "User cheated in 1v1 (refund ELO)",
 		"ban_button": "Ban User",
 		"user_banned": "{{username}} has been banned for {{duration}}"
 	},
@@ -1315,11 +1269,6 @@
 		"rooms_bullet_2": "Live leaderboard",
 		"rooms_bullet_3": "Instant chat",
 		"rooms_alt": "Multiplayer Rooms"
-	},
-	"match_module": {
-		"solves_completed": "You completed {{count}} solves",
-		"retry_failed_solve": "Retry failed solve",
-		"congratulations": "Congratulations! You won!"
 	},
 	"time_display": {
 		"inspection_on": "Inspection On",
@@ -1609,5 +1558,36 @@
 		"music_youtube": "Unlimited, ad-free music from YouTube",
 		"music_friends": "Listen together with friends",
 		"music_unlimited": "Unlimited song search and playback"
+	},
+	"battle": {
+		"mobile_only": "Battle mode is only available on mobile",
+		"tap_to_start": "Tap to start",
+		"solving": "Solving...",
+		"score": "Score",
+		"round": "Round",
+		"winner": "Winner",
+		"tie": "Tie",
+		"best": "Best",
+		"mean": "Mean",
+		"solves": "Solves",
+		"switch_sides": "Switch Sides",
+		"change_scramble": "Change Scramble",
+		"delete_last": "Delete Last Round",
+		"new_battle": "New Battle",
+		"show_time": "Show Time",
+		"show_scramble": "Show Scramble",
+		"show_names": "Show Names",
+		"show_stats": "Show Statistics",
+		"show_score": "Show Score",
+		"streak": "Streak",
+		"history": "History",
+		"menu": "Menu",
+		"cube_type": "Cube Type",
+		"player_1": "Player 1",
+		"player_2": "Player 2",
+		"settings": "Settings",
+		"plus_two": "+2",
+		"dnf": "DNF",
+		"display": "Display"
 	}
 }

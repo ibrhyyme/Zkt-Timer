@@ -20,11 +20,6 @@ export default function CommunityNav() {
 
 	const TABS = [
 		{
-			id: 'leaderboards',
-			link: '/community/leaderboards',
-			value: t('community_nav.leaderboards'),
-		},
-		{
 			id: 'friends',
 			link: '/community/friends/list',
 			value: t('community_nav.friends'),

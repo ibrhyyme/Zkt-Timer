@@ -7,7 +7,7 @@ import StatModule from '../common/stat_module/StatModule';
 import SubStats from '../common/sub_stats/SubStats';
 import SolvesPerDay from '../../modules/solves_per_day/SolvesPerDay';
 import AllStatsFeatured from './all_featured/AllStatsFeatured';
-import AllStatsCommunity from './all_community/AllStatsCommunity';
+
 import CubeDistro from '../../modules/cube_distro/CubeDistro';
 import {useMe} from '../../../util/hooks/useMe';
 import {StatsContext} from '../Stats';
@@ -24,9 +24,6 @@ export default function AllStats() {
 		<div className={b()}>
 			<StatSection colSpan={2} title={t('stats_page.overview')}>
 				<AllStatsFeatured />
-			</StatSection>
-			<StatSection title={t('stats_page.community')}>
-				<AllStatsCommunity />
 			</StatSection>
 			<StatSection title={t('stats_page.event_distribution')}>
 				<StatModule>

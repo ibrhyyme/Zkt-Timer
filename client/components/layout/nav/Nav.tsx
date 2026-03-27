@@ -6,7 +6,6 @@ import { setSetting } from '../../../db/settings/update';
 import { setGeneral } from '../../../actions/general';
 import {
 	ArrowLeft,
-	Sword,
 	Handshake,
 	ChartPie,
 	LadderSimple,
@@ -16,6 +15,7 @@ import {
 	Wrench,
 	Timer,
 	ArrowRight,
+	Sword,
 } from 'phosphor-react';
 import Notifications from './notifications/Notifications';
 import Logo from '../../common/logo/Logo';
@@ -44,6 +44,7 @@ export interface NavLinkProps {
 	link: string;
 	newTag?: boolean;
 	loginRequired?: boolean;
+	mobileOnly?: boolean;
 }
 
 export const NAV_LINKS: NavLinkProps[] = [
@@ -54,11 +55,12 @@ export const NAV_LINKS: NavLinkProps[] = [
 		link: '/timer',
 	},
 	{
-		name: 'nav.online',
+		name: 'nav.battle',
 		icon: <Sword weight="bold" />,
-		match: /^\/play/,
-		link: '/play',
-		loginRequired: true,
+		match: /^\/battle/,
+		link: '/battle',
+		loginRequired: false,
+		mobileOnly: true,
 	},
 	{
 		name: 'nav.rooms',
@@ -78,7 +80,7 @@ export const NAV_LINKS: NavLinkProps[] = [
 		name: 'nav.community',
 		icon: <Users weight="bold" />,
 		match: /^\/community/,
-		link: '/community/leaderboards',
+		link: '/community/friends/list',
 		loginRequired: true,
 	},
 	{
@@ -179,7 +181,7 @@ export default function Nav() {
 		);
 	}
 
-	const navLinks = NAV_LINKS.map((link) => (
+	const navLinks = NAV_LINKS.filter((link) => !link.mobileOnly).map((link) => (
 		<NavLink {...link} key={link.name} collapsed={navClosed} selected={link.match.test(pathname)} />
 	));
 

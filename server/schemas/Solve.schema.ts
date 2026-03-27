@@ -23,9 +23,6 @@ export class SolveInput {
 	scramble?: string;
 
 	@Field()
-	game_session_id?: string;
-
-	@Field()
 	session_id?: string;
 
 	@Field(() => GraphQLBigInt)
@@ -61,12 +58,6 @@ export class SolveInput {
 	@Field()
 	smart_device_id?: string;
 
-	@Field()
-	match_id?: string;
-
-	@Field()
-	match_participant_id?: string;
-
 	@Field(() => Int)
 	smart_turn_count?: number;
 
@@ -99,9 +90,6 @@ export class Solve {
 
 	@Field()
 	scramble: string;
-
-	@Field()
-	game_session_id: string;
 
 	@Field()
 	from_timer: boolean;
@@ -144,12 +132,6 @@ export class Solve {
 
 	@Field()
 	smart_device_id: string;
-
-	@Field()
-	match_id: string;
-
-	@Field()
-	match_participant_id: string;
 
 	@Field(() => Int)
 	smart_turn_count: number;

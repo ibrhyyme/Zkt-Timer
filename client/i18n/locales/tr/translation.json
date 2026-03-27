@@ -1,13 +1,13 @@
 {
 	"nav": {
 		"timer": "Timer",
-		"online": "Online",
 		"rooms": "Odalar",
 		"stats": "İstatistikler",
 		"community": "Topluluk",
 		"trainer": "Trainer",
 		"solves": "Çözümler",
 		"sessions": "Sezonlar",
+		"battle": "Mücadele",
 		"collapse": "Daralt",
 		"login": "Log in",
 		"signup": "Sign up"
@@ -464,7 +464,6 @@
 		"email_notifications": "E-posta Bildirimleri",
 		"friend_request_accepted": "Arkadaş isteği kabul edildi",
 		"friend_request_received": "Arkadaş isteği alındı",
-		"elo_refund": "Hileci ile oynandıktan sonra ELO iadesi",
 		"marketing_emails": "Zkt-Timer'dan ipucu, güncellemeler ve diğer e-postalar"
 	},
 	"announcement_dropdown": {
@@ -783,50 +782,6 @@
 		"page_info": "Sayfa {{current}} / {{total}}",
 		"no_solves_found": "Hiçbir çözüm bulunamadı"
 	},
-	"play": {
-		"page_title": "Mücadele",
-		"1v1_description": "Başka bir kullanıcıyla bire bir oyna. 5 galibiyete ilk ulaşan kazanır.",
-		"elimination": "Eliminasyon",
-		"elimination_description": "30 saniye ile başla, her çözümde %5 daha hızla git. Kaç tane yapabilirsin?",
-		"join_lobby": "Lobiye Katıl",
-		"challenge": "Meydan Oku",
-		"play_game": "{{name}} Oyna",
-		"create_new_game": "Yeni Oyun Oluştur"
-	},
-	"match": {
-		"match_options": "Maç Seçenekleri",
-		"copy_spectator_link": "İzleyici Linkini Kopyala",
-		"copy_invite_link": "Davet Linkini Kopyala",
-		"resign": "Çekil",
-		"abort": "İptal Et",
-		"spectator_link_copied": "İzleyici linki kopyalandı",
-		"invite_link_copied": "Davet linki kopyalandı",
-		"player_times": "{{username}} Süreleri",
-		"searching_players": "Oyuncular aranıyor",
-		"cancel": "İptal",
-		"show_link": "Linki Göster",
-		"copy_link": "Linki Kopyala",
-		"copy_spectate_link": "İzleme Linkini Kopyala",
-		"join_match": "Maça Katıl",
-		"player_count": "{{count}} Oyuncu",
-		"cube_type": "Küp Türü",
-		"players": "Oyuncular",
-		"players_description": "Bu maçta oynayacak oyuncu sayısı. Bu kadar oyuncunun maç başlamadan önce katılması <bold>gerekir</bold>.",
-		"create_custom_match": "Özel maç oluştur",
-		"solve_aborted": "Çözüm iptal edildi",
-		"you_won": "Kazandın!",
-		"player_won": "{{username}} kazandı!",
-		"match_ended": "Maç bitti",
-		"by_resignation": "çekilme ile",
-		"by_forfeiture": "hükmen yenilgi ile",
-		"rematch": "Rövanş",
-		"rematch_requested": "Rövanş istendi",
-		"exit": "Çıkış",
-		"player": "oyuncu",
-		"players_label": "oyuncu",
-		"in_lobby": "lobide",
-		"in_match": "maçta"
-	},
 	"rooms": {
 		"page_title": "Odalar",
 		"description": "Arkadaşlarınla mücadele etmek için bir oda oluştur veya mevcut bir odaya katıl.",
@@ -1059,7 +1014,6 @@
 		"forever": "sonsuza kadar",
 		"delete_published_solves": "Yayınlanan tüm çözümleri sil",
 		"ban_permanently": "Kullanıcıyı süresiz yasakla",
-		"cheater_elo_refund": "Kullanıcı 1v1'de hile yaptı (ELO iadesi yap)",
 		"ban_button": "Kullanıcıyı Yasakla",
 		"user_banned": "{{username}} kullanıcı {{duration}} süresiyle yasaklandı"
 	},
@@ -1315,11 +1269,6 @@
 		"rooms_bullet_2": "Canlı liderlik tablosu",
 		"rooms_bullet_3": "Anlık sohbet",
 		"rooms_alt": "Çok Oyunculu Odalar"
-	},
-	"match_module": {
-		"solves_completed": "{{count}} çözüm tamamladın",
-		"retry_failed_solve": "Başarısız çözümü tekrarla",
-		"congratulations": "Tebrikler! Kazandın!"
 	},
 	"time_display": {
 		"inspection_on": "İnceleme Açık",
@@ -1607,5 +1556,36 @@
 		"music_youtube": "YouTube'dan sınırsız, reklamsız müzik",
 		"music_friends": "Arkadaşlarınla birlikte dinle",
 		"music_unlimited": "Sınırsız şarkı arama ve çalma"
+	},
+	"battle": {
+		"mobile_only": "Mücadele modu yalnızca mobilde kullanılabilir",
+		"tap_to_start": "Başlamak için dokun",
+		"solving": "Çözülüyor...",
+		"score": "Skor",
+		"round": "Tur",
+		"winner": "Kazanan",
+		"tie": "Berabere",
+		"best": "En İyi",
+		"mean": "Ortalama",
+		"solves": "Çözümler",
+		"switch_sides": "Taraf Değiştir",
+		"change_scramble": "Karıştırmayı Değiştir",
+		"delete_last": "Son Turu Sil",
+		"new_battle": "Yeni Mücadele",
+		"show_time": "Süreyi Göster",
+		"show_scramble": "Karıştırmayı Göster",
+		"show_names": "İsimleri Göster",
+		"show_stats": "İstatistikleri Göster",
+		"show_score": "Skoru Göster",
+		"streak": "Seri",
+		"history": "Geçmiş",
+		"menu": "Menü",
+		"cube_type": "Küp Türü",
+		"player_1": "Oyuncu 1",
+		"player_2": "Oyuncu 2",
+		"settings": "Ayarlar",
+		"plus_two": "+2",
+		"dnf": "DNF",
+		"display": "Görünüm"
 	}
 }

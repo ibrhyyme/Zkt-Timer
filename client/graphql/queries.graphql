@@ -22,16 +22,6 @@ query profile($username: String) {
 	}
 }
 
-query eloLeaderboards($pageArgs: PaginationArgsInput) {
-	eloLeaderboards(pageArgs: $pageArgs) {
-		hasMore
-		total
-		items {
-			...EloRatingWithUserFragment
-		}
-	}
-}
-
 query userSearch($pageArgs: PaginationArgsInput) {
 	userSearch(pageArgs: $pageArgs) {
 		hasMore

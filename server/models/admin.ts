@@ -1,6 +1,5 @@
 import {
 	UserAccountForAdmin,
-	UserAccountMatchesSummary,
 	UserAccountSolvesSummary,
 	UserAccountSummary,
 } from '../schemas/UserAccount.schema';
@@ -35,11 +34,6 @@ export async function getUserAccountForAdmin(userId: string): Promise<UserAccoun
 				},
 			},
 			bans: {
-				orderBy: {
-					created_at: 'desc',
-				},
-			},
-			chat_messages: {
 				orderBy: {
 					created_at: 'desc',
 				},
@@ -80,21 +74,13 @@ async function getUserForAdminSummary(userId: string): Promise<UserAccountSummar
 		AND: trainerExceptions,
 	});
 
-	const matchSolves = await getUserForAdminSolvesSummary(userId, {
-		match: null,
-	});
-
 	if (!agg || !agg._count) {
 		return null;
 	}
 
-	const matchesSummary = await getUserForAdminMatchesSummary(userId);
-
 	return {
 		...agg._count,
-		matches: matchesSummary,
 		timer_solves: timerSolves,
-		match_solves: matchSolves,
 	};
 }
 
@@ -131,30 +117,4 @@ async function getUserForAdminSolvesSummary(userId: string, where: any = {}): Pr
 		max_time: row._max.time,
 		cube_type: row.cube_type,
 	}));
-}
-
-async function getUserForAdminMatchesSummary(userId: string): Promise<UserAccountMatchesSummary> {
-	const count = getPrisma().matchParticipant.count({
-		where: {
-			user_id: userId,
-		},
-	});
-
-	const wins = getPrisma().match.count({
-		where: {
-			winner_id: userId,
-		},
-	});
-
-	const res = await Promise.all([count, wins]);
-
-	const total = res[0];
-	const winCount = res[1];
-	const losses = total - winCount;
-
-	return {
-		count: total,
-		wins: winCount,
-		losses,
-	};
 }

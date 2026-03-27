@@ -3,12 +3,10 @@ import { Profile } from './Profile.schema';
 import { Integration } from './Integration.schema';
 import { Badge } from './Badge.schema';
 import { Setting } from './Setting.schema';
-import { ChatMessage } from './ChatMessage.schema';
 import { Report } from './Report.schema';
 import { BanLog } from './BanLog.schema';
 import PaginatedResponse from './Pagination.schema';
 import { TimerBackground } from './TimerBackground.schema';
-import { EloRating } from './EloRating.schema';
 import { NotificationPreference } from './NotificationPreference.schema';
 import { TopSolve } from './TopSolve.schema';
 import { TopAverage } from './TopAverage.schema';
@@ -51,9 +49,6 @@ class IPublicUserAccount {
 	@Field(() => Profile)
 	profile?: Profile;
 
-	@Field(() => EloRating)
-	elo_rating?: EloRating;
-
 	@Field(() => [Integration])
 	integrations?: Integration[];
 
@@ -65,18 +60,6 @@ class IPublicUserAccount {
 
 	@Field(() => [TopAverage])
 	top_averages?: TopAverage[];
-}
-
-@ObjectType()
-export class UserAccountMatchesSummary {
-	@Field()
-	count: number;
-
-	@Field()
-	wins: number;
-
-	@Field()
-	losses: number;
 }
 
 @ObjectType()
@@ -102,12 +85,6 @@ export class UserAccountSolvesSummary {
 
 @ObjectType()
 export class UserAccountSummary {
-	@Field(() => UserAccountMatchesSummary)
-	matches: UserAccountMatchesSummary;
-
-	@Field(() => [UserAccountSolvesSummary])
-	match_solves: UserAccountSolvesSummary[];
-
 	@Field(() => [UserAccountSolvesSummary])
 	timer_solves: UserAccountSolvesSummary[];
 
@@ -173,9 +150,6 @@ class IUserAccountForAdmin extends IUserAccount {
 
 	@Field(() => [Report])
 	reports_for?: Report[];
-
-	@Field(() => [ChatMessage])
-	chat_messages?: ChatMessage[];
 
 	@Field(() => NotificationPreference)
 	notification_preferences?: NotificationPreference;

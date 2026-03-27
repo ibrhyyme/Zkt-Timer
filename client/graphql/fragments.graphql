@@ -19,11 +19,7 @@ fragment MiniSolveFragment on Solve {
 
 fragment StatsFragment on Stats {
 	friend_count
-	matches_played
-	matches_won
 	profile_views
-	match_max_win_streak
-	match_solve_count
 	solve_views
 }
 
@@ -109,18 +105,6 @@ fragment SolveFragment on Solve {
 	}
 }
 
-fragment GameOptionsFragment on GameOptions {
-	id
-	cube_type
-	game_session_id
-	game_type
-	elimination_percent_change_rate
-	elimination_starting_time_seconds
-	gauntlet_time_multiplier
-	head_to_head_target_win_count
-	match_session_id
-}
-
 fragment CustomCubeTypeFragment on CustomCubeType {
 	id
 	user_id
@@ -162,24 +146,6 @@ fragment ImageFragment on Image {
 	storage_path
 }
 
-fragment EloRatingFragment on EloRating {
-	id
-	user_id
-	profile_id
-	elo_overall_rating
-	games_overall_count
-	elo_222_rating
-	games_222_count
-	elo_333_rating
-	games_333_count
-	elo_444_rating
-	games_444_count
-	updated_at
-	created_at
-}
-
-
-
 fragment PublicUserFragment on IPublicUserAccount {
 	id
 	username
@@ -202,18 +168,8 @@ fragment PublicUserFragment on IPublicUserAccount {
 	}
 }
 
-fragment EloRatingWithUserFragment on EloRating {
-	...EloRatingFragment,
-	user {
-		...PublicUserFragment
-	}
-}
-
 fragment PublicUserWithEloFragment on IPublicUserAccount {
 	...PublicUserFragment
-	elo_rating {
-		...EloRatingFragment
-	}
 }
 
 fragment UserAccountFragment on IUserAccount {
@@ -224,15 +180,6 @@ fragment UserAccountFragment on IUserAccount {
 
 fragment SolveWithUserFragment on Solve {
 	...SolveFragment
-	user {
-		...PublicUserWithEloFragment
-	}
-}
-
-fragment ChatMessageFragment on ChatMessage {
-	id
-	message
-	created_at
 	user {
 		...PublicUserWithEloFragment
 	}
@@ -255,7 +202,6 @@ fragment NotificationPreferenceFragment on NotificationPreference {
 	friend_request
 	friend_request_accept
 	marketing_emails
-	elo_refund
 }
 
 fragment FriendshipRequestFragment on FriendshipRequest {
@@ -288,77 +234,6 @@ fragment NotificationFragment on Notification {
 	created_at
 	triggering_user {
 		...PublicUserWithEloFragment
-	}
-}
-
-fragment MatchParticipantFragment on MatchParticipant {
-	id
-	user_id
-	created_at
-	forfeited
-	lost
-	position
-	resigned
-	won
-	user {
-		...PublicUserWithEloFragment
-	}
-	solves {
-		...SolveFragment
-	}
-}
-
-fragment MatchSessionFragment on MatchSession {
-	created_at
-	id
-	match_type
-	custom_match
-	created_by_id
-	min_players
-	max_players
-
-	chat_messages {
-		...ChatMessageFragment
-	}
-
-	game_options {
-		...GameOptionsFragment
-	}
-}
-
-fragment EloLogFragment on EloLog {
-	id
-	player_id
-	player_new_game_count
-	opponent_id
-	opponent_new_game_count
-	cube_type
-	match_id
-	elo_change
-	player_new_elo_rating
-	opponent_new_elo_rating
-	updated_at
-	created_at
-}
-
-fragment MatchFragment on Match {
-	id
-	link_code
-	spectate_code
-	ended_at
-	started_at
-	winner_id
-	aborted
-	match_session_id
-	elo_log {
-		...EloLogFragment
-	}
-	match_session {
-		...MatchSessionFragment
-	}
-	created_at
-	participants {
-		...MatchParticipantFragment
 	}
 }
 
@@ -444,48 +319,6 @@ fragment ReportFragment on Report {
 	}
 }
 
-fragment GameSessionFragment on GameSession {
-	id
-	created_at
-	match {
-		id
-		winner_id
-		started_at
-		ended_at
-		created_at
-		participants {
-			id
-			user_id
-			position
-			resigned
-			forfeited
-			won
-			lost
-			created_at
-			user {
-				...PublicUserWithEloFragment
-			}
-			solves {
-				...SolveFragment
-			}
-		}
-		match_session {
-			min_players
-			max_players
-			match_type
-			custom_match
-			created_at
-		}
-	}
-	user {
-		id
-		username
-	}
-	solves {
-		...SolveFragment
-	}
-}
-
 fragment IntegrationFragment on Integration {
 	id
 	auth_expires_at
@@ -548,12 +381,6 @@ fragment UserForMeFragment on IUserAccount {
 	...PublicUserWithEloFragment
 }
 
-fragment UserAccountMatchesSummaryFragment on UserAccountMatchesSummary {
-	count
-	wins
-	losses
-}
-
 fragment UserAccountSolvesSummaryFragment on UserAccountSolvesSummary {
 	count
 	average
@@ -569,12 +396,6 @@ fragment UserAccountSummaryFragment on UserAccountSummary {
 	reports_created
 	profile_views
 	bans
-	matches {
-		...UserAccountMatchesSummaryFragment
-	}
-	match_solves {
-		...UserAccountSolvesSummaryFragment
-	}
 	timer_solves {
 		...UserAccountSolvesSummaryFragment
 	}
@@ -591,9 +412,6 @@ fragment UserForAdminFragment on UserAccountForAdmin {
 	}
 	settings {
 		...SettingsFragment
-	}
-	chat_messages {
-		...ChatMessageFragment
 	}
 	notification_preferences {
 		...NotificationPreferenceFragment

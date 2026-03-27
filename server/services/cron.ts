@@ -1,6 +1,5 @@
 import {CronJob} from 'cron';
 import {logger} from './logger';
-import {matchPlayersInLobby} from '../match/pair/pair_logic';
 import {initSiteMapGeneration} from './sitemap';
 import {getPrisma} from '../database';
 import {sendPushToUser} from './push';
@@ -14,27 +13,9 @@ const CUBE_NAMES: Record<string, string> = {
 };
 
 export function initCronJobs() {
-	initMatchPairingCronJob();
 	initSiteMapGenerationCronJob();
 	initUnverifiedAccountCleanupCronJob();
 	initDailyGoalReminderCronJob();
-}
-
-function initMatchPairingCronJob() {
-	// Every minute
-	const job = new CronJob(
-		'*/3 * * * * *',
-		async () => {
-			await matchPlayersInLobby();
-		},
-		null,
-		true,
-		'America/Los_Angeles'
-	);
-
-	logger.debug('Initiated dev cron job for match pairing.', {
-		running: job.running,
-	});
 }
 
 function initSiteMapGenerationCronJob() {

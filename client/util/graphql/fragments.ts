@@ -45,12 +45,7 @@ export const MINI_SOLVE_FRAGMENT = gql`
 export const STATS_FRAGMENT = gql`
 	fragment StatsFragment on Stats {
 		friend_count
-		matches_played
-		matches_won
-		matches_lost
 		profile_views
-		match_max_win_streak
-		match_solve_count
 		solve_views
 	}
 `;
@@ -123,20 +118,6 @@ export const SOLVE_FRAGMENT = gql`
 	}
 `;
 
-export const GAME_OPTIONS_FRAGMENT = gql`
-	fragment GameOptionsFragment on GameOptions {
-		id
-		cube_type
-		game_session_id
-		game_type
-		elimination_percent_change_rate
-		elimination_starting_time_seconds
-		gauntlet_time_multiplier
-		head_to_head_target_win_count
-		match_session_id
-	}
-`;
-
 export const CUSTOM_CUBE_TYPE_FRAGMENT = gql`
 	fragment CustomCubeTypeFragment on CustomCubeType {
 		id
@@ -186,24 +167,6 @@ export const IMAGE_FRAGMENT = gql`
 	}
 `;
 
-export const ELO_RATING_FRAGMENT = gql`
-	fragment EloRatingFragment on EloRating {
-		id
-		user_id
-		profile_id
-		elo_overall_rating
-		games_overall_count
-		elo_222_rating
-		games_222_count
-		elo_333_rating
-		games_333_count
-		elo_444_rating
-		games_444_count
-		updated_at
-		created_at
-	}
-`;
-
 export const PUBLIC_USER_FRAGMENT = gql`
 	${IMAGE_FRAGMENT}
 
@@ -231,13 +194,9 @@ export const PUBLIC_USER_FRAGMENT = gql`
 
 export const PUBLIC_USER_WITH_ELO_FRAGMENT = gql`
 	${PUBLIC_USER_FRAGMENT}
-	${ELO_RATING_FRAGMENT}
 
 	fragment PublicUserWithEloFragment on PublicUserAccount {
 		...PublicUserFragment
-		elo_rating {
-			...EloRatingFragment
-		}
 	}
 `;
 
@@ -247,19 +206,6 @@ export const SOLVE_WITH_USER_FRAGMENT = gql`
 
 	fragment SolveWithUserFragment on Solve {
 		...SolveFragment
-		user {
-			...PublicUserWithEloFragment
-		}
-	}
-`;
-
-export const CHAT_MESSAGE_FRAGMENT = gql`
-	${PUBLIC_USER_WITH_ELO_FRAGMENT}
-
-	fragment ChatMessageFragment on ChatMessage {
-		id
-		message
-		created_at
 		user {
 			...PublicUserWithEloFragment
 		}
@@ -308,7 +254,6 @@ export const NOTIFICATION_PREFERENCE_FRAGMENT = gql`
 		friend_request
 		friend_request_accept
 		marketing_emails
-		elo_refund
 	}
 `;
 
@@ -349,95 +294,6 @@ export const NOTIFICATION_FRAGMENT = gql`
 		created_at
 		triggering_user {
 			...PublicUserWithEloFragment
-		}
-	}
-`;
-
-export const MATCH_PARTICIPANT_FRAGMENT = gql`
-	${SOLVE_FRAGMENT}
-	${PUBLIC_USER_WITH_ELO_FRAGMENT}
-
-	fragment MatchParticipantFragment on MatchParticipant {
-		id
-		user_id
-		created_at
-		forfeited
-		lost
-		position
-		resigned
-		won
-		user {
-			...PublicUserWithEloFragment
-		}
-		solves {
-			...SolveFragment
-		}
-	}
-`;
-
-export const MATCH_SESSION_FRAGMENT = gql`
-	${CHAT_MESSAGE_FRAGMENT}
-	${GAME_OPTIONS_FRAGMENT}
-
-	fragment MatchSessionFragment on MatchSession {
-		created_at
-		id
-		match_type
-		custom_match
-		created_by_id
-		min_players
-		max_players
-
-		chat_messages {
-			...ChatMessageFragment
-		}
-
-		game_options {
-			...GameOptionsFragment
-		}
-	}
-`;
-
-export const ELO_LOG_FRAGMENT = gql`
-	fragment EloLogFragment on EloLog {
-		id
-		player_id
-		player_new_game_count
-		opponent_id
-		opponent_new_game_count
-		cube_type
-		match_id
-		elo_change
-		player_new_elo_rating
-		opponent_new_elo_rating
-		updated_at
-		created_at
-	}
-`;
-
-export const MATCH_FRAGMENT = gql`
-	${MATCH_SESSION_FRAGMENT}
-	${MATCH_PARTICIPANT_FRAGMENT}
-	${ELO_LOG_FRAGMENT}
-
-	fragment MatchFragment on Match {
-		id
-		link_code
-		spectate_code
-		ended_at
-		started_at
-		winner_id
-		aborted
-		match_session_id
-		elo_log {
-			...EloLogFragment
-		}
-		match_session {
-			...MatchSessionFragment
-		}
-		created_at
-		participants {
-			...MatchParticipantFragment
 		}
 	}
 `;
@@ -545,53 +401,6 @@ export const REPORT_FRAGMENT = gql`
 	}
 `;
 
-export const GAME_SESSION_FRAGMENT = gql`
-	${PUBLIC_USER_WITH_ELO_FRAGMENT}
-	${SOLVE_FRAGMENT}
-
-	fragment GameSessionFragment on GameSession {
-		id
-		created_at
-		match {
-			id
-			winner_id
-			started_at
-			ended_at
-			created_at
-			participants {
-				id
-				user_id
-				position
-				resigned
-				forfeited
-				won
-				lost
-				created_at
-				user {
-					...PublicUserWithEloFragment
-				}
-				solves {
-					...SolveFragment
-				}
-			}
-			match_session {
-				min_players
-				max_players
-				match_type
-				custom_match
-				created_at
-			}
-		}
-		user {
-			id
-			username
-		}
-		solves {
-			...SolveFragment
-		}
-	}
-`;
-
 export const INTEGRATION_FRAGMENT = gql`
 	fragment IntegrationFragment on Integration {
 		id
@@ -626,14 +435,6 @@ export const USER_FOR_ME_FRAGMENT = gql`
 	}
 `;
 
-export const USER_ACCOUNT_MATCHES_SUMMARY_FRAGMENT = gql`
-	fragment UserAccountMatchesSummaryFragment on UserAccountMatchesSummary {
-		count
-		wins
-		losses
-	}
-`;
-
 export const USER_ACCOUNT_SOLVES_SUMMARY_FRAGMENT = gql`
 	fragment UserAccountSolvesSummaryFragment on UserAccountSolvesSummary {
 		count
@@ -646,7 +447,6 @@ export const USER_ACCOUNT_SOLVES_SUMMARY_FRAGMENT = gql`
 `;
 
 export const USER_ACCOUNT_SUMMARY_FRAGMENT = gql`
-	${USER_ACCOUNT_MATCHES_SUMMARY_FRAGMENT}
 	${USER_ACCOUNT_SOLVES_SUMMARY_FRAGMENT}
 
 	fragment UserAccountSummaryFragment on UserAccountSummary {
@@ -655,12 +455,6 @@ export const USER_ACCOUNT_SUMMARY_FRAGMENT = gql`
 		reports_created
 		profile_views
 		bans
-		matches {
-			...UserAccountMatchesSummaryFragment
-		}
-		match_solves {
-			...UserAccountSolvesSummaryFragment
-		}
 		timer_solves {
 			...UserAccountSolvesSummaryFragment
 		}
@@ -672,7 +466,6 @@ export const USER_FOR_ADMIN_FRAGMENT = gql`
 	${PUBLIC_USER_WITH_ELO_FRAGMENT}
 	${REPORT_FRAGMENT}
 	${SETTING_FRAGMENT}
-	${CHAT_MESSAGE_FRAGMENT}
 	${USER_ACCOUNT_SUMMARY_FRAGMENT}
 
 	fragment UserForAdminFragment on UserAccountForAdmin {
@@ -686,9 +479,6 @@ export const USER_FOR_ADMIN_FRAGMENT = gql`
 		}
 		settings {
 			...SettingsFragment
-		}
-		chat_messages {
-			...ChatMessageFragment
 		}
 		notification_preferences {
 			...NotificationPreferenceFragment

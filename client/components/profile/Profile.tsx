@@ -23,7 +23,7 @@ import block from '../../styles/bem';
 import { useMe } from '../../util/hooks/useMe';
 import { useGeneral } from '../../util/hooks/useGeneral';
 import { getMe } from '../../actions/account';
-import ProfileElo from './elo/ProfileElo';
+
 import AvatarDropdown from '../common/avatar/avatar_dropdown/AvatarDropdown';
 import { openModal } from '../../actions/general';
 import PublishSolves from './publish_solves/PublishSolves';
@@ -267,17 +267,6 @@ export default function Profile() {
 		);
 	}
 
-	let eloBody = null;
-
-	if (user?.elo_rating) {
-		eloBody = (
-			<>
-				<hr />
-				<ProfileElo eloRating={user.elo_rating} />
-			</>
-		);
-	}
-
 	// WCA Cards oluştur
 	const wcaCards = wcaRecords.map((record: any) => (
 		<WcaPbCard key={record.id} record={record} />
@@ -386,7 +375,6 @@ export default function Profile() {
 						)}
 					</div>
 					<About profile={profile} />
-					{eloBody}
 					{pbsDiv}
 				</div>
 			</div>
