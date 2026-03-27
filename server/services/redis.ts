@@ -15,6 +15,7 @@ export enum RedisNamespace {
 	SOCKET_IO_CLIENT_USER = 'cd:socketio:client:user',
 	TRAINER_DATA = 'cd:trainerdata',
 	TRAINER_DATA_DATE = 'cd:trainerdata:date',
+	WCA_COMPETITIONS = 'cd:wca:competitions',
 }
 
 export type generatedRedisKey = {

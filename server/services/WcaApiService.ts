@@ -95,6 +95,30 @@ export class WcaApiService {
 	}
 
 	/**
+	 * Fetch upcoming WCA competitions
+	 */
+	static async fetchUpcomingCompetitions(countryIso2?: string): Promise<any[]> {
+		try {
+			const today = new Date().toISOString().split('T')[0];
+			const params: Record<string, any> = {
+				start: today,
+				sort: 'start_date',
+				per_page: 100,
+			};
+
+			if (countryIso2) {
+				params.country_iso2 = countryIso2;
+			}
+
+			const response = await axios.get(`${this.BASE_URL}/competitions`, {params});
+			return (response.data || []).filter((c: any) => !c.cancelled_at);
+		} catch (error) {
+			console.error('Failed to fetch WCA competitions:', error.message);
+			return [];
+		}
+	}
+
+	/**
 	 * Map WCA event codes to readable names (Turkish)
 	 */
 	static getEventName(eventCode: string): string {

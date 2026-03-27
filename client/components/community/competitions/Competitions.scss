@@ -1,0 +1,123 @@
+.cd-competitions {
+	width: 100%;
+	padding: 0.5rem;
+
+	&__content {
+		width: 100%;
+		max-width: 56rem;
+		margin: 0 auto;
+	}
+
+	&__toolbar {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin-bottom: 0.75rem;
+	}
+
+	&__location-error {
+		font-size: 0.8rem;
+		color: var(--danger-color);
+	}
+
+	&__results-count {
+		display: block;
+		font-size: 0.85rem;
+		color: var(--text-color);
+		opacity: 0.6;
+		margin-bottom: 0.5rem;
+	}
+
+	&__empty {
+		text-align: center;
+		padding: 2rem;
+		color: var(--text-color);
+		opacity: 0.5;
+	}
+
+	&__event-filter {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem;
+		margin-bottom: 0.75rem;
+	}
+
+	&__event-chip {
+		padding: 0.25rem 0.6rem;
+		border-radius: 0.35rem;
+		font-size: 0.8rem;
+		font-weight: 500;
+		border: 1px solid var(--primary-color);
+		color: var(--primary-color);
+		background: transparent;
+		cursor: pointer;
+		transition: all 0.15s;
+
+		&--active {
+			background: var(--primary-color);
+			color: #fff;
+		}
+	}
+
+	&__row {
+		background: var(--module-color);
+		border-radius: 0.5rem;
+		padding: 1rem;
+		margin-bottom: 0.5rem;
+	}
+
+	&__row-header {
+		margin-bottom: 0.35rem;
+	}
+
+	&__row-name {
+		font-size: 1rem;
+		font-weight: 600;
+		color: var(--primary-color);
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		text-decoration: none;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+
+	&__row-meta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+		font-size: 0.85rem;
+		color: var(--text-color);
+		opacity: 0.7;
+		margin-bottom: 0.5rem;
+	}
+
+	&__row-meta-item {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.25rem;
+
+		&--distance {
+			font-weight: 600;
+			color: var(--primary-color);
+			opacity: 1;
+		}
+	}
+
+	&__row-events {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.25rem;
+	}
+
+	&__event-badge {
+		display: inline-block;
+		padding: 0.15rem 0.4rem;
+		border-radius: 0.25rem;
+		font-size: 0.75rem;
+		background: var(--button-color);
+		color: var(--text-color);
+	}
+}

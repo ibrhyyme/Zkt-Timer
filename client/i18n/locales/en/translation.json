@@ -449,8 +449,17 @@
 	"community_nav": {
 		"page_title": "Community",
 		"leaderboards": "Leaderboards",
+		"competitions": "Competitions",
 		"friends": "Friends",
 		"search_placeholder": "Search username"
+	},
+	"competitions": {
+		"page_title": "WCA Competitions",
+		"use_my_location": "Use my location",
+		"location_active": "Location active",
+		"location_error": "Could not get location",
+		"no_results": "No upcoming competitions found",
+		"results_count": "{{count}} competitions found"
 	},
 	"friends": {
 		"friends_tab": "Friends",

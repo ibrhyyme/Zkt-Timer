@@ -449,8 +449,17 @@
 	"community_nav": {
 		"page_title": "Comunidad",
 		"leaderboards": "Clasificaciones",
+		"competitions": "Competencias",
 		"friends": "Amigos",
 		"search_placeholder": "Buscar nombre de usuario"
+	},
+	"competitions": {
+		"page_title": "Competencias WCA",
+		"use_my_location": "Usar mi ubicación",
+		"location_active": "Ubicación activa",
+		"location_error": "No se pudo obtener la ubicación",
+		"no_results": "No se encontraron competencias próximas",
+		"results_count": "{{count}} competencias encontradas"
 	},
 	"friends": {
 		"friends_tab": "Amigos",

@@ -100,6 +100,24 @@ query trainerAlternatives($category: String!, $caseName: String!) {
 	}
 }
 
+query wcaCompetitions($filter: WcaCompetitionFilterInput) {
+	wcaCompetitions(filter: $filter) {
+		id
+		name
+		city
+		country_iso2
+		venue
+		start_date
+		end_date
+		date_range
+		event_ids
+		latitude_degrees
+		longitude_degrees
+		url
+		competitor_limit
+	}
+}
+
 query adminTrainerAlternatives($category: String, $page: Int, $pageSize: Int) {
 	adminTrainerAlternatives(category: $category, page: $page, pageSize: $pageSize) {
 		items {
