@@ -66,6 +66,12 @@ export default function App(props: Props = {}) {
 			lockTextZoom();
 			initSafeArea();
 
+			// iOS WKWebView pinch-to-zoom engelle
+			if (Capacitor.getPlatform() === 'ios') {
+				document.addEventListener('gesturestart', (e) => e.preventDefault());
+				document.addEventListener('gesturechange', (e) => e.preventDefault());
+			}
+
 			CapApp.addListener('backButton', () => {
 				const state = getStore().getState();
 				const modals = state?.general?.modals || [];
