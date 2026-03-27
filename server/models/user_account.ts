@@ -28,7 +28,6 @@ export const publicUserInclude = {
 		banned_forever: true,
 		banned_until: true,
 		integrations: true,
-		elo_rating: true,
 		profile: {
 			include: {
 				pfp_image: true,
@@ -96,7 +95,6 @@ export async function getUserByIdWithProfile(
 	const include: any = {
 		timer_background: true,
 		integrations: true,
-		elo_rating: true,
 		profile: {
 			include: {
 				pfp_image: true,

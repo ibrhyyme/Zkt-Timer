@@ -17,7 +17,6 @@ function getSolvesByUserId(context: GraphQLContext, userId: string) {
 	return prisma.solve.findMany({
 		where: {
 			user_id: userId,
-			game_session_id: null,
 		},
 	});
 }
@@ -36,7 +35,6 @@ export class SolveResolver {
 		return prisma.solve.findMany({
 			where: {
 				user_id: context.user.id,
-				game_session_id: null,
 			},
 			select: {
 				id: true,
