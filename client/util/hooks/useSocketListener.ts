@@ -1,13 +1,12 @@
 import { useEffect, useRef } from 'react';
 import { socketClient } from '../socket/socketio';
-import { ServerToClientEvents } from '../../../shared/match/socketio.types';
 
-export function useSocketListener<T extends keyof ServerToClientEvents>(
-	event: T,
-	handler: ServerToClientEvents[T],
+export function useSocketListener(
+	event: string,
+	handler: (...args: any[]) => void,
 	deps: any[] = []
 ) {
-	const savedHandler = useRef<ServerToClientEvents[T] | undefined>(undefined);
+	const savedHandler = useRef<((...args: any[]) => void) | undefined>(undefined);
 
 	useEffect(() => {
 		savedHandler.current = handler;

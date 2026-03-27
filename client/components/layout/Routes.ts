@@ -10,20 +10,19 @@ import Password from '../account/password/Password';
 import DangerZone from '../account/danger_zone/DangerZone';
 import PersonalInfo from '../account/personal_info/PersonalInfo';
 import Community from '../community/Community';
-import Elimination from '../play/logic/Elimination';
+
 import Solves from '../solves/SolvesList';
 import Profile, { prefetchProfileData } from '../profile/Profile';
 import Admin from '../admin/Admin';
 import SolvePage, { prefetchSolveData } from '../solve_page/SolvePage';
 import Friends from '../community/friends/Friends';
 import NotificationPreferences from '../account/notification_preferences/NotificationPreferences';
-import Play from '../play/Play';
-import HeadToHead from '../play/logic/HeadToHead';
+
 import Privacy from '../landing/legal/Privacy';
 import Terms from '../landing/legal/Terms';
 import Credits from '../landing/legal/Credits';
 import Landing from '../landing/Landing';
-import PlayWrapper from '../play/PlayWrapper';
+
 import Appearance from '../settings/appearance/Appearance';
 import TimerSettings from '../settings/timer/TimerSettings';
 import DataSettings from '../settings/data/DataSettings';
@@ -37,7 +36,7 @@ import Reports from '../admin/reports/Reports';
 import DefaultTimer from '../timer/DefaultTimer';
 import AdminUsers from '../admin/users/AdminUsers';
 import UnsubEmails from '../unsub/UnsubEmails';
-import EloBoard from '../community/EloBoard';
+
 import RoomsList from '../rooms/RoomsList';
 import FriendlyRoom from '../rooms/FriendlyRoom';
 import AdminAnnouncements from '../admin/announcements/AdminAnnouncements';
@@ -46,6 +45,7 @@ import AdminAlgorithms from '../admin/algorithms/AdminAlgorithms';
 import Welcome from '../landing/welcome/Welcome';
 import RootRedirect from '../landing/root_redirect/RootRedirect';
 import ProPage from '../pro_page/ProPage';
+import Battle from '../battle/Battle';
 
 interface PageOptions {
 	restricted: boolean;
@@ -149,17 +149,12 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/account/announcements', App, Account, AnnouncementHistory),
 
 	// Community
-	route('/community/leaderboards', App, Community, EloBoard, false),
 	route('/community/friends/list', App, Community, Friends),
 	route('/community/friends/received', App, Community, Friends),
 	route('/community/friends/sent', App, Community, Friends),
 
-	// Play
-	route('/play', App, PlayWrapper, Play, false),
-	route('/play/elimination', App, PlayWrapper, Elimination),
-	route('/play/elimination/:linkCode', App, PlayWrapper, Elimination),
-	route('/play/head-to-head', App, PlayWrapper, HeadToHead),
-	route('/play/head-to-head/:linkCode', App, PlayWrapper, HeadToHead),
+	// Battle (mobile only)
+	route('/battle', null, App, Battle, false, false, false, false, true),
 
 	// Friendly Rooms
 	route('/rooms', null, App, RoomsList, false),
@@ -176,11 +171,9 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/oauth/:integrationType', null, App, OAuthService, true, true, false, true),
 
 	// Redirects
-	routeRedirect('/m/elimination/:linkCode', '/play/elimination/:linkCode'),
-	routeRedirect('/m/head-to-head/:linkCode', '/play/head-to-head/:linkCode'),
 	routeRedirect('/settings', '/settings/timer'),
 	routeRedirect('/account', '/account/personal-info'),
 	routeRedirect('/community/friends', '/community/friends/list'),
-	routeRedirect('/community', '/community/leaderboards'),
+	routeRedirect('/community', '/community/friends/list'),
 	routeRedirect('/admin', '/admin/reports'),
 ];

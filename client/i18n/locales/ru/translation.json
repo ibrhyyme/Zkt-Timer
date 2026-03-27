@@ -1,13 +1,13 @@
 {
 	"nav": {
 		"timer": "Таймер",
-		"online": "Онлайн",
 		"rooms": "Комнаты",
 		"stats": "Статистика",
 		"community": "Сообщество",
 		"trainer": "Тренажёр",
 		"solves": "Сборки",
 		"sessions": "Сессии",
+		"battle": "Битва",
 		"collapse": "Свернуть",
 		"login": "Войти",
 		"signup": "Регистрация"
@@ -464,7 +464,6 @@
 		"email_notifications": "Уведомления по почте",
 		"friend_request_accepted": "Запрос в друзья принят",
 		"friend_request_received": "Получен запрос в друзья",
-		"elo_refund": "Возврат ELO после игры с читером",
 		"marketing_emails": "Советы, обновления и другие письма от Zkt-Timer"
 	},
 	"announcement_dropdown": {
@@ -783,50 +782,6 @@
 		"page_info": "Страница {{current}} / {{total}}",
 		"no_solves_found": "Сборки не найдены"
 	},
-	"play": {
-		"page_title": "Играть",
-		"1v1_description": "Играйте один на один с другим пользователем. Первый до 5 побед выигрывает.",
-		"elimination": "На выбывание",
-		"elimination_description": "Начните с 30 секунд, ускоряйтесь на 5% с каждой сборкой. Сколько сможете?",
-		"join_lobby": "Войти в лобби",
-		"challenge": "Вызов",
-		"play_game": "Играть в {{name}}",
-		"create_new_game": "Создать новую игру"
-	},
-	"match": {
-		"match_options": "Параметры матча",
-		"copy_spectator_link": "Скопировать ссылку для зрителя",
-		"copy_invite_link": "Скопировать ссылку-приглашение",
-		"resign": "Сдаться",
-		"abort": "Прервать",
-		"spectator_link_copied": "Ссылка для зрителя скопирована",
-		"invite_link_copied": "Ссылка-приглашение скопирована",
-		"player_times": "Времена {{username}}",
-		"searching_players": "Поиск игроков",
-		"cancel": "Отмена",
-		"show_link": "Показать ссылку",
-		"copy_link": "Скопировать ссылку",
-		"copy_spectate_link": "Скопировать ссылку для просмотра",
-		"join_match": "Присоединиться к матчу",
-		"player_count": "{{count}} Игроков",
-		"cube_type": "Тип куба",
-		"players": "Игроки",
-		"players_description": "Количество игроков в этом матче. Столько игроков <bold>должно</bold> присоединиться, прежде чем матч начнётся.",
-		"create_custom_match": "Создать свой матч",
-		"solve_aborted": "Сборка прервана",
-		"you_won": "Вы победили!",
-		"player_won": "{{username}} победил(а)!",
-		"match_ended": "Матч завершён",
-		"by_resignation": "сдачей",
-		"by_forfeiture": "неявкой",
-		"rematch": "Реванш",
-		"rematch_requested": "Запрошен реванш",
-		"exit": "Выйти",
-		"player": "игрок",
-		"players_label": "игроков",
-		"in_lobby": "в лобби",
-		"in_match": "в матче"
-	},
 	"rooms": {
 		"page_title": "Комнаты",
 		"description": "Создайте комнату, чтобы соревноваться с друзьями, или присоединитесь к существующей.",
@@ -1059,7 +1014,6 @@
 		"forever": "навсегда",
 		"delete_published_solves": "Удалить все опубликованные сборки",
 		"ban_permanently": "Забанить пользователя навсегда",
-		"cheater_elo_refund": "Пользователь жульничал в 1v1 (вернуть ELO)",
 		"ban_button": "Забанить пользователя",
 		"user_banned": "{{username}} забанен на {{duration}}"
 	},
@@ -1315,11 +1269,6 @@
 		"rooms_bullet_2": "Таблица лидеров в реальном времени",
 		"rooms_bullet_3": "Мгновенный чат",
 		"rooms_alt": "Многопользовательские комнаты"
-	},
-	"match_module": {
-		"solves_completed": "Вы выполнили {{count}} сборок",
-		"retry_failed_solve": "Повторить неудавшуюся сборку",
-		"congratulations": "Поздравляем! Вы победили!"
 	},
 	"time_display": {
 		"inspection_on": "Инспекция включена",
@@ -1609,5 +1558,36 @@
 		"music_youtube": "Безлимитная музыка без рекламы с YouTube",
 		"music_friends": "Слушайте вместе с друзьями",
 		"music_unlimited": "Безлимитный поиск и воспроизведение"
+	},
+	"battle": {
+		"mobile_only": "Режим битвы доступен только на мобильных устройствах",
+		"tap_to_start": "Нажмите, чтобы начать",
+		"solving": "Решение...",
+		"score": "Счёт",
+		"round": "Раунд",
+		"winner": "Победитель",
+		"tie": "Ничья",
+		"best": "Лучший",
+		"mean": "Среднее",
+		"solves": "Сборки",
+		"switch_sides": "Поменять стороны",
+		"change_scramble": "Сменить скрамбл",
+		"delete_last": "Удалить последний раунд",
+		"new_battle": "Новая битва",
+		"show_time": "Показать время",
+		"show_scramble": "Показать скрамбл",
+		"show_names": "Показать имена",
+		"show_stats": "Показать статистику",
+		"show_score": "Показать счёт",
+		"streak": "Серия",
+		"history": "История",
+		"menu": "Меню",
+		"cube_type": "Тип куба",
+		"player_1": "Игрок 1",
+		"player_2": "Игрок 2",
+		"settings": "Настройки",
+		"plus_two": "+2",
+		"dnf": "DNF",
+		"display": "Отображение"
 	}
 }

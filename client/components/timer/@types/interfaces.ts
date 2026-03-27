@@ -1,6 +1,4 @@
 import { ReactComponentElement, ReactNode } from 'react';
-import { Match } from '../../../../server/schemas/Match.schema';
-import { ChallengerProps } from '../../play/target/challengers/challenger/Challenger';
 import { TimerModuleDropdownOptions, TimerModuleType } from './enums';
 import { ITimerContext } from '../Timer';
 import { TimerLayoutPosition } from '../../../db/settings/query';
@@ -43,7 +41,6 @@ export interface TimerProps {
 	hideScramble?: boolean;
 	hideTime?: boolean;
 	inModal?: boolean;
-	matchMode?: boolean; // Maç modunda gereksiz UI elementlerini gizle
 	cubeType?: string;
 	timerLayout?: TimerLayoutPosition;
 	forceMobileLayout?: boolean;
@@ -54,7 +51,7 @@ export interface TimerProps {
 
 	scramble?: string;
 	scrambleLocked?: boolean;
-	onSolve?: ((solve: Solve, match?: Match) => void) | undefined;
+	onSolve?: ((solve: Solve) => void) | undefined;
 
 	solvesFilter: Partial<Solve>;
 	solvesSaveOverride?: Partial<Solve>;

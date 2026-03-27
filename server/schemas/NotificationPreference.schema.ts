@@ -15,9 +15,6 @@ export class NotificationPreference {
 	friend_request_accept: boolean;
 
 	@Field()
-	elo_refund: boolean;
-
-	@Field()
 	marketing_emails: boolean;
 
 	@Field()

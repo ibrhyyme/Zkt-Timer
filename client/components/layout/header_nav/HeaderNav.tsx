@@ -183,7 +183,7 @@ export default function HeaderNav() {
 		notifications = null;
 	}
 
-	const navLinks = NAV_LINKS.map((link) => (
+	const navLinks = NAV_LINKS.filter((link) => !link.mobileOnly).map((link) => (
 		<HeaderNavLink
 			{...link}
 			key={link.name}

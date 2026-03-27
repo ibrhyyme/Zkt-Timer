@@ -7,7 +7,6 @@ import * as profile from './profile';
 import * as notifications from './notification';
 import * as adminBadge from './admin/badge';
 import * as smartDevice from './smart_device';
-import * as matchSession from './match_session';
 import * as emailVerification from './email_verification';
 
 export {
@@ -18,7 +17,6 @@ export {
 	smartDevice,
 	timerBackground,
 	notifications,
-	matchSession,
 	adminBadge,
 	forgotPassword,
 	emailVerification,

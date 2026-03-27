@@ -1,10 +1,10 @@
 import {io, Socket} from 'socket.io-client';
 import {toastError} from '../toast';
-import {SocketConst} from '../../shared/socket_costs';
-import {ClientToServerEvents, ServerToClientEvents} from '../../../shared/match/socketio.types';
 import {onVisibilityChange} from '../app-visibility';
 
-let socket: Socket<ServerToClientEvents, ClientToServerEvents> = io();
+const CLIENT_RECONNECT_BEFORE_ALERT_TIMEOUT_MS = 5000;
+
+let socket: Socket = io();
 let initiated = false;
 let rooms = [];
 let backgroundTimer: ReturnType<typeof setTimeout> | null = null;
@@ -56,7 +56,7 @@ function onDisconnect() {
 		if (socket && !socket.connected && !disconnectedByVisibility) {
 			toastError('Lost connection to server. Please check your connection to the Internet.');
 		}
-	}, SocketConst.CLIENT_RECONNECT_BEFORE_ALERT_TIMEOUT_MS);
+	}, CLIENT_RECONNECT_BEFORE_ALERT_TIMEOUT_MS);
 }
 
 function updateRooms(r) {

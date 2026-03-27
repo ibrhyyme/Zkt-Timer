@@ -13,7 +13,7 @@ import * as Sentry from '@sentry/node';
 import '@sentry/tracing';
 
 import { initLLStates } from './util/solve/ll_states';
-import { initSocket } from './match/init';
+import { initSocket } from './services/socket';
 import 'seedrandom';
 import { initMjmlTemplates } from './services/ses';
 import { initFirebase } from './services/push';

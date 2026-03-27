@@ -25,7 +25,6 @@ import {
 import { deleteAllPublishedSolves } from '../models/top_solve';
 import { createBanLog, deactivateAllBanLogs } from '../models/ban_log';
 import { resolveReportsOfUserId } from './Report.resolver';
-import { refundElo } from '../models/elo_log';
 import { PaginationArgsInput } from '../schemas/Pagination.schema';
 import { getPaginatedResponse, PaginatedRequestInput } from '../util/pagination/paginated_response';
 
@@ -134,10 +133,6 @@ export class AdminResolver {
 
 		if (deletePublishedSolves) {
 			await deleteAllPublishedSolves(targetUser);
-		}
-
-		if (cheatingIn1v1) {
-			await refundElo(targetUser.id);
 		}
 
 		await resolveReportsOfUserId(context, targetUser.id);

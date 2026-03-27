@@ -1,6 +1,6 @@
 import { Socket } from 'socket.io';
-import { getSocketIO } from '../match/init';
-import { getDetailedClientInfo, joinRoom, leaveRoom } from '../match/util';
+import { getSocketIO } from '../services/socket';
+import { getDetailedClientInfo, joinRoom, leaveRoom } from '../services/socket_util';
 import {
     FriendlyRoomClientEvent,
     FriendlyRoomServerEvent,

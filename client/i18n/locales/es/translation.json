@@ -1,13 +1,13 @@
 {
 	"nav": {
 		"timer": "Timer",
-		"online": "En línea",
 		"rooms": "Salas",
 		"stats": "Estadísticas",
 		"community": "Comunidad",
 		"trainer": "Entrenador",
 		"solves": "Resoluciones",
 		"sessions": "Sesiones",
+		"battle": "Batalla",
 		"collapse": "Colapsar",
 		"login": "Iniciar sesión",
 		"signup": "Registrarse"
@@ -464,7 +464,6 @@
 		"email_notifications": "Notificaciones por correo electrónico",
 		"friend_request_accepted": "Solicitud de amistad aceptada",
 		"friend_request_received": "Solicitud de amistad recibida",
-		"elo_refund": "Reembolso de ELO después de jugar con un tramposo",
 		"marketing_emails": "Consejos, actualizaciones y otros correos de Zkt-Timer"
 	},
 	"announcement_dropdown": {
@@ -783,50 +782,6 @@
 		"page_info": "Página {{current}} / {{total}}",
 		"no_solves_found": "No se encontraron resoluciones"
 	},
-	"play": {
-		"page_title": "Jugar",
-		"1v1_description": "Juega cara a cara con otro usuario. El primero en ganar 5 se lleva la victoria.",
-		"elimination": "Eliminación",
-		"elimination_description": "Comienza con 30 segundos, ve un 5% más rápido con cada resolución. ¿Cuántas puedes hacer?",
-		"join_lobby": "Unirse a la sala",
-		"challenge": "Desafío",
-		"play_game": "Jugar {{name}}",
-		"create_new_game": "Crear nueva partida"
-	},
-	"match": {
-		"match_options": "Opciones de partida",
-		"copy_spectator_link": "Copiar enlace de espectador",
-		"copy_invite_link": "Copiar enlace de invitación",
-		"resign": "Rendirse",
-		"abort": "Cancelar",
-		"spectator_link_copied": "Enlace de espectador copiado",
-		"invite_link_copied": "Enlace de invitación copiado",
-		"player_times": "Tiempos de {{username}}",
-		"searching_players": "Buscando jugadores",
-		"cancel": "Cancelar",
-		"show_link": "Mostrar enlace",
-		"copy_link": "Copiar enlace",
-		"copy_spectate_link": "Copiar enlace de espectador",
-		"join_match": "Unirse a partida",
-		"player_count": "{{count}} Jugadores",
-		"cube_type": "Tipo de cubo",
-		"players": "Jugadores",
-		"players_description": "El número de jugadores en esta partida. Esta cantidad de jugadores <bold>debe</bold> unirse antes de que comience la partida.",
-		"create_custom_match": "Crear partida personalizada",
-		"solve_aborted": "Resolución cancelada",
-		"you_won": "¡Ganaste!",
-		"player_won": "¡{{username}} ganó!",
-		"match_ended": "Partida terminada",
-		"by_resignation": "por rendición",
-		"by_forfeiture": "por abandono",
-		"rematch": "Revancha",
-		"rematch_requested": "Revancha solicitada",
-		"exit": "Salir",
-		"player": "jugador",
-		"players_label": "jugadores",
-		"in_lobby": "en la sala",
-		"in_match": "en una partida"
-	},
 	"rooms": {
 		"page_title": "Salas",
 		"description": "Crea una sala para competir con tus amigos o únete a una existente.",
@@ -1059,7 +1014,6 @@
 		"forever": "para siempre",
 		"delete_published_solves": "Eliminar todas las resoluciones publicadas",
 		"ban_permanently": "Prohibir usuario permanentemente",
-		"cheater_elo_refund": "El usuario hizo trampa en 1v1 (reembolsar ELO)",
 		"ban_button": "Prohibir usuario",
 		"user_banned": "{{username}} ha sido prohibido por {{duration}}"
 	},
@@ -1315,11 +1269,6 @@
 		"rooms_bullet_2": "Clasificación en vivo",
 		"rooms_bullet_3": "Chat instantáneo",
 		"rooms_alt": "Salas multijugador"
-	},
-	"match_module": {
-		"solves_completed": "Completaste {{count}} resoluciones",
-		"retry_failed_solve": "Reintentar resolución fallida",
-		"congratulations": "¡Felicidades! ¡Ganaste!"
 	},
 	"time_display": {
 		"inspection_on": "Inspección activada",
@@ -1609,5 +1558,36 @@
 		"music_youtube": "Música ilimitada y sin anuncios de YouTube",
 		"music_friends": "Escucha junto con amigos",
 		"music_unlimited": "Búsqueda y reproducción ilimitada"
+	},
+	"battle": {
+		"mobile_only": "El modo batalla solo está disponible en móvil",
+		"tap_to_start": "Toca para comenzar",
+		"solving": "Resolviendo...",
+		"score": "Puntuación",
+		"round": "Ronda",
+		"winner": "Ganador",
+		"tie": "Empate",
+		"best": "Mejor",
+		"mean": "Media",
+		"solves": "Solves",
+		"switch_sides": "Cambiar Lados",
+		"change_scramble": "Cambiar Mezcla",
+		"delete_last": "Eliminar Última Ronda",
+		"new_battle": "Nueva Batalla",
+		"show_time": "Mostrar Tiempo",
+		"show_scramble": "Mostrar Mezcla",
+		"show_names": "Mostrar Nombres",
+		"show_stats": "Mostrar Estadísticas",
+		"show_score": "Mostrar Puntuación",
+		"streak": "Racha",
+		"history": "Historial",
+		"menu": "Menú",
+		"cube_type": "Tipo de Cubo",
+		"player_1": "Jugador 1",
+		"player_2": "Jugador 2",
+		"settings": "Ajustes",
+		"plus_two": "+2",
+		"dnf": "DNF",
+		"display": "Visualización"
 	}
 }

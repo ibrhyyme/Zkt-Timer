@@ -2,7 +2,6 @@ import { Arg, Authorized, Ctx, Mutation, Query, Resolver, Int } from 'type-graph
 import { GraphQLContext } from '../@types/interfaces/server.interface';
 import { Role } from '../middlewares/auth';
 import { Solve, SolveInput } from '../schemas/Solve.schema';
-import { getMatchById } from '../models/match';
 import { bulkCreateSolves, createSolve, updateSolve } from '../models/solve';
 import { getSolveSteps } from '../util/solve/solve_method';
 import { createSolveMethodSteps } from '../models/solve_method_step';
@@ -71,16 +70,6 @@ export class SolveResolver {
 	@Mutation(() => Solve)
 	async createSolve(@Ctx() context: GraphQLContext, @Arg('input') input: SolveInput) {
 		const { user } = context;
-
-		if (input.match_id) {
-			const match = await getMatchById(input.match_id);
-			for (const part of match.participants) {
-				if (part.user_id === user.id) {
-					input.match_participant_id = part.id;
-					break;
-				}
-			}
-		}
 
 		input.bulk = false;
 		const createdSolve = await createSolve(user, input);
