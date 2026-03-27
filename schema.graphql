@@ -307,6 +307,7 @@ type Query {
   customTrainer(id: String): CustomTrainer
   trainerAlternatives(category: String!, caseName: String!): [TrainerAlternative!]!
   adminTrainerAlternatives(category: String, page: Int = 0, pageSize: Int = 25): PaginatedTrainerAlternatives!
+  wcaCompetitions(filter: WcaCompetitionFilterInput): [WcaCompetition!]!
 }
 
 type Mutation {
@@ -1543,4 +1544,24 @@ input TrainerAlternativeCreateInput {
   original_input: String!
   setup: String
   ll_pattern: String
+}
+
+type WcaCompetition {
+  id: String!
+  name: String!
+  city: String!
+  country_iso2: String!
+  venue: String!
+  start_date: String!
+  end_date: String!
+  date_range: String!
+  event_ids: [String!]!
+  latitude_degrees: Float!
+  longitude_degrees: Float!
+  url: String!
+  competitor_limit: Int
+}
+
+input WcaCompetitionFilterInput {
+  country_iso2: String
 }

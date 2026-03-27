@@ -449,8 +449,17 @@
 	"community_nav": {
 		"page_title": "Topluluk",
 		"leaderboards": "Lider Tahtası",
+		"competitions": "Yarışmalar",
 		"friends": "Arkadaşlar",
 		"search_placeholder": "Kullanıcı adı ara"
+	},
+	"competitions": {
+		"page_title": "WCA Yarışmaları",
+		"use_my_location": "Konumumu kullan",
+		"location_active": "Konum aktif",
+		"location_error": "Konum alınamadı",
+		"no_results": "Yaklaşan yarışma bulunamadı",
+		"results_count": "{{count}} yarışma bulundu"
 	},
 	"friends": {
 		"friends_tab": "Arkadaşlar",

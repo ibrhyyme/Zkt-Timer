@@ -449,8 +449,17 @@
 	"community_nav": {
 		"page_title": "Сообщество",
 		"leaderboards": "Таблица лидеров",
+		"competitions": "Соревнования",
 		"friends": "Друзья",
 		"search_placeholder": "Поиск по имени пользователя"
+	},
+	"competitions": {
+		"page_title": "Соревнования WCA",
+		"use_my_location": "Моё местоположение",
+		"location_active": "Местоположение активно",
+		"location_error": "Не удалось получить местоположение",
+		"no_results": "Предстоящих соревнований не найдено",
+		"results_count": "{{count}} соревнований найдено"
 	},
 	"friends": {
 		"friends_tab": "Друзья",
