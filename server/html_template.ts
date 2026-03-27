@@ -31,7 +31,7 @@ export default (payload: HtmlPagePayload) => {
 				<link rel="stylesheet" href="${distBase}/${cssFileName}?v=${version}">
 				<link rel="stylesheet" href="https://cdn.cubing.net/v0/css/@cubing/icons/css">
 				<link rel="shortcut icon" href="${resourceBase}/favicon.ico" type="image/x-icon">
-				<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+				<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 				<!-- PWA Manifest -->
 				<link rel="manifest" href="/public/manifest.webmanifest">
 				<!-- iOS PWA Uyumluluğu (Otomatik Splash Screen Oluşturucu) -->

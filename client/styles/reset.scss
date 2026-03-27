@@ -165,6 +165,7 @@ input,
 select {
 	font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
 	-webkit-appearance: none;
+	font-size: 16px; // iOS auto-zoom fix: < 16px input'lara focus olunca WKWebView zoom yapar
 }
 
 input:-webkit-autofill {
