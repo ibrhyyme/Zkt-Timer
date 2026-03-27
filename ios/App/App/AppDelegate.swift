@@ -1,31 +1,37 @@
 import UIKit
 import Capacitor
-import Network
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
-    private let networkMonitor = NWPathMonitor()
+    private var loadCheckCount = 0
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // iOS ilk acilista network izin diyalogu gosterir.
-        // WKWebView'in ilk istegi bu yuzden basarisiz olur.
-        // Network geldiginde sayfayi otomatik tekrar yukle.
-        networkMonitor.pathUpdateHandler = { [weak self] path in
-            guard path.status == .satisfied else { return }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                if let vc = self?.window?.rootViewController as? CAPBridgeViewController,
-                   let webView = vc.webView,
-                   webView.url == nil || webView.url?.absoluteString == "about:blank" {
-                    webView.reload()
-                }
-            }
-            self?.networkMonitor.cancel()
-        }
-        networkMonitor.start(queue: DispatchQueue.global(qos: .utility))
-
+        // iOS ilk acilista network izin diyalogu nedeniyle sayfa yuklenemiyor.
+        // Sayfa yuklenene kadar her 3 saniyede tekrar dene (max 30 sn).
+        schedulePageLoadCheck()
         return true
+    }
+
+    private func schedulePageLoadCheck() {
+        loadCheckCount += 1
+        guard loadCheckCount <= 10 else { return }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
+            guard let self = self,
+                  let vc = self.window?.rootViewController as? CAPBridgeViewController,
+                  let webView = vc.webView else { return }
+
+            // window.__STORE__ SSR tarafindan set ediliyor - varsa sayfa yuklenmis demektir
+            webView.evaluateJavaScript("typeof window.__STORE__ !== 'undefined'") { result, _ in
+                if result as? Bool == true {
+                    return
+                }
+                webView.load(URLRequest(url: URL(string: "https://zktimer.app")!))
+                self.schedulePageLoadCheck()
+            }
+        }
     }
 
     func applicationWillResignActive(_ application: UIApplication) {
