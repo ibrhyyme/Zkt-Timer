@@ -1,63 +1,39 @@
 import UIKit
 import Capacitor
-import CoreTelephony
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
-    private var cellularData: CTCellularData?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // iOS ilk acilista "kablosuz veri kullanabilsin mi?" diyalogu gosterir.
-        // WKWebView bu diyalog acikken baglanamiyor. Izin verildikten sonra da
-        // otomatik retry yapmiyor. CTCellularData ile izin aninda reload yapiyoruz.
+        // WKWebView bu diyalog acikken baglanamiyor ve otomatik retry yapmiyor.
+        // Splash auto-hide (10 sn) ile ayni anda tek seferlik reload yapiyoruz.
+        // Bu noktada kullanici izni coktan vermis oluyor (genelde 2-3 sn icinde).
         if !UserDefaults.standard.bool(forKey: "zkt_hasLaunchedBefore") {
-            setupFirstLaunchNetworkHandler()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 10.0) { [weak self] in
+                self?.singleReloadAttempt()
+            }
         }
         return true
     }
 
-    private func setupFirstLaunchNetworkHandler() {
-        cellularData = CTCellularData()
-        cellularData?.cellularDataRestrictionDidUpdateNotifier = { [weak self] state in
-            guard let self = self else { return }
-            if state == .notRestricted {
-                // Kullanici izin verdi. 0.5 sn bekle (iOS network'u aktif etsin), sonra reload.
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    self.reloadIfNeeded()
-                }
-            }
-        }
-    }
-
-    private func reloadIfNeeded() {
+    private func singleReloadAttempt() {
         guard let vc = window?.rootViewController as? CAPBridgeViewController,
               let webView = vc.webView else { return }
 
-        // Sayfa zaten yukleniyor mu? Mudahale etme.
-        if webView.isLoading { return }
+        webView.evaluateJavaScript("typeof window.__STORE__ !== 'undefined'") { result, _ in
+            UserDefaults.standard.set(true, forKey: "zkt_hasLaunchedBefore")
 
-        // Sayfa yuklendi mi?
-        webView.evaluateJavaScript("typeof window.__STORE__ !== 'undefined'") { [weak self] result, _ in
             if result as? Bool == true {
-                // Sayfa zaten yuklenmis, temizle.
-                self?.markAsLoaded()
-                return
+                return // Sayfa zaten yuklenmis
             }
-            // Sayfa yuklenemedi, tek seferlik reload.
-            webView.load(URLRequest(url: URL(string: "https://zktimer.app")!))
-            // 5 sn sonra ne olursa olsun temizle (sonsuz dongu onlemi).
-            DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
-                self?.markAsLoaded()
-            }
+            // Sayfa yuklenemedi -- cache'siz tek seferlik reload
+            var request = URLRequest(url: URL(string: "https://zktimer.app")!)
+            request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
+            webView.load(request)
         }
-    }
-
-    private func markAsLoaded() {
-        UserDefaults.standard.set(true, forKey: "zkt_hasLaunchedBefore")
-        cellularData?.cellularDataRestrictionDidUpdateNotifier = nil
-        cellularData = nil
     }
 
     func applicationWillResignActive(_ application: UIApplication) {
