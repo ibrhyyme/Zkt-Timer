@@ -37,23 +37,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             return
         }
 
-        print("[ZKT] reloadAttempt - webView.url: \(webView.url?.absoluteString ?? "nil"), isLoading: \(webView.isLoading)")
+        let currentUrl = webView.url?.absoluteString ?? "nil"
+        print("[ZKT] reloadAttempt - webView.url: \(currentUrl), isLoading: \(webView.isLoading)")
 
-        webView.evaluateJavaScript("typeof window.__STORE__ !== 'undefined'") { result, error in
-            let storeExists = result as? Bool == true
-            print("[ZKT] evaluateJS - __STORE__ exists: \(storeExists), error: \(error?.localizedDescription ?? "none")")
-
-            if storeExists {
-                print("[ZKT] Page loaded, marking as launched")
-                UserDefaults.standard.set(true, forKey: "zkt_hasLaunchedBefore")
-                return
-            }
-
-            print("[ZKT] Reloading with cache-busting request")
-            var request = URLRequest(url: URL(string: "https://zktimer.app")!)
-            request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
-            webView.load(request)
+        // Sayfa zaten zktimer.app'ten yuklenmisse basarili say
+        if currentUrl.contains("zktimer.app") && !webView.isLoading {
+            print("[ZKT] Page already loaded from zktimer.app, marking as launched")
+            UserDefaults.standard.set(true, forKey: "zkt_hasLaunchedBefore")
+            return
         }
+
+        print("[ZKT] Reloading with cache-busting request")
+        var request = URLRequest(url: URL(string: "https://zktimer.app")!)
+        request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
+        webView.load(request)
     }
 
     func applicationWillResignActive(_ application: UIApplication) {
