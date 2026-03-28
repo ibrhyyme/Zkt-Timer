@@ -455,11 +455,15 @@
 	},
 	"competitions": {
 		"page_title": "WCA Yarışmaları",
-		"use_my_location": "Konumumu kullan",
-		"location_active": "Konum aktif",
-		"location_error": "Konum alınamadı",
+		"search_placeholder": "Şehir veya ülke adı",
+		"search_hint": "Detaylı yazın: şehir, ülke veya adres",
+		"find": "Bul",
+		"search_error": "Yer bulunamadı",
 		"no_results": "Yaklaşan yarışma bulunamadı",
-		"results_count": "{{count}} yarışma bulundu"
+		"results_count": "{{count}} yarışma bulundu",
+		"col_date": "Tarih",
+		"col_name": "Ad",
+		"col_events": "Etkinlikler"
 	},
 	"friends": {
 		"friends_tab": "Arkadaşlar",

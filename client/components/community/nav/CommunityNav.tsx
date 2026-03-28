@@ -47,14 +47,16 @@ export default function CommunityNav() {
 			<PageTitle pageName={t('community_nav.page_title')}>
 				<div className={b('nav-list')}>
 					<HorizontalNav tabId={page} tabs={TABS} />
-					<div className={b('search-input')}>
-						<Input
-							icon={<MagnifyingGlass />}
-							placeholder={t('community_nav.search_placeholder')}
-							value={userSearchQuery}
-							onChange={handleQueryChange}
-						/>
-					</div>
+					{page !== 'competitions' && (
+						<div className={b('search-input')}>
+							<Input
+								icon={<MagnifyingGlass />}
+								placeholder={t('community_nav.search_placeholder')}
+								value={userSearchQuery}
+								onChange={handleQueryChange}
+							/>
+						</div>
+					)}
 				</div>
 			</PageTitle>
 		</div>

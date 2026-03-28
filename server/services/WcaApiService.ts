@@ -95,25 +95,56 @@ export class WcaApiService {
 	}
 
 	/**
-	 * Fetch upcoming WCA competitions
+	 * Fetch upcoming WCA competitions (parallel pages)
 	 */
 	static async fetchUpcomingCompetitions(countryIso2?: string): Promise<any[]> {
 		try {
 			const today = new Date().toISOString().split('T')[0];
-			const params: Record<string, any> = {
+			const PER_PAGE = 100;
+			const MAX_PAGES = 5;
+
+			const baseParams: Record<string, any> = {
 				start: today,
 				sort: 'start_date',
-				per_page: 100,
+				per_page: PER_PAGE,
 			};
 
 			if (countryIso2) {
-				params.country_iso2 = countryIso2;
+				baseParams.country_iso2 = countryIso2;
 			}
 
-			const response = await axios.get(`${this.BASE_URL}/competitions`, {params});
-			return (response.data || []).filter((c: any) => !c.cancelled_at);
+			// Sayfa 1'i cek, toplam sayfa sayisini hesapla
+			const firstRes = await axios.get(`${this.BASE_URL}/competitions`, {
+				params: {...baseParams, page: 1},
+				timeout: 15000,
+			});
+
+			const firstPage: any[] = firstRes.data || [];
+			const totalHeader = firstRes.headers['total'];
+			const total = totalHeader ? parseInt(totalHeader, 10) : firstPage.length;
+			const totalPages = Math.min(Math.ceil(total / PER_PAGE), MAX_PAGES);
+
+			if (totalPages <= 1) {
+				return firstPage.filter((c: any) => !c.cancelled_at);
+			}
+
+			// Kalan sayfalari paralel cek
+			const pagePromises = [];
+			for (let p = 2; p <= totalPages; p++) {
+				pagePromises.push(
+					axios.get(`${this.BASE_URL}/competitions`, {
+						params: {...baseParams, page: p},
+						timeout: 15000,
+					}).then((r) => r.data || [])
+				);
+			}
+
+			const restPages = await Promise.all(pagePromises);
+			const allCompetitions = [firstPage, ...restPages].flat();
+
+			return allCompetitions.filter((c: any) => !c.cancelled_at);
 		} catch (error) {
-			console.error('Failed to fetch WCA competitions:', error.message);
+			console.error('[WCA API] Error:', error.message);
 			return [];
 		}
 	}

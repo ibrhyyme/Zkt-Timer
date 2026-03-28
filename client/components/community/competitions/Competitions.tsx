@@ -1,32 +1,67 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import {useTranslation} from 'react-i18next';
 import Header from '../../layout/header/Header';
 import {gqlQueryTyped} from '../../api';
 import {WcaCompetitionsDocument} from '../../../@types/generated/graphql';
 import {haversineDistanceKm} from '../../../util/geo';
-import CompetitionRow from './CompetitionRow';
-import CompetitionEventFilter from './CompetitionEventFilter';
+import CompetitionEventFilter, {WCA_EVENTS} from './CompetitionEventFilter';
 import Button from '../../common/button/Button';
 import Loading from '../../common/loading/Loading';
-import {Crosshair} from 'phosphor-react';
+import {MagnifyingGlass} from 'phosphor-react';
 import block from '../../../styles/bem';
 import './Competitions.scss';
 
 const b = block('competitions');
 
+const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
+
+interface GeoPlace {
+	lat: string;
+	lon: string;
+	display_name: string;
+}
+
 interface UserLocation {
 	lat: number;
 	lon: number;
+	name: string;
+}
+
+const I18N_LOCALE_MAP: Record<string, string> = {
+	tr: 'tr-TR',
+	en: 'en-US',
+	es: 'es-ES',
+	ru: 'ru-RU',
+};
+
+function formatDateRange(startDate: string, endDate: string, lang: string): string {
+	const locale = I18N_LOCALE_MAP[lang] || lang;
+	const start = new Date(startDate + 'T00:00:00');
+	const end = new Date(endDate + 'T00:00:00');
+
+	const fmt = (d: Date, opts: Intl.DateTimeFormatOptions) => d.toLocaleDateString(locale, opts);
+
+	if (startDate === endDate) {
+		return fmt(start, {day: 'numeric', month: 'short', year: 'numeric'});
+	}
+
+	if (start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear()) {
+		return `${fmt(start, {day: 'numeric'})} - ${fmt(end, {day: 'numeric', month: 'short', year: 'numeric'})}`;
+	}
+
+	return `${fmt(start, {day: 'numeric', month: 'short'})} - ${fmt(end, {day: 'numeric', month: 'short', year: 'numeric'})}`;
 }
 
 export default function Competitions() {
-	const {t} = useTranslation();
+	const {t, i18n} = useTranslation();
+	const inputRef = useRef<HTMLInputElement>(null);
 
 	const [competitions, setCompetitions] = useState<any[] | null>(null);
 	const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
 	const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
-	const [locationLoading, setLocationLoading] = useState(false);
-	const [locationError, setLocationError] = useState(false);
+	const [searchQuery, setSearchQuery] = useState('');
+	const [places, setPlaces] = useState<GeoPlace[] | null>(null);
+	const [searching, setSearching] = useState(false);
 
 	useEffect(() => {
 		fetchCompetitions();
@@ -41,23 +76,41 @@ export default function Competitions() {
 		}
 	}
 
-	function requestLocation() {
-		if (!navigator.geolocation) {
-			setLocationError(true);
-			return;
-		}
-		setLocationLoading(true);
-		setLocationError(false);
-		navigator.geolocation.getCurrentPosition(
-			(pos) => {
-				setUserLocation({lat: pos.coords.latitude, lon: pos.coords.longitude});
-				setLocationLoading(false);
-			},
-			() => {
-				setLocationError(true);
-				setLocationLoading(false);
+	async function handleFind() {
+		const query = searchQuery.trim();
+		if (!query) return;
+
+		setSearching(true);
+		setPlaces(null);
+
+		try {
+			const res = await fetch(`${NOMINATIM_URL}?q=${encodeURIComponent(query)}&format=json&limit=5`);
+			const data: GeoPlace[] = await res.json();
+			if (data.length === 1) {
+				selectPlace(data[0]);
+			} else {
+				setPlaces(data);
 			}
-		);
+		} catch {
+			setPlaces([]);
+		}
+
+		setSearching(false);
+	}
+
+	function selectPlace(place: GeoPlace) {
+		setUserLocation({
+			lat: parseFloat(place.lat),
+			lon: parseFloat(place.lon),
+			name: place.display_name,
+		});
+		setPlaces(null);
+	}
+
+	function handleKeyDown(e: React.KeyboardEvent) {
+		if (e.key === 'Enter') {
+			handleFind();
+		}
 	}
 
 	let displayList = competitions || [];
@@ -81,10 +134,56 @@ export default function Competitions() {
 		body = <p className={b('empty')}>{t('competitions.no_results')}</p>;
 	} else {
 		body = (
-			<div className={b('list')}>
-				{displayList.map((comp) => (
-					<CompetitionRow key={comp.id} competition={comp} userLocation={userLocation} />
-				))}
+			<div className={b('table-wrapper')}>
+				<table className={b('table')}>
+					<thead>
+						<tr>
+							<th>{t('competitions.col_date')}</th>
+							{userLocation && <th>km</th>}
+							<th>{t('competitions.col_name')}</th>
+							<th>{t('competitions.col_events')}</th>
+						</tr>
+					</thead>
+					<tbody>
+						{displayList.map((comp) => {
+							const km = userLocation
+								? Math.round(
+										haversineDistanceKm(
+											userLocation.lat,
+											userLocation.lon,
+											comp.latitude_degrees,
+											comp.longitude_degrees
+										)
+								  )
+								: null;
+
+							const eventNames = (comp.event_ids || [])
+								.map((eid: string) => {
+									const info = WCA_EVENTS.find((e) => e.code === eid);
+									return info?.shortName || eid;
+								})
+								.join(' ');
+
+							return (
+								<tr key={comp.id}>
+									<td className={b('date-cell')}>{formatDateRange(comp.start_date, comp.end_date, i18n.language)}</td>
+									{userLocation && <td className={b('km-cell')}>{km}</td>}
+									<td>
+										<a
+											href={comp.url}
+											target="_blank"
+											rel="noopener noreferrer"
+											className={b('link')}
+										>
+											{comp.name}
+										</a>
+									</td>
+									<td className={b('events-cell')}>{eventNames}</td>
+								</tr>
+							);
+						})}
+					</tbody>
+				</table>
 			</div>
 		);
 	}
@@ -93,19 +192,46 @@ export default function Competitions() {
 		<div className={b()}>
 			<Header path="/community/competitions" title={t('competitions.page_title')} />
 			<div className={b('content')}>
-				<div className={b('toolbar')}>
-					<Button
-						icon={<Crosshair />}
-						iconFirst
-						text={userLocation ? t('competitions.location_active') : t('competitions.use_my_location')}
-						onClick={requestLocation}
-						loading={locationLoading}
-						primary={!!userLocation}
-						gray={!userLocation}
-						small
+				<div className={b('search')}>
+					<input
+						ref={inputRef}
+						type="text"
+						className={b('search-input')}
+						placeholder={t('competitions.search_placeholder')}
+						value={searchQuery}
+						onChange={(e) => setSearchQuery(e.target.value)}
+						onKeyDown={handleKeyDown}
 					/>
-					{locationError && <span className={b('location-error')}>{t('competitions.location_error')}</span>}
+					<Button
+						text={t('competitions.find')}
+						primary
+						small
+						onClick={handleFind}
+						loading={searching}
+					/>
 				</div>
+
+				<p className={b('search-hint')}>{t('competitions.search_hint')}</p>
+
+				{places && places.length > 0 && (
+					<div className={b('places')}>
+						{places.map((place, i) => (
+							<button key={i} className={b('place')} onClick={() => selectPlace(place)}>
+								{place.display_name}
+							</button>
+						))}
+					</div>
+				)}
+
+				{places && places.length === 0 && (
+					<p className={b('search-error')}>{t('competitions.search_error')}</p>
+				)}
+
+				{userLocation && (
+					<p className={b('location-info')}>
+						{userLocation.name}
+					</p>
+				)}
 
 				<CompetitionEventFilter selectedEvent={selectedEvent} onSelect={setSelectedEvent} />
 

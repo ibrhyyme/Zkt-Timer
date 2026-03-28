@@ -455,11 +455,15 @@
 	},
 	"competitions": {
 		"page_title": "Соревнования WCA",
-		"use_my_location": "Моё местоположение",
-		"location_active": "Местоположение активно",
-		"location_error": "Не удалось получить местоположение",
+		"search_placeholder": "Город или страна",
+		"search_hint": "Укажите подробнее: город, страна или адрес",
+		"find": "Найти",
+		"search_error": "Места не найдены",
 		"no_results": "Предстоящих соревнований не найдено",
-		"results_count": "{{count}} соревнований найдено"
+		"results_count": "{{count}} соревнований найдено",
+		"col_date": "Дата",
+		"col_name": "Название",
+		"col_events": "Дисциплины"
 	},
 	"friends": {
 		"friends_tab": "Друзья",
