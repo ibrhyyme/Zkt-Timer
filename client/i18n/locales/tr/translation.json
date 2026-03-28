@@ -726,7 +726,8 @@
 		"pickup_time": "Alma süresi",
 		"putdown_time": "Bırakma süresi",
 		"overview_tab": "Genel Bakış",
-		"time_label": "Süre"
+		"time_label": "Süre",
+		"deleted_from_other_device": "Bu çözüm başka bir cihazdan silinmiş"
 	},
 	"sessions": {
 		"page_title": "Sezonlar",

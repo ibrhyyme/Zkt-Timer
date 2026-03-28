@@ -726,7 +726,8 @@
 		"pickup_time": "Tiempo de recogida",
 		"putdown_time": "Tiempo de colocación",
 		"overview_tab": "Resumen",
-		"time_label": "Tiempo"
+		"time_label": "Tiempo",
+		"deleted_from_other_device": "Esta solución fue eliminada desde otro dispositivo"
 	},
 	"sessions": {
 		"page_title": "Sesiones",

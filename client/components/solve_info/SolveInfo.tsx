@@ -19,6 +19,10 @@ import { closeModal } from '../../actions/general';
 import { demoUser } from './demo_user';
 import NormalSolveLayout from './normal_solve_layout/NormalSolveLayout';
 import SmartSolveLayout from './smart_solve_layout/SmartSolveLayout';
+import { getSolveDb } from '../../db/solves/init';
+import { emitEvent } from '../../util/event_handler';
+import { toastError } from '../../util/toast';
+import { useTranslation } from 'react-i18next';
 
 const b = block('solve-info');
 
@@ -57,6 +61,7 @@ interface Props extends IModalProps {
 export default function SolveInfo(props: Props) {
 	const { solveId, disabled, onComplete } = props;
 
+	const { t } = useTranslation();
 	const dispatch = useDispatch();
 	const mobileMode = useGeneral('mobile_mode');
 	const demoSolve = props.solve?.demo_mode;
@@ -104,6 +109,16 @@ export default function SolveInfo(props: Props) {
 			setDbSolve(fetchSolve(id));
 			setSolve(res.data.solve);
 			setLoading(false);
+		}).catch(() => {
+			// Sunucuda solve bulunamadi — baska cihazdan silinmis olabilir
+			const localSolve = fetchSolve(id);
+			if (localSolve) {
+				getSolveDb().remove(localSolve);
+				emitEvent('solveDbUpdatedEvent', localSolve);
+			}
+
+			toastError(t('solve_info.deleted_from_other_device'));
+			onComplete ? onComplete() : dispatch(closeModal());
 		});
 	}
 

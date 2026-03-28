@@ -14,7 +14,7 @@ import { clearOfflineData, initOfflineData, updateOfflineHash } from './offline'
 import { initSettingsDb, SettingValue } from '../../db/settings/init';
 import { getDefaultSettings } from '../../db/settings/query';
 import { getLokiDb, initLokiDb } from '../../db/lokijs';
-import { appendSolvesToDb, initSolveDb, initSolvesCollection } from '../../db/solves/init';
+import { appendSolvesToDb, getSolveDb, initSolveDb, initSolvesCollection } from '../../db/solves/init';
 import { getNewScramble } from '../timer/helpers/scramble';
 import { Solve } from '../../../server/schemas/Solve.schema';
 import { StatsModule } from '../../../server/schemas/StatsModule.schema';
@@ -30,6 +30,7 @@ import { setGeneral } from '../../actions/general';
 import { generateId } from '../../../shared/code';
 import { emitEvent } from '../../util/event_handler';
 import { syncDailyGoalsFromServer } from '../daily-goal/helpers/storage';
+import { onVisibilityChange } from '../../util/app-visibility';
 
 export function initAnonymousAppData(callback) {
 	if (typeof window === 'undefined') {
@@ -138,6 +139,9 @@ async function loadNonCriticalData(_me: UserAccount, dispatch: Dispatch<any>, pa
 	} catch (e) {
 		console.error(e);
 	}
+
+	// Tab gorunur oldugunda stale solve'lari temizle
+	initVisibilitySyncListener();
 }
 
 /**
@@ -152,6 +156,25 @@ async function initNewScramble() {
 }
 
 const SYNC_SOLVE_COUNT = 500;
+const VISIBILITY_SYNC_DEBOUNCE_MS = 10_000;
+
+let visibilityListenerRegistered = false;
+let lastSyncTime = 0;
+
+function initVisibilitySyncListener() {
+	if (visibilityListenerRegistered) return;
+	visibilityListenerRegistered = true;
+
+	onVisibilityChange((visible) => {
+		if (!visible) return;
+
+		const now = Date.now();
+		if (now - lastSyncTime < VISIBILITY_SYNC_DEBOUNCE_MS) return;
+		lastSyncTime = now;
+
+		syncNewSolves().then(() => updateOfflineHash()).catch(() => {});
+	});
+}
 
 async function syncNewSolves() {
 	const query = gql`
@@ -166,12 +189,34 @@ async function syncNewSolves() {
 
 	try {
 		const res = await gqlQuery<{ solves: Solve[] }>(query, { take: SYNC_SOLVE_COUNT, skip: 0 });
-		const solves = res.data.solves;
-		if (solves.length) {
-			appendSolvesToDb(solves);
+		const serverSolves = res.data.solves;
+
+		if (serverSolves.length) {
+			appendSolvesToDb(serverSolves);
+		}
+
+		// Stale solve'lari tespit et ve sil (baska cihazdan silinmis olabilir)
+		const serverIds = new Set(serverSolves.map((s) => s.id));
+		const solveDb = getSolveDb();
+		if (!solveDb) return;
+
+		let stale: Solve[];
+		if (serverSolves.length < SYNC_SOLVE_COUNT) {
+			// Sunucuda 500'den az solve var — tum local solve'lari kontrol et
+			stale = solveDb.find().filter((s) => !serverIds.has(s.id));
+		} else {
+			// Sunucuda 500+ solve var — sadece son 500'un zaman araligindakileri kontrol et
+			const oldestServerTime = parseInt(String(serverSolves[serverSolves.length - 1].started_at), 10);
+			const recentLocal = solveDb.find({ started_at: { $gte: oldestServerTime } });
+			stale = recentLocal.filter((s) => !serverIds.has(s.id));
+		}
+
+		if (stale.length > 0) {
+			stale.forEach((s) => solveDb.remove(s));
+			emitEvent('solveDbUpdatedEvent');
 		}
 	} catch (e) {
-		console.error("Failed to sync new solves", e);
+		console.error('Failed to sync new solves', e);
 	}
 }
 

@@ -726,7 +726,8 @@
 		"pickup_time": "Время поднятия",
 		"putdown_time": "Время постановки",
 		"overview_tab": "Обзор",
-		"time_label": "Время"
+		"time_label": "Время",
+		"deleted_from_other_device": "Эта сборка была удалена с другого устройства"
 	},
 	"sessions": {
 		"page_title": "Сессии",
