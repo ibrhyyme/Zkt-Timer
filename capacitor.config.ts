@@ -9,7 +9,6 @@ const config: CapacitorConfig = {
     server: {
         url: 'https://zktimer.app',
         cleartext: false,
-        errorPath: '/error.html',
     },
     android: {
         webContentsDebuggingEnabled: true,
