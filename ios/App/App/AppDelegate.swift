@@ -9,36 +9,43 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // iOS ilk acilista "kablosuz veri kullanabilsin mi?" diyalogu gosterir.
         // WKWebView bu diyalog acikken baglanamiyor ve otomatik retry yapmiyor.
-        // Splash auto-hide (10 sn) ile ayni anda tek seferlik reload yapiyoruz.
+        // 10, 15, 20 saniyede retry yapiyoruz. Basarili olunca duruyor.
         let isFirstLaunch = !UserDefaults.standard.bool(forKey: "zkt_hasLaunchedBefore")
         print("[ZKT] didFinishLaunching - isFirstLaunch: \(isFirstLaunch)")
 
         if isFirstLaunch {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 10.0) { [weak self] in
-                print("[ZKT] 10s timer fired")
-                self?.singleReloadAttempt()
+            for delay in [10.0, 15.0, 20.0] {
+                DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+                    print("[ZKT] \(delay)s timer fired")
+                    self?.reloadAttempt()
+                }
             }
         }
         return true
     }
 
-    private func singleReloadAttempt() {
-        guard let vc = window?.rootViewController as? CAPBridgeViewController,
-              let webView = vc.webView else {
-            print("[ZKT] singleReloadAttempt - webView nil!")
+    private func reloadAttempt() {
+        // Onceki denemede basarili olduysa atla
+        guard !UserDefaults.standard.bool(forKey: "zkt_hasLaunchedBefore") else {
+            print("[ZKT] Already loaded, skipping")
             return
         }
 
-        print("[ZKT] singleReloadAttempt - webView.url: \(webView.url?.absoluteString ?? "nil"), isLoading: \(webView.isLoading)")
+        guard let vc = window?.rootViewController as? CAPBridgeViewController,
+              let webView = vc.webView else {
+            print("[ZKT] reloadAttempt - webView nil!")
+            return
+        }
+
+        print("[ZKT] reloadAttempt - webView.url: \(webView.url?.absoluteString ?? "nil"), isLoading: \(webView.isLoading)")
 
         webView.evaluateJavaScript("typeof window.__STORE__ !== 'undefined'") { result, error in
             let storeExists = result as? Bool == true
             print("[ZKT] evaluateJS - __STORE__ exists: \(storeExists), error: \(error?.localizedDescription ?? "none")")
 
-            UserDefaults.standard.set(true, forKey: "zkt_hasLaunchedBefore")
-
             if storeExists {
-                print("[ZKT] Page already loaded, skipping reload")
+                print("[ZKT] Page loaded, marking as launched")
+                UserDefaults.standard.set(true, forKey: "zkt_hasLaunchedBefore")
                 return
             }
 
