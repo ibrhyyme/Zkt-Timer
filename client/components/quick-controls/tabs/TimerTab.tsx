@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
+import { Lock } from 'phosphor-react';
 import { setSetting, toggleSetting } from '../../../db/settings/update';
 import { useSettings } from '../../../util/hooks/useSettings';
 import { openModal } from '../../../actions/general';
@@ -8,7 +9,7 @@ import StackMatPicker from '../../settings/stackmat_picker/StackMatPicker';
 import { AllSettings } from '../../../db/settings/query';
 
 interface TimerOptionProps {
-	label: string;
+	label: string | React.ReactNode;
 	isActive: boolean;
 	disabled?: boolean;
 	onClick: () => void;
@@ -38,7 +39,11 @@ function TimerOption({ label, isActive, disabled = false, onClick }: TimerOption
 	);
 }
 
-export default function TimerTab() {
+interface TimerTabProps {
+	allowedTimerTypes?: string[];
+}
+
+export default function TimerTab({ allowedTimerTypes }: TimerTabProps) {
 	const { t } = useTranslation();
 	const dispatch = useDispatch();
 
@@ -81,33 +86,58 @@ export default function TimerTab() {
 
 	const timerOptions = [
 		{
+			typeKey: 'keyboard',
 			label: t('quick_controls.keyboard'),
 			isActive: timerType === 'keyboard' && !manualEntry,
 			onClick: () => selectTimerType('keyboard'),
 		},
 		{
+			typeKey: 'stackmat',
 			label: t('quick_controls.stackmat'),
 			isActive: timerType === 'stackmat' && !manualEntry,
 			onClick: openStackMat,
 		},
 		{
+			typeKey: 'smart',
 			label: t('quick_controls.smart_cube'),
 			isActive: timerType === 'smart' && !manualEntry,
 			disabled: cubeType !== '333',
 			onClick: () => selectTimerType('smart'),
 		},
 		{
+			typeKey: 'gantimer',
 			label: t('quick_controls.gan_smart_timer'),
 			isActive: timerType === 'gantimer' && !manualEntry,
 			onClick: () => selectTimerType('gantimer'),
 		},
 		{
+			typeKey: 'manual',
 			label: t('quick_controls.manual_entry'),
 			isActive: manualEntry,
 			disabled: manualDisabled,
 			onClick: toggleManualEntry,
 		},
 	];
+
+	// Room kisitlamasi: allowedTimerTypes verilmisse, izin verilmeyen turleri disable et
+	const finalOptions = timerOptions.map((option) => {
+		if (!allowedTimerTypes || allowedTimerTypes.includes(option.typeKey)) {
+			return option;
+		}
+		return {
+			...option,
+			disabled: true,
+			label: (
+				<span className="flex items-center gap-2">
+					{option.label}
+					<span className="text-xs text-red-400 bg-red-400/10 px-1.5 py-0.5 rounded flex items-center gap-1">
+						<Lock size={10} weight="fill" />
+						{t('room_settings.not_allowed')}
+					</span>
+				</span>
+			),
+		};
+	});
 
 	return (
 		<div className="space-y-3">
@@ -117,9 +147,9 @@ export default function TimerTab() {
 					{t('quick_controls.timer_type_description')}
 				</p>
 			</div>
-			{timerOptions.map((option) => (
+			{finalOptions.map((option) => (
 				<TimerOption
-					key={option.label}
+					key={option.typeKey}
 					label={option.label}
 					isActive={option.isActive}
 					disabled={option.disabled}
