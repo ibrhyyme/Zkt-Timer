@@ -481,12 +481,23 @@
     }
 
     // Mobile responsive
-    @media (max-width: 600px) {
+    @media (max-width: 768px) {
         min-width: auto;
         max-width: none;
-        width: calc(100vw - 2rem);
-        margin: 1rem;
-        border-radius: 20px;
+        width: 100%;
+        margin: 0;
+        border-radius: 0;
+        overflow: visible;
+        min-height: 100%;
+        display: flex;
+        flex-direction: column;
+        box-shadow: none;
+        border: none;
+        animation: none;
+
+        &__bg-orb {
+            display: none;
+        }
 
         &__header {
             padding: 1.25rem;
@@ -494,6 +505,7 @@
 
         &__content {
             padding: 1.25rem;
+            flex: 1;
         }
 
         &__row {
@@ -503,6 +515,10 @@
 
         &__footer {
             padding: 1rem 1.25rem;
+            position: sticky;
+            bottom: 0;
+            background: rgba(var(--module-color), 0.98);
+            backdrop-filter: blur(10px);
         }
 
         &__icon-wrapper {
