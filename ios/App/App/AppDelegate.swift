@@ -10,9 +10,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // iOS ilk acilista "kablosuz veri kullanabilsin mi?" diyalogu gosterir.
         // WKWebView bu diyalog acikken baglanamiyor ve otomatik retry yapmiyor.
         // Splash auto-hide (10 sn) ile ayni anda tek seferlik reload yapiyoruz.
-        // Bu noktada kullanici izni coktan vermis oluyor (genelde 2-3 sn icinde).
-        if !UserDefaults.standard.bool(forKey: "zkt_hasLaunchedBefore") {
+        let isFirstLaunch = !UserDefaults.standard.bool(forKey: "zkt_hasLaunchedBefore")
+        print("[ZKT] didFinishLaunching - isFirstLaunch: \(isFirstLaunch)")
+
+        if isFirstLaunch {
             DispatchQueue.main.asyncAfter(deadline: .now() + 10.0) { [weak self] in
+                print("[ZKT] 10s timer fired")
                 self?.singleReloadAttempt()
             }
         }
@@ -21,15 +24,25 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     private func singleReloadAttempt() {
         guard let vc = window?.rootViewController as? CAPBridgeViewController,
-              let webView = vc.webView else { return }
+              let webView = vc.webView else {
+            print("[ZKT] singleReloadAttempt - webView nil!")
+            return
+        }
 
-        webView.evaluateJavaScript("typeof window.__STORE__ !== 'undefined'") { result, _ in
+        print("[ZKT] singleReloadAttempt - webView.url: \(webView.url?.absoluteString ?? "nil"), isLoading: \(webView.isLoading)")
+
+        webView.evaluateJavaScript("typeof window.__STORE__ !== 'undefined'") { result, error in
+            let storeExists = result as? Bool == true
+            print("[ZKT] evaluateJS - __STORE__ exists: \(storeExists), error: \(error?.localizedDescription ?? "none")")
+
             UserDefaults.standard.set(true, forKey: "zkt_hasLaunchedBefore")
 
-            if result as? Bool == true {
-                return // Sayfa zaten yuklenmis
+            if storeExists {
+                print("[ZKT] Page already loaded, skipping reload")
+                return
             }
-            // Sayfa yuklenemedi -- cache'siz tek seferlik reload
+
+            print("[ZKT] Reloading with cache-busting request")
             var request = URLRequest(url: URL(string: "https://zktimer.app")!)
             request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
             webView.load(request)
