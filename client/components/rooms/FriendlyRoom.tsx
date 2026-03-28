@@ -1864,7 +1864,6 @@ export default function FriendlyRoom() {
             <RoomSettingsModal
                 isOpen={settingsOpen}
                 onClose={() => setSettingsOpen(false)}
-                cubeType={room.cube_type}
                 allowedTimerTypes={room.allowed_timer_types}
             />
             {/* New Modals */}
