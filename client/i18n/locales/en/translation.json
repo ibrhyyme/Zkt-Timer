@@ -1107,6 +1107,7 @@
 		"focus_mode": "Focus Mode",
 		"inspection": "Inspection",
 		"hide_time_when_solving": "Hide Time When Solving",
+		"haptic_feedback": "Haptic Feedback",
 		"freeze_time": "Freeze Time (s)",
 		"none": "None",
 		"multi_phase": "Multi-Phase",

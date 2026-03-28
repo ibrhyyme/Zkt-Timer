@@ -195,6 +195,7 @@ export function cancelInspection() {
 export function startInspection(context: ITimerContext) {
 	// Acik dropdown menuleri kapat
 	window.dispatchEvent(new CustomEvent('timerInteractionStart'));
+	hapticImpact('medium');
 
 	const {
 		inspection_delay: inspectionDelay,

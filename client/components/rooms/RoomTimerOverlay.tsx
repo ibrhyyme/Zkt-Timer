@@ -11,6 +11,7 @@ import { GanTimerConnection, GanTimerEvent, GanTimerState, connectGanTimer } fro
 import BluetoothErrorMessage from '../timer/common/BluetoothErrorMessage';
 import BleScanningModal from '../timer/smart_cube/ble_scanning_modal/BleScanningModal';
 import { isNative } from '../../util/platform';
+import { hapticImpact } from '../../util/native-plugins';
 import { resourceUri } from '../../util/storage';
 import StackMatPicker from '../settings/stackmat_picker/StackMatPicker';
 import SmartStats from '../timer/smart_cube/stats/SmartStats';
@@ -255,6 +256,7 @@ export default function RoomTimerOverlay({
         // Force reset any stuck keys
         keyIsDown.current = false;
         inspectionSoundsPlayedRef.current.clear();
+        hapticImpact('medium');
 
         setStatus(STATUS.INSPECTING);
         statusRef.current = STATUS.INSPECTING;
@@ -265,6 +267,7 @@ export default function RoomTimerOverlay({
     };
 
     const startTiming = () => {
+        hapticImpact('light');
         setStatus(STATUS.TIMING);
         statusRef.current = STATUS.TIMING;
         setStartedAt(now());
@@ -284,7 +287,7 @@ export default function RoomTimerOverlay({
             if (performance.now() - holdStartTimeRef.current >= 100) { // 100ms for inspection to timing
                 setStatus(STATUS.INSPECTING_PRIMING);
                 statusRef.current = STATUS.INSPECTING_PRIMING;
-                if (navigator.vibrate) navigator.vibrate(50);
+                hapticImpact('light');
             }
         }
 
@@ -459,12 +462,12 @@ export default function RoomTimerOverlay({
                 if (freezeTime === 0) {
                     setStatus(STATUS.PRIMING);
                     statusRef.current = STATUS.PRIMING;
-                    if (navigator.vibrate) navigator.vibrate(50);
+                    hapticImpact('light');
                 } else {
                     primingTimeoutRef.current = setTimeout(() => {
                         setStatus(STATUS.PRIMING);
                         statusRef.current = STATUS.PRIMING;
-                        if (navigator.vibrate) navigator.vibrate(50);
+                        hapticImpact('light');
                     }, (freezeTime ?? 0.2) * 1000);
                 }
                 break;
@@ -477,6 +480,7 @@ export default function RoomTimerOverlay({
 
             case STATUS.TIMING:
                 if (timerRef.current) clearInterval(timerRef.current);
+                hapticImpact('medium');
                 setStatus(STATUS.SUBMITTING_DOWN);
                 statusRef.current = STATUS.SUBMITTING_DOWN;
                 break;

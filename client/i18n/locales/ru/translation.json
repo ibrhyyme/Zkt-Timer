@@ -1107,6 +1107,7 @@
 		"focus_mode": "Режим фокусировки",
 		"inspection": "Инспекция",
 		"hide_time_when_solving": "Скрывать время во время сборки",
+		"haptic_feedback": "Вибрация",
 		"freeze_time": "Время Задержки (с)",
 		"none": "Нет",
 		"multi_phase": "Многофазный",
