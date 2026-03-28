@@ -9,25 +9,40 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // iOS ilk acilista network izin diyalogu nedeniyle sayfa yuklenemiyor.
-        // Sayfa yuklenene kadar her 3 saniyede tekrar dene (max 30 sn).
+        // Sadece ilk kurulum sonrasi ilk acilista retry yap, sonraki acilislarda hic calisma.
         schedulePageLoadCheck()
         return true
     }
 
     private func schedulePageLoadCheck() {
+        // Daha once basariyla acildiysa bir daha retry yapma
+        if UserDefaults.standard.bool(forKey: "zkt_hasLaunchedBefore") { return }
+
         loadCheckCount += 1
-        guard loadCheckCount <= 10 else { return }
+        guard loadCheckCount <= 10 else {
+            UserDefaults.standard.set(true, forKey: "zkt_hasLaunchedBefore")
+            return
+        }
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
             guard let self = self,
                   let vc = self.window?.rootViewController as? CAPBridgeViewController,
                   let webView = vc.webView else { return }
 
+            // Sayfa zaten yukleniyor mu? Mudahale etme, bekle.
+            if webView.isLoading {
+                self.schedulePageLoadCheck()
+                return
+            }
+
             // window.__STORE__ SSR tarafindan set ediliyor - varsa sayfa yuklenmis demektir
             webView.evaluateJavaScript("typeof window.__STORE__ !== 'undefined'") { result, _ in
                 if result as? Bool == true {
+                    // Basarili! Bir daha retry yapma.
+                    UserDefaults.standard.set(true, forKey: "zkt_hasLaunchedBefore")
                     return
                 }
+                // Sayfa yuklenemedi, tekrar dene
                 webView.load(URLRequest(url: URL(string: "https://zktimer.app")!))
                 self.schedulePageLoadCheck()
             }
