@@ -1,4 +1,5 @@
 import { isNative } from './platform';
+import { getSetting } from '../db/settings/query';
 
 // Keep Awake — cozum sirasinda ekran acik tutar
 export async function keepScreenAwake(): Promise<void> {
@@ -24,6 +25,7 @@ export async function allowScreenSleep(): Promise<void> {
 // Haptics — dokunsal geri bildirim
 export async function hapticImpact(style: 'light' | 'medium' | 'heavy' = 'medium'): Promise<void> {
 	if (!isNative()) return;
+	if (getSetting('haptic_feedback') === false) return;
 	try {
 		const { Haptics, ImpactStyle } = await import('@capacitor/haptics');
 		const styleMap = {
@@ -39,6 +41,7 @@ export async function hapticImpact(style: 'light' | 'medium' | 'heavy' = 'medium
 
 export async function hapticNotification(type: 'success' | 'warning' | 'error' = 'success'): Promise<void> {
 	if (!isNative()) return;
+	if (getSetting('haptic_feedback') === false) return;
 	try {
 		const { Haptics, NotificationType } = await import('@capacitor/haptics');
 		const typeMap = {

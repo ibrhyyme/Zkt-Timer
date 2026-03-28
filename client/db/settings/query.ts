@@ -34,6 +34,7 @@ export interface AllSettings {
 	stackmat_auto_inspection_warning_shown: boolean; // Uyarı modalı gösterildi mi?
 
 	// Local
+	haptic_feedback: boolean;
 	timer_type: 'keyboard' | 'smart' | 'stackmat' | 'gantimer';
 	timer_layout: TimerLayoutPosition;
 	timer_module_count: number;
@@ -86,6 +87,7 @@ const defaultSettings: AllSettings = {
 	locked_scramble: null,
 	custom_cube_types: [],
 
+	haptic_feedback: true,
 	timer_type: 'keyboard',
 	timer_module_count: 3,
 	timer_layout: 'bottom',

@@ -1107,6 +1107,7 @@
 		"focus_mode": "Modo concentración",
 		"inspection": "Inspección",
 		"hide_time_when_solving": "Ocultar tiempo mientras resuelves",
+		"haptic_feedback": "Vibración",
 		"freeze_time": "Tiempo de Espera (s)",
 		"none": "Ninguno",
 		"multi_phase": "Multifase",

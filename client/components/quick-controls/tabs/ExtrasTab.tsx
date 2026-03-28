@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { setSetting, toggleSetting } from '../../../db/settings/update';
 import { useSettings } from '../../../util/hooks/useSettings';
 import screenfull from '../../../util/vendor/screenfull';
+import { isNative } from '../../../util/platform';
 import { CaretDown, CaretUp, Minus, Plus } from 'phosphor-react';
 
 interface ExtrasNumberInputProps {
@@ -173,6 +174,7 @@ export default function ExtrasTab() {
 	const focusMode = useSettings('focus_mode');
 	const inspection = useSettings('inspection');
 	const hideTimeWhenSolving = useSettings('hide_time_when_solving');
+	const hapticFeedback = useSettings('haptic_feedback');
 	const timerType = useSettings('timer_type');
 	const freezeTime = useSettings('freeze_time');
 	const analysisMode = useSettings('smart_cube_analysis_mode');
@@ -213,6 +215,12 @@ export default function ExtrasTab() {
 			isActive: hideTimeWhenSolving,
 			hidden: false,
 			onClick: () => toggleSetting('hide_time_when_solving'),
+		},
+		{
+			label: t('quick_controls.haptic_feedback'),
+			isActive: hapticFeedback,
+			hidden: !isNative(),
+			onClick: () => toggleSetting('haptic_feedback'),
 		},
 	];
 
