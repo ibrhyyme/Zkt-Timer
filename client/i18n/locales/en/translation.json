@@ -455,11 +455,15 @@
 	},
 	"competitions": {
 		"page_title": "WCA Competitions",
-		"use_my_location": "Use my location",
-		"location_active": "Location active",
-		"location_error": "Could not get location",
+		"search_placeholder": "City or country name",
+		"search_hint": "Give details for best accuracy: city, country or address",
+		"find": "Find",
+		"search_error": "No places found",
 		"no_results": "No upcoming competitions found",
-		"results_count": "{{count}} competitions found"
+		"results_count": "{{count}} competitions found",
+		"col_date": "Date",
+		"col_name": "Name",
+		"col_events": "Events"
 	},
 	"friends": {
 		"friends_tab": "Friends",

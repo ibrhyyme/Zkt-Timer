@@ -14,7 +14,7 @@ export class WcaCompetitionResolver {
 		const country = filter?.country_iso2 || '';
 		const cacheKey = createRedisKey(RedisNamespace.WCA_COMPETITIONS, country || 'all');
 
-		return fetchDataFromCache<WcaCompetition[]>(
+		const result = await fetchDataFromCache<WcaCompetition[]>(
 			cacheKey,
 			async () => {
 				const raw = await WcaApiService.fetchUpcomingCompetitions(country || undefined);
@@ -36,5 +36,7 @@ export class WcaCompetitionResolver {
 			},
 			CACHE_TTL_SECONDS
 		);
+
+		return result;
 	}
 }

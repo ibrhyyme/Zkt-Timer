@@ -455,11 +455,15 @@
 	},
 	"competitions": {
 		"page_title": "Competencias WCA",
-		"use_my_location": "Usar mi ubicación",
-		"location_active": "Ubicación activa",
-		"location_error": "No se pudo obtener la ubicación",
+		"search_placeholder": "Ciudad o país",
+		"search_hint": "Escriba detalles: ciudad, país o dirección",
+		"find": "Buscar",
+		"search_error": "No se encontraron lugares",
 		"no_results": "No se encontraron competencias próximas",
-		"results_count": "{{count}} competencias encontradas"
+		"results_count": "{{count}} competencias encontradas",
+		"col_date": "Fecha",
+		"col_name": "Nombre",
+		"col_events": "Eventos"
 	},
 	"friends": {
 		"friends_tab": "Amigos",
