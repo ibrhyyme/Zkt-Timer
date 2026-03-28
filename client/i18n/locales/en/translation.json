@@ -726,7 +726,8 @@
 		"pickup_time": "Pickup time",
 		"putdown_time": "Put-down time",
 		"overview_tab": "Overview",
-		"time_label": "Time"
+		"time_label": "Time",
+		"deleted_from_other_device": "This solve was deleted from another device"
 	},
 	"sessions": {
 		"page_title": "Sessions",
