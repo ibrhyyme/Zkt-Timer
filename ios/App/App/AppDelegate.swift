@@ -1,86 +1,85 @@
 import UIKit
 import Capacitor
+import CoreTelephony
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
-    private var loadCheckCount = 0
+    private var cellularData: CTCellularData?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // iOS ilk acilista network izin diyalogu nedeniyle sayfa yuklenemiyor.
-        // Sadece ilk kurulum sonrasi ilk acilista retry yap, sonraki acilislarda hic calisma.
-        schedulePageLoadCheck()
+        // iOS ilk acilista "kablosuz veri kullanabilsin mi?" diyalogu gosterir.
+        // WKWebView bu diyalog acikken baglanamiyor. Izin verildikten sonra da
+        // otomatik retry yapmiyor. CTCellularData ile izin aninda reload yapiyoruz.
+        if !UserDefaults.standard.bool(forKey: "zkt_hasLaunchedBefore") {
+            setupFirstLaunchNetworkHandler()
+        }
         return true
     }
 
-    private func schedulePageLoadCheck() {
-        // Daha once basariyla acildiysa bir daha retry yapma
-        if UserDefaults.standard.bool(forKey: "zkt_hasLaunchedBefore") { return }
-
-        loadCheckCount += 1
-        guard loadCheckCount <= 10 else {
-            UserDefaults.standard.set(true, forKey: "zkt_hasLaunchedBefore")
-            return
+    private func setupFirstLaunchNetworkHandler() {
+        cellularData = CTCellularData()
+        cellularData?.cellularDataRestrictionDidUpdateNotifier = { [weak self] state in
+            guard let self = self else { return }
+            if state == .notRestricted {
+                // Kullanici izin verdi. 0.5 sn bekle (iOS network'u aktif etsin), sonra reload.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    self.reloadIfNeeded()
+                }
+            }
         }
+    }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) { [weak self] in
-            guard let self = self,
-                  let vc = self.window?.rootViewController as? CAPBridgeViewController,
-                  let webView = vc.webView else { return }
+    private func reloadIfNeeded() {
+        guard let vc = window?.rootViewController as? CAPBridgeViewController,
+              let webView = vc.webView else { return }
 
-            // Sayfa zaten yukleniyor mu? Mudahale etme, bekle.
-            if webView.isLoading {
-                self.schedulePageLoadCheck()
+        // Sayfa zaten yukleniyor mu? Mudahale etme.
+        if webView.isLoading { return }
+
+        // Sayfa yuklendi mi?
+        webView.evaluateJavaScript("typeof window.__STORE__ !== 'undefined'") { [weak self] result, _ in
+            if result as? Bool == true {
+                // Sayfa zaten yuklenmis, temizle.
+                self?.markAsLoaded()
                 return
             }
-
-            // window.__STORE__ SSR tarafindan set ediliyor - varsa sayfa yuklenmis demektir
-            webView.evaluateJavaScript("typeof window.__STORE__ !== 'undefined'") { result, _ in
-                if result as? Bool == true {
-                    // Basarili! Bir daha retry yapma.
-                    UserDefaults.standard.set(true, forKey: "zkt_hasLaunchedBefore")
-                    return
-                }
-                // Sayfa yuklenemedi, tekrar dene
-                webView.load(URLRequest(url: URL(string: "https://zktimer.app")!))
-                self.schedulePageLoadCheck()
+            // Sayfa yuklenemedi, tek seferlik reload.
+            webView.load(URLRequest(url: URL(string: "https://zktimer.app")!))
+            // 5 sn sonra ne olursa olsun temizle (sonsuz dongu onlemi).
+            DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
+                self?.markAsLoaded()
             }
         }
+    }
+
+    private func markAsLoaded() {
+        UserDefaults.standard.set(true, forKey: "zkt_hasLaunchedBefore")
+        cellularData?.cellularDataRestrictionDidUpdateNotifier = nil
+        cellularData = nil
     }
 
     func applicationWillResignActive(_ application: UIApplication) {
-        // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
-        // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.
     }
 
     func applicationDidEnterBackground(_ application: UIApplication) {
-        // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
-        // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
     }
 
     func applicationWillEnterForeground(_ application: UIApplication) {
-        // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.
     }
 
     func applicationDidBecomeActive(_ application: UIApplication) {
-        // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
     }
 
     func applicationWillTerminate(_ application: UIApplication) {
-        // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
     }
 
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
-        // Called when the app was launched with a url. Feel free to add additional processing here,
-        // but if you want the App API to support tracking app url opens, make sure to keep this call
         return ApplicationDelegateProxy.shared.application(app, open: url, options: options)
     }
 
     func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
-        // Called when the app was launched with an activity, including Universal Links.
-        // Feel free to add additional processing here, but if you want the App API to support
-        // tracking app url opens, make sure to keep this call
         return ApplicationDelegateProxy.shared.application(application, continue: userActivity, restorationHandler: restorationHandler)
     }
 
