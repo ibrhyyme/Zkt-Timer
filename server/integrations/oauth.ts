@@ -1,7 +1,7 @@
 import { createIntegration, getIntegration, updateIntegration } from '../models/integration';
 import axios from 'axios';
 import { InternalUserAccount, UserAccount } from '../schemas/UserAccount.schema';
-import { IntegrationType, LINKED_SERVICES, LinkedServiceData, getWcaRedirectUri } from '../../shared/integration';
+import { IntegrationType, LINKED_SERVICES, LinkedServiceData, getWcaRedirectUri, getWcaLoginRedirectUri } from '../../shared/integration';
 import { Integration } from '../schemas/Integration.schema';
 import { updateUserProfile } from '../models/profile';
 
@@ -53,10 +53,11 @@ export async function linkOAuthAccount(intType: IntegrationType, user: InternalU
 	return integration;
 }
 
-async function getOAuthPostRequest(
+export async function getOAuthPostRequest(
 	service: LinkedServiceData,
 	serviceEndpoint: string,
-	additionalData: { [key: string]: string } = {}
+	additionalData: { [key: string]: string } = {},
+	overrideRedirectUri?: string
 ) {
 	const intType = service.id;
 
@@ -64,7 +65,7 @@ async function getOAuthPostRequest(
 	if (intType === 'wca') {
 		const clientId = process.env.WCA_CLIENT_ID || '';
 		const clientSecret = process.env.WCA_CLIENT_SECRET || '';
-		const redirectUri = getWcaRedirectUri();
+		const redirectUri = overrideRedirectUri || getWcaRedirectUri();
 
 		// Debug logging
 		console.log('WCA OAuth request details:', {
@@ -142,6 +143,44 @@ async function getOAuthPostRequest(
 		}
 		throw error;
 	}
+}
+
+export async function exchangeWcaLoginCode(code: string) {
+	const service = LINKED_SERVICES['wca'];
+	const redirectUri = getWcaLoginRedirectUri();
+
+	const { accessToken, refreshToken, expiresIn, createdAt } = await getOAuthPostRequest(
+		service,
+		service.tokenEndpoint,
+		{ grant_type: 'authorization_code', code },
+		redirectUri
+	);
+
+	let wcaData: any;
+	try {
+		const res = await axios.get(service.meEndpoint, {
+			headers: { Authorization: 'Bearer ' + accessToken },
+		});
+		wcaData = res?.data?.me || res?.data;
+	} catch (error) {
+		console.error('Failed to fetch WCA user data:', error?.message);
+		throw new Error('WCA kullanici bilgileri alinamadi');
+	}
+
+	if (!wcaData) {
+		throw new Error('WCA kullanici bilgileri alinamadi');
+	}
+
+	return {
+		email: wcaData.email,
+		name: wcaData.name || '',
+		wcaId: wcaData.wca_id,
+		countryIso2: wcaData.country_iso2,
+		gender: wcaData.gender,
+		accessToken,
+		refreshToken,
+		expiresAt: createdAt + expiresIn,
+	};
 }
 
 export async function getAuthToken(intType: IntegrationType, user: UserAccount) {

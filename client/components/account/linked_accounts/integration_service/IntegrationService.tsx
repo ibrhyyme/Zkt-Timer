@@ -10,6 +10,7 @@ import {INTEGRATION_FRAGMENT} from '../../../../util/graphql/fragments';
 import Loading from '../../../common/loading/Loading';
 import {IntegrationType, LINKED_SERVICES, LinkedServiceData} from '../../../../../shared/integration';
 import {toastError} from '../../../../util/toast';
+import {useMe} from '../../../../util/hooks/useMe';
 
 const b = block('integration');
 
@@ -39,6 +40,7 @@ interface Props {
 
 export default function IntegrationService(props: Props) {
 	const {t} = useTranslation();
+	const me = useMe();
 	const {integrationType} = props;
 	const [revokeMutate] = useMutation(REVOKE_INTEGRATION_MUTATION);
 	const {data, loading} = useQuery<{integration: Integration}>(INTEGRATION_QUERY, {
@@ -84,22 +86,32 @@ export default function IntegrationService(props: Props) {
 		return <Loading />;
 	}
 
+	const hasPassword = me?.has_password;
+
 	let revokeButton = null;
 	if (integration) {
-		revokeButton = (
-			<Button
-				text={t('integration.disconnect')}
-				flat
-				danger
-				confirmModalProps={{
-					hideInput: true,
-					title: t('integration.disconnect_title', { name: service.name }),
-					description: t('integration.disconnect_confirm'),
-					buttonText: t('integration.disconnect_button'),
-					triggerAction: removeIntegration,
-				}}
-			/>
-		);
+		if (!hasPassword) {
+			revokeButton = (
+				<p style={{fontSize: '0.8rem', opacity: 0.6, marginTop: '0.5rem'}}>
+					{t('integration.disconnect_no_password')}
+				</p>
+			);
+		} else {
+			revokeButton = (
+				<Button
+					text={t('integration.disconnect')}
+					flat
+					danger
+					confirmModalProps={{
+						hideInput: true,
+						title: t('integration.disconnect_title', { name: service.name }),
+						description: t('integration.disconnect_confirm'),
+						buttonText: t('integration.disconnect_button'),
+						triggerAction: removeIntegration,
+					}}
+				/>
+			);
+		}
 	}
 
 	return (

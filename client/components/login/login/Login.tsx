@@ -10,6 +10,7 @@ import Button from '../../common/button/Button';
 import { useInput } from '../../../util/hooks/useInput';
 import { Eye, EyeSlash, Check } from 'phosphor-react';
 import { useTranslation } from 'react-i18next';
+import WcaLoginButton from '../wca_login_button/WcaLoginButton';
 
 const b = block('login');
 
@@ -224,6 +225,9 @@ export default function Login() {
 					{t('login.no_account')}
 				</Link>
 			</div>
+
+			{/* WCA Login */}
+			<WcaLoginButton />
 		</div>
 	);
 }

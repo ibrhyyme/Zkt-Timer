@@ -28,3 +28,4 @@ export * from './CustomTrainer.schema';
 export * from './YouTubeSearch.schema';
 export * from './DailyGoal.schema';
 export * from './WcaCompetition.schema';
+export * from './WcaOAuthResult.schema';

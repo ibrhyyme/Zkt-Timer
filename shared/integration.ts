@@ -24,6 +24,13 @@ export const getWcaRedirectUri = () => {
 	return (process.env.BASE_URI_DEV || 'http://localhost:3000') + '/oauth/wca';
 };
 
+export const getWcaLoginRedirectUri = () => {
+	if (typeof process === 'undefined') {
+		return 'http://localhost:3000/oauth/wca/login';
+	}
+	return (process.env.BASE_URI_DEV || 'http://localhost:3000') + '/oauth/wca/login';
+};
+
 export const LINKED_SERVICES: Record<IntegrationType, LinkedServiceData> = {
 	wca: {
 		id: 'wca',
@@ -34,8 +41,8 @@ export const LINKED_SERVICES: Record<IntegrationType, LinkedServiceData> = {
 		revokeEndpoint: 'https://www.worldcubeassociation.org/oauth/revoke',
 		authEndpoint: 'https://www.worldcubeassociation.org/oauth/authorize',
 		meEndpoint: 'https://www.worldcubeassociation.org/api/v0/me',
-		clientId: 'wY1dbmwDjPLkRtZVzLJXAcIGWkap1QNbVnuK-ulkDSY', // Updated to match .docker.env
+		clientId: process.env.WCA_CLIENT_ID || '',
 		responseType: 'code',
-		scope: ['public'],
+		scope: ['public', 'email'],
 	},
 };

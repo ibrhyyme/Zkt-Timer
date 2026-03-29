@@ -56,6 +56,7 @@ require('esbuild')
 			'process.env.FIREBASE_MESSAGING_SENDER_ID': JSON.stringify(process.env.FIREBASE_MESSAGING_SENDER_ID || ''),
 			'process.env.FIREBASE_APP_ID': JSON.stringify(process.env.FIREBASE_APP_ID || ''),
 			'process.env.FIREBASE_VAPID_KEY': JSON.stringify(process.env.FIREBASE_VAPID_KEY || ''),
+			'process.env.WCA_CLIENT_ID': JSON.stringify(process.env.WCA_CLIENT_ID || ''),
 		},
 		pure: !dev ? ['console.log', 'console.warn', 'console.info'] : [],
 		loader: {'.js': 'jsx'},
