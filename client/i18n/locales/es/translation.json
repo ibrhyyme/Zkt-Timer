@@ -28,7 +28,10 @@
 		"remember_me": "Recordarme",
 		"login_button": "Iniciar sesión",
 		"forgot_password": "¿Olvidaste tu contraseña?",
-		"no_account": "¿No tienes una cuenta? Regístrate"
+		"no_account": "¿No tienes una cuenta? Regístrate",
+		"wca_login": "Iniciar sesion con WCA",
+		"wca_divider": "o",
+		"wca_note": "Si ya tienes una cuenta, inicia sesion primero y vincula tu cuenta WCA desde Cuenta > Cuentas Vinculadas."
 	},
 	"signup": {
 		"first_name": "Nombre",
@@ -437,7 +440,15 @@
 		"last_name": "Apellido",
 		"username": "Nombre de usuario",
 		"email": "Correo electrónico",
-		"update_button": "Actualizar información"
+		"update_button": "Actualizar información",
+		"change_password": "Cambiar Contrasena",
+		"set_password": "Crear Contrasena",
+		"set_password_description": "Tu cuenta fue creada con WCA. Puedes establecer una contrasena para iniciar sesion con correo y contrasena.",
+		"current_password": "Contrasena Actual",
+		"new_password": "Nueva Contrasena",
+		"change_password_button": "Cambiar Contrasena",
+		"set_password_button": "Crear Contrasena",
+		"password_success": "Contrasena actualizada correctamente"
 	},
 	"password_page": {
 		"current_password": "Contraseña actual",
@@ -1234,7 +1245,8 @@
 		"disconnect_button": "Desconectar cuenta",
 		"account_linked": "Cuenta vinculada",
 		"link_account": "Vincular cuenta",
-		"wca_description": "Aumenta la credibilidad vinculando tu cuenta WCA y mostrando tus récords oficiales."
+		"wca_description": "Aumenta la credibilidad vinculando tu cuenta WCA y mostrando tus récords oficiales.",
+		"disconnect_no_password": "Para desvincular, primero establece una contrasena desde la pagina de Informacion Personal."
 	},
 	"email_verification": {
 		"title": "Verificación de correo",
@@ -1245,6 +1257,21 @@
 		"verify_button": "Verificar",
 		"resend_code": "Reenviar código",
 		"code_resent": "¡Código reenviado!"
+	},
+	"wca_signup": {
+		"title": "Elige un Nombre de Usuario",
+		"description": "Te estas registrando con tu cuenta WCA. Por favor elige un nombre de usuario.",
+		"first_name": "Nombre",
+		"last_name": "Apellido",
+		"email": "Correo",
+		"wca_id": "WCA ID",
+		"username_label": "Nombre de Usuario",
+		"submit": "Crear Cuenta",
+		"username_too_short": "El nombre de usuario debe tener al menos 2 caracteres",
+		"username_too_long": "El nombre de usuario no puede tener mas de 18 caracteres",
+		"username_invalid": "El nombre de usuario solo puede contener letras, numeros y guiones bajos",
+		"session_expired": "La sesion ha expirado. Por favor intente iniciar sesion con WCA nuevamente.",
+		"loading": "Iniciando sesion con WCA..."
 	},
 	"login_wrapper": {
 		"login_title": "Zkt-Timer | Iniciar sesión",

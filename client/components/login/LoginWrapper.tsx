@@ -5,6 +5,7 @@ import Login from './login/Login';
 import SignUp from './sign_up/SignUp';
 import Forgot from './forgot/Forgot';
 import EmailVerification from './email_verification/EmailVerification';
+import WcaSignup from './wca_signup/WcaSignup';
 import './LoginWrapper.scss';
 import Header from '../layout/header/Header';
 import { useRouteMatch, Link } from 'react-router-dom';
@@ -34,13 +35,18 @@ export default function LoginWrapper() {
 	} else if (path.startsWith('/verify-email')) {
 		body = <EmailVerification />;
 		currentTab = 'verify';
+	} else if (path.startsWith('/wca-signup')) {
+		body = <WcaSignup />;
+		currentTab = 'wca-signup';
 	}
 
 	const titleText = currentTab === 'forgot'
 		? t('login_wrapper.reset_password')
 		: currentTab === 'verify'
 			? t('email_verification.title')
-			: t('login_wrapper.welcome');
+			: currentTab === 'wca-signup'
+				? t('wca_signup.title')
+				: t('login_wrapper.welcome');
 
 	return (
 		<React.Fragment>

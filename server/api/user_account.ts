@@ -12,7 +12,7 @@ import {
 import { sendEmailWithTemplate } from '../services/ses';
 import { createSetting } from '../models/settings';
 import { checkLoggedIn } from '../util/auth';
-import { checkPassword } from '../util/password';
+import { checkPassword, hashPassword } from '../util/password';
 import { createNotificationPreference } from '../models/notification_preference';
 import { createEmailVerification } from '../models/email_verification';
 import { GraphQLContext } from '../@types/interfaces/server.interface';
@@ -29,12 +29,14 @@ export const gqlMutation = `
 	createUserAccount(first_name: String!, last_name: String!, email: String!, username: String!, password: String!, language: String): PublicUserAccount
 	updateUserAccount(first_name: String!, last_name: String!, email: String!, username: String!): PublicUserAccount
 	updateUserPassword(old_password: String!, new_password: String!): PublicUserAccount
+	setUserPassword(new_password: String!): PublicUserAccount
 	deleteUserAccount: PublicUserAccount
 `;
 
 export const queryActions = {
 	me: async (a: any, b: any, { user }: GraphQLContext) => {
-		return await getUserByIdWithProfile(user.id);
+		const fullUser = await getUserByIdWithProfile(user.id);
+		return sanitizeUser(fullUser);
 	},
 };
 
@@ -62,7 +64,7 @@ export const mutateActions = {
 
 		const existingUser = await getUserByEmail(email);
 		if (existingUser) {
-			if (!existingUser.email_verified) {
+			if (!(existingUser as any).email_verified) {
 				// Dogrulanmamis hesabi sil, yeni kayda izin ver
 				await getPrisma().userAccount.delete({where: {id: existingUser.id}});
 			} else {
@@ -165,6 +167,20 @@ export const mutateActions = {
 		const goodPass = await checkPassword(old_password, user.password);
 		if (!goodPass) {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Incorrect old password');
+		}
+
+		return await updateUserAccountPassword(user.id, new_password);
+	},
+
+	setUserPassword: async (_: any, { new_password }: { new_password: string }, { user }: GraphQLContext) => {
+		checkLoggedIn(user);
+
+		if (user.password) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Zaten bir sifreniz var. Sifre degistir bolumunu kullanin.');
+		}
+
+		if (!new_password || new_password.length < 8) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Sifre en az 8 karakter olmalidir');
 		}
 
 		return await updateUserAccountPassword(user.id, new_password);

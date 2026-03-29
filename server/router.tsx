@@ -138,7 +138,7 @@ function appUseRouteForPage(routePath, route: PageContext) {
 		}
 
 		// Redirect to home page if user is logged in and on login page
-		if (me && (routePath === '/login' || routePath === '/signup')) {
+		if (me && (routePath === '/login' || routePath === '/signup' || routePath === '/wca-signup')) {
 			res.status(302).redirect('/timer');
 			return;
 		}

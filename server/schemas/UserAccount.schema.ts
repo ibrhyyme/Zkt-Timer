@@ -121,6 +121,9 @@ class IUserAccount extends IPublicUserAccount {
 	@Field()
 	join_country: string;
 
+	@Field({nullable: true})
+	has_password?: boolean;
+
 	@Field(() => TimerBackground)
 	timer_background?: TimerBackground;
 
@@ -163,8 +166,8 @@ class IUserAccountForAdmin extends IUserAccount {
 
 @InterfaceType({ implements: IUserAccountForAdmin })
 class IInternalUserAccount extends IUserAccountForAdmin {
-	@Field()
-	password: string;
+	@Field({ nullable: true })
+	password?: string;
 }
 
 @ObjectType({ implements: IPublicUserAccount })

@@ -28,7 +28,10 @@
 		"remember_me": "Beni anımsa",
 		"login_button": "Giriş Yap",
 		"forgot_password": "Şifreni mi unuttun?",
-		"no_account": "Hesabın yok mu? Kayıt ol"
+		"no_account": "Hesabın yok mu? Kayıt ol",
+		"wca_login": "WCA ile Giriş Yap",
+		"wca_divider": "veya",
+		"wca_note": "Zaten bir hesabınız varsa önce giriş yapıp Hesap > Bağlı Hesaplar bölümünden WCA hesabınızı bağlayın."
 	},
 	"signup": {
 		"first_name": "Ad",
@@ -437,7 +440,15 @@
 		"last_name": "Soyad",
 		"username": "Kullanıcı adı",
 		"email": "E-posta",
-		"update_button": "Bilgileri Güncelle"
+		"update_button": "Bilgileri Güncelle",
+		"change_password": "Şifre Değiştir",
+		"set_password": "Şifre Oluştur",
+		"set_password_description": "Hesabınız WCA ile oluşturuldu. İsterseniz e-posta/şifre ile de giriş yapabilmek için bir şifre belirleyebilirsiniz.",
+		"current_password": "Mevcut Şifre",
+		"new_password": "Yeni Şifre",
+		"change_password_button": "Şifre Değiştir",
+		"set_password_button": "Şifre Oluştur",
+		"password_success": "Şifre başarıyla güncellendi"
 	},
 	"password_page": {
 		"current_password": "Mevcut Şifre",
@@ -1234,7 +1245,8 @@
 		"disconnect_button": "Hesap bağlantısını kes",
 		"account_linked": "Hesap Bağlı",
 		"link_account": "Hesap Bağla",
-		"wca_description": "WCA hesabınızı ekleyerek ve resmi derecelerinizi göstererek güvenilirliği artırın."
+		"wca_description": "WCA hesabınızı ekleyerek ve resmi derecelerinizi göstererek güvenilirliği artırın.",
+		"disconnect_no_password": "Bağlantıyı kesmek için önce Kişisel Bilgiler sayfasından bir şifre oluşturun."
 	},
 	"email_verification": {
 		"title": "E-posta Doğrulama",
@@ -1245,6 +1257,21 @@
 		"verify_button": "Doğrula",
 		"resend_code": "Kodu tekrar gönder",
 		"code_resent": "Kod tekrar gönderildi!"
+	},
+	"wca_signup": {
+		"title": "Kullanıcı Adı Belirle",
+		"description": "WCA hesabınızla kayıt oluyorsunuz. Lütfen bir kullanıcı adı seçin.",
+		"first_name": "Ad",
+		"last_name": "Soyad",
+		"email": "E-posta",
+		"wca_id": "WCA ID",
+		"username_label": "Kullanıcı Adı",
+		"submit": "Hesap Oluştur",
+		"username_too_short": "Kullanıcı adı en az 2 karakter olmalıdır",
+		"username_too_long": "Kullanıcı adı en fazla 18 karakter olabilir",
+		"username_invalid": "Kullanıcı adı sadece harf, rakam ve alt çizgi içerebilir",
+		"session_expired": "Oturum süresi doldu. Lütfen tekrar WCA ile giriş yapın.",
+		"loading": "WCA ile giriş yapılıyor..."
 	},
 	"login_wrapper": {
 		"login_title": "Zkt-Timer | Giriş Yap",

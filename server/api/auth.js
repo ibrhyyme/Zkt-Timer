@@ -15,6 +15,10 @@ const mutateActions = {
 			throw new GraphQLError(400, 'Geçersiz kullanıcı adı veya şifre');
 		}
 
+		if (!user.password) {
+			throw new GraphQLError(400, 'Bu hesap WCA ile giriş yapıyor. Lütfen WCA ile giriş yap butonunu kullanın.');
+		}
+
 		const goodPass = await checkPassword(password, user.password);
 		if (!goodPass) {
 			throw new GraphQLError(400, 'Geçersiz kullanıcı adı veya şifre');

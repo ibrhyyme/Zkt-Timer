@@ -38,3 +38,12 @@ export async function getIntegration(user: UserAccount, intType: IntegrationType
 		},
 	});
 }
+
+export async function getIntegrationByWcaId(wcaId: string): Promise<Integration> {
+	return getPrisma().integration.findFirst({
+		where: {
+			wca_id: wcaId,
+			service_name: 'wca',
+		},
+	});
+}

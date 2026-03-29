@@ -18,11 +18,6 @@ export default function AccountNav() {
 			value: t('account_nav.personal_info'),
 		},
 		{
-			id: 'password',
-			link: '/account/password',
-			value: t('account_nav.password'),
-		},
-		{
 			id: 'notifications',
 			link: '/account/notifications',
 			value: t('account_nav.notifications'),

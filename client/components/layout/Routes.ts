@@ -6,7 +6,6 @@ import Settings from '../settings/Settings';
 import LoginWrapper from '../login/LoginWrapper';
 import Trainer from '../trainer/Trainer';
 import Account from '../account/Account';
-import Password from '../account/password/Password';
 import DangerZone from '../account/danger_zone/DangerZone';
 import PersonalInfo from '../account/personal_info/PersonalInfo';
 import Community from '../community/Community';
@@ -29,6 +28,7 @@ import DataSettings from '../settings/data/DataSettings';
 import SettingsRedirect from '../settings/redirect/SettingsRedirect';
 import LinkedAccounts from '../account/linked_accounts/LinkedAccounts';
 import OAuthService from '../oauth/OAuthService';
+import WcaLoginCallback from '../oauth/WcaLoginCallback';
 import ForceSignOut from '../login/force_sign_out/ForceSignOut';
 import AnnouncementHistory from '../profile/AnnouncementHistory';
 import type { Store } from 'redux';
@@ -111,6 +111,7 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/login', null, App, LoginWrapper, false, true, false, true),
 	route('/forgot', null, App, LoginWrapper, false, true, false, true),
 	route('/verify-email', null, App, LoginWrapper, false, true, false, true),
+	route('/wca-signup', null, App, LoginWrapper, false, true, false, true),
 	route('/sessions', null, App, Sessions, false),
 	route('/solves', null, App, Solves, false),
 	route('/stats', null, App, Stats, false),
@@ -144,7 +145,6 @@ export const routes: (PageContext | RedirectPath)[] = [
 	// Account
 	route('/account/personal-info', App, Account, PersonalInfo),
 	route('/account/danger-zone', App, Account, DangerZone),
-	route('/account/password', App, Account, Password),
 	route('/account/linked-accounts', App, Account, LinkedAccounts),
 	route('/account/notifications', App, Account, NotificationPreferences),
 	route('/account/announcements', App, Account, AnnouncementHistory),
@@ -170,11 +170,13 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/admin/algorithms', App, Admin, AdminAlgorithms, true, false, true),
 
 	// OAuth
+	route('/oauth/wca/login', null, App, WcaLoginCallback, false, true, false, true),
 	route('/oauth/:integrationType', null, App, OAuthService, true, true, false, true),
 
 	// Redirects
 	routeRedirect('/settings', '/settings/timer'),
 	routeRedirect('/account', '/account/personal-info'),
+	routeRedirect('/account/password', '/account/personal-info'),
 	routeRedirect('/community/friends', '/community/friends/list'),
 	routeRedirect('/community', '/community/friends/list'),
 	routeRedirect('/admin', '/admin/reports'),

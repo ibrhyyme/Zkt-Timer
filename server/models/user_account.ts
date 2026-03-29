@@ -47,6 +47,9 @@ export function sanitizeUsers(users: InternalUserAccount[], forPublic = false): 
 			return user;
 		}
 
+		// has_password flag'i frontend icin set et
+		user.has_password = !!user.password;
+
 		// User's password should never go to the front-end
 		delete user.password;
 		delete user.join_ip;
@@ -69,7 +72,7 @@ export function sanitizeUsers(users: InternalUserAccount[], forPublic = false): 
 		return user;
 	}
 
-	return users.map((user) => sanitizeUser({...user}));
+	return users.map((user) => user ? sanitizeUser({...user}) : user);
 }
 
 export async function getUserByIdOrThrow404(id: string) {
@@ -281,7 +284,7 @@ export async function createUserAccount(
 	lastName: string,
 	email: string,
 	username: string,
-	password: string,
+	password: string | null,
 	ip: string | undefined
 ) {
 	const user = await getUserByEmail(email);
@@ -300,7 +303,7 @@ export async function createUserAccount(
 		});
 	}
 
-	const hashedPassword = await hashPassword(password);
+	const hashedPassword = password ? await hashPassword(password) : null;
 
 	return await getPrisma().userAccount.create({
 		data: {
