@@ -162,7 +162,7 @@ export async function adminUserSearch(page: number, query: string): Promise<User
 	});
 }
 
-export async function getUserByEmail(email: string): Promise<UserAccount | null> {
+export async function getUserByEmail(email: string): Promise<InternalUserAccount | null> {
 	return await getPrisma().userAccount.findUnique({
 		where: {
 			email: email.toLowerCase(),

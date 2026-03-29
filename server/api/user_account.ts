@@ -64,7 +64,7 @@ export const mutateActions = {
 
 		const existingUser = await getUserByEmail(email);
 		if (existingUser) {
-			if (!(existingUser as any).email_verified) {
+			if (!existingUser.email_verified) {
 				// Dogrulanmamis hesabi sil, yeni kayda izin ver
 				await getPrisma().userAccount.delete({where: {id: existingUser.id}});
 			} else {
