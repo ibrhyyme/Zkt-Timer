@@ -12,6 +12,7 @@ import {getJwtString} from '../util/auth';
 import GraphQLError from '../util/graphql_error';
 import {ErrorCode} from '../constants/errors';
 import {getPrisma} from '../database';
+import {notifyAdminsOfNewUser} from '../services/admin_notification';
 
 const jwtSecret = (process as any).env.JWT_SECRET as string;
 const WCA_PENDING_COOKIE = 'wca_pending';
@@ -218,6 +219,10 @@ export class WcaAuthResolver {
 			httpOnly: true,
 			maxAge: 315360000000, // 10 yil
 		});
+
+		notifyAdminsOfNewUser(user, 'wca').catch(err =>
+			console.error('[AdminNotification] WCA signup notification failed:', err)
+		);
 
 		return sanitizeUser(user) as PublicUserAccount;
 	}

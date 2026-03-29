@@ -7,6 +7,7 @@ import {getJwtString} from '../util/auth';
 import {ErrorCode} from '../constants/errors';
 import {GraphQLContext} from '../@types/interfaces/server.interface';
 import {getEmailStrings, getWelcomeTemplateName} from '../util/email_translations';
+import {notifyAdminsOfNewUser} from '../services/admin_notification';
 
 export const gqlMutation = `
 	resendEmailVerificationCode(email: String!, language: String): Void
@@ -70,6 +71,10 @@ export const mutateActions = {
 		} catch (error) {
 			console.error('Welcome email could not be sent:', error);
 		}
+
+		notifyAdminsOfNewUser(user, 'local').catch(err =>
+			console.error('[AdminNotification] Local signup notification failed:', err)
+		);
 
 		const jwt = getJwtString(user);
 		res.cookie('session', jwt, {maxAge: 2147483647, httpOnly: true});
