@@ -1101,7 +1101,21 @@
 			"setting_require_period_in_manual_time_entry": "Точка в Ручном Вводе",
 			"setting_cube_type": "Тип Куба",
 			"bool_true": "Да",
-			"bool_false": "Нет"
+			"bool_false": "Нет",
+			"set_pro_title": "{{username}} — Сделать {{type}}",
+			"set_pro_desc": "Установить подписку {{type}} с длительностью.",
+			"pro_duration": "Длительность",
+			"pro_duration_unit": "Единица",
+			"duration_minute": "Минута",
+			"duration_hour": "Час",
+			"duration_day": "День",
+			"duration_week": "Неделя",
+			"duration_month": "Месяц",
+			"duration_year": "Год",
+			"pro_forever": "Бессрочно (без ограничений)",
+			"forever": "Бессрочно",
+			"set_pro_button": "Сделать {{type}}",
+			"pro_set_success": "{{username}} получил {{type}} на {{duration}}"
 		}
 	},
 	"admin_email": {

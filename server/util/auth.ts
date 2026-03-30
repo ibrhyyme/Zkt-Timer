@@ -39,6 +39,20 @@ export async function getMe(req: Request) {
 				deactivateAllBanLogs(me.id);
 			}
 
+			// Pro expire check
+			if (me.pro_expires_at && new Date() > new Date(me.pro_expires_at)) {
+				me.is_pro = false;
+				me.pro_expires_at = null;
+				updateUserAccountWithParams(me.id, {is_pro: false, pro_expires_at: null});
+			}
+
+			// Premium expire check
+			if (me.premium_expires_at && new Date() > new Date(me.premium_expires_at)) {
+				me.is_premium = false;
+				me.premium_expires_at = null;
+				updateUserAccountWithParams(me.id, {is_premium: false, premium_expires_at: null});
+			}
+
 			return me;
 		}
 	} catch (e) {
