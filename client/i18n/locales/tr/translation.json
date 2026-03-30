@@ -680,6 +680,7 @@
 		"consistency": "Tutarlılık",
 		"solve_graph": "süre Grafiği",
 		"time_distro": "süre Dağılımı",
+		"cross_solver": "Çözücüler",
 		"none": "Hiçbiri",
 		"customize_stats": "İstatistikleri Özelleştir",
 		"stat_type": "İstatistik türü",
@@ -1892,5 +1893,12 @@
 		"plus_two": "+2",
 		"dnf": "DNF",
 		"display": "Görünüm"
+	},
+	"cross_solver": {
+		"only_3x3": "Sadece 3x3 için kullanılabilir",
+		"not_supported": "Bu bulmaca için çözücü yok",
+		"solving": "Çözülüyor...",
+		"error": "Çözücü hatası",
+		"no_scramble": "Çözümleri görmek için bir karıştırma oluşturun"
 	}
 }

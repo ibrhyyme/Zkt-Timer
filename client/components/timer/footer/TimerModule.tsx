@@ -17,6 +17,7 @@ import { setSetting } from '../../../db/settings/update';
 import { useSettings } from '../../../util/hooks/useSettings';
 import { useMe } from '../../../util/hooks/useMe';
 import QuickStats from '../../modules/quick_stats/QuickStats';
+import CrossSolverModule from '../../modules/cross_solver/CrossSolverModule';
 
 interface Props {
 	index: number;
@@ -77,6 +78,10 @@ export default function TimerModule(props: Props) {
 			module: <SolvesPerDay filterOptions={solvesFilter} days={14} />,
 			proOnly: false,
 		},
+		[TimerModuleType.CROSS_SOLVER]: {
+			module: <CrossSolverModule />,
+			proOnly: false,
+		},
 		[TimerModuleType.NONE]: {
 			module: null,
 			proOnly: false,
@@ -92,6 +97,7 @@ export default function TimerModule(props: Props) {
 		{ label: t('timer_modules.consistency'), value: TimerModuleType.CONSISTENCY },
 		{ label: t('timer_modules.solve_graph'), value: TimerModuleType.SOLVE_GRAPH },
 		{ label: t('timer_modules.time_distro'), value: TimerModuleType.TIME_DISTRO },
+		{ label: t('timer_modules.cross_solver'), value: TimerModuleType.CROSS_SOLVER },
 		{ label: t('timer_modules.none'), value: TimerModuleType.NONE },
 	];
 

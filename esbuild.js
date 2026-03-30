@@ -36,6 +36,21 @@ require('esbuild').build({
 	console.error('Solver worker build failed:', err);
 });
 
+// Cross/EOLine/Roux1/gSolver Web Worker (ported from cstimer IDA*)
+require('esbuild').build({
+	entryPoints: ['client/util/cross-solver/worker-entry.ts'],
+	outfile: 'dist/cross-solver-worker.js',
+	bundle: true,
+	logLevel: 'error',
+	minify: !dev,
+	resolveExtensions: ['.ts', '.js'],
+	format: 'iife',
+	loader: {'.js': 'jsx'},
+	watch,
+}).catch((err) => {
+	console.error('Cross solver worker build failed:', err);
+});
+
 require('esbuild')
 	.build({
 		entryPoints: ['client/components/App.tsx'],

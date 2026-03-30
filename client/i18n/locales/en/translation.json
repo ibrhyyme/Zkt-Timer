@@ -680,6 +680,7 @@
 		"consistency": "Consistency",
 		"solve_graph": "Solve Graph",
 		"time_distro": "Time Distribution",
+		"cross_solver": "Solvers",
 		"none": "None",
 		"customize_stats": "Customize Stats",
 		"stat_type": "Stat type",
@@ -1894,5 +1895,12 @@
 		"plus_two": "+2",
 		"dnf": "DNF",
 		"display": "Display"
+	},
+	"cross_solver": {
+		"only_3x3": "Only available for 3x3",
+		"not_supported": "No solver available for this puzzle",
+		"solving": "Solving...",
+		"error": "Solver error",
+		"no_scramble": "Generate a scramble to see solutions"
 	}
 }
