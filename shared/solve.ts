@@ -1,8 +1,12 @@
 import { Solve } from '../server/schemas/Solve.schema';
 
-export function sanitizeSolve(s: Solve): Solve {
+export function sanitizeSolve(s: Partial<Solve>): Partial<Solve> {
 	const solve = { ...s };
 	delete solve.created_at;
+	delete solve.user;
+	delete solve.solve_method_steps;
+	delete solve.solve_views;
+	delete solve.smart_device;
 
 	let startedAt: number | bigint = solve.started_at;
 	let endedAt: number | bigint = solve.ended_at;

@@ -1,9 +1,17 @@
 import React, {useState} from 'react';
 import './ProPage.scss';
 import {useTranslation} from 'react-i18next';
-import {Crown, Check, CaretDown, Info} from 'phosphor-react';
+import {Crown, Check, CaretDown, Info, Ticket, CheckCircle} from 'phosphor-react';
+import {useDispatch} from 'react-redux';
+import {gql} from '@apollo/client';
 import block from '../../styles/bem';
 import ElectricBorder from '../common/electric_border/ElectricBorder';
+import {gqlMutate} from '../api';
+import {openModal} from '../../actions/general';
+import {toastError} from '../../util/toast';
+import PromoSuccessModal from './PromoSuccessModal';
+import {useMe} from '../../util/hooks/useMe';
+import {isPro} from '../../lib/pro';
 
 const b = block('pro-page');
 
@@ -62,8 +70,54 @@ function FeatureRow({featureKey, pro}: FeatureRowProps) {
 	);
 }
 
+const REDEEM_PROMO = gql`
+	mutation RedeemPromo($code: String!) {
+		redeemPromoCode(code: $code) {
+			success
+			membership_type
+			expires_at
+		}
+	}
+`;
+
 export default function ProPage() {
 	const {t} = useTranslation();
+	const dispatch = useDispatch();
+	const me = useMe();
+	const userIsPro = isPro(me);
+	const [promoCode, setPromoCode] = useState('');
+	const [redeeming, setRedeeming] = useState(false);
+
+	const proExpiresAt = (me as any)?.pro_expires_at || (me as any)?.premium_expires_at;
+	const expiryLabel = proExpiresAt
+		? new Date(proExpiresAt).toLocaleDateString(undefined, {year: 'numeric', month: 'long', day: 'numeric'})
+		: null;
+
+	async function handleRedeem() {
+		if (!promoCode.trim() || redeeming) return;
+		setRedeeming(true);
+		try {
+			const result = await gqlMutate(REDEEM_PROMO, {code: promoCode.trim()});
+			const data = result?.data?.redeemPromoCode;
+			if (data?.success) {
+				setPromoCode('');
+				dispatch(openModal(
+					<PromoSuccessModal membershipType={data.membership_type} expiresAt={data.expires_at} />
+				));
+			}
+		} catch (e: any) {
+			const msg = e?.message || '';
+			if (msg.includes('already_used')) {
+				toastError(t('pro_page.promo.error_used'));
+			} else if (msg.includes('max_uses')) {
+				toastError(t('pro_page.promo.error_max_uses'));
+			} else {
+				toastError(t('pro_page.promo.error_invalid'));
+			}
+		} finally {
+			setRedeeming(false);
+		}
+	}
 
 	return (
 		<div className={b()}>
@@ -100,7 +154,7 @@ export default function ProPage() {
 						</div>
 
 						<button className={b('card-cta', {basic: true})} disabled>
-							{t('pro_page.current_plan')}
+							{userIsPro ? 'Basic' : t('pro_page.current_plan')}
 						</button>
 					</div>
 
@@ -120,10 +174,17 @@ export default function ProPage() {
 
 							<div className={b('card-top')}>
 								<h2 className={b('card-name', {pro: true})}>Pro</h2>
-								<p className={b('card-desc', {pro: true})}>{t('pro_page.pro_desc')}</p>
-								<div className={b('card-price-block')}>
-									<span className={b('card-price', {pro: true})}>{t('pro_page.coming_soon')}</span>
-								</div>
+								<p className={b('card-desc', {pro: true})}>
+									{userIsPro ? t('pro_page.pro_active_desc') : t('pro_page.pro_desc')}
+								</p>
+								{userIsPro && expiryLabel && (
+									<p className={b('card-expiry')}>{t('pro_page.pro_expires', {date: expiryLabel})}</p>
+								)}
+								{!userIsPro && (
+									<div className={b('card-price-block')}>
+										<span className={b('card-price', {pro: true})}>{t('pro_page.coming_soon')}</span>
+									</div>
+								)}
 							</div>
 
 							<div className={b('card-includes', {pro: true})}>
@@ -149,11 +210,41 @@ export default function ProPage() {
 								</div>
 							</div>
 
-							<button className={b('card-cta', {pro: true})} disabled>
-								{t('pro_page.coming_soon')}
-							</button>
+							{userIsPro ? (
+								<div className={b('card-active')}>
+									<CheckCircle weight="fill" />
+									<span>{t('pro_page.current_plan')}</span>
+								</div>
+							) : (
+								<button className={b('card-cta', {pro: true})} disabled>
+									{t('pro_page.coming_soon')}
+								</button>
+							)}
 						</div>
 					</ElectricBorder>
+				</div>
+
+				{/* Promo Code */}
+				<div className={b('promo')}>
+					<Ticket weight="duotone" className={b('promo-icon')} />
+					<h3 className={b('promo-title')}>{t('pro_page.promo.title')}</h3>
+					<p className={b('promo-desc')}>{t('pro_page.promo.desc')}</p>
+					<div className={b('promo-form')}>
+						<input
+							className={b('promo-input')}
+							placeholder={t('pro_page.promo.placeholder')}
+							value={promoCode}
+							onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+							onKeyDown={(e) => e.key === 'Enter' && handleRedeem()}
+						/>
+						<button
+							className={b('promo-btn')}
+							onClick={handleRedeem}
+							disabled={redeeming || !promoCode.trim()}
+						>
+							{redeeming ? '...' : t('pro_page.promo.redeem')}
+						</button>
+					</div>
 				</div>
 			</div>
 		</div>

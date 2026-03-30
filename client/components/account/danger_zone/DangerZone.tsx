@@ -4,6 +4,8 @@ import { gql } from '@apollo/client/core';
 import { gqlMutate } from '../../api';
 import Button from '../../common/button/Button';
 import { toastError } from '../../../util/toast';
+import { deleteLocalStorage } from '../../../util/data/local_storage';
+import { clearOfflineData } from '../../layout/offline';
 
 export default function DangerZone() {
 	const {t} = useTranslation();
@@ -35,6 +37,9 @@ export default function DangerZone() {
 		`;
 
 		await gqlMutate(query);
+		deleteLocalStorage('wasBasicUser');
+		deleteLocalStorage('offlineHash');
+		try { await clearOfflineData(); } catch (e) { /* ignore */ }
 		window.location.href = '/';
 	}
 

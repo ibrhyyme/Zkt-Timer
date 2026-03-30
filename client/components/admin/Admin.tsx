@@ -32,6 +32,11 @@ const TABS = [
 		link: '/admin/algorithms',
 		value: 'Algoritmalar',
 	},
+	{
+		id: 'promo-codes',
+		link: '/admin/promo-codes',
+		value: 'Promo',
+	},
 ];
 
 interface Props {

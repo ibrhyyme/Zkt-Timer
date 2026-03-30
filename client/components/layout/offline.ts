@@ -70,6 +70,11 @@ export async function shouldFetchDataFromDb(me: UserAccount): Promise<boolean> {
 
 	const offlineHash = getLocalStorage('offlineHash');
 
+	// Iki hash de null/undefined ise sunucudan cek (yeni kullanici veya temiz state)
+	if (!me.offline_hash && !offlineHash) {
+		return true;
+	}
+
 	return me.offline_hash !== offlineHash;
 }
 
