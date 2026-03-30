@@ -6,31 +6,22 @@ import {CommunityContext} from '../Community';
 import block from '../../../styles/bem';
 import Input from '../../common/inputs/input/Input';
 import PageTitle from '../../common/page_title/PageTitle';
-import {useDispatch} from 'react-redux';
 import {MagnifyingGlass} from 'phosphor-react';
-import {useMe} from '../../../util/hooks/useMe';
-import {isLoggedInAndPro} from '../../../lib/pro';
 
 const b = block('community');
 
 export default function CommunityNav() {
 	const {t} = useTranslation();
-	const dispatch = useDispatch();
 	const {userSearchQuery, setUserSearchQuery} = useContext(CommunityContext);
-	const me = useMe();
 
 	const page = useRouteMatch().path.split('/')[2];
 
 	const TABS = [
-		...(isLoggedInAndPro(me)
-			? [
-					{
-						id: 'competitions',
-						link: '/community/competitions',
-						value: t('community_nav.competitions'),
-					},
-			  ]
-			: []),
+		{
+			id: 'competitions',
+			link: '/community/competitions',
+			value: t('community_nav.competitions'),
+		},
 		{
 			id: 'friends',
 			link: '/community/friends/list',

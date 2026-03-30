@@ -181,6 +181,6 @@ export const routes: (PageContext | RedirectPath)[] = [
 	routeRedirect('/pro', '/account/pro'),
 	routeRedirect('/account/password', '/account/personal-info'),
 	routeRedirect('/community/friends', '/community/friends/list'),
-	routeRedirect('/community', '/community/friends/list'),
+	routeRedirect('/community', '/community/competitions'),
 	routeRedirect('/admin', '/admin/reports'),
 ];

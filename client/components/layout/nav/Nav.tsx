@@ -80,8 +80,8 @@ export const NAV_LINKS: NavLinkProps[] = [
 		name: 'nav.community',
 		icon: <Users weight="bold" />,
 		match: /^\/community/,
-		link: '/community/friends/list',
-		loginRequired: true,
+		link: '/community/competitions',
+		loginRequired: false,
 	},
 	{
 		name: 'nav.trainer',
