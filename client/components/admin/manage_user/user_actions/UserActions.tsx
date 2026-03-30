@@ -1,15 +1,15 @@
 import React from 'react';
 import './UserActions.scss';
-import { gql } from '@apollo/client';
-import { gqlMutate } from '../../../api';
-import { openModal } from '../../../../actions/general';
-import { PUBLIC_USER_WITH_ELO_FRAGMENT } from '../../../../util/graphql/fragments';
+import {gql} from '@apollo/client';
+import {gqlMutate} from '../../../api';
+import {openModal} from '../../../../actions/general';
 import BanUser from '../ban_user/BanUser';
 import block from '../../../../styles/bem';
 import Button from '../../../common/button/Button';
-import { toastSuccess } from '../../../../util/toast';
-import { useDispatch } from 'react-redux';
-import { UserAccountForAdmin } from '../../../../../server/schemas/UserAccount.schema';
+import {toastSuccess} from '../../../../util/toast';
+import {useDispatch} from 'react-redux';
+import {UserAccountForAdmin} from '../../../../../server/schemas/UserAccount.schema';
+import {useTranslation} from 'react-i18next';
 
 const b = block('manage-user-actions');
 
@@ -20,8 +20,9 @@ interface Props {
 
 export default function UserActions(props: Props) {
 	const dispatch = useDispatch();
+	const {t} = useTranslation('translation', {keyPrefix: 'admin_users.manage_user'});
 
-	const { user, updateUser } = props;
+	const {user, updateUser} = props;
 	const banned = user.banned_forever || user.banned_until;
 
 	async function unbanUser() {
@@ -38,7 +39,7 @@ export default function UserActions(props: Props) {
 		});
 
 		updateUser();
-		toastSuccess('Successfully unbanned user');
+		toastSuccess(t('user_unbanned'));
 	}
 
 	async function toggleVerifyUser() {
@@ -57,11 +58,7 @@ export default function UserActions(props: Props) {
 		});
 
 		updateUser();
-		let flagMessage = 'verified';
-		if (user.verified) {
-			flagMessage = 'unverified';
-		}
-		toastSuccess(`Successfully ${flagMessage} user`);
+		toastSuccess(user.verified ? t('user_unverified') : t('user_verified'));
 	}
 
 	async function toggleProStatus() {
@@ -80,7 +77,7 @@ export default function UserActions(props: Props) {
 		});
 
 		updateUser();
-		toastSuccess(`Successfully ${user.is_pro ? 'removed Pro from' : 'gave Pro to'} user`);
+		toastSuccess(user.is_pro ? t('pro_removed', {username: user.username}) : t('pro_given', {username: user.username}));
 	}
 
 	async function togglePremiumStatus() {
@@ -99,11 +96,11 @@ export default function UserActions(props: Props) {
 		});
 
 		updateUser();
-		toastSuccess(`Successfully ${user.is_premium ? 'removed Premium from' : 'gave Premium to'} user`);
+		toastSuccess(user.is_premium ? t('premium_removed', {username: user.username}) : t('premium_given', {username: user.username}));
 	}
 
 	async function deleteUser() {
-		if (!window.confirm(`"${user.username}" kullanıcısını silmek istediğine emin misin? Bu işlem geri alınamaz.`)) {
+		if (!window.confirm(t('delete_confirm', {username: user.username}))) {
 			return;
 		}
 
@@ -119,7 +116,7 @@ export default function UserActions(props: Props) {
 			userId: user.id,
 		});
 
-		toastSuccess('User account deleted');
+		toastSuccess(t('user_deleted'));
 		updateUser();
 	}
 
@@ -137,26 +134,26 @@ export default function UserActions(props: Props) {
 
 	return (
 		<div className={b()}>
-			<Button text={banned ? 'Unban user' : 'Ban user'} onClick={toggleBan} danger />
+			<Button text={banned ? t('unban_user') : t('ban_user')} onClick={toggleBan} danger />
 			<Button
-				text={user.verified ? 'Unverify user' : 'Verify user'}
+				text={user.verified ? t('unverify_user') : t('verify_user')}
 				primary={!user.verified}
 				warning={user.verified}
 				onClick={toggleVerifyUser}
 			/>
 			<Button
-				text={user.is_pro ? 'Remove Pro' : 'Make Pro'}
+				text={user.is_pro ? t('remove_pro') : t('make_pro')}
 				primary={!user.is_pro}
 				warning={user.is_pro}
 				onClick={toggleProStatus}
 			/>
 			<Button
-				text={user.is_premium ? 'Remove Premium' : 'Make Premium'}
+				text={user.is_premium ? t('remove_premium') : t('make_premium')}
 				primary={!user.is_premium}
 				warning={user.is_premium}
 				onClick={togglePremiumStatus}
 			/>
-			<Button text="Delete user" danger onClick={deleteUser} />
+			<Button text={t('delete_user')} danger onClick={deleteUser} />
 		</div>
 	);
 }

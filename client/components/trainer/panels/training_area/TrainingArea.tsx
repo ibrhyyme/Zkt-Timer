@@ -12,11 +12,14 @@ import AlternativesPicker from '../stats_panel/AlternativesPicker';
 import TrainerTimeChart from '../stats_panel/TrainerTimeChart';
 import {useTranslation} from 'react-i18next';
 import {CaretLeft, CaretRight, CaretDown, CaretUp} from 'phosphor-react';
+import {useMe} from '../../../../util/hooks/useMe';
+import {isPro, isProEnabled} from '../../../../lib/pro';
 
 const b = block('trainer');
 
 export default function TrainingArea() {
 	const {t} = useTranslation();
+	const me = useMe();
 	const {state, dispatch} = useTrainerContext();
 	useLLPatternsReady();
 	const {currentAlgorithm, options} = state;
@@ -99,7 +102,7 @@ export default function TrainingArea() {
 	}
 
 	const is3x3 = getPuzzleType(currentAlgorithm.category) === '3x3x3';
-	const useSmartCube = state.smartConnected && is3x3;
+	const useSmartCube = state.smartConnected && is3x3 && (!isProEnabled() || isPro(me));
 
 	// Mobilde training-area'nin herhangi bir yerine dokunarak timer baslatma/durdurma
 	const handleAreaTouch = useCallback((e: React.MouseEvent) => {

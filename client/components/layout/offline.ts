@@ -5,6 +5,7 @@ import { UserAccount } from '../../@types/generated/graphql';
 import { v4 as uuid } from 'uuid';
 import { getLokiDb, initLokiDb } from '../../db/lokijs';
 import { initSolvesCollection } from '../../db/solves/init';
+import { isProEnabled } from '../../lib/pro';
 
 export async function initOfflineData(me, callback) {
 	const shouldFetch = await shouldFetchDataFromDb(me);
@@ -55,14 +56,29 @@ export async function shouldFetchDataFromDb(me: UserAccount): Promise<boolean> {
 		return true;
 	}
 
+	// Basic kullanicilar sunucuyla hash karsilastirmasi yapmaz,
+	// her zaman lokal IndexedDB'den yuklemeyi dene
+	if (isProEnabled() && !me?.is_pro && !me?.is_premium) {
+		setLocalStorage('wasBasicUser', 'true');
+		return false;
+	}
+
+	// Yeni Pro kullanici (onceden Basic'ti) - once lokal veriyi yukle, migration yapilacak
+	if (isProEnabled() && (me?.is_pro || me?.is_premium) && getLocalStorage('wasBasicUser') === 'true') {
+		return false;
+	}
+
 	const offlineHash = getLocalStorage('offlineHash');
 
 	return me.offline_hash !== offlineHash;
 }
 
-export async function updateOfflineHash() {
-	// DB'yi IndexedDB'ye kaydet ve TAMAMLANMASINI bekle
-	const dbSaved = await new Promise<boolean>((resolve) => {
+/**
+ * LokiJS DB'yi IndexedDB'ye kaydet.
+ * Hem Basic hem Pro kullanicilar icin calismali.
+ */
+export async function saveLokiDb(): Promise<boolean> {
+	return new Promise<boolean>((resolve) => {
 		try {
 			const db = getLokiDb();
 			if (!db || !db.persistenceAdapter) {
@@ -93,6 +109,10 @@ export async function updateOfflineHash() {
 			resolve(false);
 		}
 	});
+}
+
+export async function updateOfflineHash() {
+	const dbSaved = await saveLokiDb();
 
 	// DB kaydedilemezse hash'i guncelleme — tutarsizlik onlenir
 	if (!dbSaved) {

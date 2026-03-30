@@ -4,7 +4,7 @@ import {
 	UserAccountSummary,
 } from '../schemas/UserAccount.schema';
 import {getPrisma} from '../database';
-import {trainerExceptions} from './solve';
+
 
 export async function getUserAccountForAdmin(userId: string): Promise<UserAccountForAdmin> {
 	const summary = await getUserForAdminSummary(userId);
@@ -71,7 +71,7 @@ async function getUserForAdminSummary(userId: string): Promise<UserAccountSummar
 	});
 
 	const timerSolves = await getUserForAdminSolvesSummary(userId, {
-		AND: trainerExceptions,
+		OR: [{trainer_name: null}, {trainer_name: ''}],
 	});
 
 	if (!agg || !agg._count) {

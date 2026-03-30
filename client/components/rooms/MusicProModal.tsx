@@ -1,9 +1,19 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { useHistory } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { closeModal } from '../../actions/general';
 import { MusicNote, YoutubeLogo, Users, Headphones } from 'phosphor-react';
 
 export default function MusicProModal() {
 	const { t } = useTranslation();
+	const history = useHistory();
+	const dispatch = useDispatch();
+
+	function handleUpgrade() {
+		dispatch(closeModal());
+		history.push('/account/pro');
+	}
 
 	return (
 		<div className="p-8 max-w-sm mx-auto text-center">
@@ -33,9 +43,13 @@ export default function MusicProModal() {
 				</div>
 			</div>
 
-			<div className="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-gradient-to-r from-purple-600 to-pink-500 text-white font-bold text-base">
-				PRO <span className="font-normal opacity-80">({t('pro_page.coming_soon')})</span>
-			</div>
+			<button
+				type="button"
+				onClick={handleUpgrade}
+				className="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-gradient-to-r from-purple-600 to-pink-500 text-white font-bold text-base cursor-pointer hover:opacity-90 transition-opacity"
+			>
+				{t('pro.upgrade_button')}
+			</button>
 		</div>
 	);
 }

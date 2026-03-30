@@ -10,6 +10,7 @@ import {getStorageURL} from '../../../../util/storage';
 import Button from '../../../common/button/Button';
 import block from '../../../../styles/bem';
 import {TimerBackground as TimerBackgroundSchema} from '../../../../@types/generated/graphql';
+import ProOnly from '../../../common/pro_only/ProOnly';
 
 const b = block('timer-background');
 
@@ -65,12 +66,14 @@ export default function TimerBackground() {
 	}
 
 	return (
-		<div className={b()}>
-			<div className={b('image')}>
-				<UploadCover upload={uploadTimerBackground} />
-				{image ? <img src={image} alt="Timer background" /> : null}
+		<ProOnly>
+			<div className={b()}>
+				<div className={b('image')}>
+					<UploadCover upload={uploadTimerBackground} />
+					{image ? <img src={image} alt="Timer background" /> : null}
+				</div>
+				{image ? <Button flat text="Reset background" danger onClick={resetBackgroundImage} /> : null}
 			</div>
-			{image ? <Button flat text="Reset background" danger onClick={resetBackgroundImage} /> : null}
-		</div>
+		</ProOnly>
 	);
 }

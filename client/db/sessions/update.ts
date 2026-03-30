@@ -12,13 +12,15 @@ import {
 	UpdateSessionDocument,
 } from '../../@types/generated/graphql';
 import { fetchSessionById, fetchSessions } from './query';
-import { updateOfflineHash } from '../../components/layout/offline';
+import { saveLokiDb, updateOfflineHash } from '../../components/layout/offline';
+import { canSync } from '../../lib/sync-gate';
+import { generateId } from '../../../shared/code';
 
 export async function createSessionDb(sessionInput: Partial<Session>) {
 	const sessionDb = getSessionDb();
 	let session = sessionInput as Session;
 
-	if (!sessionInput.demo_mode) {
+	if (!sessionInput.demo_mode && canSync()) {
 		const res = await gqlMutateTyped(CreateSessionDocument, {
 			input: {
 				name: session.name,
@@ -26,6 +28,8 @@ export async function createSessionDb(sessionInput: Partial<Session>) {
 		});
 
 		session = res.data.createSession as Session;
+	} else if (!sessionInput.demo_mode) {
+		session = { ...session, id: generateId() } as Session;
 	}
 
 	sessionDb.insert({
@@ -51,17 +55,21 @@ export async function deleteSessionDb(session: Session) {
 	postProcessDbUpdate(session);
 	updateLocalDbOrderValueForAllSessions();
 
-	await gqlMutateTyped(DeleteSessionDocument, {
-		id: session.id,
-	});
+	if (canSync()) {
+		await gqlMutateTyped(DeleteSessionDocument, {
+			id: session.id,
+		});
+	}
 }
 
 export async function reorderSessions(sessionIds: string[]) {
 	updateLocalDbOrderValuesForSessionIds(sessionIds);
 
-	await gqlMutateTyped(ReorderSessionsDocument, {
-		ids: sessionIds,
-	});
+	if (canSync()) {
+		await gqlMutateTyped(ReorderSessionsDocument, {
+			ids: sessionIds,
+		});
+	}
 }
 
 function updateLocalDbOrderValueForAllSessions() {
@@ -94,12 +102,14 @@ export async function updateSessionDb(session: Session, input: Partial<Session>)
 	});
 	postProcessDbUpdate(session, false);
 
-	await gqlMutateTyped(UpdateSessionDocument, {
-		id: session.id,
-		input: {
-			...input,
-		},
-	});
+	if (canSync()) {
+		await gqlMutateTyped(UpdateSessionDocument, {
+			id: session.id,
+			input: {
+				...input,
+			},
+		});
+	}
 }
 
 export async function mergeSessionsDb(oldSessionId: string, newSessionId: string) {
@@ -127,10 +137,12 @@ export async function mergeSessionsDb(oldSessionId: string, newSessionId: string
 	postProcessDbUpdate(newSession, true);
 	updateLocalDbOrderValueForAllSessions();
 
-	await gqlMutateTyped(MergeSessionsDocument, {
-		oldSessionId,
-		newSessionId,
-	});
+	if (canSync()) {
+		await gqlMutateTyped(MergeSessionsDocument, {
+			oldSessionId,
+			newSessionId,
+		});
+	}
 }
 
 function postProcessDbUpdate(session: Session, clearSolveCache = true) {
@@ -145,5 +157,9 @@ function postProcessDbUpdate(session: Session, clearSolveCache = true) {
 	emitEvent('solveDbUpdatedEvent');
 	emitEvent('sessionsDbUpdatedEvent', session);
 
-	updateOfflineHash();
+	if (canSync()) {
+		updateOfflineHash();
+	} else {
+		saveLokiDb();
+	}
 }

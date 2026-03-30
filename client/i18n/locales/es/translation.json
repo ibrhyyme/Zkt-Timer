@@ -660,7 +660,8 @@
 		"twistytimer_step_3": "Toca el menú de tres puntos en la esquina superior derecha y selecciona \"Exportar\"",
 		"twistytimer_step_4": "Usa la opción \"Exportar como externo\" para guardar el archivo",
 		"category_management": "Gestión de datos",
-		"category_reset": "Restablecer"
+		"category_reset": "Restablecer",
+		"import_pro_upsell": "Actualiza a Pro para importar tus datos"
 	},
 	"language": {
 		"label": "Idioma",
@@ -738,7 +739,8 @@
 		"putdown_time": "Tiempo de colocación",
 		"overview_tab": "Resumen",
 		"time_label": "Tiempo",
-		"deleted_from_other_device": "Esta solución fue eliminada desde otro dispositivo"
+		"deleted_from_other_device": "Esta solución fue eliminada desde otro dispositivo",
+		"pro_stats_upsell": "Actualiza a Pro para estadísticas detalladas"
 	},
 	"sessions": {
 		"page_title": "Sesiones",
@@ -1040,7 +1042,67 @@
 		"delete_published_solves": "Eliminar todas las resoluciones publicadas",
 		"ban_permanently": "Prohibir usuario permanentemente",
 		"ban_button": "Prohibir usuario",
-		"user_banned": "{{username}} ha sido prohibido por {{duration}}"
+		"user_banned": "{{username}} ha sido prohibido por {{duration}}",
+		"manage_user": {
+			"user_not_found": "Usuario no encontrado",
+			"overview": "Resumen",
+			"solves_count": "Resoluciones",
+			"bans_count": "Prohibiciones",
+			"reports_received": "Reportes Recibidos",
+			"reports_created": "Reportes Creados",
+			"timer_solves": "Resoluciones del Temporizador",
+			"no_data": "Sin datos",
+			"total_time": "Tiempo Total",
+			"average": "Promedio",
+			"min_time": "Tiempo Mín",
+			"max_time": "Tiempo Máx",
+			"settings": "Configuración",
+			"bans_title": "Prohibiciones",
+			"reports_title": "Reportes",
+			"no_records": "No se encontraron registros",
+			"wca_id": "WCA ID",
+			"join_country": "País de Registro",
+			"join_ip": "IP de Registro",
+			"email_verified": "Email Verificado",
+			"email_not_verified": "Email No Verificado",
+			"ban_user": "Prohibir",
+			"unban_user": "Quitar prohibición",
+			"verify_user": "Verificar",
+			"unverify_user": "Quitar verificación",
+			"make_pro": "Hacer Pro",
+			"remove_pro": "Quitar Pro",
+			"make_premium": "Hacer Premium",
+			"remove_premium": "Quitar Premium",
+			"delete_user": "Eliminar usuario",
+			"delete_confirm": "¿Estás seguro de que quieres eliminar a \"{{username}}\"? Esta acción no se puede deshacer.",
+			"user_deleted": "Cuenta de usuario eliminada",
+			"user_verified": "Usuario verificado exitosamente",
+			"user_unverified": "Verificación de usuario eliminada",
+			"pro_given": "Pro otorgado a {{username}}",
+			"pro_removed": "Pro eliminado de {{username}}",
+			"premium_given": "Premium otorgado a {{username}}",
+			"premium_removed": "Premium eliminado de {{username}}",
+			"user_unbanned": "Prohibición de usuario eliminada",
+			"setting_id": "ID",
+			"setting_focus_mode": "Modo de Enfoque",
+			"setting_freeze_time": "Tiempo de Congelación",
+			"setting_inspection": "Inspección",
+			"setting_manual_entry": "Entrada Manual",
+			"setting_inspection_delay": "Retraso de Inspección",
+			"setting_inverse_time_list": "Lista de Tiempo Inversa",
+			"setting_hide_time_when_solving": "Ocultar Tiempo al Resolver",
+			"setting_nav_collapsed": "Menú Colapsado",
+			"setting_timer_decimal_points": "Decimales del Temporizador",
+			"setting_pb_confetti": "Confeti PB",
+			"setting_play_inspection_sound": "Sonido de Inspección",
+			"setting_zero_out_time_after_solve": "Reiniciar Después de Resolver",
+			"setting_confirm_delete_solve": "Confirmar Eliminación",
+			"setting_use_space_with_smart_cube": "Espacio con Smart Cube",
+			"setting_require_period_in_manual_time_entry": "Punto Requerido en Entrada Manual",
+			"setting_cube_type": "Tipo de Cubo",
+			"bool_true": "Sí",
+			"bool_false": "No"
+		}
 	},
 	"admin_email": {
 		"page_title": "Enviar correo",
@@ -1363,31 +1425,112 @@
 	},
 	"pro_page": {
 		"title": "Pro",
+		"hero_title": "Elige tu plan",
 		"subtitle": "Lleva tu speedcubing al siguiente nivel con funciones Pro exclusivas diseñadas para speedcubers serios.",
-		"six_months": "6 Meses",
-		"one_year": "1 Año",
-		"per_month": "/mes",
-		"best_value": "Mejor Valor",
-		"bonus_months": "+2 meses gratis",
+		"whats_included": "Qué incluye:",
 		"coming_soon": "Próximamente",
-		"features_title": "Qué incluye Pro",
-		"pricing_title": "Elige tu plan",
-		"plan_feature_all_pro": "Todas las funciones Pro",
-		"plan_feature_ai": "Coaching con IA",
-		"plan_feature_themes": "Temas exclusivos",
-		"plan_feature_support": "Soporte prioritario",
-		"feature_ai_coach": "Coach con IA",
-		"feature_ai_coach_desc": "Obtén planes de entrenamiento personalizados y análisis en tiempo real de nuestro asistente de IA que aprende tus patrones de resolución.",
-		"feature_trainer": "Páginas de Entrenamiento",
-		"feature_trainer_desc": "Accede a módulos especializados para F2L, OLL, PLL y más con dificultad adaptativa.",
-		"feature_stats": "Analíticas Avanzadas",
-		"feature_stats_desc": "Analiza tu rendimiento en profundidad con gráficos detallados, análisis de tendencias y desglose de resoluciones.",
-		"feature_themes": "Temas Exclusivos",
-		"feature_themes_desc": "Personaliza tu temporizador con temas de colores exclusivos de Pro y opciones de personalización visual.",
-		"feature_support": "Soporte Prioritario",
-		"feature_support_desc": "Obtén respuestas más rápidas y acceso directo al equipo de desarrollo para solicitudes de funciones.",
-		"feature_early_access": "Acceso Anticipado",
-		"feature_early_access_desc": "Sé el primero en probar nuevas funciones antes de que se publiquen."
+		"free": "Gratis",
+		"basic_desc": "Empieza con lo esencial.",
+		"pro_desc": "Desbloquea todas las funciones.",
+		"current_plan": "Plan actual",
+		"click_hint": "Haz clic para más detalles",
+		"all_basic_included": "Todas las funciones gratuitas incluidas",
+		"basic_features": {
+			"timer": {
+				"title": "Temporizador",
+				"desc": "Cronometra con teclado, táctil, StackMat, GAN Timer o cubo inteligente — como prefieras."
+			},
+			"sessions": {
+				"title": "Sesiones",
+				"desc": "Crea todas las sesiones que necesites. Fusiona, reordena o elimina — tus resoluciones quedan seguras."
+			},
+			"unlimited_solves": {
+				"title": "Resoluciones ilimitadas",
+				"desc": "Sin límites. Resuelve todo lo que quieras, añade notas y edita cuando quieras."
+			},
+			"rooms": {
+				"title": "Salas comunitarias",
+				"desc": "Entra a una sala, resuelve el mismo scramble y chatea en tiempo real con otros cubers."
+			},
+			"basic_stats": {
+				"title": "Estadísticas básicas",
+				"desc": "Sigue tu PB, ao5, ao12 y total de resoluciones de un vistazo."
+			},
+			"smart_cube_basic": {
+				"title": "Conexión de cubo inteligente",
+				"desc": "Conecta tu cubo por Bluetooth. Tiempos y movimientos se registran automáticamente."
+			},
+			"trainer_basic": {
+				"title": "Entrenador de algoritmos",
+				"desc": "Practica OLL, PLL, F2L y más. Memoriza y entrena a tu ritmo."
+			},
+			"friends": {
+				"title": "Sistema de amigos",
+				"desc": "Añade amigos, revisa sus perfiles y resuelve junto a ellos."
+			},
+			"notifications": {
+				"title": "Notificaciones",
+				"desc": "Alertas instantáneas de solicitudes de amistad, invitaciones a salas y más."
+			},
+			"settings_sync": {
+				"title": "Sincronización de ajustes",
+				"desc": "Configura tu temporizador una vez y se mantiene igual en todos tus dispositivos."
+			},
+			"two_themes": {
+				"title": "2 temas",
+				"desc": "Cambia entre modo oscuro y claro."
+			}
+		},
+		"features": {
+			"sync": {
+				"title": "Sincronización entre dispositivos",
+				"desc": "Resuelve en tu teléfono, continúa justo donde lo dejaste en tu computadora. Todas tus resoluciones, sesiones y estadísticas se respaldan automáticamente en la nube. Cambia de dispositivo, borra tu navegador, incluso reinstala la app — todo vuelve exactamente como lo dejaste. Nunca más pierdas tus datos."
+			},
+			"smart_cube_analysis": {
+				"title": "Análisis profundo de cubo inteligente",
+				"desc": "Analiza cada resolución paso a paso: Cross, F2L, OLL, PLL — ve el tiempo, movimientos y TPS de cada fase por separado. Detecta al instante qué etapa te está costando tiempo y qué algoritmos te ralentizan. Gráficos generales, tablas de detalle paso a paso y animaciones de resolución te permiten seguir tu mejora con datos reales."
+			},
+			"trainer_smart_cube": {
+				"title": "Entrena con tu cubo inteligente",
+				"desc": "Conecta tu cubo inteligente por Bluetooth, ejecuta el algoritmo en el cubo real — y ve al instante en pantalla si lo hiciste bien. Se acabó cronometrar manualmente y verificar algoritmos de memoria. Tu cubo se convierte en tu entrenador, y cada repetición te hace más rápido y preciso."
+			},
+			"themes": {
+				"title": "6 temas exclusivos",
+				"desc": "El brillo neón de Cyberpunk, las calles nocturnas de Tokyo, el minimalismo de Norman, los tonos cálidos de Save the Bees, la oscuridad de Night Owl y el aire académico de The PhD Student — dale a tu temporizador una personalidad completamente nueva. Cada tema transforma colores, fondos y toda la atmósfera."
+			},
+			"advanced_stats": {
+				"title": "Estadísticas avanzadas",
+				"desc": "Ve más allá de lo básico. Todos los bloques de estadísticas se desbloquean — ao5, ao12, ao50, ao100, promedios de sesión y más. Sigue tu mejora a lo largo del tiempo con gráficos detallados, detecta tendencias e identifica tus puntos débiles. Personaliza los módulos de estadísticas exactamente como quieras."
+			},
+			"leaderboard_publish": {
+				"title": "Destaca en la tabla de líderes",
+				"desc": "Publica tu mejor single o ao5 en la tabla de líderes y muestra tus PBs con orgullo en tu perfil. Deja que otros speedcubers vean tus resoluciones y se inspiren. Resolver cubos no es solo para ti — muestra al mundo lo rápido que realmente eres."
+			},
+			"timer_background": {
+				"title": "Fondo personalizado",
+				"desc": "Pon tu propia foto o imagen favorita como fondo del temporizador. Cada vez que lo abras, se siente únicamente tuyo. Cámbialo cuando quieras, reinícialo cuando quieras — está completamente en tus manos."
+			},
+			"room_music": {
+				"title": "Música en las salas",
+				"desc": "Entra a una sala, busca cualquier canción y escúchala sin anuncios mientras resuelves. Elige lo que quieras de la enorme biblioteca de YouTube y déjalo sonar de fondo. El reproductor está integrado en la sala, sin necesidad de pestañas extra. Mantén tu motivación alta con tu propia música."
+			},
+			"pro_badge": {
+				"title": "Insignia Pro",
+				"desc": "Un anillo Pro brillante alrededor de tu foto de perfil. En las salas, en la tabla de líderes, en tu perfil — todos pueden ver que eres Pro dondequiera que vayas. No es solo una insignia, es tu estatus en la comunidad."
+			},
+			"data_import": {
+				"title": "Importación de datos",
+				"desc": "¿Usabas CSTimer, ZKTTimer o TwistyTimer? No pierdas años de esfuerzo — importa todas tus resoluciones pasadas, tiempos y estadísticas a Zkt-Timer en un solo clic. En vez de empezar desde cero, continúa justo donde lo dejaste."
+			},
+			"stats_customization": {
+				"title": "Personalización de estadísticas",
+				"desc": "Personaliza completamente los módulos de estadísticas debajo de tu temporizador. Tú decides qué bloques mostrar — añade, elimina y reordénalos a tu gusto. Ve solo los datos que te importan, sin ruido innecesario."
+			},
+			"solve_sharing": {
+				"title": "Compartir resoluciones",
+				"desc": "Comparte tu resolución de cubo inteligente como un simple enlace. Tus amigos hacen clic y exploran toda tu solución paso a paso — qué algoritmos usaste, cuántos segundos tardó cada fase, tu TPS y conteo de movimientos, todo detallado."
+			}
+		}
 	},
 	"wca_integration": {
 		"profile_connected": "Perfil WCA Conectado",
@@ -1594,12 +1737,43 @@
 	},
 	"pro": {
 		"feature_title": "Función Pro",
-		"feature_description": "Esta función es exclusiva para usuarios Pro. Actualiza a Pro para acceder a todos los temas y más. (Próximamente)",
-		"music_title": "Música en Salas",
-		"music_description": "Escucha música junto a tus amigos mientras resuelven cubos. Esta función es exclusiva para miembros Pro.",
-		"music_youtube": "Música ilimitada y sin anuncios de YouTube",
-		"music_friends": "Escucha junto con amigos",
-		"music_unlimited": "Búsqueda y reproducción ilimitada"
+		"feature_description": "Esta función es exclusiva para miembros Pro. Actualiza para desbloquear todo.",
+		"upgrade_button": "Actualizar a Pro",
+		"modal": {
+			"room_music": { "title": "Música en las Salas", "desc": "Escucha tu música favorita sin anuncios mientras resuelves en salas. Desbloquea la experiencia musical con Pro." },
+			"leaderboard": { "title": "Destaca en la Tabla de Líderes", "desc": "Publica tus mejores resoluciones e inspira a otros speedcubers." },
+			"data_import": { "title": "Importación de Datos", "desc": "Trae tu historial de resoluciones a Zkt-Timer en un clic." },
+			"smart_cube": { "title": "Análisis Profundo de Cubo Inteligente", "desc": "Analiza tus resoluciones paso a paso y ve cada detalle." },
+			"themes": { "title": "Temas Exclusivos", "desc": "Dale personalidad a tu temporizador con 6 temas exclusivos." },
+			"stats": { "title": "Personalización de Estadísticas", "desc": "Configura los módulos de estadísticas exactamente como quieras." },
+			"trainer": { "title": "Entrena con Tu Cubo Inteligente", "desc": "Practica algoritmos en tu cubo con feedback instantáneo." }
+		},
+		"highlights": {
+			"sync": "Sincronización automática en todos tus dispositivos",
+			"themes": "6 temas exclusivos para personalización total",
+			"advanced_stats": "Gráficos detallados y análisis de tendencias",
+			"music_youtube": "Música ilimitada y sin anuncios de YouTube",
+			"music_friends": "Escucha tu propia música mientras resuelves",
+			"music_unlimited": "Búsqueda y reproducción ilimitada",
+			"leaderboard_publish": "Publica tu mejor single o ao5",
+			"leaderboard_profile": "Muestra tus PBs en tu perfil",
+			"leaderboard_compete": "Compite con otros speedcubers",
+			"import_history": "Importa todas tus resoluciones pasadas",
+			"import_sources": "Soporte para CSTimer, ZKTTimer, TwistyTimer",
+			"import_one_click": "Transferencia de datos en un clic",
+			"smart_analysis": "Ve el tiempo y TPS de cada paso",
+			"smart_steps": "Cross, F2L, OLL, PLL analizados por separado",
+			"smart_animation": "Animación de resolución para revisión detallada",
+			"themes_six": "Cyberpunk, Tokyo, Norman y más",
+			"themes_colors": "Colores y fondos se transforman completamente",
+			"themes_atmosphere": "Cada tema crea una atmósfera única",
+			"stats_blocks": "Todos los bloques de estadísticas desbloqueados",
+			"stats_charts": "Gráficos detallados y tendencias",
+			"stats_customize": "Añade, elimina y reordena módulos",
+			"trainer_ble": "Conexión Bluetooth con cubo inteligente",
+			"trainer_feedback": "Feedback instantáneo sobre precisión del algoritmo",
+			"trainer_speed": "Más rápido y preciso con cada repetición"
+		}
 	},
 	"battle": {
 		"mobile_only": "El modo batalla solo está disponible en móvil",

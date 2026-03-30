@@ -26,7 +26,7 @@ import EditRoomModal from './EditRoomModal';
 import ManageUsersModal from './ManageUsersModal';
 import { Gear, List, PencilSimple, Users, Trash, BluetoothConnected, Bluetooth, CheckCircle, CircleNotch, Check, MusicNote } from 'phosphor-react';
 import RoomMusicPlayer from './RoomMusicPlayer';
-import MusicProModal from './MusicProModal';
+import ProOnlyModal from '../common/pro_only/ProOnlyModal';
 import { getTimeString, convertTimeStringToSeconds } from '../../util/time';
 import { toastError } from '../../util/toast';
 import { resourceUri } from '../../util/storage';
@@ -1299,7 +1299,7 @@ export default function FriendlyRoom() {
                                 if (isPro(me)) {
                                     setMusicPlayerOpen(!musicPlayerOpen);
                                 } else {
-                                    dispatch(openModal(<MusicProModal />));
+                                    dispatch(openModal(<ProOnlyModal featureKey="room_music" />));
                                 }
                             }}
                             className={`p-1 md:p-2 transition-colors ${musicPlayerOpen ? 'text-green-400' : 'text-white/90 hover:text-white'}`}

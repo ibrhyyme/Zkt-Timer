@@ -9,7 +9,7 @@ import { getStore } from '../../components/store';
 import { openModal } from '../../actions/general';
 import ConfirmModal from '../../components/common/confirm_modal/ConfirmModal';
 import { checkForPB } from './stats/solves/pb';
-import { updateOfflineHash } from '../../components/layout/offline';
+import { saveLokiDb, updateOfflineHash } from '../../components/layout/offline';
 import { getSetting } from '../settings/query';
 import { Solve } from '../../../server/schemas/Solve.schema';
 import { checkForWorst } from './stats/solves/worst';
@@ -19,6 +19,7 @@ import { fetchLastSolve } from './query';
 import { setTimerParam } from '../../components/timer/helpers/params';
 import { addToQueue } from '../../util/offline-queue';
 import { toastInfo } from '../../util/toast';
+import { canSync } from '../../lib/sync-gate';
 
 let offlineToastShown = false;
 if (typeof window !== 'undefined') {
@@ -42,7 +43,7 @@ export async function createSolveDb(solveInput: Solve) {
 
 	postProcessDbUpdate(solve, true);
 
-	if (!solve.demo_mode) {
+	if (!solve.demo_mode && canSync()) {
 		const query = gql`
 			mutation Mutate($input: SolveInput) {
 				createSolve(input: $input) {
@@ -60,7 +61,7 @@ export async function createSolveDb(solveInput: Solve) {
 			await addToQueue('createSolve', { input: solve });
 			showOfflineToastOnce();
 		}
-	} else {
+	} else if (solve.demo_mode) {
 		await createDemoSolve(solve);
 	}
 }
@@ -125,7 +126,7 @@ export async function deleteSolveDb(solve: Solve, confirmed: boolean = false) {
 		setTimerParam('finalTime', 0);
 	}
 
-	if (!solve.demo_mode) {
+	if (!solve.demo_mode && canSync()) {
 		const query = gql`
 			mutation Mutate($id: String) {
 				deleteSolve(id: $id) {
@@ -159,7 +160,7 @@ export async function updateSolveDb(solve: Solve, input: Partial<Solve> = {}, up
 		postProcessDbUpdate(solve, false);
 	}
 
-	if (!solve.demo_mode) {
+	if (!solve.demo_mode && canSync()) {
 		const query = gql`
 			mutation Mutate($id: String, $input: SolveInput) {
 				updateSolve(id: $id, input: $input) {
@@ -197,7 +198,11 @@ function postProcessDbUpdate(solve: Solve, isNew: boolean) {
 	checkForCurrentAverageUpdate(solve, isNew);
 
 	if (!solve.demo_mode) {
-		updateOfflineHash();
+		if (canSync()) {
+			updateOfflineHash();
+		} else {
+			saveLokiDb();
+		}
 	}
 
 	emitEvent('solveDbUpdatedEvent', solve);
@@ -240,18 +245,23 @@ export async function deleteAllSolvesInSessionDb(sessionId: string, confirmed: b
 	// İstatistikleri temizle
 	solvesToRemove.forEach(solve => clearSolveStatCache({ solve: solve as any }));
 	emitEvent('solveDbUpdatedEvent', null);
-	updateOfflineHash();
 
-	const query = gql`
-		mutation Mutate($sessionId: String!) {
-			deleteAllSolvesInSession(sessionId: $sessionId)
+	if (canSync()) {
+		updateOfflineHash();
+
+		const query = gql`
+			mutation Mutate($sessionId: String!) {
+				deleteAllSolvesInSession(sessionId: $sessionId)
+			}
+		`;
+
+		try {
+			await gqlMutate(query, { sessionId });
+		} catch (e) {
+			// Log
 		}
-	`;
-
-	try {
-		await gqlMutate(query, { sessionId });
-	} catch (e) {
-		// Log
+	} else {
+		saveLokiDb();
 	}
 }
 
@@ -294,7 +304,7 @@ export async function deleteMultipleSolvesDb(solves: Solve[], confirmed: boolean
 
 	const solvesToDeleteFromServer = solves.filter(s => !s.demo_mode);
 
-	if (solvesToDeleteFromServer.length > 0) {
+	if (solvesToDeleteFromServer.length > 0 && canSync()) {
 		const query = gql`
 			mutation Mutate($ids: [String!]!) {
 				deleteSolves(ids: $ids)

@@ -23,7 +23,7 @@ function getSolvesByUserId(context: GraphQLContext, userId: string) {
 
 @Resolver()
 export class SolveResolver {
-	@Authorized([Role.LOGGED_IN])
+	@Authorized([Role.LOGGED_IN, Role.PRO])
 	@Query(() => [Solve])
 	async solves(
 		@Ctx() context: GraphQLContext,
@@ -64,7 +64,7 @@ export class SolveResolver {
 
 
 
-	@Authorized([Role.LOGGED_IN])
+	@Authorized([Role.LOGGED_IN, Role.PRO])
 	@Mutation(() => Solve)
 	async createSolve(@Ctx() context: GraphQLContext, @Arg('input') input: SolveInput) {
 		const { user } = context;
@@ -94,7 +94,7 @@ export class SolveResolver {
 		return createdSolve;
 	}
 
-	@Authorized([Role.LOGGED_IN])
+	@Authorized([Role.LOGGED_IN, Role.PRO])
 	@Mutation(() => GraphQLVoid)
 	async deleteAllSolvesInSession(@Ctx() context: GraphQLContext, @Arg('sessionId') sessionId: string) {
 		const { prisma, user } = context;
@@ -122,7 +122,7 @@ export class SolveResolver {
 		});
 	}
 
-	@Authorized([Role.LOGGED_IN])
+	@Authorized([Role.LOGGED_IN, Role.PRO])
 	@Mutation(() => Boolean)
 	async deleteSolves(@Ctx() context: GraphQLContext, @Arg('ids', () => [String], { validate: false }) ids: string[]) {
 		const { prisma, user } = context;
@@ -143,7 +143,7 @@ export class SolveResolver {
 		return true;
 	}
 
-	@Authorized([Role.LOGGED_IN])
+	@Authorized([Role.LOGGED_IN, Role.PRO])
 	@Mutation(() => GraphQLVoid)
 	async bulkCreateSolves(@Ctx() context: GraphQLContext, @Arg('solves', () => [SolveInput]) solves: SolveInput[]) {
 		const { user } = context;

@@ -23,6 +23,7 @@ import { getSolveDb } from '../../db/solves/init';
 import { emitEvent } from '../../util/event_handler';
 import { toastError } from '../../util/toast';
 import { useTranslation } from 'react-i18next';
+import { canSync } from '../../lib/sync-gate';
 
 const b = block('solve-info');
 
@@ -87,6 +88,18 @@ export default function SolveInfo(props: Props) {
 
 	function updateSolve(targetSolveId?: string) {
 		const id = targetSolveId || solveId;
+
+		// Basic kullanici: sunucudan cekme, direkt lokal'den goster
+		if (!canSync()) {
+			const localSolve = fetchSolve(id);
+			if (localSolve) {
+				setDbSolve(localSolve);
+				setSolve(localSolve);
+			}
+			setLoading(false);
+			return;
+		}
+
 		const query = gql`
 			${SOLVE_WITH_USER_FRAGMENT}
 

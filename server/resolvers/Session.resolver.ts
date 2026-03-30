@@ -25,25 +25,6 @@ async function createSession(context: GraphQLContext, input: SessionInput) {
 async function bulkCreateSessions(context: GraphQLContext, input: SessionInput[]) {
 	const {prisma} = context;
 
-	console.log(`[bulkCreateSessions] Creating ${input.length} sessions for user ${context.user.id}`);
-
-	// Check for existing sessions with the same IDs
-	const inputIds = input.map(s => s.id).filter(Boolean);
-	if (inputIds.length > 0) {
-		const existingSessions = await prisma.session.findMany({
-			where: {
-				id: { in: inputIds },
-				user_id: context.user.id,
-			},
-			select: { id: true },
-		});
-
-		if (existingSessions.length > 0) {
-			console.warn(`[bulkCreateSessions] Found ${existingSessions.length} existing sessions with duplicate IDs`,
-				existingSessions.map(s => s.id));
-		}
-	}
-
 	const data = [];
 	for (const ses of input) {
 		data.push({
@@ -56,8 +37,6 @@ async function bulkCreateSessions(context: GraphQLContext, input: SessionInput[]
 		data,
 		skipDuplicates: true,
 	});
-
-	console.log(`[bulkCreateSessions] Created ${result.count} sessions (skipped ${input.length - result.count} duplicates)`);
 
 	return result;
 }
@@ -160,13 +139,13 @@ async function updateOrderOfSessions(sessions: Session[]): Promise<Session[]> {
 
 @Resolver()
 export class SessionResolver {
-	@Authorized([Role.LOGGED_IN])
+	@Authorized([Role.LOGGED_IN, Role.PRO])
 	@Query(() => [Session])
 	async sessions(@Ctx() context: GraphQLContext) {
 		return getSessionsByUser(context.user);
 	}
 
-	@Authorized([Role.LOGGED_IN])
+	@Authorized([Role.LOGGED_IN, Role.PRO])
 	@Mutation(() => Session)
 	async createSession(@Ctx() context: GraphQLContext, @Arg('input', () => SessionInput) input: SessionInput) {
 		const sessions = await getSessionsByUser(context.user);
@@ -182,7 +161,7 @@ export class SessionResolver {
 		return newSession;
 	}
 
-	@Authorized([Role.LOGGED_IN])
+	@Authorized([Role.LOGGED_IN, Role.PRO])
 	@Mutation(() => Session)
 	async updateSession(
 		@Ctx() context: GraphQLContext,
@@ -198,7 +177,7 @@ export class SessionResolver {
 		return updateSession(context, session, input);
 	}
 
-	@Authorized([Role.LOGGED_IN])
+	@Authorized([Role.LOGGED_IN, Role.PRO])
 	@Mutation(() => GraphQLVoid)
 	async reorderSessions(@Ctx() context: GraphQLContext, @Arg('ids', () => [String]) ids: string[]) {
 		const sessions = await getSessionsByIds(context.user, ids);
@@ -219,7 +198,7 @@ export class SessionResolver {
 		await updateOrderOfSessions(orderedSessions);
 	}
 
-	@Authorized([Role.LOGGED_IN])
+	@Authorized([Role.LOGGED_IN, Role.PRO])
 	@Mutation(() => Session)
 	async deleteSession(@Ctx() context: GraphQLContext, @Arg('id') id: string) {
 		const session = await getSessionById(id);
@@ -234,7 +213,7 @@ export class SessionResolver {
 		return session;
 	}
 
-	@Authorized([Role.LOGGED_IN])
+	@Authorized([Role.LOGGED_IN, Role.PRO])
 	@Mutation(() => Session)
 	async mergeSessions(
 		@Ctx() context: GraphQLContext,
@@ -257,7 +236,7 @@ export class SessionResolver {
 		return newSession;
 	}
 
-	@Authorized([Role.LOGGED_IN])
+	@Authorized([Role.LOGGED_IN, Role.PRO])
 	@Mutation(() => GraphQLVoid)
 	async bulkCreateSessions(
 		@Ctx() context: GraphQLContext,

@@ -674,6 +674,7 @@ model Setting {
   play_inspection_sound               Boolean          @default(false)
   zero_out_time_after_solve           Boolean          @default(false)
   confirm_delete_solve                Boolean          @default(false)
+  confirm_delete_season               Boolean          @default(false)
   require_period_in_manual_time_entry Boolean          @default(false)
   created_at                          DateTime         @default(now())
   cube_type                           String           @default("333")

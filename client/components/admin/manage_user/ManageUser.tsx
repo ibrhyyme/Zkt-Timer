@@ -1,7 +1,6 @@
 import React from 'react';
 import {gql, useQuery} from '@apollo/client';
 import './ManageUser.scss';
-import {USER_FOR_ADMIN_FRAGMENT} from '../../../util/graphql/fragments';
 import {NO_CACHE} from '../../api';
 import Loading from '../../common/loading/Loading';
 import Avatar from '../../common/avatar/Avatar';
@@ -11,6 +10,7 @@ import {getDateFromNow} from '../../../util/dates';
 import block from '../../../styles/bem';
 import UserSummary from './user_summary/UserSummary';
 import {UserAccountForAdmin} from '../../../../server/schemas/UserAccount.schema';
+import {useTranslation} from 'react-i18next';
 
 const b = block('manage-user');
 
@@ -20,6 +20,7 @@ const GET_USER_FOR_ADMIN = gql`
 			id
 			username
 			email
+			email_verified
 			verified
 			created_at
 			banned_forever
@@ -98,30 +99,12 @@ const GET_USER_FOR_ADMIN = gql`
 					username
 				}
 			}
-			chat_messages {
-				id
-				message
-				created_at
-			}
 			summary {
 				solves
 				reports_for
 				reports_created
 				profile_views
 				bans
-				matches {
-					count
-					wins
-					losses
-				}
-				match_solves {
-					count
-					average
-					min_time
-					max_time
-					sum
-					cube_type
-				}
 				timer_solves {
 					count
 					average
@@ -135,7 +118,6 @@ const GET_USER_FOR_ADMIN = gql`
 				friend_request
 				friend_request_accept
 				marketing_emails
-				elo_refund
 			}
 		}
 	}
@@ -147,6 +129,7 @@ interface Props {
 
 export default function ManageUser(props: Props) {
 	const {userId} = props;
+	const {t} = useTranslation('translation', {keyPrefix: 'admin_users.manage_user'});
 
 	const {data, loading, refetch} = useQuery<{getUserAccountForAdmin: UserAccountForAdmin}>(GET_USER_FOR_ADMIN, {
 		variables: {
@@ -162,41 +145,44 @@ export default function ManageUser(props: Props) {
 	}
 
 	if (!userData) {
-		return <Empty text="Kullanıcı bulunamadı" />;
+		return <Empty text={t('user_not_found')} />;
 	}
 
-	function getGenericTable(title: string, obj) {
-		const rows = Object.keys(obj || {}).map((key) => {
-			const name = key.replace(/_/g, ' ');
+	const wcaIntegration = userData.integrations?.find((int) => int.service_name === 'wca');
 
-			if (key.startsWith('_')) {
-				return null;
-			}
-
-			return (
-				<tr key={key}>
-					<td className={b('table-stat')}>{name}</td>
-					<td>{obj[key]}</td>
-				</tr>
-			);
-		});
-
-		let body = (
-			<table className="cd-table">
-				<tbody>{rows}</tbody>
-			</table>
-		);
-
-		if (!rows.length) {
-			body = <Empty text="No records found" />;
-		}
+	function getInfoTable() {
+		const rows = [
+			{label: 'Email', value: userData.email},
+			{label: t('email_verified'), value: userData.email_verified ? '✓' : '✗', highlight: userData.email_verified},
+			{label: t('join_country'), value: userData.join_country || '—'},
+			{label: t('join_ip'), value: userData.join_ip || '—'},
+			{label: t('wca_id'), value: wcaIntegration?.wca_id || '—'},
+		];
 
 		return (
-			<div className={b('table')}>
-				<h3>{title}</h3>
-				{body}
+			<div className={b('info')}>
+				<table className="cd-table">
+					<tbody>
+						{rows.map((row) => (
+							<tr key={row.label}>
+								<td className={b('table-stat')}>{row.label}</td>
+								<td>{row.value}</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
 			</div>
 		);
+	}
+
+	function formatSettingValue(value: any): string {
+		if (typeof value === 'boolean') {
+			return value ? t('bool_true') : t('bool_false');
+		}
+		if (value === null || value === undefined) {
+			return '—';
+		}
+		return String(value);
 	}
 
 	function getGenericGrid(title: string, list, name: string, sub) {
@@ -216,7 +202,7 @@ export default function ManageUser(props: Props) {
 		));
 
 		if (!output.length) {
-			output = <Empty text="No records found" />;
+			output = <Empty text={t('no_records')} />;
 		}
 
 		return (
@@ -229,38 +215,42 @@ export default function ManageUser(props: Props) {
 
 	function getSettings() {
 		const settings = userData.settings;
-		
-		// Add WCA ID to settings display
-		const wcaIntegration = userData.integrations?.find(int => int.service_name === 'wca');
-		const wcaId = wcaIntegration?.wca_id || '—';
-		
-		const settingsWithWca = {
-			...settings,
-			wca_id: wcaId
-		};
-		
-		return getGenericTable('Settings', settingsWithWca);
+		if (!settings) {
+			return null;
+		}
+
+		const settingKeys = Object.keys(settings).filter((key) => !key.startsWith('_'));
+
+		return (
+			<div className={b('table')}>
+				<h3>{t('settings')}</h3>
+				<table className="cd-table">
+					<tbody>
+						{settingKeys.map((key) => (
+							<tr key={key}>
+								<td className={b('table-stat')}>{t(`setting_${key}`, key.replace(/_/g, ' '))}</td>
+								<td>{formatSettingValue(settings[key])}</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</div>
+		);
 	}
 
 	function getBans() {
-		const bans = userData.bans;
-		return getGenericGrid('Bans', bans, 'reason', 'banned_until');
+		return getGenericGrid(t('bans_title'), userData.bans, 'reason', 'banned_until');
 	}
 
 	function getReports() {
-		const reports = userData.reports_for;
-		return getGenericGrid('Reports', reports, 'reason', null);
-	}
-
-	function getChatMessage() {
-		const messages = userData.chat_messages;
-		return getGenericGrid('Chat Messages', messages, 'message', null);
+		return getGenericGrid(t('reports_title'), userData.reports_for, 'reason', null);
 	}
 
 	return (
 		<div className={b()}>
 			<div className={b('user')}>
 				<Avatar target="_blank" user={userData} showEmail profile={userData.profile} />
+				{getInfoTable()}
 				<UserActions updateUser={refetch} user={userData} />
 			</div>
 
@@ -268,7 +258,6 @@ export default function ManageUser(props: Props) {
 				<UserSummary summary={userData.summary} />
 				<div className={b('section')}>{getBans()}</div>
 				<div className={b('section')}>{getReports()}</div>
-				<div className={b('section')}>{getChatMessage()}</div>
 				<div className={b('section')}>{getSettings()}</div>
 			</div>
 		</div>

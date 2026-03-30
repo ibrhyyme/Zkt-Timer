@@ -24,13 +24,16 @@ import { Setting } from '../../../server/schemas/Setting.schema';
 import { Friendship } from '../../../server/schemas/Friendship.schema';
 import { UserAccount } from '../../../server/schemas/UserAccount.schema';
 import { getAllLocalSettings } from '../../db/settings/local';
-import { getLocalStorage, setLocalStorageObject } from '../../util/data/local_storage';
+import { deleteLocalStorage, getLocalStorage, setLocalStorageObject } from '../../util/data/local_storage';
 import { getStore } from '../store';
 import { setGeneral } from '../../actions/general';
 import { generateId } from '../../../shared/code';
 import { emitEvent } from '../../util/event_handler';
 import { syncDailyGoalsFromServer } from '../daily-goal/helpers/storage';
 import { onVisibilityChange } from '../../util/app-visibility';
+import { isPro, isProEnabled } from '../../lib/pro';
+import { canSync } from '../../lib/sync-gate';
+import { importSessionsInChunks, importSolvesInChunks } from '../settings/data/import_data/review_import/chunked_import';
 
 export function initAnonymousAppData(callback) {
 	if (typeof window === 'undefined') {
@@ -63,8 +66,28 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 		return;
 	}
 
+	const canSyncUser = !isProEnabled() || isPro(me);
+
 	await initOfflineData(me, async (passed) => {
+		// Basic → Pro gecisi: lokal verileri sunucuya aktar
+		const needsMigration = canSyncUser && getLocalStorage('wasBasicUser') === 'true';
+		if (needsMigration && passed) {
+			// passed=true → IndexedDB'den LokiJS'e yuklendi, veriler hazir
+			try {
+				await migrateLocalDataToServer();
+			} catch (e) {
+				console.error('[Migration] Failed:', e);
+			}
+			deleteLocalStorage('wasBasicUser');
+			// Migration sonrasi fresh fetch yapilmali
+			passed = false;
+		}
+
 		if (!passed) {
+			if (needsMigration) {
+				deleteLocalStorage('wasBasicUser');
+			}
+
 			try {
 				await clearOfflineData();
 			} catch (e) {
@@ -96,8 +119,11 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 		}
 
 		const criticalPromises: Promise<any>[] = [];
-		if (!passed) {
+		if (!passed && canSyncUser) {
 			criticalPromises.push(getAllSessions());
+		} else if (!passed) {
+			// Basic kullanici: bos session collection olustur
+			initSessionDb([]);
 		}
 		criticalPromises.push(getAllSettings(me?.id));
 		criticalPromises.push(initNewScramble());
@@ -106,7 +132,7 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 			await Promise.all(criticalPromises);
 			initSolvesCollection();
 
-			if (!passed) {
+			if (!passed && canSyncUser) {
 				await initAllSolves();
 			}
 		} catch (e) {
@@ -117,15 +143,15 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 		callback();
 
 		// PHASE 2: Non-critical data — loads in background after UI is visible
-		loadNonCriticalData(me, dispatch, passed);
+		loadNonCriticalData(me, dispatch, passed, canSyncUser);
 	});
 }
 
-async function loadNonCriticalData(_me: UserAccount, dispatch: Dispatch<any>, passedFromOffline: boolean) {
+async function loadNonCriticalData(_me: UserAccount, dispatch: Dispatch<any>, passedFromOffline: boolean, canSyncUser: boolean) {
 	try {
 		const bgPromises: Promise<any>[] = [];
 
-		if (passedFromOffline) {
+		if (passedFromOffline && canSyncUser) {
 			emitEvent('solveDbUpdatedEvent');
 			bgPromises.push(syncNewSolves());
 		}
@@ -135,13 +161,17 @@ async function loadNonCriticalData(_me: UserAccount, dispatch: Dispatch<any>, pa
 		bgPromises.push(syncDailyGoalsFromServer());
 
 		await Promise.all(bgPromises);
-		await updateOfflineHash();
+		if (canSyncUser) {
+			await updateOfflineHash();
+		}
 	} catch (e) {
 		console.error(e);
 	}
 
 	// Tab gorunur oldugunda stale solve'lari temizle
-	initVisibilitySyncListener();
+	if (canSyncUser) {
+		initVisibilitySyncListener();
+	}
 }
 
 /**
@@ -167,6 +197,7 @@ function initVisibilitySyncListener() {
 
 	onVisibilityChange((visible) => {
 		if (!visible) return;
+		if (!canSync()) return;
 
 		const now = Date.now();
 		if (now - lastSyncTime < VISIBILITY_SYNC_DEBOUNCE_MS) return;
@@ -357,4 +388,61 @@ async function getAllFriends(dispatch) {
 
 	const res = await gqlQuery<{ allFriendships: Friendship[] }>(query);
 	return dispatch(addFriendships(res.data.allFriendships));
+}
+
+/**
+ * Basic → Pro gecisinde lokal verileri sunucuya aktar.
+ * initOfflineData passed=true olduktan sonra cagirilmali (LokiDB zaten yuklu).
+ */
+async function migrateLocalDataToServer() {
+	const solveCollection = getLokiDb().getCollection('solves');
+	const sessionCollection = getLokiDb().getCollection('sessions');
+
+	const localSessions = sessionCollection ? sessionCollection.find() : [];
+	const localSolves = solveCollection ? solveCollection.find() : [];
+
+	if (!localSessions.length && !localSolves.length) return;
+
+	console.log(`[Migration] ${localSessions.length} session, ${localSolves.length} solve aktarilacak`);
+
+	// Once session'lari yukle (solve'lar session_id'ye bagimli)
+	if (localSessions.length > 0) {
+		const sessionInputs = localSessions.map((s) => ({
+			id: s.id,
+			name: s.name || 'Sezon',
+			order: s.order || 0,
+		}));
+		await importSessionsInChunks(sessionInputs, () => {});
+	}
+
+	// Sonra solve'lari yukle (sadece SolveInput alanlarini gonder)
+	if (localSolves.length > 0) {
+		const solveInputs = localSolves.map((s) => ({
+			id: s.id,
+			time: s.time,
+			raw_time: s.raw_time,
+			cube_type: s.cube_type,
+			scramble: s.scramble,
+			session_id: s.session_id,
+			started_at: s.started_at,
+			ended_at: s.ended_at,
+			dnf: s.dnf,
+			plus_two: s.plus_two,
+			bulk: s.bulk,
+			notes: s.notes,
+			from_timer: s.from_timer ?? true,
+			trainer_name: s.trainer_name,
+			is_smart_cube: s.is_smart_cube,
+			training_session_id: s.training_session_id,
+			smart_device_id: s.smart_device_id,
+			smart_turn_count: s.smart_turn_count,
+			smart_turns: s.smart_turns,
+			smart_put_down_time: s.smart_put_down_time,
+			smart_pick_up_time: s.smart_pick_up_time,
+			inspection_time: s.inspection_time,
+		}));
+		await importSolvesInChunks(solveInputs, () => {});
+	}
+
+	console.log('[Migration] Aktarim tamamlandi');
 }

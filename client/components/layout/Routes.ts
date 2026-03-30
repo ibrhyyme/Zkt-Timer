@@ -137,7 +137,7 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/unsub-emails', null, App, UnsubEmails, false, true, false, true, false),
 
 	// Pro
-	route('/pro', null, App, ProPage, false),
+	route('/account/pro', App, Account, ProPage),
 
 	// Trainer
 	route('/trainer', null, App, Trainer, false),
@@ -176,6 +176,7 @@ export const routes: (PageContext | RedirectPath)[] = [
 	// Redirects
 	routeRedirect('/settings', '/settings/timer'),
 	routeRedirect('/account', '/account/personal-info'),
+	routeRedirect('/pro', '/account/pro'),
 	routeRedirect('/account/password', '/account/personal-info'),
 	routeRedirect('/community/friends', '/community/friends/list'),
 	routeRedirect('/community', '/community/friends/list'),

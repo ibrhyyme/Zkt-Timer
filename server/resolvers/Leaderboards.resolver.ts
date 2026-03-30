@@ -40,7 +40,7 @@ export class LeaderboardsResolver {
 		return await getTopAverages(cubeType, page);
 	}
 
-	@Authorized([Role.LOGGED_IN])
+	@Authorized([Role.LOGGED_IN, Role.PRO])
 	@Mutation(() => TopSolve)
 	async publishTopSolve(@Ctx() context: GraphQLContext, @Arg('solveId') solveId: string) {
 		const {user} = context;
@@ -53,7 +53,7 @@ export class LeaderboardsResolver {
 		return await submitTopSolve(user, solve);
 	}
 
-	@Authorized([Role.LOGGED_IN])
+	@Authorized([Role.LOGGED_IN, Role.PRO])
 	@Mutation(() => TopAverage)
 	async publishTopAverages(@Ctx() context: GraphQLContext, @Arg('solveIds', () => [String]) solveIds: string[]) {
 		const {user} = context;

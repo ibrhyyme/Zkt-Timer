@@ -15,6 +15,8 @@ import Button from '../../common/button/Button';
 import HorizontalLine from '../../common/horizontal_line/HorizontalLine';
 import {fetchAllCubeTypesSolved, FilterSolvesOptions} from '../../../db/solves/query';
 import {toastError, toastSuccess} from '../../../util/toast';
+import {isProEnabled, isPro} from '../../../lib/pro';
+import ProOnlyModal from '../../common/pro_only/ProOnlyModal';
 
 const b = block('select-times');
 
@@ -121,6 +123,10 @@ export default function PublishSolves(props: IModalProps) {
 				<td>{ao5pb && <Emblem text={getTimeString(ao5pb.time)} />}</td>
 			</tr>
 		);
+	}
+
+	if (isProEnabled() && !isPro(me)) {
+		return <ProOnlyModal />;
 	}
 
 	let exception = null;

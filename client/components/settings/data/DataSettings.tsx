@@ -11,6 +11,10 @@ import { fetchSolves } from '../../../db/solves/query';
 import { toastError, toastSuccess } from '../../../util/toast';
 import { clearOfflineData } from '../../layout/offline';
 import LoggedInOnly from '../../common/logged_in_only/LoggedInOnly';
+import { useMe } from '../../../util/hooks/useMe';
+import { isPro, isProEnabled } from '../../../lib/pro';
+import { useHistory } from 'react-router-dom';
+import { setGeneral } from '../../../actions/general';
 import ConfirmModal from '../../common/confirm_modal/ConfirmModal';
 import {
 	TimerSettingsGroup,
@@ -21,6 +25,9 @@ import {
 export default function DataSettings() {
 	const { t } = useTranslation();
 	const dispatch = useDispatch();
+	const me = useMe();
+	const history = useHistory();
+	const showProOverlay = isProEnabled() && !isPro(me);
 
 	const [exportingData, setExportingData] = useState(false);
 
@@ -121,24 +128,65 @@ export default function DataSettings() {
 							{exportingData ? '...' : t('data_settings.export_button')}
 						</button>
 					</TimerSettingsAction>
-					<TimerSettingsSelect
-						label={t('data_settings.import_data')}
-						description={t('data_settings.import_data_desc')}
-						value=""
-						options={[
-							{ label: t('data_settings.import_cstimer'), value: 'cstimer' },
-							{ label: t('data_settings.import_zkttimer'), value: 'zkttimer' },
-							{ label: t('data_settings.import_twistytimer'), value: 'twistytimer' },
-						]}
-						onChange={(v) => {
-							const typeMap: Record<string, ImportDataType> = {
-								cstimer: ImportDataType.CS_TIMER,
-								zkttimer: ImportDataType.ZKT_TIMER,
-								twistytimer: ImportDataType.TWISTY_TIMER,
-							};
-							if (typeMap[v]) openImportModal(typeMap[v]);
-						}}
-					/>
+					{showProOverlay ? (
+						<div style={{position: 'relative'}}>
+							<div style={{filter: 'blur(4px)', pointerEvents: 'none', userSelect: 'none'}}>
+								<TimerSettingsSelect
+									label={t('data_settings.import_data')}
+									description={t('data_settings.import_data_desc')}
+									value=""
+									options={[
+										{ label: t('data_settings.import_cstimer'), value: 'cstimer' },
+										{ label: t('data_settings.import_zkttimer'), value: 'zkttimer' },
+										{ label: t('data_settings.import_twistytimer'), value: 'twistytimer' },
+									]}
+									onChange={() => {}}
+								/>
+							</div>
+							<div
+								onClick={() => { dispatch(setGeneral('settings_modal_open', false)); history.push('/account/pro'); }}
+								style={{
+									position: 'absolute',
+									top: 0, left: 0, right: 0, bottom: 0,
+									display: 'flex',
+									flexDirection: 'column',
+									alignItems: 'center',
+									justifyContent: 'center',
+									gap: '6px',
+									cursor: 'pointer',
+									borderRadius: '8px',
+									background: 'rgba(0,0,0,0.4)',
+									backdropFilter: 'blur(4px)',
+									zIndex: 1,
+									transition: 'background 0.2s ease',
+								}}
+							>
+								<span style={{color: '#a78bfa', fontSize: '1.2rem'}}>&#9733;</span>
+								<span style={{color: '#fff', fontWeight: 600, fontSize: '0.85rem'}}>
+									{t('data_settings.import_pro_upsell')}
+								</span>
+							</div>
+						</div>
+					) : (
+						<TimerSettingsSelect
+							label={t('data_settings.import_data')}
+							description={t('data_settings.import_data_desc')}
+							value=""
+							options={[
+								{ label: t('data_settings.import_cstimer'), value: 'cstimer' },
+								{ label: t('data_settings.import_zkttimer'), value: 'zkttimer' },
+								{ label: t('data_settings.import_twistytimer'), value: 'twistytimer' },
+							]}
+							onChange={(v) => {
+								const typeMap: Record<string, ImportDataType> = {
+									cstimer: ImportDataType.CS_TIMER,
+									zkttimer: ImportDataType.ZKT_TIMER,
+									twistytimer: ImportDataType.TWISTY_TIMER,
+								};
+								if (typeMap[v]) openImportModal(typeMap[v]);
+							}}
+						/>
+					)}
 				</TimerSettingsGroup>
 
 				{/* Sıfırlama */}

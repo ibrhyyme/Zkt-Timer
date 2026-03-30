@@ -74,7 +74,7 @@ export default function QuickStats(props: Props) {
 	return (
 		<div className="w-full h-full relative group">
 			<div className={className}>{blocks}</div>
-			<div className="absolute top-0 right-0 group-hover:opacity-100 opacity-0">
+			<div className="absolute top-0 right-0 group-hover:opacity-100 group-hover:pointer-events-auto opacity-0 pointer-events-none">
 				<Button onClick={openCustomizer} text={t('timer_modules.customize_stats')} secondary glow />
 			</div>
 		</div>

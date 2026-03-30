@@ -1766,59 +1766,106 @@
 	}
 
 	&__landing-title {
-		font-size: 1.75rem;
+		font-family: Kontora, Poppins, Arial, Helvetica, sans-serif;
+		font-size: 2rem;
 		font-weight: 700;
+		letter-spacing: -0.02em;
 		margin: 0 0 0.5rem;
-		background: linear-gradient(to bottom, rgba(var(--text-color), 1), rgba(var(--text-color), 0.6));
-		background-clip: text;
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
+		color: rgb(var(--text-color));
 	}
 
 	&__landing-subtitle {
 		font-size: 0.9rem;
-		color: rgba(var(--text-color), 0.55);
+		color: rgba(var(--text-color), 0.45);
 		margin: 0;
 	}
 
 	&__landing-cards {
 		display: grid;
-		grid-template-columns: repeat(2, 1fr);
-		gap: 1.25rem;
-		max-width: 680px;
+		grid-template-columns: 1fr;
+		gap: 20px;
+		max-width: 760px;
 		width: 100%;
+		align-items: stretch;
+
+		@include md {
+			grid-template-columns: 1fr 1fr;
+			gap: 24px;
+		}
 	}
 
+	&__landing-electric-wrap {
+		height: 100%;
+	}
+
+	// ─── Card Base ──────────────────────────────────
 	&__landing-card {
-		@include dark-glass(0.35, 12px, 0.06);
-		border-radius: 16px;
-		padding: 1.25rem 1.5rem 1.5rem;
+		border-radius: 20px;
+		padding: 32px 24px 28px;
 		display: flex;
 		flex-direction: column;
-		align-items: center;
-		text-align: center;
-		gap: 0.6rem;
-		cursor: pointer;
-		transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 		position: relative;
-		overflow: hidden;
+		height: 100%;
+		cursor: pointer;
+		transition: transform 0.2s ease, box-shadow 0.2s ease;
+		background: rgba(var(--button-color), 0.45);
+		border: 1px solid rgba(var(--text-color), 0.08);
+
+		@include md {
+			padding: 36px 28px 32px;
+		}
 
 		&:hover {
-			transform: translateY(-4px);
-			box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3) !important;
+			transform: translateY(-3px);
+			box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+		}
+
+		&--pro {
+			background: #1a1225;
+			border-color: rgba(124, 58, 237, 0.25);
+
+			&:hover {
+				box-shadow: 0 8px 24px rgba(124, 58, 237, 0.15);
+			}
 		}
 
 		&--locked {
 			cursor: not-allowed;
-			opacity: 0.85;
 
 			&:hover {
 				transform: none;
-				box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2) !important;
+				box-shadow: none;
 			}
 		}
 	}
 
+	// ─── Pro Badge ──────────────────────────────────
+	&__landing-pro-badge {
+		position: absolute;
+		top: -14px;
+		left: 50%;
+		transform: translateX(-50%);
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		padding: 6px 20px;
+		border-radius: 50px;
+		background: #7c3aed;
+		font-size: 0.7rem;
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		color: #fff;
+		white-space: nowrap;
+		box-shadow: 0 4px 16px rgba(124, 58, 237, 0.4);
+		z-index: 3;
+
+		svg {
+			width: 13px;
+			height: 13px;
+		}
+	}
+
+	// ─── Lock Overlay ───────────────────────────────
 	&__landing-card-lock {
 		position: absolute;
 		bottom: 0;
@@ -1829,114 +1876,169 @@
 		justify-content: center;
 		gap: 0.4rem;
 		padding: 0.6rem 1rem;
-		background: rgba(0, 0, 0, 0.7);
+		background: rgba(26, 18, 37, 0.85);
 		backdrop-filter: blur(6px);
 		z-index: 2;
-		border-radius: 0 0 16px 16px;
-		color: rgba(var(--text-color), 0.85);
+		border-radius: 0 0 20px 20px;
+		color: #a78bfa;
 		font-size: 0.78rem;
 		font-weight: 600;
 	}
 
+	// ─── Card Top ───────────────────────────────────
+	&__landing-card-top {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		margin-bottom: 20px;
+	}
+
 	&__landing-card-icon {
-		width: 72px;
-		height: 72px;
-		border-radius: 50%;
+		width: 48px;
+		height: 48px;
+		border-radius: 14px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		margin-bottom: 8px;
 
 		&--blue {
 			background: rgba(36, 107, 253, 0.15);
-			color: #246bfd;
+			color: #5b8df7;
 		}
 
 		&--purple {
-			background: rgba(168, 85, 247, 0.15);
-			color: #a855f7;
+			background: rgba(124, 58, 237, 0.15);
+			color: #a78bfa;
 		}
 	}
 
-	&__landing-card-title {
-		font-size: 1.1rem;
-		font-weight: 600;
-		margin: 0;
+	&__landing-card-name {
+		font-family: Kontora, Poppins, Arial, Helvetica, sans-serif;
+		font-size: 1.35rem;
+		font-weight: 700;
 		color: rgb(var(--text-color));
+		margin: 0;
+
+		&--pro {
+			color: #fff;
+		}
 	}
 
 	&__landing-card-desc {
-		font-size: 0.8rem;
-		color: rgba(var(--text-color), 0.55);
+		font-size: 0.85rem;
+		color: rgba(var(--text-color), 0.5);
 		margin: 0;
 		line-height: 1.4;
+
+		&--pro {
+			color: rgba(255, 255, 255, 0.45);
+		}
 	}
 
-	&__landing-card-section {
-		width: 100%;
-		text-align: left;
+	// ─── Divider ────────────────────────────────────
+	&__landing-card-divider {
+		height: 1px;
+		background: rgba(var(--text-color), 0.08);
+		margin-bottom: 16px;
+
+		&--pro {
+			background: rgba(124, 58, 237, 0.15);
+		}
 	}
 
-	&__landing-card-section-title {
-		font-size: 0.7rem;
+	// ─── Includes ───────────────────────────────────
+	&__landing-card-includes {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		margin-bottom: 16px;
+	}
+
+	&__landing-card-includes-label {
+		font-size: 0.75rem;
 		font-weight: 600;
-		color: rgba(var(--text-color), 0.4);
 		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		margin: 0 0 0.3rem;
+		letter-spacing: 0.08em;
+		color: rgba(var(--text-color), 0.4);
+
+		&--pro {
+			color: #a78bfa;
+		}
+	}
+
+	// ─── Features ───────────────────────────────────
+	&__landing-card-features {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+
+	&__landing-card-feature {
 		display: flex;
 		align-items: center;
-		gap: 0.35rem;
-	}
+		gap: 10px;
+		padding: 5px 0;
 
-	&__landing-card-list {
-		list-style: none;
-		padding: 0;
-		margin: 0 0 0.15rem;
-		display: flex;
-		flex-direction: column;
-		gap: 0.2rem;
-
-		li {
-			font-size: 0.75rem;
-			color: rgba(var(--text-color), 0.6);
-			padding-left: 0.5rem;
+		svg {
+			width: 15px;
+			height: 15px;
+			min-width: 15px;
+			color: rgba(var(--text-color), 0.4);
 		}
-	}
 
-	&__landing-card-features {
-		list-style: none;
-		padding: 0;
-		margin: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 0.3rem;
-
-		li {
-			display: flex;
-			align-items: center;
-			gap: 0.4rem;
-			font-size: 0.75rem;
-			color: rgba(var(--text-color), 0.6);
-		}
-	}
-
-	&__landing-card-badge {
-		margin-top: auto;
-		padding: 0.25rem 0.75rem;
-		border-radius: 999px;
-		font-size: 0.7rem;
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
-
-		&--free {
-			background: rgba(102, 187, 106, 0.15);
-			color: #66bb6a;
+		span {
+			font-size: 0.88rem;
+			font-weight: 500;
+			color: rgba(var(--text-color), 0.75);
 		}
 
 		&--pro {
-			background: rgba(168, 85, 247, 0.15);
-			color: #a855f7;
+			svg {
+				color: #a78bfa;
+			}
+
+			span {
+				color: rgba(255, 255, 255, 0.8);
+			}
+		}
+	}
+
+	// ─── CTA Button ─────────────────────────────────
+	&__landing-card-cta {
+		margin-top: auto;
+		padding-top: 20px;
+		width: 100%;
+		padding: 12px 20px;
+		border-radius: 12px;
+		font-size: 0.88rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		border: 1px solid rgba(var(--text-color), 0.12);
+		background: rgba(var(--text-color), 0.04);
+		color: rgba(var(--text-color), 0.6);
+		font-family: inherit;
+
+		&:hover {
+			background: rgba(var(--text-color), 0.08);
+		}
+
+		&--pro {
+			background: #7c3aed;
+			border: none;
+			color: #fff;
+			box-shadow: 0 4px 20px rgba(124, 58, 237, 0.35);
+
+			&:hover:not(:disabled) {
+				filter: brightness(1.1);
+				box-shadow: 0 6px 28px rgba(124, 58, 237, 0.45);
+			}
+
+			&:disabled {
+				opacity: 0.6;
+				cursor: not-allowed;
+			}
 		}
 	}
 
@@ -1947,16 +2049,7 @@
 		}
 
 		&__landing-title {
-			font-size: 1.35rem;
-		}
-
-		&__landing-cards {
-			grid-template-columns: 1fr;
-			gap: 1rem;
-		}
-
-		&__landing-card {
-			padding: 1.25rem;
+			font-size: 1.5rem;
 		}
 	}
 

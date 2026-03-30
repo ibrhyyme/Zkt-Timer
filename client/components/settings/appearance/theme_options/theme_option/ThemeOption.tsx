@@ -6,12 +6,12 @@ import {useDispatch} from 'react-redux';
 import {setSetting} from '../../../../../db/settings/update';
 import {useMe} from '../../../../../util/hooks/useMe';
 import Tag from '../../../../common/tag/Tag';
-import {openModal} from '../../../../../actions/general';
-import ProOnlyModal from '../../../../common/pro_only/ProOnlyModal';
 import {Lock} from 'phosphor-react';
 import {getSetting} from '../../../../../db/settings/query';
 import {APP_THEME_PRESETS, PresetThemeValues} from '../../../../../util/themes/theme_consts';
 import {isNotPro, isProEnabled} from '../../../../../util/pro';
+import {useHistory} from 'react-router-dom';
+import {setGeneral} from '../../../../../actions/general';
 
 const b = block('theme-option');
 
@@ -22,6 +22,7 @@ interface Props {
 export default function ThemeOption(props: Props) {
 	const dispatch = useDispatch();
 	const me = useMe();
+	const history = useHistory();
 
 	const theme = APP_THEME_PRESETS[props.theme];
 	const selected = jsonStr(theme.values) === getCurrentTheme();
@@ -38,7 +39,8 @@ export default function ThemeOption(props: Props) {
 
 	function selectTheme() {
 		if (locked) {
-			dispatch(openModal(<ProOnlyModal />));
+			dispatch(setGeneral('settings_modal_open', false));
+			history.push('/account/pro');
 			return;
 		}
 		for (const key of Object.keys(theme.values)) {

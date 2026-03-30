@@ -660,7 +660,8 @@
 		"twistytimer_step_3": "Sağ üst köşedeki üç nokta menüsüne dokunun ve \"Dışa aktar\" seçin",
 		"twistytimer_step_4": "\"Dış kaynak olarak dışa aktar\" seçeneğini kullanarak dosyayı kaydedin",
 		"category_management": "Veri Yönetimi",
-		"category_reset": "Sıfırlama"
+		"category_reset": "Sıfırlama",
+		"import_pro_upsell": "Verilerinizi aktarmak için Pro'ya geçin"
 	},
 	"language": {
 		"label": "Dil",
@@ -738,7 +739,8 @@
 		"putdown_time": "Bırakma süresi",
 		"overview_tab": "Genel Bakış",
 		"time_label": "Süre",
-		"deleted_from_other_device": "Bu çözüm başka bir cihazdan silinmiş"
+		"deleted_from_other_device": "Bu çözüm başka bir cihazdan silinmiş",
+		"pro_stats_upsell": "Detaylı istatistikler için Pro'ya geçin"
 	},
 	"sessions": {
 		"page_title": "Sezonlar",
@@ -1040,7 +1042,67 @@
 		"delete_published_solves": "Yayınlanan tüm çözümleri sil",
 		"ban_permanently": "Kullanıcıyı süresiz yasakla",
 		"ban_button": "Kullanıcıyı Yasakla",
-		"user_banned": "{{username}} kullanıcı {{duration}} süresiyle yasaklandı"
+		"user_banned": "{{username}} kullanıcı {{duration}} süresiyle yasaklandı",
+		"manage_user": {
+			"user_not_found": "Kullanıcı bulunamadı",
+			"overview": "Genel Bakış",
+			"solves_count": "Çözümler",
+			"bans_count": "Yasaklar",
+			"reports_received": "Alınan Raporlar",
+			"reports_created": "Oluşturulan Raporlar",
+			"timer_solves": "Zamanlayıcı Çözümleri",
+			"no_data": "Veri yok",
+			"total_time": "Toplam Süre",
+			"average": "Ortalama",
+			"min_time": "Min Süre",
+			"max_time": "Maks Süre",
+			"settings": "Ayarlar",
+			"bans_title": "Yasaklar",
+			"reports_title": "Raporlar",
+			"no_records": "Kayıt bulunamadı",
+			"wca_id": "WCA ID",
+			"join_country": "Kayıt Ülkesi",
+			"join_ip": "Kayıt IP",
+			"email_verified": "Email Doğrulandı",
+			"email_not_verified": "Email Doğrulanmadı",
+			"ban_user": "Yasakla",
+			"unban_user": "Yasağı Kaldır",
+			"verify_user": "Onayla",
+			"unverify_user": "Onayı Kaldır",
+			"make_pro": "Pro Yap",
+			"remove_pro": "Pro Kaldır",
+			"make_premium": "Premium Yap",
+			"remove_premium": "Premium Kaldır",
+			"delete_user": "Kullanıcıyı Sil",
+			"delete_confirm": "\"{{username}}\" kullanıcısını silmek istediğine emin misin? Bu işlem geri alınamaz.",
+			"user_deleted": "Kullanıcı hesabı silindi",
+			"user_verified": "Kullanıcı başarıyla onaylandı",
+			"user_unverified": "Kullanıcının onayı kaldırıldı",
+			"pro_given": "{{username}} kullanıcısına Pro verildi",
+			"pro_removed": "{{username}} kullanıcısından Pro kaldırıldı",
+			"premium_given": "{{username}} kullanıcısına Premium verildi",
+			"premium_removed": "{{username}} kullanıcısından Premium kaldırıldı",
+			"user_unbanned": "Kullanıcının yasağı kaldırıldı",
+			"setting_id": "ID",
+			"setting_focus_mode": "Odak Modu",
+			"setting_freeze_time": "Dondurma Süresi",
+			"setting_inspection": "Denetim",
+			"setting_manual_entry": "Manuel Giriş",
+			"setting_inspection_delay": "Denetim Gecikmesi",
+			"setting_inverse_time_list": "Ters Zaman Listesi",
+			"setting_hide_time_when_solving": "Çözerken Zamanı Gizle",
+			"setting_nav_collapsed": "Menü Daraltılmış",
+			"setting_timer_decimal_points": "Ondalık Basamak",
+			"setting_pb_confetti": "PB Konfeti",
+			"setting_play_inspection_sound": "Denetim Sesi",
+			"setting_zero_out_time_after_solve": "Çözüm Sonrası Sıfırla",
+			"setting_confirm_delete_solve": "Silmeyi Onayla",
+			"setting_use_space_with_smart_cube": "Akıllı Küp ile Boşluk",
+			"setting_require_period_in_manual_time_entry": "Manuel Girişte Nokta Zorunlu",
+			"setting_cube_type": "Küp Türü",
+			"bool_true": "Evet",
+			"bool_false": "Hayır"
+		}
 	},
 	"admin_email": {
 		"page_title": "Mail Gönder",
@@ -1363,31 +1425,112 @@
 	},
 	"pro_page": {
 		"title": "Pro",
+		"hero_title": "Planını seç",
 		"subtitle": "Ciddi speedcuber'lar için tasarlanmış özel Pro özellikleriyle küp çözme deneyimini bir üst seviyeye taşı.",
-		"six_months": "6 Ay",
-		"one_year": "1 Yıl",
-		"per_month": "/ay",
-		"best_value": "En İyi Değer",
-		"bonus_months": "+2 ay bedava",
+		"whats_included": "Dahil olanlar:",
 		"coming_soon": "Yakında",
-		"features_title": "Pro'ya dahil olanlar",
-		"pricing_title": "Planını seç",
-		"plan_feature_all_pro": "Tüm Pro özellikler",
-		"plan_feature_ai": "Yapay zeka destekli koçluk",
-		"plan_feature_themes": "Özel temalar",
-		"plan_feature_support": "Öncelikli destek",
-		"feature_ai_coach": "Yapay Zeka Destekli Koç",
-		"feature_ai_coach_desc": "Çözüm kalıplarınızı öğrenen yapay zeka asistanından kişiselleştirilmiş antrenman planları ve gerçek zamanlı analizler alın.",
-		"feature_trainer": "Özel Eğitim Sayfaları",
-		"feature_trainer_desc": "F2L, OLL, PLL ve daha fazlası için uyarlanabilir zorluğa sahip özel eğitim modüllerine erişin.",
-		"feature_stats": "Gelişmiş Analizler",
-		"feature_stats_desc": "Detaylı grafikler, trend analizleri ve çözüm detaylarıyla performansınızı derinlemesine inceleyin.",
-		"feature_themes": "Özel Temalar",
-		"feature_themes_desc": "Pro'ya özel renk temaları ve görsel kişiselleştirme seçenekleriyle zamanlayıcınızı özelleştirin.",
-		"feature_support": "Öncelikli Destek",
-		"feature_support_desc": "Daha hızlı yanıtlar ve özellik istekleri için geliştirme ekibine doğrudan erişim sağlayın.",
-		"feature_early_access": "Erken Erişim",
-		"feature_early_access_desc": "Yeni özellikler herkese açılmadan önce ilk deneyen siz olun."
+		"free": "Ücretsiz",
+		"basic_desc": "Hemen başla, temel özelliklerle.",
+		"pro_desc": "Tüm özelliklerin kilidi açılsın.",
+		"current_plan": "Mevcut plan",
+		"click_hint": "Detaylar için tıkla",
+		"all_basic_included": "Tüm ücretsiz özellikler dahil",
+		"basic_features": {
+			"timer": {
+				"title": "Zamanlayıcı",
+				"desc": "Klavye, dokunmatik, StackMat, GAN Timer ve akıllı küp dahil istediğin yöntemle süre tut."
+			},
+			"sessions": {
+				"title": "Sezonlar",
+				"desc": "İstediğin kadar sezon oluştur, birleştir veya sil. Çözümlerin cihazında güvende kalır."
+			},
+			"unlimited_solves": {
+				"title": "Sınırsız çözüm",
+				"desc": "Herhangi bir çözüm limiti yok. Dilediğin kadar çöz, not ekle, düzenle."
+			},
+			"rooms": {
+				"title": "Topluluk odaları",
+				"desc": "Odaya gir, aynı scramble'ı çöz, sohbet et. Arkadaşlarınla gerçek zamanlı yarış."
+			},
+			"basic_stats": {
+				"title": "Temel istatistikler",
+				"desc": "PB, ao5, ao12 ve çözüm sayısı gibi temel performans verilerini takip et."
+			},
+			"smart_cube_basic": {
+				"title": "Akıllı küp bağlantısı",
+				"desc": "Bluetooth ile akıllı küpünü bağla, sürelerin ve hamlelerin otomatik kaydedilsin."
+			},
+			"trainer_basic": {
+				"title": "Algoritma eğitmeni",
+				"desc": "OLL, PLL, F2L ve daha fazlası için algoritma ezberle ve pratik yap."
+			},
+			"friends": {
+				"title": "Arkadaşlık sistemi",
+				"desc": "Arkadaş ekle, profillerini incele ve birlikte çöz."
+			},
+			"notifications": {
+				"title": "Bildirimler",
+				"desc": "Arkadaşlık istekleri, oda davetleri ve daha fazlası için anlık bildirim al."
+			},
+			"settings_sync": {
+				"title": "Ayar senkronizasyonu",
+				"desc": "Timer ayarların tüm cihazlarında aynı kalır. Bir kere ayarla, her yerde kullan."
+			},
+			"two_themes": {
+				"title": "2 tema",
+				"desc": "Koyu ve açık tema arasında geçiş yap."
+			}
+		},
+		"features": {
+			"sync": {
+				"title": "Cihazlar arası senkronizasyon",
+				"desc": "Telefonunda çöz, bilgisayarında kaldığın yerden devam et. Tüm çözümlerin, sezonların ve istatistiklerin otomatik olarak buluta yedeklenir. Cihaz değiştirsen, tarayıcını temizlesen, hatta uygulamayı silip yeniden yüklesen bile — her şey olduğu gibi geri gelir. Verilerini bir daha asla kaybetme."
+			},
+			"smart_cube_analysis": {
+				"title": "Akıllı küp detaylı analiz",
+				"desc": "Çözümünü adım adım analiz et: Cross, F2L, OLL, PLL — her birinin süresini, hamle sayısını ve TPS'ini ayrı ayrı gör. Hangi aşamada zaman kaybettiğini, hangi algoritmada yavaşladığını tek bakışta anla. Genel bakış grafikleri, adım adım detay tablosu ve çözüm animasyonuyla gelişimini somut verilerle takip et."
+			},
+			"trainer_smart_cube": {
+				"title": "Akıllı küple algoritma çalış",
+				"desc": "Akıllı küpünü Bluetooth ile bağla, algoritmayı küp üzerinde çevir — doğru mu yanlış mı anında ekranda gör. Elle süre tutmaya, algoritmayı kafadan kontrol etmeye son. Küpün senin antrenörün olur, her tekrarında daha hızlı ve daha doğru olursun."
+			},
+			"themes": {
+				"title": "6 özel tema",
+				"desc": "Cyberpunk'ın neon ışıkları, Tokyo'nun gece sokakları, Norman'ın minimalizmi, Save the Bees'in sıcak tonları, Night Owl'ın karanlığı ve The PhD Student'ın akademik havası — zamanlayıcına tam anlamıyla karakter kat. Her tema renkleri, arka planı ve genel havayı baştan değiştirir."
+			},
+			"advanced_stats": {
+				"title": "Gelişmiş istatistikler",
+				"desc": "Temel istatistiklerin ötesine geç. Tüm istatistik blokları açılır — ao5, ao12, ao50, ao100, session ortalamaları ve daha fazlası. Detaylı grafiklerle zaman içindeki gelişimini izle, trendleri yakala ve zayıf noktalarını tespit et. İstatistik modüllerini istediğin gibi özelleştir."
+			},
+			"leaderboard_publish": {
+				"title": "Liderlik tablosunda boy göster",
+				"desc": "En iyi tekini veya ao5 ortalamanı liderlik tablosuna yayınla ve profilinde PB'lerini sergile. Diğer speedcuber'lar senin çözümlerini görsün, ilham alsın. Küp çözme sadece kendin için değil — dünyaya da göster ne kadar hızlısın."
+			},
+			"timer_background": {
+				"title": "Özel arka plan",
+				"desc": "Zamanlayıcına kendi fotoğrafını veya sevdiğin bir görseli arka plan olarak koy. Her zamanlayıcıyı açtığında sana özel bir deneyim yaşa. Sıkıldığında değiştir, sıfırla — tamamen senin kontrolünde."
+			},
+			"room_music": {
+				"title": "Odalarda müzik dinle",
+				"desc": "Odaya gir, istediğin şarkıyı ara ve küp çözerken reklamsız dinle. YouTube'un devasa kütüphanesinden dilediğin şarkıyı seç, arka planda çalsın. Müzik çaları tamamen odanın içinde, ekstra sekme açmana gerek yok. Çözerken kendi müziğinle motivasyonunu yüksek tut."
+			},
+			"pro_badge": {
+				"title": "Pro rozeti",
+				"desc": "Profil fotoğrafının etrafında parlayan özel Pro halkası. Odalarda, liderlik tablosunda, profil sayfanda — her yerde Pro olduğun belli olur. Sadece bir rozet değil, topluluktaki statünün simgesi."
+			},
+			"data_import": {
+				"title": "Veri aktarımı",
+				"desc": "Daha önce CSTimer, ZKTTimer veya TwistyTimer kullanıyordun? Yılların emeğini kaybetme — tüm geçmiş çözümlerini, sürelerini ve istatistiklerini tek tıkla Zkt-Timer'a aktar. Sıfırdan başlamak yerine kaldığın yerden devam et."
+			},
+			"stats_customization": {
+				"title": "İstatistik özelleştirme",
+				"desc": "Zamanlayıcının altındaki istatistik modüllerini tamamen sana göre ayarla. Hangi blokları görmek istediğine sen karar ver — ekle, çıkar, sırasını değiştir. Sadece senin için önemli olan verileri gör, gereksiz bilgilerle uğraşma."
+			},
+			"solve_sharing": {
+				"title": "Çözüm paylaşımı",
+				"desc": "Akıllı küpte yaptığın çözümü tek bir link olarak paylaş. Arkadaşların linke tıklasın ve senin çözümünü adım adım incelesin — hangi algoritmayı kullandığını, her aşamada kaç saniye harcadığını, TPS'ini ve hamle sayısını detaylıca görsünler."
+			}
+		}
 	},
 	"wca_integration": {
 		"profile_connected": "WCA Profili Bağlandı",
@@ -1592,12 +1735,64 @@
 	},
 	"pro": {
 		"feature_title": "Pro Özellik",
-		"feature_description": "Bu özellik Pro kullanıcılara özeldir. Pro'ya yükselterek tüm temalara ve daha fazlasına erişebilirsiniz. (Yakında)",
-		"music_title": "Odalarda Müzik Dinle",
-		"music_description": "Arkadaşlarınla küp çözerken birlikte müzik dinle! Pro üyelere özel bu özellikle odalarında müzik keyfi yap.",
-		"music_youtube": "YouTube'dan sınırsız, reklamsız müzik",
-		"music_friends": "Arkadaşlarınla birlikte dinle",
-		"music_unlimited": "Sınırsız şarkı arama ve çalma"
+		"feature_description": "Bu özellik Pro üyelere özel. Pro'ya geçerek tüm özelliklerin kilidini aç.",
+		"upgrade_button": "Pro'ya Geç",
+		"modal": {
+			"room_music": {
+				"title": "Odalarda Müzik Dinle",
+				"desc": "Odada küp çözerken istediğin müziği reklamsız dinle. Pro ile müzik deneyimini yaşa."
+			},
+			"leaderboard": {
+				"title": "Liderlik Tablosunda Boy Göster",
+				"desc": "En iyi çözümlerini yayınla ve diğer speedcuber'lara ilham ver."
+			},
+			"data_import": {
+				"title": "Veri Aktarımı",
+				"desc": "Geçmiş çözümlerini tek tıkla Zkt-Timer'a taşı."
+			},
+			"smart_cube": {
+				"title": "Akıllı Küp Detaylı Analiz",
+				"desc": "Çözümlerini adım adım analiz et, her aşamanın detaylarını gör."
+			},
+			"themes": {
+				"title": "Özel Temalar",
+				"desc": "6 özel tema ile zamanlayıcına karakter kat."
+			},
+			"stats": {
+				"title": "İstatistik Özelleştirme",
+				"desc": "İstatistik modüllerini istediğin gibi ayarla."
+			},
+			"trainer": {
+				"title": "Akıllı Küple Algoritma Çalış",
+				"desc": "Küpünle algoritma çalış, anında geri bildirim al."
+			}
+		},
+		"highlights": {
+			"sync": "Tüm cihazlarda otomatik senkronizasyon",
+			"themes": "6 özel tema ile tam kişiselleştirme",
+			"advanced_stats": "Detaylı grafikler ve trend analizi",
+			"music_youtube": "YouTube'dan sınırsız, reklamsız müzik",
+			"music_friends": "Küp çözerken kendi müziğini dinle",
+			"music_unlimited": "Sınırsız şarkı arama ve çalma",
+			"leaderboard_publish": "En iyi tekini veya ao5'ini yayınla",
+			"leaderboard_profile": "PB'lerini profilinde sergile",
+			"leaderboard_compete": "Diğer speedcuber'larla yarış",
+			"import_history": "Tüm geçmiş çözümlerini aktar",
+			"import_sources": "CSTimer, ZKTTimer, TwistyTimer desteği",
+			"import_one_click": "Tek tıkla veri aktarımı",
+			"smart_analysis": "Her adımın süresini ve TPS'ini gör",
+			"smart_steps": "Cross, F2L, OLL, PLL ayrı ayrı analiz",
+			"smart_animation": "Çözüm animasyonu ile detaylı inceleme",
+			"themes_six": "Cyberpunk, Tokyo, Norman ve daha fazlası",
+			"themes_colors": "Renkler ve arka plan tamamen değişir",
+			"themes_atmosphere": "Her tema farklı bir atmosfer yaratır",
+			"stats_blocks": "Tüm istatistik blokları açık",
+			"stats_charts": "Detaylı grafikler ve trendler",
+			"stats_customize": "Modülleri ekle, çıkar, sırasını değiştir",
+			"trainer_ble": "Bluetooth ile akıllı küp bağlantısı",
+			"trainer_feedback": "Algoritma doğruluğu için anında geri bildirim",
+			"trainer_speed": "Her tekrarda daha hızlı ve daha doğru"
+		}
 	},
 	"battle": {
 		"mobile_only": "Mücadele modu yalnızca mobilde kullanılabilir",

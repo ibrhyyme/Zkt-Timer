@@ -4,6 +4,8 @@ import { processQueue, isOnline } from '../../../util/offline-sync';
 import { useEventListener } from '../../../util/event_handler';
 import './PendingSyncBadge.scss';
 import block from '../../../styles/bem';
+import { useMe } from '../../../util/hooks/useMe';
+import { isPro, isProEnabled } from '../../../lib/pro';
 
 const b = block('pending-sync-badge');
 
@@ -11,6 +13,7 @@ const b = block('pending-sync-badge');
  * Offline pending solve sayısını gösteren ve sync tetikleyen badge
  */
 export default function PendingSyncBadge() {
+    const me = useMe();
     const [pendingCount, setPendingCount] = useState(0);
     const [syncing, setSyncing] = useState(false);
 
@@ -52,6 +55,11 @@ export default function PendingSyncBadge() {
         } finally {
             setSyncing(false);
         }
+    }
+
+    // Pro degilse sync yok, badge anlamsiz
+    if (isProEnabled() && !isPro(me)) {
+        return null;
     }
 
     // Pending yoksa gösterme

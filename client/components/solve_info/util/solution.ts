@@ -10,7 +10,7 @@ export function getSolveStepsWithChildren(solve: Solve): SolveStepWithChildren[]
 	const steps = [];
 	const children = [];
 
-	for (const step of solve.solve_method_steps) {
+	for (const step of (solve.solve_method_steps || [])) {
 		if (step.parent_name) {
 			children.push(step);
 		} else {
