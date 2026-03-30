@@ -1101,7 +1101,21 @@
 			"setting_require_period_in_manual_time_entry": "Manuel Girişte Nokta Zorunlu",
 			"setting_cube_type": "Küp Türü",
 			"bool_true": "Evet",
-			"bool_false": "Hayır"
+			"bool_false": "Hayır",
+			"set_pro_title": "{{username}} — {{type}} Yap",
+			"set_pro_desc": "Kullanıcıyı {{type}} yap ve süre belirle.",
+			"pro_duration": "Süre",
+			"pro_duration_unit": "Birim",
+			"duration_minute": "Dakika",
+			"duration_hour": "Saat",
+			"duration_day": "Gün",
+			"duration_week": "Hafta",
+			"duration_month": "Ay",
+			"duration_year": "Yıl",
+			"pro_forever": "Süresiz (sınırsız)",
+			"forever": "Süresiz",
+			"set_pro_button": "{{type}} Yap",
+			"pro_set_success": "{{username}} kullanıcısına {{duration}} süreyle {{type}} verildi"
 		}
 	},
 	"admin_email": {

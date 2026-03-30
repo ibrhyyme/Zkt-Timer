@@ -34,8 +34,14 @@ class IPublicUserAccount {
 	@Field()
 	is_pro: boolean;
 
+	@Field({nullable: true})
+	pro_expires_at?: Date;
+
 	@Field()
 	is_premium: boolean;
+
+	@Field({nullable: true})
+	premium_expires_at?: Date;
 
 	@Field({ nullable: true })
 	last_solve_at?: Date;

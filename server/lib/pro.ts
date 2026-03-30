@@ -9,6 +9,8 @@ export const isProEnabled = (): boolean => {
 };
 
 export function isPro(user?: InternalUserAccount): boolean {
+	if (user?.pro_expires_at && new Date() > new Date(user.pro_expires_at)) return false;
+	if (user?.premium_expires_at && new Date() > new Date(user.premium_expires_at)) return false;
 	return user?.is_pro || user?.is_premium || false;
 }
 
@@ -25,6 +27,7 @@ export function isLoggedInAndNotPro(user?: InternalUserAccount): boolean {
 }
 
 export function isPremium(user?: InternalUserAccount): boolean {
+	if (user?.premium_expires_at && new Date() > new Date(user.premium_expires_at)) return false;
 	return user?.is_premium ?? false;
 }
 

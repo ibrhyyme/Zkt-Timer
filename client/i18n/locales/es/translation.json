@@ -1101,7 +1101,21 @@
 			"setting_require_period_in_manual_time_entry": "Punto Requerido en Entrada Manual",
 			"setting_cube_type": "Tipo de Cubo",
 			"bool_true": "Sí",
-			"bool_false": "No"
+			"bool_false": "No",
+			"set_pro_title": "{{username}} — Hacer {{type}}",
+			"set_pro_desc": "Establecer membresía {{type}} con una duración.",
+			"pro_duration": "Duración",
+			"pro_duration_unit": "Unidad",
+			"duration_minute": "Minuto",
+			"duration_hour": "Hora",
+			"duration_day": "Día",
+			"duration_week": "Semana",
+			"duration_month": "Mes",
+			"duration_year": "Año",
+			"pro_forever": "Ilimitado (sin expiración)",
+			"forever": "Ilimitado",
+			"set_pro_button": "Hacer {{type}}",
+			"pro_set_success": "Se ha dado {{type}} a {{username}} por {{duration}}"
 		}
 	},
 	"admin_email": {

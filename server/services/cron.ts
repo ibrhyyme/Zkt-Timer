@@ -16,6 +16,7 @@ export function initCronJobs() {
 	initSiteMapGenerationCronJob();
 	initUnverifiedAccountCleanupCronJob();
 	initDailyGoalReminderCronJob();
+	initProPremiumExpiryCronJob();
 }
 
 function initSiteMapGenerationCronJob() {
@@ -64,6 +65,52 @@ function initUnverifiedAccountCleanupCronJob() {
 	logger.debug('Initiated cron job for unverified account cleanup.', {
 		running: job.running,
 	});
+}
+
+function initProPremiumExpiryCronJob() {
+	const job = new CronJob(
+		'0 0 * * * *',
+		async () => {
+			try {
+				const prisma = getPrisma();
+				const now = new Date();
+
+				const proResult = await prisma.userAccount.updateMany({
+					where: {
+						is_pro: true,
+						pro_expires_at: {lt: now},
+					},
+					data: {
+						is_pro: false,
+						pro_expires_at: null,
+					},
+				});
+
+				const premiumResult = await prisma.userAccount.updateMany({
+					where: {
+						is_premium: true,
+						premium_expires_at: {lt: now},
+					},
+					data: {
+						is_premium: false,
+						premium_expires_at: null,
+					},
+				});
+
+				const total = proResult.count + premiumResult.count;
+				if (total > 0) {
+					logger.info(`[ProExpiry] Expired ${proResult.count} Pro and ${premiumResult.count} Premium membership(s)`);
+				}
+			} catch (e) {
+				logger.error('[ProExpiry] Error expiring memberships', {error: e});
+			}
+		},
+		null,
+		true,
+		'America/Los_Angeles'
+	);
+
+	logger.debug('Initiated cron job for Pro/Premium expiry.', {running: job.running});
 }
 
 function initDailyGoalReminderCronJob() {

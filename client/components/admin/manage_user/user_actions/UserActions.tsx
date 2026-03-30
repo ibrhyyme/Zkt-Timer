@@ -4,6 +4,7 @@ import {gql} from '@apollo/client';
 import {gqlMutate} from '../../../api';
 import {openModal} from '../../../../actions/general';
 import BanUser from '../ban_user/BanUser';
+import SetProModal from '../set_pro/SetProModal';
 import block from '../../../../styles/bem';
 import Button from '../../../common/button/Button';
 import {toastSuccess} from '../../../../util/toast';
@@ -61,42 +62,46 @@ export default function UserActions(props: Props) {
 		toastSuccess(user.verified ? t('user_unverified') : t('user_verified'));
 	}
 
-	async function toggleProStatus() {
-		const query = gql`
-			mutation Mutate($userId: String, $isPro: Boolean) {
-				setProStatus(userId: $userId, isPro: $isPro) {
-					id
-					is_pro
+	function toggleProStatus() {
+		if (user.is_pro) {
+			// Remove Pro
+			const query = gql`
+				mutation Mutate($userId: String, $isPro: Boolean) {
+					setProStatus(userId: $userId, isPro: $isPro) {
+						id
+						is_pro
+						pro_expires_at
+					}
 				}
-			}
-		`;
-
-		await gqlMutate(query, {
-			userId: user.id,
-			isPro: !user.is_pro,
-		});
-
-		updateUser();
-		toastSuccess(user.is_pro ? t('pro_removed', {username: user.username}) : t('pro_given', {username: user.username}));
+			`;
+			gqlMutate(query, {userId: user.id, isPro: false}).then(() => {
+				updateUser();
+				toastSuccess(t('pro_removed', {username: user.username}));
+			});
+		} else {
+			// Open duration modal
+			dispatch(openModal(<SetProModal user={user} type="pro" />, {onComplete: updateUser}));
+		}
 	}
 
-	async function togglePremiumStatus() {
-		const query = gql`
-			mutation Mutate($userId: String, $isPremium: Boolean) {
-				setPremiumStatus(userId: $userId, isPremium: $isPremium) {
-					id
-					is_premium
+	function togglePremiumStatus() {
+		if (user.is_premium) {
+			const query = gql`
+				mutation Mutate($userId: String, $isPremium: Boolean) {
+					setPremiumStatus(userId: $userId, isPremium: $isPremium) {
+						id
+						is_premium
+						premium_expires_at
+					}
 				}
-			}
-		`;
-
-		await gqlMutate(query, {
-			userId: user.id,
-			isPremium: !user.is_premium,
-		});
-
-		updateUser();
-		toastSuccess(user.is_premium ? t('premium_removed', {username: user.username}) : t('premium_given', {username: user.username}));
+			`;
+			gqlMutate(query, {userId: user.id, isPremium: false}).then(() => {
+				updateUser();
+				toastSuccess(t('premium_removed', {username: user.username}));
+			});
+		} else {
+			dispatch(openModal(<SetProModal user={user} type="premium" />, {onComplete: updateUser}));
+		}
 	}
 
 	async function deleteUser() {

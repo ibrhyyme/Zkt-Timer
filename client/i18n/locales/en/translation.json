@@ -1101,7 +1101,21 @@
 			"setting_require_period_in_manual_time_entry": "Require Period In Manual Entry",
 			"setting_cube_type": "Cube Type",
 			"bool_true": "Yes",
-			"bool_false": "No"
+			"bool_false": "No",
+			"set_pro_title": "{{username}} — Make {{type}}",
+			"set_pro_desc": "Set {{type}} membership with a duration.",
+			"pro_duration": "Duration",
+			"pro_duration_unit": "Unit",
+			"duration_minute": "Minute",
+			"duration_hour": "Hour",
+			"duration_day": "Day",
+			"duration_week": "Week",
+			"duration_month": "Month",
+			"duration_year": "Year",
+			"pro_forever": "Unlimited (no expiry)",
+			"forever": "Unlimited",
+			"set_pro_button": "Make {{type}}",
+			"pro_set_success": "{{username}} has been given {{type}} for {{duration}}"
 		}
 	},
 	"admin_email": {

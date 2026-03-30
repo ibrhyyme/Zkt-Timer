@@ -171,12 +171,19 @@ export class AdminResolver {
 	async setProStatus(
 		@Ctx() context: GraphQLContext,
 		@Arg('userId') userId: string,
-		@Arg('isPro') isPro: boolean
+		@Arg('isPro') isPro: boolean,
+		@Arg('minutes', {nullable: true}) minutes?: number
 	) {
 		const targetUser = await getUserByIdOrThrow404(userId);
 
+		let pro_expires_at: Date | null = null;
+		if (isPro && minutes && minutes > 0) {
+			pro_expires_at = new Date(Date.now() + minutes * 60000);
+		}
+
 		await updateUserAccountWithParams(targetUser.id, {
 			is_pro: isPro,
+			pro_expires_at: isPro ? pro_expires_at : null,
 		});
 
 		return getUserById(userId);
@@ -187,12 +194,19 @@ export class AdminResolver {
 	async setPremiumStatus(
 		@Ctx() context: GraphQLContext,
 		@Arg('userId') userId: string,
-		@Arg('isPremium') isPremium: boolean
+		@Arg('isPremium') isPremium: boolean,
+		@Arg('minutes', {nullable: true}) minutes?: number
 	) {
 		const targetUser = await getUserByIdOrThrow404(userId);
 
+		let premium_expires_at: Date | null = null;
+		if (isPremium && minutes && minutes > 0) {
+			premium_expires_at = new Date(Date.now() + minutes * 60000);
+		}
+
 		await updateUserAccountWithParams(targetUser.id, {
 			is_premium: isPremium,
+			premium_expires_at: isPremium ? premium_expires_at : null,
 		});
 
 		return getUserById(userId);
