@@ -660,7 +660,8 @@
 		"twistytimer_step_3": "Tap the three-dot menu in the top-right corner and select \"Export\"",
 		"twistytimer_step_4": "Use the \"Export as external\" option to save the file",
 		"category_management": "Data Management",
-		"category_reset": "Reset"
+		"category_reset": "Reset",
+		"import_pro_upsell": "Upgrade to Pro to import your data"
 	},
 	"language": {
 		"label": "Language",
@@ -738,7 +739,8 @@
 		"putdown_time": "Put-down time",
 		"overview_tab": "Overview",
 		"time_label": "Time",
-		"deleted_from_other_device": "This solve was deleted from another device"
+		"deleted_from_other_device": "This solve was deleted from another device",
+		"pro_stats_upsell": "Upgrade to Pro for detailed statistics"
 	},
 	"sessions": {
 		"page_title": "Sessions",
@@ -1040,7 +1042,67 @@
 		"delete_published_solves": "Delete all published solves",
 		"ban_permanently": "Ban user permanently",
 		"ban_button": "Ban User",
-		"user_banned": "{{username}} has been banned for {{duration}}"
+		"user_banned": "{{username}} has been banned for {{duration}}",
+		"manage_user": {
+			"user_not_found": "User not found",
+			"overview": "Overview",
+			"solves_count": "Solves",
+			"bans_count": "Bans",
+			"reports_received": "Reports Received",
+			"reports_created": "Reports Created",
+			"timer_solves": "Timer Solves",
+			"no_data": "No data",
+			"total_time": "Total Time",
+			"average": "Average",
+			"min_time": "Min Time",
+			"max_time": "Max Time",
+			"settings": "Settings",
+			"bans_title": "Bans",
+			"reports_title": "Reports",
+			"no_records": "No records found",
+			"wca_id": "WCA ID",
+			"join_country": "Join Country",
+			"join_ip": "Join IP",
+			"email_verified": "Email Verified",
+			"email_not_verified": "Email Not Verified",
+			"ban_user": "Ban user",
+			"unban_user": "Unban user",
+			"verify_user": "Verify user",
+			"unverify_user": "Unverify user",
+			"make_pro": "Make Pro",
+			"remove_pro": "Remove Pro",
+			"make_premium": "Make Premium",
+			"remove_premium": "Remove Premium",
+			"delete_user": "Delete user",
+			"delete_confirm": "Are you sure you want to delete \"{{username}}\"? This action cannot be undone.",
+			"user_deleted": "User account deleted",
+			"user_verified": "User successfully verified",
+			"user_unverified": "User verification removed",
+			"pro_given": "Pro granted to {{username}}",
+			"pro_removed": "Pro removed from {{username}}",
+			"premium_given": "Premium granted to {{username}}",
+			"premium_removed": "Premium removed from {{username}}",
+			"user_unbanned": "User successfully unbanned",
+			"setting_id": "ID",
+			"setting_focus_mode": "Focus Mode",
+			"setting_freeze_time": "Freeze Time",
+			"setting_inspection": "Inspection",
+			"setting_manual_entry": "Manual Entry",
+			"setting_inspection_delay": "Inspection Delay",
+			"setting_inverse_time_list": "Inverse Time List",
+			"setting_hide_time_when_solving": "Hide Time When Solving",
+			"setting_nav_collapsed": "Nav Collapsed",
+			"setting_timer_decimal_points": "Timer Decimal Points",
+			"setting_pb_confetti": "PB Confetti",
+			"setting_play_inspection_sound": "Play Inspection Sound",
+			"setting_zero_out_time_after_solve": "Zero Out Time After Solve",
+			"setting_confirm_delete_solve": "Confirm Delete Solve",
+			"setting_use_space_with_smart_cube": "Use Space With Smart Cube",
+			"setting_require_period_in_manual_time_entry": "Require Period In Manual Entry",
+			"setting_cube_type": "Cube Type",
+			"bool_true": "Yes",
+			"bool_false": "No"
+		}
 	},
 	"admin_email": {
 		"page_title": "Send Email",
@@ -1363,31 +1425,112 @@
 	},
 	"pro_page": {
 		"title": "Pro",
+		"hero_title": "Pick your plan",
 		"subtitle": "Take your cubing to the next level with exclusive Pro features designed for serious speedcubers.",
-		"six_months": "6 Months",
-		"one_year": "1 Year",
-		"per_month": "/mo",
-		"best_value": "Best Value",
-		"bonus_months": "+2 months free",
+		"whats_included": "What's included:",
 		"coming_soon": "Coming Soon",
-		"features_title": "What's included in Pro",
-		"pricing_title": "Choose your plan",
-		"plan_feature_all_pro": "All Pro features",
-		"plan_feature_ai": "AI-powered coaching",
-		"plan_feature_themes": "Exclusive themes",
-		"plan_feature_support": "Priority support",
-		"feature_ai_coach": "AI-Powered Coach",
-		"feature_ai_coach_desc": "Get personalized training plans and real-time analysis from our AI assistant that learns your solving patterns.",
-		"feature_trainer": "Custom Trainer Pages",
-		"feature_trainer_desc": "Access specialized training modules for F2L, OLL, PLL and more with adaptive difficulty.",
-		"feature_stats": "Advanced Analytics",
-		"feature_stats_desc": "Deep dive into your performance with detailed charts, trend analysis, and solve breakdowns.",
-		"feature_themes": "Exclusive Themes",
-		"feature_themes_desc": "Personalize your timer with Pro-exclusive color themes and visual customization options.",
-		"feature_support": "Priority Support",
-		"feature_support_desc": "Get faster responses and direct access to the development team for feature requests.",
-		"feature_early_access": "Early Access",
-		"feature_early_access_desc": "Be the first to try new features before they're released to the public."
+		"free": "Free",
+		"basic_desc": "Get started with the essentials.",
+		"pro_desc": "Unlock every feature.",
+		"current_plan": "Current plan",
+		"click_hint": "Click for details",
+		"all_basic_included": "All free features included",
+		"basic_features": {
+			"timer": {
+				"title": "Timer",
+				"desc": "Time your solves with keyboard, touch, StackMat, GAN Timer, or smart cube — whichever you prefer."
+			},
+			"sessions": {
+				"title": "Sessions",
+				"desc": "Create as many sessions as you need. Merge, reorder, or delete — your solves stay safe on your device."
+			},
+			"unlimited_solves": {
+				"title": "Unlimited solves",
+				"desc": "No solve limits. Solve as much as you want, add notes, and edit anytime."
+			},
+			"rooms": {
+				"title": "Community rooms",
+				"desc": "Jump into a room, solve the same scramble, and chat in real time with other cubers."
+			},
+			"basic_stats": {
+				"title": "Basic statistics",
+				"desc": "Track your PB, ao5, ao12, and total solve count at a glance."
+			},
+			"smart_cube_basic": {
+				"title": "Smart cube connection",
+				"desc": "Pair your smart cube via Bluetooth. Times and moves are recorded automatically."
+			},
+			"trainer_basic": {
+				"title": "Algorithm trainer",
+				"desc": "Drill OLL, PLL, F2L, and more. Memorize and practice at your own pace."
+			},
+			"friends": {
+				"title": "Friend system",
+				"desc": "Add friends, check their profiles, and solve together."
+			},
+			"notifications": {
+				"title": "Notifications",
+				"desc": "Get instant alerts for friend requests, room invites, and more."
+			},
+			"settings_sync": {
+				"title": "Settings sync",
+				"desc": "Set up your timer once, and it stays the same on all your devices."
+			},
+			"two_themes": {
+				"title": "2 themes",
+				"desc": "Switch between Dark and Light mode."
+			}
+		},
+		"features": {
+			"sync": {
+				"title": "Cross-device sync",
+				"desc": "Solve on your phone, pick up right where you left off on your computer. All your solves, sessions, and stats are automatically backed up to the cloud. Switch devices, clear your browser, even reinstall the app — everything comes back exactly as you left it. Never lose your data again."
+			},
+			"smart_cube_analysis": {
+				"title": "Smart cube deep analysis",
+				"desc": "Break down every solve step by step: Cross, F2L, OLL, PLL — see the time, move count, and TPS for each phase individually. Instantly spot which stage is costing you time and which algorithms are slowing you down. Overview charts, step-by-step detail tables, and solve animations let you track your improvement with real data."
+			},
+			"trainer_smart_cube": {
+				"title": "Train with your smart cube",
+				"desc": "Connect your smart cube via Bluetooth, execute the algorithm on the actual cube — and see instantly on screen whether you got it right. No more manual timing, no more checking algorithms in your head. Your cube becomes your coach, and every rep makes you faster and more accurate."
+			},
+			"themes": {
+				"title": "6 exclusive themes",
+				"desc": "Cyberpunk's neon glow, Tokyo's night streets, Norman's clean minimalism, Save the Bees' warm tones, Night Owl's deep darkness, and The PhD Student's academic vibe — give your timer a completely new personality. Each theme transforms colors, backgrounds, and the entire atmosphere."
+			},
+			"advanced_stats": {
+				"title": "Advanced statistics",
+				"desc": "Go beyond the basics. All stat blocks are unlocked — ao5, ao12, ao50, ao100, session averages, and more. Track your improvement over time with detailed charts, catch trends, and pinpoint your weak spots. Customize stat modules exactly the way you want them."
+			},
+			"leaderboard_publish": {
+				"title": "Show off on the leaderboard",
+				"desc": "Publish your best single or ao5 to the leaderboard and display your PBs proudly on your profile. Let other speedcubers see your solves and get inspired. Cubing isn't just for yourself — show the world how fast you really are."
+			},
+			"timer_background": {
+				"title": "Custom background",
+				"desc": "Set your own photo or favorite image as the timer background. Every time you open the timer, it feels uniquely yours. Change it whenever you want, reset it anytime — it's completely in your hands."
+			},
+			"room_music": {
+				"title": "Listen to music in rooms",
+				"desc": "Join a room, search for any song, and listen ad-free while you cube. Pick anything from YouTube's massive library and let it play in the background. The music player is built right into the room, no extra tabs needed. Stay motivated with your own soundtrack while solving."
+			},
+			"pro_badge": {
+				"title": "Pro badge",
+				"desc": "A glowing Pro ring around your profile photo. In rooms, on the leaderboard, on your profile page — everyone can see you're Pro wherever you go. It's not just a badge, it's your status in the community."
+			},
+			"data_import": {
+				"title": "Data import",
+				"desc": "Been using CSTimer, ZKTTimer, or TwistyTimer? Don't lose years of hard work — import all your past solves, times, and stats to Zkt-Timer in one click. Instead of starting from scratch, pick up right where you left off."
+			},
+			"stats_customization": {
+				"title": "Stats customization",
+				"desc": "Fully customize the stat modules below your timer. You decide which blocks to show — add, remove, and reorder them to fit your workflow. See only the data that matters to you, skip the noise."
+			},
+			"solve_sharing": {
+				"title": "Solve sharing",
+				"desc": "Share your smart cube solve as a single link. Your friends click it and explore your entire solution step by step — which algorithms you used, how many seconds each phase took, your TPS, and move count all laid out in detail."
+			}
+		}
 	},
 	"wca_integration": {
 		"profile_connected": "WCA Profile Connected",
@@ -1594,12 +1737,64 @@
 	},
 	"pro": {
 		"feature_title": "Pro Feature",
-		"feature_description": "This feature is exclusive to Pro users. Upgrade to Pro to access all themes and more. (Coming Soon)",
-		"music_title": "Music in Rooms",
-		"music_description": "Listen to music together while solving cubes with friends! This feature is exclusive to Pro members.",
-		"music_youtube": "Unlimited, ad-free music from YouTube",
-		"music_friends": "Listen together with friends",
-		"music_unlimited": "Unlimited song search and playback"
+		"feature_description": "This feature is exclusive to Pro members. Upgrade to unlock everything.",
+		"upgrade_button": "Upgrade to Pro",
+		"modal": {
+			"room_music": {
+				"title": "Listen to Music in Rooms",
+				"desc": "Listen to your favorite music ad-free while cubing in rooms. Unlock the music experience with Pro."
+			},
+			"leaderboard": {
+				"title": "Show Off on the Leaderboard",
+				"desc": "Publish your best solves and inspire other speedcubers."
+			},
+			"data_import": {
+				"title": "Data Import",
+				"desc": "Bring your solve history to Zkt-Timer in one click."
+			},
+			"smart_cube": {
+				"title": "Smart Cube Deep Analysis",
+				"desc": "Analyze your solves step by step and see every detail."
+			},
+			"themes": {
+				"title": "Exclusive Themes",
+				"desc": "Give your timer personality with 6 exclusive themes."
+			},
+			"stats": {
+				"title": "Stats Customization",
+				"desc": "Set up stat modules exactly the way you want."
+			},
+			"trainer": {
+				"title": "Train with Your Smart Cube",
+				"desc": "Practice algorithms on your cube with instant feedback."
+			}
+		},
+		"highlights": {
+			"sync": "Automatic sync across all your devices",
+			"themes": "6 exclusive themes for full customization",
+			"advanced_stats": "Detailed charts and trend analysis",
+			"music_youtube": "Unlimited, ad-free music from YouTube",
+			"music_friends": "Listen to your own music while cubing",
+			"music_unlimited": "Unlimited song search and playback",
+			"leaderboard_publish": "Publish your best single or ao5",
+			"leaderboard_profile": "Display your PBs on your profile",
+			"leaderboard_compete": "Compete with other speedcubers",
+			"import_history": "Import all your past solves",
+			"import_sources": "CSTimer, ZKTTimer, TwistyTimer support",
+			"import_one_click": "One-click data transfer",
+			"smart_analysis": "See time and TPS for every step",
+			"smart_steps": "Cross, F2L, OLL, PLL analyzed separately",
+			"smart_animation": "Solve animation for detailed review",
+			"themes_six": "Cyberpunk, Tokyo, Norman, and more",
+			"themes_colors": "Colors and backgrounds fully transform",
+			"themes_atmosphere": "Each theme creates a unique atmosphere",
+			"stats_blocks": "All stat blocks unlocked",
+			"stats_charts": "Detailed charts and trends",
+			"stats_customize": "Add, remove, and reorder modules",
+			"trainer_ble": "Bluetooth smart cube connection",
+			"trainer_feedback": "Instant feedback on algorithm accuracy",
+			"trainer_speed": "Get faster and more accurate every rep"
+		}
 	},
 	"battle": {
 		"mobile_only": "Battle mode is only available on mobile",

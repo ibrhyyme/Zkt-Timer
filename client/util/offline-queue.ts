@@ -10,6 +10,8 @@ const DB_VERSION = 1;
 const STORE_NAME = 'mutations';
 const BACKUP_KEY = 'zkt_offline_queue_backup';
 
+import { canSync } from '../lib/sync-gate';
+
 export interface QueuedMutation {
     id: string;
     mutationName: 'createSolve' | 'updateSolve' | 'deleteSolve' | 'deleteSolves';
@@ -51,6 +53,8 @@ export async function addToQueue(
     mutationName: QueuedMutation['mutationName'],
     variables: any
 ): Promise<void> {
+    if (!canSync()) return;
+
     const mutation: QueuedMutation = {
         id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         mutationName,

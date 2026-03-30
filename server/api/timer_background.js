@@ -3,6 +3,7 @@ import GraphQLError from '../util/graphql_error';
 import {deleteTimerBackground, getTimerBackground, uploadTimerBackgroundWithFile} from '../models/timer_background';
 import {ErrorCode} from '../constants/errors';
 import {logger} from '../services/logger';
+import {isProEnabled, isPro} from '../lib/pro';
 
 export const gqlMutation = `
 	deleteTimerBackground: TimerBackground!
@@ -13,6 +14,9 @@ export const gqlMutation = `
 export const mutateActions = {
 	deleteTimerBackground: async (_, params, {user}) => {
 		checkLoggedIn(user);
+		if (isProEnabled() && !isPro(user)) {
+			throw new GraphQLError(ErrorCode.FORBIDDEN, 'Pro feature');
+		}
 
 		const background = await getTimerBackground(user);
 		if (!background) {
@@ -24,6 +28,9 @@ export const mutateActions = {
 	},
 	uploadTimerBackground: async (_, {file}, {user}) => {
 		checkLoggedIn(user);
+		if (isProEnabled() && !isPro(user)) {
+			throw new GraphQLError(ErrorCode.FORBIDDEN, 'Pro feature');
+		}
 
 		if (!file) {
 			throw new GraphQLError(400, 'File must be specified');

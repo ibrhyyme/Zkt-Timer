@@ -7,6 +7,10 @@
 		margin-top: 15px;
 		width: 100%;
 		max-width: 820px;
+
+		&:has(.#{$namespace}-pro-page) {
+			max-width: unset;
+		}
 	}
 
 	&-nav {

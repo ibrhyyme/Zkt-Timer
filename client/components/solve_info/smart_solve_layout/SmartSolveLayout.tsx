@@ -14,6 +14,9 @@ import CopyText from '../../common/copy_text/CopyText';
 import block from '../../../styles/bem';
 import { getFullFormattedDate } from '../../../util/dates';
 import { SolveLayoutProps } from '../SolveInfo';
+import { useMe } from '../../../util/hooks/useMe';
+import { isPro, isProEnabled } from '../../../lib/pro';
+import { useHistory } from 'react-router-dom';
 import './SmartSolveLayout.scss';
 
 const b = block('solve-info');
@@ -28,7 +31,10 @@ export default function SmartSolveLayout(props: SolveLayoutProps) {
 	} = props;
 
 	const { t } = useTranslation();
+	const me = useMe();
+	const history = useHistory();
 	const [page, setPage] = useState('overview');
+	const showProOverlay = isProEnabled() && !isPro(me);
 
 	const rawTime = solve.raw_time;
 	const smartTurnCount = solve.smart_turn_count;
@@ -39,7 +45,7 @@ export default function SmartSolveLayout(props: SolveLayoutProps) {
 	const cubeType = solve.cube_type;
 
 	let shareLink = null;
-	if (typeof window !== 'undefined') {
+	if (typeof window !== 'undefined' && !showProOverlay) {
 		shareLink = (
 			<CopyText
 				buttonProps={{ text: t('solve_info.share_link') }}
@@ -175,10 +181,33 @@ export default function SmartSolveLayout(props: SolveLayoutProps) {
 				/>
 			</div>
 
-			<div className={b('nav')}>
-				<HorizontalNav tabId={page} onChange={setPage} tabs={pages} />
-			</div>
-			{pageMap[page]}
+			{showProOverlay ? (
+				<div className={bs('pro-locked')}>
+					<div className={bs('pro-locked-content')}>
+						<div className={b('nav')}>
+							<HorizontalNav tabId="overview" onChange={() => {}} tabs={pages} />
+						</div>
+						<div className={bs('pro-locked-dummy')}>
+							<div className={bs('pro-locked-dummy-bar')} style={{width: '80%'}} />
+							<div className={bs('pro-locked-dummy-bar')} style={{width: '60%'}} />
+							<div className={bs('pro-locked-dummy-bar')} style={{width: '90%'}} />
+							<div className={bs('pro-locked-dummy-bar')} style={{width: '45%'}} />
+							<div className={bs('pro-locked-dummy-bar')} style={{width: '70%'}} />
+						</div>
+					</div>
+					<div className={bs('pro-locked-overlay')} onClick={() => { handleDone(); history.push('/account/pro'); }}>
+						<span style={{color: '#a78bfa', fontSize: '1.3rem', marginBottom: '4px'}}>&#9733;</span>
+						<span>{t('solve_info.pro_stats_upsell')}</span>
+					</div>
+				</div>
+			) : (
+				<>
+					<div className={b('nav')}>
+						<HorizontalNav tabId={page} onChange={setPage} tabs={pages} />
+					</div>
+					{pageMap[page]}
+				</>
+			)}
 		</div>
 	);
 }
