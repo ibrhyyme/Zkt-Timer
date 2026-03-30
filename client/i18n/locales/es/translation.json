@@ -680,6 +680,7 @@
 		"consistency": "Consistencia",
 		"solve_graph": "Gráfico de resoluciones",
 		"time_distro": "Distribución de tiempos",
+		"cross_solver": "Solucionadores",
 		"none": "Ninguno",
 		"customize_stats": "Personalizar estadísticas",
 		"stat_type": "Tipo de estadística",
@@ -1873,5 +1874,12 @@
 		"plus_two": "+2",
 		"dnf": "DNF",
 		"display": "Visualización"
+	},
+	"cross_solver": {
+		"only_3x3": "Solo disponible para 3x3",
+		"not_supported": "No hay solucionador para este puzzle",
+		"solving": "Resolviendo...",
+		"error": "Error del solucionador",
+		"no_scramble": "Genera una mezcla para ver soluciones"
 	}
 }
