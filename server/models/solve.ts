@@ -70,7 +70,7 @@ export function deleteAllSolvesByCubeType(cubeType, user) {
 }
 
 export function getSolveTimesForCubeType(user, cubeType) {
-	return getPrisma().solve.deleteMany({
+	return getPrisma().solve.findMany({
 		select: {
 			time: true,
 		},
@@ -174,7 +174,7 @@ export async function bulkCreateSolves(user: UserAccount, solves: SolveInput[]) 
 	const data = [];
 	for (let i = 0; i < solves.length; i += 1) {
 		let solve = solves[i];
-		const id = uuid();
+		const id = solve.id || uuid();
 		solve = sanitizeSolve(solve);
 		const shareCode = generateRandomCode(8);
 

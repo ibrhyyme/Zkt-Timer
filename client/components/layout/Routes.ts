@@ -42,6 +42,7 @@ import FriendlyRoom from '../rooms/FriendlyRoom';
 import AdminAnnouncements from '../admin/announcements/AdminAnnouncements';
 import AdminEmail from '../admin/email/AdminEmail';
 import AdminAlgorithms from '../admin/algorithms/AdminAlgorithms';
+import AdminPromoCodes from '../admin/promo_codes/AdminPromoCodes';
 import Welcome from '../landing/welcome/Welcome';
 import RootRedirect from '../landing/root_redirect/RootRedirect';
 import ProPage from '../pro_page/ProPage';
@@ -168,6 +169,7 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/admin/announcements', App, Admin, AdminAnnouncements, true, false, true),
 	route('/admin/email', App, Admin, AdminEmail, true, false, true),
 	route('/admin/algorithms', App, Admin, AdminAlgorithms, true, false, true),
+	route('/admin/promo-codes', App, Admin, AdminPromoCodes, true, false, true),
 
 	// OAuth
 	route('/oauth/wca/login', null, App, WcaLoginCallback, false, true, false, true),

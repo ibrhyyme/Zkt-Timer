@@ -1,0 +1,131 @@
+@import '../../../styles/config';
+
+$pro-violet: #7c3aed;
+$pro-violet-light: #a78bfa;
+
+.#{$namespace}-create-promo-code-modal {
+	padding: 32px 28px;
+	display: flex;
+	flex-direction: column;
+	max-width: 440px;
+	margin: 0 auto;
+
+	&__header {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+		margin-bottom: 24px;
+	}
+
+	&__icon {
+		width: 56px;
+		height: 56px;
+		border-radius: 50%;
+		background: linear-gradient(135deg, $pro-violet, #a855f7);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin-bottom: 14px;
+		box-shadow: 0 6px 24px rgba(124, 58, 237, 0.3);
+
+		svg {
+			width: 28px;
+			height: 28px;
+			color: #fff;
+		}
+	}
+
+	&__title {
+		font-family: Kontora, Poppins, Arial, Helvetica, sans-serif;
+		font-size: 1.2rem;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+		margin: 0;
+	}
+
+	&__form {
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+		margin-bottom: 24px;
+	}
+
+	&__field {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+	}
+
+	&__label {
+		font-size: 0.78rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: rgba(var(--text-color), 0.45);
+	}
+
+	&__input,
+	&__select {
+		width: 100%;
+		padding: 10px 12px;
+		border-radius: 10px;
+		border: 1px solid rgba(var(--text-color), 0.1);
+		background: rgba(var(--button-color), 0.5);
+		color: rgb(var(--text-color));
+		font-size: 0.9rem;
+		font-family: inherit;
+		outline: none;
+		transition: border-color 0.15s ease;
+
+		&:focus {
+			border-color: $pro-violet-light;
+		}
+
+		&:disabled {
+			opacity: 0.5;
+		}
+
+		&::placeholder {
+			color: rgba(var(--text-color), 0.25);
+		}
+	}
+
+	&__select {
+		cursor: pointer;
+		appearance: auto;
+	}
+
+	&__duration {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 12px;
+		transition: opacity 0.2s ease;
+
+		&--forever {
+			opacity: 0.4;
+			pointer-events: none;
+		}
+	}
+
+	&__cta {
+		width: 100%;
+		padding: 14px 24px;
+		border-radius: 12px;
+		border: none;
+		background: linear-gradient(135deg, $pro-violet, #a855f7);
+		color: #fff;
+		font-size: 0.95rem;
+		font-weight: 700;
+		font-family: inherit;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+
+		&:hover {
+			filter: brightness(1.1);
+			box-shadow: 0 6px 28px rgba(124, 58, 237, 0.4);
+			transform: translateY(-1px);
+		}
+	}
+}

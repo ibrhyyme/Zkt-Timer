@@ -92,6 +92,10 @@ model UserAccount {
   // Daily goals
   daily_goals                   DailyGoal[]
 
+  // Promo codes
+  promo_codes_created           PromoCode[]            @relation("promo_code_creator")
+  promo_code_redemptions        PromoCodeRedemption[]   @relation("promo_redemption_user")
+
   @@map("user_account")
 }
 
@@ -929,5 +933,36 @@ model PushToken {
 
   @@index([userId])
   @@map("push_tokens")
+}
+
+model PromoCode {
+  id               String               @id @default(uuid())
+  code             String               @unique
+  membership_type  String
+  duration_minutes Int
+  max_uses         Int                  @default(1)
+  current_uses     Int                  @default(0)
+  is_active        Boolean              @default(true)
+  expires_at       DateTime?
+  created_at       DateTime             @default(now())
+  created_by_id    String
+  created_by       UserAccount          @relation("promo_code_creator", fields: [created_by_id], references: [id], onDelete: Cascade)
+  redemptions      PromoCodeRedemption[]
+
+  @@index([code])
+  @@map("promo_code")
+}
+
+model PromoCodeRedemption {
+  id            String      @id @default(uuid())
+  promo_code_id String
+  user_id       String
+  redeemed_at   DateTime    @default(now())
+  promo_code    PromoCode   @relation(fields: [promo_code_id], references: [id], onDelete: Cascade)
+  user          UserAccount @relation("promo_redemption_user", fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([promo_code_id, user_id])
+  @@index([user_id])
+  @@map("promo_code_redemption")
 }
 
