@@ -11,8 +11,6 @@ import Loading from '../../../common/loading/Loading';
 import {IntegrationType, LINKED_SERVICES, LinkedServiceData} from '../../../../../shared/integration';
 import {toastError} from '../../../../util/toast';
 import {useMe} from '../../../../util/hooks/useMe';
-import {openOAuthFlow} from '../../../../util/oauth-native';
-import {isNative} from '../../../../util/platform';
 
 const b = block('integration');
 
@@ -133,8 +131,7 @@ export default function IntegrationService(props: Props) {
 					disabled={!!integration}
 					text={integration ? t('integration.account_linked') : t('integration.link_account')}
 					icon={integration ? <Check /> : <ArrowRight />}
-					to={isNative() ? undefined : serviceUri}
-					onClick={isNative() && !integration ? () => openOAuthFlow(serviceUri) : undefined}
+					to={serviceUri}
 				/>
 				{revokeButton}
 			</div>

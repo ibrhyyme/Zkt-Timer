@@ -2,7 +2,6 @@ import React from 'react';
 import {useTranslation} from 'react-i18next';
 import {LINKED_SERVICES} from '../../../../shared/integration';
 import {resourceUri} from '../../../util/storage';
-import {openOAuthFlow} from '../../../util/oauth-native';
 
 export default function WcaLoginButton() {
 	const {t} = useTranslation();
@@ -16,7 +15,7 @@ export default function WcaLoginButton() {
 			redirect_uri: window.location.origin + '/oauth/wca/login',
 		});
 
-		openOAuthFlow(`${service.authEndpoint}?${params.toString()}`);
+		window.location.href = `${service.authEndpoint}?${params.toString()}`;
 	}
 
 	return (
