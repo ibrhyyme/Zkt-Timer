@@ -17,9 +17,6 @@ project(':capacitor-community-safe-area').projectDir = new File('../node_modules
 include ':capacitor-app'
 project(':capacitor-app').projectDir = new File('../node_modules/@capacitor/app/android')
 
-include ':capacitor-browser'
-project(':capacitor-browser').projectDir = new File('../node_modules/@capacitor/browser/android')
-
 include ':capacitor-haptics'
 project(':capacitor-haptics').projectDir = new File('../node_modules/@capacitor/haptics/android')
 
@@ -49,3 +46,6 @@ project(':capacitor-text-zoom').projectDir = new File('../node_modules/@capacito
 
 include ':capacitor-toast'
 project(':capacitor-toast').projectDir = new File('../node_modules/@capacitor/toast/android')
+
+include ':capgo-inappbrowser'
+project(':capgo-inappbrowser').projectDir = new File('../node_modules/@capgo/inappbrowser/android')
