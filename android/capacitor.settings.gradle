@@ -46,6 +46,3 @@ project(':capacitor-text-zoom').projectDir = new File('../node_modules/@capacito
 
 include ':capacitor-toast'
 project(':capacitor-toast').projectDir = new File('../node_modules/@capacitor/toast/android')
-
-include ':capgo-inappbrowser'
-project(':capgo-inappbrowser').projectDir = new File('../node_modules/@capgo/inappbrowser/android')
