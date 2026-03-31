@@ -1262,11 +1262,6 @@
   resolved "https://registry.yarnpkg.com/@capacitor/toast/-/toast-6.0.4.tgz#5f4374f3d4d366a7c192afdaa11fbab12259823d"
   integrity sha512-eSU9TsYlpZ/Sg3OS18r/VfoTuq4uIIJNdiRQxDUxHVi5UHUoXoGAgL+fmTMMUqsF3ICu/BkXGZphm9gRCE3/ag==
 
-"@capgo/inappbrowser@^6.0.0":
-  version "6.15.0"
-  resolved "https://registry.yarnpkg.com/@capgo/inappbrowser/-/inappbrowser-6.15.0.tgz#1dcfca9b020cf5c503d38e588891b4aa3bb432c8"
-  integrity sha512-PAXcBwt28ho5lUISQaH52Je1so85kyCK3LlUUpJLoYzWhYCmSA9kauhNhQFflVIdnIPjcCkPYJ7XXssIWJGIGg==
-
 "@colors/colors@1.6.0", "@colors/colors@^1.6.0":
   version "1.6.0"
   resolved "https://registry.npmjs.org/@colors/colors/-/colors-1.6.0.tgz"

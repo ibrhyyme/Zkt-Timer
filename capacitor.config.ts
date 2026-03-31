@@ -9,6 +9,7 @@ const config: CapacitorConfig = {
     server: {
         url: 'https://zktimer.app',
         cleartext: false,
+        allowNavigation: ['*.worldcubeassociation.org'],
     },
     android: {
         webContentsDebuggingEnabled: true,
