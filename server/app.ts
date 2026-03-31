@@ -83,6 +83,11 @@ app.use((req, res, next) => {
 	next();
 });
 
+app.get('/.well-known/apple-app-site-association', (req, res) => {
+	res.setHeader('Content-Type', 'application/json');
+	res.sendFile('apple-app-site-association', {root: `${__dirname}/../public/.well-known`});
+});
+
 app.use('/dist', express.static(`${__dirname}/../dist`));
 app.use('/public', express.static(`${__dirname}/../public`));
 app.use(express.static(`${__dirname}/../public`, { index: false, redirect: false }));

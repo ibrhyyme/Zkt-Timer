@@ -1,0 +1,10 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.zktimer.app",
+      "sha256_cert_fingerprints": ["87:9B:39:BE:3F:82:C9:E0:B4:B0:3F:F4:54:D2:DC:1F:86:90:F6:E1:45:92:A0:32:35:EE:47:7A:70:61:14:B6"]
+    }
+  }
+]
