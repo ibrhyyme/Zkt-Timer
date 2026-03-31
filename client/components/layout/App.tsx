@@ -72,17 +72,6 @@ export default function App(props: Props = {}) {
 				document.addEventListener('gesturechange', (e) => e.preventDefault());
 			}
 
-			CapApp.addListener('appUrlOpen', (data: {url: string}) => {
-				try {
-					const url = new URL(data.url);
-					if (url.hostname === 'zktimer.app') {
-						window.location.href = url.pathname + url.search;
-					}
-				} catch (e) {
-					// ignore
-				}
-			});
-
 			CapApp.addListener('backButton', () => {
 				const state = getStore().getState();
 				const modals = state?.general?.modals || [];
