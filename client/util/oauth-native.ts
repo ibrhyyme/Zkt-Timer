@@ -1,5 +1,4 @@
-import {Browser} from '@capacitor/browser';
-import {App as CapApp} from '@capacitor/app';
+import {InAppBrowser} from '@capgo/inappbrowser';
 import {isNative} from './platform';
 
 export function openOAuthFlow(authUrl: string): void {
@@ -8,14 +7,18 @@ export function openOAuthFlow(authUrl: string): void {
 		return;
 	}
 
-	Browser.open({url: authUrl, presentationStyle: 'popover'});
+	InAppBrowser.open({url: authUrl});
 
-	const listenerPromise = CapApp.addListener('appUrlOpen', (data: {url: string}) => {
-		const url = new URL(data.url);
-		if (url.pathname.startsWith('/oauth/wca')) {
-			Browser.close();
-			listenerPromise.then((h) => h.remove());
-			window.location.href = url.pathname + url.search;
+	InAppBrowser.addListener('urlChangeEvent', (event: {url: string}) => {
+		try {
+			const url = new URL(event.url);
+			if (url.pathname.startsWith('/oauth/wca')) {
+				InAppBrowser.removeAllListeners();
+				InAppBrowser.close();
+				window.location.href = url.pathname + url.search;
+			}
+		} catch (e) {
+			// ignore
 		}
 	});
 }

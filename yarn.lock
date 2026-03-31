@@ -1177,11 +1177,6 @@
   resolved "https://registry.yarnpkg.com/@capacitor/app/-/app-6.0.3.tgz#c33ec5d29bc74090d860363934a28c4d0213955d"
   integrity sha512-4gFUCbcVz0N/YYN32OBFerocWXslIv3Nc90gDiRsBkJc0plwK6kIUT6PKa5WtW2kfhteUeCVXQbvArH2fH+0Ug==
 
-"@capacitor/browser@^6.0.0":
-  version "6.0.6"
-  resolved "https://registry.yarnpkg.com/@capacitor/browser/-/browser-6.0.6.tgz#56ef900ebe98d5689e5f4b0f47cbcc42cb1db5ec"
-  integrity sha512-VHOPkMR+JqKz2mf5YncnnOWvFdVYFTTLnPW+JRcsP1LobXmA0gtchER35PQ7XXqXU16eeacrehX+XF+rC6wmQw==
-
 "@capacitor/cli@^6.0.0":
   version "6.2.1"
   resolved "https://registry.npmjs.org/@capacitor/cli/-/cli-6.2.1.tgz"
@@ -1266,6 +1261,11 @@
   version "6.0.4"
   resolved "https://registry.yarnpkg.com/@capacitor/toast/-/toast-6.0.4.tgz#5f4374f3d4d366a7c192afdaa11fbab12259823d"
   integrity sha512-eSU9TsYlpZ/Sg3OS18r/VfoTuq4uIIJNdiRQxDUxHVi5UHUoXoGAgL+fmTMMUqsF3ICu/BkXGZphm9gRCE3/ag==
+
+"@capgo/inappbrowser@^6.0.0":
+  version "6.15.0"
+  resolved "https://registry.yarnpkg.com/@capgo/inappbrowser/-/inappbrowser-6.15.0.tgz#1dcfca9b020cf5c503d38e588891b4aa3bb432c8"
+  integrity sha512-PAXcBwt28ho5lUISQaH52Je1so85kyCK3LlUUpJLoYzWhYCmSA9kauhNhQFflVIdnIPjcCkPYJ7XXssIWJGIGg==
 
 "@colors/colors@1.6.0", "@colors/colors@^1.6.0":
   version "1.6.0"
