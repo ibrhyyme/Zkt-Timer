@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import { createPortal } from 'react-dom';
-import { X } from 'phosphor-react';
-import { gql } from '@apollo/client';
-import { gqlMutate } from '../../api';
+import {createPortal} from 'react-dom';
+import {X} from 'phosphor-react';
+import {gql} from '@apollo/client';
+import {gqlMutate} from '../../api';
 import Checkbox from '../../common/checkbox/Checkbox';
 
 const CREATE_ANNOUNCEMENT = gql`
@@ -16,10 +16,16 @@ const CREATE_ANNOUNCEMENT = gql`
 `;
 
 const LANG_TABS = [
-	{ code: 'tr', label: 'TR' },
-	{ code: 'en', label: 'EN' },
-	{ code: 'es', label: 'ES' },
-	{ code: 'ru', label: 'RU' },
+	{code: 'tr', label: 'TR'},
+	{code: 'en', label: 'EN'},
+	{code: 'es', label: 'ES'},
+	{code: 'ru', label: 'RU'},
+] as const;
+
+const PLATFORMS = [
+	{key: 'WEB', label: 'Web'},
+	{key: 'ANDROID', label: 'Android'},
+	{key: 'IOS', label: 'iOS'},
 ] as const;
 
 interface LangContent {
@@ -33,7 +39,7 @@ interface CreateAnnouncementModalProps {
 
 export default function CreateAnnouncementModal(props: CreateAnnouncementModalProps) {
 	const {t} = useTranslation();
-	const { onClose } = props;
+	const {onClose} = props;
 	const [activeLang, setActiveLang] = useState('tr');
 	const [formData, setFormData] = useState({
 		title: '',
@@ -42,12 +48,13 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 		priority: 0,
 		imageUrl: '',
 		isDraft: false,
-		sendNotification: false
+		sendNotification: false,
+		notificationPlatforms: ['WEB', 'ANDROID', 'IOS'] as string[],
 	});
 	const [translations, setTranslations] = useState<Record<string, LangContent>>({
-		en: { title: '', content: '' },
-		es: { title: '', content: '' },
-		ru: { title: '', content: '' },
+		en: {title: '', content: ''},
+		es: {title: '', content: ''},
+		ru: {title: '', content: ''},
 	});
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState('');
@@ -57,20 +64,19 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 
 	function updateLangField(field: 'title' | 'content', value: string) {
 		if (activeLang === 'tr') {
-			setFormData({ ...formData, [field]: value });
+			setFormData({...formData, [field]: value});
 		} else {
 			setTranslations({
 				...translations,
-				[activeLang]: { ...translations[activeLang], [field]: value }
+				[activeLang]: {...translations[activeLang], [field]: value},
 			});
 		}
 	}
 
 	function buildTranslationsInput(): string | undefined {
-		const hasAny = Object.values(translations).some(t => t.title || t.content);
+		const hasAny = Object.values(translations).some((t) => t.title || t.content);
 		if (!hasAny) return undefined;
 
-		// Sadece doldurulmuş dilleri gönder
 		const filtered: Record<string, LangContent> = {};
 		for (const [lang, val] of Object.entries(translations)) {
 			if (val.title || val.content) {
@@ -78,6 +84,12 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 			}
 		}
 		return Object.keys(filtered).length > 0 ? JSON.stringify(filtered) : undefined;
+	}
+
+	function togglePlatform(platform: string) {
+		const current = formData.notificationPlatforms;
+		const next = current.includes(platform) ? current.filter((p) => p !== platform) : [...current, platform];
+		setFormData({...formData, notificationPlatforms: next});
 	}
 
 	const handleSubmit = async (e: React.FormEvent) => {
@@ -88,10 +100,16 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 			setError('');
 			await gqlMutate(CREATE_ANNOUNCEMENT, {
 				input: {
-					...formData,
+					title: formData.title,
+					content: formData.content,
+					category: formData.category,
 					priority: parseInt(formData.priority.toString()),
-					translations: buildTranslationsInput()
-				}
+					imageUrl: formData.imageUrl,
+					isDraft: formData.isDraft,
+					sendNotification: formData.sendNotification,
+					notificationPlatforms: formData.sendNotification ? formData.notificationPlatforms : [],
+					translations: buildTranslationsInput(),
+				},
 			});
 			onClose();
 		} catch (err) {
@@ -103,166 +121,241 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 	};
 
 	const modal = (
-		<div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60">
-			<div className="bg-zinc-800 border border-zinc-700 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-				<div className="p-6 border-b border-zinc-700 flex justify-between items-center">
-					<h2 className="text-xl font-bold">{t('create_announcement.title')}</h2>
-					<button onClick={onClose} className="p-2 hover:bg-zinc-700 rounded">
-						<X size={20} />
+		<div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60" onClick={onClose}>
+			<div
+				className="bg-zinc-800 border border-zinc-700 rounded-xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col"
+				onClick={(e) => e.stopPropagation()}
+			>
+				{/* Header */}
+				<div className="px-5 py-4 border-b border-zinc-700 flex justify-between items-center shrink-0">
+					<h2 className="text-lg font-bold text-white">{t('create_announcement.title')}</h2>
+					<button onClick={onClose} className="p-1.5 hover:bg-zinc-700 rounded-lg transition">
+						<X size={18} />
 					</button>
 				</div>
 
-				<form onSubmit={handleSubmit} className="overflow-y-auto max-h-[calc(90vh-160px)]">
-					<div className="p-6 grid grid-cols-2 gap-6">
-						{/* Left - Form */}
-						<div className="space-y-4">
-							{/* Language Tabs */}
-							<div className="flex gap-1 bg-zinc-900 p-1 rounded-lg">
-								{LANG_TABS.map(({ code, label }) => (
-									<button
-										key={code}
-										type="button"
-										onClick={() => setActiveLang(code)}
-										className={`flex-1 px-3 py-1.5 rounded-md text-sm font-medium transition ${
-											activeLang === code
-												? 'bg-blue-600 text-white'
-												: 'text-zinc-400 hover:text-white hover:bg-zinc-700'
-										}`}
-									>
-										{label}
-										{code === 'tr' && ' *'}
-									</button>
-								))}
-							</div>
+				{/* Scrollable Content */}
+				<form onSubmit={handleSubmit} className="overflow-y-auto flex-1 px-5 py-4">
+					{/* Language Tabs */}
+					<div className="flex gap-1 bg-zinc-900 p-1 rounded-lg mb-4">
+						{LANG_TABS.map(({code, label}) => (
+							<button
+								key={code}
+								type="button"
+								onClick={() => setActiveLang(code)}
+								className={`flex-1 px-3 py-1.5 rounded-md text-sm font-medium transition ${
+									activeLang === code
+										? 'bg-blue-600 text-white'
+										: 'text-zinc-400 hover:text-white hover:bg-zinc-700'
+								}`}
+							>
+								{label}
+								{code === 'tr' && ' *'}
+							</button>
+						))}
+					</div>
 
+					{/* Title */}
+					<div className="mb-3">
+						<label className="block text-sm font-medium text-zinc-300 mb-1.5">
+							{t('create_announcement.field_title')}
+							{activeLang !== 'tr' && (
+								<span className="text-zinc-500 ml-1">({activeLang.toUpperCase()})</span>
+							)}
+						</label>
+						<input
+							type="text"
+							value={activeTitle}
+							onChange={(e) => updateLangField('title', e.target.value)}
+							className="w-full px-3 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white text-sm placeholder-zinc-500 focus:border-blue-500 focus:outline-none"
+							required={activeLang === 'tr'}
+							placeholder={
+								activeLang !== 'tr'
+									? formData.title || t('create_announcement.field_title')
+									: ''
+							}
+						/>
+					</div>
+
+					{/* Category, Priority, Image - only on TR tab */}
+					{activeLang === 'tr' && (
+						<div className="grid grid-cols-2 gap-3 mb-3">
 							<div>
-								<label className="block text-sm font-medium mb-2">
-									{t('create_announcement.field_title')}
-									{activeLang !== 'tr' && <span className="text-zinc-500 ml-1">({activeLang.toUpperCase()})</span>}
+								<label className="block text-sm font-medium text-zinc-300 mb-1.5">
+									{t('create_announcement.field_category')}
+								</label>
+								<select
+									value={formData.category}
+									onChange={(e) => setFormData({...formData, category: e.target.value})}
+									className="w-full px-3 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white text-sm focus:border-blue-500 focus:outline-none"
+								>
+									<option value="FEATURE">{t('create_announcement.category_feature')}</option>
+									<option value="BUGFIX">{t('create_announcement.category_bugfix')}</option>
+									<option value="IMPORTANT">{t('create_announcement.category_important')}</option>
+									<option value="INFO">{t('create_announcement.category_info')}</option>
+								</select>
+							</div>
+							<div>
+								<label className="block text-sm font-medium text-zinc-300 mb-1.5">
+									{t('create_announcement.field_priority')}
 								</label>
 								<input
-									type="text"
-									value={activeTitle}
-									onChange={(e) => updateLangField('title', e.target.value)}
-									className="w-full px-4 py-2 bg-zinc-900 border border-zinc-700 rounded-lg"
-									required={activeLang === 'tr'}
-									placeholder={activeLang !== 'tr' ? formData.title || t('create_announcement.field_title') : ''}
+									type="number"
+									min="0"
+									max="10"
+									value={formData.priority}
+									onChange={(e) =>
+										setFormData({...formData, priority: parseInt(e.target.value)})
+									}
+									className="w-full px-3 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white text-sm focus:border-blue-500 focus:outline-none"
 								/>
 							</div>
+						</div>
+					)}
 
-							{activeLang === 'tr' && (
-								<>
-									<div>
-										<label className="block text-sm font-medium mb-2">{t('create_announcement.field_category')}</label>
-										<select
-											value={formData.category}
-											onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-											className="w-full px-4 py-2 bg-zinc-900 border border-zinc-700 rounded-lg"
-										>
-											<option value="FEATURE">{t('create_announcement.category_feature')}</option>
-											<option value="BUGFIX">{t('create_announcement.category_bugfix')}</option>
-											<option value="IMPORTANT">{t('create_announcement.category_important')}</option>
-											<option value="INFO">{t('create_announcement.category_info')}</option>
-										</select>
-									</div>
+					{activeLang === 'tr' && (
+						<div className="mb-3">
+							<label className="block text-sm font-medium text-zinc-300 mb-1.5">
+								{t('create_announcement.field_image_url')}
+							</label>
+							<input
+								type="url"
+								value={formData.imageUrl}
+								onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
+								className="w-full px-3 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white text-sm placeholder-zinc-500 focus:border-blue-500 focus:outline-none"
+								placeholder="https://..."
+							/>
+						</div>
+					)}
 
-									<div>
-										<label className="block text-sm font-medium mb-2">{t('create_announcement.field_priority')}</label>
-										<input
-											type="number"
-											min="0"
-											max="10"
-											value={formData.priority}
-											onChange={(e) => setFormData({ ...formData, priority: parseInt(e.target.value) })}
-											className="w-full px-4 py-2 bg-zinc-900 border border-zinc-700 rounded-lg"
-										/>
-									</div>
+					{/* Content */}
+					<div className="mb-3">
+						<label className="block text-sm font-medium text-zinc-300 mb-1.5">
+							{t('create_announcement.field_content')}
+							{activeLang !== 'tr' && (
+								<span className="text-zinc-500 ml-1">({activeLang.toUpperCase()})</span>
+							)}
+						</label>
+						<textarea
+							value={activeContent}
+							onChange={(e) => updateLangField('content', e.target.value)}
+							className="w-full px-3 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white text-sm h-36 font-mono placeholder-zinc-500 focus:border-blue-500 focus:outline-none resize-none"
+							required={activeLang === 'tr'}
+							placeholder={
+								activeLang !== 'tr'
+									? formData.content?.substring(0, 100) ||
+									  t('create_announcement.content_placeholder')
+									: t('create_announcement.content_placeholder')
+							}
+						/>
+					</div>
 
-									<div>
-										<label className="block text-sm font-medium mb-2">{t('create_announcement.field_image_url')}</label>
-										<input
-											type="url"
-											value={formData.imageUrl}
-											onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-											className="w-full px-4 py-2 bg-zinc-900 border border-zinc-700 rounded-lg"
-											placeholder="https://..."
-										/>
-									</div>
-								</>
+					{/* Draft + Notification Options - only on TR tab */}
+					{activeLang === 'tr' && (
+						<div className="space-y-2 mb-3">
+							<Checkbox
+								text={t('create_announcement.save_as_draft')}
+								checked={formData.isDraft}
+								onChange={(e) =>
+									setFormData({
+										...formData,
+										isDraft: e.target.checked,
+										sendNotification: false,
+									})
+								}
+								noMargin
+							/>
+
+							<Checkbox
+								text={t('create_announcement.send_notification')}
+								checked={formData.sendNotification}
+								disabled={formData.isDraft}
+								onChange={(e) =>
+									setFormData({...formData, sendNotification: e.target.checked})
+								}
+								noMargin
+							/>
+
+							{formData.isDraft && (
+								<span className="text-xs text-zinc-500 block">
+									{t('create_announcement.draft_notification_warning')}
+								</span>
 							)}
 
-							<div>
-								<label className="block text-sm font-medium mb-2">
-									{t('create_announcement.field_content')}
-									{activeLang !== 'tr' && <span className="text-zinc-500 ml-1">({activeLang.toUpperCase()})</span>}
-								</label>
-								<textarea
-									value={activeContent}
-									onChange={(e) => updateLangField('content', e.target.value)}
-									className="w-full px-4 py-2 bg-zinc-900 border border-zinc-700 rounded-lg h-64 font-mono text-sm"
-									required={activeLang === 'tr'}
-									placeholder={activeLang !== 'tr' ? formData.content?.substring(0, 100) || t('create_announcement.content_placeholder') : t('create_announcement.content_placeholder')}
-								/>
-							</div>
-
-							{activeLang === 'tr' && (
-								<>
-									<Checkbox
-										text={t('create_announcement.save_as_draft')}
-										checked={formData.isDraft}
-										onChange={(e) => setFormData({ ...formData, isDraft: e.target.checked, sendNotification: false })}
-										noMargin
-									/>
-
-									<Checkbox
-										text={t('create_announcement.send_notification')}
-										checked={formData.sendNotification}
-										disabled={formData.isDraft}
-										onChange={(e) => setFormData({ ...formData, sendNotification: e.target.checked })}
-										noMargin
-									/>
-									{formData.isDraft && (
-										<span className="text-xs text-zinc-500 -mt-1">{t('create_announcement.draft_notification_warning')}</span>
-									)}
-								</>
+							{/* Platform Selection */}
+							{formData.sendNotification && !formData.isDraft && (
+								<div className="ml-6 mt-1 flex gap-3">
+									{PLATFORMS.map(({key, label}) => {
+										const selected = formData.notificationPlatforms.includes(key);
+										return (
+											<button
+												key={key}
+												type="button"
+												onClick={() => togglePlatform(key)}
+												className={`px-3 py-1 rounded-md text-sm font-medium transition ${
+													selected
+														? 'bg-blue-600 text-white'
+														: 'bg-zinc-700 text-zinc-400 hover:bg-zinc-600'
+												}`}
+											>
+												{label}
+											</button>
+										);
+									})}
+								</div>
 							)}
 						</div>
+					)}
 
-						{/* Right - Live Preview */}
-						<div className="border border-zinc-700 rounded-lg p-4 bg-zinc-900">
-							<h3 className="font-semibold mb-4">
-								{t('create_announcement.preview')}
-								{activeLang !== 'tr' && <span className="text-zinc-500 ml-1">({activeLang.toUpperCase()})</span>}
-							</h3>
-							<div className="prose prose-invert prose-sm max-w-none">
-								<h4>{activeTitle || t('create_announcement.field_title')}</h4>
-								{formData.imageUrl && (
-									<img src={formData.imageUrl} alt="Preview" className="rounded-lg mb-4" />
-								)}
-								<div className="whitespace-pre-wrap">
-									{activeContent || t('create_announcement.content_preview_placeholder')}
-								</div>
-							</div>
+					{/* Preview */}
+					<div className="border border-zinc-700 rounded-lg p-4 bg-zinc-900/50 mt-2">
+						<h3 className="text-sm font-semibold text-zinc-400 mb-3">
+							{t('create_announcement.preview')}
+							{activeLang !== 'tr' && (
+								<span className="text-zinc-500 ml-1">({activeLang.toUpperCase()})</span>
+							)}
+						</h3>
+						<div className="text-white">
+							<h4 className="text-base font-bold mb-2">
+								{activeTitle || t('create_announcement.field_title')}
+							</h4>
+							{formData.imageUrl && (
+								<img
+									src={formData.imageUrl}
+									alt="Preview"
+									className="rounded-lg mb-3 max-h-32 object-cover"
+								/>
+							)}
+							<p className="text-sm text-zinc-300 whitespace-pre-wrap leading-relaxed">
+								{activeContent || t('create_announcement.preview_content_placeholder')}
+							</p>
 						</div>
 					</div>
 				</form>
 
-				<div className="p-6 border-t border-zinc-700 flex justify-end gap-3">
+				{/* Footer */}
+				<div className="px-5 py-3 border-t border-zinc-700 flex items-center gap-3 shrink-0">
 					{error && <p className="text-red-400 text-sm mr-auto">{error}</p>}
-					<button
-						type="button"
-						onClick={onClose}
-						className="px-4 py-2 border border-zinc-700 rounded-lg hover:bg-zinc-700 transition"
-					>
-						{t('create_announcement.cancel')}
-					</button>
-					<button
-						onClick={handleSubmit}
-						disabled={loading}
-						className="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition disabled:opacity-50"
-					>
-						{loading ? t('create_announcement.creating') : formData.isDraft ? t('create_announcement.save_draft') : t('create_announcement.publish')}
-					</button>
+					<div className="ml-auto flex gap-2">
+						<button
+							type="button"
+							onClick={onClose}
+							className="px-4 py-2 text-sm border border-zinc-600 rounded-lg text-zinc-300 hover:bg-zinc-700 transition"
+						>
+							{t('create_announcement.cancel')}
+						</button>
+						<button
+							onClick={handleSubmit}
+							disabled={loading}
+							className="px-5 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition disabled:opacity-50"
+						>
+							{loading
+								? t('create_announcement.creating')
+								: formData.isDraft
+								? t('create_announcement.save_draft')
+								: t('create_announcement.publish')}
+						</button>
+					</div>
 				</div>
 			</div>
 		</div>

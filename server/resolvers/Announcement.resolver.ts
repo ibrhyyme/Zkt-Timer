@@ -10,7 +10,7 @@ import {
 import GraphQLError from '../util/graphql_error';
 import { ErrorCode } from '../constants/errors';
 import { Role } from '../middlewares/auth';
-import { sendPushToAll } from '../services/push';
+import { sendPushToAll, sendPushToPlatforms } from '../services/push';
 
 function getLocale(context: GraphQLContext): string {
 	return context.req.cookies?.zkt_language || 'tr';
@@ -206,9 +206,16 @@ export class AnnouncementResolver {
 
 			// Bildirim gonder (fire-and-forget, duyuru olusturmayı bloklamaz)
 			if (input.sendNotification && !input.isDraft) {
-				sendPushToAll(announcement.title, announcement.content.substring(0, 200)).catch((err) => {
-					console.error('[Push] Failed to send push for announcement:', err);
-				});
+				const body = announcement.content.substring(0, 200);
+				if (input.notificationPlatforms && input.notificationPlatforms.length > 0) {
+					sendPushToPlatforms(input.notificationPlatforms, announcement.title, body).catch((err) => {
+						console.error('[Push] Failed to send push for announcement:', err);
+					});
+				} else {
+					sendPushToAll(announcement.title, body).catch((err) => {
+						console.error('[Push] Failed to send push for announcement:', err);
+					});
+				}
 			}
 
 			return {

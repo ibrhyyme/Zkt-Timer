@@ -105,6 +105,80 @@ export async function sendPushToAll(title: string, body: string, data?: Record<s
 }
 
 /**
+ * Belirli platformlardaki cihazlara push notification gonder.
+ */
+export async function sendPushToPlatforms(platforms: string[], title: string, body: string, data?: Record<string, string>): Promise<void> {
+	if (!firebaseInitialized) {
+		logger.warn('[Push] Firebase not initialized, skipping push notification');
+		return;
+	}
+
+	if (!platforms || platforms.length === 0) {
+		logger.info('[Push] No platforms specified, skipping');
+		return;
+	}
+
+	try {
+		const prisma = getPrisma();
+		const tokens = await prisma.pushToken.findMany({
+			where: { platform: { in: platforms as any[] } },
+			select: { token: true },
+		});
+
+		if (tokens.length === 0) {
+			logger.info(`[Push] No tokens for platforms [${platforms.join(', ')}], skipping`);
+			return;
+		}
+
+		const tokenStrings = tokens.map((t) => t.token);
+		const BATCH_SIZE = 500;
+		let totalSuccess = 0;
+		let totalFailure = 0;
+		const tokensToRemove: string[] = [];
+
+		for (let i = 0; i < tokenStrings.length; i += BATCH_SIZE) {
+			const batch = tokenStrings.slice(i, i + BATCH_SIZE);
+
+			try {
+				const response = await admin.messaging().sendEachForMulticast({
+					tokens: batch,
+					notification: { title, body },
+					data: data || {},
+				});
+
+				totalSuccess += response.successCount;
+				totalFailure += response.failureCount;
+
+				response.responses.forEach((resp, idx) => {
+					if (resp.error) {
+						const code = resp.error.code;
+						if (
+							code === 'messaging/registration-token-not-registered' ||
+							code === 'messaging/invalid-registration-token'
+						) {
+							tokensToRemove.push(batch[idx]);
+						}
+					}
+				});
+			} catch (batchError) {
+				logger.error(`[Push] Batch send error (batch ${i / BATCH_SIZE + 1}):`, batchError);
+			}
+		}
+
+		if (tokensToRemove.length > 0) {
+			await prisma.pushToken.deleteMany({
+				where: { token: { in: tokensToRemove } },
+			});
+			logger.info(`[Push] Removed ${tokensToRemove.length} invalid tokens`);
+		}
+
+		logger.info(`[Push] Sent to [${platforms.join(', ')}]: ${totalSuccess} success, ${totalFailure} failure, ${tokenStrings.length} total`);
+	} catch (error) {
+		logger.error('[Push] sendPushToPlatforms error:', error);
+	}
+}
+
+/**
  * Belirli bir kullanicinin tum cihazlarina push notification gonder.
  */
 export async function sendPushToUser(userId: string, title: string, body: string, data?: Record<string, string>): Promise<void> {
