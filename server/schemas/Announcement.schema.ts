@@ -71,6 +71,9 @@ export class CreateAnnouncementInput {
 	@Field({ defaultValue: false })
 	sendNotification: boolean;
 
+	@Field(() => [String], { nullable: true })
+	notificationPlatforms?: string[]; // WEB, ANDROID, IOS
+
 	@Field({ nullable: true })
 	translations?: string; // JSON string
 }
