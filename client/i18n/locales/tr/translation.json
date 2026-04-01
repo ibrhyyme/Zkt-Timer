@@ -1363,7 +1363,9 @@
 		"account_linked": "Hesap Bağlı",
 		"link_account": "Hesap Bağla",
 		"wca_description": "WCA hesabınızı ekleyerek ve resmi derecelerinizi göstererek güvenilirliği artırın.",
-		"disconnect_no_password": "Bağlantıyı kesmek için önce Kişisel Bilgiler sayfasından bir şifre oluşturun."
+		"disconnect_no_password": "Bağlantıyı kesmek için önce Kişisel Bilgiler sayfasından bir şifre oluşturun.",
+		"wca_connecting": "WCA'ya bağlanılıyor...",
+		"linking_account": "Hesap bağlanıyor..."
 	},
 	"email_verification": {
 		"title": "E-posta Doğrulama",

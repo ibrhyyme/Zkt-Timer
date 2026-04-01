@@ -1363,7 +1363,9 @@
 		"account_linked": "Account Linked",
 		"link_account": "Link Account",
 		"wca_description": "Increase credibility by linking your WCA account and displaying your official records.",
-		"disconnect_no_password": "To disconnect, first set a password from the Personal Info page."
+		"disconnect_no_password": "To disconnect, first set a password from the Personal Info page.",
+		"wca_connecting": "Connecting to WCA...",
+		"linking_account": "Linking account..."
 	},
 	"email_verification": {
 		"title": "Email Verification",

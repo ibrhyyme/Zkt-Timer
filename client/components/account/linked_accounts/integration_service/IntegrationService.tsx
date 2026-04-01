@@ -1,4 +1,4 @@
-import React, {useMemo} from 'react';
+import React, {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import './IntegrationService.scss';
 import {Integration} from '../../../../@types/generated/graphql';
@@ -46,6 +46,9 @@ export default function IntegrationService(props: Props) {
 	const {data, loading} = useQuery<{integration: Integration}>(INTEGRATION_QUERY, {
 		variables: {integrationType},
 	});
+	const [linking, setLinking] = useState(false);
+	const [showDisconnect, setShowDisconnect] = useState(false);
+	const [disconnecting, setDisconnecting] = useState(false);
 
 	const service = LINKED_SERVICES[integrationType];
 	const integration = data?.integration;
@@ -73,12 +76,21 @@ export default function IntegrationService(props: Props) {
 		return `${base}?${queryParams}`;
 	}
 
-	async function removeIntegration() {
+	function handleLink() {
+		if (linking || integration) return;
+		setLinking(true);
+		window.location.href = serviceUri;
+	}
+
+	async function handleConfirmDisconnect() {
+		if (disconnecting) return;
+		setDisconnecting(true);
 		try {
 			await revokeMutate({variables: {integrationType}});
 			window.location.reload();
 		} catch (e) {
 			toastError(e);
+			setDisconnecting(false);
 		}
 	}
 
@@ -100,15 +112,9 @@ export default function IntegrationService(props: Props) {
 			revokeButton = (
 				<Button
 					text={t('integration.disconnect')}
-					flat
+					fullWidth
 					danger
-					confirmModalProps={{
-						hideInput: true,
-						title: t('integration.disconnect_title', { name: service.name }),
-						description: t('integration.disconnect_confirm'),
-						buttonText: t('integration.disconnect_button'),
-						triggerAction: removeIntegration,
-					}}
+					onClick={() => setShowDisconnect(true)}
 				/>
 			);
 		}
@@ -128,13 +134,89 @@ export default function IntegrationService(props: Props) {
 					fullWidth
 					large
 					primary
-					disabled={!!integration}
-					text={integration ? t('integration.account_linked') : t('integration.link_account')}
+					disabled={!!integration || linking}
+					text={integration ? t('integration.account_linked') : linking ? t('integration.wca_connecting') : t('integration.link_account')}
 					icon={integration ? <Check /> : <ArrowRight />}
-					to={serviceUri}
+					onClick={handleLink}
 				/>
 				{revokeButton}
 			</div>
+
+			{linking && (
+				<div
+					style={{
+						position: 'fixed',
+						top: 0,
+						left: 0,
+						right: 0,
+						bottom: 0,
+						backgroundColor: 'rgba(0, 0, 0, 0.7)',
+						display: 'flex',
+						flexDirection: 'column',
+						alignItems: 'center',
+						justifyContent: 'center',
+						zIndex: 9999,
+						gap: '16px',
+					}}
+				>
+					<img src={service.logoSrc} alt={service.name} style={{width: '48px', height: '48px'}} />
+					<span style={{color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.9rem'}}>
+						{t('integration.wca_connecting')}
+					</span>
+				</div>
+			)}
+
+			{showDisconnect && (
+				<div
+					onClick={() => !disconnecting && setShowDisconnect(false)}
+					style={{
+						position: 'fixed',
+						top: 0,
+						left: 0,
+						right: 0,
+						bottom: 0,
+						backgroundColor: 'rgba(0, 0, 0, 0.6)',
+						display: 'flex',
+						alignItems: 'center',
+						justifyContent: 'center',
+						zIndex: 9999,
+						padding: '24px',
+					}}
+				>
+					<div
+						onClick={(e) => e.stopPropagation()}
+						style={{
+							backgroundColor: 'rgb(22, 25, 35)',
+							borderRadius: '20px',
+							padding: '28px 24px',
+							width: '100%',
+							maxWidth: '340px',
+							display: 'flex',
+							flexDirection: 'column',
+							alignItems: 'center',
+							gap: '16px',
+							border: '1px solid rgba(255, 255, 255, 0.08)',
+						}}
+					>
+						<img src={service.logoSrc} alt={service.name} style={{width: '48px', height: '48px'}} />
+						<h3 style={{color: 'rgba(255, 255, 255, 0.95)', margin: 0, fontSize: '1.05rem', fontWeight: 600, textAlign: 'center'}}>
+							{t('integration.disconnect_title', {name: service.name})}
+						</h3>
+						<p style={{color: 'rgba(255, 255, 255, 0.55)', margin: 0, textAlign: 'center', lineHeight: 1.5, fontSize: '0.85rem'}}>
+							{t('integration.disconnect_confirm')}
+						</p>
+						<Button
+							fullWidth
+							large
+							danger
+							glow
+							text={t('integration.disconnect_button')}
+							loading={disconnecting}
+							onClick={handleConfirmDisconnect}
+						/>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 }

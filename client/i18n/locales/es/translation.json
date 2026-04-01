@@ -1363,7 +1363,9 @@
 		"account_linked": "Cuenta vinculada",
 		"link_account": "Vincular cuenta",
 		"wca_description": "Aumenta la credibilidad vinculando tu cuenta WCA y mostrando tus récords oficiales.",
-		"disconnect_no_password": "Para desvincular, primero establece una contrasena desde la pagina de Informacion Personal."
+		"disconnect_no_password": "Para desvincular, primero establece una contrasena desde la pagina de Informacion Personal.",
+		"wca_connecting": "Conectando con WCA...",
+		"linking_account": "Vinculando cuenta..."
 	},
 	"email_verification": {
 		"title": "Verificación de correo",
