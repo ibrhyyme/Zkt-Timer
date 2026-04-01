@@ -13,6 +13,8 @@ import { useDispatch } from 'react-redux';
 import { openModal } from '../../../actions/general';
 import ManageUser from '../manage_user/ManageUser';
 import { useTranslation } from 'react-i18next';
+import SendFilteredEmailModal from './SendFilteredEmailModal';
+import { EnvelopeSimple } from 'phosphor-react';
 
 dayjs.extend(relativeTime);
 dayjs.locale('tr');
@@ -178,6 +180,7 @@ export default function AdminUsers() {
 	const [hasMore, setHasMore] = React.useState(true);
 	const [total, setTotal] = React.useState(0);
 	const [activeFilters, setActiveFilters] = React.useState<string[]>([]);
+	const [showEmailModal, setShowEmailModal] = React.useState(false);
 
 	async function fetchData(currentPage: number) {
 		setLoading(true);
@@ -280,6 +283,28 @@ export default function AdminUsers() {
 							);
 						})}
 					</div>
+					{activeFilters.length > 0 && filteredUsers.length > 0 && (
+						<button
+							onClick={() => setShowEmailModal(true)}
+							style={{
+								marginTop: '12px',
+								padding: '6px 16px',
+								borderRadius: '8px',
+								fontSize: '0.85rem',
+								fontWeight: 600,
+								cursor: 'pointer',
+								border: 'none',
+								backgroundColor: '#3b82f6',
+								color: '#fff',
+								display: 'flex',
+								alignItems: 'center',
+								gap: '6px',
+							}}
+						>
+							<EnvelopeSimple size={16} weight="bold" />
+							{t('admin_users.send_email_filtered')} ({filteredUsers.length})
+						</button>
+					)}
 				</div>
 
 				{loading ? (
@@ -333,6 +358,13 @@ export default function AdminUsers() {
 					</>
 				)}
 			</div>
+
+			{showEmailModal && (
+				<SendFilteredEmailModal
+					users={filteredUsers.map((u) => ({id: u.id, username: u.username, email: u.email}))}
+					onClose={() => setShowEmailModal(false)}
+				/>
+			)}
 		</div>
 	);
 }

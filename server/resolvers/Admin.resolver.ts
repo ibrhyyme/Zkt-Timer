@@ -27,6 +27,8 @@ import { createBanLog, deactivateAllBanLogs } from '../models/ban_log';
 import { resolveReportsOfUserId } from './Report.resolver';
 import { PaginationArgsInput } from '../schemas/Pagination.schema';
 import { getPaginatedResponse, PaginatedRequestInput } from '../util/pagination/paginated_response';
+import { sendPushToUser } from '../services/push';
+import { AdminSendPushResult } from '../schemas/PushToken.schema';
 
 @Resolver()
 export class AdminResolver {
@@ -224,5 +226,17 @@ export class AdminResolver {
 		await deleteUserAccount(targetUser);
 
 		return targetUser;
+	}
+
+	@Authorized([Role.ADMIN])
+	@Mutation(() => AdminSendPushResult)
+	async adminSendPushToUser(
+		@Arg('userId') userId: string,
+		@Arg('title') title: string,
+		@Arg('body') body: string
+	): Promise<AdminSendPushResult> {
+		await getUserByIdOrThrow404(userId);
+		await sendPushToUser(userId, title, body);
+		return {success: true};
 	}
 }

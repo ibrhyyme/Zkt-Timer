@@ -11,6 +11,7 @@ import {toastSuccess} from '../../../../util/toast';
 import {useDispatch} from 'react-redux';
 import {UserAccountForAdmin} from '../../../../../server/schemas/UserAccount.schema';
 import {useTranslation} from 'react-i18next';
+import SendPushModal from '../send_push/SendPushModal';
 
 const b = block('manage-user-actions');
 
@@ -159,6 +160,14 @@ export default function UserActions(props: Props) {
 				onClick={togglePremiumStatus}
 			/>
 			<Button text={t('delete_user')} danger onClick={deleteUser} />
+			<Button
+				text={t('send_push')}
+				primary
+				onClick={() => dispatch(openModal(
+					<SendPushModal userId={user.id} username={user.username} />,
+					{title: t('send_push'), width: 400}
+				))}
+			/>
 		</div>
 	);
 }

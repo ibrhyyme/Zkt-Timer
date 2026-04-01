@@ -12,6 +12,12 @@ export class PushTokenInfo {
 	platform: string;
 }
 
+@ObjectType()
+export class AdminSendPushResult {
+	@Field()
+	success: boolean;
+}
+
 @InputType()
 export class RegisterPushTokenInput {
 	@Field()
