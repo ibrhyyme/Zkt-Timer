@@ -157,6 +157,18 @@ function UserTableRow({ user }: { user: UserAccountData }) {
 	);
 }
 
+const FILTERS = [
+	{key: 'ADMIN', label: 'Admin', color: '#ef4444', match: (u: UserAccountData) => u.admin},
+	{key: 'MOD', label: 'Mod', color: '#f97316', match: (u: UserAccountData) => u.mod},
+	{key: 'PRO', label: 'Pro', color: '#a855f7', match: (u: UserAccountData) => u.is_pro},
+	{key: 'VERIFIED', label: 'Dogrulanmis', color: '#22c55e', match: (u: UserAccountData) => u.email_verified},
+	{key: 'APPROVED', label: 'Onayli', color: '#3b82f6', match: (u: UserAccountData) => u.verified},
+	{key: 'BANNED', label: 'Banned', color: '#6b7280', match: (u: UserAccountData) => u.banned_forever || !!u.banned_until},
+	{key: 'WEB', label: 'Web', color: '#3b82f6', match: (u: UserAccountData) => u.pushTokens?.some((t) => t.platform === 'WEB')},
+	{key: 'ANDROID', label: 'Android', color: '#22c55e', match: (u: UserAccountData) => u.pushTokens?.some((t) => t.platform === 'ANDROID')},
+	{key: 'IOS', label: 'iOS', color: '#6b7280', match: (u: UserAccountData) => u.pushTokens?.some((t) => t.platform === 'IOS')},
+];
+
 export default function AdminUsers() {
 	const { t } = useTranslation();
 	const [query, setQuery] = useInput('');
@@ -165,6 +177,7 @@ export default function AdminUsers() {
 	const [page, setPage] = React.useState(0);
 	const [hasMore, setHasMore] = React.useState(true);
 	const [total, setTotal] = React.useState(0);
+	const [activeFilters, setActiveFilters] = React.useState<string[]>([]);
 
 	async function fetchData(currentPage: number) {
 		setLoading(true);
@@ -203,6 +216,14 @@ export default function AdminUsers() {
 		fetchData(0);
 	}, [query]);
 
+	function toggleFilter(key: string) {
+		setActiveFilters((prev) => prev.includes(key) ? prev.filter((f) => f !== key) : [...prev, key]);
+	}
+
+	const filteredUsers = activeFilters.length === 0
+		? users
+		: users.filter((u) => activeFilters.every((key) => FILTERS.find((f) => f.key === key)?.match(u)));
+
 	const handlePrevPage = () => {
 		if (page > 0) {
 			const newPage = page - 1;
@@ -234,6 +255,31 @@ export default function AdminUsers() {
 					<div className="cd-admin-users__stats">
 						{t('admin_users.total_users', { count: total })}
 					</div>
+					<div style={{display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '12px'}}>
+						{FILTERS.map((f) => {
+							const active = activeFilters.includes(f.key);
+							return (
+								<button
+									key={f.key}
+									type="button"
+									onClick={() => toggleFilter(f.key)}
+									style={{
+										padding: '4px 12px',
+										borderRadius: '12px',
+										fontSize: '0.75rem',
+										fontWeight: 600,
+										cursor: 'pointer',
+										transition: 'all 0.15s',
+										border: 'none',
+										backgroundColor: active ? f.color : 'rgba(255,255,255,0.06)',
+										color: active ? '#fff' : 'rgba(255,255,255,0.5)',
+									}}
+								>
+									{f.label}
+								</button>
+							);
+						})}
+					</div>
 				</div>
 
 				{loading ? (
@@ -254,7 +300,7 @@ export default function AdminUsers() {
 									</tr>
 								</thead>
 								<tbody>
-									{users.map((user) => (
+									{filteredUsers.map((user) => (
 										<UserTableRow key={user.id} user={user} />
 									))}
 								</tbody>
