@@ -30,6 +30,7 @@
 		"forgot_password": "¿Olvidaste tu contraseña?",
 		"no_account": "¿No tienes una cuenta? Regístrate",
 		"wca_login": "Iniciar sesion con WCA",
+		"wca_connecting": "Conectando con WCA...",
 		"wca_divider": "o",
 		"wca_note": "Si ya tienes una cuenta, inicia sesion primero y vincula tu cuenta WCA desde Cuenta > Cuentas Vinculadas."
 	},
