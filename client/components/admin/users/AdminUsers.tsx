@@ -37,6 +37,9 @@ interface UserAccountData {
 			storage_path?: string;
 		};
 	};
+	pushTokens?: {
+		platform: string;
+	}[];
 }
 
 const ADMIN_USER_SEARCH_QUERY = gql`
@@ -64,6 +67,9 @@ const ADMIN_USER_SEARCH_QUERY = gql`
 						storage_path
 					}
 				}
+				pushTokens {
+					platform
+				}
 			}
 		}
 	}
@@ -80,6 +86,10 @@ function UserTableRow({ user }: { user: UserAccountData }) {
 	if (user.email_verified) badges.push({ label: t('admin_users.verified'), color: 'green' });
 	if (user.verified) badges.push({ label: t('admin_users.approved'), color: 'blue' });
 	if (user.banned_forever || user.banned_until) badges.push({ label: t('admin_users.banned'), color: 'gray' });
+
+	const platforms = user.pushTokens ? [...new Set(user.pushTokens.map((pt) => pt.platform))] : [];
+	const platformColors: Record<string, string> = {WEB: 'blue', ANDROID: 'green', IOS: 'gray'};
+	platforms.forEach((p) => badges.push({label: p, color: platformColors[p] || 'gray'}));
 
 	const handleManage = () => {
 		dispatch(openModal(<ManageUser userId={user.id} />));

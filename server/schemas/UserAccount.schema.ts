@@ -8,6 +8,7 @@ import { BanLog } from './BanLog.schema';
 import PaginatedResponse from './Pagination.schema';
 import { TimerBackground } from './TimerBackground.schema';
 import { NotificationPreference } from './NotificationPreference.schema';
+import { PushTokenInfo } from './PushToken.schema';
 import { TopSolve } from './TopSolve.schema';
 import { TopAverage } from './TopAverage.schema';
 
@@ -168,6 +169,9 @@ class IUserAccountForAdmin extends IUserAccount {
 
 	@Field(() => UserAccountSummary)
 	summary?: UserAccountSummary;
+
+	@Field(() => [PushTokenInfo], {nullable: true})
+	pushTokens?: PushTokenInfo[];
 }
 
 @InterfaceType({ implements: IUserAccountForAdmin })
