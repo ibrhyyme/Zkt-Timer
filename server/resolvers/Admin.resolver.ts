@@ -73,6 +73,11 @@ export class AdminResolver {
 					admin: true,
 					mod: true,
 					integrations: true,
+					pushTokens: {
+						select: {
+							platform: true,
+						},
+					},
 					profile: {
 						include: {
 							pfp_image: true,

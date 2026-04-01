@@ -6,6 +6,12 @@ export class PushTokenResult {
 	success: boolean;
 }
 
+@ObjectType()
+export class PushTokenInfo {
+	@Field()
+	platform: string;
+}
+
 @InputType()
 export class RegisterPushTokenInput {
 	@Field()
