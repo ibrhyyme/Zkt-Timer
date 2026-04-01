@@ -30,6 +30,7 @@
 		"forgot_password": "Şifreni mi unuttun?",
 		"no_account": "Hesabın yok mu? Kayıt ol",
 		"wca_login": "WCA ile Giriş Yap",
+		"wca_connecting": "WCA'ya bağlanılıyor...",
 		"wca_divider": "veya",
 		"wca_note": "Zaten bir hesabınız varsa önce giriş yapıp Hesap > Bağlı Hesaplar bölümünden WCA hesabınızı bağlayın."
 	},
