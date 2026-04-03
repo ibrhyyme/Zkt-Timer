@@ -46,9 +46,7 @@ export function sanitizeSolve(s: Partial<Solve>): Partial<Solve> {
 	solve.from_timer = true;
 	if (
 		!solve.session_id ||
-		solve.match_id ||
 		solve.trainer_name ||
-		solve.game_session_id ||
 		solve.training_session_id
 	) {
 		solve.from_timer = false;

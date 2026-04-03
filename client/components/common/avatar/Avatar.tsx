@@ -65,8 +65,8 @@ export default function Avatar(props: Props) {
 	}
 
 	let eloSpan = null;
-	if (showEloType && user?.elo_rating) {
-		const elo = user.elo_rating[`elo_${showEloType}_rating`];
+	if (showEloType && (user as GqlPublicUserAccount)?.elo_rating) {
+		const elo = (user as GqlPublicUserAccount).elo_rating[`elo_${showEloType}_rating`];
 		eloSpan = <span className={b('elo')}>{elo}</span>;
 	}
 

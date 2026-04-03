@@ -36,7 +36,7 @@ function showOfflineToastOnce() {
 export async function createSolveDb(solveInput: Solve) {
 	const solveDb = getSolveDb();
 
-	const solve = sanitizeSolve(solveInput);
+	const solve = sanitizeSolve(solveInput) as Solve;
 	solveDb.insert({
 		...solve,
 	});

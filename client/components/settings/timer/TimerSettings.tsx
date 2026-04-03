@@ -198,7 +198,7 @@ export default function TimerSettings() {
 						label: getTimerTypeName(c),
 						value: c,
 					}))}
-					onChange={(v) => setSetting('timer_type', v)}
+					onChange={(v) => setSetting('timer_type', v as 'keyboard' | 'smart' | 'stackmat' | 'gantimer')}
 				/>
 				<TimerSettingsAction
 					label={t('timer_settings.cube_types')}

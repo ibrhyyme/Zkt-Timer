@@ -96,7 +96,7 @@ export default function TimeChart(props: Props) {
 									fontWeight: 400,
 									textAnchor: 'middle',
 								})}
-								tickFormat={(d) => getTimeString(d as number, d > 10 ? 0 : undefined)}
+								tickFormat={(d) => getTimeString(d as number, (d as number) > 10 ? 0 : undefined)}
 								left={-17}
 								top={10}
 								strokeWidth={0}
