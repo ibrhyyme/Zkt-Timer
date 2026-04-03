@@ -20,6 +20,14 @@ import { hapticImpact } from '../../../util/native-plugins';
 
 let endLocked = false;
 
+// Touch/keyboard: endTimer anında display'i dondur — React re-render beklemeden
+// 33ms interval overshoot'unu engeller (smart cube freeze ile aynı pattern)
+let _timerEndFinalTime: number | null = null;
+
+export function getTimerEndFinalTime(): number | null {
+	return _timerEndFinalTime;
+}
+
 // Smart cube: BLE katmanından senkron solved tespiti için
 // Timer display interval'ı bu değeri kontrol eder — React render beklemeden display donar
 let _smartSolveEndTime: number | null = null;
@@ -49,9 +57,14 @@ export function setSmartCubeClockSkew(skew: number) {
 	_smartCubeClockSkew = skew;
 }
 
-export function startTimer(smartStartTimestamp?: number) {
-	const timeStartedAt = smartStartTimestamp ? new Date(smartStartTimestamp) : new Date();
+export function startTimer(smartStartTimestamp?: number, touchTimestamp?: number) {
+	const timeStartedAt = smartStartTimestamp
+		? new Date(smartStartTimestamp)
+		: touchTimestamp
+			? new Date(touchTimestamp)
+			: new Date();
 	_smartSolveEndTime = null;
+	_timerEndFinalTime = null;
 	hapticImpact('light');
 
 	// Acik dropdown menuleri kapat (hamburger, kup secici vb.)
@@ -73,7 +86,7 @@ export function startTimer(smartStartTimestamp?: number) {
 	});
 }
 
-export function endTimer(context: ITimerContext, finalTimeMilli?: number, overrides?: Partial<SolveInput>) {
+export function endTimer(context: ITimerContext, finalTimeMilli?: number, overrides?: Partial<SolveInput>, endTimestamp?: number) {
 	hapticImpact('medium');
 
 	const { scramble, timeStartedAt } = context;
@@ -85,11 +98,15 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 	endLocked = true;
 	let finalTime = finalTimeMilli;
 
-	const now = new Date();
+	const now = endTimestamp || Date.now();
 
 	if (!finalTimeMilli) {
-		finalTime = now.getTime() - timeStartedAt.getTime();
+		finalTime = now - timeStartedAt.getTime();
 	}
+
+	// Display'i HEMEN dondur — Redux dispatch ve React re-render beklemeden
+	_timerEndFinalTime = finalTime;
+	window.dispatchEvent(new CustomEvent('timerEndFreeze'));
 
 	// Smart cube stats hesapla (dispatch oncesi)
 	let smartStats: { turns: number; tps: number } | null = null;
@@ -160,13 +177,13 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 			}
 
 			if (context.lastSmartMoveTime) {
-				let pd = (now.getTime() - context.lastSmartMoveTime) / 1000;
+				let pd = (now - context.lastSmartMoveTime) / 1000;
 				if (pd < 0) pd = 0;
 				overridesCombined.smart_put_down_time = pd;
 			}
 		}
 
-		saveSolve(context, finalTime, scramble, timeStartedAt.getTime(), now.getTime(), false, false, overridesCombined);
+		saveSolve(context, finalTime, scramble, timeStartedAt.getTime(), now, false, false, overridesCombined);
 		endLocked = false;
 	}, 10);
 }

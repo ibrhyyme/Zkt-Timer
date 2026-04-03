@@ -89,6 +89,9 @@ export default function KeyWatcher(props: Props) {
 	useWindowListener('touchmove', touchMove, [], { passive: false });
 
 	function touchStart(e) {
+		// Touch event timestamp'ini DOM traversal'dan ONCE yakala — mobil zamanlama dogrulugu icin
+		const eventTs = Math.round(performance.timeOrigin + e.timeStamp);
+
 		let target = e.target;
 		let insideTimer = false;
 
@@ -119,12 +122,15 @@ export default function KeyWatcher(props: Props) {
 				touchStartX.current = e.touches[0].clientX;
 				touchStartY.current = e.touches[0].clientY;
 			}
-			keydownSpace(e, true);
+			keydownSpace(e, true, eventTs);
 		}
 	}
 
 	function touchEnd(e) {
 		if (e.touches && e.touches.length > 0) return;
+
+		// Touch event timestamp'ini DOM traversal'dan ONCE yakala
+		const eventTs = Math.round(performance.timeOrigin + e.timeStamp);
 
 		touchStartX.current = null;
 		touchStartY.current = null;
@@ -154,7 +160,7 @@ export default function KeyWatcher(props: Props) {
 		}
 
 		if (insideTimer) {
-			keyupSpace(e, true);
+			keyupSpace(e, true, eventTs);
 		}
 	}
 
@@ -184,7 +190,7 @@ export default function KeyWatcher(props: Props) {
 		}
 	}
 
-	function keydownSpace(e, touch = false) {
+	function keydownSpace(e, touch = false, eventTimestamp?: number) {
 		const freezeTime = getSettings().freeze_time;
 
 		if (e.key === 'Escape') return;
@@ -210,7 +216,7 @@ export default function KeyWatcher(props: Props) {
 
 		if (timeStartedAt) {
 			e.preventDefault();
-			endTimer(context);
+			endTimer(context, undefined, undefined, eventTimestamp);
 
 			if (inspection) {
 				setTimer(
@@ -261,7 +267,7 @@ export default function KeyWatcher(props: Props) {
 		}
 	}
 
-	function keyupSpace(e, touch = false) {
+	function keyupSpace(e, touch = false, eventTimestamp?: number) {
 		const freezeTime = getSettings().freeze_time;
 
 		// Don't trigger if user is typing in an input
@@ -298,7 +304,7 @@ export default function KeyWatcher(props: Props) {
 			if (inInspection && context.dnfTime) {
 				return;
 			}
-			startTimer();
+			startTimer(undefined, eventTimestamp);
 		}
 	}
 
