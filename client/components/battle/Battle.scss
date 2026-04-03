@@ -125,6 +125,9 @@ $self: '.cd-battle';
 		font-family: 'Roboto Mono', monospace;
 		opacity: 1;
 		transition: font-size 0.2s ease, color 0.2s ease;
+		background: rgba(0, 0, 0, 0.5);
+		padding: 4px 10px;
+		border-radius: 8px;
 
 		&--winning {
 			color: rgb(var(--secondary-color));
@@ -270,9 +273,7 @@ $self: '.cd-battle';
 		position: fixed;
 		inset: 0;
 		z-index: 9999;
-		background: rgba(0, 0, 0, 0.6);
-		backdrop-filter: blur(12px);
-		-webkit-backdrop-filter: blur(12px);
+		background: rgb(var(--background-color));
 		display: flex;
 		flex-direction: column;
 		color: rgb(var(--text-color));
