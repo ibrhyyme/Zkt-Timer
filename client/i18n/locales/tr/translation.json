@@ -1907,7 +1907,10 @@
 		"settings": "Ayarlar",
 		"plus_two": "+2",
 		"dnf": "DNF",
-		"display": "Görünüm"
+		"display": "Görünüm",
+		"round_detail": "Tur {{number}}",
+		"scramble_label": "Karıştırma",
+		"wins": "{{name}} kazandı!"
 	},
 	"cross_solver": {
 		"only_3x3": "Sadece 3x3 için kullanılabilir",

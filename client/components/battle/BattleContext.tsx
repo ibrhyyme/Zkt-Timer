@@ -41,7 +41,10 @@ export interface BattleState {
 	// Sync start
 	player1Ready: boolean;
 	player2Ready: boolean;
-	roundStartedAt: number | null;
+	player1StartedAt: number | null;
+	player2StartedAt: number | null;
+	// L2: Round detail modal
+	selectedRound: number | null;
 }
 
 type BattleAction =
@@ -56,7 +59,9 @@ type BattleAction =
 	| { type: 'RESET' }
 	| { type: 'PLAYER_READY'; player: 1 | 2 }
 	| { type: 'PLAYER_UNREADY'; player: 1 | 2 }
-	| { type: 'START_ROUND'; startTime: number };
+	| { type: 'PLAYER_START'; player: 1 | 2; startTime: number }
+	| { type: 'SELECT_ROUND'; roundIndex: number }
+	| { type: 'DESELECT_ROUND' };
 
 function getEffectiveTime(solve: BattleSolve): number {
 	if (solve.dnf) return Infinity;
@@ -116,7 +121,8 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
 				}
 			}
 
-			return { ...state, rounds, player1Score, player2Score, winStreak, roundStartedAt: null };
+			const solveStartKey = action.player === 1 ? 'player1StartedAt' : 'player2StartedAt';
+			return { ...state, rounds, player1Score, player2Score, winStreak, [solveStartKey]: null };
 		}
 
 		case 'NEXT_ROUND': {
@@ -127,7 +133,8 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
 				rounds: [...state.rounds, newRound],
 				currentRound: state.currentRound + 1,
 				currentScramble: newScramble,
-				roundStartedAt: null,
+				player1StartedAt: null,
+				player2StartedAt: null,
 			};
 		}
 
@@ -158,7 +165,8 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
 				player1Score,
 				player2Score,
 				winStreak: { player: null, count: 0 },
-				roundStartedAt: null,
+				player1StartedAt: null,
+				player2StartedAt: null,
 			};
 		}
 
@@ -194,7 +202,7 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
 			return { ...state, menuOpen: !state.menuOpen, historyOpen: false };
 
 		case 'TOGGLE_HISTORY':
-			return { ...state, historyOpen: !state.historyOpen, menuOpen: false };
+			return { ...state, historyOpen: !state.historyOpen, menuOpen: false, selectedRound: state.historyOpen ? null : state.selectedRound };
 
 		case 'RESET': {
 			const scramble = getNewScramble(state.settings.cubeType);
@@ -215,32 +223,37 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
 			return { ...state, player2Ready: false };
 		}
 
-		case 'START_ROUND': {
+		case 'PLAYER_START': {
 			const round = state.rounds[state.currentRound];
 			const bothDone = !!round.player1Solve && !!round.player2Solve;
+			const startKey = action.player === 1 ? 'player1StartedAt' : 'player2StartedAt';
 
 			if (bothDone) {
-				// Onceki tur tamamlanmis — yeni tur olustur + baslat
+				// Onceki tur tamamlanmis — yeni tur olustur + bu oyuncunun timer'ini baslat
 				const newScramble = getNewScramble(state.settings.cubeType);
 				return {
 					...state,
 					rounds: [...state.rounds, { scramble: newScramble }],
 					currentRound: state.currentRound + 1,
 					currentScramble: newScramble,
-					roundStartedAt: action.startTime,
-					player1Ready: false,
-					player2Ready: false,
+					player1StartedAt: null,
+					player2StartedAt: null,
+					[startKey]: action.startTime,
 				};
 			}
 
-			// Ilk tur veya tamamlanmamis tur — sadece baslat
+			// Ilk tur veya tamamlanmamis tur — sadece bu oyuncuyu baslat
 			return {
 				...state,
-				roundStartedAt: action.startTime,
-				player1Ready: false,
-				player2Ready: false,
+				[startKey]: action.startTime,
 			};
 		}
+
+		case 'SELECT_ROUND':
+			return { ...state, selectedRound: action.roundIndex };
+
+		case 'DESELECT_ROUND':
+			return { ...state, selectedRound: null };
 
 		default:
 			return state;
@@ -271,7 +284,9 @@ function createInitialState(cubeType: string = '333', scramble?: string): Battle
 		historyOpen: false,
 		player1Ready: false,
 		player2Ready: false,
-		roundStartedAt: null,
+		player1StartedAt: null,
+		player2StartedAt: null,
+		selectedRound: null,
 	};
 }
 

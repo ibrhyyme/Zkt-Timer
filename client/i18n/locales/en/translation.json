@@ -1909,7 +1909,10 @@
 		"settings": "Settings",
 		"plus_two": "+2",
 		"dnf": "DNF",
-		"display": "Display"
+		"display": "Display",
+		"round_detail": "Round {{number}}",
+		"scramble_label": "Scramble",
+		"wins": "{{name}} wins!"
 	},
 	"cross_solver": {
 		"only_3x3": "Only available for 3x3",

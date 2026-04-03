@@ -1888,7 +1888,10 @@
 		"settings": "Настройки",
 		"plus_two": "+2",
 		"dnf": "DNF",
-		"display": "Отображение"
+		"display": "Отображение",
+		"round_detail": "Раунд {{number}}",
+		"scramble_label": "Скрамбл",
+		"wins": "{{name}} побеждает!"
 	},
 	"cross_solver": {
 		"only_3x3": "Доступно только для 3x3",
