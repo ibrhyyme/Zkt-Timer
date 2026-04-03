@@ -258,7 +258,7 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 			<div className={b('time', timeMod)}>{timeText}</div>
 
 			{/* Scramble */}
-			{settings.showScramble && status !== 'TIMING' && (
+			{settings.showScramble && ((status === 'RESTING' && !alreadySolved) || status === 'PRIMING' || (bothSolved && status !== 'TIMING')) && (
 				<div className={b('scramble')}>{currentScramble}</div>
 			)}
 
