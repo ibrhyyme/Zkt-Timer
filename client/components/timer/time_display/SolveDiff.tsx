@@ -16,9 +16,9 @@ function SolveDiff() {
     // Subscribe to DB updates
     useSolveDb();
 
-    // Timer çalışıyorken veya inceleme esnasındayken gösterme
+    // Timer çalışıyorken veya inceleme esnasındayken gizle ama yer kapla (timer kaymasin)
     if (timeStartedAt || solving || (context.inInspection && inspectionTimer > 0)) {
-        return null;
+        return <div className={b()} style={{ visibility: 'hidden' }}>&nbsp;</div>;
     }
 
     const solves = fetchSolves({ session_id: sessionId }, { limit: 20 });

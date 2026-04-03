@@ -98,7 +98,7 @@ export async function getMeWithCookieString(cookies: string | any): Promise<User
 			return {
 				...user,
 				profile,
-			};
+			} as any;
 		}
 	} catch (e) {
 		return null;

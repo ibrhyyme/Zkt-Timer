@@ -44,7 +44,7 @@ export default function AdminEmail() {
 		if (!canSend) return;
 
 		const recipientCount = sendToAll ? t('admin_email.to_all_users') : recipientList.length;
-		if (!confirm(t('admin_email.send_confirm', { count: recipientCount }))) {
+		if (!confirm(t('admin_email.send_confirm', { count: recipientCount as number }))) {
 			return;
 		}
 

@@ -1,4 +1,4 @@
-import {PublicUserAccount, UserAccount} from '../../server/schemas/UserAccount.schema';
+import {PublicUserAccount, UserAccount, UserAccountForAdmin} from '../../server/schemas/UserAccount.schema';
 
 /**
  * Central Pro feature configuration
@@ -9,11 +9,11 @@ export const isProEnabled = (): boolean => {
 	return process.env.PRO_ENABLED === 'true';
 };
 
-export function isPro(user?: UserAccount | PublicUserAccount): boolean {
+export function isPro(user?: UserAccount | PublicUserAccount | UserAccountForAdmin): boolean {
 	return user?.is_pro || user?.is_premium || false;
 }
 
-export function isNotPro(user?: UserAccount | PublicUserAccount): boolean {
+export function isNotPro(user?: UserAccount | PublicUserAccount | UserAccountForAdmin): boolean {
 	return !isPro(user);
 }
 
@@ -25,11 +25,11 @@ export function isLoggedInAndNotPro(user?: UserAccount): boolean {
 	return !!user && !isPro(user);
 }
 
-export function isPremium(user?: UserAccount | PublicUserAccount): boolean {
+export function isPremium(user?: UserAccount | PublicUserAccount | UserAccountForAdmin): boolean {
 	return user?.is_premium ?? false;
 }
 
-export function isNotPremium(user?: UserAccount | PublicUserAccount): boolean {
+export function isNotPremium(user?: UserAccount | PublicUserAccount | UserAccountForAdmin): boolean {
 	return !isPremium(user);
 }
 
@@ -45,7 +45,7 @@ export function isLoggedInAndNotPremium(user?: UserAccount): boolean {
  * React hook for Pro status
  * Returns consistent Pro state for components
  */
-export function usePro(user?: UserAccount | PublicUserAccount) {
+export function usePro(user?: UserAccount | PublicUserAccount | UserAccountForAdmin) {
 	return {
 		enabled: isProEnabled(),
 		isPro: isPro(user),

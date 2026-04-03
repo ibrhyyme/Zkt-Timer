@@ -35,13 +35,13 @@ export async function getImageBufferFromFileStream(
 async function getFileStreamAsBufferStream(readStream: ReadStream): Promise<Buffer> {
 	return new Promise((resolve, reject) => {
 		readStream.pipe(
-			BufferListStream((err, data) => {
+			BufferListStream((err: any, data: any) => {
 				if (err) {
 					reject(err);
 				} else {
 					resolve(data);
 				}
-			})
+			}) as any
 		);
 	});
 }
