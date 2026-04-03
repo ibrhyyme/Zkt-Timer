@@ -348,8 +348,7 @@
 			gap: 0.2rem; // Öğeler arası boşluğu azalt
 		}
 
-		overflow-y: auto; // İçeriği kendi içinde scroll et
-		overflow-x: hidden;
+		overflow: hidden; // Scroll sadece karistirma icinde — alt kisim sabit kalsin
 		gap: 0.5rem;
 
 		&--manual {

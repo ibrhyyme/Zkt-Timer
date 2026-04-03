@@ -6,17 +6,15 @@
     text-align: center;
     box-sizing: border-box;
 
-    // Esnek yükseklik — kısa scramble'lar aşağıda, uzunlar yukarı büyür
-    min-height: 80px;
+    // Kalan alani kapla — alt kisim (timer, kontroller, dashboard) sabit kalsin
+    flex: 1;
+    min-height: 60px;
 
     @media (max-height: 745px) {
-        min-height: 60px;
         padding-top: 1rem;
     }
 
-    max-height: 35vh;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch; // Smooth scrolling on iOS
+    overflow: hidden; // Font otomatik kuculdugu icin tasma olmaz
 
     display: flex;
     flex-direction: column;
