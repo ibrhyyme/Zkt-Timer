@@ -86,9 +86,10 @@ export function startTimer(smartStartTimestamp?: number, touchTimestamp?: number
 	});
 
 	// Cozum sirasinda yeni karistirmayi arka planda hazirla
-	const timerStore = getTimerStore();
-	if (timerStore?.cubeType) {
-		preGenerateScramble(timerStore.cubeType, timerStore.scrambleSubset);
+	const cubeType = getSetting('cube_type');
+	if (cubeType) {
+		const scrambleSubset = getTimerStore('scrambleSubset');
+		preGenerateScramble(cubeType, scrambleSubset);
 	}
 }
 
@@ -193,6 +194,8 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 		}
 
 		saveSolve(context, finalTime, scramble, timeStartedAt.getTime(), now, false, false, overridesCombined);
+
+
 		endLocked = false;
 	}, 10);
 }
