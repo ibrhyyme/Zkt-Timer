@@ -10,6 +10,7 @@ import './Battle.scss';
 
 const b = block('battle');
 
+
 const CUBE_TYPES = [
 	{ id: '222', name: '2x2' },
 	{ id: '333', name: '3x3' },

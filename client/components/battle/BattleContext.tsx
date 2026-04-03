@@ -227,7 +227,6 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
 			const round = state.rounds[state.currentRound];
 			const bothDone = !!round.player1Solve && !!round.player2Solve;
 			const startKey = action.player === 1 ? 'player1StartedAt' : 'player2StartedAt';
-
 			if (bothDone) {
 				// Onceki tur tamamlanmis — yeni tur olustur + bu oyuncunun timer'ini baslat
 				const newScramble = getNewScramble(state.settings.cubeType);
