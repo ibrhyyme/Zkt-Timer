@@ -144,12 +144,13 @@ interface TimerSettingsSelectProps {
 	label: string;
 	description?: string;
 	value: string;
+	placeholder?: string;
 	options: { label: string; value: string }[];
 	hidden?: boolean;
 	onChange: (val: string) => void;
 }
 
-export function TimerSettingsSelect({ label, description, value, options, hidden, onChange }: TimerSettingsSelectProps) {
+export function TimerSettingsSelect({ label, description, value, placeholder, options, hidden, onChange }: TimerSettingsSelectProps) {
 	const [isOpen, setIsOpen] = useState(false);
 	const containerRef = React.useRef<HTMLDivElement>(null);
 
@@ -168,7 +169,7 @@ export function TimerSettingsSelect({ label, description, value, options, hidden
 
 	if (hidden) return null;
 
-	const selectedLabel = options.find(o => o.value === value)?.label || value;
+	const selectedLabel = options.find(o => o.value === value)?.label || placeholder || value;
 
 	return (
 		<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-module border border-text/[0.08] hover:border-text/[0.15] transition-all duration-200">
