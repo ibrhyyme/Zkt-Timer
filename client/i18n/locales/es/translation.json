@@ -1888,7 +1888,10 @@
 		"settings": "Ajustes",
 		"plus_two": "+2",
 		"dnf": "DNF",
-		"display": "Visualización"
+		"display": "Visualización",
+		"round_detail": "Ronda {{number}}",
+		"scramble_label": "Mezcla",
+		"wins": "¡{{name}} gana!"
 	},
 	"cross_solver": {
 		"only_3x3": "Solo disponible para 3x3",

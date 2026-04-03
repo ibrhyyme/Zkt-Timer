@@ -17,8 +17,8 @@ interface BattleTimerProps {
 export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 	const { t } = useTranslation();
 	const { state, dispatch } = useBattle();
-	const { settings, currentRound, rounds, currentScramble, player1Score, player2Score, winStreak, roundStartedAt } =
-		state;
+	const { settings, currentRound, rounds, currentScramble, player1Score, player2Score, winStreak } = state;
+	const myStartedAt = player === 1 ? state.player1StartedAt : state.player2StartedAt;
 	const currentRoundData = rounds[currentRound];
 
 	const [status, setStatus] = useState<TimerStatus>('RESTING');
@@ -54,14 +54,14 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 		rafRef.current = requestAnimationFrame(tick);
 	}, []);
 
-	// Sync start: roundStartedAt degistiginde her iki timer da baslar
+	// Bagimsiz start: her oyuncunun kendi startedAt'i degistiginde baslar
 	useEffect(() => {
-		if (roundStartedAt && statusRef.current !== 'TIMING' && statusRef.current !== 'DONE' && !alreadySolved) {
-			startTimeRef.current = roundStartedAt;
+		if (myStartedAt && statusRef.current !== 'TIMING' && statusRef.current !== 'DONE' && !alreadySolved) {
+			startTimeRef.current = myStartedAt;
 			setStatus('TIMING');
 			rafRef.current = requestAnimationFrame(tick);
 		}
-	}, [roundStartedAt, currentRound, tick, alreadySolved]);
+	}, [myStartedAt, currentRound, tick, alreadySolved]);
 
 	const stopTimer = useCallback(() => {
 		if (rafRef.current) cancelAnimationFrame(rafRef.current);
@@ -123,11 +123,12 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 
 			const s = statusRef.current;
 			if (s === 'PRIMING') {
-				// Diger oyuncu da hazir mi?
+				// Diger oyuncu hazir mi veya zaten baslamis mi?
 				const otherReady = player === 1 ? state.player2Ready : state.player1Ready;
-				if (otherReady) {
-					// Ikisi de hazir — baslat!
-					dispatch({ type: 'START_ROUND', startTime: performance.now() });
+				const otherStarted = player === 1 ? state.player2StartedAt : state.player1StartedAt;
+				if (otherReady || otherStarted) {
+					// Diger oyuncu hazir veya timing'de — ben de baslayabilirim
+					dispatch({ type: 'PLAYER_START', player, startTime: performance.now() });
 				} else {
 					// Diger oyuncu hazir degil — iptal
 					setStatus('RESTING');
@@ -138,7 +139,7 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 				setStatus('RESTING');
 			}
 		},
-		[dispatch, player, state.player1Ready, state.player2Ready]
+		[dispatch, player, state.player1Ready, state.player2Ready, state.player1StartedAt, state.player2StartedAt]
 	);
 
 	const applyPenalty = useCallback(
