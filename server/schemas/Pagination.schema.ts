@@ -35,6 +35,30 @@ export class PaginationArgs {
 	searchQuery: string = '';
 }
 
+@InputType()
+export class AdminUserFiltersInput {
+	@Field(() => Boolean, {nullable: true})
+	admin?: boolean;
+
+	@Field(() => Boolean, {nullable: true})
+	mod?: boolean;
+
+	@Field(() => Boolean, {nullable: true})
+	is_pro?: boolean;
+
+	@Field(() => Boolean, {nullable: true})
+	email_verified?: boolean;
+
+	@Field(() => Boolean, {nullable: true})
+	verified?: boolean;
+
+	@Field(() => Boolean, {nullable: true})
+	banned?: boolean;
+
+	@Field(() => [String], {nullable: true})
+	platforms?: string[];
+}
+
 export interface PaginationOutput<T> {
 	items: T[];
 	total: number;
