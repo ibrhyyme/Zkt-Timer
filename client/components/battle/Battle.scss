@@ -48,7 +48,8 @@ $self: '.cd-battle';
 		}
 
 		&--done {
-			background: rgba(var(--button-color), 0.4) !important;
+			background: rgba(var(--primary-color), 0.7) !important;
+			border-color: rgba(var(--primary-color), 0.8) !important;
 		}
 
 		&:first-child {

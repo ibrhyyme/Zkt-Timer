@@ -114,8 +114,6 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 
 	const handleTouchEnd = useCallback(
 		(e: React.TouchEvent) => {
-			if (e.touches.length > 0) return;
-
 			touchActiveRef.current = false;
 
 			if (freezeTimeoutRef.current) {
