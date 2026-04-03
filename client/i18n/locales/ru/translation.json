@@ -655,6 +655,7 @@
 		"retry_success": "Все неудавшиеся чанки успешно импортированы!",
 		"retry_partial_fail": "{{count}} чанков всё ещё не удались при повторе.",
 		"import_twistytimer": "Импорт из Twisty Timer",
+		"import_select_placeholder": "Выбрать источник",
 		"twistytimer_instructions_title": "Как экспортировать данные из Twisty Timer",
 		"twistytimer_step_1": "Откройте приложение Twisty Timer",
 		"twistytimer_step_2": "Выберите тип куба для импорта в меню слева вверху",

@@ -655,6 +655,7 @@
 		"retry_success": "Tüm başarısız chunk'lar başarıyla yeniden içe aktarıldı!",
 		"retry_partial_fail": "Yeniden denemede {{count}} chunk hala başarısız.",
 		"import_twistytimer": "Twisty Timer'dan içe aktar",
+		"import_select_placeholder": "Kaynak seçin",
 		"twistytimer_instructions_title": "Twisty Timer'dan veriler nasıl dışa aktarılır",
 		"twistytimer_step_1": "Twisty Timer uygulamasını açın",
 		"twistytimer_step_2": "Sol üst menüden içe aktarmak istediğiniz küp türünü seçin",

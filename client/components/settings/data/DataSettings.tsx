@@ -172,6 +172,7 @@ export default function DataSettings() {
 							label={t('data_settings.import_data')}
 							description={t('data_settings.import_data_desc')}
 							value=""
+							placeholder={t('data_settings.import_select_placeholder')}
 							options={[
 								{ label: t('data_settings.import_cstimer'), value: 'cstimer' },
 								{ label: t('data_settings.import_zkttimer'), value: 'zkttimer' },
@@ -183,7 +184,7 @@ export default function DataSettings() {
 									zkttimer: ImportDataType.ZKT_TIMER,
 									twistytimer: ImportDataType.TWISTY_TIMER,
 								};
-								if (typeMap[v]) openImportModal(typeMap[v]);
+								if (typeMap[v] !== undefined) openImportModal(typeMap[v]);
 							}}
 						/>
 					)}

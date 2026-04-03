@@ -655,6 +655,7 @@
 		"retry_success": "All failed chunks imported successfully!",
 		"retry_partial_fail": "{{count}} chunks still failed on retry.",
 		"import_twistytimer": "Import from Twisty Timer",
+		"import_select_placeholder": "Select source",
 		"twistytimer_instructions_title": "How to export data from Twisty Timer",
 		"twistytimer_step_1": "Open the Twisty Timer app",
 		"twistytimer_step_2": "Select the cube type you want to import from the top-left menu",

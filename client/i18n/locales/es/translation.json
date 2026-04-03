@@ -655,6 +655,7 @@
 		"retry_success": "¡Todos los fragmentos fallidos se importaron exitosamente!",
 		"retry_partial_fail": "{{count}} fragmentos aún fallaron en el reintento.",
 		"import_twistytimer": "Importar desde Twisty Timer",
+		"import_select_placeholder": "Seleccionar fuente",
 		"twistytimer_instructions_title": "Cómo exportar datos desde Twisty Timer",
 		"twistytimer_step_1": "Abre la aplicación Twisty Timer",
 		"twistytimer_step_2": "Selecciona el tipo de cubo que deseas importar desde el menú superior izquierdo",
