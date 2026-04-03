@@ -2,6 +2,7 @@ import React from 'react';
 import './Landing.scss';
 import block from '../../styles/bem';
 import LandingNav from './common/landing_nav/LandingNav';
+import SwipeBackIndicator from '../common/swipe_back_indicator/SwipeBackIndicator';
 
 const b = block('landing');
 
@@ -12,6 +13,7 @@ export default function Landing(props: any) {
 		<div className={b()}>
 			<LandingNav />
 			{children}
+			<SwipeBackIndicator />
 		</div>
 	);
 }
