@@ -295,34 +295,48 @@
 	&--started {
 		#{$self}-header-control {
 			pointer-events: none;
-			opacity: 0.3;
+			opacity: 0;
+			transition: opacity 0.1s ease;
 		}
 
 		#{$self}-bottom-info,
 		#{$self}-scramble,
 		#{$self}-footer {
 			pointer-events: none;
-			opacity: 0.3;
+			opacity: 0;
+			transition: opacity 0.1s ease;
 		}
 
 		.cd-daily-goal-progress {
 			pointer-events: none;
-			opacity: 0.3;
+			opacity: 0;
+			transition: opacity 0.1s ease;
 		}
 
-		// Timer çalışırken yeni mobil componentleri gizle
-		// Timer çalışırken yeni mobil componentleri silikleştir
+		// Timer zoom efekti — cozum sirasinda timer buyur
+		#{$self}__mobile-timer {
+			transform: scale(1.08);
+		}
+
+		// Timer calisirken sadece sure gozuksun, her sey gizlensin
+		// Smart cube gorunumu ve evre analizi haric
 		#{$self}__mobile-layout {
 
 			.cd-timer-controls,
 			.cd-timer-dashboard,
-			.cd-stats-bar,
 			.cd-mobile-timer-scramble,
 			.cd-daily-goal-progress {
-				opacity: 0.05;
+				opacity: 0;
 				pointer-events: none;
 				transition: opacity 0.1s ease;
 			}
+		}
+
+		// StatsBar mobile-layout disinda — ayri gizle
+		.cd-stats-bar {
+			opacity: 0;
+			pointer-events: none;
+			transition: opacity 0.1s ease;
 		}
 	}
 
@@ -371,6 +385,7 @@
 		justify-content: center;
 		flex: 0 0 auto; // flex: 1 kaldırıldı, diğer öğelere yer açılsın
 		padding: 3vh 0; // Timer'a biraz boşluk
+		transition: transform 0.15s ease;
 
 		@media (max-height: 745px) {
 			padding: 1vh 0; // Küçük ekranlarda boşluğu iyice azalt
