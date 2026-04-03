@@ -25,7 +25,7 @@ import {
 import { deleteAllPublishedSolves } from '../models/top_solve';
 import { createBanLog, deactivateAllBanLogs } from '../models/ban_log';
 import { resolveReportsOfUserId } from './Report.resolver';
-import { PaginationArgsInput } from '../schemas/Pagination.schema';
+import { PaginationArgsInput, AdminUserFiltersInput } from '../schemas/Pagination.schema';
 import { getPaginatedResponse, PaginatedRequestInput } from '../util/pagination/paginated_response';
 import { sendPushToUser } from '../services/push';
 import { AdminSendPushResult } from '../schemas/PushToken.schema';
@@ -36,28 +36,43 @@ export class AdminResolver {
 	@Query(() => PaginatedUserAccountsForAdmin)
 	async adminUserSearch(
 		@Ctx() context: GraphQLContext,
-		@Arg('pageArgs', () => PaginationArgsInput) pageArgs: PaginationArgsInput
+		@Arg('pageArgs', () => PaginationArgsInput) pageArgs: PaginationArgsInput,
+		@Arg('filters', () => AdminUserFiltersInput, {nullable: true}) filters?: AdminUserFiltersInput
 	) {
+		const conditions: any[] = [];
+
+		if (pageArgs.searchQuery) {
+			conditions.push({
+				OR: [
+					{username: {contains: pageArgs.searchQuery, mode: 'insensitive'}},
+					{email: {contains: pageArgs.searchQuery, mode: 'insensitive'}},
+				],
+			});
+		}
+
+		if (filters) {
+			if (filters.admin) conditions.push({admin: true});
+			if (filters.mod) conditions.push({mod: true});
+			if (filters.is_pro) conditions.push({is_pro: true});
+			if (filters.email_verified) conditions.push({email_verified: true});
+			if (filters.verified) conditions.push({verified: true});
+			if (filters.banned) {
+				conditions.push({OR: [{banned_forever: true}, {banned_until: {gt: new Date()}}]});
+			}
+			if (filters.platforms?.length) {
+				for (const platform of filters.platforms) {
+					conditions.push({pushTokens: {some: {platform}}});
+				}
+			}
+		}
+
+		const where = conditions.length === 0 ? {} : conditions.length === 1 ? conditions[0] : {AND: conditions};
+
 		const requestInput: PaginatedRequestInput = {
 			paginationArgs: pageArgs,
 			tableName: 'userAccount',
 			prismaPayload: {
-				where: pageArgs.searchQuery ? {
-					OR: [
-						{
-							username: {
-								contains: pageArgs.searchQuery,
-								mode: 'insensitive',
-							},
-						},
-						{
-							email: {
-								contains: pageArgs.searchQuery,
-								mode: 'insensitive',
-							},
-						},
-					],
-				} : {},
+				where,
 				select: {
 					id: true,
 					username: true,
