@@ -41,12 +41,19 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 
 	// Round degistiginde reset
 	useEffect(() => {
-		setStatus('RESTING');
 		setDisplayTime(0);
 		setPenalty('none');
 		if (rafRef.current) cancelAnimationFrame(rafRef.current);
 		if (freezeTimeoutRef.current) clearTimeout(freezeTimeoutRef.current);
-	}, [currentRound]);
+
+		if (touchActiveRef.current) {
+			// Oyuncu hala basili tutuyor — direkt PRIMING'e gec
+			setStatus('PRIMING');
+			dispatch({ type: 'PLAYER_READY', player });
+		} else {
+			setStatus('RESTING');
+		}
+	}, [currentRound, dispatch, player]);
 
 	const tick = useCallback(() => {
 		const elapsed = (performance.now() - startTimeRef.current) / 1000;
