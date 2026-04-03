@@ -18,7 +18,6 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 	const { t } = useTranslation();
 	const { state, dispatch } = useBattle();
 	const { settings, currentRound, rounds, currentScramble, player1Score, player2Score, winStreak } = state;
-	const myStartedAt = player === 1 ? state.player1StartedAt : state.player2StartedAt;
 	const currentRoundData = rounds[currentRound];
 
 	const [status, setStatus] = useState<TimerStatus>('RESTING');
@@ -31,6 +30,8 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 	const touchActiveRef = useRef(false);
 	const statusRef = useRef<TimerStatus>('RESTING');
 	const finalTimeRef = useRef(0);
+	const stateRef = useRef(state);
+	stateRef.current = state;
 
 	const alreadySolved = player === 1 ? !!currentRoundData?.player1Solve : !!currentRoundData?.player2Solve;
 	const bothSolved = !!currentRoundData?.player1Solve && !!currentRoundData?.player2Solve;
@@ -39,16 +40,11 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 		statusRef.current = status;
 	}, [status]);
 
-	// Reducer iptal ettiyse (ready false, parmak basili degil, hala PRIMING) → RESTING'e don
-	const myReady = player === 1 ? state.player1Ready : state.player2Ready;
-	useEffect(() => {
-		if (!myReady && !touchActiveRef.current && statusRef.current === 'PRIMING') {
-			setStatus('RESTING');
-		}
-	}, [myReady]);
-
 	// Round degistiginde reset
 	useEffect(() => {
+		// Timer zaten calisiyor — dokunma (handler'dan baslatildi)
+		if (statusRef.current === 'TIMING') return;
+
 		setDisplayTime(0);
 		setPenalty('none');
 		if (rafRef.current) cancelAnimationFrame(rafRef.current);
@@ -68,15 +64,6 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 		setDisplayTime(elapsed);
 		rafRef.current = requestAnimationFrame(tick);
 	}, []);
-
-	// Bagimsiz start: her oyuncunun kendi startedAt'i degistiginde baslar
-	useEffect(() => {
-		if (myStartedAt && statusRef.current !== 'TIMING' && statusRef.current !== 'DONE' && !alreadySolved) {
-			startTimeRef.current = myStartedAt;
-			setStatus('TIMING');
-			rafRef.current = requestAnimationFrame(tick);
-		}
-	}, [myStartedAt, currentRound, tick, alreadySolved]);
 
 	const stopTimer = useCallback(() => {
 		if (rafRef.current) cancelAnimationFrame(rafRef.current);
@@ -138,14 +125,28 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 
 			const s = statusRef.current;
 			if (s === 'PRIMING') {
-				// Reducer karar verecek — baslat veya iptal et
-				dispatch({ type: 'PLAYER_START', player, startTime: performance.now() });
+				// stateRef ile guncel state'i oku — stale closure sorunu yok
+				const cs = stateRef.current;
+				const otherReady = player === 1 ? cs.player2Ready : cs.player1Ready;
+				const otherStarted = player === 1 ? cs.player2StartedAt : cs.player1StartedAt;
+
+				if (otherReady || otherStarted) {
+					// Timer'i dogrudan baslat — useEffect zincirine bagimli degil
+					const startTime = performance.now();
+					startTimeRef.current = startTime;
+					setStatus('TIMING');
+					rafRef.current = requestAnimationFrame(tick);
+					dispatch({ type: 'PLAYER_START', player, startTime });
+				} else {
+					setStatus('RESTING');
+					dispatch({ type: 'PLAYER_UNREADY', player });
+				}
 			} else if (s !== 'TIMING' && s !== 'DONE') {
 				dispatch({ type: 'PLAYER_UNREADY', player });
 				setStatus('RESTING');
 			}
 		},
-		[dispatch, player]
+		[dispatch, player, tick]
 	);
 
 	const applyPenalty = useCallback(
