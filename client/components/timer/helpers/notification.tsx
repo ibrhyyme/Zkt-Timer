@@ -30,11 +30,13 @@ export function displayTimerAlert(tagProps: TagProps, dontHide?: boolean) {
 		setTimeout(() => {
 			const notification = getTimerStore('notification');
 
-			setTimerParams({
-				notification: React.cloneElement(notification, {
-					className: b({ out: true }),
-				}),
-			});
+			if (notification) {
+				setTimerParams({
+					notification: React.cloneElement(notification, {
+						className: b({ out: true }),
+					}),
+				});
+			}
 		}, HIDE_NOTIF_TIMEOUT)
 	);
 }

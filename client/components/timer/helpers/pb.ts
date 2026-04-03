@@ -20,6 +20,7 @@ export function listenForPbEvents(context: ITimerContext) {
 	// find in the cache
 	const pbFilter: FilterSolvesOptions = {
 		cube_type: context.cubeType,
+		from_timer: true,
 	};
 
 	getSinglePB(pbFilter);
