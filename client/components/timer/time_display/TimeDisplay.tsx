@@ -194,9 +194,6 @@ export default function TimeDisplay() {
 
 	let timeStr;
 	let bottomInfo = null;
-	if (inspectionOn) {
-		bottomInfo = <StartInstructions>{t('time_display.inspection_on')}</StartInstructions>;
-	}
 
 	if (inInspection) {
 		if (inspectionTimer <= 2) {

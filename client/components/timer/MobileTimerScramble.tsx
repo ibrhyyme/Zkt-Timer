@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import {useTranslation} from 'react-i18next';
 import { Check } from 'phosphor-react';
 import { copyText } from '../common/copy_text/CopyText';
@@ -25,6 +25,9 @@ export default function MobileTimerScramble() {
     const scrambleSubset = context.scrambleSubset;
     const isMegaminx = cubeType === 'minx' || cubeType === 'megaminx';
     const [copied, setCopied] = useState(false);
+    const [adjustedFontSize, setAdjustedFontSize] = useState<number | null>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const textRef = useRef<HTMLDivElement>(null);
 
     const timerScrambleSize = useSettings('timer_scramble_size');
 
@@ -43,6 +46,54 @@ export default function MobileTimerScramble() {
             resetScramble(context);
         }
     }, [cubeType, scrambleSubset]);
+
+    // Karistirma alana sigmiyorsa font boyutunu otomatik kucult (binary search)
+    useEffect(() => {
+        const container = containerRef.current;
+        const text = textRef.current;
+        if (!container || !text) {
+            setAdjustedFontSize(null);
+            return;
+        }
+
+        // Once tam boyutta kontrol et
+        setAdjustedFontSize(null);
+
+        requestAnimationFrame(() => {
+            if (!containerRef.current || !textRef.current) return;
+
+            const setFontOnElement = (size: number) => {
+                text.style.fontSize = size + 'px';
+                text.style.lineHeight = size * 1.4 + 'px';
+            };
+
+            // Tam boyutta sigiyor mu?
+            setFontOnElement(timerScrambleSize);
+            const containerH = container.clientHeight;
+
+            if (text.scrollHeight <= containerH) {
+                setAdjustedFontSize(null);
+                return;
+            }
+
+            // Binary search: sigacak en buyuk fontu bul
+            let lo = 8;
+            let hi = timerScrambleSize;
+
+            while (hi - lo > 1) {
+                const mid = Math.floor((lo + hi) / 2);
+                setFontOnElement(mid);
+
+                if (text.scrollHeight <= containerH) {
+                    lo = mid;
+                } else {
+                    hi = mid;
+                }
+            }
+
+            setAdjustedFontSize(lo);
+        });
+    }, [scramble, cubeType, timerScrambleSize]);
 
     // Focus modunda gizle
     if (focusMode) {
@@ -71,15 +122,18 @@ export default function MobileTimerScramble() {
         setTimeout(() => setCopied(false), 1500);
     }
 
+    const fontSize = adjustedFontSize || timerScrambleSize;
+
     // Smart cube ise SmartScramble göster
     if (isSmart && scramble) {
         return (
-            <div className={b()}>
+            <div className={b()} ref={containerRef}>
                 <div
                     className={b('smart-scramble')}
+                    ref={textRef}
                     style={{
-                        fontSize: timerScrambleSize + 'px',
-                        lineHeight: timerScrambleSize * 1.4 + 'px',
+                        fontSize: fontSize + 'px',
+                        lineHeight: fontSize * 1.4 + 'px',
                     }}
                 >
                     <SmartScramble />
@@ -94,12 +148,13 @@ export default function MobileTimerScramble() {
     }
 
     return (
-        <div className={b()}>
+        <div className={b()} ref={containerRef}>
             <div
                 className={b('text', { megaminx: isMegaminx, copied })}
+                ref={textRef}
                 style={{
-                    fontSize: timerScrambleSize + 'px',
-                    lineHeight: timerScrambleSize * 1.4 + 'px',
+                    fontSize: fontSize + 'px',
+                    lineHeight: fontSize * 1.4 + 'px',
                 }}
                 onClick={handleCopy}
                 title={t('mobile_scramble.click_to_copy')}
