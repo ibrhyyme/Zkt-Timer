@@ -224,6 +224,17 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
 		}
 
 		case 'PLAYER_START': {
+			const otherReady = action.player === 1 ? state.player2Ready : state.player1Ready;
+			const otherStarted = action.player === 1 ? state.player2StartedAt : state.player1StartedAt;
+
+			// Diger oyuncu hazir degil ve baslamadiysa — iptal
+			if (!otherReady && !otherStarted) {
+				return {
+					...state,
+					[action.player === 1 ? 'player1Ready' : 'player2Ready']: false,
+				};
+			}
+
 			const round = state.rounds[state.currentRound];
 			const bothDone = !!round.player1Solve && !!round.player2Solve;
 			const startKey = action.player === 1 ? 'player1StartedAt' : 'player2StartedAt';

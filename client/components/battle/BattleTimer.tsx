@@ -39,6 +39,14 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 		statusRef.current = status;
 	}, [status]);
 
+	// Reducer iptal ettiyse (ready false, parmak basili degil, hala PRIMING) → RESTING'e don
+	const myReady = player === 1 ? state.player1Ready : state.player2Ready;
+	useEffect(() => {
+		if (!myReady && !touchActiveRef.current && statusRef.current === 'PRIMING') {
+			setStatus('RESTING');
+		}
+	}, [myReady]);
+
 	// Round degistiginde reset
 	useEffect(() => {
 		setDisplayTime(0);
@@ -130,23 +138,14 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 
 			const s = statusRef.current;
 			if (s === 'PRIMING') {
-				// Diger oyuncu hazir mi veya zaten baslamis mi?
-				const otherReady = player === 1 ? state.player2Ready : state.player1Ready;
-				const otherStarted = player === 1 ? state.player2StartedAt : state.player1StartedAt;
-				if (otherReady || otherStarted) {
-					// Diger oyuncu hazir veya timing'de — ben de baslayabilirim
-					dispatch({ type: 'PLAYER_START', player, startTime: performance.now() });
-				} else {
-					// Diger oyuncu hazir degil — iptal
-					setStatus('RESTING');
-					dispatch({ type: 'PLAYER_UNREADY', player });
-				}
+				// Reducer karar verecek — baslat veya iptal et
+				dispatch({ type: 'PLAYER_START', player, startTime: performance.now() });
 			} else if (s !== 'TIMING' && s !== 'DONE') {
 				dispatch({ type: 'PLAYER_UNREADY', player });
 				setStatus('RESTING');
 			}
 		},
-		[dispatch, player, state.player1Ready, state.player2Ready, state.player1StartedAt, state.player2StartedAt]
+		[dispatch, player]
 	);
 
 	const applyPenalty = useCallback(
