@@ -9,7 +9,7 @@ import {
 } from './timers';
 import { emitEvent } from '../../../util/event_handler';
 import { saveSolve } from './save';
-import { resetScramble } from './scramble';
+import { resetScramble, preGenerateScramble, consumePreGeneratedScramble } from './scramble';
 import { ITimerContext } from '../Timer';
 import { SolveInput } from '../../../../server/schemas/Solve.schema';
 import { getSettings, getSetting } from '../../../db/settings/query';
@@ -84,6 +84,12 @@ export function startTimer(smartStartTimestamp?: number, touchTimestamp?: number
 	emitEvent('startTimerEvent', {
 		timeStartedAt,
 	});
+
+	// Cozum sirasinda yeni karistirmayi arka planda hazirla
+	const timerStore = getTimerStore();
+	if (timerStore?.cubeType) {
+		preGenerateScramble(timerStore.cubeType, timerStore.scrambleSubset);
+	}
 }
 
 export function endTimer(context: ITimerContext, finalTimeMilli?: number, overrides?: Partial<SolveInput>, endTimestamp?: number) {
@@ -129,11 +135,11 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 		smartStats = { turns: turnCount, tps };
 	}
 
-	// Timer/interval temizligi — önce display güncelle, scramble üretimi defer edilecek
+	// Timer/interval temizligi
 	stopTimer(START_TIMEOUT);
 	clearInspectionTimers(false, true);
 
-	// Tek dispatch: solving durumu + stats + timer reset — onceden 3 ayri dispatch'ti
+	// Tek dispatch: solving durumu + stats + timer reset
 	setTimerParams({
 		solving: false,
 		finalTime,
@@ -149,16 +155,22 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 	});
 
 	setTimeout(() => {
-		// Yeni scramble üretimi pahalı — display güncellendikten sonra defer et (kasma önleme)
-		resetScramble(context);
+		// Pre-generated scramble varsa anlik swap, yoksa senkron uret
+		const preScramble = consumePreGeneratedScramble(context.cubeType);
+		if (preScramble && !context.scrambleLocked && !context.customScrambleFunc) {
+			setTimerParams({
+				scramble: preScramble,
+				originalScramble: preScramble,
+				smartTurnOffset: 0,
+			});
+		} else {
+			resetScramble(context);
+		}
 
 		const overridesCombined = { ...overrides };
 
-
-		// Auto-detect smart cube data if not explicitly provided
 		if (smartCubeSelected(context) && !overridesCombined.is_smart_cube) {
 			const startTime = timeStartedAt.getTime();
-			// Filter out turns that happened before the timer started (scramble moves)
 			const solutionTurns = (context.smartTurns || []).filter((t: any) => t.completedAt >= startTime);
 
 			overridesCombined.is_smart_cube = true;
@@ -167,9 +179,6 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 			overridesCombined.smart_turns = JSON.stringify(solutionTurns);
 		}
 
-		// Alma/bırakma süreleri sadece use_space_with_smart_cube modunda anlamlı.
-		// Pure smart cube modunda timer ilk hamleyle başlayıp çözümle duruyor,
-		// bu değerler sadece React/BLE processing gecikmesini yansıtır.
 		const useSpaceWithSmart = getSetting('use_space_with_smart_cube');
 		if (useSpaceWithSmart) {
 			if (context.smartPickUpTime) {
