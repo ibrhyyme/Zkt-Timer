@@ -16,6 +16,7 @@ const config: CapacitorConfig = {
     },
     ios: {
         webContentsDebuggingEnabled: true,
+        limitsNavigationsToAppBoundDomains: true,
     },
     plugins: {
         SplashScreen: {
