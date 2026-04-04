@@ -50,12 +50,13 @@ extension ZKTBridgeViewController: WKNavigationDelegate {
         print("[ZKT] Navigation hatasi: \(nsError.code) - \(nsError.localizedDescription)")
 
         let offlineErrors: Set<Int> = [
-            NSURLErrorNotConnectedToInternet,   // -1009
-            NSURLErrorTimedOut,                  // -1001
-            NSURLErrorCannotConnectToHost,       // -1004
-            NSURLErrorNetworkConnectionLost,     // -1005
-            NSURLErrorDNSLookupFailed,           // -1006
-            NSURLErrorCannotFindHost,            // -1003
+            0,                                    // SW redirect rejection (iOS)
+            NSURLErrorNotConnectedToInternet,      // -1009
+            NSURLErrorTimedOut,                    // -1001
+            NSURLErrorCannotConnectToHost,         // -1004
+            NSURLErrorNetworkConnectionLost,       // -1005
+            NSURLErrorDNSLookupFailed,             // -1006
+            NSURLErrorCannotFindHost,              // -1003
         ]
 
         if offlineErrors.contains(nsError.code) {

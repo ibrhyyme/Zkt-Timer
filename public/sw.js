@@ -2,6 +2,7 @@ const CACHE_VERSION = '__DEPLOY_VERSION__';
 const CACHE = 'zkt-' + CACHE_VERSION;
 const CORE = [
   '/',
+  '/timer',
   '/public/manifest.webmanifest',
   '/public/images/apple-touch-icon.png',
   '/public/images/zkt-logo.png'
@@ -70,11 +71,25 @@ self.addEventListener('fetch', (e) => {
     e.respondWith(
       fetch(req)
         .then(res => {
-          const copy = res.clone();
-          caches.open(CACHE).then(c => c.put(req, copy));
+          if (res.ok || res.type === 'opaqueredirect') {
+            const copy = res.clone();
+            caches.open(CACHE).then(c => c.put(req, copy));
+          }
           return res;
         })
-        .catch(() => caches.match(req).then(cached => cached || caches.match('/')))
+        .catch(() => caches.match(req)
+          .then(cached => cached || caches.match('/'))
+          .then(res => {
+            if (!res) return new Response('Offline', { status: 503 });
+            // iOS WKWebView redirected flag'li SW response'lari reddeder.
+            // Temiz bir response olustur.
+            return new Response(res.body, {
+              status: res.status,
+              statusText: res.statusText,
+              headers: res.headers,
+            });
+          })
+        )
     );
     return;
   }
