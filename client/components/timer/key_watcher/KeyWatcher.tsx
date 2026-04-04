@@ -90,7 +90,8 @@ export default function KeyWatcher(props: Props) {
 
 	function touchStart(e) {
 		// Touch event timestamp'ini DOM traversal'dan ONCE yakala — mobil zamanlama dogrulugu icin
-		const eventTs = Math.round(performance.timeOrigin + e.timeStamp);
+		// Touch event timestamp: iki kaynaktan erkek olani kullan (iOS WKWebView IPC gecikmesi icin)
+		const eventTs = Math.round(Math.min(performance.timeOrigin + e.timeStamp, Date.now()));
 
 		let target = e.target;
 		let insideTimer = false;
@@ -129,8 +130,8 @@ export default function KeyWatcher(props: Props) {
 	function touchEnd(e) {
 		if (e.touches && e.touches.length > 0) return;
 
-		// Touch event timestamp'ini DOM traversal'dan ONCE yakala
-		const eventTs = Math.round(performance.timeOrigin + e.timeStamp);
+		// Touch event timestamp: iki kaynaktan erkek olani kullan (iOS WKWebView IPC gecikmesi icin)
+		const eventTs = Math.round(Math.min(performance.timeOrigin + e.timeStamp, Date.now()));
 
 		touchStartX.current = null;
 		touchStartY.current = null;
