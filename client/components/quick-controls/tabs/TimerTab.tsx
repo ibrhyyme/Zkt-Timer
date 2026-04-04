@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux';
 import { Lock } from 'phosphor-react';
 import { setSetting, toggleSetting } from '../../../db/settings/update';
 import { useSettings } from '../../../util/hooks/useSettings';
+import { useGeneral } from '../../../util/hooks/useGeneral';
 import { openModal } from '../../../actions/general';
 import StackMatPicker from '../../settings/stackmat_picker/StackMatPicker';
 import { AllSettings } from '../../../db/settings/query';
@@ -50,6 +51,7 @@ export default function TimerTab({ allowedTimerTypes }: TimerTabProps) {
 	const timerType = useSettings('timer_type');
 	const manualEntry = useSettings('manual_entry');
 	const cubeType = useSettings('cube_type');
+	const mobileMode = useGeneral('mobile_mode');
 
 	// Küp türü değiştiğinde smart cube uyumluluğunu kontrol et
 	useEffect(() => {
@@ -73,7 +75,7 @@ export default function TimerTab({ allowedTimerTypes }: TimerTabProps) {
 	}
 
 	function openStackMat() {
-		dispatch(openModal(<StackMatPicker />, { width: 400, closeButtonText: t('sessions.done') }));
+		dispatch(openModal(<StackMatPicker />, { width: 400, compact: true, title: t('stackmat.select_input'), description: t('stackmat.description'), closeButtonText: t('solve_info.done') }));
 	}
 
 	function toggleManualEntry() {
@@ -87,7 +89,7 @@ export default function TimerTab({ allowedTimerTypes }: TimerTabProps) {
 	const timerOptions = [
 		{
 			typeKey: 'keyboard',
-			label: t('quick_controls.keyboard'),
+			label: mobileMode ? t('quick_controls.touch') : t('quick_controls.keyboard'),
 			isActive: timerType === 'keyboard' && !manualEntry,
 			onClick: () => selectTimerType('keyboard'),
 		},

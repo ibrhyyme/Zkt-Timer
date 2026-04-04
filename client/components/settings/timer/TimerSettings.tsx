@@ -8,6 +8,7 @@ import { useDispatch } from 'react-redux';
 import Button from '../../common/button/Button';
 import { setSetting, toggleSetting } from '../../../db/settings/update';
 import { useSettings } from '../../../util/hooks/useSettings';
+import { useGeneral } from '../../../util/hooks/useGeneral';
 import ModalHeader from '../../common/modal/modal_header/ModalHeader';
 import Checkbox from '../../common/checkbox/Checkbox';
 import {
@@ -84,6 +85,7 @@ function AutoInspectionWarningModal({ onComplete }: { onComplete?: () => void })
 export default function TimerSettings() {
 	const { t } = useTranslation();
 	const dispatch = useDispatch();
+	const mobileMode = useGeneral('mobile_mode');
 
 	// Genel
 	const timerDecimalPoints = useSettings('timer_decimal_points');
@@ -134,10 +136,13 @@ export default function TimerSettings() {
 	}
 
 	function openStackMatPickerModal() {
-		dispatch(openModal(<StackMatPicker />, { width: 400, closeButtonText: t('sessions.done') }));
+		dispatch(openModal(<StackMatPicker />, { width: 400, compact: true, title: t('stackmat.select_input'), description: t('stackmat.description'), closeButtonText: t('solve_info.done') }));
 	}
 
 	function getTimerTypeName(tt: string) {
+		if (tt === 'keyboard' && mobileMode) {
+			return t('timer_settings.input_touch');
+		}
 		return t(TIMER_INPUT_TYPE_KEYS[tt]);
 	}
 
