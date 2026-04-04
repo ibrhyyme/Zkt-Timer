@@ -6,9 +6,11 @@ import {gqlMutate, gqlQuery} from '../../api';
 import {useMe} from '../../../util/hooks/useMe';
 import Button from '../../common/button/Button';
 import {toastError, toastSuccess} from '../../../util/toast';
-import Emblem from '../../common/emblem/Emblem';
-import {Plus, Check} from 'phosphor-react';
+import {Plus} from 'phosphor-react';
+import block from '../../../styles/bem';
 import './PublishWcaRecords.scss';
+
+const b = block('publish-wca-records');
 
 interface WcaRecord {
 	id: string;
@@ -26,7 +28,7 @@ export default function PublishWcaRecords(props: IModalProps) {
 	const { t } = useTranslation();
 	const {onComplete} = props;
 	const me = useMe();
-	
+
 	const [records, setRecords] = useState<WcaRecord[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [fetching, setFetching] = useState(false);
@@ -98,7 +100,7 @@ export default function PublishWcaRecords(props: IModalProps) {
 	async function toggleRecordPublication(record: WcaRecord) {
 		setPublishing(true);
 		try {
-			const mutation = record.published 
+			const mutation = record.published
 				? gql`
 					mutation UnpublishWcaRecord($recordId: String!) {
 						unpublishWcaRecord(recordId: $recordId) {
@@ -117,10 +119,9 @@ export default function PublishWcaRecords(props: IModalProps) {
 				`;
 
 			await gqlMutate(mutation, { recordId: record.id });
-			
-			// Update local state
-			setRecords(prev => prev.map(r => 
-				r.id === record.id 
+
+			setRecords(prev => prev.map(r =>
+				r.id === record.id
 					? { ...r, published: !r.published }
 					: r
 			));
@@ -154,16 +155,16 @@ export default function PublishWcaRecords(props: IModalProps) {
 	}
 
 	if (loading) {
-		return <div>{t('profile.wca_records_loading')}</div>;
+		return <div className={b('loading')}>{t('profile.wca_records_loading')}</div>;
 	}
 
 	if (!records.length) {
 		return (
-			<div className="publish-wca-records">
+			<div className={b('empty')}>
 				<p>{t('profile.no_wca_records_yet')}</p>
 				<Button
 					primary
-					text={t('profile.fetch_wca_records')} 
+					text={t('profile.fetch_wca_records')}
 					loading={fetching}
 					onClick={fetchWcaRecords}
 				/>
@@ -171,32 +172,26 @@ export default function PublishWcaRecords(props: IModalProps) {
 		);
 	}
 
-	const rows = records.map(record => (
-		<tr key={record.id}>
-			<td>
-				<Emblem text={getEventName(record.wca_event)} />
-			</td>
-			<td>
-				{record.single_record && (
-					<div>
-						<Emblem text={formatTime(record.single_record)} />
-						{record.single_country_rank && (
-							<small>#{record.single_country_rank} Türkiye</small>
-						)}
-					</div>
-				)}
-			</td>
-			<td>
-				{record.average_record && (
-					<div>
-						<Emblem text={formatTime(record.average_record)} />
-						{record.average_country_rank && (
-							<small>#{record.average_country_rank} Türkiye</small>
-						)}
-					</div>
-				)}
-			</td>
-			<td>
+	const cards = records.map(record => (
+		<div key={record.id} className={b('card', { published: record.published })}>
+			<div className={b('card-event')}>{getEventName(record.wca_event)}</div>
+			<div className={b('card-records')}>
+				<div className={b('card-stat')}>
+					<span className={b('card-stat-label')}>{t('profile.single_pb')}</span>
+					<span className={b('card-stat-value')}>{record.single_record ? formatTime(record.single_record) : '—'}</span>
+					{record.single_country_rank && (
+						<span className={b('card-rank')}>#{record.single_country_rank} {t('profile.country_short', { defaultValue: 'TR' })}</span>
+					)}
+				</div>
+				<div className={b('card-stat')}>
+					<span className={b('card-stat-label')}>{t('profile.average_pb')}</span>
+					<span className={b('card-stat-value')}>{record.average_record ? formatTime(record.average_record) : '—'}</span>
+					{record.average_country_rank && (
+						<span className={b('card-rank')}>#{record.average_country_rank} {t('profile.country_short', { defaultValue: 'TR' })}</span>
+					)}
+				</div>
+			</div>
+			<div className={b('card-action')}>
 				<Button
 					text={record.published ? t('profile.hide') : t('profile.publish')}
 					small
@@ -205,44 +200,35 @@ export default function PublishWcaRecords(props: IModalProps) {
 					onClick={() => toggleRecordPublication(record)}
 					icon={record.published ? undefined : <Plus weight="bold" />}
 				/>
-			</td>
-		</tr>
+			</div>
+		</div>
 	));
 
 	return (
-		<div className="publish-wca-records">
-			<div className="wca-records-header">
-				<h3>{t('profile.your_wca_official_records')}</h3>
-				<Button
-					text={t('profile.update_records')} 
-					loading={fetching}
-					onClick={fetchWcaRecords}
-				/>
+		<div className={b()}>
+			<div className={b('list')}>
+				{cards}
 			</div>
 
-			<table className="cd-table">
-				<thead>
-					<tr>
-						<th>{t('profile.event')}</th>
-						<th>{t('profile.single_pb')}</th>
-						<th>{t('profile.average_pb')}</th>
-						<th>{t('profile.status')}</th>
-					</tr>
-				</thead>
-				<tbody>{rows}</tbody>
-			</table>
-
-			<div className="wca-records-footer">
-				<p>
-					<small>
-						{t('profile.wca_records_info')}
-					</small>
+			<div className={b('footer')}>
+				<button
+					type="button"
+					className={b('refresh-btn')}
+					onClick={fetchWcaRecords}
+					disabled={fetching}
+				>
+					{fetching ? '...' : t('profile.update_records')}
+				</button>
+				<p className={b('info')}>
+					{t('profile.wca_records_info')}
 				</p>
-				<Button
-					primary
-					text={t('profile.ok')}
-					onClick={onComplete}
-				/>
+				<div className={b('actions')}>
+					<Button
+						primary
+						text={t('profile.ok')}
+						onClick={onComplete}
+					/>
+				</div>
 			</div>
 		</div>
 	);
