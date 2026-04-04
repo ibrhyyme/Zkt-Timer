@@ -628,6 +628,23 @@
 		color: rgba(var(--text-color), 0.5);
 	}
 
+	&__alg-card-edit {
+		background: none;
+		border: none;
+		padding: 4px;
+		cursor: pointer;
+		color: rgba(var(--text-color), 0.4);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 4px;
+		transition: color 0.2s;
+
+		&:hover {
+			color: rgba(var(--text-color), 0.8);
+		}
+	}
+
 	&__alg-card-checkbox {
 		width: 24px;
 		height: 24px;

@@ -13,7 +13,7 @@ import SkewbPatternView from '../SkewbPatternView';
 import SQ1PatternView from '../SQ1PatternView';
 import { getBestTime, averageOfFive, getLearnedStatus, setLearnedStatus, getLastTimes } from '../../hooks/useAlgorithmData';
 import { useTrainerDb } from '../../../../util/hooks/useTrainerDb';
-import { BookmarkSimple, Check, Plus } from 'phosphor-react';
+import { BookmarkSimple, Check, PencilSimple, Plus } from 'phosphor-react';
 import type { CubeFace, LearnedStatus } from '../../types';
 
 const b = block('trainer');
@@ -168,10 +168,6 @@ export default function AlgorithmCard({
 			ref={containerRef}
 			className={b('alg-card', { checked })}
 			onClick={() => onToggle(algorithm, name, !checked)}
-			onDoubleClick={(e) => {
-				e.preventDefault();
-				onDetail(algorithm, name, category, subset);
-			}}
 		>
 			<div className={b('alg-card-header')}>
 				<span className={b('alg-card-name')} title={algorithm}>
@@ -180,7 +176,6 @@ export default function AlgorithmCard({
 				<button
 					className={b('alg-card-bookmark')}
 					onClick={cycleLearnedStatus}
-					onDoubleClick={(e) => e.stopPropagation()}
 					title="Learning status"
 				>
 					<BookmarkSimple
@@ -252,6 +247,15 @@ export default function AlgorithmCard({
 						<Check size={12} /> {solveCount}
 					</span>
 				)}
+				<button
+					className={b('alg-card-edit')}
+					onClick={(e) => {
+						e.stopPropagation();
+						onDetail(algorithm, name, category, subset);
+					}}
+				>
+					<PencilSimple size={16} />
+				</button>
 			</div>
 		</div>
 	);
