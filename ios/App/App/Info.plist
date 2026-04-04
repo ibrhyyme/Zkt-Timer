@@ -52,6 +52,7 @@
 	<key>WKAppBoundDomains</key>
 	<array>
 		<string>zktimer.app</string>
+		<string>worldcubeassociation.org</string>
 	</array>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>Zkt-Timer needs Bluetooth to connect to your smart cube for real-time solve tracking.</string>
