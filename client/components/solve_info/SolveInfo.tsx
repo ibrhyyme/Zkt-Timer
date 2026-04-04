@@ -122,8 +122,24 @@ export default function SolveInfo(props: Props) {
 			setDbSolve(fetchSolve(id));
 			setSolve(res.data.solve);
 			setLoading(false);
-		}).catch(() => {
-			// Sunucuda solve bulunamadi — baska cihazdan silinmis olabilir
+		}).catch((err) => {
+			// Offline/network hatasi ise solve'u silme — sadece local veriyi goster
+			const isOffline = err?.networkError?.statusCode === 503
+				|| err?.message?.includes('Offline')
+				|| err?.message?.includes('Failed to fetch')
+				|| err?.message?.includes('Network request failed');
+
+			if (isOffline) {
+				const localSolve = fetchSolve(id);
+				if (localSolve) {
+					setDbSolve(localSolve);
+					setSolve(localSolve);
+					setLoading(false);
+					return;
+				}
+			}
+
+			// Gercek NOT_FOUND: baska cihazdan silinmis
 			const localSolve = fetchSolve(id);
 			if (localSolve) {
 				getSolveDb().remove(localSolve);
