@@ -163,7 +163,7 @@ export default function SettingsModal(props: Props) {
 			onClick={handleBackdropClick}
 		>
 			<div
-				className="max-w-4xl w-full max-h-[70vh] rounded-3xl bg-[#12141c] border border-white/[0.08] shadow-2xl shadow-black/50 transform transition-all duration-300 flex flex-col"
+				className="max-w-4xl w-full max-h-[70vh] rounded-3xl bg-background border border-text/[0.08] shadow-2xl shadow-black/50 transform transition-all duration-300 flex flex-col"
 				onClick={(e) => e.stopPropagation()}
 				style={swipePhase !== 'idle' ? {
 					transform: `translateX(${swipeX}px)`,
@@ -172,11 +172,11 @@ export default function SettingsModal(props: Props) {
 				} : undefined}
 			>
 				{/* Header: close button + mobile nav */}
-				<div className="sticky top-0 z-10 bg-[#12141c] border-b border-white/[0.08] rounded-t-3xl px-6 pt-4 pb-3">
+				<div className="sticky top-0 z-10 bg-background border-b border-text/[0.08] rounded-t-3xl px-6 pt-4 pb-3">
 					<div className="flex justify-end mb-2">
 						<button
 							type="button"
-							className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#1c1c1e] hover:bg-[#2a2a2e] text-slate-300 hover:text-white transition-all duration-200"
+							className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-button hover:bg-button/80 text-text/70 hover:text-text transition-all duration-200"
 							onClick={handleClose}
 							aria-label={t('settings.close')}
 						>
@@ -186,7 +186,7 @@ export default function SettingsModal(props: Props) {
 
 					{/* Mobile nav pills */}
 					{!isDesktop && (
-						<div className="flex overflow-x-auto gap-1 bg-[#1c1c1e] rounded-full p-1 scrollbar-hide">
+						<div className="flex overflow-x-auto gap-1 bg-button rounded-full p-1 scrollbar-hide">
 							{SETTINGS_SECTIONS.map((section) => (
 								<button
 									key={section.id}
@@ -194,8 +194,8 @@ export default function SettingsModal(props: Props) {
 									onClick={() => scrollToSection(section.id)}
 									className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200 shrink-0 ${
 										activeMainSection === section.id
-											? 'bg-[#4a9eff] text-white'
-											: 'text-[#888] hover:text-white hover:bg-[#2a2a2e]'
+											? 'bg-primary text-text'
+											: 'text-text/50 hover:text-text hover:bg-button/80'
 									}`}
 								>
 									{t(section.labelKey)}
@@ -209,7 +209,7 @@ export default function SettingsModal(props: Props) {
 				<div className="flex flex-1 overflow-hidden">
 					{/* Desktop sidebar */}
 					{isDesktop && (
-						<nav className="w-48 shrink-0 overflow-y-auto py-4 pl-4 pr-2 border-r border-white/[0.08] scrollbar-hide">
+						<nav className="w-48 shrink-0 overflow-y-auto py-4 pl-4 pr-2 border-r border-text/[0.08] scrollbar-hide">
 							{SETTINGS_SECTIONS.map((section) => (
 								<div key={section.id} className="mb-3">
 									<button
@@ -217,8 +217,8 @@ export default function SettingsModal(props: Props) {
 										onClick={() => scrollToSection(section.id)}
 										className={`w-full text-left px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-200 cursor-pointer ${
 											activeMainSection === section.id
-												? 'text-white bg-white/[0.05]'
-												: 'text-[#666] hover:text-[#999]'
+												? 'text-text bg-text/[0.05]'
+												: 'text-text/40 hover:text-text/60'
 										}`}
 									>
 										{t(section.labelKey)}
@@ -231,8 +231,8 @@ export default function SettingsModal(props: Props) {
 												onClick={() => scrollToSection(sub.id)}
 												className={`w-full text-left px-3 py-1.5 rounded-md text-xs transition-all duration-200 cursor-pointer ${
 													activeId === sub.id
-														? 'text-[#4a9eff] font-medium'
-														: 'text-[#555] hover:text-[#888]'
+														? 'text-primary font-medium'
+														: 'text-text/35 hover:text-text/50'
 												}`}
 											>
 												{t(sub.labelKey)}
@@ -252,7 +252,7 @@ export default function SettingsModal(props: Props) {
 						<div className="settings-content space-y-10">
 							{/* Timer */}
 							<div id="section-timer">
-								<h2 className="text-lg font-semibold text-white mb-4">
+								<h2 className="text-lg font-semibold text-text mb-4">
 									{t('settings.tab_timer')}
 								</h2>
 								<TimerSettings />
@@ -260,7 +260,7 @@ export default function SettingsModal(props: Props) {
 
 							{/* Appearance */}
 							<div id="section-appearance">
-								<h2 className="text-lg font-semibold text-white mb-4">
+								<h2 className="text-lg font-semibold text-text mb-4">
 									{t('settings.tab_appearance')}
 								</h2>
 								<Appearance />
@@ -268,7 +268,7 @@ export default function SettingsModal(props: Props) {
 
 							{/* Data */}
 							<div id="section-data">
-								<h2 className="text-lg font-semibold text-white mb-4">
+								<h2 className="text-lg font-semibold text-text mb-4">
 									{t('settings.tab_data')}
 								</h2>
 								<DataSettings />
@@ -276,7 +276,7 @@ export default function SettingsModal(props: Props) {
 
 							{/* Language */}
 							<div id="section-language">
-								<h2 className="text-lg font-semibold text-white mb-4">
+								<h2 className="text-lg font-semibold text-text mb-4">
 									{t('settings.tab_language')}
 								</h2>
 								<LanguageSettings />
