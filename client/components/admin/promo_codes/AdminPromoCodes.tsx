@@ -94,6 +94,7 @@ export default function AdminPromoCodes() {
 	function openCreate() {
 		dispatch(
 			openModal(<CreatePromoCodeModal />, {
+				closeButtonText: 'Bitti',
 				onComplete: fetchCodes,
 			})
 		);

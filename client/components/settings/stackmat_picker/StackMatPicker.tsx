@@ -6,7 +6,6 @@ import Dropdown from '../../common/inputs/dropdown/Dropdown';
 import { useSettings } from '../../../util/hooks/useSettings';
 import Button from '../../common/button/Button';
 import { IModalProps } from '../../common/modal/Modal';
-import ModalHeader from '../../common/modal/modal_header/ModalHeader';
 import { isNative } from '../../../util/platform';
 
 export default function StackMatPicker(props: IModalProps) {
@@ -109,10 +108,6 @@ export default function StackMatPicker(props: IModalProps) {
 
 	return (
 		<div>
-			<ModalHeader
-				title={t('stackmat.select_input')}
-				description={t('stackmat.description')}
-			/>
 			<div className="mb-2">
 				<Dropdown
 					dropdownButtonProps={{

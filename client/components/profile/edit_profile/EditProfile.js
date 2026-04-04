@@ -206,15 +206,17 @@ export default class EditProfile extends React.Component {
 						onChange={this.handleChange}
 					/>
 				</div>
-				<Button
-					text="Profili Güncelle"
-					primary
-					glow
-					large
-					loading={loading}
-					error={error}
-					onClick={this.updateProfile}
-				/>
+				<div className="cd-profile__edit__actions">
+					<Button
+						text="Profili Güncelle"
+						primary
+						glow
+						large
+						loading={loading}
+						error={error}
+						onClick={this.updateProfile}
+					/>
+				</div>
 			</div>
 		);
 	}

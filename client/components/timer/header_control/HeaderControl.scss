@@ -107,10 +107,10 @@
 		// Dropdown Overrides - Neutral Glass
 		.cd-common-dropdown {
 			&__body {
-				background: rgba(var(--button-color), 0.95) !important;
+				background: rgb(var(--background-color)) !important;
 				backdrop-filter: blur(16px) !important;
-				border: 1px solid rgba(var(--text-color), 0.08) !important;
-				box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4) !important;
+				border: 1px solid rgba(var(--text-color), 0.25) !important;
+				box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
 
 				>button,
 				>.cd-common-button__wrapper>button {

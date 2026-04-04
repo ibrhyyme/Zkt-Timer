@@ -25,6 +25,7 @@ export interface IModalProps {
 	closeButtonText?: string;
 	children?: ReactNode;
 	fullSize?: boolean;
+	compact?: boolean;
 	disableBackdropClick?: boolean;
 }
 
@@ -36,6 +37,7 @@ export default function Modal(props: IModalProps) {
 		title,
 		overFlowHidden,
 		fullSize,
+		compact,
 		description,
 		hideCloseButton,
 		closeButtonText,
@@ -144,7 +146,7 @@ export default function Modal(props: IModalProps) {
 	}
 
 	return (
-		<div ref={modalRef} className={b({ active, fullSize })} style={style} onClick={handleBackdropClick}>
+		<div ref={modalRef} className={b({ active, fullSize, compact })} style={style} onClick={handleBackdropClick}>
 			<div className={b('center')} style={centerStyle} onClick={(e) => e.stopPropagation()}>
 				<ModalHeader title={title} description={description} />
 				{closeButton}
