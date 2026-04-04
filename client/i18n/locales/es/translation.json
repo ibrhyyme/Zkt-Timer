@@ -1170,7 +1170,16 @@
 		"duration_day": "día",
 		"duration_week": "semana",
 		"duration_month": "mes",
-		"duration_year": "año"
+		"duration_year": "año",
+		"table_actions": "Acciones",
+		"manage_button": "Gestionar",
+		"delete_button": "Eliminar",
+		"delete_confirm_title": "Eliminar Código Promo",
+		"delete_confirm_desc": "¿Está seguro de eliminar \"{{code}}\"? No se puede deshacer.",
+		"delete_confirm_button": "Eliminar",
+		"delete_success": "Código promo \"{{code}}\" eliminado",
+		"manage_title": "Canjes",
+		"manage_empty": "Nadie ha usado este código"
 	},
 	"admin_email": {
 		"page_title": "Enviar correo",

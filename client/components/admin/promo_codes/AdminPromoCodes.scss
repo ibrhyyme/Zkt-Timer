@@ -48,7 +48,7 @@ $pro-violet-light: #a78bfa;
 
 	&__table-header {
 		display: grid;
-		grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+		grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr;
 		padding: 12px 16px;
 		background: rgba(var(--text-color), 0.03);
 		border-bottom: 1px solid rgba(var(--text-color), 0.06);
@@ -64,7 +64,7 @@ $pro-violet-light: #a78bfa;
 
 	&__table-row {
 		display: grid;
-		grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+		grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr;
 		padding: 12px 16px;
 		align-items: center;
 		border-bottom: 1px solid rgba(var(--text-color), 0.04);
@@ -141,10 +141,52 @@ $pro-violet-light: #a78bfa;
 		}
 	}
 
+	&__actions {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+
+	&__action-btn {
+		width: 32px;
+		height: 32px;
+		border-radius: 8px;
+		border: none;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		transition: all 0.15s ease;
+		font-family: inherit;
+
+		svg {
+			width: 16px;
+			height: 16px;
+		}
+
+		&--manage {
+			background: rgba($pro-violet-light, 0.12);
+			color: $pro-violet-light;
+
+			&:hover {
+				background: rgba($pro-violet-light, 0.22);
+			}
+		}
+
+		&--delete {
+			background: rgba(239, 68, 68, 0.12);
+			color: #ef4444;
+
+			&:hover {
+				background: rgba(239, 68, 68, 0.22);
+			}
+		}
+	}
+
 	@media (max-width: 768px) {
 		&__table-header,
 		&__table-row {
-			grid-template-columns: 1.5fr 1fr 1fr;
+			grid-template-columns: 1.5fr 1fr 1fr 1fr;
 
 			span:nth-child(4),
 			span:nth-child(5) {

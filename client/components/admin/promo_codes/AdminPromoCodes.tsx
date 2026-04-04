@@ -5,11 +5,13 @@ import {gqlMutate} from '../../api';
 import {openModal} from '../../../actions/general';
 import {useDispatch} from 'react-redux';
 import {useTranslation} from 'react-i18next';
-import {Plus, Crown} from 'phosphor-react';
+import {Plus, Crown, Trash, ListBullets} from 'phosphor-react';
 import block from '../../../styles/bem';
 import Button from '../../common/button/Button';
+import ConfirmModal from '../../common/confirm_modal/ConfirmModal';
 import {toastSuccess, toastError} from '../../../util/toast';
 import CreatePromoCodeModal from './CreatePromoCodeModal';
+import ManagePromoCodeModal from './ManagePromoCodeModal';
 
 const b = block('admin-promo-codes');
 
@@ -91,6 +93,37 @@ export default function AdminPromoCodes() {
 		}
 	}
 
+	function handleDelete(code: PromoCodeItem) {
+		dispatch(
+			openModal(
+				<ConfirmModal
+					title={t('delete_confirm_title')}
+					description={t('delete_confirm_desc', {code: code.code})}
+					buttonText={t('delete_confirm_button')}
+					hideInput
+					triggerAction={async () => {
+						const query = gql`
+							mutation DeletePromoCode($id: String!) {
+								deletePromoCode(id: $id)
+							}
+						`;
+						await gqlMutate(query, {id: code.id});
+						toastSuccess(t('delete_success', {code: code.code}));
+						fetchCodes();
+					}}
+				/>
+			)
+		);
+	}
+
+	function openManage(code: PromoCodeItem) {
+		dispatch(
+			openModal(<ManagePromoCodeModal promoCodeId={code.id} code={code.code} />, {
+				closeButtonText: 'Bitti',
+			})
+		);
+	}
+
 	function openCreate() {
 		dispatch(
 			openModal(<CreatePromoCodeModal />, {
@@ -122,6 +155,7 @@ export default function AdminPromoCodes() {
 						<span>{t('table_duration')}</span>
 						<span>{t('table_uses')}</span>
 						<span>{t('table_status')}</span>
+						<span>{t('table_actions')}</span>
 					</div>
 					{codes.map((code) => (
 						<div key={code.id} className={b('table-row', {inactive: !code.is_active})}>
@@ -141,6 +175,24 @@ export default function AdminPromoCodes() {
 									onClick={() => toggleActive(code.id, !code.is_active)}
 								>
 									{code.is_active ? t('active') : t('inactive')}
+								</button>
+							</span>
+							<span className={b('actions')}>
+								<button
+									type="button"
+									className={b('action-btn', {manage: true})}
+									onClick={() => openManage(code)}
+									title={t('manage_button')}
+								>
+									<ListBullets weight="bold" />
+								</button>
+								<button
+									type="button"
+									className={b('action-btn', {delete: true})}
+									onClick={() => handleDelete(code)}
+									title={t('delete_button')}
+								>
+									<Trash weight="bold" />
 								</button>
 							</span>
 						</div>

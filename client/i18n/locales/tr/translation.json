@@ -1170,7 +1170,16 @@
 		"duration_day": "gün",
 		"duration_week": "hafta",
 		"duration_month": "ay",
-		"duration_year": "yıl"
+		"duration_year": "yıl",
+		"table_actions": "İşlemler",
+		"manage_button": "Yönet",
+		"delete_button": "Sil",
+		"delete_confirm_title": "Promo Kodu Sil",
+		"delete_confirm_desc": "\"{{code}}\" promo kodunu silmek istediğinize emin misiniz? Bu işlem geri alınamaz.",
+		"delete_confirm_button": "Sil",
+		"delete_success": "\"{{code}}\" promo kodu silindi",
+		"manage_title": "Kullananlar",
+		"manage_empty": "Henüz kimse bu kodu kullanmadı"
 	},
 	"admin_email": {
 		"page_title": "Mail Gönder",
