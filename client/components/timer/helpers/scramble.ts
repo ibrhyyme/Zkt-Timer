@@ -95,6 +95,34 @@ function getBlindWideMove() {
 	return move;
 }
 
+// Pre-generate: solve sirasinda yeni karistirmayi arka planda hazirla
+let _preGeneratedScramble: string | null = null;
+let _preGeneratedForType: string | null = null;
+
+export function preGenerateScramble(cubeType: string, subset?: string) {
+	const ct = getCubeTypeInfoById(cubeType);
+	if (!ct) return;
+
+	_preGeneratedScramble = null;
+	_preGeneratedForType = cubeType;
+
+	setTimeout(() => {
+		// Kup tipi solve sirasinda degismis olabilir — kontrol et
+		if (_preGeneratedForType !== cubeType) return;
+		_preGeneratedScramble = getNewScramble(ct.scramble, undefined, subset);
+	}, 100);
+}
+
+export function consumePreGeneratedScramble(cubeType: string): string | null {
+	if (_preGeneratedScramble && _preGeneratedForType === cubeType) {
+		const scramble = _preGeneratedScramble;
+		_preGeneratedScramble = null;
+		_preGeneratedForType = null;
+		return scramble;
+	}
+	return null;
+}
+
 export function resetScramble(context: ITimerContext) {
 	const { cubeType, scrambleLocked, customScrambleFunc, scrambleSubset } = context;
 	const ct = getCubeTypeInfoById(cubeType);

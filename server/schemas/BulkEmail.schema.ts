@@ -22,4 +22,7 @@ export class BulkEmailResult {
 
 	@Field(() => Int)
 	failCount: number;
+
+	@Field(() => Int)
+	skippedCount: number;
 }

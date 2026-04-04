@@ -53,6 +53,8 @@ export interface TimerProps {
 	scrambleLocked?: boolean;
 	onSolve?: ((solve: Solve) => void) | undefined;
 
+	matchMode?: boolean;
+
 	solvesFilter: Partial<Solve>;
 	solvesSaveOverride?: Partial<Solve>;
 

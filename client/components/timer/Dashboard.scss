@@ -14,10 +14,8 @@
         grid-template-columns: 1fr 1fr;
         gap: 0.5rem;
         padding: 0 0.5rem;
-        min-height: 160px;
-        flex: 1; // Boş alan varsa genişle
-        max-height: unset; // Ensure it can grow
-        // height/max-height kaldırıldı
+        height: 200px; // Sabit yukseklik — cozum olsa da olmasa da ayni boyut
+        flex: 0 0 200px; // Flex'te de sabit tut
     }
 
     &__section {

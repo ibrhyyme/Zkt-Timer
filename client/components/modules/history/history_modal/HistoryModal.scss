@@ -160,7 +160,8 @@
 		text-align: center;
 		outline: none;
 		padding: 4px 6px;
-		-moz-appearance: textfield;
+		appearance: textfield;
+			-moz-appearance: textfield;
 
 		&:focus {
 			border-color: #4a9eff;

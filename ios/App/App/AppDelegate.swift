@@ -23,6 +23,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                     self?.reloadAttempt()
                 }
             }
+            // Tum retry'lar basarisiz olduysa offline sayfasini goster
+            DispatchQueue.main.asyncAfter(deadline: .now() + 25.0) { [weak self] in
+                print("[ZKT] 25s timeout - offline fallback kontrol ediliyor")
+                self?.showOfflineFallback()
+            }
         }
         return true
     }
@@ -54,6 +59,27 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         var request = URLRequest(url: URL(string: "https://zktimer.app")!)
         request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
         webView.load(request)
+    }
+
+    /// Ilk acilis retry'lari basarisiz olduktan sonra offline sayfasina yonlendir
+    private func showOfflineFallback() {
+        guard let vc = window?.rootViewController as? ZKTBridgeViewController else {
+            print("[ZKT] showOfflineFallback - ZKTBridgeViewController bulunamadi")
+            return
+        }
+
+        guard let webView = vc.webView else { return }
+
+        let currentUrl = webView.url?.absoluteString ?? ""
+        // Zaten yuklendiyse veya offline sayfasi gorunuyorsa atla
+        if currentUrl.contains("zktimer.app") && !webView.isLoading { return }
+        if currentUrl.contains("offline.html") { return }
+
+        print("[ZKT] Tum retry'lar basarisiz, offline sayfasina yonlendiriliyor")
+        if let offlinePath = Bundle.main.path(forResource: "offline", ofType: "html", inDirectory: "public") {
+            let fileURL = URL(fileURLWithPath: offlinePath)
+            webView.loadFileURL(fileURL, allowingReadAccessTo: fileURL.deletingLastPathComponent())
+        }
     }
 
     func applicationWillResignActive(_ application: UIApplication) {

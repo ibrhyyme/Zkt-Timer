@@ -64,6 +64,43 @@ export class SolveResolver {
 
 
 
+
+	@Authorized([Role.LOGGED_IN, Role.PRO])
+	@Query(() => [Solve])
+	async solvesByIds(
+		@Ctx() context: GraphQLContext,
+		@Arg('ids', () => [String], { validate: false }) ids: string[]
+	) {
+		const { prisma } = context;
+
+		if (!ids?.length) return [];
+
+		return prisma.solve.findMany({
+			where: {
+				user_id: context.user.id,
+				id: { in: ids },
+			},
+			select: {
+				id: true,
+				time: true,
+				raw_time: true,
+				cube_type: true,
+				session_id: true,
+				trainer_name: true,
+				bulk: true,
+				from_timer: true,
+				training_session_id: true,
+				dnf: true,
+				plus_two: true,
+				scramble: true,
+				is_smart_cube: true,
+				created_at: true,
+				started_at: true,
+				ended_at: true,
+			},
+		});
+	}
+
 	@Authorized([Role.LOGGED_IN, Role.PRO])
 	@Mutation(() => Solve)
 	async createSolve(@Ctx() context: GraphQLContext, @Arg('input') input: SolveInput) {
