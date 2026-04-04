@@ -48,9 +48,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let currentUrl = webView.url?.absoluteString ?? "nil"
         print("[ZKT] reloadAttempt - webView.url: \(currentUrl), isLoading: \(webView.isLoading)")
 
-        // Sayfa zaten zktimer.app'ten yuklenmisse basarili say
-        if currentUrl.contains("zktimer.app") && !webView.isLoading {
-            print("[ZKT] Page already loaded from zktimer.app, marking as launched")
+        // Sayfa zaten zktimer.app'ten yukleniyorsa veya yuklendiyse basarili say
+        if currentUrl.contains("zktimer.app") {
+            print("[ZKT] Page loaded/loading from zktimer.app, marking as launched")
             UserDefaults.standard.set(true, forKey: "zkt_hasLaunchedBefore")
             return
         }
