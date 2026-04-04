@@ -122,7 +122,16 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
 			}
 
 			const solveStartKey = action.player === 1 ? 'player1StartedAt' : 'player2StartedAt';
-			return { ...state, rounds, player1Score, player2Score, winStreak, [solveStartKey]: null };
+			const bothDone = !!round.player1Solve && !!round.player2Solve;
+			return {
+				...state,
+				rounds,
+				player1Score,
+				player2Score,
+				winStreak,
+				[solveStartKey]: null,
+				...(bothDone ? { player1Ready: false, player2Ready: false } : {}),
+			};
 		}
 
 		case 'NEXT_ROUND': {
@@ -133,6 +142,8 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
 				rounds: [...state.rounds, newRound],
 				currentRound: state.currentRound + 1,
 				currentScramble: newScramble,
+				player1Ready: false,
+				player2Ready: false,
 				player1StartedAt: null,
 				player2StartedAt: null,
 			};
@@ -235,6 +246,8 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
 					rounds: [...state.rounds, { scramble: newScramble }],
 					currentRound: state.currentRound + 1,
 					currentScramble: newScramble,
+					player1Ready: false,
+					player2Ready: false,
 					player1StartedAt: null,
 					player2StartedAt: null,
 					[startKey]: action.startTime,

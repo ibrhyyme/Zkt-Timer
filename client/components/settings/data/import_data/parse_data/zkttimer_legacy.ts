@@ -82,7 +82,7 @@ function getSessionSolves(newSession: Session, sessionMap: LegacySession) {
 	return output;
 }
 
-const solveArrayIndexMapping: (keyof Solve)[] = [
+const solveArrayIndexMapping: (keyof Solve | string)[] = [
 	'time',
 	'raw_time',
 	'cube_type',

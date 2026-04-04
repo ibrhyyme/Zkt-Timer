@@ -29,7 +29,7 @@ async function getUnresolvedReports(context: GraphQLContext) {
 
 		if (!userMap[userId]) {
 			userMap[userId] = {
-				user: report.reported_user,
+				user: report.reported_user as any,
 				count: 0,
 				first_report: report.created_at,
 				last_report: report.created_at,
@@ -37,7 +37,7 @@ async function getUnresolvedReports(context: GraphQLContext) {
 			};
 		}
 
-		userMap[userId].reports.push(report);
+		userMap[userId].reports.push(report as any);
 		userMap[userId].count++;
 
 		if (userMap[userId].first_report > report.created_at) {

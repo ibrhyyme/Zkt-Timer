@@ -34,6 +34,7 @@ import { onVisibilityChange } from '../../util/app-visibility';
 import { isPro, isProEnabled } from '../../lib/pro';
 import { canSync } from '../../lib/sync-gate';
 import { importSessionsInChunks, importSolvesInChunks } from '../settings/data/import_data/review_import/chunked_import';
+import { getAllQueued } from '../../util/offline-queue';
 
 export function initAnonymousAppData(callback) {
 	if (typeof window === 'undefined') {
@@ -83,39 +84,31 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 			passed = false;
 		}
 
+		let hasLocalData = false;
+
 		if (!passed) {
 			if (needsMigration) {
 				deleteLocalStorage('wasBasicUser');
 			}
 
-			try {
-				await clearOfflineData();
-			} catch (e) {
-				console.error(e);
+			// Delta sync: IndexedDB'deki mevcut veriyi koruyarak sadece farki cek
+			if (canSyncUser && !needsMigration) {
+				hasLocalData = await tryLoadExistingDb();
 			}
-			// IndexedDB delete transaction'in tamamen kapanmasi icin bekle
-			await new Promise(r => setTimeout(r, 100));
-			initLokiDb({
-				autoload: false,
-			});
 
-			// LokiJS IndexedDB adapter'inin catalog'unu on-initialize et.
-			// Adapter'in saveDatabase metodu catalog null iken lazy-init yapiyor ama
-			// recursive cagridaki callback wrapping bug'i yuzunden save her zaman basarisiz oluyor.
-			// getDatabaseList catalog'u initialize eder ama veri yuklemez (loadDatabase'den farki bu).
-			await new Promise<void>((resolve) => {
-				const adapter = getLokiDb().persistenceAdapter as any;
-				const timeout = setTimeout(() => resolve(), 3000);
-				if (adapter?.getDatabaseList) {
-					adapter.getDatabaseList(() => {
-						clearTimeout(timeout);
-						resolve();
-					});
-				} else {
-					clearTimeout(timeout);
-					resolve();
+			if (!hasLocalData) {
+				try {
+					await clearOfflineData();
+				} catch (e) {
+					console.error(e);
 				}
-			});
+				// IndexedDB delete transaction'in tamamen kapanmasi icin bekle
+				await new Promise(r => setTimeout(r, 100));
+				initLokiDb({
+					autoload: false,
+				});
+				await initAdapterCatalog();
+			}
 		}
 
 		const criticalPromises: Promise<any>[] = [];
@@ -125,6 +118,7 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 			// Basic kullanici: bos session collection olustur
 			initSessionDb([]);
 		}
+
 		criticalPromises.push(getAllSettings(me?.id));
 		criticalPromises.push(initNewScramble());
 
@@ -133,7 +127,19 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 			initSolvesCollection();
 
 			if (!passed && canSyncUser) {
-				await initAllSolves();
+				if (hasLocalData) {
+					// Delta sync: sadece farki cek
+					const deltaSuccess = await deltaSyncSolves();
+
+					if (!deltaSuccess) {
+						// Delta sync basarisiz — fallback: full fetch
+						initSolvesCollection(true);
+						await initAllSolves();
+					}
+				} else {
+					// Ilk acilis veya bozuk DB: tum solve'lari cek
+					await initAllSolves();
+				}
 			}
 		} catch (e) {
 			console.error(e);
@@ -161,6 +167,7 @@ async function loadNonCriticalData(_me: UserAccount, dispatch: Dispatch<any>, pa
 		bgPromises.push(syncDailyGoalsFromServer());
 
 		await Promise.all(bgPromises);
+
 		if (canSyncUser) {
 			await updateOfflineHash();
 		}
@@ -186,7 +193,164 @@ async function initNewScramble() {
 }
 
 const SYNC_SOLVE_COUNT = 500;
+const DELTA_SYNC_BATCH_SIZE = 500;
 const VISIBILITY_SYNC_DEBOUNCE_MS = 10_000;
+
+/**
+ * Mevcut IndexedDB'den LokiJS'e veri yuklemeyi dener.
+ * Cache MISS durumunda bile eski veriyi korumak icin kullanilir (delta sync oncesi).
+ */
+async function tryLoadExistingDb(): Promise<boolean> {
+	try {
+		initLokiDb({ autoload: false });
+
+		const loaded = await new Promise<boolean>((resolve) => {
+			const timeout = setTimeout(() => resolve(false), 2000);
+
+			getLokiDb().loadDatabase(undefined, (err) => {
+				clearTimeout(timeout);
+				if (err) {
+					resolve(false);
+					return;
+				}
+
+				const solves = getLokiDb().getCollection('solves');
+				const sessions = getLokiDb().getCollection('sessions');
+				if (solves && sessions && solves.count() > 0) {
+					resolve(true);
+				} else {
+					resolve(false);
+				}
+			});
+		});
+
+		return loaded;
+	} catch (e) {
+		console.error('[DeltaSync] tryLoadExistingDb failed:', e);
+		return false;
+	}
+}
+
+/**
+ * Delta sync: sunucudan sadece solve ID listesini cek, local ile karsilastir,
+ * sadece farki uygula (yeni solve'lari cek, silinen solve'lari kaldir).
+ */
+async function deltaSyncSolves(): Promise<boolean> {
+	try {
+		// 1. Sunucudan tum solve ID'lerini cek (sadece id field'i)
+		const idsQuery = gql`
+			query Query($take: Int, $skip: Int) {
+				solves(take: $take, skip: $skip) {
+					id
+				}
+			}
+		`;
+		const idsRes = await gqlQuery<{ solves: { id: string }[] }>(idsQuery, { take: 0, skip: 0 });
+		const serverIds = new Set(idsRes.data.solves.map((s) => s.id));
+
+		// 2. Local solve ID'lerini al
+		const solveDb = getSolveDb();
+		if (!solveDb) return false;
+		const localSolves = solveDb.find();
+		const localIds = new Set(localSolves.map((s) => s.id));
+
+		// 3. Offline queue'daki pending mutation'lari al (race condition onleme)
+		let pendingCreateIds = new Set<string>();
+		let pendingDeleteIds = new Set<string>();
+		try {
+			const pendingMutations = await getAllQueued();
+			for (const m of pendingMutations) {
+				if (m.mutationName === 'createSolve' && m.variables?.input?.id) {
+					pendingCreateIds.add(m.variables.input.id);
+				}
+				if (m.mutationName === 'deleteSolve' && m.variables?.id) {
+					pendingDeleteIds.add(m.variables.id);
+				}
+				if (m.mutationName === 'deleteSolves' && m.variables?.ids) {
+					for (const id of m.variables.ids) {
+						pendingDeleteIds.add(id);
+					}
+				}
+			}
+		} catch (e) {
+			// Offline queue okunamadiysa devam et, sadece pending korumasi olmaz
+		}
+
+		// 4. Diff hesapla
+		const toFetch: string[] = [];
+		for (const id of serverIds) {
+			if (!localIds.has(id) && !pendingDeleteIds.has(id)) {
+				toFetch.push(id);
+			}
+		}
+
+		const toRemove: string[] = [];
+		for (const id of localIds) {
+			if (!serverIds.has(id) && !pendingCreateIds.has(id)) {
+				toRemove.push(id);
+			}
+		}
+
+		// 5. Silinenleri local'den kaldir
+		if (toRemove.length > 0) {
+			const toRemoveSet = new Set(toRemove);
+			const solvesToRemove = solveDb.find().filter((s) => toRemoveSet.has(s.id));
+			solvesToRemove.forEach((s) => solveDb.remove(s));
+		}
+
+		// 6. Yenileri batch'ler halinde cek (solvesByIds query'si)
+		if (toFetch.length > 0) {
+			const fetchQuery = gql`
+				${MICRO_SOLVE_FRAGMENT}
+
+				query Query($ids: [String]!) {
+					solvesByIds(ids: $ids) {
+						...MicroSolveFragment
+					}
+				}
+			`;
+
+			for (let i = 0; i < toFetch.length; i += DELTA_SYNC_BATCH_SIZE) {
+				const batch = toFetch.slice(i, i + DELTA_SYNC_BATCH_SIZE);
+				const res = await gqlQuery<{ solvesByIds: Solve[] }>(fetchQuery, { ids: batch });
+				if (res.data.solvesByIds.length) {
+					appendSolvesToDb(res.data.solvesByIds, true);
+				}
+			}
+		}
+
+		// 7. Degisiklik varsa event emit et
+		if (toFetch.length > 0 || toRemove.length > 0) {
+			emitEvent('solveDbUpdatedEvent');
+		}
+
+		return true;
+	} catch (e) {
+		console.error('[DeltaSync] Failed:', e);
+		return false;
+	}
+}
+
+/**
+ * LokiJS IndexedDB adapter catalog'unu on-initialize et.
+ * Adapter'in saveDatabase metodu catalog null iken lazy-init yapiyor ama
+ * recursive cagridaki callback wrapping bug'i yuzunden save her zaman basarisiz oluyor.
+ */
+async function initAdapterCatalog(): Promise<void> {
+	await new Promise<void>((resolve) => {
+		const adapter = getLokiDb().persistenceAdapter as any;
+		const timeout = setTimeout(() => resolve(), 3000);
+		if (adapter?.getDatabaseList) {
+			adapter.getDatabaseList(() => {
+				clearTimeout(timeout);
+				resolve();
+			});
+		} else {
+			clearTimeout(timeout);
+			resolve();
+		}
+	});
+}
 
 let visibilityListenerRegistered = false;
 let lastSyncTime = 0;

@@ -10,7 +10,7 @@ export function checkForPB(solve: Solve, isNew: boolean) {
 
 	// Disqualify items that don't qualify for confetti
 	if (!solve.from_timer || !isNew) {
-		return;
+			return;
 	}
 
 	const cubeType = solve.cube_type;
@@ -23,6 +23,7 @@ export function checkForPB(solve: Solve, isNew: boolean) {
 
 	const isAvgPb = updatedAvgPbs.some((pb) => jsonStr(pb.filterOptions) === pbFilter);
 	const isSinglePb = updatedSinglePbs.some((pb) => jsonStr(pb.filterOptions) === pbFilter);
+
 
 	if (isSinglePb && isAvgPb) {
 		emitEvent('singleAndAvgPbEvent', cubeType);

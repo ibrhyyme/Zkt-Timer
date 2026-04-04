@@ -24,7 +24,7 @@ export default function InputLegend(props: Props) {
 	let optionalSpan = null;
 
 	if (tag) {
-		body = <Tag icon={icon} text={text} small />;
+		body = <Tag icon={icon ? <i className={icon} /> : undefined} text={text} small />;
 	} else {
 		let iconBody = null;
 		if (icon) {

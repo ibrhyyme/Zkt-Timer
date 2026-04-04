@@ -441,7 +441,7 @@ export function TrainerProvider({children}: TrainerProviderProps) {
 			};
 
 			// _onCubeCreated callback (gyro subscription icin)
-			if (conn._onCubeCreated) conn._onCubeCreated(cube);
+			if ((conn as any)._onCubeCreated) (conn as any)._onCubeCreated(cube);
 
 			await cube.init();
 		};

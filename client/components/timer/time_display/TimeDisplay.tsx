@@ -7,7 +7,7 @@ import { preflightChecks } from '../smart_cube/preflight';
 import { MOBILE_FONT_SIZE_MULTIPLIER } from '../../../db/settings/update';
 import { useGeneral } from '../../../util/hooks/useGeneral';
 import { smartCubeSelected } from '../helpers/util';
-import { getSmartSolveEndTime } from '../helpers/events';
+import { getSmartSolveEndTime, getTimerEndFinalTime } from '../helpers/events';
 import { TimerContext } from '../Timer';
 import block from '../../../styles/bem';
 import { useSettings } from '../../../util/hooks/useSettings';
@@ -90,6 +90,22 @@ export default function TimeDisplay() {
 		return () => window.removeEventListener('smartSolveFreeze', handleFreeze);
 	}, [timeStartedAt]);
 
+	// Touch/keyboard: endTimer aninda display'i dondur ve interval'i temizle
+	useEffect(() => {
+		const handleEndFreeze = () => {
+			const endFinal = getTimerEndFinalTime();
+			if (endFinal !== null && endFinal > 0) {
+				setTime(endFinal / 1000);
+				if (timerCounter.current) {
+					clearInterval(timerCounter.current);
+					timerCounter.current = null;
+				}
+			}
+		};
+		window.addEventListener('timerEndFreeze', handleEndFreeze);
+		return () => window.removeEventListener('timerEndFreeze', handleEndFreeze);
+	}, []);
+
 	// Arka plana gecildiginde timer display interval'ini durdur
 	useEffect(() => {
 		const unsub = onVisibilityChange((visible) => {
@@ -159,6 +175,14 @@ export default function TimeDisplay() {
 				}
 			}
 
+			// Touch/keyboard: endTimer cagrildiginda display'i dondur
+			// Redux dispatch ve React re-render beklemeden overshoot'u engeller
+			const endFinalTime = getTimerEndFinalTime();
+			if (endFinalTime !== null && endFinalTime > 0) {
+				setTime(endFinalTime / 1000);
+				return;
+			}
+
 			const runningTime = (now.getTime() - timeStartedAt.getTime()) / 1000;
 			setTime(runningTime);
 		}, 33);
@@ -170,9 +194,6 @@ export default function TimeDisplay() {
 
 	let timeStr;
 	let bottomInfo = null;
-	if (inspectionOn) {
-		bottomInfo = <StartInstructions>{t('time_display.inspection_on')}</StartInstructions>;
-	}
 
 	if (inInspection) {
 		if (inspectionTimer <= 2) {

@@ -87,7 +87,7 @@ export default function AvatarImage(props: Props) {
 	const user = props.user || props.profile?.user;
 	const profile = props.profile || props.user?.profile;
 
-	const showProRing = isProEnabled() && isPro(user);
+	const showProRing = isProEnabled() && isPro(user as UserAccount);
 
 	// Check if we have a profile image and it hasn't failed to load
 	const hasProfileImage = ((profile && profile.pfp_image) || image) && !imageError;

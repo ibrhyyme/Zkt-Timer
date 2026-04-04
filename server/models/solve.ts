@@ -175,11 +175,11 @@ export async function bulkCreateSolves(user: UserAccount, solves: SolveInput[]) 
 	for (let i = 0; i < solves.length; i += 1) {
 		let solve = solves[i];
 		const id = solve.id || uuid();
-		solve = sanitizeSolve(solve);
+		const sanitized = sanitizeSolve(solve) as any;
 		const shareCode = generateRandomCode(8);
 
 		data.push({
-			...solve,
+			...sanitized,
 			bulk: true,
 			id,
 			user_id: user.id,
@@ -212,7 +212,7 @@ export function addShareCodeToSolve(solve: Solve) {
 export function createSolve(user: UserAccount, input: SolveInput) {
 	const id = input.id || uniqid('s-');
 
-	const solve = sanitizeSolve(input);
+	const solve = sanitizeSolve(input) as any;
 	const shareCode = generateRandomCode(8);
 
 	return getPrisma().solve.create({
