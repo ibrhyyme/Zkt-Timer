@@ -37,6 +37,15 @@ class ZKTBridgeViewController: CAPBridgeViewController {
 // MARK: - WKNavigationDelegate
 extension ZKTBridgeViewController: WKNavigationDelegate {
 
+    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        let url = navigationAction.request.url?.absoluteString ?? ""
+
+        // Harici domainlerde native back gesture ac, zktimer.app'te kapat (JS SwipeBackIndicator ile cakismasin)
+        webView.allowsBackForwardNavigationGestures = !url.contains("zktimer.app")
+
+        decisionHandler(.allow)
+    }
+
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         let currentUrl = webView.url?.absoluteString ?? ""
         if currentUrl.contains("zktimer.app") {
