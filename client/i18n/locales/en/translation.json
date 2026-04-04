@@ -1170,7 +1170,16 @@
 		"duration_day": "day",
 		"duration_week": "week",
 		"duration_month": "month",
-		"duration_year": "year"
+		"duration_year": "year",
+		"table_actions": "Actions",
+		"manage_button": "Manage",
+		"delete_button": "Delete",
+		"delete_confirm_title": "Delete Promo Code",
+		"delete_confirm_desc": "Are you sure you want to delete \"{{code}}\"? This cannot be undone.",
+		"delete_confirm_button": "Delete",
+		"delete_success": "Promo code \"{{code}}\" deleted",
+		"manage_title": "Redemptions",
+		"manage_empty": "No one has used this code yet"
 	},
 	"admin_email": {
 		"page_title": "Send Email",

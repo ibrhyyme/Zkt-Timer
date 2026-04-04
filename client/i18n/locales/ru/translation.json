@@ -1170,7 +1170,16 @@
 		"duration_day": "день",
 		"duration_week": "неделя",
 		"duration_month": "месяц",
-		"duration_year": "год"
+		"duration_year": "год",
+		"table_actions": "Действия",
+		"manage_button": "Управление",
+		"delete_button": "Удалить",
+		"delete_confirm_title": "Удалить промокод",
+		"delete_confirm_desc": "Удалить промокод \"{{code}}\"? Это действие необратимо.",
+		"delete_confirm_button": "Удалить",
+		"delete_success": "Промокод \"{{code}}\" удалён",
+		"manage_title": "Использования",
+		"manage_empty": "Этот код ещё никто не использовал"
 	},
 	"admin_email": {
 		"page_title": "Отправить письмо",

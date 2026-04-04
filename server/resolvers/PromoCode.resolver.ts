@@ -3,7 +3,7 @@ import {GraphQLContext} from '../@types/interfaces/server.interface';
 import {Role} from '../middlewares/auth';
 import GraphQLError from '../util/graphql_error';
 import {ErrorCode} from '../constants/errors';
-import {PromoCode, CreatePromoCodeInput, RedeemPromoCodeResult} from '../schemas/PromoCode.schema';
+import {PromoCode, CreatePromoCodeInput, RedeemPromoCodeResult, PromoCodeRedemptionInfo} from '../schemas/PromoCode.schema';
 import {getPrisma} from '../database';
 import {updateUserAccountWithParams} from '../models/user_account';
 
@@ -130,11 +130,38 @@ export class PromoCodeResolver {
 	}
 
 	@Authorized([Role.ADMIN])
+	@Query(() => [PromoCodeRedemptionInfo])
+	async getPromoCodeRedemptions(@Arg('promoCodeId') promoCodeId: string) {
+		const redemptions = await getPrisma().promoCodeRedemption.findMany({
+			where: {promo_code_id: promoCodeId},
+			orderBy: {redeemed_at: 'desc'},
+			include: {
+				user: {
+					select: {id: true, username: true},
+				},
+			},
+		});
+
+		return redemptions.map((r) => ({
+			id: r.id,
+			username: r.user.username,
+			redeemed_at: r.redeemed_at,
+		}));
+	}
+
+	@Authorized([Role.ADMIN])
 	@Mutation(() => PromoCode)
 	async togglePromoCodeActive(@Arg('id') id: string, @Arg('isActive') isActive: boolean) {
 		return getPrisma().promoCode.update({
 			where: {id},
 			data: {is_active: isActive},
 		});
+	}
+
+	@Authorized([Role.ADMIN])
+	@Mutation(() => Boolean)
+	async deletePromoCode(@Arg('id') id: string) {
+		await getPrisma().promoCode.delete({where: {id}});
+		return true;
 	}
 }

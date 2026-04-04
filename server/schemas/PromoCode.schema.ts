@@ -49,6 +49,18 @@ export class CreatePromoCodeInput {
 }
 
 @ObjectType()
+export class PromoCodeRedemptionInfo {
+	@Field()
+	id: string;
+
+	@Field()
+	username: string;
+
+	@Field()
+	redeemed_at: Date;
+}
+
+@ObjectType()
 export class RedeemPromoCodeResult {
 	@Field()
 	success: boolean;
