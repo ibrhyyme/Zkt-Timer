@@ -2,7 +2,7 @@ import React, {useState, useEffect, useMemo, useCallback, useRef} from 'react';
 import {useDispatch as useReduxDispatch} from 'react-redux';
 import block from '../../../../styles/bem';
 import {useTrainerContext} from '../../TrainerContext';
-import {useAlgorithmData, getBestTime, getLearnedStatus} from '../../hooks/useAlgorithmData';
+import {useAlgorithmData, getBestTime, getLearnedStatus, fetchDefaultAlgs, getCustomAlternatives} from '../../hooks/useAlgorithmData';
 import {algToId, expandNotation, getAdjacentFaces, getDefaultFrontFace, isCubeShapePuzzle, isLLCategory, isIsometricCategory, isTopFaceOnlyCategory} from '../../../../util/trainer/algorithm_engine';
 import {useLLPatternsReady} from '../../../../util/trainer/ll_patterns';
 import {usePuzzlePatternsReady} from '../../../../util/trainer/puzzle_patterns';
@@ -12,7 +12,10 @@ import AlgorithmCard from './AlgorithmCard';
 import Checkbox from '../../../common/checkbox/Checkbox';
 import type {CheckedAlgorithm, CubeFace} from '../../types';
 import {useTranslation} from 'react-i18next';
-import {CaretDown, Play, Info, X} from 'phosphor-react';
+import {CaretDown, Play, Info, X, FilePdf} from 'phosphor-react';
+import {useMe} from '../../../../util/hooks/useMe';
+import {isPro} from '../../../../lib/pro';
+import ProOnlyModal from '../../../common/pro_only/ProOnlyModal';
 
 const b = block('trainer');
 
@@ -53,7 +56,9 @@ export default function AlgorithmSelector() {
 	const reduxDispatch = useReduxDispatch();
 	const {state, dispatch} = useTrainerContext();
 	const {selectedCategory, selectedSubsets, checkedAlgorithms, options} = state;
+	const me = useMe();
 	const {categories, getSubsets, getAlgorithmsWithSubset} = useAlgorithmData();
+	const [pdfLoading, setPdfLoading] = useState(false);
 	const isLL = isLLCategory(selectedCategory);
 	const isIso = isIsometricCategory(selectedCategory);
 	const effectiveFrontFace = (isLL || isIso) ? getDefaultFrontFace(options.topFace) : options.frontFace;
@@ -276,6 +281,53 @@ export default function AlgorithmSelector() {
 			dispatch({type: 'SET_CHECKED_ALGORITHMS', payload: []});
 		}
 	}, [dispatch, isF2L, slotFilter, filteredAlgorithmsWithSubset, checkedAlgorithms, options.selectLearning]);
+
+	const handlePdfExport = useCallback(async () => {
+		if (!isPro(me)) {
+			reduxDispatch(openModal(<ProOnlyModal featureKey="trainer_pdf" />));
+			return;
+		}
+
+		// Secili algoritmalar varsa onlari, yoksa tum gorunur algoritmalari al
+		const baseAlgs = checkedAlgorithms.length > 0
+			? checkedAlgorithms.map((a) => ({name: a.name, algorithm: a.algorithm, subset: a.subset}))
+			: filteredAlgorithmsWithSubset.flatMap((group) =>
+				group.algorithms.map((alg) => ({name: alg.name, algorithm: alg.algorithm, subset: group.subset}))
+			);
+
+		if (baseAlgs.length === 0) return;
+
+		setPdfLoading(true);
+		try {
+			// Default alternatifleri yukle
+			const defaultAlgs = await fetchDefaultAlgs();
+			const categoryData = defaultAlgs[selectedCategory] || [];
+
+			// Her algoritma icin default + custom alternatifleri merge et
+			const algsToExport = baseAlgs.map((alg) => {
+				const subsetData = categoryData.find((s) => s.subset === alg.subset);
+				const entry = subsetData?.algorithms.find((a) => a.name === alg.name);
+				const defaultAlts = entry?.alternatives || [];
+				const customAlts = getCustomAlternatives(selectedCategory, alg.subset, alg.name);
+				const allAlts = [...defaultAlts, ...customAlts];
+				return {...alg, alternatives: allAlts};
+			});
+
+			const catKey = selectedCategory.toLowerCase().replace(/[\s-]+/g, '_');
+			const description = t(`trainer.cat_info.${catKey}.desc`, {defaultValue: ''});
+
+			const {generateTrainerPdf} = await import('../../../../util/trainer/pdf_export');
+			await generateTrainerPdf({
+				category: selectedCategory,
+				categoryDescription: description || undefined,
+				algorithms: algsToExport,
+				topFace: options.topFace,
+				frontFace: effectiveFrontFace,
+			});
+		} finally {
+			setPdfLoading(false);
+		}
+	}, [me, checkedAlgorithms, filteredAlgorithmsWithSubset, selectedCategory, options.topFace, effectiveFrontFace, reduxDispatch, t]);
 
 	const handleOptionChange = useCallback(
 		(key: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -512,6 +564,15 @@ export default function AlgorithmSelector() {
 								onClick={allAlgsSelected ? handleDeselectAllAlgs : handleSelectAllAlgs}
 							>
 								{allAlgsSelected ? t('trainer.deselect_all') : t('trainer.select_all')}
+							</button>
+							<button
+								className={b('selector-action-btn', {'pdf': true})}
+								onClick={handlePdfExport}
+								disabled={pdfLoading}
+								title={t('trainer.export_pdf')}
+							>
+								<FilePdf size={16} weight="bold" />
+								{pdfLoading ? '...' : 'PDF'}
 							</button>
 						</div>
 					</div>

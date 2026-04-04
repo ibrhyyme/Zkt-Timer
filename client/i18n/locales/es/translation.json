@@ -210,6 +210,7 @@
 		"reset_season_confirm": "¿Estás seguro de que quieres eliminar todo el historial de resoluciones de este algoritmo?",
 		"options": "Opciones",
 		"export": "Exportar",
+		"export_pdf": "Exportar como PDF",
 		"import": "Importar",
 		"show_moves": "Mostrar movimientos",
 		"hide_moves": "Ocultar movimientos",
@@ -1576,6 +1577,10 @@
 				"title": "Entrena con tu cubo inteligente",
 				"desc": "Conecta tu cubo inteligente por Bluetooth, ejecuta el algoritmo en el cubo real — y ve al instante en pantalla si lo hiciste bien. Se acabó cronometrar manualmente y verificar algoritmos de memoria. Tu cubo se convierte en tu entrenador, y cada repetición te hace más rápido y preciso."
 			},
+			"trainer_pdf": {
+				"title": "Descarga todos los algoritmos en PDF",
+				"desc": "Descarga todos los algoritmos o solo los que seleccionaste, con sus alternativas, en formato PDF."
+			},
 			"themes": {
 				"title": "6 temas exclusivos",
 				"desc": "El brillo neón de Cyberpunk, las calles nocturnas de Tokyo, el minimalismo de Norman, los tonos cálidos de Save the Bees, la oscuridad de Night Owl y el aire académico de The PhD Student — dale a tu temporizador una personalidad completamente nueva. Cada tema transforma colores, fondos y toda la atmósfera."
@@ -1841,7 +1846,8 @@
 			"smart_cube": { "title": "Análisis Profundo de Cubo Inteligente", "desc": "Analiza tus resoluciones paso a paso y ve cada detalle." },
 			"themes": { "title": "Temas Exclusivos", "desc": "Dale personalidad a tu temporizador con 6 temas exclusivos." },
 			"stats": { "title": "Personalización de Estadísticas", "desc": "Configura los módulos de estadísticas exactamente como quieras." },
-			"trainer": { "title": "Entrena con Tu Cubo Inteligente", "desc": "Practica algoritmos en tu cubo con feedback instantáneo." }
+			"trainer": { "title": "Entrena con Tu Cubo Inteligente", "desc": "Practica algoritmos en tu cubo con feedback instantáneo." },
+			"trainer_pdf": { "title": "Descarga Todos los Algoritmos en PDF", "desc": "Descarga todos los algoritmos o solo los que seleccionaste, con sus alternativas, en formato PDF." }
 		},
 		"highlights": {
 			"sync": "Sincronización automática en todos tus dispositivos",
@@ -1867,7 +1873,10 @@
 			"stats_customize": "Añade, elimina y reordena módulos",
 			"trainer_ble": "Conexión Bluetooth con cubo inteligente",
 			"trainer_feedback": "Feedback instantáneo sobre precisión del algoritmo",
-			"trainer_speed": "Más rápido y preciso con cada repetición"
+			"trainer_speed": "Más rápido y preciso con cada repetición",
+			"pdf_professional": "Salida PDF con diseño profesional",
+			"pdf_alternatives": "Algoritmos alternativos incluidos",
+			"pdf_stats": "Exporta todos o los algoritmos seleccionados"
 		}
 	},
 	"battle": {
