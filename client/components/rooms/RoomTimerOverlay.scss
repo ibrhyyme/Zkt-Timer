@@ -53,10 +53,16 @@
         display: flex;
         flex-direction: column;
         align-items: center;
+        justify-content: center;
         gap: 1.5rem;
         padding: 2rem;
         width: 100%;
         max-width: 600px;
+        height: 100%;
+
+        @media (max-width: 480px) {
+            padding: 1rem;
+        }
     }
 
     &__time {
@@ -89,7 +95,7 @@
         }
 
         @media (max-width: 480px) {
-            font-size: 3.5rem;
+            font-size: 4.5rem;
         }
 
         &--calculation {
@@ -111,42 +117,146 @@
         flex-direction: column;
         align-items: center;
         gap: 1rem;
+        width: 100%;
+
+        @media (max-width: 480px) {
+            height: 100%;
+            justify-content: center;
+            position: relative;
+        }
     }
 
-    &__penalties {
+    &__actions {
         display: flex;
+        flex-direction: column;
         align-items: center;
-        gap: 1rem;
-        flex-wrap: wrap;
+        gap: 0.75rem;
+        width: 100%;
+
+        @media (max-width: 480px) {
+            position: absolute;
+            bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+            left: 0;
+            right: 0;
+            padding: 0 1.5rem;
+        }
+    }
+
+    &__penalty-row {
+        display: flex;
+        gap: 0.75rem;
         justify-content: center;
     }
 
-    &__checkbox {
-        display: flex;
+    &__penalty-btn {
+        display: inline-flex;
         align-items: center;
-        gap: 0.4rem;
-        cursor: pointer;
-        color: rgba(var(--text-color), 0.9);
-        font-size: 1rem;
-        font-weight: 500;
-        padding: 0.5rem 0.75rem;
+        justify-content: center;
+        padding: 0.5rem 1.5rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        border: 2px solid rgba(var(--text-color), 0.25);
         border-radius: 8px;
-        border: 2px solid transparent;
+        background: transparent;
+        color: rgba(var(--text-color), 0.7);
+        cursor: pointer;
         transition: all 0.15s;
+
+        &:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
 
         &--focused {
             border-color: rgb(var(--primary-color));
             box-shadow: 0 0 8px rgba(var(--primary-color), 0.4);
         }
 
-        input[type='checkbox'] {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-            accent-color: rgb(var(--primary-color));
+        &--plus-two.room-timer-overlay__penalty-btn--active {
+            background: #ff9800;
+            border-color: #ff9800;
+            color: white;
+        }
+
+        &--dnf.room-timer-overlay__penalty-btn--active {
+            background: #ef5350;
+            border-color: #ef5350;
+            color: white;
         }
     }
 
+    &__action-row {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+
+        @media (max-width: 480px) {
+            gap: 0.5rem;
+        }
+    }
+
+    &__action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.85rem 1.5rem;
+        font-size: 0.95rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.15s;
+
+        &--save {
+            flex: 2;
+            max-width: 240px;
+            background: #66bb6a;
+            color: white;
+
+            &:active {
+                background: #57a05a;
+            }
+        }
+
+        &--cancel {
+            flex: 1;
+            max-width: 120px;
+            background: rgba(239, 83, 80, 0.15);
+            border: 1px solid rgba(239, 83, 80, 0.25);
+            color: rgba(239, 83, 80, 0.7);
+            font-size: 0.8rem;
+
+            &:active {
+                background: rgba(239, 83, 80, 0.25);
+            }
+        }
+
+        &--focused {
+            box-shadow: 0 0 10px rgba(var(--primary-color), 0.5);
+        }
+
+        @media (max-width: 480px) {
+            &--save {
+                padding: 1rem;
+                font-size: 1rem;
+                max-width: none;
+            }
+
+            &--cancel {
+                padding: 0.75rem;
+                font-size: 0.75rem;
+                max-width: 100px;
+            }
+        }
+    }
+
+    // Legacy btn class (used in smart cube review and other places)
     &__btn {
         display: inline-flex;
         align-items: center;
@@ -218,6 +328,10 @@
         font-size: 0.85rem;
         margin: 0.5rem 0 0 0;
         text-align: center;
+
+        @media (max-width: 480px) {
+            display: none;
+        }
     }
 
     // Manual entry styles
