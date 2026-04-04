@@ -2,8 +2,6 @@ import React, {useState} from 'react';
 import { useTranslation } from 'react-i18next';
 import {gql} from '@apollo/client';
 import {gqlMutate} from '../../api';
-import Emblem from '../../common/emblem/Emblem';
-import Checkbox from '../../common/checkbox/Checkbox';
 import {useMe} from '../../../util/hooks/useMe';
 import {getSinglePB} from '../../../db/solves/stats/solves/single/single_pb';
 import {getAveragePB} from '../../../db/solves/stats/solves/average/average_pb';
@@ -12,13 +10,13 @@ import {getTimeString} from '../../../util/time';
 import block from '../../../styles/bem';
 import {getCubeTypeInfoById} from '../../../util/cubes/util';
 import Button from '../../common/button/Button';
-import HorizontalLine from '../../common/horizontal_line/HorizontalLine';
 import {fetchAllCubeTypesSolved, FilterSolvesOptions} from '../../../db/solves/query';
 import {toastError, toastSuccess} from '../../../util/toast';
 import {isProEnabled, isPro} from '../../../lib/pro';
 import ProOnlyModal from '../../common/pro_only/ProOnlyModal';
+import './PublishSolves.scss';
 
-const b = block('select-times');
+const b = block('publish-solves');
 
 export default function PublishSolves(props: IModalProps) {
 	const { t } = useTranslation();
@@ -115,13 +113,19 @@ export default function PublishSolves(props: IModalProps) {
 		const ct = getCubeTypeInfoById(type.cube_type);
 
 		rows.push(
-			<tr key={type.cube_type}>
-				<td>
-					<Emblem text={ct.name} />
-				</td>
-				<td>{pb && <Emblem text={getTimeString(pb.time)} />}</td>
-				<td>{ao5pb && <Emblem text={getTimeString(ao5pb.time)} />}</td>
-			</tr>
+			<div key={type.cube_type} className={b('card')}>
+				<div className={b('card-label')}>{ct.name}</div>
+				<div className={b('card-values')}>
+					<div className={b('card-stat')}>
+						<span className={b('card-stat-label')}>{t('profile.single')}</span>
+						<span className={b('card-stat-value')}>{pb ? getTimeString(pb.time) : '—'}</span>
+					</div>
+					<div className={b('card-stat')}>
+						<span className={b('card-stat-label')}>{t('profile.average')}</span>
+						<span className={b('card-stat-value')}>{ao5pb ? getTimeString(ao5pb.time) : '—'}</span>
+					</div>
+				</div>
+			</div>
 		);
 	}
 
@@ -132,15 +136,15 @@ export default function PublishSolves(props: IModalProps) {
 	let exception = null;
 	if (!me.username) {
 		exception = (
-			<p>
+			<div className={b('exception')}>
 				{t('profile.set_username_first')} <a href="/account/personal-info">{t('profile.set_username_link')}</a>
-			</p>
+			</div>
 		);
 	} else if (!rows.length) {
 		exception = (
-			<p>
+			<div className={b('exception')}>
 				{t('profile.no_solves_to_publish')} <a href="/">{t('profile.timer_page')}</a>
-			</p>
+			</div>
 		);
 	}
 
@@ -149,25 +153,20 @@ export default function PublishSolves(props: IModalProps) {
 			{exception}
 			{exception ? null : (
 				<>
-					<table className="cd-table mb-3">
-						<thead>
-							<tr>
-								<th>{t('profile.cube_type')}</th>
-								<th>{t('profile.single')}</th>
-								<th>{t('profile.average')}</th>
-							</tr>
-						</thead>
-						<tbody>{rows}</tbody>
-					</table>
-					<Button
-						primary
-						glow
-						large
-						text={t('profile.publish_to_profile')}
-						error={error}
-						loading={publishing}
-						onClick={publishTimes}
-					/>
+					<div className={b('list')}>
+						{rows}
+					</div>
+					<div className={b('actions')}>
+						<Button
+							primary
+							glow
+							large
+							text={t('profile.publish_to_profile')}
+							error={error}
+							loading={publishing}
+							onClick={publishTimes}
+						/>
+					</div>
 				</>
 			)}
 		</div>

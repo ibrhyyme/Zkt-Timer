@@ -1,1 +1,119 @@
-// Placeholder - styles inherited from parent
+@import '../../../styles/config';
+
+.#{$namespace}-publish-solves {
+	// ─── Card List ──────────────────────────────────
+	&__list {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		margin-bottom: 28px;
+	}
+
+	// ─── Card ───────────────────────────────────────
+	&__card {
+		display: flex;
+		align-items: center;
+		gap: 16px;
+		padding: 16px 20px;
+		border-radius: 14px;
+		background-color: rgb(var(--background-color));
+		border: 1px solid rgba(var(--text-color), 0.08);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+		transition: all 0.2s ease;
+		cursor: default;
+
+		&:hover {
+			transform: translateY(-1px);
+			box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+			border-color: rgba(var(--text-color), 0.12);
+		}
+	}
+
+	// ─── Card Label (cube type) ─────────────────────
+	&__card-label {
+		flex: 1;
+		font-size: 1rem;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+		letter-spacing: -0.01em;
+	}
+
+	// ─── Card Values ────────────────────────────────
+	&__card-values {
+		display: flex;
+		gap: 20px;
+	}
+
+	// ─── Stat Group ─────────────────────────────────
+	&__card-stat {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+		min-width: 72px;
+	}
+
+	&__card-stat-label {
+		font-size: 0.7rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: rgba(var(--text-color), 0.7);
+		margin-bottom: 4px;
+	}
+
+	&__card-stat-value {
+		font-size: 1.25rem;
+		font-weight: 800;
+		color: rgb(var(--text-color));
+		font-family: 'SF Mono', 'Roboto Mono', 'Fira Code', monospace;
+		font-variant-numeric: tabular-nums;
+	}
+
+	// ─── Actions ────────────────────────────────────
+	&__actions {
+		display: flex;
+		justify-content: center;
+	}
+
+	// ─── Exception (no solves / no username) ────────
+	&__exception {
+		text-align: center;
+		padding: 24px 0;
+		color: rgba(var(--text-color), 0.85);
+		line-height: 1.6;
+		font-size: 0.95rem;
+
+		a {
+			color: rgb(var(--primary-color));
+			text-decoration: none;
+			font-weight: 600;
+
+			&:hover {
+				text-decoration: underline;
+			}
+		}
+	}
+
+	// ─── Mobile ─────────────────────────────────────
+	@media (max-width: 768px) {
+		&__card {
+			flex-direction: column;
+			align-items: stretch;
+			gap: 12px;
+			padding: 16px;
+		}
+
+		&__card-values {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 8px;
+		}
+
+		&__card-stat {
+			background-color: rgba(var(--button-color), 0.5);
+			border-radius: 10px;
+			padding: 10px 8px;
+		}
+	}
+}

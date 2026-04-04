@@ -1,37 +1,190 @@
-.publish-wca-records {
-  .wca-records-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
+@import '../../../styles/config';
 
-    h3 {
-      margin: 0;
-    }
-  }
+.#{$namespace}-publish-wca-records {
+	// ─── Card List ──────────────────────────────────
+	&__list {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		margin-bottom: 28px;
+	}
 
-  .cd-table {
-    width: 100%;
-    margin-bottom: 1rem;
+	// ─── Card ───────────────────────────────────────
+	&__card {
+		display: flex;
+		align-items: center;
+		gap: 16px;
+		padding: 16px 20px;
+		border-radius: 14px;
+		background-color: rgb(var(--background-color));
+		border: 1px solid rgba(var(--text-color), 0.08);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+		transition: all 0.2s ease;
 
-    td {
-      vertical-align: middle;
+		&:hover {
+			transform: translateY(-1px);
+			box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+			border-color: rgba(var(--text-color), 0.12);
+		}
 
-      small {
-        display: block;
-        color: #666;
-        margin-top: 0.25rem;
-      }
-    }
-  }
+		&--published {
+			border-left: 3px solid rgb(var(--primary-color));
+		}
+	}
 
-  .wca-records-footer {
-    text-align: center;
-    margin-top: 1rem;
+	// ─── Card Event Name ────────────────────────────
+	&__card-event {
+		flex: 1;
+		min-width: 0;
+		font-size: 1rem;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+		letter-spacing: -0.01em;
+	}
 
-    p {
-      margin-bottom: 1rem;
-      color: #666;
-    }
-  }
+	// ─── Card Records ───────────────────────────────
+	&__card-records {
+		display: flex;
+		gap: 20px;
+	}
+
+	// ─── Stat Group ─────────────────────────────────
+	&__card-stat {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+		min-width: 72px;
+	}
+
+	&__card-stat-label {
+		font-size: 0.7rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: rgba(var(--text-color), 0.7);
+		margin-bottom: 4px;
+	}
+
+	&__card-stat-value {
+		font-size: 1.25rem;
+		font-weight: 800;
+		color: rgb(var(--text-color));
+		font-family: 'SF Mono', 'Roboto Mono', 'Fira Code', monospace;
+		font-variant-numeric: tabular-nums;
+	}
+
+	&__card-rank {
+		font-size: 0.72rem;
+		font-weight: 500;
+		color: rgba(var(--text-color), 0.7);
+		margin-top: 3px;
+		font-variant-numeric: tabular-nums;
+	}
+
+	// ─── Card Action ────────────────────────────────
+	&__card-action {
+		flex-shrink: 0;
+	}
+
+	// ─── Footer ─────────────────────────────────────
+	&__footer {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 14px;
+		padding-top: 4px;
+	}
+
+	&__info {
+		font-size: 0.8rem;
+		color: rgba(var(--text-color), 0.85);
+		text-align: center;
+		line-height: 1.5;
+		max-width: 340px;
+	}
+
+	&__refresh-btn {
+		background: none;
+		border: none;
+		color: rgb(var(--primary-color));
+		font-size: 0.85rem;
+		font-weight: 600;
+		font-family: inherit;
+		cursor: pointer;
+		padding: 8px 16px;
+		border-radius: 10px;
+		transition: all 0.15s ease;
+
+		&:hover {
+			background: rgba(var(--primary-color), 0.1);
+		}
+
+		&:disabled {
+			opacity: 0.5;
+			cursor: default;
+		}
+	}
+
+	// ─── Empty State ────────────────────────────────
+	&__empty {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 16px;
+		padding: 32px 0;
+		text-align: center;
+		color: rgba(var(--text-color), 0.85);
+		font-size: 0.95rem;
+	}
+
+	// ─── Loading ────────────────────────────────────
+	&__loading {
+		display: flex;
+		justify-content: center;
+		padding: 40px 0;
+		color: rgba(var(--text-color), 0.7);
+	}
+
+	// ─── Actions ────────────────────────────────────
+	&__actions {
+		display: flex;
+		justify-content: center;
+	}
+
+	// ─── Mobile ─────────────────────────────────────
+	@media (max-width: 768px) {
+		&__card {
+			flex-wrap: wrap;
+			gap: 12px;
+			padding: 16px;
+		}
+
+		&__card-event {
+			width: 100%;
+			flex: none;
+		}
+
+		&__card-records {
+			flex: 1;
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 8px;
+		}
+
+		&__card-stat {
+			background-color: rgba(var(--button-color), 0.5);
+			border-radius: 10px;
+			padding: 10px 8px;
+		}
+
+		&__card-action {
+			width: 100%;
+
+			// Button icindeki button'u full-width yap
+			> * {
+				width: 100%;
+			}
+		}
+	}
 }

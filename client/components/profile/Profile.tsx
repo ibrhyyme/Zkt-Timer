@@ -196,6 +196,7 @@ export default function Profile() {
 			openModal(<PublishSolves />, {
 				title: t('profile.publish_pbs'),
 				description: t('profile.publish_pbs_desc'),
+				closeButtonText: t('solve_info.done'),
 				onComplete: () => window.location.reload(),
 			})
 		);
@@ -206,6 +207,7 @@ export default function Profile() {
 			openModal(<PublishWcaRecords />, {
 				title: t('profile.publish_wca_records'),
 				description: t('profile.publish_wca_records_desc'),
+				closeButtonText: t('solve_info.done'),
 				onComplete: () => window.location.reload(),
 			})
 		);
