@@ -210,6 +210,7 @@
 		"reset_season_confirm": "Bu algoritmanın tüm çözüm geçmişini silmek istediğinize emin misiniz?",
 		"options": "Seçenekler",
 		"export": "Dışa Aktar",
+		"export_pdf": "PDF Olarak Dışa Aktar",
 		"import": "İçe Aktar",
 		"show_moves": "Hamleleri göster",
 		"hide_moves": "Hamleleri gizle",
@@ -1576,6 +1577,10 @@
 				"title": "Akıllı küple algoritma çalış",
 				"desc": "Akıllı küpünü Bluetooth ile bağla, algoritmayı küp üzerinde çevir — doğru mu yanlış mı anında ekranda gör. Elle süre tutmaya, algoritmayı kafadan kontrol etmeye son. Küpün senin antrenörün olur, her tekrarında daha hızlı ve daha doğru olursun."
 			},
+			"trainer_pdf": {
+				"title": "Tüm algoritmaları PDF indir",
+				"desc": "İstersen tüm algoritmaları, istersen sadece seçtiklerini alternatifleriyle beraber PDF olarak indir."
+			},
 			"themes": {
 				"title": "6 özel tema",
 				"desc": "Cyberpunk'ın neon ışıkları, Tokyo'nun gece sokakları, Norman'ın minimalizmi, Save the Bees'in sıcak tonları, Night Owl'ın karanlığı ve The PhD Student'ın akademik havası — zamanlayıcına tam anlamıyla karakter kat. Her tema renkleri, arka planı ve genel havayı baştan değiştirir."
@@ -1860,6 +1865,10 @@
 			"trainer": {
 				"title": "Akıllı Küple Algoritma Çalış",
 				"desc": "Küpünle algoritma çalış, anında geri bildirim al."
+			},
+			"trainer_pdf": {
+				"title": "Tüm Algoritmaları PDF İndir",
+				"desc": "İstersen tüm algoritmaları, istersen sadece seçtiklerini alternatifleriyle beraber PDF olarak indir."
 			}
 		},
 		"highlights": {
@@ -1886,7 +1895,10 @@
 			"stats_customize": "Modülleri ekle, çıkar, sırasını değiştir",
 			"trainer_ble": "Bluetooth ile akıllı küp bağlantısı",
 			"trainer_feedback": "Algoritma doğruluğu için anında geri bildirim",
-			"trainer_speed": "Her tekrarda daha hızlı ve daha doğru"
+			"trainer_speed": "Her tekrarda daha hızlı ve daha doğru",
+			"pdf_professional": "Profesyonel tasarımlı PDF çıktı",
+			"pdf_alternatives": "Alternatif algoritmalar dahil",
+			"pdf_stats": "Toplu veya seçili algoritmaların çıktısı"
 		}
 	},
 	"battle": {

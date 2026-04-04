@@ -296,11 +296,14 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
+		flex-wrap: wrap;
+		gap: 0.4rem;
 	}
 
 	&__selector-actions {
 		display: flex;
 		gap: 0.5rem;
+		flex-wrap: wrap;
 	}
 
 	&__selector-action-btn {
@@ -316,6 +319,17 @@
 		&:hover {
 			background: rgba(var(--primary-color), 0.15);
 			border-color: rgba(var(--primary-color), 0.3);
+		}
+
+		&--pdf {
+			display: flex;
+			align-items: center;
+			gap: 4px;
+
+			&:disabled {
+				opacity: 0.5;
+				cursor: wait;
+			}
 		}
 	}
 

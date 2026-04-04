@@ -33,6 +33,7 @@ const PRO_FEATURES = [
 	'sync',
 	'smart_cube_analysis',
 	'trainer_smart_cube',
+	'trainer_pdf',
 	'themes',
 	'advanced_stats',
 	'leaderboard_publish',

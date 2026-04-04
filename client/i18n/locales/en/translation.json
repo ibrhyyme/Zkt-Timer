@@ -236,6 +236,7 @@
 		"device_info": "Device Info",
 		"ble_make_first_move": "Make your first move",
 		"export": "Export algorithms",
+		"export_pdf": "Export as PDF",
 		"import": "Import algorithms",
 		"reset": "Reset",
 		"next": "Next",
@@ -1576,6 +1577,10 @@
 				"title": "Train with your smart cube",
 				"desc": "Connect your smart cube via Bluetooth, execute the algorithm on the actual cube — and see instantly on screen whether you got it right. No more manual timing, no more checking algorithms in your head. Your cube becomes your coach, and every rep makes you faster and more accurate."
 			},
+			"trainer_pdf": {
+				"title": "Download all algorithms as PDF",
+				"desc": "Download all algorithms or just the ones you selected, with their alternatives, as a PDF."
+			},
 			"themes": {
 				"title": "6 exclusive themes",
 				"desc": "Cyberpunk's neon glow, Tokyo's night streets, Norman's clean minimalism, Save the Bees' warm tones, Night Owl's deep darkness, and The PhD Student's academic vibe — give your timer a completely new personality. Each theme transforms colors, backgrounds, and the entire atmosphere."
@@ -1862,6 +1867,10 @@
 			"trainer": {
 				"title": "Train with Your Smart Cube",
 				"desc": "Practice algorithms on your cube with instant feedback."
+			},
+			"trainer_pdf": {
+				"title": "Download All Algorithms as PDF",
+				"desc": "Download all algorithms or just the ones you selected, with their alternatives, as a PDF."
 			}
 		},
 		"highlights": {
@@ -1888,7 +1897,10 @@
 			"stats_customize": "Add, remove, and reorder modules",
 			"trainer_ble": "Bluetooth smart cube connection",
 			"trainer_feedback": "Instant feedback on algorithm accuracy",
-			"trainer_speed": "Get faster and more accurate every rep"
+			"trainer_speed": "Get faster and more accurate every rep",
+			"pdf_professional": "Professionally designed PDF output",
+			"pdf_alternatives": "Alternative algorithms included",
+			"pdf_stats": "Export all or selected algorithms"
 		}
 	},
 	"battle": {

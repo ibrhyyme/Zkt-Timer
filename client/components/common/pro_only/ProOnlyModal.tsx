@@ -19,6 +19,7 @@ const FEATURE_HIGHLIGHTS: Record<string, readonly string[]> = {
 	themes: ['themes_six', 'themes_colors', 'themes_atmosphere'],
 	stats: ['stats_blocks', 'stats_charts', 'stats_customize'],
 	trainer: ['trainer_ble', 'trainer_feedback', 'trainer_speed'],
+	trainer_pdf: ['pdf_professional', 'pdf_alternatives', 'pdf_stats'],
 };
 
 interface Props {
