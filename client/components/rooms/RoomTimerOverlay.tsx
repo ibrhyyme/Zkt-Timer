@@ -80,6 +80,7 @@ export default function RoomTimerOverlay({
     const [status, setStatus] = useState(STATUS.RESTING);
     const [time, setTime] = useState(0); // milliseconds
     const [startedAt, setStartedAt] = useState<number | null>(null);
+    const startedAtRef = useRef<number | null>(null);
     const [penalties, setPenalties] = useState<{
         inspection?: boolean;
         inspectionDNF?: boolean;
@@ -266,11 +267,14 @@ export default function RoomTimerOverlay({
         timerRef.current = setInterval(() => tickInspection(), 30);
     };
 
-    const startTiming = () => {
+    const startTiming = (startTs?: number) => {
         hapticImpact('light');
         setStatus(STATUS.TIMING);
         statusRef.current = STATUS.TIMING;
-        setStartedAt(now());
+        // Touch event timestamp varsa onu kullan (iOS IPC gecikmesi icin daha dogru)
+        const startNow = startTs ? (startTs - performance.timeOrigin) : now();
+        setStartedAt(startNow);
+        startedAtRef.current = startNow;
         setTime(0);
         if (timerRef.current) clearInterval(timerRef.current);
         timerRef.current = setInterval(() => tickTiming(), 33);
@@ -350,6 +354,7 @@ export default function RoomTimerOverlay({
         statusRef.current = STATUS.RESTING;
         setTime(0);
         setStartedAt(null);
+        startedAtRef.current = null;
         setPenalties({});
         setManualTimeInput('');
         setManualTimeError(false);
@@ -440,7 +445,7 @@ export default function RoomTimerOverlay({
     }, [timerType, isActive, stackmatId, connectStackmat, stackmatConnected]);
 
     // Keyboard/Touch timer controls
-    const simulateSpaceDown = useCallback(() => {
+    const simulateSpaceDown = useCallback((stopTs?: number) => {
         if (alreadySolvedThisRound) return;
 
         // STRICT timer type enforcement: Only keyboard mode allows keyboard/touch input
@@ -478,12 +483,18 @@ export default function RoomTimerOverlay({
                 // Timeout removed! logic moved to tickInspection for reliability
                 break;
 
-            case STATUS.TIMING:
+            case STATUS.TIMING: {
                 if (timerRef.current) clearInterval(timerRef.current);
                 hapticImpact('medium');
+                // Exact stop time: touch event timestamp veya performance.now() (33ms tick yerine)
+                const stopNow = stopTs ? (stopTs - performance.timeOrigin) : now();
+                if (startedAtRef.current !== null) {
+                    setTime(stopNow - startedAtRef.current);
+                }
                 setStatus(STATUS.SUBMITTING_DOWN);
                 statusRef.current = STATUS.SUBMITTING_DOWN;
                 break;
+            }
             case STATUS.MANUAL_INPUT:
                 // For manual mode with inspection: start inspection
                 if (effectiveInspection) {
@@ -499,7 +510,7 @@ export default function RoomTimerOverlay({
         keyIsDown.current = true;
     }, [alreadySolvedThisRound, timerType, effectiveInspection, stackmatConnected, ganTimerConnected, freezeTime]);
 
-    const simulateSpaceUp = useCallback(() => {
+    const simulateSpaceUp = useCallback((startTs?: number) => {
         if (alreadySolvedThisRound) return;
 
         // STRICT timer type enforcement
@@ -531,7 +542,7 @@ export default function RoomTimerOverlay({
                         if (timerRef.current) clearInterval(timerRef.current);
                         setStatus(STATUS.MANUAL_INPUT);
                     } else {
-                        startTiming();
+                        startTiming(startTs);
                     }
                 } else {
                     // Abort start
@@ -549,7 +560,7 @@ export default function RoomTimerOverlay({
                 } else if (effectiveInspection) {
                     startInspection();
                 } else {
-                    startTiming();
+                    startTiming(startTs);
                 }
                 break;
             case STATUS.INSPECTING_PRIMING:
@@ -558,7 +569,7 @@ export default function RoomTimerOverlay({
                     if (timerRef.current) clearInterval(timerRef.current);
                     setStatus(STATUS.MANUAL_INPUT);
                 } else {
-                    startTiming();
+                    startTiming(startTs);
                 }
                 break;
             case STATUS.SUBMITTING_DOWN:
@@ -750,6 +761,9 @@ export default function RoomTimerOverlay({
         };
 
         const handleTouchStart = (e: TouchEvent) => {
+            // Touch event timestamp: iki kaynaktan erkek olani kullan (iOS WKWebView IPC gecikmesi icin)
+            const eventTs = Math.round(Math.min(performance.timeOrigin + e.timeStamp, Date.now()));
+
             const target = e.target as HTMLElement;
 
             // Allow interaction with buttons, inputs, and scrollable areas
@@ -782,7 +796,7 @@ export default function RoomTimerOverlay({
             // If timer is running, stop immediately (no delay needed)
             if (currentStatus === STATUS.TIMING) {
                 if (e.cancelable) e.preventDefault();
-                simulateSpaceDown();
+                simulateSpaceDown(eventTs);
                 return;
             }
 
@@ -851,6 +865,9 @@ export default function RoomTimerOverlay({
             // This handles the case where a user accidentally touches with a 2nd finger and lifts one.
             if (e.touches.length > 0) return;
 
+            // Touch event timestamp: iki kaynaktan erkek olani kullan (iOS WKWebView IPC gecikmesi icin)
+            const eventTs = Math.round(Math.min(performance.timeOrigin + e.timeStamp, Date.now()));
+
             // Clear delay timeout
             if (touchDelayTimeoutRef.current) {
                 clearTimeout(touchDelayTimeoutRef.current);
@@ -858,7 +875,7 @@ export default function RoomTimerOverlay({
             }
 
             if (keyIsDown.current) {
-                simulateSpaceUp();
+                simulateSpaceUp(eventTs);
             }
             touchStartedRef.current = false;
             isTouchScrollingRef.current = false;
