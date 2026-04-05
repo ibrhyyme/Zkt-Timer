@@ -13,13 +13,14 @@ const resources = {
 	ru: { translation: ruTranslation },
 };
 
-export function createI18nInstance(lng: string = 'tr') {
+export function createI18nInstance(lng: string = 'en') {
 	const instance = i18n.createInstance();
 	instance.use(initReactI18next).init({
 		resources,
 		lng,
-		fallbackLng: 'tr',
+		fallbackLng: 'en',
 		supportedLngs: ['tr', 'en', 'es', 'ru'],
+		returnObjects: true,
 		interpolation: {
 			escapeValue: false,
 		},

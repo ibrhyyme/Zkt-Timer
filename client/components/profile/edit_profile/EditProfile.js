@@ -86,16 +86,19 @@ export default class EditProfile extends React.Component {
 			loading: true,
 		});
 
+		// Bos string'leri null'a cevir — profil alanlarini temizleyebilmek icin
+		const toNull = (v) => (v === '' || v === undefined ? null : v);
+
 		const input = {
-			bio,
-			three_method: threeMethod,
-			three_goal: threeGoal,
-			main_three_cube: mainThreeCube,
-			favorite_event: favoriteEvent,
-			twitch_link: twitchLink,
-			youtube_link: youtubeLink,
-			reddit_link: wcaProfileLink,
-			twitter_link: twitterLink,
+			bio: toNull(bio),
+			three_method: toNull(threeMethod),
+			three_goal: toNull(threeGoal),
+			main_three_cube: toNull(mainThreeCube),
+			favorite_event: toNull(favoriteEvent),
+			twitch_link: toNull(twitchLink),
+			youtube_link: toNull(youtubeLink),
+			reddit_link: toNull(wcaProfileLink),
+			twitter_link: toNull(twitterLink),
 		};
 
 		const query = gql`

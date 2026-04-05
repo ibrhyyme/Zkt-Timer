@@ -1,5 +1,6 @@
 import React, { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import { TFunction } from 'i18next';
 import Helmet from 'react-helmet';
 import { resourceUri } from '../../../util/storage';
 // process.env variables are defined by esbuild, no need to import process
@@ -12,34 +13,42 @@ interface Props {
 	children?: ReactNode;
 }
 
-export const DEFAULT_TITLE = 'Zkt-Timer | Türkiye\'nin #1 Zeka Küpü Timer Sitesi';
+export const DEFAULT_TITLE = "ZKT Timer | Online Rubik's Cube Timer & Speedcubing Platform";
 export const DEFAULT_DESCRIPTION =
-	"Türkiye'nin en gelişmiş zeka küpü timer sitesi! Rubik küp çözüm sürenizi ölçün, canlı mücadele odalarında yarışın, Türkiye rekorlarını takip edin. Speedcubing, 3x3, 2x2, 4x4 ve tüm WCA kategorileri. %100 Türkçe cubing platformu.";
-export const DEFAULT_KEYWORDS = 'zeka küpü, rubik küp, rubiks cube, küp timer, speedcubing, cubing türkiye, zeka küpü timer, rubik küp çözümü, 3x3 küp, 2x2 küp, 4x4 küp, WCA türkiye, zeka küpü yarışması, küp çözme, rubik türkiye, speedcubing türkiye, cubing timer, zeka küpü nasıl çözülür, rubik küp algoritma';
+	"The most advanced online Rubik's cube timer with live race rooms, algorithm trainer, smart cube support, and global leaderboards. All WCA events: 3x3, 2x2, 4x4, Pyraminx, Megaminx & more.";
+export const DEFAULT_KEYWORDS = "rubiks cube timer, cube timer, speedcubing timer, online cube timer, WCA timer, 3x3 timer, 2x2 timer, 4x4 timer, rubik cube, speedcubing, cubing, puzzle timer, zeka küpü timer, rubik küp, küp zamanlayıcı, кубик рубика таймер, спидкубинг, cronómetro cubo rubik, cubo rubik, مؤقت مكعب روبيك, rubik's cube solver, algorithm trainer, cube racing";
 export const DEFAULT_FEATURED_IMAGE = resourceUri('/images/zkt-logo.png');
 export const SITE_URL = 'https://zktimer.app';
 export const LOGO_URL = `${SITE_URL}/public/images/zkt-logo.png`;
 
+const OG_LOCALE_MAP: Record<string, string> = {
+	tr: 'tr_TR', en: 'en_US', es: 'es_ES', ru: 'ru_RU'
+};
+const LANG_CODE_MAP: Record<string, string> = {
+	tr: 'tr-TR', en: 'en-US', es: 'es-ES', ru: 'ru-RU'
+};
+
 // JSON-LD Schema for Google Sitelinks
-export const getStructuredData = (currentPath: string, finalTitle: string, finalDesc: string) => {
+export const getStructuredData = (currentPath: string, finalTitle: string, finalDesc: string, t: TFunction, lang: string) => {
+	const inLanguage = LANG_CODE_MAP[lang] || 'en-US';
+
 	// WebSite schema - enables sitelinks search box
 	const websiteSchema = {
 		'@context': 'https://schema.org',
 		'@type': 'WebSite',
-		'name': 'ZKT Timer - Zeka Küpü Timer',
+		'name': 'ZKT Timer',
 		'alternateName': [
-			'Zeka Küpü Türkiye Timer',
-			'Rubik Küp Timer',
-			'Rubiks Cube Timer Türkiye',
-			'Speedcubing Türkiye',
-			'Cubing Timer',
+			"Rubik's Cube Timer",
 			'Zeka Küpü Timer',
-			'Rubik Timer',
-			'ZKT Timer'
+			'Cronómetro Cubo Rubik',
+			'Таймер Кубика Рубика',
+			'مؤقت مكعب روبيك',
+			'Speedcubing Timer',
+			'Cubing Timer'
 		],
 		'url': SITE_URL,
-		'description': DEFAULT_DESCRIPTION,
-		'inLanguage': 'tr-TR',
+		'description': finalDesc,
+		'inLanguage': inLanguage,
 		'keywords': DEFAULT_KEYWORDS,
 		'potentialAction': {
 			'@type': 'SearchAction',
@@ -56,11 +65,11 @@ export const getStructuredData = (currentPath: string, finalTitle: string, final
 		'@context': 'https://schema.org',
 		'@type': 'Organization',
 		'name': 'ZKT Timer',
-		'alternateName': ['Zeka Küpü Türkiye', 'Rubik Küp Türkiye', 'Speedcubing Türkiye'],
+		'alternateName': ["Rubik's Cube Timer", 'Speedcubing Platform', 'Cubing Timer'],
 		'url': SITE_URL,
 		'logo': LOGO_URL,
 		'image': LOGO_URL,
-		'description': DEFAULT_DESCRIPTION,
+		'description': finalDesc,
 		'sameAs': [
 			'https://www.instagram.com/zekakuputurkiye',
 			'https://www.youtube.com/@zekakuputurkiye'
@@ -68,17 +77,18 @@ export const getStructuredData = (currentPath: string, finalTitle: string, final
 		'contactPoint': {
 			'@type': 'ContactPoint',
 			'contactType': 'customer support',
-			'availableLanguage': 'Turkish'
+			'availableLanguage': ['Turkish', 'English', 'Spanish', 'Russian']
 		}
 	};
 
 	// SoftwareApplication schema - helps Google understand this is a timer app
+	const featureList = t('seo.feature_list', { returnObjects: true });
 	const softwareSchema = {
 		'@context': 'https://schema.org',
 		'@type': 'WebApplication',
 		'name': 'ZKT Timer',
-		'alternateName': 'Zeka Küpü Timer',
-		'description': 'Türkiye\'nin en gelişmiş zeka küpü ve rubik küp timer uygulaması. Speedcubing timer\'ı.',
+		'alternateName': "Rubik's Cube Timer",
+		'description': t('seo.app_description'),
 		'url': SITE_URL,
 		'applicationCategory': 'GameApplication',
 		'applicationSubCategory': 'PuzzleGame',
@@ -87,18 +97,10 @@ export const getStructuredData = (currentPath: string, finalTitle: string, final
 		'offers': {
 			'@type': 'Offer',
 			'price': '0',
-			'priceCurrency': 'TRY'
+			'priceCurrency': 'USD'
 		},
-		'featureList': [
-			'Zeka küpü timer',
-			'Rubik küp timer',
-			'Canlı yarışma odaları',
-			'Türkiye sıralaması',
-			'Algoritma öğreticisi',
-			'Smart Cube desteği',
-			'Stackmat Timer desteği'
-		],
-		'inLanguage': 'tr-TR',
+		'featureList': Array.isArray(featureList) ? featureList : [],
+		'inLanguage': inLanguage,
 		'keywords': DEFAULT_KEYWORDS
 	};
 
@@ -111,35 +113,35 @@ export const getStructuredData = (currentPath: string, finalTitle: string, final
 				'@type': 'SiteNavigationElement',
 				'position': 1,
 				'name': 'Timer',
-				'description': 'Profesyonel zeka küpü timer\'ı',
+				'description': t('seo.nav_timer_desc'),
 				'url': `${SITE_URL}/timer`
 			},
 			{
 				'@type': 'SiteNavigationElement',
 				'position': 2,
-				'name': 'Canlı Yarışma Odaları',
-				'description': 'Arkadaşlarınla veya diğer küpçülerle canlı yarış.',
+				'name': t('seo.nav_rooms_name'),
+				'description': t('seo.nav_rooms_desc'),
 				'url': `${SITE_URL}/rooms`
 			},
 			{
 				'@type': 'SiteNavigationElement',
 				'position': 3,
-				'name': 'Türkiye Sıralaması',
-				'description': 'Türkiye\'nin en hızlı speedcuber listesi ve rekorları.',
+				'name': t('seo.nav_leaderboards_name'),
+				'description': t('seo.nav_leaderboards_desc'),
 				'url': `${SITE_URL}/community/leaderboards`
 			},
 			{
 				'@type': 'SiteNavigationElement',
 				'position': 4,
-				'name': 'Algoritma Eğitmeni',
-				'description': 'OLL, PLL ve ZBLL algoritmalarını interaktif öğren.',
+				'name': t('seo.nav_trainer_name'),
+				'description': t('seo.nav_trainer_desc'),
 				'url': `${SITE_URL}/trainer`
 			},
 			{
 				'@type': 'SiteNavigationElement',
 				'position': 5,
-				'name': 'Ücretsiz Kayıt Ol',
-				'description': 'İstatistiklerini bulutta sakla ve analiz et.',
+				'name': t('seo.nav_signup_name'),
+				'description': t('seo.nav_signup_desc'),
 				'url': `${SITE_URL}/signup`
 			}
 		]
@@ -153,7 +155,7 @@ export const getStructuredData = (currentPath: string, finalTitle: string, final
 			{
 				'@type': 'ListItem',
 				'position': 1,
-				'name': 'Ana Sayfa',
+				'name': t('seo.breadcrumb_home'),
 				'item': SITE_URL
 			},
 			{
@@ -165,83 +167,27 @@ export const getStructuredData = (currentPath: string, finalTitle: string, final
 		]
 	} : null;
 
-	// FAQPage schema - Sık Sorulan Sorular (Ana sayfada gösterilir)
-	const faqSchema = (currentPath === '/' || currentPath === '') ? {
+	// FAQPage schema - shown on homepage
+	const faqItems = t('seo.faq', { returnObjects: true });
+	const faqSchema = (currentPath === '/' || currentPath === '') && Array.isArray(faqItems) && faqItems.length > 0 ? {
 		'@context': 'https://schema.org',
 		'@type': 'FAQPage',
-		'mainEntity': [
-			{
-				'@type': 'Question',
-				'name': 'ZKT Timer nedir ve ne işe yarar?',
-				'acceptedAnswer': {
-					'@type': 'Answer',
-					'text': 'ZKT Timer, Türkiye\'nin en gelişmiş zeka küpü (Rubik Küp) timer platformudur. Speedcubing çözüm sürelerinizi milisaniye hassasiyetinde ölçer, WCA resmi scramble algoritmaları sunar, detaylı istatistikler ve performans analizi sağlar. Canlı yarış odaları, Türkiye sıralaması, akıllı küp desteği ve algoritma öğreticisi gibi profesyonel özellikler içerir.'
-				}
-			},
-			{
-				'@type': 'Question',
-				'name': 'ZKT Timer tamamen ücretsiz mi?',
-				'acceptedAnswer': {
-					'@type': 'Answer',
-					'text': 'Evet! ZKT Timer %100 ücretsiz bir platformdur. Tüm özellikler (timer, istatistikler, online yarışmalar, trainer, sıralamalar) sınırsız ve reklamsız olarak kullanılabilir. Premium veya ücretli abonelik sistemi yoktur. Hesap oluşturmak ve tüm özelliklere erişmek tamamen ücretsizdir.'
-				}
-			},
-			{
-				'@type': 'Question',
-				'name': 'Hangi zeka küpü türlerini destekler?',
-				'acceptedAnswer': {
-					'@type': 'Answer',
-					'text': 'ZKT Timer tüm WCA resmi kategorilerini destekler: 2x2x2, 3x3x3, 4x4x4, 5x5x5, 6x6x6, 7x7x7 küpler; Pyraminx, Megaminx, Skewb, Square-1, Clock; 3x3 One-Handed, 3x3 Blindfolded, 4x4 Blindfolded, 5x5 Blindfolded, 3x3 Multi-Blind, 3x3 Fewest Moves kategorileri mevcuttur. Her kategori için WCA resmi scramble algoritmaları kullanılır.'
-				}
-			},
-			{
-				'@type': 'Question',
-				'name': 'İnternet bağlantısı olmadan kullanabilir miyim?',
-				'acceptedAnswer': {
-					'@type': 'Answer',
-					'text': 'Evet! ZKT Timer Progressive Web App (PWA) teknolojisi sayesinde çevrimdışı çalışabilir. Tarayıcınızda "Ana ekrana ekle" seçeneği ile uygulamayı yükledikten sonra internet olmadan timer\'ı kullanabilir, solve kayıtları oluşturabilir ve istatistiklerinizi görüntüleyebilirsiniz. Verileriniz yerel veritabanında güvenle saklanır ve internet bağlantısı kurulduğunda otomatik olarak senkronize edilir.'
-				}
-			},
-			{
-				'@type': 'Question',
-				'name': 'WCA resmi bir timer mı?',
-				'acceptedAnswer': {
-					'@type': 'Answer',
-					'text': 'ZKT Timer, WCA (World Cube Association) resmi scramble algoritmalarını kullanan ve WCA kurallarına uygun olarak geliştirilmiş bir antrenman platformudur. Ancak resmi WCA yarışmalarında fiziksel Stackmat Timer kullanılması zorunludur. ZKT Timer, antrenman, pratik yapma, istatistik takibi ve online yarışmalar için idealdir. WCA resmi yarışmalara hazırlanmak için mükemmel bir araçtır.'
-				}
-			},
-			{
-				'@type': 'Question',
-				'name': 'Hangi cihazlarda çalışır?',
-				'acceptedAnswer': {
-					'@type': 'Answer',
-					'text': 'ZKT Timer tüm modern web tarayıcılarında (Chrome, Firefox, Safari, Edge) çalışır. Windows, macOS, Linux bilgisayarlar; Android ve iOS telefonlar/tabletler desteklenir. PWA olarak telefonunuza uygulama gibi yüklenebilir. Responsive tasarım sayesinde mobil, tablet ve masaüstü cihazlarda optimize deneyim sunar. Smart Cube (GAN, MoYu) ve Stackmat Timer ile de uyumludur.'
-				}
-			},
-			{
-				'@type': 'Question',
-				'name': 'Verilerim güvende mi?',
-				'acceptedAnswer': {
-					'@type': 'Answer',
-					'text': 'Evet, verileriniz güvendedir. Tüm solve kayıtları, istatistikler ve hesap bilgileri şifreli olarak saklanır. Verileriniz yedekleme amacıyla hem sunucuda hem de tarayıcınızın yerel veritabanında (IndexedDB) tutulur. Kişisel bilgileriniz üçüncü taraflarla paylaşılmaz. İstediğiniz zaman hesabınızı ve tüm verilerinizi silebilirsiniz. KVKK ve GDPR uyumlu veri işleme politikaları uygulanır.'
-				}
-			},
-			{
-				'@type': 'Question',
-				'name': 'Online yarışmalara nasıl katılabilirim?',
-				'acceptedAnswer': {
-					'@type': 'Answer',
-					'text': 'Online yarışmalara katılmak çok kolay! Ücretsiz hesap oluşturun, "Odalar" menüsünden açık yarış odalarına katılabilir veya arkadaşlarınızla özel oda oluşturabilirsiniz. Head-to-Head (bire bir) ve Elimination (eleme) formatlarında gerçek zamanlı yarışmalar düzenlenir. Ayrıca "Online" bölümünden canlı maçlara katılabilir ve Türkiye sıralamasında yerinizi alabilirsiniz. ELO puanlama sistemi ile rakiplerinizle adil bir şekilde eşleştirilirsiniz.'
-				}
+		'mainEntity': faqItems.map((item: { q: string; a: string }) => ({
+			'@type': 'Question',
+			'name': item.q,
+			'acceptedAnswer': {
+				'@type': 'Answer',
+				'text': item.a
 			}
-		]
+		}))
 	} : null;
 
 	return { websiteSchema, organizationSchema, softwareSchema, navigationSchema, breadcrumbSchema, faqSchema };
 };
 
 export default function Header(props: Props) {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
+	const lang = i18n.language || 'en';
 	const currentPath = props.path || '';
 	const fullUrl = `https://zktimer.app${currentPath}`;
 
@@ -306,7 +252,7 @@ export default function Header(props: Props) {
 	const shouldNoIndex = noIndexPaths.some((p) => currentPath.startsWith(p));
 
 	// Structured Data
-	const { websiteSchema, organizationSchema, softwareSchema, navigationSchema, breadcrumbSchema, faqSchema } = getStructuredData(currentPath, finalTitle, finalDesc);
+	const { websiteSchema, organizationSchema, softwareSchema, navigationSchema, breadcrumbSchema, faqSchema } = getStructuredData(currentPath, finalTitle, finalDesc, t, lang);
 
 	return (
 		<Helmet>
@@ -335,9 +281,9 @@ export default function Header(props: Props) {
 			<meta property="og:image:secure_url" content={secureImage} />
 			<meta property="og:image:width" content="1200" />
 			<meta property="og:image:height" content="630" />
-			<meta property="og:site_name" content="ZKT Timer - Zeka Küpü Timer" />
+			<meta property="og:site_name" content="ZKT Timer" />
 			<meta property="og:type" content="website" />
-			<meta property="og:locale" content="tr_TR" />
+			<meta property="og:locale" content={OG_LOCALE_MAP[lang] || 'en_US'} />
 
 			{/* JSON-LD Structured Data for Google Sitelinks */}
 			<script type="application/ld+json">

@@ -76,10 +76,22 @@
 		opacity: 0.3;
 	}
 
+	&__ranks {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 2px;
+	}
+
 	&__rank {
-		font-size: 0.8rem;
+		font-size: 0.75rem;
 		color: rgb(var(--text-color));
-		opacity: 0.7;
+		opacity: 0.5;
+
+		&--world {
+			opacity: 0.7;
+			font-weight: 600;
+		}
 	}
 
 	&__rank-icon {
@@ -99,18 +111,26 @@
 		}
 	}
 
-	// Responsive tasarım
+	// Responsive tasarım — kup turu yukarda, avg/single yan yana
 	@media (max-width: 768px) {
-		flex-direction: column;
-		gap: 15px;
+		flex-wrap: wrap;
+		gap: 0;
+
+		&__visual {
+			width: 100%;
+			min-width: unset;
+			padding: 0 0 10px;
+			border-bottom: 1px solid rgb(var(--border-color));
+			margin-bottom: 10px;
+		}
 
 		&__record-section {
+			flex: 1;
 			border-right: none;
-			border-bottom: 1px solid rgb(var(--border-color));
-			padding: 10px 0;
+			padding: 8px 10px;
 
-			&:last-child {
-				border-bottom: none;
+			&:first-of-type {
+				border-right: 1px solid rgb(var(--border-color));
 			}
 		}
 

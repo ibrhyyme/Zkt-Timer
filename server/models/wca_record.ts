@@ -16,6 +16,21 @@ export async function fetchAndSaveWcaRecords(user: InternalUserAccount, integrat
 		throw new Error('Failed to fetch WCA records');
 	}
 
+	// WCA person metadata'yi Integration'a kaydet
+	await prisma.integration.update({
+		where: { id: integration.id },
+		data: {
+			wca_country_iso2: wcaPerson.country_iso2 || null,
+			wca_competition_count: wcaPerson.competition_count ?? null,
+			wca_medal_gold: wcaPerson.medals?.gold ?? null,
+			wca_medal_silver: wcaPerson.medals?.silver ?? null,
+			wca_medal_bronze: wcaPerson.medals?.bronze ?? null,
+			wca_record_nr: wcaPerson.records?.national ?? null,
+			wca_record_cr: wcaPerson.records?.continental ?? null,
+			wca_record_wr: wcaPerson.records?.world ?? null,
+		},
+	});
+
 	const records: WcaRecord[] = [];
 	const supportedEvents = WcaApiService.getSupportedEvents();
 

@@ -1,67 +1,42 @@
 @import '../../../styles/config';
 
 .#{$namespace}-profile-about {
-	position: relative;
+	@include dark-glass(0.4, 12px, 0.08);
+	border-radius: 12px;
+	padding: 20px 24px;
+	margin-bottom: 20px;
 
-	&__edit {
-		position: absolute;
-		top: 0;
-		right: 0;
-	}
-
-	&__body {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(400px, auto));
-		grid-gap: 30px;
-		margin-top: 10px;
-
-		@media (max-width: 768px) {
-			grid-template-columns: 1fr;
-			grid-gap: 20px;
-		}
-	}
-
-	&__header {
-		>*:not(:last-child) {
-			margin-bottom: 10px;
-		}
+	@media (max-width: 768px) {
+		padding: 16px;
 	}
 
 	&__bio {
-		p {
-			color: rgb(var(--text-color));
-			font-size: 1.3rem;
-			opacity: 0.9;
-			line-height: 1.7rem;
-			margin-top: 10px;
+		color: rgb(var(--text-color));
+		font-size: 1.05rem;
+		line-height: 1.6;
+		margin: 0;
+		opacity: 0.85;
 
-			i {
-				font-style: italic;
-			}
+		&--empty {
+			font-style: italic;
+			opacity: 0.4;
 		}
 	}
 
-	&__details {
-		display: grid;
-		grid-gap: 10px;
-		grid-template-columns: 1fr 1fr;
-	}
-
-	&__detail-block {
-		padding: 10px;
-		border-radius: 4px;
-		box-sizing: border-box;
+	&__chips {
 		display: flex;
-		background-color: rgb(var(--module-color));
-		flex-direction: column;
-		align-items: flex-start;
+		flex-wrap: wrap;
+		gap: 8px;
+		margin-top: 14px;
+	}
 
-		>span {
-			display: table;
-			margin-top: 5px;
-			font-size: 1.3rem;
-			font-weight: 600;
-			color: rgb(var(--text-color));
-		}
+	&__chip {
+		padding: 6px 14px;
+		border-radius: 20px;
+		font-size: 0.85rem;
+		font-weight: 500;
+		background: rgba(var(--primary-color), 0.12);
+		color: rgb(var(--primary-color));
+		border: 1px solid rgba(var(--primary-color), 0.15);
 	}
 }

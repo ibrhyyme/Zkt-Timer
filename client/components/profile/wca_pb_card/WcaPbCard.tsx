@@ -104,9 +104,14 @@ export default function WcaPbCard(props: Props) {
 							<span className={b('time-value')}>{formatTime(record.average_record)}</span>
 							{getRankIcon(record.average_country_rank)}
 						</div>
-						{record.average_country_rank && (
-							<span className={b('rank')}>#{record.average_country_rank} Türkiye</span>
-						)}
+						<div className={b('ranks')}>
+							{record.average_world_rank && (
+								<span className={b('rank', { world: true })}>#{record.average_world_rank} {t('profile.wca_world_short')}</span>
+							)}
+							{record.average_country_rank && (
+								<span className={b('rank')}>#{record.average_country_rank} {t('profile.wca_country_short')}</span>
+							)}
+						</div>
 					</>
 				) : (
 					<span className={b('no-record')}>—</span>
@@ -122,9 +127,14 @@ export default function WcaPbCard(props: Props) {
 							<span className={b('time-value')}>{formatTime(record.single_record)}</span>
 							{getRankIcon(record.single_country_rank)}
 						</div>
-						{record.single_country_rank && (
-							<span className={b('rank')}>#{record.single_country_rank} Türkiye</span>
-						)}
+						<div className={b('ranks')}>
+							{record.single_world_rank && (
+								<span className={b('rank', { world: true })}>#{record.single_world_rank} {t('profile.wca_world_short')}</span>
+							)}
+							{record.single_country_rank && (
+								<span className={b('rank')}>#{record.single_country_rank} {t('profile.wca_country_short')}</span>
+							)}
+						</div>
 					</>
 				) : (
 					<span className={b('no-record')}>—</span>

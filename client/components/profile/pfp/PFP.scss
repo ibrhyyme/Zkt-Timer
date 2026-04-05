@@ -1,16 +1,23 @@
 .cd-pfp {
 	background-color: rgba(#eee, 0.3);
-	$pfpSize: 150px;
+	$pfpSize: 110px;
 
 	width: $pfpSize;
 	height: $pfpSize;
 	border-radius: 50%;
 	display: flex;
 	justify-content: center;
-	padding: 10px;
+	padding: 8px;
 	box-sizing: border-box;
 	align-items: center;
 	position: relative;
+
+	@media (max-width: 768px) {
+		$pfpMobile: 80px;
+		width: $pfpMobile;
+		height: $pfpMobile;
+		padding: 6px;
+	}
 
 	.cd-common-upload-cover {
 		border-radius: 50%;
