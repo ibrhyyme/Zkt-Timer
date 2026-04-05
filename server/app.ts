@@ -75,6 +75,23 @@ app.use(compression());
 app.use(bodyParser.json({ limit: '200mb' }));
 app.use(cookieParser());
 
+// iOS Capacitor: local asset'lerden yukleniyor, API cross-origin
+const CAPACITOR_ORIGINS = ['capacitor://localhost', 'ionic://localhost'];
+app.use((req, res, next) => {
+	const origin = req.headers.origin;
+	if (origin && CAPACITOR_ORIGINS.includes(origin)) {
+		res.setHeader('Access-Control-Allow-Origin', origin);
+		res.setHeader('Access-Control-Allow-Credentials', 'true');
+		res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+		res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Apollo-Require-Preflight, x-apollo-operation-name');
+		if (req.method === 'OPTIONS') {
+			res.sendStatus(204);
+			return;
+		}
+	}
+	next();
+});
+
 initWebhookListeners();
 exposeResourcesForSearchEngines();
 
