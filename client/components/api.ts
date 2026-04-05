@@ -30,27 +30,20 @@ export function initApollo() {
 	let fetchType: any;
 
 	let hostname = '';
-	let credentials: RequestCredentials = 'same-origin';
-
 	if (typeof window === 'undefined' && typeof process !== 'undefined') {
 		// SSR: dahili istekler için localhost kullan, dış ağ döngüsünden kaçın
 		const port = process.env.PORT || 3000;
 		hostname = `http://localhost:${port}`;
 		fetchType = nodeFetch as unknown as FetchType;
 	} else if (typeof window !== 'undefined') {
-		const { getApiBase } = require('../util/api-base');
-		const apiBase = getApiBase();
-		if (apiBase) {
-			// iOS native: local asset'lerden yukleniyor, API cross-origin
-			hostname = apiBase;
-			credentials = 'include';
-		} else {
-			hostname = window.location.origin;
-		}
+		// Both web browser and native app now share the same origin (https://zktimer.app)
+		// because capacitor.config.ts uses server.url to load directly from the remote server
+		hostname = window.location.origin;
 		fetchType = fetch as FetchType;
 	}
 
 	const uri = `${hostname}/graphql`;
+	const credentials = 'same-origin';
 	const link = createUploadLink({
 		credentials,
 		uri,

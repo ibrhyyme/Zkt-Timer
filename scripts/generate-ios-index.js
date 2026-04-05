@@ -1,7 +1,11 @@
 /**
- * iOS Capacitor icin dist/index.html olusturur.
- * iOS'ta server.url olmadigi icin local asset'lerden yuklenir.
- * SSR yok — React client-side render yapar.
+ * iOS offline bundle olusturur.
+ * Online'da sunucudan yuklenir, offline'da bu bundle fallback olarak kullanilir.
+ *
+ * Kullanim:
+ *   yarn build
+ *   node scripts/generate-ios-index.js
+ *   Cikan "offline-bundle" klasorunu Xcode projesine ekle (Add Files > Create folder reference)
  */
 
 const fs = require('fs');
@@ -32,9 +36,47 @@ const html = `<!DOCTYPE html>
 </html>`;
 
 const distDir = path.join(__dirname, '..', 'dist');
-if (!fs.existsSync(distDir)) {
-	fs.mkdirSync(distDir, { recursive: true });
+const bundleDir = path.join(distDir, 'offline-bundle');
+const publicDir = path.join(__dirname, '..', 'public');
+
+// offline-bundle klasorunu olustur
+if (fs.existsSync(bundleDir)) {
+	fs.rmSync(bundleDir, { recursive: true });
+}
+fs.mkdirSync(bundleDir, { recursive: true });
+
+// index.html olustur
+fs.writeFileSync(path.join(bundleDir, 'index.html'), html);
+
+// JS ve CSS kopyala
+const filesToCopy = [jsFile, cssFile, 'solver-worker.js', 'cross-solver-worker.js'];
+for (const file of filesToCopy) {
+	const src = path.join(distDir, file);
+	if (fs.existsSync(src)) {
+		fs.copyFileSync(src, path.join(bundleDir, file));
+	}
 }
 
-fs.writeFileSync(path.join(distDir, 'index.html'), html);
-console.log('[generate-ios-index] dist/index.html olusturuldu');
+// public/images kopyala (logo, ikonlar vs.)
+function copyDirSync(src, dest) {
+	if (!fs.existsSync(src)) return;
+	if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
+	const entries = fs.readdirSync(src, { withFileTypes: true });
+	for (const entry of entries) {
+		const srcPath = path.join(src, entry.name);
+		const destPath = path.join(dest, entry.name);
+		if (entry.isDirectory()) {
+			copyDirSync(srcPath, destPath);
+		} else {
+			fs.copyFileSync(srcPath, destPath);
+		}
+	}
+}
+
+const imagesDir = path.join(publicDir, 'images');
+if (fs.existsSync(imagesDir)) {
+	copyDirSync(imagesDir, path.join(bundleDir, 'public', 'images'));
+}
+
+console.log('[generate-ios-index] offline-bundle olusturuldu: dist/offline-bundle/');
+console.log('[generate-ios-index] Xcode\'a "offline-bundle" klasorunu ekle (Add Files > Create folder reference)');
