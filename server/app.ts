@@ -88,10 +88,11 @@ app.get('/.well-known/apple-app-site-association', (req, res) => {
 	res.sendFile('apple-app-site-association', {root: `${__dirname}/../public/.well-known`});
 });
 
-app.use('/dist', express.static(`${__dirname}/../dist`));
-app.use('/public', express.static(`${__dirname}/../public`));
-app.use(express.static(`${__dirname}/../public`, { index: false, redirect: false }));
-app.use('/public/uploads', express.static(`${__dirname}/../public/uploads`));
+// JS/CSS dosyalari deployment hash'li → uzun sureli cache guvenli
+app.use('/dist', express.static(`${__dirname}/../dist`, { maxAge: '1y', immutable: true }));
+app.use('/public', express.static(`${__dirname}/../public`, { maxAge: '1d' }));
+app.use(express.static(`${__dirname}/../public`, { index: false, redirect: false, maxAge: '1d' }));
+app.use('/public/uploads', express.static(`${__dirname}/../public/uploads`, { maxAge: '1d' }));
 
 mapPathToPage();
 

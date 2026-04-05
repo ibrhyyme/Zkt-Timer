@@ -55,9 +55,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             return
         }
 
-        print("[ZKT] Reloading with cache-busting request")
+        print("[ZKT] Reloading with cache-friendly request")
         var request = URLRequest(url: URL(string: "https://zktimer.app")!)
-        request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
+        request.cachePolicy = .returnCacheDataElseLoad
         webView.load(request)
     }
 
