@@ -77,7 +77,7 @@ export const mutateActions = {
 		);
 
 		const jwt = getJwtString(user);
-		res.cookie('session', jwt, {maxAge: 2147483647, httpOnly: true});
+		res.cookie('session', jwt, {maxAge: 2147483647, httpOnly: true, sameSite: 'none', secure: true});
 
 		return sanitizeUser(user);
 	},
