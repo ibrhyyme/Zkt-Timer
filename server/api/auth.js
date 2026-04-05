@@ -34,7 +34,9 @@ const mutateActions = {
 		// If false, set cookie for 1 year (also effectively forever for normal users unless they clear cookies)
 		const cookieOptions = {
 			httpOnly: true,
-			maxAge: remember ? 315360000000 : 31536000000 // 10 years vs 1 year
+			maxAge: remember ? 315360000000 : 31536000000, // 10 years vs 1 year
+			sameSite: 'none',
+			secure: true,
 		};
 
 		res.cookie('session', jwt, cookieOptions);
@@ -42,7 +44,7 @@ const mutateActions = {
 		return sanitizeUser(user);
 	},
 	logOut: async (_, params, { res, user }) => {
-		res.clearCookie('session');
+		res.clearCookie('session', { sameSite: 'none', secure: true });
 		return sanitizeUser(user);
 	},
 };

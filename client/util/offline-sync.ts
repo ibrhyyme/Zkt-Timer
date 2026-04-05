@@ -19,9 +19,11 @@ const MAX_RETRIES = 3;
  */
 async function isReallyOnline(): Promise<boolean> {
     try {
-        const res = await fetch('/graphql', {
+        const { getApiBase } = require('./api-base');
+        const apiBase = getApiBase();
+        const res = await fetch(`${apiBase}/graphql`, {
             method: 'POST',
-            credentials: 'same-origin',
+            credentials: apiBase ? 'include' : 'same-origin',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ query: '{ __typename }' }),
         });

@@ -54,6 +54,8 @@ export class WcaAuthResolver {
 					res.cookie('session', jwtToken, {
 						httpOnly: true,
 						maxAge: 315360000000,
+						sameSite: 'none' as const,
+						secure: true,
 					});
 
 					return {
@@ -74,6 +76,8 @@ export class WcaAuthResolver {
 				res.cookie('session', jwtToken, {
 					httpOnly: true,
 					maxAge: 315360000000,
+					sameSite: 'none' as const,
+					secure: true,
 				});
 
 				// Integration yoksa olustur
@@ -117,6 +121,8 @@ export class WcaAuthResolver {
 		res.cookie(WCA_PENDING_COOKIE, pendingToken, {
 			httpOnly: true,
 			maxAge: WCA_PENDING_EXPIRY * 1000,
+			sameSite: 'none' as const,
+			secure: true,
 		});
 
 		return {
@@ -212,12 +218,14 @@ export class WcaAuthResolver {
 		}
 
 		// 8. wca_pending cookie temizle + session cookie set et
-		res.clearCookie(WCA_PENDING_COOKIE);
+		res.clearCookie(WCA_PENDING_COOKIE, { sameSite: 'none' as const, secure: true });
 
 		const jwtToken = getJwtString(user);
 		res.cookie('session', jwtToken, {
 			httpOnly: true,
 			maxAge: 315360000000, // 10 yil
+			sameSite: 'none' as const,
+			secure: true,
 		});
 
 		notifyAdminsOfNewUser(user, 'wca').catch(err =>
