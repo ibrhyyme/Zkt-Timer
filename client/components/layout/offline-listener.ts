@@ -68,13 +68,18 @@ async function handleOnline() {
  * Service Worker register et
  */
 async function registerServiceWorker() {
+    console.log('[SW-DEBUG] serviceWorker in navigator:', 'serviceWorker' in navigator);
+    console.log('[SW-DEBUG] protocol:', window.location.protocol);
+    console.log('[SW-DEBUG] origin:', window.location.origin);
+
     if ('serviceWorker' in navigator) {
         try {
+            console.log('[SW-DEBUG] Registering /sw.js...');
             const registration = await navigator.serviceWorker.register('/sw.js', {
                 scope: '/',
             });
 
-            console.log('Service Worker registered:', registration.scope);
+            console.log('[SW-DEBUG] Registered:', registration.scope);
 
             // Güncelleme kontrolü
             registration.addEventListener('updatefound', () => {
