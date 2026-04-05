@@ -1023,7 +1023,8 @@ export default function RoomTimerOverlay({
         if (status === STATUS.TIMING && hideTimeWhenSolving) {
             return t('time_display.solve');
         }
-        return formatTime(time, dp);
+        const activeDp = (isMobile && status === STATUS.TIMING) ? 1 : dp;
+        return formatTime(time, activeDp);
     };
 
     // Get timer color based on status
@@ -1462,7 +1463,7 @@ export default function RoomTimerOverlay({
                                 </div>
                             ) : (
                                 <div className="room-timer-overlay__time">
-                                    {formatTime(smartElapsedTime, dp)}
+                                    {formatTime(smartElapsedTime, isMobile ? 1 : dp)}
                                 </div>
                             )}
                         </div>
