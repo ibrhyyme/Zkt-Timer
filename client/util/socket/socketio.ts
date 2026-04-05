@@ -1,11 +1,10 @@
 import {io, Socket} from 'socket.io-client';
 import {toastError} from '../toast';
 import {onVisibilityChange} from '../app-visibility';
-import {getApiBase} from '../api-base';
 
 const CLIENT_RECONNECT_BEFORE_ALERT_TIMEOUT_MS = 5000;
 
-let socket: Socket = io(getApiBase() || undefined);
+let socket: Socket = io();
 let initiated = false;
 let rooms = [];
 let backgroundTimer: ReturnType<typeof setTimeout> | null = null;
@@ -38,7 +37,7 @@ export function initSocketIO() {
 		return;
 	}
 
-	socket = io(getApiBase() || undefined, {
+	socket = io(null, {
 		forceNew: true,
 	});
 
