@@ -1,11 +1,12 @@
 import i18n from '../i18n/i18n';
 import { isNative } from './platform';
+import { getApiBase } from './api-base';
 
 const VERSION_KEY = 'zkt_app_version';
 
 async function checkForUpdate(): Promise<void> {
 	try {
-		const res = await fetch('/api/version', { cache: 'no-store' });
+		const res = await fetch(`${getApiBase()}/api/version`, { cache: 'no-store' });
 		if (!res.ok) return;
 
 		const { version } = await res.json();
