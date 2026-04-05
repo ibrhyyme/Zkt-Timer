@@ -84,6 +84,35 @@ export class IntegrationResolver {
 
 	@Authorized([Role.LOGGED_IN])
 	@Mutation(() => Integration)
+	async updateWcaVisibility(
+		@Ctx() context: GraphQLContext,
+		@Arg('showCompetitions', {nullable: true}) showCompetitions?: boolean,
+		@Arg('showMedals', {nullable: true}) showMedals?: boolean,
+		@Arg('showRecords', {nullable: true}) showRecords?: boolean,
+		@Arg('showRank', {nullable: true}) showRank?: boolean,
+		@Arg('showResults', {nullable: true}) showResults?: boolean
+	) {
+		const {user, prisma} = context;
+		const integration = await getIntegration(user, 'wca');
+		if (!integration) {
+			throw new GraphQLError(ErrorCode.FORBIDDEN, 'WCA account is not linked');
+		}
+
+		const data: any = {};
+		if (showCompetitions !== undefined) data.wca_show_competitions = showCompetitions;
+		if (showMedals !== undefined) data.wca_show_medals = showMedals;
+		if (showRecords !== undefined) data.wca_show_records = showRecords;
+		if (showRank !== undefined) data.wca_show_rank = showRank;
+		if (showResults !== undefined) data.wca_show_results = showResults;
+
+		return prisma.integration.update({
+			where: {id: integration.id},
+			data,
+		});
+	}
+
+	@Authorized([Role.LOGGED_IN])
+	@Mutation(() => Integration)
 	async deleteIntegration(
 		@Ctx() context: GraphQLContext,
 		@Arg('integrationType', () => IntegrationTypeSchema) integrationType: IntegrationType

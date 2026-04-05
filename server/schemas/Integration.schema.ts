@@ -33,6 +33,45 @@ export class Integration {
 	@Field(() => String, { nullable: true })
 	wca_id?: string;
 
+	@Field(() => String, { nullable: true })
+	wca_country_iso2?: string;
+
+	@Field(() => Number, { nullable: true })
+	wca_competition_count?: number;
+
+	@Field(() => Number, { nullable: true })
+	wca_medal_gold?: number;
+
+	@Field(() => Number, { nullable: true })
+	wca_medal_silver?: number;
+
+	@Field(() => Number, { nullable: true })
+	wca_medal_bronze?: number;
+
+	@Field(() => Number, { nullable: true })
+	wca_record_nr?: number;
+
+	@Field(() => Number, { nullable: true })
+	wca_record_cr?: number;
+
+	@Field(() => Number, { nullable: true })
+	wca_record_wr?: number;
+
+	@Field(() => Boolean, { nullable: true })
+	wca_show_competitions?: boolean;
+
+	@Field(() => Boolean, { nullable: true })
+	wca_show_medals?: boolean;
+
+	@Field(() => Boolean, { nullable: true })
+	wca_show_records?: boolean;
+
+	@Field(() => Boolean, { nullable: true })
+	wca_show_rank?: boolean;
+
+	@Field(() => Boolean, { nullable: true })
+	wca_show_results?: boolean;
+
 	@Field()
 	created_at: Date;
 

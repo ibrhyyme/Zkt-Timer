@@ -1,0 +1,143 @@
+@import '../../../styles/config';
+
+.#{$namespace}-wca-summary {
+	@include dark-glass(0.4, 12px, 0.08);
+	border-radius: 12px;
+	padding: 16px 20px;
+	margin-bottom: 20px;
+
+	&__header {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		margin-bottom: 14px;
+	}
+
+	&__logo {
+		width: 22px;
+		height: 22px;
+	}
+
+	&__wca-id {
+		font-size: 0.9rem;
+		font-weight: 600;
+		color: rgb(var(--primary-color));
+		text-decoration: none;
+		opacity: 0.9;
+
+		&:hover {
+			opacity: 1;
+			text-decoration: underline;
+		}
+	}
+
+	&__stats {
+		display: flex;
+		gap: 0;
+		flex-wrap: wrap;
+
+		@media (max-width: 768px) {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+		}
+	}
+
+	&__stat {
+		flex: 1;
+		text-align: center;
+		padding: 10px 8px;
+		min-width: 0;
+
+		&:not(:last-child) {
+			border-right: 1px solid rgba(var(--text-color), 0.06);
+		}
+
+		@media (max-width: 768px) {
+			&:nth-child(2) {
+				border-right: none;
+			}
+
+			&:nth-child(1),
+			&:nth-child(2) {
+				border-bottom: 1px solid rgba(var(--text-color), 0.06);
+			}
+		}
+	}
+
+	&__stat-value {
+		font-size: 1.3rem;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+		display: block;
+	}
+
+	&__stat-label {
+		font-size: 0.7rem;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+		color: rgb(var(--text-color));
+		opacity: 0.45;
+		margin-top: 4px;
+		display: block;
+	}
+
+	&__medals {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+	}
+
+	&__medal {
+		display: flex;
+		align-items: center;
+		gap: 3px;
+		font-size: 0.95rem;
+		font-weight: 700;
+
+		svg {
+			font-size: 1rem;
+		}
+
+		&--gold {
+			color: #FFD700;
+		}
+
+		&--silver {
+			color: #C0C0C0;
+		}
+
+		&--bronze {
+			color: #CD7F32;
+		}
+	}
+
+	&__records-list {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 6px;
+	}
+
+	&__record-badge {
+		font-size: 1rem;
+		font-weight: 700;
+		padding: 4px 12px;
+		border-radius: 10px;
+
+		&--wr {
+			background: rgba(#FFD700, 0.15);
+			color: #FFD700;
+		}
+
+		&--cr {
+			background: rgba(#3B82F6, 0.15);
+			color: #3B82F6;
+		}
+
+		&--nr {
+			background: rgba(#22C55E, 0.15);
+			color: #22C55E;
+		}
+	}
+}

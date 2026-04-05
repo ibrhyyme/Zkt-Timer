@@ -19,8 +19,9 @@ i18n
 	.use(initReactI18next)
 	.init({
 		resources,
-		fallbackLng: 'tr',
+		fallbackLng: 'en',
 		supportedLngs: ['tr', 'en', 'es', 'ru'],
+		returnObjects: true,
 		interpolation: {
 			escapeValue: false,
 		},
@@ -38,7 +39,7 @@ i18n
 // Client-side: update HTML lang attribute and set cookie for SSR
 const SUPPORTED_LANGS = ['tr', 'en', 'es', 'ru'];
 function resolveLang(lng: string): string {
-	return SUPPORTED_LANGS.find((s) => lng?.startsWith(s)) || 'tr';
+	return SUPPORTED_LANGS.find((s) => lng?.startsWith(s)) || 'en';
 }
 
 if (typeof document !== 'undefined') {

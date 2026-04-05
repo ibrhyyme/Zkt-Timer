@@ -1,7 +1,7 @@
 {
-  "name": "ZKT Timer - Zeka Küpü Timer",
+  "name": "ZKT Timer - Rubik's Cube Timer",
   "short_name": "ZKT Timer",
-  "description": "Türkiye'nin en gelişmiş zeka küpü ve rubik küp timer platformu. Profesyonel timer, canlı yarış odaları, akıllı küp desteği, detaylı istatistikler ve Türkiye sıralaması.",
+  "description": "The most advanced online Rubik's cube timer platform. Professional timer, live race rooms, smart cube support, detailed statistics, and global leaderboards.",
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
@@ -11,7 +11,7 @@
   "orientation": "portrait",
   "background_color": "#0F142B",
   "theme_color": "#0F142B",
-  "lang": "tr",
+  "lang": "en",
   "categories": ["games", "utilities", "sports"],
   "icons": [
     {

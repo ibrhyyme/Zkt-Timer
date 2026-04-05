@@ -13,7 +13,7 @@ import { Role } from '../middlewares/auth';
 import { sendPushToAll, sendPushToPlatforms } from '../services/push';
 
 function getLocale(context: GraphQLContext): string {
-	return context.req.cookies?.zkt_language || 'tr';
+	return context.req.cookies?.zkt_language || 'en';
 }
 
 function resolveLocale(announcement: any, lang: string) {

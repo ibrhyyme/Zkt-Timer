@@ -35,7 +35,7 @@ function safeStringify(object) {
 		.replace(/\u2029/g, '\\u2029');
 }
 
-function renderFullPage(html, helmet, preloadedState, lang: string = 'tr') {
+function renderFullPage(html, helmet, preloadedState, lang: string = 'en') {
 	let cleanState = JSON.stringify(preloadedState).replace(/</g, '\\u003c');
 	cleanState = safeStringify(cleanState);
 
@@ -57,7 +57,7 @@ function renderFullPage(html, helmet, preloadedState, lang: string = 'tr') {
 
 function createComponents(req, store) {
 	// Detect language from cookie for SSR
-	const lng = req.cookies?.zkt_language || 'tr';
+	const lng = req.cookies?.zkt_language || 'en';
 	const i18nInstance = createI18nInstance(lng);
 
 	const client = new ApolloClient({
@@ -94,9 +94,13 @@ function createComponents(req, store) {
 
 function appUseRouteForPage(routePath, route: PageContext) {
 	global.app.all(routePath, async (req, res) => {
-		// İlk ziyarette dil cookie'si yoksa tr olarak set et (Google bot dahil)
+		// İlk ziyarette dil cookie'si yoksa Accept-Language'dan tespit et
 		if (!req.cookies?.zkt_language) {
-			res.cookie('zkt_language', 'tr', { maxAge: 365 * 24 * 60 * 60 * 1000, path: '/' });
+			const acceptLang = req.headers['accept-language'] || '';
+			const preferred = ['en', 'es', 'ru', 'tr'].find(
+				(l) => acceptLang.toLowerCase().includes(l)
+			) || 'en';
+			res.cookie('zkt_language', preferred, { maxAge: 365 * 24 * 60 * 60 * 1000, path: '/' });
 		}
 
 		const store = createStore(reducers, {}, applyMiddleware(promise(), thunk));

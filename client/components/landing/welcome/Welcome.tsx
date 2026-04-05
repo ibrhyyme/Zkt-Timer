@@ -17,7 +17,7 @@ import { getStructuredData, SITE_URL, DEFAULT_KEYWORDS } from '../../layout/head
 export default function Welcome() {
 	const me = useMe();
 	const history = useHistory();
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 
 	useEffect(() => {
 		if (me) {
@@ -34,7 +34,8 @@ export default function Welcome() {
 	const desc = t('seo.home_description');
 	const ogImage = `${SITE_URL}/public/welcome/web/timer.jpeg`;
 
-	const { websiteSchema, organizationSchema, softwareSchema, navigationSchema, faqSchema } = getStructuredData('/', title, desc);
+	const lang = i18n.language || 'en';
+	const { websiteSchema, organizationSchema, softwareSchema, navigationSchema, faqSchema } = getStructuredData('/', title, desc, t, lang);
 
 	return (
 		<>
@@ -53,9 +54,9 @@ export default function Welcome() {
 				<meta property="og:image:width" content="1200" />
 				<meta property="og:image:height" content="630" />
 				<meta property="og:url" content={`${SITE_URL}/`} />
-				<meta property="og:site_name" content="ZKT Timer - Zeka Küpü Timer" />
+				<meta property="og:site_name" content="ZKT Timer" />
 				<meta property="og:type" content="website" />
-				<meta property="og:locale" content="tr_TR" />
+				<meta property="og:locale" content={lang === 'tr' ? 'tr_TR' : lang === 'es' ? 'es_ES' : lang === 'ru' ? 'ru_RU' : 'en_US'} />
 
 				{/* Twitter Card */}
 				<meta name="twitter:card" content="summary_large_image" />

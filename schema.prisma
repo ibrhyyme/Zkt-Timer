@@ -118,10 +118,23 @@ model Integration {
   auth_token      String
   refresh_token   String
   auth_expires_at BigInt
-  wca_id          String?
-  created_at      DateTime    @default(now())
-  user            UserAccount @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  wca_records     WcaRecord[]
+  wca_id                 String?
+  wca_country_iso2       String?
+  wca_competition_count  Int?
+  wca_medal_gold         Int?
+  wca_medal_silver       Int?
+  wca_medal_bronze       Int?
+  wca_record_nr          Int?
+  wca_record_cr          Int?
+  wca_record_wr          Int?
+  wca_show_competitions  Boolean     @default(true)
+  wca_show_medals        Boolean     @default(true)
+  wca_show_records       Boolean     @default(true)
+  wca_show_rank          Boolean     @default(true)
+  wca_show_results       Boolean     @default(false)
+  created_at             DateTime    @default(now())
+  user                   UserAccount @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  wca_records            WcaRecord[]
 
   @@index([user_id])
   @@map("integration")
@@ -182,6 +195,7 @@ model NotificationPreference {
   friend_request_accept Boolean     @default(true)
   created_at            DateTime    @default(now())
   marketing_emails      Boolean     @default(true)
+  membership_granted    Boolean     @default(true)
   user                  UserAccount @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([user_id])

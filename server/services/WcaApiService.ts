@@ -16,11 +16,28 @@ export interface WcaPersonalRecord {
 	};
 }
 
+export interface WcaMedals {
+	gold: number;
+	silver: number;
+	bronze: number;
+	total: number;
+}
+
+export interface WcaRecordCounts {
+	national: number;
+	continental: number;
+	world: number;
+	total: number;
+}
+
 export interface WcaPerson {
 	wca_id: string;
 	name: string;
 	country_iso2: string;
 	personal_records: Record<string, WcaPersonalRecord>;
+	competition_count: number;
+	medals: WcaMedals;
+	records: WcaRecordCounts;
 }
 
 export class WcaApiService {
@@ -175,5 +192,47 @@ export class WcaApiService {
 		};
 
 		return eventNames[eventCode] || eventCode;
+	}
+
+	/**
+	 * Fetch all competition results for a person
+	 */
+	static async fetchPersonResults(wcaId: string): Promise<any[]> {
+		try {
+			const response = await axios.get(`${this.BASE_URL}/persons/${wcaId}/results`);
+			return response.data || [];
+		} catch (error) {
+			console.error(`Failed to fetch WCA results for ${wcaId}:`, error.message);
+			return [];
+		}
+	}
+
+	/**
+	 * Fetch all competitions a person attended
+	 */
+	static async fetchPersonCompetitions(wcaId: string): Promise<any[]> {
+		try {
+			const response = await axios.get(`${this.BASE_URL}/persons/${wcaId}/competitions`);
+			return response.data || [];
+		} catch (error) {
+			console.error(`Failed to fetch WCA competitions for ${wcaId}:`, error.message);
+			return [];
+		}
+	}
+
+	/**
+	 * Map round type IDs to readable names
+	 */
+	static getRoundName(roundTypeId: string): string {
+		const roundNames: Record<string, string> = {
+			'1': 'First Round',
+			'2': 'Second Round',
+			'3': 'Third Round',
+			'f': 'Final',
+			'c': 'Combined Final',
+			'd': 'Combined First',
+			'e': 'Combined Second',
+		};
+		return roundNames[roundTypeId] || roundTypeId;
 	}
 }

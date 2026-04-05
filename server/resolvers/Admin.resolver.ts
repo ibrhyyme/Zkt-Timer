@@ -23,6 +23,7 @@ import {
 	updateUserAccountWithParams, publicUserInclude
 } from '../models/user_account';
 import { deleteAllPublishedSolves } from '../models/top_solve';
+import MembershipGrantedNotification from '../resources/notification_types/membership_granted';
 import { createBanLog, deactivateAllBanLogs } from '../models/ban_log';
 import { resolveReportsOfUserId } from './Report.resolver';
 import { PaginationArgsInput, AdminUserFiltersInput } from '../schemas/Pagination.schema';
@@ -208,6 +209,19 @@ export class AdminResolver {
 			pro_expires_at: isPro ? pro_expires_at : null,
 		});
 
+		if (isPro) {
+			try {
+				const notification = new MembershipGrantedNotification(
+					{user: targetUser, triggeringUser: context.user as unknown as UserAccount, sendEmail: true},
+					'pro',
+					pro_expires_at
+				);
+				await notification.send();
+			} catch (error) {
+				console.error('[MembershipNotification] Failed to send:', error);
+			}
+		}
+
 		return getUserById(userId);
 	}
 
@@ -230,6 +244,19 @@ export class AdminResolver {
 			is_premium: isPremium,
 			premium_expires_at: isPremium ? premium_expires_at : null,
 		});
+
+		if (isPremium) {
+			try {
+				const notification = new MembershipGrantedNotification(
+					{user: targetUser, triggeringUser: context.user as unknown as UserAccount, sendEmail: true},
+					'premium',
+					premium_expires_at
+				);
+				await notification.send();
+			} catch (error) {
+				console.error('[MembershipNotification] Failed to send:', error);
+			}
+		}
 
 		return getUserById(userId);
 	}

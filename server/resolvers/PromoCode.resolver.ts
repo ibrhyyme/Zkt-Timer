@@ -5,7 +5,8 @@ import GraphQLError from '../util/graphql_error';
 import {ErrorCode} from '../constants/errors';
 import {PromoCode, CreatePromoCodeInput, RedeemPromoCodeResult, PromoCodeRedemptionInfo} from '../schemas/PromoCode.schema';
 import {getPrisma} from '../database';
-import {updateUserAccountWithParams} from '../models/user_account';
+import {getUserById, updateUserAccountWithParams} from '../models/user_account';
+import MembershipGrantedNotification from '../resources/notification_types/membership_granted';
 
 @Resolver()
 export class PromoCodeResolver {
@@ -120,6 +121,21 @@ export class PromoCodeResolver {
 				is_premium: true,
 				premium_expires_at: expires_at,
 			});
+		}
+
+		// Uyelik bildirimi gonder
+		const user = await getUserById(userId);
+		if (user) {
+			try {
+				const notification = new MembershipGrantedNotification(
+					{user, triggeringUser: user, sendEmail: true},
+					promoCode.membership_type as 'pro' | 'premium',
+					expires_at
+				);
+				await notification.send();
+			} catch (error) {
+				console.error('[MembershipNotification] Failed to send:', error);
+			}
 		}
 
 		return {
