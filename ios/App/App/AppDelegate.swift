@@ -12,6 +12,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         FirebaseApp.configure()
         // iOS artik local asset'lerden yukleniyor, retry/offline fallback gereksiz
         print("[ZKT] didFinishLaunching - local assets mode")
+        return true
+    }
 
     func applicationWillResignActive(_ application: UIApplication) {
     }
