@@ -68,19 +68,21 @@ extension ZKTBridgeViewController: WKNavigationDelegate {
             NSURLErrorCannotFindHost,              // -1003
         ]
 
-        if offlineErrors.contains(nsError.code) {
-            print("[ZKT] Offline tespit edildi, fallback yukleniyor")
-            loadOfflinePage()
-        }
+        guard offlineErrors.contains(nsError.code) else { return }
+
+        // Hemen offline.html gostermek yerine, once WKWebView HTTP cache'inden yuklemeyi dene.
+        // returnCacheDataDontLoad: suresi dolmus olsa bile cache'teki veriyi kullan, network'e gitme.
+        print("[ZKT] Offline tespit edildi, cache'ten yukleme deneniyor")
+        var request = URLRequest(url: URL(string: "https://zktimer.app")!)
+        request.cachePolicy = .returnCacheDataDontLoad
+        webView.load(request)
     }
 
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-        let nsError = error as NSError
-        // Frame yükleme hatalarini da yakala
-        if nsError.code == NSURLErrorNotConnectedToInternet || nsError.code == NSURLErrorCannotConnectToHost {
-            if !hasLoadedSuccessfully {
-                loadOfflinePage()
-            }
+        // Cache'te de yoksa (ilk kurulum, hic acilmamis) → offline.html goster
+        if !hasLoadedSuccessfully {
+            print("[ZKT] Cache'te de bulunamadi, offline.html yukleniyor")
+            loadOfflinePage()
         }
     }
 }
