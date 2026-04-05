@@ -244,6 +244,11 @@ export default function Profile() {
 			const records = (res.data as any).wcaRecords || [];
 			setWcaRecords(records);
 
+			// PB yoksa ve WCA kaydi varsa varsayilan tab'i degistir
+			if (Object.keys(pbs || {}).length === 0 && records.length > 0) {
+				setRecordsTab('wca');
+			}
+
 			// Integration metadata'yi ilk record'dan al
 			if (records.length > 0 && records[0].integration) {
 				const int = records[0].integration;
@@ -252,6 +257,11 @@ export default function Profile() {
 				// WCA results verisini de burada cek (tab degisiminde remount olmasin)
 				if (int.wca_id && int.wca_show_results !== false) {
 					loadWcaResultsData(int.wca_id);
+				}
+
+				// PB ve WCA kaydi yoksa ama results varsa
+				if (Object.keys(pbs || {}).length === 0 && records.length === 0 && int.wca_id && int.wca_show_results !== false) {
+					setRecordsTab('results');
 				}
 			}
 		} catch (error) {
@@ -393,15 +403,6 @@ export default function Profile() {
 	// Varsayilan tab: PB yoksa WCA'ya, WCA da yoksa results'a gec
 	const hasResults = wcaIntegration?.wca_id && wcaIntegration.wca_show_results !== false;
 	const showTabs = pbCards.length > 0 || wcaCards.length > 0 || hasResults;
-	const pbCount_ = pbCards.length;
-	const wcaCount_ = wcaCards.length;
-
-	// Varsayilan tab'i ayarla (sadece wcaRecords yuklendiginde bir kere)
-	useEffect(() => {
-		if (pbCount_ > 0) return;
-		if (wcaCount_ > 0) { setRecordsTab('wca'); return; }
-		if (hasResults) { setRecordsTab('results'); return; }
-	}, [wcaRecords]);
 
 	let recordsSection = null;
 	if (showTabs) {
