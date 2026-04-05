@@ -58,11 +58,16 @@ export function setSmartCubeClockSkew(skew: number) {
 }
 
 export function startTimer(smartStartTimestamp?: number, touchTimestamp?: number) {
-	const timeStartedAt = smartStartTimestamp
-		? new Date(smartStartTimestamp)
-		: touchTimestamp
-			? new Date(touchTimestamp)
-			: new Date();
+	const now = Date.now();
+	let timeStartedAt: Date;
+
+	if (smartStartTimestamp) {
+		timeStartedAt = new Date(smartStartTimestamp);
+	} else if (touchTimestamp && (now - touchTimestamp) < 2000) {
+		timeStartedAt = new Date(touchTimestamp);
+	} else {
+		timeStartedAt = new Date(now);
+	}
 	_smartSolveEndTime = null;
 	_timerEndFinalTime = null;
 	hapticImpact('light');
@@ -105,7 +110,8 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 	endLocked = true;
 	let finalTime = finalTimeMilli;
 
-	const now = endTimestamp || Date.now();
+	const currentTime = Date.now();
+	const now = (endTimestamp && (currentTime - endTimestamp) < 2000) ? endTimestamp : currentTime;
 
 	if (!finalTimeMilli) {
 		finalTime = now - timeStartedAt.getTime();
