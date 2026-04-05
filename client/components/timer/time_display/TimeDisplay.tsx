@@ -203,7 +203,7 @@ export default function TimeDisplay() {
 			timeStr = Math.ceil(inspectionTimer - 2).toString();
 		}
 	} else {
-		timeStr = getTimeString(time);
+		timeStr = getTimeString(time, (mobileMode && solving) ? 1 : undefined);
 	}
 
 	if (dnfTime && inInspection) {
