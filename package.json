@@ -14,9 +14,7 @@
 		"compile-client": "babel client --out-dir ./build/client --extensions \".ts,.js,.jsx,.tsx\" -s --config-file ./prod.babelrc",
 		"compile-shared": "babel shared --out-dir ./build/shared --extensions \".ts,.js,.jsx,.tsx\" -s --config-file ./prod.babelrc",
 		"stamp-sw": "node -e \"const fs=require('fs');const f='public/sw.js';const s=fs.readFileSync(f,'utf8');fs.writeFileSync(f,s.replace('__DEPLOY_VERSION__',process.env.RELEASE_NAME||Date.now().toString()));\"",
-		"deploy": "graphql-codegen && yarn build && yarn stamp-sw && yarn compile-server && yarn compile-client && yarn compile-shared",
-		"cap-sync-ios": "yarn build && node scripts/generate-ios-index.js && npx cap sync ios",
-		"cap-sync-android": "node scripts/generate-ios-index.js && npx cap sync android && node scripts/fix-android-config.js"
+		"deploy": "graphql-codegen && yarn build && yarn stamp-sw && yarn compile-server && yarn compile-client && yarn compile-shared"
 	},
 	"engines": {
 		"node": "20.x"
