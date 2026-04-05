@@ -363,7 +363,7 @@ export default function Profile() {
 			topRecord = pb.average;
 		}
 
-		pbCards.push(<PbCard key={pb.single.id} solves={solves} topRecord={topRecord} user={user} />);
+		pbCards.push(<PbCard key={pb.single?.id || pb.average?.id || ct} solves={solves} topRecord={topRecord} user={user} />);
 	}
 
 	const myProfile = user.id === me?.id;
@@ -393,13 +393,15 @@ export default function Profile() {
 	// Varsayilan tab: PB yoksa WCA'ya, WCA da yoksa results'a gec
 	const hasResults = wcaIntegration?.wca_id && wcaIntegration.wca_show_results !== false;
 	const showTabs = pbCards.length > 0 || wcaCards.length > 0 || hasResults;
+	const pbCount_ = pbCards.length;
+	const wcaCount_ = wcaCards.length;
 
-	// Varsayilan tab'i ayarla (bir kere, data yuklendikten sonra)
+	// Varsayilan tab'i ayarla (sadece wcaRecords yuklendiginde bir kere)
 	useEffect(() => {
-		if (pbCards.length > 0) return; // PB varsa pb tab'inda kal
-		if (wcaCards.length > 0) { setRecordsTab('wca'); return; }
+		if (pbCount_ > 0) return;
+		if (wcaCount_ > 0) { setRecordsTab('wca'); return; }
 		if (hasResults) { setRecordsTab('results'); return; }
-	}, [pbCards.length, wcaCards.length, hasResults]);
+	}, [wcaRecords]);
 
 	let recordsSection = null;
 	if (showTabs) {
