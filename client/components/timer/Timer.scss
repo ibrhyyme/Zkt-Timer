@@ -366,13 +366,14 @@
 		gap: 0.5rem;
 
 		&--manual {
-			overflow-y: hidden;
+			overflow-y: auto;
 			overscroll-behavior: none;
-			touch-action: pan-x;
-			gap: 0.15rem;
+			touch-action: pan-x pan-y;
+			gap: 0.5rem;
 
 			.cd-mobile-timer-scramble {
-				min-height: auto;
+				flex: 0 0 auto;
+				min-height: 60px;
 			}
 
 		}
@@ -405,7 +406,7 @@
 		}
 
 		&--manual {
-			padding: 0.5vh 0;
+			padding: 1.5vh 0;
 			min-height: auto;
 		}
 	}

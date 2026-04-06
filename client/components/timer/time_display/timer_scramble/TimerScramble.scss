@@ -138,6 +138,7 @@
 		}
 
 		>span {
+			-webkit-text-fill-color: rgb(var(--text-color));
 			color: inherit;
 			line-height: inherit;
 			font-family: inherit;
@@ -156,14 +157,17 @@
 
 		&--green {
 			color: $primaryGreen !important;
+			-webkit-text-fill-color: $primaryGreen;
 		}
 
 		&--red {
 			color: $primaryRed !important;
+			-webkit-text-fill-color: $primaryRed;
 		}
 
 		&--orange {
 			color: $primaryOrange !important;
+			-webkit-text-fill-color: $primaryOrange;
 		}
 
 		&--smart {
@@ -190,6 +194,7 @@
 	}
 
 	&__turn {
+		-webkit-text-fill-color: rgb(var(--text-color));
 		color: inherit;
 		line-height: inherit;
 		font-family: inherit;
@@ -204,14 +209,17 @@
 
 		&--green {
 			color: $primaryGreen !important;
+			-webkit-text-fill-color: $primaryGreen;
 		}
 
 		&--red {
 			color: $primaryRed !important;
+			-webkit-text-fill-color: $primaryRed;
 		}
 
 		&--orange {
 			color: $primaryOrange !important;
+			-webkit-text-fill-color: $primaryOrange;
 		}
 	}
 

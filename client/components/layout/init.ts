@@ -12,7 +12,7 @@ import { Dispatch } from 'redux';
 import { addFriendships } from '../../actions/account';
 import { clearOfflineData, initOfflineData, updateOfflineHash } from './offline';
 import { initSettingsDb, SettingValue } from '../../db/settings/init';
-import { getDefaultSettings } from '../../db/settings/query';
+import { getDefaultSettings, viewportDependentKeys, isMobileViewport, AllSettings } from '../../db/settings/query';
 import { getLokiDb, initLokiDb } from '../../db/lokijs';
 import { appendSolvesToDb, getSolveDb, initSolveDb, initSolvesCollection } from '../../db/solves/init';
 import { getNewScramble } from '../timer/helpers/scramble';
@@ -527,8 +527,16 @@ async function getAllSettings(userId: string) {
 		};
 
 		if (key in backendSettings) {
-			setting.value = backendSettings[key];
-			setting.local = false;
+			// Mobilde viewport-dependent ayarlari backend'den alma — cihaza ozel kalsin
+			if (isMobileViewport() && viewportDependentKeys.has(key as keyof AllSettings)) {
+				if (localSettings[key] !== undefined && localSettings[key] !== null) {
+					setting.value = localSettings[key];
+				}
+				// else: mobile-aware default zaten yuklendi (getDefaultSettings'ten)
+			} else {
+				setting.value = backendSettings[key];
+				setting.local = false;
+			}
 		} else if (localSettings[key] !== undefined && localSettings[key] !== null) {
 			setting.value = localSettings[key];
 		}
