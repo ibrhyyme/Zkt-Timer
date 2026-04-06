@@ -308,6 +308,9 @@ type Query {
   trainerAlternatives(category: String!, caseName: String!): [TrainerAlternative!]!
   adminTrainerAlternatives(category: String, page: Int = 0, pageSize: Int = 25): PaginatedTrainerAlternatives!
   wcaCompetitions(filter: WcaCompetitionFilterInput): [WcaCompetition!]!
+  wcaSearchCompetitions(query: String!): [WcaCompetition!]!
+  myWcaCompetitions: [WcaCompetition!]!
+  wcaCompetitionDetail(input: WcaScheduleInput!): WcaCompetitionDetail
 }
 
 type Mutation {
@@ -1564,4 +1567,144 @@ type WcaCompetition {
 
 input WcaCompetitionFilterInput {
   country_iso2: String
+}
+
+type WcaScheduleAssignment {
+  activityCode: String!
+  eventName: String!
+  roundNumber: Int!
+  groupNumber: Int
+  assignmentCode: String!
+  startTime: String!
+  endTime: String!
+  roomName: String!
+  roomColor: String
+  venueName: String!
+  stationNumber: Int
+}
+
+type WcaScheduleDay {
+  date: String!
+  assignments: [WcaScheduleAssignment!]!
+}
+
+type WcaCompetitorAssignment {
+  activityCode: String!
+  eventName: String!
+  roundNumber: Int!
+  groupNumber: Int
+  assignmentCode: String!
+  startTime: String
+  endTime: String
+  stationNumber: Int
+  roomName: String
+}
+
+type WcaPersonalBest {
+  eventId: String!
+  type: String!
+  best: Int!
+  worldRanking: Int!
+  continentalRanking: Int!
+  nationalRanking: Int!
+}
+
+type WcaCompetitor {
+  name: String!
+  wcaId: String
+  country: String
+  avatar: String
+  registrantId: Int!
+  wcaUserId: Int
+  registeredEvents: [String!]!
+  assignments: [WcaCompetitorAssignment!]!
+  personalBests: [WcaPersonalBest!]!
+}
+
+type WcaGroupCompetitor {
+  name: String!
+  wcaId: String
+  registrantId: Int!
+  assignmentCode: String!
+  seedResult: Int
+}
+
+type WcaGroup {
+  groupNumber: Int!
+  activityCode: String
+  competitors: [WcaGroupCompetitor!]!
+  startTime: String
+  endTime: String
+}
+
+type WcaRound {
+  roundNumber: Int!
+  format: String
+  timeLimit: Int
+  cutoff: Int
+  cutoffAttempts: Int
+  advancementType: String
+  advancementLevel: Int
+  groups: [WcaGroup!]!
+}
+
+type WcaEventDetail {
+  eventId: String!
+  eventName: String!
+  rounds: [WcaRound!]!
+}
+
+type WcaRankingRow {
+  name: String!
+  wcaId: String
+  registrantId: Int!
+  eventId: String!
+  single: Int
+  average: Int
+  singleWorldRank: Int
+  averageWorldRank: Int
+}
+
+type WcaVenueInfo {
+  name: String!
+  address: String
+  city: String
+}
+
+type WcaPersonInfo {
+  name: String!
+  wcaId: String
+  role: String!
+  avatar: String
+}
+
+type WcaCompetitionInfo {
+  venues: [WcaVenueInfo!]!
+  organizers: [WcaPersonInfo!]!
+  delegates: [WcaPersonInfo!]!
+  wcaUrl: String
+}
+
+type WcaLiveCompetitor {
+  wcaId: String!
+  liveId: String!
+}
+
+type WcaCompetitionDetail {
+  competitionId: String!
+  competitionName: String!
+  myWcaId: String
+  myRegistrationStatus: String
+  myRegisteredEvents: [String!]!
+  competitors: [WcaCompetitor!]!
+  events: [WcaEventDetail!]!
+  schedule: [WcaScheduleDay!]!
+  allPersonalBests: [WcaRankingRow!]!
+  wcaLiveCompId: String
+  wcaLiveCompetitors: [WcaLiveCompetitor!]!
+  info: WcaCompetitionInfo!
+}
+
+input WcaScheduleInput {
+  competitionId: String!
 }

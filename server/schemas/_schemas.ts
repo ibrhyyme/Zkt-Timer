@@ -30,4 +30,5 @@ export * from './DailyGoal.schema';
 export * from './WcaCompetition.schema';
 export * from './WcaOAuthResult.schema';
 export * from './WcaResult.schema';
+export * from './WcaSchedule.schema';
 export * from './PromoCode.schema';

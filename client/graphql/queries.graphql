@@ -118,6 +118,145 @@ query wcaCompetitions($filter: WcaCompetitionFilterInput) {
 	}
 }
 
+query wcaSearchCompetitions($query: String!) {
+	wcaSearchCompetitions(query: $query) {
+		id
+		name
+		city
+		country_iso2
+		start_date
+		end_date
+		url
+	}
+}
+
+query myWcaCompetitions {
+	myWcaCompetitions {
+		id
+		name
+		city
+		country_iso2
+		start_date
+		end_date
+		url
+	}
+}
+
+query wcaCompetitionDetail($input: WcaScheduleInput!) {
+	wcaCompetitionDetail(input: $input) {
+		competitionId
+		competitionName
+		myWcaId
+		myRegistrationStatus
+		myRegisteredEvents
+		competitors {
+			name
+			wcaId
+			country
+			avatar
+			registrantId
+			wcaUserId
+			registeredEvents
+			assignments {
+				activityCode
+				eventName
+				roundNumber
+				groupNumber
+				assignmentCode
+				startTime
+				endTime
+				stationNumber
+				roomName
+			}
+			personalBests {
+				eventId
+				type
+				best
+				worldRanking
+				continentalRanking
+				nationalRanking
+			}
+		}
+		events {
+			eventId
+			eventName
+			rounds {
+				roundNumber
+				format
+				timeLimit
+				cutoff
+				cutoffAttempts
+				advancementType
+				advancementLevel
+				groups {
+					groupNumber
+					activityCode
+					startTime
+					endTime
+					competitors {
+						name
+						wcaId
+						registrantId
+						assignmentCode
+						seedResult
+					}
+				}
+			}
+		}
+		schedule {
+			date
+			assignments {
+				activityCode
+				eventName
+				roundNumber
+				groupNumber
+				assignmentCode
+				startTime
+				endTime
+				roomName
+				roomColor
+				venueName
+				stationNumber
+			}
+		}
+		allPersonalBests {
+			name
+			wcaId
+			registrantId
+			eventId
+			single
+			average
+			singleWorldRank
+			averageWorldRank
+		}
+		wcaLiveCompId
+		wcaLiveCompetitors {
+			wcaId
+			liveId
+		}
+		info {
+			venues {
+				name
+				address
+				city
+			}
+			organizers {
+				name
+				wcaId
+				role
+				avatar
+			}
+			delegates {
+				name
+				wcaId
+				role
+				avatar
+			}
+			wcaUrl
+		}
+	}
+}
+
 query adminTrainerAlternatives($category: String, $page: Int, $pageSize: Int) {
 	adminTrainerAlternatives(category: $category, page: $page, pageSize: $pageSize) {
 		items {

@@ -116,12 +116,16 @@ export class WcaApiService {
 	 */
 	static async fetchUpcomingCompetitions(countryIso2?: string): Promise<any[]> {
 		try {
-			const today = new Date().toISOString().split('T')[0];
+			// Bu ayin basindan itibaren cek (bitmis ama bu aydaki yarismalar da gorunsun)
+			const now = new Date();
+			const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+			const startFrom = monthStart.toISOString().split('T')[0];
+
 			const PER_PAGE = 100;
 			const MAX_PAGES = 5;
 
 			const baseParams: Record<string, any> = {
-				start: today,
+				start: startFrom,
 				sort: 'start_date',
 				per_page: PER_PAGE,
 			};
@@ -192,6 +196,59 @@ export class WcaApiService {
 		};
 
 		return eventNames[eventCode] || eventCode;
+	}
+
+	/**
+	 * Fetch public WCIF data for a competition
+	 */
+	static async fetchCompetitionWcif(competitionId: string): Promise<any | null> {
+		try {
+			const response = await axios.get(`${this.BASE_URL}/competitions/${competitionId}/wcif/public`, {
+				timeout: 15000,
+			});
+			return response.data;
+		} catch (error) {
+			console.error(`Failed to fetch WCIF for competition ${competitionId}:`, error.message);
+			return null;
+		}
+	}
+
+	/**
+	 * Fetch user's registered competitions using OAuth token
+	 * Uses /api/v0/competitions/mine endpoint
+	 */
+	static async fetchMyCompetitions(authToken: string): Promise<any[]> {
+		try {
+			const response = await axios.get(`${this.BASE_URL}/competitions/mine`, {
+				headers: {Authorization: `Bearer ${authToken}`},
+				timeout: 15000,
+			});
+			const data = response.data;
+			const comps = [
+				...(data?.future_competitions || []),
+				...(data?.ongoing_competitions || []),
+			];
+			return comps.filter((c: any) => !c['cancelled?']);
+		} catch (error) {
+			console.error('Failed to fetch my competitions:', error.message);
+			return [];
+		}
+	}
+
+	/**
+	 * Search WCA competitions by name (includes past competitions)
+	 */
+	static async searchCompetitions(query: string): Promise<any[]> {
+		try {
+			const response = await axios.get(`${this.BASE_URL}/competitions`, {
+				params: {q: query, sort: '-start_date', per_page: 25},
+				timeout: 15000,
+			});
+			return (response.data || []).filter((c: any) => !c.cancelled_at);
+		} catch (error) {
+			console.error(`Failed to search WCA competitions:`, error.message);
+			return [];
+		}
 	}
 
 	/**

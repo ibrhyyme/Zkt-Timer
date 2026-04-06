@@ -1407,6 +1407,7 @@ export type Query = {
   membership?: Maybe<Membership>;
   membershipOptions?: Maybe<MembershipOptions>;
   myEloLeaderboardsPosition?: Maybe<Scalars['Int']>;
+  myWcaCompetitions: Array<WcaCompetition>;
   myWcaRecords?: Maybe<Array<Maybe<WcaRecord>>>;
   notificationPreferences?: Maybe<NotificationPreference>;
   notifications?: Maybe<Array<Maybe<Notification>>>;
@@ -1428,9 +1429,11 @@ export type Query = {
   trainerAlternatives: Array<TrainerAlternative>;
   unreadNotificationCount?: Maybe<Scalars['Int']>;
   userSearch?: Maybe<PaginatedUserAccounts>;
+  wcaCompetitionDetail?: Maybe<WcaCompetitionDetail>;
   wcaCompetitions: Array<WcaCompetition>;
   wcaMe?: Maybe<WcaAccount>;
   wcaRecords?: Maybe<Array<Maybe<WcaRecord>>>;
+  wcaSearchCompetitions: Array<WcaCompetition>;
 };
 
 
@@ -1590,6 +1593,11 @@ export type QueryUserSearchArgs = {
 };
 
 
+export type QueryWcaCompetitionDetailArgs = {
+  input: WcaScheduleInput;
+};
+
+
 export type QueryWcaCompetitionsArgs = {
   filter?: InputMaybe<WcaCompetitionFilterInput>;
 };
@@ -1597,6 +1605,11 @@ export type QueryWcaCompetitionsArgs = {
 
 export type QueryWcaRecordsArgs = {
   userId?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryWcaSearchCompetitionsArgs = {
+  query: Scalars['String'];
 };
 
 export type RegisterPushTokenInput = {
@@ -2098,8 +2111,119 @@ export type WcaCompetition = {
   venue: Scalars['String'];
 };
 
+export type WcaCompetitionDetail = {
+  __typename?: 'WcaCompetitionDetail';
+  allPersonalBests: Array<WcaRankingRow>;
+  competitionId: Scalars['String'];
+  competitionName: Scalars['String'];
+  competitors: Array<WcaCompetitor>;
+  events: Array<WcaEventDetail>;
+  info: WcaCompetitionInfo;
+  myRegisteredEvents: Array<Scalars['String']>;
+  myRegistrationStatus?: Maybe<Scalars['String']>;
+  myWcaId?: Maybe<Scalars['String']>;
+  schedule: Array<WcaScheduleDay>;
+  wcaLiveCompetitors: Array<WcaLiveCompetitor>;
+  wcaLiveCompId?: Maybe<Scalars['String']>;
+};
+
 export type WcaCompetitionFilterInput = {
   country_iso2?: InputMaybe<Scalars['String']>;
+};
+
+export type WcaCompetitionInfo = {
+  __typename?: 'WcaCompetitionInfo';
+  delegates: Array<WcaPersonInfo>;
+  organizers: Array<WcaPersonInfo>;
+  venues: Array<WcaVenueInfo>;
+  wcaUrl?: Maybe<Scalars['String']>;
+};
+
+export type WcaCompetitor = {
+  __typename?: 'WcaCompetitor';
+  assignments: Array<WcaCompetitorAssignment>;
+  avatar?: Maybe<Scalars['String']>;
+  country?: Maybe<Scalars['String']>;
+  name: Scalars['String'];
+  personalBests: Array<WcaPersonalBest>;
+  registeredEvents: Array<Scalars['String']>;
+  registrantId: Scalars['Int'];
+  wcaId?: Maybe<Scalars['String']>;
+  wcaUserId?: Maybe<Scalars['Int']>;
+};
+
+export type WcaCompetitorAssignment = {
+  __typename?: 'WcaCompetitorAssignment';
+  activityCode: Scalars['String'];
+  assignmentCode: Scalars['String'];
+  endTime?: Maybe<Scalars['String']>;
+  eventName: Scalars['String'];
+  groupNumber?: Maybe<Scalars['Int']>;
+  roomName?: Maybe<Scalars['String']>;
+  roundNumber: Scalars['Int'];
+  startTime?: Maybe<Scalars['String']>;
+  stationNumber?: Maybe<Scalars['Int']>;
+};
+
+export type WcaEventDetail = {
+  __typename?: 'WcaEventDetail';
+  eventId: Scalars['String'];
+  eventName: Scalars['String'];
+  rounds: Array<WcaRound>;
+};
+
+export type WcaGroup = {
+  __typename?: 'WcaGroup';
+  activityCode?: Maybe<Scalars['String']>;
+  competitors: Array<WcaGroupCompetitor>;
+  endTime?: Maybe<Scalars['String']>;
+  groupNumber: Scalars['Int'];
+  startTime?: Maybe<Scalars['String']>;
+};
+
+export type WcaGroupCompetitor = {
+  __typename?: 'WcaGroupCompetitor';
+  assignmentCode: Scalars['String'];
+  name: Scalars['String'];
+  registrantId: Scalars['Int'];
+  seedResult?: Maybe<Scalars['Int']>;
+  wcaId?: Maybe<Scalars['String']>;
+};
+
+export type WcaLiveCompetitor = {
+  __typename?: 'WcaLiveCompetitor';
+  liveId: Scalars['String'];
+  wcaId: Scalars['String'];
+};
+
+export type WcaPersonalBest = {
+  __typename?: 'WcaPersonalBest';
+  best: Scalars['Int'];
+  continentalRanking: Scalars['Int'];
+  eventId: Scalars['String'];
+  nationalRanking: Scalars['Int'];
+  type: Scalars['String'];
+  worldRanking: Scalars['Int'];
+};
+
+export type WcaPersonInfo = {
+  __typename?: 'WcaPersonInfo';
+  avatar?: Maybe<Scalars['String']>;
+  name: Scalars['String'];
+  role: Scalars['String'];
+  wcaId?: Maybe<Scalars['String']>;
+};
+
+export type WcaRankingRow = {
+  __typename?: 'WcaRankingRow';
+  average?: Maybe<Scalars['Int']>;
+  averageWorldRank?: Maybe<Scalars['Int']>;
+  eventId: Scalars['String'];
+  name: Scalars['String'];
+  registrantId: Scalars['Int'];
+  single?: Maybe<Scalars['Int']>;
+  singleWorldRank?: Maybe<Scalars['Int']>;
+  wcaId?: Maybe<Scalars['String']>;
 };
 
 export type WcaRecord = {
@@ -2122,6 +2246,50 @@ export type WcaRecord = {
   user?: Maybe<PublicUserAccount>;
   user_id?: Maybe<Scalars['String']>;
   wca_event?: Maybe<Scalars['String']>;
+};
+
+export type WcaRound = {
+  __typename?: 'WcaRound';
+  advancementLevel?: Maybe<Scalars['Int']>;
+  advancementType?: Maybe<Scalars['String']>;
+  cutoff?: Maybe<Scalars['Int']>;
+  cutoffAttempts?: Maybe<Scalars['Int']>;
+  format?: Maybe<Scalars['String']>;
+  groups: Array<WcaGroup>;
+  roundNumber: Scalars['Int'];
+  timeLimit?: Maybe<Scalars['Int']>;
+};
+
+export type WcaScheduleAssignment = {
+  __typename?: 'WcaScheduleAssignment';
+  activityCode: Scalars['String'];
+  assignmentCode: Scalars['String'];
+  endTime: Scalars['String'];
+  eventName: Scalars['String'];
+  groupNumber?: Maybe<Scalars['Int']>;
+  roomColor?: Maybe<Scalars['String']>;
+  roomName: Scalars['String'];
+  roundNumber: Scalars['Int'];
+  startTime: Scalars['String'];
+  stationNumber?: Maybe<Scalars['Int']>;
+  venueName: Scalars['String'];
+};
+
+export type WcaScheduleDay = {
+  __typename?: 'WcaScheduleDay';
+  assignments: Array<WcaScheduleAssignment>;
+  date: Scalars['String'];
+};
+
+export type WcaScheduleInput = {
+  competitionId: Scalars['String'];
+};
+
+export type WcaVenueInfo = {
+  __typename?: 'WcaVenueInfo';
+  address?: Maybe<Scalars['String']>;
+  city?: Maybe<Scalars['String']>;
+  name: Scalars['String'];
 };
 
 export type MiniSolveFragmentFragment = { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, session_id?: string | null, trainer_name?: string | null, bulk?: boolean | null, scramble?: string | null, from_timer?: boolean | null, training_session_id?: string | null, dnf?: boolean | null, plus_two?: boolean | null, is_smart_cube?: boolean | null, created_at?: any | null, started_at?: any | null, ended_at?: any | null };
@@ -2406,6 +2574,25 @@ export type WcaCompetitionsQueryVariables = Exact<{
 
 export type WcaCompetitionsQuery = { __typename?: 'Query', wcaCompetitions: Array<{ __typename?: 'WcaCompetition', id: string, name: string, city: string, country_iso2: string, venue: string, start_date: string, end_date: string, date_range: string, event_ids: Array<string>, latitude_degrees: number, longitude_degrees: number, url: string, competitor_limit?: number | null }> };
 
+export type WcaSearchCompetitionsQueryVariables = Exact<{
+  query: Scalars['String'];
+}>;
+
+
+export type WcaSearchCompetitionsQuery = { __typename?: 'Query', wcaSearchCompetitions: Array<{ __typename?: 'WcaCompetition', id: string, name: string, city: string, country_iso2: string, start_date: string, end_date: string, url: string }> };
+
+export type MyWcaCompetitionsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MyWcaCompetitionsQuery = { __typename?: 'Query', myWcaCompetitions: Array<{ __typename?: 'WcaCompetition', id: string, name: string, city: string, country_iso2: string, start_date: string, end_date: string, url: string }> };
+
+export type WcaCompetitionDetailQueryVariables = Exact<{
+  input: WcaScheduleInput;
+}>;
+
+
+export type WcaCompetitionDetailQuery = { __typename?: 'Query', wcaCompetitionDetail?: { __typename?: 'WcaCompetitionDetail', competitionId: string, competitionName: string, myWcaId?: string | null, myRegistrationStatus?: string | null, myRegisteredEvents: Array<string>, wcaLiveCompId?: string | null, competitors: Array<{ __typename?: 'WcaCompetitor', name: string, wcaId?: string | null, country?: string | null, avatar?: string | null, registrantId: number, wcaUserId?: number | null, registeredEvents: Array<string>, assignments: Array<{ __typename?: 'WcaCompetitorAssignment', activityCode: string, eventName: string, roundNumber: number, groupNumber?: number | null, assignmentCode: string, startTime?: string | null, endTime?: string | null, stationNumber?: number | null, roomName?: string | null }>, personalBests: Array<{ __typename?: 'WcaPersonalBest', eventId: string, type: string, best: number, worldRanking: number, continentalRanking: number, nationalRanking: number }> }>, events: Array<{ __typename?: 'WcaEventDetail', eventId: string, eventName: string, rounds: Array<{ __typename?: 'WcaRound', roundNumber: number, format?: string | null, timeLimit?: number | null, cutoff?: number | null, cutoffAttempts?: number | null, advancementType?: string | null, advancementLevel?: number | null, groups: Array<{ __typename?: 'WcaGroup', groupNumber: number, activityCode?: string | null, startTime?: string | null, endTime?: string | null, competitors: Array<{ __typename?: 'WcaGroupCompetitor', name: string, wcaId?: string | null, registrantId: number, assignmentCode: string, seedResult?: number | null }> }> }> }>, schedule: Array<{ __typename?: 'WcaScheduleDay', date: string, assignments: Array<{ __typename?: 'WcaScheduleAssignment', activityCode: string, eventName: string, roundNumber: number, groupNumber?: number | null, assignmentCode: string, startTime: string, endTime: string, roomName: string, roomColor?: string | null, venueName: string, stationNumber?: number | null }> }>, allPersonalBests: Array<{ __typename?: 'WcaRankingRow', name: string, wcaId?: string | null, registrantId: number, eventId: string, single?: number | null, average?: number | null, singleWorldRank?: number | null, averageWorldRank?: number | null }>, wcaLiveCompetitors: Array<{ __typename?: 'WcaLiveCompetitor', wcaId: string, liveId: string }>, info: { __typename?: 'WcaCompetitionInfo', wcaUrl?: string | null, venues: Array<{ __typename?: 'WcaVenueInfo', name: string, address?: string | null, city?: string | null }>, organizers: Array<{ __typename?: 'WcaPersonInfo', name: string, wcaId?: string | null, role: string, avatar?: string | null }>, delegates: Array<{ __typename?: 'WcaPersonInfo', name: string, wcaId?: string | null, role: string, avatar?: string | null }> } } | null };
+
 export type AdminTrainerAlternativesQueryVariables = Exact<{
   category?: InputMaybe<Scalars['String']>;
   page?: InputMaybe<Scalars['Int']>;
@@ -2474,4 +2661,7 @@ export const GetAllAnnouncementsDocument = {"kind":"Document","definitions":[{"k
 export const GetMyAnnouncementHistoryDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getMyAnnouncementHistory"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"limit"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"offset"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getMyAnnouncementHistory"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"limit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"limit"}}},{"kind":"Argument","name":{"kind":"Name","value":"offset"},"value":{"kind":"Variable","name":{"kind":"Name","value":"offset"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"content"}},{"kind":"Field","name":{"kind":"Name","value":"category"}},{"kind":"Field","name":{"kind":"Name","value":"priority"}},{"kind":"Field","name":{"kind":"Name","value":"imageUrl"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}}]}}]}}]} as unknown as DocumentNode<GetMyAnnouncementHistoryQuery, GetMyAnnouncementHistoryQueryVariables>;
 export const TrainerAlternativesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"trainerAlternatives"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"category"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"caseName"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"trainerAlternatives"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"category"},"value":{"kind":"Variable","name":{"kind":"Name","value":"category"}}},{"kind":"Argument","name":{"kind":"Name","value":"caseName"},"value":{"kind":"Variable","name":{"kind":"Name","value":"caseName"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"algorithm"}},{"kind":"Field","name":{"kind":"Name","value":"original_input"}},{"kind":"Field","name":{"kind":"Name","value":"setup"}},{"kind":"Field","name":{"kind":"Name","value":"ll_pattern"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}}]}}]}}]} as unknown as DocumentNode<TrainerAlternativesQuery, TrainerAlternativesQueryVariables>;
 export const WcaCompetitionsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"wcaCompetitions"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"filter"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"WcaCompetitionFilterInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"wcaCompetitions"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"filter"},"value":{"kind":"Variable","name":{"kind":"Name","value":"filter"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"city"}},{"kind":"Field","name":{"kind":"Name","value":"country_iso2"}},{"kind":"Field","name":{"kind":"Name","value":"venue"}},{"kind":"Field","name":{"kind":"Name","value":"start_date"}},{"kind":"Field","name":{"kind":"Name","value":"end_date"}},{"kind":"Field","name":{"kind":"Name","value":"date_range"}},{"kind":"Field","name":{"kind":"Name","value":"event_ids"}},{"kind":"Field","name":{"kind":"Name","value":"latitude_degrees"}},{"kind":"Field","name":{"kind":"Name","value":"longitude_degrees"}},{"kind":"Field","name":{"kind":"Name","value":"url"}},{"kind":"Field","name":{"kind":"Name","value":"competitor_limit"}}]}}]}}]} as unknown as DocumentNode<WcaCompetitionsQuery, WcaCompetitionsQueryVariables>;
+export const WcaSearchCompetitionsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"wcaSearchCompetitions"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"query"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"wcaSearchCompetitions"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"query"},"value":{"kind":"Variable","name":{"kind":"Name","value":"query"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"city"}},{"kind":"Field","name":{"kind":"Name","value":"country_iso2"}},{"kind":"Field","name":{"kind":"Name","value":"start_date"}},{"kind":"Field","name":{"kind":"Name","value":"end_date"}},{"kind":"Field","name":{"kind":"Name","value":"url"}}]}}]}}]} as unknown as DocumentNode<WcaSearchCompetitionsQuery, WcaSearchCompetitionsQueryVariables>;
+export const MyWcaCompetitionsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"myWcaCompetitions"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"myWcaCompetitions"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"city"}},{"kind":"Field","name":{"kind":"Name","value":"country_iso2"}},{"kind":"Field","name":{"kind":"Name","value":"start_date"}},{"kind":"Field","name":{"kind":"Name","value":"end_date"}},{"kind":"Field","name":{"kind":"Name","value":"url"}}]}}]}}]} as unknown as DocumentNode<MyWcaCompetitionsQuery, MyWcaCompetitionsQueryVariables>;
+export const WcaCompetitionDetailDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"wcaCompetitionDetail"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"WcaScheduleInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"wcaCompetitionDetail"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"competitionId"}},{"kind":"Field","name":{"kind":"Name","value":"competitionName"}},{"kind":"Field","name":{"kind":"Name","value":"myWcaId"}},{"kind":"Field","name":{"kind":"Name","value":"myRegistrationStatus"}},{"kind":"Field","name":{"kind":"Name","value":"myRegisteredEvents"}},{"kind":"Field","name":{"kind":"Name","value":"competitors"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"wcaId"}},{"kind":"Field","name":{"kind":"Name","value":"country"}},{"kind":"Field","name":{"kind":"Name","value":"avatar"}},{"kind":"Field","name":{"kind":"Name","value":"registrantId"}},{"kind":"Field","name":{"kind":"Name","value":"wcaUserId"}},{"kind":"Field","name":{"kind":"Name","value":"registeredEvents"}},{"kind":"Field","name":{"kind":"Name","value":"assignments"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"activityCode"}},{"kind":"Field","name":{"kind":"Name","value":"eventName"}},{"kind":"Field","name":{"kind":"Name","value":"roundNumber"}},{"kind":"Field","name":{"kind":"Name","value":"groupNumber"}},{"kind":"Field","name":{"kind":"Name","value":"assignmentCode"}},{"kind":"Field","name":{"kind":"Name","value":"startTime"}},{"kind":"Field","name":{"kind":"Name","value":"endTime"}},{"kind":"Field","name":{"kind":"Name","value":"stationNumber"}},{"kind":"Field","name":{"kind":"Name","value":"roomName"}}]}},{"kind":"Field","name":{"kind":"Name","value":"personalBests"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"eventId"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"best"}},{"kind":"Field","name":{"kind":"Name","value":"worldRanking"}},{"kind":"Field","name":{"kind":"Name","value":"continentalRanking"}},{"kind":"Field","name":{"kind":"Name","value":"nationalRanking"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"events"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"eventId"}},{"kind":"Field","name":{"kind":"Name","value":"eventName"}},{"kind":"Field","name":{"kind":"Name","value":"rounds"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"roundNumber"}},{"kind":"Field","name":{"kind":"Name","value":"format"}},{"kind":"Field","name":{"kind":"Name","value":"timeLimit"}},{"kind":"Field","name":{"kind":"Name","value":"cutoff"}},{"kind":"Field","name":{"kind":"Name","value":"cutoffAttempts"}},{"kind":"Field","name":{"kind":"Name","value":"advancementType"}},{"kind":"Field","name":{"kind":"Name","value":"advancementLevel"}},{"kind":"Field","name":{"kind":"Name","value":"groups"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"groupNumber"}},{"kind":"Field","name":{"kind":"Name","value":"activityCode"}},{"kind":"Field","name":{"kind":"Name","value":"startTime"}},{"kind":"Field","name":{"kind":"Name","value":"endTime"}},{"kind":"Field","name":{"kind":"Name","value":"competitors"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"wcaId"}},{"kind":"Field","name":{"kind":"Name","value":"registrantId"}},{"kind":"Field","name":{"kind":"Name","value":"assignmentCode"}},{"kind":"Field","name":{"kind":"Name","value":"seedResult"}}]}}]}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"schedule"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"assignments"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"activityCode"}},{"kind":"Field","name":{"kind":"Name","value":"eventName"}},{"kind":"Field","name":{"kind":"Name","value":"roundNumber"}},{"kind":"Field","name":{"kind":"Name","value":"groupNumber"}},{"kind":"Field","name":{"kind":"Name","value":"assignmentCode"}},{"kind":"Field","name":{"kind":"Name","value":"startTime"}},{"kind":"Field","name":{"kind":"Name","value":"endTime"}},{"kind":"Field","name":{"kind":"Name","value":"roomName"}},{"kind":"Field","name":{"kind":"Name","value":"roomColor"}},{"kind":"Field","name":{"kind":"Name","value":"venueName"}},{"kind":"Field","name":{"kind":"Name","value":"stationNumber"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"allPersonalBests"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"wcaId"}},{"kind":"Field","name":{"kind":"Name","value":"registrantId"}},{"kind":"Field","name":{"kind":"Name","value":"eventId"}},{"kind":"Field","name":{"kind":"Name","value":"single"}},{"kind":"Field","name":{"kind":"Name","value":"average"}},{"kind":"Field","name":{"kind":"Name","value":"singleWorldRank"}},{"kind":"Field","name":{"kind":"Name","value":"averageWorldRank"}}]}},{"kind":"Field","name":{"kind":"Name","value":"wcaLiveCompId"}},{"kind":"Field","name":{"kind":"Name","value":"wcaLiveCompetitors"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"wcaId"}},{"kind":"Field","name":{"kind":"Name","value":"liveId"}}]}},{"kind":"Field","name":{"kind":"Name","value":"info"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"venues"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"address"}},{"kind":"Field","name":{"kind":"Name","value":"city"}}]}},{"kind":"Field","name":{"kind":"Name","value":"organizers"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"wcaId"}},{"kind":"Field","name":{"kind":"Name","value":"role"}},{"kind":"Field","name":{"kind":"Name","value":"avatar"}}]}},{"kind":"Field","name":{"kind":"Name","value":"delegates"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"wcaId"}},{"kind":"Field","name":{"kind":"Name","value":"role"}},{"kind":"Field","name":{"kind":"Name","value":"avatar"}}]}},{"kind":"Field","name":{"kind":"Name","value":"wcaUrl"}}]}}]}}]}}]} as unknown as DocumentNode<WcaCompetitionDetailQuery, WcaCompetitionDetailQueryVariables>;
 export const AdminTrainerAlternativesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"adminTrainerAlternatives"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"category"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"page"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pageSize"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"adminTrainerAlternatives"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"category"},"value":{"kind":"Variable","name":{"kind":"Name","value":"category"}}},{"kind":"Argument","name":{"kind":"Name","value":"page"},"value":{"kind":"Variable","name":{"kind":"Name","value":"page"}}},{"kind":"Argument","name":{"kind":"Name","value":"pageSize"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pageSize"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"items"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"category"}},{"kind":"Field","name":{"kind":"Name","value":"subset"}},{"kind":"Field","name":{"kind":"Name","value":"case_name"}},{"kind":"Field","name":{"kind":"Name","value":"algorithm"}},{"kind":"Field","name":{"kind":"Name","value":"original_input"}},{"kind":"Field","name":{"kind":"Name","value":"user_id"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}}]}},{"kind":"Field","name":{"kind":"Name","value":"total"}},{"kind":"Field","name":{"kind":"Name","value":"hasMore"}}]}}]}}]} as unknown as DocumentNode<AdminTrainerAlternativesQuery, AdminTrainerAlternativesQueryVariables>;

@@ -32,15 +32,18 @@ export default function OAuthService() {
 			integrationType,
 		})
 			.then(() => {
-				window.location.href = `/account/linked-accounts`;
+				const state = urlParams.get('state');
+				window.location.href = state || '/account/linked-accounts';
 			})
 			.catch((e) => {
-				console.error(e);
-				const errorMessage = e?.graphQLErrors?.[0]?.extensions?.exception?.message ||
-									 e?.graphQLErrors?.[0]?.message ||
-									 e?.message ||
-									 'OAuth bağlantısı sırasında hata oluştu';
-				toastError(errorMessage);
+				const msg = e?.graphQLErrors?.[0]?.message || e?.message || '';
+				// Zaten bagli ise sessizce redirect yap
+				if (msg.includes('already linked')) {
+					const state = urlParams.get('state');
+					window.location.href = state || '/account/linked-accounts';
+					return;
+				}
+				toastError(msg || 'OAuth bağlantısı sırasında hata oluştu');
 			});
 	}, []);
 
