@@ -17,6 +17,7 @@ export enum RedisNamespace {
 	TRAINER_DATA_DATE = 'cd:trainerdata:date',
 	WCA_COMPETITIONS = 'cd:wca:competitions',
 	WCA_RESULTS = 'cd:wca:results',
+	WCA_WCIF = 'cd:wca:wcif',
 }
 
 export type generatedRedisKey = {

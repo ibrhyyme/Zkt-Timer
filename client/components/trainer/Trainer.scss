@@ -2075,6 +2075,7 @@
 
 	@media (max-width: 768px) {
 		&__landing {
+			justify-content: flex-start;
 			padding: 1.5rem 1rem;
 			gap: 1.5rem;
 		}

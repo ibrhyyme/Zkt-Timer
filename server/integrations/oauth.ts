@@ -40,9 +40,10 @@ export async function linkOAuthAccount(intType: IntegrationType, user: InternalU
 			const wcaId = wcaData?.wca_id;
 
 			if (wcaId) {
-				// Update the integration with WCA ID
-				await updateIntegration(integration, { wca_id: wcaId });
-				console.log('WCA ID saved:', wcaId);
+				await updateIntegration(integration, {
+					wca_id: wcaId,
+					wca_country_iso2: wcaData.country_iso2 || null,
+				});
 			}
 		} catch (error) {
 			// Swallow the error and proceed - WCA ID will remain null

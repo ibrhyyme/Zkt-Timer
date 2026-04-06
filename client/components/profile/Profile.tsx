@@ -414,7 +414,7 @@ export default function Profile() {
 							className={b('tab', { active: recordsTab === 'pb' })}
 							onClick={() => setRecordsTab('pb')}
 						>
-							{t('profile.personal_records')}
+							{t(mobileMode ? 'profile.personal_records_short' : 'profile.personal_records')}
 							<span className={b('tab-count')}>{pbCards.length}</span>
 						</button>
 					)}
@@ -428,7 +428,7 @@ export default function Profile() {
 								alt="WCA"
 								className={b('tab-wca-logo')}
 							/>
-							{t('profile.wca_official_records')}
+							{t(mobileMode ? 'profile.wca_official_records_short' : 'profile.wca_official_records')}
 							<span className={b('tab-count')}>{wcaCards.length}</span>
 						</button>
 					)}
@@ -437,7 +437,7 @@ export default function Profile() {
 							className={b('tab', { active: recordsTab === 'results' })}
 							onClick={() => setRecordsTab('results')}
 						>
-							{t('profile.wca_results_tab')}
+							{t(mobileMode ? 'profile.wca_results_tab_short' : 'profile.wca_results_tab')}
 						</button>
 					)}
 				</div>

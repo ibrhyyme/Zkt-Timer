@@ -1,7 +1,7 @@
 import React, {useContext} from 'react';
 import {useTranslation} from 'react-i18next';
 import HorizontalNav from '../../common/horizontal_nav/HorizontalNav';
-import {useRouteMatch} from 'react-router-dom';
+import {useLocation} from 'react-router-dom';
 import {CommunityContext} from '../Community';
 import block from '../../../styles/bem';
 import Input from '../../common/inputs/input/Input';
@@ -14,7 +14,7 @@ export default function CommunityNav() {
 	const {t} = useTranslation();
 	const {userSearchQuery, setUserSearchQuery} = useContext(CommunityContext);
 
-	const page = useRouteMatch().path.split('/')[2];
+	const page = useLocation().pathname.split('/')[2];
 
 	const TABS = [
 		{

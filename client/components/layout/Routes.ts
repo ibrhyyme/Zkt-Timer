@@ -47,7 +47,7 @@ import Welcome from '../landing/welcome/Welcome';
 import RootRedirect from '../landing/root_redirect/RootRedirect';
 import ProPage from '../pro_page/ProPage';
 import Battle from '../battle/Battle';
-import Competitions from '../community/competitions/Competitions';
+import MySchedule from '../community/my_schedule/MySchedule';
 
 interface PageOptions {
 	restricted: boolean;
@@ -151,7 +151,11 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/account/announcements', App, Account, AnnouncementHistory),
 
 	// Community
-	route('/community/competitions', App, Community, Competitions, false),
+	route('/community/competitions/:competitionId/personal-bests/:wcaId', App, Community, MySchedule, false),
+	route('/community/competitions/:competitionId/persons/:registrantId', App, Community, MySchedule, false),
+	route('/community/competitions/:competitionId/activities/:activityCode', App, Community, MySchedule, false),
+	route('/community/competitions/:competitionId', App, Community, MySchedule, false),
+	route('/community/competitions', App, Community, MySchedule, false),
 	route('/community/friends/list', App, Community, Friends),
 	route('/community/friends/received', App, Community, Friends),
 	route('/community/friends/sent', App, Community, Friends),

@@ -91,7 +91,10 @@ export class WcaAuthResolver {
 						wcaData.expiresAt
 					);
 					if (wcaData.wcaId) {
-						await updateIntegration(integration, {wca_id: wcaData.wcaId});
+						await updateIntegration(integration, {
+							wca_id: wcaData.wcaId,
+							wca_country_iso2: wcaData.countryIso2 || null,
+						});
 					}
 				}
 

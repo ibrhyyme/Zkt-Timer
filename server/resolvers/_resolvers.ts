@@ -29,4 +29,5 @@ export * from './DailyGoal.resolver';
 export * from './WcaCompetition.resolver';
 export * from './WcaAuth.resolver';
 export * from './WcaResult.resolver';
+export * from './WcaSchedule.resolver';
 export * from './PromoCode.resolver';
