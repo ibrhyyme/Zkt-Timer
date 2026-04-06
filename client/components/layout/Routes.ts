@@ -151,11 +151,11 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/account/announcements', App, Account, AnnouncementHistory),
 
 	// Community
-	route('/community/competitions/:competitionId/personal-bests/:wcaId', App, Community, MySchedule, false),
-	route('/community/competitions/:competitionId/persons/:registrantId', App, Community, MySchedule, false),
-	route('/community/competitions/:competitionId/activities/:activityCode', App, Community, MySchedule, false),
-	route('/community/competitions/:competitionId', App, Community, MySchedule, false),
-	route('/community/competitions', App, Community, MySchedule, false),
+	route('/community/competitions/:competitionId/personal-bests/:wcaId', App, Community, MySchedule),
+	route('/community/competitions/:competitionId/persons/:registrantId', App, Community, MySchedule),
+	route('/community/competitions/:competitionId/activities/:activityCode', App, Community, MySchedule),
+	route('/community/competitions/:competitionId', App, Community, MySchedule),
+	route('/community/competitions', App, Community, MySchedule),
 	route('/community/friends/list', App, Community, Friends),
 	route('/community/friends/received', App, Community, Friends),
 	route('/community/friends/sent', App, Community, Friends),

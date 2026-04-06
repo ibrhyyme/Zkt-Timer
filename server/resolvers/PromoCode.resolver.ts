@@ -120,6 +120,8 @@ export class PromoCodeResolver {
 			await updateUserAccountWithParams(userId, {
 				is_premium: true,
 				premium_expires_at: expires_at,
+				is_pro: false,
+				pro_expires_at: null,
 			});
 		}
 
