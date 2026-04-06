@@ -10,11 +10,20 @@ import CompetitorDetail from './CompetitorDetail';
 import ActivityDetail from './ActivityDetail';
 import PersonalBests from './PersonalBests';
 import {b} from './shared';
+import {useMe} from '../../../util/hooks/useMe';
+import {isPremium} from '../../../lib/pro';
 import './MySchedule.scss';
 
 export default function MySchedule() {
 	const {t} = useTranslation();
 	const history = useHistory();
+	const me = useMe();
+
+	// Premium degilse erisim yok
+	if (!isPremium(me)) {
+		history.replace('/community/friends/list');
+		return null;
+	}
 
 	const matchPersonalBests = useRouteMatch<{competitionId: string; wcaId: string}>(
 		'/community/competitions/:competitionId/personal-bests/:wcaId'

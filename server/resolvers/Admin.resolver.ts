@@ -243,6 +243,7 @@ export class AdminResolver {
 		await updateUserAccountWithParams(targetUser.id, {
 			is_premium: isPremium,
 			premium_expires_at: isPremium ? premium_expires_at : null,
+			...(isPremium ? {is_pro: false, pro_expires_at: null} : {}),
 		});
 
 		if (isPremium) {
