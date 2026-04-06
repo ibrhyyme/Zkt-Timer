@@ -145,7 +145,16 @@ export function getDefaultSetting<T extends keyof AllSettings>(key: T): AllSetti
 	return defaultSettings[key];
 }
 
+export const viewportDependentKeys = new Set<keyof AllSettings>(
+	Object.keys(mobileDefaultOverrides) as (keyof AllSettings)[]
+);
+
+export { isMobileViewport };
+
 export function getDefaultSettings() {
+	if (isMobileViewport()) {
+		return { ...defaultSettings, ...mobileDefaultOverrides };
+	}
 	return defaultSettings;
 }
 

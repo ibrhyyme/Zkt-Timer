@@ -139,14 +139,21 @@ export default function Manual() {
 			ref={manualInput}
 			onBlur={(e) => {
 				const target = e.target;
+				const relatedTarget = e.relatedTarget as HTMLElement | null;
 				if (!disabled) {
+					// Submit butonuna tiklandiysa, submitTime refocus yapacak
+					if (relatedTarget?.closest('.cd-manual-time-entry__submit-btn')) return;
+					// Baska bir elemente tiklandiysa, blur'a izin ver (klavye kapansin)
+					if (relatedTarget) return;
+					// Mobilde bos alana tiklaninca klavye kapansin
+					if (mobileMode) return;
+					// Desktop'ta accidental blur'u onle
 					const refocus = () => {
 						if (document.activeElement === document.body || !document.activeElement) {
 							target.focus({ preventScroll: true });
 						}
 					};
 					requestAnimationFrame(refocus);
-					setTimeout(refocus, 50);
 				}
 			}}
 			disabled={disabled}
@@ -168,7 +175,12 @@ export default function Manual() {
 	}
 
 	return (
-		<div className={b('wrapper')}>
+		<div className={b('wrapper')} onClick={(e) => {
+			const target = e.target as HTMLElement;
+			if (mobileMode && !disabled && !target.closest('button') && manualInput.current) {
+				manualInput.current.focus();
+			}
+		}}>
 			<div className={b('input-container')}>
 				{input}
 				{!hideTime && (
