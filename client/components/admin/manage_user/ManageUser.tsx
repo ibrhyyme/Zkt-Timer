@@ -115,8 +115,6 @@ const GET_USER_FOR_ADMIN = gql`
 				}
 			}
 			notification_preferences {
-				friend_request
-				friend_request_accept
 				marketing_emails
 			}
 		}

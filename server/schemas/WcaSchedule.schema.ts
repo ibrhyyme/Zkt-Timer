@@ -285,6 +285,298 @@ export class WcaLiveCompetitor {
 	liveId: string;
 }
 
+@ObjectType()
+export class WcaLiveRoundMapping {
+	@Field()
+	activityCode: string;
+
+	@Field()
+	liveRoundId: string;
+}
+
+@ObjectType()
+export class WcaLiveAttempt {
+	@Field(() => Int)
+	result: number;
+}
+
+@ObjectType()
+export class WcaLiveResult {
+	@Field(() => Int, {nullable: true})
+	ranking?: number;
+
+	@Field(() => Int)
+	best: number;
+
+	@Field(() => Int)
+	average: number;
+
+	@Field(() => [WcaLiveAttempt])
+	attempts: WcaLiveAttempt[];
+
+	@Field()
+	personName: string;
+
+	@Field({nullable: true})
+	personWcaId?: string;
+
+	@Field({nullable: true})
+	personCountryIso2?: string;
+
+	@Field()
+	personLiveId: string;
+
+	@Field({nullable: true})
+	singleRecordTag?: string;
+
+	@Field({nullable: true})
+	averageRecordTag?: string;
+
+	@Field()
+	advancing: boolean;
+
+	@Field()
+	advancingQuestionable: boolean;
+}
+
+@ObjectType()
+export class WcaLiveTimeLimit {
+	@Field(() => Int)
+	centiseconds: number;
+
+	@Field(() => [String])
+	cumulativeRoundWcifIds: string[];
+}
+
+@ObjectType()
+export class WcaLiveCutoff {
+	@Field(() => Int)
+	attemptResult: number;
+
+	@Field(() => Int)
+	numberOfAttempts: number;
+}
+
+@ObjectType()
+export class WcaLiveAdvancementCondition {
+	@Field()
+	type: string; // "ranking" | "percent" | "attemptResult"
+
+	@Field(() => Int)
+	level: number;
+}
+
+@ObjectType()
+export class WcaLiveFormat {
+	@Field(() => Int)
+	numberOfAttempts: number;
+
+	@Field()
+	sortBy: string;
+}
+
+@ObjectType()
+export class WcaLiveRoundInfo {
+	@Field()
+	liveRoundId: string;
+
+	@Field(() => Int)
+	number: number;
+
+	@Field()
+	name: string;
+
+	@Field()
+	open: boolean;
+
+	@Field()
+	finished: boolean;
+
+	@Field()
+	active: boolean;
+
+	@Field(() => Int)
+	numEntered: number;
+
+	@Field(() => Int)
+	numResults: number;
+
+	@Field(() => WcaLiveFormat, {nullable: true})
+	format?: WcaLiveFormat;
+
+	@Field(() => WcaLiveTimeLimit, {nullable: true})
+	timeLimit?: WcaLiveTimeLimit;
+
+	@Field(() => WcaLiveCutoff, {nullable: true})
+	cutoff?: WcaLiveCutoff;
+
+	@Field(() => WcaLiveAdvancementCondition, {nullable: true})
+	advancementCondition?: WcaLiveAdvancementCondition;
+}
+
+@ObjectType()
+export class WcaLiveEventInfo {
+	@Field()
+	eventId: string;
+
+	@Field()
+	eventName: string;
+
+	@Field(() => [WcaLiveRoundInfo])
+	rounds: WcaLiveRoundInfo[];
+}
+
+@ObjectType()
+export class WcaLiveScheduleActivity {
+	@Field(() => Int)
+	activityId: number;
+
+	@Field()
+	name: string;
+
+	@Field()
+	activityCode: string;
+
+	@Field()
+	startTime: string;
+
+	@Field()
+	endTime: string;
+}
+
+@ObjectType()
+export class WcaLiveScheduleRoom {
+	@Field()
+	name: string;
+
+	@Field({nullable: true})
+	color?: string;
+
+	@Field(() => [WcaLiveScheduleActivity])
+	activities: WcaLiveScheduleActivity[];
+}
+
+@ObjectType()
+export class WcaLiveScheduleVenue {
+	@Field()
+	name: string;
+
+	@Field(() => [WcaLiveScheduleRoom])
+	rooms: WcaLiveScheduleRoom[];
+}
+
+@ObjectType()
+export class WcaLiveRecord {
+	@Field()
+	type: string;
+
+	@Field()
+	tag: string;
+
+	@Field()
+	eventId: string;
+
+	@Field()
+	eventName: string;
+
+	@Field(() => Int)
+	attemptResult: number;
+
+	@Field()
+	personName: string;
+
+	@Field({nullable: true})
+	personCountryIso2?: string;
+
+	@Field(() => Int, {nullable: true})
+	roundNumber?: number;
+}
+
+@ObjectType()
+export class WcaLivePodiumEntry {
+	@Field(() => Int, {nullable: true})
+	ranking?: number;
+
+	@Field()
+	personName: string;
+
+	@Field({nullable: true})
+	personCountryIso2?: string;
+
+	@Field(() => Int)
+	best: number;
+
+	@Field(() => Int)
+	average: number;
+
+	@Field({nullable: true})
+	singleRecordTag?: string;
+
+	@Field({nullable: true})
+	averageRecordTag?: string;
+}
+
+@ObjectType()
+export class WcaLivePodium {
+	@Field()
+	eventId: string;
+
+	@Field()
+	eventName: string;
+
+	@Field()
+	sortBy: string;
+
+	@Field(() => [WcaLivePodiumEntry])
+	entries: WcaLivePodiumEntry[];
+}
+
+@ObjectType()
+export class WcaLiveCompetitionOverview {
+	@Field()
+	compId: string;
+
+	@Field()
+	name: string;
+
+	@Field(() => [WcaLiveEventInfo])
+	events: WcaLiveEventInfo[];
+
+	@Field(() => [WcaLiveScheduleVenue])
+	schedule: WcaLiveScheduleVenue[];
+
+	@Field(() => [WcaLiveRecord])
+	records: WcaLiveRecord[];
+
+	@Field(() => [WcaLivePodium])
+	podiums: WcaLivePodium[];
+}
+
+@ObjectType()
+export class WcaLiveRoundResults {
+	@Field()
+	roundActivityCode: string;
+
+	@Field()
+	roundName: string;
+
+	@Field()
+	active: boolean;
+
+	@Field()
+	finished: boolean;
+
+	@Field(() => Int)
+	numberOfAttempts: number;
+
+	@Field()
+	sortBy: string;
+
+	@Field(() => [WcaLiveResult])
+	results: WcaLiveResult[];
+}
+
+
 // Root type
 @ObjectType()
 export class WcaCompetitionDetail {
@@ -326,6 +618,9 @@ export class WcaCompetitionDetail {
 	@Field(() => [WcaLiveCompetitor])
 	wcaLiveCompetitors: WcaLiveCompetitor[];
 
+	@Field(() => [WcaLiveRoundMapping])
+	wcaLiveRoundMap: WcaLiveRoundMapping[];
+
 	// Info
 	@Field(() => WcaCompetitionInfo)
 	info: WcaCompetitionInfo;
@@ -336,3 +631,19 @@ export class WcaScheduleInput {
 	@Field()
 	competitionId: string;
 }
+
+@InputType()
+export class WcaLiveRoundInput {
+	@Field()
+	competitionId: string;
+
+	@Field()
+	liveRoundId: string;
+}
+
+@InputType()
+export class WcaLiveOverviewInput {
+	@Field()
+	competitionId: string;
+}
+

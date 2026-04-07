@@ -51,14 +51,6 @@ export default function NotificationPreferences() {
 
 	const notificationTypeNames = [
 		{
-			key: 'friend_request',
-			label: t('notification_prefs.friend_request_accepted'),
-		},
-		{
-			key: 'friend_request_accept',
-			label: t('notification_prefs.friend_request_received'),
-		},
-		{
 			key: 'elo_refund',
 			label: t('notification_prefs.elo_refund'),
 		},

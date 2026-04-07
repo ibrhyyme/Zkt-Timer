@@ -460,12 +460,7 @@
 		"success": "Password updated successfully"
 	},
 	"community_nav": {
-		"page_title": "Community",
-		"leaderboards": "Leaderboards",
-		"competitions": "Competitions",
-		"my_schedule": "My Schedule",
-		"friends": "Friends",
-		"search_placeholder": "Search username"
+		"page_title": "Competitions"
 	},
 	"my_schedule": {
 		"page_title": "My Competition Schedule",
@@ -534,7 +529,46 @@
 		"back_to_events": "Back to Events",
 		"pb_type": "Type",
 		"pb_best": "Best",
-		"view_assignments": "View Personal Assignments"
+		"view_assignments": "View Personal Assignments",
+		"live_results": "Live Results",
+		"final_results": "Final Results",
+		"col_rank": "#",
+		"col_best": "Best",
+		"col_average": "Average",
+		"col_attempts": "Attempts",
+		"col_event": "Event",
+		"col_round": "Round",
+		"round_active": "In Progress",
+		"round_finished": "Completed",
+		"competition_results": "Competition Results",
+		"wca_live": "WCA Live",
+		"wca_live_select_event": "Select an event",
+		"wca_live_unavailable": "This competition is not available on WCA Live",
+		"wca_live_no_events": "This competition has no events yet",
+		"wca_live_no_rounds": "This event has no rounds yet",
+		"wca_live_podiums": "Podiums",
+		"refresh": "Refresh",
+		"col_country": "Country",
+		"show_more": "Show {{count}} more",
+		"updated_just_now": "Updated just now",
+		"updated_x_ago": "Updated {{value}}",
+		"seconds_ago": "{{count}}s ago",
+		"minutes_ago": "{{count}}m ago",
+		"hours_ago": "{{count}}h ago",
+		"days_ago": "{{count}}d ago",
+		"connection_error_stale": "Connection issue, showing last results",
+		"cumulative": "cumulative",
+		"advancement": "Advancement",
+		"wca_live_schedule": "Schedule",
+		"wca_live_records": "Records",
+		"wca_live_no_results": "No results yet for this round",
+		"round_status_done": "Done",
+		"round_status_live": "Live",
+		"round_status_open": "Open",
+		"round_status_upcoming": "Upcoming",
+		"back_to_competition": "Back to competition",
+		"back": "Back",
+		"loading": "Loading..."
 	},
 	"competitions": {
 		"page_title": "WCA Competitions",
@@ -548,18 +582,8 @@
 		"col_name": "Name",
 		"col_events": "Events"
 	},
-	"friends": {
-		"friends_tab": "Friends",
-		"friends_count": "friends",
-		"received_tab": "Received",
-		"received_count": "received requests",
-		"sent_tab": "Sent",
-		"sent_count": "sent requests"
-	},
 	"notification_prefs": {
 		"email_notifications": "Email Notifications",
-		"friend_request_accepted": "Friend request accepted",
-		"friend_request_received": "Friend request received",
 		"marketing_emails": "Tips, updates, and other emails from Zkt-Timer"
 	},
 	"announcement_dropdown": {
@@ -1606,18 +1630,6 @@
 		"button_color": "Button color",
 		"apply_changes": "Apply Changes",
 		"reset_to_defaults": "Reset to Defaults"
-	},
-	"friendship": {
-		"unfriended": "{{username}} has been unfriended",
-		"request_cancelled": "Friend request to {{username}} has been cancelled",
-		"request_accepted": "{{username}}'s friend request has been accepted",
-		"request_sent": "Friend request sent to {{username}}",
-		"add_friend": "Add Friend",
-		"friends": "Friends",
-		"unfriend": "Unfriend",
-		"accept_request": "Accept Request",
-		"request_sent_status": "Request Sent",
-		"cancel_request": "Cancel Request"
 	},
 	"report": {
 		"last_report": "Last report {{date}}",

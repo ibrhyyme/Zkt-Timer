@@ -460,12 +460,7 @@
 		"success": "Şifre başarıyla güncellendi"
 	},
 	"community_nav": {
-		"page_title": "Topluluk",
-		"leaderboards": "Lider Tahtası",
-		"competitions": "Yarışmalar",
-		"my_schedule": "Programım",
-		"friends": "Arkadaşlar",
-		"search_placeholder": "Kullanıcı adı ara"
+		"page_title": "Yarışmalar"
 	},
 	"my_schedule": {
 		"page_title": "Yarışma Programım",
@@ -534,7 +529,46 @@
 		"back_to_events": "Etkinliklere dön",
 		"pb_type": "Tür",
 		"pb_best": "En İyi",
-		"view_assignments": "Görevlerini Görüntüle"
+		"view_assignments": "Görevlerini Görüntüle",
+		"live_results": "Canlı Sonuçlar",
+		"final_results": "Final Sonuçları",
+		"col_rank": "#",
+		"col_best": "En İyi",
+		"col_average": "Ortalama",
+		"col_attempts": "Çözümler",
+		"col_event": "Etkinlik",
+		"col_round": "Tur",
+		"round_active": "Devam Ediyor",
+		"round_finished": "Tamamlandı",
+		"competition_results": "Yarışma Sonuçları",
+		"wca_live": "WCA Live",
+		"wca_live_select_event": "Etkinlik seçin",
+		"wca_live_unavailable": "Bu yarışma WCA Live'da bulunamadı",
+		"wca_live_no_events": "Bu yarışmada henüz etkinlik bulunmuyor",
+		"wca_live_no_rounds": "Bu etkinliğin henüz turu yok",
+		"wca_live_podiums": "Podyum",
+		"refresh": "Yenile",
+		"col_country": "Ülke",
+		"show_more": "{{count}} tane daha göster",
+		"updated_just_now": "Az önce güncellendi",
+		"updated_x_ago": "{{value}} güncellendi",
+		"seconds_ago": "{{count}} saniye önce",
+		"minutes_ago": "{{count}} dakika önce",
+		"hours_ago": "{{count}} saat önce",
+		"days_ago": "{{count}} gün önce",
+		"connection_error_stale": "Bağlantı sorunu, son sonuçlar görüntüleniyor",
+		"cumulative": "kümülatif",
+		"advancement": "Geçiş",
+		"wca_live_schedule": "Program",
+		"wca_live_records": "Rekorlar",
+		"wca_live_no_results": "Bu round için henüz sonuç yok",
+		"round_status_done": "Tamamlandı",
+		"round_status_live": "Canlı",
+		"round_status_open": "Açık",
+		"round_status_upcoming": "Yakında",
+		"back_to_competition": "Yarışmaya dön",
+		"back": "Geri",
+		"loading": "Yükleniyor..."
 	},
 	"competitions": {
 		"page_title": "WCA Yarışmaları",
@@ -548,18 +582,8 @@
 		"col_name": "Ad",
 		"col_events": "Etkinlikler"
 	},
-	"friends": {
-		"friends_tab": "Arkadaşlar",
-		"friends_count": "arkadaş",
-		"received_tab": "Gelen",
-		"received_count": "gelen istek",
-		"sent_tab": "Gönderilen",
-		"sent_count": "gönderilen istek"
-	},
 	"notification_prefs": {
 		"email_notifications": "E-posta Bildirimleri",
-		"friend_request_accepted": "Arkadaş isteği kabul edildi",
-		"friend_request_received": "Arkadaş isteği alındı",
 		"marketing_emails": "Zkt-Timer'dan ipucu, güncellemeler ve diğer e-postalar"
 	},
 	"announcement_dropdown": {
@@ -1606,18 +1630,6 @@
 		"button_color": "Buton rengi",
 		"apply_changes": "Değişiklikleri Uygula",
 		"reset_to_defaults": "Varsayılana Geri Dön"
-	},
-	"friendship": {
-		"unfriended": "{{username}} arkadaşlıktan çıkarıldı",
-		"request_cancelled": "{{username}} kullanıcısına gönderilen istek iptal edildi",
-		"request_accepted": "{{username}} kullanıcısının arkadaşlık isteği kabul edildi",
-		"request_sent": "{{username}} kullanıcısına arkadaşlık isteği gönderildi",
-		"add_friend": "Arkadaş Ekle",
-		"friends": "Arkadaşlar",
-		"unfriend": "Arkadaşlıktan Çıkar",
-		"accept_request": "İsteği Kabul Et",
-		"request_sent_status": "İstek Gönderildi",
-		"cancel_request": "İsteği İptal Et"
 	},
 	"report": {
 		"last_report": "Son rapor {{date}}",

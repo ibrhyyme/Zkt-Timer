@@ -49,10 +49,6 @@ model UserAccount {
   email_log                     EmailLog[]
   forgot_password               ForgotPassword[]
   email_verifications           EmailVerification[]
-  friendships_other             Friendship[]            @relation("friendship_other_user")
-  friendships                   Friendship[]            @relation("friendship_user")
-  friendship_requests_sent      FriendshipRequest[]     @relation("friendship_request_from_user")
-  friendships_requests_received FriendshipRequest[]     @relation("friendship_request_to_user")
   image                         Image[]
   integrations                  Integration[]
   metric_logs                   MetricLog[]
@@ -191,8 +187,6 @@ model MetricLog {
 model NotificationPreference {
   id                    String      @id @default(uuid())
   user_id               String      @unique
-  friend_request        Boolean     @default(true)
-  friend_request_accept Boolean     @default(true)
   created_at            DateTime    @default(now())
   marketing_emails      Boolean     @default(true)
   membership_granted    Boolean     @default(true)
@@ -200,37 +194,6 @@ model NotificationPreference {
 
   @@index([user_id])
   @@map("notification_preference")
-}
-
-model FriendshipRequest {
-  id          String       @id @default(uuid())
-  from_id     String
-  to_id       String
-  created_at  DateTime     @default(now())
-  accepted_at DateTime?
-  friendship  Friendship[]
-  from_user   UserAccount  @relation("friendship_request_from_user", fields: [from_id], references: [id], onDelete: Cascade)
-  to_user     UserAccount  @relation("friendship_request_to_user", fields: [to_id], references: [id], onDelete: Cascade)
-
-  @@index([from_id])
-  @@index([to_id])
-  @@map("friendship_request")
-}
-
-model Friendship {
-  id                    String            @id @default(uuid())
-  user_id               String
-  other_user_id         String
-  friendship_request_id String
-  created_at            DateTime          @default(now())
-  friendship_request    FriendshipRequest @relation(fields: [friendship_request_id], references: [id], onDelete: Cascade)
-  other_user            UserAccount       @relation("friendship_other_user", fields: [other_user_id], references: [id], onDelete: Cascade)
-  user                  UserAccount       @relation("friendship_user", fields: [user_id], references: [id], onDelete: Cascade)
-
-  @@index([friendship_request_id])
-  @@index([other_user_id])
-  @@index([user_id])
-  @@map("friendship")
 }
 
 model Profile {

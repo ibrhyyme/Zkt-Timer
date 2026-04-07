@@ -1,7 +1,7 @@
 import React, {useState, useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useHistory} from 'react-router-dom';
-import {CalendarBlank, MapPin, Info, MagnifyingGlass, Users, ListBullets, ChartBar, Globe} from 'phosphor-react';
+import {CalendarBlank, MapPin, Info, MagnifyingGlass, Users, ListBullets, ChartBar, Globe, Broadcast} from 'phosphor-react';
 import {openInAppBrowser, openInMaps} from '../../../util/external-link';
 import {useCompetitionData} from './CompetitionLoader';
 import {
@@ -9,11 +9,13 @@ import {
 	getEventShortName, getRoleLabel,
 	formatRoundFormat,
 } from './shared';
+import {useNow} from '../../../util/hooks/useNow';
 
-type TabId = 'groups' | 'events' | 'schedule' | 'rankings' | 'info';
+type TabId = 'groups' | 'events' | 'schedule' | 'rankings' | 'info' | 'wca-live';
 
 export default function CompetitionDetail() {
 	const {t, i18n} = useTranslation();
+	const history = useHistory();
 	const {detail} = useCompetitionData();
 	const locale = I18N_LOCALE_MAP[i18n.language] || i18n.language;
 
@@ -23,11 +25,26 @@ export default function CompetitionDetail() {
 
 	const TABS: {id: TabId; label: string; icon: any; count?: number}[] = [
 		{id: 'groups', label: t('my_schedule.tab_groups'), icon: Users, count: detail.competitors.length},
+	];
+
+	if (detail.wcaLiveCompId) {
+		TABS.push({id: 'wca-live', label: t('my_schedule.wca_live'), icon: Broadcast});
+	}
+
+	TABS.push(
 		{id: 'events', label: t('my_schedule.tab_events'), icon: ListBullets, count: detail.events.length},
 		{id: 'schedule', label: t('my_schedule.tab_schedule'), icon: CalendarBlank},
 		{id: 'rankings', label: t('my_schedule.tab_rankings'), icon: ChartBar},
 		{id: 'info', label: t('my_schedule.tab_info'), icon: Globe},
-	];
+	);
+
+	function handleTabClick(tabId: TabId) {
+		if (tabId === 'wca-live') {
+			history.push(`/community/competitions/${detail.competitionId}/wca-live`);
+			return;
+		}
+		setActiveTab(tabId);
+	}
 
 	return (
 		<div className={b('detail')}>
@@ -49,7 +66,7 @@ export default function CompetitionDetail() {
 					<button
 						key={tab.id}
 						className={b('tab', {active: activeTab === tab.id})}
-						onClick={() => setActiveTab(tab.id)}
+						onClick={() => handleTabClick(tab.id)}
 					>
 						<tab.icon size={16} />
 						{tab.label}
@@ -301,11 +318,19 @@ function RoundPanel({row, competitionId, locale, t}: any) {
 
 function ScheduleTab({schedule, competitionId, locale, t}: any) {
 	const history = useHistory();
+	const now = useNow(60000);
 	// Ilk gun acik, digerler kapali
 	const [openDays, setOpenDays] = useState<Set<string>>(() => {
 		if (schedule.length > 0) return new Set([schedule[0].date]);
 		return new Set();
 	});
+
+	function isOngoing(a: any): boolean {
+		if (!a.startTime || !a.endTime) return false;
+		const start = new Date(a.startTime).getTime();
+		const end = new Date(a.endTime).getTime();
+		return now >= start && now < end;
+	}
 
 	function toggleDay(date: string) {
 		setOpenDays((prev) => {
@@ -337,7 +362,7 @@ function ScheduleTab({schedule, competitionId, locale, t}: any) {
 								{day.assignments.map((a: any, idx: number) => (
 									<div
 										key={idx}
-										className={b('assignment', {clickable: true})}
+										className={b('assignment', {clickable: true, ongoing: isOngoing(a)})}
 										onClick={() => history.push(`/community/competitions/${competitionId}/activities/${a.activityCode}`)}
 									>
 										<div className={b('time')}>

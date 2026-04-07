@@ -9,12 +9,6 @@ export class NotificationPreference {
 	user_id: string;
 
 	@Field()
-	friend_request: boolean;
-
-	@Field()
-	friend_request_accept: boolean;
-
-	@Field()
 	marketing_emails: boolean;
 
 	@Field()

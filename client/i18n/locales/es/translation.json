@@ -460,12 +460,7 @@
 		"success": "Contraseña actualizada exitosamente"
 	},
 	"community_nav": {
-		"page_title": "Comunidad",
-		"leaderboards": "Clasificaciones",
-		"competitions": "Competencias",
-		"my_schedule": "Mi Programa",
-		"friends": "Amigos",
-		"search_placeholder": "Buscar nombre de usuario"
+		"page_title": "Competiciones"
 	},
 	"my_schedule": {
 		"page_title": "Mi Programa de Competencia",
@@ -534,7 +529,46 @@
 		"back_to_events": "Volver a Eventos",
 		"pb_type": "Tipo",
 		"pb_best": "Mejor",
-		"view_assignments": "Ver Asignaciones"
+		"view_assignments": "Ver Asignaciones",
+		"live_results": "Resultados en Vivo",
+		"final_results": "Resultados Finales",
+		"col_rank": "#",
+		"col_best": "Mejor",
+		"col_average": "Promedio",
+		"col_attempts": "Intentos",
+		"col_event": "Evento",
+		"col_round": "Ronda",
+		"round_active": "En Progreso",
+		"round_finished": "Completado",
+		"competition_results": "Resultados de la Competición",
+		"wca_live": "WCA Live",
+		"wca_live_select_event": "Selecciona un evento",
+		"wca_live_unavailable": "Esta competición no está disponible en WCA Live",
+		"wca_live_no_events": "Esta competición aún no tiene eventos",
+		"wca_live_no_rounds": "Este evento aún no tiene rondas",
+		"wca_live_podiums": "Podios",
+		"refresh": "Actualizar",
+		"col_country": "País",
+		"show_more": "Mostrar {{count}} más",
+		"updated_just_now": "Actualizado ahora",
+		"updated_x_ago": "Actualizado hace {{value}}",
+		"seconds_ago": "{{count}}s",
+		"minutes_ago": "{{count}}m",
+		"hours_ago": "{{count}}h",
+		"days_ago": "{{count}}d",
+		"connection_error_stale": "Problema de conexión, mostrando últimos resultados",
+		"cumulative": "acumulativo",
+		"advancement": "Avance",
+		"wca_live_schedule": "Horario",
+		"wca_live_records": "Récords",
+		"wca_live_no_results": "Aún no hay resultados para esta ronda",
+		"round_status_done": "Finalizado",
+		"round_status_live": "En Vivo",
+		"round_status_open": "Abierto",
+		"round_status_upcoming": "Próximo",
+		"back_to_competition": "Volver a la competición",
+		"back": "Atrás",
+		"loading": "Cargando..."
 	},
 	"competitions": {
 		"page_title": "Competencias WCA",
@@ -548,18 +582,8 @@
 		"col_name": "Nombre",
 		"col_events": "Eventos"
 	},
-	"friends": {
-		"friends_tab": "Amigos",
-		"friends_count": "amigos",
-		"received_tab": "Recibidas",
-		"received_count": "solicitudes recibidas",
-		"sent_tab": "Enviadas",
-		"sent_count": "solicitudes enviadas"
-	},
 	"notification_prefs": {
 		"email_notifications": "Notificaciones por correo electrónico",
-		"friend_request_accepted": "Solicitud de amistad aceptada",
-		"friend_request_received": "Solicitud de amistad recibida",
 		"marketing_emails": "Consejos, actualizaciones y otros correos de Zkt-Timer"
 	},
 	"announcement_dropdown": {
@@ -1606,18 +1630,6 @@
 		"button_color": "Color del botón",
 		"apply_changes": "Aplicar cambios",
 		"reset_to_defaults": "Restablecer valores predeterminados"
-	},
-	"friendship": {
-		"unfriended": "{{username}} ha sido eliminado de amigos",
-		"request_cancelled": "La solicitud de amistad a {{username}} ha sido cancelada",
-		"request_accepted": "La solicitud de amistad de {{username}} ha sido aceptada",
-		"request_sent": "Solicitud de amistad enviada a {{username}}",
-		"add_friend": "Agregar amigo",
-		"friends": "Amigos",
-		"unfriend": "Eliminar amigo",
-		"accept_request": "Aceptar solicitud",
-		"request_sent_status": "Solicitud enviada",
-		"cancel_request": "Cancelar solicitud"
 	},
 	"report": {
 		"last_report": "Último reporte {{date}}",

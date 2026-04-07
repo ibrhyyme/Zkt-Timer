@@ -5,7 +5,7 @@
 			<loc>https://zktimer.app/</loc>
 			<priority>1</priority>
 			<changefreq>daily</changefreq>
-			<lastmod>2026-04-06</lastmod>
+			<lastmod>2026-04-07</lastmod>
 		</url>
 	
 
@@ -13,119 +13,119 @@
 			<loc>https://zktimer.app/timer</loc>
 			<priority>0.998</priority>
 			<changefreq>daily</changefreq>
-			<lastmod>2026-04-06</lastmod>
+			<lastmod>2026-04-07</lastmod>
 		</url>
 	
 
 		<url>
 			<loc>https://zktimer.app/signup</loc>
-			<priority>0.996</priority>
+			<priority>0.997</priority>
 			<changefreq>monthly</changefreq>
-			<lastmod>2026-04-06</lastmod>
+			<lastmod>2026-04-07</lastmod>
 		</url>
 	
 
 		<url>
 			<loc>https://zktimer.app/login</loc>
-			<priority>0.994</priority>
+			<priority>0.995</priority>
 			<changefreq>monthly</changefreq>
-			<lastmod>2026-04-06</lastmod>
+			<lastmod>2026-04-07</lastmod>
 		</url>
 	
 
 		<url>
 			<loc>https://zktimer.app/verify-email</loc>
-			<priority>0.99</priority>
+			<priority>0.992</priority>
 			<changefreq>monthly</changefreq>
-			<lastmod>2026-04-06</lastmod>
+			<lastmod>2026-04-07</lastmod>
 		</url>
 	
 
 		<url>
 			<loc>https://zktimer.app/wca-signup</loc>
-			<priority>0.989</priority>
+			<priority>0.991</priority>
 			<changefreq>monthly</changefreq>
-			<lastmod>2026-04-06</lastmod>
+			<lastmod>2026-04-07</lastmod>
 		</url>
 	
 
 		<url>
 			<loc>https://zktimer.app/solves</loc>
-			<priority>0.985</priority>
+			<priority>0.988</priority>
 			<changefreq>weekly</changefreq>
-			<lastmod>2026-04-06</lastmod>
+			<lastmod>2026-04-07</lastmod>
 		</url>
 	
 
 		<url>
 			<loc>https://zktimer.app/stats</loc>
-			<priority>0.983</priority>
+			<priority>0.986</priority>
 			<changefreq>weekly</changefreq>
-			<lastmod>2026-04-06</lastmod>
+			<lastmod>2026-04-07</lastmod>
 		</url>
 	
 
 		<url>
 			<loc>https://zktimer.app/terms</loc>
-			<priority>0.972</priority>
+			<priority>0.977</priority>
 			<changefreq>yearly</changefreq>
-			<lastmod>2026-04-06</lastmod>
+			<lastmod>2026-04-07</lastmod>
 		</url>
 	
 
 		<url>
 			<loc>https://zktimer.app/privacy</loc>
-			<priority>0.97</priority>
+			<priority>0.976</priority>
 			<changefreq>yearly</changefreq>
-			<lastmod>2026-04-06</lastmod>
+			<lastmod>2026-04-07</lastmod>
 		</url>
 	
 
 		<url>
 			<loc>https://zktimer.app/credits</loc>
-			<priority>0.969</priority>
+			<priority>0.975</priority>
 			<changefreq>yearly</changefreq>
-			<lastmod>2026-04-06</lastmod>
+			<lastmod>2026-04-07</lastmod>
 		</url>
 	
 
 		<url>
 			<loc>https://zktimer.app/welcome</loc>
-			<priority>0.967</priority>
+			<priority>0.973</priority>
 			<changefreq>daily</changefreq>
-			<lastmod>2026-04-06</lastmod>
+			<lastmod>2026-04-07</lastmod>
 		</url>
 	
 
 		<url>
 			<loc>https://zktimer.app/trainer</loc>
-			<priority>0.958</priority>
+			<priority>0.966</priority>
 			<changefreq>daily</changefreq>
-			<lastmod>2026-04-06</lastmod>
-		</url>
-	
-
-		<url>
-			<loc>https://zktimer.app/community/competitions</loc>
-			<priority>0.94</priority>
-			<changefreq>monthly</changefreq>
-			<lastmod>2026-04-06</lastmod>
+			<lastmod>2026-04-07</lastmod>
 		</url>
 	
 
 		<url>
 			<loc>https://zktimer.app/battle</loc>
-			<priority>0.932</priority>
+			<priority>0.941</priority>
 			<changefreq>monthly</changefreq>
-			<lastmod>2026-04-06</lastmod>
+			<lastmod>2026-04-07</lastmod>
 		</url>
 	
 
 		<url>
 			<loc>https://zktimer.app/rooms</loc>
-			<priority>0.93</priority>
+			<priority>0.939</priority>
 			<changefreq>daily</changefreq>
-			<lastmod>2026-04-06</lastmod>
+			<lastmod>2026-04-07</lastmod>
+		</url>
+	
+
+		<url>
+			<loc>https://zktimer.app/contests</loc>
+			<priority>0.936</priority>
+			<changefreq>monthly</changefreq>
+			<lastmod>2026-04-07</lastmod>
 		</url>
 			  
 		</urlset> 

@@ -2,9 +2,9 @@ import React, {createContext, useContext, useState, useEffect} from 'react';
 import {gqlQueryTyped} from '../../api';
 import {WcaCompetitionDetailDocument} from '../../../@types/generated/graphql';
 import {b} from './shared';
-import {resourceUri} from '../../../util/storage';
 import {Info} from 'phosphor-react';
 import {useTranslation} from 'react-i18next';
+import {prefetchWcaLiveOverview} from './useLiveResults';
 
 interface CompetitionData {
 	detail: any;
@@ -21,17 +21,20 @@ export function useCompetitionData(): CompetitionData {
 }
 
 // Module-level cache - component unmount olsa bile veri korunur
-const CACHE_TTL = 15 * 60 * 1000; // 15 dakika
+// SWR pattern: stale veriyi hemen goster, arka planda yenile
+const FRESH_TTL = 60 * 60 * 1000; // 1 saat — fresh
+const STALE_TTL = 24 * 60 * 60 * 1000; // 24 saat — stale-but-show
 const detailCache = new Map<string, {data: any; ts: number}>();
 
-function getCached(id: string): any | null {
+function getCached(id: string): {data: any; isStale: boolean} | null {
 	const entry = detailCache.get(id);
 	if (!entry) return null;
-	if (Date.now() - entry.ts > CACHE_TTL) {
+	const age = Date.now() - entry.ts;
+	if (age > STALE_TTL) {
 		detailCache.delete(id);
 		return null;
 	}
-	return entry.data;
+	return {data: entry.data, isStale: age > FRESH_TTL};
 }
 
 interface CompetitionLoaderProps {
@@ -39,21 +42,58 @@ interface CompetitionLoaderProps {
 	children: React.ReactNode;
 }
 
+// Background prefetch helper — disaridan cagrilabilir (liste/hover prefetch icin)
+export function prefetchCompetitionDetail(competitionId: string): void {
+	const cached = getCached(competitionId);
+	if (cached && !cached.isStale) return; // taze, gerek yok
+
+	gqlQueryTyped(WcaCompetitionDetailDocument, {input: {competitionId}}, {fetchPolicy: 'no-cache'})
+		.then((res) => {
+			const data = res.data?.wcaCompetitionDetail;
+			if (data) detailCache.set(competitionId, {data, ts: Date.now()});
+		})
+		.catch(() => {});
+}
+
 export default function CompetitionLoader({competitionId, children}: CompetitionLoaderProps) {
 	const {t} = useTranslation();
-	const [detail, setDetail] = useState<any>(() => getCached(competitionId));
-	const [loading, setLoading] = useState(!getCached(competitionId));
+	const initialCached = getCached(competitionId);
+	const [detail, setDetail] = useState<any>(initialCached?.data || null);
+	const [loading, setLoading] = useState(!initialCached);
 	const [error, setError] = useState<string | null>(null);
+
+	// WCA Live overview prefetch — detail geldiginde sessizce arka planda yukle
+	useEffect(() => {
+		if (detail?.wcaLiveCompId) {
+			prefetchWcaLiveOverview(competitionId).catch(() => {});
+		}
+	}, [detail?.wcaLiveCompId, competitionId]);
 
 	useEffect(() => {
 		const cached = getCached(competitionId);
+
+		// Cache'de var (fresh veya stale) → hemen goster
 		if (cached) {
-			setDetail(cached);
+			setDetail(cached.data);
 			setLoading(false);
 			setError(null);
+
+			// Stale ise arka planda sessizce yenile
+			if (cached.isStale) {
+				gqlQueryTyped(WcaCompetitionDetailDocument, {input: {competitionId}}, {fetchPolicy: 'no-cache'})
+					.then((res) => {
+						const data = res.data?.wcaCompetitionDetail;
+						if (data) {
+							detailCache.set(competitionId, {data, ts: Date.now()});
+							setDetail(data);
+						}
+					})
+					.catch(() => {});
+			}
 			return;
 		}
 
+		// Cache'de yok → loading goster, fetch et
 		let cancelled = false;
 		setLoading(true);
 		setError(null);
@@ -84,8 +124,11 @@ export default function CompetitionLoader({competitionId, children}: Competition
 
 	if (loading) {
 		return (
-			<div className={b('loading')}>
-				<img src={resourceUri('/images/zkt-logo.png')} alt="" className={b('loading-logo')} />
+			<div className={b('edge-loading')}>
+				<div className={b('edge-runner', {top: true})} />
+				<div className={b('edge-runner', {right: true})} />
+				<div className={b('edge-runner', {bottom: true})} />
+				<div className={b('edge-runner', {left: true})} />
 			</div>
 		);
 	}

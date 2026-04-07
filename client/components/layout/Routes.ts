@@ -14,7 +14,6 @@ import Solves from '../solves/SolvesList';
 import Profile, { prefetchProfileData } from '../profile/Profile';
 import Admin from '../admin/Admin';
 import SolvePage, { prefetchSolveData } from '../solve_page/SolvePage';
-import Friends from '../community/friends/Friends';
 import NotificationPreferences from '../account/notification_preferences/NotificationPreferences';
 
 import Privacy from '../landing/legal/Privacy';
@@ -154,11 +153,11 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/community/competitions/:competitionId/personal-bests/:wcaId', App, Community, MySchedule),
 	route('/community/competitions/:competitionId/persons/:registrantId', App, Community, MySchedule),
 	route('/community/competitions/:competitionId/activities/:activityCode', App, Community, MySchedule),
+	route('/community/competitions/:competitionId/wca-live/:eventId/:roundNumber', App, Community, MySchedule),
+	route('/community/competitions/:competitionId/wca-live/:eventId', App, Community, MySchedule),
+	route('/community/competitions/:competitionId/wca-live', App, Community, MySchedule),
 	route('/community/competitions/:competitionId', App, Community, MySchedule),
 	route('/community/competitions', App, Community, MySchedule),
-	route('/community/friends/list', App, Community, Friends),
-	route('/community/friends/received', App, Community, Friends),
-	route('/community/friends/sent', App, Community, Friends),
 
 	// Battle (mobile only)
 	route('/battle', null, App, Battle, false, false, false, false, true),
@@ -184,7 +183,7 @@ export const routes: (PageContext | RedirectPath)[] = [
 	routeRedirect('/account', '/account/personal-info'),
 	routeRedirect('/pro', '/account/pro'),
 	routeRedirect('/account/password', '/account/personal-info'),
-	routeRedirect('/community/friends', '/community/friends/list'),
+	routeRedirect('/community/friends', '/community/competitions'),
 	routeRedirect('/community', '/community/competitions'),
 	routeRedirect('/admin', '/admin/reports'),
 ];

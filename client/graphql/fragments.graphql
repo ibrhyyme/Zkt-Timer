@@ -185,37 +185,8 @@ fragment SolveWithUserFragment on Solve {
 	}
 }
 
-fragment FriendshipFragment on Friendship {
-	id
-	user_id
-	other_user_id
-	user {
-		...PublicUserWithEloFragment
-	}
-	other_user {
-		...PublicUserWithEloFragment
-	}
-	created_at
-}
-
 fragment NotificationPreferenceFragment on NotificationPreference {
-	friend_request
-	friend_request_accept
 	marketing_emails
-}
-
-fragment FriendshipRequestFragment on FriendshipRequest {
-	id
-	from_id
-	to_id
-	accepted
-	from_user {
-		...PublicUserWithEloFragment
-	}
-	to_user {
-		...PublicUserWithEloFragment
-	}
-	created_at
 }
 
 fragment NotificationFragment on Notification {
