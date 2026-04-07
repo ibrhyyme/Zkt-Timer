@@ -460,12 +460,7 @@
 		"success": "Пароль успешно обновлён"
 	},
 	"community_nav": {
-		"page_title": "Сообщество",
-		"leaderboards": "Таблица лидеров",
-		"competitions": "Соревнования",
-		"friends": "Друзья",
-		"search_placeholder": "Поиск по имени пользователя",
-		"my_schedule": "Моё расписание"
+		"page_title": "Соревнования"
 	},
 	"my_schedule": {
 		"page_title": "Моё расписание соревнований",
@@ -534,7 +529,46 @@
 		"back_to_events": "К дисциплинам",
 		"pb_type": "Тип",
 		"pb_best": "Лучший",
-		"view_assignments": "Посмотреть назначения"
+		"view_assignments": "Посмотреть назначения",
+		"live_results": "Результаты в реальном времени",
+		"final_results": "Финальные результаты",
+		"col_rank": "#",
+		"col_best": "Лучший",
+		"col_average": "Среднее",
+		"col_attempts": "Попытки",
+		"col_event": "Дисциплина",
+		"col_round": "Раунд",
+		"round_active": "В процессе",
+		"round_finished": "Завершено",
+		"competition_results": "Результаты соревнования",
+		"wca_live": "WCA Live",
+		"wca_live_select_event": "Выберите дисциплину",
+		"wca_live_unavailable": "Это соревнование недоступно на WCA Live",
+		"wca_live_no_events": "В этом соревновании пока нет дисциплин",
+		"wca_live_no_rounds": "В этой дисциплине пока нет раундов",
+		"wca_live_podiums": "Подиумы",
+		"refresh": "Обновить",
+		"col_country": "Страна",
+		"show_more": "Показать ещё {{count}}",
+		"updated_just_now": "Только что обновлено",
+		"updated_x_ago": "Обновлено {{value}}",
+		"seconds_ago": "{{count}}с назад",
+		"minutes_ago": "{{count}}м назад",
+		"hours_ago": "{{count}}ч назад",
+		"days_ago": "{{count}}д назад",
+		"connection_error_stale": "Проблема соединения, показаны последние результаты",
+		"cumulative": "накопительный",
+		"advancement": "Проход",
+		"wca_live_schedule": "Расписание",
+		"wca_live_records": "Рекорды",
+		"wca_live_no_results": "Пока нет результатов для этого раунда",
+		"round_status_done": "Завершено",
+		"round_status_live": "В эфире",
+		"round_status_open": "Открыт",
+		"round_status_upcoming": "Скоро",
+		"back_to_competition": "К соревнованию",
+		"back": "Назад",
+		"loading": "Загрузка..."
 	},
 	"competitions": {
 		"page_title": "Соревнования WCA",
@@ -548,18 +582,8 @@
 		"col_name": "Название",
 		"col_events": "Дисциплины"
 	},
-	"friends": {
-		"friends_tab": "Друзья",
-		"friends_count": "друзей",
-		"received_tab": "Полученные",
-		"received_count": "полученных запросов",
-		"sent_tab": "Отправленные",
-		"sent_count": "отправленных запросов"
-	},
 	"notification_prefs": {
 		"email_notifications": "Уведомления по почте",
-		"friend_request_accepted": "Запрос в друзья принят",
-		"friend_request_received": "Получен запрос в друзья",
 		"marketing_emails": "Советы, обновления и другие письма от Zkt-Timer"
 	},
 	"announcement_dropdown": {
@@ -1606,18 +1630,6 @@
 		"button_color": "Цвет кнопок",
 		"apply_changes": "Применить изменения",
 		"reset_to_defaults": "Сбросить по умолчанию"
-	},
-	"friendship": {
-		"unfriended": "{{username}} удалён(а) из друзей",
-		"request_cancelled": "Запрос в друзья к {{username}} отменён",
-		"request_accepted": "Запрос в друзья от {{username}} принят",
-		"request_sent": "Запрос в друзья отправлен {{username}}",
-		"add_friend": "Добавить в друзья",
-		"friends": "Друзья",
-		"unfriend": "Удалить из друзей",
-		"accept_request": "Принять запрос",
-		"request_sent_status": "Запрос отправлен",
-		"cancel_request": "Отменить запрос"
 	},
 	"report": {
 		"last_report": "Последняя жалоба {{date}}",

@@ -1,6 +1,5 @@
 // File name starts with "_" to keep it at the top of the folder
 
-export * from './Friendship.resolver';
 export * from './UserSearch.resolver';
 export * from './Solve.resolver';
 export * from './Session.resolver';

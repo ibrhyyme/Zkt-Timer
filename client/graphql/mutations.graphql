@@ -1,28 +1,3 @@
-mutation deleteFriendshipRequest($friendshipRequestId: String!) {
-	deleteFriendshipRequest(friendshipRequestId: $friendshipRequestId) {
-		...FriendshipRequestFragment
-	}
-}
-
-mutation acceptFriendshipRequest($friendshipRequestId: String!) {
-	acceptFriendshipRequest(friendshipRequestId: $friendshipRequestId) {
-		...FriendshipFragment
-	}
-}
-
-mutation unfriend($targetUserId: String!) {
-	unfriend(targetUserId: $targetUserId) {
-		...FriendshipFragment
-	}
-}
-
-mutation sendFriendshipRequest($toUserId: String) {
-	sendFriendshipRequest(toUserId: $toUserId) {
-		...FriendshipRequestFragment
-	}
-}
-
-
 mutation mergeSessions($oldSessionId: String, $newSessionId: String) {
 	mergeSessions(oldSessionId: $oldSessionId, newSessionId: $newSessionId) {
 		...SessionFragment

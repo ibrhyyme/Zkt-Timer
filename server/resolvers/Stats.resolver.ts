@@ -8,11 +8,6 @@ export async function getStatsByUserId(context: GraphQLContext, userId: string) 
 	const {prisma, user} = context;
 
 	const promises = await Promise.all([
-		prisma.friendship.count({
-			where: {
-				user_id: userId,
-			},
-		}),
 		prisma.profileView.count({
 			where: {
 				profile_user_id: user.id,
@@ -25,12 +20,10 @@ export async function getStatsByUserId(context: GraphQLContext, userId: string) 
 		}),
 	]);
 
-	const friendCount = promises[0];
-	let profileViews = promises[1];
-	let solveViews = promises[2];
+	let profileViews = promises[0];
+	let solveViews = promises[1];
 
 	return {
-		friend_count: friendCount,
 		profile_views: profileViews,
 		solve_views: solveViews,
 	};

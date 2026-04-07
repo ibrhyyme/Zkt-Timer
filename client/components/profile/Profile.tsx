@@ -13,7 +13,6 @@ import About from './about/About';
 import { setSsrValue } from '../../actions/ssr';
 import Header from '../layout/header/Header';
 import WCA from './wca/WCA';
-import FriendshipRequest from './friendship_request/FriendshipRequest';
 import Avatar from '../common/avatar/Avatar';
 import { getStorageURL, resourceUri } from '../../util/storage';
 import { Image, Profile as ProfileSchema, PublicUserAccount, TopAverage, TopSolve } from '../../@types/generated/graphql';
@@ -538,7 +537,6 @@ export default function Profile() {
 									{(user as any).mod && !(user as any).admin && <span className={b('role-badge', { mod: true })}>Mod</span>}
 								</div>
 								<div className={b('identity-actions')}>
-									<FriendshipRequest user={user as any} fetchData />
 									<WCA myProfile={myProfile} user={user} />
 									<AvatarDropdown user={user as any} />
 								</div>
@@ -568,7 +566,6 @@ export default function Profile() {
 							</div>
 							<SocialIcons profile={profile} />
 							<div className={b('identity-actions', { centered: true })}>
-								<FriendshipRequest user={user as any} fetchData />
 								<WCA myProfile={myProfile} user={user} />
 								{mobileMode && <MobileNav />}
 								{!mobileMode && <AvatarDropdown user={user as any} />}

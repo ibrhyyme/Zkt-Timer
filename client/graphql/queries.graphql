@@ -1,15 +1,3 @@
-query receivedFriendshipRequestsFromUser($userId: String!) {
-	receivedFriendshipRequestsFromUser(userId: $userId) {
-		...FriendshipRequestFragment
-	}
-}
-
-query sentFriendshipRequestsToUser($userId: String!) {
-	sentFriendshipRequestsToUser(userId: $userId) {
-		...FriendshipRequestFragment
-	}
-}
-
 query solveByShareCode($shareCode: String) {
 	solveByShareCode(shareCode: $shareCode) {
 		...SolveWithUserFragment
@@ -234,6 +222,10 @@ query wcaCompetitionDetail($input: WcaScheduleInput!) {
 			wcaId
 			liveId
 		}
+		wcaLiveRoundMap {
+			activityCode
+			liveRoundId
+		}
 		info {
 			venues {
 				name
@@ -253,6 +245,108 @@ query wcaCompetitionDetail($input: WcaScheduleInput!) {
 				avatar
 			}
 			wcaUrl
+		}
+	}
+}
+
+query wcaLiveCompetitionOverview($input: WcaLiveOverviewInput!) {
+	wcaLiveCompetitionOverview(input: $input) {
+		compId
+		name
+		events {
+			eventId
+			eventName
+			rounds {
+				liveRoundId
+				number
+				name
+				open
+				finished
+				active
+				numEntered
+				numResults
+				format {
+					numberOfAttempts
+					sortBy
+				}
+				timeLimit {
+					centiseconds
+					cumulativeRoundWcifIds
+				}
+				cutoff {
+					attemptResult
+					numberOfAttempts
+				}
+				advancementCondition {
+					type
+					level
+				}
+			}
+		}
+		schedule {
+			name
+			rooms {
+				name
+				color
+				activities {
+					activityId
+					name
+					activityCode
+					startTime
+					endTime
+				}
+			}
+		}
+		records {
+			type
+			tag
+			eventId
+			eventName
+			attemptResult
+			personName
+			personCountryIso2
+			roundNumber
+		}
+		podiums {
+			eventId
+			eventName
+			sortBy
+			entries {
+				ranking
+				personName
+				personCountryIso2
+				best
+				average
+				singleRecordTag
+				averageRecordTag
+			}
+		}
+	}
+}
+
+query wcaLiveRoundResults($input: WcaLiveRoundInput!) {
+	wcaLiveRoundResults(input: $input) {
+		roundActivityCode
+		roundName
+		active
+		finished
+		numberOfAttempts
+		sortBy
+		results {
+			ranking
+			best
+			average
+			attempts {
+				result
+			}
+			personName
+			personWcaId
+			personCountryIso2
+			personLiveId
+			singleRecordTag
+			averageRecordTag
+			advancing
+			advancingQuestionable
 		}
 	}
 }

@@ -6,8 +6,9 @@ import {useCompetitionData} from './CompetitionLoader';
 import {openInAppBrowser} from '../../../util/external-link';
 import {
 	b, I18N_LOCALE_MAP, ROLE_COLORS, formatTime, formatDayHeader, getRoleLabel,
-	EventIcon,
+	EventIcon, countryFlag,
 } from './shared';
+import {useNow} from '../../../util/hooks/useNow';
 
 interface CompetitorDetailProps {
 	registrantId: number;
@@ -51,19 +52,29 @@ export default function CompetitorDetail({registrantId}: CompetitorDetailProps) 
 					</div>
 				)}
 				<div className={b('competitor-header')}>
-					<h3 className={b('competitor-name')}>{selected.name}</h3>
-					{selected.wcaId && (
-						<span
-							className={b('competitor-wca-id')}
-							onClick={(e) => {
-								e.stopPropagation();
-								openInAppBrowser(`https://www.worldcubeassociation.org/persons/${selected.wcaId}`);
-							}}
-							style={{cursor: 'pointer'}}
-						>
-							{selected.wcaId}
-						</span>
-					)}
+					<h3 className={b('competitor-name')}>
+						{selected.country && (
+							<span className={b('competitor-flag')}>{countryFlag(selected.country)} </span>
+						)}
+						{selected.name}
+					</h3>
+					<div className={b('competitor-meta')}>
+						{selected.wcaId && (
+							<span
+								className={b('competitor-wca-id')}
+								onClick={(e) => {
+									e.stopPropagation();
+									openInAppBrowser(`https://www.worldcubeassociation.org/persons/${selected.wcaId}`);
+								}}
+								style={{cursor: 'pointer'}}
+							>
+								{selected.wcaId}
+							</span>
+						)}
+						{selected.country && (
+							<span className={b('competitor-country-code')}>{selected.country}</span>
+						)}
+					</div>
 				</div>
 				</div>
 
@@ -127,6 +138,7 @@ export default function CompetitorDetail({registrantId}: CompetitorDetailProps) 
 
 function CompetitorDays({assignments, competitionId, locale, t}: any) {
 	const history = useHistory();
+	const now = useNow(60000);
 	const [openDays, setOpenDays] = useState<Set<string>>(new Set());
 
 	const dayMap = useMemo(() => {
@@ -139,11 +151,48 @@ function CompetitorDays({assignments, competitionId, locale, t}: any) {
 		return Array.from(map.entries()).sort(([a], [bk]) => a.localeCompare(bk));
 	}, [assignments]);
 
+	// Default acik gunler: bugun + tum gelecek gunler.
+	// 4+ saat eski gunler otomatik kapali.
 	useEffect(() => {
-		if (dayMap.length > 0 && openDays.size === 0) {
-			setOpenDays(new Set([dayMap[0][0]]));
+		if (dayMap.length === 0 || openDays.size > 0) return;
+		const FOUR_HOURS = 4 * 60 * 60 * 1000;
+		const initialOpen = new Set<string>();
+		for (const [date, dayAssignments] of dayMap) {
+			if (date === 'unknown') {
+				initialOpen.add(date);
+				continue;
+			}
+			// Gun icindeki son activity'nin bitis zamanini bul
+			let lastEnd = 0;
+			for (const a of dayAssignments) {
+				if (a.endTime) {
+					const ts = new Date(a.endTime).getTime();
+					if (ts > lastEnd) lastEnd = ts;
+				}
+			}
+			// Eger son activity 4 saatten kisa sure once bitti veya hala bitmedi → ac
+			if (lastEnd === 0 || (Date.now() - lastEnd) < FOUR_HOURS) {
+				initialOpen.add(date);
+			}
 		}
+		// Hicbiri acilmadiysa son gunu ac
+		if (initialOpen.size === 0 && dayMap.length > 0) {
+			initialOpen.add(dayMap[dayMap.length - 1][0]);
+		}
+		setOpenDays(initialOpen);
 	}, [dayMap]);
+
+	function isCurrent(a: any): boolean {
+		if (!a.startTime || !a.endTime) return false;
+		const start = new Date(a.startTime).getTime();
+		const end = new Date(a.endTime).getTime();
+		return now >= start && now < end;
+	}
+
+	function isPast(a: any): boolean {
+		if (!a.endTime) return false;
+		return now >= new Date(a.endTime).getTime();
+	}
 
 	function toggleDay(date: string) {
 		setOpenDays((prev) => {
@@ -183,7 +232,10 @@ function CompetitorDays({assignments, competitionId, locale, t}: any) {
 										{dayAssignments.map((a: any, idx: number) => (
 											<tr
 												key={idx}
-												className={b('assignment-row')}
+												className={b('assignment-row', {
+													current: isCurrent(a),
+													past: isPast(a) && !isCurrent(a),
+												})}
 												onClick={() => history.push(`/community/competitions/${competitionId}/activities/${a.activityCode}`)}
 											>
 												<td>

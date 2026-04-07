@@ -1,7 +1,6 @@
 import { gql } from '@apollo/client';
 import {
 	MICRO_SOLVE_FRAGMENT,
-	MINI_FRIENDSHIP_FRAGMENT,
 	SESSION_FRAGMENT,
 	SETTING_FRAGMENT,
 	STATS_MODULE_BLOCK_FRAGMENT,
@@ -9,7 +8,6 @@ import {
 import { gqlQuery, removeTypename } from '../api';
 import { initSessionCollection, initSessionDb } from '../../db/sessions/init';
 import { Dispatch } from 'redux';
-import { addFriendships } from '../../actions/account';
 import { clearOfflineData, initOfflineData, updateOfflineHash } from './offline';
 import { initSettingsDb, SettingValue } from '../../db/settings/init';
 import { getDefaultSettings, viewportDependentKeys, isMobileViewport, AllSettings } from '../../db/settings/query';
@@ -21,7 +19,6 @@ import { StatsModule } from '../../../server/schemas/StatsModule.schema';
 import { initStatsModuleStore } from '../../actions/stats';
 import { Session } from '../../../server/schemas/Session.schema';
 import { Setting } from '../../../server/schemas/Setting.schema';
-import { Friendship } from '../../../server/schemas/Friendship.schema';
 import { UserAccount } from '../../../server/schemas/UserAccount.schema';
 import { getAllLocalSettings } from '../../db/settings/local';
 import { deleteLocalStorage, getLocalStorage, setLocalStorageObject } from '../../util/data/local_storage';
@@ -163,7 +160,6 @@ async function loadNonCriticalData(_me: UserAccount, dispatch: Dispatch<any>, pa
 		}
 
 		bgPromises.push(getStatsModule(dispatch));
-		bgPromises.push(getAllFriends(dispatch));
 		bgPromises.push(syncDailyGoalsFromServer());
 
 		await Promise.all(bgPromises);
@@ -545,21 +541,6 @@ async function getAllSettings(userId: string) {
 	}
 
 	initSettingsDb(settings);
-}
-
-async function getAllFriends(dispatch) {
-	const query = gql`
-		${MINI_FRIENDSHIP_FRAGMENT}
-
-		query Query {
-			allFriendships {
-				...MiniFriendshipFragment
-			}
-		}
-	`;
-
-	const res = await gqlQuery<{ allFriendships: Friendship[] }>(query);
-	return dispatch(addFriendships(res.data.allFriendships));
 }
 
 /**

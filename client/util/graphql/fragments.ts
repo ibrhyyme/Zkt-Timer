@@ -44,7 +44,6 @@ export const MINI_SOLVE_FRAGMENT = gql`
 
 export const STATS_FRAGMENT = gql`
 	fragment StatsFragment on Stats {
-		friend_count
 		profile_views
 		solve_views
 	}
@@ -212,66 +211,9 @@ export const SOLVE_WITH_USER_FRAGMENT = gql`
 	}
 `;
 
-export const MINI_FRIENDSHIP_FRAGMENT = gql`
-	${IMAGE_FRAGMENT}
-
-	fragment MiniFriendshipFragment on Friendship {
-		id
-		user_id
-		other_user_id
-		other_user {
-			id
-			username
-			profile {
-				pfp_image {
-					...ImageFragment
-				}
-			}
-		}
-		created_at
-	}
-`;
-
-export const FRIENDSHIP_FRAGMENT = gql`
-	${PUBLIC_USER_WITH_ELO_FRAGMENT}
-
-	fragment FriendshipFragment on Friendship {
-		id
-		user_id
-		other_user_id
-		user {
-			...PublicUserWithEloFragment
-		}
-		other_user {
-			...PublicUserWithEloFragment
-		}
-		created_at
-	}
-`;
-
 export const NOTIFICATION_PREFERENCE_FRAGMENT = gql`
 	fragment NotificationPreferenceFragment on NotificationPreference {
-		friend_request
-		friend_request_accept
 		marketing_emails
-	}
-`;
-
-export const FRIENDSHIP_REQUEST_FRAGMENT = gql`
-	${PUBLIC_USER_WITH_ELO_FRAGMENT}
-
-	fragment FriendshipRequestFragment on FriendshipRequest {
-		id
-		from_id
-		to_id
-		accepted
-		from_user {
-			...PublicUserWithEloFragment
-		}
-		to_user {
-			...PublicUserWithEloFragment
-		}
-		created_at
 	}
 `;
 

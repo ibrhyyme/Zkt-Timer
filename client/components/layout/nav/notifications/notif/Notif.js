@@ -79,11 +79,6 @@ export default class Notif extends React.Component {
 				iconBody = <Sword weight="bold" />;
 				break;
 			}
-			case 'friend_request':
-			case 'friend_request_accept': {
-				iconBody = <User weight="bold" />;
-				break;
-			}
 		}
 
 		let icon = (

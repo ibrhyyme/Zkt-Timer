@@ -216,6 +216,7 @@ export interface CompetitionDetail {
 	allPersonalBests: RankingRow[];
 	wcaLiveCompId: string | null;
 	wcaLiveCompetitors: {wcaId: string; liveId: string}[];
+	wcaLiveRoundMap: {activityCode: string; liveRoundId: string}[];
 	info: any;
 }
 
@@ -575,6 +576,7 @@ export function buildCompetitionDetail(wcifData: WcifData, myWcaId: string): Com
 		allPersonalBests: buildRankings(persons),
 		wcaLiveCompId: null,
 		wcaLiveCompetitors: [],
+		wcaLiveRoundMap: [],
 		info: buildInfo(wcifData),
 	};
 }

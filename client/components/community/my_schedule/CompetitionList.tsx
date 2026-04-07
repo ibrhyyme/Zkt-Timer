@@ -9,6 +9,7 @@ import {resourceUri} from '../../../util/storage';
 import {LINKED_SERVICES} from '../../../../shared/integration';
 import {b, I18N_LOCALE_MAP, formatDateRange} from './shared';
 import {isPremium} from '../../../lib/pro';
+import {prefetchCompetitionDetail} from './CompetitionLoader';
 
 // Module-level cache with TTL
 const LIST_CACHE_TTL = 30 * 60 * 1000; // 30 dakika
@@ -56,6 +57,35 @@ export default function CompetitionList() {
 	useEffect(() => {
 		if (me && userIsPremium && !getMyCache()) fetchMyCompetitions();
 	}, [me, userIsPremium]);
+
+	// Prefetch: kullanicinin yarismalari + en yakin 3 yarisma
+	useEffect(() => {
+		if (!myComps || myComps.length === 0) return;
+		// Kullanici yarismalari yuklenince ilk 3'unu prefetch et
+		const targets = myComps.slice(0, 3);
+		targets.forEach((c: any, i: number) => {
+			setTimeout(() => prefetchCompetitionDetail(c.competitionId || c.id), 500 + i * 200);
+		});
+	}, [myComps]);
+
+	useEffect(() => {
+		if (!competitions || competitions.length === 0) return;
+		// Genel listeden ilk 3 (genelde upcoming en yakin)
+		const targets = competitions.slice(0, 3);
+		targets.forEach((c: any, i: number) => {
+			setTimeout(() => prefetchCompetitionDetail(c.id), 1500 + i * 300);
+		});
+	}, [competitions]);
+
+	// Hover prefetch (web)
+	const hoverTimerRef = useRef<any>(null);
+	function handleHoverPrefetch(competitionId: string) {
+		clearTimeout(hoverTimerRef.current);
+		hoverTimerRef.current = setTimeout(() => prefetchCompetitionDetail(competitionId), 200);
+	}
+	function handleHoverLeave() {
+		clearTimeout(hoverTimerRef.current);
+	}
 
 	async function fetchMyCompetitions() {
 		try {
@@ -149,6 +179,8 @@ export default function CompetitionList() {
 								key={comp.id}
 								className={b('comp-card', {mine: true})}
 								onClick={() => handleSelectCompetition(comp.id)}
+								onMouseEnter={() => handleHoverPrefetch(comp.id)}
+								onMouseLeave={handleHoverLeave}
 							>
 								{comp.country_iso2 && (
 									<span className={b('country-code')}>{comp.country_iso2}</span>
@@ -176,19 +208,15 @@ export default function CompetitionList() {
 					value={compSearch}
 					onChange={(e) => handleSearchChange(e.target.value)}
 				/>
+				{searching && <div className={b('search-progress')} />}
 			</div>
 
-			{searching && (
-				<div className={b('loading')}>
-					<img src={resourceUri('/images/zkt-logo.png')} alt="" className={b('loading-logo')} />
-					<span className={b('loading-text')}>{t('my_schedule.loading_competitions')}</span>
-				</div>
-			)}
-
 			{competitions === null && !searching && (
-				<div className={b('loading')}>
-					<img src={resourceUri('/images/zkt-logo.png')} alt="" className={b('loading-logo')} />
-					<span className={b('loading-text')}>{t('my_schedule.loading_competitions')}</span>
+				<div className={b('edge-loading')}>
+					<div className={b('edge-runner', {top: true})} />
+					<div className={b('edge-runner', {right: true})} />
+					<div className={b('edge-runner', {bottom: true})} />
+					<div className={b('edge-runner', {left: true})} />
 				</div>
 			)}
 
@@ -216,6 +244,8 @@ export default function CompetitionList() {
 									key={comp.id}
 									className={b('comp-card', {finished: isFinished, ongoing: isOngoing})}
 									onClick={() => handleSelectCompetition(comp.id)}
+									onMouseEnter={() => handleHoverPrefetch(comp.id)}
+									onMouseLeave={handleHoverLeave}
 								>
 									{comp.country_iso2 && (
 									<span className={b('country-code')}>{comp.country_iso2}</span>
