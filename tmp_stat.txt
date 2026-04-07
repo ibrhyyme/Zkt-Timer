@@ -1,0 +1,67 @@
+On branch Zkt_dev1
+Your branch is behind 'origin/Zkt_dev1' by 1 commit, and can be fast-forwarded.
+  (use "git pull" to update your local branch)
+
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	modified:   client/actions/account.ts
+	modified:   client/components/account/notification_preferences/NotificationPreferences.tsx
+	modified:   client/components/admin/manage_user/ManageUser.tsx
+	modified:   client/components/community/Community.tsx
+	deleted:    client/components/community/friends/Friends.scss
+	deleted:    client/components/community/friends/Friends.tsx
+	modified:   client/components/community/my_schedule/CompetitionDetail.tsx
+	modified:   client/components/community/my_schedule/CompetitionList.tsx
+	modified:   client/components/community/my_schedule/CompetitionLoader.tsx
+	modified:   client/components/community/my_schedule/CompetitorDetail.tsx
+	modified:   client/components/community/my_schedule/MySchedule.scss
+	modified:   client/components/community/my_schedule/MySchedule.tsx
+	modified:   client/components/community/my_schedule/shared.tsx
+	modified:   client/components/community/nav/CommunityNav.tsx
+	deleted:    client/components/community/user_search/UserSearch.tsx
+	modified:   client/components/layout/Routes.ts
+	modified:   client/components/layout/init.ts
+	modified:   client/components/layout/nav/notifications/notif/Notif.js
+	modified:   client/components/profile/Profile.tsx
+	deleted:    client/components/profile/friendship_request/FriendshipRequest.tsx
+	modified:   client/graphql/fragments.graphql
+	modified:   client/graphql/mutations.graphql
+	modified:   client/graphql/queries.graphql
+	modified:   client/i18n/locales/en/translation.json
+	modified:   client/i18n/locales/es/translation.json
+	modified:   client/i18n/locales/ru/translation.json
+	modified:   client/i18n/locales/tr/translation.json
+	modified:   client/reducers/account.ts
+	modified:   client/util/graphql/fragments.ts
+	modified:   client/util/hooks/useIsMobile.ts
+	modified:   public/uploads/site/sitemaps/sitemap_site.xml
+	modified:   schema.prisma
+	modified:   server/@types/enums.ts
+	deleted:    server/models/friendship.js
+	deleted:    server/resolvers/Friendship.resolver.ts
+	modified:   server/resolvers/Stats.resolver.ts
+	modified:   server/resolvers/WcaSchedule.resolver.ts
+	modified:   server/resolvers/_resolvers.ts
+	deleted:    server/resources/mjml_templates/friend_solve_pb.mjml
+	deleted:    server/resources/notification_types/friend_request.ts
+	deleted:    server/resources/notification_types/friend_request_accept.ts
+	deleted:    server/schemas/Friendship.schema.ts
+	modified:   server/schemas/NotificationPreference.schema.ts
+	modified:   server/schemas/Stats.schema.ts
+	modified:   server/schemas/WcaSchedule.schema.ts
+	modified:   server/schemas/_schemas.ts
+	modified:   server/services/WcifTransformer.ts
+
+Unmerged paths:
+  (use "git restore --staged <file>..." to unstage)
+  (use "git add <file>..." to mark resolution)
+	both modified:   client/@types/generated/graphql.ts
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	client/components/community/my_schedule/useLiveResults.ts
+	client/components/community/my_schedule/wca_live/
+	client/util/hooks/useNow.ts
+	tmp_git.txt
+	tmp_stat.txt
+
