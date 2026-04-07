@@ -1,0 +1,78 @@
+commit 22a80cd7884cf7a037397b582d7feb915de21c01
+Author: ibrhyyme <ibrahimyldz77@gmail.com>
+Date:   Tue Apr 7 13:49:31 2026 +0300
+
+    feat: implement full contest management system including real-time socket updates, state transitions, and result processing
+
+ client/@types/generated/graphql.ts                 | 769 ++++++++++++++++++++-
+ client/components/admin/Admin.tsx                  |   5 +
+ .../admin/contests/AdminContestForm.scss           |  93 +++
+ .../components/admin/contests/AdminContestForm.tsx | 228 ++++++
+ .../components/admin/contests/AdminContests.scss   | 174 +++++
+ client/components/admin/contests/AdminContests.tsx | 216 ++++++
+ .../admin/contests/AdminRegistrations.scss         | 140 ++++
+ .../admin/contests/AdminRegistrations.tsx          | 189 +++++
+ .../admin/contests/AdminResultEntry.scss           | 139 ++++
+ .../components/admin/contests/AdminResultEntry.tsx | 299 ++++++++
+ client/components/contests/AttemptCell.tsx         |  29 +
+ client/components/contests/ContestCompetitors.tsx  |  87 +++
+ client/components/contests/ContestInfo.tsx         |  92 +++
+ client/components/contests/ContestPage.scss        |  61 ++
+ client/components/contests/ContestPage.tsx         | 131 ++++
+ .../components/contests/ContestRegistration.scss   |  92 +++
+ client/components/contests/ContestRegistration.tsx | 131 ++++
+ client/components/contests/ContestResults.tsx      | 169 +++++
+ .../components/contests/ContestResultsTable.scss   | 132 ++++
+ client/components/contests/ContestResultsTable.tsx | 107 +++
+ client/components/contests/ContestsList.scss       | 118 ++++
+ client/components/contests/ContestsList.tsx        | 134 ++++
+ client/components/contests/RecordBadge.scss        |  26 +
+ client/components/contests/RecordBadge.tsx         |  34 +
+ .../components/contests/hooks/useContestSocket.ts  |  56 ++
+ client/components/layout/Routes.ts                 |  18 +
+ client/components/layout/nav/Nav.tsx               |   8 +
+ client/graphql/fragments.graphql                   | 152 ++++
+ client/graphql/mutations.graphql                   | 114 +++
+ client/graphql/queries.graphql                     |  93 +++
+ client/i18n/locales/en/translation.json            |  82 +++
+ client/i18n/locales/es/translation.json            |  19 +
+ client/i18n/locales/ru/translation.json            |  19 +
+ client/i18n/locales/tr/translation.json            |  82 +++
+ client/reducers/contest.ts                         |  25 +
+ client/reducers/reducers.ts                        |   2 +
+ codegen.yml                                        |   4 +
+ schema.graphql                                     | 310 +++++++++
+ schema.prisma                                      | 315 +++++++++
+ scripts/seed-contest-events.ts                     |  58 ++
+ server/app.ts                                      |   2 +-
+ server/contest/auth.ts                             |  70 ++
+ server/contest/contest_manager.ts                  | 132 ++++
+ server/contest/events.ts                           |  49 ++
+ server/contest/index.ts                            |   6 +
+ server/contest/record_service.ts                   | 166 +++++
+ server/contest/result_calculator.ts                | 132 ++++
+ server/contest/scramble_service.ts                 |  70 ++
+ server/friendly_room/room_manager.ts               |  80 +--
+ server/lib/scramble.ts                             |  81 +++
+ server/resolvers/Contest.resolver.ts               | 347 ++++++++++
+ server/resolvers/ContestEvent.resolver.ts          |  45 ++
+ server/resolvers/ContestRecord.resolver.ts         |  72 ++
+ server/resolvers/ContestRegistration.resolver.ts   | 311 +++++++++
+ server/resolvers/ContestResult.resolver.ts         | 275 ++++++++
+ server/resolvers/ContestRound.resolver.ts          | 229 ++++++
+ server/resolvers/_resolvers.ts                     |   6 +
+ server/schemas/Contest.schema.ts                   | 266 +++++++
+ server/schemas/ContestCompetitor.schema.ts         |  32 +
+ server/schemas/ContestEvent.schema.ts              |  46 ++
+ server/schemas/ContestRecord.schema.ts             |  55 ++
+ server/schemas/ContestRegistration.schema.ts       |  83 +++
+ server/schemas/ContestResult.schema.ts             |  95 +++
+ server/schemas/ContestRound.schema.ts              | 112 +++
+ server/schemas/_schemas.ts                         |   7 +
+ server/services/socket.ts                          |   4 +
+ shared/contest/consts.ts                           |  97 +++
+ shared/contest/events.ts                           |  24 +
+ shared/contest/index.ts                            |   4 +
+ shared/contest/result_utils.ts                     | 237 +++++++
+ shared/contest/types.ts                            |  49 ++
+ 71 files changed, 8055 insertions(+), 81 deletions(-)
