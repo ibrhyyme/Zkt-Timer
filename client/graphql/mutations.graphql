@@ -1,3 +1,16 @@
+mutation updateSiteConfig($input: UpdateSiteConfigInput!) {
+	updateSiteConfig(input: $input) {
+		id
+		maintenance_mode
+		trainer_enabled
+		community_enabled
+		leaderboards_enabled
+		rooms_enabled
+		battle_enabled
+		updated_at
+	}
+}
+
 mutation mergeSessions($oldSessionId: String, $newSessionId: String) {
 	mergeSessions(oldSessionId: $oldSessionId, newSessionId: $newSessionId) {
 		...SessionFragment

@@ -462,6 +462,17 @@
 	"community_nav": {
 		"page_title": "Competitions"
 	},
+	"maintenance": {
+		"title": "We're under maintenance",
+		"description": "We're upgrading the infrastructure to make Zkt-Timer better. We'll be back soon!",
+		"thanks": "Thank you for your patience 💙"
+	},
+	"site_config": {
+		"page_disabled_title": "{{page}} is under maintenance",
+		"page_disabled_description": "This feature is temporarily disabled. We'll be back soon.",
+		"go_to_timer": "Back to Timer",
+		"admin_disabled_banner": "{{page}} is currently disabled — only admin (you) can see this"
+	},
 	"my_schedule": {
 		"page_title": "My Competition Schedule",
 		"login_description": "Sign in with your WCA account to load your competition list and personalized schedule.",
@@ -536,7 +547,6 @@
 		"col_best": "Best",
 		"col_average": "Average",
 		"col_attempts": "Attempts",
-		"col_event": "Event",
 		"col_round": "Round",
 		"round_active": "In Progress",
 		"round_finished": "Completed",

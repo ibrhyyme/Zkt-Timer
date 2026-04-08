@@ -196,6 +196,20 @@ model NotificationPreference {
   @@map("notification_preference")
 }
 
+model SiteConfig {
+  id                   String   @id @default("singleton")
+  maintenance_mode     Boolean  @default(false)
+  trainer_enabled      Boolean  @default(true)
+  community_enabled    Boolean  @default(true)
+  leaderboards_enabled Boolean  @default(true)
+  rooms_enabled        Boolean  @default(true)
+  battle_enabled       Boolean  @default(true)
+  updated_at           DateTime @updatedAt @default(now())
+  updated_by           String?
+
+  @@map("site_config")
+}
+
 model Profile {
   id                          String        @id @default(uuid())
   user_id                     String        @unique

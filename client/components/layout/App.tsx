@@ -29,6 +29,8 @@ import { App as CapApp } from '@capacitor/app';
 import { initPushNotifications } from '../../util/push-notifications';
 import { initStatusBar, lockTextZoom, initSafeArea } from '../../util/native-plugins';
 import SwipeBackIndicator from '../common/swipe_back_indicator/SwipeBackIndicator';
+import {useSiteConfig} from '../../util/hooks/useSiteConfig';
+import MaintenancePage from '../maintenance/MaintenancePage';
 
 interface Props {
 	path?: string;
@@ -48,6 +50,7 @@ export default function App(props: Props = {}) {
 	const appLoaded = useGeneral('app_loaded');
 	const settingsModalOpen = useGeneral('settings_modal_open');
 	const me = useMe();
+	const siteConfig = useSiteConfig();
 
 	const [unseenAnnouncements, setUnseenAnnouncements] = useState<Announcement[]>([]);
 	const [loadingAnnouncements, setLoadingAnnouncements] = useState(false);
@@ -207,6 +210,18 @@ export default function App(props: Props = {}) {
 
 	if (me?.banned_forever || me?.banned_until) {
 		return <Banned />;
+	}
+
+	// Bakim modu — admin haric herkese MaintenancePage goster
+	// Login/signup/oauth/admin sayfalarinda bypass
+	const pathname = location.pathname;
+	const bypassMaintenance =
+		pathname.startsWith('/login') ||
+		pathname.startsWith('/signup') ||
+		pathname.startsWith('/oauth') ||
+		pathname.startsWith('/admin');
+	if (siteConfig?.maintenance_mode && !me?.admin && !bypassMaintenance) {
+		return <MaintenancePage />;
 	}
 
 	if (standalone) {

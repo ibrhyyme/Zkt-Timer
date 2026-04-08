@@ -5,6 +5,7 @@ export * from './Profile.schema';
 export * from './BadgeType.schema';
 export * from './SmartDevice.schema';
 export * from './Session.schema';
+export * from './SiteConfig.schema';
 export * from './WcaAccount.schema';
 export * from './Notification.schema';
 export * from './Solve.schema';

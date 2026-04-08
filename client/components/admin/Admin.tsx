@@ -37,6 +37,11 @@ const TABS = [
 		link: '/admin/promo-codes',
 		value: 'Promo',
 	},
+	{
+		id: 'site-config',
+		link: '/admin/site-config',
+		value: 'Site Yönetimi',
+	},
 ];
 
 interface Props {

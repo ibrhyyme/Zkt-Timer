@@ -34,8 +34,17 @@ import LanguageSwitcher from '../../common/language_switcher/LanguageSwitcher';
 import { resourceUri } from '../../../util/storage';
 import { isPro } from '../../../util/pro';
 import { useTranslation } from 'react-i18next';
+import { useSiteConfig } from '../../../util/hooks/useSiteConfig';
 
 const b = block('nav');
+
+// Nav link adi → SiteConfig feature key
+const NAV_FEATURE_MAP: Record<string, string> = {
+	'nav.trainer': 'trainer_enabled',
+	'nav.community': 'community_enabled',
+	'nav.rooms': 'rooms_enabled',
+	'nav.battle': 'battle_enabled',
+};
 
 export interface NavLinkProps {
 	name: string;
@@ -112,6 +121,8 @@ export default function Nav() {
 
 	const match = useRouteMatch();
 	const me = useMe();
+	const siteConfig = useSiteConfig();
+	const isAdmin = !!me?.admin;
 
 	const focusMode = useSettings('focus_mode');
 	const moduleColor = useTheme('module_color');
@@ -181,9 +192,30 @@ export default function Nav() {
 		);
 	}
 
-	const navLinks = NAV_LINKS.filter((link) => !link.mobileOnly).map((link) => (
-		<NavLink {...link} key={link.name} collapsed={navClosed} selected={link.match.test(pathname)} />
-	));
+	const navLinks = NAV_LINKS
+		.filter((link) => !link.mobileOnly)
+		.filter((link) => {
+			// Site config'e gore feature kapali ise admin haric gizle
+			const featureKey = NAV_FEATURE_MAP[link.name];
+			if (!featureKey || !siteConfig) return true;
+			const enabled = (siteConfig as any)[featureKey];
+			if (enabled) return true;
+			// Kapali → admin gorur, diger gizle
+			return isAdmin;
+		})
+		.map((link) => {
+			const featureKey = NAV_FEATURE_MAP[link.name];
+			const isDisabled = featureKey && siteConfig && !(siteConfig as any)[featureKey];
+			return (
+				<NavLink
+					{...link}
+					key={link.name}
+					collapsed={navClosed}
+					selected={link.match.test(pathname)}
+					disabled={isDisabled}
+				/>
+			);
+		});
 
 	// Pro features are now available to everyone
 	let getPro = null;

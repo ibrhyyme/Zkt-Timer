@@ -6,6 +6,7 @@ import BattleMenu from './BattleMenu';
 import BattleHistory from './BattleHistory';
 import { ClockCounterClockwise, GearSix, CaretDown } from 'phosphor-react';
 import block from '../../styles/bem';
+import FeatureGuard from '../common/page_disabled/FeatureGuard';
 import './Battle.scss';
 
 const b = block('battle');
@@ -135,8 +136,10 @@ export default function Battle() {
 	if (!isMobile) return null;
 
 	return (
-		<BattleProvider>
-			<BattleInner />
-		</BattleProvider>
+		<FeatureGuard feature="battle_enabled" pageNameKey="nav.battle">
+			<BattleProvider>
+				<BattleInner />
+			</BattleProvider>
+		</FeatureGuard>
 	);
 }

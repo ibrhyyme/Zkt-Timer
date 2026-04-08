@@ -30,3 +30,4 @@ export * from './WcaAuth.resolver';
 export * from './WcaResult.resolver';
 export * from './WcaSchedule.resolver';
 export * from './PromoCode.resolver';
+export * from './SiteConfig.resolver';
