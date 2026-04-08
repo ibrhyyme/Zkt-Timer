@@ -14,20 +14,11 @@ import {resourceUri} from '../../../util/storage';
 // Code splitting: WCA Live tab sadece kullanildiginda yuklensin
 const WcaLiveTab = React.lazy(() => import('./wca_live/WcaLiveTab'));
 import {b} from './shared';
-import {useMe} from '../../../util/hooks/useMe';
-import {isPremium} from '../../../lib/pro';
 import './MySchedule.scss';
 
 export default function MySchedule() {
 	const {t} = useTranslation();
 	const history = useHistory();
-	const me = useMe();
-
-	// Premium degilse Pro upgrade sayfasina yonlendir
-	if (!isPremium(me)) {
-		history.replace('/account/pro');
-		return null;
-	}
 
 	const matchPersonalBests = useRouteMatch<{competitionId: string; wcaId: string}>(
 		'/community/competitions/:competitionId/personal-bests/:wcaId'
