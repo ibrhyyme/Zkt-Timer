@@ -19,63 +19,52 @@
 		padding: 4rem 0;
 	}
 
-	// Edge loading: 4 kenarda dolasan parlak isik
-	// Parent'in icinde (header haric content alani), uzerine binmez
-	&__edge-loading {
-		position: relative;
-		width: 100%;
+	// WCA loading: ortada WCA logosu + altinda linear progress bar + metin
+	&__wca-loading {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
 		min-height: 60vh;
-		pointer-events: none;
+		gap: 1.25rem;
 	}
 
-	&__edge-runner {
+	&__wca-loading-logo {
+		width: 110px;
+		height: auto;
+		object-fit: contain;
+	}
+
+	&__wca-loading-bar {
+		position: relative;
+		width: 220px;
+		height: 3px;
+		background: rgba(255, 255, 255, 0.08);
+		border-radius: 999px;
+		overflow: hidden;
+	}
+
+	&__wca-loading-bar-fill {
 		position: absolute;
-		box-shadow:
-			0 0 24px 4px rgba(74, 158, 255, 1),
-			0 0 60px 8px rgba(74, 158, 255, 0.7),
-			0 0 120px 16px rgba(74, 158, 255, 0.4);
+		top: 0;
+		left: 0;
+		height: 100%;
+		width: 35%;
+		background: linear-gradient(90deg,
+			rgba(74, 158, 255, 0) 0%,
+			rgba(74, 158, 255, 1) 50%,
+			rgba(120, 200, 255, 0) 100%
+		);
+		border-radius: 999px;
+		box-shadow: 0 0 10px rgba(74, 158, 255, 0.6);
+		animation: cd-wca-loading-bar 1.4s ease-in-out infinite;
+	}
 
-		// Top kenar: yatay cizgi
-		&--top {
-			top: 0;
-			left: 0;
-			height: 5px;
-			width: 50%;
-			background: linear-gradient(90deg,
-				transparent,
-				rgba(180, 220, 255, 1) 30%,
-				rgba(255, 255, 255, 1) 50%,
-				rgba(180, 220, 255, 1) 70%,
-				transparent
-			);
-			animation: cd-edge-top 2.4s linear infinite;
-		}
-
-		// Right kenar: dikey cizgi (kapali)
-		&--right {
-			display: none;
-		}
-
-		// Bottom kenar: yatay cizgi
-		&--bottom {
-			bottom: 0;
-			right: 0;
-			height: 5px;
-			width: 50%;
-			background: linear-gradient(90deg,
-				transparent,
-				rgba(180, 220, 255, 1) 30%,
-				rgba(255, 255, 255, 1) 50%,
-				rgba(180, 220, 255, 1) 70%,
-				transparent
-			);
-			animation: cd-edge-bottom 2.4s linear infinite;
-		}
-
-		// Left kenar: dikey cizgi (kapali)
-		&--left {
-			display: none;
-		}
+	&__wca-loading-text {
+		font-size: 0.95rem;
+		color: rgba(255, 255, 255, 0.8);
+		font-weight: 500;
+		letter-spacing: 0.02em;
 	}
 
 	&__loading-logo {
@@ -2558,6 +2547,11 @@
 }
 
 // Edge runner: top + bottom yatay olarak surekli dolasiyor (zit yon)
+@keyframes cd-wca-loading-bar {
+	0%   { left: -35%; }
+	100% { left: 100%; }
+}
+
 @keyframes cd-edge-top {
 	0%   { transform: translateX(-100%); }
 	100% { transform: translateX(333%); }
