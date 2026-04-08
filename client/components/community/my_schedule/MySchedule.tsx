@@ -90,11 +90,12 @@ export default function MySchedule() {
 						</button>
 					)}
 					<Suspense fallback={
-						<div className={b('edge-loading')}>
-							<div className={b('edge-runner', {top: true})} />
-							<div className={b('edge-runner', {right: true})} />
-							<div className={b('edge-runner', {bottom: true})} />
-							<div className={b('edge-runner', {left: true})} />
+						<div className={b('wca-loading')}>
+							<img src={resourceUri('/images/logos/wca_logo.svg')} alt="WCA" className={b('wca-loading-logo')} />
+							<div className={b('wca-loading-bar')}>
+								<div className={b('wca-loading-bar-fill')} />
+							</div>
+							<span className={b('wca-loading-text')}>{t('my_schedule.loading')}</span>
 						</div>
 					}>
 						<WcaLiveTab eventId={eventId} roundNumber={roundNumber} />

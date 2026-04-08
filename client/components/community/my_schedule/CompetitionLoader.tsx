@@ -2,6 +2,7 @@ import React, {createContext, useContext, useState, useEffect} from 'react';
 import {gqlQueryTyped} from '../../api';
 import {WcaCompetitionDetailDocument} from '../../../@types/generated/graphql';
 import {b} from './shared';
+import {resourceUri} from '../../../util/storage';
 import {Info} from 'phosphor-react';
 import {useTranslation} from 'react-i18next';
 import {prefetchWcaLiveOverview} from './useLiveResults';
@@ -124,11 +125,12 @@ export default function CompetitionLoader({competitionId, children}: Competition
 
 	if (loading) {
 		return (
-			<div className={b('edge-loading')}>
-				<div className={b('edge-runner', {top: true})} />
-				<div className={b('edge-runner', {right: true})} />
-				<div className={b('edge-runner', {bottom: true})} />
-				<div className={b('edge-runner', {left: true})} />
+			<div className={b('wca-loading')}>
+				<img src={resourceUri('/images/logos/wca_logo.svg')} alt="WCA" className={b('wca-loading-logo')} />
+				<div className={b('wca-loading-bar')}>
+					<div className={b('wca-loading-bar-fill')} />
+				</div>
+				<span className={b('wca-loading-text')}>{t('my_schedule.loading')}</span>
 			</div>
 		);
 	}
