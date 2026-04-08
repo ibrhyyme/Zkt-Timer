@@ -9,10 +9,11 @@ import { NavLinkProps } from './Nav';
 interface Props extends NavLinkProps {
 	collapsed?: boolean;
 	selected?: boolean;
+	disabled?: boolean;
 }
 
 export default function NavLink(props: Props) {
-	const { name, icon, newTag, loginRequired, collapsed, selected } = props;
+	const { name, icon, newTag, loginRequired, collapsed, selected, disabled } = props;
 	let link = props.link;
 
 	const { t } = useTranslation();
@@ -47,6 +48,10 @@ export default function NavLink(props: Props) {
 	if (!selected) {
 		linkClasses.push('opacity-40');
 		linkClasses.push('group-hover:opacity-100');
+	}
+
+	if (disabled) {
+		linkClasses.push('opacity-30');
 	}
 
 	let navLabel = <span className="ml-4 font-roboto text-text">{t(name)}</span>;

@@ -15,6 +15,7 @@ import { useDispatch } from 'react-redux';
 import { openModal } from '../../actions/general';
 import { useMe } from '../../util/hooks/useMe';
 import PageTitle from '../common/page_title/PageTitle';
+import FeatureGuard from '../common/page_disabled/FeatureGuard';
 import './RoomsList.scss';
 
 export default function RoomsList() {
@@ -85,6 +86,7 @@ export default function RoomsList() {
     const privateRooms = rooms.filter((r) => r.is_private);
 
     return (
+        <FeatureGuard feature="rooms_enabled" pageNameKey="nav.rooms">
         <div className="rooms-list-page">
             <div className="rooms-list-page__container">
                 <div className="rooms-list-page__header">
@@ -157,5 +159,6 @@ export default function RoomsList() {
                 </div>
             </div>
         </div>
+        </FeatureGuard>
     );
 }

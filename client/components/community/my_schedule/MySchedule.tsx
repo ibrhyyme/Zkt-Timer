@@ -14,9 +14,10 @@ import {resourceUri} from '../../../util/storage';
 // Code splitting: WCA Live tab sadece kullanildiginda yuklensin
 const WcaLiveTab = React.lazy(() => import('./wca_live/WcaLiveTab'));
 import {b} from './shared';
+import FeatureGuard from '../../common/page_disabled/FeatureGuard';
 import './MySchedule.scss';
 
-export default function MySchedule() {
+function MyScheduleInner() {
 	const {t} = useTranslation();
 	const history = useHistory();
 
@@ -123,5 +124,13 @@ export default function MySchedule() {
 			<Header path="/community/competitions" title={t('my_schedule.page_title')} />
 			<CompetitionList />
 		</div>
+	);
+}
+
+export default function MySchedule() {
+	return (
+		<FeatureGuard feature="community_enabled" pageNameKey="nav.community">
+			<MyScheduleInner />
+		</FeatureGuard>
 	);
 }

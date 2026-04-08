@@ -462,6 +462,17 @@
 	"community_nav": {
 		"page_title": "Yarışmalar"
 	},
+	"maintenance": {
+		"title": "Bakım modundayız",
+		"description": "Daha iyi bir Zkt-Timer için altyapı çalışması yapıyoruz. Çok yakında görüşmek üzere!",
+		"thanks": "Anlayışınız için teşekkür ederiz 💙"
+	},
+	"site_config": {
+		"page_disabled_title": "{{page}} şu an bakımda",
+		"page_disabled_description": "Bu özellik geçici olarak devre dışı. Çok yakında geri döneceğiz.",
+		"go_to_timer": "Timer'a dön",
+		"admin_disabled_banner": "{{page}} sayfası şu an kapalı — sadece admin (sen) görebilirsin"
+	},
 	"my_schedule": {
 		"page_title": "Yarışma Programım",
 		"login_description": "WCA hesabınızla giriş yaparak yarışma listenizi ve kişiselleştirilmiş programınızı yükleyebilirsiniz.",
@@ -536,7 +547,6 @@
 		"col_best": "En İyi",
 		"col_average": "Ortalama",
 		"col_attempts": "Çözümler",
-		"col_event": "Etkinlik",
 		"col_round": "Tur",
 		"round_active": "Devam Ediyor",
 		"round_finished": "Tamamlandı",

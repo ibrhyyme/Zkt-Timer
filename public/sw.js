@@ -128,6 +128,10 @@ async function syncOfflineQueue() {
   try {
     // IndexedDB'den pending mutation'ları al
     const db = await openQueueDB();
+    if (!db.objectStoreNames.contains('mutations')) {
+      // Client henuz queue'yu olusturmamis — sessizce cik
+      return;
+    }
     const tx = db.transaction('mutations', 'readonly');
     const store = tx.objectStore('mutations');
     const mutations = await new Promise((resolve, reject) => {
@@ -154,6 +158,12 @@ async function syncOfflineQueue() {
 async function openQueueDB() {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open('ZktOfflineQueue', 1);
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      if (!db.objectStoreNames.contains('mutations')) {
+        db.createObjectStore('mutations', { keyPath: 'id' });
+      }
+    };
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error);
   });

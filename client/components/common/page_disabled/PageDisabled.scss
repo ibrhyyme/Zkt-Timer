@@ -1,0 +1,78 @@
+.cd-page-disabled {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 60vh;
+	padding: 2rem 1.5rem;
+
+	&__content {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+		max-width: 420px;
+	}
+
+	&__icon-wrapper {
+		width: 90px;
+		height: 90px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: rgba(74, 158, 255, 0.1);
+		border: 2px solid rgba(74, 158, 255, 0.3);
+		border-radius: 50%;
+		margin-bottom: 1.5rem;
+	}
+
+	&__icon {
+		color: #4a9eff;
+	}
+
+	&__title {
+		font-size: 1.5rem;
+		font-weight: 700;
+		color: #fff;
+		margin: 0 0 0.65rem 0;
+	}
+
+	&__description {
+		font-size: 0.95rem;
+		color: rgba(255, 255, 255, 0.7);
+		line-height: 1.5;
+		margin: 0 0 1.75rem 0;
+	}
+
+	&__back-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.75rem 1.5rem;
+		background: rgba(74, 158, 255, 0.18);
+		border: 1px solid rgba(74, 158, 255, 0.4);
+		border-radius: 0.5rem;
+		color: #fff;
+		font-size: 0.9rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition: all 0.15s;
+
+		&:hover {
+			background: rgba(74, 158, 255, 0.28);
+		}
+	}
+}
+
+.cd-admin-disabled-banner {
+	display: flex;
+	align-items: center;
+	gap: 0.55rem;
+	padding: 0.65rem 0.95rem;
+	margin: 0.5rem 1rem 1rem 1rem;
+	background: rgba(234, 179, 8, 0.12);
+	border: 1px solid rgba(234, 179, 8, 0.4);
+	border-radius: 0.5rem;
+	color: #facc15;
+	font-size: 0.82rem;
+	font-weight: 600;
+}

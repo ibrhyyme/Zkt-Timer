@@ -1,3 +1,16 @@
+query siteConfig {
+	siteConfig {
+		id
+		maintenance_mode
+		trainer_enabled
+		community_enabled
+		leaderboards_enabled
+		rooms_enabled
+		battle_enabled
+		updated_at
+	}
+}
+
 query solveByShareCode($shareCode: String) {
 	solveByShareCode(shareCode: $shareCode) {
 		...SolveWithUserFragment

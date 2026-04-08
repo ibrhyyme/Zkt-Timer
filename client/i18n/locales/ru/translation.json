@@ -462,6 +462,17 @@
 	"community_nav": {
 		"page_title": "Соревнования"
 	},
+	"maintenance": {
+		"title": "Мы на техобслуживании",
+		"description": "Мы улучшаем инфраструктуру Zkt-Timer. Скоро вернёмся!",
+		"thanks": "Спасибо за терпение 💙"
+	},
+	"site_config": {
+		"page_disabled_title": "{{page}} на техобслуживании",
+		"page_disabled_description": "Эта функция временно отключена. Скоро вернёмся.",
+		"go_to_timer": "Вернуться к Timer",
+		"admin_disabled_banner": "{{page}} отключен — только админ (вы) видит это"
+	},
 	"my_schedule": {
 		"page_title": "Моё расписание соревнований",
 		"login_description": "Войдите с аккаунтом WCA, чтобы загрузить список соревнований и персонализированное расписание.",
@@ -536,7 +547,6 @@
 		"col_best": "Лучший",
 		"col_average": "Среднее",
 		"col_attempts": "Попытки",
-		"col_event": "Дисциплина",
 		"col_round": "Раунд",
 		"round_active": "В процессе",
 		"round_finished": "Завершено",

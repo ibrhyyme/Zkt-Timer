@@ -16,6 +16,7 @@ import {ensureKPuzzleReady} from '../../util/trainer/pattern_utils';
 import {loadLLPatterns} from '../../util/trainer/ll_patterns';
 import {loadPuzzlePatterns} from '../../util/trainer/puzzle_patterns';
 import {loadIsometricPatterns} from '../../util/trainer/isometric_patterns';
+import FeatureGuard from '../common/page_disabled/FeatureGuard';
 
 const b = block('trainer');
 
@@ -97,6 +98,7 @@ export default function Trainer() {
 	}, []);
 
 	return (
+		<FeatureGuard feature="trainer_enabled" pageNameKey="nav.trainer">
 		<TrainerProvider>
 			<div className={b()}>
 				<Header title={t('trainer.page_title')} path={location.pathname} />
@@ -104,5 +106,6 @@ export default function Trainer() {
 				<TrainerContent />
 			</div>
 		</TrainerProvider>
+		</FeatureGuard>
 	);
 }

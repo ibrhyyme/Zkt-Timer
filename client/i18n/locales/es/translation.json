@@ -462,6 +462,17 @@
 	"community_nav": {
 		"page_title": "Competiciones"
 	},
+	"maintenance": {
+		"title": "Estamos en mantenimiento",
+		"description": "Estamos mejorando la infraestructura de Zkt-Timer. ¡Volveremos pronto!",
+		"thanks": "Gracias por tu paciencia 💙"
+	},
+	"site_config": {
+		"page_disabled_title": "{{page}} está en mantenimiento",
+		"page_disabled_description": "Esta función está temporalmente desactivada. Volveremos pronto.",
+		"go_to_timer": "Volver al Timer",
+		"admin_disabled_banner": "{{page}} está desactivado — solo el admin (tú) puede ver esto"
+	},
 	"my_schedule": {
 		"page_title": "Mi Programa de Competencia",
 		"login_description": "Inicia sesión con tu cuenta WCA para cargar tu lista de competencias y programa personalizado.",
@@ -536,7 +547,6 @@
 		"col_best": "Mejor",
 		"col_average": "Promedio",
 		"col_attempts": "Intentos",
-		"col_event": "Evento",
 		"col_round": "Ronda",
 		"round_active": "En Progreso",
 		"round_finished": "Completado",

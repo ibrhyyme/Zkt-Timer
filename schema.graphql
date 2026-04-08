@@ -304,6 +304,7 @@ type Query {
   wcaLiveRoundResults(input: WcaLiveRoundInput): WcaLiveRoundResults
   getPromoCodes: [PromoCode]
   getPromoCodeRedemptions(promoCodeId: String): [PromoCodeRedemptionInfo]
+  siteConfig: SiteConfig
 }
 
 type Mutation {
@@ -402,6 +403,7 @@ type Mutation {
   redeemPromoCode(code: String): RedeemPromoCodeResult
   togglePromoCodeActive(isActive: Boolean, id: String): PromoCode
   deletePromoCode(id: String): Boolean
+  updateSiteConfig(input: UpdateSiteConfigInput): SiteConfig
 }
 
 type SmartDevice {
@@ -1427,6 +1429,17 @@ type RedeemPromoCodeResult {
   expires_at: DateTime
 }
 
+type SiteConfig {
+  id: String
+  maintenance_mode: Boolean
+  trainer_enabled: Boolean
+  community_enabled: Boolean
+  leaderboards_enabled: Boolean
+  rooms_enabled: Boolean
+  battle_enabled: Boolean
+  updated_at: DateTime
+}
+
 type Notification {
   id: String
   user_id: String
@@ -1633,6 +1646,15 @@ input CreatePromoCodeInput {
   membership_type: String
   duration_minutes: Int
   max_uses: Int = 1
+}
+
+input UpdateSiteConfigInput {
+  maintenance_mode: Boolean
+  trainer_enabled: Boolean
+  community_enabled: Boolean
+  leaderboards_enabled: Boolean
+  rooms_enabled: Boolean
+  battle_enabled: Boolean
 }
 
 input PaginationArgsInput {
