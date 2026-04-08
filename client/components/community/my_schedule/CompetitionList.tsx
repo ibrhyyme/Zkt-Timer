@@ -8,7 +8,6 @@ import {MagnifyingGlass} from 'phosphor-react';
 import {resourceUri} from '../../../util/storage';
 import {LINKED_SERVICES} from '../../../../shared/integration';
 import {b, I18N_LOCALE_MAP, formatDateRange} from './shared';
-import {isPremium} from '../../../lib/pro';
 import {prefetchCompetitionDetail} from './CompetitionLoader';
 
 // Module-level cache with TTL
@@ -52,11 +51,9 @@ export default function CompetitionList() {
 		if (!getListCache()) fetchCompetitions();
 	}, []);
 
-	const userIsPremium = me && isPremium(me);
-
 	useEffect(() => {
-		if (me && userIsPremium && !getMyCache()) fetchMyCompetitions();
-	}, [me, userIsPremium]);
+		if (me && !getMyCache()) fetchMyCompetitions();
+	}, [me]);
 
 	// Prefetch: kullanicinin yarismalari + en yakin 3 yarisma
 	useEffect(() => {
@@ -170,7 +167,7 @@ export default function CompetitionList() {
 			)}
 
 			{/* Benim Yarismalarin */}
-			{!compSearch.trim() && userIsPremium && myComps && myComps.length > 0 && (
+			{!compSearch.trim() && myComps && myComps.length > 0 && (
 				<div className={b('my-competitions')}>
 					<h3 className={b('section-title')}>{t('my_schedule.my_competitions')}</h3>
 					<div className={b('comp-list')}>
