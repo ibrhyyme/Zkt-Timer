@@ -128,6 +128,21 @@ export type Scalars = {
   Void: any;
 };
 
+export type AdminSendPushResult = {
+  __typename?: 'AdminSendPushResult';
+  success?: Maybe<Scalars['Boolean']>;
+};
+
+export type AdminUserFiltersInput = {
+  admin?: InputMaybe<Scalars['Boolean']>;
+  banned?: InputMaybe<Scalars['Boolean']>;
+  email_verified?: InputMaybe<Scalars['Boolean']>;
+  is_pro?: InputMaybe<Scalars['Boolean']>;
+  mod?: InputMaybe<Scalars['Boolean']>;
+  platforms?: InputMaybe<Array<Scalars['String']>>;
+  verified?: InputMaybe<Scalars['Boolean']>;
+};
+
 export type AlgorithmOverride = {
   __typename?: 'AlgorithmOverride';
   created_at?: Maybe<Scalars['DateTime']>;
@@ -161,6 +176,7 @@ export type Announcement = {
   priority?: Maybe<Scalars['Int']>;
   publishedAt?: Maybe<Scalars['DateTime']>;
   title?: Maybe<Scalars['String']>;
+  translations?: Maybe<Scalars['String']>;
   viewCount?: Maybe<Scalars['Int']>;
 };
 
@@ -222,15 +238,11 @@ export type BanUserInput = {
   user_id?: InputMaybe<Scalars['String']>;
 };
 
-export type ChatMessage = {
-  __typename?: 'ChatMessage';
-  created_at?: Maybe<Scalars['DateTime']>;
-  id?: Maybe<Scalars['String']>;
-  match_session?: Maybe<MatchSession>;
-  match_session_id?: Maybe<Scalars['String']>;
-  message?: Maybe<Scalars['String']>;
-  user?: Maybe<PublicUserAccount>;
-  user_id?: Maybe<Scalars['String']>;
+export type BulkEmailResult = {
+  __typename?: 'BulkEmailResult';
+  failCount?: Maybe<Scalars['Int']>;
+  skippedCount?: Maybe<Scalars['Int']>;
+  successCount?: Maybe<Scalars['Int']>;
 };
 
 export type CreateAnnouncementInput = {
@@ -238,9 +250,18 @@ export type CreateAnnouncementInput = {
   content?: InputMaybe<Scalars['String']>;
   imageUrl?: InputMaybe<Scalars['String']>;
   isDraft?: InputMaybe<Scalars['Boolean']>;
+  notificationPlatforms?: InputMaybe<Array<Scalars['String']>>;
   priority?: InputMaybe<Scalars['Int']>;
   sendNotification?: InputMaybe<Scalars['Boolean']>;
   title?: InputMaybe<Scalars['String']>;
+  translations?: InputMaybe<Scalars['String']>;
+};
+
+export type CreatePromoCodeInput = {
+  code?: InputMaybe<Scalars['String']>;
+  duration_minutes?: InputMaybe<Scalars['Int']>;
+  max_uses?: InputMaybe<Scalars['Int']>;
+  membership_type?: InputMaybe<Scalars['String']>;
 };
 
 export type CustomCubeType = {
@@ -296,6 +317,19 @@ export type CustomTrainerCreateInput = {
   three_d?: InputMaybe<Scalars['Boolean']>;
 };
 
+export type DailyGoalReminderResult = {
+  __typename?: 'DailyGoalReminderResult';
+  enabled?: Maybe<Scalars['Boolean']>;
+};
+
+export type DailyGoalType = {
+  __typename?: 'DailyGoalType';
+  cube_type?: Maybe<Scalars['String']>;
+  enabled?: Maybe<Scalars['Boolean']>;
+  id?: Maybe<Scalars['String']>;
+  target?: Maybe<Scalars['Int']>;
+};
+
 export type DemoSolve = {
   __typename?: 'DemoSolve';
   created_at?: Maybe<Scalars['DateTime']>;
@@ -319,44 +353,6 @@ export type DemoSolveInput = {
   started_at?: InputMaybe<Scalars['BigInt']>;
 };
 
-export type EloLog = {
-  __typename?: 'EloLog';
-  created_at?: Maybe<Scalars['DateTime']>;
-  cube_type?: Maybe<Scalars['String']>;
-  elo_change?: Maybe<Scalars['Float']>;
-  id?: Maybe<Scalars['String']>;
-  match?: Maybe<Match>;
-  match_id?: Maybe<Scalars['String']>;
-  opponent?: Maybe<PublicUserAccount>;
-  opponent_id?: Maybe<Scalars['String']>;
-  opponent_new_elo_rating?: Maybe<Scalars['Float']>;
-  opponent_new_game_count?: Maybe<Scalars['String']>;
-  player?: Maybe<PublicUserAccount>;
-  player_id?: Maybe<Scalars['String']>;
-  player_new_elo_rating?: Maybe<Scalars['Float']>;
-  player_new_game_count?: Maybe<Scalars['String']>;
-  updated_at?: Maybe<Scalars['DateTime']>;
-};
-
-export type EloRating = {
-  __typename?: 'EloRating';
-  created_at?: Maybe<Scalars['DateTime']>;
-  elo_222_rating?: Maybe<Scalars['Float']>;
-  elo_333_rating?: Maybe<Scalars['Float']>;
-  elo_444_rating?: Maybe<Scalars['Float']>;
-  elo_overall_rating?: Maybe<Scalars['Float']>;
-  games_222_count?: Maybe<Scalars['Float']>;
-  games_333_count?: Maybe<Scalars['Float']>;
-  games_444_count?: Maybe<Scalars['Float']>;
-  games_overall_count?: Maybe<Scalars['Float']>;
-  id?: Maybe<Scalars['String']>;
-  profile?: Maybe<Profile>;
-  profile_id?: Maybe<Scalars['String']>;
-  updated_at?: Maybe<Scalars['DateTime']>;
-  user?: Maybe<PublicUserAccount>;
-  user_id?: Maybe<Scalars['String']>;
-};
-
 export type File = {
   __typename?: 'File';
   encoding: Scalars['String'];
@@ -364,102 +360,17 @@ export type File = {
   mimetype: Scalars['String'];
 };
 
-export type Friendship = {
-  __typename?: 'Friendship';
-  created_at?: Maybe<Scalars['DateTime']>;
-  friendship_request?: Maybe<FriendshipRequest>;
-  friendship_request_id?: Maybe<Scalars['String']>;
-  id?: Maybe<Scalars['String']>;
-  other_user?: Maybe<PublicUserAccount>;
-  other_user_id?: Maybe<Scalars['String']>;
-  user?: Maybe<PublicUserAccount>;
-  user_id?: Maybe<Scalars['String']>;
-};
-
-export type FriendshipRequest = {
-  __typename?: 'FriendshipRequest';
-  accepted?: Maybe<Scalars['Boolean']>;
-  created_at?: Maybe<Scalars['DateTime']>;
-  from_id?: Maybe<Scalars['String']>;
-  from_user?: Maybe<PublicUserAccount>;
-  id?: Maybe<Scalars['String']>;
-  to_id?: Maybe<Scalars['String']>;
-  to_user?: Maybe<PublicUserAccount>;
-};
-
-export type FriendshipRequestResult = {
-  __typename?: 'FriendshipRequestResult';
-  more_results?: Maybe<Scalars['Boolean']>;
-  records?: Maybe<Array<Maybe<FriendshipRequest>>>;
-  total_count?: Maybe<Scalars['Int']>;
-};
-
-export type FriendshipResult = {
-  __typename?: 'FriendshipResult';
-  id?: Maybe<Scalars['String']>;
-  more_results?: Maybe<Scalars['Boolean']>;
-  records?: Maybe<Array<Maybe<Friendship>>>;
-};
-
-export type FriendshipStats = {
-  __typename?: 'FriendshipStats';
-  friend_count?: Maybe<Scalars['Int']>;
-  friend_requests_count?: Maybe<Scalars['Int']>;
-  friend_requests_sent_count?: Maybe<Scalars['Int']>;
-};
-
-export type GameOptions = {
-  __typename?: 'GameOptions';
-  cube_type?: Maybe<Scalars['String']>;
-  elimination_percent_change_rate?: Maybe<Scalars['Float']>;
-  elimination_starting_time_seconds?: Maybe<Scalars['Float']>;
-  game_session_id?: Maybe<Scalars['String']>;
-  game_type?: Maybe<GameType>;
-  gauntlet_time_multiplier?: Maybe<Scalars['Float']>;
-  head_to_head_target_win_count?: Maybe<Scalars['Float']>;
-  id?: Maybe<Scalars['String']>;
-  match_session_id?: Maybe<Scalars['String']>;
-};
-
-export type GameOptionsInput = {
-  cube_type?: InputMaybe<Scalars['String']>;
-  elimination_percent_change_rate?: InputMaybe<Scalars['Float']>;
-  elimination_starting_time_seconds?: InputMaybe<Scalars['Float']>;
-  game_type?: InputMaybe<GameType>;
-  gauntlet_time_multiplier?: InputMaybe<Scalars['Float']>;
-  head_to_head_target_win_count?: InputMaybe<Scalars['Float']>;
-};
-
-export type GameSession = {
-  __typename?: 'GameSession';
-  created_at?: Maybe<Scalars['DateTime']>;
-  game_type?: Maybe<GameType>;
-  id?: Maybe<Scalars['String']>;
-  match?: Maybe<Match>;
-  match_id?: Maybe<Scalars['String']>;
-  solve_count?: Maybe<Scalars['Int']>;
-  solves?: Maybe<Array<Maybe<Solve>>>;
-  total_time?: Maybe<Scalars['Float']>;
-  user?: Maybe<PublicUserAccount>;
-  user_id?: Maybe<Scalars['String']>;
-};
-
-export enum GameType {
-  Elimination = 'ELIMINATION',
-  HeadToHead = 'HEAD_TO_HEAD'
-}
-
 export type IInternalUserAccount = {
   admin?: Maybe<Scalars['Boolean']>;
   badges?: Maybe<Array<Maybe<Badge>>>;
   banned_forever?: Maybe<Scalars['Boolean']>;
   banned_until?: Maybe<Scalars['DateTime']>;
   bans?: Maybe<Array<Maybe<BanLog>>>;
-  chat_messages?: Maybe<Array<Maybe<ChatMessage>>>;
   created_at?: Maybe<Scalars['DateTime']>;
-  elo_rating?: Maybe<EloRating>;
   email?: Maybe<Scalars['String']>;
+  email_verified?: Maybe<Scalars['Boolean']>;
   first_name?: Maybe<Scalars['String']>;
+  has_password?: Maybe<Scalars['Boolean']>;
   id?: Maybe<Scalars['String']>;
   integrations?: Maybe<Array<Maybe<Integration>>>;
   is_premium?: Maybe<Scalars['Boolean']>;
@@ -472,11 +383,12 @@ export type IInternalUserAccount = {
   notification_preferences?: Maybe<NotificationPreference>;
   offline_hash?: Maybe<Scalars['String']>;
   password?: Maybe<Scalars['String']>;
-  pro_status?: Maybe<SubscriptionStatus>;
+  premium_expires_at?: Maybe<Scalars['DateTime']>;
+  pro_expires_at?: Maybe<Scalars['DateTime']>;
   profile?: Maybe<Profile>;
+  pushTokens?: Maybe<Array<PushTokenInfo>>;
   reports_for?: Maybe<Array<Maybe<Report>>>;
   settings?: Maybe<Setting>;
-  stripe_customer_id?: Maybe<Scalars['String']>;
   summary?: Maybe<UserAccountSummary>;
   timer_background?: Maybe<TimerBackground>;
   top_averages?: Maybe<Array<Maybe<TopAverage>>>;
@@ -505,7 +417,20 @@ export type Integration = {
   service_name?: Maybe<IntegrationType>;
   user?: Maybe<PublicUserAccount>;
   user_id?: Maybe<Scalars['String']>;
+  wca_competition_count?: Maybe<Scalars['Float']>;
+  wca_country_iso2?: Maybe<Scalars['String']>;
   wca_id?: Maybe<Scalars['String']>;
+  wca_medal_bronze?: Maybe<Scalars['Float']>;
+  wca_medal_gold?: Maybe<Scalars['Float']>;
+  wca_medal_silver?: Maybe<Scalars['Float']>;
+  wca_record_cr?: Maybe<Scalars['Float']>;
+  wca_record_nr?: Maybe<Scalars['Float']>;
+  wca_record_wr?: Maybe<Scalars['Float']>;
+  wca_show_competitions?: Maybe<Scalars['Boolean']>;
+  wca_show_medals?: Maybe<Scalars['Boolean']>;
+  wca_show_rank?: Maybe<Scalars['Boolean']>;
+  wca_show_records?: Maybe<Scalars['Boolean']>;
+  wca_show_results?: Maybe<Scalars['Boolean']>;
 };
 
 export enum IntegrationType {
@@ -519,11 +444,11 @@ export type InternalUserAccount = IInternalUserAccount & IPublicUserAccount & IU
   banned_forever?: Maybe<Scalars['Boolean']>;
   banned_until?: Maybe<Scalars['DateTime']>;
   bans?: Maybe<Array<Maybe<BanLog>>>;
-  chat_messages?: Maybe<Array<Maybe<ChatMessage>>>;
   created_at?: Maybe<Scalars['DateTime']>;
-  elo_rating?: Maybe<EloRating>;
   email?: Maybe<Scalars['String']>;
+  email_verified?: Maybe<Scalars['Boolean']>;
   first_name?: Maybe<Scalars['String']>;
+  has_password?: Maybe<Scalars['Boolean']>;
   id?: Maybe<Scalars['String']>;
   integrations?: Maybe<Array<Maybe<Integration>>>;
   is_premium?: Maybe<Scalars['Boolean']>;
@@ -536,11 +461,12 @@ export type InternalUserAccount = IInternalUserAccount & IPublicUserAccount & IU
   notification_preferences?: Maybe<NotificationPreference>;
   offline_hash?: Maybe<Scalars['String']>;
   password?: Maybe<Scalars['String']>;
-  pro_status?: Maybe<SubscriptionStatus>;
+  premium_expires_at?: Maybe<Scalars['DateTime']>;
+  pro_expires_at?: Maybe<Scalars['DateTime']>;
   profile?: Maybe<Profile>;
+  pushTokens?: Maybe<Array<PushTokenInfo>>;
   reports_for?: Maybe<Array<Maybe<Report>>>;
   settings?: Maybe<Setting>;
-  stripe_customer_id?: Maybe<Scalars['String']>;
   summary?: Maybe<UserAccountSummary>;
   timer_background?: Maybe<TimerBackground>;
   top_averages?: Maybe<Array<Maybe<TopAverage>>>;
@@ -555,13 +481,14 @@ export type IPublicUserAccount = {
   banned_forever?: Maybe<Scalars['Boolean']>;
   banned_until?: Maybe<Scalars['DateTime']>;
   created_at?: Maybe<Scalars['DateTime']>;
-  elo_rating?: Maybe<EloRating>;
   id?: Maybe<Scalars['String']>;
   integrations?: Maybe<Array<Maybe<Integration>>>;
   is_premium?: Maybe<Scalars['Boolean']>;
   is_pro?: Maybe<Scalars['Boolean']>;
   last_solve_at?: Maybe<Scalars['DateTime']>;
   mod?: Maybe<Scalars['Boolean']>;
+  premium_expires_at?: Maybe<Scalars['DateTime']>;
+  pro_expires_at?: Maybe<Scalars['DateTime']>;
   profile?: Maybe<Profile>;
   top_averages?: Maybe<Array<Maybe<TopAverage>>>;
   top_solves?: Maybe<Array<Maybe<TopSolve>>>;
@@ -576,9 +503,9 @@ export type IUserAccount = {
   banned_until?: Maybe<Scalars['DateTime']>;
   bans?: Maybe<Array<Maybe<BanLog>>>;
   created_at?: Maybe<Scalars['DateTime']>;
-  elo_rating?: Maybe<EloRating>;
   email?: Maybe<Scalars['String']>;
   first_name?: Maybe<Scalars['String']>;
+  has_password?: Maybe<Scalars['Boolean']>;
   id?: Maybe<Scalars['String']>;
   integrations?: Maybe<Array<Maybe<Integration>>>;
   is_premium?: Maybe<Scalars['Boolean']>;
@@ -588,7 +515,8 @@ export type IUserAccount = {
   last_solve_at?: Maybe<Scalars['DateTime']>;
   mod?: Maybe<Scalars['Boolean']>;
   offline_hash?: Maybe<Scalars['String']>;
-  pro_status?: Maybe<SubscriptionStatus>;
+  premium_expires_at?: Maybe<Scalars['DateTime']>;
+  pro_expires_at?: Maybe<Scalars['DateTime']>;
   profile?: Maybe<Profile>;
   timer_background?: Maybe<TimerBackground>;
   top_averages?: Maybe<Array<Maybe<TopAverage>>>;
@@ -603,11 +531,11 @@ export type IUserAccountForAdmin = {
   banned_forever?: Maybe<Scalars['Boolean']>;
   banned_until?: Maybe<Scalars['DateTime']>;
   bans?: Maybe<Array<Maybe<BanLog>>>;
-  chat_messages?: Maybe<Array<Maybe<ChatMessage>>>;
   created_at?: Maybe<Scalars['DateTime']>;
-  elo_rating?: Maybe<EloRating>;
   email?: Maybe<Scalars['String']>;
+  email_verified?: Maybe<Scalars['Boolean']>;
   first_name?: Maybe<Scalars['String']>;
+  has_password?: Maybe<Scalars['Boolean']>;
   id?: Maybe<Scalars['String']>;
   integrations?: Maybe<Array<Maybe<Integration>>>;
   is_premium?: Maybe<Scalars['Boolean']>;
@@ -619,8 +547,10 @@ export type IUserAccountForAdmin = {
   mod?: Maybe<Scalars['Boolean']>;
   notification_preferences?: Maybe<NotificationPreference>;
   offline_hash?: Maybe<Scalars['String']>;
-  pro_status?: Maybe<SubscriptionStatus>;
+  premium_expires_at?: Maybe<Scalars['DateTime']>;
+  pro_expires_at?: Maybe<Scalars['DateTime']>;
   profile?: Maybe<Profile>;
+  pushTokens?: Maybe<Array<PushTokenInfo>>;
   reports_for?: Maybe<Array<Maybe<Report>>>;
   settings?: Maybe<Setting>;
   summary?: Maybe<UserAccountSummary>;
@@ -631,116 +561,31 @@ export type IUserAccountForAdmin = {
   verified?: Maybe<Scalars['Boolean']>;
 };
 
-export type Match = {
-  __typename?: 'Match';
-  aborted?: Maybe<Scalars['Boolean']>;
-  created_at?: Maybe<Scalars['DateTime']>;
-  elo_log?: Maybe<Array<Maybe<EloLog>>>;
-  ended_at?: Maybe<Scalars['DateTime']>;
-  id?: Maybe<Scalars['String']>;
-  link_code?: Maybe<Scalars['String']>;
-  match_session?: Maybe<MatchSession>;
-  match_session_id?: Maybe<Scalars['String']>;
-  participants?: Maybe<Array<Maybe<MatchParticipant>>>;
-  spectate_code?: Maybe<Scalars['String']>;
-  started_at?: Maybe<Scalars['DateTime']>;
-  winner?: Maybe<PublicUserAccount>;
-  winner_id?: Maybe<Scalars['String']>;
-};
-
-export type MatchParticipant = {
-  __typename?: 'MatchParticipant';
-  created_at?: Maybe<Scalars['DateTime']>;
-  forfeited?: Maybe<Scalars['Boolean']>;
-  id?: Maybe<Scalars['String']>;
-  lost?: Maybe<Scalars['Boolean']>;
-  match?: Maybe<Match>;
-  match_id?: Maybe<Scalars['String']>;
-  position?: Maybe<Scalars['Int']>;
-  resigned?: Maybe<Scalars['Boolean']>;
-  solves?: Maybe<Array<Maybe<Solve>>>;
-  user?: Maybe<PublicUserAccount>;
-  user_id?: Maybe<Scalars['String']>;
-  won?: Maybe<Scalars['Boolean']>;
-};
-
-export type MatchSession = {
-  __typename?: 'MatchSession';
-  chat_messages?: Maybe<Array<Maybe<ChatMessage>>>;
-  created_at?: Maybe<Scalars['DateTime']>;
-  created_by?: Maybe<PublicUserAccount>;
-  created_by_id?: Maybe<Scalars['String']>;
-  custom_match?: Maybe<Scalars['Boolean']>;
-  game_options?: Maybe<GameOptions>;
-  id?: Maybe<Scalars['String']>;
-  match_type?: Maybe<Scalars['String']>;
-  max_players?: Maybe<Scalars['Int']>;
-  min_players?: Maybe<Scalars['Int']>;
-  participants?: Maybe<Array<Maybe<MatchParticipant>>>;
-  rated?: Maybe<Scalars['Boolean']>;
-  winner?: Maybe<PublicUserAccount>;
-};
-
-export type MatchSessionInput = {
-  cube_type?: InputMaybe<Scalars['String']>;
-  head_to_head_target_win_count?: InputMaybe<Scalars['Float']>;
-  match_type?: InputMaybe<GameType>;
-  max_players?: InputMaybe<Scalars['Int']>;
-  min_players?: InputMaybe<Scalars['Int']>;
-};
-
-export type Membership = {
-  __typename?: 'Membership';
-  cancel_at_period_end?: Maybe<Scalars['Boolean']>;
-  canceled_at?: Maybe<Scalars['Float']>;
-  current_period_end?: Maybe<Scalars['Float']>;
-  days_until_due?: Maybe<Scalars['Float']>;
-  ended_at?: Maybe<Scalars['Float']>;
-  pricing?: Maybe<MembershipPricing>;
-  start_date?: Maybe<Scalars['Float']>;
-  status?: Maybe<SubscriptionStatus>;
-};
-
-export type MembershipOptions = {
-  __typename?: 'MembershipOptions';
-  month?: Maybe<MembershipPricing>;
-  year?: Maybe<MembershipPricing>;
-};
-
-export type MembershipPricing = {
-  __typename?: 'MembershipPricing';
-  currency?: Maybe<Scalars['String']>;
-  id?: Maybe<Scalars['String']>;
-  interval?: Maybe<Scalars['String']>;
-  interval_count?: Maybe<Scalars['Float']>;
-  unit_amount?: Maybe<Scalars['Float']>;
-};
-
 export type Mutation = {
   __typename?: 'Mutation';
-  acceptFriendshipRequest?: Maybe<Friendship>;
   addBadgeToUser?: Maybe<Badge>;
   addNewSmartDevice?: Maybe<SmartDevice>;
-  adminDeleteTrainerAlternative: TrainerAlternative;
+  adminDeleteTrainerAlternative?: Maybe<TrainerAlternative>;
   adminDeleteUserAccount?: Maybe<UserAccount>;
+  adminSendPushToUser?: Maybe<AdminSendPushResult>;
   authenticateUser: PublicUserAccount;
+  authenticateWithWca?: Maybe<WcaOAuthResult>;
   banUserAccount?: Maybe<BanLog>;
   bulkCreateSessions?: Maybe<Scalars['Void']>;
   bulkCreateSolves?: Maybe<Scalars['Void']>;
-  cancelMembership?: Maybe<Scalars['Boolean']>;
   changeSmartDeviceName?: Maybe<SmartDevice>;
   checkForgotPasswordCode?: Maybe<Scalars['Boolean']>;
+  completeWcaSignup?: Maybe<PublicUserAccount>;
   createAnnouncement?: Maybe<Announcement>;
   createBadgeType?: Maybe<BadgeType>;
   createCustomCubeType?: Maybe<CustomCubeType>;
   createCustomTrainer?: Maybe<CustomTrainer>;
   createDemoSolve?: Maybe<DemoSolve>;
-  createGameSession?: Maybe<GameSession>;
   createIntegration?: Maybe<Integration>;
-  createMatchWithNewSession?: Maybe<Match>;
+  createPromoCode?: Maybe<PromoCode>;
   createSession?: Maybe<Session>;
   createSolve?: Maybe<Solve>;
-  createTrainerAlternative: TrainerAlternative;
+  createTrainerAlternative?: Maybe<TrainerAlternative>;
   createUserAccount?: Maybe<PublicUserAccount>;
   deleteAlgorithmOverride?: Maybe<AlgorithmOverride>;
   deleteAllSolves?: Maybe<Scalars['Void']>;
@@ -750,10 +595,9 @@ export type Mutation = {
   deleteBadgeType?: Maybe<BadgeType>;
   deleteCustomCubeType?: Maybe<CustomCubeType>;
   deleteCustomTrainer?: Maybe<CustomTrainer>;
-  deleteFriendshipRequest?: Maybe<FriendshipRequest>;
-  deleteGameSession?: Maybe<GameSession>;
   deleteIntegration?: Maybe<Integration>;
   deleteNotification?: Maybe<Notification>;
+  deletePromoCode?: Maybe<Scalars['Boolean']>;
   deleteSession?: Maybe<Session>;
   deleteSmartDevice?: Maybe<SmartDevice>;
   deleteSolve: Solve;
@@ -766,7 +610,6 @@ export type Mutation = {
   deleteUserAccount?: Maybe<PublicUserAccount>;
   editBadgeType?: Maybe<BadgeType>;
   fetchWcaRecords?: Maybe<Array<Maybe<WcaRecord>>>;
-  generateBuyLink?: Maybe<Scalars['String']>;
   logOut: PublicUserAccount;
   markAnnouncementAsViewed?: Maybe<Scalars['Boolean']>;
   markNotificationAsRead?: Maybe<Notification>;
@@ -774,19 +617,27 @@ export type Mutation = {
   publishTopAverages?: Maybe<TopAverage>;
   publishTopSolve?: Maybe<TopSolve>;
   publishWcaRecord?: Maybe<WcaRecord>;
+  redeemPromoCode?: Maybe<RedeemPromoCodeResult>;
   registerPushToken?: Maybe<PushTokenResult>;
   removeBadgeFromUser?: Maybe<Badge>;
+  removeDailyGoal?: Maybe<Scalars['Boolean']>;
   reorderSessions?: Maybe<Scalars['Void']>;
   reportProfile?: Maybe<Report>;
+  resendEmailVerificationCode?: Maybe<Scalars['Void']>;
   resetSettings?: Maybe<Setting>;
   resolveReports?: Maybe<Scalars['Float']>;
+  sendBulkEmail?: Maybe<BulkEmailResult>;
   sendForgotPasswordCode?: Maybe<Scalars['Void']>;
-  sendFriendshipRequest?: Maybe<FriendshipRequest>;
+  setDailyGoal?: Maybe<DailyGoalType>;
+  setDailyGoalReminder?: Maybe<DailyGoalReminderResult>;
+  setPremiumStatus?: Maybe<UserAccount>;
+  setProStatus?: Maybe<UserAccount>;
   setSetting?: Maybe<Setting>;
   setTimerBackgroundHex: TimerBackground;
+  setUserPassword?: Maybe<PublicUserAccount>;
   setVerifiedStatus?: Maybe<UserAccount>;
+  togglePromoCodeActive?: Maybe<PromoCode>;
   unbanUserAccount?: Maybe<UserAccount>;
-  unfriend?: Maybe<Friendship>;
   unpublishWcaRecord?: Maybe<WcaRecord>;
   unregisterPushToken?: Maybe<PushTokenResult>;
   unsubEmails?: Maybe<Scalars['Boolean']>;
@@ -802,14 +653,11 @@ export type Mutation = {
   updateStatsModuleBlocks?: Maybe<StatsModule>;
   updateUserAccount?: Maybe<PublicUserAccount>;
   updateUserPassword?: Maybe<PublicUserAccount>;
+  updateWcaVisibility?: Maybe<Integration>;
   uploadProfileHeader: Image;
   uploadProfilePicture: Image;
   uploadTimerBackground: TimerBackground;
-};
-
-
-export type MutationAcceptFriendshipRequestArgs = {
-  friendshipRequestId?: InputMaybe<Scalars['String']>;
+  verifyEmailCode?: Maybe<PublicUserAccount>;
 };
 
 
@@ -826,7 +674,7 @@ export type MutationAddNewSmartDeviceArgs = {
 
 
 export type MutationAdminDeleteTrainerAlternativeArgs = {
-  id: Scalars['String'];
+  id?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -835,10 +683,22 @@ export type MutationAdminDeleteUserAccountArgs = {
 };
 
 
+export type MutationAdminSendPushToUserArgs = {
+  body?: InputMaybe<Scalars['String']>;
+  title?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+
 export type MutationAuthenticateUserArgs = {
   email: Scalars['String'];
   password: Scalars['String'];
   remember?: InputMaybe<Scalars['Boolean']>;
+};
+
+
+export type MutationAuthenticateWithWcaArgs = {
+  code?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -869,6 +729,11 @@ export type MutationCheckForgotPasswordCodeArgs = {
 };
 
 
+export type MutationCompleteWcaSignupArgs = {
+  username?: InputMaybe<Scalars['String']>;
+};
+
+
 export type MutationCreateAnnouncementArgs = {
   input?: InputMaybe<CreateAnnouncementInput>;
 };
@@ -894,20 +759,14 @@ export type MutationCreateDemoSolveArgs = {
 };
 
 
-export type MutationCreateGameSessionArgs = {
-  gameType?: InputMaybe<GameType>;
-  matchId?: InputMaybe<Scalars['String']>;
-};
-
-
 export type MutationCreateIntegrationArgs = {
   code?: InputMaybe<Scalars['String']>;
   integrationType?: InputMaybe<IntegrationType>;
 };
 
 
-export type MutationCreateMatchWithNewSessionArgs = {
-  input?: InputMaybe<MatchSessionInput>;
+export type MutationCreatePromoCodeArgs = {
+  input?: InputMaybe<CreatePromoCodeInput>;
 };
 
 
@@ -922,13 +781,14 @@ export type MutationCreateSolveArgs = {
 
 
 export type MutationCreateTrainerAlternativeArgs = {
-  input: TrainerAlternativeCreateInput;
+  input?: InputMaybe<TrainerAlternativeCreateInput>;
 };
 
 
 export type MutationCreateUserAccountArgs = {
   email: Scalars['String'];
   first_name: Scalars['String'];
+  language?: InputMaybe<Scalars['String']>;
   last_name: Scalars['String'];
   password: Scalars['String'];
   username: Scalars['String'];
@@ -965,22 +825,17 @@ export type MutationDeleteCustomTrainerArgs = {
 };
 
 
-export type MutationDeleteFriendshipRequestArgs = {
-  friendshipRequestId?: InputMaybe<Scalars['String']>;
-};
-
-
-export type MutationDeleteGameSessionArgs = {
-  id?: InputMaybe<Scalars['String']>;
-};
-
-
 export type MutationDeleteIntegrationArgs = {
   integrationType?: InputMaybe<IntegrationType>;
 };
 
 
 export type MutationDeleteNotificationArgs = {
+  id?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationDeletePromoCodeArgs = {
   id?: InputMaybe<Scalars['String']>;
 };
 
@@ -1031,11 +886,6 @@ export type MutationEditBadgeTypeArgs = {
 };
 
 
-export type MutationGenerateBuyLinkArgs = {
-  priceId?: InputMaybe<Scalars['String']>;
-};
-
-
 export type MutationMarkAnnouncementAsViewedArgs = {
   announcementId?: InputMaybe<Scalars['String']>;
 };
@@ -1067,6 +917,11 @@ export type MutationPublishWcaRecordArgs = {
 };
 
 
+export type MutationRedeemPromoCodeArgs = {
+  code?: InputMaybe<Scalars['String']>;
+};
+
+
 export type MutationRegisterPushTokenArgs = {
   input?: InputMaybe<RegisterPushTokenInput>;
 };
@@ -1075,6 +930,11 @@ export type MutationRegisterPushTokenArgs = {
 export type MutationRemoveBadgeFromUserArgs = {
   badgeTypeId?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationRemoveDailyGoalArgs = {
+  cubeType?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -1089,18 +949,49 @@ export type MutationReportProfileArgs = {
 };
 
 
+export type MutationResendEmailVerificationCodeArgs = {
+  email: Scalars['String'];
+  language?: InputMaybe<Scalars['String']>;
+};
+
+
 export type MutationResolveReportsArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
 
-export type MutationSendForgotPasswordCodeArgs = {
-  email?: InputMaybe<Scalars['String']>;
+export type MutationSendBulkEmailArgs = {
+  input?: InputMaybe<SendBulkEmailInput>;
 };
 
 
-export type MutationSendFriendshipRequestArgs = {
-  toUserId?: InputMaybe<Scalars['String']>;
+export type MutationSendForgotPasswordCodeArgs = {
+  email?: InputMaybe<Scalars['String']>;
+  language?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationSetDailyGoalArgs = {
+  input?: InputMaybe<SetDailyGoalInput>;
+};
+
+
+export type MutationSetDailyGoalReminderArgs = {
+  enabled?: InputMaybe<Scalars['Boolean']>;
+};
+
+
+export type MutationSetPremiumStatusArgs = {
+  isPremium?: InputMaybe<Scalars['Boolean']>;
+  minutes?: InputMaybe<Scalars['Float']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationSetProStatusArgs = {
+  isPro?: InputMaybe<Scalars['Boolean']>;
+  minutes?: InputMaybe<Scalars['Float']>;
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -1114,19 +1005,25 @@ export type MutationSetTimerBackgroundHexArgs = {
 };
 
 
+export type MutationSetUserPasswordArgs = {
+  new_password: Scalars['String'];
+};
+
+
 export type MutationSetVerifiedStatusArgs = {
   userId?: InputMaybe<Scalars['String']>;
   verified?: InputMaybe<Scalars['Boolean']>;
 };
 
 
-export type MutationUnbanUserAccountArgs = {
-  userId?: InputMaybe<Scalars['String']>;
+export type MutationTogglePromoCodeActiveArgs = {
+  id?: InputMaybe<Scalars['String']>;
+  isActive?: InputMaybe<Scalars['Boolean']>;
 };
 
 
-export type MutationUnfriendArgs = {
-  targetUserId?: InputMaybe<Scalars['String']>;
+export type MutationUnbanUserAccountArgs = {
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -1217,6 +1114,15 @@ export type MutationUpdateUserPasswordArgs = {
 };
 
 
+export type MutationUpdateWcaVisibilityArgs = {
+  showCompetitions?: InputMaybe<Scalars['Boolean']>;
+  showMedals?: InputMaybe<Scalars['Boolean']>;
+  showRank?: InputMaybe<Scalars['Boolean']>;
+  showRecords?: InputMaybe<Scalars['Boolean']>;
+  showResults?: InputMaybe<Scalars['Boolean']>;
+};
+
+
 export type MutationUploadProfileHeaderArgs = {
   file?: InputMaybe<Scalars['Upload']>;
 };
@@ -1229,6 +1135,13 @@ export type MutationUploadProfilePictureArgs = {
 
 export type MutationUploadTimerBackgroundArgs = {
   file?: InputMaybe<Scalars['Upload']>;
+};
+
+
+export type MutationVerifyEmailCodeArgs = {
+  code: Scalars['String'];
+  email: Scalars['String'];
+  language?: InputMaybe<Scalars['String']>;
 };
 
 export type Notification = {
@@ -1252,9 +1165,6 @@ export type Notification = {
 export type NotificationPreference = {
   __typename?: 'NotificationPreference';
   created_at?: Maybe<Scalars['DateTime']>;
-  elo_refund?: Maybe<Scalars['Boolean']>;
-  friend_request?: Maybe<Scalars['Boolean']>;
-  friend_request_accept?: Maybe<Scalars['Boolean']>;
   id?: Maybe<Scalars['String']>;
   marketing_emails?: Maybe<Scalars['Boolean']>;
   user_id?: Maybe<Scalars['String']>;
@@ -1267,32 +1177,11 @@ export type PaginatedCustomTrainers = {
   total?: Maybe<Scalars['Int']>;
 };
 
-export type PaginatedEloLeaderboards = {
-  __typename?: 'PaginatedEloLeaderboards';
-  hasMore?: Maybe<Scalars['Boolean']>;
-  items?: Maybe<Array<Maybe<EloRating>>>;
-  total?: Maybe<Scalars['Int']>;
-};
-
-export type PaginatedFriendshipRequests = {
-  __typename?: 'PaginatedFriendshipRequests';
-  hasMore?: Maybe<Scalars['Boolean']>;
-  items?: Maybe<Array<Maybe<FriendshipRequest>>>;
-  total?: Maybe<Scalars['Int']>;
-};
-
-export type PaginatedFriendships = {
-  __typename?: 'PaginatedFriendships';
-  hasMore?: Maybe<Scalars['Boolean']>;
-  items?: Maybe<Array<Maybe<Friendship>>>;
-  total?: Maybe<Scalars['Int']>;
-};
-
 export type PaginatedTrainerAlternatives = {
   __typename?: 'PaginatedTrainerAlternatives';
-  hasMore: Scalars['Boolean'];
-  items: Array<TrainerAlternative>;
-  total: Scalars['Int'];
+  hasMore?: Maybe<Scalars['Boolean']>;
+  items?: Maybe<Array<Maybe<TrainerAlternative>>>;
+  total?: Maybe<Scalars['Int']>;
 };
 
 export type PaginatedUserAccounts = {
@@ -1350,6 +1239,27 @@ export type ProfileInput = {
   youtube_link?: InputMaybe<Scalars['String']>;
 };
 
+export type PromoCode = {
+  __typename?: 'PromoCode';
+  code?: Maybe<Scalars['String']>;
+  created_at?: Maybe<Scalars['DateTime']>;
+  created_by_id?: Maybe<Scalars['String']>;
+  current_uses?: Maybe<Scalars['Int']>;
+  duration_minutes?: Maybe<Scalars['Int']>;
+  expires_at?: Maybe<Scalars['DateTime']>;
+  id?: Maybe<Scalars['String']>;
+  is_active?: Maybe<Scalars['Boolean']>;
+  max_uses?: Maybe<Scalars['Int']>;
+  membership_type?: Maybe<Scalars['String']>;
+};
+
+export type PromoCodeRedemptionInfo = {
+  __typename?: 'PromoCodeRedemptionInfo';
+  id?: Maybe<Scalars['String']>;
+  redeemed_at?: Maybe<Scalars['DateTime']>;
+  username?: Maybe<Scalars['String']>;
+};
+
 export type PublicUserAccount = IPublicUserAccount & {
   __typename?: 'PublicUserAccount';
   admin?: Maybe<Scalars['Boolean']>;
@@ -1357,18 +1267,24 @@ export type PublicUserAccount = IPublicUserAccount & {
   banned_forever?: Maybe<Scalars['Boolean']>;
   banned_until?: Maybe<Scalars['DateTime']>;
   created_at?: Maybe<Scalars['DateTime']>;
-  elo_rating?: Maybe<EloRating>;
   id?: Maybe<Scalars['String']>;
   integrations?: Maybe<Array<Maybe<Integration>>>;
   is_premium?: Maybe<Scalars['Boolean']>;
   is_pro?: Maybe<Scalars['Boolean']>;
   last_solve_at?: Maybe<Scalars['DateTime']>;
   mod?: Maybe<Scalars['Boolean']>;
+  premium_expires_at?: Maybe<Scalars['DateTime']>;
+  pro_expires_at?: Maybe<Scalars['DateTime']>;
   profile?: Maybe<Profile>;
   top_averages?: Maybe<Array<Maybe<TopAverage>>>;
   top_solves?: Maybe<Array<Maybe<TopSolve>>>;
   username?: Maybe<Scalars['String']>;
   verified?: Maybe<Scalars['Boolean']>;
+};
+
+export type PushTokenInfo = {
+  __typename?: 'PushTokenInfo';
+  platform?: Maybe<Scalars['String']>;
 };
 
 export type PushTokenResult = {
@@ -1378,43 +1294,31 @@ export type PushTokenResult = {
 
 export type Query = {
   __typename?: 'Query';
-  adminTrainerAlternatives: PaginatedTrainerAlternatives;
+  adminTrainerAlternatives?: Maybe<PaginatedTrainerAlternatives>;
   adminUserSearch?: Maybe<PaginatedUserAccountsForAdmin>;
   algorithmOverrides?: Maybe<Array<Maybe<AlgorithmOverride>>>;
-  allFriendships?: Maybe<Array<Maybe<Friendship>>>;
   badgeTypes?: Maybe<Array<Maybe<BadgeType>>>;
   customCubeTypes?: Maybe<Array<Maybe<CustomCubeType>>>;
   customTrainer?: Maybe<CustomTrainer>;
   customTrainers?: Maybe<Array<Maybe<CustomTrainer>>>;
-  eloLeaderboards?: Maybe<PaginatedEloLeaderboards>;
-  friendshipRequestsReceived?: Maybe<PaginatedFriendshipRequests>;
-  friendshipRequestsSent?: Maybe<PaginatedFriendshipRequests>;
-  friendships?: Maybe<PaginatedFriendships>;
-  gameSession?: Maybe<GameSession>;
-  gameSessions?: Maybe<Array<Maybe<GameSession>>>;
+  dailyGoalReminderStatus?: Maybe<DailyGoalReminderResult>;
+  dailyGoals?: Maybe<Array<Maybe<DailyGoalType>>>;
   getActiveAnnouncements?: Maybe<Array<Maybe<Announcement>>>;
   getAllAnnouncements?: Maybe<Array<Maybe<Announcement>>>;
   getMyAnnouncementHistory?: Maybe<Array<Maybe<Announcement>>>;
+  getPromoCodeRedemptions?: Maybe<Array<Maybe<PromoCodeRedemptionInfo>>>;
+  getPromoCodes?: Maybe<Array<Maybe<PromoCode>>>;
   getUnreadAnnouncementCount?: Maybe<UnreadAnnouncementCount>;
   getUserAccountForAdmin?: Maybe<UserAccountForAdmin>;
   integration?: Maybe<Integration>;
   integrations?: Maybe<Array<Maybe<Integration>>>;
-  match?: Maybe<Match>;
-  matchByLinkCode?: Maybe<Match>;
-  matchBySpectateCode?: Maybe<Match>;
-  matchSession: MatchSession;
   me: UserAccount;
-  membership?: Maybe<Membership>;
-  membershipOptions?: Maybe<MembershipOptions>;
-  myEloLeaderboardsPosition?: Maybe<Scalars['Int']>;
-  myWcaCompetitions: Array<WcaCompetition>;
+  myWcaCompetitions?: Maybe<Array<Maybe<WcaCompetition>>>;
   myWcaRecords?: Maybe<Array<Maybe<WcaRecord>>>;
   notificationPreferences?: Maybe<NotificationPreference>;
   notifications?: Maybe<Array<Maybe<Notification>>>;
   profile: Profile;
-  receivedFriendshipRequestsFromUser?: Maybe<Array<Maybe<FriendshipRequest>>>;
   reports?: Maybe<Array<Maybe<ReportSummary>>>;
-  sentFriendshipRequestsToUser?: Maybe<Array<Maybe<FriendshipRequest>>>;
   sessions?: Maybe<Array<Maybe<Session>>>;
   settings?: Maybe<Setting>;
   smartDevices?: Maybe<Array<Maybe<SmartDevice>>>;
@@ -1422,18 +1326,23 @@ export type Query = {
   solveByShareCode?: Maybe<Solve>;
   solveList?: Maybe<SolveList>;
   solves?: Maybe<Array<Maybe<Solve>>>;
+  solvesByIds?: Maybe<Array<Maybe<Solve>>>;
   stats?: Maybe<Stats>;
   statsModule?: Maybe<StatsModule>;
   topAverages?: Maybe<Array<Maybe<TopAverage>>>;
   topSolves?: Maybe<Array<Maybe<TopSolve>>>;
-  trainerAlternatives: Array<TrainerAlternative>;
+  trainerAlternatives?: Maybe<Array<Maybe<TrainerAlternative>>>;
   unreadNotificationCount?: Maybe<Scalars['Int']>;
   userSearch?: Maybe<PaginatedUserAccounts>;
   wcaCompetitionDetail?: Maybe<WcaCompetitionDetail>;
-  wcaCompetitions: Array<WcaCompetition>;
+  wcaCompetitions?: Maybe<Array<Maybe<WcaCompetition>>>;
+  wcaLiveCompetitionOverview?: Maybe<WcaLiveCompetitionOverview>;
+  wcaLiveRoundResults?: Maybe<WcaLiveRoundResults>;
   wcaMe?: Maybe<WcaAccount>;
   wcaRecords?: Maybe<Array<Maybe<WcaRecord>>>;
-  wcaSearchCompetitions: Array<WcaCompetition>;
+  wcaResults?: Maybe<Array<Maybe<WcaResult>>>;
+  wcaSearchCompetitions?: Maybe<Array<Maybe<WcaCompetition>>>;
+  youtubeSearch?: Maybe<Array<Maybe<YouTubeVideoResult>>>;
 };
 
 
@@ -1445,6 +1354,7 @@ export type QueryAdminTrainerAlternativesArgs = {
 
 
 export type QueryAdminUserSearchArgs = {
+  filters?: InputMaybe<AdminUserFiltersInput>;
   pageArgs?: InputMaybe<PaginationArgsInput>;
 };
 
@@ -1459,37 +1369,6 @@ export type QueryCustomTrainersArgs = {
 };
 
 
-export type QueryEloLeaderboardsArgs = {
-  pageArgs?: InputMaybe<PaginationArgsInput>;
-};
-
-
-export type QueryFriendshipRequestsReceivedArgs = {
-  page?: InputMaybe<Scalars['Int']>;
-  pageSize?: InputMaybe<Scalars['Int']>;
-  searchQuery?: InputMaybe<Scalars['String']>;
-};
-
-
-export type QueryFriendshipRequestsSentArgs = {
-  page?: InputMaybe<Scalars['Int']>;
-  pageSize?: InputMaybe<Scalars['Int']>;
-  searchQuery?: InputMaybe<Scalars['String']>;
-};
-
-
-export type QueryFriendshipsArgs = {
-  page?: InputMaybe<Scalars['Int']>;
-  pageSize?: InputMaybe<Scalars['Int']>;
-  searchQuery?: InputMaybe<Scalars['String']>;
-};
-
-
-export type QueryGameSessionArgs = {
-  id?: InputMaybe<Scalars['String']>;
-};
-
-
 export type QueryGetAllAnnouncementsArgs = {
   filter?: InputMaybe<AnnouncementFilterInput>;
 };
@@ -1498,6 +1377,11 @@ export type QueryGetAllAnnouncementsArgs = {
 export type QueryGetMyAnnouncementHistoryArgs = {
   limit?: InputMaybe<Scalars['Int']>;
   offset?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type QueryGetPromoCodeRedemptionsArgs = {
+  promoCodeId?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -1511,26 +1395,6 @@ export type QueryIntegrationArgs = {
 };
 
 
-export type QueryMatchArgs = {
-  id?: InputMaybe<Scalars['String']>;
-};
-
-
-export type QueryMatchByLinkCodeArgs = {
-  code?: InputMaybe<Scalars['String']>;
-};
-
-
-export type QueryMatchBySpectateCodeArgs = {
-  code?: InputMaybe<Scalars['String']>;
-};
-
-
-export type QueryMatchSessionArgs = {
-  id?: InputMaybe<Scalars['String']>;
-};
-
-
 export type QueryNotificationsArgs = {
   page?: InputMaybe<Scalars['Int']>;
 };
@@ -1538,16 +1402,6 @@ export type QueryNotificationsArgs = {
 
 export type QueryProfileArgs = {
   username?: InputMaybe<Scalars['String']>;
-};
-
-
-export type QueryReceivedFriendshipRequestsFromUserArgs = {
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-
-export type QuerySentFriendshipRequestsToUserArgs = {
-  userId?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -1570,6 +1424,17 @@ export type QuerySolveListArgs = {
 };
 
 
+export type QuerySolvesArgs = {
+  skip?: InputMaybe<Scalars['Int']>;
+  take?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type QuerySolvesByIdsArgs = {
+  ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+
 export type QueryTopAveragesArgs = {
   cubeType?: InputMaybe<Scalars['String']>;
   page?: InputMaybe<Scalars['Int']>;
@@ -1583,8 +1448,8 @@ export type QueryTopSolvesArgs = {
 
 
 export type QueryTrainerAlternativesArgs = {
-  caseName: Scalars['String'];
-  category: Scalars['String'];
+  caseName?: InputMaybe<Scalars['String']>;
+  category?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -1594,7 +1459,7 @@ export type QueryUserSearchArgs = {
 
 
 export type QueryWcaCompetitionDetailArgs = {
-  input: WcaScheduleInput;
+  input?: InputMaybe<WcaScheduleInput>;
 };
 
 
@@ -1603,13 +1468,40 @@ export type QueryWcaCompetitionsArgs = {
 };
 
 
+export type QueryWcaLiveCompetitionOverviewArgs = {
+  input?: InputMaybe<WcaLiveOverviewInput>;
+};
+
+
+export type QueryWcaLiveRoundResultsArgs = {
+  input?: InputMaybe<WcaLiveRoundInput>;
+};
+
+
 export type QueryWcaRecordsArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
 
+export type QueryWcaResultsArgs = {
+  wcaId?: InputMaybe<Scalars['String']>;
+};
+
+
 export type QueryWcaSearchCompetitionsArgs = {
-  query: Scalars['String'];
+  query?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryYoutubeSearchArgs = {
+  input?: InputMaybe<YouTubeSearchInput>;
+};
+
+export type RedeemPromoCodeResult = {
+  __typename?: 'RedeemPromoCodeResult';
+  expires_at?: Maybe<Scalars['DateTime']>;
+  membership_type?: Maybe<Scalars['String']>;
+  success?: Maybe<Scalars['Boolean']>;
 };
 
 export type RegisterPushTokenInput = {
@@ -1638,6 +1530,13 @@ export type ReportSummary = {
   user?: Maybe<PublicUserAccount>;
 };
 
+export type SendBulkEmailInput = {
+  content?: InputMaybe<Scalars['String']>;
+  sendToAll?: InputMaybe<Scalars['Boolean']>;
+  subject?: InputMaybe<Scalars['String']>;
+  userIds?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
 export type Session = {
   __typename?: 'Session';
   created_at?: Maybe<Scalars['DateTime']>;
@@ -1652,6 +1551,12 @@ export type SessionInput = {
   id?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   order?: InputMaybe<Scalars['Float']>;
+};
+
+export type SetDailyGoalInput = {
+  cube_type?: InputMaybe<Scalars['String']>;
+  enabled?: InputMaybe<Scalars['Boolean']>;
+  target?: InputMaybe<Scalars['Int']>;
 };
 
 export type Setting = {
@@ -1730,12 +1635,9 @@ export type Solve = {
   dnf?: Maybe<Scalars['Boolean']>;
   ended_at?: Maybe<Scalars['BigInt']>;
   from_timer?: Maybe<Scalars['Boolean']>;
-  game_session_id?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
   inspection_time?: Maybe<Scalars['Float']>;
   is_smart_cube?: Maybe<Scalars['Boolean']>;
-  match_id?: Maybe<Scalars['String']>;
-  match_participant_id?: Maybe<Scalars['String']>;
   notes?: Maybe<Scalars['String']>;
   plus_two?: Maybe<Scalars['Boolean']>;
   raw_time?: Maybe<Scalars['Float']>;
@@ -1764,12 +1666,9 @@ export type SolveInput = {
   dnf?: InputMaybe<Scalars['Boolean']>;
   ended_at?: InputMaybe<Scalars['BigInt']>;
   from_timer?: InputMaybe<Scalars['Boolean']>;
-  game_session_id?: InputMaybe<Scalars['String']>;
   id?: InputMaybe<Scalars['String']>;
   inspection_time?: InputMaybe<Scalars['Float']>;
   is_smart_cube?: InputMaybe<Scalars['Boolean']>;
-  match_id?: InputMaybe<Scalars['String']>;
-  match_participant_id?: InputMaybe<Scalars['String']>;
   notes?: InputMaybe<Scalars['String']>;
   plus_two?: InputMaybe<Scalars['Boolean']>;
   raw_time?: InputMaybe<Scalars['Float']>;
@@ -1844,13 +1743,6 @@ export type SolveView = {
 
 export type Stats = {
   __typename?: 'Stats';
-  friend_count?: Maybe<Scalars['Float']>;
-  match_max_win_streak?: Maybe<Scalars['Float']>;
-  match_solve_count?: Maybe<Scalars['Float']>;
-  matches_lost?: Maybe<Scalars['Float']>;
-  matches_played?: Maybe<Scalars['Float']>;
-  matches_tied?: Maybe<Scalars['Float']>;
-  matches_won?: Maybe<Scalars['Float']>;
   profile_views?: Maybe<Scalars['Float']>;
   solve_views?: Maybe<Scalars['Float']>;
 };
@@ -1881,18 +1773,6 @@ export type Store = {
   __typename?: 'Store';
   json?: Maybe<Scalars['String']>;
 };
-
-export enum SubscriptionStatus {
-  Active = 'ACTIVE',
-  Canceled = 'CANCELED',
-  Incomplete = 'INCOMPLETE',
-  IncompleteExpired = 'INCOMPLETE_EXPIRED',
-  None = 'NONE',
-  PastDue = 'PAST_DUE',
-  TrialExpired = 'TRIAL_EXPIRED',
-  Trialing = 'TRIALING',
-  Unpaid = 'UNPAID'
-}
 
 export type TimerBackground = {
   __typename?: 'TimerBackground';
@@ -1947,16 +1827,16 @@ export type TrainerAlgorithm = {
 
 export type TrainerAlternative = {
   __typename?: 'TrainerAlternative';
-  algorithm: Scalars['String'];
-  case_name: Scalars['String'];
-  category: Scalars['String'];
-  created_at: Scalars['DateTime'];
-  id: Scalars['String'];
+  algorithm?: Maybe<Scalars['String']>;
+  case_name?: Maybe<Scalars['String']>;
+  category?: Maybe<Scalars['String']>;
+  created_at?: Maybe<Scalars['DateTime']>;
+  id?: Maybe<Scalars['String']>;
   ll_pattern?: Maybe<Scalars['String']>;
-  original_input: Scalars['String'];
+  original_input?: Maybe<Scalars['String']>;
   setup?: Maybe<Scalars['String']>;
-  subset: Scalars['String'];
-  user_id: Scalars['String'];
+  subset?: Maybe<Scalars['String']>;
+  user_id?: Maybe<Scalars['String']>;
 };
 
 export type TrainerAlternativeCreateInput = {
@@ -1990,6 +1870,7 @@ export type UpdateAnnouncementInput = {
   isDraft?: InputMaybe<Scalars['Boolean']>;
   priority?: InputMaybe<Scalars['Int']>;
   title?: InputMaybe<Scalars['String']>;
+  translations?: InputMaybe<Scalars['String']>;
 };
 
 export type UserAccount = IPublicUserAccount & IUserAccount & {
@@ -2000,9 +1881,9 @@ export type UserAccount = IPublicUserAccount & IUserAccount & {
   banned_until?: Maybe<Scalars['DateTime']>;
   bans?: Maybe<Array<Maybe<BanLog>>>;
   created_at?: Maybe<Scalars['DateTime']>;
-  elo_rating?: Maybe<EloRating>;
   email?: Maybe<Scalars['String']>;
   first_name?: Maybe<Scalars['String']>;
+  has_password?: Maybe<Scalars['Boolean']>;
   id?: Maybe<Scalars['String']>;
   integrations?: Maybe<Array<Maybe<Integration>>>;
   is_premium?: Maybe<Scalars['Boolean']>;
@@ -2012,7 +1893,8 @@ export type UserAccount = IPublicUserAccount & IUserAccount & {
   last_solve_at?: Maybe<Scalars['DateTime']>;
   mod?: Maybe<Scalars['Boolean']>;
   offline_hash?: Maybe<Scalars['String']>;
-  pro_status?: Maybe<SubscriptionStatus>;
+  premium_expires_at?: Maybe<Scalars['DateTime']>;
+  pro_expires_at?: Maybe<Scalars['DateTime']>;
   profile?: Maybe<Profile>;
   timer_background?: Maybe<TimerBackground>;
   top_averages?: Maybe<Array<Maybe<TopAverage>>>;
@@ -2028,11 +1910,11 @@ export type UserAccountForAdmin = IPublicUserAccount & IUserAccount & IUserAccou
   banned_forever?: Maybe<Scalars['Boolean']>;
   banned_until?: Maybe<Scalars['DateTime']>;
   bans?: Maybe<Array<Maybe<BanLog>>>;
-  chat_messages?: Maybe<Array<Maybe<ChatMessage>>>;
   created_at?: Maybe<Scalars['DateTime']>;
-  elo_rating?: Maybe<EloRating>;
   email?: Maybe<Scalars['String']>;
+  email_verified?: Maybe<Scalars['Boolean']>;
   first_name?: Maybe<Scalars['String']>;
+  has_password?: Maybe<Scalars['Boolean']>;
   id?: Maybe<Scalars['String']>;
   integrations?: Maybe<Array<Maybe<Integration>>>;
   is_premium?: Maybe<Scalars['Boolean']>;
@@ -2044,8 +1926,10 @@ export type UserAccountForAdmin = IPublicUserAccount & IUserAccount & IUserAccou
   mod?: Maybe<Scalars['Boolean']>;
   notification_preferences?: Maybe<NotificationPreference>;
   offline_hash?: Maybe<Scalars['String']>;
-  pro_status?: Maybe<SubscriptionStatus>;
+  premium_expires_at?: Maybe<Scalars['DateTime']>;
+  pro_expires_at?: Maybe<Scalars['DateTime']>;
   profile?: Maybe<Profile>;
+  pushTokens?: Maybe<Array<PushTokenInfo>>;
   reports_for?: Maybe<Array<Maybe<Report>>>;
   settings?: Maybe<Setting>;
   summary?: Maybe<UserAccountSummary>;
@@ -2054,13 +1938,6 @@ export type UserAccountForAdmin = IPublicUserAccount & IUserAccount & IUserAccou
   top_solves?: Maybe<Array<Maybe<TopSolve>>>;
   username?: Maybe<Scalars['String']>;
   verified?: Maybe<Scalars['Boolean']>;
-};
-
-export type UserAccountMatchesSummary = {
-  __typename?: 'UserAccountMatchesSummary';
-  count?: Maybe<Scalars['Float']>;
-  losses?: Maybe<Scalars['Float']>;
-  wins?: Maybe<Scalars['Float']>;
 };
 
 export type UserAccountSolvesSummary = {
@@ -2076,8 +1953,6 @@ export type UserAccountSolvesSummary = {
 export type UserAccountSummary = {
   __typename?: 'UserAccountSummary';
   bans?: Maybe<Scalars['Int']>;
-  match_solves?: Maybe<Array<Maybe<UserAccountSolvesSummary>>>;
-  matches?: Maybe<UserAccountMatchesSummary>;
   profile_views?: Maybe<Scalars['Int']>;
   reports_created?: Maybe<Scalars['Int']>;
   reports_for?: Maybe<Scalars['Int']>;
@@ -2096,35 +1971,36 @@ export type WcaAccount = {
 
 export type WcaCompetition = {
   __typename?: 'WcaCompetition';
-  city: Scalars['String'];
+  city?: Maybe<Scalars['String']>;
   competitor_limit?: Maybe<Scalars['Int']>;
-  country_iso2: Scalars['String'];
-  date_range: Scalars['String'];
-  end_date: Scalars['String'];
-  event_ids: Array<Scalars['String']>;
-  id: Scalars['String'];
-  latitude_degrees: Scalars['Float'];
-  longitude_degrees: Scalars['Float'];
-  name: Scalars['String'];
-  start_date: Scalars['String'];
-  url: Scalars['String'];
-  venue: Scalars['String'];
+  country_iso2?: Maybe<Scalars['String']>;
+  date_range?: Maybe<Scalars['String']>;
+  end_date?: Maybe<Scalars['String']>;
+  event_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
+  id?: Maybe<Scalars['String']>;
+  latitude_degrees?: Maybe<Scalars['Float']>;
+  longitude_degrees?: Maybe<Scalars['Float']>;
+  name?: Maybe<Scalars['String']>;
+  start_date?: Maybe<Scalars['String']>;
+  url?: Maybe<Scalars['String']>;
+  venue?: Maybe<Scalars['String']>;
 };
 
 export type WcaCompetitionDetail = {
   __typename?: 'WcaCompetitionDetail';
-  allPersonalBests: Array<WcaRankingRow>;
-  competitionId: Scalars['String'];
-  competitionName: Scalars['String'];
-  competitors: Array<WcaCompetitor>;
-  events: Array<WcaEventDetail>;
-  info: WcaCompetitionInfo;
-  myRegisteredEvents: Array<Scalars['String']>;
+  allPersonalBests?: Maybe<Array<Maybe<WcaRankingRow>>>;
+  competitionId?: Maybe<Scalars['String']>;
+  competitionName?: Maybe<Scalars['String']>;
+  competitors?: Maybe<Array<Maybe<WcaCompetitor>>>;
+  events?: Maybe<Array<Maybe<WcaEventDetail>>>;
+  info?: Maybe<WcaCompetitionInfo>;
+  myRegisteredEvents?: Maybe<Array<Maybe<Scalars['String']>>>;
   myRegistrationStatus?: Maybe<Scalars['String']>;
   myWcaId?: Maybe<Scalars['String']>;
-  schedule: Array<WcaScheduleDay>;
-  wcaLiveCompetitors: Array<WcaLiveCompetitor>;
+  schedule?: Maybe<Array<Maybe<WcaScheduleDay>>>;
+  wcaLiveCompetitors?: Maybe<Array<Maybe<WcaLiveCompetitor>>>;
   wcaLiveCompId?: Maybe<Scalars['String']>;
+  wcaLiveRoundMap?: Maybe<Array<Maybe<WcaLiveRoundMapping>>>;
 };
 
 export type WcaCompetitionFilterInput = {
@@ -2133,84 +2009,250 @@ export type WcaCompetitionFilterInput = {
 
 export type WcaCompetitionInfo = {
   __typename?: 'WcaCompetitionInfo';
-  delegates: Array<WcaPersonInfo>;
-  organizers: Array<WcaPersonInfo>;
-  venues: Array<WcaVenueInfo>;
+  delegates?: Maybe<Array<Maybe<WcaPersonInfo>>>;
+  organizers?: Maybe<Array<Maybe<WcaPersonInfo>>>;
+  venues?: Maybe<Array<Maybe<WcaVenueInfo>>>;
   wcaUrl?: Maybe<Scalars['String']>;
 };
 
 export type WcaCompetitor = {
   __typename?: 'WcaCompetitor';
-  assignments: Array<WcaCompetitorAssignment>;
+  assignments?: Maybe<Array<Maybe<WcaCompetitorAssignment>>>;
   avatar?: Maybe<Scalars['String']>;
   country?: Maybe<Scalars['String']>;
-  name: Scalars['String'];
-  personalBests: Array<WcaPersonalBest>;
-  registeredEvents: Array<Scalars['String']>;
-  registrantId: Scalars['Int'];
+  name?: Maybe<Scalars['String']>;
+  personalBests?: Maybe<Array<Maybe<WcaPersonalBest>>>;
+  registeredEvents?: Maybe<Array<Maybe<Scalars['String']>>>;
+  registrantId?: Maybe<Scalars['Int']>;
   wcaId?: Maybe<Scalars['String']>;
   wcaUserId?: Maybe<Scalars['Int']>;
 };
 
 export type WcaCompetitorAssignment = {
   __typename?: 'WcaCompetitorAssignment';
-  activityCode: Scalars['String'];
-  assignmentCode: Scalars['String'];
+  activityCode?: Maybe<Scalars['String']>;
+  assignmentCode?: Maybe<Scalars['String']>;
   endTime?: Maybe<Scalars['String']>;
-  eventName: Scalars['String'];
+  eventName?: Maybe<Scalars['String']>;
   groupNumber?: Maybe<Scalars['Int']>;
   roomName?: Maybe<Scalars['String']>;
-  roundNumber: Scalars['Int'];
+  roundNumber?: Maybe<Scalars['Int']>;
   startTime?: Maybe<Scalars['String']>;
   stationNumber?: Maybe<Scalars['Int']>;
 };
 
 export type WcaEventDetail = {
   __typename?: 'WcaEventDetail';
-  eventId: Scalars['String'];
-  eventName: Scalars['String'];
-  rounds: Array<WcaRound>;
+  eventId?: Maybe<Scalars['String']>;
+  eventName?: Maybe<Scalars['String']>;
+  rounds?: Maybe<Array<Maybe<WcaRound>>>;
 };
 
 export type WcaGroup = {
   __typename?: 'WcaGroup';
   activityCode?: Maybe<Scalars['String']>;
-  competitors: Array<WcaGroupCompetitor>;
+  competitors?: Maybe<Array<Maybe<WcaGroupCompetitor>>>;
   endTime?: Maybe<Scalars['String']>;
-  groupNumber: Scalars['Int'];
+  groupNumber?: Maybe<Scalars['Int']>;
   startTime?: Maybe<Scalars['String']>;
 };
 
 export type WcaGroupCompetitor = {
   __typename?: 'WcaGroupCompetitor';
-  assignmentCode: Scalars['String'];
-  name: Scalars['String'];
-  registrantId: Scalars['Int'];
+  assignmentCode?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  registrantId?: Maybe<Scalars['Int']>;
   seedResult?: Maybe<Scalars['Int']>;
   wcaId?: Maybe<Scalars['String']>;
 };
 
+export type WcaLiveAdvancementCondition = {
+  __typename?: 'WcaLiveAdvancementCondition';
+  level?: Maybe<Scalars['Int']>;
+  type?: Maybe<Scalars['String']>;
+};
+
+export type WcaLiveAttempt = {
+  __typename?: 'WcaLiveAttempt';
+  result?: Maybe<Scalars['Int']>;
+};
+
+export type WcaLiveCompetitionOverview = {
+  __typename?: 'WcaLiveCompetitionOverview';
+  compId?: Maybe<Scalars['String']>;
+  events?: Maybe<Array<Maybe<WcaLiveEventInfo>>>;
+  name?: Maybe<Scalars['String']>;
+  podiums?: Maybe<Array<Maybe<WcaLivePodium>>>;
+  records?: Maybe<Array<Maybe<WcaLiveRecord>>>;
+  schedule?: Maybe<Array<Maybe<WcaLiveScheduleVenue>>>;
+};
+
 export type WcaLiveCompetitor = {
   __typename?: 'WcaLiveCompetitor';
-  liveId: Scalars['String'];
-  wcaId: Scalars['String'];
+  liveId?: Maybe<Scalars['String']>;
+  wcaId?: Maybe<Scalars['String']>;
+};
+
+export type WcaLiveCutoff = {
+  __typename?: 'WcaLiveCutoff';
+  attemptResult?: Maybe<Scalars['Int']>;
+  numberOfAttempts?: Maybe<Scalars['Int']>;
+};
+
+export type WcaLiveEventInfo = {
+  __typename?: 'WcaLiveEventInfo';
+  eventId?: Maybe<Scalars['String']>;
+  eventName?: Maybe<Scalars['String']>;
+  rounds?: Maybe<Array<Maybe<WcaLiveRoundInfo>>>;
+};
+
+export type WcaLiveFormat = {
+  __typename?: 'WcaLiveFormat';
+  numberOfAttempts?: Maybe<Scalars['Int']>;
+  sortBy?: Maybe<Scalars['String']>;
+};
+
+export type WcaLiveOverviewInput = {
+  competitionId?: InputMaybe<Scalars['String']>;
+};
+
+export type WcaLivePodium = {
+  __typename?: 'WcaLivePodium';
+  entries?: Maybe<Array<Maybe<WcaLivePodiumEntry>>>;
+  eventId?: Maybe<Scalars['String']>;
+  eventName?: Maybe<Scalars['String']>;
+  sortBy?: Maybe<Scalars['String']>;
+};
+
+export type WcaLivePodiumEntry = {
+  __typename?: 'WcaLivePodiumEntry';
+  average?: Maybe<Scalars['Int']>;
+  averageRecordTag?: Maybe<Scalars['String']>;
+  best?: Maybe<Scalars['Int']>;
+  personCountryIso2?: Maybe<Scalars['String']>;
+  personName?: Maybe<Scalars['String']>;
+  ranking?: Maybe<Scalars['Int']>;
+  singleRecordTag?: Maybe<Scalars['String']>;
+};
+
+export type WcaLiveRecord = {
+  __typename?: 'WcaLiveRecord';
+  attemptResult?: Maybe<Scalars['Int']>;
+  eventId?: Maybe<Scalars['String']>;
+  eventName?: Maybe<Scalars['String']>;
+  personCountryIso2?: Maybe<Scalars['String']>;
+  personName?: Maybe<Scalars['String']>;
+  roundNumber?: Maybe<Scalars['Int']>;
+  tag?: Maybe<Scalars['String']>;
+  type?: Maybe<Scalars['String']>;
+};
+
+export type WcaLiveResult = {
+  __typename?: 'WcaLiveResult';
+  advancing?: Maybe<Scalars['Boolean']>;
+  advancingQuestionable?: Maybe<Scalars['Boolean']>;
+  attempts?: Maybe<Array<Maybe<WcaLiveAttempt>>>;
+  average?: Maybe<Scalars['Int']>;
+  averageRecordTag?: Maybe<Scalars['String']>;
+  best?: Maybe<Scalars['Int']>;
+  personCountryIso2?: Maybe<Scalars['String']>;
+  personLiveId?: Maybe<Scalars['String']>;
+  personName?: Maybe<Scalars['String']>;
+  personWcaId?: Maybe<Scalars['String']>;
+  ranking?: Maybe<Scalars['Int']>;
+  singleRecordTag?: Maybe<Scalars['String']>;
+};
+
+export type WcaLiveRoundInfo = {
+  __typename?: 'WcaLiveRoundInfo';
+  active?: Maybe<Scalars['Boolean']>;
+  advancementCondition?: Maybe<WcaLiveAdvancementCondition>;
+  cutoff?: Maybe<WcaLiveCutoff>;
+  finished?: Maybe<Scalars['Boolean']>;
+  format?: Maybe<WcaLiveFormat>;
+  liveRoundId?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  number?: Maybe<Scalars['Int']>;
+  numEntered?: Maybe<Scalars['Int']>;
+  numResults?: Maybe<Scalars['Int']>;
+  open?: Maybe<Scalars['Boolean']>;
+  timeLimit?: Maybe<WcaLiveTimeLimit>;
+};
+
+export type WcaLiveRoundInput = {
+  competitionId?: InputMaybe<Scalars['String']>;
+  liveRoundId?: InputMaybe<Scalars['String']>;
+};
+
+export type WcaLiveRoundMapping = {
+  __typename?: 'WcaLiveRoundMapping';
+  activityCode?: Maybe<Scalars['String']>;
+  liveRoundId?: Maybe<Scalars['String']>;
+};
+
+export type WcaLiveRoundResults = {
+  __typename?: 'WcaLiveRoundResults';
+  active?: Maybe<Scalars['Boolean']>;
+  finished?: Maybe<Scalars['Boolean']>;
+  numberOfAttempts?: Maybe<Scalars['Int']>;
+  results?: Maybe<Array<Maybe<WcaLiveResult>>>;
+  roundActivityCode?: Maybe<Scalars['String']>;
+  roundName?: Maybe<Scalars['String']>;
+  sortBy?: Maybe<Scalars['String']>;
+};
+
+export type WcaLiveScheduleActivity = {
+  __typename?: 'WcaLiveScheduleActivity';
+  activityCode?: Maybe<Scalars['String']>;
+  activityId?: Maybe<Scalars['Int']>;
+  endTime?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  startTime?: Maybe<Scalars['String']>;
+};
+
+export type WcaLiveScheduleRoom = {
+  __typename?: 'WcaLiveScheduleRoom';
+  activities?: Maybe<Array<Maybe<WcaLiveScheduleActivity>>>;
+  color?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+};
+
+export type WcaLiveScheduleVenue = {
+  __typename?: 'WcaLiveScheduleVenue';
+  name?: Maybe<Scalars['String']>;
+  rooms?: Maybe<Array<Maybe<WcaLiveScheduleRoom>>>;
+};
+
+export type WcaLiveTimeLimit = {
+  __typename?: 'WcaLiveTimeLimit';
+  centiseconds?: Maybe<Scalars['Int']>;
+  cumulativeRoundWcifIds?: Maybe<Array<Maybe<Scalars['String']>>>;
+};
+
+export type WcaOAuthResult = {
+  __typename?: 'WcaOAuthResult';
+  needsUsername?: Maybe<Scalars['Boolean']>;
+  success?: Maybe<Scalars['Boolean']>;
+  wcaEmail?: Maybe<Scalars['String']>;
+  wcaId?: Maybe<Scalars['String']>;
+  wcaName?: Maybe<Scalars['String']>;
 };
 
 export type WcaPersonalBest = {
   __typename?: 'WcaPersonalBest';
-  best: Scalars['Int'];
-  continentalRanking: Scalars['Int'];
-  eventId: Scalars['String'];
-  nationalRanking: Scalars['Int'];
-  type: Scalars['String'];
-  worldRanking: Scalars['Int'];
+  best?: Maybe<Scalars['Int']>;
+  continentalRanking?: Maybe<Scalars['Int']>;
+  eventId?: Maybe<Scalars['String']>;
+  nationalRanking?: Maybe<Scalars['Int']>;
+  type?: Maybe<Scalars['String']>;
+  worldRanking?: Maybe<Scalars['Int']>;
 };
 
 export type WcaPersonInfo = {
   __typename?: 'WcaPersonInfo';
   avatar?: Maybe<Scalars['String']>;
-  name: Scalars['String'];
-  role: Scalars['String'];
+  name?: Maybe<Scalars['String']>;
+  role?: Maybe<Scalars['String']>;
   wcaId?: Maybe<Scalars['String']>;
 };
 
@@ -2218,9 +2260,9 @@ export type WcaRankingRow = {
   __typename?: 'WcaRankingRow';
   average?: Maybe<Scalars['Int']>;
   averageWorldRank?: Maybe<Scalars['Int']>;
-  eventId: Scalars['String'];
-  name: Scalars['String'];
-  registrantId: Scalars['Int'];
+  eventId?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  registrantId?: Maybe<Scalars['Int']>;
   single?: Maybe<Scalars['Int']>;
   singleWorldRank?: Maybe<Scalars['Int']>;
   wcaId?: Maybe<Scalars['String']>;
@@ -2248,6 +2290,21 @@ export type WcaRecord = {
   wca_event?: Maybe<Scalars['String']>;
 };
 
+export type WcaResult = {
+  __typename?: 'WcaResult';
+  attempts?: Maybe<Array<Maybe<Scalars['Int']>>>;
+  average?: Maybe<Scalars['Int']>;
+  best?: Maybe<Scalars['Int']>;
+  competition_date?: Maybe<Scalars['String']>;
+  competition_id?: Maybe<Scalars['String']>;
+  competition_name?: Maybe<Scalars['String']>;
+  event_id?: Maybe<Scalars['String']>;
+  pos?: Maybe<Scalars['Int']>;
+  regional_average_record?: Maybe<Scalars['String']>;
+  regional_single_record?: Maybe<Scalars['String']>;
+  round_type_id?: Maybe<Scalars['String']>;
+};
+
 export type WcaRound = {
   __typename?: 'WcaRound';
   advancementLevel?: Maybe<Scalars['Int']>;
@@ -2255,46 +2312,58 @@ export type WcaRound = {
   cutoff?: Maybe<Scalars['Int']>;
   cutoffAttempts?: Maybe<Scalars['Int']>;
   format?: Maybe<Scalars['String']>;
-  groups: Array<WcaGroup>;
-  roundNumber: Scalars['Int'];
+  groups?: Maybe<Array<Maybe<WcaGroup>>>;
+  roundNumber?: Maybe<Scalars['Int']>;
   timeLimit?: Maybe<Scalars['Int']>;
 };
 
 export type WcaScheduleAssignment = {
   __typename?: 'WcaScheduleAssignment';
-  activityCode: Scalars['String'];
-  assignmentCode: Scalars['String'];
-  endTime: Scalars['String'];
-  eventName: Scalars['String'];
+  activityCode?: Maybe<Scalars['String']>;
+  assignmentCode?: Maybe<Scalars['String']>;
+  endTime?: Maybe<Scalars['String']>;
+  eventName?: Maybe<Scalars['String']>;
   groupNumber?: Maybe<Scalars['Int']>;
   roomColor?: Maybe<Scalars['String']>;
-  roomName: Scalars['String'];
-  roundNumber: Scalars['Int'];
-  startTime: Scalars['String'];
+  roomName?: Maybe<Scalars['String']>;
+  roundNumber?: Maybe<Scalars['Int']>;
+  startTime?: Maybe<Scalars['String']>;
   stationNumber?: Maybe<Scalars['Int']>;
-  venueName: Scalars['String'];
+  venueName?: Maybe<Scalars['String']>;
 };
 
 export type WcaScheduleDay = {
   __typename?: 'WcaScheduleDay';
-  assignments: Array<WcaScheduleAssignment>;
-  date: Scalars['String'];
+  assignments?: Maybe<Array<Maybe<WcaScheduleAssignment>>>;
+  date?: Maybe<Scalars['String']>;
 };
 
 export type WcaScheduleInput = {
-  competitionId: Scalars['String'];
+  competitionId?: InputMaybe<Scalars['String']>;
 };
 
 export type WcaVenueInfo = {
   __typename?: 'WcaVenueInfo';
   address?: Maybe<Scalars['String']>;
   city?: Maybe<Scalars['String']>;
-  name: Scalars['String'];
+  name?: Maybe<Scalars['String']>;
+};
+
+export type YouTubeSearchInput = {
+  query?: InputMaybe<Scalars['String']>;
+};
+
+export type YouTubeVideoResult = {
+  __typename?: 'YouTubeVideoResult';
+  channelTitle?: Maybe<Scalars['String']>;
+  thumbnail?: Maybe<Scalars['String']>;
+  title?: Maybe<Scalars['String']>;
+  videoId?: Maybe<Scalars['String']>;
 };
 
 export type MiniSolveFragmentFragment = { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, session_id?: string | null, trainer_name?: string | null, bulk?: boolean | null, scramble?: string | null, from_timer?: boolean | null, training_session_id?: string | null, dnf?: boolean | null, plus_two?: boolean | null, is_smart_cube?: boolean | null, created_at?: any | null, started_at?: any | null, ended_at?: any | null };
 
-export type StatsFragmentFragment = { __typename?: 'Stats', friend_count?: number | null, profile_views?: number | null, solve_views?: number | null };
+export type StatsFragmentFragment = { __typename?: 'Stats', profile_views?: number | null, solve_views?: number | null };
 
 export type StatsModuleBlockFragmentFragment = { __typename?: 'StatsModuleBlock', statType?: string | null, sortBy?: string | null, session?: boolean | null, colorName?: string | null, averageCount?: number | null };
 
@@ -2451,14 +2520,14 @@ export type CreateTrainerAlternativeMutationVariables = Exact<{
 }>;
 
 
-export type CreateTrainerAlternativeMutation = { __typename?: 'Mutation', createTrainerAlternative: { __typename?: 'TrainerAlternative', id: string, algorithm: string, original_input: string, setup?: string | null, ll_pattern?: string | null } };
+export type CreateTrainerAlternativeMutation = { __typename?: 'Mutation', createTrainerAlternative?: { __typename?: 'TrainerAlternative', id?: string | null, algorithm?: string | null, original_input?: string | null, setup?: string | null, ll_pattern?: string | null } | null };
 
 export type AdminDeleteTrainerAlternativeMutationVariables = Exact<{
   id: Scalars['String'];
 }>;
 
 
-export type AdminDeleteTrainerAlternativeMutation = { __typename?: 'Mutation', adminDeleteTrainerAlternative: { __typename?: 'TrainerAlternative', id: string } };
+export type AdminDeleteTrainerAlternativeMutation = { __typename?: 'Mutation', adminDeleteTrainerAlternative?: { __typename?: 'TrainerAlternative', id?: string | null } | null };
 
 export type SolveByShareCodeQueryVariables = Exact<{
   shareCode?: InputMaybe<Scalars['String']>;
@@ -2519,47 +2588,47 @@ export type TrainerAlternativesQueryVariables = Exact<{
 }>;
 
 
-export type TrainerAlternativesQuery = { __typename?: 'Query', trainerAlternatives: Array<{ __typename?: 'TrainerAlternative', id: string, algorithm: string, original_input: string, setup?: string | null, ll_pattern?: string | null, created_at: any }> };
+export type TrainerAlternativesQuery = { __typename?: 'Query', trainerAlternatives?: Array<{ __typename?: 'TrainerAlternative', id?: string | null, algorithm?: string | null, original_input?: string | null, setup?: string | null, ll_pattern?: string | null, created_at?: any | null } | null> | null };
 
 export type WcaCompetitionsQueryVariables = Exact<{
   filter?: InputMaybe<WcaCompetitionFilterInput>;
 }>;
 
 
-export type WcaCompetitionsQuery = { __typename?: 'Query', wcaCompetitions: Array<{ __typename?: 'WcaCompetition', id: string, name: string, city: string, country_iso2: string, venue: string, start_date: string, end_date: string, date_range: string, event_ids: Array<string>, latitude_degrees: number, longitude_degrees: number, url: string, competitor_limit?: number | null }> };
+export type WcaCompetitionsQuery = { __typename?: 'Query', wcaCompetitions?: Array<{ __typename?: 'WcaCompetition', id?: string | null, name?: string | null, city?: string | null, country_iso2?: string | null, venue?: string | null, start_date?: string | null, end_date?: string | null, date_range?: string | null, event_ids?: Array<string | null> | null, latitude_degrees?: number | null, longitude_degrees?: number | null, url?: string | null, competitor_limit?: number | null } | null> | null };
 
 export type WcaSearchCompetitionsQueryVariables = Exact<{
   query: Scalars['String'];
 }>;
 
 
-export type WcaSearchCompetitionsQuery = { __typename?: 'Query', wcaSearchCompetitions: Array<{ __typename?: 'WcaCompetition', id: string, name: string, city: string, country_iso2: string, start_date: string, end_date: string, url: string }> };
+export type WcaSearchCompetitionsQuery = { __typename?: 'Query', wcaSearchCompetitions?: Array<{ __typename?: 'WcaCompetition', id?: string | null, name?: string | null, city?: string | null, country_iso2?: string | null, start_date?: string | null, end_date?: string | null, url?: string | null } | null> | null };
 
 export type MyWcaCompetitionsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MyWcaCompetitionsQuery = { __typename?: 'Query', myWcaCompetitions: Array<{ __typename?: 'WcaCompetition', id: string, name: string, city: string, country_iso2: string, start_date: string, end_date: string, url: string }> };
+export type MyWcaCompetitionsQuery = { __typename?: 'Query', myWcaCompetitions?: Array<{ __typename?: 'WcaCompetition', id?: string | null, name?: string | null, city?: string | null, country_iso2?: string | null, start_date?: string | null, end_date?: string | null, url?: string | null } | null> | null };
 
 export type WcaCompetitionDetailQueryVariables = Exact<{
   input: WcaScheduleInput;
 }>;
 
 
-export type WcaCompetitionDetailQuery = { __typename?: 'Query', wcaCompetitionDetail?: { __typename?: 'WcaCompetitionDetail', competitionId: string, competitionName: string, myWcaId?: string | null, myRegistrationStatus?: string | null, myRegisteredEvents: Array<string>, wcaLiveCompId?: string | null, competitors: Array<{ __typename?: 'WcaCompetitor', name: string, wcaId?: string | null, country?: string | null, avatar?: string | null, registrantId: number, wcaUserId?: number | null, registeredEvents: Array<string>, assignments: Array<{ __typename?: 'WcaCompetitorAssignment', activityCode: string, eventName: string, roundNumber: number, groupNumber?: number | null, assignmentCode: string, startTime?: string | null, endTime?: string | null, stationNumber?: number | null, roomName?: string | null }>, personalBests: Array<{ __typename?: 'WcaPersonalBest', eventId: string, type: string, best: number, worldRanking: number, continentalRanking: number, nationalRanking: number }> }>, events: Array<{ __typename?: 'WcaEventDetail', eventId: string, eventName: string, rounds: Array<{ __typename?: 'WcaRound', roundNumber: number, format?: string | null, timeLimit?: number | null, cutoff?: number | null, cutoffAttempts?: number | null, advancementType?: string | null, advancementLevel?: number | null, groups: Array<{ __typename?: 'WcaGroup', groupNumber: number, activityCode?: string | null, startTime?: string | null, endTime?: string | null, competitors: Array<{ __typename?: 'WcaGroupCompetitor', name: string, wcaId?: string | null, registrantId: number, assignmentCode: string, seedResult?: number | null }> }> }> }>, schedule: Array<{ __typename?: 'WcaScheduleDay', date: string, assignments: Array<{ __typename?: 'WcaScheduleAssignment', activityCode: string, eventName: string, roundNumber: number, groupNumber?: number | null, assignmentCode: string, startTime: string, endTime: string, roomName: string, roomColor?: string | null, venueName: string, stationNumber?: number | null }> }>, allPersonalBests: Array<{ __typename?: 'WcaRankingRow', name: string, wcaId?: string | null, registrantId: number, eventId: string, single?: number | null, average?: number | null, singleWorldRank?: number | null, averageWorldRank?: number | null }>, wcaLiveCompetitors: Array<{ __typename?: 'WcaLiveCompetitor', wcaId: string, liveId: string }>, info: { __typename?: 'WcaCompetitionInfo', wcaUrl?: string | null, venues: Array<{ __typename?: 'WcaVenueInfo', name: string, address?: string | null, city?: string | null }>, organizers: Array<{ __typename?: 'WcaPersonInfo', name: string, wcaId?: string | null, role: string, avatar?: string | null }>, delegates: Array<{ __typename?: 'WcaPersonInfo', name: string, wcaId?: string | null, role: string, avatar?: string | null }> } } | null };
+export type WcaCompetitionDetailQuery = { __typename?: 'Query', wcaCompetitionDetail?: { __typename?: 'WcaCompetitionDetail', competitionId?: string | null, competitionName?: string | null, myWcaId?: string | null, myRegistrationStatus?: string | null, myRegisteredEvents?: Array<string | null> | null, wcaLiveCompId?: string | null, competitors?: Array<{ __typename?: 'WcaCompetitor', name?: string | null, wcaId?: string | null, country?: string | null, avatar?: string | null, registrantId?: number | null, wcaUserId?: number | null, registeredEvents?: Array<string | null> | null, assignments?: Array<{ __typename?: 'WcaCompetitorAssignment', activityCode?: string | null, eventName?: string | null, roundNumber?: number | null, groupNumber?: number | null, assignmentCode?: string | null, startTime?: string | null, endTime?: string | null, stationNumber?: number | null, roomName?: string | null } | null> | null, personalBests?: Array<{ __typename?: 'WcaPersonalBest', eventId?: string | null, type?: string | null, best?: number | null, worldRanking?: number | null, continentalRanking?: number | null, nationalRanking?: number | null } | null> | null } | null> | null, events?: Array<{ __typename?: 'WcaEventDetail', eventId?: string | null, eventName?: string | null, rounds?: Array<{ __typename?: 'WcaRound', roundNumber?: number | null, format?: string | null, timeLimit?: number | null, cutoff?: number | null, cutoffAttempts?: number | null, advancementType?: string | null, advancementLevel?: number | null, groups?: Array<{ __typename?: 'WcaGroup', groupNumber?: number | null, activityCode?: string | null, startTime?: string | null, endTime?: string | null, competitors?: Array<{ __typename?: 'WcaGroupCompetitor', name?: string | null, wcaId?: string | null, registrantId?: number | null, assignmentCode?: string | null, seedResult?: number | null } | null> | null } | null> | null } | null> | null } | null> | null, schedule?: Array<{ __typename?: 'WcaScheduleDay', date?: string | null, assignments?: Array<{ __typename?: 'WcaScheduleAssignment', activityCode?: string | null, eventName?: string | null, roundNumber?: number | null, groupNumber?: number | null, assignmentCode?: string | null, startTime?: string | null, endTime?: string | null, roomName?: string | null, roomColor?: string | null, venueName?: string | null, stationNumber?: number | null } | null> | null } | null> | null, allPersonalBests?: Array<{ __typename?: 'WcaRankingRow', name?: string | null, wcaId?: string | null, registrantId?: number | null, eventId?: string | null, single?: number | null, average?: number | null, singleWorldRank?: number | null, averageWorldRank?: number | null } | null> | null, wcaLiveCompetitors?: Array<{ __typename?: 'WcaLiveCompetitor', wcaId?: string | null, liveId?: string | null } | null> | null, wcaLiveRoundMap?: Array<{ __typename?: 'WcaLiveRoundMapping', activityCode?: string | null, liveRoundId?: string | null } | null> | null, info?: { __typename?: 'WcaCompetitionInfo', wcaUrl?: string | null, venues?: Array<{ __typename?: 'WcaVenueInfo', name?: string | null, address?: string | null, city?: string | null } | null> | null, organizers?: Array<{ __typename?: 'WcaPersonInfo', name?: string | null, wcaId?: string | null, role?: string | null, avatar?: string | null } | null> | null, delegates?: Array<{ __typename?: 'WcaPersonInfo', name?: string | null, wcaId?: string | null, role?: string | null, avatar?: string | null } | null> | null } | null } | null };
 
 export type WcaLiveCompetitionOverviewQueryVariables = Exact<{
   input: WcaLiveOverviewInput;
 }>;
 
 
-export type WcaLiveCompetitionOverviewQuery = { __typename?: 'Query' };
+export type WcaLiveCompetitionOverviewQuery = { __typename?: 'Query', wcaLiveCompetitionOverview?: { __typename?: 'WcaLiveCompetitionOverview', compId?: string | null, name?: string | null, events?: Array<{ __typename?: 'WcaLiveEventInfo', eventId?: string | null, eventName?: string | null, rounds?: Array<{ __typename?: 'WcaLiveRoundInfo', liveRoundId?: string | null, number?: number | null, name?: string | null, open?: boolean | null, finished?: boolean | null, active?: boolean | null, numEntered?: number | null, numResults?: number | null, format?: { __typename?: 'WcaLiveFormat', numberOfAttempts?: number | null, sortBy?: string | null } | null, timeLimit?: { __typename?: 'WcaLiveTimeLimit', centiseconds?: number | null, cumulativeRoundWcifIds?: Array<string | null> | null } | null, cutoff?: { __typename?: 'WcaLiveCutoff', attemptResult?: number | null, numberOfAttempts?: number | null } | null, advancementCondition?: { __typename?: 'WcaLiveAdvancementCondition', type?: string | null, level?: number | null } | null } | null> | null } | null> | null, schedule?: Array<{ __typename?: 'WcaLiveScheduleVenue', name?: string | null, rooms?: Array<{ __typename?: 'WcaLiveScheduleRoom', name?: string | null, color?: string | null, activities?: Array<{ __typename?: 'WcaLiveScheduleActivity', activityId?: number | null, name?: string | null, activityCode?: string | null, startTime?: string | null, endTime?: string | null } | null> | null } | null> | null } | null> | null, records?: Array<{ __typename?: 'WcaLiveRecord', type?: string | null, tag?: string | null, eventId?: string | null, eventName?: string | null, attemptResult?: number | null, personName?: string | null, personCountryIso2?: string | null, roundNumber?: number | null } | null> | null, podiums?: Array<{ __typename?: 'WcaLivePodium', eventId?: string | null, eventName?: string | null, sortBy?: string | null, entries?: Array<{ __typename?: 'WcaLivePodiumEntry', ranking?: number | null, personName?: string | null, personCountryIso2?: string | null, best?: number | null, average?: number | null, singleRecordTag?: string | null, averageRecordTag?: string | null } | null> | null } | null> | null } | null };
 
 export type WcaLiveRoundResultsQueryVariables = Exact<{
   input: WcaLiveRoundInput;
 }>;
 
 
-export type WcaLiveRoundResultsQuery = { __typename?: 'Query' };
+export type WcaLiveRoundResultsQuery = { __typename?: 'Query', wcaLiveRoundResults?: { __typename?: 'WcaLiveRoundResults', roundActivityCode?: string | null, roundName?: string | null, active?: boolean | null, finished?: boolean | null, numberOfAttempts?: number | null, sortBy?: string | null, results?: Array<{ __typename?: 'WcaLiveResult', ranking?: number | null, best?: number | null, average?: number | null, personName?: string | null, personWcaId?: string | null, personCountryIso2?: string | null, personLiveId?: string | null, singleRecordTag?: string | null, averageRecordTag?: string | null, advancing?: boolean | null, advancingQuestionable?: boolean | null, attempts?: Array<{ __typename?: 'WcaLiveAttempt', result?: number | null } | null> | null } | null> | null } | null };
 
 export type AdminTrainerAlternativesQueryVariables = Exact<{
   category?: InputMaybe<Scalars['String']>;
@@ -2568,10 +2637,10 @@ export type AdminTrainerAlternativesQueryVariables = Exact<{
 }>;
 
 
-export type AdminTrainerAlternativesQuery = { __typename?: 'Query', adminTrainerAlternatives: { __typename?: 'PaginatedTrainerAlternatives', total: number, hasMore: boolean, items: Array<{ __typename?: 'TrainerAlternative', id: string, category: string, subset: string, case_name: string, algorithm: string, original_input: string, user_id: string, created_at: any }> } };
+export type AdminTrainerAlternativesQuery = { __typename?: 'Query', adminTrainerAlternatives?: { __typename?: 'PaginatedTrainerAlternatives', total?: number | null, hasMore?: boolean | null, items?: Array<{ __typename?: 'TrainerAlternative', id?: string | null, category?: string | null, subset?: string | null, case_name?: string | null, algorithm?: string | null, original_input?: string | null, user_id?: string | null, created_at?: any | null } | null> | null } | null };
 
 export const MiniSolveFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"MiniSolveFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Solve"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"time"}},{"kind":"Field","name":{"kind":"Name","value":"raw_time"}},{"kind":"Field","name":{"kind":"Name","value":"cube_type"}},{"kind":"Field","name":{"kind":"Name","value":"session_id"}},{"kind":"Field","name":{"kind":"Name","value":"trainer_name"}},{"kind":"Field","name":{"kind":"Name","value":"bulk"}},{"kind":"Field","name":{"kind":"Name","value":"scramble"}},{"kind":"Field","name":{"kind":"Name","value":"from_timer"}},{"kind":"Field","name":{"kind":"Name","value":"training_session_id"}},{"kind":"Field","name":{"kind":"Name","value":"dnf"}},{"kind":"Field","name":{"kind":"Name","value":"plus_two"}},{"kind":"Field","name":{"kind":"Name","value":"is_smart_cube"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"started_at"}},{"kind":"Field","name":{"kind":"Name","value":"ended_at"}}]}}]} as unknown as DocumentNode<MiniSolveFragmentFragment, unknown>;
-export const StatsFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"StatsFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Stats"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"friend_count"}},{"kind":"Field","name":{"kind":"Name","value":"profile_views"}},{"kind":"Field","name":{"kind":"Name","value":"solve_views"}}]}}]} as unknown as DocumentNode<StatsFragmentFragment, unknown>;
+export const StatsFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"StatsFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Stats"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"profile_views"}},{"kind":"Field","name":{"kind":"Name","value":"solve_views"}}]}}]} as unknown as DocumentNode<StatsFragmentFragment, unknown>;
 export const StatsModuleBlockFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"StatsModuleBlockFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"StatsModuleBlock"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"statType"}},{"kind":"Field","name":{"kind":"Name","value":"sortBy"}},{"kind":"Field","name":{"kind":"Name","value":"session"}},{"kind":"Field","name":{"kind":"Name","value":"colorName"}},{"kind":"Field","name":{"kind":"Name","value":"averageCount"}}]}}]} as unknown as DocumentNode<StatsModuleBlockFragmentFragment, unknown>;
 export const AlgorithmOverrideFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"AlgorithmOverrideFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"AlgorithmOverride"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cube_key"}},{"kind":"Field","name":{"kind":"Name","value":"rotate"}},{"kind":"Field","name":{"kind":"Name","value":"solution"}}]}}]} as unknown as DocumentNode<AlgorithmOverrideFragmentFragment, unknown>;
 export const TrainerFavoriteFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"TrainerFavoriteFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"TrainerFavorite"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"cube_key"}}]}}]} as unknown as DocumentNode<TrainerFavoriteFragmentFragment, unknown>;
