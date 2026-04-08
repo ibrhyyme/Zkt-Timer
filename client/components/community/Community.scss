@@ -1,18 +1,20 @@
 .cd-community {
 	position: relative;
 
-	&__nav-list {
-		display: flex;
-		flex-direction: row;
-		flex-wrap: wrap;
-		align-items: flex-start;
-	}
+	&__nav {
+		// Mobilde tab bar olmadigi icin alt bosluk azaltildi
+		@media (max-width: 768px), (max-height: 500px) {
+			.cd-page-title {
+				padding-bottom: 0.85rem !important;
+			}
 
-	&__search-input {
-		margin-left: 10px;
-	}
+			.cd-page-title__title {
+				font-size: 2.2rem;
+			}
 
-	.cd-common__horizontal-nav__body {
-		margin-right: 10px;
+			.cd-page-title__lines {
+				margin-bottom: 0.85rem;
+			}
+		}
 	}
 }

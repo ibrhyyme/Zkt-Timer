@@ -18,7 +18,6 @@ fragment MiniSolveFragment on Solve {
 }
 
 fragment StatsFragment on Stats {
-	friend_count
 	profile_views
 	solve_views
 }

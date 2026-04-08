@@ -263,38 +263,23 @@ type Query {
   smartDevices: [SmartDevice]
   unreadNotificationCount: Int
   notifications(page: Int): [Notification]
-  matchSession(id: String): MatchSession!
   badgeTypes: [BadgeType]
-  gameSession(id: String): GameSession
-  gameSessions: [GameSession]
-  allFriendships: [Friendship]
-  friendships(page: Int = 0, pageSize: Int = 25, searchQuery: String = ""): PaginatedFriendships
-  friendshipRequestsSent(page: Int = 0, pageSize: Int = 25, searchQuery: String = ""): PaginatedFriendshipRequests
-  friendshipRequestsReceived(page: Int = 0, pageSize: Int = 25, searchQuery: String = ""): PaginatedFriendshipRequests
-  receivedFriendshipRequestsFromUser(userId: String): [FriendshipRequest]
-  sentFriendshipRequestsToUser(userId: String): [FriendshipRequest]
   userSearch(pageArgs: PaginationArgsInput): PaginatedUserAccounts
-  solves: [Solve]
+  solves(skip: Int, take: Int): [Solve]
+  solvesByIds(ids: [String]): [Solve]
   sessions: [Session]
   settings: Setting
   stats: Stats
   integration(integrationType: IntegrationType): Integration
   wcaMe: WcaAccount
   integrations: [Integration]
-  membership: Membership
-  membershipOptions: MembershipOptions
   reports: [ReportSummary]
   topSolves(page: Int, cubeType: String): [TopSolve]
   topAverages(page: Int, cubeType: String): [TopAverage]
   customCubeTypes: [CustomCubeType]
-  match(id: String): Match
-  matchBySpectateCode(code: String): Match
-  matchByLinkCode(code: String): Match
   notificationPreferences: NotificationPreference
-  adminUserSearch(pageArgs: PaginationArgsInput): PaginatedUserAccountsForAdmin
+  adminUserSearch(filters: AdminUserFiltersInput, pageArgs: PaginationArgsInput): PaginatedUserAccountsForAdmin
   getUserAccountForAdmin(userId: String): UserAccountForAdmin
-  eloLeaderboards(pageArgs: PaginationArgsInput): PaginatedEloLeaderboards
-  myEloLeaderboardsPosition: Int
   statsModule: StatsModule
   wcaRecords(userId: String): [WcaRecord]
   myWcaRecords: [WcaRecord]
@@ -305,12 +290,20 @@ type Query {
   algorithmOverrides: [AlgorithmOverride]
   customTrainers(pageArgs: PaginationArgsInput): [CustomTrainer]
   customTrainer(id: String): CustomTrainer
-  trainerAlternatives(category: String!, caseName: String!): [TrainerAlternative!]!
-  adminTrainerAlternatives(category: String, page: Int = 0, pageSize: Int = 25): PaginatedTrainerAlternatives!
-  wcaCompetitions(filter: WcaCompetitionFilterInput): [WcaCompetition!]!
-  wcaSearchCompetitions(query: String!): [WcaCompetition!]!
-  myWcaCompetitions: [WcaCompetition!]!
-  wcaCompetitionDetail(input: WcaScheduleInput!): WcaCompetitionDetail
+  trainerAlternatives(caseName: String, category: String): [TrainerAlternative]
+  adminTrainerAlternatives(pageSize: Int = 25, page: Int = 0, category: String): PaginatedTrainerAlternatives
+  youtubeSearch(input: YouTubeSearchInput): [YouTubeVideoResult]
+  dailyGoals: [DailyGoalType]
+  dailyGoalReminderStatus: DailyGoalReminderResult
+  wcaCompetitions(filter: WcaCompetitionFilterInput): [WcaCompetition]
+  wcaSearchCompetitions(query: String): [WcaCompetition]
+  myWcaCompetitions: [WcaCompetition]
+  wcaResults(wcaId: String): [WcaResult]
+  wcaCompetitionDetail(input: WcaScheduleInput): WcaCompetitionDetail
+  wcaLiveCompetitionOverview(input: WcaLiveOverviewInput): WcaLiveCompetitionOverview
+  wcaLiveRoundResults(input: WcaLiveRoundInput): WcaLiveRoundResults
+  getPromoCodes: [PromoCode]
+  getPromoCodeRedemptions(promoCodeId: String): [PromoCodeRedemptionInfo]
 }
 
 type Mutation {
@@ -320,9 +313,10 @@ type Mutation {
   deleteSolvesByCubeType(cubeType: String): Void
   deleteAllTrainingSolves: Void
   deleteAllSolves: Void
-  createUserAccount(first_name: String!, last_name: String!, email: String!, username: String!, password: String!): PublicUserAccount
+  createUserAccount(first_name: String!, last_name: String!, email: String!, username: String!, password: String!, language: String): PublicUserAccount
   updateUserAccount(first_name: String!, last_name: String!, email: String!, username: String!): PublicUserAccount
   updateUserPassword(old_password: String!, new_password: String!): PublicUserAccount
+  setUserPassword(new_password: String!): PublicUserAccount
   deleteUserAccount: PublicUserAccount
   logOut: PublicUserAccount!
   authenticateUser(email: String!, password: String!, remember: Boolean): PublicUserAccount!
@@ -342,15 +336,11 @@ type Mutation {
   deleteBadgeType(id: String!): BadgeType
   addBadgeToUser(badgeTypeId: String, userId: String): Badge
   removeBadgeFromUser(badgeTypeId: String, userId: String): Badge
-  sendForgotPasswordCode(email: String): Void
+  sendForgotPasswordCode(email: String, language: String): Void
   checkForgotPasswordCode(email: String, code: String): Boolean
   updateForgotPassword(email: String, code: String, password: String): PublicUserAccount
-  createGameSession(matchId: String, gameType: GameType): GameSession
-  deleteGameSession(id: String): GameSession
-  sendFriendshipRequest(toUserId: String): FriendshipRequest
-  acceptFriendshipRequest(friendshipRequestId: String): Friendship
-  deleteFriendshipRequest(friendshipRequestId: String): FriendshipRequest
-  unfriend(targetUserId: String): Friendship
+  resendEmailVerificationCode(email: String!, language: String): Void
+  verifyEmailCode(email: String!, code: String!, language: String): PublicUserAccount
   createSolve(input: SolveInput): Solve
   deleteAllSolvesInSession(sessionId: String): Void
   deleteSolves(ids: [String]): Boolean
@@ -364,9 +354,8 @@ type Mutation {
   setSetting(input: SettingInput): Setting
   resetSettings: Setting
   createIntegration(code: String, integrationType: IntegrationType): Integration
+  updateWcaVisibility(showResults: Boolean, showRank: Boolean, showRecords: Boolean, showMedals: Boolean, showCompetitions: Boolean): Integration
   deleteIntegration(integrationType: IntegrationType): Integration
-  cancelMembership: Boolean
-  generateBuyLink(priceId: String): String
   reportProfile(reason: String, userId: String): Report
   resolveReports(userId: String): Float
   publishTopSolve(solveId: String): TopSolve
@@ -375,14 +364,16 @@ type Mutation {
   deleteTopAverage(id: String): TopAverage
   createCustomCubeType(input: CustomCubeTypeInput): CustomCubeType
   deleteCustomCubeType(id: String): CustomCubeType
-  createMatchWithNewSession(input: MatchSessionInput): Match
   updateOfflineHash(hash: String): String
   unsubEmails(unsubId: String): Boolean
   updateNotificationPreferences(value: Boolean, key: String): NotificationPreference
   banUserAccount(input: BanUserInput): BanLog
   unbanUserAccount(userId: String): UserAccount
   setVerifiedStatus(verified: Boolean, userId: String): UserAccount
+  setProStatus(minutes: Float, isPro: Boolean, userId: String): UserAccount
+  setPremiumStatus(minutes: Float, isPremium: Boolean, userId: String): UserAccount
   adminDeleteUserAccount(userId: String): UserAccount
+  adminSendPushToUser(body: String, title: String, userId: String): AdminSendPushResult
   updateStatsModuleBlocks(blocks: [StatsModuleBlockInput]): StatsModule
   createDemoSolve(input: DemoSolveInput): DemoSolve
   fetchWcaRecords: [WcaRecord]
@@ -397,10 +388,20 @@ type Mutation {
   createCustomTrainer(input: CustomTrainerCreateInput): CustomTrainer
   updateCustomTrainer(input: CustomTrainerCreateInput, id: String): CustomTrainer
   deleteCustomTrainer(id: String): CustomTrainer
+  createTrainerAlternative(input: TrainerAlternativeCreateInput): TrainerAlternative
+  adminDeleteTrainerAlternative(id: String): TrainerAlternative
+  sendBulkEmail(input: SendBulkEmailInput): BulkEmailResult
   registerPushToken(input: RegisterPushTokenInput): PushTokenResult
   unregisterPushToken(token: String): PushTokenResult
-  createTrainerAlternative(input: TrainerAlternativeCreateInput!): TrainerAlternative!
-  adminDeleteTrainerAlternative(id: String!): TrainerAlternative!
+  setDailyGoal(input: SetDailyGoalInput): DailyGoalType
+  setDailyGoalReminder(enabled: Boolean): DailyGoalReminderResult
+  removeDailyGoal(cubeType: String): Boolean
+  authenticateWithWca(code: String): WcaOAuthResult
+  completeWcaSignup(username: String): PublicUserAccount
+  createPromoCode(input: CreatePromoCodeInput): PromoCode
+  redeemPromoCode(code: String): RedeemPromoCodeResult
+  togglePromoCodeActive(isActive: Boolean, id: String): PromoCode
+  deletePromoCode(id: String): Boolean
 }
 
 type SmartDevice {
@@ -420,7 +421,6 @@ type Solve {
   raw_time: Float
   cube_type: String
   scramble: String
-  game_session_id: String
   from_timer: Boolean
   training_session_id: String
   session_id: String
@@ -435,8 +435,6 @@ type Solve {
   created_at: DateTime
   is_smart_cube: Boolean
   smart_device_id: String
-  match_id: String
-  match_participant_id: String
   smart_turn_count: Int
   smart_turns: String
   smart_put_down_time: Float
@@ -546,6 +544,19 @@ type Integration {
   refresh_token: String
   auth_expires_at: BigInt
   wca_id: String
+  wca_country_iso2: String
+  wca_competition_count: Float
+  wca_medal_gold: Float
+  wca_medal_silver: Float
+  wca_medal_bronze: Float
+  wca_record_nr: Float
+  wca_record_cr: Float
+  wca_record_wr: Float
+  wca_show_competitions: Boolean
+  wca_show_medals: Boolean
+  wca_show_records: Boolean
+  wca_show_rank: Boolean
+  wca_show_results: Boolean
   created_at: DateTime
   user: PublicUserAccount
 }
@@ -601,64 +612,6 @@ type Setting {
   custom_cube_types: [CustomCubeType]
 }
 
-type GameOptions {
-  id: String
-  game_session_id: String
-  match_session_id: String
-  game_type: GameType
-  cube_type: String
-  elimination_starting_time_seconds: Float
-  elimination_percent_change_rate: Float
-  head_to_head_target_win_count: Float
-  gauntlet_time_multiplier: Float
-}
-
-enum GameType {
-  HEAD_TO_HEAD
-  ELIMINATION
-}
-
-type MatchSession {
-  id: String
-  created_by_id: String
-  custom_match: Boolean
-  match_type: String
-  rated: Boolean
-  min_players: Int
-  max_players: Int
-  created_at: DateTime
-  game_options: GameOptions
-  winner: PublicUserAccount
-  created_by: PublicUserAccount
-  participants: [MatchParticipant]
-  chat_messages: [ChatMessage]
-}
-
-type MatchParticipant {
-  id: String
-  match_id: String
-  user_id: String
-  position: Int
-  resigned: Boolean
-  forfeited: Boolean
-  won: Boolean
-  lost: Boolean
-  created_at: DateTime
-  match: Match
-  user: PublicUserAccount
-  solves: [Solve]
-}
-
-type ChatMessage {
-  id: String
-  user_id: String
-  match_session_id: String
-  message: String
-  created_at: DateTime
-  match_session: MatchSession
-  user: PublicUserAccount
-}
-
 type Report {
   id: String
   created_by_id: String
@@ -688,44 +641,11 @@ type TimerBackground {
   user: PublicUserAccount
 }
 
-type EloRating {
-  id: String
-  user_id: String
-  profile_id: String
-  elo_overall_rating: Float
-  games_overall_count: Float
-  elo_222_rating: Float
-  games_222_count: Float
-  elo_333_rating: Float
-  games_333_count: Float
-  elo_444_rating: Float
-  games_444_count: Float
-  updated_at: DateTime
-  created_at: DateTime
-  user: PublicUserAccount
-  profile: Profile
-}
-
-type PaginatedEloLeaderboards {
-  items: [EloRating]
-  total: Int
-  hasMore: Boolean
-}
-
 type NotificationPreference {
   id: String
   user_id: String
-  friend_request: Boolean
-  friend_request_accept: Boolean
-  elo_refund: Boolean
   marketing_emails: Boolean
   created_at: DateTime
-}
-
-type UserAccountMatchesSummary {
-  count: Float
-  wins: Float
-  losses: Float
 }
 
 type UserAccountSolvesSummary {
@@ -738,8 +658,6 @@ type UserAccountSolvesSummary {
 }
 
 type UserAccountSummary {
-  matches: UserAccountMatchesSummary
-  match_solves: [UserAccountSolvesSummary]
   timer_solves: [UserAccountSolvesSummary]
   solves: Int
   reports_for: Int
@@ -756,12 +674,13 @@ type PublicUserAccount implements IPublicUserAccount {
   username: String
   verified: Boolean
   is_pro: Boolean
+  pro_expires_at: DateTime
   is_premium: Boolean
+  premium_expires_at: DateTime
   last_solve_at: DateTime
   banned_forever: Boolean
   banned_until: DateTime
   profile: Profile
-  elo_rating: EloRating
   integrations: [Integration]
   badges: [Badge]
   top_solves: [TopSolve]
@@ -776,12 +695,13 @@ interface IPublicUserAccount {
   username: String
   verified: Boolean
   is_pro: Boolean
+  pro_expires_at: DateTime
   is_premium: Boolean
+  premium_expires_at: DateTime
   last_solve_at: DateTime
   banned_forever: Boolean
   banned_until: DateTime
   profile: Profile
-  elo_rating: EloRating
   integrations: [Integration]
   badges: [Badge]
   top_solves: [TopSolve]
@@ -805,12 +725,13 @@ type UserAccount implements IPublicUserAccount & IUserAccount {
   username: String
   verified: Boolean
   is_pro: Boolean
+  pro_expires_at: DateTime
   is_premium: Boolean
+  premium_expires_at: DateTime
   last_solve_at: DateTime
   banned_forever: Boolean
   banned_until: DateTime
   profile: Profile
-  elo_rating: EloRating
   integrations: [Integration]
   badges: [Badge]
   top_solves: [TopSolve]
@@ -819,8 +740,8 @@ type UserAccount implements IPublicUserAccount & IUserAccount {
   first_name: String
   last_name: String
   offline_hash: String
-  pro_status: SubscriptionStatus
   join_country: String
+  has_password: Boolean
   timer_background: TimerBackground
   bans: [BanLog]
 }
@@ -833,12 +754,13 @@ interface IUserAccount implements IPublicUserAccount {
   username: String
   verified: Boolean
   is_pro: Boolean
+  pro_expires_at: DateTime
   is_premium: Boolean
+  premium_expires_at: DateTime
   last_solve_at: DateTime
   banned_forever: Boolean
   banned_until: DateTime
   profile: Profile
-  elo_rating: EloRating
   integrations: [Integration]
   badges: [Badge]
   top_solves: [TopSolve]
@@ -847,22 +769,10 @@ interface IUserAccount implements IPublicUserAccount {
   first_name: String
   last_name: String
   offline_hash: String
-  pro_status: SubscriptionStatus
   join_country: String
+  has_password: Boolean
   timer_background: TimerBackground
   bans: [BanLog]
-}
-
-enum SubscriptionStatus {
-  NONE
-  ACTIVE
-  CANCELED
-  INCOMPLETE
-  INCOMPLETE_EXPIRED
-  PAST_DUE
-  TRIALING
-  UNPAID
-  TRIAL_EXPIRED
 }
 
 type BanLog {
@@ -887,12 +797,13 @@ type UserAccountForAdmin implements IPublicUserAccount & IUserAccount & IUserAcc
   username: String
   verified: Boolean
   is_pro: Boolean
+  pro_expires_at: DateTime
   is_premium: Boolean
+  premium_expires_at: DateTime
   last_solve_at: DateTime
   banned_forever: Boolean
   banned_until: DateTime
   profile: Profile
-  elo_rating: EloRating
   integrations: [Integration]
   badges: [Badge]
   top_solves: [TopSolve]
@@ -901,16 +812,17 @@ type UserAccountForAdmin implements IPublicUserAccount & IUserAccount & IUserAcc
   first_name: String
   last_name: String
   offline_hash: String
-  pro_status: SubscriptionStatus
   join_country: String
+  has_password: Boolean
   timer_background: TimerBackground
   bans: [BanLog]
+  email_verified: Boolean
   join_ip: String
   reports_for: [Report]
-  chat_messages: [ChatMessage]
   notification_preferences: NotificationPreference
   settings: Setting
   summary: UserAccountSummary
+  pushTokens: [PushTokenInfo!]
 }
 
 interface IUserAccountForAdmin implements IUserAccount & IPublicUserAccount {
@@ -921,12 +833,13 @@ interface IUserAccountForAdmin implements IUserAccount & IPublicUserAccount {
   username: String
   verified: Boolean
   is_pro: Boolean
+  pro_expires_at: DateTime
   is_premium: Boolean
+  premium_expires_at: DateTime
   last_solve_at: DateTime
   banned_forever: Boolean
   banned_until: DateTime
   profile: Profile
-  elo_rating: EloRating
   integrations: [Integration]
   badges: [Badge]
   top_solves: [TopSolve]
@@ -935,16 +848,21 @@ interface IUserAccountForAdmin implements IUserAccount & IPublicUserAccount {
   first_name: String
   last_name: String
   offline_hash: String
-  pro_status: SubscriptionStatus
   join_country: String
+  has_password: Boolean
   timer_background: TimerBackground
   bans: [BanLog]
+  email_verified: Boolean
   join_ip: String
   reports_for: [Report]
-  chat_messages: [ChatMessage]
   notification_preferences: NotificationPreference
   settings: Setting
   summary: UserAccountSummary
+  pushTokens: [PushTokenInfo!]
+}
+
+type PushTokenInfo {
+  platform: String
 }
 
 type InternalUserAccount implements IPublicUserAccount & IUserAccount & IUserAccountForAdmin & IInternalUserAccount {
@@ -955,12 +873,13 @@ type InternalUserAccount implements IPublicUserAccount & IUserAccount & IUserAcc
   username: String
   verified: Boolean
   is_pro: Boolean
+  pro_expires_at: DateTime
   is_premium: Boolean
+  premium_expires_at: DateTime
   last_solve_at: DateTime
   banned_forever: Boolean
   banned_until: DateTime
   profile: Profile
-  elo_rating: EloRating
   integrations: [Integration]
   badges: [Badge]
   top_solves: [TopSolve]
@@ -969,18 +888,18 @@ type InternalUserAccount implements IPublicUserAccount & IUserAccount & IUserAcc
   first_name: String
   last_name: String
   offline_hash: String
-  pro_status: SubscriptionStatus
   join_country: String
+  has_password: Boolean
   timer_background: TimerBackground
   bans: [BanLog]
+  email_verified: Boolean
   join_ip: String
   reports_for: [Report]
-  chat_messages: [ChatMessage]
   notification_preferences: NotificationPreference
   settings: Setting
   summary: UserAccountSummary
+  pushTokens: [PushTokenInfo!]
   password: String
-  stripe_customer_id: String
 }
 
 interface IInternalUserAccount implements IUserAccountForAdmin & IUserAccount & IPublicUserAccount {
@@ -991,12 +910,13 @@ interface IInternalUserAccount implements IUserAccountForAdmin & IUserAccount & 
   username: String
   verified: Boolean
   is_pro: Boolean
+  pro_expires_at: DateTime
   is_premium: Boolean
+  premium_expires_at: DateTime
   last_solve_at: DateTime
   banned_forever: Boolean
   banned_until: DateTime
   profile: Profile
-  elo_rating: EloRating
   integrations: [Integration]
   badges: [Badge]
   top_solves: [TopSolve]
@@ -1005,18 +925,18 @@ interface IInternalUserAccount implements IUserAccountForAdmin & IUserAccount & 
   first_name: String
   last_name: String
   offline_hash: String
-  pro_status: SubscriptionStatus
   join_country: String
+  has_password: Boolean
   timer_background: TimerBackground
   bans: [BanLog]
+  email_verified: Boolean
   join_ip: String
   reports_for: [Report]
-  chat_messages: [ChatMessage]
   notification_preferences: NotificationPreference
   settings: Setting
   summary: UserAccountSummary
+  pushTokens: [PushTokenInfo!]
   password: String
-  stripe_customer_id: String
 }
 
 type PaginatedUserAccounts {
@@ -1031,91 +951,6 @@ type PaginatedUserAccountsForAdmin {
   hasMore: Boolean
 }
 
-type EloLog {
-  id: String
-  player_id: String
-  player_new_game_count: String
-  opponent_id: String
-  opponent_new_game_count: String
-  cube_type: String
-  match_id: String
-  elo_change: Float
-  player_new_elo_rating: Float
-  opponent_new_elo_rating: Float
-  updated_at: DateTime
-  created_at: DateTime
-  match: Match
-  player: PublicUserAccount
-  opponent: PublicUserAccount
-}
-
-type Match {
-  id: String
-  winner_id: String
-  link_code: String
-  spectate_code: String
-  match_session_id: String
-  aborted: Boolean
-  ended_at: DateTime
-  started_at: DateTime
-  created_at: DateTime
-  winner: PublicUserAccount
-  match_session: MatchSession
-  participants: [MatchParticipant]
-  elo_log: [EloLog]
-}
-
-type FriendshipRequest {
-  id: String
-  from_id: String
-  to_id: String
-  accepted: Boolean
-  from_user: PublicUserAccount
-  to_user: PublicUserAccount
-  created_at: DateTime
-}
-
-type Friendship {
-  id: String
-  user_id: String
-  other_user_id: String
-  friendship_request_id: String
-  created_at: DateTime
-  friendship_request: FriendshipRequest
-  user: PublicUserAccount
-  other_user: PublicUserAccount
-}
-
-type PaginatedFriendships {
-  items: [Friendship]
-  total: Int
-  hasMore: Boolean
-}
-
-type PaginatedFriendshipRequests {
-  items: [FriendshipRequest]
-  total: Int
-  hasMore: Boolean
-}
-
-type FriendshipStats {
-  friend_count: Int
-  friend_requests_count: Int
-  friend_requests_sent_count: Int
-}
-
-type FriendshipResult {
-  id: String
-  records: [Friendship]
-  more_results: Boolean
-}
-
-type FriendshipRequestResult {
-  records: [FriendshipRequest]
-  more_results: Boolean
-  total_count: Int
-}
-
 type Session {
   id: String
   name: String
@@ -1126,14 +961,7 @@ type Session {
 }
 
 type Stats {
-  friend_count: Float
-  matches_played: Float
-  matches_won: Float
-  matches_lost: Float
-  matches_tied: Float
   profile_views: Float
-  match_solve_count: Float
-  match_max_win_streak: Float
   solve_views: Float
 }
 
@@ -1143,30 +971,6 @@ type WcaAccount {
   wca_id: String
   country_iso2: String
   created_at: String
-}
-
-type MembershipPricing {
-  id: String
-  currency: String
-  unit_amount: Float
-  interval_count: Float
-  interval: String
-}
-
-type Membership {
-  status: SubscriptionStatus
-  canceled_at: Float
-  ended_at: Float
-  cancel_at_period_end: Boolean
-  current_period_end: Float
-  days_until_due: Float
-  start_date: Float
-  pricing: MembershipPricing
-}
-
-type MembershipOptions {
-  month: MembershipPricing
-  year: MembershipPricing
 }
 
 type StatsModule {
@@ -1255,6 +1059,374 @@ type PaginatedCustomTrainers {
   hasMore: Boolean
 }
 
+type TrainerAlternative {
+  id: String
+  category: String
+  subset: String
+  case_name: String
+  algorithm: String
+  original_input: String
+  setup: String
+  ll_pattern: String
+  user_id: String
+  created_at: DateTime
+}
+
+type PaginatedTrainerAlternatives {
+  items: [TrainerAlternative]
+  total: Int
+  hasMore: Boolean
+}
+
+type YouTubeVideoResult {
+  videoId: String
+  title: String
+  channelTitle: String
+  thumbnail: String
+}
+
+type DailyGoalType {
+  id: String
+  cube_type: String
+  target: Int
+  enabled: Boolean
+}
+
+type DailyGoalReminderResult {
+  enabled: Boolean
+}
+
+type WcaCompetition {
+  id: String
+  name: String
+  city: String
+  country_iso2: String
+  venue: String
+  start_date: String
+  end_date: String
+  date_range: String
+  event_ids: [String]
+  latitude_degrees: Float
+  longitude_degrees: Float
+  url: String
+  competitor_limit: Int
+}
+
+type WcaOAuthResult {
+  success: Boolean
+  needsUsername: Boolean
+  wcaName: String
+  wcaEmail: String
+  wcaId: String
+}
+
+type WcaResult {
+  competition_id: String
+  competition_name: String
+  competition_date: String
+  event_id: String
+  round_type_id: String
+  pos: Int
+  best: Int
+  average: Int
+  attempts: [Int]
+  regional_single_record: String
+  regional_average_record: String
+}
+
+type WcaScheduleAssignment {
+  activityCode: String
+  eventName: String
+  roundNumber: Int
+  groupNumber: Int
+  assignmentCode: String
+  startTime: String
+  endTime: String
+  roomName: String
+  roomColor: String
+  venueName: String
+  stationNumber: Int
+}
+
+type WcaScheduleDay {
+  date: String
+  assignments: [WcaScheduleAssignment]
+}
+
+type WcaCompetitorAssignment {
+  activityCode: String
+  eventName: String
+  roundNumber: Int
+  groupNumber: Int
+  assignmentCode: String
+  startTime: String
+  endTime: String
+  stationNumber: Int
+  roomName: String
+}
+
+type WcaPersonalBest {
+  eventId: String
+  type: String
+  best: Int
+  worldRanking: Int
+  continentalRanking: Int
+  nationalRanking: Int
+}
+
+type WcaCompetitor {
+  name: String
+  wcaId: String
+  country: String
+  avatar: String
+  registrantId: Int
+  wcaUserId: Int
+  registeredEvents: [String]
+  assignments: [WcaCompetitorAssignment]
+  personalBests: [WcaPersonalBest]
+}
+
+type WcaGroupCompetitor {
+  name: String
+  wcaId: String
+  registrantId: Int
+  assignmentCode: String
+  seedResult: Int
+}
+
+type WcaGroup {
+  groupNumber: Int
+  activityCode: String
+  competitors: [WcaGroupCompetitor]
+  startTime: String
+  endTime: String
+}
+
+type WcaRound {
+  roundNumber: Int
+  format: String
+  timeLimit: Int
+  cutoff: Int
+  cutoffAttempts: Int
+  advancementType: String
+  advancementLevel: Int
+  groups: [WcaGroup]
+}
+
+type WcaEventDetail {
+  eventId: String
+  eventName: String
+  rounds: [WcaRound]
+}
+
+type WcaRankingRow {
+  name: String
+  wcaId: String
+  registrantId: Int
+  eventId: String
+  single: Int
+  average: Int
+  singleWorldRank: Int
+  averageWorldRank: Int
+}
+
+type WcaVenueInfo {
+  name: String
+  address: String
+  city: String
+}
+
+type WcaPersonInfo {
+  name: String
+  wcaId: String
+  role: String
+  avatar: String
+}
+
+type WcaCompetitionInfo {
+  venues: [WcaVenueInfo]
+  organizers: [WcaPersonInfo]
+  delegates: [WcaPersonInfo]
+  wcaUrl: String
+}
+
+type WcaLiveCompetitor {
+  wcaId: String
+  liveId: String
+}
+
+type WcaLiveRoundMapping {
+  activityCode: String
+  liveRoundId: String
+}
+
+type WcaLiveAttempt {
+  result: Int
+}
+
+type WcaLiveResult {
+  ranking: Int
+  best: Int
+  average: Int
+  attempts: [WcaLiveAttempt]
+  personName: String
+  personWcaId: String
+  personCountryIso2: String
+  personLiveId: String
+  singleRecordTag: String
+  averageRecordTag: String
+  advancing: Boolean
+  advancingQuestionable: Boolean
+}
+
+type WcaLiveTimeLimit {
+  centiseconds: Int
+  cumulativeRoundWcifIds: [String]
+}
+
+type WcaLiveCutoff {
+  attemptResult: Int
+  numberOfAttempts: Int
+}
+
+type WcaLiveAdvancementCondition {
+  type: String
+  level: Int
+}
+
+type WcaLiveFormat {
+  numberOfAttempts: Int
+  sortBy: String
+}
+
+type WcaLiveRoundInfo {
+  liveRoundId: String
+  number: Int
+  name: String
+  open: Boolean
+  finished: Boolean
+  active: Boolean
+  numEntered: Int
+  numResults: Int
+  format: WcaLiveFormat
+  timeLimit: WcaLiveTimeLimit
+  cutoff: WcaLiveCutoff
+  advancementCondition: WcaLiveAdvancementCondition
+}
+
+type WcaLiveEventInfo {
+  eventId: String
+  eventName: String
+  rounds: [WcaLiveRoundInfo]
+}
+
+type WcaLiveScheduleActivity {
+  activityId: Int
+  name: String
+  activityCode: String
+  startTime: String
+  endTime: String
+}
+
+type WcaLiveScheduleRoom {
+  name: String
+  color: String
+  activities: [WcaLiveScheduleActivity]
+}
+
+type WcaLiveScheduleVenue {
+  name: String
+  rooms: [WcaLiveScheduleRoom]
+}
+
+type WcaLiveRecord {
+  type: String
+  tag: String
+  eventId: String
+  eventName: String
+  attemptResult: Int
+  personName: String
+  personCountryIso2: String
+  roundNumber: Int
+}
+
+type WcaLivePodiumEntry {
+  ranking: Int
+  personName: String
+  personCountryIso2: String
+  best: Int
+  average: Int
+  singleRecordTag: String
+  averageRecordTag: String
+}
+
+type WcaLivePodium {
+  eventId: String
+  eventName: String
+  sortBy: String
+  entries: [WcaLivePodiumEntry]
+}
+
+type WcaLiveCompetitionOverview {
+  compId: String
+  name: String
+  events: [WcaLiveEventInfo]
+  schedule: [WcaLiveScheduleVenue]
+  records: [WcaLiveRecord]
+  podiums: [WcaLivePodium]
+}
+
+type WcaLiveRoundResults {
+  roundActivityCode: String
+  roundName: String
+  active: Boolean
+  finished: Boolean
+  numberOfAttempts: Int
+  sortBy: String
+  results: [WcaLiveResult]
+}
+
+type WcaCompetitionDetail {
+  competitionId: String
+  competitionName: String
+  myWcaId: String
+  myRegistrationStatus: String
+  myRegisteredEvents: [String]
+  competitors: [WcaCompetitor]
+  events: [WcaEventDetail]
+  schedule: [WcaScheduleDay]
+  allPersonalBests: [WcaRankingRow]
+  wcaLiveCompId: String
+  wcaLiveCompetitors: [WcaLiveCompetitor]
+  wcaLiveRoundMap: [WcaLiveRoundMapping]
+  info: WcaCompetitionInfo
+}
+
+type PromoCode {
+  id: String
+  code: String
+  membership_type: String
+  duration_minutes: Int
+  max_uses: Int
+  current_uses: Int
+  is_active: Boolean
+  expires_at: DateTime
+  created_at: DateTime
+  created_by_id: String
+}
+
+type PromoCodeRedemptionInfo {
+  id: String
+  username: String
+  redeemed_at: DateTime
+}
+
+type RedeemPromoCodeResult {
+  success: Boolean
+  membership_type: String
+  expires_at: DateTime
+}
+
 type Notification {
   id: String
   user_id: String
@@ -1308,7 +1480,6 @@ input SolveInput {
   raw_time: Float
   cube_type: String
   scramble: String
-  game_session_id: String
   session_id: String
   started_at: BigInt
   ended_at: BigInt
@@ -1321,8 +1492,6 @@ input SolveInput {
   is_smart_cube: Boolean
   training_session_id: String
   smart_device_id: String
-  match_id: String
-  match_participant_id: String
   smart_turn_count: Int
   smart_turns: String
   smart_put_down_time: Float
@@ -1378,23 +1547,6 @@ input SettingInput {
   smart_cube_size: Int
 }
 
-input GameOptionsInput {
-  cube_type: String
-  game_type: GameType
-  elimination_starting_time_seconds: Float
-  elimination_percent_change_rate: Float
-  head_to_head_target_win_count: Float
-  gauntlet_time_multiplier: Float
-}
-
-input MatchSessionInput {
-  min_players: Int
-  max_players: Int
-  match_type: GameType
-  cube_type: String
-  head_to_head_target_win_count: Float
-}
-
 input SessionInput {
   id: String
   name: String
@@ -1439,23 +1591,64 @@ input CustomTrainerCreateInput {
   description: String
 }
 
-type GameSession {
-  id: String
-  user_id: String
-  match_id: String
-  game_type: GameType
-  solve_count: Int
-  total_time: Float
-  created_at: DateTime
-  match: Match
-  user: PublicUserAccount
-  solves: [Solve]
+input TrainerAlternativeCreateInput {
+  category: String!
+  subset: String!
+  case_name: String!
+  algorithm: String!
+  original_input: String!
+  setup: String
+  ll_pattern: String
+}
+
+input YouTubeSearchInput {
+  query: String
+}
+
+input SetDailyGoalInput {
+  cube_type: String
+  target: Int
+  enabled: Boolean
+}
+
+input WcaCompetitionFilterInput {
+  country_iso2: String
+}
+
+input WcaScheduleInput {
+  competitionId: String
+}
+
+input WcaLiveRoundInput {
+  competitionId: String
+  liveRoundId: String
+}
+
+input WcaLiveOverviewInput {
+  competitionId: String
+}
+
+input CreatePromoCodeInput {
+  code: String
+  membership_type: String
+  duration_minutes: Int
+  max_uses: Int = 1
 }
 
 input PaginationArgsInput {
   page: Int = 0
   pageSize: Int = 25
   searchQuery: String = ""
+}
+
+input AdminUserFiltersInput {
+  admin: Boolean
+  mod: Boolean
+  is_pro: Boolean
+  email_verified: Boolean
+  verified: Boolean
+  banned: Boolean
+  platforms: [String!]
 }
 
 type Announcement {
@@ -1471,6 +1664,7 @@ type Announcement {
   isActive: Boolean
   viewCount: Int
   hasViewed: Boolean
+  translations: String
 }
 
 type UnreadAnnouncementCount {
@@ -1491,6 +1685,10 @@ input BanUserInput {
   cheating_in_1v1: Boolean
 }
 
+type AdminSendPushResult {
+  success: Boolean
+}
+
 input CreateAnnouncementInput {
   title: String
   content: String
@@ -1499,6 +1697,8 @@ input CreateAnnouncementInput {
   imageUrl: String
   isDraft: Boolean = false
   sendNotification: Boolean = false
+  notificationPlatforms: [String!]
+  translations: String
 }
 
 input UpdateAnnouncementInput {
@@ -1509,6 +1709,20 @@ input UpdateAnnouncementInput {
   imageUrl: String
   isDraft: Boolean
   isActive: Boolean
+  translations: String
+}
+
+type BulkEmailResult {
+  successCount: Int
+  failCount: Int
+  skippedCount: Int
+}
+
+input SendBulkEmailInput {
+  userIds: [String]
+  sendToAll: Boolean
+  subject: String
+  content: String
 }
 
 type PushTokenResult {
@@ -1518,193 +1732,4 @@ type PushTokenResult {
 input RegisterPushTokenInput {
   token: String
   platform: String
-}
-
-type TrainerAlternative {
-  id: String!
-  category: String!
-  subset: String!
-  case_name: String!
-  algorithm: String!
-  original_input: String!
-  setup: String
-  ll_pattern: String
-  user_id: String!
-  created_at: DateTime!
-}
-
-type PaginatedTrainerAlternatives {
-  items: [TrainerAlternative!]!
-  total: Int!
-  hasMore: Boolean!
-}
-
-input TrainerAlternativeCreateInput {
-  category: String!
-  subset: String!
-  case_name: String!
-  algorithm: String!
-  original_input: String!
-  setup: String
-  ll_pattern: String
-}
-
-type WcaCompetition {
-  id: String!
-  name: String!
-  city: String!
-  country_iso2: String!
-  venue: String!
-  start_date: String!
-  end_date: String!
-  date_range: String!
-  event_ids: [String!]!
-  latitude_degrees: Float!
-  longitude_degrees: Float!
-  url: String!
-  competitor_limit: Int
-}
-
-input WcaCompetitionFilterInput {
-  country_iso2: String
-}
-
-type WcaScheduleAssignment {
-  activityCode: String!
-  eventName: String!
-  roundNumber: Int!
-  groupNumber: Int
-  assignmentCode: String!
-  startTime: String!
-  endTime: String!
-  roomName: String!
-  roomColor: String
-  venueName: String!
-  stationNumber: Int
-}
-
-type WcaScheduleDay {
-  date: String!
-  assignments: [WcaScheduleAssignment!]!
-}
-
-type WcaCompetitorAssignment {
-  activityCode: String!
-  eventName: String!
-  roundNumber: Int!
-  groupNumber: Int
-  assignmentCode: String!
-  startTime: String
-  endTime: String
-  stationNumber: Int
-  roomName: String
-}
-
-type WcaPersonalBest {
-  eventId: String!
-  type: String!
-  best: Int!
-  worldRanking: Int!
-  continentalRanking: Int!
-  nationalRanking: Int!
-}
-
-type WcaCompetitor {
-  name: String!
-  wcaId: String
-  country: String
-  avatar: String
-  registrantId: Int!
-  wcaUserId: Int
-  registeredEvents: [String!]!
-  assignments: [WcaCompetitorAssignment!]!
-  personalBests: [WcaPersonalBest!]!
-}
-
-type WcaGroupCompetitor {
-  name: String!
-  wcaId: String
-  registrantId: Int!
-  assignmentCode: String!
-  seedResult: Int
-}
-
-type WcaGroup {
-  groupNumber: Int!
-  activityCode: String
-  competitors: [WcaGroupCompetitor!]!
-  startTime: String
-  endTime: String
-}
-
-type WcaRound {
-  roundNumber: Int!
-  format: String
-  timeLimit: Int
-  cutoff: Int
-  cutoffAttempts: Int
-  advancementType: String
-  advancementLevel: Int
-  groups: [WcaGroup!]!
-}
-
-type WcaEventDetail {
-  eventId: String!
-  eventName: String!
-  rounds: [WcaRound!]!
-}
-
-type WcaRankingRow {
-  name: String!
-  wcaId: String
-  registrantId: Int!
-  eventId: String!
-  single: Int
-  average: Int
-  singleWorldRank: Int
-  averageWorldRank: Int
-}
-
-type WcaVenueInfo {
-  name: String!
-  address: String
-  city: String
-}
-
-type WcaPersonInfo {
-  name: String!
-  wcaId: String
-  role: String!
-  avatar: String
-}
-
-type WcaCompetitionInfo {
-  venues: [WcaVenueInfo!]!
-  organizers: [WcaPersonInfo!]!
-  delegates: [WcaPersonInfo!]!
-  wcaUrl: String
-}
-
-type WcaLiveCompetitor {
-  wcaId: String!
-  liveId: String!
-}
-
-type WcaCompetitionDetail {
-  competitionId: String!
-  competitionName: String!
-  myWcaId: String
-  myRegistrationStatus: String
-  myRegisteredEvents: [String!]!
-  competitors: [WcaCompetitor!]!
-  events: [WcaEventDetail!]!
-  schedule: [WcaScheduleDay!]!
-  allPersonalBests: [WcaRankingRow!]!
-  wcaLiveCompId: String
-  wcaLiveCompetitors: [WcaLiveCompetitor!]!
-  info: WcaCompetitionInfo!
-}
-
-input WcaScheduleInput {
-  competitionId: String!
 }
