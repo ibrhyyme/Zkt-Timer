@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
-    - name: Deploy to GCP
+    - name: Deploy to Hetzner
       uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.REMOTE_HOST }}
@@ -45,6 +45,13 @@ jobs:
           echo "Deployment tamamlandı!"
           docker compose ps
           
+    - name: Purge Cloudflare cache
+      run: |
+        curl --fail -X POST "https://api.cloudflare.com/client/v4/zones/${{ secrets.CF_ZONE_ID }}/purge_cache" \
+          -H "Authorization: Bearer ${{ secrets.CF_API_TOKEN }}" \
+          -H "Content-Type: application/json" \
+          --data '{"purge_everything":true}'
+
     - name: Notify on failure
       if: failure()
       run: echo "Deployment failed!"
