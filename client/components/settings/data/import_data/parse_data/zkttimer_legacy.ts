@@ -32,7 +32,7 @@ export function parseZktTimerLegacyData(txt: string, context: IImportDataContext
 	try {
 		sessionMap = (JSON.parse(txt) as ZktTimerLegacyExportSchema).timer.sessionMap;
 	} catch (e) {
-		throw new Error('Invalid import file. Please make sure this is a valid file exported from Zkt-Timer');
+		throw new Error('Invalid import file. Please make sure this is a valid file exported from Zkt Timer');
 	}
 
 	const sessionIds = Object.keys(sessionMap);

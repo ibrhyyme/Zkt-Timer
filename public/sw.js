@@ -175,7 +175,7 @@ async function openQueueDB() {
 
 self.addEventListener('push', (event) => {
   const data = event.data ? event.data.json() : {};
-  const title = (data.notification && data.notification.title) || 'Zkt-Timer';
+  const title = (data.notification && data.notification.title) || 'Zkt Timer';
   const options = {
     body: (data.notification && data.notification.body) || '',
     icon: '/public/images/zkt-logo.png',

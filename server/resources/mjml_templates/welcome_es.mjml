@@ -1,6 +1,6 @@
 <mjml>
   <mj-head>
-    <mj-title>¡Bienvenido a Zkt-Timer!</mj-title>
+    <mj-title>¡Bienvenido a Zkt Timer!</mj-title>
     <mj-font name="Roboto" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700" />
     <mj-attributes>
       <mj-all font-family="Roboto, Helvetica, Arial, sans-serif" />
@@ -11,7 +11,7 @@
   <mj-body background-color="#f4f4f4">
     <mj-section background-color="#ffffff" padding-bottom="0">
       <mj-column>
-        <mj-image href="https://zktimer.app" width="100px" src="https://zktimer.app/public/images/zkt-logo-dark.png" alt="Zkt-Timer Logo"></mj-image>
+        <mj-image href="https://zktimer.app" width="100px" src="https://zktimer.app/public/images/zkt-logo-dark.png" alt="Zkt Timer Logo"></mj-image>
         <mj-divider border-color="#246bfd" border-width="2px"></mj-divider>
       </mj-column>
     </mj-section>
@@ -22,7 +22,7 @@
           ¡Bienvenido {{user.first_name}}! 🎉
         </mj-text>
         <mj-text align="center">
-          Estamos felices de que te hayas unido a la familia Zkt-Timer. Acabas de entrar a la plataforma de resolución de cubos más avanzada del mundo, diseñada para speedcubers profesionales.
+          Estamos felices de que te hayas unido a la familia Zkt Timer. Acabas de entrar a la plataforma de resolución de cubos más avanzada del mundo, diseñada para speedcubers profesionales.
         </mj-text>
       </mj-column>
     </mj-section>
@@ -121,7 +121,7 @@
         </mj-button>
         <mj-divider border-color="#cbd5e0" border-width="1px"></mj-divider>
          <mj-text font-size="12px" align="center" color="#999999">
-          Equipo Zkt-Timer<br/>
+          Equipo Zkt Timer<br/>
           <a href="https://zktimer.app" style="color: #246bfd; text-decoration: none;">zktimer.app</a>
         </mj-text>
         <mj-text font-size="12px" align="center" color="#999999">

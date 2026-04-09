@@ -25,7 +25,7 @@ export default class NewUserSignupNotification extends Notification {
 
 	message() {
 		const method = this.registrationMethod === 'wca' ? 'WCA hesabi' : 'e-posta';
-		return `${this.input.triggeringUser.username} kullanicisi ${method} ile Zkt-Timer'a kayit oldu.`;
+		return `${this.input.triggeringUser.username} kullanicisi ${method} ile Zkt Timer'a kayit oldu.`;
 	}
 
 	icon() {

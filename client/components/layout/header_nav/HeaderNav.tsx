@@ -226,7 +226,7 @@ export default function HeaderNav() {
 								transform: 'translateZ(0)'
 							}}
 						/>
-						Zkt-Timer
+						Zkt Timer
 					</Link>
 				</div>
 

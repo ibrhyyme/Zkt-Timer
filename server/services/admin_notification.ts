@@ -18,7 +18,7 @@ export async function notifyAdminsOfNewUser(
 				registrationMethod
 			);
 			await notification.send();
-			await sendPushToUser(admin.id, 'Zkt-Timer', notification.data().inAppMessage);
+			await sendPushToUser(admin.id, 'Zkt Timer', notification.data().inAppMessage);
 		} catch (error) {
 			console.error(`[AdminNotification] Failed to notify admin ${admin.id}:`, error);
 		}

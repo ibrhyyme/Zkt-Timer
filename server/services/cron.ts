@@ -192,7 +192,7 @@ async function checkDailyGoalReminders() {
 					? `${cubeName}: ${first.current}/${first.target}`
 					: `${cubeName}: ${first.current}/${first.target} (+${incompleteGoals.length - 1})`;
 
-			sendPushToUser(user.id, 'Zkt-Timer', body).catch(() => {});
+			sendPushToUser(user.id, 'Zkt Timer', body).catch(() => {});
 			sentCount++;
 
 			// Son bildirim zamanini guncelle

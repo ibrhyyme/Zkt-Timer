@@ -86,7 +86,7 @@ export default function LoginWrapper() {
 				<div className={b('card')}>
 					{/* Logo */}
 					<div className={b('logo-container')}>
-						<img src="/public/images/zkt-logo.png" alt="ZKT-Timer Logo" className={b('logo')} />
+						<img src="/public/images/zkt-logo.png" alt="Zkt Timer Logo" className={b('logo')} />
 					</div>
 
 					{/* Title — SplitText stagger animation */}

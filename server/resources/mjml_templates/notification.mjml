@@ -29,7 +29,7 @@
 					>Sevgiler,<br />
 				</mj-text>
 
-				<mj-text font-size="20px" color="#444444" font-family="helvetica">Zkt-Timer Ekibi</mj-text>
+				<mj-text font-size="20px" color="#444444" font-family="helvetica">Zkt Timer Ekibi</mj-text>
 			</mj-column>
 		</mj-section>
 	</mj-body>

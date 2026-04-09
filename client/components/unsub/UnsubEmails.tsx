@@ -5,7 +5,7 @@ import AlertContainer from '../common/alert_container/AlertContainer';
 export default function UnsubEmails() {
 	const body = (
 		<p>
-			Artık tüm Zkt-Timer ipuçları, güncellemeleri ve pazarlama e-postalarından abonelikten çıktınız. <a href="/account/notifications">Bildirimler</a> sayfasından dilediğiniz zaman tekrar abone olabilirsiniz.
+			Artık tüm Zkt Timer ipuçları, güncellemeleri ve pazarlama e-postalarından abonelikten çıktınız. <a href="/account/notifications">Bildirimler</a> sayfasından dilediğiniz zaman tekrar abone olabilirsiniz.
 		</p>
 	);
 

@@ -2,7 +2,7 @@ let changeTitleInterval = null;
 let pageHasFocus = false;
 let isOldTitle = false;
 let init = false;
-let originalPageTitle = 'Zkt-Timer';
+let originalPageTitle = 'Zkt Timer';
 
 export function initPageTitleBlink() {
 	if (init) {

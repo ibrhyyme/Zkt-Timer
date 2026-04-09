@@ -507,8 +507,8 @@ export default function Profile() {
 		<div className={b('wrapper', { standalone: !me, mobile: mobileMode, blurred: settingsModalOpen })}>
 			<Header
 				path={`/user/${username}`}
-				title={user.username + ' Profile | Zkt-Timer'}
-				description={`Check out ${user.username}'s Zkt-Timer profile to see their fastest speedcubing times. See their WCA profile, cubing bio, social links, and more`}
+				title={user.username + ' Profile | Zkt Timer'}
+				description={`Check out ${user.username}'s Zkt Timer profile to see their fastest speedcubing times. See their WCA profile, cubing bio, social links, and more`}
 			/>
 			<div className={b({ me: myProfile })}>
 				{/* Banner — sadece kapak resmi varsa ve desktop'taysa goster */}

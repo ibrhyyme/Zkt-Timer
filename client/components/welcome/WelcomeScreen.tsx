@@ -28,8 +28,8 @@ interface WelcomePage {
 
 const PAGES: WelcomePage[] = [
 	{
-		title: 'Welcome to Zkt-Timer',
-		description: 'Zkt-Timer is a free',
+		title: 'Welcome to Zkt Timer',
+		description: 'Zkt Timer is a free',
 		imgSrc: resourceUri('/images/setting/welcome.svg'),
 	},
 ];
