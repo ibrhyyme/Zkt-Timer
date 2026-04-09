@@ -17,7 +17,7 @@ export const DEFAULT_TITLE = "Zkt Timer | Online Rubik's Cube Timer & Speedcubin
 export const DEFAULT_DESCRIPTION =
 	"The most advanced online Rubik's cube timer with live race rooms, algorithm trainer, smart cube support, and global leaderboards. All WCA events: 3x3, 2x2, 4x4, Pyraminx, Megaminx & more.";
 export const DEFAULT_KEYWORDS = "rubiks cube timer, cube timer, speedcubing timer, online cube timer, WCA timer, 3x3 timer, 2x2 timer, 4x4 timer, rubik cube, speedcubing, cubing, puzzle timer, zeka küpü timer, rubik küp, küp zamanlayıcı, кубик рубика таймер, спидкубинг, cronómetro cubo rubik, cubo rubik, مؤقت مكعب روبيك, rubik's cube solver, algorithm trainer, cube racing";
-export const DEFAULT_FEATURED_IMAGE = resourceUri('/images/zkt-logo.png');
+export const DEFAULT_FEATURED_IMAGE = resourceUri('/public/images/zkt-logo.png');
 export const SITE_URL = 'https://zktimer.app';
 export const LOGO_URL = `${SITE_URL}/public/images/zkt-logo.png`;
 

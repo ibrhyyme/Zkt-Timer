@@ -13,7 +13,7 @@ export default function MaintenancePage() {
 	return (
 		<div className={b()}>
 			<div className={b('content')}>
-				<img src={resourceUri('/images/zkt-logo.png')} alt="Zkt Timer" className={b('logo')} />
+				<img src={resourceUri('/public/images/zkt-logo.png')} alt="Zkt Timer" className={b('logo')} />
 				<div className={b('cube-wrapper')}>
 					<HeroCube />
 				</div>
