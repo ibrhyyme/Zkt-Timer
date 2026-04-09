@@ -1976,7 +1976,13 @@
 		"cta_signup": "Registrarse",
 		"cta_login": "Iniciar sesión",
 		"title_highlight_2": "plataforma speedcubing",
-		"title_highlight_3": "herramienta de análisis"
+		"title_highlight_3": "herramienta de análisis",
+		"title_highlight_4": "Asistente de Competición WCA",
+		"store_pill": "Nuevo",
+		"store_tagline": "Zkt Timer ya está en las tiendas de aplicaciones",
+		"or_continue_web": "o continúa en la web",
+		"app_store_alt": "Descargar en App Store",
+		"google_play_alt": "Disponible en Google Play"
 	},
 	"welcome_mobile": {
 		"title": "Siempre a Tu Lado",

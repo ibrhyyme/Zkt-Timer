@@ -1976,7 +1976,13 @@
 		"cta_signup": "Регистрация",
 		"cta_login": "Войти",
 		"title_highlight_2": "спидкубинг платформа",
-		"title_highlight_3": "инструмент аналитики"
+		"title_highlight_3": "инструмент аналитики",
+		"title_highlight_4": "ассистент соревнований WCA",
+		"store_pill": "Новое",
+		"store_tagline": "Zkt Timer теперь в магазинах приложений",
+		"or_continue_web": "или продолжите в браузере",
+		"app_store_alt": "Загрузить в App Store",
+		"google_play_alt": "Доступно в Google Play"
 	},
 	"welcome_mobile": {
 		"title": "Всегда Рядом",

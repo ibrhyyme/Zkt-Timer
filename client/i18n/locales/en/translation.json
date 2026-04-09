@@ -1976,7 +1976,13 @@
 		"cta_signup": "Sign Up",
 		"cta_login": "Log In",
 		"title_highlight_2": "speedcubing platform",
-		"title_highlight_3": "solve & analytics tool"
+		"title_highlight_3": "solve & analytics tool",
+		"title_highlight_4": "WCA Competition Assistant",
+		"store_pill": "New",
+		"store_tagline": "Zkt Timer is now on the app stores",
+		"or_continue_web": "or continue on the web",
+		"app_store_alt": "Download on the App Store",
+		"google_play_alt": "Get it on Google Play"
 	},
 	"welcome_mobile": {
 		"title": "Always By Your Side",
