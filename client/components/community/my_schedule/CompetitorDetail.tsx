@@ -1,7 +1,7 @@
 import React, {useEffect, useState, useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useHistory} from 'react-router-dom';
-import {ArrowLeft, CalendarBlank, Users, Info, ArrowSquareOut, Warning} from 'phosphor-react';
+import {ArrowLeft, CalendarBlank, Users, Info, Warning} from 'phosphor-react';
 import {useCompetitionData} from './CompetitionLoader';
 import {openInAppBrowser} from '../../../util/external-link';
 import {
@@ -102,10 +102,9 @@ export default function CompetitorDetail({registrantId}: CompetitorDetailProps) 
 					return (
 						<button
 							className={b('wca-results-btn')}
-							onClick={() => openInAppBrowser(`https://live.worldcubeassociation.org/competitions/${wcaLiveCompId}/competitors/${live.liveId}`)}
+							onClick={() => history.push(`/community/competitions/${detail.competitionId}/persons/${registrantId}/results`)}
 						>
 							{t('my_schedule.view_complete_results')}
-							<ArrowSquareOut size={14} />
 						</button>
 					);
 				})()}

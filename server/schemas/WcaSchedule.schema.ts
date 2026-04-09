@@ -576,6 +576,64 @@ export class WcaLiveRoundResults {
 	results: WcaLiveResult[];
 }
 
+// Bir yarismacinin tum round sonuclari (in-app gosterim icin)
+@ObjectType()
+export class WcaLiveCompetitorResultEntry {
+	@Field()
+	eventId: string;
+
+	@Field()
+	eventName: string;
+
+	@Field(() => Int)
+	roundNumber: number;
+
+	@Field()
+	roundName: string;
+
+	@Field(() => Int, {nullable: true})
+	ranking?: number;
+
+	@Field(() => Int)
+	best: number;
+
+	@Field(() => Int)
+	average: number;
+
+	@Field(() => [WcaLiveAttempt])
+	attempts: WcaLiveAttempt[];
+
+	@Field({nullable: true})
+	singleRecordTag?: string;
+
+	@Field({nullable: true})
+	averageRecordTag?: string;
+
+	@Field()
+	advancing: boolean;
+
+	@Field()
+	advancingQuestionable: boolean;
+
+	@Field(() => WcaLiveFormat, {nullable: true})
+	format?: WcaLiveFormat;
+}
+
+@ObjectType()
+export class WcaLiveCompetitorResults {
+	@Field()
+	personName: string;
+
+	@Field({nullable: true})
+	personWcaId?: string;
+
+	@Field({nullable: true})
+	personCountryIso2?: string;
+
+	@Field(() => [WcaLiveCompetitorResultEntry])
+	results: WcaLiveCompetitorResultEntry[];
+}
+
 
 // Root type
 @ObjectType()
@@ -645,5 +703,14 @@ export class WcaLiveRoundInput {
 export class WcaLiveOverviewInput {
 	@Field()
 	competitionId: string;
+}
+
+@InputType()
+export class WcaLiveCompetitorInput {
+	@Field()
+	competitionId: string;
+
+	@Field()
+	personLiveId: string;
 }
 

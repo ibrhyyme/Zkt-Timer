@@ -364,6 +364,34 @@ query wcaLiveRoundResults($input: WcaLiveRoundInput!) {
 	}
 }
 
+query wcaLiveCompetitorResults($input: WcaLiveCompetitorInput!) {
+	wcaLiveCompetitorResults(input: $input) {
+		personName
+		personWcaId
+		personCountryIso2
+		results {
+			eventId
+			eventName
+			roundNumber
+			roundName
+			ranking
+			best
+			average
+			attempts {
+				result
+			}
+			singleRecordTag
+			averageRecordTag
+			advancing
+			advancingQuestionable
+			format {
+				numberOfAttempts
+				sortBy
+			}
+		}
+	}
+}
+
 query adminTrainerAlternatives($category: String, $page: Int, $pageSize: Int) {
 	adminTrainerAlternatives(category: $category, page: $page, pageSize: $pageSize) {
 		items {

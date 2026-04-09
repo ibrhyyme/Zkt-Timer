@@ -2524,6 +2524,153 @@
 		color: rgba(255, 255, 255, 0.7);
 		margin-top: 0.1rem;
 	}
+
+	// --- Competitor Live Results sayfasi (in-app WCA Live yarismaci sonuclari) ---
+
+	// Sayfa genisligi: bu sayfada attempt sutunlari sigsin diye content max-width artar
+	&__content--wide {
+		max-width: 64rem;
+	}
+
+	&__competitor-results-header {
+		margin-bottom: 0.85rem;
+	}
+
+	&__competitor-results-title-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+	}
+
+	&__competitor-results-title {
+		margin: 0;
+		font-size: 1.15rem;
+		font-weight: 700;
+		color: #fff;
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+	}
+
+	&__competitor-results-subtitle {
+		font-size: 0.78rem;
+		color: rgba(255, 255, 255, 0.6);
+		margin-top: 0.15rem;
+		font-family: 'SF Mono', Menlo, Consolas, monospace;
+	}
+
+	&__competitor-results-event {
+		margin-top: 1.25rem;
+
+		&:first-of-type {
+			margin-top: 0.5rem;
+		}
+	}
+
+	&__competitor-results-event-header {
+		display: flex;
+		align-items: center;
+		gap: 0.55rem;
+		margin-bottom: 0.5rem;
+		color: #fff;
+
+		.cubing-icon {
+			color: #fff;
+			line-height: 1;
+		}
+	}
+
+	&__competitor-results-event-name {
+		margin: 0;
+		font-size: 1rem;
+		font-weight: 700;
+		color: #fff;
+		letter-spacing: 0.01em;
+	}
+
+	// Bu sayfaya ozel tablo override'lari
+	&__competitor-results-event &__wca-live-results-table {
+		// Web: sutunlar sabit, attempt'ler sigsin
+		@media (min-width: 769px) {
+			table-layout: fixed;
+			width: 100%;
+
+			th, td {
+				padding: 0.6rem 0.3rem;
+			}
+		}
+
+		// Tum yazilar tam beyaz
+		th, td {
+			color: #fff;
+		}
+
+		tbody td {
+			color: #fff;
+		}
+
+		// Round adi (TUR sutunu) sol hizali, beyaz
+		.cd-my-schedule__wca-live-person-name {
+			color: #fff;
+			font-weight: 600;
+		}
+
+		// Best ve Average sutunlari beyaz, ortalama daha kalin
+		.cd-my-schedule__wca-live-time {
+			color: #fff;
+			font-weight: 600;
+
+			&--strong {
+				font-weight: 800;
+				font-size: 0.92rem;
+			}
+		}
+
+		// Attempt cell'leri tam beyaz (mevcut 0.82 opacity'i override et)
+		.cd-my-schedule__wca-live-attempt {
+			color: #fff;
+			font-weight: 500;
+		}
+	}
+
+	// Web: sutun genislikleri sabit ki uzun sureler hizayi bozmasin
+	@media (min-width: 769px) {
+		&__competitor-results-event &__wca-live-results-table {
+			.cd-my-schedule__wca-live-th-name {
+				width: 8rem;
+			}
+
+			.cd-my-schedule__wca-live-th-rank {
+				width: 3rem;
+			}
+
+			.cd-my-schedule__wca-live-th-attempt {
+				width: 4.4rem;
+			}
+
+			// Best ve Average sutun min-width
+			th:not(.cd-my-schedule__wca-live-th-name):not(.cd-my-schedule__wca-live-th-rank):not(.cd-my-schedule__wca-live-th-attempt) {
+				width: 5rem;
+			}
+		}
+	}
+
+	// Mobil: ortalama kalin daha buyuk
+	@media (max-width: 768px) {
+		&__competitor-results-event &__wca-live-results-table {
+			.cd-my-schedule__wca-live-time--strong {
+				font-weight: 800;
+				font-size: 0.95rem;
+			}
+		}
+
+		// Mobil header'da event ikonu beyaz ve daha buyuk
+		&__competitor-results-event-header .cubing-icon {
+			color: #fff;
+			font-size: 22px !important;
+		}
+	}
 }
 
 @keyframes cd-live-pulse {

@@ -302,6 +302,7 @@ type Query {
   wcaCompetitionDetail(input: WcaScheduleInput): WcaCompetitionDetail
   wcaLiveCompetitionOverview(input: WcaLiveOverviewInput): WcaLiveCompetitionOverview
   wcaLiveRoundResults(input: WcaLiveRoundInput): WcaLiveRoundResults
+  wcaLiveCompetitorResults(input: WcaLiveCompetitorInput): WcaLiveCompetitorResults
   getPromoCodes: [PromoCode]
   getPromoCodeRedemptions(promoCodeId: String): [PromoCodeRedemptionInfo]
   siteConfig: SiteConfig
@@ -1388,6 +1389,29 @@ type WcaLiveRoundResults {
   results: [WcaLiveResult]
 }
 
+type WcaLiveCompetitorResultEntry {
+  eventId: String
+  eventName: String
+  roundNumber: Int
+  roundName: String
+  ranking: Int
+  best: Int
+  average: Int
+  attempts: [WcaLiveAttempt]
+  singleRecordTag: String
+  averageRecordTag: String
+  advancing: Boolean
+  advancingQuestionable: Boolean
+  format: WcaLiveFormat
+}
+
+type WcaLiveCompetitorResults {
+  personName: String
+  personWcaId: String
+  personCountryIso2: String
+  results: [WcaLiveCompetitorResultEntry]
+}
+
 type WcaCompetitionDetail {
   competitionId: String
   competitionName: String
@@ -1639,6 +1663,11 @@ input WcaLiveRoundInput {
 
 input WcaLiveOverviewInput {
   competitionId: String
+}
+
+input WcaLiveCompetitorInput {
+  competitionId: String
+  personLiveId: String
 }
 
 input CreatePromoCodeInput {

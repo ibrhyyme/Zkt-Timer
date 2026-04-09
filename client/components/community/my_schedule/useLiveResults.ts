@@ -5,14 +5,19 @@ import {
 	WcaLiveRoundResultsQuery,
 	WcaLiveCompetitionOverviewDocument,
 	WcaLiveCompetitionOverviewQuery,
+	WcaLiveCompetitorResultsDocument,
+	WcaLiveCompetitorResultsQuery,
 } from '../../../@types/generated/graphql';
 
 export type LiveRoundData = WcaLiveRoundResultsQuery['wcaLiveRoundResults'];
 export type LiveOverviewData = WcaLiveCompetitionOverviewQuery['wcaLiveCompetitionOverview'];
+export type LiveCompetitorData = WcaLiveCompetitorResultsQuery['wcaLiveCompetitorResults'];
 
 const ROUND_POLL_INTERVAL = 30 * 1000;
 const OVERVIEW_CACHE_TTL = 60 * 1000; // 60s — server cache ile align
 const OVERVIEW_CACHE_MAX = 20;
+const COMPETITOR_CACHE_TTL = 60 * 1000;
+const COMPETITOR_CACHE_MAX = 20;
 
 // Module-level cache: overview verisi sayfa gecislerinde kaybolmasin
 const overviewCache = new Map<string, {data: LiveOverviewData; timestamp: number}>();
@@ -247,4 +252,104 @@ export function useLiveRoundResults(
 		isActive: !!data?.active,
 		isFinished: !!data?.finished,
 	};
+}
+
+// --- Competitor Live Results (in-app yarismaci sonuc gosterimi) ---
+
+const competitorCache = new Map<string, {data: LiveCompetitorData; timestamp: number}>();
+
+function setCompetitorCache(key: string, data: LiveCompetitorData) {
+	competitorCache.delete(key);
+	competitorCache.set(key, {data, timestamp: Date.now()});
+	while (competitorCache.size > COMPETITOR_CACHE_MAX) {
+		const firstKey = competitorCache.keys().next().value;
+		if (firstKey) competitorCache.delete(firstKey);
+	}
+}
+
+export function useCompetitorLiveResults(
+	competitionId: string,
+	personLiveId: string | null,
+	enabled: boolean
+) {
+	const cacheKey = `${competitionId}:${personLiveId}`;
+	const [data, setData] = useState<LiveCompetitorData | null>(() => {
+		if (!enabled || !personLiveId) return null;
+		const cached = competitorCache.get(cacheKey);
+		if (cached && Date.now() - cached.timestamp < COMPETITOR_CACHE_TTL) {
+			return cached.data;
+		}
+		return null;
+	});
+	const [loading, setLoading] = useState(false);
+	const [lastUpdated, setLastUpdated] = useState<number | null>(() => {
+		const cached = competitorCache.get(cacheKey);
+		return cached ? cached.timestamp : null;
+	});
+	const [lastError, setLastError] = useState<number | null>(null);
+	const requestIdRef = useRef(0);
+
+	const doFetch = useCallback(async (myRequestId: number, retry: number = 0): Promise<void> => {
+		if (!competitionId || !personLiveId) return;
+		try {
+			const res = await gqlQueryTyped(
+				WcaLiveCompetitorResultsDocument,
+				{input: {competitionId, personLiveId}},
+				{fetchPolicy: 'no-cache'}
+			);
+			if (myRequestId !== requestIdRef.current) return;
+
+			const result = res?.data?.wcaLiveCompetitorResults || null;
+
+			if (!result && retry < 1) {
+				setTimeout(() => doFetch(myRequestId, retry + 1), 800);
+				return;
+			}
+
+			if (result) {
+				setCompetitorCache(cacheKey, result);
+				setData(result);
+				setLastUpdated(Date.now());
+				setLastError(null);
+			}
+			setLoading(false);
+		} catch {
+			if (myRequestId !== requestIdRef.current) return;
+			if (retry < 1) {
+				setTimeout(() => doFetch(myRequestId, retry + 1), 1000);
+				return;
+			}
+			setLastError(Date.now());
+			setLoading(false);
+		}
+	}, [competitionId, personLiveId, cacheKey]);
+
+	useEffect(() => {
+		if (!enabled || !competitionId || !personLiveId) {
+			setLoading(false);
+			return;
+		}
+
+		const cached = competitorCache.get(cacheKey);
+		if (cached && Date.now() - cached.timestamp < COMPETITOR_CACHE_TTL) {
+			setData(cached.data);
+			setLastUpdated(cached.timestamp);
+			setLoading(false);
+			return;
+		}
+
+		const myRequestId = ++requestIdRef.current;
+		setLoading(true);
+		doFetch(myRequestId);
+	}, [competitionId, personLiveId, enabled, cacheKey, doFetch]);
+
+	const refresh = useCallback(() => {
+		if (!enabled || !competitionId || !personLiveId) return;
+		competitorCache.delete(cacheKey);
+		const myRequestId = ++requestIdRef.current;
+		setLoading(true);
+		doFetch(myRequestId);
+	}, [enabled, competitionId, personLiveId, cacheKey, doFetch]);
+
+	return {data, loading, lastUpdated, lastError, refresh};
 }
