@@ -280,6 +280,7 @@ type Query {
   notificationPreferences: NotificationPreference
   adminUserSearch(filters: AdminUserFiltersInput, pageArgs: PaginationArgsInput): PaginatedUserAccountsForAdmin
   getUserAccountForAdmin(userId: String): UserAccountForAdmin
+  onlineStats: OnlineStats
   statsModule: StatsModule
   wcaRecords(userId: String): [WcaRecord]
   myWcaRecords: [WcaRecord]
@@ -976,6 +977,23 @@ type WcaAccount {
   created_at: String
 }
 
+type OnlineStats {
+  totalSockets: Int
+  uniqueUsers: Int
+  anonymous: Int
+}
+
+type SiteConfig {
+  id: String
+  maintenance_mode: Boolean
+  trainer_enabled: Boolean
+  community_enabled: Boolean
+  leaderboards_enabled: Boolean
+  rooms_enabled: Boolean
+  battle_enabled: Boolean
+  updated_at: DateTime
+}
+
 type StatsModule {
   blocks: [StatsModuleBlock]
 }
@@ -1453,17 +1471,6 @@ type RedeemPromoCodeResult {
   expires_at: DateTime
 }
 
-type SiteConfig {
-  id: String
-  maintenance_mode: Boolean
-  trainer_enabled: Boolean
-  community_enabled: Boolean
-  leaderboards_enabled: Boolean
-  rooms_enabled: Boolean
-  battle_enabled: Boolean
-  updated_at: DateTime
-}
-
 type Notification {
   id: String
   user_id: String
@@ -1590,6 +1597,15 @@ input SessionInput {
   order: Float
 }
 
+input UpdateSiteConfigInput {
+  maintenance_mode: Boolean
+  trainer_enabled: Boolean
+  community_enabled: Boolean
+  leaderboards_enabled: Boolean
+  rooms_enabled: Boolean
+  battle_enabled: Boolean
+}
+
 input StatsModuleBlockInput {
   statType: String
   sortBy: String
@@ -1675,15 +1691,6 @@ input CreatePromoCodeInput {
   membership_type: String
   duration_minutes: Int
   max_uses: Int = 1
-}
-
-input UpdateSiteConfigInput {
-  maintenance_mode: Boolean
-  trainer_enabled: Boolean
-  community_enabled: Boolean
-  leaderboards_enabled: Boolean
-  rooms_enabled: Boolean
-  battle_enabled: Boolean
 }
 
 input PaginationArgsInput {

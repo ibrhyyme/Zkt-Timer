@@ -1,4 +1,16 @@
-import {Field, ObjectType, InputType} from 'type-graphql';
+import {Field, ObjectType, InputType, Int} from 'type-graphql';
+
+@ObjectType()
+export class OnlineStats {
+	@Field(() => Int)
+	totalSockets: number;
+
+	@Field(() => Int)
+	uniqueUsers: number;
+
+	@Field(() => Int)
+	anonymous: number;
+}
 
 @ObjectType()
 export class SiteConfig {

@@ -30,6 +30,8 @@ import { PaginationArgsInput, AdminUserFiltersInput } from '../schemas/Paginatio
 import { getPaginatedResponse, PaginatedRequestInput } from '../util/pagination/paginated_response';
 import { sendPushToUser } from '../services/push';
 import { AdminSendPushResult } from '../schemas/PushToken.schema';
+import { OnlineStats } from '../schemas/SiteConfig.schema';
+import { getOnlineCounts } from '../services/socket_util';
 
 @Resolver()
 export class AdminResolver {
@@ -281,5 +283,11 @@ export class AdminResolver {
 		await getUserByIdOrThrow404(userId);
 		await sendPushToUser(userId, title, body);
 		return {success: true};
+	}
+
+	@Authorized([Role.ADMIN])
+	@Query(() => OnlineStats)
+	async onlineStats(): Promise<OnlineStats> {
+		return getOnlineCounts();
 	}
 }
