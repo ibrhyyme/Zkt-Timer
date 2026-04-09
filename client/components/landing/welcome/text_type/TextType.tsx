@@ -118,7 +118,7 @@ export default function TextType({
 	]);
 
 	return (
-		<span ref={containerRef} className={`cd-text-type ${className}`}>
+		<span ref={containerRef} className={className ? `cd-text-type ${className}` : 'cd-text-type'}>
 			{/* Hidden sizers — stacked in same grid cell, tallest sets height */}
 			{textArray.map((t, i) => (
 				<span key={i} className="cd-text-type__sizer" aria-hidden="true">

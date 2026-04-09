@@ -1974,7 +1974,13 @@
 		"cta_signup": "Kayıt Ol",
 		"cta_login": "Giriş Yap",
 		"title_highlight_2": "Speedcubing Platformu",
-		"title_highlight_3": "Çözüm ve Analiz Aracı"
+		"title_highlight_3": "Çözüm ve Analiz Aracı",
+		"title_highlight_4": "WCA Yarışma Asistanı",
+		"store_pill": "Yeni",
+		"store_tagline": "Zkt Timer artık dijital mağazalarda",
+		"or_continue_web": "veya web'de devam et",
+		"app_store_alt": "App Store'dan indir",
+		"google_play_alt": "Google Play'den al"
 	},
 	"welcome_mobile": {
 		"title": "Her Zaman Yanınızda",
