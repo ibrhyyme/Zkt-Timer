@@ -7,7 +7,7 @@ const b = block('import-instructions');
 export default function ZktTimerInstructions() {
 	return (
 		<div className={b()}>
-			<ImportSection title="Zkt-Timer'dan veriler nasıl dışa aktarılır">
+			<ImportSection title="Zkt Timer'dan veriler nasıl dışa aktarılır">
 				<ol>
 					<li>
 						<a href="/settings" target="_blank">

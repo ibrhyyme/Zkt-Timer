@@ -43,7 +43,7 @@ export default function Welcome() {
 				<title>{title}</title>
 				<meta name="description" content={desc} />
 				<meta name="keywords" content={DEFAULT_KEYWORDS} />
-				<meta name="author" content="ZKT Timer" />
+				<meta name="author" content="Zkt Timer" />
 				<link rel="canonical" href={`${SITE_URL}/`} />
 
 				{/* Open Graph */}
@@ -54,7 +54,7 @@ export default function Welcome() {
 				<meta property="og:image:width" content="1200" />
 				<meta property="og:image:height" content="630" />
 				<meta property="og:url" content={`${SITE_URL}/`} />
-				<meta property="og:site_name" content="ZKT Timer" />
+				<meta property="og:site_name" content="Zkt Timer" />
 				<meta property="og:type" content="website" />
 				<meta property="og:locale" content={lang === 'tr' ? 'tr_TR' : lang === 'es' ? 'es_ES' : lang === 'ru' ? 'ru_RU' : 'en_US'} />
 

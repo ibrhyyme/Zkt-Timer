@@ -88,7 +88,7 @@ export default function ImportData(props: Props) {
 			break;
 		case ImportDataType.ZKT_TIMER:
 			timerImportData = {
-				name: 'Zkt-Timer',
+				name: 'Zkt Timer',
 				getImportableData: parseZktTimerData,
 				acceptedFileTypes: ['.txt', '.json'],
 				instructions: <ZktTimerInstructions />,

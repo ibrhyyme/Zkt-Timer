@@ -83,7 +83,7 @@
 		"delete_account_warning": "Burada dikkatli olun. Aşağıdaki butona tıklarsanız, tüm hesabınızı sileceksiniz. Tüm çözümleriniz, seans bilgileriniz, istatistikleriniz vb. sonsuza kadar silinecek. Dikkatli ilerleyin.",
 		"delete_account_button": "Hesabı Sil",
 		"delete_account_title": "Hesabı sil",
-		"delete_account_confirm_desc": "Burada dikkatli olun. Tüm hesabınızı silmek üzeresiniz. Tüm Zkt-Timer verileriniz silinecek ve kurtarılamayacak.",
+		"delete_account_confirm_desc": "Burada dikkatli olun. Tüm hesabınızı silmek üzeresiniz. Tüm Zkt Timer verileriniz silinecek ve kurtarılamayacak.",
 		"delete_account_confirm_button": "Hesabı ve tüm verileri sil"
 	},
 	"admin_announcements": {
@@ -179,7 +179,7 @@
 		"create_button": "Oda Oluştur"
 	},
 	"trainer": {
-		"page_title": "Zkt-Timer | Algoritma Eğiticisi",
+		"page_title": "Zkt Timer | Algoritma Eğiticisi",
 		"title": "Algoritma Eğiticisi",
 		"coming_soon": "Coming Soon!",
 		"description": "Bu sayfa çok yakında kullanıma açılacak! 🚀 F2, OLL, PLL, ZBLL ve daha fazla algoritma seti, akıllı küp desteği ve gelişmiş performans izleme özellikleri yakında!",
@@ -464,7 +464,7 @@
 	},
 	"maintenance": {
 		"title": "Bakım modundayız",
-		"description": "Daha iyi bir Zkt-Timer için altyapı çalışması yapıyoruz. Çok yakında görüşmek üzere!",
+		"description": "Daha iyi bir Zkt Timer için altyapı çalışması yapıyoruz. Çok yakında görüşmek üzere!",
 		"thanks": "Anlayışınız için teşekkür ederiz 💙"
 	},
 	"site_config": {
@@ -598,7 +598,7 @@
 	},
 	"notification_prefs": {
 		"email_notifications": "E-posta Bildirimleri",
-		"marketing_emails": "Zkt-Timer'dan ipucu, güncellemeler ve diğer e-postalar"
+		"marketing_emails": "Zkt Timer'dan ipucu, güncellemeler ve diğer e-postalar"
 	},
 	"announcement_dropdown": {
 		"title": "Duyurular",
@@ -610,7 +610,7 @@
 	},
 	"orientation_warning": {
 		"title": "Lütfen Cihazınızı Döndürün",
-		"text": "ZKT-Timer en iyi deneyim için mobil cihazlarda dikey (portrait) modda kullanılmak üzere tasarlanmıştır."
+		"text": "Zkt Timer en iyi deneyim için mobil cihazlarda dikey (portrait) modda kullanılmak üzere tasarlanmıştır."
 	},
 	"settings": {
 		"page_title": "Ayarlar",
@@ -737,10 +737,10 @@
 		"export_button": "Verileri dışa aktar",
 		"export_success": "Tüm çözüm ve oturum verileri başarıyla indirildi.",
 		"import_data": "Veri içe aktar",
-		"import_data_desc": "csTimer veya Zkt-Timer'dan veri içe aktarın",
+		"import_data_desc": "csTimer veya Zkt Timer'dan veri içe aktarın",
 		"import_button": "Veri içe aktar",
 		"import_cstimer": "csTimer'dan içe aktar",
-		"import_zkttimer": "Zkt-Timer Yedekten içe aktar",
+		"import_zkttimer": "Zkt Timer Yedekten içe aktar",
 		"reset_settings": "Ayarları sıfırla",
 		"reset_settings_desc": "Ayarlardaki her şeyi varsayılan değerlere sıfırla (özel küp türleri hariç)",
 		"reset_settings_button": "Ayarları sıfırla",
@@ -829,7 +829,7 @@
 		"add_cube_type": "Küp türünü ekle",
 		"add_date": "Tarihi ekle",
 		"wrap_text": "Metni kaydır",
-		"generated_by": "ZKT-Timer tarafından {{date}} tarihinde oluşturuldu",
+		"generated_by": "Zkt Timer tarafından {{date}} tarihinde oluşturuldu",
 		"single_solve": "Tek Çözüm",
 		"view_as_stats": "1-(Stats) Olarak Görüntüle",
 		"tps": "TPS",
@@ -887,7 +887,7 @@
 		"create_session": "Sezon Oluştur",
 		"create_session_error": "Sunucu Hatası: Oturum oluşturulamadı",
 		"create_new_session_title": "Yeni oturum oluştur",
-		"create_new_session_desc": "Zkt-Timer'da oturumlar birden fazla küp türüne sahip olabilir. Oturumları istediğiniz gibi bölebilirsiniz: küp türüne göre, güne göre, vb.",
+		"create_new_session_desc": "Zkt Timer'da oturumlar birden fazla küp türüne sahip olabilir. Oturumları istediğiniz gibi bölebilirsiniz: küp türüne göre, güne göre, vb.",
 		"new_session_placeholder": "Yeni Oturum",
 		"cube_type": "Cube Türü",
 		"cube_type_info": "Korkma:) Bu daha sonra değiştirilebilir"
@@ -1344,9 +1344,9 @@
 		"preview": "Önizleme",
 		"email_greeting": "Merhaba Kullanıcı,",
 		"content_preview_placeholder": "Mail içeriği burada görünecek...",
-		"go_to_zkttimer": "Zkt-Timer'a Git",
+		"go_to_zkttimer": "Zkt Timer'a Git",
 		"regards": "Sevgiler,",
-		"team": "Zkt-Timer Ekibi",
+		"team": "Zkt Timer Ekibi",
 		"clear": "Temizle",
 		"sending": "Gönderiliyor...",
 		"send_button": "Mail Gönder",
@@ -1369,33 +1369,33 @@
 		"select_people": "{{count}} Kişi Seç"
 	},
 	"seo": {
-		"home_title": "ZKT Timer | Online Zeka Küpü Timer ve Speedcubing Platformu",
+		"home_title": "Zkt Timer | Online Zeka Küpü Timer ve Speedcubing Platformu",
 		"home_description": "En gelişmiş online zeka küpü timer. Çözümlerini kaydet, canlı odalarda yarış, algoritma öğren ve sıralamalarda yüksel. Tüm WCA etkinlikleri: 3x3, 2x2, 4x4, Pyraminx, Megaminx ve daha fazlası.",
-		"timer_title": "Zeka Küpü Timer - Zkt-Timer",
+		"timer_title": "Zeka Küpü Timer - Zkt Timer",
 		"timer_description": "Profesyonel zeka küpü timer. Milisaniye hassasiyetinde ölçüm, WCA scramble algoritmaları, akıllı küp desteği ve detaylı performans analizi. Speedcubing için en iyi timer.",
-		"login_title": "Giriş Yap - Zkt-Timer",
-		"login_description": "ZKT Timer hesabına giriş yap. Çözümlerini kaydet, istatistiklerini takip et ve sıralamalarda yerini al.",
-		"signup_title": "Hesap Oluştur - Zkt-Timer",
+		"login_title": "Giriş Yap - Zkt Timer",
+		"login_description": "Zkt Timer hesabına giriş yap. Çözümlerini kaydet, istatistiklerini takip et ve sıralamalarda yerini al.",
+		"signup_title": "Hesap Oluştur - Zkt Timer",
 		"signup_description": "Dünyanın en büyük zeka küpü topluluklarından birine katıl! Hesap oluştur, çözümlerini kaydet ve diğer küpçülerle yarış.",
-		"forgot_password_title": "Şifre Sıfırla - Zkt-Timer",
-		"forgot_password_description": "ZKT Timer hesabının şifresini sıfırla. E-posta adresine gönderilecek bağlantı ile yeni şifre belirle.",
-		"rooms_title": "Canlı Yarışma Odaları - Zkt-Timer",
+		"forgot_password_title": "Şifre Sıfırla - Zkt Timer",
+		"forgot_password_description": "Zkt Timer hesabının şifresini sıfırla. E-posta adresine gönderilecek bağlantı ile yeni şifre belirle.",
+		"rooms_title": "Canlı Yarışma Odaları - Zkt Timer",
 		"rooms_description": "Diğer küpçülerle gerçek zamanlı yarış! Arkadaşlarınla oda oluştur veya açık odalara katıl. Speedcubing mücadelesi için en iyi platform.",
-		"settings_title": "Kullanıcı Ayarları - Zkt-Timer",
+		"settings_title": "Kullanıcı Ayarları - Zkt Timer",
 		"settings_description": "Timer ayarlarını, görünümü ve hesap tercihlerini kişiselleştir.",
 		"user_fallback": "Kullanıcı",
-		"user_profile_title": "{{username}} - Cuber Profili | Zkt-Timer",
+		"user_profile_title": "{{username}} - Cuber Profili | Zkt Timer",
 		"user_profile_description": "{{username}} kullanıcısının zeka küpü profili. Rekorları, çözüm istatistikleri ve yarışma geçmişi.",
-		"trainer_title": "Algoritma Eğitmeni - Zkt-Timer",
+		"trainer_title": "Algoritma Eğitmeni - Zkt Timer",
 		"trainer_description": "F2L, OLL, PLL ve daha fazla algoritma öğren. İnteraktif 3D küp ile antrenman yap ve hızını artır.",
-		"stats_title": "Çözüm İstatistikleri - Zkt-Timer",
+		"stats_title": "Çözüm İstatistikleri - Zkt Timer",
 		"stats_description": "Zeka küpü performansını analiz et. Ortalamalar, en iyi süreler, grafikler ve detaylı istatistikler.",
-		"solves_title": "Çözüm Geçmişi - Zkt-Timer",
+		"solves_title": "Çözüm Geçmişi - Zkt Timer",
 		"solves_description": "Tüm zeka küpü çözümlerini görüntüle. Scramble, süre ve çözüm detayları ile performans analizi.",
-		"leaderboards_title": "Sıralama - Zkt-Timer",
+		"leaderboards_title": "Sıralama - Zkt Timer",
 		"leaderboards_description": "En hızlı zeka küpü çözücüler! Single ve Average rekorları, kategori bazlı sıralamalar.",
-		"demo_title": "Demo Modu - Zkt-Timer",
-		"demo_description": "ZKT Timer'ı dene! Hesap oluşturmadan timer özelliklerini keşfet.",
+		"demo_title": "Demo Modu - Zkt Timer",
+		"demo_description": "Zkt Timer'ı dene! Hesap oluşturmadan timer özelliklerini keşfet.",
 		"app_description": "En gelişmiş online zeka küpü ve rubik küp timer uygulaması. Speedcubing zamanlayıcı.",
 		"feature_list": ["Zeka küpü timer", "Rubik küp timer", "Canlı yarışma odaları", "Global sıralama", "Algoritma eğitmeni", "Akıllı küp desteği", "Stackmat Timer desteği"],
 		"nav_timer_desc": "Profesyonel zeka küpü zamanlayıcı",
@@ -1410,12 +1410,12 @@
 		"breadcrumb_home": "Ana Sayfa",
 		"keywords": "zeka küpü timer, rubik küp, küp zamanlayıcı, speedcubing, zeka küpü çözümü, rubik küp timer, 3x3 küp, 2x2 küp, 4x4 küp, zeka küpü yarışması, küp çözme, cubing timer, rubik küp algoritma, zeka küpü nasıl çözülür",
 		"faq": [
-			{"q": "ZKT Timer nedir ve ne işe yarar?", "a": "ZKT Timer, dünyanın en gelişmiş zeka küpü (Rubik Küp) timer platformlarından biridir. Speedcubing çözüm sürelerinizi milisaniye hassasiyetinde ölçer, WCA resmi scramble algoritmaları sunar, detaylı istatistikler ve performans analizi sağlar. Canlı yarış odaları, global sıralama, akıllı küp desteği ve algoritma öğreticisi gibi profesyonel özellikler içerir."},
-			{"q": "ZKT Timer nasıl çalışır?", "a": "ZKT Timer'a kayıt olarak hemen başlayabilirsiniz. Timer, istatistikler, online yarışmalar, trainer ve sıralamalar gibi temel özellikler mevcuttur. Pro üyelik ile ek premium özelliklerden de yararlanabilirsiniz."},
-			{"q": "Hangi zeka küpü türlerini destekler?", "a": "ZKT Timer tüm WCA resmi kategorilerini destekler: 2x2, 3x3, 4x4, 5x5, 6x6, 7x7; Pyraminx, Megaminx, Skewb, Square-1, Clock; 3x3 Tek El, 3x3 Gözü Kapalı ve daha fazlası. Her kategori için WCA resmi scramble algoritmaları kullanılır."},
-			{"q": "İnternet bağlantısı olmadan kullanabilir miyim?", "a": "Evet! ZKT Timer PWA teknolojisi sayesinde çevrimdışı çalışabilir. Tarayıcınızda 'Ana ekrana ekle' seçeneği ile uygulamayı yükledikten sonra internet olmadan timer'ı kullanabilirsiniz. Verileriniz internet bağlantısı kurulduğunda otomatik senkronize edilir."},
-			{"q": "WCA resmi bir timer mı?", "a": "ZKT Timer, WCA resmi scramble algoritmalarını kullanan bir antrenman platformudur. Resmi WCA yarışmalarında fiziksel Stackmat Timer zorunludur. ZKT Timer antrenman, pratik ve istatistik takibi için idealdir."},
-			{"q": "Hangi cihazlarda çalışır?", "a": "ZKT Timer tüm modern tarayıcılarda çalışır. Windows, macOS, Linux, Android ve iOS desteklenir. PWA olarak telefonunuza uygulama gibi yüklenebilir. Smart Cube (GAN, MoYu) ve Stackmat Timer ile de uyumludur."},
+			{"q": "Zkt Timer nedir ve ne işe yarar?", "a": "Zkt Timer, dünyanın en gelişmiş zeka küpü (Rubik Küp) timer platformlarından biridir. Speedcubing çözüm sürelerinizi milisaniye hassasiyetinde ölçer, WCA resmi scramble algoritmaları sunar, detaylı istatistikler ve performans analizi sağlar. Canlı yarış odaları, global sıralama, akıllı küp desteği ve algoritma öğreticisi gibi profesyonel özellikler içerir."},
+			{"q": "Zkt Timer nasıl çalışır?", "a": "Zkt Timer'a kayıt olarak hemen başlayabilirsiniz. Timer, istatistikler, online yarışmalar, trainer ve sıralamalar gibi temel özellikler mevcuttur. Pro üyelik ile ek premium özelliklerden de yararlanabilirsiniz."},
+			{"q": "Hangi zeka küpü türlerini destekler?", "a": "Zkt Timer tüm WCA resmi kategorilerini destekler: 2x2, 3x3, 4x4, 5x5, 6x6, 7x7; Pyraminx, Megaminx, Skewb, Square-1, Clock; 3x3 Tek El, 3x3 Gözü Kapalı ve daha fazlası. Her kategori için WCA resmi scramble algoritmaları kullanılır."},
+			{"q": "İnternet bağlantısı olmadan kullanabilir miyim?", "a": "Evet! Zkt Timer PWA teknolojisi sayesinde çevrimdışı çalışabilir. Tarayıcınızda 'Ana ekrana ekle' seçeneği ile uygulamayı yükledikten sonra internet olmadan timer'ı kullanabilirsiniz. Verileriniz internet bağlantısı kurulduğunda otomatik senkronize edilir."},
+			{"q": "WCA resmi bir timer mı?", "a": "Zkt Timer, WCA resmi scramble algoritmalarını kullanan bir antrenman platformudur. Resmi WCA yarışmalarında fiziksel Stackmat Timer zorunludur. Zkt Timer antrenman, pratik ve istatistik takibi için idealdir."},
+			{"q": "Hangi cihazlarda çalışır?", "a": "Zkt Timer tüm modern tarayıcılarda çalışır. Windows, macOS, Linux, Android ve iOS desteklenir. PWA olarak telefonunuza uygulama gibi yüklenebilir. Smart Cube (GAN, MoYu) ve Stackmat Timer ile de uyumludur."},
 			{"q": "Verilerim güvende mi?", "a": "Evet, tüm solve kayıtları ve hesap bilgileri güvenli şekilde saklanır. Verileriniz hem sunucuda hem de tarayıcınızın yerel veritabanında tutulur. İstediğiniz zaman hesabınızı ve verilerinizi silebilirsiniz."},
 			{"q": "Online yarışmalara nasıl katılabilirim?", "a": "Hesap oluşturun, 'Odalar' bölümünden açık yarış odalarına katılabilir veya arkadaşlarınızla özel oda oluşturabilirsiniz. Gerçek zamanlı yarışmalar düzenlenir ve sıralamada yerinizi alırsınız."}
 		]
@@ -1582,8 +1582,8 @@
 		"loading": "WCA ile giriş yapılıyor..."
 	},
 	"login_wrapper": {
-		"login_title": "Zkt-Timer | Giriş Yap",
-		"signup_title": "Zkt-Timer | Kayıt Ol",
+		"login_title": "Zkt Timer | Giriş Yap",
+		"signup_title": "Zkt Timer | Kayıt Ol",
 		"reset_password": "Şifreni Sıfırla",
 		"verify_email": "E-posta Doğrulama",
 		"welcome": "Hoş Geldin",
@@ -1760,7 +1760,7 @@
 			},
 			"data_import": {
 				"title": "Veri aktarımı",
-				"desc": "Daha önce CSTimer, ZKTTimer veya TwistyTimer kullanıyordun? Yılların emeğini kaybetme — tüm geçmiş çözümlerini, sürelerini ve istatistiklerini tek tıkla Zkt-Timer'a aktar. Sıfırdan başlamak yerine kaldığın yerden devam et."
+				"desc": "Daha önce CSTimer, ZKTTimer veya TwistyTimer kullanıyordun? Yılların emeğini kaybetme — tüm geçmiş çözümlerini, sürelerini ve istatistiklerini tek tıkla Zkt Timer'a aktar. Sıfırdan başlamak yerine kaldığın yerden devam et."
 			},
 			"stats_customization": {
 				"title": "İstatistik özelleştirme",
@@ -1882,25 +1882,25 @@
 	"terms": {
 		"title": "Kullanıcı Sözleşmesi",
 		"last_update": "Son güncelleme: 9 Şubat 2026",
-		"intro": "Lütfen Zkt-Timer (\"Platform\") hizmetlerini kullanmadan önce bu Kullanıcı Sözleşmesi'ni (\"Sözleşme\") dikkatlice okuyunuz. Platforma erişmeniz veya kullanmanız, bu Sözleşme'yi kabul ettiğiniz anlamına gelir.",
+		"intro": "Lütfen Zkt Timer (\"Platform\") hizmetlerini kullanmadan önce bu Kullanıcı Sözleşmesi'ni (\"Sözleşme\") dikkatlice okuyunuz. Platforma erişmeniz veya kullanmanız, bu Sözleşme'yi kabul ettiğiniz anlamına gelir.",
 		"section_1_title": "1. Taraflar",
-		"section_1_text": "Bu Sözleşme, Zkt-Timer ile Platformu kullanan kullanıcı (\"Kullanıcı\") arasında akdedilmiştir.",
+		"section_1_text": "Bu Sözleşme, Zkt Timer ile Platformu kullanan kullanıcı (\"Kullanıcı\") arasında akdedilmiştir.",
 		"section_2_title": "2. Hizmetin Kapsamı",
-		"section_2_text": "Zkt-Timer, kullanıcılarına online hız bardağı/küp zamanlayıcısı, istatistik takibi, algoritmalar ve ilgili eğitim araçlarını sunan bir platformdur. Platform, \"olduğu gibi\" (as-is) sunulmakta olup, kesintisiz veya hatasız olacağı garanti edilmemektedir.",
+		"section_2_text": "Zkt Timer, kullanıcılarına online hız bardağı/küp zamanlayıcısı, istatistik takibi, algoritmalar ve ilgili eğitim araçlarını sunan bir platformdur. Platform, \"olduğu gibi\" (as-is) sunulmakta olup, kesintisiz veya hatasız olacağı garanti edilmemektedir.",
 		"section_3_title": "3. Üyelik ve Kullanım Şartları",
 		"section_3_item_1": "Kullanıcı, Platforma üye olurken verdiği bilgilerin doğru ve güncel olduğunu beyan eder.",
 		"section_3_item_2": "18 yaşından küçük kullanıcıların, Platformu kullanmak için ebeveyn veya yasal vasi iznini almış olması gerekmektedir.",
 		"section_3_item_3": "Kullanıcı, Platformu yalnızca hukuka uygun amaçlarla kullanabilir. Platformun güvenliğini tehdit edecek, diğer kullanıcılara zarar verecek veya sistemin işleyişini bozacak faaliyetlerde bulunamaz.",
 		"section_3_item_4": "Hesap güvenliğinden (şifre vb.) Kullanıcı bizzat sorumludur. Hesabın yetkisiz kullanımı durumunda derhal Platforma bildirimde bulunulmalıdır.",
-		"section_3_item_5": "Zkt-Timer, herhangi bir gerekçe göstermeksizin Kullanıcı'nın üyeliğini askıya alma veya sonlandırma hakkını saklı tutar.",
+		"section_3_item_5": "Zkt Timer, herhangi bir gerekçe göstermeksizin Kullanıcı'nın üyeliğini askıya alma veya sonlandırma hakkını saklı tutar.",
 		"section_4_title": "4. Fikri Mülkiyet Hakları",
-		"section_4_text": "Platformda yer alan tüm yazılım, tasarım, içerik, görseller ve markalar Zkt-Timer'a veya lisans verenlerine aittir. Kullanıcılar, bu içerikleri kopyalayamaz, çoğaltamaz, dağıtamaz veya ticari amaçla kullanamaz.",
+		"section_4_text": "Platformda yer alan tüm yazılım, tasarım, içerik, görseller ve markalar Zkt Timer'a veya lisans verenlerine aittir. Kullanıcılar, bu içerikleri kopyalayamaz, çoğaltamaz, dağıtamaz veya ticari amaçla kullanamaz.",
 		"section_5_title": "5. Sorumluluk Reddi",
-		"section_5_text": "Zkt-Timer, Platformun kullanımı sırasında oluşabilecek veri kayıpları, bağlantı hataları veya donanım uyuşmazlıklarından sorumlu tutulamaz. Üçüncü taraf bağlantılarına (linkler) erişim Kullanıcı'nın kendi sorumluluğundadır.",
+		"section_5_text": "Zkt Timer, Platformun kullanımı sırasında oluşabilecek veri kayıpları, bağlantı hataları veya donanım uyuşmazlıklarından sorumlu tutulamaz. Üçüncü taraf bağlantılarına (linkler) erişim Kullanıcı'nın kendi sorumluluğundadır.",
 		"section_6_title": "6. Ücretli Hizmetler ve İadeler",
 		"section_6_text": "Platform üzerindeki bazı hizmetler ücretli olabilir. Ödemeler, güvenli ödeme altyapıları (örn. Stripe) aracılığıyla gerçekleştirilir. Dijital içerik ve hizmetler doğası gereği anında ifa edildiğinden, yasal zorunluluklar saklı kalmak kaydıyla ücret iadesi yapılmayabilir.",
 		"section_7_title": "7. Sözleşme Değişiklikleri",
-		"section_7_text": "Zkt-Timer, bu Sözleşme'yi dilediği zaman güncelleme hakkını saklı tutar. Güncellenen şartlar, Platformda yayınlandığı tarihte yürürlüğe girer. Kullanıcıların periyodik olarak bu sayfayı kontrol etmesi önerilir.",
+		"section_7_text": "Zkt Timer, bu Sözleşme'yi dilediği zaman güncelleme hakkını saklı tutar. Güncellenen şartlar, Platformda yayınlandığı tarihte yürürlüğe girer. Kullanıcıların periyodik olarak bu sayfayı kontrol etmesi önerilir.",
 		"section_8_title": "8. Uyuşmazlık Çözümü",
 		"section_8_text": "İşbu Sözleşme'den doğacak uyuşmazlıklarda Türk Hukuku uygulanacak olup, ilgili Mahkemeler ve İcra Daireleri yetkilidir.",
 		"section_9_title": "9. İletişim",
@@ -1909,10 +1909,10 @@
 	"privacy": {
 		"title": "Gizlilik Politikası ve KVKK Aydınlatma Metni",
 		"last_update": "Son güncelleme: 9 Şubat 2026",
-		"intro_1": "Zkt-Timer (\"Platform\", \"Biz\") olarak, kullanıcılarımızın (\"Kullanıcı\", \"Siz\") kişisel verilerinin güvenliğine ve gizliliğine büyük önem veriyoruz. Bu metin, 6698 sayılı Kişisel Verilerin Korunması Kanunu (\"KVKK\") ve ilgili mevzuat uyarınca kişisel verilerinizin işlenmesi, saklanması ve aktarılması hakkında sizleri aydınlatmak amacıyla hazırlanmıştır.",
+		"intro_1": "Zkt Timer (\"Platform\", \"Biz\") olarak, kullanıcılarımızın (\"Kullanıcı\", \"Siz\") kişisel verilerinin güvenliğine ve gizliliğine büyük önem veriyoruz. Bu metin, 6698 sayılı Kişisel Verilerin Korunması Kanunu (\"KVKK\") ve ilgili mevzuat uyarınca kişisel verilerinizin işlenmesi, saklanması ve aktarılması hakkında sizleri aydınlatmak amacıyla hazırlanmıştır.",
 		"intro_2": "Platformumuzu kullanarak, bu Gizlilik Politikasını ve KVKK Aydınlatma Metnini kabul etmiş sayılırsınız.",
 		"section_1_title": "1. Veri Sorumlusu",
-		"section_1_text": "KVKK uyarınca, kişisel verileriniz; Zkt-Timer Platformu tarafından veri sorumlusu sıfatıyla aşağıda açıklanan kapsamda işlenebilecektir.",
+		"section_1_text": "KVKK uyarınca, kişisel verileriniz; Zkt Timer Platformu tarafından veri sorumlusu sıfatıyla aşağıda açıklanan kapsamda işlenebilecektir.",
 		"section_2_title": "2. Kişisel Verilerin İşlenme Amacı",
 		"section_2_text": "Kişisel verileriniz aşağıdaki amaçlarla işlenmektedir:",
 		"section_2_item_1": "Platform üyelik işlemlerinin gerçekleştirilmesi.",
@@ -1955,7 +1955,7 @@
 		"section_6_item_8": "Kişisel verilerin kanuna aykırı olarak işlenmesi sebebiyle zarara uğramanız hâlinde zararın giderilmesini talep etme.",
 		"section_6_contact": "Bu haklarınızı kullanmak için bizimle <a href=\"mailto:ibrhyyme@icloud.com\">ibrhyyme@icloud.com</a> adresinden iletişime geçebilirsiniz.",
 		"cookie_title": "Çerez Politikası (Cookie Policy)",
-		"cookie_intro": "Zkt-Timer olarak, kullanıcı deneyimini iyileştirmek ve hizmet kalitemizi artırmak amacıyla çerezler (cookies) kullanmaktayız.",
+		"cookie_intro": "Zkt Timer olarak, kullanıcı deneyimini iyileştirmek ve hizmet kalitemizi artırmak amacıyla çerezler (cookies) kullanmaktayız.",
 		"cookie_section_1_title": "1. Çerez Nedir?",
 		"cookie_section_1_text": "Çerezler, ziyaret ettiğiniz web siteleri tarafından tarayıcınız aracılığıyla cihazınıza veya ağ sunucusuna depolanan küçük metin dosyalarıdır.",
 		"cookie_section_2_title": "2. Kullanılan Çerez Türleri",
@@ -1984,7 +1984,7 @@
 	},
 	"welcome_mobile": {
 		"title": "Her Zaman Yanınızda",
-		"description": "Mobil uyumlu arayüzü ile ZKT-Timer'ı her yerden kullanabilirsiniz. Uygulama indirmeye gerek yok.",
+		"description": "Mobil uyumlu arayüzü ile Zkt Timer'ı her yerden kullanabilirsiniz. Uygulama indirmeye gerek yok.",
 		"label_timer": "Zamanlayıcı",
 		"label_solves": "Çözümler",
 		"label_smart_cube": "Smart Cube",
@@ -2005,7 +2005,7 @@
 	"welcome_footer": {
 		"cta_title": "Topluluğumuza Katılın",
 		"cta_description": "Sosyal medyada bizi takip edin, yeni içeriklerden haberdar olun ve speedcubing topluluğunun bir parçası olun!",
-		"copyright": "© {{year}} ZKT-Timer. Created and Designed by",
+		"copyright": "© {{year}} Zkt Timer. Created and Designed by",
 		"privacy": "Gizlilik",
 		"terms": "Sözleşme",
 		"credits": "Teşekkürler"
@@ -2025,7 +2025,7 @@
 			},
 			"data_import": {
 				"title": "Veri Aktarımı",
-				"desc": "Geçmiş çözümlerini tek tıkla Zkt-Timer'a taşı."
+				"desc": "Geçmiş çözümlerini tek tıkla Zkt Timer'a taşı."
 			},
 			"smart_cube": {
 				"title": "Akıllı Küp Detaylı Analiz",

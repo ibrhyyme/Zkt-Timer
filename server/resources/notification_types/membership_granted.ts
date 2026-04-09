@@ -18,7 +18,7 @@ export default class MembershipGrantedNotification extends Notification {
 
 	subject() {
 		const label = this.membershipType === 'premium' ? 'Premium' : 'Pro';
-		return `Tebrikler! Zkt-Timer ${label} uyeliginiz aktif`;
+		return `Tebrikler! Zkt Timer ${label} uyeliginiz aktif`;
 	}
 
 	inAppMessage() {
@@ -32,9 +32,9 @@ export default class MembershipGrantedNotification extends Notification {
 	message() {
 		const label = this.membershipType === 'premium' ? 'Premium' : 'Pro';
 		if (this.expiresAt) {
-			return `Tebrikler! Zkt-Timer ${label} uyeliginiz basariyla aktif edildi. Uyeliginiz ${this.formatDate(this.expiresAt)} tarihine kadar gecerlidir.`;
+			return `Tebrikler! Zkt Timer ${label} uyeliginiz basariyla aktif edildi. Uyeliginiz ${this.formatDate(this.expiresAt)} tarihine kadar gecerlidir.`;
 		}
-		return `Tebrikler! Zkt-Timer ${label} uyeliginiz basariyla aktif edildi. Uyeliginiz suresizdir.`;
+		return `Tebrikler! Zkt Timer ${label} uyeliginiz basariyla aktif edildi. Uyeliginiz suresizdir.`;
 	}
 
 	icon() {

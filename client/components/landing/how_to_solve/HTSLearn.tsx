@@ -11,7 +11,7 @@ export default function HTSLearn() {
 				<div className="mb-6 flex w-full flex-row items-end justify-between border-b-4 border-solid border-slate-200 pb-4">
 					<div>
 						<h1 className="text-xl text-slate-700">How to solve the Rubik's Cube</h1>
-						<h2 className="text-lg text-slate-400">By Zkt-Timer</h2>
+						<h2 className="text-lg text-slate-400">By Zkt Timer</h2>
 					</div>
 					<div>
 						<Button primary large text="Next Step" icon={<ArrowRight />} to="/timer" />

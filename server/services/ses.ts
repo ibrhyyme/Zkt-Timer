@@ -59,7 +59,7 @@ export async function sendBulkEmailDirect(
 			await sendEmailWithTemplate(user, subject, 'notification', {
 				message: content,
 				link: 'https://zktimer.app',
-				linkText: "Zkt-Timer'a Git"
+				linkText: "Zkt Timer'a Git"
 			});
 			successCount++;
 		} catch (error) {
@@ -79,7 +79,7 @@ async function sendEmail(email: string, subject: string, body: string) {
 
 	try {
 		const data = await resend.emails.send({
-			from: 'Zkt-Timer <noreply@zktimer.app>',
+			from: 'Zkt Timer <noreply@zktimer.app>',
 			to: [email],
 			subject: subject,
 			html: content,

@@ -83,7 +83,7 @@
 		"delete_account_warning": "Ten cuidado aquí. Si haces clic en el botón de abajo, eliminarás toda tu cuenta. Todas tus resoluciones, datos de sesión, estadísticas, etc. serán eliminados permanentemente. Procede con precaución.",
 		"delete_account_button": "Eliminar cuenta",
 		"delete_account_title": "Eliminar cuenta",
-		"delete_account_confirm_desc": "Ten cuidado aquí. Estás a punto de eliminar toda tu cuenta. Todos tus datos de Zkt-Timer serán eliminados y no podrán recuperarse.",
+		"delete_account_confirm_desc": "Ten cuidado aquí. Estás a punto de eliminar toda tu cuenta. Todos tus datos de Zkt Timer serán eliminados y no podrán recuperarse.",
 		"delete_account_confirm_button": "Eliminar cuenta y todos los datos"
 	},
 	"admin_announcements": {
@@ -179,7 +179,7 @@
 		"create_button": "Crear sala"
 	},
 	"trainer": {
-		"page_title": "Zkt-Timer | Entrenador de algoritmos",
+		"page_title": "Zkt Timer | Entrenador de algoritmos",
 		"title": "Entrenador de algoritmos",
 		"coming_soon": "¡Próximamente!",
 		"description": "¡Esta página estará disponible muy pronto! 🚀 F2L, OLL, PLL, ZBLL y más conjuntos de algoritmos, soporte para cubos inteligentes y funciones avanzadas de seguimiento de rendimiento próximamente.",
@@ -464,7 +464,7 @@
 	},
 	"maintenance": {
 		"title": "Estamos en mantenimiento",
-		"description": "Estamos mejorando la infraestructura de Zkt-Timer. ¡Volveremos pronto!",
+		"description": "Estamos mejorando la infraestructura de Zkt Timer. ¡Volveremos pronto!",
 		"thanks": "Gracias por tu paciencia 💙"
 	},
 	"site_config": {
@@ -598,7 +598,7 @@
 	},
 	"notification_prefs": {
 		"email_notifications": "Notificaciones por correo electrónico",
-		"marketing_emails": "Consejos, actualizaciones y otros correos de Zkt-Timer"
+		"marketing_emails": "Consejos, actualizaciones y otros correos de Zkt Timer"
 	},
 	"announcement_dropdown": {
 		"title": "Anuncios",
@@ -610,7 +610,7 @@
 	},
 	"orientation_warning": {
 		"title": "Por favor rota tu dispositivo",
-		"text": "ZKT-Timer está diseñado para la mejor experiencia en modo vertical en dispositivos móviles."
+		"text": "Zkt Timer está diseñado para la mejor experiencia en modo vertical en dispositivos móviles."
 	},
 	"settings": {
 		"page_title": "Configuración",
@@ -737,10 +737,10 @@
 		"export_button": "Exportar datos",
 		"export_success": "Todos los datos de resoluciones y sesiones se descargaron exitosamente.",
 		"import_data": "Importar datos",
-		"import_data_desc": "Importar datos desde csTimer o Zkt-Timer",
+		"import_data_desc": "Importar datos desde csTimer o Zkt Timer",
 		"import_button": "Importar datos",
 		"import_cstimer": "Importar desde csTimer",
-		"import_zkttimer": "Importar desde respaldo de Zkt-Timer",
+		"import_zkttimer": "Importar desde respaldo de Zkt Timer",
 		"reset_settings": "Restablecer configuración",
 		"reset_settings_desc": "Restablecer toda la configuración a los valores predeterminados (excepto tipos de cubo personalizados)",
 		"reset_settings_button": "Restablecer configuración",
@@ -829,7 +829,7 @@
 		"add_cube_type": "Incluir tipo de cubo",
 		"add_date": "Incluir fecha",
 		"wrap_text": "Ajustar texto",
-		"generated_by": "Generado por ZKT-Timer el {{date}}",
+		"generated_by": "Generado por Zkt Timer el {{date}}",
 		"single_solve": "Resolución individual",
 		"view_as_stats": "Ver como estadísticas",
 		"tps": "TPS",
@@ -887,7 +887,7 @@
 		"create_session": "Crear sesión",
 		"create_session_error": "Error del servidor: No se pudo crear la sesión",
 		"create_new_session_title": "Crear nueva sesión",
-		"create_new_session_desc": "Las sesiones en Zkt-Timer pueden tener múltiples tipos de cubo. Puedes dividir las sesiones como quieras: por tipo de cubo, por día, etc.",
+		"create_new_session_desc": "Las sesiones en Zkt Timer pueden tener múltiples tipos de cubo. Puedes dividir las sesiones como quieras: por tipo de cubo, por día, etc.",
 		"new_session_placeholder": "Nueva sesión",
 		"cube_type": "Tipo de cubo",
 		"cube_type_info": "No te preocupes :) Esto se puede cambiar después"
@@ -1344,9 +1344,9 @@
 		"preview": "Vista previa",
 		"email_greeting": "Hola Usuario,",
 		"content_preview_placeholder": "El contenido del correo aparecerá aquí...",
-		"go_to_zkttimer": "Ir a Zkt-Timer",
+		"go_to_zkttimer": "Ir a Zkt Timer",
 		"regards": "Saludos cordiales,",
-		"team": "Equipo de Zkt-Timer",
+		"team": "Equipo de Zkt Timer",
 		"clear": "Limpiar",
 		"sending": "Enviando...",
 		"send_button": "Enviar correo",
@@ -1369,33 +1369,33 @@
 		"select_people": "Seleccionar {{count}} personas"
 	},
 	"seo": {
-		"home_title": "ZKT Timer | Cronómetro Online de Cubo Rubik y Plataforma de Speedcubing",
+		"home_title": "Zkt Timer | Cronómetro Online de Cubo Rubik y Plataforma de Speedcubing",
 		"home_description": "El cronómetro online de cubo Rubik más avanzado con salas de carreras en vivo, entrenador de algoritmos, soporte para cubos inteligentes y clasificaciones globales. Todos los eventos WCA: 3x3, 2x2, 4x4, Pyraminx, Megaminx y más.",
-		"timer_title": "Cronómetro de Cubo Rubik - Zkt-Timer",
+		"timer_title": "Cronómetro de Cubo Rubik - Zkt Timer",
 		"timer_description": "Cronómetro profesional de cubo Rubik. Precisión de milisegundos, algoritmos de mezcla WCA, soporte para cubos inteligentes y análisis detallado de rendimiento. El mejor cronómetro online para speedcubing.",
-		"login_title": "Iniciar sesión - Zkt-Timer",
-		"login_description": "Inicia sesión en tu cuenta de ZKT Timer. Guarda tus resoluciones, sigue tus estadísticas y ocupa tu lugar en las clasificaciones.",
-		"signup_title": "Crear cuenta - Zkt-Timer",
+		"login_title": "Iniciar sesión - Zkt Timer",
+		"login_description": "Inicia sesión en tu cuenta de Zkt Timer. Guarda tus resoluciones, sigue tus estadísticas y ocupa tu lugar en las clasificaciones.",
+		"signup_title": "Crear cuenta - Zkt Timer",
 		"signup_description": "¡Únete a una de las comunidades de cubo Rubik más grandes! Crea una cuenta, guarda tus resoluciones y compite con cuberos de todo el mundo.",
-		"forgot_password_title": "Restablecer contraseña - Zkt-Timer",
-		"forgot_password_description": "Restablece la contraseña de tu cuenta de ZKT Timer. Establece una nueva contraseña con el enlace enviado a tu correo electrónico.",
-		"rooms_title": "Salas de carreras en vivo - Zkt-Timer",
+		"forgot_password_title": "Restablecer contraseña - Zkt Timer",
+		"forgot_password_description": "Restablece la contraseña de tu cuenta de Zkt Timer. Establece una nueva contraseña con el enlace enviado a tu correo electrónico.",
+		"rooms_title": "Salas de carreras en vivo - Zkt Timer",
 		"rooms_description": "¡Compite contra otros cuberos en tiempo real! Crea salas con amigos o únete a salas abiertas. La mejor plataforma para competencias de speedcubing.",
-		"settings_title": "Configuración de usuario - Zkt-Timer",
+		"settings_title": "Configuración de usuario - Zkt Timer",
 		"settings_description": "Personaliza la configuración de tu timer, apariencia y preferencias de cuenta.",
 		"user_fallback": "Usuario",
-		"user_profile_title": "{{username}} - Perfil de cubero | Zkt-Timer",
+		"user_profile_title": "{{username}} - Perfil de cubero | Zkt Timer",
 		"user_profile_description": "Perfil de cubo Rubik de {{username}}. Récords, estadísticas de resoluciones e historial de competencias.",
-		"trainer_title": "Entrenador de algoritmos - Zkt-Timer",
+		"trainer_title": "Entrenador de algoritmos - Zkt Timer",
 		"trainer_description": "Aprende algoritmos de F2L, OLL, PLL y más. Entrena con cubo 3D interactivo y mejora tu velocidad.",
-		"stats_title": "Estadísticas de resoluciones - Zkt-Timer",
+		"stats_title": "Estadísticas de resoluciones - Zkt Timer",
 		"stats_description": "Analiza tu rendimiento en el cubo Rubik. Promedios, mejores tiempos, gráficos y estadísticas detalladas.",
-		"solves_title": "Historial de resoluciones - Zkt-Timer",
+		"solves_title": "Historial de resoluciones - Zkt Timer",
 		"solves_description": "Ve todas tus resoluciones del cubo Rubik. Análisis de rendimiento con mezcla, tiempo y detalles de resolución.",
-		"leaderboards_title": "Clasificaciones - Zkt-Timer",
+		"leaderboards_title": "Clasificaciones - Zkt Timer",
 		"leaderboards_description": "¡Los resolvedores de cubo Rubik más rápidos! Récords individuales y de promedio, clasificaciones por categoría.",
-		"demo_title": "Modo demo - Zkt-Timer",
-		"demo_description": "¡Prueba ZKT Timer! Explora las funciones del timer sin crear una cuenta.",
+		"demo_title": "Modo demo - Zkt Timer",
+		"demo_description": "¡Prueba Zkt Timer! Explora las funciones del timer sin crear una cuenta.",
 		"app_description": "La aplicación de cronómetro de cubo Rubik más avanzada. Plataforma profesional de speedcubing.",
 		"feature_list": ["Cronómetro de cubo Rubik", "Cronómetro de speedcubing", "Salas de carreras en vivo", "Clasificaciones globales", "Entrenador de algoritmos", "Soporte para cubos inteligentes", "Soporte para Stackmat Timer"],
 		"nav_timer_desc": "Cronómetro profesional de cubo Rubik",
@@ -1410,12 +1410,12 @@
 		"breadcrumb_home": "Inicio",
 		"keywords": "cronómetro cubo rubik, cubo rubik timer, speedcubing, cronómetro rubik online, cubo rubik, rubik timer, 3x3 timer, 2x2 timer, 4x4 timer, cubing, puzzle cube, algoritmos cubo rubik",
 		"faq": [
-			{"q": "¿Qué es ZKT Timer?", "a": "ZKT Timer es una de las plataformas de cronómetro de cubo Rubik más avanzadas. Mide tus tiempos de speedcubing con precisión de milisegundos, proporciona algoritmos de mezcla WCA oficiales, estadísticas detalladas y análisis de rendimiento. Incluye salas de carreras en vivo, clasificaciones globales, soporte para cubos inteligentes y entrenador de algoritmos."},
-			{"q": "¿Cómo funciona ZKT Timer?", "a": "Regístrate y comienza de inmediato. Las funciones principales como el cronómetro, estadísticas, carreras online, entrenador y clasificaciones están disponibles. Actualiza a la membresía Pro para funciones premium adicionales."},
-			{"q": "¿Qué tipos de cubos soporta?", "a": "ZKT Timer soporta todas las categorías oficiales de la WCA: 2x2, 3x3, 4x4, 5x5, 6x6, 7x7; Pyraminx, Megaminx, Skewb, Square-1, Clock; 3x3 una mano, 3x3 con los ojos vendados y más. Se utilizan algoritmos de mezcla oficiales de la WCA."},
-			{"q": "¿Puedo usarlo sin conexión a internet?", "a": "¡Sí! ZKT Timer funciona sin conexión gracias a la tecnología PWA. Después de instalar la app desde la opción 'Agregar a pantalla de inicio', puedes usar el cronómetro sin internet. Tus datos se sincronizan automáticamente al reconectarte."},
-			{"q": "¿Es un cronómetro oficial de la WCA?", "a": "ZKT Timer utiliza algoritmos de mezcla oficiales de la WCA y está diseñado para entrenamiento. Los Stackmat Timer físicos son obligatorios en competencias oficiales de la WCA. ZKT Timer es ideal para práctica, entrenamiento y seguimiento de estadísticas."},
-			{"q": "¿En qué dispositivos funciona?", "a": "ZKT Timer funciona en todos los navegadores modernos. Compatible con Windows, macOS, Linux, Android e iOS. Se puede instalar como PWA en tu teléfono. También es compatible con Smart Cubes (GAN, MoYu) y Stackmat Timer."},
+			{"q": "¿Qué es Zkt Timer?", "a": "Zkt Timer es una de las plataformas de cronómetro de cubo Rubik más avanzadas. Mide tus tiempos de speedcubing con precisión de milisegundos, proporciona algoritmos de mezcla WCA oficiales, estadísticas detalladas y análisis de rendimiento. Incluye salas de carreras en vivo, clasificaciones globales, soporte para cubos inteligentes y entrenador de algoritmos."},
+			{"q": "¿Cómo funciona Zkt Timer?", "a": "Regístrate y comienza de inmediato. Las funciones principales como el cronómetro, estadísticas, carreras online, entrenador y clasificaciones están disponibles. Actualiza a la membresía Pro para funciones premium adicionales."},
+			{"q": "¿Qué tipos de cubos soporta?", "a": "Zkt Timer soporta todas las categorías oficiales de la WCA: 2x2, 3x3, 4x4, 5x5, 6x6, 7x7; Pyraminx, Megaminx, Skewb, Square-1, Clock; 3x3 una mano, 3x3 con los ojos vendados y más. Se utilizan algoritmos de mezcla oficiales de la WCA."},
+			{"q": "¿Puedo usarlo sin conexión a internet?", "a": "¡Sí! Zkt Timer funciona sin conexión gracias a la tecnología PWA. Después de instalar la app desde la opción 'Agregar a pantalla de inicio', puedes usar el cronómetro sin internet. Tus datos se sincronizan automáticamente al reconectarte."},
+			{"q": "¿Es un cronómetro oficial de la WCA?", "a": "Zkt Timer utiliza algoritmos de mezcla oficiales de la WCA y está diseñado para entrenamiento. Los Stackmat Timer físicos son obligatorios en competencias oficiales de la WCA. Zkt Timer es ideal para práctica, entrenamiento y seguimiento de estadísticas."},
+			{"q": "¿En qué dispositivos funciona?", "a": "Zkt Timer funciona en todos los navegadores modernos. Compatible con Windows, macOS, Linux, Android e iOS. Se puede instalar como PWA en tu teléfono. También es compatible con Smart Cubes (GAN, MoYu) y Stackmat Timer."},
 			{"q": "¿Están seguros mis datos?", "a": "Sí, todos los registros de resoluciones e información de cuenta se almacenan de forma segura. Tus datos se mantienen tanto en el servidor como en la base de datos local de tu navegador. Puedes eliminar tu cuenta y todos tus datos en cualquier momento."},
 			{"q": "¿Cómo puedo unirme a carreras online?", "a": "Crea una cuenta, luego únete a salas de carreras abiertas o crea salas privadas con amigos desde la sección 'Salas'. Se realizan carreras en tiempo real y puedes subir en las clasificaciones."}
 		]
@@ -1582,8 +1582,8 @@
 		"loading": "Iniciando sesion con WCA..."
 	},
 	"login_wrapper": {
-		"login_title": "Zkt-Timer | Iniciar sesión",
-		"signup_title": "Zkt-Timer | Registrarse",
+		"login_title": "Zkt Timer | Iniciar sesión",
+		"signup_title": "Zkt Timer | Registrarse",
 		"reset_password": "Restablecer contraseña",
 		"verify_email": "Verificación de correo",
 		"welcome": "Bienvenido",
@@ -1760,7 +1760,7 @@
 			},
 			"data_import": {
 				"title": "Importación de datos",
-				"desc": "¿Usabas CSTimer, ZKTTimer o TwistyTimer? No pierdas años de esfuerzo — importa todas tus resoluciones pasadas, tiempos y estadísticas a Zkt-Timer en un solo clic. En vez de empezar desde cero, continúa justo donde lo dejaste."
+				"desc": "¿Usabas CSTimer, ZKTTimer o TwistyTimer? No pierdas años de esfuerzo — importa todas tus resoluciones pasadas, tiempos y estadísticas a Zkt Timer en un solo clic. En vez de empezar desde cero, continúa justo donde lo dejaste."
 			},
 			"stats_customization": {
 				"title": "Personalización de estadísticas",
@@ -1882,25 +1882,25 @@
 	"terms": {
 		"title": "Términos de Servicio",
 		"last_update": "Última actualización: 9 de febrero de 2026",
-		"intro": "Lea atentamente estos Términos de Servicio (\"Acuerdo\") antes de utilizar los servicios de Zkt-Timer (\"Plataforma\"). Al acceder o utilizar la Plataforma, usted acepta estar sujeto a este Acuerdo.",
+		"intro": "Lea atentamente estos Términos de Servicio (\"Acuerdo\") antes de utilizar los servicios de Zkt Timer (\"Plataforma\"). Al acceder o utilizar la Plataforma, usted acepta estar sujeto a este Acuerdo.",
 		"section_1_title": "1. Partes",
-		"section_1_text": "Este Acuerdo se celebra entre Zkt-Timer y el usuario (\"Usuario\") que utiliza la Plataforma.",
+		"section_1_text": "Este Acuerdo se celebra entre Zkt Timer y el usuario (\"Usuario\") que utiliza la Plataforma.",
 		"section_2_title": "2. Alcance del Servicio",
-		"section_2_text": "Zkt-Timer es una plataforma que ofrece a sus usuarios un cronómetro en línea para cubos de velocidad, seguimiento de estadísticas, algoritmos y herramientas de entrenamiento relacionadas. La Plataforma se proporciona \"tal cual\" y no se garantiza que sea ininterrumpida o libre de errores.",
+		"section_2_text": "Zkt Timer es una plataforma que ofrece a sus usuarios un cronómetro en línea para cubos de velocidad, seguimiento de estadísticas, algoritmos y herramientas de entrenamiento relacionadas. La Plataforma se proporciona \"tal cual\" y no se garantiza que sea ininterrumpida o libre de errores.",
 		"section_3_title": "3. Membresía y Condiciones de Uso",
 		"section_3_item_1": "El Usuario declara que la información proporcionada durante el registro es precisa y actualizada.",
 		"section_3_item_2": "Los usuarios menores de 18 años deben haber obtenido el consentimiento de sus padres o tutor legal para usar la Plataforma.",
 		"section_3_item_3": "El Usuario solo puede utilizar la Plataforma con fines lícitos. Se prohíben las actividades que amenacen la seguridad de la Plataforma, perjudiquen a otros usuarios o interrumpan el funcionamiento del sistema.",
 		"section_3_item_4": "El Usuario es el único responsable de la seguridad de su cuenta (contraseñas, etc.). Cualquier uso no autorizado de la cuenta debe ser informado inmediatamente a la Plataforma.",
-		"section_3_item_5": "Zkt-Timer se reserva el derecho de suspender o cancelar la membresía del Usuario sin necesidad de proporcionar motivo alguno.",
+		"section_3_item_5": "Zkt Timer se reserva el derecho de suspender o cancelar la membresía del Usuario sin necesidad de proporcionar motivo alguno.",
 		"section_4_title": "4. Derechos de Propiedad Intelectual",
-		"section_4_text": "Todo el software, diseños, contenido, imágenes y marcas comerciales de la Plataforma pertenecen a Zkt-Timer o a sus licenciantes. Los usuarios no pueden copiar, reproducir, distribuir ni utilizar este contenido con fines comerciales.",
+		"section_4_text": "Todo el software, diseños, contenido, imágenes y marcas comerciales de la Plataforma pertenecen a Zkt Timer o a sus licenciantes. Los usuarios no pueden copiar, reproducir, distribuir ni utilizar este contenido con fines comerciales.",
 		"section_5_title": "5. Exención de Responsabilidad",
-		"section_5_text": "Zkt-Timer no será responsable por la pérdida de datos, errores de conexión o incompatibilidades de hardware que puedan ocurrir durante el uso de la Plataforma. El acceso a enlaces de terceros es responsabilidad exclusiva del Usuario.",
+		"section_5_text": "Zkt Timer no será responsable por la pérdida de datos, errores de conexión o incompatibilidades de hardware que puedan ocurrir durante el uso de la Plataforma. El acceso a enlaces de terceros es responsabilidad exclusiva del Usuario.",
 		"section_6_title": "6. Servicios de Pago y Reembolsos",
 		"section_6_text": "Algunos servicios de la Plataforma pueden estar sujetos a tarifas. Los pagos se procesan a través de infraestructura de pago segura (ej. Stripe). Dado que el contenido y los servicios digitales se entregan de forma inmediata por naturaleza, es posible que no se realicen reembolsos, sujeto a obligaciones legales.",
 		"section_7_title": "7. Cambios en el Acuerdo",
-		"section_7_text": "Zkt-Timer se reserva el derecho de actualizar este Acuerdo en cualquier momento. Los términos actualizados entran en vigor en la fecha de su publicación en la Plataforma. Se recomienda a los usuarios revisar periódicamente esta página.",
+		"section_7_text": "Zkt Timer se reserva el derecho de actualizar este Acuerdo en cualquier momento. Los términos actualizados entran en vigor en la fecha de su publicación en la Plataforma. Se recomienda a los usuarios revisar periódicamente esta página.",
 		"section_8_title": "8. Resolución de Disputas",
 		"section_8_text": "Las disputas derivadas de este Acuerdo se regirán por la legislación turca, y los Tribunales y Oficinas de Ejecución correspondientes tendrán jurisdicción.",
 		"section_9_title": "9. Contacto",
@@ -1910,10 +1910,10 @@
 	"privacy": {
 		"title": "Política de Privacidad y Aviso de Protección de Datos",
 		"last_update": "Última actualización: 9 de febrero de 2026",
-		"intro_1": "En Zkt-Timer (\"Plataforma\", \"Nosotros\"), otorgamos gran importancia a la seguridad y privacidad de los datos personales de nuestros usuarios (\"Usuario\", \"Usted\"). Este aviso ha sido preparado de conformidad con la Ley de Protección de Datos Personales de Turquía N.° 6698 (\"KVKK\") y la legislación relacionada para informarle sobre el procesamiento, almacenamiento y transferencia de sus datos personales.",
+		"intro_1": "En Zkt Timer (\"Plataforma\", \"Nosotros\"), otorgamos gran importancia a la seguridad y privacidad de los datos personales de nuestros usuarios (\"Usuario\", \"Usted\"). Este aviso ha sido preparado de conformidad con la Ley de Protección de Datos Personales de Turquía N.° 6698 (\"KVKK\") y la legislación relacionada para informarle sobre el procesamiento, almacenamiento y transferencia de sus datos personales.",
 		"intro_2": "Al utilizar nuestra Plataforma, se considera que ha aceptado esta Política de Privacidad y el Aviso de Protección de Datos.",
 		"section_1_title": "1. Responsable del Tratamiento",
-		"section_1_text": "De conformidad con la KVKK, sus datos personales pueden ser procesados por la Plataforma Zkt-Timer en calidad de responsable del tratamiento dentro del alcance descrito a continuación.",
+		"section_1_text": "De conformidad con la KVKK, sus datos personales pueden ser procesados por la Plataforma Zkt Timer en calidad de responsable del tratamiento dentro del alcance descrito a continuación.",
 		"section_2_title": "2. Finalidad del Tratamiento de Datos Personales",
 		"section_2_text": "Sus datos personales se procesan con las siguientes finalidades:",
 		"section_2_item_1": "Realización de procedimientos de membresía en la Plataforma.",
@@ -1956,7 +1956,7 @@
 		"section_6_item_8": "Reclamar una indemnización por daños derivados del procesamiento ilegal de datos personales.",
 		"section_6_contact": "Para ejercer estos derechos, puede contactarnos en <a href=\"mailto:ibrhyyme@icloud.com\">ibrhyyme@icloud.com</a>.",
 		"cookie_title": "Política de Cookies",
-		"cookie_intro": "En Zkt-Timer, utilizamos cookies para mejorar la experiencia del usuario y aumentar la calidad de nuestro servicio.",
+		"cookie_intro": "En Zkt Timer, utilizamos cookies para mejorar la experiencia del usuario y aumentar la calidad de nuestro servicio.",
 		"cookie_section_1_title": "1. ¿Qué Son las Cookies?",
 		"cookie_section_1_text": "Las cookies son pequeños archivos de texto almacenados en su dispositivo o servidor de red a través de su navegador por los sitios web que visita.",
 		"cookie_section_2_title": "2. Tipos de Cookies Utilizadas",
@@ -1986,7 +1986,7 @@
 	},
 	"welcome_mobile": {
 		"title": "Siempre a Tu Lado",
-		"description": "Usa ZKT-Timer desde cualquier lugar con su interfaz optimizada para móviles. No necesitas descargar ninguna aplicación.",
+		"description": "Usa Zkt Timer desde cualquier lugar con su interfaz optimizada para móviles. No necesitas descargar ninguna aplicación.",
 		"label_timer": "Cronómetro",
 		"label_solves": "Resoluciones",
 		"label_smart_cube": "Smart Cube",
@@ -2007,7 +2007,7 @@
 	"welcome_footer": {
 		"cta_title": "Únete a Nuestra Comunidad",
 		"cta_description": "Síguenos en redes sociales, mantente al día con nuevo contenido y forma parte de la comunidad de speedcubing.",
-		"copyright": "© {{year}} ZKT-Timer. Created and Designed by",
+		"copyright": "© {{year}} Zkt Timer. Created and Designed by",
 		"privacy": "Privacidad",
 		"terms": "Términos",
 		"credits": "Créditos"
@@ -2019,7 +2019,7 @@
 		"modal": {
 			"room_music": { "title": "Música en las Salas", "desc": "Escucha tu música favorita sin anuncios mientras resuelves en salas. Desbloquea la experiencia musical con Pro." },
 			"leaderboard": { "title": "Destaca en la Tabla de Líderes", "desc": "Publica tus mejores resoluciones e inspira a otros speedcubers." },
-			"data_import": { "title": "Importación de Datos", "desc": "Trae tu historial de resoluciones a Zkt-Timer en un clic." },
+			"data_import": { "title": "Importación de Datos", "desc": "Trae tu historial de resoluciones a Zkt Timer en un clic." },
 			"smart_cube": { "title": "Análisis Profundo de Cubo Inteligente", "desc": "Analiza tus resoluciones paso a paso y ve cada detalle." },
 			"themes": { "title": "Temas Exclusivos", "desc": "Dale personalidad a tu temporizador con 6 temas exclusivos." },
 			"stats": { "title": "Personalización de Estadísticas", "desc": "Configura los módulos de estadísticas exactamente como quieras." },

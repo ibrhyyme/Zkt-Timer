@@ -60,8 +60,8 @@ export default function SolvePage() {
 		<div className={b()}>
 			<Header
 				path={`/solve/${shareCode}`}
-				title={`${getTimeString(solve.time)} Solve for ${ct.name} by ${user} | Zkt-Timer`}
-				description={`View the details of this ${time} ${cubeType} solve by ${user}. Zkt-Timer is the most advanced speedcubing timer, analytics, and trainer application.`}
+				title={`${getTimeString(solve.time)} Solve for ${ct.name} by ${user} | Zkt Timer`}
+				description={`View the details of this ${time} ${cubeType} solve by ${user}. Zkt Timer is the most advanced speedcubing timer, analytics, and trainer application.`}
 			/>
 			<div className={b('body')}>
 				<SolveInfo disabled solve={solve} solveId={solve?.id} />

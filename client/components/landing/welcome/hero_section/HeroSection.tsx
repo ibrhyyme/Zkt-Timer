@@ -107,7 +107,7 @@ export default function HeroSection() {
 					<motion.div className={b('logo-wrap')} variants={fadeInUp}>
 						<img
 							src="/public/images/zkt-logo.png"
-							alt="ZKT-Timer Logo"
+							alt="Zkt Timer Logo"
 							className={b('logo')}
 						/>
 					</motion.div>

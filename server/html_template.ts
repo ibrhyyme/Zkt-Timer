@@ -41,7 +41,7 @@ export default (payload: HtmlPagePayload) => {
 				<!-- iOS -->
 				<meta name="mobile-web-app-capable" content="yes">
 				<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-				<meta name="apple-mobile-web-app-title" content="Zkt-Timer">
+				<meta name="apple-mobile-web-app-title" content="Zkt Timer">
 				<!-- iOS Ana Ekran İkonu (Mutlaka PNG olmalı, SVG desteklenmez) -->
 				<link rel="apple-touch-icon" href="${resourceBase}/images/apple-touch-icon.png">
 				<link rel="apple-touch-icon" sizes="152x152" href="${resourceBase}/images/apple-touch-icon.png">

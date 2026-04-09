@@ -948,5 +948,5 @@ export async function generateTrainerPdf({category, categoryDescription, algorit
 
 	// Save
 	const safeName = category.replace(/[^a-zA-Z0-9]/g, '_');
-	doc.save(`Zkt-Timer_${safeName}.pdf`);
+	doc.save(`Zkt_Timer_${safeName}.pdf`);
 }

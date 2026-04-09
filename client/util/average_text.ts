@@ -12,7 +12,7 @@ export function generateAverageText(
 	const isSingle = solves.length === 1;
 	const dateStr = isSingle ? dayjs(solves[0].started_at).format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD');
 
-	lines.push('ZKT-Timer tarafından ' + dateStr + ' tarihinde oluşturuldu');
+	lines.push('Zkt Timer tarafından ' + dateStr + ' tarihinde oluşturuldu');
 
 	let desc = description;
 	if (time && getTimeString(time)) {

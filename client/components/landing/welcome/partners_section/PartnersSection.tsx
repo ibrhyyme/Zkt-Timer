@@ -148,7 +148,7 @@ export default function PartnersSection() {
 							<div className={b('card-logo')}>
 								<img
 									src={partner.logo}
-									alt={`${partner.name} - ${t(partner.descriptionKey)} - ZKT Timer`}
+									alt={`${partner.name} - ${t(partner.descriptionKey)} - Zkt Timer`}
 									loading="lazy"
 								/>
 							</div>
