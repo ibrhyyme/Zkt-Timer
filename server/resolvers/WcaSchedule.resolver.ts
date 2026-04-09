@@ -6,6 +6,8 @@ import {
 	WcaLiveRoundInput,
 	WcaLiveCompetitionOverview,
 	WcaLiveOverviewInput,
+	WcaLiveCompetitorResults,
+	WcaLiveCompetitorInput,
 } from '../schemas/WcaSchedule.schema';
 import {GraphQLContext} from '../@types/interfaces/server.interface';
 import {getIntegration} from '../models/integration';
@@ -28,6 +30,7 @@ const WCIF_CACHE_TTL = 60 * 60; // 1 saat — WCIF nadir degisir
 const WCA_LIVE_CACHE_TTL = 60 * 60;
 const WCA_LIVE_ROUND_TTL = 60;
 const WCA_LIVE_OVERVIEW_TTL = 60;
+const WCA_LIVE_COMPETITOR_TTL = 60;
 
 const WCA_LIVE_ENDPOINT = process.env.WCA_LIVE_API_URL || 'https://live.worldcubeassociation.org/api';
 
@@ -134,6 +137,47 @@ export class WcaScheduleResolver {
 		} catch (err: any) {
 			logger.warn('[WcaLive] round results failed', {
 				liveRoundId: input.liveRoundId,
+				error: err?.message || String(err),
+				errorType: getErrorType(err),
+			});
+			return null;
+		}
+	}
+
+	@Authorized()
+	@Query(() => WcaLiveCompetitorResults, {nullable: true})
+	async wcaLiveCompetitorResults(
+		@Arg('input') input: WcaLiveCompetitorInput
+	): Promise<WcaLiveCompetitorResults | null> {
+		try {
+			// personLiveId numerik olmali (WCA Live person ID), guvenlik icin sanitize
+			const sanitizedId = String(parseInt(input.personLiveId, 10));
+			if (sanitizedId === 'NaN') return null;
+
+			const cacheKey = createRedisKey(
+				RedisNamespace.WCA_WCIF,
+				`livecompetitor:${input.competitionId}:${sanitizedId}`
+			);
+
+			const result = await fetchDataFromCache(
+				cacheKey,
+				() => this.fetchLiveCompetitorResults(sanitizedId),
+				WCA_LIVE_COMPETITOR_TTL
+			);
+
+			// Bos/null sonuc geldiyse cache'i sil ki sonraki istek tekrar denesin
+			if (!result || !result.results || result.results.length === 0) {
+				try {
+					await deleteKeyInRedis(cacheKey);
+				} catch (err: any) {
+					logger.warn('[WcaLive] cache delete failed', {error: err?.message});
+				}
+			}
+
+			return result;
+		} catch (err: any) {
+			logger.warn('[WcaLive] competitor results failed', {
+				personLiveId: input.personLiveId,
 				error: err?.message || String(err),
 				errorType: getErrorType(err),
 			});
@@ -402,6 +446,62 @@ export class WcaScheduleResolver {
 				averageRecordTag: r.averageRecordTag || undefined,
 				advancing: !!r.advancing,
 				advancingQuestionable: !!r.advancingQuestionable,
+			})),
+		};
+	}
+
+	private async fetchLiveCompetitorResults(personLiveId: string): Promise<WcaLiveCompetitorResults | null> {
+		const axios = (await import('axios')).default;
+
+		const res = await axios.post(WCA_LIVE_ENDPOINT, {
+			query: `{ person(id: "${personLiveId}") {
+				id name wcaId
+				country { iso2 }
+				results {
+					ranking best average
+					attempts { result }
+					singleRecordTag averageRecordTag advancing advancingQuestionable
+					round {
+						number name
+						format { numberOfAttempts sortBy }
+						competitionEvent { event { id name } }
+					}
+				}
+			} }`,
+		}, {timeout: 8000});
+
+		const person = res.data?.data?.person;
+		if (!person) return null;
+
+		// Round'lari event ID'ye, sonra round number'a gore sirala
+		const sorted = (person.results || []).slice().sort((a: any, b: any) => {
+			const eA = a.round?.competitionEvent?.event?.id || '';
+			const eB = b.round?.competitionEvent?.event?.id || '';
+			if (eA !== eB) return eA.localeCompare(eB);
+			return (a.round?.number || 0) - (b.round?.number || 0);
+		});
+
+		return {
+			personName: person.name || '',
+			personWcaId: person.wcaId || undefined,
+			personCountryIso2: person.country?.iso2 || undefined,
+			results: sorted.map((r: any) => ({
+				eventId: r.round?.competitionEvent?.event?.id || '',
+				eventName: r.round?.competitionEvent?.event?.name || '',
+				roundNumber: r.round?.number || 0,
+				roundName: r.round?.name || '',
+				ranking: r.ranking ?? undefined,
+				best: r.best ?? 0,
+				average: r.average ?? 0,
+				attempts: (r.attempts || []).map((a: any) => ({result: a.result})),
+				singleRecordTag: r.singleRecordTag || undefined,
+				averageRecordTag: r.averageRecordTag || undefined,
+				advancing: !!r.advancing,
+				advancingQuestionable: !!r.advancingQuestionable,
+				format: r.round?.format ? {
+					numberOfAttempts: r.round.format.numberOfAttempts || 0,
+					sortBy: r.round.format.sortBy || 'best',
+				} : undefined,
 			})),
 		};
 	}

@@ -152,6 +152,7 @@ export const routes: (PageContext | RedirectPath)[] = [
 
 	// Community
 	route('/community/competitions/:competitionId/personal-bests/:wcaId', App, Community, MySchedule),
+	route('/community/competitions/:competitionId/persons/:registrantId/results', App, Community, MySchedule),
 	route('/community/competitions/:competitionId/persons/:registrantId', App, Community, MySchedule),
 	route('/community/competitions/:competitionId/activities/:activityCode', App, Community, MySchedule),
 	route('/community/competitions/:competitionId/wca-live/:eventId/:roundNumber', App, Community, MySchedule),

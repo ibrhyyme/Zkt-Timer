@@ -9,6 +9,7 @@ import CompetitionDetail from './CompetitionDetail';
 import CompetitorDetail from './CompetitorDetail';
 import ActivityDetail from './ActivityDetail';
 import PersonalBests from './PersonalBests';
+import CompetitorLiveResults from './wca_live/CompetitorLiveResults';
 import {resourceUri} from '../../../util/storage';
 
 // Code splitting: WCA Live tab sadece kullanildiginda yuklensin
@@ -24,9 +25,14 @@ function MyScheduleInner() {
 	const matchPersonalBests = useRouteMatch<{competitionId: string; wcaId: string}>(
 		'/community/competitions/:competitionId/personal-bests/:wcaId'
 	);
-	const matchPerson = useRouteMatch<{competitionId: string; registrantId: string}>(
-		'/community/competitions/:competitionId/persons/:registrantId'
-	);
+	const matchCompetitorResults = useRouteMatch<{competitionId: string; registrantId: string}>({
+		path: '/community/competitions/:competitionId/persons/:registrantId/results',
+		exact: true,
+	});
+	const matchPerson = useRouteMatch<{competitionId: string; registrantId: string}>({
+		path: '/community/competitions/:competitionId/persons/:registrantId',
+		exact: true,
+	});
 	const matchActivity = useRouteMatch<{competitionId: string; activityCode: string}>(
 		'/community/competitions/:competitionId/activities/:activityCode'
 	);
@@ -45,6 +51,7 @@ function MyScheduleInner() {
 
 	// competitionId'yi herhangi bir match'ten al
 	const competitionId = matchPersonalBests?.params.competitionId
+		|| matchCompetitorResults?.params.competitionId
 		|| matchPerson?.params.competitionId
 		|| matchActivity?.params.competitionId
 		|| matchWcaLiveRound?.params.competitionId
@@ -58,6 +65,8 @@ function MyScheduleInner() {
 
 		if (matchPersonalBests) {
 			child = <PersonalBests wcaId={matchPersonalBests.params.wcaId} />;
+		} else if (matchCompetitorResults) {
+			child = <CompetitorLiveResults registrantId={parseInt(matchCompetitorResults.params.registrantId, 10)} />;
 		} else if (matchPerson) {
 			child = <CompetitorDetail registrantId={parseInt(matchPerson.params.registrantId, 10)} />;
 		} else if (matchActivity) {
@@ -109,7 +118,7 @@ function MyScheduleInner() {
 		return (
 			<div className={b()}>
 				<Header path="/community/competitions" title={t('my_schedule.page_title')} />
-				<div className={b('content')}>
+				<div className={b('content', {wide: !!matchCompetitorResults})}>
 					<CompetitionLoader competitionId={competitionId}>
 						{child}
 					</CompetitionLoader>
