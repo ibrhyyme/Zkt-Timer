@@ -99,7 +99,7 @@ export function leaveRoom(client: SocketType, room: string) {
 	updateMyRooms(client);
 }
 
-async function getUserFromClient(client: SocketType): Promise<PublicUserAccount> {
+export async function getUserFromClient(client: SocketType): Promise<PublicUserAccount> {
 	if (!client) {
 		return null;
 	}
@@ -145,6 +145,33 @@ export async function getUsersInRoom(room: string) {
 
 export function getAllRooms() {
 	return getSocketIO().sockets.adapter.rooms;
+}
+
+export type OnlineCounts = {
+	totalSockets: number;
+	uniqueUsers: number;
+	anonymous: number;
+};
+
+export async function getOnlineCounts(): Promise<OnlineCounts> {
+	const sockets = await getSocketIO().fetchSockets();
+	const userIds = new Set<string>();
+	let anonymous = 0;
+
+	for (const s of sockets) {
+		const uid = (s as any).data?.userId ?? (s as any).userId;
+		if (uid) {
+			userIds.add(uid);
+		} else {
+			anonymous++;
+		}
+	}
+
+	return {
+		totalSockets: sockets.length,
+		uniqueUsers: userIds.size,
+		anonymous,
+	};
 }
 
 // All the rooms a client is in

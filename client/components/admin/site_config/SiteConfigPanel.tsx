@@ -1,8 +1,9 @@
 import React, {useState, useEffect} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Warning, Wrench} from 'phosphor-react';
+import {useQuery} from '@apollo/client';
 import {gqlMutateTyped, gqlQueryTyped} from '../../api';
-import {UpdateSiteConfigDocument, SiteConfigDocument} from '../../../@types/generated/graphql';
+import {UpdateSiteConfigDocument, SiteConfigDocument, OnlineStatsDocument, OnlineStatsQuery} from '../../../@types/generated/graphql';
 import {setSiteConfigCache, SiteConfigData} from '../../../util/hooks/useSiteConfig';
 import block from '../../../styles/bem';
 import './SiteConfigPanel.scss';
@@ -24,6 +25,12 @@ export default function SiteConfigPanel() {
 	const [saving, setSaving] = useState<FeatureKey | null>(null);
 
 	const [error, setError] = useState<string | null>(null);
+
+	// Canli online sayaci — 10 saniyede bir polling
+	const {data: onlineData} = useQuery<OnlineStatsQuery>(OnlineStatsDocument, {
+		pollInterval: 10000,
+		fetchPolicy: 'no-cache',
+	});
 
 	// Mount'ta bir kez fetch et (kendi state'imiz, hook bagimli degil)
 	useEffect(() => {
@@ -107,6 +114,28 @@ export default function SiteConfigPanel() {
 			<p className={b('hint')}>
 				Toggle degisiklikleri <strong>en fazla 60 saniye icinde</strong> tum kullanicilara yansir. Sen (admin) hicbir kapaliliktan etkilenmezsin.
 			</p>
+
+			{/* Canli Aktivite */}
+			<div className={b('section')}>
+				<div className={b('section-header')}>
+					<h3>Canli Aktivite</h3>
+				</div>
+				<div className={b('live')}>
+					<div className={b('live-main')}>
+						<span className={b('live-dot')} />
+						<span className={b('live-number')}>{onlineData?.onlineStats?.uniqueUsers ?? '—'}</span>
+						<span className={b('live-label')}>online kullanici</span>
+					</div>
+					<div className={b('live-meta')}>
+						<span className={b('live-meta-item')}>
+							{onlineData?.onlineStats?.anonymous ?? 0} anonim ziyaretci
+						</span>
+						<span className={b('live-meta-item')}>
+							{onlineData?.onlineStats?.totalSockets ?? 0} toplam baglanti
+						</span>
+					</div>
+				</div>
+			</div>
 
 			{/* Bakim Modu */}
 			<div className={b('section', {danger: true})}>

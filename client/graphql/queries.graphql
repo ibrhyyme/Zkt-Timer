@@ -11,6 +11,14 @@ query siteConfig {
 	}
 }
 
+query onlineStats {
+	onlineStats {
+		totalSockets
+		uniqueUsers
+		anonymous
+	}
+}
+
 query solveByShareCode($shareCode: String) {
 	solveByShareCode(shareCode: $shareCode) {
 		...SolveWithUserFragment
