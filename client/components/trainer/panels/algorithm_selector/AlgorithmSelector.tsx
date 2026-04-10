@@ -12,7 +12,7 @@ import AlgorithmCard from './AlgorithmCard';
 import Checkbox from '../../../common/checkbox/Checkbox';
 import type {CheckedAlgorithm, CubeFace} from '../../types';
 import {useTranslation} from 'react-i18next';
-import {CaretDown, Play, Info, X, FilePdf} from 'phosphor-react';
+import {CaretDown, Play, Info, X} from 'phosphor-react';
 import {useMe} from '../../../../util/hooks/useMe';
 import {isPro} from '../../../../lib/pro';
 import ProOnlyModal from '../../../common/pro_only/ProOnlyModal';
@@ -571,7 +571,7 @@ export default function AlgorithmSelector() {
 								disabled={pdfLoading}
 								title={t('trainer.export_pdf')}
 							>
-								<FilePdf size={16} weight="bold" />
+								<img src="/images/logos/pdf-svgrepo-com.svg" alt="PDF" width={14} height={14} />
 								{pdfLoading ? '...' : 'PDF'}
 							</button>
 						</div>

@@ -1,8 +1,8 @@
 package com.zktimer.app;
 
 import android.content.pm.ActivityInfo;
-import android.content.res.Configuration;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.view.View;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
@@ -16,9 +16,13 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Telefon: sadece dikey, Tablet: sadece yatay
-        // 720dp eşiği: Z Fold açık mod (~604dp) telefon olarak kalır, gerçek tabletler (720dp+) landscape olur
-        boolean isTablet = (getResources().getConfiguration().smallestScreenWidthDp >= 720);
+        // Fiziksel ekran boyutuna göre yön kilidi
+        // Z Fold açık ~7.6", gerçek tabletler 10"+, eşik 9"
+        DisplayMetrics dm = getResources().getDisplayMetrics();
+        double widthInch = (double) dm.widthPixels / dm.xdpi;
+        double heightInch = (double) dm.heightPixels / dm.ydpi;
+        double diagonalInch = Math.sqrt(widthInch * widthInch + heightInch * heightInch);
+        boolean isTablet = diagonalInch >= 9.0;
         setRequestedOrientation(isTablet
             ? ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
             : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
