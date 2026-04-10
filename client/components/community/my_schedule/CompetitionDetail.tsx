@@ -1,17 +1,15 @@
 import React, {useState, useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useHistory} from 'react-router-dom';
-import {CalendarBlank, MapPin, Info, MagnifyingGlass, Users, ListBullets, ChartBar, Globe, Broadcast} from 'phosphor-react';
+import {MapPin, Info, MagnifyingGlass, Users, ListBullets, ChartBar, Globe, Broadcast} from 'phosphor-react';
 import {openInAppBrowser, openInMaps} from '../../../util/external-link';
 import {useCompetitionData} from './CompetitionLoader';
 import {
-	b, I18N_LOCALE_MAP, ROLE_COLORS, formatTime, formatDayHeader, formatWcaTime,
-	getEventShortName, getRoleLabel,
-	formatRoundFormat,
+	b, I18N_LOCALE_MAP, formatTime, formatWcaTime,
+	getEventShortName, formatRoundFormat,
 } from './shared';
-import {useNow} from '../../../util/hooks/useNow';
 
-type TabId = 'groups' | 'events' | 'schedule' | 'rankings' | 'info' | 'wca-live';
+type TabId = 'groups' | 'events' | 'rankings' | 'info' | 'wca-live';
 
 export default function CompetitionDetail() {
 	const {t, i18n} = useTranslation();
@@ -33,7 +31,6 @@ export default function CompetitionDetail() {
 
 	TABS.push(
 		{id: 'events', label: t('my_schedule.tab_events'), icon: ListBullets, count: detail.events.length},
-		{id: 'schedule', label: t('my_schedule.tab_schedule'), icon: CalendarBlank},
 		{id: 'rankings', label: t('my_schedule.tab_rankings'), icon: ChartBar},
 		{id: 'info', label: t('my_schedule.tab_info'), icon: Globe},
 	);
@@ -90,9 +87,6 @@ export default function CompetitionDetail() {
 				)}
 				{activeTab === 'events' && (
 					<EventsTab events={detail.events} competitionId={detail.competitionId} locale={locale} t={t} />
-				)}
-				{activeTab === 'schedule' && (
-					<ScheduleTab schedule={detail.schedule} competitionId={detail.competitionId} locale={locale} t={t} />
 				)}
 				{activeTab === 'rankings' && (
 					<RankingsTab
@@ -314,87 +308,7 @@ function RoundPanel({row, competitionId, locale, t}: any) {
 	);
 }
 
-// --- Tab 3: Schedule ---
-
-function ScheduleTab({schedule, competitionId, locale, t}: any) {
-	const history = useHistory();
-	const now = useNow(60000);
-	// Ilk gun acik, digerler kapali
-	const [openDays, setOpenDays] = useState<Set<string>>(() => {
-		if (schedule.length > 0) return new Set([schedule[0].date]);
-		return new Set();
-	});
-
-	function isOngoing(a: any): boolean {
-		if (!a.startTime || !a.endTime) return false;
-		const start = new Date(a.startTime).getTime();
-		const end = new Date(a.endTime).getTime();
-		return now >= start && now < end;
-	}
-
-	function toggleDay(date: string) {
-		setOpenDays((prev) => {
-			const next = new Set(prev);
-			if (next.has(date)) next.delete(date);
-			else next.add(date);
-			return next;
-		});
-	}
-
-	return (
-		<div className={b('schedule-tab')}>
-			{schedule.map((day: any) => {
-				const isOpen = openDays.has(day.date);
-				return (
-					<div key={day.date} className={b('day')}>
-						<button
-							className={b('day-header', {open: isOpen})}
-							onClick={() => toggleDay(day.date)}
-						>
-							<div className={b('day-header-left')}>
-								<CalendarBlank size={18} />
-								<span>{formatDayHeader(day.date, locale)}</span>
-							</div>
-							<span className={b('day-header-arrow')}>{isOpen ? '\u25B2' : '\u25BC'}</span>
-						</button>
-						{isOpen && (
-							<div className={b('assignments')}>
-								{day.assignments.map((a: any, idx: number) => (
-									<div
-										key={idx}
-										className={b('assignment', {clickable: true, ongoing: isOngoing(a)})}
-										onClick={() => history.push(`/community/competitions/${competitionId}/activities/${a.activityCode}`)}
-									>
-										<div className={b('time')}>
-											{formatTime(a.startTime, locale)} - {formatTime(a.endTime, locale)}
-										</div>
-										<div className={b('activity')}>
-											<span className={b('event-name')}>{a.eventName}</span>
-										</div>
-										{a.assignmentCode !== 'schedule' && (
-											<div className={b('role', {type: ROLE_COLORS[a.assignmentCode] || 'gray'})}>
-												{getRoleLabel(a.assignmentCode, t)}
-											</div>
-										)}
-										<div className={b('location')}>
-											{a.roomColor && (
-												<span className={b('room-dot')} style={{backgroundColor: a.roomColor}} />
-											)}
-											<MapPin size={14} />
-											<span>{a.roomName}</span>
-										</div>
-									</div>
-								))}
-							</div>
-						)}
-					</div>
-				);
-			})}
-		</div>
-	);
-}
-
-// --- Tab 4: Rankings ---
+// --- Tab 3: Rankings ---
 
 function RankingsTab({allPersonalBests, competitionId, selectedEvent, setSelectedEvent, t}: any) {
 	const history = useHistory();

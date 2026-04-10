@@ -433,6 +433,30 @@ function buildEventDetails(wcifData: WcifData, activityMap: Map<number, Activity
 		}
 	}
 
+	// Round 1 icin personalBests fallback — round results yoksa kişinin PR'ini seed olarak kullan
+	const BLD_EVENTS = new Set(['333bf', '444bf', '555bf', '333mbf']);
+	for (const person of persons) {
+		if (!person.personalBests?.length) continue;
+		for (const event of events) {
+			const key = event.id;
+			if (!personBestMap.has(key)) personBestMap.set(key, new Map());
+			const map = personBestMap.get(key);
+			if (map.has(person.registrantId)) continue;
+
+			const isBld = BLD_EVENTS.has(event.id);
+			const avgPb = person.personalBests.find(pb => pb.eventId === event.id && pb.type === 'average');
+			const singlePb = person.personalBests.find(pb => pb.eventId === event.id && pb.type === 'single');
+
+			const seedValue = isBld
+				? singlePb?.best
+				: (avgPb?.best || singlePb?.best);
+
+			if (seedValue && seedValue > 0) {
+				map.set(person.registrantId, seedValue);
+			}
+		}
+	}
+
 	return events.map((event) => {
 		const rounds: RoundEntry[] = event.rounds.map((round, idx) => {
 			const roundNumber = idx + 1;

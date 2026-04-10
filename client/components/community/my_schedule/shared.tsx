@@ -12,9 +12,9 @@ export const I18N_LOCALE_MAP: Record<string, string> = {
 
 export const ROLE_COLORS: Record<string, string> = {
 	competitor: 'primary',
-	'staff-judge': 'orange',
+	'staff-judge': 'blue',
 	'staff-scrambler': 'purple',
-	'staff-runner': 'blue',
+	'staff-runner': 'orange',
 	'staff-dataentry': 'gray',
 	'staff-announcer': 'gray',
 };
