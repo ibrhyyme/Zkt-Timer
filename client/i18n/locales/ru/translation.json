@@ -1984,6 +1984,10 @@
 		"app_store_alt": "Загрузить в App Store",
 		"google_play_alt": "Доступно в Google Play"
 	},
+	"hero_cube": {
+		"hint": "Попробуйте собрать, перетаскивая",
+		"try_again": "Попробовать снова"
+	},
 	"welcome_mobile": {
 		"title": "Всегда Рядом",
 		"description": "Используйте Zkt Timer откуда угодно с мобильным интерфейсом. Скачивание приложения не требуется.",

@@ -17,7 +17,8 @@ public class MainActivity extends BridgeActivity {
         super.onCreate(savedInstanceState);
 
         // Telefon: sadece dikey, Tablet: sadece yatay
-        boolean isTablet = (getResources().getConfiguration().smallestScreenWidthDp >= 600);
+        // 720dp eşiği: Z Fold açık mod (~604dp) telefon olarak kalır, gerçek tabletler (720dp+) landscape olur
+        boolean isTablet = (getResources().getConfiguration().smallestScreenWidthDp >= 720);
         setRequestedOrientation(isTablet
             ? ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
             : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);

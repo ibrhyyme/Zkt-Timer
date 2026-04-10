@@ -269,8 +269,10 @@ export class CubeGame {
 	private scrambler = new Scrambler();
 	private isScrambling = false;
 
-	// Callback
+	// Callbacks
 	onSolved: (() => void) | null = null;
+	onFirstMove: (() => void) | null = null;
+	private firstMoveFired = false;
 
 	// Animation
 	private reqId = 0;
@@ -551,6 +553,10 @@ export class CubeGame {
 			const deltaAngle = targetAngle - this.flipAngle;
 
 			if (this.flipType === 'layer') {
+				if (!this.firstMoveFired && this.onFirstMove) {
+					this.firstMoveFired = true;
+					this.onFirstMove();
+				}
 				this.animateLayerRotation(deltaAngle, false, () => {
 					this.state = this.gettingDrag ? State.PREPARING : State.STILL;
 					this.gettingDrag = false;
@@ -664,6 +670,10 @@ export class CubeGame {
 	// ============================================
 	// Scramble
 	// ============================================
+
+	reset() {
+		this.firstMoveFired = false;
+	}
 
 	scramble(length = 20) {
 		if (this.isScrambling) return;

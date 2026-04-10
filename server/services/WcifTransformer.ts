@@ -490,7 +490,7 @@ function buildEventDetails(wcifData: WcifData, activityMap: Map<number, Activity
 
 // --- Tab 4: Rankings ---
 
-function buildRankings(persons: WcifPerson[]): RankingRow[] {
+function buildRankings(persons: WcifPerson[], competitionEventIds: Set<string>): RankingRow[] {
 	const accepted = persons.filter((p) => p.registration?.status === 'accepted');
 	const rows: RankingRow[] = [];
 
@@ -501,6 +501,7 @@ function buildRankings(persons: WcifPerson[]): RankingRow[] {
 		const eventMap = new Map<string, {single?: WcifPersonalBest; average?: WcifPersonalBest}>();
 
 		for (const pb of person.personalBests) {
+			if (!competitionEventIds.has(pb.eventId)) continue;
 			if (!eventMap.has(pb.eventId)) {
 				eventMap.set(pb.eventId, {});
 			}
@@ -573,7 +574,7 @@ export function buildCompetitionDetail(wcifData: WcifData, myWcaId: string): Com
 		competitors: buildCompetitorsList(persons, activityMap),
 		events: buildEventDetails(wcifData, activityMap),
 		schedule: buildSchedule(wcifData),
-		allPersonalBests: buildRankings(persons),
+		allPersonalBests: buildRankings(persons, new Set((wcifData.events || []).map((e) => e.id))),
 		wcaLiveCompId: null,
 		wcaLiveCompetitors: [],
 		wcaLiveRoundMap: [],
