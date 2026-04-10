@@ -215,10 +215,10 @@ export default function SettingsModal(props: Props) {
 									<button
 										type="button"
 										onClick={() => scrollToSection(section.id)}
-										className={`w-full text-left px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-200 cursor-pointer ${
+										className={`w-full text-left px-3 py-2 rounded-lg text-base font-bold transition-all duration-200 cursor-pointer ${
 											activeMainSection === section.id
 												? 'text-text bg-text/[0.05]'
-												: 'text-text/40 hover:text-text/60'
+												: 'text-text/90 hover:text-text'
 										}`}
 									>
 										{t(section.labelKey)}

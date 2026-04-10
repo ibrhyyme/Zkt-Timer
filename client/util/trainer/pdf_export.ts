@@ -948,5 +948,14 @@ export async function generateTrainerPdf({category, categoryDescription, algorit
 
 	// Save
 	const safeName = category.replace(/[^a-zA-Z0-9]/g, '_');
-	doc.save(`Zkt_Timer_${safeName}.pdf`);
+	const fileName = `Zkt_Timer_${safeName}.pdf`;
+
+	const blob = doc.output('blob');
+	const file = new File([blob], fileName, {type: 'application/pdf'});
+
+	if (navigator.canShare?.({files: [file]})) {
+		await navigator.share({files: [file], title: fileName});
+	} else {
+		doc.save(fileName);
+	}
 }
