@@ -8,11 +8,6 @@ import { updateUserProfile } from '../models/profile';
 
 export async function linkOAuthAccount(intType: IntegrationType, user: InternalUserAccount, code: string) {
 	const int = await getIntegration(user, intType);
-
-	if (int) {
-		return true;
-	}
-
 	const service = LINKED_SERVICES[intType];
 
 	const { accessToken, refreshToken, expiresIn, createdAt } = await getOAuthPostRequest(
@@ -24,7 +19,34 @@ export async function linkOAuthAccount(intType: IntegrationType, user: InternalU
 		}
 	);
 
-	const integration = await createIntegration(user, intType, accessToken, refreshToken, createdAt + expiresIn);
+	if (int) {
+		await updateIntegration(int, {
+			auth_token: accessToken,
+			refresh_token: refreshToken,
+			auth_expires_at: createdAt + expiresIn * 1000,
+		});
+
+		if (intType === 'wca') {
+			try {
+				const res = await axios.get(service.meEndpoint, {
+					headers: { Authorization: 'Bearer ' + accessToken },
+				});
+				const wcaData = res?.data?.me || res?.data;
+				if (wcaData?.wca_id) {
+					await updateIntegration(int, {
+						wca_id: wcaData.wca_id,
+						wca_country_iso2: wcaData.country_iso2 || null,
+					});
+				}
+			} catch (error) {
+				console.warn('Failed to fetch WCA ID on re-link:', error.message);
+			}
+		}
+
+		return true;
+	}
+
+	const integration = await createIntegration(user, intType, accessToken, refreshToken, createdAt + expiresIn * 1000);
 
 	// For WCA integration, fetch and store the WCA ID
 	if (intType === 'wca') {
@@ -180,7 +202,7 @@ export async function exchangeWcaLoginCode(code: string) {
 		gender: wcaData.gender,
 		accessToken,
 		refreshToken,
-		expiresAt: createdAt + expiresIn,
+		expiresAt: createdAt + expiresIn * 1000,
 	};
 }
 
@@ -192,7 +214,7 @@ export async function getAuthToken(intType: IntegrationType, user: UserAccount) 
 	}
 
 	let authToken: string = integration.auth_token;
-	const expiresAt = new Date(Number(integration.auth_expires_at) * 1000);
+	const expiresAt = new Date(Number(integration.auth_expires_at));
 	const now = new Date();
 
 	if (expiresAt < now) {
@@ -218,12 +240,13 @@ async function getNewAuthToken(integration: Integration) {
 
 		const int = await updateIntegration(integration, {
 			auth_token: accessToken,
-			auth_expires_at: createdAt + expiresIn,
+			auth_expires_at: createdAt + expiresIn * 1000,
 			refresh_token: refreshToken,
 		});
 
 		return int.auth_token;
 	} catch (e) {
+		console.warn('Token refresh failed for', integration.service_name, ':', e?.message);
 		return null;
 	}
 }

@@ -72,7 +72,12 @@ export class WcaCompetitionResolver {
 		let authToken: string;
 		try {
 			authToken = await getAuthToken('wca', ctx.user);
-		} catch {
+		} catch (e) {
+			console.warn('myWcaCompetitions: Failed to get auth token:', e?.message);
+			return [];
+		}
+		if (!authToken) {
+			console.warn('myWcaCompetitions: Auth token is null (token refresh may have failed)');
 			return [];
 		}
 		const raw = await WcaApiService.fetchMyCompetitions(authToken);
