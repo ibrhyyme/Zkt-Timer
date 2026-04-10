@@ -421,10 +421,49 @@
 		color: rgba(255, 255, 255, 0.35);
 		pointer-events: none;
 		user-select: none;
+		transition: color 0.3s ease, font-size 0.3s ease;
 
 		@media (max-width: 900px) {
 			bottom: -1.25rem;
 			font-size: 0.7rem;
+		}
+
+		&--phase-timing {
+			color: rgba(255, 255, 255, 0.7);
+			font-variant-numeric: tabular-nums;
+			font-family: 'Roboto Mono', monospace;
+			font-size: 1.1rem;
+			letter-spacing: 0.05em;
+		}
+
+		&--phase-solved {
+			color: #4ade80;
+			font-variant-numeric: tabular-nums;
+			font-family: 'Roboto Mono', monospace;
+			font-size: 1.1rem;
+			pointer-events: auto;
+		}
+	}
+
+	&__hint-time {
+		font-weight: 600;
+	}
+
+	&__hint-retry {
+		background: none;
+		border: 1px solid rgba(255, 255, 255, 0.25);
+		color: rgba(255, 255, 255, 0.6);
+		border-radius: 0.4rem;
+		padding: 0.2rem 0.6rem;
+		font-size: 0.7rem;
+		cursor: pointer;
+		pointer-events: auto;
+		margin-left: 0.5rem;
+		transition: all 0.2s ease;
+
+		&:hover {
+			color: #fff;
+			border-color: rgba(255, 255, 255, 0.5);
 		}
 	}
 }

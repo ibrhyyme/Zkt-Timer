@@ -1982,6 +1982,10 @@
 		"app_store_alt": "App Store'dan indir",
 		"google_play_alt": "Google Play'den al"
 	},
+	"hero_cube": {
+		"hint": "Küpü sürükleyerek çözmeye çalışın",
+		"try_again": "Tekrar dene"
+	},
 	"welcome_mobile": {
 		"title": "Her Zaman Yanınızda",
 		"description": "Mobil uyumlu arayüzü ile Zkt Timer'ı her yerden kullanabilirsiniz. Uygulama indirmeye gerek yok.",

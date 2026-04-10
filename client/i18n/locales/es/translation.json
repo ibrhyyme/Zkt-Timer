@@ -1984,6 +1984,10 @@
 		"app_store_alt": "Descargar en App Store",
 		"google_play_alt": "Disponible en Google Play"
 	},
+	"hero_cube": {
+		"hint": "Intenta resolverlo arrastrando",
+		"try_again": "Intentar de nuevo"
+	},
 	"welcome_mobile": {
 		"title": "Siempre a Tu Lado",
 		"description": "Usa Zkt Timer desde cualquier lugar con su interfaz optimizada para móviles. No necesitas descargar ninguna aplicación.",
