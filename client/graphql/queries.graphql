@@ -242,6 +242,7 @@ query wcaCompetitionDetail($input: WcaScheduleInput!) {
 		wcaLiveCompetitors {
 			wcaId
 			liveId
+			name
 		}
 		wcaLiveRoundMap {
 			activityCode

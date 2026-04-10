@@ -573,6 +573,7 @@
 		"connection_error_stale": "Connection issue, showing last results",
 		"cumulative": "cumulative",
 		"advancement": "Advancement",
+		"wca_live_active_rounds": "Active Rounds",
 		"wca_live_schedule": "Schedule",
 		"wca_live_records": "Records",
 		"wca_live_no_results": "No results yet for this round",

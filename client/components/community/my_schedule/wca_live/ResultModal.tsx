@@ -14,6 +14,7 @@ export interface ResultModalRow {
 	averageRecordTag?: string | null;
 	singleRecordTag?: string | null;
 	personWcaId?: string | null;
+	personRegistrantId?: number | null;
 }
 
 interface Props {
@@ -42,12 +43,16 @@ export default function ResultModal({row, competitionId, onClose, t, showViewPro
 	}, [onClose]);
 
 	function handleViewProfile() {
-		if (!row.personWcaId) return;
 		onClose();
-		history.push(`/community/competitions/${competitionId}/personal-bests/${row.personWcaId}`);
+		if (row.personRegistrantId != null) {
+			history.push(`/community/competitions/${competitionId}/persons/${row.personRegistrantId}/results`);
+		} else if (row.personWcaId) {
+			history.push(`/community/competitions/${competitionId}/personal-bests/${row.personWcaId}`);
+		}
 	}
 
-	const showProfile = (showViewProfile ?? !!row.personWcaId) && !!row.personWcaId;
+	const hasNavTarget = !!row.personWcaId || row.personRegistrantId != null;
+	const showProfile = (showViewProfile ?? hasNavTarget) && hasNavTarget;
 
 	return (
 		<div className={b('wca-live-modal-overlay')} onClick={onClose}>
@@ -97,7 +102,7 @@ export default function ResultModal({row, competitionId, onClose, t, showViewPro
 				{showProfile && (
 					<button className={b('wca-live-modal-profile-btn')} onClick={handleViewProfile}>
 						<ArrowSquareOut size={16} />
-						{t('my_schedule.view_personal_records')}
+						{t('my_schedule.view_complete_results')}
 					</button>
 				)}
 			</div>

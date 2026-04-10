@@ -152,6 +152,38 @@ function WcaLiveTabInner({eventId, roundNumber}: Props) {
 							<ArrowClockwise size={18} />
 						</button>
 					</div>
+					{/* Active Rounds */}
+					{(() => {
+						const activeRounds: {eventId: string; eventName: string; roundName: string; roundNumber: number}[] = [];
+						for (const ev of overview.events || []) {
+							for (const r of ev.rounds || []) {
+								if (r.active) {
+									activeRounds.push({eventId: ev.eventId, eventName: ev.eventName, roundName: r.name, roundNumber: r.number});
+								}
+							}
+						}
+						if (activeRounds.length === 0) return null;
+						return (
+							<div className={b('wca-live-active-rounds')}>
+								<h3 className={b('wca-live-section-title')}>{t('my_schedule.wca_live_active_rounds')}</h3>
+								<div className={b('wca-live-active-rounds-grid')}>
+									{activeRounds.map((ar) => (
+										<button
+											key={`${ar.eventId}-${ar.roundNumber}`}
+											className={b('wca-live-active-round-card')}
+											onClick={() => history.push(`/community/competitions/${detail.competitionId}/wca-live/${ar.eventId}/${ar.roundNumber}`)}
+										>
+											<EventIcon eventId={ar.eventId} size={22} />
+											<span className={b('wca-live-active-round-name')}>{ar.roundName}</span>
+											<span className={b('wca-live-status-badge', {live: true})}>
+												{t('my_schedule.round_status_live')}
+											</span>
+										</button>
+									))}
+								</div>
+							</div>
+						);
+					})()}
 					<WcaLivePodiums podiums={overview.podiums || []} competitionId={detail.competitionId} />
 					<WcaLiveSchedule schedule={overview.schedule} competitionId={detail.competitionId} />
 					<WcaLiveRecords records={overview.records} competitionId={detail.competitionId} />

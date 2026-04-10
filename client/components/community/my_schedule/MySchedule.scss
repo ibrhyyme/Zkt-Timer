@@ -2347,6 +2347,9 @@
 	}
 
 	&__wca-live-schedule-card-name {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
 		font-size: 0.9rem;
 		font-weight: 600;
 		margin-bottom: 0.35rem;
@@ -2366,6 +2369,41 @@
 		width: 0.55rem;
 		height: 0.55rem;
 		border-radius: 50%;
+	}
+
+	// --- Active Rounds ---
+	&__wca-live-active-rounds {
+		margin-bottom: 1.5rem;
+	}
+
+	&__wca-live-active-rounds-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+		gap: 0.65rem;
+	}
+
+	&__wca-live-active-round-card {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		padding: 0.85rem 1rem;
+		background: rgba(255, 255, 255, 0.05);
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		border-left: 3px solid #ef4444;
+		border-radius: 0.5rem;
+		cursor: pointer;
+		transition: background 0.15s ease;
+		color: #fff;
+		font-size: 0.9rem;
+		font-weight: 600;
+
+		&:hover {
+			background: rgba(255, 255, 255, 0.1);
+		}
+	}
+
+	&__wca-live-active-round-name {
+		flex: 1;
 	}
 
 	// --- Podiums ---

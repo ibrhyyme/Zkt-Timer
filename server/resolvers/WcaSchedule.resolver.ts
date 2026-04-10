@@ -36,7 +36,7 @@ const WCA_LIVE_ENDPOINT = process.env.WCA_LIVE_API_URL || 'https://live.worldcub
 
 interface WcaLiveData {
 	compId: string;
-	competitors: {wcaId: string; liveId: string}[];
+	competitors: {wcaId: string | null; liveId: string; name: string}[];
 	roundMap: {activityCode: string; liveRoundId: string}[];
 }
 
@@ -208,7 +208,7 @@ export class WcaScheduleResolver {
 		const compRes = await axios.post(WCA_LIVE_ENDPOINT, {
 			query: `{ competition(id: "${liveComp.id}") {
 				id
-				competitors { id wcaId }
+				competitors { id wcaId name }
 				competitionEvents { event { id } rounds { id number } }
 			} }`,
 		}, {timeout: 5000});
@@ -229,8 +229,7 @@ export class WcaScheduleResolver {
 		return {
 			compId: String(comp.id),
 			competitors: (comp.competitors || [])
-				.filter((c: any) => c.wcaId)
-				.map((c: any) => ({wcaId: c.wcaId, liveId: String(c.id)})),
+				.map((c: any) => ({wcaId: c.wcaId || null, liveId: String(c.id), name: c.name || ''})),
 			roundMap,
 		};
 	}
