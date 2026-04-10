@@ -465,11 +465,24 @@
 	}
 
 	&__competitor-count {
-		display: block;
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
 		font-size: 0.8rem;
 		color: rgba(var(--text-color), 0.4);
 		margin-bottom: 0.5rem;
 		font-style: italic;
+	}
+
+	&__role-breakdown {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.25rem;
+		font-size: 0.75rem;
+	}
+
+	&__role-sep {
+		opacity: 0.5;
 	}
 
 	&__competitor-list {

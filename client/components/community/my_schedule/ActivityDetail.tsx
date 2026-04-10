@@ -115,6 +115,9 @@ export default function ActivityDetail({activityCode}: ActivityDetailProps) {
 				const people = map.get(role);
 				if (role === 'competitor') {
 					people.sort((a: any, bx: any) => {
+						const stA = a.assignment.stationNumber || Infinity;
+						const stB = bx.assignment.stationNumber || Infinity;
+						if (stA !== stB) return stA - stB;
 						const sa = seedMap.get(a.registrantId) || Infinity;
 						const sb = seedMap.get(bx.registrantId) || Infinity;
 						if (sa !== sb) return sa - sb;
@@ -149,7 +152,6 @@ export default function ActivityDetail({activityCode}: ActivityDetailProps) {
 		return () => document.removeEventListener('keydown', handleKeydown);
 	}, [prevCode, nextCode, detail?.competitionId]);
 	const activityLabel = parseActivityCodeLabel(activityCode);
-	const hasSeeds = seedMap.size > 0;
 
 	if (peopleInActivity.length === 0) {
 		return (
@@ -240,16 +242,26 @@ export default function ActivityDetail({activityCode}: ActivityDetailProps) {
 				</div>
 			)}
 
-			<span className={b('competitor-count')}>
-				{t('my_schedule.activity_people_count', {count: peopleInActivity.length})}
-			</span>
+			<div className={b('competitor-count')}>
+				<span>{t('my_schedule.activity_people_count', {count: peopleInActivity.length})}</span>
+				{byRole.size > 1 && (
+					<span className={b('role-breakdown')}>
+						{Array.from(byRole.entries()).map(([role, people]) => (
+							<span key={role} className={b('role-breakdown-item')}>
+								{getRoleLabel(role, t)} {people.length}
+							</span>
+						)).reduce((prev: any, curr: any, i: number) => i === 0 ? [curr] : [...prev, <span key={`sep-${i}`} className={b('role-sep')}>&middot;</span>, curr], [])}
+					</span>
+				)}
+			</div>
 
 			{/* Role sections */}
 			{Array.from(byRole.entries()).map(([role, people]) => {
 				const headerBg = ROLE_HEADER_COLORS[role] || 'rgba(107, 114, 128, 0.15)';
 				const headerBorder = ROLE_HEADER_BORDER[role] || '#6b7280';
 				const isCompetitor = role === 'competitor';
-				const showSeedTable = isCompetitor && hasSeeds;
+				const anyHasStation = isCompetitor && people.some((p: any) => p.assignment.stationNumber);
+				const showSeedTable = isCompetitor;
 
 				return (
 					<div key={role} className={b('activity-role-group')}>
@@ -269,8 +281,8 @@ export default function ActivityDetail({activityCode}: ActivityDetailProps) {
 									<thead>
 										<tr>
 											<th>{t('my_schedule.col_name')}</th>
-											<th>{t('my_schedule.seed_result')}</th>
-											<th>{t('my_schedule.col_station')}</th>
+											<th style={{textAlign: 'center'}}>{t('my_schedule.seed_result')}</th>
+											{anyHasStation && <th style={{textAlign: 'center'}}>{t('my_schedule.col_station')}</th>}
 										</tr>
 									</thead>
 									<tbody>
@@ -284,7 +296,7 @@ export default function ActivityDetail({activityCode}: ActivityDetailProps) {
 												<td className={b('seed-result')}>
 													{seedMap.get(p.registrantId) ? formatWcaTime(seedMap.get(p.registrantId)) : '-'}
 												</td>
-												<td className={b('events-cell-center')}>{p.assignment.stationNumber || '-'}</td>
+												{anyHasStation && <td className={b('events-cell-center')}>{p.assignment.stationNumber || '-'}</td>}
 											</tr>
 										))}
 									</tbody>
