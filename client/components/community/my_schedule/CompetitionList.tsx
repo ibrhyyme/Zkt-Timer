@@ -40,11 +40,19 @@ export default function CompetitionList() {
 
 	const filteredCompetitions = useMemo(() => {
 		if (!competitions) return [];
-		if (!compSearch.trim()) return competitions;
-		const q = compSearch.toLowerCase();
-		return competitions.filter(
-			(c: any) => c.name.toLowerCase().includes(q) || c.city?.toLowerCase().includes(q)
-		);
+		let list = competitions;
+		if (compSearch.trim()) {
+			const q = compSearch.toLowerCase();
+			list = list.filter(
+				(c: any) => c.name.toLowerCase().includes(q) || c.city?.toLowerCase().includes(q)
+			);
+		}
+		// Devam eden yarismalari listenin basina koy
+		const now = new Date();
+		const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+		const ongoing = list.filter((c: any) => c.start_date <= today && c.end_date >= today);
+		const rest = list.filter((c: any) => !(c.start_date <= today && c.end_date >= today));
+		return [...ongoing, ...rest];
 	}, [competitions, compSearch]);
 
 	useEffect(() => {

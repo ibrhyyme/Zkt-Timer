@@ -215,7 +215,7 @@ export interface CompetitionDetail {
 	schedule: ScheduleDay[];
 	allPersonalBests: RankingRow[];
 	wcaLiveCompId: string | null;
-	wcaLiveCompetitors: {wcaId: string; liveId: string}[];
+	wcaLiveCompetitors: {wcaId: string | null; liveId: string; name: string}[];
 	wcaLiveRoundMap: {activityCode: string; liveRoundId: string}[];
 	info: any;
 }

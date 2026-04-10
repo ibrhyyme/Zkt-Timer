@@ -1274,6 +1274,7 @@ type WcaCompetitionInfo {
 type WcaLiveCompetitor {
   wcaId: String
   liveId: String
+  name: String
 }
 
 type WcaLiveRoundMapping {

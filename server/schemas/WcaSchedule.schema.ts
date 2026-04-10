@@ -278,11 +278,14 @@ export class WcaCompetitionInfo {
 // Root type
 @ObjectType()
 export class WcaLiveCompetitor {
-	@Field()
-	wcaId: string;
+	@Field({nullable: true})
+	wcaId?: string;
 
 	@Field()
 	liveId: string;
+
+	@Field()
+	name: string;
 }
 
 @ObjectType()

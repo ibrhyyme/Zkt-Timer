@@ -573,6 +573,7 @@
 		"connection_error_stale": "Bağlantı sorunu, son sonuçlar görüntüleniyor",
 		"cumulative": "kümülatif",
 		"advancement": "Geçiş",
+		"wca_live_active_rounds": "Aktif Turlar",
 		"wca_live_schedule": "Program",
 		"wca_live_records": "Rekorlar",
 		"wca_live_no_results": "Bu round için henüz sonuç yok",

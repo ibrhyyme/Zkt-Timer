@@ -4,6 +4,7 @@ import {useHistory} from 'react-router-dom';
 import {ArrowClockwise, Warning} from 'phosphor-react';
 import {b, formatWcaTime, formatResult, formatAttempts, formatTimeAgo, countryFlag, rankingMedal, RecordTag, EventIcon} from '../shared';
 import {useLiveRoundResults} from '../useLiveResults';
+import {useCompetitionData} from '../CompetitionLoader';
 import ResultModal from './ResultModal';
 
 interface Props {
@@ -18,8 +19,24 @@ const PAGE_SIZE = 50;
 export default function WcaLiveEventDetail({event, competitionId, roundNumber, isMobile}: Props) {
 	const {t} = useTranslation();
 	const history = useHistory();
+	const {detail} = useCompetitionData();
 	const [modalRow, setModalRow] = useState<any | null>(null);
 	const [visibleCount, setVisibleCount] = useState<number>(PAGE_SIZE);
+
+	// Yarismaci → registrantId mapping (competition results sayfasina yonlendirme icin)
+	const findRegistrantId = useMemo(() => {
+		const byWcaId = new Map<string, number>();
+		const byName = new Map<string, number>();
+		for (const c of detail?.competitors || []) {
+			if (c.wcaId) byWcaId.set(c.wcaId, c.registrantId);
+			if (c.name) byName.set(c.name, c.registrantId);
+		}
+		return (personWcaId?: string | null, personName?: string | null): number | null => {
+			if (personWcaId && byWcaId.has(personWcaId)) return byWcaId.get(personWcaId)!;
+			if (personName && byName.has(personName)) return byName.get(personName)!;
+			return null;
+		};
+	}, [detail?.competitors]);
 
 	const defaultRound = useMemo(() => {
 		if (!event?.rounds || event.rounds.length === 0) return null;
@@ -114,9 +131,13 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 		return t('my_schedule.advancement_top_ranking', {level});
 	}
 
-	function handlePersonClick(personWcaId: string | null | undefined) {
-		if (!personWcaId) return;
-		history.push(`/community/competitions/${competitionId}/personal-bests/${personWcaId}`);
+	function handlePersonClick(personWcaId: string | null | undefined, personName: string | null | undefined) {
+		const registrantId = findRegistrantId(personWcaId, personName);
+		if (registrantId != null) {
+			history.push(`/community/competitions/${competitionId}/persons/${registrantId}/results`);
+		} else if (personWcaId) {
+			history.push(`/community/competitions/${competitionId}/personal-bests/${personWcaId}`);
+		}
 	}
 
 	const allResults = roundResults?.results || [];
@@ -230,7 +251,8 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 							<tbody>
 								{visibleResults.map((r: any) => {
 									const attempts = formatAttempts(r.attempts || [], numAttempts, event.eventId);
-									const clickable = isMobile || !!r.personWcaId;
+									const hasTarget = !!r.personWcaId || !!findRegistrantId(r.personWcaId, r.personName);
+									const clickable = isMobile || hasTarget;
 									const medal = isFinished ? rankingMedal(r.ranking) : '';
 									return (
 										<tr
@@ -243,9 +265,9 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 											})}
 											onClick={() => {
 												if (isMobile) {
-													setModalRow({...r, attempts, numAttempts, eventId: event.eventId});
-												} else if (r.personWcaId) {
-													handlePersonClick(r.personWcaId);
+													setModalRow({...r, attempts, numAttempts, eventId: event.eventId, personRegistrantId: findRegistrantId(r.personWcaId, r.personName)});
+												} else {
+													handlePersonClick(r.personWcaId, r.personName);
 												}
 											}}
 										>
@@ -315,6 +337,7 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 						averageRecordTag: modalRow.averageRecordTag,
 						singleRecordTag: modalRow.singleRecordTag,
 						personWcaId: modalRow.personWcaId,
+						personRegistrantId: modalRow.personRegistrantId,
 					}}
 					competitionId={competitionId}
 					onClose={() => setModalRow(null)}

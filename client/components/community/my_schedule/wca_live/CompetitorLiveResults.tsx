@@ -26,8 +26,15 @@ export default function CompetitorLiveResults({registrantId}: Props) {
 	}, [detail, registrantId]);
 
 	const liveCompetitor = useMemo(() => {
-		if (!selected?.wcaId || !detail?.wcaLiveCompetitors) return null;
-		return detail.wcaLiveCompetitors.find((c: any) => c.wcaId === selected.wcaId) || null;
+		if (!detail?.wcaLiveCompetitors) return null;
+		if (selected?.wcaId) {
+			const byWcaId = detail.wcaLiveCompetitors.find((c: any) => c.wcaId === selected.wcaId);
+			if (byWcaId) return byWcaId;
+		}
+		if (selected?.name) {
+			return detail.wcaLiveCompetitors.find((c: any) => c.name === selected.name) || null;
+		}
+		return null;
 	}, [detail, selected]);
 
 	const competitionId: string = detail?.competitionId || '';

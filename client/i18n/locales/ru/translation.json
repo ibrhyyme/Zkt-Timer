@@ -573,6 +573,7 @@
 		"connection_error_stale": "Проблема соединения, показаны последние результаты",
 		"cumulative": "накопительный",
 		"advancement": "Проход",
+		"wca_live_active_rounds": "Активные раунды",
 		"wca_live_schedule": "Расписание",
 		"wca_live_records": "Рекорды",
 		"wca_live_no_results": "Пока нет результатов для этого раунда",
