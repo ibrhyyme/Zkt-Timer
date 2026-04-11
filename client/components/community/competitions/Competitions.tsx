@@ -139,7 +139,7 @@ export default function Competitions() {
 					<thead>
 						<tr>
 							<th>{t('competitions.col_date')}</th>
-							{userLocation && <th>km</th>}
+							{userLocation && <th>{t('competitions.col_distance')}</th>}
 							<th>{t('competitions.col_name')}</th>
 							<th>{t('competitions.col_events')}</th>
 						</tr>

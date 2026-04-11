@@ -593,7 +593,9 @@
 		"notif_advancing_questionable": "Avanzaste en {{ranking}}.º lugar (provisional, puede cambiar)",
 		"notif_not_advancing": "Terminaste en {{ranking}}.º lugar. ¡Bien hecho!",
 		"notif_final_result": "¡Terminaste en {{ranking}}.º lugar!",
-		"notif_link_text": "Ver resultados"
+		"notif_link_text": "Ver resultados",
+		"cutoff_attempts": "{{count}} int.",
+		"wca_live_error": "Error al cargar WCA Live. Actualiza la página."
 	},
 	"competitions": {
 		"page_title": "Competencias WCA",
@@ -605,7 +607,8 @@
 		"results_count": "{{count}} competencias encontradas",
 		"col_date": "Fecha",
 		"col_name": "Nombre",
-		"col_events": "Eventos"
+		"col_events": "Eventos",
+		"col_distance": "km"
 	},
 	"notification_prefs": {
 		"email_notifications": "Notificaciones por correo electrónico",

@@ -593,7 +593,9 @@
 		"notif_advancing_questionable": "Ты прошёл дальше на {{ranking}}-м месте (предварительно, может измениться)",
 		"notif_not_advancing": "Ты финишировал на {{ranking}}-м месте. Молодец!",
 		"notif_final_result": "Ты финишировал на {{ranking}}-м месте!",
-		"notif_link_text": "Посмотреть результаты"
+		"notif_link_text": "Посмотреть результаты",
+		"cutoff_attempts": "{{count}} поп.",
+		"wca_live_error": "Не удалось загрузить WCA Live. Обновите страницу."
 	},
 	"competitions": {
 		"page_title": "Соревнования WCA",
@@ -605,7 +607,8 @@
 		"results_count": "{{count}} соревнований найдено",
 		"col_date": "Дата",
 		"col_name": "Название",
-		"col_events": "Дисциплины"
+		"col_events": "Дисциплины",
+		"col_distance": "км"
 	},
 	"notification_prefs": {
 		"email_notifications": "Уведомления по почте",

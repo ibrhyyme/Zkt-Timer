@@ -2,6 +2,7 @@ import React, {useMemo, Component, ErrorInfo, ReactNode} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useHistory} from 'react-router-dom';
 import {Info, Warning, ArrowClockwise} from 'phosphor-react';
+import i18n from '../../../../i18n/i18n';
 import {useCompetitionData} from '../CompetitionLoader';
 import {useWcaLiveOverview} from '../useLiveResults';
 import {b, EventIcon} from '../shared';
@@ -34,7 +35,7 @@ class WcaLiveErrorBoundary extends Component<{children: ReactNode}, {hasError: b
 			return (
 				<div className={b('info-banner')}>
 					<Warning size={18} />
-					<span>WCA Live yuklenirken bir sorun olustu. Sayfayi yenileyin.</span>
+					<span>{i18n.t('my_schedule.wca_live_error')}</span>
 				</div>
 			);
 		}
