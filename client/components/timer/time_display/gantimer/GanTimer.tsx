@@ -13,7 +13,13 @@ import {isNative} from '../../../../util/platform';
 import {useTranslation} from 'react-i18next';
 
 import {SubscriptionLike} from 'rxjs';
-import {GanTimerConnection, GanTimerEvent, GanTimerState, connectGanTimer} from 'gan-web-bluetooth';
+import {
+	GanTimerConnection,
+	GanTimerEvent,
+	GanTimerState,
+	connectGanTimer,
+	abortGanTimerScan,
+} from './ganTimerConnection';
 
 // Since this component is singleton and should never have multiple instances,
 // also will never be used in different contexts, we won't pollute context
@@ -74,6 +80,7 @@ export default function GanTimer() {
 	}
 
 	function cancelGanScan() {
+		abortGanTimerScan();
 		dispatch(closeModal());
 		setScanning(false);
 	}
