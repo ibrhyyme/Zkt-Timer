@@ -2190,6 +2190,24 @@
 		color: rgba(255, 255, 255, 0.82);
 	}
 
+	&__wca-live-result-row--me {
+		background: rgba(59, 130, 246, 0.18) !important;
+		border-left: 3px solid rgb(59, 130, 246);
+
+		td {
+			color: #fff;
+			font-weight: 600;
+		}
+
+		@media (max-width: 600px) {
+			background: rgba(59, 130, 246, 0.25) !important;
+
+			.cd-my-schedule__me-badge {
+				display: none;
+			}
+		}
+	}
+
 	&__wca-live-result-row--clickable {
 		cursor: pointer;
 	}

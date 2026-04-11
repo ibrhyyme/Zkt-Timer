@@ -38,6 +38,13 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 		};
 	}, [detail?.competitors]);
 
+	// Giris yapan kullanicinin WCIF'teki ismini bul (WCA ID eslesmese bile isim ile highlight icin)
+	const myName = useMemo(() => {
+		if (!detail?.myWcaId || !detail?.competitors) return null;
+		const me = detail.competitors.find((c: any) => c.wcaId === detail.myWcaId);
+		return me?.name || null;
+	}, [detail?.myWcaId, detail?.competitors]);
+
 	const defaultRound = useMemo(() => {
 		if (!event?.rounds || event.rounds.length === 0) return null;
 		const active = event.rounds.find((r: any) => r.active);
@@ -254,6 +261,10 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 									const hasTarget = !!r.personWcaId || !!findRegistrantId(r.personWcaId, r.personName);
 									const clickable = isMobile || hasTarget;
 									const medal = isFinished ? rankingMedal(r.ranking) : '';
+									const isMe = !!(
+										(detail?.myWcaId && r.personWcaId && detail.myWcaId === r.personWcaId) ||
+										(myName && r.personName && myName === r.personName)
+									);
 									return (
 										<tr
 											key={r.personLiveId || `${r.ranking}-${r.personName}`}
@@ -261,6 +272,7 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 												advancing: r.advancing && !r.advancingQuestionable,
 												questionable: r.advancing && r.advancingQuestionable,
 												clickable,
+												me: isMe,
 												[`rank-${r.ranking}`]: isFinished && r.ranking && r.ranking <= 3,
 											})}
 											onClick={() => {
@@ -286,6 +298,7 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 											)}
 											<td className={b('wca-live-person')}>
 												<span className={b('wca-live-person-name')}>{r.personName}</span>
+												{isMe && <span className={b('me-badge')}>{t('my_schedule.you')}</span>}
 											</td>
 											{showAverage && (
 												<td className={b('wca-live-time', {strong: true})}>
