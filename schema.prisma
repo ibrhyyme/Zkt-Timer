@@ -85,6 +85,9 @@ model UserAccount {
   // Push notification tokens
   pushTokens                    PushToken[]
 
+  // WCA competition notification tracking (auto-managed dedup state)
+  wca_competition_notification_states WcaCompetitionNotificationState[]
+
   // Daily goals
   daily_goals                   DailyGoal[]
 
@@ -924,6 +927,41 @@ model PushToken {
 
   @@index([userId])
   @@map("push_tokens")
+}
+
+model WcaCompetitionNotificationState {
+  id             String   @id @default(uuid())
+  user_id        String
+  competition_id String
+  start_date     DateTime @db.Date
+  end_date       DateTime @db.Date
+  wca_id         String
+  person_name    String
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  user            UserAccount                   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  notified_rounds WcaCompetitionNotifiedRound[]
+
+  @@unique([user_id, competition_id])
+  @@index([competition_id, end_date])
+  @@index([end_date])
+  @@map("wca_competition_notification_state")
+}
+
+model WcaCompetitionNotifiedRound {
+  id              String   @id @default(uuid())
+  state_id        String
+  activity_code   String
+  result_notified Boolean  @default(false)
+  finish_notified Boolean  @default(false)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  state WcaCompetitionNotificationState @relation(fields: [state_id], references: [id], onDelete: Cascade)
+
+  @@unique([state_id, activity_code])
+  @@map("wca_competition_notified_round")
 }
 
 model PromoCode {

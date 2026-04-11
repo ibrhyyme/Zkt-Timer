@@ -583,7 +583,17 @@
 		"round_status_upcoming": "Próximo",
 		"back_to_competition": "Volver a la competición",
 		"back": "Atrás",
-		"loading": "Cargando..."
+		"loading": "Cargando...",
+		"notif_result_title": "Tu resultado está disponible: {{eventName}} R{{roundNumber}}",
+		"notif_result_body_avg_single": "Prom: {{avg}} · Único: {{single}}",
+		"notif_result_body_single_only": "Único: {{single}}",
+		"notif_round_finished_title": "{{eventName}} R{{roundNumber}} finalizado",
+		"notif_final_finished_title": "Final de {{eventName}} finalizada",
+		"notif_advancing": "¡Avanzaste en {{ranking}}.º lugar!",
+		"notif_advancing_questionable": "Avanzaste en {{ranking}}.º lugar (provisional, puede cambiar)",
+		"notif_not_advancing": "Terminaste en {{ranking}}.º lugar. ¡Bien hecho!",
+		"notif_final_result": "¡Terminaste en {{ranking}}.º lugar!",
+		"notif_link_text": "Ver resultados"
 	},
 	"competitions": {
 		"page_title": "Competencias WCA",

@@ -583,7 +583,17 @@
 		"round_status_upcoming": "Yakında",
 		"back_to_competition": "Yarışmaya dön",
 		"back": "Geri",
-		"loading": "Yükleniyor..."
+		"loading": "Yükleniyor...",
+		"notif_result_title": "Yarışma sonucun yayınlandı: {{eventName}} R{{roundNumber}}",
+		"notif_result_body_avg_single": "Avg: {{avg}} · Single: {{single}}",
+		"notif_result_body_single_only": "Single: {{single}}",
+		"notif_round_finished_title": "{{eventName}} R{{roundNumber}} tamamlandı",
+		"notif_final_finished_title": "{{eventName}} finali tamamlandı",
+		"notif_advancing": "{{ranking}}. sırayla üst tura geçtin!",
+		"notif_advancing_questionable": "{{ranking}}. sırayla üst tura geçtin (ön sıralama, değişebilir)",
+		"notif_not_advancing": "{{ranking}}. sırada bitirdin. Ellerine sağlık!",
+		"notif_final_result": "{{ranking}}. sırada bitirdin!",
+		"notif_link_text": "Sonuçları gör"
 	},
 	"competitions": {
 		"page_title": "WCA Yarışmaları",

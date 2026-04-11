@@ -3,6 +3,7 @@ import {logger} from './logger';
 import {initSiteMapGeneration} from './sitemap';
 import {getPrisma} from '../database';
 import {sendPushToUser} from './push';
+import {initWcaCompetitionNotificationCronJob} from './cron_wca_notifications';
 
 const CUBE_NAMES: Record<string, string> = {
 	'222': '2x2', '333': '3x3', '444': '4x4', '555': '5x5',
@@ -17,6 +18,7 @@ export function initCronJobs() {
 	initUnverifiedAccountCleanupCronJob();
 	initDailyGoalReminderCronJob();
 	initProPremiumExpiryCronJob();
+	initWcaCompetitionNotificationCronJob();
 }
 
 function initSiteMapGenerationCronJob() {

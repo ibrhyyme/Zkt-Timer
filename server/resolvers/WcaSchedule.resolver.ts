@@ -15,6 +15,8 @@ import {WcaApiService} from '../services/WcaApiService';
 import {buildCompetitionDetail} from '../services/WcifTransformer';
 import {fetchDataFromCache, createRedisKey, RedisNamespace, deleteKeyInRedis} from '../services/redis';
 import {logger} from '../services/logger';
+import {getWcaLiveData as wcaLiveGetData, fetchLiveRoundResults as wcaLiveFetchRound} from '../services/WcaLiveService';
+import {ensureNotificationState} from '../services/WcaNotificationState';
 
 function getErrorType(err: any): string {
 	if (!err) return 'unknown';
@@ -27,18 +29,11 @@ function getErrorType(err: any): string {
 }
 
 const WCIF_CACHE_TTL = 60 * 60; // 1 saat — WCIF nadir degisir
-const WCA_LIVE_CACHE_TTL = 60 * 60;
 const WCA_LIVE_ROUND_TTL = 60;
 const WCA_LIVE_OVERVIEW_TTL = 60;
 const WCA_LIVE_COMPETITOR_TTL = 60;
 
 const WCA_LIVE_ENDPOINT = process.env.WCA_LIVE_API_URL || 'https://live.worldcubeassociation.org/api';
-
-interface WcaLiveData {
-	compId: string;
-	competitors: {wcaId: string | null; liveId: string; name: string}[];
-	roundMap: {activityCode: string; liveRoundId: string}[];
-}
 
 @Resolver()
 export class WcaScheduleResolver {
@@ -64,7 +59,7 @@ export class WcaScheduleResolver {
 		const detail = buildCompetitionDetail(wcifData, wcaId);
 
 		try {
-			const liveData = await this.getWcaLiveData(input.competitionId);
+			const liveData = await wcaLiveGetData(input.competitionId);
 			if (liveData) {
 				detail.wcaLiveCompId = liveData.compId;
 				detail.wcaLiveCompetitors = liveData.competitors;
@@ -75,6 +70,24 @@ export class WcaScheduleResolver {
 				competitionId: input.competitionId,
 				error: err?.message || String(err),
 				errorType: getErrorType(err),
+			});
+		}
+
+		// Kullanici kayitli ve accepted ise notification state'i otomatik kur (fire-and-forget)
+		if (detail && wcaId && detail.myRegistrationStatus === 'accepted') {
+			const myPerson = (wcifData as any).persons?.find((p: any) => p.wcaId === wcaId);
+			ensureNotificationState(
+				ctx.user.id,
+				input.competitionId,
+				wcaId,
+				myPerson?.name || '',
+				(wcifData as any).schedule?.startDate || '',
+				(wcifData as any).schedule?.numberOfDays || 1,
+			).catch((err: any) => {
+				logger.warn('[WcaNotify] ensureNotificationState failed', {
+					competitionId: input.competitionId,
+					err: err?.message,
+				});
 			});
 		}
 
@@ -120,7 +133,7 @@ export class WcaScheduleResolver {
 
 			const result = await fetchDataFromCache(
 				cacheKey,
-				() => this.fetchLiveRoundResults(input.liveRoundId),
+				() => wcaLiveFetchRound(input.liveRoundId),
 				WCA_LIVE_ROUND_TTL
 			);
 
@@ -185,55 +198,6 @@ export class WcaScheduleResolver {
 		}
 	}
 
-	private async getWcaLiveData(competitionId: string): Promise<WcaLiveData | null> {
-		return fetchDataFromCache(
-			createRedisKey(RedisNamespace.WCA_WCIF, `live:${competitionId}`),
-			() => this.fetchWcaLiveData(competitionId),
-			WCA_LIVE_CACHE_TTL
-		);
-	}
-
-	private async fetchWcaLiveData(competitionId: string): Promise<WcaLiveData | null> {
-		const axios = (await import('axios')).default;
-
-		const listRes = await axios.post(WCA_LIVE_ENDPOINT, {
-			query: `{ competitions { id wcaId } }`,
-		}, {timeout: 5000});
-
-		const allComps = listRes.data?.data?.competitions || [];
-		const liveComp = allComps.find((c: any) => c.wcaId === competitionId);
-
-		if (!liveComp?.id) return null;
-
-		const compRes = await axios.post(WCA_LIVE_ENDPOINT, {
-			query: `{ competition(id: "${liveComp.id}") {
-				id
-				competitors { id wcaId name }
-				competitionEvents { event { id } rounds { id number } }
-			} }`,
-		}, {timeout: 5000});
-
-		const comp = compRes.data?.data?.competition;
-		if (!comp) return null;
-
-		const roundMap: {activityCode: string; liveRoundId: string}[] = [];
-		for (const ce of comp.competitionEvents || []) {
-			for (const round of ce.rounds || []) {
-				roundMap.push({
-					activityCode: `${ce.event.id}-r${round.number}`,
-					liveRoundId: String(round.id),
-				});
-			}
-		}
-
-		return {
-			compId: String(comp.id),
-			competitors: (comp.competitors || [])
-				.map((c: any) => ({wcaId: c.wcaId || null, liveId: String(c.id), name: c.name || ''})),
-			roundMap,
-		};
-	}
-
 	private async fetchPodiumsForRounds(rounds: {liveRoundId: string; eventId: string; eventName: string; sortBy: string}[]): Promise<any[]> {
 		if (rounds.length === 0) return [];
 		const axios = (await import('axios')).default;
@@ -287,7 +251,7 @@ export class WcaScheduleResolver {
 		const axios = (await import('axios')).default;
 
 		// Once liveCompId'yi al
-		const liveData = await this.getWcaLiveData(competitionId);
+		const liveData = await wcaLiveGetData(competitionId);
 		if (!liveData) return null;
 
 		const res = await axios.post(WCA_LIVE_ENDPOINT, {
@@ -402,49 +366,6 @@ export class WcaScheduleResolver {
 				personName: rec.result?.person?.name || '',
 				personCountryIso2: rec.result?.person?.country?.iso2 || undefined,
 				roundNumber: rec.result?.round?.number || undefined,
-			})),
-		};
-	}
-
-	private async fetchLiveRoundResults(liveRoundId: string): Promise<WcaLiveRoundResults | null> {
-		const axios = (await import('axios')).default;
-
-		const res = await axios.post(WCA_LIVE_ENDPOINT, {
-			query: `{ round(id: "${liveRoundId}") {
-				id name finished active
-				format { numberOfAttempts sortBy }
-				results {
-					ranking best average
-					attempts { result }
-					person { id name wcaId country { iso2 } }
-					singleRecordTag averageRecordTag advancing advancingQuestionable
-				}
-			} }`,
-		}, {timeout: 8000});
-
-		const round = res.data?.data?.round;
-		if (!round) return null;
-
-		return {
-			roundActivityCode: liveRoundId,
-			roundName: round.name || '',
-			active: !!round.active,
-			finished: !!round.finished,
-			numberOfAttempts: round.format?.numberOfAttempts || 0,
-			sortBy: round.format?.sortBy || 'best',
-			results: (round.results || []).map((r: any) => ({
-				ranking: r.ranking ?? undefined,
-				best: r.best ?? 0,
-				average: r.average ?? 0,
-				attempts: (r.attempts || []).map((a: any) => ({result: a.result})),
-				personName: r.person?.name || '',
-				personWcaId: r.person?.wcaId || undefined,
-				personCountryIso2: r.person?.country?.iso2 || undefined,
-				personLiveId: String(r.person?.id || ''),
-				singleRecordTag: r.singleRecordTag || undefined,
-				averageRecordTag: r.averageRecordTag || undefined,
-				advancing: !!r.advancing,
-				advancingQuestionable: !!r.advancingQuestionable,
 			})),
 		};
 	}
