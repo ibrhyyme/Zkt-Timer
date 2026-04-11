@@ -593,7 +593,9 @@
 		"notif_advancing_questionable": "You advanced in {{ranking}}{{suffix}} place (provisional, may change)",
 		"notif_not_advancing": "You finished in {{ranking}}{{suffix}} place. Well done!",
 		"notif_final_result": "You finished in {{ranking}}{{suffix}} place!",
-		"notif_link_text": "View results"
+		"notif_link_text": "View results",
+		"cutoff_attempts": "{{count}} att.",
+		"wca_live_error": "Failed to load WCA Live. Please refresh the page."
 	},
 	"competitions": {
 		"page_title": "WCA Competitions",
@@ -605,7 +607,8 @@
 		"results_count": "{{count}} competitions found",
 		"col_date": "Date",
 		"col_name": "Name",
-		"col_events": "Events"
+		"col_events": "Events",
+		"col_distance": "km"
 	},
 	"notification_prefs": {
 		"email_notifications": "Email Notifications",

@@ -120,7 +120,8 @@
 		align-items: center;
 		justify-content: space-between;
 		gap: 1rem;
-		padding: 0.75rem 1rem;
+		padding: 1rem 1rem;
+		min-height: 5.5rem;
 		background: rgb(var(--module-color));
 		border-radius: 0.5rem;
 		border: 1px solid rgba(var(--text-color), 0.06);
@@ -416,9 +417,14 @@
 		padding: 0.65rem 1rem;
 		background: rgb(var(--module-color));
 		border-radius: 0.5rem;
-		border: 1px solid rgba(var(--text-color), 0.1);
+		border: 1px solid rgba(255, 255, 255, 0.5);
 		font-size: 0.95rem;
 		overflow: hidden;
+		color: #fff;
+
+		svg {
+			color: #fff;
+		}
 
 		&:focus-within {
 			border-color: rgb(var(--primary-color));
@@ -511,11 +517,25 @@
 		}
 	}
 
+	&__competitor-number {
+		flex-shrink: 0;
+		min-width: 2.25rem;
+		padding: 0.3rem 0.5rem;
+		border-radius: 6px;
+		background: rgba(var(--primary-color), 0.12);
+		color: #fff;
+		font-weight: 700;
+		font-size: 0.9rem;
+		text-align: center;
+		font-variant-numeric: tabular-nums;
+	}
+
 	&__competitor-info {
 		display: flex;
 		flex-direction: column;
 		gap: 1px;
 		min-width: 0;
+		flex: 1;
 	}
 
 	&__competitor-name-list {

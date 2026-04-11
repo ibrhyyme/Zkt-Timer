@@ -483,8 +483,8 @@
 		"back_to_list": "Yarışmalara dön",
 		"back_to_competitors": "Geri Dön",
 		"ongoing": "Devam Ediyor",
-		"my_competitions": "Yarismalarim",
-		"upcoming_competitions": "Yaklasan Yarismalar",
+		"my_competitions": "Yarışmalarım",
+		"upcoming_competitions": "Yaklaşan Yarışmalar",
 		"loading_competitions": "Yarışmalar yükleniyor...",
 		"no_competitions": "Yaklaşan yarışma bulunamadı.",
 		"no_wcif": "Bu yarışma için program verisi henüz mevcut değil.",
@@ -593,7 +593,9 @@
 		"notif_advancing_questionable": "{{ranking}}. sırayla üst tura geçtin (ön sıralama, değişebilir)",
 		"notif_not_advancing": "{{ranking}}. sırada bitirdin. Ellerine sağlık!",
 		"notif_final_result": "{{ranking}}. sırada bitirdin!",
-		"notif_link_text": "Sonuçları gör"
+		"notif_link_text": "Sonuçları gör",
+		"cutoff_attempts": "{{count}} deneme",
+		"wca_live_error": "WCA Live yüklenirken bir sorun oluştu. Sayfayı yenileyin."
 	},
 	"competitions": {
 		"page_title": "WCA Yarışmaları",
@@ -605,7 +607,8 @@
 		"results_count": "{{count}} yarışma bulundu",
 		"col_date": "Tarih",
 		"col_name": "Ad",
-		"col_events": "Etkinlikler"
+		"col_events": "Etkinlikler",
+		"col_distance": "km"
 	},
 	"notification_prefs": {
 		"email_notifications": "E-posta Bildirimleri",

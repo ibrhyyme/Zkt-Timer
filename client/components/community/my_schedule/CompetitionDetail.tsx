@@ -114,16 +114,19 @@ function GroupsTab({competitors, myWcaId, competitionId, searchQuery, setSearchQ
 		let list = competitors;
 		if (searchQuery.trim()) {
 			const q = searchQuery.toLowerCase();
-			list = list.filter((c: any) => c.name.toLowerCase().includes(q) || (c.wcaId && c.wcaId.toLowerCase().includes(q)));
+			list = list.filter((c: any) =>
+				c.name.toLowerCase().includes(q) ||
+				(c.wcaId && c.wcaId.toLowerCase().includes(q)) ||
+				String(c.registrantId).includes(q)
+			);
 		}
-		if (myWcaId) {
-			list = [...list].sort((a: any, bx: any) => {
+		return [...list].sort((a: any, bx: any) => {
+			if (myWcaId) {
 				if (a.wcaId === myWcaId) return -1;
 				if (bx.wcaId === myWcaId) return 1;
-				return a.name.localeCompare(bx.name);
-			});
-		}
-		return list;
+			}
+			return a.registrantId - bx.registrantId;
+		});
 	}, [competitors, searchQuery, myWcaId]);
 
 	return (
@@ -152,6 +155,7 @@ function GroupsTab({competitors, myWcaId, competitionId, searchQuery, setSearchQ
 							className={b('competitor-card', {me: isMe})}
 							onClick={() => history.push(`/community/competitions/${competitionId}/persons/${comp.registrantId}`)}
 						>
+							<span className={b('competitor-number')}>{comp.registrantId}</span>
 							<div className={b('competitor-info')}>
 								<span className={b('competitor-name-list')}>
 									{comp.name}
@@ -205,8 +209,8 @@ function EventsTab({events, competitionId, locale, t}: any) {
 					<thead>
 						<tr>
 							<th>{t('my_schedule.col_event')}</th>
-							<th>Round</th>
-							<th>Groups</th>
+							<th>{t('my_schedule.col_round')}</th>
+							<th>{t('my_schedule.tab_groups')}</th>
 							<th></th>
 						</tr>
 					</thead>
@@ -271,7 +275,7 @@ function RoundPanel({row, competitionId, locale, t}: any) {
 				{row.cutoff && (
 					<span className={b('round-info-item')}>
 						{t('my_schedule.cutoff')}: {formatWcaTime(row.cutoff)}
-						{row.cutoffAttempts && ` (${row.cutoffAttempts} att.)`}
+						{row.cutoffAttempts && ` (${t('my_schedule.cutoff_attempts', {count: row.cutoffAttempts})})`}
 					</span>
 				)}
 				{row.advancementType && row.advancementLevel && (
@@ -293,7 +297,7 @@ function RoundPanel({row, competitionId, locale, t}: any) {
 							className={b('group-card')}
 							onClick={() => history.push(`/community/competitions/${competitionId}/activities/${activityCode}`)}
 						>
-							<span className={b('group-card-title')}>Group {group.groupNumber}</span>
+							<span className={b('group-card-title')}>{t('my_schedule.col_group')} {group.groupNumber}</span>
 							{group.startTime && (
 								<span className={b('group-card-time')}>
 									{formatTime(group.startTime, locale)}

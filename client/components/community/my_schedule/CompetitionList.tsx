@@ -141,6 +141,39 @@ export default function CompetitionList() {
 	const showSearchResults = compSearch.trim().length >= 3 && searchResults;
 	const displayList = showSearchResults ? searchResults : filteredCompetitions;
 
+	const todayStr = useMemo(() => {
+		const n = new Date();
+		return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
+	}, []);
+
+	function renderCompCard(comp: any, opts: {mine?: boolean} = {}) {
+		const isFinished = comp.end_date < todayStr;
+		const isOngoing = comp.start_date <= todayStr && comp.end_date >= todayStr;
+		return (
+			<div
+				key={comp.id}
+				className={b('comp-card', {finished: isFinished, ongoing: isOngoing, mine: opts.mine})}
+				onClick={() => handleSelectCompetition(comp.id)}
+				onMouseEnter={() => handleHoverPrefetch(comp.id)}
+				onMouseLeave={handleHoverLeave}
+			>
+				{comp.country_iso2 && (
+					<span className={b('country-code')}>{comp.country_iso2}</span>
+				)}
+				<div className={b('comp-info')}>
+					<span className={b('comp-title')}>{comp.name}</span>
+					<span className={b('comp-sub')}>
+						{formatDateRange(comp.start_date, comp.end_date, locale)}
+						{comp.city && ` \u2013 ${comp.city}`}
+					</span>
+				</div>
+				{isOngoing && (
+					<span className={b('ongoing-badge')}>{t('my_schedule.ongoing')}</span>
+				)}
+			</div>
+		);
+	}
+
 	return (
 		<div className={b('content')}>
 			{/* WCA banner */}
@@ -179,26 +212,7 @@ export default function CompetitionList() {
 				<div className={b('my-competitions')}>
 					<h3 className={b('section-title')}>{t('my_schedule.my_competitions')}</h3>
 					<div className={b('comp-list')}>
-						{myComps.map((comp: any) => (
-							<div
-								key={comp.id}
-								className={b('comp-card', {mine: true})}
-								onClick={() => handleSelectCompetition(comp.id)}
-								onMouseEnter={() => handleHoverPrefetch(comp.id)}
-								onMouseLeave={handleHoverLeave}
-							>
-								{comp.country_iso2 && (
-									<span className={b('country-code')}>{comp.country_iso2}</span>
-								)}
-								<div className={b('comp-info')}>
-									<span className={b('comp-title')}>{comp.name}</span>
-									<span className={b('comp-sub')}>
-										{formatDateRange(comp.start_date, comp.end_date, locale)}
-										{comp.city && ` \u2013 ${comp.city}`}
-									</span>
-								</div>
-							</div>
-						))}
+						{myComps.map((comp: any) => renderCompCard(comp, {mine: true}))}
 					</div>
 				</div>
 			)}
@@ -239,36 +253,7 @@ export default function CompetitionList() {
 						{t('my_schedule.competition_count', {count: displayList.length})}
 					</span>
 					<div className={b('comp-list')}>
-						{displayList.map((comp: any) => {
-							const now = new Date();
-							const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-							const isFinished = comp.end_date < today;
-							const isOngoing = comp.start_date <= today && comp.end_date >= today;
-
-							return (
-								<div
-									key={comp.id}
-									className={b('comp-card', {finished: isFinished, ongoing: isOngoing})}
-									onClick={() => handleSelectCompetition(comp.id)}
-									onMouseEnter={() => handleHoverPrefetch(comp.id)}
-									onMouseLeave={handleHoverLeave}
-								>
-									{comp.country_iso2 && (
-									<span className={b('country-code')}>{comp.country_iso2}</span>
-								)}
-								<div className={b('comp-info')}>
-									<span className={b('comp-title')}>{comp.name}</span>
-									<span className={b('comp-sub')}>
-										{formatDateRange(comp.start_date, comp.end_date, locale)}
-										{comp.city && ` \u2013 ${comp.city}`}
-									</span>
-								</div>
-									{isOngoing && (
-										<span className={b('ongoing-badge')}>{t('my_schedule.ongoing')}</span>
-									)}
-								</div>
-							);
-						})}
+						{displayList.map((comp: any) => renderCompCard(comp))}
 					</div>
 				</>
 			)}
