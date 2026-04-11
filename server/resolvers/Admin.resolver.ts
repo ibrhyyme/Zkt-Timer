@@ -35,6 +35,7 @@ import { getOnlineCounts } from '../services/socket_util';
 import WcaResultEnteredNotification from '../resources/notification_types/wca_result_entered';
 import WcaRoundFinishedNotification from '../resources/notification_types/wca_round_finished';
 import { getPrisma } from '../database';
+import { WcaApiService } from '../services/WcaApiService';
 
 @Resolver()
 export class AdminResolver {
@@ -322,67 +323,106 @@ export class AdminResolver {
 
 		const user = integration.user;
 		const locale = (user as any).settings?.locale || 'tr';
+		const eventId = '333';
+		const eventName = WcaApiService.getShortEventName(eventId);
+		const compId = 'TestCompetition2026';
+		const compName = 'Test Yarismasi 2026';
 
-		// --- Test 1: Sonuc girildi bildirimi ---
-		const resultNotif = new WcaResultEnteredNotification(
-			{
-				user: user as any,
-				triggeringUser: user as any,
-				sendEmail: false,
-			},
-			{
-				competitionId: 'TestCompetition2026',
-				competitionName: 'Test Yarismasi 2026',
-				eventId: '333',
-				eventName: '3x3x3 Cube',
+		const baseInput = {
+			user: user as any,
+			triggeringUser: user as any,
+			sendEmail: false,
+		};
+
+		// --- Test 1: Sonuc girildi (Avg + Single) ---
+		{
+			const body = 'Avg: 12.45 · Single: 11.20';
+			const notif = new WcaResultEnteredNotification(baseInput, {
+				competitionId: compId,
+				competitionName: compName,
+				eventId,
+				eventName,
 				roundNumber: 1,
-				resultText: 'Avg: 12.45 · Single: 11.20',
+				resultText: body,
 				locale,
-			},
-		);
+			});
+			await notif.send().catch(() => {});
+			await sendPushToUser(user.id, notif.subject(), body, {
+				type: 'wca_result_entered',
+				competitionId: compId,
+				eventId,
+				roundNumber: '1',
+			});
+		}
 
-		const resultTitle = resultNotif.subject();
-		const resultBody = 'Avg: 12.45 · Single: 11.20';
-
-		await resultNotif.send().catch(() => {});
-		await sendPushToUser(user.id, resultTitle, resultBody, {
-			type: 'wca_result_entered',
-			competitionId: 'TestCompetition2026',
-			eventId: '333',
-			roundNumber: '1',
-		});
-
-		// --- Test 2: Round bitti bildirimi (advancing) ---
-		const finishNotif = new WcaRoundFinishedNotification(
-			{
-				user: user as any,
-				triggeringUser: user as any,
-				sendEmail: false,
-			},
-			{
-				competitionId: 'TestCompetition2026',
-				competitionName: 'Test Yarismasi 2026',
-				eventId: '333',
-				eventName: '3x3x3 Cube',
+		// --- Test 2: Round 1 bitti, ust tura yukseldi ---
+		{
+			const notif = new WcaRoundFinishedNotification(baseInput, {
+				competitionId: compId,
+				competitionName: compName,
+				eventId,
+				eventName,
 				roundNumber: 1,
 				ranking: 14,
 				advancing: true,
 				advancingQuestionable: false,
 				isFinal: false,
 				locale,
-			},
-		);
+			});
+			await notif.send().catch(() => {});
+			await sendPushToUser(user.id, notif.subject(), notif.inAppMessage(), {
+				type: 'wca_round_finished',
+				competitionId: compId,
+				eventId,
+				roundNumber: '1',
+			});
+		}
 
-		const finishTitle = finishNotif.subject();
-		const finishBody = finishNotif.inAppMessage();
+		// --- Test 3: Round 2 bitti, ust tura YUKSELEMEDI ---
+		{
+			const notif = new WcaRoundFinishedNotification(baseInput, {
+				competitionId: compId,
+				competitionName: compName,
+				eventId,
+				eventName,
+				roundNumber: 2,
+				ranking: 9,
+				advancing: false,
+				advancingQuestionable: false,
+				isFinal: false,
+				locale,
+			});
+			await notif.send().catch(() => {});
+			await sendPushToUser(user.id, notif.subject(), notif.inAppMessage(), {
+				type: 'wca_round_finished',
+				competitionId: compId,
+				eventId,
+				roundNumber: '2',
+			});
+		}
 
-		await finishNotif.send().catch(() => {});
-		await sendPushToUser(user.id, finishTitle, finishBody, {
-			type: 'wca_round_finished',
-			competitionId: 'TestCompetition2026',
-			eventId: '333',
-			roundNumber: '1',
-		});
+		// --- Test 4: Final bitti ---
+		{
+			const notif = new WcaRoundFinishedNotification(baseInput, {
+				competitionId: compId,
+				competitionName: compName,
+				eventId,
+				eventName,
+				roundNumber: 3,
+				ranking: 5,
+				advancing: false,
+				advancingQuestionable: false,
+				isFinal: true,
+				locale,
+			});
+			await notif.send().catch(() => {});
+			await sendPushToUser(user.id, notif.subject(), notif.inAppMessage(), {
+				type: 'wca_round_finished',
+				competitionId: compId,
+				eventId,
+				roundNumber: '3',
+			});
+		}
 
 		return true;
 	}

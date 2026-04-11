@@ -4,7 +4,7 @@ import {logger} from './logger';
 import {acquireRedisLock} from './redis';
 import {createRedisKey, RedisNamespace} from './redis';
 import {sendPushToUser} from './push';
-import {getWcaLiveData, fetchLiveRoundResults, formatCentiseconds} from './WcaLiveService';
+import {getWcaLiveData, fetchLiveRoundResults, formatCentiseconds, WcaLiveRoundData} from './WcaLiveService';
 import WcaResultEnteredNotification from '../resources/notification_types/wca_result_entered';
 import WcaRoundFinishedNotification from '../resources/notification_types/wca_round_finished';
 import {WcaApiService} from './WcaApiService';
@@ -117,12 +117,12 @@ async function processCompetition(compId: string, states: StateRow[]): Promise<n
 	const liveData = await getWcaLiveData(compId).catch(() => null);
 	if (!liveData) return 0;
 
-	// Hizli erisim icin map'ler
+	// Hizli erisim icin map'ler — bos string key'leri kabul etme
 	const byWcaId = new Map<string, StateRow>();
 	const byName = new Map<string, StateRow>();
 	for (const s of states) {
-		if (s.wca_id) byWcaId.set(s.wca_id, s);
-		if (s.person_name) byName.set(s.person_name, s);
+		if (s.wca_id && s.wca_id.trim()) byWcaId.set(s.wca_id, s);
+		if (s.person_name && s.person_name.trim()) byName.set(s.person_name, s);
 	}
 
 	// Event basina max round numarasi (final tespiti icin)
@@ -141,7 +141,7 @@ async function processCompetition(compId: string, states: StateRow[]): Promise<n
 	let allFinished = true;
 
 	for (const rm of liveData.roundMap) {
-		let round;
+		let round: WcaLiveRoundData | null;
 		try {
 			round = await fetchLiveRoundResults(rm.liveRoundId);
 		} catch (err: any) {
@@ -164,7 +164,7 @@ async function processCompetition(compId: string, states: StateRow[]): Promise<n
 		if (!m) continue;
 		const [, eventId, roundNumStr] = m;
 		const roundNumber = parseInt(roundNumStr, 10);
-		const eventName = WcaApiService.getEventName(eventId);
+		const eventName = WcaApiService.getShortEventName(eventId);
 		const isFinal = maxRoundByEvent.get(eventId) === roundNumber;
 
 		for (const result of round.results) {
@@ -186,7 +186,6 @@ async function processCompetition(compId: string, states: StateRow[]): Promise<n
 						roundNumber,
 						result,
 						round.numberOfAttempts,
-						round.sortBy,
 					);
 					await upsertNotifiedRound(state.id, rm.activityCode, {result_notified: true});
 					pushed++;
@@ -251,7 +250,6 @@ async function sendResultEntered(
 	roundNumber: number,
 	result: {best: number; average: number},
 	numberOfAttempts: number,
-	sortBy: string,
 ) {
 	const locale = getUserLocale(state);
 	const i18n = createI18nInstance(locale);
