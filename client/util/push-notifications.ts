@@ -40,6 +40,12 @@ async function showLocalNotification(title: string, body: string, data?: any): P
 					body,
 					extra: data || {},
 					schedule: {at: new Date(Date.now() + 100)}, // hemen
+					// Android: native build/store gerek olmadan icon fix.
+					// `ic_launcher_background` drawable namespace'inde mevcut (vector).
+					// Statusbar'da silhouette'a cevrilir, iconColor ile Zkt brand mor olur.
+					// iOS bu parametreleri yoksayar — kendi default davranisini surdurur.
+					smallIcon: 'ic_launcher_background',
+					iconColor: '#7C3AED',
 				},
 			],
 		});
