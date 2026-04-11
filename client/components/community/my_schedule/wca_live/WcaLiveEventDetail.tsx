@@ -2,7 +2,7 @@ import React, {useEffect, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useHistory} from 'react-router-dom';
 import {ArrowClockwise, Warning} from 'phosphor-react';
-import {b, formatWcaTime, formatResult, formatAttempts, formatTimeAgo, countryFlag, rankingMedal, RecordTag, EventIcon} from '../shared';
+import {b, formatWcaTime, formatResult, formatAttempts, formatTimeAgo, rankingMedal, RecordTag, EventIcon} from '../shared';
 import {useLiveRoundResults} from '../useLiveResults';
 import {useCompetitionData} from '../CompetitionLoader';
 import ResultModal from './ResultModal';
@@ -289,10 +289,7 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 											{!isMobile && (
 												<td className={b('wca-live-country-cell')}>
 													{r.personCountryIso2 && (
-														<>
-															<span className={b('wca-live-flag-emoji')}>{countryFlag(r.personCountryIso2)}</span>
-															<span className={b('wca-live-flag-iso')}>{r.personCountryIso2}</span>
-														</>
+														<span className={b('wca-live-flag-iso')}>{r.personCountryIso2}</span>
 													)}
 												</td>
 											)}
