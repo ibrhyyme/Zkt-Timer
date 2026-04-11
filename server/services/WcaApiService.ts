@@ -199,6 +199,35 @@ export class WcaApiService {
 	}
 
 	/**
+	 * Bildirim ve kisa goruntuleme icin kisaltilmis event isimleri.
+	 * "3x3x3 Cube" yerine "3x3", "3x3x3 One-Handed" yerine "3x3 OH" vs.
+	 */
+	static getShortEventName(eventCode: string): string {
+		const shortNames: Record<string, string> = {
+			'333': '3x3',
+			'222': '2x2',
+			'444': '4x4',
+			'555': '5x5',
+			'666': '6x6',
+			'777': '7x7',
+			'333bf': '3x3 BLD',
+			'333fm': 'FMC',
+			'333oh': '3x3 OH',
+			'333ft': '3x3 Ayak',
+			'minx': 'Megaminx',
+			'pyram': 'Pyraminx',
+			'clock': 'Clock',
+			'skewb': 'Skewb',
+			'sq1': 'Square-1',
+			'444bf': '4x4 BLD',
+			'555bf': '5x5 BLD',
+			'333mbf': 'MBLD',
+		};
+
+		return shortNames[eventCode] || eventCode;
+	}
+
+	/**
 	 * Fetch public WCIF data for a competition
 	 */
 	static async fetchCompetitionWcif(competitionId: string): Promise<any | null> {

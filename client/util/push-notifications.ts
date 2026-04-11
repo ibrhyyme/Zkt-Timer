@@ -21,6 +21,33 @@ async function registerTokenWithBackend(token: string, platform: string): Promis
 	}
 }
 
+async function showLocalNotification(title: string, body: string, data?: any): Promise<void> {
+	try {
+		const { LocalNotifications } = await import('@capacitor/local-notifications');
+
+		// Permission'i ilk seferinde iste
+		const perm = await LocalNotifications.checkPermissions();
+		if (perm.display !== 'granted') {
+			const req = await LocalNotifications.requestPermissions();
+			if (req.display !== 'granted') return;
+		}
+
+		await LocalNotifications.schedule({
+			notifications: [
+				{
+					id: Date.now() % 2147483647, // 32-bit int
+					title,
+					body,
+					extra: data || {},
+					schedule: {at: new Date(Date.now() + 100)}, // hemen
+				},
+			],
+		});
+	} catch (err) {
+		console.error('[Push] LocalNotification show failed:', err);
+	}
+}
+
 async function initNativePush(): Promise<void> {
 	const { PushNotifications } = await import('@capacitor/push-notifications');
 
@@ -41,8 +68,16 @@ async function initNativePush(): Promise<void> {
 		console.error('[Push] Native registration error:', error);
 	});
 
+	// Foreground'da iken bildirim geldiginde:
+	// PushNotifications plugin foreground'da bildirim gostermez (hem iOS hem Android).
+	// LocalNotifications plugin ile manuel goster — bu plugin iOS'ta da foreground'da
+	// otomatik bildirim gosterir (UNUserNotificationCenterDelegate.willPresent default).
+	// Bu yaklasim native build/store gerektirmez, plugin zaten compile edilmis.
 	PushNotifications.addListener('pushNotificationReceived', (notification) => {
 		console.log('[Push] Notification received in foreground:', notification);
+		const title = notification.title || 'Zkt-Timer';
+		const body = notification.body || '';
+		showLocalNotification(title, body, notification.data);
 	});
 
 	PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
@@ -87,8 +122,36 @@ async function initWebPush(): Promise<void> {
 			await registerTokenWithBackend(token, 'WEB');
 		}
 
+		// Web foreground'da gelen FCM mesajlarini browser Notification API ile manuel goster
+		// (FCM web SDK foreground'da otomatik gostermez)
 		onMessage(messaging, (payload) => {
 			console.log('[Push] Web foreground message:', payload);
+			try {
+				if (Notification.permission !== 'granted') return;
+
+				const title = payload.notification?.title || 'Zkt-Timer';
+				const body = payload.notification?.body || '';
+				const tag = (payload.data?.type as string) || 'default';
+				const link = (payload.data?.competitionId as string)
+					? `/community/competitions/${payload.data?.competitionId}/wca-live`
+					: '/';
+
+				const notif = new Notification(title, {
+					body,
+					icon: '/favicon-192.png',
+					badge: '/favicon-96.png',
+					tag, // ayni tag bildirimleri grupla
+					data: payload.data,
+				});
+
+				notif.onclick = () => {
+					window.focus();
+					if (link) window.location.href = link;
+					notif.close();
+				};
+			} catch (err) {
+				console.error('[Push] Web foreground notification show failed:', err);
+			}
 		});
 	} catch (error) {
 		console.error('[Push] Web push init error:', error);

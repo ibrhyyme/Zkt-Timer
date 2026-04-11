@@ -28,6 +28,9 @@ const config: CapacitorConfig = {
         Keyboard: {
             resize: KeyboardResize.None,
         },
+        // PushNotifications presentationOptions yok — foreground'da gosterimi
+        // client/util/push-notifications.ts icindeki LocalNotifications fallback'i hallediyor.
+        // Bu sayede native build/store gerek olmaz.
     },
 };
 
