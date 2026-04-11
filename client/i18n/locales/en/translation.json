@@ -898,6 +898,7 @@
 		"are_you_sure": "Are you sure?",
 		"bulk_delete_confirm": "You are deleting multiple sessions. This action cannot be undone. Do you want to continue?",
 		"created": "Created",
+		"drag_to_reorder": "Drag to reorder",
 		"create_session": "Create Session",
 		"create_session_error": "Server Error: Could not create session",
 		"create_new_session_title": "Create New Session",

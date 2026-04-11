@@ -17,7 +17,6 @@ async function createSession(context: GraphQLContext, input: SessionInput) {
 			id: uniqid('se-'),
 			...input,
 			user_id: context.user.id,
-			order: 0,
 		},
 	});
 }
@@ -179,7 +178,7 @@ export class SessionResolver {
 
 	@Authorized([Role.LOGGED_IN, Role.PRO])
 	@Mutation(() => GraphQLVoid)
-	async reorderSessions(@Ctx() context: GraphQLContext, @Arg('ids', () => [String]) ids: string[]) {
+	async reorderSessions(@Ctx() context: GraphQLContext, @Arg('ids', () => [String], {validate: false}) ids: string[]) {
 		const sessions = await getSessionsByIds(context.user, ids);
 		if (sessions.length !== ids.length) {
 			throw new GraphQLError(ErrorCode.NOT_FOUND, 'Invalid session ID list');

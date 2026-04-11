@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import './Sessions.scss';
-import { Plus, CaretDown } from 'phosphor-react';
+import { Plus } from 'phosphor-react';
 import CubePicker from '../common/cube_picker/CubePicker';
 import TimeChart from '../modules/time_chart/TimeChart';
 import History from '../modules/history/History';
@@ -14,7 +14,7 @@ import arrayMove from 'array-move';
 import Session from './session/Session';
 import { fetchSessionById, fetchSessions, getCubeTypesFromSession } from '../../db/sessions/query';
 import { fetchLastCubeTypeForSession } from '../../db/solves/query';
-import { reorderSessions, updateSessionDb, createSessionDb, deleteSessionDb, mergeSessionsDb } from '../../db/sessions/update';
+import { reorderSessions, updateSessionDb, deleteSessionDb, mergeSessionsDb } from '../../db/sessions/update';
 import { useGeneral } from '../../util/hooks/useGeneral';
 import block from '../../styles/bem';
 import { useSessionDb } from '../../util/hooks/useSessionDb';
@@ -24,11 +24,9 @@ import Button from '../common/button/Button';
 import Module from '../common/module/Module';
 import TimeDistro from '../modules/time_distro/TimeDistro';
 import { useSettings } from '../../util/hooks/useSettings';
-import { setCubeType, setCurrentSession } from '../../db/settings/update';
-import { v4 as uuid } from 'uuid';
+import { setCurrentSession } from '../../db/settings/update';
 import ConfirmModal from '../common/confirm_modal/ConfirmModal';
 import { toastSuccess, toastError } from '../../util/toast';
-import Dropdown from '../common/inputs/dropdown/Dropdown';
 
 const b = block('sessions');
 
@@ -174,8 +172,10 @@ export default function Sessions() {
 	}
 
 	function onSortEnd({ oldIndex, newIndex }) {
+		if (oldIndex === newIndex) return;
+
 		const sessions = arrayMove(allSessions, oldIndex, newIndex);
-		const sessionIds = sessions.map((s) => s.id);
+		const sessionIds = sessions.map((s) => s.id).filter(Boolean);
 
 		reorderSessions(sessionIds);
 	}
@@ -218,17 +218,13 @@ export default function Sessions() {
 			let updatedSessionId = currentSessionId;
 
 			if (currentSessionId === id) {
-				const newId = uuid();
+				const fallback = allSessions.find((s) => s.id !== id);
+				const fallbackCubeType = fetchLastCubeTypeForSession(fallback.id) || '333';
 
-				await createSessionDb({
-					name: t('sessions.new_session'),
-					id: newId,
-				});
+				setCurrentSession(fallback.id);
+				setCubeType(fallbackCubeType);
 
-				setCurrentSession(newId);
-				setCubeType('333');
-
-				updatedSessionId = newId;
+				updatedSessionId = fallback.id;
 			}
 
 			setSelectedSessionId(updatedSessionId);
@@ -298,14 +294,11 @@ export default function Sessions() {
 						const deletingCurrent = idsToDelete.includes(currentSessionId);
 
 						if (deletingCurrent) {
-							const newId = uuid();
-							await createSessionDb({
-								name: t('sessions.new_session'),
-								id: newId,
-							});
-							setCurrentSession(newId);
-							setCubeType('333');
-							updatedSessionId = newId;
+							const fallback = allSessions.find((s) => !idsToDelete.includes(s.id));
+							const fallbackCubeType = fetchLastCubeTypeForSession(fallback.id) || '333';
+							setCurrentSession(fallback.id);
+							setCubeType(fallbackCubeType);
+							updatedSessionId = fallback.id;
 						}
 
 						for (const id of idsToDelete) {
@@ -458,68 +451,36 @@ export default function Sessions() {
 		</div>
 	);
 
-	// Mobil için dropdown seçenekleri
-	const sessionDropdownOptions = allSessions.map((ses) => ({
-		text: ses.name,
-		disabled: selectedSessionId === ses.id,
-		onClick: () => selectSession(null, ses.id),
-	}));
+	const sortableConfig = mobileMode
+		? { pressDelay: 200, axis: 'xy' as const }
+		: { distance: 5, axis: 'y' as const };
 
 	return (
 		<div className={b({ mobile: mobileMode })}>
 			<PageTitle pageName={t('sessions.page_title')} />
 			<div className={b('body')}>
-				{mobileMode ? (
-					// Mobil: Dropdown + Yeni Sezon butonu
-					<div className={b('sessions-container')}>
-						<Module>
-							<div className={b('mobile-session-header')}>
-								<div className={b('mobile-session-picker')}>
-									<label className={b('mobile-session-label')}>{t('sessions.select_session')}</label>
-									<Dropdown
-										noMargin
-										text={session.name}
-										icon={<CaretDown />}
-										options={sessionDropdownOptions}
-									/>
-								</div>
-								<Button
-									primary
-									glow
-									text={t('sessions.new_session')}
-									onClick={openCreateNewSession}
-									type="button"
-									icon={<Plus weight="bold" />}
-									noMargin
-								/>
-							</div>
-						</Module>
-					</div>
-				) : (
-					// Desktop: Liste görünümü
-					<div className={b('sessions-container')}>
-						<Button
-							primary
-							glow
-							large
-							text={t('sessions.new_session')}
-							onClick={openCreateNewSession}
-							type="button"
-							icon={<Plus weight="bold" />}
-							noMargin
-						/>
-						<SortableList
-							useDragHandle
-							lockAxis="y"
-							selectSession={selectSession}
-							setSelectedSessionId={setSelectedSessionId}
-							sessions={allSessions}
-							selectedSessionId={selectedSessionId}
-							multiSelectedIds={multiSelectedIds}
-							onSortEnd={onSortEnd}
-						/>
-					</div>
-				)}
+				<div className={b('sessions-container')}>
+					<Button
+						primary
+						glow
+						large={!mobileMode}
+						text={t('sessions.new_session')}
+						onClick={openCreateNewSession}
+						type="button"
+						icon={<Plus weight="bold" />}
+						noMargin
+					/>
+					<SortableList
+						{...sortableConfig}
+						helperClass="cd-session-row--sortable-helper"
+						selectSession={selectSession}
+						setSelectedSessionId={setSelectedSessionId}
+						sessions={allSessions}
+						selectedSessionId={selectedSessionId}
+						multiSelectedIds={multiSelectedIds}
+						onSortEnd={onSortEnd}
+					/>
+				</div>
 				<div>{body}</div>
 			</div>
 		</div>
