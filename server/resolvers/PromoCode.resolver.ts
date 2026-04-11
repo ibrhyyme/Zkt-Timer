@@ -7,6 +7,7 @@ import {PromoCode, CreatePromoCodeInput, RedeemPromoCodeResult, PromoCodeRedempt
 import {getPrisma} from '../database';
 import {getUserById, updateUserAccountWithParams} from '../models/user_account';
 import MembershipGrantedNotification from '../resources/notification_types/membership_granted';
+import {sendPushToUser} from '../services/push';
 
 @Resolver()
 export class PromoCodeResolver {
@@ -135,6 +136,10 @@ export class PromoCodeResolver {
 					expires_at
 				);
 				await notification.send();
+				await sendPushToUser(user.id, notification.subject(), notification.inAppMessage(), {
+					type: 'membership_granted',
+					membershipType: promoCode.membership_type,
+				});
 			} catch (error) {
 				console.error('[MembershipNotification] Failed to send:', error);
 			}

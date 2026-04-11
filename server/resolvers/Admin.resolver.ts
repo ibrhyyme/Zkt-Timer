@@ -223,6 +223,10 @@ export class AdminResolver {
 					pro_expires_at
 				);
 				await notification.send();
+				await sendPushToUser(targetUser.id, notification.subject(), notification.inAppMessage(), {
+					type: 'membership_granted',
+					membershipType: 'pro',
+				});
 			} catch (error) {
 				console.error('[MembershipNotification] Failed to send:', error);
 			}
@@ -260,6 +264,10 @@ export class AdminResolver {
 					premium_expires_at
 				);
 				await notification.send();
+				await sendPushToUser(targetUser.id, notification.subject(), notification.inAppMessage(), {
+					type: 'membership_granted',
+					membershipType: 'premium',
+				});
 			} catch (error) {
 				console.error('[MembershipNotification] Failed to send:', error);
 			}

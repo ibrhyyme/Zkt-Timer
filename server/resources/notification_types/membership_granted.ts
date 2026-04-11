@@ -18,13 +18,16 @@ export default class MembershipGrantedNotification extends Notification {
 
 	subject() {
 		const label = this.membershipType === 'premium' ? 'Premium' : 'Pro';
+		if (this.expiresAt) {
+			return `Tebrikler! ${label} uyeliginiz ${this.formatDateTime(this.expiresAt)} tarihine kadar aktif`;
+		}
 		return `Tebrikler! Zkt Timer ${label} uyeliginiz aktif`;
 	}
 
 	inAppMessage() {
 		const label = this.membershipType === 'premium' ? 'Premium' : 'Pro';
 		if (this.expiresAt) {
-			return `Tebrikler! ${label} uyeliginiz ${this.formatDate(this.expiresAt)} tarihine kadar aktif`;
+			return `Tebrikler! ${label} uyeliginiz ${this.formatDateTime(this.expiresAt)} tarihine kadar aktif`;
 		}
 		return `Tebrikler! ${label} uyeliginiz aktif`;
 	}
@@ -32,7 +35,7 @@ export default class MembershipGrantedNotification extends Notification {
 	message() {
 		const label = this.membershipType === 'premium' ? 'Premium' : 'Pro';
 		if (this.expiresAt) {
-			return `Tebrikler! Zkt Timer ${label} uyeliginiz basariyla aktif edildi. Uyeliginiz ${this.formatDate(this.expiresAt)} tarihine kadar gecerlidir.`;
+			return `Tebrikler! Zkt Timer ${label} uyeliginiz basariyla aktif edildi. Uyeliginiz ${this.formatDateTime(this.expiresAt)} tarihine kadar gecerlidir.`;
 		}
 		return `Tebrikler! Zkt Timer ${label} uyeliginiz basariyla aktif edildi. Uyeliginiz suresizdir.`;
 	}
@@ -60,11 +63,13 @@ export default class MembershipGrantedNotification extends Notification {
 		};
 	}
 
-	private formatDate(date: Date): string {
-		return date.toLocaleDateString('tr-TR', {
+	private formatDateTime(date: Date): string {
+		return date.toLocaleString('tr-TR', {
 			day: 'numeric',
 			month: 'long',
 			year: 'numeric',
+			hour: '2-digit',
+			minute: '2-digit',
 		});
 	}
 }
