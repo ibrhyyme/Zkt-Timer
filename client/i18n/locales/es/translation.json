@@ -898,6 +898,7 @@
 		"are_you_sure": "¿Estás seguro?",
 		"bulk_delete_confirm": "Estás eliminando múltiples sesiones. Esta acción no se puede deshacer. ¿Deseas continuar?",
 		"created": "Creada",
+		"drag_to_reorder": "Arrastra para reordenar",
 		"create_session": "Crear sesión",
 		"create_session_error": "Error del servidor: No se pudo crear la sesión",
 		"create_new_session_title": "Crear nueva sesión",

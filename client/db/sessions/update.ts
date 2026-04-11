@@ -32,9 +32,11 @@ export async function createSessionDb(sessionInput: Partial<Session>) {
 		session = { ...session, id: generateId() } as Session;
 	}
 
+	const nextOrder = fetchSessions().length;
+
 	sessionDb.insert({
 		...session,
-		order: 0,
+		order: session.order ?? nextOrder,
 	});
 	updateLocalDbOrderValueForAllSessions();
 
@@ -63,11 +65,14 @@ export async function deleteSessionDb(session: Session) {
 }
 
 export async function reorderSessions(sessionIds: string[]) {
-	updateLocalDbOrderValuesForSessionIds(sessionIds);
+	const validIds = sessionIds.filter(Boolean);
+	if (!validIds.length) return;
+
+	updateLocalDbOrderValuesForSessionIds(validIds);
 
 	if (canSync()) {
 		await gqlMutateTyped(ReorderSessionsDocument, {
-			ids: sessionIds,
+			ids: validIds,
 		});
 	}
 }

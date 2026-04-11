@@ -24,6 +24,7 @@
 		flex-direction: column;
 		justify-content: flex-start;
 		width: 100%;
+		min-width: 0;
 
 		span {
 			display: table;
@@ -34,6 +35,13 @@
 		}
 	}
 
+	&__drag-hint {
+		display: none !important;
+		color: rgb(var(--primary-color)) !important;
+		opacity: 1 !important;
+		font-weight: 500;
+	}
+
 	&--selected {
 		border: 4px solid rgb(var(--primary-color)) !important;
 	}
@@ -41,5 +49,19 @@
 	&--multi-selected {
 		border: 4px dashed rgb(var(--error-color)) !important;
 		opacity: 0.85;
+	}
+
+	&--sortable-helper {
+		z-index: 9999;
+		cursor: grabbing !important;
+		list-style: none;
+
+		.#{$namespace}-session-row__created-at {
+			display: none !important;
+		}
+
+		.#{$namespace}-session-row__drag-hint {
+			display: table !important;
+		}
 	}
 }

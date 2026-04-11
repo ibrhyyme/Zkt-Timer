@@ -898,6 +898,7 @@
 		"are_you_sure": "Emin misiniz?",
 		"bulk_delete_confirm": "Birden fazla sezon siliyorsunuz. Bu işlem geri alınamaz. Devam etmek istiyor musunuz?",
 		"created": "Oluşturuldu",
+		"drag_to_reorder": "Sezon sırası için sürükleyin",
 		"create_session": "Sezon Oluştur",
 		"create_session_error": "Sunucu Hatası: Oturum oluşturulamadı",
 		"create_new_session_title": "Yeni oturum oluştur",

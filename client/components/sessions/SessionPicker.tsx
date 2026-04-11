@@ -42,21 +42,23 @@ export default function SessionPicker(props: Props) {
 	}
 
 	const options = useMemo(() => {
-		const sessionOptions = fetchSessions().map((ses) => ({
+		const sessions = fetchSessions();
+		const showNewSessionButton = me && !stateless;
+
+		const sessionOptions = sessions.map((ses, i) => ({
 			text: ses.name,
 			disabled: selectedSession?.id === ses.id,
 			onClick: () => switchSession(ses),
+			separator: showNewSessionButton && i === sessions.length - 1,
 		}));
 
-		// Add "Yeni sezon +" as the first option if user is logged in
-		if (me && !stateless) {
+		if (showNewSessionButton) {
 			return [
+				...sessionOptions,
 				{
 					text: `${t('sessions.new_session')} +`,
 					onClick: toggleCreateNewSession,
-					separator: true, // Add separator after this item
 				},
-				...sessionOptions,
 			];
 		}
 
