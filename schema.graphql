@@ -377,6 +377,7 @@ type Mutation {
   setPremiumStatus(minutes: Float, isPremium: Boolean, userId: String): UserAccount
   adminDeleteUserAccount(userId: String): UserAccount
   adminSendPushToUser(body: String, title: String, userId: String): AdminSendPushResult
+  testWcaNotification(wcaId: String): Boolean
   updateStatsModuleBlocks(blocks: [StatsModuleBlockInput]): StatsModule
   createDemoSolve(input: DemoSolveInput): DemoSolve
   fetchWcaRecords: [WcaRecord]

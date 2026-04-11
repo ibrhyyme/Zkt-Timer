@@ -636,6 +636,7 @@ export type Mutation = {
   setTimerBackgroundHex: TimerBackground;
   setUserPassword?: Maybe<PublicUserAccount>;
   setVerifiedStatus?: Maybe<UserAccount>;
+  testWcaNotification?: Maybe<Scalars['Boolean']>;
   togglePromoCodeActive?: Maybe<PromoCode>;
   unbanUserAccount?: Maybe<UserAccount>;
   unpublishWcaRecord?: Maybe<WcaRecord>;
@@ -1014,6 +1015,11 @@ export type MutationSetUserPasswordArgs = {
 export type MutationSetVerifiedStatusArgs = {
   userId?: InputMaybe<Scalars['String']>;
   verified?: InputMaybe<Scalars['Boolean']>;
+};
+
+
+export type MutationTestWcaNotificationArgs = {
+  wcaId?: InputMaybe<Scalars['String']>;
 };
 
 

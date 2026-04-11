@@ -32,6 +32,9 @@ import { sendPushToUser } from '../services/push';
 import { AdminSendPushResult } from '../schemas/PushToken.schema';
 import { OnlineStats } from '../schemas/SiteConfig.schema';
 import { getOnlineCounts } from '../services/socket_util';
+import WcaResultEnteredNotification from '../resources/notification_types/wca_result_entered';
+import WcaRoundFinishedNotification from '../resources/notification_types/wca_round_finished';
+import { getPrisma } from '../database';
 
 @Resolver()
 export class AdminResolver {
@@ -289,5 +292,98 @@ export class AdminResolver {
 	@Query(() => OnlineStats)
 	async onlineStats(): Promise<OnlineStats> {
 		return getOnlineCounts();
+	}
+
+	/**
+	 * Test mutation: WCA bildirimlerini bir kullaniciya yollar.
+	 * WCA ID ile kullaniciyi bulur, hem result_entered hem round_finished push'larini test eder.
+	 * Sample data ile calisir, gercek yarisma gerekli degil.
+	 */
+	@Authorized([Role.ADMIN])
+	@Mutation(() => Boolean)
+	async testWcaNotification(
+		@Arg('wcaId') wcaId: string
+	): Promise<boolean> {
+		const prisma = getPrisma();
+
+		// WCA ID ile kullaniciyi bul
+		const integration = await prisma.integration.findFirst({
+			where: {service_name: 'wca', wca_id: wcaId},
+			include: {
+				user: {
+					include: {settings: true},
+				},
+			},
+		});
+
+		if (!integration?.user) {
+			throw new GraphQLError(ErrorCode.NOT_FOUND, `WCA ID '${wcaId}' icin kullanici bulunamadi`);
+		}
+
+		const user = integration.user;
+		const locale = (user as any).settings?.locale || 'tr';
+
+		// --- Test 1: Sonuc girildi bildirimi ---
+		const resultNotif = new WcaResultEnteredNotification(
+			{
+				user: user as any,
+				triggeringUser: user as any,
+				sendEmail: false,
+			},
+			{
+				competitionId: 'TestCompetition2026',
+				competitionName: 'Test Yarismasi 2026',
+				eventId: '333',
+				eventName: '3x3x3 Cube',
+				roundNumber: 1,
+				resultText: 'Avg: 12.45 · Single: 11.20',
+				locale,
+			},
+		);
+
+		const resultTitle = resultNotif.subject();
+		const resultBody = 'Avg: 12.45 · Single: 11.20';
+
+		await resultNotif.send().catch(() => {});
+		await sendPushToUser(user.id, resultTitle, resultBody, {
+			type: 'wca_result_entered',
+			competitionId: 'TestCompetition2026',
+			eventId: '333',
+			roundNumber: '1',
+		});
+
+		// --- Test 2: Round bitti bildirimi (advancing) ---
+		const finishNotif = new WcaRoundFinishedNotification(
+			{
+				user: user as any,
+				triggeringUser: user as any,
+				sendEmail: false,
+			},
+			{
+				competitionId: 'TestCompetition2026',
+				competitionName: 'Test Yarismasi 2026',
+				eventId: '333',
+				eventName: '3x3x3 Cube',
+				roundNumber: 1,
+				ranking: 14,
+				advancing: true,
+				advancingQuestionable: false,
+				isFinal: false,
+				locale,
+			},
+		);
+
+		const finishTitle = finishNotif.subject();
+		const finishBody = finishNotif.inAppMessage();
+
+		await finishNotif.send().catch(() => {});
+		await sendPushToUser(user.id, finishTitle, finishBody, {
+			type: 'wca_round_finished',
+			competitionId: 'TestCompetition2026',
+			eventId: '333',
+			roundNumber: '1',
+		});
+
+		return true;
 	}
 }
