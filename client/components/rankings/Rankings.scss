@@ -225,6 +225,7 @@
 
 	// Avatar
 	&__card-avatar {
+		position: relative;
 		width: 40px;
 		height: 40px;
 		border-radius: 50%;
@@ -233,7 +234,25 @@
 		border: 2px solid rgba(var(--text-color), 0.1);
 
 		&--pro {
-			border-color: rgba(var(--primary-color), 0.5);
+			overflow: visible;
+			border: none;
+			padding: 3px;
+
+			&::before {
+				content: '';
+				position: absolute;
+				inset: 0;
+				border-radius: 50%;
+				background: conic-gradient(from 0deg, #246bfd, #a855f7, #66bb6a, #246bfd);
+				animation: pro-ring-spin 8s linear infinite;
+			}
+
+			.cd-rankings__avatar-img,
+			.cd-rankings__avatar-fallback {
+				position: relative;
+				z-index: 1;
+				border-radius: 50%;
+			}
 		}
 	}
 
@@ -426,4 +445,9 @@
 			gap: 0.35rem;
 		}
 	}
+}
+
+@keyframes pro-ring-spin {
+	from { transform: rotate(0deg); }
+	to { transform: rotate(360deg); }
 }
