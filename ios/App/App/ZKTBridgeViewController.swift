@@ -9,6 +9,11 @@ class ZKTBridgeViewController: CAPBridgeViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+    }
+
+    override func capacitorDidLoad() {
+        bridge?.registerPluginInstance(NativeAudioPlugin())
+        // Capacitor webView yuklendikten sonra navigation delegate'i ayarla
         webView?.navigationDelegate = self
     }
 
