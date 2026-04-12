@@ -114,7 +114,7 @@
 		gap: 1.333rem;
 		align-items: start;
 
-		@media (max-width: 768px) {
+		@media (max-width: 1023px) {
 			grid-template-columns: 1fr;
 		}
 	}
@@ -140,7 +140,7 @@
 		flex-wrap: wrap;
 		margin-top: 0.533rem;
 
-		@media (max-width: 768px) {
+		@media (max-width: 1023px) {
 			flex-direction: column;
 
 			>* {

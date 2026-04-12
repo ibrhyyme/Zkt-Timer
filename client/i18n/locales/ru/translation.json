@@ -8,9 +8,12 @@
 		"solves": "Сборки",
 		"sessions": "Сессии",
 		"battle": "Битва",
+		"ranks": "Рейтинг",
 		"collapse": "Свернуть",
 		"login": "Войти",
-		"signup": "Регистрация"
+		"signup": "Регистрация",
+		"notch_swipe": "Проведите, чтобы открыть меню",
+		"notch_hold": "Удерживайте, чтобы переместить"
 	},
 	"account_dropdown": {
 		"account": "Аккаунт",
@@ -2114,5 +2117,23 @@
 		"solving": "Решение...",
 		"error": "Ошибка решателя",
 		"no_scramble": "Сгенерируйте скрамбл для просмотра решений"
+	},
+	"ranks": {
+		"title": "Рейтинг",
+		"kinch": "Kinch Ranks",
+		"sor_single": "Sum of Ranks (Single)",
+		"sor_average": "Sum of Ranks (Average)",
+		"search_placeholder": "Поиск пользователей...",
+		"user": "Пользователь",
+		"score": "Счёт",
+		"sum": "Сумма",
+		"no_results": "Пока нет пользователей в рейтинге",
+		"link_wca_title": "Привязать аккаунт",
+		"link_wca_desc": "Привяжите аккаунт WCA, чтобы попасть в рейтинг.",
+		"link_wca_button": "Привязать аккаунт",
+		"login_title": "Войти",
+		"login_desc": "Войдите и привяжите аккаунт WCA, чтобы попасть в рейтинг.",
+		"login_button": "Войти",
+		"loading": "Загрузка..."
 	}
 }

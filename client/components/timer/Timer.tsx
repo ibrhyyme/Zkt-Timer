@@ -44,18 +44,7 @@ export default function Timer(props: TimerProps) {
 	useStableViewportHeight();
 	const dispatch = useDispatch();
 	const _mobileMode = useGeneral('mobile_mode');
-	// Timer sayfasi icin genisletilmis mobil breakpoint (1024px)
-	// Katlanan telefonlar (Z Fold ~884px) hala mobil layout kullanir
-	// Tabletler (iPad 1024px+) desktop layout alir
-	const [isTimerMobile, setIsTimerMobile] = useState(
-		typeof window !== 'undefined' && window.innerWidth < 1024
-	);
-	useEffect(() => {
-		const handler = () => setIsTimerMobile(window.innerWidth < 1024);
-		window.addEventListener('resize', handler);
-		return () => window.removeEventListener('resize', handler);
-	}, []);
-	const mobileMode = props.forceMobileLayout ?? (_mobileMode || isTimerMobile);
+	const mobileMode = props.forceMobileLayout ?? _mobileMode;
 
 	const [loading, setLoading] = useState(true);
 	const timerStore = useSelector((state: RootStateOrAny) => state.timer, shallowEqual) as TimerStore;

@@ -48,6 +48,7 @@ import RootRedirect from '../landing/root_redirect/RootRedirect';
 import ProPage from '../pro_page/ProPage';
 import Battle from '../battle/Battle';
 import MySchedule from '../community/my_schedule/MySchedule';
+import Rankings from '../rankings/Rankings';
 
 interface PageOptions {
 	restricted: boolean;
@@ -160,6 +161,9 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/community/competitions/:competitionId/wca-live', App, Community, MySchedule),
 	route('/community/competitions/:competitionId', App, Community, MySchedule),
 	route('/community/competitions', App, Community, MySchedule),
+
+	// Rankings
+	route('/ranks', null, App, Rankings, false),
 
 	// Battle (mobile only)
 	route('/battle', null, App, Battle, false, false, false, false, true),

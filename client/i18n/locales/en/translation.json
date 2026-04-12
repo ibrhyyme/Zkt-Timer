@@ -8,9 +8,12 @@
 		"solves": "Solves",
 		"sessions": "Sessions",
 		"battle": "Battle",
+		"ranks": "Rankings",
 		"collapse": "Collapse",
 		"login": "Log in",
-		"signup": "Sign up"
+		"signup": "Sign up",
+		"notch_swipe": "Swipe to open menu",
+		"notch_hold": "Hold to reposition"
 	},
 	"account_dropdown": {
 		"account": "Account",
@@ -2138,5 +2141,23 @@
 		"solving": "Solving...",
 		"error": "Solver error",
 		"no_scramble": "Generate a scramble to see solutions"
+	},
+	"ranks": {
+		"title": "Rankings",
+		"kinch": "Kinch Ranks",
+		"sor_single": "Sum of Ranks (Single)",
+		"sor_average": "Sum of Ranks (Average)",
+		"search_placeholder": "Search users...",
+		"user": "User",
+		"score": "Score",
+		"sum": "Sum",
+		"no_results": "No ranked users yet",
+		"link_wca_title": "Link Account",
+		"link_wca_desc": "Link your WCA account to join the rankings.",
+		"link_wca_button": "Link Account",
+		"login_title": "Log In",
+		"login_desc": "Log in and link your WCA account to join the rankings.",
+		"login_button": "Log In",
+		"loading": "Loading..."
 	}
 }

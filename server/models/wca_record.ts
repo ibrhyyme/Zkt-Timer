@@ -3,6 +3,7 @@ import {WcaRecord} from '../schemas/WcaRecord.schema';
 import {InternalUserAccount} from '../schemas/UserAccount.schema';
 import {Integration} from '../schemas/Integration.schema';
 import {WcaApiService, WcaPerson} from '../services/WcaApiService';
+import {recalculateUserRanking} from './ranking';
 
 const prisma = new PrismaClient();
 
@@ -92,6 +93,13 @@ export async function fetchAndSaveWcaRecords(user: InternalUserAccount, integrat
 		}
 
 		records.push(record as WcaRecord);
+	}
+
+	// Recalculate Kinch + SoR scores after WCA data refresh
+	try {
+		await recalculateUserRanking(user.id);
+	} catch (err) {
+		console.error(`[Rankings] Failed to recalculate ranking for user ${user.id}:`, err);
 	}
 
 	return records;

@@ -307,6 +307,7 @@ type Query {
   getPromoCodes: [PromoCode]
   getPromoCodeRedemptions(promoCodeId: String): [PromoCodeRedemptionInfo]
   siteConfig: SiteConfig
+  rankings(search: String, page: Int, mode: String): RankingsPage
 }
 
 type Mutation {
@@ -407,6 +408,7 @@ type Mutation {
   togglePromoCodeActive(isActive: Boolean, id: String): PromoCode
   deletePromoCode(id: String): Boolean
   updateSiteConfig(input: UpdateSiteConfigInput): SiteConfig
+  recalculateAllRankings: Boolean
 }
 
 type SmartDevice {
@@ -1471,6 +1473,27 @@ type RedeemPromoCodeResult {
   success: Boolean
   membership_type: String
   expires_at: DateTime
+}
+
+type RankedUser {
+  rank: Int
+  user_id: String
+  username: String
+  is_pro: Boolean
+  wca_id: String
+  country_iso2: String
+  score: Float
+  wca_competition_count: Int
+  wca_medal_gold: Int
+  wca_medal_silver: Int
+  wca_medal_bronze: Int
+  pfp_image_url: String
+}
+
+type RankingsPage {
+  rows: [RankedUser]
+  total_count: Int
+  page: Int
 }
 
 type Notification {

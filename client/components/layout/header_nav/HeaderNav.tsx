@@ -114,11 +114,10 @@ export default function HeaderNav() {
 
 	function windowResize() {
 		// Ekran boyutuna göre mobil/desktop tespiti
-		// Telefon (portrait kilitli): genişlik < 768 → mobil
-		// Tablet (landscape kilitli): genişlik > 768 → desktop
-		// Web: pencere boyutuna göre karar verilir
+		// < 1024: mobil (katlanan telefonlarin acik ekrani dahil)
+		// >= 1024: desktop/tablet
 		// innerHeight <= 500: web browser'da landscape telefon tespiti
-		const shouldBeMobile = window.innerWidth <= 768 || window.innerHeight <= 500;
+		const shouldBeMobile = window.innerWidth < 1024 || window.innerHeight <= 500;
 
 		if (shouldBeMobile && !mobileMode) {
 			dispatch(setGeneral('mobile_mode', true));

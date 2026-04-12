@@ -3,11 +3,14 @@ import ReactDOM from 'react-dom';
 import './BottomSheetNav.scss';
 import {useRouteMatch, useHistory} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
+import {UserCircle} from 'phosphor-react';
 import {NAV_LINKS} from '../Nav';
+import {useMe} from '../../../../util/hooks/useMe';
 import block from '../../../../styles/bem';
 
 const b = block('bottom-sheet-nav');
 const NOTCH_Y_KEY = 'zkt_notch_y';
+const NOTCH_USED_KEY = 'zkt_notch_used';
 
 function loadNotchY(): number {
 	try {
@@ -23,10 +26,21 @@ export default function BottomSheetNav() {
 	const [swipeOffset, setSwipeOffset] = useState<number | null>(null);
 	const [notchY, setNotchY] = useState(loadNotchY);
 	const [repositioning, setRepositioning] = useState(false);
+	const [showHint, setShowHint] = useState(() => {
+		try { return !localStorage.getItem(NOTCH_USED_KEY); } catch { return true; }
+	});
+
+	function markNotchUsed() {
+		if (showHint) {
+			setShowHint(false);
+			try { localStorage.setItem(NOTCH_USED_KEY, '1'); } catch {}
+		}
+	}
 
 	const match = useRouteMatch();
 	const history = useHistory();
 	const {t} = useTranslation();
+	const me = useMe();
 
 	const drawerRef = useRef<HTMLDivElement>(null);
 	const notchRef = useRef<HTMLDivElement>(null);
@@ -58,6 +72,7 @@ export default function BottomSheetNav() {
 		const handleClose = (e: Event) => {
 			const target = e.target as HTMLElement;
 			if (target?.closest(`.${b('grid')}`)) return;
+			if (notchRef.current?.contains(target)) return;
 			setOpen(false);
 		};
 
@@ -143,6 +158,7 @@ export default function BottomSheetNav() {
 			// Swipe tamamlandi
 			if (swipeOffset !== null) {
 				if (swipeOffset > gridWidth() * 0.25) {
+					markNotchUsed();
 					setOpen(true);
 				}
 				setSwipeOffset(null);
@@ -152,6 +168,7 @@ export default function BottomSheetNav() {
 
 			// Tap (ne swipe ne long-press)
 			if (!locked.current) {
+				markNotchUsed();
 				setOpen(true);
 			}
 			locked.current = false;
@@ -251,10 +268,21 @@ export default function BottomSheetNav() {
 				<>
 					<div
 						ref={notchRef}
-						className={b('notch', {hidden: open, repositioning})}
+						className={b('notch', {hidden: open, repositioning, hint: showHint && !open})}
 						style={{top: `${notchY}%`}}
-						onClick={() => !repositioning && setOpen(true)}
-					/>
+						onClick={() => {
+							if (repositioning) return;
+							markNotchUsed();
+							setOpen(true);
+						}}
+					>
+						{showHint && !open && (
+							<div className={b('notch-tooltip')}>
+								<span>{t('nav.notch_swipe')}</span>
+								<span className={b('notch-tooltip-sub')}>{t('nav.notch_hold')}</span>
+							</div>
+						)}
+					</div>
 
 					<div
 						className={b('backdrop', {visible: open || swiping})}
@@ -283,6 +311,17 @@ export default function BottomSheetNav() {
 									</button>
 								);
 							})}
+							{me && (
+								<button
+									className={b('item', {active: /^\/user\//.test(match.path)})}
+									onClick={() => navigateTo(`/user/${me.username}`)}
+								>
+									<div className={b('item-icon')}>
+										<UserCircle size={24} weight="bold" />
+									</div>
+									<span className={b('item-label')}>{t('account_dropdown.profile')}</span>
+								</button>
+							)}
 						</div>
 					</div>
 				</>,

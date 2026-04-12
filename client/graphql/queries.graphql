@@ -417,3 +417,24 @@ query adminTrainerAlternatives($category: String, $page: Int, $pageSize: Int) {
 		hasMore
 	}
 }
+
+query rankings($mode: String!, $page: Int!, $search: String) {
+	rankings(mode: $mode, page: $page, search: $search) {
+		rows {
+			rank
+			user_id
+			username
+			is_pro
+			wca_id
+			country_iso2
+			score
+			wca_competition_count
+			wca_medal_gold
+			wca_medal_silver
+			wca_medal_bronze
+			pfp_image_url
+		}
+		total_count
+		page
+	}
+}

@@ -1,11 +1,14 @@
 import React, {useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import Button, {ButtonProps, CommonType} from '../button/Button';
+import './ConfirmModal.scss';
+import Button, {ButtonProps} from '../button/Button';
 import {IModalProps} from '../modal/Modal';
-import ModalHeader from '../modal/modal_header/ModalHeader';
 import Input from '../inputs/input/Input';
 import {useWindowListener} from '../../../util/hooks/useListener';
 import ProOnly from '../pro_only/ProOnly';
+import block from '../../../styles/bem';
+
+const b = block('confirm-modal');
 
 interface ConfirmModalInfoBox {
 	value: string | number;
@@ -13,8 +16,6 @@ interface ConfirmModalInfoBox {
 }
 
 export interface ConfirmModalProps extends IModalProps {
-	title: string;
-	description?: string;
 	buttonProps?: ButtonProps;
 	buttonText: string;
 	hideInput?: boolean;
@@ -25,8 +26,7 @@ export interface ConfirmModalProps extends IModalProps {
 
 export default function ConfirmModal(props: ConfirmModalProps) {
 	const {t} = useTranslation();
-	const {buttonProps, infoBoxes, proOnly, title, description, triggerAction, buttonText, hideInput, onComplete} =
-		props;
+	const {buttonProps, infoBoxes, proOnly, triggerAction, buttonText, hideInput, onComplete} = props;
 
 	const [confirm, setConfirm] = useState('');
 	const [error, setError] = useState('');
@@ -40,7 +40,6 @@ export default function ConfirmModal(props: ConfirmModalProps) {
 	}
 
 	async function onSubmit(e) {
-		// If enter key is pressed
 		if (e.keyCode === 13 && hideInput) {
 			await onClick(e);
 		}
@@ -93,11 +92,11 @@ export default function ConfirmModal(props: ConfirmModalProps) {
 	let infoBoxContainer = null;
 	if (infoBoxes && infoBoxes.length) {
 		infoBoxContainer = (
-			<div className="grid grid-cols-3 gap-2 mb-8 divide-y-2 divide-button divide-solid">
-				{infoBoxes.map((box) => (
-					<div className="bg-error/90 flex flex-col self-center rounded-lg p-4">
-						<span className="text-2xl font-bold text-text">{box.value}</span>
-						<span className="text-md text-text/70">{box.label}</span>
+			<div className={b('info-boxes')}>
+				{infoBoxes.map((box, i) => (
+					<div key={i} className={b('info-box')}>
+						<span className={b('info-box-value')}>{box.value}</span>
+						<span className={b('info-box-label')}>{box.label}</span>
 					</div>
 				))}
 			</div>
@@ -105,24 +104,25 @@ export default function ConfirmModal(props: ConfirmModalProps) {
 	}
 
 	return (
-		<form className="table" onSubmit={onClick}>
-			<ModalHeader title={title} description={description} />
+		<form className={b()} onSubmit={onClick}>
 			{infoBoxContainer}
 			<ProOnly ignore={!proOnly}>
 				<div>
-					<div className="mb-2">{input}</div>
-					<Button
-						glow
-						large
-						type={hideInput ? 'submit' : 'button'}
-						text={buttonText}
-						danger
-						loading={loading}
-						onClick={onClick}
-						disabled={disabled}
-						error={error}
-						{...buttonProps}
-					/>
+					<div className={b('input')}>{input}</div>
+					<div className={b('actions')}>
+						<Button
+							glow
+							large
+							type={hideInput ? 'submit' : 'button'}
+							text={buttonText}
+							danger
+							loading={loading}
+							onClick={onClick}
+							disabled={disabled}
+							error={error}
+							{...buttonProps}
+						/>
+					</div>
 				</div>
 			</ProOnly>
 		</form>

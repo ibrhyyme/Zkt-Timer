@@ -68,6 +68,18 @@ export async function sendPushToAll(title: string, body: string, data?: Record<s
 					tokens: batch,
 					notification: { title, body },
 					data: data || {},
+					apns: {
+						payload: {
+							aps: {
+								sound: 'default',
+							},
+						},
+					},
+					android: {
+						notification: {
+							sound: 'default',
+						},
+					},
 				});
 
 				totalSuccess += response.successCount;
@@ -144,6 +156,18 @@ export async function sendPushToPlatforms(platforms: string[], title: string, bo
 					tokens: batch,
 					notification: { title, body },
 					data: data || {},
+					apns: {
+						payload: {
+							aps: {
+								sound: 'default',
+							},
+						},
+					},
+					android: {
+						notification: {
+							sound: 'default',
+						},
+					},
 				});
 
 				totalSuccess += response.successCount;
@@ -198,6 +222,18 @@ export async function sendPushToUser(userId: string, title: string, body: string
 			tokens: tokenStrings,
 			notification: { title, body },
 			data: data || {},
+			apns: {
+				payload: {
+					aps: {
+						sound: 'default',
+					},
+				},
+			},
+			android: {
+				notification: {
+					sound: 'default',
+				},
+			},
 		});
 
 		// Gecersiz token'lari temizle
