@@ -379,6 +379,7 @@ type Mutation {
   adminDeleteUserAccount(userId: String): UserAccount
   adminSendPushToUser(body: String, title: String, userId: String): AdminSendPushResult
   testWcaNotification(wcaId: String): Boolean
+  backfillWcaIds: BackfillResult
   updateStatsModuleBlocks(blocks: [StatsModuleBlockInput]): StatsModule
   createDemoSolve(input: DemoSolveInput): DemoSolve
   fetchWcaRecords: [WcaRecord]
@@ -409,7 +410,6 @@ type Mutation {
   deletePromoCode(id: String): Boolean
   updateSiteConfig(input: UpdateSiteConfigInput): SiteConfig
   recalculateAllRankings: Boolean
-  backfillWcaIds: Int
 }
 
 type SmartDevice {
@@ -996,6 +996,14 @@ type SiteConfig {
   rooms_enabled: Boolean
   battle_enabled: Boolean
   updated_at: DateTime
+}
+
+type BackfillResult {
+  total: Int
+  filled: Int
+  tokenFailed: Int
+  noWcaId: Int
+  error: Int
 }
 
 type StatsModule {
