@@ -9,7 +9,6 @@ interface EmailStrings {
 	verification_message: string;
 	forgot_subject: string;
 	forgot_message: string;
-	welcome_subject: string;
 }
 
 const emailTranslations: Record<SupportedLang, EmailStrings> = {
@@ -22,7 +21,6 @@ const emailTranslations: Record<SupportedLang, EmailStrings> = {
 		verification_message: 'Hesabınızı doğrulamak için lütfen aşağıdaki kodu kullanın:',
 		forgot_subject: 'Zkt Timer Şifre Sıfırlama',
 		forgot_message: 'Şifrenizi sıfırlamak için lütfen aşağıdaki kodu kullanın:',
-		welcome_subject: "Zkt Timer'a Hoş Geldin! 🎉",
 	},
 	en: {
 		greeting: 'Hello',
@@ -33,7 +31,6 @@ const emailTranslations: Record<SupportedLang, EmailStrings> = {
 		verification_message: 'Please use the following code to verify your account:',
 		forgot_subject: 'Zkt Timer Password Reset',
 		forgot_message: 'Please use the following code to reset your password:',
-		welcome_subject: 'Welcome to Zkt Timer! 🎉',
 	},
 	es: {
 		greeting: 'Hola',
@@ -44,7 +41,6 @@ const emailTranslations: Record<SupportedLang, EmailStrings> = {
 		verification_message: 'Por favor, usa el siguiente código para verificar tu cuenta:',
 		forgot_subject: 'Restablecer contraseña - Zkt Timer',
 		forgot_message: 'Por favor, usa el siguiente código para restablecer tu contraseña:',
-		welcome_subject: '¡Bienvenido a Zkt Timer! 🎉',
 	},
 	ru: {
 		greeting: 'Привет',
@@ -55,7 +51,6 @@ const emailTranslations: Record<SupportedLang, EmailStrings> = {
 		verification_message: 'Пожалуйста, используйте следующий код для подтверждения аккаунта:',
 		forgot_subject: 'Сброс пароля - Zkt Timer',
 		forgot_message: 'Пожалуйста, используйте следующий код для сброса пароля:',
-		welcome_subject: 'Добро пожаловать в Zkt Timer! 🎉',
 	},
 };
 
@@ -64,9 +59,4 @@ const SUPPORTED: SupportedLang[] = ['tr', 'en', 'es', 'ru'];
 export function getEmailStrings(lang?: string): EmailStrings {
 	const resolved = SUPPORTED.find((s) => lang?.startsWith(s)) || 'en';
 	return emailTranslations[resolved];
-}
-
-export function getWelcomeTemplateName(lang?: string): string {
-	const resolved = SUPPORTED.find((s) => lang?.startsWith(s)) || 'en';
-	return resolved === 'tr' ? 'welcome' : `welcome_${resolved}`;
 }
