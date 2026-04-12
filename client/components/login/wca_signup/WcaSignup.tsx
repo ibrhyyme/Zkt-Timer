@@ -70,7 +70,12 @@ export default function WcaSignup() {
 			setRedirecting(true);
 			window.location.href = '/timer';
 		} catch (e) {
-			setError(e.message);
+			const errorMessage =
+				e?.graphQLErrors?.[0]?.extensions?.exception?.message ||
+				e?.graphQLErrors?.[0]?.message ||
+				e?.message ||
+				t('wca_signup.session_expired');
+			setError(errorMessage);
 		}
 	}
 
