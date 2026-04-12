@@ -31,6 +31,7 @@ import { initStatusBar, lockTextZoom, initSafeArea } from '../../util/native-plu
 import SwipeBackIndicator from '../common/swipe_back_indicator/SwipeBackIndicator';
 import {useSiteConfig} from '../../util/hooks/useSiteConfig';
 import MaintenancePage from '../maintenance/MaintenancePage';
+import {toastInfo} from '../../util/toast';
 
 interface Props {
 	path?: string;
@@ -75,7 +76,12 @@ export default function App(props: Props = {}) {
 				document.addEventListener('gesturechange', (e) => e.preventDefault());
 			}
 
+			let lastBackPress = 0;
+
 			CapApp.addListener('backButton', () => {
+				// Centik (notch) dokunulmaktaysa geri hareketini yoksay
+				if ((window as any).__notchTouching) return;
+
 				const state = getStore().getState();
 				const modals = state?.general?.modals || [];
 				const settingsOpen = state?.general?.settings_modal_open;
@@ -87,7 +93,14 @@ export default function App(props: Props = {}) {
 				} else if (window.history.length > 1) {
 					window.history.back();
 				} else {
-					CapApp.exitApp();
+					// Cift-geri-ile-cik: kazara uygulamayi kapatmayi engelle
+					const now = Date.now();
+					if (now - lastBackPress < 2000) {
+						CapApp.exitApp();
+					} else {
+						lastBackPress = now;
+						toastInfo('Cikmak icin tekrar geri basin');
+					}
 				}
 			});
 		}

@@ -100,10 +100,19 @@ export default function BottomSheetNav() {
 		const notch = notchRef.current;
 		if (!notch) return;
 
+		function clearNotchFlag() {
+			(window as any).__notchTouching = false;
+		}
+
 		function onStart(e: TouchEvent) {
 			// Timer'in inspection/cozum baslatmasini engelle
 			e.stopPropagation();
 			e.preventDefault();
+
+			// Android back gesture'u engellemek icin flag
+			(window as any).__notchTouching = true;
+			// Guvenlik: touchend/touchcancel firlamazsa 2s sonra temizle
+			setTimeout(clearNotchFlag, 2000);
 
 			startX.current = e.touches[0].clientX;
 			startY.current = e.touches[0].clientY;
@@ -152,6 +161,7 @@ export default function BottomSheetNav() {
 
 		function onEnd(e: TouchEvent) {
 			e.stopPropagation();
+			clearNotchFlag();
 
 			if (longPressTimer.current) {
 				clearTimeout(longPressTimer.current);
@@ -187,11 +197,14 @@ export default function BottomSheetNav() {
 		notch.addEventListener('touchstart', onStart, opts);
 		notch.addEventListener('touchmove', onMove, opts);
 		notch.addEventListener('touchend', onEnd, opts);
+		notch.addEventListener('touchcancel', clearNotchFlag);
 
 		return () => {
 			notch.removeEventListener('touchstart', onStart);
 			notch.removeEventListener('touchmove', onMove);
 			notch.removeEventListener('touchend', onEnd);
+			notch.removeEventListener('touchcancel', clearNotchFlag);
+			clearNotchFlag();
 			if (longPressTimer.current) {
 				clearTimeout(longPressTimer.current);
 			}
