@@ -43,7 +43,9 @@ export async function linkOAuthAccount(intType: IntegrationType, user: InternalU
 			}
 		}
 
-		return true;
+		// Guncel integration'i dondur (wca_id dahil)
+		const updated = await getIntegration(user, intType);
+		return updated || int;
 	}
 
 	const integration = await createIntegration(user, intType, accessToken, refreshToken, createdAt + expiresIn * 1000);
