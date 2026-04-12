@@ -218,7 +218,7 @@ export class AdminResolver {
 		if (isPro) {
 			try {
 				const notification = new MembershipGrantedNotification(
-					{user: targetUser, triggeringUser: context.user as unknown as UserAccount, sendEmail: true},
+					{user: targetUser, triggeringUser: context.user as unknown as UserAccount, sendEmail: false},
 					'pro',
 					pro_expires_at
 				);
@@ -259,7 +259,7 @@ export class AdminResolver {
 		if (isPremium) {
 			try {
 				const notification = new MembershipGrantedNotification(
-					{user: targetUser, triggeringUser: context.user as unknown as UserAccount, sendEmail: true},
+					{user: targetUser, triggeringUser: context.user as unknown as UserAccount, sendEmail: false},
 					'premium',
 					premium_expires_at
 				);

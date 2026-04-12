@@ -6,7 +6,7 @@ import {sendEmailWithTemplate} from '../services/ses';
 import {getJwtString} from '../util/auth';
 import {ErrorCode} from '../constants/errors';
 import {GraphQLContext} from '../@types/interfaces/server.interface';
-import {getEmailStrings, getWelcomeTemplateName} from '../util/email_translations';
+import {getEmailStrings} from '../util/email_translations';
 import {notifyAdminsOfNewUser} from '../services/admin_notification';
 
 export const gqlMutation = `
@@ -63,14 +63,6 @@ export const mutateActions = {
 
 		await claimEmailVerification(ev);
 		await updateUserAccountWithParams(user.id, {email_verified: true});
-
-		// Hosgeldin mailini dogrulama sonrasi gonder
-		const emailStrings = getEmailStrings(language);
-		try {
-			await sendEmailWithTemplate(user, emailStrings.welcome_subject, getWelcomeTemplateName(language), {});
-		} catch (error) {
-			console.error('Welcome email could not be sent:', error);
-		}
 
 		notifyAdminsOfNewUser(user, 'local').catch(err =>
 			console.error('[AdminNotification] Local signup notification failed:', err)

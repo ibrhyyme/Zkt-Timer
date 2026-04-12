@@ -131,7 +131,7 @@ export class PromoCodeResolver {
 		if (user) {
 			try {
 				const notification = new MembershipGrantedNotification(
-					{user, triggeringUser: user, sendEmail: true},
+					{user, triggeringUser: user, sendEmail: false},
 					promoCode.membership_type as 'pro' | 'premium',
 					expires_at
 				);
