@@ -9,6 +9,7 @@ import { getTimeString } from '../../util/time';
 import { StatsModuleBlock } from '../../../server/schemas/StatsModule.schema';
 import { openModal } from '../../actions/general';
 import HistoryModal from '../modules/history/history_modal/HistoryModal';
+import { useKeyboardOpen } from '../../util/hooks/useKeyboardOpen';
 import block from '../../styles/bem';
 import './StatsBar.scss';
 
@@ -59,6 +60,8 @@ export default function StatsBar() {
     const mobileMode = useGeneral('mobile_mode');
     const sessionId = useSettings('session_id');
     const timerFontFamily = useSettings('timer_font_family');
+    const manualEntry = useSettings('manual_entry');
+    const keyboardOpen = useKeyboardOpen();
     const stats = useSelector((state: RootStateOrAny) => state?.stats);
 
     const [mobileAoCounts, setMobileAoCounts] = useState<number[]>(loadMobileAoCounts);
@@ -67,6 +70,12 @@ export default function StatsBar() {
 
     // Focus modunda gizle
     if (focusMode) {
+        return null;
+    }
+
+    // Manuel giriste klavye acikken alt StatsBar'in yukari itilmesini engellemek icin gizle
+    // (istatistikler duplike olarak ust panelde zaten gorunur). Klavye kapandiginda geri gelir.
+    if (mobileMode && manualEntry && keyboardOpen) {
         return null;
     }
 
