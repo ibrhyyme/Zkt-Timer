@@ -117,7 +117,7 @@ model Integration {
   auth_token      String
   refresh_token   String
   auth_expires_at BigInt
-  wca_id                 String?
+  wca_id                 String?     @unique
   wca_country_iso2       String?
   wca_competition_count  Int?
   wca_medal_gold         Int?
