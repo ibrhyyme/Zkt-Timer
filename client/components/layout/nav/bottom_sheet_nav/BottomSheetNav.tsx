@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useRef} from 'react';
-import ReactDOM from 'react-dom';
+import ReactDOM, {unstable_batchedUpdates} from 'react-dom';
 import './BottomSheetNav.scss';
 import {useRouteMatch, useHistory} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
@@ -184,17 +184,18 @@ export default function BottomSheetNav() {
 			// Swipe tamamlandi
 			if (swipeOffset !== null) {
 				const shouldOpen = swipeOffset > gridWidth() * 0.25;
+				locked.current = false;
 				if (shouldOpen) {
 					markNotchUsed();
 					openedBySwipe.current = true;
-					setOpen(true);
-				}
-				// rAF ile geciktir — React 17'de native event'larda batching yok,
-				// setOpen + setSwipeOffset ayni anda iki re-render tetikler ve drawer titrer
-				requestAnimationFrame(() => {
+					// Tek render'da ikisini birden guncelle — titreme engeli
+					unstable_batchedUpdates(() => {
+						setSwipeOffset(null);
+						setOpen(true);
+					});
+				} else {
 					setSwipeOffset(null);
-				});
-				locked.current = false;
+				}
 				return;
 			}
 
