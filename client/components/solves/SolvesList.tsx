@@ -355,7 +355,6 @@ export default function SolvesList() {
 								/>
 								<Dropdown
 									openLeft
-									preventCloseOnInnerClick
 									text={filterText}
 									icon={<Funnel weight="bold" />}
 									options={[
@@ -429,7 +428,6 @@ export default function SolvesList() {
 								<Dropdown
 									text={t('solves_list.sort')}
 									openLeft
-									preventCloseOnInnerClick
 									icon={sortInverse ? <SortAscending weight="bold" /> : <SortDescending weight="bold" />}
 									options={[
 										{
