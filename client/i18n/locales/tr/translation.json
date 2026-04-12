@@ -1154,7 +1154,6 @@
 		"page_info": "Sayfa {{current}} / {{total}}",
 		"no_items_found": "Hiçbir {{items}} bulunamadı",
 		"search_placeholder": "{{items}} ara",
-		"new_version_available": "Yeni bir versiyon mevcut. Sayfayı yenilemek ister misiniz?",
 		"delete_solve": "Çözümü sil",
 		"view_details": "Detayları gör",
 		"view_profile": "Profili gör",

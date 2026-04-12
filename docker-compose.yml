@@ -1,6 +1,9 @@
 services:
   app-server:
-    build: .
+    build:
+      context: .
+      args:
+        RELEASE_NAME: ${RELEASE_NAME:-dev}
     container_name: zkt-timer-app-server-1
     env_file:
       - .env
@@ -16,6 +19,7 @@ services:
       - NODE_ENV=production
       - HOST=0.0.0.0
       - PORT=3000
+      - RELEASE_NAME=${RELEASE_NAME:-dev}
     depends_on:
       - postgres
       - redis

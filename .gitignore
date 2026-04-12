@@ -1,10 +1,9 @@
-ZKT_TIMER_NASIL_CALISIR.md
-
 # builds
 node_modules
 .next
 dist
 .out
+build
 
 # secrets
 .env

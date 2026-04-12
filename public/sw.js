@@ -1,4 +1,4 @@
-const CACHE_VERSION = '__DEPLOY_VERSION__';
+const CACHE_VERSION = '1775955912824';
 const CACHE = 'zkt-' + CACHE_VERSION;
 const CORE = [
   '/',
@@ -10,7 +10,8 @@ const CORE = [
 
 self.addEventListener('install', (e) => {
   console.log('[SW] Installing...');
-  self.skipWaiting();
+  // skipWaiting yok: yeni SW kullanici uygulamayi tamamen kapatip acana kadar bekler.
+  // Mid-session reload olmasini engeller.
   e.waitUntil(
     caches.open(CACHE).then(c =>
       // Cache each asset individually so one failure doesn't prevent others
@@ -25,7 +26,7 @@ self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
   );
-  self.clients.claim();
+  // clients.claim() yok: yeni SW ancak tum client'lar kapandiktan sonra devralir.
 });
 
 self.addEventListener('fetch', (e) => {
@@ -95,7 +96,8 @@ self.addEventListener('fetch', (e) => {
   }
 
   // Static assets (JS, CSS, images): Cache-first, arka planda güncelle
-  // Yeni deploy'larda capacitor-update-checker versiyon farkını tespit edip cache'i temizler
+  // Yeni deploy'larda RELEASE_NAME degisince CACHE_VERSION de degisir,
+  // eski cache activate event'inde silinir.
   if (req.method === 'GET') {
     const cacheUrl = url.pathname;
     e.respondWith(

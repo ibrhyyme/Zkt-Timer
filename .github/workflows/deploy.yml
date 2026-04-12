@@ -32,7 +32,11 @@ jobs:
           docker builder prune -af
           docker image prune -af
 
-          # 4. Build et ve başlat
+          # 4. RELEASE_NAME'i git SHA olarak set et (cache-busting icin)
+          export RELEASE_NAME=$(git rev-parse --short HEAD)
+          echo "RELEASE_NAME=$RELEASE_NAME"
+
+          # 5. Build et ve başlat
           docker compose up -d --no-deps --build app-server
 
           # 5. İzinleri düzelt

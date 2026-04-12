@@ -8,7 +8,6 @@ import { processQueue, registerBackgroundSync, isOnline } from '../../util/offli
 import { getPendingCount } from '../../util/offline-queue';
 import { initNetworkListener, getNetworkStatus } from '../../util/native-plugins';
 import { isNative } from '../../util/platform';
-import i18n from '../../i18n/i18n';
 
 let syncInProgress = false;
 
@@ -81,26 +80,8 @@ async function registerServiceWorker() {
 
             console.log('[SW-DEBUG] Registered:', registration.scope);
 
-            // Güncelleme kontrolü
-            registration.addEventListener('updatefound', () => {
-                const newWorker = registration.installing;
-
-                newWorker?.addEventListener('statechange', () => {
-                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                        // Yeni versiyon var, kullanıcıyı bilgilendir
-                        if (confirm(i18n.t('common.new_version_available'))) {
-                            window.location.reload();
-                        }
-                    }
-                });
-            });
-
-            // controllerchange: yeni SW devraldiginda reload
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (document.visibilityState === 'visible') {
-                    window.location.reload();
-                }
-            });
+            // Yeni SW tespit edilince install olur ama beklemede kalir.
+            // Kullanici uygulamayi tamamen kapatip acana kadar aktif olmaz -- mid-session reload yok.
 
             // SW guncelleme kontrolu -- platform'a gore
             if (isNative()) {
