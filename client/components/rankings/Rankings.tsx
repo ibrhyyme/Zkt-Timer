@@ -6,7 +6,7 @@ import {gqlQuery, gqlQueryTyped} from '../api';
 import {RankingsDocument} from '../../@types/generated/graphql';
 import gql from 'graphql-tag';
 import {useMe} from '../../util/hooks/useMe';
-import {resourceUri} from '../../util/storage';
+import {resourceUri, getStorageURL} from '../../util/storage';
 import {LINKED_SERVICES} from '../../../shared/integration';
 import {countryFlag} from '../community/my_schedule/shared';
 import PageTitle from '../common/page_title/PageTitle';
@@ -167,7 +167,7 @@ export default function Rankings() {
 				<div className={b('card-avatar', {pro: row.is_pro})}>
 					{row.pfp_image_url ? (
 						<img
-							src={resourceUri(row.pfp_image_url)}
+							src={getStorageURL(row.pfp_image_url)}
 							alt={row.username}
 							className={b('avatar-img')}
 						/>
