@@ -12,10 +12,18 @@
 		border-radius: 6px 0 0 6px;
 		z-index: 99999;
 		cursor: pointer;
+		// Gorunen alan 8x115px, dokunma alani padding ile genisletilmis
+		box-sizing: content-box;
+		padding: 30px 0 30px 16px;
+		margin-top: 0;
+		margin-right: 0;
+		// Padding arka plani gorunmesin
+		background-clip: content-box;
 
 		&:active {
 			width: 12px;
 			background: rgba(var(--primary-color), 0.4);
+			background-clip: content-box;
 		}
 
 		&--hidden {
@@ -30,6 +38,7 @@
 		&--repositioning {
 			width: 14px;
 			background: rgba(var(--primary-color), 0.5);
+			background-clip: content-box;
 		}
 
 		&-tooltip {
