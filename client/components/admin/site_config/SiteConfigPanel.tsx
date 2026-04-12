@@ -1,14 +1,17 @@
 import React, {useState, useEffect} from 'react';
 import {useTranslation} from 'react-i18next';
-import {Warning, Wrench} from 'phosphor-react';
+import {Warning, Wrench, Database} from 'phosphor-react';
 import {useQuery} from '@apollo/client';
-import {gqlMutateTyped, gqlQueryTyped} from '../../api';
+import {gqlMutate, gqlMutateTyped, gqlQueryTyped} from '../../api';
 import {UpdateSiteConfigDocument, SiteConfigDocument, OnlineStatsDocument, OnlineStatsQuery} from '../../../@types/generated/graphql';
+import gql from 'graphql-tag';
 import {setSiteConfigCache, SiteConfigData} from '../../../util/hooks/useSiteConfig';
 import block from '../../../styles/bem';
 import './SiteConfigPanel.scss';
 
 const b = block('site-config-panel');
+
+const BACKFILL_WCA_IDS = gql`mutation { backfillWcaIds }`;
 
 type FeatureKey = 'maintenance_mode' | 'trainer_enabled' | 'community_enabled' | 'leaderboards_enabled' | 'rooms_enabled' | 'battle_enabled';
 
@@ -26,6 +29,8 @@ export default function SiteConfigPanel() {
 	const [saving, setSaving] = useState<FeatureKey | null>(null);
 
 	const [error, setError] = useState<string | null>(null);
+	const [backfillLoading, setBackfillLoading] = useState(false);
+	const [backfillResult, setBackfillResult] = useState<string | null>(null);
 
 	// Canli online sayaci — 10 saniyede bir polling
 	const {data: onlineData} = useQuery<OnlineStatsQuery>(OnlineStatsDocument, {
@@ -189,6 +194,48 @@ export default function SiteConfigPanel() {
 						</div>
 					);
 				})}
+			</div>
+
+			{/* WCA Backfill */}
+			<div className={b('section')}>
+				<div className={b('section-header')}>
+					<Database size={20} weight="fill" />
+					<h3>WCA Veri Onarimi</h3>
+				</div>
+				<div className={b('row')}>
+					<div className={b('row-text')}>
+						<div className={b('row-label')}>WCA ID Backfill</div>
+						<div className={b('row-desc')}>
+							WCA hesabi bagli ama WCA ID'si eksik kullanicilarin verilerini WCA API'den cekip rankings'i hesaplar.
+						</div>
+					</div>
+					<button
+						className={b('action-btn')}
+						disabled={backfillLoading}
+						onClick={async () => {
+							setBackfillLoading(true);
+							setBackfillResult(null);
+							try {
+								const res = await gqlMutate(BACKFILL_WCA_IDS);
+								const count = res?.data?.backfillWcaIds ?? 0;
+								setBackfillResult(`${count} kullanici guncellendi`);
+							} catch (err) {
+								setBackfillResult('Hata: ' + (err as any)?.message);
+							} finally {
+								setBackfillLoading(false);
+							}
+						}}
+					>
+						{backfillLoading ? 'Calisiyor...' : 'Calistir'}
+					</button>
+				</div>
+				{backfillResult && (
+					<div className={b('row')}>
+						<div className={b('row-text')}>
+							<div className={b('row-desc')}>{backfillResult}</div>
+						</div>
+					</div>
+				)}
 			</div>
 
 			<div className={b('footer')}>

@@ -80,3 +80,7 @@ mutation adminDeleteTrainerAlternative($id: String!) {
 		id
 	}
 }
+
+mutation backfillWcaIds {
+	backfillWcaIds
+}

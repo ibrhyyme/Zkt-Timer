@@ -182,6 +182,7 @@ export const PUBLIC_USER_FRAGMENT = gql`
 		integrations {
 			id
 			service_name
+			wca_id
 		}
 		profile {
 			pfp_image {

@@ -57,6 +57,9 @@ export class AdminUserFiltersInput {
 
 	@Field(() => [String], {nullable: true})
 	platforms?: string[];
+
+	@Field(() => Boolean, {nullable: true})
+	has_wca?: boolean;
 }
 
 export interface PaginationOutput<T> {

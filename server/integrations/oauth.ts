@@ -48,7 +48,7 @@ export async function linkOAuthAccount(intType: IntegrationType, user: InternalU
 		return updated || int;
 	}
 
-	const integration = await createIntegration(user, intType, accessToken, refreshToken, createdAt + expiresIn * 1000);
+	let integration = await createIntegration(user, intType, accessToken, refreshToken, createdAt + expiresIn * 1000);
 
 	// For WCA integration, fetch and store the WCA ID
 	if (intType === 'wca') {
@@ -64,7 +64,7 @@ export async function linkOAuthAccount(intType: IntegrationType, user: InternalU
 			const wcaId = wcaData?.wca_id;
 
 			if (wcaId) {
-				await updateIntegration(integration, {
+				integration = await updateIntegration(integration, {
 					wca_id: wcaId,
 					wca_country_iso2: wcaData.country_iso2 || null,
 				});

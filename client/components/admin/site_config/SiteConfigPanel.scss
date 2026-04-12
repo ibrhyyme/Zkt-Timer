@@ -200,6 +200,28 @@
 		gap: 0.3rem;
 	}
 
+	&__action-btn {
+		flex-shrink: 0;
+		padding: 0.5rem 1.25rem;
+		background: #4a9eff;
+		color: #fff;
+		border: none;
+		border-radius: 0.4rem;
+		font-size: 0.85rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition: opacity 0.2s;
+
+		&:hover {
+			opacity: 0.85;
+		}
+
+		&:disabled {
+			opacity: 0.5;
+			cursor: default;
+		}
+	}
+
 	&__footer {
 		margin-top: 1.25rem;
 		padding-top: 1rem;
