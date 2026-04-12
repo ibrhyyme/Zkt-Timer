@@ -81,8 +81,17 @@ export class WcaAuthResolver {
 					secure: true,
 				});
 
-				// Integration yoksa olustur
+				// Integration yoksa olustur (ayni WCA baska hesapta degilse)
 				const existing = await getIntegration(existingUser, 'wca');
+				if (!existing && wcaData.wcaId) {
+					const existingWca = await getIntegrationByWcaId(wcaData.wcaId);
+					if (existingWca) {
+						return {
+							success: true,
+							needsUsername: false,
+						};
+					}
+				}
 				if (!existing) {
 					const integration = await createIntegration(
 						existingUser,
@@ -213,7 +222,15 @@ export class WcaAuthResolver {
 		await createSetting(user);
 		await createNotificationPreference(user);
 
-		// 7. Integration record olustur
+		// 7. WCA ID baska hesaba bagli mi kontrol et
+		if (payload.wcaId) {
+			const existingWca = await getIntegrationByWcaId(payload.wcaId);
+			if (existingWca) {
+				throw new GraphQLError(ErrorCode.BAD_INPUT, 'Bu WCA hesabi baska bir kullaniciya bagli.');
+			}
+		}
+
+		// 8. Integration record olustur
 		const integration = await createIntegration(
 			user,
 			'wca',

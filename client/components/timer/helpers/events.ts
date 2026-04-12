@@ -15,6 +15,7 @@ import { SolveInput } from '../../../../server/schemas/Solve.schema';
 import { getSettings, getSetting } from '../../../db/settings/query';
 import { getTimerStore } from '../../../util/store/getTimer';
 import { resourceUri } from '../../../util/storage';
+import { playNativeSound } from '../../../util/native-audio';
 import { smartCubeSelected } from './util';
 import { hapticImpact } from '../../../util/native-plugins';
 
@@ -278,17 +279,20 @@ export function startInspection(context: ITimerContext) {
 		setInterval(() => {
 			const insTimer = getTimerStore('inspectionTimer');
 			if (playInspectionSound) {
-				let audio;
 				// Play sounds at 8 and 12 seconds (inspectionDelay - remaining time)
 				const elapsed = inspectionDelay + 2 - insTimer;
 				if (elapsed >= 8 && elapsed < 8.1) {
-					audio = new Audio(resourceUri('/audio/8_sec.mp3'));
+					if (!playNativeSound('8_sec', 2.3)) {
+						const audio = new Audio(resourceUri('/audio/8_sec.mp3'));
+						audio.playbackRate = 2.3;
+						audio.play();
+					}
 				} else if (elapsed >= 12 && elapsed < 12.1) {
-					audio = new Audio(resourceUri('/audio/12_sec.mp3'));
-				}
-				if (audio) {
-					audio.playbackRate = 2.3;
-					audio.play();
+					if (!playNativeSound('12_sec', 2.3)) {
+						const audio = new Audio(resourceUri('/audio/12_sec.mp3'));
+						audio.playbackRate = 2.3;
+						audio.play();
+					}
 				}
 			}
 			let addTwoToSolve = false;

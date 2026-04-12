@@ -1,4 +1,4 @@
-import { createIntegration, getIntegration, updateIntegration } from '../models/integration';
+import { createIntegration, getIntegration, getIntegrationByWcaId, updateIntegration } from '../models/integration';
 import axios from 'axios';
 import { InternalUserAccount, UserAccount } from '../schemas/UserAccount.schema';
 import { IntegrationType, LINKED_SERVICES, LinkedServiceData, getWcaRedirectUri, getWcaLoginRedirectUri } from '../../shared/integration';
@@ -58,6 +58,11 @@ export async function linkOAuthAccount(intType: IntegrationType, user: InternalU
 
 		if (!wcaId) {
 			throw new Error('WCA hesabinizdan WCA ID alinamadi. Lutfen tekrar deneyin.');
+		}
+
+		const existingWca = await getIntegrationByWcaId(wcaId);
+		if (existingWca && existingWca.user_id !== user.id) {
+			throw new Error('Bu WCA hesabi baska bir kullaniciya bagli.');
 		}
 
 		let integration = await createIntegration(user, intType, accessToken, refreshToken, createdAt + expiresIn * 1000);
