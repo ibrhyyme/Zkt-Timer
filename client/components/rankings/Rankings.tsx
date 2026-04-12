@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useHistory, useLocation} from 'react-router-dom';
-import {MagnifyingGlass, Trophy, Medal, Crown} from 'phosphor-react';
+import {MagnifyingGlass, Trophy, Medal, Crown, Info} from 'phosphor-react';
 import {gqlQuery, gqlQueryTyped} from '../api';
 import {RankingsDocument} from '../../@types/generated/graphql';
 import gql from 'graphql-tag';
@@ -57,6 +57,7 @@ export default function Rankings() {
 	const [totalCount, setTotalCount] = useState(0);
 	const [loading, setLoading] = useState(true);
 	const [hasWca, setHasWca] = useState<boolean | null>(null);
+	const [showInfo, setShowInfo] = useState(false);
 
 	// WCA bagli mi kontrol et
 	useEffect(() => {
@@ -270,7 +271,64 @@ export default function Rankings() {
 							{t(m.label)}
 						</button>
 					))}
+					<button
+						className={b('info-toggle', {active: showInfo})}
+						onClick={() => setShowInfo(!showInfo)}
+						aria-label="Info"
+					>
+						<Info size={18} weight={showInfo ? 'fill' : 'bold'} />
+					</button>
 				</div>
+
+				{/* Info Card */}
+				{showInfo && (
+					<div className={b('info-card')}>
+						{isKinch ? (
+							<>
+								<h3 className={b('info-title')}>{t('ranks.info_kinch_title')}</h3>
+								<p className={b('info-text')}>{t('ranks.info_kinch_desc')}</p>
+								<p className={b('info-text')}>{t('ranks.info_kinch_mbld')}</p>
+
+								<h4 className={b('info-subtitle')}>{t('ranks.info_kinch_special_title')}</h4>
+								<p className={b('info-text')}>{t('ranks.info_kinch_special_desc')}</p>
+								<ul className={b('info-list')}>
+									{t('ranks.info_kinch_special_list').split(', ').map((item) => (
+										<li key={item}>{item} single & average</li>
+									))}
+								</ul>
+
+								<h4 className={b('info-subtitle')}>{t('ranks.info_kinch_meaning_title')}</h4>
+								<p className={b('info-text')}>{t('ranks.info_kinch_meaning_desc')}</p>
+
+								<h4 className={b('info-subtitle')}>{t('ranks.info_kinch_why_title')}</h4>
+								<p className={b('info-text')}>{t('ranks.info_kinch_why_desc')}</p>
+								<ul className={b('info-list')}>
+									<li>{t('ranks.info_kinch_why_1')}</li>
+									<li>{t('ranks.info_kinch_why_2')}</li>
+									<li>{t('ranks.info_kinch_why_3')}</li>
+									<li>{t('ranks.info_kinch_why_4')}</li>
+								</ul>
+
+								<h4 className={b('info-subtitle')}>{t('ranks.info_alt_title')}</h4>
+								<p className={b('info-text', {dim: true})}>{t('ranks.info_alt_kinch')}</p>
+							</>
+						) : (
+							<>
+								<h3 className={b('info-title')}>{t('ranks.info_sor_title')}</h3>
+								<p className={b('info-text')}>{t('ranks.info_sor_desc')}</p>
+								<p className={b('info-text', {dim: true})}>
+									{mode === 'sor_single' ? t('ranks.info_sor_single_note') : t('ranks.info_sor_average_note')}
+								</p>
+
+								<h4 className={b('info-subtitle')}>{t('ranks.info_sor_meaning_title')}</h4>
+								<p className={b('info-text')}>{t('ranks.info_sor_meaning_desc')}</p>
+
+								<h4 className={b('info-subtitle')}>{t('ranks.info_alt_title')}</h4>
+								<p className={b('info-text', {dim: true})}>{t('ranks.info_alt_sor')}</p>
+							</>
+						)}
+					</div>
+				)}
 
 				{/* Search */}
 				<div className={b('search-box')}>
