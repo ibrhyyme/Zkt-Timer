@@ -26,9 +26,9 @@ export default function FeatureGuard({feature, pageNameKey, children}: Props) {
 	const isAdmin = !!me?.admin;
 	const pageName = t(pageNameKey);
 
-	// Loading sirasinda cocuklari render et (cache yoksa)
+	// Config henuz yuklenmediyse icerik gosterme (SSR + ilk client render)
 	if (!config) {
-		return <>{children}</>;
+		return null;
 	}
 
 	const enabled = (config as any)[feature];

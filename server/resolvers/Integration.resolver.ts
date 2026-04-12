@@ -78,7 +78,7 @@ export class IntegrationResolver {
 			console.log('Integration created successfully:', typeof result === 'object' ? result?.id : 'success');
 
 			// WCA baglama sonrasi kayitlari otomatik cek + ranking hesapla
-			if (integrationType === 'wca' && result?.wca_id) {
+			if (integrationType === 'wca' && typeof result === 'object' && result?.wca_id) {
 				fetchAndSaveWcaRecords(user, result).catch((err) => {
 					console.error('[Rankings] Auto-fetch WCA records failed:', err?.message);
 				});
