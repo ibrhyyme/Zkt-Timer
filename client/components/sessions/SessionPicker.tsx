@@ -38,7 +38,13 @@ export default function SessionPicker(props: Props) {
 	}, [sessionId]);
 
 	function toggleCreateNewSession() {
-		dispatch(openModal(<CreateNewSession />));
+		dispatch(openModal(<CreateNewSession />, {
+			compact: true,
+			width: 420,
+			title: t('sessions.create_new_session_title'),
+			description: t('sessions.create_new_session_desc'),
+			closeButtonText: t('solve_info.done'),
+		}));
 	}
 
 	const options = useMemo(() => {

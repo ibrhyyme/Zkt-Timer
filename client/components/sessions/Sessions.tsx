@@ -164,6 +164,11 @@ export default function Sessions() {
 	function openCreateNewSession() {
 		dispatch(
 			openModal(<CreateNewSession />, {
+				compact: true,
+				width: 420,
+				title: t('sessions.create_new_session_title'),
+				description: t('sessions.create_new_session_desc'),
+				closeButtonText: t('solve_info.done'),
 				onComplete: (session) => {
 					setSelectedSessionId(session.id);
 				},

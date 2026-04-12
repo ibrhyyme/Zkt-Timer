@@ -10,9 +10,7 @@ import {toastError} from '../../../util/toast';
 import {useInput} from '../../../util/hooks/useInput';
 import Button from '../../common/button/Button';
 import {CubeType} from '../../../util/cubes/cube_types';
-import ModalHeader from '../../common/modal/modal_header/ModalHeader';
 import block from '../../../styles/bem';
-import FormSection from '../../common/form/FormSection';
 
 const b = block('create-new-session');
 
@@ -51,33 +49,30 @@ export default function CreateNewSession(props: IModalProps) {
 
 	return (
 		<div className={b()}>
-			<ModalHeader
-				title={t('sessions.create_new_session_title')}
-				description={t('sessions.create_new_session_desc')}
+			<Input
+				placeholder={t('sessions.new_session_placeholder')}
+				maxLength={200}
+				legend={t('sessions.session_name')}
+				value={name}
+				onChange={setName}
 			/>
-			<div className="w-full">
-				<Input
-					placeholder={t('sessions.new_session_placeholder')}
-					maxLength={200}
-					legend={t('sessions.session_name')}
-					value={name}
-					onChange={setName}
-				/>
-			</div>
 			<CubePicker
 				dropdownProps={{
 					legend: t('sessions.cube_type'),
 					info: t('sessions.cube_type_info'),
 					openLeft: true,
+					openUp: true,
+					dropdownMaxHeight: 260,
 				}}
 				onChange={onCubeTypeChange}
 				value={sessionCubeType}
 			/>
-			<div className="mt-3">
+			<div className={b('actions')}>
 				<Button
 					glow
 					primary
 					large
+					fullWidth
 					text={t('sessions.create_session')}
 					onClick={createSession}
 					disabled={disabled}

@@ -11,7 +11,6 @@ const b = block('common-dropdown');
 
 export interface DropdownProps extends GenericInputProps<HTMLDivElement> {
 	options: IDropdownOption[];
-	preventCloseOnInnerClick?: boolean;
 	onClose?: () => void;
 	onOpen?: () => void;
 	// Opens right aligned and down by default
@@ -28,7 +27,6 @@ export interface DropdownProps extends GenericInputProps<HTMLDivElement> {
 
 export default function Dropdown(props: InputProps<DropdownProps>) {
 	const {
-		preventCloseOnInnerClick,
 		handle,
 		onClose,
 		options,
@@ -50,7 +48,10 @@ export default function Dropdown(props: InputProps<DropdownProps>) {
 		if (!open) return;
 
 		const handleOutsideClick = (e: MouseEvent) => {
-			if (preventCloseOnInnerClick && containerRef.current?.contains(e.target as Node)) {
+			// Inner clicks are always skipped — option/button handlers manage their own
+			// close behavior. Closing here would trigger a sync re-render from a native
+			// listener and unmount the option before React dispatches its synthetic click.
+			if (containerRef.current?.contains(e.target as Node)) {
 				return;
 			}
 
@@ -61,16 +62,18 @@ export default function Dropdown(props: InputProps<DropdownProps>) {
 			setOpen(false);
 		};
 
-		// Delay creating the listener to avoid immediate closing on the opening click
+		// Capture phase on document so clicks inside elements that stopPropagation
+		// (e.g. modal center div) still reach this listener. Delay attach until after
+		// the opening click settles.
 		const timer = setTimeout(() => {
-			window.addEventListener('click', handleOutsideClick);
+			document.addEventListener('click', handleOutsideClick, true);
 		}, 50);
 
 		return () => {
 			clearTimeout(timer);
-			window.removeEventListener('click', handleOutsideClick);
+			document.removeEventListener('click', handleOutsideClick, true);
 		};
-	}, [open, preventCloseOnInnerClick, onClose]);
+	}, [open, onClose]);
 
 	// Timer basladiginda acik dropdown'lari kapat
 	useEffect(() => {
@@ -81,10 +84,18 @@ export default function Dropdown(props: InputProps<DropdownProps>) {
 		return () => window.removeEventListener('timerInteractionStart', handleTimerStart);
 	}, [open]);
 
-	function openDropdown(e) {
+	function toggleDropdown(e) {
 		e.preventDefault();
 
-		if (open || !options || !options.length) {
+		if (!options || !options.length) {
+			return;
+		}
+
+		if (open) {
+			if (onClose) {
+				onClose();
+			}
+			setOpen(false);
 			return;
 		}
 
@@ -131,7 +142,7 @@ export default function Dropdown(props: InputProps<DropdownProps>) {
 		<Button
 			flat={flat}
 			icon={icon === null ? null : icon || <CaretDown weight="bold" />}
-			onClick={openDropdown}
+			onClick={toggleDropdown}
 			gray
 			text={text}
 			{...dropdownButtonProps}
@@ -139,7 +150,7 @@ export default function Dropdown(props: InputProps<DropdownProps>) {
 	);
 	if (handle) {
 		handleDiv = (
-			<button className={b('custom-handle')} onClick={openDropdown}>
+			<button className={b('custom-handle')} onClick={toggleDropdown}>
 				{handle}
 			</button>
 		);
