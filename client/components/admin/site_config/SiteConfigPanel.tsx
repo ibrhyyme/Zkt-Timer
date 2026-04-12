@@ -11,7 +11,7 @@ import './SiteConfigPanel.scss';
 
 const b = block('site-config-panel');
 
-const BACKFILL_WCA_IDS = gql`mutation { backfillWcaIds }`;
+const BACKFILL_WCA_IDS = gql`mutation { backfillWcaIds { total filled tokenFailed noWcaId error } }`;
 
 type FeatureKey = 'maintenance_mode' | 'trainer_enabled' | 'community_enabled' | 'leaderboards_enabled' | 'rooms_enabled' | 'battle_enabled';
 
@@ -217,8 +217,16 @@ export default function SiteConfigPanel() {
 							setBackfillResult(null);
 							try {
 								const res = await gqlMutate(BACKFILL_WCA_IDS);
-								const count = res?.data?.backfillWcaIds ?? 0;
-								setBackfillResult(`${count} kullanici guncellendi`);
+								const r = res?.data?.backfillWcaIds;
+								if (r) {
+									const parts = [`${r.filled}/${r.total} kullanici guncellendi`];
+									if (r.tokenFailed > 0) parts.push(`${r.tokenFailed} token gecersiz (yeniden baglama gerekli)`);
+									if (r.noWcaId > 0) parts.push(`${r.noWcaId} WCA ID alinamadi`);
+									if (r.error > 0) parts.push(`${r.error} hata`);
+									setBackfillResult(parts.join(' | '));
+								} else {
+									setBackfillResult('Sonuc alinamadi');
+								}
 							} catch (err) {
 								setBackfillResult('Hata: ' + (err as any)?.message);
 							} finally {

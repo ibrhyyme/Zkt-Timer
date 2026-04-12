@@ -48,34 +48,27 @@ export async function linkOAuthAccount(intType: IntegrationType, user: InternalU
 		return updated || int;
 	}
 
-	let integration = await createIntegration(user, intType, accessToken, refreshToken, createdAt + expiresIn * 1000);
-
-	// For WCA integration, fetch and store the WCA ID
+	// WCA icin: once wca_id al, sonra integration olustur (zombie kayit engelle)
 	if (intType === 'wca') {
-		try {
-			// Fetch user data from WCA me endpoint
-			const res = await axios.get(service.meEndpoint, {
-				headers: {
-					Authorization: 'Bearer ' + accessToken,
-				},
-			});
+		const res = await axios.get(service.meEndpoint, {
+			headers: {Authorization: 'Bearer ' + accessToken},
+		});
+		const wcaData = res?.data?.me || res?.data;
+		const wcaId = wcaData?.wca_id;
 
-			const wcaData = res?.data?.me || res?.data;
-			const wcaId = wcaData?.wca_id;
-
-			if (wcaId) {
-				integration = await updateIntegration(integration, {
-					wca_id: wcaId,
-					wca_country_iso2: wcaData.country_iso2 || null,
-				});
-			}
-		} catch (error) {
-			// Swallow the error and proceed - WCA ID will remain null
-			console.warn('Failed to fetch WCA ID:', error.message);
+		if (!wcaId) {
+			throw new Error('WCA hesabinizdan WCA ID alinamadi. Lutfen tekrar deneyin.');
 		}
+
+		let integration = await createIntegration(user, intType, accessToken, refreshToken, createdAt + expiresIn * 1000);
+		integration = await updateIntegration(integration, {
+			wca_id: wcaId,
+			wca_country_iso2: wcaData.country_iso2 || null,
+		});
+		return integration;
 	}
 
-	return integration;
+	return await createIntegration(user, intType, accessToken, refreshToken, createdAt + expiresIn * 1000);
 }
 
 export async function getOAuthPostRequest(

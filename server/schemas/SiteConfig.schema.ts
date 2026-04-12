@@ -39,6 +39,24 @@ export class SiteConfig {
 	updated_at: Date;
 }
 
+@ObjectType()
+export class BackfillResult {
+	@Field(() => Int)
+	total: number;
+
+	@Field(() => Int)
+	filled: number;
+
+	@Field(() => Int)
+	tokenFailed: number;
+
+	@Field(() => Int)
+	noWcaId: number;
+
+	@Field(() => Int)
+	error: number;
+}
+
 @InputType()
 export class UpdateSiteConfigInput {
 	@Field({nullable: true})
