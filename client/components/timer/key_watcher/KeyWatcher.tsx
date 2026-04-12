@@ -89,6 +89,11 @@ export default function KeyWatcher(props: Props) {
 	useWindowListener('touchmove', touchMove, [], { passive: false });
 
 	function touchStart(e) {
+		// Sag kenar dead zone — centik (notch) alani, timer tetiklemesin
+		if (e.touches?.[0] && window.innerWidth - e.touches[0].clientX < 48) {
+			return;
+		}
+
 		// Touch event timestamp'ini DOM traversal'dan ONCE yakala — mobil zamanlama dogrulugu icin
 		// Touch event timestamp: iki kaynaktan erkek olani kullan (iOS WKWebView IPC gecikmesi icin)
 		const eventTs = Math.round(Math.min(performance.timeOrigin + e.timeStamp, Date.now()));
@@ -129,6 +134,11 @@ export default function KeyWatcher(props: Props) {
 
 	function touchEnd(e) {
 		if (e.touches && e.touches.length > 0) return;
+
+		// Sag kenar dead zone — centik (notch) alani
+		if (e.changedTouches?.[0] && window.innerWidth - e.changedTouches[0].clientX < 48) {
+			return;
+		}
 
 		// Touch event timestamp: iki kaynaktan erkek olani kullan (iOS WKWebView IPC gecikmesi icin)
 		const eventTs = Math.round(Math.min(performance.timeOrigin + e.timeStamp, Date.now()));

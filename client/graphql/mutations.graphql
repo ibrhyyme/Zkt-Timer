@@ -82,5 +82,11 @@ mutation adminDeleteTrainerAlternative($id: String!) {
 }
 
 mutation backfillWcaIds {
-	backfillWcaIds
+	backfillWcaIds {
+		total
+		filled
+		tokenFailed
+		noWcaId
+		error
+	}
 }

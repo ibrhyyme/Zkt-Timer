@@ -1,4 +1,4 @@
-import { Arg, Authorized, Ctx, Int, Mutation, Query, Resolver } from 'type-graphql';
+import { Arg, Authorized, Ctx, Mutation, Query, Resolver } from 'type-graphql';
 import { GraphQLContext } from '../@types/interfaces/server.interface';
 import { Role } from '../middlewares/auth';
 import GraphQLError from '../util/graphql_error';
@@ -30,7 +30,7 @@ import { PaginationArgsInput, AdminUserFiltersInput } from '../schemas/Paginatio
 import { getPaginatedResponse, PaginatedRequestInput } from '../util/pagination/paginated_response';
 import { sendPushToUser } from '../services/push';
 import { AdminSendPushResult } from '../schemas/PushToken.schema';
-import { OnlineStats } from '../schemas/SiteConfig.schema';
+import { OnlineStats, BackfillResult } from '../schemas/SiteConfig.schema';
 import { getOnlineCounts } from '../services/socket_util';
 import WcaResultEnteredNotification from '../resources/notification_types/wca_result_entered';
 import WcaRoundFinishedNotification from '../resources/notification_types/wca_round_finished';
@@ -444,8 +444,8 @@ export class AdminResolver {
 	}
 
 	@Authorized([Role.ADMIN])
-	@Mutation(() => Int)
-	async backfillWcaIds(): Promise<number> {
+	@Mutation(() => BackfillResult)
+	async backfillWcaIds(): Promise<BackfillResult> {
 		const prisma = getPrisma();
 		const wcaService = LINKED_SERVICES['wca'];
 
@@ -454,7 +454,7 @@ export class AdminResolver {
 			include: {user: true},
 		});
 
-		let filled = 0;
+		const result: BackfillResult = {total: integrations.length, filled: 0, tokenFailed: 0, noWcaId: 0, error: 0};
 
 		for (const int of integrations) {
 			try {
@@ -476,6 +476,7 @@ export class AdminResolver {
 						});
 					} catch (e) {
 						console.warn(`[Backfill] Token refresh failed for user ${int.user_id}:`, e?.message);
+						result.tokenFailed++;
 						continue;
 					}
 				}
@@ -489,6 +490,8 @@ export class AdminResolver {
 				const wcaId = wcaData?.wca_id;
 
 				if (!wcaId) {
+					console.warn(`[Backfill] No wca_id in API response for user ${int.user_id}`);
+					result.noWcaId++;
 					continue;
 				}
 
@@ -502,14 +505,15 @@ export class AdminResolver {
 					console.error(`[Backfill] fetchAndSaveWcaRecords failed for ${wcaId}:`, err?.message);
 				});
 
-				filled++;
+				result.filled++;
 				console.log(`[Backfill] Filled wca_id=${wcaId} for user ${int.user_id}`);
 			} catch (e) {
 				console.warn(`[Backfill] Failed for user ${int.user_id}:`, e?.message);
+				result.error++;
 			}
 		}
 
-		console.log(`[Backfill] Done. Filled ${filled}/${integrations.length} integrations.`);
-		return filled;
+		console.log(`[Backfill] Done.`, result);
+		return result;
 	}
 }

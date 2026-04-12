@@ -286,14 +286,22 @@
 		gap: 0.85rem;
 		justify-content: center;
 		align-items: center;
+		width: 100%;
+		max-width: 22rem;
+		margin: 0 auto;
+
+		> div {
+			flex: 1;
+			min-width: 0;
+
+			.cd-common-button__wrapper,
+			.cd-common-button {
+				width: 100%;
+			}
+		}
 
 		@media (max-width: 380px) {
 			flex-direction: column;
-			width: 100%;
-
-			> div {
-				width: 100%;
-			}
 		}
 	}
 
