@@ -10,6 +10,7 @@ import {resourceUri, getStorageURL} from '../../util/storage';
 import {LINKED_SERVICES} from '../../../shared/integration';
 import {countryFlag} from '../community/my_schedule/shared';
 import PageTitle from '../common/page_title/PageTitle';
+import FeatureGuard from '../common/page_disabled/FeatureGuard';
 import block from '../../styles/bem';
 import './Rankings.scss';
 
@@ -227,6 +228,7 @@ export default function Rankings() {
 	}
 
 	return (
+		<FeatureGuard feature="leaderboards_enabled" pageNameKey="nav.ranks">
 		<div className={b()}>
 			<PageTitle pageName={t('ranks.title')} />
 
@@ -335,5 +337,6 @@ export default function Rankings() {
 				</div>
 			</div>
 		</div>
+		</FeatureGuard>
 	);
 }

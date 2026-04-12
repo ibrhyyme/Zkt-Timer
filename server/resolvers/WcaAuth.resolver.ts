@@ -13,6 +13,7 @@ import GraphQLError from '../util/graphql_error';
 import {ErrorCode} from '../constants/errors';
 import {getPrisma} from '../database';
 import {notifyAdminsOfNewUser} from '../services/admin_notification';
+import {fetchAndSaveWcaRecords} from '../models/wca_record';
 
 const jwtSecret = (process as any).env.JWT_SECRET as string;
 const WCA_PENDING_COOKIE = 'wca_pending';
@@ -94,6 +95,10 @@ export class WcaAuthResolver {
 						await updateIntegration(integration, {
 							wca_id: wcaData.wcaId,
 							wca_country_iso2: wcaData.countryIso2 || null,
+						});
+						// WCA kayitlarini cek + ranking hesapla
+						fetchAndSaveWcaRecords(existingUser, {...integration, wca_id: wcaData.wcaId} as any).catch((err) => {
+							console.error('[Rankings] Auto-fetch on login failed:', err?.message);
 						});
 					}
 				}
@@ -218,6 +223,10 @@ export class WcaAuthResolver {
 		);
 		if (payload.wcaId) {
 			await updateIntegration(integration, {wca_id: payload.wcaId});
+			// WCA kayitlarini cek + ranking hesapla
+			fetchAndSaveWcaRecords(user, {...integration, wca_id: payload.wcaId} as any).catch((err) => {
+				console.error('[Rankings] Auto-fetch on signup failed:', err?.message);
+			});
 		}
 
 		// 8. wca_pending cookie temizle + session cookie set et
