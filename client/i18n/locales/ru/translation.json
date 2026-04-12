@@ -1154,7 +1154,6 @@
 		"page_info": "Страница {{current}} / {{total}}",
 		"no_items_found": "{{items}} не найдены",
 		"search_placeholder": "Поиск {{items}}",
-		"new_version_available": "Доступна новая версия. Хотите обновить страницу?",
 		"delete_solve": "Удалить сборку",
 		"view_details": "Подробнее",
 		"view_profile": "Просмотр профиля",

@@ -21,6 +21,10 @@ ENV NODE_ENV=production
 ENV DEPLOYING=true
 ENV PRO_ENABLED=true
 
+# Deploy versiyonu (cache-busting icin) -- docker-compose args'tan gelir
+ARG RELEASE_NAME=dev
+ENV RELEASE_NAME=$RELEASE_NAME
+
 # Derleme işlemi (Typescript -> Javascript)
 # 1. build klasörünü oluştur
 # 2. Prisma ve GraphQL kodlarını üret

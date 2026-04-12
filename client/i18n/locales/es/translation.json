@@ -1154,7 +1154,6 @@
 		"page_info": "Página {{current}} / {{total}}",
 		"no_items_found": "No se encontraron {{items}}",
 		"search_placeholder": "Buscar {{items}}",
-		"new_version_available": "Hay una nueva versión disponible. ¿Te gustaría actualizar la página?",
 		"delete_solve": "Eliminar resolución",
 		"view_details": "Ver detalles",
 		"view_profile": "Ver perfil",

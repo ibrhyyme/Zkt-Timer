@@ -185,6 +185,7 @@ function appUseRouteForPage(routePath, route: PageContext) {
 		}
 
 		if (!res.headersSent) {
+			res.setHeader('Cache-Control', 'no-store, must-revalidate');
 			res.status(code).send(html);
 		}
 	});

@@ -29,7 +29,6 @@ import '../styles/index.scss';
 import { mapSingleRoute } from './map_route';
 import { ApolloProvider } from '@apollo/client';
 import { DataProvider } from '../providers/DataProvider';
-import { initCapacitorUpdateChecker } from '../util/capacitor-update-checker';
 
 Sentry.init({
 	dsn: 'https://feee16c821834f408ae2453577b10f9e@o637154.ingest.sentry.io/5756098',
@@ -51,9 +50,4 @@ ReactDOM.hydrate(
 	</ApolloProvider>,
 	document.getElementById('app')
 );
-
-// Capacitor ve web: Uygulama öne geldiğinde versiyon kontrolü yap
-if (typeof window !== "undefined" && process.env.NODE_ENV === "production") {
-	initCapacitorUpdateChecker();
-}
 /* eslint-enable */
