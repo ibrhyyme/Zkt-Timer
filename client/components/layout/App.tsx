@@ -31,7 +31,7 @@ import { initStatusBar, lockTextZoom, initSafeArea } from '../../util/native-plu
 import SwipeBackIndicator from '../common/swipe_back_indicator/SwipeBackIndicator';
 import {useSiteConfig} from '../../util/hooks/useSiteConfig';
 import MaintenancePage from '../maintenance/MaintenancePage';
-import {toastInfo} from '../../util/toast';
+import {showNativeToast} from '../../util/native-plugins';
 
 interface Props {
 	path?: string;
@@ -99,7 +99,7 @@ export default function App(props: Props = {}) {
 						CapApp.exitApp();
 					} else {
 						lastBackPress = now;
-						toastInfo('Cikmak icin tekrar geri basin');
+						showNativeToast('Cikmak icin tekrar geri basin');
 					}
 				}
 			});

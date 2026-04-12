@@ -36,6 +36,11 @@ import WcaResultEnteredNotification from '../resources/notification_types/wca_re
 import WcaRoundFinishedNotification from '../resources/notification_types/wca_round_finished';
 import { getPrisma } from '../database';
 import { WcaApiService } from '../services/WcaApiService';
+import { LINKED_SERVICES } from '../../shared/integration';
+import axios from 'axios';
+import { updateIntegration } from '../models/integration';
+import { fetchAndSaveWcaRecords } from '../models/wca_record';
+import { getOAuthPostRequest } from '../integrations/oauth';
 
 @Resolver()
 export class AdminResolver {
@@ -70,6 +75,9 @@ export class AdminResolver {
 				for (const platform of filters.platforms) {
 					conditions.push({pushTokens: {some: {platform}}});
 				}
+			}
+			if (filters.has_wca) {
+				conditions.push({integrations: {some: {service_name: 'wca'}}});
 			}
 		}
 
@@ -433,5 +441,75 @@ export class AdminResolver {
 		}
 
 		return true;
+	}
+
+	@Authorized([Role.ADMIN])
+	@Mutation(() => Int)
+	async backfillWcaIds(): Promise<number> {
+		const prisma = getPrisma();
+		const wcaService = LINKED_SERVICES['wca'];
+
+		const integrations = await prisma.integration.findMany({
+			where: {service_name: 'wca', wca_id: null},
+			include: {user: true},
+		});
+
+		let filled = 0;
+
+		for (const int of integrations) {
+			try {
+				// Token refresh if expired
+				let authToken = int.auth_token;
+				const expiresAt = new Date(Number(int.auth_expires_at));
+				if (expiresAt < new Date()) {
+					try {
+						const refreshResult = await getOAuthPostRequest(
+							wcaService,
+							wcaService.tokenEndpoint,
+							{grant_type: 'refresh_token', refresh_token: int.refresh_token}
+						);
+						authToken = refreshResult.accessToken;
+						await updateIntegration(int, {
+							auth_token: refreshResult.accessToken,
+							refresh_token: refreshResult.refreshToken,
+							auth_expires_at: refreshResult.createdAt + refreshResult.expiresIn * 1000,
+						});
+					} catch (e) {
+						console.warn(`[Backfill] Token refresh failed for user ${int.user_id}:`, e?.message);
+						continue;
+					}
+				}
+
+				// Fetch WCA me
+				const res = await axios.get(wcaService.meEndpoint, {
+					headers: {Authorization: 'Bearer ' + authToken},
+				});
+
+				const wcaData = res?.data?.me || res?.data;
+				const wcaId = wcaData?.wca_id;
+
+				if (!wcaId) {
+					continue;
+				}
+
+				const updated = await updateIntegration(int, {
+					wca_id: wcaId,
+					wca_country_iso2: wcaData.country_iso2 || null,
+				});
+
+				// Fetch WCA records + calculate ranking
+				fetchAndSaveWcaRecords(int.user as any, updated).catch((err) => {
+					console.error(`[Backfill] fetchAndSaveWcaRecords failed for ${wcaId}:`, err?.message);
+				});
+
+				filled++;
+				console.log(`[Backfill] Filled wca_id=${wcaId} for user ${int.user_id}`);
+			} catch (e) {
+				console.warn(`[Backfill] Failed for user ${int.user_id}:`, e?.message);
+			}
+		}
+
+		console.log(`[Backfill] Done. Filled ${filled}/${integrations.length} integrations.`);
+		return filled;
 	}
 }

@@ -6,7 +6,7 @@ import {useTranslation} from 'react-i18next';
 import {UserCircle} from 'phosphor-react';
 import {NAV_LINKS} from '../Nav';
 import {useMe} from '../../../../util/hooks/useMe';
-import {isNative} from '../../../../util/platform';
+import {isNative, updateGestureExclusion, clearGestureExclusion} from '../../../../util/platform';
 import block from '../../../../styles/bem';
 
 const b = block('bottom-sheet-nav');
@@ -94,6 +94,12 @@ export default function BottomSheetNav() {
 		window.addEventListener('timerInteractionStart', close);
 		return () => window.removeEventListener('timerInteractionStart', close);
 	}, [open]);
+
+	// --- Android gesture exclusion: centik bolgesini geri hareketinden muaf tut ---
+	useEffect(() => {
+		updateGestureExclusion(notchY, 115);
+		return () => clearGestureExclusion();
+	}, [notchY]);
 
 	// --- Notch touch: tap to open, swipe left to open, long-press to reposition ---
 	useEffect(() => {
