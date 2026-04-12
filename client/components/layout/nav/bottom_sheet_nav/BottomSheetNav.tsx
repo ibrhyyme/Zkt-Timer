@@ -50,6 +50,7 @@ export default function BottomSheetNav() {
 	const locked = useRef(false);
 	const horizontal = useRef(false);
 	const longPressTimer = useRef<any>(null);
+	const openedBySwipe = useRef(false);
 	const swiping = swipeOffset !== null;
 
 	function gridWidth() {
@@ -185,6 +186,7 @@ export default function BottomSheetNav() {
 				const shouldOpen = swipeOffset > gridWidth() * 0.25;
 				if (shouldOpen) {
 					markNotchUsed();
+					openedBySwipe.current = true;
 					setOpen(true);
 				}
 				// rAF ile geciktir — React 17'de native event'larda batching yok,
@@ -228,6 +230,9 @@ export default function BottomSheetNav() {
 		if (!drawer || !open) return;
 
 		function onStart(e: TouchEvent) {
+			// Centik swipe'indan acildiysa bu dokunusu yoksay (parmak hala ekranda)
+			if (openedBySwipe.current) return;
+
 			startX.current = e.touches[0].clientX;
 			startY.current = e.touches[0].clientY;
 			locked.current = false;
@@ -235,6 +240,8 @@ export default function BottomSheetNav() {
 		}
 
 		function onMove(e: TouchEvent) {
+			if (openedBySwipe.current) return;
+
 			const dx = e.touches[0].clientX - startX.current;
 			const dy = Math.abs(e.touches[0].clientY - startY.current);
 
@@ -250,6 +257,12 @@ export default function BottomSheetNav() {
 		}
 
 		function onEnd() {
+			// Centik swipe flag'ini temizle — sonraki dokunuslar normal calismali
+			if (openedBySwipe.current) {
+				openedBySwipe.current = false;
+				return;
+			}
+
 			if (swipeOffset !== null && swipeOffset > gridWidth() * 0.25) {
 				setOpen(false);
 			}
