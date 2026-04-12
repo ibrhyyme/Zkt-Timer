@@ -182,11 +182,16 @@ export default function BottomSheetNav() {
 
 			// Swipe tamamlandi
 			if (swipeOffset !== null) {
-				if (swipeOffset > gridWidth() * 0.25) {
+				const shouldOpen = swipeOffset > gridWidth() * 0.25;
+				if (shouldOpen) {
 					markNotchUsed();
 					setOpen(true);
 				}
-				setSwipeOffset(null);
+				// rAF ile geciktir — React 17'de native event'larda batching yok,
+				// setOpen + setSwipeOffset ayni anda iki re-render tetikler ve drawer titrer
+				requestAnimationFrame(() => {
+					setSwipeOffset(null);
+				});
 				locked.current = false;
 				return;
 			}
