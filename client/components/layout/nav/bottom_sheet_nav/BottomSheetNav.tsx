@@ -134,6 +134,9 @@ export default function BottomSheetNav() {
 		function onMove(e: TouchEvent) {
 			e.stopPropagation();
 
+			// Swipe ile acildiysa sonraki hareketleri yoksay
+			if (openedBySwipe.current) return;
+
 			const tx = e.touches[0].clientX;
 			const ty = e.touches[0].clientY;
 
@@ -163,6 +166,19 @@ export default function BottomSheetNav() {
 
 			if (!horizontal.current) return;
 			e.preventDefault();
+
+			// Esige ulasinca hemen ac, parmagi takip etmeyi birak
+			if (dx > gridWidth() * 0.25) {
+				markNotchUsed();
+				openedBySwipe.current = true;
+				locked.current = false;
+				unstable_batchedUpdates(() => {
+					setSwipeOffset(null);
+					setOpen(true);
+				});
+				return;
+			}
+
 			setSwipeOffset(Math.max(0, dx));
 		}
 
@@ -181,21 +197,16 @@ export default function BottomSheetNav() {
 				return;
 			}
 
-			// Swipe tamamlandi
+			// Swipe mid-gesture acildiysa sadece flag temizle
+			if (openedBySwipe.current) {
+				openedBySwipe.current = false;
+				return;
+			}
+
+			// Esige ulasmadan birakildi — drawer'i geri kapat
 			if (swipeOffset !== null) {
-				const shouldOpen = swipeOffset > gridWidth() * 0.25;
+				setSwipeOffset(null);
 				locked.current = false;
-				if (shouldOpen) {
-					markNotchUsed();
-					openedBySwipe.current = true;
-					// Tek render'da ikisini birden guncelle — titreme engeli
-					unstable_batchedUpdates(() => {
-						setSwipeOffset(null);
-						setOpen(true);
-					});
-				} else {
-					setSwipeOffset(null);
-				}
 				return;
 			}
 
