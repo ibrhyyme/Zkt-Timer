@@ -13,20 +13,36 @@ import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        registerPlugin(GestureExclusionPlugin.class);
-        super.onCreate(savedInstanceState);
+    public void onConfigurationChanged(android.content.res.Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        updateOrientationLock();
+    }
 
-        // Fiziksel ekran boyutuna göre yön kilidi
-        // Z Fold açık ~7.6", gerçek tabletler 10"+, eşik 9"
+    private void updateOrientationLock() {
         DisplayMetrics dm = getResources().getDisplayMetrics();
         double widthInch = (double) dm.widthPixels / dm.xdpi;
         double heightInch = (double) dm.heightPixels / dm.ydpi;
         double diagonalInch = Math.sqrt(widthInch * widthInch + heightInch * heightInch);
-        boolean isTablet = diagonalInch >= 9.0;
-        setRequestedOrientation(isTablet
-            ? ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
-            : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        int smallestWidthDp = getResources().getConfiguration().smallestScreenWidthDp;
+
+        if (diagonalInch >= 9.0) {
+            // Buyuk tablet → landscape kilitli
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+        } else if (smallestWidthDp >= 600) {
+            // Foldable acik / kucuk tablet → serbest
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+        } else {
+            // Normal telefon → portrait kilitli
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        }
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        registerPlugin(GestureExclusionPlugin.class);
+        super.onCreate(savedInstanceState);
+
+        updateOrientationLock();
 
         // Status bar ve navigation bar ikonlarını açık renk yap (koyu tema için)
         WindowInsetsControllerCompat insetsController =

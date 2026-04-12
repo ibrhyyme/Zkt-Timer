@@ -137,10 +137,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return ApplicationDelegateProxy.shared.application(application, continue: userActivity, restorationHandler: restorationHandler)
     }
 
-    // Telefon: sadece dikey, Tablet: sadece yatay
+    // Telefon: dikey kilitli, Kucuk tablet (iPad mini): serbest, Buyuk tablet: yatay kilitli
     // Info.plist'te 4 yon var (Apple multitasking zorunlulugu), runtime'da kisitliyoruz
     func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
         if UIDevice.current.userInterfaceIdiom == .pad {
+            let shortEdge = min(UIScreen.main.bounds.width, UIScreen.main.bounds.height)
+            if shortEdge < 800 {
+                // iPad mini gibi kucuk tabletler → serbest
+                return .all
+            }
             return .landscape
         }
         return .portrait
