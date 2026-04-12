@@ -12,10 +12,6 @@ class ZKTBridgeViewController: CAPBridgeViewController {
         webView?.navigationDelegate = self
     }
 
-    override func capacitorDidLoad() {
-        bridge?.registerPluginInstance(NativeAudioPlugin())
-    }
-
     /// Offline bundle'dan index.html yukle
     private func loadOfflineBundle() {
         guard let webView = webView else { return }
