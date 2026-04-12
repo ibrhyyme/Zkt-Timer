@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import './HeaderControl.scss';
-import { MagnifyingGlassPlus, FrameCorners, CrosshairSimple, Keyboard, Plus, X, CaretDown, Gear, List } from 'phosphor-react';
+import { MagnifyingGlassPlus, FrameCorners, CrosshairSimple, Keyboard, Plus, X, CaretDown, Gear } from 'phosphor-react';
 import { GlobalHotKeys } from 'react-hotkeys';
 import { setCubeType, setSetting } from '../../../db/settings/update';
 import CubePicker from '../../common/cube_picker/CubePicker';
@@ -9,7 +9,7 @@ import SessionSwitcher from '../../sessions/SessionPicker';
 import { HOTKEY_MAP } from '../../../util/timer/hotkeys';
 import CreateNewSession from '../../sessions/new_session/CreateNewSession';
 import { openModal } from '../../../actions/general';
-import Dropdown from '../../common/inputs/dropdown/Dropdown';
+import BottomSheetNav from '../../layout/nav/bottom_sheet_nav/BottomSheetNav';
 import { TimerContext } from '../Timer';
 import { toggleSetting } from '../../../db/settings/update';
 import { useDispatch } from 'react-redux';
@@ -25,8 +25,6 @@ import { useMe } from '../../../util/hooks/useMe';
 import screenfull from '../../../util/vendor/screenfull';
 import { useQuickControlsModal } from '../../quick-controls/useQuickControlsModal';
 import AccountDropdown from '../../layout/nav/account_dropdown/AccountDropdown';
-import { NAV_LINKS } from '../../layout/nav/Nav';
-import { useRouteMatch } from 'react-router-dom';
 import SubsetPicker from './SubsetPicker';
 import { getSubsetsForCube } from '../../../util/cubes/scramble_subsets';
 import { getNewScramble } from '../helpers/scramble';
@@ -45,7 +43,7 @@ export default function HeaderControl() {
 	const context = useContext(TimerContext);
 	const { focusMode, cubeType, matchMode } = context;
 	const headerOptions = context.headerOptions || {};
-	const match = useRouteMatch();
+
 
 	const mobileMode = useGeneral('mobile_mode');
 	const manualEntry = useSettings('manual_entry');
@@ -162,23 +160,6 @@ export default function HeaderControl() {
 
 	// Mobile: minimal header with account dropdown on right
 	if (mobileMode && !focusMode) {
-		// Hamburger menu için NAV_LINKS
-		const navOptions = NAV_LINKS.map((link) => ({
-			link: link.link,
-			text: t(link.name),
-			icon: link.icon,
-			disabled: link.match.test(match.path),
-		}));
-
-		// Maç modunda hamburger menüyü gizle
-		const hamburgerMenu = !matchMode && (
-			<Dropdown
-				icon={<List />}
-				dropdownButtonProps={{ gray: true }}
-				options={navOptions}
-			/>
-		);
-
 		return (
 			<GlobalHotKeys handlers={handlers} keyMap={HOTKEY_MAP}>
 				<div className={b()}>
@@ -186,13 +167,13 @@ export default function HeaderControl() {
 						{cubePicker}
 						{sessionSwitcher}
 						{gearButton}
-						{hamburgerMenu}
 					</div>
 					<div />
 					<div className={b('right-controls')}>
 						{!matchMode && <AccountDropdown />}
 					</div>
 				</div>
+				{!matchMode && <BottomSheetNav />}
 			</GlobalHotKeys>
 		);
 	}

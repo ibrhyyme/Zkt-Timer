@@ -144,9 +144,11 @@ export default function Nav() {
 			dispatch(setGeneral('force_nav_collapsed', false));
 		}
 
-		if (window.innerWidth <= 750 && !mobileMode) {
+		const shouldBeMobile = window.innerWidth <= 768 || window.innerHeight <= 500;
+
+		if (shouldBeMobile && !mobileMode) {
 			dispatch(setGeneral('mobile_mode', true));
-		} else if (window.innerWidth > 750 && mobileMode) {
+		} else if (!shouldBeMobile && mobileMode) {
 			dispatch(setGeneral('mobile_mode', false));
 		}
 	}
@@ -183,9 +185,9 @@ export default function Nav() {
 					boxSizing: 'border-box'
 				}}
 			>
+				<MobileNav />
 				<div style={{ pointerEvents: 'auto', display: 'flex', gap: '12px', alignItems: 'center' }}>
 					<LanguageSwitcher />
-					<MobileNav />
 					<AccountDropdown />
 				</div>
 			</div>

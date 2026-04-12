@@ -196,4 +196,11 @@
 		flex-direction: column;
 		justify-content: center;
 	}
+
+	&__mobile-header {
+		.#{$namespace}-nav-account-dropdown__pfp {
+			width: 48px;
+			height: 48px;
+		}
+	}
 }
