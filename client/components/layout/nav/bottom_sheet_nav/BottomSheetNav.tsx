@@ -6,6 +6,7 @@ import {useTranslation} from 'react-i18next';
 import {UserCircle} from 'phosphor-react';
 import {NAV_LINKS} from '../Nav';
 import {useMe} from '../../../../util/hooks/useMe';
+import {useGeneral} from '../../../../util/hooks/useGeneral';
 import block from '../../../../styles/bem';
 
 const b = block('bottom-sheet-nav');
@@ -22,6 +23,7 @@ function loadNotchY(): number {
 }
 
 export default function BottomSheetNav() {
+	const mobileMode = useGeneral('mobile_mode');
 	const [open, setOpen] = useState(false);
 	const [swipeOffset, setSwipeOffset] = useState<number | null>(null);
 	const [notchY, setNotchY] = useState(loadNotchY);
@@ -268,7 +270,7 @@ export default function BottomSheetNav() {
 				<>
 					<div
 						ref={notchRef}
-						className={b('notch', {hidden: open, repositioning, hint: showHint && !open})}
+						className={b('notch', {hidden: open, repositioning, hint: showHint && !open && mobileMode})}
 						style={{top: `${notchY}%`}}
 						onClick={() => {
 							if (repositioning) return;
@@ -276,7 +278,7 @@ export default function BottomSheetNav() {
 							setOpen(true);
 						}}
 					>
-						{showHint && !open && (
+						{showHint && !open && mobileMode && (
 							<div className={b('notch-tooltip')}>
 								<span>{t('nav.notch_swipe')}</span>
 								<span className={b('notch-tooltip-sub')}>{t('nav.notch_hold')}</span>

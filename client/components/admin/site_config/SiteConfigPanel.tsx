@@ -17,6 +17,7 @@ const PAGE_TOGGLES: {key: FeatureKey; label: string; description: string}[] = [
 	{key: 'community_enabled', label: 'Yarismalar', description: 'WCA yarismalar sayfasi + WCA Live'},
 	{key: 'rooms_enabled', label: 'Rooms', description: 'Multiplayer rooms sayfasi'},
 	{key: 'battle_enabled', label: 'Battle', description: '1v1 battle modu (mobile)'},
+	{key: 'leaderboards_enabled', label: 'Siralama', description: 'Kinch Ranks + Sum of Ranks siralama sayfasi'},
 ];
 
 export default function SiteConfigPanel() {

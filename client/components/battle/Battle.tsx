@@ -7,6 +7,7 @@ import BattleHistory from './BattleHistory';
 import { ClockCounterClockwise, GearSix, CaretDown } from 'phosphor-react';
 import block from '../../styles/bem';
 import FeatureGuard from '../common/page_disabled/FeatureGuard';
+import BottomSheetNav from '../layout/nav/bottom_sheet_nav/BottomSheetNav';
 import './Battle.scss';
 
 const b = block('battle');
@@ -116,6 +117,7 @@ function BattleInner() {
 
 			<BattleMenu />
 			<BattleHistory />
+			<BottomSheetNav />
 		</div>
 	);
 }
