@@ -1004,6 +1004,9 @@ type BackfillResult {
   tokenFailed: Int
   noWcaId: Int
   error: Int
+  recordsTotal: Int
+  recordsFilled: Int
+  recordsError: Int
 }
 
 type StatsModule {

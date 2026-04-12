@@ -55,6 +55,15 @@ export class BackfillResult {
 
 	@Field(() => Int)
 	error: number;
+
+	@Field(() => Int)
+	recordsTotal: number;
+
+	@Field(() => Int)
+	recordsFilled: number;
+
+	@Field(() => Int)
+	recordsError: number;
 }
 
 @InputType()

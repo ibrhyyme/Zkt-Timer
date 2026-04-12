@@ -449,16 +449,21 @@ export class AdminResolver {
 		const prisma = getPrisma();
 		const wcaService = LINKED_SERVICES['wca'];
 
-		const integrations = await prisma.integration.findMany({
+		const result: BackfillResult = {
+			total: 0, filled: 0, tokenFailed: 0, noWcaId: 0, error: 0,
+			recordsTotal: 0, recordsFilled: 0, recordsError: 0,
+		};
+
+		// Phase 1: wca_id null olan integration'lara WCA ID doldur
+		const nullIdIntegrations = await prisma.integration.findMany({
 			where: {service_name: 'wca', wca_id: null},
 			include: {user: true},
 		});
 
-		const result: BackfillResult = {total: integrations.length, filled: 0, tokenFailed: 0, noWcaId: 0, error: 0};
+		result.total = nullIdIntegrations.length;
 
-		for (const int of integrations) {
+		for (const int of nullIdIntegrations) {
 			try {
-				// Token refresh if expired
 				let authToken = int.auth_token;
 				const expiresAt = new Date(Number(int.auth_expires_at));
 				if (expiresAt < new Date()) {
@@ -481,7 +486,6 @@ export class AdminResolver {
 					}
 				}
 
-				// Fetch WCA me
 				const res = await axios.get(wcaService.meEndpoint, {
 					headers: {Authorization: 'Bearer ' + authToken},
 				});
@@ -495,14 +499,9 @@ export class AdminResolver {
 					continue;
 				}
 
-				const updated = await updateIntegration(int, {
+				await updateIntegration(int, {
 					wca_id: wcaId,
 					wca_country_iso2: wcaData.country_iso2 || null,
-				});
-
-				// Fetch WCA records + calculate ranking
-				fetchAndSaveWcaRecords(int.user as any, updated).catch((err) => {
-					console.error(`[Backfill] fetchAndSaveWcaRecords failed for ${wcaId}:`, err?.message);
 				});
 
 				result.filled++;
@@ -510,6 +509,29 @@ export class AdminResolver {
 			} catch (e) {
 				console.warn(`[Backfill] Failed for user ${int.user_id}:`, e?.message);
 				result.error++;
+			}
+		}
+
+		// Phase 2: wca_id var ama ranking skoru olmayan herkese WCA record cek + ranking hesapla
+		const missingRankings = await prisma.integration.findMany({
+			where: {
+				service_name: 'wca',
+				wca_id: {not: null},
+				kinch_score: null,
+			},
+			include: {user: true},
+		});
+
+		result.recordsTotal = missingRankings.length;
+
+		for (const int of missingRankings) {
+			try {
+				await fetchAndSaveWcaRecords(int.user as any, int as any);
+				result.recordsFilled++;
+				console.log(`[Backfill] Records fetched for wca_id=${int.wca_id} user=${int.user_id}`);
+			} catch (e) {
+				console.warn(`[Backfill] Records failed for user ${int.user_id}:`, e?.message);
+				result.recordsError++;
 			}
 		}
 

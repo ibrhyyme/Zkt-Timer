@@ -90,7 +90,7 @@ export default function KeyWatcher(props: Props) {
 
 	function touchStart(e) {
 		// Sag kenar dead zone — centik (notch) alani, timer tetiklemesin
-		if (e.touches?.[0] && window.innerWidth - e.touches[0].clientX < 48) {
+		if (e.touches?.[0] && window.innerWidth - e.touches[0].clientX < 20) {
 			return;
 		}
 
@@ -136,7 +136,7 @@ export default function KeyWatcher(props: Props) {
 		if (e.touches && e.touches.length > 0) return;
 
 		// Sag kenar dead zone — centik (notch) alani
-		if (e.changedTouches?.[0] && window.innerWidth - e.changedTouches[0].clientX < 48) {
+		if (e.changedTouches?.[0] && window.innerWidth - e.changedTouches[0].clientX < 20) {
 			return;
 		}
 

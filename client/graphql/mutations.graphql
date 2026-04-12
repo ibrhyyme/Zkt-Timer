@@ -88,5 +88,8 @@ mutation backfillWcaIds {
 		tokenFailed
 		noWcaId
 		error
+		recordsTotal
+		recordsFilled
+		recordsError
 	}
 }

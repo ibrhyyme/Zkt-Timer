@@ -11,7 +11,7 @@ import './SiteConfigPanel.scss';
 
 const b = block('site-config-panel');
 
-const BACKFILL_WCA_IDS = gql`mutation { backfillWcaIds { total filled tokenFailed noWcaId error } }`;
+const BACKFILL_WCA_IDS = gql`mutation { backfillWcaIds { total filled tokenFailed noWcaId error recordsTotal recordsFilled recordsError } }`;
 
 type FeatureKey = 'maintenance_mode' | 'trainer_enabled' | 'community_enabled' | 'leaderboards_enabled' | 'rooms_enabled' | 'battle_enabled';
 
@@ -219,10 +219,12 @@ export default function SiteConfigPanel() {
 								const res = await gqlMutate(BACKFILL_WCA_IDS);
 								const r = res?.data?.backfillWcaIds;
 								if (r) {
-									const parts = [`${r.filled}/${r.total} kullanici guncellendi`];
-									if (r.tokenFailed > 0) parts.push(`${r.tokenFailed} token gecersiz (yeniden baglama gerekli)`);
+									const parts = [`WCA ID: ${r.filled}/${r.total} dolduruldu`];
+									if (r.tokenFailed > 0) parts.push(`${r.tokenFailed} token gecersiz`);
 									if (r.noWcaId > 0) parts.push(`${r.noWcaId} WCA ID alinamadi`);
 									if (r.error > 0) parts.push(`${r.error} hata`);
+									parts.push(`Ranking: ${r.recordsFilled}/${r.recordsTotal} hesaplandi`);
+									if (r.recordsError > 0) parts.push(`${r.recordsError} ranking hatasi`);
 									setBackfillResult(parts.join(' | '));
 								} else {
 									setBackfillResult('Sonuc alinamadi');
