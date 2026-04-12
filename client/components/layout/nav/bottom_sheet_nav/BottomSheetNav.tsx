@@ -6,7 +6,7 @@ import {useTranslation} from 'react-i18next';
 import {UserCircle} from 'phosphor-react';
 import {NAV_LINKS} from '../Nav';
 import {useMe} from '../../../../util/hooks/useMe';
-import {useGeneral} from '../../../../util/hooks/useGeneral';
+import {isNative} from '../../../../util/platform';
 import block from '../../../../styles/bem';
 
 const b = block('bottom-sheet-nav');
@@ -23,7 +23,6 @@ function loadNotchY(): number {
 }
 
 export default function BottomSheetNav() {
-	const mobileMode = useGeneral('mobile_mode');
 	const [open, setOpen] = useState(false);
 	const [swipeOffset, setSwipeOffset] = useState<number | null>(null);
 	const [notchY, setNotchY] = useState(loadNotchY);
@@ -102,6 +101,10 @@ export default function BottomSheetNav() {
 		if (!notch) return;
 
 		function onStart(e: TouchEvent) {
+			// Timer'in inspection/cozum baslatmasini engelle
+			e.stopPropagation();
+			e.preventDefault();
+
 			startX.current = e.touches[0].clientX;
 			startY.current = e.touches[0].clientY;
 			locked.current = false;
@@ -113,6 +116,8 @@ export default function BottomSheetNav() {
 		}
 
 		function onMove(e: TouchEvent) {
+			e.stopPropagation();
+
 			const tx = e.touches[0].clientX;
 			const ty = e.touches[0].clientY;
 
@@ -145,7 +150,9 @@ export default function BottomSheetNav() {
 			setSwipeOffset(Math.max(0, dx));
 		}
 
-		function onEnd() {
+		function onEnd(e: TouchEvent) {
+			e.stopPropagation();
+
 			if (longPressTimer.current) {
 				clearTimeout(longPressTimer.current);
 				longPressTimer.current = null;
@@ -264,13 +271,16 @@ export default function BottomSheetNav() {
 		setOpen(false);
 	}
 
+	// Centik sadece native uygulamada gorunur, webde gizli
+	if (!isNative()) return null;
+
 	return (
 		<>
 			{ReactDOM.createPortal(
 				<>
 					<div
 						ref={notchRef}
-						className={b('notch', {hidden: open, repositioning, hint: showHint && !open && mobileMode})}
+						className={b('notch', {hidden: open, repositioning, hint: showHint && !open})}
 						style={{top: `${notchY}%`}}
 						onClick={() => {
 							if (repositioning) return;
@@ -278,7 +288,7 @@ export default function BottomSheetNav() {
 							setOpen(true);
 						}}
 					>
-						{showHint && !open && mobileMode && (
+						{showHint && !open && (
 							<div className={b('notch-tooltip')}>
 								<span>{t('nav.notch_swipe')}</span>
 								<span className={b('notch-tooltip-sub')}>{t('nav.notch_hold')}</span>
