@@ -79,11 +79,16 @@ export default function DataSettings() {
 		dispatch(
 			openModal(
 				<ConfirmModal
-					title={t('data_settings.reset_settings')}
-					description={t('data_settings.reset_settings_confirm_desc')}
 					buttonText={t('data_settings.reset_settings_button')}
 					triggerAction={resetSettings}
-				/>
+				/>,
+				{
+					title: t('data_settings.reset_settings'),
+					description: t('data_settings.reset_settings_confirm_desc'),
+					closeButtonText: t('solve_info.done'),
+					compact: true,
+					width: 420,
+				}
 			)
 		);
 	}

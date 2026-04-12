@@ -196,8 +196,6 @@ export default function Sessions() {
 		dispatch(
 			openModal(
 				<ConfirmModal
-					title={t('sessions.merge_sessions_title')}
-					description={t('sessions.merge_confirm_desc', { source: session.name, target: currentSession.name })}
 					triggerAction={async () => {
 						await mergeSessionsDb(selectedSessionId, currentSessionId);
 						setSelectedSessionId(currentSessionId);
@@ -206,7 +204,14 @@ export default function Sessions() {
 					buttonProps={{
 						danger: true,
 					}}
-				/>
+				/>,
+				{
+					title: t('sessions.merge_sessions_title'),
+					description: t('sessions.merge_confirm_desc', { source: session.name, target: currentSession.name }),
+					closeButtonText: t('solve_info.done'),
+					compact: true,
+					width: 420,
+				}
 			)
 		);
 	}
@@ -240,11 +245,16 @@ export default function Sessions() {
 		dispatch(
 			openModal(
 				<ConfirmModal
-					title={t('sessions.delete_session')}
-					description={t('sessions.delete_confirm_desc', { name: session.name })}
 					triggerAction={triggerAction}
 					buttonText={t('sessions.delete_session')}
-				/>
+				/>,
+				{
+					title: t('sessions.delete_session'),
+					description: t('sessions.delete_confirm_desc', { name: session.name }),
+					closeButtonText: t('solve_info.done'),
+					compact: true,
+					width: 420,
+				}
 			)
 		);
 	}
@@ -266,17 +276,21 @@ export default function Sessions() {
 		dispatch(
 			openModal(
 				<ConfirmModal
-					title={t('sessions.delete_selected_title')}
-					description={t('sessions.delete_selected_desc', { count: idsToDelete.length, names: sessionNames })}
 					triggerAction={async () => {
-						// İlk onay geçti, pending state'e kaydet — ikinci modal useEffect ile açılacak
 						setPendingBulkDelete(idsToDelete);
 					}}
 					buttonText={t('sessions.delete_sessions')}
 					buttonProps={{
 						danger: true,
 					}}
-				/>
+				/>,
+				{
+					title: t('sessions.delete_selected_title'),
+					description: t('sessions.delete_selected_desc', { count: idsToDelete.length, names: sessionNames }),
+					closeButtonText: t('solve_info.done'),
+					compact: true,
+					width: 420,
+				}
 			)
 		);
 	}
@@ -291,8 +305,6 @@ export default function Sessions() {
 		dispatch(
 			openModal(
 				<ConfirmModal
-					title={t('sessions.are_you_sure')}
-					description={t('sessions.bulk_delete_confirm')}
 					hideInput
 					triggerAction={async () => {
 						let updatedSessionId = currentSessionId;
@@ -321,7 +333,14 @@ export default function Sessions() {
 					buttonProps={{
 						danger: true,
 					}}
-				/>
+				/>,
+				{
+					title: t('sessions.are_you_sure'),
+					description: t('sessions.bulk_delete_confirm'),
+					closeButtonText: t('solve_info.done'),
+					compact: true,
+					width: 420,
+				}
 			)
 		);
 	}, [pendingBulkDelete]);

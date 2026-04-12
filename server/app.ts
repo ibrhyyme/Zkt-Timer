@@ -256,6 +256,30 @@ if (!isDev) {
 	}
 })();
 
+// Admin: Tum WCA bagli kullanicilarin Kinch + SoR skorlarini yeniden hesapla
+app.post('/api/admin/recalculate-rankings', (req, res) => {
+	const {getMe} = require('./util/auth');
+	const {recalculateAllRankings} = require('./models/ranking');
+
+	getMe(req).then((me) => {
+		if (!me || !me.admin) {
+			res.status(403).json({error: 'Forbidden'});
+			return;
+		}
+
+		recalculateAllRankings().then(() => {
+			console.log('[Rankings] All rankings recalculated via API');
+		}).catch((err) => {
+			console.error('[Rankings] Recalculation failed:', err);
+		});
+
+		res.json({success: true, message: 'Ranking recalculation started'});
+	}).catch((err) => {
+		console.error('[Rankings] API error:', err);
+		res.status(500).json({error: 'Internal server error'});
+	});
+});
+
 // Cache-busting: Capacitor ve web istemciler güncel versiyonu kontrol eder
 app.get('/api/version', (req, res) => {
 	res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');

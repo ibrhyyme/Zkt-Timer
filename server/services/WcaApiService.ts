@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { Integration } from '../schemas/Integration.schema';
+import {RedisNamespace, createRedisKey, fetchDataFromCache} from './redis';
 
 export interface WcaPersonalRecord {
 	single?: {
@@ -49,7 +50,15 @@ export class WcaApiService {
 	static async fetchPersonData(wcaId: string): Promise<WcaPerson | null> {
 		try {
 			const response = await axios.get(`${this.BASE_URL}/persons/${wcaId}`);
-			return response.data;
+			const data = response.data;
+			// WCA API response: {person: {name, country_iso2, ...}, personal_records: {...}, ...}
+			// Flatten person fields into top level for our interface
+			return {
+				...data,
+				wca_id: data.person?.wca_id || wcaId,
+				name: data.person?.name || '',
+				country_iso2: data.person?.country_iso2 || data.person?.country?.iso2 || '',
+			};
 		} catch (error) {
 			console.error(`Failed to fetch WCA person data for ${wcaId}:`, error.message);
 			return null;
@@ -109,6 +118,91 @@ export class WcaApiService {
 			'555bf',  // 5x5x5 Blindfolded
 			'333mbf'  // 3x3x3 Multi-Blind
 		];
+	}
+
+	/**
+	 * Events used for Kinch/SoR ranking calculations.
+	 * Excludes deprecated: 333ft, 333mbo, magic, mmagic
+	 */
+	static getRankingEvents(): string[] {
+		return [
+			'333', '222', '444', '555', '666', '777',
+			'333bf', '333fm', '333oh',
+			'minx', 'pyram', 'clock', 'skewb', 'sq1',
+			'444bf', '555bf', '333mbf',
+		];
+	}
+
+	/**
+	 * Events where Kinch uses best-of single/average (BLD + FMC)
+	 */
+	static getBestOfEvents(): string[] {
+		return ['333bf', '444bf', '555bf', '333fm'];
+	}
+
+	/**
+	 * World records (centiseconds, FMC=moves, MBLD=encoded).
+	 * Source: Wikipedia "List of world records in speedcubing" (March 2026).
+	 * WCA API v0 has no records endpoint; update manually when WRs change.
+	 */
+	static getWorldRecords(): Record<string, {single: number; average: number}> {
+		return {
+			'333':    {single: 276,    average: 384},
+			'222':    {single: 39,     average: 86},
+			'444':    {single: 1518,   average: 1856},
+			'555':    {single: 3045,   average: 3431},
+			'666':    {single: 5769,   average: 6504},
+			'777':    {single: 9348,   average: 9686},
+			'333bf':  {single: 1167,   average: 1405},
+			'333fm':  {single: 16,     average: 1933},
+			'333oh':  {single: 566,    average: 772},
+			'minx':   {single: 2199,   average: 2438},
+			'pyram':  {single: 73,     average: 114},
+			'clock':  {single: 153,    average: 224},
+			'skewb':  {single: 73,     average: 137},
+			'sq1':    {single: 340,    average: 463},
+			'444bf':  {single: 5196,   average: 5939},
+			'555bf':  {single: 11859,  average: 14763},
+			'333mbf': {single: 930058230065, average: 0},
+		};
+	}
+
+	/**
+	 * Approximate max competitor counts per event (for SoR missing-event penalty).
+	 */
+	static getMaxRanks(): Record<string, {single: number; average: number}> {
+		return {
+			'333':    {single: 250000, average: 200000},
+			'222':    {single: 120000, average: 100000},
+			'444':    {single: 80000,  average: 65000},
+			'555':    {single: 50000,  average: 40000},
+			'666':    {single: 20000,  average: 18000},
+			'777':    {single: 18000,  average: 15000},
+			'333bf':  {single: 15000,  average: 5000},
+			'333fm':  {single: 12000,  average: 5000},
+			'333oh':  {single: 70000,  average: 55000},
+			'minx':   {single: 40000,  average: 30000},
+			'pyram':  {single: 80000,  average: 65000},
+			'clock':  {single: 30000,  average: 25000},
+			'skewb':  {single: 50000,  average: 40000},
+			'sq1':    {single: 30000,  average: 25000},
+			'444bf':  {single: 3000,   average: 500},
+			'555bf':  {single: 1500,   average: 300},
+			'333mbf': {single: 5000,   average: 0},
+		};
+	}
+
+	/**
+	 * Get WR + max rank data for ranking calculations.
+	 */
+	static async fetchRankingData(): Promise<{
+		worldRecords: Record<string, {single: number; average: number}>;
+		maxRanks: Record<string, {single: number; average: number}>;
+	}> {
+		return {
+			worldRecords: this.getWorldRecords(),
+			maxRanks: this.getMaxRanks(),
+		};
 	}
 
 	/**

@@ -58,6 +58,7 @@ export default function StatsBar() {
     const { solvesFilter, timeStartedAt, focusMode } = context;
 
     const mobileMode = useGeneral('mobile_mode');
+
     const sessionId = useSettings('session_id');
     const timerFontFamily = useSettings('timer_font_family');
     const manualEntry = useSettings('manual_entry');

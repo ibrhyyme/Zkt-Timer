@@ -14,8 +14,8 @@
 		cursor: pointer;
 
 		&:active {
-			width: 14px;
-			background: rgba(255, 255, 255, 0.3);
+			width: 12px;
+			background: rgba(var(--primary-color), 0.4);
 		}
 
 		&--hidden {
@@ -23,9 +23,36 @@
 			pointer-events: none;
 		}
 
+		&--hint {
+			animation: notchHint 3s ease-in-out infinite;
+		}
+
 		&--repositioning {
 			width: 14px;
 			background: rgba(var(--primary-color), 0.5);
+		}
+
+		&-tooltip {
+			position: absolute;
+			right: calc(100% + 10px);
+			top: 50%;
+			transform: translateY(-50%);
+			background: rgb(var(--background-color));
+			border: 1px solid rgba(var(--text-color), 0.15);
+			border-radius: 12px;
+			padding: 10px 14px;
+			white-space: nowrap;
+			box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+			display: flex;
+			flex-direction: column;
+			gap: 4px;
+			pointer-events: none;
+
+			span {
+				color: rgb(var(--text-color));
+				font-size: 0.88rem;
+				font-weight: 500;
+			}
 		}
 	}
 
@@ -129,4 +156,18 @@
 			font-weight: 600;
 		}
 	}
+}
+
+@keyframes notchHint {
+	0%, 50% { transform: translateY(-50%) translateX(0); }
+	55% { transform: translateY(-50%) translateX(-14px); }
+	60% { transform: translateY(-50%) translateX(0); }
+	65% { transform: translateY(-50%) translateX(-14px); }
+	70% { transform: translateY(-50%) translateX(0); }
+	75% { transform: translateY(-50%) translateX(-12px); }
+	80% { transform: translateY(-50%) translateX(0); }
+	85% { transform: translateY(-50%) translateX(-10px); }
+	90% { transform: translateY(-50%) translateX(0); }
+	95% { transform: translateY(-50%) translateX(-8px); }
+	100% { transform: translateY(-50%) translateX(0); }
 }

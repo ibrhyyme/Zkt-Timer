@@ -8,9 +8,12 @@
 		"solves": "Çözümler",
 		"sessions": "Sezonlar",
 		"battle": "Mücadele",
+		"ranks": "Sıralama",
 		"collapse": "Daralt",
 		"login": "Log in",
-		"signup": "Sign up"
+		"signup": "Sign up",
+		"notch_swipe": "Menüyü açmak için kaydır",
+		"notch_hold": "Hareket ettirmek için basılı tut"
 	},
 	"account_dropdown": {
 		"account": "Hesap",
@@ -2136,5 +2139,23 @@
 		"solving": "Çözülüyor...",
 		"error": "Çözücü hatası",
 		"no_scramble": "Çözümleri görmek için bir karıştırma oluşturun"
+	},
+	"ranks": {
+		"title": "Sıralama",
+		"kinch": "Kinch Ranks",
+		"sor_single": "Sum of Ranks (Single)",
+		"sor_average": "Sum of Ranks (Average)",
+		"search_placeholder": "Kullanıcı ara...",
+		"user": "Kullanıcı",
+		"score": "Skor",
+		"sum": "Toplam",
+		"no_results": "Henüz sıralanmış kullanıcı yok",
+		"link_wca_title": "Hesap Bağla",
+		"link_wca_desc": "Sıralamaya katılmak için WCA hesabını bağla.",
+		"link_wca_button": "Hesap Bağla",
+		"login_title": "Giriş Yap",
+		"login_desc": "Sıralamaya katılmak için giriş yap ve WCA hesabını bağla.",
+		"login_button": "Giriş Yap",
+		"loading": "Yükleniyor..."
 	}
 }

@@ -8,9 +8,12 @@
 		"solves": "Resoluciones",
 		"sessions": "Sesiones",
 		"battle": "Batalla",
+		"ranks": "Clasificación",
 		"collapse": "Colapsar",
 		"login": "Iniciar sesión",
-		"signup": "Registrarse"
+		"signup": "Registrarse",
+		"notch_swipe": "Desliza para abrir el menú",
+		"notch_hold": "Mantén pulsado para mover"
 	},
 	"account_dropdown": {
 		"account": "Cuenta",
@@ -2114,5 +2117,23 @@
 		"solving": "Resolviendo...",
 		"error": "Error del solucionador",
 		"no_scramble": "Genera una mezcla para ver soluciones"
+	},
+	"ranks": {
+		"title": "Clasificación",
+		"kinch": "Kinch Ranks",
+		"sor_single": "Sum of Ranks (Single)",
+		"sor_average": "Sum of Ranks (Average)",
+		"search_placeholder": "Buscar usuarios...",
+		"user": "Usuario",
+		"score": "Puntuación",
+		"sum": "Suma",
+		"no_results": "Aún no hay usuarios clasificados",
+		"link_wca_title": "Vincular Cuenta",
+		"link_wca_desc": "Vincula tu cuenta WCA para unirte a la clasificación.",
+		"link_wca_button": "Vincular Cuenta",
+		"login_title": "Iniciar Sesión",
+		"login_desc": "Inicia sesión y vincula tu cuenta WCA para unirte a la clasificación.",
+		"login_button": "Iniciar Sesión",
+		"loading": "Cargando..."
 	}
 }

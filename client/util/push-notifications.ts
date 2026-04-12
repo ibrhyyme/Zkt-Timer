@@ -39,6 +39,7 @@ async function showLocalNotification(title: string, body: string, data?: any): P
 					title,
 					body,
 					extra: data || {},
+					sound: 'default',
 					schedule: {at: new Date(Date.now() + 100)}, // hemen
 					// Android: native build/store gerek olmadan icon fix.
 					// `ic_launcher_background` drawable namespace'inde mevcut (vector).

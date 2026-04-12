@@ -16,6 +16,7 @@ import {
 	Timer,
 	ArrowRight,
 	Sword,
+	Trophy,
 } from 'phosphor-react';
 import Notifications from './notifications/Notifications';
 import Logo from '../../common/logo/Logo';
@@ -44,6 +45,7 @@ const NAV_FEATURE_MAP: Record<string, string> = {
 	'nav.community': 'community_enabled',
 	'nav.rooms': 'rooms_enabled',
 	'nav.battle': 'battle_enabled',
+	'nav.ranks': 'leaderboards_enabled',
 };
 
 export interface NavLinkProps {
@@ -90,6 +92,13 @@ export const NAV_LINKS: NavLinkProps[] = [
 		icon: <Users weight="bold" />,
 		match: /^\/community/,
 		link: '/community/competitions',
+		loginRequired: false,
+	},
+	{
+		name: 'nav.ranks',
+		icon: <Trophy weight="bold" />,
+		match: /^\/ranks/,
+		link: '/ranks',
 		loginRequired: false,
 	},
 	{
@@ -144,7 +153,7 @@ export default function Nav() {
 			dispatch(setGeneral('force_nav_collapsed', false));
 		}
 
-		const shouldBeMobile = window.innerWidth <= 768 || window.innerHeight <= 500;
+		const shouldBeMobile = window.innerWidth < 1024 || window.innerHeight <= 500;
 
 		if (shouldBeMobile && !mobileMode) {
 			dispatch(setGeneral('mobile_mode', true));

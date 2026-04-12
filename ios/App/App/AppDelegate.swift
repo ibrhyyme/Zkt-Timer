@@ -2,6 +2,7 @@ import UIKit
 import Capacitor
 import FirebaseCore
 import FirebaseMessaging
+import AVFoundation
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -10,6 +11,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         FirebaseApp.configure()
+
+        // Inspection sesleri (8s, 12s) arka plandaki muzigi durdurmasin
+        // .ambient + .mixWithOthers: diger uygulamalarin sesiyle karisir
+        do {
+            try AVAudioSession.sharedInstance().setCategory(.ambient, options: [.mixWithOthers])
+            try AVAudioSession.sharedInstance().setActive(true)
+        } catch {
+            print("[ZKT] AVAudioSession error: \(error)")
+        }
+
         // iOS ilk acilista "kablosuz veri kullanabilsin mi?" diyalogu gosterir.
         // WKWebView bu diyalog acikken baglanamiyor ve otomatik retry yapmiyor.
         // 10, 15, 20 saniyede retry yapiyoruz. Basarili olunca duruyor.

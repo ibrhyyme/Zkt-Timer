@@ -140,7 +140,7 @@
 }
 
 // Mobil özel stiller
-@media (max-width: 768px) {
+@media (max-width: 1023px) {
 	.#{$namespace}-timer-header-control {
 		padding: calc(10px + env(safe-area-inset-top, 0px)) 12px 10px 12px !important;
 		grid-template-columns: 1fr 0px auto;

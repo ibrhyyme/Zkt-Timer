@@ -97,8 +97,6 @@ export default function AdminPromoCodes() {
 		dispatch(
 			openModal(
 				<ConfirmModal
-					title={t('delete_confirm_title')}
-					description={t('delete_confirm_desc', {code: code.code})}
 					buttonText={t('delete_confirm_button')}
 					hideInput
 					triggerAction={async () => {
@@ -111,7 +109,14 @@ export default function AdminPromoCodes() {
 						toastSuccess(t('delete_success', {code: code.code}));
 						fetchCodes();
 					}}
-				/>
+				/>,
+				{
+					title: t('delete_confirm_title'),
+					description: t('delete_confirm_desc', {code: code.code}),
+					closeButtonText: t('solve_info.done'),
+					compact: true,
+					width: 420,
+				}
 			)
 		);
 	}

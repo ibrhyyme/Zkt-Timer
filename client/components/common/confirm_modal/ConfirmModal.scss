@@ -1,0 +1,43 @@
+.cd-confirm-modal {
+	&__info-boxes {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 8px;
+		margin-bottom: 24px;
+	}
+
+	&__info-box {
+		background: rgb(var(--button-color));
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		border-radius: 14px;
+		padding: 16px;
+		border: 1px solid rgba(var(--text-color), 0.08);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+	}
+
+	&__info-box-value {
+		font-size: 1.25rem;
+		font-weight: 800;
+		font-family: 'SF Mono', 'Roboto Mono', 'Fira Code', monospace;
+		font-variant-numeric: tabular-nums;
+		color: rgb(var(--text-color));
+	}
+
+	&__info-box-label {
+		font-size: 0.7rem;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: rgba(var(--text-color), 0.7);
+	}
+
+	&__input {
+		margin-bottom: 8px;
+	}
+
+	&__actions {
+		display: flex;
+		justify-content: center;
+	}
+}

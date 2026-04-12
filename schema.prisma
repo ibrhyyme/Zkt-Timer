@@ -131,11 +131,18 @@ model Integration {
   wca_show_records       Boolean     @default(true)
   wca_show_rank          Boolean     @default(true)
   wca_show_results       Boolean     @default(false)
+  kinch_score            Float?
+  sor_single             Int?
+  sor_average            Int?
+  ranks_updated_at       DateTime?
   created_at             DateTime    @default(now())
   user                   UserAccount @relation(fields: [user_id], references: [id], onDelete: Cascade)
   wca_records            WcaRecord[]
 
   @@index([user_id])
+  @@index([kinch_score])
+  @@index([sor_single])
+  @@index([sor_average])
   @@map("integration")
 }
 

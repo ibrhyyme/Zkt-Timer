@@ -9,6 +9,7 @@ import CSS from 'csstype';
 import block from '../../../styles/bem';
 import InputInfo from '../inputs/input/input_info/InputInfo';
 import { useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 
 const b = block('common-button');
 
@@ -33,7 +34,7 @@ export interface ButtonProps {
 	large?: boolean;
 	flat?: boolean;
 	disabled?: boolean;
-	confirmModalProps?: ConfirmModalProps;
+	confirmModalProps?: ConfirmModalProps & { title?: string; description?: string };
 	onMouseOver?: React.MouseEventHandler<HTMLButtonElement>;
 	onMouseOut?: React.MouseEventHandler<HTMLButtonElement>;
 	textStyle?: CSS.Properties;
@@ -132,6 +133,7 @@ export default function Button(props: ButtonProps) {
 	}
 
 	const dispatch = useDispatch();
+	const { t } = useTranslation();
 
 	function buttonClick(e) {
 		if (confirmModalProps) {
@@ -144,7 +146,16 @@ export default function Button(props: ButtonProps) {
 	}
 
 	function toggleConfirmModal() {
-		dispatch(openModal(<ConfirmModal {...confirmModalProps} />));
+		const { title: modalTitle, description: modalDescription, ...rest } = confirmModalProps;
+		dispatch(
+			openModal(<ConfirmModal {...rest} />, {
+				title: modalTitle,
+				description: modalDescription,
+				closeButtonText: t('solve_info.done'),
+				compact: true,
+				width: 420,
+			})
+		);
 	}
 
 	let ic = null;

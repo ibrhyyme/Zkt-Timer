@@ -8,6 +8,7 @@ import {IntegrationType} from '../../shared/integration';
 import {getIntegrationGetMe, linkOAuthAccount, revokeIntegration} from '../integrations/oauth';
 import {WcaAccount} from '../schemas/WcaAccount.schema';
 import {getIntegration} from '../models/integration';
+import {fetchAndSaveWcaRecords} from '../models/wca_record';
 
 function getIntegrationsByUserId(context: GraphQLContext, userId: string) {
 	const {prisma} = context;
@@ -75,6 +76,14 @@ export class IntegrationResolver {
 		try {
 			const result = await linkOAuthAccount(integrationType, user, code);
 			console.log('Integration created successfully:', typeof result === 'object' ? result?.id : 'success');
+
+			// WCA baglama sonrasi kayitlari otomatik cek + ranking hesapla
+			if (integrationType === 'wca' && result?.wca_id) {
+				fetchAndSaveWcaRecords(user, result).catch((err) => {
+					console.error('[Rankings] Auto-fetch WCA records failed:', err?.message);
+				});
+			}
+
 			return result;
 		} catch (e) {
 			console.error('createIntegration error:', e);

@@ -30,7 +30,7 @@
 			font-size: clamp(2.5rem, 8vw, 5rem);
 		}
 
-		@media (max-width: 768px) {
+		@media (max-width: 1023px) {
 			font-size: clamp(2rem, 10vw, 4rem);
 		}
 	}

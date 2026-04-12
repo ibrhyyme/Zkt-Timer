@@ -101,12 +101,17 @@ export async function deleteSolveDb(solve: Solve, confirmed: boolean = false) {
 		store.dispatch(
 			openModal(
 				<ConfirmModal
-					description="Bu çözümü silmek istediğinizden emin misiniz?"
 					buttonText="Çözümü sil"
 					hideInput
-					title="Çözümü sil"
 					triggerAction={() => deleteSolveDb(solve, true)}
-				/>
+				/>,
+				{
+					title: 'Çözümü sil',
+					description: 'Bu çözümü silmek istediğinizden emin misiniz?',
+					closeButtonText: 'Bitti',
+					compact: true,
+					width: 420,
+				}
 			)
 		);
 		return;
@@ -226,12 +231,17 @@ export async function deleteAllSolvesInSessionDb(sessionId: string, confirmed: b
 		store.dispatch(
 			openModal(
 				<ConfirmModal
-					description="Bu sezondaki TÜM çözümleri silmek istediğinizden emin misiniz? Bu işlem geri alınamaz."
 					buttonText="Tümünü Sil"
 					hideInput
-					title="Sezonu Temizle"
 					triggerAction={() => deleteAllSolvesInSessionDb(sessionId, true)}
-				/>
+				/>,
+				{
+					title: 'Sezonu Temizle',
+					description: 'Bu sezondaki TÜM çözümleri silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.',
+					closeButtonText: 'Bitti',
+					compact: true,
+					width: 420,
+				}
 			)
 		);
 		return;
@@ -273,12 +283,17 @@ export async function deleteMultipleSolvesDb(solves: Solve[], confirmed: boolean
 		store.dispatch(
 			openModal(
 				<ConfirmModal
-					description={`Seçilen ${solves.length} çözümü silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.`}
 					buttonText="Seçilenleri Sil"
 					hideInput
-					title="Çözümleri Sil"
 					triggerAction={() => deleteMultipleSolvesDb(solves, true)}
-				/>
+				/>,
+				{
+					title: 'Çözümleri Sil',
+					description: `Seçilen ${solves.length} çözümü silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.`,
+					closeButtonText: 'Bitti',
+					compact: true,
+					width: 420,
+				}
 			)
 		);
 		return;
