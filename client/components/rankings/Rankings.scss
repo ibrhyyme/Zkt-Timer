@@ -1,3 +1,5 @@
+@import '../../styles/config';
+
 .cd-rankings {
 	width: 100%;
 
@@ -98,6 +100,76 @@
 			color: rgb(var(--text-color));
 			font-weight: 600;
 		}
+	}
+
+	// Info toggle (inside tabs bar)
+	&__info-toggle {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 36px;
+		flex-shrink: 0;
+		border-radius: 0.4rem;
+		border: none;
+		background: transparent;
+		color: rgba(var(--text-color), 0.35);
+		cursor: pointer;
+		transition: all 0.15s;
+
+		&:hover {
+			color: rgba(var(--text-color), 0.7);
+		}
+
+		&--active {
+			color: rgb(var(--primary-color));
+			background: rgba(var(--primary-color), 0.1);
+		}
+	}
+
+	// Info card
+	&__info-card {
+		@include dark-glass(0.08, 12px, 0.06);
+		border-radius: 0.6rem;
+		padding: 1rem 1.2rem;
+		margin-bottom: 1rem;
+	}
+
+	&__info-title {
+		font-size: 0.9rem;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+		margin: 0 0 0.5rem;
+	}
+
+	&__info-text {
+		font-size: 0.8rem;
+		line-height: 1.5;
+		color: rgba(var(--text-color), 0.7);
+		margin: 0 0 0.35rem;
+
+		&:last-child {
+			margin-bottom: 0;
+		}
+
+		&--dim {
+			color: rgba(var(--text-color), 0.45);
+			font-size: 0.75rem;
+		}
+	}
+
+	&__info-subtitle {
+		font-size: 0.82rem;
+		font-weight: 600;
+		color: rgba(var(--text-color), 0.85);
+		margin: 0.7rem 0 0.3rem;
+	}
+
+	&__info-list {
+		margin: 0.25rem 0 0.35rem 1.2rem;
+		padding: 0;
+		font-size: 0.8rem;
+		color: rgba(var(--text-color), 0.65);
+		line-height: 1.6;
 	}
 
 	// Search
