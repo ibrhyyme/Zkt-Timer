@@ -319,11 +319,18 @@
 				animation: pro-ring-spin 8s linear infinite;
 			}
 
-			.cd-rankings__avatar-img,
+			.cd-rankings__avatar-img {
+				position: relative;
+				z-index: 1;
+				border-radius: 50%;
+			}
+
 			.cd-rankings__avatar-fallback {
 				position: relative;
 				z-index: 1;
 				border-radius: 50%;
+				overflow: hidden;
+				background: rgb(var(--module-color));
 			}
 		}
 	}
