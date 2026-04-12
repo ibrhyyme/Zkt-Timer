@@ -409,6 +409,7 @@ type Mutation {
   deletePromoCode(id: String): Boolean
   updateSiteConfig(input: UpdateSiteConfigInput): SiteConfig
   recalculateAllRankings: Boolean
+  backfillWcaIds: Int
 }
 
 type SmartDevice {
@@ -1732,6 +1733,7 @@ input AdminUserFiltersInput {
   verified: Boolean
   banned: Boolean
   platforms: [String!]
+  has_wca: Boolean
 }
 
 type Announcement {
