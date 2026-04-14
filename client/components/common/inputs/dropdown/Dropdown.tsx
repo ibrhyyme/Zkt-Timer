@@ -42,6 +42,22 @@ export default function Dropdown(props: InputProps<DropdownProps>) {
 	} = props;
 	const [open, setOpen] = useState(false);
 	const containerRef = useRef<HTMLDivElement>(null);
+	const bodyRef = useRef<HTMLDivElement>(null);
+
+	// Acildiginda secili option'u listenin ortasina kaydir — kullanici hem ust hem alt
+	// option'lari goresin, ekstra scroll atmak zorunda kalmasin.
+	useEffect(() => {
+		if (!open) return;
+		const raf = requestAnimationFrame(() => {
+			const body = bodyRef.current;
+			if (!body) return;
+			const selected = body.querySelector<HTMLElement>('.cd-dropdown-option--selected');
+			if (!selected) return;
+			const target = selected.offsetTop - (body.clientHeight / 2) + (selected.offsetHeight / 2);
+			body.scrollTop = Math.max(0, target);
+		});
+		return () => cancelAnimationFrame(raf);
+	}, [open]);
 
 	// Manage click listener with cleanup
 	useEffect(() => {
@@ -130,7 +146,7 @@ export default function Dropdown(props: InputProps<DropdownProps>) {
 		}));
 
 		body = (
-			<div className={b('body', { up: openUp, left: openLeft, fullwidth: fullWidth })} style={style}>
+			<div ref={bodyRef} className={b('body', { up: openUp, left: openLeft, fullwidth: fullWidth })} style={style}>
 				{wrappedOptions.map((op, index) => (
 					<DropdownOption key={`${op.text}-${index}`} option={op} />
 				))}
