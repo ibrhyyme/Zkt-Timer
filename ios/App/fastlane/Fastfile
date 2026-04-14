@@ -19,7 +19,9 @@ platform :ios do
 
     cert(
       team_id: TEAM_ID,
-      api_key: api_key
+      api_key: api_key,
+      keychain_path: ENV["FASTLANE_KEYCHAIN_PATH"],
+      keychain_password: ENV["MATCH_KEYCHAIN_PASSWORD"]
     )
 
     sigh(
