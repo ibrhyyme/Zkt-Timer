@@ -457,10 +457,12 @@ async function getAllSessions() {
 
 	try {
 		const res = await gqlQuery<{ sessions: Session[] }>(query);
-		initSessionDb(res.data.sessions);
+		initSessionCollection();
+		reconcileSessionDb(res.data.sessions);
+		emitEvent('sessionsDbUpdatedEvent');
 	} catch (error) {
 		console.warn('Offline: Could not fetch sessions', error);
-		initSessionDb([]);
+		initSessionCollection();
 	}
 }
 
