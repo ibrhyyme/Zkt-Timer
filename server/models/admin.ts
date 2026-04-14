@@ -86,7 +86,7 @@ async function getUserForAdminSummary(userId: string): Promise<UserAccountSummar
 
 async function getUserForAdminSolvesSummary(userId: string, where: any = {}): Promise<UserAccountSolvesSummary[]> {
 	const sum = await getPrisma().solve.groupBy({
-		by: ['cube_type'],
+		by: ['cube_type', 'scramble_subset'],
 		_avg: {
 			time: true,
 		},
@@ -116,5 +116,6 @@ async function getUserForAdminSolvesSummary(userId: string, where: any = {}): Pr
 		min_time: row._min.time,
 		max_time: row._max.time,
 		cube_type: row.cube_type,
+		scramble_subset: row.scramble_subset,
 	}));
 }

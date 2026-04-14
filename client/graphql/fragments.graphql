@@ -136,6 +136,7 @@ fragment SettingsFragment on Setting {
 	use_2d_scramble_visual
 	require_period_in_manual_time_entry
 	cube_type
+	scramble_subset
 	custom_cube_types {
 		...CustomCubeTypeFragment
 	}
@@ -213,6 +214,7 @@ fragment TopSolveFragment on TopSolve {
 	id
 	time
 	cube_type
+	scramble_subset
 	created_at
 	solve {
 		...SolveFragment
@@ -226,6 +228,7 @@ fragment TopAverageFragment on TopAverage {
 	id
 	time
 	cube_type
+	scramble_subset
 	created_at
 	solve_1 {
 		...SolveFragment
