@@ -37,6 +37,7 @@ export default function CompetitionList() {
 	const [searchResults, setSearchResults] = useState<any[] | null>(null);
 	const [searching, setSearching] = useState(false);
 	const [myComps, setMyComps] = useState<any[] | null>(getMyCache());
+	const [loadError, setLoadError] = useState<string | null>(null);
 
 	const filteredCompetitions = useMemo(() => {
 		if (!competitions) return [];
@@ -61,6 +62,31 @@ export default function CompetitionList() {
 
 	useEffect(() => {
 		if (me && !getMyCache()) fetchMyCompetitions();
+	}, [me]);
+
+	// App resume / tab focus: arka planda sessiz refresh et — cached liste varken
+	// kullanici yeni yarismalari gorebilsin, manuel aç/kapa gerekmesin
+	useEffect(() => {
+		const silentRefresh = () => {
+			if (document.visibilityState !== 'visible') return;
+			// Son fetch 2 dakikadan eskiyse tekrar dene (cok sik istek atma)
+			const cache = cachedCompetitions;
+			if (!cache || Date.now() - cache.ts > 2 * 60 * 1000) {
+				fetchCompetitions();
+			}
+			if (me) {
+				const myCache = cachedMyComps;
+				if (!myCache || Date.now() - myCache.ts > 2 * 60 * 1000) {
+					fetchMyCompetitions();
+				}
+			}
+		};
+		window.addEventListener('focus', silentRefresh);
+		document.addEventListener('visibilitychange', silentRefresh);
+		return () => {
+			window.removeEventListener('focus', silentRefresh);
+			document.removeEventListener('visibilitychange', silentRefresh);
+		};
 	}, [me]);
 
 	// Prefetch: kullanicinin yarismalari + en yakin 3 yarisma
@@ -98,20 +124,36 @@ export default function CompetitionList() {
 			const data = res.data?.myWcaCompetitions || [];
 			cachedMyComps = {data, ts: Date.now()};
 			setMyComps(data);
-		} catch {
+		} catch (err) {
+			console.warn('[CompetitionList] myWcaCompetitions fetch failed:', err);
 			setMyComps([]);
 		}
 	}
 
 	async function fetchCompetitions() {
+		setLoadError(null);
 		try {
 			const res = await gqlQueryTyped(WcaCompetitionsDocument, {filter: {}}, {fetchPolicy: 'no-cache'});
 			const data = res.data?.wcaCompetitions || [];
-			cachedCompetitions = {data, ts: Date.now()};
+			if (data.length > 0) {
+				// Sadece gercek data cache'lenir — bos dondugunde cache yazarsak 30 dk boyunca
+				// "bulunamadi" kalir, kullanici her aç/kapa'da tekrar dener
+				cachedCompetitions = {data, ts: Date.now()};
+			} else {
+				console.warn('[CompetitionList] wcaCompetitions returned empty array — cache yazilmadi');
+			}
 			setCompetitions(data);
-		} catch {
-			setCompetitions([]);
+		} catch (err: any) {
+			console.warn('[CompetitionList] wcaCompetitions fetch failed:', err);
+			setLoadError(err?.message || 'network_error');
+			setCompetitions(null);
 		}
+	}
+
+	function handleRetry() {
+		setCompetitions(null);
+		cachedCompetitions = null;
+		fetchCompetitions();
 	}
 
 	const searchTimerRef = useRef<any>(null);
@@ -230,7 +272,7 @@ export default function CompetitionList() {
 				{searching && <div className={b('search-progress')} />}
 			</div>
 
-			{competitions === null && !searching && (
+			{competitions === null && !searching && !loadError && (
 				<div className={b('wca-loading')}>
 					<img src={resourceUri('/images/logos/wca_logo.svg')} alt="WCA" className={b('wca-loading-logo')} />
 					<div className={b('wca-loading-bar')}>
@@ -240,7 +282,23 @@ export default function CompetitionList() {
 				</div>
 			)}
 
-			{!searching && displayList.length === 0 && competitions !== null && (
+			{loadError && (
+				<div className={b('wca-loading')}>
+					<img src={resourceUri('/images/logos/wca_logo.svg')} alt="WCA" className={b('wca-loading-logo')} />
+					<span className={b('wca-loading-text')} style={{color: '#ef5350'}}>
+						{t('my_schedule.load_error') || 'Yarismalar yuklenemedi.'}
+					</span>
+					<button
+						className={b('wca-banner-btn')}
+						style={{marginTop: 12}}
+						onClick={handleRetry}
+					>
+						{t('my_schedule.retry') || 'Tekrar dene'}
+					</button>
+				</div>
+			)}
+
+			{!searching && displayList.length === 0 && competitions !== null && !loadError && (
 				<p className={b('empty')}>{t('my_schedule.no_competitions')}</p>
 			)}
 

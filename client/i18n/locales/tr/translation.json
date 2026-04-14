@@ -490,6 +490,8 @@
 		"upcoming_competitions": "Yaklaşan Yarışmalar",
 		"loading_competitions": "Yarışmalar yükleniyor...",
 		"no_competitions": "Yaklaşan yarışma bulunamadı.",
+		"load_error": "Yarışmalar yüklenirken bir hata oluştu. Lütfen tekrar deneyin.",
+		"retry": "Tekrar dene",
 		"no_wcif": "Bu yarışma için program verisi henüz mevcut değil.",
 		"fetch_error": "Program verisi yüklenemedi. Lütfen daha sonra tekrar deneyin.",
 		"registration_accepted": "Kabul Edildi",
