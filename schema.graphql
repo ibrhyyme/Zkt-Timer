@@ -667,6 +667,7 @@ type UserAccountSolvesSummary {
   max_time: Float
   sum: Float
   cube_type: String
+  scramble_subset: String
 }
 
 type UserAccountSummary {

@@ -88,6 +88,9 @@ export class UserAccountSolvesSummary {
 
 	@Field()
 	cube_type: string;
+
+	@Field({ nullable: true })
+	scramble_subset?: string;
 }
 
 @ObjectType()
