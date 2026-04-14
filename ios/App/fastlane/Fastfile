@@ -41,13 +41,21 @@ platform :ios do
       build_number: latest_build + 1
     )
 
+    profile_name = ENV["SIGH_NAME"]
+    profile_uuid = ENV["SIGH_UUID"]
+
     build_app(
       workspace: "App.xcworkspace",
       scheme: "App",
       export_method: "app-store",
       clean: true,
       codesigning_identity: "Apple Distribution",
-      xcargs: "DEVELOPMENT_TEAM=#{TEAM_ID} CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=\"Apple Distribution\" PROVISIONING_PROFILE_SPECIFIER=\"com.zktimer.app AppStore\""
+      export_options: {
+        provisioningProfiles: {
+          APP_IDENTIFIER => profile_name
+        }
+      },
+      xcargs: "DEVELOPMENT_TEAM=#{TEAM_ID} CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=\"Apple Distribution\" PROVISIONING_PROFILE_SPECIFIER=\"#{profile_name}\" PROVISIONING_PROFILE=\"#{profile_uuid}\""
     )
 
     upload_to_testflight(
