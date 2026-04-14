@@ -38,7 +38,8 @@ platform :ios do
       scheme: "App",
       export_method: "app-store",
       clean: true,
-      xcargs: "DEVELOPMENT_TEAM=#{TEAM_ID} CODE_SIGN_STYLE=Manual PROVISIONING_PROFILE_SPECIFIER=\"#{ENV['SIGH_NAME'] || "match AppStore #{APP_IDENTIFIER}"}\""
+      codesigning_identity: "Apple Distribution",
+      xcargs: "DEVELOPMENT_TEAM=#{TEAM_ID} CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=\"Apple Distribution\" PROVISIONING_PROFILE_SPECIFIER=\"com.zktimer.app AppStore\""
     )
 
     upload_to_testflight(
