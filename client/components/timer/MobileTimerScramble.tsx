@@ -112,8 +112,9 @@ export default function MobileTimerScramble() {
     if (hideScramble) {
         scramble = '';
     } else if (isMegaminx && scramble) {
-        // Megaminx formatting
-        if (!scramble.includes('\n')) {
+        // Sadece Pochmann notasyonlu scramble'larda (WCA/Carrot/OldStyle — "++" iceriyor) satir kir.
+        // 2-gen R,U / Random-state / S2L subset'lerinde "++" olmadigi icin bu split atlanir.
+        if (!scramble.includes('\n') && scramble.includes('++')) {
             scramble = scramble.replace(/ (U'?)( |$)/g, ' $1\n').trim();
         }
     }
