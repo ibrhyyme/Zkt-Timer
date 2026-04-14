@@ -36,6 +36,21 @@ require('esbuild').build({
 	console.error('Solver worker build failed:', err);
 });
 
+// Scramble Generator Web Worker (cstimer random-state solvers)
+require('esbuild').build({
+	entryPoints: ['client/util/scramble-worker-entry.ts'],
+	outfile: 'dist/scramble-worker.js',
+	bundle: true,
+	logLevel: 'error',
+	minify: !dev,
+	resolveExtensions: ['.ts', '.js'],
+	format: 'iife',
+	loader: {'.js': 'jsx'},
+	watch,
+}).catch((err) => {
+	console.error('Scramble worker build failed:', err);
+});
+
 // Cross/EOLine/Roux1/gSolver Web Worker (ported from cstimer IDA*)
 require('esbuild').build({
 	entryPoints: ['client/util/cross-solver/worker-entry.ts'],

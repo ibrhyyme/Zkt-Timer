@@ -27,7 +27,8 @@ export default function Manual() {
 	const [error, setError] = useState(false);
 
 	const context = useContext(TimerContext);
-	const { scramble, originalScramble, disabled, hideTime, cubeType, solvesFilter } = context;
+	const { scramble, originalScramble, disabled, hideTime, cubeType, scrambleSubset, solvesFilter } = context;
+	const visualCubeType = (cubeType === 'wca' && scrambleSubset) ? scrambleSubset : cubeType;
 
 	const mobileMode = useGeneral('mobile_mode');
 	const timerFontFamily = useSettings('timer_font_family');
@@ -202,7 +203,7 @@ export default function Manual() {
 			{mobileMode && !hideTime && (
 				<div className={b('context-row')}>
 					<div className={b('scramble-compact')}>
-						<Scramble cubeType={cubeType} scramble={originalScramble || scramble} width="100px" />
+						<Scramble cubeType={visualCubeType} scramble={originalScramble || scramble} width="100px" />
 					</div>
 					<div className={b('stats-compact')}>
 						{compactStats?.map(({ label, time }) => (

@@ -12,10 +12,9 @@ const TwistyPlayerWrapper: React.FC<Props> = ({ puzzle, alg, visualization = '2D
     const containerRef = useRef<HTMLDivElement>(null);
     const playerRef = useRef<TwistyPlayer | null>(null);
 
+    // Puzzle/visualization degistiginde yeniden olustur
     useEffect(() => {
-        // Check if we are in a browser environment
         if (typeof window !== 'undefined' && containerRef.current) {
-            // Cleanup previous instance if it exists (safety check, though return cleanup handles it)
             if (playerRef.current) {
                 containerRef.current.innerHTML = '';
                 playerRef.current = null;
@@ -39,15 +38,16 @@ const TwistyPlayerWrapper: React.FC<Props> = ({ puzzle, alg, visualization = '2D
                 playerRef.current = null;
             }
         };
-        // Re-initialize when puzzle or visualization changes. 
-        // We include 'alg' in the init, but we handle dynamic alg updates separately below to avoid re-creation.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [puzzle, visualization]);
 
-    // Handle scramble updates without re-creating the player
+    // Scramble degistiginde sadece alg guncelle (yikip yeniden olusturma)
     useEffect(() => {
         if (playerRef.current) {
-            playerRef.current.alg = alg;
+            try {
+                playerRef.current.alg = alg;
+            } catch {
+                // TwistyPlayer notasyonu parse edemedi
+            }
         }
     }, [alg]);
 

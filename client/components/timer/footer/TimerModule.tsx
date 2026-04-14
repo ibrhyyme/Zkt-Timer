@@ -31,7 +31,8 @@ export default function TimerModule(props: Props) {
 	const { t } = useTranslation();
 	const me = useMe();
 	const context = useContext(TimerContext);
-	const { scramble, originalScramble, cubeType, solvesFilter } = context;
+	const { scramble, originalScramble, cubeType, scrambleSubset, solvesFilter } = context;
+	const visualCubeType = (cubeType === 'wca' && scrambleSubset) ? scrambleSubset : cubeType;
 
 	const timerModules = useSettings('timer_modules');
 
@@ -63,7 +64,7 @@ export default function TimerModule(props: Props) {
 			proOnly: false,
 		},
 		[TimerModuleType.SCRAMBLE]: {
-			module: <Scramble cubeType={cubeType} scramble={originalScramble || scramble} />,
+			module: <Scramble cubeType={visualCubeType} scramble={originalScramble || scramble} />,
 			proOnly: false,
 		},
 		[TimerModuleType.SOLVE_GRAPH]: {

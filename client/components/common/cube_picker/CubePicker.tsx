@@ -16,6 +16,22 @@ interface Props {
 	dropdownProps?: Partial<DropdownProps>;
 }
 
+// BL/FM/OH/MBLD/Mirror/Yau variant'lari artik parent cube'un subset'i — burada tek grup
+const CUBE_TYPE_GROUPS: { header: string; types: string[] }[] = [
+	{ header: '', types: ['wca'] },
+	{
+		header: 'WCA',
+		types: [
+			'333', '333cfop', '333roux', '333mehta', '333zz', '333sub',
+			'222',
+			'444', '444yau',
+			'555', '666', '777',
+			'clock', 'minx', 'pyram', 'skewb', 'sq1',
+		],
+	},
+	{ header: '', types: ['other'] },
+];
+
 export default function CubePicker(props: Props) {
 	const {
 		value,
@@ -28,29 +44,29 @@ export default function CubePicker(props: Props) {
 		excludeOtherCubeType,
 	} = props;
 
-	let cubeTypeNames: string[];
-	if (cubeTypes) {
-		cubeTypeNames = cubeTypes;
-	} else if (excludeCustomCubeTypes) {
-		cubeTypeNames = getDefaultCubeTypeNames();
-	} else {
-		cubeTypeNames = getAllCubeTypeNames();
-	}
-
 	const options: IDropdownOption[] = [];
-	for (const name of cubeTypeNames) {
-		const ct = getCubeTypeInfoById(name);
-		const disabled = ct?.id === value;
 
-		if (!name || !ct || (excludeOtherCubeType && name === 'other') || (excludeSelected && disabled)) {
-			continue;
+	if (cubeTypes) {
+		// Custom list — flat
+		for (const name of cubeTypes) {
+			const ct = getCubeTypeInfoById(name);
+			const disabled = ct?.id === value;
+			if (!name || !ct || (excludeOtherCubeType && name === 'other') || (excludeSelected && disabled)) continue;
+			options.push({ text: ct.name, disabled, onClick: () => onChange && onChange(ct) });
 		}
-
-		options.push({
-			text: ct.name,
-			disabled,
-			onClick: () => onChange && onChange(ct),
-		});
+	} else {
+		// Default — cstimer style grouped with headers
+		for (const group of CUBE_TYPE_GROUPS) {
+			if (group.header) {
+				options.push({ text: group.header, header: true });
+			}
+			for (const name of group.types) {
+				const ct = getCubeTypeInfoById(name);
+				const disabled = ct?.id === value;
+				if (!ct || (excludeOtherCubeType && name === 'other') || (excludeSelected && disabled)) continue;
+				options.push({ text: ct.name, disabled, onClick: () => onChange && onChange(ct) });
+			}
+		}
 	}
 
 	const cubeType = getCubeTypeInfoById(value);
@@ -63,7 +79,7 @@ export default function CubePicker(props: Props) {
 			text={text}
 			icon={<Cube weight="bold" />}
 			options={options}
-			dropdownMaxHeight={300}
+			dropdownMaxHeight={400}
 			{...(dropdownProps || {})}
 		/>
 	);

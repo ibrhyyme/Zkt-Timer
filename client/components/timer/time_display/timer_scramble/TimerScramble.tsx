@@ -9,7 +9,7 @@ import { useGeneral } from '../../../../util/hooks/useGeneral';
 import Button from '../../../common/button/Button';
 import { TimerContext } from '../../Timer';
 import block from '../../../../styles/bem';
-import { getNewScramble, resetScramble } from '../../helpers/scramble';
+import { getNewScrambleAsync, resetScramble } from '../../helpers/scramble';
 import SmartScramble from './smart_scramble/SmartScramble';
 import { setTimerParam, setTimerParams } from '../../helpers/params';
 import { smartCubeSelected } from '../../helpers/util';
@@ -32,7 +32,7 @@ export default function TimerScramble() {
 	const mobileMode = useGeneral('mobile_mode');
 	const cubeType = context.cubeType;
 	const scrambleSubset = context.scrambleSubset;
-	const isMegaminx = cubeType === 'minx' || cubeType === 'megaminx';
+	const isMegaminx = cubeType === 'minx';
 	let timerScrambleSize = useSettings('timer_scramble_size');
 
 	const focusMode = context.focusMode;
@@ -147,10 +147,10 @@ export default function TimerScramble() {
 	}, [currentIndex, scrambleHistory, timeStartedAt, scrambleLocked, isSmartScrambling]);
 
 	// Sonraki scramble'a git veya yeni üret
+	const nextScrambleRef = useRef(0);
 	const handleNextScramble = useCallback(() => {
 		if (timeStartedAt || scrambleLocked || isSmartScrambling) return;
 
-		// Eğer geçmişte bir yerdeyse, ileri git
 		if (currentIndex < scrambleHistory.length - 1) {
 			isNavigatingRef.current = true;
 			const newIndex = currentIndex + 1;
@@ -158,10 +158,15 @@ export default function TimerScramble() {
 			const nextScramble = scrambleHistory[newIndex];
 			setTimerParams({ scramble: nextScramble, originalScramble: nextScramble, smartTurnOffset: 0 });
 		} else {
-			// En sondaysa, yeni scramble üret
 			const ct = getCubeTypeInfoById(cubeType);
-			const newScramble = getNewScramble(ct.scramble, undefined, scrambleSubset);
-			setTimerParams({ scramble: newScramble, originalScramble: newScramble, smartTurnOffset: 0 });
+			if (!ct) return;
+			const callId = ++nextScrambleRef.current;
+			setTimerParams({ scramble: '', originalScramble: '', smartTurnOffset: 0 });
+			getNewScrambleAsync(ct.scramble, scrambleSubset).then((newScramble) => {
+				if (callId === nextScrambleRef.current && newScramble) {
+					setTimerParams({ scramble: newScramble, originalScramble: newScramble, smartTurnOffset: 0 });
+				}
+			}).catch((e) => { console.error('[scramble] next failed:', e); });
 		}
 	}, [currentIndex, scrambleHistory, timeStartedAt, scrambleLocked, isSmartScrambling, cubeType, scrambleSubset]);
 
@@ -195,24 +200,38 @@ export default function TimerScramble() {
 	if (hideScramble) {
 		scramble = '';
 	} else if (isMegaminx && scramble) {
-		// Megaminx formatting: Force newlines after each line (usually ending in U or U')
-		// Standard WCA scramble format usually has 7 lines
-		if (!scramble.includes('\n')) {
+		// Pochmann/Carrot/OldStyle zaten \n iceriyor — dokunma
+		// Sadece tek satirlik Megaminx scramble'larinda (2-Gen, random-state) satir kir
+		if (!scramble.includes('\n') && scramble.includes('++')) {
+			// Pochmann notasyonu ama \n silinmis — U/U' sonrasi satir kir
 			scramble = scramble.replace(/ (U'?)( |$)/g, ' $1\n').trim();
 		}
 	}
 
-	let scrambleBody: ReactNode = (
-		<TextareaAutosize
-			onChange={handleScrambleChange}
-			value={scramble}
-			disabled={!editScramble}
-			minRows={1}
-			placeholder={hideScramble ? '' : 'scramble'}
-			ref={scrambleInput}
-			className={b({ edit: editScramble })}
-		/>
-	);
+	let scrambleBody: ReactNode;
+
+	// Megaminx: her satiri ayri div olarak render et (wrap kaymasi onlenir)
+	if (isMegaminx && !editScramble && scramble && scramble.includes('\n')) {
+		scrambleBody = (
+			<div className={b('megaminx-lines')}>
+				{scramble.split('\n').map((line, i) => (
+					<div key={i} className={b('megaminx-line')}>{line}</div>
+				))}
+			</div>
+		);
+	} else {
+		scrambleBody = (
+			<TextareaAutosize
+				onChange={handleScrambleChange}
+				value={scramble}
+				disabled={!editScramble}
+				minRows={1}
+				placeholder={hideScramble ? '' : 'scramble'}
+				ref={scrambleInput}
+				className={b({ edit: editScramble })}
+			/>
+		);
+	}
 
 	// Is smart cube
 	if (isSmart && !timeStartedAt && scramble) {

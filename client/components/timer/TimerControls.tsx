@@ -9,7 +9,7 @@ import { useLatestSolve } from '../../util/hooks/useLatestSolve';
 import { toggleDnfSolveDb, togglePlusTwoSolveDb } from '../../db/solves/operations';
 import { deleteSolveDb } from '../../db/solves/update';
 import { setTimerParam, setTimerParams } from './helpers/params';
-import { getNewScramble, resetScramble } from './helpers/scramble';
+import { getNewScrambleAsync, resetScramble } from './helpers/scramble';
 import { getCubeTypeInfoById } from '../../util/cubes/util';
 import { smartCubeSelected } from './helpers/util';
 import { setSetting } from '../../db/settings/update';
@@ -129,6 +129,7 @@ export default function TimerControls() {
     }, [currentIndex, scrambleHistory, timeStartedAt, scrambleLocked, isSmartScrambling]);
 
     // Next scramble
+    const nextScrambleRef = useRef(0);
     const handleNextScramble = useCallback(() => {
         if (timeStartedAt || scrambleLocked || isSmartScrambling) return;
 
@@ -140,8 +141,14 @@ export default function TimerControls() {
             setTimerParams({ scramble: nextScramble, originalScramble: nextScramble, smartTurnOffset: 0 });
         } else {
             const ct = getCubeTypeInfoById(cubeType);
-            const newScramble = getNewScramble(ct.scramble, undefined, scrambleSubset);
-            setTimerParams({ scramble: newScramble, originalScramble: newScramble, smartTurnOffset: 0 });
+            if (!ct) return;
+            const callId = ++nextScrambleRef.current;
+            setTimerParams({ scramble: '', originalScramble: '', smartTurnOffset: 0 });
+            getNewScrambleAsync(ct.scramble, scrambleSubset).then((newScramble) => {
+                if (callId === nextScrambleRef.current && newScramble) {
+                    setTimerParams({ scramble: newScramble, originalScramble: newScramble, smartTurnOffset: 0 });
+                }
+            }).catch((e) => { console.error('[scramble] next failed:', e); });
         }
     }, [currentIndex, scrambleHistory, timeStartedAt, scrambleLocked, isSmartScrambling, cubeType, scrambleSubset]);
 

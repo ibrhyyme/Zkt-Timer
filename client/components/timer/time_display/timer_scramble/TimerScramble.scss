@@ -175,21 +175,36 @@
 		}
 
 		&--megaminx {
-			white-space: pre-wrap;
 			text-align: center;
 			font-weight: 600;
 			line-height: 1.5;
 
 			textarea {
 				width: 100%;
+				white-space: pre-wrap;
 				text-align: center;
 			}
 
 			@media (max-width: 1023px) {
-				font-size: 0.75rem !important; // Smaller font to fit width
+				font-size: 0.75rem !important;
 				line-height: 1.2 !important;
-				overflow-x: auto;
 			}
+		}
+	}
+
+	&__megaminx-lines {
+		width: 100%;
+		text-align: center;
+	}
+
+	&__megaminx-line {
+		white-space: nowrap;
+		padding: 1px 0;
+
+		@media (max-width: 1023px) {
+			font-size: 0.7rem;
+			overflow-x: auto;
+			text-align: center;
 		}
 	}
 

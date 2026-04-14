@@ -29,7 +29,7 @@ function rn(n: number): number {
 // Each row describes how a move affects the 14 clock positions (9 front + 5 back-related).
 // Rows 0-8: front side moves (UR, DR, DL, UL, U, R, D, L, ALL)
 // Rows 9-17: back side moves (same pin names after y2)
-const moveArr: number[][] = [
+export const moveArr: number[][] = [
 	[0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0], // UR
 	[0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0], // DR
 	[0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0], // DL

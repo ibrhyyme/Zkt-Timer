@@ -180,7 +180,6 @@
 		"request-ip": "^3.3.0",
 		"resend": "^6.7.0",
 		"rxjs": "^7.8.0",
-		"scrambow": "1.7.0",
 		"seedrandom": "^3.0.5",
 		"socket.io": "^4.2.0",
 		"socket.io-client": "^4.2.0",

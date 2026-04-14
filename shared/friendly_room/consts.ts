@@ -17,4 +17,12 @@ export const FriendlyRoomConst = {
     MAX_PASSWORD_LENGTH: 50,
 };
 
-export const ALLOWED_CUBE_TYPES = ['222', '333', '444', '555', '666', '777', 'skewb', 'pyram', 'sq1', 'clock', 'minx', '333mirror', '222oh', '333oh', '333bl', 'other'];
+export const ALLOWED_CUBE_TYPES = [
+    'wca',
+    '222', '333', '444', '555', '666', '777',
+    'clock', 'minx', 'pyram', 'skewb', 'sq1',
+    '333cfop', '333roux', '333mehta', '333zz',
+    '444yau',
+    '333sub',
+    'other',
+];

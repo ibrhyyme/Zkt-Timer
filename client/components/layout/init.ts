@@ -13,7 +13,7 @@ import { initSettingsDb, SettingValue } from '../../db/settings/init';
 import { getDefaultSettings, viewportDependentKeys, isMobileViewport, AllSettings } from '../../db/settings/query';
 import { getLokiDb, initLokiDb } from '../../db/lokijs';
 import { appendSolvesToDb, getSolveDb, initSolveDb, initSolvesCollection } from '../../db/solves/init';
-import { getNewScramble } from '../timer/helpers/scramble';
+import { getNewScrambleAsync } from '../timer/helpers/scramble';
 import { Solve } from '../../../server/schemas/Solve.schema';
 import { StatsModule } from '../../../server/schemas/StatsModule.schema';
 import { initStatsModuleStore } from '../../actions/stats';
@@ -182,10 +182,8 @@ async function loadNonCriticalData(_me: UserAccount, dispatch: Dispatch<any>, pa
  * (with everything else)
  */
 async function initNewScramble() {
-	return new Promise((resolve) => {
-		getNewScramble('333');
-		resolve(null);
-	});
+	// Worker uzerinden arka planda — main thread bloke olmaz
+	await getNewScrambleAsync('333');
 }
 
 const SYNC_SOLVE_COUNT = 500;
