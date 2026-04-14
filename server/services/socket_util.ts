@@ -7,6 +7,17 @@ import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 
 export type SocketType = Socket | RemoteSocket<DefaultEventsMap, any>;
 
+function rehydrateUserDates(user: any): void {
+	if (user.created_at && typeof user.created_at === 'string') user.created_at = new Date(user.created_at);
+	if (user.last_solve_at && typeof user.last_solve_at === 'string') user.last_solve_at = new Date(user.last_solve_at);
+	if (user.banned_until && typeof user.banned_until === 'string') user.banned_until = new Date(user.banned_until);
+	if (user.pro_expires_at && typeof user.pro_expires_at === 'string') user.pro_expires_at = new Date(user.pro_expires_at);
+	if (user.premium_expires_at && typeof user.premium_expires_at === 'string') user.premium_expires_at = new Date(user.premium_expires_at);
+	if (user.profile?.created_at && typeof user.profile.created_at === 'string') {
+		user.profile.created_at = new Date(user.profile.created_at);
+	}
+}
+
 export function getBasicUser(user: PublicUserAccount): PublicUserAccount {
 	const {
 		id,
@@ -210,6 +221,9 @@ export async function getOnlineUsers(): Promise<OnlineUserEntry[]> {
 			// olmasin diye bos array ile doldur.
 			if (!user.integrations) user.integrations = [];
 			if (!user.badges) user.badges = [];
+			// JSON.parse Date alanlarini string birakir — type-graphql "@Field() Date"
+			// string kabul etmiyor, manuel new Date() ile hydrate et.
+			rehydrateUserDates(user);
 			byUserId.set(uid, { user, tabCount: 1 });
 		} catch {
 			// Bozuk cache satiri — atla
