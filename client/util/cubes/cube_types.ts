@@ -22,21 +22,35 @@ function getCubeType(id: string, name: string, scramble: string, size?: number):
 	return data;
 }
 
-export const CUBE_TYPES = {
-	'222': getCubeType('222', '2x2', '222', 2),
+export const CUBE_TYPES: Record<string, CubeType> = {
+	// WCA kategorisi — tiklanabilir, icinde tum WCA etkinlikleri
+	'wca': getCubeType('wca', 'WCA', 'wca'),
+
+	// === WCA Events ===
 	'333': getCubeType('333', '3x3', '333', 3),
+	'222': getCubeType('222', '2x2', '222', 2),
 	'444': getCubeType('444', '4x4', '444', 4),
 	'555': getCubeType('555', '5x5', '555', 5),
 	'666': getCubeType('666', '6x6', '666', 6),
 	'777': getCubeType('777', '7x7', '777', 7),
-	sq1: getCubeType('sq1', 'Square-1', 'sq1'),
-	pyram: getCubeType('pyram', 'Pyraminx', 'pyram'),
 	clock: getCubeType('clock', 'Clock', 'clock'),
-	skewb: getCubeType('skewb', 'Skewb', 'skewb'),
 	minx: getCubeType('minx', 'Megaminx', 'minx'),
-	'333mirror': getCubeType('333mirror', '3x3 Mirror', '333', 3),
-	'222oh': getCubeType('222oh', '2x2 One-Handed', '222', 2),
-	'333oh': getCubeType('333oh', '3x3 One-Handed', '333', 3),
-	'333bl': getCubeType('333bl', '3x3 Blind', '333bl', 3),
+	pyram: getCubeType('pyram', 'Pyraminx', 'pyram'),
+	skewb: getCubeType('skewb', 'Skewb', 'skewb'),
+	sq1: getCubeType('sq1', 'Square-1', 'sq1'),
+
+	// === 3x3 Methods ===
+	'333cfop': getCubeType('333cfop', '3x3 CFOP', '333cfop', 3),
+	'333roux': getCubeType('333roux', '3x3 Roux', '333roux', 3),
+	'333mehta': getCubeType('333mehta', '3x3 Mehta', '333mehta', 3),
+	'333zz': getCubeType('333zz', '3x3 ZZ', '333zz', 3),
+
+	// === 4x4 Methods ===
+	'444yau': getCubeType('444yau', '4x4 Yau/Hoya', '444yau', 4),
+
+	// === 3x3 Subsets ===
+	'333sub': getCubeType('333sub', '3x3 Subsets', '333sub', 3),
+
+	// === Other ===
 	other: getCubeType('other', 'Other', 'none'),
 };

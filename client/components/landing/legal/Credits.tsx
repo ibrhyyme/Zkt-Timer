@@ -113,11 +113,11 @@ const LIBRARIES: Reference[] = [
 		descKey: 'credits.libraries_ganweb',
 	},
 	{
-		project: 'Scrambow',
-		user: '',
-		username: '',
-		link: 'https://www.npmjs.com/package/scrambow',
-		descKey: 'credits.libraries_scrambow',
+		project: 'csTimer',
+		user: 'cs0x7f',
+		username: 'cs0x7f',
+		link: 'https://github.com/cs0x7f/cstimer',
+		descKey: 'credits.libraries_cstimer',
 	},
 	{
 		project: 'cubejs',

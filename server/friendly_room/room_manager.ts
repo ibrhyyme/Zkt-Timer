@@ -11,84 +11,75 @@ import * as bcrypt from 'bcryptjs';
 
 const prisma = () => getPrisma();
 
-import { Scrambow } from 'scrambow';
-import { generate222Scramble } from '../../client/util/cubes/scramble_222';
-import { generateCornersScramble } from '../../client/util/cubes/scramble_333_corners';
+import { generateScramble, hasGenerator } from '../../shared/scramble/registry';
+
+// Generator'lari kaydet
+import '../../shared/scramble/generators/scramble-pyraminx';
+import '../../shared/scramble/generators/scramble-skewb';
+import '../../shared/scramble/generators/scramble-333lse';
+import '../../shared/scramble/generators/megascramble';
+import '../../shared/scramble/generators/utilscramble';
+import '../../shared/scramble/generators/scramble-333';
+import '../../shared/scramble/generators/scramble-444';
+import '../../shared/scramble/generators/scramble-sq1';
+import '../../shared/scramble/generators/scramble-megaminx';
+import '../../shared/scramble/generators/scramble-222';
 import { generateClockScramble } from '../../client/util/cubes/scramble_clock';
 
-// Scramble definitions mapping our internal IDs to Scrambow types and lengths
-const SCRAMBLE_MAP: Record<string, { type: string, length: number }> = {
-    '222': { type: '222', length: 9 },
-    '333': { type: '333', length: 20 },
-    '333bl': { type: '333', length: 20 }, // Treated as 333 but with extra logic
-    '333oh': { type: '333', length: 20 },
-    '333mirror': { type: '333', length: 20 },
-    '222oh': { type: '222', length: 9 },
-    '444': { type: '444', length: 46 },
-    '555': { type: '555', length: 60 },
-    '666': { type: '666', length: 89 },
-    '777': { type: '777', length: 100 },
-    'pyram': { type: 'pyraminx', length: 11 }, // Adjusted length to standard
-    'skewb': { type: 'skewb', length: 10 },    // Adjusted length to standard
-    'sq1': { type: 'square1', length: 12 },    // Adjusted length to standard
-    'clock': { type: 'clock', length: 0 },     // Clock usually handles its own length in scrambow or is fixed
-    'minx': { type: 'megaminx', length: 70 },
+// Cube type ID -> cstimer scramble type ID mapping (sadece WCA + variants)
+const CUBE_TO_SCRAMBLE_TYPE: Record<string, string> = {
+    'wca': '333',
+    '222': '222so',
+    '333': '333',
+    '444': '444m',
+    '555': '555wca',
+    '666': '666wca',
+    '777': '777wca',
+    'pyram': 'pyrso',
+    'skewb': 'skbso',
+    'sq1': 'sqrs',
+    'clock': 'clock',
+    'minx': 'mgmp',
+    '333cfop': '333',
+    '333roux': '333',
+    '333mehta': '333',
+    '333zz': '333',
+    '444yau': '444m',
+    '333sub': '2gen',
 };
 
-function getBlindWideMove() {
-    const moves = ['Uw', 'Lw', 'Rw', 'Fw'];
-    const move = moves[Math.floor(Math.random() * moves.length)];
-    const randState = Math.random();
-
-    if (randState < 0.33) {
-        return `${move}'`;
-    } else if (randState < 0.66) {
-        return `${move}2`;
-    }
-
-    return move;
-}
-
-// Robust scramble generator using Scrambow
 function generateScrambleForCubeType(cubeType: string, subset?: string | null): string {
-    const def = SCRAMBLE_MAP[cubeType];
-
-    let scrambowType = def ? def.type : '333';
-    const length = def ? def.length : 20;
-
-    // Custom 2x2 subset scrambler (ported from cstimer)
-    if (scrambowType === '222' && subset) {
-        return generate222Scramble(subset);
+    // WCA kategori: subset aslinda bir cube type ID
+    if (cubeType === 'wca' && subset) {
+        return generateScrambleForCubeType(subset);
     }
 
-    // Custom corners-only scrambler (cubejs Kociemba solver)
-    if (scrambowType === '333' && subset === 'corners') {
-        return generateCornersScramble();
-    }
-
-    // Custom WCA Clock Scrambler (random-state solver)
-    if (scrambowType === 'clock' && !subset) {
+    // Clock — mevcut port
+    if (cubeType === 'clock' && !subset) {
         return generateClockScramble();
     }
 
-    // Use subset if provided, otherwise default to mapped type
-    const typeToUse = subset || scrambowType;
-    let scrambo = new Scrambow(typeToUse);
+    try {
+        // Subset varsa ve registry'de kayitliysa
+        if (subset && hasGenerator(subset)) {
+            return generateScramble(subset).replace(/\s+/g, ' ').trim();
+        }
 
-    if (!['pyraminx', 'clock', 'skewb'].includes(scrambowType) && !subset) {
-        scrambo = scrambo.setLength(length);
+        // Cube type mapping
+        const scrambleType = CUBE_TO_SCRAMBLE_TYPE[cubeType];
+        if (scrambleType && hasGenerator(scrambleType)) {
+            return generateScramble(scrambleType).replace(/\s+/g, ' ').trim();
+        }
+    } catch (e) {
+        console.error(`[scramble] Generator error for ${cubeType}/${subset}:`, e);
     }
 
-    const scrambleOb = scrambo.get();
-    let scramble = scrambleOb[0].scramble_string;
-
-    scramble = scramble.replace(/\s+/g, ' ').trim();
-
-    if (cubeType === '333bl') {
-        scramble += ' ' + getBlindWideMove();
+    // Fallback: 3x3 random-state
+    try {
+        return generateScramble('333').replace(/\s+/g, ' ').trim();
+    } catch {
+        return "R U R' U' R' F R2 U' R' U' R U R' F'";
     }
-
-    return scramble;
 }
 
 // Create a new room

@@ -17,7 +17,9 @@ const PAGE_SIZE = 50;
 export default function Dashboard() {
     const { t } = useTranslation();
     const context = useContext(TimerContext);
-    const { scramble, originalScramble, cubeType, solvesFilter, timeStartedAt, focusMode } = context;
+    const { scramble, originalScramble, cubeType, scrambleSubset, solvesFilter, timeStartedAt, focusMode } = context;
+    // WCA kategorisinde subset seciliyken gorseli subset'in puzzle'ina gore goster
+    const visualCubeType = (cubeType === 'wca' && scrambleSubset) ? scrambleSubset : cubeType;
     const mobileMode = useGeneral('mobile_mode');
     const sessionId = useSettings('session_id');
 
@@ -69,7 +71,7 @@ export default function Dashboard() {
 
             {/* Sağ: Scramble Görseli (2D Küp Haritası) */}
             <div className={b('section', { scramble: true })}>
-                <Scramble cubeType={cubeType} scramble={originalScramble || scramble} />
+                <Scramble cubeType={visualCubeType} scramble={originalScramble || scramble} />
             </div>
         </div>
     );

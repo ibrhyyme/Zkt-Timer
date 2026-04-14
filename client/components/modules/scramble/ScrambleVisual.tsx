@@ -8,6 +8,10 @@ import { useSettings } from '../../../util/hooks/useSettings';
 
 // Dynamically import TwistyPlayerWrapper
 const TwistyPlayerWrapper = React.lazy(() => import('./TwistyPlayerWrapper'));
+// Sq1 icin custom 2D canvas renderer (cstimer style)
+const Sq1Renderer = React.lazy(() => import('./Sq1Renderer'));
+// Clock icin custom 2D canvas renderer (cstimer style)
+const ClockRenderer = React.lazy(() => import('./ClockRenderer'));
 
 const b = block('scramble-visual');
 
@@ -28,11 +32,27 @@ const PUZZLE_MAPPING: Record<string, string> = {
 	'333bl': '3x3x3',
 	'333mirror': '3x3x3',
 	'222oh': '2x2x2',
+	// Method-based 3x3 variants
+	'333cfop': '3x3x3',
+	'333roux': '3x3x3',
+	'333mehta': '3x3x3',
+	'333zz': '3x3x3',
+	'333fm': '3x3x3',
+	'333mbld': '3x3x3',
+	'333sub': '3x3x3',
+	// 4x4 variants
+	'444yau': '4x4x4',
+	'444bl': '4x4x4',
+	// 5x5 variant
+	'555bl': '5x5x5',
+	// WCA default
+	'wca': '3x3x3',
 };
 
 const NXN_PUZZLE_IDS = new Set(['2x2x2', '3x3x3', '4x4x4', '5x5x5', '6x6x6', '7x7x7']);
 const ALWAYS_2D_PUZZLES = new Set(['clock']);
 const TOGGLE_PUZZLES = new Set([...NXN_PUZZLE_IDS, 'pyraminx', 'megaminx', 'skewb']);
+const VALID_TWISTY_PUZZLES = new Set([...NXN_PUZZLE_IDS, 'clock', 'megaminx', 'pyraminx', 'square1', 'skewb']);
 
 interface Props {
 	cubeType: string;
@@ -50,6 +70,12 @@ function ScrambleVisual(props: Props) {
 
 	// Determine puzzle details for TwistyPlayer
 	const puzzleId = PUZZLE_MAPPING[cubeType] || cubeType;
+
+	// SQ1: backtick karakteri cubing.js parser'ini kiriyor — temizle
+	const viewerAlg = puzzleId === 'square1' && scramble
+		? scramble.replace(/`/g, '')
+		: scramble;
+
 	const isClock = puzzleId === 'clock';
 	const visualizationVal = ALWAYS_2D_PUZZLES.has(puzzleId)
 		? '2D'
@@ -100,12 +126,18 @@ function ScrambleVisual(props: Props) {
 				<div className={b('expanded-close')} onClick={closeModal}>✕</div>
 				<div className={b('expanded-twisty-container')} style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
 					<Suspense fallback={<div>Yükleniyor...</div>}>
-						<TwistyPlayerWrapper
-							puzzle={puzzleId}
-							alg={scramble}
-							visualization={visualizationVal}
-							className={b('twisty-player-expanded')}
-						/>
+						{puzzleId === 'square1' ? (
+							<Sq1Renderer scramble={viewerAlg} className={b('sq1-renderer-expanded')} />
+						) : puzzleId === 'clock' ? (
+							<ClockRenderer scramble={viewerAlg} className={b('clock-renderer-expanded')} />
+						) : (
+							<TwistyPlayerWrapper
+								puzzle={puzzleId}
+								alg={viewerAlg}
+								visualization={visualizationVal}
+								className={b('twisty-player-expanded')}
+							/>
+						)}
 					</Suspense>
 				</div>
 			</div>
@@ -138,9 +170,30 @@ function ScrambleVisual(props: Props) {
 			? { width: '100%', display: 'flex', justifyContent: 'center' }
 			: { width: '100%' };
 
-	if (puzzleId === 'other') {
-		return <div className={b('invalid')}>No visual</div>;
+	// === Early returns (tum hook'lardan SONRA) ===
+
+	// Desteklenmeyen puzzle tipi
+	if (!VALID_TWISTY_PUZZLES.has(puzzleId)) {
+		return null;
 	}
+
+	// Relay: multi-scramble formati, tek viewer ile gosterilemez
+	if (cubeType === 'relay') {
+		return null;
+	}
+
+	// Clock: kendi custom renderer'imiz var, tum notasyonlar destekleniyor
+
+	// Megaminx: TwistyPlayer sadece Pochmann (R++ D--) ve 2-Gen (R, U) destekliyor
+	if (puzzleId === 'megaminx' && scramble && !scramble.includes('++') && !scramble.includes('--')) {
+		const moves = scramble.trim().split(/\s+/);
+		const is2Gen = moves.every(m => /^[RU](2'?|')?$/.test(m));
+		if (!is2Gen) return null;
+	}
+
+	// Custom 2D canvas renderer'lar (cstimer style)
+	const isSquareOne = puzzleId === 'square1';
+	const isClockCustom = puzzleId === 'clock';
 
 	return (
 		<div className={`${b('wrapper', { clickable: false })} ${b()}`} style={{ width: width }}>
@@ -152,12 +205,18 @@ function ScrambleVisual(props: Props) {
 			>
 				<div style={innerStyle}>
 					<Suspense fallback={<div className={b('loading')}>Yükleniyor...</div>}>
-						<TwistyPlayerWrapper
-							puzzle={puzzleId}
-							alg={scramble}
-							visualization={visualizationVal}
-							className={b('twisty-player')}
-						/>
+						{isSquareOne ? (
+							<Sq1Renderer scramble={viewerAlg} className={b('sq1-renderer')} />
+						) : isClockCustom ? (
+							<ClockRenderer scramble={viewerAlg} className={b('clock-renderer')} />
+						) : (
+							<TwistyPlayerWrapper
+								puzzle={puzzleId}
+								alg={viewerAlg}
+								visualization={visualizationVal}
+								className={b('twisty-player')}
+							/>
+						)}
 					</Suspense>
 				</div>
 			</div>

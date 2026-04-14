@@ -27,7 +27,7 @@ import { useQuickControlsModal } from '../../quick-controls/useQuickControlsModa
 import AccountDropdown from '../../layout/nav/account_dropdown/AccountDropdown';
 import SubsetPicker from './SubsetPicker';
 import { getSubsetsForCube } from '../../../util/cubes/scramble_subsets';
-import { getNewScramble } from '../helpers/scramble';
+import { getNewScrambleAsync } from '../helpers/scramble';
 import { getCubeTypeInfoById } from '../../../util/cubes/util';
 import { setTimerParam, setTimerParams } from '../helpers/params';
 
@@ -72,8 +72,22 @@ export default function HeaderControl() {
 
 	function changeCubeType(cubeTypeId: string) {
 		setCubeType(cubeTypeId);
-		// Küp değiştiğinde subset'i sıfırla
-		setSetting('scramble_subset', null);
+
+		const ct = getCubeTypeInfoById(cubeTypeId);
+		if (!ct) return;
+
+		// Yeni cube type'in ilk non-header subset'ini default olarak sec
+		const subsets = getSubsetsForCube(cubeTypeId);
+		const defaultSubset = subsets.find(s => !s.isHeader);
+		const newSubset = defaultSubset ? defaultSubset.id : null;
+
+		setSetting('scramble_subset', newSubset);
+		setTimerParam('scrambleSubset', newSubset);
+
+		setTimerParams({ scramble: '', originalScramble: '', smartTurnOffset: 0 });
+		getNewScrambleAsync(ct.scramble, newSubset ?? undefined).then((newScramble) => {
+			setTimerParams({ scramble: newScramble, originalScramble: newScramble, smartTurnOffset: 0 });
+		}).catch((e) => { console.error('[scramble] changeCubeType failed:', e); });
 	}
 
 	function handleSubsetChange(subset: string | null) {
@@ -82,8 +96,10 @@ export default function HeaderControl() {
 
 		const ct = getCubeTypeInfoById(cubeType);
 		if (ct) {
-			const newScramble = getNewScramble(ct.scramble, undefined, subset);
-			setTimerParams({ scramble: newScramble, originalScramble: newScramble, smartTurnOffset: 0 });
+			setTimerParams({ scramble: '', originalScramble: '', smartTurnOffset: 0 });
+			getNewScrambleAsync(ct.scramble, subset).then((newScramble) => {
+				setTimerParams({ scramble: newScramble, originalScramble: newScramble, smartTurnOffset: 0 });
+			}).catch((e) => { console.error('[scramble] handleSubsetChange failed:', e); });
 		}
 	}
 

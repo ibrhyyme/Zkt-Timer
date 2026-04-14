@@ -17,8 +17,9 @@ export default function SubsetPicker({ subsets, selectedSubset, onChange, mobile
 
     if (!subsets || subsets.length === 0) return null;
 
-    // Find current selection
-    const currentSubset = subsets.find(s => s.id === selectedSubset);
+    // Find current selection (null ve '' ayni anlama gelir — default subset)
+    const effectiveSelected = selectedSubset ?? '';
+    const currentSubset = subsets.find(s => s.id === effectiveSelected);
 
     // Translate label: if it's an i18n key (contains dot), translate it; otherwise use as-is
     function translateLabel(label: string): string {
@@ -31,7 +32,7 @@ export default function SubsetPicker({ subsets, selectedSubset, onChange, mobile
     // Build options
     const options: IDropdownOption[] = subsets.map(sub => ({
         text: translateLabel(sub.label),
-        disabled: sub.id === selectedSubset,
+        disabled: sub.id === effectiveSelected,
         header: sub.isHeader,
         onClick: () => {
             if (sub.isHeader) return;
@@ -43,7 +44,9 @@ export default function SubsetPicker({ subsets, selectedSubset, onChange, mobile
     }));
 
     const icon = mobile ? <ArrowDown weight="bold" /> : <CaretDown weight="bold" />;
-    const text = mobile ? undefined : (currentSubset ? translateLabel(currentSubset.label) : 'WCA');
+    const firstNonHeader = subsets.find(s => !s.isHeader);
+    const displaySubset = currentSubset || firstNonHeader;
+    const text = mobile ? undefined : (displaySubset ? translateLabel(displaySubset.label) : '');
 
     return (
         <Dropdown

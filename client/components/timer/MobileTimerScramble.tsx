@@ -23,7 +23,7 @@ export default function MobileTimerScramble() {
     const context = useContext(TimerContext);
     const cubeType = context.cubeType;
     const scrambleSubset = context.scrambleSubset;
-    const isMegaminx = cubeType === 'minx' || cubeType === 'megaminx';
+    const isMegaminx = cubeType === 'minx';
     const [copied, setCopied] = useState(false);
     const [adjustedFontSize, setAdjustedFontSize] = useState<number | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);

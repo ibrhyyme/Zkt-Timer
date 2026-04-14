@@ -56,8 +56,23 @@ export default function DropdownOption(props: Props) {
 	} else {
 		if (header) {
 			return (
-				<div className={`${b({})} px-4 py-2 text-gray-500 font-bold text-xs uppercase cursor-default opacity-70 select-none bg-black/20`} style={{ pointerEvents: 'none' }}>
-					{body}
+				<div
+					className={`${b({})} cursor-default select-none`}
+					style={{
+						pointerEvents: 'none',
+						padding: '6px 12px',
+						fontSize: '0.7rem',
+						fontWeight: 700,
+						letterSpacing: '0.08em',
+						textAlign: 'center',
+						color: 'var(--tm-c-text-tertiary, #888)',
+						borderTop: '1px solid rgba(255,255,255,0.08)',
+						borderBottom: '1px solid rgba(255,255,255,0.08)',
+						background: 'rgba(255,255,255,0.03)',
+						marginTop: '4px',
+					}}
+				>
+					=== {text} ===
 				</div>
 			);
 		}
