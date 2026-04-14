@@ -6,7 +6,7 @@ import {
 	STATS_MODULE_BLOCK_FRAGMENT,
 } from '../../util/graphql/fragments';
 import { gqlQuery, removeTypename } from '../api';
-import { initSessionCollection, initSessionDb } from '../../db/sessions/init';
+import { initSessionCollection, initSessionDb, reconcileSessionDb } from '../../db/sessions/init';
 import { Dispatch } from 'redux';
 import { clearOfflineData, initOfflineData, updateOfflineHash } from './offline';
 import { initSettingsDb, SettingValue } from '../../db/settings/init';
@@ -157,6 +157,7 @@ async function loadNonCriticalData(_me: UserAccount, dispatch: Dispatch<any>, pa
 		if (passedFromOffline && canSyncUser) {
 			emitEvent('solveDbUpdatedEvent');
 			bgPromises.push(syncNewSolves());
+			bgPromises.push(syncNewSessions());
 		}
 
 		bgPromises.push(getStatsModule(dispatch));
@@ -361,7 +362,9 @@ function initVisibilitySyncListener() {
 		if (now - lastSyncTime < VISIBILITY_SYNC_DEBOUNCE_MS) return;
 		lastSyncTime = now;
 
-		syncNewSolves().then(() => updateOfflineHash()).catch(() => {});
+		Promise.all([syncNewSolves(), syncNewSessions()])
+			.then(() => updateOfflineHash())
+			.catch(() => {});
 	});
 }
 
@@ -458,6 +461,28 @@ async function getAllSessions() {
 	} catch (error) {
 		console.warn('Offline: Could not fetch sessions', error);
 		initSessionDb([]);
+	}
+}
+
+async function syncNewSessions() {
+	const query = gql`
+		${SESSION_FRAGMENT}
+
+		query Query {
+			sessions {
+				...SessionFragment
+			}
+		}
+	`;
+
+	try {
+		const res = await gqlQuery<{ sessions: Session[] }>(query);
+		const changed = reconcileSessionDb(res.data.sessions);
+		if (changed) {
+			emitEvent('sessionsDbUpdatedEvent');
+		}
+	} catch (e) {
+		console.error('Failed to sync sessions', e);
 	}
 }
 
