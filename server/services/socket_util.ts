@@ -174,6 +174,44 @@ export async function getOnlineCounts(): Promise<OnlineCounts> {
 	};
 }
 
+export type OnlineUserEntry = {
+	user: PublicUserAccount;
+	tabCount: number;
+};
+
+export async function getOnlineUsers(): Promise<OnlineUserEntry[]> {
+	const sockets = await getSocketIO().fetchSockets();
+	const byUserId = new Map<string, { user: PublicUserAccount; tabCount: number }>();
+
+	for (const s of sockets) {
+		const uid = (s as any).data?.userId ?? (s as any).userId;
+		if (!uid) {
+			continue;
+		}
+
+		const existing = byUserId.get(uid);
+		if (existing) {
+			existing.tabCount++;
+			continue;
+		}
+
+		const redisKey = createRedisKey(RedisNamespace.SOCKET_IO_CLIENT_USER, s.id);
+		const userJson = await getValueFromRedis(redisKey);
+		if (!userJson) {
+			continue;
+		}
+
+		try {
+			const user = JSON.parse(userJson) as PublicUserAccount;
+			byUserId.set(uid, { user, tabCount: 1 });
+		} catch {
+			// Bozuk cache satiri — atla
+		}
+	}
+
+	return Array.from(byUserId.values());
+}
+
 // All the rooms a client is in
 export function getClientRooms(client: SocketType): string[] {
 	if (!client || !client.rooms) {

@@ -281,6 +281,7 @@ type Query {
   adminUserSearch(filters: AdminUserFiltersInput, pageArgs: PaginationArgsInput): PaginatedUserAccountsForAdmin
   getUserAccountForAdmin(userId: String): UserAccountForAdmin
   onlineStats: OnlineStats
+  onlineUsers: [OnlineUser]
   statsModule: StatsModule
   wcaRecords(userId: String): [WcaRecord]
   myWcaRecords: [WcaRecord]
@@ -990,6 +991,11 @@ type OnlineStats {
   totalSockets: Int
   uniqueUsers: Int
   anonymous: Int
+}
+
+type OnlineUser {
+  user: PublicUserAccount
+  tabCount: Int
 }
 
 type SiteConfig {
