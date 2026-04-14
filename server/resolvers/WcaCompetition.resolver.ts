@@ -1,7 +1,7 @@
 import {Resolver, Query, Arg, Ctx, Authorized} from 'type-graphql';
 import {WcaCompetition, WcaCompetitionFilterInput} from '../schemas/WcaCompetition.schema';
 import {WcaApiService} from '../services/WcaApiService';
-import {fetchDataFromCache, createRedisKey, RedisNamespace} from '../services/redis';
+import {createRedisKey, RedisNamespace, getValueFromRedis, setKeyInRedis} from '../services/redis';
 import {GraphQLContext} from '../@types/interfaces/server.interface';
 import {getAuthToken} from '../integrations/oauth';
 
@@ -16,28 +16,42 @@ export class WcaCompetitionResolver {
 		const country = filter?.country_iso2 || '';
 		const cacheKey = createRedisKey(RedisNamespace.WCA_COMPETITIONS, country || 'all2');
 
-		return fetchDataFromCache<WcaCompetition[]>(
-			cacheKey,
-			async () => {
-				const raw = await WcaApiService.fetchUpcomingCompetitions(country || undefined);
-				return raw.map((c) => ({
-					id: c.id,
-					name: c.name,
-					city: c.city,
-					country_iso2: c.country_iso2,
-					venue: c.venue || '',
-					start_date: c.start_date,
-					end_date: c.end_date,
-					date_range: c.date_range,
-					event_ids: c.event_ids || [],
-					latitude_degrees: c.latitude_degrees,
-					longitude_degrees: c.longitude_degrees,
-					url: c.url,
-					competitor_limit: c.competitor_limit || null,
-				}));
-			},
-			CACHE_TTL_SECONDS
-		);
+		// Cache hit?
+		const cached = await getValueFromRedis(cacheKey);
+		if (cached) {
+			const parsed = JSON.parse(cached);
+			if (Array.isArray(parsed) && parsed.length > 0) {
+				return parsed;
+			}
+			// Bos array cache'lenmis (eski deploy bug'i) — gormezden gel, fresh cek
+		}
+
+		const raw = await WcaApiService.fetchUpcomingCompetitions(country || undefined);
+		const mapped = raw.map((c) => ({
+			id: c.id,
+			name: c.name,
+			city: c.city,
+			country_iso2: c.country_iso2,
+			venue: c.venue || '',
+			start_date: c.start_date,
+			end_date: c.end_date,
+			date_range: c.date_range,
+			event_ids: c.event_ids || [],
+			latitude_degrees: c.latitude_degrees,
+			longitude_degrees: c.longitude_degrees,
+			url: c.url,
+			competitor_limit: c.competitor_limit || null,
+		}));
+
+		// Sadece gercek data cache'lenir. WCA API hatasi durumunda bos array
+		// cache'e yazilirsa 2 saat boyunca herkes "bulunamadi" gorur.
+		if (mapped.length > 0) {
+			await setKeyInRedis(cacheKey, JSON.stringify(mapped), CACHE_TTL_SECONDS);
+		} else {
+			console.warn('[wcaCompetitions] WCA API bos liste dondurdu — cache atlandi');
+		}
+
+		return mapped;
 	}
 
 	@Query(() => [WcaCompetition])
