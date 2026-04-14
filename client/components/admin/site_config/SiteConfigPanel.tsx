@@ -49,11 +49,17 @@ export default function SiteConfigPanel() {
 
 	// Online kullanici listesi — sadece expand acikken polling
 	const [showOnlineList, setShowOnlineList] = useState(false);
-	const {data: onlineUsersData} = useQuery<OnlineUsersQuery>(OnlineUsersDocument, {
+	const {data: onlineUsersData, error: onlineUsersError} = useQuery<OnlineUsersQuery>(OnlineUsersDocument, {
 		pollInterval: showOnlineList ? 10000 : 0,
 		fetchPolicy: 'no-cache',
 		skip: !showOnlineList,
 	});
+
+	useEffect(() => {
+		if (onlineUsersError) {
+			console.warn('[SiteConfigPanel] onlineUsers query error:', onlineUsersError);
+		}
+	}, [onlineUsersError]);
 
 	// Mount'ta bir kez fetch et (kendi state'imiz, hook bagimli degil)
 	useEffect(() => {
@@ -171,7 +177,11 @@ export default function SiteConfigPanel() {
 
 				{showOnlineList && (
 					<div className={b('online-list')}>
-						{!onlineUsersData ? (
+						{onlineUsersError ? (
+							<div className={b('online-list-empty')} style={{color: '#ef5350'}}>
+								Liste yuklenemedi: {onlineUsersError.message}
+							</div>
+						) : !onlineUsersData ? (
 							<div className={b('online-list-empty')}>Yukleniyor...</div>
 						) : onlineUsersData.onlineUsers.length === 0 ? (
 							<div className={b('online-list-empty')}>Giris yapmis kullanici yok.</div>
