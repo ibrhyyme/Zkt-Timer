@@ -40,7 +40,9 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 		statusRef.current = status;
 	}, [status]);
 
-	// Round degistiginde reset
+	// Round degistiginde veya scramble yenilendiginde reset (cube type degisimi, RESET,
+	// CHANGE_SCRAMBLE — hepsi yeni currentScramble uretir). currentRound tek basina yetmez
+	// cunku ilk round'dayken RESET sonrasi currentRound hala 0 olur, effect tetiklenmez.
 	useEffect(() => {
 		// Timer zaten calisiyor — dokunma (handler'dan baslatildi)
 		if (statusRef.current === 'TIMING') return;
@@ -57,7 +59,7 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 		} else {
 			setStatus('RESTING');
 		}
-	}, [currentRound, dispatch, player]);
+	}, [currentRound, currentScramble, dispatch, player]);
 
 	const tick = useCallback(() => {
 		const elapsed = (performance.now() - startTimeRef.current) / 1000;
