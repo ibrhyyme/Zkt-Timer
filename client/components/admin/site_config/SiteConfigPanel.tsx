@@ -190,7 +190,7 @@ export default function SiteConfigPanel() {
 								.slice()
 								.sort((a, b) => b.tabCount - a.tabCount)
 								.map(({user, tabCount}) => (
-									<Link key={user.id} to={`/${user.username}`} className={b('online-item')}>
+									<Link key={user.id} to={`/user/${user.username}`} className={b('online-item')}>
 										<AvatarImage user={user} small />
 										<div className={b('online-item-text')}>
 											<div className={b('online-item-name')}>
