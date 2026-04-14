@@ -74,6 +74,27 @@ export const NAV_LINKS: NavLinkProps[] = [
 		mobileOnly: true,
 	},
 	{
+		name: 'nav.sessions',
+		icon: <Rows weight="bold" />,
+		match: /^\/sessions/,
+		link: '/sessions',
+		loginRequired: true,
+	},
+	{
+		name: 'nav.solves',
+		icon: <ListBullets weight="bold" />,
+		match: /^\/solves/,
+		link: '/solves',
+		loginRequired: false,
+	},
+	{
+		name: 'nav.stats',
+		icon: <ChartPie weight="bold" />,
+		match: /^\/stats/,
+		link: '/stats',
+		loginRequired: true,
+	},
+	{
 		name: 'nav.rooms',
 		icon: <Handshake weight="bold" />,
 		match: /^\/rooms/,
@@ -81,10 +102,10 @@ export const NAV_LINKS: NavLinkProps[] = [
 		loginRequired: true,
 	},
 	{
-		name: 'nav.stats',
-		icon: <ChartPie weight="bold" />,
-		match: /^\/stats/,
-		link: '/stats',
+		name: 'nav.trainer',
+		icon: <LadderSimple weight="bold" />,
+		match: /^\/trainer/,
+		link: '/trainer',
 		loginRequired: true,
 	},
 	{
@@ -100,27 +121,6 @@ export const NAV_LINKS: NavLinkProps[] = [
 		match: /^\/ranks/,
 		link: '/ranks',
 		loginRequired: false,
-	},
-	{
-		name: 'nav.trainer',
-		icon: <LadderSimple weight="bold" />,
-		match: /^\/trainer/,
-		link: '/trainer',
-		loginRequired: true,
-	},
-	{
-		name: 'nav.solves',
-		icon: <ListBullets weight="bold" />,
-		match: /^\/solves/,
-		link: '/solves',
-		loginRequired: false,
-	},
-	{
-		name: 'nav.sessions',
-		icon: <Rows weight="bold" />,
-		match: /^\/sessions/,
-		link: '/sessions',
-		loginRequired: true,
 	},
 ];
 
