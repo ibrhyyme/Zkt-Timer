@@ -37,6 +37,9 @@ export function getBasicUser(user: PublicUserAccount): PublicUserAccount {
 		created_at,
 		verified,
 		badges,
+		// PublicUserFragment integrations istiyor ve schema'da non-nullable.
+		// Socket context'inde DB hit yapmamak icin bos array dondur.
+		integrations: [],
 		profile: {
 			id: profileId,
 			user_id: id,
@@ -203,6 +206,10 @@ export async function getOnlineUsers(): Promise<OnlineUserEntry[]> {
 
 		try {
 			const user = JSON.parse(userJson) as PublicUserAccount;
+			// Eski cache kayitlarinda integrations/badges bulunmayabilir — non-null schema ihlali
+			// olmasin diye bos array ile doldur.
+			if (!user.integrations) user.integrations = [];
+			if (!user.badges) user.badges = [];
 			byUserId.set(uid, { user, tabCount: 1 });
 		} catch {
 			// Bozuk cache satiri — atla
