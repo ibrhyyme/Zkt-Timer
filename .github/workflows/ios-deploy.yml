@@ -43,6 +43,20 @@ jobs:
       - name: Capacitor sync iOS
         run: npx cap sync ios
 
+      - name: Setup signing keychain
+        env:
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+          security list-keychains -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | tr -d '"')
+          security default-keychain -s "$KEYCHAIN_PATH"
+          echo "MATCH_KEYCHAIN_NAME=$KEYCHAIN_PATH" >> $GITHUB_ENV
+          echo "MATCH_KEYCHAIN_PASSWORD=$KEYCHAIN_PASSWORD" >> $GITHUB_ENV
+          echo "FASTLANE_KEYCHAIN_PATH=$KEYCHAIN_PATH" >> $GITHUB_ENV
+
       - name: Install fastlane
         run: gem install fastlane -NV
 
@@ -70,5 +84,16 @@ jobs:
         with:
           name: App-ipa
           path: ios/App/App.ipa
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Upload gym logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gym-logs
+          path: |
+            /Users/runner/Library/Logs/gym/
+            ios/App/fastlane/report.xml
           if-no-files-found: ignore
           retention-days: 7
