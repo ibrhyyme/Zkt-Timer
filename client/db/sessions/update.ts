@@ -21,13 +21,17 @@ export async function createSessionDb(sessionInput: Partial<Session>) {
 	let session = sessionInput as Session;
 
 	if (!sessionInput.demo_mode && canSync()) {
-		const res = await gqlMutateTyped(CreateSessionDocument, {
-			input: {
-				name: session.name,
-			},
-		});
-
-		session = res.data.createSession as Session;
+		try {
+			const res = await gqlMutateTyped(CreateSessionDocument, {
+				input: {
+					name: session.name,
+				},
+			});
+			session = res.data.createSession as Session;
+		} catch (e) {
+			console.error('Failed to create session on server, falling back to local', e);
+			session = { ...session, id: generateId() } as Session;
+		}
 	} else if (!sessionInput.demo_mode) {
 		session = { ...session, id: generateId() } as Session;
 	}

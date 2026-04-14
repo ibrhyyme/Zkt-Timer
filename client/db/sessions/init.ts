@@ -27,3 +27,38 @@ export function initSessionDb(sessions: Session[]) {
 		getSessionDb().insert(session);
 	}
 }
+
+export function reconcileSessionDb(serverSessions: Session[]): boolean {
+	const sessionDb = getSessionDb();
+	if (!sessionDb) return false;
+
+	const localSessions = sessionDb.find();
+	const localMap = new Map(localSessions.map((s) => [s.id, s]));
+	const serverMap = new Map(serverSessions.map((s) => [s.id, s]));
+
+	let changed = false;
+
+	for (const serverSession of serverSessions) {
+		const local = localMap.get(serverSession.id);
+		if (!local) {
+			sessionDb.insert({...serverSession});
+			changed = true;
+		} else if (local.name !== serverSession.name || local.order !== serverSession.order) {
+			sessionDb.update({
+				...local,
+				name: serverSession.name,
+				order: serverSession.order,
+			});
+			changed = true;
+		}
+	}
+
+	for (const local of localSessions) {
+		if (!serverMap.has(local.id)) {
+			sessionDb.remove(local);
+			changed = true;
+		}
+	}
+
+	return changed;
+}
