@@ -22,8 +22,14 @@ platform :ios do
       force: true
     )
 
-    increment_build_number_in_xcodeproj(
-      xcodeproj: "App.xcodeproj"
+    latest_build = latest_testflight_build_number(
+      app_identifier: APP_IDENTIFIER,
+      apple_id: ASC_APP_ID,
+      initial_build_number: 0
+    )
+    increment_build_number(
+      xcodeproj: "App.xcodeproj",
+      build_number: latest_build + 1
     )
 
     build_app(
