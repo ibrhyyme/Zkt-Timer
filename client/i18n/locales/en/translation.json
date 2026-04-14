@@ -490,6 +490,8 @@
 		"upcoming_competitions": "Upcoming Competitions",
 		"loading_competitions": "Loading competitions...",
 		"no_competitions": "No upcoming competitions found.",
+		"load_error": "An error occurred while loading competitions. Please try again.",
+		"retry": "Retry",
 		"no_wcif": "Schedule data is not available for this competition yet.",
 		"fetch_error": "Failed to load schedule data. Please try again later.",
 		"registration_accepted": "Accepted",

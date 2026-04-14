@@ -490,6 +490,8 @@
 		"upcoming_competitions": "Proximas Competencias",
 		"loading_competitions": "Cargando competencias...",
 		"no_competitions": "No se encontraron competencias próximas.",
+		"load_error": "Ocurrió un error al cargar las competencias. Inténtalo de nuevo.",
+		"retry": "Reintentar",
 		"no_wcif": "Los datos del programa aún no están disponibles para esta competencia.",
 		"fetch_error": "No se pudieron cargar los datos del programa. Inténtalo más tarde.",
 		"registration_accepted": "Aceptado",
