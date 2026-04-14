@@ -259,8 +259,10 @@ export class WcaApiService {
 
 			return allCompetitions.filter((c: any) => !c.cancelled_at);
 		} catch (error) {
-			console.error('[WCA API] Error:', error.message);
-			return [];
+			// Hatayı yutup [] dondurmek tehlikeli — client bunu "gercekten bos" sanip
+			// "bulunamadi" gosteriyor. Throw ederek client'in gercek hata UI'i acmasini saglayalim.
+			console.error('[WCA API] fetchUpcomingCompetitions error:', error.message);
+			throw new Error(`WCA API fetch failed: ${error.message}`);
 		}
 	}
 
