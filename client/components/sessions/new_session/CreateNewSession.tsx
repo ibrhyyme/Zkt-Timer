@@ -2,14 +2,12 @@ import React, {useState} from 'react';
 import { useTranslation } from 'react-i18next';
 import './CreateNewSession.scss';
 import Input from '../../common/inputs/input/Input';
-import {setCubeType, setCurrentSession} from '../../../db/settings/update';
-import CubePicker from '../../common/cube_picker/CubePicker';
+import {setCurrentSession} from '../../../db/settings/update';
 import {createSessionDb} from '../../../db/sessions/update';
 import {IModalProps} from '../../common/modal/Modal';
 import {toastError} from '../../../util/toast';
 import {useInput} from '../../../util/hooks/useInput';
 import Button from '../../common/button/Button';
-import {CubeType} from '../../../util/cubes/cube_types';
 import block from '../../../styles/bem';
 
 const b = block('create-new-session');
@@ -19,12 +17,7 @@ export default function CreateNewSession(props: IModalProps) {
 	const { t } = useTranslation();
 
 	const [loading, setLoading] = useState(false);
-	const [sessionCubeType, setSessionCubeType] = useState('333');
 	const [name, setName] = useInput('');
-
-	function onCubeTypeChange(ct: CubeType) {
-		setSessionCubeType(ct.id);
-	}
 
 	async function createSession() {
 		if (loading) {
@@ -36,7 +29,6 @@ export default function CreateNewSession(props: IModalProps) {
 		try {
 			const session = await createSessionDb({name});
 			setCurrentSession(session.id);
-			setCubeType(sessionCubeType);
 
 			onComplete(session);
 		} catch (e) {
@@ -45,7 +37,7 @@ export default function CreateNewSession(props: IModalProps) {
 		}
 	}
 
-	const disabled = !name.trim() || loading || !sessionCubeType;
+	const disabled = !name.trim() || loading;
 
 	return (
 		<div className={b()}>
@@ -55,17 +47,6 @@ export default function CreateNewSession(props: IModalProps) {
 				legend={t('sessions.session_name')}
 				value={name}
 				onChange={setName}
-			/>
-			<CubePicker
-				dropdownProps={{
-					legend: t('sessions.cube_type'),
-					info: t('sessions.cube_type_info'),
-					openLeft: true,
-					openUp: true,
-					dropdownMaxHeight: 260,
-				}}
-				onChange={onCubeTypeChange}
-				value={sessionCubeType}
 			/>
 			<div className={b('actions')}>
 				<Button

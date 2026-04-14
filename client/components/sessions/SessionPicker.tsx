@@ -12,6 +12,7 @@ import {Session} from '../../../server/schemas/Session.schema';
 import {openModal} from '../../actions/general';
 import CreateNewSession from './new_session/CreateNewSession';
 import {useMe} from '../../util/hooks/useMe';
+import {useSessionDb} from '../../util/hooks/useSessionDb';
 
 interface Props {
 	stateless?: boolean;
@@ -24,6 +25,7 @@ export default function SessionPicker(props: Props) {
 	const {t} = useTranslation();
 	const me = useMe();
 	const sessionId = useSettings('session_id');
+	const sessionDbChangeCounter = useSessionDb();
 
 	const [selectedSession, setSelectedSession] = useState<Session>();
 	const {onChange, hideSessionName, stateless} = props;
@@ -69,7 +71,7 @@ export default function SessionPicker(props: Props) {
 		}
 
 		return sessionOptions;
-	}, [selectedSession, me, stateless, t]);
+	}, [selectedSession, me, stateless, t, sessionDbChangeCounter]);
 
 	function switchSession(session: Session) {
 		setSelectedSession(session);
