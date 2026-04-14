@@ -618,6 +618,7 @@ type Setting {
   use_2d_scramble_visual: Boolean
   timer_decimal_points: Int
   cube_type: String
+  scramble_subset: String
   session_id: String
   smart_cube_size: Int
   custom_cube_types: [CustomCubeType]
@@ -1629,6 +1630,7 @@ input SettingInput {
   use_2d_scramble_visual: Boolean
   timer_decimal_points: Int
   cube_type: String
+  scramble_subset: String
   session_id: String
   smart_cube_size: Int
 }

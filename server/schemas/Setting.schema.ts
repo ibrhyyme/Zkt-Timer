@@ -66,6 +66,9 @@ export class Setting {
 	@Field()
 	cube_type: string;
 
+	@Field({ nullable: true })
+	scramble_subset?: string;
+
 	@Field()
 	session_id: string;
 
@@ -131,6 +134,9 @@ export class SettingInput implements Partial<Setting> {
 
 	@Field()
 	cube_type: string;
+
+	@Field({ nullable: true })
+	scramble_subset?: string;
 
 	@Field()
 	session_id: string;
