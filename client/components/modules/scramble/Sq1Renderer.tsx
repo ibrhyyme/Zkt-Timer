@@ -235,9 +235,10 @@ function drawState(
 interface Props {
 	scramble: string;
 	className?: string;
+	baseWidth?: number;
 }
 
-const Sq1Renderer: React.FC<Props> = ({ scramble, className }) => {
+const Sq1Renderer: React.FC<Props> = ({ scramble, className, baseWidth: baseWidthProp }) => {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 
 	useEffect(() => {
@@ -248,7 +249,7 @@ const Sq1Renderer: React.FC<Props> = ({ scramble, className }) => {
 		if (!ctx) return;
 
 		// Canvas boyutu — cstimer 4*sqb*width x 2*sqb*width
-		const baseWidth = 28; // scale factor (web boyutu icin optimize)
+		const baseWidth = baseWidthProp ?? 28; // scale factor (web boyutu icin optimize)
 		const w = 4 * SQB * baseWidth;
 		const h = 2 * SQB * baseWidth + baseWidth; // +extra for middle bar
 
@@ -272,7 +273,7 @@ const Sq1Renderer: React.FC<Props> = ({ scramble, className }) => {
 		}
 
 		drawState(ctx, sc, baseWidth);
-	}, [scramble]);
+	}, [scramble, baseWidthProp]);
 
 	return (
 		<canvas

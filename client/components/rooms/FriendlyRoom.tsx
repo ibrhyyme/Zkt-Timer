@@ -1795,11 +1795,12 @@ export default function FriendlyRoom() {
                         </div>
 
                         {/* Cube Preview (Restored & Resized) */}
-                        <div className="h-[80px] md:h-[100px] w-auto aspect-[4/3] flex items-center justify-center bg-transparent ml-4 shrink-0">
+                        <div className="w-[110px] h-[80px] md:w-[140px] md:h-[100px] flex items-center justify-center bg-transparent ml-4 shrink-0">
                             <ScrambleVisual
                                 scramble={room.current_scramble}
                                 cubeType={room.cube_type}
                                 width="100%"
+                                compact
                             />
                         </div>
                     </div>

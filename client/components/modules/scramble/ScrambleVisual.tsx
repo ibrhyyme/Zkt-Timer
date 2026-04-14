@@ -59,10 +59,11 @@ interface Props {
 	scramble: string;
 	width?: string;
 	frontFace?: boolean;
+	compact?: boolean;
 }
 
 function ScrambleVisual(props: Props) {
-	const { cubeType, scramble, frontFace } = props;
+	const { cubeType, scramble, frontFace, compact } = props;
 	const [isExpanded, setIsExpanded] = useState(false);
 	const mobileMode = useGeneral('mobile_mode');
 	const use2dScramble = useSettings('use_2d_scramble_visual');
@@ -206,7 +207,7 @@ function ScrambleVisual(props: Props) {
 				<div style={innerStyle}>
 					<Suspense fallback={<div className={b('loading')}>Yükleniyor...</div>}>
 						{isSquareOne ? (
-							<Sq1Renderer scramble={viewerAlg} className={b('sq1-renderer')} />
+							<Sq1Renderer scramble={viewerAlg} className={b('sq1-renderer')} baseWidth={compact ? 14 : undefined} />
 						) : isClockCustom ? (
 							<ClockRenderer scramble={viewerAlg} className={b('clock-renderer')} />
 						) : (
@@ -231,6 +232,7 @@ export default React.memo(ScrambleVisual, (prevProps, nextProps) => {
 		prevProps.cubeType === nextProps.cubeType &&
 		prevProps.scramble === nextProps.scramble &&
 		prevProps.width === nextProps.width &&
-		prevProps.frontFace === nextProps.frontFace
+		prevProps.frontFace === nextProps.frontFace &&
+		prevProps.compact === nextProps.compact
 	);
 });

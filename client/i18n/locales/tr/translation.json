@@ -1645,7 +1645,11 @@
 	},
 	"mobile_scramble": {
 		"click_to_copy": "Kopyalamak için tıkla",
-		"loading_scramble": "Karıştırma yükleniyor..."
+		"loading_scramble": "Karıştırma yükleniyor...",
+		"tap_hint": "Tıkla: büyüt · Basılı tut: kopyala",
+		"copy": "Kopyala",
+		"copied": "Kopyalandı",
+		"close": "Kapat"
 	},
 	"theme_options": {
 		"themes_title": "Temalar",

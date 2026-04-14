@@ -1645,7 +1645,11 @@
 	},
 	"mobile_scramble": {
 		"click_to_copy": "Click to copy",
-		"loading_scramble": "Loading scramble..."
+		"loading_scramble": "Loading scramble...",
+		"tap_hint": "Tap: expand · Hold: copy",
+		"copy": "Copy",
+		"copied": "Copied",
+		"close": "Close"
 	},
 	"theme_options": {
 		"themes_title": "Themes",

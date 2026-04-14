@@ -5,7 +5,7 @@ import {
     FriendlyRoomSolveData,
     CreateFriendlyRoomInput,
 } from '../../shared/friendly_room';
-import { FriendlyRoomConst } from '../../shared/friendly_room/consts';
+import { FriendlyRoomConst, ALLOWED_CUBE_TYPES } from '../../shared/friendly_room/consts';
 import { PublicUserAccount } from '../schemas/UserAccount.schema';
 import * as bcrypt from 'bcryptjs';
 
@@ -26,9 +26,8 @@ import '../../shared/scramble/generators/scramble-megaminx';
 import '../../shared/scramble/generators/scramble-222';
 import { generateClockScramble } from '../../client/util/cubes/scramble_clock';
 
-// Cube type ID -> cstimer scramble type ID mapping (sadece WCA + variants)
+// WCA cube type ID -> cstimer scramble type ID mapping (sadece WCA events)
 const CUBE_TO_SCRAMBLE_TYPE: Record<string, string> = {
-    'wca': '333',
     '222': '222so',
     '333': '333',
     '444': '444m',
@@ -40,38 +39,31 @@ const CUBE_TO_SCRAMBLE_TYPE: Record<string, string> = {
     'sq1': 'sqrs',
     'clock': 'clock',
     'minx': 'mgmp',
-    '333cfop': '333',
-    '333roux': '333',
-    '333mehta': '333',
-    '333zz': '333',
-    '444yau': '444m',
-    '333sub': '2gen',
 };
 
-function generateScrambleForCubeType(cubeType: string, subset?: string | null): string {
-    // WCA kategori: subset aslinda bir cube type ID
-    if (cubeType === 'wca' && subset) {
-        return generateScrambleForCubeType(subset);
+// Invalid/eski cube_type'lari default'a normalize et
+function normalizeCubeType(cubeType: string | null | undefined): string {
+    if (cubeType && ALLOWED_CUBE_TYPES.includes(cubeType)) {
+        return cubeType;
     }
+    return FriendlyRoomConst.DEFAULT_CUBE_TYPE;
+}
+
+function generateScrambleForCubeType(cubeType: string): string {
+    const normalized = normalizeCubeType(cubeType);
 
     // Clock — mevcut port
-    if (cubeType === 'clock' && !subset) {
+    if (normalized === 'clock') {
         return generateClockScramble();
     }
 
     try {
-        // Subset varsa ve registry'de kayitliysa
-        if (subset && hasGenerator(subset)) {
-            return generateScramble(subset).replace(/\s+/g, ' ').trim();
-        }
-
-        // Cube type mapping
-        const scrambleType = CUBE_TO_SCRAMBLE_TYPE[cubeType];
+        const scrambleType = CUBE_TO_SCRAMBLE_TYPE[normalized];
         if (scrambleType && hasGenerator(scrambleType)) {
             return generateScramble(scrambleType).replace(/\s+/g, ' ').trim();
         }
     } catch (e) {
-        console.error(`[scramble] Generator error for ${cubeType}/${subset}:`, e);
+        console.error(`[scramble] Generator error for ${normalized}:`, e);
     }
 
     // Fallback: 3x3 random-state
@@ -90,17 +82,16 @@ export async function createRoom(input: CreateFriendlyRoomInput, user: PublicUse
         hashedPassword = await bcrypt.hash(input.password, 10);
     }
 
+    const cubeType = normalizeCubeType(input.cube_type);
+
     // Generate initial scramble
-    // Generate initial scramble
-    const initialScramble = generateScrambleForCubeType(
-        input.cube_type || FriendlyRoomConst.DEFAULT_CUBE_TYPE
-    );
+    const initialScramble = generateScrambleForCubeType(cubeType);
 
     const room = await prisma().friendlyRoom.create({
         data: {
             name: input.name.slice(0, FriendlyRoomConst.MAX_ROOM_NAME_LENGTH),
             password: hashedPassword,
-            cube_type: input.cube_type || FriendlyRoomConst.DEFAULT_CUBE_TYPE,
+            cube_type: cubeType,
 
             max_players: Math.max(FriendlyRoomConst.MIN_PLAYERS, Math.min(input.max_players || FriendlyRoomConst.DEFAULT_MAX_PLAYERS, FriendlyRoomConst.MAX_PLAYERS)),
             is_private: input.is_private || false,
@@ -415,16 +406,18 @@ export async function updateRoom(
     }
 
     // Handle Cube Type Change (RESET ROOM)
-    if (updates.cube_type && updates.cube_type !== room.cube_type) {
-        data.cube_type = updates.cube_type;
+    if (updates.cube_type) {
+        const newCubeType = normalizeCubeType(updates.cube_type);
+        if (newCubeType !== room.cube_type) {
+            data.cube_type = newCubeType;
+            data.current_scramble = generateScrambleForCubeType(newCubeType);
+            data.scramble_index = 1;
 
-        data.current_scramble = generateScrambleForCubeType(updates.cube_type);
-        data.scramble_index = 1;
-
-        // Reset all solves
-        await prisma().friendlyRoomSolve.deleteMany({
-            where: { room_id: roomId }
-        });
+            // Reset all solves
+            await prisma().friendlyRoomSolve.deleteMany({
+                where: { room_id: roomId }
+            });
+        }
     }
 
     // Note: allowed_timer_types is handled via raw query below to support outdated Prisma Client
