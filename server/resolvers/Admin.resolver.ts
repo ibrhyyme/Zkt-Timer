@@ -30,8 +30,8 @@ import { PaginationArgsInput, AdminUserFiltersInput } from '../schemas/Paginatio
 import { getPaginatedResponse, PaginatedRequestInput } from '../util/pagination/paginated_response';
 import { sendPushToUser } from '../services/push';
 import { AdminSendPushResult } from '../schemas/PushToken.schema';
-import { OnlineStats, BackfillResult } from '../schemas/SiteConfig.schema';
-import { getOnlineCounts } from '../services/socket_util';
+import { OnlineStats, OnlineUser, BackfillResult } from '../schemas/SiteConfig.schema';
+import { getOnlineCounts, getOnlineUsers } from '../services/socket_util';
 import WcaResultEnteredNotification from '../resources/notification_types/wca_result_entered';
 import WcaRoundFinishedNotification from '../resources/notification_types/wca_round_finished';
 import { getPrisma } from '../database';
@@ -309,6 +309,12 @@ export class AdminResolver {
 	@Query(() => OnlineStats)
 	async onlineStats(): Promise<OnlineStats> {
 		return getOnlineCounts();
+	}
+
+	@Authorized([Role.ADMIN])
+	@Query(() => [OnlineUser])
+	async onlineUsers(): Promise<OnlineUser[]> {
+		return getOnlineUsers();
 	}
 
 	/**

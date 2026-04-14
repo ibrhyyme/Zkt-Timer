@@ -1206,6 +1206,12 @@ export type OnlineStats = {
   uniqueUsers?: Maybe<Scalars['Int']>;
 };
 
+export type OnlineUser = {
+  __typename?: 'OnlineUser';
+  tabCount?: Maybe<Scalars['Int']>;
+  user?: Maybe<PublicUserAccount>;
+};
+
 export type PaginatedCustomTrainers = {
   __typename?: 'PaginatedCustomTrainers';
   hasMore?: Maybe<Scalars['Boolean']>;
@@ -1354,6 +1360,7 @@ export type Query = {
   notificationPreferences?: Maybe<NotificationPreference>;
   notifications?: Maybe<Array<Maybe<Notification>>>;
   onlineStats?: Maybe<OnlineStats>;
+  onlineUsers?: Maybe<Array<Maybe<OnlineUser>>>;
   profile: Profile;
   rankings?: Maybe<RankingsPage>;
   reports?: Maybe<Array<Maybe<ReportSummary>>>;
@@ -2052,6 +2059,7 @@ export type UserAccountSolvesSummary = {
   cube_type?: Maybe<Scalars['String']>;
   max_time?: Maybe<Scalars['Float']>;
   min_time?: Maybe<Scalars['Float']>;
+  scramble_subset?: Maybe<Scalars['String']>;
   sum?: Maybe<Scalars['Float']>;
 };
 
@@ -2687,6 +2695,11 @@ export type OnlineStatsQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type OnlineStatsQuery = { __typename?: 'Query', onlineStats?: { __typename?: 'OnlineStats', totalSockets?: number | null, uniqueUsers?: number | null, anonymous?: number | null } | null };
 
+export type OnlineUsersQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type OnlineUsersQuery = { __typename?: 'Query', onlineUsers?: Array<{ __typename?: 'OnlineUser', tabCount?: number | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null } | null> | null };
+
 export type SolveByShareCodeQueryVariables = Exact<{
   shareCode?: InputMaybe<Scalars['String']>;
 }>;
@@ -2858,6 +2871,7 @@ export const AdminDeleteTrainerAlternativeDocument = {"kind":"Document","definit
 export const BackfillWcaIdsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"backfillWcaIds"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"backfillWcaIds"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"total"}},{"kind":"Field","name":{"kind":"Name","value":"filled"}},{"kind":"Field","name":{"kind":"Name","value":"tokenFailed"}},{"kind":"Field","name":{"kind":"Name","value":"noWcaId"}},{"kind":"Field","name":{"kind":"Name","value":"error"}},{"kind":"Field","name":{"kind":"Name","value":"recordsTotal"}},{"kind":"Field","name":{"kind":"Name","value":"recordsFilled"}},{"kind":"Field","name":{"kind":"Name","value":"recordsError"}}]}}]}}]} as unknown as DocumentNode<BackfillWcaIdsMutation, BackfillWcaIdsMutationVariables>;
 export const SiteConfigDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"siteConfig"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"siteConfig"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"maintenance_mode"}},{"kind":"Field","name":{"kind":"Name","value":"trainer_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"community_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"leaderboards_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"rooms_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"battle_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"updated_at"}}]}}]}}]} as unknown as DocumentNode<SiteConfigQuery, SiteConfigQueryVariables>;
 export const OnlineStatsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"onlineStats"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"onlineStats"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"totalSockets"}},{"kind":"Field","name":{"kind":"Name","value":"uniqueUsers"}},{"kind":"Field","name":{"kind":"Name","value":"anonymous"}}]}}]}}]} as unknown as DocumentNode<OnlineStatsQuery, OnlineStatsQueryVariables>;
+export const OnlineUsersDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"onlineUsers"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"onlineUsers"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"tabCount"}},{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PublicUserFragment"}}]}}]}}]}},...PublicUserFragmentFragmentDoc.definitions,...ImageFragmentFragmentDoc.definitions]} as unknown as DocumentNode<OnlineUsersQuery, OnlineUsersQueryVariables>;
 export const SolveByShareCodeDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"solveByShareCode"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"shareCode"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"solveByShareCode"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"shareCode"},"value":{"kind":"Variable","name":{"kind":"Name","value":"shareCode"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SolveWithUserFragment"}}]}}]}},...SolveWithUserFragmentFragmentDoc.definitions,...SolveFragmentFragmentDoc.definitions,...PublicUserWithEloFragmentFragmentDoc.definitions,...PublicUserFragmentFragmentDoc.definitions,...ImageFragmentFragmentDoc.definitions]} as unknown as DocumentNode<SolveByShareCodeQuery, SolveByShareCodeQueryVariables>;
 export const ProfileDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"profile"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"username"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"profile"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"username"},"value":{"kind":"Variable","name":{"kind":"Name","value":"username"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ProfileFragment"}}]}}]}},...ProfileFragmentFragmentDoc.definitions,...PublicUserWithEloFragmentFragmentDoc.definitions,...PublicUserFragmentFragmentDoc.definitions,...ImageFragmentFragmentDoc.definitions,...TopSolveFragmentFragmentDoc.definitions,...SolveFragmentFragmentDoc.definitions,...TopAverageFragmentFragmentDoc.definitions]} as unknown as DocumentNode<ProfileQuery, ProfileQueryVariables>;
 export const UserSearchDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"userSearch"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pageArgs"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"PaginationArgsInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"userSearch"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pageArgs"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pageArgs"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hasMore"}},{"kind":"Field","name":{"kind":"Name","value":"total"}},{"kind":"Field","name":{"kind":"Name","value":"items"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PublicUserFragment"}}]}}]}}]}},...PublicUserFragmentFragmentDoc.definitions,...ImageFragmentFragmentDoc.definitions]} as unknown as DocumentNode<UserSearchQuery, UserSearchQueryVariables>;

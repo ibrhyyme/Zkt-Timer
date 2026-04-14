@@ -1,4 +1,5 @@
 import {Field, ObjectType, InputType, Int} from 'type-graphql';
+import {PublicUserAccount} from './UserAccount.schema';
 
 @ObjectType()
 export class OnlineStats {
@@ -10,6 +11,15 @@ export class OnlineStats {
 
 	@Field(() => Int)
 	anonymous: number;
+}
+
+@ObjectType()
+export class OnlineUser {
+	@Field(() => PublicUserAccount)
+	user: PublicUserAccount;
+
+	@Field(() => Int)
+	tabCount: number;
 }
 
 @ObjectType()

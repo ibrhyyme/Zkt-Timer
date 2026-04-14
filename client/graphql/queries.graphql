@@ -19,6 +19,15 @@ query onlineStats {
 	}
 }
 
+query onlineUsers {
+	onlineUsers {
+		tabCount
+		user {
+			...PublicUserFragment
+		}
+	}
+}
+
 query solveByShareCode($shareCode: String) {
 	solveByShareCode(shareCode: $shareCode) {
 		...SolveWithUserFragment

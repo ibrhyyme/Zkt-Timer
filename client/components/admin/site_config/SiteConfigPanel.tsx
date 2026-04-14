@@ -1,11 +1,20 @@
 import React, {useState, useEffect} from 'react';
 import {useTranslation} from 'react-i18next';
-import {Warning, Wrench, Database} from 'phosphor-react';
+import {Link} from 'react-router-dom';
+import {Warning, Wrench, Database, CaretDown, CaretUp} from 'phosphor-react';
 import {useQuery} from '@apollo/client';
 import {gqlMutate, gqlMutateTyped, gqlQueryTyped} from '../../api';
-import {UpdateSiteConfigDocument, SiteConfigDocument, OnlineStatsDocument, OnlineStatsQuery} from '../../../@types/generated/graphql';
+import {
+	UpdateSiteConfigDocument,
+	SiteConfigDocument,
+	OnlineStatsDocument,
+	OnlineStatsQuery,
+	OnlineUsersDocument,
+	OnlineUsersQuery,
+} from '../../../@types/generated/graphql';
 import gql from 'graphql-tag';
 import {setSiteConfigCache, SiteConfigData} from '../../../util/hooks/useSiteConfig';
+import AvatarImage from '../../common/avatar/avatar_image/AvatarImage';
 import block from '../../../styles/bem';
 import './SiteConfigPanel.scss';
 
@@ -36,6 +45,14 @@ export default function SiteConfigPanel() {
 	const {data: onlineData} = useQuery<OnlineStatsQuery>(OnlineStatsDocument, {
 		pollInterval: 10000,
 		fetchPolicy: 'no-cache',
+	});
+
+	// Online kullanici listesi — sadece expand acikken polling
+	const [showOnlineList, setShowOnlineList] = useState(false);
+	const {data: onlineUsersData} = useQuery<OnlineUsersQuery>(OnlineUsersDocument, {
+		pollInterval: showOnlineList ? 10000 : 0,
+		fetchPolicy: 'no-cache',
+		skip: !showOnlineList,
 	});
 
 	// Mount'ta bir kez fetch et (kendi state'imiz, hook bagimli degil)
@@ -141,6 +158,48 @@ export default function SiteConfigPanel() {
 						</span>
 					</div>
 				</div>
+
+				{(onlineData?.onlineStats?.uniqueUsers ?? 0) > 0 && (
+					<button
+						className={b('list-toggle')}
+						onClick={() => setShowOnlineList((v) => !v)}
+					>
+						{showOnlineList ? <CaretUp size={14} weight="bold" /> : <CaretDown size={14} weight="bold" />}
+						<span>{showOnlineList ? 'Listeyi gizle' : 'Kimler online?'}</span>
+					</button>
+				)}
+
+				{showOnlineList && (
+					<div className={b('online-list')}>
+						{!onlineUsersData ? (
+							<div className={b('online-list-empty')}>Yukleniyor...</div>
+						) : onlineUsersData.onlineUsers.length === 0 ? (
+							<div className={b('online-list-empty')}>Giris yapmis kullanici yok.</div>
+						) : (
+							onlineUsersData.onlineUsers
+								.slice()
+								.sort((a, b) => b.tabCount - a.tabCount)
+								.map(({user, tabCount}) => (
+									<Link key={user.id} to={`/${user.username}`} className={b('online-item')}>
+										<AvatarImage user={user} small />
+										<div className={b('online-item-text')}>
+											<div className={b('online-item-name')}>
+												{user.username}
+												{user.admin && <span className={b('online-badge', {admin: true})}>admin</span>}
+												{!user.admin && user.mod && <span className={b('online-badge', {mod: true})}>mod</span>}
+												{user.is_premium && <span className={b('online-badge', {premium: true})}>premium</span>}
+												{!user.is_premium && user.is_pro && <span className={b('online-badge', {pro: true})}>pro</span>}
+												{user.verified && <span className={b('online-badge', {verified: true})}>verified</span>}
+											</div>
+											{tabCount > 1 && (
+												<div className={b('online-item-meta')}>{tabCount} tab acik</div>
+											)}
+										</div>
+									</Link>
+								))
+						)}
+					</div>
+				)}
 			</div>
 
 			{/* Bakim Modu */}
