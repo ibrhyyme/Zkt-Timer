@@ -2,7 +2,7 @@ import React, {useMemo} from 'react';
 import './CubeDistro.scss';
 import {fetchAllCubeTypesSolved} from '../../../db/solves/query';
 import {PieChart} from 'react-minimal-pie-chart';
-import {getCubeTypeInfoById} from '../../../util/cubes/util';
+import {getBucketShortLabel} from '../../../util/cubes/util';
 import block from '../../../styles/bem';
 
 const b = block('cube-distro');
@@ -15,9 +15,9 @@ export default function CubeDistro() {
 	}, []);
 
 	const data = cubeTypes.map((ct, i) => ({
-		title: getCubeTypeInfoById(ct.cube_type).name,
+		title: getBucketShortLabel(ct.cube_type, ct.scramble_subset),
 		value: ct.count,
-		color: colors[i],
+		color: colors[i % colors.length],
 	}));
 
 	return (

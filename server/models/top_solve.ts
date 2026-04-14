@@ -9,11 +9,12 @@ export async function deleteAllPublishedSolves(user) {
 	return Promise.all([deleteAllTopSolves(user), deleteAllTopAverages(user)]);
 }
 
-export function deleteTopSolve(cubeType, user) {
+export function deleteTopSolve(cubeType, user, scrambleSubset?: string | null) {
 	return getPrisma().topSolve.deleteMany({
 		where: {
 			user_id: user.id,
 			cube_type: cubeType,
+			scramble_subset: scrambleSubset ?? null,
 		},
 	});
 }
@@ -42,11 +43,12 @@ export function deleteTopSolveById(id) {
 	});
 }
 
-export function deleteTopAverage(cubeType, user) {
+export function deleteTopAverage(cubeType, user, scrambleSubset?: string | null) {
 	return getPrisma().topAverage.deleteMany({
 		where: {
 			user_id: user.id,
 			cube_type: cubeType,
+			scramble_subset: scrambleSubset ?? null,
 		},
 	});
 }
@@ -67,6 +69,7 @@ export function submitTopSolve(user, solve) {
 			time: solve.time,
 			solve_id: solve.id,
 			cube_type: solve.cube_type,
+			scramble_subset: solve.scramble_subset ?? null,
 		},
 	});
 }
@@ -78,6 +81,7 @@ export function submitTopAverage(user: UserAccount, solves: SolveClientType[]) {
 		user_id: user.id,
 		time: avg,
 		cube_type: solves[0].cube_type,
+		scramble_subset: solves[0].scramble_subset ?? null,
 	};
 
 	for (let i = 0; i < solves.length; i += 1) {
@@ -172,12 +176,13 @@ const notBannedWhere = {
 	],
 };
 
-export function getTopSolves(cubeType, page) {
+export function getTopSolves(cubeType, page, scrambleSubset?: string | null) {
 	const pageSize = 50;
 
 	return getPrisma().topSolve.findMany({
 		where: {
 			cube_type: cubeType,
+			scramble_subset: scrambleSubset ?? null,
 			...notBannedWhere,
 		},
 		orderBy: {
@@ -210,12 +215,13 @@ export function getTopAverage(id) {
 	});
 }
 
-export function getTopAverages(cubeType, page) {
+export function getTopAverages(cubeType, page, scrambleSubset?: string | null) {
 	const pageSize = 50;
 
 	return getPrisma().topAverage.findMany({
 		where: {
 			cube_type: cubeType,
+			scramble_subset: scrambleSubset ?? null,
 			...notBannedWhere,
 		},
 		orderBy: {

@@ -43,6 +43,7 @@ export default function SmartSolveLayout(props: SolveLayoutProps) {
 
 	const scramble = solve.scramble;
 	const cubeType = solve.cube_type;
+	const visualCubeType = (cubeType === 'wca' && solve.scramble_subset) ? solve.scramble_subset : cubeType;
 
 	let shareLink = null;
 	if (typeof window !== 'undefined' && !showProOverlay) {
@@ -143,7 +144,7 @@ export default function SmartSolveLayout(props: SolveLayoutProps) {
 					</div>
 				</div>
 				<div className={bs('header-visual')}>
-					<ScrambleVisual cubeType={cubeType} scramble={scramble} />
+					<ScrambleVisual cubeType={visualCubeType} scramble={scramble} />
 				</div>
 			</div>
 

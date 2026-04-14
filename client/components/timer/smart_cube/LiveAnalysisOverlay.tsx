@@ -4,6 +4,7 @@ import { useLiveAnalysis } from '../../../util/hooks/useLiveAnalysis';
 import './LiveAnalysisOverlay.scss';
 import block from '../../../styles/bem';
 import { useSettings } from '../../../util/hooks/useSettings';
+import { is3x3CubeType } from '../helpers/util';
 
 const b = block('live-analysis');
 
@@ -13,10 +14,10 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
     const cubeType = useSettings('cube_type');
     const scrambleSubset = useSettings('scramble_subset');
 
-    // Only run if timer is running or we have turns AND it is Standard 3x3 (WCA)
-    // Subsets (OLL, PLL, ZBLL etc.) should NOT trigger live analysis
-    const isStandard3x3 = cubeType === '333' && (!scrambleSubset || scrambleSubset === '');
-    const shouldRun = (!!timeStartedAt || (smartTurns && smartTurns.length > 0)) && isStandard3x3;
+    // Tum 3x3 varyantlarinda (333, 333cfop, 333roux, 333zz, 333mehta, 333sub ve wca+333) calisir.
+    // Subset'lerde de aktif (OLL, PLL, ZBLL) — kullanici tercihi: tum 3x3 cozumlerinde analiz olsun.
+    const is3x3 = is3x3CubeType(cubeType, scrambleSubset);
+    const shouldRun = (!!timeStartedAt || (smartTurns && smartTurns.length > 0)) && is3x3;
 
     const [cachedAnalysis, setCachedAnalysis] = React.useState<any>(null);
     const prevStartState = React.useRef(startState);

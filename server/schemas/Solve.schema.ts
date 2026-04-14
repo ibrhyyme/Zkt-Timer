@@ -19,6 +19,9 @@ export class SolveInput {
 	@Field()
 	cube_type?: string;
 
+	@Field({ nullable: true })
+	scramble_subset?: string;
+
 	@Field()
 	scramble?: string;
 
@@ -87,6 +90,9 @@ export class Solve {
 
 	@Field()
 	cube_type: string;
+
+	@Field({ nullable: true })
+	scramble_subset?: string;
 
 	@Field()
 	scramble: string;

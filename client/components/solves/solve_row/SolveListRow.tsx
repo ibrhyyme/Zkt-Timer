@@ -7,7 +7,7 @@ import SolveInfo from '../../solve_info/SolveInfo';
 import Emblem from '../../common/emblem/Emblem';
 import { getDateFromNow } from '../../../util/dates';
 import Scramble from '../../modules/scramble/ScrambleVisual';
-import { getCubeTypeName } from '../../../util/cubes/util';
+import { getCubeTypeBucketLabel } from '../../../util/cubes/util';
 import { useGeneral } from '../../../util/hooks/useGeneral';
 import block from '../../../styles/bem';
 import Tag from '../../common/tag/Tag';
@@ -45,8 +45,11 @@ export default function SolveListRow(props: Props) {
 	const plusTwo = solve.plus_two;
 	const scramble = solve.scramble;
 	const smart = solve.is_smart_cube;
-	const cubeType = getCubeTypeName(solve.cube_type) || 'None';
+	const cubeType = getCubeTypeBucketLabel(solve.cube_type, solve.scramble_subset) || 'None';
 	const createdAt = getDateFromNow(solve.started_at);
+	const visualCubeType = (solve.cube_type === 'wca' && solve.scramble_subset)
+		? solve.scramble_subset
+		: solve.cube_type;
 
 	let plusTwoEmblem = null;
 	let dnfEmblem = null;
@@ -91,7 +94,7 @@ export default function SolveListRow(props: Props) {
 			</div>
 			<div className={b('scramble')}>
 				<div className={b('scramble-body')}>
-					<Scramble frontFace width={scrambleSize} scramble={scramble} cubeType={solve.cube_type} />
+					<Scramble frontFace width={scrambleSize} scramble={scramble} cubeType={visualCubeType} />
 				</div>
 			</div>
 			<div className={b('badges')}>

@@ -20,6 +20,7 @@ export function listenForPbEvents(context: ITimerContext) {
 	// find in the cache
 	const pbFilter: FilterSolvesOptions = {
 		cube_type: context.cubeType,
+		scramble_subset: context.scrambleSubset ?? null,
 		from_timer: true,
 	};
 

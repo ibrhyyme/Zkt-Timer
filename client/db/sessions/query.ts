@@ -50,3 +50,31 @@ export function getCubeTypesFromSession(session: Session) {
 
 	return Array.from(types);
 }
+
+export interface SessionCubeBucket {
+	cube_type: string;
+	scramble_subset: string | null;
+}
+
+// Session icindeki (cube_type, subset) ciftlerini dondur. WCA altinda farkli etkinlikler icin ayri bucket.
+export function getCubeBucketsFromSession(session: Session): SessionCubeBucket[] {
+	if (!session) {
+		return [];
+	}
+
+	const seen = new Set<string>();
+	const out: SessionCubeBucket[] = [];
+	const solves = fetchSolves({
+		session_id: session.id,
+	});
+
+	for (const solve of solves) {
+		const subset = solve.scramble_subset ?? null;
+		const key = `${solve.cube_type}::${subset ?? ''}`;
+		if (seen.has(key)) continue;
+		seen.add(key);
+		out.push({ cube_type: solve.cube_type, scramble_subset: subset });
+	}
+
+	return out;
+}

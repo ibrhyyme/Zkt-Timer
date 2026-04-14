@@ -6,6 +6,7 @@ export function checkForSinglePB(solve: Solve) {
 		type: 'single_pb',
 		filterOptions: {
 			cube_type: solve.cube_type,
+			scramble_subset: solve.scramble_subset ?? null,
 		},
 	});
 
@@ -37,6 +38,7 @@ export function checkForSingleWorstUpdate(solve: Solve) {
 		type: 'single_worst',
 		filterOptions: {
 			cube_type: solve.cube_type,
+			scramble_subset: solve.scramble_subset ?? null,
 		},
 	});
 

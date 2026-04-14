@@ -10,7 +10,7 @@ import { fetchSolve, fetchAdjacentSolve } from '../../db/solves/query';
 import { deleteSolveDb, updateSolveDb } from '../../db/solves/update';
 import { useSolveDb } from '../../util/hooks/useSolveDb';
 import { IModalProps } from '../common/modal/Modal';
-import { getCubeTypeInfoById } from '../../util/cubes/util';
+import { getCubeTypeBucketLabel, getCubeTypeInfoById } from '../../util/cubes/util';
 import block from '../../styles/bem';
 import { Solve } from '../../../server/schemas/Solve.schema';
 import { useGeneral } from '../../util/hooks/useGeneral';
@@ -217,7 +217,9 @@ export default function SolveInfo(props: Props) {
 	const isSystemDnf = effSolve.dnf && effSolve.raw_time === 0;
 
 	const time = getTimeString(effSolve.time);
-	const cubeTypeInfo = getCubeTypeInfoById(cubeType);
+	const baseCubeTypeInfo = getCubeTypeInfoById(cubeType);
+	const bucketLabel = getCubeTypeBucketLabel(cubeType, solve.scramble_subset);
+	const cubeTypeInfo = baseCubeTypeInfo ? { ...baseCubeTypeInfo, name: bucketLabel || baseCubeTypeInfo.name } : baseCubeTypeInfo;
 
 	const layoutProps: SolveLayoutProps = {
 		solve,

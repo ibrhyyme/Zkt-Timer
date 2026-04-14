@@ -274,8 +274,8 @@ type Query {
   wcaMe: WcaAccount
   integrations: [Integration]
   reports: [ReportSummary]
-  topSolves(page: Int, cubeType: String): [TopSolve]
-  topAverages(page: Int, cubeType: String): [TopAverage]
+  topSolves(scrambleSubset: String, page: Int, cubeType: String): [TopSolve]
+  topAverages(scrambleSubset: String, page: Int, cubeType: String): [TopAverage]
   customCubeTypes: [CustomCubeType]
   notificationPreferences: NotificationPreference
   adminUserSearch(filters: AdminUserFiltersInput, pageArgs: PaginationArgsInput): PaginatedUserAccountsForAdmin
@@ -401,7 +401,7 @@ type Mutation {
   unregisterPushToken(token: String): PushTokenResult
   setDailyGoal(input: SetDailyGoalInput): DailyGoalType
   setDailyGoalReminder(enabled: Boolean): DailyGoalReminderResult
-  removeDailyGoal(cubeType: String): Boolean
+  removeDailyGoal(scrambleSubset: String, cubeType: String): Boolean
   authenticateWithWca(code: String): WcaOAuthResult
   completeWcaSignup(username: String): PublicUserAccount
   createPromoCode(input: CreatePromoCodeInput): PromoCode
@@ -428,6 +428,7 @@ type Solve {
   time: Float
   raw_time: Float
   cube_type: String
+  scramble_subset: String
   scramble: String
   from_timer: Boolean
   training_session_id: String
@@ -526,6 +527,7 @@ type TopSolve {
   id: String
   time: Float
   cube_type: String
+  scramble_subset: String
   created_at: DateTime
   solve: Solve
   user: PublicUserAccount
@@ -535,6 +537,7 @@ type TopAverage {
   id: String
   time: Float
   cube_type: String
+  scramble_subset: String
   created_at: DateTime
   solve_1: Solve
   solve_2: Solve
@@ -1124,6 +1127,7 @@ type YouTubeVideoResult {
 type DailyGoalType {
   id: String
   cube_type: String
+  scramble_subset: String
   target: Int
   enabled: Boolean
 }
@@ -1560,6 +1564,7 @@ input SolveInput {
   time: Float
   raw_time: Float
   cube_type: String
+  scramble_subset: String
   scramble: String
   session_id: String
   started_at: BigInt
@@ -1697,6 +1702,7 @@ input YouTubeSearchInput {
 
 input SetDailyGoalInput {
   cube_type: String
+  scramble_subset: String
   target: Int
   enabled: Boolean
 }

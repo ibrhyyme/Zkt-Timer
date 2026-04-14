@@ -8,6 +8,9 @@ export class DailyGoalType {
 	@Field()
 	cube_type: string;
 
+	@Field({ nullable: true })
+	scramble_subset?: string;
+
 	@Field(() => Int)
 	target: number;
 
@@ -19,6 +22,9 @@ export class DailyGoalType {
 export class SetDailyGoalInput {
 	@Field()
 	cube_type: string;
+
+	@Field({ nullable: true })
+	scramble_subset?: string;
 
 	@Field(() => Int)
 	target: number;

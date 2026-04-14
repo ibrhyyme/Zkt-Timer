@@ -1,13 +1,15 @@
-import React, { ReactNode, useEffect, useState, useRef } from 'react';
+import React, { ReactNode, useEffect, useMemo, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import './Solves.scss';
 import CubePicker from '../common/cube_picker/CubePicker';
+import SubsetPicker from '../timer/header_control/SubsetPicker';
 import Empty from '../common/empty/Empty';
 import { SortAscending, SortDescending, Share, Funnel, ListChecks, Trash, X, CheckSquare, Timer } from 'phosphor-react';
 import SolveListRow from './solve_row/SolveListRow';
 import Loading from '../common/loading/Loading';
 import { numberWithCommas } from '../../util/strings/util';
-import { fetchSolveCount, fetchSolves, FilterSolvesOptions, fetchSolve } from '../../db/solves/query'; // Added fetchSolve
+import { fetchAllCubeTypesSolved, fetchSolveCount, fetchSolves, FilterSolvesOptions, fetchSolve } from '../../db/solves/query'; // Added fetchSolve
+import { getUniqueCubeTypes, getSubsetsForBuckets } from '../../util/cubes/util';
 import { useSolveDb } from '../../util/hooks/useSolveDb';
 import jsonStr from 'json-stable-stringify';
 import { CubeType } from '../../util/cubes/cube_types';
@@ -28,6 +30,8 @@ import { convertTimeStringToSeconds } from '../../util/time';
 
 
 const PAGE_SIZE = 25;
+const ALL_CUBES_MARKER = '__all_cubes__';
+const ALL_SUBSETS_MARKER = '__all_subsets__';
 
 const b = block('solves-list');
 
@@ -36,7 +40,8 @@ export default function SolvesList() {
 	const dispatch = useDispatch();
 	const me = useMe();
 
-	const [cubeType, setCubeType] = useState('333');
+	const [cubeType, setCubeType] = useState<string>(ALL_CUBES_MARKER);
+	const [scrambleSubset, setScrambleSubset] = useState<string | null>(ALL_SUBSETS_MARKER);
 	const [page, setPage] = useState(0);
 	const [moreResults, setMoreResults] = useState(true);
 	const [totalResults, setTotalResults] = useState(0);
@@ -67,14 +72,14 @@ export default function SolvesList() {
 		setTotalResults(() => results);
 		setMoreResults(() => moreResults);
 		setSolves(() => list);
-	}, [updateCount, cubeType, jsonStr(filters), page, sortBy, sortInverse, cubeType]);
+	}, [updateCount, cubeType, scrambleSubset, jsonStr(filters), page, sortBy, sortInverse]);
 
 	// Reset selection when filters change or mode closed
 	useEffect(() => {
 		if (!isSelectionMode) {
 			setSelectedSolves(new Set());
 		}
-	}, [isSelectionMode, cubeType, jsonStr(filters)]);
+	}, [isSelectionMode, cubeType, scrambleSubset, jsonStr(filters)]);
 
 	// Close time filter on outside click
 	useEffect(() => {
@@ -110,11 +115,18 @@ export default function SolvesList() {
 	}
 
 	function getFinalFilter(): FilterSolvesOptions {
-		return {
+		const final: FilterSolvesOptions = {
 			...filters,
 			from_timer: true,
-			cube_type: cubeType,
 		};
+		if (cubeType !== ALL_CUBES_MARKER) {
+			final.cube_type = cubeType;
+			if (scrambleSubset !== ALL_SUBSETS_MARKER) {
+				// SubsetPicker '' subset'i null olarak gonderir
+				final.scramble_subset = scrambleSubset;
+			}
+		}
+		return final;
 	}
 
 	function nextPage() {
@@ -190,11 +202,38 @@ export default function SolvesList() {
 		setShowTimeFilter(false);
 	}
 
-	function changeCubeType(cubeType: CubeType) {
+	function changeCubeType(ct: CubeType) {
 		setPage(0);
-		setCubeType(cubeType.id);
-		filters.cube_type = cubeType.id;
+		setCubeType(ct.id);
+		// Cube type degisince default "Hepsi" subset
+		setScrambleSubset(ALL_SUBSETS_MARKER);
 	}
+
+	function changeSubset(subset: string | null) {
+		setPage(0);
+		if (subset === ALL_SUBSETS_MARKER) {
+			setScrambleSubset(ALL_SUBSETS_MARKER);
+			return;
+		}
+		setScrambleSubset(subset);
+	}
+
+	function selectAllCubes() {
+		setPage(0);
+		setCubeType(ALL_CUBES_MARKER);
+		setScrambleSubset(ALL_SUBSETS_MARKER);
+	}
+
+	const allBuckets = useMemo(() => fetchAllCubeTypesSolved(), [updateCount]);
+	const uniqueCubeTypes = useMemo(() => getUniqueCubeTypes(allBuckets), [allBuckets]);
+	const subsetsForCurrentCube = useMemo(() => {
+		if (cubeType === ALL_CUBES_MARKER) return [];
+		const subs = getSubsetsForBuckets(cubeType, allBuckets);
+		if (subs.length === 0) return [];
+		return [{ id: ALL_SUBSETS_MARKER, label: t('stats.all') }, ...subs];
+	}, [cubeType, allBuckets, t]);
+
+	const isAllCubes = cubeType === ALL_CUBES_MARKER;
 
 	function changeSortBy(value: keyof Solve) {
 		setSortBy(value);
@@ -346,13 +385,28 @@ export default function SolvesList() {
 						) : (
 							// Standard Toolbar
 							<>
+								<Button
+									text={t('stats.all')}
+									onClick={selectAllCubes}
+									primary={isAllCubes}
+									transparent={!isAllCubes}
+									noMargin
+								/>
 								<CubePicker
 									dropdownProps={{
 										openLeft: true,
 									}}
-									value={cubeType}
+									value={isAllCubes ? '' : cubeType}
+									cubeTypes={uniqueCubeTypes}
 									onChange={changeCubeType}
 								/>
+								{!isAllCubes && (
+									<SubsetPicker
+										subsets={subsetsForCurrentCube}
+										selectedSubset={scrambleSubset}
+										onChange={changeSubset}
+									/>
+								)}
 								<Dropdown
 									openLeft
 									text={filterText}

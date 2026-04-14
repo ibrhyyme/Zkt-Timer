@@ -16,6 +16,7 @@ import { playNativeSound } from '../../util/native-audio';
 import { resourceUri } from '../../util/storage';
 import StackMatPicker from '../settings/stackmat_picker/StackMatPicker';
 import SmartStats from '../timer/smart_cube/stats/SmartStats';
+import { is3x3CubeType } from '../timer/helpers/util';
 import './RoomTimerOverlay.scss';
 
 // Timer phases
@@ -36,6 +37,7 @@ interface RoomTimerOverlayProps {
     isActive: boolean;
     scramble: string;
     cubeType: string;
+    scrambleSubset?: string | null;
     onSubmit: (time: number, plusTwo: boolean, dnf: boolean) => void;
     onRedo: () => void;
     onStatusChange: (status: string) => void;
@@ -60,6 +62,7 @@ export default function RoomTimerOverlay({
     isActive,
     scramble,
     cubeType,
+    scrambleSubset = null,
     onSubmit,
     onRedo,
     onStatusChange,
@@ -1382,7 +1385,7 @@ export default function RoomTimerOverlay({
         }
 
         if (timerType === 'smart') {
-            const isSupported = cubeType === '333';
+            const isSupported = is3x3CubeType(cubeType, scrambleSubset);
             return (
                 <div className="room-timer-overlay__device">
                     <div className="room-timer-overlay__device-icon">

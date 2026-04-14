@@ -13,6 +13,9 @@ export class TopSolve {
 	@Field()
 	cube_type: string
 
+	@Field({ nullable: true })
+	scramble_subset?: string
+
 	@Field()
 	created_at: Date
 

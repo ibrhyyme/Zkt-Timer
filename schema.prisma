@@ -306,6 +306,7 @@ model Solve {
   time                 Float
   raw_time             Float?
   cube_type            String?
+  scramble_subset      String?
   scramble             String?
   session_id           String?
   started_at           BigInt?
@@ -505,12 +506,13 @@ model SolveView {
 }
 
 model TopSolve {
-  id         String      @id @default(uuid())
-  user_id    String
-  time       Float
-  solve_id   String
-  cube_type  String
-  created_at DateTime    @default(now())
+  id              String      @id @default(uuid())
+  user_id         String
+  time            Float
+  solve_id        String
+  cube_type       String
+  scramble_subset String?
+  created_at      DateTime    @default(now())
   solve      Solve       @relation(fields: [solve_id], references: [id], onDelete: Cascade)
   user       UserAccount @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
@@ -521,10 +523,11 @@ model TopSolve {
 }
 
 model TopAverage {
-  id         String      @id @default(uuid())
-  user_id    String
-  time       Float
-  cube_type  String
+  id              String      @id @default(uuid())
+  user_id         String
+  time            Float
+  cube_type       String
+  scramble_subset String?
   solve_1_id String
   solve_2_id String
   solve_3_id String
@@ -908,16 +911,17 @@ enum PushTokenPlatform {
 }
 
 model DailyGoal {
-  id         String      @id @default(uuid())
-  user_id    String
-  cube_type  String
-  target     Int
-  enabled    Boolean     @default(true)
-  created_at DateTime    @default(now())
-  updated_at DateTime    @updatedAt
-  user       UserAccount @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  id              String      @id @default(uuid())
+  user_id         String
+  cube_type       String
+  scramble_subset String      @default("")
+  target          Int
+  enabled         Boolean     @default(true)
+  created_at      DateTime    @default(now())
+  updated_at      DateTime    @updatedAt
+  user            UserAccount @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-  @@unique([user_id, cube_type])
+  @@unique([user_id, cube_type, scramble_subset])
   @@index([user_id])
   @@map("daily_goal")
 }

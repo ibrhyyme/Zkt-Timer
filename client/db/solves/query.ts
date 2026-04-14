@@ -48,6 +48,28 @@ export function fetchLastCubeTypeForSession(sessionId: string): string {
 	return null;
 }
 
+export function fetchLastBucketForSession(sessionId: string): { cube_type: string; scramble_subset: string | null } | null {
+	const solveDb = getSolveDb();
+
+	const last = solveDb
+		.chain()
+		.find({
+			session_id: sessionId,
+		})
+		.simplesort('ended_at', true)
+		.limit(1)
+		.data();
+
+	if (last && last.length) {
+		return {
+			cube_type: last[0].cube_type,
+			scramble_subset: last[0].scramble_subset ?? null,
+		};
+	}
+
+	return null;
+}
+
 // Same as fetchSolves but returns the first in array (if any)
 export function fetchSingleSolve(options: FilterSolvesOptions = {}, fetchOptions?: LokiFetchOptions) {
 	const solves = fetchSolves(options, fetchOptions);
@@ -62,6 +84,7 @@ export function fetchSingleSolve(options: FilterSolvesOptions = {}, fetchOptions
 export function fetchAllCubeTypesSolved(defaultsOnly: boolean = false) {
 	type CubeTypeCount = {
 		cube_type: string;
+		scramble_subset: string | null;
 		count: number;
 	};
 
@@ -75,18 +98,21 @@ export function fetchAllCubeTypesSolved(defaultsOnly: boolean = false) {
 
 	for (const solve of solves) {
 		const cubeType = solve.cube_type;
+		const scrambleSubset = solve.scramble_subset ?? null;
 		const ct = getCubeTypeInfoById(cubeType);
 		if (!ct || (defaultsOnly && !ct.default)) {
 			continue;
 		}
 
-		if (cubeType in typeListMap) {
-			const index = typeListMap[cubeType];
+		const key = `${cubeType}::${scrambleSubset ?? ''}`;
+		if (key in typeListMap) {
+			const index = typeListMap[key];
 			list[index].count++;
 		} else {
-			typeListMap[cubeType] = list.length;
+			typeListMap[key] = list.length;
 			list.push({
 				cube_type: cubeType,
+				scramble_subset: scrambleSubset,
 				count: 1,
 			});
 		}

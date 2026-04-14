@@ -2,9 +2,9 @@ import React, {useEffect, useMemo, useState} from 'react';
 import {CaretDown} from 'phosphor-react';
 import {useDispatch} from 'react-redux';
 import {useTranslation} from 'react-i18next';
-import {setCubeType, setCurrentSession} from '../../db/settings/update';
+import {setCubeType, setCurrentSession, setScrambleSubset} from '../../db/settings/update';
 import {fetchSessionById, fetchSessions} from '../../db/sessions/query';
-import {fetchLastCubeTypeForSession} from '../../db/solves/query';
+import {fetchLastBucketForSession} from '../../db/solves/query';
 import {useSettings} from '../../util/hooks/useSettings';
 import {getSetting} from '../../db/settings/query';
 import Dropdown from '../common/inputs/dropdown/Dropdown';
@@ -85,10 +85,15 @@ export default function SessionPicker(props: Props) {
 
 		setCurrentSession(session.id);
 
-		const lastCubeType = fetchLastCubeTypeForSession(session.id) || '333';
+		const lastBucket = fetchLastBucketForSession(session.id);
+		const lastCubeType = lastBucket?.cube_type || '333';
 		const currentCubeType = getSetting('cube_type');
+		const currentSubset = getSetting('scramble_subset');
 		if (lastCubeType !== currentCubeType) {
 			setCubeType(lastCubeType);
+		}
+		if ((lastBucket?.scramble_subset ?? null) !== (currentSubset ?? null)) {
+			setScrambleSubset(lastBucket?.scramble_subset ?? null);
 		}
 	}
 

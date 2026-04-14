@@ -35,42 +35,46 @@ export function setDailyGoalStorage(data: DailyGoalStorage): void {
 	localStorage.setItem(getStorageKey(), JSON.stringify(data));
 }
 
-export function getGoalForCubeType(cubeType: string): DailyGoal | null {
-	const storage = getDailyGoalStorage();
-	return storage.goals.find((g) => g.cube_type === cubeType) || null;
+function sameGoal(a: Pick<DailyGoal, 'cube_type' | 'scramble_subset'>, cubeType: string, subset?: string | null): boolean {
+	return a.cube_type === cubeType && (a.scramble_subset ?? null) === (subset ?? null);
 }
 
-export function setGoalForCubeType(cubeType: string, target: number): void {
+export function getGoalForCubeType(cubeType: string, scrambleSubset?: string | null): DailyGoal | null {
 	const storage = getDailyGoalStorage();
-	const existingIndex = storage.goals.findIndex((g) => g.cube_type === cubeType);
+	return storage.goals.find((g) => sameGoal(g, cubeType, scrambleSubset)) || null;
+}
+
+export function setGoalForCubeType(cubeType: string, target: number, scrambleSubset?: string | null): void {
+	const storage = getDailyGoalStorage();
+	const existingIndex = storage.goals.findIndex((g) => sameGoal(g, cubeType, scrambleSubset));
 
 	if (existingIndex >= 0) {
 		storage.goals[existingIndex].target = target;
 	} else {
-		storage.goals.push({cube_type: cubeType, target, enabled: true});
+		storage.goals.push({cube_type: cubeType, scramble_subset: scrambleSubset ?? null, target, enabled: true});
 	}
 
 	setDailyGoalStorage(storage);
 	emitEvent('dailyGoalUpdatedEvent');
-	syncGoalToServer(cubeType, target, existingIndex >= 0 ? storage.goals[existingIndex].enabled : true);
+	syncGoalToServer(cubeType, target, existingIndex >= 0 ? storage.goals[existingIndex].enabled : true, scrambleSubset);
 }
 
-export function removeGoalForCubeType(cubeType: string): void {
+export function removeGoalForCubeType(cubeType: string, scrambleSubset?: string | null): void {
 	const storage = getDailyGoalStorage();
-	storage.goals = storage.goals.filter((g) => g.cube_type !== cubeType);
+	storage.goals = storage.goals.filter((g) => !sameGoal(g, cubeType, scrambleSubset));
 	setDailyGoalStorage(storage);
 	emitEvent('dailyGoalUpdatedEvent');
-	removeGoalFromServer(cubeType);
+	removeGoalFromServer(cubeType, scrambleSubset);
 }
 
-export function toggleGoalEnabled(cubeType: string): void {
+export function toggleGoalEnabled(cubeType: string, scrambleSubset?: string | null): void {
 	const storage = getDailyGoalStorage();
-	const goal = storage.goals.find((g) => g.cube_type === cubeType);
+	const goal = storage.goals.find((g) => sameGoal(g, cubeType, scrambleSubset));
 	if (goal) {
 		goal.enabled = !goal.enabled;
 		setDailyGoalStorage(storage);
 		emitEvent('dailyGoalUpdatedEvent');
-		syncGoalToServer(cubeType, goal.target, goal.enabled);
+		syncGoalToServer(cubeType, goal.target, goal.enabled, scrambleSubset);
 	}
 }
 
@@ -83,7 +87,7 @@ export function setReminderEnabled(enabled: boolean): void {
 
 // --- Server sync (fire-and-forget) ---
 
-function syncGoalToServer(cubeType: string, target: number, enabled: boolean): void {
+function syncGoalToServer(cubeType: string, target: number, enabled: boolean, scrambleSubset?: string | null): void {
 	const me = getMe();
 	if (!me) return;
 
@@ -92,13 +96,21 @@ function syncGoalToServer(cubeType: string, target: number, enabled: boolean): v
 			setDailyGoal(input: $input) {
 				id
 				cube_type
+				scramble_subset
 				target
 				enabled
 			}
 		}
 	`;
 
-	gqlMutate(mutation, {input: {cube_type: cubeType, target, enabled}}).catch((e) => {
+	gqlMutate(mutation, {
+		input: {
+			cube_type: cubeType,
+			scramble_subset: scrambleSubset ?? null,
+			target,
+			enabled,
+		},
+	}).catch((e) => {
 		console.error('Failed to sync daily goal to server', e);
 	});
 }
@@ -120,17 +132,17 @@ function syncReminderToServer(enabled: boolean): void {
 	});
 }
 
-function removeGoalFromServer(cubeType: string): void {
+function removeGoalFromServer(cubeType: string, scrambleSubset?: string | null): void {
 	const me = getMe();
 	if (!me) return;
 
 	const mutation = gql`
-		mutation RemoveDailyGoal($cubeType: String!) {
-			removeDailyGoal(cubeType: $cubeType)
+		mutation RemoveDailyGoal($cubeType: String!, $scrambleSubset: String) {
+			removeDailyGoal(cubeType: $cubeType, scrambleSubset: $scrambleSubset)
 		}
 	`;
 
-	gqlMutate(mutation, {cubeType}).catch((e) => {
+	gqlMutate(mutation, {cubeType, scrambleSubset: scrambleSubset ?? null}).catch((e) => {
 		console.error('Failed to remove daily goal from server', e);
 	});
 }
@@ -144,6 +156,7 @@ export async function syncDailyGoalsFromServer(): Promise<void> {
 			dailyGoals {
 				id
 				cube_type
+				scramble_subset
 				target
 				enabled
 			}
@@ -155,7 +168,7 @@ export async function syncDailyGoalsFromServer(): Promise<void> {
 
 	try {
 		const res = await gqlQuery<{
-			dailyGoals: Array<{id: string; cube_type: string; target: number; enabled: boolean}>;
+			dailyGoals: Array<{id: string; cube_type: string; scramble_subset?: string | null; target: number; enabled: boolean}>;
 			dailyGoalReminderStatus: {enabled: boolean};
 		}>(query);
 		const serverGoals = res.data.dailyGoals;
@@ -167,7 +180,7 @@ export async function syncDailyGoalsFromServer(): Promise<void> {
 		if (serverGoals.length === 0 && storage.goals.length > 0) {
 			// Migration: localStorage'da goal var ama server bos → push et
 			for (const goal of storage.goals) {
-				syncGoalToServer(goal.cube_type, goal.target, goal.enabled);
+				syncGoalToServer(goal.cube_type, goal.target, goal.enabled, goal.scramble_subset);
 			}
 			// localStorage'daki reminder_enabled'i da server'a push et
 			if (storage.reminder_enabled) {
@@ -177,6 +190,7 @@ export async function syncDailyGoalsFromServer(): Promise<void> {
 			// Server'dan gelen goals ile localStorage'i guncelle
 			storage.goals = serverGoals.map((g) => ({
 				cube_type: g.cube_type,
+				scramble_subset: g.scramble_subset ?? null,
 				target: g.target,
 				enabled: g.enabled,
 			}));

@@ -214,8 +214,7 @@ const ClockRenderer: React.FC<Props> = ({ scramble, className }) => {
 		const dpr = window.devicePixelRatio || 1;
 		canvas.width = w * dpr;
 		canvas.height = h * dpr;
-		canvas.style.width = `${w}px`;
-		canvas.style.height = `${h}px`;
+		// CSS boyutu ve aspect-ratio SCSS'de (width:100% + aspect-ratio:125/60) handle ediliyor
 		ctx.setTransform(1, 0, 0, 1, 0, 0);
 		ctx.scale(dpr, dpr);
 		ctx.clearRect(0, 0, w, h);
@@ -234,7 +233,6 @@ const ClockRenderer: React.FC<Props> = ({ scramble, className }) => {
 		<canvas
 			ref={canvasRef}
 			className={className}
-			style={{ maxWidth: '100%', height: 'auto', display: 'block', margin: '0 auto' }}
 		/>
 	);
 };

@@ -8,6 +8,7 @@ import { useGeneral } from '../../../util/hooks/useGeneral';
 import { openModal } from '../../../actions/general';
 import StackMatPicker from '../../settings/stackmat_picker/StackMatPicker';
 import { AllSettings } from '../../../db/settings/query';
+import { is3x3CubeType } from '../../timer/helpers/util';
 
 interface TimerOptionProps {
 	label: string | React.ReactNode;
@@ -51,16 +52,15 @@ export default function TimerTab({ allowedTimerTypes }: TimerTabProps) {
 	const timerType = useSettings('timer_type');
 	const manualEntry = useSettings('manual_entry');
 	const cubeType = useSettings('cube_type');
+	const scrambleSubset = useSettings('scramble_subset');
 	const mobileMode = useGeneral('mobile_mode');
 
 	// Küp türü değiştiğinde smart cube uyumluluğunu kontrol et
 	useEffect(() => {
-		const smartCubeSupportedTypes = ['333', '333oh', '333bl', '333mirror'];
-
-		if (timerType === 'smart' && !smartCubeSupportedTypes.includes(cubeType)) {
+		if (timerType === 'smart' && !is3x3CubeType(cubeType, scrambleSubset)) {
 			setSetting('timer_type', 'keyboard');
 		}
-	}, [cubeType, timerType]);
+	}, [cubeType, scrambleSubset, timerType]);
 
 	let manualDisabled = false;
 	// Smart cube selection disables manual entry only for 3x3
@@ -103,7 +103,7 @@ export default function TimerTab({ allowedTimerTypes }: TimerTabProps) {
 			typeKey: 'smart',
 			label: t('quick_controls.smart_cube'),
 			isActive: timerType === 'smart' && !manualEntry,
-			disabled: cubeType !== '333',
+			disabled: !is3x3CubeType(cubeType, scrambleSubset),
 			onClick: () => selectTimerType('smart'),
 		},
 		{

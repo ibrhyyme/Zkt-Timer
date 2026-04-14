@@ -4,7 +4,7 @@ import {ArrowFatLinesUp, Hash, Timer} from 'phosphor-react';
 import {StatsContext} from '../../Stats';
 import {useSolveDb} from '../../../../util/hooks/useSolveDb';
 import {fetchAllCubeTypesSolved} from '../../../../db/solves/query';
-import {getCubeTypeInfoById} from '../../../../util/cubes/util';
+import {getCubeTypeBucketLabel} from '../../../../util/cubes/util';
 import {getTotalSolveCount, getTotalSolveTime} from '../../../../db/solves/stats/count';
 import NumberBlock from '../../common/number_block/NumberBlock';
 import {getTimeString} from '../../../../util/time';
@@ -20,9 +20,9 @@ export default function AllStatsFeatured() {
 		return fetchAllCubeTypesSolved();
 	}, [context.filterOptions, solveUpdate]);
 
-	let topCubeType = null;
+	let topCubeLabel = null;
 	if (cubeTypes.length) {
-		topCubeType = getCubeTypeInfoById(cubeTypes[0].cube_type);
+		topCubeLabel = getCubeTypeBucketLabel(cubeTypes[0].cube_type, cubeTypes[0].scramble_subset);
 	}
 
 	const totalSolves = useMemo(() => {
@@ -65,7 +65,7 @@ export default function AllStatsFeatured() {
 				colSpan={1}
 				icon={<ArrowFatLinesUp weight="bold" />}
 				title={t('stats_page.most_popular_event')}
-				value={topCubeType?.name || '-'}
+				value={topCubeLabel || '-'}
 				color="#6D7D90"
 			/>
 		</StatsGrid>
