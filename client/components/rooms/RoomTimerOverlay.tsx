@@ -12,6 +12,7 @@ import BluetoothErrorMessage from '../timer/common/BluetoothErrorMessage';
 import BleScanningModal from '../timer/smart_cube/ble_scanning_modal/BleScanningModal';
 import { isNative } from '../../util/platform';
 import { hapticImpact } from '../../util/native-plugins';
+import { playNativeSound } from '../../util/native-audio';
 import { resourceUri } from '../../util/storage';
 import StackMatPicker from '../settings/stackmat_picker/StackMatPicker';
 import SmartStats from '../timer/smart_cube/stats/SmartStats';
@@ -310,15 +311,19 @@ export default function RoomTimerOverlay({
                 const elapsedSec = elapsed / 1000;
                 if (elapsedSec >= 8 && !inspectionSoundsPlayedRef.current.has(8)) {
                     inspectionSoundsPlayedRef.current.add(8);
-                    const audio = new Audio(resourceUri('/audio/8_sec.mp3'));
-                    audio.playbackRate = 2.3;
-                    audio.play().catch(() => {});
+                    if (!playNativeSound('8_sec', 2.3)) {
+                        const audio = new Audio(resourceUri('/audio/8_sec.mp3'));
+                        audio.playbackRate = 2.3;
+                        audio.play().catch(() => {});
+                    }
                 }
                 if (elapsedSec >= 12 && !inspectionSoundsPlayedRef.current.has(12)) {
                     inspectionSoundsPlayedRef.current.add(12);
-                    const audio = new Audio(resourceUri('/audio/12_sec.mp3'));
-                    audio.playbackRate = 2.3;
-                    audio.play().catch(() => {});
+                    if (!playNativeSound('12_sec', 2.3)) {
+                        const audio = new Audio(resourceUri('/audio/12_sec.mp3'));
+                        audio.playbackRate = 2.3;
+                        audio.play().catch(() => {});
+                    }
                 }
             }
 
