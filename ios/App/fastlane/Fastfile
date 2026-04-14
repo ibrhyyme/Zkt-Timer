@@ -24,7 +24,8 @@ platform :ios do
 
     latest_build = latest_testflight_build_number(
       app_identifier: APP_IDENTIFIER,
-      apple_id: ASC_APP_ID,
+      username: APPLE_ID,
+      team_id: TEAM_ID,
       initial_build_number: 0
     )
     increment_build_number(
