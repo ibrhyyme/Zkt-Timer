@@ -68,4 +68,96 @@
         color: rgb(var(--primary-color));
         font-size: 1.2em;
     }
+
+    // Tam ekran scramble overlay
+    &__expanded {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: rgba(var(--theme-background), 0.98);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: calc(60px + env(safe-area-inset-top, 0px)) 1.5rem calc(100px + env(safe-area-inset-bottom, 0px));
+        animation: mobileScrambleExpandFade 0.18s ease-out;
+    }
+
+    @keyframes mobileScrambleExpandFade {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    &__expanded-close {
+        position: absolute;
+        top: calc(env(safe-area-inset-top, 0px) + 14px);
+        right: 14px;
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(var(--text-color), 0.08);
+        border: none;
+        border-radius: 50%;
+        color: rgb(var(--text-color));
+        cursor: pointer;
+        transition: background 0.15s ease;
+
+        &:active {
+            background: rgba(var(--text-color), 0.16);
+        }
+    }
+
+    &__expanded-text {
+        flex: 1;
+        width: 100%;
+        max-width: 640px;
+        overflow-y: auto;
+        color: rgb(var(--text-color));
+        font-family: 'Roboto Mono', monospace;
+        font-size: clamp(1.1rem, 4.5vw, 1.5rem);
+        line-height: 1.6;
+        text-align: center;
+        word-break: break-word;
+        white-space: pre-wrap;
+        padding: 1rem 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &--megaminx {
+            font-size: clamp(0.95rem, 3.6vw, 1.2rem);
+            line-height: 1.5;
+        }
+    }
+
+    &__expanded-copy {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.9rem 1.8rem;
+        margin-top: 1rem;
+        background: rgb(var(--primary-color));
+        color: rgb(var(--text-color));
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        font-family: inherit;
+        cursor: pointer;
+        min-width: 160px;
+        transition: background 0.15s ease, transform 0.1s ease;
+
+        &:active {
+            transform: scale(0.97);
+        }
+
+        &--copied {
+            background: rgb(var(--success-color, 34, 197, 94));
+        }
+    }
 }

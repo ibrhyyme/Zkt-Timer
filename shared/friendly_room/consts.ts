@@ -18,11 +18,6 @@ export const FriendlyRoomConst = {
 };
 
 export const ALLOWED_CUBE_TYPES = [
-    'wca',
     '222', '333', '444', '555', '666', '777',
     'clock', 'minx', 'pyram', 'skewb', 'sq1',
-    '333cfop', '333roux', '333mehta', '333zz',
-    '444yau',
-    '333sub',
-    'other',
 ];

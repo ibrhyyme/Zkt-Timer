@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
+import ReactDOM from 'react-dom';
 import {useTranslation} from 'react-i18next';
-import { Check } from 'phosphor-react';
+import { Check, Copy, X } from 'phosphor-react';
 import { copyText } from '../common/copy_text/CopyText';
 import { TimerContext } from './Timer';
 import { useSettings } from '../../util/hooks/useSettings';
@@ -10,6 +11,7 @@ import block from '../../styles/bem';
 import './MobileTimerScramble.scss';
 import { resetScramble } from './helpers/scramble';
 import { setTimerParam } from './helpers/params';
+import { hapticImpact } from '../../util/native-plugins';
 
 const b = block('mobile-timer-scramble');
 
@@ -26,8 +28,15 @@ export default function MobileTimerScramble() {
     const isMegaminx = cubeType === 'minx';
     const [copied, setCopied] = useState(false);
     const [adjustedFontSize, setAdjustedFontSize] = useState<number | null>(null);
+    const [expanded, setExpanded] = useState(false);
+    const [expandedCopied, setExpandedCopied] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
     const textRef = useRef<HTMLDivElement>(null);
+
+    // Long-press state: tap (kisa) modal acar, uzun basma kopyalar
+    const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const longPressFired = useRef(false);
+    const touchStartPos = useRef<{ x: number; y: number } | null>(null);
 
     const timerScrambleSize = useSettings('timer_scramble_size');
 
@@ -114,12 +123,77 @@ export default function MobileTimerScramble() {
         scramble = scramble.replace(/ \/ /g, '\u00A0/ ');
     }
 
-    // Scramble'ı kopyala
-    function handleCopy() {
+    // Scramble'ı kopyala (uzun basma)
+    function handleCopy(showInExpanded = false) {
         if (!scramble) return;
         copyText(scramble);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 1500);
+        hapticImpact('medium');
+        if (showInExpanded) {
+            setExpandedCopied(true);
+            setTimeout(() => setExpandedCopied(false), 1500);
+        } else {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1500);
+        }
+    }
+
+    // Fullscreen modal ac (kisa tap)
+    function openExpanded() {
+        if (!scramble) return;
+        setExpanded(true);
+    }
+
+    function closeExpanded() {
+        setExpanded(false);
+    }
+
+    // Tap/long-press detection (mobil)
+    function handleTouchStart(e: React.TouchEvent) {
+        if (!scramble) return;
+        longPressFired.current = false;
+        touchStartPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+
+        longPressTimer.current = setTimeout(() => {
+            longPressFired.current = true;
+            handleCopy(false);
+        }, 500);
+    }
+
+    function handleTouchMove(e: React.TouchEvent) {
+        if (!touchStartPos.current) return;
+        const dx = Math.abs(e.touches[0].clientX - touchStartPos.current.x);
+        const dy = Math.abs(e.touches[0].clientY - touchStartPos.current.y);
+        if ((dx > 10 || dy > 10) && longPressTimer.current) {
+            clearTimeout(longPressTimer.current);
+            longPressTimer.current = null;
+        }
+    }
+
+    function handleTouchEnd() {
+        if (longPressTimer.current) {
+            clearTimeout(longPressTimer.current);
+            longPressTimer.current = null;
+        }
+        if (!longPressFired.current && touchStartPos.current) {
+            openExpanded();
+        }
+        touchStartPos.current = null;
+    }
+
+    function handleTouchCancel() {
+        if (longPressTimer.current) {
+            clearTimeout(longPressTimer.current);
+            longPressTimer.current = null;
+        }
+        touchStartPos.current = null;
+    }
+
+    // Desktop: onClick ile modal ac
+    function handleClick(e: React.MouseEvent) {
+        // Touch olaylari zaten handle ediyor, desktop'ta calissin
+        if ('ontouchstart' in window) return;
+        e.stopPropagation();
+        openExpanded();
     }
 
     const fontSize = adjustedFontSize || timerScrambleSize;
@@ -147,6 +221,36 @@ export default function MobileTimerScramble() {
         return null;
     }
 
+    const expandedOverlay = expanded && scramble && typeof document !== 'undefined'
+        ? ReactDOM.createPortal(
+            <div className={b('expanded')} onClick={closeExpanded}>
+                <button
+                    className={b('expanded-close')}
+                    onClick={(e) => { e.stopPropagation(); closeExpanded(); }}
+                    aria-label={t('mobile_scramble.close')}
+                    type="button"
+                >
+                    <X size={24} weight="bold" />
+                </button>
+                <div
+                    className={b('expanded-text', { megaminx: isMegaminx })}
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    {scramble}
+                </div>
+                <button
+                    className={b('expanded-copy', { copied: expandedCopied })}
+                    onClick={(e) => { e.stopPropagation(); handleCopy(true); }}
+                    type="button"
+                >
+                    {expandedCopied ? <Check size={20} weight="bold" /> : <Copy size={20} weight="bold" />}
+                    <span>{expandedCopied ? t('mobile_scramble.copied') : t('mobile_scramble.copy')}</span>
+                </button>
+            </div>,
+            document.body,
+        )
+        : null;
+
     return (
         <div className={b()} ref={containerRef}>
             <div
@@ -156,12 +260,17 @@ export default function MobileTimerScramble() {
                     fontSize: fontSize + 'px',
                     lineHeight: fontSize * 1.4 + 'px',
                 }}
-                onClick={handleCopy}
-                title={t('mobile_scramble.click_to_copy')}
+                onClick={handleClick}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+                onTouchCancel={handleTouchCancel}
+                title={t('mobile_scramble.tap_hint')}
             >
                 {scramble || t('mobile_scramble.loading_scramble')}
                 {copied && <Check className={b('copied-icon')} weight="bold" />}
             </div>
+            {expandedOverlay}
         </div>
     );
 }

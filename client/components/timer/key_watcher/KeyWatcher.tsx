@@ -111,7 +111,14 @@ export default function KeyWatcher(props: Props) {
 				target.classList.contains('cd-timer-controls__right') ||
 				target.classList.contains('cd-timer-header-control') ||
 				target.classList.contains('cd-timer-dashboard') ||
-				target.classList.contains('cd-stats-bar')
+				target.classList.contains('cd-stats-bar') ||
+				target.classList.contains('cd-mobile-timer-scramble') ||
+				target.classList.contains('cd-mobile-timer-scramble__text') ||
+				target.classList.contains('cd-mobile-timer-scramble__smart-scramble') ||
+				target.classList.contains('cd-mobile-timer-scramble__expanded') ||
+				target.classList.contains('cd-mobile-timer-scramble__expanded-text') ||
+				target.classList.contains('cd-mobile-timer-scramble__expanded-copy') ||
+				target.classList.contains('cd-mobile-timer-scramble__expanded-close')
 			)) {
 				return;
 			}
@@ -158,7 +165,14 @@ export default function KeyWatcher(props: Props) {
 				target.classList.contains('cd-timer-controls__right') ||
 				target.classList.contains('cd-timer-header-control') ||
 				target.classList.contains('cd-timer-dashboard') ||
-				target.classList.contains('cd-stats-bar')
+				target.classList.contains('cd-stats-bar') ||
+				target.classList.contains('cd-mobile-timer-scramble') ||
+				target.classList.contains('cd-mobile-timer-scramble__text') ||
+				target.classList.contains('cd-mobile-timer-scramble__smart-scramble') ||
+				target.classList.contains('cd-mobile-timer-scramble__expanded') ||
+				target.classList.contains('cd-mobile-timer-scramble__expanded-text') ||
+				target.classList.contains('cd-mobile-timer-scramble__expanded-copy') ||
+				target.classList.contains('cd-mobile-timer-scramble__expanded-close')
 			)) {
 				return;
 			}

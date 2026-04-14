@@ -1645,7 +1645,11 @@
 	},
 	"mobile_scramble": {
 		"click_to_copy": "Нажмите, чтобы скопировать",
-		"loading_scramble": "Загрузка скрамбла..."
+		"loading_scramble": "Загрузка скрамбла...",
+		"tap_hint": "Нажать: увеличить · Удерживать: копировать",
+		"copy": "Копировать",
+		"copied": "Скопировано",
+		"close": "Закрыть"
 	},
 	"theme_options": {
 		"themes_title": "Темы",
