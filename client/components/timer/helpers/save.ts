@@ -16,7 +16,7 @@ export function saveSolve(
 	plusTwo = false,
 	overrides: Partial<SolveInput> = {}
 ) {
-	const { onSolve, addTwoToSolve, cubeType, dnfTime, demoMode } = context;
+	const { onSolve, addTwoToSolve, cubeType, scrambleSubset, dnfTime, demoMode } = context;
 
 	dnf = dnf || dnfTime;
 	plusTwo = dnf ? false : (plusTwo || (addTwoToSolve && !dnfTime));
@@ -32,6 +32,7 @@ export function saveSolve(
 		time: finalTime,
 		raw_time: Math.max(time, 0),
 		cube_type: cubeType,
+		scramble_subset: scrambleSubset || null,
 		id: uuid(),
 		dnf: dnf || false,
 		plus_two: !!plusTwo,

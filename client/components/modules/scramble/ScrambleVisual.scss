@@ -146,11 +146,29 @@
 		}
 	}
 
-	&__sq1-renderer,
-	&__clock-renderer {
+	&__sq1-renderer {
 		max-width: 100%;
 		max-height: 240px;
 		height: auto;
 		width: auto;
+	}
+
+	&__clock-renderer {
+		display: block;
+		width: 100%;
+		max-width: 100%;
+		height: auto;
+		aspect-ratio: 125 / 60;
+		margin: 0 auto;
+	}
+
+	&__clock-renderer-expanded {
+		display: block;
+		width: 100%;
+		max-width: 100%;
+		max-height: 70vh;
+		height: auto;
+		aspect-ratio: 125 / 60;
+		margin: 0 auto;
 	}
 }

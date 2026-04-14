@@ -1,5 +1,6 @@
 export interface DailyGoal {
 	cube_type: string;
+	scramble_subset?: string | null;
 	target: number;
 	enabled: boolean;
 }

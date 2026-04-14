@@ -36,16 +36,19 @@ export class DailyGoalResolver {
 		@Ctx() context: GraphQLContext
 	): Promise<DailyGoalType> {
 		try {
+			const subset = input.scramble_subset ?? '';
 			return await context.prisma.dailyGoal.upsert({
 				where: {
-					user_id_cube_type: {
+					user_id_cube_type_scramble_subset: {
 						user_id: context.user.id,
 						cube_type: input.cube_type,
+						scramble_subset: subset,
 					},
 				},
 				create: {
 					user_id: context.user.id,
 					cube_type: input.cube_type,
+					scramble_subset: subset,
 					target: input.target,
 					enabled: input.enabled ?? true,
 				},
@@ -76,14 +79,16 @@ export class DailyGoalResolver {
 	@Mutation(() => Boolean)
 	async removeDailyGoal(
 		@Arg('cubeType') cubeType: string,
-		@Ctx() context: GraphQLContext
+		@Ctx() context: GraphQLContext,
+		@Arg('scrambleSubset', { nullable: true }) scrambleSubset?: string
 	): Promise<boolean> {
 		try {
 			await context.prisma.dailyGoal.delete({
 				where: {
-					user_id_cube_type: {
+					user_id_cube_type_scramble_subset: {
 						user_id: context.user.id,
 						cube_type: cubeType,
+						scramble_subset: scrambleSubset ?? '',
 					},
 				},
 			});

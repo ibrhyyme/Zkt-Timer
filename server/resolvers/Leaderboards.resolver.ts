@@ -25,9 +25,10 @@ export class LeaderboardsResolver {
 	async topSolves(
 		@Ctx() context: GraphQLContext,
 		@Arg('cubeType') cubeType: string,
-		@Arg('page', () => Int) page: number
+		@Arg('page', () => Int) page: number,
+		@Arg('scrambleSubset', { nullable: true }) scrambleSubset?: string
 	) {
-		return await getTopSolves(cubeType, page);
+		return await getTopSolves(cubeType, page, scrambleSubset);
 	}
 
 	@Authorized([Role.LOGGED_IN])
@@ -35,9 +36,10 @@ export class LeaderboardsResolver {
 	async topAverages(
 		@Ctx() context: GraphQLContext,
 		@Arg('cubeType') cubeType: string,
-		@Arg('page', () => Int) page: number
+		@Arg('page', () => Int) page: number,
+		@Arg('scrambleSubset', { nullable: true }) scrambleSubset?: string
 	) {
-		return await getTopAverages(cubeType, page);
+		return await getTopAverages(cubeType, page, scrambleSubset);
 	}
 
 	@Authorized([Role.LOGGED_IN, Role.PRO])
@@ -49,7 +51,7 @@ export class LeaderboardsResolver {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Invalid solve');
 		}
 
-		await deleteTopSolve(solve.cube_type, user);
+		await deleteTopSolve(solve.cube_type, user, solve.scramble_subset);
 		return await submitTopSolve(user, solve);
 	}
 
@@ -76,7 +78,7 @@ export class LeaderboardsResolver {
 			}
 		}
 
-		await deleteTopAverage(solves[0].cube_type, user);
+		await deleteTopAverage(solves[0].cube_type, user, solves[0].scramble_subset);
 		return await submitTopAverage(user, solves);
 	}
 

@@ -14,10 +14,12 @@ export function checkForPB(solve: Solve, isNew: boolean) {
 	}
 
 	const cubeType = solve.cube_type;
+	const scrambleSubset = solve.scramble_subset ?? null;
 
-	// We only want PBs that are for this cube type
+	// We only want PBs that are for this cube type + subset combination
 	const pbFilter = jsonStr({
 		cube_type: cubeType,
+		scramble_subset: scrambleSubset,
 		from_timer: true,
 	});
 

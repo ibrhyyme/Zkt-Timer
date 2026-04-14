@@ -16,7 +16,7 @@ import { initTimer } from './helpers/init';
 import { stopAllTimers, clearInspectionTimers } from './helpers/timers';
 import { endTimer } from './helpers/events';
 import { useSettings } from '../../util/hooks/useSettings';
-import { smartCubeSelected } from './helpers/util';
+import { is3x3CubeType, smartCubeSelected } from './helpers/util';
 import { listenForPbEvents } from './helpers/pb';
 import { useStableViewportHeight } from '../../util/hooks/useStableViewportHeight';
 import SmartCube from './smart_cube/SmartCube';
@@ -99,8 +99,10 @@ export default function Timer(props: TimerProps) {
 		}
 	}
 
+	const smartActive = timerType === 'smart' && is3x3CubeType(cubeType, scrambleSubset) && !manualEntry;
+
 	let smartCubeVisual: ReactNode = null;
-	if (timerType === 'smart' && cubeType === '333' && !manualEntry) {
+	if (smartActive) {
 		smartCubeVisual = <SmartCube />;
 	}
 
@@ -115,7 +117,7 @@ export default function Timer(props: TimerProps) {
 				<TimerScramble />
 				<div
 					className={b('main-time', {
-						smart: timerType === 'smart' && cubeType === '333' && !manualEntry,
+						smart: smartActive,
 					})}
 				>
 					<TimeDisplay />
@@ -134,7 +136,7 @@ export default function Timer(props: TimerProps) {
 				<MobileTimerScramble />
 
 				{/* Akıllı küp modunda timer ve küp yan yana, normal modda sadece timer */}
-				{timerType === 'smart' && cubeType === '333' && !manualEntry ? (
+				{smartActive ? (
 					<div className={b('mobile-smart-row')}>
 						{/* Timer alanı - sol taraf */}
 						<div className={`${b('mobile-timer', { smart: true })} ${b('main', { mobile: true })}`}>
@@ -161,7 +163,7 @@ export default function Timer(props: TimerProps) {
 				<TimerControls />
 
 				{/* Günlük hedef progress bar */}
-				<DailyGoalProgressBar cubeType={cubeType} compact />
+				<DailyGoalProgressBar cubeType={cubeType} scrambleSubset={scrambleSubset} compact />
 
 				{/* Orta panel - Son çözümler ve Scramble görseli */}
 				<Dashboard />
@@ -179,7 +181,7 @@ export default function Timer(props: TimerProps) {
 	let body = (
 		<>
 			{renderFirst}
-			<DailyGoalProgressBar cubeType={cubeType} />
+			<DailyGoalProgressBar cubeType={cubeType} scrambleSubset={scrambleSubset} />
 			{renderSecond}
 		</>
 	);

@@ -43,6 +43,10 @@ export default function CubeStatsFeatured() {
 
 	const pbDate = new Date(singlePb?.solve.started_at);
 
+	const pbCubeType = singlePb?.solve?.cube_type;
+	const pbSubset = singlePb?.solve?.scramble_subset;
+	const pbVisualCubeType = (pbCubeType === 'wca' && pbSubset) ? pbSubset : pbCubeType;
+
 	return (
 		<div className={b()}>
 			<NumberBlock
@@ -70,7 +74,7 @@ export default function CubeStatsFeatured() {
 							width="60px"
 							frontFace
 							scramble={singlePb?.solve?.scramble}
-							cubeType={singlePb?.solve?.cube_type}
+							cubeType={pbVisualCubeType}
 						/>
 					</div>
 				</div>

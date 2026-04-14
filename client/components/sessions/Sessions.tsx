@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import './Sessions.scss';
 import { Plus } from 'phosphor-react';
 import CubePicker from '../common/cube_picker/CubePicker';
+import SubsetPicker from '../timer/header_control/SubsetPicker';
 import TimeChart from '../modules/time_chart/TimeChart';
 import History from '../modules/history/History';
 import Input from '../common/inputs/input/Input';
@@ -12,13 +13,14 @@ import CreateNewSession from './new_session/CreateNewSession';
 import { SortableContainer, SortableElement } from 'react-sortable-hoc';
 import arrayMove from 'array-move';
 import Session from './session/Session';
-import { fetchSessionById, fetchSessions, getCubeTypesFromSession } from '../../db/sessions/query';
-import { fetchLastCubeTypeForSession } from '../../db/solves/query';
+import { fetchSessionById, fetchSessions, getCubeBucketsFromSession } from '../../db/sessions/query';
+import { fetchLastBucketForSession } from '../../db/solves/query';
+import { getUniqueCubeTypes, getSubsetsForBuckets } from '../../util/cubes/util';
+import { CubeType } from '../../util/cubes/cube_types';
 import { reorderSessions, updateSessionDb, deleteSessionDb, mergeSessionsDb } from '../../db/sessions/update';
 import { useGeneral } from '../../util/hooks/useGeneral';
 import block from '../../styles/bem';
 import { useSessionDb } from '../../util/hooks/useSessionDb';
-import { CubeType } from '../../util/cubes/cube_types';
 import PageTitle from '../common/page_title/PageTitle';
 import Button from '../common/button/Button';
 import Module from '../common/module/Module';
@@ -29,6 +31,8 @@ import ConfirmModal from '../common/confirm_modal/ConfirmModal';
 import { toastSuccess, toastError } from '../../util/toast';
 
 const b = block('sessions');
+
+const ALL_SUBSETS_MARKER = '__all_subsets__';
 
 interface SortableItemProps {
 	session: any;
@@ -88,6 +92,7 @@ export default function Sessions() {
 	const [multiSelectedIds, setMultiSelectedIds] = useState<Set<string>>(new Set());
 	const [pendingBulkDelete, setPendingBulkDelete] = useState<string[] | null>(null);
 	const [cubeType, setCubeType] = useState('');
+	const [scrambleSubset, setScrambleSubset] = useState<string | null>(null);
 	const [isEditingName, setIsEditingName] = useState(false);
 	const [tempSessionName, setTempSessionName] = useState('');
 
@@ -137,12 +142,24 @@ export default function Sessions() {
 		setSelectedSessionId(id);
 		setIsEditingName(false);
 
-		const lastCubeType = fetchLastCubeTypeForSession(id);
-		setCubeType(lastCubeType || '333');
+		const lastBucket = fetchLastBucketForSession(id);
+		setCubeType(lastBucket?.cube_type || '333');
+		setScrambleSubset(lastBucket?.scramble_subset ?? null);
 	}
 
-	function handleCubeChange(ct: CubeType) {
+	function handleCubeTypeChange(ct: CubeType) {
 		setCubeType(ct.id);
+		// Default "Hepsi" — kullanici dilerse subset secer
+		setScrambleSubset(ALL_SUBSETS_MARKER);
+	}
+
+	function handleSubsetChange(subset: string | null) {
+		if (subset === ALL_SUBSETS_MARKER) {
+			setScrambleSubset(ALL_SUBSETS_MARKER);
+			return;
+		}
+		// SubsetPicker '' subset'i null olarak gonderir
+		setScrambleSubset(subset);
 	}
 
 	function startEditingName() {
@@ -186,9 +203,10 @@ export default function Sessions() {
 	}
 
 	function makeCurrent() {
-		const lastCubeType = fetchLastCubeTypeForSession(selectedSessionId) || '333';
+		const lastBucket = fetchLastBucketForSession(selectedSessionId);
 		setCurrentSession(selectedSessionId);
-		setCubeType(lastCubeType);
+		setCubeType(lastBucket?.cube_type || '333');
+		setScrambleSubset(lastBucket?.scramble_subset ?? null);
 	}
 
 	async function mergeSessions() {
@@ -229,10 +247,11 @@ export default function Sessions() {
 
 			if (currentSessionId === id) {
 				const fallback = allSessions.find((s) => s.id !== id);
-				const fallbackCubeType = fetchLastCubeTypeForSession(fallback.id) || '333';
+				const fallbackBucket = fetchLastBucketForSession(fallback.id);
 
 				setCurrentSession(fallback.id);
-				setCubeType(fallbackCubeType);
+				setCubeType(fallbackBucket?.cube_type || '333');
+				setScrambleSubset(fallbackBucket?.scramble_subset ?? null);
 
 				updatedSessionId = fallback.id;
 			}
@@ -312,9 +331,10 @@ export default function Sessions() {
 
 						if (deletingCurrent) {
 							const fallback = allSessions.find((s) => !idsToDelete.includes(s.id));
-							const fallbackCubeType = fetchLastCubeTypeForSession(fallback.id) || '333';
+							const fallbackBucket = fetchLastBucketForSession(fallback.id);
 							setCurrentSession(fallback.id);
-							setCubeType(fallbackCubeType);
+							setCubeType(fallbackBucket?.cube_type || '333');
+							setScrambleSubset(fallbackBucket?.scramble_subset ?? null);
 							updatedSessionId = fallback.id;
 						}
 
@@ -349,13 +369,32 @@ export default function Sessions() {
 		return null;
 	}
 
-	const sessionCubeTypes = getCubeTypesFromSession(session);
-	const currentCube = String(cubeType || (session ? fetchLastCubeTypeForSession(session.id) : null) || '333');
+	const sessionBuckets = useMemo(() => getCubeBucketsFromSession(session), [session]);
+	const defaultBucket = cubeType ? null : (session ? fetchLastBucketForSession(session.id) : null);
+	const currentCube = String(cubeType || defaultBucket?.cube_type || '333');
+	const isAllSubsets = scrambleSubset === ALL_SUBSETS_MARKER;
+	const effectiveSubset = isAllSubsets
+		? null
+		: (scrambleSubset ?? defaultBucket?.scramble_subset ?? null);
+	const uniqueSessionCubeTypes = useMemo(() => getUniqueCubeTypes(sessionBuckets), [sessionBuckets]);
+	const subsetsForCurrentCube = useMemo(() => {
+		const subs = getSubsetsForBuckets(currentCube, sessionBuckets);
+		if (subs.length === 0) return [];
+		return [{ id: ALL_SUBSETS_MARKER, label: t('stats.all') }, ...subs];
+	}, [currentCube, sessionBuckets, t]);
 
-	const fetchFilter = {
+	const fetchFilter: Record<string, any> = {
 		session_id: selectedSessionId,
 		cube_type: currentCube,
 	};
+	// "Hepsi" modu ise subset filter ekleme — tum subset'lerdeki cozumler gelir
+	if (!isAllSubsets) {
+		// cube_type='wca' her zaman subset ile filtrelemeli (WCA etkinlikleri karisir)
+		// Diger cube_type'larda subset opsiyonel — sadece secilmisse filtre ekle
+		if (currentCube === 'wca' || effectiveSubset) {
+			fetchFilter.scramble_subset = effectiveSubset || null;
+		}
+	}
 
 	const isCurrentSession = selectedSessionId === currentSessionId;
 
@@ -436,23 +475,21 @@ export default function Sessions() {
 				</div>
 			</Module>
 
-			{/* İstatistikler Dropdown - Stats bölümünün başında */}
+			{/* İstatistikler bucket picker - Stats bölümünün başında */}
 			<Module>
 				<div className={b('stats-header')}>
 					<div className={b('stats-picker')}>
 						<label className={b('stats-label')}>{t('sessions.statistics')}</label>
 						<CubePicker
-							handlePrefix=""
-							excludeSelected
 							value={currentCube}
-							cubeTypes={sessionCubeTypes}
-							onChange={handleCubeChange}
-							dropdownProps={{
-								noMargin: true,
-								dropdownButtonProps: {
-									noMargin: true,
-								},
-							}}
+							cubeTypes={uniqueSessionCubeTypes}
+							onChange={handleCubeTypeChange}
+							dropdownProps={{ openLeft: true }}
+						/>
+						<SubsetPicker
+							subsets={subsetsForCurrentCube}
+							selectedSubset={isAllSubsets ? ALL_SUBSETS_MARKER : effectiveSubset}
+							onChange={handleSubsetChange}
 						/>
 					</div>
 				</div>

@@ -27,6 +27,7 @@ import ManageUsersModal from './ManageUsersModal';
 import { Gear, List, PencilSimple, Users, Trash, BluetoothConnected, Bluetooth, CheckCircle, CircleNotch, Check, MusicNote } from 'phosphor-react';
 import RoomMusicPlayer from './RoomMusicPlayer';
 import ProOnlyModal from '../common/pro_only/ProOnlyModal';
+import { is3x3CubeType } from '../timer/helpers/util';
 import { getTimeString, convertTimeStringToSeconds } from '../../util/time';
 import { toastError } from '../../util/toast';
 import { resourceUri } from '../../util/storage';
@@ -167,9 +168,10 @@ export default function FriendlyRoom() {
     useEffect(() => {
         if (!room?.cube_type) return;
 
-        const smartCubeSupportedTypes = ['333', '333oh', '333bl', '333mirror'];
+        const roomSubset = (room as any).scramble_subset ?? null;
+        const smartSupported = is3x3CubeType(room.cube_type, roomSubset);
 
-        if (timerType === 'smart' && !smartCubeSupportedTypes.includes(room.cube_type)) {
+        if (timerType === 'smart' && !smartSupported) {
             // Smart cube bağlantısını kes
             disconnectSmartCube();
             // Timer türünü klavyeye çevir
@@ -1827,6 +1829,7 @@ export default function FriendlyRoom() {
                 isActive={isActive}
                 scramble={room.current_scramble}
                 cubeType={room.cube_type}
+                scrambleSubset={(room as any).scramble_subset ?? null}
                 onSubmit={(t, p2, dnf) => {
                     handleSolveSubmit(t, p2, dnf);
                     setSmartReviewing(false);

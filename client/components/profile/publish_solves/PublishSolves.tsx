@@ -8,7 +8,7 @@ import {getAveragePB} from '../../../db/solves/stats/solves/average/average_pb';
 import {IModalProps} from '../../common/modal/Modal';
 import {getTimeString} from '../../../util/time';
 import block from '../../../styles/bem';
-import {getCubeTypeInfoById} from '../../../util/cubes/util';
+import {getCubeTypeBucketLabel} from '../../../util/cubes/util';
 import Button from '../../common/button/Button';
 import {fetchAllCubeTypesSolved, FilterSolvesOptions} from '../../../db/solves/query';
 import {toastError, toastSuccess} from '../../../util/toast';
@@ -28,10 +28,11 @@ export default function PublishSolves(props: IModalProps) {
 	const [publishing, setPublishing] = useState(false);
 	const [error, setError] = useState('');
 
-	function getFilter(ct: string): FilterSolvesOptions {
+	function getFilter(ct: string, subset?: string | null): FilterSolvesOptions {
 		return {
 			from_timer: true,
 			cube_type: ct,
+			scramble_subset: subset ?? null,
 		};
 	}
 
@@ -47,8 +48,8 @@ export default function PublishSolves(props: IModalProps) {
 		let successCount = 0;
 
 		for (const type of cubeTypes) {
-			const pb = getSinglePB(getFilter(type.cube_type));
-			const ao5Pb = getAveragePB(getFilter(type.cube_type), 5);
+			const pb = getSinglePB(getFilter(type.cube_type, type.scramble_subset));
+			const ao5Pb = getAveragePB(getFilter(type.cube_type, type.scramble_subset), 5);
 
 			try {
 				if (pb && pb.time > 0) {
@@ -103,18 +104,19 @@ export default function PublishSolves(props: IModalProps) {
 
 	const rows = [];
 	for (const type of cubeTypes) {
-		const pb = getSinglePB(getFilter(type.cube_type));
-		const ao5pb = getAveragePB(getFilter(type.cube_type), 5);
+		const pb = getSinglePB(getFilter(type.cube_type, type.scramble_subset));
+		const ao5pb = getAveragePB(getFilter(type.cube_type, type.scramble_subset), 5);
 
 		if (!pb && !ao5pb) {
 			continue;
 		}
 
-		const ct = getCubeTypeInfoById(type.cube_type);
+		const label = getCubeTypeBucketLabel(type.cube_type, type.scramble_subset);
+		const bucketKey = `${type.cube_type}::${type.scramble_subset ?? ''}`;
 
 		rows.push(
-			<div key={type.cube_type} className={b('card')}>
-				<div className={b('card-label')}>{ct.name}</div>
+			<div key={bucketKey} className={b('card')}>
+				<div className={b('card-label')}>{label}</div>
 				<div className={b('card-values')}>
 					<div className={b('card-stat')}>
 						<span className={b('card-stat-label')}>{t('profile.single')}</span>

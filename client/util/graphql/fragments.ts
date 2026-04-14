@@ -6,6 +6,7 @@ export const MICRO_SOLVE_FRAGMENT = gql`
 		time
 		raw_time
 		cube_type
+		scramble_subset
 		session_id
 		trainer_name
 		bulk
@@ -27,6 +28,7 @@ export const MINI_SOLVE_FRAGMENT = gql`
 		time
 		raw_time
 		cube_type
+		scramble_subset
 		session_id
 		trainer_name
 		bulk
@@ -75,6 +77,7 @@ export const SOLVE_FRAGMENT = gql`
 		time
 		raw_time
 		cube_type
+		scramble_subset
 		user_id
 		scramble
 		session_id
@@ -152,6 +155,7 @@ export const SETTING_FRAGMENT = gql`
 		use_2d_scramble_visual
 		require_period_in_manual_time_entry
 		cube_type
+		scramble_subset
 		custom_cube_types {
 			...CustomCubeTypeFragment
 		}
@@ -249,6 +253,7 @@ export const TOP_SOLVE_FRAGMENT = gql`
 		id
 		time
 		cube_type
+		scramble_subset
 		created_at
 		solve {
 			...SolveFragment
@@ -267,6 +272,7 @@ export const TOP_AVERAGE_FRAGMENT = gql`
 		id
 		time
 		cube_type
+		scramble_subset
 		created_at
 		solve_1 {
 			...SolveFragment

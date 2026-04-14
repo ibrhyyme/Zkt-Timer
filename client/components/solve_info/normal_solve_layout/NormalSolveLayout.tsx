@@ -34,6 +34,7 @@ export default function NormalSolveLayout(props: SolveLayoutProps) {
 
 	const scramble = solve.scramble;
 	const cubeType = solve.cube_type;
+	const visualCubeType = (cubeType === 'wca' && solve.scramble_subset) ? solve.scramble_subset : cubeType;
 
 	function handleShare() {
 		const solveUrl = window.location.origin + '/solve/' + solve.share_code;
@@ -137,7 +138,7 @@ export default function NormalSolveLayout(props: SolveLayoutProps) {
 				<div className={b('inline-scramble')}>
 					<legend>{t('solve_info.scramble_label')}</legend>
 					<div className={b('inline-scramble-visual')}>
-						<ScrambleVisual cubeType={cubeType} scramble={scramble} />
+						<ScrambleVisual cubeType={visualCubeType} scramble={scramble} />
 					</div>
 					{editMode ? (
 						<TextArea fullWidth autoSize value={scramble} name="scramble" onChange={handleChange} />

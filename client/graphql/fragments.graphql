@@ -3,6 +3,7 @@ fragment MiniSolveFragment on Solve {
 	time
 	raw_time
 	cube_type
+	scramble_subset
 	session_id
 	trainer_name
 	bulk
@@ -64,6 +65,7 @@ fragment SolveFragment on Solve {
 	time
 	raw_time
 	cube_type
+	scramble_subset
 	user_id
 	scramble
 	session_id

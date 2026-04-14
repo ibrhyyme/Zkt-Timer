@@ -23,11 +23,12 @@ export default function ScrambleInfo(props: Props) {
 	const { solve, editMode, handleChange } = props;
 	const scramble = solve.scramble;
 	const cubeType = solve.cube_type;
+	const visualCubeType = (cubeType === 'wca' && solve.scramble_subset) ? solve.scramble_subset : cubeType;
 	const dispatch = useDispatch();
 
 	const scrambleBody = (
 		<div className={b('body')}>
-			<ScrambleVisual cubeType={cubeType} scramble={scramble} />
+			<ScrambleVisual cubeType={visualCubeType} scramble={scramble} />
 		</div>
 	);
 

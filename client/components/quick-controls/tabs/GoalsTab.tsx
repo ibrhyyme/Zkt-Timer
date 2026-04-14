@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useSettings} from '../../../util/hooks/useSettings';
-import {getCubeTypeInfoById} from '../../../util/cubes/util';
+import {getCubeTypeBucketLabel, getCubeTypeInfoById} from '../../../util/cubes/util';
 import {
 	getDailyGoalStorage,
 	setGoalForCubeType,
@@ -12,15 +12,21 @@ import {
 import {getDailyGoalProgress} from '../../daily-goal/helpers/progress';
 import {Trash, Bell, BellSlash, Target} from 'phosphor-react';
 
+function goalKey(g: {cube_type: string; scramble_subset?: string | null}): string {
+	return `${g.cube_type}::${g.scramble_subset ?? ''}`;
+}
+
 export default function GoalsTab() {
 	const {t} = useTranslation();
 	const cubeType = useSettings('cube_type');
+	const scrambleSubset = useSettings('scramble_subset');
 	const [, forceUpdate] = useState(0);
 
 	const storage = getDailyGoalStorage();
-	const currentGoal = storage.goals.find((g) => g.cube_type === cubeType);
-	const otherGoals = storage.goals.filter((g) => g.cube_type !== cubeType);
-	const currentProgress = getDailyGoalProgress(cubeType);
+	const currentKey = `${cubeType}::${scrambleSubset ?? ''}`;
+	const currentGoal = storage.goals.find((g) => goalKey(g) === currentKey);
+	const otherGoals = storage.goals.filter((g) => goalKey(g) !== currentKey);
+	const currentProgress = getDailyGoalProgress(cubeType, scrambleSubset);
 
 	function refresh() {
 		forceUpdate((n) => n + 1);
@@ -37,18 +43,19 @@ export default function GoalsTab() {
 			{/* Aktif kup turu icin hedef */}
 			<CurrentCubeGoal
 				cubeType={cubeType}
+				scrambleSubset={scrambleSubset}
 				goal={currentGoal}
 				progress={currentProgress}
 				onSave={(target) => {
-					setGoalForCubeType(cubeType, target);
+					setGoalForCubeType(cubeType, target, scrambleSubset);
 					refresh();
 				}}
 				onToggle={() => {
-					toggleGoalEnabled(cubeType);
+					toggleGoalEnabled(cubeType, scrambleSubset);
 					refresh();
 				}}
 				onRemove={() => {
-					removeGoalForCubeType(cubeType);
+					removeGoalForCubeType(cubeType, scrambleSubset);
 					refresh();
 				}}
 				t={t}
@@ -64,21 +71,23 @@ export default function GoalsTab() {
 						</p>
 					</div>
 					{otherGoals.map((goal) => {
-						const info = getCubeTypeInfoById(goal.cube_type);
-						const progress = getDailyGoalProgress(goal.cube_type);
+						const label = getCubeTypeBucketLabel(goal.cube_type, goal.scramble_subset)
+							|| getCubeTypeInfoById(goal.cube_type)?.name
+							|| goal.cube_type;
+						const progress = getDailyGoalProgress(goal.cube_type, goal.scramble_subset);
 
 						return (
 							<OtherGoalRow
-								key={goal.cube_type}
-								name={info?.name || goal.cube_type}
+								key={goalKey(goal)}
+								name={label}
 								goal={goal}
 								progress={progress}
 								onToggle={() => {
-									toggleGoalEnabled(goal.cube_type);
+									toggleGoalEnabled(goal.cube_type, goal.scramble_subset);
 									refresh();
 								}}
 								onRemove={() => {
-									removeGoalForCubeType(goal.cube_type);
+									removeGoalForCubeType(goal.cube_type, goal.scramble_subset);
 									refresh();
 								}}
 							/>
@@ -130,7 +139,8 @@ export default function GoalsTab() {
 
 interface CurrentCubeGoalProps {
 	cubeType: string;
-	goal: {cube_type: string; target: number; enabled: boolean} | undefined;
+	scrambleSubset?: string | null;
+	goal: {cube_type: string; scramble_subset?: string | null; target: number; enabled: boolean} | undefined;
 	progress: {current: number; target: number; percentage: number; completed: boolean} | null;
 	onSave: (target: number) => void;
 	onToggle: () => void;
@@ -138,8 +148,8 @@ interface CurrentCubeGoalProps {
 	t: (key: string, opts?: any) => string;
 }
 
-function CurrentCubeGoal({cubeType, goal, progress, onSave, onToggle, onRemove, t}: CurrentCubeGoalProps) {
-	const cubeInfo = getCubeTypeInfoById(cubeType);
+function CurrentCubeGoal({cubeType, scrambleSubset, goal, progress, onSave, onToggle, onRemove, t}: CurrentCubeGoalProps) {
+	const label = getCubeTypeBucketLabel(cubeType, scrambleSubset) || getCubeTypeInfoById(cubeType)?.name || cubeType;
 	const [inputValue, setInputValue] = useState(goal?.target?.toString() || '');
 	const [editing, setEditing] = useState(!goal);
 
@@ -157,7 +167,7 @@ function CurrentCubeGoal({cubeType, goal, progress, onSave, onToggle, onRemove, 
 			<div className="flex items-center justify-between">
 				<div className="flex items-center space-x-2">
 					<Target size={18} weight="bold" className="text-primary" />
-					<span className="font-semibold text-text">{cubeInfo?.name || cubeType}</span>
+					<span className="font-semibold text-text">{label}</span>
 				</div>
 				{goal && (
 					<div className="flex items-center space-x-2">
@@ -257,7 +267,7 @@ function CurrentCubeGoal({cubeType, goal, progress, onSave, onToggle, onRemove, 
 
 interface OtherGoalRowProps {
 	name: string;
-	goal: {cube_type: string; target: number; enabled: boolean};
+	goal: {cube_type: string; scramble_subset?: string | null; target: number; enabled: boolean};
 	progress: {current: number; target: number; percentage: number; completed: boolean} | null;
 	onToggle: () => void;
 	onRemove: () => void;

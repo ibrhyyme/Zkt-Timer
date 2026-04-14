@@ -20,6 +20,10 @@ export function setCubeType(cubeType: string) {
 	return setSetting('cube_type', cubeType);
 }
 
+export function setScrambleSubset(subset: string | null) {
+	return setSetting('scramble_subset', subset);
+}
+
 export async function refreshSettings() {
 	const query = gql`
 		${SETTING_FRAGMENT}

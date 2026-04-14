@@ -9,6 +9,7 @@ export function checkForAveragePBUpdate(solve: Solve, isNew: boolean) {
 		type: 'avg_pb',
 		filterOptions: {
 			cube_type: solve.cube_type,
+			scramble_subset: solve.scramble_subset ?? null,
 		},
 	});
 
@@ -47,6 +48,7 @@ export function checkForAverageWorstUpdate(solve: Solve, isNew: boolean) {
 		type: 'avg_worst',
 		filterOptions: {
 			cube_type: solve.cube_type,
+			scramble_subset: solve.scramble_subset ?? null,
 		},
 	});
 

@@ -4,14 +4,15 @@ import {useSolveDb} from '../../util/hooks/useSolveDb';
 import {useEventListener} from '../../util/event_handler';
 import {getDailyGoalProgress} from './helpers/progress';
 import {triggerGoalConfetti} from './helpers/confetti';
-import {getCubeTypeInfoById} from '../../util/cubes/util';
+import {getCubeTypeBucketLabel, getCubeTypeInfoById} from '../../util/cubes/util';
 
 interface Props {
 	cubeType: string;
+	scrambleSubset?: string | null;
 	compact?: boolean;
 }
 
-export default function DailyGoalProgressBar({cubeType, compact}: Props) {
+export default function DailyGoalProgressBar({cubeType, scrambleSubset, compact}: Props) {
 	const {t} = useTranslation();
 	const solveUpdate = useSolveDb();
 	const prevCountRef = useRef<number | null>(null);
@@ -22,8 +23,8 @@ export default function DailyGoalProgressBar({cubeType, compact}: Props) {
 	}, []);
 
 	const progress = useMemo(() => {
-		return getDailyGoalProgress(cubeType);
-	}, [cubeType, solveUpdate, goalVersion]);
+		return getDailyGoalProgress(cubeType, scrambleSubset);
+	}, [cubeType, scrambleSubset, solveUpdate, goalVersion]);
 
 	// Hedefe ulasma tespiti
 	useEffect(() => {
@@ -38,8 +39,7 @@ export default function DailyGoalProgressBar({cubeType, compact}: Props) {
 
 	if (!progress) return null;
 
-	const cubeInfo = getCubeTypeInfoById(cubeType);
-	const cubeName = cubeInfo?.name || cubeType;
+	const cubeName = getCubeTypeBucketLabel(cubeType, scrambleSubset) || getCubeTypeInfoById(cubeType)?.name || cubeType;
 
 	return (
 		<div className={`cd-daily-goal-progress w-full ${compact ? 'px-3 py-1' : 'px-4 py-2'}`}>
