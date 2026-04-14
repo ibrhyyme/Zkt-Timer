@@ -11,7 +11,7 @@ RUN apt-get update && \
 
 # Bağımlılıkları yükle
 COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
+RUN yarn install --frozen-lockfile --network-timeout 600000 --network-concurrency 4
 
 # Kaynak kodları kopyala
 COPY . .
@@ -54,7 +54,7 @@ RUN apt-get update && \
 
 # Sadece production bağımlılıklarını yüklemek için package.json
 COPY package.json yarn.lock ./
-RUN yarn install --production --frozen-lockfile && yarn cache clean
+RUN yarn install --production --frozen-lockfile --network-timeout 600000 --network-concurrency 4 && yarn cache clean
 
 # Builder aşamasından derlenmiş dosyaları al
 # 1. Server kodu (Compiled JS)
