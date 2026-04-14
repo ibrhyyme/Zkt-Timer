@@ -187,8 +187,14 @@ export default function AlgorithmCard({
 			</div>
 
 			<div className={b('alg-card-stats')}>
-				<span>Best: {formatTimeShort(best)}</span>
-				<span>Ao5: {formatTimeShort(ao5)}</span>
+				<div className={b('alg-card-stat')}>
+					<span className={b('alg-card-stat-label')}>Best</span>
+					<span className={b('alg-card-stat-value')}>{formatTimeShort(best)}</span>
+				</div>
+				<div className={b('alg-card-stat')}>
+					<span className={b('alg-card-stat-label')}>Ao5</span>
+					<span className={b('alg-card-stat-value')}>{formatTimeShort(ao5)}</span>
+				</div>
 			</div>
 
 			<div className={b('alg-card-preview')}>

@@ -227,12 +227,12 @@ export default function AlgorithmSelector() {
 							topFace={state.options.topFace}
 							frontFace={effectiveFrontFace}
 						/>,
-						{width: 500, title: name}
+						{width: 500, title: name, closeButtonText: t('solve_info.done')}
 					)
 				);
 			});
 		},
-		[reduxDispatch, state.options.topFace, effectiveFrontFace]
+		[reduxDispatch, state.options.topFace, effectiveFrontFace, t]
 	);
 
 	const handleSelectAllAlgs = useCallback(() => {
