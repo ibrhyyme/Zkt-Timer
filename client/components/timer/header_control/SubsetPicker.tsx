@@ -30,18 +30,21 @@ export default function SubsetPicker({ subsets, selectedSubset, onChange, mobile
     }
 
     // Build options
-    const options: IDropdownOption[] = subsets.map(sub => ({
-        text: translateLabel(sub.label),
-        disabled: sub.id === effectiveSelected,
-        header: sub.isHeader,
-        onClick: () => {
-            if (sub.isHeader) return;
+    const options: IDropdownOption[] = subsets.map(sub => {
+        const isSelected = !sub.isHeader && sub.id === effectiveSelected;
+        return {
+            text: translateLabel(sub.label),
+            selected: isSelected,
+            header: sub.isHeader,
+            onClick: () => {
+                if (sub.isHeader) return;
 
-            // Handle "None" or valid ID
-            const val = sub.id === '' ? null : sub.id;
-            onChange(val);
-        }
-    }));
+                // Handle "None" or valid ID
+                const val = sub.id === '' ? null : sub.id;
+                onChange(val);
+            }
+        };
+    });
 
     const icon = mobile ? <ArrowDown weight="bold" /> : <CaretDown weight="bold" />;
     const firstNonHeader = subsets.find(s => !s.isHeader);
