@@ -50,9 +50,9 @@ export default function CubePicker(props: Props) {
 		// Custom list — flat
 		for (const name of cubeTypes) {
 			const ct = getCubeTypeInfoById(name);
-			const disabled = ct?.id === value;
-			if (!name || !ct || (excludeOtherCubeType && name === 'other') || (excludeSelected && disabled)) continue;
-			options.push({ text: ct.name, disabled, onClick: () => onChange && onChange(ct) });
+			const isSelected = ct?.id === value;
+			if (!name || !ct || (excludeOtherCubeType && name === 'other') || (excludeSelected && isSelected)) continue;
+			options.push({ text: ct.name, selected: isSelected, onClick: () => onChange && onChange(ct) });
 		}
 	} else {
 		// Default — cstimer style grouped with headers
@@ -62,9 +62,9 @@ export default function CubePicker(props: Props) {
 			}
 			for (const name of group.types) {
 				const ct = getCubeTypeInfoById(name);
-				const disabled = ct?.id === value;
-				if (!ct || (excludeOtherCubeType && name === 'other') || (excludeSelected && disabled)) continue;
-				options.push({ text: ct.name, disabled, onClick: () => onChange && onChange(ct) });
+				const isSelected = ct?.id === value;
+				if (!ct || (excludeOtherCubeType && name === 'other') || (excludeSelected && isSelected)) continue;
+				options.push({ text: ct.name, selected: isSelected, onClick: () => onChange && onChange(ct) });
 			}
 		}
 	}

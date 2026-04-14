@@ -15,7 +15,29 @@
 		color: rgb(var(--background-color)) !important;
 	}
 
+	&--selected {
+		background-color: rgb(var(--primary-color)) !important;
+		color: #fff !important;
+		font-weight: 500;
+		opacity: 1 !important;
+		justify-content: space-between !important;
+		cursor: default;
+		padding: 6px 12px !important;
+
+		svg {
+			color: #fff;
+			flex-shrink: 0;
+			width: 14px;
+			height: 14px;
+		}
+	}
+
 	&:hover {
 		background-color: rgb(var(--button-color));
+	}
+
+	&--selected:hover {
+		background-color: rgb(var(--primary-color)) !important;
+		filter: brightness(1.1);
 	}
 }

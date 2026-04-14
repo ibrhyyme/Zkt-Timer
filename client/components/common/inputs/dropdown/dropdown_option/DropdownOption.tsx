@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Check } from 'phosphor-react';
 import './DropdownOption.scss';
 import block from '../../../../../styles/bem';
 import Checkbox from '../../../checkbox/Checkbox';
@@ -12,6 +13,7 @@ export interface IDropdownOption {
 	link?: string;
 	icon?: React.ReactElement;
 	on?: boolean;
+	selected?: boolean;
 	disabled?: boolean;
 	hidden?: boolean;
 	header?: boolean;
@@ -24,12 +26,12 @@ interface Props {
 }
 
 export default function DropdownOption(props: Props) {
-	const { text, hidden, checkbox, onChange, disabled, link, icon, on, onClick, header } = props.option;
+	const { text, hidden, checkbox, onChange, disabled, link, icon, on, selected, onClick, header } = props.option;
 
 	const body = (
 		<>
 			<span>{text}</span>
-			{icon}
+			{icon || (selected && <Check weight="bold" />)}
 		</>
 	);
 
@@ -78,7 +80,7 @@ export default function DropdownOption(props: Props) {
 		}
 
 		return (
-			<button disabled={disabled} className={b({ on })} onClick={onClick}>
+			<button disabled={disabled} className={b({ on, selected })} onClick={onClick}>
 				{body}
 			</button>
 		);
