@@ -1,0 +1,43 @@
+default_platform(:ios)
+
+TEAM_ID = "R6CCJB68TQ"
+APP_IDENTIFIER = "com.zktimer.app"
+APPLE_ID = "ibrhyyme@icloud.com"
+ASC_APP_ID = "11492926306"
+
+platform :ios do
+  desc "Build and upload to TestFlight"
+  lane :beta do
+    cocoapods(podfile: "./Podfile")
+
+    cert(
+      team_id: TEAM_ID,
+      username: APPLE_ID
+    )
+
+    sigh(
+      app_identifier: APP_IDENTIFIER,
+      team_id: TEAM_ID,
+      username: APPLE_ID,
+      force: true
+    )
+
+    increment_build_number_in_xcodeproj(
+      xcodeproj: "App.xcodeproj"
+    )
+
+    build_app(
+      workspace: "App.xcworkspace",
+      scheme: "App",
+      export_method: "app-store",
+      clean: true,
+      xcargs: "DEVELOPMENT_TEAM=#{TEAM_ID} CODE_SIGN_STYLE=Manual PROVISIONING_PROFILE_SPECIFIER=\"#{ENV['SIGH_NAME'] || "match AppStore #{APP_IDENTIFIER}"}\""
+    )
+
+    upload_to_testflight(
+      apple_id: ASC_APP_ID,
+      skip_waiting_for_build_processing: true,
+      skip_submission: true
+    )
+  end
+end
