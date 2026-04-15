@@ -41,6 +41,17 @@ platform :ios do
       api_key: api_key,
       initial_build_number: 0
     )
+
+    latest_version_str = lane_context[SharedValues::LATEST_TESTFLIGHT_VERSION] || "2.0.0"
+    version_parts = latest_version_str.split(".")
+    version_parts[-1] = (version_parts[-1].to_i + 1).to_s
+    next_version = version_parts.join(".")
+    UI.message("Bumping version: #{latest_version_str} -> #{next_version}")
+
+    increment_version_number(
+      xcodeproj: "App.xcodeproj",
+      version_number: next_version
+    )
     increment_build_number(
       xcodeproj: "App.xcodeproj",
       build_number: latest_build + 1
