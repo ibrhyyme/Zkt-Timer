@@ -7,43 +7,6 @@ platform :android do
   lane :beta do
     json_key_path = ENV["PLAY_STORE_JSON_KEY_PATH"]
 
-    all_codes = []
-    ["production", "internal", "alpha", "beta"].each do |track|
-      begin
-        codes = google_play_track_version_codes(
-          package_name: PACKAGE_NAME,
-          track: track,
-          json_key: json_key_path
-        )
-        all_codes.concat(codes)
-      rescue => e
-        UI.important("Track '#{track}' okunamadı (boş olabilir): #{e.message}")
-      end
-    end
-    next_version_code = (all_codes.max || 0) + 1
-
-    latest_version_name = begin
-      names = google_play_track_release_names(
-        package_name: PACKAGE_NAME,
-        track: "production",
-        json_key: json_key_path
-      )
-      raw = names.last || "2.0.0"
-      match = raw.match(/\(([\d\.]+)\)/)
-      match ? match[1] : raw
-    rescue => e
-      UI.important("Release names okunamadı: #{e.message}")
-      "2.0.0"
-    end
-    parts = latest_version_name.split(".")
-    parts[-1] = (parts[-1].to_i + 1).to_s
-    next_version_name = parts.join(".")
-
-    UI.message("Bumping Android version: #{latest_version_name} (code #{all_codes.max}) -> #{next_version_name} (code #{next_version_code})")
-
-    ENV["ANDROID_VERSION_CODE"] = next_version_code.to_s
-    ENV["ANDROID_VERSION_NAME"] = next_version_name
-
     gradle(
       task: "clean bundleRelease",
       project_dir: ".",
@@ -51,9 +14,7 @@ platform :android do
         "android.injected.signing.store.file" => ENV["ANDROID_KEYSTORE_PATH"],
         "android.injected.signing.store.password" => ENV["ANDROID_KEYSTORE_PASSWORD"],
         "android.injected.signing.key.alias" => ENV["ANDROID_KEY_ALIAS"],
-        "android.injected.signing.key.password" => ENV["ANDROID_KEY_PASSWORD"],
-        "versionCode" => next_version_code,
-        "versionName" => next_version_name
+        "android.injected.signing.key.password" => ENV["ANDROID_KEY_PASSWORD"]
       }
     )
 
