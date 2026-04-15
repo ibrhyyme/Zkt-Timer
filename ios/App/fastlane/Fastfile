@@ -17,12 +17,17 @@ platform :ios do
 
     cocoapods(podfile: "./Podfile")
 
-    cert(
-      team_id: TEAM_ID,
-      api_key: api_key,
-      keychain_path: ENV["FASTLANE_KEYCHAIN_PATH"],
-      keychain_password: ENV["MATCH_KEYCHAIN_PASSWORD"]
-    )
+    if ENV["SKIP_FASTLANE_CERT"] != "true"
+      cert(
+        team_id: TEAM_ID,
+        api_key: api_key,
+        keychain_path: ENV["FASTLANE_KEYCHAIN_PATH"],
+        keychain_password: ENV["MATCH_KEYCHAIN_PASSWORD"],
+        output_path: "./fastlane/certs"
+      )
+    else
+      UI.message("Using pre-imported distribution certificate from keychain - skipping cert action")
+    end
 
     sigh(
       app_identifier: APP_IDENTIFIER,
