@@ -46,6 +46,8 @@ jobs:
       - name: Setup signing keychain
         env:
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
         run: |
           KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
           security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
@@ -56,6 +58,17 @@ jobs:
           echo "MATCH_KEYCHAIN_NAME=$KEYCHAIN_PATH" >> $GITHUB_ENV
           echo "MATCH_KEYCHAIN_PASSWORD=$KEYCHAIN_PASSWORD" >> $GITHUB_ENV
           echo "FASTLANE_KEYCHAIN_PATH=$KEYCHAIN_PATH" >> $GITHUB_ENV
+
+          if [ -n "$BUILD_CERTIFICATE_BASE64" ]; then
+            echo "Importing existing distribution certificate from secret..."
+            CERT_PATH="$RUNNER_TEMP/distribution.p12"
+            echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o "$CERT_PATH"
+            security import "$CERT_PATH" -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN_PATH"
+            security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+            echo "SKIP_FASTLANE_CERT=true" >> $GITHUB_ENV
+          else
+            echo "No existing certificate secret found - fastlane cert will create a new one"
+          fi
 
       - name: Install fastlane
         run: gem install fastlane -NV
@@ -77,6 +90,39 @@ jobs:
           APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
           FASTLANE_DISABLE_COLORS: 1
         run: fastlane beta
+
+      - name: Export certificate for future runs
+        if: success() && env.SKIP_FASTLANE_CERT != 'true'
+        env:
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+          P12_EXPORT_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          EXPORT_DIR="$RUNNER_TEMP/cert-export"
+          mkdir -p "$EXPORT_DIR"
+          KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain-db"
+
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+          IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN_PATH" | grep "Apple Distribution" | head -1 | awk -F'"' '{print $2}')
+          echo "Found identity: $IDENTITY"
+
+          security export -k "$KEYCHAIN_PATH" -t identities -f pkcs12 -P "$P12_EXPORT_PASSWORD" -o "$EXPORT_DIR/distribution.p12"
+
+          base64 -i "$EXPORT_DIR/distribution.p12" -o "$EXPORT_DIR/distribution.p12.base64"
+
+          echo "==============================================="
+          echo "CERTIFICATE EXPORTED - download the artifact and add these secrets:"
+          echo "  BUILD_CERTIFICATE_BASE64 = contents of distribution.p12.base64"
+          echo "  P12_PASSWORD = value of KEYCHAIN_PASSWORD secret"
+          echo "==============================================="
+
+      - name: Upload exported certificate
+        if: success() && env.SKIP_FASTLANE_CERT != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: distribution-certificate
+          path: ${{ runner.temp }}/cert-export/
+          retention-days: 1
 
       - name: Upload IPA artifact
         if: always()
