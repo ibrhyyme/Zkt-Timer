@@ -28,7 +28,9 @@ platform :android do
         track: "production",
         json_key: json_key_path
       )
-      names.last || "2.0.0"
+      raw = names.last || "2.0.0"
+      match = raw.match(/\(([\d\.]+)\)/)
+      match ? match[1] : raw
     rescue => e
       UI.important("Release names okunamadı: #{e.message}")
       "2.0.0"
@@ -44,7 +46,7 @@ platform :android do
 
     gradle(
       task: "clean bundleRelease",
-      project_dir: "..",
+      project_dir: ".",
       properties: {
         "android.injected.signing.store.file" => ENV["ANDROID_KEYSTORE_PATH"],
         "android.injected.signing.store.password" => ENV["ANDROID_KEYSTORE_PASSWORD"],
@@ -55,7 +57,7 @@ platform :android do
 
     upload_to_play_store(
       track: "internal",
-      aab: "../app/build/outputs/bundle/release/app-release.aab",
+      aab: "app/build/outputs/bundle/release/app-release.aab",
       json_key: json_key_path,
       skip_upload_metadata: true,
       skip_upload_images: true,
