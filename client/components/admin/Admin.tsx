@@ -42,6 +42,11 @@ const TABS = [
 		link: '/admin/site-config',
 		value: 'Site Yönetimi',
 	},
+	{
+		id: 'competitions',
+		link: '/admin/competitions',
+		value: 'Yarışmalar',
+	},
 ];
 
 interface Props {

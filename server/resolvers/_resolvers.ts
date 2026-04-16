@@ -32,3 +32,8 @@ export * from './WcaSchedule.resolver';
 export * from './PromoCode.resolver';
 export * from './SiteConfig.resolver';
 export * from './Ranking.resolver';
+export * from './ZktCompetition.resolver';
+export * from './ZktRegistration.resolver';
+export * from './ZktResult.resolver';
+export * from './ZktRecord.resolver';
+export * from './ZktAssignment.resolver';

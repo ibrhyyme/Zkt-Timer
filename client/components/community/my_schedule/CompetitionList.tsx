@@ -1,14 +1,44 @@
 import React, {useEffect, useState, useMemo, useRef} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useHistory} from 'react-router-dom';
-import {gqlQueryTyped} from '../../api';
+import {gql} from '@apollo/client';
+import {gqlQueryTyped, gqlMutate} from '../../api';
 import {WcaCompetitionsDocument, WcaSearchCompetitionsDocument, MyWcaCompetitionsDocument} from '../../../@types/generated/graphql';
 import {useMe} from '../../../util/hooks/useMe';
-import {MagnifyingGlass} from 'phosphor-react';
+import {MagnifyingGlass, Trophy} from 'phosphor-react';
 import {resourceUri} from '../../../util/storage';
 import {LINKED_SERVICES} from '../../../../shared/integration';
 import {b, I18N_LOCALE_MAP, formatDateRange} from './shared';
 import {prefetchCompetitionDetail} from './CompetitionLoader';
+
+const ZKT_COMPETITIONS_QUERY = gql`
+	query ZktCompetitionsForList($page: Int!, $pageSize: Int!, $searchQuery: String!) {
+		zktCompetitions(page: $page, pageSize: $pageSize, searchQuery: $searchQuery) {
+			items {
+				id
+				name
+				date_start
+				date_end
+				location
+				status
+				events {
+					id
+					event_id
+				}
+			}
+		}
+	}
+`;
+
+let cachedZktComps: {data: any[]; ts: number} | null = null;
+function getZktCache(): any[] | null {
+	if (!cachedZktComps) return null;
+	if (Date.now() - cachedZktComps.ts > 30 * 60 * 1000) {
+		cachedZktComps = null;
+		return null;
+	}
+	return cachedZktComps.data;
+}
 
 // Module-level cache with TTL
 const LIST_CACHE_TTL = 30 * 60 * 1000; // 30 dakika
@@ -37,6 +67,7 @@ export default function CompetitionList() {
 	const [searchResults, setSearchResults] = useState<any[] | null>(null);
 	const [searching, setSearching] = useState(false);
 	const [myComps, setMyComps] = useState<any[] | null>(getMyCache());
+	const [zktComps, setZktComps] = useState<any[] | null>(getZktCache());
 	const [loadError, setLoadError] = useState<string | null>(null);
 
 	const filteredCompetitions = useMemo(() => {
@@ -58,11 +89,28 @@ export default function CompetitionList() {
 
 	useEffect(() => {
 		if (!getListCache()) fetchCompetitions();
+		if (!getZktCache()) fetchZktCompetitions();
 	}, []);
 
 	useEffect(() => {
 		if (me && !getMyCache()) fetchMyCompetitions();
 	}, [me]);
+
+	async function fetchZktCompetitions() {
+		try {
+			const res = await gqlMutate(ZKT_COMPETITIONS_QUERY, {
+				page: 0,
+				pageSize: 50,
+				searchQuery: '',
+			});
+			const data = res?.data?.zktCompetitions?.items || [];
+			cachedZktComps = {data, ts: Date.now()};
+			setZktComps(data);
+		} catch (err) {
+			// sessiz — ZKT yarisma yoksa veya login degilse zaten bos gosterilecek
+			setZktComps([]);
+		}
+	}
 
 	// App resume / tab focus: arka planda sessiz refresh et — cached liste varken
 	// kullanici yeni yarismalari gorebilsin, manuel aç/kapa gerekmesin
@@ -255,6 +303,37 @@ export default function CompetitionList() {
 					<h3 className={b('section-title')}>{t('my_schedule.my_competitions')}</h3>
 					<div className={b('comp-list')}>
 						{myComps.map((comp: any) => renderCompCard(comp, {mine: true}))}
+					</div>
+				</div>
+			)}
+
+			{/* ZKT Yarismalari (Zeka Kupu Turkiye organizasyonlari) */}
+			{!compSearch.trim() && zktComps && zktComps.length > 0 && (
+				<div className={b('zkt-competitions')}>
+					<h3 className={b('section-title')}>
+						<Trophy weight="fill" style={{marginRight: 8, verticalAlign: 'text-bottom', color: 'rgb(var(--primary-color))'}} />
+						{t('my_schedule.zkt_competitions')}
+					</h3>
+					<div className={b('comp-list')}>
+						{zktComps.map((comp: any) => (
+							<div
+								key={comp.id}
+								className={b('comp-card', {zkt: true})}
+								onClick={() => history.push(`/community/zkt-competitions/${comp.id}`)}
+							>
+								<span className={b('zkt-badge')}>ZKT</span>
+								<div className={b('comp-info')}>
+									<span className={b('comp-title')}>{comp.name}</span>
+									<span className={b('comp-sub')}>
+										{formatDateRange(comp.date_start, comp.date_end, locale)}
+										{comp.location && ` \u2013 ${comp.location}`}
+									</span>
+								</div>
+								<span className={b('zkt-status', {[comp.status.toLowerCase()]: true})}>
+									{t(`zkt_comp.status_${comp.status.toLowerCase()}`)}
+								</span>
+							</div>
+						))}
 					</div>
 				</div>
 			)}

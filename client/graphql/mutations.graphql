@@ -93,3 +93,128 @@ mutation backfillWcaIds {
 		recordsError
 	}
 }
+
+mutation createZktCompetition($input: CreateZktCompetitionInput!) {
+	createZktCompetition(input: $input) {
+		...ZktCompetitionFullFragment
+	}
+}
+
+mutation updateZktCompetition($id: String!, $input: UpdateZktCompetitionInput!) {
+	updateZktCompetition(id: $id, input: $input) {
+		...ZktCompetitionSummaryFragment
+	}
+}
+
+mutation updateZktCompetitionStatus($input: UpdateZktCompetitionStatusInput!) {
+	updateZktCompetitionStatus(input: $input) {
+		...ZktCompetitionSummaryFragment
+	}
+}
+
+mutation deleteZktCompetition($id: String!) {
+	deleteZktCompetition(id: $id)
+}
+
+mutation registerForZktCompetition($input: ZktRegistrationInput!) {
+	registerForZktCompetition(input: $input) {
+		...ZktRegistrationFragment
+	}
+}
+
+mutation withdrawZktRegistration($competitionId: String!) {
+	withdrawZktRegistration(competitionId: $competitionId) {
+		...ZktRegistrationFragment
+	}
+}
+
+mutation updateZktRegistrationStatus($input: UpdateZktRegistrationStatusInput!) {
+	updateZktRegistrationStatus(input: $input) {
+		...ZktRegistrationFragment
+	}
+}
+
+mutation addZktCompetitorManually($input: AddZktCompetitorManuallyInput!) {
+	addZktCompetitorManually(input: $input) {
+		...ZktRegistrationFragment
+	}
+}
+
+mutation addZktDelegate($input: AddZktDelegateInput!) {
+	addZktDelegate(input: $input) {
+		...ZktCompDelegateFragment
+	}
+}
+
+mutation removeZktDelegate($competitionId: String!, $userId: String!) {
+	removeZktDelegate(competitionId: $competitionId, userId: $userId)
+}
+
+mutation submitZktResult($input: SubmitZktResultInput!) {
+	submitZktResult(input: $input) {
+		...ZktResultFragment
+	}
+}
+
+mutation deleteZktResult($resultId: String!) {
+	deleteZktResult(resultId: $resultId)
+}
+
+mutation finalizeZktRound($roundId: String!) {
+	finalizeZktRound(roundId: $roundId) {
+		...ZktRoundFragment
+		results {
+			...ZktResultFragment
+		}
+	}
+}
+
+mutation updateZktRoundStatus($input: UpdateZktRoundStatusInput!) {
+	updateZktRoundStatus(input: $input) {
+		...ZktRoundFragment
+	}
+}
+
+mutation createZktRound($input: CreateZktRoundInput!) {
+	createZktRound(input: $input) {
+		...ZktRoundFragment
+	}
+}
+
+mutation updateZktRound($input: UpdateZktRoundInput!) {
+	updateZktRound(input: $input) {
+		...ZktRoundFragment
+	}
+}
+
+mutation deleteZktRound($roundId: String!) {
+	deleteZktRound(roundId: $roundId)
+}
+
+mutation assignUserToRound($input: AssignUserInput!) {
+	assignUserToRound(input: $input) {
+		...ZktAssignmentFragment
+	}
+}
+
+mutation unassignUser($assignmentId: String!) {
+	unassignUser(assignmentId: $assignmentId)
+}
+
+mutation createZktGroup($input: CreateGroupInput!) {
+	createZktGroup(input: $input) {
+		id
+		round_id
+		group_number
+	}
+}
+
+mutation deleteZktGroup($groupId: String!) {
+	deleteZktGroup(groupId: $groupId)
+}
+
+mutation bulkAssignCompetitors($input: BulkAssignCompetitorsInput!) {
+	bulkAssignCompetitors(input: $input) {
+		...ZktAssignmentFragment
+	}
+}

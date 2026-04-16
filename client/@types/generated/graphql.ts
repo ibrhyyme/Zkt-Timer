@@ -128,6 +128,17 @@ export type Scalars = {
   Void: any;
 };
 
+export type AddZktCompetitorManuallyInput = {
+  competitionId?: InputMaybe<Scalars['String']>;
+  eventIds?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type AddZktDelegateInput = {
+  competitionId?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type AdminSendPushResult = {
   __typename?: 'AdminSendPushResult';
   success?: Maybe<Scalars['Boolean']>;
@@ -185,6 +196,14 @@ export type AnnouncementFilterInput = {
   category?: InputMaybe<Scalars['String']>;
   isActive?: InputMaybe<Scalars['Boolean']>;
   isDraft?: InputMaybe<Scalars['Boolean']>;
+};
+
+export type AssignUserInput = {
+  groupId?: InputMaybe<Scalars['String']>;
+  role?: InputMaybe<ZktAssignmentRole>;
+  roundId?: InputMaybe<Scalars['String']>;
+  stationNumber?: InputMaybe<Scalars['Int']>;
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type BackfillResult = {
@@ -251,6 +270,12 @@ export type BanUserInput = {
   user_id?: InputMaybe<Scalars['String']>;
 };
 
+export type BulkAssignCompetitorsInput = {
+  groupCount?: InputMaybe<Scalars['Int']>;
+  roundId?: InputMaybe<Scalars['String']>;
+  userIds?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
 export type BulkEmailResult = {
   __typename?: 'BulkEmailResult';
   failCount?: Maybe<Scalars['Int']>;
@@ -270,11 +295,39 @@ export type CreateAnnouncementInput = {
   translations?: InputMaybe<Scalars['String']>;
 };
 
+export type CreateGroupInput = {
+  groupNumber?: InputMaybe<Scalars['Int']>;
+  roundId?: InputMaybe<Scalars['String']>;
+};
+
 export type CreatePromoCodeInput = {
   code?: InputMaybe<Scalars['String']>;
   duration_minutes?: InputMaybe<Scalars['Int']>;
   max_uses?: InputMaybe<Scalars['Int']>;
   membership_type?: InputMaybe<Scalars['String']>;
+};
+
+export type CreateZktCompetitionInput = {
+  competitorLimit?: InputMaybe<Scalars['Int']>;
+  dateEnd?: InputMaybe<Scalars['String']>;
+  dateStart?: InputMaybe<Scalars['String']>;
+  description?: InputMaybe<Scalars['String']>;
+  eventIds?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  location?: InputMaybe<Scalars['String']>;
+  locationAddress?: InputMaybe<Scalars['String']>;
+  name?: InputMaybe<Scalars['String']>;
+  visibility?: InputMaybe<ZktCompVisibility>;
+};
+
+export type CreateZktRoundInput = {
+  advancementLevel?: InputMaybe<Scalars['Int']>;
+  advancementType?: InputMaybe<ZktAdvancementType>;
+  compEventId?: InputMaybe<Scalars['String']>;
+  cutoffAttempts?: InputMaybe<Scalars['Int']>;
+  cutoffCs?: InputMaybe<Scalars['Int']>;
+  format?: InputMaybe<ZktRoundFormat>;
+  roundNumber?: InputMaybe<Scalars['Int']>;
+  timeLimitCs?: InputMaybe<Scalars['Int']>;
 };
 
 export type CustomCubeType = {
@@ -579,13 +632,17 @@ export type Mutation = {
   __typename?: 'Mutation';
   addBadgeToUser?: Maybe<Badge>;
   addNewSmartDevice?: Maybe<SmartDevice>;
+  addZktCompetitorManually?: Maybe<ZktRegistration>;
+  addZktDelegate?: Maybe<ZktCompDelegate>;
   adminDeleteTrainerAlternative?: Maybe<TrainerAlternative>;
   adminDeleteUserAccount?: Maybe<UserAccount>;
   adminSendPushToUser?: Maybe<AdminSendPushResult>;
+  assignUserToRound?: Maybe<ZktAssignment>;
   authenticateUser: PublicUserAccount;
   authenticateWithWca?: Maybe<WcaOAuthResult>;
   backfillWcaIds?: Maybe<BackfillResult>;
   banUserAccount?: Maybe<BanLog>;
+  bulkAssignCompetitors?: Maybe<Array<Maybe<ZktAssignment>>>;
   bulkCreateSessions?: Maybe<Scalars['Void']>;
   bulkCreateSolves?: Maybe<Scalars['Void']>;
   changeSmartDeviceName?: Maybe<SmartDevice>;
@@ -602,6 +659,9 @@ export type Mutation = {
   createSolve?: Maybe<Solve>;
   createTrainerAlternative?: Maybe<TrainerAlternative>;
   createUserAccount?: Maybe<PublicUserAccount>;
+  createZktCompetition?: Maybe<ZktCompetition>;
+  createZktGroup?: Maybe<ZktGroup>;
+  createZktRound?: Maybe<ZktRound>;
   deleteAlgorithmOverride?: Maybe<AlgorithmOverride>;
   deleteAllSolves?: Maybe<Scalars['Void']>;
   deleteAllSolvesInSession?: Maybe<Scalars['Void']>;
@@ -623,8 +683,13 @@ export type Mutation = {
   deleteTopSolve?: Maybe<TopSolve>;
   deleteTrainingSolves?: Maybe<Scalars['Void']>;
   deleteUserAccount?: Maybe<PublicUserAccount>;
+  deleteZktCompetition?: Maybe<Scalars['Boolean']>;
+  deleteZktGroup?: Maybe<Scalars['Boolean']>;
+  deleteZktResult?: Maybe<Scalars['Boolean']>;
+  deleteZktRound?: Maybe<Scalars['Boolean']>;
   editBadgeType?: Maybe<BadgeType>;
   fetchWcaRecords?: Maybe<Array<Maybe<WcaRecord>>>;
+  finalizeZktRound?: Maybe<ZktRound>;
   logOut: PublicUserAccount;
   markAnnouncementAsViewed?: Maybe<Scalars['Boolean']>;
   markNotificationAsRead?: Maybe<Notification>;
@@ -634,9 +699,11 @@ export type Mutation = {
   publishWcaRecord?: Maybe<WcaRecord>;
   recalculateAllRankings?: Maybe<Scalars['Boolean']>;
   redeemPromoCode?: Maybe<RedeemPromoCodeResult>;
+  registerForZktCompetition?: Maybe<ZktRegistration>;
   registerPushToken?: Maybe<PushTokenResult>;
   removeBadgeFromUser?: Maybe<Badge>;
   removeDailyGoal?: Maybe<Scalars['Boolean']>;
+  removeZktDelegate?: Maybe<Scalars['Boolean']>;
   reorderSessions?: Maybe<Scalars['Void']>;
   reportProfile?: Maybe<Report>;
   resendEmailVerificationCode?: Maybe<Scalars['Void']>;
@@ -652,8 +719,10 @@ export type Mutation = {
   setTimerBackgroundHex: TimerBackground;
   setUserPassword?: Maybe<PublicUserAccount>;
   setVerifiedStatus?: Maybe<UserAccount>;
+  submitZktResult?: Maybe<ZktResult>;
   testWcaNotification?: Maybe<Scalars['Boolean']>;
   togglePromoCodeActive?: Maybe<PromoCode>;
+  unassignUser?: Maybe<Scalars['Boolean']>;
   unbanUserAccount?: Maybe<UserAccount>;
   unpublishWcaRecord?: Maybe<WcaRecord>;
   unregisterPushToken?: Maybe<PushTokenResult>;
@@ -672,10 +741,16 @@ export type Mutation = {
   updateUserAccount?: Maybe<PublicUserAccount>;
   updateUserPassword?: Maybe<PublicUserAccount>;
   updateWcaVisibility?: Maybe<Integration>;
+  updateZktCompetition?: Maybe<ZktCompetition>;
+  updateZktCompetitionStatus?: Maybe<ZktCompetition>;
+  updateZktRegistrationStatus?: Maybe<ZktRegistration>;
+  updateZktRound?: Maybe<ZktRound>;
+  updateZktRoundStatus?: Maybe<ZktRound>;
   uploadProfileHeader: Image;
   uploadProfilePicture: Image;
   uploadTimerBackground: TimerBackground;
   verifyEmailCode?: Maybe<PublicUserAccount>;
+  withdrawZktRegistration?: Maybe<ZktRegistration>;
 };
 
 
@@ -688,6 +763,16 @@ export type MutationAddBadgeToUserArgs = {
 export type MutationAddNewSmartDeviceArgs = {
   deviceId?: InputMaybe<Scalars['String']>;
   originalName?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationAddZktCompetitorManuallyArgs = {
+  input?: InputMaybe<AddZktCompetitorManuallyInput>;
+};
+
+
+export type MutationAddZktDelegateArgs = {
+  input?: InputMaybe<AddZktDelegateInput>;
 };
 
 
@@ -708,6 +793,11 @@ export type MutationAdminSendPushToUserArgs = {
 };
 
 
+export type MutationAssignUserToRoundArgs = {
+  input?: InputMaybe<AssignUserInput>;
+};
+
+
 export type MutationAuthenticateUserArgs = {
   email: Scalars['String'];
   password: Scalars['String'];
@@ -722,6 +812,11 @@ export type MutationAuthenticateWithWcaArgs = {
 
 export type MutationBanUserAccountArgs = {
   input?: InputMaybe<BanUserInput>;
+};
+
+
+export type MutationBulkAssignCompetitorsArgs = {
+  input?: InputMaybe<BulkAssignCompetitorsInput>;
 };
 
 
@@ -813,6 +908,21 @@ export type MutationCreateUserAccountArgs = {
 };
 
 
+export type MutationCreateZktCompetitionArgs = {
+  input?: InputMaybe<CreateZktCompetitionInput>;
+};
+
+
+export type MutationCreateZktGroupArgs = {
+  input?: InputMaybe<CreateGroupInput>;
+};
+
+
+export type MutationCreateZktRoundArgs = {
+  input?: InputMaybe<CreateZktRoundInput>;
+};
+
+
 export type MutationDeleteAlgorithmOverrideArgs = {
   algoKey?: InputMaybe<Scalars['String']>;
 };
@@ -898,9 +1008,34 @@ export type MutationDeleteTrainingSolvesArgs = {
 };
 
 
+export type MutationDeleteZktCompetitionArgs = {
+  id?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationDeleteZktGroupArgs = {
+  groupId?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationDeleteZktResultArgs = {
+  resultId?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationDeleteZktRoundArgs = {
+  roundId?: InputMaybe<Scalars['String']>;
+};
+
+
 export type MutationEditBadgeTypeArgs = {
   id?: InputMaybe<Scalars['String']>;
   input?: InputMaybe<BadgeTypeInput>;
+};
+
+
+export type MutationFinalizeZktRoundArgs = {
+  roundId?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -940,6 +1075,11 @@ export type MutationRedeemPromoCodeArgs = {
 };
 
 
+export type MutationRegisterForZktCompetitionArgs = {
+  input?: InputMaybe<ZktRegistrationInput>;
+};
+
+
 export type MutationRegisterPushTokenArgs = {
   input?: InputMaybe<RegisterPushTokenInput>;
 };
@@ -954,6 +1094,12 @@ export type MutationRemoveBadgeFromUserArgs = {
 export type MutationRemoveDailyGoalArgs = {
   cubeType?: InputMaybe<Scalars['String']>;
   scrambleSubset?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationRemoveZktDelegateArgs = {
+  competitionId?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -1035,6 +1181,11 @@ export type MutationSetVerifiedStatusArgs = {
 };
 
 
+export type MutationSubmitZktResultArgs = {
+  input?: InputMaybe<SubmitZktResultInput>;
+};
+
+
 export type MutationTestWcaNotificationArgs = {
   wcaId?: InputMaybe<Scalars['String']>;
 };
@@ -1043,6 +1194,11 @@ export type MutationTestWcaNotificationArgs = {
 export type MutationTogglePromoCodeActiveArgs = {
   id?: InputMaybe<Scalars['String']>;
   isActive?: InputMaybe<Scalars['Boolean']>;
+};
+
+
+export type MutationUnassignUserArgs = {
+  assignmentId?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -1152,6 +1308,32 @@ export type MutationUpdateWcaVisibilityArgs = {
 };
 
 
+export type MutationUpdateZktCompetitionArgs = {
+  id?: InputMaybe<Scalars['String']>;
+  input?: InputMaybe<UpdateZktCompetitionInput>;
+};
+
+
+export type MutationUpdateZktCompetitionStatusArgs = {
+  input?: InputMaybe<UpdateZktCompetitionStatusInput>;
+};
+
+
+export type MutationUpdateZktRegistrationStatusArgs = {
+  input?: InputMaybe<UpdateZktRegistrationStatusInput>;
+};
+
+
+export type MutationUpdateZktRoundArgs = {
+  input?: InputMaybe<UpdateZktRoundInput>;
+};
+
+
+export type MutationUpdateZktRoundStatusArgs = {
+  input?: InputMaybe<UpdateZktRoundStatusInput>;
+};
+
+
 export type MutationUploadProfileHeaderArgs = {
   file?: InputMaybe<Scalars['Upload']>;
 };
@@ -1171,6 +1353,11 @@ export type MutationVerifyEmailCodeArgs = {
   code: Scalars['String'];
   email: Scalars['String'];
   language?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationWithdrawZktRegistrationArgs = {
+  competitionId?: InputMaybe<Scalars['String']>;
 };
 
 export type Notification = {
@@ -1237,6 +1424,13 @@ export type PaginatedUserAccountsForAdmin = {
   __typename?: 'PaginatedUserAccountsForAdmin';
   hasMore?: Maybe<Scalars['Boolean']>;
   items?: Maybe<Array<Maybe<UserAccountForAdmin>>>;
+  total?: Maybe<Scalars['Int']>;
+};
+
+export type PaginatedZktCompetitions = {
+  __typename?: 'PaginatedZktCompetitions';
+  hasMore?: Maybe<Scalars['Boolean']>;
+  items?: Maybe<Array<Maybe<ZktCompetition>>>;
   total?: Maybe<Scalars['Int']>;
 };
 
@@ -1390,6 +1584,19 @@ export type Query = {
   wcaResults?: Maybe<Array<Maybe<WcaResult>>>;
   wcaSearchCompetitions?: Maybe<Array<Maybe<WcaCompetition>>>;
   youtubeSearch?: Maybe<Array<Maybe<YouTubeVideoResult>>>;
+  zktCompetition?: Maybe<ZktCompetition>;
+  zktCompetitionForAdmin?: Maybe<ZktCompetition>;
+  zktCompetitions?: Maybe<PaginatedZktCompetitions>;
+  zktCompetitionsForAdmin?: Maybe<PaginatedZktCompetitions>;
+  zktCompetitorResults?: Maybe<Array<Maybe<ZktResult>>>;
+  zktGroupAssignments?: Maybe<Array<Maybe<ZktAssignment>>>;
+  zktMyAssignments?: Maybe<Array<Maybe<ZktAssignment>>>;
+  zktMyCompetitions?: Maybe<Array<Maybe<ZktCompetition>>>;
+  zktRecords?: Maybe<Array<Maybe<ZktRecord>>>;
+  zktRecordsForEvent?: Maybe<Array<Maybe<ZktRecord>>>;
+  zktRoundAssignments?: Maybe<Array<Maybe<ZktAssignment>>>;
+  zktRoundResults?: Maybe<Array<Maybe<ZktResult>>>;
+  zktUserAssignments?: Maybe<Array<Maybe<ZktAssignment>>>;
 };
 
 
@@ -1556,6 +1763,70 @@ export type QueryWcaSearchCompetitionsArgs = {
 
 export type QueryYoutubeSearchArgs = {
   input?: InputMaybe<YouTubeSearchInput>;
+};
+
+
+export type QueryZktCompetitionArgs = {
+  id?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryZktCompetitionForAdminArgs = {
+  id?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryZktCompetitionsArgs = {
+  filter?: InputMaybe<ZktCompetitionFilterInput>;
+  page?: InputMaybe<Scalars['Int']>;
+  pageSize?: InputMaybe<Scalars['Int']>;
+  searchQuery?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryZktCompetitionsForAdminArgs = {
+  filter?: InputMaybe<ZktCompetitionFilterInput>;
+  page?: InputMaybe<Scalars['Int']>;
+  pageSize?: InputMaybe<Scalars['Int']>;
+  searchQuery?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryZktCompetitorResultsArgs = {
+  competitionId?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryZktGroupAssignmentsArgs = {
+  groupId?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryZktMyAssignmentsArgs = {
+  competitionId?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryZktRecordsForEventArgs = {
+  eventId?: InputMaybe<Scalars['String']>;
+  recordType?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryZktRoundAssignmentsArgs = {
+  roundId?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryZktRoundResultsArgs = {
+  roundId?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryZktUserAssignmentsArgs = {
+  competitionId?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type RankedUser = {
@@ -1875,6 +2146,16 @@ export type Store = {
   json?: Maybe<Scalars['String']>;
 };
 
+export type SubmitZktResultInput = {
+  attempt1?: InputMaybe<Scalars['Int']>;
+  attempt2?: InputMaybe<Scalars['Int']>;
+  attempt3?: InputMaybe<Scalars['Int']>;
+  attempt4?: InputMaybe<Scalars['Int']>;
+  attempt5?: InputMaybe<Scalars['Int']>;
+  roundId?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type TimerBackground = {
   __typename?: 'TimerBackground';
   created_at?: Maybe<Scalars['DateTime']>;
@@ -1983,6 +2264,43 @@ export type UpdateSiteConfigInput = {
   maintenance_mode?: InputMaybe<Scalars['Boolean']>;
   rooms_enabled?: InputMaybe<Scalars['Boolean']>;
   trainer_enabled?: InputMaybe<Scalars['Boolean']>;
+};
+
+export type UpdateZktCompetitionInput = {
+  competitorLimit?: InputMaybe<Scalars['Int']>;
+  dateEnd?: InputMaybe<Scalars['String']>;
+  dateStart?: InputMaybe<Scalars['String']>;
+  description?: InputMaybe<Scalars['String']>;
+  eventIds?: InputMaybe<Array<Scalars['String']>>;
+  location?: InputMaybe<Scalars['String']>;
+  locationAddress?: InputMaybe<Scalars['String']>;
+  name?: InputMaybe<Scalars['String']>;
+  visibility?: InputMaybe<ZktCompVisibility>;
+};
+
+export type UpdateZktCompetitionStatusInput = {
+  competitionId?: InputMaybe<Scalars['String']>;
+  status?: InputMaybe<ZktCompStatus>;
+};
+
+export type UpdateZktRegistrationStatusInput = {
+  registrationId?: InputMaybe<Scalars['String']>;
+  status?: InputMaybe<ZktRegistrationStatus>;
+};
+
+export type UpdateZktRoundInput = {
+  advancementLevel?: InputMaybe<Scalars['Int']>;
+  advancementType?: InputMaybe<ZktAdvancementType>;
+  cutoffAttempts?: InputMaybe<Scalars['Int']>;
+  cutoffCs?: InputMaybe<Scalars['Int']>;
+  format?: InputMaybe<ZktRoundFormat>;
+  roundId?: InputMaybe<Scalars['String']>;
+  timeLimitCs?: InputMaybe<Scalars['Int']>;
+};
+
+export type UpdateZktRoundStatusInput = {
+  roundId?: InputMaybe<Scalars['String']>;
+  status?: InputMaybe<ZktRoundStatus>;
 };
 
 export type UserAccount = IPublicUserAccount & IUserAccount & {
@@ -2505,6 +2823,207 @@ export type YouTubeVideoResult = {
   videoId?: Maybe<Scalars['String']>;
 };
 
+export enum ZktAdvancementType {
+  Percent = 'PERCENT',
+  Ranking = 'RANKING'
+}
+
+export type ZktAssignment = {
+  __typename?: 'ZktAssignment';
+  created_at?: Maybe<Scalars['DateTime']>;
+  group_id?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  role?: Maybe<ZktAssignmentRole>;
+  round_id?: Maybe<Scalars['String']>;
+  seed_result?: Maybe<Scalars['Int']>;
+  station_number?: Maybe<Scalars['Int']>;
+  updated_at?: Maybe<Scalars['DateTime']>;
+  user?: Maybe<PublicUserAccount>;
+  user_id?: Maybe<Scalars['String']>;
+};
+
+export enum ZktAssignmentRole {
+  Competitor = 'COMPETITOR',
+  Judge = 'JUDGE',
+  Organizer = 'ORGANIZER',
+  Runner = 'RUNNER',
+  Scrambler = 'SCRAMBLER',
+  Staff = 'STAFF'
+}
+
+export type ZktCompDelegate = {
+  __typename?: 'ZktCompDelegate';
+  competition_id?: Maybe<Scalars['String']>;
+  created_at?: Maybe<Scalars['DateTime']>;
+  id?: Maybe<Scalars['String']>;
+  user?: Maybe<PublicUserAccount>;
+  user_id?: Maybe<Scalars['String']>;
+};
+
+export type ZktCompetition = {
+  __typename?: 'ZktCompetition';
+  competitor_limit?: Maybe<Scalars['Int']>;
+  created_at?: Maybe<Scalars['DateTime']>;
+  created_by?: Maybe<PublicUserAccount>;
+  created_by_id?: Maybe<Scalars['String']>;
+  date_end?: Maybe<Scalars['DateTime']>;
+  date_start?: Maybe<Scalars['DateTime']>;
+  delegates?: Maybe<Array<ZktCompDelegate>>;
+  description?: Maybe<Scalars['String']>;
+  events?: Maybe<Array<ZktCompEvent>>;
+  id?: Maybe<Scalars['String']>;
+  location?: Maybe<Scalars['String']>;
+  location_address?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  registrations?: Maybe<Array<ZktRegistration>>;
+  status?: Maybe<ZktCompStatus>;
+  updated_at?: Maybe<Scalars['DateTime']>;
+  visibility?: Maybe<ZktCompVisibility>;
+};
+
+export type ZktCompetitionFilterInput = {
+  status?: InputMaybe<ZktCompStatus>;
+  visibility?: InputMaybe<ZktCompVisibility>;
+};
+
+export type ZktCompEvent = {
+  __typename?: 'ZktCompEvent';
+  competition_id?: Maybe<Scalars['String']>;
+  created_at?: Maybe<Scalars['DateTime']>;
+  event_id?: Maybe<Scalars['String']>;
+  event_order?: Maybe<Scalars['Int']>;
+  id?: Maybe<Scalars['String']>;
+  rounds?: Maybe<Array<ZktRound>>;
+};
+
+export enum ZktCompStatus {
+  Announced = 'ANNOUNCED',
+  Draft = 'DRAFT',
+  Finished = 'FINISHED',
+  Ongoing = 'ONGOING',
+  Published = 'PUBLISHED',
+  RegistrationClosed = 'REGISTRATION_CLOSED',
+  RegistrationOpen = 'REGISTRATION_OPEN'
+}
+
+export enum ZktCompVisibility {
+  Private = 'PRIVATE',
+  Public = 'PUBLIC'
+}
+
+export type ZktGroup = {
+  __typename?: 'ZktGroup';
+  created_at?: Maybe<Scalars['DateTime']>;
+  group_number?: Maybe<Scalars['Int']>;
+  id?: Maybe<Scalars['String']>;
+  round_id?: Maybe<Scalars['String']>;
+};
+
+export type ZktRecord = {
+  __typename?: 'ZktRecord';
+  competition_id?: Maybe<Scalars['String']>;
+  created_at?: Maybe<Scalars['DateTime']>;
+  event_id?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  record_type?: Maybe<Scalars['String']>;
+  result_id?: Maybe<Scalars['String']>;
+  set_at?: Maybe<Scalars['DateTime']>;
+  user?: Maybe<PublicUserAccount>;
+  user_id?: Maybe<Scalars['String']>;
+  value?: Maybe<Scalars['Int']>;
+};
+
+export type ZktRegistration = {
+  __typename?: 'ZktRegistration';
+  competition_id?: Maybe<Scalars['String']>;
+  created_at?: Maybe<Scalars['DateTime']>;
+  events?: Maybe<Array<ZktRegistrationEvent>>;
+  id?: Maybe<Scalars['String']>;
+  notes?: Maybe<Scalars['String']>;
+  status?: Maybe<ZktRegistrationStatus>;
+  updated_at?: Maybe<Scalars['DateTime']>;
+  user?: Maybe<PublicUserAccount>;
+  user_id?: Maybe<Scalars['String']>;
+};
+
+export type ZktRegistrationEvent = {
+  __typename?: 'ZktRegistrationEvent';
+  comp_event_id?: Maybe<Scalars['String']>;
+  created_at?: Maybe<Scalars['DateTime']>;
+  id?: Maybe<Scalars['String']>;
+  registration_id?: Maybe<Scalars['String']>;
+};
+
+export type ZktRegistrationInput = {
+  competitionId?: InputMaybe<Scalars['String']>;
+  eventIds?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  notes?: InputMaybe<Scalars['String']>;
+};
+
+export enum ZktRegistrationStatus {
+  Approved = 'APPROVED',
+  Pending = 'PENDING',
+  Rejected = 'REJECTED',
+  Waitlisted = 'WAITLISTED',
+  Withdrawn = 'WITHDRAWN'
+}
+
+export type ZktResult = {
+  __typename?: 'ZktResult';
+  attempt_1?: Maybe<Scalars['Int']>;
+  attempt_2?: Maybe<Scalars['Int']>;
+  attempt_3?: Maybe<Scalars['Int']>;
+  attempt_4?: Maybe<Scalars['Int']>;
+  attempt_5?: Maybe<Scalars['Int']>;
+  average?: Maybe<Scalars['Int']>;
+  average_record_tag?: Maybe<Scalars['String']>;
+  best?: Maybe<Scalars['Int']>;
+  created_at?: Maybe<Scalars['DateTime']>;
+  entered_by?: Maybe<PublicUserAccount>;
+  entered_by_id?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  proceeds?: Maybe<Scalars['Boolean']>;
+  ranking?: Maybe<Scalars['Int']>;
+  round_id?: Maybe<Scalars['String']>;
+  single_record_tag?: Maybe<Scalars['String']>;
+  updated_at?: Maybe<Scalars['DateTime']>;
+  user?: Maybe<PublicUserAccount>;
+  user_id?: Maybe<Scalars['String']>;
+};
+
+export type ZktRound = {
+  __typename?: 'ZktRound';
+  advancement_level?: Maybe<Scalars['Int']>;
+  advancement_type?: Maybe<ZktAdvancementType>;
+  comp_event_id?: Maybe<Scalars['String']>;
+  created_at?: Maybe<Scalars['DateTime']>;
+  cutoff_attempts?: Maybe<Scalars['Int']>;
+  cutoff_cs?: Maybe<Scalars['Int']>;
+  format?: Maybe<ZktRoundFormat>;
+  groups?: Maybe<Array<ZktGroup>>;
+  id?: Maybe<Scalars['String']>;
+  results?: Maybe<Array<ZktResult>>;
+  round_number?: Maybe<Scalars['Int']>;
+  status?: Maybe<ZktRoundStatus>;
+  time_limit_cs?: Maybe<Scalars['Int']>;
+  updated_at?: Maybe<Scalars['DateTime']>;
+};
+
+export enum ZktRoundFormat {
+  Ao5 = 'AO5',
+  Bo1 = 'BO1',
+  Bo2 = 'BO2',
+  Bo3 = 'BO3',
+  Mo3 = 'MO3'
+}
+
+export enum ZktRoundStatus {
+  Active = 'ACTIVE',
+  Finished = 'FINISHED',
+  Open = 'OPEN',
+  Upcoming = 'UPCOMING'
+}
+
 export type MiniSolveFragmentFragment = { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, session_id?: string | null, trainer_name?: string | null, bulk?: boolean | null, scramble?: string | null, from_timer?: boolean | null, training_session_id?: string | null, dnf?: boolean | null, plus_two?: boolean | null, is_smart_cube?: boolean | null, created_at?: any | null, started_at?: any | null, ended_at?: any | null };
 
 export type StatsFragmentFragment = { __typename?: 'Stats', profile_views?: number | null, solve_views?: number | null };
@@ -2592,6 +3111,24 @@ export type UserAccountSummaryFragmentFragment = { __typename?: 'UserAccountSumm
 export type UserForAdminFragmentFragment = { __typename?: 'UserAccountForAdmin', email?: string | null, join_country?: string | null, join_ip?: string | null, id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, reports_for?: Array<{ __typename?: 'Report', id?: string | null, reported_user_id?: string | null, created_by_id?: string | null, reason?: string | null, resolved_at?: any | null, created_at?: any | null, created_by?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, reported_user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null } | null> | null, settings?: { __typename?: 'Setting', id?: string | null, user_id?: string | null, focus_mode?: boolean | null, freeze_time?: number | null, inspection?: boolean | null, manual_entry?: boolean | null, inspection_delay?: number | null, session_id?: string | null, inverse_time_list?: boolean | null, hide_time_when_solving?: boolean | null, nav_collapsed?: boolean | null, timer_decimal_points?: number | null, pb_confetti?: boolean | null, play_inspection_sound?: boolean | null, zero_out_time_after_solve?: boolean | null, confirm_delete_solve?: boolean | null, use_space_with_smart_cube?: boolean | null, use_2d_scramble_visual?: boolean | null, require_period_in_manual_time_entry?: boolean | null, cube_type?: string | null, scramble_subset?: string | null, custom_cube_types?: Array<{ __typename?: 'CustomCubeType', id?: string | null, user_id?: string | null, name?: string | null, created_at?: any | null, scramble?: string | null, private?: boolean | null } | null> | null } | null, notification_preferences?: { __typename?: 'NotificationPreference', marketing_emails?: boolean | null } | null, summary?: { __typename?: 'UserAccountSummary', solves?: number | null, reports_for?: number | null, reports_created?: number | null, profile_views?: number | null, bans?: number | null, timer_solves?: Array<{ __typename?: 'UserAccountSolvesSummary', count?: number | null, average?: number | null, min_time?: number | null, max_time?: number | null, sum?: number | null, cube_type?: string | null } | null> | null } | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null };
 
 export type ReportSummaryFragmentFragment = { __typename?: 'ReportSummary', last_report?: any | null, first_report?: any | null, count?: number | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, reports?: Array<{ __typename?: 'Report', id?: string | null, reported_user_id?: string | null, created_by_id?: string | null, reason?: string | null, resolved_at?: any | null, created_at?: any | null, created_by?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, reported_user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null } | null> | null };
+
+export type ZktResultFragmentFragment = { __typename?: 'ZktResult', id?: string | null, round_id?: string | null, user_id?: string | null, attempt_1?: number | null, attempt_2?: number | null, attempt_3?: number | null, attempt_4?: number | null, attempt_5?: number | null, best?: number | null, average?: number | null, ranking?: number | null, proceeds?: boolean | null, single_record_tag?: string | null, average_record_tag?: string | null, entered_by_id?: string | null, created_at?: any | null, updated_at?: any | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null };
+
+export type ZktRoundFragmentFragment = { __typename?: 'ZktRound', id?: string | null, comp_event_id?: string | null, round_number?: number | null, format?: ZktRoundFormat | null, time_limit_cs?: number | null, cutoff_cs?: number | null, cutoff_attempts?: number | null, advancement_type?: ZktAdvancementType | null, advancement_level?: number | null, status?: ZktRoundStatus | null, created_at?: any | null, updated_at?: any | null, groups?: Array<{ __typename?: 'ZktGroup', id?: string | null, group_number?: number | null }> | null };
+
+export type ZktCompEventFragmentFragment = { __typename?: 'ZktCompEvent', id?: string | null, competition_id?: string | null, event_id?: string | null, event_order?: number | null, rounds?: Array<{ __typename?: 'ZktRound', id?: string | null, comp_event_id?: string | null, round_number?: number | null, format?: ZktRoundFormat | null, time_limit_cs?: number | null, cutoff_cs?: number | null, cutoff_attempts?: number | null, advancement_type?: ZktAdvancementType | null, advancement_level?: number | null, status?: ZktRoundStatus | null, created_at?: any | null, updated_at?: any | null, groups?: Array<{ __typename?: 'ZktGroup', id?: string | null, group_number?: number | null }> | null }> | null };
+
+export type ZktRegistrationFragmentFragment = { __typename?: 'ZktRegistration', id?: string | null, competition_id?: string | null, user_id?: string | null, status?: ZktRegistrationStatus | null, notes?: string | null, created_at?: any | null, updated_at?: any | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, events?: Array<{ __typename?: 'ZktRegistrationEvent', id?: string | null, comp_event_id?: string | null }> | null };
+
+export type ZktCompDelegateFragmentFragment = { __typename?: 'ZktCompDelegate', id?: string | null, competition_id?: string | null, user_id?: string | null, created_at?: any | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null };
+
+export type ZktCompetitionSummaryFragmentFragment = { __typename?: 'ZktCompetition', id?: string | null, name?: string | null, description?: string | null, date_start?: any | null, date_end?: any | null, location?: string | null, location_address?: string | null, competitor_limit?: number | null, status?: ZktCompStatus | null, visibility?: ZktCompVisibility | null, created_by_id?: string | null, created_at?: any | null, updated_at?: any | null, events?: Array<{ __typename?: 'ZktCompEvent', id?: string | null, event_id?: string | null, event_order?: number | null }> | null };
+
+export type ZktCompetitionFullFragmentFragment = { __typename?: 'ZktCompetition', id?: string | null, name?: string | null, description?: string | null, date_start?: any | null, date_end?: any | null, location?: string | null, location_address?: string | null, competitor_limit?: number | null, status?: ZktCompStatus | null, visibility?: ZktCompVisibility | null, created_by_id?: string | null, created_at?: any | null, updated_at?: any | null, created_by?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, events?: Array<{ __typename?: 'ZktCompEvent', id?: string | null, event_id?: string | null, event_order?: number | null, competition_id?: string | null, rounds?: Array<{ __typename?: 'ZktRound', id?: string | null, comp_event_id?: string | null, round_number?: number | null, format?: ZktRoundFormat | null, time_limit_cs?: number | null, cutoff_cs?: number | null, cutoff_attempts?: number | null, advancement_type?: ZktAdvancementType | null, advancement_level?: number | null, status?: ZktRoundStatus | null, created_at?: any | null, updated_at?: any | null, groups?: Array<{ __typename?: 'ZktGroup', id?: string | null, group_number?: number | null }> | null }> | null }> | null, registrations?: Array<{ __typename?: 'ZktRegistration', id?: string | null, competition_id?: string | null, user_id?: string | null, status?: ZktRegistrationStatus | null, notes?: string | null, created_at?: any | null, updated_at?: any | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, events?: Array<{ __typename?: 'ZktRegistrationEvent', id?: string | null, comp_event_id?: string | null }> | null }> | null, delegates?: Array<{ __typename?: 'ZktCompDelegate', id?: string | null, competition_id?: string | null, user_id?: string | null, created_at?: any | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null }> | null };
+
+export type ZktRecordFragmentFragment = { __typename?: 'ZktRecord', id?: string | null, event_id?: string | null, record_type?: string | null, value?: number | null, user_id?: string | null, result_id?: string | null, competition_id?: string | null, set_at?: any | null, created_at?: any | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null };
+
+export type ZktAssignmentFragmentFragment = { __typename?: 'ZktAssignment', id?: string | null, round_id?: string | null, group_id?: string | null, user_id?: string | null, role?: ZktAssignmentRole | null, station_number?: number | null, seed_result?: number | null, created_at?: any | null, updated_at?: any | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null };
 
 export type UpdateSiteConfigMutationVariables = Exact<{
   input: UpdateSiteConfigInput;
@@ -2684,6 +3221,162 @@ export type BackfillWcaIdsMutationVariables = Exact<{ [key: string]: never; }>;
 
 
 export type BackfillWcaIdsMutation = { __typename?: 'Mutation', backfillWcaIds?: { __typename?: 'BackfillResult', total?: number | null, filled?: number | null, tokenFailed?: number | null, noWcaId?: number | null, error?: number | null, recordsTotal?: number | null, recordsFilled?: number | null, recordsError?: number | null } | null };
+
+export type CreateZktCompetitionMutationVariables = Exact<{
+  input: CreateZktCompetitionInput;
+}>;
+
+
+export type CreateZktCompetitionMutation = { __typename?: 'Mutation', createZktCompetition?: { __typename?: 'ZktCompetition', id?: string | null, name?: string | null, description?: string | null, date_start?: any | null, date_end?: any | null, location?: string | null, location_address?: string | null, competitor_limit?: number | null, status?: ZktCompStatus | null, visibility?: ZktCompVisibility | null, created_by_id?: string | null, created_at?: any | null, updated_at?: any | null, created_by?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, events?: Array<{ __typename?: 'ZktCompEvent', id?: string | null, event_id?: string | null, event_order?: number | null, competition_id?: string | null, rounds?: Array<{ __typename?: 'ZktRound', id?: string | null, comp_event_id?: string | null, round_number?: number | null, format?: ZktRoundFormat | null, time_limit_cs?: number | null, cutoff_cs?: number | null, cutoff_attempts?: number | null, advancement_type?: ZktAdvancementType | null, advancement_level?: number | null, status?: ZktRoundStatus | null, created_at?: any | null, updated_at?: any | null, groups?: Array<{ __typename?: 'ZktGroup', id?: string | null, group_number?: number | null }> | null }> | null }> | null, registrations?: Array<{ __typename?: 'ZktRegistration', id?: string | null, competition_id?: string | null, user_id?: string | null, status?: ZktRegistrationStatus | null, notes?: string | null, created_at?: any | null, updated_at?: any | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, events?: Array<{ __typename?: 'ZktRegistrationEvent', id?: string | null, comp_event_id?: string | null }> | null }> | null, delegates?: Array<{ __typename?: 'ZktCompDelegate', id?: string | null, competition_id?: string | null, user_id?: string | null, created_at?: any | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null }> | null } | null };
+
+export type UpdateZktCompetitionMutationVariables = Exact<{
+  id: Scalars['String'];
+  input: UpdateZktCompetitionInput;
+}>;
+
+
+export type UpdateZktCompetitionMutation = { __typename?: 'Mutation', updateZktCompetition?: { __typename?: 'ZktCompetition', id?: string | null, name?: string | null, description?: string | null, date_start?: any | null, date_end?: any | null, location?: string | null, location_address?: string | null, competitor_limit?: number | null, status?: ZktCompStatus | null, visibility?: ZktCompVisibility | null, created_by_id?: string | null, created_at?: any | null, updated_at?: any | null, events?: Array<{ __typename?: 'ZktCompEvent', id?: string | null, event_id?: string | null, event_order?: number | null }> | null } | null };
+
+export type UpdateZktCompetitionStatusMutationVariables = Exact<{
+  input: UpdateZktCompetitionStatusInput;
+}>;
+
+
+export type UpdateZktCompetitionStatusMutation = { __typename?: 'Mutation', updateZktCompetitionStatus?: { __typename?: 'ZktCompetition', id?: string | null, name?: string | null, description?: string | null, date_start?: any | null, date_end?: any | null, location?: string | null, location_address?: string | null, competitor_limit?: number | null, status?: ZktCompStatus | null, visibility?: ZktCompVisibility | null, created_by_id?: string | null, created_at?: any | null, updated_at?: any | null, events?: Array<{ __typename?: 'ZktCompEvent', id?: string | null, event_id?: string | null, event_order?: number | null }> | null } | null };
+
+export type DeleteZktCompetitionMutationVariables = Exact<{
+  id: Scalars['String'];
+}>;
+
+
+export type DeleteZktCompetitionMutation = { __typename?: 'Mutation', deleteZktCompetition?: boolean | null };
+
+export type RegisterForZktCompetitionMutationVariables = Exact<{
+  input: ZktRegistrationInput;
+}>;
+
+
+export type RegisterForZktCompetitionMutation = { __typename?: 'Mutation', registerForZktCompetition?: { __typename?: 'ZktRegistration', id?: string | null, competition_id?: string | null, user_id?: string | null, status?: ZktRegistrationStatus | null, notes?: string | null, created_at?: any | null, updated_at?: any | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, events?: Array<{ __typename?: 'ZktRegistrationEvent', id?: string | null, comp_event_id?: string | null }> | null } | null };
+
+export type WithdrawZktRegistrationMutationVariables = Exact<{
+  competitionId: Scalars['String'];
+}>;
+
+
+export type WithdrawZktRegistrationMutation = { __typename?: 'Mutation', withdrawZktRegistration?: { __typename?: 'ZktRegistration', id?: string | null, competition_id?: string | null, user_id?: string | null, status?: ZktRegistrationStatus | null, notes?: string | null, created_at?: any | null, updated_at?: any | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, events?: Array<{ __typename?: 'ZktRegistrationEvent', id?: string | null, comp_event_id?: string | null }> | null } | null };
+
+export type UpdateZktRegistrationStatusMutationVariables = Exact<{
+  input: UpdateZktRegistrationStatusInput;
+}>;
+
+
+export type UpdateZktRegistrationStatusMutation = { __typename?: 'Mutation', updateZktRegistrationStatus?: { __typename?: 'ZktRegistration', id?: string | null, competition_id?: string | null, user_id?: string | null, status?: ZktRegistrationStatus | null, notes?: string | null, created_at?: any | null, updated_at?: any | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, events?: Array<{ __typename?: 'ZktRegistrationEvent', id?: string | null, comp_event_id?: string | null }> | null } | null };
+
+export type AddZktCompetitorManuallyMutationVariables = Exact<{
+  input: AddZktCompetitorManuallyInput;
+}>;
+
+
+export type AddZktCompetitorManuallyMutation = { __typename?: 'Mutation', addZktCompetitorManually?: { __typename?: 'ZktRegistration', id?: string | null, competition_id?: string | null, user_id?: string | null, status?: ZktRegistrationStatus | null, notes?: string | null, created_at?: any | null, updated_at?: any | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, events?: Array<{ __typename?: 'ZktRegistrationEvent', id?: string | null, comp_event_id?: string | null }> | null } | null };
+
+export type AddZktDelegateMutationVariables = Exact<{
+  input: AddZktDelegateInput;
+}>;
+
+
+export type AddZktDelegateMutation = { __typename?: 'Mutation', addZktDelegate?: { __typename?: 'ZktCompDelegate', id?: string | null, competition_id?: string | null, user_id?: string | null, created_at?: any | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null } | null };
+
+export type RemoveZktDelegateMutationVariables = Exact<{
+  competitionId: Scalars['String'];
+  userId: Scalars['String'];
+}>;
+
+
+export type RemoveZktDelegateMutation = { __typename?: 'Mutation', removeZktDelegate?: boolean | null };
+
+export type SubmitZktResultMutationVariables = Exact<{
+  input: SubmitZktResultInput;
+}>;
+
+
+export type SubmitZktResultMutation = { __typename?: 'Mutation', submitZktResult?: { __typename?: 'ZktResult', id?: string | null, round_id?: string | null, user_id?: string | null, attempt_1?: number | null, attempt_2?: number | null, attempt_3?: number | null, attempt_4?: number | null, attempt_5?: number | null, best?: number | null, average?: number | null, ranking?: number | null, proceeds?: boolean | null, single_record_tag?: string | null, average_record_tag?: string | null, entered_by_id?: string | null, created_at?: any | null, updated_at?: any | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null } | null };
+
+export type DeleteZktResultMutationVariables = Exact<{
+  resultId: Scalars['String'];
+}>;
+
+
+export type DeleteZktResultMutation = { __typename?: 'Mutation', deleteZktResult?: boolean | null };
+
+export type FinalizeZktRoundMutationVariables = Exact<{
+  roundId: Scalars['String'];
+}>;
+
+
+export type FinalizeZktRoundMutation = { __typename?: 'Mutation', finalizeZktRound?: { __typename?: 'ZktRound', id?: string | null, comp_event_id?: string | null, round_number?: number | null, format?: ZktRoundFormat | null, time_limit_cs?: number | null, cutoff_cs?: number | null, cutoff_attempts?: number | null, advancement_type?: ZktAdvancementType | null, advancement_level?: number | null, status?: ZktRoundStatus | null, created_at?: any | null, updated_at?: any | null, results?: Array<{ __typename?: 'ZktResult', id?: string | null, round_id?: string | null, user_id?: string | null, attempt_1?: number | null, attempt_2?: number | null, attempt_3?: number | null, attempt_4?: number | null, attempt_5?: number | null, best?: number | null, average?: number | null, ranking?: number | null, proceeds?: boolean | null, single_record_tag?: string | null, average_record_tag?: string | null, entered_by_id?: string | null, created_at?: any | null, updated_at?: any | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null }> | null, groups?: Array<{ __typename?: 'ZktGroup', id?: string | null, group_number?: number | null }> | null } | null };
+
+export type UpdateZktRoundStatusMutationVariables = Exact<{
+  input: UpdateZktRoundStatusInput;
+}>;
+
+
+export type UpdateZktRoundStatusMutation = { __typename?: 'Mutation', updateZktRoundStatus?: { __typename?: 'ZktRound', id?: string | null, comp_event_id?: string | null, round_number?: number | null, format?: ZktRoundFormat | null, time_limit_cs?: number | null, cutoff_cs?: number | null, cutoff_attempts?: number | null, advancement_type?: ZktAdvancementType | null, advancement_level?: number | null, status?: ZktRoundStatus | null, created_at?: any | null, updated_at?: any | null, groups?: Array<{ __typename?: 'ZktGroup', id?: string | null, group_number?: number | null }> | null } | null };
+
+export type CreateZktRoundMutationVariables = Exact<{
+  input: CreateZktRoundInput;
+}>;
+
+
+export type CreateZktRoundMutation = { __typename?: 'Mutation', createZktRound?: { __typename?: 'ZktRound', id?: string | null, comp_event_id?: string | null, round_number?: number | null, format?: ZktRoundFormat | null, time_limit_cs?: number | null, cutoff_cs?: number | null, cutoff_attempts?: number | null, advancement_type?: ZktAdvancementType | null, advancement_level?: number | null, status?: ZktRoundStatus | null, created_at?: any | null, updated_at?: any | null, groups?: Array<{ __typename?: 'ZktGroup', id?: string | null, group_number?: number | null }> | null } | null };
+
+export type UpdateZktRoundMutationVariables = Exact<{
+  input: UpdateZktRoundInput;
+}>;
+
+
+export type UpdateZktRoundMutation = { __typename?: 'Mutation', updateZktRound?: { __typename?: 'ZktRound', id?: string | null, comp_event_id?: string | null, round_number?: number | null, format?: ZktRoundFormat | null, time_limit_cs?: number | null, cutoff_cs?: number | null, cutoff_attempts?: number | null, advancement_type?: ZktAdvancementType | null, advancement_level?: number | null, status?: ZktRoundStatus | null, created_at?: any | null, updated_at?: any | null, groups?: Array<{ __typename?: 'ZktGroup', id?: string | null, group_number?: number | null }> | null } | null };
+
+export type DeleteZktRoundMutationVariables = Exact<{
+  roundId: Scalars['String'];
+}>;
+
+
+export type DeleteZktRoundMutation = { __typename?: 'Mutation', deleteZktRound?: boolean | null };
+
+export type AssignUserToRoundMutationVariables = Exact<{
+  input: AssignUserInput;
+}>;
+
+
+export type AssignUserToRoundMutation = { __typename?: 'Mutation', assignUserToRound?: { __typename?: 'ZktAssignment', id?: string | null, round_id?: string | null, group_id?: string | null, user_id?: string | null, role?: ZktAssignmentRole | null, station_number?: number | null, seed_result?: number | null, created_at?: any | null, updated_at?: any | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null } | null };
+
+export type UnassignUserMutationVariables = Exact<{
+  assignmentId: Scalars['String'];
+}>;
+
+
+export type UnassignUserMutation = { __typename?: 'Mutation', unassignUser?: boolean | null };
+
+export type CreateZktGroupMutationVariables = Exact<{
+  input: CreateGroupInput;
+}>;
+
+
+export type CreateZktGroupMutation = { __typename?: 'Mutation', createZktGroup?: { __typename?: 'ZktGroup', id?: string | null, round_id?: string | null, group_number?: number | null } | null };
+
+export type DeleteZktGroupMutationVariables = Exact<{
+  groupId: Scalars['String'];
+}>;
+
+
+export type DeleteZktGroupMutation = { __typename?: 'Mutation', deleteZktGroup?: boolean | null };
+
+export type BulkAssignCompetitorsMutationVariables = Exact<{
+  input: BulkAssignCompetitorsInput;
+}>;
+
+
+export type BulkAssignCompetitorsMutation = { __typename?: 'Mutation', bulkAssignCompetitors?: Array<{ __typename?: 'ZktAssignment', id?: string | null, round_id?: string | null, group_id?: string | null, user_id?: string | null, role?: ZktAssignmentRole | null, station_number?: number | null, seed_result?: number | null, created_at?: any | null, updated_at?: any | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null } | null> | null };
 
 export type SiteConfigQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -2826,6 +3519,102 @@ export type RankingsQueryVariables = Exact<{
 
 export type RankingsQuery = { __typename?: 'Query', rankings?: { __typename?: 'RankingsPage', total_count?: number | null, page?: number | null, rows?: Array<{ __typename?: 'RankedUser', rank?: number | null, user_id?: string | null, username?: string | null, is_pro?: boolean | null, wca_id?: string | null, country_iso2?: string | null, score?: number | null, wca_competition_count?: number | null, wca_medal_gold?: number | null, wca_medal_silver?: number | null, wca_medal_bronze?: number | null, pfp_image_url?: string | null } | null> | null } | null };
 
+export type ZktCompetitionsQueryVariables = Exact<{
+  page: Scalars['Int'];
+  pageSize: Scalars['Int'];
+  searchQuery: Scalars['String'];
+  filter?: InputMaybe<ZktCompetitionFilterInput>;
+}>;
+
+
+export type ZktCompetitionsQuery = { __typename?: 'Query', zktCompetitions?: { __typename?: 'PaginatedZktCompetitions', total?: number | null, hasMore?: boolean | null, items?: Array<{ __typename?: 'ZktCompetition', id?: string | null, name?: string | null, description?: string | null, date_start?: any | null, date_end?: any | null, location?: string | null, location_address?: string | null, competitor_limit?: number | null, status?: ZktCompStatus | null, visibility?: ZktCompVisibility | null, created_by_id?: string | null, created_at?: any | null, updated_at?: any | null, events?: Array<{ __typename?: 'ZktCompEvent', id?: string | null, event_id?: string | null, event_order?: number | null }> | null } | null> | null } | null };
+
+export type ZktCompetitionQueryVariables = Exact<{
+  id: Scalars['String'];
+}>;
+
+
+export type ZktCompetitionQuery = { __typename?: 'Query', zktCompetition?: { __typename?: 'ZktCompetition', id?: string | null, name?: string | null, description?: string | null, date_start?: any | null, date_end?: any | null, location?: string | null, location_address?: string | null, competitor_limit?: number | null, status?: ZktCompStatus | null, visibility?: ZktCompVisibility | null, created_by_id?: string | null, created_at?: any | null, updated_at?: any | null, created_by?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, events?: Array<{ __typename?: 'ZktCompEvent', id?: string | null, event_id?: string | null, event_order?: number | null, competition_id?: string | null, rounds?: Array<{ __typename?: 'ZktRound', id?: string | null, comp_event_id?: string | null, round_number?: number | null, format?: ZktRoundFormat | null, time_limit_cs?: number | null, cutoff_cs?: number | null, cutoff_attempts?: number | null, advancement_type?: ZktAdvancementType | null, advancement_level?: number | null, status?: ZktRoundStatus | null, created_at?: any | null, updated_at?: any | null, groups?: Array<{ __typename?: 'ZktGroup', id?: string | null, group_number?: number | null }> | null }> | null }> | null, registrations?: Array<{ __typename?: 'ZktRegistration', id?: string | null, competition_id?: string | null, user_id?: string | null, status?: ZktRegistrationStatus | null, notes?: string | null, created_at?: any | null, updated_at?: any | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, events?: Array<{ __typename?: 'ZktRegistrationEvent', id?: string | null, comp_event_id?: string | null }> | null }> | null, delegates?: Array<{ __typename?: 'ZktCompDelegate', id?: string | null, competition_id?: string | null, user_id?: string | null, created_at?: any | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null }> | null } | null };
+
+export type ZktMyCompetitionsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type ZktMyCompetitionsQuery = { __typename?: 'Query', zktMyCompetitions?: Array<{ __typename?: 'ZktCompetition', id?: string | null, name?: string | null, description?: string | null, date_start?: any | null, date_end?: any | null, location?: string | null, location_address?: string | null, competitor_limit?: number | null, status?: ZktCompStatus | null, visibility?: ZktCompVisibility | null, created_by_id?: string | null, created_at?: any | null, updated_at?: any | null, registrations?: Array<{ __typename?: 'ZktRegistration', id?: string | null, competition_id?: string | null, user_id?: string | null, status?: ZktRegistrationStatus | null, notes?: string | null, created_at?: any | null, updated_at?: any | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, events?: Array<{ __typename?: 'ZktRegistrationEvent', id?: string | null, comp_event_id?: string | null }> | null }> | null, delegates?: Array<{ __typename?: 'ZktCompDelegate', id?: string | null, competition_id?: string | null, user_id?: string | null, created_at?: any | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null }> | null, events?: Array<{ __typename?: 'ZktCompEvent', id?: string | null, event_id?: string | null, event_order?: number | null }> | null } | null> | null };
+
+export type ZktCompetitionsForAdminQueryVariables = Exact<{
+  page: Scalars['Int'];
+  pageSize: Scalars['Int'];
+  searchQuery: Scalars['String'];
+  filter?: InputMaybe<ZktCompetitionFilterInput>;
+}>;
+
+
+export type ZktCompetitionsForAdminQuery = { __typename?: 'Query', zktCompetitionsForAdmin?: { __typename?: 'PaginatedZktCompetitions', total?: number | null, hasMore?: boolean | null, items?: Array<{ __typename?: 'ZktCompetition', id?: string | null, name?: string | null, description?: string | null, date_start?: any | null, date_end?: any | null, location?: string | null, location_address?: string | null, competitor_limit?: number | null, status?: ZktCompStatus | null, visibility?: ZktCompVisibility | null, created_by_id?: string | null, created_at?: any | null, updated_at?: any | null, created_by?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, events?: Array<{ __typename?: 'ZktCompEvent', id?: string | null, event_id?: string | null, event_order?: number | null }> | null } | null> | null } | null };
+
+export type ZktCompetitionForAdminQueryVariables = Exact<{
+  id: Scalars['String'];
+}>;
+
+
+export type ZktCompetitionForAdminQuery = { __typename?: 'Query', zktCompetitionForAdmin?: { __typename?: 'ZktCompetition', id?: string | null, name?: string | null, description?: string | null, date_start?: any | null, date_end?: any | null, location?: string | null, location_address?: string | null, competitor_limit?: number | null, status?: ZktCompStatus | null, visibility?: ZktCompVisibility | null, created_by_id?: string | null, created_at?: any | null, updated_at?: any | null, created_by?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, events?: Array<{ __typename?: 'ZktCompEvent', id?: string | null, event_id?: string | null, event_order?: number | null, competition_id?: string | null, rounds?: Array<{ __typename?: 'ZktRound', id?: string | null, comp_event_id?: string | null, round_number?: number | null, format?: ZktRoundFormat | null, time_limit_cs?: number | null, cutoff_cs?: number | null, cutoff_attempts?: number | null, advancement_type?: ZktAdvancementType | null, advancement_level?: number | null, status?: ZktRoundStatus | null, created_at?: any | null, updated_at?: any | null, groups?: Array<{ __typename?: 'ZktGroup', id?: string | null, group_number?: number | null }> | null }> | null }> | null, registrations?: Array<{ __typename?: 'ZktRegistration', id?: string | null, competition_id?: string | null, user_id?: string | null, status?: ZktRegistrationStatus | null, notes?: string | null, created_at?: any | null, updated_at?: any | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null, events?: Array<{ __typename?: 'ZktRegistrationEvent', id?: string | null, comp_event_id?: string | null }> | null }> | null, delegates?: Array<{ __typename?: 'ZktCompDelegate', id?: string | null, competition_id?: string | null, user_id?: string | null, created_at?: any | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null }> | null } | null };
+
+export type ZktRoundResultsQueryVariables = Exact<{
+  roundId: Scalars['String'];
+}>;
+
+
+export type ZktRoundResultsQuery = { __typename?: 'Query', zktRoundResults?: Array<{ __typename?: 'ZktResult', id?: string | null, round_id?: string | null, user_id?: string | null, attempt_1?: number | null, attempt_2?: number | null, attempt_3?: number | null, attempt_4?: number | null, attempt_5?: number | null, best?: number | null, average?: number | null, ranking?: number | null, proceeds?: boolean | null, single_record_tag?: string | null, average_record_tag?: string | null, entered_by_id?: string | null, created_at?: any | null, updated_at?: any | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null } | null> | null };
+
+export type ZktCompetitorResultsQueryVariables = Exact<{
+  competitionId: Scalars['String'];
+  userId: Scalars['String'];
+}>;
+
+
+export type ZktCompetitorResultsQuery = { __typename?: 'Query', zktCompetitorResults?: Array<{ __typename?: 'ZktResult', id?: string | null, round_id?: string | null, user_id?: string | null, attempt_1?: number | null, attempt_2?: number | null, attempt_3?: number | null, attempt_4?: number | null, attempt_5?: number | null, best?: number | null, average?: number | null, ranking?: number | null, proceeds?: boolean | null, single_record_tag?: string | null, average_record_tag?: string | null, entered_by_id?: string | null, created_at?: any | null, updated_at?: any | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null } | null> | null };
+
+export type ZktRecordsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type ZktRecordsQuery = { __typename?: 'Query', zktRecords?: Array<{ __typename?: 'ZktRecord', id?: string | null, event_id?: string | null, record_type?: string | null, value?: number | null, user_id?: string | null, result_id?: string | null, competition_id?: string | null, set_at?: any | null, created_at?: any | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null } | null> | null };
+
+export type ZktRecordsForEventQueryVariables = Exact<{
+  eventId: Scalars['String'];
+  recordType: Scalars['String'];
+}>;
+
+
+export type ZktRecordsForEventQuery = { __typename?: 'Query', zktRecordsForEvent?: Array<{ __typename?: 'ZktRecord', id?: string | null, event_id?: string | null, record_type?: string | null, value?: number | null, user_id?: string | null, result_id?: string | null, competition_id?: string | null, set_at?: any | null, created_at?: any | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null } | null> | null };
+
+export type ZktRoundAssignmentsQueryVariables = Exact<{
+  roundId: Scalars['String'];
+}>;
+
+
+export type ZktRoundAssignmentsQuery = { __typename?: 'Query', zktRoundAssignments?: Array<{ __typename?: 'ZktAssignment', id?: string | null, round_id?: string | null, group_id?: string | null, user_id?: string | null, role?: ZktAssignmentRole | null, station_number?: number | null, seed_result?: number | null, created_at?: any | null, updated_at?: any | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null } | null> | null };
+
+export type ZktGroupAssignmentsQueryVariables = Exact<{
+  groupId: Scalars['String'];
+}>;
+
+
+export type ZktGroupAssignmentsQuery = { __typename?: 'Query', zktGroupAssignments?: Array<{ __typename?: 'ZktAssignment', id?: string | null, round_id?: string | null, group_id?: string | null, user_id?: string | null, role?: ZktAssignmentRole | null, station_number?: number | null, seed_result?: number | null, created_at?: any | null, updated_at?: any | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null } | null> | null };
+
+export type ZktMyAssignmentsQueryVariables = Exact<{
+  competitionId: Scalars['String'];
+}>;
+
+
+export type ZktMyAssignmentsQuery = { __typename?: 'Query', zktMyAssignments?: Array<{ __typename?: 'ZktAssignment', id?: string | null, round_id?: string | null, group_id?: string | null, user_id?: string | null, role?: ZktAssignmentRole | null, station_number?: number | null, seed_result?: number | null, created_at?: any | null, updated_at?: any | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null } | null> | null };
+
+export type ZktUserAssignmentsQueryVariables = Exact<{
+  competitionId: Scalars['String'];
+  userId: Scalars['String'];
+}>;
+
+
+export type ZktUserAssignmentsQuery = { __typename?: 'Query', zktUserAssignments?: Array<{ __typename?: 'ZktAssignment', id?: string | null, round_id?: string | null, group_id?: string | null, user_id?: string | null, role?: ZktAssignmentRole | null, station_number?: number | null, seed_result?: number | null, created_at?: any | null, updated_at?: any | null, user?: { __typename?: 'PublicUserAccount', id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null } | null> | null };
+
 export const MiniSolveFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"MiniSolveFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Solve"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"time"}},{"kind":"Field","name":{"kind":"Name","value":"raw_time"}},{"kind":"Field","name":{"kind":"Name","value":"cube_type"}},{"kind":"Field","name":{"kind":"Name","value":"scramble_subset"}},{"kind":"Field","name":{"kind":"Name","value":"session_id"}},{"kind":"Field","name":{"kind":"Name","value":"trainer_name"}},{"kind":"Field","name":{"kind":"Name","value":"bulk"}},{"kind":"Field","name":{"kind":"Name","value":"scramble"}},{"kind":"Field","name":{"kind":"Name","value":"from_timer"}},{"kind":"Field","name":{"kind":"Name","value":"training_session_id"}},{"kind":"Field","name":{"kind":"Name","value":"dnf"}},{"kind":"Field","name":{"kind":"Name","value":"plus_two"}},{"kind":"Field","name":{"kind":"Name","value":"is_smart_cube"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"started_at"}},{"kind":"Field","name":{"kind":"Name","value":"ended_at"}}]}}]} as unknown as DocumentNode<MiniSolveFragmentFragment, unknown>;
 export const StatsFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"StatsFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Stats"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"profile_views"}},{"kind":"Field","name":{"kind":"Name","value":"solve_views"}}]}}]} as unknown as DocumentNode<StatsFragmentFragment, unknown>;
 export const StatsModuleBlockFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"StatsModuleBlockFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"StatsModuleBlock"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"statType"}},{"kind":"Field","name":{"kind":"Name","value":"sortBy"}},{"kind":"Field","name":{"kind":"Name","value":"session"}},{"kind":"Field","name":{"kind":"Name","value":"colorName"}},{"kind":"Field","name":{"kind":"Name","value":"averageCount"}}]}}]} as unknown as DocumentNode<StatsModuleBlockFragmentFragment, unknown>;
@@ -2856,6 +3645,15 @@ export const UserAccountSolvesSummaryFragmentFragmentDoc = {"kind":"Document","d
 export const UserAccountSummaryFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"UserAccountSummaryFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"UserAccountSummary"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"solves"}},{"kind":"Field","name":{"kind":"Name","value":"reports_for"}},{"kind":"Field","name":{"kind":"Name","value":"reports_created"}},{"kind":"Field","name":{"kind":"Name","value":"profile_views"}},{"kind":"Field","name":{"kind":"Name","value":"bans"}},{"kind":"Field","name":{"kind":"Name","value":"timer_solves"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"UserAccountSolvesSummaryFragment"}}]}}]}}]} as unknown as DocumentNode<UserAccountSummaryFragmentFragment, unknown>;
 export const UserForAdminFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"UserForAdminFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"UserAccountForAdmin"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PublicUserWithEloFragment"}},{"kind":"Field","name":{"kind":"Name","value":"email"}},{"kind":"Field","name":{"kind":"Name","value":"join_country"}},{"kind":"Field","name":{"kind":"Name","value":"join_ip"}},{"kind":"Field","name":{"kind":"Name","value":"reports_for"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ReportFragment"}}]}},{"kind":"Field","name":{"kind":"Name","value":"settings"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SettingsFragment"}}]}},{"kind":"Field","name":{"kind":"Name","value":"notification_preferences"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"NotificationPreferenceFragment"}}]}},{"kind":"Field","name":{"kind":"Name","value":"summary"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"UserAccountSummaryFragment"}}]}}]}}]} as unknown as DocumentNode<UserForAdminFragmentFragment, unknown>;
 export const ReportSummaryFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ReportSummaryFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ReportSummary"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"last_report"}},{"kind":"Field","name":{"kind":"Name","value":"first_report"}},{"kind":"Field","name":{"kind":"Name","value":"count"}},{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PublicUserWithEloFragment"}}]}},{"kind":"Field","name":{"kind":"Name","value":"reports"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ReportFragment"}}]}}]}}]} as unknown as DocumentNode<ReportSummaryFragmentFragment, unknown>;
+export const ZktResultFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ZktResultFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ZktResult"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"round_id"}},{"kind":"Field","name":{"kind":"Name","value":"user_id"}},{"kind":"Field","name":{"kind":"Name","value":"attempt_1"}},{"kind":"Field","name":{"kind":"Name","value":"attempt_2"}},{"kind":"Field","name":{"kind":"Name","value":"attempt_3"}},{"kind":"Field","name":{"kind":"Name","value":"attempt_4"}},{"kind":"Field","name":{"kind":"Name","value":"attempt_5"}},{"kind":"Field","name":{"kind":"Name","value":"best"}},{"kind":"Field","name":{"kind":"Name","value":"average"}},{"kind":"Field","name":{"kind":"Name","value":"ranking"}},{"kind":"Field","name":{"kind":"Name","value":"proceeds"}},{"kind":"Field","name":{"kind":"Name","value":"single_record_tag"}},{"kind":"Field","name":{"kind":"Name","value":"average_record_tag"}},{"kind":"Field","name":{"kind":"Name","value":"entered_by_id"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"updated_at"}},{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PublicUserFragment"}}]}}]}}]} as unknown as DocumentNode<ZktResultFragmentFragment, unknown>;
+export const ZktCompetitionSummaryFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ZktCompetitionSummaryFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ZktCompetition"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"date_start"}},{"kind":"Field","name":{"kind":"Name","value":"date_end"}},{"kind":"Field","name":{"kind":"Name","value":"location"}},{"kind":"Field","name":{"kind":"Name","value":"location_address"}},{"kind":"Field","name":{"kind":"Name","value":"competitor_limit"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"visibility"}},{"kind":"Field","name":{"kind":"Name","value":"created_by_id"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"updated_at"}},{"kind":"Field","name":{"kind":"Name","value":"events"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"event_id"}},{"kind":"Field","name":{"kind":"Name","value":"event_order"}}]}}]}}]} as unknown as DocumentNode<ZktCompetitionSummaryFragmentFragment, unknown>;
+export const ZktRoundFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ZktRoundFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ZktRound"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"comp_event_id"}},{"kind":"Field","name":{"kind":"Name","value":"round_number"}},{"kind":"Field","name":{"kind":"Name","value":"format"}},{"kind":"Field","name":{"kind":"Name","value":"time_limit_cs"}},{"kind":"Field","name":{"kind":"Name","value":"cutoff_cs"}},{"kind":"Field","name":{"kind":"Name","value":"cutoff_attempts"}},{"kind":"Field","name":{"kind":"Name","value":"advancement_type"}},{"kind":"Field","name":{"kind":"Name","value":"advancement_level"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"updated_at"}},{"kind":"Field","name":{"kind":"Name","value":"groups"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"group_number"}}]}}]}}]} as unknown as DocumentNode<ZktRoundFragmentFragment, unknown>;
+export const ZktCompEventFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ZktCompEventFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ZktCompEvent"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"competition_id"}},{"kind":"Field","name":{"kind":"Name","value":"event_id"}},{"kind":"Field","name":{"kind":"Name","value":"event_order"}},{"kind":"Field","name":{"kind":"Name","value":"rounds"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktRoundFragment"}}]}}]}}]} as unknown as DocumentNode<ZktCompEventFragmentFragment, unknown>;
+export const ZktRegistrationFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ZktRegistrationFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ZktRegistration"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"competition_id"}},{"kind":"Field","name":{"kind":"Name","value":"user_id"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"notes"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"updated_at"}},{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PublicUserFragment"}}]}},{"kind":"Field","name":{"kind":"Name","value":"events"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"comp_event_id"}}]}}]}}]} as unknown as DocumentNode<ZktRegistrationFragmentFragment, unknown>;
+export const ZktCompDelegateFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ZktCompDelegateFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ZktCompDelegate"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"competition_id"}},{"kind":"Field","name":{"kind":"Name","value":"user_id"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PublicUserFragment"}}]}}]}}]} as unknown as DocumentNode<ZktCompDelegateFragmentFragment, unknown>;
+export const ZktCompetitionFullFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ZktCompetitionFullFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ZktCompetition"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktCompetitionSummaryFragment"}},{"kind":"Field","name":{"kind":"Name","value":"created_by"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PublicUserFragment"}}]}},{"kind":"Field","name":{"kind":"Name","value":"events"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktCompEventFragment"}}]}},{"kind":"Field","name":{"kind":"Name","value":"registrations"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktRegistrationFragment"}}]}},{"kind":"Field","name":{"kind":"Name","value":"delegates"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktCompDelegateFragment"}}]}}]}}]} as unknown as DocumentNode<ZktCompetitionFullFragmentFragment, unknown>;
+export const ZktRecordFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ZktRecordFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ZktRecord"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"event_id"}},{"kind":"Field","name":{"kind":"Name","value":"record_type"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"user_id"}},{"kind":"Field","name":{"kind":"Name","value":"result_id"}},{"kind":"Field","name":{"kind":"Name","value":"competition_id"}},{"kind":"Field","name":{"kind":"Name","value":"set_at"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PublicUserFragment"}}]}}]}}]} as unknown as DocumentNode<ZktRecordFragmentFragment, unknown>;
+export const ZktAssignmentFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ZktAssignmentFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ZktAssignment"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"round_id"}},{"kind":"Field","name":{"kind":"Name","value":"group_id"}},{"kind":"Field","name":{"kind":"Name","value":"user_id"}},{"kind":"Field","name":{"kind":"Name","value":"role"}},{"kind":"Field","name":{"kind":"Name","value":"station_number"}},{"kind":"Field","name":{"kind":"Name","value":"seed_result"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"updated_at"}},{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PublicUserFragment"}}]}}]}}]} as unknown as DocumentNode<ZktAssignmentFragmentFragment, unknown>;
 export const UpdateSiteConfigDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"updateSiteConfig"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UpdateSiteConfigInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateSiteConfig"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"maintenance_mode"}},{"kind":"Field","name":{"kind":"Name","value":"trainer_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"community_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"leaderboards_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"rooms_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"battle_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"updated_at"}}]}}]}}]} as unknown as DocumentNode<UpdateSiteConfigMutation, UpdateSiteConfigMutationVariables>;
 export const MergeSessionsDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"mergeSessions"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"oldSessionId"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"newSessionId"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"mergeSessions"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"oldSessionId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"oldSessionId"}}},{"kind":"Argument","name":{"kind":"Name","value":"newSessionId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"newSessionId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SessionFragment"}}]}}]}},...SessionFragmentFragmentDoc.definitions]} as unknown as DocumentNode<MergeSessionsMutation, MergeSessionsMutationVariables>;
 export const CreateSessionDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"createSession"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"SessionInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createSession"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SessionFragment"}}]}}]}},...SessionFragmentFragmentDoc.definitions]} as unknown as DocumentNode<CreateSessionMutation, CreateSessionMutationVariables>;
@@ -2869,6 +3667,28 @@ export const DeleteAnnouncementDocument = {"kind":"Document","definitions":[{"ki
 export const CreateTrainerAlternativeDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"createTrainerAlternative"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"TrainerAlternativeCreateInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createTrainerAlternative"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"algorithm"}},{"kind":"Field","name":{"kind":"Name","value":"original_input"}},{"kind":"Field","name":{"kind":"Name","value":"setup"}},{"kind":"Field","name":{"kind":"Name","value":"ll_pattern"}}]}}]}}]} as unknown as DocumentNode<CreateTrainerAlternativeMutation, CreateTrainerAlternativeMutationVariables>;
 export const AdminDeleteTrainerAlternativeDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"adminDeleteTrainerAlternative"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"adminDeleteTrainerAlternative"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<AdminDeleteTrainerAlternativeMutation, AdminDeleteTrainerAlternativeMutationVariables>;
 export const BackfillWcaIdsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"backfillWcaIds"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"backfillWcaIds"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"total"}},{"kind":"Field","name":{"kind":"Name","value":"filled"}},{"kind":"Field","name":{"kind":"Name","value":"tokenFailed"}},{"kind":"Field","name":{"kind":"Name","value":"noWcaId"}},{"kind":"Field","name":{"kind":"Name","value":"error"}},{"kind":"Field","name":{"kind":"Name","value":"recordsTotal"}},{"kind":"Field","name":{"kind":"Name","value":"recordsFilled"}},{"kind":"Field","name":{"kind":"Name","value":"recordsError"}}]}}]}}]} as unknown as DocumentNode<BackfillWcaIdsMutation, BackfillWcaIdsMutationVariables>;
+export const CreateZktCompetitionDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"createZktCompetition"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateZktCompetitionInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createZktCompetition"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktCompetitionFullFragment"}}]}}]}},...ZktCompetitionFullFragmentFragmentDoc.definitions,...ZktCompetitionSummaryFragmentFragmentDoc.definitions,...PublicUserFragmentFragmentDoc.definitions,...ImageFragmentFragmentDoc.definitions,...ZktCompEventFragmentFragmentDoc.definitions,...ZktRoundFragmentFragmentDoc.definitions,...ZktRegistrationFragmentFragmentDoc.definitions,...ZktCompDelegateFragmentFragmentDoc.definitions]} as unknown as DocumentNode<CreateZktCompetitionMutation, CreateZktCompetitionMutationVariables>;
+export const UpdateZktCompetitionDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"updateZktCompetition"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UpdateZktCompetitionInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateZktCompetition"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktCompetitionSummaryFragment"}}]}}]}},...ZktCompetitionSummaryFragmentFragmentDoc.definitions]} as unknown as DocumentNode<UpdateZktCompetitionMutation, UpdateZktCompetitionMutationVariables>;
+export const UpdateZktCompetitionStatusDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"updateZktCompetitionStatus"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UpdateZktCompetitionStatusInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateZktCompetitionStatus"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktCompetitionSummaryFragment"}}]}}]}},...ZktCompetitionSummaryFragmentFragmentDoc.definitions]} as unknown as DocumentNode<UpdateZktCompetitionStatusMutation, UpdateZktCompetitionStatusMutationVariables>;
+export const DeleteZktCompetitionDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"deleteZktCompetition"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deleteZktCompetition"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}]}]}}]} as unknown as DocumentNode<DeleteZktCompetitionMutation, DeleteZktCompetitionMutationVariables>;
+export const RegisterForZktCompetitionDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"registerForZktCompetition"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ZktRegistrationInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"registerForZktCompetition"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktRegistrationFragment"}}]}}]}},...ZktRegistrationFragmentFragmentDoc.definitions,...PublicUserFragmentFragmentDoc.definitions,...ImageFragmentFragmentDoc.definitions]} as unknown as DocumentNode<RegisterForZktCompetitionMutation, RegisterForZktCompetitionMutationVariables>;
+export const WithdrawZktRegistrationDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"withdrawZktRegistration"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"competitionId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"withdrawZktRegistration"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"competitionId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"competitionId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktRegistrationFragment"}}]}}]}},...ZktRegistrationFragmentFragmentDoc.definitions,...PublicUserFragmentFragmentDoc.definitions,...ImageFragmentFragmentDoc.definitions]} as unknown as DocumentNode<WithdrawZktRegistrationMutation, WithdrawZktRegistrationMutationVariables>;
+export const UpdateZktRegistrationStatusDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"updateZktRegistrationStatus"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UpdateZktRegistrationStatusInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateZktRegistrationStatus"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktRegistrationFragment"}}]}}]}},...ZktRegistrationFragmentFragmentDoc.definitions,...PublicUserFragmentFragmentDoc.definitions,...ImageFragmentFragmentDoc.definitions]} as unknown as DocumentNode<UpdateZktRegistrationStatusMutation, UpdateZktRegistrationStatusMutationVariables>;
+export const AddZktCompetitorManuallyDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"addZktCompetitorManually"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"AddZktCompetitorManuallyInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"addZktCompetitorManually"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktRegistrationFragment"}}]}}]}},...ZktRegistrationFragmentFragmentDoc.definitions,...PublicUserFragmentFragmentDoc.definitions,...ImageFragmentFragmentDoc.definitions]} as unknown as DocumentNode<AddZktCompetitorManuallyMutation, AddZktCompetitorManuallyMutationVariables>;
+export const AddZktDelegateDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"addZktDelegate"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"AddZktDelegateInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"addZktDelegate"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktCompDelegateFragment"}}]}}]}},...ZktCompDelegateFragmentFragmentDoc.definitions,...PublicUserFragmentFragmentDoc.definitions,...ImageFragmentFragmentDoc.definitions]} as unknown as DocumentNode<AddZktDelegateMutation, AddZktDelegateMutationVariables>;
+export const RemoveZktDelegateDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"removeZktDelegate"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"competitionId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"userId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"removeZktDelegate"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"competitionId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"competitionId"}}},{"kind":"Argument","name":{"kind":"Name","value":"userId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"userId"}}}]}]}}]} as unknown as DocumentNode<RemoveZktDelegateMutation, RemoveZktDelegateMutationVariables>;
+export const SubmitZktResultDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"submitZktResult"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SubmitZktResultInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"submitZktResult"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktResultFragment"}}]}}]}},...ZktResultFragmentFragmentDoc.definitions,...PublicUserFragmentFragmentDoc.definitions,...ImageFragmentFragmentDoc.definitions]} as unknown as DocumentNode<SubmitZktResultMutation, SubmitZktResultMutationVariables>;
+export const DeleteZktResultDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"deleteZktResult"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"resultId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deleteZktResult"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"resultId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"resultId"}}}]}]}}]} as unknown as DocumentNode<DeleteZktResultMutation, DeleteZktResultMutationVariables>;
+export const FinalizeZktRoundDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"finalizeZktRound"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"roundId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"finalizeZktRound"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"roundId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"roundId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktRoundFragment"}},{"kind":"Field","name":{"kind":"Name","value":"results"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktResultFragment"}}]}}]}}]}},...ZktRoundFragmentFragmentDoc.definitions,...ZktResultFragmentFragmentDoc.definitions,...PublicUserFragmentFragmentDoc.definitions,...ImageFragmentFragmentDoc.definitions]} as unknown as DocumentNode<FinalizeZktRoundMutation, FinalizeZktRoundMutationVariables>;
+export const UpdateZktRoundStatusDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"updateZktRoundStatus"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UpdateZktRoundStatusInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateZktRoundStatus"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktRoundFragment"}}]}}]}},...ZktRoundFragmentFragmentDoc.definitions]} as unknown as DocumentNode<UpdateZktRoundStatusMutation, UpdateZktRoundStatusMutationVariables>;
+export const CreateZktRoundDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"createZktRound"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateZktRoundInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createZktRound"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktRoundFragment"}}]}}]}},...ZktRoundFragmentFragmentDoc.definitions]} as unknown as DocumentNode<CreateZktRoundMutation, CreateZktRoundMutationVariables>;
+export const UpdateZktRoundDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"updateZktRound"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UpdateZktRoundInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateZktRound"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktRoundFragment"}}]}}]}},...ZktRoundFragmentFragmentDoc.definitions]} as unknown as DocumentNode<UpdateZktRoundMutation, UpdateZktRoundMutationVariables>;
+export const DeleteZktRoundDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"deleteZktRound"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"roundId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deleteZktRound"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"roundId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"roundId"}}}]}]}}]} as unknown as DocumentNode<DeleteZktRoundMutation, DeleteZktRoundMutationVariables>;
+export const AssignUserToRoundDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"assignUserToRound"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"AssignUserInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"assignUserToRound"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktAssignmentFragment"}}]}}]}},...ZktAssignmentFragmentFragmentDoc.definitions,...PublicUserFragmentFragmentDoc.definitions,...ImageFragmentFragmentDoc.definitions]} as unknown as DocumentNode<AssignUserToRoundMutation, AssignUserToRoundMutationVariables>;
+export const UnassignUserDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"unassignUser"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"assignmentId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"unassignUser"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"assignmentId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"assignmentId"}}}]}]}}]} as unknown as DocumentNode<UnassignUserMutation, UnassignUserMutationVariables>;
+export const CreateZktGroupDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"createZktGroup"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateGroupInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createZktGroup"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"round_id"}},{"kind":"Field","name":{"kind":"Name","value":"group_number"}}]}}]}}]} as unknown as DocumentNode<CreateZktGroupMutation, CreateZktGroupMutationVariables>;
+export const DeleteZktGroupDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"deleteZktGroup"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"groupId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deleteZktGroup"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"groupId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"groupId"}}}]}]}}]} as unknown as DocumentNode<DeleteZktGroupMutation, DeleteZktGroupMutationVariables>;
+export const BulkAssignCompetitorsDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"bulkAssignCompetitors"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"BulkAssignCompetitorsInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"bulkAssignCompetitors"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktAssignmentFragment"}}]}}]}},...ZktAssignmentFragmentFragmentDoc.definitions,...PublicUserFragmentFragmentDoc.definitions,...ImageFragmentFragmentDoc.definitions]} as unknown as DocumentNode<BulkAssignCompetitorsMutation, BulkAssignCompetitorsMutationVariables>;
 export const SiteConfigDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"siteConfig"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"siteConfig"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"maintenance_mode"}},{"kind":"Field","name":{"kind":"Name","value":"trainer_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"community_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"leaderboards_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"rooms_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"battle_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"updated_at"}}]}}]}}]} as unknown as DocumentNode<SiteConfigQuery, SiteConfigQueryVariables>;
 export const OnlineStatsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"onlineStats"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"onlineStats"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"totalSockets"}},{"kind":"Field","name":{"kind":"Name","value":"uniqueUsers"}},{"kind":"Field","name":{"kind":"Name","value":"anonymous"}}]}}]}}]} as unknown as DocumentNode<OnlineStatsQuery, OnlineStatsQueryVariables>;
 export const OnlineUsersDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"onlineUsers"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"onlineUsers"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"tabCount"}},{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PublicUserFragment"}}]}}]}}]}},...PublicUserFragmentFragmentDoc.definitions,...ImageFragmentFragmentDoc.definitions]} as unknown as DocumentNode<OnlineUsersQuery, OnlineUsersQueryVariables>;
@@ -2890,3 +3710,16 @@ export const WcaLiveRoundResultsDocument = {"kind":"Document","definitions":[{"k
 export const WcaLiveCompetitorResultsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"wcaLiveCompetitorResults"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"WcaLiveCompetitorInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"wcaLiveCompetitorResults"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"personName"}},{"kind":"Field","name":{"kind":"Name","value":"personWcaId"}},{"kind":"Field","name":{"kind":"Name","value":"personCountryIso2"}},{"kind":"Field","name":{"kind":"Name","value":"results"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"eventId"}},{"kind":"Field","name":{"kind":"Name","value":"eventName"}},{"kind":"Field","name":{"kind":"Name","value":"roundNumber"}},{"kind":"Field","name":{"kind":"Name","value":"roundName"}},{"kind":"Field","name":{"kind":"Name","value":"ranking"}},{"kind":"Field","name":{"kind":"Name","value":"best"}},{"kind":"Field","name":{"kind":"Name","value":"average"}},{"kind":"Field","name":{"kind":"Name","value":"attempts"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"result"}}]}},{"kind":"Field","name":{"kind":"Name","value":"singleRecordTag"}},{"kind":"Field","name":{"kind":"Name","value":"averageRecordTag"}},{"kind":"Field","name":{"kind":"Name","value":"advancing"}},{"kind":"Field","name":{"kind":"Name","value":"advancingQuestionable"}},{"kind":"Field","name":{"kind":"Name","value":"format"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"numberOfAttempts"}},{"kind":"Field","name":{"kind":"Name","value":"sortBy"}}]}}]}}]}}]}}]} as unknown as DocumentNode<WcaLiveCompetitorResultsQuery, WcaLiveCompetitorResultsQueryVariables>;
 export const AdminTrainerAlternativesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"adminTrainerAlternatives"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"category"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"page"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pageSize"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"adminTrainerAlternatives"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"category"},"value":{"kind":"Variable","name":{"kind":"Name","value":"category"}}},{"kind":"Argument","name":{"kind":"Name","value":"page"},"value":{"kind":"Variable","name":{"kind":"Name","value":"page"}}},{"kind":"Argument","name":{"kind":"Name","value":"pageSize"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pageSize"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"items"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"category"}},{"kind":"Field","name":{"kind":"Name","value":"subset"}},{"kind":"Field","name":{"kind":"Name","value":"case_name"}},{"kind":"Field","name":{"kind":"Name","value":"algorithm"}},{"kind":"Field","name":{"kind":"Name","value":"original_input"}},{"kind":"Field","name":{"kind":"Name","value":"user_id"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}}]}},{"kind":"Field","name":{"kind":"Name","value":"total"}},{"kind":"Field","name":{"kind":"Name","value":"hasMore"}}]}}]}}]} as unknown as DocumentNode<AdminTrainerAlternativesQuery, AdminTrainerAlternativesQueryVariables>;
 export const RankingsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"rankings"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"mode"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"page"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"search"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"rankings"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"mode"},"value":{"kind":"Variable","name":{"kind":"Name","value":"mode"}}},{"kind":"Argument","name":{"kind":"Name","value":"page"},"value":{"kind":"Variable","name":{"kind":"Name","value":"page"}}},{"kind":"Argument","name":{"kind":"Name","value":"search"},"value":{"kind":"Variable","name":{"kind":"Name","value":"search"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"rows"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"rank"}},{"kind":"Field","name":{"kind":"Name","value":"user_id"}},{"kind":"Field","name":{"kind":"Name","value":"username"}},{"kind":"Field","name":{"kind":"Name","value":"is_pro"}},{"kind":"Field","name":{"kind":"Name","value":"wca_id"}},{"kind":"Field","name":{"kind":"Name","value":"country_iso2"}},{"kind":"Field","name":{"kind":"Name","value":"score"}},{"kind":"Field","name":{"kind":"Name","value":"wca_competition_count"}},{"kind":"Field","name":{"kind":"Name","value":"wca_medal_gold"}},{"kind":"Field","name":{"kind":"Name","value":"wca_medal_silver"}},{"kind":"Field","name":{"kind":"Name","value":"wca_medal_bronze"}},{"kind":"Field","name":{"kind":"Name","value":"pfp_image_url"}}]}},{"kind":"Field","name":{"kind":"Name","value":"total_count"}},{"kind":"Field","name":{"kind":"Name","value":"page"}}]}}]}}]} as unknown as DocumentNode<RankingsQuery, RankingsQueryVariables>;
+export const ZktCompetitionsDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"zktCompetitions"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"page"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pageSize"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"searchQuery"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"filter"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"ZktCompetitionFilterInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"zktCompetitions"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"page"},"value":{"kind":"Variable","name":{"kind":"Name","value":"page"}}},{"kind":"Argument","name":{"kind":"Name","value":"pageSize"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pageSize"}}},{"kind":"Argument","name":{"kind":"Name","value":"searchQuery"},"value":{"kind":"Variable","name":{"kind":"Name","value":"searchQuery"}}},{"kind":"Argument","name":{"kind":"Name","value":"filter"},"value":{"kind":"Variable","name":{"kind":"Name","value":"filter"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"items"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktCompetitionSummaryFragment"}}]}},{"kind":"Field","name":{"kind":"Name","value":"total"}},{"kind":"Field","name":{"kind":"Name","value":"hasMore"}}]}}]}},...ZktCompetitionSummaryFragmentFragmentDoc.definitions]} as unknown as DocumentNode<ZktCompetitionsQuery, ZktCompetitionsQueryVariables>;
+export const ZktCompetitionDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"zktCompetition"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"zktCompetition"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktCompetitionFullFragment"}}]}}]}},...ZktCompetitionFullFragmentFragmentDoc.definitions,...ZktCompetitionSummaryFragmentFragmentDoc.definitions,...PublicUserFragmentFragmentDoc.definitions,...ImageFragmentFragmentDoc.definitions,...ZktCompEventFragmentFragmentDoc.definitions,...ZktRoundFragmentFragmentDoc.definitions,...ZktRegistrationFragmentFragmentDoc.definitions,...ZktCompDelegateFragmentFragmentDoc.definitions]} as unknown as DocumentNode<ZktCompetitionQuery, ZktCompetitionQueryVariables>;
+export const ZktMyCompetitionsDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"zktMyCompetitions"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"zktMyCompetitions"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktCompetitionSummaryFragment"}},{"kind":"Field","name":{"kind":"Name","value":"registrations"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktRegistrationFragment"}}]}},{"kind":"Field","name":{"kind":"Name","value":"delegates"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktCompDelegateFragment"}}]}}]}}]}},...ZktCompetitionSummaryFragmentFragmentDoc.definitions,...ZktRegistrationFragmentFragmentDoc.definitions,...PublicUserFragmentFragmentDoc.definitions,...ImageFragmentFragmentDoc.definitions,...ZktCompDelegateFragmentFragmentDoc.definitions]} as unknown as DocumentNode<ZktMyCompetitionsQuery, ZktMyCompetitionsQueryVariables>;
+export const ZktCompetitionsForAdminDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"zktCompetitionsForAdmin"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"page"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pageSize"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"searchQuery"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"filter"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"ZktCompetitionFilterInput"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"zktCompetitionsForAdmin"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"page"},"value":{"kind":"Variable","name":{"kind":"Name","value":"page"}}},{"kind":"Argument","name":{"kind":"Name","value":"pageSize"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pageSize"}}},{"kind":"Argument","name":{"kind":"Name","value":"searchQuery"},"value":{"kind":"Variable","name":{"kind":"Name","value":"searchQuery"}}},{"kind":"Argument","name":{"kind":"Name","value":"filter"},"value":{"kind":"Variable","name":{"kind":"Name","value":"filter"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"items"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktCompetitionSummaryFragment"}},{"kind":"Field","name":{"kind":"Name","value":"created_by"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PublicUserFragment"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"total"}},{"kind":"Field","name":{"kind":"Name","value":"hasMore"}}]}}]}},...ZktCompetitionSummaryFragmentFragmentDoc.definitions,...PublicUserFragmentFragmentDoc.definitions,...ImageFragmentFragmentDoc.definitions]} as unknown as DocumentNode<ZktCompetitionsForAdminQuery, ZktCompetitionsForAdminQueryVariables>;
+export const ZktCompetitionForAdminDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"zktCompetitionForAdmin"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"zktCompetitionForAdmin"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktCompetitionFullFragment"}}]}}]}},...ZktCompetitionFullFragmentFragmentDoc.definitions,...ZktCompetitionSummaryFragmentFragmentDoc.definitions,...PublicUserFragmentFragmentDoc.definitions,...ImageFragmentFragmentDoc.definitions,...ZktCompEventFragmentFragmentDoc.definitions,...ZktRoundFragmentFragmentDoc.definitions,...ZktRegistrationFragmentFragmentDoc.definitions,...ZktCompDelegateFragmentFragmentDoc.definitions]} as unknown as DocumentNode<ZktCompetitionForAdminQuery, ZktCompetitionForAdminQueryVariables>;
+export const ZktRoundResultsDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"zktRoundResults"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"roundId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"zktRoundResults"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"roundId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"roundId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktResultFragment"}}]}}]}},...ZktResultFragmentFragmentDoc.definitions,...PublicUserFragmentFragmentDoc.definitions,...ImageFragmentFragmentDoc.definitions]} as unknown as DocumentNode<ZktRoundResultsQuery, ZktRoundResultsQueryVariables>;
+export const ZktCompetitorResultsDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"zktCompetitorResults"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"competitionId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"userId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"zktCompetitorResults"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"competitionId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"competitionId"}}},{"kind":"Argument","name":{"kind":"Name","value":"userId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"userId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktResultFragment"}}]}}]}},...ZktResultFragmentFragmentDoc.definitions,...PublicUserFragmentFragmentDoc.definitions,...ImageFragmentFragmentDoc.definitions]} as unknown as DocumentNode<ZktCompetitorResultsQuery, ZktCompetitorResultsQueryVariables>;
+export const ZktRecordsDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"zktRecords"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"zktRecords"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktRecordFragment"}}]}}]}},...ZktRecordFragmentFragmentDoc.definitions,...PublicUserFragmentFragmentDoc.definitions,...ImageFragmentFragmentDoc.definitions]} as unknown as DocumentNode<ZktRecordsQuery, ZktRecordsQueryVariables>;
+export const ZktRecordsForEventDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"zktRecordsForEvent"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"eventId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"recordType"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"zktRecordsForEvent"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"eventId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"eventId"}}},{"kind":"Argument","name":{"kind":"Name","value":"recordType"},"value":{"kind":"Variable","name":{"kind":"Name","value":"recordType"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktRecordFragment"}}]}}]}},...ZktRecordFragmentFragmentDoc.definitions,...PublicUserFragmentFragmentDoc.definitions,...ImageFragmentFragmentDoc.definitions]} as unknown as DocumentNode<ZktRecordsForEventQuery, ZktRecordsForEventQueryVariables>;
+export const ZktRoundAssignmentsDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"zktRoundAssignments"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"roundId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"zktRoundAssignments"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"roundId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"roundId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktAssignmentFragment"}}]}}]}},...ZktAssignmentFragmentFragmentDoc.definitions,...PublicUserFragmentFragmentDoc.definitions,...ImageFragmentFragmentDoc.definitions]} as unknown as DocumentNode<ZktRoundAssignmentsQuery, ZktRoundAssignmentsQueryVariables>;
+export const ZktGroupAssignmentsDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"zktGroupAssignments"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"groupId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"zktGroupAssignments"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"groupId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"groupId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktAssignmentFragment"}}]}}]}},...ZktAssignmentFragmentFragmentDoc.definitions,...PublicUserFragmentFragmentDoc.definitions,...ImageFragmentFragmentDoc.definitions]} as unknown as DocumentNode<ZktGroupAssignmentsQuery, ZktGroupAssignmentsQueryVariables>;
+export const ZktMyAssignmentsDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"zktMyAssignments"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"competitionId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"zktMyAssignments"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"competitionId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"competitionId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktAssignmentFragment"}}]}}]}},...ZktAssignmentFragmentFragmentDoc.definitions,...PublicUserFragmentFragmentDoc.definitions,...ImageFragmentFragmentDoc.definitions]} as unknown as DocumentNode<ZktMyAssignmentsQuery, ZktMyAssignmentsQueryVariables>;
+export const ZktUserAssignmentsDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"zktUserAssignments"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"competitionId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"userId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"zktUserAssignments"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"competitionId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"competitionId"}}},{"kind":"Argument","name":{"kind":"Name","value":"userId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"userId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktAssignmentFragment"}}]}}]}},...ZktAssignmentFragmentFragmentDoc.definitions,...PublicUserFragmentFragmentDoc.definitions,...ImageFragmentFragmentDoc.definitions]} as unknown as DocumentNode<ZktUserAssignmentsQuery, ZktUserAssignmentsQueryVariables>;

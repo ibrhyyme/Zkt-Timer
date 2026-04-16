@@ -20,6 +20,9 @@ export enum RedisNamespace {
 	WCA_WCIF = 'cd:wca:wcif',
 	WCA_WORLD_RECORDS = 'cd:wca:worldrecords',
 	WCA_RANKINGS = 'cd:wca:rankings',
+	ZKT_COMP_LIST = 'cd:zktcomp:list',
+	ZKT_COMP_DETAIL = 'cd:zktcomp:detail',
+	ZKT_RECORDS = 'cd:zktcomp:records',
 }
 
 export type generatedRedisKey = {
