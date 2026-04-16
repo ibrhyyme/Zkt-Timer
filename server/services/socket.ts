@@ -2,6 +2,7 @@ import { Server } from 'socket.io';
 import { getRedisPubClient, getRedisSubClient } from './redis';
 import { createAdapter } from '@socket.io/redis-adapter';
 import { listenForFriendlyRoomEvents } from '../friendly_room';
+import { listenForZktCompEvents } from '../zkt_competition';
 import { getUserFromClient } from './socket_util';
 
 let io: Server;
@@ -30,6 +31,9 @@ export function initSocket(server: any) {
 
 		// Friendly Room events
 		listenForFriendlyRoomEvents(client);
+
+		// ZKT Unofficial Competition events
+		listenForZktCompEvents(client);
 	});
 }
 

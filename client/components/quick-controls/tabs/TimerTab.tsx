@@ -102,7 +102,7 @@ export default function TimerTab({ allowedTimerTypes }: TimerTabProps) {
 		{
 			typeKey: 'smart',
 			label: t('quick_controls.smart_cube'),
-			isActive: timerType === 'smart' && !manualEntry,
+			isActive: timerType === 'smart' && !manualEntry && is3x3CubeType(cubeType, scrambleSubset),
 			disabled: !is3x3CubeType(cubeType, scrambleSubset),
 			onClick: () => selectTimerType('smart'),
 		},

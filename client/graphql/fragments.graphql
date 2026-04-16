@@ -407,3 +407,149 @@ fragment ReportSummaryFragment on ReportSummary {
 		...ReportFragment
 	}
 }
+
+fragment ZktResultFragment on ZktResult {
+	id
+	round_id
+	user_id
+	attempt_1
+	attempt_2
+	attempt_3
+	attempt_4
+	attempt_5
+	best
+	average
+	ranking
+	proceeds
+	single_record_tag
+	average_record_tag
+	entered_by_id
+	created_at
+	updated_at
+	user {
+		...PublicUserFragment
+	}
+}
+
+fragment ZktRoundFragment on ZktRound {
+	id
+	comp_event_id
+	round_number
+	format
+	time_limit_cs
+	cutoff_cs
+	cutoff_attempts
+	advancement_type
+	advancement_level
+	status
+	created_at
+	updated_at
+	groups {
+		id
+		group_number
+	}
+}
+
+fragment ZktCompEventFragment on ZktCompEvent {
+	id
+	competition_id
+	event_id
+	event_order
+	rounds {
+		...ZktRoundFragment
+	}
+}
+
+fragment ZktRegistrationFragment on ZktRegistration {
+	id
+	competition_id
+	user_id
+	status
+	notes
+	created_at
+	updated_at
+	user {
+		...PublicUserFragment
+	}
+	events {
+		id
+		comp_event_id
+	}
+}
+
+fragment ZktCompDelegateFragment on ZktCompDelegate {
+	id
+	competition_id
+	user_id
+	created_at
+	user {
+		...PublicUserFragment
+	}
+}
+
+fragment ZktCompetitionSummaryFragment on ZktCompetition {
+	id
+	name
+	description
+	date_start
+	date_end
+	location
+	location_address
+	competitor_limit
+	status
+	visibility
+	created_by_id
+	created_at
+	updated_at
+	events {
+		id
+		event_id
+		event_order
+	}
+}
+
+fragment ZktCompetitionFullFragment on ZktCompetition {
+	...ZktCompetitionSummaryFragment
+	created_by {
+		...PublicUserFragment
+	}
+	events {
+		...ZktCompEventFragment
+	}
+	registrations {
+		...ZktRegistrationFragment
+	}
+	delegates {
+		...ZktCompDelegateFragment
+	}
+}
+
+fragment ZktRecordFragment on ZktRecord {
+	id
+	event_id
+	record_type
+	value
+	user_id
+	result_id
+	competition_id
+	set_at
+	created_at
+	user {
+		...PublicUserFragment
+	}
+}
+
+fragment ZktAssignmentFragment on ZktAssignment {
+	id
+	round_id
+	group_id
+	user_id
+	role
+	station_number
+	seed_result
+	created_at
+	updated_at
+	user {
+		...PublicUserFragment
+	}
+}

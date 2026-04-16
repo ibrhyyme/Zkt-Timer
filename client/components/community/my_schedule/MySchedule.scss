@@ -144,6 +144,85 @@
 			border-left: 3px solid rgb(var(--primary-color));
 			background: rgba(var(--primary-color), 0.05);
 		}
+
+		&--zkt {
+			border-left: 3px solid rgb(var(--primary-color));
+			background: linear-gradient(
+				90deg,
+				rgba(var(--primary-color), 0.08) 0%,
+				rgb(var(--module-color)) 40%
+			);
+
+			&:hover {
+				background: linear-gradient(
+					90deg,
+					rgba(var(--primary-color), 0.15) 0%,
+					rgba(var(--button-color), 0.8) 40%
+				);
+			}
+		}
+	}
+
+	&__zkt-competitions {
+		margin-bottom: 1.5rem;
+	}
+
+	&__zkt-badge {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.25rem 0.65rem;
+		background: rgb(var(--primary-color));
+		color: #fff;
+		font-size: 0.7rem;
+		font-weight: 800;
+		border-radius: 4px;
+		letter-spacing: 0.8px;
+	}
+
+	&__zkt-status {
+		padding: 0.2rem 0.6rem;
+		border-radius: 5px;
+		font-size: 0.68rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+		white-space: nowrap;
+
+		&--draft {
+			background: rgba(var(--text-color), 0.12);
+			color: rgba(var(--text-color), 0.85);
+		}
+		&--announced {
+			background: rgba(66, 165, 245, 0.18);
+			color: #42a5f5;
+		}
+		&--registration_open {
+			background: rgba(45, 189, 97, 0.18);
+			color: #2dbd61;
+		}
+		&--registration_closed {
+			background: rgba(238, 106, 38, 0.18);
+			color: #ee6a26;
+		}
+		&--ongoing {
+			background: rgba(238, 106, 38, 0.22);
+			color: #ee6a26;
+			animation: zkt-pulse 1.4s ease-in-out infinite;
+		}
+		&--finished {
+			background: rgba(var(--text-color), 0.12);
+			color: rgba(var(--text-color), 0.8);
+		}
+		&--published {
+			background: rgba(var(--primary-color), 0.18);
+			color: rgb(var(--primary-color));
+		}
+	}
+
+	@keyframes zkt-pulse {
+		0%, 100% { opacity: 1; }
+		50% { opacity: 0.55; }
 	}
 
 	&__ongoing-badge {

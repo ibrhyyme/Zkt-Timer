@@ -94,7 +94,7 @@ export default function RoomTimerOverlay({
 
     // Keyboard navigation for submission screen
     // 0: +2, 1: DNF, 2: KAYDET, 3: İPTAL
-    const [focusedButtonIndex, setFocusedButtonIndex] = useState(2); // Default to KAYDET
+    const [focusedButtonIndex, setFocusedButtonIndex] = useState(3); // Default to KAYDET (action-row sag)
 
     // Manual entry state
     const [manualTimeInput, setManualTimeInput] = useState('');
@@ -666,20 +666,20 @@ export default function RoomTimerOverlay({
                 // Enter or Space to activate focused button
                 if (e.key === 'Enter' || e.keyCode === 13 || e.key === ' ' || e.keyCode === 32) {
                     e.preventDefault();
-                    // 0: +2, 1: DNF, 2: KAYDET, 3: İPTAL
+                    // 0: +2, 1: DNF, 2: İPTAL (action-row sol), 3: KAYDET (action-row sag)
                     if (focusedButtonIndex === 0) {
                         flipPenalty('AUF');
                     } else if (focusedButtonIndex === 1) {
                         flipPenalty('DNF');
                     } else if (focusedButtonIndex === 2) {
+                        onRedo();
+                    } else if (focusedButtonIndex === 3) {
                         if (!warning) {
                             const sec = smartFinalTime / 1000;
                             const { inspection: inspPenalty, inspectionDNF, AUF, DNF } = penalties;
                             const isDNF = DNF || inspectionDNF;
                             onSubmit(sec, AUF || false, isDNF || false);
                         }
-                    } else if (focusedButtonIndex === 3) {
-                        onRedo();
                     }
                     return;
                 }
@@ -708,18 +708,18 @@ export default function RoomTimerOverlay({
                     if (focusedButtonIndex === 0 || focusedButtonIndex === 1) {
                         const penalty = focusedButtonIndex === 0 ? 'AUF' : 'DNF';
                         flipPenalty(penalty);
-                        // Checkbox'ı toggle et, KAYDET'e odaklan
-                        setFocusedButtonIndex(2);
+                        // Checkbox'ı toggle et, KAYDET'e odaklan (action-row sag)
+                        setFocusedButtonIndex(3);
                         return;
                     }
-                    // 2: KAYDET
+                    // 2: İPTAL (action-row sol)
                     if (focusedButtonIndex === 2) {
-                        submitTime();
+                        handleRedo();
                         return;
                     }
-                    // 3: İPTAL
+                    // 3: KAYDET (action-row sag)
                     if (focusedButtonIndex === 3) {
-                        handleRedo();
+                        submitTime();
                         return;
                     }
                 }
@@ -1101,13 +1101,13 @@ export default function RoomTimerOverlay({
                     </div>
                     <div className="room-timer-overlay__action-row">
                         <button
-                            className={`room-timer-overlay__action-btn room-timer-overlay__action-btn--cancel ${focusedButtonIndex === 3 ? 'room-timer-overlay__action-btn--focused' : ''}`}
+                            className={`room-timer-overlay__action-btn room-timer-overlay__action-btn--cancel ${focusedButtonIndex === 2 ? 'room-timer-overlay__action-btn--focused' : ''}`}
                             onClick={handleRedo}
                         >
                             {t('room_timer.cancel')}
                         </button>
                         <button
-                            className={`room-timer-overlay__action-btn room-timer-overlay__action-btn--save ${focusedButtonIndex === 2 ? 'room-timer-overlay__action-btn--focused' : ''}`}
+                            className={`room-timer-overlay__action-btn room-timer-overlay__action-btn--save ${focusedButtonIndex === 3 ? 'room-timer-overlay__action-btn--focused' : ''}`}
                             onClick={submitTime}
                         >
                             {t('room_timer.save')}
@@ -1165,31 +1165,38 @@ export default function RoomTimerOverlay({
                         {warning}
                     </div>
                 )}
-                <div className="room-timer-overlay__penalties">
-                    <label className={`room-timer-overlay__checkbox ${focusedButtonIndex === 0 ? 'room-timer-overlay__checkbox--focused' : ''}`}>
-                        <input
-                            type="checkbox"
-                            checked={AUF || false}
-                            onChange={() => flipPenalty('AUF')}
+                <div className="room-timer-overlay__actions">
+                    <div className="room-timer-overlay__penalty-row">
+                        <button
+                            className={`room-timer-overlay__penalty-btn room-timer-overlay__penalty-btn--plus-two ${AUF ? 'room-timer-overlay__penalty-btn--active' : ''} ${focusedButtonIndex === 0 ? 'room-timer-overlay__penalty-btn--focused' : ''}`}
+                            onClick={() => flipPenalty('AUF')}
                             disabled={inspectionDNF}
-                        />
-                        <span>+2</span>
-                    </label>
-                    <label className={`room-timer-overlay__checkbox ${focusedButtonIndex === 1 ? 'room-timer-overlay__checkbox--focused' : ''}`}>
-                        <input
-                            type="checkbox"
-                            checked={isDNF || false}
-                            onChange={() => flipPenalty('DNF')}
+                        >
+                            +2
+                        </button>
+                        <button
+                            className={`room-timer-overlay__penalty-btn room-timer-overlay__penalty-btn--dnf ${isDNF ? 'room-timer-overlay__penalty-btn--active' : ''} ${focusedButtonIndex === 1 ? 'room-timer-overlay__penalty-btn--focused' : ''}`}
+                            onClick={() => flipPenalty('DNF')}
                             disabled={inspectionDNF}
-                        />
-                        <span>DNF</span>
-                    </label>
-                    <button className={`room-timer-overlay__btn ${focusedButtonIndex === 2 ? 'room-timer-overlay__btn--focused' : ''}`} onClick={handleSmartSubmit} disabled={!!warning}>
-                        {t('room_timer.save')}
-                    </button>
-                    <button className={`room-timer-overlay__btn room-timer-overlay__btn--secondary ${focusedButtonIndex === 3 ? 'room-timer-overlay__btn--focused' : ''}`} onClick={onRedo}>
-                        {t('room_timer.cancel')}
-                    </button>
+                        >
+                            DNF
+                        </button>
+                    </div>
+                    <div className="room-timer-overlay__action-row">
+                        <button
+                            className={`room-timer-overlay__action-btn room-timer-overlay__action-btn--cancel ${focusedButtonIndex === 2 ? 'room-timer-overlay__action-btn--focused' : ''}`}
+                            onClick={onRedo}
+                        >
+                            {t('room_timer.cancel')}
+                        </button>
+                        <button
+                            className={`room-timer-overlay__action-btn room-timer-overlay__action-btn--save ${focusedButtonIndex === 3 ? 'room-timer-overlay__action-btn--focused' : ''}`}
+                            onClick={handleSmartSubmit}
+                            disabled={!!warning}
+                        >
+                            {t('room_timer.save')}
+                        </button>
+                    </div>
                 </div>
             </div>
         );

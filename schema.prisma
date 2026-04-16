@@ -95,6 +95,15 @@ model UserAccount {
   promo_codes_created           PromoCode[]            @relation("promo_code_creator")
   promo_code_redemptions        PromoCodeRedemption[]   @relation("promo_redemption_user")
 
+  // ZKT Unofficial Competitions
+  zkt_competitions_created      ZktCompetition[]        @relation("zkt_comp_creator")
+  zkt_registrations             ZktRegistration[]       @relation("zkt_registration_user")
+  zkt_comp_delegations          ZktCompDelegate[]       @relation("zkt_comp_delegate_user")
+  zkt_results                   ZktResult[]             @relation("zkt_result_user")
+  zkt_results_entered           ZktResult[]             @relation("zkt_result_entered_by")
+  zkt_records                   ZktRecord[]             @relation("zkt_record_holder")
+  zkt_assignments               ZktAssignment[]         @relation("zkt_assignment_user")
+
   @@map("user_account")
 }
 
@@ -1004,5 +1013,273 @@ model PromoCodeRedemption {
   @@unique([promo_code_id, user_id])
   @@index([user_id])
   @@map("promo_code_redemption")
+}
+
+// ============================================================================
+// ZKT UNOFFICIAL COMPETITION PLATFORM (Zeka Küpü Türkiye)
+// ============================================================================
+
+enum ZktCompStatus {
+  DRAFT
+  ANNOUNCED
+  REGISTRATION_OPEN
+  REGISTRATION_CLOSED
+  ONGOING
+  FINISHED
+  PUBLISHED
+
+  @@map("zkt_comp_status")
+}
+
+enum ZktCompVisibility {
+  PUBLIC
+  PRIVATE
+
+  @@map("zkt_comp_visibility")
+}
+
+enum ZktRegistrationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  WAITLISTED
+  WITHDRAWN
+
+  @@map("zkt_registration_status")
+}
+
+enum ZktRoundFormat {
+  BO1
+  BO2
+  BO3
+  MO3
+  AO5
+
+  @@map("zkt_round_format")
+}
+
+enum ZktRoundStatus {
+  UPCOMING
+  OPEN
+  ACTIVE
+  FINISHED
+
+  @@map("zkt_round_status")
+}
+
+enum ZktAdvancementType {
+  RANKING
+  PERCENT
+
+  @@map("zkt_advancement_type")
+}
+
+model ZktCompetition {
+  id               String             @id @default(uuid())
+  name             String
+  description      String?            @db.Text
+  date_start       DateTime           @db.Date
+  date_end         DateTime           @db.Date
+  location         String
+  location_address String?
+  competitor_limit Int?
+  status           ZktCompStatus      @default(DRAFT)
+  visibility       ZktCompVisibility  @default(PUBLIC)
+  created_by_id    String
+  created_at       DateTime           @default(now())
+  updated_at       DateTime           @updatedAt
+
+  created_by       UserAccount        @relation("zkt_comp_creator", fields: [created_by_id], references: [id], onDelete: Cascade)
+  events           ZktCompEvent[]
+  registrations    ZktRegistration[]
+  delegates        ZktCompDelegate[]
+
+  @@index([status])
+  @@index([created_by_id])
+  @@index([date_start])
+  @@map("zkt_competition")
+}
+
+model ZktCompEvent {
+  id             String         @id @default(uuid())
+  competition_id String
+  event_id       String
+  event_order    Int            @default(0)
+  created_at     DateTime       @default(now())
+
+  competition    ZktCompetition @relation(fields: [competition_id], references: [id], onDelete: Cascade)
+  rounds         ZktRound[]
+
+  @@unique([competition_id, event_id])
+  @@index([competition_id])
+  @@map("zkt_comp_event")
+}
+
+model ZktRound {
+  id                String              @id @default(uuid())
+  comp_event_id     String
+  round_number      Int
+  format            ZktRoundFormat      @default(AO5)
+  time_limit_cs     Int?
+  cutoff_cs         Int?
+  cutoff_attempts   Int?
+  advancement_type  ZktAdvancementType?
+  advancement_level Int?
+  status            ZktRoundStatus      @default(UPCOMING)
+  created_at        DateTime            @default(now())
+  updated_at        DateTime            @updatedAt
+
+  comp_event        ZktCompEvent        @relation(fields: [comp_event_id], references: [id], onDelete: Cascade)
+  results           ZktResult[]
+  groups            ZktGroup[]
+  assignments       ZktAssignment[]
+
+  @@unique([comp_event_id, round_number])
+  @@index([comp_event_id])
+  @@index([status])
+  @@map("zkt_round")
+}
+
+model ZktGroup {
+  id           String          @id @default(uuid())
+  round_id     String
+  group_number Int
+  created_at   DateTime        @default(now())
+
+  round        ZktRound        @relation(fields: [round_id], references: [id], onDelete: Cascade)
+  assignments  ZktAssignment[]
+
+  @@unique([round_id, group_number])
+  @@index([round_id])
+  @@map("zkt_group")
+}
+
+model ZktRegistration {
+  id             String                 @id @default(uuid())
+  competition_id String
+  user_id        String
+  status         ZktRegistrationStatus  @default(PENDING)
+  notes          String?
+  created_at     DateTime               @default(now())
+  updated_at     DateTime               @updatedAt
+
+  competition    ZktCompetition         @relation(fields: [competition_id], references: [id], onDelete: Cascade)
+  user           UserAccount            @relation("zkt_registration_user", fields: [user_id], references: [id], onDelete: Cascade)
+  events         ZktRegistrationEvent[]
+
+  @@unique([competition_id, user_id])
+  @@index([competition_id])
+  @@index([user_id])
+  @@index([status])
+  @@map("zkt_registration")
+}
+
+model ZktRegistrationEvent {
+  id              String          @id @default(uuid())
+  registration_id String
+  comp_event_id   String
+  created_at      DateTime        @default(now())
+
+  registration    ZktRegistration @relation(fields: [registration_id], references: [id], onDelete: Cascade)
+
+  @@unique([registration_id, comp_event_id])
+  @@index([registration_id])
+  @@map("zkt_registration_event")
+}
+
+model ZktCompDelegate {
+  id             String         @id @default(uuid())
+  competition_id String
+  user_id        String
+  created_at     DateTime       @default(now())
+
+  competition    ZktCompetition @relation(fields: [competition_id], references: [id], onDelete: Cascade)
+  user           UserAccount    @relation("zkt_comp_delegate_user", fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([competition_id, user_id])
+  @@index([competition_id])
+  @@index([user_id])
+  @@map("zkt_comp_delegate")
+}
+
+model ZktResult {
+  id                  String      @id @default(uuid())
+  round_id            String
+  user_id             String
+  attempt_1           Int?
+  attempt_2           Int?
+  attempt_3           Int?
+  attempt_4           Int?
+  attempt_5           Int?
+  best                Int?
+  average             Int?
+  ranking             Int?
+  proceeds            Boolean     @default(false)
+  single_record_tag   String?
+  average_record_tag  String?
+  entered_by_id       String
+  created_at          DateTime    @default(now())
+  updated_at          DateTime    @updatedAt
+
+  round               ZktRound    @relation(fields: [round_id], references: [id], onDelete: Cascade)
+  user                UserAccount @relation("zkt_result_user", fields: [user_id], references: [id], onDelete: Cascade)
+  entered_by          UserAccount @relation("zkt_result_entered_by", fields: [entered_by_id], references: [id], onDelete: Cascade)
+
+  @@unique([round_id, user_id])
+  @@index([round_id])
+  @@index([user_id])
+  @@index([ranking])
+  @@map("zkt_result")
+}
+
+model ZktRecord {
+  id             String      @id @default(uuid())
+  event_id       String
+  record_type    String
+  value          Int
+  user_id        String
+  result_id      String
+  competition_id String
+  set_at         DateTime    @default(now())
+  created_at     DateTime    @default(now())
+
+  user           UserAccount @relation("zkt_record_holder", fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([event_id, record_type])
+  @@index([user_id])
+  @@map("zkt_record")
+}
+
+enum ZktAssignmentRole {
+  COMPETITOR
+  JUDGE
+  SCRAMBLER
+  RUNNER
+  ORGANIZER
+  STAFF
+
+  @@map("zkt_assignment_role")
+}
+
+model ZktAssignment {
+  id             String            @id @default(uuid())
+  round_id       String
+  group_id       String?
+  user_id        String
+  role           ZktAssignmentRole
+  station_number Int?
+  seed_result    Int?
+  created_at     DateTime          @default(now())
+  updated_at     DateTime          @updatedAt
+
+  round          ZktRound          @relation(fields: [round_id], references: [id], onDelete: Cascade)
+  group          ZktGroup?         @relation(fields: [group_id], references: [id], onDelete: Cascade)
+  user           UserAccount       @relation("zkt_assignment_user", fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([round_id, user_id, role])
+  @@index([round_id, role])
+  @@index([group_id, role])
+  @@index([user_id])
+  @@map("zkt_assignment")
 }
 

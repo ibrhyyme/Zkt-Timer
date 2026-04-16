@@ -447,3 +447,98 @@ query rankings($mode: String!, $page: Int!, $search: String) {
 		page
 	}
 }
+
+query zktCompetitions($page: Int!, $pageSize: Int!, $searchQuery: String!, $filter: ZktCompetitionFilterInput) {
+	zktCompetitions(page: $page, pageSize: $pageSize, searchQuery: $searchQuery, filter: $filter) {
+		items {
+			...ZktCompetitionSummaryFragment
+		}
+		total
+		hasMore
+	}
+}
+
+query zktCompetition($id: String!) {
+	zktCompetition(id: $id) {
+		...ZktCompetitionFullFragment
+	}
+}
+
+query zktMyCompetitions {
+	zktMyCompetitions {
+		...ZktCompetitionSummaryFragment
+		registrations {
+			...ZktRegistrationFragment
+		}
+		delegates {
+			...ZktCompDelegateFragment
+		}
+	}
+}
+
+query zktCompetitionsForAdmin($page: Int!, $pageSize: Int!, $searchQuery: String!, $filter: ZktCompetitionFilterInput) {
+	zktCompetitionsForAdmin(page: $page, pageSize: $pageSize, searchQuery: $searchQuery, filter: $filter) {
+		items {
+			...ZktCompetitionSummaryFragment
+			created_by {
+				...PublicUserFragment
+			}
+		}
+		total
+		hasMore
+	}
+}
+
+query zktCompetitionForAdmin($id: String!) {
+	zktCompetitionForAdmin(id: $id) {
+		...ZktCompetitionFullFragment
+	}
+}
+
+query zktRoundResults($roundId: String!) {
+	zktRoundResults(roundId: $roundId) {
+		...ZktResultFragment
+	}
+}
+
+query zktCompetitorResults($competitionId: String!, $userId: String!) {
+	zktCompetitorResults(competitionId: $competitionId, userId: $userId) {
+		...ZktResultFragment
+	}
+}
+
+query zktRecords {
+	zktRecords {
+		...ZktRecordFragment
+	}
+}
+
+query zktRecordsForEvent($eventId: String!, $recordType: String!) {
+	zktRecordsForEvent(eventId: $eventId, recordType: $recordType) {
+		...ZktRecordFragment
+	}
+}
+
+query zktRoundAssignments($roundId: String!) {
+	zktRoundAssignments(roundId: $roundId) {
+		...ZktAssignmentFragment
+	}
+}
+
+query zktGroupAssignments($groupId: String!) {
+	zktGroupAssignments(groupId: $groupId) {
+		...ZktAssignmentFragment
+	}
+}
+
+query zktMyAssignments($competitionId: String!) {
+	zktMyAssignments(competitionId: $competitionId) {
+		...ZktAssignmentFragment
+	}
+}
+
+query zktUserAssignments($competitionId: String!, $userId: String!) {
+	zktUserAssignments(competitionId: $competitionId, userId: $userId) {
+		...ZktAssignmentFragment
+	}
+}

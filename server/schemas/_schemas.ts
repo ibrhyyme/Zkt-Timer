@@ -33,3 +33,4 @@ export * from './WcaResult.schema';
 export * from './WcaSchedule.schema';
 export * from './PromoCode.schema';
 export * from './Ranking.schema';
+export * from './ZktCompetition.schema';

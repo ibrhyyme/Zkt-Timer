@@ -68,7 +68,7 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
         ? analysis
         : (lastSmartSolveStats?.correctedAnalysis || cachedAnalysis);
 
-    if (!displayAnalysis || analysisMode === 'none' || !isStandard3x3) return null;
+    if (!displayAnalysis || analysisMode === 'none' || !is3x3) return null;
 
     const formatTime = (t?: number) => t ? t.toFixed(2) : '-';
 

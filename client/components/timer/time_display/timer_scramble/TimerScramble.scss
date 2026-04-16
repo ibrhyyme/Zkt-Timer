@@ -155,21 +155,6 @@
 			}
 		}
 
-		&--green {
-			color: $primaryGreen !important;
-			-webkit-text-fill-color: $primaryGreen;
-		}
-
-		&--red {
-			color: $primaryRed !important;
-			-webkit-text-fill-color: $primaryRed;
-		}
-
-		&--orange {
-			color: $primaryOrange !important;
-			-webkit-text-fill-color: $primaryOrange;
-		}
-
 		&--smart {
 			width: auto;
 		}
@@ -224,17 +209,17 @@
 
 		&--green {
 			color: $primaryGreen !important;
-			-webkit-text-fill-color: $primaryGreen;
+			-webkit-text-fill-color: $primaryGreen !important;
 		}
 
 		&--red {
 			color: $primaryRed !important;
-			-webkit-text-fill-color: $primaryRed;
+			-webkit-text-fill-color: $primaryRed !important;
 		}
 
 		&--orange {
 			color: $primaryOrange !important;
-			-webkit-text-fill-color: $primaryOrange;
+			-webkit-text-fill-color: $primaryOrange !important;
 		}
 	}
 

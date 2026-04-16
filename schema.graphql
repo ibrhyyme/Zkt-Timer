@@ -309,6 +309,19 @@ type Query {
   getPromoCodeRedemptions(promoCodeId: String): [PromoCodeRedemptionInfo]
   siteConfig: SiteConfig
   rankings(search: String, page: Int, mode: String): RankingsPage
+  zktCompetitions(filter: ZktCompetitionFilterInput, page: Int = 0, pageSize: Int = 25, searchQuery: String = ""): PaginatedZktCompetitions
+  zktCompetition(id: String): ZktCompetition
+  zktMyCompetitions: [ZktCompetition]
+  zktCompetitionsForAdmin(filter: ZktCompetitionFilterInput, page: Int = 0, pageSize: Int = 25, searchQuery: String = ""): PaginatedZktCompetitions
+  zktCompetitionForAdmin(id: String): ZktCompetition
+  zktRoundResults(roundId: String): [ZktResult]
+  zktCompetitorResults(userId: String, competitionId: String): [ZktResult]
+  zktRecords: [ZktRecord]
+  zktRecordsForEvent(recordType: String, eventId: String): [ZktRecord]
+  zktRoundAssignments(roundId: String): [ZktAssignment]
+  zktGroupAssignments(groupId: String): [ZktAssignment]
+  zktMyAssignments(competitionId: String): [ZktAssignment]
+  zktUserAssignments(userId: String, competitionId: String): [ZktAssignment]
 }
 
 type Mutation {
@@ -411,6 +424,28 @@ type Mutation {
   deletePromoCode(id: String): Boolean
   updateSiteConfig(input: UpdateSiteConfigInput): SiteConfig
   recalculateAllRankings: Boolean
+  createZktCompetition(input: CreateZktCompetitionInput): ZktCompetition
+  updateZktCompetition(input: UpdateZktCompetitionInput, id: String): ZktCompetition
+  updateZktCompetitionStatus(input: UpdateZktCompetitionStatusInput): ZktCompetition
+  deleteZktCompetition(id: String): Boolean
+  registerForZktCompetition(input: ZktRegistrationInput): ZktRegistration
+  withdrawZktRegistration(competitionId: String): ZktRegistration
+  updateZktRegistrationStatus(input: UpdateZktRegistrationStatusInput): ZktRegistration
+  addZktCompetitorManually(input: AddZktCompetitorManuallyInput): ZktRegistration
+  addZktDelegate(input: AddZktDelegateInput): ZktCompDelegate
+  removeZktDelegate(userId: String, competitionId: String): Boolean
+  submitZktResult(input: SubmitZktResultInput): ZktResult
+  deleteZktResult(resultId: String): Boolean
+  finalizeZktRound(roundId: String): ZktRound
+  updateZktRoundStatus(input: UpdateZktRoundStatusInput): ZktRound
+  createZktRound(input: CreateZktRoundInput): ZktRound
+  updateZktRound(input: UpdateZktRoundInput): ZktRound
+  deleteZktRound(roundId: String): Boolean
+  assignUserToRound(input: AssignUserInput): ZktAssignment
+  unassignUser(assignmentId: String): Boolean
+  createZktGroup(input: CreateGroupInput): ZktGroup
+  deleteZktGroup(groupId: String): Boolean
+  bulkAssignCompetitors(input: BulkAssignCompetitorsInput): [ZktAssignment]
 }
 
 type SmartDevice {
@@ -1520,6 +1555,192 @@ type RankingsPage {
   page: Int
 }
 
+type ZktResult {
+  id: String
+  round_id: String
+  user_id: String
+  attempt_1: Int
+  attempt_2: Int
+  attempt_3: Int
+  attempt_4: Int
+  attempt_5: Int
+  best: Int
+  average: Int
+  ranking: Int
+  proceeds: Boolean
+  single_record_tag: String
+  average_record_tag: String
+  entered_by_id: String
+  created_at: DateTime
+  updated_at: DateTime
+  user: PublicUserAccount
+  entered_by: PublicUserAccount
+}
+
+type ZktGroup {
+  id: String
+  round_id: String
+  group_number: Int
+  created_at: DateTime
+}
+
+type ZktRound {
+  id: String
+  comp_event_id: String
+  round_number: Int
+  format: ZktRoundFormat
+  time_limit_cs: Int
+  cutoff_cs: Int
+  cutoff_attempts: Int
+  advancement_type: ZktAdvancementType
+  advancement_level: Int
+  status: ZktRoundStatus
+  created_at: DateTime
+  updated_at: DateTime
+  results: [ZktResult!]
+  groups: [ZktGroup!]
+}
+
+enum ZktRoundFormat {
+  BO1
+  BO2
+  BO3
+  MO3
+  AO5
+}
+
+enum ZktAdvancementType {
+  RANKING
+  PERCENT
+}
+
+enum ZktRoundStatus {
+  UPCOMING
+  OPEN
+  ACTIVE
+  FINISHED
+}
+
+type ZktCompEvent {
+  id: String
+  competition_id: String
+  event_id: String
+  event_order: Int
+  created_at: DateTime
+  rounds: [ZktRound!]
+}
+
+type ZktRegistrationEvent {
+  id: String
+  registration_id: String
+  comp_event_id: String
+  created_at: DateTime
+}
+
+type ZktRegistration {
+  id: String
+  competition_id: String
+  user_id: String
+  status: ZktRegistrationStatus
+  notes: String
+  created_at: DateTime
+  updated_at: DateTime
+  user: PublicUserAccount
+  events: [ZktRegistrationEvent!]
+}
+
+enum ZktRegistrationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  WAITLISTED
+  WITHDRAWN
+}
+
+type ZktCompDelegate {
+  id: String
+  competition_id: String
+  user_id: String
+  created_at: DateTime
+  user: PublicUserAccount
+}
+
+type ZktCompetition {
+  id: String
+  name: String
+  description: String
+  date_start: DateTime
+  date_end: DateTime
+  location: String
+  location_address: String
+  competitor_limit: Int
+  status: ZktCompStatus
+  visibility: ZktCompVisibility
+  created_by_id: String
+  created_at: DateTime
+  updated_at: DateTime
+  created_by: PublicUserAccount
+  events: [ZktCompEvent!]
+  registrations: [ZktRegistration!]
+  delegates: [ZktCompDelegate!]
+}
+
+enum ZktCompStatus {
+  DRAFT
+  ANNOUNCED
+  REGISTRATION_OPEN
+  REGISTRATION_CLOSED
+  ONGOING
+  FINISHED
+  PUBLISHED
+}
+
+enum ZktCompVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+type ZktRecord {
+  id: String
+  event_id: String
+  record_type: String
+  value: Int
+  user_id: String
+  result_id: String
+  competition_id: String
+  set_at: DateTime
+  created_at: DateTime
+  user: PublicUserAccount
+}
+
+type PaginatedZktCompetitions {
+  items: [ZktCompetition]
+  total: Int
+  hasMore: Boolean
+}
+
+type ZktAssignment {
+  id: String
+  round_id: String
+  group_id: String
+  user_id: String
+  role: ZktAssignmentRole
+  station_number: Int
+  seed_result: Int
+  created_at: DateTime
+  updated_at: DateTime
+  user: PublicUserAccount
+}
+
+enum ZktAssignmentRole {
+  COMPETITOR
+  JUDGE
+  SCRAMBLER
+  RUNNER
+  ORGANIZER
+  STAFF
+}
+
 type Notification {
   id: String
   user_id: String
@@ -1743,6 +1964,117 @@ input CreatePromoCodeInput {
   membership_type: String
   duration_minutes: Int
   max_uses: Int = 1
+}
+
+input CreateZktCompetitionInput {
+  name: String
+  description: String
+  dateStart: String
+  dateEnd: String
+  location: String
+  locationAddress: String
+  competitorLimit: Int
+  visibility: ZktCompVisibility
+  eventIds: [String]
+}
+
+input UpdateZktCompetitionInput {
+  name: String
+  description: String
+  dateStart: String
+  dateEnd: String
+  location: String
+  locationAddress: String
+  competitorLimit: Int
+  visibility: ZktCompVisibility
+  eventIds: [String!]
+}
+
+input UpdateZktCompetitionStatusInput {
+  competitionId: String
+  status: ZktCompStatus
+}
+
+input ZktCompetitionFilterInput {
+  status: ZktCompStatus
+  visibility: ZktCompVisibility
+}
+
+input ZktRegistrationInput {
+  competitionId: String
+  eventIds: [String]
+  notes: String
+}
+
+input UpdateZktRegistrationStatusInput {
+  registrationId: String
+  status: ZktRegistrationStatus
+}
+
+input AddZktDelegateInput {
+  competitionId: String
+  userId: String
+}
+
+input AddZktCompetitorManuallyInput {
+  competitionId: String
+  userId: String
+  eventIds: [String]
+}
+
+input CreateZktRoundInput {
+  compEventId: String
+  roundNumber: Int
+  format: ZktRoundFormat
+  timeLimitCs: Int
+  cutoffCs: Int
+  cutoffAttempts: Int
+  advancementType: ZktAdvancementType
+  advancementLevel: Int
+}
+
+input UpdateZktRoundInput {
+  roundId: String
+  format: ZktRoundFormat
+  timeLimitCs: Int
+  cutoffCs: Int
+  cutoffAttempts: Int
+  advancementType: ZktAdvancementType
+  advancementLevel: Int
+}
+
+input UpdateZktRoundStatusInput {
+  roundId: String
+  status: ZktRoundStatus
+}
+
+input AssignUserInput {
+  roundId: String
+  groupId: String
+  userId: String
+  role: ZktAssignmentRole
+  stationNumber: Int
+}
+
+input CreateGroupInput {
+  roundId: String
+  groupNumber: Int
+}
+
+input BulkAssignCompetitorsInput {
+  roundId: String
+  groupCount: Int
+  userIds: [String]
+}
+
+input SubmitZktResultInput {
+  roundId: String
+  userId: String
+  attempt1: Int
+  attempt2: Int
+  attempt3: Int
+  attempt4: Int
+  attempt5: Int
 }
 
 input PaginationArgsInput {

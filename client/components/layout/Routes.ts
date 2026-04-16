@@ -43,6 +43,12 @@ import AdminEmail from '../admin/email/AdminEmail';
 import AdminAlgorithms from '../admin/algorithms/AdminAlgorithms';
 import AdminPromoCodes from '../admin/promo_codes/AdminPromoCodes';
 import SiteConfigPanel from '../admin/site_config/SiteConfigPanel';
+import AdminZktCompetitions from '../admin/zkt_competitions/AdminZktCompetitions';
+import CompetitionDashboard from '../admin/zkt_competitions/CompetitionDashboard';
+import ZktCompetitionDetail from '../community/zkt_competitions/ZktCompetitionDetail';
+import ZktCompetitorDetail from '../community/zkt_competitions/ZktCompetitorDetail';
+import ZktActivityDetail from '../community/zkt_competitions/ZktActivityDetail';
+import ZktRecordsPage from '../community/zkt_competitions/ZktRecordsPage';
 import Welcome from '../landing/welcome/Welcome';
 import RootRedirect from '../landing/root_redirect/RootRedirect';
 import ProPage from '../pro_page/ProPage';
@@ -162,6 +168,15 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/community/competitions/:competitionId', App, Community, MySchedule),
 	route('/community/competitions', App, Community, MySchedule),
 
+	// ZKT Unofficial Competitions
+	route('/community/zkt-competitions/:competitionId/competitors/:userId', App, Community, ZktCompetitorDetail),
+	route('/community/zkt-competitions/:competitionId/activities/:groupId', App, Community, ZktActivityDetail),
+	route('/community/zkt-competitions/:competitionId/live/:eventId/:roundNumber', App, Community, ZktCompetitionDetail),
+	route('/community/zkt-competitions/:competitionId/live/:eventId', App, Community, ZktCompetitionDetail),
+	route('/community/zkt-competitions/:competitionId/live', App, Community, ZktCompetitionDetail),
+	route('/community/zkt-competitions/:competitionId', App, Community, ZktCompetitionDetail),
+	route('/community/zkt-records', App, Community, ZktRecordsPage),
+
 	// Rankings
 	route('/ranks', null, App, Rankings, false),
 
@@ -180,6 +195,8 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/admin/algorithms', App, Admin, AdminAlgorithms, true, false, true),
 	route('/admin/promo-codes', App, Admin, AdminPromoCodes, true, false, true),
 	route('/admin/site-config', App, Admin, SiteConfigPanel, true, false, true),
+	route('/admin/competitions/:competitionId', App, Admin, CompetitionDashboard, true, false, true),
+	route('/admin/competitions', App, Admin, AdminZktCompetitions, true, false, true),
 
 	// OAuth
 	route('/oauth/wca/login', null, App, WcaLoginCallback, false, true, false, true),
