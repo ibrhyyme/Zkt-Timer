@@ -17,6 +17,7 @@ import DashboardRounds from './tabs/DashboardRounds';
 import DashboardResults from './tabs/DashboardResults';
 import DashboardDelegates from './tabs/DashboardDelegates';
 import DashboardAssignments from './tabs/DashboardAssignments';
+import DashboardDelegateReport from './tabs/DashboardDelegateReport';
 
 const DELETE_MUTATION = gql`
 	mutation DeleteZktCompFromDashboard($id: String!) {
@@ -105,7 +106,7 @@ const DETAIL_QUERY = gql`
 	}
 `;
 
-type TabId = 'overview' | 'registrations' | 'rounds' | 'assignments' | 'results' | 'delegates';
+type TabId = 'overview' | 'registrations' | 'rounds' | 'assignments' | 'results' | 'delegates' | 'report';
 
 export default function CompetitionDashboard() {
 	const {competitionId} = useParams<{competitionId: string}>();
@@ -164,6 +165,7 @@ export default function CompetitionDashboard() {
 		{id: 'assignments', label: t('tab_assignments')},
 		{id: 'results', label: t('tab_results')},
 		{id: 'delegates', label: t('tab_delegates')},
+		{id: 'report', label: t('tab_delegate_report')},
 	];
 
 	return (
@@ -214,6 +216,7 @@ export default function CompetitionDashboard() {
 				{tab === 'assignments' && <DashboardAssignments detail={detail} onUpdated={fetch} />}
 				{tab === 'results' && <DashboardResults detail={detail} onUpdated={fetch} />}
 				{tab === 'delegates' && <DashboardDelegates detail={detail} onUpdated={fetch} />}
+			{tab === 'report' && <DashboardDelegateReport detail={detail} onUpdated={fetch} />}
 			</div>
 		</div>
 	);

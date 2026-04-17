@@ -112,6 +112,36 @@ mutation updateZktCompetitionStatus($input: UpdateZktCompetitionStatusInput!) {
 	}
 }
 
+mutation confirmZktCompetition($id: String!) {
+	confirmZktCompetition(id: $id) {
+		...ZktCompetitionSummaryFragment
+	}
+}
+
+mutation announceZktCompetition($id: String!) {
+	announceZktCompetition(id: $id) {
+		...ZktCompetitionSummaryFragment
+	}
+}
+
+mutation cancelZktCompetition($input: CancelZktCompetitionInput!) {
+	cancelZktCompetition(input: $input) {
+		...ZktCompetitionSummaryFragment
+	}
+}
+
+mutation publishZktResults($id: String!) {
+	publishZktResults(id: $id) {
+		...ZktCompetitionSummaryFragment
+	}
+}
+
+mutation unpublishZktResults($id: String!) {
+	unpublishZktResults(id: $id) {
+		...ZktCompetitionSummaryFragment
+	}
+}
+
 mutation deleteZktCompetition($id: String!) {
 	deleteZktCompetition(id: $id)
 }
@@ -130,6 +160,18 @@ mutation withdrawZktRegistration($competitionId: String!) {
 
 mutation updateZktRegistrationStatus($input: UpdateZktRegistrationStatusInput!) {
 	updateZktRegistrationStatus(input: $input) {
+		...ZktRegistrationFragment
+	}
+}
+
+mutation updateMyZktRegistration($input: UpdateMyZktRegistrationInput!) {
+	updateMyZktRegistration(input: $input) {
+		...ZktRegistrationFragment
+	}
+}
+
+mutation bulkUpdateZktRegistrations($input: BulkUpdateZktRegistrationsInput!) {
+	bulkUpdateZktRegistrations(input: $input) {
 		...ZktRegistrationFragment
 	}
 }
@@ -172,6 +214,52 @@ mutation finalizeZktRound($roundId: String!) {
 mutation updateZktRoundStatus($input: UpdateZktRoundStatusInput!) {
 	updateZktRoundStatus(input: $input) {
 		...ZktRoundFragment
+	}
+}
+
+mutation upsertZktDelegateReport($input: UpsertZktDelegateReportInput!) {
+	upsertZktDelegateReport(input: $input) {
+		...ZktDelegateReportFragment
+	}
+}
+
+mutation submitZktDelegateReport($competitionId: String!) {
+	submitZktDelegateReport(competitionId: $competitionId) {
+		...ZktDelegateReportFragment
+	}
+}
+
+mutation createZktIncident($input: CreateZktIncidentInput!) {
+	createZktIncident(input: $input) {
+		...ZktIncidentFragment
+	}
+}
+
+mutation updateZktIncident($input: UpdateZktIncidentInput!) {
+	updateZktIncident(input: $input) {
+		...ZktIncidentFragment
+	}
+}
+
+mutation deleteZktIncident($id: String!) {
+	deleteZktIncident(id: $id)
+}
+
+mutation submitZktResultsBatch($input: SubmitZktResultsBatchInput!) {
+	submitZktResultsBatch(input: $input) {
+		...ZktResultFragment
+	}
+}
+
+mutation reopenZktRound($roundId: String!) {
+	reopenZktRound(roundId: $roundId) {
+		...ZktRoundFragment
+	}
+}
+
+mutation markZktNoShow($input: MarkZktNoShowInput!) {
+	markZktNoShow(input: $input) {
+		...ZktResultFragment
 	}
 }
 

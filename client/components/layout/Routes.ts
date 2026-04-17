@@ -49,6 +49,7 @@ import ZktCompetitionDetail from '../community/zkt_competitions/ZktCompetitionDe
 import ZktCompetitorDetail from '../community/zkt_competitions/ZktCompetitorDetail';
 import ZktActivityDetail from '../community/zkt_competitions/ZktActivityDetail';
 import ZktRecordsPage from '../community/zkt_competitions/ZktRecordsPage';
+import ZktRankingsPage from '../community/zkt_competitions/ZktRankingsPage';
 import Welcome from '../landing/welcome/Welcome';
 import RootRedirect from '../landing/root_redirect/RootRedirect';
 import ProPage from '../pro_page/ProPage';
@@ -176,6 +177,7 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/community/zkt-competitions/:competitionId/live', App, Community, ZktCompetitionDetail),
 	route('/community/zkt-competitions/:competitionId', App, Community, ZktCompetitionDetail),
 	route('/community/zkt-records', App, Community, ZktRecordsPage),
+	route('/community/zkt-rankings', App, Community, ZktRankingsPage),
 
 	// Rankings
 	route('/ranks', null, App, Rankings, false),

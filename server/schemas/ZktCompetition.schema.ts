@@ -8,12 +8,14 @@ import {PublicUserAccount} from './UserAccount.schema';
 
 export enum ZktCompStatus {
 	DRAFT = 'DRAFT',
+	CONFIRMED = 'CONFIRMED',
 	ANNOUNCED = 'ANNOUNCED',
 	REGISTRATION_OPEN = 'REGISTRATION_OPEN',
 	REGISTRATION_CLOSED = 'REGISTRATION_CLOSED',
 	ONGOING = 'ONGOING',
 	FINISHED = 'FINISHED',
 	PUBLISHED = 'PUBLISHED',
+	CANCELLED = 'CANCELLED',
 }
 
 registerEnumType(ZktCompStatus, {name: 'ZktCompStatus'});
@@ -113,6 +115,9 @@ export class ZktResult {
 
 	@Field()
 	proceeds: boolean;
+
+	@Field()
+	no_show: boolean;
 
 	@Field({nullable: true})
 	single_record_tag?: string;
@@ -249,6 +254,15 @@ export class ZktRegistration {
 	@Field({nullable: true})
 	notes?: string;
 
+	@Field({nullable: true})
+	admin_comment?: string;
+
+	@Field(() => Int)
+	guests: number;
+
+	@Field(() => Int, {nullable: true})
+	waiting_list_position?: number;
+
 	@Field()
 	created_at: Date;
 
@@ -260,6 +274,34 @@ export class ZktRegistration {
 
 	@Field(() => [ZktRegistrationEvent], {nullable: true})
 	events?: ZktRegistrationEvent[];
+
+	@Field(() => [ZktRegistrationHistory], {nullable: true})
+	history?: ZktRegistrationHistory[];
+}
+
+@ObjectType()
+export class ZktRegistrationHistory {
+	@Field()
+	id: string;
+
+	@Field()
+	registration_id: string;
+
+	@Field()
+	actor_id: string;
+
+	@Field()
+	action: string;
+
+	// JSON serialized as string; client parses. Nullable when action carries no diff.
+	@Field({nullable: true})
+	changed_attributes?: string;
+
+	@Field()
+	created_at: Date;
+
+	@Field(() => PublicUserAccount, {nullable: true})
+	actor?: PublicUserAccount;
 }
 
 @ObjectType()
@@ -312,6 +354,27 @@ export class ZktCompetition {
 	@Field(() => ZktCompVisibility)
 	visibility: ZktCompVisibility;
 
+	@Field({nullable: true})
+	confirmed_at?: Date;
+
+	@Field({nullable: true})
+	announced_at?: Date;
+
+	@Field({nullable: true})
+	announced_by_id?: string;
+
+	@Field({nullable: true})
+	cancelled_at?: Date;
+
+	@Field({nullable: true})
+	cancel_reason?: string;
+
+	@Field({nullable: true})
+	results_published_at?: Date;
+
+	@Field({nullable: true})
+	registration_edit_deadline?: Date;
+
 	@Field()
 	created_by_id: string;
 
@@ -332,6 +395,177 @@ export class ZktCompetition {
 
 	@Field(() => [ZktCompDelegate], {nullable: true})
 	delegates?: ZktCompDelegate[];
+}
+
+@ObjectType()
+export class ZktDelegateReport {
+	@Field()
+	id: string;
+
+	@Field()
+	competition_id: string;
+
+	@Field({nullable: true})
+	summary?: string;
+
+	@Field({nullable: true})
+	venue_notes?: string;
+
+	@Field({nullable: true})
+	organization_notes?: string;
+
+	@Field({nullable: true})
+	incidents_summary?: string;
+
+	@Field({nullable: true})
+	remarks?: string;
+
+	@Field({nullable: true})
+	submitted_by_id?: string;
+
+	@Field({nullable: true})
+	submitted_at?: Date;
+
+	@Field()
+	created_at: Date;
+
+	@Field()
+	updated_at: Date;
+
+	@Field(() => PublicUserAccount, {nullable: true})
+	submitted_by?: PublicUserAccount;
+}
+
+@ObjectType()
+export class ZktIncident {
+	@Field()
+	id: string;
+
+	@Field()
+	competition_id: string;
+
+	@Field()
+	title: string;
+
+	@Field()
+	description: string;
+
+	@Field(() => [String])
+	tags: string[];
+
+	@Field({nullable: true})
+	result_id?: string;
+
+	@Field()
+	created_by_id: string;
+
+	@Field({nullable: true})
+	resolved_at?: Date;
+
+	@Field()
+	created_at: Date;
+
+	@Field()
+	updated_at: Date;
+
+	@Field(() => PublicUserAccount, {nullable: true})
+	created_by?: PublicUserAccount;
+}
+
+@InputType()
+export class UpsertZktDelegateReportInput {
+	@Field()
+	competitionId: string;
+
+	@Field({nullable: true})
+	summary?: string;
+
+	@Field({nullable: true})
+	venueNotes?: string;
+
+	@Field({nullable: true})
+	organizationNotes?: string;
+
+	@Field({nullable: true})
+	incidentsSummary?: string;
+
+	@Field({nullable: true})
+	remarks?: string;
+}
+
+@InputType()
+export class CreateZktIncidentInput {
+	@Field()
+	competitionId: string;
+
+	@Field()
+	title: string;
+
+	@Field()
+	description: string;
+
+	@Field(() => [String], {nullable: true})
+	tags?: string[];
+
+	@Field({nullable: true})
+	resultId?: string;
+}
+
+@InputType()
+export class UpdateZktIncidentInput {
+	@Field()
+	id: string;
+
+	@Field({nullable: true})
+	title?: string;
+
+	@Field({nullable: true})
+	description?: string;
+
+	@Field(() => [String], {nullable: true})
+	tags?: string[];
+
+	@Field({nullable: true, defaultValue: false})
+	markResolved?: boolean;
+}
+
+@ObjectType()
+export class ZktPodium {
+	@Field()
+	event_id: string;
+
+	@Field()
+	round_id: string;
+
+	@Field(() => [ZktResult])
+	results: ZktResult[];
+}
+
+@ObjectType()
+export class ZktAllTimeRanking {
+	@Field(() => Int)
+	ranking: number;
+
+	@Field(() => Int)
+	value: number;
+
+	@Field()
+	event_id: string;
+
+	@Field()
+	record_type: string;
+
+	@Field()
+	result_id: string;
+
+	@Field()
+	round_id: string;
+
+	@Field(() => PublicUserAccount, {nullable: true})
+	user?: PublicUserAccount;
+
+	@Field(() => ZktCompetition, {nullable: true})
+	competition?: ZktCompetition;
 }
 
 @ObjectType()
@@ -444,6 +678,15 @@ export class UpdateZktCompetitionStatusInput {
 }
 
 @InputType()
+export class CancelZktCompetitionInput {
+	@Field()
+	competitionId: string;
+
+	@Field({nullable: true})
+	reason?: string;
+}
+
+@InputType()
 export class ZktCompetitionFilterInput {
 	@Field(() => ZktCompStatus, {nullable: true})
 	status?: ZktCompStatus;
@@ -462,6 +705,9 @@ export class ZktRegistrationInput {
 
 	@Field({nullable: true})
 	notes?: string;
+
+	@Field(() => Int, {nullable: true})
+	guests?: number;
 }
 
 @InputType()
@@ -471,6 +717,42 @@ export class UpdateZktRegistrationStatusInput {
 
 	@Field(() => ZktRegistrationStatus)
 	status: ZktRegistrationStatus;
+
+	@Field({nullable: true})
+	adminComment?: string;
+}
+
+@InputType()
+export class UpdateMyZktRegistrationInput {
+	@Field()
+	competitionId: string;
+
+	@Field(() => [String], {nullable: true})
+	eventIds?: string[];
+
+	@Field({nullable: true})
+	notes?: string;
+
+	@Field(() => Int, {nullable: true})
+	guests?: number;
+}
+
+@InputType()
+export class BulkZktRegistrationUpdate {
+	@Field()
+	registrationId: string;
+
+	@Field(() => ZktRegistrationStatus)
+	status: ZktRegistrationStatus;
+}
+
+@InputType()
+export class BulkUpdateZktRegistrationsInput {
+	@Field()
+	competitionId: string;
+
+	@Field(() => [BulkZktRegistrationUpdate])
+	updates: BulkZktRegistrationUpdate[];
 }
 
 @InputType()
@@ -552,6 +834,15 @@ export class UpdateZktRoundStatusInput {
 
 	@Field(() => ZktRoundStatus)
 	status: ZktRoundStatus;
+}
+
+@InputType()
+export class MarkZktNoShowInput {
+	@Field()
+	roundId: string;
+
+	@Field()
+	userId: string;
 }
 
 @ObjectType()
@@ -648,4 +939,34 @@ export class SubmitZktResultInput {
 
 	@Field(() => Int, {nullable: true})
 	attempt5?: number;
+}
+
+@InputType()
+export class SubmitZktResultBatchItem {
+	@Field()
+	userId: string;
+
+	@Field(() => Int, {nullable: true})
+	attempt1?: number;
+
+	@Field(() => Int, {nullable: true})
+	attempt2?: number;
+
+	@Field(() => Int, {nullable: true})
+	attempt3?: number;
+
+	@Field(() => Int, {nullable: true})
+	attempt4?: number;
+
+	@Field(() => Int, {nullable: true})
+	attempt5?: number;
+}
+
+@InputType()
+export class SubmitZktResultsBatchInput {
+	@Field()
+	roundId: string;
+
+	@Field(() => [SubmitZktResultBatchItem])
+	results: SubmitZktResultBatchItem[];
 }

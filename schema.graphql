@@ -314,6 +314,10 @@ type Query {
   zktMyCompetitions: [ZktCompetition]
   zktCompetitionsForAdmin(filter: ZktCompetitionFilterInput, page: Int = 0, pageSize: Int = 25, searchQuery: String = ""): PaginatedZktCompetitions
   zktCompetitionForAdmin(id: String): ZktCompetition
+  exportZktCompetitionWcif(id: String): String
+  zktCompetitionPodiums(id: String): [ZktPodium]
+  zktAllTimeRankings(limit: Float, recordType: String, eventId: String): [ZktAllTimeRanking]
+  zktRegistrationHistory(registrationId: String): [ZktRegistrationHistory]
   zktRoundResults(roundId: String): [ZktResult]
   zktCompetitorResults(userId: String, competitionId: String): [ZktResult]
   zktRecords: [ZktRecord]
@@ -322,6 +326,8 @@ type Query {
   zktGroupAssignments(groupId: String): [ZktAssignment]
   zktMyAssignments(competitionId: String): [ZktAssignment]
   zktUserAssignments(userId: String, competitionId: String): [ZktAssignment]
+  zktDelegateReport(competitionId: String): ZktDelegateReport
+  zktIncidents(competitionId: String): [ZktIncident]
 }
 
 type Mutation {
@@ -427,17 +433,27 @@ type Mutation {
   createZktCompetition(input: CreateZktCompetitionInput): ZktCompetition
   updateZktCompetition(input: UpdateZktCompetitionInput, id: String): ZktCompetition
   updateZktCompetitionStatus(input: UpdateZktCompetitionStatusInput): ZktCompetition
+  confirmZktCompetition(id: String): ZktCompetition
+  announceZktCompetition(id: String): ZktCompetition
+  cancelZktCompetition(input: CancelZktCompetitionInput): ZktCompetition
+  publishZktResults(id: String): ZktCompetition
+  unpublishZktResults(id: String): ZktCompetition
   deleteZktCompetition(id: String): Boolean
   registerForZktCompetition(input: ZktRegistrationInput): ZktRegistration
   withdrawZktRegistration(competitionId: String): ZktRegistration
   updateZktRegistrationStatus(input: UpdateZktRegistrationStatusInput): ZktRegistration
+  updateMyZktRegistration(input: UpdateMyZktRegistrationInput): ZktRegistration
+  bulkUpdateZktRegistrations(input: BulkUpdateZktRegistrationsInput): [ZktRegistration]
   addZktCompetitorManually(input: AddZktCompetitorManuallyInput): ZktRegistration
   addZktDelegate(input: AddZktDelegateInput): ZktCompDelegate
   removeZktDelegate(userId: String, competitionId: String): Boolean
   submitZktResult(input: SubmitZktResultInput): ZktResult
+  submitZktResultsBatch(input: SubmitZktResultsBatchInput): [ZktResult]
   deleteZktResult(resultId: String): Boolean
   finalizeZktRound(roundId: String): ZktRound
   updateZktRoundStatus(input: UpdateZktRoundStatusInput): ZktRound
+  reopenZktRound(roundId: String): ZktRound
+  markZktNoShow(input: MarkZktNoShowInput): ZktResult
   createZktRound(input: CreateZktRoundInput): ZktRound
   updateZktRound(input: UpdateZktRoundInput): ZktRound
   deleteZktRound(roundId: String): Boolean
@@ -446,6 +462,11 @@ type Mutation {
   createZktGroup(input: CreateGroupInput): ZktGroup
   deleteZktGroup(groupId: String): Boolean
   bulkAssignCompetitors(input: BulkAssignCompetitorsInput): [ZktAssignment]
+  upsertZktDelegateReport(input: UpsertZktDelegateReportInput): ZktDelegateReport
+  submitZktDelegateReport(competitionId: String): ZktDelegateReport
+  createZktIncident(input: CreateZktIncidentInput): ZktIncident
+  updateZktIncident(input: UpdateZktIncidentInput): ZktIncident
+  deleteZktIncident(id: String): Boolean
 }
 
 type SmartDevice {
@@ -1568,6 +1589,7 @@ type ZktResult {
   average: Int
   ranking: Int
   proceeds: Boolean
+  no_show: Boolean
   single_record_tag: String
   average_record_tag: String
   entered_by_id: String
@@ -1643,10 +1665,14 @@ type ZktRegistration {
   user_id: String
   status: ZktRegistrationStatus
   notes: String
+  admin_comment: String
+  guests: Int
+  waiting_list_position: Int
   created_at: DateTime
   updated_at: DateTime
   user: PublicUserAccount
   events: [ZktRegistrationEvent!]
+  history: [ZktRegistrationHistory!]
 }
 
 enum ZktRegistrationStatus {
@@ -1655,6 +1681,16 @@ enum ZktRegistrationStatus {
   REJECTED
   WAITLISTED
   WITHDRAWN
+}
+
+type ZktRegistrationHistory {
+  id: String
+  registration_id: String
+  actor_id: String
+  action: String
+  changed_attributes: String
+  created_at: DateTime
+  actor: PublicUserAccount
 }
 
 type ZktCompDelegate {
@@ -1676,6 +1712,13 @@ type ZktCompetition {
   competitor_limit: Int
   status: ZktCompStatus
   visibility: ZktCompVisibility
+  confirmed_at: DateTime
+  announced_at: DateTime
+  announced_by_id: String
+  cancelled_at: DateTime
+  cancel_reason: String
+  results_published_at: DateTime
+  registration_edit_deadline: DateTime
   created_by_id: String
   created_at: DateTime
   updated_at: DateTime
@@ -1687,17 +1730,65 @@ type ZktCompetition {
 
 enum ZktCompStatus {
   DRAFT
+  CONFIRMED
   ANNOUNCED
   REGISTRATION_OPEN
   REGISTRATION_CLOSED
   ONGOING
   FINISHED
   PUBLISHED
+  CANCELLED
 }
 
 enum ZktCompVisibility {
   PUBLIC
   PRIVATE
+}
+
+type ZktDelegateReport {
+  id: String
+  competition_id: String
+  summary: String
+  venue_notes: String
+  organization_notes: String
+  incidents_summary: String
+  remarks: String
+  submitted_by_id: String
+  submitted_at: DateTime
+  created_at: DateTime
+  updated_at: DateTime
+  submitted_by: PublicUserAccount
+}
+
+type ZktIncident {
+  id: String
+  competition_id: String
+  title: String
+  description: String
+  tags: [String]
+  result_id: String
+  created_by_id: String
+  resolved_at: DateTime
+  created_at: DateTime
+  updated_at: DateTime
+  created_by: PublicUserAccount
+}
+
+type ZktPodium {
+  event_id: String
+  round_id: String
+  results: [ZktResult]
+}
+
+type ZktAllTimeRanking {
+  ranking: Int
+  value: Int
+  event_id: String
+  record_type: String
+  result_id: String
+  round_id: String
+  user: PublicUserAccount
+  competition: ZktCompetition
 }
 
 type ZktRecord {
@@ -1966,6 +2057,31 @@ input CreatePromoCodeInput {
   max_uses: Int = 1
 }
 
+input UpsertZktDelegateReportInput {
+  competitionId: String
+  summary: String
+  venueNotes: String
+  organizationNotes: String
+  incidentsSummary: String
+  remarks: String
+}
+
+input CreateZktIncidentInput {
+  competitionId: String
+  title: String
+  description: String
+  tags: [String!]
+  resultId: String
+}
+
+input UpdateZktIncidentInput {
+  id: String
+  title: String
+  description: String
+  tags: [String!]
+  markResolved: Boolean = false
+}
+
 input CreateZktCompetitionInput {
   name: String
   description: String
@@ -1995,6 +2111,11 @@ input UpdateZktCompetitionStatusInput {
   status: ZktCompStatus
 }
 
+input CancelZktCompetitionInput {
+  competitionId: String
+  reason: String
+}
+
 input ZktCompetitionFilterInput {
   status: ZktCompStatus
   visibility: ZktCompVisibility
@@ -2004,11 +2125,30 @@ input ZktRegistrationInput {
   competitionId: String
   eventIds: [String]
   notes: String
+  guests: Int
 }
 
 input UpdateZktRegistrationStatusInput {
   registrationId: String
   status: ZktRegistrationStatus
+  adminComment: String
+}
+
+input UpdateMyZktRegistrationInput {
+  competitionId: String
+  eventIds: [String!]
+  notes: String
+  guests: Int
+}
+
+input BulkZktRegistrationUpdate {
+  registrationId: String
+  status: ZktRegistrationStatus
+}
+
+input BulkUpdateZktRegistrationsInput {
+  competitionId: String
+  updates: [BulkZktRegistrationUpdate]
 }
 
 input AddZktDelegateInput {
@@ -2048,6 +2188,11 @@ input UpdateZktRoundStatusInput {
   status: ZktRoundStatus
 }
 
+input MarkZktNoShowInput {
+  roundId: String
+  userId: String
+}
+
 input AssignUserInput {
   roundId: String
   groupId: String
@@ -2075,6 +2220,20 @@ input SubmitZktResultInput {
   attempt3: Int
   attempt4: Int
   attempt5: Int
+}
+
+input SubmitZktResultBatchItem {
+  userId: String
+  attempt1: Int
+  attempt2: Int
+  attempt3: Int
+  attempt4: Int
+  attempt5: Int
+}
+
+input SubmitZktResultsBatchInput {
+  roundId: String
+  results: [SubmitZktResultBatchItem]
 }
 
 input PaginationArgsInput {

@@ -14,6 +14,17 @@ const UPDATE_STATUS = gql`
 		updateZktRegistrationStatus(input: $input) {
 			id
 			status
+			waiting_list_position
+		}
+	}
+`;
+
+const BULK_UPDATE = gql`
+	mutation BulkUpdateZktRegs($input: BulkUpdateZktRegistrationsInput!) {
+		bulkUpdateZktRegistrations(input: $input) {
+			id
+			status
+			waiting_list_position
 		}
 	}
 `;
@@ -51,11 +62,13 @@ export default function DashboardRegistrations({
 
 	async function bulkSetStatus(status: string) {
 		try {
-			await Promise.all(
-				Array.from(selected).map((registrationId) =>
-					gqlMutate(UPDATE_STATUS, {input: {registrationId, status}})
-				)
-			);
+			const updates = Array.from(selected).map((registrationId) => ({
+				registrationId,
+				status,
+			}));
+			await gqlMutate(BULK_UPDATE, {
+				input: {competitionId: detail.id, updates},
+			});
 			toastSuccess(t('bulk_updated'));
 			setSelected(new Set());
 			onUpdated();

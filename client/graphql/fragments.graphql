@@ -421,6 +421,7 @@ fragment ZktResultFragment on ZktResult {
 	average
 	ranking
 	proceeds
+	no_show
 	single_record_tag
 	average_record_tag
 	entered_by_id
@@ -466,6 +467,9 @@ fragment ZktRegistrationFragment on ZktRegistration {
 	user_id
 	status
 	notes
+	admin_comment
+	guests
+	waiting_list_position
 	created_at
 	updated_at
 	user {
@@ -474,6 +478,76 @@ fragment ZktRegistrationFragment on ZktRegistration {
 	events {
 		id
 		comp_event_id
+	}
+}
+
+fragment ZktDelegateReportFragment on ZktDelegateReport {
+	id
+	competition_id
+	summary
+	venue_notes
+	organization_notes
+	incidents_summary
+	remarks
+	submitted_by_id
+	submitted_at
+	created_at
+	updated_at
+	submitted_by {
+		...PublicUserFragment
+	}
+}
+
+fragment ZktIncidentFragment on ZktIncident {
+	id
+	competition_id
+	title
+	description
+	tags
+	result_id
+	created_by_id
+	resolved_at
+	created_at
+	updated_at
+	created_by {
+		...PublicUserFragment
+	}
+}
+
+fragment ZktPodiumFragment on ZktPodium {
+	event_id
+	round_id
+	results {
+		...ZktResultFragment
+	}
+}
+
+fragment ZktAllTimeRankingFragment on ZktAllTimeRanking {
+	ranking
+	value
+	event_id
+	record_type
+	result_id
+	round_id
+	user {
+		...PublicUserFragment
+	}
+	competition {
+		id
+		name
+		date_start
+	}
+}
+
+fragment ZktRegistrationHistoryFragment on ZktRegistrationHistory {
+	id
+	registration_id
+	actor_id
+	action
+	changed_attributes
+	created_at
+	actor {
+		...PublicUserFragment
 	}
 }
 
@@ -498,6 +572,13 @@ fragment ZktCompetitionSummaryFragment on ZktCompetition {
 	competitor_limit
 	status
 	visibility
+	confirmed_at
+	announced_at
+	announced_by_id
+	cancelled_at
+	cancel_reason
+	results_published_at
+	registration_edit_deadline
 	created_by_id
 	created_at
 	updated_at

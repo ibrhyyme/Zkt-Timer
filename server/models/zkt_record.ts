@@ -96,8 +96,40 @@ export async function insertRecord(params: {
 }
 
 /**
- * Check a finalized result against current records.
- * Creates new record entries if beaten. Returns tags to set on the result.
+ * Personal best lookup for a given user + event + record type. Scans all
+ * ZktResults the user has in this event (across any finalized round) and
+ * returns the smallest valid value, or null if none yet.
+ */
+async function getUserPersonalBest(
+	userId: string,
+	eventId: string,
+	recordType: RecordType,
+	excludeResultId?: string
+): Promise<number | null> {
+	const prisma = getPrisma();
+	const column = recordType === 'single' ? 'best' : 'average';
+	const rows = await prisma.zktResult.findMany({
+		where: {
+			user_id: userId,
+			round: {comp_event: {event_id: eventId}},
+			...(excludeResultId ? {id: {not: excludeResultId}} : {}),
+		},
+		select: {best: true, average: true},
+	});
+	let pb: number | null = null;
+	for (const r of rows) {
+		const v = (r as any)[column] as number | null;
+		if (v !== null && v !== undefined && v > 0) {
+			if (pb === null || v < pb) pb = v;
+		}
+	}
+	return pb;
+}
+
+/**
+ * Check a finalized result against current records + user PB.
+ * Creates new record entries if beaten. Tag priority: NR > PR.
+ * Returns tags to set on the result.
  */
 export async function checkAndApplyRecords(params: {
 	resultId: string;
@@ -123,6 +155,17 @@ export async function checkAndApplyRecords(params: {
 				competitionId: params.competitionId,
 			});
 			singleTag = 'NR';
+		} else {
+			// Not a national record — check personal best instead.
+			const pb = await getUserPersonalBest(
+				params.userId,
+				params.eventId,
+				'single',
+				params.resultId
+			);
+			if (pb === null || params.best < pb) {
+				singleTag = 'PR';
+			}
 		}
 	}
 
@@ -139,6 +182,16 @@ export async function checkAndApplyRecords(params: {
 				competitionId: params.competitionId,
 			});
 			averageTag = 'NR';
+		} else {
+			const pb = await getUserPersonalBest(
+				params.userId,
+				params.eventId,
+				'average',
+				params.resultId
+			);
+			if (pb === null || params.average < pb) {
+				averageTag = 'PR';
+			}
 		}
 	}
 

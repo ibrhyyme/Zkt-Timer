@@ -495,6 +495,40 @@ query zktCompetitionForAdmin($id: String!) {
 	}
 }
 
+query zktRegistrationHistory($registrationId: String!) {
+	zktRegistrationHistory(registrationId: $registrationId) {
+		...ZktRegistrationHistoryFragment
+	}
+}
+
+query exportZktCompetitionWcif($id: String!) {
+	exportZktCompetitionWcif(id: $id)
+}
+
+query zktCompetitionPodiums($id: String!) {
+	zktCompetitionPodiums(id: $id) {
+		...ZktPodiumFragment
+	}
+}
+
+query zktAllTimeRankings($eventId: String!, $recordType: String!, $limit: Float) {
+	zktAllTimeRankings(eventId: $eventId, recordType: $recordType, limit: $limit) {
+		...ZktAllTimeRankingFragment
+	}
+}
+
+query zktDelegateReport($competitionId: String!) {
+	zktDelegateReport(competitionId: $competitionId) {
+		...ZktDelegateReportFragment
+	}
+}
+
+query zktIncidents($competitionId: String!) {
+	zktIncidents(competitionId: $competitionId) {
+		...ZktIncidentFragment
+	}
+}
+
 query zktRoundResults($roundId: String!) {
 	zktRoundResults(roundId: $roundId) {
 		...ZktResultFragment

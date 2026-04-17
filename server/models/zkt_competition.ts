@@ -70,7 +70,9 @@ export async function listZktCompetitions(params: {
 
 	if (onlyPublic) {
 		where.visibility = 'PUBLIC';
-		where.status = {not: 'DRAFT'};
+		// Hide pre-announcement states (DRAFT internal, CONFIRMED awaiting announce).
+		// CANCELLED stays visible so users learn about the cancellation.
+		where.status = {notIn: ['DRAFT', 'CONFIRMED']};
 	}
 
 	if (status) {
@@ -174,17 +176,24 @@ export async function createZktCompetitionWithEvents(params: {
 // STATE MACHINE
 // ============================================================================
 
+// WCA pattern:
+//   DRAFT → CONFIRMED → ANNOUNCED → REGISTRATION_OPEN → REGISTRATION_CLOSED
+//     → ONGOING → FINISHED → PUBLISHED
+// Cancel is reachable from any live state; cancelled is terminal.
 const STATUS_TRANSITIONS: Record<ZktCompStatus, ZktCompStatus[]> = {
-	DRAFT: ['ANNOUNCED'],
-	ANNOUNCED: ['REGISTRATION_OPEN', 'DRAFT'],
-	REGISTRATION_OPEN: ['REGISTRATION_CLOSED', 'ANNOUNCED'],
-	REGISTRATION_CLOSED: ['ONGOING', 'REGISTRATION_OPEN'],
-	ONGOING: ['FINISHED'],
-	FINISHED: ['PUBLISHED'],
-	PUBLISHED: [],
+	DRAFT: ['CONFIRMED', 'CANCELLED'],
+	CONFIRMED: ['ANNOUNCED', 'DRAFT', 'CANCELLED'],
+	ANNOUNCED: ['REGISTRATION_OPEN', 'CONFIRMED', 'CANCELLED'],
+	REGISTRATION_OPEN: ['REGISTRATION_CLOSED', 'ANNOUNCED', 'CANCELLED'],
+	REGISTRATION_CLOSED: ['ONGOING', 'REGISTRATION_OPEN', 'CANCELLED'],
+	ONGOING: ['FINISHED', 'CANCELLED'],
+	FINISHED: ['PUBLISHED', 'ONGOING'], // results can be unpublished back for correction
+	PUBLISHED: ['FINISHED'],
+	CANCELLED: [],
 };
 
 export function canTransitionStatus(from: ZktCompStatus, to: ZktCompStatus): boolean {
+	if (from === to) return true;
 	return STATUS_TRANSITIONS[from]?.includes(to) ?? false;
 }
 
@@ -200,6 +209,138 @@ export async function updateZktCompetitionStatus(id: string, newStatus: ZktCompS
 	return prisma.zktCompetition.update({
 		where: {id},
 		data: {status: newStatus},
+	});
+}
+
+// ============================================================================
+// LIFECYCLE ACTIONS (confirm / announce / cancel / publish)
+// ============================================================================
+
+/**
+ * Confirm competition: validate all required fields are set before it can
+ * be announced publicly. Called by mod/admin. Sets `confirmed_at`.
+ */
+export async function confirmZktCompetition(id: string) {
+	const prisma = getPrisma();
+	const comp = await prisma.zktCompetition.findUnique({
+		where: {id},
+		include: {events: true},
+	});
+	if (!comp) throw new GraphQLError(ErrorCode.NOT_FOUND);
+
+	if (!canTransitionStatus(comp.status, 'CONFIRMED')) {
+		throw new GraphQLError(
+			ErrorCode.BAD_INPUT,
+			`Cannot confirm from status ${comp.status}`
+		);
+	}
+
+	const missing: string[] = [];
+	if (!comp.name?.trim()) missing.push('name');
+	if (!comp.location?.trim()) missing.push('location');
+	if (!comp.date_start) missing.push('date_start');
+	if (!comp.date_end) missing.push('date_end');
+	if (comp.events.length === 0) missing.push('events');
+	if (missing.length > 0) {
+		throw new GraphQLError(
+			ErrorCode.BAD_INPUT,
+			`Missing required fields: ${missing.join(', ')}`
+		);
+	}
+
+	return prisma.zktCompetition.update({
+		where: {id},
+		data: {status: 'CONFIRMED', confirmed_at: new Date()},
+	});
+}
+
+/**
+ * Announce: CONFIRMED → ANNOUNCED. Public-visible from this point.
+ * Triggers notification email separately in the resolver.
+ */
+export async function announceZktCompetition(id: string, announcedById: string) {
+	const prisma = getPrisma();
+	const comp = await prisma.zktCompetition.findUnique({where: {id}});
+	if (!comp) throw new GraphQLError(ErrorCode.NOT_FOUND);
+
+	if (!canTransitionStatus(comp.status, 'ANNOUNCED')) {
+		throw new GraphQLError(
+			ErrorCode.BAD_INPUT,
+			`Cannot announce from status ${comp.status}`
+		);
+	}
+
+	return prisma.zktCompetition.update({
+		where: {id},
+		data: {
+			status: 'ANNOUNCED',
+			announced_at: new Date(),
+			announced_by_id: announcedById,
+		},
+	});
+}
+
+/**
+ * Cancel: any live state → CANCELLED. Reason stored for public communication.
+ */
+export async function cancelZktCompetition(id: string, reason: string | null) {
+	const prisma = getPrisma();
+	const comp = await prisma.zktCompetition.findUnique({where: {id}});
+	if (!comp) throw new GraphQLError(ErrorCode.NOT_FOUND);
+
+	if (!canTransitionStatus(comp.status, 'CANCELLED')) {
+		throw new GraphQLError(
+			ErrorCode.BAD_INPUT,
+			`Cannot cancel from status ${comp.status}`
+		);
+	}
+
+	return prisma.zktCompetition.update({
+		where: {id},
+		data: {
+			status: 'CANCELLED',
+			cancelled_at: new Date(),
+			cancel_reason: reason,
+		},
+	});
+}
+
+/**
+ * Publish results: FINISHED → PUBLISHED. Sets `results_published_at`.
+ * Until this is set, the public result queries hide completed rounds.
+ */
+export async function publishZktResults(id: string) {
+	const prisma = getPrisma();
+	const comp = await prisma.zktCompetition.findUnique({where: {id}});
+	if (!comp) throw new GraphQLError(ErrorCode.NOT_FOUND);
+
+	if (!canTransitionStatus(comp.status, 'PUBLISHED')) {
+		throw new GraphQLError(
+			ErrorCode.BAD_INPUT,
+			`Cannot publish from status ${comp.status}`
+		);
+	}
+
+	return prisma.zktCompetition.update({
+		where: {id},
+		data: {status: 'PUBLISHED', results_published_at: new Date()},
+	});
+}
+
+/**
+ * Unpublish: PUBLISHED → FINISHED. Clears timestamp; used if a wrong result
+ * slipped through and needs correction. Rare.
+ */
+export async function unpublishZktResults(id: string) {
+	const prisma = getPrisma();
+	const comp = await prisma.zktCompetition.findUnique({where: {id}});
+	if (!comp) throw new GraphQLError(ErrorCode.NOT_FOUND);
+	if (comp.status !== 'PUBLISHED') {
+		throw new GraphQLError(ErrorCode.BAD_INPUT, 'Competition is not published');
+	}
+	return prisma.zktCompetition.update({
+		where: {id},
+		data: {status: 'FINISHED', results_published_at: null},
 	});
 }
 

@@ -211,6 +211,9 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 									competitor={comp}
 									roundId={selectedRound.id}
 									format={selectedRound.format}
+									timeLimitCs={selectedRound.time_limit_cs}
+									cutoffCs={selectedRound.cutoff_cs}
+									cutoffAttempts={selectedRound.cutoff_attempts}
 									existing={results.find((r) => r.user_id === comp.user_id)}
 									onSaved={fetchResults}
 								/>
@@ -239,12 +242,18 @@ function ResultRow({
 	competitor,
 	roundId,
 	format,
+	timeLimitCs,
+	cutoffCs,
+	cutoffAttempts,
 	existing,
 	onSaved,
 }: {
 	competitor: Competitor;
 	roundId: string;
 	format: string;
+	timeLimitCs?: number | null;
+	cutoffCs?: number | null;
+	cutoffAttempts?: number | null;
 	existing?: any;
 	onSaved: () => void;
 }) {
@@ -308,6 +317,20 @@ function ResultRow({
 	const previewBest = computeBestPreview(relevantAttempts);
 	const previewAvg = hasAverage ? computeAveragePreview(relevantAttempts, format) : null;
 
+	// Cutoff gate: if first N attempts don't include one that beats cutoff_cs,
+	// later attempts are locked (server will wipe them on save anyway).
+	const cutoffActive =
+		cutoffCs != null &&
+		cutoffAttempts != null &&
+		cutoffCs > 0 &&
+		cutoffAttempts > 0 &&
+		cutoffAttempts < attemptCount;
+	const cutoffMet = cutoffActive
+		? attempts
+				.slice(0, cutoffAttempts!)
+				.some((a) => a !== null && a > 0 && a < cutoffCs!)
+		: true;
+
 	return (
 		<div className={b('result-row')}>
 			<div className={b('result-user')}>
@@ -321,29 +344,57 @@ function ResultRow({
 			</div>
 
 			<div className={b('attempts')}>
-				{Array.from({length: attemptCount}).map((_, idx) => (
-					<div key={idx} className={b('attempt-cell')}>
-						<TimeField
-							value={attempts[idx]}
-							onChange={(cs) => setAttempt(idx, cs)}
-							placeholder={`D${idx + 1}`}
-						/>
-						<div className={b('attempt-actions')}>
-							<button className={b('mini-btn')} onClick={() => setSpecial(idx, 'DNF')}>
-								DNF
-							</button>
-							<button className={b('mini-btn')} onClick={() => setSpecial(idx, 'DNS')}>
-								DNS
-							</button>
-							<button className={b('mini-btn')} onClick={() => setSpecial(idx, 'PLUS2')}>
-								+2
-							</button>
-							<button className={b('mini-btn')} onClick={() => setSpecial(idx, 'CLEAR')}>
-								×
-							</button>
+				{Array.from({length: attemptCount}).map((_, idx) => {
+					const lockedByCutoff =
+						cutoffActive && !cutoffMet && idx >= (cutoffAttempts as number);
+					return (
+						<div
+							key={idx}
+							className={b('attempt-cell', {'cutoff-locked': lockedByCutoff})}
+						>
+							<TimeField
+								value={attempts[idx]}
+								onChange={(cs) => setAttempt(idx, cs)}
+								placeholder={`D${idx + 1}`}
+								disabled={lockedByCutoff}
+								disabledReason={
+									lockedByCutoff ? t('cutoff_locked_hint') : undefined
+								}
+								timeLimitCs={timeLimitCs ?? undefined}
+							/>
+							<div className={b('attempt-actions')}>
+								<button
+									className={b('mini-btn')}
+									onClick={() => setSpecial(idx, 'DNF')}
+									disabled={lockedByCutoff}
+								>
+									DNF
+								</button>
+								<button
+									className={b('mini-btn')}
+									onClick={() => setSpecial(idx, 'DNS')}
+									disabled={lockedByCutoff}
+								>
+									DNS
+								</button>
+								<button
+									className={b('mini-btn')}
+									onClick={() => setSpecial(idx, 'PLUS2')}
+									disabled={lockedByCutoff}
+								>
+									+2
+								</button>
+								<button
+									className={b('mini-btn')}
+									onClick={() => setSpecial(idx, 'CLEAR')}
+									disabled={lockedByCutoff}
+								>
+									×
+								</button>
+							</div>
 						</div>
-					</div>
-				))}
+					);
+				})}
 			</div>
 
 			<div className={b('result-stats')}>

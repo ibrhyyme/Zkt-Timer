@@ -95,6 +95,7 @@ export default function Appearance() {
 				<TimerSettingsSlider
 					label={t('appearance.timer_font_size')}
 					description={t('appearance.timer_font_size_desc')}
+					hidden={!!mobileMode}
 					value={timerTimeSize}
 					min={35}
 					max={150}
