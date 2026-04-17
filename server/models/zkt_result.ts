@@ -123,6 +123,49 @@ export function calculateBestAndAverage(
 }
 
 /**
+ * Attempts >= time_limit_cs are converted to DNF.
+ * DNF/DNS/null attempts untouched. Mirrors wca-live non-cumulative time limit.
+ */
+export function applyTimeLimit(
+	attempts: (number | null | undefined)[],
+	timeLimitCs: number | null | undefined
+): (number | null | undefined)[] {
+	if (!timeLimitCs || timeLimitCs <= 0) return attempts;
+	return attempts.map((a) => {
+		if (a === null || a === undefined) return a;
+		if (isDnfOrDns(a)) return a;
+		if (a >= timeLimitCs) return DNF;
+		return a;
+	});
+}
+
+/**
+ * If none of the first `cutoffAttempts` attempts beats `cutoffCs`,
+ * remaining attempts are wiped (set to null). Mirrors wca-live cutoff logic.
+ */
+export function applyCutoff(
+	attempts: (number | null | undefined)[],
+	cutoffCs: number | null | undefined,
+	cutoffAttempts: number | null | undefined,
+	format?: ZktRoundFormat
+): (number | null | undefined)[] {
+	if (!cutoffCs || cutoffCs <= 0 || !cutoffAttempts || cutoffAttempts <= 0) {
+		return attempts;
+	}
+	// Guard: cutoff makes no sense if it covers all (or more) format attempts.
+	// WCA convention: cutoff N means "first N of M>N attempts decide further attempts".
+	if (format && cutoffAttempts >= getAttemptCount(format)) {
+		return attempts;
+	}
+	const firstN = attempts.slice(0, cutoffAttempts);
+	const meetsCutoff = firstN.some(
+		(a) => a !== null && a !== undefined && a > 0 && a < cutoffCs
+	);
+	if (meetsCutoff) return attempts;
+	return attempts.map((a, i) => (i < cutoffAttempts ? a : null));
+}
+
+/**
  * Compare two results for ranking.
  */
 function compareResults(
@@ -222,7 +265,7 @@ export async function upsertZktResult(input: {
 		throw new Error('Round not found');
 	}
 
-	const attempts = [
+	const rawAttempts = [
 		input.attempt_1,
 		input.attempt_2,
 		input.attempt_3,
@@ -230,7 +273,28 @@ export async function upsertZktResult(input: {
 		input.attempt_5,
 	];
 
+	// Apply time_limit first (slow attempts → DNF), then cutoff (unqualified → skipped).
+	// Order matters: time_limit can convert a slow "pass" into DNF, affecting cutoff check.
+	const afterTimeLimit = applyTimeLimit(rawAttempts, round.time_limit_cs);
+	const attempts = applyCutoff(
+		afterTimeLimit,
+		round.cutoff_cs,
+		round.cutoff_attempts,
+		round.format
+	);
+
 	const {best, average} = calculateBestAndAverage(attempts, round.format);
+
+	const persisted = {
+		attempt_1: attempts[0] ?? null,
+		attempt_2: attempts[1] ?? null,
+		attempt_3: attempts[2] ?? null,
+		attempt_4: attempts[3] ?? null,
+		attempt_5: attempts[4] ?? null,
+		best,
+		average,
+		entered_by_id: input.entered_by_id,
+	};
 
 	return prisma.zktResult.upsert({
 		where: {
@@ -242,32 +306,72 @@ export async function upsertZktResult(input: {
 		create: {
 			round_id: input.round_id,
 			user_id: input.user_id,
-			attempt_1: input.attempt_1 ?? null,
-			attempt_2: input.attempt_2 ?? null,
-			attempt_3: input.attempt_3 ?? null,
-			attempt_4: input.attempt_4 ?? null,
-			attempt_5: input.attempt_5 ?? null,
-			best,
-			average,
-			entered_by_id: input.entered_by_id,
+			...persisted,
 		},
-		update: {
-			attempt_1: input.attempt_1 ?? null,
-			attempt_2: input.attempt_2 ?? null,
-			attempt_3: input.attempt_3 ?? null,
-			attempt_4: input.attempt_4 ?? null,
-			attempt_5: input.attempt_5 ?? null,
-			best,
-			average,
-			entered_by_id: input.entered_by_id,
-		},
+		update: persisted,
 	});
 }
 
 /**
- * Finalize a round: compute rankings, advancement, and apply records.
+ * Mark a competitor as no-show: all format attempts become DNS,
+ * best/average are DNF, and no_show flag is set. Separate from a regular
+ * submit: no cutoff/time_limit apply (there's nothing to measure).
  */
-export async function finalizeRound(roundId: string): Promise<void> {
+export async function markResultNoShow(input: {
+	round_id: string;
+	user_id: string;
+	entered_by_id: string;
+}) {
+	const prisma = getPrisma();
+	const round = await prisma.zktRound.findUnique({where: {id: input.round_id}});
+	if (!round) {
+		throw new Error('Round not found');
+	}
+
+	const attemptCount = getAttemptCount(round.format);
+	const attemptValues: (number | null)[] = [null, null, null, null, null];
+	for (let i = 0; i < attemptCount; i++) {
+		attemptValues[i] = DNS;
+	}
+	const {best, average} = calculateBestAndAverage(attemptValues, round.format);
+
+	const persisted = {
+		attempt_1: attemptValues[0],
+		attempt_2: attemptValues[1],
+		attempt_3: attemptValues[2],
+		attempt_4: attemptValues[3],
+		attempt_5: attemptValues[4],
+		best,
+		average,
+		no_show: true,
+		entered_by_id: input.entered_by_id,
+	};
+
+	return prisma.zktResult.upsert({
+		where: {
+			round_id_user_id: {
+				round_id: input.round_id,
+				user_id: input.user_id,
+			},
+		},
+		create: {
+			round_id: input.round_id,
+			user_id: input.user_id,
+			...persisted,
+		},
+		update: persisted,
+	});
+}
+
+/**
+ * Finalize a round: compute rankings, advancement, apply records, and
+ * carry advancing competitors to the next round as empty result rows.
+ * `enteredById` is the acting admin's id, used as entered_by for carry rows.
+ */
+export async function finalizeRound(
+	roundId: string,
+	enteredById: string
+): Promise<void> {
 	const prisma = getPrisma();
 	const round = await prisma.zktRound.findUnique({
 		where: {id: roundId},
@@ -303,4 +407,54 @@ export async function finalizeRound(roundId: string): Promise<void> {
 		where: {id: roundId},
 		data: {status: 'FINISHED'},
 	});
+
+	// Advancement carry: if a next round exists, create empty result rows
+	// for competitors who advanced. Skips users that already have a row
+	// (idempotent — finalize can be called again after reopen without dupes).
+	await carryAdvancingToNextRound(roundId, withAdvancement, enteredById);
+}
+
+async function carryAdvancingToNextRound(
+	currentRoundId: string,
+	ranked: Array<{user_id: string; proceeds: boolean}>,
+	enteredById: string
+): Promise<void> {
+	const prisma = getPrisma();
+	const current = await prisma.zktRound.findUnique({
+		where: {id: currentRoundId},
+		select: {comp_event_id: true, round_number: true},
+	});
+	if (!current) return;
+
+	const nextRound = await prisma.zktRound.findUnique({
+		where: {
+			comp_event_id_round_number: {
+				comp_event_id: current.comp_event_id,
+				round_number: current.round_number + 1,
+			},
+		},
+	});
+	if (!nextRound) return;
+
+	const advancingUserIds = ranked.filter((r) => r.proceeds).map((r) => r.user_id);
+	if (advancingUserIds.length === 0) return;
+
+	await Promise.all(
+		advancingUserIds.map((userId) =>
+			prisma.zktResult.upsert({
+				where: {
+					round_id_user_id: {
+						round_id: nextRound.id,
+						user_id: userId,
+					},
+				},
+				create: {
+					round_id: nextRound.id,
+					user_id: userId,
+					entered_by_id: enteredById,
+				},
+				update: {}, // don't overwrite if admin already started entering
+			})
+		)
+	);
 }

@@ -135,10 +135,20 @@ function appUseRouteForPage(routePath, route: PageContext) {
 			return;
 		}
 
-		// Admin sayfalarına sadece admin/mod erişebilir, geri kalanı 404 görür
-		if (route.admin && (!me || (!me.admin && !me.mod))) {
-			res.status(404).sendFile(`${__dirname}/resources/not_found.html`);
-			return;
+		// Admin sayfalarına sadece admin/mod erişebilir, geri kalanı 404 görür.
+		// Mod (ama admin değil) sadece ZKT yarışma sayfalarına erişebilir.
+		if (route.admin) {
+			if (!me || (!me.admin && !me.mod)) {
+				res.status(404).sendFile(`${__dirname}/resources/not_found.html`);
+				return;
+			}
+			if (me.mod && !me.admin) {
+				const isCompetitionsRoute = routePath.startsWith('/admin/competitions');
+				if (!isCompetitionsRoute) {
+					res.status(404).sendFile(`${__dirname}/resources/not_found.html`);
+					return;
+				}
+			}
 		}
 
 		// Redirect to home page if user is logged in and on login page

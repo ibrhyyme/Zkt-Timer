@@ -92,13 +92,13 @@ export default function TimerModule(props: Props) {
 
 	const moduleDropdownOptions: TimerModuleDropdownOptions[] = customOptions?.dropdownOptions || [
 		{ label: t('timer_modules.history'), value: TimerModuleType.HISTORY },
+		{ label: t('timer_modules.cross_solver'), value: TimerModuleType.CROSS_SOLVER },
 		{ label: t('timer_modules.stats'), value: TimerModuleType.STATS },
 		{ label: t('timer_modules.last_solve'), value: TimerModuleType.LAST_SOLVE },
 		{ label: t('timer_modules.scramble'), value: TimerModuleType.SCRAMBLE },
 		{ label: t('timer_modules.consistency'), value: TimerModuleType.CONSISTENCY },
 		{ label: t('timer_modules.solve_graph'), value: TimerModuleType.SOLVE_GRAPH },
 		{ label: t('timer_modules.time_distro'), value: TimerModuleType.TIME_DISTRO },
-		{ label: t('timer_modules.cross_solver'), value: TimerModuleType.CROSS_SOLVER },
 		{ label: t('timer_modules.none'), value: TimerModuleType.NONE },
 	];
 

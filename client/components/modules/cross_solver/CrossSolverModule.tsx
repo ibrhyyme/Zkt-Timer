@@ -11,25 +11,42 @@ const b = block('cross-solver');
 interface SolverTab {
 	key: SolverType;
 	label: string;
-	cubeTypes: string[];
+	puzzles: string[];
+}
+
+// Tum 3x3 scramble ureten cube type'lar — tum 3x3 solver'lari bu listedekilerde calisir
+const CUBE_TYPES_333 = new Set(['333', '333cfop', '333roux', '333mehta', '333zz', '333sub']);
+
+// Cube type + subset -> gercek puzzle turu cozumu
+// WCA kategorisinde subset bizzat puzzle turudur (333, 222, sq1, vs)
+// Diger cube type'larda subset scramble varyantidir, puzzle turu cube type'tan gelir
+function resolvePuzzle(cubeType: string, subset?: string): string {
+	if (cubeType === 'wca') {
+		// WCA: subset puzzle turu. Subset yoksa default 3x3.
+		return subset || '333';
+	}
+	if (CUBE_TYPES_333.has(cubeType)) {
+		return '333';
+	}
+	return cubeType;
 }
 
 const ALL_SOLVERS: SolverTab[] = [
-	{key: 'cross', label: 'Cross', cubeTypes: ['333', '333oh', '333bl']},
-	{key: 'xcross', label: 'XCross', cubeTypes: ['333', '333oh', '333bl']},
-	{key: 'eoline', label: 'EOLine', cubeTypes: ['333', '333oh', '333bl']},
-	{key: 'eocross', label: 'EOCross', cubeTypes: ['333', '333oh', '333bl']},
-	{key: 'roux1', label: 'Roux S1', cubeTypes: ['333', '333oh', '333bl']},
-	{key: '333cf', label: 'Cross + F2L', cubeTypes: ['333', '333oh', '333bl']},
-	{key: '333roux', label: 'Roux S1 + S2', cubeTypes: ['333', '333oh', '333bl']},
-	{key: '333petrus', label: '2x2x2 + 2x2x3', cubeTypes: ['333', '333oh', '333bl']},
-	{key: '333zz', label: 'EOLine + ZZF2L', cubeTypes: ['333', '333oh', '333bl']},
-	{key: '333eodr', label: 'EO + DR', cubeTypes: ['333', '333oh', '333bl']},
-	{key: '333222', label: '2x2x2 Block', cubeTypes: ['333', '333oh', '333bl']},
-	{key: '222face', label: '2x2x2 Face', cubeTypes: ['222']},
-	{key: 'sq1cs', label: 'SQ1 S1 + S2', cubeTypes: ['sq1']},
-	{key: 'pyrv', label: 'Pyraminx V', cubeTypes: ['pyram']},
-	{key: 'skbl1', label: 'Skewb Face', cubeTypes: ['skewb']},
+	{key: 'cross', label: 'Cross', puzzles: ['333']},
+	{key: 'xcross', label: 'XCross', puzzles: ['333']},
+	{key: 'eoline', label: 'EOLine', puzzles: ['333']},
+	{key: 'eocross', label: 'EOCross', puzzles: ['333']},
+	{key: 'roux1', label: 'Roux S1', puzzles: ['333']},
+	{key: '333cf', label: 'Cross + F2L', puzzles: ['333']},
+	{key: '333roux', label: 'Roux S1 + S2', puzzles: ['333']},
+	{key: '333petrus', label: '2x2x2 + 2x2x3', puzzles: ['333']},
+	{key: '333zz', label: 'EOLine + ZZF2L', puzzles: ['333']},
+	{key: '333eodr', label: 'EO + DR', puzzles: ['333']},
+	{key: '333222', label: '2x2x2 Block', puzzles: ['333']},
+	{key: '222face', label: '2x2x2 Face', puzzles: ['222']},
+	{key: 'sq1cs', label: 'SQ1 S1 + S2', puzzles: ['sq1']},
+	{key: 'pyrv', label: 'Pyraminx V', puzzles: ['pyram']},
+	{key: 'skbl1', label: 'Skewb Face', puzzles: ['skewb']},
 ];
 
 const FACE_COLORS: Record<string, string> = {
@@ -39,7 +56,7 @@ const FACE_COLORS: Record<string, string> = {
 export default function CrossSolverModule() {
 	const {t} = useTranslation();
 	const context = useContext(TimerContext);
-	const {scramble, cubeType} = context;
+	const {scramble, cubeType, scrambleSubset} = context;
 
 	const [solverType, setSolverType] = useState<SolverType>('cross');
 	const [orientation, setOrientation] = useState('z2');
@@ -48,9 +65,14 @@ export default function CrossSolverModule() {
 	const [error, setError] = useState<string | null>(null);
 	const reqIdRef = useRef(0);
 
+	const resolvedPuzzle = useMemo(
+		() => resolvePuzzle(cubeType || '', scrambleSubset),
+		[cubeType, scrambleSubset]
+	);
+
 	const availableSolvers = useMemo(
-		() => ALL_SOLVERS.filter((s) => s.cubeTypes.includes(cubeType || '')),
-		[cubeType]
+		() => ALL_SOLVERS.filter((s) => s.puzzles.includes(resolvedPuzzle)),
+		[resolvedPuzzle]
 	);
 
 	const hasAnySolver = availableSolvers.length > 0;

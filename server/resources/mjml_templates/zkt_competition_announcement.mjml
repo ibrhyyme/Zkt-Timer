@@ -1,0 +1,55 @@
+<mjml>
+	<mj-body>
+		<mj-section>
+			<mj-column>
+				<mj-image
+					href="https://zktimer.app"
+					width="80px"
+					src="https://zktimer.app/public/images/zkt-logo-dark.png"
+				></mj-image>
+
+				<mj-divider border-color="#444"></mj-divider>
+
+				<mj-text font-size="22px" font-weight="bold" color="#246bfd" font-family="helvetica">
+					Yeni Yarışma Duyurusu
+				</mj-text>
+
+				<mj-text font-size="18px" color="#444444" font-family="helvetica">
+					Merhaba {{user.first_name}},
+				</mj-text>
+
+				<mj-text line-height="26px" font-size="18px" color="#444444" font-family="helvetica">
+					<strong>{{competitionName}}</strong> yarışması duyuruldu.
+				</mj-text>
+
+				<mj-text line-height="24px" font-size="16px" color="#444444" font-family="helvetica">
+					<strong>Tarih:</strong> {{dateRange}}<br/>
+					<strong>Konum:</strong> {{location}}{{#if locationAddress}}<br/>{{locationAddress}}{{/if}}
+				</mj-text>
+
+				{{#if description}}
+				<mj-text line-height="24px" font-size="16px" color="#444444" font-family="helvetica">
+					{{description}}
+				</mj-text>
+				{{/if}}
+
+				<mj-text
+					font-weight="bold"
+					font-size="18px"
+					color="#246bfd"
+					text-decoration="underline"
+					font-family="helvetica"
+				>
+					<a font-weight="700" href="{{link}}">Yarışma Sayfasına Git</a>
+				</mj-text>
+
+				<mj-divider border-color="#444"></mj-divider>
+
+				<mj-text font-size="16px" color="#444444" font-family="helvetica">
+					Sevgiler,<br/>
+					Zkt Timer Ekibi
+				</mj-text>
+			</mj-column>
+		</mj-section>
+	</mj-body>
+</mjml>

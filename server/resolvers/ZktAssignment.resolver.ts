@@ -91,6 +91,26 @@ export class ZktAssignmentResolver {
 
 		await assertCanModifyCompetition(context.user, round.comp_event.competition_id);
 
+		// WCA-live parity: aynı kullanıcı aynı grup içinde birden fazla rolde olamaz
+		// (yarışmacı aynı anda aynı grupta hakemlik edemez). Farklı gruplarda
+		// farklı roller serbest (COMPETITOR grup A, JUDGE grup B OK).
+		if (input.groupId) {
+			const conflicting = await getPrisma().zktAssignment.findFirst({
+				where: {
+					round_id: input.roundId,
+					user_id: input.userId,
+					group_id: input.groupId,
+					role: {not: input.role},
+				},
+			});
+			if (conflicting) {
+				throw new GraphQLError(
+					ErrorCode.BAD_INPUT,
+					`User already assigned as ${conflicting.role} in this group`
+				);
+			}
+		}
+
 		// Upsert: ayni (round, user, role) icin tek kayit
 		const existing = await getPrisma().zktAssignment.findUnique({
 			where: {
@@ -197,8 +217,13 @@ export class ZktAssignmentResolver {
 	}
 
 	/**
-	 * Otomatik dagitim: onaylanan yarismacilari N grupa esit dagit.
-	 * Mevcut COMPETITOR assignment'larini silip yeniden olusturur.
+	 * Otomatik dagitim: onaylanan yarismacilari N grupa dagit.
+	 * Round >= 2 ise önceki tur ranking'ine göre serpentine seeding
+	 * (en iyiler gruplara dengeli dağıtılır: #1→G1, #2→G2, ..., #N→GN,
+	 * sonraki katman ters: #N+1→GN, ..., #2N→G1). Round 1'de userIds sırası
+	 * kullanılır (stable fallback).
+	 * Station number her grup içinde 1'den başlayarak seed sırasına verilir.
+	 * Mevcut gruplar + COMPETITOR assignment'ları silinip yeniden oluşturulur.
 	 */
 	@Authorized([Role.LOGGED_IN])
 	@Mutation(() => [ZktAssignment])
@@ -211,10 +236,23 @@ export class ZktAssignmentResolver {
 
 		await assertCanModifyCompetition(context.user, round.comp_event.competition_id);
 
-		// Var olan gruplari sil (yeniden olustur)
+		// Determine seed order. If this is a >1 round, pull ranked results
+		// from the previous round of the same comp_event. Fallback: input order.
+		const seededUserIds = await seedUsersForRound(
+			round.id,
+			round.comp_event_id,
+			round.round_number,
+			input.userIds
+		);
+
+		// Also compute a seed_result map (best time) for persisted tie-break info.
+		const seedResultByUser = await getPreviousRoundBestByUser(
+			round.comp_event_id,
+			round.round_number
+		);
+
 		await getPrisma().zktGroup.deleteMany({where: {round_id: input.roundId}});
 
-		// Gruplari olustur
 		const groups = await Promise.all(
 			Array.from({length: input.groupCount}).map((_, i) =>
 				getPrisma().zktGroup.create({
@@ -223,22 +261,31 @@ export class ZktAssignmentResolver {
 			)
 		);
 
-		// Mevcut COMPETITOR assignment'larini sil
 		await getPrisma().zktAssignment.deleteMany({
 			where: {round_id: input.roundId, role: 'COMPETITOR'},
 		});
 
-		// User'lari gruplara distribute et (round-robin)
+		// Serpentine distribution — avoids stacking top seeds in the same group.
 		const assignments = [];
-		for (let i = 0; i < input.userIds.length; i++) {
-			const groupIdx = i % input.groupCount;
-			const userId = input.userIds[i];
+		const stationByGroup = new Map<string, number>();
+		for (let i = 0; i < seededUserIds.length; i++) {
+			const layer = Math.floor(i / input.groupCount);
+			const posInLayer = i % input.groupCount;
+			const groupIdx =
+				layer % 2 === 0 ? posInLayer : input.groupCount - 1 - posInLayer;
+			const groupId = groups[groupIdx].id;
+			const userId = seededUserIds[i];
+			const nextStation = (stationByGroup.get(groupId) ?? 0) + 1;
+			stationByGroup.set(groupId, nextStation);
+
 			const a = await getPrisma().zktAssignment.create({
 				data: {
 					round_id: input.roundId,
-					group_id: groups[groupIdx].id,
+					group_id: groupId,
 					user_id: userId,
 					role: 'COMPETITOR',
+					station_number: nextStation,
+					seed_result: seedResultByUser.get(userId) ?? null,
 				},
 				include: {user: publicUserInclude},
 			});
@@ -247,4 +294,71 @@ export class ZktAssignmentResolver {
 
 		return assignments;
 	}
+}
+
+/**
+ * Return userIds ordered by previous-round ranking (best first). Users without
+ * a previous result stay in input order after ranked ones. Round 1 just returns
+ * input unchanged.
+ */
+async function seedUsersForRound(
+	_roundId: string,
+	compEventId: string,
+	roundNumber: number,
+	inputUserIds: string[]
+): Promise<string[]> {
+	if (roundNumber <= 1) return inputUserIds;
+
+	const prevRound = await getPrisma().zktRound.findUnique({
+		where: {
+			comp_event_id_round_number: {
+				comp_event_id: compEventId,
+				round_number: roundNumber - 1,
+			},
+		},
+		include: {
+			results: {
+				orderBy: [
+					{ranking: {sort: 'asc', nulls: 'last'}},
+					{best: {sort: 'asc', nulls: 'last'}},
+				],
+			},
+		},
+	});
+	if (!prevRound) return inputUserIds;
+
+	const inputSet = new Set(inputUserIds);
+	const ranked = prevRound.results
+		.map((r) => r.user_id)
+		.filter((uid) => inputSet.has(uid));
+	const rankedSet = new Set(ranked);
+	const unranked = inputUserIds.filter((uid) => !rankedSet.has(uid));
+
+	return [...ranked, ...unranked];
+}
+
+async function getPreviousRoundBestByUser(
+	compEventId: string,
+	roundNumber: number
+): Promise<Map<string, number>> {
+	const map = new Map<string, number>();
+	if (roundNumber <= 1) return map;
+
+	const prev = await getPrisma().zktRound.findUnique({
+		where: {
+			comp_event_id_round_number: {
+				comp_event_id: compEventId,
+				round_number: roundNumber - 1,
+			},
+		},
+		include: {results: true},
+	});
+	if (!prev) return map;
+
+	for (const r of prev.results) {
+		if (r.best !== null && r.best !== undefined) {
+			map.set(r.user_id, r.best);
+		}
+	}
+	return map;
 }

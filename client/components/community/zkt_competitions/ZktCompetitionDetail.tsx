@@ -11,8 +11,9 @@ import ZktInfoTab from './tabs/ZktInfoTab';
 import ZktCompetitorsTab from './tabs/ZktCompetitorsTab';
 import ZktEventsTab from './tabs/ZktEventsTab';
 import ZktLiveTab from './tabs/ZktLiveTab';
+import ZktPodiumsTab from './tabs/ZktPodiumsTab';
 import ZktRegistrationForm from './tabs/ZktRegistrationForm';
-import {Users, ListBullets, Globe, Broadcast, UserPlus} from 'phosphor-react';
+import {Users, ListBullets, Globe, Broadcast, UserPlus, Trophy} from 'phosphor-react';
 
 const DETAIL_QUERY = gql`
 	query ZktCompetitionPublic($id: String!) {
@@ -79,7 +80,7 @@ const DETAIL_QUERY = gql`
 	}
 `;
 
-type TabId = 'info' | 'competitors' | 'events' | 'live' | 'register';
+type TabId = 'info' | 'competitors' | 'events' | 'live' | 'podiums' | 'register';
 
 export default function ZktCompetitionDetail() {
 	const {competitionId} = useParams<{competitionId: string}>();
@@ -127,11 +128,13 @@ export default function ZktCompetitionDetail() {
 
 	const approvedCount = detail.registrations.filter((r: any) => r.status === 'APPROVED').length;
 
+	const showPodiums = detail.status === 'FINISHED' || detail.status === 'PUBLISHED';
 	const TABS: Array<{id: TabId; label: string; icon: any; show?: boolean; count?: number}> = [
 		{id: 'info', label: t('tab_info'), icon: Globe, show: true},
 		{id: 'competitors', label: t('tab_competitors'), icon: Users, show: true, count: approvedCount},
 		{id: 'events', label: t('tab_events'), icon: ListBullets, show: true, count: detail.events.length},
 		{id: 'live', label: t('tab_live'), icon: Broadcast, show: detail.status !== 'DRAFT'},
+		{id: 'podiums', label: t('tab_podiums'), icon: Trophy, show: showPodiums},
 		{id: 'register', label: t('tab_register'), icon: UserPlus, show: canRegister},
 	];
 
@@ -187,6 +190,7 @@ export default function ZktCompetitionDetail() {
 				{tab === 'competitors' && <ZktCompetitorsTab detail={detail} />}
 				{tab === 'events' && <ZktEventsTab detail={detail} />}
 				{tab === 'live' && <ZktLiveTab detail={detail} />}
+				{tab === 'podiums' && <ZktPodiumsTab detail={detail} />}
 				{tab === 'register' && <ZktRegistrationForm detail={detail} onDone={fetch} />}
 			</div>
 		</div>

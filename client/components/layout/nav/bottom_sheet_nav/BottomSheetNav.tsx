@@ -6,6 +6,7 @@ import {useTranslation} from 'react-i18next';
 import {UserCircle} from 'phosphor-react';
 import {NAV_LINKS} from '../Nav';
 import {useMe} from '../../../../util/hooks/useMe';
+import {useGeneral} from '../../../../util/hooks/useGeneral';
 import {isNative, updateGestureExclusion, clearGestureExclusion} from '../../../../util/platform';
 import block from '../../../../styles/bem';
 
@@ -42,6 +43,7 @@ export default function BottomSheetNav() {
 	const history = useHistory();
 	const {t} = useTranslation();
 	const me = useMe();
+	const mobileMode = useGeneral('mobile_mode');
 
 	const drawerRef = useRef<HTMLDivElement>(null);
 	const notchRef = useRef<HTMLDivElement>(null);
@@ -320,8 +322,8 @@ export default function BottomSheetNav() {
 		setOpen(false);
 	}
 
-	// Centik sadece native uygulamada gorunur, webde gizli
-	if (!isNative()) return null;
+	// Centik native uygulamada + mobil tarayicida gorunur, masaustu tarayicida gizli
+	if (!isNative() && !mobileMode) return null;
 
 	return (
 		<>

@@ -213,6 +213,9 @@ export default function DashboardAssignments({
 			return;
 		}
 
+		// Destructive: wipes existing groups + COMPETITOR assignments.
+		if (!window.confirm(t('auto_distribute_confirm'))) return;
+
 		const groupCount = Math.max(groups.length, 1);
 		try {
 			await gqlMutate(BULK_ASSIGN, {
@@ -275,13 +278,27 @@ export default function DashboardAssignments({
 			)}
 
 			{/* Actions bar */}
-			<div style={{display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap'}}>
+			<div style={{display: 'flex', gap: '0.5rem', marginBottom: '0.75rem', flexWrap: 'wrap'}}>
 				<button className={b('action-btn', {primary: true})} onClick={autoDist}>
 					<UsersThree weight="bold" /> {t('auto_distribute')}
 				</button>
 				<button className={b('action-btn')} onClick={addGroup}>
 					<Plus weight="bold" /> {t('add_group')}
 				</button>
+			</div>
+
+			{/* Distribution method hint */}
+			<div
+				className={b('info-banner')}
+				style={{
+					marginBottom: '1.5rem',
+					fontSize: 13,
+					opacity: 0.75,
+				}}
+			>
+				{selectedRound && selectedRound.round_number > 1
+					? t('distribution_hint_seeded')
+					: t('distribution_hint_round1')}
 			</div>
 
 			{/* Groups grid */}

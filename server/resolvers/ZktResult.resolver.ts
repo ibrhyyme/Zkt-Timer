@@ -7,9 +7,11 @@ import {
 	ZktResult,
 	ZktRound,
 	SubmitZktResultInput,
+	SubmitZktResultsBatchInput,
 	CreateZktRoundInput,
 	UpdateZktRoundInput,
 	UpdateZktRoundStatusInput,
+	MarkZktNoShowInput,
 } from '../schemas/ZktCompetition.schema';
 import {getPrisma} from '../database';
 import {
@@ -17,7 +19,8 @@ import {
 	getRoundWithCompetition,
 	publicUserInclude,
 } from '../models/zkt_competition';
-import {upsertZktResult, finalizeRound} from '../models/zkt_result';
+import {upsertZktResult, finalizeRound, markResultNoShow} from '../models/zkt_result';
+import {assertRoundTransition, revokeAdvancementCarry} from '../models/zkt_round';
 import {checkAndApplyRecords} from '../models/zkt_record';
 import {emitZktResultUpdated, emitZktResultDeleted, emitZktRoundStatusChanged} from '../zkt_competition';
 
@@ -92,6 +95,50 @@ export class ZktResultResolver {
 	}
 
 	@Authorized([Role.LOGGED_IN])
+	@Mutation(() => [ZktResult])
+	async submitZktResultsBatch(
+		@Ctx() context: GraphQLContext,
+		@Arg('input') input: SubmitZktResultsBatchInput
+	) {
+		const round = await getRoundWithCompetition(input.roundId);
+		if (!round) throw new GraphQLError(ErrorCode.NOT_FOUND);
+		const competitionId = round.comp_event.competition_id;
+		await assertCanModifyCompetition(context.user, competitionId);
+
+		// Sequential upsert so time_limit/cutoff logic runs per-row. We don't
+		// wrap in a prisma transaction because upsertZktResult already reads
+		// round config and would self-conflict inside an implicit tx.
+		const saved = [];
+		for (const item of input.results) {
+			const r = await upsertZktResult({
+				round_id: input.roundId,
+				user_id: item.userId,
+				attempt_1: item.attempt1 ?? null,
+				attempt_2: item.attempt2 ?? null,
+				attempt_3: item.attempt3 ?? null,
+				attempt_4: item.attempt4 ?? null,
+				attempt_5: item.attempt5 ?? null,
+				entered_by_id: context.user.id,
+			});
+			saved.push(r);
+		}
+
+		for (const r of saved) {
+			emitZktResultUpdated(competitionId, {
+				roundId: input.roundId,
+				resultId: r.id,
+				userId: r.user_id,
+			});
+		}
+
+		const ids = saved.map((r) => r.id);
+		return getPrisma().zktResult.findMany({
+			where: {id: {in: ids}},
+			include: {user: publicUserInclude},
+		});
+	}
+
+	@Authorized([Role.LOGGED_IN])
 	@Mutation(() => Boolean)
 	async deleteZktResult(
 		@Ctx() context: GraphQLContext,
@@ -129,7 +176,7 @@ export class ZktResultResolver {
 		const competitionId = round.comp_event.competition_id;
 		await assertCanModifyCompetition(context.user, competitionId);
 
-		await finalizeRound(roundId);
+		await finalizeRound(roundId, context.user.id);
 
 		const results = await getPrisma().zktResult.findMany({where: {round_id: roundId}});
 		for (const r of results) {
@@ -172,6 +219,8 @@ export class ZktResultResolver {
 		const competitionId = round.comp_event.competition_id;
 		await assertCanModifyCompetition(context.user, competitionId);
 
+		assertRoundTransition(round.status, input.status);
+
 		const updated = await getPrisma().zktRound.update({
 			where: {id: input.roundId},
 			data: {status: input.status},
@@ -181,6 +230,65 @@ export class ZktResultResolver {
 		emitZktRoundStatusChanged(competitionId, {roundId: input.roundId, status: input.status});
 
 		return updated;
+	}
+
+	@Authorized([Role.LOGGED_IN])
+	@Mutation(() => ZktRound)
+	async reopenZktRound(
+		@Ctx() context: GraphQLContext,
+		@Arg('roundId') roundId: string
+	) {
+		const round = await getRoundWithCompetition(roundId);
+		if (!round) throw new GraphQLError(ErrorCode.NOT_FOUND);
+		if (round.status !== 'FINISHED') {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Round is not finished');
+		}
+
+		const competitionId = round.comp_event.competition_id;
+		await assertCanModifyCompetition(context.user, competitionId);
+
+		// Remove untouched carry rows from the next round so rankings can be
+		// recomputed without phantom competitors once the admin re-finalizes.
+		await revokeAdvancementCarry(roundId);
+
+		const updated = await getPrisma().zktRound.update({
+			where: {id: roundId},
+			data: {status: 'ACTIVE'},
+			include: {results: true, groups: true},
+		});
+
+		emitZktRoundStatusChanged(competitionId, {roundId, status: 'ACTIVE'});
+		return updated;
+	}
+
+	@Authorized([Role.LOGGED_IN])
+	@Mutation(() => ZktResult)
+	async markZktNoShow(
+		@Ctx() context: GraphQLContext,
+		@Arg('input') input: MarkZktNoShowInput
+	) {
+		const round = await getRoundWithCompetition(input.roundId);
+		if (!round) throw new GraphQLError(ErrorCode.NOT_FOUND);
+
+		const competitionId = round.comp_event.competition_id;
+		await assertCanModifyCompetition(context.user, competitionId);
+
+		const result = await markResultNoShow({
+			round_id: input.roundId,
+			user_id: input.userId,
+			entered_by_id: context.user.id,
+		});
+
+		emitZktResultUpdated(competitionId, {
+			roundId: input.roundId,
+			resultId: result.id,
+			userId: input.userId,
+		});
+
+		return getPrisma().zktResult.findUnique({
+			where: {id: result.id},
+			include: {user: publicUserInclude},
+		});
 	}
 
 	@Authorized([Role.MOD])

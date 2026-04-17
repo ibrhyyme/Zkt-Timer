@@ -6,6 +6,12 @@ interface Props {
 	onChange: (cs: number | null) => void;
 	placeholder?: string;
 	disabled?: boolean;
+	// When set, any entered time >= timeLimitCs is visually flagged as it
+	// will be coerced to DNF server-side. Value is not rewritten — admin
+	// still sees what they typed.
+	timeLimitCs?: number | null;
+	// Disabled-state tooltip explaining why (shown on hover + aria-label).
+	disabledReason?: string;
 }
 
 const DNF = -1;
@@ -69,7 +75,7 @@ function reformatInput(raw: string): string {
 }
 
 export default function TimeField(props: Props) {
-	const {value, onChange, placeholder, disabled} = props;
+	const {value, onChange, placeholder, disabled, timeLimitCs, disabledReason} = props;
 	const [draft, setDraft] = useState<string>(csToDisplay(value));
 	const lastValueRef = useRef<number | null | undefined>(value);
 
@@ -129,18 +135,36 @@ export default function TimeField(props: Props) {
 	}
 
 	const isSpecial = draft === 'DNF' || draft === 'DNS';
+	const exceedsTimeLimit =
+		!!timeLimitCs &&
+		typeof value === 'number' &&
+		value > 0 &&
+		value >= timeLimitCs;
 
 	return (
-		<input
-			type="text"
-			className={b('time-field-input', {special: isSpecial})}
-			value={draft}
-			onChange={handleChange}
-			onBlur={handleBlur}
-			placeholder={placeholder || '0.00'}
-			disabled={disabled}
-			inputMode="decimal"
-			autoComplete="off"
-		/>
+		<div className={b('time-field-wrap')}>
+			<input
+				type="text"
+				className={b('time-field-input', {
+					special: isSpecial,
+					'over-limit': exceedsTimeLimit,
+					disabled: !!disabled,
+				})}
+				value={draft}
+				onChange={handleChange}
+				onBlur={handleBlur}
+				placeholder={placeholder || '0.00'}
+				disabled={disabled}
+				inputMode="decimal"
+				autoComplete="off"
+				title={disabled && disabledReason ? disabledReason : undefined}
+				aria-label={disabled && disabledReason ? disabledReason : undefined}
+			/>
+			{exceedsTimeLimit && (
+				<span className={b('time-field-warning')} title="Time limit aşıldı → DNF">
+					→ DNF
+				</span>
+			)}
+		</div>
 	);
 }
