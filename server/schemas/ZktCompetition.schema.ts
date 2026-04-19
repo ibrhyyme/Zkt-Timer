@@ -27,6 +27,16 @@ export enum ZktCompVisibility {
 
 registerEnumType(ZktCompVisibility, {name: 'ZktCompVisibility'});
 
+export enum ZktChampionshipType {
+	NATIONAL = 'NATIONAL',
+	REGIONAL = 'REGIONAL',
+	CITY = 'CITY',
+	INVITATIONAL = 'INVITATIONAL',
+	YOUTH = 'YOUTH',
+}
+
+registerEnumType(ZktChampionshipType, {name: 'ZktChampionshipType'});
+
 export enum ZktRegistrationStatus {
 	PENDING = 'PENDING',
 	APPROVED = 'APPROVED',
@@ -142,6 +152,27 @@ export class ZktResult {
 }
 
 @ObjectType()
+export class ZktScramble {
+	@Field()
+	id: string;
+
+	@Field()
+	round_id: string;
+
+	@Field(() => Int)
+	attempt_number: number;
+
+	@Field()
+	is_extra: boolean;
+
+	@Field()
+	scramble_string: string;
+
+	@Field()
+	created_at: Date;
+}
+
+@ObjectType()
 export class ZktGroup {
 	@Field()
 	id: string;
@@ -151,6 +182,12 @@ export class ZktGroup {
 
 	@Field(() => Int)
 	group_number: number;
+
+	@Field({nullable: true})
+	start_time?: Date;
+
+	@Field({nullable: true})
+	end_time?: Date;
 
 	@Field()
 	created_at: Date;
@@ -199,6 +236,9 @@ export class ZktRound {
 
 	@Field(() => [ZktGroup], {nullable: true})
 	groups?: ZktGroup[];
+
+	@Field(() => [ZktScramble], {nullable: true})
+	scrambles?: ZktScramble[];
 }
 
 @ObjectType()
@@ -354,6 +394,9 @@ export class ZktCompetition {
 	@Field(() => ZktCompVisibility)
 	visibility: ZktCompVisibility;
 
+	@Field(() => ZktChampionshipType, {nullable: true})
+	championship_type?: ZktChampionshipType;
+
 	@Field({nullable: true})
 	confirmed_at?: Date;
 
@@ -395,138 +438,6 @@ export class ZktCompetition {
 
 	@Field(() => [ZktCompDelegate], {nullable: true})
 	delegates?: ZktCompDelegate[];
-}
-
-@ObjectType()
-export class ZktDelegateReport {
-	@Field()
-	id: string;
-
-	@Field()
-	competition_id: string;
-
-	@Field({nullable: true})
-	summary?: string;
-
-	@Field({nullable: true})
-	venue_notes?: string;
-
-	@Field({nullable: true})
-	organization_notes?: string;
-
-	@Field({nullable: true})
-	incidents_summary?: string;
-
-	@Field({nullable: true})
-	remarks?: string;
-
-	@Field({nullable: true})
-	submitted_by_id?: string;
-
-	@Field({nullable: true})
-	submitted_at?: Date;
-
-	@Field()
-	created_at: Date;
-
-	@Field()
-	updated_at: Date;
-
-	@Field(() => PublicUserAccount, {nullable: true})
-	submitted_by?: PublicUserAccount;
-}
-
-@ObjectType()
-export class ZktIncident {
-	@Field()
-	id: string;
-
-	@Field()
-	competition_id: string;
-
-	@Field()
-	title: string;
-
-	@Field()
-	description: string;
-
-	@Field(() => [String])
-	tags: string[];
-
-	@Field({nullable: true})
-	result_id?: string;
-
-	@Field()
-	created_by_id: string;
-
-	@Field({nullable: true})
-	resolved_at?: Date;
-
-	@Field()
-	created_at: Date;
-
-	@Field()
-	updated_at: Date;
-
-	@Field(() => PublicUserAccount, {nullable: true})
-	created_by?: PublicUserAccount;
-}
-
-@InputType()
-export class UpsertZktDelegateReportInput {
-	@Field()
-	competitionId: string;
-
-	@Field({nullable: true})
-	summary?: string;
-
-	@Field({nullable: true})
-	venueNotes?: string;
-
-	@Field({nullable: true})
-	organizationNotes?: string;
-
-	@Field({nullable: true})
-	incidentsSummary?: string;
-
-	@Field({nullable: true})
-	remarks?: string;
-}
-
-@InputType()
-export class CreateZktIncidentInput {
-	@Field()
-	competitionId: string;
-
-	@Field()
-	title: string;
-
-	@Field()
-	description: string;
-
-	@Field(() => [String], {nullable: true})
-	tags?: string[];
-
-	@Field({nullable: true})
-	resultId?: string;
-}
-
-@InputType()
-export class UpdateZktIncidentInput {
-	@Field()
-	id: string;
-
-	@Field({nullable: true})
-	title?: string;
-
-	@Field({nullable: true})
-	description?: string;
-
-	@Field(() => [String], {nullable: true})
-	tags?: string[];
-
-	@Field({nullable: true, defaultValue: false})
-	markResolved?: boolean;
 }
 
 @ObjectType()
@@ -634,6 +545,9 @@ export class CreateZktCompetitionInput {
 	@Field(() => ZktCompVisibility)
 	visibility: ZktCompVisibility;
 
+	@Field(() => ZktChampionshipType, {nullable: true})
+	championshipType?: ZktChampionshipType;
+
 	@Field(() => [String])
 	eventIds: string[];
 }
@@ -663,6 +577,9 @@ export class UpdateZktCompetitionInput {
 
 	@Field(() => ZktCompVisibility, {nullable: true})
 	visibility?: ZktCompVisibility;
+
+	@Field(() => ZktChampionshipType, {nullable: true})
+	championshipType?: ZktChampionshipType;
 
 	@Field(() => [String], {nullable: true})
 	eventIds?: string[];
@@ -903,6 +820,18 @@ export class CreateGroupInput {
 
 	@Field(() => Int)
 	groupNumber: number;
+}
+
+@InputType()
+export class UpdateZktGroupScheduleInput {
+	@Field()
+	groupId: string;
+
+	@Field({nullable: true})
+	startTime?: Date;
+
+	@Field({nullable: true})
+	endTime?: Date;
 }
 
 @InputType()

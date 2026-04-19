@@ -32,6 +32,9 @@ export default function CreateZktCompetitionModal(props: IModalProps) {
 	const [locationAddress, setLocationAddress] = useState('');
 	const [competitorLimit, setCompetitorLimit] = useState('');
 	const [visibility, setVisibility] = useState<'PUBLIC' | 'PRIVATE'>('PUBLIC');
+	const [championshipType, setChampionshipType] = useState<
+		'NATIONAL' | 'REGIONAL' | 'CITY' | 'INVITATIONAL' | 'YOUTH' | ''
+	>('');
 	const [selectedEvents, setSelectedEvents] = useState<Set<string>>(new Set(['333']));
 	const [submitting, setSubmitting] = useState(false);
 
@@ -78,6 +81,7 @@ export default function CreateZktCompetitionModal(props: IModalProps) {
 				locationAddress: locationAddress.trim() || null,
 				competitorLimit: competitorLimit ? parseInt(competitorLimit, 10) : null,
 				visibility,
+				championshipType: championshipType || null,
 				eventIds: Array.from(selectedEvents),
 			};
 			await gqlMutate(CREATE_MUTATION, {input});
@@ -147,6 +151,23 @@ export default function CreateZktCompetitionModal(props: IModalProps) {
 									>
 										<option value="PUBLIC">{t('visibility_public')}</option>
 										<option value="PRIVATE">{t('visibility_private')}</option>
+									</select>
+								</div>
+							</div>
+							<div className={b('field-row')}>
+								<div className={b('field')}>
+									<label className={b('label')}>{t('championship_type')}</label>
+									<select
+										className={b('select')}
+										value={championshipType}
+										onChange={(e) => setChampionshipType(e.target.value as any)}
+									>
+										<option value="">{t('championship_none')}</option>
+										<option value="NATIONAL">{t('championship_national')}</option>
+										<option value="REGIONAL">{t('championship_regional')}</option>
+										<option value="CITY">{t('championship_city')}</option>
+										<option value="INVITATIONAL">{t('championship_invitational')}</option>
+										<option value="YOUTH">{t('championship_youth')}</option>
 									</select>
 								</div>
 							</div>

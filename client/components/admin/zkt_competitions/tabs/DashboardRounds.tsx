@@ -4,10 +4,11 @@ import {gqlMutate} from '../../../api';
 import {useTranslation} from 'react-i18next';
 import {toastSuccess, toastError} from '../../../../util/toast';
 import {b, getEventName, ZKT_ROUND_FORMATS} from '../shared';
-import {Plus, Minus} from 'phosphor-react';
+import {Plus, Minus, FilePdf, ArrowsClockwise} from 'phosphor-react';
 import EditTimeLimitModal from '../modals/EditTimeLimitModal';
 import EditCutoffModal from '../modals/EditCutoffModal';
 import EditAdvancementModal from '../modals/EditAdvancementModal';
+import {generateScramblePdf} from '../../../../util/cubes/scramble_pdf';
 
 const CREATE_ROUND = gql`
 	mutation CreateZktRound($input: CreateZktRoundInput!) {
@@ -36,6 +37,39 @@ const UPDATE_ROUND_STATUS = gql`
 		updateZktRoundStatus(input: $input) {
 			id
 			status
+		}
+	}
+`;
+
+const ROUND_SCRAMBLES = gql`
+	query ZktRoundScramblesForPdf($roundId: String!) {
+		zktRoundScrambles(roundId: $roundId) {
+			id
+			attempt_number
+			is_extra
+			scramble_string
+		}
+	}
+`;
+
+const ENSURE_SCRAMBLES = gql`
+	mutation EnsureZktScramblesForPdf($roundId: String!) {
+		ensureZktScrambles(roundId: $roundId) {
+			id
+			attempt_number
+			is_extra
+			scramble_string
+		}
+	}
+`;
+
+const REGENERATE_SCRAMBLES = gql`
+	mutation RegenerateZktScramblesForPdf($roundId: String!) {
+		regenerateZktScrambles(roundId: $roundId) {
+			id
+			attempt_number
+			is_extra
+			scramble_string
 		}
 	}
 `;
@@ -93,6 +127,44 @@ export default function DashboardRounds({
 		}
 	}
 
+	async function downloadScramblePdf(eventId: string, round: any) {
+		try {
+			// Lazy-ensure: server creates scrambles on first view if absent.
+			await gqlMutate(ENSURE_SCRAMBLES, {roundId: round.id});
+			const res: any = await gqlMutate(ROUND_SCRAMBLES, {roundId: round.id});
+			const scrambles = (res?.data?.zktRoundScrambles || [])
+				.slice()
+				.sort((a: any, bx: any) => a.attempt_number - bx.attempt_number);
+			if (scrambles.length === 0) {
+				toastError(t('no_scrambles'));
+				return;
+			}
+			generateScramblePdf({
+				competitionName: detail.name,
+				eventName: getEventName(eventId),
+				eventId,
+				roundNumber: round.round_number,
+				scrambles: scrambles.map((s: any) => ({
+					attemptNumber: s.attempt_number,
+					isExtra: s.is_extra,
+					scrambleString: s.scramble_string,
+				})),
+			});
+		} catch (e: any) {
+			toastError(e?.message || t('error'));
+		}
+	}
+
+	async function regenerateScrambles(round: any) {
+		if (!window.confirm(t('regenerate_scrambles_confirm'))) return;
+		try {
+			await gqlMutate(REGENERATE_SCRAMBLES, {roundId: round.id});
+			toastSuccess(t('scrambles_regenerated'));
+		} catch (e: any) {
+			toastError(e?.message || t('error'));
+		}
+	}
+
 	return (
 		<div className={b('event-card-grid')}>
 			{detail.events.map((ev: any) => (
@@ -134,6 +206,24 @@ export default function DashboardRounds({
 									<span className={b('round-status', {[round.status.toLowerCase()]: true})}>
 										{t(`round_status_${round.status.toLowerCase()}`)}
 									</span>
+									<div style={{marginLeft: 'auto', display: 'flex', gap: '0.35rem'}}>
+										<button
+											type="button"
+											className={b('scramble-action-btn')}
+											onClick={() => downloadScramblePdf(ev.event_id, round)}
+											title={t('download_scramble_pdf')}
+										>
+											<FilePdf weight="bold" /> {t('scramble_pdf')}
+										</button>
+										<button
+											type="button"
+											className={b('scramble-action-btn', {ghost: true})}
+											onClick={() => regenerateScrambles(round)}
+											title={t('regenerate_scrambles_hint')}
+										>
+											<ArrowsClockwise weight="bold" />
+										</button>
+									</div>
 								</div>
 
 								<div className={b('round-row-fields')}>

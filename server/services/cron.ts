@@ -4,6 +4,7 @@ import {initSiteMapGeneration} from './sitemap';
 import {getPrisma} from '../database';
 import {sendPushToUser} from './push';
 import {initWcaCompetitionNotificationCronJob} from './cron_wca_notifications';
+import {syncAllWorldRecords} from './WorldRecordSyncService';
 
 const CUBE_NAMES: Record<string, string> = {
 	'222': '2x2', '333': '3x3', '444': '4x4', '555': '5x5',
@@ -19,6 +20,47 @@ export function initCronJobs() {
 	initDailyGoalReminderCronJob();
 	initProPremiumExpiryCronJob();
 	initWcaCompetitionNotificationCronJob();
+	initWorldRecordSyncCronJob();
+	initRankingRecalculationCronJob();
+}
+
+function initWorldRecordSyncCronJob() {
+	// Haftada bir pazar 04:00 — WR'lari Robin WCA REST API'dan cek, DB'ye yaz
+	const job = new CronJob(
+		'0 0 4 * * 0',
+		async () => {
+			try {
+				logger.info('[WRSync] Weekly world record sync starting');
+				await syncAllWorldRecords();
+			} catch (e) {
+				logger.error('[WRSync] Cron run failed', {error: e});
+			}
+		},
+		null,
+		true,
+		'America/Los_Angeles'
+	);
+	logger.debug('Initiated cron job for world record sync.', {running: job.running});
+}
+
+function initRankingRecalculationCronJob() {
+	// Her gece 03:00 — tum WCA bagli kullanicilarin Kinch+SoR skorlarini yeniden hesapla
+	const job = new CronJob(
+		'0 0 3 * * *',
+		async () => {
+			try {
+				const {recalculateAllRankings} = require('../models/ranking');
+				logger.info('[Rankings] Daily recalculation starting');
+				await recalculateAllRankings();
+			} catch (e) {
+				logger.error('[Rankings] Daily recalculation failed', {error: e});
+			}
+		},
+		null,
+		true,
+		'America/Los_Angeles'
+	);
+	logger.debug('Initiated cron job for daily ranking recalculation.', {running: job.running});
 }
 
 function initSiteMapGenerationCronJob() {

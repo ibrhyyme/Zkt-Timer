@@ -261,41 +261,75 @@
 		flex-wrap: wrap;
 	}
 
+	// WCA-paritede pill bar — kullanıcı /wca-competitions ile aynı görünüm hisseder
 	&__tabs {
 		display: flex;
-		gap: 0.25rem;
-		border-bottom: 1px solid rgba(var(--text-color), 0.1);
-		margin-bottom: 1.5rem;
+		flex-wrap: nowrap;
+		background: rgba(var(--module-color), 0.6);
+		border-radius: 10px;
+		padding: 4px;
+		margin-bottom: 1.25rem;
+		gap: 2px;
 		overflow-x: auto;
 
 		&::-webkit-scrollbar {
 			display: none;
 		}
+
+		@media (max-width: 768px) {
+			display: grid;
+			grid-template-columns: repeat(3, 1fr);
+			gap: 4px;
+		}
 	}
 
 	&__tab {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.5rem;
-		padding: 0.75rem 1.2rem;
+		background: none;
 		border: none;
-		background: transparent;
-		color: rgba(var(--text-color), 0.65);
+		padding: 8px 12px;
+		opacity: 0.75;
 		cursor: pointer;
-		font-size: 14px;
-		font-weight: 500;
-		border-bottom: 2px solid transparent;
+		border-radius: 8px;
+		transition: all 0.15s;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 5px;
+		font-size: 0.78rem;
+		font-weight: 600;
+		color: rgb(var(--text-color));
 		white-space: nowrap;
-		transition: color 0.15s ease;
+		flex: 1 1 0;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+
+		@media (max-width: 768px) {
+			flex: none;
+			padding: 10px 8px;
+			font-size: 0.8rem;
+		}
 
 		&:hover {
-			color: rgb(var(--text-color));
+			opacity: 1;
 		}
 
 		&--active {
-			color: rgb(var(--primary-color));
-			border-bottom-color: rgb(var(--primary-color));
+			opacity: 1;
+			background: rgba(var(--primary-color), 0.2);
 		}
+	}
+
+	&__tab-count {
+		font-size: 0.75rem;
+		padding: 1px 6px;
+		border-radius: 10px;
+		background: rgba(var(--text-color), 0.1);
+	}
+
+	&__tab--active &__tab-count {
+		background: rgba(var(--primary-color), 0.2);
+		color: rgb(var(--primary-color));
 	}
 
 	// Info tab
@@ -409,11 +443,841 @@
 		gap: 0.25rem;
 	}
 
-	// Events tab
+	// Events tab — WCA-paritede expandable tablo
+	&__events-tab {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+	}
+
+	&__events-table-wrapper {
+		background: rgb(var(--module-color));
+		border-radius: 10px;
+		overflow: hidden;
+	}
+
+	&__events-table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 13px;
+
+		th {
+			text-align: left;
+			padding: 0.75rem 1rem;
+			font-size: 11px;
+			font-weight: 600;
+			letter-spacing: 0.4px;
+			text-transform: uppercase;
+			color: rgba(var(--text-color), 0.55);
+			border-bottom: 1px solid rgba(var(--text-color), 0.08);
+			background: rgba(var(--text-color), 0.02);
+		}
+
+		td {
+			padding: 0.75rem 1rem;
+			color: rgb(var(--text-color));
+			border-bottom: 1px solid rgba(var(--text-color), 0.05);
+			vertical-align: middle;
+		}
+	}
+
+	&__events-row {
+		cursor: pointer;
+		transition: background 120ms ease;
+
+		&:hover {
+			background: rgba(var(--text-color), 0.03);
+		}
+
+		&--active {
+			background: rgba(var(--primary-color), 0.07);
+		}
+	}
+
+	&__events-cell-event {
+		font-weight: 600;
+	}
+
+	&__events-cell-center {
+		text-align: center;
+	}
+
+	&__events-cell-view {
+		text-align: right;
+	}
+
+	&__events-expanded-row > td {
+		background: rgba(var(--primary-color), 0.04);
+		border-top: 1px solid rgba(var(--primary-color), 0.15);
+	}
+
+	&__round-panel {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+		padding: 0.5rem 0;
+	}
+
+	&__round-info {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.45rem;
+	}
+
+	&__round-info-item {
+		padding: 0.3rem 0.7rem;
+		border-radius: 999px;
+		font-size: 11px;
+		font-weight: 600;
+		background: rgba(var(--text-color), 0.07);
+		color: rgba(var(--text-color), 0.85);
+	}
+
+	&__round-panel-empty {
+		font-size: 12px;
+		color: rgba(var(--text-color), 0.5);
+		padding: 0.5rem 0;
+	}
+
+	&__group-cards {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+		gap: 0.5rem;
+	}
+
+	&__group-card {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+		padding: 0.7rem 0.9rem;
+		border: 1px solid rgba(var(--text-color), 0.08);
+		background: rgb(var(--module-color));
+		color: rgb(var(--text-color));
+		border-radius: 8px;
+		cursor: pointer;
+		text-align: left;
+		transition: border-color 120ms ease, background 120ms ease;
+
+		&:hover {
+			border-color: rgba(var(--primary-color), 0.35);
+			background: rgba(var(--primary-color), 0.05);
+		}
+	}
+
+	&__group-card-title {
+		font-size: 13px;
+		font-weight: 600;
+	}
+
+	&__group-card-time {
+		font-size: 11px;
+		color: rgba(var(--text-color), 0.65);
+		font-family: 'SF Mono', Menlo, Consolas, monospace;
+	}
+
 	&__events-list {
 		display: flex;
 		flex-direction: column;
 		gap: 1rem;
+	}
+
+	// Rankings tab — WCA paritede event chips + table + üstte podium banner
+	&__rankings-tab {
+		display: flex;
+		flex-direction: column;
+		gap: 1.25rem;
+	}
+
+	&__ranking-events {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+	}
+
+	&__event-chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		padding: 0.4rem 0.85rem;
+		border-radius: 999px;
+		border: 1px solid rgba(var(--text-color), 0.12);
+		background: transparent;
+		color: rgba(var(--text-color), 0.85);
+		cursor: pointer;
+		font-size: 13px;
+		font-weight: 600;
+		transition: all 120ms ease;
+
+		.cubing-icon {
+			font-size: 16px;
+		}
+
+		&:hover {
+			border-color: rgba(var(--primary-color), 0.4);
+		}
+
+		&--active {
+			background: rgba(var(--primary-color), 0.18);
+			border-color: rgb(var(--primary-color));
+			color: rgb(var(--primary-color));
+		}
+	}
+
+	&__podium-banner {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+		gap: 0.75rem;
+	}
+
+	&__podium-medal-card {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.35rem;
+		padding: 1rem;
+		border-radius: 12px;
+		text-align: center;
+
+		&--pos-1 {
+			background: linear-gradient(135deg, rgba(245, 197, 24, 0.22), rgba(245, 197, 24, 0.08));
+			color: #f5c518;
+		}
+		&--pos-2 {
+			background: linear-gradient(135deg, rgba(192, 192, 192, 0.22), rgba(192, 192, 192, 0.08));
+			color: #c0c0c0;
+		}
+		&--pos-3 {
+			background: linear-gradient(135deg, rgba(205, 127, 50, 0.22), rgba(205, 127, 50, 0.08));
+			color: #cd7f32;
+		}
+	}
+
+	&__podium-medal-rank {
+		font-size: 22px;
+		font-weight: 800;
+	}
+
+	&__podium-medal-name {
+		font-size: 14px;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+	}
+
+	&__podium-medal-time {
+		font-family: 'SF Mono', Menlo, Consolas, monospace;
+		font-size: 14px;
+		color: rgba(var(--text-color), 0.85);
+	}
+
+	&__ranking-table-wrapper {
+		background: rgb(var(--module-color));
+		border-radius: 10px;
+		overflow: hidden;
+	}
+
+	&__ranking-table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 13px;
+
+		th {
+			text-align: left;
+			padding: 0.75rem 1rem;
+			font-size: 11px;
+			font-weight: 600;
+			letter-spacing: 0.4px;
+			text-transform: uppercase;
+			color: rgba(var(--text-color), 0.55);
+			border-bottom: 1px solid rgba(var(--text-color), 0.08);
+		}
+
+		td {
+			padding: 0.7rem 1rem;
+			color: rgb(var(--text-color));
+			border-bottom: 1px solid rgba(var(--text-color), 0.05);
+			vertical-align: middle;
+		}
+	}
+
+	&__ranking-row {
+		transition: background 120ms ease;
+
+		&:hover {
+			background: rgba(var(--text-color), 0.03);
+		}
+
+		&--no-show {
+			opacity: 0.5;
+			font-style: italic;
+		}
+	}
+
+	&__rank-num {
+		font-weight: 700;
+		width: 50px;
+		color: rgba(var(--text-color), 0.75);
+	}
+
+	&__rank-name {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		font-weight: 600;
+	}
+
+	&__rank-time {
+		font-family: 'SF Mono', Menlo, Consolas, monospace;
+		font-size: 13px;
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+	}
+
+	&__rankings-empty-cell {
+		text-align: center;
+		padding: 2rem !important;
+		color: rgba(var(--text-color), 0.5);
+		font-style: italic;
+	}
+
+	// Groups tab — WCA paritede arama + competitor cards
+	&__competitors-tab {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	&__search {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.5rem 0.85rem;
+		background: rgb(var(--module-color));
+		border-radius: 8px;
+
+		svg {
+			color: rgba(var(--text-color), 0.55);
+			flex-shrink: 0;
+		}
+
+		input {
+			flex: 1;
+			background: transparent;
+			border: none;
+			outline: none;
+			color: rgb(var(--text-color));
+			font-size: 14px;
+			min-width: 0;
+		}
+	}
+
+	&__competitor-count {
+		font-size: 12px;
+		color: rgba(var(--text-color), 0.6);
+		font-weight: 600;
+		padding: 0 0.25rem;
+	}
+
+	&__competitor-list {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+		gap: 0.5rem;
+	}
+
+	&__competitor-card {
+		display: grid;
+		grid-template-columns: auto auto 1fr auto;
+		gap: 0.7rem;
+		align-items: center;
+		padding: 0.65rem 0.85rem;
+		border: 1px solid rgba(var(--text-color), 0.08);
+		background: rgb(var(--module-color));
+		border-radius: 10px;
+		cursor: pointer;
+		text-align: left;
+		color: rgb(var(--text-color));
+		transition: border-color 120ms ease, background 120ms ease;
+
+		&:hover {
+			border-color: rgba(var(--primary-color), 0.35);
+			background: rgba(var(--primary-color), 0.04);
+		}
+
+		&--me {
+			border-color: rgba(var(--primary-color), 0.5);
+			background: rgba(var(--primary-color), 0.07);
+		}
+	}
+
+	&__competitor-number {
+		font-size: 12px;
+		font-weight: 700;
+		color: rgba(var(--text-color), 0.55);
+		min-width: 22px;
+		text-align: center;
+	}
+
+	&__competitor-info {
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+	}
+
+	&__competitor-name-list {
+		font-size: 14px;
+		font-weight: 600;
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	&__me-badge {
+		font-size: 10px;
+		font-weight: 700;
+		padding: 1px 6px;
+		border-radius: 4px;
+		background: rgba(var(--primary-color), 0.25);
+		color: rgb(var(--primary-color));
+		letter-spacing: 0.5px;
+	}
+
+	&__competitor-events {
+		display: flex;
+		gap: 0.2rem;
+		flex-wrap: wrap;
+		justify-content: flex-end;
+	}
+
+	&__event-chip-mini {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 22px;
+		height: 22px;
+
+		.cubing-icon {
+			font-size: 16px;
+			color: rgba(var(--text-color), 0.75);
+		}
+	}
+
+	// Info tab — WCA paritede section'lar
+	&__info-tab {
+		display: flex;
+		flex-direction: column;
+		gap: 1.25rem;
+	}
+
+	&__info-section {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	&__info-section-title {
+		font-size: 11px;
+		font-weight: 700;
+		letter-spacing: 0.6px;
+		text-transform: uppercase;
+		color: rgba(var(--text-color), 0.55);
+		margin: 0;
+	}
+
+	&__info-venue-link {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.7rem;
+		padding: 0.85rem 1rem;
+		background: rgb(var(--module-color));
+		border: 1px solid rgba(var(--text-color), 0.06);
+		border-radius: 10px;
+		color: rgb(var(--text-color));
+		text-align: left;
+		cursor: pointer;
+		transition: border-color 120ms ease;
+
+		&:hover {
+			border-color: rgba(var(--primary-color), 0.4);
+		}
+
+		svg {
+			color: rgb(var(--primary-color));
+			margin-top: 2px;
+			flex-shrink: 0;
+		}
+
+		div {
+			display: flex;
+			flex-direction: column;
+		}
+	}
+
+	&__info-people-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+		gap: 0.5rem;
+	}
+
+	&__info-person {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		padding: 0.6rem 0.85rem;
+		background: rgb(var(--module-color));
+		border-radius: 10px;
+	}
+
+	&__info-avatar {
+		width: 36px;
+		height: 36px;
+		border-radius: 50%;
+		object-fit: cover;
+	}
+
+	&__info-avatar-placeholder {
+		width: 36px;
+		height: 36px;
+		border-radius: 50%;
+		background: rgba(var(--text-color), 0.08);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: rgba(var(--text-color), 0.6);
+	}
+
+	&__info-person-text {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+	}
+
+	&__info-name {
+		font-size: 14px;
+		font-weight: 600;
+		color: rgb(var(--text-color));
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	&__info-sub {
+		font-size: 12px;
+		color: rgba(var(--text-color), 0.6);
+		margin-top: 2px;
+	}
+
+	&__description-text {
+		font-size: 13px;
+		line-height: 1.55;
+		color: rgba(var(--text-color), 0.85);
+		white-space: pre-wrap;
+		padding: 0.85rem 1rem;
+		background: rgb(var(--module-color));
+		border-radius: 10px;
+	}
+
+	// Person detail page — WCA paritesi
+	&__person-header {
+		display: flex;
+		align-items: center;
+		gap: 0.85rem;
+		padding: 1rem 0 0.5rem;
+	}
+
+	&__person-avatar {
+		width: 56px;
+		height: 56px;
+		border-radius: 50%;
+		object-fit: cover;
+	}
+
+	&__person-avatar-placeholder {
+		width: 56px;
+		height: 56px;
+		border-radius: 50%;
+		background: rgba(var(--text-color), 0.1);
+	}
+
+	&__person-name {
+		font-size: 24px;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+		margin: 0;
+		letter-spacing: -0.3px;
+	}
+
+	&__person-events-strip {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		padding: 0.5rem 0 1rem;
+		border-bottom: 1px solid rgba(var(--text-color), 0.06);
+		margin-bottom: 1rem;
+
+		.cubing-icon {
+			font-size: 22px;
+			color: rgba(var(--text-color), 0.85);
+		}
+	}
+
+	&__person-mode-buttons {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 0.5rem;
+		margin-bottom: 1rem;
+	}
+
+	&__person-mode-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		padding: 0.85rem 1rem;
+		border-radius: 10px;
+		border: 1px solid transparent;
+		background: rgb(var(--module-color));
+		color: rgb(var(--text-color));
+		font-size: 14px;
+		font-weight: 600;
+		cursor: pointer;
+		transition: all 120ms ease;
+
+		&:hover {
+			border-color: rgba(var(--primary-color), 0.4);
+		}
+
+		&--schedule.cd-zkt-comp__person-mode-btn--active {
+			background: rgba(36, 107, 253, 0.18);
+			border-color: rgba(36, 107, 253, 0.5);
+			color: #6ea8ff;
+		}
+
+		&--results.cd-zkt-comp__person-mode-btn--active {
+			background: rgba(45, 189, 97, 0.18);
+			border-color: rgba(45, 189, 97, 0.5);
+			color: #45d97c;
+		}
+	}
+
+	&__schedule-warning {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		padding: 0.7rem 1rem;
+		margin-bottom: 0.85rem;
+		background: rgba(255, 165, 0, 0.1);
+		border: 1px solid rgba(255, 165, 0, 0.25);
+		border-radius: 8px;
+		color: rgba(var(--text-color), 0.85);
+		font-size: 12px;
+
+		svg {
+			color: #ffa500;
+			flex-shrink: 0;
+		}
+	}
+
+	&__schedule-table-wrapper {
+		background: rgb(var(--module-color));
+		border-radius: 10px;
+		overflow: hidden;
+	}
+
+	&__schedule-table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 13px;
+
+		th {
+			text-align: left;
+			padding: 0.7rem 1rem;
+			font-size: 11px;
+			font-weight: 600;
+			letter-spacing: 0.4px;
+			text-transform: uppercase;
+			color: rgba(var(--text-color), 0.55);
+			border-bottom: 1px solid rgba(var(--text-color), 0.08);
+		}
+
+		td {
+			padding: 0.65rem 1rem;
+			color: rgb(var(--text-color));
+			border-bottom: 1px solid rgba(var(--text-color), 0.05);
+			vertical-align: middle;
+		}
+	}
+
+	&__schedule-cell-center {
+		text-align: center;
+		font-weight: 600;
+	}
+
+	&__schedule-cell-time {
+		font-family: 'SF Mono', Menlo, Consolas, monospace;
+		font-size: 12px;
+		color: rgba(var(--text-color), 0.85);
+		white-space: nowrap;
+	}
+
+	&__role-pill {
+		display: inline-block;
+		padding: 0.2rem 0.55rem;
+		border-radius: 4px;
+		font-size: 11px;
+		font-weight: 700;
+	}
+
+	&__person-results {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+	}
+
+	&__person-results-event {
+		background: rgb(var(--module-color));
+		border-radius: 10px;
+		overflow: hidden;
+	}
+
+	&__person-results-event-header {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		padding: 0.85rem 1rem;
+		border-bottom: 1px solid rgba(var(--text-color), 0.08);
+	}
+
+	&__person-results-event-title {
+		font-size: 16px;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+	}
+
+	// Activity (group) detail header
+	&__activity-header {
+		display: flex;
+		align-items: center;
+		gap: 0.85rem;
+		padding: 0.5rem 0 1rem;
+		border-bottom: 1px solid rgba(var(--text-color), 0.06);
+		margin-bottom: 1rem;
+
+		.cubing-icon {
+			color: rgb(var(--primary-color));
+		}
+	}
+
+	&__activity-header-text {
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+		min-width: 0;
+	}
+
+	&__activity-title {
+		font-size: 22px;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+		margin: 0;
+		letter-spacing: -0.3px;
+	}
+
+	&__activity-round,
+	&__activity-group {
+		color: rgba(var(--text-color), 0.55);
+		font-weight: 500;
+	}
+
+	&__activity-meta {
+		font-size: 12px;
+		color: rgba(var(--text-color), 0.65);
+
+		strong {
+			color: rgb(var(--text-color));
+		}
+	}
+
+	// Live tab — "all rounds" özet grid
+	&__all-rounds-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+		gap: 0.5rem;
+	}
+
+	&__all-rounds-card {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		padding: 0.7rem 0.9rem;
+		border: 1px solid rgba(var(--text-color), 0.08);
+		background: rgb(var(--module-color));
+		color: rgb(var(--text-color));
+		border-radius: 10px;
+		cursor: pointer;
+		text-align: left;
+		transition: border-color 120ms ease, background 120ms ease;
+
+		&:hover {
+			border-color: rgba(var(--primary-color), 0.4);
+			background: rgba(var(--primary-color), 0.05);
+		}
+
+		&--active {
+			border-color: rgba(255, 100, 100, 0.5);
+			background: rgba(255, 100, 100, 0.08);
+		}
+
+		.cubing-icon {
+			color: rgba(var(--text-color), 0.85);
+			flex-shrink: 0;
+		}
+	}
+
+	&__all-rounds-card-text {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		min-width: 0;
+		gap: 2px;
+	}
+
+	&__all-rounds-card-event {
+		font-size: 13px;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	&__all-rounds-card-round {
+		font-size: 11px;
+		color: rgba(var(--text-color), 0.6);
+	}
+
+	&__person-results-table {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 13px;
+
+		th {
+			text-align: left;
+			padding: 0.6rem 1rem;
+			font-size: 11px;
+			font-weight: 600;
+			letter-spacing: 0.4px;
+			text-transform: uppercase;
+			color: rgba(var(--text-color), 0.55);
+		}
+
+		td {
+			padding: 0.6rem 1rem;
+			color: rgb(var(--text-color));
+			border-top: 1px solid rgba(var(--text-color), 0.05);
+		}
 	}
 
 	&__event-card {

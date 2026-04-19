@@ -10,60 +10,10 @@
     max-height: 200px;
 
     &--mobile {
-        // Mobilde de yan yana - şablona uygun
         grid-template-columns: 1fr 1fr;
         gap: 0.5rem;
         padding: 0 0.5rem;
-        height: 200px; // Sabit yukseklik — cozum olsa da olmasa da ayni boyut
-        flex: 0 0 200px; // Flex'te de sabit tut
-    }
-
-    &__section {
-        display: flex;
-        flex-direction: column;
-        background: rgba(var(--text-color), 0.03);
-        border-radius: 8px;
-        overflow: hidden;
-
-        &--history {
-            height: 100%; // Parent yüksekliğini doldur
-            max-height: 100%;
-            overflow-y: auto;
-        }
-
-        &--scramble {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0.5rem;
-
-            // ScrambleVisual componentinin boyutunu ayarla
-            .cd-scramble-visual {
-                width: 150%;
-                max-width: 220px;
-                margin: 0 auto;
-                max-height: 150px;
-
-                svg,
-                canvas,
-                img {
-                    max-width: 100% !important;
-                    max-height: 100% !important; // Sabit 140px yerine container'a uy
-                    border-radius: 4px;
-                    height: auto !important;
-                }
-            }
-        }
-    }
-
-    &__section-content {
-        flex: 1;
-        overflow-y: auto;
-        padding: 0.25rem;
-    }
-
-    &__history-list {
-        display: flex;
-        flex-direction: column;
+        height: 200px;
+        flex: 0 0 200px;
     }
 }

@@ -321,6 +321,16 @@ export default function DashboardAssignments({
 								</button>
 							</div>
 
+							<GroupScheduleEditor
+								groupId={group.id}
+								startTime={group.start_time}
+								endTime={group.end_time}
+								onSaved={() => {
+									onUpdated();
+									fetchAssignments();
+								}}
+							/>
+
 							{/* Competitors */}
 							<RoleSection
 								label={t('role_competitor')}
@@ -359,6 +369,113 @@ export default function DashboardAssignments({
 						</div>
 					))}
 				</div>
+			)}
+		</div>
+	);
+}
+
+const UPDATE_GROUP_SCHEDULE = gql`
+	mutation UpdateZktGroupScheduleM($input: UpdateZktGroupScheduleInput!) {
+		updateZktGroupSchedule(input: $input) {
+			id
+			start_time
+			end_time
+		}
+	}
+`;
+
+function toTimeLocal(iso: string | null | undefined): string {
+	if (!iso) return '';
+	const d = new Date(iso);
+	if (isNaN(d.getTime())) return '';
+	const hh = String(d.getHours()).padStart(2, '0');
+	const mm = String(d.getMinutes()).padStart(2, '0');
+	return `${hh}:${mm}`;
+}
+
+function combineDateAndTime(baseIso: string | null | undefined, timeStr: string): string | null {
+	if (!timeStr) return null;
+	const [hh, mm] = timeStr.split(':').map((s) => parseInt(s, 10));
+	if (isNaN(hh) || isNaN(mm)) return null;
+	// Use any existing date as the date anchor; fall back to today so the
+	// admin can still schedule before the competition date is finalised.
+	const base = baseIso ? new Date(baseIso) : new Date();
+	base.setHours(hh, mm, 0, 0);
+	return base.toISOString();
+}
+
+function GroupScheduleEditor({
+	groupId,
+	startTime,
+	endTime,
+	onSaved,
+}: {
+	groupId: string;
+	startTime?: string | null;
+	endTime?: string | null;
+	onSaved: () => void;
+}) {
+	const {t} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
+	const [start, setStart] = useState(toTimeLocal(startTime));
+	const [end, setEnd] = useState(toTimeLocal(endTime));
+	const [saving, setSaving] = useState(false);
+
+	useEffect(() => {
+		setStart(toTimeLocal(startTime));
+		setEnd(toTimeLocal(endTime));
+	}, [startTime, endTime]);
+
+	async function save() {
+		setSaving(true);
+		try {
+			await gqlMutate(UPDATE_GROUP_SCHEDULE, {
+				input: {
+					groupId,
+					startTime: start ? combineDateAndTime(startTime, start) : null,
+					endTime: end ? combineDateAndTime(endTime || startTime, end) : null,
+				},
+			});
+			toastSuccess(t('saved'));
+			onSaved();
+		} catch (e: any) {
+			toastError(e?.message || t('error'));
+		} finally {
+			setSaving(false);
+		}
+	}
+
+	const changed =
+		start !== toTimeLocal(startTime) || end !== toTimeLocal(endTime);
+
+	return (
+		<div className={b('group-schedule-editor')}>
+			<label className={b('group-schedule-label')}>
+				<span>{t('start')}</span>
+				<input
+					type="time"
+					value={start}
+					onChange={(e) => setStart(e.target.value)}
+					className={b('group-schedule-input')}
+				/>
+			</label>
+			<label className={b('group-schedule-label')}>
+				<span>{t('end')}</span>
+				<input
+					type="time"
+					value={end}
+					onChange={(e) => setEnd(e.target.value)}
+					className={b('group-schedule-input')}
+				/>
+			</label>
+			{changed && (
+				<button
+					type="button"
+					className={b('group-schedule-save')}
+					onClick={save}
+					disabled={saving}
+				>
+					{saving ? '...' : t('save')}
+				</button>
 			)}
 		</div>
 	);

@@ -1,0 +1,56 @@
+# Zkt Timer
+
+> Zkt Timer is an advanced online Rubik's cube timer and speedcubing platform with live WCA competition tracking, real-time race rooms, algorithm trainer, smart cube BLE integration, and global leaderboards. Available on web, iOS, and Android via PWA and native apps.
+
+## Core capabilities
+
+- **Timer**: Millisecond-precision Rubik's cube timer with official WCA scramble algorithms, inspection countdown, penalty tracking (+2, DNF), multi-phase timing, and customizable UI
+- **Scramble generation**: Client and server parity for all WCA events — 2x2, 3x3, 4x4, 5x5, 6x6, 7x7, 3x3 OH, 3x3 Blind, Pyraminx, Megaminx, Skewb, Square-1, Clock
+- **Smart cube support**: BLE integration for GAN, Giiker, and Particula smart cubes with 3D visualization and gyroscope
+- **Algorithm trainer**: OLL, PLL, F2L, ZBLL and more with per-algorithm stats, pattern visualization (2D + 3D), setup algorithm generation, PDF export
+- **Puzzle solvers**: IDA*-based solvers for Cross, XCross, EOLine, EOCross, Roux FB, F2L, Petrus, ZZ, EODR, 2x2x2, SQ1, Pyraminx, Skewb
+- **Competitions**: WCA competition tracking with live results, schedule, competitor assignments, personal bests
+- **Multiplayer**: Real-time race rooms via Socket.IO, 1v1 battle mode, friend system
+- **Data**: LokiJS local-first storage with IndexedDB, server sync, offline support, import/export (csTimer, Twisty Timer, Zkt-Timer formats)
+- **Stats**: Per-session and all-time statistics, averages, graphs, personal bests, cube-type buckets
+- **Pro membership**: Advanced stats, unlimited sessions, PDF export, premium trainers
+
+## Key pages
+
+- [Home](https://zktimer.app/): Landing page with feature overview
+- [Timer](https://zktimer.app/timer): Main Rubik's cube timer interface
+- [Trainer](https://zktimer.app/trainer): Algorithm trainer for OLL, PLL, F2L, ZBLL
+- [Live Rooms](https://zktimer.app/rooms): Real-time multiplayer race rooms
+- [WCA Competitions](https://zktimer.app/community/competitions): All WCA Rubik's cube competitions worldwide with live results
+- [Global Leaderboards](https://zktimer.app/ranks): Top solves and averages from all users
+- [Pro](https://zktimer.app/pro): Premium membership features
+- [Battle](https://zktimer.app/battle): 1v1 battle mode (mobile)
+- [Sign Up](https://zktimer.app/signup): Create an account
+- [Sitemap](https://zktimer.app/sitemap.xml): Full list of indexed URLs
+
+## Technology
+
+- Frontend: React 17, TypeScript, Redux, Apollo Client, LokiJS, SCSS + Tailwind CSS
+- Backend: Node.js 20, Express, Apollo Server v2, type-graphql, Prisma ORM, PostgreSQL, Redis, Socket.IO
+- Mobile: Capacitor v6 (iOS and Android native wrappers), web as PWA
+- Rendering: Custom SSR pipeline with ReactDOM.hydrate
+- Scrambles: Port of cstimer scramble engine
+- Solvers: IDA* in Web Workers
+
+## Supported languages
+
+English, Turkish, Spanish, Russian. Cookie-based language switching with full in-app localization.
+
+## Platforms
+
+- Web: https://zktimer.app
+- iOS App Store: https://apps.apple.com/app/zkt-timer/id6760920873
+- Google Play Store: https://play.google.com/store/apps/details?id=com.zktimer.app
+- PWA: Installable on any modern browser with offline support
+
+## Links
+
+- Sitemap: https://zktimer.app/sitemap.xml
+- Robots: https://zktimer.app/robots.txt
+- Instagram: https://www.instagram.com/zekakuputurkiye
+- YouTube: https://www.youtube.com/@zekakuputurkiye

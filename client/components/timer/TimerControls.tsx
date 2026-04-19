@@ -29,7 +29,7 @@ export default function TimerControls() {
     const lockedScramble = useSettings('locked_scramble');
     const latestSolve = useLatestSolve();
 
-    const { scramble, scrambleLocked, editScramble, timeStartedAt, cubeType, focusMode, scrambleSubset, smartTurns } = context;
+    const { scramble, scrambleLocked, editScramble, timeStartedAt, cubeType, scrambleSubset, smartTurns } = context;
     const isSmart = smartCubeSelected(context);
     const isSmartScrambling = isSmart && smartTurns && smartTurns.length > 0 && !timeStartedAt;
 
@@ -171,11 +171,6 @@ export default function TimerControls() {
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [handlePreviousScramble, handleNextScramble, timeStartedAt]);
-
-    // Focus modunda gizle
-    if (focusMode) {
-        return null;
-    }
 
     // Navigation disable states
     const minHistoryIndex = Math.max(0, scrambleHistory.length - 1 - MAX_HISTORY_BACK_STEPS);

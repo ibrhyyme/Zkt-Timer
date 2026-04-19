@@ -38,10 +38,18 @@ export default (payload: HtmlPagePayload) => {
 				<script async src="https://cdn.jsdelivr.net/npm/pwacompat" crossorigin="anonymous"></script>
 				<meta name="theme-color" content="#0F142B">
 
-				<!-- iOS -->
+				<!-- iOS / PWA -->
 				<meta name="mobile-web-app-capable" content="yes">
+				<meta name="apple-mobile-web-app-capable" content="yes">
 				<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 				<meta name="apple-mobile-web-app-title" content="Zkt Timer">
+				<meta name="application-name" content="Zkt Timer">
+				<meta name="format-detection" content="telephone=no">
+				<!-- Smart App Banner: Safari'de "Uygulamada Ac" butonu gosterir -->
+				<meta name="apple-itunes-app" content="app-id=6760920873">
+				<!-- Android: Chrome'a native app uyarisi -->
+				<meta name="google-play-app" content="app-id=com.zktimer.app">
+				<link rel="alternate" href="android-app://com.zktimer.app/https/zktimer.app/">
 				<!-- iOS Ana Ekran İkonu (Mutlaka PNG olmalı, SVG desteklenmez) -->
 				<link rel="apple-touch-icon" href="${resourceBase}/images/apple-touch-icon.png">
 				<link rel="apple-touch-icon" sizes="152x152" href="${resourceBase}/images/apple-touch-icon.png">

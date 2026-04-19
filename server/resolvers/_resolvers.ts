@@ -37,4 +37,3 @@ export * from './ZktRegistration.resolver';
 export * from './ZktResult.resolver';
 export * from './ZktRecord.resolver';
 export * from './ZktAssignment.resolver';
-export * from './ZktDelegateReport.resolver';

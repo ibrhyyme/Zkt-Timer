@@ -6,6 +6,7 @@ import {ErrorCode} from '../constants/errors';
 import {
 	ZktResult,
 	ZktRound,
+	ZktScramble,
 	SubmitZktResultInput,
 	SubmitZktResultsBatchInput,
 	CreateZktRoundInput,
@@ -21,6 +22,7 @@ import {
 } from '../models/zkt_competition';
 import {upsertZktResult, finalizeRound, markResultNoShow} from '../models/zkt_result';
 import {assertRoundTransition, revokeAdvancementCarry} from '../models/zkt_round';
+import {ensureScramblesForRound, regenerateScramblesForRound} from '../models/zkt_scramble';
 import {checkAndApplyRecords} from '../models/zkt_record';
 import {emitZktResultUpdated, emitZktResultDeleted, emitZktRoundStatusChanged} from '../zkt_competition';
 
@@ -227,9 +229,73 @@ export class ZktResultResolver {
 			include: {results: true, groups: true},
 		});
 
+		// Auto-generate scrambles the first time a round opens (UPCOMING → OPEN).
+		// Idempotent — already-existing scrambles aren't touched.
+		if (input.status === 'OPEN' && round.status === 'UPCOMING') {
+			try {
+				await ensureScramblesForRound(input.roundId);
+			} catch (err) {
+				console.error('[zkt-scramble] auto-gen on open failed:', err);
+			}
+		}
+
 		emitZktRoundStatusChanged(competitionId, {roundId: input.roundId, status: input.status});
 
 		return updated;
+	}
+
+	@Authorized([Role.LOGGED_IN])
+	@Query(() => [ZktScramble])
+	async zktRoundScrambles(@Arg('roundId') roundId: string) {
+		return getPrisma().zktScramble.findMany({
+			where: {round_id: roundId},
+			orderBy: {attempt_number: 'asc'},
+		});
+	}
+
+	@Authorized([Role.LOGGED_IN])
+	@Mutation(() => [ZktScramble])
+	async regenerateZktScrambles(
+		@Ctx() context: GraphQLContext,
+		@Arg('roundId') roundId: string
+	) {
+		const round = await getRoundWithCompetition(roundId);
+		if (!round) throw new GraphQLError(ErrorCode.NOT_FOUND);
+		await assertCanModifyCompetition(context.user, round.comp_event.competition_id);
+
+		// Refuse if any result has already been entered — regenerating mid-round
+		// would invalidate everyone's scrambles. Admin must clear results first.
+		const enteredCount = await getPrisma().zktResult.count({
+			where: {round_id: roundId, best: {not: null}},
+		});
+		if (enteredCount > 0) {
+			throw new GraphQLError(
+				ErrorCode.BAD_INPUT,
+				'Sonuçlar girilmiş, scramble yeniden üretilemez. Önce sonuçları silin.'
+			);
+		}
+
+		await regenerateScramblesForRound(roundId);
+		return getPrisma().zktScramble.findMany({
+			where: {round_id: roundId},
+			orderBy: {attempt_number: 'asc'},
+		});
+	}
+
+	@Authorized([Role.LOGGED_IN])
+	@Mutation(() => [ZktScramble])
+	async ensureZktScrambles(
+		@Ctx() context: GraphQLContext,
+		@Arg('roundId') roundId: string
+	) {
+		const round = await getRoundWithCompetition(roundId);
+		if (!round) throw new GraphQLError(ErrorCode.NOT_FOUND);
+		await assertCanModifyCompetition(context.user, round.comp_event.competition_id);
+		await ensureScramblesForRound(roundId);
+		return getPrisma().zktScramble.findMany({
+			where: {round_id: roundId},
+			orderBy: {attempt_number: 'asc'},
+		});
 	}
 
 	@Authorized([Role.LOGGED_IN])

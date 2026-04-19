@@ -50,6 +50,7 @@ export interface AllSettings {
 	module_color: string;
 	button_color: string;
 	timer_modules: TimerModuleType[];
+	mobile_timer_modules: TimerModuleType[];
 
 	hide_mobile_timer_footer: boolean;
 	timer_avg_main: string;
@@ -103,6 +104,10 @@ const defaultSettings: AllSettings = {
 		TimerModuleType.TIME_DISTRO,
 		TimerModuleType.CONSISTENCY,
 		TimerModuleType.SOLVE_GRAPH,
+	],
+	mobile_timer_modules: [
+		TimerModuleType.HISTORY,
+		TimerModuleType.SCRAMBLE,
 	],
 
 	// U R F D L B

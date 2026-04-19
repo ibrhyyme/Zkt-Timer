@@ -30,11 +30,19 @@ export function formatDayHeader(dateStr: string, locale: string): string {
 }
 
 export function formatDateRange(startDate: string, endDate: string, locale: string): string {
-	const start = new Date(startDate + 'T00:00:00');
-	const end = new Date(endDate + 'T00:00:00');
+	// Accept both "YYYY-MM-DD" (WCA) and full ISO "YYYY-MM-DDTHH:mm:ss.sssZ" (ZKT Prisma @db.Date).
+	const toDate = (s: string): Date => {
+		if (!s) return new Date(NaN);
+		const datePart = s.length >= 10 ? s.slice(0, 10) : s;
+		return new Date(datePart + 'T00:00:00');
+	};
+	const start = toDate(startDate);
+	const end = toDate(endDate);
 	const fmt = (d: Date, opts: Intl.DateTimeFormatOptions) => d.toLocaleDateString(locale, opts);
 
-	if (startDate === endDate) {
+	const startKey = startDate?.slice(0, 10);
+	const endKey = endDate?.slice(0, 10);
+	if (startKey === endKey) {
 		return fmt(start, {day: 'numeric', month: 'short', year: 'numeric'});
 	}
 	return `${fmt(start, {day: 'numeric', month: 'short'})} - ${fmt(end, {day: 'numeric', month: 'short', year: 'numeric'})}`;

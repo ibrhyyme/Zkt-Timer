@@ -28,7 +28,6 @@ export default function Wrapper(props: Props) {
 	const match = useRouteMatch();
 
 	const appLoaded = useGeneral('app_loaded');
-	const focusMode = useSettings('focus_mode');
 	const mobileMode = useGeneral('mobile_mode');
 	const primaryColor = useSettings('primary_color');
 	const secondaryColor = useSettings('secondary_color');
@@ -76,7 +75,6 @@ export default function Wrapper(props: Props) {
 			{headerNav}
 			<div
 				className={b({
-					full: focusMode,
 					mobile: mobileMode,
 					noPadding,
 				})}

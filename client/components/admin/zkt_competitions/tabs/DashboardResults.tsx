@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useState, useEffect, useCallback, useMemo, useRef} from 'react';
 import {gql} from '@apollo/client';
 import {gqlMutate} from '../../../api';
 import {useTranslation} from 'react-i18next';
@@ -11,6 +11,7 @@ import {
 	formatHasAverage,
 } from '../shared';
 import TimeField from '../TimeField';
+import {MagnifyingGlass, FloppyDisk, CaretLeft, CaretRight} from 'phosphor-react';
 
 const ROUND_RESULTS = gql`
 	query ZktRoundResults($roundId: String!) {
@@ -26,6 +27,7 @@ const ROUND_RESULTS = gql`
 			average
 			ranking
 			proceeds
+			no_show
 			single_record_tag
 			average_record_tag
 			user {
@@ -48,6 +50,7 @@ const SUBMIT_RESULT = gql`
 			id
 			best
 			average
+			ranking
 			attempt_1
 			attempt_2
 			attempt_3
@@ -66,14 +69,16 @@ const FINALIZE_ROUND = gql`
 	}
 `;
 
+
+const DNF = -1;
+const DNS = -2;
+
 interface Competitor {
 	id: string;
 	user_id: string;
 	username: string;
 	avatarUrl?: string;
 }
-
-const DNF = -1;
 
 export default function DashboardResults({detail, onUpdated}: {detail: any; onUpdated: () => void}) {
 	const {t} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
@@ -82,9 +87,9 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 
 	const [selectedRoundId, setSelectedRoundId] = useState<string>('');
 	const [results, setResults] = useState<any[]>([]);
-	const [loading, setLoading] = useState(false);
+	const [activeUserId, setActiveUserId] = useState<string | null>(null);
+	const [search, setSearch] = useState('');
 
-	// Pick first non-finished round by default
 	useEffect(() => {
 		if (selectedEvent && selectedEvent.rounds.length > 0) {
 			const active = selectedEvent.rounds.find((r: any) => r.status !== 'FINISHED');
@@ -96,14 +101,11 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 
 	const fetchResults = useCallback(async () => {
 		if (!selectedRoundId) return;
-		setLoading(true);
 		try {
 			const res = await gqlMutate(ROUND_RESULTS, {roundId: selectedRoundId});
-			setResults(res?.data?.zktRoundResults || []);
+			setResults((res as any)?.data?.zktRoundResults || []);
 		} catch {
 			// ignore
-		} finally {
-			setLoading(false);
 		}
 	}, [selectedRoundId]);
 
@@ -111,8 +113,7 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 		fetchResults();
 	}, [fetchResults]);
 
-	// Competitors eligible for this round
-	const competitors: Competitor[] = React.useMemo(() => {
+	const competitors: Competitor[] = useMemo(() => {
 		if (!selectedRound || !selectedEvent) return [];
 		if (selectedRound.round_number === 1) {
 			return detail.registrations
@@ -136,6 +137,32 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 		}));
 	}, [selectedRound, selectedEvent, detail.registrations, results]);
 
+	// Auto-pick the first competitor when loading the round.
+	useEffect(() => {
+		if (!activeUserId && competitors.length > 0) {
+			setActiveUserId(competitors[0].user_id);
+		}
+		if (activeUserId && !competitors.some((c) => c.user_id === activeUserId)) {
+			setActiveUserId(competitors[0]?.user_id || null);
+		}
+	}, [competitors, activeUserId]);
+
+	const filteredCompetitors = useMemo(() => {
+		if (!search.trim()) return competitors;
+		const q = search.toLowerCase();
+		return competitors.filter((c) => c.username.toLowerCase().includes(q));
+	}, [competitors, search]);
+
+	const activeCompetitor = competitors.find((c) => c.user_id === activeUserId);
+	const activeResult = results.find((r) => r.user_id === activeUserId);
+
+	function goToAdjacent(delta: number) {
+		if (!activeUserId || competitors.length === 0) return;
+		const idx = competitors.findIndex((c) => c.user_id === activeUserId);
+		const next = (idx + delta + competitors.length) % competitors.length;
+		setActiveUserId(competitors[next].user_id);
+	}
+
 	async function finalize() {
 		if (!selectedRoundId) return;
 		try {
@@ -151,94 +178,133 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 	if (!selectedEvent) return <div className={b('empty')}>{t('no_events')}</div>;
 
 	return (
-		<div className={b('results-tab')}>
-			<div className={b('event-card-grid')} style={{gridTemplateColumns: 'auto'}}>
-				<div style={{display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1rem'}}>
-					{detail.events.map((ev: any) => (
-						<button
-							key={ev.id}
-							className={b('filter-pill', {active: selectedEventId === ev.id})}
-							onClick={() => setSelectedEventId(ev.id)}
-						>
-							<span className={`cubing-icon event-${ev.event_id}`} />
-							<span>{getEventName(ev.event_id)}</span>
-						</button>
-					))}
-				</div>
+		<div className={b('scoretake-page')}>
+			{/* Event pills */}
+			<div className={b('scoretake-event-row')}>
+				{detail.events.map((ev: any) => (
+					<button
+						key={ev.id}
+						className={b('filter-pill', {active: selectedEventId === ev.id})}
+						onClick={() => setSelectedEventId(ev.id)}
+					>
+						<span className={`cubing-icon event-${ev.event_id}`} />
+						<span>{getEventName(ev.event_id)}</span>
+					</button>
+				))}
+			</div>
 
-				<div style={{display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1rem'}}>
-					{selectedEvent.rounds.map((r: any) => (
-						<button
-							key={r.id}
-							className={b('filter-pill', {active: selectedRoundId === r.id})}
-							onClick={() => setSelectedRoundId(r.id)}
-						>
-							<span>{t('round_n', {n: r.round_number})}</span>
-							<span className={b('round-status', {[r.status.toLowerCase()]: true})}>
-								{t(`round_status_${r.status.toLowerCase()}`)}
-							</span>
-						</button>
-					))}
-				</div>
+			{/* Round pills */}
+			<div className={b('scoretake-round-row')}>
+				{selectedEvent.rounds.map((r: any) => (
+					<button
+						key={r.id}
+						className={b('filter-pill', {active: selectedRoundId === r.id})}
+						onClick={() => setSelectedRoundId(r.id)}
+					>
+						<span>{t('round_n', {n: r.round_number})}</span>
+						<span className={b('round-status', {[r.status.toLowerCase()]: true})}>
+							{t(`round_status_${r.status.toLowerCase()}`)}
+						</span>
+					</button>
+				))}
 			</div>
 
 			{selectedRound && (
-				<>
-					<div className={b('round-info-banner')}>
+				<div className={b('scoretake-info')}>
+					<span><strong>{t('format')}:</strong> {selectedRound.format}</span>
+					{selectedRound.time_limit_cs && (
+						<span><strong>{t('time_limit')}:</strong> {formatCs(selectedRound.time_limit_cs)}</span>
+					)}
+					{selectedRound.cutoff_cs && (
 						<span>
-							<strong>{t('format')}:</strong> {selectedRound.format}
+							<strong>{t('cutoff')}:</strong> {formatCs(selectedRound.cutoff_cs)} /{' '}
+							{selectedRound.cutoff_attempts}
 						</span>
-						{selectedRound.time_limit_cs && (
-							<span>
-								<strong>{t('time_limit')}:</strong> {formatCs(selectedRound.time_limit_cs)}
-							</span>
-						)}
-						{selectedRound.cutoff_cs && (
-							<span>
-								<strong>{t('cutoff')}:</strong> {formatCs(selectedRound.cutoff_cs)} /{' '}
-								{selectedRound.cutoff_attempts}
-							</span>
-						)}
-					</div>
+					)}
+					<span className={b('scoretake-entered')}>
+						{results.filter((r) => r.best !== null && r.best !== undefined).length} / {competitors.length}{' '}
+						{t('entered')}
+					</span>
+				</div>
+			)}
 
-					<div className={b('results-entry')}>
-						{competitors.length === 0 ? (
-							<div className={b('empty')}>{t('no_competitors_in_round')}</div>
+			{selectedRound && (
+				<div className={b('scoretake-split')}>
+					{/* LEFT: active competitor form */}
+					<div className={b('scoretake-left')}>
+						{activeCompetitor ? (
+							<ActiveResultForm
+								key={activeCompetitor.user_id}
+								competitor={activeCompetitor}
+								roundId={selectedRound.id}
+								format={selectedRound.format}
+								timeLimitCs={selectedRound.time_limit_cs}
+								cutoffCs={selectedRound.cutoff_cs}
+								cutoffAttempts={selectedRound.cutoff_attempts}
+								existing={activeResult}
+								onSaved={async () => {
+									await fetchResults();
+									// Advance to next competitor without an entered result, if any.
+									const idx = competitors.findIndex((c) => c.user_id === activeCompetitor.user_id);
+									for (let i = 1; i <= competitors.length; i++) {
+										const cand = competitors[(idx + i) % competitors.length];
+										const candRes = results.find((r) => r.user_id === cand.user_id);
+										const empty = !candRes || (candRes.best === null || candRes.best === undefined);
+										if (empty) {
+											setActiveUserId(cand.user_id);
+											return;
+										}
+									}
+								}}
+								onPrev={() => goToAdjacent(-1)}
+								onNext={() => goToAdjacent(1)}
+							/>
 						) : (
-							competitors.map((comp) => (
-								<ResultRow
-									key={comp.user_id}
-									competitor={comp}
-									roundId={selectedRound.id}
-									format={selectedRound.format}
-									timeLimitCs={selectedRound.time_limit_cs}
-									cutoffCs={selectedRound.cutoff_cs}
-									cutoffAttempts={selectedRound.cutoff_attempts}
-									existing={results.find((r) => r.user_id === comp.user_id)}
-									onSaved={fetchResults}
-								/>
-							))
+							<div className={b('empty')}>{t('no_competitors_in_round')}</div>
 						)}
 					</div>
 
-					<div className={b('sticky-footer')}>
-						<button
-							className={b('finalize-btn')}
-							onClick={finalize}
-							disabled={selectedRound.status === 'FINISHED'}
-						>
-							{selectedRound.status === 'FINISHED'
-								? t('round_already_finalized')
-								: t('finalize_round')}
-						</button>
+					{/* RIGHT: live leaderboard */}
+					<div className={b('scoretake-right')}>
+						<div className={b('scoretake-search')}>
+							<MagnifyingGlass weight="bold" />
+							<input
+								type="text"
+								placeholder={t('search_competitor')}
+								value={search}
+								onChange={(e) => setSearch(e.target.value)}
+							/>
+						</div>
+
+						<LeaderboardTable
+							competitors={filteredCompetitors}
+							results={results}
+							activeUserId={activeUserId}
+							onSelect={setActiveUserId}
+							format={selectedRound.format}
+						/>
 					</div>
-				</>
+				</div>
+			)}
+
+			{selectedRound && (
+				<div className={b('sticky-footer')}>
+					<button
+						className={b('finalize-btn')}
+						onClick={finalize}
+						disabled={selectedRound.status === 'FINISHED'}
+					>
+						{selectedRound.status === 'FINISHED'
+							? t('round_already_finalized')
+							: t('finalize_round')}
+					</button>
+				</div>
 			)}
 		</div>
 	);
 }
 
-function ResultRow({
+function ActiveResultForm({
 	competitor,
 	roundId,
 	format,
@@ -247,6 +313,8 @@ function ResultRow({
 	cutoffAttempts,
 	existing,
 	onSaved,
+	onPrev,
+	onNext,
 }: {
 	competitor: Competitor;
 	roundId: string;
@@ -256,6 +324,8 @@ function ResultRow({
 	cutoffAttempts?: number | null;
 	existing?: any;
 	onSaved: () => void;
+	onPrev: () => void;
+	onNext: () => void;
 }) {
 	const {t} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
 	const attemptCount = getFormatAttempts(format);
@@ -264,13 +334,12 @@ function ResultRow({
 	const [attempts, setAttempts] = useState<(number | null)[]>(() => {
 		const arr: (number | null)[] = [null, null, null, null, null];
 		if (existing) {
-			for (let i = 0; i < 5; i++) {
-				arr[i] = existing[`attempt_${i + 1}`] ?? null;
-			}
+			for (let i = 0; i < 5; i++) arr[i] = existing[`attempt_${i + 1}`] ?? null;
 		}
 		return arr;
 	});
 	const [saving, setSaving] = useState(false);
+	const inputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
 	function setAttempt(idx: number, cs: number | null) {
 		const next = [...attempts];
@@ -278,30 +347,11 @@ function ResultRow({
 		setAttempts(next);
 	}
 
-	function setSpecial(idx: number, type: 'DNF' | 'DNS' | 'PLUS2' | 'CLEAR') {
-		const next = [...attempts];
-		if (type === 'DNF') next[idx] = -1;
-		else if (type === 'DNS') next[idx] = -2;
-		else if (type === 'CLEAR') next[idx] = null;
-		else if (type === 'PLUS2') {
-			const current = next[idx];
-			if (current !== null && current > 0) {
-				next[idx] = current + 200;
-			}
-		}
-		setAttempts(next);
-	}
-
 	async function save() {
 		setSaving(true);
 		try {
-			const input: any = {
-				roundId,
-				userId: competitor.user_id,
-			};
-			for (let i = 0; i < attemptCount; i++) {
-				input[`attempt${i + 1}`] = attempts[i];
-			}
+			const input: any = {roundId, userId: competitor.user_id};
+			for (let i = 0; i < attemptCount; i++) input[`attempt${i + 1}`] = attempts[i];
 			await gqlMutate(SUBMIT_RESULT, {input});
 			toastSuccess(t('saved'));
 			onSaved();
@@ -312,92 +362,115 @@ function ResultRow({
 		}
 	}
 
-	// Live preview of best/average
+	const cutoffActive =
+		cutoffCs != null && cutoffAttempts != null &&
+		cutoffCs > 0 && cutoffAttempts > 0 && cutoffAttempts < attemptCount;
+	const cutoffMet = cutoffActive
+		? attempts.slice(0, cutoffAttempts!).some((a) => a !== null && a > 0 && a < cutoffCs!)
+		: true;
+
 	const relevantAttempts = attempts.slice(0, attemptCount);
 	const previewBest = computeBestPreview(relevantAttempts);
 	const previewAvg = hasAverage ? computeAveragePreview(relevantAttempts, format) : null;
 
-	// Cutoff gate: if first N attempts don't include one that beats cutoff_cs,
-	// later attempts are locked (server will wipe them on save anyway).
-	const cutoffActive =
-		cutoffCs != null &&
-		cutoffAttempts != null &&
-		cutoffCs > 0 &&
-		cutoffAttempts > 0 &&
-		cutoffAttempts < attemptCount;
-	const cutoffMet = cutoffActive
-		? attempts
-				.slice(0, cutoffAttempts!)
-				.some((a) => a !== null && a > 0 && a < cutoffCs!)
-		: true;
+	// "Required" attempts = either full format count, or cutoff count when cutoff
+	// is active and unmet. All required cells must be filled (non-null) for submit
+	// to unlock.
+	const requiredCount = cutoffActive && !cutoffMet ? (cutoffAttempts as number) : attemptCount;
+	const requiredFilled = attempts
+		.slice(0, requiredCount)
+		.every((v) => v !== null && v !== undefined);
+
+	// Focus the first empty required attempt when the competitor changes, so the
+	// scoretaker lands on the next field to type without clicking.
+	useEffect(() => {
+		const firstEmpty = attempts.findIndex((v, i) => i < requiredCount && (v === null || v === undefined));
+		const target = firstEmpty === -1 ? 0 : firstEmpty;
+		requestAnimationFrame(() => inputRefs.current[target]?.focus());
+		// Intentionally on mount of a new competitor only.
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+
+	function attemptKeyDown(idx: number) {
+		return (e: React.KeyboardEvent<HTMLInputElement>) => {
+			if (e.key === 'ArrowLeft' && e.altKey) {
+				e.preventDefault();
+				onPrev();
+				return;
+			}
+			if (e.key === 'ArrowRight' && e.altKey) {
+				e.preventDefault();
+				onNext();
+				return;
+			}
+			if (e.key === 'Enter') {
+				e.preventDefault();
+				// Next required attempt; if we're on the last one and everything is
+				// filled, submit. Otherwise jump to the first remaining empty.
+				if (idx < requiredCount - 1) {
+					inputRefs.current[idx + 1]?.focus();
+					return;
+				}
+				if (requiredFilled) {
+					save();
+					return;
+				}
+				const firstEmpty = attempts.findIndex((v, i) => i < requiredCount && (v === null || v === undefined));
+				if (firstEmpty !== -1) inputRefs.current[firstEmpty]?.focus();
+			}
+		};
+	}
 
 	return (
-		<div className={b('result-row')}>
-			<div className={b('result-user')}>
-				{competitor.avatarUrl && (
-					<img className={b('user-avatar')} src={competitor.avatarUrl} alt="" />
-				)}
-				<span className={b('user-name')}>{competitor.username}</span>
-				{existing?.ranking && (
-					<span className={b('ranking-pill')}>#{existing.ranking}</span>
-				)}
+		<div className={b('active-form')}>
+			<div className={b('active-form-header')}>
+				<button type="button" className={b('icon-btn', {ghost: true})} onClick={onPrev} title={t('prev')}>
+					<CaretLeft weight="bold" />
+				</button>
+				<div className={b('active-form-user')}>
+					{competitor.avatarUrl && (
+						<img className={b('user-avatar')} src={competitor.avatarUrl} alt="" />
+					)}
+					<div>
+						<div className={b('active-form-name')}>{competitor.username}</div>
+						{existing?.ranking && (
+							<div className={b('active-form-rank')}>#{existing.ranking}</div>
+						)}
+					</div>
+				</div>
+				<button type="button" className={b('icon-btn', {ghost: true})} onClick={onNext} title={t('next')}>
+					<CaretRight weight="bold" />
+				</button>
 			</div>
 
-			<div className={b('attempts')}>
+			<div className={b('active-form-attempts')}>
 				{Array.from({length: attemptCount}).map((_, idx) => {
-					const lockedByCutoff =
-						cutoffActive && !cutoffMet && idx >= (cutoffAttempts as number);
+					const locked = cutoffActive && !cutoffMet && idx >= (cutoffAttempts as number);
 					return (
 						<div
 							key={idx}
-							className={b('attempt-cell', {'cutoff-locked': lockedByCutoff})}
+							className={b('active-form-attempt', {'cutoff-locked': locked})}
 						>
+							<label className={b('active-form-attempt-label')}>
+								{t('attempt_n', {n: idx + 1})}
+							</label>
 							<TimeField
+								inputRef={(el) => {
+									inputRefs.current[idx] = el;
+								}}
 								value={attempts[idx]}
 								onChange={(cs) => setAttempt(idx, cs)}
-								placeholder={`D${idx + 1}`}
-								disabled={lockedByCutoff}
-								disabledReason={
-									lockedByCutoff ? t('cutoff_locked_hint') : undefined
-								}
+								disabled={locked}
+								disabledReason={locked ? t('cutoff_locked_hint') : undefined}
 								timeLimitCs={timeLimitCs ?? undefined}
+								onKeyDown={attemptKeyDown(idx)}
 							/>
-							<div className={b('attempt-actions')}>
-								<button
-									className={b('mini-btn')}
-									onClick={() => setSpecial(idx, 'DNF')}
-									disabled={lockedByCutoff}
-								>
-									DNF
-								</button>
-								<button
-									className={b('mini-btn')}
-									onClick={() => setSpecial(idx, 'DNS')}
-									disabled={lockedByCutoff}
-								>
-									DNS
-								</button>
-								<button
-									className={b('mini-btn')}
-									onClick={() => setSpecial(idx, 'PLUS2')}
-									disabled={lockedByCutoff}
-								>
-									+2
-								</button>
-								<button
-									className={b('mini-btn')}
-									onClick={() => setSpecial(idx, 'CLEAR')}
-									disabled={lockedByCutoff}
-								>
-									×
-								</button>
-							</div>
 						</div>
 					);
 				})}
 			</div>
 
-			<div className={b('result-stats')}>
+			<div className={b('active-form-stats')}>
 				<div className={b('stat-pill')}>
 					<span>{t('best')}:</span>
 					<strong>{formatCs(previewBest)}</strong>
@@ -410,9 +483,99 @@ function ResultRow({
 				)}
 			</div>
 
-			<button className={b('save-btn')} onClick={save} disabled={saving}>
-				{saving ? t('saving') : t('save')}
-			</button>
+			{requiredFilled && (
+				<button className={b('save-btn', {primary: true})} onClick={save} disabled={saving}>
+					<FloppyDisk weight="bold" /> {saving ? t('saving') : t('submit_attempts')}
+				</button>
+			)}
+			<div className={b('active-form-hint')}>{t('scoretake_hint')}</div>
+		</div>
+	);
+}
+
+function LeaderboardTable({
+	competitors,
+	results,
+	activeUserId,
+	onSelect,
+	format,
+}: {
+	competitors: Competitor[];
+	results: any[];
+	activeUserId: string | null;
+	onSelect: (userId: string) => void;
+	format: string;
+}) {
+	const {t} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
+	const attemptCount = getFormatAttempts(format);
+	const hasAverage = formatHasAverage(format);
+
+	// Sort by ranking if available, then unranked after.
+	const sorted = [...competitors].sort((a, b) => {
+		const ra = results.find((r) => r.user_id === a.user_id);
+		const rb = results.find((r) => r.user_id === b.user_id);
+		const rankA = ra?.ranking ?? Number.MAX_SAFE_INTEGER;
+		const rankB = rb?.ranking ?? Number.MAX_SAFE_INTEGER;
+		return rankA - rankB;
+	});
+
+	return (
+		<div className={b('leaderboard')}>
+			<div className={b('leaderboard-head')}>
+				<span className={b('leaderboard-col', {rank: true})}>#</span>
+				<span className={b('leaderboard-col', {name: true})}>{t('competitor')}</span>
+				{Array.from({length: attemptCount}).map((_, i) => (
+					<span key={i} className={b('leaderboard-col', {attempt: true})}>{i + 1}</span>
+				))}
+				<span className={b('leaderboard-col', {best: true})}>{t('best')}</span>
+				{hasAverage && (
+					<span className={b('leaderboard-col', {avg: true})}>{t('average')}</span>
+				)}
+			</div>
+			{sorted.map((c) => {
+				const r = results.find((x) => x.user_id === c.user_id);
+				const isActive = c.user_id === activeUserId;
+				const advancing = r?.proceeds;
+				return (
+					<button
+						key={c.user_id}
+						type="button"
+						className={b('leaderboard-row', {active: isActive, advancing, 'no-show': !!r?.no_show})}
+						onClick={() => onSelect(c.user_id)}
+					>
+						<span className={b('leaderboard-col', {rank: true})}>
+							{r?.ranking ?? '-'}
+						</span>
+						<span className={b('leaderboard-col', {name: true})}>
+							{c.avatarUrl && <img className={b('user-avatar')} src={c.avatarUrl} alt="" />}
+							<span>{c.username}</span>
+						</span>
+						{Array.from({length: attemptCount}).map((_, i) => (
+							<span key={i} className={b('leaderboard-col', {attempt: true})}>
+								{formatCs(r?.[`attempt_${i + 1}`])}
+							</span>
+						))}
+						<span className={b('leaderboard-col', {best: true})}>
+							{formatCs(r?.best)}
+							{r?.single_record_tag && (
+								<span className={b('record-tag', {[r.single_record_tag.toLowerCase()]: true})}>
+									{r.single_record_tag}
+								</span>
+							)}
+						</span>
+						{hasAverage && (
+							<span className={b('leaderboard-col', {avg: true})}>
+								{formatCs(r?.average)}
+								{r?.average_record_tag && (
+									<span className={b('record-tag', {[r.average_record_tag.toLowerCase()]: true})}>
+										{r.average_record_tag}
+									</span>
+								)}
+							</span>
+						)}
+					</button>
+				);
+			})}
 		</div>
 	);
 }
@@ -432,15 +595,15 @@ function computeAveragePreview(attempts: (number | null)[], format: string): num
 	const vals = attempts as number[];
 
 	if (format === 'MO3') {
-		if (vals.some((v) => v === -1 || v === -2)) return DNF;
+		if (vals.some((v) => v === DNF || v === DNS)) return DNF;
 		return Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
 	}
 	if (format === 'AO5') {
-		const dnfCount = vals.filter((v) => v === -1 || v === -2).length;
+		const dnfCount = vals.filter((v) => v === DNF || v === DNS).length;
 		if (dnfCount >= 2) return DNF;
 		const sorted = [...vals].sort((a, b) => {
-			if (a === -1 || a === -2) return 1;
-			if (b === -1 || b === -2) return -1;
+			if (a === DNF || a === DNS) return 1;
+			if (b === DNF || b === DNS) return -1;
 			return a - b;
 		});
 		const mid = sorted.slice(1, 4);

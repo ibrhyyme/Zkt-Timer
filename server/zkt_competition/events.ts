@@ -4,6 +4,7 @@ import {joinRoom, leaveRoom} from '../services/socket_util';
 import {
 	ZktCompClientEvent,
 	ZktCompServerEvent,
+	ZktCompSocketRoom,
 	getZktCompSocketRoom,
 } from '../../shared/zkt_competition';
 import {logger} from '../services/logger';
@@ -21,6 +22,14 @@ export function listenForZktCompEvents(client: Socket) {
 		if (!competitionId) return;
 		const room = getZktCompSocketRoom(competitionId);
 		leaveRoom(client, room);
+	});
+
+	client.on(ZktCompClientEvent.JOIN_LIST, () => {
+		joinRoom(client, ZktCompSocketRoom.LIST);
+	});
+
+	client.on(ZktCompClientEvent.LEAVE_LIST, () => {
+		leaveRoom(client, ZktCompSocketRoom.LIST);
 	});
 }
 
@@ -97,5 +106,15 @@ export function emitZktAssignmentUpdated(
 		io().to(room).emit(ZktCompServerEvent.ASSIGNMENT_UPDATED, {competitionId, ...payload});
 	} catch (err) {
 		logger.warn('Failed to emit zkt assignment updated', {competitionId, err});
+	}
+}
+
+export function emitZktCompListChanged(
+	payload: {action: 'created' | 'updated' | 'deleted'; competitionId: string}
+) {
+	try {
+		io().to(ZktCompSocketRoom.LIST).emit(ZktCompServerEvent.LIST_CHANGED, payload);
+	} catch (err) {
+		logger.warn('Failed to emit zkt comp list changed', {err});
 	}
 }

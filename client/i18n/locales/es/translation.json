@@ -829,6 +829,11 @@
 		"previous_scramble": "Mezcla anterior",
 		"next_scramble": "Siguiente mezcla"
 	},
+	"mobile_modules": {
+		"title": "Módulos",
+		"slot_left": "Módulo izquierdo",
+		"slot_right": "Módulo derecho"
+	},
 	"solve_info": {
 		"solve_tab": "Solución",
 		"stats_tab": "Estadísticas",
@@ -1389,10 +1394,24 @@
 		"select_people": "Seleccionar {{count}} personas"
 	},
 	"seo": {
-		"home_title": "Zkt Timer | Cronómetro Online de Cubo Rubik y Plataforma de Speedcubing",
-		"home_description": "El cronómetro online de cubo Rubik más avanzado con salas de carreras en vivo, entrenador de algoritmos, soporte para cubos inteligentes y clasificaciones globales. Todos los eventos WCA: 3x3, 2x2, 4x4, Pyraminx, Megaminx y más.",
+		"home_title": "Zkt Timer | Cronómetro Online de Cubo Rubik, Competiciones WCA y Speedcubing",
+		"home_description": "El cronómetro online de cubo Rubik y plataforma de competiciones WCA más avanzada. Competiciones WCA en vivo, resultados en directo, registro de resoluciones, salas de carreras, entrenador de algoritmos. Todos los eventos WCA: 3x3, 2x2, 4x4, Pyraminx, Megaminx y más.",
 		"timer_title": "Cronómetro de Cubo Rubik - Zkt Timer",
 		"timer_description": "Cronómetro profesional de cubo Rubik. Precisión de milisegundos, algoritmos de mezcla WCA, soporte para cubos inteligentes y análisis detallado de rendimiento. El mejor cronómetro online para speedcubing.",
+		"wca_competitions_title": "Competiciones WCA - Resultados en Vivo y Horarios | Zkt Timer",
+		"wca_competitions_description": "Explora todas las competiciones WCA de cubo Rubik en todo el mundo. Resultados en vivo, horarios de competencia, información de registro, listas de competidores y seguimiento en directo. Todas las competiciones oficiales WCA en una sola plataforma.",
+		"wca_competition_detail_title": "Detalles de Competición WCA - Resultados en Vivo | Zkt Timer",
+		"wca_competition_detail_description": "Detalles completos de la competición WCA: eventos, horario, competidores, resultados en vivo y seguimiento de récords personales. Actualizaciones en tiempo real y clasificaciones durante la competencia.",
+		"zkt_competition_detail_title": "Detalles de Competición ZKT - Resultados en Vivo | Zkt Timer",
+		"zkt_competition_detail_description": "Detalles de competición no oficial ZKT. Resultados en vivo, eventos, registro, entrada de scorecard, transmisión en vivo y seguimiento de récords.",
+		"zkt_records_title": "Récords ZKT | Zkt Timer",
+		"zkt_records_description": "Récords no oficiales de cubo Rubik de ZKT. Récords single y promedio en todos los eventos WCA. Lista actual de récords e histórico.",
+		"zkt_rankings_title": "Clasificaciones ZKT | Zkt Timer",
+		"zkt_rankings_description": "Los speedcubers más rápidos en competiciones ZKT. Clasificaciones por evento, récords de single y promedio, mejores promedios.",
+		"pro_title": "Zkt Timer Pro - Membresía Premium",
+		"pro_description": "Actualiza a Zkt Timer Pro para estadísticas avanzadas, sesiones ilimitadas, exportación PDF, todos los entrenadores de algoritmos y funciones premium.",
+		"battle_title": "Modo Battle 1v1 - Zkt Timer",
+		"battle_description": "¡Battle 1v1 con tu amigo en la misma pantalla! Inicio independiente, seguimiento de penalizaciones, historial de rondas. Duelo móvil de cubo Rubik.",
 		"login_title": "Iniciar sesión - Zkt Timer",
 		"login_description": "Inicia sesión en tu cuenta de Zkt Timer. Guarda tus resoluciones, sigue tus estadísticas y ocupa tu lugar en las clasificaciones.",
 		"signup_title": "Crear cuenta - Zkt Timer",
@@ -1416,10 +1435,11 @@
 		"leaderboards_description": "¡Los resolvedores de cubo Rubik más rápidos! Récords individuales y de promedio, clasificaciones por categoría.",
 		"demo_title": "Modo demo - Zkt Timer",
 		"demo_description": "¡Prueba Zkt Timer! Explora las funciones del timer sin crear una cuenta.",
-		"app_description": "La aplicación de cronómetro de cubo Rubik más avanzada. Plataforma profesional de speedcubing.",
+		"app_description": "La aplicación de cronómetro de cubo Rubik, seguimiento de competiciones WCA y plataforma de speedcubing más avanzada. Precisión de milisegundos.",
 		"feature_list": [
 			"Cronómetro de cubo Rubik",
-			"Cronómetro de speedcubing",
+			"Seguimiento competiciones WCA",
+			"Resultados de competencia en vivo",
 			"Salas de carreras en vivo",
 			"Clasificaciones globales",
 			"Entrenador de algoritmos",
@@ -1427,6 +1447,8 @@
 			"Soporte para Stackmat Timer"
 		],
 		"nav_timer_desc": "Cronómetro profesional de cubo Rubik",
+		"nav_competitions_name": "Competiciones WCA",
+		"nav_competitions_desc": "Competiciones WCA de cubo Rubik en todo el mundo, resultados en vivo y horarios",
 		"nav_rooms_name": "Salas de carreras en vivo",
 		"nav_rooms_desc": "Compite con otros cuberos en tiempo real",
 		"nav_leaderboards_name": "Clasificaciones",
@@ -1436,7 +1458,37 @@
 		"nav_signup_name": "Regístrate",
 		"nav_signup_desc": "Guarda tus estadísticas en la nube y analízalas",
 		"breadcrumb_home": "Inicio",
-		"keywords": "cronómetro cubo rubik, cubo rubik timer, speedcubing, cronómetro rubik online, cubo rubik, rubik timer, 3x3 timer, 2x2 timer, 4x4 timer, cubing, puzzle cube, algoritmos cubo rubik",
+		"keywords": "temporizador cubo rubik, cronómetro cubo rubik, timer cubo online, competiciones WCA, plataforma speedcubing, cubo rubik, speedcubing, cubing, entrenador de algoritmos",
+		"home_keywords": "temporizador cubo rubik, timer cubo online, plataforma speedcubing, comunidad cubing, WCA timer",
+		"timer_keywords": "cronómetro cubo rubik, timer online, scramble WCA, stackmat timer, smart cube timer, precisión milisegundos",
+		"trainer_keywords": "entrenador OLL, entrenador PLL, entrenador F2L, entrenador ZBLL, algoritmos cubo rubik, algoritmos speedcubing",
+		"rooms_keywords": "carrera cubo online, speedcubing multijugador, salas de carrera en vivo, competencia cubo online",
+		"battle_keywords": "duelo cubo 1v1, duelo rubik, modo versus, batalla de cubo, duelo speedcubing",
+		"leaderboards_keywords": "ranking cubo rubik, tablas de clasificación speedcubing, cuberos más rápidos, récords cubo",
+		"stats_keywords": "estadísticas cubo rubik, análisis de solves, promedios cubo, estadísticas speedcubing, récords personales",
+		"solves_keywords": "historial de solves cubo rubik, registros de solves, historial de scramble, registro cubo",
+		"pro_keywords": "Zkt Timer Pro, timer cubo premium, funciones avanzadas speedcubing, pro speedcubing",
+		"user_profile_keywords": "perfil cubero, speedcuber, perfil comunidad cubing, perfil WCA",
+		"wca_competitions_keywords": "competiciones WCA, competiciones speedcubing, competiciones cubo rubik, WCA en vivo, calendario de competiciones",
+		"zkt_competitions_keywords": "competición ZKT, competición cubo no oficial, evento cubo Turquía, competición nacional de cubo",
+		"zkt_records_keywords": "récords ZKT, récords cubo Turquía, récords nacionales, récords cubo rubik Turquía",
+		"zkt_rankings_keywords": "ranking ZKT, ranking cubo Turquía, clasificaciones nacionales, speedcuberos turcos",
+		"login_keywords": "Zkt Timer iniciar sesión, registro timer cubo, cuenta speedcubing",
+		"demo_keywords": "Zkt Timer demo, probar timer cubo, demo speedcubing",
+		"wca_live_title": "Resultados en Vivo WCA - Clasificación en Tiempo Real | Zkt Timer",
+		"wca_live_description": "Resultados en vivo de la competición WCA. Clasificaciones de ronda en tiempo real, tiempos y seguimiento de eventos.",
+		"wca_person_title": "Perfil del Competidor - Competición WCA | Zkt Timer",
+		"wca_person_description": "Detalles del competidor, resultados de eventos y récords personales en la competición WCA.",
+		"wca_activity_title": "Actividad de Competición - Programa WCA | Zkt Timer",
+		"wca_activity_description": "Detalles de actividad: eventos programados, rondas y asignaciones de competidores.",
+		"wca_personal_bests_title": "Récords Personales - Competidor WCA | Zkt Timer",
+		"wca_personal_bests_description": "Récords personales del competidor en todos los eventos WCA.",
+		"zkt_live_title": "Resultados en Vivo ZKT - Clasificación | Zkt Timer",
+		"zkt_live_description": "Resultados en vivo de la competición ZKT. Clasificación de ronda, progreso del evento y tiempos en tiempo real.",
+		"zkt_competitor_title": "Perfil del Competidor - Competición ZKT | Zkt Timer",
+		"zkt_competitor_description": "Detalles del competidor, resultados de eventos y clasificación en la competición ZKT.",
+		"zkt_activity_title": "Actividad de Competición - Grupos ZKT | Zkt Timer",
+		"zkt_activity_description": "Detalles de actividad del grupo: evento, ronda, juez y asignaciones de competidores.",
 		"faq": [
 			{
 				"q": "¿Qué es Zkt Timer?",
@@ -1469,8 +1521,79 @@
 			{
 				"q": "¿Cómo puedo unirme a carreras online?",
 				"a": "Crea una cuenta, luego únete a salas de carreras abiertas o crea salas privadas con amigos desde la sección 'Salas'. Se realizan carreras en tiempo real y puedes subir en las clasificaciones."
+			},
+			{
+				"q": "¿Cómo puedo seguir las competiciones WCA?",
+				"a": "Explora todas las competiciones WCA de cubo Rubik del mundo desde la sección 'Competiciones'. La página de detalle de cada competición muestra el horario, lista de competidores, eventos y resultados en vivo. Conecta tu cuenta WCA para ver tu horario personal de las competiciones en las que estás registrado."
+			},
+			{
+				"q": "¿Cómo conecto un smart cube?",
+				"a": "Zkt Timer soporta smart cubes GAN, Giiker y Particula vía Bluetooth. En móvil, activa el Bluetooth y usa el plugin Capacitor BLE; en navegadores web, usa Chrome o Edge que soportan Web Bluetooth. Abre el menú Smart Cube desde el timer, pulsa Escanear y empareja con tu dispositivo. Una vez conectado, el timer inicia y para automáticamente según el estado del cubo."
+			},
+			{
+				"q": "¿Zkt Timer soporta Stackmat Timer?",
+				"a": "Sí. Conecta tu Stackmat Timer a través de la entrada de audio (jack 3.5mm). En los ajustes del timer, selecciona StackMat como tipo de entrada y elige el dispositivo de audio correcto. El timer detectará las señales del Stackmat automáticamente."
+			},
+			{
+				"q": "¿Qué es el entrenador de algoritmos?",
+				"a": "El entrenador de algoritmos te ayuda a practicar OLL, PLL, F2L, ZBLL y otros algoritmos de cubo con repetición espaciada. Muestra un cubo 3D o patrón 2D para cada algoritmo, rastrea tu tiempo por algoritmo y pone en cola los que necesitan más práctica. Soporta smart cubes para coincidencia de patrones."
+			},
+			{
+				"q": "¿Qué son OLL y PLL?",
+				"a": "OLL (Orientation of the Last Layer) y PLL (Permutation of the Last Layer) son los últimos dos pasos del método de speedsolving CFOP. OLL tiene 57 algoritmos que orientan la última capa; PLL tiene 21 algoritmos que permutan las piezas. Dominarlos es esencial para solves sub-20."
+			},
+			{
+				"q": "¿Qué me da la membresía Pro?",
+				"a": "Zkt Timer Pro desbloquea estadísticas avanzadas, sesiones ilimitadas, exportación PDF de tus algoritmos y estadísticas, acceso a todos los entrenadores de algoritmos, temas premium y soporte prioritario. Es una compra única o recurrente según el plan."
+			},
+			{
+				"q": "¿Puedo importar datos de csTimer o Twisty Timer?",
+				"a": "Sí. Zkt Timer soporta importación de datos desde csTimer, Twisty Timer y sus propios formatos de exportación anteriores. Ve a Ajustes > Datos > Importar, selecciona el formato fuente y sube tu archivo de exportación. Todos los solves, sesiones y metadatos se preservan."
+			},
+			{
+				"q": "¿Cómo hago respaldo de mis datos?",
+				"a": "Ve a Ajustes > Datos > Exportar. Zkt Timer genera un archivo JSON con todos tus solves, sesiones y ajustes. Guárdalo en un lugar seguro — puedes reimportarlo en cualquier dispositivo. Los usuarios conectados también obtienen sincronización automática en la nube."
+			},
+			{
+				"q": "¿Qué algoritmo de scramble usa Zkt Timer?",
+				"a": "Zkt Timer usa el mismo motor de scramble que cstimer, el estándar de facto en speedcubing. Esto incluye scramblers random-state compatibles con WCA para 2x2, 3x3, 4x4, Pyraminx, Megaminx, Skewb, Square-1, Clock y más. Todos los scrambles cumplen con las regulaciones WCA."
+			},
+			{
+				"q": "¿Qué es el modo Battle?",
+				"a": "El modo Battle es un modo competitivo 1v1 en una pantalla móvil compartida. Dos cuberos compiten lado a lado con inicio independiente, seguimiento de penalizaciones (+2, DNF), puntuación por ronda y un modal de revisión para examinar cada ronda. Perfecto para duelos rápidos con un amigo."
+			},
+			{
+				"q": "¿Cómo entro en las clasificaciones?",
+				"a": "Las clasificaciones globales muestran los mejores solves individuales y los mejores promedios. Para aparecer, necesitas una cuenta Zkt Timer, solves verificados (del timer, no manual) y el solve no debe estar marcado. Los mejores tiempos se publican automáticamente; también puedes gestionar cuáles son públicos."
+			},
+			{
+				"q": "¿Puedo eliminar mi cuenta?",
+				"a": "Sí, completamente. Ve a Ajustes > Cuenta > Zona de Peligro > Eliminar Cuenta. Esto elimina permanentemente todos tus solves, sesiones, datos de perfil y enlace WCA. La acción es irreversible. Exporta tus datos primero si quieres un respaldo."
+			},
+			{
+				"q": "¿Zkt Timer es gratis?",
+				"a": "El Zkt Timer básico es completamente gratis: timer, scrambles, estadísticas básicas, salas en línea, clasificaciones y el entrenador de algoritmos. La membresía Pro desbloquea funciones avanzadas. No hay anuncios."
+			},
+			{
+				"q": "¿Hay aplicación iOS o Android?",
+				"a": "Sí. Zkt Timer está disponible nativamente en la App Store de iOS y Google Play Store. Las apps incluyen soporte Bluetooth de smart cube, modo offline, notificaciones push y rendimiento nativo. También puedes instalar la app web como PWA."
+			},
+			{
+				"q": "¿Qué es el modo inspección?",
+				"a": "El modo inspección es la cuenta regresiva de 15 segundos antes de cada solve, acorde a las regulaciones WCA. Durante la inspección, examinas el scramble sin tocar el cubo. Se escucha un aviso a los 8 y 12 segundos, empezar después de 15 segundos incurre en penalización +2 (17+ segundos es DNF)."
+			},
+			{
+				"q": "¿Se rastrean las estadísticas por separado para diferentes tipos de cubo?",
+				"a": "Sí. Zkt Timer agrupa estadísticas por (tipo de cubo, subconjunto de scramble). Tus promedios de 3x3, récords personales de 2x2 y tiempos de Pyraminx se rastrean independientemente. La página de Estadísticas permite filtrar por tipo de cubo y rango de tiempo."
+			},
+			{
+				"q": "¿Cómo funciona Zkt Timer sin internet?",
+				"a": "Como PWA, Zkt Timer almacena todos los archivos de la app después de la primera visita. Puedes cronometrar solves, generar scrambles y ver estadísticas cacheadas totalmente offline. Al reconectar, los solves pendientes se sincronizan automáticamente vía Background Sync API."
 			}
-		]
+		],
+		"nav_timer_name": "Temporizador",
+		"nav_battle_name": "Modo Battle",
+		"nav_pro_name": "Zkt Timer Pro"
 	},
 	"quick_controls": {
 		"timer": "Timer",
@@ -2284,6 +2407,19 @@
 		"visibility": "Visibilidad",
 		"visibility_public": "Pública",
 		"visibility_private": "Privada",
+		"championship_type": "Tipo de Campeonato",
+		"championship_none": "No es un campeonato",
+		"championship_national": "Campeonato Nacional",
+		"championship_regional": "Campeonato Regional",
+		"championship_city": "Campeonato de Ciudad",
+		"championship_invitational": "Invitacional",
+		"championship_youth": "Campeonato Juvenil",
+		"championship_badge_national": "Campeonato Nacional",
+		"championship_badge_regional": "Campeonato Regional",
+		"championship_badge_city": "Campeonato de Ciudad",
+		"championship_badge_invitational": "Invitacional",
+		"championship_badge_youth": "Juvenil",
+		"upcoming_championships": "Próximos Campeonatos",
 		"step_basic": "Pasos",
 		"step_details": "Detalles",
 		"step_events": "Eventos",

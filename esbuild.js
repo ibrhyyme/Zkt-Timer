@@ -73,6 +73,10 @@ require('esbuild')
 		bundle: true,
 		logLevel: 'error',
 		minify: !dev,
+		// Modern browsers - less polyfill, smaller bundle for Core Web Vitals
+		target: dev ? 'esnext' : ['es2020', 'chrome90', 'firefox88', 'safari14', 'edge90'],
+		treeShaking: true,
+		legalComments: 'none',
 		resolveExtensions: ['.tsx', '.ts', '.jsx', '.js'],
 		define: {
 			'process.env.RESOURCES_BASE_URI': JSON.stringify(resourceBaseUri),

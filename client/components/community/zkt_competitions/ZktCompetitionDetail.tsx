@@ -13,7 +13,8 @@ import ZktEventsTab from './tabs/ZktEventsTab';
 import ZktLiveTab from './tabs/ZktLiveTab';
 import ZktPodiumsTab from './tabs/ZktPodiumsTab';
 import ZktRegistrationForm from './tabs/ZktRegistrationForm';
-import {Users, ListBullets, Globe, Broadcast, UserPlus, Trophy} from 'phosphor-react';
+import {useZktCompRefetch} from './useZktCompRefetch';
+import {Users, ListBullets, Globe, Broadcast, UserPlus, ChartBar} from 'phosphor-react';
 
 const DETAIL_QUERY = gql`
 	query ZktCompetitionPublic($id: String!) {
@@ -80,7 +81,7 @@ const DETAIL_QUERY = gql`
 	}
 `;
 
-type TabId = 'info' | 'competitors' | 'events' | 'live' | 'podiums' | 'register';
+type TabId = 'groups' | 'live' | 'events' | 'rankings' | 'info' | 'register';
 
 export default function ZktCompetitionDetail() {
 	const {competitionId} = useParams<{competitionId: string}>();
@@ -94,7 +95,7 @@ export default function ZktCompetitionDetail() {
 	const me = useSelector((state: any) => state.account.me);
 	const [detail, setDetail] = useState<any>(null);
 	const [loading, setLoading] = useState(true);
-	const [tab, setTab] = useState<TabId>(isLiveRoute ? 'live' : 'info');
+	const [tab, setTab] = useState<TabId>(isLiveRoute ? 'live' : 'groups');
 
 	const fetch = useCallback(async () => {
 		try {
@@ -110,6 +111,8 @@ export default function ZktCompetitionDetail() {
 	useEffect(() => {
 		fetch();
 	}, [fetch]);
+
+	useZktCompRefetch(competitionId, fetch);
 
 	useEffect(() => {
 		if (isLiveRoute) setTab('live');
@@ -128,13 +131,16 @@ export default function ZktCompetitionDetail() {
 
 	const approvedCount = detail.registrations.filter((r: any) => r.status === 'APPROVED').length;
 
-	const showPodiums = detail.status === 'FINISHED' || detail.status === 'PUBLISHED';
+	// Tab order matches the WCA competitions page so users feel at home
+	// switching between WCA + ZKT competitions. "Rankings" replaces the
+	// stand-alone "Podiums" tab — final-round top 3 is the natural top of
+	// the rankings table.
 	const TABS: Array<{id: TabId; label: string; icon: any; show?: boolean; count?: number}> = [
-		{id: 'info', label: t('tab_info'), icon: Globe, show: true},
-		{id: 'competitors', label: t('tab_competitors'), icon: Users, show: true, count: approvedCount},
-		{id: 'events', label: t('tab_events'), icon: ListBullets, show: true, count: detail.events.length},
+		{id: 'groups', label: t('tab_competitors'), icon: Users, show: true, count: approvedCount},
 		{id: 'live', label: t('tab_live'), icon: Broadcast, show: detail.status !== 'DRAFT'},
-		{id: 'podiums', label: t('tab_podiums'), icon: Trophy, show: showPodiums},
+		{id: 'events', label: t('tab_events'), icon: ListBullets, show: true, count: detail.events.length},
+		{id: 'rankings', label: t('tab_rankings'), icon: ChartBar, show: detail.status !== 'DRAFT'},
+		{id: 'info', label: t('tab_info'), icon: Globe, show: true},
 		{id: 'register', label: t('tab_register'), icon: UserPlus, show: canRegister},
 	];
 
@@ -178,19 +184,22 @@ export default function ZktCompetitionDetail() {
 							className={b('tab', {active: tab === tb.id})}
 							onClick={() => handleTab(tb.id)}
 						>
-							<Icon weight="bold" />
-							<span>{tb.label}{tb.count !== undefined ? ` (${tb.count})` : ''}</span>
+							<Icon size={16} />
+							{tb.label}
+							{tb.count !== undefined && (
+								<span className={b('tab-count')}>{tb.count}</span>
+							)}
 						</button>
 					);
 				})}
 			</div>
 
 			<div className={b('tab-content')}>
-				{tab === 'info' && <ZktInfoTab detail={detail} />}
-				{tab === 'competitors' && <ZktCompetitorsTab detail={detail} />}
-				{tab === 'events' && <ZktEventsTab detail={detail} />}
+				{tab === 'groups' && <ZktCompetitorsTab detail={detail} />}
 				{tab === 'live' && <ZktLiveTab detail={detail} />}
-				{tab === 'podiums' && <ZktPodiumsTab detail={detail} />}
+				{tab === 'events' && <ZktEventsTab detail={detail} />}
+				{tab === 'rankings' && <ZktPodiumsTab detail={detail} />}
+				{tab === 'info' && <ZktInfoTab detail={detail} />}
 				{tab === 'register' && <ZktRegistrationForm detail={detail} onDone={fetch} />}
 			</div>
 		</div>

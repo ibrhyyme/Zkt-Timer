@@ -517,15 +517,10 @@ query zktAllTimeRankings($eventId: String!, $recordType: String!, $limit: Float)
 	}
 }
 
-query zktDelegateReport($competitionId: String!) {
-	zktDelegateReport(competitionId: $competitionId) {
-		...ZktDelegateReportFragment
-	}
-}
 
-query zktIncidents($competitionId: String!) {
-	zktIncidents(competitionId: $competitionId) {
-		...ZktIncidentFragment
+query zktRoundScrambles($roundId: String!) {
+	zktRoundScrambles(roundId: $roundId) {
+		...ZktScrambleFragment
 	}
 }
 

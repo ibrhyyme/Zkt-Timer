@@ -510,6 +510,7 @@ export default function Profile() {
 				title={user.username + ' Profile | Zkt Timer'}
 				description={`Check out ${user.username}'s Zkt Timer profile to see their fastest speedcubing times. See their WCA profile, cubing bio, social links, and more`}
 			/>
+			<h1 className="sr-only">{user.username} - Cuber Profile | Zkt Timer</h1>
 			<div className={b({ me: myProfile })}>
 				{/* Banner — sadece kapak resmi varsa ve desktop'taysa goster */}
 				{headerImage && !mobileMode && (

@@ -5,7 +5,7 @@ import {gqlMutate} from '../../api';
 import {useTranslation} from 'react-i18next';
 import {useParams, useHistory} from 'react-router-dom';
 import Loading from '../../common/loading/Loading';
-import {b, getEventName, formatCs, formatName} from './shared';
+import {b, getEventName, formatCs, formatName, formatTimeRange} from './shared';
 import {CaretLeft, CaretRight} from 'phosphor-react';
 
 const GROUP_ASSIGNMENTS_QUERY = gql`
@@ -26,6 +26,21 @@ const GROUP_ASSIGNMENTS_QUERY = gql`
 						id
 						url
 					}
+				}
+			}
+			group {
+				id
+				group_number
+				start_time
+				end_time
+			}
+			round {
+				id
+				round_number
+				format
+				comp_event {
+					id
+					event_id
 				}
 			}
 		}
@@ -50,6 +65,13 @@ interface Assignment {
 	station_number?: number;
 	seed_result?: number;
 	user?: {id: string; username: string; profile?: {pfp_image?: {url: string}}};
+	group?: {id: string; group_number: number; start_time?: string | null; end_time?: string | null};
+	round?: {
+		id: string;
+		round_number: number;
+		format: string;
+		comp_event?: {id: string; event_id: string};
+	};
 }
 
 export default function ZktActivityDetail() {
@@ -88,6 +110,15 @@ export default function ZktActivityDetail() {
 		.map((r) => `${t(`role_${r.toLowerCase()}`)} ${byRole[r].length}`)
 		.join(' · ');
 
+	const first = assignments[0];
+	const eventId = first?.round?.comp_event?.event_id;
+	const roundNumber = first?.round?.round_number;
+	const groupNumber = first?.group?.group_number;
+	const format = first?.round?.format;
+	const startTime = first?.group?.start_time;
+	const endTime = first?.group?.end_time;
+	const timeRange = startTime ? formatTimeRange(startTime, endTime) : '';
+
 	return (
 		<div className={b('detail-page')}>
 			<div className={b('detail-header')}>
@@ -98,6 +129,32 @@ export default function ZktActivityDetail() {
 					{t('back')}
 				</button>
 			</div>
+
+			{/* Activity header — etkinlik + round + grup ana bilgisi */}
+			{first && (
+				<div className={b('activity-header')}>
+					{eventId && (
+						<span className={`cubing-icon event-${eventId}`} style={{fontSize: 28}} />
+					)}
+					<div className={b('activity-header-text')}>
+						<h1 className={b('activity-title')}>
+							{eventId ? getEventName(eventId) : t('activity')}
+							{roundNumber && (
+								<span className={b('activity-round')}> · R{roundNumber}</span>
+							)}
+							{groupNumber !== undefined && (
+								<span className={b('activity-group')}> · {t('col_group')} {groupNumber}</span>
+							)}
+						</h1>
+						{(format || timeRange) && (
+							<div className={b('activity-meta')}>
+								{format && <span>{t('format')}: <strong>{formatName(format)}</strong></span>}
+								{timeRange && <span style={{marginLeft: format ? '1rem' : 0}}>🕐 {timeRange}</span>}
+							</div>
+						)}
+					</div>
+				</div>
+			)}
 
 			<div style={{marginBottom: '0.75rem', color: 'rgba(var(--text-color), 0.65)', fontSize: 13}}>
 				{totalCount} {t('people')} / {roleSummary}

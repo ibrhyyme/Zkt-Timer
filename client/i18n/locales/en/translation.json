@@ -829,6 +829,11 @@
 		"previous_scramble": "Previous scramble",
 		"next_scramble": "Next scramble"
 	},
+	"mobile_modules": {
+		"title": "Modules",
+		"slot_left": "Left Module",
+		"slot_right": "Right Module"
+	},
 	"solve_info": {
 		"solve_tab": "Solution",
 		"stats_tab": "Stats",
@@ -1389,10 +1394,24 @@
 		"select_people": "Select {{count}} People"
 	},
 	"seo": {
-		"home_title": "Zkt Timer | Online Rubik's Cube Timer & Speedcubing Platform",
-		"home_description": "The most advanced online Rubik's cube timer with live race rooms, algorithm trainer, smart cube support, and global leaderboards. All WCA events: 3x3, 2x2, 4x4, Pyraminx, Megaminx & more.",
+		"home_title": "Zkt Timer | Online Rubik's Cube Timer, WCA Competitions & Speedcubing Platform",
+		"home_description": "The most advanced online Rubik's cube timer and WCA competition platform. Live WCA competitions, live results tracking, solve recording, live race rooms, algorithm trainer. All WCA events: 3x3, 2x2, 4x4, Pyraminx, Megaminx & more.",
 		"timer_title": "Rubik's Cube Timer - Zkt Timer",
 		"timer_description": "Professional Rubik's cube timer. Millisecond precision, WCA scramble algorithms, smart cube support and detailed performance analysis. The best online timer for speedcubing.",
+		"wca_competitions_title": "WCA Competitions - Live Results & Schedules | Zkt Timer",
+		"wca_competitions_description": "Browse all WCA speedcubing competitions worldwide. Live results, competition schedules, registration info, competitor lists and live tracking. All official WCA Rubik's cube competitions on a single platform.",
+		"wca_competition_detail_title": "WCA Competition Details - Live Results | Zkt Timer",
+		"wca_competition_detail_description": "Full details of WCA competition: events, schedule, competitors, live results and personal best tracking. Real-time score updates and rankings during the competition.",
+		"zkt_competition_detail_title": "ZKT Competition Details - Live Results | Zkt Timer",
+		"zkt_competition_detail_description": "ZKT unofficial competition details. Live results, events, registration, scorecard entry, live stream and record tracking.",
+		"zkt_records_title": "ZKT Records | Zkt Timer",
+		"zkt_records_description": "ZKT unofficial Rubik's cube records. Single and average records across all WCA events. Current record list and history.",
+		"zkt_rankings_title": "ZKT Rankings | Zkt Timer",
+		"zkt_rankings_description": "The fastest speedcubers in ZKT competitions. Event-based rankings, single and average records, best averages.",
+		"pro_title": "Zkt Timer Pro - Premium Membership",
+		"pro_description": "Upgrade to Zkt Timer Pro for advanced statistics, unlimited sessions, PDF export, all algorithm trainers and premium features.",
+		"battle_title": "1v1 Battle Mode - Zkt Timer",
+		"battle_description": "1v1 battle with your friend on the same screen! Independent start, penalty tracking, round history. Mobile Rubik's cube duel.",
 		"login_title": "Log In - Zkt Timer",
 		"login_description": "Log in to your Zkt Timer account. Save your solves, track your stats and take your place in the rankings.",
 		"signup_title": "Create Account - Zkt Timer",
@@ -1416,10 +1435,11 @@
 		"leaderboards_description": "The fastest Rubik's cube solvers! Single and Average records, category-based rankings.",
 		"demo_title": "Demo Mode - Zkt Timer",
 		"demo_description": "Try Zkt Timer! Explore timer features without creating an account.",
-		"app_description": "The most advanced online Rubik's cube timer app. Professional speedcubing timer platform.",
+		"app_description": "The most advanced online Rubik's cube timer, WCA competition tracker and speedcubing platform. Millisecond precision timing.",
 		"feature_list": [
 			"Rubik's cube timer",
-			"Speedcubing timer",
+			"WCA competition tracker",
+			"Live competition results",
 			"Live race rooms",
 			"Global leaderboards",
 			"Algorithm trainer",
@@ -1427,6 +1447,8 @@
 			"Stackmat Timer support"
 		],
 		"nav_timer_desc": "Professional Rubik's cube timer",
+		"nav_competitions_name": "WCA Competitions",
+		"nav_competitions_desc": "WCA Rubik's cube competitions worldwide, live results and schedules",
 		"nav_rooms_name": "Live Race Rooms",
 		"nav_rooms_desc": "Race other cubers in real time",
 		"nav_leaderboards_name": "Leaderboards",
@@ -1436,7 +1458,37 @@
 		"nav_signup_name": "Sign Up",
 		"nav_signup_desc": "Save your stats in the cloud and analyze them",
 		"breadcrumb_home": "Home",
-		"keywords": "rubiks cube timer, cube timer, speedcubing timer, online cube timer, rubik cube, speedcubing, cubing, puzzle timer, WCA timer, 3x3 timer, 2x2 timer, 4x4 timer, rubiks cube solver, algorithm trainer, cube racing",
+		"keywords": "rubik's cube timer, speedcubing timer, online cube timer, WCA competitions, cubing platform, rubik cube, speedcubing, cubing, algorithm trainer",
+		"home_keywords": "rubik's cube timer, online cube timer, speedcubing platform, WCA timer, cubing community",
+		"timer_keywords": "rubik's cube timer, online timer, WCA scramble, stackmat timer, smart cube timer, cubing timer, millisecond precision",
+		"trainer_keywords": "OLL trainer, PLL trainer, F2L trainer, ZBLL trainer, algorithm trainer, rubik's cube algorithms, speedcubing algorithms",
+		"rooms_keywords": "online cube race, multiplayer cubing, live race rooms, speedcubing race, cube battle online",
+		"battle_keywords": "1v1 cube battle, rubik's cube duel, versus mode, cube versus, speedcubing battle",
+		"leaderboards_keywords": "rubik's cube rankings, speedcubing leaderboards, fastest cubers, cube records, top solvers",
+		"stats_keywords": "rubik's cube statistics, solve analysis, cube averages, speedcubing stats, personal bests",
+		"solves_keywords": "rubik's cube solve history, solve records, scramble history, cube solve log",
+		"pro_keywords": "Zkt Timer Pro, premium cube timer, advanced cubing features, speedcubing pro",
+		"user_profile_keywords": "cuber profile, speedcuber, cube community profile, WCA profile",
+		"wca_competitions_keywords": "WCA competitions, speedcubing competitions, rubik's cube competitions, WCA live, competition schedule",
+		"zkt_competitions_keywords": "ZKT competition, unofficial cube competition, Turkey cubing competition, national cube event",
+		"zkt_records_keywords": "ZKT records, Turkey cube records, national records, rubik's cube records Turkey",
+		"zkt_rankings_keywords": "ZKT rankings, Turkey cube rankings, national rankings, Turkish speedcubers",
+		"login_keywords": "Zkt Timer login, cube timer signup, speedcubing account",
+		"demo_keywords": "Zkt Timer demo, try cube timer, speedcubing demo",
+		"wca_live_title": "WCA Live Results - Real-time Rankings | Zkt Timer",
+		"wca_live_description": "Live WCA competition results. Real-time round rankings, solve times and event tracking as the competition unfolds.",
+		"wca_person_title": "Competitor Profile - WCA Competition | Zkt Timer",
+		"wca_person_description": "Competitor details, event results and personal bests in the WCA competition.",
+		"wca_activity_title": "Competition Activity - WCA Schedule | Zkt Timer",
+		"wca_activity_description": "Activity details: scheduled events, rounds and competitor assignments.",
+		"wca_personal_bests_title": "Personal Bests - WCA Competitor | Zkt Timer",
+		"wca_personal_bests_description": "Personal bests for all WCA events of the competitor.",
+		"zkt_live_title": "ZKT Live Results - Competition Rankings | Zkt Timer",
+		"zkt_live_description": "Live ZKT competition results. Round rankings, event progress and real-time solve times.",
+		"zkt_competitor_title": "Competitor Profile - ZKT Competition | Zkt Timer",
+		"zkt_competitor_description": "Competitor details, event results and rankings in the ZKT competition.",
+		"zkt_activity_title": "Competition Activity - ZKT Groups | Zkt Timer",
+		"zkt_activity_description": "Group activity details: event, round, judge and competitor assignments.",
 		"faq": [
 			{
 				"q": "What is Zkt Timer?",
@@ -1469,8 +1521,79 @@
 			{
 				"q": "How can I join online races?",
 				"a": "Create an account, then join open race rooms or create private rooms with friends from the 'Rooms' section. Real-time races are held and you can climb the rankings."
+			},
+			{
+				"q": "How can I track WCA competitions?",
+				"a": "Browse all WCA Rubik's cube competitions worldwide from the 'Competitions' section. Each competition's detail page shows schedule, competitor list, events and live results. Connect your WCA account to see your personal schedule for competitions you're registered for."
+			},
+			{
+				"q": "How do I connect a smart cube?",
+				"a": "Zkt Timer supports GAN, Giiker, and Particula smart cubes via Bluetooth. On mobile, enable Bluetooth and use the Capacitor BLE plugin; on web browsers, use Chrome or Edge which support Web Bluetooth. Open the Smart Cube menu from the timer, press Scan, and pair with your device. Once connected, the timer auto-starts and stops based on the cube state."
+			},
+			{
+				"q": "Does Zkt Timer support Stackmat Timer?",
+				"a": "Yes. Connect your Stackmat Timer via the audio input (3.5mm jack). In the timer settings, select StackMat as the input type, then choose the correct audio input device. The timer will detect your Stackmat signals automatically."
+			},
+			{
+				"q": "What is the algorithm trainer?",
+				"a": "The algorithm trainer helps you drill OLL, PLL, F2L, ZBLL, and other cube algorithms with spaced repetition. It shows a 3D cube or 2D pattern for each algorithm, tracks your solve time per algorithm, and queues the ones you need most practice on. It supports smart cubes for pattern matching."
+			},
+			{
+				"q": "What are OLL and PLL?",
+				"a": "OLL (Orientation of the Last Layer) and PLL (Permutation of the Last Layer) are the final two steps of the CFOP speedsolving method. OLL has 57 algorithms that orient the last layer; PLL has 21 algorithms that permute the pieces. Mastering these is essential for sub-20 solves."
+			},
+			{
+				"q": "What does Pro membership give me?",
+				"a": "Zkt Timer Pro unlocks advanced statistics, unlimited sessions, PDF export of your algorithms and stats, access to all algorithm trainers, premium themes, and priority support. It's a one-time or recurring purchase depending on the plan."
+			},
+			{
+				"q": "Can I import data from csTimer or Twisty Timer?",
+				"a": "Yes. Zkt Timer supports data import from csTimer, Twisty Timer, and its own previous export formats. Go to Settings > Data > Import, select the source format, and upload your export file. All solves, sessions, and metadata are preserved."
+			},
+			{
+				"q": "How do I back up my data?",
+				"a": "Go to Settings > Data > Export. Zkt Timer generates a JSON file containing all your solves, sessions, and settings. Store this file safely — you can re-import it on any device. Signed-in users also get automatic cloud sync."
+			},
+			{
+				"q": "Which scramble algorithm does Zkt Timer use?",
+				"a": "Zkt Timer uses the same scramble engine as cstimer, the de facto standard in speedcubing. This includes WCA-compliant random-state scramblers for 2x2, 3x3, 4x4, Pyraminx, Megaminx, Skewb, Square-1, Clock, and more. All scrambles meet WCA regulations."
+			},
+			{
+				"q": "What is Battle mode?",
+				"a": "Battle mode is a 1v1 competitive mode on a shared mobile screen. Two cubers race side-by-side with independent start timing, penalty tracking (+2, DNF), round-by-round scoring, and a review modal to examine each round. Perfect for quick duels with a friend."
+			},
+			{
+				"q": "How do I get on the leaderboards?",
+				"a": "Global leaderboards show top single solves and top averages. To appear, you need a Zkt Timer account, verified solves (from the timer, not manual entry), and the solve must not be flagged. Top times are auto-published; you can also manage which solves are public."
+			},
+			{
+				"q": "Can I delete my account?",
+				"a": "Yes, completely. Go to Settings > Account > Danger Zone > Delete Account. This permanently removes all your solves, sessions, profile data, and WCA link. The action is irreversible. Export your data first if you want to keep a backup."
+			},
+			{
+				"q": "Is Zkt Timer free?",
+				"a": "The core Zkt Timer is completely free: timer, scrambles, basic stats, online rooms, leaderboards, and the algorithm trainer. Pro membership ($optional) unlocks advanced features. There are no ads."
+			},
+			{
+				"q": "Is there an iOS or Android app?",
+				"a": "Yes. Zkt Timer is available natively on the iOS App Store and Google Play Store. The apps include smart cube Bluetooth support, offline mode, push notifications, and native performance. You can also install the web app as a PWA."
+			},
+			{
+				"q": "What is inspection mode?",
+				"a": "Inspection mode is the 15-second countdown before each solve, matching WCA regulations. During inspection, you examine the scramble without touching the cube. An audible 8-second and 12-second warning plays, and starting after 15 seconds incurs a +2 penalty (17+ seconds is DNF)."
+			},
+			{
+				"q": "Are stats tracked separately for different cube types?",
+				"a": "Yes. Zkt Timer buckets stats by (cube type, scramble subset). Your 3x3 averages, 2x2 personal bests, and Pyraminx times are all tracked independently. The Stats page lets you filter by cube type and time range."
+			},
+			{
+				"q": "How does Zkt Timer work without internet?",
+				"a": "As a PWA, Zkt Timer caches all app files after the first visit. You can time solves, generate scrambles, and view cached stats fully offline. When you reconnect, pending solves are automatically synced to the server via Background Sync API."
 			}
-		]
+		],
+		"nav_timer_name": "Timer",
+		"nav_battle_name": "Battle Mode",
+		"nav_pro_name": "Zkt Timer Pro"
 	},
 	"quick_controls": {
 		"timer": "Timer",
@@ -2284,6 +2407,19 @@
 		"visibility": "Visibility",
 		"visibility_public": "Public",
 		"visibility_private": "Private",
+		"championship_type": "Championship Type",
+		"championship_none": "Not a championship",
+		"championship_national": "National Championship",
+		"championship_regional": "Regional Championship",
+		"championship_city": "City Championship",
+		"championship_invitational": "Invitational",
+		"championship_youth": "Youth Championship",
+		"championship_badge_national": "National Championship",
+		"championship_badge_regional": "Regional Championship",
+		"championship_badge_city": "City Championship",
+		"championship_badge_invitational": "Invitational",
+		"championship_badge_youth": "Youth",
+		"upcoming_championships": "Upcoming Championships",
 		"step_basic": "Basic Info",
 		"step_details": "Details",
 		"step_events": "Events",
@@ -2401,6 +2537,20 @@
 		"cutoff_short": "CF",
 		"advancement": "Advancement",
 		"advancement_short": "Adv",
+		"col_event": "Event",
+		"col_round": "Round",
+		"col_format": "Format",
+		"col_groups": "Groups",
+		"col_group": "Group",
+		"col_name": "Name",
+		"col_role": "Role",
+		"col_station": "Station",
+		"no_groups_in_round": "No groups defined for this round",
+		"no_results_yet": "No results yet",
+		"tab_rankings": "Rankings",
+		"competitor_not_found": "Competitor not found",
+		"schedule_and_assignments": "Schedule & Assignments",
+		"schedule_warning": "Times are tentative — organizers may update them.",
 		"advancement_type": "Advancement Type",
 		"advancement_ranking": "Top N",
 		"advancement_percent": "Percentage",
@@ -2413,14 +2563,23 @@
 		"total_competitors": "{{count}} competitors",
 		"search_competitors": "Search competitors",
 		"organizer": "Organizer",
+		"venue": "Venue",
+		"you": "YOU",
+		"unknown": "Unknown",
 		"competitors": "Competitors",
 		"competitor": "Competitor",
 		"best": "Best",
 		"average": "Average",
-		"attempt_n": "A{{n}}",
+		"attempt_n": "Attempt {{n}}",
 		"save": "Save",
 		"saving": "Saving...",
 		"saved": "Saved",
+		"start": "Start",
+		"end": "End",
+		"time": "Time",
+		"scramble_pdf": "Scramble PDF",
+		"download_scramble_pdf": "Download scrambles as PDF (includes cube diagram)",
+		"no_scrambles": "No scrambles generated for this round yet",
 		"finalize_round": "Finalize Round",
 		"add_delegate": "Add Delegate",
 		"delegate_added": "Delegate added",
@@ -2452,30 +2611,22 @@
 		"rankings_event": "Event",
 		"rankings_type_single": "Single",
 		"rankings_type_average": "Average",
-		"tab_delegate_report": "Delegate Report",
-		"delegate_report_sections": "Report Sections",
-		"report_summary": "Summary",
-		"report_venue_notes": "Venue Notes",
-		"report_org_notes": "Organization Notes",
-		"report_incidents_summary": "Incidents (summary text)",
-		"report_remarks": "Additional Remarks",
-		"submit_report": "Submit Report",
-		"already_submitted": "Report Submitted",
-		"submit_report_confirm": "Submit the report? Later edits will still be visible.",
-		"report_submitted": "Report submitted",
-		"report_submitted_by": "Submitted by {{name}} on {{at}}",
-		"incidents": "Incidents",
-		"add_incident": "Add Incident",
-		"no_incidents": "No incidents recorded",
-		"incident_added": "Incident added",
-		"incident_deleted": "Incident deleted",
-		"incident_resolved": "Incident marked as resolved",
-		"incident_delete_confirm": "Delete this incident?",
-		"incident_title_prompt": "Incident title:",
-		"incident_description_prompt": "Incident description (optional):",
-		"mark_resolved": "Mark as resolved",
-		"resolved": "Resolved",
-		"delete": "Delete",
+		"admin_overline": "COMPETITION ADMIN",
+		"public_view": "Open Public View",
+		"entered": "entered",
+		"search_competitor": "Search competitor...",
+		"save_and_next": "Save & Next",
+		"submit_attempts": "Submit Attempts",
+		"scoretake_hint": "Enter: next attempt · Alt+← → : switch competitor · f: DNF · s: DNS",
+		"enter_to_save_hint": "Press Enter to save and go to next competitor",
+		"prev": "Previous",
+		"scramble": "Scramble",
+		"extra_scrambles": "Extra Scrambles (for re-solves)",
+		"regenerate_scrambles": "Regenerate Scrambles",
+		"regenerate_scrambles_hint": "Wipes all scrambles for this round and generates fresh ones. Only allowed when no results are entered yet.",
+		"regenerate_scrambles_confirm": "All scrambles for this round will be regenerated. Continue?",
+		"scrambles_regenerated": "Scrambles regenerated",
+		"working": "Working...",
 		"add_group": "Add Group",
 		"delete_group": "Delete Group",
 		"group_added": "Group added",
@@ -2489,6 +2640,8 @@
 		"people": "people",
 		"results": "Results",
 		"active_rounds": "Active Rounds",
+		"all_rounds": "All Rounds",
+		"activity": "Activity",
 		"podiums": "Podiums",
 		"register_title": "Register for Competition",
 		"register": "Register",
@@ -2500,8 +2653,6 @@
 		"submitting": "Submitting...",
 		"my_status": "My Status",
 		"refresh": "Refresh",
-		"loading": "Loading...",
-		"no_results_yet": "No results yet",
 		"records_title": "Turkey Unofficial Records",
 		"records_subtitle": "All Turkey records set at ZKT competitions",
 		"no_records": "No records yet",

@@ -432,6 +432,15 @@ fragment ZktResultFragment on ZktResult {
 	}
 }
 
+fragment ZktScrambleFragment on ZktScramble {
+	id
+	round_id
+	attempt_number
+	is_extra
+	scramble_string
+	created_at
+}
+
 fragment ZktRoundFragment on ZktRound {
 	id
 	comp_event_id
@@ -448,6 +457,8 @@ fragment ZktRoundFragment on ZktRound {
 	groups {
 		id
 		group_number
+		start_time
+		end_time
 	}
 }
 
@@ -478,39 +489,6 @@ fragment ZktRegistrationFragment on ZktRegistration {
 	events {
 		id
 		comp_event_id
-	}
-}
-
-fragment ZktDelegateReportFragment on ZktDelegateReport {
-	id
-	competition_id
-	summary
-	venue_notes
-	organization_notes
-	incidents_summary
-	remarks
-	submitted_by_id
-	submitted_at
-	created_at
-	updated_at
-	submitted_by {
-		...PublicUserFragment
-	}
-}
-
-fragment ZktIncidentFragment on ZktIncident {
-	id
-	competition_id
-	title
-	description
-	tags
-	result_id
-	created_by_id
-	resolved_at
-	created_at
-	updated_at
-	created_by {
-		...PublicUserFragment
 	}
 }
 

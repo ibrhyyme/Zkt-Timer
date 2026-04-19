@@ -55,7 +55,7 @@ const DEFAULT_STATS: StatsModuleBlock[] = [
 export default function StatsBar() {
     const dispatch = useDispatch();
     const context = useContext(TimerContext);
-    const { solvesFilter, timeStartedAt, focusMode } = context;
+    const { solvesFilter, timeStartedAt } = context;
 
     const mobileMode = useGeneral('mobile_mode');
 
@@ -68,11 +68,6 @@ export default function StatsBar() {
     const [mobileAoCounts, setMobileAoCounts] = useState<number[]>(loadMobileAoCounts);
 
     useSolveDb();
-
-    // Focus modunda gizle
-    if (focusMode) {
-        return null;
-    }
 
     // Manuel giriste klavye acikken alt StatsBar'in yukari itilmesini engellemek icin gizle
     // (istatistikler duplike olarak ust panelde zaten gorunur). Klavye kapandiginda geri gelir.

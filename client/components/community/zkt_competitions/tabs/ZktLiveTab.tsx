@@ -5,7 +5,6 @@ import {b, getEventName, formatCs, formatName, formatHasAverage, getFormatAttemp
 import {useZktLiveResults, LiveResult} from '../useZktLiveResults';
 import {ArrowClockwise, Broadcast} from 'phosphor-react';
 import ZktLivePodiums from './ZktLivePodiums';
-import ZktLiveRecords from './ZktLiveRecords';
 
 export default function ZktLiveTab({detail}: {detail: any}) {
 	const {t} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
@@ -123,8 +122,41 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 					{/* Podiums */}
 					<ZktLivePodiums detail={detail} results={new Map()} />
 
-					{/* Records */}
-					<ZktLiveRecords />
+					{/* Tüm turlar — schedule benzeri liste, schedule modeli yokken
+					    her event için round'ların durumunu özet kart olarak gösterir */}
+					<div style={{marginTop: '2rem'}}>
+						<h3 className={b('section-title')}>{t('all_rounds')}</h3>
+						<div className={b('all-rounds-grid')}>
+							{detail.events.map((ev: any) =>
+								ev.rounds.map((r: any) => (
+									<button
+										key={r.id}
+										type="button"
+										className={b('all-rounds-card', {[r.status.toLowerCase()]: true})}
+										onClick={() => {
+											setSelectedEventId(ev.id);
+											history.push(
+												`/community/zkt-competitions/${competitionId}/live/${ev.event_id}/${r.round_number}`
+											);
+										}}
+									>
+										<span className={`cubing-icon event-${ev.event_id}`} style={{fontSize: 22}} />
+										<div className={b('all-rounds-card-text')}>
+											<span className={b('all-rounds-card-event')}>
+												{getEventName(ev.event_id)}
+											</span>
+											<span className={b('all-rounds-card-round')}>
+												{t('round_n', {n: r.round_number})}
+											</span>
+										</div>
+										<span className={b('round-chip-status', {[r.status.toLowerCase()]: true})}>
+											{t(`round_status_${r.status.toLowerCase()}`)}
+										</span>
+									</button>
+								))
+							)}
+						</div>
+					</div>
 				</div>
 			)}
 

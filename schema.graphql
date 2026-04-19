@@ -320,14 +320,13 @@ type Query {
   zktRegistrationHistory(registrationId: String): [ZktRegistrationHistory]
   zktRoundResults(roundId: String): [ZktResult]
   zktCompetitorResults(userId: String, competitionId: String): [ZktResult]
+  zktRoundScrambles(roundId: String): [ZktScramble]
   zktRecords: [ZktRecord]
   zktRecordsForEvent(recordType: String, eventId: String): [ZktRecord]
   zktRoundAssignments(roundId: String): [ZktAssignment]
   zktGroupAssignments(groupId: String): [ZktAssignment]
   zktMyAssignments(competitionId: String): [ZktAssignment]
   zktUserAssignments(userId: String, competitionId: String): [ZktAssignment]
-  zktDelegateReport(competitionId: String): ZktDelegateReport
-  zktIncidents(competitionId: String): [ZktIncident]
 }
 
 type Mutation {
@@ -452,6 +451,8 @@ type Mutation {
   deleteZktResult(resultId: String): Boolean
   finalizeZktRound(roundId: String): ZktRound
   updateZktRoundStatus(input: UpdateZktRoundStatusInput): ZktRound
+  regenerateZktScrambles(roundId: String): [ZktScramble]
+  ensureZktScrambles(roundId: String): [ZktScramble]
   reopenZktRound(roundId: String): ZktRound
   markZktNoShow(input: MarkZktNoShowInput): ZktResult
   createZktRound(input: CreateZktRoundInput): ZktRound
@@ -461,12 +462,8 @@ type Mutation {
   unassignUser(assignmentId: String): Boolean
   createZktGroup(input: CreateGroupInput): ZktGroup
   deleteZktGroup(groupId: String): Boolean
+  updateZktGroupSchedule(input: UpdateZktGroupScheduleInput): ZktGroup
   bulkAssignCompetitors(input: BulkAssignCompetitorsInput): [ZktAssignment]
-  upsertZktDelegateReport(input: UpsertZktDelegateReportInput): ZktDelegateReport
-  submitZktDelegateReport(competitionId: String): ZktDelegateReport
-  createZktIncident(input: CreateZktIncidentInput): ZktIncident
-  updateZktIncident(input: UpdateZktIncidentInput): ZktIncident
-  deleteZktIncident(id: String): Boolean
 }
 
 type SmartDevice {
@@ -1599,10 +1596,21 @@ type ZktResult {
   entered_by: PublicUserAccount
 }
 
+type ZktScramble {
+  id: String
+  round_id: String
+  attempt_number: Int
+  is_extra: Boolean
+  scramble_string: String
+  created_at: DateTime
+}
+
 type ZktGroup {
   id: String
   round_id: String
   group_number: Int
+  start_time: DateTime
+  end_time: DateTime
   created_at: DateTime
 }
 
@@ -1621,6 +1629,7 @@ type ZktRound {
   updated_at: DateTime
   results: [ZktResult!]
   groups: [ZktGroup!]
+  scrambles: [ZktScramble!]
 }
 
 enum ZktRoundFormat {
@@ -1712,6 +1721,7 @@ type ZktCompetition {
   competitor_limit: Int
   status: ZktCompStatus
   visibility: ZktCompVisibility
+  championship_type: ZktChampionshipType
   confirmed_at: DateTime
   announced_at: DateTime
   announced_by_id: String
@@ -1745,33 +1755,12 @@ enum ZktCompVisibility {
   PRIVATE
 }
 
-type ZktDelegateReport {
-  id: String
-  competition_id: String
-  summary: String
-  venue_notes: String
-  organization_notes: String
-  incidents_summary: String
-  remarks: String
-  submitted_by_id: String
-  submitted_at: DateTime
-  created_at: DateTime
-  updated_at: DateTime
-  submitted_by: PublicUserAccount
-}
-
-type ZktIncident {
-  id: String
-  competition_id: String
-  title: String
-  description: String
-  tags: [String]
-  result_id: String
-  created_by_id: String
-  resolved_at: DateTime
-  created_at: DateTime
-  updated_at: DateTime
-  created_by: PublicUserAccount
+enum ZktChampionshipType {
+  NATIONAL
+  REGIONAL
+  CITY
+  INVITATIONAL
+  YOUTH
 }
 
 type ZktPodium {
@@ -2057,31 +2046,6 @@ input CreatePromoCodeInput {
   max_uses: Int = 1
 }
 
-input UpsertZktDelegateReportInput {
-  competitionId: String
-  summary: String
-  venueNotes: String
-  organizationNotes: String
-  incidentsSummary: String
-  remarks: String
-}
-
-input CreateZktIncidentInput {
-  competitionId: String
-  title: String
-  description: String
-  tags: [String!]
-  resultId: String
-}
-
-input UpdateZktIncidentInput {
-  id: String
-  title: String
-  description: String
-  tags: [String!]
-  markResolved: Boolean = false
-}
-
 input CreateZktCompetitionInput {
   name: String
   description: String
@@ -2091,6 +2055,7 @@ input CreateZktCompetitionInput {
   locationAddress: String
   competitorLimit: Int
   visibility: ZktCompVisibility
+  championshipType: ZktChampionshipType
   eventIds: [String]
 }
 
@@ -2103,6 +2068,7 @@ input UpdateZktCompetitionInput {
   locationAddress: String
   competitorLimit: Int
   visibility: ZktCompVisibility
+  championshipType: ZktChampionshipType
   eventIds: [String!]
 }
 
@@ -2204,6 +2170,12 @@ input AssignUserInput {
 input CreateGroupInput {
   roundId: String
   groupNumber: Int
+}
+
+input UpdateZktGroupScheduleInput {
+  groupId: String
+  startTime: DateTime
+  endTime: DateTime
 }
 
 input BulkAssignCompetitorsInput {
