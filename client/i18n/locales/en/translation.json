@@ -603,6 +603,11 @@
 		"notif_not_advancing": "Congrats. You finished in {{ranking}}{{suffix}} place. You didn't advance but it was a great run!",
 		"notif_final_result": "Congrats! You finished in {{ranking}}{{suffix}} place!",
 		"notif_link_text": "View results",
+		"notif_countdown_title_days": "In {{days}} days: {{competitionName}}",
+		"notif_countdown_title_tomorrow": "Competition tomorrow: {{competitionName}}",
+		"notif_countdown_body": "Your registered competition is coming up. Time to prepare.",
+		"notif_countdown_body_with_time": "Start time: {{startTime}}. Time to prepare.",
+		"notif_countdown_link_text": "View competition",
 		"cutoff_attempts": "{{count}} att.",
 		"wca_live_error": "Failed to load WCA Live. Please refresh the page."
 	},

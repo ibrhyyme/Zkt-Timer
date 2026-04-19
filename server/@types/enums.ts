@@ -3,6 +3,7 @@ export enum NotificationType {
 	MEMBERSHIP_GRANTED = 'membership_granted',
 	WCA_RESULT_ENTERED = 'wca_result_entered',
 	WCA_ROUND_FINISHED = 'wca_round_finished',
+	WCA_COMPETITION_COUNTDOWN = 'wca_competition_countdown',
 }
 
 export enum MetricLogType {
