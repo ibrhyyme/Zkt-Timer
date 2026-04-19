@@ -2,7 +2,7 @@
     $src: null;
 
     @each $ext in $exts {
-        $url: "https://zktimer.app/fonts/" + $name + "/" + $name + " " + $suffix + "." + $ext;
+        $url: "/fonts/" + $name + "/" + $name + " " + $suffix + "." + $ext;
         $src: append($src, url($url) format(quote($ext)), comma);
     }
 

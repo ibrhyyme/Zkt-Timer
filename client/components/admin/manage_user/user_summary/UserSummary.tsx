@@ -2,7 +2,7 @@ import React from 'react';
 import './UserSummary.scss';
 import block from '../../../../styles/bem';
 import {UserAccountSolvesSummary, UserAccountSummary} from '../../../../../server/schemas/UserAccount.schema';
-import {getCubeTypeInfoById} from '../../../../util/cubes/util';
+import {getCubeTypeBucketLabel, getCubeTypeInfoById} from '../../../../util/cubes/util';
 import {getTimeString} from '../../../../util/time';
 import {useTranslation} from 'react-i18next';
 
@@ -38,12 +38,17 @@ export default function UserSummary(props: Props) {
 			);
 		}
 
-		return cubeTypes.map((ct) => {
+		return cubeTypes.map((ct, idx) => {
 			const cubeType = getCubeTypeInfoById(ct.cube_type);
+			const bucketId = `${ct.cube_type || 'unknown'}::${ct.scramble_subset || ''}`;
+			const label = getCubeTypeBucketLabel(ct.cube_type, ct.scramble_subset)
+				|| cubeType?.name
+				|| ct.cube_type
+				|| t('no_data');
 
 			return (
-				<div key={`timer-ss-${cubeType.id}`} className={b('solve-cubetype')}>
-					<h4>{cubeType.name}</h4>
+				<div key={`timer-ss-${bucketId}-${idx}`} className={b('solve-cubetype')}>
+					<h4>{label}</h4>
 					<div className={b('pills')}>
 						{getPill(t('solves_count'), ct.count.toLocaleString())}
 						{getPill(t('total_time'), getTimeString(ct.sum, 2))}
