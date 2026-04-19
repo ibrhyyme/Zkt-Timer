@@ -2,11 +2,11 @@
 
 .cd-welcome-live-timer {
 	position: relative;
-	padding: 7rem 1.5rem 6rem;
+	padding: 8rem 1.5rem 7rem;
 	overflow: hidden;
 
 	@media (max-width: 768px) {
-		padding: 4rem 1rem 4rem;
+		padding: 5rem 1rem 5rem;
 	}
 
 	&__background {
@@ -14,39 +14,54 @@
 		inset: 0;
 		z-index: 0;
 		pointer-events: none;
+		// Sadece arka plan efektleri icin fade maske — icerik etkilenmez
+		mask-image: linear-gradient(
+			to bottom,
+			transparent 0%,
+			black 12%,
+			black 88%,
+			transparent 100%
+		);
+		-webkit-mask-image: linear-gradient(
+			to bottom,
+			transparent 0%,
+			black 12%,
+			black 88%,
+			transparent 100%
+		);
 	}
 
 	&__grid-bg {
 		position: absolute;
-		inset: 0;
+		inset: -20% 0;
 		background-image:
-			linear-gradient(rgba(99, 102, 241, 0.04) 1px, transparent 1px),
-			linear-gradient(90deg, rgba(99, 102, 241, 0.04) 1px, transparent 1px);
-		background-size: 40px 40px;
-		mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
-		-webkit-mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+			linear-gradient(rgba(99, 102, 241, 0.035) 1px, transparent 1px),
+			linear-gradient(90deg, rgba(99, 102, 241, 0.035) 1px, transparent 1px);
+		background-size: 48px 48px;
+		mask-image: radial-gradient(ellipse 70% 60% at center, black 10%, transparent 95%);
+		-webkit-mask-image: radial-gradient(ellipse 70% 60% at center, black 10%, transparent 95%);
 	}
 
 	&__orb {
 		position: absolute;
-		width: 45vw;
-		height: 45vw;
-		max-width: 500px;
-		max-height: 500px;
+		width: 50vw;
+		height: 50vw;
+		max-width: 600px;
+		max-height: 600px;
 		border-radius: 50%;
-		filter: blur(120px);
-		opacity: 0.15;
+		filter: blur(140px);
+		opacity: 0.12;
 
 		&--position-left {
-			top: 10%;
-			left: -8%;
-			background: radial-gradient(circle, rgba(99, 102, 241, 0.9), transparent);
+			top: -10%;
+			left: -12%;
+			background: radial-gradient(circle, rgba(99, 102, 241, 0.9), transparent 70%);
 		}
 
 		&--position-right {
-			bottom: 10%;
-			right: -8%;
-			background: radial-gradient(circle, rgba(236, 72, 153, 0.8), transparent);
+			bottom: -10%;
+			right: -12%;
+			background: radial-gradient(circle, rgba(236, 72, 153, 0.8), transparent 70%);
 		}
 	}
 
