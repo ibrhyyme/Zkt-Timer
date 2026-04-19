@@ -1060,6 +1060,7 @@ type SiteConfig {
   leaderboards_enabled: Boolean
   rooms_enabled: Boolean
   battle_enabled: Boolean
+  pro_enabled: Boolean
   updated_at: DateTime
 }
 
@@ -1957,6 +1958,7 @@ input UpdateSiteConfigInput {
   leaderboards_enabled: Boolean
   rooms_enabled: Boolean
   battle_enabled: Boolean
+  pro_enabled: Boolean
 }
 
 input StatsModuleBlockInput {

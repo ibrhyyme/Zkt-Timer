@@ -13,6 +13,7 @@ export interface SiteConfigData {
 	leaderboards_enabled: boolean;
 	rooms_enabled: boolean;
 	battle_enabled: boolean;
+	pro_enabled: boolean;
 	updated_at: Date;
 }
 
@@ -23,6 +24,7 @@ const DEFAULT_CONFIG: Omit<SiteConfigData, 'id' | 'updated_at'> = {
 	leaderboards_enabled: true,
 	rooms_enabled: true,
 	battle_enabled: true,
+	pro_enabled: false,
 };
 
 export async function getSiteConfig(): Promise<SiteConfigData> {
@@ -36,6 +38,7 @@ export async function getSiteConfig(): Promise<SiteConfigData> {
 			leaderboards_enabled: false,
 			rooms_enabled: false,
 			battle_enabled: false,
+			pro_enabled: false,
 			updated_at: new Date(),
 		};
 	}
