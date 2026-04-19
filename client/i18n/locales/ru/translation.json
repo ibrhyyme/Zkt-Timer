@@ -830,7 +830,8 @@
 		"lock_scramble": "Заблокировать скрамбл",
 		"new_scramble": "Новый скрамбл",
 		"previous_scramble": "Предыдущий скрамбл",
-		"next_scramble": "Следующий скрамбл"
+		"next_scramble": "Следующий скрамбл",
+		"reset_to_defaults": "Сбросить по умолчанию"
 	},
 	"mobile_modules": {
 		"title": "Модули",

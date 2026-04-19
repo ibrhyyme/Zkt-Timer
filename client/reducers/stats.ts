@@ -78,6 +78,13 @@ export default (state = initialState, action) => {
 			};
 		}
 
+		case 'RESET_STATS_MODULE_BLOCKS': {
+			return {
+				...state,
+				blocks: [...defaultStatsModuleBlocks],
+			};
+		}
+
 		default: {
 			return {
 				...initialState,

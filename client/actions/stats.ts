@@ -35,3 +35,9 @@ export function updateStatsModuleBlock(index: number, statOptions: StatsModuleBl
 		},
 	};
 }
+
+export function resetStatsModuleBlocks() {
+	return {
+		type: 'RESET_STATS_MODULE_BLOCKS',
+	};
+}

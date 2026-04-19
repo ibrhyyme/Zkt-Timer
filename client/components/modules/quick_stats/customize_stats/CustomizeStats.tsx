@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import QuickStatsBlock from '../QuickStatsBlock';
 import { getQuickStatsGridSizes, saveStatsModuleBlocks, STATS_GRID_SIZE } from '../util';
 import Button from '../../../common/button/Button';
@@ -6,7 +7,7 @@ import CustomizeStatsEditor from './CustomizeStatsEditor';
 import HorizontalLine from '../../../common/horizontal_line/HorizontalLine';
 import { StatsModuleBlock } from '../../../../../server/schemas/StatsModule.schema';
 import { RootStateOrAny, useDispatch, useSelector } from 'react-redux';
-import { addStatsModuleBlock, removeStatsModuleBlock } from '../../../../actions/stats';
+import { addStatsModuleBlock, removeStatsModuleBlock, resetStatsModuleBlocks } from '../../../../actions/stats';
 import { defaultStatsModuleBlocks } from '../../../../reducers/stats';
 import { toastError } from '../../../../util/toast';
 import { FilterSolvesOptions } from '../../../../db/solves/query';
@@ -19,6 +20,7 @@ interface Props {
 export default function CustomizeStats(props: Props) {
 	const { filterOptions } = props;
 
+	const { t } = useTranslation();
 	const dispatch = useDispatch();
 	const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -61,6 +63,12 @@ export default function CustomizeStats(props: Props) {
 		saveStatsModuleBlocks().catch((e) => {
 			toastError(e.message);
 		});
+	}
+
+	function resetToDefaults() {
+		dispatch(resetStatsModuleBlocks());
+		setSelectedIndex(0);
+		saveStatsBlockChanges();
 	}
 
 	function selectStatsBlock(e, index: number) {
@@ -111,8 +119,9 @@ export default function CustomizeStats(props: Props) {
 		<div className="md:max-h-[65vh] md:overflow-y-auto md:pr-2">
 			<div className="mb-4 table w-full">
 				<div className={className}>{blocks}</div>
-				<div className="mx-auto mt-4 table">
+				<div className="mx-auto mt-4 flex gap-2 items-center justify-center flex-wrap">
 					<Button disabled={!canAddBlocks} glow small primary onClick={addBlockToGrid} text="Blok Ekle" />
+					<Button small gray onClick={resetToDefaults} text={t('timer_modules.reset_to_defaults')} />
 				</div>
 			</div>
 			<HorizontalLine />

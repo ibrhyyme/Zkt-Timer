@@ -830,7 +830,8 @@
 		"lock_scramble": "Lock scramble",
 		"new_scramble": "New scramble",
 		"previous_scramble": "Previous scramble",
-		"next_scramble": "Next scramble"
+		"next_scramble": "Next scramble",
+		"reset_to_defaults": "Reset to Defaults"
 	},
 	"mobile_modules": {
 		"title": "Modules",
