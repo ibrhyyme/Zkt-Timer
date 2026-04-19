@@ -4,10 +4,12 @@ import {NotificationType} from '../../@types/enums';
 
 export default class NewUserSignupNotification extends Notification {
 	private registrationMethod: 'local' | 'wca';
+	private pending: boolean;
 
-	constructor(input: NotificationInput, registrationMethod: 'local' | 'wca') {
+	constructor(input: NotificationInput, registrationMethod: 'local' | 'wca', pending: boolean = false) {
 		super(input);
 		this.registrationMethod = registrationMethod;
+		this.pending = pending;
 	}
 
 	notificationType() {
@@ -15,16 +17,25 @@ export default class NewUserSignupNotification extends Notification {
 	}
 
 	subject() {
+		if (this.pending) {
+			return `Kayit beklemede: ${this.input.triggeringUser.username}`;
+		}
 		return `Yeni uye: ${this.input.triggeringUser.username}`;
 	}
 
 	inAppMessage() {
 		const method = this.registrationMethod === 'wca' ? 'WCA' : 'E-posta';
+		if (this.pending) {
+			return `${this.input.triggeringUser.username} kayit oldu, dogrulama bekleniyor (${method})`;
+		}
 		return `${this.input.triggeringUser.username} yeni uye oldu (${method})`;
 	}
 
 	message() {
 		const method = this.registrationMethod === 'wca' ? 'WCA hesabi' : 'e-posta';
+		if (this.pending) {
+			return `${this.input.triggeringUser.username} kullanicisi ${method} ile kayit oldu, e-posta dogrulaması bekleniyor.`;
+		}
 		return `${this.input.triggeringUser.username} kullanicisi ${method} ile Zkt Timer'a kayit oldu.`;
 	}
 
