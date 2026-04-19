@@ -291,6 +291,31 @@ app.post('/api/admin/recalculate-rankings', (req, res) => {
 	});
 });
 
+// Admin: Sitemap'i manuel yeniden olustur (cron 2 saatte bir, acelen varsa buradan tetikle)
+app.post('/api/admin/regenerate-sitemap', (req, res) => {
+	const {getMe} = require('./util/auth');
+	const {initSiteMapGeneration} = require('./services/sitemap');
+
+	getMe(req).then((me) => {
+		if (!me || !me.admin) {
+			res.status(403).json({error: 'Forbidden'});
+			return;
+		}
+
+		// Async calistir, response'u hemen don
+		initSiteMapGeneration().then(() => {
+			console.log('[Sitemap] Manual regeneration done');
+		}).catch((err) => {
+			console.error('[Sitemap] Manual regeneration failed:', err);
+		});
+
+		res.json({success: true, message: 'Sitemap regeneration started — check /sitemap.xml in 1-2 min'});
+	}).catch((err) => {
+		console.error('[Sitemap] API error:', err);
+		res.status(500).json({error: 'Internal server error'});
+	});
+});
+
 // Admin: Dunya rekorlarini Robin WCA REST API'dan yeniden senkronize et
 app.post('/api/admin/sync-world-records', (req, res) => {
 	const {getMe} = require('./util/auth');
