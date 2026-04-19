@@ -138,8 +138,9 @@ function ProPageContent() {
 		getOfferings()
 			.then((off) => {
 				setOfferings(off);
+				const dbg = (window as any).__IAP_DEBUG__ || {};
 				setDebugInfo(
-					`keys=${iosKey.length}/${androidKey.length}, packages=${Object.keys(off).join(',') || 'EMPTY'}`
+					`keys=${iosKey.length}/${androidKey.length} pkgs=${Object.keys(off).join(',') || 'EMPTY'} all=[${dbg.allKeys?.join(',') || 'NONE'}] pickedId=${dbg.pickedOfferingId || 'null'} pkgCount=${dbg.pkgCount || 0} types=${dbg.pkgTypes || 'none'}${dbg.error ? ' ERR=' + dbg.error : ''}`
 				);
 			})
 			.catch((err) => {
