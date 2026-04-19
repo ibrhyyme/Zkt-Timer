@@ -31,10 +31,18 @@ allprojects {
                 jvmTarget = "17"
             }
         }
-        // RevenueCat plugin Java 1.8, Kotlin 17 hedefliyor — tutarsizlik icin Java'yi da 17'ye zorla
-        tasks.withType(JavaCompile).configureEach {
-            sourceCompatibility = "17"
-            targetCompatibility = "17"
+    }
+}
+
+// RevenueCat plugin android.compileOptions'i 1.8'e hardcode ediyor, Kotlin 17 ile tutarsiz.
+// Tum Android subproject'lerinin compileOptions'ini 17'ye override et.
+subprojects {
+    afterEvaluate { project ->
+        if (project.hasProperty('android')) {
+            project.android.compileOptions {
+                sourceCompatibility JavaVersion.VERSION_17
+                targetCompatibility JavaVersion.VERSION_17
+            }
         }
     }
 }
