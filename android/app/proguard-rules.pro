@@ -29,3 +29,37 @@
 -keep public class com.getcapacitor.BridgeWebViewClient { *; }
 -keep public class com.getcapacitor.WebViewLocalServer { *; }
 
+# RevenueCat
+-keep class com.revenuecat.purchases.** { *; }
+-dontwarn com.revenuecat.purchases.**
+
+# Google Play Billing Library
+-keep class com.android.billingclient.** { *; }
+-keep class com.google.android.gms.** { *; }
+-dontwarn com.android.billingclient.**
+
+# Kotlin reflection / serialization / coroutines (RevenueCat ve Capacitor kullanıyor)
+-keepattributes Signature
+-keepattributes *Annotation*
+-keepattributes InnerClasses
+-keepattributes EnclosingMethod
+-keep class kotlin.Metadata { *; }
+-keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
+-keepnames class kotlinx.coroutines.CoroutineExceptionHandler {}
+-keepclassmembers class kotlinx.** { *; }
+
+# OkHttp / Okio (RevenueCat dependency)
+-dontwarn okhttp3.**
+-dontwarn okio.**
+-dontwarn javax.annotation.**
+
+# Gson / serialization models (RevenueCat kullanıyor)
+-keepclassmembers,allowobfuscation class * {
+  @com.google.gson.annotations.SerializedName <fields>;
+}
+-keep class com.google.gson.reflect.TypeToken { *; }
+-keep class * extends com.google.gson.reflect.TypeToken
+
+# Capacitor RevenueCat plugin (reflection-based)
+-keep class com.revenuecat.purchases.capacitor.** { *; }
+
