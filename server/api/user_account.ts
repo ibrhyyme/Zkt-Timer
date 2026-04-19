@@ -20,6 +20,19 @@ import { ErrorCode } from '../constants/errors';
 import { getPrisma } from '../database';
 import { getEmailStrings } from '../util/email_translations';
 import { validateEmailMx } from '../util/email_validation';
+import { validateName } from '../util/name_validation';
+import { checkRateLimit } from '../services/rate_limit';
+import { logger } from '../services/logger';
+
+function extractIp(req: any): string {
+	let ip = req?.headers?.['x-forwarded-for'] || req?.connection?.remoteAddress || '';
+	if (Array.isArray(ip)) {
+		ip = ip[0];
+	} else if (typeof ip === 'string' && ip.indexOf(',') > -1) {
+		ip = ip.split(',')[0];
+	}
+	return (ip || '').trim();
+}
 
 export const gqlQuery = `
 	me: UserAccount!
@@ -60,7 +73,31 @@ export const mutateActions = {
 		{ first_name, last_name, email, username, password, language }: CreateAccountInput,
 		{ req, res }: GraphQLContext
 	) => {
-		let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+		const ip = extractIp(req);
+
+		if (ip) {
+			const hourly = await checkRateLimit(`signup:ip:${ip}`, 3, 3600);
+			if (!hourly.allowed) {
+				logger.warn('Signup rate limit exceeded', {ip, count: hourly.count, scope: 'hourly'});
+				throw new GraphQLError(ErrorCode.BAD_INPUT, 'Cok fazla kayit denemesi. Lutfen daha sonra tekrar deneyin.');
+			}
+
+			const daily = await checkRateLimit(`signup:ip:daily:${ip}`, 10, 86400);
+			if (!daily.allowed) {
+				logger.warn('Signup rate limit exceeded', {ip, count: daily.count, scope: 'daily'});
+				throw new GraphQLError(ErrorCode.BAD_INPUT, 'Cok fazla kayit denemesi. Lutfen daha sonra tekrar deneyin.');
+			}
+		}
+
+		const firstNameError = validateName(first_name, 'Ad');
+		if (firstNameError) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, firstNameError);
+		}
+
+		const lastNameError = validateName(last_name, 'Soyad');
+		if (lastNameError) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, lastNameError);
+		}
 
 		const existingUser = await getUserByEmail(email);
 		if (existingUser) {
@@ -94,13 +131,7 @@ export const mutateActions = {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'That username is already in use');
 		}
 
-		if (Array.isArray(ip)) {
-			ip = ip[0];
-		} else if (ip.indexOf(',') > -1) {
-			ip = ip.split(',')[0];
-		}
-
-		const user = await createUserAccount(first_name, last_name, email, username, password, ip);
+		const user = await createUserAccount(first_name.trim(), last_name.trim(), email, username, password, ip);
 		await createSetting(user);
 		await createNotificationPreference(user);
 
@@ -132,6 +163,16 @@ export const mutateActions = {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Please fill out all of the required fields');
 		}
 
+		const firstNameError = validateName(first_name, 'Ad');
+		if (firstNameError) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, firstNameError);
+		}
+
+		const lastNameError = validateName(last_name, 'Soyad');
+		if (lastNameError) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, lastNameError);
+		}
+
 		if (email !== user.email) {
 			const newEmail = await getUserByEmail(email);
 			if (newEmail) {
@@ -158,7 +199,7 @@ export const mutateActions = {
 			}
 		}
 
-		return await updateUserAccount(user.id, first_name, last_name, email, username);
+		return await updateUserAccount(user.id, first_name.trim(), last_name.trim(), email, username);
 	},
 
 	updateUserPassword: async (_: any, { old_password, new_password }: UpdatePasswordInput, { user }: GraphQLContext) => {
