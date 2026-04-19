@@ -105,6 +105,7 @@ function ProPageContent() {
 	const [purchasing, setPurchasing] = useState(false);
 	const [restoring, setRestoring] = useState(false);
 	const [offerings, setOfferings] = useState<IapOfferings>({});
+	const [debugInfo, setDebugInfo] = useState<string>('');
 
 	const {data: iapData, refetch: refetchIap} = useQuery<GetIapStatusQuery>(GetIapStatusDocument, {
 		fetchPolicy: 'cache-and-network',
@@ -129,9 +130,21 @@ function ProPageContent() {
 	// Native platformda offerings yukle
 	useEffect(() => {
 		if (!native || userIsPro) return;
-		getOfferings().then((off) => {
-			setOfferings(off);
-		});
+		const iosKey = (window as any).__REVENUECAT_IOS_KEY__ || '';
+		const androidKey = (window as any).__REVENUECAT_ANDROID_KEY__ || '';
+		setDebugInfo(
+			`native=true, iosKeyLen=${iosKey.length}, androidKeyLen=${androidKey.length}, loading...`
+		);
+		getOfferings()
+			.then((off) => {
+				setOfferings(off);
+				setDebugInfo(
+					`keys=${iosKey.length}/${androidKey.length}, packages=${Object.keys(off).join(',') || 'EMPTY'}`
+				);
+			})
+			.catch((err) => {
+				setDebugInfo(`getOfferings error: ${err?.message || String(err)}`);
+			});
 	}, [native, userIsPro]);
 
 	// Aktif Pro aboneliği olan kullanıcının seçili planı mevcut planı olsun
@@ -317,6 +330,12 @@ function ProPageContent() {
 									</button>
 								))}
 							</div>
+
+							{debugInfo && native && (
+								<div style={{padding: '8px', background: 'rgba(255,200,0,0.15)', border: '1px solid orange', fontSize: '11px', color: '#fff', margin: '8px 0', wordBreak: 'break-word'}}>
+									DEBUG: {debugInfo}
+								</div>
+							)}
 
 							<div className={b('price-block')}>
 								<div className={b('price-amount')}>
