@@ -3966,6 +3966,18 @@
   resolved "https://registry.npmjs.org/@repeaterjs/repeater/-/repeater-3.0.6.tgz"
   integrity sha512-Javneu5lsuhwNCryN+pXH93VPQ8g0dBX7wItHFgYiwQmzE1sVdg5tWHiOgHywzL2W21XQopa7IwIEnNbmeUJYA==
 
+"@revenuecat/purchases-capacitor@^9.0.0":
+  version "9.2.2"
+  resolved "https://registry.yarnpkg.com/@revenuecat/purchases-capacitor/-/purchases-capacitor-9.2.2.tgz#23a38cc0478f79a1aa95f30643388b928d438c7b"
+  integrity sha512-FHq22Er19etHc6oLRt69sofjsE+t7I3ByGWLm2PB10k0JpNgubWmnu5chvxn33jxAOoGmGK3FzCRDWQ8923TjQ==
+  dependencies:
+    "@revenuecat/purchases-typescript-internal-esm" "13.26.0"
+
+"@revenuecat/purchases-typescript-internal-esm@13.26.0":
+  version "13.26.0"
+  resolved "https://registry.yarnpkg.com/@revenuecat/purchases-typescript-internal-esm/-/purchases-typescript-internal-esm-13.26.0.tgz#f16e95d771d32a5f56dd38fa8628ecd02be7fab8"
+  integrity sha512-+oU1JmHUtSVRyqnQIMWbHIKhXh3DGiXr4SlH8NmIWi8HE2bcnuZcrmfXTUWl91FEkPqRlYy8sqvqv3JcdH6XtA==
+
 "@sapphire/async-queue@^1.5.0":
   version "1.5.5"
   resolved "https://registry.npmjs.org/@sapphire/async-queue/-/async-queue-1.5.5.tgz"

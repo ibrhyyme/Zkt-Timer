@@ -28,6 +28,14 @@ model UserAccount {
   pro_expires_at     DateTime?
   is_premium         Boolean     @default(false)
   premium_expires_at DateTime?
+  revenuecat_user_id   String?   @unique
+  iap_platform         String?
+  iap_product_id       String?
+  iap_original_tx_id   String?
+  iap_latest_event_at  DateTime?
+  iap_cancellation_at  DateTime?
+  iap_billing_issue_at DateTime?
+  iap_paused_until     DateTime?
   mod                Boolean     @default(false)
   offline_hash       String?
   unsub_id           String?     @default(uuid())

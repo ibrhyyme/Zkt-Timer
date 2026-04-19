@@ -328,6 +328,7 @@ type Query {
   zktMyAssignments(competitionId: String): [ZktAssignment]
   zktUserAssignments(userId: String, competitionId: String): [ZktAssignment]
   landingStats: LandingStats
+  getIapStatus: IapStatus
 }
 
 type Mutation {
@@ -465,6 +466,7 @@ type Mutation {
   deleteZktGroup(groupId: String): Boolean
   updateZktGroupSchedule(input: UpdateZktGroupScheduleInput): ZktGroup
   bulkAssignCompetitors(input: BulkAssignCompetitorsInput): [ZktAssignment]
+  linkRevenueCatUser: Boolean
 }
 
 type SmartDevice {
@@ -1821,6 +1823,18 @@ enum ZktAssignmentRole {
   RUNNER
   ORGANIZER
   STAFF
+}
+
+type IapStatus {
+  is_pro: Boolean
+  pro_expires_at: DateTime
+  iap_platform: String
+  iap_product_id: String
+  iap_cancellation_at: DateTime
+  iap_billing_issue_at: DateTime
+  iap_paused_until: DateTime
+  is_iap_pro: Boolean
+  can_purchase: Boolean
 }
 
 type Notification {

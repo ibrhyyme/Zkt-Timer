@@ -342,6 +342,10 @@ app.post('/api/admin/sync-world-records', (req, res) => {
 	});
 });
 
+// RevenueCat webhook — in-app purchase eventleri
+import { revenueCatWebhookHandler } from './api/revenuecat_webhook';
+app.post('/api/iap/revenuecat-webhook', revenueCatWebhookHandler);
+
 // Cache-busting: Capacitor ve web istemciler güncel versiyonu kontrol eder
 app.get('/api/version', (req, res) => {
 	res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');

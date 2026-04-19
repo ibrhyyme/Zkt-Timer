@@ -1,3 +1,17 @@
+query getIapStatus {
+	getIapStatus {
+		is_pro
+		pro_expires_at
+		iap_platform
+		iap_product_id
+		iap_cancellation_at
+		iap_billing_issue_at
+		iap_paused_until
+		is_iap_pro
+		can_purchase
+	}
+}
+
 query siteConfig {
 	siteConfig {
 		id

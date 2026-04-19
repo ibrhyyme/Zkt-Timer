@@ -33,6 +33,9 @@ import {useSiteConfig} from '../../util/hooks/useSiteConfig';
 import MaintenancePage from '../maintenance/MaintenancePage';
 import {showNativeToast} from '../../util/native-plugins';
 import {preloadInspectionSounds} from '../../util/native-audio';
+import {initRevenueCat, identifyUser as iapIdentifyUser, logoutRevenueCat} from '../../lib/iap';
+import {gqlMutate} from '../api';
+import {LinkRevenueCatUserDocument} from '../../@types/generated/graphql';
 
 interface Props {
 	path?: string;
@@ -70,6 +73,7 @@ export default function App(props: Props = {}) {
 			initStatusBar();
 			lockTextZoom();
 			initSafeArea();
+			initRevenueCat(); // RevenueCat IAP SDK'sini hazirla
 
 			// iOS WKWebView pinch-to-zoom engelle
 			if (Capacitor.getPlatform() === 'ios') {
@@ -176,6 +180,20 @@ export default function App(props: Props = {}) {
 		pushInitRef.current = true;
 		initPushNotifications();
 	}, [me]);
+
+	// RevenueCat: login olunca kullaniciyi tanitir, DB'de revenuecat_user_id set olur
+	const iapLinkedRef = useRef<string | null>(null);
+	useEffect(() => {
+		if (!Capacitor.isNativePlatform()) return;
+		if (me?.id && iapLinkedRef.current !== me.id) {
+			iapLinkedRef.current = me.id;
+			iapIdentifyUser(me.id).catch(() => {});
+			gqlMutate(LinkRevenueCatUserDocument, {}).catch(() => {});
+		} else if (!me && iapLinkedRef.current) {
+			iapLinkedRef.current = null;
+			logoutRevenueCat().catch(() => {});
+		}
+	}, [me?.id]);
 
 	// Fetch announcements when user logs in
 	useEffect(() => {
