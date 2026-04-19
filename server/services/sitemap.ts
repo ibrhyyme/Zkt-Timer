@@ -28,19 +28,28 @@ interface SiteMapUrl {
  * Solves: 0.1
  */
 
-export async function initSiteMapGeneration() {
+export interface SiteMapGenerationResult {
+	skipped?: string;
+	env?: string;
+	defaultSiteMapUrl?: string;
+	profileBatchCount?: number;
+	totalProfileUrls?: number;
+	timeSeconds?: number;
+}
+
+export async function initSiteMapGeneration(options: { force?: boolean } = {}): Promise<SiteMapGenerationResult> {
 	const isProd = process.env.ENV === 'production';
-	if (!isProd) {
-		logger.warn('Not updating sitemap because environment is not prod');
-		return;
+	if (!isProd && !options.force) {
+		logger.warn('Not updating sitemap because environment is not prod', { env: process.env.ENV });
+		return { skipped: 'not production', env: process.env.ENV || 'undefined' };
 	}
 
 	const startTime = Date.now();
 
 	const lock = await acquireRedisLock(SITEMAP_REDIS_KEY, 60 * 60 * 3 * 1000);
-	if (!lock) {
+	if (!lock && !options.force) {
 		logger.info('Not updating sitemap because it has already been updated. Could not acquire lock.');
-		return;
+		return { skipped: 'redis lock active (ran within last 3h)' };
 	}
 
 	logger.info('Starting sitemap generation');
@@ -53,22 +62,28 @@ export async function initSiteMapGeneration() {
 		defaultSiteMapUrl,
 	});
 
-	const profileSiteMapUrls = await uploadProfileSiteMaps();
+	const profileResult = await uploadProfileSiteMaps();
 
 	logger.info('Finished writing profile sitemaps', {
-		count: profileSiteMapUrls.length,
+		batchCount: profileResult.urls.length,
+		totalProfiles: profileResult.totalProfiles,
 	});
 
-	const allSiteMapUrls = [defaultSiteMapUrl, ...profileSiteMapUrls].filter(Boolean) as string[];
+	const allSiteMapUrls = [defaultSiteMapUrl, ...profileResult.urls].filter(Boolean) as string[];
 	await writeSiteMapIndices(allSiteMapUrls);
-	// Cache invalidation removed - not needed for local storage
 
 	deleteLocalSiteMapSchemasFolder();
 
 	const endTime = Date.now();
-	logger.info('Generated sitemap', {
-		timeToGenerateSeconds: (endTime - startTime) / 1000,
-	});
+	const timeSeconds = (endTime - startTime) / 1000;
+	logger.info('Generated sitemap', { timeToGenerateSeconds: timeSeconds });
+
+	return {
+		defaultSiteMapUrl,
+		profileBatchCount: profileResult.urls.length,
+		totalProfileUrls: profileResult.totalProfiles,
+		timeSeconds,
+	};
 }
 
 function createLocalSiteMapSchemasFolder() {
@@ -250,7 +265,7 @@ function convertSchemaUrlToXml(url: SiteMapUrl) {
 	`;
 }
 
-async function uploadProfileSiteMaps(): Promise<string[]> {
+async function uploadProfileSiteMaps(): Promise<{ urls: string[]; totalProfiles: number }> {
 	const baseUri = process.env.BASE_URI;
 	const prisma = getPrisma();
 	const activeThreshold = new Date(Date.now() - ACTIVE_DAYS_WINDOW * 24 * 60 * 60 * 1000);
@@ -281,7 +296,7 @@ async function uploadProfileSiteMaps(): Promise<string[]> {
 
 	if (users.length === 0) {
 		logger.info('No qualifying profiles for sitemap');
-		return [];
+		return { urls: [], totalProfiles: 0 };
 	}
 
 	const urls: SiteMapUrl[] = users.map((u) => {
@@ -311,6 +326,6 @@ async function uploadProfileSiteMaps(): Promise<string[]> {
 		batches: uploadedUrls.length,
 	});
 
-	return uploadedUrls;
+	return { urls: uploadedUrls, totalProfiles: users.length };
 }
 
