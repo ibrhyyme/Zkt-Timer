@@ -270,19 +270,25 @@ async function uploadProfileSiteMaps(): Promise<{ urls: string[]; totalProfiles:
 	const prisma = getPrisma();
 	const activeThreshold = new Date(Date.now() - ACTIVE_DAYS_WINDOW * 24 * 60 * 60 * 1000);
 
-	// Kaliteli profil filtresi: banli degil, email dogrulanmis, username var,
-	// ve AKTIF (son 30 gun) VEYA Pro/Premium VEYA profil dolu (bio/pfp)
+	// Kaliteli profil filtresi: banli degil, email dogrulanmis, username var.
+	// Kullanicilar farkli amaclar icin geliyor — timer, rooms, WCA takibi, trainer —
+	// bu yuzden birden cok aktiflik sinyalinden herhangi biri yeterli.
 	const users = await prisma.userAccount.findMany({
 		where: {
 			banned_forever: false,
 			email_verified: true,
 			username: { not: null },
 			OR: [
-				{ last_solve_at: { gte: activeThreshold } },
-				{ is_pro: true },
-				{ is_premium: true },
-				{ profile: { bio: { not: null } } },
-				{ profile: { pfp_image_id: { not: null } } },
+				{ last_solve_at: { gte: activeThreshold } },   // son 30 gunde solve (timer)
+				{ last_solve_at: { not: null } },              // hayatinda en az 1 solve
+				{ is_pro: true },                               // Pro uye
+				{ is_premium: true },                           // Premium uye
+				{ profile: { bio: { not: null } } },            // bio yazmis
+				{ profile: { pfp_image_id: { not: null } } },   // profil fotosu yuklemis
+				{ integrations: { some: {} } },                 // WCA veya baska hesap baglamis
+				{ sessions: { some: {} } },                     // timer session'i olusturmus
+				{ top_solves: { some: {} } },                   // top solve'a girmis
+				{ top_average: { some: {} } },                  // top average'a girmis
 			],
 		},
 		select: {
