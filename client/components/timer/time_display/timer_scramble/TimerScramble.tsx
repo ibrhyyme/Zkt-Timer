@@ -35,7 +35,6 @@ export default function TimerScramble() {
 	const isMegaminx = cubeType === 'minx';
 	let timerScrambleSize = useSettings('timer_scramble_size');
 
-	const focusMode = context.focusMode;
 	if (mobileMode) {
 		timerScrambleSize *= MOBILE_FONT_SIZE_MULTIPLIER;
 	}
@@ -250,12 +249,12 @@ export default function TimerScramble() {
 		<div className={b()}>
 			{notification}
 			{/* Scramble navigasyon butonları - timer çalışmıyorken ve maç modunda değilken göster */}
-			{scrambleLocked && !timeStartedAt && !focusMode && !matchMode && (
+			{scrambleLocked && !timeStartedAt && !matchMode && (
 				<div className={b('locked-banner')}>
 					{t('timer_scramble.scramble_locked')}
 				</div>
 			)}
-			{!timeStartedAt && !focusMode && !matchMode && !isSmartScrambling && (
+			{!timeStartedAt && !matchMode && !isSmartScrambling && (
 				<div className={b('nav')}>
 					<button
 						className={b('nav-btn', { disabled: !canGoPrevious })}
@@ -289,7 +288,7 @@ export default function TimerScramble() {
 			>
 				{scrambleBody}
 			</div>
-			<div className={b('actions', { focused: focusMode })}>
+			<div className={b('actions')}>
 				{/* Maç modunda sadece +2 ve DNF göster */}
 				{!matchMode && (
 					<Button

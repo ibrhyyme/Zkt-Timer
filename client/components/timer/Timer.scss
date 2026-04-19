@@ -374,6 +374,25 @@
 		}
 	}
 
+	&__mobile-scramble-fallback {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex: 0 0 auto;
+		padding: 0.25rem 0;
+
+		.cd-scramble-visual {
+			max-width: 140px;
+
+			svg,
+			canvas,
+			img {
+				max-width: 100% !important;
+				height: auto !important;
+			}
+		}
+	}
+
 	&__mobile-timer {
 		display: flex;
 		flex-direction: column;

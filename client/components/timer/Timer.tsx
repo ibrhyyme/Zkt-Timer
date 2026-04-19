@@ -33,6 +33,8 @@ import TimerControls from './TimerControls';
 import Dashboard from './Dashboard';
 import StatsBar from './StatsBar';
 import MobileTimerScramble from './MobileTimerScramble';
+import Scramble from '../modules/scramble/ScrambleVisual';
+import { TimerModuleType } from './@types/enums';
 
 const b = block('timer');
 
@@ -51,10 +53,10 @@ export default function Timer(props: TimerProps) {
 	const cubeType = useSettings('cube_type');
 	const hideMobileTimerFooter = useSettings('hide_mobile_timer_footer');
 	const timerType = useSettings('timer_type');
-	const focusMode = useSettings('focus_mode');
 	const manualEntry = useSettings('manual_entry');
 	const useSpaceWithSmartCube = useSettings('use_space_with_smart_cube');
 	const scrambleSubset = useSettings('scramble_subset');
+	const mobileTimerModules = useSettings('mobile_timer_modules');
 	let timerLayout = props.timerLayout || useSettings('timer_layout');
 
 	const me = useMe();
@@ -62,12 +64,11 @@ export default function Timer(props: TimerProps) {
 	// All default values from the settings should go here - Memoized to prevent re-renders
 	const context: ITimerContext = useMemo(() => ({
 		cubeType,
-		focusMode,
 		scrambleSubset,
 		...timerStore,
 		...props,
 		timerLayout,
-	}), [cubeType, focusMode, scrambleSubset, timerStore, props, timerLayout]);
+	}), [cubeType, scrambleSubset, timerStore, props, timerLayout]);
 
 	// Event listeners for single and AVG PBs
 	listenForPbEvents(context);
@@ -159,6 +160,17 @@ export default function Timer(props: TimerProps) {
 					<div id="mobile-smart-phases-container" style={{ width: '100%', padding: '0 10px' }}></div>
 				)}
 
+				{/* Dashboard modullerinde karistirma yoksa timer altina mini preview ciz */}
+				{!smartActive && !manualEntry && !mobileTimerModules?.includes(TimerModuleType.SCRAMBLE) && (
+					<div className={b('mobile-scramble-fallback')}>
+						<Scramble
+							cubeType={(cubeType === 'wca' && scrambleSubset) ? scrambleSubset : cubeType}
+							scramble={context.originalScramble || context.scramble}
+							width="120px"
+						/>
+					</div>
+				)}
+
 				{/* Kontrol çubuğu */}
 				<TimerControls />
 
@@ -191,10 +203,6 @@ export default function Timer(props: TimerProps) {
 		body = mobileTimeBar;
 	}
 
-	if (context.focusMode) {
-		body = timeBar;
-	}
-
 	let background: ReactNode = null;
 	const backgroundPath = me?.timer_background?.storage_path;
 
@@ -205,12 +213,11 @@ export default function Timer(props: TimerProps) {
 
 	return (
 		<QuickControlsProvider>
+			<h1 className="sr-only">Rubik's Cube Timer - Zkt Timer</h1>
 			<div
 				className={b({
 					started: !!context.timeStartedAt,
 					mobile: mobileMode && !props.inModal,
-					focused: context.focusMode && !mobileMode,
-					focusedWeb: context.focusMode && !mobileMode,
 				})}
 			>
 				<TimerContext.Provider value={context}>

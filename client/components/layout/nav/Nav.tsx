@@ -133,7 +133,6 @@ export default function Nav() {
 	const siteConfig = useSiteConfig();
 	const isAdmin = !!me?.admin;
 
-	const focusMode = useSettings('focus_mode');
 	const moduleColor = useTheme('module_color');
 
 	const navCollapsed = useSettings('nav_collapsed');
@@ -172,10 +171,6 @@ export default function Nav() {
 	}
 
 	const navClosed = navCollapsed || forceNavCollapsed;
-
-	if (focusMode) {
-		return null;
-	}
 
 	if (mobileMode) {
 		return (

@@ -12,6 +12,7 @@ import ConfirmModal from '../../common/confirm_modal/ConfirmModal';
 import CreateZktCompetitionModal from './CreateZktCompetitionModal';
 import {b, formatDateRange, getEventName} from './shared';
 import {useHistory} from 'react-router-dom';
+import {useZktCompListRefetch} from '../../community/zkt_competitions/useZktCompRefetch';
 
 const LIST_QUERY = gql`
 	query ZktCompsForAdmin($page: Int!, $pageSize: Int!, $searchQuery: String!, $filter: ZktCompetitionFilterInput) {
@@ -86,6 +87,8 @@ export default function AdminZktCompetitions() {
 		fetchList();
 	}, [fetchList]);
 
+	useZktCompListRefetch(fetchList);
+
 	function openCreate() {
 		dispatch(
 			openModal(
@@ -132,12 +135,14 @@ export default function AdminZktCompetitions() {
 				>
 					<option value="">{t('filter_all_status')}</option>
 					<option value="DRAFT">{t('status_draft')}</option>
+					<option value="CONFIRMED">{t('status_confirmed')}</option>
 					<option value="ANNOUNCED">{t('status_announced')}</option>
 					<option value="REGISTRATION_OPEN">{t('status_registration_open')}</option>
 					<option value="REGISTRATION_CLOSED">{t('status_registration_closed')}</option>
 					<option value="ONGOING">{t('status_ongoing')}</option>
 					<option value="FINISHED">{t('status_finished')}</option>
 					<option value="PUBLISHED">{t('status_published')}</option>
+					<option value="CANCELLED">{t('status_cancelled')}</option>
 				</select>
 				<button className={b('create-btn')} onClick={openCreate}>
 					<Plus weight="bold" /> {t('create_competition')}

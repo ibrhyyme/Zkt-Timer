@@ -9,6 +9,7 @@ import {
 	AssignUserInput,
 	CreateGroupInput,
 	BulkAssignCompetitorsInput,
+	UpdateZktGroupScheduleInput,
 } from '../schemas/ZktCompetition.schema';
 import {getPrisma} from '../database';
 import {assertCanModifyCompetition, publicUserInclude, getRoundWithCompetition} from '../models/zkt_competition';
@@ -32,7 +33,11 @@ export class ZktAssignmentResolver {
 		return getPrisma().zktAssignment.findMany({
 			where: {group_id: groupId},
 			orderBy: [{role: 'asc'}, {station_number: 'asc'}, {seed_result: 'asc'}],
-			include: {user: publicUserInclude},
+			include: {
+				user: publicUserInclude,
+				group: true,
+				round: {include: {comp_event: {include: {competition: true}}}},
+			},
 		});
 	}
 
@@ -122,7 +127,7 @@ export class ZktAssignmentResolver {
 			},
 		});
 
-		let result;
+		let result: any;
 		if (existing) {
 			result = await getPrisma().zktAssignment.update({
 				where: {id: existing.id},
@@ -216,6 +221,29 @@ export class ZktAssignmentResolver {
 		return true;
 	}
 
+	@Authorized([Role.LOGGED_IN])
+	@Mutation(() => ZktGroup)
+	async updateZktGroupSchedule(
+		@Ctx() context: GraphQLContext,
+		@Arg('input') input: UpdateZktGroupScheduleInput
+	) {
+		const group = await getPrisma().zktGroup.findUnique({
+			where: {id: input.groupId},
+			include: {round: {include: {comp_event: true}}},
+		});
+		if (!group) throw new GraphQLError(ErrorCode.NOT_FOUND);
+
+		await assertCanModifyCompetition(context.user, group.round.comp_event.competition_id);
+
+		return getPrisma().zktGroup.update({
+			where: {id: input.groupId},
+			data: {
+				start_time: input.startTime ?? null,
+				end_time: input.endTime ?? null,
+			},
+		});
+	}
+
 	/**
 	 * Otomatik dagitim: onaylanan yarismacilari N grupa dagit.
 	 * Round >= 2 ise önceki tur ranking'ine göre serpentine seeding
@@ -290,6 +318,16 @@ export class ZktAssignmentResolver {
 				include: {user: publicUserInclude},
 			});
 			assignments.push(a);
+		}
+
+		// One emit per user is noisy but consistent with per-assignment handler.
+		// For typical ~30 person distribute that's fine; consumers debounce.
+		for (const a of assignments) {
+			emitZktAssignmentUpdated(round.comp_event.competition_id, {
+				roundId: input.roundId,
+				groupId: a.group_id ?? undefined,
+				userId: a.user_id,
+			});
 		}
 
 		return assignments;

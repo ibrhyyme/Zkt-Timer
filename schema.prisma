@@ -104,8 +104,6 @@ model UserAccount {
   zkt_records                   ZktRecord[]             @relation("zkt_record_holder")
   zkt_assignments               ZktAssignment[]         @relation("zkt_assignment_user")
   zkt_registration_history      ZktRegistrationHistory[] @relation("zkt_registration_history_actor")
-  zkt_delegate_reports          ZktDelegateReport[]     @relation("zkt_delegate_report_submitter")
-  zkt_incidents_created         ZktIncident[]           @relation("zkt_incident_creator")
 
   @@map("user_account")
 }
@@ -756,6 +754,22 @@ model WcaRecord {
   @@map("wca_record")
 }
 
+model WorldRecord {
+  id                String   @id @default(uuid())
+  event_id          String   @unique
+  single_best       Int?
+  single_person_id  String?
+  single_person_name String?
+  average_best      Int?
+  average_person_id String?
+  average_person_name String?
+  last_synced_at    DateTime @default(now())
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  @@map("world_record")
+}
+
 enum MetricLogType {
   DELETE_USER_ACCOUNT
 }
@@ -1043,6 +1057,16 @@ enum ZktCompVisibility {
   @@map("zkt_comp_visibility")
 }
 
+enum ZktChampionshipType {
+  NATIONAL
+  REGIONAL
+  CITY
+  INVITATIONAL
+  YOUTH
+
+  @@map("zkt_championship_type")
+}
+
 enum ZktRegistrationStatus {
   PENDING
   APPROVED
@@ -1090,6 +1114,7 @@ model ZktCompetition {
   competitor_limit           Int?
   status                     ZktCompStatus      @default(DRAFT)
   visibility                 ZktCompVisibility  @default(PUBLIC)
+  championship_type          ZktChampionshipType?
   confirmed_at               DateTime?
   announced_at               DateTime?
   announced_by_id            String?
@@ -1105,8 +1130,6 @@ model ZktCompetition {
   events           ZktCompEvent[]
   registrations    ZktRegistration[]
   delegates        ZktCompDelegate[]
-  delegate_report  ZktDelegateReport?
-  incidents        ZktIncident[]
 
   @@index([status])
   @@index([created_by_id])
@@ -1147,6 +1170,7 @@ model ZktRound {
   results           ZktResult[]
   groups            ZktGroup[]
   assignments       ZktAssignment[]
+  scrambles         ZktScramble[]
 
   @@unique([comp_event_id, round_number])
   @@index([comp_event_id])
@@ -1154,10 +1178,27 @@ model ZktRound {
   @@map("zkt_round")
 }
 
+model ZktScramble {
+  id              String   @id @default(uuid())
+  round_id        String
+  attempt_number  Int      // 1-5 regular, 6+ extra
+  is_extra        Boolean  @default(false)
+  scramble_string String   @db.Text
+  created_at      DateTime @default(now())
+
+  round           ZktRound @relation(fields: [round_id], references: [id], onDelete: Cascade)
+
+  @@unique([round_id, attempt_number])
+  @@index([round_id])
+  @@map("zkt_scramble")
+}
+
 model ZktGroup {
   id           String          @id @default(uuid())
   round_id     String
   group_number Int
+  start_time   DateTime?
+  end_time     DateTime?
   created_at   DateTime        @default(now())
 
   round        ZktRound        @relation(fields: [round_id], references: [id], onDelete: Cascade)
@@ -1317,46 +1358,5 @@ model ZktAssignment {
   @@index([group_id, role])
   @@index([user_id])
   @@map("zkt_assignment")
-}
-
-model ZktDelegateReport {
-  id                  String       @id @default(uuid())
-  competition_id      String       @unique
-  summary             String?      @db.Text
-  venue_notes         String?      @db.Text
-  organization_notes  String?      @db.Text
-  incidents_summary   String?      @db.Text
-  remarks             String?      @db.Text
-  submitted_by_id     String?
-  submitted_at        DateTime?
-  created_at          DateTime     @default(now())
-  updated_at          DateTime     @updatedAt
-
-  competition         ZktCompetition @relation(fields: [competition_id], references: [id], onDelete: Cascade)
-  submitted_by        UserAccount?   @relation("zkt_delegate_report_submitter", fields: [submitted_by_id], references: [id], onDelete: SetNull)
-
-  @@index([competition_id])
-  @@map("zkt_delegate_report")
-}
-
-model ZktIncident {
-  id              String       @id @default(uuid())
-  competition_id  String
-  title           String
-  description     String       @db.Text
-  tags            String[]     @default([])
-  result_id       String?
-  created_by_id   String
-  resolved_at     DateTime?
-  created_at      DateTime     @default(now())
-  updated_at      DateTime     @updatedAt
-
-  competition     ZktCompetition @relation(fields: [competition_id], references: [id], onDelete: Cascade)
-  created_by      UserAccount    @relation("zkt_incident_creator", fields: [created_by_id], references: [id], onDelete: Cascade)
-
-  @@index([competition_id])
-  @@index([created_by_id])
-  @@index([result_id])
-  @@map("zkt_incident")
 }
 

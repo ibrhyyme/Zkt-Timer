@@ -90,8 +90,19 @@ app.get('/.well-known/apple-app-site-association', (req, res) => {
 
 // JS/CSS dosyalari deployment hash'li → uzun sureli cache guvenli
 app.use('/dist', express.static(`${__dirname}/../dist`, { maxAge: '1y', immutable: true }));
-app.use('/public', express.static(`${__dirname}/../public`, { maxAge: '1d' }));
-app.use(express.static(`${__dirname}/../public`, { index: false, redirect: false, maxAge: '1d' }));
+
+// /public — image/font dosyalarina 30g cache (LCP icin onemli), digerleri 1g
+const longLivedAssetRegex = /\.(png|jpg|jpeg|svg|webp|avif|ico|woff2?|ttf|otf)$/i;
+const publicStaticOptions = {
+	maxAge: '1d',
+	setHeaders: (res: any, filePath: string) => {
+		if (longLivedAssetRegex.test(filePath)) {
+			res.setHeader('Cache-Control', 'public, max-age=2592000, immutable');
+		}
+	},
+};
+app.use('/public', express.static(`${__dirname}/../public`, publicStaticOptions));
+app.use(express.static(`${__dirname}/../public`, { ...publicStaticOptions, index: false, redirect: false }));
 app.use('/public/uploads', express.static(`${__dirname}/../public/uploads`, { maxAge: '1d' }));
 
 mapPathToPage();
@@ -276,6 +287,30 @@ app.post('/api/admin/recalculate-rankings', (req, res) => {
 		res.json({success: true, message: 'Ranking recalculation started'});
 	}).catch((err) => {
 		console.error('[Rankings] API error:', err);
+		res.status(500).json({error: 'Internal server error'});
+	});
+});
+
+// Admin: Dunya rekorlarini Robin WCA REST API'dan yeniden senkronize et
+app.post('/api/admin/sync-world-records', (req, res) => {
+	const {getMe} = require('./util/auth');
+	const {syncAllWorldRecords} = require('./services/WorldRecordSyncService');
+
+	getMe(req).then((me) => {
+		if (!me || !me.admin) {
+			res.status(403).json({error: 'Forbidden'});
+			return;
+		}
+
+		syncAllWorldRecords().then((result) => {
+			console.log(`[WRSync] Manual sync done. Updated: ${result.updated}, Failed: ${result.failed}`);
+		}).catch((err) => {
+			console.error('[WRSync] Manual sync failed:', err);
+		});
+
+		res.json({success: true, message: 'World record sync started'});
+	}).catch((err) => {
+		console.error('[WRSync] API error:', err);
 		res.status(500).json({error: 'Internal server error'});
 	});
 });

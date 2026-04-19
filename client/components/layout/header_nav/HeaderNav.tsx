@@ -97,7 +97,6 @@ export default function HeaderNav() {
 	const match = useRouteMatch();
 	const me = useMe();
 
-	const focusMode = useSettings('focus_mode');
 	const mobileMode = useGeneral('mobile_mode');
 	const bgTheme = useTheme('background_color');
 	const isLightTheme = bgTheme && !bgTheme.isDark;
@@ -172,10 +171,6 @@ export default function HeaderNav() {
 		window.addEventListener('resize', measureActive);
 		return () => window.removeEventListener('resize', measureActive);
 	}, [pathname, measureActive]);
-
-	if (focusMode) {
-		return null;
-	}
 
 	let notifications = <Notifications />;
 	if (!me) {

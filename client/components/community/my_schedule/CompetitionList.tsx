@@ -10,6 +10,7 @@ import {resourceUri} from '../../../util/storage';
 import {LINKED_SERVICES} from '../../../../shared/integration';
 import {b, I18N_LOCALE_MAP, formatDateRange} from './shared';
 import {prefetchCompetitionDetail} from './CompetitionLoader';
+import {useZktCompListRefetch} from '../zkt_competitions/useZktCompRefetch';
 
 const ZKT_COMPETITIONS_QUERY = gql`
 	query ZktCompetitionsForList($page: Int!, $pageSize: Int!, $searchQuery: String!) {
@@ -21,6 +22,7 @@ const ZKT_COMPETITIONS_QUERY = gql`
 				date_end
 				location
 				status
+				championship_type
 				events {
 					id
 					event_id
@@ -29,6 +31,18 @@ const ZKT_COMPETITIONS_QUERY = gql`
 		}
 	}
 `;
+
+function championshipBadgeKey(type: string | null | undefined): string | null {
+	if (!type) return null;
+	const map: Record<string, string> = {
+		NATIONAL: 'zkt_comp.championship_badge_national',
+		REGIONAL: 'zkt_comp.championship_badge_regional',
+		CITY: 'zkt_comp.championship_badge_city',
+		INVITATIONAL: 'zkt_comp.championship_badge_invitational',
+		YOUTH: 'zkt_comp.championship_badge_youth',
+	};
+	return map[type] || null;
+}
 
 let cachedZktComps: {data: any[]; ts: number} | null = null;
 function getZktCache(): any[] | null {
@@ -91,6 +105,9 @@ export default function CompetitionList() {
 		if (!getListCache()) fetchCompetitions();
 		if (!getZktCache()) fetchZktCompetitions();
 	}, []);
+
+	// Live refresh: any ZKT competition create/update/delete → refetch list.
+	useZktCompListRefetch(fetchZktCompetitions);
 
 	useEffect(() => {
 		if (me && !getMyCache()) fetchMyCompetitions();
@@ -266,6 +283,7 @@ export default function CompetitionList() {
 
 	return (
 		<div className={b('content')}>
+			<h1 className="sr-only">{t('seo.wca_competitions_title')}</h1>
 			{/* WCA banner */}
 			{((!me || (me && myComps !== null && myComps.length === 0)) && !compSearch.trim()) && (
 				<div className={b('wca-banner')}>
@@ -307,36 +325,85 @@ export default function CompetitionList() {
 				</div>
 			)}
 
-			{/* ZKT Yarismalari (Zeka Kupu Turkiye organizasyonlari) */}
-			{!compSearch.trim() && zktComps && zktComps.length > 0 && (
-				<div className={b('zkt-competitions')}>
+			{/* Yaklasan Sampiyonalar — ozel vitrin */}
+			{!compSearch.trim() && zktComps && zktComps.some((c: any) => c.championship_type && c.date_end >= todayStr) && (
+				<div className={b('zkt-championships')}>
 					<h3 className={b('section-title')}>
-						<Trophy weight="fill" style={{marginRight: 8, verticalAlign: 'text-bottom', color: 'rgb(var(--primary-color))'}} />
-						{t('my_schedule.zkt_competitions')}
+						<Trophy weight="fill" style={{marginRight: 8, verticalAlign: 'text-bottom', color: '#ffc400'}} />
+						{t('zkt_comp.upcoming_championships')}
 					</h3>
 					<div className={b('comp-list')}>
-						{zktComps.map((comp: any) => (
-							<div
-								key={comp.id}
-								className={b('comp-card', {zkt: true})}
-								onClick={() => history.push(`/community/zkt-competitions/${comp.id}`)}
-							>
-								<span className={b('zkt-badge')}>ZKT</span>
-								<div className={b('comp-info')}>
-									<span className={b('comp-title')}>{comp.name}</span>
-									<span className={b('comp-sub')}>
-										{formatDateRange(comp.date_start, comp.date_end, locale)}
-										{comp.location && ` \u2013 ${comp.location}`}
-									</span>
-								</div>
-								<span className={b('zkt-status', {[comp.status.toLowerCase()]: true})}>
-									{t(`zkt_comp.status_${comp.status.toLowerCase()}`)}
-								</span>
-							</div>
-						))}
+						{zktComps
+							.filter((c: any) => c.championship_type && c.date_end >= todayStr)
+							.map((comp: any) => {
+								const badgeKey = championshipBadgeKey(comp.championship_type);
+								return (
+									<div
+										key={`champ-${comp.id}`}
+										className={b('comp-card', {zkt: true, championship: true})}
+										onClick={() => history.push(`/community/zkt-competitions/${comp.id}`)}
+									>
+										<span className={b('championship-badge', {[(comp.championship_type || 'default').toLowerCase()]: true})}>
+											{badgeKey ? t(badgeKey) : ''}
+										</span>
+										<div className={b('comp-info')}>
+											<span className={b('comp-title')}>{comp.name}</span>
+											<span className={b('comp-sub')}>
+												{formatDateRange(comp.date_start, comp.date_end, locale)}
+												{comp.location && ` \u2013 ${comp.location}`}
+											</span>
+										</div>
+									</div>
+								);
+							})}
 					</div>
 				</div>
 			)}
+
+			{/* ZKT Yarismalari — aktif sampiyonalari yukaridaki vitrinden tekrar
+			     gosterme, sadece sampiyona olmayan veya gecmis olanlar burada. */}
+			{(() => {
+				const regularZkt = (zktComps || []).filter(
+					(c: any) => !c.championship_type || c.date_end < todayStr
+				);
+				return !compSearch.trim() && regularZkt.length > 0 && (
+					<div className={b('zkt-competitions')}>
+						<h3 className={b('section-title')}>
+							<Trophy weight="fill" style={{marginRight: 8, verticalAlign: 'text-bottom', color: 'rgb(var(--primary-color))'}} />
+							{t('my_schedule.zkt_competitions')}
+						</h3>
+						<div className={b('comp-list')}>
+							{regularZkt.map((comp: any) => {
+							const champBadgeKey = championshipBadgeKey(comp.championship_type);
+							return (
+								<div
+									key={comp.id}
+									className={b('comp-card', {zkt: true, championship: !!comp.championship_type})}
+									onClick={() => history.push(`/community/zkt-competitions/${comp.id}`)}
+								>
+									<span className={b('zkt-badge')}>ZKT</span>
+									{champBadgeKey && (
+										<span className={b('championship-badge', {[(comp.championship_type || 'default').toLowerCase()]: true})}>
+											{t(champBadgeKey)}
+										</span>
+									)}
+									<div className={b('comp-info')}>
+										<span className={b('comp-title')}>{comp.name}</span>
+										<span className={b('comp-sub')}>
+											{formatDateRange(comp.date_start, comp.date_end, locale)}
+											{comp.location && ` \u2013 ${comp.location}`}
+										</span>
+									</div>
+									<span className={b('zkt-status', {[comp.status.toLowerCase()]: true})}>
+										{t(`zkt_comp.status_${comp.status.toLowerCase()}`)}
+									</span>
+								</div>
+							);
+						})}
+						</div>
+					</div>
+				);
+			})()}
 
 			{/* Arama */}
 			<div className={b('search-box')}>

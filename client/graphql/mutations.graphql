@@ -217,32 +217,16 @@ mutation updateZktRoundStatus($input: UpdateZktRoundStatusInput!) {
 	}
 }
 
-mutation upsertZktDelegateReport($input: UpsertZktDelegateReportInput!) {
-	upsertZktDelegateReport(input: $input) {
-		...ZktDelegateReportFragment
+mutation regenerateZktScrambles($roundId: String!) {
+	regenerateZktScrambles(roundId: $roundId) {
+		...ZktScrambleFragment
 	}
 }
 
-mutation submitZktDelegateReport($competitionId: String!) {
-	submitZktDelegateReport(competitionId: $competitionId) {
-		...ZktDelegateReportFragment
+mutation ensureZktScrambles($roundId: String!) {
+	ensureZktScrambles(roundId: $roundId) {
+		...ZktScrambleFragment
 	}
-}
-
-mutation createZktIncident($input: CreateZktIncidentInput!) {
-	createZktIncident(input: $input) {
-		...ZktIncidentFragment
-	}
-}
-
-mutation updateZktIncident($input: UpdateZktIncidentInput!) {
-	updateZktIncident(input: $input) {
-		...ZktIncidentFragment
-	}
-}
-
-mutation deleteZktIncident($id: String!) {
-	deleteZktIncident(id: $id)
 }
 
 mutation submitZktResultsBatch($input: SubmitZktResultsBatchInput!) {
@@ -299,6 +283,15 @@ mutation createZktGroup($input: CreateGroupInput!) {
 
 mutation deleteZktGroup($groupId: String!) {
 	deleteZktGroup(groupId: $groupId)
+}
+
+mutation updateZktGroupSchedule($input: UpdateZktGroupScheduleInput!) {
+	updateZktGroupSchedule(input: $input) {
+		id
+		group_number
+		start_time
+		end_time
+	}
 }
 
 mutation bulkAssignCompetitors($input: BulkAssignCompetitorsInput!) {

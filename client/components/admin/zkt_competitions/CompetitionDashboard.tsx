@@ -9,7 +9,7 @@ import {openModal} from '../../../actions/general';
 import ConfirmModal from '../../common/confirm_modal/ConfirmModal';
 import {toastSuccess, toastError} from '../../../util/toast';
 import Loading from '../../common/loading/Loading';
-import {Trash} from 'phosphor-react';
+import {Trash, ArrowLeft, CalendarBlank, MapPin, Eye} from 'phosphor-react';
 import {b, formatDateRange} from './shared';
 import DashboardOverview from './tabs/DashboardOverview';
 import DashboardRegistrations from './tabs/DashboardRegistrations';
@@ -17,7 +17,7 @@ import DashboardRounds from './tabs/DashboardRounds';
 import DashboardResults from './tabs/DashboardResults';
 import DashboardDelegates from './tabs/DashboardDelegates';
 import DashboardAssignments from './tabs/DashboardAssignments';
-import DashboardDelegateReport from './tabs/DashboardDelegateReport';
+import {useZktCompRefetch} from '../../community/zkt_competitions/useZktCompRefetch';
 
 const DELETE_MUTATION = gql`
 	mutation DeleteZktCompFromDashboard($id: String!) {
@@ -106,7 +106,7 @@ const DETAIL_QUERY = gql`
 	}
 `;
 
-type TabId = 'overview' | 'registrations' | 'rounds' | 'assignments' | 'results' | 'delegates' | 'report';
+type TabId = 'overview' | 'registrations' | 'rounds' | 'assignments' | 'results' | 'delegates';
 
 export default function CompetitionDashboard() {
 	const {competitionId} = useParams<{competitionId: string}>();
@@ -153,6 +153,8 @@ export default function CompetitionDashboard() {
 		fetch();
 	}, [fetch]);
 
+	useZktCompRefetch(competitionId, fetch);
+
 	if (loading) return <Loading />;
 	if (!detail) return <div className={b('empty')}>{t('not_found')}</div>;
 
@@ -165,48 +167,70 @@ export default function CompetitionDashboard() {
 		{id: 'assignments', label: t('tab_assignments')},
 		{id: 'results', label: t('tab_results')},
 		{id: 'delegates', label: t('tab_delegates')},
-		{id: 'report', label: t('tab_delegate_report')},
 	];
 
 	return (
 		<div className={b('dashboard')}>
-			<div className={b('dashboard-header')}>
-				<div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem'}}>
-					<button className={b('back-btn')} onClick={() => history.push('/admin/competitions')}>
-						{t('back')}
-					</button>
+			<div className={b('sticky-header')}>
+				<div className={b('sticky-header-top')}>
 					<button
-						className={b('action-btn', {danger: true})}
-						onClick={handleDelete}
-						style={{marginBottom: '1rem'}}
+						type="button"
+						className={b('icon-btn', {ghost: true})}
+						onClick={() => history.push('/admin/competitions')}
+						title={t('back')}
+						aria-label={t('back')}
 					>
-						<Trash weight="bold" /> {t('delete_competition')}
+						<ArrowLeft weight="bold" />
 					</button>
-				</div>
-				<div className={b('dashboard-title')}>{detail.name}</div>
-				<div className={b('dashboard-meta')}>
-					{formatDateRange(detail.date_start, detail.date_end, locale)} - {detail.location}
-				</div>
-				<div className={b('dashboard-status')}>
-					<span className={b('status', {[detail.status.toLowerCase()]: true})}>
-						{t(`status_${detail.status.toLowerCase()}`)}
-					</span>
-					<span className={b('visibility', {[detail.visibility.toLowerCase()]: true})}>
-						{t(`visibility_${detail.visibility.toLowerCase()}`)}
-					</span>
-				</div>
-			</div>
 
-			<div className={b('tabs')}>
-				{TABS.map((tb) => (
-					<button
-						key={tb.id}
-						className={b('tab', {active: tab === tb.id})}
-						onClick={() => setTab(tb.id)}
-					>
-						{tb.label}
-					</button>
-				))}
+					<div className={b('sticky-header-title-block')}>
+						<div className={b('sticky-header-overline')}>{t('admin_overline')}</div>
+						<h1 className={b('sticky-header-title')}>{detail.name}</h1>
+						<div className={b('sticky-header-meta')}>
+							<span><CalendarBlank weight="bold" /> {formatDateRange(detail.date_start, detail.date_end, locale)}</span>
+							<span><MapPin weight="bold" /> {detail.location}</span>
+							<span className={b('status', {[detail.status.toLowerCase()]: true})}>
+								{t(`status_${detail.status.toLowerCase()}`)}
+							</span>
+							<span className={b('visibility', {[detail.visibility.toLowerCase()]: true})}>
+								{t(`visibility_${detail.visibility.toLowerCase()}`)}
+							</span>
+						</div>
+					</div>
+
+					<div className={b('sticky-header-actions')}>
+						<button
+							type="button"
+							className={b('icon-btn', {ghost: true})}
+							onClick={() => window.open(`/community/zkt-competitions/${detail.id}`, '_blank')}
+							title={t('public_view')}
+							aria-label={t('public_view')}
+						>
+							<Eye weight="bold" />
+						</button>
+						<button
+							type="button"
+							className={b('icon-btn', {danger: true})}
+							onClick={handleDelete}
+							title={t('delete_competition')}
+							aria-label={t('delete_competition')}
+						>
+							<Trash weight="bold" />
+						</button>
+					</div>
+				</div>
+
+				<div className={b('tabs', {sticky: true})}>
+					{TABS.map((tb) => (
+						<button
+							key={tb.id}
+							className={b('tab', {active: tab === tb.id})}
+							onClick={() => setTab(tb.id)}
+						>
+							{tb.label}
+						</button>
+					))}
+				</div>
 			</div>
 
 			<div className={b('tab-content')}>
@@ -216,7 +240,6 @@ export default function CompetitionDashboard() {
 				{tab === 'assignments' && <DashboardAssignments detail={detail} onUpdated={fetch} />}
 				{tab === 'results' && <DashboardResults detail={detail} onUpdated={fetch} />}
 				{tab === 'delegates' && <DashboardDelegates detail={detail} onUpdated={fetch} />}
-			{tab === 'report' && <DashboardDelegateReport detail={detail} onUpdated={fetch} />}
 			</div>
 		</div>
 	);

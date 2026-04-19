@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { Integration } from '../schemas/Integration.schema';
-import {RedisNamespace, createRedisKey, fetchDataFromCache} from './redis';
+import { RedisNamespace, createRedisKey, fetchDataFromCache } from './redis';
 
 export interface WcaPersonalRecord {
 	single?: {
@@ -140,67 +140,90 @@ export class WcaApiService {
 		return ['333bf', '444bf', '555bf', '333fm'];
 	}
 
+
 	/**
-	 * World records (centiseconds, FMC=moves, MBLD=encoded).
-	 * Source: Wikipedia "List of world records in speedcubing" (March 2026).
-	 * WCA API v0 has no records endpoint; update manually when WRs change.
+	 * Hardcoded fallback WRs (centiseconds, FMC=moves, MBLD=encoded).
+	 * Kullanim: DB'deki world_record tablosu bos/eksik oldugunda (ilk deploy, sync hatasi).
+	 * Prod'da asil kaynak: WorldRecordSyncService haftalik sync ile DB'yi doldurur.
 	 */
-	static getWorldRecords(): Record<string, {single: number; average: number}> {
+	static getWorldRecords(): Record<string, { single: number; average: number }> {
 		return {
-			'333':    {single: 276,    average: 384},
-			'222':    {single: 39,     average: 86},
-			'444':    {single: 1518,   average: 1856},
-			'555':    {single: 3045,   average: 3431},
-			'666':    {single: 5769,   average: 6504},
-			'777':    {single: 9348,   average: 9686},
-			'333bf':  {single: 1167,   average: 1405},
-			'333fm':  {single: 16,     average: 1933},
-			'333oh':  {single: 566,    average: 772},
-			'minx':   {single: 2199,   average: 2438},
-			'pyram':  {single: 73,     average: 114},
-			'clock':  {single: 153,    average: 224},
-			'skewb':  {single: 73,     average: 137},
-			'sq1':    {single: 340,    average: 463},
-			'444bf':  {single: 5196,   average: 5939},
-			'555bf':  {single: 11859,  average: 14763},
-			'333mbf': {single: 930058230065, average: 0},
+			'333': { single: 276, average: 384 },
+			'222': { single: 39, average: 86 },
+			'444': { single: 1518, average: 1856 },
+			'555': { single: 3045, average: 3431 },
+			'666': { single: 5769, average: 6504 },
+			'777': { single: 9348, average: 9686 },
+			'333bf': { single: 1167, average: 1405 },
+			'333fm': { single: 16, average: 1933 },
+			'333oh': { single: 566, average: 772 },
+			'minx': { single: 2199, average: 2438 },
+			'pyram': { single: 73, average: 114 },
+			'clock': { single: 153, average: 224 },
+			'skewb': { single: 73, average: 137 },
+			'sq1': { single: 340, average: 463 },
+			'444bf': { single: 5196, average: 5939 },
+			'555bf': { single: 11859, average: 14763 },
+			'333mbf': { single: 930058230065, average: 0 },
 		};
 	}
 
 	/**
 	 * Approximate max competitor counts per event (for SoR missing-event penalty).
 	 */
-	static getMaxRanks(): Record<string, {single: number; average: number}> {
+	static getMaxRanks(): Record<string, { single: number; average: number }> {
 		return {
-			'333':    {single: 250000, average: 200000},
-			'222':    {single: 120000, average: 100000},
-			'444':    {single: 80000,  average: 65000},
-			'555':    {single: 50000,  average: 40000},
-			'666':    {single: 20000,  average: 18000},
-			'777':    {single: 18000,  average: 15000},
-			'333bf':  {single: 15000,  average: 5000},
-			'333fm':  {single: 12000,  average: 5000},
-			'333oh':  {single: 70000,  average: 55000},
-			'minx':   {single: 40000,  average: 30000},
-			'pyram':  {single: 80000,  average: 65000},
-			'clock':  {single: 30000,  average: 25000},
-			'skewb':  {single: 50000,  average: 40000},
-			'sq1':    {single: 30000,  average: 25000},
-			'444bf':  {single: 3000,   average: 500},
-			'555bf':  {single: 1500,   average: 300},
-			'333mbf': {single: 5000,   average: 0},
+			'333': { single: 250000, average: 200000 },
+			'222': { single: 120000, average: 100000 },
+			'444': { single: 80000, average: 65000 },
+			'555': { single: 50000, average: 40000 },
+			'666': { single: 20000, average: 18000 },
+			'777': { single: 18000, average: 15000 },
+			'333bf': { single: 15000, average: 5000 },
+			'333fm': { single: 12000, average: 5000 },
+			'333oh': { single: 70000, average: 55000 },
+			'minx': { single: 40000, average: 30000 },
+			'pyram': { single: 80000, average: 65000 },
+			'clock': { single: 30000, average: 25000 },
+			'skewb': { single: 50000, average: 40000 },
+			'sq1': { single: 30000, average: 25000 },
+			'444bf': { single: 3000, average: 500 },
+			'555bf': { single: 1500, average: 300 },
+			'333mbf': { single: 5000, average: 0 },
 		};
 	}
 
 	/**
 	 * Get WR + max rank data for ranking calculations.
+	 * WRs DB'den (WorldRecordSyncService tarafindan haftalik guncellenir); eksikse hardcode fallback.
 	 */
 	static async fetchRankingData(): Promise<{
-		worldRecords: Record<string, {single: number; average: number}>;
-		maxRanks: Record<string, {single: number; average: number}>;
+		worldRecords: Record<string, { single: number; average: number }>;
+		maxRanks: Record<string, { single: number; average: number }>;
 	}> {
+		const { getWorldRecordsFromDb } = require('./WorldRecordSyncService');
+		const hardcoded = this.getWorldRecords();
+		let dbRecords: Record<string, { single: number; average: number }> = {};
+		try {
+			dbRecords = await getWorldRecordsFromDb();
+		} catch (err) {
+			console.error('[WcaApiService] Failed to read world_record from DB, using hardcoded fallback:', err);
+		}
+
+		// Event basinda DB degeri gecerliyse onu kullan, yoksa hardcode'a dus
+		const merged: Record<string, { single: number; average: number }> = {};
+		const allEvents = new Set([...Object.keys(hardcoded), ...Object.keys(dbRecords)]);
+		for (const event of allEvents) {
+			const db = dbRecords[event];
+			const hc = hardcoded[event];
+			merged[event] = {
+				single: db?.single || hc?.single || 0,
+				average: db?.average || hc?.average || 0,
+			};
+		}
+
 		return {
-			worldRecords: this.getWorldRecords(),
+			worldRecords: merged,
 			maxRanks: this.getMaxRanks(),
 		};
 	}
@@ -230,7 +253,7 @@ export class WcaApiService {
 
 			// Sayfa 1'i cek, toplam sayfa sayisini hesapla
 			const firstRes = await axios.get(`${this.BASE_URL}/competitions`, {
-				params: {...baseParams, page: 1},
+				params: { ...baseParams, page: 1 },
 				timeout: 15000,
 			});
 
@@ -248,7 +271,7 @@ export class WcaApiService {
 			for (let p = 2; p <= totalPages; p++) {
 				pagePromises.push(
 					axios.get(`${this.BASE_URL}/competitions`, {
-						params: {...baseParams, page: p},
+						params: { ...baseParams, page: p },
 						timeout: 15000,
 					}).then((r) => r.data || [])
 				);
@@ -345,7 +368,7 @@ export class WcaApiService {
 	static async fetchMyCompetitions(authToken: string): Promise<any[]> {
 		try {
 			const response = await axios.get(`${this.BASE_URL}/competitions/mine`, {
-				headers: {Authorization: `Bearer ${authToken}`},
+				headers: { Authorization: `Bearer ${authToken}` },
 				timeout: 15000,
 			});
 			const data = response.data;
@@ -366,7 +389,7 @@ export class WcaApiService {
 	static async searchCompetitions(query: string): Promise<any[]> {
 		try {
 			const response = await axios.get(`${this.BASE_URL}/competitions`, {
-				params: {q: query, sort: '-start_date', per_page: 25},
+				params: { q: query, sort: '-start_date', per_page: 25 },
 				timeout: 15000,
 			});
 			return (response.data || []).filter((c: any) => !c.cancelled_at);

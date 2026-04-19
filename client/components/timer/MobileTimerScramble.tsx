@@ -40,7 +40,7 @@ export default function MobileTimerScramble() {
 
     const timerScrambleSize = useSettings('timer_scramble_size');
 
-    const { hideScramble, timeStartedAt, focusMode, scrambleLocked } = context;
+    const { hideScramble, timeStartedAt, scrambleLocked } = context;
     let scramble = context.scramble;
     const lockedScramble = useSettings('locked_scramble');
 
@@ -103,11 +103,6 @@ export default function MobileTimerScramble() {
             setAdjustedFontSize(lo);
         });
     }, [scramble, cubeType, timerScrambleSize]);
-
-    // Focus modunda gizle
-    if (focusMode) {
-        return null;
-    }
 
     if (hideScramble) {
         scramble = '';

@@ -1,73 +1,81 @@
 import React from 'react';
 import {useTranslation} from 'react-i18next';
 import {b} from '../shared';
-import {MapPin, Users, Calendar, User} from 'phosphor-react';
+import {MapPin, Users} from 'phosphor-react';
+
+function openInMaps(query: string) {
+	const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+	window.open(url, '_blank', 'noopener,noreferrer');
+}
+
+function PersonRow({user}: {user: any}) {
+	const {t} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
+	const avatar = user?.profile?.pfp_image?.url;
+	return (
+		<div className={b('info-person')}>
+			{avatar ? (
+				<img src={avatar} alt="" className={b('info-avatar')} />
+			) : (
+				<div className={b('info-avatar-placeholder')}>
+					<Users size={16} />
+				</div>
+			)}
+			<div className={b('info-person-text')}>
+				<span className={b('info-name')}>{user?.username || t('unknown')}</span>
+			</div>
+		</div>
+	);
+}
 
 export default function ZktInfoTab({detail}: {detail: any}) {
 	const {t} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
-
-	const approvedCount = detail.registrations.filter((r: any) => r.status === 'APPROVED').length;
+	const locationFull = [detail.location, detail.location_address].filter(Boolean).join(', ');
 
 	return (
 		<div className={b('info-tab')}>
-			<div className={b('info-grid')}>
-				<div className={b('info-card')}>
-					<Calendar weight="bold" />
-					<div>
-						<div className={b('info-label')}>{t('date')}</div>
-						<div className={b('info-value')}>
-							{new Date(detail.date_start).toLocaleDateString()} -{' '}
-							{new Date(detail.date_end).toLocaleDateString()}
-						</div>
-					</div>
-				</div>
-
-				<div className={b('info-card')}>
-					<MapPin weight="bold" />
-					<div>
-						<div className={b('info-label')}>{t('location')}</div>
-						<div className={b('info-value')}>{detail.location}</div>
-						{detail.location_address && (
-							<div className={b('info-sub')}>{detail.location_address}</div>
-						)}
-					</div>
-				</div>
-
-				<div className={b('info-card')}>
-					<Users weight="bold" />
-					<div>
-						<div className={b('info-label')}>{t('competitors')}</div>
-						<div className={b('info-value')}>
-							{approvedCount}
-							{detail.competitor_limit && ` / ${detail.competitor_limit}`}
-						</div>
-					</div>
-				</div>
-
-				<div className={b('info-card')}>
-					<User weight="bold" />
-					<div>
-						<div className={b('info-label')}>{t('organizer')}</div>
-						<div className={b('info-value')}>{detail.created_by?.username || '-'}</div>
-					</div>
-				</div>
-			</div>
-
+			{/* Description top — markdown desteği yoksa düz metin */}
 			{detail.description && (
-				<div className={b('description-block')}>
-					<h3 className={b('section-title')}>{t('description')}</h3>
+				<div className={b('info-section')}>
+					<h4 className={b('info-section-title')}>{t('description')}</h4>
 					<div className={b('description-text')}>{detail.description}</div>
 				</div>
 			)}
 
-			{detail.delegates.length > 0 && (
-				<div className={b('delegates-block')}>
-					<h3 className={b('section-title')}>{t('delegates')}</h3>
-					<div className={b('delegate-chips')}>
+			{/* Venue / Location — WCA InfoTab pattern */}
+			{detail.location && (
+				<div className={b('info-section')}>
+					<h4 className={b('info-section-title')}>{t('venue')}</h4>
+					<button
+						type="button"
+						className={b('info-venue-link')}
+						onClick={() => openInMaps(locationFull || detail.location)}
+					>
+						<MapPin size={18} />
+						<div>
+							<span className={b('info-name')}>{detail.location}</span>
+							{detail.location_address && (
+								<span className={b('info-sub')}>{detail.location_address}</span>
+							)}
+						</div>
+					</button>
+				</div>
+			)}
+
+			{/* Organizer (creator) */}
+			{detail.created_by && (
+				<div className={b('info-section')}>
+					<h4 className={b('info-section-title')}>{t('organizer')}</h4>
+					<PersonRow user={detail.created_by} />
+				</div>
+			)}
+
+			{/* Delegates */}
+			{detail.delegates && detail.delegates.length > 0 && (
+				<div className={b('info-section')}>
+					<h4 className={b('info-section-title')}>{t('delegates')}</h4>
+					<div className={b('info-people-grid')}>
 						{detail.delegates.map((d: any) => (
-							<span key={d.id} className={b('delegate-chip')}>
-								{d.user?.username || d.user_id}
-							</span>
+							<PersonRow key={d.id} user={d.user} />
 						))}
 					</div>
 				</div>

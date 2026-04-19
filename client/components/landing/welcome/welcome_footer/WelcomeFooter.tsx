@@ -1,5 +1,5 @@
 import React from 'react';
-import { useHistory } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import './WelcomeFooter.scss';
@@ -137,6 +137,18 @@ export default function WelcomeFooter() {
 						</div>
 					</motion.div>
 				</motion.div>
+
+				{/* Internal SEO links — crawlers discover & rank these via anchor text */}
+				<nav className={b('sitemap')} aria-label="Site">
+					<Link to="/timer" className={b('nav-link')}>{t('seo.nav_timer_name')}</Link>
+					<Link to="/trainer" className={b('nav-link')}>{t('seo.nav_trainer_name')}</Link>
+					<Link to="/rooms" className={b('nav-link')}>{t('seo.nav_rooms_name')}</Link>
+					<Link to="/community/competitions" className={b('nav-link')}>{t('seo.nav_competitions_name')}</Link>
+					<Link to="/ranks" className={b('nav-link')}>{t('seo.nav_leaderboards_name')}</Link>
+					<Link to="/battle" className={b('nav-link')}>{t('seo.nav_battle_name')}</Link>
+					<Link to="/pro" className={b('nav-link')}>{t('seo.nav_pro_name')}</Link>
+					<Link to="/signup" className={b('nav-link')}>{t('seo.nav_signup_name')}</Link>
+				</nav>
 
 				{/* Footer Links */}
 				<div className={b('links')}>

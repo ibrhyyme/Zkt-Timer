@@ -5,7 +5,6 @@ export const HOTKEY_MAP = {
 	TOGGLE_DNF: ['Control+3', 'command+3', '3'],
 	RESET_INSPECTION: 'esc',
 	TOGGLE_INSPECTION_MODE: ['alt+i', 'i'],
-	TOGGLE_FOCUS_MODE: ['alt+f', 'f'],
 	CHANGE_CUBE_222: ['alt+2'],
 	CHANGE_CUBE_333: ['alt+3'],
 	CHANGE_CUBE_444: ['alt+4'],

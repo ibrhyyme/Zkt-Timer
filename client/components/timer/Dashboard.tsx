@@ -1,78 +1,26 @@
-import React, { useCallback, useContext, useMemo, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import React, { useContext } from 'react';
 import { TimerContext } from './Timer';
 import { useGeneral } from '../../util/hooks/useGeneral';
-import { fetchSolves, fetchSolveCount } from '../../db/solves/query';
-import { useSolveDb } from '../../util/hooks/useSolveDb';
 import { useSettings } from '../../util/hooks/useSettings';
-import Scramble from '../modules/scramble/ScrambleVisual';
-import HistorySolveRow from '../modules/history/solve_row/HistorySolveRow';
-import Empty from '../common/empty/Empty';
+import { TimerModuleType } from './@types/enums';
+import MobileModuleSlot from './MobileModuleSlot';
 import block from '../../styles/bem';
 import './Dashboard.scss';
 
 const b = block('timer-dashboard');
-const PAGE_SIZE = 50;
 
 export default function Dashboard() {
-    const { t } = useTranslation();
     const context = useContext(TimerContext);
-    const { scramble, originalScramble, cubeType, scrambleSubset, solvesFilter, timeStartedAt, focusMode } = context;
-    // WCA kategorisinde subset seciliyken gorseli subset'in puzzle'ina gore goster
-    const visualCubeType = (cubeType === 'wca' && scrambleSubset) ? scrambleSubset : cubeType;
     const mobileMode = useGeneral('mobile_mode');
-    const sessionId = useSettings('session_id');
+    const mobileModules = useSettings('mobile_timer_modules');
 
-    const dbVersion = useSolveDb();
-    const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-    const listRef = useRef<HTMLDivElement>(null);
-
-    const totalSolveCount = useMemo(() => fetchSolveCount(solvesFilter), [solvesFilter, dbVersion]);
-    const solves = useMemo(() => fetchSolves(solvesFilter, { limit: visibleCount }), [solvesFilter, dbVersion, visibleCount]);
-    const hasMore = visibleCount < totalSolveCount;
-
-    const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-        const target = e.currentTarget;
-        const nearBottom = target.scrollHeight - target.scrollTop - target.clientHeight < 200;
-
-        if (nearBottom && hasMore) {
-            setVisibleCount((prev) => prev + PAGE_SIZE);
-        }
-    }, [hasMore]);
-
-    // Focus modunda gizle
-    if (focusMode) {
-        return null;
-    }
-
-    const historyContent = solves.length > 0 ? (
-        <div className={b('history-list')} ref={listRef} onScroll={handleScroll}>
-            {solves.map((solve, index) => (
-                <HistorySolveRow
-                    key={solve.id}
-                    solve={solve}
-                    index={totalSolveCount - index - 1}
-                    disabled={false}
-                />
-            ))}
-        </div>
-    ) : (
-        <Empty text={t('timer_modules.no_solves_yet')} />
-    );
+    const slot0 = mobileModules[0] || TimerModuleType.HISTORY;
+    const slot1 = mobileModules[1] || TimerModuleType.SCRAMBLE;
 
     return (
         <div className={b({ mobile: mobileMode })}>
-            {/* Sol: Son Çözümler */}
-            <div className={b('section', { history: true })}>
-                <div className={b('section-content')}>
-                    {historyContent}
-                </div>
-            </div>
-
-            {/* Sağ: Scramble Görseli (2D Küp Haritası) */}
-            <div className={b('section', { scramble: true })}>
-                <Scramble cubeType={visualCubeType} scramble={originalScramble || scramble} />
-            </div>
+            <MobileModuleSlot moduleType={slot0} />
+            <MobileModuleSlot moduleType={slot1} />
         </div>
     );
 }

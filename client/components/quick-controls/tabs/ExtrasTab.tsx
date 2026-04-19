@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { setSetting, toggleSetting } from '../../../db/settings/update';
 import { useSettings } from '../../../util/hooks/useSettings';
-import screenfull from '../../../util/vendor/screenfull';
+import { useGeneral } from '../../../util/hooks/useGeneral';
 import { isNative } from '../../../util/platform';
 import { CaretDown, CaretUp, Minus, Plus } from 'phosphor-react';
+import { TimerModuleType } from '../../timer/@types/enums';
+import { MOBILE_MODULE_OPTIONS } from '../../timer/@types/mobile_modules';
 
 interface ExtrasNumberInputProps {
 	label: string;
@@ -100,10 +102,11 @@ interface ExtrasSelectProps {
 	value: string;
 	options: { label: string; value: string }[];
 	hidden?: boolean;
+	openUp?: boolean;
 	onChange: (val: string) => void;
 }
 
-function ExtrasSelect({ label, value, options, hidden, onChange }: ExtrasSelectProps) {
+function ExtrasSelect({ label, value, options, hidden, openUp, onChange }: ExtrasSelectProps) {
 	const [isOpen, setIsOpen] = useState(false);
 	const containerRef = React.useRef<HTMLDivElement>(null);
 
@@ -143,7 +146,7 @@ function ExtrasSelect({ label, value, options, hidden, onChange }: ExtrasSelectP
 				</button>
 
 				{isOpen && (
-					<div className="absolute right-0 mt-2 w-48 rounded-xl bg-module border border-text/[0.1] shadow-xl shadow-black/40 z-50 overflow-hidden text-sm animate-in fade-in zoom-in-95 duration-100 origin-top-right">
+					<div className={`absolute right-0 w-48 rounded-xl bg-module border border-text/[0.1] shadow-xl shadow-black/40 z-50 overflow-hidden text-sm animate-in fade-in zoom-in-95 duration-100 ${openUp ? 'bottom-full mb-2 origin-bottom-right' : 'mt-2 origin-top-right'}`}>
 						<div className="py-1">
 							{options.map((option) => (
 								<button
@@ -171,39 +174,16 @@ function ExtrasSelect({ label, value, options, hidden, onChange }: ExtrasSelectP
 
 export default function ExtrasTab() {
 	const { t } = useTranslation();
-	const focusMode = useSettings('focus_mode');
 	const inspection = useSettings('inspection');
 	const hideTimeWhenSolving = useSettings('hide_time_when_solving');
 	const hapticFeedback = useSettings('haptic_feedback');
 	const timerType = useSettings('timer_type');
 	const freezeTime = useSettings('freeze_time');
 	const analysisMode = useSettings('smart_cube_analysis_mode');
-
-	const [fullScreenMode, setFullScreenMode] = useState(false);
-
-	// Track fullscreen state
-	if (screenfull.isEnabled) {
-		useEffect(() => {
-			const updateFullScreenState = () => setFullScreenMode(screenfull.isFullscreen);
-			updateFullScreenState();
-			screenfull.on('change', updateFullScreenState);
-			return () => screenfull.off('change', updateFullScreenState);
-		}, []);
-	}
+	const mobileModules = useSettings('mobile_timer_modules');
+	const mobileMode = useGeneral('mobile_mode');
 
 	const extrasOptions = [
-		{
-			label: t('quick_controls.full_screen'),
-			isActive: fullScreenMode,
-			hidden: !screenfull.isEnabled,
-			onClick: () => screenfull.toggle(),
-		},
-		{
-			label: t('quick_controls.focus_mode'),
-			isActive: focusMode,
-			hidden: false,
-			onClick: () => toggleSetting('focus_mode'),
-		},
 		{
 			label: t('quick_controls.inspection'),
 			isActive: inspection,
@@ -223,6 +203,31 @@ export default function ExtrasTab() {
 			onClick: () => toggleSetting('haptic_feedback'),
 		},
 	];
+
+	const MODULE_LABELS: Record<string, string> = {
+		[TimerModuleType.HISTORY]: t('timer_modules.history'),
+		[TimerModuleType.SCRAMBLE]: t('timer_modules.scramble'),
+		[TimerModuleType.CROSS_SOLVER]: t('timer_modules.cross_solver'),
+		[TimerModuleType.SOLVE_GRAPH]: t('timer_modules.solve_graph'),
+		[TimerModuleType.TIME_DISTRO]: t('timer_modules.time_distro'),
+	};
+
+	function handleModuleChange(index: number, value: string) {
+		const next = [...(mobileModules || [TimerModuleType.HISTORY, TimerModuleType.SCRAMBLE])];
+		next[index] = value as TimerModuleType;
+		setSetting('mobile_timer_modules', next);
+	}
+
+	function moduleOptions(currentIndex: number) {
+		const current = mobileModules?.[currentIndex];
+		const other = mobileModules?.[currentIndex === 0 ? 1 : 0];
+		return MOBILE_MODULE_OPTIONS
+			.filter((opt) => opt === current || opt !== other)
+			.map((opt) => ({ label: MODULE_LABELS[opt], value: opt as string }));
+	}
+
+	const slot0 = mobileModules?.[0] || TimerModuleType.HISTORY;
+	const slot1 = mobileModules?.[1] || TimerModuleType.SCRAMBLE;
 
 	const analysisOptions = [
 		{ label: t('quick_controls.none'), value: 'none' },
@@ -264,6 +269,24 @@ export default function ExtrasTab() {
 				options={analysisOptions}
 				hidden={timerType !== 'smart'} // Only show if Smart Cube is selected
 				onChange={(val) => setSetting('smart_cube_analysis_mode', val)}
+			/>
+
+			<ExtrasSelect
+				label={t('mobile_modules.slot_left')}
+				value={slot0}
+				options={moduleOptions(0)}
+				hidden={!mobileMode}
+				openUp
+				onChange={(val) => handleModuleChange(0, val)}
+			/>
+
+			<ExtrasSelect
+				label={t('mobile_modules.slot_right')}
+				value={slot1}
+				options={moduleOptions(1)}
+				hidden={!mobileMode}
+				openUp
+				onChange={(val) => handleModuleChange(1, val)}
 			/>
 		</div>
 	);

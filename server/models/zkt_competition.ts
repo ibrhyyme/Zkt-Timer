@@ -62,17 +62,33 @@ export async function listZktCompetitions(params: {
 	searchQuery?: string;
 	status?: ZktCompStatus | null;
 	onlyPublic?: boolean;
+	viewerId?: string | null;
 }) {
 	const prisma = getPrisma();
-	const {page, pageSize, searchQuery, status, onlyPublic} = params;
+	const {page, pageSize, searchQuery, status, onlyPublic, viewerId} = params;
 
 	const where: Prisma.ZktCompetitionWhereInput = {};
 
 	if (onlyPublic) {
-		where.visibility = 'PUBLIC';
-		// Hide pre-announcement states (DRAFT internal, CONFIRMED awaiting announce).
-		// CANCELLED stays visible so users learn about the cancellation.
-		where.status = {notIn: ['DRAFT', 'CONFIRMED']};
+		// Public listing: hide DRAFT/CONFIRMED (pre-announcement) entries.
+		// Visibility: show PUBLIC — plus any PRIVATE comp the viewer is tied to
+		// (registered, delegate, or creator). This way manually-added users on
+		// private competitions still see them in "My Competitions" style lists.
+		const visibilityFilter: Prisma.ZktCompetitionWhereInput[] = [{visibility: 'PUBLIC'}];
+		if (viewerId) {
+			visibilityFilter.push({
+				visibility: 'PRIVATE',
+				OR: [
+					{registrations: {some: {user_id: viewerId}}},
+					{delegates: {some: {user_id: viewerId}}},
+					{created_by_id: viewerId},
+				],
+			});
+		}
+		where.AND = [
+			{OR: visibilityFilter},
+			{status: {notIn: ['DRAFT', 'CONFIRMED']}},
+		];
 	}
 
 	if (status) {
@@ -139,6 +155,7 @@ export async function createZktCompetitionWithEvents(params: {
 	locationAddress?: string | null;
 	competitorLimit?: number | null;
 	visibility: 'PUBLIC' | 'PRIVATE';
+	championshipType?: 'NATIONAL' | 'REGIONAL' | 'CITY' | 'INVITATIONAL' | 'YOUTH' | null;
 	eventIds: string[];
 }) {
 	const prisma = getPrisma();
@@ -153,6 +170,7 @@ export async function createZktCompetitionWithEvents(params: {
 			location_address: params.locationAddress ?? null,
 			competitor_limit: params.competitorLimit ?? null,
 			visibility: params.visibility,
+			...({championship_type: params.championshipType ?? null} as any),
 			created_by_id: params.createdById,
 			events: {
 				create: params.eventIds.map((eventId, index) => ({

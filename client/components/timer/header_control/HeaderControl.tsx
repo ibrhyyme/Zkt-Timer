@@ -1,7 +1,7 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import './HeaderControl.scss';
-import { MagnifyingGlassPlus, FrameCorners, CrosshairSimple, Keyboard, Plus, X, CaretDown, Gear } from 'phosphor-react';
+import { Gear } from 'phosphor-react';
 import { GlobalHotKeys } from 'react-hotkeys';
 import { setCubeType, setSetting } from '../../../db/settings/update';
 import CubePicker from '../../common/cube_picker/CubePicker';
@@ -22,7 +22,6 @@ import { TIMER_INPUT_TYPE_KEYS } from '../../settings/timer/TimerSettings';
 import { useSettings } from '../../../util/hooks/useSettings';
 import { AllSettings, getSetting } from '../../../db/settings/query';
 import { useMe } from '../../../util/hooks/useMe';
-import screenfull from '../../../util/vendor/screenfull';
 import { useQuickControlsModal } from '../../quick-controls/useQuickControlsModal';
 import AccountDropdown from '../../layout/nav/account_dropdown/AccountDropdown';
 import SubsetPicker from './SubsetPicker';
@@ -41,7 +40,7 @@ export default function HeaderControl() {
 
 	const me = useMe();
 	const context = useContext(TimerContext);
-	const { focusMode, cubeType, matchMode } = context;
+	const { cubeType, matchMode } = context;
 	const headerOptions = context.headerOptions || {};
 
 
@@ -49,16 +48,6 @@ export default function HeaderControl() {
 	const manualEntry = useSettings('manual_entry');
 	const inspection = useSettings('inspection');
 	const timerType = useSettings('timer_type');
-
-	const [fullScreenMode, setFullScreenMode] = useState(false);
-	if (screenfull.isEnabled) {
-		useEffect(() => {
-			const updateFullScreenState = () => setFullScreenMode(screenfull.isFullscreen);
-			updateFullScreenState();
-			screenfull.on('change', updateFullScreenState);
-			return () => screenfull.off('change', updateFullScreenState);
-		}, []);
-	}
 
 	function toggleCreateNewSession() {
 		dispatch(openModal(<CreateNewSession />, {
@@ -113,7 +102,6 @@ export default function HeaderControl() {
 
 	const handlers = {
 		TOGGLE_INSPECTION_MODE: () => toggleSetting('inspection'),
-		TOGGLE_FOCUS_MODE: () => toggleSetting('focus_mode'),
 		CHANGE_CUBE_222: () => changeCubeType('222'),
 		CHANGE_CUBE_333: () => changeCubeType('333'),
 		CHANGE_CUBE_444: () => changeCubeType('444'),
@@ -134,7 +122,7 @@ export default function HeaderControl() {
 		manualDisabled = true;
 	}
 
-	const cubePicker = !focusMode && !headerOptions.hideCubeType && (
+	const cubePicker = !headerOptions.hideCubeType && (
 		<div className="flex items-center gap-2">
 			<CubePicker
 				dropdownProps={{ openLeft: true, noMargin: true }}
@@ -153,10 +141,10 @@ export default function HeaderControl() {
 	// Timer type dropdown moved to Quick Controls modal
 	const timerTypeDropdown = null;
 
-	const sessionSwitcher = !focusMode && !headerOptions.hideSessionSelector && <SessionSwitcher />;
+	const sessionSwitcher = !headerOptions.hideSessionSelector && <SessionSwitcher />;
 
 	// Maç modunda gear butonunu gizle
-	const gearButton = !focusMode && !matchMode && (
+	const gearButton = !matchMode && (
 		<Button
 			gray
 			icon={<Gear weight="bold" />}
@@ -167,15 +155,8 @@ export default function HeaderControl() {
 		/>
 	);
 
-	// Extra features dropdown moved to Quick Controls modal, but keep focus mode exit button
-	let topRightButton = null;
-
-	if (focusMode) {
-		topRightButton = <Button noMargin transparent icon={<X />} onClick={() => toggleSetting('focus_mode')} />;
-	}
-
 	// Mobile: minimal header with account dropdown on right
-	if (mobileMode && !focusMode) {
+	if (mobileMode) {
 		return (
 			<GlobalHotKeys handlers={handlers} keyMap={HOTKEY_MAP}>
 				<div className={b()}>
@@ -207,7 +188,6 @@ export default function HeaderControl() {
 				<div>
 					{headerOptions?.customHeadersRight}
 					{timerTypeDropdown}
-					{topRightButton}
 				</div>
 			</div>
 		</GlobalHotKeys>

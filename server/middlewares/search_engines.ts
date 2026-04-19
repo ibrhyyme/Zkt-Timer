@@ -7,4 +7,8 @@ export function exposeResourcesForSearchEngines() {
 	global.app.get('/sitemap.xml', (req, res) => {
 		request('https://zktimer.app/public/uploads/site/sitemaps/sitemap.xml').pipe(res);
 	});
+	global.app.get('/llms.txt', (req, res) => {
+		res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+		request('https://zktimer.app/public/llms.txt').pipe(res);
+	});
 }

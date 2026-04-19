@@ -64,6 +64,7 @@ function BattleInner() {
 
 	return (
 		<div className={b()}>
+			<h1 className="sr-only">{t('seo.battle_title')}</h1>
 			<BattleTimer player={1} onSolve={handleSolve1} />
 
 			{/* Toolbar */}

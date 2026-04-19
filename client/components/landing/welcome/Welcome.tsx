@@ -12,7 +12,7 @@ import { useHistory } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { getStructuredData, SITE_URL, DEFAULT_KEYWORDS } from '../../layout/header/Header';
+import { getStructuredData, SITE_URL, getPageKeywords } from '../../layout/header/Header';
 
 export default function Welcome() {
 	const me = useMe();
@@ -32,6 +32,7 @@ export default function Welcome() {
 
 	const title = t('seo.home_title');
 	const desc = t('seo.home_description');
+	const keywords = getPageKeywords('/', t);
 	const ogImage = `${SITE_URL}/public/welcome/web/timer.jpeg`;
 
 	const lang = i18n.language || 'en';
@@ -42,7 +43,7 @@ export default function Welcome() {
 			<Helmet>
 				<title>{title}</title>
 				<meta name="description" content={desc} />
-				<meta name="keywords" content={DEFAULT_KEYWORDS} />
+				<meta name="keywords" content={keywords} />
 				<meta name="author" content="Zkt Timer" />
 				<link rel="canonical" href={`${SITE_URL}/`} />
 

@@ -138,6 +138,27 @@ export function useZktLiveResults(competitionId: string, roundId: string | null)
 		};
 	}, [roundId, fetchResults]);
 
+	// Polling fallback — if Socket.IO misses an event (disconnect, proxy
+	// issue, browser background throttling), a 10-second interval guarantees
+	// results still converge. Only runs while a round is selected and the
+	// tab is visible, so idle traffic stays low.
+	useEffect(() => {
+		if (!roundId) return;
+		let active = document.visibilityState === 'visible';
+		const onVis = () => {
+			active = document.visibilityState === 'visible';
+			if (active) fetchResults(roundId);
+		};
+		document.addEventListener('visibilitychange', onVis);
+		const id = window.setInterval(() => {
+			if (active) fetchResults(roundId);
+		}, 10000);
+		return () => {
+			window.clearInterval(id);
+			document.removeEventListener('visibilitychange', onVis);
+		};
+	}, [roundId, fetchResults]);
+
 	const refresh = useCallback(() => {
 		if (roundId) fetchResults(roundId);
 	}, [roundId, fetchResults]);

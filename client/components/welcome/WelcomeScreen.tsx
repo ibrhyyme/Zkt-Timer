@@ -8,7 +8,7 @@ import {resourceUri} from '../../util/storage';
 const b = block('welcome-screen');
 
 interface WelcomePage {
-	title: ReactNode;
+	title: string;
 	description: ReactNode;
 	imgSrc: string;
 	action?: ReactNode;
@@ -50,7 +50,7 @@ export default function WelcomeScreen(props: IModalProps) {
 		<div className={b('page')}>
 			<h1>{page.title}</h1>
 			<p>{page.description}</p>
-			<img src={page.imgSrc} />
+			<img src={page.imgSrc} alt={page.title} />
 		</div>
 	);
 

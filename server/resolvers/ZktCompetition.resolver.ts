@@ -31,7 +31,7 @@ import {
 } from '../models/zkt_competition';
 import {buildZktWcif} from '../models/zkt_wcif';
 import {getZktPodiums, getZktAllTimeRankings} from '../models/zkt_podium';
-import {emitZktCompStatusChanged} from '../zkt_competition';
+import {emitZktCompStatusChanged, emitZktCompListChanged} from '../zkt_competition';
 import {sendEmailWithTemplate} from '../services/ses';
 
 function formatCompDate(d: Date): string {
@@ -49,6 +49,7 @@ export class ZktCompetitionResolver {
 	@Authorized([Role.LOGGED_IN])
 	@Query(() => PaginatedZktCompetitions)
 	async zktCompetitions(
+		@Ctx() context: GraphQLContext,
 		@Args() pageArgs: PaginationArgs,
 		@Arg('filter', () => ZktCompetitionFilterInput, {nullable: true}) filter?: ZktCompetitionFilterInput
 	) {
@@ -58,6 +59,7 @@ export class ZktCompetitionResolver {
 			searchQuery: pageArgs.searchQuery,
 			status: filter?.status ?? null,
 			onlyPublic: true,
+			viewerId: context.user?.id ?? null,
 		});
 	}
 
@@ -141,7 +143,7 @@ export class ZktCompetitionResolver {
 		if (!input.eventIds || input.eventIds.length === 0) {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'At least one event required');
 		}
-		return createZktCompetitionWithEvents({
+		const created = await createZktCompetitionWithEvents({
 			createdById: context.user.id,
 			name: input.name,
 			description: input.description ?? null,
@@ -151,8 +153,11 @@ export class ZktCompetitionResolver {
 			locationAddress: input.locationAddress ?? null,
 			competitorLimit: input.competitorLimit ?? null,
 			visibility: input.visibility,
+			championshipType: input.championshipType ?? null,
 			eventIds: input.eventIds,
 		});
+		emitZktCompListChanged({action: 'created', competitionId: created.id});
+		return created;
 	}
 
 	@Authorized([Role.MOD])
@@ -180,6 +185,7 @@ export class ZktCompetitionResolver {
 		if (input.locationAddress !== undefined) data.location_address = input.locationAddress;
 		if (input.competitorLimit !== undefined) data.competitor_limit = input.competitorLimit;
 		if (input.visibility !== undefined) data.visibility = input.visibility;
+		if (input.championshipType !== undefined) data.championship_type = input.championshipType;
 
 		const updated = await getPrisma().zktCompetition.update({
 			where: {id},
@@ -210,6 +216,7 @@ export class ZktCompetitionResolver {
 	async updateZktCompetitionStatus(@Arg('input') input: UpdateZktCompetitionStatusInput) {
 		const updated = await updateZktCompetitionStatus(input.competitionId, input.status);
 		emitZktCompStatusChanged(input.competitionId, input.status);
+		emitZktCompListChanged({action: 'updated', competitionId: input.competitionId});
 		return updated;
 	}
 
@@ -218,6 +225,7 @@ export class ZktCompetitionResolver {
 	async confirmZktCompetition(@Arg('id') id: string) {
 		const updated = await confirmCompetition(id);
 		emitZktCompStatusChanged(id, updated.status);
+		emitZktCompListChanged({action: 'updated', competitionId: id});
 		return updated;
 	}
 
@@ -229,6 +237,7 @@ export class ZktCompetitionResolver {
 	) {
 		const updated = await announceCompetition(id, context.user.id);
 		emitZktCompStatusChanged(id, updated.status);
+		emitZktCompListChanged({action: 'updated', competitionId: id});
 
 		// Notify creator + delegates. Fire-and-forget: one bad email shouldn't
 		// roll back the announcement state transition.
@@ -275,6 +284,7 @@ export class ZktCompetitionResolver {
 	async cancelZktCompetition(@Arg('input') input: CancelZktCompetitionInput) {
 		const updated = await cancelCompetition(input.competitionId, input.reason ?? null);
 		emitZktCompStatusChanged(input.competitionId, updated.status);
+		emitZktCompListChanged({action: 'updated', competitionId: input.competitionId});
 		return updated;
 	}
 
@@ -283,6 +293,7 @@ export class ZktCompetitionResolver {
 	async publishZktResults(@Arg('id') id: string) {
 		const updated = await publishResults(id);
 		emitZktCompStatusChanged(id, updated.status);
+		emitZktCompListChanged({action: 'updated', competitionId: id});
 		return updated;
 	}
 
@@ -291,6 +302,7 @@ export class ZktCompetitionResolver {
 	async unpublishZktResults(@Arg('id') id: string) {
 		const updated = await unpublishResults(id);
 		emitZktCompStatusChanged(id, updated.status);
+		emitZktCompListChanged({action: 'updated', competitionId: id});
 		return updated;
 	}
 
@@ -301,6 +313,7 @@ export class ZktCompetitionResolver {
 		if (!current) throw new GraphQLError(ErrorCode.NOT_FOUND);
 		// Cascade: events -> rounds -> results, registrations, delegates hepsi otomatik silinir
 		await getPrisma().zktCompetition.delete({where: {id}});
+		emitZktCompListChanged({action: 'deleted', competitionId: id});
 		return true;
 	}
 }

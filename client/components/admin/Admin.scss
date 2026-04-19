@@ -1,0 +1,18 @@
+.cd-admin {
+	color: rgb(var(--text-color));
+
+	// Ensure inline SVG icons (phosphor-react, etc.) inherit the text color
+	// in both light and dark themes — otherwise Chrome renders them black.
+	svg {
+		color: inherit;
+		fill: currentColor;
+	}
+
+	button,
+	a,
+	select,
+	input,
+	textarea {
+		color: inherit;
+	}
+}

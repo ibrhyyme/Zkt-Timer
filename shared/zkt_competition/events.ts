@@ -3,6 +3,8 @@
 export enum ZktCompClientEvent {
 	JOIN_COMP = 'zktCompJoin',
 	LEAVE_COMP = 'zktCompLeave',
+	JOIN_LIST = 'zktCompJoinList',
+	LEAVE_LIST = 'zktCompLeaveList',
 }
 
 export enum ZktCompServerEvent {
@@ -12,11 +14,13 @@ export enum ZktCompServerEvent {
 	COMP_STATUS_CHANGED = 'zktCompStatusChanged',
 	REGISTRATION_UPDATED = 'zktCompRegistrationUpdated',
 	ASSIGNMENT_UPDATED = 'zktCompAssignmentUpdated',
+	LIST_CHANGED = 'zktCompListChanged',
 	ERROR = 'zktCompError',
 }
 
 export const ZktCompSocketRoom = {
 	COMP_PREFIX: 'zkt_comp_',
+	LIST: 'zkt_comp_list',
 };
 
 export function getZktCompSocketRoom(competitionId: string): string {

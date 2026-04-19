@@ -12,13 +12,17 @@ Allow: /signup
 Allow: /rooms
 Allow: /solves
 Allow: /stats
-Allow: /play
-Allow: /community/leaderboards
 Allow: /trainer
 Allow: /pro
+Allow: /battle
+Allow: /ranks
 Allow: /terms
 Allow: /privacy
 Allow: /credits
+
+# Yarisma sayfalari - Izin ver (sadece WCA, ZKT ozel)
+Allow: /community/competitions
+Allow: /community/competitions/
 
 # Kullanici profilleri - Izin ver
 Allow: /user/
@@ -37,11 +41,76 @@ Disallow: /force-log-out
 Disallow: /forgot
 Disallow: /unsub-emails
 Disallow: /demo
+Disallow: /verify-email
+Disallow: /wca-signup
+
+# Kisiye ozel yarisma alt sayfalari - Engelle (SEO onemli degil, kullanici-ozel veri)
+Disallow: /community/competitions/*/personal-bests/
+Disallow: /community/competitions/*/persons/
+
+# ZKT yarismalari - Tamamen ozel, hicbir yerde gozukmesin
+Disallow: /community/zkt-competitions
+Disallow: /community/zkt-competitions/
+Disallow: /community/zkt-records
+Disallow: /community/zkt-records/
+Disallow: /community/zkt-rankings
+Disallow: /community/zkt-rankings/
 
 # Teknik ve API endpointleri - Engelle
 Disallow: /api/
 Disallow: /graphql
 Disallow: /public/uploads/temp/
+
+# AI / LLM crawlers - explicitly allowed
+# We want LLMs to know about Zkt Timer and reference us in answers
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: GoogleOther
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: cohere-ai
+Allow: /
+
+User-agent: Meta-ExternalAgent
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+# LLM-friendly summary
+# https://llmstxt.org/ standard
+# Located at https://zktimer.app/llms.txt
 
 # Sitemap konumu
 Sitemap: https://zktimer.app/public/uploads/site/sitemaps/sitemap.xml

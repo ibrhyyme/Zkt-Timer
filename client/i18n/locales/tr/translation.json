@@ -810,8 +810,8 @@
 		"last_solve": "Son Çözüm",
 		"scramble": "Karıştırma",
 		"consistency": "Tutarlılık",
-		"solve_graph": "süre Grafiği",
-		"time_distro": "süre Dağılımı",
+		"solve_graph": "Süre Grafiği",
+		"time_distro": "Süre Dağılımı",
 		"cross_solver": "Çözücüler",
 		"none": "Hiçbiri",
 		"customize_stats": "İstatistikleri Özelleştir",
@@ -828,6 +828,11 @@
 		"new_scramble": "Yeni karıştırma",
 		"previous_scramble": "Önceki karıştırma",
 		"next_scramble": "Sonraki karıştırma"
+	},
+	"mobile_modules": {
+		"title": "Modüller",
+		"slot_left": "Sol Modül",
+		"slot_right": "Sağ Modül"
 	},
 	"solve_info": {
 		"solve_tab": "Çözüm",
@@ -1389,10 +1394,24 @@
 		"select_people": "{{count}} Kişi Seç"
 	},
 	"seo": {
-		"home_title": "Zkt Timer | Online Zeka Küpü Timer ve Speedcubing Platformu",
-		"home_description": "En gelişmiş online zeka küpü timer. Çözümlerini kaydet, canlı odalarda yarış, algoritma öğren ve sıralamalarda yüksel. Tüm WCA etkinlikleri: 3x3, 2x2, 4x4, Pyraminx, Megaminx ve daha fazlası.",
+		"home_title": "Zkt Timer | Zeka Küpü Timer, WCA Yarışmaları ve Speedcubing Platformu",
+		"home_description": "En gelişmiş online zeka küpü timer ve WCA yarışma platformu. Canlı WCA yarışmaları, canlı sonuç takibi, çözüm kaydı, canlı yarışma odaları, algoritma öğreticisi. Tüm WCA etkinlikleri: 3x3, 2x2, 4x4, Pyraminx, Megaminx ve daha fazlası.",
 		"timer_title": "Zeka Küpü Timer - Zkt Timer",
 		"timer_description": "Profesyonel zeka küpü timer. Milisaniye hassasiyetinde ölçüm, WCA scramble algoritmaları, akıllı küp desteği ve detaylı performans analizi. Speedcubing için en iyi timer.",
+		"wca_competitions_title": "WCA Yarışmaları - Canlı Sonuçlar ve Programlar | Zkt Timer",
+		"wca_competitions_description": "Dünya genelindeki tüm WCA zeka küpü yarışmalarını keşfet. Canlı sonuçlar, yarışma programları, kayıt bilgileri, katılımcı listeleri ve canlı takip. Tüm resmi WCA speedcubing yarışmaları tek platformda.",
+		"wca_competition_detail_title": "WCA Yarışma Detayı - Canlı Sonuçlar | Zkt Timer",
+		"wca_competition_detail_description": "WCA yarışmasının tüm detayları: etkinlikler, program, katılımcılar, canlı sonuçlar ve kişisel rekor takibi. Yarışma sırasında canlı skor güncellemeleri ve sıralama.",
+		"zkt_competition_detail_title": "ZKT Yarışma Detayı - Canlı Sonuçlar | Zkt Timer",
+		"zkt_competition_detail_description": "ZKT gayri resmi yarışma detayları. Canlı sonuçlar, etkinlikler, kayıt, skorkart girişi, canlı yayın ve rekor takibi.",
+		"zkt_records_title": "ZKT Rekorları | Zkt Timer",
+		"zkt_records_description": "ZKT gayri resmi zeka küpü rekorları. Tüm WCA etkinliklerinde single ve average rekorları. Güncel rekor listesi ve tarihçe.",
+		"zkt_rankings_title": "ZKT Sıralamaları | Zkt Timer",
+		"zkt_rankings_description": "ZKT yarışmalarındaki en hızlı speedcuber'lar. Etkinlik bazlı sıralamalar, single ve average rekorları, en iyi ortalamalar.",
+		"pro_title": "Zkt Timer Pro - Premium Üyelik",
+		"pro_description": "Zkt Timer Pro ile gelişmiş istatistikler, sınırsız oturum, PDF dışa aktarma, tüm algoritma eğitmenleri ve premium özelliklere erişim sağla.",
+		"battle_title": "1v1 Battle Modu - Zkt Timer",
+		"battle_description": "Arkadaşınla aynı ekranda 1v1 battle! Bağımsız başlangıç, ceza takibi, tur geçmişi. Mobil zeka küpü düellosu.",
 		"login_title": "Giriş Yap - Zkt Timer",
 		"login_description": "Zkt Timer hesabına giriş yap. Çözümlerini kaydet, istatistiklerini takip et ve sıralamalarda yerini al.",
 		"signup_title": "Hesap Oluştur - Zkt Timer",
@@ -1416,9 +1435,20 @@
 		"leaderboards_description": "En hızlı zeka küpü çözücüler! Single ve Average rekorları, kategori bazlı sıralamalar.",
 		"demo_title": "Demo Modu - Zkt Timer",
 		"demo_description": "Zkt Timer'ı dene! Hesap oluşturmadan timer özelliklerini keşfet.",
-		"app_description": "En gelişmiş online zeka küpü ve rubik küp timer uygulaması. Speedcubing zamanlayıcı.",
-		"feature_list": ["Zeka küpü timer", "Rubik küp timer", "Canlı yarışma odaları", "Global sıralama", "Algoritma eğitmeni", "Akıllı küp desteği", "Stackmat Timer desteği"],
+		"app_description": "En gelişmiş online zeka küpü timer, WCA yarışma ve speedcubing platformu. Milisaniye hassasiyetinde zamanlayıcı.",
+		"feature_list": [
+			"Zeka küpü timer",
+			"WCA yarışma takibi",
+			"Canlı yarışma sonuçları",
+			"Canlı yarışma odaları",
+			"Global sıralama",
+			"Algoritma eğitmeni",
+			"Akıllı küp desteği",
+			"Stackmat Timer desteği"
+		],
 		"nav_timer_desc": "Profesyonel zeka küpü zamanlayıcı",
+		"nav_competitions_name": "WCA Yarışmaları",
+		"nav_competitions_desc": "Dünya genelindeki WCA zeka küpü yarışmaları, canlı sonuçlar ve programlar",
 		"nav_rooms_name": "Canlı Yarışma Odaları",
 		"nav_rooms_desc": "Diğer küpçülerle canlı yarış",
 		"nav_leaderboards_name": "Sıralama",
@@ -1428,17 +1458,142 @@
 		"nav_signup_name": "Kayıt Ol",
 		"nav_signup_desc": "İstatistiklerini bulutta sakla ve analiz et",
 		"breadcrumb_home": "Ana Sayfa",
-		"keywords": "zeka küpü timer, rubik küp, küp zamanlayıcı, speedcubing, zeka küpü çözümü, rubik küp timer, 3x3 küp, 2x2 küp, 4x4 küp, zeka küpü yarışması, küp çözme, cubing timer, rubik küp algoritma, zeka küpü nasıl çözülür",
+		"keywords": "rubik küp zamanlayıcı, zeka küpü timer, küp zamanlayıcı, online küp timer, WCA yarışmaları, speedcubing Türkiye, zeka küpü, algoritma antrenörü",
+		"home_keywords": "rubik küp zamanlayıcı, online küp timer, speedcubing platformu, zeka küpü topluluğu, WCA timer",
+		"timer_keywords": "rubik küp zamanlayıcı, online timer, WCA karıştırma, stackmat timer, akıllı küp timer, milisaniye hassasiyeti",
+		"trainer_keywords": "OLL antrenörü, PLL antrenörü, F2L antrenörü, ZBLL antrenörü, algoritma antrenörü, rubik küp algoritmaları, speedcubing algoritmaları",
+		"rooms_keywords": "online küp yarışı, çok oyunculu speedcubing, canlı yarış odaları, küp yarışı, speedcubing online",
+		"battle_keywords": "1v1 küp düellosu, rubik küp düellosu, versus mod, küp karşılaşması, speedcubing düellosu",
+		"leaderboards_keywords": "rubik küp sıralaması, speedcubing liderlik tablosu, en hızlı cuberlar, küp rekorları, en iyi çözücüler",
+		"stats_keywords": "rubik küp istatistikleri, çözüm analizi, küp ortalamaları, speedcubing istatistik, kişisel rekorlar",
+		"solves_keywords": "rubik küp çözüm geçmişi, çözüm kayıtları, scramble geçmişi, küp çözüm günlüğü",
+		"pro_keywords": "Zkt Timer Pro, premium küp timer, gelişmiş speedcubing özellikleri, speedcubing pro üyelik",
+		"user_profile_keywords": "cuber profili, speedcuber, zeka küpü topluluk profili, WCA profili",
+		"wca_competitions_keywords": "WCA yarışmaları, speedcubing yarışmaları, rubik küp yarışmaları, WCA canlı, yarışma takvimi",
+		"zkt_competitions_keywords": "ZKT yarışması, Türkiye gayri resmi küp yarışması, ulusal küp etkinliği, Türkiye speedcubing",
+		"zkt_records_keywords": "ZKT rekorları, Türkiye küp rekorları, ulusal rekorlar, Türkiye rubik küp rekorları",
+		"zkt_rankings_keywords": "ZKT sıralama, Türkiye küp sıralaması, ulusal sıralama, Türk speedcuberlar",
+		"login_keywords": "Zkt Timer giriş, küp timer kayıt, speedcubing hesabı",
+		"demo_keywords": "Zkt Timer demo, küp timer dene, speedcubing demo",
+		"wca_live_title": "WCA Canlı Sonuçlar - Anlık Sıralama | Zkt Timer",
+		"wca_live_description": "Canlı WCA yarışma sonuçları. Gerçek zamanlı tur sıralaması, çözüm süreleri ve etkinlik takibi.",
+		"wca_person_title": "Yarışmacı Profili - WCA Yarışması | Zkt Timer",
+		"wca_person_description": "WCA yarışmasındaki yarışmacının detayları, etkinlik sonuçları ve kişisel rekorları.",
+		"wca_activity_title": "Yarışma Etkinliği - WCA Programı | Zkt Timer",
+		"wca_activity_description": "Etkinlik detayları: planlanmış etkinlikler, turlar ve yarışmacı atamaları.",
+		"wca_personal_bests_title": "Kişisel Rekorlar - WCA Yarışmacısı | Zkt Timer",
+		"wca_personal_bests_description": "Yarışmacının tüm WCA etkinliklerindeki kişisel rekorları.",
+		"zkt_live_title": "ZKT Canlı Sonuçlar - Yarışma Sıralaması | Zkt Timer",
+		"zkt_live_description": "Canlı ZKT yarışma sonuçları. Tur sıralaması, etkinlik ilerlemesi ve gerçek zamanlı çözüm süreleri.",
+		"zkt_competitor_title": "Yarışmacı Profili - ZKT Yarışması | Zkt Timer",
+		"zkt_competitor_description": "ZKT yarışmasındaki yarışmacının detayları, etkinlik sonuçları ve sıralaması.",
+		"zkt_activity_title": "Yarışma Etkinliği - ZKT Grupları | Zkt Timer",
+		"zkt_activity_description": "Grup etkinliği detayları: etkinlik, tur, hakem ve yarışmacı atamaları.",
 		"faq": [
-			{"q": "Zkt Timer nedir ve ne işe yarar?", "a": "Zkt Timer, dünyanın en gelişmiş zeka küpü (Rubik Küp) timer platformlarından biridir. Speedcubing çözüm sürelerinizi milisaniye hassasiyetinde ölçer, WCA resmi scramble algoritmaları sunar, detaylı istatistikler ve performans analizi sağlar. Canlı yarış odaları, global sıralama, akıllı küp desteği ve algoritma öğreticisi gibi profesyonel özellikler içerir."},
-			{"q": "Zkt Timer nasıl çalışır?", "a": "Zkt Timer'a kayıt olarak hemen başlayabilirsiniz. Timer, istatistikler, online yarışmalar, trainer ve sıralamalar gibi temel özellikler mevcuttur. Pro üyelik ile ek premium özelliklerden de yararlanabilirsiniz."},
-			{"q": "Hangi zeka küpü türlerini destekler?", "a": "Zkt Timer tüm WCA resmi kategorilerini destekler: 2x2, 3x3, 4x4, 5x5, 6x6, 7x7; Pyraminx, Megaminx, Skewb, Square-1, Clock; 3x3 Tek El, 3x3 Gözü Kapalı ve daha fazlası. Her kategori için WCA resmi scramble algoritmaları kullanılır."},
-			{"q": "İnternet bağlantısı olmadan kullanabilir miyim?", "a": "Evet! Zkt Timer PWA teknolojisi sayesinde çevrimdışı çalışabilir. Tarayıcınızda 'Ana ekrana ekle' seçeneği ile uygulamayı yükledikten sonra internet olmadan timer'ı kullanabilirsiniz. Verileriniz internet bağlantısı kurulduğunda otomatik senkronize edilir."},
-			{"q": "WCA resmi bir timer mı?", "a": "Zkt Timer, WCA resmi scramble algoritmalarını kullanan bir antrenman platformudur. Resmi WCA yarışmalarında fiziksel Stackmat Timer zorunludur. Zkt Timer antrenman, pratik ve istatistik takibi için idealdir."},
-			{"q": "Hangi cihazlarda çalışır?", "a": "Zkt Timer tüm modern tarayıcılarda çalışır. Windows, macOS, Linux, Android ve iOS desteklenir. PWA olarak telefonunuza uygulama gibi yüklenebilir. Smart Cube (GAN, MoYu) ve Stackmat Timer ile de uyumludur."},
-			{"q": "Verilerim güvende mi?", "a": "Evet, tüm solve kayıtları ve hesap bilgileri güvenli şekilde saklanır. Verileriniz hem sunucuda hem de tarayıcınızın yerel veritabanında tutulur. İstediğiniz zaman hesabınızı ve verilerinizi silebilirsiniz."},
-			{"q": "Online yarışmalara nasıl katılabilirim?", "a": "Hesap oluşturun, 'Odalar' bölümünden açık yarış odalarına katılabilir veya arkadaşlarınızla özel oda oluşturabilirsiniz. Gerçek zamanlı yarışmalar düzenlenir ve sıralamada yerinizi alırsınız."}
-		]
+			{
+				"q": "Zkt Timer nedir ve ne işe yarar?",
+				"a": "Zkt Timer, dünyanın en gelişmiş zeka küpü (Rubik Küp) timer platformlarından biridir. Speedcubing çözüm sürelerinizi milisaniye hassasiyetinde ölçer, WCA resmi scramble algoritmaları sunar, detaylı istatistikler ve performans analizi sağlar. Canlı yarış odaları, global sıralama, akıllı küp desteği ve algoritma öğreticisi gibi profesyonel özellikler içerir."
+			},
+			{
+				"q": "Zkt Timer nasıl çalışır?",
+				"a": "Zkt Timer'a kayıt olarak hemen başlayabilirsiniz. Timer, istatistikler, online yarışmalar, trainer ve sıralamalar gibi temel özellikler mevcuttur. Pro üyelik ile ek premium özelliklerden de yararlanabilirsiniz."
+			},
+			{
+				"q": "Hangi zeka küpü türlerini destekler?",
+				"a": "Zkt Timer tüm WCA resmi kategorilerini destekler: 2x2, 3x3, 4x4, 5x5, 6x6, 7x7; Pyraminx, Megaminx, Skewb, Square-1, Clock; 3x3 Tek El, 3x3 Gözü Kapalı ve daha fazlası. Her kategori için WCA resmi scramble algoritmaları kullanılır."
+			},
+			{
+				"q": "İnternet bağlantısı olmadan kullanabilir miyim?",
+				"a": "Evet! Zkt Timer PWA teknolojisi sayesinde çevrimdışı çalışabilir. Tarayıcınızda 'Ana ekrana ekle' seçeneği ile uygulamayı yükledikten sonra internet olmadan timer'ı kullanabilirsiniz. Verileriniz internet bağlantısı kurulduğunda otomatik senkronize edilir."
+			},
+			{
+				"q": "WCA resmi bir timer mı?",
+				"a": "Zkt Timer, WCA resmi scramble algoritmalarını kullanan bir antrenman platformudur. Resmi WCA yarışmalarında fiziksel Stackmat Timer zorunludur. Zkt Timer antrenman, pratik ve istatistik takibi için idealdir."
+			},
+			{
+				"q": "Hangi cihazlarda çalışır?",
+				"a": "Zkt Timer tüm modern tarayıcılarda çalışır. Windows, macOS, Linux, Android ve iOS desteklenir. PWA olarak telefonunuza uygulama gibi yüklenebilir. Smart Cube (GAN, MoYu) ve Stackmat Timer ile de uyumludur."
+			},
+			{
+				"q": "Verilerim güvende mi?",
+				"a": "Evet, tüm solve kayıtları ve hesap bilgileri güvenli şekilde saklanır. Verileriniz hem sunucuda hem de tarayıcınızın yerel veritabanında tutulur. İstediğiniz zaman hesabınızı ve verilerinizi silebilirsiniz."
+			},
+			{
+				"q": "Online yarışmalara nasıl katılabilirim?",
+				"a": "Hesap oluşturun, 'Odalar' bölümünden açık yarış odalarına katılabilir veya arkadaşlarınızla özel oda oluşturabilirsiniz. Gerçek zamanlı yarışmalar düzenlenir ve sıralamada yerinizi alırsınız."
+			},
+			{
+				"q": "WCA yarışmalarını nasıl takip ederim?",
+				"a": "'Yarışmalar' bölümünden dünya genelindeki tüm WCA zeka küpü yarışmalarına göz atabilirsiniz. Her yarışmanın detay sayfasında program, katılımcı listesi, etkinlikler ve canlı sonuçlar bulunur. WCA hesabınızı bağlayarak kayıtlı olduğunuz yarışmaların kişisel programınızı da görebilirsiniz."
+			},
+			{
+				"q": "Akıllı küpü nasıl bağlarım?",
+				"a": "Zkt Timer GAN, Giiker ve Particula akıllı küplerini Bluetooth ile destekler. Mobilde Bluetooth'u açıp Capacitor BLE plugin'ini kullanın; web tarayıcısında Web Bluetooth destekleyen Chrome veya Edge kullanın. Timer'dan Smart Cube menüsünü açın, Tara'ya basın ve cihazınızla eşleştirin. Bağlandıktan sonra timer küpün durumuna göre otomatik başlar ve durur."
+			},
+			{
+				"q": "Zkt Timer Stackmat Timer destekliyor mu?",
+				"a": "Evet. Stackmat Timer'ınızı ses girişi (3.5mm jack) ile bağlayın. Timer ayarlarından StackMat'ı giriş tipi olarak seçin, sonra doğru ses giriş cihazını belirleyin. Timer, Stackmat sinyallerini otomatik algılar."
+			},
+			{
+				"q": "Algoritma antrenörü nedir?",
+				"a": "Algoritma antrenörü OLL, PLL, F2L, ZBLL ve diğer küp algoritmalarını aralıklı tekrar ile çalışmana yardım eder. Her algoritma için 3D küp veya 2D desen gösterir, algoritma başına çözüm süreni takip eder ve en çok pratik gereken algoritmaları sıraya koyar. Akıllı küplerle desen eşleştirmeyi destekler."
+			},
+			{
+				"q": "OLL ve PLL nedir?",
+				"a": "OLL (Orientation of the Last Layer) ve PLL (Permutation of the Last Layer), CFOP speedsolving yönteminin son iki adımıdır. OLL'de son katmanı yönlendiren 57 algoritma vardır; PLL'de parçaları yer değiştiren 21 algoritma vardır. Bunları öğrenmek sub-20 çözümler için şarttır."
+			},
+			{
+				"q": "Pro üyelik ne kazandırır?",
+				"a": "Zkt Timer Pro; gelişmiş istatistikler, sınırsız oturum, algoritma ve istatistiklerinin PDF dışa aktarımı, tüm algoritma antrenörlerine erişim, premium temalar ve öncelikli destek sağlar. Plana göre tek seferlik veya tekrar eden bir satın alımdır."
+			},
+			{
+				"q": "csTimer veya Twisty Timer'dan veri aktarabilir miyim?",
+				"a": "Evet. Zkt Timer csTimer, Twisty Timer ve kendi önceki dışa aktarma formatlarından veri içe aktarımı destekler. Ayarlar > Veri > İçe Aktar'a git, kaynak formatı seç ve dışa aktarma dosyanı yükle. Tüm çözümler, oturumlar ve üst veriler korunur."
+			},
+			{
+				"q": "Verilerimi nasıl yedekleyebilirim?",
+				"a": "Ayarlar > Veri > Dışa Aktar'a gidin. Zkt Timer tüm çözümlerinizi, oturumlarınızı ve ayarlarınızı içeren bir JSON dosyası üretir. Bu dosyayı güvenli bir yerde saklayın — herhangi bir cihazda yeniden içe aktarabilirsiniz. Giriş yapmış kullanıcılar ayrıca otomatik bulut senkronizasyonu alır."
+			},
+			{
+				"q": "Zkt Timer hangi scramble algoritmasını kullanıyor?",
+				"a": "Zkt Timer, speedcubing'de standart olan cstimer ile aynı scramble motorunu kullanır. Bu 2x2, 3x3, 4x4, Pyraminx, Megaminx, Skewb, Square-1, Clock ve daha fazlası için WCA uyumlu random-state scramble üreticileri içerir. Tüm scramble'lar WCA kurallarına uygundur."
+			},
+			{
+				"q": "Battle modu nedir?",
+				"a": "Battle modu paylaşımlı mobil ekranda 1v1 rekabet modudur. İki cuber bağımsız başlama süresi, ceza takibi (+2, DNF), round bazlı puanlama ve her round'u inceleyen detay modali ile yan yana yarışır. Arkadaşlarla hızlı düellolar için mükemmel."
+			},
+			{
+				"q": "Liderlik tablolarına nasıl girerim?",
+				"a": "Global liderlik tabloları en iyi tekil çözümleri ve en iyi ortalamaları gösterir. Görünmek için Zkt Timer hesabına, doğrulanmış çözümlere (timerdan, manuel girişten değil) ihtiyacınız var ve çözüm işaretlenmemiş olmalı. En iyi süreler otomatik yayınlanır; hangi çözümlerin herkese açık olduğunu siz de yönetebilirsiniz."
+			},
+			{
+				"q": "Hesabımı silebilir miyim?",
+				"a": "Evet, tamamen. Ayarlar > Hesap > Tehlike Bölgesi > Hesabı Sil'e gidin. Bu işlem tüm çözümlerinizi, oturumlarınızı, profil verilerinizi ve WCA bağlantınızı kalıcı olarak siler. İşlem geri alınamaz. Yedek istiyorsanız önce verilerinizi dışa aktarın."
+			},
+			{
+				"q": "Zkt Timer ücretsiz mi?",
+				"a": "Zkt Timer'ın temel özellikleri tamamen ücretsizdir: timer, scramble'lar, temel istatistikler, online odalar, liderlik tabloları ve algoritma antrenörü. Pro üyelik gelişmiş özellikleri açar. Reklam yoktur."
+			},
+			{
+				"q": "iOS veya Android uygulaması var mı?",
+				"a": "Evet. Zkt Timer, iOS App Store ve Google Play Store'da native olarak mevcuttur. Uygulamalar akıllı küp Bluetooth desteği, offline mod, push bildirimleri ve native performans içerir. Web uygulamasını PWA olarak da yükleyebilirsiniz."
+			},
+			{
+				"q": "Inspection modu nedir?",
+				"a": "Inspection modu, WCA kurallarıyla eşleşen her çözüm öncesi 15 saniyelik geri sayımdır. Inspection sırasında küpe dokunmadan scramble'ı incelersiniz. 8 ve 12 saniyede sesli uyarı çalar, 15 saniyeden sonra başlamak +2 cezası alır (17+ saniye DNF'dir)."
+			},
+			{
+				"q": "Farklı küp tipleri için istatistikler ayrı mı tutuluyor?",
+				"a": "Evet. Zkt Timer istatistikleri (küp tipi, scramble alt kümesi) ile gruplar. 3x3 ortalamalarınız, 2x2 kişisel rekorlarınız ve Pyraminx süreleriniz bağımsız olarak takip edilir. İstatistikler sayfası küp tipi ve zaman aralığına göre filtreleme yapmanıza olanak tanır."
+			},
+			{
+				"q": "Zkt Timer internet olmadan nasıl çalışır?",
+				"a": "PWA olarak Zkt Timer ilk ziyaretten sonra tüm uygulama dosyalarını önbelleğe alır. Tamamen offline olarak çözüm zamanlayabilir, scramble üretebilir ve önbelleğe alınmış istatistikleri görüntüleyebilirsiniz. Yeniden bağlandığınızda bekleyen çözümler Background Sync API ile otomatik senkronize edilir."
+			}
+		],
+		"nav_timer_name": "Zamanlayıcı",
+		"nav_battle_name": "Battle Modu",
+		"nav_pro_name": "Zkt Timer Pro"
 	},
 	"quick_controls": {
 		"timer": "Timer",
@@ -2250,10 +2405,23 @@
 		"visibility": "Görünürlük",
 		"visibility_public": "Herkese Açık",
 		"visibility_private": "Gizli",
+		"championship_type": "Şampiyona Türü",
+		"championship_none": "Şampiyona değil",
+		"championship_national": "Türkiye Şampiyonası",
+		"championship_regional": "Bölge Şampiyonası",
+		"championship_city": "İl Şampiyonası",
+		"championship_invitational": "Davetli Turnuva",
+		"championship_youth": "Gençlik Şampiyonası",
+		"championship_badge_national": "Türkiye Şampiyonası",
+		"championship_badge_regional": "Bölge Şampiyonası",
+		"championship_badge_city": "İl Şampiyonası",
+		"championship_badge_invitational": "Davetli",
+		"championship_badge_youth": "Gençlik",
+		"upcoming_championships": "Yaklaşan Şampiyonalar",
 		"step_basic": "Temel Bilgiler",
 		"step_details": "Detaylar",
 		"step_events": "Etkinlikler",
-		"next": "İleri",
+		"next": "Sonraki",
 		"description_placeholder": "Yarışma hakkında detaylı bilgi...",
 		"location_address_placeholder": "Tam adres, kroki, ulaşım bilgisi...",
 		"section_basic_info": "Temel Bilgiler",
@@ -2367,6 +2535,20 @@
 		"cutoff_short": "CF",
 		"advancement": "İlerleme",
 		"advancement_short": "İlerleme",
+		"col_event": "Etkinlik",
+		"col_round": "Tur",
+		"col_format": "Format",
+		"col_groups": "Grup Sayısı",
+		"col_group": "Grup",
+		"col_name": "İsim",
+		"col_role": "Görev",
+		"col_station": "İstasyon",
+		"no_groups_in_round": "Bu tur için grup tanımlanmamış",
+		"no_results_yet": "Henüz sonuç yok",
+		"tab_rankings": "Sıralama",
+		"competitor_not_found": "Yarışmacı bulunamadı",
+		"schedule_and_assignments": "Program ve Görevler",
+		"schedule_warning": "Saatler kesin değildir, organizatör tarafından güncellenebilir.",
 		"advancement_type": "İlerleme Tipi",
 		"advancement_ranking": "İlk N Kişi",
 		"advancement_percent": "Yüzdelik",
@@ -2379,14 +2561,23 @@
 		"total_competitors": "{{count}} yarışmacı",
 		"search_competitors": "Yarışmacı ara",
 		"organizer": "Organizatör",
+		"venue": "Mekan",
+		"you": "SEN",
+		"unknown": "Bilinmeyen",
 		"competitors": "Yarışmacılar",
 		"competitor": "Yarışmacı",
 		"best": "En İyi",
 		"average": "Ortalama",
-		"attempt_n": "D{{n}}",
+		"attempt_n": "{{n}}. Deneme",
 		"save": "Kaydet",
 		"saving": "Kaydediliyor...",
 		"saved": "Kaydedildi",
+		"start": "Başlangıç",
+		"end": "Bitiş",
+		"time": "Saat",
+		"scramble_pdf": "Karıştırma PDF",
+		"download_scramble_pdf": "Karıştırmaları PDF olarak indir (küp şeması dahil)",
+		"no_scrambles": "Bu tur için karıştırma bulunamadı",
 		"finalize_round": "Turu Tamamla",
 		"add_delegate": "Delege Ekle",
 		"delegate_added": "Delege eklendi",
@@ -2418,30 +2609,22 @@
 		"rankings_event": "Etkinlik",
 		"rankings_type_single": "Tek",
 		"rankings_type_average": "Ortalama",
-		"tab_delegate_report": "Delege Raporu",
-		"delegate_report_sections": "Rapor Bölümleri",
-		"report_summary": "Genel Özet",
-		"report_venue_notes": "Mekan Notları",
-		"report_org_notes": "Organizasyon Notları",
-		"report_incidents_summary": "Olaylar (özet metin)",
-		"report_remarks": "Ek Notlar",
-		"submit_report": "Raporu Gönder",
-		"already_submitted": "Rapor Gönderildi",
-		"submit_report_confirm": "Rapor gönderilecek. Sonraki düzenlemeler de görünecek. Devam?",
-		"report_submitted": "Rapor gönderildi",
-		"report_submitted_by": "{{name}} tarafından {{at}} tarihinde gönderildi",
-		"incidents": "Olaylar",
-		"add_incident": "Olay Ekle",
-		"no_incidents": "Kayıtlı olay yok",
-		"incident_added": "Olay eklendi",
-		"incident_deleted": "Olay silindi",
-		"incident_resolved": "Olay çözümlendi olarak işaretlendi",
-		"incident_delete_confirm": "Olay kaydı silinecek. Devam?",
-		"incident_title_prompt": "Olay başlığı:",
-		"incident_description_prompt": "Olay açıklaması (opsiyonel):",
-		"mark_resolved": "Çözümlendi olarak işaretle",
-		"resolved": "Çözümlendi",
-		"delete": "Sil",
+		"admin_overline": "YARIŞMA YÖNETİMİ",
+		"public_view": "Genel Görünüme Git",
+		"entered": "girildi",
+		"search_competitor": "Yarışmacı ara...",
+		"save_and_next": "Kaydet ve Sonrakine Geç",
+		"submit_attempts": "Denemeleri Gönder",
+		"scoretake_hint": "Enter: sonraki deneme · Alt+← → : yarışmacı değiştir · f: DNF · s: DNS",
+		"enter_to_save_hint": "Enter tuşuyla kaydedip sonraki yarışmacıya geç",
+		"prev": "Önceki",
+		"scramble": "Karıştırma",
+		"extra_scrambles": "Ekstra Karıştırmalar (yeniden çözüm için)",
+		"regenerate_scrambles": "Karıştırmaları Yenile",
+		"regenerate_scrambles_hint": "Bu turun tüm karıştırmalarını sıfırdan üretir. Sonuç girilmiş olmamalı.",
+		"regenerate_scrambles_confirm": "Bu turun tüm karıştırmaları yeniden üretilecek. Devam?",
+		"scrambles_regenerated": "Karıştırmalar yeniden üretildi",
+		"working": "Çalışıyor...",
 		"add_group": "Grup Ekle",
 		"delete_group": "Grubu Sil",
 		"group_added": "Grup eklendi",
@@ -2455,6 +2638,8 @@
 		"people": "kişi",
 		"results": "Sonuçlar",
 		"active_rounds": "Aktif Turlar",
+		"all_rounds": "Tüm Turlar",
+		"activity": "Aktivite",
 		"podiums": "Podyumlar",
 		"register_title": "Yarışmaya Kayıt Ol",
 		"register": "Kayıt Ol",
@@ -2466,8 +2651,6 @@
 		"submitting": "Gönderiliyor...",
 		"my_status": "Durumum",
 		"refresh": "Yenile",
-		"loading": "Yükleniyor...",
-		"no_results_yet": "Henüz sonuç yok",
 		"records_title": "Türkiye Unofficial Rekorları",
 		"records_subtitle": "ZKT yarışmalarında kırılan tüm Türkiye rekorları",
 		"no_records": "Henüz rekor yok",

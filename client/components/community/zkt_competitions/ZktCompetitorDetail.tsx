@@ -1,14 +1,42 @@
-import React, {useEffect, useState, useCallback} from 'react';
+import React, {useEffect, useState, useCallback, useMemo} from 'react';
 import './ZktCompetitions.scss';
 import {gql} from '@apollo/client';
 import {gqlMutate} from '../../api';
 import {useTranslation} from 'react-i18next';
 import {useParams, useHistory} from 'react-router-dom';
+import {ArrowLeft, Trophy, ListBullets, Warning} from 'phosphor-react';
 import Loading from '../../common/loading/Loading';
-import {b, getEventName, formatCs} from './shared';
+import {b, getEventName, formatCs, formatName, formatTimeRange} from './shared';
 
-const USER_ASSIGNMENTS_QUERY = gql`
-	query ZktUserAssignmentsPublic($competitionId: String!, $userId: String!) {
+const COMPETITOR_DETAIL_QUERY = gql`
+	query ZktCompetitorDetailPublic($competitionId: String!, $userId: String!) {
+		zktCompetition(id: $competitionId) {
+			id
+			name
+			date_start
+			date_end
+			events {
+				id
+				event_id
+			}
+			registrations {
+				id
+				user_id
+				status
+				user {
+					id
+					username
+					profile {
+						pfp_image {
+							url
+						}
+					}
+				}
+				events {
+					comp_event_id
+				}
+			}
+		}
 		zktUserAssignments(competitionId: $competitionId, userId: $userId) {
 			id
 			round_id
@@ -25,13 +53,10 @@ const USER_ASSIGNMENTS_QUERY = gql`
 			}
 			group {
 				group_number
+				start_time
+				end_time
 			}
 		}
-	}
-`;
-
-const COMPETITOR_RESULTS_QUERY = gql`
-	query ZktCompetitorResultsPublic($competitionId: String!, $userId: String!) {
 		zktCompetitorResults(competitionId: $competitionId, userId: $userId) {
 			id
 			round_id
@@ -66,32 +91,30 @@ const ROLE_LABELS: Record<string, string> = {
 	STAFF: 'role_staff',
 };
 
-const ROLE_COLORS: Record<string, string> = {
+const ROLE_TINT: Record<string, string> = {
 	COMPETITOR: '#2dbd61',
 	JUDGE: '#42a5f5',
 	SCRAMBLER: '#9b59b6',
 	RUNNER: '#ee6a26',
+	ORGANIZER: '#246bfd',
+	STAFF: '#95a5a6',
 };
+
+type Mode = 'schedule' | 'results';
 
 export default function ZktCompetitorDetail() {
 	const {competitionId, userId} = useParams<{competitionId: string; userId: string}>();
 	const {t} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
 	const history = useHistory();
 
-	const [assignments, setAssignments] = useState<any[]>([]);
-	const [results, setResults] = useState<any[]>([]);
+	const [data, setData] = useState<any>(null);
 	const [loading, setLoading] = useState(true);
+	const [mode, setMode] = useState<Mode>('schedule');
 
 	const fetch = useCallback(async () => {
 		try {
-			const [assignRes, resultRes] = await Promise.all([
-				gqlMutate(USER_ASSIGNMENTS_QUERY, {competitionId, userId}),
-				gqlMutate(COMPETITOR_RESULTS_QUERY, {competitionId, userId}),
-			]);
-			setAssignments(assignRes?.data?.zktUserAssignments || []);
-			setResults(resultRes?.data?.zktCompetitorResults || []);
-		} catch {
-			// ignore
+			const res: any = await gqlMutate(COMPETITOR_DETAIL_QUERY, {competitionId, userId});
+			setData(res?.data || null);
 		} finally {
 			setLoading(false);
 		}
@@ -101,148 +124,252 @@ export default function ZktCompetitorDetail() {
 		fetch();
 	}, [fetch]);
 
+	const competitor = useMemo(() => {
+		if (!data) return null;
+		const reg = (data.zktCompetition?.registrations || []).find(
+			(r: any) => r.user_id === userId
+		);
+		return reg?.user || null;
+	}, [data, userId]);
+
+	const competitorEvents = useMemo(() => {
+		if (!data) return [] as string[];
+		const reg = (data.zktCompetition?.registrations || []).find(
+			(r: any) => r.user_id === userId
+		);
+		const compEventMap = new Map<string, string>();
+		(data.zktCompetition?.events || []).forEach((e: any) =>
+			compEventMap.set(e.id, e.event_id)
+		);
+		const ids: string[] = [];
+		for (const ev of reg?.events || []) {
+			const eid = compEventMap.get(ev.comp_event_id);
+			if (eid) ids.push(eid);
+		}
+		return ids;
+	}, [data, userId]);
+
 	if (loading) return <Loading />;
-
-	// Group assignments by event
-	const eventMap = new Map<string, any[]>();
-	for (const a of assignments) {
-		const eventId = a.round?.comp_event?.event_id || 'unknown';
-		if (!eventMap.has(eventId)) eventMap.set(eventId, []);
-		eventMap.get(eventId)!.push(a);
+	if (!data || !competitor) {
+		return (
+			<div className={b('detail-page')}>
+				<div className={b('empty')}>{t('competitor_not_found')}</div>
+			</div>
+		);
 	}
 
-	// Group results by event
-	const resultEventMap = new Map<string, any[]>();
-	for (const r of results) {
-		const eventId = r.round?.comp_event?.event_id || 'unknown';
-		if (!resultEventMap.has(eventId)) resultEventMap.set(eventId, []);
-		resultEventMap.get(eventId)!.push(r);
-	}
+	const assignments = data.zktUserAssignments || [];
+	const results = data.zktCompetitorResults || [];
 
 	return (
 		<div className={b('detail-page')}>
-			<div className={b('detail-header')}>
+			<button
+				className={b('back-btn')}
+				onClick={() => history.push(`/community/zkt-competitions/${competitionId}`)}
+			>
+				<ArrowLeft weight="bold" /> {t('back')}
+			</button>
+
+			{/* Person header — WCA Person paritesi */}
+			<div className={b('person-header')}>
+				{competitor.profile?.pfp_image?.url ? (
+					<img
+						className={b('person-avatar')}
+						src={competitor.profile.pfp_image.url}
+						alt=""
+					/>
+				) : (
+					<div className={b('person-avatar-placeholder')} />
+				)}
+				<h1 className={b('person-name')}>{competitor.username}</h1>
+			</div>
+
+			{/* Cubing icon strip — yarışmacının kayıtlı olduğu eventler */}
+			{competitorEvents.length > 0 && (
+				<div className={b('person-events-strip')}>
+					{competitorEvents.map((eid) => (
+						<span
+							key={eid}
+							className={`cubing-icon event-${eid}`}
+							title={getEventName(eid)}
+						/>
+					))}
+				</div>
+			)}
+
+			{/* Mode toggle butonları */}
+			<div className={b('person-mode-buttons')}>
 				<button
-					className={b('back-btn')}
-					onClick={() => history.push(`/community/zkt-competitions/${competitionId}`)}
+					type="button"
+					className={b('person-mode-btn', {active: mode === 'schedule', schedule: true})}
+					onClick={() => setMode('schedule')}
 				>
-					{t('back')}
+					<ListBullets weight="bold" /> {t('schedule_and_assignments')}
 				</button>
-				<h1 className={b('detail-title')}>{t('competitor_detail')}</h1>
+				<button
+					type="button"
+					className={b('person-mode-btn', {active: mode === 'results', results: true})}
+					onClick={() => setMode('results')}
+				>
+					<Trophy weight="bold" /> {t('results')}
+				</button>
 			</div>
 
-			{/* Assignments section */}
-			<div style={{marginBottom: '2rem'}}>
-				<h3 className={b('section-title')}>{t('my_assignments')}</h3>
+			{mode === 'schedule' && (
+				<>
+					{assignments.length > 0 && (
+						<div className={b('schedule-warning')}>
+							<Warning weight="fill" />
+							<span>{t('schedule_warning')}</span>
+						</div>
+					)}
+					<ScheduleTable assignments={assignments} t={t} />
+				</>
+			)}
 
-				{assignments.length === 0 ? (
-					<div className={b('empty')}>{t('no_assignments')}</div>
-				) : (
-					<div className={b('events-list')}>
-						{Array.from(eventMap.entries()).map(([eventId, eventAssignments]) => (
-							<div key={eventId} className={b('event-card')}>
-								<div className={b('event-card-header')}>
-									<span className={`cubing-icon event-${eventId}`} style={{fontSize: 24}} />
-									<div>
-										<div className={b('event-card-title')}>{getEventName(eventId)}</div>
-									</div>
-								</div>
-								<div className={b('event-card-rounds')}>
-									{eventAssignments.map((a: any) => (
-										<div key={a.id} className={b('round-info-row')}>
-											<span className={b('round-info-label')}>
-												{t('round_n', {n: a.round?.round_number})}
-											</span>
-											{a.group && (
-												<span className={b('round-info-fmt')}>
-													{t('group_n', {n: a.group.group_number})}
-												</span>
-											)}
-											<span
-												style={{
-													padding: '0.15rem 0.5rem',
-													borderRadius: 4,
-													fontSize: 11,
-													fontWeight: 700,
-													background: `${ROLE_COLORS[a.role] || '#666'}22`,
-													color: ROLE_COLORS[a.role] || 'rgb(var(--text-color))',
-												}}
-											>
-												{t(ROLE_LABELS[a.role] || a.role)}
-											</span>
-											{a.station_number && (
-												<span className={b('round-info-meta')}>#{a.station_number}</span>
-											)}
-										</div>
-									))}
-								</div>
-							</div>
-						))}
+			{mode === 'results' && (
+				<ResultsList results={results} t={t} />
+			)}
+		</div>
+	);
+}
+
+function ScheduleTable({assignments, t}: {assignments: any[]; t: any}) {
+	if (assignments.length === 0) {
+		return <div className={b('empty')}>{t('no_assignments')}</div>;
+	}
+
+	// Sort by event then round then group
+	const sorted = [...assignments].sort((a, bx) => {
+		const ea = a.round?.comp_event?.event_id || '';
+		const eb = bx.round?.comp_event?.event_id || '';
+		if (ea !== eb) return ea.localeCompare(eb);
+		const ra = a.round?.round_number || 0;
+		const rb = bx.round?.round_number || 0;
+		if (ra !== rb) return ra - rb;
+		return (a.group?.group_number || 0) - (bx.group?.group_number || 0);
+	});
+
+	return (
+		<div className={b('schedule-table-wrapper')}>
+			<table className={b('schedule-table')}>
+				<thead>
+					<tr>
+						<th>{t('col_event')}</th>
+						<th>{t('col_round')}</th>
+						<th>{t('time')}</th>
+						<th>{t('col_role')}</th>
+						<th>{t('col_group')}</th>
+						<th>{t('col_station')}</th>
+					</tr>
+				</thead>
+				<tbody>
+					{sorted.map((a) => {
+						const eventId = a.round?.comp_event?.event_id || '';
+						const role = a.role || 'STAFF';
+						const tint = ROLE_TINT[role] || '#888';
+						const timeRange = a.group?.start_time
+							? formatTimeRange(a.group.start_time, a.group.end_time)
+							: '';
+						return (
+							<tr key={a.id}>
+								<td>
+									<span className={`cubing-icon event-${eventId}`} style={{marginRight: 8, fontSize: 16, verticalAlign: 'middle'}} />
+									{getEventName(eventId)}
+								</td>
+								<td>R{a.round?.round_number}</td>
+								<td className={b('schedule-cell-time')}>{timeRange || '-'}</td>
+								<td>
+									<span
+										className={b('role-pill')}
+										style={{
+											background: `${tint}22`,
+											color: tint,
+											border: `1px solid ${tint}55`,
+										}}
+									>
+										{t(ROLE_LABELS[role] || role)}
+									</span>
+								</td>
+								<td className={b('schedule-cell-center')}>
+									{a.group?.group_number ?? '-'}
+								</td>
+								<td className={b('schedule-cell-center')}>
+									{a.station_number ?? '-'}
+								</td>
+							</tr>
+						);
+					})}
+				</tbody>
+			</table>
+		</div>
+	);
+}
+
+function ResultsList({results, t}: {results: any[]; t: any}) {
+	if (results.length === 0) {
+		return <div className={b('empty')}>{t('no_results_yet')}</div>;
+	}
+
+	// Group by event
+	const byEvent = new Map<string, any[]>();
+	for (const r of results) {
+		const eid = r.round?.comp_event?.event_id || 'unknown';
+		if (!byEvent.has(eid)) byEvent.set(eid, []);
+		byEvent.get(eid)!.push(r);
+	}
+
+	return (
+		<div className={b('person-results')}>
+			{Array.from(byEvent.entries()).map(([eventId, rounds]) => (
+				<div key={eventId} className={b('person-results-event')}>
+					<div className={b('person-results-event-header')}>
+						<span className={`cubing-icon event-${eventId}`} style={{fontSize: 22}} />
+						<span className={b('person-results-event-title')}>{getEventName(eventId)}</span>
 					</div>
-				)}
-			</div>
-
-			{/* Results section */}
-			<div>
-				<h3 className={b('section-title')}>{t('results')}</h3>
-
-				{results.length === 0 ? (
-					<div className={b('empty')}>{t('no_results_yet')}</div>
-				) : (
-					<div className={b('events-list')}>
-						{Array.from(resultEventMap.entries()).map(([eventId, eventResults]) => (
-							<div key={eventId} className={b('event-card')}>
-								<div className={b('event-card-header')}>
-									<span className={`cubing-icon event-${eventId}`} style={{fontSize: 24}} />
-									<div>
-										<div className={b('event-card-title')}>{getEventName(eventId)}</div>
-									</div>
-								</div>
-								<div className={b('event-card-rounds')}>
-									{eventResults.map((r: any) => (
-										<div key={r.id} className={b('round-info-row')}>
-											<span className={b('round-info-label')}>
-												{t('round_n', {n: r.round?.round_number})}
-											</span>
-											<span className={b('round-info-fmt')}>{r.round?.format}</span>
-											{r.ranking && (
-												<span
-													style={{
-														padding: '0.15rem 0.5rem',
-														borderRadius: 4,
-														fontSize: 12,
-														fontWeight: 700,
-														background: 'rgba(var(--primary-color), 0.2)',
-														color: 'rgb(var(--primary-color))',
-													}}
-												>
-													#{r.ranking}
-												</span>
-											)}
-											<span style={{fontFamily: 'monospace', fontWeight: 700}}>
-												{formatCs(r.best)}
-											</span>
-											{r.average && r.average > 0 && (
-												<span
-													style={{fontFamily: 'monospace', color: 'rgba(var(--text-color), 0.75)'}}
-												>
-													avg: {formatCs(r.average)}
-												</span>
-											)}
+					<table className={b('person-results-table')}>
+						<thead>
+							<tr>
+								<th>{t('col_round')}</th>
+								<th>#</th>
+								<th>{t('best')}</th>
+								<th>{t('average')}</th>
+								<th>{t('format')}</th>
+							</tr>
+						</thead>
+						<tbody>
+							{[...rounds]
+								.sort(
+									(a, bx) =>
+										(a.round?.round_number || 0) - (bx.round?.round_number || 0)
+								)
+								.map((r) => (
+									<tr key={r.id}>
+										<td>R{r.round?.round_number}</td>
+										<td>{r.ranking ?? '-'}</td>
+										<td className={b('rank-time')}>
+											{formatCs(r.best)}
 											{r.single_record_tag && (
-												<span className={b('record-tag')}>{r.single_record_tag}</span>
+												<span className={b('record-tag', {[r.single_record_tag.toLowerCase()]: true})}>
+													{r.single_record_tag}
+												</span>
 											)}
+										</td>
+										<td className={b('rank-time')}>
+											{formatCs(r.average)}
 											{r.average_record_tag && (
-												<span className={b('record-tag')}>{r.average_record_tag}</span>
+												<span className={b('record-tag', {[r.average_record_tag.toLowerCase()]: true})}>
+													{r.average_record_tag}
+												</span>
 											)}
-										</div>
-									))}
-								</div>
-							</div>
-						))}
-					</div>
-				)}
-			</div>
+										</td>
+										<td>{formatName(r.round?.format)}</td>
+									</tr>
+								))}
+						</tbody>
+					</table>
+				</div>
+			))}
 		</div>
 	);
 }

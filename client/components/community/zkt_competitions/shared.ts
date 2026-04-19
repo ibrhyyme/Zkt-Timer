@@ -26,6 +26,23 @@ export function getEventName(eventId: string): string {
 	return ZKT_WCA_EVENTS.find((e) => e.id === eventId)?.name || eventId;
 }
 
+/**
+ * "HH:mm - HH:mm" from two ISO datetime strings. If endIso is null/undefined,
+ * returns only the start. Returns '' for unparseable input.
+ */
+export function formatTimeRange(startIso: string | null | undefined, endIso?: string | null): string {
+	if (!startIso) return '';
+	const fmt = (iso: string) => {
+		const d = new Date(iso);
+		if (isNaN(d.getTime())) return '';
+		return d.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+	};
+	const start = fmt(startIso);
+	if (!endIso) return start;
+	const end = fmt(endIso);
+	return end ? `${start} - ${end}` : start;
+}
+
 export function formatCs(cs: number | null | undefined): string {
 	if (cs === null || cs === undefined) return '';
 	if (cs === -1) return 'DNF';

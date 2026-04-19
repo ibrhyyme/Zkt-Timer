@@ -12,6 +12,11 @@ interface Props {
 	timeLimitCs?: number | null;
 	// Disabled-state tooltip explaining why (shown on hover + aria-label).
 	disabledReason?: string;
+	// Forward input ref for parent-driven focus management.
+	inputRef?: React.Ref<HTMLInputElement>;
+	// Key events bubble up so parent can implement Enter-to-next-attempt,
+	// Arrow-to-switch-competitor, etc.
+	onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
 const DNF = -1;
@@ -75,7 +80,7 @@ function reformatInput(raw: string): string {
 }
 
 export default function TimeField(props: Props) {
-	const {value, onChange, placeholder, disabled, timeLimitCs, disabledReason} = props;
+	const {value, onChange, placeholder, disabled, timeLimitCs, disabledReason, inputRef, onKeyDown} = props;
 	const [draft, setDraft] = useState<string>(csToDisplay(value));
 	const lastValueRef = useRef<number | null | undefined>(value);
 
@@ -144,6 +149,7 @@ export default function TimeField(props: Props) {
 	return (
 		<div className={b('time-field-wrap')}>
 			<input
+				ref={inputRef}
 				type="text"
 				className={b('time-field-input', {
 					special: isSpecial,
@@ -153,6 +159,7 @@ export default function TimeField(props: Props) {
 				value={draft}
 				onChange={handleChange}
 				onBlur={handleBlur}
+				onKeyDown={onKeyDown}
 				placeholder={placeholder || '0.00'}
 				disabled={disabled}
 				inputMode="decimal"

@@ -158,26 +158,26 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/account/notifications', App, Account, NotificationPreferences),
 	route('/account/announcements', App, Account, AnnouncementHistory),
 
-	// Community
-	route('/community/competitions/:competitionId/personal-bests/:wcaId', App, Community, MySchedule),
-	route('/community/competitions/:competitionId/persons/:registrantId/results', App, Community, MySchedule),
-	route('/community/competitions/:competitionId/persons/:registrantId', App, Community, MySchedule),
-	route('/community/competitions/:competitionId/activities/:activityCode', App, Community, MySchedule),
-	route('/community/competitions/:competitionId/wca-live/:eventId/:roundNumber', App, Community, MySchedule),
-	route('/community/competitions/:competitionId/wca-live/:eventId', App, Community, MySchedule),
-	route('/community/competitions/:competitionId/wca-live', App, Community, MySchedule),
-	route('/community/competitions/:competitionId', App, Community, MySchedule),
-	route('/community/competitions', App, Community, MySchedule),
+	// Community - WCA Competitions (public for SEO, public data)
+	route('/community/competitions/:competitionId/personal-bests/:wcaId', App, Community, MySchedule, false),
+	route('/community/competitions/:competitionId/persons/:registrantId/results', App, Community, MySchedule, false),
+	route('/community/competitions/:competitionId/persons/:registrantId', App, Community, MySchedule, false),
+	route('/community/competitions/:competitionId/activities/:activityCode', App, Community, MySchedule, false),
+	route('/community/competitions/:competitionId/wca-live/:eventId/:roundNumber', App, Community, MySchedule, false),
+	route('/community/competitions/:competitionId/wca-live/:eventId', App, Community, MySchedule, false),
+	route('/community/competitions/:competitionId/wca-live', App, Community, MySchedule, false),
+	route('/community/competitions/:competitionId', App, Community, MySchedule, false),
+	route('/community/competitions', App, Community, MySchedule, false),
 
-	// ZKT Unofficial Competitions
-	route('/community/zkt-competitions/:competitionId/competitors/:userId', App, Community, ZktCompetitorDetail),
-	route('/community/zkt-competitions/:competitionId/activities/:groupId', App, Community, ZktActivityDetail),
-	route('/community/zkt-competitions/:competitionId/live/:eventId/:roundNumber', App, Community, ZktCompetitionDetail),
-	route('/community/zkt-competitions/:competitionId/live/:eventId', App, Community, ZktCompetitionDetail),
-	route('/community/zkt-competitions/:competitionId/live', App, Community, ZktCompetitionDetail),
-	route('/community/zkt-competitions/:competitionId', App, Community, ZktCompetitionDetail),
-	route('/community/zkt-records', App, Community, ZktRecordsPage),
-	route('/community/zkt-rankings', App, Community, ZktRankingsPage),
+	// ZKT Unofficial Competitions (public for SEO)
+	route('/community/zkt-competitions/:competitionId/competitors/:userId', App, Community, ZktCompetitorDetail, false),
+	route('/community/zkt-competitions/:competitionId/activities/:groupId', App, Community, ZktActivityDetail, false),
+	route('/community/zkt-competitions/:competitionId/live/:eventId/:roundNumber', App, Community, ZktCompetitionDetail, false),
+	route('/community/zkt-competitions/:competitionId/live/:eventId', App, Community, ZktCompetitionDetail, false),
+	route('/community/zkt-competitions/:competitionId/live', App, Community, ZktCompetitionDetail, false),
+	route('/community/zkt-competitions/:competitionId', App, Community, ZktCompetitionDetail, false),
+	route('/community/zkt-records', App, Community, ZktRecordsPage, false),
+	route('/community/zkt-rankings', App, Community, ZktRankingsPage, false),
 
 	// Rankings
 	route('/ranks', null, App, Rankings, false),
