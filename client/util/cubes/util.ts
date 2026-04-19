@@ -115,9 +115,12 @@ export function getCubeTypeBucketLabel(cubeType: string, subsetId: string | null
 	if (!ct) return cubeType;
 
 	const subsetLabel = getSubsetLabel(cubeType, subsetId);
-	if (!subsetLabel) return ct.name;
+	if (subsetLabel) return `${ct.name} > ${subsetLabel}`;
 
-	return `${ct.name} > ${subsetLabel}`;
+	// Config'de yok ama raw subset ID var — ham haliyle goster (yoksa sadece "WCA" gibi muphem kalir)
+	if (subsetId) return `${ct.name} > ${subsetId}`;
+
+	return ct.name;
 }
 
 // Short label — subset varsa sadece subset, yoksa cube type adi.
