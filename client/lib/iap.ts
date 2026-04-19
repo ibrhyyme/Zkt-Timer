@@ -110,14 +110,23 @@ export async function getOfferings(): Promise<OfferingsSnapshot> {
 	if (!mod) return {};
 	try {
 		const result = await mod.Purchases.getOfferings();
-		const current = result?.current;
+		// current yoksa all'dan default'a fallback
+		const current = result?.current || result?.all?.default || Object.values(result?.all || {})[0];
+		(window as any).__IAP_DEBUG__ = {
+			hasCurrent: !!result?.current,
+			allKeys: Object.keys(result?.all || {}),
+			pickedOfferingId: current?.identifier || null,
+			pkgCount: current?.availablePackages?.length || 0,
+			pkgTypes: current?.availablePackages?.map((p: any) => p.packageType).join(',') || '',
+		};
 		if (!current) return {};
 		return {
 			monthly: current.monthly || current.availablePackages?.find((p: any) => p.packageType === 'MONTHLY'),
 			yearly: current.annual || current.availablePackages?.find((p: any) => p.packageType === 'ANNUAL'),
 			lifetime: current.lifetime || current.availablePackages?.find((p: any) => p.packageType === 'LIFETIME'),
 		};
-	} catch (err) {
+	} catch (err: any) {
+		(window as any).__IAP_DEBUG__ = {error: err?.message || String(err)};
 		console.error('[IAP] getOfferings hatasi', err);
 		return {};
 	}
