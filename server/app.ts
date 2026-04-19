@@ -292,24 +292,26 @@ app.post('/api/admin/recalculate-rankings', (req, res) => {
 });
 
 // Admin: Sitemap'i manuel yeniden olustur (cron 2 saatte bir, acelen varsa buradan tetikle)
+// Query param ?force=1 → ENV check'i ve Redis lock'u bypass et (debug icin)
 app.post('/api/admin/regenerate-sitemap', (req, res) => {
 	const {getMe} = require('./util/auth');
 	const {initSiteMapGeneration} = require('./services/sitemap');
+	const force = req.query.force === '1';
 
-	getMe(req).then((me) => {
+	getMe(req).then(async (me) => {
 		if (!me || !me.admin) {
 			res.status(403).json({error: 'Forbidden'});
 			return;
 		}
 
-		// Async calistir, response'u hemen don
-		initSiteMapGeneration().then(() => {
-			console.log('[Sitemap] Manual regeneration done');
-		}).catch((err) => {
+		try {
+			const result = await initSiteMapGeneration({force});
+			console.log('[Sitemap] Manual regeneration result:', result);
+			res.json({success: true, result});
+		} catch (err: any) {
 			console.error('[Sitemap] Manual regeneration failed:', err);
-		});
-
-		res.json({success: true, message: 'Sitemap regeneration started — check /sitemap.xml in 1-2 min'});
+			res.status(500).json({error: err?.message || 'unknown', stack: err?.stack});
+		}
 	}).catch((err) => {
 		console.error('[Sitemap] API error:', err);
 		res.status(500).json({error: 'Internal server error'});
