@@ -1,3 +1,7 @@
+mutation linkRevenueCatUser {
+	linkRevenueCatUser
+}
+
 mutation updateSiteConfig($input: UpdateSiteConfigInput!) {
 	updateSiteConfig(input: $input) {
 		id

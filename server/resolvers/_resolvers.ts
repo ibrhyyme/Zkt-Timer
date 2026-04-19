@@ -38,3 +38,4 @@ export * from './ZktResult.resolver';
 export * from './ZktRecord.resolver';
 export * from './ZktAssignment.resolver';
 export * from './LandingStats.resolver';
+export * from './IAP.resolver';

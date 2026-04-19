@@ -1,19 +1,22 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import './ProPage.scss';
 import {useTranslation} from 'react-i18next';
-import {Crown, Check, CaretDown, Info, Ticket, CheckCircle, Sparkle} from 'phosphor-react';
+import {Crown, Check, CaretDown, Info, Ticket, CheckCircle, Sparkle, Warning} from 'phosphor-react';
 import {useDispatch} from 'react-redux';
-import {gql} from '@apollo/client';
+import {gql, useQuery} from '@apollo/client';
 import block from '../../styles/bem';
 import ElectricBorder from '../common/electric_border/ElectricBorder';
 import {gqlMutate} from '../api';
 import {openModal} from '../../actions/general';
-import {toastError} from '../../util/toast';
+import {toastError, toastSuccess} from '../../util/toast';
 import PromoSuccessModal from './PromoSuccessModal';
 import PlanCompareModal from './PlanCompareModal';
 import {useMe} from '../../util/hooks/useMe';
 import {isPro} from '../../lib/pro';
 import FeatureGuard from '../common/page_disabled/FeatureGuard';
+import {isNative} from '../../util/platform';
+import {getOfferings, purchasePackage, restorePurchases, showManageSubscriptions} from '../../lib/iap';
+import {GetIapStatusDocument, GetIapStatusQuery} from '../../@types/generated/graphql';
 
 const b = block('pro-page');
 
@@ -84,14 +87,37 @@ const REDEEM_PROMO = gql`
 	}
 `;
 
+interface IapOfferings {
+	monthly?: any;
+	yearly?: any;
+	lifetime?: any;
+}
+
 function ProPageContent() {
 	const {t} = useTranslation();
 	const dispatch = useDispatch();
 	const me = useMe();
 	const userIsPro = isPro(me);
+	const native = isNative();
 	const [selectedPlan, setSelectedPlan] = useState<PlanId>('yearly');
 	const [promoCode, setPromoCode] = useState('');
 	const [redeeming, setRedeeming] = useState(false);
+	const [purchasing, setPurchasing] = useState(false);
+	const [restoring, setRestoring] = useState(false);
+	const [offerings, setOfferings] = useState<IapOfferings>({});
+
+	const {data: iapData, refetch: refetchIap} = useQuery<GetIapStatusQuery>(GetIapStatusDocument, {
+		fetchPolicy: 'cache-and-network',
+		skip: !me,
+	});
+
+	const iapStatus = iapData?.getIapStatus;
+	const isIapPro = iapStatus?.is_iap_pro ?? false;
+	const isGrantedPro = userIsPro && !isIapPro;
+	const canPurchase = iapStatus?.can_purchase ?? !isGrantedPro;
+	const iapCancellation = iapStatus?.iap_cancellation_at;
+	const iapBillingIssue = iapStatus?.iap_billing_issue_at;
+	const currentIapProductId = iapStatus?.iap_product_id;
 
 	const proExpiresAt = (me as any)?.pro_expires_at || (me as any)?.premium_expires_at;
 	const expiryLabel = proExpiresAt
@@ -99,6 +125,25 @@ function ProPageContent() {
 		: null;
 
 	const activePlan = PLANS.find((p) => p.id === selectedPlan)!;
+
+	// Native platformda offerings yukle
+	useEffect(() => {
+		if (!native || userIsPro) return;
+		getOfferings().then((off) => {
+			setOfferings(off);
+		});
+	}, [native, userIsPro]);
+
+	// Aktif Pro aboneliği olan kullanıcının seçili planı mevcut planı olsun
+	useEffect(() => {
+		if (!isIapPro || !currentIapProductId) return;
+		if (currentIapProductId.endsWith('monthly')) setSelectedPlan('monthly');
+		else if (currentIapProductId.endsWith('yearly')) setSelectedPlan('yearly');
+		else if (currentIapProductId.endsWith('lifetime')) setSelectedPlan('lifetime');
+	}, [isIapPro, currentIapProductId]);
+
+	const selectedPackage = offerings[selectedPlan];
+	const dynamicPrice = selectedPackage?.product?.priceString;
 
 	async function handleRedeem() {
 		if (!promoCode.trim() || redeeming) return;
@@ -128,6 +173,100 @@ function ProPageContent() {
 
 	function openCompare() {
 		dispatch(openModal(<PlanCompareModal />));
+	}
+
+	function currentPlanId(): PlanId | null {
+		if (!currentIapProductId) return null;
+		if (currentIapProductId.endsWith('monthly')) return 'monthly';
+		if (currentIapProductId.endsWith('yearly')) return 'yearly';
+		if (currentIapProductId.endsWith('lifetime')) return 'lifetime';
+		return null;
+	}
+
+	// Secili plan kullanicinin mevcut plani mi?
+	const isCurrentPlan = isIapPro && currentPlanId() === selectedPlan;
+	const hasActiveSubscription = isIapPro && currentPlanId() !== null && currentPlanId() !== 'lifetime';
+	// Lifetime x aktif abonelik catismasi: aktif aboneligi olan kullanici lifetime alamaz
+	const lifetimeBlocked = selectedPlan === 'lifetime' && hasActiveSubscription;
+
+	async function handlePurchase() {
+		if (!native || !selectedPackage || purchasing) return;
+		if (!canPurchase) {
+			toastError(t('pro_page.iap.blocked_by_grant'));
+			return;
+		}
+		if (isCurrentPlan) return;
+		if (lifetimeBlocked) {
+			toastError(t('pro_page.iap.lifetime_needs_cancel'));
+			return;
+		}
+
+		setPurchasing(true);
+		try {
+			// Upgrade/downgrade Android icin eski product id + isUpgrade belirle
+			const oldProductId = currentIapProductId || undefined;
+			const monthlyPkg = offerings.monthly?.product?.price || 0;
+			const yearlyPkg = offerings.yearly?.product?.price || 0;
+			const yearlyMonthly = yearlyPkg / 12;
+			// Upgrade: monthly -> yearly, monthly -> lifetime, yearly -> lifetime
+			// Downgrade: yearly -> monthly
+			let isUpgrade = true;
+			if (currentIapProductId?.endsWith('yearly') && selectedPlan === 'monthly') {
+				isUpgrade = false;
+			} else if (currentIapProductId?.endsWith('monthly') && selectedPlan === 'yearly') {
+				isUpgrade = yearlyMonthly > monthlyPkg ? false : true; // yillik aylik basina daha ucuz olmali
+			}
+
+			await purchasePackage(selectedPackage, oldProductId, isUpgrade);
+			toastSuccess(t('pro_page.iap.purchase_success'));
+			// Webhook birkac saniye surebilir — refetch + kisa delay
+			setTimeout(() => refetchIap(), 2500);
+		} catch (err: any) {
+			const code = err?.code || '';
+			const msg = String(err?.message || '').toLowerCase();
+			if (code === 'PURCHASE_CANCELLED' || msg.includes('cancel')) {
+				// Kullanici iptal etti, sessizce gec
+			} else {
+				console.error('[IAP] purchase hatasi', err);
+				toastError(t('pro_page.iap.purchase_error'));
+			}
+		} finally {
+			setPurchasing(false);
+		}
+	}
+
+	async function handleRestore() {
+		if (!native || restoring) return;
+		setRestoring(true);
+		try {
+			const result = await restorePurchases();
+			if (result?.isPro) {
+				toastSuccess(t('pro_page.iap.restore_success'));
+				setTimeout(() => refetchIap(), 2000);
+			} else {
+				toastError(t('pro_page.iap.restore_empty'));
+			}
+		} catch (err) {
+			toastError(t('pro_page.iap.restore_error'));
+		} finally {
+			setRestoring(false);
+		}
+	}
+
+	async function handleManage() {
+		await showManageSubscriptions();
+	}
+
+	function purchaseButtonLabel(): string {
+		if (purchasing) return t('pro_page.iap.purchasing');
+		if (isCurrentPlan) return t('pro_page.current_plan');
+		if (lifetimeBlocked) return t('pro_page.iap.cancel_first');
+		if (hasActiveSubscription && selectedPlan !== 'lifetime') {
+			const current = currentPlanId();
+			if (current === 'monthly' && selectedPlan === 'yearly') return t('pro_page.iap.upgrade_to_yearly');
+			if (current === 'yearly' && selectedPlan === 'monthly') return t('pro_page.iap.downgrade_to_monthly');
+		}
+		return t('pro_page.iap.purchase_cta');
 	}
 
 	return (
@@ -180,20 +319,85 @@ function ProPageContent() {
 							</div>
 
 							<div className={b('price-block')}>
-								<div className={b('price-amount')}>{t(activePlan.priceKey)}</div>
+								<div className={b('price-amount')}>
+									{dynamicPrice || t(activePlan.priceKey)}
+								</div>
 								<div className={b('price-detail')}>{t(activePlan.detailKey)}</div>
 								<div className={b('price-trial', {muted: !activePlan.hasTrial})}>
 									{activePlan.hasTrial && <Sparkle weight="fill" />}
 									<span>{t(activePlan.trialKey)}</span>
 								</div>
-								<div className={b('price-region-hint')}>{t('pro_page.plan.region_hint')}</div>
+								{!dynamicPrice && (
+									<div className={b('price-region-hint')}>{t('pro_page.plan.region_hint')}</div>
+								)}
 							</div>
 
-							{userIsPro ? (
+							{/* Bildirim bannerlari */}
+							{iapCancellation && isIapPro && (
+								<div className={b('notice', {warn: true})}>
+									<Warning weight="fill" />
+									<span>
+										{t('pro_page.iap.cancellation_notice', {
+											date: expiryLabel || '',
+										})}
+									</span>
+								</div>
+							)}
+							{iapBillingIssue && isIapPro && (
+								<div className={b('notice', {danger: true})}>
+									<Warning weight="fill" />
+									<div>
+										<div>{t('pro_page.iap.billing_issue_notice')}</div>
+										{native && (
+											<button type="button" className={b('notice-action')} onClick={handleManage}>
+												{t('pro_page.iap.update_payment')}
+											</button>
+										)}
+									</div>
+								</div>
+							)}
+
+							{/* CTA buton tercihi */}
+							{!canPurchase && userIsPro && !isIapPro ? (
+								// Admin/promo ile Pro — satin alma kapali
+								<div className={b('card-active')}>
+									<CheckCircle weight="fill" />
+									<span>{t('pro_page.iap.granted_pro', {date: expiryLabel || ''})}</span>
+								</div>
+							) : isCurrentPlan ? (
 								<div className={b('card-active')}>
 									<CheckCircle weight="fill" />
 									<span>{t('pro_page.current_plan')}</span>
 								</div>
+							) : native ? (
+								<>
+									<button
+										className={b('cta')}
+										disabled={purchasing || lifetimeBlocked || !selectedPackage}
+										onClick={handlePurchase}
+									>
+										{purchaseButtonLabel()}
+									</button>
+									{lifetimeBlocked && (
+										<p className={b('cta-hint')}>
+											<Info weight="fill" />
+											<span>{t('pro_page.iap.lifetime_needs_cancel_hint')}</span>
+										</p>
+									)}
+									{isIapPro && !lifetimeBlocked && (
+										<button type="button" className={b('secondary-link')} onClick={handleManage}>
+											{t('pro_page.iap.manage_subscription')}
+										</button>
+									)}
+									<button
+										type="button"
+										className={b('secondary-link')}
+										onClick={handleRestore}
+										disabled={restoring}
+									>
+										{restoring ? t('pro_page.iap.restoring') : t('pro_page.iap.restore')}
+									</button>
+								</>
 							) : (
 								<>
 									<button className={b('cta')} disabled>

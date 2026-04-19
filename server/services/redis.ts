@@ -23,6 +23,7 @@ export enum RedisNamespace {
 	ZKT_COMP_LIST = 'cd:zktcomp:list',
 	ZKT_COMP_DETAIL = 'cd:zktcomp:detail',
 	ZKT_RECORDS = 'cd:zktcomp:records',
+	IAP_EVENTS = 'cd:iap:events',
 }
 
 export type generatedRedisKey = {

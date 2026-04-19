@@ -68,6 +68,7 @@
 		"@capacitor/status-bar": "^6.0.0",
 		"@capacitor/text-zoom": "^6.0.0",
 		"@capacitor/toast": "^6.0.0",
+		"@revenuecat/purchases-capacitor": "^9.0.0",
 		"@elastic/elasticsearch": "^8.2.1",
 		"@graphql-tools/schema": "^8.3.1",
 		"@graphql-typed-document-node/core": "^3.1.2",

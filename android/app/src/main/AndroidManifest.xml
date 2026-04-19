@@ -13,7 +13,7 @@
             android:name=".MainActivity"
             android:label="@string/title_activity_main"
             android:theme="@style/AppTheme.NoActionBarLaunch"
-            android:launchMode="singleTask"
+            android:launchMode="singleTop"
             android:windowSoftInputMode="adjustNothing"
             android:exported="true">
             <intent-filter>
@@ -57,4 +57,7 @@
 
     <!-- Push Notifications (API 33+ / Android 13+) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- In-App Billing (RevenueCat / Google Play Billing) -->
+    <uses-permission android:name="com.android.vending.BILLING" />
 </manifest>
