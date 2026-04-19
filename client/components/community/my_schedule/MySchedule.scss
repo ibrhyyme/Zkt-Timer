@@ -141,8 +141,37 @@
 		}
 
 		&--mine {
-			border-left: 3px solid rgb(var(--primary-color));
-			background: rgba(var(--primary-color), 0.05);
+			position: relative;
+			overflow: hidden;
+			border: 1px solid rgba(var(--primary-color), 0.35);
+			border-left: 4px solid rgb(var(--primary-color));
+			background:
+				linear-gradient(
+					115deg,
+					rgba(var(--primary-color), 0.18) 0%,
+					rgba(var(--primary-color), 0.08) 35%,
+					rgb(var(--module-color)) 75%
+				);
+			box-shadow:
+				0 0 0 1px rgba(var(--primary-color), 0.08),
+				0 6px 22px -8px rgba(var(--primary-color), 0.45),
+				0 1px 0 0 rgba(255, 255, 255, 0.04) inset;
+			transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+
+			&:hover {
+				transform: translateY(-2px);
+				background:
+					linear-gradient(
+						115deg,
+						rgba(var(--primary-color), 0.28) 0%,
+						rgba(var(--primary-color), 0.12) 35%,
+						rgba(var(--button-color), 0.85) 75%
+					);
+				box-shadow:
+					0 0 0 1px rgba(var(--primary-color), 0.18),
+					0 12px 30px -10px rgba(var(--primary-color), 0.65),
+					0 1px 0 0 rgba(255, 255, 255, 0.06) inset;
+			}
 		}
 
 		&--zkt {
@@ -161,6 +190,87 @@
 				);
 			}
 		}
+	}
+
+	// Mine card decorative shimmer (sweeps right on hover)
+	&__mine-glow {
+		position: absolute;
+		top: 0;
+		left: -40%;
+		width: 35%;
+		height: 100%;
+		background: linear-gradient(
+			110deg,
+			transparent 0%,
+			rgba(255, 255, 255, 0.06) 50%,
+			transparent 100%
+		);
+		pointer-events: none;
+		transition: left 0.7s cubic-bezier(0.22, 0.61, 0.36, 1);
+	}
+
+	&__comp-card--mine:hover &__mine-glow {
+		left: 110%;
+	}
+
+	// "Kayitlisin" pill above the title
+	&__mine-tag {
+		display: inline-flex;
+		align-items: center;
+		align-self: flex-start;
+		padding: 2px 8px 2px 6px;
+		margin-bottom: 4px;
+		border-radius: 999px;
+		font-size: 0.62rem;
+		font-weight: 800;
+		letter-spacing: 0.6px;
+		text-transform: uppercase;
+		background: rgba(var(--primary-color), 0.18);
+		color: rgb(var(--primary-color));
+		border: 1px solid rgba(var(--primary-color), 0.35);
+	}
+
+	// Countdown badge on the right
+	&__countdown-badge {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		min-width: 3.6rem;
+		padding: 0.4rem 0.55rem;
+		border-radius: 0.6rem;
+		background: rgba(var(--primary-color), 0.15);
+		border: 1px solid rgba(var(--primary-color), 0.3);
+		color: rgb(var(--primary-color));
+		flex-shrink: 0;
+		line-height: 1.05;
+
+		&--imminent {
+			background: rgba(238, 106, 38, 0.18);
+			border-color: rgba(238, 106, 38, 0.45);
+			color: #ee6a26;
+			animation: cd-mine-pulse 2s ease-in-out infinite;
+		}
+	}
+
+	&__countdown-num {
+		font-size: 1.15rem;
+		font-weight: 800;
+		letter-spacing: -0.02em;
+	}
+
+	&__countdown-label {
+		font-size: 0.58rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+		opacity: 0.85;
+		margin-top: 1px;
+	}
+
+	@keyframes cd-mine-pulse {
+		0%, 100% { box-shadow: 0 0 0 0 rgba(238, 106, 38, 0.35); }
+		50% { box-shadow: 0 0 0 6px rgba(238, 106, 38, 0); }
 	}
 
 	&__zkt-competitions {
