@@ -2,9 +2,14 @@ import React from 'react';
 import { Helmet } from 'react-helmet';
 import HeroSection from './hero_section/HeroSection';
 import FeaturesSection from './features_section/FeaturesSection';
+import LiveTimerSection from './live_timer_section/LiveTimerSection';
+import ComparisonSection from './comparison_section/ComparisonSection';
+import WcaSection from './wca_section/WcaSection';
+import TestimonialsSection from './testimonials_section/TestimonialsSection';
 import MobileGrid from './mobile_grid/MobileGrid';
 import PartnersSection from './partners_section/PartnersSection';
 import WelcomeFooter from './welcome_footer/WelcomeFooter';
+import {useScrollProgress} from './hooks/useScrollProgress';
 import './Welcome.scss';
 
 import { useMe } from '../../../util/hooks/useMe';
@@ -18,6 +23,7 @@ export default function Welcome() {
 	const me = useMe();
 	const history = useHistory();
 	const { t, i18n } = useTranslation();
+	const scrollProgress = useScrollProgress();
 
 	useEffect(() => {
 		if (me) {
@@ -75,8 +81,16 @@ export default function Welcome() {
 			</Helmet>
 
 			<div className="cd-welcome min-h-screen bg-[#050505] text-white">
+				<div
+					className="cd-welcome__scroll-progress"
+					style={{width: `${scrollProgress * 100}%`}}
+				/>
 				<HeroSection />
+				<LiveTimerSection />
 				<FeaturesSection />
+				<ComparisonSection />
+				<WcaSection />
+				<TestimonialsSection />
 				<MobileGrid />
 				<PartnersSection />
 				<WelcomeFooter />
