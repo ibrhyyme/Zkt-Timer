@@ -23,6 +23,7 @@ import { validateEmailMx } from '../util/email_validation';
 import { validateName } from '../util/name_validation';
 import { checkRateLimit } from '../services/rate_limit';
 import { logger } from '../services/logger';
+import { notifyAdminsOfNewUser } from '../services/admin_notification';
 
 function extractIp(req: any): string {
 	let ip = req?.headers?.['x-forwarded-for'] || req?.connection?.remoteAddress || '';
@@ -170,6 +171,10 @@ export const mutateActions = {
 		}).catch(error => {
 			console.error('Verification email could not be sent:', error);
 		});
+
+		notifyAdminsOfNewUser(user as any, 'local', true).catch(err =>
+			console.error('[AdminNotification] Pending signup notification failed:', err)
+		);
 
 		return sanitizeUser(user);
 	},

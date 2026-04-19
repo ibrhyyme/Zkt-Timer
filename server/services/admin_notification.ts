@@ -5,7 +5,8 @@ import {sendPushToUser} from './push';
 
 export async function notifyAdminsOfNewUser(
 	newUser: InternalUserAccount,
-	registrationMethod: 'local' | 'wca'
+	registrationMethod: 'local' | 'wca',
+	pending: boolean = false
 ): Promise<void> {
 	const admins = await getPrisma().userAccount.findMany({
 		where: {admin: true},
@@ -15,7 +16,8 @@ export async function notifyAdminsOfNewUser(
 		try {
 			const notification = new NewUserSignupNotification(
 				{user: admin as UserAccount, triggeringUser: newUser, sendEmail: false},
-				registrationMethod
+				registrationMethod,
+				pending
 			);
 			await notification.send();
 			await sendPushToUser(admin.id, 'Zkt Timer', notification.data().inAppMessage);
