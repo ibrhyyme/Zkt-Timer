@@ -31,6 +31,11 @@ allprojects {
                 jvmTarget = "17"
             }
         }
+        // RevenueCat plugin Java 1.8, Kotlin 17 hedefliyor — tutarsizlik icin Java'yi da 17'ye zorla
+        tasks.withType(JavaCompile).configureEach {
+            sourceCompatibility = "17"
+            targetCompatibility = "17"
+        }
     }
 }
 
