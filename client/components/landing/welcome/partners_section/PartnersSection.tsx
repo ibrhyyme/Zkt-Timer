@@ -127,7 +127,7 @@ export default function PartnersSection() {
 	return (
 		<section ref={containerRef} className={b()}>
 			<div className={b('container')}>
-				<div ref={headerRef} className={b('header')} style={{ opacity: 0 }}>
+				<div ref={headerRef} className={b('header')}>
 					<h2 className={b('title')}>{t('welcome_partners.title')}</h2>
 					<p className={b('description')}>{t('welcome_partners.description')}</p>
 				</div>
@@ -138,7 +138,6 @@ export default function PartnersSection() {
 							key={partner.name}
 							className={b('card', { category: partner.category })}
 							data-partner-card
-							style={{ opacity: 0 }}
 							whileHover={hoverLift}
 							whileTap={tapScale}
 						>

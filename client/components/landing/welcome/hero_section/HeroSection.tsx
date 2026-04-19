@@ -1,14 +1,16 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import './HeroSection.scss';
 import block from '../../../../styles/bem';
 import Button from '../../../common/button/Button';
 import LanguageSwitcher from '../../../common/language_switcher/LanguageSwitcher';
 import HeroCube from './HeroCube';
 import ParticleCanvas from './ParticleCanvas';
+import CursorSpotlight from './CursorSpotlight';
 import TextType from '../text_type/TextType';
 import { staggerContainer, fadeInUp, fadeInLeft, fadeInRight, hoverScale, tapScale } from '../motion-variants';
+import { useMagnetic } from '../hooks/useMagnetic';
 import { APP_STORE_URL, PLAY_STORE_URL } from '../../../../util/store-links';
 import { isNative } from '../../../../util/platform';
 
@@ -17,6 +19,21 @@ const b = block('welcome-hero');
 export default function HeroSection() {
 	const { t } = useTranslation();
 	const native = isNative();
+	const sectionRef = useRef<HTMLElement>(null);
+
+	// Scroll-linked orb parallax
+	const { scrollYProgress } = useScroll({
+		target: sectionRef,
+		offset: ['start start', 'end start'],
+	});
+	const orbLeftY = useTransform(scrollYProgress, [0, 1], [0, 200]);
+	const orbLeftX = useTransform(scrollYProgress, [0, 1], [0, -80]);
+	const orbRightY = useTransform(scrollYProgress, [0, 1], [0, 260]);
+	const orbRightX = useTransform(scrollYProgress, [0, 1], [0, 100]);
+	const orbOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0.3]);
+
+	const magneticSignup = useMagnetic<HTMLDivElement>({strength: 14, radius: 120});
+	const magneticLogin = useMagnetic<HTMLDivElement>({strength: 14, radius: 120});
 
 	const storeCta = (
 		<div className={b('store-badges')}>
@@ -55,38 +72,51 @@ export default function HeroSection() {
 				</div>
 			)}
 			<div className={b('auth-buttons')}>
-				<motion.div whileHover={hoverScale} whileTap={tapScale}>
-					<Button
-						large
-						glow
-						onClick={() => (window.location.href = '/signup')}
-					>
-						{t('welcome_hero.cta_signup')}
-					</Button>
-				</motion.div>
-				<motion.div whileHover={hoverScale} whileTap={tapScale}>
-					<Button
-						primary
-						large
-						glow
-						onClick={() => (window.location.href = '/login')}
-					>
-						{t('welcome_hero.cta_login')}
-					</Button>
-				</motion.div>
+				<div ref={magneticSignup}>
+					<motion.div whileHover={hoverScale} whileTap={tapScale}>
+						<Button
+							large
+							glow
+							onClick={() => (window.location.href = '/signup')}
+						>
+							{t('welcome_hero.cta_signup')}
+						</Button>
+					</motion.div>
+				</div>
+				<div ref={magneticLogin}>
+					<motion.div whileHover={hoverScale} whileTap={tapScale}>
+						<Button
+							primary
+							large
+							glow
+							onClick={() => (window.location.href = '/login')}
+						>
+							{t('welcome_hero.cta_login')}
+						</Button>
+					</motion.div>
+				</div>
 			</div>
 		</>
 	);
 
 	return (
-		<section className={b()}>
+		<section ref={sectionRef} className={b()}>
+			{/* Cursor Spotlight */}
+			<CursorSpotlight />
+
 			{/* Particle Background */}
 			<ParticleCanvas />
 
 			{/* Background Ambience */}
 			<div className={b('background')}>
-				<div className={b('background-orb', { position: 'left' })} />
-				<div className={b('background-orb', { position: 'right' })} />
+				<motion.div
+					className={b('background-orb', { position: 'left' })}
+					style={{ x: orbLeftX, y: orbLeftY, opacity: orbOpacity }}
+				/>
+				<motion.div
+					className={b('background-orb', { position: 'right' })}
+					style={{ x: orbRightX, y: orbRightY, opacity: orbOpacity }}
+				/>
 			</div>
 
 			{/* Mobile Language Switcher */}

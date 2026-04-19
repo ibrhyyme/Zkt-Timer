@@ -327,6 +327,7 @@ type Query {
   zktGroupAssignments(groupId: String): [ZktAssignment]
   zktMyAssignments(competitionId: String): [ZktAssignment]
   zktUserAssignments(userId: String, competitionId: String): [ZktAssignment]
+  landingStats: LandingStats
 }
 
 type Mutation {
@@ -2249,6 +2250,15 @@ input AnnouncementFilterInput {
   category: String
   isActive: Boolean
   isDraft: Boolean
+}
+
+type LandingStats {
+  upcoming_wca_competition_count: Int
+  total_competitor_capacity: Int
+  supported_event_count: Int
+  supported_language_count: Int
+  cuber_count: Int
+  solve_count: Int
 }
 
 input BanUserInput {

@@ -96,6 +96,8 @@
 		aspect-ratio: 16 / 10;
 		border-radius: 16px;
 		overflow: hidden;
+		background: linear-gradient(135deg, rgba(10, 10, 12, 0.6), rgba(20, 20, 24, 0.4));
+		padding: 1.25rem;
 
 		// iOS Safari fallback
 		@supports not (aspect-ratio: 16 / 10) {
@@ -118,11 +120,12 @@
 
 	&__image {
 		position: absolute;
-		inset: 0;
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		border-radius: 16px;
+		inset: 1.25rem;
+		width: calc(100% - 2.5rem);
+		height: calc(100% - 2.5rem);
+		object-fit: contain;
+		object-position: center;
+		border-radius: 12px;
 		border: 1px solid rgba(255, 255, 255, 0.05);
 		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
 		transition: transform 0.3s ease, box-shadow 0.3s ease;

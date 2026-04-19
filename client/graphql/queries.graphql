@@ -571,3 +571,14 @@ query zktUserAssignments($competitionId: String!, $userId: String!) {
 		...ZktAssignmentFragment
 	}
 }
+
+query landingStats {
+	landingStats {
+		upcoming_wca_competition_count
+		total_competitor_capacity
+		supported_event_count
+		supported_language_count
+		cuber_count
+		solve_count
+	}
+}

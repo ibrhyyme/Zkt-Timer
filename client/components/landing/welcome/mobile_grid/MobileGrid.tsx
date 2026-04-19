@@ -116,14 +116,14 @@ export default function MobileGrid() {
 	return (
 		<section ref={containerRef} className={b()}>
 			<div className={b('container')}>
-				<div ref={headerRef} className={b('header')} style={{ opacity: 0 }}>
+				<div ref={headerRef} className={b('header')}>
 					<h2 className={b('title')}>{t('welcome_mobile.title')}</h2>
 					<p className={b('description')}>{t('welcome_mobile.description')}</p>
 				</div>
 
 				<div className={b('grid')}>
 					{MOBILE_SCREENS.map((screen, index) => (
-						<div key={index} className={b('item')} data-grid-item style={{ opacity: 0 }}>
+						<div key={index} className={b('item')} data-grid-item>
 							<div
 								className={b('phone-frame')}
 								onMouseMove={handleMouseMove}
