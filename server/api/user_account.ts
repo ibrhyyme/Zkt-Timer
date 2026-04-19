@@ -39,7 +39,7 @@ export const gqlQuery = `
 `;
 
 export const gqlMutation = `
-	createUserAccount(first_name: String!, last_name: String!, email: String!, username: String!, password: String!, language: String): PublicUserAccount
+	createUserAccount(first_name: String!, last_name: String!, email: String!, username: String!, password: String!, language: String, turnstile_token: String!): PublicUserAccount
 	updateUserAccount(first_name: String!, last_name: String!, email: String!, username: String!): PublicUserAccount
 	updateUserPassword(old_password: String!, new_password: String!): PublicUserAccount
 	setUserPassword(new_password: String!): PublicUserAccount
@@ -70,10 +70,32 @@ type UpdatePasswordInput = {
 export const mutateActions = {
 	createUserAccount: async (
 		_: any,
-		{ first_name, last_name, email, username, password, language }: CreateAccountInput,
+		{ first_name, last_name, email, username, password, language, turnstile_token }: CreateAccountInput & { turnstile_token: string },
 		{ req, res }: GraphQLContext
 	) => {
 		const ip = extractIp(req);
+
+		if (process.env.NODE_ENV === 'production') {
+			try {
+				const verifyRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						secret: process.env.CLOUDFLARE_TURNSTILE_SECRET,
+						response: turnstile_token,
+						remoteip: ip,
+					}),
+				});
+				const verifyData = await verifyRes.json() as { success: boolean };
+				if (!verifyData.success) {
+					throw new GraphQLError(ErrorCode.BAD_INPUT, 'Güvenlik doğrulaması başarısız. Lütfen sayfayı yenileyip tekrar deneyin.');
+				}
+			} catch (e) {
+				if (e instanceof GraphQLError) throw e;
+				logger.error('Turnstile verification failed', { error: e });
+				throw new GraphQLError(ErrorCode.BAD_INPUT, 'Güvenlik doğrulaması başarısız. Lütfen sayfayı yenileyip tekrar deneyin.');
+			}
+		}
 
 		if (ip) {
 			const hourly = await checkRateLimit(`signup:ip:${ip}`, 3, 3600);

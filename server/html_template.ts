@@ -67,6 +67,7 @@ export default (payload: HtmlPagePayload) => {
 				  gtag('config', 'AW-354788011');
 				</script>
 
+				<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 				${helmet.title.toString()}
 				${helmet.meta.toString()}
 				${helmet.link.toString()}

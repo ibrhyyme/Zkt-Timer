@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Input from '../../common/inputs/input/Input';
 import { Link } from 'react-router-dom';
 import { gql } from '@apollo/client/core';
@@ -17,8 +17,10 @@ import WcaLoginButton from '../wca_login_button/WcaLoginButton';
 
 const b = block('login');
 
+const TURNSTILE_SITE_KEY = '0x4AAAAAAC_20JqWLYy73wqH';
+
 const CREATE_USER_ACCOUNT_MUTATION = gql`
-	mutation Mutate($firstName: String!, $lastName: String!, $email: String!, $username: String!, $password: String!, $language: String) {
+	mutation Mutate($firstName: String!, $lastName: String!, $email: String!, $username: String!, $password: String!, $language: String, $turnstileToken: String!) {
 		createUserAccount(
 			first_name: $firstName
 			last_name: $lastName
@@ -26,6 +28,7 @@ const CREATE_USER_ACCOUNT_MUTATION = gql`
 			username: $username
 			password: $password
 			language: $language
+			turnstile_token: $turnstileToken
 		) {
 			id
 		}
@@ -42,6 +45,18 @@ export default function SignUp() {
 	const [error, setError] = useState('');
 	const [showPassword, setShowPassword] = useState(false);
 	const [emailSuggestion, setEmailSuggestion] = useState<EmailSuggestion | null>(null);
+	const [turnstileToken, setTurnstileToken] = useState('');
+
+	useEffect(() => {
+		(window as any).__turnstileCallback = (token: string) => setTurnstileToken(token);
+		(window as any).__turnstileExpired = () => setTurnstileToken('');
+		(window as any).__turnstileError = () => setTurnstileToken('');
+		return () => {
+			delete (window as any).__turnstileCallback;
+			delete (window as any).__turnstileExpired;
+			delete (window as any).__turnstileError;
+		};
+	}, []);
 
 	const [createAccount, createAccountData] = useMutation<
 		{ createUserAccount: UserAccount },
@@ -79,6 +94,7 @@ export default function SignUp() {
 					username: username.trim(),
 					password,
 					language: i18n.language,
+					turnstileToken,
 				},
 			});
 			window.location.href = `/verify-email?email=${encodeURIComponent(email.trim())}`;
@@ -99,7 +115,7 @@ export default function SignUp() {
 		}
 	}
 
-	const disabled = !firstName.trim() || !lastName.trim() || !email.trim() || !password.trim() || !username.trim();
+	const disabled = !firstName.trim() || !lastName.trim() || !email.trim() || !password.trim() || !username.trim() || !turnstileToken;
 
 
 
@@ -272,6 +288,16 @@ export default function SignUp() {
 				<div className="text-xs">
 					<PasswordStrength password={password} />
 				</div>
+
+				{/* Turnstile */}
+				<div
+					className="cf-turnstile"
+					data-sitekey={TURNSTILE_SITE_KEY}
+					data-callback="__turnstileCallback"
+					data-expired-callback="__turnstileExpired"
+					data-error-callback="__turnstileError"
+					data-theme="dark"
+				/>
 
 				{/* SignUp Button */}
 				<button
