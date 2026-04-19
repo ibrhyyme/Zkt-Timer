@@ -12,6 +12,7 @@ import {toastError} from '../../util/toast';
 import PromoSuccessModal from './PromoSuccessModal';
 import {useMe} from '../../util/hooks/useMe';
 import {isPro} from '../../lib/pro';
+import FeatureGuard from '../common/page_disabled/FeatureGuard';
 
 const b = block('pro-page');
 
@@ -81,7 +82,7 @@ const REDEEM_PROMO = gql`
 	}
 `;
 
-export default function ProPage() {
+function ProPageContent() {
 	const {t} = useTranslation();
 	const dispatch = useDispatch();
 	const me = useMe();
@@ -249,5 +250,13 @@ export default function ProPage() {
 				</div>
 			</div>
 		</div>
+	);
+}
+
+export default function ProPage() {
+	return (
+		<FeatureGuard feature="pro_enabled" pageNameKey="pro_page.hero_title">
+			<ProPageContent />
+		</FeatureGuard>
 	);
 }

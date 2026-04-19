@@ -5,7 +5,7 @@ import {useMe} from '../../../util/hooks/useMe';
 import PageDisabled from './PageDisabled';
 import AdminDisabledBanner from './AdminDisabledBanner';
 
-type FeatureKey = 'trainer_enabled' | 'community_enabled' | 'leaderboards_enabled' | 'rooms_enabled' | 'battle_enabled';
+type FeatureKey = 'trainer_enabled' | 'community_enabled' | 'leaderboards_enabled' | 'rooms_enabled' | 'battle_enabled' | 'pro_enabled';
 
 interface Props {
 	feature: FeatureKey;

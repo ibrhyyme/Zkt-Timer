@@ -22,7 +22,7 @@ const b = block('site-config-panel');
 
 const BACKFILL_WCA_IDS = gql`mutation { backfillWcaIds { total filled tokenFailed noWcaId error recordsTotal recordsFilled recordsError } }`;
 
-type FeatureKey = 'maintenance_mode' | 'trainer_enabled' | 'community_enabled' | 'leaderboards_enabled' | 'rooms_enabled' | 'battle_enabled';
+type FeatureKey = 'maintenance_mode' | 'trainer_enabled' | 'community_enabled' | 'leaderboards_enabled' | 'rooms_enabled' | 'battle_enabled' | 'pro_enabled';
 
 const PAGE_TOGGLES: {key: FeatureKey; label: string; description: string}[] = [
 	{key: 'trainer_enabled', label: 'Trainer', description: 'Algoritma trainer sayfasi'},
@@ -30,6 +30,7 @@ const PAGE_TOGGLES: {key: FeatureKey; label: string; description: string}[] = [
 	{key: 'rooms_enabled', label: 'Rooms', description: 'Multiplayer rooms sayfasi'},
 	{key: 'battle_enabled', label: 'Battle', description: '1v1 battle modu (mobile)'},
 	{key: 'leaderboards_enabled', label: 'Siralama', description: 'Kinch Ranks + Sum of Ranks siralama sayfasi'},
+	{key: 'pro_enabled', label: 'Pro Uyelik', description: 'Pro abonelik satis sayfasi + paywall. Banka/odeme hazir degilse kapali tut.'},
 ];
 
 export default function SiteConfigPanel() {

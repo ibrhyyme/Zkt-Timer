@@ -46,6 +46,9 @@ export class SiteConfig {
 	battle_enabled: boolean;
 
 	@Field()
+	pro_enabled: boolean;
+
+	@Field()
 	updated_at: Date;
 }
 
@@ -95,4 +98,7 @@ export class UpdateSiteConfigInput {
 
 	@Field({nullable: true})
 	battle_enabled?: boolean;
+
+	@Field({nullable: true})
+	pro_enabled?: boolean;
 }

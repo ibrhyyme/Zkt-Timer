@@ -224,6 +224,7 @@ model SiteConfig {
   leaderboards_enabled Boolean  @default(true)
   rooms_enabled        Boolean  @default(true)
   battle_enabled       Boolean  @default(true)
+  pro_enabled          Boolean  @default(false)
   updated_at           DateTime @updatedAt @default(now())
   updated_by           String?
 

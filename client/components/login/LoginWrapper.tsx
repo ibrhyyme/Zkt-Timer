@@ -75,7 +75,7 @@ export default function LoginWrapper() {
 					{/* Cube Pattern Overlay */}
 					<div className={b('cube-pattern')}>
 						{[...Array(6)].map((_, i) => (
-							<div key={i} className={b('cube-float')} style={{ animationDelay: i === 0 ? '0s' : `${i * 500}ms` }}>
+							<div key={i} className={b('cube-float')}>
 								<Cube size={24} weight="duotone" />
 							</div>
 						))}
