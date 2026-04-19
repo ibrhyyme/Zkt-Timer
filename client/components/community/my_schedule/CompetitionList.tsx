@@ -256,6 +256,13 @@ export default function CompetitionList() {
 	function renderCompCard(comp: any, opts: {mine?: boolean} = {}) {
 		const isFinished = comp.end_date < todayStr;
 		const isOngoing = comp.start_date <= todayStr && comp.end_date >= todayStr;
+		const daysUntil = (() => {
+			if (!opts.mine || isOngoing || isFinished) return null;
+			const start = new Date(comp.start_date + 'T00:00:00');
+			const today = new Date(todayStr + 'T00:00:00');
+			const diff = Math.round((start.getTime() - today.getTime()) / (24 * 3600 * 1000));
+			return diff;
+		})();
 		return (
 			<div
 				key={comp.id}
@@ -264,19 +271,35 @@ export default function CompetitionList() {
 				onMouseEnter={() => handleHoverPrefetch(comp.id)}
 				onMouseLeave={handleHoverLeave}
 			>
+				{opts.mine && <span className={b('mine-glow')} aria-hidden="true" />}
 				{comp.country_iso2 && (
 					<span className={b('country-code')}>{comp.country_iso2}</span>
 				)}
 				<div className={b('comp-info')}>
+					{opts.mine && (
+						<span className={b('mine-tag')}>
+							<Trophy weight="fill" size={11} style={{marginRight: 4}} />
+							{t('my_schedule.registered')}
+						</span>
+					)}
 					<span className={b('comp-title')}>{comp.name}</span>
 					<span className={b('comp-sub')}>
 						{formatDateRange(comp.start_date, comp.end_date, locale)}
 						{comp.city && ` \u2013 ${comp.city}`}
 					</span>
 				</div>
-				{isOngoing && (
+				{isOngoing ? (
 					<span className={b('ongoing-badge')}>{t('my_schedule.ongoing')}</span>
-				)}
+				) : daysUntil !== null && daysUntil >= 0 ? (
+					<span className={b('countdown-badge', {imminent: daysUntil <= 3})}>
+						<span className={b('countdown-num')}>{daysUntil === 0 ? t('my_schedule.starts_today') : daysUntil}</span>
+						{daysUntil > 0 && (
+							<span className={b('countdown-label')}>
+								{t('my_schedule.days_left', {count: daysUntil})}
+							</span>
+						)}
+					</span>
+				) : null}
 			</div>
 		);
 	}
