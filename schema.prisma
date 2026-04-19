@@ -986,13 +986,26 @@ model WcaCompetitionNotificationState {
   created_at     DateTime @default(now())
   updated_at     DateTime @updatedAt
 
-  user            UserAccount                   @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  notified_rounds WcaCompetitionNotifiedRound[]
+  user               UserAccount                     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  notified_rounds    WcaCompetitionNotifiedRound[]
+  notified_countdowns WcaCompetitionCountdownNotified[]
 
   @@unique([user_id, competition_id])
   @@index([competition_id, end_date])
   @@index([end_date])
   @@map("wca_competition_notification_state")
+}
+
+model WcaCompetitionCountdownNotified {
+  id           String   @id @default(uuid())
+  state_id     String
+  days_before  Int
+  created_at   DateTime @default(now())
+
+  state WcaCompetitionNotificationState @relation(fields: [state_id], references: [id], onDelete: Cascade)
+
+  @@unique([state_id, days_before])
+  @@map("wca_competition_countdown_notified")
 }
 
 model WcaCompetitionNotifiedRound {

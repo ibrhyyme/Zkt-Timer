@@ -4,6 +4,7 @@ import {initSiteMapGeneration} from './sitemap';
 import {getPrisma} from '../database';
 import {sendPushToUser} from './push';
 import {initWcaCompetitionNotificationCronJob} from './cron_wca_notifications';
+import {initWcaCompetitionCountdownCronJob} from './cron_wca_countdown';
 import {syncAllWorldRecords} from './WorldRecordSyncService';
 
 const CUBE_NAMES: Record<string, string> = {
@@ -20,6 +21,7 @@ export function initCronJobs() {
 	initDailyGoalReminderCronJob();
 	initProPremiumExpiryCronJob();
 	initWcaCompetitionNotificationCronJob();
+	initWcaCompetitionCountdownCronJob();
 	initWorldRecordSyncCronJob();
 	initRankingRecalculationCronJob();
 }

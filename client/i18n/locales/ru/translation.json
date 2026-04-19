@@ -603,6 +603,11 @@
 		"notif_not_advancing": "Поздравляем. Ты финишировал на {{ranking}}-м месте. Не прошёл дальше, но молодец!",
 		"notif_final_result": "Поздравляем! Ты финишировал на {{ranking}}-м месте!",
 		"notif_link_text": "Посмотреть результаты",
+		"notif_countdown_title_days": "Через {{days}} дн.: {{competitionName}}",
+		"notif_countdown_title_tomorrow": "Соревнование завтра: {{competitionName}}",
+		"notif_countdown_body": "Соревнование, на которое ты зарегистрирован, приближается. Пора готовиться.",
+		"notif_countdown_body_with_time": "Время начала: {{startTime}}. Пора готовиться.",
+		"notif_countdown_link_text": "Посмотреть соревнование",
 		"cutoff_attempts": "{{count}} поп.",
 		"wca_live_error": "Не удалось загрузить WCA Live. Обновите страницу."
 	},

@@ -603,6 +603,11 @@
 		"notif_not_advancing": "Felicidades. Terminaste en {{ranking}}.º lugar. No avanzaste pero fue una gran competencia!",
 		"notif_final_result": "¡Felicidades! Terminaste en {{ranking}}.º lugar.",
 		"notif_link_text": "Ver resultados",
+		"notif_countdown_title_days": "En {{days}} días: {{competitionName}}",
+		"notif_countdown_title_tomorrow": "Competencia mañana: {{competitionName}}",
+		"notif_countdown_body": "Tu competencia registrada se acerca. Hora de prepararse.",
+		"notif_countdown_body_with_time": "Hora de inicio: {{startTime}}. Hora de prepararse.",
+		"notif_countdown_link_text": "Ver competencia",
 		"cutoff_attempts": "{{count}} int.",
 		"wca_live_error": "Error al cargar WCA Live. Actualiza la página."
 	},

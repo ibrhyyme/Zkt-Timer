@@ -603,6 +603,11 @@
 		"notif_not_advancing": "Tebrikler. {{ranking}}. Sırada bitirdin. Üst tura yükselemesen de güzel yarıştın!",
 		"notif_final_result": "Tebrikler! {{ranking}}. Sırada bitirdin!",
 		"notif_link_text": "Sonuçları gör",
+		"notif_countdown_title_days": "{{days}} gün sonra: {{competitionName}}",
+		"notif_countdown_title_tomorrow": "Yarın yarışma: {{competitionName}}",
+		"notif_countdown_body": "Kayıtlı olduğun yarışma yaklaşıyor. Hazırlıklarını gözden geçir.",
+		"notif_countdown_body_with_time": "Başlangıç saati: {{startTime}}. Hazırlıklarını gözden geçir.",
+		"notif_countdown_link_text": "Yarışmayı gör",
 		"cutoff_attempts": "{{count}} deneme",
 		"wca_live_error": "WCA Live yüklenirken bir sorun oluştu. Sayfayı yenileyin."
 	},
