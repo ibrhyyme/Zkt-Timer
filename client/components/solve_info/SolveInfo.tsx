@@ -14,7 +14,7 @@ import { getCubeTypeBucketLabel, getCubeTypeInfoById } from '../../util/cubes/ut
 import block from '../../styles/bem';
 import { Solve } from '../../../server/schemas/Solve.schema';
 import { useGeneral } from '../../util/hooks/useGeneral';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { closeModal } from '../../actions/general';
 import { demoUser } from './demo_user';
 import NormalSolveLayout from './normal_solve_layout/NormalSolveLayout';
@@ -65,6 +65,7 @@ export default function SolveInfo(props: Props) {
 	const { t } = useTranslation();
 	const dispatch = useDispatch();
 	const mobileMode = useGeneral('mobile_mode');
+	const me = useSelector((state: any) => state.account.me);
 	const demoSolve = props.solve?.demo_mode;
 
 	const [loading, setLoading] = useState(!demoSolve);
@@ -81,7 +82,7 @@ export default function SolveInfo(props: Props) {
 		updateSolve();
 	}, []);
 
-	let user = solve?.user;
+	let user = solve?.user || me;
 	if (solve?.demo_mode) {
 		user = demoUser;
 	}

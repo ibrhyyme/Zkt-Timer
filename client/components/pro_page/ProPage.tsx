@@ -332,7 +332,7 @@ function ProPageContent() {
 								))}
 							</div>
 
-							{debugInfo && native && (
+							{debugInfo && native && Object.keys(offerings).length === 0 && (
 								<div style={{padding: '8px', background: 'rgba(255,200,0,0.15)', border: '1px solid orange', fontSize: '11px', color: '#fff', margin: '8px 0', wordBreak: 'break-word'}}>
 									DEBUG: {debugInfo}
 								</div>

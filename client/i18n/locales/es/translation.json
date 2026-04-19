@@ -830,7 +830,8 @@
 		"lock_scramble": "Bloquear mezcla",
 		"new_scramble": "Nueva mezcla",
 		"previous_scramble": "Mezcla anterior",
-		"next_scramble": "Siguiente mezcla"
+		"next_scramble": "Siguiente mezcla",
+		"reset_to_defaults": "Restablecer valores predeterminados"
 	},
 	"mobile_modules": {
 		"title": "Módulos",

@@ -830,7 +830,8 @@
 		"lock_scramble": "Karıştırmayı kilitle",
 		"new_scramble": "Yeni karıştırma",
 		"previous_scramble": "Önceki karıştırma",
-		"next_scramble": "Sonraki karıştırma"
+		"next_scramble": "Sonraki karıştırma",
+		"reset_to_defaults": "Varsayılana Geri Dön"
 	},
 	"mobile_modules": {
 		"title": "Modüller",
