@@ -29,7 +29,7 @@ import { resolveReportsOfUserId } from './Report.resolver';
 import { PaginationArgsInput, AdminUserFiltersInput } from '../schemas/Pagination.schema';
 import { getPaginatedResponse, PaginatedRequestInput } from '../util/pagination/paginated_response';
 import { sendPushToUser } from '../services/push';
-import { AdminSendPushResult } from '../schemas/PushToken.schema';
+import { AdminSendPushResult, PushTokenInfo } from '../schemas/PushToken.schema';
 import { OnlineStats, OnlineUser, BackfillResult } from '../schemas/SiteConfig.schema';
 import { getOnlineCounts, getOnlineUsers } from '../services/socket_util';
 import WcaResultEnteredNotification from '../resources/notification_types/wca_result_entered';
@@ -291,6 +291,15 @@ export class AdminResolver {
 		await deleteUserAccount(targetUser);
 
 		return targetUser;
+	}
+
+	@Authorized([Role.ADMIN])
+	@Query(() => [PushTokenInfo])
+	async adminMyPushTokens(@Ctx() context: GraphQLContext): Promise<{platform: string}[]> {
+		return getPrisma().pushToken.findMany({
+			where: {userId: context.user!.id},
+			select: {platform: true},
+		});
 	}
 
 	@Authorized([Role.ADMIN])
