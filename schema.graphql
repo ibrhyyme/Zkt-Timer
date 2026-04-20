@@ -338,7 +338,7 @@ type Mutation {
   deleteSolvesByCubeType(cubeType: String): Void
   deleteAllTrainingSolves: Void
   deleteAllSolves: Void
-  createUserAccount(first_name: String!, last_name: String!, email: String!, username: String!, password: String!, language: String): PublicUserAccount
+  createUserAccount(first_name: String!, last_name: String!, email: String!, username: String!, password: String!, language: String, turnstile_token: String!): PublicUserAccount
   updateUserAccount(first_name: String!, last_name: String!, email: String!, username: String!): PublicUserAccount
   updateUserPassword(old_password: String!, new_password: String!): PublicUserAccount
   setUserPassword(new_password: String!): PublicUserAccount

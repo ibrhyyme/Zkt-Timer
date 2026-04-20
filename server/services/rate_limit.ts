@@ -15,7 +15,8 @@ export async function checkRateLimit(
 	try {
 		const client = getRedisPubClient();
 		if (!client) {
-			return {allowed: true, count: 0, ttl: 0};
+			logger.warn('Rate limit check skipped: Redis not available, blocking request', {key});
+			return {allowed: false, count: 0, ttl: windowSeconds};
 		}
 
 		const fullKey = `cd:ratelimit:${key}`;
@@ -33,7 +34,7 @@ export async function checkRateLimit(
 			ttl: ttl > 0 ? ttl : windowSeconds,
 		};
 	} catch (e) {
-		logger.error('Rate limit check failed', {key, error: e});
-		return {allowed: true, count: 0, ttl: 0};
+		logger.error('Rate limit check failed, blocking request as safety measure', {key, error: e});
+		return {allowed: false, count: 0, ttl: windowSeconds};
 	}
 }

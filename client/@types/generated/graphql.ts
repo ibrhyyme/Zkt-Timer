@@ -982,6 +982,7 @@ export type MutationCreateUserAccountArgs = {
   language?: InputMaybe<Scalars['String']>;
   last_name: Scalars['String'];
   password: Scalars['String'];
+  turnstile_token: Scalars['String'];
   username: Scalars['String'];
 };
 
