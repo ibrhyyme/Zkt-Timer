@@ -64,7 +64,14 @@ async function initNativePush(): Promise<void> {
 		return;
 	}
 
-	await PushNotifications.register();
+	await PushNotifications.removeAllListeners();
+
+	try {
+		await PushNotifications.register();
+	} catch (err) {
+		console.error('[Push] register() failed:', err);
+		return;
+	}
 
 	PushNotifications.addListener('registration', (token) => {
 		const platform = Capacitor.getPlatform() === 'ios' ? 'IOS' : 'ANDROID';
