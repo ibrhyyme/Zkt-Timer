@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Capacitor } from '@capacitor/core';
 import Input from '../../common/inputs/input/Input';
 import { Link } from 'react-router-dom';
 import { gql } from '@apollo/client/core';
@@ -45,7 +46,8 @@ export default function SignUp() {
 	const [error, setError] = useState('');
 	const [showPassword, setShowPassword] = useState(false);
 	const [emailSuggestion, setEmailSuggestion] = useState<EmailSuggestion | null>(null);
-	const [turnstileToken, setTurnstileToken] = useState('');
+	const isNative = Capacitor.isNativePlatform();
+	const [turnstileToken, setTurnstileToken] = useState(isNative ? 'NATIVE_APP' : '');
 
 	useEffect(() => {
 		(window as any).__turnstileCallback = (token: string) => setTurnstileToken(token);
@@ -289,15 +291,17 @@ export default function SignUp() {
 					<PasswordStrength password={password} />
 				</div>
 
-				{/* Turnstile */}
-				<div
-					className="cf-turnstile"
-					data-sitekey={TURNSTILE_SITE_KEY}
-					data-callback="__turnstileCallback"
-					data-expired-callback="__turnstileExpired"
-					data-error-callback="__turnstileError"
-					data-theme="dark"
-				/>
+				{/* Turnstile — native app'te atlanir */}
+				{!isNative && (
+					<div
+						className="cf-turnstile"
+						data-sitekey={TURNSTILE_SITE_KEY}
+						data-callback="__turnstileCallback"
+						data-expired-callback="__turnstileExpired"
+						data-error-callback="__turnstileError"
+						data-theme="dark"
+					/>
+				)}
 
 				{/* SignUp Button */}
 				<button
