@@ -3,7 +3,7 @@ import { gql } from '@apollo/client/core';
 import { gqlMutate } from '../../components/api';
 import { getSolveDb } from './init';
 import { emitEvent } from '../../util/event_handler';
-import { clearSolveStatCache } from './stats/solves/caching';
+import { clearSolveStatCache, clearSolveStatCacheForSession } from './stats/solves/caching';
 import { toastError } from '../../util/toast';
 import { getStore } from '../../components/store';
 import { openModal } from '../../actions/general';
@@ -252,8 +252,7 @@ export async function deleteAllSolvesInSessionDb(sessionId: string, confirmed: b
 
 	solveDb.removeWhere({ session_id: sessionId });
 
-	// İstatistikleri temizle
-	solvesToRemove.forEach(solve => clearSolveStatCache({ solve: solve as any }));
+	clearSolveStatCacheForSession(sessionId);
 	emitEvent('solveDbUpdatedEvent', null);
 
 	if (canSync()) {

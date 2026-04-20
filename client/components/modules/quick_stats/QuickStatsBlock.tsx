@@ -51,7 +51,7 @@ export default function QuickStatsBlock(props: Props) {
 	];
 
 	// "Session Mean" identify -> session: true AND (no averageCount OR averageCount 0)
-	const isSessionMean = statOptions.session && !statOptions.averageCount;
+	const isSessionMean = statOptions.session && statOptions.statType === 'average' && !statOptions.averageCount;
 
 	const buttonClasses = [
 		'relative',
@@ -106,7 +106,7 @@ export default function QuickStatsBlock(props: Props) {
 		// ANCAK: Kullanıcı isteği üzerine "Session Mean" (tüm oturum ortalaması) açılmamalıdır.
 		// Çünkü çok fazla veri olduğunda modal açılması performans sorunu yaratabilir veya istenmiyor.
 		// "Session Mean" -> session: true ve averageCount yok (veya 0)
-		const isSessionMean = statOptions.session && !statOptions.averageCount;
+		const isSessionMean = statOptions.session && statOptions.statType === 'average' && !statOptions.averageCount;
 
 		if (isSessionMean) {
 			e.preventDefault();
@@ -127,7 +127,7 @@ export default function QuickStatsBlock(props: Props) {
 					/>
 				)
 			);
-		} else if (solveCount) {
+		} else if (solveCount || statsBlockSolvesFilter?.solve) {
 			dispatch(openModal(<SolveInfo solveId={statsBlockSolvesFilter.solve.id} />));
 		} else {
 			e.preventDefault();

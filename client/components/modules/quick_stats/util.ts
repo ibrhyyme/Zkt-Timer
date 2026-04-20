@@ -10,12 +10,10 @@ import {getCurrentAverage} from '../../../db/solves/stats/solves/average/average
 import {getAveragePB} from '../../../db/solves/stats/solves/average/average_pb';
 import {gql} from '@apollo/client';
 import {gqlMutate} from '../../api';
-import {getCubeTypeInfo} from '../../../util/cubes/util';
 
 export const STATS_GRID_SIZE = 4;
 
 export function getStatsBlockDescription(statsOptions: StatsModuleBlock, filterOptions: FilterSolvesOptions = {}) {
-	const solvesFilter = {...filterOptions};
 	const description = [];
 
 	if (statsOptions.sortBy === 'worst' && statsOptions.statType === 'single') {
@@ -30,16 +28,8 @@ export function getStatsBlockDescription(statsOptions: StatsModuleBlock, filterO
 		description.push('session');
 	}
 
-	if (solvesFilter?.cube_type) {
-		const cubeType = solvesFilter.cube_type as string;
-
-		const ct = getCubeTypeInfo(cubeType);
-		description.push(ct.name);
-	}
-
 	if (statsOptions.statType === 'average') {
-		description.push('average');
-
+		description.push('avg');
 		if (statsOptions.averageCount) {
 			description.push(`of ${statsOptions.averageCount}`);
 		}

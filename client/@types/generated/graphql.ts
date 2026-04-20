@@ -1654,6 +1654,7 @@ export type PushTokenResult = {
 
 export type Query = {
   __typename?: 'Query';
+  adminMyPushTokens?: Maybe<Array<Maybe<PushTokenInfo>>>;
   adminTrainerAlternatives?: Maybe<PaginatedTrainerAlternatives>;
   adminUserSearch?: Maybe<PaginatedUserAccountsForAdmin>;
   algorithmOverrides?: Maybe<Array<Maybe<AlgorithmOverride>>>;
