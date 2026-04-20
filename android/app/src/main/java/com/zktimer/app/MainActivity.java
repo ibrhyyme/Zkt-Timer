@@ -10,6 +10,7 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.core.graphics.Insets;
 import com.getcapacitor.BridgeActivity;
+import com.google.firebase.FirebaseApp;
 
 public class MainActivity extends BridgeActivity {
     @Override
@@ -39,6 +40,9 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        if (FirebaseApp.getApps(this).isEmpty()) {
+            FirebaseApp.initializeApp(this);
+        }
         registerPlugin(GestureExclusionPlugin.class);
         super.onCreate(savedInstanceState);
 
