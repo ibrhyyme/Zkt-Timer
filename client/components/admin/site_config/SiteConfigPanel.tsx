@@ -22,6 +22,7 @@ const b = block('site-config-panel');
 
 const BACKFILL_WCA_IDS = gql`mutation { backfillWcaIds { total filled tokenFailed noWcaId error recordsTotal recordsFilled recordsError } }`;
 const TEST_WCA_NOTIFICATION = gql`mutation TestWcaNotification($wcaId: String!) { testWcaNotification(wcaId: $wcaId) }`;
+const MY_PUSH_TOKENS = gql`query { adminMyPushTokens { platform } }`;
 
 type FeatureKey = 'maintenance_mode' | 'trainer_enabled' | 'community_enabled' | 'leaderboards_enabled' | 'rooms_enabled' | 'battle_enabled' | 'pro_enabled';
 
@@ -46,6 +47,9 @@ export default function SiteConfigPanel() {
 	const [wcaIdInput, setWcaIdInput] = useState('');
 	const [testPushLoading, setTestPushLoading] = useState(false);
 	const [testPushResult, setTestPushResult] = useState<string | null>(null);
+
+	const [tokenCheckLoading, setTokenCheckLoading] = useState(false);
+	const [tokenCheckResult, setTokenCheckResult] = useState<string | null>(null);
 
 	// Canli online sayaci — 10 saniyede bir polling
 	const {data: onlineData} = useQuery<OnlineStatsQuery>(OnlineStatsDocument, {
@@ -368,6 +372,44 @@ export default function SiteConfigPanel() {
 					<div className={b('row')}>
 						<div className={b('row-text')}>
 							<div className={b('row-desc')}>{testPushResult}</div>
+						</div>
+					</div>
+				)}
+				<div className={b('row')}>
+					<div className={b('row-text')}>
+						<div className={b('row-label')}>Kayıtlı Token'larım</div>
+						<div className={b('row-desc')}>
+							Hangi platformlarda push token'ı DB'de kayıtlı? iOS yok → register() başarısız.
+						</div>
+					</div>
+					<button
+						className={b('action-btn')}
+						disabled={tokenCheckLoading}
+						onClick={async () => {
+							setTokenCheckLoading(true);
+							setTokenCheckResult(null);
+							try {
+								const res = await gqlQueryTyped(MY_PUSH_TOKENS, {}, {fetchPolicy: 'no-cache'});
+								const tokens: {platform: string}[] = res?.data?.adminMyPushTokens ?? [];
+								if (tokens.length === 0) {
+									setTokenCheckResult('Hiç token yok — register() hiç çalışmamış.');
+								} else {
+									setTokenCheckResult(tokens.map((t) => t.platform).join(', '));
+								}
+							} catch (err) {
+								setTokenCheckResult('Hata: ' + (err as any)?.message);
+							} finally {
+								setTokenCheckLoading(false);
+							}
+						}}
+					>
+						{tokenCheckLoading ? 'Kontrol ediliyor...' : 'Kontrol Et'}
+					</button>
+				</div>
+				{tokenCheckResult && (
+					<div className={b('row')}>
+						<div className={b('row-text')}>
+							<div className={b('row-desc')}>{tokenCheckResult}</div>
 						</div>
 					</div>
 				)}
