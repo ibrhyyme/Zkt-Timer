@@ -43,11 +43,19 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         if (FirebaseApp.getApps(this).isEmpty()) {
             FirebaseOptions options = new FirebaseOptions.Builder()
+<<<<<<< HEAD
                 .setApplicationId(BuildConfig.FIREBASE_APP_ID)
                 .setGcmSenderId(BuildConfig.FIREBASE_SENDER_ID)
                 .setProjectId(BuildConfig.FIREBASE_PROJECT_ID)
                 .setApiKey(BuildConfig.FIREBASE_API_KEY)
                 .setStorageBucket(BuildConfig.FIREBASE_STORAGE_BUCKET)
+=======
+                .setApplicationId("1:872286317632:android:2954aeeeff1bdc904a03a5")
+                .setGcmSenderId("872286317632")
+                .setProjectId("zkt-timer-59c59")
+                .setApiKey("AIzaSyCq6g61ZPSGEc3a-1qvLx1uEgkjgX_XV98")
+                .setStorageBucket("zkt-timer-59c59.firebasestorage.app")
+>>>>>>> cdc5d70f8e39eea4be5b0ae28876a5d835cda690
                 .build();
             FirebaseApp.initializeApp(this, options);
         }

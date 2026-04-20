@@ -9,11 +9,14 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 18
         versionName "1.5.7"
+<<<<<<< HEAD
         buildConfigField "String", "FIREBASE_APP_ID", '"1:872286317632:android:2954aeeeff1bdc904a03a5"'
         buildConfigField "String", "FIREBASE_SENDER_ID", '"872286317632"'
         buildConfigField "String", "FIREBASE_PROJECT_ID", '"zkt-timer-59c59"'
         buildConfigField "String", "FIREBASE_API_KEY", '"AIzaSyCq6g61ZPSGEc3a-1qvLx1uEgkjgX_XV98"'
         buildConfigField "String", "FIREBASE_STORAGE_BUCKET", '"zkt-timer-59c59.firebasestorage.app"'
+=======
+>>>>>>> cdc5d70f8e39eea4be5b0ae28876a5d835cda690
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
