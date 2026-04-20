@@ -6,7 +6,6 @@ import block from '../../../../styles/bem';
 import { getTimeString } from '../../../../util/time';
 import SolvesText from '../../solves_text/SolvesText';
 import Button, { CommonType } from '../../../common/button/Button';
-import { getCubeTypeInfoById } from '../../../../util/cubes/util';
 import { Solve } from '../../../../../server/schemas/Solve.schema';
 
 const b = block('history-modal');
@@ -113,22 +112,7 @@ export default function HistoryModal(props: Props) {
 		return [...effectiveSolves].sort((a, b) => b.started_at - a.started_at);
 	}, [effectiveSolves]);
 
-	const cubeTypes = useMemo(() => {
-		const types = new Set<string>();
-		for (const solve of solves) {
-			types.add(solve.cube_type);
-		}
-
-		const output = [];
-		for (const type of types) {
-			const cubeName = getCubeTypeInfoById(type).name;
-			output.push(cubeName);
-		}
-
-		return output;
-	}, [solves, solves?.length]);
-
-	const trimmedIds = useMemo(() => getTrimmedSolveIds(solves), [solves]);
+const trimmedIds = useMemo(() => getTrimmedSolveIds(solves), [solves]);
 
 	const lastSolve = solves[solves.length - 1];
 	const isSingleSolve = solves.length === 1;
@@ -207,7 +191,7 @@ export default function HistoryModal(props: Props) {
 					<div className={b('mobile-header-main')}>
 						<div className={b('mobile-time')}>{timeString}</div>
 						<div className={b('mobile-desc')}>
-							<span>{description} {cubeTypes.join(', ')}</span>
+							<span>{description}</span>
 						</div>
 						{onAoCountChange && (
 							<div className={b('edit-ao-section')}>
@@ -352,7 +336,7 @@ export default function HistoryModal(props: Props) {
 			<div className={b('card-header')}>
 				<div className={b('card-time')}>{timeString}</div>
 				<div className={b('card-desc')}>
-					<span>{description} {cubeTypes.join(', ')}</span>
+					<span>{description}</span>
 				</div>
 			</div>
 

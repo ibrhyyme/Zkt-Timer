@@ -74,6 +74,11 @@ export function clearSingleSolveStatCache(cacheStr: string) {
 	}
 }
 
+export function clearSolveStatCacheForSession(sessionId: string) {
+	const solveCacheDb = getSolveCacheDb();
+	solveCacheDb.removeWhere((stat) => (stat.filterOptions as FilterSolvesOptions)?.session_id === sessionId);
+}
+
 export function clearSolveStatCache(filter: FilterSolveStats) {
 	const solveCacheDb = getSolveCacheDb();
 

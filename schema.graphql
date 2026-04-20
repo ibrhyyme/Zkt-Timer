@@ -280,6 +280,7 @@ type Query {
   notificationPreferences: NotificationPreference
   adminUserSearch(filters: AdminUserFiltersInput, pageArgs: PaginationArgsInput): PaginatedUserAccountsForAdmin
   getUserAccountForAdmin(userId: String): UserAccountForAdmin
+  adminMyPushTokens: [PushTokenInfo]
   onlineStats: OnlineStats
   onlineUsers: [OnlineUser]
   statsModule: StatsModule
