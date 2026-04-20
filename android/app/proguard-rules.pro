@@ -33,10 +33,12 @@
 -keep class com.revenuecat.purchases.** { *; }
 -dontwarn com.revenuecat.purchases.**
 
-# Google Play Billing Library
+# Google Play Billing Library + Firebase
 -keep class com.android.billingclient.** { *; }
 -keep class com.google.android.gms.** { *; }
+-keep class com.google.firebase.** { *; }
 -dontwarn com.android.billingclient.**
+-dontwarn com.google.firebase.**
 
 # Kotlin reflection / serialization / coroutines (RevenueCat ve Capacitor kullanıyor)
 -keepattributes Signature
