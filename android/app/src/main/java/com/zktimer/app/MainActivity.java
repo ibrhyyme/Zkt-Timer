@@ -11,6 +11,7 @@ import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.core.graphics.Insets;
 import com.getcapacitor.BridgeActivity;
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.FirebaseOptions;
 
 public class MainActivity extends BridgeActivity {
     @Override
@@ -41,7 +42,14 @@ public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         if (FirebaseApp.getApps(this).isEmpty()) {
-            FirebaseApp.initializeApp(this);
+            FirebaseOptions options = new FirebaseOptions.Builder()
+                .setApplicationId("1:872286317632:android:2954aeeeff1bdc904a03a5")
+                .setGcmSenderId("872286317632")
+                .setProjectId("zkt-timer-59c59")
+                .setApiKey("AIzaSyCq6g61ZPSGEc3a-1qvLx1uEgkjgX_XV98")
+                .setStorageBucket("zkt-timer-59c59.firebasestorage.app")
+                .build();
+            FirebaseApp.initializeApp(this, options);
         }
         registerPlugin(GestureExclusionPlugin.class);
         super.onCreate(savedInstanceState);
