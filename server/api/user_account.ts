@@ -76,7 +76,7 @@ export const mutateActions = {
 	) => {
 		const ip = extractIp(req);
 
-		if (process.env.NODE_ENV === 'production') {
+		if (process.env.NODE_ENV === 'production' && turnstile_token !== 'NATIVE_APP') {
 			try {
 				const verifyRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
 					method: 'POST',
