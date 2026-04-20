@@ -241,6 +241,12 @@ export async function sendPushToUser(userId: string, title: string, body: string
 		response.responses.forEach((resp, idx) => {
 			if (resp.error) {
 				const code = resp.error.code;
+				logger.warn('[Push] sendPushToUser token error', {
+					userId,
+					tokenIdx: idx,
+					errorCode: code,
+					errorMessage: resp.error.message,
+				});
 				if (
 					code === 'messaging/registration-token-not-registered' ||
 					code === 'messaging/invalid-registration-token'
