@@ -11,6 +11,7 @@ import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.core.graphics.Insets;
 import com.getcapacitor.BridgeActivity;
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.FirebaseOptions;
 
 public class MainActivity extends BridgeActivity {
     @Override
@@ -41,7 +42,14 @@ public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         if (FirebaseApp.getApps(this).isEmpty()) {
-            FirebaseApp.initializeApp(this);
+            FirebaseOptions options = new FirebaseOptions.Builder()
+                .setApplicationId(BuildConfig.FIREBASE_APP_ID)
+                .setGcmSenderId(BuildConfig.FIREBASE_SENDER_ID)
+                .setProjectId(BuildConfig.FIREBASE_PROJECT_ID)
+                .setApiKey(BuildConfig.FIREBASE_API_KEY)
+                .setStorageBucket(BuildConfig.FIREBASE_STORAGE_BUCKET)
+                .build();
+            FirebaseApp.initializeApp(this, options);
         }
         registerPlugin(GestureExclusionPlugin.class);
         super.onCreate(savedInstanceState);
