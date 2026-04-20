@@ -21,6 +21,7 @@ import './SiteConfigPanel.scss';
 const b = block('site-config-panel');
 
 const BACKFILL_WCA_IDS = gql`mutation { backfillWcaIds { total filled tokenFailed noWcaId error recordsTotal recordsFilled recordsError } }`;
+const TEST_WCA_NOTIFICATION = gql`mutation TestWcaNotification($wcaId: String!) { testWcaNotification(wcaId: $wcaId) }`;
 
 type FeatureKey = 'maintenance_mode' | 'trainer_enabled' | 'community_enabled' | 'leaderboards_enabled' | 'rooms_enabled' | 'battle_enabled' | 'pro_enabled';
 
@@ -41,6 +42,10 @@ export default function SiteConfigPanel() {
 	const [error, setError] = useState<string | null>(null);
 	const [backfillLoading, setBackfillLoading] = useState(false);
 	const [backfillResult, setBackfillResult] = useState<string | null>(null);
+
+	const [wcaIdInput, setWcaIdInput] = useState('');
+	const [testPushLoading, setTestPushLoading] = useState(false);
+	const [testPushResult, setTestPushResult] = useState<string | null>(null);
 
 	// Canli online sayaci — 10 saniyede bir polling
 	const {data: onlineData} = useQuery<OnlineStatsQuery>(OnlineStatsDocument, {
@@ -313,6 +318,56 @@ export default function SiteConfigPanel() {
 					<div className={b('row')}>
 						<div className={b('row-text')}>
 							<div className={b('row-desc')}>{backfillResult}</div>
+						</div>
+					</div>
+				)}
+			</div>
+
+			{/* WCA Bildirim Testi */}
+			<div className={b('section')}>
+				<div className={b('section-header')}>
+					<Database size={20} weight="fill" />
+					<h3>WCA Bildirim Testi</h3>
+				</div>
+				<div className={b('row')}>
+					<div className={b('row-text')}>
+						<div className={b('row-label')}>Test Push Gönder</div>
+						<div className={b('row-desc')}>
+							WCA ID'ye sahip kullanıcıya örnek sonuç ve tur bildirimleri gönderir (sahte veri, gerçek yarışma gerekmez).
+						</div>
+					</div>
+					<div className={b('test-push-controls')}>
+						<input
+							className={b('test-push-input')}
+							value={wcaIdInput}
+							onChange={(e) => setWcaIdInput(e.target.value.toUpperCase())}
+							placeholder="WCA ID"
+							maxLength={10}
+						/>
+						<button
+							className={b('action-btn')}
+							disabled={testPushLoading || !wcaIdInput.trim()}
+							onClick={async () => {
+								setTestPushLoading(true);
+								setTestPushResult(null);
+								try {
+									await gqlMutate(TEST_WCA_NOTIFICATION, {wcaId: wcaIdInput.trim()});
+									setTestPushResult('Bildirimler gönderildi.');
+								} catch (err) {
+									setTestPushResult('Hata: ' + (err as any)?.message);
+								} finally {
+									setTestPushLoading(false);
+								}
+							}}
+						>
+							{testPushLoading ? 'Gönderiliyor...' : 'Gönder'}
+						</button>
+					</div>
+				</div>
+				{testPushResult && (
+					<div className={b('row')}>
+						<div className={b('row-text')}>
+							<div className={b('row-desc')}>{testPushResult}</div>
 						</div>
 					</div>
 				)}
