@@ -66,13 +66,8 @@ async function initNativePush(): Promise<void> {
 
 	await PushNotifications.removeAllListeners();
 
-	try {
-		await PushNotifications.register();
-	} catch (err) {
-		console.error('[Push] register() failed:', err);
-		return;
-	}
-
+	// Listener'lar register() ÖNCESINDE kurulur — iOS cached token'ı
+	// register() tamamlanmadan gönderebilir, kaçırmamak için önce dinle.
 	PushNotifications.addListener('registration', (token) => {
 		const platform = Capacitor.getPlatform() === 'ios' ? 'IOS' : 'ANDROID';
 		registerTokenWithBackend(token.value, platform);
@@ -82,11 +77,6 @@ async function initNativePush(): Promise<void> {
 		console.error('[Push] Native registration error:', error);
 	});
 
-	// Foreground'da iken bildirim geldiginde:
-	// PushNotifications plugin foreground'da bildirim gostermez (hem iOS hem Android).
-	// LocalNotifications plugin ile manuel goster — bu plugin iOS'ta da foreground'da
-	// otomatik bildirim gosterir (UNUserNotificationCenterDelegate.willPresent default).
-	// Bu yaklasim native build/store gerektirmez, plugin zaten compile edilmis.
 	PushNotifications.addListener('pushNotificationReceived', (notification) => {
 		console.log('[Push] Notification received in foreground:', notification);
 		const title = notification.title || 'Zkt-Timer';
@@ -97,6 +87,13 @@ async function initNativePush(): Promise<void> {
 	PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
 		console.log('[Push] Notification action:', action);
 	});
+
+	try {
+		await PushNotifications.register();
+	} catch (err) {
+		console.error('[Push] register() failed:', err);
+		await PushNotifications.removeAllListeners();
+	}
 }
 
 async function initWebPush(): Promise<void> {
