@@ -7,7 +7,7 @@ import { getTimerStore } from '../../../util/store/getTimer';
 
 const b = block('timer-notif');
 
-const HIDE_NOTIF_TIMEOUT = 1750;
+const HIDE_NOTIF_TIMEOUT = 3000;
 
 // This is for the notification that shows up above the scramble
 export function displayTimerAlert(tagProps: TagProps, dontHide?: boolean) {

@@ -1,7 +1,6 @@
 import React, { createContext, ReactNode, useEffect, useState, useMemo } from 'react';
 import { RootStateOrAny, useDispatch, useSelector, shallowEqual } from 'react-redux';
 import './Timer.scss';
-import { ArrowRight, CaretUp, CaretDown } from 'phosphor-react';
 import HeaderControl from './header_control/HeaderControl';
 import TimerFooter from './footer/TimerFooter';
 import TimeDisplay from './time_display/TimeDisplay';
@@ -20,12 +19,8 @@ import { is3x3CubeType, smartCubeSelected } from './helpers/util';
 import { listenForPbEvents } from './helpers/pb';
 import { useStableViewportHeight } from '../../util/hooks/useStableViewportHeight';
 import SmartCube from './smart_cube/SmartCube';
-import { Link } from 'react-router-dom';
-import { isNotPro } from '../../util/pro';
 import { QuickControlsProvider } from '../quick-controls/useQuickControlsModal';
 import QuickControlsModal from '../quick-controls/QuickControlsModal';
-import Button from '../common/button/Button';
-import { setSetting } from '../../db/settings/update';
 import DailyGoalProgressBar from '../daily-goal/DailyGoalProgressBar';
 import { keepScreenAwake, allowScreenSleep } from '../../util/native-plugins';
 // Yeni mobil layout componentleri
@@ -33,8 +28,6 @@ import TimerControls from './TimerControls';
 import Dashboard from './Dashboard';
 import StatsBar from './StatsBar';
 import MobileTimerScramble from './MobileTimerScramble';
-import Scramble from '../modules/scramble/ScrambleVisual';
-import { TimerModuleType } from './@types/enums';
 
 const b = block('timer');
 
@@ -56,8 +49,7 @@ export default function Timer(props: TimerProps) {
 	const manualEntry = useSettings('manual_entry');
 	const useSpaceWithSmartCube = useSettings('use_space_with_smart_cube');
 	const scrambleSubset = useSettings('scramble_subset');
-	const mobileTimerModules = useSettings('mobile_timer_modules');
-	let timerLayout = props.timerLayout || useSettings('timer_layout');
+let timerLayout = props.timerLayout || useSettings('timer_layout');
 
 	const me = useMe();
 
@@ -136,8 +128,10 @@ export default function Timer(props: TimerProps) {
 				{/* Scramble alanı - sadece metin, tıkla kopyala */}
 				<MobileTimerScramble />
 
-				{/* PB / bildirim — timer'ın hemen üstünde */}
-				{timerStore.notification}
+				{/* Bildirim zone — sabit yükseklik, timer pozisyonunu etkilemez */}
+				<div className={b('notification-zone')}>
+					{timerStore.notification}
+				</div>
 
 				{/* Akıllı küp modunda timer ve küp yan yana, normal modda sadece timer */}
 				{smartActive ? (
@@ -163,16 +157,7 @@ export default function Timer(props: TimerProps) {
 					<div id="mobile-smart-phases-container" style={{ width: '100%', padding: '0 10px' }}></div>
 				)}
 
-				{/* Dashboard modullerinde karistirma yoksa timer altina mini preview ciz */}
-				{!smartActive && !manualEntry && !context.timeStartedAt && !mobileTimerModules?.includes(TimerModuleType.SCRAMBLE) && (
-					<div className={b('mobile-scramble-fallback')}>
-						<Scramble
-							cubeType={(cubeType === 'wca' && scrambleSubset) ? scrambleSubset : cubeType}
-							scramble={context.originalScramble || context.scramble}
-							width="120px"
-						/>
-					</div>
-				)}
+				<div style={{ flex: 0.5 }} />
 
 				{/* Kontrol çubuğu */}
 				<TimerControls />
