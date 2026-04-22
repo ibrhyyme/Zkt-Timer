@@ -164,7 +164,7 @@ export default function Timer(props: TimerProps) {
 				)}
 
 				{/* Dashboard modullerinde karistirma yoksa timer altina mini preview ciz */}
-				{!smartActive && !manualEntry && !mobileTimerModules?.includes(TimerModuleType.SCRAMBLE) && (
+				{!smartActive && !manualEntry && !context.timeStartedAt && !mobileTimerModules?.includes(TimerModuleType.SCRAMBLE) && (
 					<div className={b('mobile-scramble-fallback')}>
 						<Scramble
 							cubeType={(cubeType === 'wca' && scrambleSubset) ? scrambleSubset : cubeType}
