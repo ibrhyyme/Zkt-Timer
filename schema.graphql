@@ -1044,6 +1044,17 @@ type WcaAccount {
   created_at: String
 }
 
+type FeatureOverrideUser {
+  id: String
+  username: String
+}
+
+type FeatureOverrideEntry {
+  feature: String
+  mode: String
+  users: [FeatureOverrideUser]
+}
+
 type OnlineStats {
   totalSockets: Int
   uniqueUsers: Int
@@ -1064,6 +1075,7 @@ type SiteConfig {
   rooms_enabled: Boolean
   battle_enabled: Boolean
   pro_enabled: Boolean
+  featureOverrides: [FeatureOverrideEntry]
   updated_at: DateTime
 }
 
@@ -1966,6 +1978,17 @@ input SessionInput {
   order: Float
 }
 
+input FeatureOverrideUserInput {
+  id: String
+  username: String
+}
+
+input FeatureOverrideEntryInput {
+  feature: String
+  mode: String
+  users: [FeatureOverrideUserInput!]
+}
+
 input UpdateSiteConfigInput {
   maintenance_mode: Boolean
   trainer_enabled: Boolean
@@ -1974,6 +1997,7 @@ input UpdateSiteConfigInput {
   rooms_enabled: Boolean
   battle_enabled: Boolean
   pro_enabled: Boolean
+  featureOverrides: [FeatureOverrideEntryInput!]
 }
 
 input StatsModuleBlockInput {

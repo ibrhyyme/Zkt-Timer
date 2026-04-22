@@ -1,4 +1,46 @@
 import {Field, ObjectType, InputType, Int} from 'type-graphql';
+
+@ObjectType()
+export class FeatureOverrideUser {
+	@Field()
+	id: string;
+
+	@Field()
+	username: string;
+}
+
+@ObjectType()
+export class FeatureOverrideEntry {
+	@Field()
+	feature: string;
+
+	@Field()
+	mode: string;
+
+	@Field(() => [FeatureOverrideUser])
+	users: FeatureOverrideUser[];
+}
+
+@InputType()
+export class FeatureOverrideUserInput {
+	@Field()
+	id: string;
+
+	@Field()
+	username: string;
+}
+
+@InputType()
+export class FeatureOverrideEntryInput {
+	@Field()
+	feature: string;
+
+	@Field()
+	mode: string;
+
+	@Field(() => [FeatureOverrideUserInput], {nullable: true})
+	users?: FeatureOverrideUserInput[];
+}
 import {PublicUserAccount} from './UserAccount.schema';
 
 @ObjectType()
@@ -47,6 +89,9 @@ export class SiteConfig {
 
 	@Field()
 	pro_enabled: boolean;
+
+	@Field(() => [FeatureOverrideEntry])
+	featureOverrides: FeatureOverrideEntry[];
 
 	@Field()
 	updated_at: Date;
@@ -101,4 +146,7 @@ export class UpdateSiteConfigInput {
 
 	@Field({nullable: true})
 	pro_enabled?: boolean;
+
+	@Field(() => [FeatureOverrideEntryInput], {nullable: true})
+	featureOverrides?: FeatureOverrideEntryInput[];
 }

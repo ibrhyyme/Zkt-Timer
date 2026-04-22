@@ -20,7 +20,27 @@ export class SiteConfigResolver {
 		@Arg('input') input: UpdateSiteConfigInput,
 		@Ctx() ctx: GraphQLContext
 	): Promise<SiteConfig> {
-		const updated = await updateSiteConfig(input, ctx.user?.id);
+		const {featureOverrides, ...rest} = input;
+
+		const updates: any = {...rest};
+
+		if (featureOverrides !== undefined) {
+			const current = await getSiteConfig();
+			const merged: Record<string, any> = {...current.feature_overrides};
+			for (const entry of featureOverrides) {
+				if (entry.mode === 'ALL') {
+					delete merged[entry.feature];
+				} else {
+					merged[entry.feature] = {
+						mode: entry.mode,
+						users: entry.users ?? [],
+					};
+				}
+			}
+			updates.feature_overrides = merged;
+		}
+
+		const updated = await updateSiteConfig(updates, ctx.user?.id);
 		return updated as SiteConfig;
 	}
 }

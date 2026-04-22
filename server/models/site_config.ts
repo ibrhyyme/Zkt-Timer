@@ -5,6 +5,17 @@ import {logger} from '../services/logger';
 const SITE_CONFIG_TTL = 30; // 30s
 const SITE_CONFIG_CACHE_KEY = createRedisKey(RedisNamespace.PRO_DATA, 'site_config:singleton');
 
+export interface FeatureOverrideUserData {
+	id: string;
+	username: string;
+}
+
+export interface FeatureOverrideEntryData {
+	feature: string;
+	mode: string;
+	users: FeatureOverrideUserData[];
+}
+
 export interface SiteConfigData {
 	id: string;
 	maintenance_mode: boolean;
@@ -14,10 +25,12 @@ export interface SiteConfigData {
 	rooms_enabled: boolean;
 	battle_enabled: boolean;
 	pro_enabled: boolean;
+	feature_overrides: Record<string, {mode: string; users: FeatureOverrideUserData[]}>;
+	featureOverrides: FeatureOverrideEntryData[];
 	updated_at: Date;
 }
 
-const DEFAULT_CONFIG: Omit<SiteConfigData, 'id' | 'updated_at'> = {
+const DEFAULT_CONFIG: Omit<SiteConfigData, 'id' | 'updated_at' | 'featureOverrides'> = {
 	maintenance_mode: false,
 	trainer_enabled: true,
 	community_enabled: true,
@@ -25,6 +38,7 @@ const DEFAULT_CONFIG: Omit<SiteConfigData, 'id' | 'updated_at'> = {
 	rooms_enabled: true,
 	battle_enabled: true,
 	pro_enabled: false,
+	feature_overrides: {},
 };
 
 export async function getSiteConfig(): Promise<SiteConfigData> {
@@ -39,6 +53,8 @@ export async function getSiteConfig(): Promise<SiteConfigData> {
 			rooms_enabled: false,
 			battle_enabled: false,
 			pro_enabled: false,
+			feature_overrides: {},
+			featureOverrides: [],
 			updated_at: new Date(),
 		};
 	}
@@ -56,26 +72,35 @@ export async function getSiteConfig(): Promise<SiteConfigData> {
 				config = await prisma.siteConfig.create({
 					data: {
 						id: 'singleton',
-						...DEFAULT_CONFIG,
+						...(DEFAULT_CONFIG as any),
 					},
 				});
 				logger.info('[SiteConfig] Singleton row olusturuldu');
 			}
 
-			return config as SiteConfigData;
+			return config as unknown as SiteConfigData;
 		},
 		SITE_CONFIG_TTL
 	);
 
+	const rawOverrides = (cached.feature_overrides as Record<string, any>) || {};
+	const featureOverrides: FeatureOverrideEntryData[] = Object.entries(rawOverrides).map(([feature, data]) => ({
+		feature,
+		mode: data?.mode ?? 'ALL',
+		users: Array.isArray(data?.users) ? data.users : [],
+	}));
+
 	// Redis'ten gelen JSON'da Date string olur — type-graphql Date instance bekliyor
 	return {
 		...cached,
+		feature_overrides: rawOverrides,
+		featureOverrides,
 		updated_at: new Date(cached.updated_at),
 	};
 }
 
 export async function updateSiteConfig(
-	updates: Partial<Omit<SiteConfigData, 'id' | 'updated_at'>>,
+	updates: Partial<Omit<SiteConfigData, 'id' | 'updated_at' | 'featureOverrides'>>,
 	userId?: string
 ): Promise<SiteConfigData> {
 	const prisma = getPrisma();
@@ -84,13 +109,13 @@ export async function updateSiteConfig(
 	const updated = await prisma.siteConfig.upsert({
 		where: {id: 'singleton'},
 		update: {
-			...updates,
+			...(updates as any),
 			updated_by: userId,
 		},
 		create: {
 			id: 'singleton',
-			...DEFAULT_CONFIG,
-			...updates,
+			...(DEFAULT_CONFIG as any),
+			...(updates as any),
 			updated_by: userId,
 		},
 	});
@@ -113,5 +138,16 @@ export async function updateSiteConfig(
 		} catch {}
 	}
 
-	return updated as SiteConfigData;
+	const rawOverrides = (updated.feature_overrides as Record<string, any>) || {};
+	const featureOverrides: FeatureOverrideEntryData[] = Object.entries(rawOverrides).map(([feature, data]) => ({
+		feature,
+		mode: data?.mode ?? 'ALL',
+		users: Array.isArray(data?.users) ? data.users : [],
+	}));
+
+	return {
+		...(updated as any),
+		feature_overrides: rawOverrides,
+		featureOverrides,
+	} as SiteConfigData;
 }

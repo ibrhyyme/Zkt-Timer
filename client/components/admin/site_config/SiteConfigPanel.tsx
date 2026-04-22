@@ -15,6 +15,7 @@ import {
 import gql from 'graphql-tag';
 import {setSiteConfigCache, SiteConfigData} from '../../../util/hooks/useSiteConfig';
 import AvatarImage from '../../common/avatar/avatar_image/AvatarImage';
+import FeatureAccessControl from './FeatureAccessControl';
 import block from '../../../styles/bem';
 import './SiteConfigPanel.scss';
 
@@ -255,21 +256,32 @@ export default function SiteConfigPanel() {
 				</div>
 				{PAGE_TOGGLES.map(({key, label, description}) => {
 					const value = (config as any)[key];
+					const override = config.featureOverrides?.find((o: any) => o.feature === key) ?? null;
 					return (
-						<div key={key} className={b('row')}>
-							<div className={b('row-text')}>
-								<div className={b('row-label')}>{label}</div>
-								<div className={b('row-desc')}>{description}</div>
+						<div key={key} className={b('feature-block')}>
+							<div className={b('row')}>
+								<div className={b('row-text')}>
+									<div className={b('row-label')}>{label}</div>
+									<div className={b('row-desc')}>{description}</div>
+								</div>
+								<button
+									className={b('toggle', {on: value})}
+									onClick={() => handleToggle(key, value)}
+									disabled={saving === key}
+								>
+									<span className={b('toggle-track')}>
+										<span className={b('toggle-thumb')} />
+									</span>
+								</button>
 							</div>
-							<button
-								className={b('toggle', {on: value})}
-								onClick={() => handleToggle(key, value)}
-								disabled={saving === key}
-							>
-								<span className={b('toggle-track')}>
-									<span className={b('toggle-thumb')} />
-								</span>
-							</button>
+							<FeatureAccessControl
+								feature={key}
+								currentOverride={override}
+								onSaved={(updated) => {
+									setSiteConfigCache(updated);
+									setConfig(updated);
+								}}
+							/>
 						</div>
 					);
 				})}

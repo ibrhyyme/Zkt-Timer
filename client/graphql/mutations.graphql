@@ -12,6 +12,14 @@ mutation updateSiteConfig($input: UpdateSiteConfigInput!) {
 		rooms_enabled
 		battle_enabled
 		pro_enabled
+		featureOverrides {
+			feature
+			mode
+			users {
+				id
+				username
+			}
+		}
 		updated_at
 	}
 }
