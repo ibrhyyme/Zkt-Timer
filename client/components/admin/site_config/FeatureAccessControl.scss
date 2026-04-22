@@ -1,0 +1,121 @@
+.cd-feature-access-control {
+	padding: 0.2rem 0 0.65rem 0;
+
+	&__label {
+		font-size: 0.78rem;
+		color: rgba(255, 255, 255, 0.5);
+		margin-bottom: 0.45rem;
+	}
+
+	&__label-hint {
+		margin-left: 0.35rem;
+		color: rgba(255, 255, 255, 0.35);
+		font-style: italic;
+	}
+
+	&__user-section {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.4rem;
+	}
+
+	&__chips {
+		display: contents;
+	}
+
+	&__chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
+		padding: 0.2rem 0.4rem 0.2rem 0.55rem;
+		background: rgba(74, 158, 255, 0.15);
+		border: 1px solid rgba(74, 158, 255, 0.3);
+		border-radius: 0.3rem;
+		font-size: 0.78rem;
+		color: #93c5fd;
+	}
+
+	&__chip-remove {
+		background: none;
+		border: none;
+		color: rgba(147, 197, 253, 0.7);
+		font-size: 1rem;
+		line-height: 1;
+		cursor: pointer;
+		padding: 0 0.1rem;
+		display: flex;
+		align-items: center;
+
+		&:hover {
+			color: #ef4444;
+		}
+
+		&:disabled {
+			opacity: 0.5;
+			cursor: default;
+		}
+	}
+
+	&__search-wrap {
+		position: relative;
+	}
+
+	&__search-input {
+		width: 160px;
+		padding: 0.35rem 0.6rem;
+		background: rgba(255, 255, 255, 0.06);
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		border-radius: 0.35rem;
+		color: #fff;
+		font-size: 0.8rem;
+
+		&::placeholder {
+			color: rgba(255, 255, 255, 0.3);
+		}
+
+		&:focus {
+			outline: none;
+			border-color: rgba(74, 158, 255, 0.45);
+		}
+	}
+
+	&__dropdown {
+		position: absolute;
+		top: calc(100% + 4px);
+		left: 0;
+		min-width: 180px;
+		background: #1e2433;
+		border: 1px solid rgba(255, 255, 255, 0.12);
+		border-radius: 0.4rem;
+		overflow: hidden;
+		z-index: 100;
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+	}
+
+	&__dropdown-item {
+		display: block;
+		width: 100%;
+		text-align: left;
+		padding: 0.45rem 0.7rem;
+		background: none;
+		border: none;
+		color: #fff;
+		font-size: 0.82rem;
+		cursor: pointer;
+		transition: background 0.12s;
+
+		&:hover {
+			background: rgba(74, 158, 255, 0.12);
+		}
+
+		&--loading {
+			color: rgba(255, 255, 255, 0.45);
+			cursor: default;
+
+			&:hover {
+				background: none;
+			}
+		}
+	}
+}

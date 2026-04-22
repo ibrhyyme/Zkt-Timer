@@ -71,6 +71,16 @@
 		}
 	}
 
+	&__feature-block {
+		&:not(:last-child) {
+			border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+		}
+
+		&:not(:last-child) .cd-site-config-panel__row {
+			border-bottom: none;
+		}
+	}
+
 	&__row {
 		display: flex;
 		align-items: center;

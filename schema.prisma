@@ -233,6 +233,7 @@ model SiteConfig {
   rooms_enabled        Boolean  @default(true)
   battle_enabled       Boolean  @default(true)
   pro_enabled          Boolean  @default(false)
+  feature_overrides    Json     @default("{}")
   updated_at           DateTime @updatedAt @default(now())
   updated_by           String?
 

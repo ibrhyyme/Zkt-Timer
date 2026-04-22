@@ -1,6 +1,6 @@
 import React from 'react';
 import {useTranslation} from 'react-i18next';
-import {useSiteConfig, SiteConfigData} from '../../../util/hooks/useSiteConfig';
+import {useSiteConfig} from '../../../util/hooks/useSiteConfig';
 import {useMe} from '../../../util/hooks/useMe';
 import PageDisabled from './PageDisabled';
 import AdminDisabledBanner from './AdminDisabledBanner';
@@ -15,9 +15,11 @@ interface Props {
 
 /**
  * Sayfa-bazinda feature flag guard'i.
- * - Feature kapali + admin degilse → PageDisabled goster
- * - Feature kapali + admin → AdminDisabledBanner + cocuklar render
- * - Feature acik → cocuklar render
+ * - Admin: her zaman icerik goster (kapaliysa AdminDisabledBanner ekle)
+ * - EXCLUDE override && kullanici listede: PageDisabled
+ * - Feature acik: icerik goster
+ * - INCLUDE override && kullanici listede: icerik goster
+ * - Diger: PageDisabled
  */
 export default function FeatureGuard({feature, pageNameKey, children}: Props) {
 	const {t} = useTranslation();
@@ -32,19 +34,31 @@ export default function FeatureGuard({feature, pageNameKey, children}: Props) {
 	}
 
 	const enabled = (config as any)[feature];
+	const override = config.featureOverrides?.find((o) => o.feature === feature);
+	const userId = me?.id;
 
-	if (!enabled && !isAdmin) {
-		return <PageDisabled pageName={pageName} />;
+	// Admin her zaman gorer
+	if (isAdmin) {
+		if (!enabled) {
+			return (
+				<>
+					<AdminDisabledBanner pageName={pageName} />
+					{children}
+				</>
+			);
+		}
+		return <>{children}</>;
 	}
 
-	if (!enabled && isAdmin) {
-		return (
-			<>
-				<AdminDisabledBanner pageName={pageName} />
-				{children}
-			</>
-		);
+	// Feature acik — herkes gorer
+	if (enabled) {
+		return <>{children}</>;
 	}
 
-	return <>{children}</>;
+	// Feature kapali — ozel erisim listesinde var mi?
+	if (userId && override?.users?.some((u) => u?.id === userId)) {
+		return <>{children}</>;
+	}
+
+	return <PageDisabled pageName={pageName} />;
 }
