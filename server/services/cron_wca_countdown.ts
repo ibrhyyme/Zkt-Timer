@@ -169,30 +169,51 @@ function getUserLocale(state: {user?: any}): string {
 }
 
 // WCIF schedule'dan ilk gunun en erken activity startTime'ini cek
+// WCA API UTC dondurur; venue.timezone ile yerel saate cevirip goster
 function extractFirstDayStartTime(wcif: any, startDate: Date): string | null {
 	const venues = wcif?.schedule?.venues;
 	if (!Array.isArray(venues) || venues.length === 0) return null;
 
 	const targetDateStr = startDate.toISOString().slice(0, 10); // "YYYY-MM-DD"
-	let earliestIso: string | null = null;
+	let earliestMs: number | null = null;
+	let venueTimezone: string | null = null;
 
 	for (const venue of venues) {
+		const tz = typeof venue.timezone === 'string' ? venue.timezone : null;
 		for (const room of venue.rooms || []) {
 			for (const activity of room.activities || []) {
 				const iso = activity?.startTime;
 				if (typeof iso !== 'string') continue;
 				if (!iso.startsWith(targetDateStr)) continue;
-				if (!earliestIso || iso < earliestIso) {
-					earliestIso = iso;
+				const ms = new Date(iso).getTime();
+				if (isNaN(ms)) continue;
+				if (earliestMs === null || ms < earliestMs) {
+					earliestMs = ms;
+					venueTimezone = tz;
 				}
 			}
 		}
 	}
 
-	if (!earliestIso) return null;
+	if (earliestMs === null) return null;
 
-	// "2026-05-10T09:00:00+03:00" → "09:00"
-	const match = earliestIso.match(/T(\d{2}):(\d{2})/);
-	if (!match) return null;
-	return `${match[1]}:${match[2]}`;
+	if (venueTimezone) {
+		try {
+			const parts = new Intl.DateTimeFormat('en-GB', {
+				timeZone: venueTimezone,
+				hour: '2-digit',
+				minute: '2-digit',
+				hour12: false,
+			}).formatToParts(new Date(earliestMs));
+			const hour = parts.find((p) => p.type === 'hour')?.value;
+			const minute = parts.find((p) => p.type === 'minute')?.value;
+			if (hour && minute) return `${hour}:${minute}`;
+		} catch {
+			// bilinmeyen timezone ise UTC'ye duser
+		}
+	}
+
+	// Fallback: UTC saat (timezone yoksa veya hatali)
+	const utcMatch = new Date(earliestMs).toISOString().match(/T(\d{2}):(\d{2})/);
+	return utcMatch ? `${utcMatch[1]}:${utcMatch[2]}` : null;
 }
