@@ -2714,5 +2714,12 @@
 		"single_best": "Single (Лучший)",
 		"average_best": "Average (Лучший)",
 		"holder": "Держатель"
+	},
+	"password_strength": {
+		"lowercase": "Строчная буква",
+		"uppercase": "Заглавная буква",
+		"one_number": "1 цифра",
+		"eight_chars": "8 символов",
+		"passwords_match": "Пароли совпадают"
 	}
 }
