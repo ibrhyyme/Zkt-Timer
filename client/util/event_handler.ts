@@ -14,9 +14,9 @@ export interface ClientEvent {
 	sessionsDbUpdatedEvent: Session;
 	solveDbUpdatedEvent: Solve;
 	settingsDbUpdatedEvent: SettingValue;
-	singlePbEvent: string; // Cube type
-	avgPbEvent: string; // Cube type
-	singleAndAvgPbEvent: string; // Cube type
+	singlePbEvent: { cubeType: string; scrambleSubset: string | null };
+	avgPbEvent: { cubeType: string; scrambleSubset: string | null };
+	singleAndAvgPbEvent: { cubeType: string; scrambleSubset: string | null };
 	offlineSyncCompleted: {
 		successCount: number;
 		failCount: number;

@@ -136,6 +136,9 @@ export default function Timer(props: TimerProps) {
 				{/* Scramble alanı - sadece metin, tıkla kopyala */}
 				<MobileTimerScramble />
 
+				{/* PB / bildirim — timer'ın hemen üstünde */}
+				{timerStore.notification}
+
 				{/* Akıllı küp modunda timer ve küp yan yana, normal modda sadece timer */}
 				{smartActive ? (
 					<div className={b('mobile-smart-row')}>
@@ -261,8 +264,8 @@ export default function Timer(props: TimerProps) {
 							})}
 						>
 							{body}
-						</div>
-					</KeyWatcher>
+							</div>
+						</KeyWatcher>
 					<QuickControlsModal />
 				</TimerContext.Provider>
 				{background}
