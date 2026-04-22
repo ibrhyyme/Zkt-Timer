@@ -23,15 +23,17 @@ function SolveDiff() {
 
     const solves = fetchSolves({ session_id: sessionId }, { limit: 20 });
 
+    const placeholder = <div className={b()} style={{ visibility: 'hidden' }}>&nbsp;</div>;
+
     if (!solves || solves.length < 2) {
-        return null;
+        return placeholder;
     }
 
     const current = solves[0];
 
     // If current solve is DNF, no valid time to compare
     if (current.dnf) {
-        return null;
+        return placeholder;
     }
 
     // Find the most recent non-DNF solve before current for comparison
