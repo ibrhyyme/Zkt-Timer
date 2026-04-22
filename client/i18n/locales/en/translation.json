@@ -2801,5 +2801,12 @@
 		"single_best": "Single (Best)",
 		"average_best": "Average (Best)",
 		"holder": "Holder"
+	},
+	"password_strength": {
+		"lowercase": "Lowercase letter",
+		"uppercase": "Uppercase letter",
+		"one_number": "1 number",
+		"eight_chars": "8 characters",
+		"passwords_match": "Passwords match"
 	}
 }

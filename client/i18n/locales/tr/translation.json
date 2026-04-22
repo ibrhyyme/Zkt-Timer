@@ -2799,5 +2799,12 @@
 		"single_best": "Tek (Best)",
 		"average_best": "Ortalama (Best)",
 		"holder": "Sahibi"
+	},
+	"password_strength": {
+		"lowercase": "Küçük harf",
+		"uppercase": "Büyük harf",
+		"one_number": "1 rakam",
+		"eight_chars": "8 karakter",
+		"passwords_match": "Şifreler eşleşiyor"
 	}
 }

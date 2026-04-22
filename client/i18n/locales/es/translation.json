@@ -2714,5 +2714,12 @@
 		"single_best": "Single (Mejor)",
 		"average_best": "Promedio (Mejor)",
 		"holder": "Titular"
+	},
+	"password_strength": {
+		"lowercase": "Letra minúscula",
+		"uppercase": "Letra mayúscula",
+		"one_number": "1 número",
+		"eight_chars": "8 caracteres",
+		"passwords_match": "Las contraseñas coinciden"
 	}
 }
