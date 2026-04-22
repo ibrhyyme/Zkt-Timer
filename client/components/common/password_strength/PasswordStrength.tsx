@@ -3,6 +3,7 @@ import {validateStrongPassword} from '../../../util/auth/password';
 import './PasswordStrength.scss';
 import {Check} from 'phosphor-react';
 import block from '../../../styles/bem';
+import {useTranslation} from 'react-i18next';
 
 const b = block('password-strength');
 
@@ -13,19 +14,20 @@ interface Props {
 
 export default function PasswordStrength(props: Props) {
 	const {password, confirmPassword} = props;
+	const {t} = useTranslation();
 	const result = validateStrongPassword(password, confirmPassword);
 
 	let confirm = null;
 	if (typeof confirmPassword === 'string') {
-		confirm = <PasswordCase name="Şifreler eşleşiyor" checked={result.confirmMatches} />;
+		confirm = <PasswordCase name={t('password_strength.passwords_match')} checked={result.confirmMatches} />;
 	}
 
 	return (
 		<div className={b()}>
-			<PasswordCase name="Küçük harf" checked={result.lower1Check} />
-			<PasswordCase name="Büyük harf" checked={result.cap1Check} />
-			<PasswordCase name="1 rakam" checked={result.number1Check} />
-			<PasswordCase name="8 karakter" checked={result.char8Check} />
+			<PasswordCase name={t('password_strength.lowercase')} checked={result.lower1Check} />
+			<PasswordCase name={t('password_strength.uppercase')} checked={result.cap1Check} />
+			<PasswordCase name={t('password_strength.one_number')} checked={result.number1Check} />
+			<PasswordCase name={t('password_strength.eight_chars')} checked={result.char8Check} />
 			{confirm}
 		</div>
 	);
