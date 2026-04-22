@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next';
 import block from '../../styles/bem';
 
 const b = block('battle');
-const FREEZE_MS = 300;
 
 type TimerStatus = 'RESTING' | 'PRIMING' | 'TIMING' | 'DONE';
 
@@ -26,7 +25,6 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 
 	const startTimeRef = useRef<number>(0);
 	const rafRef = useRef<number>(0);
-	const freezeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 	const touchActiveRef = useRef(false);
 	const statusRef = useRef<TimerStatus>('RESTING');
 	const finalTimeRef = useRef(0);
@@ -36,9 +34,11 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 	const alreadySolved = player === 1 ? !!currentRoundData?.player1Solve : !!currentRoundData?.player2Solve;
 	const bothSolved = !!currentRoundData?.player1Solve && !!currentRoundData?.player2Solve;
 
-	useEffect(() => {
-		statusRef.current = status;
-	}, [status]);
+	// statusRef ve status state'ini senkron güncelle — useEffect bekleme, race condition önle
+	const updateStatus = useCallback((newStatus: TimerStatus) => {
+		statusRef.current = newStatus;
+		setStatus(newStatus);
+	}, []);
 
 	// Round degistiginde veya scramble yenilendiginde reset (cube type degisimi, RESET,
 	// CHANGE_SCRAMBLE — hepsi yeni currentScramble uretir). currentRound tek basina yetmez
@@ -50,16 +50,15 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 		setDisplayTime(0);
 		setPenalty('none');
 		if (rafRef.current) cancelAnimationFrame(rafRef.current);
-		if (freezeTimeoutRef.current) clearTimeout(freezeTimeoutRef.current);
 
 		if (touchActiveRef.current) {
 			// Oyuncu hala basili tutuyor — direkt PRIMING'e gec
-			setStatus('PRIMING');
+			updateStatus('PRIMING');
 			dispatch({ type: 'PLAYER_READY', player });
 		} else {
-			setStatus('RESTING');
+			updateStatus('RESTING');
 		}
-	}, [currentRound, currentScramble, dispatch, player]);
+	}, [currentRound, currentScramble, dispatch, player, updateStatus]);
 
 	const tick = useCallback(() => {
 		const elapsed = (performance.now() - startTimeRef.current) / 1000;
@@ -72,7 +71,7 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 		const finalTime = (performance.now() - startTimeRef.current) / 1000;
 		finalTimeRef.current = finalTime;
 		setDisplayTime(finalTime);
-		setStatus('DONE');
+		updateStatus('DONE');
 
 		onSolve({
 			time: finalTime,
@@ -81,10 +80,10 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 			scramble: currentScramble,
 			roundIndex: currentRound,
 		});
-	}, [onSolve, currentScramble, currentRound]);
+	}, [onSolve, currentScramble, currentRound, updateStatus]);
 
 	const handleTouchStart = useCallback(
-		(e: React.TouchEvent) => {
+		(_e: React.TouchEvent) => {
 			const s = statusRef.current;
 
 			if (s === 'TIMING') {
@@ -99,54 +98,49 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 			if (s !== 'RESTING' && !(s === 'DONE' && bothSolved)) return;
 
 			touchActiveRef.current = true;
-			freezeTimeoutRef.current = setTimeout(() => {
-				if (touchActiveRef.current) {
-					// Yeni tur icin display sifirla
-					if (bothSolved) {
-						setDisplayTime(0);
-						setPenalty('none');
-					}
-					setStatus('PRIMING');
-					dispatch({ type: 'PLAYER_READY', player });
-				}
-			}, FREEZE_MS);
+
+			if (bothSolved) {
+				setDisplayTime(0);
+				setPenalty('none');
+			}
+			// Gecikme olmadan aninda PRIMING — parmak deger degmez yesile gec
+			updateStatus('PRIMING');
+			dispatch({ type: 'PLAYER_READY', player });
 		},
-		[alreadySolved, bothSolved, stopTimer, dispatch, player]
+		[alreadySolved, bothSolved, stopTimer, dispatch, player, updateStatus]
 	);
 
 	const handleTouchEnd = useCallback(
-		(e: React.TouchEvent) => {
+		(_e: React.TouchEvent) => {
 			touchActiveRef.current = false;
-
-			if (freezeTimeoutRef.current) {
-				clearTimeout(freezeTimeoutRef.current);
-				freezeTimeoutRef.current = null;
-			}
 
 			const s = statusRef.current;
 			if (s === 'PRIMING') {
-				// stateRef ile guncel state'i oku — stale closure sorunu yok
 				const cs = stateRef.current;
 				const otherReady = player === 1 ? cs.player2Ready : cs.player1Ready;
 				const otherStarted = player === 1 ? cs.player2StartedAt : cs.player1StartedAt;
+				// Rakip coktan bitirmisse (erken biten + gec baslayan senaryosu) de baslat
+				const otherSolve = player === 1
+					? cs.rounds[cs.currentRound]?.player2Solve
+					: cs.rounds[cs.currentRound]?.player1Solve;
 
-				if (otherReady || otherStarted) {
+				if (otherReady || otherStarted || otherSolve) {
 					// Timer'i dogrudan baslat — useEffect zincirine bagimli degil
 					const startTime = performance.now();
 					startTimeRef.current = startTime;
-					setStatus('TIMING');
+					updateStatus('TIMING');
 					rafRef.current = requestAnimationFrame(tick);
 					dispatch({ type: 'PLAYER_START', player, startTime });
 				} else {
-					setStatus('RESTING');
+					updateStatus('RESTING');
 					dispatch({ type: 'PLAYER_UNREADY', player });
 				}
 			} else if (s !== 'TIMING' && s !== 'DONE') {
 				dispatch({ type: 'PLAYER_UNREADY', player });
-				setStatus('RESTING');
+				updateStatus('RESTING');
 			}
 		},
-		[dispatch, player, tick]
+		[dispatch, player, tick, updateStatus]
 	);
 
 	const applyPenalty = useCallback(
@@ -259,8 +253,8 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 			{/* Time */}
 			<div className={b('time', timeMod)}>{timeText}</div>
 
-			{/* Scramble */}
-			{settings.showScramble && ((status === 'RESTING' && !alreadySolved) || status === 'PRIMING' || (bothSolved && status !== 'TIMING')) && (
+			{/* Scramble — cozuyor olsa bile goster (distraction olmasin diye sadece TIMING'de gizle) */}
+			{settings.showScramble && status !== 'TIMING' && (
 				<div className={b('scramble')}>{currentScramble}</div>
 			)}
 
