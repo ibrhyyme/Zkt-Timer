@@ -27,6 +27,11 @@ export function listenForPbEvents(context: ITimerContext) {
 	getSinglePB(pbFilter);
 	getAveragePB(pbFilter, 5);
 
+	function getPbDisplayName(cubeType: string, scrambleSubset: string | null): string {
+		const displayId = (cubeType === 'wca' && scrambleSubset) ? scrambleSubset : cubeType;
+		return getCubeTypeInfoById(displayId)?.name || displayId;
+	}
+
 	function pbEventCallback(msg: string, cubeTypeName: string) {
 		triggerConfetti();
 		hapticNotification('success');
@@ -40,27 +45,27 @@ export function listenForPbEvents(context: ITimerContext) {
 
 	useEventListener(
 		'singlePbEvent',
-		(ct) => {
-			const cubeType = getCubeTypeInfoById(ct);
-			pbEventCallback(`Yeni ${cubeType.name} Single PB!`, cubeType.name);
+		({ cubeType: ct, scrambleSubset }) => {
+			const name = getPbDisplayName(ct, scrambleSubset);
+			pbEventCallback(`Yeni ${name} Single PB!`, name);
 		},
 		[context.cubeType]
 	);
 
 	useEventListener(
 		'avgPbEvent',
-		(ct) => {
-			const cubeType = getCubeTypeInfoById(ct);
-			pbEventCallback(`Yeni ${cubeType.name} Average of 5 PB!`, cubeType.name);
+		({ cubeType: ct, scrambleSubset }) => {
+			const name = getPbDisplayName(ct, scrambleSubset);
+			pbEventCallback(`Yeni ${name} Average of 5 PB!`, name);
 		},
 		[context.cubeType]
 	);
 
 	useEventListener(
 		'singleAndAvgPbEvent',
-		(ct) => {
-			const cubeType = getCubeTypeInfoById(ct);
-			pbEventCallback(`Yeni ${cubeType.name} Single ve Average of 5 PB!`, cubeType.name);
+		({ cubeType: ct, scrambleSubset }) => {
+			const name = getPbDisplayName(ct, scrambleSubset);
+			pbEventCallback(`Yeni ${name} Single ve Average of 5 PB!`, name);
 		},
 		[context.cubeType]
 	);

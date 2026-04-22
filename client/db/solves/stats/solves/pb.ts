@@ -28,10 +28,10 @@ export function checkForPB(solve: Solve, isNew: boolean) {
 
 
 	if (isSinglePb && isAvgPb) {
-		emitEvent('singleAndAvgPbEvent', cubeType);
+		emitEvent('singleAndAvgPbEvent', { cubeType, scrambleSubset });
 	} else if (isSinglePb) {
-		emitEvent('singlePbEvent', cubeType);
+		emitEvent('singlePbEvent', { cubeType, scrambleSubset });
 	} else if (isAvgPb) {
-		emitEvent('avgPbEvent', cubeType);
+		emitEvent('avgPbEvent', { cubeType, scrambleSubset });
 	}
 }

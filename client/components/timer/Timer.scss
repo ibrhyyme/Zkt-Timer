@@ -203,6 +203,28 @@
 			z-index: 100;
 		}
 
+		.#{$namespace}-timer-notif {
+			position: relative;
+			top: auto;
+			transform: none;
+			opacity: 1;
+			animation: mobileFadeIn 0.3s ease forwards;
+
+			@keyframes mobileFadeIn {
+				from { opacity: 0; }
+				to { opacity: 1; }
+			}
+
+			&--out {
+				animation: mobileFadeOut 0.3s ease forwards;
+
+				@keyframes mobileFadeOut {
+					from { opacity: 1; }
+					to { opacity: 0; }
+				}
+			}
+		}
+
 		// Viewport responsive layout (Strict locking)
 		display: flex;
 		flex-direction: column;
