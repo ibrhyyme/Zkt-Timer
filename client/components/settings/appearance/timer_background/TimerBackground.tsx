@@ -10,13 +10,15 @@ import {getStorageURL} from '../../../../util/storage';
 import Button from '../../../common/button/Button';
 import block from '../../../../styles/bem';
 import {TimerBackground as TimerBackgroundSchema} from '../../../../@types/generated/graphql';
-import ProOnly from '../../../common/pro_only/ProOnly';
+import {isPro} from '../../../../lib/pro';
+import {Crown} from 'phosphor-react';
 
 const b = block('timer-background');
 
 export default function TimerBackground() {
 	const dispatch = useDispatch();
 	const me = useMe();
+	const userIsPro = isPro(me);
 
 	const [loading, setLoading] = useState(false);
 	const [image, setImage] = useState<string>(getStorageURL(me?.timer_background?.storage_path) || '');
@@ -65,15 +67,26 @@ export default function TimerBackground() {
 		dispatch(getMe());
 	}
 
-	return (
-		<ProOnly>
-			<div className={b()}>
+	if (!userIsPro) {
+		return (
+			<a href="/account/pro" className={b('locked')}>
 				<div className={b('image')}>
-					<UploadCover upload={uploadTimerBackground} />
-					{image ? <img src={image} alt="Timer background" /> : null}
+					<div className={b('pro-overlay')}>
+						<Crown weight="fill" className={b('pro-crown')} />
+						<span className={b('pro-label')}>PRO</span>
+					</div>
 				</div>
-				{image ? <Button flat text="Reset background" danger onClick={resetBackgroundImage} /> : null}
+			</a>
+		);
+	}
+
+	return (
+		<div className={b()}>
+			<div className={b('image')}>
+				<UploadCover upload={uploadTimerBackground} />
+				{image ? <img src={image} alt="Timer background" /> : null}
 			</div>
-		</ProOnly>
+			{image ? <Button flat text="Reset background" danger onClick={resetBackgroundImage} /> : null}
+		</div>
 	);
 }

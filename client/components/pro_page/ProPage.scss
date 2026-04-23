@@ -582,6 +582,30 @@ $pro-violet-dim: rgba(124, 58, 237, 0.12);
 		}
 	}
 
+	&__feature--upcoming {
+		opacity: 0.8;
+
+		@include lg {
+			grid-column: 2;
+		}
+	}
+
+
+	&__feature-check--upcoming {
+		color: rgba(167, 139, 250, 0.5);
+	}
+
+	&__feature-soon {
+		font-size: 0.65rem;
+		font-weight: 600;
+		letter-spacing: 0.05em;
+		color: $pro-violet-light;
+		background: rgba(124, 58, 237, 0.2);
+		padding: 2px 7px;
+		border-radius: 20px;
+		white-space: nowrap;
+	}
+
 	&__compare-link {
 		margin-top: 8px;
 		padding: 9px 12px;

@@ -10,7 +10,6 @@ import {gqlMutate} from '../api';
 import {openModal} from '../../actions/general';
 import {toastError, toastSuccess} from '../../util/toast';
 import PromoSuccessModal from './PromoSuccessModal';
-import PlanCompareModal from './PlanCompareModal';
 import {useMe} from '../../util/hooks/useMe';
 import {isPro} from '../../lib/pro';
 import FeatureGuard from '../common/page_disabled/FeatureGuard';
@@ -43,28 +42,27 @@ const PRO_FEATURES = [
 	'trainer_smart_cube',
 	'trainer_pdf',
 	'themes',
-	'advanced_stats',
-	'leaderboard_publish',
 	'timer_background',
 	'room_music',
+	'room_smart_cube',
 	'pro_badge',
-	'data_import',
 	'stats_customization',
 	'solve_sharing',
 ] as const;
 
-interface FeatureRowProps {
-	featureKey: string;
-}
+const UPCOMING_FEATURES = ['early_access', 'ai_analysis', 'pll_trainer', 'cross_trainer'] as const;
 
-function FeatureRow({featureKey}: FeatureRowProps) {
+function FeatureRow({featureKey, upcoming}: {featureKey: string; upcoming?: boolean}) {
 	const [open, setOpen] = useState(false);
 	const {t} = useTranslation();
 
 	return (
 		<li className={b('feature', {open})}>
 			<button type="button" className={b('feature-row')} onClick={() => setOpen(!open)}>
-				<Check weight="bold" className={b('feature-check')} />
+				{upcoming
+					? <Sparkle weight="fill" className={b('feature-check', {upcoming: true})} />
+					: <Check weight="bold" className={b('feature-check')} />
+				}
 				<span className={b('feature-label')}>{t(`pro_page.features.${featureKey}.title`)}</span>
 				<CaretDown weight="bold" className={b('feature-caret')} />
 			</button>
@@ -168,10 +166,6 @@ function ProPageContent() {
 		} finally {
 			setRedeeming(false);
 		}
-	}
-
-	function openCompare() {
-		dispatch(openModal(<PlanCompareModal />));
 	}
 
 	function currentPlanId(): PlanId | null {
@@ -501,10 +495,11 @@ function ProPageContent() {
 								{PRO_FEATURES.map((key) => (
 									<FeatureRow key={key} featureKey={key} />
 								))}
+								{UPCOMING_FEATURES.map((key) => (
+									<FeatureRow key={key} featureKey={key} upcoming />
+								))}
 							</ul>
-							<button type="button" className={b('compare-link')} onClick={openCompare}>
-								{t('pro_page.compare_plans')}
-							</button>
+
 						</div>
 					</div>
 				</ElectricBorder>

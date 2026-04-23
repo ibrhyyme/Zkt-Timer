@@ -1855,8 +1855,6 @@
 		"mobile_only_cta": "Comprar en la app móvil",
 		"mobile_only_hint": "Las compras se realizan en las apps de iOS y Android",
 		"basic_hint": "Actualmente tienes el plan Basic",
-		"compare_plans": "Comparar todas las funciones",
-		"compare_plans_more": "+10 funciones más · Ver comparación",
 		"plan": {
 			"monthly_label": "Mensual",
 			"yearly_label": "Anual",
@@ -2022,6 +2020,26 @@
 			"solve_sharing": {
 				"title": "Compartir resoluciones",
 				"desc": "Comparte tu resolución de cubo inteligente como un simple enlace. Tus amigos hacen clic y exploran toda tu solución paso a paso — qué algoritmos usaste, cuántos segundos tardó cada fase, tu TPS y conteo de movimientos, todo detallado."
+			},
+			"room_smart_cube": {
+				"title": "Cubo inteligente & GAN timer en salas",
+				"desc": "Conecta tu cubo inteligente o GAN timer mientras resuelves con amigos en una sala online. Los tiempos se registran automáticamente y compites en tiempo real — se requiere Pro para usar esta función."
+			},
+			"ai_analysis": {
+				"title": "Análisis AI de cubo inteligente — Próximamente",
+				"desc": "Analiza los datos de tu cubo inteligente con IA. Aprende automáticamente dónde pierdes tiempo y qué algoritmos necesitas mejorar."
+			},
+			"pll_trainer": {
+				"title": "Trainer avanzado de reconocimiento PLL — Próximamente",
+				"desc": "Aprende todos los casos PLL con reconocimiento visual. Generación aleatoria de casos, seguimiento de tiempo y modo de entrenamiento inteligente enfocado en tus puntos débiles."
+			},
+			"cross_trainer": {
+				"title": "Trainer avanzado Cross / X-Cross — Próximamente",
+				"desc": "Herramienta de entrenamiento avanzada para aprender soluciones de cross y extended cross paso a paso. Descubre los caminos más eficientes y aumenta tu velocidad."
+			},
+			"early_access": {
+				"title": "Acceso anticipado a nuevas funciones",
+				"desc": "Los miembros Pro nunca pagan extra por nuevas funciones y obtienen acceso antes que todos."
 			}
 		},
 		"promo": {
