@@ -346,6 +346,10 @@ app.post('/api/admin/sync-world-records', (req, res) => {
 import { revenueCatWebhookHandler } from './api/revenuecat_webhook';
 app.post('/api/iap/revenuecat-webhook', revenueCatWebhookHandler);
 
+// IAP sync — restore/satin alma sonrasi anlık RevenueCat sorgulama
+import { iapSyncHandler } from './api/iap_sync';
+app.post('/api/iap/sync', iapSyncHandler);
+
 // Cache-busting: Capacitor ve web istemciler güncel versiyonu kontrol eder
 app.get('/api/version', (req, res) => {
 	res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');

@@ -105,7 +105,7 @@ function ProPageContent() {
 	const [purchasing, setPurchasing] = useState(false);
 	const [restoring, setRestoring] = useState(false);
 	const [offerings, setOfferings] = useState<IapOfferings>({});
-	const [debugInfo, setDebugInfo] = useState<string>('');
+
 
 	const {data: iapData, refetch: refetchIap} = useQuery<GetIapStatusQuery>(GetIapStatusDocument, {
 		fetchPolicy: 'cache-and-network',
@@ -130,23 +130,8 @@ function ProPageContent() {
 	// Native platformda offerings yukle
 	useEffect(() => {
 		if (!native) return;
-		const iosKey = (window as any).__REVENUECAT_IOS_KEY__ || '';
-		const androidKey = (window as any).__REVENUECAT_ANDROID_KEY__ || '';
-		setDebugInfo(
-			`native=true, iosKeyLen=${iosKey.length}, androidKeyLen=${androidKey.length}, loading...`
-		);
-		getOfferings()
-			.then((off) => {
-				setOfferings(off);
-				const dbg = (window as any).__IAP_DEBUG__ || {};
-				setDebugInfo(
-					`keys=${iosKey.length}/${androidKey.length} pkgs=${Object.keys(off).join(',') || 'EMPTY'} all=[${dbg.allKeys?.join(',') || 'NONE'}] pickedId=${dbg.pickedOfferingId || 'null'} pkgCount=${dbg.pkgCount || 0} types=${dbg.pkgTypes || 'none'}${dbg.error ? ' ERR=' + dbg.error : ''}`
-				);
-			})
-			.catch((err) => {
-				setDebugInfo(`getOfferings error: ${err?.message || String(err)}`);
-			});
-	}, [native, userIsPro]);
+		getOfferings().then(setOfferings).catch(() => {});
+	}, [native]);
 
 	// Aktif Pro aboneliği olan kullanıcının seçili planı mevcut planı olsun
 	useEffect(() => {
@@ -212,6 +197,41 @@ function ProPageContent() {
 	const downgradeBlocked = isIapPro && currentPlanId() === 'yearly' && selectedPlan === 'monthly';
 	const iapPaused = iapStatus?.iap_paused_until;
 
+	if (isIapPro && (!native || isCrossPlatform)) {
+		const platformLabel = subscriptionPlatform === 'android' ? 'Android' : 'iOS';
+		const planId = currentPlanId();
+		return (
+			<div className={b('subscribed-via')}>
+				<h2 className={b('subscribed-via-title')}>
+					{t('pro_page.subscribed_via_title', {platform: platformLabel})}
+				</h2>
+				{planId && (
+					<p className={b('subscribed-via-plan')}>
+						{t(`pro_page.plan.${planId}_label`)}
+						{expiryLabel && planId !== 'lifetime' && (
+							<>
+								{' • '}
+								{t('pro_page.pro_expires', {date: expiryLabel})}
+							</>
+						)}
+					</p>
+				)}
+				<p className={b('subscribed-via-subtitle')}>
+					{t('pro_page.subscribed_via_subtitle', {platform: platformLabel})}
+				</p>
+				<a href="/" className={b('subscribed-via-btn')}>
+					{t('pro_page.subscribed_via_home')}
+				</a>
+			</div>
+		);
+	}
+
+	async function syncWithServer() {
+		try {
+			await fetch('/api/iap/sync', {method: 'POST', credentials: 'include'});
+		} catch {}
+	}
+
 	async function handlePurchase() {
 		if (!native || !selectedPackage || purchasing) return;
 		if (!canPurchase) {
@@ -254,8 +274,8 @@ function ProPageContent() {
 
 			await purchasePackage(selectedPackage, oldProductId, isUpgrade);
 			toastSuccess(t('pro_page.iap.purchase_success'));
-			// Webhook birkac saniye surebilir — refetch + kisa delay
-			setTimeout(() => refetchIap(), 2500);
+			await syncWithServer();
+			setTimeout(() => refetchIap(), 1000);
 		} catch (err: any) {
 			const code = err?.code || '';
 			const msg = String(err?.message || '').toLowerCase();
@@ -277,7 +297,8 @@ function ProPageContent() {
 			const result = await restorePurchases();
 			if (result?.isPro) {
 				toastSuccess(t('pro_page.iap.restore_success'));
-				setTimeout(() => refetchIap(), 2000);
+				await syncWithServer();
+				setTimeout(() => refetchIap(), 500);
 			} else {
 				toastError(t('pro_page.iap.restore_empty'));
 			}
@@ -356,12 +377,6 @@ function ProPageContent() {
 								))}
 							</div>
 
-							{debugInfo && native && Object.keys(offerings).length === 0 && (
-								<div style={{padding: '8px', background: 'rgba(255,200,0,0.15)', border: '1px solid orange', fontSize: '11px', color: '#fff', margin: '8px 0', wordBreak: 'break-word'}}>
-									DEBUG: {debugInfo}
-								</div>
-							)}
-
 							<div className={b('price-block')}>
 								<div className={b('price-amount')}>
 									{dynamicPrice || t(activePlan.priceKey)}
@@ -398,14 +413,6 @@ function ProPageContent() {
 											</button>
 										)}
 									</div>
-								</div>
-							)}
-							{isCrossPlatform && subscriptionPlatform && (
-								<div className={b('notice', {warn: true})}>
-									<Info weight="fill" />
-									<span>{t('pro_page.iap.cross_platform_notice', {
-										platform: subscriptionPlatform === 'android' ? 'Android' : 'iOS',
-									})}</span>
 								</div>
 							)}
 							{iapPaused && (
