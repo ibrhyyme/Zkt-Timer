@@ -1855,8 +1855,6 @@
 		"mobile_only_cta": "Purchase in mobile app",
 		"mobile_only_hint": "Purchases are made through the iOS and Android apps",
 		"basic_hint": "You're currently on Basic plan",
-		"compare_plans": "Compare all features",
-		"compare_plans_more": "+10 more features · See comparison",
 		"plan": {
 			"monthly_label": "Monthly",
 			"yearly_label": "Yearly",
@@ -2022,6 +2020,26 @@
 			"solve_sharing": {
 				"title": "Solve sharing",
 				"desc": "Share your smart cube solve as a single link. Your friends click it and explore your entire solution step by step — which algorithms you used, how many seconds each phase took, your TPS, and move count all laid out in detail."
+			},
+			"room_smart_cube": {
+				"title": "Smart cube & GAN timer in rooms",
+				"desc": "Connect your smart cube or GAN timer while solving with friends in an online room. Times are recorded automatically and you compete in real time — Pro required to use this feature."
+			},
+			"ai_analysis": {
+				"title": "Smart cube AI analysis — Coming Soon",
+				"desc": "Analyze your smart cube data with AI. Automatically learn where you're losing time and which algorithms need improvement."
+			},
+			"pll_trainer": {
+				"title": "Advanced PLL recognition Trainer — Coming Soon",
+				"desc": "Learn all PLL cases with visual recognition. Random case generation, time tracking, and a smart training mode focused on your weak spots."
+			},
+			"cross_trainer": {
+				"title": "Advanced Cross / X-Cross Trainer — Coming Soon",
+				"desc": "Advanced trainer for learning cross and extended cross solutions step by step. Discover the most efficient paths and boost your speed."
+			},
+			"early_access": {
+				"title": "Early access to new features",
+				"desc": "Pro members never pay extra for new features and get access before everyone else."
 			}
 		},
 		"promo": {

@@ -1855,8 +1855,6 @@
 		"mobile_only_cta": "Mobil uygulamadan satın al",
 		"mobile_only_hint": "Satın alma iOS ve Android uygulamalarında yapılır",
 		"basic_hint": "Şu an Basic plandasın",
-		"compare_plans": "Tüm özellikleri karşılaştır",
-		"compare_plans_more": "+10 özellik daha · Karşılaştırmayı gör",
 		"plan": {
 			"monthly_label": "Aylık",
 			"yearly_label": "Yıllık",
@@ -2022,6 +2020,26 @@
 			"solve_sharing": {
 				"title": "Çözüm paylaşımı",
 				"desc": "Akıllı küpte yaptığın çözümü tek bir link olarak paylaş. Arkadaşların linke tıklasın ve senin çözümünü adım adım incelesin — hangi algoritmayı kullandığını, her aşamada kaç saniye harcadığını, TPS'ini ve hamle sayısını detaylıca görsünler."
+			},
+			"room_smart_cube": {
+				"title": "Odada akıllı küp & GAN timer",
+				"desc": "Arkadaşlarınla online oda kurarak küp çözerken akıllı küp veya GAN timer bağlayabilirsin. Sürelerin otomatik kaydedilir, gerçek zamanlı rekabet yaşarsın — ama bu özellik için Pro olman gerekiyor."
+			},
+			"ai_analysis": {
+				"title": "Akıllı küp AI analizi — Yakında",
+				"desc": "Akıllı küp verilerini yapay zeka ile analiz et. Hangi aşamada zaman kaybettiğini, hangi algoritmaları geliştirmen gerektiğini otomatik olarak öğren."
+			},
+			"pll_trainer": {
+				"title": "Gelişmiş PLL tanıma Trainer — Yakında",
+				"desc": "Tüm PLL vakalarını görsel tanıma ile öğren. Rastgele vaka üretimi, süre takibi ve zayıf noktalarına odaklanan akıllı antrenman modu."
+			},
+			"cross_trainer": {
+				"title": "Gelişmiş Cross / X-Cross Trainer — Yakında",
+				"desc": "Cross ve extended cross çözümlerini adım adım öğrenmek için gelişmiş antrenman aracı. En verimli çözüm yollarını keşfet, hızını artır."
+			},
+			"early_access": {
+				"title": "Yeni özelliklere erken erişim",
+				"desc": "Pro üyelerin yeni özellikler için ek ücret ödemez ve herkesten önce erişim hakkı kazanır."
 			}
 		},
 		"promo": {
