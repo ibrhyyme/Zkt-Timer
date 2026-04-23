@@ -37,6 +37,10 @@ $self: '.cd-battle';
 		&--priming {
 			background: rgba(var(--secondary-color), 0.7) !important;
 			border-color: rgba(var(--secondary-color), 0.8) !important;
+
+			.cd-battle__time {
+				text-shadow: none;
+			}
 		}
 
 		&--timing {
@@ -71,7 +75,10 @@ $self: '.cd-battle';
 	&__time {
 		font-family: 'Roboto Mono', monospace;
 		font-weight: 500;
-		font-variant-numeric: tabular-nums;
+		// tabular-nums icin font-variant yerine font-feature-settings kullan:
+		// font-variant-numeric iOS Turkce locale'de locl feature'ini tetikleyip
+		// ondalik noktayi virgule cevirebiliyor.
+		font-feature-settings: 'tnum' 1, 'locl' 0;
 		letter-spacing: -0.02em;
 		font-size: clamp(2.5rem, 12vw, 4.5rem);
 		text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);

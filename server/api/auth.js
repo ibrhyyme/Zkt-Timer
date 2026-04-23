@@ -32,11 +32,12 @@ const mutateActions = {
 
 		// If remember me is true, set cookie for 10 years (effectively forever)
 		// If false, set cookie for 1 year (also effectively forever for normal users unless they clear cookies)
+		const isProduction = process.env.NODE_ENV === 'production';
 		const cookieOptions = {
 			httpOnly: true,
 			maxAge: remember ? 315360000000 : 31536000000, // 10 years vs 1 year
-			sameSite: 'none',
-			secure: true,
+			sameSite: isProduction ? 'none' : 'lax',
+			secure: isProduction,
 		};
 
 		res.cookie('session', jwt, cookieOptions);
@@ -44,7 +45,8 @@ const mutateActions = {
 		return sanitizeUser(user);
 	},
 	logOut: async (_, params, { res, user }) => {
-		res.clearCookie('session', { sameSite: 'none', secure: true });
+		const isProduction = process.env.NODE_ENV === 'production';
+		res.clearCookie('session', { sameSite: isProduction ? 'none' : 'lax', secure: isProduction });
 		return sanitizeUser(user);
 	},
 };
