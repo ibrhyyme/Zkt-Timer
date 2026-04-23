@@ -10,9 +10,10 @@ interface RoomSettingsModalProps {
     isOpen: boolean;
     onClose: () => void;
     allowedTimerTypes?: string[];
+    requireProForSmart?: boolean;
 }
 
-export default function RoomSettingsModal({ isOpen, onClose, allowedTimerTypes }: RoomSettingsModalProps) {
+export default function RoomSettingsModal({ isOpen, onClose, allowedTimerTypes, requireProForSmart }: RoomSettingsModalProps) {
     const { t } = useTranslation();
     const [activeTab, setActiveTab] = useState<'timer' | 'extras'>('timer');
 
@@ -57,7 +58,7 @@ export default function RoomSettingsModal({ isOpen, onClose, allowedTimerTypes }
                 </div>
 
                 <div className="room-settings-modal__content overflow-y-auto max-h-[70vh] px-2">
-                    {activeTab === 'timer' && <TimerTab allowedTimerTypes={allowedTimerTypes} />}
+                    {activeTab === 'timer' && <TimerTab allowedTimerTypes={allowedTimerTypes} requireProForSmart={requireProForSmart} />}
                     {activeTab === 'extras' && <ExtrasTab />}
                 </div>
             </div>

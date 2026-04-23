@@ -1869,6 +1869,7 @@ export default function FriendlyRoom() {
                 isOpen={settingsOpen}
                 onClose={() => setSettingsOpen(false)}
                 allowedTimerTypes={room.allowed_timer_types}
+                requireProForSmart={true}
             />
             {/* New Modals */}
             <EditRoomModal

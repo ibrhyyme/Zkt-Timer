@@ -1622,6 +1622,7 @@
 		"stackmat": "StackMat",
 		"smart_cube": "Cubo inteligente",
 		"gan_smart_timer": "GAN Smart Timer",
+		"smart_cube_pro_room": "El uso del cubo inteligente en salas es una función Pro.",
 		"manual_entry": "Entrada manual",
 		"goals": "Metas",
 		"goals_description": "Establece metas diarias de resolución por tipo de cubo",

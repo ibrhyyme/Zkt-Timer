@@ -1622,6 +1622,7 @@
 		"stackmat": "StackMat",
 		"smart_cube": "Smart Cube",
 		"gan_smart_timer": "GAN Smart Timer",
+		"smart_cube_pro_room": "Smart cube usage in rooms is a Pro feature.",
 		"manual_entry": "Manual Entry",
 		"goals": "Goals",
 		"goals_description": "Set daily solve targets per cube type",
