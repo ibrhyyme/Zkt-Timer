@@ -1,14 +1,16 @@
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
-import { Lock } from 'phosphor-react';
+import { Lock, Crown } from 'phosphor-react';
 import { setSetting, toggleSetting } from '../../../db/settings/update';
 import { useSettings } from '../../../util/hooks/useSettings';
 import { useGeneral } from '../../../util/hooks/useGeneral';
+import { useMe } from '../../../util/hooks/useMe';
 import { openModal } from '../../../actions/general';
 import StackMatPicker from '../../settings/stackmat_picker/StackMatPicker';
 import { AllSettings } from '../../../db/settings/query';
 import { is3x3CubeType } from '../../timer/helpers/util';
+import { isPro } from '../../../lib/pro';
 
 interface TimerOptionProps {
 	label: string | React.ReactNode;
@@ -43,17 +45,21 @@ function TimerOption({ label, isActive, disabled = false, onClick }: TimerOption
 
 interface TimerTabProps {
 	allowedTimerTypes?: string[];
+	requireProForSmart?: boolean;
 }
 
-export default function TimerTab({ allowedTimerTypes }: TimerTabProps) {
+export default function TimerTab({ allowedTimerTypes, requireProForSmart }: TimerTabProps) {
 	const { t } = useTranslation();
 	const dispatch = useDispatch();
+	const me = useMe();
 
 	const timerType = useSettings('timer_type');
 	const manualEntry = useSettings('manual_entry');
 	const cubeType = useSettings('cube_type');
 	const scrambleSubset = useSettings('scramble_subset');
 	const mobileMode = useGeneral('mobile_mode');
+
+	const isProGated = requireProForSmart && !isPro(me);
 
 	// Küp türü değiştiğinde smart cube uyumluluğunu kontrol et
 	useEffect(() => {
@@ -86,6 +92,18 @@ export default function TimerTab({ allowedTimerTypes }: TimerTabProps) {
 		toggleSetting('manual_entry');
 	}
 
+	function proLabel(base: string) {
+		return (
+			<span className="flex items-center gap-2">
+				{base}
+				<span className="text-xs text-primary/80 bg-primary/10 px-1.5 py-0.5 rounded flex items-center gap-1">
+					<Crown size={10} weight="fill" />
+					Pro
+				</span>
+			</span>
+		);
+	}
+
 	const timerOptions = [
 		{
 			typeKey: 'keyboard',
@@ -101,15 +119,16 @@ export default function TimerTab({ allowedTimerTypes }: TimerTabProps) {
 		},
 		{
 			typeKey: 'smart',
-			label: t('quick_controls.smart_cube'),
+			label: isProGated ? proLabel(t('quick_controls.smart_cube')) : t('quick_controls.smart_cube'),
 			isActive: timerType === 'smart' && !manualEntry && is3x3CubeType(cubeType, scrambleSubset),
-			disabled: !is3x3CubeType(cubeType, scrambleSubset),
+			disabled: !is3x3CubeType(cubeType, scrambleSubset) || isProGated,
 			onClick: () => selectTimerType('smart'),
 		},
 		{
 			typeKey: 'gantimer',
-			label: t('quick_controls.gan_smart_timer'),
+			label: isProGated ? proLabel(t('quick_controls.gan_smart_timer')) : t('quick_controls.gan_smart_timer'),
 			isActive: timerType === 'gantimer' && !manualEntry,
+			disabled: isProGated,
 			onClick: () => selectTimerType('gantimer'),
 		},
 		{
@@ -158,6 +177,17 @@ export default function TimerTab({ allowedTimerTypes }: TimerTabProps) {
 					onClick={option.onClick}
 				/>
 			))}
+			{isProGated && (
+				<div className="flex items-center justify-between px-4 py-3 rounded-xl bg-primary/5 border border-primary/20">
+					<span className="text-xs text-text/60">{t('quick_controls.smart_cube_pro_room')}</span>
+					<a
+						href="/account/pro"
+						className="text-xs font-semibold text-primary hover:text-primary/80 whitespace-nowrap ml-3 transition-colors"
+					>
+						Pro'ya Geç →
+					</a>
+				</div>
+			)}
 		</div>
 	);
 }

@@ -93,7 +93,7 @@ export default function RoomTimerOverlay({
     }>({});
 
     // Keyboard navigation for submission screen
-    // 0: +2, 1: DNF, 2: KAYDET, 3: İPTAL
+    // 0: +2, 1: DNF, 2: İPTAL, 3: KAYDET
     const [focusedButtonIndex, setFocusedButtonIndex] = useState(3); // Default to KAYDET (action-row sag)
 
     // Manual entry state
@@ -179,7 +179,7 @@ export default function RoomTimerOverlay({
     useEffect(() => {
         if (smartReviewing || status === STATUS.SUBMITTING) {
             setPenalties({});
-            setFocusedButtonIndex(2); // Always default to KAYDET button
+            setFocusedButtonIndex(3); // Always default to KAYDET button
         }
     }, [smartReviewing, status]);
 
