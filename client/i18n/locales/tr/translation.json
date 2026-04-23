@@ -1898,7 +1898,17 @@
 			"downgrade_to_monthly": "Aylık'a Düş",
 			"cancel_first": "Önce aboneliği iptal et",
 			"lifetime_needs_cancel": "Lifetime almak için önce aboneliğini iptal etmelisin",
-			"lifetime_needs_cancel_hint": "Aboneliğin bittiğinde Lifetime seçeneği aktif olacak"
+			"lifetime_needs_cancel_hint": "Aboneliğin bittiğinde Lifetime seçeneği aktif olacak",
+			"cross_platform_notice": "Aboneliğin {{platform}} üzerinden aktif. Aboneliğini {{platform}} cihazından yönetebilirsin.",
+			"cross_platform_cta": "{{platform}}'dan Yönet",
+			"cross_platform_blocked": "Bu abonelik {{platform}} üzerinden alındı, buradan değiştirilemez",
+			"already_lifetime": "Ömür boyu üyeliğin zaten aktif",
+			"already_lifetime_cta": "Ömür Boyu Aktif",
+			"already_lifetime_hint": "Lifetime üyeliğin aktif olduğu sürece abonelik alınamaz",
+			"downgrade_blocked_toast": "Yıllık planın süresi dolmadan aylık plana geçiş yapılamaz",
+			"downgrade_blocked_cta": "Yıllık Plan Aktif",
+			"downgrade_blocked_hint": "Yıllık planın {{date}} tarihinde sona eriyor. O tarihten sonra aylık plana geçebilirsin.",
+			"paused_notice": "Aboneliğin duraklatıldı. Google Play üzerinden yeniden başlatabilirsin."
 		},
 		"whats_included": "Dahil olanlar:",
 		"coming_soon": "Yakında",

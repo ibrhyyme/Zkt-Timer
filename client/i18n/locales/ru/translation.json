@@ -1898,7 +1898,17 @@
 			"downgrade_to_monthly": "Перейти на месячный",
 			"cancel_first": "Сначала отмените подписку",
 			"lifetime_needs_cancel": "Чтобы купить Lifetime, сначала отмените активную подписку",
-			"lifetime_needs_cancel_hint": "Lifetime станет доступен после окончания подписки"
+			"lifetime_needs_cancel_hint": "Lifetime станет доступен после окончания подписки",
+			"cross_platform_notice": "Ваша подписка активна через {{platform}}. Управляйте ею с устройства {{platform}}.",
+			"cross_platform_cta": "Управлять на {{platform}}",
+			"cross_platform_blocked": "Эта подписка была куплена на {{platform}} и не может быть изменена здесь",
+			"already_lifetime": "Ваше пожизненное членство уже активно",
+			"already_lifetime_cta": "Lifetime активен",
+			"already_lifetime_hint": "Нельзя оформить подписку, пока активно пожизненное членство",
+			"downgrade_blocked_toast": "Нельзя перейти на месячный план до истечения годового",
+			"downgrade_blocked_cta": "Годовой план активен",
+			"downgrade_blocked_hint": "Ваш годовой план истекает {{date}}. После этой даты вы сможете перейти на месячный.",
+			"paused_notice": "Ваша подписка приостановлена. Возобновить можно через Google Play."
 		},
 		"whats_included": "Что включено:",
 		"coming_soon": "Скоро",

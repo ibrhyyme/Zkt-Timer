@@ -14,7 +14,7 @@ import PlanCompareModal from './PlanCompareModal';
 import {useMe} from '../../util/hooks/useMe';
 import {isPro} from '../../lib/pro';
 import FeatureGuard from '../common/page_disabled/FeatureGuard';
-import {isNative} from '../../util/platform';
+import {isNative, isAndroidNative} from '../../util/platform';
 import {getOfferings, purchasePackage, restorePurchases, showManageSubscriptions} from '../../lib/iap';
 import {GetIapStatusDocument, GetIapStatusQuery} from '../../@types/generated/graphql';
 
@@ -129,7 +129,7 @@ function ProPageContent() {
 
 	// Native platformda offerings yukle
 	useEffect(() => {
-		if (!native || userIsPro) return;
+		if (!native) return;
 		const iosKey = (window as any).__REVENUECAT_IOS_KEY__ || '';
 		const androidKey = (window as any).__REVENUECAT_ANDROID_KEY__ || '';
 		setDebugInfo(
@@ -202,6 +202,15 @@ function ProPageContent() {
 	const hasActiveSubscription = isIapPro && currentPlanId() !== null && currentPlanId() !== 'lifetime';
 	// Lifetime x aktif abonelik catismasi: aktif aboneligi olan kullanici lifetime alamaz
 	const lifetimeBlocked = selectedPlan === 'lifetime' && hasActiveSubscription;
+	// Cross-platform: abonelik baska platformdan alinmissa bu platformdan satin alinamaz
+	const subscriptionPlatform = iapStatus?.iap_platform;
+	const currentNativePlatform = native ? (isAndroidNative() ? 'android' : 'ios') : null;
+	const isCrossPlatform = native && isIapPro && !!subscriptionPlatform && subscriptionPlatform !== currentNativePlatform;
+	// Lifetime sahibi aylik/yillik alamaz; yillik abone ayliga dusamaz
+	const isLifetimeOwner = isIapPro && currentPlanId() === 'lifetime';
+	const ownedLifetimeBlocked = isLifetimeOwner && selectedPlan !== 'lifetime';
+	const downgradeBlocked = isIapPro && currentPlanId() === 'yearly' && selectedPlan === 'monthly';
+	const iapPaused = iapStatus?.iap_paused_until;
 
 	async function handlePurchase() {
 		if (!native || !selectedPackage || purchasing) return;
@@ -212,6 +221,18 @@ function ProPageContent() {
 		if (isCurrentPlan) return;
 		if (lifetimeBlocked) {
 			toastError(t('pro_page.iap.lifetime_needs_cancel'));
+			return;
+		}
+		if (isCrossPlatform) {
+			toastError(t('pro_page.iap.cross_platform_blocked', {platform: subscriptionPlatform === 'android' ? 'Android' : 'iOS'}));
+			return;
+		}
+		if (ownedLifetimeBlocked) {
+			toastError(t('pro_page.iap.already_lifetime'));
+			return;
+		}
+		if (downgradeBlocked) {
+			toastError(t('pro_page.iap.downgrade_blocked_toast'));
 			return;
 		}
 
@@ -275,6 +296,9 @@ function ProPageContent() {
 		if (purchasing) return t('pro_page.iap.purchasing');
 		if (isCurrentPlan) return t('pro_page.current_plan');
 		if (lifetimeBlocked) return t('pro_page.iap.cancel_first');
+		if (ownedLifetimeBlocked) return t('pro_page.iap.already_lifetime_cta');
+		if (downgradeBlocked) return t('pro_page.iap.downgrade_blocked_cta');
+		if (isCrossPlatform) return t('pro_page.iap.cross_platform_cta', {platform: subscriptionPlatform === 'android' ? 'Android' : 'iOS'});
 		if (hasActiveSubscription && selectedPlan !== 'lifetime') {
 			const current = currentPlanId();
 			if (current === 'monthly' && selectedPlan === 'yearly') return t('pro_page.iap.upgrade_to_yearly');
@@ -376,6 +400,20 @@ function ProPageContent() {
 									</div>
 								</div>
 							)}
+							{isCrossPlatform && subscriptionPlatform && (
+								<div className={b('notice', {warn: true})}>
+									<Info weight="fill" />
+									<span>{t('pro_page.iap.cross_platform_notice', {
+										platform: subscriptionPlatform === 'android' ? 'Android' : 'iOS',
+									})}</span>
+								</div>
+							)}
+							{iapPaused && (
+								<div className={b('notice', {warn: true})}>
+									<Warning weight="fill" />
+									<span>{t('pro_page.iap.paused_notice')}</span>
+								</div>
+							)}
 
 							{/* CTA buton tercihi */}
 							{!canPurchase && userIsPro && !isIapPro ? (
@@ -393,7 +431,7 @@ function ProPageContent() {
 								<>
 									<button
 										className={b('cta')}
-										disabled={purchasing || lifetimeBlocked || !selectedPackage}
+										disabled={purchasing || lifetimeBlocked || ownedLifetimeBlocked || downgradeBlocked || isCrossPlatform || !selectedPackage}
 										onClick={handlePurchase}
 									>
 										{purchaseButtonLabel()}
@@ -402,6 +440,18 @@ function ProPageContent() {
 										<p className={b('cta-hint')}>
 											<Info weight="fill" />
 											<span>{t('pro_page.iap.lifetime_needs_cancel_hint')}</span>
+										</p>
+									)}
+									{ownedLifetimeBlocked && (
+										<p className={b('cta-hint')}>
+											<Info weight="fill" />
+											<span>{t('pro_page.iap.already_lifetime_hint')}</span>
+										</p>
+									)}
+									{downgradeBlocked && (
+										<p className={b('cta-hint')}>
+											<Info weight="fill" />
+											<span>{t('pro_page.iap.downgrade_blocked_hint', {date: expiryLabel || ''})}</span>
 										</p>
 									)}
 									{isIapPro && !lifetimeBlocked && (

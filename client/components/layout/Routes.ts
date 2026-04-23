@@ -34,6 +34,7 @@ import type { Store } from 'redux';
 import Reports from '../admin/reports/Reports';
 import DefaultTimer from '../timer/DefaultTimer';
 import AdminUsers from '../admin/users/AdminUsers';
+import AdminProUsers from '../admin/pro_users/AdminProUsers';
 import UnsubEmails from '../unsub/UnsubEmails';
 
 import RoomsList from '../rooms/RoomsList';
@@ -192,6 +193,7 @@ export const routes: (PageContext | RedirectPath)[] = [
 	// Admin
 	route('/admin/reports', App, Admin, Reports, true, false, true),
 	route('/admin/users', App, Admin, AdminUsers, true, false, true),
+	route('/admin/pro-users', App, Admin, AdminProUsers, true, false, true),
 	route('/admin/announcements', App, Admin, AdminAnnouncements, true, false, true),
 	route('/admin/email', App, Admin, AdminEmail, true, false, true),
 	route('/admin/algorithms', App, Admin, AdminAlgorithms, true, false, true),

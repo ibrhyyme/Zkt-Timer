@@ -10,6 +10,7 @@ const b = block('admin');
 const ALL_TABS = [
 	{id: 'reports', link: '/admin/reports', value: 'Reports'},
 	{id: 'users', link: '/admin/users', value: 'Users'},
+	{id: 'pro-users', link: '/admin/pro-users', value: 'Pro Users'},
 	{id: 'announcements', link: '/admin/announcements', value: 'Duyurular'},
 	{id: 'email', link: '/admin/email', value: 'Mail'},
 	{id: 'algorithms', link: '/admin/algorithms', value: 'Algoritmalar'},
