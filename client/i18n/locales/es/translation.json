@@ -1898,7 +1898,17 @@
 			"downgrade_to_monthly": "Cambiar a Mensual",
 			"cancel_first": "Cancela la suscripción primero",
 			"lifetime_needs_cancel": "Para comprar Lifetime, cancela primero tu suscripción activa",
-			"lifetime_needs_cancel_hint": "Lifetime estará disponible cuando termine tu suscripción"
+			"lifetime_needs_cancel_hint": "Lifetime estará disponible cuando termine tu suscripción",
+			"cross_platform_notice": "Tu suscripción está activa a través de {{platform}}. Adminístrala desde tu dispositivo {{platform}}.",
+			"cross_platform_cta": "Gestionar en {{platform}}",
+			"cross_platform_blocked": "Esta suscripción fue comprada en {{platform}} y no se puede cambiar aquí",
+			"already_lifetime": "Tu membresía de por vida ya está activa",
+			"already_lifetime_cta": "Lifetime Activo",
+			"already_lifetime_hint": "No puedes suscribirte mientras una membresía de por vida esté activa",
+			"downgrade_blocked_toast": "No puedes cambiar al plan mensual antes de que expire tu plan anual",
+			"downgrade_blocked_cta": "Plan Anual Activo",
+			"downgrade_blocked_hint": "Tu plan anual vence el {{date}}. Podrás cambiar al mensual después de esa fecha.",
+			"paused_notice": "Tu suscripción está en pausa. Puedes reanudarla desde Google Play."
 		},
 		"whats_included": "Qué incluye:",
 		"coming_soon": "Próximamente",

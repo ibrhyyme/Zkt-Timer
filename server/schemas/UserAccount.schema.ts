@@ -175,6 +175,27 @@ class IUserAccountForAdmin extends IUserAccount {
 
 	@Field(() => [PushTokenInfo], {nullable: true})
 	pushTokens?: PushTokenInfo[];
+
+	@Field({nullable: true})
+	iap_platform?: string;
+
+	@Field({nullable: true})
+	iap_product_id?: string;
+
+	@Field(() => Date, {nullable: true})
+	pro_expires_at?: Date;
+
+	@Field(() => Date, {nullable: true})
+	iap_cancellation_at?: Date;
+
+	@Field(() => Date, {nullable: true})
+	iap_billing_issue_at?: Date;
+
+	@Field(() => Date, {nullable: true})
+	iap_paused_until?: Date;
+
+	@Field({nullable: true})
+	revenuecat_user_id?: string;
 }
 
 @InterfaceType({ implements: IUserAccountForAdmin })

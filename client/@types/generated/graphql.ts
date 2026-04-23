@@ -491,6 +491,11 @@ export type IInternalUserAccount = {
   email_verified?: Maybe<Scalars['Boolean']>;
   first_name?: Maybe<Scalars['String']>;
   has_password?: Maybe<Scalars['Boolean']>;
+  iap_billing_issue_at?: Maybe<Scalars['DateTime']>;
+  iap_cancellation_at?: Maybe<Scalars['DateTime']>;
+  iap_paused_until?: Maybe<Scalars['DateTime']>;
+  iap_platform?: Maybe<Scalars['String']>;
+  iap_product_id?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
   integrations?: Maybe<Array<Maybe<Integration>>>;
   is_premium?: Maybe<Scalars['Boolean']>;
@@ -508,6 +513,7 @@ export type IInternalUserAccount = {
   profile?: Maybe<Profile>;
   pushTokens?: Maybe<Array<PushTokenInfo>>;
   reports_for?: Maybe<Array<Maybe<Report>>>;
+  revenuecat_user_id?: Maybe<Scalars['String']>;
   settings?: Maybe<Setting>;
   summary?: Maybe<UserAccountSummary>;
   timer_background?: Maybe<TimerBackground>;
@@ -569,6 +575,11 @@ export type InternalUserAccount = IInternalUserAccount & IPublicUserAccount & IU
   email_verified?: Maybe<Scalars['Boolean']>;
   first_name?: Maybe<Scalars['String']>;
   has_password?: Maybe<Scalars['Boolean']>;
+  iap_billing_issue_at?: Maybe<Scalars['DateTime']>;
+  iap_cancellation_at?: Maybe<Scalars['DateTime']>;
+  iap_paused_until?: Maybe<Scalars['DateTime']>;
+  iap_platform?: Maybe<Scalars['String']>;
+  iap_product_id?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
   integrations?: Maybe<Array<Maybe<Integration>>>;
   is_premium?: Maybe<Scalars['Boolean']>;
@@ -586,6 +597,7 @@ export type InternalUserAccount = IInternalUserAccount & IPublicUserAccount & IU
   profile?: Maybe<Profile>;
   pushTokens?: Maybe<Array<PushTokenInfo>>;
   reports_for?: Maybe<Array<Maybe<Report>>>;
+  revenuecat_user_id?: Maybe<Scalars['String']>;
   settings?: Maybe<Setting>;
   summary?: Maybe<UserAccountSummary>;
   timer_background?: Maybe<TimerBackground>;
@@ -656,6 +668,11 @@ export type IUserAccountForAdmin = {
   email_verified?: Maybe<Scalars['Boolean']>;
   first_name?: Maybe<Scalars['String']>;
   has_password?: Maybe<Scalars['Boolean']>;
+  iap_billing_issue_at?: Maybe<Scalars['DateTime']>;
+  iap_cancellation_at?: Maybe<Scalars['DateTime']>;
+  iap_paused_until?: Maybe<Scalars['DateTime']>;
+  iap_platform?: Maybe<Scalars['String']>;
+  iap_product_id?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
   integrations?: Maybe<Array<Maybe<Integration>>>;
   is_premium?: Maybe<Scalars['Boolean']>;
@@ -672,6 +689,7 @@ export type IUserAccountForAdmin = {
   profile?: Maybe<Profile>;
   pushTokens?: Maybe<Array<PushTokenInfo>>;
   reports_for?: Maybe<Array<Maybe<Report>>>;
+  revenuecat_user_id?: Maybe<Scalars['String']>;
   settings?: Maybe<Setting>;
   summary?: Maybe<UserAccountSummary>;
   timer_background?: Maybe<TimerBackground>;
@@ -2561,6 +2579,11 @@ export type UserAccountForAdmin = IPublicUserAccount & IUserAccount & IUserAccou
   email_verified?: Maybe<Scalars['Boolean']>;
   first_name?: Maybe<Scalars['String']>;
   has_password?: Maybe<Scalars['Boolean']>;
+  iap_billing_issue_at?: Maybe<Scalars['DateTime']>;
+  iap_cancellation_at?: Maybe<Scalars['DateTime']>;
+  iap_paused_until?: Maybe<Scalars['DateTime']>;
+  iap_platform?: Maybe<Scalars['String']>;
+  iap_product_id?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
   integrations?: Maybe<Array<Maybe<Integration>>>;
   is_premium?: Maybe<Scalars['Boolean']>;
@@ -2577,6 +2600,7 @@ export type UserAccountForAdmin = IPublicUserAccount & IUserAccount & IUserAccou
   profile?: Maybe<Profile>;
   pushTokens?: Maybe<Array<PushTokenInfo>>;
   reports_for?: Maybe<Array<Maybe<Report>>>;
+  revenuecat_user_id?: Maybe<Scalars['String']>;
   settings?: Maybe<Setting>;
   summary?: Maybe<UserAccountSummary>;
   timer_background?: Maybe<TimerBackground>;
@@ -3306,6 +3330,14 @@ export type ZktScramble = {
   round_id?: Maybe<Scalars['String']>;
   scramble_string?: Maybe<Scalars['String']>;
 };
+
+export type AdminProUsersQueryVariables = Exact<{
+  pageArgs?: InputMaybe<PaginationArgsInput>;
+  search?: InputMaybe<Scalars['String']>;
+}>;
+
+
+export type AdminProUsersQuery = { __typename?: 'Query', adminUserSearch?: { __typename?: 'PaginatedUserAccountsForAdmin', hasMore?: boolean | null, total?: number | null, items?: Array<{ __typename?: 'UserAccountForAdmin', id?: string | null, username?: string | null, email?: string | null, created_at?: any | null, is_pro?: boolean | null, pro_expires_at?: any | null, iap_platform?: string | null, iap_product_id?: string | null, iap_cancellation_at?: any | null, iap_billing_issue_at?: any | null, iap_paused_until?: any | null, revenuecat_user_id?: string | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', storage_path?: string | null } | null } | null } | null> | null } | null };
 
 export type MiniSolveFragmentFragment = { __typename?: 'Solve', id?: string | null, time?: number | null, raw_time?: number | null, cube_type?: string | null, scramble_subset?: string | null, session_id?: string | null, trainer_name?: string | null, bulk?: boolean | null, scramble?: string | null, from_timer?: boolean | null, training_session_id?: string | null, dnf?: boolean | null, plus_two?: boolean | null, is_smart_cube?: boolean | null, created_at?: any | null, started_at?: any | null, ended_at?: any | null };
 
@@ -4092,6 +4124,7 @@ export const ZktCompDelegateFragmentFragmentDoc = {"kind":"Document","definition
 export const ZktCompetitionFullFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ZktCompetitionFullFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ZktCompetition"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktCompetitionSummaryFragment"}},{"kind":"Field","name":{"kind":"Name","value":"created_by"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PublicUserFragment"}}]}},{"kind":"Field","name":{"kind":"Name","value":"events"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktCompEventFragment"}}]}},{"kind":"Field","name":{"kind":"Name","value":"registrations"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktRegistrationFragment"}}]}},{"kind":"Field","name":{"kind":"Name","value":"delegates"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktCompDelegateFragment"}}]}}]}}]} as unknown as DocumentNode<ZktCompetitionFullFragmentFragment, unknown>;
 export const ZktRecordFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ZktRecordFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ZktRecord"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"event_id"}},{"kind":"Field","name":{"kind":"Name","value":"record_type"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"user_id"}},{"kind":"Field","name":{"kind":"Name","value":"result_id"}},{"kind":"Field","name":{"kind":"Name","value":"competition_id"}},{"kind":"Field","name":{"kind":"Name","value":"set_at"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PublicUserFragment"}}]}}]}}]} as unknown as DocumentNode<ZktRecordFragmentFragment, unknown>;
 export const ZktAssignmentFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ZktAssignmentFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ZktAssignment"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"round_id"}},{"kind":"Field","name":{"kind":"Name","value":"group_id"}},{"kind":"Field","name":{"kind":"Name","value":"user_id"}},{"kind":"Field","name":{"kind":"Name","value":"role"}},{"kind":"Field","name":{"kind":"Name","value":"station_number"}},{"kind":"Field","name":{"kind":"Name","value":"seed_result"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"updated_at"}},{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PublicUserFragment"}}]}}]}}]} as unknown as DocumentNode<ZktAssignmentFragmentFragment, unknown>;
+export const AdminProUsersDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"AdminProUsers"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"pageArgs"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"PaginationArgsInput"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"search"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"adminUserSearch"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"pageArgs"},"value":{"kind":"Variable","name":{"kind":"Name","value":"pageArgs"}}},{"kind":"Argument","name":{"kind":"Name","value":"filters"},"value":{"kind":"ObjectValue","fields":[{"kind":"ObjectField","name":{"kind":"Name","value":"is_pro"},"value":{"kind":"BooleanValue","value":true}}]}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hasMore"}},{"kind":"Field","name":{"kind":"Name","value":"total"}},{"kind":"Field","name":{"kind":"Name","value":"items"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"username"}},{"kind":"Field","name":{"kind":"Name","value":"email"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"is_pro"}},{"kind":"Field","name":{"kind":"Name","value":"pro_expires_at"}},{"kind":"Field","name":{"kind":"Name","value":"iap_platform"}},{"kind":"Field","name":{"kind":"Name","value":"iap_product_id"}},{"kind":"Field","name":{"kind":"Name","value":"iap_cancellation_at"}},{"kind":"Field","name":{"kind":"Name","value":"iap_billing_issue_at"}},{"kind":"Field","name":{"kind":"Name","value":"iap_paused_until"}},{"kind":"Field","name":{"kind":"Name","value":"revenuecat_user_id"}},{"kind":"Field","name":{"kind":"Name","value":"profile"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"pfp_image"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"storage_path"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<AdminProUsersQuery, AdminProUsersQueryVariables>;
 export const LinkRevenueCatUserDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"linkRevenueCatUser"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"linkRevenueCatUser"}}]}}]} as unknown as DocumentNode<LinkRevenueCatUserMutation, LinkRevenueCatUserMutationVariables>;
 export const UpdateSiteConfigDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"updateSiteConfig"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UpdateSiteConfigInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateSiteConfig"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"maintenance_mode"}},{"kind":"Field","name":{"kind":"Name","value":"trainer_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"community_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"leaderboards_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"rooms_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"battle_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"pro_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"featureOverrides"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"feature"}},{"kind":"Field","name":{"kind":"Name","value":"mode"}},{"kind":"Field","name":{"kind":"Name","value":"users"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"username"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"updated_at"}}]}}]}}]} as unknown as DocumentNode<UpdateSiteConfigMutation, UpdateSiteConfigMutationVariables>;
 export const MergeSessionsDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"mergeSessions"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"oldSessionId"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"newSessionId"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"mergeSessions"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"oldSessionId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"oldSessionId"}}},{"kind":"Argument","name":{"kind":"Name","value":"newSessionId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"newSessionId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SessionFragment"}}]}}]}},...SessionFragmentFragmentDoc.definitions]} as unknown as DocumentNode<MergeSessionsMutation, MergeSessionsMutationVariables>;

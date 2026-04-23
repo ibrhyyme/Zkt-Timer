@@ -894,6 +894,12 @@ type UserAccountForAdmin implements IPublicUserAccount & IUserAccount & IUserAcc
   settings: Setting
   summary: UserAccountSummary
   pushTokens: [PushTokenInfo!]
+  iap_platform: String
+  iap_product_id: String
+  iap_cancellation_at: DateTime
+  iap_billing_issue_at: DateTime
+  iap_paused_until: DateTime
+  revenuecat_user_id: String
 }
 
 interface IUserAccountForAdmin implements IUserAccount & IPublicUserAccount {
@@ -930,6 +936,12 @@ interface IUserAccountForAdmin implements IUserAccount & IPublicUserAccount {
   settings: Setting
   summary: UserAccountSummary
   pushTokens: [PushTokenInfo!]
+  iap_platform: String
+  iap_product_id: String
+  iap_cancellation_at: DateTime
+  iap_billing_issue_at: DateTime
+  iap_paused_until: DateTime
+  revenuecat_user_id: String
 }
 
 type PushTokenInfo {
@@ -970,6 +982,12 @@ type InternalUserAccount implements IPublicUserAccount & IUserAccount & IUserAcc
   settings: Setting
   summary: UserAccountSummary
   pushTokens: [PushTokenInfo!]
+  iap_platform: String
+  iap_product_id: String
+  iap_cancellation_at: DateTime
+  iap_billing_issue_at: DateTime
+  iap_paused_until: DateTime
+  revenuecat_user_id: String
   password: String
 }
 
@@ -1007,6 +1025,12 @@ interface IInternalUserAccount implements IUserAccountForAdmin & IUserAccount & 
   settings: Setting
   summary: UserAccountSummary
   pushTokens: [PushTokenInfo!]
+  iap_platform: String
+  iap_product_id: String
+  iap_cancellation_at: DateTime
+  iap_billing_issue_at: DateTime
+  iap_paused_until: DateTime
+  revenuecat_user_id: String
   password: String
 }
 

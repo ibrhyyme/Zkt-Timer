@@ -1,0 +1,25 @@
+query AdminProUsers($pageArgs: PaginationArgsInput, $search: String) {
+  adminUserSearch(pageArgs: $pageArgs, filters: { is_pro: true }) {
+    hasMore
+    total
+    items {
+      id
+      username
+      email
+      created_at
+      is_pro
+      pro_expires_at
+      iap_platform
+      iap_product_id
+      iap_cancellation_at
+      iap_billing_issue_at
+      iap_paused_until
+      revenuecat_user_id
+      profile {
+        pfp_image {
+          storage_path
+        }
+      }
+    }
+  }
+}
