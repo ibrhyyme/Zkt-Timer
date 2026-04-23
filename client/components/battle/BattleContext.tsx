@@ -43,6 +43,8 @@ export interface BattleState {
 	player2Ready: boolean;
 	player1StartedAt: number | null;
 	player2StartedAt: number | null;
+	// true: herhangi biri basladi, false: ikisi de bitmeden veya yeni round
+	roundStarted: boolean;
 	// L2: Round detail modal
 	selectedRound: number | null;
 }
@@ -90,6 +92,8 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
 			const rounds = [...state.rounds];
 			const round = { ...rounds[state.currentRound] };
 			const previousWinner = round.winner;
+			// Penalty update mi, ilk bitiris mi ayirt et
+			const wasAlreadyBothDone = !!round.player1Solve && !!round.player2Solve;
 
 			if (action.player === 1) {
 				round.player1Solve = action.solve;
@@ -123,6 +127,26 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
 
 			const solveStartKey = action.player === 1 ? 'player1StartedAt' : 'player2StartedAt';
 			const bothDone = !!round.player1Solve && !!round.player2Solve;
+
+			if (bothDone && !wasAlreadyBothDone) {
+				// Ilk kez her ikisi bitti — yeni scramble hemen set et, bayrakları sifirla
+				// (wasAlreadyBothDone: penalty update ise bu daldan gec, sadece skoru guncelle)
+				const nextScramble = getNewScramble(state.settings.cubeType);
+				return {
+					...state,
+					rounds,
+					player1Score,
+					player2Score,
+					winStreak,
+					player1StartedAt: null,
+					player2StartedAt: null,
+					player1Ready: false,
+					player2Ready: false,
+					roundStarted: false,
+					currentScramble: nextScramble,
+				};
+			}
+
 			return {
 				...state,
 				rounds,
@@ -130,7 +154,6 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
 				player2Score,
 				winStreak,
 				[solveStartKey]: null,
-				...(bothDone ? { player1Ready: false, player2Ready: false } : {}),
 			};
 		}
 
@@ -146,6 +169,7 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
 				player2Ready: false,
 				player1StartedAt: null,
 				player2StartedAt: null,
+				roundStarted: false,
 			};
 		}
 
@@ -239,24 +263,25 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
 			const bothDone = !!round.player1Solve && !!round.player2Solve;
 			const startKey = action.player === 1 ? 'player1StartedAt' : 'player2StartedAt';
 			if (bothDone) {
-				// Onceki tur tamamlanmis — yeni tur olustur + bu oyuncunun timer'ini baslat
-				const newScramble = getNewScramble(state.settings.cubeType);
+				// Onceki tur tamamlanmis — yeni tur olustur.
+				// Scramble PLAYER_SOLVE (bothDone)'da zaten uretildi ve currentScramble'a yazildi.
 				return {
 					...state,
-					rounds: [...state.rounds, { scramble: newScramble }],
+					rounds: [...state.rounds, { scramble: state.currentScramble }],
 					currentRound: state.currentRound + 1,
-					currentScramble: newScramble,
 					player1Ready: false,
 					player2Ready: false,
 					player1StartedAt: null,
 					player2StartedAt: null,
+					roundStarted: true,
 					[startKey]: action.startTime,
 				};
 			}
 
-			// Ilk tur veya tamamlanmamis tur — sadece bu oyuncuyu baslat
+			// Tamamlanmamis tur — sadece bu oyuncuyu baslat
 			return {
 				...state,
+				roundStarted: true,
 				[startKey]: action.startTime,
 			};
 		}
@@ -298,6 +323,7 @@ function createInitialState(cubeType: string = '333', scramble?: string): Battle
 		player2Ready: false,
 		player1StartedAt: null,
 		player2StartedAt: null,
+		roundStarted: false,
 		selectedRound: null,
 	};
 }
