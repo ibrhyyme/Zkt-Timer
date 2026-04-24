@@ -1,4 +1,5 @@
 @import '../../../../styles/config';
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap');
 
 .#{$namespace}-nav-account-dropdown {
     &__handle {
@@ -26,6 +27,39 @@
             @media (max-width: 1023px) {
                 display: none;
             }
+        }
+    }
+
+    &__pro-item {
+        background: #0e0c1c !important;
+        border: 1px solid rgba(139, 120, 255, 0.35) !important;
+        box-shadow: 0 0 0 1px rgba(139, 120, 255, 0.12), 0 0 18px rgba(91, 62, 240, 0.2) !important;
+        color: #c4b5ff !important;
+        position: relative !important;
+        overflow: hidden;
+
+        &::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(139, 120, 255, 0.6), transparent);
+        }
+
+        svg {
+            color: #a78bff !important;
+        }
+
+        &:hover {
+            background: #130f24 !important;
+            border-color: rgba(139, 120, 255, 0.55) !important;
+            color: #d4c4ff !important;
+        }
+
+        &--active {
+            color: #a78bff !important;
         }
     }
 

@@ -1,15 +1,16 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import './ProPage.scss';
 import {useTranslation} from 'react-i18next';
 import {
 	Crown, Check, CaretDown, Info, Ticket, CheckCircle, Sparkle, Warning,
 	CloudArrowUp, ChartBar, Lightning, FilePdf, PaintBrush, FrameCorners,
 	MusicNote, Users, Medal, Sliders, ShareNetwork, Rocket, Brain, BookOpen, Crosshair,
+	ArrowRight,
 } from 'phosphor-react';
+import CountUp from '../stats/common/count_up/CountUp';
 import {useDispatch} from 'react-redux';
 import {gql, useQuery} from '@apollo/client';
 import block from '../../styles/bem';
-import ElectricBorder from '../common/electric_border/ElectricBorder';
 import {gqlMutate} from '../api';
 import {openModal} from '../../actions/general';
 import {getMe} from '../../actions/account';
@@ -21,6 +22,9 @@ import FeatureGuard from '../common/page_disabled/FeatureGuard';
 import {isNative, isAndroidNative} from '../../util/platform';
 import {getOfferings, purchasePackage, restorePurchases, showManageSubscriptions} from '../../lib/iap';
 import {GetIapStatusDocument, GetIapStatusQuery} from '../../@types/generated/graphql';
+import {useGeneral} from '../../util/hooks/useGeneral';
+import MobileNav from '../layout/nav/mobile_nav/MobileNav';
+import AccountDropdown from '../layout/nav/account_dropdown/AccountDropdown';
 
 const b = block('pro-page');
 
@@ -31,15 +35,44 @@ interface Plan {
 	priceKey: string;
 	detailKey: string;
 	trialKey: string;
+	sublabelKey: string;
+	cycleLabelKey: string;
 	hasTrial: boolean;
 	popular?: boolean;
 	bestValue?: boolean;
 }
 
+// Yearly first — matches design order. planIndex used for sliding thumb.
 const PLANS: Plan[] = [
-	{id: 'monthly', priceKey: 'pro_page.plan.monthly_price', detailKey: 'pro_page.plan.monthly_detail', trialKey: 'pro_page.plan.trial', hasTrial: true},
-	{id: 'yearly', priceKey: 'pro_page.plan.yearly_price', detailKey: 'pro_page.plan.yearly_detail', trialKey: 'pro_page.plan.trial', hasTrial: true, popular: true},
-	{id: 'lifetime', priceKey: 'pro_page.plan.lifetime_price', detailKey: 'pro_page.plan.lifetime_detail', trialKey: 'pro_page.plan.no_trial', hasTrial: false, bestValue: true},
+	{
+		id: 'yearly',
+		priceKey: 'pro_page.plan.yearly_price',
+		detailKey: 'pro_page.plan.yearly_detail',
+		trialKey: 'pro_page.plan.trial',
+		sublabelKey: 'pro_page.plan.yearly_sublabel',
+		cycleLabelKey: 'pro_page.plan.yearly_cycle',
+		hasTrial: true,
+		popular: true,
+	},
+	{
+		id: 'monthly',
+		priceKey: 'pro_page.plan.monthly_price',
+		detailKey: 'pro_page.plan.monthly_detail',
+		trialKey: 'pro_page.plan.trial',
+		sublabelKey: 'pro_page.plan.monthly_sublabel',
+		cycleLabelKey: 'pro_page.plan.monthly_cycle',
+		hasTrial: true,
+	},
+	{
+		id: 'lifetime',
+		priceKey: 'pro_page.plan.lifetime_price',
+		detailKey: 'pro_page.plan.lifetime_detail',
+		trialKey: 'pro_page.plan.no_trial',
+		sublabelKey: 'pro_page.plan.lifetime_sublabel',
+		cycleLabelKey: 'pro_page.plan.lifetime_cycle',
+		hasTrial: false,
+		bestValue: true,
+	},
 ];
 
 const PRO_FEATURES = [
@@ -76,20 +109,34 @@ const FEATURE_ICONS: Record<string, React.ElementType> = {
 	cross_trainer: Crosshair,
 };
 
+const TESTIMONIALS = [
+	{initials: 'EA', name: 'Efe A.', colorA: '#ff7ab6', colorB: '#8b78ff', quoteKey: 'pro_page.testimonials.t1'},
+	{initials: 'MK', name: 'Melis K.', colorA: '#6ee7b7', colorB: '#6366f1', quoteKey: 'pro_page.testimonials.t2'},
+	{initials: 'KS', name: 'Kaan S.', colorA: '#b5ff5a', colorB: '#06b6d4', quoteKey: 'pro_page.testimonials.t3'},
+	{initials: 'SD', name: 'Selin D.', colorA: '#ffd166', colorB: '#ff7ab6', quoteKey: 'pro_page.testimonials.t4'},
+	{initials: 'ÖY', name: 'Ömer Y.', colorA: '#8b78ff', colorB: '#3ef0a0', quoteKey: 'pro_page.testimonials.t5'},
+	{initials: 'AN', name: 'Ayşegül N.', colorA: '#ff7ab6', colorB: '#ffd166', quoteKey: 'pro_page.testimonials.t6'},
+];
+
+
 function FeatureRow({featureKey, upcoming}: {featureKey: string; upcoming?: boolean}) {
 	const [open, setOpen] = useState(false);
 	const {t} = useTranslation();
+	const Icon = FEATURE_ICONS[featureKey];
 
 	return (
-		<li className={b('feature', {open})}>
+		<li className={b('feature', {open, upcoming})}>
 			<button type="button" className={b('feature-row')} onClick={() => setOpen(!open)}>
-				{(() => {
-					const Icon = FEATURE_ICONS[featureKey];
-					return Icon
-						? <Icon weight="fill" className={b('feature-check', {upcoming})} />
-						: <Check weight="bold" className={b('feature-check', {upcoming})} />;
-				})()}
-				<span className={b('feature-label')}>{t(`pro_page.features.${featureKey}.title`)}</span>
+				<span className={b('feat-icon', {soon: !!upcoming})}>
+					{Icon
+						? <Icon weight="fill" />
+						: <Check weight="bold" />
+					}
+				</span>
+				<span className={b('feature-label')}>
+					{t(`pro_page.features.${featureKey}.title`)}
+					{upcoming && <span className={b('feat-soon')}>Yakında</span>}
+				</span>
 				<CaretDown weight="bold" className={b('feature-caret')} />
 			</button>
 			{open && (
@@ -123,13 +170,13 @@ function ProPageContent() {
 	const me = useMe();
 	const userIsPro = isPro(me);
 	const native = isNative();
+	const mobileMode = useGeneral('mobile_mode');
 	const [selectedPlan, setSelectedPlan] = useState<PlanId>('yearly');
 	const [promoCode, setPromoCode] = useState('');
 	const [redeeming, setRedeeming] = useState(false);
 	const [purchasing, setPurchasing] = useState(false);
 	const [restoring, setRestoring] = useState(false);
 	const [offerings, setOfferings] = useState<IapOfferings>({});
-
 
 	const {data: iapData, refetch: refetchIap} = useQuery<GetIapStatusQuery>(GetIapStatusDocument, {
 		fetchPolicy: 'cache-and-network',
@@ -150,15 +197,15 @@ function ProPageContent() {
 		: null;
 
 	const activePlan = PLANS.find((p) => p.id === selectedPlan)!;
+	// Index in PLANS array — used for sliding thumb transform
+	const planIndex = PLANS.findIndex((p) => p.id === selectedPlan);
 
-	// Native platformda offerings yukle
-	useEffect(() => {
+	React.useEffect(() => {
 		if (!native) return;
 		getOfferings().then(setOfferings).catch(() => {});
 	}, [native]);
 
-	// Aktif Pro aboneliği olan kullanıcının seçili planı mevcut planı olsun
-	useEffect(() => {
+	React.useEffect(() => {
 		if (!isIapPro || !currentIapProductId) return;
 		if (currentIapProductId.endsWith('monthly')) setSelectedPlan('monthly');
 		else if (currentIapProductId.endsWith('yearly')) setSelectedPlan('yearly');
@@ -202,16 +249,12 @@ function ProPageContent() {
 		return null;
 	}
 
-	// Secili plan kullanicinin mevcut plani mi?
 	const isCurrentPlan = isIapPro && currentPlanId() === selectedPlan;
 	const hasActiveSubscription = isIapPro && currentPlanId() !== null && currentPlanId() !== 'lifetime';
-	// Lifetime x aktif abonelik catismasi: aktif aboneligi olan kullanici lifetime alamaz
 	const lifetimeBlocked = selectedPlan === 'lifetime' && hasActiveSubscription;
-	// Cross-platform: abonelik baska platformdan alinmissa bu platformdan satin alinamaz
 	const subscriptionPlatform = iapStatus?.iap_platform;
 	const currentNativePlatform = native ? (isAndroidNative() ? 'android' : 'ios') : null;
 	const isCrossPlatform = native && isIapPro && !!subscriptionPlatform && subscriptionPlatform !== currentNativePlatform;
-	// Lifetime sahibi aylik/yillik alamaz; yillik abone ayliga dusamaz
 	const isLifetimeOwner = isIapPro && currentPlanId() === 'lifetime';
 	const ownedLifetimeBlocked = isLifetimeOwner && selectedPlan !== 'lifetime';
 	const downgradeBlocked = isIapPro && currentPlanId() === 'yearly' && selectedPlan === 'monthly';
@@ -222,26 +265,41 @@ function ProPageContent() {
 		const planId = currentPlanId();
 		return (
 			<div className={b('subscribed-via')}>
-				<h2 className={b('subscribed-via-title')}>
-					{t('pro_page.subscribed_via_title', {platform: platformLabel})}
-				</h2>
-				{planId && (
-					<p className={b('subscribed-via-plan')}>
-						{t(`pro_page.plan.${planId}_label`)}
-						{expiryLabel && planId !== 'lifetime' && (
-							<>
-								{' • '}
-								{t('pro_page.pro_expires', {date: expiryLabel})}
-							</>
-						)}
-					</p>
+				{mobileMode && (
+					<div className={b('mobile-header')}>
+						<MobileNav />
+						<AccountDropdown />
+					</div>
 				)}
-				<p className={b('subscribed-via-subtitle')}>
-					{t('pro_page.subscribed_via_subtitle', {platform: platformLabel})}
-				</p>
-				<a href="/" className={b('subscribed-via-btn')}>
-					{t('pro_page.subscribed_via_home')}
-				</a>
+				<div className={b('subscribed-via-card')}>
+					<div className={b('subscribed-via-icon')}>
+						<Crown weight="fill" size={32} />
+					</div>
+					<span className={b('eyebrow')}>
+						<span className={b('eyebrow-dot')} />
+						PRO
+					</span>
+					<h2 className={b('subscribed-via-title')}>
+						{t('pro_page.subscribed_via_title', {platform: platformLabel})}
+					</h2>
+					{planId && (
+						<div className={b('subscribed-via-plan-badge')}>
+							<span>{t(`pro_page.plan.${planId}_label`)}</span>
+							{expiryLabel && planId !== 'lifetime' && (
+								<span className={b('subscribed-via-expiry')}>
+									{t('pro_page.pro_expires', {date: expiryLabel})}
+								</span>
+							)}
+						</div>
+					)}
+					<p className={b('subscribed-via-subtitle')}>
+						{t('pro_page.subscribed_via_subtitle', {platform: platformLabel})}
+					</p>
+					<a href="/" className={b('subscribed-via-btn')}>
+						{t('pro_page.subscribed_via_home')}
+						<ArrowRight weight="bold" />
+					</a>
+				</div>
 			</div>
 		);
 	}
@@ -278,18 +336,15 @@ function ProPageContent() {
 
 		setPurchasing(true);
 		try {
-			// Upgrade/downgrade Android icin eski product id + isUpgrade belirle
 			const oldProductId = currentIapProductId || undefined;
 			const monthlyPkg = offerings.monthly?.product?.price || 0;
 			const yearlyPkg = offerings.yearly?.product?.price || 0;
 			const yearlyMonthly = yearlyPkg / 12;
-			// Upgrade: monthly -> yearly, monthly -> lifetime, yearly -> lifetime
-			// Downgrade: yearly -> monthly
 			let isUpgrade = true;
 			if (currentIapProductId?.endsWith('yearly') && selectedPlan === 'monthly') {
 				isUpgrade = false;
 			} else if (currentIapProductId?.endsWith('monthly') && selectedPlan === 'yearly') {
-				isUpgrade = yearlyMonthly > monthlyPkg ? false : true; // yillik aylik basina daha ucuz olmali
+				isUpgrade = yearlyMonthly > monthlyPkg ? false : true;
 			}
 
 			await purchasePackage(selectedPackage, oldProductId, isUpgrade);
@@ -300,7 +355,7 @@ function ProPageContent() {
 			const code = err?.code || '';
 			const msg = String(err?.message || '').toLowerCase();
 			if (code === 'PURCHASE_CANCELLED' || msg.includes('cancel')) {
-				// Kullanici iptal etti, sessizce gec
+				// kullanici iptal etti
 			} else {
 				console.error('[IAP] purchase hatasi', err);
 				toastError(t('pro_page.iap.purchase_error'));
@@ -348,84 +403,129 @@ function ProPageContent() {
 		return t('pro_page.iap.purchase_cta');
 	}
 
+	const totalFeatures = PRO_FEATURES.length + UPCOMING_FEATURES.length;
+
 	return (
 		<div className={b()}>
-			<div className={b('container')}>
-				<ElectricBorder
-					color="#7c3aed"
-					speed={0.6}
-					chaos={0.1}
-					borderRadius={20}
-					className={b('electric-wrap')}
-				>
-					<div className={b('card')}>
-						<div className={b('pro-badge')}>
-							<Crown weight="fill" />
-							<span>PRO</span>
-						</div>
+			{mobileMode && (
+				<div className={b('mobile-header')}>
+					<MobileNav />
+					<AccountDropdown />
+				</div>
+			)}
+			{/* ── HERO ─────────────────────────────────────── */}
+			<section className={b('hero')}>
+				<span className={b('eyebrow')}>
+					<span className={b('eyebrow-dot')} />
+					PRO
+				</span>
+				<h1 className={b('hero-title')}>
+					{t('pro_page.hero_title_1')}<br />
+					<em>{t('pro_page.hero_title_em')}</em>
+				</h1>
+				<p className={b('hero-sub')}>{t('pro_page.hero_sub')}</p>
+			</section>
 
-						{/* Sol Sütun — Desktop yatayda, mobile üstte */}
-						<div className={b('card-main')}>
-							<div className={b('card-top')}>
-								<h2 className={b('card-name')}>{t('pro_page.pro_card_title')}</h2>
-								<p className={b('card-desc')}>
-									{userIsPro ? t('pro_page.pro_active_desc') : t('pro_page.pro_desc')}
-								</p>
-								{userIsPro && expiryLabel && (
-									<p className={b('card-expiry')}>{t('pro_page.pro_expires', {date: expiryLabel})}</p>
-								)}
+			{/* ── BILLING PANEL ─────────────────────────────── */}
+			<section className={b('billing-wrap')} id="billing">
+				<div className={b('billing-card')}>
+					<div className={b('billing-grid')}>
+
+						{/* LEFT — plan selection, price, CTA */}
+						<div className={b('billing-left')}>
+							<div className={b('plan-header')}>
+								<span className={b('plan-badge')}>
+									<Crown weight="fill" />
+									PRO
+								</span>
+								<span className={b('plan-badge', {live: true})}>
+									<span className={b('plan-live-dot')} />
+									{t('pro_page.plan_live')}
+								</span>
 							</div>
 
-							<div className={b('segments')} role="tablist">
+							<h2 className={b('plan-title')}>
+								Pro <em>{t('pro_page.plan_title_em')}</em>
+							</h2>
+
+							<p className={b('plan-lede')}>
+								{userIsPro ? t('pro_page.pro_active_desc') : t('pro_page.pro_desc')}
+							</p>
+
+							{userIsPro && expiryLabel && (
+								<p className={b('card-expiry')}>{t('pro_page.pro_expires', {date: expiryLabel})}</p>
+							)}
+
+							{/* Segmented switcher with sliding thumb */}
+							<div className={b('seg')} role="tablist">
+								<div
+									className={b('seg-thumb')}
+									style={{transform: `translateX(${planIndex * 100}%)`}}
+								/>
 								{PLANS.map((plan) => (
 									<button
 										key={plan.id}
 										type="button"
 										role="tab"
-										aria-selected={selectedPlan === plan.id}
-										className={b('segment', {active: selectedPlan === plan.id})}
+										className={b('seg-btn', {active: selectedPlan === plan.id})}
 										onClick={() => setSelectedPlan(plan.id)}
 									>
-										<span className={b('segment-label')}>{t(`pro_page.plan.${plan.id}_label`)}</span>
 										{plan.popular && (
-											<span className={b('segment-badge')}>
-												<Sparkle weight="fill" />
-												{t('pro_page.plan.popular')}
-											</span>
+											<span className={b('seg-badge')}>{t('pro_page.plan.popular')}</span>
 										)}
 										{plan.bestValue && (
-											<span className={b('segment-badge', {bestValue: true})}>
-												<Medal weight="fill" />
-												{t('pro_page.plan.best_value')}
-											</span>
+											<span className={b('seg-badge', {bestValue: true})}>{t('pro_page.plan.best_value')}</span>
 										)}
+										<span className={b('seg-label')}>{t(`pro_page.plan.${plan.id}_label`)}</span>
+										<span className={b('seg-sublabel')}>{t(plan.sublabelKey)}</span>
 									</button>
 								))}
 							</div>
 
+							{/* Price block */}
 							<div className={b('price-block')}>
-								<div className={b('price-amount')}>
-									{dynamicPrice || t(activePlan.priceKey)}
+								<div className={b('price-row')}>
+									{(() => {
+										const rawPriceStr = dynamicPrice || t(activePlan.priceKey);
+										const priceNum = parseFloat(rawPriceStr.replace(/[^0-9.]/g, '')) || 0;
+										const priceDecimals = (rawPriceStr.match(/\.(\d+)/) || [])[1]?.length || 0;
+										const pricePrefix = rawPriceStr.match(/^[^0-9]*/)?.[0] || '';
+										const priceSuffix = rawPriceStr.replace(/^[^0-9]*[0-9.]+/, '') || '';
+										return (
+											<span className={b('price-main')}>
+												{pricePrefix}
+												<CountUp
+													key={selectedPlan + (dynamicPrice || '')}
+													from={0}
+													to={priceNum}
+													duration={0.4}
+													decimals={priceDecimals}
+												/>
+												{priceSuffix}
+											</span>
+										);
+									})()}
+									{activePlan.id !== 'lifetime' && (
+										<span className={b('price-cycle')}>{t(activePlan.cycleLabelKey)}</span>
+									)}
 								</div>
 								<div className={b('price-detail')}>{t(activePlan.detailKey)}</div>
-								<div className={b('price-trial', {muted: !activePlan.hasTrial})}>
-									{activePlan.hasTrial && <Sparkle weight="fill" />}
-									<span>{t(activePlan.trialKey)}</span>
-								</div>
+								{activePlan.hasTrial && (
+									<span className={b('trial-pill')}>
+										<Sparkle weight="fill" />
+										{t(activePlan.trialKey)}
+									</span>
+								)}
 								{!dynamicPrice && (
 									<div className={b('price-region-hint')}>{t('pro_page.plan.region_hint')}</div>
 								)}
 							</div>
 
-							{/* Bildirim bannerlari */}
+							{/* Notice banners */}
 							{iapCancellation && isIapPro && (
 								<div className={b('notice', {warn: true})}>
 									<Warning weight="fill" />
-									<span>
-										{t('pro_page.iap.cancellation_notice', {
-											date: expiryLabel || '',
-										})}
-									</span>
+									<span>{t('pro_page.iap.cancellation_notice', {date: expiryLabel || ''})}</span>
 								</div>
 							)}
 							{iapBillingIssue && isIapPro && (
@@ -448,9 +548,8 @@ function ProPageContent() {
 								</div>
 							)}
 
-							{/* CTA buton tercihi */}
+							{/* CTA area */}
 							{!canPurchase && userIsPro && !isIapPro ? (
-								// Admin/promo ile Pro — satin alma kapali
 								<div className={b('card-active')}>
 									<CheckCircle weight="fill" />
 									<span>{t('pro_page.iap.granted_pro', {date: expiryLabel || ''})}</span>
@@ -467,6 +566,7 @@ function ProPageContent() {
 										disabled={purchasing || lifetimeBlocked || ownedLifetimeBlocked || downgradeBlocked || isCrossPlatform || !selectedPackage}
 										onClick={handlePurchase}
 									>
+										{!purchasing && <ArrowRight weight="bold" />}
 										{purchaseButtonLabel()}
 									</button>
 									{lifetimeBlocked && (
@@ -506,7 +606,7 @@ function ProPageContent() {
 									<button className={b('cta')} disabled>
 										{t('pro_page.mobile_only_cta')}
 									</button>
-									<p className={b('cta-hint')}>
+									<p className={b('fine-note')}>
 										<Info weight="fill" />
 										<span>{t('pro_page.mobile_only_hint')}</span>
 									</p>
@@ -514,54 +614,126 @@ function ProPageContent() {
 							)}
 						</div>
 
-						{/* Sağ Sütun — Desktop yatayda, mobile altta. Tüm feature listesi */}
-						<div className={b('features-summary')}>
-							<span className={b('features-summary-label')}>{t('pro_page.pro_includes')}</span>
-							<ul className={b('features-list')}>
-								<li className={b('feature', {highlight: true})}>
-									<div className={b('feature-row', {static: true})}>
-										<Check weight="bold" className={b('feature-check', {highlight: true})} />
-										<span className={b('feature-label', {highlight: true})}>{t('pro_page.all_basic_included')}</span>
-									</div>
-								</li>
-								{PRO_FEATURES.map((key) => (
-									<FeatureRow key={key} featureKey={key} />
-								))}
-								{UPCOMING_FEATURES.map((key) => (
-									<FeatureRow key={key} featureKey={key} upcoming />
-								))}
-							</ul>
+						{/* RIGHT — feature list */}
+						<div className={b('billing-right')}>
+							<div className={b('features-head')}>
+								<span className={b('features-eyebrow')}>{t('pro_page.features_head_label')}</span>
+								<span className={b('features-count')}>
+									{t('pro_page.features_head_count', {count: totalFeatures})}
+								</span>
+							</div>
 
+							<div className={b('feature-hero-card')}>
+								<div className={b('feature-hero-icon')}>
+									<Check weight="bold" />
+								</div>
+								<div className={b('feature-hero-text')}>
+									<strong>{t('pro_page.all_basic_included')}</strong>
+									<span>{t('pro_page.all_basic_desc')}</span>
+								</div>
+							</div>
+
+							<div className={b('features-list')}>
+								<ul className={b('features-col')}>
+									{PRO_FEATURES.slice(0, 8).map((key) => (
+										<FeatureRow key={key} featureKey={key} />
+									))}
+								</ul>
+								<ul className={b('features-col')}>
+									{PRO_FEATURES.slice(8).map((key) => (
+										<FeatureRow key={key} featureKey={key} />
+									))}
+									{UPCOMING_FEATURES.map((key) => (
+										<FeatureRow key={key} featureKey={key} upcoming />
+									))}
+								</ul>
+							</div>
 						</div>
 					</div>
-				</ElectricBorder>
+				</div>
 
-				{!userIsPro && (
-					<div className={b('basic-hint')}>
-						<span>{t('pro_page.basic_hint')}</span>
-					</div>
-				)}
+			</section>
 
-				<div className={b('promo')}>
-					<Ticket weight="duotone" className={b('promo-icon')} />
-					<h3 className={b('promo-title')}>{t('pro_page.promo.title')}</h3>
-					<p className={b('promo-desc')}>{t('pro_page.promo.desc')}</p>
-					<div className={b('promo-form')}>
-						<input
-							className={b('promo-input')}
-							placeholder={t('pro_page.promo.placeholder')}
-							value={promoCode}
-							onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-							onKeyDown={(e) => e.key === 'Enter' && handleRedeem()}
-						/>
-						<button
-							className={b('promo-btn')}
-							onClick={handleRedeem}
-							disabled={redeeming || !promoCode.trim()}
-						>
-							{redeeming ? '...' : t('pro_page.promo.redeem')}
-						</button>
+			{/* ── STORIES ───────────────────────────────────── */}
+			<section className={b('stories')}>
+				<div className={b('stories-head')}>
+					<span className={b('eyebrow')}>
+						<span className={b('eyebrow-dot')} />
+						{t('pro_page.stories_eyebrow')}
+					</span>
+					<h2 className={b('stories-title')}>
+						{t('pro_page.stories_title_1')} <em>{t('pro_page.stories_title_em')}</em>{t('pro_page.stories_title_2')}
+					</h2>
+					<p className={b('stories-sub')}>{t('pro_page.stories_sub')}</p>
+				</div>
+				<div className={b('stories-grid')}>
+					{TESTIMONIALS.map((testimonial) => (
+						<div key={testimonial.name} className={b('story')}>
+							<p className={b('story-quote')}>{t(testimonial.quoteKey)}</p>
+							<div className={b('story-who')}>
+								<div
+									className={b('story-avatar')}
+									style={{background: `linear-gradient(135deg, ${testimonial.colorA}, ${testimonial.colorB})`}}
+								>
+									{testimonial.initials}
+								</div>
+								<div className={b('story-who-text')}>
+									<div className={b('story-name')}>{testimonial.name}</div>
+								</div>
+							</div>
+						</div>
+					))}
+				</div>
+			</section>
+
+			{/* ── FINALE ────────────────────────────────────── */}
+			<section className={b('finale')}>
+				<div className={b('finale-card')}>
+					<span className={b('eyebrow')}>
+						<span className={b('eyebrow-dot')} />
+						{t('pro_page.finale_eyebrow')}
+					</span>
+					<h2 className={b('finale-title')}>
+						{t('pro_page.finale_title_1')} <em>{t('pro_page.finale_title_em')}</em>{t('pro_page.finale_title_2')}
+					</h2>
+					<p className={b('finale-sub')}>{t('pro_page.finale_sub')}</p>
+					<a href="#billing" className={b('finale-cta')}>
+						{t('pro_page.finale_cta')}
+						<ArrowRight weight="bold" />
+					</a>
+					<div className={b('finale-footnote')}>
+						<span><Check weight="bold" />{t('pro_page.finale_no_card')}</span>
+						<span><Check weight="bold" />{t('pro_page.finale_secure')}</span>
 					</div>
+				</div>
+			</section>
+
+			{/* ── PROMO ─────────────────────────────────────── */}
+			{!userIsPro && (
+				<div className={b('basic-hint')}>
+					<span>{t('pro_page.basic_hint')}</span>
+				</div>
+			)}
+
+			<div className={b('promo')}>
+				<Ticket weight="duotone" className={b('promo-icon')} />
+				<h3 className={b('promo-title')}>{t('pro_page.promo.title')}</h3>
+				<p className={b('promo-desc')}>{t('pro_page.promo.desc')}</p>
+				<div className={b('promo-form')}>
+					<input
+						className={b('promo-input')}
+						placeholder={t('pro_page.promo.placeholder')}
+						value={promoCode}
+						onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+						onKeyDown={(e) => e.key === 'Enter' && handleRedeem()}
+					/>
+					<button
+						className={b('promo-btn')}
+						onClick={handleRedeem}
+						disabled={redeeming || !promoCode.trim()}
+					>
+						{redeeming ? '...' : t('pro_page.promo.redeem')}
+					</button>
 				</div>
 			</div>
 		</div>

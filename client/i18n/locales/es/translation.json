@@ -22,7 +22,9 @@
 		"notification_settings": "Configuración de notificaciones",
 		"admin": "Administración",
 		"logout": "Cerrar sesión"
-	},
+	,
+			"pro_subscription": "Suscripción Pro",
+			"pro_subscription_cta": "✦ Mejorar a Pro"},
 	"login": {
 		"email": "Correo electrónico",
 		"email_placeholder": "Ingresa tu correo electrónico",
@@ -1859,8 +1861,8 @@
 			"monthly_label": "Mensual",
 			"yearly_label": "Anual",
 			"lifetime_label": "Lifetime",
-			"monthly_price": "$1,49 / mes",
-			"yearly_price": "$12,99 / año",
+			"monthly_price": "$1,49",
+			"yearly_price": "$12,99",
 			"lifetime_price": "$29,99",
 			"monthly_detail": "$1,49 al mes, facturación mensual",
 			"yearly_detail": "Unos $1,08/mes · Ahorra 27%",
@@ -1869,7 +1871,13 @@
 			"best_value": "Mejor Valor",
 			"trial": "7 días gratis",
 			"no_trial": "Pago único, sin prueba",
-			"region_hint": "El precio puede variar según tu región"
+			"region_hint": "El precio puede variar según tu región",
+			"yearly_sublabel": "Ahorra 27%",
+			"monthly_sublabel": "Flexible",
+			"lifetime_sublabel": "Un solo pago",
+			"yearly_cycle": "/ año",
+			"monthly_cycle": "/ mes",
+			"lifetime_cycle": ""
 		},
 		"compare": {
 			"title": "Comparación de planes",
@@ -1923,6 +1931,36 @@
 		"subscribed_via_home": "Inicio",
 		"click_hint": "Haz clic para más detalles",
 		"all_basic_included": "Todas las funciones gratuitas incluidas",
+		"all_basic_desc": "Todo lo de Basic, y mucho más.",
+		"plan_live": "Activo",
+		"plan_title_em": "Membresía.",
+		"hero_title_1": "Te hacemos",
+		"hero_title_em": "más rápido.",
+		"hero_sub": "Velocidad, análisis y entrenamiento — todo en una suscripción.",
+		"features_head_label": "Qué incluye",
+		"features_head_count": "{{count}} características",
+		"stories_eyebrow": "DE LOS CUBEROS",
+		"stories_title_1": "Cada segundo",
+		"stories_title_em": "tiene su historia.",
+		"stories_title_2": "",
+		"stories_sub": "El progreso de 90 días de los usuarios Pro, en sus propias palabras.",
+
+		"testimonials": {
+			"t1": "Después de descubrir el entrenamiento de algoritmos con cubo inteligente, corregí mis cases de F2L en tiempo real. Progresé mucho en 3 semanas.",
+			"t2": "El pack de PDF de algoritmos era justo lo que necesitaba. Aprendí OLL y PLL en un fin de semana — sin perder tiempo escribiendo en papel.",
+			"t3": "La sincronización entre dispositivos me permite empezar en el móvil y terminar en la tablet. La función de salas es genial para entrenar con amigos.",
+			"t4": "Con el análisis detallado del cubo inteligente puedo ver exactamente dónde pierdo tiempo, segundo a segundo. Gráficas, mapas de calor — todo está ahí.",
+			"t5": "Me cambié al plan anual porque cuesta lo de un café para todo el año. Pronto me paso a lifetime, pero quería probarlo primero.",
+			"t6": "Entre los 6 temas personalizados, Midnight Violet se ha convertido en mi clásico. Una interfaz tranquila y enfocada que no cansa los ojos en sesiones largas."
+		},
+		"finale_eyebrow": "7 DÍAS DE PRUEBA GRATIS",
+		"finale_title_1": "Tu próximo",
+		"finale_title_em": "PB",
+		"finale_title_2": " te espera.",
+		"finale_sub": "7 días gratis. Cancela con un toque.",
+		"finale_cta": "Mejorar a Pro",
+		"finale_no_card": "Sin tarjeta de crédito",
+		"finale_secure": "Pago cifrado 256-bit",
 		"basic_features": {
 			"timer": {
 				"title": "Temporizador",
