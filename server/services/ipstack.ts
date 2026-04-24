@@ -1,4 +1,3 @@
-import request from 'request';
 import {logger} from './logger';
 
 interface IfConfig {
@@ -14,24 +13,28 @@ interface IfConfig {
 	asn_org: string;
 }
 
-export function getLocationFromIp(ip: string): Promise<IfConfig> {
-	const url = `https://ifconfig.co/json?ip=${ip}`;
+function normalizeIp(ip: string): string {
+	// Strip IPv4-mapped IPv6 prefix (::ffff:1.2.3.4 → 1.2.3.4)
+	if (ip.startsWith('::ffff:')) {
+		return ip.slice(7);
+	}
+	return ip;
+}
 
-	return new Promise((resolve, reject) => {
-		request(url, (error, response, body) => {
-			if (error) {
-				reject(error);
-				return;
-			}
+export async function getLocationFromIp(ip: string): Promise<IfConfig> {
+	const normalized = normalizeIp(ip);
+	const url = `https://ifconfig.co/json?ip=${encodeURIComponent(normalized)}`;
 
-			try {
-				resolve(JSON.parse(body));
-			} catch (e) {
-				logger.error('Could not parse location from IP', {
-					body
-				});
-				reject();
-			}
-		});
+	const response = await fetch(url, {
+		headers: { 'Accept': 'application/json' },
+		signal: AbortSignal.timeout(5000),
 	});
+
+	if (!response.ok) {
+		logger.warn('ifconfig.co returned non-ok status', { ip: normalized, status: response.status });
+		throw new Error(`ifconfig.co status ${response.status}`);
+	}
+
+	const data = await response.json() as IfConfig;
+	return data;
 }
