@@ -8,6 +8,7 @@ import block from '../../styles/bem';
 import ElectricBorder from '../common/electric_border/ElectricBorder';
 import {gqlMutate} from '../api';
 import {openModal} from '../../actions/general';
+import {getMe} from '../../actions/account';
 import {toastError, toastSuccess} from '../../util/toast';
 import PromoSuccessModal from './PromoSuccessModal';
 import {useMe} from '../../util/hooks/useMe';
@@ -269,7 +270,7 @@ function ProPageContent() {
 			await purchasePackage(selectedPackage, oldProductId, isUpgrade);
 			toastSuccess(t('pro_page.iap.purchase_success'));
 			await syncWithServer();
-			setTimeout(() => refetchIap(), 1000);
+			setTimeout(() => { refetchIap(); dispatch(getMe()); }, 1000);
 		} catch (err: any) {
 			const code = err?.code || '';
 			const msg = String(err?.message || '').toLowerCase();
@@ -292,7 +293,7 @@ function ProPageContent() {
 			if (result?.isPro) {
 				toastSuccess(t('pro_page.iap.restore_success'));
 				await syncWithServer();
-				setTimeout(() => refetchIap(), 500);
+				setTimeout(() => { refetchIap(); dispatch(getMe()); }, 500);
 			} else {
 				toastError(t('pro_page.iap.restore_empty'));
 			}
