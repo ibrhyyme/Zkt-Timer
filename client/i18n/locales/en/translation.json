@@ -22,7 +22,9 @@
 		"notification_settings": "Notification Settings",
 		"admin": "Admin",
 		"logout": "Log Out"
-	},
+	,
+			"pro_subscription": "Pro Subscription",
+			"pro_subscription_cta": "✦ Upgrade to Pro"},
 	"login": {
 		"email": "Email",
 		"email_placeholder": "Enter your email",
@@ -1859,8 +1861,8 @@
 			"monthly_label": "Monthly",
 			"yearly_label": "Yearly",
 			"lifetime_label": "Lifetime",
-			"monthly_price": "$1.49 / mo",
-			"yearly_price": "$12.99 / yr",
+			"monthly_price": "$1.49",
+			"yearly_price": "$12.99",
 			"lifetime_price": "$29.99",
 			"monthly_detail": "$1.49 per month, billed monthly",
 			"yearly_detail": "About $1.08/month · Save 27%",
@@ -1869,7 +1871,13 @@
 			"best_value": "Best Value",
 			"trial": "7-day free trial",
 			"no_trial": "One-time, no trial",
-			"region_hint": "Price may vary based on your region"
+			"region_hint": "Price may vary based on your region",
+			"yearly_sublabel": "Save 27%",
+			"monthly_sublabel": "Flexible",
+			"lifetime_sublabel": "One-time",
+			"yearly_cycle": "/ year",
+			"monthly_cycle": "/ month",
+			"lifetime_cycle": ""
 		},
 		"compare": {
 			"title": "Plan Comparison",
@@ -1923,6 +1931,36 @@
 		"subscribed_via_home": "Home",
 		"click_hint": "Click for details",
 		"all_basic_included": "All free features included",
+		"all_basic_desc": "Everything in Basic, plus so much more.",
+		"plan_live": "Live",
+		"plan_title_em": "Membership.",
+		"hero_title_1": "We make you",
+		"hero_title_em": "faster.",
+		"hero_sub": "Speed, analysis, and training — all in one subscription.",
+		"features_head_label": "What's included",
+		"features_head_count": "{{count}} features",
+		"stories_eyebrow": "FROM CUBERS",
+		"stories_title_1": "Every second",
+		"stories_title_em": "has a story.",
+		"stories_title_2": "",
+		"stories_sub": "90-day progress of Pro users, in their own words.",
+
+		"testimonials": {
+			"t1": "After discovering the smart cube algorithm training feature, I corrected my F2L cases in real time. Made serious progress in 3 weeks.",
+			"t2": "The PDF algorithm pack was exactly what I needed. Learned OLL and PLL in one weekend — no more scribbling on paper.",
+			"t3": "Cross-device sync lets me start on my phone and finish on my tablet. The rooms feature is great for training with friends.",
+			"t4": "With detailed smart cube analysis I can see exactly where I lose time, second by second. Charts, heat maps — everything is there.",
+			"t5": "Switched to yearly because it's the price of a coffee for a whole year. Might go lifetime soon but wanted to try it first.",
+			"t6": "Among the 6 custom themes, Midnight Violet has become a classic for me. A calm, focused interface that doesn't tire my eyes on long sessions."
+		},
+		"finale_eyebrow": "7-DAY FREE TRIAL",
+		"finale_title_1": "Your next",
+		"finale_title_em": "PB",
+		"finale_title_2": " is waiting.",
+		"finale_sub": "First 7 days free. Cancel with one tap if you're not satisfied.",
+		"finale_cta": "Upgrade to Pro",
+		"finale_no_card": "No credit card needed",
+		"finale_secure": "256-bit secure payment",
 		"basic_features": {
 			"timer": {
 				"title": "Timer",

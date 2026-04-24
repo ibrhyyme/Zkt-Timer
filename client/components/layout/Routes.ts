@@ -146,8 +146,8 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/user/:username', null, App, Profile, false, false, false, false, false, [prefetchProfileData]),
 	route('/unsub-emails', null, App, UnsubEmails, false, true, false, true, false),
 
-	// Pro
-	route('/account/pro', App, Account, ProPage),
+	// Pro — standalone page (not nested under Account)
+	route('/pro', null, App, ProPage),
 
 	// Trainer
 	route('/trainer', null, App, Trainer, false),
@@ -209,7 +209,7 @@ export const routes: (PageContext | RedirectPath)[] = [
 	// Redirects
 	routeRedirect('/settings', '/settings/timer'),
 	routeRedirect('/account', '/account/personal-info'),
-	routeRedirect('/pro', '/account/pro'),
+	routeRedirect('/account/pro', '/pro'),
 	routeRedirect('/account/password', '/account/personal-info'),
 	routeRedirect('/community/friends', '/community/competitions'),
 	routeRedirect('/community', '/community/competitions'),

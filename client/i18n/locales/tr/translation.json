@@ -22,7 +22,9 @@
 		"notification_settings": "Bildirim Ayarları",
 		"admin": "Yönetici",
 		"logout": "Çıkış Yap"
-	},
+	,
+			"pro_subscription": "Pro Abonelik",
+			"pro_subscription_cta": "✦ Pro'ya Geç"},
 	"login": {
 		"email": "E-posta",
 		"email_placeholder": "E-postanı gir",
@@ -1859,8 +1861,8 @@
 			"monthly_label": "Aylık",
 			"yearly_label": "Yıllık",
 			"lifetime_label": "Lifetime",
-			"monthly_price": "49 ₺ / ay",
-			"yearly_price": "399 ₺ / yıl",
+			"monthly_price": "49 ₺",
+			"yearly_price": "399 ₺",
 			"lifetime_price": "999 ₺",
 			"monthly_detail": "Ayda 49 ₺, her ay yenilenir",
 			"yearly_detail": "Ayda yaklaşık 33 ₺ · %33 tasarruf",
@@ -1869,7 +1871,13 @@
 			"best_value": "En İyi Değer",
 			"trial": "İlk 7 gün ücretsiz",
 			"no_trial": "Tek seferlik, deneme yok",
-			"region_hint": "Fiyat bulunduğun ülkeye göre değişebilir"
+			"region_hint": "Fiyat bulunduğun ülkeye göre değişebilir",
+			"yearly_sublabel": "%33 tasarruf",
+			"monthly_sublabel": "Esnek",
+			"lifetime_sublabel": "Tek ödeme",
+			"yearly_cycle": "/ yıl",
+			"monthly_cycle": "/ ay",
+			"lifetime_cycle": ""
 		},
 		"compare": {
 			"title": "Plan Karşılaştırması",
@@ -1923,6 +1931,36 @@
 		"subscribed_via_home": "Ana Sayfa",
 		"click_hint": "Detaylar için tıkla",
 		"all_basic_included": "Tüm ücretsiz özellikler dahil",
+		"all_basic_desc": "Basic planda ne varsa, üstüne her şey.",
+		"plan_live": "Canlı",
+		"plan_title_em": "Üyelik.",
+		"hero_title_1": "Seni daha",
+		"hero_title_em": "hızlı yapar.",
+		"hero_sub": "Hız, analiz ve antrenman — hepsi tek bir abonelikte.",
+		"features_head_label": "Pro ile gelenler",
+		"features_head_count": "{{count}} özellik",
+		"stories_eyebrow": "CUBER'LARDAN",
+		"stories_title_1": "Her saniyenin",
+		"stories_title_em": "bir hikâyesi",
+		"stories_title_2": " var.",
+		"stories_sub": "Pro kullanıcıların 90 günlük ilerleyişi, kendi cümleleriyle.",
+
+		"testimonials": {
+			"t1": "Akıllı küp algoritma çalış özelliğini keşfettikten sonra F2L case'lerimi gerçek zamanlı düzelttim. 3 haftada ciddi ilerleme kaydettim.",
+			"t2": "PDF algoritma paketi tam aradığım şeydi. OLL ve PLL'i bir hafta sonunda öğrendim, kağıda yazmakla vakit kaybetmedim.",
+			"t3": "Cihazlar arası senkronizasyon sayesinde telefondan başlayıp tablette bitiriyorum. Odalar özelliğiyle arkadaşlarımla da çalışıyoruz.",
+			"t4": "Detaylı akıllı küp analizi ile hangi çevirimimde kaybettiğimi saniye saniye görüyorum. Grafikler, ısı haritaları — her şey hazır.",
+			"t5": "Yıllık aboneliğe geçtim çünkü bir kahve fiyatına bütün yıl. Lifetime'a da geçerim ama önce biraz daha kullanmak istedim.",
+			"t6": "6 özel tema arasında Midnight Violet bir klasik oldu benim için. Sessiz, odaklı bir arayüz — uzun seanslarda gözümü yormuyor."
+		},
+		"finale_eyebrow": "7 GÜN ÜCRETSİZ DENEME",
+		"finale_title_1": "Bir sonraki",
+		"finale_title_em": "PB",
+		"finale_title_2": " seni bekliyor.",
+		"finale_sub": "İlk 7 gün ücretsiz. Beğenmezsen tek tık ile iptal.",
+		"finale_cta": "Pro'ya yükselt",
+		"finale_no_card": "Kredi kartı gerekmez",
+		"finale_secure": "256-bit şifreli ödeme",
 		"basic_features": {
 			"timer": {
 				"title": "Zamanlayıcı",
