@@ -297,9 +297,9 @@ export async function createUserAccount(
 		const location = await getLocationFromIp(ip);
 		country = location.country_iso || 'NONE';
 	} catch (e) {
-		logger.error('Could not get location for IP', {
+		logger.warn('Could not get location for IP', {
 			ip,
-			error: e,
+			error: e instanceof Error ? e.message : String(e),
 		});
 	}
 
