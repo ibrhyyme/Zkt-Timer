@@ -38,6 +38,7 @@ import { isNative } from '../../util/platform';
 import Connect from '../timer/smart_cube/bluetooth/connect';
 import { preflightChecks } from '../timer/smart_cube/preflight';
 import { processSmartTurns, SmartTurn, isTwo, rawTurnIsSame, reverseScramble } from '../../util/smart_scramble';
+import { cubeTimestampLinearFit, TimestampedMove } from '../../util/smart_cube_timing';
 import Cube from 'cubejs';
 import NotificationLog, { NotificationItem } from './NotificationLog';
 import AbortSolveOverlay from '../timer/smart_cube/abort_solve/AbortSolveOverlay';
@@ -445,9 +446,18 @@ export default function FriendlyRoom() {
         // If timer is running and cube is solved
         if (smartTiming && isSolved && smartTimerStartedAt) {
             setSmartTiming(false);
-            const timeMs = (reduxSmartPhysicallySolved && reduxLastSmartMoveTime)
-                ? reduxLastSmartMoveTime - smartTimerStartedAt
-                : Date.now() - smartTimerStartedAt;
+
+            // Linear fit ile Bluetooth gecikmesini düzelt (normal timer ile aynı yöntem)
+            const solutionTurns = smartTurns.slice(scrambleTurnCountRef.current);
+            const { finalTimeMs } = cubeTimestampLinearFit(solutionTurns as unknown as TimestampedMove[], smartTimerStartedAt);
+            let timeMs = Math.round(finalTimeMs);
+            // Fallback: linear fit geçersizse ham timestamp farkını kullan
+            if (timeMs <= 0) {
+                timeMs = (reduxSmartPhysicallySolved && reduxLastSmartMoveTime)
+                    ? reduxLastSmartMoveTime - smartTimerStartedAt
+                    : Date.now() - smartTimerStartedAt;
+            }
+
             setSmartTimerStartedAt(null);
             if (smartTimerIntervalRef.current) clearInterval(smartTimerIntervalRef.current);
 
@@ -455,7 +465,6 @@ export default function FriendlyRoom() {
             setSmartFinalTime(timeMs);
 
             // Calculate stats
-            const solutionTurns = smartTurns.slice(scrambleTurnCountRef.current);
             const turnCount = solutionTurns.length;
             const timeInSeconds = timeMs / 1000;
             const tps = timeInSeconds > 0 ? Number((turnCount / timeInSeconds).toFixed(2)) : 0;
