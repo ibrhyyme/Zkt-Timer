@@ -1,5 +1,4 @@
-import {Response} from 'express';
-import {Request} from 'express-serve-static-core';
+import {Request, Response} from 'express';
 import {getMe} from '../util/auth';
 import {getPrisma} from '../database';
 import {logger} from '../services/logger';
@@ -16,7 +15,7 @@ import {applyIapPurchase, IapPlatform} from '../models/iap';
  * Revokasyon sadece webhook uzerinden yapilir.
  */
 export async function iapSyncHandler(req: Request, res: Response): Promise<void> {
-	const me = await getMe(req);
+	const me = await getMe(req as any);
 	if (!me) {
 		res.status(401).json({error: 'unauthorized'});
 		return;
