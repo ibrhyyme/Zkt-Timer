@@ -220,6 +220,11 @@ $pro-violet-dim: rgba(124, 58, 237, 0.12);
 		svg {
 			display: none;
 		}
+
+		&--best-value {
+			background: linear-gradient(135deg, #6366f1, #8b5cf6);
+			box-shadow: 0 2px 6px rgba(139, 92, 246, 0.35);
+		}
 	}
 
 	// ─── Price Block ────────────────────────────────────

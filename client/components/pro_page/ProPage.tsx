@@ -1,7 +1,11 @@
 import React, {useEffect, useState} from 'react';
 import './ProPage.scss';
 import {useTranslation} from 'react-i18next';
-import {Crown, Check, CaretDown, Info, Ticket, CheckCircle, Sparkle, Warning} from 'phosphor-react';
+import {
+	Crown, Check, CaretDown, Info, Ticket, CheckCircle, Sparkle, Warning,
+	CloudArrowUp, ChartBar, Lightning, FilePdf, PaintBrush, FrameCorners,
+	MusicNote, Users, Medal, Sliders, ShareNetwork, Rocket, Brain, BookOpen, Crosshair,
+} from 'phosphor-react';
 import {useDispatch} from 'react-redux';
 import {gql, useQuery} from '@apollo/client';
 import block from '../../styles/bem';
@@ -29,12 +33,13 @@ interface Plan {
 	trialKey: string;
 	hasTrial: boolean;
 	popular?: boolean;
+	bestValue?: boolean;
 }
 
 const PLANS: Plan[] = [
 	{id: 'monthly', priceKey: 'pro_page.plan.monthly_price', detailKey: 'pro_page.plan.monthly_detail', trialKey: 'pro_page.plan.trial', hasTrial: true},
 	{id: 'yearly', priceKey: 'pro_page.plan.yearly_price', detailKey: 'pro_page.plan.yearly_detail', trialKey: 'pro_page.plan.trial', hasTrial: true, popular: true},
-	{id: 'lifetime', priceKey: 'pro_page.plan.lifetime_price', detailKey: 'pro_page.plan.lifetime_detail', trialKey: 'pro_page.plan.no_trial', hasTrial: false},
+	{id: 'lifetime', priceKey: 'pro_page.plan.lifetime_price', detailKey: 'pro_page.plan.lifetime_detail', trialKey: 'pro_page.plan.no_trial', hasTrial: false, bestValue: true},
 ];
 
 const PRO_FEATURES = [
@@ -53,6 +58,24 @@ const PRO_FEATURES = [
 
 const UPCOMING_FEATURES = ['early_access', 'ai_analysis', 'pll_trainer', 'cross_trainer'] as const;
 
+const FEATURE_ICONS: Record<string, React.ElementType> = {
+	sync: CloudArrowUp,
+	smart_cube_analysis: ChartBar,
+	trainer_smart_cube: Lightning,
+	trainer_pdf: FilePdf,
+	themes: PaintBrush,
+	timer_background: FrameCorners,
+	room_music: MusicNote,
+	room_smart_cube: Users,
+	pro_badge: Medal,
+	stats_customization: Sliders,
+	solve_sharing: ShareNetwork,
+	early_access: Rocket,
+	ai_analysis: Brain,
+	pll_trainer: BookOpen,
+	cross_trainer: Crosshair,
+};
+
 function FeatureRow({featureKey, upcoming}: {featureKey: string; upcoming?: boolean}) {
 	const [open, setOpen] = useState(false);
 	const {t} = useTranslation();
@@ -60,10 +83,12 @@ function FeatureRow({featureKey, upcoming}: {featureKey: string; upcoming?: bool
 	return (
 		<li className={b('feature', {open})}>
 			<button type="button" className={b('feature-row')} onClick={() => setOpen(!open)}>
-				{upcoming
-					? <Sparkle weight="fill" className={b('feature-check', {upcoming: true})} />
-					: <Check weight="bold" className={b('feature-check')} />
-				}
+				{(() => {
+					const Icon = FEATURE_ICONS[featureKey];
+					return Icon
+						? <Icon weight="fill" className={b('feature-check', {upcoming})} />
+						: <Check weight="bold" className={b('feature-check', {upcoming})} />;
+				})()}
 				<span className={b('feature-label')}>{t(`pro_page.features.${featureKey}.title`)}</span>
 				<CaretDown weight="bold" className={b('feature-caret')} />
 			</button>
@@ -366,6 +391,12 @@ function ProPageContent() {
 											<span className={b('segment-badge')}>
 												<Sparkle weight="fill" />
 												{t('pro_page.plan.popular')}
+											</span>
+										)}
+										{plan.bestValue && (
+											<span className={b('segment-badge', {bestValue: true})}>
+												<Medal weight="fill" />
+												{t('pro_page.plan.best_value')}
 											</span>
 										)}
 									</button>
