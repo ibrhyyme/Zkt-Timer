@@ -23,7 +23,7 @@ export function useCompetitionData(): CompetitionData {
 
 // Module-level cache - component unmount olsa bile veri korunur
 // SWR pattern: stale veriyi hemen goster, arka planda yenile
-const FRESH_TTL = 60 * 60 * 1000; // 1 saat — fresh
+const FRESH_TTL = 0; // her zaman background refetch (stale veriyi aninda goster)
 const STALE_TTL = 24 * 60 * 60 * 1000; // 24 saat — stale-but-show
 const detailCache = new Map<string, {data: any; ts: number}>();
 
@@ -121,6 +121,26 @@ export default function CompetitionLoader({competitionId, children}: Competition
 		return () => {
 			cancelled = true;
 		};
+	}, [competitionId]);
+
+	// Kullanici uygulamaya geri dondugunde (arka plandan one alma) sessizce yenile
+	useEffect(() => {
+		const handleVisibility = () => {
+			if (document.visibilityState !== 'visible') return;
+			const cached = getCached(competitionId);
+			if (!cached) return;
+			gqlQueryTyped(WcaCompetitionDetailDocument, {input: {competitionId}}, {fetchPolicy: 'no-cache'})
+				.then((res) => {
+					const data = res.data?.wcaCompetitionDetail;
+					if (data) {
+						detailCache.set(competitionId, {data, ts: Date.now()});
+						setDetail(data);
+					}
+				})
+				.catch(() => {});
+		};
+		document.addEventListener('visibilitychange', handleVisibility);
+		return () => document.removeEventListener('visibilitychange', handleVisibility);
 	}, [competitionId]);
 
 	if (loading) {

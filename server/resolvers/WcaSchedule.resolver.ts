@@ -28,7 +28,7 @@ function getErrorType(err: any): string {
 	return 'unknown';
 }
 
-const WCIF_CACHE_TTL = 60 * 60; // 1 saat — WCIF nadir degisir
+const WCIF_CACHE_TTL = 60; // 60 saniye — canli yarismada atamalar guncellenir
 const WCA_LIVE_ROUND_TTL = 60;
 const WCA_LIVE_OVERVIEW_TTL = 60;
 const WCA_LIVE_COMPETITOR_TTL = 60;
