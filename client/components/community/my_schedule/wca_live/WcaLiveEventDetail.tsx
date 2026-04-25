@@ -14,14 +14,11 @@ interface Props {
 	isMobile: boolean;
 }
 
-const PAGE_SIZE = 50;
-
 export default function WcaLiveEventDetail({event, competitionId, roundNumber, isMobile}: Props) {
 	const {t} = useTranslation();
 	const history = useHistory();
 	const {detail} = useCompetitionData();
 	const [modalRow, setModalRow] = useState<any | null>(null);
-	const [visibleCount, setVisibleCount] = useState<number>(PAGE_SIZE);
 
 	// Yarismaci → registrantId mapping (competition results sayfasina yonlendirme icin)
 	const findRegistrantId = useMemo(() => {
@@ -68,7 +65,6 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 
 	useEffect(() => {
 		setModalRow(null);
-		setVisibleCount(PAGE_SIZE);
 	}, [selectedRound?.liveRoundId]);
 
 	const liveRoundId = selectedRound?.liveRoundId || null;
@@ -148,8 +144,6 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 	}
 
 	const allResults = roundResults?.results || [];
-	const visibleResults = allResults.slice(0, visibleCount);
-	const hasMore = allResults.length > visibleCount;
 	const isFinished = selectedRound.finished;
 	const showStaleBanner = lastError && lastUpdated && (lastError - lastUpdated > 0) && (Date.now() - lastError < 5 * 60 * 1000);
 
@@ -256,7 +250,7 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 								</tr>
 							</thead>
 							<tbody>
-								{visibleResults.map((r: any) => {
+								{allResults.map((r: any) => {
 									const attempts = formatAttempts(r.attempts || [], numAttempts, event.eventId);
 									const hasTarget = !!r.personWcaId || !!findRegistrantId(r.personWcaId, r.personName);
 									const clickable = isMobile || hasTarget;
@@ -321,12 +315,6 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 						</table>
 					</div>
 
-					{/* Pagination */}
-					{hasMore && (
-						<button className={b('wca-live-show-more')} onClick={() => setVisibleCount((x) => x + PAGE_SIZE)}>
-							{t('my_schedule.show_more', {count: Math.min(PAGE_SIZE, allResults.length - visibleCount)})}
-						</button>
-					)}
 				</>
 			) : (
 				!loading && (
