@@ -8,12 +8,13 @@ import {
 	WcaLiveCompetitorResultsDocument,
 	WcaLiveCompetitorResultsQuery,
 } from '../../../@types/generated/graphql';
+import {socketClient} from '../../../util/socket/socketio';
 
 export type LiveRoundData = WcaLiveRoundResultsQuery['wcaLiveRoundResults'];
 export type LiveOverviewData = WcaLiveCompetitionOverviewQuery['wcaLiveCompetitionOverview'];
 export type LiveCompetitorData = WcaLiveCompetitorResultsQuery['wcaLiveCompetitorResults'];
 
-const ROUND_POLL_INTERVAL = 30 * 1000;
+const ROUND_POLL_INTERVAL = 60 * 1000; // Socket.IO push varken fallback
 const OVERVIEW_CACHE_TTL = 60 * 1000; // 60s — server cache ile align
 const OVERVIEW_CACHE_MAX = 20;
 const COMPETITOR_CACHE_TTL = 60 * 1000;
@@ -197,7 +198,22 @@ export function useLiveRoundResults(
 		setLoading(true);
 		doFetch(myRequestId);
 
+		// Socket.IO subscription — server push ile anlık guncelleme
+		const socket = socketClient();
+		socket.emit('wca-live:subscribe', {competitionId, liveRoundId});
+
+		const handleUpdate = (data: LiveRoundData) => {
+			if (!data) return;
+			setData(data);
+			setLastUpdated(Date.now());
+			setLastError(null);
+			setLoading(false);
+		};
+		socket.on('wca-live:round-update', handleUpdate);
+
 		return () => {
+			socket.emit('wca-live:unsubscribe', {liveRoundId});
+			socket.off('wca-live:round-update', handleUpdate);
 			if (intervalRef.current) clearInterval(intervalRef.current);
 		};
 	}, [competitionId, liveRoundId, enabled, doFetch]);
