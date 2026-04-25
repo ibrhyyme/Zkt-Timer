@@ -44,6 +44,10 @@ export default function OAuthService() {
 					return;
 				}
 				toastError(msg || 'OAuth bağlantısı sırasında hata oluştu');
+				// Hata durumunda da geri yonlendir — overlay takilı kalmasın
+				setTimeout(() => {
+					window.location.href = '/account/linked-accounts';
+				}, 2000);
 			});
 	}, []);
 

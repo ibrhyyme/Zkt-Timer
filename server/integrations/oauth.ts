@@ -32,11 +32,12 @@ export async function linkOAuthAccount(intType: IntegrationType, user: InternalU
 					headers: { Authorization: 'Bearer ' + accessToken },
 				});
 				const wcaData = res?.data?.me || res?.data;
-				if (wcaData?.wca_id) {
-					await updateIntegration(int, {
-						wca_id: wcaData.wca_id,
-						wca_country_iso2: wcaData.country_iso2 || null,
-					});
+				const update: any = {};
+				if (wcaData?.wca_id) update.wca_id = wcaData.wca_id;
+				if (wcaData?.id) update.wca_user_id = String(wcaData.id);
+				if (wcaData?.country_iso2) update.wca_country_iso2 = wcaData.country_iso2;
+				if (Object.keys(update).length > 0) {
+					await updateIntegration(int, update);
 				}
 			} catch (error) {
 				console.warn('Failed to fetch WCA ID on re-link:', error.message);
@@ -48,26 +49,27 @@ export async function linkOAuthAccount(intType: IntegrationType, user: InternalU
 		return updated || int;
 	}
 
-	// WCA icin: once wca_id al, sonra integration olustur (zombie kayit engelle)
+	// WCA icin: kullanici bilgilerini al, sonra integration olustur
 	if (intType === 'wca') {
 		const res = await axios.get(service.meEndpoint, {
 			headers: {Authorization: 'Bearer ' + accessToken},
 		});
 		const wcaData = res?.data?.me || res?.data;
-		const wcaId = wcaData?.wca_id;
+		const wcaId = wcaData?.wca_id || null;
+		const wcaUserId = wcaData?.id ? String(wcaData.id) : null;
 
-		if (!wcaId) {
-			throw new Error('WCA hesabinizdan WCA ID alinamadi. Lutfen tekrar deneyin.');
-		}
-
-		const existingWca = await getIntegrationByWcaId(wcaId);
-		if (existingWca && existingWca.user_id !== user.id) {
-			throw new Error('Bu WCA hesabi baska bir kullaniciya bagli.');
+		// Baska kullaniciya bagli wca_id kontrolu (sadece wca_id varsa)
+		if (wcaId) {
+			const existingWca = await getIntegrationByWcaId(wcaId);
+			if (existingWca && existingWca.user_id !== user.id) {
+				throw new Error('Bu WCA hesabi baska bir kullaniciya bagli.');
+			}
 		}
 
 		let integration = await createIntegration(user, intType, accessToken, refreshToken, createdAt + expiresIn * 1000);
 		integration = await updateIntegration(integration, {
 			wca_id: wcaId,
+			wca_user_id: wcaUserId,
 			wca_country_iso2: wcaData.country_iso2 || null,
 		});
 		return integration;

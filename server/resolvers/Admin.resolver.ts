@@ -469,15 +469,16 @@ export class AdminResolver {
 			recordsTotal: 0, recordsFilled: 0, recordsError: 0,
 		};
 
-		// Phase 1: wca_id null olan integration'lara WCA ID doldur
-		const nullIdIntegrations = await prisma.integration.findMany({
-			where: {service_name: 'wca', wca_id: null},
+		// Phase 1: wca_user_id eksik olan TUM wca integration'lari guncelle
+		// (wca_id null olanlar dahil — newcomer destek)
+		const needsUpdate = await prisma.integration.findMany({
+			where: {service_name: 'wca', wca_user_id: null},
 			include: {user: true},
 		});
 
-		result.total = nullIdIntegrations.length;
+		result.total = needsUpdate.length;
 
-		for (const int of nullIdIntegrations) {
+		for (const int of needsUpdate) {
 			try {
 				let authToken = int.auth_token;
 				const expiresAt = new Date(Number(int.auth_expires_at));
@@ -506,21 +507,25 @@ export class AdminResolver {
 				});
 
 				const wcaData = res?.data?.me || res?.data;
-				const wcaId = wcaData?.wca_id;
+				const wcaUserId = wcaData?.id ? String(wcaData.id) : null;
+				const wcaId = wcaData?.wca_id || null;
 
-				if (!wcaId) {
-					console.warn(`[Backfill] No wca_id in API response for user ${int.user_id}`);
-					result.noWcaId++;
-					continue;
+				const update: any = {};
+				if (wcaUserId) update.wca_user_id = wcaUserId;
+				if (wcaId && !int.wca_id) update.wca_id = wcaId;
+				if (wcaData?.country_iso2 && !int.wca_country_iso2) update.wca_country_iso2 = wcaData.country_iso2;
+
+				if (Object.keys(update).length > 0) {
+					await updateIntegration(int, update);
 				}
 
-				await updateIntegration(int, {
-					wca_id: wcaId,
-					wca_country_iso2: wcaData.country_iso2 || null,
-				});
-
-				result.filled++;
-				console.log(`[Backfill] Filled wca_id=${wcaId} for user ${int.user_id}`);
+				if (!wcaId) {
+					result.noWcaId++;
+					console.log(`[Backfill] Newcomer — wca_user_id=${wcaUserId} saved for user ${int.user_id}`);
+				} else {
+					result.filled++;
+					console.log(`[Backfill] Filled wca_user_id=${wcaUserId} wca_id=${wcaId} for user ${int.user_id}`);
+				}
 			} catch (e) {
 				console.warn(`[Backfill] Failed for user ${int.user_id}:`, e?.message);
 				result.error++;

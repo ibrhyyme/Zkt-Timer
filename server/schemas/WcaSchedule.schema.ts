@@ -650,6 +650,9 @@ export class WcaCompetitionDetail {
 	@Field({nullable: true})
 	myWcaId?: string;
 
+	@Field(() => Int, {nullable: true})
+	myRegistrantId?: number;
+
 	@Field({nullable: true})
 	myRegistrationStatus?: string;
 

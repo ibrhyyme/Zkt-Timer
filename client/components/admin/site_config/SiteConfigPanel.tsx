@@ -310,9 +310,10 @@ export default function SiteConfigPanel() {
 								const res = await gqlMutate(BACKFILL_WCA_IDS);
 								const r = res?.data?.backfillWcaIds;
 								if (r) {
-									const parts = [`WCA ID: ${r.filled}/${r.total} dolduruldu`];
+									const parts = [`${r.filled + r.noWcaId}/${r.total} islendi`];
+									if (r.filled > 0) parts.push(`${r.filled} WCA ID dolduruldu`);
+									if (r.noWcaId > 0) parts.push(`${r.noWcaId} newcomer (ID yok, user_id kaydedildi)`);
 									if (r.tokenFailed > 0) parts.push(`${r.tokenFailed} token gecersiz`);
-									if (r.noWcaId > 0) parts.push(`${r.noWcaId} WCA ID alinamadi`);
 									if (r.error > 0) parts.push(`${r.error} hata`);
 									parts.push(`Ranking: ${r.recordsFilled}/${r.recordsTotal} hesaplandi`);
 									if (r.recordsError > 0) parts.push(`${r.recordsError} ranking hatasi`);

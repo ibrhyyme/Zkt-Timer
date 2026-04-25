@@ -33,6 +33,8 @@ export class Integration {
 	@Field(() => String, { nullable: true })
 	wca_id?: string;
 
+	wca_user_id?: string;
+
 	@Field(() => String, { nullable: true })
 	wca_country_iso2?: string;
 
