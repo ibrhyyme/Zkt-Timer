@@ -502,8 +502,10 @@ export class AdminResolver {
 					}
 				}
 
+				await new Promise((r) => setTimeout(r, 300));
 				const res = await axios.get(wcaService.meEndpoint, {
 					headers: {Authorization: 'Bearer ' + authToken},
+					timeout: 8000,
 				});
 
 				const wcaData = res?.data?.me || res?.data;
