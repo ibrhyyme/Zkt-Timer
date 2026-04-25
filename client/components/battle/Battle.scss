@@ -70,6 +70,8 @@ $self: '.cd-battle';
 		opacity: 1;
 		margin-bottom: 4px;
 		font-weight: 500;
+		pointer-events: none;
+		touch-action: none;
 	}
 
 	&__time {
@@ -83,6 +85,8 @@ $self: '.cd-battle';
 		font-size: clamp(2.5rem, 12vw, 4.5rem);
 		text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 		transition: font-size 0.15s ease;
+		pointer-events: none;
+		touch-action: none;
 
 		&--dnf {
 			color: rgb(var(--error-color));
@@ -111,6 +115,8 @@ $self: '.cd-battle';
 		opacity: 1;
 		font-family: 'Roboto Mono', monospace;
 		line-height: 1.6;
+		pointer-events: none;
+		touch-action: none;
 
 		&--left {
 			left: 14px;
@@ -135,6 +141,8 @@ $self: '.cd-battle';
 		background: rgba(0, 0, 0, 0.5);
 		padding: 4px 10px;
 		border-radius: 8px;
+		pointer-events: none;
+		touch-action: none;
 
 		&--winning {
 			color: rgb(var(--secondary-color));
@@ -153,6 +161,8 @@ $self: '.cd-battle';
 		font-size: 0.7rem;
 		font-weight: 600;
 		color: rgb(var(--secondary-color));
+		pointer-events: none;
+		touch-action: none;
 	}
 
 	// =====================
@@ -166,6 +176,8 @@ $self: '.cd-battle';
 		max-width: 90%;
 		word-break: break-word;
 		margin-top: 8px;
+		pointer-events: none;
+		touch-action: none;
 	}
 
 	// =====================
