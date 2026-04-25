@@ -208,6 +208,7 @@ export interface CompetitionDetail {
 	competitionId: string;
 	competitionName: string;
 	myWcaId: string | null;
+	myRegistrantId: number | null;
 	myRegistrationStatus: string | null;
 	myRegisteredEvents: string[];
 	competitors: CompetitorEntry[];
@@ -579,7 +580,7 @@ function buildInfo(wcifData: WcifData): any {
 
 // --- Master builder ---
 
-export function buildCompetitionDetail(wcifData: WcifData, myWcaId: string): CompetitionDetail | null {
+export function buildCompetitionDetail(wcifData: WcifData, myWcaId: string, myWcaUserId?: string): CompetitionDetail | null {
 	if (!wcifData) {
 		return null;
 	}
@@ -587,12 +588,16 @@ export function buildCompetitionDetail(wcifData: WcifData, myWcaId: string): Com
 	const persons = wcifData.persons || [];
 	const activityMap = flattenActivities(wcifData.schedule?.venues || []);
 
-	const myPerson = myWcaId ? persons.find((p) => p.wcaId === myWcaId) : null;
+	let myPerson = myWcaId ? persons.find((p) => p.wcaId === myWcaId) || null : null;
+	if (!myPerson && myWcaUserId) {
+		myPerson = persons.find((p) => p.wcaUserId && String(p.wcaUserId) === myWcaUserId) || null;
+	}
 
 	return {
 		competitionId: wcifData.id,
 		competitionName: wcifData.name,
 		myWcaId: myPerson?.wcaId || myWcaId || null,
+		myRegistrantId: myPerson?.registrantId ?? null,
 		myRegistrationStatus: myPerson?.registration?.status || null,
 		myRegisteredEvents: myPerson?.registration?.eventIds || [],
 		competitors: buildCompetitorsList(persons, activityMap),

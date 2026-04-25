@@ -79,6 +79,7 @@ export default function CompetitionDetail() {
 					<GroupsTab
 						competitors={detail.competitors}
 						myWcaId={detail.myWcaId}
+						myRegistrantId={detail.myRegistrantId}
 						competitionId={detail.competitionId}
 						searchQuery={searchQuery}
 						setSearchQuery={setSearchQuery}
@@ -107,7 +108,7 @@ export default function CompetitionDetail() {
 
 // --- Tab 1: Groups ---
 
-function GroupsTab({competitors, myWcaId, competitionId, searchQuery, setSearchQuery, t}: any) {
+function GroupsTab({competitors, myWcaId, myRegistrantId, competitionId, searchQuery, setSearchQuery, t}: any) {
 	const history = useHistory();
 
 	const filtered = useMemo(() => {
@@ -124,10 +125,13 @@ function GroupsTab({competitors, myWcaId, competitionId, searchQuery, setSearchQ
 			if (myWcaId) {
 				if (a.wcaId === myWcaId) return -1;
 				if (bx.wcaId === myWcaId) return 1;
+			} else if (myRegistrantId) {
+				if (a.registrantId === myRegistrantId) return -1;
+				if (bx.registrantId === myRegistrantId) return 1;
 			}
 			return a.registrantId - bx.registrantId;
 		});
-	}, [competitors, searchQuery, myWcaId]);
+	}, [competitors, searchQuery, myWcaId, myRegistrantId]);
 
 	return (
 		<div className={b('groups-tab')}>
@@ -148,7 +152,8 @@ function GroupsTab({competitors, myWcaId, competitionId, searchQuery, setSearchQ
 
 			<div className={b('competitor-list')}>
 				{filtered.map((comp: any) => {
-					const isMe = myWcaId && comp.wcaId === myWcaId;
+					const isMe = (myWcaId && comp.wcaId === myWcaId) ||
+					(!myWcaId && myRegistrantId && comp.registrantId === myRegistrantId);
 					return (
 						<div
 							key={comp.registrantId}

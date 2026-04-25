@@ -45,6 +45,7 @@ export class WcaScheduleResolver {
 	): Promise<WcaCompetitionDetail | null> {
 		const integration = await getIntegration(ctx.user, 'wca');
 		const wcaId = integration?.wca_id || '';
+		const wcaUserId = integration?.wca_user_id || '';
 
 		const cacheKey = createRedisKey(RedisNamespace.WCA_WCIF, input.competitionId);
 
@@ -56,7 +57,7 @@ export class WcaScheduleResolver {
 
 		if (!wcifData) return null;
 
-		const detail = buildCompetitionDetail(wcifData, wcaId);
+		const detail = buildCompetitionDetail(wcifData, wcaId, wcaUserId);
 
 		try {
 			const liveData = await wcaLiveGetData(input.competitionId);

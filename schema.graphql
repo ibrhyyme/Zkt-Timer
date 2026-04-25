@@ -1556,6 +1556,7 @@ type WcaCompetitionDetail {
   competitionId: String
   competitionName: String
   myWcaId: String
+  myRegistrantId: Int
   myRegistrationStatus: String
   myRegisteredEvents: [String]
   competitors: [WcaCompetitor]

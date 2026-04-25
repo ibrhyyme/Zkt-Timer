@@ -188,6 +188,7 @@ query wcaCompetitionDetail($input: WcaScheduleInput!) {
 		competitionId
 		competitionName
 		myWcaId
+		myRegistrantId
 		myRegistrationStatus
 		myRegisteredEvents
 		competitors {
