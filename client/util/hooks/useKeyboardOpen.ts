@@ -13,10 +13,13 @@ export function useKeyboardOpen(): boolean {
 	useEffect(() => {
 		if (Capacitor.isNativePlatform()) {
 			const showPromise = Keyboard.addListener('keyboardWillShow', () => setOpen(true));
-			const hidePromise = Keyboard.addListener('keyboardWillHide', () => setOpen(false));
+			const willHidePromise = Keyboard.addListener('keyboardWillHide', () => setOpen(false));
+			// keyboardWillHide Android'de bazi kapatma senaryolarinda gelmiyor; didHide fallback.
+			const didHidePromise = Keyboard.addListener('keyboardDidHide', () => setOpen(false));
 			return () => {
 				showPromise.then((h) => h.remove()).catch(() => {});
-				hidePromise.then((h) => h.remove()).catch(() => {});
+				willHidePromise.then((h) => h.remove()).catch(() => {});
+				didHidePromise.then((h) => h.remove()).catch(() => {});
 			};
 		}
 

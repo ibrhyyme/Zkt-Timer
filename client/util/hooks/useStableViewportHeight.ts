@@ -22,7 +22,9 @@ export function useStableViewportHeight() {
 
 		function onResize() {
 			const currentHeight = getViewportHeight();
-			if (currentHeight !== stableHeight.current) {
+			// Sadece buyuyen resize'i kabul et — klavye acildiginda Android WebView kuculebilir,
+			// bu --stable-vh'yi yanlis sekilde dusurur ve klavye kapandiktan sonra siyah bosluk birakirdi.
+			if (currentHeight > stableHeight.current) {
 				setStableHeight(currentHeight);
 			}
 		}
