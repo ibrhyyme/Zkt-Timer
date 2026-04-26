@@ -85,7 +85,25 @@ async function initNativePush(): Promise<void> {
 	});
 
 	PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
-		console.log('[Push] Notification action:', action);
+		const data = action.notification.data;
+		if (
+			(data?.type === 'wca_result_entered' || data?.type === 'wca_round_finished') &&
+			data.competitionId && data.eventId && data.roundNumber
+		) {
+			window.location.href = `/community/competitions/${data.competitionId}/wca-live/${data.eventId}/${data.roundNumber}`;
+		}
+	});
+
+	// Uygulama on plandayken gelen bildirime (LocalNotification) tıklama
+	const {LocalNotifications: LN} = await import('@capacitor/local-notifications');
+	LN.addListener('localNotificationActionPerformed', (action) => {
+		const data = action.notification.extra;
+		if (
+			(data?.type === 'wca_result_entered' || data?.type === 'wca_round_finished') &&
+			data.competitionId && data.eventId && data.roundNumber
+		) {
+			window.location.href = `/community/competitions/${data.competitionId}/wca-live/${data.eventId}/${data.roundNumber}`;
+		}
 	});
 
 	try {
@@ -143,8 +161,10 @@ async function initWebPush(): Promise<void> {
 				const title = payload.notification?.title || 'Zkt-Timer';
 				const body = payload.notification?.body || '';
 				const tag = (payload.data?.type as string) || 'default';
-				const link = (payload.data?.competitionId as string)
-					? `/community/competitions/${payload.data?.competitionId}/wca-live`
+				const link = (payload.data?.competitionId && payload.data?.eventId && payload.data?.roundNumber)
+					? `/community/competitions/${payload.data.competitionId}/wca-live/${payload.data.eventId}/${payload.data.roundNumber}`
+					: payload.data?.competitionId
+					? `/community/competitions/${payload.data.competitionId}/wca-live`
 					: '/';
 
 				const notif = new Notification(title, {
