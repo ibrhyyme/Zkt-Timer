@@ -13,14 +13,11 @@ export default function WCA({ myProfile, user }) {
 	let body;
 
 	if (wcaInt) {
-		// Profil sahibinin wca_id'sini kullan, giris yapmis kullanicinin degil
 		const wcaId = wcaInt.wca_id;
-		const wcaUrl = wcaId ? `https://www.worldcubeassociation.org/persons/${wcaId}` : null;
-		body = (
-			<a target="_blank" href={wcaUrl}>
-				<Emblem text={t('wca_integration.profile_connected')} icon={<Check weight="bold" />} green />
-			</a>
-		);
+		const emblem = <Emblem text={t('wca_integration.profile_connected')} icon={<Check weight="bold" />} green />;
+		body = wcaId
+			? <a target="_blank" href={`https://www.worldcubeassociation.org/persons/${wcaId}`}>{emblem}</a>
+			: emblem;
 	} else if (myProfile) {
 		const redirectUri = window.location.origin + '/oauth/wca';
 		const clientId = 'wY1dbmwDjPLkRtZVzLJXAcIGWkap1QNbVnuK-ulkDSY'; // Must match WCA_CLIENT_ID from .docker.env

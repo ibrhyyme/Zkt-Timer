@@ -35,6 +35,8 @@ export async function linkOAuthAccount(intType: IntegrationType, user: InternalU
 				const update: any = {};
 				if (wcaData?.wca_id) update.wca_id = wcaData.wca_id;
 				if (wcaData?.id) update.wca_user_id = String(wcaData.id);
+				if (wcaData?.name) update.wca_name = wcaData.name;
+				if (wcaData?.avatar?.thumb_url || wcaData?.avatar?.url) update.wca_avatar_url = wcaData.avatar.thumb_url || wcaData.avatar.url;
 				if (wcaData?.country_iso2) update.wca_country_iso2 = wcaData.country_iso2;
 				if (Object.keys(update).length > 0) {
 					await updateIntegration(int, update);
@@ -70,6 +72,8 @@ export async function linkOAuthAccount(intType: IntegrationType, user: InternalU
 		integration = await updateIntegration(integration, {
 			wca_id: wcaId,
 			wca_user_id: wcaUserId,
+			wca_name: wcaData?.name || null,
+			wca_avatar_url: wcaData?.avatar?.thumb_url || wcaData?.avatar?.url || null,
 			wca_country_iso2: wcaData.country_iso2 || null,
 		});
 		return integration;

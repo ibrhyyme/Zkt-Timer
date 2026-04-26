@@ -1,36 +1,24 @@
 @import '../../../../styles/config';
 
 .#{$namespace}-manage-user-summary {
-	grid-column: span 2;
-
 	&__section {
 		padding: 10px;
 	}
 
-	@media (max-width: 1200px) {
-		grid-column: span 1;
-	}
-
 	&__pills {
-		display: flex;
-		flex-direction: row;
-		flex-wrap: wrap;
-
-		> * {
-			margin-right: 10px;
-			margin-bottom: 10px;
-		}
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 8px;
 	}
 
 	&__pill {
-		padding: 10px 8px 10px 12px;
+		padding: 10px 12px;
 		background-color: rgb(var(--button-color));
-		border: 3px solid rgb(var(--theme-button-opposite), 0.1);
-		border-radius: 20px;
-
-		span {
-			font-size: 0.95rem;
-		}
+		border: 1px solid rgba(var(--text-color), 0.08);
+		border-radius: 12px;
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
 	}
 
 	&__solve-cubetype {
@@ -48,15 +36,18 @@
 	}
 
 	&__pill-title {
-		color: rgb(var(--theme-button-opposite));
+		font-size: 0.7rem;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: rgba(var(--text-color), 0.6);
 	}
 
 	&__pill-value {
-		padding: 4px 10px;
-		margin-left: 8px;
-		background-color: rgb(var(--secondary-color));
-		border-radius: 12px;
-		color: rgb(var(--theme-secondary-opposite));
+		font-size: 1rem;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+		font-family: 'SF Mono', 'Roboto Mono', monospace;
+		font-variant-numeric: tabular-nums;
 	}
 
 	> *:not(:last-child) {

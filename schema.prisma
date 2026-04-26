@@ -137,6 +137,8 @@ model Integration {
   auth_expires_at BigInt
   wca_id                 String?     @unique
   wca_user_id            String?
+  wca_name               String?
+  wca_avatar_url         String?
   wca_country_iso2       String?
   wca_competition_count  Int?
   wca_medal_gold         Int?
