@@ -10,12 +10,12 @@ import WcaRoundFinishedNotification from '../resources/notification_types/wca_ro
 import {WcaApiService} from './WcaApiService';
 import {createI18nInstance} from '../i18n_server';
 
-const TICK_LOCK_TTL_MS = 110_000;
+const TICK_LOCK_TTL_MS = 55_000;
 const LOCK_KEY = createRedisKey(RedisNamespace.WCA_WCIF, 'notifications_cron_lock');
 
 export function initWcaCompetitionNotificationCronJob() {
 	const job = new CronJob(
-		'0 */2 * * * *', // Her 2 dakikada bir
+		'0 * * * * *', // Her 1 dakikada bir
 		async () => {
 			try {
 				await runTick();
