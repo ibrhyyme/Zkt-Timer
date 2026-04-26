@@ -44,6 +44,9 @@ export default class WcaRoundFinishedNotification extends Notification {
 	}
 
 	subject() {
+		if (this.meta.isFinal && this.meta.ranking >= 1 && this.meta.ranking <= 3) {
+			return this.t(`notif_podium_${['1st', '2nd', '3rd'][this.meta.ranking - 1]}_title`);
+		}
 		if (this.meta.isFinal) {
 			return this.t('notif_final_finished_title', {eventName: this.meta.eventName});
 		}
@@ -56,6 +59,9 @@ export default class WcaRoundFinishedNotification extends Notification {
 	inAppMessage() {
 		const suffix = ordinalSuffix(this.meta.ranking, this.locale);
 		const vars = {ranking: this.meta.ranking, suffix};
+		if (this.meta.isFinal && this.meta.ranking >= 1 && this.meta.ranking <= 3) {
+			return this.t(`notif_podium_${['1st', '2nd', '3rd'][this.meta.ranking - 1]}_body`, {eventName: this.meta.eventName});
+		}
 		if (this.meta.isFinal) {
 			return this.t('notif_final_result', vars);
 		}
