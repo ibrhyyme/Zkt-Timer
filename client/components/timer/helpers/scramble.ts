@@ -48,6 +48,13 @@ const CUBE_TO_SCRAMBLE_TYPE: Record<string, string> = {
 	'333sub': '2gen',       // default to 2-gen
 };
 
+// WCA subset ID'si olup ayrı bir cube type olmayan eventler için fallback mapping
+// (333oh, 333mbld: dedicated generator yok — normal 3x3 scramble kullanılır)
+const WCA_EVENT_TO_GEN: Record<string, string> = {
+	'333oh': '333',
+	'333mbld': '333',
+};
+
 // Scramble temizleme: satirlari koru, satir ici bosluklari normalize et
 function cleanScramble(s: string): string {
 	return s.split('\n').map(line => line.replace(/ {2,}/g, ' ').trim()).filter(Boolean).join('\n');
@@ -76,7 +83,12 @@ export function getNewScramble(scrambleTypeId: string, _seed?: number, subset?: 
 
 	// WCA kategori: subset aslinda bir cube type ID — onu cube type olarak coz
 	if (baseType === 'wca' && effectiveSubset) {
-		return getNewScramble(effectiveSubset);
+		const result = getNewScramble(effectiveSubset);
+		if (result) return result;
+		if (hasGenerator(effectiveSubset)) return cleanScramble(generateScramble(effectiveSubset));
+		const fallbackGen = WCA_EVENT_TO_GEN[effectiveSubset];
+		if (fallbackGen && hasGenerator(fallbackGen)) return cleanScramble(generateScramble(fallbackGen));
+		return '';
 	}
 
 	// Clock — mevcut port (Faz 5'te shared'e tasinacak)
@@ -134,7 +146,10 @@ function resolveGenType(scrambleTypeId: string, subset?: string): string | null 
 	}
 
 	if (baseType === 'wca' && effectiveSubset) {
-		return resolveGenType(effectiveSubset);
+		const asCubeType = resolveGenType(effectiveSubset);
+		if (asCubeType) return asCubeType;
+		if (hasGenerator(effectiveSubset)) return effectiveSubset;
+		return WCA_EVENT_TO_GEN[effectiveSubset] || null;
 	}
 	if (baseType === 'clock' && !effectiveSubset) return 'clock';
 

@@ -16,7 +16,7 @@ export const SCRAMBLE_SUBSETS: Record<string, ScrambleSubset[]> = {
         { id: '555', label: '5x5x5' },
         { id: '666', label: '6x6x6' },
         { id: '777', label: '7x7x7' },
-        { id: '333bld', label: '3x3x3 BLD' },
+        { id: '333ni', label: '3x3x3 BLD' },
         { id: '333fm', label: '3x3x3 FMC' },
         { id: '333oh', label: '3x3x3 OH' },
         { id: '333mbld', label: '3x3x3 Multi-BLD' },
