@@ -32,7 +32,7 @@ class User extends React.Component {
 	openUser = (e) => {
 		e.preventDefault();
 
-		this.props.dispatch(openModal(<UserView userId={this.state.user.id} />));
+		this.props.dispatch(openModal(<UserView userId={this.state.user.id} />, {width: 1100}));
 	};
 
 	render() {

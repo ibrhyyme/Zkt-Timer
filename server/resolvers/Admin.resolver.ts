@@ -469,10 +469,12 @@ export class AdminResolver {
 			recordsTotal: 0, recordsFilled: 0, recordsError: 0,
 		};
 
-		// Phase 1: wca_user_id eksik olan TUM wca integration'lari guncelle
-		// (wca_id null olanlar dahil — newcomer destek)
+		// Phase 1: eksik alan olan TUM wca integration'lari guncelle
 		const needsUpdate = await prisma.integration.findMany({
-			where: {service_name: 'wca', wca_user_id: null},
+			where: {
+				service_name: 'wca',
+				OR: [{wca_user_id: null}, {wca_id: null}, {wca_name: null}, {wca_avatar_url: null}],
+			},
 			include: {user: true},
 		});
 
@@ -515,6 +517,11 @@ export class AdminResolver {
 				const update: any = {};
 				if (wcaUserId) update.wca_user_id = wcaUserId;
 				if (wcaId && !int.wca_id) update.wca_id = wcaId;
+				if (wcaData?.name && !int.wca_name) update.wca_name = wcaData.name;
+				if (!int.wca_avatar_url) {
+					const avatarUrl = wcaData?.avatar?.thumb_url || wcaData?.avatar?.url || null;
+					if (avatarUrl) update.wca_avatar_url = avatarUrl;
+				}
 				if (wcaData?.country_iso2 && !int.wca_country_iso2) update.wca_country_iso2 = wcaData.country_iso2;
 
 				if (Object.keys(update).length > 0) {

@@ -82,7 +82,7 @@ function ProUserRow({user}: {user: ProUserData}) {
 	const type = subscriptionType(user);
 	const status = subscriptionStatus(user);
 
-	const handleManage = () => dispatch(openModal(<ManageUser userId={user.id} />));
+	const handleManage = () => dispatch(openModal(<ManageUser userId={user.id} />, {width: 1100}));
 
 	const [copied, setCopied] = React.useState(false);
 	function copyRcId() {

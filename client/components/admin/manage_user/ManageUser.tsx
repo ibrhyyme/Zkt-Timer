@@ -36,6 +36,9 @@ const GET_USER_FOR_ADMIN = gql`
 				id
 				service_name
 				wca_id
+				wca_user_id
+				wca_name
+				wca_avatar_url
 			}
 			profile {
 				id
@@ -130,133 +133,131 @@ export default function ManageUser(props: Props) {
 	const {t} = useTranslation('translation', {keyPrefix: 'admin_users.manage_user'});
 
 	const {data, loading, refetch} = useQuery<{getUserAccountForAdmin: UserAccountForAdmin}>(GET_USER_FOR_ADMIN, {
-		variables: {
-			userId,
-		},
+		variables: {userId},
 		fetchPolicy: NO_CACHE,
 	});
 
 	const userData = data?.getUserAccountForAdmin;
 
-	if (loading) {
-		return <Loading />;
-	}
-
-	if (!userData) {
-		return <Empty text={t('user_not_found')} />;
-	}
+	if (loading) return <Loading />;
+	if (!userData) return <Empty text={t('user_not_found')} />;
 
 	const wcaIntegration = userData.integrations?.find((int) => int.service_name === 'wca');
 
-	function getInfoTable() {
+	function formatSettingValue(value: any): string {
+		if (typeof value === 'boolean') return value ? t('bool_true') : t('bool_false');
+		if (value === null || value === undefined) return '—';
+		return String(value);
+	}
+
+	function getInfoCards() {
 		const rows = [
 			{label: 'Email', value: userData.email},
-			{label: t('email_verified'), value: userData.email_verified ? '✓' : '✗', highlight: userData.email_verified},
+			{label: t('email_verified'), value: userData.email_verified ? '✓' : '✗'},
 			{label: t('join_country'), value: userData.join_country || '—'},
 			{label: t('join_ip'), value: userData.join_ip || '—'},
-			{label: t('wca_id'), value: wcaIntegration?.wca_id || '—'},
 		];
 
 		return (
-			<div className={b('info')}>
-				<table className="cd-table">
-					<tbody>
-						{rows.map((row) => (
-							<tr key={row.label}>
-								<td className={b('table-stat')}>{row.label}</td>
-								<td>{row.value}</td>
-							</tr>
-						))}
-					</tbody>
-				</table>
+			<div className={b('list')}>
+				{wcaIntegration && (
+					<div className={b('card', {wca: true})}>
+						{(wcaIntegration.wca_avatar_url || wcaIntegration.wca_name) && (
+							<div className={b('card-wca-identity')}>
+								{wcaIntegration.wca_avatar_url && (
+									<img src={wcaIntegration.wca_avatar_url} alt="" className={b('wca-avatar')} />
+								)}
+								{wcaIntegration.wca_name && (
+									<span className={b('wca-name')}>{wcaIntegration.wca_name}</span>
+								)}
+							</div>
+						)}
+						<div className={b('card-stats')}>
+							<div className={b('card-stat')}>
+								<span className={b('card-stat-label')}>WCA ID</span>
+								<span className={b('card-stat-value')}>{wcaIntegration.wca_id || '—'}</span>
+							</div>
+							<div className={b('card-stat')}>
+								<span className={b('card-stat-label')}>User ID</span>
+								<span className={b('card-stat-value')}>{wcaIntegration.wca_user_id || '—'}</span>
+							</div>
+						</div>
+					</div>
+				)}
+				{rows.map((row) => (
+					<div key={row.label} className={b('card')}>
+						<span className={b('card-label')}>{row.label}</span>
+						<span className={b('card-value')}>{row.value}</span>
+					</div>
+				))}
 			</div>
 		);
 	}
 
-	function formatSettingValue(value: any): string {
-		if (typeof value === 'boolean') {
-			return value ? t('bool_true') : t('bool_false');
-		}
-		if (value === null || value === undefined) {
-			return '—';
-		}
-		return String(value);
-	}
-
-	function getGenericGrid(title: string, list, name: string, sub) {
-		let output = list || [];
-
-		output = output.map((item) => (
-			<div key={item.id} className={b('grid-row')}>
-				<div className={b('grid-row', {left: true})}>
-					<p>{item[name]}</p>
-					{sub && item[sub] ? <span>{item[sub]}</span> : null}
-				</div>
-
-				<div className={b('grid-row', {right: true})}>
-					<span>{getDateFromNow(item.created_at)}</span>
-				</div>
-			</div>
-		));
-
-		if (!output.length) {
-			output = <Empty text={t('no_records')} />;
-		}
-
+	function getSection(title: string, list: any[], nameKey: string, subKey: string | null) {
+		const items = list || [];
 		return (
-			<div className={b('grid')}>
-				<h3>{title}</h3>
-				<div className={b('grid-body')}>{output}</div>
+			<div className={b('section')}>
+				<div className={b('section-title')}>{title}</div>
+				{items.length === 0 ? (
+					<Empty text={t('no_records')} />
+				) : (
+					<div className={b('list')}>
+						{items.map((item) => (
+							<div key={item.id} className={b('card')}>
+								<span className={b('card-label')}>{item[nameKey]}</span>
+								<div className={b('card-meta')}>
+									{subKey && item[subKey] && <span>{item[subKey]}</span>}
+									<span className={b('card-date')}>{getDateFromNow(item.created_at)}</span>
+								</div>
+							</div>
+						))}
+					</div>
+				)}
 			</div>
 		);
 	}
 
 	function getSettings() {
 		const settings = userData.settings;
-		if (!settings) {
-			return null;
-		}
-
+		if (!settings) return null;
 		const settingKeys = Object.keys(settings).filter((key) => !key.startsWith('_'));
 
 		return (
-			<div className={b('table')}>
-				<h3>{t('settings')}</h3>
-				<table className="cd-table">
-					<tbody>
-						{settingKeys.map((key) => (
-							<tr key={key}>
-								<td className={b('table-stat')}>{t(`setting_${key}`, key.replace(/_/g, ' '))}</td>
-								<td>{formatSettingValue(settings[key])}</td>
-							</tr>
-						))}
-					</tbody>
-				</table>
+			<div className={b('section')}>
+				<div className={b('section-title')}>{t('settings')}</div>
+				<div className={b('settings-grid')}>
+					{settingKeys.map((key) => (
+						<div key={key} className={b('setting-card')}>
+							<span className={b('card-stat-label')}>{t(`setting_${key}`, key.replace(/_/g, ' '))}</span>
+							<span className={b('card-stat-value')}>{formatSettingValue(settings[key])}</span>
+						</div>
+					))}
+				</div>
 			</div>
 		);
 	}
 
-	function getBans() {
-		return getGenericGrid(t('bans_title'), userData.bans, 'reason', 'banned_until');
-	}
-
-	function getReports() {
-		return getGenericGrid(t('reports_title'), userData.reports_for, 'reason', null);
-	}
-
 	return (
 		<div className={b()}>
-			<div className={b('user')}>
-				<Avatar target="_blank" user={userData} showEmail profile={userData.profile} />
-				{getInfoTable()}
-				<UserActions updateUser={refetch} user={userData} />
+			<div className={b('col')}>
+				<div className={b('header')}>
+					<Avatar target="_blank" user={userData} showEmail profile={userData.profile} />
+				</div>
+				{getInfoCards()}
+				<div className={b('actions')}>
+					<UserActions updateUser={refetch} user={userData} />
+				</div>
 			</div>
 
-			<div className={b('sections')}>
+			<div className={b('col')}>
 				<UserSummary summary={userData.summary} />
-				<div className={b('section')}>{getBans()}</div>
-				<div className={b('section')}>{getReports()}</div>
-				<div className={b('section')}>{getSettings()}</div>
+			</div>
+
+			<div className={b('col')}>
+				{getSection(t('bans_title'), userData.bans, 'reason', 'banned_until')}
+				{getSection(t('reports_title'), userData.reports_for, 'reason', null)}
+				{getSettings()}
 			</div>
 		</div>
 	);

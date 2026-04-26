@@ -543,12 +543,14 @@ export type Integration = {
   service_name?: Maybe<IntegrationType>;
   user?: Maybe<PublicUserAccount>;
   user_id?: Maybe<Scalars['String']>;
+  wca_avatar_url?: Maybe<Scalars['String']>;
   wca_competition_count?: Maybe<Scalars['Float']>;
   wca_country_iso2?: Maybe<Scalars['String']>;
   wca_id?: Maybe<Scalars['String']>;
   wca_medal_bronze?: Maybe<Scalars['Float']>;
   wca_medal_gold?: Maybe<Scalars['Float']>;
   wca_medal_silver?: Maybe<Scalars['Float']>;
+  wca_name?: Maybe<Scalars['String']>;
   wca_record_cr?: Maybe<Scalars['Float']>;
   wca_record_nr?: Maybe<Scalars['Float']>;
   wca_record_wr?: Maybe<Scalars['Float']>;
@@ -557,6 +559,7 @@ export type Integration = {
   wca_show_rank?: Maybe<Scalars['Boolean']>;
   wca_show_records?: Maybe<Scalars['Boolean']>;
   wca_show_results?: Maybe<Scalars['Boolean']>;
+  wca_user_id?: Maybe<Scalars['String']>;
 };
 
 export enum IntegrationType {
