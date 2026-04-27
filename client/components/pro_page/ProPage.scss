@@ -638,6 +638,34 @@ $radius-sm:   10px;
 		}
 	}
 
+	&__legal-links {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 6px;
+		margin-top: 16px;
+	}
+
+	&__legal-link {
+		padding: 0;
+		background: transparent;
+		border: none;
+		color: rgba(var(--text-color), 0.30);
+		font-size: 0.72rem;
+		font-family: inherit;
+		cursor: pointer;
+		text-decoration: underline;
+		text-underline-offset: 3px;
+
+		&:hover { color: rgba(var(--text-color), 0.60); }
+	}
+
+	&__legal-sep {
+		color: rgba(var(--text-color), 0.20);
+		font-size: 0.72rem;
+		line-height: 1;
+	}
+
 	// ── Feature right column ─────────────────────────────
 	&__billing-right {
 		display: flex;

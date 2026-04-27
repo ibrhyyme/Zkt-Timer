@@ -21,6 +21,7 @@ import {isPro} from '../../lib/pro';
 import FeatureGuard from '../common/page_disabled/FeatureGuard';
 import {isNative, isAndroidNative} from '../../util/platform';
 import {getOfferings, purchasePackage, restorePurchases, showManageSubscriptions} from '../../lib/iap';
+import {openInAppBrowser} from '../../util/external-link';
 import {GetIapStatusDocument, GetIapStatusQuery} from '../../@types/generated/graphql';
 import {useGeneral} from '../../util/hooks/useGeneral';
 import MobileNav from '../layout/nav/mobile_nav/MobileNav';
@@ -612,6 +613,16 @@ function ProPageContent() {
 									</p>
 								</>
 							)}
+
+							<div className={b('legal-links')}>
+								<button type="button" className={b('legal-link')} onClick={() => openInAppBrowser('https://zktimer.app/terms')}>
+									{t('landing_footer.terms')}
+								</button>
+								<span className={b('legal-sep')}>·</span>
+								<button type="button" className={b('legal-link')} onClick={() => openInAppBrowser('https://zktimer.app/privacy')}>
+									{t('landing_footer.privacy')}
+								</button>
+							</div>
 						</div>
 
 						{/* RIGHT — feature list */}
