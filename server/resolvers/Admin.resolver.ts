@@ -17,6 +17,7 @@ import {
 	deleteUserAccount,
 	getUserById,
 	getUserByIdOrThrow404,
+	getUserByIdWithSettings,
 	isUserBanned,
 	adminUserSearch,
 	unbanUserAccount,
@@ -212,7 +213,8 @@ export class AdminResolver {
 		@Arg('isPro') isPro: boolean,
 		@Arg('minutes', {nullable: true}) minutes?: number
 	) {
-		const targetUser = await getUserByIdOrThrow404(userId);
+		const targetUser = await getUserByIdWithSettings(userId);
+		if (!targetUser) throw new Error('User not found');
 
 		let pro_expires_at: Date | null = null;
 		if (isPro && minutes && minutes > 0) {
@@ -252,7 +254,8 @@ export class AdminResolver {
 		@Arg('isPremium') isPremium: boolean,
 		@Arg('minutes', {nullable: true}) minutes?: number
 	) {
-		const targetUser = await getUserByIdOrThrow404(userId);
+		const targetUser = await getUserByIdWithSettings(userId);
+		if (!targetUser) throw new Error('User not found');
 
 		let premium_expires_at: Date | null = null;
 		if (isPremium && minutes && minutes > 0) {
@@ -354,7 +357,7 @@ export class AdminResolver {
 		}
 
 		const user = integration.user;
-		const locale = (user as any).settings?.locale || 'tr';
+		const locale = (user as any).settings?.locale || 'en';
 		const eventId = '333';
 		const eventName = WcaApiService.getShortEventName(eventId);
 		const compId = 'TestCompetition2026';

@@ -165,7 +165,7 @@ async function runTick() {
 
 function getUserLocale(state: {user?: any}): string {
 	const locale = state.user?.settings?.locale;
-	return locale && ['tr', 'en', 'es', 'ru'].includes(locale) ? locale : 'tr';
+	return locale && ['tr', 'en', 'es', 'ru', 'zh'].includes(locale) ? locale : 'en';
 }
 
 // WCIF schedule'dan ilk gunun en erken activity startTime'ini cek

@@ -11,11 +11,12 @@ export function getSetting(user: UserAccount) {
 	});
 }
 
-export function createSetting(user: UserAccount) {
+export function createSetting(user: UserAccount, locale?: string) {
 	return getPrisma().setting.create({
 		data: {
 			id: uuid(),
 			user_id: user.id,
+			...(locale ? { locale } : {}),
 		},
 	});
 }

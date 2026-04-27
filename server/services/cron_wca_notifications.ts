@@ -110,7 +110,7 @@ async function loadStates() {
 
 function getUserLocale(state: StateRow): string {
 	const locale = (state.user as any)?.settings?.locale;
-	return locale && ['tr', 'en', 'es', 'ru'].includes(locale) ? locale : 'tr';
+	return locale && ['tr', 'en', 'es', 'ru', 'zh'].includes(locale) ? locale : 'en';
 }
 
 async function processCompetition(compId: string, states: StateRow[]): Promise<number> {

@@ -9,7 +9,7 @@ const CACHE_KEY = 'landing_stats_v2';
 
 // Statik destek metrikleri
 const SUPPORTED_EVENT_COUNT = 17; // WCA resmi etkinlik sayisi
-const SUPPORTED_LANGUAGE_COUNT = 4; // tr, en, es, ru
+const SUPPORTED_LANGUAGE_COUNT = 5; // tr, en, es, ru, zh
 
 @Resolver()
 export class LandingStatsResolver {

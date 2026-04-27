@@ -1,4 +1,5 @@
 import {getPrisma} from '../database';
+import {getUserByIdWithSettings} from './user_account';
 import {logger} from '../services/logger';
 import {sendPushToUser} from '../services/push';
 import {createRedisKey, keyExistsInRedis, setKeyInRedis, RedisNamespace} from '../services/redis';
@@ -40,7 +41,7 @@ export interface IapPurchaseUpdate {
 export async function applyIapPurchase(update: IapPurchaseUpdate, firePush = true): Promise<void> {
 	const prisma = getPrisma();
 
-	const targetUser = await prisma.userAccount.findUnique({where: {id: update.userId}});
+	const targetUser = await getUserByIdWithSettings(update.userId);
 	if (!targetUser) {
 		logger.warn('[IAP] Kullanici bulunamadi', {userId: update.userId});
 		return;

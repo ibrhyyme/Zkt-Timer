@@ -91,6 +91,13 @@ export function getUserById(id: string): Promise<InternalUserAccount> {
 	});
 }
 
+export function getUserByIdWithSettings(id: string): Promise<InternalUserAccount> {
+	return getPrisma().userAccount.findUnique({
+		where: { id },
+		include: { settings: true },
+	}) as Promise<InternalUserAccount>;
+}
+
 export async function getUserByIdWithProfile(
 	id: string,
 	includeBans: boolean = false

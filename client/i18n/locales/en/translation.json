@@ -2887,5 +2887,14 @@
     "one_number": "1 number",
     "eight_chars": "8 characters",
     "passwords_match": "Passwords match"
+  },
+  "notifications": {
+    "membership_granted": {
+      "subject": "Congratulations! Your Zkt Timer {{label}} membership is now active",
+      "subject_expiry": "Congratulations! Your {{label}} membership is active until {{date}}",
+      "message": "Congratulations! Your Zkt Timer {{label}} membership has been successfully activated. Your membership is unlimited.",
+      "message_expiry": "Congratulations! Your Zkt Timer {{label}} membership has been successfully activated. Your membership is valid until {{date}}.",
+      "link_text": "View your settings"
+    }
   }
 }

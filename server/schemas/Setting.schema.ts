@@ -143,4 +143,7 @@ export class SettingInput implements Partial<Setting> {
 
 	@Field(() => Int, { nullable: true })
 	smart_cube_size?: number;
+
+	@Field({ nullable: true })
+	locale?: string;
 }
