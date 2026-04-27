@@ -283,6 +283,7 @@ type Query {
   adminMyPushTokens: [PushTokenInfo]
   onlineStats: OnlineStats
   onlineUsers: [OnlineUser]
+  wcaStats: WcaStats
   statsModule: StatsModule
   wcaRecords(userId: String): [WcaRecord]
   myWcaRecords: [WcaRecord]
@@ -1115,6 +1116,13 @@ type BackfillResult {
   recordsTotal: Int
   recordsFilled: Int
   recordsError: Int
+}
+
+type WcaStats {
+  totalUsers: Int
+  wcaConnected: Int
+  wcaWithId: Int
+  wcaWithUserId: Int
 }
 
 type StatsModule {
