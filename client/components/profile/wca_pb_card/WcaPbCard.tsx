@@ -1,10 +1,9 @@
 import React from 'react';
 import {useTranslation} from 'react-i18next';
 import './WcaPbCard.scss';
-import Scramble from '../../modules/scramble/ScrambleVisual';
-import {getCubeTypeInfoById} from '../../../util/cubes/util';
 import block from '../../../styles/bem';
 import {Trophy, Medal, Crown} from 'phosphor-react';
+import {EventIcon} from '../../community/my_schedule/shared';
 
 const b = block('profile-wca-pb-card');
 
@@ -28,30 +27,10 @@ export default function WcaPbCard(props: Props) {
 	const {t} = useTranslation();
 	const {record} = props;
 
-	const cubeType = getCubeTypeInfoById(record.wca_event);
-
 	function getEventName(eventCode: string): string {
 		const key = `wca_events.${eventCode}`;
 		const translated = t(key);
 		return translated !== key ? translated : eventCode;
-	}
-
-	function getScrambleForVisual(eventCode: string): string {
-		// WCA eventlerini desteklenen scramble türlerine map'le
-		const eventToScramble: Record<string, string> = {
-			'333': '333',
-			'222': '222', 
-			'444': '444',
-			'555': '555',
-			'666': '666',
-			'777': '777',
-			'333bf': '333bl', // Blind için 333bl scramble kullan
-			'333oh': '333',   // One handed için normal 3x3 visual
-			'333fm': '333',   // Fewest moves için normal 3x3 visual
-			'333ft': '333',   // With feet için normal 3x3 visual
-		};
-
-		return eventToScramble[eventCode] || eventCode;
 	}
 
 	function formatTime(centiseconds: number): string {
@@ -70,29 +49,25 @@ export default function WcaPbCard(props: Props) {
 
 	function getRankIcon(rank?: number) {
 		if (!rank) return null;
-		
+
 		if (rank === 1) return <Crown weight="fill" className={b('rank-icon', {gold: true})} />;
 		if (rank <= 3) return <Medal weight="fill" className={b('rank-icon', {silver: true})} />;
 		if (rank <= 10) return <Trophy weight="fill" className={b('rank-icon', {bronze: true})} />;
 		return null;
 	}
 
-	if (!cubeType) {
-		return null;
-	}
-
-	// Eğer hiç record yoksa gösterme
 	if (!record.average_record && !record.single_record) {
 		return null;
 	}
 
 	return (
 		<div className={b()}>
-			{/* Sol: Event İsmi */}
+			{/* Sol: WCA Event İkonu */}
 			<div className={b('visual')}>
-				<div className={b('event-name')}>
+				<EventIcon eventId={record.wca_event} size={52} />
+				<span className={b('event-label')} style={{display: 'block', marginTop: '6px', fontSize: '0.72rem', fontWeight: 600, opacity: 0.65, textAlign: 'center'}}>
 					{getEventName(record.wca_event)}
-				</div>
+				</span>
 			</div>
 
 			{/* Orta: Average */}
