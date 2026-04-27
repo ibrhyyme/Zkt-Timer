@@ -38,10 +38,26 @@ export function initLogger() {
 		addFormats.push(winston.format.json());
 	}
 
+	// Elasticsearch'te 'error' field'i her zaman obje olarak indexlenmeli.
+	// Kimi yerde Error objesi, kimi yerde string geciyor — tip catismasi onlemek icin normalize et.
+	const normalizeErrorField = winston.format((info) => {
+		const meta = (info as any).metadata;
+		if (meta && 'error' in meta) {
+			const err = meta.error;
+			if (err instanceof Error) {
+				meta.error = {message: err.message, stack: err.stack};
+			} else if (typeof err === 'string') {
+				meta.error = {message: err};
+			}
+		}
+		return info;
+	});
+
 	const defaultFormats = [
 		winston.format.errors({stack: true}),
 		winston.format.splat(),
 		winston.format.metadata({fillExcept: ['message', 'level', 'timestamp', 'label']}),
+		normalizeErrorField(),
 		...addFormats,
 	];
 

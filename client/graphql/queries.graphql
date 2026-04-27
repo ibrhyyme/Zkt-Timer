@@ -51,6 +51,22 @@ query wcaStats {
 	}
 }
 
+query ipInfo($ip: String!) {
+	ipInfo(ip: $ip) {
+		ip
+		country
+		countryCode
+		regionName
+		city
+		isp
+		org
+		proxy
+		mobile
+		hosting
+		timezone
+	}
+}
+
 query onlineUsers {
 	onlineUsers {
 		tabCount

@@ -125,6 +125,42 @@ export class BackfillResult {
 }
 
 @ObjectType()
+export class IpInfo {
+	@Field()
+	ip: string;
+
+	@Field()
+	country: string;
+
+	@Field()
+	countryCode: string;
+
+	@Field()
+	regionName: string;
+
+	@Field()
+	city: string;
+
+	@Field()
+	isp: string;
+
+	@Field()
+	org: string;
+
+	@Field()
+	proxy: boolean;
+
+	@Field()
+	mobile: boolean;
+
+	@Field()
+	hosting: boolean;
+
+	@Field()
+	timezone: string;
+}
+
+@ObjectType()
 export class WcaStats {
 	@Field(() => Int)
 	totalUsers: number;
