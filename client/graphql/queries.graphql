@@ -42,6 +42,15 @@ query onlineStats {
 	}
 }
 
+query wcaStats {
+	wcaStats {
+		totalUsers
+		wcaConnected
+		wcaWithId
+		wcaWithUserId
+	}
+}
+
 query onlineUsers {
 	onlineUsers {
 		tabCount

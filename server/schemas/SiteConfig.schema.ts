@@ -124,6 +124,21 @@ export class BackfillResult {
 	recordsError: number;
 }
 
+@ObjectType()
+export class WcaStats {
+	@Field(() => Int)
+	totalUsers: number;
+
+	@Field(() => Int)
+	wcaConnected: number;
+
+	@Field(() => Int)
+	wcaWithId: number;
+
+	@Field(() => Int)
+	wcaWithUserId: number;
+}
+
 @InputType()
 export class UpdateSiteConfigInput {
 	@Field({nullable: true})

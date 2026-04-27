@@ -30,7 +30,7 @@ import { PaginationArgsInput, AdminUserFiltersInput } from '../schemas/Paginatio
 import { getPaginatedResponse, PaginatedRequestInput } from '../util/pagination/paginated_response';
 import { sendPushToUser } from '../services/push';
 import { AdminSendPushResult, PushTokenInfo } from '../schemas/PushToken.schema';
-import { OnlineStats, OnlineUser, BackfillResult } from '../schemas/SiteConfig.schema';
+import { OnlineStats, OnlineUser, BackfillResult, WcaStats } from '../schemas/SiteConfig.schema';
 import { getOnlineCounts, getOnlineUsers } from '../services/socket_util';
 import WcaResultEnteredNotification from '../resources/notification_types/wca_result_entered';
 import WcaRoundFinishedNotification from '../resources/notification_types/wca_round_finished';
@@ -456,6 +456,19 @@ export class AdminResolver {
 		}
 
 		return true;
+	}
+
+	@Authorized([Role.ADMIN])
+	@Query(() => WcaStats)
+	async wcaStats(): Promise<WcaStats> {
+		const prisma = getPrisma();
+		const [totalUsers, wcaConnected, wcaWithId, wcaWithUserId] = await Promise.all([
+			prisma.userAccount.count(),
+			prisma.integration.count({where: {service_name: 'wca'}}),
+			prisma.integration.count({where: {service_name: 'wca', wca_id: {not: null}}}),
+			prisma.integration.count({where: {service_name: 'wca', wca_user_id: {not: null}}}),
+		]);
+		return {totalUsers, wcaConnected, wcaWithId, wcaWithUserId};
 	}
 
 	@Authorized([Role.ADMIN])

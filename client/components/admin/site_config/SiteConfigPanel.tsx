@@ -22,6 +22,7 @@ import './SiteConfigPanel.scss';
 const b = block('site-config-panel');
 
 const BACKFILL_WCA_IDS = gql`mutation { backfillWcaIds { total filled tokenFailed noWcaId error recordsTotal recordsFilled recordsError } }`;
+const WCA_STATS = gql`query { wcaStats { totalUsers wcaConnected wcaWithId wcaWithUserId } }`;
 const TEST_WCA_NOTIFICATION = gql`mutation TestWcaNotification($wcaId: String!) { testWcaNotification(wcaId: $wcaId) }`;
 const MY_PUSH_TOKENS = gql`query { adminMyPushTokens { platform } }`;
 
@@ -51,6 +52,8 @@ export default function SiteConfigPanel() {
 
 	const [tokenCheckLoading, setTokenCheckLoading] = useState(false);
 	const [tokenCheckResult, setTokenCheckResult] = useState<string | null>(null);
+
+	const {data: wcaStatsData, refetch: refetchWcaStats, loading: wcaStatsLoading} = useQuery<{wcaStats: {totalUsers: number; wcaConnected: number; wcaWithId: number; wcaWithUserId: number}}>(WCA_STATS, {fetchPolicy: 'no-cache'});
 
 	// Canli online sayaci — 10 saniyede bir polling
 	const {data: onlineData} = useQuery<OnlineStatsQuery>(OnlineStatsDocument, {
@@ -285,6 +288,33 @@ export default function SiteConfigPanel() {
 						</div>
 					);
 				})}
+			</div>
+
+			{/* WCA Istatistikleri */}
+			<div className={b('section')}>
+				<div className={b('section-header')}>
+					<Database size={20} weight="fill" />
+					<h3>WCA İstatistikleri</h3>
+				</div>
+				<div className={b('stats-grid')}>
+					{[
+						{label: 'Toplam Kullanıcı', value: wcaStatsData?.wcaStats?.totalUsers},
+						{label: 'WCA Bağlı Hesap', value: wcaStatsData?.wcaStats?.wcaConnected},
+						{label: 'WCA ID\'si Olan', value: wcaStatsData?.wcaStats?.wcaWithId},
+						{label: 'WCA User ID\'si Olan', value: wcaStatsData?.wcaStats?.wcaWithUserId},
+					].map(({label, value}) => (
+						<div key={label} className={b('stat-card')}>
+							<div className={b('stat-label')}>{label}</div>
+							<div className={b('stat-value')}>{wcaStatsLoading ? '...' : (value ?? '—')}</div>
+						</div>
+					))}
+				</div>
+				<div className={b('row')} style={{marginTop: 8}}>
+					<div />
+					<button className={b('action-btn')} disabled={wcaStatsLoading} onClick={() => refetchWcaStats()}>
+						Yenile
+					</button>
+				</div>
 			</div>
 
 			{/* WCA Backfill */}
