@@ -469,11 +469,12 @@ export class AdminResolver {
 			recordsTotal: 0, recordsFilled: 0, recordsError: 0,
 		};
 
-		// Phase 1: eksik alan olan TUM wca integration'lari guncelle
+		// Phase 1: wca_user_id veya wca_id eksik olan integration'lari guncelle
+		// wca_name/wca_avatar_url intentionally excluded — avatari olmayan kullanicilari sonsuz donguye sokmasin
 		const needsUpdate = await prisma.integration.findMany({
 			where: {
 				service_name: 'wca',
-				OR: [{wca_user_id: null}, {wca_id: null}, {wca_name: null}, {wca_avatar_url: null}],
+				OR: [{wca_user_id: null}, {wca_id: null}],
 			},
 			include: {user: true},
 		});
@@ -536,6 +537,10 @@ export class AdminResolver {
 					console.log(`[Backfill] Filled wca_user_id=${wcaUserId} wca_id=${wcaId} for user ${int.user_id}`);
 				}
 			} catch (e) {
+				if (e?.response?.status === 429) {
+					console.warn(`[Backfill] Rate limited by WCA, sleeping 10s...`);
+					await new Promise((r) => setTimeout(r, 10_000));
+				}
 				console.warn(`[Backfill] Failed for user ${int.user_id}:`, e?.message);
 				result.error++;
 			}
