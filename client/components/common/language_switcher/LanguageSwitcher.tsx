@@ -17,7 +17,7 @@ export default function LanguageSwitcher(props: Props = {}) {
 		dayjs.locale(lng);
 	}
 
-	const supportedLangs = ['tr', 'en', 'es', 'ru'];
+	const supportedLangs = ['tr', 'en', 'es', 'ru', 'zh'];
 	const currentLang = supportedLangs.find((s) => i18n.language?.startsWith(s)) || 'en';
 
 	return (
@@ -27,26 +27,11 @@ export default function LanguageSwitcher(props: Props = {}) {
 			icon={<Globe weight="bold" />}
 			text={currentLang.toUpperCase()}
 			options={[
-				{
-					text: t('language.turkish'),
-					onClick: () => changeLanguage('tr'),
-					disabled: currentLang === 'tr',
-				},
-				{
-					text: t('language.english'),
-					onClick: () => changeLanguage('en'),
-					disabled: currentLang === 'en',
-				},
-				{
-					text: t('language.spanish'),
-					onClick: () => changeLanguage('es'),
-					disabled: currentLang === 'es',
-				},
-				{
-					text: t('language.russian'),
-					onClick: () => changeLanguage('ru'),
-					disabled: currentLang === 'ru',
-				},
+				{ text: 'Türkçe',  onClick: () => changeLanguage('tr'), disabled: currentLang === 'tr' },
+				{ text: 'English', onClick: () => changeLanguage('en'), disabled: currentLang === 'en' },
+				{ text: 'Español', onClick: () => changeLanguage('es'), disabled: currentLang === 'es' },
+				{ text: 'Русский', onClick: () => changeLanguage('ru'), disabled: currentLang === 'ru' },
+				{ text: '中文',    onClick: () => changeLanguage('zh'), disabled: currentLang === 'zh' },
 			]}
 		/>
 	);

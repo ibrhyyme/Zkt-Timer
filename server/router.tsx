@@ -97,7 +97,7 @@ function appUseRouteForPage(routePath, route: PageContext) {
 		// İlk ziyarette dil cookie'si yoksa Accept-Language'dan tespit et
 		if (!req.cookies?.zkt_language) {
 			const acceptLang = req.headers['accept-language'] || '';
-			const preferred = ['en', 'es', 'ru', 'tr'].find(
+			const preferred = ['zh', 'en', 'es', 'ru', 'tr'].find(
 				(l) => acceptLang.toLowerCase().includes(l)
 			) || 'en';
 			res.cookie('zkt_language', preferred, { maxAge: 365 * 24 * 60 * 60 * 1000, path: '/' });

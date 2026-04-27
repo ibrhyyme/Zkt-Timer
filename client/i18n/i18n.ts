@@ -6,12 +6,14 @@ import trTranslation from './locales/tr/translation.json';
 import enTranslation from './locales/en/translation.json';
 import esTranslation from './locales/es/translation.json';
 import ruTranslation from './locales/ru/translation.json';
+import zhTranslation from './locales/zh/translation.json';
 
 const resources = {
 	tr: { translation: trTranslation },
 	en: { translation: enTranslation },
 	es: { translation: esTranslation },
 	ru: { translation: ruTranslation },
+	zh: { translation: zhTranslation },
 };
 
 i18n
@@ -20,7 +22,7 @@ i18n
 	.init({
 		resources,
 		fallbackLng: 'en',
-		supportedLngs: ['tr', 'en', 'es', 'ru'],
+		supportedLngs: ['tr', 'en', 'es', 'ru', 'zh'],
 		returnObjects: true,
 		interpolation: {
 			escapeValue: false,
@@ -37,7 +39,7 @@ i18n
 	});
 
 // Client-side: update HTML lang attribute and set cookie for SSR
-const SUPPORTED_LANGS = ['tr', 'en', 'es', 'ru'];
+const SUPPORTED_LANGS = ['tr', 'en', 'es', 'ru', 'zh'];
 function resolveLang(lng: string): string {
 	return SUPPORTED_LANGS.find((s) => lng?.startsWith(s)) || 'en';
 }
