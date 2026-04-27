@@ -144,12 +144,6 @@ export default function CompetitorLiveResults({registrantId}: Props) {
 				)}
 			</div>
 
-			{/* Disclaimer */}
-			<div className={b('disclaimer')}>
-				<Warning size={16} />
-				<span>{t('my_schedule.results_disclaimer')}</span>
-			</div>
-
 			{/* Stale data banner */}
 			{showStaleBanner && (
 				<div className={b('wca-live-stale-banner')}>
