@@ -40,7 +40,7 @@ export default function ThemeOption(props: Props) {
 	function selectTheme() {
 		if (locked) {
 			dispatch(setGeneral('settings_modal_open', false));
-			history.push('/account/pro');
+			history.push('/pro');
 			return;
 		}
 		for (const key of Object.keys(theme.values)) {

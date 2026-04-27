@@ -25,7 +25,7 @@ export default function FormSection(props: Props) {
 
 	function goToPro() {
 		dispatch(closeModal());
-		history.push('/account/pro');
+		history.push('/pro');
 	}
 	const classes = ['relative', 'border-solid', 'border-button'];
 	if (!removePaddingTop) {

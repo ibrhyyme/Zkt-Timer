@@ -24,7 +24,7 @@ export default function TrainerLanding() {
 
 	const handleSelectSmart = () => {
 		if (smartLocked) {
-			history.push('/account/pro');
+			history.push('/pro');
 			return;
 		}
 		dispatch({type: 'SET_MODE', payload: 'smart'});
@@ -181,7 +181,7 @@ export default function TrainerLanding() {
 							onClick={(e) => {
 								if (smartLocked) {
 									e.stopPropagation();
-									history.push('/account/pro');
+									history.push('/pro');
 								}
 							}}
 						>

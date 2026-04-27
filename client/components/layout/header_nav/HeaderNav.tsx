@@ -196,7 +196,7 @@ export default function HeaderNav() {
 		return null;
 	}
 
-	const logoSrc = isLightTheme ? '/public/images/zkt-logo-dark.png' : '/public/images/zkt-logo.png';
+	const logoSrc = isLightTheme ? '/public/images/zkt-logo-white.png' : '/public/images/zkt-logo.png';
 
 	// Desktop header
 	return (

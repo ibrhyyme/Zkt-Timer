@@ -196,7 +196,7 @@ export default function SmartSolveLayout(props: SolveLayoutProps) {
 							<div className={bs('pro-locked-dummy-bar')} style={{width: '70%'}} />
 						</div>
 					</div>
-					<div className={bs('pro-locked-overlay')} onClick={() => { handleDone(); history.push('/account/pro'); }}>
+					<div className={bs('pro-locked-overlay')} onClick={() => { handleDone(); history.push('/pro'); }}>
 						<span style={{color: '#a78bfa', fontSize: '1.3rem', marginBottom: '4px'}}>&#9733;</span>
 						<span>{t('solve_info.pro_stats_upsell')}</span>
 					</div>

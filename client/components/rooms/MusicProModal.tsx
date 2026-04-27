@@ -12,7 +12,7 @@ export default function MusicProModal() {
 
 	function handleUpgrade() {
 		dispatch(closeModal());
-		history.push('/account/pro');
+		history.push('/pro');
 	}
 
 	return (
