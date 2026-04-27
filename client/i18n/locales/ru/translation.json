@@ -2800,5 +2800,14 @@
     "one_number": "1 цифра",
     "eight_chars": "8 символов",
     "passwords_match": "Пароли совпадают"
+  },
+  "notifications": {
+    "membership_granted": {
+      "subject": "Поздравляем! Ваше членство {{label}} в Zkt Timer активно",
+      "subject_expiry": "Поздравляем! Ваше членство {{label}} активно до {{date}}",
+      "message": "Поздравляем! Ваше членство {{label}} в Zkt Timer успешно активировано. Членство бессрочное.",
+      "message_expiry": "Поздравляем! Ваше членство {{label}} в Zkt Timer успешно активировано. Членство действительно до {{date}}.",
+      "link_text": "Просмотреть настройки"
+    }
   }
 }

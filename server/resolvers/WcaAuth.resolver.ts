@@ -219,7 +219,8 @@ export class WcaAuthResolver {
 		});
 
 		// 6. Setting + NotificationPreference olustur
-		await createSetting(user);
+		const wcaLocale = req.cookies?.zkt_language || 'en';
+		await createSetting(user, wcaLocale);
 		await createNotificationPreference(user);
 
 		// 7. WCA ID baska hesaba bagli mi kontrol et

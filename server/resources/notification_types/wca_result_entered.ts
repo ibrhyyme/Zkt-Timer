@@ -20,7 +20,7 @@ export default class WcaResultEnteredNotification extends Notification {
 	constructor(input: NotificationInput, meta: WcaResultEnteredMeta) {
 		super(input);
 		this.meta = meta;
-		const locale = meta.locale && ['tr', 'en', 'es', 'ru'].includes(meta.locale) ? meta.locale : 'tr';
+		const locale = meta.locale && ['tr', 'en', 'es', 'ru', 'zh'].includes(meta.locale) ? meta.locale : 'en';
 		this.i18n = createI18nInstance(locale);
 	}
 

@@ -3,6 +3,16 @@ import { useTranslation } from 'react-i18next';
 import { Globe } from 'phosphor-react';
 import Dropdown from '../inputs/dropdown/Dropdown';
 import dayjs from 'dayjs';
+import { useSelector } from 'react-redux';
+import { useMutation, gql } from '@apollo/client';
+
+const UPDATE_LOCALE = gql`
+	mutation UpdateLocale($locale: String!) {
+		setSetting(input: { locale: $locale }) {
+			id
+		}
+	}
+`;
 
 interface Props {
 	openLeft?: boolean;
@@ -10,11 +20,16 @@ interface Props {
 
 export default function LanguageSwitcher(props: Props = {}) {
 	const {openLeft} = props;
-	const { i18n, t } = useTranslation();
+	const { i18n } = useTranslation();
+	const me = useSelector((state: any) => state.account.me);
+	const [updateLocale] = useMutation(UPDATE_LOCALE);
 
 	function changeLanguage(lng: string) {
 		i18n.changeLanguage(lng);
 		dayjs.locale(lng);
+		if (me?.id) {
+			updateLocale({ variables: { locale: lng } }).catch(() => {});
+		}
 	}
 
 	const supportedLangs = ['tr', 'en', 'es', 'ru', 'zh'];

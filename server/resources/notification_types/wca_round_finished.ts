@@ -31,7 +31,7 @@ export default class WcaRoundFinishedNotification extends Notification {
 	constructor(input: NotificationInput, meta: WcaRoundFinishedMeta) {
 		super(input);
 		this.meta = meta;
-		this.locale = meta.locale && ['tr', 'en', 'es', 'ru'].includes(meta.locale) ? meta.locale : 'tr';
+		this.locale = meta.locale && ['tr', 'en', 'es', 'ru', 'zh'].includes(meta.locale) ? meta.locale : 'en';
 		this.i18n = createI18nInstance(this.locale);
 	}
 

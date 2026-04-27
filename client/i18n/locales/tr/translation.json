@@ -2885,5 +2885,14 @@
     "one_number": "1 rakam",
     "eight_chars": "8 karakter",
     "passwords_match": "Şifreler eşleşiyor"
+  },
+  "notifications": {
+    "membership_granted": {
+      "subject": "Tebrikler! Zkt Timer {{label}} üyeliğiniz aktif",
+      "subject_expiry": "Tebrikler! {{label}} üyeliğiniz {{date}} tarihine kadar aktif",
+      "message": "Tebrikler! Zkt Timer {{label}} üyeliğiniz başarıyla aktif edildi. Üyeliğiniz süresizdir.",
+      "message_expiry": "Tebrikler! Zkt Timer {{label}} üyeliğiniz başarıyla aktif edildi. Üyeliğiniz {{date}} tarihine kadar geçerlidir.",
+      "link_text": "Ayarlarını görüntüle"
+    }
   }
 }

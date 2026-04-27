@@ -2,7 +2,17 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check } from 'phosphor-react';
 import dayjs from 'dayjs';
+import { useSelector } from 'react-redux';
+import { useMutation, gql } from '@apollo/client';
 import { TimerSettingsGroup } from '../timer/TimerSettingsRow';
+
+const UPDATE_LOCALE = gql`
+	mutation UpdateLocale($locale: String!) {
+		setSetting(input: { locale: $locale }) {
+			id
+		}
+	}
+`;
 
 interface LanguageOption {
 	code: string;
@@ -14,16 +24,22 @@ const LANGUAGES: LanguageOption[] = [
 	{ code: 'en', nativeName: 'English' },
 	{ code: 'es', nativeName: 'Español' },
 	{ code: 'ru', nativeName: 'Русский' },
+	{ code: 'zh', nativeName: '中文' },
 ];
 
 export default function LanguageSettings() {
 	const { t, i18n } = useTranslation();
+	const me = useSelector((state: any) => state.account.me);
+	const [updateLocale] = useMutation(UPDATE_LOCALE);
 
-	const currentLang = LANGUAGES.find((l) => i18n.language?.startsWith(l.code))?.code || 'tr';
+	const currentLang = LANGUAGES.find((l) => i18n.language?.startsWith(l.code))?.code || 'en';
 
 	function changeLanguage(lng: string) {
 		i18n.changeLanguage(lng);
 		dayjs.locale(lng);
+		if (me?.id) {
+			updateLocale({ variables: { locale: lng } }).catch(() => {});
+		}
 	}
 
 	return (

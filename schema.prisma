@@ -718,7 +718,7 @@ model Setting {
   inspection_auto_start               Boolean          @default(false)
   stats_module_json                   String?
   scramble_subset                     String?
-  locale                              String           @default("tr")
+  locale                              String           @default("en")
   goal_reminder_enabled               Boolean          @default(false)
   custom_cube_types                   CustomCubeType[] @relation("custom_cube_type_setting")
   user                                UserAccount      @relation(fields: [user_id], references: [id], onDelete: Cascade)

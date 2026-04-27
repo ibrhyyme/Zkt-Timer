@@ -1,4 +1,4 @@
-type SupportedLang = 'tr' | 'en' | 'es' | 'ru';
+type SupportedLang = 'tr' | 'en' | 'es' | 'ru' | 'zh';
 
 interface EmailStrings {
 	greeting: string;
@@ -52,9 +52,19 @@ const emailTranslations: Record<SupportedLang, EmailStrings> = {
 		forgot_subject: 'Сброс пароля - Zkt Timer',
 		forgot_message: 'Пожалуйста, используйте следующий код для сброса пароля:',
 	},
+	zh: {
+		greeting: '你好',
+		code_expiry: '此验证码将在30分钟后失效。',
+		closing: '此致，',
+		team: 'Zkt Timer 团队',
+		verification_subject: 'Zkt Timer 邮箱验证',
+		verification_message: '请使用以下验证码验证您的账户：',
+		forgot_subject: 'Zkt Timer 密码重置',
+		forgot_message: '请使用以下验证码重置您的密码：',
+	},
 };
 
-const SUPPORTED: SupportedLang[] = ['tr', 'en', 'es', 'ru'];
+const SUPPORTED: SupportedLang[] = ['tr', 'en', 'es', 'ru', 'zh'];
 
 export function getEmailStrings(lang?: string): EmailStrings {
 	const resolved = SUPPORTED.find((s) => lang?.startsWith(s)) || 'en';

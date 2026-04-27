@@ -5,7 +5,7 @@ import GraphQLError from '../util/graphql_error';
 import {ErrorCode} from '../constants/errors';
 import {PromoCode, CreatePromoCodeInput, RedeemPromoCodeResult, PromoCodeRedemptionInfo} from '../schemas/PromoCode.schema';
 import {getPrisma} from '../database';
-import {getUserById, updateUserAccountWithParams} from '../models/user_account';
+import {getUserByIdWithSettings, updateUserAccountWithParams} from '../models/user_account';
 import MembershipGrantedNotification from '../resources/notification_types/membership_granted';
 import {sendPushToUser} from '../services/push';
 
@@ -127,7 +127,7 @@ export class PromoCodeResolver {
 		}
 
 		// Uyelik bildirimi gonder
-		const user = await getUserById(userId);
+		const user = await getUserByIdWithSettings(userId);
 		if (user) {
 			try {
 				const notification = new MembershipGrantedNotification(

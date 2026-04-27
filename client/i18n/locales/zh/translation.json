@@ -2887,5 +2887,14 @@
     "one_number": "1个数字",
     "eight_chars": "8个字符",
     "passwords_match": "密码匹配"
+  },
+  "notifications": {
+    "membership_granted": {
+      "subject": "恭喜！您的 Zkt Timer {{label}} 会员资格已激活",
+      "subject_expiry": "恭喜！您的 {{label}} 会员资格有效期至 {{date}}",
+      "message": "恭喜！您的 Zkt Timer {{label}} 会员资格已成功激活。您的会员资格为永久有效。",
+      "message_expiry": "恭喜！您的 Zkt Timer {{label}} 会员资格已成功激活。会员资格有效期至 {{date}}。",
+      "link_text": "查看设置"
+    }
   }
 }

@@ -2021,6 +2021,7 @@ input SettingInput {
   scramble_subset: String
   session_id: String
   smart_cube_size: Int
+  locale: String
 }
 
 input SessionInput {

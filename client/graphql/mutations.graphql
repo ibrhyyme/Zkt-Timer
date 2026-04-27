@@ -2,6 +2,12 @@ mutation linkRevenueCatUser {
 	linkRevenueCatUser
 }
 
+mutation UpdateLocale($locale: String!) {
+	setSetting(input: { locale: $locale }) {
+		id
+	}
+}
+
 mutation updateSiteConfig($input: UpdateSiteConfigInput!) {
 	updateSiteConfig(input: $input) {
 		id
