@@ -45,7 +45,7 @@ export default function ProOnlyModal({featureKey}: Props) {
 
 	function handleUpgrade() {
 		dispatch(closeModal());
-		history.push('/account/pro');
+		history.push('/pro');
 	}
 
 	return (

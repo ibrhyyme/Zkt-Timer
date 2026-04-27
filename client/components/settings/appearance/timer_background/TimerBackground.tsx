@@ -69,7 +69,7 @@ export default function TimerBackground() {
 
 	if (!userIsPro) {
 		return (
-			<a href="/account/pro" className={b('locked')}>
+			<a href="/pro" className={b('locked')}>
 				<div className={b('image')}>
 					<div className={b('pro-overlay')}>
 						<Crown weight="fill" className={b('pro-crown')} />

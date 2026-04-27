@@ -167,7 +167,7 @@ $radius-sm:   10px;
 	&__billing-card {
 		position: relative;
 		border-radius: $radius-xl;
-		background: #0e0c1c;
+		background: rgb(var(--module-color));
 		border: 1px solid rgba(139, 120, 255, 0.3);
 		box-shadow:
 			0 0 0 1px rgba(139, 120, 255, 0.15),
@@ -398,7 +398,7 @@ $radius-sm:   10px;
 		font-size: clamp(56px, 8vw, 96px);
 		line-height: 0.9;
 		letter-spacing: -0.04em;
-		background: linear-gradient(180deg, #ffffff 20%, #b9a9ff 110%);
+		background: linear-gradient(180deg, rgb(var(--text-color)) 20%, #b9a9ff 110%);
 		-webkit-background-clip: text;
 		background-clip: text;
 		color: transparent;
@@ -914,7 +914,7 @@ $radius-sm:   10px;
 		margin-bottom: 20px;
 		padding: 22px;
 		border-radius: 18px;
-		background: #0e0c1c;
+		background: rgb(var(--module-color));
 		border: 1px solid rgba(139, 120, 255, 0.25);
 		box-shadow:
 			0 0 0 1px rgba(139, 120, 255, 0.1),
@@ -993,7 +993,7 @@ $radius-sm:   10px;
 		border-radius: $radius-xl;
 		padding: 56px 28px;
 		text-align: center;
-		background: linear-gradient(135deg, #1a1240 0%, #0a061d 60%, #1a1240 100%);
+		background: rgb(var(--module-color));
 		border: 1px solid rgba(139, 120, 255, 0.25);
 		overflow: hidden;
 
@@ -1101,7 +1101,7 @@ $radius-sm:   10px;
 	}
 
 	&__subscribed-via-card {
-		background: #0e0c1c;
+		background: rgb(var(--module-color));
 		border: 1px solid rgba(139, 120, 255, 0.3);
 		box-shadow:
 			0 0 0 1px rgba(139, 120, 255, 0.15),

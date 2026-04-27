@@ -181,7 +181,7 @@ export default function TimerTab({ allowedTimerTypes, requireProForSmart }: Time
 				<div className="flex items-center justify-between px-4 py-3 rounded-xl bg-primary/5 border border-primary/20">
 					<span className="text-xs text-text/60">{t('quick_controls.smart_cube_pro_room')}</span>
 					<a
-						href="/account/pro"
+						href="/pro"
 						className="text-xs font-semibold text-primary hover:text-primary/80 whitespace-nowrap ml-3 transition-colors"
 					>
 						Pro'ya Geç →
