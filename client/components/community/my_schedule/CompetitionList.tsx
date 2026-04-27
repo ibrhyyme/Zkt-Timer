@@ -307,8 +307,8 @@ export default function CompetitionList() {
 	return (
 		<div className={b('content')}>
 			<h1 className="sr-only">{t('seo.wca_competitions_title')}</h1>
-			{/* WCA banner */}
-			{((!me || (me && myComps !== null && myComps.length === 0)) && !compSearch.trim()) && (
+			{/* WCA banner — sadece WCA bagli degilken goster */}
+			{!compSearch.trim() && !me?.integrations?.some((i: any) => i.service_name === 'wca') && (
 				<div className={b('wca-banner')}>
 					<img src={resourceUri('/images/logos/wca_logo.svg')} alt="WCA" className={b('wca-banner-logo')} />
 					<div className={b('wca-banner-body')}>
@@ -338,13 +338,19 @@ export default function CompetitionList() {
 				</div>
 			)}
 
-			{/* Benim Yarismalarin */}
-			{!compSearch.trim() && myComps && myComps.length > 0 && (
+			{/* Benim Yarismalarin — WCA bagliysa her zaman goster */}
+			{!compSearch.trim() && me?.integrations?.some((i: any) => i.service_name === 'wca') && (
 				<div className={b('my-competitions')}>
 					<h3 className={b('section-title')}>{t('my_schedule.my_competitions')}</h3>
-					<div className={b('comp-list')}>
-						{myComps.map((comp: any) => renderCompCard(comp, {mine: true}))}
-					</div>
+					{!myComps ? (
+						<p className={b('my-competitions-empty')}>{t('my_schedule.my_competitions_loading')}</p>
+					) : myComps.length === 0 ? (
+						<p className={b('my-competitions-empty')}>{t('my_schedule.my_competitions_empty')}</p>
+					) : (
+						<div className={b('comp-list')}>
+							{myComps.map((comp: any) => renderCompCard(comp, {mine: true}))}
+						</div>
+					)}
 				</div>
 			)}
 

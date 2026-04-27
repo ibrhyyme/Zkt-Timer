@@ -492,6 +492,8 @@
 		"days_left": "days left",
 		"starts_today": "Today",
 		"my_competitions": "My Competitions",
+		"my_competitions_empty": "No registered competitions found.",
+		"my_competitions_loading": "Loading...",
 		"zkt_competitions": "ZKT Competitions",
 		"upcoming_competitions": "Upcoming Competitions",
 		"loading_competitions": "Loading competitions...",

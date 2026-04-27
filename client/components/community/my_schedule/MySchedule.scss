@@ -108,6 +108,13 @@
 		border-bottom: 1px solid rgba(var(--text-color), 0.08);
 	}
 
+	&__my-competitions-empty {
+		font-size: 0.875rem;
+		color: rgba(var(--text-color), 0.5);
+		margin: 0;
+		padding: 4px 0;
+	}
+
 	// Competition list
 	&__comp-list {
 		display: flex;

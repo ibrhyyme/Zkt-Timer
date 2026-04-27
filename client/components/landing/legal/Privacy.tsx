@@ -4,19 +4,18 @@ import {useHistory} from 'react-router-dom';
 import {ArrowLeft} from 'phosphor-react';
 import './Legal.scss';
 import block from '../../../styles/bem';
-import {useGeneral} from '../../../util/hooks/useGeneral';
+import {isNative} from '../../../util/platform';
 
 const b = block('landing-legal');
 
 export default function Privacy() {
 	const {t, i18n} = useTranslation();
 	const history = useHistory();
-	const mobileMode = useGeneral('mobile_mode');
 	const isNonTurkish = !i18n.language?.startsWith('tr');
 
 	return (
 		<div className={b()}>
-			{mobileMode && (
+			{isNative() && (
 				<button type="button" className={b('back-btn')} onClick={() => history.goBack()}>
 					<ArrowLeft weight="bold" size={20} />
 				</button>

@@ -492,6 +492,8 @@
 		"days_left": "gün kaldı",
 		"starts_today": "Bugün",
 		"my_competitions": "Yarışmalarım",
+		"my_competitions_empty": "Kayıtlı yarışma bulunamadı.",
+		"my_competitions_loading": "Yükleniyor...",
 		"zkt_competitions": "ZKT Yarışmaları",
 		"upcoming_competitions": "Yaklaşan Yarışmalar",
 		"loading_competitions": "Yarışmalar yükleniyor...",

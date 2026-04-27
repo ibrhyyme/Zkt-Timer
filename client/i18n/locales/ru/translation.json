@@ -492,6 +492,8 @@
 		"days_left": "дней",
 		"starts_today": "Сегодня",
 		"my_competitions": "Мои соревнования",
+		"my_competitions_empty": "Зарегистрированных соревнований не найдено.",
+		"my_competitions_loading": "Загрузка...",
 		"zkt_competitions": "Соревнования ZKT",
 		"upcoming_competitions": "Предстоящие соревнования",
 		"loading_competitions": "Загрузка соревнований...",
