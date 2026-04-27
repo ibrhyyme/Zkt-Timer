@@ -53,7 +53,7 @@ export default function SiteConfigPanel() {
 	const [tokenCheckLoading, setTokenCheckLoading] = useState(false);
 	const [tokenCheckResult, setTokenCheckResult] = useState<string | null>(null);
 
-	const {data: wcaStatsData, refetch: refetchWcaStats, loading: wcaStatsLoading} = useQuery<{wcaStats: {totalUsers: number; wcaConnected: number; wcaWithId: number; wcaWithUserId: number}}>(WCA_STATS, {fetchPolicy: 'no-cache'});
+	const {data: wcaStatsData, refetch: refetchWcaStats, loading: wcaStatsLoading} = useQuery<{wcaStats: {totalUsers: number; wcaConnected: number; wcaWithId: number; wcaWithoutId: number}}>(WCA_STATS, {fetchPolicy: 'no-cache'});
 
 	// Canli online sayaci — 10 saniyede bir polling
 	const {data: onlineData} = useQuery<OnlineStatsQuery>(OnlineStatsDocument, {
@@ -301,7 +301,7 @@ export default function SiteConfigPanel() {
 						{label: 'Toplam Kullanıcı', value: wcaStatsData?.wcaStats?.totalUsers},
 						{label: 'WCA Bağlı Hesap', value: wcaStatsData?.wcaStats?.wcaConnected},
 						{label: 'WCA ID\'si Olan', value: wcaStatsData?.wcaStats?.wcaWithId},
-						{label: 'WCA User ID\'si Olan', value: wcaStatsData?.wcaStats?.wcaWithUserId},
+						{label: 'WCA ID\'si Olmayan', value: wcaStatsData?.wcaStats?.wcaWithoutId},
 					].map(({label, value}) => (
 						<div key={label} className={b('stat-card')}>
 							<div className={b('stat-label')}>{label}</div>

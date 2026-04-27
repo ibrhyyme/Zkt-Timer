@@ -469,13 +469,12 @@ export class AdminResolver {
 	@Query(() => WcaStats)
 	async wcaStats(): Promise<WcaStats> {
 		const prisma = getPrisma();
-		const [totalUsers, wcaConnected, wcaWithId, wcaWithUserId] = await Promise.all([
+		const [totalUsers, wcaConnected, wcaWithId] = await Promise.all([
 			prisma.userAccount.count(),
 			prisma.integration.count({where: {service_name: 'wca'}}),
 			prisma.integration.count({where: {service_name: 'wca', wca_id: {not: null}}}),
-			prisma.integration.count({where: {service_name: 'wca', wca_user_id: {not: null}}}),
 		]);
-		return {totalUsers, wcaConnected, wcaWithId, wcaWithUserId};
+		return {totalUsers, wcaConnected, wcaWithId, wcaWithoutId: wcaConnected - wcaWithId};
 	}
 
 	@Authorized([Role.ADMIN])
