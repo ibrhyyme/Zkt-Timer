@@ -172,7 +172,7 @@ export class WcaStats {
 	wcaWithId: number;
 
 	@Field(() => Int)
-	wcaWithUserId: number;
+	wcaWithoutId: number;
 }
 
 @InputType()
