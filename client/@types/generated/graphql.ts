@@ -610,6 +610,21 @@ export type InternalUserAccount = IInternalUserAccount & IPublicUserAccount & IU
   verified?: Maybe<Scalars['Boolean']>;
 };
 
+export type IpInfo = {
+  __typename?: 'IpInfo';
+  city?: Maybe<Scalars['String']>;
+  country?: Maybe<Scalars['String']>;
+  countryCode?: Maybe<Scalars['String']>;
+  hosting?: Maybe<Scalars['Boolean']>;
+  ip?: Maybe<Scalars['String']>;
+  isp?: Maybe<Scalars['String']>;
+  mobile?: Maybe<Scalars['Boolean']>;
+  org?: Maybe<Scalars['String']>;
+  proxy?: Maybe<Scalars['Boolean']>;
+  regionName?: Maybe<Scalars['String']>;
+  timezone?: Maybe<Scalars['String']>;
+};
+
 export type IPublicUserAccount = {
   admin?: Maybe<Scalars['Boolean']>;
   badges?: Maybe<Array<Maybe<Badge>>>;
@@ -1720,6 +1735,7 @@ export type Query = {
   getUserAccountForAdmin?: Maybe<UserAccountForAdmin>;
   integration?: Maybe<Integration>;
   integrations?: Maybe<Array<Maybe<Integration>>>;
+  ipInfo?: Maybe<IpInfo>;
   landingStats?: Maybe<LandingStats>;
   me: UserAccount;
   myWcaCompetitions?: Maybe<Array<Maybe<WcaCompetition>>>;
@@ -1829,6 +1845,11 @@ export type QueryGetUserAccountForAdminArgs = {
 
 export type QueryIntegrationArgs = {
   integrationType?: InputMaybe<IntegrationType>;
+};
+
+
+export type QueryIpInfoArgs = {
+  ip?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -3830,6 +3851,13 @@ export type WcaStatsQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type WcaStatsQuery = { __typename?: 'Query', wcaStats?: { __typename?: 'WcaStats', totalUsers?: number | null, wcaConnected?: number | null, wcaWithId?: number | null, wcaWithUserId?: number | null } | null };
 
+export type IpInfoQueryVariables = Exact<{
+  ip: Scalars['String'];
+}>;
+
+
+export type IpInfoQuery = { __typename?: 'Query', ipInfo?: { __typename?: 'IpInfo', ip?: string | null, country?: string | null, countryCode?: string | null, regionName?: string | null, city?: string | null, isp?: string | null, org?: string | null, proxy?: boolean | null, mobile?: boolean | null, hosting?: boolean | null, timezone?: string | null } | null };
+
 export type OnlineUsersQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -4196,6 +4224,7 @@ export const GetIapStatusDocument = {"kind":"Document","definitions":[{"kind":"O
 export const SiteConfigDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"siteConfig"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"siteConfig"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"maintenance_mode"}},{"kind":"Field","name":{"kind":"Name","value":"trainer_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"community_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"leaderboards_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"rooms_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"battle_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"pro_enabled"}},{"kind":"Field","name":{"kind":"Name","value":"featureOverrides"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"feature"}},{"kind":"Field","name":{"kind":"Name","value":"mode"}},{"kind":"Field","name":{"kind":"Name","value":"users"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"username"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"updated_at"}}]}}]}}]} as unknown as DocumentNode<SiteConfigQuery, SiteConfigQueryVariables>;
 export const OnlineStatsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"onlineStats"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"onlineStats"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"totalSockets"}},{"kind":"Field","name":{"kind":"Name","value":"uniqueUsers"}},{"kind":"Field","name":{"kind":"Name","value":"anonymous"}}]}}]}}]} as unknown as DocumentNode<OnlineStatsQuery, OnlineStatsQueryVariables>;
 export const WcaStatsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"wcaStats"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"wcaStats"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"totalUsers"}},{"kind":"Field","name":{"kind":"Name","value":"wcaConnected"}},{"kind":"Field","name":{"kind":"Name","value":"wcaWithId"}},{"kind":"Field","name":{"kind":"Name","value":"wcaWithUserId"}}]}}]}}]} as unknown as DocumentNode<WcaStatsQuery, WcaStatsQueryVariables>;
+export const IpInfoDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ipInfo"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"ip"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"ipInfo"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"ip"},"value":{"kind":"Variable","name":{"kind":"Name","value":"ip"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"ip"}},{"kind":"Field","name":{"kind":"Name","value":"country"}},{"kind":"Field","name":{"kind":"Name","value":"countryCode"}},{"kind":"Field","name":{"kind":"Name","value":"regionName"}},{"kind":"Field","name":{"kind":"Name","value":"city"}},{"kind":"Field","name":{"kind":"Name","value":"isp"}},{"kind":"Field","name":{"kind":"Name","value":"org"}},{"kind":"Field","name":{"kind":"Name","value":"proxy"}},{"kind":"Field","name":{"kind":"Name","value":"mobile"}},{"kind":"Field","name":{"kind":"Name","value":"hosting"}},{"kind":"Field","name":{"kind":"Name","value":"timezone"}}]}}]}}]} as unknown as DocumentNode<IpInfoQuery, IpInfoQueryVariables>;
 export const OnlineUsersDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"onlineUsers"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"onlineUsers"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"tabCount"}},{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PublicUserFragment"}}]}}]}}]}},...PublicUserFragmentFragmentDoc.definitions,...ImageFragmentFragmentDoc.definitions]} as unknown as DocumentNode<OnlineUsersQuery, OnlineUsersQueryVariables>;
 export const SolveByShareCodeDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"solveByShareCode"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"shareCode"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"solveByShareCode"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"shareCode"},"value":{"kind":"Variable","name":{"kind":"Name","value":"shareCode"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SolveWithUserFragment"}}]}}]}},...SolveWithUserFragmentFragmentDoc.definitions,...SolveFragmentFragmentDoc.definitions,...PublicUserWithEloFragmentFragmentDoc.definitions,...PublicUserFragmentFragmentDoc.definitions,...ImageFragmentFragmentDoc.definitions]} as unknown as DocumentNode<SolveByShareCodeQuery, SolveByShareCodeQueryVariables>;
 export const ProfileDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"profile"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"username"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"profile"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"username"},"value":{"kind":"Variable","name":{"kind":"Name","value":"username"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ProfileFragment"}}]}}]}},...ProfileFragmentFragmentDoc.definitions,...PublicUserWithEloFragmentFragmentDoc.definitions,...PublicUserFragmentFragmentDoc.definitions,...ImageFragmentFragmentDoc.definitions,...TopSolveFragmentFragmentDoc.definitions,...SolveFragmentFragmentDoc.definitions,...TopAverageFragmentFragmentDoc.definitions]} as unknown as DocumentNode<ProfileQuery, ProfileQueryVariables>;

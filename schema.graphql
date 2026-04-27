@@ -283,6 +283,7 @@ type Query {
   adminMyPushTokens: [PushTokenInfo]
   onlineStats: OnlineStats
   onlineUsers: [OnlineUser]
+  ipInfo(ip: String): IpInfo
   wcaStats: WcaStats
   statsModule: StatsModule
   wcaRecords(userId: String): [WcaRecord]
@@ -1116,6 +1117,20 @@ type BackfillResult {
   recordsTotal: Int
   recordsFilled: Int
   recordsError: Int
+}
+
+type IpInfo {
+  ip: String
+  country: String
+  countryCode: String
+  regionName: String
+  city: String
+  isp: String
+  org: String
+  proxy: Boolean
+  mobile: Boolean
+  hosting: Boolean
+  timezone: String
 }
 
 type WcaStats {

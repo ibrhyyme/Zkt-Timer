@@ -30,7 +30,7 @@ import { PaginationArgsInput, AdminUserFiltersInput } from '../schemas/Paginatio
 import { getPaginatedResponse, PaginatedRequestInput } from '../util/pagination/paginated_response';
 import { sendPushToUser } from '../services/push';
 import { AdminSendPushResult, PushTokenInfo } from '../schemas/PushToken.schema';
-import { OnlineStats, OnlineUser, BackfillResult, WcaStats } from '../schemas/SiteConfig.schema';
+import { OnlineStats, OnlineUser, BackfillResult, WcaStats, IpInfo } from '../schemas/SiteConfig.schema';
 import { getOnlineCounts, getOnlineUsers } from '../services/socket_util';
 import WcaResultEnteredNotification from '../resources/notification_types/wca_result_entered';
 import WcaRoundFinishedNotification from '../resources/notification_types/wca_round_finished';
@@ -41,6 +41,7 @@ import axios from 'axios';
 import { updateIntegration } from '../models/integration';
 import { fetchAndSaveWcaRecords } from '../models/wca_record';
 import { getOAuthPostRequest } from '../integrations/oauth';
+import { getIpDetail } from '../services/ipstack';
 
 @Resolver()
 export class AdminResolver {
@@ -456,6 +457,12 @@ export class AdminResolver {
 		}
 
 		return true;
+	}
+
+	@Authorized([Role.ADMIN, Role.MOD])
+	@Query(() => IpInfo)
+	async ipInfo(@Arg('ip') ip: string): Promise<IpInfo> {
+		return getIpDetail(ip);
 	}
 
 	@Authorized([Role.ADMIN])

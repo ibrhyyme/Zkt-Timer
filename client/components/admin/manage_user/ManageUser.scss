@@ -68,6 +68,12 @@
 			align-items: stretch;
 			gap: 12px;
 		}
+
+		&--ip-expandable {
+			flex-direction: column;
+			align-items: stretch;
+			gap: 0;
+		}
 	}
 
 	&__card-label {
@@ -162,6 +168,100 @@
 		display: flex;
 		flex-direction: column;
 		gap: 5px;
+	}
+
+	&__card-ip-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		width: 100%;
+	}
+
+	&__card-ip-right {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+
+	&__ip-toggle {
+		background: rgba(var(--text-color), 0.08);
+		border: none;
+		border-radius: 6px;
+		color: rgba(var(--text-color), 0.6);
+		cursor: pointer;
+		font-size: 0.65rem;
+		padding: 2px 6px;
+		line-height: 1;
+
+		&:hover {
+			background: rgba(var(--text-color), 0.14);
+		}
+	}
+
+	&__ip-detail {
+		margin-top: 10px;
+		padding-top: 10px;
+		border-top: 1px solid rgba(var(--text-color), 0.08);
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		width: 100%;
+	}
+
+	&__ip-detail-loading {
+		font-size: 0.8rem;
+		color: rgba(var(--text-color), 0.5);
+	}
+
+	&__ip-detail-row {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		gap: 8px;
+		font-size: 0.8rem;
+		color: rgba(var(--text-color), 0.85);
+	}
+
+	&__ip-detail-label {
+		color: rgba(var(--text-color), 0.5);
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		flex-shrink: 0;
+	}
+
+	&__ip-detail-flags {
+		display: flex;
+		gap: 6px;
+		flex-wrap: wrap;
+		margin-top: 2px;
+	}
+
+	&__ip-flag {
+		font-size: 0.7rem;
+		font-weight: 600;
+		padding: 2px 8px;
+		border-radius: 6px;
+
+		&--danger {
+			background: rgba(239, 68, 68, 0.2);
+			color: rgb(248, 113, 113);
+		}
+
+		&--warn {
+			background: rgba(234, 179, 8, 0.2);
+			color: rgb(250, 204, 21);
+		}
+
+		&--ok {
+			background: rgba(34, 197, 94, 0.12);
+			color: rgba(var(--text-color), 0.5);
+		}
+
+		&--neutral {
+			background: rgba(var(--text-color), 0.08);
+			color: rgba(var(--text-color), 0.6);
+		}
 	}
 
 	&__card-meta {
