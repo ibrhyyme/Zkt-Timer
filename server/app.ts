@@ -75,6 +75,24 @@ app.use(compression());
 app.use(bodyParser.json({ limit: '200mb' }));
 app.use(cookieParser());
 
+app.use((req, res, next) => {
+	const originalSend = res.send.bind(res);
+	res.send = function (body) {
+		if (res.statusCode >= 400 && res.statusCode < 500) {
+			logger.warn('client_error', {
+				method: req.method,
+				path: req.path,
+				status: res.statusCode,
+				referer: req.headers.referer || null,
+				ua: req.headers['user-agent']?.substring(0, 120),
+				ip: requestIp.getClientIp(req),
+			});
+		}
+		return originalSend(body);
+	};
+	next();
+});
+
 initWebhookListeners();
 exposeResourcesForSearchEngines();
 

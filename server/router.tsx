@@ -195,7 +195,13 @@ function appUseRouteForPage(routePath, route: PageContext) {
 		}
 
 		if (!res.headersSent) {
-			res.setHeader('Cache-Control', 'no-store, must-revalidate');
+			const isAuthenticated = !!req.cookies?.session;
+			res.setHeader(
+				'Cache-Control',
+				isAuthenticated
+					? 'private, no-store'
+					: 'public, s-maxage=300, max-age=60, stale-while-revalidate=30'
+			);
 			res.status(code).send(html);
 		}
 	});
