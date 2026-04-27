@@ -492,6 +492,8 @@
 		"days_left": "días restantes",
 		"starts_today": "Hoy",
 		"my_competitions": "Mis Competencias",
+		"my_competitions_empty": "No se encontraron competiciones registradas.",
+		"my_competitions_loading": "Cargando...",
 		"zkt_competitions": "Competiciones ZKT",
 		"upcoming_competitions": "Proximas Competencias",
 		"loading_competitions": "Cargando competencias...",
