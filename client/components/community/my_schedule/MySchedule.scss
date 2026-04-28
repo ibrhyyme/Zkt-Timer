@@ -674,7 +674,7 @@
 		bottom: 0;
 		height: 2px;
 		width: 40%;
-		background: linear-gradient(90deg, transparent, #4a9eff, transparent);
+		background: linear-gradient(90deg, transparent, rgb(var(--primary-color)), transparent);
 		animation: cd-search-progress 1.1s linear infinite;
 	}
 

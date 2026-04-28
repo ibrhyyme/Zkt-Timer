@@ -233,13 +233,13 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 					: 'opacity-0 translate-y-4 pointer-events-none'
 			} bottom-0 left-0 w-full md:bottom-4 md:right-4 md:left-auto md:w-80`}
 		>
-			<div className="bg-[#1a1b1f] border border-gray-800 md:rounded-lg shadow-xl overflow-hidden">
+			<div className="bg-module border border-text/[0.1] md:rounded-lg shadow-xl overflow-hidden">
 				{/* Header */}
-				<div className="flex items-center justify-between px-3 py-2 border-b border-gray-800/50 bg-[#15161a]">
-					<span className="text-sm font-semibold text-white/90">{t('rooms.music_player')}</span>
+				<div className="flex items-center justify-between px-3 py-2 border-b border-text/[0.05] bg-background">
+					<span className="text-sm font-semibold text-text/90">{t('rooms.music_player')}</span>
 					<button
 						onClick={onClose}
-						className="p-1 text-white/60 hover:text-white transition-colors"
+						className="p-1 text-text/60 hover:text-text transition-colors"
 					>
 						<X size={16} weight="bold" />
 					</button>
@@ -251,7 +251,7 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 						<div className="relative flex-1">
 							<MagnifyingGlass
 								size={14}
-								className="absolute left-2.5 top-1/2 -translate-y-1/2 text-white/40"
+								className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text/40"
 							/>
 							<input
 								type="text"
@@ -259,7 +259,7 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 								onChange={(e) => setSearchQuery(e.target.value)}
 								onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
 								placeholder={t('rooms.music_search_placeholder')}
-								className="w-full bg-[#0f1014] border border-gray-800 rounded-md pl-8 pr-3 py-1.5 text-sm text-white placeholder-white/30 focus:outline-none focus:border-blue-500/50"
+								className="w-full bg-background border border-text/[0.1] rounded-md pl-8 pr-3 py-1.5 text-sm text-text placeholder-text/30 focus:outline-none focus:border-blue-500/50"
 							/>
 						</div>
 						<button

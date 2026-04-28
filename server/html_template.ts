@@ -28,6 +28,7 @@ export default (payload: HtmlPagePayload) => {
 				<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Mono&family=Fira+Sans&family=JetBrains+Mono&family=Kiwi+Maru&family=Montserrat&family=Poppins&family=Roboto+Mono&family=Space+Mono&display=swap"></noscript>
 				<link rel="preload" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,500;0,600;0,700;0,800;0,900;1,500;1,600;1,700;1,900&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
 				<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,500;0,600;0,700;0,800;0,900;1,500;1,600;1,700;1,900&display=swap"></noscript>
+				<script>try{var _t=JSON.parse(localStorage.getItem('zkt_theme'));if(_t){var _h=document.documentElement,_s=_h.style;if(_t.bg)_s.setProperty('--background-color',_t.bg);if(_t.mod)_s.setProperty('--module-color',_t.mod);if(_t.btn)_s.setProperty('--button-color',_t.btn);if(_t.txt)_s.setProperty('--text-color',_t.txt);if(_t.pri)_s.setProperty('--primary-color',_t.pri);if(_t.sec)_s.setProperty('--secondary-color',_t.sec);_h.classList.add(_t.light?'theme-light':'theme-dark');}}catch(e){}</script>
 				<link rel="stylesheet" href="${distBase}/${cssFileName}?v=${version}">
 				<link rel="stylesheet" href="/public/cubing-icons/cubing-icons.css">
 				<link rel="icon" type="image/png" href="${resourceBase}/images/zkt-logo.png">

@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import {useDispatch} from 'react-redux';
 import {openModal, closeModal} from '../../../../actions/general';
 import {b} from '../shared';
+import {useTranslation} from 'react-i18next';
 
 interface Props {
 	type: string | null | undefined; // 'RANKING' | 'PERCENT' | null
@@ -44,6 +45,7 @@ function Editor({
 	onSave: (params: {type: string | null; level: number | null}) => Promise<void> | void;
 }) {
 	const dispatch = useDispatch();
+	const {t} = useTranslation();
 	const [type, setType] = useState<string>(initialType || 'RANKING');
 	const [level, setLevel] = useState<string>(initialLevel ? String(initialLevel) : '');
 
@@ -94,13 +96,13 @@ function Editor({
 
 			<div className={b('modal-actions')}>
 				<button type="button" className={b('modal-btn', {danger: true})} onClick={handleClear}>
-					Temizle
+					{t('common.clear')}
 				</button>
 				<button type="button" className={b('modal-btn')} onClick={() => dispatch(closeModal())}>
-					İptal
+					{t('common.cancel')}
 				</button>
 				<button type="button" className={b('modal-btn', {primary: true})} onClick={handleSave}>
-					Kaydet
+					{t('common.save')}
 				</button>
 			</div>
 		</div>

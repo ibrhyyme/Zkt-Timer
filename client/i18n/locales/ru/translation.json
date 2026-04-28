@@ -810,7 +810,14 @@
         "twistytimer_step_4": "Используйте опцию \"Экспорт как внешний\" для сохранения файла",
         "category_management": "Управление данными",
         "category_reset": "Сброс",
-        "import_pro_upsell": "Перейдите на Pro для импорта данных"
+        "import_pro_upsell": "Перейдите на Pro для импорта данных",
+        "import_error_title": "Импорт завершён (с некоторыми ошибками)",
+        "import_success_count": "Успешно: {{count}} фрагментов",
+        "import_failed_count": "Неудачно: {{count}} фрагментов",
+        "import_failed_chunks_header": "Неудачные фрагменты:",
+        "import_items_range": "Элементы: {{range}}",
+        "import_retry_failed_btn": "Повторить неудачные фрагменты",
+        "import_continue_anyway": "Продолжить в любом случае"
     },
     "language": {
         "label": "Язык",
@@ -897,7 +904,10 @@
         "overview_tab": "Обзор",
         "time_label": "Время",
         "deleted_from_other_device": "Эта сборка была удалена с другого устройства",
-        "pro_stats_upsell": "Перейдите на Pro для детальной статистики"
+        "pro_stats_upsell": "Перейдите на Pro для детальной статистики",
+        "copy": "Копировать",
+        "share": "Поделиться",
+        "average_copied": "Среднее скопировано"
     },
     "sessions": {
         "page_title": "Сессии",
@@ -1187,7 +1197,14 @@
         "delete_solve": "Удалить сборку",
         "view_details": "Подробнее",
         "view_profile": "Просмотр профиля",
-        "close": "Закрыть"
+        "close": "Закрыть",
+        "loading": "Загрузка...",
+        "save": "Сохранить",
+        "cancel": "Отмена",
+        "reset": "Сбросить",
+        "clear": "Очистить",
+        "create_new": "Создать новый",
+        "copied": "Скопировано"
     },
     "announcement_modal": {
         "feature": "🎉 Новая функция",
@@ -1749,7 +1766,8 @@
         "wca_description": "Повысьте доверие, привязав аккаунт WCA и отображая официальные записи.",
         "disconnect_no_password": "Чтобы отвязать, сначала установите пароль на странице Личная информация.",
         "wca_connecting": "Подключение к WCA...",
-        "linking_account": "Привязка аккаунта..."
+        "linking_account": "Привязка аккаунта...",
+        "oauth_error": "Произошла ошибка при подключении OAuth"
     },
     "email_verification": {
         "title": "Подтверждение почты",
@@ -1814,6 +1832,13 @@
         "rooms_bullet_2": "Таблица лидеров в реальном времени",
         "rooms_bullet_3": "Мгновенный чат",
         "rooms_alt": "Многопользовательские комнаты"
+    },
+    "trust_section": {
+        "solves": "Сборок",
+        "cube_type": "Тип куба",
+        "countries": "Стран",
+        "title": "Совместимо с WCA и актуально",
+        "description": "Мгновенный доступ к национальным и мировым рекордам. Актуальные официальные скрамблы WCA."
     },
     "time_display": {
         "inspection_on": "Инспекция включена",

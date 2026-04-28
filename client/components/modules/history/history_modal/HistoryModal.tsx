@@ -22,6 +22,7 @@ import { useGeneral } from '../../../../util/hooks/useGeneral';
 import { copyText } from '../../../common/copy_text/CopyText';
 import { generateAverageText } from '../../../../util/average_text';
 import { toastSuccess } from '../../../../util/toast';
+import { shareContent } from '../../../../util/native-plugins';
 
 interface Props {
 	solves?: Solve[];
@@ -122,20 +123,16 @@ const trimmedIds = useMemo(() => getTrimmedSolveIds(solves), [solves]);
 		// Use reverseOrder directly to match view
 		const text = generateAverageText(description, effectiveTime, solves, reverseOrder);
 		copyText(text);
-		toastSuccess('Average kopyalandı');
+		toastSuccess(t('solve_info.average_copied'));
 	}
 
 	async function handleShare() {
 		const text = generateAverageText(description, effectiveTime, solves, reverseOrder);
-		copyText(text);
-		if (navigator.share) {
-			try {
-				await navigator.share({ text });
-			} catch (e) {
-				// Kullanıcı paylaşımı iptal etti
-			}
+		const shared = await shareContent({ title: description || 'Average', text });
+		if (!shared) {
+			copyText(text);
+			toastSuccess(t('solve_info.average_copied'));
 		}
-		toastSuccess('Average kopyalandı');
 	}
 
 	function handleDone() {
@@ -241,7 +238,7 @@ const trimmedIds = useMemo(() => getTrimmedSolveIds(solves), [solves]);
 						fullWidth
 						iconFirst
 						icon={<Copy weight="bold" />}
-						text="Kopyala"
+						text={t('solve_info.copy')}
 						theme={CommonType.PRIMARY}
 						onClick={handleCopy}
 					/>
@@ -250,7 +247,7 @@ const trimmedIds = useMemo(() => getTrimmedSolveIds(solves), [solves]);
 						fullWidth
 						iconFirst
 						icon={<ShareNetwork weight="bold" />}
-						text="Paylaş"
+						text={t('solve_info.share')}
 						theme={CommonType.PRIMARY}
 						onClick={handleShare}
 					/>

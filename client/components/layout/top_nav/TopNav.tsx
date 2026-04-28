@@ -20,7 +20,10 @@ export default function TopNav(props: Props) {
 			<div className={b('body')}>
 				<div className={b('logo')}>
 					<a href="/">
-						<div className="logo-placeholder" />
+						<img
+							src={white ? '/public/images/zkt-logo-white.png' : '/public/images/zkt-logo.png'}
+							alt="Zkt Timer"
+						/>
 					</a>
 				</div>
 

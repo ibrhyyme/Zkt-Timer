@@ -810,7 +810,14 @@
         "twistytimer_step_4": "使用“导出为外部”选项保存文件",
         "category_management": "数据管理",
         "category_reset": "重置",
-        "import_pro_upsell": "升级到 Pro 以导入您的数据"
+        "import_pro_upsell": "升级到 Pro 以导入您的数据",
+        "import_error_title": "导入完成（有部分错误）",
+        "import_success_count": "成功: {{count}} 块",
+        "import_failed_count": "失败: {{count}} 块",
+        "import_failed_chunks_header": "失败的块：",
+        "import_items_range": "项目：{{range}}",
+        "import_retry_failed_btn": "重试失败的块",
+        "import_continue_anyway": "仍然继续"
     },
     "language": {
         "label": "语言",
@@ -897,7 +904,10 @@
         "overview_tab": "概览",
         "time_label": "时间",
         "deleted_from_other_device": "此还原已从其他设备删除",
-        "pro_stats_upsell": "升级到 Pro 以获取详细统计信息"
+        "pro_stats_upsell": "升级到 Pro 以获取详细统计信息",
+        "copy": "复制",
+        "share": "分享",
+        "average_copied": "平均成绩已复制"
     },
     "sessions": {
         "page_title": "阶段",
@@ -1187,7 +1197,14 @@
         "delete_solve": "删除还原",
         "view_details": "查看详情",
         "view_profile": "查看个人资料",
-        "close": "关闭"
+        "close": "关闭",
+        "loading": "加载中...",
+        "save": "保存",
+        "cancel": "取消",
+        "reset": "重置",
+        "clear": "清除",
+        "create_new": "新建",
+        "copied": "已复制"
     },
     "announcement_modal": {
         "feature": "🎉 功能",
@@ -1749,7 +1766,8 @@
         "wca_description": "关联您的WCA账户并显示您的官方记录，以增加可信度。",
         "disconnect_no_password": "要断开连接，请先在个人信息页面设置密码。",
         "wca_connecting": "正在连接到WCA...",
-        "linking_account": "正在关联账户..."
+        "linking_account": "正在关联账户...",
+        "oauth_error": "OAuth 连接期间发生错误"
     },
     "email_verification": {
         "title": "邮箱验证",
@@ -1814,6 +1832,13 @@
         "rooms_bullet_2": "实时排行榜",
         "rooms_bullet_3": "即时聊天",
         "rooms_alt": "多人房间"
+    },
+    "trust_section": {
+        "solves": "还原",
+        "cube_type": "魔方类型",
+        "countries": "国家",
+        "title": "WCA 兼容 & 最新",
+        "description": "即时访问全国和世界纪录。使用官方 WCA 打乱保持最新状态。"
     },
     "time_display": {
         "inspection_on": "观察中",

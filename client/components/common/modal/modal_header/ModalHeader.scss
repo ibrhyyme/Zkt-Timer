@@ -2,10 +2,10 @@
 
 .#{$namespace}-modal-header {
 	width: calc(100% - 3rem);
-	color: rgba(248, 250, 252, 1); // slate-50
+	color: rgb(var(--text-color));
 	margin-bottom: 1.5rem;
 	padding-bottom: 0.75rem;
-	border-bottom: 1px solid rgba(148, 163, 184, 0.1); // slate-400/10
+	border-bottom: 1px solid rgba(var(--text-color), 0.1);
 
 	h2 {
 		color: inherit;
@@ -22,7 +22,7 @@
 	}
 
 	p {
-		color: rgba(148, 163, 184, 1); // slate-400
+		color: rgba(var(--text-color), 0.6);
 		font-size: 1rem;
 		line-height: 1.5;
 		margin: 0.5rem 0 0 0;

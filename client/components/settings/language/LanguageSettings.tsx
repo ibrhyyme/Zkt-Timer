@@ -54,12 +54,12 @@ export default function LanguageSettings() {
 								type="button"
 								onClick={() => changeLanguage(lang.code)}
 								className={`w-full flex items-center justify-between py-4 px-4 rounded-xl border transition-all duration-200 cursor-pointer ${isActive
-									? 'bg-[#4a9eff]/10 border-[#4a9eff] text-white'
-									: 'bg-[#1c1c1e] border-white/[0.08] text-[#888] hover:border-white/[0.15] hover:text-slate-200'
+									? 'bg-primary/10 border-primary text-text'
+									: 'bg-button border-text/[0.08] text-text/50 hover:border-text/[0.15] hover:text-text/80'
 									}`}
 							>
 								<span className="font-medium">{lang.nativeName}</span>
-								{isActive && <Check size={18} weight="bold" className="text-[#4a9eff]" />}
+								{isActive && <Check size={18} weight="bold" className="text-primary" />}
 							</button>
 						);
 					})}

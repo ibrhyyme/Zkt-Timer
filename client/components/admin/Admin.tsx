@@ -11,12 +11,12 @@ const ALL_TABS = [
 	{id: 'reports', link: '/admin/reports', value: 'Reports'},
 	{id: 'users', link: '/admin/users', value: 'Users'},
 	{id: 'pro-users', link: '/admin/pro-users', value: 'Pro Users'},
-	{id: 'announcements', link: '/admin/announcements', value: 'Duyurular'},
+	{id: 'announcements', link: '/admin/announcements', value: 'Announcements'},
 	{id: 'email', link: '/admin/email', value: 'Mail'},
-	{id: 'algorithms', link: '/admin/algorithms', value: 'Algoritmalar'},
+	{id: 'algorithms', link: '/admin/algorithms', value: 'Algorithms'},
 	{id: 'promo-codes', link: '/admin/promo-codes', value: 'Promo'},
-	{id: 'site-config', link: '/admin/site-config', value: 'Site Yönetimi'},
-	{id: 'competitions', link: '/admin/competitions', value: 'Yarışmalar'},
+	{id: 'site-config', link: '/admin/site-config', value: 'Site Config'},
+	{id: 'competitions', link: '/admin/competitions', value: 'Competitions'},
 ];
 
 const COMPETITIONS_ONLY = ALL_TABS.filter((t) => t.id === 'competitions');

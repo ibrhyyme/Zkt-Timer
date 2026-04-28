@@ -22,9 +22,9 @@ export default function NotificationLog({ notifications }: NotificationLogProps)
     }, [notifications]);
 
     return (
-        <div className="flex flex-col h-full w-full bg-[#0f1014] border-l border-[#333] overflow-hidden">
-            <div className="p-2 border-b border-[#333] bg-[#15161a]">
-                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider">Log</h3>
+        <div className="flex flex-col h-full w-full bg-background border-l border-text/[0.1] overflow-hidden">
+            <div className="p-2 border-b border-text/[0.1] bg-module">
+                <h3 className="text-xs font-bold text-text/50 uppercase tracking-wider">Log</h3>
             </div>
 
             <div className="flex-1 overflow-y-auto p-2 space-y-1.5 scrollbar-thin scrollbar-thumb-gray-800 scrollbar-track-transparent">

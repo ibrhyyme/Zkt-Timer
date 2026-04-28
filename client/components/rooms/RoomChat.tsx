@@ -48,8 +48,8 @@ export default function RoomChat({ roomId }: RoomChatProps) {
     }
 
     return (
-        <div className="flex flex-col h-full w-full bg-[#15161A] text-gray-200 overflow-hidden relative">
-            <div className="shrink-0 p-3 border-b border-gray-800 bg-[#15161A] text-xs font-bold uppercase tracking-wider text-gray-400">
+        <div className="flex flex-col h-full w-full bg-background text-text/80 overflow-hidden relative">
+            <div className="shrink-0 p-3 border-b border-text/[0.1] bg-background text-xs font-bold uppercase tracking-wider text-text/50">
                 Sohbet
             </div>
 
@@ -79,11 +79,11 @@ export default function RoomChat({ roomId }: RoomChatProps) {
                 <div ref={messagesEndRef} />
             </div>
 
-            <div className="shrink-0 p-2 border-t border-gray-800 bg-[#15161A]">
+            <div className="shrink-0 p-2 border-t border-text/[0.1] bg-background">
                 <div className="flex gap-2">
                     <input
                         type="text"
-                        className="flex-1 bg-[#0a0b0e] border border-gray-700/50 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500 transition-colors"
+                        className="flex-1 bg-module border border-text/[0.1] rounded px-3 py-2 text-sm text-text focus:outline-none focus:border-blue-500 transition-colors"
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
                         onKeyDown={handleKeyDown}

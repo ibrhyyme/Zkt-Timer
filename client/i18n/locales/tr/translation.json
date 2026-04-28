@@ -810,7 +810,14 @@
         "twistytimer_step_4": "\"Dış kaynak olarak dışa aktar\" seçeneğini kullanarak dosyayı kaydedin",
         "category_management": "Veri Yönetimi",
         "category_reset": "Sıfırlama",
-        "import_pro_upsell": "Verilerinizi aktarmak için Pro'ya geçin"
+        "import_pro_upsell": "Verilerinizi aktarmak için Pro'ya geçin",
+        "import_error_title": "İçe Aktarma Tamamlandı (Bazı Hatalarla)",
+        "import_success_count": "Başarılı: {{count}} chunk",
+        "import_failed_count": "Başarısız: {{count}} chunk",
+        "import_failed_chunks_header": "Başarısız Chunk'lar:",
+        "import_items_range": "Öğeler: {{range}}",
+        "import_retry_failed_btn": "Başarısız Chunk'ları Tekrar Dene",
+        "import_continue_anyway": "Yine de Devam Et"
     },
     "language": {
         "label": "Dil",
@@ -897,7 +904,10 @@
         "overview_tab": "Genel Bakış",
         "time_label": "Süre",
         "deleted_from_other_device": "Bu çözüm başka bir cihazdan silinmiş",
-        "pro_stats_upsell": "Detaylı istatistikler için Pro'ya geçin"
+        "pro_stats_upsell": "Detaylı istatistikler için Pro'ya geçin",
+        "copy": "Kopyala",
+        "share": "Paylaş",
+        "average_copied": "Average kopyalandı"
     },
     "sessions": {
         "page_title": "Sezonlar",
@@ -1187,7 +1197,14 @@
         "delete_solve": "Çözümü sil",
         "view_details": "Detayları gör",
         "view_profile": "Profili gör",
-        "close": "Kapat"
+        "close": "Kapat",
+        "loading": "Yükleniyor...",
+        "save": "Kaydet",
+        "cancel": "İptal",
+        "reset": "Sıfırla",
+        "clear": "Temizle",
+        "create_new": "Yeni Oluştur",
+        "copied": "Kopyalandı"
     },
     "announcement_modal": {
         "feature": "🎉 Yenilik",
@@ -1749,7 +1766,8 @@
         "wca_description": "WCA hesabınızı ekleyerek ve resmi derecelerinizi göstererek güvenilirliği artırın.",
         "disconnect_no_password": "Bağlantıyı kesmek için önce Kişisel Bilgiler sayfasından bir şifre oluşturun.",
         "wca_connecting": "WCA'ya bağlanılıyor...",
-        "linking_account": "Hesap bağlanıyor..."
+        "linking_account": "Hesap bağlanıyor...",
+        "oauth_error": "OAuth bağlantısı sırasında hata oluştu"
     },
     "email_verification": {
         "title": "E-posta Doğrulama",
@@ -1814,6 +1832,13 @@
         "rooms_bullet_2": "Canlı liderlik tablosu",
         "rooms_bullet_3": "Anlık sohbet",
         "rooms_alt": "Çok Oyunculu Odalar"
+    },
+    "trust_section": {
+        "solves": "Çözüm",
+        "cube_type": "Küp Türü",
+        "countries": "Ülke",
+        "title": "WCA Uyumlu & Güncel",
+        "description": "Ulusal ve Dünya rekorlarına anında erişin. Resmi WCA karıştırmaları ile güncel kalın."
     },
     "time_display": {
         "inspection_on": "İnceleme Açık",

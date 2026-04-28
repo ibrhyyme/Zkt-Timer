@@ -20,8 +20,8 @@ export default function RoomParticipants({ participants, currentScrambleIndex, h
     });
 
     return (
-        <div className="flex flex-col w-full h-full bg-[#15161A]">
-            <div className="shrink-0 p-3 border-b border-gray-800 bg-[#15161A] text-xs font-bold uppercase tracking-wider text-gray-400">
+        <div className="flex flex-col w-full h-full bg-background">
+            <div className="shrink-0 p-3 border-b border-text/[0.1] bg-background text-xs font-bold uppercase tracking-wider text-text/50">
                 {t('rooms.participants')} ({participants.length})
             </div>
             <div className="flex-1 overflow-y-auto p-2 space-y-2 scroll-smooth">
@@ -36,15 +36,15 @@ export default function RoomParticipants({ participants, currentScrambleIndex, h
                         <div
                             key={participant.id}
                             className={`flex items-center justify-between p-3 rounded-lg border transition-all ${hasSolvedCurrent
-                                    ? 'bg-[#0f1014] border-gray-800 opacity-60'
-                                    : 'bg-[#1a1b1f] border-white/5 hover:border-white/10'
+                                    ? 'bg-background border-text/[0.1] opacity-60'
+                                    : 'bg-module border-text/[0.05] hover:border-text/[0.1]'
                                 }`}
                         >
                             <div className="flex items-center gap-2">
                                 {isHost && (
                                     <Crown size={16} weight="fill" className="text-orange-500" />
                                 )}
-                                <span className={`font-medium ${isHost ? 'text-white' : 'text-gray-200'}`}>
+                                <span className={`font-medium ${isHost ? 'text-text' : 'text-text/80'}`}>
                                     {participant.username}
                                 </span>
                             </div>
