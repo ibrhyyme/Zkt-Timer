@@ -442,6 +442,7 @@
 		flex: 0 0 auto; // flex: 1 kaldırıldı, diğer öğelere yer açılsın
 		padding: 3vh 0; // Timer'a biraz boşluk
 		will-change: auto;
+		touch-action: none; // iOS visual viewport kaymasını engelle
 
 		@media (max-height: 745px) {
 			padding: 1vh 0; // Küçük ekranlarda boşluğu iyice azalt
