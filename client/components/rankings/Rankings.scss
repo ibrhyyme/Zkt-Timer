@@ -38,13 +38,13 @@
 	&__wca-banner-title {
 		font-size: 1rem;
 		font-weight: 700;
-		color: #fff;
+		color: rgb(var(--text-color));
 		margin: 0 0 0.25rem;
 	}
 
 	&__wca-banner-desc {
 		font-size: 0.82rem;
-		color: rgba(255, 255, 255, 0.7);
+		color: rgba(var(--text-color), 0.7);
 		margin: 0 0 0.75rem;
 		line-height: 1.4;
 	}
@@ -54,9 +54,9 @@
 		align-items: center;
 		gap: 0.5rem;
 		padding: 0.55rem 1.25rem;
-		background: rgba(255, 255, 255, 0.1);
-		border: 1px solid rgba(255, 255, 255, 0.18);
-		color: #fff;
+		background: rgba(var(--text-color), 0.1);
+		border: 1px solid rgba(var(--text-color), 0.18);
+		color: rgb(var(--text-color));
 		border-radius: 0.5rem;
 		font-weight: 600;
 		font-size: 0.85rem;
@@ -64,8 +64,8 @@
 		transition: all 0.15s;
 
 		&:hover {
-			background: rgba(255, 255, 255, 0.16);
-			border-color: rgba(255, 255, 255, 0.25);
+			background: rgba(var(--text-color), 0.16);
+			border-color: rgba(var(--text-color), 0.25);
 		}
 	}
 
