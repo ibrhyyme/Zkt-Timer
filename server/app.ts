@@ -76,8 +76,7 @@ app.use(bodyParser.json({ limit: '200mb' }));
 app.use(cookieParser());
 
 app.use((req, res, next) => {
-	const originalSend = res.send.bind(res);
-	res.send = function (body) {
+	function logIfError() {
 		if (res.statusCode >= 400 && res.statusCode < 500) {
 			logger.warn('client_error', {
 				method: req.method,
@@ -88,8 +87,20 @@ app.use((req, res, next) => {
 				ip: requestIp.getClientIp(req),
 			});
 		}
+	}
+
+	const originalSend = res.send.bind(res);
+	res.send = function (body) {
+		logIfError();
 		return originalSend(body);
 	};
+
+	const originalSendFile = res.sendFile.bind(res);
+	res.sendFile = function (filePath: string, ...args: any[]) {
+		logIfError();
+		return (originalSendFile as any)(filePath, ...args);
+	};
+
 	next();
 });
 
