@@ -13,13 +13,29 @@ export function checkForAveragePBUpdate(solve: Solve, isNew: boolean) {
 		},
 	});
 
+	// Session-specific caches are missed by the query above because
+	// LokiJS null != undefined — a session cache entry has no scramble_subset
+	// field (undefined), so {scramble_subset: null} doesn't match it.
+	const sessionCached = fetchAllSolveCaches({
+		type: 'avg_pb',
+		filterOptions: {
+			cube_type: solve.cube_type,
+			session_id: solve.session_id,
+		},
+	});
+
+	const allCached = [
+		...cached,
+		...sessionCached.filter((sc) => !cached.some((c) => c.cacheKey === sc.cacheKey)),
+	];
+
 	const updatedPbs: typeof cached = [];
-	for (const cach of cached) {
+	for (const cach of allCached) {
 		if (isNew) {
 			const best = getAveragePB(cach.filterOptions, cach.averageCount);
 			const avg = getCurrentAverage(cach.filterOptions, cach.averageCount);
 
-			if (avg.time < best.time && avg.time >= 0) {
+			if (avg && best && avg.time < best.time && avg.time >= 0) {
 				updatedPbs.push(cach);
 			}
 		}
@@ -52,13 +68,26 @@ export function checkForAverageWorstUpdate(solve: Solve, isNew: boolean) {
 		},
 	});
 
+	const sessionCached = fetchAllSolveCaches({
+		type: 'avg_worst',
+		filterOptions: {
+			cube_type: solve.cube_type,
+			session_id: solve.session_id,
+		},
+	});
+
+	const allCached = [
+		...cached,
+		...sessionCached.filter((sc) => !cached.some((c) => c.cacheKey === sc.cacheKey)),
+	];
+
 	const updatedWorsts: typeof cached = [];
-	for (const cach of cached) {
+	for (const cach of allCached) {
 		if (isNew) {
 			const worst = getAverageWorst(cach.filterOptions, cach.averageCount);
 			const avg = getCurrentAverage(cach.filterOptions, cach.averageCount);
 
-			if (avg.time > worst.time && avg.time >= 0) {
+			if (avg && worst && avg.time > worst.time && avg.time >= 0) {
 				updatedWorsts.push(cach);
 			}
 		}

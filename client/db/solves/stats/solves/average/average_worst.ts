@@ -29,7 +29,7 @@ export function getAverageWorst(filterOptions: FilterSolvesOptions, count: numbe
 	let worst = getAverage(firstSolves);
 	let bestList: Solve[] = [...firstSolves];
 
-	for (let i = 1; i < allSolves.length - count; i++) {
+	for (let i = 1; i <= allSolves.length - count; i++) {
 		const dropSolve = allSolves[i - 1];
 		const addSolve = allSolves[i + count - 1];
 

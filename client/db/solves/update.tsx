@@ -197,10 +197,11 @@ function postProcessDbUpdate(solve: Solve, isNew: boolean) {
 		} as any,
 	});
 
-	// ORDER MATTERS!
+	// ORDER MATTERS! avg_current cache must be cleared before PB/worst checks
+	// so getCurrentAverage() returns fresh data during comparison.
+	checkForCurrentAverageUpdate(solve, isNew);
 	checkForPB(solve, isNew);
 	checkForWorst(solve, isNew);
-	checkForCurrentAverageUpdate(solve, isNew);
 
 	if (!solve.demo_mode) {
 		if (canSync()) {
