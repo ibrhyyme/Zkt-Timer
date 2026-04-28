@@ -10,8 +10,22 @@ export function checkForSinglePB(solve: Solve) {
 		},
 	});
 
+	// Session-specific caches missed by above query (LokiJS null != undefined)
+	const sessionCached = fetchAllSolveCaches({
+		type: 'single_pb',
+		filterOptions: {
+			cube_type: solve.cube_type,
+			session_id: solve.session_id,
+		},
+	});
+
+	const allCached = [
+		...cached,
+		...sessionCached.filter((sc) => !cached.some((c) => c.cacheKey === sc.cacheKey)),
+	];
+
 	const updatedPbs: typeof cached = [];
-	cacheLoop: for (const cach of cached) {
+	cacheLoop: for (const cach of allCached) {
 		const filter = cach.filterOptions;
 		const filterKeys = Object.keys(filter);
 
@@ -42,8 +56,21 @@ export function checkForSingleWorstUpdate(solve: Solve) {
 		},
 	});
 
+	const sessionCached = fetchAllSolveCaches({
+		type: 'single_worst',
+		filterOptions: {
+			cube_type: solve.cube_type,
+			session_id: solve.session_id,
+		},
+	});
+
+	const allCached = [
+		...cached,
+		...sessionCached.filter((sc) => !cached.some((c) => c.cacheKey === sc.cacheKey)),
+	];
+
 	const updatedWorsts: typeof cached = [];
-	cacheLoop: for (const cach of cached) {
+	cacheLoop: for (const cach of allCached) {
 		const filter = cach.filterOptions;
 		const filterKeys = Object.keys(filter);
 

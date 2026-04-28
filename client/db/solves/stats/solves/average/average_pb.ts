@@ -29,7 +29,7 @@ export function getAveragePB(filterOptions: FilterSolvesOptions, count: number) 
 	let bestList: Solve[] = [...firstSolves];
 	let best = getAverage(firstSolves);
 
-	for (let i = 1; i < allSolves.length - count; i++) {
+	for (let i = 1; i <= allSolves.length - count; i++) {
 		const dropSolve = allSolves[i - 1];
 		const addSolve = allSolves[i + count - 1];
 
