@@ -61,6 +61,27 @@
         &--active {
             color: #a78bff !important;
         }
+
+        .theme-light & {
+            background: rgba(124, 58, 237, 0.08) !important;
+            border-color: rgba(124, 58, 237, 0.3) !important;
+            box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.1) !important;
+            color: #6d28d9 !important;
+
+            &::before {
+                background: linear-gradient(90deg, transparent, rgba(124, 58, 237, 0.4), transparent);
+            }
+
+            svg {
+                color: #7c3aed !important;
+            }
+
+            &:hover {
+                background: rgba(124, 58, 237, 0.15) !important;
+                border-color: rgba(124, 58, 237, 0.5) !important;
+                color: #5b21b6 !important;
+            }
+        }
     }
 
     &__pfp {

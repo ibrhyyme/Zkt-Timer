@@ -201,7 +201,7 @@ export default function HeaderNav() {
 						to="/"
 						className="text-text hover:text-text font-bold tracking-tight select-none text-2xl flex items-center gap-2"
 					>
-						<span className={b('logo') + ' cd-logo cd-logo--large'} aria-label="Zeka Küpü Türkiye">
+						<span className={b('logo') + ' cd-logo'} aria-label="Zeka Küpü Türkiye" style={{width: '5rem', height: '5rem'}}>
 							<img className="cd-logo__img cd-logo__img--dark" src="/public/images/zkt-logo.png" alt="" />
 							<img className="cd-logo__img cd-logo__img--light" src="/public/images/zkt-logo-white.png" alt="" />
 						</span>
