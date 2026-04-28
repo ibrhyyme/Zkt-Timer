@@ -810,7 +810,14 @@
         "twistytimer_step_4": "Usa la opción \"Exportar como externo\" para guardar el archivo",
         "category_management": "Gestión de datos",
         "category_reset": "Restablecer",
-        "import_pro_upsell": "Actualiza a Pro para importar tus datos"
+        "import_pro_upsell": "Actualiza a Pro para importar tus datos",
+        "import_error_title": "Importación completada (con algunos errores)",
+        "import_success_count": "Exitosos: {{count}} fragmentos",
+        "import_failed_count": "Fallidos: {{count}} fragmentos",
+        "import_failed_chunks_header": "Fragmentos fallidos:",
+        "import_items_range": "Elementos: {{range}}",
+        "import_retry_failed_btn": "Reintentar fragmentos fallidos",
+        "import_continue_anyway": "Continuar de todas formas"
     },
     "language": {
         "label": "Idioma",
@@ -897,7 +904,10 @@
         "overview_tab": "Resumen",
         "time_label": "Tiempo",
         "deleted_from_other_device": "Esta solución fue eliminada desde otro dispositivo",
-        "pro_stats_upsell": "Actualiza a Pro para estadísticas detalladas"
+        "pro_stats_upsell": "Actualiza a Pro para estadísticas detalladas",
+        "copy": "Copiar",
+        "share": "Compartir",
+        "average_copied": "Promedio copiado"
     },
     "sessions": {
         "page_title": "Sesiones",
@@ -1187,7 +1197,14 @@
         "delete_solve": "Eliminar resolución",
         "view_details": "Ver detalles",
         "view_profile": "Ver perfil",
-        "close": "Cerrar"
+        "close": "Cerrar",
+        "loading": "Cargando...",
+        "save": "Guardar",
+        "cancel": "Cancelar",
+        "reset": "Restablecer",
+        "clear": "Limpiar",
+        "create_new": "Crear nuevo",
+        "copied": "Copiado"
     },
     "announcement_modal": {
         "feature": "🎉 Novedad",
@@ -1749,7 +1766,8 @@
         "wca_description": "Aumenta la credibilidad vinculando tu cuenta WCA y mostrando tus récords oficiales.",
         "disconnect_no_password": "Para desvincular, primero establece una contrasena desde la pagina de Informacion Personal.",
         "wca_connecting": "Conectando con WCA...",
-        "linking_account": "Vinculando cuenta..."
+        "linking_account": "Vinculando cuenta...",
+        "oauth_error": "Se produjo un error durante la conexión OAuth"
     },
     "email_verification": {
         "title": "Verificación de correo",
@@ -1814,6 +1832,13 @@
         "rooms_bullet_2": "Clasificación en vivo",
         "rooms_bullet_3": "Chat instantáneo",
         "rooms_alt": "Salas multijugador"
+    },
+    "trust_section": {
+        "solves": "Resoluciones",
+        "cube_type": "Tipo de cubo",
+        "countries": "Países",
+        "title": "Compatible con WCA & Actualizado",
+        "description": "Accede instantáneamente a los récords nacionales y mundiales. Mantente actualizado con las mezclas oficiales de la WCA."
     },
     "time_display": {
         "inspection_on": "Inspección activada",

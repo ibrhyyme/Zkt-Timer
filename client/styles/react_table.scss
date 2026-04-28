@@ -49,7 +49,7 @@
 		.rt-th.-cursor-pointer {
 			&:after {
 				content: '\f0dc';
-				color: #ddd;
+				color: rgba(var(--text-color), 0.6);
 			}
 		}
 

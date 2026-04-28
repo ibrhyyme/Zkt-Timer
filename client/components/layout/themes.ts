@@ -12,6 +12,19 @@ const userDefinedColorsVar: Partial<Record<string, string>> = {
 	button_color: '--button-color',
 };
 
+// localStorage key — read by the inline <head> script for FOUC prevention
+const THEME_SNAPSHOT_KEY = 'zkt_theme';
+
+// Short keys for the snapshot to keep localStorage payload tiny
+const CSS_VAR_TO_SNAPSHOT_KEY: Record<string, string> = {
+	'--background-color': 'bg',
+	'--module-color': 'mod',
+	'--button-color': 'btn',
+	'--text-color': 'txt',
+	'--primary-color': 'pri',
+	'--secondary-color': 'sec',
+};
+
 function getHtmlTag() {
 	return document.getElementsByTagName('html')[0];
 }
@@ -20,10 +33,40 @@ function setDocProp(key: string, value: string) {
 	getHtmlTag().style.setProperty(key, value);
 }
 
+function saveThemeSnapshot(isLight: boolean) {
+	try {
+		const html = getHtmlTag();
+		const snapshot: Record<string, string | boolean> = {light: isLight};
+		for (const [cssVar, shortKey] of Object.entries(CSS_VAR_TO_SNAPSHOT_KEY)) {
+			const val = html.style.getPropertyValue(cssVar);
+			if (val) snapshot[shortKey] = val;
+		}
+		localStorage.setItem(THEME_SNAPSHOT_KEY, JSON.stringify(snapshot));
+	} catch (_) {
+		// localStorage may not be available (private browsing edge cases)
+	}
+}
+
 export function updateThemeColors() {
 	getHtmlTag().classList.add('app-html');
 
 	const colorKeys = Object.keys(userDefinedColorsVar) as (keyof AllSettings)[];
+
+	// Always apply theme-light/dark class unconditionally — the <head> inline script may
+	// have pre-filled CSS variables so the color !== currentPc check below can skip this.
+	const bgColor = getSetting('background_color') as string;
+	let isLight = false;
+	if (bgColor && bgColor !== 'undefined') {
+		const bgTc = tinycolor(getAnyColorStringAsRgbString(bgColor));
+		if (bgTc.isDark()) {
+			getHtmlTag().classList.remove('theme-light');
+			getHtmlTag().classList.add('theme-dark');
+		} else {
+			isLight = true;
+			getHtmlTag().classList.remove('theme-dark');
+			getHtmlTag().classList.add('theme-light');
+		}
+	}
 
 	for (const key of colorKeys) {
 		const color = getSetting(key) as string;
@@ -58,6 +101,8 @@ export function updateThemeColors() {
 			}
 		}
 	}
+
+	saveThemeSnapshot(isLight);
 }
 
 function getThemeBackgroundColor(color: tinycolorInstance, opposite: boolean = false): string {

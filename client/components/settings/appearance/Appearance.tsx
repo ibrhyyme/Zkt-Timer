@@ -104,14 +104,14 @@ export default function Appearance() {
 					onReset={() => updateSetting('timer_time_size', getDefaultSetting('timer_time_size'))}
 					onChange={(v) => updateSetting('timer_time_size', v)}
 				>
-					<div className="flex items-center justify-center py-2 rounded-lg bg-[#12141c] overflow-hidden">
+					<div className="flex items-center justify-center py-2 rounded-lg bg-module overflow-hidden">
 						<span
 							style={{
 								fontWeight: '500',
 								fontFamily: timerFontFamily,
 								fontSize: `${Math.min(timerTimeSize, 80)}px`,
 							}}
-							className="text-white"
+							className="text-text"
 						>
 							{getTimeString(23.074, timerDecimalPoints)}
 						</span>
@@ -128,10 +128,10 @@ export default function Appearance() {
 					onReset={() => updateSetting('timer_scramble_size', getDefaultSetting('timer_scramble_size'))}
 					onChange={(v) => updateSetting('timer_scramble_size', v)}
 				>
-					<div className="flex items-center justify-center py-2 rounded-lg bg-[#12141c] overflow-hidden">
+					<div className="flex items-center justify-center py-2 rounded-lg bg-module overflow-hidden">
 						<span
 							style={{ fontSize: `${Math.min(timerScrambleSize, 24)}px` }}
-							className="text-slate-300 text-center leading-relaxed px-2"
+							className="text-text/70 text-center leading-relaxed px-2"
 						>
 							D' R2 B2 R2 U' F2 R2 U' L2 U2 L2 R2 F' D' L D' F' D' F D' R' U
 						</span>

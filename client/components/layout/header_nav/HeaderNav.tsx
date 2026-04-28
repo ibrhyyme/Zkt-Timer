@@ -15,8 +15,6 @@ import Notifications from '../nav/notifications/Notifications';
 import Logo from '../../common/logo/Logo';
 import { useGeneral } from '../../../util/hooks/useGeneral';
 import { useWindowListener } from '../../../util/hooks/useListener';
-import { useSettings } from '../../../util/hooks/useSettings';
-import { useTheme } from '../../../util/hooks/useTheme';
 import block from '../../../styles/bem';
 import AccountDropdown from '../nav/account_dropdown/AccountDropdown';
 import { useMe } from '../../../util/hooks/useMe';
@@ -98,9 +96,6 @@ export default function HeaderNav() {
 	const me = useMe();
 
 	const mobileMode = useGeneral('mobile_mode');
-	const bgTheme = useTheme('background_color');
-	const isLightTheme = bgTheme && !bgTheme.isDark;
-
 	// Pill nav state
 	const navRef = useRef<HTMLElement>(null);
 	const [pillPos, setPillPos] = useState({ left: 0, top: 0, width: 0, height: 0, ready: false });
@@ -196,8 +191,6 @@ export default function HeaderNav() {
 		return null;
 	}
 
-	const logoSrc = isLightTheme ? '/public/images/zkt-logo-white.png' : '/public/images/zkt-logo.png';
-
 	// Desktop header
 	return (
 		<div className={b()}>
@@ -207,19 +200,11 @@ export default function HeaderNav() {
 					<Link
 						to="/"
 						className="text-text hover:text-text font-bold tracking-tight select-none text-2xl flex items-center gap-2"
-						style={{ textShadow: isLightTheme ? 'none' : '0 2px 4px rgba(0,0,0,0.5)' }}
 					>
-						<img
-							src={logoSrc}
-							alt="Zeka Küpü Türkiye"
-							className={b('logo') + " w-20 h-20 object-contain"}
-							style={{
-								imageRendering: 'auto',
-								filter: isLightTheme ? 'none' : 'brightness(1.1) contrast(1.05)',
-								WebkitBackfaceVisibility: 'hidden',
-								transform: 'translateZ(0)'
-							}}
-						/>
+						<span className={b('logo') + ' cd-logo cd-logo--large'} aria-label="Zeka Küpü Türkiye">
+							<img className="cd-logo__img cd-logo__img--dark" src="/public/images/zkt-logo.png" alt="" />
+							<img className="cd-logo__img cd-logo__img--light" src="/public/images/zkt-logo-white.png" alt="" />
+						</span>
 						Zkt Timer
 					</Link>
 				</div>

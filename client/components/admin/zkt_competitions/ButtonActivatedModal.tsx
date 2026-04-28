@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import {useDispatch} from 'react-redux';
 import {openModal, closeModal} from '../../../actions/general';
 import {b} from './shared';
+import {useTranslation} from 'react-i18next';
 
 interface Props {
 	trigger: React.ReactNode; // content of the button that opens the modal
@@ -70,6 +71,7 @@ function ModalBody({
 	children: (ctx: {close: () => void}) => React.ReactNode;
 }) {
 	const dispatch = useDispatch();
+	const {t} = useTranslation();
 	const [submitting, setSubmitting] = useState(false);
 	const close = () => dispatch(closeModal());
 
@@ -90,11 +92,11 @@ function ModalBody({
 			<div className={b('modal-actions')}>
 				{onReset && (
 					<button type="button" className={b('modal-btn', {danger: true})} onClick={onReset}>
-						Sıfırla
+						{t('common.reset')}
 					</button>
 				)}
 				<button type="button" className={b('modal-btn')} onClick={close}>
-					{cancelLabel || 'İptal'}
+					{cancelLabel || t('common.cancel')}
 				</button>
 				<button
 					type="button"
@@ -102,7 +104,7 @@ function ModalBody({
 					onClick={handleOk}
 					disabled={submitting}
 				>
-					{submitting ? '...' : okLabel || 'Kaydet'}
+					{submitting ? '...' : okLabel || t('common.save')}
 				</button>
 			</div>
 		</div>

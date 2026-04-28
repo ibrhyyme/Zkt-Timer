@@ -100,7 +100,7 @@
 		transform: translateY(-50%);
 		font-size: 1rem;
 		font-weight: 600;
-		color: #4a9eff;
+		color: rgb(var(--primary-color));
 		cursor: pointer;
 	}
 
@@ -164,7 +164,7 @@
 			-moz-appearance: textfield;
 
 		&:focus {
-			border-color: #4a9eff;
+			border-color: rgb(var(--primary-color));
 		}
 
 		&::-webkit-outer-spin-button,
@@ -175,7 +175,7 @@
 	}
 
 	&__edit-ao-confirm {
-		color: #4a9eff;
+		color: rgb(var(--primary-color));
 		cursor: pointer;
 		display: flex;
 		align-items: center;
@@ -214,12 +214,12 @@
 			background-color: rgb(var(--module-color)) !important;
 			border-radius: 10px !important;
 			height: 44px !important;
-			color: #4a9eff !important;
+			color: rgb(var(--primary-color)) !important;
 			font-weight: 600 !important;
 			border: none !important;
 
 			svg {
-				color: #4a9eff !important;
+				color: rgb(var(--primary-color)) !important;
 			}
 		}
 	}
@@ -267,7 +267,7 @@
 	}
 
 	&__mobile-row-index {
-		color: #4a9eff;
+		color: rgb(var(--primary-color));
 		font-size: 1rem;
 		font-weight: 600;
 		min-width: 24px;
@@ -370,12 +370,12 @@
 			background-color: rgb(var(--module-color)) !important;
 			border-radius: 10px !important;
 			height: 44px !important;
-			color: #4a9eff !important;
+			color: rgb(var(--primary-color)) !important;
 			font-weight: 600 !important;
 			border: none !important;
 
 			svg {
-				color: #4a9eff !important;
+				color: rgb(var(--primary-color)) !important;
 			}
 		}
 	}

@@ -43,20 +43,20 @@ export default function DailyGoalProgressBar({cubeType, scrambleSubset, compact}
 
 	return (
 		<div className={`cd-daily-goal-progress w-full ${compact ? 'px-3 py-1' : 'px-4 py-2'}`}>
-			<div className={`relative w-full ${compact ? 'h-5' : 'h-6'} bg-[#1c1c1e] rounded-full overflow-hidden border border-white/[0.06]`}>
+			<div className={`relative w-full ${compact ? 'h-5' : 'h-6'} bg-button rounded-full overflow-hidden border border-text/[0.06]`}>
 				{/* Fill bar */}
 				<div
 					className={`h-full rounded-full transition-all duration-500 ease-out ${
-						progress.completed ? 'bg-green-500' : 'bg-[#4a9eff]'
+						progress.completed ? 'bg-green-500' : 'bg-primary'
 					}`}
 					style={{width: `${progress.percentage}%`}}
 				/>
 				{/* Text overlay */}
 				<div className="absolute inset-0 flex items-center justify-between px-3">
-					<span className={`font-medium text-white/90 ${compact ? 'text-[10px]' : 'text-xs'}`}>
+					<span className={`font-medium text-text/90 ${compact ? 'text-[10px]' : 'text-xs'}`}>
 						{cubeName} &middot; {t('quick_controls.solves_progress', {current: progress.current, target: progress.target})}
 					</span>
-					<span className={`font-semibold text-white/70 ${compact ? 'text-[10px]' : 'text-xs'}`}>
+					<span className={`font-semibold text-text/70 ${compact ? 'text-[10px]' : 'text-xs'}`}>
 						{progress.percentage}%
 					</span>
 				</div>

@@ -43,7 +43,7 @@ export default function OAuthService() {
 					window.location.href = state || '/account/linked-accounts';
 					return;
 				}
-				toastError(msg || 'OAuth bağlantısı sırasında hata oluştu');
+				toastError(msg || t('integration.oauth_error'));
 				// Hata durumunda da geri yonlendir — overlay takilı kalmasın
 				setTimeout(() => {
 					window.location.href = '/account/linked-accounts';

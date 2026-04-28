@@ -3,6 +3,7 @@ import {useDispatch} from 'react-redux';
 import {openModal, closeModal} from '../../../../actions/general';
 import {b, formatCs} from '../shared';
 import TimeField from '../TimeField';
+import {useTranslation} from 'react-i18next';
 
 interface Props {
 	cutoffCs: number | null | undefined;
@@ -48,6 +49,7 @@ function Editor({
 	onSave: (params: {cutoffCs: number | null; cutoffAttempts: number | null}) => Promise<void> | void;
 }) {
 	const dispatch = useDispatch();
+	const {t} = useTranslation();
 	const [cs, setCs] = useState<number | null>(initialCs ?? null);
 	const [attempts, setAttempts] = useState<number>(initialAttempts ?? 2);
 
@@ -88,13 +90,13 @@ function Editor({
 
 			<div className={b('modal-actions')}>
 				<button type="button" className={b('modal-btn', {danger: true})} onClick={handleClear}>
-					Temizle
+					{t('common.clear')}
 				</button>
 				<button type="button" className={b('modal-btn')} onClick={() => dispatch(closeModal())}>
-					İptal
+					{t('common.cancel')}
 				</button>
 				<button type="button" className={b('modal-btn', {primary: true})} onClick={handleSave}>
-					Kaydet
+					{t('common.save')}
 				</button>
 			</div>
 		</div>

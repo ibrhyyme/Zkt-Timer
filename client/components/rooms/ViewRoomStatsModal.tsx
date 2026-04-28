@@ -63,12 +63,12 @@ export default function ViewRoomStatsModal({ isOpen, onClose, roomId, roomName }
 
     return createPortal(
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={onClose}>
-            <div className="w-full max-w-6xl bg-[#15161A] border border-gray-800 rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
+            <div className="w-full max-w-6xl bg-background border border-text/[0.1] rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
 
                 {/* Header */}
-                <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-white/5 bg-[#1a1b1f]">
-                    <h3 className="text-lg font-bold text-white">{roomName} - {t('rooms.statistics')}</h3>
-                    <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
+                <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-text/[0.05] bg-module">
+                    <h3 className="text-lg font-bold text-text">{roomName} - {t('rooms.statistics')}</h3>
+                    <button onClick={onClose} className="text-text/50 hover:text-text transition-colors">
                         <X size={20} />
                     </button>
                 </div>

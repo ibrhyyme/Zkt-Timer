@@ -58,12 +58,12 @@ export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate,
 
     return createPortal(
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={onClose}>
-            <div className="w-full max-w-md bg-[#15161A] border border-gray-800 rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
+            <div className="w-full max-w-md bg-background border border-text/[0.1] rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
 
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 bg-[#1a1b1f] shrink-0">
-                    <h3 className="text-lg font-bold text-white">{t('rooms.edit_room')}</h3>
-                    <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-text/[0.05] bg-module shrink-0">
+                    <h3 className="text-lg font-bold text-text">{t('rooms.edit_room')}</h3>
+                    <button onClick={onClose} className="text-text/50 hover:text-text transition-colors">
                         <X size={20} />
                     </button>
                 </div>
@@ -77,7 +77,7 @@ export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate,
                             type="text"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            className="w-full bg-[#0a0b0e] border border-gray-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors"
+                            className="w-full bg-module border border-text/[0.1] rounded-lg px-4 py-3 text-text focus:outline-none focus:border-blue-500 transition-colors"
                             placeholder={t('rooms.room_name_placeholder')}
                         />
                     </div>
@@ -91,7 +91,7 @@ export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate,
                             <select
                                 value={selectedCubeType}
                                 onChange={(e) => setSelectedCubeType(e.target.value)}
-                                className="w-full bg-[#0a0b0e] border border-gray-800 rounded-lg px-4 py-3 text-white appearance-none focus:outline-none focus:border-blue-500 transition-colors"
+                                className="w-full bg-module border border-text/[0.1] rounded-lg px-4 py-3 text-text appearance-none focus:outline-none focus:border-blue-500 transition-colors"
                             >
                                 {ALLOWED_CUBE_TYPES.map((ct) => {
                                     const info = getCubeTypeInfoById(ct);
@@ -114,7 +114,7 @@ export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate,
                         >
                             <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${privateRoom ? 'left-7' : 'left-1'}`} />
                         </button>
-                        <span className="text-sm font-medium text-gray-300">{t('rooms.private_room_q')}</span>
+                        <span className="text-sm font-medium text-text/70">{t('rooms.private_room_q')}</span>
                     </div>
 
                     {/* Password Input */}
@@ -127,7 +127,7 @@ export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate,
                                     type="password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full bg-[#0a0b0e] border border-gray-800 rounded-lg pl-10 pr-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors"
+                                    className="w-full bg-module border border-text/[0.1] rounded-lg pl-10 pr-4 py-3 text-text focus:outline-none focus:border-blue-500 transition-colors"
                                     placeholder={t('rooms.new_password_placeholder')}
                                 />
                             </div>
@@ -144,10 +144,10 @@ export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate,
                                     onClick={() => toggleType(type)}
                                     className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all ${allowedTypes.includes(type)
                                         ? 'bg-blue-500/10 border-blue-500/50'
-                                        : 'bg-[#0a0b0e] border-gray-800 hover:border-gray-700'
+                                        : 'bg-module border-text/[0.1] hover:border-text/[0.2]'
                                         }`}
                                 >
-                                    <span className={`text-sm font-medium ${allowedTypes.includes(type) ? 'text-blue-200' : 'text-gray-400'}`}>
+                                    <span className={`text-sm font-medium ${allowedTypes.includes(type) ? 'text-blue-200' : 'text-text/50'}`}>
                                         {getTypeName(type)}
                                     </span>
                                     <div className={`w-5 h-5 rounded flex items-center justify-center transition-colors ${allowedTypes.includes(type) ? 'bg-blue-500 text-white' : 'bg-gray-800'
@@ -161,8 +161,8 @@ export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate,
                 </div>
 
                 {/* Footer */}
-                <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-white/5 bg-[#1a1b1f] shrink-0">
-                    <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-400 hover:text-white transition-colors">
+                <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-text/[0.05] bg-module shrink-0">
+                    <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-text/50 hover:text-text transition-colors">
                         {t('rooms.cancel')}
                     </button>
                     <Button onClick={() => {

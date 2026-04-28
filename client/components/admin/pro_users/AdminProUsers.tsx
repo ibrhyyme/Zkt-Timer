@@ -58,22 +58,22 @@ interface ProUserData {
 
 function subscriptionType(user: ProUserData): {label: string; color: string} {
 	const pid = user.iap_product_id;
-	if (!pid) return {label: 'Admin / Promosyon', color: '#a855f7'};
-	if (pid.endsWith('lifetime')) return {label: 'Ömür Boyu', color: '#f59e0b'};
-	if (pid.endsWith('yearly')) return {label: 'Yıllık', color: '#3b82f6'};
-	if (pid.endsWith('monthly')) return {label: 'Aylık', color: '#22c55e'};
+	if (!pid) return {label: 'Admin / Promo', color: '#a855f7'};
+	if (pid.endsWith('lifetime')) return {label: 'Lifetime', color: '#f59e0b'};
+	if (pid.endsWith('yearly')) return {label: 'Yearly', color: '#3b82f6'};
+	if (pid.endsWith('monthly')) return {label: 'Monthly', color: '#22c55e'};
 	return {label: pid, color: '#6b7280'};
 }
 
 function subscriptionStatus(user: ProUserData): {label: string; color: string} {
-	if (user.iap_paused_until) return {label: 'Duraklatıldı', color: '#f97316'};
-	if (user.iap_billing_issue_at) return {label: 'Ödeme Sorunu', color: '#ef4444'};
-	if (user.iap_cancellation_at) return {label: 'İptal Edildi', color: '#6b7280'};
-	return {label: 'Aktif', color: '#22c55e'};
+	if (user.iap_paused_until) return {label: 'Paused', color: '#f97316'};
+	if (user.iap_billing_issue_at) return {label: 'Billing Issue', color: '#ef4444'};
+	if (user.iap_cancellation_at) return {label: 'Cancelled', color: '#6b7280'};
+	return {label: 'Active', color: '#22c55e'};
 }
 
 function expiryLabel(user: ProUserData): string {
-	if (!user.pro_expires_at) return 'Sınırsız';
+	if (!user.pro_expires_at) return 'Unlimited';
 	return dayjs(user.pro_expires_at).format('DD MMM YYYY');
 }
 
@@ -136,7 +136,7 @@ function ProUserRow({user}: {user: ProUserData}) {
 						style={{fontFamily: 'monospace', fontSize: '11px', background: 'transparent', border: '1px solid #444', borderRadius: '4px', color: '#aaa', cursor: 'pointer', padding: '2px 6px'}}
 						onClick={copyRcId}
 					>
-						{copied ? 'Kopyalandı' : user.revenuecat_user_id.slice(0, 12) + '...'}
+						{copied ? 'Copied' : user.revenuecat_user_id.slice(0, 12) + '...'}
 					</button>
 				) : (
 					<span style={{color: '#666'}}>—</span>
@@ -200,27 +200,27 @@ export default function AdminProUsers() {
 	return (
 		<div className="cd-admin-users">
 			<div className="cd-admin-users__controls">
-				<Input value={query} onChange={setQuery} placeholder="Kullanıcı ara..." />
-				<span className="cd-admin-users__total">{total} pro kullanıcı</span>
+				<Input value={query} onChange={setQuery} placeholder="Search users..." />
+				<span className="cd-admin-users__total">{total} pro users</span>
 			</div>
 
 			<div className="cd-admin-users__table-wrapper">
 				<table className="cd-admin-users__table">
 					<thead>
 						<tr>
-							<th className="cd-admin-users__th">Kullanıcı</th>
-							<th className="cd-admin-users__th">Abonelik Türü</th>
+							<th className="cd-admin-users__th">User</th>
+							<th className="cd-admin-users__th">Subscription</th>
 							<th className="cd-admin-users__th">Platform</th>
-							<th className="cd-admin-users__th">Bitiş Tarihi</th>
-							<th className="cd-admin-users__th">Durum</th>
+							<th className="cd-admin-users__th">Expires</th>
+							<th className="cd-admin-users__th">Status</th>
 							<th className="cd-admin-users__th">RevenueCat ID</th>
 						</tr>
 					</thead>
 					<tbody>
 						{loading ? (
-							<tr><td colSpan={6} style={{textAlign: 'center', padding: '32px', color: '#666'}}>Yükleniyor...</td></tr>
+							<tr><td colSpan={6} style={{textAlign: 'center', padding: '32px', color: '#666'}}>Loading...</td></tr>
 						) : users.length === 0 ? (
-							<tr><td colSpan={6} style={{textAlign: 'center', padding: '32px', color: '#666'}}>Pro kullanıcı bulunamadı</td></tr>
+							<tr><td colSpan={6} style={{textAlign: 'center', padding: '32px', color: '#666'}}>No pro users found</td></tr>
 						) : (
 							users.map((u) => <ProUserRow key={u.id} user={u} />)
 						)}
@@ -229,9 +229,9 @@ export default function AdminProUsers() {
 			</div>
 
 			<div className="cd-admin-users__pagination">
-				<button className="cd-admin-users__page-btn" onClick={prevPage} disabled={page === 0}>← Önceki</button>
+				<button className="cd-admin-users__page-btn" onClick={prevPage} disabled={page === 0}>← Previous</button>
 				<span className="cd-admin-users__page-info">{startIdx}–{endIdx} / {total}</span>
-				<button className="cd-admin-users__page-btn" onClick={nextPage} disabled={!hasMore}>Sonraki →</button>
+				<button className="cd-admin-users__page-btn" onClick={nextPage} disabled={!hasMore}>Next →</button>
 			</div>
 		</div>
 	);

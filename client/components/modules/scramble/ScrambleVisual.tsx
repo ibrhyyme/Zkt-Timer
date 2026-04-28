@@ -5,6 +5,7 @@ import './ScrambleVisual.scss';
 import block from '../../../styles/bem';
 import { useGeneral } from '../../../util/hooks/useGeneral';
 import { useSettings } from '../../../util/hooks/useSettings';
+import { useTranslation } from 'react-i18next';
 
 // Dynamically import TwistyPlayerWrapper
 const TwistyPlayerWrapper = React.lazy(() => import('./TwistyPlayerWrapper'));
@@ -64,6 +65,7 @@ interface Props {
 
 function ScrambleVisual(props: Props) {
 	const { cubeType, scramble, frontFace, compact } = props;
+	const { t } = useTranslation();
 	const [isExpanded, setIsExpanded] = useState(false);
 	const mobileMode = useGeneral('mobile_mode');
 	const use2dScramble = useSettings('use_2d_scramble_visual');
@@ -126,7 +128,7 @@ function ScrambleVisual(props: Props) {
 			<div className={b('expanded-content')} onClick={(e) => e.stopPropagation()}>
 				<div className={b('expanded-close')} onClick={closeModal}>✕</div>
 				<div className={b('expanded-twisty-container')} style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-					<Suspense fallback={<div>Yükleniyor...</div>}>
+					<Suspense fallback={<div>{t('common.loading')}</div>}>
 						{puzzleId === 'square1' ? (
 							<Sq1Renderer scramble={viewerAlg} className={b('sq1-renderer-expanded')} />
 						) : puzzleId === 'clock' ? (
@@ -205,7 +207,7 @@ function ScrambleVisual(props: Props) {
 				onTouchEnd={handleTouchEnd}
 			>
 				<div style={innerStyle}>
-					<Suspense fallback={<div className={b('loading')}>Yükleniyor...</div>}>
+					<Suspense fallback={<div className={b('loading')}>{t('common.loading')}</div>}>
 						{isSquareOne ? (
 							<Sq1Renderer scramble={viewerAlg} className={b('sq1-renderer')} baseWidth={compact ? 14 : undefined} />
 						) : isClockCustom ? (

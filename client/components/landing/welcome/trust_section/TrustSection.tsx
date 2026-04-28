@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import './TrustSection.scss';
 import block from '../../../../styles/bem';
+import { useTranslation } from 'react-i18next';
 
 if (typeof window !== 'undefined') {
 	gsap.registerPlugin(ScrollTrigger);
@@ -10,18 +11,19 @@ if (typeof window !== 'undefined') {
 
 const b = block('welcome-trust');
 
-const STATS = [
-	{ value: 5000, suffix: '+', label: 'Cuber' },
-	{ value: 250000, suffix: '+', label: 'Çözüm' },
-	{ value: 17, suffix: '', label: 'Küp Türü' },
-	{ value: 50, suffix: '+', label: 'Ülke' },
-];
-
 export default function TrustSection() {
+	const { t } = useTranslation();
 	const sectionRef = useRef<HTMLElement>(null);
 	const bgRef = useRef<HTMLDivElement>(null);
 	const headerRef = useRef<HTMLDivElement>(null);
 	const statsRef = useRef<HTMLDivElement>(null);
+
+	const STATS = [
+		{ value: 5000, suffix: '+', label: 'Cuber' },
+		{ value: 250000, suffix: '+', label: t('trust_section.solves') },
+		{ value: 17, suffix: '', label: t('trust_section.cube_type') },
+		{ value: 50, suffix: '+', label: t('trust_section.countries') },
+	];
 
 	useEffect(() => {
 		const section = sectionRef.current;
@@ -140,9 +142,9 @@ export default function TrustSection() {
 			<div className={b('content')}>
 				<div className={b('container')}>
 					<div ref={headerRef} className={b('header')} style={{ opacity: 0 }}>
-						<h2 className={b('title')}>WCA Uyumlu & Güncel</h2>
+						<h2 className={b('title')}>{t('trust_section.title')}</h2>
 						<p className={b('description')}>
-							Ulusal ve Dünya rekorlarına anında erişin. Resmi WCA karıştırmaları ile güncel kalın.
+							{t('trust_section.description')}
 						</p>
 					</div>
 

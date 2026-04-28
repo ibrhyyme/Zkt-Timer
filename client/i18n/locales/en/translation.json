@@ -810,7 +810,14 @@
         "twistytimer_step_4": "Use the \"Export as external\" option to save the file",
         "category_management": "Data Management",
         "category_reset": "Reset",
-        "import_pro_upsell": "Upgrade to Pro to import your data"
+        "import_pro_upsell": "Upgrade to Pro to import your data",
+        "import_error_title": "Import Completed (With Some Errors)",
+        "import_success_count": "Successful: {{count}} chunks",
+        "import_failed_count": "Failed: {{count}} chunks",
+        "import_failed_chunks_header": "Failed Chunks:",
+        "import_items_range": "Items: {{range}}",
+        "import_retry_failed_btn": "Retry Failed Chunks",
+        "import_continue_anyway": "Continue Anyway"
     },
     "language": {
         "label": "Language",
@@ -897,7 +904,10 @@
         "overview_tab": "Overview",
         "time_label": "Time",
         "deleted_from_other_device": "This solve was deleted from another device",
-        "pro_stats_upsell": "Upgrade to Pro for detailed statistics"
+        "pro_stats_upsell": "Upgrade to Pro for detailed statistics",
+        "copy": "Copy",
+        "share": "Share",
+        "average_copied": "Average copied"
     },
     "sessions": {
         "page_title": "Sessions",
@@ -1187,7 +1197,14 @@
         "delete_solve": "Delete solve",
         "view_details": "View details",
         "view_profile": "View profile",
-        "close": "Close"
+        "close": "Close",
+        "loading": "Loading...",
+        "save": "Save",
+        "cancel": "Cancel",
+        "reset": "Reset",
+        "clear": "Clear",
+        "create_new": "Create New",
+        "copied": "Copied"
     },
     "announcement_modal": {
         "feature": "🎉 Feature",
@@ -1749,7 +1766,8 @@
         "wca_description": "Increase credibility by linking your WCA account and displaying your official records.",
         "disconnect_no_password": "To disconnect, first set a password from the Personal Info page.",
         "wca_connecting": "Connecting to WCA...",
-        "linking_account": "Linking account..."
+        "linking_account": "Linking account...",
+        "oauth_error": "An error occurred during OAuth connection"
     },
     "email_verification": {
         "title": "Email Verification",
@@ -1814,6 +1832,13 @@
         "rooms_bullet_2": "Live leaderboard",
         "rooms_bullet_3": "Instant chat",
         "rooms_alt": "Multiplayer Rooms"
+    },
+    "trust_section": {
+        "solves": "Solves",
+        "cube_type": "Cube Type",
+        "countries": "Countries",
+        "title": "WCA Compatible & Up-to-Date",
+        "description": "Access national and world records instantly. Stay current with official WCA scrambles."
     },
     "time_display": {
         "inspection_on": "Inspection On",

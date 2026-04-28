@@ -48,13 +48,13 @@ export default function AdminAlgorithms() {
 
 	const handleDelete = async (e: React.MouseEvent, id: string) => {
 		e.stopPropagation();
-		if (!confirm('Bu algortimayi silmek istediginize emin misiniz?')) return;
+		if (!confirm('Are you sure you want to delete this algorithm?')) return;
 
 		try {
 			await gqlMutateTyped(AdminDeleteTrainerAlternativeDocument, {id});
 			fetchData();
 		} catch (error) {
-			alert('Silme basarisiz oldu');
+			alert('Delete failed');
 		}
 	};
 
@@ -69,8 +69,8 @@ export default function AdminAlgorithms() {
 	return (
 		<div className="p-8 max-w-7xl mx-auto">
 			<div className="mb-8">
-				<h1 className="text-3xl font-bold text-white mb-2">Algoritma Havuzu</h1>
-				<p className="text-gray-400">Kullanicilarin ekledigi global alternatif algoritmalar ({total} toplam)</p>
+				<h1 className="text-3xl font-bold text-white mb-2">Algorithm Pool</h1>
+				<p className="text-gray-400">Global alternative algorithms submitted by users ({total} total)</p>
 			</div>
 
 			<div className="flex gap-4 mb-6 bg-[#1e1e24] p-2 rounded-xl border border-white/5 w-fit">
@@ -82,7 +82,7 @@ export default function AdminAlgorithms() {
 					}}
 					className="px-4 py-2 bg-[#1e1e24] text-gray-300 focus:outline-none focus:text-white [&>option]:bg-[#1e1e24] [&>option]:text-gray-300"
 				>
-					<option value="">Tum kategoriler</option>
+					<option value="">All categories</option>
 					{CATEGORIES.map((cat) => (
 						<option key={cat} value={cat}>{cat}</option>
 					))}
@@ -93,26 +93,26 @@ export default function AdminAlgorithms() {
 				{loading ? (
 					<div className="flex flex-col items-center justify-center py-20 text-gray-400">
 						<div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4" />
-						<p>Yukleniyor...</p>
+						<p>Loading...</p>
 					</div>
 				) : (
 					<div className="overflow-x-auto">
 						<table className="w-full text-left border-collapse">
 							<thead>
 								<tr className="bg-white/5 border-b border-white/5 text-gray-400 text-xs uppercase tracking-wider">
-									<th className="p-5 font-semibold">Kategori</th>
+									<th className="p-5 font-semibold">Category</th>
 									<th className="p-5 font-semibold">Subset</th>
 									<th className="p-5 font-semibold">Case</th>
-									<th className="p-5 font-semibold">Algoritma</th>
-									<th className="p-5 font-semibold">Tarih</th>
-									<th className="p-5 font-semibold text-right">Islem</th>
+									<th className="p-5 font-semibold">Algorithm</th>
+									<th className="p-5 font-semibold">Date</th>
+									<th className="p-5 font-semibold text-right">Actions</th>
 								</tr>
 							</thead>
 							<tbody className="divide-y divide-white/5">
 								{items.length === 0 ? (
 									<tr>
 										<td colSpan={6} className="p-12 text-center text-gray-500">
-											Henuz alternatif algoritma eklenmemis
+											No alternative algorithms submitted yet
 										</td>
 									</tr>
 								) : (
@@ -136,7 +136,7 @@ export default function AdminAlgorithms() {
 													<button
 														onClick={(e) => handleDelete(e, item.id)}
 														className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition border border-red-500/20 opacity-0 group-hover:opacity-100"
-														title="Sil"
+														title="Delete"
 													>
 														<Trash size={18} />
 													</button>
@@ -153,7 +153,7 @@ export default function AdminAlgorithms() {
 				{totalPages > 1 && (
 					<div className="flex items-center justify-between px-5 py-4 border-t border-white/5">
 						<span className="text-sm text-gray-400">
-							Sayfa {page + 1} / {totalPages}
+							Page {page + 1} / {totalPages}
 						</span>
 						<div className="flex gap-2">
 							<button
@@ -161,14 +161,14 @@ export default function AdminAlgorithms() {
 								disabled={page === 0}
 								className="px-4 py-2 text-sm bg-white/5 hover:bg-white/10 text-gray-300 rounded-lg transition disabled:opacity-30 disabled:cursor-not-allowed"
 							>
-								Onceki
+								Previous
 							</button>
 							<button
 								onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
 								disabled={page >= totalPages - 1}
 								className="px-4 py-2 text-sm bg-white/5 hover:bg-white/10 text-gray-300 rounded-lg transition disabled:opacity-30 disabled:cursor-not-allowed"
 							>
-								Sonraki
+								Next
 							</button>
 						</div>
 					</div>

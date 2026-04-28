@@ -93,11 +93,11 @@ export default function SiteConfigPanel() {
 	}, []);
 
 	if (error) {
-		return <div className={b('loading')} style={{color: '#f55'}}>Hata: {error}</div>;
+		return <div className={b('loading')} style={{color: '#f55'}}>Error: {error}</div>;
 	}
 
 	if (!config) {
-		return <div className={b('loading')}>Yükleniyor...</div>;
+		return <div className={b('loading')}>Loading...</div>;
 	}
 
 	async function handleToggle(key: FeatureKey, currentValue: boolean) {
@@ -151,7 +151,7 @@ export default function SiteConfigPanel() {
 		<div className={b()}>
 			<div className={b('header')}>
 				<Wrench size={28} weight="fill" />
-				<h2>Site Yönetim Paneli</h2>
+				<h2>Site Config Panel</h2>
 			</div>
 
 			<p className={b('hint')}>
@@ -196,9 +196,9 @@ export default function SiteConfigPanel() {
 								Liste yuklenemedi: {onlineUsersError.message}
 							</div>
 						) : !onlineUsersData ? (
-							<div className={b('online-list-empty')}>Yukleniyor...</div>
+							<div className={b('online-list-empty')}>Loading...</div>
 						) : onlineUsersData.onlineUsers.length === 0 ? (
-							<div className={b('online-list-empty')}>Giris yapmis kullanici yok.</div>
+							<div className={b('online-list-empty')}>No logged-in users.</div>
 						) : (
 							onlineUsersData.onlineUsers
 								.slice()
@@ -294,14 +294,14 @@ export default function SiteConfigPanel() {
 			<div className={b('section')}>
 				<div className={b('section-header')}>
 					<Database size={20} weight="fill" />
-					<h3>WCA İstatistikleri</h3>
+					<h3>WCA Statistics</h3>
 				</div>
 				<div className={b('stats-grid')}>
 					{[
-						{label: 'Toplam Kullanıcı', value: wcaStatsData?.wcaStats?.totalUsers},
-						{label: 'WCA Bağlı Hesap', value: wcaStatsData?.wcaStats?.wcaConnected},
-						{label: 'WCA ID\'si Olan', value: wcaStatsData?.wcaStats?.wcaWithId},
-						{label: 'WCA ID\'si Olmayan', value: wcaStatsData?.wcaStats?.wcaWithoutId},
+						{label: 'Total Users', value: wcaStatsData?.wcaStats?.totalUsers},
+						{label: 'WCA Linked', value: wcaStatsData?.wcaStats?.wcaConnected},
+						{label: 'With WCA ID', value: wcaStatsData?.wcaStats?.wcaWithId},
+						{label: 'Without WCA ID', value: wcaStatsData?.wcaStats?.wcaWithoutId},
 					].map(({label, value}) => (
 						<div key={label} className={b('stat-card')}>
 							<div className={b('stat-label')}>{label}</div>
@@ -378,9 +378,9 @@ export default function SiteConfigPanel() {
 				</div>
 				<div className={b('row')}>
 					<div className={b('row-text')}>
-						<div className={b('row-label')}>Test Push Gönder</div>
+						<div className={b('row-label')}>Send Test Push</div>
 						<div className={b('row-desc')}>
-							WCA ID'ye sahip kullanıcıya örnek sonuç ve tur bildirimleri gönderir (sahte veri, gerçek yarışma gerekmez).
+							Sends sample result and round notifications to a user with this WCA ID (fake data, no real competition needed).
 						</div>
 					</div>
 					<div className={b('test-push-controls')}>
@@ -399,7 +399,7 @@ export default function SiteConfigPanel() {
 								setTestPushResult(null);
 								try {
 									await gqlMutate(TEST_WCA_NOTIFICATION, {wcaId: wcaIdInput.trim()});
-									setTestPushResult('Bildirimler gönderildi.');
+									setTestPushResult('Notifications sent.');
 								} catch (err) {
 									setTestPushResult('Hata: ' + (err as any)?.message);
 								} finally {
@@ -407,7 +407,7 @@ export default function SiteConfigPanel() {
 								}
 							}}
 						>
-							{testPushLoading ? 'Gönderiliyor...' : 'Gönder'}
+							{testPushLoading ? 'Sending...' : 'Send'}
 						</button>
 					</div>
 				</div>
@@ -420,9 +420,9 @@ export default function SiteConfigPanel() {
 				)}
 				<div className={b('row')}>
 					<div className={b('row-text')}>
-						<div className={b('row-label')}>Kayıtlı Token'larım</div>
+						<div className={b('row-label')}>My Registered Tokens</div>
 						<div className={b('row-desc')}>
-							Hangi platformlarda push token'ı DB'de kayıtlı? iOS yok → register() başarısız.
+							Which platforms have a push token in DB? No iOS → register() failed.
 						</div>
 					</div>
 					<button
@@ -435,7 +435,7 @@ export default function SiteConfigPanel() {
 								const res = await gqlQueryTyped(MY_PUSH_TOKENS, {}, {fetchPolicy: 'no-cache'});
 								const tokens: {platform: string}[] = res?.data?.adminMyPushTokens ?? [];
 								if (tokens.length === 0) {
-									setTokenCheckResult('Hiç token yok — register() hiç çalışmamış.');
+									setTokenCheckResult('No tokens — register() never ran.');
 								} else {
 									setTokenCheckResult(tokens.map((t) => t.platform).join(', '));
 								}
@@ -446,7 +446,7 @@ export default function SiteConfigPanel() {
 							}
 						}}
 					>
-						{tokenCheckLoading ? 'Kontrol ediliyor...' : 'Kontrol Et'}
+						{tokenCheckLoading ? 'Checking...' : 'Check'}
 					</button>
 				</div>
 				{tokenCheckResult && (
@@ -459,7 +459,7 @@ export default function SiteConfigPanel() {
 			</div>
 
 			<div className={b('footer')}>
-				Son guncelleme: {formatTime(config.updated_at)}
+				Last updated: {formatTime(config.updated_at)}
 			</div>
 		</div>
 	);

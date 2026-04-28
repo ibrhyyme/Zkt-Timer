@@ -2,6 +2,7 @@ import React from 'react';
 import {useDispatch} from 'react-redux';
 import './CubeTypes.scss';
 import {Trash, Plus} from 'phosphor-react';
+import {useTranslation} from 'react-i18next';
 import {refreshSettings, setCubeType} from '../../../db/settings/update';
 import {getAllCubeTypes, getScrambleTypeById} from '../../../util/cubes/util';
 import {openModal} from '../../../actions/general';
@@ -17,6 +18,7 @@ const b = block('manage-custom-cubes');
 
 export default function CubeTypes() {
 	const dispatch = useDispatch();
+	const {t} = useTranslation();
 
 	const currentCubeType = useSettings('cube_type');
 
@@ -76,7 +78,7 @@ export default function CubeTypes() {
 	return (
 		<div>
 			<div className={b('add')}>
-				<Button text="Yeni Oluştur" primary icon={<Plus weight="bold" />} onClick={addCustomCubeType} />
+				<Button text={t('common.create_new')} primary icon={<Plus weight="bold" />} onClick={addCustomCubeType} />
 			</div>
 			<div className={b('table')}>
 				<table className="cd-table">

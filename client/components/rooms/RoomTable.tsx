@@ -190,26 +190,26 @@ export default function RoomTable({ participants, scrambleIndex, userStatuses = 
             <div
                 ref={tableRef}
 
-                className="flex-1 w-full overflow-auto bg-[#1E1E1E] text-gray-300 font-sans border border-[#333] text-sm min-h-0 room-table-custom-scroll"
+                className="flex-1 w-full overflow-auto bg-button text-text/70 font-sans border border-text/[0.1] text-sm min-h-0 room-table-custom-scroll"
                 style={{ touchAction: 'pan-y', overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}
             >
                 <div ref={contentRef} className="flex flex-col min-w-full w-max">
 
                     {/* Header (Sticky) */}
                     <div
-                        className="sticky top-0 z-20 flex w-full bg-[#1E1E1E] border-b border-[#333] text-xs font-bold uppercase tracking-wider text-gray-400 shadow-[0_4px_10px_-2px_rgba(0,0,0,0.3)] cursor-grab active:cursor-grabbing select-none"
+                        className="sticky top-0 z-20 flex w-full bg-button border-b border-text/[0.1] text-xs font-bold uppercase tracking-wider text-text/50 shadow-[0_4px_10px_-2px_rgba(0,0,0,0.3)] cursor-grab active:cursor-grabbing select-none"
                         onMouseDown={handleHeaderMouseDown}
                         onMouseLeave={handleHeaderMouseLeave}
                         onMouseUp={handleHeaderMouseUp}
                         onMouseMove={handleHeaderMouseMove}
                     >
-                        <div className="w-12 shrink-0 sticky left-0 z-30 flex items-center justify-center py-3 bg-[#1E1E1E] border-r border-[#333] shadow-sm">
+                        <div className="w-12 shrink-0 sticky left-0 z-30 flex items-center justify-center py-3 bg-button border-r border-text/[0.1] shadow-sm">
                             #
                         </div>
                         {participants.map(p => {
                             const isMe = p.user_id === currentUserId;
                             return (
-                                <div key={p.id} className={`flex-1 min-w-[100px] flex items-center justify-center py-3 px-2 border-r border-[#333] last:border-0 truncate ${isMe ? 'text-blue-200 bg-white/[0.03]' : 'text-gray-400'}`}>
+                                <div key={p.id} className={`flex-1 min-w-[100px] flex items-center justify-center py-3 px-2 border-r border-text/[0.1] last:border-0 truncate ${isMe ? 'text-blue-200 bg-text/[0.03]' : 'text-text/50'}`}>
                                     {p.username}
                                 </div>
                             );
@@ -217,9 +217,9 @@ export default function RoomTable({ participants, scrambleIndex, userStatuses = 
                     </div>
 
                     {/* Stats Summary Rows */}
-                    <div className="flex w-full bg-[#252525] border-b border-[#333] font-mono text-gray-300">
+                    <div className="flex w-full bg-button border-b border-text/[0.1] font-mono text-text/70">
 
-                        <div className="w-12 shrink-0 sticky left-0 z-10 flex items-center justify-center py-2 bg-[#252525] border-r border-[#333] text-[10px] font-sans text-gray-500 uppercase">
+                        <div className="w-12 shrink-0 sticky left-0 z-10 flex items-center justify-center py-2 bg-button border-r border-text/[0.1] text-[10px] font-sans text-text/40 uppercase">
                             avg
                         </div>
                         {participants.map(p => {
@@ -232,13 +232,13 @@ export default function RoomTable({ participants, scrambleIndex, userStatuses = 
                             );
                         })}
                     </div>
-                    <div className="flex w-full bg-[#252525] border-b border-[#333] font-mono text-gray-300 mb-[1px]">
-                        <div className="w-12 shrink-0 sticky left-0 z-10 flex items-center justify-center py-2 bg-[#252525] border-r border-[#333] text-[10px] font-sans text-gray-500 uppercase">
+                    <div className="flex w-full bg-button border-b border-text/[0.1] font-mono text-text/70 mb-[1px]">
+                        <div className="w-12 shrink-0 sticky left-0 z-10 flex items-center justify-center py-2 bg-button border-r border-text/[0.1] text-[10px] font-sans text-text/40 uppercase">
                             win
                         </div>
                         {participants.map(p => {
                             return (
-                                <div key={p.id} className="flex-1 min-w-[100px] flex items-center justify-center py-2 border-r border-[#333] last:border-0 text-emerald-500/80">
+                                <div key={p.id} className="flex-1 min-w-[100px] flex items-center justify-center py-2 border-r border-text/[0.1] last:border-0 text-emerald-500/80">
                                     {stats.find(s => s.id === p.user_id)?.wins}
                                 </div>
                             );
@@ -254,9 +254,9 @@ export default function RoomTable({ participants, scrambleIndex, userStatuses = 
                             return (
                                 <div
                                     key={round}
-                                    className={`flex w-full border-b border-[#333] ${isCurrentRound ? 'bg-blue-500/10' : isEven ? 'bg-[#1E1E1E]' : 'bg-[#252525]'}`}
+                                    className={`flex w-full border-b border-text/[0.1] ${isCurrentRound ? 'bg-blue-500/10' : isEven ? 'bg-button' : 'bg-module'}`}
                                 >
-                                    <div className={`w-12 shrink-0 sticky left-0 z-10 flex items-center justify-center py-1.5 font-mono border-r border-[#333] ${isCurrentRound ? 'text-blue-400 font-bold bg-[#1a202c]' : isEven ? 'bg-[#1E1E1E] text-gray-500' : 'bg-[#252525] text-gray-500'}`}>
+                                    <div className={`w-12 shrink-0 sticky left-0 z-10 flex items-center justify-center py-1.5 font-mono border-r border-text/[0.1] ${isCurrentRound ? 'text-blue-400 font-bold bg-module' : isEven ? 'bg-button text-text/40' : 'bg-module text-text/40'}`}>
                                         {round}
                                     </div>
                                     {participants.map(p => {

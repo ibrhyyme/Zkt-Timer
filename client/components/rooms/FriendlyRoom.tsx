@@ -1089,7 +1089,7 @@ export default function FriendlyRoom() {
 
     if (loading) {
         return (
-            <div className="flex h-[100dvh] w-full items-center justify-center bg-[#0f1014] text-white">
+            <div className="flex h-[100dvh] w-full items-center justify-center bg-background text-text">
                 <div className="text-lg font-medium animate-pulse">{t('rooms.room_loading')}</div>
             </div>
         );
@@ -1097,7 +1097,7 @@ export default function FriendlyRoom() {
 
     if (needsPassword) {
         return (
-            <div className="flex h-[100dvh] w-full flex-col items-center justify-center bg-[#0f1014] p-4 text-white">
+            <div className="flex h-[100dvh] w-full flex-col items-center justify-center bg-background p-4 text-text">
                 <PasswordModal
                     onSubmit={handlePasswordSubmit}
                     onCancel={() => history.push('/rooms')}
@@ -1108,7 +1108,7 @@ export default function FriendlyRoom() {
 
     if (error || !room) {
         return (
-            <div className="flex h-[100dvh] w-full flex-col items-center justify-center bg-[#0f1014] text-white p-4 text-center">
+            <div className="flex h-[100dvh] w-full flex-col items-center justify-center bg-background text-text p-4 text-center">
                 <div className="text-red-400 mb-4 text-lg">
                     {error || t('rooms.room_not_found')}
                 </div>
@@ -1165,7 +1165,7 @@ export default function FriendlyRoom() {
     const formatStat = (val: number | null) => val !== null ? (val / 1000).toFixed(timerDecimalPoints ?? 2) : '-';
 
     return (
-        <div className="fixed inset-0 z-[100] md:fixed md:inset-0 md:top-[var(--nav-h)] md:h-[calc(100vh-var(--nav-h))] flex flex-col bg-[#0f1014] text-white overflow-hidden font-sans pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
+        <div className="fixed inset-0 z-[100] md:fixed md:inset-0 md:top-[var(--nav-h)] md:h-[calc(100vh-var(--nav-h))] flex flex-col bg-background text-text overflow-hidden font-sans pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
             {/* 1. Header & Scramble (Fixed) */}
             <div className="shrink-0 flex flex-col">
                 {/* Top Bar - Native App Header Style */}
@@ -1182,14 +1182,14 @@ export default function FriendlyRoom() {
 
                             {/* Dropdown Menu */}
                             {hostMenuOpen && (
-                                <div className="absolute top-full left-0 mt-2 w-56 bg-[#1a1b1f] border border-gray-800 rounded-lg shadow-xl transition-all transform origin-top-left z-50 overflow-hidden">
+                                <div className="absolute top-full left-0 mt-2 w-56 bg-module border border-text/[0.1] rounded-lg shadow-xl transition-all transform origin-top-left z-50 overflow-hidden">
                                     <div className="py-1">
                                         <button
                                             onClick={() => {
                                                 setEditModalOpen(true);
                                                 setHostMenuOpen(false);
                                             }}
-                                            className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-white/5 hover:text-white flex items-center gap-3 transition-colors"
+                                            className="w-full text-left px-4 py-3 text-sm text-text/70 hover:bg-text/[0.05] hover:text-text flex items-center gap-3 transition-colors"
                                         >
                                             <PencilSimple size={18} />
                                             {t('rooms.edit_room')}
@@ -1199,12 +1199,12 @@ export default function FriendlyRoom() {
                                                 setManageUsersModalOpen(true);
                                                 setHostMenuOpen(false);
                                             }}
-                                            className="w-full text-left px-4 py-3 text-sm text-gray-300 hover:bg-white/5 hover:text-white flex items-center gap-3 transition-colors"
+                                            className="w-full text-left px-4 py-3 text-sm text-text/70 hover:bg-text/[0.05] hover:text-text flex items-center gap-3 transition-colors"
                                         >
                                             <Users size={18} />
                                             {t('rooms.manage_users')}
                                         </button>
-                                        <div className="h-px bg-gray-800 my-1" />
+                                        <div className="h-px bg-text/[0.1] my-1" />
                                         <button
                                             onClick={handleLeaveRoom}
                                             className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 flex items-center gap-3 transition-colors"
@@ -1340,9 +1340,9 @@ export default function FriendlyRoom() {
 
                 {/* Mobile Tabs - Only show on lg and below */}
                 {isActive && isMobile && (
-                    <div className="flex border-b border-gray-800 bg-[#15161A]">
+                    <div className="flex border-b border-text/[0.1] bg-background">
                         <button
-                            className={`flex-1 py-3 text-sm font-medium transition-colors relative ${mobileTab === 'timer' ? 'text-blue-400' : 'text-gray-400 hover:text-gray-200'
+                            className={`flex-1 py-3 text-sm font-medium transition-colors relative ${mobileTab === 'timer' ? 'text-blue-400' : 'text-text/50 hover:text-text/80'
                                 }`}
                             onClick={() => setMobileTab('timer')}
                         >
@@ -1352,7 +1352,7 @@ export default function FriendlyRoom() {
                             )}
                         </button>
                         <button
-                            className={`flex-1 py-3 text-sm font-medium transition-colors relative ${mobileTab === 'chat' ? 'text-blue-400' : 'text-gray-400 hover:text-gray-200'
+                            className={`flex-1 py-3 text-sm font-medium transition-colors relative ${mobileTab === 'chat' ? 'text-blue-400' : 'text-text/50 hover:text-text/80'
                                 }`}
                             onClick={() => setMobileTab('chat')}
                         >
@@ -1366,11 +1366,11 @@ export default function FriendlyRoom() {
 
                 {/* Scramble Area */}
                 {isActive && (
-                    <div className="flex items-center flex-col justify-center bg-[#0a0b0e] py-4 px-4 border-b border-gray-800/50">
+                    <div className="flex items-center flex-col justify-center bg-module py-4 px-4 border-b border-text/[0.05]">
                         {/* Scramble Display - colored for smart cube */}
                         <div className="text-center font-mono text-base md:text-3xl leading-relaxed font-medium select-all px-1">
                             {alreadySolvedThisRound ? (
-                                <span className="text-gray-500 animate-pulse">{t('rooms.waiting_for_others')}</span>
+                                <span className="text-text/40 animate-pulse">{t('rooms.waiting_for_others')}</span>
                             ) : needsCubeReset && timerType === 'smart' && smartCubeConnected ? (
                                 <div className="flex flex-col items-center gap-3 py-2">
                                     <span className="text-orange-400 font-bold text-lg md:text-2xl">{t('smart_cube.cube_mismatch_message')}</span>
@@ -1446,7 +1446,7 @@ export default function FriendlyRoom() {
                                     orangeMiddle = false;
                                     return scrambleParts.map((turn, i) => {
                                         const smartTurn = smartScramble[i];
-                                        let colorClass = 'text-gray-200'; // default
+                                        let colorClass = 'text-text/80'; // default
 
                                         if (smartScramble.length > i && smartTurn === turn && !orangeMiddle) {
                                             colorClass = 'text-green-400'; // completed
@@ -1464,7 +1464,7 @@ export default function FriendlyRoom() {
                                 })()
                             ) : (
                                 // Normal: show plain scramble
-                                <span className="text-gray-200">{room.current_scramble}</span>
+                                <span className="text-text/80">{room.current_scramble}</span>
                             )}
                         </div>
 
@@ -1474,7 +1474,7 @@ export default function FriendlyRoom() {
                                 {manualInspecting ? (
                                     // Show inspection timer inline
                                     <div
-                                        className={`w-full px-4 py-3 text-4xl md:text-5xl font-mono text-center rounded-lg bg-[#1a1b1f] border-2 ${manualInspectionTime < 0 ? 'border-red-500 text-red-500' :
+                                        className={`w-full px-4 py-3 text-4xl md:text-5xl font-mono text-center rounded-lg bg-module border-2 ${manualInspectionTime < 0 ? 'border-red-500 text-red-500' :
                                             manualInspectionTime < 3000 ? 'border-orange-500 text-orange-500' :
                                                 'border-red-500 text-red-400'
                                             }`}
@@ -1512,10 +1512,10 @@ export default function FriendlyRoom() {
                                                 type="text"
                                                 inputMode="decimal"
                                                 pattern="[0-9]*"
-                                                className={`flex-1 min-w-0 px-4 py-3 text-2xl md:text-3xl font-mono text-center rounded-lg bg-[#1a1b1f] border-2 ${manualTimeError && manualTimeInput
+                                                className={`flex-1 min-w-0 px-4 py-3 text-2xl md:text-3xl font-mono text-center rounded-lg bg-module border-2 ${manualTimeError && manualTimeInput
                                                     ? 'border-red-500 focus:border-red-400'
-                                                    : 'border-gray-700 focus:border-blue-500'
-                                                    } text-white placeholder-gray-500 outline-none transition-colors appearance-none`}
+                                                    : 'border-text/[0.2] focus:border-blue-500'
+                                                    } text-text placeholder-text/40 outline-none transition-colors appearance-none`}
                                                 placeholder={alreadySolvedThisRound ? t('rooms.saved') : "1234"}
                                                 value={manualTimeInput}
                                                 disabled={alreadySolvedThisRound}
@@ -1633,17 +1633,17 @@ export default function FriendlyRoom() {
                     <>
                         {/* Timer Layout (Table) - Left (60% on desktop) */}
                         <div className={`
-                            flex-col bg-[#0f1014]
+                            flex-col bg-background
                             ${!isMobile
-                                ? 'flex relative w-[60%] border-r border-[#333]'
+                                ? 'flex relative w-[60%] border-r border-text/[0.1]'
                                 : `absolute inset-0 ${mobileTab === 'timer' ? 'flex z-10' : 'hidden'}`
-                            } 
+                            }
                             transition-opacity duration-200
                         `}>
 
                             {/* Table Container - takes all remaining space */}
                             <div
-                                className={`flex-1 h-full w-full overflow-hidden bg-[#0f1014] ${
+                                className={`flex-1 h-full w-full overflow-hidden bg-background ${
                                     isMobile && timerType === 'keyboard' && !isManualMode ? 'timer-touch-area' : ''
                                 }`}
                                 style={isMobile && timerType === 'keyboard' && !isManualMode ? {
@@ -1662,9 +1662,9 @@ export default function FriendlyRoom() {
 
                             {/* Mobile Timer Touch Area - Fixed at bottom of Timer Tab */}
                             {isMobile && timerType === 'keyboard' && !isManualMode && (
-                                <div className="timer-touch-area shrink-0 h-32 w-full bg-[#15161A] border-t border-[#333] flex flex-col items-center justify-center select-none touch-none cursor-pointer active:bg-[#1a1c22] transition-colors relative z-20"
+                                <div className="timer-touch-area shrink-0 h-32 w-full bg-background border-t border-text/[0.1] flex flex-col items-center justify-center select-none touch-none cursor-pointer active:bg-module transition-colors relative z-20"
                                      style={{ WebkitTouchCallout: 'none' }}>
-                                    <span className="text-6xl font-mono font-medium text-gray-200 tracking-tight">
+                                    <span className="text-6xl font-mono font-medium text-text/80 tracking-tight">
                                         {(() => {
                                             const myParticipant = room.participants.find(p => p.user_id === me?.id);
                                             const dpVal = timerDecimalPoints ?? 2;
@@ -1688,9 +1688,9 @@ export default function FriendlyRoom() {
 
                         {/* Chat Layout - Center (30% on desktop) */}
                         <div className={`
-                            flex-col bg-[#0f1014]
+                            flex-col bg-background
                             ${!isMobile
-                                ? 'flex relative w-[30%] border-r border-[#333]'
+                                ? 'flex relative w-[30%] border-r border-text/[0.1]'
                                 : `absolute inset-0 ${mobileTab === 'chat' ? 'flex z-10' : 'hidden'}`
                             }
                             transition-opacity duration-200
@@ -1706,14 +1706,14 @@ export default function FriendlyRoom() {
                         )}
                     </>
                 ) : (
-                    <div className="flex h-full w-full flex-col bg-[#0f1014] overflow-y-auto overflow-x-hidden">
+                    <div className="flex h-full w-full flex-col bg-background overflow-y-auto overflow-x-hidden">
 
                         {/* Waiting Room Header */}
                         <div className="shrink-0 text-center mt-6 md:mt-12 mb-6 md:mb-12 space-y-3 px-4">
-                            <h2 className="text-2xl md:text-4xl font-bold text-white tracking-tight">
+                            <h2 className="text-2xl md:text-4xl font-bold text-text tracking-tight">
                                 {t('rooms.waiting_for_players')}
                             </h2>
-                            <p className="text-gray-400 text-sm md:text-base">
+                            <p className="text-text/50 text-sm md:text-base">
                                 {isHost
                                     ? t('rooms.host_start_instruction')
                                     : t('rooms.guest_wait_instruction')}
@@ -1724,7 +1724,7 @@ export default function FriendlyRoom() {
                         <div className="flex-1 flex flex-col md:flex-row items-center md:items-start justify-center gap-6 md:gap-8 px-4 md:px-8 max-w-7xl mx-auto w-full pb-8">
 
                             {/* Left: Participants */}
-                            <div className="w-full max-w-md md:max-w-none md:flex-1 h-[300px] md:h-[500px] bg-[#15161A] rounded-2xl border border-gray-800 overflow-hidden flex flex-col shadow-2xl relative group">
+                            <div className="w-full max-w-md md:max-w-none md:flex-1 h-[300px] md:h-[500px] bg-background rounded-2xl border border-text/[0.1] overflow-hidden flex flex-col shadow-2xl relative group">
                                 <RoomParticipants
                                     participants={room.participants}
                                     currentScrambleIndex={room.scramble_index}
@@ -1765,13 +1765,13 @@ export default function FriendlyRoom() {
                                 ) : (
                                     <div className="flex flex-col items-center gap-2 animate-pulse">
                                         <div className="w-12 h-12 rounded-full border-2 border-gray-700 border-t-blue-500 animate-spin" />
-                                        <span className="text-gray-500 text-sm font-medium tracking-wider">{t('rooms.waiting_for_host')}</span>
+                                        <span className="text-text/40 text-sm font-medium tracking-wider">{t('rooms.waiting_for_host')}</span>
                                     </div>
                                 )}
                             </div>
 
                             {/* Right: Chat */}
-                            <div className="w-full max-w-md md:max-w-none md:flex-1 h-[300px] md:h-[500px] bg-[#15161A] rounded-2xl border border-gray-800 overflow-hidden flex flex-col shadow-2xl relative group">
+                            <div className="w-full max-w-md md:max-w-none md:flex-1 h-[300px] md:h-[500px] bg-background rounded-2xl border border-text/[0.1] overflow-hidden flex flex-col shadow-2xl relative group">
                                 <RoomChat roomId={roomId} />
                                 <div className="absolute inset-0 border-2 border-transparent group-hover:border-blue-500/20 rounded-2xl pointer-events-none transition-colors" />
                             </div>
@@ -1783,25 +1783,25 @@ export default function FriendlyRoom() {
 
             {/* 3. Bottom Panel (Stats & Preview) - Fixed Sticky */}
             {isActive && mobileTab === 'timer' && (
-                <div className="shrink-0 bg-[#0a0b0e] border-t border-gray-800 p-2 pb-safe z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.3)] w-full">
+                <div className="shrink-0 bg-module border-t border-text/[0.1] p-2 pb-safe z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.3)] w-full">
                     <div className="flex items-center justify-between w-full px-2 md:px-6">
                         {/* Compact Stats */}
                         <div className="flex flex-col gap-1 text-xs md:text-sm">
                             <div className="grid grid-cols-[50px_repeat(3,minmax(40px,1fr))] gap-x-2 gap-y-1 items-center">
-                                <span className="text-gray-500 font-semibold text-[10px] uppercase tracking-wider"></span>
+                                <span className="text-text/30 font-semibold text-[10px] uppercase tracking-wider"></span>
                                 <span className="text-blue-400 font-bold text-center text-[10px] uppercase tracking-wider">{t('rooms.single')}</span>
                                 <span className="text-blue-400 font-bold text-center text-[10px] uppercase tracking-wider">{t('rooms.ao5')}</span>
                                 <span className="text-blue-400 font-bold text-center text-[10px] uppercase tracking-wider">{t('rooms.ao12')}</span>
 
-                                <span className="text-gray-400 font-medium text-left">{t('rooms.current')}</span>
-                                <span className="text-gray-200 font-mono text-center">{formatStat(times.length > 0 ? times[times.length - 1] : null)}</span>
-                                <span className="text-gray-200 font-mono text-center">{formatStat(ao5)}</span>
-                                <span className="text-gray-200 font-mono text-center">{formatStat(ao12)}</span>
+                                <span className="text-text/50 font-medium text-left">{t('rooms.current')}</span>
+                                <span className="text-text/80 font-mono text-center">{formatStat(times.length > 0 ? times[times.length - 1] : null)}</span>
+                                <span className="text-text/80 font-mono text-center">{formatStat(ao5)}</span>
+                                <span className="text-text/80 font-mono text-center">{formatStat(ao12)}</span>
 
-                                <span className="text-gray-400 font-medium text-left">{t('rooms.best')}</span>
-                                <span className="text-gray-200 font-mono text-center">{formatStat(single)}</span>
-                                <span className="text-gray-200 font-mono text-center">{formatStat(bestAo5)}</span>
-                                <span className="text-gray-200 font-mono text-center">{formatStat(bestAo12)}</span>
+                                <span className="text-text/50 font-medium text-left">{t('rooms.best')}</span>
+                                <span className="text-text/80 font-mono text-center">{formatStat(single)}</span>
+                                <span className="text-text/80 font-mono text-center">{formatStat(bestAo5)}</span>
+                                <span className="text-text/80 font-mono text-center">{formatStat(bestAo12)}</span>
                             </div>
                         </div>
 

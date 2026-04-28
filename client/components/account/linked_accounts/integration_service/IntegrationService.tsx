@@ -160,7 +160,7 @@ export default function IntegrationService(props: Props) {
 					}}
 				>
 					<img src={service.logoSrc} alt={service.name} style={{width: '48px', height: '48px'}} />
-					<span style={{color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.9rem'}}>
+					<span className="text-text/80" style={{fontSize: '0.9rem'}}>
 						{t('integration.wca_connecting')}
 					</span>
 				</div>
@@ -186,7 +186,7 @@ export default function IntegrationService(props: Props) {
 					<div
 						onClick={(e) => e.stopPropagation()}
 						style={{
-							backgroundColor: 'rgb(22, 25, 35)',
+							backgroundColor: 'rgb(var(--module-color))',
 							borderRadius: '20px',
 							padding: '28px 24px',
 							width: '100%',
@@ -195,14 +195,14 @@ export default function IntegrationService(props: Props) {
 							flexDirection: 'column',
 							alignItems: 'center',
 							gap: '16px',
-							border: '1px solid rgba(255, 255, 255, 0.08)',
+							border: '1px solid rgba(var(--text-color), 0.08)',
 						}}
 					>
 						<img src={service.logoSrc} alt={service.name} style={{width: '48px', height: '48px'}} />
-						<h3 style={{color: 'rgba(255, 255, 255, 0.95)', margin: 0, fontSize: '1.05rem', fontWeight: 600, textAlign: 'center'}}>
+						<h3 className="text-text/95" style={{margin: 0, fontSize: '1.05rem', fontWeight: 600, textAlign: 'center'}}>
 							{t('integration.disconnect_title', {name: service.name})}
 						</h3>
-						<p style={{color: 'rgba(255, 255, 255, 0.55)', margin: 0, textAlign: 'center', lineHeight: 1.5, fontSize: '0.85rem'}}>
+						<p className="text-text/55" style={{margin: 0, textAlign: 'center', lineHeight: 1.5, fontSize: '0.85rem'}}>
 							{t('integration.disconnect_confirm')}
 						</p>
 						<Button
