@@ -21,25 +21,25 @@ export default function MusicProModal() {
 				<MusicNote size={40} weight="fill" className="text-white" />
 			</div>
 
-			<h2 className="text-2xl font-bold text-white mb-3">
+			<h2 className="text-2xl font-bold text-text mb-3">
 				{t('pro.music_title')}
 			</h2>
-			<p className="text-base text-white opacity-70 mb-7">
+			<p className="text-base text-text/70 mb-7">
 				{t('pro.music_description')}
 			</p>
 
 			<div className="flex flex-col gap-4 mb-7 text-left">
 				<div className="flex items-center gap-4 p-4 rounded-lg bg-[color:var(--primary-color)]/10">
 					<YoutubeLogo size={28} weight="fill" className="text-red-500 shrink-0" />
-					<span className="text-base text-white">{t('pro.music_youtube')}</span>
+					<span className="text-base text-text">{t('pro.music_youtube')}</span>
 				</div>
 				<div className="flex items-center gap-4 p-4 rounded-lg bg-[color:var(--primary-color)]/10">
 					<Users size={28} weight="fill" className="text-blue-400 shrink-0" />
-					<span className="text-base text-white">{t('pro.music_friends')}</span>
+					<span className="text-base text-text">{t('pro.music_friends')}</span>
 				</div>
 				<div className="flex items-center gap-4 p-4 rounded-lg bg-[color:var(--primary-color)]/10">
 					<Headphones size={28} weight="fill" className="text-green-400 shrink-0" />
-					<span className="text-base text-white">{t('pro.music_unlimited')}</span>
+					<span className="text-base text-text">{t('pro.music_unlimited')}</span>
 				</div>
 			</div>
 

@@ -64,12 +64,12 @@ export default function RoomChat({ roomId }: RoomChatProps) {
                             key={msg.id}
                             className={`flex flex-col max-w-[85%] ${msg.user_id === me?.id ? 'ml-auto items-end' : 'mr-auto items-start'}`}
                         >
-                            <span className={`text-[10px] mb-0.5 px-1 ${msg.user_id === me?.id ? 'text-blue-400' : 'text-gray-400'}`}>
+                            <span className={`text-[10px] mb-0.5 px-1 ${msg.user_id === me?.id ? 'text-blue-400' : 'text-text/40'}`}>
                                 {msg.username}
                             </span>
                             <div className={`px-3 py-2 rounded-lg text-sm break-words ${msg.user_id === me?.id
                                     ? 'bg-blue-600 text-white rounded-br-none'
-                                    : 'bg-gray-700/50 text-gray-200 rounded-bl-none'
+                                    : 'bg-button text-text/80 rounded-bl-none'
                                 }`}>
                                 {msg.message}
                             </div>

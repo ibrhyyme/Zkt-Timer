@@ -209,7 +209,7 @@ export default function RoomTable({ participants, scrambleIndex, userStatuses = 
                         {participants.map(p => {
                             const isMe = p.user_id === currentUserId;
                             return (
-                                <div key={p.id} className={`flex-1 min-w-[100px] flex items-center justify-center py-3 px-2 border-r border-text/[0.1] last:border-0 truncate ${isMe ? 'text-blue-200 bg-text/[0.03]' : 'text-text/50'}`}>
+                                <div key={p.id} className={`flex-1 min-w-[100px] flex items-center justify-center py-3 px-2 border-r border-text/[0.1] last:border-0 truncate ${isMe ? 'text-primary font-semibold bg-text/[0.03]' : 'text-text font-medium'}`}>
                                     {p.username}
                                 </div>
                             );
@@ -226,7 +226,7 @@ export default function RoomTable({ participants, scrambleIndex, userStatuses = 
                             const stat = stats.find(s => s.id === p.user_id);
                             const isBest = bestMean !== null && stat?.mean === bestMean;
                             return (
-                                <div key={p.id} className={`flex-1 min-w-[100px] flex items-center justify-center py-2 border-r border-[#333] last:border-0 ${isBest ? 'text-emerald-400 font-bold' : ''}`}>
+                                <div key={p.id} className={`flex-1 min-w-[100px] flex items-center justify-center py-2 border-r border-text/[0.1] last:border-0 ${isBest ? 'text-emerald-600 font-bold' : ''}`}>
                                     {stat?.meanStr}
                                 </div>
                             );
@@ -238,7 +238,7 @@ export default function RoomTable({ participants, scrambleIndex, userStatuses = 
                         </div>
                         {participants.map(p => {
                             return (
-                                <div key={p.id} className="flex-1 min-w-[100px] flex items-center justify-center py-2 border-r border-text/[0.1] last:border-0 text-emerald-500/80">
+                                <div key={p.id} className="flex-1 min-w-[100px] flex items-center justify-center py-2 border-r border-text/[0.1] last:border-0 text-emerald-600">
                                     {stats.find(s => s.id === p.user_id)?.wins}
                                 </div>
                             );
@@ -291,14 +291,14 @@ export default function RoomTable({ participants, scrambleIndex, userStatuses = 
                                                     cellContent = (
                                                         <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-sm ${userStatus === 'TIMING' ? 'text-emerald-400 bg-emerald-400/10' :
                                                             userStatus.includes('INSPECTING') ? 'text-amber-400 bg-amber-400/10' :
-                                                                'text-gray-500'
+                                                                'text-text/50'
                                                             }`}>
                                                             {statusText}
                                                         </span>
                                                     );
                                                 }
                                             } else {
-                                                cellContent = <span className="text-gray-700">-</span>;
+                                                cellContent = <span className="text-text/30">-</span>;
                                             }
                                         } else {
                                             const solveTime = solve.plus_two ? solve.time + 2 : solve.time;
@@ -306,7 +306,7 @@ export default function RoomTable({ participants, scrambleIndex, userStatuses = 
                                             cellContent = (
                                                 <span className={`font-mono tracking-tight ${solve.dnf ? 'text-rose-400' :
                                                     isBest ? 'text-emerald-400 font-bold' :
-                                                        'text-gray-200'
+                                                        'text-text/80'
                                                     }`}>
                                                     {solve.dnf ? 'DNF' : getTimeString(solveTime) + (solve.plus_two ? '+' : '')}
                                                 </span>
@@ -316,7 +316,7 @@ export default function RoomTable({ participants, scrambleIndex, userStatuses = 
                                         return (
                                             <div
                                                 key={p.id}
-                                                className={`flex-1 min-w-[100px] flex items-center justify-center py-1.5 border-r border-[#333] last:border-0`}
+                                                className={`flex-1 min-w-[100px] flex items-center justify-center py-1.5 border-r border-text/[0.1] last:border-0`}
                                             >
                                                 {cellContent}
                                             </div>
@@ -326,7 +326,7 @@ export default function RoomTable({ participants, scrambleIndex, userStatuses = 
                             );
                         })}
 
-                        <div className="h-8 w-full bg-[#1E1E1E]"></div>
+                        <div className="h-8 w-full bg-button"></div>
                     </div>
                 </div>
             </div>
