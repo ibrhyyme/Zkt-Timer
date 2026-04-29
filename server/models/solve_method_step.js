@@ -9,7 +9,7 @@ export function deleteSolveMethodSteps(solve) {
 	});
 }
 
-export function createSolveMethodSteps(solve, steps) {
+export async function createSolveMethodSteps(solve, steps) {
 	const data = [];
 
 	for (const step of Object.keys(steps)) {
@@ -37,7 +37,6 @@ export function createSolveMethodSteps(solve, steps) {
 		});
 	}
 
-	return getPrisma().solveMethodStep.createMany({
-		data,
-	});
+	await getPrisma().solveMethodStep.createMany({ data });
+	return data;
 }

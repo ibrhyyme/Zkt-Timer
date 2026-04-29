@@ -838,6 +838,7 @@
         "solve_graph": "Solve Graph",
         "time_distro": "Time Distribution",
         "cross_solver": "Solvers",
+        "phase_analysis": "Phase Analysis",
         "none": "None",
         "customize_stats": "Customize Stats",
         "stat_type": "Stat type",
@@ -912,6 +913,15 @@
     "sessions": {
         "page_title": "Sessions",
         "settings_title": "Session Settings",
+        "smart_cube_summary_title": "Smart Cube Summary",
+        "smart_cube_count": "Solve Count",
+        "smart_cube_total_time": "Total Time",
+        "smart_cube_avg_time": "Average",
+        "no_smart_cube_solves": "No smart cube solves in this session",
+        "session_steps_title": "Session Step Averages",
+        "hours_short": "h",
+        "minutes_short": "m",
+        "seconds_short": "s",
         "session_name": "Session Name",
         "statistics": "Statistics",
         "select_session": "Select Session",
@@ -2577,6 +2587,16 @@
         "round_detail": "Round {{number}}",
         "scramble_label": "Scramble",
         "wins": "{{name}} wins!"
+    },
+    "phase_analysis": {
+        "no_smart_solves": "No smart cube solves found",
+        "total": "Total",
+        "recognition": "Recognition",
+        "execution": "Execution",
+        "average": "Avg.",
+        "avg_short": "Avg.",
+        "total_label": "Total",
+        "turns_label": "Moves"
     },
     "cross_solver": {
         "only_3x3": "Only available for 3x3",

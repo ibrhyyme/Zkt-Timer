@@ -210,6 +210,7 @@ export default function ExtrasTab() {
 		[TimerModuleType.CROSS_SOLVER]: t('timer_modules.cross_solver'),
 		[TimerModuleType.SOLVE_GRAPH]: t('timer_modules.solve_graph'),
 		[TimerModuleType.TIME_DISTRO]: t('timer_modules.time_distro'),
+		[TimerModuleType.PHASE_ANALYSIS]: t('timer_modules.phase_analysis'),
 	};
 
 	function handleModuleChange(index: number, value: string) {

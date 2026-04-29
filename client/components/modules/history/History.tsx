@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import ReactList from 'react-list';
 import { GlobalHotKeys } from 'react-hotkeys';
@@ -12,6 +12,7 @@ import { deleteSolveDb } from '../../../db/solves/update';
 import { useSolveDb } from '../../../util/hooks/useSolveDb';
 import { Solve } from '../../../../server/schemas/Solve.schema';
 import { useGeneral } from '../../../util/hooks/useGeneral';
+import { publishScroll, subscribeScroll, HISTORY_SCROLL_CHANNEL, PHASE_ANALYSIS_SCROLL_CHANNEL } from '../../../util/scroll_sync';
 
 interface Props {
 	solves?: Solve[];
@@ -28,6 +29,32 @@ export default function History(props: Props) {
 	const { t } = useTranslation();
 	useSolveDb();
 	const modals = useGeneral('modals');
+	const scrollRef = useRef<HTMLDivElement>(null);
+	const isReceiving = useRef(false);
+
+	useEffect(() => {
+		const el = scrollRef.current;
+		if (!el) return;
+
+		const onScroll = () => {
+			if (!isReceiving.current) {
+				publishScroll(HISTORY_SCROLL_CHANNEL, el.scrollTop);
+			}
+		};
+
+		el.addEventListener('scroll', onScroll, { passive: true });
+
+		const unsub = subscribeScroll(PHASE_ANALYSIS_SCROLL_CHANNEL, (top) => {
+			isReceiving.current = true;
+			el.scrollTop = top;
+			requestAnimationFrame(() => { isReceiving.current = false; });
+		});
+
+		return () => {
+			el.removeEventListener('scroll', onScroll);
+			unsub();
+		};
+	}, []);
 
 	let solves;
 	if (parentSolves) {
@@ -95,7 +122,7 @@ export default function History(props: Props) {
 		<GlobalHotKeys handlers={HOTKEY_HANDLERS} keyMap={HOTKEY_MAP}>
 			<div className="cd-history h-full">
 				<div className="cd-history__table h-full">
-					<div className="cd-history__list h-full overflow-y-auto">
+					<div ref={scrollRef} className="cd-history__list h-full overflow-y-auto">
 						<ReactList itemRenderer={renderSolveRow} length={solves.length} type="uniform" />
 					</div>
 				</div>

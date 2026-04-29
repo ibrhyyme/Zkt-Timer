@@ -838,6 +838,7 @@
         "solve_graph": "还原图",
         "time_distro": "时间分布",
         "cross_solver": "公式求解器",
+        "phase_analysis": "阶段分析",
         "none": "无",
         "customize_stats": "自定义统计",
         "stat_type": "统计类型",
@@ -912,6 +913,15 @@
     "sessions": {
         "page_title": "阶段",
         "settings_title": "阶段设置",
+        "smart_cube_summary_title": "智能魔方概览",
+        "smart_cube_count": "解决次数",
+        "smart_cube_total_time": "总时间",
+        "smart_cube_avg_time": "平均",
+        "no_smart_cube_solves": "本阶段没有智能魔方解决记录",
+        "session_steps_title": "阶段步骤平均值",
+        "hours_short": "时",
+        "minutes_short": "分",
+        "seconds_short": "秒",
         "session_name": "阶段名称",
         "statistics": "统计数据",
         "select_session": "选择阶段",
@@ -2577,6 +2587,16 @@
         "round_detail": "第 {{number}} 回合",
         "scramble_label": "打乱",
         "wins": "{{name}} 获胜!"
+    },
+    "phase_analysis": {
+        "no_smart_solves": "未找到智能魔方还原记录",
+        "total": "总计",
+        "recognition": "识别",
+        "execution": "执行",
+        "average": "均值",
+        "avg_short": "均",
+        "total_label": "总计",
+        "turns_label": "步数"
     },
     "cross_solver": {
         "only_3x3": "仅适用于3x3",

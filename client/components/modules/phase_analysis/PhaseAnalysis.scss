@@ -1,0 +1,169 @@
+@import '../../../styles/config';
+
+.cd-phase-analysis {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	box-sizing: border-box;
+
+	// ── Column header ─────────────────────────────────────────────
+	&__header {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		padding: 0 6px;
+		height: 28px;
+		flex-shrink: 0;
+		background-color: rgba(var(--button-color), 0.6);
+		border-bottom: 1px solid rgba(var(--text-color), 0.10);
+	}
+
+	// ── Scrollable list ───────────────────────────────────────────
+	&__list {
+		flex: 1;
+		min-height: 0;
+	}
+
+	// ── Solve row ─────────────────────────────────────────────────
+	&__row {
+		width: 100%;
+		display: flex;
+		flex-direction: row;
+		height: 36px;
+		padding: 0 6px;
+		box-sizing: border-box;
+		align-items: center;
+		border-bottom: 1px solid rgba(var(--text-color), 0.05);
+		background-color: rgb(var(--module-color));
+
+		&--even {
+			background-color: rgba(var(--button-color), 0.3);
+		}
+
+		&:hover {
+			background-color: rgba(var(--text-color), 0.06) !important;
+		}
+
+		&--empty {
+			opacity: 0.35;
+		}
+	}
+
+	// ── Average footer ────────────────────────────────────────────
+	&__avg-row {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		padding: 0 6px;
+		height: 32px;
+		flex-shrink: 0;
+		border-top: 1px solid rgba(var(--secondary-color), 0.2);
+		background-color: rgba(var(--secondary-color), 0.05);
+	}
+
+	// ── Cell ──────────────────────────────────────────────────────
+	&__cell {
+		flex: 1;
+		font-size: 0.82rem;
+		color: rgb(var(--text-color));
+		text-align: center;
+		white-space: nowrap;
+		min-width: 0;
+
+		&--index {
+			flex: 0 0 26px;
+			min-width: 26px;
+			text-align: left;
+			opacity: 0.35;
+			font-size: 0.74rem;
+		}
+
+		&--head {
+			opacity: 0.40;
+			font-size: 0.67rem;
+			font-weight: 700;
+			letter-spacing: 0.04em;
+			text-transform: uppercase;
+		}
+
+		&--stat {
+			flex: 0 0 54px;
+			min-width: 54px;
+			color: rgba(var(--text-color), 0.60);
+			font-size: 0.78rem;
+			border-left: 1px solid rgba(var(--text-color), 0.07);
+		}
+
+		&--avg {
+			color: rgb(var(--secondary-color));
+			font-weight: 700;
+			font-size: 0.83rem;
+
+			&.cd-phase-analysis__cell--index {
+				color: rgb(var(--text-color));
+				font-weight: 500;
+				opacity: 0.4;
+				font-size: 0.72rem;
+			}
+
+			&.cd-phase-analysis__cell--stat {
+				color: rgba(var(--secondary-color), 0.8);
+			}
+		}
+	}
+
+	// ── Mobile ────────────────────────────────────────────────────
+	&--mobile {
+		justify-content: center;
+		align-items: center;
+		padding: 8px 12px;
+	}
+
+	&__mobile-table {
+		width: 100%;
+		border-collapse: collapse;
+	}
+
+	&__mobile-row {
+		border-bottom: 1px solid rgba(var(--text-color), 0.06);
+
+		&--total {
+			border-top: 1px solid rgba(var(--secondary-color), 0.2);
+			border-bottom: none;
+
+			.cd-phase-analysis__mobile-cell {
+				font-weight: 700;
+				color: rgb(var(--secondary-color));
+				padding-top: 6px;
+			}
+		}
+	}
+
+	&__mobile-cell {
+		font-size: 0.85rem;
+		color: rgb(var(--text-color));
+		text-align: right;
+		padding: 5px 4px;
+
+		&--phase {
+			text-align: left;
+			opacity: 0.5;
+			font-size: 0.7rem;
+			font-weight: 600;
+			letter-spacing: 0.03em;
+			text-transform: uppercase;
+			width: 55px;
+		}
+
+		&--better {
+			color: $successColor;
+			font-weight: 600;
+		}
+
+		&--worse {
+			color: $primaryRed;
+			font-weight: 600;
+		}
+	}
+}

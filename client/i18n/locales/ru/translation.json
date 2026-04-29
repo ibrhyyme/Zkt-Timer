@@ -838,6 +838,7 @@
         "solve_graph": "График сборок",
         "time_distro": "Распределение времени",
         "cross_solver": "Решатели",
+        "phase_analysis": "Анализ Этапов",
         "none": "Нет",
         "customize_stats": "Настроить статистику",
         "stat_type": "Тип статистики",
@@ -912,6 +913,15 @@
     "sessions": {
         "page_title": "Сессии",
         "settings_title": "Настройки сессии",
+        "smart_cube_summary_title": "Сводка по умному кубу",
+        "smart_cube_count": "Количество сборок",
+        "smart_cube_total_time": "Общее время",
+        "smart_cube_avg_time": "Среднее",
+        "no_smart_cube_solves": "В этой сессии нет сборок с умным кубом",
+        "session_steps_title": "Средние значения шагов сессии",
+        "hours_short": "ч",
+        "minutes_short": "м",
+        "seconds_short": "с",
         "session_name": "Название сессии",
         "statistics": "Статистика",
         "select_session": "Выбрать сессию",
@@ -2577,6 +2587,16 @@
         "round_detail": "Раунд {{number}}",
         "scramble_label": "Скрамбл",
         "wins": "{{name}} побеждает!"
+    },
+    "phase_analysis": {
+        "no_smart_solves": "Сборки с умным кубом не найдены",
+        "total": "Итого",
+        "recognition": "Распознавание",
+        "execution": "Выполнение",
+        "average": "Ср.",
+        "avg_short": "Ср.",
+        "total_label": "Итого",
+        "turns_label": "Ходы"
     },
     "cross_solver": {
         "only_3x3": "Доступно только для 3x3",

@@ -1,0 +1,50 @@
+@import '../../../styles/config';
+
+.#{$namespace}-smart-cube-summary {
+	display: flex;
+	flex-direction: column;
+	gap: 1.067rem;
+
+	&__title {
+		color: rgb(var(--text-color));
+		font-size: 1.2rem;
+		font-weight: 600;
+		margin: 0;
+		padding-bottom: 0.533rem;
+		border-bottom: 2px solid rgba(var(--primary-color), 0.3);
+	}
+
+	&__stats {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 0.667rem;
+
+		@media (max-width: 600px) {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	&__stat {
+		display: flex;
+		flex-direction: column;
+		gap: 0.267rem;
+		padding: 0.733rem 0.867rem;
+		background-color: rgba(var(--button-color), 0.4);
+		border-radius: 8px;
+	}
+
+	&__stat-label {
+		color: rgba(var(--text-color), 0.55);
+		font-size: 0.75rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+	}
+
+	&__stat-value {
+		color: rgb(var(--text-color));
+		font-size: 1.35rem;
+		font-weight: 700;
+		font-family: 'SF Mono', 'Roboto Mono', 'Fira Code', monospace;
+	}
+}
