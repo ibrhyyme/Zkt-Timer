@@ -22,7 +22,7 @@ import './SiteConfigPanel.scss';
 const b = block('site-config-panel');
 
 const BACKFILL_WCA_IDS = gql`mutation { backfillWcaIds { total filled tokenFailed noWcaId error recordsTotal recordsFilled recordsError } }`;
-const WCA_STATS = gql`query { wcaStats { totalUsers wcaConnected wcaWithId wcaWithUserId } }`;
+const WCA_STATS = gql`query { wcaStats { totalUsers wcaConnected wcaWithId wcaWithoutId } }`;
 const TEST_WCA_NOTIFICATION = gql`mutation TestWcaNotification($wcaId: String!) { testWcaNotification(wcaId: $wcaId) }`;
 const MY_PUSH_TOKENS = gql`query { adminMyPushTokens { platform } }`;
 

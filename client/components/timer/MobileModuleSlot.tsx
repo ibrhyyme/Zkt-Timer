@@ -6,6 +6,7 @@ import Scramble from '../modules/scramble/ScrambleVisual';
 import TimeChart from '../modules/time_chart/TimeChart';
 import TimeDistro from '../modules/time_distro/TimeDistro';
 import CrossSolverModule from '../modules/cross_solver/CrossSolverModule';
+import PhaseAnalysis from '../modules/phase_analysis/PhaseAnalysis';
 import block from '../../styles/bem';
 import './MobileModuleSlot.scss';
 
@@ -36,6 +37,9 @@ export default function MobileModuleSlot({ moduleType }: Props) {
             break;
         case TimerModuleType.CROSS_SOLVER:
             content = <CrossSolverModule />;
+            break;
+        case TimerModuleType.PHASE_ANALYSIS:
+            content = <PhaseAnalysis filterOptions={solvesFilter} />;
             break;
     }
 

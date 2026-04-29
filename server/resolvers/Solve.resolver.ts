@@ -115,7 +115,11 @@ export class SolveResolver {
 			try {
 				const turns = JSON.parse(input.smart_turns);
 				const steps = getSolveSteps(turns);
-				await createSolveMethodSteps(createdSolve, steps);
+				const methodStepsData = await createSolveMethodSteps(createdSolve, steps);
+				(createdSolve as any).solve_method_steps = methodStepsData.map((s) => ({
+					...s,
+					created_at: new Date(),
+				}));
 			} catch (e) {
 				logger.warn('Failed to create solve method steps', {
 					error: e,

@@ -25,6 +25,8 @@ import PageTitle from '../common/page_title/PageTitle';
 import Button from '../common/button/Button';
 import Module from '../common/module/Module';
 import TimeDistro from '../modules/time_distro/TimeDistro';
+import SmartCubeSummary from './smart_cube_summary/SmartCubeSummary';
+import SessionStepsTable from './smart_cube_steps_table/SessionStepsTable';
 import { useSettings } from '../../util/hooks/useSettings';
 import { setCurrentSession } from '../../db/settings/update';
 import ConfirmModal from '../common/confirm_modal/ConfirmModal';
@@ -401,6 +403,7 @@ export default function Sessions() {
 	// TODO NOW fix session stats. Replace with QuickStats with proper options
 	const body = (
 		<div className={b('info')}>
+			<div className={b('top-row')}>
 			<Module>
 				<div className={b('info-container')}>
 					<h3 className={b('info-title')}>{t('sessions.settings_title')}</h3>
@@ -473,6 +476,14 @@ export default function Sessions() {
 						)}
 					</div>
 				</div>
+			</Module>
+			<Module>
+				<SmartCubeSummary sessionId={selectedSessionId} />
+			</Module>
+			</div>
+
+			<Module>
+				<SessionStepsTable sessionId={selectedSessionId} />
 			</Module>
 
 			{/* İstatistikler bucket picker - Stats bölümünün başında */}

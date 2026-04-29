@@ -1,0 +1,29 @@
+@import '../../../styles/config';
+
+.#{$namespace}-session-steps-table {
+	display: flex;
+	flex-direction: column;
+	gap: 1.067rem;
+	width: 100%;
+	min-width: 0;
+
+	&__title {
+		color: rgb(var(--text-color));
+		font-size: 1.2rem;
+		font-weight: 600;
+		margin: 0;
+		padding-bottom: 0.533rem;
+		border-bottom: 2px solid rgba(var(--primary-color), 0.3);
+	}
+
+	// Tablo kendi içinde yatay scrollable — sayfayı genişletmesin
+	.#{$namespace}-solve-info-steps-table {
+		max-width: 100%;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+
+		&__table {
+			min-width: max-content;
+		}
+	}
+}

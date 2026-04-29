@@ -10,6 +10,7 @@ export enum TimerModuleType {
 	CONSISTENCY = 'consistency',
 	CHAT = 'chat',
 	CROSS_SOLVER = 'cross_solver',
+	PHASE_ANALYSIS = 'phase_analysis',
 	NONE = 'none',
 }
 

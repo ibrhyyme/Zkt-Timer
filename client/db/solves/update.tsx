@@ -48,14 +48,34 @@ export async function createSolveDb(solveInput: Solve) {
 			mutation Mutate($input: SolveInput) {
 				createSolve(input: $input) {
 					id
+					solve_method_steps {
+						step_name
+						total_time
+						recognition_time
+						turn_count
+						tps
+						oll_case_key
+						pll_case_key
+						skipped
+						parent_name
+						step_index
+					}
 				}
 			}
 		`;
 
 		try {
-			await gqlMutate(query, {
-				input: solve,
-			});
+			const result = await gqlMutate(query, { input: solve });
+			const methodSteps = (result as any)?.data?.createSolve?.solve_method_steps;
+			if (methodSteps?.length) {
+				const db = getSolveDb();
+				const existing = db.findOne({ id: solve.id });
+				if (existing) {
+					existing.solve_method_steps = methodSteps;
+					db.update(existing);
+					emitEvent('solveDbUpdatedEvent', existing);
+				}
+			}
 		} catch (e) {
 			// Offline queue'ya ekle
 			await addToQueue('createSolve', { input: solve });

@@ -10,4 +10,5 @@ export const MOBILE_MODULE_OPTIONS: TimerModuleType[] = [
 	TimerModuleType.CROSS_SOLVER,
 	TimerModuleType.SOLVE_GRAPH,
 	TimerModuleType.TIME_DISTRO,
+	TimerModuleType.PHASE_ANALYSIS,
 ];

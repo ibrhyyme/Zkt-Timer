@@ -838,6 +838,7 @@
         "solve_graph": "Gráfico de resoluciones",
         "time_distro": "Distribución de tiempos",
         "cross_solver": "Solucionadores",
+        "phase_analysis": "Análisis de Fases",
         "none": "Ninguno",
         "customize_stats": "Personalizar estadísticas",
         "stat_type": "Tipo de estadística",
@@ -912,6 +913,15 @@
     "sessions": {
         "page_title": "Sesiones",
         "settings_title": "Configuración de sesión",
+        "smart_cube_summary_title": "Resumen de Cubo Inteligente",
+        "smart_cube_count": "Número de resoluciones",
+        "smart_cube_total_time": "Tiempo total",
+        "smart_cube_avg_time": "Promedio",
+        "no_smart_cube_solves": "No hay resoluciones con cubo inteligente en esta sesión",
+        "session_steps_title": "Promedio de Pasos de Sesión",
+        "hours_short": "h",
+        "minutes_short": "m",
+        "seconds_short": "s",
         "session_name": "Nombre de sesión",
         "statistics": "Estadísticas",
         "select_session": "Seleccionar sesión",
@@ -2577,6 +2587,16 @@
         "round_detail": "Ronda {{number}}",
         "scramble_label": "Mezcla",
         "wins": "¡{{name}} gana!"
+    },
+    "phase_analysis": {
+        "no_smart_solves": "No se encontraron soluciones con cubo inteligente",
+        "total": "Total",
+        "recognition": "Reconocimiento",
+        "execution": "Ejecución",
+        "average": "Prom.",
+        "avg_short": "Prom.",
+        "total_label": "Total",
+        "turns_label": "Movs."
     },
     "cross_solver": {
         "only_3x3": "Solo disponible para 3x3",

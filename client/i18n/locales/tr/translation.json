@@ -838,6 +838,7 @@
         "solve_graph": "Süre Grafiği",
         "time_distro": "Süre Dağılımı",
         "cross_solver": "Çözücüler",
+        "phase_analysis": "Evre Analiz",
         "none": "Hiçbiri",
         "customize_stats": "İstatistikleri Özelleştir",
         "stat_type": "İstatistik türü",
@@ -912,6 +913,15 @@
     "sessions": {
         "page_title": "Sezonlar",
         "settings_title": "Sezon Ayarları",
+        "smart_cube_summary_title": "Akıllı Küp Özeti",
+        "smart_cube_count": "Çözüm Sayısı",
+        "smart_cube_total_time": "Toplam Süre",
+        "smart_cube_avg_time": "Ortalama",
+        "no_smart_cube_solves": "Bu sezonda akıllı küp çözümü yok",
+        "session_steps_title": "Sezon Adım Ortalamaları",
+        "hours_short": "sa",
+        "minutes_short": "dk",
+        "seconds_short": "sn",
         "session_name": "Sezon Adı",
         "statistics": "İstatistikler",
         "select_session": "Sezon Seç",
@@ -2575,6 +2585,16 @@
         "round_detail": "Tur {{number}}",
         "scramble_label": "Karıştırma",
         "wins": "{{name}} kazandı!"
+    },
+    "phase_analysis": {
+        "no_smart_solves": "Akıllı küp çözümü bulunamadı",
+        "total": "Toplam",
+        "recognition": "Tanıma",
+        "execution": "Uygulama",
+        "average": "Ort.",
+        "avg_short": "Ort.",
+        "total_label": "Toplam",
+        "turns_label": "Hamle"
     },
     "cross_solver": {
         "only_3x3": "Sadece 3x3 için kullanılabilir",
