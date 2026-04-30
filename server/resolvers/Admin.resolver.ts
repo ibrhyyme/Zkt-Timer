@@ -34,7 +34,7 @@ import { AdminSendPushResult, PushTokenInfo } from '../schemas/PushToken.schema'
 import { OnlineStats, OnlineUser, BackfillResult, WcaStats, IpInfo, MethodStepsBackfillResult } from '../schemas/SiteConfig.schema';
 import { getSolveSteps } from '../util/solve/solve_method';
 import { createSolveMethodSteps } from '../models/solve_method_step';
-import { updateSolve } from '../models/solve';
+import { updateSolveLiteral } from '../models/solve';
 import { getOnlineCounts, getOnlineUsers } from '../services/socket_util';
 import WcaResultEnteredNotification from '../resources/notification_types/wca_result_entered';
 import WcaRoundFinishedNotification from '../resources/notification_types/wca_round_finished';
@@ -644,7 +644,7 @@ export class AdminResolver {
 			if (!cand.smart_turns || typeof cand.smart_turns !== 'string') {
 				result.skippedNoTurns++;
 				try {
-					await updateSolve(cand.id, { is_smart_cube: false });
+					await updateSolveLiteral(cand.id, { is_smart_cube: false });
 					result.downgraded++;
 				} catch (e) {
 					result.error++;
@@ -654,17 +654,20 @@ export class AdminResolver {
 
 			try {
 				const turns = JSON.parse(cand.smart_turns);
+				if (!Array.isArray(turns) || turns.length === 0) {
+					// Bos turns array — parse edilebildi ama icerik yok, downgrade
+					await updateSolveLiteral(cand.id, { is_smart_cube: false });
+					result.downgraded++;
+					continue;
+				}
 				const steps = getSolveSteps(turns);
 				await createSolveMethodSteps({ id: cand.id }, steps);
 				result.filled++;
 			} catch (e: any) {
-				console.warn(`[MethodStepsBackfill] solve ${cand.id} basarisiz: ${e?.message}`);
-				try {
-					await updateSolve(cand.id, { is_smart_cube: false });
-					result.downgraded++;
-				} catch (downgradeErr) {
-					result.error++;
-				}
+				// Eski format / bozuk veri — solve metadata'sini bozma, sadece skip et.
+				// is_smart_cube=true kalir, method_steps bos kalir, UI '–' gosterir.
+				console.warn(`[MethodStepsBackfill] solve ${cand.id} skipped: ${e?.message}`);
+				result.error++;
 			}
 
 			// Her 100 solve'da bir progress logu
