@@ -404,6 +404,7 @@ type Mutation {
   adminSendPushToUser(body: String, title: String, userId: String): AdminSendPushResult
   testWcaNotification(wcaId: String): Boolean
   backfillWcaIds: BackfillResult
+  backfillSmartCubeMethodSteps: MethodStepsBackfillResult
   updateStatsModuleBlocks(blocks: [StatsModuleBlockInput]): StatsModule
   createDemoSolve(input: DemoSolveInput): DemoSolve
   fetchWcaRecords: [WcaRecord]
@@ -1117,6 +1118,16 @@ type BackfillResult {
   recordsTotal: Int
   recordsFilled: Int
   recordsError: Int
+}
+
+type MethodStepsBackfillResult {
+  totalCandidates: Int
+  processed: Int
+  filled: Int
+  skippedNoTurns: Int
+  skippedAlreadyHasSteps: Int
+  downgraded: Int
+  error: Int
 }
 
 type IpInfo {

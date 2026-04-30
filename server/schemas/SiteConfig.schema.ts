@@ -125,6 +125,30 @@ export class BackfillResult {
 }
 
 @ObjectType()
+export class MethodStepsBackfillResult {
+	@Field(() => Int)
+	totalCandidates: number;
+
+	@Field(() => Int)
+	processed: number;
+
+	@Field(() => Int)
+	filled: number;
+
+	@Field(() => Int)
+	skippedNoTurns: number;
+
+	@Field(() => Int)
+	skippedAlreadyHasSteps: number;
+
+	@Field(() => Int)
+	downgraded: number;
+
+	@Field(() => Int)
+	error: number;
+}
+
+@ObjectType()
 export class IpInfo {
 	@Field()
 	ip: string;

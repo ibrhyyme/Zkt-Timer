@@ -44,9 +44,11 @@ Disallow: /demo
 Disallow: /verify-email
 Disallow: /wca-signup
 
-# Kisiye ozel yarisma alt sayfalari - Engelle (SEO onemli degil, kullanici-ozel veri)
+# Yarisma alt sayfalari - Engelle (sınırsız URL, thin content riski; WCA Live ile ayni strateji)
 Disallow: /community/competitions/*/personal-bests/
 Disallow: /community/competitions/*/persons/
+Disallow: /community/competitions/*/wca-live/
+Disallow: /community/competitions/*/activities/
 
 # ZKT yarismalari - Tamamen ozel, hicbir yerde gozukmesin
 Disallow: /community/zkt-competitions

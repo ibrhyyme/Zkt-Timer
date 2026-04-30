@@ -22,6 +22,7 @@ import './SiteConfigPanel.scss';
 const b = block('site-config-panel');
 
 const BACKFILL_WCA_IDS = gql`mutation { backfillWcaIds { total filled tokenFailed noWcaId error recordsTotal recordsFilled recordsError } }`;
+const BACKFILL_METHOD_STEPS = gql`mutation { backfillSmartCubeMethodSteps { totalCandidates processed filled skippedNoTurns skippedAlreadyHasSteps downgraded error } }`;
 const WCA_STATS = gql`query { wcaStats { totalUsers wcaConnected wcaWithId wcaWithoutId } }`;
 const TEST_WCA_NOTIFICATION = gql`mutation TestWcaNotification($wcaId: String!) { testWcaNotification(wcaId: $wcaId) }`;
 const MY_PUSH_TOKENS = gql`query { adminMyPushTokens { platform } }`;
@@ -45,6 +46,9 @@ export default function SiteConfigPanel() {
 	const [error, setError] = useState<string | null>(null);
 	const [backfillLoading, setBackfillLoading] = useState(false);
 	const [backfillResult, setBackfillResult] = useState<string | null>(null);
+
+	const [methodStepsLoading, setMethodStepsLoading] = useState(false);
+	const [methodStepsResult, setMethodStepsResult] = useState<string | null>(null);
 
 	const [wcaIdInput, setWcaIdInput] = useState('');
 	const [testPushLoading, setTestPushLoading] = useState(false);
@@ -365,6 +369,64 @@ export default function SiteConfigPanel() {
 					<div className={b('row')}>
 						<div className={b('row-text')}>
 							<div className={b('row-desc')}>{backfillResult}</div>
+						</div>
+					</div>
+				)}
+			</div>
+
+			{/* Smart Cube Method Steps Backfill */}
+			<div className={b('section')}>
+				<div className={b('section-header')}>
+					<Database size={20} weight="fill" />
+					<h3>Smart Cube Evre Verisi Backfill</h3>
+				</div>
+				<div className={b('row')}>
+					<div className={b('row-text')}>
+						<div className={b('row-label')}>Method Steps Backfill</div>
+						<div className={b('row-desc')}>
+							is_smart_cube=true olan ama SolveMethodStep kaydi bulunmayan eski solve'lari isler.
+							smart_turns JSON'i parse edilip getSolveSteps calistirilir, sonuclar DB'ye yazilir.
+							Parse edilemeyen solve'lar is_smart_cube=false olarak downgrade edilir.
+							Buyuk DB'lerde dakikalar surebilir, sayfayi kapatma.
+						</div>
+					</div>
+					<button
+						className={b('action-btn')}
+						disabled={methodStepsLoading}
+						onClick={async () => {
+							if (!window.confirm('Bu islem tum is_smart_cube=true solve\'lari isler ve uzun surebilir. Devam?')) {
+								return;
+							}
+							setMethodStepsLoading(true);
+							setMethodStepsResult(null);
+							try {
+								const res = await gqlMutate(BACKFILL_METHOD_STEPS);
+								const r = res?.data?.backfillSmartCubeMethodSteps;
+								if (r) {
+									const parts = [`${r.processed}/${r.totalCandidates} islendi`];
+									if (r.filled > 0) parts.push(`${r.filled} step kaydi olusturuldu`);
+									if (r.skippedAlreadyHasSteps > 0) parts.push(`${r.skippedAlreadyHasSteps} zaten dolu`);
+									if (r.skippedNoTurns > 0) parts.push(`${r.skippedNoTurns} smart_turns yok`);
+									if (r.downgraded > 0) parts.push(`${r.downgraded} downgrade edildi`);
+									if (r.error > 0) parts.push(`${r.error} hata`);
+									setMethodStepsResult(parts.join(' | '));
+								} else {
+									setMethodStepsResult('Sonuc alinamadi');
+								}
+							} catch (err) {
+								setMethodStepsResult('Hata: ' + (err as any)?.message);
+							} finally {
+								setMethodStepsLoading(false);
+							}
+						}}
+					>
+						{methodStepsLoading ? 'Calisiyor...' : 'Calistir'}
+					</button>
+				</div>
+				{methodStepsResult && (
+					<div className={b('row')}>
+						<div className={b('row-text')}>
+							<div className={b('row-desc')}>{methodStepsResult}</div>
 						</div>
 					</div>
 				)}
