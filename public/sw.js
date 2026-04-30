@@ -72,7 +72,8 @@ self.addEventListener('fetch', (e) => {
     e.respondWith(
       fetch(req)
         .then(res => {
-          if (res.ok || res.type === 'opaqueredirect') {
+          // Sadece status 200 cache'lenir — 206 (Partial), opaque, redirect cache'lenmez
+          if (res.status === 200) {
             const copy = res.clone();
             caches.open(CACHE).then(c => c.put(req, copy));
           }
@@ -81,7 +82,10 @@ self.addEventListener('fetch', (e) => {
         .catch(() => caches.match(req)
           .then(cached => cached || caches.match('/'))
           .then(res => {
-            if (!res) return new Response('Offline', { status: 503 });
+            // Geçerli bir response yoksa veya status 0 ise (network error) offline dön
+            if (!res || res.status < 200 || res.status > 599) {
+              return new Response('Offline', { status: 503 });
+            }
             // iOS WKWebView redirected flag'li SW response'lari reddeder.
             // Temiz bir response olustur.
             return new Response(res.body, {
@@ -103,7 +107,8 @@ self.addEventListener('fetch', (e) => {
     e.respondWith(
       caches.match(cacheUrl).then(hit => {
         const fetchPromise = fetch(req).then(res => {
-          if (res.ok) {
+          // Sadece status 200 cache'lenir — 206 Partial Content desteklenmiyor
+          if (res.status === 200) {
             const copy = res.clone();
             caches.open(CACHE).then(c => c.put(cacheUrl, copy));
           }
