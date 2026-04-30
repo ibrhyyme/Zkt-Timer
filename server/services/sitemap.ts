@@ -270,21 +270,22 @@ async function uploadProfileSiteMaps(): Promise<{ urls: string[]; totalProfiles:
 	const prisma = getPrisma();
 	const activeThreshold = new Date(Date.now() - ACTIVE_DAYS_WINDOW * 24 * 60 * 60 * 1000);
 
-	// Kaliteli profil filtresi: banli degil, email dogrulanmis, username var.
-	// Kullanicilar farkli amaclar icin geliyor — timer, rooms, WCA takibi, trainer —
-	// bu yuzden birden cok aktiflik sinyalinden herhangi biri yeterli.
+	// Kaliteli profil filtresi:
+	// - Banli degil, email dogrulanmis, username var
+	// - WCA hesabi baglamis ZORUNLU (kullanici tercihi: WCA bagli olmayan profilleri Google'a sunma)
+	// - Ek olarak en az BIR aktiflik/kalite sinyali (solve, pfp, bio, Pro/Premium, top solves)
 	const users = await prisma.userAccount.findMany({
 		where: {
 			banned_forever: false,
 			email_verified: true,
 			username: { not: null },
+			integrations: { some: {} },                         // WCA bagli zorunlu
 			OR: [
-				{ last_solve_at: { gte: activeThreshold } },   // son 30 gunde solve (timer)
+				{ last_solve_at: { gte: activeThreshold } },   // son 30 gunde solve
 				{ is_pro: true },                               // Pro uye
 				{ is_premium: true },                           // Premium uye
 				{ profile: { bio: { not: null } } },            // bio yazmis
 				{ profile: { pfp_image_id: { not: null } } },   // profil fotosu yuklemis
-				{ integrations: { some: {} } },                 // WCA veya baska hesap baglamis
 				{ top_solves: { some: {} } },                   // top solve'a girmis
 				{ top_average: { some: {} } },                  // top average'a girmis
 			],

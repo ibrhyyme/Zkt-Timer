@@ -732,6 +732,17 @@ export type MarkZktNoShowInput = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type MethodStepsBackfillResult = {
+  __typename?: 'MethodStepsBackfillResult';
+  downgraded?: Maybe<Scalars['Int']>;
+  error?: Maybe<Scalars['Int']>;
+  filled?: Maybe<Scalars['Int']>;
+  processed?: Maybe<Scalars['Int']>;
+  skippedAlreadyHasSteps?: Maybe<Scalars['Int']>;
+  skippedNoTurns?: Maybe<Scalars['Int']>;
+  totalCandidates?: Maybe<Scalars['Int']>;
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   addBadgeToUser?: Maybe<Badge>;
@@ -745,6 +756,7 @@ export type Mutation = {
   assignUserToRound?: Maybe<ZktAssignment>;
   authenticateUser: PublicUserAccount;
   authenticateWithWca?: Maybe<WcaOAuthResult>;
+  backfillSmartCubeMethodSteps?: Maybe<MethodStepsBackfillResult>;
   backfillWcaIds?: Maybe<BackfillResult>;
   banUserAccount?: Maybe<BanLog>;
   bulkAssignCompetitors?: Maybe<Array<Maybe<ZktAssignment>>>;

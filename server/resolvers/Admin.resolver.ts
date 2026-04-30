@@ -31,7 +31,10 @@ import { PaginationArgsInput, AdminUserFiltersInput } from '../schemas/Paginatio
 import { getPaginatedResponse, PaginatedRequestInput } from '../util/pagination/paginated_response';
 import { sendPushToUser } from '../services/push';
 import { AdminSendPushResult, PushTokenInfo } from '../schemas/PushToken.schema';
-import { OnlineStats, OnlineUser, BackfillResult, WcaStats, IpInfo } from '../schemas/SiteConfig.schema';
+import { OnlineStats, OnlineUser, BackfillResult, WcaStats, IpInfo, MethodStepsBackfillResult } from '../schemas/SiteConfig.schema';
+import { getSolveSteps } from '../util/solve/solve_method';
+import { createSolveMethodSteps } from '../models/solve_method_step';
+import { updateSolve } from '../models/solve';
 import { getOnlineCounts, getOnlineUsers } from '../services/socket_util';
 import WcaResultEnteredNotification from '../resources/notification_types/wca_result_entered';
 import WcaRoundFinishedNotification from '../resources/notification_types/wca_round_finished';
@@ -592,6 +595,85 @@ export class AdminResolver {
 		}
 
 		console.log(`[Backfill] Done.`, result);
+		return result;
+	}
+
+	/**
+	 * Eski smart cube solve'larin SolveMethodStep kayitlarini geriye donuk olusturur.
+	 * smart_turns JSON parse edilir → getSolveSteps calistirilir → createSolveMethodSteps ile DB'ye yazilir.
+	 * Parse hatasi alan solve'lar is_smart_cube=false olarak downgrade edilir (createSolve resolver'i ile ayni davranis).
+	 */
+	@Authorized([Role.ADMIN])
+	@Mutation(() => MethodStepsBackfillResult)
+	async backfillSmartCubeMethodSteps(): Promise<MethodStepsBackfillResult> {
+		const prisma = getPrisma();
+
+		const result: MethodStepsBackfillResult = {
+			totalCandidates: 0,
+			processed: 0,
+			filled: 0,
+			skippedNoTurns: 0,
+			skippedAlreadyHasSteps: 0,
+			downgraded: 0,
+			error: 0,
+		};
+
+		// is_smart_cube=true olan tum solve'lari bul
+		const candidates = await prisma.solve.findMany({
+			where: { is_smart_cube: true },
+			select: {
+				id: true,
+				smart_turns: true,
+				_count: { select: { solve_method_steps: true } },
+			},
+		});
+
+		result.totalCandidates = candidates.length;
+		console.log(`[MethodStepsBackfill] ${candidates.length} aday solve bulundu`);
+
+		for (const cand of candidates) {
+			result.processed++;
+
+			// Zaten step kaydi olan solve'lari atla
+			if (cand._count.solve_method_steps > 0) {
+				result.skippedAlreadyHasSteps++;
+				continue;
+			}
+
+			// smart_turns yoksa parse edilemez — downgrade
+			if (!cand.smart_turns || typeof cand.smart_turns !== 'string') {
+				result.skippedNoTurns++;
+				try {
+					await updateSolve(cand.id, { is_smart_cube: false });
+					result.downgraded++;
+				} catch (e) {
+					result.error++;
+				}
+				continue;
+			}
+
+			try {
+				const turns = JSON.parse(cand.smart_turns);
+				const steps = getSolveSteps(turns);
+				await createSolveMethodSteps({ id: cand.id }, steps);
+				result.filled++;
+			} catch (e: any) {
+				console.warn(`[MethodStepsBackfill] solve ${cand.id} basarisiz: ${e?.message}`);
+				try {
+					await updateSolve(cand.id, { is_smart_cube: false });
+					result.downgraded++;
+				} catch (downgradeErr) {
+					result.error++;
+				}
+			}
+
+			// Her 100 solve'da bir progress logu
+			if (result.processed % 100 === 0) {
+				console.log(`[MethodStepsBackfill] ${result.processed}/${result.totalCandidates}...`);
+			}
+		}
+
+		console.log(`[MethodStepsBackfill] Done.`, result);
 		return result;
 	}
 }

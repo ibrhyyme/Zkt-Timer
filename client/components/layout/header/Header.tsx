@@ -99,6 +99,8 @@ export const getStructuredData = (currentPath: string, finalTitle: string, final
 		'foundingDate': '2024',
 		'founder': creatorSchema,
 		'sameAs': [
+			'https://apps.apple.com/app/zkt-timer/id6760920873',
+			'https://play.google.com/store/apps/details?id=com.zktimer.app',
 			'https://www.instagram.com/zekakuputurkiye',
 			'https://www.youtube.com/@zekakuputurkiye'
 		],
@@ -392,7 +394,17 @@ export default function Header(props: Props) {
 		'/settings', '/sessions', '/force-log-out', '/account', '/oauth', '/admin',
 		'/community/zkt-competitions', '/community/zkt-records', '/community/zkt-rankings',
 	];
-	const shouldNoIndex = noIndexPaths.some((p) => currentPath.startsWith(p));
+	// WCA yarisma alt sayfalari — sınırsız URL, thin content riski (WCA Live ile ayni strateji)
+	// Ana yarisma sayfasi (`/community/competitions/:id`) ve liste indexlenebilir kalacak.
+	const noIndexPatterns = [
+		/^\/community\/competitions\/[^/]+\/wca-live\//,
+		/^\/community\/competitions\/[^/]+\/persons\//,
+		/^\/community\/competitions\/[^/]+\/activities\//,
+		/^\/community\/competitions\/[^/]+\/personal-bests\//,
+	];
+	const shouldNoIndex =
+		noIndexPaths.some((p) => currentPath.startsWith(p)) ||
+		noIndexPatterns.some((re) => re.test(currentPath));
 
 	// Structured Data
 	const { websiteSchema, organizationSchema, softwareSchema, navigationSchema, breadcrumbSchema, faqSchema, collectionPageSchema, iosAppSchema, androidAppSchema } = getStructuredData(currentPath, finalTitle, finalDesc, t, lang);
