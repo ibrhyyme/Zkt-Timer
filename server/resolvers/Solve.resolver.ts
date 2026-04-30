@@ -54,6 +54,7 @@ export class SolveResolver {
 				created_at: true,
 				started_at: true,
 				ended_at: true,
+				solve_method_steps: true,
 			},
 			orderBy: {
 				created_at: 'desc',
@@ -99,6 +100,7 @@ export class SolveResolver {
 				created_at: true,
 				started_at: true,
 				ended_at: true,
+				solve_method_steps: true,
 			},
 		});
 	}
