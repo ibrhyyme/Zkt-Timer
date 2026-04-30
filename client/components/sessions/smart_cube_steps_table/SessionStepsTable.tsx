@@ -1,7 +1,12 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { useDispatch } from 'react-redux';
+import { useHistory } from 'react-router-dom';
 import { fetchSolves } from '../../../db/solves/query';
 import { useSolveDb } from '../../../util/hooks/useSolveDb';
+import { useMe } from '../../../util/hooks/useMe';
+import { isPro, isProEnabled } from '../../../lib/pro';
+import { closeModal } from '../../../actions/general';
 import { getSolveStepsWithoutParents } from '../../solve_info/util/solution';
 import { STEP_NAME_MAP } from '../../solve_info/util/consts';
 import block from '../../../styles/bem';
@@ -41,9 +46,19 @@ function fmt(val: number | null | undefined, suffix = 's'): string {
 
 export default function SessionStepsTable({ sessionId }: Props) {
 	const { t } = useTranslation();
+	const dispatch = useDispatch();
+	const history = useHistory();
+	const me = useMe();
 	useSolveDb();
 
 	if (!sessionId) return null;
+
+	const showProOverlay = isProEnabled() && !isPro(me);
+
+	function goPro() {
+		dispatch(closeModal());
+		history.push('/pro');
+	}
 
 	const solves = fetchSolves({
 		session_id: sessionId,
@@ -52,6 +67,27 @@ export default function SessionStepsTable({ sessionId }: Props) {
 	});
 
 	if (!solves.length) return null;
+
+	if (showProOverlay) {
+		return (
+			<div className={bSession()}>
+				<h3 className={bSession('title')}>{t('sessions.session_steps_title')}</h3>
+				<div className={bSession('pro-locked')}>
+					<div className={bSession('pro-locked-dummy')}>
+						<div className={bSession('pro-locked-dummy-bar')} style={{ width: '85%' }} />
+						<div className={bSession('pro-locked-dummy-bar')} style={{ width: '70%' }} />
+						<div className={bSession('pro-locked-dummy-bar')} style={{ width: '90%' }} />
+						<div className={bSession('pro-locked-dummy-bar')} style={{ width: '55%' }} />
+						<div className={bSession('pro-locked-dummy-bar')} style={{ width: '75%' }} />
+					</div>
+					<div className={bSession('pro-locked-overlay')} onClick={goPro}>
+						<span className={bSession('pro-locked-star')}>★</span>
+						<span>{t('solve_info.pro_stats_upsell')}</span>
+					</div>
+				</div>
+			</div>
+		);
+	}
 
 	// Phase başına aggregate
 	const aggregates: Record<string, PhaseAggregate> = {};

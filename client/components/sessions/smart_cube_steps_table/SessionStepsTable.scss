@@ -26,4 +26,68 @@
 			min-width: max-content;
 		}
 	}
+
+	// ── Pro Paywall ────────────────────────────────────────────────
+	&__pro-locked {
+		position: relative;
+		min-height: 220px;
+		border-radius: 10px;
+		background-color: rgb(var(--module-color));
+		border: 1px solid rgba(var(--text-color), 0.08);
+		overflow: hidden;
+	}
+
+	&__pro-locked-dummy {
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+		padding: 28px 22px;
+		filter: blur(6px);
+		opacity: 0.45;
+		pointer-events: none;
+	}
+
+	&__pro-locked-dummy-bar {
+		height: 18px;
+		background: linear-gradient(
+			90deg,
+			rgba(var(--text-color), 0.18) 0%,
+			rgba(var(--text-color), 0.08) 100%
+		);
+		border-radius: 6px;
+	}
+
+	&__pro-locked-overlay {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+		cursor: pointer;
+		font-weight: 600;
+		font-size: 1rem;
+		color: rgb(var(--primary-color));
+		background: linear-gradient(
+			180deg,
+			rgba(var(--module-color), 0) 0%,
+			rgba(var(--module-color), 0.5) 50%,
+			rgba(var(--module-color), 0.85) 100%
+		);
+		transition: background 0.2s ease;
+
+		&:hover {
+			background: linear-gradient(
+				180deg,
+				rgba(var(--module-color), 0.1) 0%,
+				rgba(var(--module-color), 0.6) 50%,
+				rgba(var(--module-color), 0.95) 100%
+			);
+		}
+	}
+
+	&__pro-locked-star {
+		color: #a78bfa;
+		font-size: 1.3rem;
+	}
 }
