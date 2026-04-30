@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import './Profile.scss';
-import { CircleWavyCheck, Plus, YoutubeLogo, TwitchLogo } from 'phosphor-react';
+import { CircleWavyCheck, Plus, YoutubeLogo, TwitchLogo, ShareNetwork } from 'phosphor-react';
+import { shareContent } from '../../util/native-plugins';
 import { gql } from '@apollo/client';
 import { gqlMutate, gqlQuery } from '../api';
 import { PROFILE_FRAGMENT } from '../../util/graphql/fragments';
@@ -331,6 +332,15 @@ export default function Profile() {
 		);
 	}
 
+	function shareProfile() {
+		const url = `${window.location.origin}/user/${username}`;
+		shareContent({
+			title: `${username} - Zkt Timer`,
+			text: t('profile.share_text', { username }) as string,
+			url,
+		});
+	}
+
 	function openPublishWcaRecords() {
 		dispatch(
 			openModal(<PublishWcaRecords />, {
@@ -539,6 +549,9 @@ export default function Profile() {
 								</div>
 								<div className={b('identity-actions')}>
 									<WCA myProfile={myProfile} user={user} />
+									<button className={b('share-btn')} onClick={shareProfile} aria-label="Share profile">
+										<ShareNetwork weight="bold" />
+									</button>
 									<AvatarDropdown user={user as any} />
 								</div>
 							</div>
@@ -568,6 +581,9 @@ export default function Profile() {
 							<SocialIcons profile={profile} />
 							<div className={b('identity-actions', { centered: true })}>
 								<WCA myProfile={myProfile} user={user} />
+								<button className={b('share-btn')} onClick={shareProfile} aria-label="Share profile">
+									<ShareNetwork weight="bold" />
+								</button>
 								{mobileMode && <MobileNav />}
 								{!mobileMode && <AvatarDropdown user={user as any} />}
 							</div>

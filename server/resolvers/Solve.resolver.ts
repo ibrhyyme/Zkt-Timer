@@ -127,6 +127,9 @@ export class SolveResolver {
 				await updateSolve(createdSolve.id, {
 					is_smart_cube: false,
 				});
+				// Client'a downgrade'i bildir — yoksa client is_smart_cube=true olarak kalir
+				(createdSolve as any).is_smart_cube = false;
+				(createdSolve as any).solve_method_steps = [];
 			}
 		}
 

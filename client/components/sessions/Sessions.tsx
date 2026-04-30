@@ -477,14 +477,18 @@ export default function Sessions() {
 					</div>
 				</div>
 			</Module>
-			<Module>
-				<SmartCubeSummary sessionId={selectedSessionId} />
-			</Module>
+			{selectedSessionId && (
+				<Module>
+					<SmartCubeSummary sessionId={selectedSessionId} />
+				</Module>
+			)}
 			</div>
 
-			<Module>
-				<SessionStepsTable sessionId={selectedSessionId} />
-			</Module>
+			{selectedSessionId && (
+				<Module>
+					<SessionStepsTable sessionId={selectedSessionId} />
+				</Module>
+			)}
 
 			{/* İstatistikler bucket picker - Stats bölümünün başında */}
 			<Module>

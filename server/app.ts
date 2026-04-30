@@ -71,9 +71,37 @@ process.on('SIGINT', () => {
 initSearch();
 initLogger();
 
+app.post('/', (req, res) => {
+	let body = '';
+	req.on('data', (chunk) => {
+		body += chunk.toString();
+		if (body.length > 2000) body = body.substring(0, 2000);
+	});
+	req.on('end', () => {
+		logger.warn('post_root_detected', {
+			ua: req.headers['user-agent']?.substring(0, 200),
+			referer: req.headers.referer || null,
+			contentType: req.headers['content-type'] || null,
+			origin: req.headers.origin || null,
+			bodyPreview: body.substring(0, 500),
+			bodyLength: body.length,
+			ip: requestIp.getClientIp(req),
+		});
+		res.status(204).end();
+	});
+});
+
 app.use(compression());
 app.use(bodyParser.json({ limit: '200mb' }));
 app.use(cookieParser());
+
+// WebView (mobile app) trafigini organic web trafiginden ayirt et.
+// UA suffix capacitor.config.ts'de "ZktTimerApp" olarak ekleniyor.
+app.use((req, _res, next) => {
+	const ua = req.headers['user-agent'] || '';
+	(req as any).isWebView = ua.includes('ZktTimerApp');
+	next();
+});
 
 app.use((req, res, next) => {
 	function logIfError() {
@@ -84,6 +112,7 @@ app.use((req, res, next) => {
 				status: res.statusCode,
 				referer: req.headers.referer || null,
 				ua: req.headers['user-agent']?.substring(0, 120),
+				isWebView: !!(req as any).isWebView,
 				ip: requestIp.getClientIp(req),
 			});
 		}
@@ -115,6 +144,28 @@ app.use((req, res, next) => {
 app.get('/.well-known/apple-app-site-association', (req, res) => {
 	res.setHeader('Content-Type', 'application/json');
 	res.sendFile('apple-app-site-association', {root: `${__dirname}/../public/.well-known`});
+});
+
+app.get(['/favicon.ico', '/apple-touch-icon.png', '/apple-touch-icon-precomposed.png'], (_req, res) => {
+	res.setHeader('Cache-Control', 'public, max-age=2592000, immutable');
+	res.sendFile('apple-touch-icon.png', {root: `${__dirname}/../public/images`});
+});
+
+app.get('/app-ads.txt', (_req, res) => {
+	res.setHeader('Cache-Control', 'public, max-age=86400');
+	res.type('text/plain').send('');
+});
+
+app.get('/.well-known/passkey-endpoints', (_req, res) => {
+	res.setHeader('Cache-Control', 'public, max-age=86400');
+	res.json({endpoints: []});
+});
+
+app.get(['/security.txt', '/.well-known/security.txt'], (_req, res) => {
+	res.setHeader('Cache-Control', 'public, max-age=86400');
+	res.type('text/plain').send(
+		`Contact: mailto:contact@zktimer.app\nExpires: 2027-12-31T23:59:59.000Z\nPreferred-Languages: tr, en\n`
+	);
 });
 
 // JS/CSS dosyalari deployment hash'li → uzun sureli cache guvenli

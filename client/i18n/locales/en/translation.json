@@ -1084,6 +1084,7 @@
         "music_rate_limit": "Please wait before searching again"
     },
     "profile": {
+        "share_text": "Check out {{username}}'s speedcubing profile on Zkt Timer",
         "about_me": "About Me",
         "socials": "Socials",
         "biography": "Biography",
@@ -1440,10 +1441,10 @@
         "select_people": "Select {{count}} People"
     },
     "seo": {
-        "home_title": "Zkt Timer | Online Rubik's Cube Timer, WCA Competitions & Speedcubing Platform",
-        "home_description": "The most advanced online Rubik's cube timer and WCA competition platform. Live WCA competitions, live results tracking, solve recording, live race rooms, algorithm trainer. All WCA events: 3x3, 2x2, 4x4, Pyraminx, Megaminx & more.",
-        "timer_title": "Rubik's Cube Timer - Zkt Timer",
-        "timer_description": "Professional Rubik's cube timer. Millisecond precision, WCA scramble algorithms, smart cube support and detailed performance analysis. The best online timer for speedcubing.",
+        "home_title": "Zkt Timer — Speedcube Timer, WCA Live, Algorithm Trainer & Smart Cube Platform",
+        "home_description": "Professional speedcubing platform: cube timer, OLL/PLL/ZBLL trainer, live WCA competition tracking, 1v1 battle mode, smart cube support and phase analysis. All WCA puzzles, all in one place.",
+        "timer_title": "Rubik's Cube Timer with Smart Cube & WCA Scrambles - Zkt Timer",
+        "timer_description": "Professional Rubik's cube timer with millisecond precision, WCA-compliant scrambles, smart cube (GAN) support, phase analysis (Cross/F2L/OLL/PLL) and detailed solve tracking.",
         "wca_competitions_title": "WCA Competitions - Live Results & Schedules | Zkt Timer",
         "wca_competitions_description": "Browse all WCA speedcubing competitions worldwide. Live results, competition schedules, registration info, competitor lists and live tracking. All official WCA Rubik's cube competitions on a single platform.",
         "wca_competition_detail_title": "WCA Competition Details - Live Results | Zkt Timer",

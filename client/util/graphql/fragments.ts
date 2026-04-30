@@ -19,6 +19,18 @@ export const MICRO_SOLVE_FRAGMENT = gql`
 		created_at
 		started_at
 		ended_at
+		solve_method_steps {
+			step_name
+			total_time
+			recognition_time
+			turn_count
+			tps
+			oll_case_key
+			pll_case_key
+			skipped
+			parent_name
+			step_index
+		}
 	}
 `;
 

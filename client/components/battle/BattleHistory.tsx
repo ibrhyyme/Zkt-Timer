@@ -2,8 +2,9 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useBattle } from './BattleContext';
 import { getTimeString } from '../../util/time';
-import { X } from 'phosphor-react';
+import { X, ShareNetwork } from 'phosphor-react';
 import block from '../../styles/bem';
+import { shareContent } from '../../util/native-plugins';
 
 const b = block('battle');
 
@@ -29,13 +30,29 @@ export default function BattleHistory() {
 		return t('battle.tie');
 	};
 
+	function shareBattleResult() {
+		const p1 = state.player1Score;
+		const p2 = state.player2Score;
+		const text = `🎮 Battle on Zkt Timer: ${settings.player1Name} ${p1} - ${p2} ${settings.player2Name}`;
+		shareContent({
+			title: 'Zkt Timer Battle',
+			text,
+			url: 'https://zktimer.app/battle',
+		});
+	}
+
 	return (
 		<div className={b('overlay')}>
 			<div className={b('overlay-header')}>
 				<h2>{t('battle.history')}</h2>
-				<button className={b('overlay-close')} onClick={() => dispatch({ type: 'TOGGLE_HISTORY' })}>
-					<X size={24} />
-				</button>
+				<div className={b('overlay-actions')}>
+					<button className={b('overlay-action')} onClick={shareBattleResult} aria-label="Share result">
+						<ShareNetwork size={22} />
+					</button>
+					<button className={b('overlay-close')} onClick={() => dispatch({ type: 'TOGGLE_HISTORY' })}>
+						<X size={24} />
+					</button>
+				</div>
 			</div>
 
 			{/* Header row */}

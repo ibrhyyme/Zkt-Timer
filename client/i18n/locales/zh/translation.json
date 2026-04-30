@@ -1084,6 +1084,7 @@
         "music_rate_limit": "请稍后再试"
     },
     "profile": {
+        "share_text": "在 Zkt Timer 上查看 {{username}} 的速拧资料",
         "about_me": "关于我",
         "socials": "社交媒体",
         "biography": "个人简介",
@@ -1440,10 +1441,10 @@
         "select_people": "选择 {{count}} 人"
     },
     "seo": {
-        "home_title": "Zkt Timer | 在线魔方计时器、WCA比赛与速拧平台",
-        "home_description": "最先进的在线魔方计时器和WCA比赛平台。实时WCA比赛、实时成绩追踪、记录还原、实时竞速房间、公式训练器。所有WCA项目：3x3、2x2、4x4、金字塔、十二面体及更多。",
-        "timer_title": "魔方计时器 - Zkt Timer",
-        "timer_description": "专业的魔方计时器。毫秒级精度、WCA打乱公式、智能魔方支持和详细性能分析。最佳在线速拧计时器。",
+        "home_title": "Zkt Timer — 速拧计时器、WCA Live、公式训练器与智能魔方平台",
+        "home_description": "专业速拧平台：魔方计时器、OLL/PLL/ZBLL公式训练器、WCA比赛实时追踪、1v1对战模式、智能魔方支持与分阶段分析。所有WCA项目，一站式专业体验。",
+        "timer_title": "支持智能魔方与WCA打乱的魔方计时器 - Zkt Timer",
+        "timer_description": "专业魔方计时器：毫秒级精度、符合WCA标准的打乱、智能魔方（GAN）支持、分阶段分析（Cross/F2L/OLL/PLL）与详细还原追踪。",
         "wca_competitions_title": "WCA比赛 - 实时成绩与赛程 | Zkt Timer",
         "wca_competitions_description": "浏览全球所有WCA速拧比赛。实时成绩、比赛日程、报名信息、选手列表和实时追踪。所有官方WCA魔方比赛尽在一个平台。",
         "wca_competition_detail_title": "WCA比赛详情 - 实时成绩 | Zkt Timer",

@@ -48,6 +48,10 @@
 		&--empty {
 			opacity: 0.35;
 		}
+
+		&--clickable {
+			cursor: pointer;
+		}
 	}
 
 	// ── Average footer ────────────────────────────────────────────

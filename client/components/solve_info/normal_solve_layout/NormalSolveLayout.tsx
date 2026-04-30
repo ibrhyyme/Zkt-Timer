@@ -39,8 +39,8 @@ export default function NormalSolveLayout(props: SolveLayoutProps) {
 	function handleShare() {
 		const solveUrl = window.location.origin + '/solve/' + solve.share_code;
 		shareContent({
-			title: `${cubeTypeInfo.name} - ${time}`,
-			text: `${cubeTypeInfo.name}: ${time} | ${scramble}`,
+			title: `${cubeTypeInfo.name} - ${time} | Zkt Timer`,
+			text: `⚡ ${time} on ${cubeTypeInfo.name} — solved on Zkt Timer`,
 			url: solveUrl,
 		});
 	}
