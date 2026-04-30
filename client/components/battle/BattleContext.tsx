@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useReducer } from 'react';
+import React, { createContext, useContext, useEffect, useReducer } from 'react';
 import { getNewScramble } from '../timer/helpers/scramble';
+import { requestInAppReview } from '../../util/native-plugins';
 
 export interface BattleSolve {
 	time: number;
@@ -337,6 +338,17 @@ const BattleCtx = createContext<BattleContextValue | null>(null);
 
 export function BattleProvider({ children }: { children: React.ReactNode }) {
 	const [state, dispatch] = useReducer(battleReducer, createInitialState());
+
+	// Ust uste 3+ kazanma ani — yuksek mutluluk noktasi, native review prompt tetikle.
+	// requestInAppReview session-level dedup yapiyor; tekrar tetiklense de gosterilmez.
+	useEffect(() => {
+		if (state.winStreak.count >= 3) {
+			const timer = setTimeout(() => {
+				requestInAppReview();
+			}, 3000);
+			return () => clearTimeout(timer);
+		}
+	}, [state.winStreak.count]);
 
 	return <BattleCtx.Provider value={{ state, dispatch }}>{children}</BattleCtx.Provider>;
 }

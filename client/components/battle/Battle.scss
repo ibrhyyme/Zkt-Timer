@@ -323,6 +323,26 @@ $self: '.cd-battle';
 		-webkit-tap-highlight-color: transparent;
 	}
 
+	&__overlay-actions {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+	}
+
+	&__overlay-action {
+		background: none;
+		border: none;
+		color: rgb(var(--text-color));
+		padding: 8px;
+		cursor: pointer;
+		-webkit-tap-highlight-color: transparent;
+		opacity: 0.85;
+
+		&:hover {
+			opacity: 1;
+		}
+	}
+
 	// =====================
 	// MENU
 	// =====================

@@ -1084,6 +1084,7 @@
         "music_rate_limit": "Tekrar aramadan önce bekleyin"
     },
     "profile": {
+        "share_text": "{{username}} kullanıcısının Zkt Timer speedcubing profilini gör",
         "about_me": "Hakkımda",
         "socials": "Socials",
         "biography": "Biyografi",
@@ -1440,10 +1441,10 @@
         "select_people": "{{count}} Kişi Seç"
     },
     "seo": {
-        "home_title": "Zkt Timer | Zeka Küpü Timer, WCA Yarışmaları ve Speedcubing Platformu",
-        "home_description": "En gelişmiş online zeka küpü timer ve WCA yarışma platformu. Canlı WCA yarışmaları, canlı sonuç takibi, çözüm kaydı, canlı yarışma odaları, algoritma öğreticisi. Tüm WCA etkinlikleri: 3x3, 2x2, 4x4, Pyraminx, Megaminx ve daha fazlası.",
-        "timer_title": "Zeka Küpü Timer - Zkt Timer",
-        "timer_description": "Profesyonel zeka küpü timer. Milisaniye hassasiyetinde ölçüm, WCA scramble algoritmaları, akıllı küp desteği ve detaylı performans analizi. Speedcubing için en iyi timer.",
+        "home_title": "Zkt Timer — Speedcube Timer, WCA Live, Algoritma Antrenörü ve Akıllı Küp Platformu",
+        "home_description": "Profesyonel speedcubing platformu: küp timer, OLL/PLL/ZBLL antrenörü, canlı WCA yarışma takibi, 1v1 battle modu, akıllı küp desteği ve faz analizi. Tüm WCA bulmacaları, tek bir uygulamada.",
+        "timer_title": "Akıllı Küp ve WCA Scramble Destekli Zeka Küpü Timer - Zkt Timer",
+        "timer_description": "Profesyonel zeka küpü timer: milisaniye hassasiyeti, WCA standardında scramble, akıllı küp (GAN) desteği, faz analizi (Cross/F2L/OLL/PLL) ve detaylı çözüm takibi.",
         "wca_competitions_title": "WCA Yarışmaları - Canlı Sonuçlar ve Programlar | Zkt Timer",
         "wca_competitions_description": "Dünya genelindeki tüm WCA zeka küpü yarışmalarını keşfet. Canlı sonuçlar, yarışma programları, kayıt bilgileri, katılımcı listeleri ve canlı takip. Tüm resmi WCA speedcubing yarışmaları tek platformda.",
         "wca_competition_detail_title": "WCA Yarışma Detayı - Canlı Sonuçlar | Zkt Timer",

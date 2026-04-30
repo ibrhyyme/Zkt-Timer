@@ -1,4 +1,5 @@
 import confetti from 'canvas-confetti';
+import { requestInAppReview } from '../../../util/native-plugins';
 
 let lastGoalConfetti = 0;
 
@@ -24,4 +25,10 @@ export function triggerGoalConfetti() {
 		...defaults,
 		origin: {x: 0.8, y: 0.6},
 	});
+
+	// Yuksek mutluluk ani — celebration animasyonu sonrasi review prompt.
+	// requestInAppReview session-level dedup yapiyor (tek session'da bir kez).
+	setTimeout(() => {
+		requestInAppReview();
+	}, 5000);
 }

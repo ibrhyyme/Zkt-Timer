@@ -48,17 +48,22 @@ export async function createSolveDb(solveInput: Solve) {
 			mutation Mutate($input: SolveInput) {
 				createSolve(input: $input) {
 					id
+					is_smart_cube
 					solve_method_steps {
+						id
 						step_name
 						total_time
 						recognition_time
 						turn_count
+						turns
 						tps
 						oll_case_key
 						pll_case_key
 						skipped
 						parent_name
+						method_name
 						step_index
+						created_at
 					}
 				}
 			}
@@ -66,12 +71,17 @@ export async function createSolveDb(solveInput: Solve) {
 
 		try {
 			const result = await gqlMutate(query, { input: solve });
-			const methodSteps = (result as any)?.data?.createSolve?.solve_method_steps;
-			if (methodSteps?.length) {
+			const created = (result as any)?.data?.createSolve;
+			if (created) {
 				const db = getSolveDb();
 				const existing = db.findOne({ id: solve.id });
 				if (existing) {
-					existing.solve_method_steps = methodSteps;
+					// Server downgrade ettiyse (örn. smart_turns parse hatasi) client'i sync et
+					if (typeof created.is_smart_cube === 'boolean' && created.is_smart_cube !== existing.is_smart_cube) {
+						existing.is_smart_cube = created.is_smart_cube;
+					}
+					// method_steps her zaman güncelle — bos array de gecerli sonuc (stale veriyi temizler)
+					existing.solve_method_steps = created.solve_method_steps || [];
 					db.update(existing);
 					emitEvent('solveDbUpdatedEvent', existing);
 				}

@@ -43,6 +43,8 @@ export default function SessionStepsTable({ sessionId }: Props) {
 	const { t } = useTranslation();
 	useSolveDb();
 
+	if (!sessionId) return null;
+
 	const solves = fetchSolves({
 		session_id: sessionId,
 		is_smart_cube: true,
@@ -59,17 +61,22 @@ export default function SessionStepsTable({ sessionId }: Props) {
 
 	for (const solve of solves) {
 		const steps = getSolveStepsWithoutParents(solve);
-		let cumulative = 0;
 
-		// Önce phase'leri sırayla map'e koy ki cumulative tutarlı olsun
+		// Önce phase'leri sırayla map'e koy
 		const byPhase: Record<string, any> = {};
 		for (const step of steps) {
 			byPhase[step.step_name] = step;
 		}
 
+		let cumulative = 0;
+		let chainBroken = false;
 		for (const phase of PHASE_ORDER) {
 			const step = byPhase[phase];
-			if (!step) continue;
+			if (!step) {
+				// Bu phase eksik, sonraki phase'lerin cumulative'i artik biased — chain'i kir
+				chainBroken = true;
+				continue;
+			}
 			const total = step.total_time || 0;
 			const rec = step.recognition_time || 0;
 			const exec = Math.max(0, total - rec);
@@ -78,8 +85,11 @@ export default function SessionStepsTable({ sessionId }: Props) {
 			aggregates[phase].recognition.push(rec);
 			aggregates[phase].execution.push(exec);
 			aggregates[phase].stepTime.push(total);
-			aggregates[phase].cumulative.push(cumulative);
 			aggregates[phase].turns.push(step.turn_count || 0);
+			// Cumulative'i sadece zincir kirilmadiysa ekle (bias'i onler)
+			if (!chainBroken) {
+				aggregates[phase].cumulative.push(cumulative);
+			}
 		}
 	}
 

@@ -280,13 +280,11 @@ async function uploadProfileSiteMaps(): Promise<{ urls: string[]; totalProfiles:
 			username: { not: null },
 			OR: [
 				{ last_solve_at: { gte: activeThreshold } },   // son 30 gunde solve (timer)
-				{ last_solve_at: { not: null } },              // hayatinda en az 1 solve
 				{ is_pro: true },                               // Pro uye
 				{ is_premium: true },                           // Premium uye
 				{ profile: { bio: { not: null } } },            // bio yazmis
 				{ profile: { pfp_image_id: { not: null } } },   // profil fotosu yuklemis
 				{ integrations: { some: {} } },                 // WCA veya baska hesap baglamis
-				{ sessions: { some: {} } },                     // timer session'i olusturmus
 				{ top_solves: { some: {} } },                   // top solve'a girmis
 				{ top_average: { some: {} } },                  // top average'a girmis
 			],

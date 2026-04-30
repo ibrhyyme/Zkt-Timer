@@ -32,6 +32,8 @@ export default function SmartCubeSummary({ sessionId }: Props) {
 	const { t } = useTranslation();
 	useSolveDb();
 
+	if (!sessionId) return null;
+
 	const solves = fetchSolves({
 		session_id: sessionId,
 		is_smart_cube: true,

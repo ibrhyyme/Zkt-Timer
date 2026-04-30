@@ -1084,6 +1084,7 @@
         "music_rate_limit": "Espere antes de buscar de nuevo"
     },
     "profile": {
+        "share_text": "Mira el perfil de speedcubing de {{username}} en Zkt Timer",
         "about_me": "Sobre mí",
         "socials": "Redes sociales",
         "biography": "Biografía",
@@ -1440,10 +1441,10 @@
         "select_people": "Seleccionar {{count}} personas"
     },
     "seo": {
-        "home_title": "Zkt Timer | Cronómetro Online de Cubo Rubik, Competiciones WCA y Speedcubing",
-        "home_description": "El cronómetro online de cubo Rubik y plataforma de competiciones WCA más avanzada. Competiciones WCA en vivo, resultados en directo, registro de resoluciones, salas de carreras, entrenador de algoritmos. Todos los eventos WCA: 3x3, 2x2, 4x4, Pyraminx, Megaminx y más.",
-        "timer_title": "Cronómetro de Cubo Rubik - Zkt Timer",
-        "timer_description": "Cronómetro profesional de cubo Rubik. Precisión de milisegundos, algoritmos de mezcla WCA, soporte para cubos inteligentes y análisis detallado de rendimiento. El mejor cronómetro online para speedcubing.",
+        "home_title": "Zkt Timer — Cronómetro de Speedcube, WCA Live, Entrenador de Algoritmos y Plataforma Smart Cube",
+        "home_description": "Plataforma profesional de speedcubing: cronómetro de cubo, entrenador OLL/PLL/ZBLL, seguimiento en vivo de competiciones WCA, modo battle 1v1, soporte para cubos inteligentes y análisis por fases. Todos los puzzles WCA en un solo lugar.",
+        "timer_title": "Cronómetro de Cubo Rubik con Smart Cube y Mezclas WCA - Zkt Timer",
+        "timer_description": "Cronómetro profesional de cubo Rubik con precisión de milisegundos, mezclas conformes a WCA, soporte para cubos inteligentes (GAN), análisis por fases (Cross/F2L/OLL/PLL) y seguimiento detallado de resoluciones.",
         "wca_competitions_title": "Competiciones WCA - Resultados en Vivo y Horarios | Zkt Timer",
         "wca_competitions_description": "Explora todas las competiciones WCA de cubo Rubik en todo el mundo. Resultados en vivo, horarios de competencia, información de registro, listas de competidores y seguimiento en directo. Todas las competiciones oficiales WCA en una sola plataforma.",
         "wca_competition_detail_title": "Detalles de Competición WCA - Resultados en Vivo | Zkt Timer",

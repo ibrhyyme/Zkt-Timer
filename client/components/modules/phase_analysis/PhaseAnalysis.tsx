@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useDispatch } from 'react-redux';
 import ReactList from 'react-list';
 import './PhaseAnalysis.scss';
 import Empty from '../../common/empty/Empty';
@@ -8,6 +9,8 @@ import { useSolveDb } from '../../../util/hooks/useSolveDb';
 import { useGeneral } from '../../../util/hooks/useGeneral';
 import { Solve } from '../../../../server/schemas/Solve.schema';
 import { publishScroll, subscribeScroll, HISTORY_SCROLL_CHANNEL, PHASE_ANALYSIS_SCROLL_CHANNEL } from '../../../util/scroll_sync';
+import { openModal } from '../../../actions/general';
+import SessionStepsTable from '../../sessions/smart_cube_steps_table/SessionStepsTable';
 
 type StepType = NonNullable<Solve['solve_method_steps']>[number];
 
@@ -18,7 +21,7 @@ const MOBILE_LABELS = ['Cross', 'F2L', 'OLL', 'PLL'];
 
 function fmt(seconds: number | null | undefined): string {
 	if (seconds == null || seconds < 0) return '–';
-	return seconds.toFixed(2) + 's';
+	return seconds.toFixed(2);
 }
 
 function totalTime(step: StepType | undefined): number | null {
@@ -32,6 +35,15 @@ function f2lTotal(steps: StepType[]): number | null {
 		if (s?.total_time != null) { sum += s.total_time; count++; }
 	}
 	return count > 0 ? sum : null;
+}
+
+function f2lPairCount(steps: StepType[]): number {
+	let count = 0;
+	for (const name of ['f2l_1', 'f2l_2', 'f2l_3', 'f2l_4']) {
+		const s = steps.find((x) => x.step_name === name);
+		if (s?.total_time != null) count++;
+	}
+	return count;
 }
 
 function phaseAvg(solves: Solve[], phase: string): number | null {
@@ -101,6 +113,7 @@ interface Props {
 export default function PhaseAnalysis(props: Props) {
 	const { filterOptions } = props;
 	const { t } = useTranslation();
+	const dispatch = useDispatch();
 	useSolveDb();
 	const mobileMode = useGeneral('mobile_mode');
 
@@ -139,6 +152,10 @@ export default function PhaseAnalysis(props: Props) {
 		);
 	}
 
+	function openSessionStats(sessionId: string) {
+		dispatch(openModal(<SessionStepsTable sessionId={sessionId} />, { width: 900 }));
+	}
+
 	function renderRow(index: number) {
 		const solve = solves[index];
 		const displayIndex = solves.length - index - 1;
@@ -151,8 +168,10 @@ export default function PhaseAnalysis(props: Props) {
 					'cd-phase-analysis__row',
 					isEven ? 'cd-phase-analysis__row--even' : '',
 					!solve.is_smart_cube ? 'cd-phase-analysis__row--empty' : '',
+					'cd-phase-analysis__row--clickable',
 				].filter(Boolean).join(' ')}
 				key={solve.id}
+				onClick={() => openSessionStats(solve.session_id)}
 			>
 				<div className="cd-phase-analysis__cell cd-phase-analysis__cell--index">
 					{(displayIndex + 1).toLocaleString()}.
@@ -251,13 +270,19 @@ function MobileView({ solves }: { solves: Solve[] }) {
 
 		let comparison: 'better' | 'worse' | null = null;
 		if (val != null && prevVal != null) {
-			comparison = val < prevVal ? 'better' : val > prevVal ? 'worse' : null;
+			// F2L için pair sayisi farkliysa karsilastirma fair degil
+			const fairCompare = phase !== 'f2l' || f2lPairCount(currentSteps) === f2lPairCount(prevSteps);
+			if (fairCompare) {
+				comparison = val < prevVal ? 'better' : val > prevVal ? 'worse' : null;
+			}
 		}
 
 		return { label: MOBILE_LABELS[i], val, comparison };
 	});
 
-	const total = rows.reduce((sum, r) => sum + (r.val ?? 0), 0);
+	// Herhangi bir phase eksikse total da '–' gostermeli (yarim toplam yaniltici)
+	const hasNullPhase = rows.some(r => r.val == null);
+	const total = hasNullPhase ? null : rows.reduce((sum, r) => sum + (r.val ?? 0), 0);
 
 	return (
 		<div className="cd-phase-analysis cd-phase-analysis--mobile">
@@ -275,7 +300,7 @@ function MobileView({ solves }: { solves: Solve[] }) {
 						<td className="cd-phase-analysis__mobile-cell cd-phase-analysis__mobile-cell--phase">
 							{t('phase_analysis.total_label')}
 						</td>
-						<td className="cd-phase-analysis__mobile-cell">{fmt(total)}</td>
+						<td className="cd-phase-analysis__mobile-cell">{total == null ? '–' : fmt(total)}</td>
 					</tr>
 				</tbody>
 			</table>

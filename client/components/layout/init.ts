@@ -138,6 +138,13 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 					await initAllSolves();
 				}
 			}
+
+			// Background: eksik method_steps'leri backfill et (passed=true durumunda da calismali)
+			if (canSyncUser) {
+				backfillMissingMethodSteps().catch((e) => {
+					console.error('[Backfill] failed:', e);
+				});
+			}
 		} catch (e) {
 			console.error(e);
 		}
@@ -409,6 +416,64 @@ async function syncNewSolves() {
 		}
 	} catch (e) {
 		console.error('Failed to sync new solves', e);
+	}
+}
+
+/**
+ * Eski sync edilmis smart cube solve'lar (MICRO_SOLVE_FRAGMENT'a method_steps eklenmeden once)
+ * solve_method_steps olmadan LokiJS'te bulunabilir. Bu fonksiyon onlari tespit edip backfill eder.
+ */
+async function backfillMissingMethodSteps(): Promise<void> {
+	const db = getSolveDb();
+	if (!db) return;
+
+	const smartSolves = db.find({ is_smart_cube: true });
+	const missingIds = smartSolves
+		.filter((s) => !s.solve_method_steps || s.solve_method_steps.length === 0)
+		.map((s) => s.id);
+
+	if (!missingIds.length) return;
+
+	console.log(`[Backfill] ${missingIds.length} smart cube solve'un method_steps'i eksik, fetch ediliyor...`);
+
+	const fetchQuery = gql`
+		${MICRO_SOLVE_FRAGMENT}
+
+		query Query($ids: [String]!) {
+			solvesByIds(ids: $ids) {
+				...MicroSolveFragment
+			}
+		}
+	`;
+
+	let updated = 0;
+
+	for (let i = 0; i < missingIds.length; i += DELTA_SYNC_BATCH_SIZE) {
+		const batch = missingIds.slice(i, i + DELTA_SYNC_BATCH_SIZE);
+		try {
+			const res = await gqlQuery<{ solvesByIds: Solve[] }>(fetchQuery, { ids: batch });
+			for (const fetched of res.data.solvesByIds) {
+				const existing = db.findOne({ id: fetched.id });
+				if (!existing) continue;
+
+				// Server downgrade ettiyse is_smart_cube'i sync et
+				if (typeof fetched.is_smart_cube === 'boolean' && fetched.is_smart_cube !== existing.is_smart_cube) {
+					existing.is_smart_cube = fetched.is_smart_cube;
+				}
+				if (fetched.solve_method_steps && fetched.solve_method_steps.length) {
+					existing.solve_method_steps = fetched.solve_method_steps;
+				}
+				db.update(existing);
+				updated++;
+			}
+		} catch (e) {
+			console.error('[Backfill] Batch fetch failed:', e);
+		}
+	}
+
+	if (updated > 0) {
+		console.log(`[Backfill] ${updated} solve guncellendi`);
+		emitEvent('solveDbUpdatedEvent');
 	}
 }
 

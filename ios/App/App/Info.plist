@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-        <string>Zkt-Timer</string>
+        <string>Zkt Timer</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -55,8 +55,8 @@
 		<string>worldcubeassociation.org</string>
 	</array>
 	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>Zkt-Timer needs Bluetooth to connect to your smart cube for real-time solve tracking.</string>
+	<string>Zkt Timer needs Bluetooth to connect to your smart cube for real-time solve tracking.</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>Zkt-Timer needs Bluetooth to communicate with smart cubes.</string>
+	<string>Zkt Timer needs Bluetooth to communicate with smart cubes.</string>
 </dict>
 </plist>

@@ -3,7 +3,7 @@ import { KeyboardResize } from '@capacitor/keyboard';
 
 const config: CapacitorConfig = {
     appId: 'com.zktimer.app',
-    appName: 'Zkt-Timer',
+    appName: 'Zkt Timer',
     webDir: 'dist',
     backgroundColor: '#12141C',
     server: {
@@ -13,10 +13,12 @@ const config: CapacitorConfig = {
     },
     android: {
         webContentsDebuggingEnabled: true,
+        appendUserAgent: 'ZktTimerApp',
     },
     ios: {
         webContentsDebuggingEnabled: true,
         limitsNavigationsToAppBoundDomains: true,
+        appendUserAgent: 'ZktTimerApp',
     },
     plugins: {
         SplashScreen: {
