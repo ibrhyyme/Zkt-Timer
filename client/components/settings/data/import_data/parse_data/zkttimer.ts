@@ -69,6 +69,18 @@ function getUpdatedSolves(solves: Solve[], oldNewSessionMap: Record<string, stri
 		delete solve.bulk;
 		delete solve.from_timer;
 		delete solve.created_at;
+		// FK riski: smart_device_id baska kullanicinin SmartDevice satirina point edebilir.
+		// Veri korunur (smart_turns/turn_count/put_down/pick_up), sadece device referansi kopar.
+		delete (solve as any).smart_device_id;
+		// training_session_id baska kullanicinin TrainingSession'ina ait — orphan veri.
+		delete (solve as any).training_session_id;
+		// id/user_id/share_code server tarafinda yeniden uretilir; conflict riskini sifirla.
+		delete (solve as any).id;
+		delete (solve as any).user_id;
+		delete (solve as any).share_code;
+		// Loki internal alanlari — server beklemiyor.
+		delete (solve as any).$loki;
+		delete (solve as any).meta;
 
 		if (trainerName) {
 			delete solve.session_id;
