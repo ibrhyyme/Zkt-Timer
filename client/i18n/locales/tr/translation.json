@@ -728,6 +728,7 @@
         "timer_font": "Timer yazı tipi",
         "timer_font_desc": "Timer sayfasında gördüğünüz büyük Timernın yazı tipi",
         "reset": "Sıfırla",
+        "save_as_default": "Varsayılan Yap",
         "timer_font_size": "Timer yazı boyutu",
         "timer_font_size_desc": "Timer sayfasında gördüğünüz büyük sürenin yazı boyutu",
         "scramble_font_size": "Karıştırma yazı boyutu",

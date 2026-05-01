@@ -301,11 +301,13 @@ interface TimerSettingsSliderProps {
 	showReset?: boolean;
 	resetLabel?: string;
 	onReset?: () => void;
+	restoreDefaultLabel?: string;
+	onRestoreDefault?: () => void;
 	onChange: (val: number) => void;
 	children?: React.ReactNode;
 }
 
-export function TimerSettingsSlider({ label, description, value, min, max, hidden, showReset, resetLabel, onReset, onChange, children }: TimerSettingsSliderProps) {
+export function TimerSettingsSlider({ label, description, value, min, max, hidden, showReset, resetLabel, onReset, restoreDefaultLabel, onRestoreDefault, onChange, children }: TimerSettingsSliderProps) {
 	if (hidden) return null;
 
 	const percentage = ((value - min) / (max - min)) * 100;
@@ -321,6 +323,15 @@ export function TimerSettingsSlider({ label, description, value, min, max, hidde
 				</div>
 				<div className="flex items-center space-x-3 shrink-0 ml-4">
 					<span className="text-sm font-medium text-primary tabular-nums">{value}px</span>
+					{onRestoreDefault && (
+						<button
+							type="button"
+							onClick={onRestoreDefault}
+							className="text-xs text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
+						>
+							{restoreDefaultLabel || 'Default'}
+						</button>
+					)}
 					{showReset && onReset && (
 						<button
 							type="button"

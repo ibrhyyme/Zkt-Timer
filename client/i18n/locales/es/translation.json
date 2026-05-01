@@ -728,6 +728,7 @@
         "timer_font": "Fuente del timer",
         "timer_font_desc": "La fuente del timer grande que ves en la página del timer",
         "reset": "Restablecer",
+        "save_as_default": "Establecer predeterminado",
         "timer_font_size": "Tamaño de fuente del timer",
         "timer_font_size_desc": "El tamaño de fuente del tiempo grande que ves en la página del timer",
         "scramble_font_size": "Tamaño de fuente de la mezcla",
