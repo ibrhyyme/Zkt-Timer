@@ -22,7 +22,11 @@ export default function PublishSolves(props: IModalProps) {
 	const { t } = useTranslation();
 	const {onComplete} = props;
 
-	const cubeTypes = fetchAllCubeTypesSolved(true);
+	// cube_type='wca' bucket'i icin subset zorunlu (cube-subset-bucket kurali).
+	// Eski sistemden kalan subset=null kayitlari yayinlama listesine girmesin.
+	const cubeTypes = fetchAllCubeTypesSolved(true).filter(
+		(t) => !(t.cube_type === 'wca' && !t.scramble_subset)
+	);
 
 	const me = useMe();
 	const [publishing, setPublishing] = useState(false);

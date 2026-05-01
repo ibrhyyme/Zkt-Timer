@@ -79,7 +79,7 @@ export default function PbCard(props: Props) {
 		} else {
 			dispatch(
 				openModal(
-					<HistoryModal solves={solves} description={`Average of ${solves.length} by ${user.username}`} />
+					<HistoryModal solves={solves} time={time} description={`Average of ${solves.length} by ${user.username}`} />
 				)
 			);
 		}

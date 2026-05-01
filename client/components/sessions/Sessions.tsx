@@ -32,8 +32,6 @@ import { toastSuccess, toastError } from '../../util/toast';
 
 const b = block('sessions');
 
-const ALL_SUBSETS_MARKER = '__all_subsets__';
-
 interface SortableItemProps {
 	session: any;
 	selectedSessionId: string;
@@ -149,15 +147,13 @@ export default function Sessions() {
 
 	function handleCubeTypeChange(ct: CubeType) {
 		setCubeType(ct.id);
-		// Default "Hepsi" — kullanici dilerse subset secer
-		setScrambleSubset(ALL_SUBSETS_MARKER);
+		// Yeni cube_type icin: sezondaki ilk bucket subset'ini auto-sec
+		const buckets = session ? getCubeBucketsFromSession(session) : [];
+		const subs = getSubsetsForBuckets(ct.id, buckets);
+		setScrambleSubset(subs[0]?.id ?? null);
 	}
 
 	function handleSubsetChange(subset: string | null) {
-		if (subset === ALL_SUBSETS_MARKER) {
-			setScrambleSubset(ALL_SUBSETS_MARKER);
-			return;
-		}
 		// SubsetPicker '' subset'i null olarak gonderir
 		setScrambleSubset(subset);
 	}
@@ -372,29 +368,18 @@ export default function Sessions() {
 	const sessionBuckets = useMemo(() => getCubeBucketsFromSession(session), [session]);
 	const defaultBucket = cubeType ? null : (session ? fetchLastBucketForSession(session.id) : null);
 	const currentCube = String(cubeType || defaultBucket?.cube_type || '333');
-	const isAllSubsets = scrambleSubset === ALL_SUBSETS_MARKER;
-	const effectiveSubset = isAllSubsets
-		? null
-		: (scrambleSubset ?? defaultBucket?.scramble_subset ?? null);
+	const effectiveSubset = scrambleSubset ?? defaultBucket?.scramble_subset ?? null;
 	const uniqueSessionCubeTypes = useMemo(() => getUniqueCubeTypes(sessionBuckets), [sessionBuckets]);
-	const subsetsForCurrentCube = useMemo(() => {
-		const subs = getSubsetsForBuckets(currentCube, sessionBuckets);
-		if (subs.length === 0) return [];
-		return [{ id: ALL_SUBSETS_MARKER, label: t('stats.all') }, ...subs];
-	}, [currentCube, sessionBuckets, t]);
+	const subsetsForCurrentCube = useMemo(
+		() => getSubsetsForBuckets(currentCube, sessionBuckets),
+		[currentCube, sessionBuckets]
+	);
 
 	const fetchFilter: Record<string, any> = {
 		session_id: selectedSessionId,
 		cube_type: currentCube,
+		scramble_subset: effectiveSubset,
 	};
-	// "Hepsi" modu ise subset filter ekleme — tum subset'lerdeki cozumler gelir
-	if (!isAllSubsets) {
-		// cube_type='wca' her zaman subset ile filtrelemeli (WCA etkinlikleri karisir)
-		// Diger cube_type'larda subset opsiyonel — sadece secilmisse filtre ekle
-		if (currentCube === 'wca' || effectiveSubset) {
-			fetchFilter.scramble_subset = effectiveSubset || null;
-		}
-	}
 
 	const isCurrentSession = selectedSessionId === currentSessionId;
 
@@ -490,7 +475,7 @@ export default function Sessions() {
 						/>
 						<SubsetPicker
 							subsets={subsetsForCurrentCube}
-							selectedSubset={isAllSubsets ? ALL_SUBSETS_MARKER : effectiveSubset}
+							selectedSubset={effectiveSubset}
 							onChange={handleSubsetChange}
 						/>
 					</div>

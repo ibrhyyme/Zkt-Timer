@@ -1,6 +1,7 @@
 import { v4 as uuid } from 'uuid';
 import { IImportDataContext, ImportableData } from '../ImportData';
 import { SolveInput } from '../../../../../@types/generated/graphql';
+import { normalizeBucketForImport } from './normalize-bucket';
 
 const TWISTY_TIMER_CUBETYPE_MAP: Record<string, string> = {
 	'222': '222',
@@ -95,7 +96,18 @@ export function parseTwistyTimerData(txt: string, context: IImportDataContext): 
 		cubeType = context.cubeType;
 	}
 
-	// Create a single session for this import
+	// WCA bucket'ina normalize et — tanimlanmamissa tum import'u atla.
+	const normalized = normalizeBucketForImport(cubeType);
+	if (!normalized) {
+		const skippedCount = lines.length;
+		return {
+			solves: [],
+			sessions: [],
+			skippedSolveCount: skippedCount,
+			skippedCubeTypes: { [cubeType]: skippedCount },
+		};
+	}
+
 	const sessionId = uuid();
 	const sessionName = `Twisty Timer - ${puzzleName}`;
 
@@ -132,14 +144,15 @@ export function parseTwistyTimerData(txt: string, context: IImportDataContext): 
 			plus_two: false,
 			dnf: isDnf,
 			scramble,
-			cube_type: cubeType,
+			cube_type: normalized.cube_type,
+			scramble_subset: normalized.scramble_subset,
 			session_id: sessionId,
 			started_at: startedAt,
 			ended_at: endedAt,
 		});
 	}
 
-	console.log(`[TwistyTimer] Parsed ${solves.length} solves (cube type: ${cubeType})`);
+	console.log(`[TwistyTimer] Parsed ${solves.length} solves (bucket: ${normalized.cube_type}/${normalized.scramble_subset})`);
 
 	return {
 		solves,

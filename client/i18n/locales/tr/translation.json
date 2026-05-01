@@ -846,6 +846,8 @@
         "session_name": "Sezon İsmi",
         "solves_count": "Çözümler: {{count}}",
         "sessions_count": "Sezons: {{count}}",
+        "skipped_count": "Atlandı (tanımlanmamış küp türü): {{count}} çözüm",
+        "invalid_cube_type": "Tanımlanmamış küp türü — değişiklik uygulanmadı.",
         "review_and_import": "İncele ve içe aktar",
         "review_description": "Aşağıdaki sayıların doğru olduğundan emin olun. Ardından verileri içe aktarın!",
         "import": "İçe aktar",

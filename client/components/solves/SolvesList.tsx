@@ -31,7 +31,6 @@ import { convertTimeStringToSeconds } from '../../util/time';
 
 const PAGE_SIZE = 25;
 const ALL_CUBES_MARKER = '__all_cubes__';
-const ALL_SUBSETS_MARKER = '__all_subsets__';
 
 const b = block('solves-list');
 
@@ -41,7 +40,7 @@ export default function SolvesList() {
 	const me = useMe();
 
 	const [cubeType, setCubeType] = useState<string>(ALL_CUBES_MARKER);
-	const [scrambleSubset, setScrambleSubset] = useState<string | null>(ALL_SUBSETS_MARKER);
+	const [scrambleSubset, setScrambleSubset] = useState<string | null>(null);
 	const [page, setPage] = useState(0);
 	const [moreResults, setMoreResults] = useState(true);
 	const [totalResults, setTotalResults] = useState(0);
@@ -121,10 +120,7 @@ export default function SolvesList() {
 		};
 		if (cubeType !== ALL_CUBES_MARKER) {
 			final.cube_type = cubeType;
-			if (scrambleSubset !== ALL_SUBSETS_MARKER) {
-				// SubsetPicker '' subset'i null olarak gonderir
-				final.scramble_subset = scrambleSubset;
-			}
+			final.scramble_subset = scrambleSubset;
 		}
 		return final;
 	}
@@ -202,36 +198,31 @@ export default function SolvesList() {
 		setShowTimeFilter(false);
 	}
 
+	const allBuckets = useMemo(() => fetchAllCubeTypesSolved(), [updateCount]);
+	const uniqueCubeTypes = useMemo(() => getUniqueCubeTypes(allBuckets), [allBuckets]);
+	const subsetsForCurrentCube = useMemo(() => {
+		if (cubeType === ALL_CUBES_MARKER) return [];
+		return getSubsetsForBuckets(cubeType, allBuckets);
+	}, [cubeType, allBuckets]);
+
 	function changeCubeType(ct: CubeType) {
 		setPage(0);
 		setCubeType(ct.id);
-		// Cube type degisince default "Hepsi" subset
-		setScrambleSubset(ALL_SUBSETS_MARKER);
+		// Yeni cube_type icin ilk bucket subset'ini auto-sec
+		const subs = getSubsetsForBuckets(ct.id, allBuckets);
+		setScrambleSubset(subs[0]?.id ?? null);
 	}
 
 	function changeSubset(subset: string | null) {
 		setPage(0);
-		if (subset === ALL_SUBSETS_MARKER) {
-			setScrambleSubset(ALL_SUBSETS_MARKER);
-			return;
-		}
 		setScrambleSubset(subset);
 	}
 
 	function selectAllCubes() {
 		setPage(0);
 		setCubeType(ALL_CUBES_MARKER);
-		setScrambleSubset(ALL_SUBSETS_MARKER);
+		setScrambleSubset(null);
 	}
-
-	const allBuckets = useMemo(() => fetchAllCubeTypesSolved(), [updateCount]);
-	const uniqueCubeTypes = useMemo(() => getUniqueCubeTypes(allBuckets), [allBuckets]);
-	const subsetsForCurrentCube = useMemo(() => {
-		if (cubeType === ALL_CUBES_MARKER) return [];
-		const subs = getSubsetsForBuckets(cubeType, allBuckets);
-		if (subs.length === 0) return [];
-		return [{ id: ALL_SUBSETS_MARKER, label: t('stats.all') }, ...subs];
-	}, [cubeType, allBuckets, t]);
 
 	const isAllCubes = cubeType === ALL_CUBES_MARKER;
 

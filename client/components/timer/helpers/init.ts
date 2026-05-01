@@ -46,6 +46,14 @@ export async function initTimer(dispatch: Dispatch<any>, context: ITimerContext)
 		if (!ct) {
 			setSetting('cube_type', '333');
 		}
+
+		// cube_type='wca' icin subset zorunlu — eski user'larin Setting'inde
+		// subset=null kalmissa default '333' atanir (yoksa save'de orphan olur).
+		const currentCubeType = getSetting('cube_type');
+		const currentSubset = getSetting('scramble_subset');
+		if (currentCubeType === 'wca' && !currentSubset) {
+			setSetting('scramble_subset', '333');
+		}
 	}
 
 	// Sayfa yüklendiğinde son çözümün süresini timer'a yükle

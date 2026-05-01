@@ -1,4 +1,4 @@
-import React, {createContext, useMemo} from 'react';
+import React, {createContext, useEffect, useMemo} from 'react';
 import {useHistory} from 'react-router-dom';
 import {CaretDown} from 'phosphor-react';
 import './Stats.scss';
@@ -25,7 +25,6 @@ const b = block('stats');
 const CUBE_TYPE_QUERY_PARAM = 'cubeType';
 const SCRAMBLE_SUBSET_QUERY_PARAM = 'subset';
 const ALL_TAB_ID = 'all';
-const ALL_SUBSETS_MARKER = '__all_subsets__';
 
 interface StatsQueryData {
 	stats: StatsSchema;
@@ -62,7 +61,6 @@ export default function Stats() {
 	const urlParams = new URLSearchParams(window.location.search);
 	const tabCubeType = urlParams.get(CUBE_TYPE_QUERY_PARAM);
 	const tabSubset = urlParams.get(SCRAMBLE_SUBSET_QUERY_PARAM);
-	const tabId = tabCubeType ? `${tabCubeType}::${tabSubset ?? ''}` : ALL_TAB_ID;
 
 	useSolveDb();
 
@@ -70,26 +68,21 @@ export default function Stats() {
 		return fetchAllCubeTypesSolved();
 	}, []);
 
-	const all = tabId === ALL_TAB_ID;
-	const filterOptions: FilterSolvesOptions = {
-		from_timer: true,
-	};
-	if (!all) {
-		filterOptions.cube_type = tabCubeType;
-		if (tabSubset !== null) {
-			filterOptions.scramble_subset = tabSubset || null;
-		}
-	}
-
 	const history = useHistory();
 
-	function navigateToBucket(cube_type: string | null, scramble_subset?: string) {
+	function navigateToBucket(cube_type: string | null, scramble_subset?: string | null) {
 		if (!cube_type) {
 			history.push('/stats');
 			return;
 		}
-		if (scramble_subset === undefined) {
-			history.push(`/stats?${CUBE_TYPE_QUERY_PARAM}=${cube_type}`);
+		if (!scramble_subset) {
+			// Subset zorunlu — ilk bucket'a auto-redirect
+			const subs = getSubsetsForBuckets(cube_type, cubeTypes);
+			if (subs.length === 0) {
+				history.push('/stats');
+				return;
+			}
+			history.push(`/stats?${CUBE_TYPE_QUERY_PARAM}=${cube_type}&${SCRAMBLE_SUBSET_QUERY_PARAM}=${subs[0].id}`);
 			return;
 		}
 		history.push(`/stats?${CUBE_TYPE_QUERY_PARAM}=${cube_type}&${SCRAMBLE_SUBSET_QUERY_PARAM}=${scramble_subset}`);
@@ -98,10 +91,33 @@ export default function Stats() {
 	const uniqueCubeTypes = useMemo(() => getUniqueCubeTypes(cubeTypes), [cubeTypes]);
 	const subsetsForCurrentCube = useMemo(() => {
 		if (!tabCubeType) return [];
-		const subs = getSubsetsForBuckets(tabCubeType, cubeTypes);
-		if (subs.length === 0) return [];
-		return [{id: ALL_SUBSETS_MARKER, label: t('stats.all')}, ...subs];
-	}, [tabCubeType, cubeTypes, t]);
+		return getSubsetsForBuckets(tabCubeType, cubeTypes);
+	}, [tabCubeType, cubeTypes]);
+
+	// Eski URL ('?cubeType=wca' subset'siz) → ilk subset'e otomatik yonlendir
+	useEffect(() => {
+		if (tabCubeType && !tabSubset) {
+			if (subsetsForCurrentCube.length > 0) {
+				history.replace(
+					`/stats?${CUBE_TYPE_QUERY_PARAM}=${tabCubeType}&${SCRAMBLE_SUBSET_QUERY_PARAM}=${subsetsForCurrentCube[0].id}`
+				);
+			} else {
+				history.replace('/stats');
+			}
+		}
+	}, [tabCubeType, tabSubset, subsetsForCurrentCube]);
+
+	// "Tumu" modu: cubeType yok VEYA henuz subset set olmamis (eski URL redirect arasi).
+	// Boylece auto-redirect bir frame surdugunde CubeStatHero/CubeStats yerine AllStats render edilir,
+	// flicker engellenir.
+	const all = !tabCubeType || !tabSubset;
+	const filterOptions: FilterSolvesOptions = {
+		from_timer: true,
+	};
+	if (!all) {
+		filterOptions.cube_type = tabCubeType;
+		filterOptions.scramble_subset = tabSubset;
+	}
 
 	const cubeDropdownText = tabCubeType
 		? getCubeTypeInfoById(tabCubeType)?.name || tabCubeType
@@ -118,35 +134,26 @@ export default function Stats() {
 				onClick: () => navigateToBucket(id),
 			};
 		});
-	}, [uniqueCubeTypes, tabCubeType]);
+	}, [uniqueCubeTypes, tabCubeType, cubeTypes]);
 
 	const subsetDropdownText = useMemo(() => {
 		if (!tabCubeType) return '';
-		if (tabSubset === null) return t('stats.all');
 		const found = subsetsForCurrentCube.find((s) => s.id === tabSubset);
-		return found?.label || t('stats.all');
-	}, [tabCubeType, tabSubset, subsetsForCurrentCube, t]);
+		return found?.label || subsetsForCurrentCube[0]?.label || '';
+	}, [tabCubeType, tabSubset, subsetsForCurrentCube]);
 
 	const subsetOptions: IDropdownOption[] = useMemo(() => {
-		return subsetsForCurrentCube.map((s) => {
-			const isSelected =
-				s.id === ALL_SUBSETS_MARKER ? tabSubset === null : tabSubset === s.id;
-			return {
-				text: s.label,
-				selected: isSelected,
-				onClick: () => {
-					if (s.id === ALL_SUBSETS_MARKER) {
-						navigateToBucket(tabCubeType);
-					} else {
-						navigateToBucket(tabCubeType, s.id);
-					}
-				},
-			};
-		});
+		return subsetsForCurrentCube.map((s) => ({
+			text: s.label,
+			selected: tabSubset === s.id,
+			onClick: () => navigateToBucket(tabCubeType, s.id),
+		}));
 	}, [subsetsForCurrentCube, tabSubset, tabCubeType]);
 
+	// Mod 2 (cube secili, subset null) artik mumkun degil — auto-redirect oncesi gecici frame'de
+	// "AllStats" yerine bos render'a dusmemek icin: subset henuz set olmadiysa AllStats goster.
 	let body = <AllStats />;
-	if (tabId && tabId !== ALL_TAB_ID) {
+	if (!all) {
 		body = <CubeStats />;
 	}
 

@@ -25,10 +25,14 @@
 		flex-direction: row;
 		margin-bottom: 10px;
 		align-items: center;
+		min-width: 0;
 
 		p {
 			font-size: 1rem;
 			text-align: left;
+			min-width: 0;
+			overflow-wrap: break-word;
+			word-break: break-word;
 		}
 	}
 

@@ -3,6 +3,7 @@ import {IImportDataContext, ImportableData} from '../ImportData';
 import {Session} from '../../../../../@types/generated/graphql';
 import {fetchSessions} from '../../../../../db/sessions/query';
 import {Solve} from '../../../../../../server/schemas/Solve.schema';
+import {normalizeBucketForImport} from './normalize-bucket';
 
 type LegacySession = {
 	id: string;
@@ -38,7 +39,10 @@ export function parseZktTimerLegacyData(txt: string, context: IImportDataContext
 	const sessionIds = Object.keys(sessionMap);
 
 	const sessions = [];
-	let solves = [];
+	let solves: Solve[] = [];
+	let skippedCount = 0;
+	const skippedTypes: Record<string, number> = {};
+
 	for (const id of sessionIds) {
 		const session = sessionMap[id];
 
@@ -51,15 +55,21 @@ export function parseZktTimerLegacyData(txt: string, context: IImportDataContext
 			newSession.order = currentSessions.length + session.order;
 		}
 
-		const sessionSolves = getSessionSolves(newSession, session);
+		const result = getSessionSolves(newSession, session);
+		skippedCount += result.skippedCount;
+		for (const k of Object.keys(result.skippedTypes)) {
+			skippedTypes[k] = (skippedTypes[k] || 0) + result.skippedTypes[k];
+		}
 
 		sessions.push(newSession);
-		solves = solves.concat(sessionSolves);
+		solves = solves.concat(result.solves);
 	}
 
 	return {
 		sessions,
 		solves,
+		skippedSolveCount: skippedCount || undefined,
+		skippedCubeTypes: Object.keys(skippedTypes).length ? skippedTypes : undefined,
 	};
 }
 
@@ -67,19 +77,29 @@ function getSessionSolves(newSession: Session, sessionMap: LegacySession) {
 	const cubeTypes = Object.keys(sessionMap.solves);
 
 	const output: Solve[] = [];
+	let skippedCount = 0;
+	const skippedTypes: Record<string, number> = {};
 
 	for (const ct of cubeTypes) {
 		const solves = sessionMap.solves[ct];
+		const normalized = normalizeBucketForImport(ct);
+		if (!normalized) {
+			skippedCount += solves.length;
+			skippedTypes[ct] = (skippedTypes[ct] || 0) + solves.length;
+			continue;
+		}
 		for (const solve of solves) {
 			const newSolve = convertSolveArrayToObject(solve);
 
 			delete newSolve.id;
 			newSolve.session_id = newSession.id;
+			newSolve.cube_type = normalized.cube_type;
+			(newSolve as any).scramble_subset = normalized.scramble_subset;
 			output.push(newSolve);
 		}
 	}
 
-	return output;
+	return { solves: output, skippedCount, skippedTypes };
 }
 
 const solveArrayIndexMapping: (keyof Solve | string)[] = [

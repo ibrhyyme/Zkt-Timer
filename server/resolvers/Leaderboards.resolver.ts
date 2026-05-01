@@ -50,6 +50,10 @@ export class LeaderboardsResolver {
 		if (!solve || solve.user_id !== user.id) {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Invalid solve');
 		}
+		// cube_type='wca' bucket'i icin subset zorunlu (cube-subset-bucket kurali)
+		if (solve.cube_type === 'wca' && !solve.scramble_subset) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'WCA solves must have a scramble subset');
+		}
 
 		await deleteTopSolve(solve.cube_type, user, solve.scramble_subset);
 		return await submitTopSolve(user, solve);
@@ -76,6 +80,9 @@ export class LeaderboardsResolver {
 			if (!solve || solve.user_id !== user.id) {
 				throw new GraphQLError(ErrorCode.BAD_INPUT, 'Invalid solve IDs');
 			}
+		}
+		if (solves[0].cube_type === 'wca' && !solves[0].scramble_subset) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'WCA solves must have a scramble subset');
 		}
 
 		await deleteTopAverage(solves[0].cube_type, user, solves[0].scramble_subset);

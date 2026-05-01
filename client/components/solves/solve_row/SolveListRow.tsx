@@ -7,7 +7,7 @@ import SolveInfo from '../../solve_info/SolveInfo';
 import Emblem from '../../common/emblem/Emblem';
 import { getDateFromNow } from '../../../util/dates';
 import Scramble from '../../modules/scramble/ScrambleVisual';
-import { getCubeTypeBucketLabel } from '../../../util/cubes/util';
+import { getCubeTypeBucketLabelWithCategory } from '../../../util/cubes/util';
 import { useGeneral } from '../../../util/hooks/useGeneral';
 import block from '../../../styles/bem';
 import Tag from '../../common/tag/Tag';
@@ -45,7 +45,7 @@ export default function SolveListRow(props: Props) {
 	const plusTwo = solve.plus_two;
 	const scramble = solve.scramble;
 	const smart = solve.is_smart_cube;
-	const cubeType = getCubeTypeBucketLabel(solve.cube_type, solve.scramble_subset) || 'None';
+	const cubeType = getCubeTypeBucketLabelWithCategory(solve.cube_type, solve.scramble_subset) || 'None';
 	const createdAt = getDateFromNow(solve.started_at);
 	const visualCubeType = (solve.cube_type === 'wca' && solve.scramble_subset)
 		? solve.scramble_subset
