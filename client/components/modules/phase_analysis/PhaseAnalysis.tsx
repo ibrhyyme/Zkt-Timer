@@ -1,13 +1,17 @@
 import React, { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
+import { useHistory } from 'react-router-dom';
 import ReactList from 'react-list';
 import './PhaseAnalysis.scss';
 import Empty from '../../common/empty/Empty';
 import { FilterSolvesOptions, fetchSolves } from '../../../db/solves/query';
 import { useSolveDb } from '../../../util/hooks/useSolveDb';
 import { useGeneral } from '../../../util/hooks/useGeneral';
+import { useMe } from '../../../util/hooks/useMe';
+import { isPro, isProEnabled } from '../../../lib/pro';
 import { Solve } from '../../../../server/schemas/Solve.schema';
+import { getTimeString } from '../../../util/time';
 import { publishScroll, subscribeScroll, HISTORY_SCROLL_CHANNEL, PHASE_ANALYSIS_SCROLL_CHANNEL } from '../../../util/scroll_sync';
 import { openModal } from '../../../actions/general';
 import SessionStepsTable from '../../sessions/smart_cube_steps_table/SessionStepsTable';
@@ -21,7 +25,7 @@ const MOBILE_LABELS = ['Cross', 'F2L', 'OLL', 'PLL'];
 
 function fmt(seconds: number | null | undefined): string {
 	if (seconds == null || seconds < 0) return '–';
-	return seconds.toFixed(2);
+	return getTimeString(seconds, 2);
 }
 
 function totalTime(step: StepType | undefined): number | null {
@@ -114,8 +118,36 @@ export default function PhaseAnalysis(props: Props) {
 	const { filterOptions } = props;
 	const { t } = useTranslation();
 	const dispatch = useDispatch();
+	const history = useHistory();
+	const me = useMe();
 	useSolveDb();
 	const mobileMode = useGeneral('mobile_mode');
+
+	// Non-Pro user solve'lari server'a sync edemedigi icin method_steps olusmuyor —
+	// Phase Analysis hem desktop hem mobile'da Pro-gate'li
+	const showProOverlay = isProEnabled() && !isPro(me);
+
+	function goPro() {
+		history.push('/pro');
+	}
+
+	if (showProOverlay) {
+		return (
+			<div className="cd-phase-analysis cd-phase-analysis--pro-locked">
+				<div className="cd-phase-analysis__pro-locked-dummy">
+					<div className="cd-phase-analysis__pro-locked-dummy-bar" style={{ width: '85%' }} />
+					<div className="cd-phase-analysis__pro-locked-dummy-bar" style={{ width: '70%' }} />
+					<div className="cd-phase-analysis__pro-locked-dummy-bar" style={{ width: '90%' }} />
+					<div className="cd-phase-analysis__pro-locked-dummy-bar" style={{ width: '55%' }} />
+					<div className="cd-phase-analysis__pro-locked-dummy-bar" style={{ width: '75%' }} />
+				</div>
+				<div className="cd-phase-analysis__pro-locked-overlay" onClick={goPro}>
+					<span className="cd-phase-analysis__pro-locked-star">★</span>
+					<span>{t('solve_info.pro_stats_upsell')}</span>
+				</div>
+			</div>
+		);
+	}
 
 	const scrollRef = useRef<HTMLDivElement>(null);
 	const isReceiving = useRef(false);

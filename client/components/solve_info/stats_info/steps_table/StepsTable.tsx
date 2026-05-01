@@ -4,6 +4,7 @@ import { getSolveStepsWithoutParents } from '../../util/solution';
 import { STEP_NAME_MAP } from '../../util/consts';
 import block from '../../../../styles/bem';
 import { Solve } from '../../../../../server/schemas/Solve.schema';
+import { getTimeString } from '../../../../util/time';
 import './StepsTable.scss';
 
 const b = block('solve-info-steps-table');
@@ -46,7 +47,7 @@ export default function StepsTable(props: Props) {
 
 	function fmt(val: number | null | undefined, suffix = 's'): string {
 		if (val == null || val === 0) return '-';
-		return val.toFixed(2) + suffix;
+		return getTimeString(val, 2) + suffix;
 	}
 
 	return (

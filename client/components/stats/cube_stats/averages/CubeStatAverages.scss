@@ -1,10 +1,81 @@
 @import '../../../../styles/config';
 
 .#{$namespace}-cube-stat-avg {
-    display: grid;
-    grid-auto-rows: 1fr;
+	display: flex;
+	flex-direction: column;
+	gap: 0.133rem;
+	width: 100%;
 
-    > *:nth-child(odd) {
-        background-color: rgba(var(--theme-background-opposite), 0.05);
-    }
+	&__item {
+		display: grid;
+		grid-template-columns: 1fr auto;
+		align-items: center;
+		gap: 0.933rem;
+		padding: 0.733rem 0.4rem;
+		background: transparent;
+		border: 0;
+		border-bottom: 1px solid rgba(var(--text-color), 0.06);
+		color: rgb(var(--text-color));
+		font-family: inherit;
+		text-align: left;
+		cursor: pointer;
+		width: 100%;
+		transition: background-color 0.15s;
+
+		&:last-child {
+			border-bottom: 0;
+		}
+
+		&:hover:not(:disabled) {
+			background-color: rgba(var(--text-color), 0.06);
+		}
+
+		&:disabled {
+			cursor: default;
+			opacity: 0.55;
+		}
+
+		&--best {
+			border-left: 3px solid rgb(var(--secondary-color));
+			padding-left: 0.667rem;
+		}
+	}
+
+	&__label {
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+
+		strong {
+			font-family: inherit;
+			font-weight: 500;
+			font-size: 1rem;
+			color: rgb(var(--text-color));
+
+			span {
+				color: rgb(var(--primary-color));
+				font-weight: 600;
+			}
+		}
+
+		small {
+			font-family: 'Roboto Mono', ui-monospace, monospace;
+			font-size: 0.7rem;
+			color: rgb(var(--text-color));
+			letter-spacing: 0.04em;
+		}
+	}
+
+	&__value {
+		font-family: 'Roboto Mono', ui-monospace, monospace;
+		font-weight: 600;
+		font-size: 1.467rem;
+		color: rgb(var(--text-color));
+		font-variant-numeric: tabular-nums;
+		letter-spacing: -0.02em;
+
+		&--best {
+			color: rgb(var(--secondary-color));
+		}
+	}
 }

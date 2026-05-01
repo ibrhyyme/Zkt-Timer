@@ -133,16 +133,19 @@ let timerLayout = props.timerLayout || useSettings('timer_layout');
 					{timerStore.notification}
 				</div>
 
-				{/* Akıllı küp modunda timer ve küp yan yana, normal modda sadece timer */}
+				{/* Akıllı küp: SOL=dar analiz portal, SAĞ=cube+timer yapışık */}
 				{smartActive ? (
-					<div className={b('mobile-smart-row')}>
-						{/* Timer alanı - sol taraf */}
-						<div className={`${b('mobile-timer', { smart: true })} ${b('main', { mobile: true })}`}>
-							<TimeDisplay />
+					<div className={b('mobile-smart-grid')}>
+						<div className={b('mobile-smart-grid-left')}>
+							<div id="mobile-smart-phases-container"></div>
 						</div>
-						{/* SmartCube alanı - sağ taraf */}
-						<div className={b('mobile-smart-cube')}>
-							{smartCubeVisual}
+						<div className={b('mobile-smart-grid-right')}>
+							<div className={b('mobile-smart-grid-cube')}>
+								{smartCubeVisual}
+							</div>
+							<div className={`${b('mobile-smart-grid-time')} ${b('main', { mobile: true })}`}>
+								<TimeDisplay />
+							</div>
 						</div>
 					</div>
 				) : (
@@ -152,12 +155,10 @@ let timerLayout = props.timerLayout || useSettings('timer_layout');
 					</div>
 				)}
 
-				{/* Mobile Smart Phases Portal Container */}
-				{mobileMode && timerType === 'smart' && (
+				{/* Smart cube DEĞİLKEN portal eski yerde (timer_type=smart ama 3x3 değil veya manual entry) */}
+				{mobileMode && timerType === 'smart' && !smartActive && (
 					<div id="mobile-smart-phases-container" style={{ width: '100%', padding: '0 10px' }}></div>
 				)}
-
-				<div style={{ flex: 0.5 }} />
 
 				{/* Kontrol çubuğu */}
 				<TimerControls />

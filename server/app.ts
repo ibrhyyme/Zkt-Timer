@@ -71,26 +71,6 @@ process.on('SIGINT', () => {
 initSearch();
 initLogger();
 
-app.post('/', (req, res) => {
-	let body = '';
-	req.on('data', (chunk) => {
-		body += chunk.toString();
-		if (body.length > 2000) body = body.substring(0, 2000);
-	});
-	req.on('end', () => {
-		logger.warn('post_root_detected', {
-			ua: req.headers['user-agent']?.substring(0, 200),
-			referer: req.headers.referer || null,
-			contentType: req.headers['content-type'] || null,
-			origin: req.headers.origin || null,
-			bodyPreview: body.substring(0, 500),
-			bodyLength: body.length,
-			ip: requestIp.getClientIp(req),
-		});
-		res.status(204).end();
-	});
-});
-
 app.use(compression());
 app.use(bodyParser.json({ limit: '200mb' }));
 app.use(cookieParser());

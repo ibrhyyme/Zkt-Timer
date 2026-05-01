@@ -236,7 +236,7 @@ export default function ExtrasTab() {
 		{ label: 'CF+OP', value: 'cf_plus_op' }, // Multi-phase (4 steps: Cross, F2L, OLL, PLL)
 		{ label: 'CFFFFOP', value: 'cffffop' }, // F2L Split (Cross, F2L1, F2L2, F2L3, F2L4, OLL, PLL)
 		{ label: 'CFFFFOOPP', value: 'cffffoopp' }, // Detailed (Cross, F2L1...4, 2-look OLL/PLL?) - User requested name.
-	];
+	].filter((opt) => !(mobileMode && opt.value === 'cffffoopp')); // Mobilde 11 satir sigmaz, cffffoopp gizli
 
 	return (
 		<div className="space-y-3">
@@ -269,6 +269,7 @@ export default function ExtrasTab() {
 				value={analysisMode || 'none'}
 				options={analysisOptions}
 				hidden={timerType !== 'smart'} // Only show if Smart Cube is selected
+				openUp
 				onChange={(val) => setSetting('smart_cube_analysis_mode', val)}
 			/>
 

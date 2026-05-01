@@ -77,7 +77,67 @@
     },
     "stats": {
         "page_title": "Estadísticas",
-        "all": "Todas"
+        "all": "Todas",
+        "select_cube": "Seleccionar cubo",
+        "hero": {
+            "title": "Estadísticas",
+            "subtitle": "Resumen de cada resolución, cada segundo y cada pequeña mejora."
+        },
+        "heatmap": {
+            "less": "Menos",
+            "more": "Más",
+            "active_days": "días activos · de {{total}}",
+            "current_streak": "racha actual"
+        },
+        "cube_hero": {
+            "solves_count": "{{value}} resoluciones",
+            "avg_ao12": "Prom. {{time}}"
+        },
+        "cube_chart": {
+            "eyebrow": "Tiempos de resolución",
+            "current_ao12": "Ao12 actual",
+            "best_ao12": "Mejor Ao12",
+            "gap": "Diferencia con PB",
+            "gap_at_pb": "En PB",
+            "total": "Resoluciones totales"
+        },
+        "hourly": {
+            "empty": "No hay resoluciones para este filtro.",
+            "std_dev": "desviación estándar",
+            "peak": "Pico: {{hour}} · {{value}} resoluciones",
+            "avg_per_hour": "Prom. {{value}} resoluciones/hora"
+        },
+        "avg": {
+            "subtitle": "Últimas {{value}} resoluciones",
+            "best_block": "★ Bloque más consistente"
+        },
+        "focus": {
+            "total_time": "Tiempo total",
+            "total_solves_count": "{{value}} resoluciones",
+            "peak_hour": "Hora pico",
+            "peak_hour_sub": "{{value}} resoluciones a esta hora",
+            "peak_hour_empty": "Sin datos aún",
+            "best_day": "Mejor día",
+            "best_day_sub": "Ao12 promedio {{time}}",
+            "best_day_empty": "Datos insuficientes",
+            "sessions": "Sesiones activas",
+            "sessions_sub": "Prom. {{avg}} resoluciones/sesión"
+        },
+        "splits": {
+            "empty": "No hay resoluciones de cubo inteligente.",
+            "eyebrow": "Promedio de {{value}} resoluciones con cubo inteligente",
+            "bottleneck": "Pierdes más tiempo en {{phase}}",
+            "pro_upsell": "El análisis por fase es una función Pro",
+            "phase": {
+                "cross": "Cross",
+                "f2l_1": "F2L 1",
+                "f2l_2": "F2L 2",
+                "f2l_3": "F2L 3",
+                "f2l_4": "F2L 4",
+                "oll": "OLL",
+                "pll": "PLL"
+            }
+        }
     },
     "danger_zone": {
         "reset_settings_title": "Restablecer configuración",
@@ -1194,7 +1254,14 @@
         "most_popular_event": "Evento más popular",
         "averages": "Promedios",
         "highest_streak": "Racha más alta",
-        "days": "días"
+        "days": "días",
+        "puzzles": "Por puzzle",
+        "activity": "Actividad de 365 días",
+        "hourly_consistency": "Actividad por hora",
+        "time_focus": "Tiempo y enfoque",
+        "phase_splits": "División por fase",
+        "steps_detail": "Tabla detalle de fases",
+        "smart_cube_summary": "Resumen de Cubo Inteligente"
     },
     "common": {
         "results_count": "{{count}} resultados",
@@ -1215,7 +1282,8 @@
         "reset": "Restablecer",
         "clear": "Limpiar",
         "create_new": "Crear nuevo",
-        "copied": "Copiado"
+        "copied": "Copiado",
+        "coming_soon": "Próximamente"
     },
     "announcement_modal": {
         "feature": "🎉 Novedad",

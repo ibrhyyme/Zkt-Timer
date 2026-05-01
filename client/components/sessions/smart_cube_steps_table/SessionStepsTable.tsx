@@ -2,13 +2,14 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import { fetchSolves } from '../../../db/solves/query';
+import { fetchSolves, FilterSolvesOptions } from '../../../db/solves/query';
 import { useSolveDb } from '../../../util/hooks/useSolveDb';
 import { useMe } from '../../../util/hooks/useMe';
 import { isPro, isProEnabled } from '../../../lib/pro';
 import { closeModal } from '../../../actions/general';
 import { getSolveStepsWithoutParents } from '../../solve_info/util/solution';
 import { STEP_NAME_MAP } from '../../solve_info/util/consts';
+import { getTimeString } from '../../../util/time';
 import block from '../../../styles/bem';
 import '../../solve_info/stats_info/steps_table/StepsTable.scss';
 import './SessionStepsTable.scss';
@@ -19,7 +20,9 @@ const bSession = block('session-steps-table');
 const PHASE_ORDER = ['cross', 'f2l_1', 'f2l_2', 'f2l_3', 'f2l_4', 'oll', 'pll'];
 
 interface Props {
-	sessionId: string;
+	sessionId?: string;
+	filterOptions?: FilterSolvesOptions;
+	title?: string;
 }
 
 interface PhaseAggregate {
@@ -41,17 +44,17 @@ function avg(arr: number[]): number {
 
 function fmt(val: number | null | undefined, suffix = 's'): string {
 	if (val == null || val === 0) return '-';
-	return val.toFixed(2) + suffix;
+	return getTimeString(val, 2) + suffix;
 }
 
-export default function SessionStepsTable({ sessionId }: Props) {
+export default function SessionStepsTable({ sessionId, filterOptions, title }: Props) {
 	const { t } = useTranslation();
 	const dispatch = useDispatch();
 	const history = useHistory();
 	const me = useMe();
 	useSolveDb();
 
-	if (!sessionId) return null;
+	if (!sessionId && !filterOptions) return null;
 
 	const showProOverlay = isProEnabled() && !isPro(me);
 
@@ -60,18 +63,20 @@ export default function SessionStepsTable({ sessionId }: Props) {
 		history.push('/pro');
 	}
 
-	const solves = fetchSolves({
-		session_id: sessionId,
-		is_smart_cube: true,
-		dnf: false,
-	});
+	const baseFilter = sessionId
+		? { session_id: sessionId, is_smart_cube: true, dnf: false }
+		: { ...filterOptions, is_smart_cube: true, dnf: false };
+
+	const solves = fetchSolves(baseFilter);
 
 	if (!solves.length) return null;
+
+	const resolvedTitle = title || t('sessions.session_steps_title');
 
 	if (showProOverlay) {
 		return (
 			<div className={bSession()}>
-				<h3 className={bSession('title')}>{t('sessions.session_steps_title')}</h3>
+				<h3 className={bSession('title')}>{resolvedTitle}</h3>
 				<div className={bSession('pro-locked')}>
 					<div className={bSession('pro-locked-dummy')}>
 						<div className={bSession('pro-locked-dummy-bar')} style={{ width: '85%' }} />
@@ -149,7 +154,7 @@ export default function SessionStepsTable({ sessionId }: Props) {
 
 	return (
 		<div className={bSession()}>
-			<h3 className={bSession('title')}>{t('sessions.session_steps_title')}</h3>
+			<h3 className={bSession('title')}>{resolvedTitle}</h3>
 			<div className={b()}>
 				<table className={b('table')}>
 					<thead>

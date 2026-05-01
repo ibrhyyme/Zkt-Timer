@@ -21,7 +21,11 @@ import dayjs from 'dayjs';
 
 const b = block('sub-stats');
 
-const SUB_STATS_COLOR = '#6D7D90';
+const NEUTRAL = '#6D7D90';
+const MINT = '#23C586';
+const BLUE = '#54ACE4';
+const ROSE = '#EF4358';
+const AMBER = '#F59E0B';
 
 interface Props {
 }
@@ -60,7 +64,7 @@ export default function SubStats(props: Props) {
 				icon={<CaretDoubleRight weight="bold" />}
 				title={t('stats_page.solve_streak')}
 				value={`${streak.currentStreak} ${t('stats_page.days')}`}
-				color={SUB_STATS_COLOR}
+				color={streak.currentStreak > 0 ? MINT : NEUTRAL}
 			/>
 			<NumberBlock
 				small
@@ -68,7 +72,7 @@ export default function SubStats(props: Props) {
 				icon={<CaretDoubleUp weight="bold" />}
 				title={t('stats_page.highest_streak')}
 				value={`${streak.highestStreak} ${t('stats_page.days')}`}
-				color={SUB_STATS_COLOR}
+				color={BLUE}
 			/>
 			<NumberBlock
 				small
@@ -76,7 +80,7 @@ export default function SubStats(props: Props) {
 				icon={<WarningOctagon weight="bold" />}
 				title="DNFs"
 				value={`${subStats.dnfCount} (${subStats.dnfPercent}%)`}
-				color={SUB_STATS_COLOR}
+				color={subStats.dnfCount > 0 ? ROSE : NEUTRAL}
 			/>
 			<NumberBlock
 				small
@@ -84,7 +88,7 @@ export default function SubStats(props: Props) {
 				icon={<Warning weight="bold" />}
 				title="+2s"
 				value={`${subStats.plusTwoCount} (${subStats.plusTwoPercent}%)`}
-				color={SUB_STATS_COLOR}
+				color={subStats.plusTwoCount > 0 ? AMBER : NEUTRAL}
 			/>
 			<NumberBlock
 				small
@@ -92,7 +96,7 @@ export default function SubStats(props: Props) {
 				icon={<Calculator weight="bold" />}
 				title={t('stats_page.avg_solves_per_session')}
 				value={avgSolvesPerSession}
-				color={SUB_STATS_COLOR}
+				color={NEUTRAL}
 			/>
 			<NumberBlock
 				small
@@ -100,7 +104,7 @@ export default function SubStats(props: Props) {
 				icon={<NumberSquareOne weight="bold" />}
 				title={t('stats_page.first_solve')}
 				value={firstSolveTime}
-				color={SUB_STATS_COLOR}
+				color={NEUTRAL}
 			/>
 			<NumberBlock
 				small
@@ -108,7 +112,7 @@ export default function SubStats(props: Props) {
 				icon={<Eye weight="bold" />}
 				title="Solve Views"
 				value={stats.solve_views || 0}
-				color="#667289"
+				color={NEUTRAL}
 			/>
 			<NumberBlock
 				small
@@ -116,7 +120,7 @@ export default function SubStats(props: Props) {
 				icon={<Eye weight="bold" />}
 				title="Profile Views"
 				value={stats.profile_views || 0}
-				color="#667289"
+				color={NEUTRAL}
 			/>
 		</div>
 	);

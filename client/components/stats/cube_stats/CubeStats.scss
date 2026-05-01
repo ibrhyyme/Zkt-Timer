@@ -3,16 +3,73 @@
 .#{$namespace}-cube-stats {
 	width: 100%;
 	display: grid;
+	grid-template-columns: minmax(0, 22rem) minmax(0, 24rem) minmax(0, 1fr);
+	grid-template-areas:
+		'featured averages chart'
+		'substats hourly hourly'
+		'summary summary summary'
+		'splits splits splits'
+		'steps-table steps-table steps-table';
+	column-gap: 1.333rem;
+	row-gap: 1.333rem;
 	overflow-x: hidden;
-	grid-template-columns: repeat(auto-fill, minmax(18.667rem, 1fr));
-	grid-auto-rows: minmax(20rem, auto);
-	grid-column-gap: 1.333rem;
-	grid-row-gap: 1.333rem;
+	align-items: start;
 
-	@media only screen and (max-width: 900px) {
+	&__summary {
+		grid-area: summary;
+	}
+
+	&__featured {
+		grid-area: featured;
+	}
+
+	&__averages {
+		grid-area: averages;
+	}
+
+	&__chart {
+		grid-area: chart;
+	}
+
+	&__substats {
+		grid-area: substats;
+	}
+
+	&__hourly {
+		grid-area: hourly;
+	}
+
+	&__splits {
+		grid-area: splits;
+	}
+
+	&__steps-table {
+		grid-area: steps-table;
+	}
+
+	@media (max-width: 1300px) {
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		grid-template-areas:
+			'featured averages'
+			'chart chart'
+			'substats hourly'
+			'summary summary'
+			'splits splits'
+			'steps-table steps-table';
+	}
+
+	@media (max-width: 900px) {
 		grid-template-columns: 1fr;
-		grid-auto-rows: auto;
-		grid-column-gap: 16px;
-		grid-row-gap: 16px;
+		grid-template-areas:
+			'featured'
+			'averages'
+			'chart'
+			'substats'
+			'hourly'
+			'summary'
+			'splits'
+			'steps-table';
+		column-gap: 16px;
+		row-gap: 16px;
 	}
 }

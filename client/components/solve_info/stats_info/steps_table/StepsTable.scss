@@ -5,8 +5,8 @@
 	margin-bottom: 16px;
 
 	&__meta-row {
-		font-size: 0.75rem;
-		color: rgba(var(--text-color), 0.5);
+		font-size: 0.85rem;
+		color: rgb(var(--text-color));
 		padding: 6px 12px;
 		text-align: center;
 	}
@@ -14,7 +14,7 @@
 	&__table {
 		width: 100%;
 		border-collapse: collapse;
-		font-size: 0.8rem;
+		font-size: 0.95rem;
 		background-color: rgb(var(--module-color));
 		border: 1px solid rgba(var(--text-color), 0.12);
 		border-radius: 10px;
@@ -22,25 +22,26 @@
 
 		th,
 		td {
-			padding: 8px 6px;
+			padding: 10px 8px;
 			text-align: center;
 			white-space: nowrap;
 		}
 
 		th {
 			font-weight: 600;
-			font-size: 0.72rem;
+			font-size: 0.85rem;
 			text-transform: uppercase;
-			color: rgba(var(--text-color), 0.5);
+			color: rgb(var(--text-color));
 			background-color: rgb(var(--module-color));
 			border-bottom: 1px solid rgba(var(--text-color), 0.12);
+			letter-spacing: 0.04em;
 		}
 
 		td {
-			color: rgba(var(--text-color), 0.85);
+			color: rgb(var(--text-color));
 			font-family: inherit;
 			font-variant-numeric: tabular-nums;
-			font-size: 0.85rem;
+			font-size: 0.95rem;
 			letter-spacing: 0.01em;
 		}
 
@@ -88,15 +89,19 @@
 
 	@media (max-width: 600px) {
 		&__table {
-			font-size: 0.72rem;
+			font-size: 0.85rem;
 
 			th,
 			td {
-				padding: 6px 4px;
+				padding: 8px 6px;
+			}
+
+			th {
+				font-size: 0.75rem;
 			}
 
 			td {
-				font-size: 0.7rem;
+				font-size: 0.85rem;
 			}
 		}
 	}

@@ -1,0 +1,67 @@
+@import '../../../../styles/config';
+
+.#{$namespace}-cube-timeline {
+	display: flex;
+	flex-direction: column;
+	gap: 0.667rem;
+	width: 100%;
+	height: 100%;
+
+	&__head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	&__label {
+		font-family: 'Roboto Mono', ui-monospace, monospace;
+		font-size: 0.7rem;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: rgb(var(--text-color));
+	}
+
+	&__chart {
+		flex: 1;
+		min-height: 16rem;
+		width: 100%;
+	}
+
+	&__stats {
+		display: flex;
+		gap: 1.467rem;
+		flex-wrap: wrap;
+		padding-top: 0.933rem;
+		border-top: 1px solid rgba(var(--text-color), 0.08);
+	}
+
+	&__stat {
+		display: flex;
+		flex-direction: column;
+		gap: 0.133rem;
+	}
+
+	&__stat-label {
+		font-family: 'Roboto Mono', ui-monospace, monospace;
+		font-size: 0.633rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: rgb(var(--text-color));
+	}
+
+	&__stat-val {
+		font-family: 'Roboto Mono', ui-monospace, monospace;
+		font-weight: 500;
+		font-size: 1rem;
+		color: rgb(var(--text-color));
+		font-variant-numeric: tabular-nums;
+
+		&--mint {
+			color: rgb(var(--secondary-color));
+		}
+
+		&--rose {
+			color: rgb(var(--primary-color));
+		}
+	}
+}

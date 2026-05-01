@@ -7,6 +7,7 @@ import RecognitionChart from './recognition_chart/RecognitionChart';
 import ExecutionTime from './execution_time/ExecutionTime';
 import block from '../../../styles/bem';
 import { Solve } from '../../../../server/schemas/Solve.schema';
+import { getTimeString } from '../../../util/time';
 
 const b = block('solve-info-stats-info');
 
@@ -41,8 +42,8 @@ export default function StatsInfo(props: Props) {
 					{getStatCard(<ArrowsClockwise />, t('solve_info.tps'), tps)}
 					{getStatCard(<Timer />, t('solve_info.inspection'), smartInspectionTime ? smartInspectionTime + 's' : '-')}
 					{getStatCard(<ArrowCounterClockwise />, t('solve_info.turns'), smartTurnCount)}
-					{solve.smart_pick_up_time ? getStatCard(<CaretUp />, t('solve_info.pick_up'), solve.smart_pick_up_time.toFixed(2) + 's') : null}
-					{solve.smart_put_down_time ? getStatCard(<CaretDown />, t('solve_info.put_down'), solve.smart_put_down_time.toFixed(2) + 's') : null}
+					{solve.smart_pick_up_time ? getStatCard(<CaretUp />, t('solve_info.pick_up'), getTimeString(solve.smart_pick_up_time, 2) + 's') : null}
+					{solve.smart_put_down_time ? getStatCard(<CaretDown />, t('solve_info.put_down'), getTimeString(solve.smart_put_down_time, 2) + 's') : null}
 				</div>
 			)}
 			<hr />

@@ -1081,10 +1081,13 @@ export default function SmartCube() {
 					</div>
 				)}
 				{mobileMode && domReady && ReactDOM.createPortal(
-					<LiveAnalysisOverlay
-						startState={startState || (cubejs.current ? cubejs.current.asString() : null)}
-						mobile={true}
-					/>,
+					<>
+						<LiveAnalysisOverlay
+							startState={startState || (cubejs.current ? cubejs.current.asString() : null)}
+							mobile={true}
+						/>
+						<SmartStats mobile={true} />
+					</>,
 					document.getElementById('mobile-smart-phases-container') || document.body
 				)}
 				<div className={b('info')}>

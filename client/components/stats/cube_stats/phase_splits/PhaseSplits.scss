@@ -1,0 +1,179 @@
+@import '../../../../styles/config';
+
+.#{$namespace}-phase-splits {
+	display: flex;
+	flex-direction: column;
+	gap: 0.933rem;
+	width: 100%;
+
+	&__header {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		gap: 0.667rem;
+		flex-wrap: wrap;
+	}
+
+	&__eyebrow {
+		font-family: 'Roboto Mono', ui-monospace, monospace;
+		font-size: 0.85rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: rgb(var(--text-color));
+		font-weight: 500;
+	}
+
+	&__insight {
+		font-family: inherit;
+		font-size: 0.95rem;
+		font-weight: 600;
+		color: #d63b51;
+	}
+
+	&__list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+	}
+
+	&__row {
+		display: grid;
+		grid-template-columns: 4.667rem 1fr 5rem;
+		gap: 0.8rem;
+		align-items: center;
+	}
+
+	&__label {
+		font-family: 'Roboto Mono', ui-monospace, monospace;
+		font-size: 0.9rem;
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: rgb(var(--text-color));
+	}
+
+	&__track {
+		height: 0.667rem;
+		background-color: rgba(var(--text-color), 0.06);
+		border-radius: 999px;
+		overflow: hidden;
+		position: relative;
+	}
+
+	&__fill {
+		height: 100%;
+		border-radius: 999px;
+		position: relative;
+		transition: width 0.4s ease;
+		background: rgb(var(--primary-color));
+
+		.#{$namespace}-phase-splits__row--cross & {
+			background: linear-gradient(90deg, #6ee7b7, #23c586);
+		}
+
+		.#{$namespace}-phase-splits__row--f2l_1 & {
+			background: linear-gradient(90deg, #b9a9ff, rgb(var(--primary-color)));
+		}
+
+		.#{$namespace}-phase-splits__row--f2l_2 & {
+			background: linear-gradient(90deg, #a78bff, rgb(var(--primary-color)));
+		}
+
+		.#{$namespace}-phase-splits__row--f2l_3 & {
+			background: linear-gradient(90deg, #8b78ff, rgb(var(--primary-color)));
+		}
+
+		.#{$namespace}-phase-splits__row--f2l_4 & {
+			background: linear-gradient(90deg, #6f5cff, rgb(var(--primary-color)));
+		}
+
+		.#{$namespace}-phase-splits__row--oll & {
+			background: linear-gradient(90deg, #ffb454, #ff7ab6);
+		}
+
+		.#{$namespace}-phase-splits__row--pll & {
+			background: linear-gradient(90deg, #67e8f9, rgb(var(--primary-color)));
+		}
+	}
+
+	&__row--bottleneck &__label {
+		color: rgb(var(--text-color));
+	}
+
+	&__row--bottleneck &__fill {
+		box-shadow: 0 0 12px rgba(var(--secondary-color), 0.45);
+	}
+
+	&__value {
+		font-family: 'Roboto Mono', ui-monospace, monospace;
+		font-size: 1.05rem;
+		font-weight: 600;
+		text-align: right;
+		color: rgb(var(--text-color));
+		font-variant-numeric: tabular-nums;
+
+		small {
+			color: rgb(var(--text-color));
+			font-size: 0.8rem;
+			margin-left: 0.2rem;
+			font-weight: 500;
+		}
+	}
+
+	&__empty {
+		padding: 2rem 1rem;
+		text-align: center;
+		color: rgb(var(--text-color));
+		font-size: 0.9rem;
+	}
+
+	&--locked {
+		position: relative;
+		min-height: 14rem;
+		padding: 0.667rem 0;
+	}
+
+	&__locked-dummy {
+		display: flex;
+		flex-direction: column;
+		gap: 0.667rem;
+		padding: 1rem 0.5rem;
+		filter: blur(3px);
+		opacity: 0.4;
+		pointer-events: none;
+	}
+
+	&__locked-dummy-bar {
+		height: 0.667rem;
+		background: linear-gradient(90deg, rgb(var(--primary-color)), rgb(var(--secondary-color)));
+		border-radius: 999px;
+	}
+
+	&__locked-overlay {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 0.4rem;
+		background-color: rgba(var(--background-color), 0.4);
+		border: 1px solid rgba(var(--primary-color), 0.3);
+		border-radius: 14px;
+		color: rgb(var(--text-color));
+		font-family: inherit;
+		cursor: pointer;
+		transition: background-color 0.18s, border-color 0.18s;
+		padding: 1rem;
+
+		&:hover {
+			background-color: rgba(var(--primary-color), 0.12);
+			border-color: rgba(var(--primary-color), 0.55);
+		}
+	}
+
+	&__locked-star {
+		font-size: 1.467rem;
+		color: rgb(var(--secondary-color));
+	}
+}

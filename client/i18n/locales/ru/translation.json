@@ -77,7 +77,67 @@
     },
     "stats": {
         "page_title": "Статистика",
-        "all": "Все"
+        "all": "Все",
+        "select_cube": "Выбрать куб",
+        "hero": {
+            "title": "Статистика",
+            "subtitle": "Сводка каждого решения, каждой секунды и каждого маленького улучшения."
+        },
+        "heatmap": {
+            "less": "Меньше",
+            "more": "Больше",
+            "active_days": "активных дней · из {{total}}",
+            "current_streak": "текущая серия"
+        },
+        "cube_hero": {
+            "solves_count": "{{value}} решений",
+            "avg_ao12": "Ср. {{time}}"
+        },
+        "cube_chart": {
+            "eyebrow": "Время решений",
+            "current_ao12": "Текущий Ao12",
+            "best_ao12": "Лучший Ao12",
+            "gap": "Отрыв от PB",
+            "gap_at_pb": "На PB",
+            "total": "Всего решений"
+        },
+        "hourly": {
+            "empty": "Нет решений по этому фильтру.",
+            "std_dev": "стандартное отклонение",
+            "peak": "Пик: {{hour}} · {{value}} решений",
+            "avg_per_hour": "Ср. {{value}} решений/час"
+        },
+        "avg": {
+            "subtitle": "Последние {{value}} решений",
+            "best_block": "★ Самый стабильный блок"
+        },
+        "focus": {
+            "total_time": "Общее время",
+            "total_solves_count": "{{value}} решений",
+            "peak_hour": "Пиковый час",
+            "peak_hour_sub": "{{value}} решений в этот час",
+            "peak_hour_empty": "Пока нет данных",
+            "best_day": "Лучший день",
+            "best_day_sub": "Средний Ao12 {{time}}",
+            "best_day_empty": "Недостаточно данных",
+            "sessions": "Активные сессии",
+            "sessions_sub": "Ср. {{avg}} решений/сессия"
+        },
+        "splits": {
+            "empty": "Нет решений с умным кубом.",
+            "eyebrow": "Среднее по {{value}} решениям с умным кубом",
+            "bottleneck": "Больше всего времени теряешь на {{phase}}",
+            "pro_upsell": "Анализ фаз — функция Pro",
+            "phase": {
+                "cross": "Cross",
+                "f2l_1": "F2L 1",
+                "f2l_2": "F2L 2",
+                "f2l_3": "F2L 3",
+                "f2l_4": "F2L 4",
+                "oll": "OLL",
+                "pll": "PLL"
+            }
+        }
     },
     "danger_zone": {
         "reset_settings_title": "Сбросить настройки",
@@ -1194,7 +1254,14 @@
         "most_popular_event": "Самая популярная дисциплина",
         "averages": "Средние",
         "highest_streak": "Лучшая серия",
-        "days": "дней"
+        "days": "дней",
+        "puzzles": "По головоломкам",
+        "activity": "Активность за 365 дней",
+        "hourly_consistency": "Часовая активность",
+        "time_focus": "Время и фокус",
+        "phase_splits": "Разделение фаз",
+        "steps_detail": "Таблица деталей фаз",
+        "smart_cube_summary": "Сводка по умному кубу"
     },
     "common": {
         "results_count": "{{count}} результатов",
@@ -1215,7 +1282,8 @@
         "reset": "Сбросить",
         "clear": "Очистить",
         "create_new": "Создать новый",
-        "copied": "Скопировано"
+        "copied": "Скопировано",
+        "coming_soon": "Скоро"
     },
     "announcement_modal": {
         "feature": "🎉 Новая функция",
