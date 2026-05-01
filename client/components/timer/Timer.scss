@@ -568,11 +568,17 @@
 		flex: 0 0 auto;
 		overflow: visible;
 
+		// Desktop'ta zoom: 0.4 var — mobilde kullanicinin smart_cube_size ayari (default 240)
+		// gercek boyutta gorunsun diye zoom'u iptal et.
+		.cd-smart-cube__cube {
+			zoom: 1 !important;
+			margin: 0 !important;
+		}
+
 		.cd-smart-cube__cube canvas {
 			width: 100% !important;
 			height: auto !important;
-			max-width: min(160px, 42vw);
-			max-height: min(160px, 42vw);
+			max-width: min(280px, 52vw); // smart_cube_size=240 sigsin, sutun tasmasin
 			object-fit: contain;
 		}
 
