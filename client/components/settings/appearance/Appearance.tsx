@@ -35,15 +35,21 @@ export default function Appearance() {
 	const { t } = useTranslation();
 	const timerTimeSize = useSettings('timer_time_size');
 	const timerScrambleSize = useSettings('timer_scramble_size');
+	const timerScrambleSizeUserDefault = useSettings('timer_scramble_size_user_default');
 	const timerDecimalPoints = useSettings('timer_decimal_points');
 	const timerFontFamily = useSettings('timer_font_family');
 	const timerModuleCount = useSettings('timer_module_count');
 	const smartCubeSize = useSettings('smart_cube_size');
+	const smartCubeSizeUserDefault = useSettings('smart_cube_size_user_default');
 	const mobileMode = useGeneral('mobile_mode');
 
 	function updateSetting(name: keyof AllSettings, value: any) {
 		setSetting(name, value);
 	}
+
+	// Kullanicinin kayitli default'i varsa onu, yoksa factory/mobile default'i don
+	const scrambleSizeDefault = timerScrambleSizeUserDefault ?? getDefaultSetting('timer_scramble_size');
+	const cubeSizeDefault = smartCubeSizeUserDefault ?? getDefaultSetting('smart_cube_size');
 
 	return (
 		<div className="space-y-2">
@@ -123,9 +129,11 @@ export default function Appearance() {
 					value={timerScrambleSize}
 					min={10}
 					max={40}
-					showReset={timerScrambleSize !== getDefaultSetting('timer_scramble_size')}
+					showReset={timerScrambleSize !== scrambleSizeDefault}
 					resetLabel={t('appearance.reset')}
-					onReset={() => updateSetting('timer_scramble_size', getDefaultSetting('timer_scramble_size'))}
+					onReset={() => updateSetting('timer_scramble_size', scrambleSizeDefault)}
+					restoreDefaultLabel={t('appearance.save_as_default')}
+					onRestoreDefault={() => updateSetting('timer_scramble_size_user_default', timerScrambleSize)}
 					onChange={(v) => updateSetting('timer_scramble_size', v)}
 				>
 					<div className="flex items-center justify-center py-2 rounded-lg bg-module overflow-hidden">
@@ -146,9 +154,11 @@ export default function Appearance() {
 				value={smartCubeSize}
 				min={100}
 				max={600}
-				showReset={smartCubeSize !== getDefaultSetting('smart_cube_size')}
+				showReset={smartCubeSize !== cubeSizeDefault}
 				resetLabel={t('appearance.reset')}
-				onReset={() => updateSetting('smart_cube_size', getDefaultSetting('smart_cube_size'))}
+				onReset={() => updateSetting('smart_cube_size', cubeSizeDefault)}
+				restoreDefaultLabel={t('appearance.save_as_default')}
+				onRestoreDefault={() => updateSetting('smart_cube_size_user_default', smartCubeSize)}
 				onChange={(v) => updateSetting('smart_cube_size', v)}
 			/>
 		</div>

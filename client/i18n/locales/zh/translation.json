@@ -728,6 +728,7 @@
         "timer_font": "计时器字体",
         "timer_font_desc": "您在计时器页面上看到的巨大计时器的字体",
         "reset": "重置",
+        "save_as_default": "设为默认",
         "timer_font_size": "计时器字体大小",
         "timer_font_size_desc": "您在计时器页面上看到的巨大时间的字体大小",
         "scramble_font_size": "打乱字体大小",

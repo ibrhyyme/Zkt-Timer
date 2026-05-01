@@ -62,6 +62,11 @@ export interface AllSettings {
 	timer_avg_6: string;
 	scramble_subset: string | null;
 	smart_cube_analysis_mode: string;
+
+	// Kullanicinin kendi default'lari — "Varsayilan" butonu ile o anki deger buraya kaydedilir.
+	// "Sifirla" butonu varsa once buna doner, yoksa factory default'a.
+	timer_scramble_size_user_default: number | null;
+	smart_cube_size_user_default: number | null;
 }
 
 const defaultSettings: AllSettings = {
@@ -130,13 +135,16 @@ const defaultSettings: AllSettings = {
 	stackmat_auto_inspection_warning_shown: false,
 	scramble_subset: null,
 	smart_cube_analysis_mode: 'cffffop', // 'none' | 'cfop' | 'cf_plus_op' | 'cffffop' | 'cffffoopp'
+
+	timer_scramble_size_user_default: null,
+	smart_cube_size_user_default: null,
 };
 
 // Mobil cihazlar icin responsive varsayilan degerler
 const mobileDefaultOverrides: Partial<AllSettings> = {
 	timer_time_size: 60,
-	timer_scramble_size: 15,
-	smart_cube_size: 240,
+	timer_scramble_size: 17,
+	smart_cube_size: 185,
 };
 
 function isMobileViewport(): boolean {

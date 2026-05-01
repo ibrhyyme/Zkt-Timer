@@ -728,6 +728,7 @@
         "timer_font": "Timer font",
         "timer_font_desc": "The font of the large timer you see on the timer page",
         "reset": "Reset",
+        "save_as_default": "Set as Default",
         "timer_font_size": "Timer font size",
         "timer_font_size_desc": "The font size of the large time you see on the timer page",
         "scramble_font_size": "Scramble font size",
