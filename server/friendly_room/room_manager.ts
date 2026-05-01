@@ -181,6 +181,27 @@ export async function getAllActiveRooms(): Promise<FriendlyRoomData[]> {
     return rooms.map(mapRoomToData);
 }
 
+// Get only the rooms that a specific user is a participant of (active status)
+export async function getRoomsForUser(userId: string): Promise<FriendlyRoomData[]> {
+    const rooms = await prisma().friendlyRoom.findMany({
+        where: {
+            status: { in: ['WAITING', 'ACTIVE'] },
+            participants: { some: { user_id: userId } },
+        },
+        include: {
+            created_by: { select: { id: true, username: true } },
+            participants: {
+                include: {
+                    user: { select: { id: true, username: true } },
+                    solves: true,
+                },
+            },
+        },
+    });
+
+    return rooms.map(mapRoomToData);
+}
+
 // Add participant to room
 export async function addParticipant(
     roomId: string,
@@ -310,22 +331,63 @@ export async function toggleParticipantReady(roomId: string, userId: string) {
 
 // Submit a solve
 export async function submitSolve(roomId: string, userId: string, solveData: FriendlyRoomSolveData) {
+    // Payload shape validation
+    if (
+        !solveData ||
+        typeof solveData.time !== 'number' ||
+        !Number.isFinite(solveData.time) ||
+        solveData.time < 0 ||
+        solveData.time > 600 || // 10 dakika ust siniri (saniye)
+        typeof solveData.scramble_index !== 'number' ||
+        !Number.isInteger(solveData.scramble_index) ||
+        solveData.scramble_index < 1
+    ) {
+        return null;
+    }
+
+    const dnf = solveData.dnf === true;
+    const plusTwo = solveData.plus_two === true;
+
+    // Room state ile karsilastir: sadece guncel scramble_index icin solve kabul et
+    const room = await prisma().friendlyRoom.findUnique({
+        where: { id: roomId },
+        select: { scramble_index: true },
+    });
+    if (!room || room.scramble_index !== solveData.scramble_index) {
+        return null;
+    }
+
     const participant = await prisma().friendlyRoomParticipant.findFirst({
         where: { room_id: roomId, user_id: userId },
     });
 
     if (!participant) return null;
 
-    return prisma().friendlyRoomSolve.create({
-        data: {
-            room_id: roomId,
+    // Duplicate check: ayni participant + scramble_index icin solve varsa sessizce reddet
+    const existing = await prisma().friendlyRoomSolve.findFirst({
+        where: {
             participant_id: participant.id,
             scramble_index: solveData.scramble_index,
-            time: solveData.time,
-            dnf: solveData.dnf || false,
-            plus_two: solveData.plus_two || false,
         },
     });
+    if (existing) return null;
+
+    try {
+        return await prisma().friendlyRoomSolve.create({
+            data: {
+                room_id: roomId,
+                participant_id: participant.id,
+                scramble_index: solveData.scramble_index,
+                time: solveData.time,
+                dnf,
+                plus_two: plusTwo,
+            },
+        });
+    } catch (error: any) {
+        // Unique constraint race condition (P2002) - duplicate ayni anda gelirse
+        if (error.code === 'P2002') return null;
+        throw error;
+    }
 }
 
 // Generate next scramble (only room creator can do this)
@@ -485,6 +547,64 @@ export async function isUserBanned(roomId: string, userId: string): Promise<bool
     return !!ban;
 }
 
+// Unban a participant (creator or site admin)
+export async function unbanParticipant(
+    roomId: string,
+    requesterId: string,
+    targetUserId: string,
+    isAdmin: boolean = false
+): Promise<boolean> {
+    const room = await getRoom(roomId);
+    if (!room) return false;
+
+    // Only creator or site admin can unban
+    if (room.created_by_id !== requesterId && !isAdmin) return false;
+
+    try {
+        await prisma().friendlyRoomBan.delete({
+            where: { room_id_user_id: { room_id: roomId, user_id: targetUserId } },
+        });
+        return true;
+    } catch (error: any) {
+        // P2025 = record not found (zaten ban'i kaldirilmis)
+        if (error.code === 'P2025') return true;
+        throw error;
+    }
+}
+
+// Get banned users for room (creator or site admin)
+export async function getBannedUsersForRoom(
+    roomId: string,
+    requesterId: string,
+    isAdmin: boolean = false
+): Promise<Array<{ user_id: string; username: string; banned_at: string }> | null> {
+    const room = await getRoom(roomId);
+    if (!room) return null;
+
+    if (room.created_by_id !== requesterId && !isAdmin) return null;
+
+    const bans = await prisma().friendlyRoomBan.findMany({
+        where: { room_id: roomId },
+        orderBy: { banned_at: 'desc' },
+    });
+
+    if (bans.length === 0) return [];
+
+    // FriendlyRoomBan modelinde user relation tanimli degil; user'lari ayri sorguyla cek
+    const userIds = bans.map((b) => b.user_id);
+    const users = await prisma().userAccount.findMany({
+        where: { id: { in: userIds } },
+        select: { id: true, username: true },
+    });
+    const userMap = new Map(users.map((u) => [u.id, u.username]));
+
+    return bans.map((b) => ({
+        user_id: b.user_id,
+        username: userMap.get(b.user_id) ?? 'Silinmis kullanici',
+        banned_at: b.banned_at.toISOString(),
+    }));
+}
+
 // Toggle spectator mode
 export async function toggleSpectator(roomId: string, userId: string): Promise<{ is_spectator: boolean } | null> {
     const participant = await prisma().friendlyRoomParticipant.findFirst({
@@ -503,6 +623,7 @@ export async function toggleSpectator(roomId: string, userId: string): Promise<{
 
 // Map database room to client data format
 function mapRoomToData(room: any): FriendlyRoomData {
+    const DELETED_USER_LABEL = 'Silinmis kullanici';
     return {
         id: room.id,
         name: room.name,
@@ -515,13 +636,13 @@ function mapRoomToData(room: any): FriendlyRoomData {
         status: room.status,
         created_at: room.created_at.toISOString(),
         created_by: {
-            id: room.created_by.id,
-            username: room.created_by.username,
+            id: room.created_by?.id ?? room.created_by_id,
+            username: room.created_by?.username ?? DELETED_USER_LABEL,
         },
         participants: room.participants.map((p: any): FriendlyRoomParticipantData => ({
             id: p.id,
             user_id: p.user_id,
-            username: p.user.username,
+            username: p.user?.username ?? DELETED_USER_LABEL,
             is_ready: p.is_ready,
             is_spectator: p.is_spectator || false,
             joined_at: p.joined_at.toISOString(),

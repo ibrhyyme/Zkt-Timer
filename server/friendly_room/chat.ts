@@ -59,7 +59,7 @@ export async function getChatMessages(roomId: string, limit = 50): Promise<Frien
         .map((m) => ({
             id: m.id,
             user_id: m.user_id,
-            username: m.user.username,
+            username: m.user?.username ?? 'Silinmis kullanici',
             message: m.message,
             created_at: m.created_at.toISOString(),
         }));

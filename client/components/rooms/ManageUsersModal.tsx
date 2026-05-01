@@ -1,21 +1,66 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { createPortal } from 'react-dom';
-import { X, User, ShieldSlash, Prohibit } from 'phosphor-react';
-import { FriendlyRoomParticipantData } from '../../../shared/friendly_room';
+import { X, User } from 'phosphor-react';
+import {
+    FriendlyRoomParticipantData,
+    FriendlyRoomClientEvent,
+    FriendlyRoomServerEvent,
+} from '../../../shared/friendly_room';
+import { socketClient } from '../../util/socket/socketio';
+
+interface BannedUser {
+    user_id: string;
+    username: string;
+    banned_at: string;
+}
 
 interface ManageUsersModalProps {
     isOpen: boolean;
     onClose: () => void;
+    roomId: string;
     participants: FriendlyRoomParticipantData[];
     onKick: (userId: string) => void;
     onBan: (userId: string) => void;
 }
 
-export default function ManageUsersModal({ isOpen, onClose, participants, onKick, onBan }: ManageUsersModalProps) {
+const getSocket = () => socketClient() as any;
+
+export default function ManageUsersModal({ isOpen, onClose, roomId, participants, onKick, onBan }: ManageUsersModalProps) {
     const { t } = useTranslation();
+    const [bannedUsers, setBannedUsers] = useState<BannedUser[]>([]);
+
+    // Modal acildiginda banlilari fetch et + listener bagla; kapaninca cleanup
+    useEffect(() => {
+        if (!isOpen || !roomId) return;
+        const socket = getSocket();
+
+        const handleBannedList = (payload: { room_id: string; banned_users: BannedUser[] }) => {
+            if (payload.room_id !== roomId) return;
+            setBannedUsers(payload.banned_users || []);
+        };
+        const handleUserUnbanned = (payload: { room_id: string; user_id: string }) => {
+            if (payload.room_id !== roomId) return;
+            setBannedUsers(prev => prev.filter(b => b.user_id !== payload.user_id));
+        };
+
+        socket.on(FriendlyRoomServerEvent.BANNED_USERS_LIST, handleBannedList);
+        socket.on(FriendlyRoomServerEvent.USER_UNBANNED, handleUserUnbanned);
+
+        socket.emit(FriendlyRoomClientEvent.GET_BANNED_USERS, roomId);
+
+        return () => {
+            socket.off(FriendlyRoomServerEvent.BANNED_USERS_LIST, handleBannedList);
+            socket.off(FriendlyRoomServerEvent.USER_UNBANNED, handleUserUnbanned);
+        };
+    }, [isOpen, roomId]);
+
     if (!isOpen) return null;
+
+    const handleUnban = (userId: string) => {
+        getSocket().emit(FriendlyRoomClientEvent.UNBAN_USER, roomId, userId);
+    };
 
     return createPortal(
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={onClose}>
@@ -76,20 +121,33 @@ export default function ManageUsersModal({ isOpen, onClose, participants, onKick
                         </div>
                     </div>
 
-                    {/* Not In Room Section (Placeholder) */}
-                    <div>
-                        <h4 className="text-sm font-bold text-text/40 uppercase tracking-wider mb-4">{t('rooms.not_in_room')}</h4>
-                        <div className="p-8 text-center border border-dashed border-text/[0.15] rounded-lg">
-                            <span className="text-text/40 text-sm">{t('rooms.no_users')}</span>
-                        </div>
-                    </div>
-
-                    {/* Banned Section (Placeholder) */}
+                    {/* Banned Section */}
                     <div>
                         <h4 className="text-sm font-bold text-text/40 uppercase tracking-wider mb-4">{t('rooms.banned')}</h4>
-                        <div className="p-8 text-center border border-dashed border-text/[0.15] rounded-lg">
-                            <span className="text-text/40 text-sm">{t('rooms.no_banned')}</span>
-                        </div>
+                        {bannedUsers.length === 0 ? (
+                            <div className="p-8 text-center border border-dashed border-text/[0.15] rounded-lg">
+                                <span className="text-text/40 text-sm">{t('rooms.no_banned')}</span>
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                {bannedUsers.map(b => (
+                                    <div key={b.user_id} className="flex items-center justify-between p-3 bg-module border border-text/[0.1] rounded-lg hover:border-text/[0.2] transition-colors">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-button flex items-center justify-center text-text/50">
+                                                <User weight="bold" size={20} />
+                                            </div>
+                                            <span className="font-medium text-text/80">{b.username}</span>
+                                        </div>
+                                        <button
+                                            onClick={() => handleUnban(b.user_id)}
+                                            className="text-xs font-bold text-emerald-400 hover:text-emerald-300 uppercase tracking-wider px-3 py-1.5 hover:bg-emerald-500/10 rounded transition-colors"
+                                        >
+                                            {t('rooms.unban')}
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                 </div>

@@ -378,6 +378,7 @@ type Mutation {
   reorderSessions(ids: [String]): Void
   deleteSession(id: String): Session
   mergeSessions(newSessionId: String, oldSessionId: String): Session
+  bulkDeleteSessions(ids: [String]): Void
   bulkCreateSessions(sessions: [SessionInput]): Void
   setSetting(input: SettingInput): Setting
   resetSettings: Setting

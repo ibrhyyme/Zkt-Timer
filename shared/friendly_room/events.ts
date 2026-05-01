@@ -21,6 +21,8 @@ export enum FriendlyRoomClientEvent {
     ADMIN_VIEW_ROOM = 'friendlyRoomAdminViewRoom',
     SIGNAL_AWAY = 'friendlyRoomSignalAway', // Tab hidden / minimized
     SIGNAL_BACK = 'friendlyRoomSignalBack', // Tab visible again
+    GET_BANNED_USERS = 'friendlyRoomGetBannedUsers',
+    UNBAN_USER = 'friendlyRoomUnbanUser',
 }
 
 export enum FriendlyRoomServerEvent {
@@ -43,6 +45,8 @@ export enum FriendlyRoomServerEvent {
     USER_STATUS = 'friendlyRoomUserStatus',
     ERROR = 'friendlyRoomError',
     NOTIFICATION = 'friendlyRoomNotification',
+    BANNED_USERS_LIST = 'friendlyRoomBannedUsersList',
+    USER_UNBANNED = 'friendlyRoomUserUnbanned',
 }
 
 export const FriendlyRoomSocketRoom = {

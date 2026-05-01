@@ -53,34 +53,54 @@ export function parseZktTimerData(txt: string, context: IImportDataContext): Imp
 	};
 }
 
+// SolveInput'ta tanimli ve import sirasinda guvenle gonderilebilecek alanlar.
+// Bunun disindaki her sey (Prisma-only kolonlar: custom_scramble; relations: solve_method_steps,
+// top_solve, solve_views, smart_device, user; FK riski: smart_device_id, training_session_id;
+// server-managed: id, user_id, share_code, created_at, bulk, from_timer; Loki: $loki, meta) drop edilir.
+const IMPORTABLE_SOLVE_FIELDS = [
+	'time',
+	'raw_time',
+	'cube_type',
+	'scramble_subset',
+	'scramble',
+	'session_id',
+	'started_at',
+	'ended_at',
+	'dnf',
+	'plus_two',
+	'notes',
+	'trainer_name',
+	'is_smart_cube',
+	'smart_turn_count',
+	'smart_turns',
+	'smart_put_down_time',
+	'smart_pick_up_time',
+	'inspection_time',
+] as const;
+
+function pickImportableFields(solve: Solve): Solve {
+	const out: any = {};
+	for (const key of IMPORTABLE_SOLVE_FIELDS) {
+		const val = (solve as any)[key];
+		if (val !== undefined) out[key] = val;
+	}
+	return out as Solve;
+}
+
 function getUpdatedSolves(solves: Solve[], oldNewSessionMap: Record<string, string>) {
 	const newSolves: Solve[] = [];
 	let skippedCount = 0;
 	const skippedTypes: Record<string, number> = {};
 
-	for (const solve of solves) {
-		const sessionId = solve.session_id;
-		const trainerName = solve.trainer_name;
+	for (const rawSolve of solves) {
+		const sessionId = rawSolve.session_id;
+		const trainerName = rawSolve.trainer_name;
 
 		if (!sessionId && !trainerName) {
 			continue;
 		}
 
-		delete solve.bulk;
-		delete solve.from_timer;
-		delete solve.created_at;
-		// FK riski: smart_device_id baska kullanicinin SmartDevice satirina point edebilir.
-		// Veri korunur (smart_turns/turn_count/put_down/pick_up), sadece device referansi kopar.
-		delete (solve as any).smart_device_id;
-		// training_session_id baska kullanicinin TrainingSession'ina ait — orphan veri.
-		delete (solve as any).training_session_id;
-		// id/user_id/share_code server tarafinda yeniden uretilir; conflict riskini sifirla.
-		delete (solve as any).id;
-		delete (solve as any).user_id;
-		delete (solve as any).share_code;
-		// Loki internal alanlari — server beklemiyor.
-		delete (solve as any).$loki;
-		delete (solve as any).meta;
+		const solve = pickImportableFields(rawSolve);
 
 		if (trainerName) {
 			delete solve.session_id;

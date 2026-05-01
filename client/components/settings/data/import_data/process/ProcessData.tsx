@@ -47,6 +47,11 @@ export default function ProcessData() {
 			const importData = timerImportData.getImportableData(txt, context);
 			context.setImportableData(importData);
 		} catch (e) {
+			// Parser sentinel'leri — i18n'e map ediliyor, yoksa dilden bagimsiz hardcoded mesaj kullaniciya gosterilirdi.
+			if (e.message === 'CUBETIME_CSV_NOT_SUPPORTED') {
+				toastError(t('data_settings.cubetime_csv_not_supported'));
+				return;
+			}
 			toastError(e.message);
 		}
 	}

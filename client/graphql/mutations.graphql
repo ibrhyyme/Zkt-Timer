@@ -58,6 +58,10 @@ mutation reorderSessions($ids: [String]!) {
 	reorderSessions(ids: $ids)
 }
 
+mutation bulkDeleteSessions($ids: [String]!) {
+	bulkDeleteSessions(ids: $ids)
+}
+
 mutation createAnnouncement($input: CreateAnnouncementInput!) {
 	createAnnouncement(input: $input) {
 		id
