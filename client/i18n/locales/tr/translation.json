@@ -1262,8 +1262,8 @@
         "activity": "365 Günlük Aktiflik",
         "hourly_consistency": "Saatlik Aktivite",
         "time_focus": "Zaman & Odak",
-        "phase_splits": "Aşama Ayrımı",
-        "steps_detail": "Aşama Detay Tablosu",
+        "phase_splits": "Evre Analizi",
+        "steps_detail": "Evre Analiz Detay Tablosu",
         "smart_cube_summary": "Akıllı Küp Özeti"
     },
     "common": {

@@ -16,6 +16,10 @@ import Input from '../../../../common/inputs/input/Input';
 import InputLegend from '../../../../common/inputs/input/input_legend/InputLegend';
 import { normalizeBucketForImport } from '../parse_data/normalize-bucket';
 
+// Import yalnizca WCA event'lerine kayit yapar (cube_type='wca' + bu subset).
+// Method-based cube_type'lar (333cfop/roux/mehta/zz, 444yau, other, wca parent) gosterilmez.
+const WCA_IMPORT_EVENTS = ['333', '222', '444', '555', '666', '777', 'sq1', 'pyram', 'clock', 'skewb', 'minx'];
+
 const b = block('review-import');
 
 export default function ReviewImport() {
@@ -255,7 +259,11 @@ export default function ReviewImport() {
 						<Input value={session.name} onChange={(e) => updateSessionName(session.id, e.target.value)} />
 					</div>
 					<div>
-						<CubePicker onChange={(ct) => updateSessionCubeType(session.id, ct.id)} value={cubeType} />
+						<CubePicker
+							cubeTypes={WCA_IMPORT_EVENTS}
+							onChange={(ct) => updateSessionCubeType(session.id, ct.id)}
+							value={cubeType}
+						/>
 					</div>
 					<div>
 						<Button icon={<X />} onClick={() => removeSession(session.id)} transparent />

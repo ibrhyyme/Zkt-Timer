@@ -6,60 +6,127 @@ import {normalizeBucketForImport} from './normalize-bucket';
 // Namespace UUID for csTimer sessions (randomly generated, constant for this app)
 const CSTIMER_NAMESPACE = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
 
-const CSTIMER_ZKTTIMER_CUBETYPE_MAP = {
+// csTimer scrType -> Zkt-Timer flat WCA event ID.
+// Tum WCA varyantlari (oh/bld/fm/mirror/cll/eg/method-trainer'lar) parent event'e duser.
+// normalizeBucketForImport bu degeri WCA bucket'ina (cube_type='wca' + subset) cevirir.
+// Burada OLMAYAN scrType -> session skip + raporlanir.
+const CSTIMER_ZKTTIMER_CUBETYPE_MAP: Record<string, string> = {
+	// 3x3 ve tum 3x3 method/varyantlari -> 333
 	'333': '333',
 	'333wca': '333',
-	'222': '222',
-	'222so': '222',
-	'444': '444',
-	'444wca': '444',
-	'555': '555',
-	'555wca': '555',
-	'666': '666',
-	'666wca': '666',
-	'777': '777',
-	'777wca': '777',
-	'333ni': '333',
-	'333fm': '333',
-	'333bf': '333',
+	'333o': '333',
 	'333oh': '333',
 	'333ft': '333',
-	clkwca: 'clock',
+	'333fm': '333',
+	'333bf': '333',
+	'333bld': '333',
+	'333ni': '333',
+	'333mbld': '333',
+	'333noob': '333',
+	'333mirror': '333',
+	lsemu: '333',
+	lsll: '333',
+	cll: '333',
+	ll: '333',
+	pll: '333',
+	oll: '333',
+	eo: '333',
+	roux: '333',
+	f2l: '333',
+	cmll: '333',
+	cmll2: '333',
+
+	// 2x2 ve tum varyantlari -> 222
+	'222': '222',
+	'222o': '222',
+	'222so': '222',
+	'222nb': '222',
+	'222oh': '222',
+	'222eg': '222',
+	'222eg0': '222',
+	'222eg1': '222',
+	'222eg2': '222',
+	'222tcll': '222',
+	'222cll': '222',
+	'222lbl': '222',
+	'2223': '222',
+
+	// 4x4 -> 444
+	'444': '444',
+	'444wca': '444',
+	'444m': '444',
+	'444yj': '444',
+	'444bld': '444',
+	'444bl': '444',
+	'4edge': '444',
+
+	// 5x5 -> 555
+	'555': '555',
+	'555wca': '555',
+	'555bld': '555',
+	'555bl': '555',
+	'5edge': '555',
+
+	// 6x6 -> 666
+	'666': '666',
+	'666wca': '666',
+	'666p': '666',
+	'666s': '666',
+	'666si': '666',
+	'6edge': '666',
+
+	// 7x7 -> 777
+	'777': '777',
+	'777wca': '777',
+	'777p': '777',
+	'777s': '777',
+	'777si': '777',
+	'7edge': '777',
+
+	// Megaminx ailesi -> minx
 	mgmp: 'minx',
-	pyrso: 'pyraminx',
-	ksbso: 'skewb',
-	mgmc: 'minx',
 	mgmo: 'minx',
+	mgmc: 'minx',
+	mgms2l: 'minx',
+	klmso: 'minx',
+	klmp: 'minx',
+	mlsll: 'minx',
+	minx2g: 'minx',
+
+	// Pyraminx ailesi -> pyraminx
+	pyrso: 'pyraminx',
 	pyro: 'pyraminx',
 	pyrm: 'pyraminx',
 	pyrl4e: 'pyraminx',
 	pyr4c: 'pyraminx',
 	pyrnb: 'pyraminx',
-	'444yj': '444',
-	'444m': '444',
-	'222o': '222',
-	'2223': '222',
-	'222eg': '222',
-	'222eg0': '222',
-	'222eg1': '222',
-	'5edge': '555',
-	'222eg2': '222',
-	'666si': '666',
-	'666p': '666',
-	'666s': '666',
-	'6edge': '666',
-	'777si': '777',
-	'777p': '777',
-	'777s': '777',
-	'7edge': '777',
+	mpyr: 'pyraminx',
+	mpyrso: 'pyraminx',
+
+	// Skewb ailesi -> skewb
 	skbso: 'skewb',
 	skbo: 'skewb',
 	skb: 'skewb',
 	skbnb: 'skewb',
+
+	// Square-1 ailesi -> sq1
+	sqrs: 'sq1',
 	sq1t: 'sq1',
 	sq1h: 'sq1',
 	sqrcsp: 'sq1',
-	sqrs: 'sq1',
+	sq1pll: 'sq1',
+	sq2: 'sq1',
+	ssq1t: 'sq1',
+	bsq: 'sq1',
+
+	// Clock ailesi -> clock
+	clkwca: 'clock',
+	clkwcab: 'clock',
+	clknf: 'clock',
+	clk: 'clock',
+	clko: 'clock',
+	clkc: 'clock',
+	clke: 'clock',
 };
 
 // Penalty (-1 = DNF, 2000 = +2), Solve Time
@@ -119,9 +186,11 @@ export function parseCsTimerData(txt: string, context: IImportDataContext): Impo
 		skippedCubeTypes,
 	});
 
+	// CubePicker'da kullanici-yuzlu WCA event ID'sini goster (333/222/444...).
+	// updateSessionCubeType bunu normalize edip cube_type='wca' + subset yapar.
 	const sessionIdCubeTypeMap = {};
 	for (const session of validSessions) {
-		sessionIdCubeTypeMap[session.id] = session.cubeType;
+		sessionIdCubeTypeMap[session.id] = session.scrambleSubset ?? session.cubeType;
 	}
 
 	const sessionIds = new Set(sessions.map(s => s.id));
@@ -191,14 +260,28 @@ function getSessionData(sesData: string | object) {
 		const ses = sessionData[sessionId];
 
 		const srcType = ses?.opt?.scrType;
-		const mappedFlat = srcType && CSTIMER_ZKTTIMER_CUBETYPE_MAP[srcType] ? CSTIMER_ZKTTIMER_CUBETYPE_MAP[srcType] : '333';
-
-		const normalized = normalizeBucketForImport(mappedFlat);
-
 		const deterministicId = uuidv5(`cstimer-session-${sessionId}`, CSTIMER_NAMESPACE);
 
+		// srcType var ama haritada yok -> WCA disi puzzle (gear/fto/relay/15p vs). Skip.
+		if (srcType && !CSTIMER_ZKTTIMER_CUBETYPE_MAP[srcType]) {
+			sessionInput.push({
+				id: deterministicId,
+				key: String(sessionId),
+				name: String(ses.name),
+				rank: ses.rank,
+				cubeType: srcType,
+				originalCubeType: srcType,
+				skip: true,
+			});
+			continue;
+		}
+
+		// srcType undefined (opt:{}) -> '333' default; kullanici ReviewImport'ta override edebilir.
+		const mappedFlat = srcType ? CSTIMER_ZKTTIMER_CUBETYPE_MAP[srcType] : '333';
+		const normalized = normalizeBucketForImport(mappedFlat);
+
 		if (!normalized) {
-			// Tanimlanmamis cube_type — sezonu skip isaretle, solve'lari import'a girmez.
+			// Bu noktaya gelmemeli (haritadaki tum degerler WCA event); savunma amacli skip.
 			sessionInput.push({
 				id: deterministicId,
 				key: String(sessionId),
