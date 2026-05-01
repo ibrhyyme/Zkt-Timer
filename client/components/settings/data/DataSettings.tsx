@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
-import ImportData, { ImportDataType } from './import_data/ImportData';
+import ImportData, { ImportDataType, IMPORT_TYPE_NAMES } from './import_data/ImportData';
 import fileDownload from 'js-file-download';
 import { gql } from '@apollo/client/core';
 import { gqlMutate, removeTypename } from '../../api';
@@ -42,7 +42,14 @@ export default function DataSettings() {
 	}
 
 	function openImportModal(importType: ImportDataType) {
-		dispatch(openModal(<ImportData importType={importType} />));
+		dispatch(
+			openModal(<ImportData importType={importType} />, {
+				title: t('data_settings.import_modal_title', { name: IMPORT_TYPE_NAMES[importType] }),
+				closeButtonText: t('solve_info.done'),
+				compact: true,
+				width: 560,
+			})
+		);
 	}
 
 	async function hardReload() {
@@ -135,12 +142,14 @@ export default function DataSettings() {
 							{ label: t('data_settings.import_cstimer'), value: 'cstimer' },
 							{ label: t('data_settings.import_zkttimer'), value: 'zkttimer' },
 							{ label: t('data_settings.import_twistytimer'), value: 'twistytimer' },
+							{ label: t('data_settings.import_cubetime'), value: 'cubetime' },
 						]}
 						onChange={(v) => {
 							const typeMap: Record<string, ImportDataType> = {
 								cstimer: ImportDataType.CS_TIMER,
 								zkttimer: ImportDataType.ZKT_TIMER,
 								twistytimer: ImportDataType.TWISTY_TIMER,
+								cubetime: ImportDataType.CUBE_TIME,
 							};
 							if (typeMap[v] !== undefined) openImportModal(typeMap[v]);
 						}}

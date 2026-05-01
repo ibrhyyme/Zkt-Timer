@@ -27,7 +27,7 @@ const DisconnectTimer = ({ expireTime }: { expireTime: number }) => {
     return <>{timeLeft}sn</>;
 };
 
-export default function RoomTable({ participants, scrambleIndex, userStatuses = {}, currentUserId }: RoomTableProps) {
+function RoomTableInner({ participants, scrambleIndex, userStatuses = {}, currentUserId }: RoomTableProps) {
     const { t } = useTranslation();
 
     // Map status to display text
@@ -71,11 +71,12 @@ export default function RoomTable({ participants, scrambleIndex, userStatuses = 
         return rowData;
     }, [participants, scrambleIndex]);
 
-    // Find best time for each round (for highlighting)
+    // Find best time for each round (for highlighting) - spectator solve'lari hesaba katma
     const bestTimes = useMemo(() => {
         const bests: { [round: number]: number } = {};
+        const competing = participants.filter(p => !p.is_spectator);
         for (const round of rows) {
-            const roundSolves = participants
+            const roundSolves = competing
                 .map(p => p.solves.find(s => s.scramble_index === round))
                 .filter(s => s && !s.dnf)
                 .map(s => s!.plus_two ? s!.time + 2 : s!.time);
@@ -87,20 +88,33 @@ export default function RoomTable({ participants, scrambleIndex, userStatuses = 
         return bests;
     }, [participants, rows]);
 
-    // Calculate stats
+    // Calculate stats - spectator participant'lar mean/wins'e dahil edilmez
     const stats = useMemo(() => {
         return participants.map(p => {
+            // Spectator: stats hesaplamasi bos
+            if (p.is_spectator) {
+                return {
+                    id: p.user_id,
+                    mean: null as number | null,
+                    meanStr: '-',
+                    wins: 0,
+                };
+            }
+
             const solves = p.solves.filter(s => !s.dnf);
             const times = solves.map(s => s.plus_two ? s.time + 2 : s.time);
             const mean = times.length > 0 ? times.reduce((a, b) => a + b, 0) / times.length : 0;
 
-            // Calculate wins
+            // Calculate wins - sadece non-spectator katilimcilar arasinda
             let wins = 0;
             for (let i = 1; i <= scrambleIndex; i++) {
-                const roundSolves = participants.map(part => {
-                    const s = part.solves.find(sl => sl.scramble_index === i);
-                    return { id: part.user_id, solve: s };
-                }).filter(item => item.solve && !item.solve.dnf);
+                const roundSolves = participants
+                    .filter(part => !part.is_spectator)
+                    .map(part => {
+                        const s = part.solves.find(sl => sl.scramble_index === i);
+                        return { id: part.user_id, solve: s };
+                    })
+                    .filter(item => item.solve && !item.solve.dnf);
 
                 if (roundSolves.length > 0) {
                     roundSolves.sort((a, b) => {
@@ -209,8 +223,13 @@ export default function RoomTable({ participants, scrambleIndex, userStatuses = 
                         {participants.map(p => {
                             const isMe = p.user_id === currentUserId;
                             return (
-                                <div key={p.id} className={`flex-1 min-w-[100px] flex items-center justify-center py-3 px-2 border-r border-text/[0.1] last:border-0 truncate ${isMe ? 'text-primary font-semibold bg-text/[0.03]' : 'text-text font-medium'}`}>
-                                    {p.username}
+                                <div key={p.id} className={`flex-1 min-w-[100px] flex items-center justify-center gap-1 py-3 px-2 border-r border-text/[0.1] last:border-0 truncate ${isMe ? 'text-primary font-semibold bg-text/[0.03]' : 'text-text font-medium'} ${p.is_spectator ? 'opacity-70' : ''}`}>
+                                    <span className="truncate">{p.username}</span>
+                                    {p.is_spectator && (
+                                        <span className="text-[9px] font-bold uppercase tracking-wider text-amber-400 bg-amber-400/10 px-1.5 py-0.5 rounded-sm shrink-0">
+                                            {t('rooms.spectator')}
+                                        </span>
+                                    )}
                                 </div>
                             );
                         })}
@@ -267,7 +286,10 @@ export default function RoomTable({ participants, scrambleIndex, userStatuses = 
 
                                         let cellContent = null;
 
-                                        if (!solve) {
+                                        if (p.is_spectator) {
+                                            // Spectator: tum data cell'lerini bos goster
+                                            cellContent = <span className="text-text/20">-</span>;
+                                        } else if (!solve) {
                                             if (isCurrentRound && userStatus) {
                                                 if (userStatus.startsWith('DISCONNECTED')) {
                                                     const parts = userStatus.split('|');
@@ -333,3 +355,32 @@ export default function RoomTable({ participants, scrambleIndex, userStatuses = 
         </div>
     );
 }
+
+// participants array'inin reference'i her room state update'inde degisir, ancak icerik
+// cogunlukla ayni kalir. Custom shallow comparator ile sadece anlamli alanlar degistiginde
+// re-render yapilir (solve eklendi, spectator toggle, isim/yapi degisikligi).
+function arePropsEqual(prev: RoomTableProps, next: RoomTableProps): boolean {
+    if (prev.scrambleIndex !== next.scrambleIndex) return false;
+    if (prev.currentUserId !== next.currentUserId) return false;
+    if (prev.userStatuses !== next.userStatuses) return false;
+
+    const a = prev.participants;
+    const b = next.participants;
+    if (a === b) return true;
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+        const pa = a[i];
+        const pb = b[i];
+        if (
+            pa.id !== pb.id ||
+            pa.user_id !== pb.user_id ||
+            pa.username !== pb.username ||
+            pa.is_spectator !== pb.is_spectator ||
+            pa.solves.length !== pb.solves.length
+        ) return false;
+    }
+    return true;
+}
+
+const RoomTable = React.memo(RoomTableInner, arePropsEqual);
+export default RoomTable;

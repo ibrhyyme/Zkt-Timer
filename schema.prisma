@@ -859,6 +859,7 @@ model FriendlyRoomSolve {
   room           FriendlyRoom            @relation(fields: [room_id], references: [id], onDelete: Cascade)
   participant    FriendlyRoomParticipant @relation(fields: [participant_id], references: [id], onDelete: Cascade)
 
+  @@unique([participant_id, scramble_index])
   @@index([room_id])
   @@index([participant_id])
   @@index([scramble_index])

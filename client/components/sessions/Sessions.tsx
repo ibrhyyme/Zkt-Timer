@@ -17,7 +17,7 @@ import { fetchSessionById, fetchSessions, getCubeBucketsFromSession } from '../.
 import { fetchLastBucketForSession } from '../../db/solves/query';
 import { getUniqueCubeTypes, getSubsetsForBuckets } from '../../util/cubes/util';
 import { CubeType } from '../../util/cubes/cube_types';
-import { reorderSessions, updateSessionDb, deleteSessionDb, mergeSessionsDb } from '../../db/sessions/update';
+import { reorderSessions, updateSessionDb, deleteSessionDb, mergeSessionsDb, bulkDeleteSessionsDb } from '../../db/sessions/update';
 import { useGeneral } from '../../util/hooks/useGeneral';
 import block from '../../styles/bem';
 import { useSessionDb } from '../../util/hooks/useSessionDb';
@@ -334,16 +334,13 @@ export default function Sessions() {
 							updatedSessionId = fallback.id;
 						}
 
-						for (const id of idsToDelete) {
-							const ses = allSessions.find((s) => s.id === id);
-							if (ses) {
-								await deleteSessionDb(ses);
-							}
-						}
-
 						setMultiSelectedIds(new Set());
 						setSelectedSessionId(updatedSessionId);
 						toastSuccess(t('sessions.sessions_deleted', { count: idsToDelete.length }));
+
+						bulkDeleteSessionsDb(idsToDelete).catch((e) => {
+							console.error('bulkDeleteSessionsDb failed', e);
+						});
 					}}
 					buttonText={t('sessions.yes_delete')}
 					buttonProps={{

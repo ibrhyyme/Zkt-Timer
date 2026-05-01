@@ -1,43 +1,93 @@
 @import '../../../../../styles/config';
 
 .#{$namespace}-review-import {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+
 	h4 {
-		font-size: 1.1rem;
-		margin-bottom: 10px;
-		color: rgb(var(--text-color));
-		font-weight: bold;
+		font-size: 0.95rem;
+		font-weight: 600;
+		margin: 0;
+		color: rgba(var(--text-color), 0.85);
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 12px 16px;
+		background-color: rgb(var(--button-color));
+		border-radius: 10px;
+		border: 1px solid rgba(var(--text-color), 0.08);
 
 		span {
-			color: rgb(var(--secondary-color));
+			color: rgb(var(--primary-color));
+			font-weight: 800;
+			font-family: 'SF Mono', 'Roboto Mono', 'Fira Code', monospace;
+			font-variant-numeric: tabular-nums;
+			font-size: 1.1rem;
 		}
 	}
 
 	&__stats {
-		margin: 20px 0;
-	}
-
-	&__session,
-	&__session-header {
 		display: flex;
-		flex-direction: row;
-		align-items: center;
-		justify-content: space-between;
+		flex-direction: column;
+		gap: 8px;
+	}
 
-		> * {
-			display: flex;
-			flex-direction: row;
-			width: 33%;
+	&__skipped {
+		padding: 12px 16px;
+		background-color: rgba(245, 158, 11, 0.08);
+		border: 1px solid rgba(245, 158, 11, 0.25);
+		border-radius: 10px;
+		color: rgba(var(--text-color), 0.85);
+		font-size: 0.9rem;
+
+		strong {
+			color: #f59e0b;
+			font-weight: 700;
 		}
 
-		> *:not(:first-child) {
-			justify-content: flex-end;
+		ul {
+			margin: 6px 0 0;
+			padding-left: 18px;
+			list-style: disc;
+			font-family: 'SF Mono', 'Roboto Mono', 'Fira Code', monospace;
+			font-variant-numeric: tabular-nums;
+			font-size: 0.85rem;
 		}
 	}
 
 	&__session-header {
-		padding-top: 15px;
-		margin-top: 15px;
-		border-top: 2px solid rgb(var(--theme-module-opposite), 0.15);
-		margin-bottom: 8px;
+		display: grid;
+		grid-template-columns: 1fr 1fr 60px;
+		gap: 12px;
+		padding: 0 4px 6px;
+		border-bottom: 1px solid rgba(var(--text-color), 0.08);
+	}
+
+	&__session {
+		display: grid;
+		grid-template-columns: 1fr 1fr 60px;
+		gap: 12px;
+		align-items: center;
+		padding: 10px 4px;
+
+		&:not(:last-child) {
+			border-bottom: 1px solid rgba(var(--text-color), 0.05);
+		}
+
+		> div {
+			display: flex;
+			align-items: center;
+
+			&:last-child {
+				justify-content: flex-end;
+			}
+		}
+	}
+
+	&__actions {
+		display: flex;
+		justify-content: center;
+		margin-top: 8px;
 	}
 }

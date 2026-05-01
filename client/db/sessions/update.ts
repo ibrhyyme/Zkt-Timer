@@ -2,9 +2,10 @@ import { gqlMutateTyped } from '../../components/api';
 import { getSessionDb } from './init';
 import { emitEvent } from '../../util/event_handler';
 import { getSolveDb } from '../solves/init';
-import { clearSolveStatCache } from '../solves/stats/solves/caching';
+import { clearSolveStatCache, clearSolveStatCacheForSession } from '../solves/stats/solves/caching';
 import { Session } from '../../../server/schemas/Session.schema';
 import {
+	BulkDeleteSessionsDocument,
 	CreateSessionDocument,
 	DeleteSessionDocument,
 	MergeSessionsDocument,
@@ -65,6 +66,40 @@ export async function deleteSessionDb(session: Session) {
 		await gqlMutateTyped(DeleteSessionDocument, {
 			id: session.id,
 		});
+	}
+}
+
+export async function bulkDeleteSessionsDb(ids: string[]) {
+	if (!ids.length) return;
+
+	const sessionDb = getSessionDb();
+	const solveDb = getSolveDb();
+
+	sessionDb.removeWhere((s) => ids.includes(s.id));
+	solveDb.removeWhere((s) => ids.includes(s.session_id));
+
+	const remainingIds = fetchSessions().map((s) => s.id);
+	for (let i = 0; i < remainingIds.length; i += 1) {
+		const sid = remainingIds[i];
+		const session = fetchSessionById(sid);
+		sessionDb.update({...session, order: i});
+	}
+
+	for (const id of ids) {
+		clearSolveStatCacheForSession(id);
+	}
+	emitEvent('solveDbUpdatedEvent');
+	emitEvent('sessionsDbUpdatedEvent');
+
+	if (canSync()) {
+		try {
+			await gqlMutateTyped(BulkDeleteSessionsDocument, {ids});
+		} catch (e) {
+			console.error('bulkDeleteSessions failed', e);
+		}
+		updateOfflineHash();
+	} else {
+		saveLokiDb();
 	}
 }
 

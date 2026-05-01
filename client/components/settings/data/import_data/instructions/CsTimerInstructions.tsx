@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
+import { useTranslation } from 'react-i18next';
 import block from '../../../../../styles/bem';
-import CubePicker from '../../../../common/cube_picker/CubePicker';
 import { ImportDataContext } from '../ImportData';
 import { ButtonProps } from '../../../../common/button/Button';
 import ImportSection from '../import_section/ImportSection';
@@ -8,6 +8,7 @@ import ImportSection from '../import_section/ImportSection';
 const b = block('import-instructions');
 
 export default function CsTimerInstructions() {
+	const { t } = useTranslation();
 	const context = useContext(ImportDataContext);
 
 	const dropdownButtonProps: ButtonProps = {
@@ -18,21 +19,21 @@ export default function CsTimerInstructions() {
 	};
 
 	if (!context.cubeType) {
-		dropdownButtonProps.text = 'Küp türünü seçin';
+		dropdownButtonProps.text = t('data_settings.select_cube_type');
 	}
 
 	return (
 		<div className={b()}>
-			<ImportSection title="csTimer'dan veriler nasıl dışa aktarılır">
+			<ImportSection title={t('data_settings.cstimer_instructions_title')}>
 				<ol>
 					<li>
 						<a href="https://cstimer.net" target="_blank">
 							cstimer.net
 						</a>{' '}
-						adresine gidin
+						{t('data_settings.cstimer_step_1_suffix')}
 					</li>
-					<li>"Dışa Aktar" simgesine tıklayın (Ayarlar butonunun yanında)</li>
-					<li>"Dosyaya aktar"a tıklayın</li>
+					<li>{t('data_settings.cstimer_step_2')}</li>
+					<li>{t('data_settings.cstimer_step_3')}</li>
 				</ol>
 			</ImportSection>
 		</div>

@@ -669,6 +669,9 @@ export default function FriendlyRoom() {
     // Throttled status update
 
 
+    // Reconnect bayragi: socket reconnect oldugunda ROOM_DATA full hydrate yapsin
+    const isReconnectingRef = useRef(false);
+
     // Fetch room data
     useEffect(() => {
         const socket = getSocket();
@@ -681,6 +684,19 @@ export default function FriendlyRoom() {
             setRoom(roomData);
             setLoading(false);
             setNeedsPassword(false);
+
+            // Reconnect sonrasi full hydrate: live statuslari sifirla, manuel input/inspection temizle
+            if (isReconnectingRef.current) {
+                isReconnectingRef.current = false;
+                setUserStatuses({});
+                setManualTimeInput('');
+                setManualTimeError(false);
+                setManualInspecting(false);
+                if (manualInspectionRef.current) {
+                    clearInterval(manualInspectionRef.current);
+                    manualInspectionRef.current = null;
+                }
+            }
         });
 
         // Listen for errors
@@ -918,15 +934,22 @@ export default function FriendlyRoom() {
             lastDisconnectRef.current = Date.now();
         };
 
+        const onReconnect = () => {
+            // Reconnect: server'dan tam state iste; ROOM_DATA handler hydrate yapacak
+            isReconnectingRef.current = true;
+            joinRoom();
+            socket.emit(FriendlyRoomClientEvent.GET_ROOM, roomId);
+        };
+
         // Join immediately on mount
         joinRoom();
 
         // Listen for events
-        socket.on('connect', joinRoom);
+        socket.on('connect', onReconnect);
         socket.on('disconnect', onDisconnect);
 
         return () => {
-            socket.off('connect', joinRoom);
+            socket.off('connect', onReconnect);
             socket.off('disconnect', onDisconnect);
         };
     }, [me, roomId, needsPassword, history]);
@@ -1901,6 +1924,7 @@ export default function FriendlyRoom() {
             <ManageUsersModal
                 isOpen={manageUsersModalOpen}
                 onClose={() => setManageUsersModalOpen(false)}
+                roomId={roomId}
                 participants={room.participants}
                 onKick={(userId) => {
                     getSocket().emit(FriendlyRoomClientEvent.KICK_USER, roomId, userId);

@@ -1,5 +1,4 @@
 import React, { createContext, ReactNode, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import './ImportData.scss';
 import { reactState } from '../../../../@types/react';
 import { SessionInput, SolveInput } from '../../../../@types/generated/graphql';
@@ -7,12 +6,13 @@ import ProcessData from './process/ProcessData';
 import CsTimerInstructions from './instructions/CsTimerInstructions';
 import { parseZktTimerData } from './parse_data/zkttimer';
 import ZktTimerInstructions from './instructions/ZktTimerInstructions';
-import ModalHeader from '../../../common/modal/modal_header/ModalHeader';
 import block from '../../../../styles/bem';
 import ReviewImport from './review_import/ReviewImport';
 import { parseCsTimerData } from './parse_data/cstimer';
 import { parseTwistyTimerData } from './parse_data/twistytimer';
+import { parseCubeTimeData } from './parse_data/cubetime';
 import TwistyTimerInstructions from './instructions/TwistyTimerInstructions';
+import CubeTimeInstructions from './instructions/CubeTimeInstructions';
 import { ImportProgress, ChunkedImportResult } from './review_import/chunked_import';
 
 const b = block('import-data');
@@ -21,7 +21,16 @@ export enum ImportDataType {
 	CS_TIMER,
 	ZKT_TIMER,
 	TWISTY_TIMER,
+	CUBE_TIME,
 }
+
+// DataSettings.tsx openModal title'inda kullaniyor — kaynak app ismi.
+export const IMPORT_TYPE_NAMES: Record<ImportDataType, string> = {
+	[ImportDataType.CS_TIMER]: 'csTimer',
+	[ImportDataType.ZKT_TIMER]: 'Zkt Timer',
+	[ImportDataType.TWISTY_TIMER]: 'Twisty Timer',
+	[ImportDataType.CUBE_TIME]: 'CubeTime',
+};
 
 export interface ImportableData {
 	solves: SolveInput[];
@@ -70,7 +79,6 @@ interface Props {
 
 export default function ImportData(props: Props) {
 	const { importType } = props;
-	const { t } = useTranslation();
 
 	const [file, setFile] = useState<File>(null);
 	const [importableData, setImportableData] = useState<ImportableData>(null);
@@ -105,6 +113,14 @@ export default function ImportData(props: Props) {
 				instructions: <TwistyTimerInstructions />,
 			};
 			break;
+		case ImportDataType.CUBE_TIME:
+			timerImportData = {
+				name: 'CubeTime',
+				getImportableData: parseCubeTimeData,
+				acceptedFileTypes: ['.json', '.txt'],
+				instructions: <CubeTimeInstructions />,
+			};
+			break;
 	}
 
 	const context: IImportDataContext = {
@@ -127,9 +143,6 @@ export default function ImportData(props: Props) {
 	return (
 		<ImportDataContext.Provider value={context}>
 			<div className={b()}>
-				<ModalHeader
-					title={t('data_settings.import_modal_title', { name: timerImportData.name })}
-				/>
 				{timerImportData.instructions}
 				<ProcessData />
 				<ReviewImport />

@@ -298,10 +298,10 @@ export default function ReviewImport() {
 						{t('data_settings.sessions_count', { count: data.sessions.length })}
 					</h4>
 					{!!data.skippedSolveCount && (
-						<div className={b('skipped')} style={{ color: '#f59e0b', fontSize: '0.9rem', marginTop: 8 }}>
+						<div className={b('skipped')}>
 							<strong>{t('data_settings.skipped_count', { count: data.skippedSolveCount })}</strong>
 							{data.skippedCubeTypes && (
-								<ul style={{ margin: '4px 0 0 16px', padding: 0 }}>
+								<ul>
 									{Object.entries(data.skippedCubeTypes).map(([ct, n]) => (
 										<li key={ct}>
 											{ct}: {n.toLocaleString()}
@@ -322,18 +322,20 @@ export default function ReviewImport() {
 						onRetry={retryFailedChunks}
 					/>
 				)}
-				<Button
-					loading={context.importing}
-					text={context.importProgress
-						? t('data_settings.importing_progress', { percent: context.importProgress.percentComplete })
-						: t('data_settings.import')
-					}
-					primary
-					large
-					glow
-					disabled={context.importing}
-					onClick={importData}
-				/>
+				<div className={b('actions')}>
+					<Button
+						loading={context.importing}
+						text={context.importProgress
+							? t('data_settings.importing_progress', { percent: context.importProgress.percentComplete })
+							: t('data_settings.import')
+						}
+						primary
+						large
+						glow
+						disabled={context.importing}
+						onClick={importData}
+					/>
+				</div>
 			</ImportSection>
 		</div>
 	);

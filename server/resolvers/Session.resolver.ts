@@ -237,6 +237,28 @@ export class SessionResolver {
 
 	@Authorized([Role.LOGGED_IN, Role.PRO])
 	@Mutation(() => GraphQLVoid)
+	async bulkDeleteSessions(@Ctx() context: GraphQLContext, @Arg('ids', () => [String], {validate: false}) ids: string[]) {
+		if (!ids || !ids.length) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Must include at least one session ID');
+		}
+
+		const sessions = await getSessionsByIds(context.user, ids);
+		if (sessions.length !== ids.length) {
+			throw new GraphQLError(ErrorCode.NOT_FOUND, 'Invalid session ID list');
+		}
+
+		await getPrisma().session.deleteMany({
+			where: {
+				user_id: context.user.id,
+				id: {in: ids},
+			},
+		});
+
+		await updateOrderOfSessionsForUser(context.user);
+	}
+
+	@Authorized([Role.LOGGED_IN, Role.PRO])
+	@Mutation(() => GraphQLVoid)
 	async bulkCreateSessions(
 		@Ctx() context: GraphQLContext,
 		@Arg('sessions', () => [SessionInput]) sessions: SessionInput[]
