@@ -2175,7 +2175,10 @@ export type Setting = {
   scramble_subset?: Maybe<Scalars['String']>;
   session_id?: Maybe<Scalars['String']>;
   smart_cube_size?: Maybe<Scalars['Int']>;
+  smart_cube_size_user_default?: Maybe<Scalars['Int']>;
   timer_decimal_points?: Maybe<Scalars['Int']>;
+  timer_scramble_size_user_default?: Maybe<Scalars['Int']>;
+  timer_time_size_user_default?: Maybe<Scalars['Int']>;
   use_2d_scramble_visual?: Maybe<Scalars['Boolean']>;
   use_space_with_smart_cube?: Maybe<Scalars['Boolean']>;
   user_id?: Maybe<Scalars['String']>;
@@ -2201,7 +2204,10 @@ export type SettingInput = {
   scramble_subset?: InputMaybe<Scalars['String']>;
   session_id?: InputMaybe<Scalars['String']>;
   smart_cube_size?: InputMaybe<Scalars['Int']>;
+  smart_cube_size_user_default?: InputMaybe<Scalars['Int']>;
   timer_decimal_points?: InputMaybe<Scalars['Int']>;
+  timer_scramble_size_user_default?: InputMaybe<Scalars['Int']>;
+  timer_time_size_user_default?: InputMaybe<Scalars['Int']>;
   use_2d_scramble_visual?: InputMaybe<Scalars['Boolean']>;
   use_space_with_smart_cube?: InputMaybe<Scalars['Boolean']>;
   zero_out_time_after_solve?: InputMaybe<Scalars['Boolean']>;

@@ -308,9 +308,18 @@ interface TimerSettingsSliderProps {
 }
 
 export function TimerSettingsSlider({ label, description, value, min, max, hidden, showReset, resetLabel, onReset, restoreDefaultLabel, onRestoreDefault, onChange, children }: TimerSettingsSliderProps) {
+	const [savedFlash, setSavedFlash] = React.useState(false);
+
 	if (hidden) return null;
 
 	const percentage = ((value - min) / (max - min)) * 100;
+
+	function handleRestoreDefault() {
+		if (!onRestoreDefault) return;
+		onRestoreDefault();
+		setSavedFlash(true);
+		setTimeout(() => setSavedFlash(false), 1500);
+	}
 
 	return (
 		<div className="py-4 px-4 rounded-xl bg-module border border-text/[0.08] hover:border-text/[0.15] transition-all duration-200">
@@ -326,10 +335,10 @@ export function TimerSettingsSlider({ label, description, value, min, max, hidde
 					{onRestoreDefault && (
 						<button
 							type="button"
-							onClick={onRestoreDefault}
-							className="text-xs text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
+							onClick={handleRestoreDefault}
+							className={`text-xs transition-colors cursor-pointer ${savedFlash ? 'text-green-400' : 'text-blue-400 hover:text-blue-300'}`}
 						>
-							{restoreDefaultLabel || 'Default'}
+							{savedFlash ? '✓' : (restoreDefaultLabel || 'Default')}
 						</button>
 					)}
 					{showReset && onReset && (

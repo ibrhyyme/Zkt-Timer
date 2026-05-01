@@ -34,6 +34,7 @@ const FONT_FAMILIES = [
 export default function Appearance() {
 	const { t } = useTranslation();
 	const timerTimeSize = useSettings('timer_time_size');
+	const timerTimeSizeUserDefault = useSettings('timer_time_size_user_default');
 	const timerScrambleSize = useSettings('timer_scramble_size');
 	const timerScrambleSizeUserDefault = useSettings('timer_scramble_size_user_default');
 	const timerDecimalPoints = useSettings('timer_decimal_points');
@@ -49,6 +50,7 @@ export default function Appearance() {
 
 	// Kullanicinin kayitli default'i varsa onu, yoksa factory/mobile default'i don
 	const scrambleSizeDefault = timerScrambleSizeUserDefault ?? getDefaultSetting('timer_scramble_size');
+	const timeSizeDefault = timerTimeSizeUserDefault ?? getDefaultSetting('timer_time_size');
 	const cubeSizeDefault = smartCubeSizeUserDefault ?? getDefaultSetting('smart_cube_size');
 
 	return (
@@ -105,9 +107,11 @@ export default function Appearance() {
 					value={timerTimeSize}
 					min={35}
 					max={150}
-					showReset={timerTimeSize !== getDefaultSetting('timer_time_size')}
+					showReset={timerTimeSize !== timeSizeDefault}
 					resetLabel={t('appearance.reset')}
-					onReset={() => updateSetting('timer_time_size', getDefaultSetting('timer_time_size'))}
+					onReset={() => updateSetting('timer_time_size', timeSizeDefault)}
+					restoreDefaultLabel={t('appearance.save_as_default')}
+					onRestoreDefault={() => updateSetting('timer_time_size_user_default', timerTimeSize)}
 					onChange={(v) => updateSetting('timer_time_size', v)}
 				>
 					<div className="flex items-center justify-center py-2 rounded-lg bg-module overflow-hidden">

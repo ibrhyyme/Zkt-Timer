@@ -685,6 +685,9 @@ type Setting {
   scramble_subset: String
   session_id: String
   smart_cube_size: Int
+  smart_cube_size_user_default: Int
+  timer_scramble_size_user_default: Int
+  timer_time_size_user_default: Int
   custom_cube_types: [CustomCubeType]
 }
 
@@ -2032,6 +2035,9 @@ input SettingInput {
   scramble_subset: String
   session_id: String
   smart_cube_size: Int
+  smart_cube_size_user_default: Int
+  timer_scramble_size_user_default: Int
+  timer_time_size_user_default: Int
   locale: String
 }
 
