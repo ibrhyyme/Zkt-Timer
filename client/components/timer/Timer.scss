@@ -517,4 +517,80 @@
 			}
 		}
 	}
+
+	// Smart cube mobile layout: SOL=dar analiz, SAG=cube+timer yapisik
+	&__mobile-smart-grid {
+		display: grid;
+		grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr);
+		align-items: start; // Sabit ust hizalama — analiz buyudukce kaymasin
+		gap: 0.5rem;
+		width: 100%;
+		max-width: 100%;
+		flex: 0 0 auto;
+		max-height: 38vh; // Dashboard'i ezmesin
+		overflow: visible;
+		padding: 0 0.5rem;
+		box-sizing: border-box;
+		position: relative;
+		z-index: 50;
+	}
+
+	&__mobile-smart-grid-left {
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-start; // Analiz USTTEN baslar — satir eklendikce ASAGI dogru buyusun
+		align-items: flex-start;
+		min-width: 0;
+		max-height: 38vh;
+		overflow: hidden;
+		padding-top: 1.5rem; // Cube'un ust seviyesinden biraz daha asagidan basla
+
+		#mobile-smart-phases-container {
+			width: 100%;
+			padding: 0;
+		}
+	}
+
+	&__mobile-smart-grid-right {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 0; // Cube + timer YAPISIK
+		min-width: 0;
+	}
+
+	&__mobile-smart-grid-cube {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		flex: 0 0 auto;
+		overflow: visible;
+
+		.cd-smart-cube__cube canvas {
+			width: 100% !important;
+			height: auto !important;
+			max-width: min(160px, 42vw);
+			max-height: min(160px, 42vw);
+			object-fit: contain;
+		}
+
+		// Battery + BT emblem cube'a yapisik kalsin, asagi gecmesin
+		.cd-smart-cube__info {
+			margin-top: 0;
+		}
+	}
+
+	&__mobile-smart-grid-time {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		flex: 0 0 auto;
+		width: 100%;
+		padding: 0 !important; // cd-timer__main mobile padding-top: 60px override
+		margin: 0 !important;  // cd-timer__main--mobile margin-bottom: 20px override
+		touch-action: none;
+	}
 }

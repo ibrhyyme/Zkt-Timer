@@ -15,7 +15,6 @@ import { onVisibilityChange } from '../../../util/app-visibility';
 import StartInstructions from './start_instructions/StartInstructions';
 import StackMat from './stackmat/StackMat';
 import GanTimer from './gantimer/GanTimer';
-import SmartStats from '../smart_cube/stats/SmartStats';
 import SolveDiff from './SolveDiff';
 import OfflineModeIndicator from './OfflineModeIndicator';
 
@@ -287,12 +286,7 @@ export default function TimeDisplay() {
 					{!matchMode && <SolveDiff />}
 				</div>
 
-				{/* Mobile: Stats below time & diff */}
-				{mobileMode && smartCubeSelected(context) && (
-					<div style={{ marginTop: '5px' }}>
-						<SmartStats mobile={true} />
-					</div>
-				)}
+				{/* Mobile smart cube: SmartStats artık SOL kolonda LiveAnalysisOverlay altinda render ediliyor (SmartCube.tsx portal). */}
 			</div>
 			<div className={bi()}>{bottomInfo}</div>
 			{subTimerActions}

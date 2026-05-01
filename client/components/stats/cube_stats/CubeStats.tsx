@@ -1,47 +1,80 @@
-import React, {useContext} from 'react';
+import React, {useContext, useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import './CubeStats.scss';
 import block from '../../../styles/bem';
-import CubeStatsFeatured from './featured/CubeStatsFeatured';
-import TimeChart from '../../modules/time_chart/TimeChart';
 import StatSection from '../common/stat_section/StatSection';
 import StatModule from '../common/stat_module/StatModule';
+import CubeStatsFeatured from './featured/CubeStatsFeatured';
 import CubeStatAverages from './averages/CubeStatAverages';
-import {StatsContext} from '../Stats';
+import CubeTimelineChart from './timeline_chart/CubeTimelineChart';
+import HourlyConsistency from './hourly_consistency/HourlyConsistency';
+import PhaseSplits from './phase_splits/PhaseSplits';
+import SessionStepsTable from '../../sessions/smart_cube_steps_table/SessionStepsTable';
+import SmartCubeSummary from '../../sessions/smart_cube_summary/SmartCubeSummary';
 import SubStats from '../common/sub_stats/SubStats';
-import SolvesPerDay from '../../modules/solves_per_day/SolvesPerDay';
+import {StatsContext} from '../Stats';
+import {useSolveDb} from '../../../util/hooks/useSolveDb';
+import {fetchSolveCount} from '../../../db/solves/query';
 
 const b = block('cube-stats');
 
 export default function CubeStats() {
-	const { t } = useTranslation();
-	const context = useContext(StatsContext);
-	const filter = context.filterOptions;
+	const {t} = useTranslation();
+	const {filterOptions} = useContext(StatsContext);
+	const solveUpdate = useSolveDb();
 
-	const oneMonth = new Date();
-	oneMonth.setDate(oneMonth.getDate() - 60);
+	const hasSmartCubeData = useMemo(
+		() => fetchSolveCount({...filterOptions, is_smart_cube: true}) > 0,
+		[filterOptions, solveUpdate]
+	);
 
 	return (
 		<div className={b()}>
+			{hasSmartCubeData && (
+				<StatSection title={t('stats_page.smart_cube_summary')} className={b('summary')}>
+					<StatModule>
+						<SmartCubeSummary filterOptions={filterOptions} />
+					</StatModule>
+				</StatSection>
+			)}
 			<StatSection title={t('stats_page.overview')} className={b('featured')}>
 				<CubeStatsFeatured />
 			</StatSection>
 			<StatSection title={t('stats_page.averages')} className={b('averages')}>
-				<CubeStatAverages />
-			</StatSection>
-			<StatSection colSpan={2} title={t('stats_page.solve_times')} className={b('solve-times')}>
 				<StatModule>
-					<TimeChart filterOptions={filter} />
+					<CubeStatAverages />
 				</StatModule>
 			</StatSection>
-			<StatSection title={t('stats_page.more_stats')} className={b('sub-stats')}>
+			<StatSection title={t('stats_page.solve_times')} className={b('chart')}>
+				<StatModule>
+					<CubeTimelineChart />
+				</StatModule>
+			</StatSection>
+			<StatSection title={t('stats_page.more_stats')} className={b('substats')}>
 				<SubStats />
 			</StatSection>
-			<StatSection colSpan={3} title={t('stats_page.consistency')} className={b('consistency')}>
+			<StatSection title={t('stats_page.hourly_consistency')} className={b('hourly')}>
 				<StatModule>
-					<SolvesPerDay filterOptions={filter} days={60} />
+					<HourlyConsistency />
 				</StatModule>
 			</StatSection>
+			{hasSmartCubeData && (
+				<StatSection title={t('stats_page.phase_splits')} className={b('splits')}>
+					<StatModule>
+						<PhaseSplits />
+					</StatModule>
+				</StatSection>
+			)}
+			{hasSmartCubeData && (
+				<StatSection title={t('stats_page.steps_detail')} className={b('steps-table')}>
+					<StatModule>
+						<SessionStepsTable
+							filterOptions={filterOptions}
+							title={t('stats_page.steps_detail')}
+						/>
+					</StatModule>
+				</StatSection>
+			)}
 		</div>
 	);
 }

@@ -639,6 +639,29 @@ export default function RoomTimerOverlay({
             }
 
             if (alreadySolvedThisRound && !smartReviewing) return;
+
+            // Anasayfa hizalamasi: TIMING'de Space disinda herhangi bir tus timer'i durdurur
+            // (Space zaten asagidaki keydown bloku ile simulateSpaceDown'a gidiyor — SUBMITTING_DOWN ara durumu uzerinden)
+            if (currentStatus === STATUS.TIMING && e.keyCode !== 32) {
+                // Cihaz bazli modlarda (stackmat / gantimer / smart) klavye ile durdurma yok
+                if (timerType === 'stackmat' || timerType === 'gantimer' || timerType === 'smart') {
+                    return;
+                }
+                e.preventDefault();
+                e.stopPropagation();
+
+                if (timerRef.current) clearInterval(timerRef.current);
+                hapticImpact('medium');
+                const stopNow = now();
+                if (startedAtRef.current !== null) {
+                    setTime(stopNow - startedAtRef.current);
+                }
+                // Direkt SUBMITTING'e — Space disindaki tuslarda keyup-ile-onay race condition'i yok
+                setStatus(STATUS.SUBMITTING);
+                statusRef.current = STATUS.SUBMITTING;
+                return;
+            }
+
             // Prevent other keys if Prime holding (except Esc which we handled above)
             if (keyIsDown.current) return;
 

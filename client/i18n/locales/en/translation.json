@@ -77,7 +77,67 @@
     },
     "stats": {
         "page_title": "Statistics",
-        "all": "All"
+        "all": "All",
+        "select_cube": "Select cube",
+        "hero": {
+            "title": "Statistics",
+            "subtitle": "A summary of every solve, every second, and every small win."
+        },
+        "heatmap": {
+            "less": "Less",
+            "more": "More",
+            "active_days": "active days · of {{total}}",
+            "current_streak": "current streak"
+        },
+        "cube_hero": {
+            "solves_count": "{{value}} solves",
+            "avg_ao12": "Avg {{time}}"
+        },
+        "cube_chart": {
+            "eyebrow": "Solve times",
+            "current_ao12": "Current Ao12",
+            "best_ao12": "Best Ao12",
+            "gap": "Gap to PB",
+            "gap_at_pb": "At PB",
+            "total": "Total solves"
+        },
+        "hourly": {
+            "empty": "No solves match this filter.",
+            "std_dev": "standard deviation",
+            "peak": "Peak: {{hour}} · {{value}} solves",
+            "avg_per_hour": "Avg {{value}} solves/hour"
+        },
+        "avg": {
+            "subtitle": "Last {{value}} solves",
+            "best_block": "★ Most consistent block"
+        },
+        "focus": {
+            "total_time": "Total time",
+            "total_solves_count": "{{value}} solves",
+            "peak_hour": "Peak hour",
+            "peak_hour_sub": "{{value}} solves at this time",
+            "peak_hour_empty": "No data yet",
+            "best_day": "Best day",
+            "best_day_sub": "Average Ao12 {{time}}",
+            "best_day_empty": "Not enough data",
+            "sessions": "Active sessions",
+            "sessions_sub": "Avg {{avg}} solves/session"
+        },
+        "splits": {
+            "empty": "No smart cube solves found.",
+            "eyebrow": "Average of {{value}} smart cube solves",
+            "bottleneck": "You lose the most time in {{phase}}",
+            "pro_upsell": "Phase analysis is a Pro feature",
+            "phase": {
+                "cross": "Cross",
+                "f2l_1": "F2L 1",
+                "f2l_2": "F2L 2",
+                "f2l_3": "F2L 3",
+                "f2l_4": "F2L 4",
+                "oll": "OLL",
+                "pll": "PLL"
+            }
+        }
     },
     "danger_zone": {
         "reset_settings_title": "Reset Settings",
@@ -1194,7 +1254,14 @@
         "most_popular_event": "Most Popular Event",
         "averages": "Averages",
         "highest_streak": "Highest Streak",
-        "days": "days"
+        "days": "days",
+        "puzzles": "Per Puzzle",
+        "activity": "365-Day Activity",
+        "hourly_consistency": "Hourly Activity",
+        "time_focus": "Time & Focus",
+        "phase_splits": "Phase Split",
+        "steps_detail": "Phase Detail Table",
+        "smart_cube_summary": "Smart Cube Summary"
     },
     "common": {
         "results_count": "{{count}} results",
@@ -1215,7 +1282,8 @@
         "reset": "Reset",
         "clear": "Clear",
         "create_new": "Create New",
-        "copied": "Copied"
+        "copied": "Copied",
+        "coming_soon": "Coming Soon"
     },
     "announcement_modal": {
         "feature": "🎉 Feature",

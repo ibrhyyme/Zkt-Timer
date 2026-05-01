@@ -1,0 +1,114 @@
+@import '../../../../styles/config';
+
+.#{$namespace}-puzzle-row {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 0.933rem;
+	width: 100%;
+
+	@media (max-width: 900px) {
+		grid-template-columns: repeat(2, 1fr);
+	}
+
+	@media (max-width: 500px) {
+		grid-template-columns: 1fr;
+	}
+}
+
+.#{$namespace}-puzzle-card {
+	display: flex;
+	flex-direction: column;
+	gap: 0.667rem;
+	padding: 1.067rem 1.2rem;
+	border-radius: 12px;
+	background-color: rgba(var(--text-color), 0.06);
+	border: 1px solid rgba(var(--text-color), 0.06);
+	color: rgb(var(--text-color));
+	font-family: inherit;
+	cursor: pointer;
+	transition: transform 0.18s, border-color 0.18s, background-color 0.18s;
+	text-align: left;
+	width: 100%;
+
+	&:hover {
+		transform: translateY(-2px);
+		border-color: rgba(var(--primary-color), 0.35);
+		background-color: rgba(var(--text-color), 0.06);
+	}
+
+	&__head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+
+	&__name {
+		font-family: Kontora, Poppins, Arial, 'Helvetica Neue', Helvetica, sans-serif;
+		font-size: 1.6rem;
+		line-height: 1;
+		letter-spacing: -0.015em;
+		font-weight: 500;
+	}
+
+	&__count {
+		font-family: 'Roboto Mono', ui-monospace, monospace;
+		font-size: 0.733rem;
+		color: rgb(var(--text-color));
+		letter-spacing: 0.04em;
+	}
+
+	&__spark {
+		height: 2.4rem;
+		width: 100%;
+
+		svg {
+			width: 100%;
+			height: 100%;
+			display: block;
+		}
+
+		&--empty {
+			background: linear-gradient(
+				90deg,
+				rgba(var(--text-color), 0.04),
+				rgba(var(--text-color), 0.08),
+				rgba(var(--text-color), 0.04)
+			);
+			border-radius: 4px;
+			opacity: 0.4;
+		}
+	}
+
+	&__stats {
+		display: flex;
+		justify-content: space-between;
+		gap: 0.667rem;
+	}
+
+	&__stat {
+		display: flex;
+		flex-direction: column;
+		gap: 0.133rem;
+
+		strong {
+			font-family: inherit;
+			font-weight: 600;
+			font-size: 0.95rem;
+			color: rgb(var(--text-color));
+			font-variant-numeric: tabular-nums;
+		}
+
+		span {
+			font-family: 'Roboto Mono', ui-monospace, monospace;
+			font-size: 0.667rem;
+			color: rgb(var(--text-color));
+			letter-spacing: 0.06em;
+			text-transform: uppercase;
+		}
+
+		&--right {
+			text-align: right;
+			align-items: flex-end;
+		}
+	}
+}

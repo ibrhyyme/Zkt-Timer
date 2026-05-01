@@ -1,0 +1,52 @@
+@import '../../../../styles/config';
+
+.#{$namespace}-time-focus {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 1.467rem;
+	width: 100%;
+
+	@media (max-width: 900px) {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 1rem;
+	}
+
+	@media (max-width: 480px) {
+		grid-template-columns: 1fr;
+	}
+
+	&__cell {
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
+		min-width: 0;
+	}
+
+	&__label {
+		font-family: 'Roboto Mono', ui-monospace, monospace;
+		font-size: 0.7rem;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: rgb(var(--text-color));
+	}
+
+	&__value {
+		font-family: Kontora, Poppins, Arial, 'Helvetica Neue', Helvetica, sans-serif;
+		font-weight: 500;
+		font-size: clamp(2rem, 3vw, 2.733rem);
+		line-height: 1;
+		letter-spacing: -0.02em;
+		color: rgb(var(--text-color));
+
+		&--accent {
+			color: rgb(var(--primary-color));
+		}
+	}
+
+	&__sub {
+		font-family: 'Roboto Mono', ui-monospace, monospace;
+		font-size: 0.7rem;
+		color: rgb(var(--text-color));
+		letter-spacing: 0.04em;
+	}
+}

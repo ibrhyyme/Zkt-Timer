@@ -1,0 +1,130 @@
+@import '../../../../styles/config';
+
+.#{$namespace}-stats-hero {
+	width: 100%;
+	position: sticky;
+	top: var(--nav-h);
+	z-index: 100;
+	background-color: rgb(var(--background-color));
+	margin-top: calc(-1 * var(--wrapper-padding));
+	padding-top: var(--wrapper-padding);
+	margin-bottom: 0;
+	padding-bottom: 2rem;
+
+	@media (max-width: 768px), (max-height: 500px) {
+		top: 0;
+		margin-top: calc(-15px - var(--safe-area-inset-top, 0px));
+		padding-top: calc(15px + var(--safe-area-inset-top, 0px));
+	}
+
+	&__top {
+		display: flex;
+		flex-direction: column;
+		gap: 1.333rem;
+
+		@include md {
+			flex-direction: row;
+			align-items: flex-end;
+			justify-content: space-between;
+			gap: 2rem;
+		}
+	}
+
+	&__text {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+		flex: 1;
+	}
+
+	&__title {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		flex-wrap: wrap;
+		font-family: Kontora, Poppins, Arial, 'Helvetica Neue', Helvetica, sans-serif;
+		font-weight: 500;
+		font-size: clamp(2.4rem, 5vw, 3.6rem);
+		line-height: 1.05;
+		letter-spacing: -0.02em;
+		margin: 0 0 0.6rem 0;
+		color: rgb(var(--text-color));
+	}
+
+	&__title-em {
+		font-style: italic;
+		color: rgb(var(--primary-color));
+		margin-left: 0.4rem;
+	}
+
+	&__mobile-cluster {
+		margin-left: 0.8rem;
+		display: flex;
+		align-items: center;
+	}
+
+	&__account-dropdown-mobile {
+		margin-left: 0.6rem;
+		display: none;
+
+		@media (max-width: 768px), (max-height: 500px) {
+			display: block;
+		}
+
+		.#{$namespace}-nav-account-dropdown {
+			padding: 0;
+			height: auto;
+			border-left: none;
+			margin-left: 0;
+
+			&__handle {
+				padding: 0;
+			}
+
+			&__pfp {
+				margin-right: 0;
+				width: 32px;
+				height: 32px;
+			}
+		}
+	}
+
+	&__subtitle {
+		font-size: 1.067rem;
+		line-height: 1.45;
+		color: rgb(var(--text-color));
+		margin: 0 0 1.2rem 0;
+		max-width: 32rem;
+	}
+
+	&__lines {
+		display: flex;
+		flex-direction: row;
+		margin-bottom: 0;
+	}
+
+	&__line {
+		background-color: rgb(var(--primary-color));
+		height: 4px;
+		width: 3.333rem;
+		border-radius: 4px;
+		margin-right: 0.333rem;
+
+		&--secondary {
+			width: 2.333rem;
+			background-color: rgb(var(--secondary-color));
+		}
+	}
+
+	&__filters {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 8px;
+
+		@include md {
+			justify-content: flex-end;
+			flex-shrink: 0;
+		}
+	}
+}

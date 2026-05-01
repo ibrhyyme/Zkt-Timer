@@ -5,12 +5,15 @@ import './LiveAnalysisOverlay.scss';
 import block from '../../../styles/bem';
 import { useSettings } from '../../../util/hooks/useSettings';
 import { is3x3CubeType } from '../helpers/util';
+import { getTimeString } from '../../../util/time';
 
 const b = block('live-analysis');
 
 export default function LiveAnalysisOverlay({ startState, mobile }: { startState?: string, mobile?: boolean }) {
     const { smartTurns, timeStartedAt, lastSmartSolveStats } = useContext(TimerContext);
-    const analysisMode = useSettings('smart_cube_analysis_mode') || 'cffffop';
+    const rawAnalysisMode = useSettings('smart_cube_analysis_mode') || 'cffffop';
+    // Mobilde cffffoopp 11 satira cikiyor — sigmaz. cffffop'a (7 satir) fallback yap.
+    const analysisMode = (mobile && rawAnalysisMode === 'cffffoopp') ? 'cffffop' : rawAnalysisMode;
     const cubeType = useSettings('cube_type');
     const scrambleSubset = useSettings('scramble_subset');
 
@@ -237,46 +240,102 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
         currentPhase === 'Scramble/Inspection'
     ) return null;
 
+    // Sadece zamani olan ve done olan fazlari render et — cumulative hesabi icin
+    const renderableRows = mergedPhases.filter(p => p.done && p.time != null && p.time > 0);
+    let cumulative = 0;
+
     return (
         <div className={b()}>
             <div className={b('table')} style={mobile ? {
                 display: 'grid',
                 gridTemplateColumns: 'max-content max-content',
-                columnGap: '15px',
+                columnGap: '8px',
                 rowGap: '0px',
                 width: '100%',
                 justifyContent: 'start',
-                paddingLeft: '4px',
+                paddingLeft: '2px',
                 justifyItems: 'start'
             } : {}}>
-                {mergedPhases.map(p => {
-                    // Only show DONE phases. No loading state.
-                    if (!p.done) return null;
+                {renderableRows.map((p, idx) => {
+                    cumulative += p.time;
+                    const showCumulative = idx > 0;
 
-                    const timeStr = p.time ? p.time.toFixed(2) : '';
+                    const timeStr = getTimeString(p.time, 2);
                     const [sec, dec] = timeStr.split('.');
 
+                    const cumStr = getTimeString(cumulative, 2);
+                    const [cSec, cDec] = cumStr.split('.');
+
+                    const rowStyle: React.CSSProperties = {
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignItems: 'baseline',
+                        gap: mobile ? '10px' : '16px',
+                        marginBottom: mobile ? '4px' : '12px',
+                        whiteSpace: 'nowrap',
+                        fontSize: mobile ? '1.4rem' : '2.5rem',
+                        lineHeight: '1.1',
+                        fontWeight: '700',
+                    };
+
+                    // Mobilde 2-sutun grid: sutun 1 split, sutun 2 cumulative
+                    if (mobile) {
+                        return (
+                            <React.Fragment key={p.id}>
+                                <div className={b('row', { active: p.active, done: p.done })} style={rowStyle}>
+                                    <span className={b('symbol')} style={{ color: '#fff' }}>{p.label}</span>
+                                    <span className={b('time-val')} style={{ color: '#60a5fa' }}>
+                                        <span>
+                                            {sec}
+                                            <span style={{ fontSize: '0.6em', opacity: 0.8 }}>.{dec}</span>
+                                        </span>
+                                    </span>
+                                </div>
+                                <div className={b('row', { done: p.done })} style={rowStyle}>
+                                    {showCumulative && (
+                                        <>
+                                            <span className={b('symbol')} style={{ color: '#fff' }}>=</span>
+                                            <span className={b('time-val')} style={{ color: '#60a5fa' }}>
+                                                <span>
+                                                    {cSec}
+                                                    <span style={{ fontSize: '0.6em', opacity: 0.8 }}>.{cDec}</span>
+                                                </span>
+                                            </span>
+                                        </>
+                                    )}
+                                </div>
+                            </React.Fragment>
+                        );
+                    }
+
+                    // Desktop: tek satir icinde split + cumulative yan yana
                     return (
-                        <div key={p.id} className={b('row', { active: p.active, done: p.done })} style={{
-                            display: 'flex',
-                            flexDirection: 'row',
-                            alignItems: 'baseline',
-                            gap: '0px',
-                            marginBottom: mobile ? '5px' : '12px',
-                            whiteSpace: 'nowrap',
-                            fontSize: mobile ? '1.8rem' : '2.5rem',
-                            lineHeight: '0.9',
-                            fontWeight: '700'
-                        }}>
-                            <span className={b('symbol')} style={{ color: '#fff' }}>
-                                {p.label}
-                            </span>
-                            <span className={b('time-val')} style={{ color: '#60a5fa' }}>
-                                <span>
-                                    {sec}
-                                    <span style={{ fontSize: '0.6em', opacity: 0.8 }}>.{dec}</span>
+                        <div key={p.id} className={b('row', { active: p.active, done: p.done })} style={rowStyle}>
+                            <div style={{ display: 'flex', alignItems: 'baseline' }}>
+                                <span className={b('symbol')} style={{ color: '#fff' }}>
+                                    {p.label}
                                 </span>
-                            </span>
+                                <span className={b('time-val')} style={{ color: '#60a5fa' }}>
+                                    <span>
+                                        {sec}
+                                        <span style={{ fontSize: '0.6em', opacity: 0.8 }}>.{dec}</span>
+                                    </span>
+                                </span>
+                            </div>
+                            {showCumulative && (
+                                <div style={{
+                                    display: 'flex',
+                                    alignItems: 'baseline',
+                                }}>
+                                    <span className={b('symbol')} style={{ color: '#fff' }}>=</span>
+                                    <span className={b('time-val')} style={{ color: '#60a5fa' }}>
+                                        <span>
+                                            {cSec}
+                                            <span style={{ fontSize: '0.6em', opacity: 0.8 }}>.{cDec}</span>
+                                        </span>
+                                    </span>
+                                </div>
+                            )}
                         </div>
                     );
                 })}

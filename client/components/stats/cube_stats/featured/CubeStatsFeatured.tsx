@@ -51,51 +51,49 @@ export default function CubeStatsFeatured() {
 		<div className={b()}>
 			<NumberBlock
 				large
-				onClick={() => openSolve(singlePb?.solve)}
+				onClick={singlePb ? () => openSolve(singlePb?.solve) : undefined}
 				icon={<Trophy weight="bold" />}
 				title="Single PB"
 				value={getTimeString(singlePb?.time)}
 				color="#23C586"
 			>
-				<div className={b('single-pb')}>
-					<div className={b('spb-info')}>
-						<ul>
-							<li>
-								<CalendarBlank />
-								<div>
-									<p>{pbDate.toLocaleDateString()}</p>
-									<span>({getDateFromNow(pbDate)})</span>
-								</div>
-							</li>
-						</ul>
+				{singlePb && (
+					<div className={b('single-pb')}>
+						<div className={b('spb-info')}>
+							<ul>
+								<li>
+									<CalendarBlank />
+									<div>
+										<p>{pbDate.toLocaleDateString()}</p>
+										<span>({getDateFromNow(pbDate)})</span>
+									</div>
+								</li>
+							</ul>
+						</div>
+						<div className={b('spb-scramble')}>
+							<ScrambleVisual
+								width="60px"
+								frontFace
+								scramble={singlePb?.solve?.scramble}
+								cubeType={pbVisualCubeType}
+							/>
+						</div>
 					</div>
-					<div className={b('spb-scramble')}>
-						<ScrambleVisual
-							width="60px"
-							frontFace
-							scramble={singlePb?.solve?.scramble}
-							cubeType={pbVisualCubeType}
-						/>
-					</div>
-				</div>
+				)}
 			</NumberBlock>
-			<div className={b('right')}>
-				<NumberBlock
-					center
-					icon={<Hash weight="bold" />}
-					title={t('stats_page.total_solves')}
-					value={totalSolves}
-					color="#54ACE4"
-				/>
-				<NumberBlock
-					center
-					icon={<Timer weight="bold" />}
-					title={t('stats_page.cubing_time')}
-					value={getTimeString(timeSpentCubing)}
-					animateSeconds={timeSpentCubing}
-					color="#6D7D90"
-				/>
-			</div>
+			<NumberBlock
+				icon={<Hash weight="bold" />}
+				title={t('stats_page.total_solves')}
+				value={totalSolves}
+				color="#54ACE4"
+			/>
+			<NumberBlock
+				icon={<Timer weight="bold" />}
+				title={t('stats_page.cubing_time')}
+				value={getTimeString(timeSpentCubing)}
+				animateSeconds={timeSpentCubing}
+				color="#6D7D90"
+			/>
 		</div>
 	);
 }

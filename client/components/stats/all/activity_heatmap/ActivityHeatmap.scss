@@ -1,0 +1,139 @@
+@import '../../../../styles/config';
+
+.#{$namespace}-activity-heatmap {
+	display: flex;
+	flex-direction: column;
+	gap: 0.667rem;
+	width: 100%;
+
+	&__months {
+		display: grid;
+		grid-template-columns: repeat(53, 1fr);
+		gap: 3px;
+		font-family: 'Roboto Mono', ui-monospace, monospace;
+		font-size: 0.667rem;
+		color: rgb(var(--text-color));
+		letter-spacing: 0.04em;
+		min-height: 1rem;
+	}
+
+	&__month {
+		grid-row: 1;
+		white-space: nowrap;
+	}
+
+	&__grid {
+		display: grid;
+		grid-template-columns: repeat(53, 1fr);
+		gap: 3px;
+	}
+
+	&__week {
+		display: grid;
+		grid-template-rows: repeat(7, 1fr);
+		gap: 3px;
+	}
+
+	&__cell {
+		aspect-ratio: 1;
+		border-radius: 3px;
+		background-color: rgba(var(--text-color), 0.06);
+		transition: transform 0.1s;
+		cursor: default;
+
+		&:hover {
+			transform: scale(1.4);
+			z-index: 3;
+			position: relative;
+		}
+
+		&[data-l='1'] {
+			background-color: rgba(var(--primary-color), 0.22);
+		}
+
+		&[data-l='2'] {
+			background-color: rgba(var(--primary-color), 0.45);
+		}
+
+		&[data-l='3'] {
+			background-color: rgba(var(--primary-color), 0.7);
+		}
+
+		&[data-l='4'] {
+			background-color: rgb(var(--primary-color));
+			box-shadow: 0 0 8px rgba(var(--primary-color), 0.4);
+		}
+	}
+
+	&__footer {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 1rem;
+		margin-top: 0.667rem;
+		flex-wrap: wrap;
+	}
+
+	&__stat {
+		display: flex;
+		flex-direction: row;
+		align-items: baseline;
+		gap: 0.4rem;
+
+		strong {
+			font-family: Kontora, Poppins, Arial, 'Helvetica Neue', Helvetica, sans-serif;
+			font-size: 1.467rem;
+			color: rgb(var(--text-color));
+			letter-spacing: -0.015em;
+			font-weight: 500;
+		}
+
+		span {
+			font-family: 'Roboto Mono', ui-monospace, monospace;
+			font-size: 0.733rem;
+			color: rgb(var(--text-color));
+			letter-spacing: 0.04em;
+		}
+
+		&--right {
+			margin-left: auto;
+		}
+	}
+
+	&__scale {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		font-family: 'Roboto Mono', ui-monospace, monospace;
+		font-size: 0.7rem;
+		color: rgb(var(--text-color));
+		letter-spacing: 0.04em;
+
+		i {
+			width: 10px;
+			height: 10px;
+			border-radius: 2px;
+			display: inline-block;
+
+			&[data-l='0'] {
+				background-color: rgba(var(--text-color), 0.06);
+			}
+
+			&[data-l='1'] {
+				background-color: rgba(var(--primary-color), 0.22);
+			}
+
+			&[data-l='2'] {
+				background-color: rgba(var(--primary-color), 0.45);
+			}
+
+			&[data-l='3'] {
+				background-color: rgba(var(--primary-color), 0.7);
+			}
+
+			&[data-l='4'] {
+				background-color: rgb(var(--primary-color));
+			}
+		}
+	}
+}

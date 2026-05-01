@@ -77,7 +77,67 @@
     },
     "stats": {
         "page_title": "İstatistikler",
-        "all": "Tümü"
+        "all": "Tümü",
+        "select_cube": "Cube seç",
+        "hero": {
+            "title": "İstatistikler",
+            "subtitle": "Her çözümün, her saniyenin ve her küçük ilerlemenin özeti."
+        },
+        "heatmap": {
+            "less": "Az",
+            "more": "Çok",
+            "active_days": "aktif gün · {{total}}'ten",
+            "current_streak": "mevcut seri"
+        },
+        "cube_hero": {
+            "solves_count": "{{value}} çözüm",
+            "avg_ao12": "Ort. {{time}}"
+        },
+        "cube_chart": {
+            "eyebrow": "Çözüm süreleri",
+            "current_ao12": "Şu anki Ao12",
+            "best_ao12": "En iyi Ao12",
+            "gap": "PB'den fark",
+            "gap_at_pb": "PB anı",
+            "total": "Toplam çözüm"
+        },
+        "hourly": {
+            "empty": "Bu filtre için çözüm yok.",
+            "std_dev": "standart sapma",
+            "peak": "En aktif: {{hour}} · {{value}} çözüm",
+            "avg_per_hour": "Ort. {{value}} çözüm/saat"
+        },
+        "avg": {
+            "subtitle": "Son {{value}} çözüm",
+            "best_block": "★ En tutarlı blok"
+        },
+        "focus": {
+            "total_time": "Toplam süre",
+            "total_solves_count": "{{value}} çözüm",
+            "peak_hour": "En verimli saat",
+            "peak_hour_sub": "{{value}} çözüm bu saatte",
+            "peak_hour_empty": "Henüz veri yok",
+            "best_day": "En iyi gün",
+            "best_day_sub": "Ortalama Ao12 {{time}}",
+            "best_day_empty": "Yeterli veri yok",
+            "sessions": "Aktif seans",
+            "sessions_sub": "Ortalama {{avg}} çözüm/seans"
+        },
+        "splits": {
+            "empty": "Akıllı küp ile çözüm bulunamadı.",
+            "eyebrow": "{{value}} akıllı küp çözümünün ortalaması",
+            "bottleneck": "En çok {{phase}}'de zaman kaybediyorsun",
+            "pro_upsell": "Aşama analizi Pro özelliği",
+            "phase": {
+                "cross": "Cross",
+                "f2l_1": "F2L 1",
+                "f2l_2": "F2L 2",
+                "f2l_3": "F2L 3",
+                "f2l_4": "F2L 4",
+                "oll": "OLL",
+                "pll": "PLL"
+            }
+        }
     },
     "danger_zone": {
         "reset_settings_title": "Ayarları Sıfırla",
@@ -1194,7 +1254,14 @@
         "most_popular_event": "En Popüler Etkinlik",
         "averages": "Ortalamalar",
         "highest_streak": "En Yüksek Seri",
-        "days": "gün"
+        "days": "gün",
+        "puzzles": "Bulmaca Başına",
+        "activity": "365 Günlük Aktiflik",
+        "hourly_consistency": "Saatlik Aktivite",
+        "time_focus": "Zaman & Odak",
+        "phase_splits": "Aşama Ayrımı",
+        "steps_detail": "Aşama Detay Tablosu",
+        "smart_cube_summary": "Akıllı Küp Özeti"
     },
     "common": {
         "results_count": "{{count}} sonuç",
@@ -1215,7 +1282,8 @@
         "reset": "Sıfırla",
         "clear": "Temizle",
         "create_new": "Yeni Oluştur",
-        "copied": "Kopyalandı"
+        "copied": "Kopyalandı",
+        "coming_soon": "Yakında"
     },
     "announcement_modal": {
         "feature": "🎉 Yenilik",

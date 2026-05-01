@@ -3,6 +3,7 @@ import { getSolveStepsWithoutParents } from '../../util/solution';
 import { STEP_NAME_MAP } from '../../util/consts';
 import block from '../../../../styles/bem';
 import { Solve } from '../../../../../server/schemas/Solve.schema';
+import { getTimeString } from '../../../../util/time';
 import './CombinedTimeline.scss';
 
 const b = block('solve-info-combined-timeline');
@@ -28,7 +29,7 @@ export default function CombinedTimeline(props: Props) {
 	if (maxStepTime === 0) maxStepTime = 1;
 
 	function fmt(val: number): string {
-		return val.toFixed(2) + 's';
+		return getTimeString(val, 2) + 's';
 	}
 
 	return (

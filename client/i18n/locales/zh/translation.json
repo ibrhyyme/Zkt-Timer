@@ -77,7 +77,67 @@
     },
     "stats": {
         "page_title": "统计",
-        "all": "全部"
+        "all": "全部",
+        "select_cube": "选择魔方",
+        "hero": {
+            "title": "统计",
+            "subtitle": "每一次还原、每一秒、每一点进步的总览。"
+        },
+        "heatmap": {
+            "less": "少",
+            "more": "多",
+            "active_days": "活跃天数 · 共 {{total}}",
+            "current_streak": "当前连续"
+        },
+        "cube_hero": {
+            "solves_count": "{{value}} 次还原",
+            "avg_ao12": "平均 {{time}}"
+        },
+        "cube_chart": {
+            "eyebrow": "还原时间",
+            "current_ao12": "当前 Ao12",
+            "best_ao12": "最佳 Ao12",
+            "gap": "与 PB 差距",
+            "gap_at_pb": "已达 PB",
+            "total": "总还原数"
+        },
+        "hourly": {
+            "empty": "此筛选下没有还原。",
+            "std_dev": "标准差",
+            "peak": "峰值：{{hour}} · {{value}} 次还原",
+            "avg_per_hour": "平均 {{value}} 次/小时"
+        },
+        "avg": {
+            "subtitle": "最近 {{value}} 次还原",
+            "best_block": "★ 最稳定的块"
+        },
+        "focus": {
+            "total_time": "总时长",
+            "total_solves_count": "{{value}} 次还原",
+            "peak_hour": "高峰时段",
+            "peak_hour_sub": "此时段 {{value}} 次还原",
+            "peak_hour_empty": "暂无数据",
+            "best_day": "最佳日",
+            "best_day_sub": "平均 Ao12 {{time}}",
+            "best_day_empty": "数据不足",
+            "sessions": "活跃会话",
+            "sessions_sub": "平均 {{avg}} 还原/会话"
+        },
+        "splits": {
+            "empty": "未找到智能魔方还原。",
+            "eyebrow": "{{value}} 次智能魔方还原的平均",
+            "bottleneck": "你在 {{phase}} 上耗时最多",
+            "pro_upsell": "阶段分析为 Pro 功能",
+            "phase": {
+                "cross": "Cross",
+                "f2l_1": "F2L 1",
+                "f2l_2": "F2L 2",
+                "f2l_3": "F2L 3",
+                "f2l_4": "F2L 4",
+                "oll": "OLL",
+                "pll": "PLL"
+            }
+        }
     },
     "danger_zone": {
         "reset_settings_title": "重置设置",
@@ -1194,7 +1254,14 @@
         "most_popular_event": "最受欢迎的项目",
         "averages": "平均值",
         "highest_streak": "最高连续天数",
-        "days": "天"
+        "days": "天",
+        "puzzles": "按拼图",
+        "activity": "365 天活动",
+        "hourly_consistency": "每小时活动",
+        "time_focus": "时间与专注",
+        "phase_splits": "阶段拆分",
+        "steps_detail": "阶段详情表",
+        "smart_cube_summary": "智能魔方概览"
     },
     "common": {
         "results_count": "{{count}} 条结果",
@@ -1215,7 +1282,8 @@
         "reset": "重置",
         "clear": "清除",
         "create_new": "新建",
-        "copied": "已复制"
+        "copied": "已复制",
+        "coming_soon": "敬请期待"
     },
     "announcement_modal": {
         "feature": "🎉 功能",
