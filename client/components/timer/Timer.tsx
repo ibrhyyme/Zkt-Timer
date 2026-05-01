@@ -128,10 +128,12 @@ let timerLayout = props.timerLayout || useSettings('timer_layout');
 				{/* Scramble alanı - sadece metin, tıkla kopyala */}
 				<MobileTimerScramble />
 
-				{/* Bildirim zone — sabit yükseklik, timer pozisyonunu etkilemez */}
-				<div className={b('notification-zone')}>
-					{timerStore.notification}
-				</div>
+				{/* Bildirim zone — sadece bildirim varken render et (bos yer kapsamasin) */}
+				{timerStore.notification && (
+					<div className={b('notification-zone')}>
+						{timerStore.notification}
+					</div>
+				)}
 
 				{/* Akıllı küp: SOL=dar analiz portal, SAĞ=cube+timer yapışık */}
 				{smartActive ? (

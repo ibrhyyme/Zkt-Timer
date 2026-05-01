@@ -138,7 +138,11 @@ export default function GanTimer() {
 	}
 
 	return (
-		<div onClick={scanning ? undefined : handleConnectButton} style={{userSelect: 'none', cursor: scanning ? 'default' : 'pointer'}}>
+		<div
+			className={'cd-timer__connect-trigger' + (scanning ? ' cd-timer__connect-trigger--disabled' : '')}
+			onClick={scanning ? undefined : handleConnectButton}
+			role="button"
+		>
 			<Emblem
 				icon={<Bluetooth />}
 				text={emblemText}
