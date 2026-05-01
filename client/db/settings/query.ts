@@ -66,6 +66,7 @@ export interface AllSettings {
 	// Kullanicinin kendi default'lari — "Varsayilan" butonu ile o anki deger buraya kaydedilir.
 	// "Sifirla" butonu varsa once buna doner, yoksa factory default'a.
 	timer_scramble_size_user_default: number | null;
+	timer_time_size_user_default: number | null;
 	smart_cube_size_user_default: number | null;
 }
 
@@ -137,6 +138,7 @@ const defaultSettings: AllSettings = {
 	smart_cube_analysis_mode: 'cffffop', // 'none' | 'cfop' | 'cf_plus_op' | 'cffffop' | 'cffffoopp'
 
 	timer_scramble_size_user_default: null,
+	timer_time_size_user_default: null,
 	smart_cube_size_user_default: null,
 };
 
@@ -148,7 +150,10 @@ const mobileDefaultOverrides: Partial<AllSettings> = {
 };
 
 function isMobileViewport(): boolean {
-	return typeof window !== 'undefined' && window.innerWidth < 768;
+	// HeaderNav ve Nav ile ayni breakpoint: < 1024 (katlanir telefon acik ekrani dahil)
+	// veya kisa landscape (innerHeight <= 500 — landscape telefon)
+	if (typeof window === 'undefined') return false;
+	return window.innerWidth < 1024 || window.innerHeight <= 500;
 }
 
 export function getDefaultSetting<T extends keyof AllSettings>(key: T): AllSettings[T] {

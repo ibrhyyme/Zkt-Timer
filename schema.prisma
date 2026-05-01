@@ -720,6 +720,10 @@ model Setting {
   scramble_subset                     String?
   locale                              String           @default("en")
   goal_reminder_enabled               Boolean          @default(false)
+  smart_cube_size                     Int?
+  smart_cube_size_user_default        Int?
+  timer_scramble_size_user_default    Int?
+  timer_time_size_user_default        Int?
   custom_cube_types                   CustomCubeType[] @relation("custom_cube_type_setting")
   user                                UserAccount      @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
