@@ -100,6 +100,22 @@ export default function SmartCube() {
 
 	const smartCubeSize = useSettings('smart_cube_size');
 
+	// Mobilde kup boyutunu viewport'a gore sinirla (kucuk telefonlarda timer/dashboard'i ezmesin)
+	const [viewportH, setViewportH] = useState(typeof window !== 'undefined' ? window.innerHeight : 800);
+	const [viewportW, setViewportW] = useState(typeof window !== 'undefined' ? window.innerWidth : 400);
+	useEffect(() => {
+		if (typeof window === 'undefined') return;
+		const onResize = () => {
+			setViewportH(window.innerHeight);
+			setViewportW(window.innerWidth);
+		};
+		window.addEventListener('resize', onResize);
+		return () => window.removeEventListener('resize', onResize);
+	}, []);
+	const effectiveCubeSize = mobileMode
+		? Math.floor(Math.min(smartCubeSize, viewportH * 0.30, viewportW * 0.52))
+		: smartCubeSize;
+
 	const {
 		scramble,
 		smartTurns,
@@ -1050,17 +1066,29 @@ export default function SmartCube() {
 	let emblem;
 	if (smartCubeScanning) {
 		emblem = <Emblem small orange icon={<Bluetooth />} />;
-		actionButton = <Button text={t('smart_cube.scanning_short')} disabled />;
+		actionButton = (
+			<div className="cd-timer__connect-trigger cd-timer__connect-trigger--disabled">
+				<Emblem small orange icon={<Bluetooth />} text={t('smart_cube.scanning_short')} />
+			</div>
+		);
 		battery = null;
 	} else if (smartCubeConnecting) {
 		emblem = <Emblem small orange icon={<Bluetooth />} />;
-		actionButton = <Button text={t('smart_cube.connecting')} disabled />;
+		actionButton = (
+			<div className="cd-timer__connect-trigger cd-timer__connect-trigger--disabled">
+				<Emblem small orange icon={<Bluetooth />} text={t('smart_cube.connecting').replace('...', '')} />
+			</div>
+		);
 		battery = null;
 	} else if (smartCubeConnected) {
 		emblem = <Emblem small green icon={<Bluetooth />} />;
 	} else {
 		emblem = <Emblem small red icon={<Bluetooth />} />;
-		actionButton = <Button text={t('smart_cube.connect')} onClick={connectBluetooth} icon={<Bluetooth />} />;
+		actionButton = (
+			<div className="cd-timer__connect-trigger" onClick={connectBluetooth} role="button">
+				<Emblem small red icon={<Bluetooth />} text={t('smart_cube.connect')} />
+			</div>
+		);
 		battery = null;
 	}
 
@@ -1072,7 +1100,10 @@ export default function SmartCube() {
 		<div className={b({ mobile: mobileMode })}>
 			<div className={b('wrapper')}>
 				<div className={b('cube')}>
-					<div ref={containerRef} style={{ width: smartCubeSize, height: smartCubeSize }} />
+					<div
+						ref={containerRef}
+						style={{ width: effectiveCubeSize, height: effectiveCubeSize }}
+					/>
 				</div>
 				{!mobileMode && (
 					<div className={b('stats-container')}>
@@ -1082,6 +1113,11 @@ export default function SmartCube() {
 				)}
 				{mobileMode && domReady && ReactDOM.createPortal(
 					<>
+						{actionButton && (
+							<div className="cd-timer__mobile-action">
+								{actionButton}
+							</div>
+						)}
 						<LiveAnalysisOverlay
 							startState={startState || (cubejs.current ? cubejs.current.asString() : null)}
 							mobile={true}
@@ -1096,7 +1132,7 @@ export default function SmartCube() {
 					{dropdown}
 				</div>
 			</div>
-			{actionButton}
+			{!mobileMode && actionButton}
 			{domReady && ReactDOM.createPortal(
 				<AbortSolveOverlay
 					showAbortButton={!!smartAbortVisible && !!timeStartedAt}

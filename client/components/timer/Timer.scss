@@ -393,7 +393,10 @@
 			gap: 0.2rem; // Öğeler arası boşluğu azalt
 		}
 
-		overflow: hidden; // Scroll sadece karistirma icinde — alt kisim sabit kalsin
+		// Cok kucuk ekranlarda son care olarak scroll edilebilsin (normal cihazlarda sigar)
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		-webkit-overflow-scrolling: touch;
 		gap: 0.5rem;
 
 		&--manual {
@@ -527,7 +530,7 @@
 		width: 100%;
 		max-width: 100%;
 		flex: 0 0 auto;
-		max-height: 38vh; // Dashboard'i ezmesin
+		max-height: 36vh; // Dashboard'i ezmesin (38→36 ile dashboard'a daha fazla yer)
 		overflow: visible;
 		padding: 0 0.5rem;
 		box-sizing: border-box;
@@ -538,17 +541,83 @@
 	&__mobile-smart-grid-left {
 		display: flex;
 		flex-direction: column;
-		justify-content: flex-start; // Analiz USTTEN baslar — satir eklendikce ASAGI dogru buyusun
-		align-items: flex-start;
+		justify-content: center; // Sol panel icerigi (analiz / baglan butonu) ekran ortasi
+		align-items: center;
+		align-self: stretch; // Grid'in align-items: start'ini override et — hucre yuksekligi icin
+		gap: 0.5rem;
 		min-width: 0;
-		max-height: 38vh;
+		max-height: 36vh;
 		overflow: hidden;
-		padding-top: 1.5rem; // Cube'un ust seviyesinden biraz daha asagidan basla
+		padding: 0.5rem;
 
 		#mobile-smart-phases-container {
 			width: 100%;
 			padding: 0;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center; // Portal icerigi de dikey ortali
+			gap: 0.5rem;
 		}
+	}
+
+	// Smart Cube + GAN Timer ortak "Baglan" emblem wrapper — sade, biraz buyuk
+	&__connect-trigger {
+		display: inline-flex;
+		justify-content: center;
+		align-items: center;
+		cursor: pointer;
+		user-select: none;
+		-webkit-user-select: none;
+
+		.cd-common__emblem {
+			padding: 0.55rem 1.1rem !important;
+			border-radius: 999px !important;
+			margin-bottom: 0;
+			transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.2s ease;
+			box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+
+			.cd-common__emblem__body {
+				gap: 0.45rem;
+			}
+
+			span {
+				font-size: 0.95rem !important;
+				font-weight: 600 !important;
+			}
+
+			i, svg {
+				font-size: 1.1rem !important;
+			}
+
+			i + span {
+				margin-left: 0.45rem;
+			}
+		}
+
+		&:hover:not(&--disabled) .cd-common__emblem {
+			transform: scale(1.04);
+			filter: brightness(1.08);
+			box-shadow: 0 3px 12px rgba(0, 0, 0, 0.25);
+		}
+
+		&:active:not(&--disabled) .cd-common__emblem {
+			transform: scale(0.97);
+		}
+
+		&--disabled {
+			cursor: default;
+			opacity: 0.85;
+		}
+	}
+
+	// Mobile sol paneldeki connect-trigger wrapper'i ortala
+	&__mobile-action {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		width: 100%;
+		padding: 0.25rem;
 	}
 
 	&__mobile-smart-grid-right {
@@ -566,10 +635,10 @@
 		justify-content: center;
 		width: 100%;
 		flex: 0 0 auto;
+		max-height: 30vh; // Kucuk telefonlarda dashboard/stats'i ezmesin
 		overflow: visible;
 
-		// Desktop'ta zoom: 0.4 var — mobilde kullanicinin smart_cube_size ayari (default 240)
-		// gercek boyutta gorunsun diye zoom'u iptal et.
+		// Desktop'ta zoom: 0.4 var — mobilde JS effectiveCubeSize zaten viewport-aware
 		.cd-smart-cube__cube {
 			zoom: 1 !important;
 			margin: 0 !important;
@@ -577,8 +646,9 @@
 
 		.cd-smart-cube__cube canvas {
 			width: 100% !important;
-			height: auto !important;
-			max-width: min(280px, 52vw); // smart_cube_size=240 sigsin, sutun tasmasin
+			height: 100% !important;
+			max-width: 100%;
+			max-height: 100%;
 			object-fit: contain;
 		}
 

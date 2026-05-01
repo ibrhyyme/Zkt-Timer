@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import {useTranslation} from 'react-i18next';
 import { Check, Copy, X } from 'phosphor-react';
@@ -57,7 +57,7 @@ export default function MobileTimerScramble() {
     }, [cubeType, scrambleSubset]);
 
     // Karistirma alana sigmiyorsa font boyutunu otomatik kucult (binary search)
-    useEffect(() => {
+    const runFit = useCallback(() => {
         const container = containerRef.current;
         const text = textRef.current;
         if (!container || !text) {
@@ -102,7 +102,24 @@ export default function MobileTimerScramble() {
 
             setAdjustedFontSize(lo);
         });
-    }, [scramble, cubeType, timerScrambleSize]);
+    }, [timerScrambleSize]);
+
+    // Scramble/cubeType/font setting degisiminde re-fit
+    useEffect(() => {
+        runFit();
+    }, [scramble, cubeType, timerScrambleSize, isSmart, runFit]);
+
+    // Container yuksekligi degisirse (SmartCube async yuklenince, klavye acilinca, vs) re-fit
+    useEffect(() => {
+        const container = containerRef.current;
+        if (!container || typeof ResizeObserver === 'undefined') return;
+
+        const ro = new ResizeObserver(() => {
+            runFit();
+        });
+        ro.observe(container);
+        return () => ro.disconnect();
+    }, [runFit]);
 
     if (hideScramble) {
         scramble = '';
