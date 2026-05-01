@@ -108,16 +108,40 @@ export function getSubsetLabel(cubeType: string, subsetId: string | null | undef
 	return subset.label;
 }
 
-// Composite label for a (cube_type, subset) pair.
-// Examples: "WCA > 3x3", "3x3 > Random State", "Square-1"
+// Composite label for a (cube_type, subset) pair — sade format.
+// WCA standartlarinda "WCA" prefix'i gereksiz: 3x3 yeterli.
+// Examples: "3x3", "Random State", "Square-1"
+// Kullanici-yuzlu yerler (Bulmaca Basina, PuzzleCard, profil PB liste) bu helper'i kullanir.
 export function getCubeTypeBucketLabel(cubeType: string, subsetId: string | null | undefined): string {
 	const ct = getCubeTypeInfoById(cubeType);
 	if (!ct) return cubeType;
 
 	const subsetLabel = getSubsetLabel(cubeType, subsetId);
+
+	// WCA category zaten "standart" cozum demek — "3x3" kafidir, "WCA > 3x3" tekrar.
+	if (cubeType === 'wca' && subsetLabel) return subsetLabel;
+	if (cubeType === 'wca' && subsetId) return subsetId;
+
 	if (subsetLabel) return `${ct.name} > ${subsetLabel}`;
 
 	// Config'de yok ama raw subset ID var — ham haliyle goster (yoksa sadece "WCA" gibi muphem kalir)
+	if (subsetId) return `${ct.name} > ${subsetId}`;
+
+	return ct.name;
+}
+
+// Composite label that always includes the cube category prefix.
+// Examples: "WCA > 3x3", "3x3 > Random State", "Square-1"
+// SolveInfo karti gibi solve detay yerlerinde kullanilir (kategori bilgisi anlamli).
+export function getCubeTypeBucketLabelWithCategory(
+	cubeType: string,
+	subsetId: string | null | undefined
+): string {
+	const ct = getCubeTypeInfoById(cubeType);
+	if (!ct) return cubeType;
+
+	const subsetLabel = getSubsetLabel(cubeType, subsetId);
+	if (subsetLabel) return `${ct.name} > ${subsetLabel}`;
 	if (subsetId) return `${ct.name} > ${subsetId}`;
 
 	return ct.name;

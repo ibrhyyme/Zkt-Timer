@@ -846,6 +846,8 @@
         "session_name": "Nombre de sesión",
         "solves_count": "Resoluciones: {{count}}",
         "sessions_count": "Sesiones: {{count}}",
+        "skipped_count": "Omitidos (tipo de cubo desconocido): {{count}} resoluciones",
+        "invalid_cube_type": "Tipo de cubo desconocido — el cambio no se aplicó.",
         "review_and_import": "Revisar e importar",
         "review_description": "Asegúrate de que los números a continuación sean correctos. ¡Luego importa los datos!",
         "import": "Importar",

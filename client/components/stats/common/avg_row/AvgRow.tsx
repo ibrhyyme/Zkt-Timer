@@ -40,7 +40,7 @@ export default function AvgRow(props: Props) {
 
 		const descPrefix = pb ? 'Best ' : '';
 		const desc = descPrefix + `Average of ${localCount}`;
-		dispatch(openModal(<HistoryModal solves={avg.solves} description={desc} />));
+		dispatch(openModal(<HistoryModal solves={avg.solves} time={avg.time} description={desc} />));
 	}
 
 	const bestSpan = pb ? <span className={b('blue')}>Best</span> : null;

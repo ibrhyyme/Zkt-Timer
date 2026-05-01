@@ -1,6 +1,7 @@
 import {IImportDataContext, ImportableData} from '../ImportData';
 import {v4 as uuid, v5 as uuidv5} from 'uuid';
 import {SessionInput, SolveInput} from '../../../../../@types/generated/graphql';
+import {normalizeBucketForImport} from './normalize-bucket';
 
 // Namespace UUID for csTimer sessions (randomly generated, constant for this app)
 const CSTIMER_NAMESPACE = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
@@ -73,6 +74,10 @@ interface CsTimerSession {
 	name: string;
 	rank: number;
 	cubeType: string;
+	// Tanimadigimiz cube_type ile gelen sezonlar — solve'lari import'a dahil edilmez.
+	skip?: boolean;
+	scrambleSubset?: string | null;
+	originalCubeType?: string;
 }
 
 interface CsTimerProperties {
@@ -89,21 +94,36 @@ export function parseCsTimerData(txt: string, context: IImportDataContext): Impo
 	const csTimerData = parseAndValidateInput(txt);
 	const properties = getCsTimerProperties(csTimerData);
 
-	const solves = getAllSolves(csTimerData, properties.sessionData);
-	const sessions = getSessionInputFromCsTimerSessionData(properties.sessionData);
+	// Tanimlanmamis cube_type'li sezonlari ayikla — solve'lari import'a girmez.
+	const skippedCubeTypes: Record<string, number> = {};
+	let skippedSolveCount = 0;
+	const validSessions: CsTimerSession[] = [];
+	for (const ses of properties.sessionData) {
+		if (ses.skip) {
+			const csSolves = csTimerData[`session${ses.key}`] || [];
+			skippedSolveCount += csSolves.length;
+			const key = ses.originalCubeType || 'unknown';
+			skippedCubeTypes[key] = (skippedCubeTypes[key] || 0) + csSolves.length;
+			continue;
+		}
+		validSessions.push(ses);
+	}
+
+	const solves = getAllSolves(csTimerData, validSessions);
+	const sessions = getSessionInputFromCsTimerSessionData(validSessions);
 
 	console.log('[csTimer Parse] Parsed data summary:', {
 		sessionCount: sessions.length,
 		solveCount: solves.length,
-		sessions: sessions.map(s => ({ id: s.id, name: s.name, order: s.order })),
+		skippedSolveCount,
+		skippedCubeTypes,
 	});
 
 	const sessionIdCubeTypeMap = {};
-	for (const session of properties.sessionData) {
+	for (const session of validSessions) {
 		sessionIdCubeTypeMap[session.id] = session.cubeType;
 	}
 
-	// Verify all solves have valid session_id
 	const sessionIds = new Set(sessions.map(s => s.id));
 	const orphanSolves = solves.filter(solve => !sessionIds.has(solve.session_id));
 	if (orphanSolves.length > 0) {
@@ -114,6 +134,8 @@ export function parseCsTimerData(txt: string, context: IImportDataContext): Impo
 		solves,
 		sessions,
 		sessionIdCubeTypeMap,
+		skippedSolveCount: skippedSolveCount || undefined,
+		skippedCubeTypes: Object.keys(skippedCubeTypes).length ? skippedCubeTypes : undefined,
 	};
 }
 
@@ -168,23 +190,34 @@ function getSessionData(sesData: string | object) {
 	for (const sessionId of sessionKeys) {
 		const ses = sessionData[sessionId];
 
-		let cubeType = '333';
 		const srcType = ses?.opt?.scrType;
+		const mappedFlat = srcType && CSTIMER_ZKTTIMER_CUBETYPE_MAP[srcType] ? CSTIMER_ZKTTIMER_CUBETYPE_MAP[srcType] : '333';
 
-		if (srcType && CSTIMER_ZKTTIMER_CUBETYPE_MAP[srcType]) {
-			cubeType = CSTIMER_ZKTTIMER_CUBETYPE_MAP[srcType];
-		}
+		const normalized = normalizeBucketForImport(mappedFlat);
 
-		// Generate deterministic UUID from csTimer session key
-		// This ensures the same session key always produces the same UUID
 		const deterministicId = uuidv5(`cstimer-session-${sessionId}`, CSTIMER_NAMESPACE);
+
+		if (!normalized) {
+			// Tanimlanmamis cube_type — sezonu skip isaretle, solve'lari import'a girmez.
+			sessionInput.push({
+				id: deterministicId,
+				key: String(sessionId),
+				name: String(ses.name),
+				rank: ses.rank,
+				cubeType: mappedFlat,
+				originalCubeType: srcType || mappedFlat,
+				skip: true,
+			});
+			continue;
+		}
 
 		sessionInput.push({
 			id: deterministicId,
 			key: String(sessionId),
 			name: String(ses.name),
 			rank: ses.rank,
-			cubeType,
+			cubeType: normalized.cube_type,
+			scrambleSubset: normalized.scramble_subset,
 		});
 	}
 
@@ -243,6 +276,7 @@ function getSolveInputFromCsTimerSolve(csSolve: CsTimerSolve, session: CsTimerSe
 		dnf,
 		scramble,
 		cube_type: session.cubeType,
+		scramble_subset: session.scrambleSubset ?? null,
 		session_id: session.id,
 		notes,
 		started_at: startTime,

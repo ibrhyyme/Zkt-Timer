@@ -846,6 +846,8 @@
         "session_name": "阶段名称",
         "solves_count": "还原次数：{{count}}",
         "sessions_count": "阶段次数：{{count}}",
+        "skipped_count": "已跳过（未知魔方类型）：{{count}} 个还原",
+        "invalid_cube_type": "未知的魔方类型 — 未应用更改。",
         "review_and_import": "审阅并导入",
         "review_description": "请确保以下数字正确。然后导入数据！",
         "import": "导入",

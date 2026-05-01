@@ -63,8 +63,14 @@ export async function getProfileData(username: string): Promise<IProfileData> {
 		username,
 	} as any);
 
-	const topSolves = result.data.profile.top_solves;
-	const topAverages = result.data.profile.top_averages;
+	// cube_type='wca' bucket'i icin subset zorunlu — subset'siz PB kayitlari
+	// eski sistemden kalan orphan'lar, profil listesine girmesin.
+	const topSolves = (result.data.profile.top_solves || []).filter(
+		(ts) => !(ts.solve?.cube_type === 'wca' && !ts.solve?.scramble_subset)
+	);
+	const topAverages = (result.data.profile.top_averages || []).filter(
+		(ta) => !(ta.cube_type === 'wca' && !ta.scramble_subset)
+	);
 
 	const pbs = {};
 

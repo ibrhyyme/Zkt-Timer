@@ -42,7 +42,15 @@ export default function CubeStatAverages() {
 	function openAvg(count: number) {
 		const item = items.find((i) => i.count === count);
 		if (!item?.avg?.solves) return;
-		dispatch(openModal(<HistoryModal solves={item.avg.solves} description={`Average of ${count.toLocaleString()}`} />));
+		dispatch(
+			openModal(
+				<HistoryModal
+					solves={item.avg.solves}
+					time={item.avg.time}
+					description={`Average of ${count.toLocaleString()}`}
+				/>
+			)
+		);
 	}
 
 	return (

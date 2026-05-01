@@ -4,4 +4,9 @@
 	display: grid;
 	grid-template-columns: 1fr 1fr;
 	grid-gap: 10px;
+
+	// 480px alti — kart icerigi tasiyor (uzun baslik + uzun deger). Tek sutun.
+	@media (max-width: 480px) {
+		grid-template-columns: 1fr;
+	}
 }

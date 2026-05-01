@@ -14,6 +14,7 @@ import { clearOfflineData } from '../../../../layout/offline';
 import CubePicker from '../../../../common/cube_picker/CubePicker';
 import Input from '../../../../common/inputs/input/Input';
 import InputLegend from '../../../../common/inputs/input/input_legend/InputLegend';
+import { normalizeBucketForImport } from '../parse_data/normalize-bucket';
 
 const b = block('review-import');
 
@@ -221,10 +222,19 @@ export default function ReviewImport() {
 			[sessionId]: cubeType,
 		};
 
+		// Kullanici override yapinca subset'i de paralelde guncelle.
+		// Tanimlanmamis cube_type secilirse normalize null doner — degisiklik uygulanmaz.
+		const normalized = normalizeBucketForImport(cubeType);
+		if (!normalized) {
+			toastError(t('data_settings.invalid_cube_type'));
+			return;
+		}
+
 		const solves = [...data.solves];
 		for (const solve of solves) {
 			if (solve.session_id === sessionId) {
-				solve.cube_type = cubeType;
+				solve.cube_type = normalized.cube_type;
+				solve.scramble_subset = normalized.scramble_subset;
 			}
 		}
 
@@ -274,11 +284,25 @@ export default function ReviewImport() {
 			>
 				<div className={b('stats')}>
 					<h4>
-						{t('data_settings.solves_count', { count: data.solves.length.toLocaleString() })}
+						{t('data_settings.solves_count', { count: data.solves.length })}
 					</h4>
 					<h4>
-						{t('data_settings.sessions_count', { count: data.sessions.length.toLocaleString() })}
+						{t('data_settings.sessions_count', { count: data.sessions.length })}
 					</h4>
+					{!!data.skippedSolveCount && (
+						<div className={b('skipped')} style={{ color: '#f59e0b', fontSize: '0.9rem', marginTop: 8 }}>
+							<strong>{t('data_settings.skipped_count', { count: data.skippedSolveCount })}</strong>
+							{data.skippedCubeTypes && (
+								<ul style={{ margin: '4px 0 0 16px', padding: 0 }}>
+									{Object.entries(data.skippedCubeTypes).map(([ct, n]) => (
+										<li key={ct}>
+											{ct}: {n.toLocaleString()}
+										</li>
+									))}
+								</ul>
+							)}
+						</div>
+					)}
 					{sessionMapper}
 				</div>
 				{context.importProgress && (

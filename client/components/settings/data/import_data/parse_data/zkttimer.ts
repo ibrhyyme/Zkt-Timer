@@ -4,6 +4,7 @@ import { Session } from '../../../../../@types/generated/graphql';
 import { fetchSessions } from '../../../../../db/sessions/query';
 import { parseZktTimerLegacyData } from './zkttimer_legacy';
 import { Solve } from '../../../../../../server/schemas/Solve.schema';
+import { normalizeBucketForImport } from './normalize-bucket';
 
 interface ZktTimerExportSchema {
 	solves: Solve[];
@@ -42,16 +43,20 @@ export function parseZktTimerData(txt: string, context: IImportDataContext): Imp
 		sessions.push(newSession);
 	}
 
-	const solves = getUpdatedSolves(importedData.solves, oldNewSessionMap);
+	const result = getUpdatedSolves(importedData.solves, oldNewSessionMap);
 
 	return {
 		sessions,
-		solves,
+		solves: result.solves,
+		skippedSolveCount: result.skippedCount || undefined,
+		skippedCubeTypes: Object.keys(result.skippedTypes).length ? result.skippedTypes : undefined,
 	};
 }
 
 function getUpdatedSolves(solves: Solve[], oldNewSessionMap: Record<string, string>) {
 	const newSolves: Solve[] = [];
+	let skippedCount = 0;
+	const skippedTypes: Record<string, number> = {};
 
 	for (const solve of solves) {
 		const sessionId = solve.session_id;
@@ -78,8 +83,22 @@ function getUpdatedSolves(solves: Solve[], oldNewSessionMap: Record<string, stri
 			}
 		}
 
+		// Modern Zkt-Timer export'larinda cube_type='wca' ve scramble_subset zaten dolu;
+		// legacy/orphan kayitlari (cube_type='wca' subset=null veya eski variant ID) WCA bucket'ina normalize et.
+		if (!solve.scramble_subset || solve.cube_type !== 'wca') {
+			const normalized = normalizeBucketForImport(solve.cube_type);
+			if (!normalized) {
+				const key = solve.cube_type || 'unknown';
+				skippedTypes[key] = (skippedTypes[key] || 0) + 1;
+				skippedCount++;
+				continue;
+			}
+			solve.cube_type = normalized.cube_type;
+			solve.scramble_subset = normalized.scramble_subset;
+		}
+
 		newSolves.push(solve);
 	}
 
-	return newSolves;
+	return { solves: newSolves, skippedCount, skippedTypes };
 }

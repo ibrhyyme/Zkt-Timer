@@ -846,6 +846,8 @@
         "session_name": "Session Name",
         "solves_count": "Solves: {{count}}",
         "sessions_count": "Sessions: {{count}}",
+        "skipped_count": "Skipped (unknown cube type): {{count}} solves",
+        "invalid_cube_type": "Unknown cube type — change was not applied.",
         "review_and_import": "Review and Import",
         "review_description": "Make sure the numbers below are correct. Then import the data!",
         "import": "Import",

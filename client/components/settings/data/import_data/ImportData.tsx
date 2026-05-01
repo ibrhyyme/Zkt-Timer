@@ -27,6 +27,9 @@ export interface ImportableData {
 	solves: SolveInput[];
 	sessions: SessionInput[];
 	sessionIdCubeTypeMap?: Record<string, string>;
+	// Atlanan solve'lar — parser'in tanimadigi cube_type yuzunden import disi birakilan kayitlar.
+	skippedSolveCount?: number;
+	skippedCubeTypes?: Record<string, number>;
 }
 
 export interface IImportDataContext {

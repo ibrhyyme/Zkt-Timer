@@ -2,7 +2,7 @@ import React from 'react';
 import './UserSummary.scss';
 import block from '../../../../styles/bem';
 import {UserAccountSolvesSummary, UserAccountSummary} from '../../../../../server/schemas/UserAccount.schema';
-import {getCubeTypeBucketLabel, getCubeTypeInfoById} from '../../../../util/cubes/util';
+import {getCubeTypeBucketLabelWithCategory, getCubeTypeInfoById} from '../../../../util/cubes/util';
 import {getTimeString} from '../../../../util/time';
 import {useTranslation} from 'react-i18next';
 
@@ -41,7 +41,7 @@ export default function UserSummary(props: Props) {
 		return cubeTypes.map((ct, idx) => {
 			const cubeType = getCubeTypeInfoById(ct.cube_type);
 			const bucketId = `${ct.cube_type || 'unknown'}::${ct.scramble_subset || ''}`;
-			const label = getCubeTypeBucketLabel(ct.cube_type, ct.scramble_subset)
+			const label = getCubeTypeBucketLabelWithCategory(ct.cube_type, ct.scramble_subset)
 				|| cubeType?.name
 				|| ct.cube_type
 				|| t('no_data');
