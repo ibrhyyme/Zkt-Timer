@@ -18,7 +18,7 @@ import { createEmailVerification } from '../models/email_verification';
 import { GraphQLContext } from '../@types/interfaces/server.interface';
 import { ErrorCode } from '../constants/errors';
 import { getPrisma } from '../database';
-import { getEmailStrings } from '../util/email_translations';
+import { getEmailStrings, buildVerificationEmailData } from '../util/email_translations';
 import { validateEmailMx } from '../util/email_validation';
 import { validateName } from '../util/name_validation';
 import { checkRateLimit } from '../services/rate_limit';
@@ -161,14 +161,9 @@ export const mutateActions = {
 		// Dogrulama kodu olustur ve mail gonder
 		const ev = await createEmailVerification(user);
 		const emailStrings = getEmailStrings(language);
-		sendEmailWithTemplate(user, emailStrings.verification_subject, 'email_verification', {
-			code: ev.code,
-			message: emailStrings.verification_message,
-			greeting: emailStrings.greeting,
-			code_expiry: emailStrings.code_expiry,
-			closing: emailStrings.closing,
-			team: emailStrings.team,
-		}).catch(error => {
+		sendEmailWithTemplate(user, emailStrings.verification_subject, 'email_verification',
+			buildVerificationEmailData(user, ev.code, language)
+		).catch(error => {
 			console.error('Verification email could not be sent:', error);
 		});
 

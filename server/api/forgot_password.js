@@ -7,7 +7,7 @@ import { sendEmail, sendEmailWithTemplate } from '../services/ses';
 import { claimForgotPassword, createForgotPassword, getForgotPassword } from '../models/forgot_password';
 import GraphQLError from '../util/graphql_error';
 import { getJwtString } from '../util/auth';
-import { getEmailStrings } from '../util/email_translations';
+import { getEmailStrings, buildForgotEmailData } from '../util/email_translations';
 
 export const gqlMutation = `
 	sendForgotPasswordCode(email: String, language: String): Void
@@ -30,13 +30,8 @@ export const mutateActions = {
 			const fp = await createForgotPassword(user);
 			const emailStrings = getEmailStrings(language);
 
-			sendEmailWithTemplate(user, emailStrings.forgot_subject, 'forgot_password', {
-				code: fp.code,
-				message: emailStrings.forgot_message,
-				greeting: emailStrings.greeting,
-				closing: emailStrings.closing,
-				team: emailStrings.team,
-			});
+			sendEmailWithTemplate(user, emailStrings.forgot_subject, 'forgot_password',
+				buildForgotEmailData(user, fp.code, language));
 		}
 	},
 	checkForgotPasswordCode: async (_, { email, code }) => {
