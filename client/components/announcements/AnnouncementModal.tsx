@@ -1,8 +1,9 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { createPortal } from 'react-dom';
-import { X, CaretRight } from 'phosphor-react';
+import { X, CaretRight, ArrowRight } from 'phosphor-react';
 import { Announcement } from '../../@types/generated/graphql';
+import { openInAppBrowser } from '../../util/external-link';
 
 interface AnnouncementModalProps {
 	announcement: Announcement;
@@ -71,6 +72,21 @@ export default function AnnouncementModal(props: AnnouncementModalProps) {
 	} = props;
 
 	const config = CATEGORY_CONFIG[announcement.category] || CATEGORY_CONFIG.INFO;
+	const targetUrl = (announcement as any).targetUrl as string | undefined;
+
+	const handleViewDetails = () => {
+		if (!targetUrl) return;
+		// onClose markAsViewed'i tetikler (AnnouncementCarousel handleClose'da)
+		onClose();
+		// Modal kapanma transition'ina firsat ver, sonra yonlendir
+		setTimeout(() => {
+			if (targetUrl.startsWith('http')) {
+				openInAppBrowser(targetUrl);
+			} else {
+				window.location.href = targetUrl;
+			}
+		}, 50);
+	};
 
 	const modal = (
 		<div
@@ -158,12 +174,37 @@ export default function AnnouncementModal(props: AnnouncementModalProps) {
 								>
 									{t('announcement_modal.close')}
 								</button>
+								{targetUrl && (
+									<button
+										onClick={handleViewDetails}
+										className="px-5 py-2.5 rounded-xl text-sm font-medium bg-violet-600 hover:bg-violet-500 text-white transition flex items-center gap-2 shadow-lg shadow-violet-500/20"
+									>
+										{t('announcement_modal.view_details')}
+										<ArrowRight size={16} weight="bold" />
+									</button>
+								)}
 								<button
 									onClick={onNext}
 									className="px-5 py-2.5 rounded-xl text-sm font-medium bg-indigo-600 hover:bg-indigo-500 text-white transition flex items-center gap-2 shadow-lg shadow-indigo-500/20"
 								>
 									{t('announcement_modal.next')}
 									<CaretRight size={16} weight="bold" />
+								</button>
+							</>
+						) : targetUrl ? (
+							<>
+								<button
+									onClick={onClose}
+									className="px-4 py-2.5 rounded-xl text-sm font-medium text-zinc-400 hover:text-white hover:bg-zinc-800 transition"
+								>
+									{t('announcement_modal.close')}
+								</button>
+								<button
+									onClick={handleViewDetails}
+									className="px-5 py-2.5 rounded-xl text-sm font-medium bg-violet-600 hover:bg-violet-500 text-white transition flex items-center gap-2 shadow-lg shadow-violet-500/20"
+								>
+									{t('announcement_modal.view_details')}
+									<ArrowRight size={16} weight="bold" />
 								</button>
 							</>
 						) : (

@@ -16,7 +16,7 @@ export function saveSolve(
 	plusTwo = false,
 	overrides: Partial<SolveInput> = {}
 ) {
-	const { onSolve, addTwoToSolve, cubeType, scrambleSubset, dnfTime, demoMode } = context;
+	const { onSolve, addTwoToSolve, cubeType, scrambleSubset, dnfTime } = context;
 
 	dnf = dnf || dnfTime;
 	plusTwo = dnf ? false : (plusTwo || (addTwoToSolve && !dnfTime));
@@ -26,7 +26,6 @@ export function saveSolve(
 
 	const solveObject: Solve = {
 		scramble,
-		demo_mode: demoMode,
 		started_at: new Date(startedAt).getTime(),
 		ended_at: new Date(endedAt).getTime(),
 		time: finalTime,

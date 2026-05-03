@@ -26,10 +26,6 @@ export default function NavLink(props: Props) {
 		infoTag = <Tag text="new" textColor="orange" />;
 	}
 
-	// if (link === '/' && !me) {
-	// 	link = '/demo';
-	// }
-
 	const wrapperClasses = ['transition-all', 'group', 'rounded'];
 
 	const linkClasses = [

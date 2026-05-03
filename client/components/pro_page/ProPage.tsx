@@ -5,7 +5,7 @@ import {
 	Crown, Check, CaretDown, Info, Ticket, CheckCircle, Sparkle, Warning,
 	CloudArrowUp, ChartBar, Lightning, FilePdf, PaintBrush, FrameCorners,
 	MusicNote, Users, Medal, Sliders, ShareNetwork, Rocket, Brain, BookOpen, Crosshair,
-	ArrowRight,
+	ArrowRight, BellRinging,
 } from 'phosphor-react';
 import CountUp from '../stats/common/count_up/CountUp';
 import {useDispatch} from 'react-redux';
@@ -85,6 +85,7 @@ const PRO_FEATURES = [
 	'timer_background',
 	'room_music',
 	'room_smart_cube',
+	'competition_follow',
 	'pro_badge',
 	'stats_customization',
 	'solve_sharing',
@@ -101,6 +102,7 @@ const FEATURE_ICONS: Record<string, React.ElementType> = {
 	timer_background: FrameCorners,
 	room_music: MusicNote,
 	room_smart_cube: Users,
+	competition_follow: BellRinging,
 	pro_badge: Medal,
 	stats_customization: Sliders,
 	solve_sharing: ShareNetwork,
@@ -488,20 +490,33 @@ function ProPageContent() {
 								<div className={b('price-row')}>
 									{(() => {
 										const rawPriceStr = dynamicPrice || t(activePlan.priceKey);
-										const priceNum = parseFloat(rawPriceStr.replace(/[^0-9.]/g, '')) || 0;
-										const priceDecimals = (rawPriceStr.match(/\.(\d+)/) || [])[1]?.length || 0;
-										const pricePrefix = rawPriceStr.match(/^[^0-9]*/)?.[0] || '';
-										const priceSuffix = rawPriceStr.replace(/^[^0-9]*[0-9.]+/, '') || '';
+										const numMatch = rawPriceStr.match(/[\d.,]+/);
+										const numToken = numMatch?.[0] || '0';
+										const numIdx = numMatch?.index ?? 0;
+										const pricePrefix = rawPriceStr.slice(0, numIdx);
+										const priceSuffix = rawPriceStr.slice(numIdx + numToken.length);
+										// Son . veya , + 1-2 digit ondalik ayraci. "1.234,56" / "49,99" / "49.99" / "49"
+										const decMatch = numToken.match(/[.,](\d{1,2})$/);
+										const decStr = decMatch?.[1] || '';
+										const decimalSep = decMatch?.[0]?.[0] || '';
+										const intPart = decMatch
+											? numToken.slice(0, -decMatch[0].length).replace(/[.,]/g, '')
+											: numToken.replace(/[.,]/g, '');
+										const intNum = parseInt(intPart || '0', 10);
+										// Grouping separator decimal'in tersi (TR: "," → "."; US: "." → ",")
+										const groupSep = decimalSep === ',' ? '.' : ',';
 										return (
 											<span className={b('price-main')}>
 												{pricePrefix}
 												<CountUp
 													key={selectedPlan + (dynamicPrice || '')}
 													from={0}
-													to={priceNum}
+													to={intNum}
 													duration={0.4}
-													decimals={priceDecimals}
+													decimals={0}
+													separator={intNum >= 1000 ? groupSep : ''}
 												/>
+												{decStr && `${decimalSep}${decStr}`}
 												{priceSuffix}
 											</span>
 										);

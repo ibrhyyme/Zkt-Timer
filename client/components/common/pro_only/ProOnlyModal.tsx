@@ -20,6 +20,7 @@ const FEATURE_HIGHLIGHTS: Record<string, readonly string[]> = {
 	stats: ['stats_blocks', 'stats_charts', 'stats_customize'],
 	trainer: ['trainer_ble', 'trainer_feedback', 'trainer_speed'],
 	trainer_pdf: ['pdf_professional', 'pdf_alternatives', 'pdf_stats'],
+	competition_follow: ['follow_realtime', 'follow_limit'],
 };
 
 interface Props {

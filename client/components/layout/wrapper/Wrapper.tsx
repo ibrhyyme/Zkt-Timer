@@ -1,16 +1,11 @@
 import React, {ReactNode, useEffect} from 'react';
 import HeaderNav from '../header_nav/HeaderNav';
-import {NAV_LINKS} from '../nav/Nav';
 import './Wrapper.scss';
 import {ToastContainer} from 'react-toastify';
 import block, {blockNamespace} from '../../../styles/bem';
 import {useGeneral} from '../../../util/hooks/useGeneral';
 import {useSettings} from '../../../util/hooks/useSettings';
 import {updateThemeColors} from '../themes';
-import {useMe} from '../../../util/hooks/useMe';
-import DemoWarning from './DemoWarning';
-import {useRouteMatch} from 'react-router-dom';
-import DemoRestricted from './DemoRestricted';
 import ScrollReset from '../scroll_reset/ScrollReset';
 
 const b = block('body');
@@ -23,9 +18,6 @@ interface Props {
 
 export default function Wrapper(props: Props) {
 	const {hideTopNav, noPadding} = props;
-
-	const me = useMe();
-	const match = useRouteMatch();
 
 	const appLoaded = useGeneral('app_loaded');
 	const mobileMode = useGeneral('mobile_mode');
@@ -49,25 +41,6 @@ export default function Wrapper(props: Props) {
 		headerNav = null;
 	}
 
-	function isPageAuthBlocked() {
-		if (me) {
-			return false;
-		}
-
-		for (const navLink of NAV_LINKS) {
-			if (navLink.loginRequired && match.path.match(navLink.match)) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	let body = props.children;
-	if (isPageAuthBlocked()) {
-		body = <DemoRestricted />;
-	}
-
 	return (
 		<div className={blockNamespace}>
 			<ToastContainer />
@@ -80,8 +53,7 @@ export default function Wrapper(props: Props) {
 				})}
 			>
 				<div className={b('content')}>
-					<DemoWarning />
-					{body}
+					{props.children}
 				</div>
 			</div>
 		</div>

@@ -1,6 +1,33 @@
 import { Capacitor } from '@capacitor/core';
 import { gql } from '@apollo/client';
 import { gqlMutate } from '../components/api';
+import { openInAppBrowser } from './external-link';
+
+/**
+ * Bildirim payload'undaki data'ya gore yonlendirme yapar.
+ * Oncelik: data.link (generic) > WCA hardcoded fallback > /timer (default)
+ */
+function navigateFromPushData(data: any): boolean {
+	if (!data) return false;
+	const link = typeof data.link === 'string' ? data.link.trim() : '';
+	if (link) {
+		if (link.startsWith('http')) {
+			openInAppBrowser(link);
+		} else {
+			window.location.href = link;
+		}
+		return true;
+	}
+	// Geriye donuk uyumluluk: WCA hardcoded routing
+	if (
+		(data.type === 'wca_result_entered' || data.type === 'wca_round_finished') &&
+		data.competitionId && data.eventId && data.roundNumber
+	) {
+		window.location.href = `/community/competitions/${data.competitionId}/wca-live/${data.eventId}/${data.roundNumber}`;
+		return true;
+	}
+	return false;
+}
 
 const REGISTER_PUSH_TOKEN = gql`
 	mutation RegisterPushToken($input: RegisterPushTokenInput) {
@@ -85,25 +112,13 @@ async function initNativePush(): Promise<void> {
 	});
 
 	PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
-		const data = action.notification.data;
-		if (
-			(data?.type === 'wca_result_entered' || data?.type === 'wca_round_finished') &&
-			data.competitionId && data.eventId && data.roundNumber
-		) {
-			window.location.href = `/community/competitions/${data.competitionId}/wca-live/${data.eventId}/${data.roundNumber}`;
-		}
+		navigateFromPushData(action.notification.data);
 	});
 
 	// Uygulama on plandayken gelen bildirime (LocalNotification) tıklama
 	const {LocalNotifications: LN} = await import('@capacitor/local-notifications');
 	LN.addListener('localNotificationActionPerformed', (action) => {
-		const data = action.notification.extra;
-		if (
-			(data?.type === 'wca_result_entered' || data?.type === 'wca_round_finished') &&
-			data.competitionId && data.eventId && data.roundNumber
-		) {
-			window.location.href = `/community/competitions/${data.competitionId}/wca-live/${data.eventId}/${data.roundNumber}`;
-		}
+		navigateFromPushData(action.notification.extra);
 	});
 
 	try {
@@ -161,11 +176,15 @@ async function initWebPush(): Promise<void> {
 				const title = payload.notification?.title || 'Zkt-Timer';
 				const body = payload.notification?.body || '';
 				const tag = (payload.data?.type as string) || 'default';
-				const link = (payload.data?.competitionId && payload.data?.eventId && payload.data?.roundNumber)
-					? `/community/competitions/${payload.data.competitionId}/wca-live/${payload.data.eventId}/${payload.data.roundNumber}`
-					: payload.data?.competitionId
-					? `/community/competitions/${payload.data.competitionId}/wca-live`
-					: '/';
+
+				// Oncelik: data.link > WCA hardcoded fallback > /
+				const directLink = typeof payload.data?.link === 'string' ? payload.data.link.trim() : '';
+				const link = directLink
+					|| ((payload.data?.competitionId && payload.data?.eventId && payload.data?.roundNumber)
+						? `/community/competitions/${payload.data.competitionId}/wca-live/${payload.data.eventId}/${payload.data.roundNumber}`
+						: payload.data?.competitionId
+						? `/community/competitions/${payload.data.competitionId}/wca-live`
+						: '/');
 
 				const notif = new Notification(title, {
 					body,
@@ -177,7 +196,11 @@ async function initWebPush(): Promise<void> {
 
 				notif.onclick = () => {
 					window.focus();
-					if (link) window.location.href = link;
+					if (link.startsWith('http')) {
+						window.open(link, '_blank', 'noopener,noreferrer');
+					} else if (link) {
+						window.location.href = link;
+					}
 					notif.close();
 				};
 			} catch (err) {

@@ -223,7 +223,13 @@
         "category_feature": "🎉 Новая функция",
         "category_bugfix": "🔧 Исправление ошибки",
         "category_important": "⚠️ Важное",
-        "category_info": "ℹ️ Информация"
+        "category_info": "ℹ️ Информация",
+        "target_url_label": "Ссылка перенаправления (необязательно)",
+        "target_url_placeholder": "/pro или https://...",
+        "translate_btn": "Автоперевод на другие языки",
+        "translate_loading": "Перевод...",
+        "translate_success": "Переведено на 4 языка",
+        "translate_error": "Ошибка перевода"
     },
     "create_room": {
         "title": "Создать новую комнату",
@@ -678,7 +684,32 @@
         "notif_countdown_body_with_time": "Время начала: {{startTime}}. Пора готовиться.",
         "notif_countdown_link_text": "Посмотреть соревнование",
         "cutoff_attempts": "{{count}} поп.",
-        "wca_live_error": "Не удалось загрузить WCA Live. Обновите страницу."
+        "wca_live_error": "Не удалось загрузить WCA Live. Обновите страницу.",
+        "follow_competitor": "Подписаться",
+        "unfollow_competitor": "Отключить уведомления",
+        "following": "Отслеживается",
+        "follow_limit_reached": "Вы можете подписаться максимум на {{max}} участников в одном соревновании. Сначала отпишитесь от одного.",
+        "follow_self_error": "Нельзя подписаться на себя",
+        "follow_success": "Подписка на {{name}}",
+        "unfollow_success": "Отписка от {{name}}",
+        "follow_error_generic": "Действие не выполнено, попробуйте снова",
+        "notif_follow_result_title": "{{eventName}} Раунд {{roundNumber}} результаты",
+        "notif_follow_result_body": "{{name}} · {{result}}",
+        "notif_follow_round_finished_title": "{{eventName}} Раунд {{roundNumber}} завершён",
+        "notif_follow_final_finished_title": "{{name}} завершил финал {{eventName}}",
+        "notif_follow_advancing": "{{name}} прошёл с {{ranking}} места",
+        "notif_follow_advancing_questionable": "{{name}} на {{ranking}} месте (проход не подтверждён)",
+        "notif_follow_not_advancing": "{{name}} закончил {{eventName}} на {{ranking}} месте",
+        "notif_follow_final_result": "{{name}} закончил финал {{eventName}} на {{ranking}} месте",
+        "notif_follow_podium_1st_title": "🥇 {{name}} победил в {{eventName}}!",
+        "notif_follow_podium_1st_body": "{{name}} выиграл финал {{eventName}}",
+        "notif_follow_podium_2nd_title": "🥈 {{name}} 2-е место в {{eventName}}",
+        "notif_follow_podium_2nd_body": "{{name}} занял 2-е место в финале {{eventName}}",
+        "notif_follow_podium_3rd_title": "🥉 {{name}} 3-е место в {{eventName}}",
+        "notif_follow_podium_3rd_body": "{{name}} занял 3-е место в финале {{eventName}}",
+        "notif_follow_countdown_title_days": "Через {{days}} дн.: {{competitionName}}",
+        "notif_follow_countdown_title_tomorrow": "Завтра: {{competitionName}}",
+        "notif_follow_countdown_body": "Вы отслеживаете {{count}} участник(ов). Вы получите результаты в реальном времени."
     },
     "competitions": {
         "page_title": "Соревнования WCA",
@@ -1331,7 +1362,8 @@
         "info": "ℹ️ Информация",
         "close": "Закрыть",
         "next": "Далее",
-        "got_it": "Понятно"
+        "got_it": "Понятно",
+        "view_details": "Подробнее"
     },
     "admin_users": {
         "page_title": "Управление пользователями",
@@ -1587,8 +1619,6 @@
         "solves_description": "Просмотрите все ваши сборки кубика Рубика. Анализ результатов со скрамблами, временем и деталями сборок.",
         "leaderboards_title": "Таблица лидеров - Zkt Timer",
         "leaderboards_description": "Самые быстрые сборщики кубика Рубика! Рекорды одиночных и средних, рейтинги по категориям.",
-        "demo_title": "Демо-режим - Zkt Timer",
-        "demo_description": "Попробуйте Zkt Timer! Изучите функции таймера без создания аккаунта.",
         "app_description": "Самый продвинутый онлайн таймер кубика Рубика, трекер соревнований WCA и платформа для спидкубинга. Точность до миллисекунд.",
         "feature_list": [
             "Таймер кубика Рубика",
@@ -1628,7 +1658,6 @@
         "zkt_records_keywords": "ZKT рекорды, рекорды кубика Турция, национальные рекорды, рекорды кубика рубика Турция",
         "zkt_rankings_keywords": "ZKT рейтинг, рейтинг кубика Турция, национальный рейтинг, турецкие спидкьюберы",
         "login_keywords": "Zkt Timer вход, регистрация таймера кубика, аккаунт спидкубинг",
-        "demo_keywords": "Zkt Timer демо, попробовать таймер кубика, демо спидкубинг",
         "wca_live_title": "Результаты WCA в Прямом Эфире - Рейтинг в Реальном Времени | Zkt Timer",
         "wca_live_description": "Живые результаты соревнований WCA. Рейтинг раундов в реальном времени, времена сборок и отслеживание событий.",
         "wca_person_title": "Профиль Участника - Соревнование WCA | Zkt Timer",
@@ -2214,6 +2243,10 @@
                 "title": "Смарт-куб & GAN таймер в комнатах",
                 "desc": "Подключи смарт-куб или GAN таймер во время совместного решения с друзьями в онлайн-комнате. Время фиксируется автоматически, соревнование в реальном времени — для этой функции нужен Pro."
             },
+            "competition_follow": {
+                "title": "Подписка на участников",
+                "desc": "Подпишитесь на 5 участников любого WCA соревнования. Получайте уведомления о результатах, прохождениях раундов и подиумах в реальном времени."
+            },
             "ai_analysis": {
                 "title": "AI-анализ смарт-куба — Скоро",
                 "desc": "Анализируй данные смарт-куба с помощью ИИ. Автоматически узнай, где теряешь время и какие алгоритмы нужно улучшить."
@@ -2551,6 +2584,7 @@
         "title_highlight": "куб таймер",
         "description": "Раскройте свой потенциал с профессиональным таймером, подробной аналитикой и живыми соревнованиями.",
         "cta_start": "Запустить таймер →",
+        "start_now": "Начать",
         "cta_signup": "Регистрация",
         "cta_login": "Войти",
         "title_highlight_2": "спидкубинг платформа",
@@ -2630,6 +2664,10 @@
             "trainer_pdf": {
                 "title": "Скачать Все Алгоритмы в PDF",
                 "desc": "Скачай все алгоритмы или только выбранные, вместе с альтернативами, в формате PDF."
+            },
+            "competition_follow": {
+                "title": "Подписка на участников",
+                "desc": "С Pro подпишитесь на 5 участников любого WCA соревнования и получайте уведомления о результатах, прохождениях и подиумах в реальном времени."
             }
         },
         "highlights": {
@@ -2659,7 +2697,9 @@
             "trainer_speed": "Быстрее и точнее с каждым повтором",
             "pdf_professional": "Профессионально оформленный PDF",
             "pdf_alternatives": "Альтернативные алгоритмы включены",
-            "pdf_stats": "Экспорт всех или выбранных алгоритмов"
+            "pdf_stats": "Экспорт всех или выбранных алгоритмов",
+            "follow_realtime": "Уведомления сразу после публикации результатов",
+            "follow_limit": "До 5 подписок на одно соревнование"
         }
     },
     "battle": {

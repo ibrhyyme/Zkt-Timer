@@ -33,7 +33,6 @@ export interface TimerCustomModuleOptions {
 }
 
 export interface TimerProps {
-	demoMode?: boolean;
 	disabled?: boolean; // Disables the timer from starting
 	ignorePbEvents?: boolean;
 	subTimerActions?: ReactComponentElement<any> | null;

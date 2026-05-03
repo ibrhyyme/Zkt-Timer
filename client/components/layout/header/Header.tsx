@@ -48,7 +48,6 @@ export function getPageKeywords(currentPath: string, t: TFunction): string {
 	if (currentPath === '/community/zkt-records') return t('seo.zkt_records_keywords', fallback);
 	if (currentPath === '/community/zkt-rankings') return t('seo.zkt_rankings_keywords', fallback);
 	if (currentPath === '/login' || currentPath === '/signup' || currentPath === '/wca-signup') return t('seo.login_keywords', fallback);
-	if (currentPath === '/demo') return t('seo.demo_keywords', fallback);
 
 	return fallback;
 }
@@ -376,9 +375,6 @@ export default function Header(props: Props) {
 		} else if (currentPath === '/battle') {
 			pageTitle = t('seo.battle_title');
 			pageDesc = t('seo.battle_description');
-		} else if (currentPath === '/demo') {
-			pageTitle = t('seo.demo_title');
-			pageDesc = t('seo.demo_description');
 		}
 	}
 

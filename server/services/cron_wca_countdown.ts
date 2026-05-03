@@ -5,6 +5,7 @@ import {acquireRedisLock, createRedisKey, RedisNamespace, fetchDataFromCache} fr
 import {sendPushToUser} from './push';
 import {WcaApiService} from './WcaApiService';
 import WcaCompetitionCountdownNotification from '../resources/notification_types/wca_competition_countdown';
+import WcaFollowCountdownNotification from '../resources/notification_types/wca_follow_countdown';
 
 const TICK_LOCK_TTL_MS = 60 * 60 * 1000; // 1 saat
 const LOCK_KEY = createRedisKey(RedisNamespace.WCA_WCIF, 'countdown_cron_lock');
@@ -64,11 +65,6 @@ async function runTick() {
 				user: {include: {settings: true}},
 			},
 		});
-
-		if (states.length === 0) {
-			logger.info('[WcaCountdown] tick done', {states: 0, pushed: 0});
-			return;
-		}
 
 		let pushed = 0;
 		const wcifCache = new Map<string, any>();
@@ -153,7 +149,10 @@ async function runTick() {
 			}
 		}
 
-		logger.info('[WcaCountdown] tick done', {states: states.length, pushed});
+		// ===== Takipci countdown bildirimleri (Pro) =====
+		const followPushed = await runFollowCountdowns(today, targetDates, wcifCache);
+
+		logger.info('[WcaCountdown] tick done', {states: states.length, pushed, followPushed});
 	} finally {
 		try {
 			await (lock as any).release();
@@ -166,6 +165,123 @@ async function runTick() {
 function getUserLocale(state: {user?: any}): string {
 	const locale = state.user?.settings?.locale;
 	return locale && ['tr', 'en', 'es', 'ru', 'zh'].includes(locale) ? locale : 'en';
+}
+
+// Takipci icin: yarisma start_date'i target gunlerden birine duser mi?
+// Cron her gun calistigindan, sadece dogru gunde tetiklenmesi yeterli.
+// Her (user, competition) ciftine tek countdown bildirimi (kac yarismaci takip ettiginden bagimsiz).
+async function runFollowCountdowns(
+	today: Date,
+	_targetDates: {days: number; date: Date}[],
+	wcifCache: Map<string, any>,
+): Promise<number> {
+	const prisma = getPrisma();
+	const allFollows = await prisma.competitionFollow.findMany({
+		include: {
+			user: {include: {settings: true}},
+			notified_countdowns: true,
+		},
+	});
+
+	if (allFollows.length === 0) return 0;
+
+	// (user_id, competition_id) -> follows[]
+	const userCompMap = new Map<string, typeof allFollows>();
+	for (const f of allFollows) {
+		const key = `${f.user_id}::${f.competition_id}`;
+		const arr = userCompMap.get(key) ?? [];
+		arr.push(f);
+		userCompMap.set(key, arr);
+	}
+
+	let pushed = 0;
+	for (const [key, follows] of userCompMap) {
+		const [, competitionId] = key.split('::');
+		const firstFollow = follows[0];
+
+		try {
+			let wcif = wcifCache.get(competitionId);
+			if (!wcif) {
+				wcif = await fetchDataFromCache(
+					createRedisKey(RedisNamespace.WCA_WCIF, competitionId),
+					() => WcaApiService.fetchCompetitionWcif(competitionId),
+					WCIF_CACHE_TTL,
+				);
+				wcifCache.set(competitionId, wcif);
+			}
+
+			const startDateIso = wcif?.schedule?.startDate;
+			if (!startDateIso) continue;
+
+			const compStartDate = new Date(startDateIso);
+			compStartDate.setHours(0, 0, 0, 0);
+			const diffMs = compStartDate.getTime() - today.getTime();
+			const daysUntil = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+			if (!DAYS_BEFORE.includes(daysUntil)) continue;
+
+			// Bu user+comp+gun icin daha onceden bildirim gitti mi? (herhangi bir follow uzerinden)
+			const alreadySent = follows.some((f) =>
+				f.notified_countdowns.some((n) => n.days_before === daysUntil),
+			);
+			if (alreadySent) continue;
+
+			const compName = wcif?.name || wcif?.shortName || competitionId;
+			const locale = getUserLocale(firstFollow);
+
+			const notif = new WcaFollowCountdownNotification(
+				{
+					user: firstFollow.user as any,
+					triggeringUser: firstFollow.user as any,
+					sendEmail: false,
+				},
+				{
+					competitionId,
+					competitionName: compName,
+					daysBefore: daysUntil,
+					followedCount: follows.length,
+					locale,
+				},
+			);
+
+			await notif.send().catch((err: any) => {
+				logger.warn('[WcaCountdown] follow notif DB write failed', {
+					userId: firstFollow.user_id,
+					competitionId,
+					err: err?.message,
+				});
+			});
+
+			await sendPushToUser(firstFollow.user_id, notif.subject(), notif.inAppMessage(), {
+				type: 'wca_follow_countdown',
+				competitionId,
+				daysBefore: String(daysUntil),
+			}).catch((err: any) => {
+				logger.warn('[WcaCountdown] follow push send failed', {
+					userId: firstFollow.user_id,
+					competitionId,
+					err: err?.message,
+				});
+			});
+
+			// Dedup'i ilk follow uzerine yaz — bu user+comp+gun icin tekrar atilmaz
+			await prisma.competitionFollowCountdownNotified.create({
+				data: {
+					follow_id: firstFollow.id,
+					days_before: daysUntil,
+				},
+			});
+
+			pushed++;
+		} catch (err: any) {
+			logger.warn('[WcaCountdown] follow tick failed', {
+				userCompKey: key,
+				err: err?.message,
+			});
+		}
+	}
+
+	return pushed;
 }
 
 // WCIF schedule'dan ilk gunun en erken activity startTime'ini cek

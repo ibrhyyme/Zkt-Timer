@@ -3,8 +3,6 @@ import {getLocalStorage, setLocalStorageObject} from '../../util/data/local_stor
 import {getMe} from '../../components/store';
 
 export function getAllLocalSettings(userId: string): AllSettings {
-	clearDemoUserSettings();
-
 	const settingsVal = getLocalStorage('settings');
 	let output: AllSettings = getDefaultSettings();
 
@@ -29,7 +27,7 @@ export function getAllLocalSettings(userId: string): AllSettings {
 
 export function getLocalSettingValue<T extends keyof AllSettings>(key: T): AllSettings[T] {
 	const me = getMe();
-	const userId = me?.id || 'demo';
+	const userId = me?.id || '_anon';
 
 	const localSettings = getAllLocalSettings(userId);
 	return localSettings[key];
@@ -37,7 +35,7 @@ export function getLocalSettingValue<T extends keyof AllSettings>(key: T): AllSe
 
 export function setLocalSettingValue<T extends keyof AllSettings>(key: T, value: AllSettings[T]): void {
 	const me = getMe();
-	const userId = me?.id || 'demo';
+	const userId = me?.id || '_anon';
 
 	const allSettingsVal = getLocalStorage('settings');
 	const localSettings = getAllLocalSettings(userId);
@@ -46,14 +44,6 @@ export function setLocalSettingValue<T extends keyof AllSettings>(key: T, value:
 	allSettingsVal[userId] = localSettings;
 
 	setLocalStorageObject('settings', allSettingsVal);
-}
-
-function clearDemoUserSettings() {
-	const settingsVal = getLocalStorage('settings');
-	if (settingsVal && settingsVal?.demo) {
-		delete settingsVal.demo;
-		setLocalStorageObject('settings', settingsVal);
-	}
 }
 
 function findLegacyLocalSettings() {

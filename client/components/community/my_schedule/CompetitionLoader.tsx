@@ -1,16 +1,49 @@
-import React, {createContext, useContext, useState, useEffect} from 'react';
+import React, {createContext, useContext, useState, useEffect, useCallback} from 'react';
 import {gqlQueryTyped} from '../../api';
-import {WcaCompetitionDetailDocument} from '../../../@types/generated/graphql';
+import {
+	WcaCompetitionDetailDocument,
+	MyCompetitionFollowsDocument,
+} from '../../../@types/generated/graphql';
 import {b} from './shared';
 import {resourceUri} from '../../../util/storage';
 import {Info} from 'phosphor-react';
 import {useTranslation} from 'react-i18next';
 import {prefetchWcaLiveOverview} from './useLiveResults';
+import {useMe} from '../../../util/hooks/useMe';
+import {isPro} from '../../../lib/pro';
+
+interface FollowEntry {
+	id: string;
+	followed_registrant_id: number;
+	followed_wca_id?: string | null;
+	followed_name: string;
+}
 
 interface CompetitionData {
 	detail: any;
 	loading: boolean;
 	error: string | null;
+	follows: FollowEntry[];
+	followedIds: Set<number>;
+	refetchFollows: () => Promise<void>;
+	isFinished: boolean;
+}
+
+// Yarisma bitti mi? schedule dizisinin son gunu bugunden once mi?
+function isCompetitionFinished(detail: any): boolean {
+	if (!detail?.schedule || !Array.isArray(detail.schedule) || detail.schedule.length === 0) {
+		return false; // veri yoksa "bitmis" demek hatali olur, izin ver
+	}
+	const dates = detail.schedule
+		.map((d: any) => d?.date)
+		.filter((d: any) => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d));
+	if (dates.length === 0) return false;
+	const lastDate = dates.sort()[dates.length - 1];
+	const today = new Date();
+	today.setHours(0, 0, 0, 0);
+	const cutoff = new Date(lastDate + 'T00:00:00');
+	cutoff.setDate(cutoff.getDate() + 1); // son gunden bir gun sonrasi 00:00 — o ana kadar aktif say
+	return today >= cutoff;
 }
 
 const CompetitionDataContext = createContext<CompetitionData | null>(null);
@@ -58,10 +91,34 @@ export function prefetchCompetitionDetail(competitionId: string): void {
 
 export default function CompetitionLoader({competitionId, children}: CompetitionLoaderProps) {
 	const {t} = useTranslation();
+	const me = useMe();
 	const initialCached = getCached(competitionId);
 	const [detail, setDetail] = useState<any>(initialCached?.data || null);
 	const [loading, setLoading] = useState(!initialCached);
 	const [error, setError] = useState<string | null>(null);
+	const [follows, setFollows] = useState<FollowEntry[]>([]);
+
+	const refetchFollows = useCallback(async () => {
+		if (!me || !isPro(me)) {
+			setFollows([]);
+			return;
+		}
+		try {
+			const res = await gqlQueryTyped(
+				MyCompetitionFollowsDocument,
+				{competitionId},
+				{fetchPolicy: 'no-cache'},
+			);
+			const data = (res.data as any)?.myCompetitionFollows;
+			setFollows(Array.isArray(data) ? data : []);
+		} catch {
+			// sessizce gec — Pro olmayanda da bos liste OK
+		}
+	}, [competitionId, me]);
+
+	useEffect(() => {
+		refetchFollows();
+	}, [refetchFollows]);
 
 	// WCA Live overview prefetch — detail geldiginde sessizce arka planda yukle
 	useEffect(() => {
@@ -164,8 +221,13 @@ export default function CompetitionLoader({competitionId, children}: Competition
 		);
 	}
 
+	const followedIds = new Set<number>(follows.map((f) => f.followed_registrant_id));
+	const isFinished = isCompetitionFinished(detail);
+
 	return (
-		<CompetitionDataContext.Provider value={{detail, loading, error}}>
+		<CompetitionDataContext.Provider
+			value={{detail, loading, error, follows, followedIds, refetchFollows, isFinished}}
+		>
 			{children}
 		</CompetitionDataContext.Provider>
 	);

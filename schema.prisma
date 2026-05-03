@@ -96,6 +96,9 @@ model UserAccount {
   // WCA competition notification tracking (auto-managed dedup state)
   wca_competition_notification_states WcaCompetitionNotificationState[]
 
+  // WCA competition competitor follows (Pro feature)
+  competition_follows           CompetitionFollow[]
+
   // Daily goals
   daily_goals                   DailyGoal[]
 
@@ -374,23 +377,6 @@ model Solve {
   @@index([user_id])
   @@index([user_id, created_at])
   @@map("solve")
-}
-
-model DemoSolve {
-  id              String   @id @default(uuid())
-  demo_session_id String
-  ip_address      String?
-  raw_time        Float?
-  cube_type       String?
-  scramble        String?
-  started_at      BigInt?
-  ended_at        BigInt?
-  updated_at      DateTime @updatedAt
-  created_at      DateTime @default(now())
-
-  @@index([demo_session_id])
-  @@index([created_at])
-  @@map("demo_solve")
 }
 
 model EmailLog {
@@ -917,7 +903,8 @@ model Announcement {
   createdAt   DateTime              @default(now()) @map("created_at")
   publishedAt DateTime?             @map("published_at")  // Yayınlanma tarihi
   isActive    Boolean               @default(true) @map("is_active")
-  translations Json?                               // {"en": {"title":"...","content":"..."}, "es": {...}, "ru": {...}}
+  targetUrl   String?               @map("target_url")  // Bildirime tiklayinca yonlendirilecek sayfa: "/pro" veya "https://..."
+  translations Json?                               // {"en": {"title":"...","content":"..."}, "es": {...}, "ru": {...}, "zh": {...}}
 
   views AnnouncementView[]
 
@@ -1015,6 +1002,52 @@ model WcaCompetitionCountdownNotified {
 
   @@unique([state_id, days_before])
   @@map("wca_competition_countdown_notified")
+}
+
+model CompetitionFollow {
+  id                     String   @id @default(uuid())
+  user_id                String
+  competition_id         String
+  followed_registrant_id Int
+  followed_wca_id        String?
+  followed_name          String
+  created_at             DateTime @default(now())
+
+  user            UserAccount                       @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  notified_rounds CompetitionFollowNotifiedRound[]
+  notified_countdowns CompetitionFollowCountdownNotified[]
+
+  @@unique([user_id, competition_id, followed_registrant_id])
+  @@index([competition_id, followed_registrant_id])
+  @@index([user_id, competition_id])
+  @@map("competition_follow")
+}
+
+model CompetitionFollowNotifiedRound {
+  id              String   @id @default(uuid())
+  follow_id       String
+  activity_code   String
+  result_notified Boolean  @default(false)
+  finish_notified Boolean  @default(false)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  follow CompetitionFollow @relation(fields: [follow_id], references: [id], onDelete: Cascade)
+
+  @@unique([follow_id, activity_code])
+  @@map("competition_follow_notified_round")
+}
+
+model CompetitionFollowCountdownNotified {
+  id          String   @id @default(uuid())
+  follow_id   String
+  days_before Int
+  created_at  DateTime @default(now())
+
+  follow CompetitionFollow @relation(fields: [follow_id], references: [id], onDelete: Cascade)
+
+  @@unique([follow_id, days_before])
+  @@map("competition_follow_countdown_notified")
 }
 
 model WcaCompetitionNotifiedRound {

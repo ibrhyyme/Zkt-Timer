@@ -223,7 +223,13 @@
         "category_feature": "🎉 功能",
         "category_bugfix": "🔧 错误修复",
         "category_important": "⚠️ 重要",
-        "category_info": "ℹ️ 信息"
+        "category_info": "ℹ️ 信息",
+        "target_url_label": "跳转链接（可选）",
+        "target_url_placeholder": "/pro 或 https://...",
+        "translate_btn": "自动翻译到其他语言",
+        "translate_loading": "翻译中...",
+        "translate_success": "已翻译为 4 种语言",
+        "translate_error": "翻译失败"
     },
     "create_room": {
         "title": "创建新房间",
@@ -678,7 +684,32 @@
         "notif_countdown_body_with_time": "开始时间：{{startTime}}。是时候准备了。",
         "notif_countdown_link_text": "查看比赛",
         "cutoff_attempts": "{{count}} 次尝试",
-        "wca_live_error": "加载 WCA Live 失败。请刷新页面。"
+        "wca_live_error": "加载 WCA Live 失败。请刷新页面。",
+        "follow_competitor": "关注",
+        "unfollow_competitor": "关闭通知",
+        "following": "已关注",
+        "follow_limit_reached": "每个比赛最多可关注 {{max}} 名选手。请先取消关注一位。",
+        "follow_self_error": "不能关注自己",
+        "follow_success": "已关注 {{name}}",
+        "unfollow_success": "已取消关注 {{name}}",
+        "follow_error_generic": "操作失败，请重试",
+        "notif_follow_result_title": "{{eventName}} 第 {{roundNumber}} 轮结果",
+        "notif_follow_result_body": "{{name}} · {{result}}",
+        "notif_follow_round_finished_title": "{{eventName}} 第 {{roundNumber}} 轮已结束",
+        "notif_follow_final_finished_title": "{{name}} 完成 {{eventName}} 决赛",
+        "notif_follow_advancing": "{{name}} 从第 {{ranking}} 名晋级",
+        "notif_follow_advancing_questionable": "{{name}} 第 {{ranking}} 名（晋级待定）",
+        "notif_follow_not_advancing": "{{name}} 在 {{eventName}} 中获得第 {{ranking}} 名",
+        "notif_follow_final_result": "{{name}} 在 {{eventName}} 决赛中获得第 {{ranking}} 名",
+        "notif_follow_podium_1st_title": "🥇 {{name}} 赢得 {{eventName}}！",
+        "notif_follow_podium_1st_body": "{{name}} 赢得了 {{eventName}} 决赛",
+        "notif_follow_podium_2nd_title": "🥈 {{name}} 在 {{eventName}} 中获得第 2 名",
+        "notif_follow_podium_2nd_body": "{{name}} 在 {{eventName}} 决赛中获得第 2 名",
+        "notif_follow_podium_3rd_title": "🥉 {{name}} 在 {{eventName}} 中获得第 3 名",
+        "notif_follow_podium_3rd_body": "{{name}} 在 {{eventName}} 决赛中获得第 3 名",
+        "notif_follow_countdown_title_days": "{{days}} 天后：{{competitionName}}",
+        "notif_follow_countdown_title_tomorrow": "明天：{{competitionName}}",
+        "notif_follow_countdown_body": "你正在关注 {{count}} 名选手。你将实时收到结果。"
     },
     "competitions": {
         "page_title": "WCA 比赛",
@@ -1331,7 +1362,8 @@
         "info": "ℹ️ 信息",
         "close": "关闭",
         "next": "下一页",
-        "got_it": "知道了"
+        "got_it": "知道了",
+        "view_details": "查看详情"
     },
     "admin_users": {
         "page_title": "用户管理",
@@ -1587,8 +1619,6 @@
         "solves_description": "查看您的所有魔方还原记录。包含打乱、时间、还原详情的性能分析。",
         "leaderboards_title": "排行榜 - Zkt Timer",
         "leaderboards_description": "最快的魔方还原者！单次和平均记录，按类别排名。",
-        "demo_title": "演示模式 - Zkt Timer",
-        "demo_description": "试用Zkt Timer！无需创建账户即可探索计时器功能。",
         "app_description": "最先进的在线魔方计时器、WCA比赛追踪器和速拧平台。毫秒级精度计时。",
         "feature_list": [
             "魔方计时器",
@@ -1628,7 +1658,6 @@
         "zkt_records_keywords": "ZKT记录, 土耳其魔方记录, 国家记录, 土耳其魔方记录",
         "zkt_rankings_keywords": "ZKT排名, 土耳其魔方排名, 国家排名, 土耳其速拧玩家",
         "login_keywords": "Zkt Timer登录, 魔方计时器注册, 速拧账户",
-        "demo_keywords": "Zkt Timer演示, 试用魔方计时器, 速拧演示",
         "wca_live_title": "WCA实时成绩 - 实时排名 | Zkt Timer",
         "wca_live_description": "实时WCA比赛成绩。比赛进行时实时回合排名、还原时间和项目追踪。",
         "wca_person_title": "选手资料 - WCA比赛 | Zkt Timer",
@@ -2214,6 +2243,10 @@
                 "title": "房间内智能魔方和 GAN 计时器",
                 "desc": "在在线房间与朋友一起还原时，连接您的智能魔方或 GAN 计时器。时间自动记录，您实时竞争 — 需要 Pro 会员才能使用此功能。"
             },
+            "competition_follow": {
+                "title": "关注选手",
+                "desc": "在任何 WCA 比赛中关注最多 5 名选手。实时接收成绩、晋级和领奖台结果的推送通知。"
+            },
             "ai_analysis": {
                 "title": "智能魔方 AI 分析 — 即将推出",
                 "desc": "通过 AI 分析您的智能魔方数据。自动了解您在哪里浪费时间以及哪些公式需要改进。"
@@ -2551,6 +2584,7 @@
         "title_highlight": "魔方计时器",
         "description": "通过专业计时器、详细分析和实时比赛解锁您的潜力。",
         "cta_start": "开始计时 →",
+        "start_now": "立即开始",
         "cta_signup": "注册",
         "cta_login": "登录",
         "title_highlight_2": "速拧平台",
@@ -2630,6 +2664,10 @@
             "trainer_pdf": {
                 "title": "将所有公式下载为PDF",
                 "desc": "将所有公式或您选择的公式及其变体下载为PDF。"
+            },
+            "competition_follow": {
+                "title": "关注选手",
+                "desc": "通过 Pro 在任何 WCA 比赛中关注最多 5 名选手，实时接收成绩、晋级和领奖台通知。"
             }
         },
         "highlights": {
@@ -2659,7 +2697,9 @@
             "trainer_speed": "每次重复都更快更准确",
             "pdf_professional": "专业设计的PDF输出",
             "pdf_alternatives": "包含替代公式",
-            "pdf_stats": "导出全部或选定公式"
+            "pdf_stats": "导出全部或选定公式",
+            "follow_realtime": "结果发布即收到通知",
+            "follow_limit": "每个比赛最多 5 个关注"
         }
     },
     "battle": {

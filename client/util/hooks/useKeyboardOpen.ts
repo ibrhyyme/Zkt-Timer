@@ -12,10 +12,30 @@ export function useKeyboardOpen(): boolean {
 
 	useEffect(() => {
 		if (Capacitor.isNativePlatform()) {
+			const isAndroid = Capacitor.getPlatform() === 'android';
+
+			// Android WebView klavye kapaninca Y=eski_klavye_ust_siniri'nda paint cache artifact birakir
+			// (siyah cizgi). 1-frame'lik transform flicker GPU layer'i force-repaint ettirir.
+			const triggerAndroidRepaint = () => {
+				if (!isAndroid) return;
+				const el = document.querySelector('.cd-timer.cd-timer--mobile') as HTMLElement | null;
+				if (!el) return;
+				el.style.transform = 'translateZ(0)';
+				requestAnimationFrame(() => {
+					el.style.transform = '';
+				});
+			};
+
 			const showPromise = Keyboard.addListener('keyboardWillShow', () => setOpen(true));
-			const willHidePromise = Keyboard.addListener('keyboardWillHide', () => setOpen(false));
+			const willHidePromise = Keyboard.addListener('keyboardWillHide', () => {
+				setOpen(false);
+				triggerAndroidRepaint();
+			});
 			// keyboardWillHide Android'de bazi kapatma senaryolarinda gelmiyor; didHide fallback.
-			const didHidePromise = Keyboard.addListener('keyboardDidHide', () => setOpen(false));
+			const didHidePromise = Keyboard.addListener('keyboardDidHide', () => {
+				setOpen(false);
+				triggerAndroidRepaint();
+			});
 			return () => {
 				showPromise.then((h) => h.remove()).catch(() => {});
 				willHidePromise.then((h) => h.remove()).catch(() => {});

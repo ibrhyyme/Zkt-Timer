@@ -4,6 +4,7 @@ import {useHistory} from 'react-router-dom';
 import {MapPin, Info, MagnifyingGlass, Users, ListBullets, ChartBar, Globe, Broadcast} from 'phosphor-react';
 import {openInAppBrowser, openInMaps} from '../../../util/external-link';
 import {useCompetitionData} from './CompetitionLoader';
+import FollowBellButton from './FollowBellButton';
 import {
 	b, I18N_LOCALE_MAP, formatTime, formatWcaTime,
 	getEventShortName, formatRoundFormat,
@@ -168,6 +169,15 @@ function GroupsTab({competitors, myWcaId, myRegistrantId, competitionId, searchQ
 								</span>
 								{comp.wcaId && <span className={b('competitor-id')}>{comp.wcaId}</span>}
 							</div>
+							{!isMe && (
+								<FollowBellButton
+									competitionId={competitionId}
+									registrantId={comp.registrantId}
+									wcaId={comp.wcaId}
+									name={comp.name}
+									size="sm"
+								/>
+							)}
 						</div>
 					);
 				})}

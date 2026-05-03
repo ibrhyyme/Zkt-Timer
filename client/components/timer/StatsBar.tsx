@@ -69,11 +69,9 @@ export default function StatsBar() {
 
     useSolveDb();
 
-    // Manuel giriste klavye acikken alt StatsBar'in yukari itilmesini engellemek icin gizle
-    // (istatistikler duplike olarak ust panelde zaten gorunur). Klavye kapandiginda geri gelir.
-    if (mobileMode && manualEntry && keyboardOpen) {
-        return null;
-    }
+    // Manuel giriste klavye acikken alt StatsBar'i gorunmez yap ama yer kaplamaya devam etsin.
+    // return null layout collapse yaratip Dashboard'in yukari kaymasina + WebView paint artifact'ina sebep oluyordu.
+    const hideForKeyboard = mobileMode && manualEntry && keyboardOpen;
 
     const mobileStats = buildMobileStats(mobileAoCounts);
     let statsBlocks = mobileMode ? mobileStats : ((stats?.blocks as StatsModuleBlock[]) || DEFAULT_STATS);
@@ -126,7 +124,7 @@ export default function StatsBar() {
     });
 
     return (
-        <div className={b({ mobile: mobileMode })}>
+        <div className={b({ mobile: mobileMode, hidden: hideForKeyboard })}>
             {statItems}
         </div>
     );

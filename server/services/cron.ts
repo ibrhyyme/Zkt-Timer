@@ -24,6 +24,57 @@ export function initCronJobs() {
 	initWcaCompetitionCountdownCronJob();
 	initWorldRecordSyncCronJob();
 	initRankingRecalculationCronJob();
+	initCompetitionFollowCleanupCronJob();
+}
+
+function initCompetitionFollowCleanupCronJob() {
+	// Her gun 03:30 — bitmis yarismalarin takip kayitlarini sil
+	// 1) state'i olan comps: end_date + 7 gun gecince
+	// 2) state'i olmayan comps (sadece takipci): created_at + 60 gun gecince fallback
+	const job = new CronJob(
+		'0 30 3 * * *',
+		async () => {
+			try {
+				const prisma = getPrisma();
+				const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+				const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
+
+				// 1. State-based: end_date'i 7+ gun gecmis yarismalardaki follow'lari sil
+				const expiredStates = await prisma.wcaCompetitionNotificationState.findMany({
+					where: {end_date: {lt: sevenDaysAgo}},
+					select: {competition_id: true},
+					distinct: ['competition_id'],
+				});
+				let stateBasedCount = 0;
+				if (expiredStates.length > 0) {
+					const ids = expiredStates.map((s) => s.competition_id);
+					const result = await prisma.competitionFollow.deleteMany({
+						where: {competition_id: {in: ids}},
+					});
+					stateBasedCount = result.count;
+				}
+
+				// 2. Fallback: 60+ gun once olusturulmus follow kayitlari (state yoksa)
+				// Cogu WCA yarismasi 1-3 gun, en uzunu da 7 gun. 60 gun guvenli sinir.
+				const orphanResult = await prisma.competitionFollow.deleteMany({
+					where: {created_at: {lt: sixtyDaysAgo}},
+				});
+
+				const total = stateBasedCount + orphanResult.count;
+				if (total > 0) {
+					logger.info(
+						`[CompFollowCleanup] removed ${stateBasedCount} state-based + ${orphanResult.count} orphan follow record(s)`,
+					);
+				}
+			} catch (e) {
+				logger.error('[CompFollowCleanup] cleanup failed', {error: e});
+			}
+		},
+		null,
+		true,
+		'America/Los_Angeles',
+	);
+	logger.debug('Initiated cron job for competition follow cleanup.', {running: job.running});
 }
 
 function initWorldRecordSyncCronJob() {

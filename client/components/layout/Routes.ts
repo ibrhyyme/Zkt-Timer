@@ -116,15 +116,15 @@ function routeRedirect(path: string, redirect: string): RedirectPath {
 export const routes: (PageContext | RedirectPath)[] = [
 	// Main tabs
 	route('/', null, RootRedirect, null, false, true),
-	route('/timer', null, App, DefaultTimer, false, false, false, false, true),
+	route('/timer', null, App, DefaultTimer, true, false, false, false, true),
 	route('/signup', null, App, LoginWrapper, false, true, false, true),
 	route('/login', null, App, LoginWrapper, false, true, false, true),
 	route('/forgot', null, App, LoginWrapper, false, true, false, true),
 	route('/verify-email', null, App, LoginWrapper, false, true, false, true),
 	route('/wca-signup', null, App, LoginWrapper, false, true, false, true),
-	route('/sessions', null, App, Sessions, false),
+	route('/sessions', null, App, Sessions),
 	route('/solves', null, App, Solves, false),
-	route('/stats', null, App, Stats, false),
+	route('/stats', null, App, Stats),
 	route('/force-log-out', null, App, ForceSignOut, false, true, false, true),
 
 	// Settings - Redirect to modal
@@ -150,7 +150,7 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/pro', null, App, ProPage),
 
 	// Trainer
-	route('/trainer', null, App, Trainer, false),
+	route('/trainer', null, App, Trainer),
 
 	// Account
 	route('/account/personal-info', App, Account, PersonalInfo),
@@ -187,8 +187,8 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/battle', null, App, Battle, false, false, false, false, true),
 
 	// Friendly Rooms
-	route('/rooms', null, App, RoomsList, false),
-	route('/rooms/:roomId', null, App, FriendlyRoom, false),
+	route('/rooms', null, App, RoomsList),
+	route('/rooms/:roomId', null, App, FriendlyRoom),
 
 	// Admin
 	route('/admin/reports', App, Admin, Reports, true, false, true),
