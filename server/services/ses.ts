@@ -79,7 +79,7 @@ async function sendEmail(email: string, subject: string, body: string) {
 
 	try {
 		const data = await resend.emails.send({
-			from: 'Zkt Timer <noreply@zktimer.app>',
+			from: 'Zkt Timer <hello@zktimer.app>',
 			to: [email],
 			subject: subject,
 			html: content,
