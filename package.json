@@ -68,7 +68,6 @@
 		"@capacitor/status-bar": "^6.0.0",
 		"@capacitor/text-zoom": "^6.0.0",
 		"@capacitor/toast": "^6.0.0",
-		"@capawesome/capacitor-android-edge-to-edge-support": "^8.0.8",
 		"@cubing/icons": "^3.0.5",
 		"@elastic/elasticsearch": "^8.2.1",
 		"@graphql-tools/schema": "^8.3.1",

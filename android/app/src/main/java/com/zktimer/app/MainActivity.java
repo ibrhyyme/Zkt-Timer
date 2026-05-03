@@ -3,8 +3,13 @@ package com.zktimer.app;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
+import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.CookieManager;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import com.getcapacitor.BridgeActivity;
 import com.google.firebase.FirebaseApp;
@@ -54,11 +59,34 @@ public class MainActivity extends BridgeActivity {
         updateOrientationLock();
 
         // Status bar ve navigation bar ikonlarını açık renk yap (koyu tema için)
-        // Edge-to-edge ve IME insets handling Capawesome EdgeToEdge plugin tarafindan yapiliyor.
         WindowInsetsControllerCompat insetsController =
             WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
         insetsController.setAppearanceLightStatusBars(false);
         insetsController.setAppearanceLightNavigationBars(false);
+
+        // Manuel IME inset handling — Capacitor 6 SystemBars'taki stale IME inset bug'i (#8289)
+        // ve Android 15 keyboard overlay'i icin native fix. WebView'in margin'ini IME yuksekligine
+        // gore ayarlayarak surface ile UI'i senkron tutuyoruz, paint cache artifact'ini engelliyoruz.
+        View webView = bridge.getWebView();
+        if (webView != null) {
+            ViewCompat.setOnApplyWindowInsetsListener(webView, (v, insets) -> {
+                Insets imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime());
+                Insets sysBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+
+                int bottom = Math.max(imeInsets.bottom, sysBars.bottom);
+                int top = sysBars.top;
+
+                if (v.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
+                    ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+                    if (params.bottomMargin != bottom || params.topMargin != top) {
+                        params.topMargin = top;
+                        params.bottomMargin = bottom;
+                        v.setLayoutParams(params);
+                    }
+                }
+                return WindowInsetsCompat.CONSUMED;
+            });
+        }
 
         // Login sonrasi session cookie'nin disk'e garantili yazilmasi icin
         // CookieManager'i acik tut. Default'ta acik ama emniyet icin set ediyoruz.
