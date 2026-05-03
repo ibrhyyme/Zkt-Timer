@@ -40,7 +40,6 @@ Disallow: /oauth/
 Disallow: /force-log-out
 Disallow: /forgot
 Disallow: /unsub-emails
-Disallow: /demo
 Disallow: /verify-email
 Disallow: /wca-signup
 

@@ -43,10 +43,10 @@ export function initAnonymousAppData(callback) {
 		autosave: false,
 		autosaveInterval: undefined,
 		adapter: undefined,
-		disableAdapter: true, // Demo modunda veri saklanmasın
+		disableAdapter: true, // Anonim kullanıcı için veri saklanmasın
 	});
 
-	const localSettings = getAllLocalSettings('demo');
+	const localSettings = getAllLocalSettings('_anon');
 	const settingValues = Object.keys(localSettings).map((key) => ({
 		id: key,
 		local: true,
@@ -67,40 +67,56 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 	const canSyncUser = !isProEnabled() || isPro(me);
 
 	await initOfflineData(me, async (passed) => {
-		// Basic → Pro gecisi: lokal verileri sunucuya aktar
+		// Basic → Pro gecisi: lokal verileri sunucuya aktar.
+		// Veri kaybi onleme: migration BASARILI olmadan flag'i sakin silme,
+		// lokal IndexedDB'yi sakin temizleme — sonraki acilista tekrar denesin.
 		const needsMigration = canSyncUser && getLocalStorage('wasBasicUser') === 'true';
-		if (needsMigration && passed) {
-			// passed=true → IndexedDB'den LokiJS'e yuklendi, veriler hazir
-			try {
-				await migrateLocalDataToServer();
-			} catch (e) {
-				console.error('[Migration] Failed:', e);
+		let migrationSkipped = false;
+
+		if (needsMigration) {
+			// passed=false → IndexedDB ilk loadDatabase'de yuklenmedi (timeout/err/eksik collection).
+			// Tekrar yuklemeyi dene; basarisiz olursa flag KORUNUR.
+			if (!passed) {
+				passed = await tryLoadExistingDb();
 			}
-			deleteLocalStorage('wasBasicUser');
-			// Migration sonrasi fresh fetch yapilmali
-			passed = false;
+
+			if (passed) {
+				const migrationOk = await migrateLocalDataToServer();
+				if (migrationOk) {
+					deleteLocalStorage('wasBasicUser');
+					// Migration sonrasi fresh fetch yapilmali
+					passed = false;
+				} else {
+					// Migration fail — flag ve lokal LokiDB korunur,
+					// kullanici lokal verisini gormeye devam eder, sonraki acilista tekrar denenir.
+					migrationSkipped = true;
+				}
+			} else {
+				// IndexedDB yuklenemedi; gerçekten data yok ya da bozuk.
+				// Flag'i tut (sonraki acilista yeniden dene), lokal DB'yi temizleme.
+				migrationSkipped = true;
+			}
 		}
 
 		let hasLocalData = false;
 
 		if (!passed) {
-			if (needsMigration) {
-				deleteLocalStorage('wasBasicUser');
-			}
-
 			// Delta sync: IndexedDB'deki mevcut veriyi koruyarak sadece farki cek
 			if (canSyncUser && !needsMigration) {
 				hasLocalData = await tryLoadExistingDb();
 			}
 
 			if (!hasLocalData) {
-				try {
-					await clearOfflineData();
-				} catch (e) {
-					console.error(e);
+				// migrationSkipped: lokal IndexedDB'yi temizleme (sonraki acilista veri yine denenir)
+				if (!migrationSkipped) {
+					try {
+						await clearOfflineData();
+					} catch (e) {
+						console.error(e);
+					}
+					// IndexedDB delete transaction'in tamamen kapanmasi icin bekle
+					await new Promise(r => setTimeout(r, 100));
 				}
-				// IndexedDB delete transaction'in tamamen kapanmasi icin bekle
-				await new Promise(r => setTimeout(r, 100));
 				initLokiDb({
 					autoload: false,
 				});
@@ -636,56 +652,63 @@ async function getAllSettings(userId: string) {
 /**
  * Basic → Pro gecisinde lokal verileri sunucuya aktar.
  * initOfflineData passed=true olduktan sonra cagirilmali (LokiDB zaten yuklu).
+ * Return: true (basarili veya zaten bos), false (hata — flag korunmali).
  */
-async function migrateLocalDataToServer() {
+async function migrateLocalDataToServer(): Promise<boolean> {
 	const solveCollection = getLokiDb().getCollection('solves');
 	const sessionCollection = getLokiDb().getCollection('sessions');
 
 	const localSessions = sessionCollection ? sessionCollection.find() : [];
 	const localSolves = solveCollection ? solveCollection.find() : [];
 
-	if (!localSessions.length && !localSolves.length) return;
+	if (!localSessions.length && !localSolves.length) return true;
 
 	console.log(`[Migration] ${localSessions.length} session, ${localSolves.length} solve aktarilacak`);
 
-	// Once session'lari yukle (solve'lar session_id'ye bagimli)
-	if (localSessions.length > 0) {
-		const sessionInputs = localSessions.map((s) => ({
-			id: s.id,
-			name: s.name || 'Sezon',
-			order: s.order || 0,
-		}));
-		await importSessionsInChunks(sessionInputs, () => {});
-	}
+	try {
+		// Once session'lari yukle (solve'lar session_id'ye bagimli)
+		if (localSessions.length > 0) {
+			const sessionInputs = localSessions.map((s) => ({
+				id: s.id,
+				name: s.name || 'Sezon',
+				order: s.order || 0,
+			}));
+			await importSessionsInChunks(sessionInputs, () => {});
+		}
 
-	// Sonra solve'lari yukle (sadece SolveInput alanlarini gonder)
-	if (localSolves.length > 0) {
-		const solveInputs = localSolves.map((s) => ({
-			id: s.id,
-			time: s.time,
-			raw_time: s.raw_time,
-			cube_type: s.cube_type,
-			scramble: s.scramble,
-			session_id: s.session_id,
-			started_at: s.started_at,
-			ended_at: s.ended_at,
-			dnf: s.dnf,
-			plus_two: s.plus_two,
-			bulk: s.bulk,
-			notes: s.notes,
-			from_timer: s.from_timer ?? true,
-			trainer_name: s.trainer_name,
-			is_smart_cube: s.is_smart_cube,
-			training_session_id: s.training_session_id,
-			smart_device_id: s.smart_device_id,
-			smart_turn_count: s.smart_turn_count,
-			smart_turns: s.smart_turns,
-			smart_put_down_time: s.smart_put_down_time,
-			smart_pick_up_time: s.smart_pick_up_time,
-			inspection_time: s.inspection_time,
-		}));
-		await importSolvesInChunks(solveInputs, () => {});
-	}
+		// Sonra solve'lari yukle (sadece SolveInput alanlarini gonder)
+		if (localSolves.length > 0) {
+			const solveInputs = localSolves.map((s) => ({
+				id: s.id,
+				time: s.time,
+				raw_time: s.raw_time,
+				cube_type: s.cube_type,
+				scramble: s.scramble,
+				session_id: s.session_id,
+				started_at: s.started_at,
+				ended_at: s.ended_at,
+				dnf: s.dnf,
+				plus_two: s.plus_two,
+				bulk: s.bulk,
+				notes: s.notes,
+				from_timer: s.from_timer ?? true,
+				trainer_name: s.trainer_name,
+				is_smart_cube: s.is_smart_cube,
+				training_session_id: s.training_session_id,
+				smart_device_id: s.smart_device_id,
+				smart_turn_count: s.smart_turn_count,
+				smart_turns: s.smart_turns,
+				smart_put_down_time: s.smart_put_down_time,
+				smart_pick_up_time: s.smart_pick_up_time,
+				inspection_time: s.inspection_time,
+			}));
+			await importSolvesInChunks(solveInputs, () => {});
+		}
 
-	console.log('[Migration] Aktarim tamamlandi');
+		console.log('[Migration] Aktarim tamamlandi');
+		return true;
+	} catch (e) {
+		console.error('[Migration] Failed:', e);
+		return false;
+	}
 }

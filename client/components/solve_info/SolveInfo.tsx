@@ -16,7 +16,6 @@ import { Solve } from '../../../server/schemas/Solve.schema';
 import { useGeneral } from '../../util/hooks/useGeneral';
 import { useDispatch, useSelector } from 'react-redux';
 import { closeModal } from '../../actions/general';
-import { demoUser } from './demo_user';
 import NormalSolveLayout from './normal_solve_layout/NormalSolveLayout';
 import SmartSolveLayout from './smart_solve_layout/SmartSolveLayout';
 import { getSolveDb } from '../../db/solves/init';
@@ -35,7 +34,6 @@ export interface SolveLayoutProps {
 	disabled: boolean;
 	editMode: boolean;
 	mobileMode: boolean;
-	demoSolve: boolean;
 	toggleEditMode: () => void;
 	togglePlusTwo: () => void;
 	toggleDnf: () => void;
@@ -66,26 +64,18 @@ export default function SolveInfo(props: Props) {
 	const dispatch = useDispatch();
 	const mobileMode = useGeneral('mobile_mode');
 	const me = useSelector((state: any) => state.account.me);
-	const demoSolve = props.solve?.demo_mode;
 
-	const [loading, setLoading] = useState(!demoSolve);
+	const [loading, setLoading] = useState(true);
 	const [solve, setSolve] = useState<Solve>(props.solve);
 	const [editMode, setEditMode] = useState(false);
 	const [dbSolve, setDbSolve] = useState<Solve>(null);
 
 	useSolveDb();
 	useEffect(() => {
-		if (demoSolve) {
-			return;
-		}
-
 		updateSolve();
 	}, []);
 
-	let user = solve?.user || me;
-	if (solve?.demo_mode) {
-		user = demoUser;
-	}
+	const user = solve?.user || me;
 
 	function updateSolve(targetSolveId?: string) {
 		const id = targetSolveId || solveId;
@@ -230,7 +220,6 @@ export default function SolveInfo(props: Props) {
 		disabled: !!disabled,
 		editMode,
 		mobileMode,
-		demoSolve: !!demoSolve,
 		toggleEditMode,
 		togglePlusTwo,
 		toggleDnf,

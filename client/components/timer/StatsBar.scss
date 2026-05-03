@@ -17,6 +17,11 @@
         border-top: 1px solid rgba(var(--text-color), 0.05);
     }
 
+    &--hidden {
+        visibility: hidden;
+        pointer-events: none;
+    }
+
     &__item {
         display: flex;
         flex-direction: column;

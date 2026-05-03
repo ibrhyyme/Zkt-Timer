@@ -7,6 +7,8 @@ import {sendPushToUser} from './push';
 import {getWcaLiveData, fetchLiveRoundResults, formatCentiseconds, WcaLiveRoundData} from './WcaLiveService';
 import WcaResultEnteredNotification from '../resources/notification_types/wca_result_entered';
 import WcaRoundFinishedNotification from '../resources/notification_types/wca_round_finished';
+import WcaFollowResultEnteredNotification from '../resources/notification_types/wca_follow_result_entered';
+import WcaFollowRoundFinishedNotification from '../resources/notification_types/wca_follow_round_finished';
 import {WcaApiService} from './WcaApiService';
 import {createI18nInstance} from '../i18n_server';
 
@@ -63,16 +65,26 @@ async function runTick() {
 			},
 		});
 
-		if (states.length === 0) {
-			logger.info('[WcaNotify] tick done', {states: 0, comps: 0, pushed: 0});
-			return;
-		}
+		// Takipci olan yarismalar — kullanici kayitli olmasa bile cron'un islemesi gerekir
+		const followCompIdsRaw = await prisma.competitionFollow.findMany({
+			distinct: ['competition_id'],
+			select: {competition_id: true},
+		});
 
 		// Yarismaya gore grupla
 		const byComp = new Map<string, typeof states>();
 		for (const s of states) {
 			if (!byComp.has(s.competition_id)) byComp.set(s.competition_id, []);
 			byComp.get(s.competition_id)!.push(s);
+		}
+		// Takip edilen yarismalari da listeye ekle (state'i olmasa bile)
+		for (const f of followCompIdsRaw) {
+			if (!byComp.has(f.competition_id)) byComp.set(f.competition_id, []);
+		}
+
+		if (byComp.size === 0) {
+			logger.info('[WcaNotify] tick done', {states: 0, comps: 0, pushed: 0});
+			return;
 		}
 
 		let totalPushed = 0;
@@ -125,6 +137,33 @@ async function processCompetition(compId: string, states: StateRow[]): Promise<n
 		if (s.person_name && s.person_name.trim()) byName.set(s.person_name, s);
 	}
 
+	// Bu yarismaya ait takipciler (Pro ozelligi) — ayni yarismaciyi birden fazla kullanici takip edebilir
+	const follows = await getPrisma().competitionFollow.findMany({
+		where: {competition_id: compId},
+		include: {
+			user: {include: {settings: true}},
+			notified_rounds: true,
+		},
+	});
+	const followsByWcaId = new Map<string, typeof follows>();
+	const followsByName = new Map<string, typeof follows>();
+	const followsByRegistrant = new Map<number, typeof follows>();
+	for (const f of follows) {
+		if (f.followed_wca_id && f.followed_wca_id.trim()) {
+			const arr = followsByWcaId.get(f.followed_wca_id) ?? [];
+			arr.push(f);
+			followsByWcaId.set(f.followed_wca_id, arr);
+		}
+		if (f.followed_name && f.followed_name.trim()) {
+			const arr = followsByName.get(f.followed_name) ?? [];
+			arr.push(f);
+			followsByName.set(f.followed_name, arr);
+		}
+		const arr = followsByRegistrant.get(f.followed_registrant_id) ?? [];
+		arr.push(f);
+		followsByRegistrant.set(f.followed_registrant_id, arr);
+	}
+
 	// Event basina max round numarasi (final tespiti icin)
 	const maxRoundByEvent = new Map<string, number>();
 	for (const rm of liveData.roundMap) {
@@ -171,53 +210,113 @@ async function processCompetition(compId: string, states: StateRow[]): Promise<n
 			const state =
 				(result.personWcaId && byWcaId.get(result.personWcaId)) ||
 				byName.get(result.personName);
-			if (!state) continue;
+			if (state) {
+				const existingNr = state.notified_rounds.find((nr) => nr.activity_code === rm.activityCode);
 
-			const existingNr = state.notified_rounds.find((nr) => nr.activity_code === rm.activityCode);
+				// --- Sonuc girildi bildirimi ---
+				if (result.best && result.best > 0 && !existingNr?.result_notified) {
+					try {
+						await sendResultEntered(
+							state,
+							compId,
+							eventId,
+							eventName,
+							roundNumber,
+							result,
+							round.numberOfAttempts,
+						);
+						await upsertNotifiedRound(state.id, rm.activityCode, {result_notified: true});
+						pushed++;
+					} catch (err: any) {
+						logger.warn('[WcaNotify] result push failed', {
+							compId,
+							userId: state.user_id,
+							err: err?.message,
+						});
+					}
+				}
 
-			// --- Sonuc girildi bildirimi ---
-			if (result.best && result.best > 0 && !existingNr?.result_notified) {
-				try {
-					await sendResultEntered(
-						state,
-						compId,
-						eventId,
-						eventName,
-						roundNumber,
-						result,
-						round.numberOfAttempts,
-					);
-					await upsertNotifiedRound(state.id, rm.activityCode, {result_notified: true});
-					pushed++;
-				} catch (err: any) {
-					logger.warn('[WcaNotify] result push failed', {
-						compId,
-						userId: state.user_id,
-						err: err?.message,
-					});
+				// --- Round bitti bildirimi ---
+				if (round.finished && !existingNr?.finish_notified) {
+					try {
+						await sendRoundFinished(
+							state,
+							compId,
+							eventId,
+							eventName,
+							roundNumber,
+							result,
+							isFinal,
+						);
+						await upsertNotifiedRound(state.id, rm.activityCode, {finish_notified: true});
+						pushed++;
+					} catch (err: any) {
+						logger.warn('[WcaNotify] finish push failed', {
+							compId,
+							userId: state.user_id,
+							err: err?.message,
+						});
+					}
 				}
 			}
 
-			// --- Round bitti bildirimi ---
-			if (round.finished && !existingNr?.finish_notified) {
-				try {
-					await sendRoundFinished(
-						state,
-						compId,
-						eventId,
-						eventName,
-						roundNumber,
-						result,
-						isFinal,
-					);
-					await upsertNotifiedRound(state.id, rm.activityCode, {finish_notified: true});
-					pushed++;
-				} catch (err: any) {
-					logger.warn('[WcaNotify] finish push failed', {
-						compId,
-						userId: state.user_id,
-						err: err?.message,
-					});
+			// --- Takipci bildirimleri (Pro) ---
+			const matchedFollows =
+				(result.personWcaId && followsByWcaId.get(result.personWcaId)) ||
+				followsByName.get(result.personName) ||
+				[];
+
+			for (const follow of matchedFollows) {
+				// Self-bildirim koruma: kullanici ayni anda hem state hem follow'a sahipse
+				// state uzerinden zaten bildirim aldi, follow'u atla
+				if (state && state.user_id === follow.user_id) continue;
+
+				const existingFollowNr = follow.notified_rounds.find(
+					(nr) => nr.activity_code === rm.activityCode,
+				);
+
+				if (result.best && result.best > 0 && !existingFollowNr?.result_notified) {
+					try {
+						await sendFollowResultEntered(
+							follow,
+							compId,
+							eventId,
+							eventName,
+							roundNumber,
+							result,
+							round.numberOfAttempts,
+						);
+						await upsertFollowNotifiedRound(follow.id, rm.activityCode, {result_notified: true});
+						pushed++;
+					} catch (err: any) {
+						logger.warn('[WcaNotify] follow result push failed', {
+							compId,
+							followId: follow.id,
+							err: err?.message,
+						});
+					}
+				}
+
+				if (round.finished && !existingFollowNr?.finish_notified) {
+					try {
+						await sendFollowRoundFinished(
+							follow,
+							compId,
+							eventId,
+							eventName,
+							roundNumber,
+							result,
+							isFinal,
+						);
+						await upsertFollowNotifiedRound(follow.id, rm.activityCode, {finish_notified: true});
+						pushed++;
+					} catch (err: any) {
+						logger.warn('[WcaNotify] follow finish push failed', {
+							compId,
+							followId: follow.id,
+							err: err?.message,
+						});
+					}
 				}
 			}
 		}
@@ -355,6 +454,144 @@ async function upsertNotifiedRound(
 		where: {state_id_activity_code: {state_id: stateId, activity_code: activityCode}},
 		create: {
 			state_id: stateId,
+			activity_code: activityCode,
+			result_notified: patch.result_notified ?? false,
+			finish_notified: patch.finish_notified ?? false,
+		},
+		update: patch,
+	});
+}
+
+// ===== Takipci (Pro) bildirimleri =====
+
+type FollowRow = Awaited<ReturnType<typeof loadFollows>>[number];
+async function loadFollows() {
+	return getPrisma().competitionFollow.findMany({
+		include: {user: {include: {settings: true}}, notified_rounds: true},
+	});
+}
+
+function getFollowLocale(follow: FollowRow): string {
+	const locale = (follow.user as any)?.settings?.locale;
+	return locale && ['tr', 'en', 'es', 'ru', 'zh'].includes(locale) ? locale : 'en';
+}
+
+async function sendFollowResultEntered(
+	follow: FollowRow,
+	competitionId: string,
+	eventId: string,
+	eventName: string,
+	roundNumber: number,
+	result: {best: number; average: number},
+	numberOfAttempts: number,
+) {
+	const locale = getFollowLocale(follow);
+	const i18n = createI18nInstance(locale);
+	const t = (key: string, vars?: any) => i18n.t(`my_schedule.${key}`, vars) as string;
+
+	const bestText = formatCentiseconds(result.best, eventId);
+	const hasAverage = result.average && result.average > 0;
+	const avgText = hasAverage ? formatCentiseconds(result.average, eventId) : '';
+	const isBo1 = numberOfAttempts === 1;
+
+	const resultText = isBo1 || !hasAverage
+		? t('notif_result_body_single_only', {single: bestText})
+		: t('notif_result_body_avg_single', {avg: avgText, single: bestText});
+
+	const notif = new WcaFollowResultEnteredNotification(
+		{
+			user: follow.user as any,
+			triggeringUser: follow.user as any,
+			sendEmail: false,
+		},
+		{
+			competitionId,
+			competitionName: '',
+			eventId,
+			eventName,
+			roundNumber,
+			resultText,
+			followedName: follow.followed_name,
+			locale,
+		},
+	);
+
+	const title = notif.subject();
+	const body = notif.inAppMessage();
+
+	await notif.send().catch((err: any) => {
+		logger.warn('[WcaNotify] follow result notif DB write failed', {err: err?.message});
+	});
+
+	await sendPushToUser(follow.user_id, title, body, {
+		type: 'wca_follow_result_entered',
+		competitionId,
+		eventId,
+		roundNumber: String(roundNumber),
+	}).catch((err: any) => {
+		logger.warn('[WcaNotify] follow result push send failed', {err: err?.message});
+	});
+}
+
+async function sendFollowRoundFinished(
+	follow: FollowRow,
+	competitionId: string,
+	eventId: string,
+	eventName: string,
+	roundNumber: number,
+	result: {ranking?: number; advancing: boolean; advancingQuestionable: boolean},
+	isFinal: boolean,
+) {
+	const locale = getFollowLocale(follow);
+	const ranking = result.ranking ?? 0;
+
+	const notif = new WcaFollowRoundFinishedNotification(
+		{
+			user: follow.user as any,
+			triggeringUser: follow.user as any,
+			sendEmail: false,
+		},
+		{
+			competitionId,
+			competitionName: '',
+			eventId,
+			eventName,
+			roundNumber,
+			ranking,
+			advancing: result.advancing,
+			advancingQuestionable: result.advancingQuestionable,
+			isFinal,
+			followedName: follow.followed_name,
+			locale,
+		},
+	);
+
+	const title = notif.subject();
+	const body = notif.inAppMessage();
+
+	await notif.send().catch((err: any) => {
+		logger.warn('[WcaNotify] follow finish notif DB write failed', {err: err?.message});
+	});
+
+	await sendPushToUser(follow.user_id, title, body, {
+		type: 'wca_follow_round_finished',
+		competitionId,
+		eventId,
+		roundNumber: String(roundNumber),
+	}).catch((err: any) => {
+		logger.warn('[WcaNotify] follow finish push send failed', {err: err?.message});
+	});
+}
+
+async function upsertFollowNotifiedRound(
+	followId: string,
+	activityCode: string,
+	patch: {result_notified?: boolean; finish_notified?: boolean},
+) {
+	await getPrisma().competitionFollowNotifiedRound.upsert({
+		where: {follow_id_activity_code: {follow_id: followId, activity_code: activityCode}},
+		create: {
+			follow_id: followId,
 			activity_code: activityCode,
 			result_notified: patch.result_notified ?? false,
 			finish_notified: patch.finish_notified ?? false,

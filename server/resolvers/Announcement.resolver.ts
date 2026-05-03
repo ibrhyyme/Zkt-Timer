@@ -7,10 +7,12 @@ import {
 	AnnouncementFilterInput,
 	UnreadAnnouncementCount
 } from '../schemas/Announcement.schema';
+import { TranslateAnnouncementResult } from '../schemas/Translation.schema';
 import GraphQLError from '../util/graphql_error';
 import { ErrorCode } from '../constants/errors';
 import { Role } from '../middlewares/auth';
 import { sendPushToAll, sendPushToPlatforms } from '../services/push';
+import { translateAnnouncement } from '../util/gemini';
 
 function getLocale(context: GraphQLContext): string {
 	return context.req.cookies?.zkt_language || 'en';
@@ -197,6 +199,7 @@ export class AnnouncementResolver {
 					imageUrl: input.imageUrl,
 					isDraft: input.isDraft,
 					publishedAt: input.isDraft ? null : new Date(),
+					targetUrl: input.targetUrl || null,
 					translations: input.translations ? JSON.parse(input.translations) : undefined
 				},
 				include: {
@@ -207,12 +210,19 @@ export class AnnouncementResolver {
 			// Bildirim gonder (fire-and-forget, duyuru olusturmayı bloklamaz)
 			if (input.sendNotification && !input.isDraft) {
 				const body = announcement.content.substring(0, 200);
+				const pushData: Record<string, string> = {
+					type: 'announcement',
+					announcementId: announcement.id,
+				};
+				if (announcement.targetUrl) {
+					pushData.link = announcement.targetUrl;
+				}
 				if (input.notificationPlatforms && input.notificationPlatforms.length > 0) {
-					sendPushToPlatforms(input.notificationPlatforms, announcement.title, body).catch((err) => {
+					sendPushToPlatforms(input.notificationPlatforms, announcement.title, body, pushData).catch((err) => {
 						console.error('[Push] Failed to send push for announcement:', err);
 					});
 				} else {
-					sendPushToAll(announcement.title, body).catch((err) => {
+					sendPushToAll(announcement.title, body, pushData).catch((err) => {
 						console.error('[Push] Failed to send push for announcement:', err);
 					});
 				}
@@ -222,10 +232,26 @@ export class AnnouncementResolver {
 				...announcement,
 				category: announcement.category as string,
 				viewCount: 0,
+				targetUrl: announcement.targetUrl || undefined,
 				translations: announcement.translations ? JSON.stringify(announcement.translations) : undefined
 			};
 		} catch (error) {
 			throw new GraphQLError(ErrorCode.INTERNAL_SERVER_ERROR, 'Failed to create announcement');
+		}
+	}
+
+	// Admin - Gemini ile TR icerigi 4 dile cevir (EN/ES/RU/ZH)
+	@Authorized([Role.ADMIN])
+	@Mutation(() => TranslateAnnouncementResult)
+	async translateAnnouncementContent(
+		@Arg('title') title: string,
+		@Arg('content') content: string,
+	): Promise<TranslateAnnouncementResult> {
+		try {
+			return await translateAnnouncement({ title, content });
+		} catch (err: any) {
+			console.error('[Gemini] translate failed:', err?.message || err);
+			throw new GraphQLError(ErrorCode.INTERNAL_SERVER_ERROR, err?.message || 'Translation failed');
 		}
 	}
 
@@ -252,6 +278,11 @@ export class AnnouncementResolver {
 			// translations JSON string → object
 			if (updateData.translations) {
 				updateData.translations = JSON.parse(updateData.translations);
+			}
+
+			// Bos string → null (alan temizlendi)
+			if (updateData.targetUrl === '') {
+				updateData.targetUrl = null;
 			}
 
 			const announcement = await context.prisma.announcement.update({

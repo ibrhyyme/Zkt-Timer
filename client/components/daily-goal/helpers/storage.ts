@@ -14,7 +14,7 @@ const DEFAULT_STORAGE: DailyGoalStorage = {
 
 function getStorageKey(): string {
 	const me = getMe();
-	const userId = me?.id || 'demo';
+	const userId = me?.id || '_anon';
 	return `${STORAGE_KEY}_${userId}`;
 }
 

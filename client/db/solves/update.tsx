@@ -4,7 +4,6 @@ import { gqlMutate } from '../../components/api';
 import { getSolveDb } from './init';
 import { emitEvent } from '../../util/event_handler';
 import { clearSolveStatCache, clearSolveStatCacheForSession } from './stats/solves/caching';
-import { toastError } from '../../util/toast';
 import { getStore } from '../../components/store';
 import { openModal } from '../../actions/general';
 import ConfirmModal from '../../components/common/confirm_modal/ConfirmModal';
@@ -43,7 +42,7 @@ export async function createSolveDb(solveInput: Solve) {
 
 	postProcessDbUpdate(solve, true);
 
-	if (!solve.demo_mode && canSync()) {
+	if (canSync()) {
 		const query = gql`
 			mutation Mutate($input: SolveInput) {
 				createSolve(input: $input) {
@@ -91,35 +90,6 @@ export async function createSolveDb(solveInput: Solve) {
 			await addToQueue('createSolve', { input: solve });
 			showOfflineToastOnce();
 		}
-	} else if (solve.demo_mode) {
-		await createDemoSolve(solve);
-	}
-}
-
-async function createDemoSolve(solve: Solve) {
-	const query = gql`
-		mutation Mutate($input: DemoSolveInput) {
-			createDemoSolve(input: $input) {
-				id
-			}
-		}
-	`;
-
-	const browserSessionId = getStore().getState()?.general?.browser_session_id;
-
-	try {
-		await gqlMutate(query, {
-			input: {
-				raw_time: solve.raw_time,
-				cube_type: solve.cube_type,
-				scramble: solve.scramble,
-				started_at: solve.started_at,
-				ended_at: solve.ended_at,
-				demo_session_id: browserSessionId,
-			},
-		});
-	} catch (e) {
-		toastError('Could not save solve. Please check your connection.');
 	}
 }
 
@@ -161,7 +131,7 @@ export async function deleteSolveDb(solve: Solve, confirmed: boolean = false) {
 		setTimerParam('finalTime', 0);
 	}
 
-	if (!solve.demo_mode && canSync()) {
+	if (canSync()) {
 		const query = gql`
 			mutation Mutate($id: String) {
 				deleteSolve(id: $id) {
@@ -195,7 +165,7 @@ export async function updateSolveDb(solve: Solve, input: Partial<Solve> = {}, up
 		postProcessDbUpdate(solve, false);
 	}
 
-	if (!solve.demo_mode && canSync()) {
+	if (canSync()) {
 		const query = gql`
 			mutation Mutate($id: String, $input: SolveInput) {
 				updateSolve(id: $id, input: $input) {
@@ -233,12 +203,10 @@ function postProcessDbUpdate(solve: Solve, isNew: boolean) {
 	checkForPB(solve, isNew);
 	checkForWorst(solve, isNew);
 
-	if (!solve.demo_mode) {
-		if (canSync()) {
-			updateOfflineHash();
-		} else {
-			saveLokiDb();
-		}
+	if (canSync()) {
+		updateOfflineHash();
+	} else {
+		saveLokiDb();
 	}
 
 	emitEvent('solveDbUpdatedEvent', solve);
@@ -347,9 +315,7 @@ export async function deleteMultipleSolvesDb(solves: Solve[], confirmed: boolean
 		}
 	}
 
-	const solvesToDeleteFromServer = solves.filter(s => !s.demo_mode);
-
-	if (solvesToDeleteFromServer.length > 0 && canSync()) {
+	if (solves.length > 0 && canSync()) {
 		const query = gql`
 			mutation Mutate($ids: [String!]!) {
 				deleteSolves(ids: $ids)
@@ -358,7 +324,7 @@ export async function deleteMultipleSolvesDb(solves: Solve[], confirmed: boolean
 
 		try {
 			await gqlMutate(query, {
-				ids: solvesToDeleteFromServer.map(s => s.id),
+				ids: solves.map(s => s.id),
 			});
 		} catch (e: any) {
 			// Argument Validation Error = Yazılımsal hata (muhtemelen Return Type uyuşmazlığı)
@@ -370,7 +336,7 @@ export async function deleteMultipleSolvesDb(solves: Solve[], confirmed: boolean
 			}
 
 			// Offline queue'ya ekle
-			await addToQueue('deleteSolves', { ids: solvesToDeleteFromServer.map(s => s.id) });
+			await addToQueue('deleteSolves', { ids: solves.map(s => s.id) });
 			showOfflineToastOnce();
 		}
 	}

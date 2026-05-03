@@ -223,7 +223,13 @@
         "category_feature": "🎉 Feature",
         "category_bugfix": "🔧 Bug Fix",
         "category_important": "⚠️ Important",
-        "category_info": "ℹ️ Info"
+        "category_info": "ℹ️ Info",
+        "target_url_label": "Redirect Link (Optional)",
+        "target_url_placeholder": "/pro or https://...",
+        "translate_btn": "Auto-translate to other languages",
+        "translate_loading": "Translating...",
+        "translate_success": "Translated to 4 languages",
+        "translate_error": "Translation failed"
     },
     "create_room": {
         "title": "Create New Room",
@@ -678,7 +684,32 @@
         "notif_countdown_body_with_time": "Start time: {{startTime}}. Time to prepare.",
         "notif_countdown_link_text": "View competition",
         "cutoff_attempts": "{{count}} att.",
-        "wca_live_error": "Failed to load WCA Live. Please refresh the page."
+        "wca_live_error": "Failed to load WCA Live. Please refresh the page.",
+        "follow_competitor": "Follow",
+        "unfollow_competitor": "Stop notifications",
+        "following": "Following",
+        "follow_limit_reached": "You can follow up to {{max}} competitors per competition. Unfollow one first.",
+        "follow_self_error": "You can't follow yourself",
+        "follow_success": "Following {{name}}",
+        "unfollow_success": "Unfollowed {{name}}",
+        "follow_error_generic": "Action failed, please try again",
+        "notif_follow_result_title": "{{eventName}} Round {{roundNumber}} results",
+        "notif_follow_result_body": "{{name}} · {{result}}",
+        "notif_follow_round_finished_title": "{{eventName}} Round {{roundNumber}} finished",
+        "notif_follow_final_finished_title": "{{name}} finished {{eventName}} final",
+        "notif_follow_advancing": "{{name}} advanced from {{ranking}}{{suffix}}",
+        "notif_follow_advancing_questionable": "{{name}} ranked {{ranking}}{{suffix}} (advance pending)",
+        "notif_follow_not_advancing": "{{name}} finished {{eventName}} in {{ranking}}{{suffix}} place",
+        "notif_follow_final_result": "{{name}} finished {{eventName}} final in {{ranking}}{{suffix}} place",
+        "notif_follow_podium_1st_title": "🥇 {{name}} won {{eventName}}!",
+        "notif_follow_podium_1st_body": "{{name}} won the {{eventName}} final",
+        "notif_follow_podium_2nd_title": "🥈 {{name}} finished 2nd in {{eventName}}",
+        "notif_follow_podium_2nd_body": "{{name}} finished 2nd in the {{eventName}} final",
+        "notif_follow_podium_3rd_title": "🥉 {{name}} finished 3rd in {{eventName}}",
+        "notif_follow_podium_3rd_body": "{{name}} finished 3rd in the {{eventName}} final",
+        "notif_follow_countdown_title_days": "In {{days}} days: {{competitionName}}",
+        "notif_follow_countdown_title_tomorrow": "Tomorrow: {{competitionName}}",
+        "notif_follow_countdown_body": "You're following {{count}} competitor(s). You'll receive live results."
     },
     "competitions": {
         "page_title": "WCA Competitions",
@@ -1331,7 +1362,8 @@
         "info": "ℹ️ Info",
         "close": "Close",
         "next": "Next",
-        "got_it": "Got It"
+        "got_it": "Got It",
+        "view_details": "View Details"
     },
     "admin_users": {
         "page_title": "User Management",
@@ -1587,8 +1619,6 @@
         "solves_description": "View all your Rubik's cube solves. Performance analysis with scramble, time and solve details.",
         "leaderboards_title": "Leaderboards - Zkt Timer",
         "leaderboards_description": "The fastest Rubik's cube solvers! Single and Average records, category-based rankings.",
-        "demo_title": "Demo Mode - Zkt Timer",
-        "demo_description": "Try Zkt Timer! Explore timer features without creating an account.",
         "app_description": "The most advanced online Rubik's cube timer, WCA competition tracker and speedcubing platform. Millisecond precision timing.",
         "feature_list": [
             "Rubik's cube timer",
@@ -1628,7 +1658,6 @@
         "zkt_records_keywords": "ZKT records, Turkey cube records, national records, rubik's cube records Turkey",
         "zkt_rankings_keywords": "ZKT rankings, Turkey cube rankings, national rankings, Turkish speedcubers",
         "login_keywords": "Zkt Timer login, cube timer signup, speedcubing account",
-        "demo_keywords": "Zkt Timer demo, try cube timer, speedcubing demo",
         "wca_live_title": "WCA Live Results - Real-time Rankings | Zkt Timer",
         "wca_live_description": "Live WCA competition results. Real-time round rankings, solve times and event tracking as the competition unfolds.",
         "wca_person_title": "Competitor Profile - WCA Competition | Zkt Timer",
@@ -2214,6 +2243,10 @@
                 "title": "Smart cube & GAN timer in rooms",
                 "desc": "Connect your smart cube or GAN timer while solving with friends in an online room. Times are recorded automatically and you compete in real time — Pro required to use this feature."
             },
+            "competition_follow": {
+                "title": "Follow competitors",
+                "desc": "Follow up to 5 competitors in any WCA competition. Receive real-time push notifications for results, round advancements, and podium finishes."
+            },
             "ai_analysis": {
                 "title": "Smart cube AI analysis — Coming Soon",
                 "desc": "Analyze your smart cube data with AI. Automatically learn where you're losing time and which algorithms need improvement."
@@ -2551,6 +2584,7 @@
         "title_highlight": "Rubik's Cube Timer",
         "description": "Unlock your potential with a professional timer, detailed analytics, and live competitions.",
         "cta_start": "Start Timer →",
+        "start_now": "Get Started",
         "cta_signup": "Sign Up",
         "cta_login": "Log In",
         "title_highlight_2": "speedcubing platform",
@@ -2630,6 +2664,10 @@
             "trainer_pdf": {
                 "title": "Download All Algorithms as PDF",
                 "desc": "Download all algorithms or just the ones you selected, with their alternatives, as a PDF."
+            },
+            "competition_follow": {
+                "title": "Follow competitors",
+                "desc": "With Pro, follow up to 5 competitors in any WCA competition and receive real-time notifications for results, advancements, and podium finishes."
             }
         },
         "highlights": {
@@ -2659,7 +2697,9 @@
             "trainer_speed": "Get faster and more accurate every rep",
             "pdf_professional": "Professionally designed PDF output",
             "pdf_alternatives": "Alternative algorithms included",
-            "pdf_stats": "Export all or selected algorithms"
+            "pdf_stats": "Export all or selected algorithms",
+            "follow_realtime": "Notifications the moment results go live",
+            "follow_limit": "Up to 5 follows per competition"
         }
     },
     "battle": {

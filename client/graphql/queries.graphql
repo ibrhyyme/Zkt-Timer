@@ -116,6 +116,7 @@ query getActiveAnnouncements {
 		category
 		priority
 		imageUrl
+		targetUrl
 		createdAt
 		hasViewed
 	}
@@ -135,6 +136,8 @@ query getAllAnnouncements($filter: AnnouncementFilterInput) {
 		category
 		priority
 		imageUrl
+		targetUrl
+		translations
 		isDraft
 		isActive
 		createdAt
@@ -151,6 +154,7 @@ query getMyAnnouncementHistory($limit: Int!, $offset: Int!) {
 		category
 		priority
 		imageUrl
+		targetUrl
 		createdAt
 	}
 }
@@ -629,5 +633,16 @@ query landingStats {
 		supported_language_count
 		cuber_count
 		solve_count
+	}
+}
+
+query myCompetitionFollows($competitionId: String!) {
+	myCompetitionFollows(competitionId: $competitionId) {
+		id
+		competition_id
+		followed_registrant_id
+		followed_wca_id
+		followed_name
+		created_at
 	}
 }

@@ -15,9 +15,6 @@ export class Session {
 	order: number;
 
 	@Field()
-	demo_mode?: boolean;
-
-	@Field()
 	created_at: Date;
 }
 

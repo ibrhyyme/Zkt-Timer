@@ -68,6 +68,7 @@ mutation createAnnouncement($input: CreateAnnouncementInput!) {
 		title
 		category
 		isDraft
+		targetUrl
 	}
 }
 
@@ -77,6 +78,7 @@ mutation updateAnnouncement($id: String!, $input: UpdateAnnouncementInput!) {
 		title
 		category
 		isDraft
+		targetUrl
 	}
 }
 
@@ -86,6 +88,23 @@ mutation markAnnouncementAsViewed($announcementId: String!) {
 
 mutation deleteAnnouncement($id: String!) {
 	deleteAnnouncement(id: $id)
+}
+
+mutation translateAnnouncementContent($title: String!, $content: String!) {
+	translateAnnouncementContent(title: $title, content: $content) {
+		title {
+			en
+			es
+			ru
+			zh
+		}
+		content {
+			en
+			es
+			ru
+			zh
+		}
+	}
 }
 
 mutation createTrainerAlternative($input: TrainerAlternativeCreateInput!) {
@@ -321,4 +340,19 @@ mutation bulkAssignCompetitors($input: BulkAssignCompetitorsInput!) {
 	bulkAssignCompetitors(input: $input) {
 		...ZktAssignmentFragment
 	}
+}
+
+mutation followCompetitor($input: FollowCompetitorInput!) {
+	followCompetitor(input: $input) {
+		id
+		competition_id
+		followed_registrant_id
+		followed_wca_id
+		followed_name
+		created_at
+	}
+}
+
+mutation unfollowCompetitor($id: String!) {
+	unfollowCompetitor(id: $id)
 }

@@ -223,7 +223,13 @@
         "category_feature": "🎉 Yenilik",
         "category_bugfix": "🔧 Düzeltme",
         "category_important": "⚠️ Önemli",
-        "category_info": "ℹ️ Bilgi"
+        "category_info": "ℹ️ Bilgi",
+        "target_url_label": "Yönlendirme Linki (Opsiyonel)",
+        "target_url_placeholder": "/pro veya https://...",
+        "translate_btn": "Diğer dillere otomatik çevir",
+        "translate_loading": "Çevriliyor...",
+        "translate_success": "4 dile çevrildi",
+        "translate_error": "Çeviri başarısız oldu"
     },
     "create_room": {
         "title": "Yeni Oda Oluştur",
@@ -678,7 +684,32 @@
         "notif_countdown_body_with_time": "Başlangıç saati: {{startTime}}. Hazırlıklarını gözden geçir.",
         "notif_countdown_link_text": "Yarışmayı gör",
         "cutoff_attempts": "{{count}} deneme",
-        "wca_live_error": "WCA Live yüklenirken bir sorun oluştu. Sayfayı yenileyin."
+        "wca_live_error": "WCA Live yüklenirken bir sorun oluştu. Sayfayı yenileyin.",
+        "follow_competitor": "Bildirim al",
+        "unfollow_competitor": "Bildirimleri kapat",
+        "following": "Takipte",
+        "follow_limit_reached": "Bu yarışmada en fazla {{max}} yarışmacı takip edebilirsin. Önce birini bırak.",
+        "follow_self_error": "Kendini takip edemezsin",
+        "follow_success": "{{name}} takipte",
+        "unfollow_success": "{{name}} takipten çıkarıldı",
+        "follow_error_generic": "İşlem tamamlanamadı, tekrar deneyin",
+        "notif_follow_result_title": "{{eventName}} Round {{roundNumber}} sonuçları",
+        "notif_follow_result_body": "{{name}} · {{result}}",
+        "notif_follow_round_finished_title": "{{eventName}} Round {{roundNumber}} tamamlandı",
+        "notif_follow_final_finished_title": "{{name}} {{eventName}} finalini tamamladı",
+        "notif_follow_advancing": "{{name}} {{ranking}}. sıradan üst tura yükseldi",
+        "notif_follow_advancing_questionable": "{{name}} {{ranking}}. sırada (üst tur henüz kesin değil)",
+        "notif_follow_not_advancing": "{{name}} {{eventName}}'i {{ranking}}. sırada tamamladı",
+        "notif_follow_final_result": "{{name}} {{eventName}} finalini {{ranking}}. sırada bitirdi",
+        "notif_follow_podium_1st_title": "🥇 {{name}} {{eventName}} şampiyonu!",
+        "notif_follow_podium_1st_body": "{{name}} {{eventName}} finalini birinci olarak tamamladı",
+        "notif_follow_podium_2nd_title": "🥈 {{name}} {{eventName}}'de 2. oldu",
+        "notif_follow_podium_2nd_body": "{{name}} {{eventName}} finalini ikinci sırada tamamladı",
+        "notif_follow_podium_3rd_title": "🥉 {{name}} {{eventName}}'de 3. oldu",
+        "notif_follow_podium_3rd_body": "{{name}} {{eventName}} finalini üçüncü sırada tamamladı",
+        "notif_follow_countdown_title_days": "{{days}} gün sonra: {{competitionName}}",
+        "notif_follow_countdown_title_tomorrow": "Yarın yarışma: {{competitionName}}",
+        "notif_follow_countdown_body": "Takip listende {{count}} yarışmacı var. Sonuçları anlık alacaksın."
     },
     "competitions": {
         "page_title": "WCA Yarışmaları",
@@ -1331,7 +1362,8 @@
         "info": "ℹ️ Bilgi",
         "close": "Kapat",
         "next": "Sonraki",
-        "got_it": "Anladım"
+        "got_it": "Anladım",
+        "view_details": "Detayları Gör"
     },
     "admin_users": {
         "page_title": "Kullanıcı Yönetimi",
@@ -1587,8 +1619,6 @@
         "solves_description": "Tüm zeka küpü çözümlerini görüntüle. Scramble, süre ve çözüm detayları ile performans analizi.",
         "leaderboards_title": "Sıralama - Zkt Timer",
         "leaderboards_description": "En hızlı zeka küpü çözücüler! Single ve Average rekorları, kategori bazlı sıralamalar.",
-        "demo_title": "Demo Modu - Zkt Timer",
-        "demo_description": "Zkt Timer'ı dene! Hesap oluşturmadan timer özelliklerini keşfet.",
         "app_description": "En gelişmiş online zeka küpü timer, WCA yarışma ve speedcubing platformu. Milisaniye hassasiyetinde zamanlayıcı.",
         "feature_list": [
             "Zeka küpü timer",
@@ -1628,7 +1658,6 @@
         "zkt_records_keywords": "ZKT rekorları, Türkiye küp rekorları, ulusal rekorlar, Türkiye rubik küp rekorları",
         "zkt_rankings_keywords": "ZKT sıralama, Türkiye küp sıralaması, ulusal sıralama, Türk speedcuberlar",
         "login_keywords": "Zkt Timer giriş, küp timer kayıt, speedcubing hesabı",
-        "demo_keywords": "Zkt Timer demo, küp timer dene, speedcubing demo",
         "wca_live_title": "WCA Canlı Sonuçlar - Anlık Sıralama | Zkt Timer",
         "wca_live_description": "Canlı WCA yarışma sonuçları. Gerçek zamanlı tur sıralaması, çözüm süreleri ve etkinlik takibi.",
         "wca_person_title": "Yarışmacı Profili - WCA Yarışması | Zkt Timer",
@@ -2214,6 +2243,10 @@
                 "title": "Odada akıllı küp & GAN timer",
                 "desc": "Arkadaşlarınla online oda kurarak küp çözerken akıllı küp veya GAN timer bağlayabilirsin. Sürelerin otomatik kaydedilir, gerçek zamanlı rekabet yaşarsın — ama bu özellik için Pro olman gerekiyor."
             },
+            "competition_follow": {
+                "title": "Yarışmacı takip et",
+                "desc": "WCA yarışmalarında 5 yarışmacıya kadar takibe al. Sonuçlar, tur geçişleri ve podyum başarıları anlık bildirim olarak telefonuna ulaşır."
+            },
             "ai_analysis": {
                 "title": "Akıllı küp AI analizi — Yakında",
                 "desc": "Akıllı küp verilerini yapay zeka ile analiz et. Hangi aşamada zaman kaybettiğini, hangi algoritmaları geliştirmen gerektiğini otomatik olarak öğren."
@@ -2549,6 +2582,7 @@
         "title_highlight": "Rubik's Cube Timer",
         "description": "Profesyonel zamanlayıcı, detaylı analizler ve canlı yarışmalarla potansiyelini açığa çıkar.",
         "cta_start": "Timer'ı Başlat →",
+        "start_now": "Hemen Başla",
         "cta_signup": "Kayıt Ol",
         "cta_login": "Giriş Yap",
         "title_highlight_2": "Speedcubing Platformu",
@@ -2628,6 +2662,10 @@
             "trainer_pdf": {
                 "title": "Tüm Algoritmaları PDF İndir",
                 "desc": "İstersen tüm algoritmaları, istersen sadece seçtiklerini alternatifleriyle beraber PDF olarak indir."
+            },
+            "competition_follow": {
+                "title": "Yarışmacıları Takip Et",
+                "desc": "Pro üyelikle her WCA yarışmasında 5 yarışmacıya kadar takibe al. Sonuçlar, üst tura geçişler ve podyum bildirimleri anlık olarak ulaşır."
             }
         },
         "highlights": {
@@ -2657,7 +2695,9 @@
             "trainer_speed": "Her tekrarda daha hızlı ve daha doğru",
             "pdf_professional": "Profesyonel tasarımlı PDF çıktı",
             "pdf_alternatives": "Alternatif algoritmalar dahil",
-            "pdf_stats": "Toplu veya seçili algoritmaların çıktısı"
+            "pdf_stats": "Toplu veya seçili algoritmaların çıktısı",
+            "follow_realtime": "Sonuçlar yayınlanır yayınlanmaz bildirim",
+            "follow_limit": "Yarışma başına 5 takip hakkı"
         }
     },
     "battle": {

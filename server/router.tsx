@@ -107,19 +107,13 @@ function appUseRouteForPage(routePath, route: PageContext) {
 		const promises: ((store: Store<any>, req: Request) => Promise<any>)[] = route.prefetchData || [];
 		const me = await initUserAccount(store, req);
 
-		// Redirect from demo to timer if logged in
-		if (routePath === '/demo' && me) {
-			res.status(302).redirect('/timer');
-			return;
-		}
-
 		// Redirect root route to timer if authenticated, to welcome if not
 		if (routePath === '/' && me) {
 			res.status(302).redirect('/timer');
 			return;
 		}
 		if (routePath === '/' && !me) {
-			res.status(301).redirect('/welcome');
+			res.status(302).redirect('/welcome');
 			return;
 		}
 

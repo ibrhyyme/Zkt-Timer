@@ -4,6 +4,7 @@ import {useHistory} from 'react-router-dom';
 import {ArrowLeft, CalendarBlank, Users, Info, Warning} from 'phosphor-react';
 import {useCompetitionData} from './CompetitionLoader';
 import {openInAppBrowser} from '../../../util/external-link';
+import FollowBellButton from './FollowBellButton';
 import {
 	b, I18N_LOCALE_MAP, ROLE_COLORS, formatTime, formatDayHeader, getRoleLabel,
 	EventIcon, countryFlag,
@@ -35,6 +36,11 @@ export default function CompetitorDetail({registrantId}: CompetitorDetailProps) 
 
 	const wcaLiveCompId = detail.wcaLiveCompId;
 	const wcaLiveCompetitors = detail.wcaLiveCompetitors || [];
+	const myWcaId = detail.myWcaId;
+	const myRegistrantId = detail.myRegistrantId;
+	const isMe =
+		(myWcaId && selected.wcaId === myWcaId) ||
+		(!myWcaId && myRegistrantId && selected.registrantId === myRegistrantId);
 
 	return (
 		<div className={b('competitor-detail')}>
@@ -76,6 +82,16 @@ export default function CompetitorDetail({registrantId}: CompetitorDetailProps) 
 						)}
 					</div>
 				</div>
+				{!isMe && (
+					<FollowBellButton
+						competitionId={detail.competitionId}
+						registrantId={selected.registrantId}
+						wcaId={selected.wcaId}
+						name={selected.name}
+						size="lg"
+						withLabel={true}
+					/>
+				)}
 				</div>
 
 			{selected.registeredEvents?.length > 0 && (

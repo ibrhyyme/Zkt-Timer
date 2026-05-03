@@ -39,6 +39,9 @@ export class Announcement {
 	hasViewed?: boolean; // Kullanıcının gördüğü mü?
 
 	@Field({ nullable: true })
+	targetUrl?: string; // Bildirime tiklayinca acilacak sayfa: "/pro" veya "https://..."
+
+	@Field({ nullable: true })
 	translations?: string; // JSON string: {"en": {"title":"...","content":"..."}, ...}
 }
 
@@ -75,6 +78,9 @@ export class CreateAnnouncementInput {
 	notificationPlatforms?: string[]; // WEB, ANDROID, IOS
 
 	@Field({ nullable: true })
+	targetUrl?: string;
+
+	@Field({ nullable: true })
 	translations?: string; // JSON string
 }
 
@@ -100,6 +106,9 @@ export class UpdateAnnouncementInput {
 
 	@Field({ nullable: true })
 	isActive?: boolean;
+
+	@Field({ nullable: true })
+	targetUrl?: string;
 
 	@Field({ nullable: true })
 	translations?: string; // JSON string

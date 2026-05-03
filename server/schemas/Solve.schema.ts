@@ -155,9 +155,6 @@ export class Solve {
 	inspection_time: number;
 
 	@Field()
-	demo_mode: boolean;
-
-	@Field()
 	share_code: string;
 
 	@Field(() => [SolveMethodStep])

@@ -21,7 +21,7 @@ export async function createSessionDb(sessionInput: Partial<Session>) {
 	const sessionDb = getSessionDb();
 	let session = sessionInput as Session;
 
-	if (!sessionInput.demo_mode && canSync()) {
+	if (canSync()) {
 		try {
 			const res = await gqlMutateTyped(CreateSessionDocument, {
 				input: {
@@ -33,7 +33,7 @@ export async function createSessionDb(sessionInput: Partial<Session>) {
 			console.error('Failed to create session on server, falling back to local', e);
 			session = { ...session, id: generateId() } as Session;
 		}
-	} else if (!sessionInput.demo_mode) {
+	} else {
 		session = { ...session, id: generateId() } as Session;
 	}
 

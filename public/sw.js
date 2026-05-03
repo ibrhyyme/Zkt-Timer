@@ -183,28 +183,44 @@ async function openQueueDB() {
 self.addEventListener('push', (event) => {
   const data = event.data ? event.data.json() : {};
   const title = (data.notification && data.notification.title) || 'Zkt Timer';
+  // FCM payload: { notification: {...}, data: {type, link, ...} }
+  const payloadData = data.data || (data.notification && data.notification.data) || {};
   const options = {
     body: (data.notification && data.notification.body) || '',
     icon: '/public/images/zkt-logo.png',
     badge: '/public/images/apple-touch-icon.png',
-    data: { url: '/' }
+    data: payloadData
   };
   event.waitUntil(self.registration.showNotification(title, options));
 });
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
+  const data = event.notification.data || {};
+  const link = (typeof data.link === 'string' && data.link.trim()) || '/';
+  const isExternal = link.indexOf('http') === 0;
+
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(windowClients) {
-      // Acik pencere varsa fokusla
+      // External link → yeni pencere
+      if (isExternal) {
+        return self.clients.openWindow(link);
+      }
+      // Acik pencere varsa: navigate + focus, yoksa yeni pencere
       for (var i = 0; i < windowClients.length; i++) {
         var client = windowClients[i];
+        if ('navigate' in client && 'focus' in client) {
+          return client.focus().then(function() {
+            return client.navigate(link).catch(function() {
+              return self.clients.openWindow(link);
+            });
+          });
+        }
         if ('focus' in client) {
           return client.focus();
         }
       }
-      // Yoksa yeni pencere ac
-      return self.clients.openWindow('/');
+      return self.clients.openWindow(link);
     })
   );
 });

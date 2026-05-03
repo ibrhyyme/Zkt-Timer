@@ -13,19 +13,12 @@ import { getSolveDb } from '../../../db/solves/init';
 
 // Creates session if none exist already
 export async function initTimer(dispatch: Dispatch<any>, context: ITimerContext) {
-	const { inModal, demoMode } = context;
+	const { inModal } = context;
 	const sessionId = getSetting('session_id');
 	const cubeType = getSetting('cube_type');
 	const ct = getCubeTypeInfoById(cubeType);
 
-	if (demoMode) {
-		const session = await createSessionDb({
-			demo_mode: true,
-			name: 'Demo Session',
-			id: 'demo',
-		});
-		setSetting('session_id', session.id);
-	} else if (!inModal) {
+	if (!inModal) {
 		if (!sessionId || (sessionId && !fetchSessionById(sessionId))) {
 			// Mevcut session varsa onu kullan (IndexedDB silindikten sonra oluşabilecek uyumsuzluğu önler)
 			const existingSessions = fetchSessions();
