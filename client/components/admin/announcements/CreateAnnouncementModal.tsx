@@ -16,6 +16,15 @@ const CREATE_ANNOUNCEMENT = gql`
 	}
 `;
 
+const UPDATE_ANNOUNCEMENT = gql`
+	mutation UpdateAnnouncement($id: String!, $input: UpdateAnnouncementInput!) {
+		updateAnnouncement(id: $id, input: $input) {
+			id
+			title
+		}
+	}
+`;
+
 const TRANSLATE_ANNOUNCEMENT = gql`
 	mutation TranslateAnnouncementContent($title: String!, $content: String!) {
 		translateAnnouncementContent(title: $title, content: $content) {
@@ -44,31 +53,65 @@ interface LangContent {
 	content: string;
 }
 
-interface CreateAnnouncementModalProps {
-	onClose: () => void;
+interface AnnouncementForEdit {
+	id: string;
+	title: string;
+	content: string;
+	category: string;
+	priority: number;
+	imageUrl?: string | null;
+	targetUrl?: string | null;
+	translations?: string | null;
+	isDraft: boolean;
+	isActive?: boolean;
 }
 
-export default function CreateAnnouncementModal(props: CreateAnnouncementModalProps) {
-	const {t} = useTranslation();
-	const {onClose} = props;
-	const [activeLang, setActiveLang] = useState('tr');
-	const [formData, setFormData] = useState({
-		title: '',
-		content: '',
-		category: 'INFO',
-		priority: 0,
-		imageUrl: '',
-		targetUrl: '',
-		isDraft: false,
-		sendNotification: false,
-		notificationPlatforms: ['WEB', 'ANDROID', 'IOS'] as string[],
-	});
-	const [translations, setTranslations] = useState<Record<string, LangContent>>({
+interface CreateAnnouncementModalProps {
+	onClose: () => void;
+	announcement?: AnnouncementForEdit;  // varsa edit mode
+}
+
+function parseTranslations(raw?: string | null): Record<string, LangContent> {
+	const empty = {
 		en: {title: '', content: ''},
 		es: {title: '', content: ''},
 		ru: {title: '', content: ''},
 		zh: {title: '', content: ''},
+	};
+	if (!raw) return empty;
+	try {
+		const parsed = JSON.parse(raw);
+		return {
+			en: {title: parsed.en?.title || '', content: parsed.en?.content || ''},
+			es: {title: parsed.es?.title || '', content: parsed.es?.content || ''},
+			ru: {title: parsed.ru?.title || '', content: parsed.ru?.content || ''},
+			zh: {title: parsed.zh?.title || '', content: parsed.zh?.content || ''},
+		};
+	} catch {
+		return empty;
+	}
+}
+
+export default function CreateAnnouncementModal(props: CreateAnnouncementModalProps) {
+	const {t} = useTranslation();
+	const {onClose, announcement} = props;
+	const isEdit = !!announcement;
+	const [activeLang, setActiveLang] = useState('tr');
+	const [formData, setFormData] = useState({
+		title: announcement?.title || '',
+		content: announcement?.content || '',
+		category: announcement?.category || 'INFO',
+		priority: announcement?.priority ?? 0,
+		imageUrl: announcement?.imageUrl || '',
+		targetUrl: announcement?.targetUrl || '',
+		isDraft: announcement?.isDraft || false,
+		isActive: announcement?.isActive ?? true,
+		sendNotification: false,
+		notificationPlatforms: ['WEB', 'ANDROID', 'IOS'] as string[],
 	});
+	const [translations, setTranslations] = useState<Record<string, LangContent>>(
+		parseTranslations(announcement?.translations)
+	);
 	const [loading, setLoading] = useState(false);
 	const [translating, setTranslating] = useState(false);
 	const [error, setError] = useState('');
@@ -137,23 +180,40 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 		try {
 			setLoading(true);
 			setError('');
-			await gqlMutate(CREATE_ANNOUNCEMENT, {
-				input: {
-					title: formData.title,
-					content: formData.content,
-					category: formData.category,
-					priority: parseInt(formData.priority.toString()),
-					imageUrl: formData.imageUrl,
-					targetUrl: formData.targetUrl.trim() || undefined,
-					isDraft: formData.isDraft,
-					sendNotification: formData.sendNotification,
-					notificationPlatforms: formData.sendNotification ? formData.notificationPlatforms : [],
-					translations: buildTranslationsInput(),
-				},
-			});
+			if (isEdit && announcement) {
+				await gqlMutate(UPDATE_ANNOUNCEMENT, {
+					id: announcement.id,
+					input: {
+						title: formData.title,
+						content: formData.content,
+						category: formData.category,
+						priority: parseInt(formData.priority.toString()),
+						imageUrl: formData.imageUrl,
+						targetUrl: formData.targetUrl.trim() || '',
+						isDraft: formData.isDraft,
+						isActive: formData.isActive,
+						translations: buildTranslationsInput(),
+					},
+				});
+			} else {
+				await gqlMutate(CREATE_ANNOUNCEMENT, {
+					input: {
+						title: formData.title,
+						content: formData.content,
+						category: formData.category,
+						priority: parseInt(formData.priority.toString()),
+						imageUrl: formData.imageUrl,
+						targetUrl: formData.targetUrl.trim() || undefined,
+						isDraft: formData.isDraft,
+						sendNotification: formData.sendNotification,
+						notificationPlatforms: formData.sendNotification ? formData.notificationPlatforms : [],
+						translations: buildTranslationsInput(),
+					},
+				});
+			}
 			onClose();
 		} catch (err) {
-			console.error('Failed to create announcement:', err);
+			console.error('Failed to save announcement:', err);
 			setError(t('create_announcement.error'));
 		} finally {
 			setLoading(false);
@@ -170,7 +230,9 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 			>
 				{/* Header */}
 				<div className="px-5 py-4 border-b border-zinc-700 flex justify-between items-center shrink-0">
-					<h2 className="text-lg font-bold text-white">{t('create_announcement.title')}</h2>
+					<h2 className="text-lg font-bold text-white">
+						{isEdit ? t('create_announcement.edit_title') : t('create_announcement.title')}
+					</h2>
 					<button onClick={onClose} className="p-1.5 hover:bg-zinc-700 rounded-lg transition">
 						<X size={18} />
 					</button>
@@ -348,43 +410,58 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 								noMargin
 							/>
 
-							<Checkbox
-								text={t('create_announcement.send_notification')}
-								checked={formData.sendNotification}
-								disabled={formData.isDraft}
-								onChange={(e) =>
-									setFormData({...formData, sendNotification: e.target.checked})
-								}
-								noMargin
-							/>
-
-							{formData.isDraft && (
-								<span className="text-xs text-zinc-500 block">
-									{t('create_announcement.draft_notification_warning')}
-								</span>
+							{isEdit && (
+								<Checkbox
+									text={t('create_announcement.is_active')}
+									checked={formData.isActive}
+									onChange={(e) =>
+										setFormData({...formData, isActive: e.target.checked})
+									}
+									noMargin
+								/>
 							)}
 
-							{/* Platform Selection */}
-							{formData.sendNotification && !formData.isDraft && (
-								<div className="ml-6 mt-1 flex gap-3">
-									{PLATFORMS.map(({key, label}) => {
-										const selected = formData.notificationPlatforms.includes(key);
-										return (
-											<button
-												key={key}
-												type="button"
-												onClick={() => togglePlatform(key)}
-												className={`px-3 py-1 rounded-md text-sm font-medium transition ${
-													selected
-														? 'bg-blue-600 text-white'
-														: 'bg-zinc-700 text-zinc-400 hover:bg-zinc-600'
-												}`}
-											>
-												{label}
-											</button>
-										);
-									})}
-								</div>
+							{!isEdit && (
+								<>
+									<Checkbox
+										text={t('create_announcement.send_notification')}
+										checked={formData.sendNotification}
+										disabled={formData.isDraft}
+										onChange={(e) =>
+											setFormData({...formData, sendNotification: e.target.checked})
+										}
+										noMargin
+									/>
+
+									{formData.isDraft && (
+										<span className="text-xs text-zinc-500 block">
+											{t('create_announcement.draft_notification_warning')}
+										</span>
+									)}
+
+									{/* Platform Selection */}
+									{formData.sendNotification && !formData.isDraft && (
+										<div className="ml-6 mt-1 flex gap-3">
+											{PLATFORMS.map(({key, label}) => {
+												const selected = formData.notificationPlatforms.includes(key);
+												return (
+													<button
+														key={key}
+														type="button"
+														onClick={() => togglePlatform(key)}
+														className={`px-3 py-1 rounded-md text-sm font-medium transition ${
+															selected
+																? 'bg-blue-600 text-white'
+																: 'bg-zinc-700 text-zinc-400 hover:bg-zinc-600'
+														}`}
+													>
+														{label}
+													</button>
+												);
+											})}
+										</div>
+									)}
+								</>
 							)}
 						</div>
 					)}
@@ -432,7 +509,9 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 							className="px-5 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition disabled:opacity-50"
 						>
 							{loading
-								? t('create_announcement.creating')
+								? (isEdit ? t('create_announcement.updating') : t('create_announcement.creating'))
+								: isEdit
+								? t('create_announcement.update')
 								: formData.isDraft
 								? t('create_announcement.save_draft')
 								: t('create_announcement.publish')}

@@ -199,10 +199,15 @@
         "th_actions": "İşlemler",
         "status_active": "Yayında",
         "status_inactive": "Pasif",
-        "delete_button": "Sil"
+        "delete_button": "Sil",
+        "edit_button": "Düzenle"
     },
     "create_announcement": {
         "title": "Yeni Duyuru Oluştur",
+        "edit_title": "Duyuruyu Düzenle",
+        "update": "Güncelle",
+        "updating": "Güncelleniyor...",
+        "is_active": "Aktif",
         "field_title": "Başlık",
         "field_category": "Kategori",
         "field_priority": "Öncelik (0-10)",

@@ -199,10 +199,15 @@
         "th_actions": "Acciones",
         "status_active": "Activo",
         "status_inactive": "Inactivo",
-        "delete_button": "Eliminar"
+        "delete_button": "Eliminar",
+        "edit_button": "Editar"
     },
     "create_announcement": {
         "title": "Crear nuevo anuncio",
+        "edit_title": "Editar anuncio",
+        "update": "Actualizar",
+        "updating": "Actualizando...",
+        "is_active": "Activo",
         "field_title": "Título",
         "field_category": "Categoría",
         "field_priority": "Prioridad (0-10)",

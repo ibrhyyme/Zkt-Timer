@@ -11,6 +11,7 @@ export default function AdminAnnouncements() {
 	const [announcements, setAnnouncements] = useState<Announcement[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [showCreateModal, setShowCreateModal] = useState(false);
+	const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
 	const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
 	const [filter, setFilter] = useState({ category: '', isDraft: undefined as boolean | undefined });
 
@@ -42,6 +43,11 @@ export default function AdminAnnouncements() {
 		} catch (error) {
 			alert(t('admin_announcements.delete_error'));
 		}
+	};
+
+	const handleEdit = (e: React.MouseEvent, announcement: Announcement) => {
+		e.stopPropagation();
+		setEditingAnnouncement(announcement);
 	};
 
 	const CATEGORY_LABELS: Record<string, string> = {
@@ -168,6 +174,13 @@ export default function AdminAnnouncements() {
 											<td className="p-5">
 												<div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
 													<button
+														onClick={(e) => handleEdit(e, announcement)}
+														className="p-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 rounded-lg transition border border-indigo-500/20"
+														title={t('admin_announcements.edit_button')}
+													>
+														<PencilSimple size={18} />
+													</button>
+													<button
 														onClick={(e) => handleDelete(e, announcement.id)}
 														className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition border border-red-500/20"
 														title={t('admin_announcements.delete_button')}
@@ -190,6 +203,28 @@ export default function AdminAnnouncements() {
 				<CreateAnnouncementModal
 					onClose={() => {
 						setShowCreateModal(false);
+						fetchAnnouncements();
+					}}
+				/>
+			)}
+
+			{/* Edit Modal */}
+			{editingAnnouncement && (
+				<CreateAnnouncementModal
+					announcement={{
+						id: editingAnnouncement.id,
+						title: editingAnnouncement.title,
+						content: editingAnnouncement.content,
+						category: editingAnnouncement.category,
+						priority: editingAnnouncement.priority,
+						imageUrl: editingAnnouncement.imageUrl,
+						targetUrl: (editingAnnouncement as any).targetUrl,
+						translations: (editingAnnouncement as any).translations,
+						isDraft: editingAnnouncement.isDraft,
+						isActive: editingAnnouncement.isActive,
+					}}
+					onClose={() => {
+						setEditingAnnouncement(null);
 						fetchAnnouncements();
 					}}
 				/>

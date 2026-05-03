@@ -26,6 +26,7 @@ import { initOfflineSyncListener } from './offline-listener';
 import { Capacitor } from '@capacitor/core';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { App as CapApp } from '@capacitor/app';
+import { EdgeToEdge } from '@capawesome/capacitor-android-edge-to-edge-support';
 import { initPushNotifications } from '../../util/push-notifications';
 import { initStatusBar, lockTextZoom, initSafeArea } from '../../util/native-plugins';
 import SwipeBackIndicator from '../common/swipe_back_indicator/SwipeBackIndicator';
@@ -74,6 +75,12 @@ export default function App(props: Props = {}) {
 			lockTextZoom();
 			initSafeArea();
 			initRevenueCat(); // RevenueCat IAP SDK'sini hazirla
+
+			// Android 15+ edge-to-edge + numeric keyboard siyah cizgi bug fix
+			// (Capacitor Issue #28, #7827, #8166 — IME inset yanlis hesabi)
+			if (Capacitor.getPlatform() === 'android') {
+				EdgeToEdge.enable().catch(() => {});
+			}
 
 			// iOS WKWebView pinch-to-zoom engelle
 			if (Capacitor.getPlatform() === 'ios') {

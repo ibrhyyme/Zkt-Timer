@@ -199,10 +199,15 @@
         "th_actions": "Действия",
         "status_active": "Активно",
         "status_inactive": "Неактивно",
-        "delete_button": "Удалить"
+        "delete_button": "Удалить",
+        "edit_button": "Редактировать"
     },
     "create_announcement": {
         "title": "Создать новое объявление",
+        "edit_title": "Редактировать объявление",
+        "update": "Обновить",
+        "updating": "Обновление...",
+        "is_active": "Активно",
         "field_title": "Заголовок",
         "field_category": "Категория",
         "field_priority": "Приоритет (0-10)",

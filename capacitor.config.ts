@@ -14,6 +14,7 @@ const config: CapacitorConfig = {
     android: {
         webContentsDebuggingEnabled: true,
         appendUserAgent: 'ZktTimerApp',
+        adjustMarginsForEdgeToEdge: 'force',
     },
     ios: {
         webContentsDebuggingEnabled: true,
@@ -29,6 +30,10 @@ const config: CapacitorConfig = {
         },
         Keyboard: {
             resize: KeyboardResize.None,
+            resizeOnFullScreen: false,
+        },
+        EdgeToEdge: {
+            backgroundColor: '#12141C',
         },
         // PushNotifications presentationOptions yok — foreground'da gosterimi
         // client/util/push-notifications.ts icindeki LocalNotifications fallback'i hallediyor.
