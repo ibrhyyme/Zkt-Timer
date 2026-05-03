@@ -27,10 +27,14 @@ public class WebViewRefreshPlugin extends Plugin {
                 return;
             }
 
-            // WebView'i kisa sure gizle, sonra geri goster — surface invalidate
-            webView.setVisibility(View.GONE);
-            webView.post(() -> webView.setVisibility(View.VISIBLE));
-            call.resolve();
+            // GPU compositing layer'i SOFTWARE'a dusur, sonra HARDWARE'e geri al —
+            // surface'in GPU buffer'i tamamen yeniden olusturulur, paint cache silinir.
+            // GONE → VISIBLE'dan daha agresif, view tree'yi etkilemez.
+            webView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+            webView.post(() -> {
+                webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+                call.resolve();
+            });
         });
     }
 }
