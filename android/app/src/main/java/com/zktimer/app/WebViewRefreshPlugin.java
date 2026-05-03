@@ -1,6 +1,7 @@
 package com.zktimer.app;
 
 import android.view.View;
+import android.webkit.WebView;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
@@ -21,18 +22,19 @@ public class WebViewRefreshPlugin extends Plugin {
     @PluginMethod()
     public void refresh(PluginCall call) {
         getActivity().runOnUiThread(() -> {
-            View webView = bridge.getWebView();
-            if (webView == null) {
+            View view = bridge.getWebView();
+            if (!(view instanceof WebView)) {
                 call.resolve();
                 return;
             }
+            WebView wv = (WebView) view;
 
-            // GPU compositing layer'i SOFTWARE'a dusur, sonra HARDWARE'e geri al —
-            // surface'in GPU buffer'i tamamen yeniden olusturulur, paint cache silinir.
-            // GONE → VISIBLE'dan daha agresif, view tree'yi etkilemez.
-            webView.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-            webView.post(() -> {
-                webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
+            // WebView'i suspend → resume — kullanicinin "background → foreground"
+            // davranisinin tam karsiligi. WebView GPU resources release edilir,
+            // sonra yeniden olusturulur. Paint cache compositor seviyesinde temizlenir.
+            wv.onPause();
+            wv.post(() -> {
+                wv.onResume();
                 call.resolve();
             });
         });
