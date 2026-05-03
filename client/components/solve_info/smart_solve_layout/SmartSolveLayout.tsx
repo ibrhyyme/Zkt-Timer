@@ -16,7 +16,7 @@ import { getFullFormattedDate } from '../../../util/dates';
 import { SolveLayoutProps } from '../SolveInfo';
 import { useMe } from '../../../util/hooks/useMe';
 import { isPro, isProEnabled } from '../../../lib/pro';
-import { useHistory } from 'react-router-dom';
+import ProBlurOverlay from '../../common/pro_blur_overlay/ProBlurOverlay';
 import './SmartSolveLayout.scss';
 
 const b = block('solve-info');
@@ -32,7 +32,6 @@ export default function SmartSolveLayout(props: SolveLayoutProps) {
 
 	const { t } = useTranslation();
 	const me = useMe();
-	const history = useHistory();
 	const [page, setPage] = useState('overview');
 	const showProOverlay = isProEnabled() && !isPro(me);
 
@@ -183,24 +182,11 @@ export default function SmartSolveLayout(props: SolveLayoutProps) {
 			</div>
 
 			{showProOverlay ? (
-				<div className={bs('pro-locked')}>
-					<div className={bs('pro-locked-content')}>
-						<div className={b('nav')}>
-							<HorizontalNav tabId="overview" onChange={() => {}} tabs={pages} />
-						</div>
-						<div className={bs('pro-locked-dummy')}>
-							<div className={bs('pro-locked-dummy-bar')} style={{width: '80%'}} />
-							<div className={bs('pro-locked-dummy-bar')} style={{width: '60%'}} />
-							<div className={bs('pro-locked-dummy-bar')} style={{width: '90%'}} />
-							<div className={bs('pro-locked-dummy-bar')} style={{width: '45%'}} />
-							<div className={bs('pro-locked-dummy-bar')} style={{width: '70%'}} />
-						</div>
-					</div>
-					<div className={bs('pro-locked-overlay')} onClick={() => { handleDone(); history.push('/pro'); }}>
-						<span style={{color: '#a78bfa', fontSize: '1.3rem', marginBottom: '4px'}}>&#9733;</span>
-						<span>{t('solve_info.pro_stats_upsell')}</span>
-					</div>
-				</div>
+				<ProBlurOverlay
+					title={t('pro.upsell.smart_solve.title')}
+					description={t('pro.upsell.smart_solve.description')}
+					onBeforeNavigate={handleDone}
+				/>
 			) : (
 				<>
 					<div className={b('nav')}>

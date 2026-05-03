@@ -144,7 +144,7 @@ app.get('/.well-known/passkey-endpoints', (_req, res) => {
 app.get(['/security.txt', '/.well-known/security.txt'], (_req, res) => {
 	res.setHeader('Cache-Control', 'public, max-age=86400');
 	res.type('text/plain').send(
-		`Contact: mailto:contact@zktimer.app\nExpires: 2027-12-31T23:59:59.000Z\nPreferred-Languages: tr, en\n`
+		`Contact: mailto:contact@zktimer.app\nExpires: 2027-12-31T23:59:59.000Z\nPreferred-Languages: tr, en\nCanonical: https://zktimer.app/.well-known/security.txt\n`
 	);
 });
 

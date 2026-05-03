@@ -127,7 +127,6 @@
             "empty": "Нет решений с умным кубом.",
             "eyebrow": "Среднее по {{value}} решениям с умным кубом",
             "bottleneck": "Больше всего времени теряешь на {{phase}}",
-            "pro_upsell": "Анализ фаз — функция Pro",
             "phase": {
                 "cross": "Cross",
                 "f2l_1": "F2L 1",
@@ -1022,7 +1021,6 @@
         "overview_tab": "Обзор",
         "time_label": "Время",
         "deleted_from_other_device": "Эта сборка была удалена с другого устройства",
-        "pro_stats_upsell": "Перейдите на Pro для детальной статистики",
         "copy": "Копировать",
         "share": "Поделиться",
         "average_copied": "Среднее скопировано",
@@ -2637,6 +2635,24 @@
         "feature_title": "Pro функция",
         "feature_description": "Эта функция доступна только для Pro. Перейди на Pro, чтобы разблокировать всё.",
         "upgrade_button": "Перейти на Pro",
+        "upsell": {
+            "phase_analysis": {
+                "title": "Анализ фаз",
+                "description": "Разбивка по Cross, F2L, OLL и PLL"
+            },
+            "smart_steps": {
+                "title": "Шаги умного куба",
+                "description": "Изучи каждое движение по отдельности"
+            },
+            "smart_solve": {
+                "title": "Анализ умного куба",
+                "description": "TPS, количество движений и подробные данные"
+            },
+            "phase_splits": {
+                "title": "Среднее время по фазам",
+                "description": "Узнай, где ты теряешь время"
+            }
+        },
         "modal": {
             "room_music": {
                 "title": "Музыка в комнатах",
