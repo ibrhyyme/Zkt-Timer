@@ -34,6 +34,7 @@ import { AdminSendPushResult, PushTokenInfo } from '../schemas/PushToken.schema'
 import { OnlineStats, OnlineUser, BackfillResult, WcaStats, IpInfo, MethodStepsBackfillResult } from '../schemas/SiteConfig.schema';
 import { getSolveSteps } from '../util/solve/solve_method';
 import { createSolveMethodSteps } from '../models/solve_method_step';
+import { parseSmartTurns } from '../../shared/smart_cube/parse_turns';
 import { updateSolveLiteral } from '../models/solve';
 import { getOnlineCounts, getOnlineUsers } from '../services/socket_util';
 import WcaResultEnteredNotification from '../resources/notification_types/wca_result_entered';
@@ -653,9 +654,9 @@ export class AdminResolver {
 			}
 
 			try {
-				const turns = JSON.parse(cand.smart_turns);
-				if (!Array.isArray(turns) || turns.length === 0) {
-					// Bos turns array — parse edilebildi ama icerik yok, downgrade
+				const turns = parseSmartTurns(cand.smart_turns);
+				if (!turns.length) {
+					// Bos turns — parse edilebildi ama icerik yok, downgrade
 					await updateSolveLiteral(cand.id, { is_smart_cube: false });
 					result.downgraded++;
 					continue;

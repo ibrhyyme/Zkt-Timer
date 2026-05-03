@@ -18,6 +18,9 @@ import { resourceUri } from '../../../util/storage';
 import { playNativeSound } from '../../../util/native-audio';
 import { smartCubeSelected } from './util';
 import { hapticImpact } from '../../../util/native-plugins';
+import { getStore } from '../../store';
+import { isPro } from '../../../lib/pro';
+import { serializeSmartTurnsCompact } from '../../../../shared/smart_cube/parse_turns';
 
 let endLocked = false;
 
@@ -184,7 +187,18 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 			overridesCombined.is_smart_cube = true;
 			overridesCombined.smart_device_id = context.smartDeviceId;
 			overridesCombined.smart_turn_count = solutionTurns.length;
-			overridesCombined.smart_turns = JSON.stringify(solutionTurns);
+
+			// Pro user: hamleler compact format'a serialize edilir + server method_steps olusturur.
+			// Free user: smart_turns null kalir, method_steps olusmaz, DB sismez.
+			const me = getStore()?.getState()?.account?.me;
+			if (isPro(me)) {
+				overridesCombined.smart_turns = serializeSmartTurnsCompact(
+					solutionTurns.map((t: any) => ({ turn: t.turn, completedAt: t.completedAt })),
+					startTime
+				);
+			} else {
+				overridesCombined.smart_turns = null;
+			}
 		}
 
 		const useSpaceWithSmart = getSetting('use_space_with_smart_cube');

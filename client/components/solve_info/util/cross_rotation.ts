@@ -1,4 +1,5 @@
 import Cube from 'cubejs';
+import { expandNotation } from '../../../util/expand_notation';
 
 const sideIndex = { U: 0, R: 1, F: 2, D: 3, L: 4, B: 5 };
 const edgeIndices = [1, 3, 5, 7];
@@ -14,24 +15,40 @@ const edgeAdj = {
 
 const SIDES = ['U', 'R', 'F', 'D', 'L', 'B'];
 
-// Cross yüzünü D'ye getiren rotasyon
+// Cross yüzünü D'ye getiren rotasyon (cstimer cross.js:226-228 referans):
+// faceStr = ["D", "U", "L", "R", "F", "B"]
+// rotIdx  = ["",  "z2","z'","z", "x'","x" ]
+// Sariyi alta indirmek icin z2 (cubing camiasi standardi — yan kaydirma).
+// x2 yerine z2 kullaniyoruz — left/right swap olur, front/back ayni kalir.
 const CROSS_SIDE_ROTATION: Record<string, string> = {
 	D: '',
-	U: 'x2',
-	F: 'x',
-	B: "x'",
-	R: "z'",
-	L: 'z',
+	U: 'z2',
+	F: "x'",
+	B: 'x',
+	R: 'z',
+	L: "z'",
 };
 
-// Rotasyona göre yüz dönüşüm tabloları
+// Rotasyona göre yüz dönüşüm tabloları (CORE → kullanici perspectif).
+// Smart cube BLE cube'in CORE'una gore hamle gonderir. Kullanici cube'i rotation
+// ile cevirdiyse, cube'in CORE yuzleri fiziksel olarak farkli pozisyonlarda olur.
+// transformMoves ile CORE hamlesini kullanicinin pozisyonel hamlesine ceviriyoruz.
+//
+// Mantik: rotation sonrasi cube'in CORE U yuzu fiziksel olarak hangi pozisyonda?
+// Ornek z (front'tan saat yonu): top → right → bottom → left → top
+// Yani CORE U sticker'lar fiziksel R pozisyonuna gider → BLE "U" → kullanici "R" yapmis.
 const FACE_TRANSFORM: Record<string, Record<string, string>> = {
 	'': { U: 'U', D: 'D', F: 'F', B: 'B', R: 'R', L: 'L' },
 	'x2': { U: 'D', D: 'U', F: 'B', B: 'F', R: 'R', L: 'L' },
-	'x': { U: 'F', D: 'B', F: 'D', B: 'U', R: 'R', L: 'L' },
-	"x'": { U: 'B', D: 'F', F: 'U', B: 'D', R: 'R', L: 'L' },
-	"z'": { U: 'R', D: 'L', F: 'F', B: 'B', R: 'D', L: 'U' },
-	'z': { U: 'L', D: 'R', F: 'F', B: 'B', R: 'U', L: 'D' },
+	// x (R yonunde, sagdan saat yonu): top → back → bottom → front → top
+	'x': { U: 'B', D: 'F', F: 'U', B: 'D', R: 'R', L: 'L' },
+	// x' (R' yonunde, sagdan saat tersi): top → front → bottom → back → top
+	"x'": { U: 'F', D: 'B', F: 'D', B: 'U', R: 'R', L: 'L' },
+	// z (F yonunde, fronttan saat yonu): top → right → bottom → left → top
+	'z': { U: 'R', D: 'L', F: 'F', B: 'B', R: 'D', L: 'U' },
+	// z' (F' yonunde, fronttan saat tersi): top → left → bottom → right → top
+	"z'": { U: 'L', D: 'R', F: 'F', B: 'B', R: 'U', L: 'D' },
+	'z2': { U: 'D', D: 'U', F: 'F', B: 'B', R: 'L', L: 'R' },
 };
 
 export function transformMoves(moves: string, rotation: string): string {
@@ -75,7 +92,12 @@ function areEdgesSolved(side: string, state: string): boolean {
 }
 
 function applyMoves(cube: any, moves: string) {
-	for (const move of moves.trim().split(/\s+/)) {
+	// cubejs sadece U/U'/U2 kabul eder. step.turns'te artik U3/U4/L4 gibi cascade
+	// notation olabilir (cascadeQuartersForDisplay). cubejs'e vermeden once tek-quarter
+	// dizisine ac (L4 → "L L L L"). Expand etmezsek throw eder ve getCrossSide null doner
+	// → rotation kaybolur, butun solve'lar beyaz cross gibi gorunur.
+	const expanded = expandNotation(moves);
+	for (const move of expanded.trim().split(/\s+/)) {
 		if (move) cube.move(move);
 	}
 }
@@ -105,13 +127,13 @@ export function getCrossRotation(scramble: string, crossTurns: string): string {
 }
 
 function moveToQuarters(move: string): { face: string; quarters: number } | null {
-	const face = move[0];
-	if (!'URFDLB'.includes(face)) return null;
-	const suffix = move.slice(1);
-	if (suffix === '') return { face, quarters: 1 };
-	if (suffix === "'") return { face, quarters: -1 };
-	if (suffix === '2') return { face, quarters: 2 };
-	return null;
+	// Arbitrary-n suffix destegi: U, U', U2, U3, U4, U2', U3' ...
+	const m = move.match(/^([URFDLB])(\d+)?(['‘])?$/);
+	if (!m) return null;
+	const [, face, count, prime] = m;
+	const n = parseInt(count || '1', 10);
+	if (n <= 0) return null;
+	return { face, quarters: prime ? -n : n };
 }
 
 function quartersToMove(face: string, quarters: number): string {

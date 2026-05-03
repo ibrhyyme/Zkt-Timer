@@ -989,7 +989,21 @@
         "pro_stats_upsell": "Detaylı istatistikler için Pro'ya geçin",
         "copy": "Kopyala",
         "share": "Paylaş",
-        "average_copied": "Average kopyalandı"
+        "average_copied": "Average kopyalandı",
+        "replay": {
+            "play": "Oynat",
+            "pause": "Duraklat",
+            "prev_step": "Önceki adım",
+            "next_step": "Sonraki adım",
+            "prev_move": "Önceki hamle",
+            "next_move": "Sonraki hamle",
+            "speed": "Hız",
+            "seek": "İlerle",
+            "no_data": "Bu çözüm için replay verisi yok",
+            "pro_required_title": "Akıllı Küp Replay",
+            "pro_required_desc": "Pro üyelikle çözümünü adım adım 3D olarak izle.",
+            "upgrade_cta": "Pro'ya Geç"
+        }
     },
     "sessions": {
         "page_title": "Sezonlar",
@@ -998,6 +1012,9 @@
         "smart_cube_count": "Çözüm Sayısı",
         "smart_cube_total_time": "Toplam Süre",
         "smart_cube_avg_time": "Ortalama",
+        "smart_cube_avg_inspection": "Ort. İnceleme",
+        "smart_cube_avg_recognition": "Ort. Tanıma",
+        "smart_cube_avg_execution": "Ort. Uygulama",
         "no_smart_cube_solves": "Bu sezonda akıllı küp çözümü yok",
         "session_steps_title": "Sezon Adım Ortalamaları",
         "hours_short": "sa",

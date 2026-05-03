@@ -989,7 +989,21 @@
         "pro_stats_upsell": "Upgrade to Pro for detailed statistics",
         "copy": "Copy",
         "share": "Share",
-        "average_copied": "Average copied"
+        "average_copied": "Average copied",
+        "replay": {
+            "play": "Play",
+            "pause": "Pause",
+            "prev_step": "Previous step",
+            "next_step": "Next step",
+            "prev_move": "Previous move",
+            "next_move": "Next move",
+            "speed": "Speed",
+            "seek": "Seek",
+            "no_data": "No replay data for this solve",
+            "pro_required_title": "Smart Cube Replay",
+            "pro_required_desc": "Upgrade to Pro to watch your solve step-by-step in 3D.",
+            "upgrade_cta": "Upgrade to Pro"
+        }
     },
     "sessions": {
         "page_title": "Sessions",
@@ -998,6 +1012,9 @@
         "smart_cube_count": "Solve Count",
         "smart_cube_total_time": "Total Time",
         "smart_cube_avg_time": "Average",
+        "smart_cube_avg_inspection": "Avg Inspection",
+        "smart_cube_avg_recognition": "Avg Recognition",
+        "smart_cube_avg_execution": "Avg Execution",
         "no_smart_cube_solves": "No smart cube solves in this session",
         "session_steps_title": "Session Step Averages",
         "hours_short": "h",
