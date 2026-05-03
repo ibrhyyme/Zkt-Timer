@@ -49,7 +49,6 @@ public class MainActivity extends BridgeActivity {
             FirebaseApp.initializeApp(this, options);
         }
         registerPlugin(GestureExclusionPlugin.class);
-        registerPlugin(WebViewRefreshPlugin.class);
         super.onCreate(savedInstanceState);
 
         updateOrientationLock();
