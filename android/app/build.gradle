@@ -10,8 +10,8 @@ android {
         applicationId "com.zktimer.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 19
-        versionName "1.5.8"
+        versionCode 20
+        versionName "1.5.9"
         buildConfigField "String", "FIREBASE_APP_ID", '"1:872286317632:android:2954aeeeff1bdc904a03a5"'
         buildConfigField "String", "FIREBASE_SENDER_ID", '"872286317632"'
         buildConfigField "String", "FIREBASE_PROJECT_ID", '"zkt-timer-59c59"'
