@@ -4,6 +4,7 @@ import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.View;
+import android.webkit.CookieManager;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -77,5 +78,27 @@ public class MainActivity extends BridgeActivity {
             v.setPadding(left, top, right, bottom);
             return WindowInsetsCompat.CONSUMED;
         });
+
+        // Login sonrasi session cookie'nin disk'e garantili yazilmasi icin
+        // CookieManager'i acik tut. Default'ta acik ama emniyet icin set ediyoruz.
+        CookieManager.getInstance().setAcceptCookie(true);
+    }
+
+    /**
+     * Android WebView session cookie'leri memory'de tutar; disk'e flush
+     * acikca cagrilmadigi surece process ölümünde kaybolabilir.
+     * Login sonrasi 5-10sn icinde uygulama kapatilirsa kullanici tekrar
+     * login ekranina dustugu icin onPause/onStop'da flush ediyoruz.
+     */
+    @Override
+    public void onPause() {
+        super.onPause();
+        CookieManager.getInstance().flush();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        CookieManager.getInstance().flush();
     }
 }

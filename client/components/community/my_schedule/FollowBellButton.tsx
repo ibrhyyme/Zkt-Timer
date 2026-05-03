@@ -7,8 +7,7 @@ import {
 	FollowCompetitorDocument,
 	UnfollowCompetitorDocument,
 } from '../../../@types/generated/graphql';
-import {openModal} from '../../../actions/general';
-import ProOnlyModal from '../../common/pro_only/ProOnlyModal';
+import {openProOnlyModal} from '../../common/pro_only/openProOnlyModal';
 import {useMe} from '../../../util/hooks/useMe';
 import {isPro} from '../../../lib/pro';
 import {toastError, toastSuccess} from '../../../util/toast';
@@ -53,7 +52,7 @@ export default function FollowBellButton({
 
 		// Free user → Pro modal
 		if (!me || !isPro(me)) {
-			dispatch(openModal(<ProOnlyModal featureKey="competition_follow" />));
+			openProOnlyModal(dispatch, t, 'competition_follow');
 			return;
 		}
 

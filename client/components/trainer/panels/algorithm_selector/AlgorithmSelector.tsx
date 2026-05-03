@@ -15,7 +15,7 @@ import {useTranslation} from 'react-i18next';
 import {CaretDown, Play, Info, X} from 'phosphor-react';
 import {useMe} from '../../../../util/hooks/useMe';
 import {isPro} from '../../../../lib/pro';
-import ProOnlyModal from '../../../common/pro_only/ProOnlyModal';
+import {openProOnlyModal} from '../../../common/pro_only/openProOnlyModal';
 
 const b = block('trainer');
 
@@ -284,7 +284,7 @@ export default function AlgorithmSelector() {
 
 	const handlePdfExport = useCallback(async () => {
 		if (!isPro(me)) {
-			reduxDispatch(openModal(<ProOnlyModal featureKey="trainer_pdf" />));
+			openProOnlyModal(reduxDispatch, t, 'trainer_pdf');
 			return;
 		}
 
