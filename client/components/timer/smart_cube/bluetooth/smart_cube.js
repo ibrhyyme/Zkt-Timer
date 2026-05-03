@@ -134,7 +134,8 @@ export default class SmartCube {
 		// 	return;
 		// }
 
-		store.dispatch(turnSmartCube(move.replace(/\s/g, ''), new Date()));
+		const cleanMove = move.replace(/\s/g, '');
+		store.dispatch(turnSmartCube(cleanMove, new Date()));
 	};
 
 	alertTurnCubeBatch = (moves) => {

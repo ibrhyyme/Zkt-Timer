@@ -1,9 +1,20 @@
 import Cube from 'cubejs';
-import { processSmartTurns, SmartTurn } from '../../../client/util/smart_scramble';
+import { cascadeQuartersForDisplay, SmartTurn } from '../../../client/util/smart_scramble';
 import { getLLState, reverseTurns } from './turns';
 import { getMatchingOLLState, getMatchingPLLState } from './ll_states';
 
 export function getSolveSteps(turns) {
+	try {
+		return getSolveStepsInner(turns);
+	} catch (e: any) {
+		// Patolojik solve (cross color shift mid-solve, vs.) — sessizce skip et,
+		// solve kayıtta kalsın ama method_steps boş olsun.
+		console.warn('[getSolveSteps] parse failed (likely cross-color shift):', e?.message);
+		return { cross: null, f2l: null, oll: null, pll: null };
+	}
+}
+
+function getSolveStepsInner(turns) {
 	const SOLVED_STATE = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
 
 	const cubejs = new Cube();
@@ -192,7 +203,12 @@ export function getSolveSteps(turns) {
 		let recognitionTime = 0;
 
 		const firstTurnIndex = turnsIndex - (moves.length - 1);
-		if (firstTurnIndex > 0) {
+		if (
+			firstTurnIndex > 0 &&
+			firstTurnIndex < turns.length &&
+			turns[firstTurnIndex - 1] &&
+			turns[firstTurnIndex]
+		) {
 			const lastTime = new Date(turns[firstTurnIndex - 1].completedAt).getTime();
 			const firstTime = new Date(turns[firstTurnIndex].completedAt).getTime();
 			recognitionTime = (firstTime - lastTime) / 1000;
@@ -212,7 +228,7 @@ export function getSolveSteps(turns) {
 			turns: [...moves],
 			recognitionTime,
 			tps,
-			turnsString: processSmartTurns(moves, true).join(' '),
+			turnsString: cascadeQuartersForDisplay(moves).join(' '),
 			turnCount: moves.length,
 			time,
 			...(options || {}),
@@ -236,6 +252,29 @@ export function getSolveSteps(turns) {
 		const cornerMem = {};
 		let slotCounter = 1;
 
+		// Wobble false-positive korumasi: corner "tamamlandi" detect edildiginde anlik
+		// commit yapma. Sonraki K hamleyi simule et — slot hala completed kaliyor mu?
+		// 3 hamle stable kalirsa gercek completion. Aksi halde wobble (orn. F F' F).
+		function isSlotStablyCompleted(cornerAbsIndex: number, currentIdx: number, lookahead = 3): boolean {
+			const remaining = Math.min(lookahead, moves.length - currentIdx - 1);
+			if (remaining <= 0) {
+				return true;
+			}
+			let simCube;
+			try {
+				simCube = Cube.fromString(cubejs.asString());
+			} catch {
+				return true;
+			}
+			for (let i = 1; i <= remaining; i++) {
+				simCube.move(moves[currentIdx + i]);
+				if (!cornerBlockCompleted(cornerAbsIndex, simCube.asString())) {
+					return false;
+				}
+			}
+			return true;
+		}
+
 		for (const [index, turn] of moves.entries()) {
 			const realTurn = turns[turnIndex + index];
 			const completedAt = new Date(realTurn.completedAt).getTime();
@@ -256,6 +295,10 @@ export function getSolveSteps(turns) {
 				const cornerAbsIndex = getAbsoluteIndexByLocalIndex(base, corner);
 
 				if (cornerMem[corner] || !cornerBlockCompleted(cornerAbsIndex, state)) {
+					continue;
+				}
+
+				if (!isSlotStablyCompleted(cornerAbsIndex, index)) {
 					continue;
 				}
 
@@ -297,6 +340,56 @@ export function getSolveSteps(turns) {
 	function pieceSameAsCenter(absoluteIndex, state) {
 		const centerIndex = getCenterIndexGivenAnyIndex(absoluteIndex);
 		return state[absoluteIndex] === state[centerIndex];
+	}
+
+	function getSideFromAbsoluteIndex(absoluteIndex) {
+		const centerIndex = getCenterIndexGivenAnyIndex(absoluteIndex);
+		return SOLVED_STATE[centerIndex];
+	}
+
+	function getCornerAdjacentOffset(localIndex) {
+		if (localIndex === 0) {
+			return [1, 3];
+		} else if (localIndex === 2) {
+			return [-1, 3];
+		} else if (localIndex === 6) {
+			return [-3, 1];
+		} else if (localIndex === 8) {
+			return [-1, -3];
+		}
+	}
+
+	function cornerBlockCompleted(absoluteIndex, state) {
+		const side = getSideFromAbsoluteIndex(absoluteIndex);
+		const localIndex = getLocalIndexByAbsoluteIndex(absoluteIndex);
+
+		const edgeLocalIndices = getCornerAdjacentOffset(localIndex);
+
+		const side1Index = absoluteIndex + edgeLocalIndices[0];
+		const side2Index = absoluteIndex + edgeLocalIndices[1];
+
+		// Check for one square
+		if (
+			!pieceSameAsCenter(absoluteIndex, state) ||
+			!pieceSameAsCenter(side1Index, state) ||
+			!pieceSameAsCenter(side2Index, state)
+		) {
+			return false;
+		}
+
+		const cornerAdjacents = cornerAdjSide[side][localIndex];
+
+		for (const sides of cornerAdjacents) {
+			const [adjSide, connectingIndex] = sides.split(':');
+			const abs = getAbsoluteIndexByLocalIndex(adjSide, connectingIndex);
+
+			if (!pieceSameAsCenter(abs, state)) {
+				return false;
+			}
+		}
+
+		const adjSideToCorners = cornerAdjSide[side][localIndex].map((s) => s.split(':')[0]);
+		return edgeBetweenCentersSolved(adjSideToCorners[0], adjSideToCorners[1], state);
 	}
 
 	function getCubejsWithUOnTop(base, state) {
@@ -412,39 +505,6 @@ export function getSolveSteps(turns) {
 		return true;
 	}
 
-	function cornerBlockCompleted(absoluteIndex, state) {
-		const side = getSideFromAbsoluteIndex(absoluteIndex);
-		const localIndex = getLocalIndexByAbsoluteIndex(absoluteIndex);
-
-		const edgeLocalIndices = getCornerAdjacentOffset(localIndex);
-
-		const side1Index = absoluteIndex + edgeLocalIndices[0];
-		const side2Index = absoluteIndex + edgeLocalIndices[1];
-
-		// Check for one square
-		if (
-			!pieceSameAsCenter(absoluteIndex, state) ||
-			!pieceSameAsCenter(side1Index, state) ||
-			!pieceSameAsCenter(side2Index, state)
-		) {
-			return false;
-		}
-
-		const cornerAdjacents = cornerAdjSide[side][localIndex];
-
-		for (const sides of cornerAdjacents) {
-			const [side, connectingIndex] = sides.split(':');
-			const abs = getAbsoluteIndexByLocalIndex(side, connectingIndex);
-
-			if (!pieceSameAsCenter(abs, state)) {
-				return false;
-			}
-		}
-
-		const adjSideToCorners = cornerAdjSide[side][localIndex].map((s) => s.split(':')[0]);
-		return edgeBetweenCentersSolved(adjSideToCorners[0], adjSideToCorners[1], state);
-	}
-
 	// center1 and center2 should be side names
 	function edgeBetweenCentersSolved(center1, center2, state) {
 		const center1Edge = edgeAdj[center1][center2];
@@ -454,11 +514,6 @@ export function getSolveSteps(turns) {
 		const center2Abs = getAbsoluteIndexByLocalIndex(center1, center2Edge);
 
 		return pieceSameAsCenter(center1Abs, state) && pieceSameAsCenter(center2Abs, state);
-	}
-
-	function getSideFromAbsoluteIndex(absoluteIndex) {
-		const centerIndex = getCenterIndexGivenAnyIndex(absoluteIndex);
-		return SOLVED_STATE[centerIndex];
 	}
 
 	function areEdgesOriented(side, state) {
@@ -487,18 +542,6 @@ export function getSolveSteps(turns) {
 		}
 
 		return true;
-	}
-
-	function getCornerAdjacentOffset(localIndex) {
-		if (localIndex === 0) {
-			return [1, 3];
-		} else if (localIndex === 2) {
-			return [-1, 3];
-		} else if (localIndex === 6) {
-			return [-3, 1];
-		} else if (localIndex === 8) {
-			return [-1, -3];
-		}
 	}
 
 	// Given a *local* index, it will find the two piece that are side by side to that piece

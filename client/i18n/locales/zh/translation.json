@@ -989,7 +989,21 @@
         "pro_stats_upsell": "升级到 Pro 以获取详细统计信息",
         "copy": "复制",
         "share": "分享",
-        "average_copied": "平均成绩已复制"
+        "average_copied": "平均成绩已复制",
+        "replay": {
+            "play": "播放",
+            "pause": "暂停",
+            "prev_step": "上一步",
+            "next_step": "下一步",
+            "prev_move": "上一手",
+            "next_move": "下一手",
+            "speed": "速度",
+            "seek": "跳转",
+            "no_data": "此次解决无回放数据",
+            "pro_required_title": "智能魔方回放",
+            "pro_required_desc": "升级到 Pro 以 3D 形式逐步观看您的解决过程。",
+            "upgrade_cta": "升级到 Pro"
+        }
     },
     "sessions": {
         "page_title": "阶段",
@@ -998,6 +1012,9 @@
         "smart_cube_count": "解决次数",
         "smart_cube_total_time": "总时间",
         "smart_cube_avg_time": "平均",
+        "smart_cube_avg_inspection": "平均检查",
+        "smart_cube_avg_recognition": "平均识别",
+        "smart_cube_avg_execution": "平均执行",
         "no_smart_cube_solves": "本阶段没有智能魔方解决记录",
         "session_steps_title": "阶段步骤平均值",
         "hours_short": "时",

@@ -989,7 +989,21 @@
         "pro_stats_upsell": "Actualiza a Pro para estadísticas detalladas",
         "copy": "Copiar",
         "share": "Compartir",
-        "average_copied": "Promedio copiado"
+        "average_copied": "Promedio copiado",
+        "replay": {
+            "play": "Reproducir",
+            "pause": "Pausar",
+            "prev_step": "Paso anterior",
+            "next_step": "Siguiente paso",
+            "prev_move": "Movimiento anterior",
+            "next_move": "Siguiente movimiento",
+            "speed": "Velocidad",
+            "seek": "Buscar",
+            "no_data": "No hay datos de reproducción para esta resolución",
+            "pro_required_title": "Reproducción del Cubo Inteligente",
+            "pro_required_desc": "Actualiza a Pro para ver tu resolución paso a paso en 3D.",
+            "upgrade_cta": "Actualizar a Pro"
+        }
     },
     "sessions": {
         "page_title": "Sesiones",
@@ -998,6 +1012,9 @@
         "smart_cube_count": "Número de resoluciones",
         "smart_cube_total_time": "Tiempo total",
         "smart_cube_avg_time": "Promedio",
+        "smart_cube_avg_inspection": "Insp. media",
+        "smart_cube_avg_recognition": "Reconoc. medio",
+        "smart_cube_avg_execution": "Ejec. media",
         "no_smart_cube_solves": "No hay resoluciones con cubo inteligente en esta sesión",
         "session_steps_title": "Promedio de Pasos de Sesión",
         "hours_short": "h",

@@ -78,6 +78,55 @@ export function processSmartTurns(smartTurns: SmartTurn[], skipCompress: boolean
 	return processSmartTurnsHelper(smartTurns, skipCompress);
 }
 
+/**
+ * Sadece SolveInfo cozum gorunumu icin — ardisik ayni-yon hamleleri keyfi-n
+ * notation'a sikistirir: U + U → U2, U2 + U → U3, U3 + U → U4 ...
+ *
+ * processSmartTurns'tan FARKI: bu fonksiyon U2 + U gibi durumlari U3'e cascade eder.
+ * Scramble dogrulama / preflight gibi yerlerde KULLANILMAZ — onlar `U2 U` gibi
+ * ayri tokenlari olduğu gibi gosterip eslestirir. Sadece tamamlanmis solve'un
+ * cozum tablosunda goruntulemek icin.
+ */
+export function cascadeQuartersForDisplay(smartTurns: (SmartTurn | string)[]): string[] {
+	const accum: { face: string; quarters: number; raw?: string }[] = [];
+
+	for (let i = 0; i < smartTurns.length; i++) {
+		let turn = smartTurns[i] as string;
+		if (typeof turn === 'object') {
+			turn = (turn as SmartTurn).turn;
+		}
+
+		const m = turn.match(/^([URFDLB])(\d+)?(['‘])?$/);
+		if (!m) {
+			// Rotation/wide/slice/bilinmeyen — olduğu gibi yaz
+			accum.push({ face: turn, quarters: 0, raw: turn });
+			continue;
+		}
+		const [, face, count, prime] = m;
+		const n = parseInt(count || '1', 10);
+		if (n <= 0) continue;
+		const quarters = prime ? -n : n;
+
+		const last = accum[accum.length - 1];
+		if (last && last.face === face && last.raw === undefined) {
+			last.quarters += quarters;
+			continue; // skipCompress=true gibi davran — 0 olsa bile drop etme
+		}
+		accum.push({ face, quarters });
+	}
+
+	return accum
+		.map((a) => {
+			if (a.raw !== undefined) return a.raw;
+			if (a.quarters === 0) return '';
+			if (a.quarters === 1) return a.face;
+			if (a.quarters === -1) return a.face + "'";
+			if (a.quarters > 0) return a.face + a.quarters;
+			return a.face + Math.abs(a.quarters) + "'";
+		})
+		.filter(Boolean);
+}
+
 function processSmartTurnsHelper(smartTurns: (SmartTurn | string)[], skipCompress: boolean = false) {
 	const output = [];
 

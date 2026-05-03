@@ -29,6 +29,9 @@ import { endTimer, startTimer, startInspection, getSmartCubeClockSkew } from '..
 import { stopTimer, clearInspectionTimers, START_TIMEOUT } from '../helpers/timers';
 import { resetScramble } from '../helpers/scramble';
 import { saveSolve } from '../helpers/save';
+import { useMe } from '../../../util/hooks/useMe';
+import { isPro } from '../../../lib/pro';
+import { serializeSmartTurnsCompact } from '../../../../shared/smart_cube/parse_turns';
 import AbortSolveOverlay from './abort_solve/AbortSolveOverlay';
 import BluetoothErrorMessage from '../common/BluetoothErrorMessage';
 import BleScanningModal from './ble_scanning_modal/BleScanningModal';
@@ -97,6 +100,8 @@ export default function SmartCube() {
 	const inspectionEnabled = useSettings('inspection');
 	const timerType = useSettings('timer_type');
 	const mobileMode = useGeneral('mobile_mode');
+	const me = useMe();
+	const userIsPro = isPro(me);
 
 	const smartCubeSize = useSettings('smart_cube_size');
 
@@ -404,22 +409,39 @@ export default function SmartCube() {
 
 	// FACELETS güvenlik ağı: fiziksel küp çözüldüyse timer durdur
 	// cubejs'e DOKUNMAZ - sadece fiziksel durumu kontrol eder
-	// BLE'den son hamle düşerse, 1.5s sessizlik sonrası FACELETS ile yakalanır
+	//
+	// RACE CONDITION KORUMASI: BLE hamle event ile FACELETS event paralel gelir.
+	// FACELETS bazen ÖNCE gelir (cube state degisti) → hamle event henuz Redux'ta yok →
+	// resetMoves smartTurns'u eksik halde commit ederdi → son hamle kaydolmaz, sonraki
+	// scramble'a kayar ve "geri al" denirdi.
+	// 350ms bekle: bu sure icinde BLE hamle gelirse useEffect[smartTurns] otomatik
+	// resetMoves'i tetikler (timeStartedAt reset olur → bu setTimeout guard fail eder).
+	// Gelmezse FACELETS yedek olarak yine devreye girer.
 	useEffect(() => {
 		if (
-			smartPhysicallySolved &&
-			timeStartedAt &&
-			!useSpaceWithSmartCube
+			!smartPhysicallySolved ||
+			!timeStartedAt ||
+			useSpaceWithSmartCube
 		) {
-			dbgFace(`FACELETS SOLVE SAFETY NET tetiklendi | smartStateSeq: ${smartStateSeq} | lastSmartMoveTime: ${lastSmartMoveTime} | now: ${Date.now()} | gecikme: ${lastSmartMoveTime ? Date.now() - lastSmartMoveTime : 'N/A'}ms`);
+			return;
+		}
+
+		dbgFace(`FACELETS SOLVE SAFETY NET arm edildi (350ms) | smartStateSeq: ${smartStateSeq} | lastSmartMoveTime: ${lastSmartMoveTime} | now: ${Date.now()} | gecikme: ${lastSmartMoveTime ? Date.now() - lastSmartMoveTime : 'N/A'}ms`);
+
+		const tid = setTimeout(() => {
+			// 350ms sonra hala timeStartedAt varsa BLE hamle event gelmemis demektir
+			// — yedek olarak FACELETS ile commit et.
+			dbgFace(`FACELETS SOLVE SAFETY NET fire (BLE hamle gecikti)`);
 			if (needsCubeReset) {
-				resetMoves(true, false, lastSmartMoveTime || undefined);
+				resetMovesRef.current?.(true, false, lastSmartMoveTimeRef.current || undefined);
 				setNeedsCubeReset(false);
 				resetScramble(context);
 			} else {
-				resetMoves(false, false, lastSmartMoveTime || undefined);
+				resetMovesRef.current?.(false, false, lastSmartMoveTimeRef.current || undefined);
 			}
-		}
+		}, 350);
+
+		return () => clearTimeout(tid);
 	}, [smartStateSeq, timeStartedAt]);
 
 	// FACELETS scramble completion safety net:
@@ -794,12 +816,33 @@ export default function SmartCube() {
 			}
 
 			dbgTimer(`TIMER STOP (linear fit) | finalTimeMilli: ${finalTimeMilli} | moves: ${correctedMoves.length}`);
+
+			// Pro user: compact format ile kayit, server method_steps olusturur.
+			// Free user: smart_turns yazilmaz, method_steps olusmaz, DB sismez.
+			//
+			// IMPORTANT: correctedMoves[i].completedAt cubeTimestampLinearFit'ten cikiyor —
+			// bu BLE adapter'in localTimestamp'i (Date.now()-benzeri MUTLAK epoch ms).
+			// timeStartedAt.getTime() ile cikartmak BLE clock vs JS clock drift yuzunden
+			// devasa offsetler uretebiliyor. Daima ilk move'u 0 baseline yap → 4-byte/move
+			// ortalama offset, parser tarafinda ekstra is yok.
+			let smartTurnsToSave: string | null = null;
+			if (userIsPro) {
+				const baseMs = correctedMoves.length > 0 ? correctedMoves[0].completedAt : 0;
+				smartTurnsToSave = serializeSmartTurnsCompact(
+					correctedMoves.map((m: any) => ({
+						turn: m.turn,
+						completedAt: m.completedAt - baseMs,
+					})),
+					0
+				);
+			}
+
 			endTimer(context, finalTimeMilli, {
 				inspection_time: inspectionTime,
 				smart_device_id: smartDeviceId,
 				is_smart_cube: true,
 				smart_turn_count: correctedMoves.length,
-				smart_turns: JSON.stringify(correctedMoves),
+				smart_turns: smartTurnsToSave,
 			});
 
 			// Düzeltilmiş evre analizi: LiveAnalysisOverlay'in doğru süreleri göstermesi için

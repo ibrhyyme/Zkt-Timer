@@ -989,7 +989,21 @@
         "pro_stats_upsell": "Перейдите на Pro для детальной статистики",
         "copy": "Копировать",
         "share": "Поделиться",
-        "average_copied": "Среднее скопировано"
+        "average_copied": "Среднее скопировано",
+        "replay": {
+            "play": "Воспроизвести",
+            "pause": "Пауза",
+            "prev_step": "Предыдущий шаг",
+            "next_step": "Следующий шаг",
+            "prev_move": "Предыдущий ход",
+            "next_move": "Следующий ход",
+            "speed": "Скорость",
+            "seek": "Перемотка",
+            "no_data": "Нет данных воспроизведения для этой сборки",
+            "pro_required_title": "Воспроизведение умного куба",
+            "pro_required_desc": "Перейдите на Pro, чтобы посмотреть свою сборку пошагово в 3D.",
+            "upgrade_cta": "Перейти на Pro"
+        }
     },
     "sessions": {
         "page_title": "Сессии",
@@ -998,6 +1012,9 @@
         "smart_cube_count": "Количество сборок",
         "smart_cube_total_time": "Общее время",
         "smart_cube_avg_time": "Среднее",
+        "smart_cube_avg_inspection": "Ср. осмотр",
+        "smart_cube_avg_recognition": "Ср. распознавание",
+        "smart_cube_avg_execution": "Ср. выполнение",
         "no_smart_cube_solves": "В этой сессии нет сборок с умным кубом",
         "session_steps_title": "Средние значения шагов сессии",
         "hours_short": "ч",

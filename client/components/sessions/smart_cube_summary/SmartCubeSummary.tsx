@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { fetchSolves, FilterSolvesOptions } from '../../../db/solves/query';
 import { useSolveDb } from '../../../util/hooks/useSolveDb';
 import { getTimeString } from '../../../util/time';
+import { getSmartCubeAvgTimes } from '../../../db/solves/stats/smart_cube_avg_times';
 import Empty from '../../common/empty/Empty';
 import block from '../../../styles/bem';
 import './SmartCubeSummary.scss';
@@ -53,6 +54,8 @@ export default function SmartCubeSummary({ sessionId, filterOptions }: Props) {
 		);
 	}
 
+	const avgTimes = getSmartCubeAvgTimes(baseFilter);
+
 	return (
 		<div className={b()}>
 			<div className={b('stats')}>
@@ -67,6 +70,24 @@ export default function SmartCubeSummary({ sessionId, filterOptions }: Props) {
 				<div className={b('stat')}>
 					<div className={b('stat-label')}>{t('sessions.smart_cube_avg_time')}</div>
 					<div className={b('stat-value')}>{getTimeString(avgSeconds)}</div>
+				</div>
+				<div className={b('stat')}>
+					<div className={b('stat-label')}>{t('sessions.smart_cube_avg_inspection')}</div>
+					<div className={b('stat-value')}>
+						{avgTimes.inspectionSampleCount > 0 ? getTimeString(avgTimes.avgInspection) : '–'}
+					</div>
+				</div>
+				<div className={b('stat')}>
+					<div className={b('stat-label')}>{t('sessions.smart_cube_avg_recognition')}</div>
+					<div className={b('stat-value')}>
+						{avgTimes.methodStepsSampleCount > 0 ? getTimeString(avgTimes.avgRecognition) : '–'}
+					</div>
+				</div>
+				<div className={b('stat')}>
+					<div className={b('stat-label')}>{t('sessions.smart_cube_avg_execution')}</div>
+					<div className={b('stat-value')}>
+						{avgTimes.methodStepsSampleCount > 0 ? getTimeString(avgTimes.avgExecution) : '–'}
+					</div>
 				</div>
 			</div>
 		</div>

@@ -2,6 +2,38 @@
 
 .#{$namespace}-solve-info-solution-info {
 	width: 100%;
+	display: flex;
+	flex-direction: row;
+	gap: 1.5rem;
+	align-items: flex-start;
+
+	&__column {
+		min-width: 0;
+
+		&--table {
+			flex: 1 1 auto;
+		}
+
+		&--replay {
+			flex: 0 0 360px;
+			max-width: 360px;
+		}
+	}
+
+	@media (max-width: 900px) {
+		flex-direction: column;
+		gap: 1rem;
+
+		&__column {
+			width: 100%;
+
+			&--replay {
+				flex: 0 0 auto;
+				max-width: 100%;
+				order: -1; // Mobilde replay ustte, tablo altta
+			}
+		}
+	}
 
 	&__table {
 		width: 100%;
@@ -11,10 +43,14 @@
 		border: 1px solid rgba(var(--text-color), 0.12);
 		border-radius: 10px;
 		overflow: hidden;
+		table-layout: auto;
 
 		th,
 		td {
 			padding: 8px 12px;
+		}
+
+		th {
 			white-space: nowrap;
 		}
 
@@ -69,21 +105,58 @@
 		text-align: left;
 		font-weight: 500;
 		color: rgba(var(--text-color), 0.85);
+		width: 90px;
+		white-space: nowrap;
 	}
 
 	&__step-turns {
-		text-align: center;
+		text-align: left;
 		font-family: 'SF Mono', 'Roboto Mono', 'Fira Code', monospace;
 		font-size: 0.78rem;
 		color: rgba(var(--text-color), 0.85);
 		white-space: normal;
-		word-break: break-word;
+		word-break: keep-all;
+		line-height: 1.6;
 	}
 
 	&__rotation {
 		color: rgb(var(--primary-color));
 		font-weight: 600;
 		margin-right: 6px;
+	}
+
+	// Tablo satiri — replay'in oynadigi step icin highlight + tiklanabilir cursor
+	&__row {
+		transition: background-color 0.15s ease;
+
+		&--clickable {
+			cursor: pointer;
+		}
+
+		&--active {
+			background-color: rgba(var(--primary-color), 0.12) !important;
+
+			.#{$namespace}-solve-info-solution-info__step-name {
+				color: rgb(var(--text-color));
+				font-weight: 600;
+			}
+		}
+	}
+
+	// Her hamle ayri span — current move highlight
+	&__move {
+		display: inline-block;
+		padding: 1px 4px;
+		margin: 0 2px;
+		border-radius: 3px;
+		white-space: nowrap; // Tek hamle (orn "U2") asla bolunmesin
+		transition: background-color 0.1s ease, color 0.1s ease;
+
+		&--current {
+			background-color: rgb(var(--primary-color));
+			color: #fff;
+			font-weight: 700;
+		}
 	}
 
 	@media (max-width: 600px) {

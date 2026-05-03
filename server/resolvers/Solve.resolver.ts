@@ -10,6 +10,7 @@ import { updateUserAccountWithParams } from '../models/user_account';
 import { GraphQLVoid } from 'graphql-scalars';
 import GraphQLError from '../util/graphql_error';
 import { ErrorCode } from '../constants/errors';
+import { parseSmartTurns } from '../../shared/smart_cube/parse_turns';
 
 function getSolvesByUserId(context: GraphQLContext, userId: string) {
 	const { prisma } = context;
@@ -113,25 +114,34 @@ export class SolveResolver {
 		input.bulk = false;
 		const createdSolve = await createSolve(user, input);
 
-		if (input.is_smart_cube) {
-			try {
-				const turns = JSON.parse(input.smart_turns);
-				const steps = getSolveSteps(turns);
-				const methodStepsData = await createSolveMethodSteps(createdSolve, steps);
-				(createdSolve as any).solve_method_steps = methodStepsData.map((s) => ({
-					...s,
-					created_at: new Date(),
-				}));
-			} catch (e) {
-				logger.warn('Failed to create solve method steps', {
-					error: e,
-				});
-				await updateSolve(createdSolve.id, {
-					is_smart_cube: false,
-				});
-				// Client'a downgrade'i bildir — yoksa client is_smart_cube=true olarak kalir
-				(createdSolve as any).is_smart_cube = false;
-				(createdSolve as any).solve_method_steps = [];
+		if (input.is_smart_cube && input.smart_turns) {
+			// Pro gating: free user smart_turns null gonderiyor (client tarafinda).
+			// Defensive olarak server'da da kontrol et — malicious bypass'i engelle.
+			const userIsPro = !!(user && ((user as any).is_pro || (user as any).is_premium));
+			if (userIsPro) {
+				try {
+					const turns = parseSmartTurns(input.smart_turns);
+					const steps = getSolveSteps(turns);
+					const methodStepsData = await createSolveMethodSteps(createdSolve, steps);
+					(createdSolve as any).solve_method_steps = methodStepsData.map((s) => ({
+						...s,
+						created_at: new Date(),
+					}));
+				} catch (e) {
+					logger.warn('Failed to create solve method steps', {
+						error: e,
+					});
+					await updateSolve(createdSolve.id, {
+						is_smart_cube: false,
+					});
+					// Client'a downgrade'i bildir — yoksa client is_smart_cube=true olarak kalir
+					(createdSolve as any).is_smart_cube = false;
+					(createdSolve as any).solve_method_steps = [];
+				}
+			} else {
+				// Free user yanlislikla smart_turns gonderdiyse DB'ye yazma — sil
+				await updateSolve(createdSolve.id, { smart_turns: null });
+				(createdSolve as any).smart_turns = null;
 			}
 		}
 
