@@ -127,7 +127,6 @@
             "empty": "未找到智能魔方还原。",
             "eyebrow": "{{value}} 次智能魔方还原的平均",
             "bottleneck": "你在 {{phase}} 上耗时最多",
-            "pro_upsell": "阶段分析为 Pro 功能",
             "phase": {
                 "cross": "Cross",
                 "f2l_1": "F2L 1",
@@ -1022,7 +1021,6 @@
         "overview_tab": "概览",
         "time_label": "时间",
         "deleted_from_other_device": "此还原已从其他设备删除",
-        "pro_stats_upsell": "升级到 Pro 以获取详细统计信息",
         "copy": "复制",
         "share": "分享",
         "average_copied": "平均成绩已复制",
@@ -2637,6 +2635,24 @@
         "feature_title": "Pro 功能",
         "feature_description": "此功能仅限Pro会员。升级以解锁所有内容。",
         "upgrade_button": "升级到Pro",
+        "upsell": {
+            "phase_analysis": {
+                "title": "阶段分析",
+                "description": "查看 Cross、F2L、OLL 和 PLL 的细分"
+            },
+            "smart_steps": {
+                "title": "智能魔方步骤",
+                "description": "逐步查看每一个动作"
+            },
+            "smart_solve": {
+                "title": "智能魔方分析",
+                "description": "TPS、移动次数和详细数据"
+            },
+            "phase_splits": {
+                "title": "平均阶段时长",
+                "description": "了解你在哪个阶段浪费时间最多"
+            }
+        },
         "modal": {
             "room_music": {
                 "title": "在房间内听音乐",

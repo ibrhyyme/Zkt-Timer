@@ -1,7 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
-import { useHistory } from 'react-router-dom';
 import { fetchSolves, FilterSolvesOptions } from '../../../db/solves/query';
 import { useSolveDb } from '../../../util/hooks/useSolveDb';
 import { useMe } from '../../../util/hooks/useMe';
@@ -11,6 +10,7 @@ import { getSolveStepsWithoutParents } from '../../solve_info/util/solution';
 import { STEP_NAME_MAP } from '../../solve_info/util/consts';
 import { getTimeString } from '../../../util/time';
 import block from '../../../styles/bem';
+import ProBlurOverlay from '../../common/pro_blur_overlay/ProBlurOverlay';
 import '../../solve_info/stats_info/steps_table/StepsTable.scss';
 import './SessionStepsTable.scss';
 
@@ -50,18 +50,12 @@ function fmt(val: number | null | undefined, suffix = 's'): string {
 export default function SessionStepsTable({ sessionId, filterOptions, title }: Props) {
 	const { t } = useTranslation();
 	const dispatch = useDispatch();
-	const history = useHistory();
 	const me = useMe();
 	useSolveDb();
 
 	if (!sessionId && !filterOptions) return null;
 
 	const showProOverlay = isProEnabled() && !isPro(me);
-
-	function goPro() {
-		dispatch(closeModal());
-		history.push('/pro');
-	}
 
 	const baseFilter = sessionId
 		? { session_id: sessionId, is_smart_cube: true, dnf: false }
@@ -77,19 +71,11 @@ export default function SessionStepsTable({ sessionId, filterOptions, title }: P
 		return (
 			<div className={bSession()}>
 				<h3 className={bSession('title')}>{resolvedTitle}</h3>
-				<div className={bSession('pro-locked')}>
-					<div className={bSession('pro-locked-dummy')}>
-						<div className={bSession('pro-locked-dummy-bar')} style={{ width: '85%' }} />
-						<div className={bSession('pro-locked-dummy-bar')} style={{ width: '70%' }} />
-						<div className={bSession('pro-locked-dummy-bar')} style={{ width: '90%' }} />
-						<div className={bSession('pro-locked-dummy-bar')} style={{ width: '55%' }} />
-						<div className={bSession('pro-locked-dummy-bar')} style={{ width: '75%' }} />
-					</div>
-					<div className={bSession('pro-locked-overlay')} onClick={goPro}>
-						<span className={bSession('pro-locked-star')}>★</span>
-						<span>{t('solve_info.pro_stats_upsell')}</span>
-					</div>
-				</div>
+				<ProBlurOverlay
+					title={t('pro.upsell.smart_steps.title')}
+					description={t('pro.upsell.smart_steps.description')}
+					onBeforeNavigate={() => dispatch(closeModal())}
+				/>
 			</div>
 		);
 	}

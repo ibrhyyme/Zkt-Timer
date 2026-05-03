@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
-import { useHistory } from 'react-router-dom';
 import ReactList from 'react-list';
 import './PhaseAnalysis.scss';
 import Empty from '../../common/empty/Empty';
@@ -15,6 +14,7 @@ import { getTimeString } from '../../../util/time';
 import { publishScroll, subscribeScroll, HISTORY_SCROLL_CHANNEL, PHASE_ANALYSIS_SCROLL_CHANNEL } from '../../../util/scroll_sync';
 import { openModal } from '../../../actions/general';
 import SessionStepsTable from '../../sessions/smart_cube_steps_table/SessionStepsTable';
+import ProBlurOverlay from '../../common/pro_blur_overlay/ProBlurOverlay';
 
 type StepType = NonNullable<Solve['solve_method_steps']>[number];
 
@@ -118,7 +118,6 @@ export default function PhaseAnalysis(props: Props) {
 	const { filterOptions } = props;
 	const { t } = useTranslation();
 	const dispatch = useDispatch();
-	const history = useHistory();
 	const me = useMe();
 	useSolveDb();
 	const mobileMode = useGeneral('mobile_mode');
@@ -127,25 +126,12 @@ export default function PhaseAnalysis(props: Props) {
 	// Phase Analysis hem desktop hem mobile'da Pro-gate'li
 	const showProOverlay = isProEnabled() && !isPro(me);
 
-	function goPro() {
-		history.push('/pro');
-	}
-
 	if (showProOverlay) {
 		return (
-			<div className="cd-phase-analysis cd-phase-analysis--pro-locked">
-				<div className="cd-phase-analysis__pro-locked-dummy">
-					<div className="cd-phase-analysis__pro-locked-dummy-bar" style={{ width: '85%' }} />
-					<div className="cd-phase-analysis__pro-locked-dummy-bar" style={{ width: '70%' }} />
-					<div className="cd-phase-analysis__pro-locked-dummy-bar" style={{ width: '90%' }} />
-					<div className="cd-phase-analysis__pro-locked-dummy-bar" style={{ width: '55%' }} />
-					<div className="cd-phase-analysis__pro-locked-dummy-bar" style={{ width: '75%' }} />
-				</div>
-				<div className="cd-phase-analysis__pro-locked-overlay" onClick={goPro}>
-					<span className="cd-phase-analysis__pro-locked-star">★</span>
-					<span>{t('solve_info.pro_stats_upsell')}</span>
-				</div>
-			</div>
+			<ProBlurOverlay
+				title={t('pro.upsell.phase_analysis.title')}
+				description={t('pro.upsell.phase_analysis.description')}
+			/>
 		);
 	}
 

@@ -1,12 +1,12 @@
 import React, {useContext, useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
-import {useHistory} from 'react-router-dom';
 import './PhaseSplits.scss';
 import block from '../../../../styles/bem';
 import {StatsContext} from '../../Stats';
 import {useSolveDb} from '../../../../util/hooks/useSolveDb';
 import {useMe} from '../../../../util/hooks/useMe';
 import {isPro, isProEnabled} from '../../../../lib/pro';
+import ProBlurOverlay from '../../../common/pro_blur_overlay/ProBlurOverlay';
 import {getAveragePhaseSplits, PhaseKey} from '../../../../db/solves/stats/phase_splits';
 import {getTimeString} from '../../../../util/time';
 
@@ -16,7 +16,6 @@ const ORDER: PhaseKey[] = ['cross', 'f2l_1', 'f2l_2', 'f2l_3', 'f2l_4', 'oll', '
 
 export default function PhaseSplits() {
 	const {t} = useTranslation();
-	const history = useHistory();
 	const me = useMe();
 	const {filterOptions} = useContext(StatsContext);
 	const solveUpdate = useSolveDb();
@@ -28,27 +27,12 @@ export default function PhaseSplits() {
 		[filterOptions, solveUpdate]
 	);
 
-	function goPro() {
-		history.push('/pro');
-	}
-
 	if (showProOverlay) {
 		return (
-			<div className={b({locked: true})}>
-				<div className={b('locked-dummy')}>
-					{ORDER.map((_, i) => (
-						<div
-							key={i}
-							className={b('locked-dummy-bar')}
-							style={{width: `${30 + Math.abs(((i * 17) % 60))}%`}}
-						/>
-					))}
-				</div>
-				<button type="button" className={b('locked-overlay')} onClick={goPro}>
-					<span className={b('locked-star')}>★</span>
-					<span>{t('stats.splits.pro_upsell')}</span>
-				</button>
-			</div>
+			<ProBlurOverlay
+				title={t('pro.upsell.phase_splits.title')}
+				description={t('pro.upsell.phase_splits.description')}
+			/>
 		);
 	}
 

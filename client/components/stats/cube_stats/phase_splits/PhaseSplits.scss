@@ -127,56 +127,6 @@
 		font-size: 0.9rem;
 	}
 
-	&--locked {
-		position: relative;
-		min-height: 14rem;
-		padding: 0.667rem 0;
-	}
-
-	&__locked-dummy {
-		display: flex;
-		flex-direction: column;
-		gap: 0.667rem;
-		padding: 1rem 0.5rem;
-		filter: blur(3px);
-		opacity: 0.4;
-		pointer-events: none;
-	}
-
-	&__locked-dummy-bar {
-		height: 0.667rem;
-		background: linear-gradient(90deg, rgb(var(--primary-color)), rgb(var(--secondary-color)));
-		border-radius: 999px;
-	}
-
-	&__locked-overlay {
-		position: absolute;
-		inset: 0;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		gap: 0.4rem;
-		background-color: rgba(var(--background-color), 0.4);
-		border: 1px solid rgba(var(--primary-color), 0.3);
-		border-radius: 14px;
-		color: rgb(var(--text-color));
-		font-family: inherit;
-		cursor: pointer;
-		transition: background-color 0.18s, border-color 0.18s;
-		padding: 1rem;
-
-		&:hover {
-			background-color: rgba(var(--primary-color), 0.12);
-			border-color: rgba(var(--primary-color), 0.55);
-		}
-	}
-
-	&__locked-star {
-		font-size: 1.467rem;
-		color: rgb(var(--secondary-color));
-	}
-
 	@media (max-width: 600px) {
 		overflow-x: auto;
 		-webkit-overflow-scrolling: touch;

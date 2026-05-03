@@ -127,7 +127,6 @@
             "empty": "No hay resoluciones de cubo inteligente.",
             "eyebrow": "Promedio de {{value}} resoluciones con cubo inteligente",
             "bottleneck": "Pierdes más tiempo en {{phase}}",
-            "pro_upsell": "El análisis por fase es una función Pro",
             "phase": {
                 "cross": "Cross",
                 "f2l_1": "F2L 1",
@@ -1022,7 +1021,6 @@
         "overview_tab": "Resumen",
         "time_label": "Tiempo",
         "deleted_from_other_device": "Esta solución fue eliminada desde otro dispositivo",
-        "pro_stats_upsell": "Actualiza a Pro para estadísticas detalladas",
         "copy": "Copiar",
         "share": "Compartir",
         "average_copied": "Promedio copiado",
@@ -2637,6 +2635,24 @@
         "feature_title": "Función Pro",
         "feature_description": "Esta función es exclusiva para miembros Pro. Actualiza para desbloquear todo.",
         "upgrade_button": "Actualizar a Pro",
+        "upsell": {
+            "phase_analysis": {
+                "title": "Análisis de Fases",
+                "description": "Ve tu desglose de Cross, F2L, OLL y PLL"
+            },
+            "smart_steps": {
+                "title": "Pasos del Cubo Inteligente",
+                "description": "Inspecciona cada movimiento uno por uno"
+            },
+            "smart_solve": {
+                "title": "Análisis del Cubo Inteligente",
+                "description": "TPS, número de movimientos y datos detallados"
+            },
+            "phase_splits": {
+                "title": "Tiempos Promedio por Fase",
+                "description": "Ve en qué fase pierdes más tiempo"
+            }
+        },
         "modal": {
             "room_music": {
                 "title": "Música en las Salas",

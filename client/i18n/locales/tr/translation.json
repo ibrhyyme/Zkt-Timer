@@ -127,7 +127,6 @@
             "empty": "Akıllı küp ile çözüm bulunamadı.",
             "eyebrow": "{{value}} akıllı küp çözümünün ortalaması",
             "bottleneck": "En çok {{phase}}'de zaman kaybediyorsun",
-            "pro_upsell": "Aşama analizi Pro özelliği",
             "phase": {
                 "cross": "Cross",
                 "f2l_1": "F2L 1",
@@ -1022,7 +1021,6 @@
         "overview_tab": "Genel Bakış",
         "time_label": "Süre",
         "deleted_from_other_device": "Bu çözüm başka bir cihazdan silinmiş",
-        "pro_stats_upsell": "Detaylı istatistikler için Pro'ya geçin",
         "copy": "Kopyala",
         "share": "Paylaş",
         "average_copied": "Average kopyalandı",
@@ -2635,6 +2633,24 @@
         "feature_title": "Pro Özellik",
         "feature_description": "Bu özellik Pro üyelere özel. Pro'ya geçerek tüm özelliklerin kilidini aç.",
         "upgrade_button": "Pro'ya Geç",
+        "upsell": {
+            "phase_analysis": {
+                "title": "Faz Analizi",
+                "description": "Cross, F2L, OLL ve PLL kırılımını gör"
+            },
+            "smart_steps": {
+                "title": "Akıllı Küp Adımları",
+                "description": "Her hareketi tek tek incele"
+            },
+            "smart_solve": {
+                "title": "Akıllı Küp Analizi",
+                "description": "TPS, hareket sayısı ve detaylı veri"
+            },
+            "phase_splits": {
+                "title": "Ortalama Faz Süreleri",
+                "description": "Hangi fazda zaman kaybettiğini gör"
+            }
+        },
         "modal": {
             "room_music": {
                 "title": "Odalarda Müzik Dinle",

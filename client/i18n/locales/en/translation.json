@@ -127,7 +127,6 @@
             "empty": "No smart cube solves found.",
             "eyebrow": "Average of {{value}} smart cube solves",
             "bottleneck": "You lose the most time in {{phase}}",
-            "pro_upsell": "Phase analysis is a Pro feature",
             "phase": {
                 "cross": "Cross",
                 "f2l_1": "F2L 1",
@@ -1022,7 +1021,6 @@
         "overview_tab": "Overview",
         "time_label": "Time",
         "deleted_from_other_device": "This solve was deleted from another device",
-        "pro_stats_upsell": "Upgrade to Pro for detailed statistics",
         "copy": "Copy",
         "share": "Share",
         "average_copied": "Average copied",
@@ -2637,6 +2635,24 @@
         "feature_title": "Pro Feature",
         "feature_description": "This feature is exclusive to Pro members. Upgrade to unlock everything.",
         "upgrade_button": "Upgrade to Pro",
+        "upsell": {
+            "phase_analysis": {
+                "title": "Phase Analysis",
+                "description": "See your Cross, F2L, OLL and PLL breakdown"
+            },
+            "smart_steps": {
+                "title": "Smart Cube Steps",
+                "description": "Inspect every move one by one"
+            },
+            "smart_solve": {
+                "title": "Smart Cube Analysis",
+                "description": "TPS, move count and detailed data"
+            },
+            "phase_splits": {
+                "title": "Average Phase Times",
+                "description": "See where you're losing time"
+            }
+        },
         "modal": {
             "room_music": {
                 "title": "Listen to Music in Rooms",
