@@ -7,6 +7,8 @@ import {CompetitionFollow, FollowCompetitorInput} from '../schemas/CompetitionFo
 import {getPrisma} from '../database';
 import {getIntegration} from '../models/integration';
 import {Consts} from '../../shared/consts';
+import {getWcaLiveData, fetchLiveRoundResults} from '../services/WcaLiveService';
+import {logger} from '../services/logger';
 
 @Resolver()
 export class CompetitionFollowResolver {
@@ -77,7 +79,7 @@ export class CompetitionFollowResolver {
 			);
 		}
 
-		return getPrisma().competitionFollow.create({
+		const created = await getPrisma().competitionFollow.create({
 			data: {
 				user_id: user.id,
 				competition_id: competitionId,
@@ -85,7 +87,42 @@ export class CompetitionFollowResolver {
 				followed_wca_id: input.wca_id ?? null,
 				followed_name: name,
 			},
-		}) as any;
+		});
+
+		// Backfill: yarismadaki mevcut/biten round'lari "bildirim gonderildi" olarak isaretle
+		// Aksi halde bir sonraki cron tick'inde gecmis tum round'lar icin push atilir (50+ bildirim spam)
+		try {
+			const liveData = await getWcaLiveData(competitionId).catch(() => null);
+			if (liveData?.roundMap?.length) {
+				await Promise.allSettled(
+					liveData.roundMap.map(async (rm: {activityCode: string; liveRoundId: string}) => {
+						const round = await fetchLiveRoundResults(rm.liveRoundId).catch(() => null);
+						if (!round) return;
+						const hasResults = round.results?.some((r: {best: number}) => r.best && r.best > 0);
+						// Round bitti VEYA mevcut sonuc var → bildirimi atlanmis say
+						if (round.finished || hasResults) {
+							await getPrisma()
+								.competitionFollowNotifiedRound.create({
+									data: {
+										follow_id: created.id,
+										activity_code: rm.activityCode,
+										result_notified: true,
+										finish_notified: !!round.finished,
+									},
+								})
+								.catch(() => {/* unique constraint catch — idempotent */});
+						}
+					}),
+				);
+			}
+		} catch (err: any) {
+			logger.warn('[CompetitionFollow] backfill failed — kullanici eski bildirimler alabilir', {
+				followId: created.id,
+				err: err?.message,
+			});
+		}
+
+		return created as any;
 	}
 
 	@Authorized([Role.LOGGED_IN])

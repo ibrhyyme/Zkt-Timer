@@ -199,10 +199,15 @@
         "th_actions": "操作",
         "status_active": "激活",
         "status_inactive": "未激活",
-        "delete_button": "删除"
+        "delete_button": "删除",
+        "edit_button": "编辑"
     },
     "create_announcement": {
         "title": "创建新公告",
+        "edit_title": "编辑公告",
+        "update": "更新",
+        "updating": "更新中...",
+        "is_active": "激活",
         "field_title": "标题",
         "field_category": "分类",
         "field_priority": "优先级 (0-10)",
