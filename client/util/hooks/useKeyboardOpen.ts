@@ -1,11 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Capacitor, registerPlugin } from '@capacitor/core';
+import { Capacitor } from '@capacitor/core';
 import { Keyboard } from '@capacitor/keyboard';
-
-interface WebViewRefreshPlugin {
-	refresh(): Promise<void>;
-}
-const WebViewRefresh = registerPlugin<WebViewRefreshPlugin>('WebViewRefresh');
 
 /**
  * Soft klavyenin acik olup olmadigini takip eder.
@@ -17,24 +12,10 @@ export function useKeyboardOpen(): boolean {
 
 	useEffect(() => {
 		if (Capacitor.isNativePlatform()) {
-			const isAndroid = Capacitor.getPlatform() === 'android';
-
-			// Android WebView klavye kapaninca paint cache'inde siyah cizgi artifact birakir.
-			// Kullanicinin manuel "background → foreground" davranisi cizgiyi temizliyor —
-			// bu native cağri WebView'i GONE → VISIBLE toggle ederek o davranisi simule eder.
-			const refreshWebView = () => {
-				if (isAndroid) {
-					WebViewRefresh.refresh().catch(() => {});
-				}
-			};
-
 			const showPromise = Keyboard.addListener('keyboardWillShow', () => setOpen(true));
 			const willHidePromise = Keyboard.addListener('keyboardWillHide', () => setOpen(false));
 			// keyboardWillHide Android'de bazi kapatma senaryolarinda gelmiyor; didHide fallback.
-			const didHidePromise = Keyboard.addListener('keyboardDidHide', () => {
-				setOpen(false);
-				refreshWebView();
-			});
+			const didHidePromise = Keyboard.addListener('keyboardDidHide', () => setOpen(false));
 			return () => {
 				showPromise.then((h) => h.remove()).catch(() => {});
 				willHidePromise.then((h) => h.remove()).catch(() => {});
