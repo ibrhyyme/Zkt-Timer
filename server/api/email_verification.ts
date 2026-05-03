@@ -6,7 +6,7 @@ import {sendEmailWithTemplate} from '../services/ses';
 import {getJwtString} from '../util/auth';
 import {ErrorCode} from '../constants/errors';
 import {GraphQLContext} from '../@types/interfaces/server.interface';
-import {getEmailStrings} from '../util/email_translations';
+import {getEmailStrings, buildVerificationEmailData} from '../util/email_translations';
 import {notifyAdminsOfNewUser} from '../services/admin_notification';
 
 export const gqlMutation = `
@@ -29,14 +29,8 @@ export const mutateActions = {
 			const ev = await createEmailVerification(user);
 			const emailStrings = getEmailStrings(language);
 
-			sendEmailWithTemplate(user, emailStrings.verification_subject, 'email_verification', {
-				code: ev.code,
-				message: emailStrings.verification_message,
-				greeting: emailStrings.greeting,
-				code_expiry: emailStrings.code_expiry,
-				closing: emailStrings.closing,
-				team: emailStrings.team,
-			});
+			sendEmailWithTemplate(user, emailStrings.verification_subject, 'email_verification',
+				buildVerificationEmailData(user, ev.code, language));
 		}
 	},
 
