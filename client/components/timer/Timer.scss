@@ -242,8 +242,7 @@
 		// Viewport responsive layout (Strict locking)
 		display: flex;
 		flex-direction: column;
-		height: 100vh;
-		height: var(--stable-vh, 100dvh); // Klavye açılınca sabit kalır
+		height: 100dvh; // Klavye ile senkron resize (WebView margin native fix)
 		overflow: hidden; // Ana sayfa scrollunu kapat
 		padding: 0 !important; // Root padding'i sıfırla
 		position: fixed; // Garanti olsun diye fixed
@@ -377,7 +376,7 @@
 		display: flex;
 		flex-direction: column;
 		width: 100%;
-		height: var(--stable-vh, 100dvh);
+		height: 100dvh; // WebView resize ile senkron
 		overflow: hidden;
 	}
 

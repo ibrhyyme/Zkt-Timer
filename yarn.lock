@@ -1663,11 +1663,6 @@
   resolved "https://registry.yarnpkg.com/@capacitor/toast/-/toast-6.0.4.tgz#5f4374f3d4d366a7c192afdaa11fbab12259823d"
   integrity sha512-eSU9TsYlpZ/Sg3OS18r/VfoTuq4uIIJNdiRQxDUxHVi5UHUoXoGAgL+fmTMMUqsF3ICu/BkXGZphm9gRCE3/ag==
 
-"@capawesome/capacitor-android-edge-to-edge-support@^8.0.8":
-  version "8.0.8"
-  resolved "https://registry.yarnpkg.com/@capawesome/capacitor-android-edge-to-edge-support/-/capacitor-android-edge-to-edge-support-8.0.8.tgz#c80bf4c0e78a474d64471f2f5087c9332d606d71"
-  integrity sha512-+eKz15uhfOwft5IRZFL1QQZT/FHeeE5scNnlP9CIMrhW0Ctc9cJM13Ec2vOTd9oYGz3mCF3kf39C2spDDuSUVw==
-
 "@colors/colors@1.6.0", "@colors/colors@^1.6.0":
   version "1.6.0"
   resolved "https://registry.npmjs.org/@colors/colors/-/colors-1.6.0.tgz"
