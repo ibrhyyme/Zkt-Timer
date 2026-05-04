@@ -777,7 +777,6 @@ export type Mutation = {
   assignUserToRound?: Maybe<ZktAssignment>;
   authenticateUser: PublicUserAccount;
   authenticateWithWca?: Maybe<WcaOAuthResult>;
-  backfillSmartCubeMethodSteps?: Maybe<MethodStepsBackfillResult>;
   backfillWcaIds?: Maybe<BackfillResult>;
   banUserAccount?: Maybe<BanLog>;
   bulkArchiveWcaCompetitions?: Maybe<BulkArchiveResult>;
