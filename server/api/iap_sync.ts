@@ -66,8 +66,16 @@ export async function iapSyncHandler(req: Request, res: Response): Promise<void>
 	const isActive = !!proEnt && (proEnt.expires_date === null || new Date(proEnt.expires_date) > now);
 
 	if (isActive) {
-		const storeRaw: string = proEnt.store || '';
-		const platform: IapPlatform = storeRaw === 'play_store' ? 'android' : 'ios';
+		const storeRaw: string = (proEnt.store || '').toLowerCase();
+		// Webhook'taki getPlatform() ile tutarli olsun: explicit eslesme, fallback null degil ios olmasin.
+		let platform: IapPlatform | null = null;
+		if (storeRaw === 'app_store' || storeRaw === 'mac_app_store') platform = 'ios';
+		else if (storeRaw === 'play_store') platform = 'android';
+		if (!platform) {
+			logger.warn('[IAP-Sync] Bilinmeyen store, atlandi', {userId: me.id, storeRaw});
+			res.status(200).json({synced: true, isPro: false});
+			return;
+		}
 		const productId: string = proEnt.product_identifier || '';
 		const expiresAt: Date | null = proEnt.expires_date ? new Date(proEnt.expires_date) : null;
 
@@ -80,7 +88,7 @@ export async function iapSyncHandler(req: Request, res: Response): Promise<void>
 				expiresAt,
 				eventAt: now,
 			},
-			false, // kullanici zaten biliyor, push gonderme
+			'silent', // kullanici zaten biliyor, push gonderme
 		);
 
 		logger.info('[IAP-Sync] Pro geri yuklendi', {userId: me.id, platform, productId});

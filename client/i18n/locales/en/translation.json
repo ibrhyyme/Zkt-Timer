@@ -3132,6 +3132,16 @@
             "message": "Congratulations! Your Zkt Timer {{label}} membership has been successfully activated. Your membership is unlimited.",
             "message_expiry": "Congratulations! Your Zkt Timer {{label}} membership has been successfully activated. Your membership is valid until {{date}}.",
             "link_text": "View your settings"
+        },
+        "subscription_changed": {
+            "upgrade_title": "Your subscription was upgraded",
+            "upgrade_body": "{{plan}} is now active. Credit from your remaining days has been applied to the new term.",
+            "downgrade_title": "Plan change scheduled",
+            "downgrade_body": "You'll move to {{plan}} at the end of your current term. Your access continues meanwhile.",
+            "plan_monthly": "Monthly Pro",
+            "plan_yearly": "Yearly Pro",
+            "plan_lifetime": "Lifetime Pro",
+            "plan_unknown": "Pro"
         }
     },
     "case_stats": {

@@ -91,6 +91,11 @@ export async function revenueCatWebhookHandler(req: Request, res: Response): Pro
 					logger.warn('[RC-Webhook] Missing platform/product', {event});
 					break;
 				}
+				const pushKind = event.type === 'INITIAL_PURCHASE'
+					? 'initial'
+					: event.type === 'PRODUCT_CHANGE'
+						? 'change'   // upgrade/downgrade — "yukseltildi/dusuruldu" push
+						: 'silent';   // RENEWAL — sessiz, otomatik yenileme
 				await applyIapPurchase(
 					{
 						userId,
@@ -100,7 +105,7 @@ export async function revenueCatWebhookHandler(req: Request, res: Response): Pro
 						expiresAt,
 						eventAt,
 					},
-					event.type === 'INITIAL_PURCHASE' || event.type === 'PRODUCT_CHANGE'
+					pushKind
 				);
 				break;
 			}
@@ -116,7 +121,7 @@ export async function revenueCatWebhookHandler(req: Request, res: Response): Pro
 						expiresAt: null,
 						eventAt,
 					},
-					true
+					'initial'
 				);
 				break;
 			}
