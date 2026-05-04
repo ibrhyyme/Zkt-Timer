@@ -1326,7 +1326,12 @@
         "create_cuber_card": "Cuber Card Oluştur",
         "cuber_card_generating": "Oluşturuluyor...",
         "cuber_card_ready": "Cuber Card hazır!",
-        "cuber_card_failed": "Cuber Card oluşturulamadı"
+        "cuber_card_failed": "Cuber Card oluşturulamadı",
+        "cuber_card_stat_competitions": "Yarışma",
+        "cuber_card_stat_gold": "Altın",
+        "cuber_card_stat_silver": "Gümüş",
+        "cuber_card_stat_bronze": "Bronz",
+        "cuber_card_records": "Rekorlar"
     },
     "stats_page": {
         "more_stats": "Daha Fazla İstatistik",

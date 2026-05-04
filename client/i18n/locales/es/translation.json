@@ -1326,7 +1326,12 @@
         "create_cuber_card": "Crear Cuber Card",
         "cuber_card_generating": "Generando...",
         "cuber_card_ready": "¡Cuber Card lista!",
-        "cuber_card_failed": "No se pudo crear la Cuber Card"
+        "cuber_card_failed": "No se pudo crear la Cuber Card",
+        "cuber_card_stat_competitions": "Compet.",
+        "cuber_card_stat_gold": "Oro",
+        "cuber_card_stat_silver": "Plata",
+        "cuber_card_stat_bronze": "Bronce",
+        "cuber_card_records": "Récords"
     },
     "stats_page": {
         "more_stats": "Más estadísticas",

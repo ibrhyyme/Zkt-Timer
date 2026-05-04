@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import './Profile.scss';
@@ -33,6 +33,9 @@ import LoadingIcon from '../common/LoadingIcon';
 import MobileNav from '../layout/nav/mobile_nav/MobileNav';
 import WcaSummary from './wca_summary/WcaSummary';
 import WcaResults from './wca_results/WcaResults';
+import CuberCardCanvas from './cuber_card/CuberCardCanvas';
+import {captureCuberCard, shareOrDownloadCuberCard} from '../../util/cuber_card';
+import {toastError, toastSuccess} from '../../util/toast';
 
 const b = block('profile');
 
@@ -183,6 +186,9 @@ export default function Profile() {
 	const [wcaIntegration, setWcaIntegration] = useState<any>(null);
 	const [wcaResultsData, setWcaResultsData] = useState<any[]>(null);
 	const [fabOpen, setFabOpen] = useState(false);
+	const [cuberCardOpen, setCuberCardOpen] = useState(false);
+	const [cuberCardGenerating, setCuberCardGenerating] = useState(false);
+	const cuberCardRef = useRef<HTMLDivElement>(null);
 
 	const username = matchUsername;
 	const user = profileData?.user;
@@ -358,6 +364,29 @@ export default function Profile() {
 		);
 	}
 
+	async function handleCreateCuberCard() {
+		if (cuberCardGenerating) return;
+		setCuberCardOpen(true);
+		setCuberCardGenerating(true);
+		try {
+			// Hidden component'in DOM'a girmesi + cubing-icon font yuklenmesi icin kucuk bekleme
+			await new Promise((r) => setTimeout(r, 100));
+			if (!cuberCardRef.current) {
+				throw new Error('Card ref not ready');
+			}
+			const dataUrl = await captureCuberCard(cuberCardRef.current);
+			const safeName = (me?.username || 'cuber').replace(/[^a-zA-Z0-9-_]/g, '_');
+			await shareOrDownloadCuberCard(dataUrl, `${safeName}-cuber-card.png`);
+			toastSuccess(t('profile.cuber_card_ready'));
+		} catch (err: any) {
+			console.error('[CuberCard] generation failed', err);
+			toastError(err?.message || t('profile.cuber_card_failed'));
+		} finally {
+			setCuberCardGenerating(false);
+			setCuberCardOpen(false);
+		}
+	}
+
 	let headerUrl = getStorageURL('storage/default_profile_background.jpeg');
 	if (headerImage) {
 		headerUrl = getStorageURL(headerImage.storage_path);
@@ -490,6 +519,14 @@ export default function Profile() {
 					onClick={openPublishWcaRecords}
 					small
 				/>
+				<Button
+					primary
+					icon={<ShareNetwork weight="bold" />}
+					text={cuberCardGenerating ? t('profile.cuber_card_generating') : t('profile.create_cuber_card')}
+					onClick={handleCreateCuberCard}
+					disabled={cuberCardGenerating}
+					small
+				/>
 			</div>
 		);
 	}
@@ -506,6 +543,13 @@ export default function Profile() {
 						</button>
 						<button className={b('fab-item')} onClick={() => { openPublishWcaRecords(); setFabOpen(false); }}>
 							{t('profile.wca_manage_data')}
+						</button>
+						<button
+							className={b('fab-item')}
+							onClick={() => { handleCreateCuberCard(); setFabOpen(false); }}
+							disabled={cuberCardGenerating}
+						>
+							{cuberCardGenerating ? t('profile.cuber_card_generating') : t('profile.create_cuber_card')}
 						</button>
 					</div>
 				)}
@@ -641,6 +685,33 @@ export default function Profile() {
 
 			{/* Mobile FAB */}
 			{fab}
+
+			{/* Hidden Cuber Card snapshot kaynagi — sadece olusturma sirasinda DOM'da */}
+			{cuberCardOpen && me && (
+				<div
+					ref={cuberCardRef}
+					style={{
+						position: 'absolute',
+						left: '-9999px',
+						top: 0,
+						width: '1080px',
+						height: '1080px',
+						pointerEvents: 'none',
+					}}
+					aria-hidden="true"
+				>
+					<CuberCardCanvas
+						user={{
+							username: me.username,
+							first_name: me.first_name,
+							last_name: me.last_name,
+							profile: profile as any,
+						}}
+						integration={wcaIntegration}
+						records={wcaRecords}
+					/>
+				</div>
+			)}
 		</div>
 	);
 }
