@@ -62,3 +62,17 @@ export interface JoinFriendlyRoomInput {
     room_id: string;
     password?: string;
 }
+
+export interface SessionTakeoverPayload {
+    room_id: string;
+    room_name: string;
+}
+
+export interface AlreadyInOtherRoomPayload {
+    current_room_id: string;
+    current_room_name: string;
+}
+
+export interface MyActiveRoomPayload {
+    room_id: string | null;
+}

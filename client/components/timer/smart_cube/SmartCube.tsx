@@ -45,9 +45,9 @@ const b = block('smart-cube');
 const DEFAULT_SOLVED_STATE = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
 
 // ── DEBUG LOGGING ──
-const SC_DEBUG = false;
+// Runtime aktivasyon: browser console'da `window.__SMART_DEBUG__ = true`
 const _log = (cat: string, color: string, ...args: any[]) => {
-	if (!SC_DEBUG) return;
+	if (typeof window === 'undefined' || !(window as any).__SMART_DEBUG__) return;
 	const ts = performance.now().toFixed(1);
 	console.log(`%c[SC ${cat}] %c${ts}ms`, `color:${color};font-weight:bold`, 'color:gray', ...args);
 };
@@ -329,6 +329,13 @@ export default function SmartCube() {
 
 			// BATCH PROCESSING: Apply all new turns at once
 			const newTurns = smartTurns.slice(appliedTurnsRef.current);
+
+			// [BATCH] race signature: scramble bittiyse + birden fazla hamle aynı tick'te geldiyse
+			// sorun 2'nin (timer auto-start) en güçlü hipotezi
+			dbgMove(`BATCH count=${newTurns.length} | new=[${newTurns.map(t => t.turn).join(' ')}] | total=${smartTurns.length} | scrambleCompleted=${scrambleCompletedAtRef.current ? 'SET(' + (Date.now() - scrambleCompletedAtRef.current.getTime()) + 'ms ago)' : 'null'} | timeStartedAt=${!!timeStartedAt}`);
+			if (newTurns.length > 1 && scrambleCompletedAtRef.current && !timeStartedAt) {
+				dbgMove(`!!! BATCH RACE SUSPECT — ${newTurns.length} hamle aynı tick'te + scramble bitmiş + timer henüz baslamadi. Bunlardan biri belki "ilk solve hamlesi" sayilacak!`);
+			}
 
 			newTurns.forEach(turnObj => {
 				// Send to TwistyPlayer
@@ -673,11 +680,18 @@ export default function SmartCube() {
 	function checkForStartAfterTurn(currentTurns: any[]) {
 		if (useSpaceWithSmartCube || smartCubeConnecting) return;
 
+		// [CHECK_START] Entry — checkForStartAfterTurn'e her giriste hangi state ile geldigimizi izle
+		const lastTurn = currentTurns[currentTurns.length - 1];
+		dbgTimer(`CHECK_START entry | currentTurns.length=${currentTurns.length} | lastTurn=${lastTurn?.turn || '-'} (completedAt=${lastTurn?.completedAt || '-'}) | scrambleCompletedAtRef=${scrambleCompletedAtRef.current ? 'SET(' + (Date.now() - scrambleCompletedAtRef.current.getTime()) + 'ms ago)' : 'null'} | timeStartedAt=${!!timeStartedAt} | scramble.head=${scramble?.slice(0, 30) || 'null'}`);
+
 		if (scrambleCompletedAtRef.current) {
-			dbgTimer('TIMER START — scramble onceden tamamlanmis, ilk hamle geldi');
 			const firstSolveTurn = currentTurns[currentTurns.length - 1];
+			const msSinceScrambleEnd = Date.now() - scrambleCompletedAtRef.current.getTime();
+			// [CHECK_START] startTimer cagrisindan ONCE detayli context — ilk solve hamlesi mi yoksa scramble batch'inin parcasi mi?
+			dbgTimer(`!!! TIMER START tetiklendi | firstSolveTurn=${firstSolveTurn?.turn} (completedAt=${firstSolveTurn?.completedAt}) | scramble bitti=${msSinceScrambleEnd}ms once | currentTurns.length=${currentTurns.length} | appliedTurnsRef=${appliedTurnsRef.current} | son 3 turn=[${currentTurns.slice(-3).map((t: any) => t.turn).join(' ')}]`);
+			dbgTimer('TIMER START — scramble onceden tamamlanmis, ilk hamle geldi');
 			startTimer(firstSolveTurn?.completedAt);
-			let it = (new Date().getTime() - scrambleCompletedAtRef.current.getTime()) / 1000;
+			let it = msSinceScrambleEnd / 1000;
 			it = Math.floor(it * 100) / 100;
 
 			scrambleCompletedAtRef.current = null;
@@ -847,17 +861,20 @@ export default function SmartCube() {
 
 			// Düzeltilmiş evre analizi: LiveAnalysisOverlay'in doğru süreleri göstermesi için
 			// correctedMoves.completedAt linear fit ile düzeltilmiş — ham timestamp'lerden daha doğru
+			dbgCorr(`CORR_ANALYSIS start | corrected.length=${correctedMoves.length} | startState=${startState?.length === 54 ? startState.slice(0, 27) + '...' : `INVALID(len=${startState?.length})`} | first3=${correctedMoves.slice(0, 3).map((m: any) => m.turn).join(' ')} | last3=${correctedMoves.slice(-3).map((m: any) => m.turn).join(' ')}`);
 			try {
 				const correctedTurns = correctedMoves.map(m => ({ ...m, time: m.completedAt }));
 				const correctedAnalysis = analyzeCurrentState(correctedTurns, startState);
 				const tps = finalTimeMilli > 0
 					? Number((correctedMoves.length / (finalTimeMilli / 1000)).toFixed(2))
 					: 0;
+				dbgCorr(`CORR_ANALYSIS success | phase=${correctedAnalysis.currentPhase} | crossSolved=${correctedAnalysis.crossSolved} | isSolved=${correctedAnalysis.isSolved} | oll=${correctedAnalysis.ollIdentified || '-'} | pll=${correctedAnalysis.pllIdentified || '-'} | times=${JSON.stringify(correctedAnalysis.times)}`);
 				setTimerParams({
 					lastSmartSolveStats: { turns: correctedMoves.length, tps, correctedAnalysis }
 				});
-			} catch (e) {
+			} catch (e: any) {
 				// Analiz başarısız olursa endTimer'daki basit stats yeterli
+				dbgCorr(`CORR_ANALYSIS FAIL | message=${e?.message} | startStateLen=${startState?.length} | corrLen=${correctedMoves.length} | stack=${e?.stack?.slice(0, 200)}`);
 			}
 		}
 

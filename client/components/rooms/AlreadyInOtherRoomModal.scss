@@ -1,0 +1,115 @@
+.already-in-other-room-modal {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    width: 100%;
+
+    &__card {
+        background: rgba(var(--module-color), 0.95);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(var(--text-color), 0.1);
+        border-radius: 24px;
+        padding: 2.5rem;
+        max-width: 440px;
+        width: 100%;
+        text-align: center;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+        overflow: hidden;
+
+        &::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #f59e0b, #ef4444);
+        }
+    }
+
+    &__icon-wrapper {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: rgba(245, 158, 11, 0.12);
+        color: #f59e0b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem auto;
+        border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+
+    h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: rgb(var(--text-color));
+        margin: 0 0 1rem 0;
+        letter-spacing: -0.025em;
+    }
+
+    p {
+        font-size: 1rem;
+        font-weight: 500;
+        color: rgb(var(--text-color));
+        margin: 0 0 2rem 0;
+        line-height: 1.5;
+    }
+
+    &__actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 0.5rem;
+
+        button {
+            flex: 1;
+            padding: 0.875rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            transition: all 0.2s;
+        }
+    }
+
+    &__btn-cancel {
+        background: transparent !important;
+        border: 1px solid rgba(var(--text-color), 0.15) !important;
+        color: rgb(var(--text-color)) !important;
+
+        &:hover {
+            background: rgba(var(--text-color), 0.05) !important;
+            border-color: rgba(var(--text-color), 0.3) !important;
+        }
+    }
+
+    &__btn-go {
+        background: rgb(var(--primary-color)) !important;
+        color: white !important;
+        border: none !important;
+
+        &:hover {
+            background: rgba(var(--primary-color), 0.85) !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(var(--primary-color), 0.3);
+        }
+
+        &:active {
+            transform: translateY(0);
+        }
+    }
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
