@@ -3062,7 +3062,6 @@
         "col_turns": "Ходы",
         "loading": "Загрузка...",
         "empty_state": "Пока нет записей OLL/PLL со smart cube",
-        "sort_by": "Сортировка:",
         "sort_recent": "Недавние"
     }
 }

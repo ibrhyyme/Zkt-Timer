@@ -3149,7 +3149,6 @@
         "col_turns": "Turns",
         "loading": "Loading...",
         "empty_state": "No smart cube OLL/PLL records yet",
-        "sort_by": "Sort by:",
         "sort_recent": "Most Recent"
     }
 }

@@ -13,10 +13,24 @@ import { useLLPatternsReady } from '../../../../util/trainer/ll_patterns';
 const b = block('case-stats-modal');
 
 type CaseType = 'oll' | 'pll';
-type SortKey = 'lastSeenAt' | 'caseName' | 'count' | 'averageTime' | 'avgRecognition' | 'avgExecution' | 'avgTps' | 'avgTurns';
+type SortKey =
+	| 'lastSeenAt'
+	| 'caseName'
+	| 'count'
+	| 'averageTime'
+	| 'bestTime'
+	| 'avgRecognition'
+	| 'avgExecution'
+	| 'avgTps'
+	| 'avgTurns';
 
 interface Props {
 	type: CaseType;
+}
+
+interface ColumnDef {
+	key: SortKey;
+	label: string;
 }
 
 function compareName(a: string, b: string): number {
@@ -46,18 +60,17 @@ function shortName(type: CaseType, caseKey: string, fallback: string): string {
 	return fallback;
 }
 
-interface StatProps {
-	label: string;
-	value: string | number;
+function ClockIcon() {
+	return (
+		<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+			<circle cx="12" cy="12" r="9" />
+			<polyline points="12 7 12 12 15 14" />
+		</svg>
+	);
 }
 
-function Stat({ label, value }: StatProps) {
-	return (
-		<div className={block('case-stats-modal')('card-stat')}>
-			<div className={block('case-stats-modal')('card-stat-label')}>{label}</div>
-			<div className={block('case-stats-modal')('card-stat-value')}>{value}</div>
-		</div>
-	);
+function SortArrow({ desc }: { desc: boolean }) {
+	return <span className={b('sort-arrow')}>{desc ? '↓' : '↑'}</span>;
 }
 
 export default function CaseStatsModal({ type }: Props) {
@@ -117,11 +130,10 @@ export default function CaseStatsModal({ type }: Props) {
 		setSortDesc(k !== 'caseName');
 	}
 
-	const SORT_OPTIONS: Array<{ key: SortKey; label: string }> = [
-		{ key: 'lastSeenAt', label: t('case_stats.sort_recent') },
-		{ key: 'caseName', label: t('case_stats.col_case') },
+	const columns: ColumnDef[] = [
 		{ key: 'count', label: t('case_stats.col_count') },
 		{ key: 'averageTime', label: t('case_stats.col_avg') },
+		{ key: 'bestTime', label: t('case_stats.col_best') },
 		{ key: 'avgRecognition', label: t('case_stats.col_recognition') },
 		{ key: 'avgExecution', label: t('case_stats.col_execution') },
 		{ key: 'avgTps', label: t('case_stats.col_tps') },
@@ -134,19 +146,37 @@ export default function CaseStatsModal({ type }: Props) {
 
 	return (
 		<div className={b()}>
-			<div className={b('sort-bar')}>
-				<span className={b('sort-label')}>{t('case_stats.sort_by')}</span>
-				{SORT_OPTIONS.map((opt) => (
+			<div className={b('header-row')}>
+				<div className={b('header-preview')} aria-hidden="true" />
+				<div className={b('header-name-cell')}>
 					<button
-						key={opt.key}
 						type="button"
-						className={b('sort-chip', { active: sortKey === opt.key })}
-						onClick={() => toggleSort(opt.key)}
+						className={b('header-clock', { active: sortKey === 'lastSeenAt' })}
+						onClick={() => toggleSort('lastSeenAt')}
+						title={t('case_stats.sort_recent')}
+						aria-label={t('case_stats.sort_recent')}
 					>
-						{opt.label}
-						{sortKey === opt.key && (
-							<span className={b('sort-arrow')}>{sortDesc ? ' ↓' : ' ↑'}</span>
-						)}
+						<ClockIcon />
+						{sortKey === 'lastSeenAt' && <SortArrow desc={sortDesc} />}
+					</button>
+					<button
+						type="button"
+						className={b('header-cell', { active: sortKey === 'caseName', name: true })}
+						onClick={() => toggleSort('caseName')}
+					>
+						<span>{t('case_stats.col_case')}</span>
+						{sortKey === 'caseName' && <SortArrow desc={sortDesc} />}
+					</button>
+				</div>
+				{columns.map((col) => (
+					<button
+						key={col.key}
+						type="button"
+						className={b('header-cell', { active: sortKey === col.key })}
+						onClick={() => toggleSort(col.key)}
+					>
+						<span>{col.label}</span>
+						{sortKey === col.key && <SortArrow desc={sortDesc} />}
 					</button>
 				))}
 			</div>
@@ -161,8 +191,8 @@ export default function CaseStatsModal({ type }: Props) {
 						const pllKey = type === 'pll' ? pllNameFromCaseName(r.caseName || '') : null;
 						const pattern = type === 'oll' ? getCasePattern(type, r.caseKey || '') : '';
 						return (
-							<div key={r.caseKey} className={b('card')}>
-								<div className={b('card-preview')}>
+							<div key={r.caseKey} className={b('row')}>
+								<div className={b('row-preview')}>
 									{type === 'pll' && pllKey ? (
 										<PLLArrowView pllKey={pllKey} size={72} />
 									) : pattern ? (
@@ -174,23 +204,19 @@ export default function CaseStatsModal({ type }: Props) {
 											size={72}
 										/>
 									) : (
-										<div className={b('card-preview-placeholder')} />
+										<div className={b('row-preview-placeholder')} />
 									)}
 								</div>
-								<div className={b('card-main')}>
-									<div className={b('card-name')} title={r.caseName || ''}>
-										{shortName(type, r.caseKey || '', r.caseName || '')}
-									</div>
-									<div className={b('card-values')}>
-										<Stat label={t('case_stats.col_count')} value={r.count ?? 0} />
-										<Stat label={t('case_stats.col_avg')} value={`${fmt(r.averageTime)}s`} />
-										<Stat label={t('case_stats.col_best')} value={`${fmt(r.bestTime)}s`} />
-										<Stat label={t('case_stats.col_recognition')} value={`${fmt(r.avgRecognition)}s`} />
-										<Stat label={t('case_stats.col_execution')} value={`${fmt(r.avgExecution)}s`} />
-										<Stat label={t('case_stats.col_tps')} value={fmt(r.avgTps)} />
-										<Stat label={t('case_stats.col_turns')} value={fmtInt(r.avgTurns)} />
-									</div>
+								<div className={b('row-name')} title={r.caseName || ''}>
+									{shortName(type, r.caseKey || '', r.caseName || '')}
 								</div>
+								<div className={b('row-cell')}>{r.count ?? 0}</div>
+								<div className={b('row-cell')}>{`${fmt(r.averageTime)}s`}</div>
+								<div className={b('row-cell')}>{`${fmt(r.bestTime)}s`}</div>
+								<div className={b('row-cell')}>{`${fmt(r.avgRecognition)}s`}</div>
+								<div className={b('row-cell')}>{`${fmt(r.avgExecution)}s`}</div>
+								<div className={b('row-cell')}>{fmt(r.avgTps)}</div>
+								<div className={b('row-cell')}>{fmtInt(r.avgTurns)}</div>
 							</div>
 						);
 					})}
