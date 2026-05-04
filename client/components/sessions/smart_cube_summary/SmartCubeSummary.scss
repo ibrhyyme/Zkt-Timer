@@ -27,6 +27,7 @@
 		padding: 0.733rem 0.867rem;
 		background-color: rgba(var(--button-color), 0.4);
 		border-radius: 8px;
+		min-width: 0;
 	}
 
 	&__stat-label {
@@ -42,5 +43,26 @@
 		font-size: 1.35rem;
 		font-weight: 700;
 		font-family: 'SF Mono', 'Roboto Mono', 'Fira Code', monospace;
+		overflow-wrap: anywhere;
+	}
+
+	@media (max-width: 600px) {
+		&__stats {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 0.5rem;
+		}
+
+		&__stat {
+			padding: 0.55rem 0.6rem;
+		}
+
+		&__stat-label {
+			font-size: 0.65rem;
+			letter-spacing: 0.02em;
+		}
+
+		&__stat-value {
+			font-size: 1.05rem;
+		}
 	}
 }

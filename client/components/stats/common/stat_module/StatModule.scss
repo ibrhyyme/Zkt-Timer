@@ -6,4 +6,9 @@
 	padding: 20px;
 	width: 100%;
 	box-sizing: border-box;
+
+	@media (max-width: 600px) {
+		padding: 12px;
+		border-radius: 14px;
+	}
 }
