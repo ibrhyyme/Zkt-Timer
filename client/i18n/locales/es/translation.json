@@ -3045,6 +3045,16 @@
             "message": "¡Felicitaciones! Tu membresía {{label}} de Zkt Timer ha sido activada exitosamente. Tu membresía es ilimitada.",
             "message_expiry": "¡Felicitaciones! Tu membresía {{label}} de Zkt Timer ha sido activada exitosamente. Tu membresía es válida hasta {{date}}.",
             "link_text": "Ver tu configuración"
+        },
+        "subscription_changed": {
+            "upgrade_title": "Tu suscripción se actualizó",
+            "upgrade_body": "{{plan}} está activo. El crédito de tus días restantes se aplicó al nuevo término.",
+            "downgrade_title": "Cambio de plan programado",
+            "downgrade_body": "Pasarás a {{plan}} al final del período actual. Tu acceso continúa mientras tanto.",
+            "plan_monthly": "Pro Mensual",
+            "plan_yearly": "Pro Anual",
+            "plan_lifetime": "Pro de por vida",
+            "plan_unknown": "Pro"
         }
     },
     "case_stats": {

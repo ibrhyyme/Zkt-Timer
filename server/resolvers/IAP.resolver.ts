@@ -30,7 +30,6 @@ export class IAPResolver {
 		const isPro = !!user?.is_pro;
 		const iapProductId = (user as any)?.iap_product_id || null;
 		const isIapPro = isPro && !!iapProductId;
-		const isGrantedPro = isPro && !iapProductId;
 
 		return {
 			is_pro: isPro,
@@ -41,8 +40,9 @@ export class IAPResolver {
 			iap_billing_issue_at: (user as any)?.iap_billing_issue_at || undefined,
 			iap_paused_until: (user as any)?.iap_paused_until || undefined,
 			is_iap_pro: isIapPro,
-			// Admin/promo Pro aktifken satin alma kapali — yeni IAP uzerine yazar, hak kaybi olur
-			can_purchase: !isGrantedPro,
+			// applyIapPurchase artik max(currentExpiry, newExpiry) ile admin/promo suresini koruyor —
+			// promo Pro aktifken IAP satin alma artik guvenli (hak kaybi yok). Her zaman izin ver.
+			can_purchase: true,
 		};
 	}
 }

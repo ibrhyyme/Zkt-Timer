@@ -3130,6 +3130,16 @@
             "message": "Tebrikler! Zkt Timer {{label}} üyeliğiniz başarıyla aktif edildi. Üyeliğiniz süresizdir.",
             "message_expiry": "Tebrikler! Zkt Timer {{label}} üyeliğiniz başarıyla aktif edildi. Üyeliğiniz {{date}} tarihine kadar geçerlidir.",
             "link_text": "Ayarlarını görüntüle"
+        },
+        "subscription_changed": {
+            "upgrade_title": "Aboneliğin yükseltildi",
+            "upgrade_body": "{{plan}} aktif. Kalan günlerin krediği yeni döneme yansıtıldı.",
+            "downgrade_title": "Plan değişikliği planlandı",
+            "downgrade_body": "Mevcut dönem sonunda {{plan}} planına geçeceksin. Şu an erişimin devam ediyor.",
+            "plan_monthly": "Aylık Pro",
+            "plan_yearly": "Yıllık Pro",
+            "plan_lifetime": "Ömür Boyu Pro",
+            "plan_unknown": "Pro"
         }
     },
     "case_stats": {

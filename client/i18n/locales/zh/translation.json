@@ -3132,6 +3132,16 @@
             "message": "恭喜！您的 Zkt Timer {{label}} 会员资格已成功激活。您的会员资格为永久有效。",
             "message_expiry": "恭喜！您的 Zkt Timer {{label}} 会员资格已成功激活。会员资格有效期至 {{date}}。",
             "link_text": "查看设置"
+        },
+        "subscription_changed": {
+            "upgrade_title": "您的订阅已升级",
+            "upgrade_body": "{{plan}} 已生效。剩余天数的积分已应用于新周期。",
+            "downgrade_title": "套餐变更已安排",
+            "downgrade_body": "当前周期结束后将切换到 {{plan}}。在此期间您仍可继续使用。",
+            "plan_monthly": "月度 Pro",
+            "plan_yearly": "年度 Pro",
+            "plan_lifetime": "终身 Pro",
+            "plan_unknown": "Pro"
         }
     },
     "case_stats": {
