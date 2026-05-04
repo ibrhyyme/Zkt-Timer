@@ -849,6 +849,7 @@ export type Mutation = {
   regenerateZktScrambles?: Maybe<Array<Maybe<ZktScramble>>>;
   registerForZktCompetition?: Maybe<ZktRegistration>;
   registerPushToken?: Maybe<PushTokenResult>;
+  reindexArchivedCompsToES?: Maybe<ReindexEsResult>;
   removeBadgeFromUser?: Maybe<Badge>;
   removeDailyGoal?: Maybe<Scalars['Boolean']>;
   removeZktDelegate?: Maybe<Scalars['Boolean']>;
@@ -2161,6 +2162,13 @@ export type RedeemPromoCodeResult = {
 export type RegisterPushTokenInput = {
   platform?: InputMaybe<Scalars['String']>;
   token?: InputMaybe<Scalars['String']>;
+};
+
+export type ReindexEsResult = {
+  __typename?: 'ReindexESResult';
+  failed?: Maybe<Scalars['Int']>;
+  indexed?: Maybe<Scalars['Int']>;
+  total?: Maybe<Scalars['Int']>;
 };
 
 export type Report = {
