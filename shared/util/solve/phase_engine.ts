@@ -28,6 +28,7 @@ import {
 	PhaseEngineResult,
 	AnalyzeOptions,
 	CFOPPhase,
+	MoveCounts,
 } from './types';
 import { buildPrettyRecon } from './pretty_recon';
 import { getMatchingOLLState, getMatchingPLLState, buildOLLLookupState, buildPLLLookupState } from './ll_identification';
@@ -67,7 +68,10 @@ export function analyzePhases(
 	let progress = initial.progress;
 	let crossAxisIndex: number | null = null;
 
-	let counter = new MoveCounter();
+	// Boundary-aware HTM: tek totalCounter, phase basinda snapshot, phase sonunda delta.
+	// Boylece axis-mask state phase boundary'sinde kaybolmaz; cross sonu R + F2L_1 basi R
+	// = R2 (1 HTM) olarak yakalanir. Garanti: SUM(transitions[i].moveCount.htm) === totalMoves.htm.
+	let phaseStartSnapshot: MoveCounts = totalCounter.snapshot();
 	let phaseMoves: string[] = [];
 	let phaseStartMs = turns.length > 0 ? turns[0].timestamp : 0;
 	let firstMoveMs = Infinity;
@@ -92,7 +96,6 @@ export function analyzePhases(
 		const isEffective = isEffectiveMove(move);
 		if (isEffective) {
 			if (!isFinite(firstMoveMs)) firstMoveMs = t.timestamp;
-			counter.push(move);
 			totalCounter.push(move);
 		}
 		phaseMoves.push(move);
@@ -110,16 +113,18 @@ export function analyzePhases(
 			// Ilk dusus: progress -> progress-1 phase'i tamamlandi
 			const completedPhase = progressToPhaseName(progress - 1);
 			if (completedPhase) {
+				const curSnapshot = totalCounter.snapshot();
 				transitions.push({
 					phase: completedPhase,
 					turnIndex: i,
 					timestamp: t.timestamp,
 					recognitionStart: phaseStartMs,
 					firstMoveTimestamp: isFinite(firstMoveMs) ? firstMoveMs : t.timestamp,
-					moveCount: counter.snapshot(),
+					moveCount: deltaCounts(curSnapshot, phaseStartSnapshot),
 					moves: phaseMoves.slice(),
 					skipped: false,
 				});
+				phaseStartSnapshot = curSnapshot;
 				phaseEndStates[completedPhase] = stateNow;
 				phaseEndAxis[completedPhase] = cur.axisIndex;
 			}
@@ -145,8 +150,8 @@ export function analyzePhases(
 				progress -= 1;
 			}
 
-			// Reset for next phase
-			counter = new MoveCounter();
+			// Reset for next phase. phaseStartSnapshot zaten guncel (yukarida set edildi).
+			// totalCounter state'ini KORUYORUZ — yeni MoveCounter yok, axis-mask phase'ler arasi akar.
 			phaseMoves = [];
 			phaseStartMs = t.timestamp;
 			firstMoveMs = Infinity;
@@ -250,10 +255,9 @@ function mergeOneMovePhases(transitions: PhaseTransition[]) {
 		// Mevcut phase'in hamlelerini next phase'in basina ekle (kronolojik sira)
 		next.moves = cur.moves.concat(next.moves);
 
-		// Move counter'i yeniden hesapla (HTM dahil tum metrikler)
-		const newCounter = new MoveCounter();
-		for (const m of next.moves) newCounter.push(m);
-		next.moveCount = newCounter.snapshot();
+		// HTM toplami: cur ve next zaten boundary-aware delta'lar. Basit toplama,
+		// SUM(transitions.htm) === totalCounter.htm invariant'ini korur.
+		next.moveCount = addCounts(cur.moveCount, next.moveCount);
 
 		// Recognition start'i kaydir: artik bu birlesik phase mevcut phase'in startindan basliyor
 		next.recognitionStart = cur.recognitionStart;
@@ -264,6 +268,24 @@ function mergeOneMovePhases(transitions: PhaseTransition[]) {
 		cur.moves = [];
 		cur.moveCount = { htm: 0, obtm: 0, etm: 0, stm: 0 };
 	}
+}
+
+function deltaCounts(cur: MoveCounts, prev: MoveCounts): MoveCounts {
+	return {
+		htm: cur.htm - prev.htm,
+		obtm: cur.obtm - prev.obtm,
+		etm: cur.etm - prev.etm,
+		stm: cur.stm - prev.stm,
+	};
+}
+
+function addCounts(a: MoveCounts, b: MoveCounts): MoveCounts {
+	return {
+		htm: a.htm + b.htm,
+		obtm: a.obtm + b.obtm,
+		etm: a.etm + b.etm,
+		stm: a.stm + b.stm,
+	};
 }
 
 export function findTransition(result: PhaseEngineResult, phase: CFOPPhase): PhaseTransition | undefined {

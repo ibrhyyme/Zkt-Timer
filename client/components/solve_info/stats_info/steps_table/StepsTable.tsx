@@ -24,18 +24,23 @@ export default function StepsTable(props: Props) {
 
 	let totalRec = 0;
 	let totalExec = 0;
-	let totalTurns = 0;
 
 	for (const step of steps) {
 		const stepTotal = step.total_time || 0;
 		const stepRec = step.recognition_time || 0;
 		totalRec += stepRec;
 		totalExec += Math.max(0, stepTotal - stepRec);
-		totalTurns += step.turn_count || 0;
 	}
 
+	// Toplam HTM ve TPS kaynak olarak solve.smart_turn_count kullanir — bu tum projedeki
+	// "tek dogru" hamle sayimi (countHTM, boundary-aware monolitik). Per-phase
+	// step.turn_count engine fix sonrasi zaten Sigma === smart_turn_count olur, ama burada
+	// DB'deki tek kaynaktan gostererek savunma katmani.
 	const totalStepTime = totalRec + totalExec;
-	const totalTps = totalStepTime > 0 ? (totalTurns / totalStepTime).toFixed(2) : '-';
+	const totalTurns = solve.smart_turn_count || 0;
+	const totalTps = totalStepTime > 0 && totalTurns > 0
+		? (totalTurns / totalStepTime).toFixed(2)
+		: '-';
 
 	// Kümülatif süre
 	let cumulative = 0;
