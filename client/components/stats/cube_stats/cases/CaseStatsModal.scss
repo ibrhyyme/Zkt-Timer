@@ -1,71 +1,124 @@
 @import '../../../../styles/config';
 
+$case-stats-grid: 84px minmax(120px, 1.4fr) repeat(7, minmax(64px, 1fr));
+$case-stats-grid-mobile: 60px minmax(80px, 1.2fr) repeat(7, minmax(50px, 1fr));
+
 .#{$namespace}-case-stats-modal {
 	display: flex;
 	flex-direction: column;
-	gap: 16px;
-	padding: 4px;
+	gap: 10px;
+	padding: 0;
 
-	&__sort-bar {
-		display: flex;
-		gap: 6px;
+	&__header-row {
+		display: grid;
+		grid-template-columns: $case-stats-grid;
 		align-items: center;
-		flex-wrap: nowrap;
-		overflow-x: auto;
-		padding: 4px 0 12px;
-		border-bottom: 1px solid rgba(var(--text-color), 0.08);
-		scrollbar-width: thin;
+		gap: 12px;
+		// Negative yatay margin modal __center'in 1.5rem padding'ini ezer:
+		// header modal'in ic kenarlarina dayasir, gercek bir tablo basligi gibi.
+		margin: 0 -1.5rem;
+		// Yatay padding modal padding'i ile birebir; gorunur icerik eski yerinde.
+		padding: 14px 1.5rem;
+		position: sticky;
+		// CSS sticky padding-edge'e gore olcer. Modal __center'in 1.5rem
+		// padding-top'unu da kapsamak icin top: -1.5rem; aksi halde header
+		// padding-top'un altina yapisir ve onceki row'lar padding-top alani
+		// icinden gecerek header'in ustunde gorunur kalir.
+		top: -1.5rem;
+		z-index: 5;
+		// Modal background ile ozdes — askida durma hissini ortadan kaldirir.
+		background: rgb(var(--background-color));
+		border-bottom: 1px solid rgba(var(--text-color), 0.15);
+		// Scroll edilince header altindaki satirlardan ayrildigini gosterir.
+		box-shadow: 0 6px 12px -8px rgba(0, 0, 0, 0.5);
 	}
 
-	&__sort-label {
-		font-size: 0.7rem;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		color: rgba(var(--text-color), 0.7);
-		margin-right: 4px;
-		font-weight: 600;
-		flex-shrink: 0;
+	// header-preview: bos grid hucresi, style gereksiz (TSX'te div kalir)
+
+	&__header-name-cell {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+		min-width: 0;
 	}
 
-	&__sort-chip {
-		padding: 6px 12px;
-		background: rgb(var(--button-color));
-		border: 1px solid rgba(var(--text-color), 0.1);
-		border-radius: 999px;
-		color: rgba(var(--text-color), 0.85);
-		font-size: 0.85rem;
-		font-weight: 500;
+	&__header-clock {
+		display: inline-flex;
+		align-items: center;
+		gap: 2px;
+		padding: 5px 7px;
+		background: transparent;
+		border: none;
+		border-radius: 6px;
+		color: rgba(var(--text-color), 0.55);
 		cursor: pointer;
-		transition: border-color 0.15s, color 0.15s;
+		transition: color 0.15s, background 0.15s;
 		font-family: inherit;
-		white-space: nowrap;
 		flex-shrink: 0;
 
 		&:hover {
-			border-color: rgba(var(--primary-color), 0.4);
+			color: rgba(var(--text-color), 0.95);
+			background: rgba(var(--text-color), 0.05);
 		}
 
 		&--active {
-			border-color: rgb(var(--primary-color));
 			color: rgb(var(--primary-color));
-			font-weight: 700;
+			background: rgba(var(--primary-color), 0.1);
+		}
+	}
+
+	&__header-cell {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		padding: 6px 8px;
+		background: transparent;
+		border: none;
+		color: rgba(var(--text-color), 0.7);
+		font-size: 0.7rem;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		font-weight: 600;
+		cursor: pointer;
+		transition: color 0.15s, background 0.15s;
+		border-radius: 6px;
+		font-family: inherit;
+		white-space: nowrap;
+		min-width: 0;
+
+		> span {
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		&:hover {
+			color: rgb(var(--text-color));
+			background: rgba(var(--text-color), 0.05);
+		}
+
+		&--active {
+			color: rgb(var(--primary-color));
+			background: rgba(var(--primary-color), 0.08);
 		}
 	}
 
 	&__sort-arrow {
 		font-weight: 700;
+		font-size: 0.85rem;
+		flex-shrink: 0;
 	}
 
 	&__list {
 		display: flex;
 		flex-direction: column;
-		gap: 10px;
+		gap: 8px;
 	}
 
-	&__card {
-		display: flex;
+	&__row {
+		display: grid;
+		grid-template-columns: $case-stats-grid;
 		align-items: center;
-		gap: 16px;
+		gap: 12px;
 		padding: 14px 18px;
 		background: rgb(var(--button-color));
 		border: 1px solid rgba(var(--text-color), 0.08);
@@ -79,8 +132,7 @@
 		}
 	}
 
-	&__card-preview {
-		flex-shrink: 0;
+	&__row-preview {
 		width: 72px;
 		height: 72px;
 		display: flex;
@@ -88,65 +140,36 @@
 		justify-content: center;
 	}
 
-	&__card-preview-placeholder {
+	&__row-preview-placeholder {
 		width: 64px;
 		height: 64px;
 		background: rgba(var(--text-color), 0.05);
 		border-radius: 6px;
 	}
 
-	&__card-main {
-		flex: 1;
-		display: flex;
-		align-items: center;
-		gap: 20px;
-		min-width: 0;
-		overflow-x: auto;
-		scrollbar-width: thin;
-	}
-
-	&__card-name {
-		flex-shrink: 0;
-		width: 110px;
+	&__row-name {
 		font-family: $defaultFontFamily;
-		font-size: 0.95rem;
+		font-size: 1rem;
 		font-weight: 700;
 		color: rgb(var(--text-color));
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
+		min-width: 0;
 	}
 
-	&__card-values {
-		display: flex;
-		flex-wrap: nowrap;
-		gap: 18px;
-	}
-
-	&__card-stat {
-		display: flex;
-		flex-direction: column;
-		gap: 2px;
-		min-width: 56px;
-		flex-shrink: 0;
-	}
-
-	&__card-stat-label {
-		font-size: 0.65rem;
-		text-transform: uppercase;
-		letter-spacing: 0.06em;
-		color: rgba(var(--text-color), 0.7);
-		font-weight: 600;
-	}
-
-	&__card-stat-value {
-		font-size: 1.1rem;
+	&__row-cell {
+		font-size: 1.15rem;
 		font-weight: 700;
 		font-family: $defaultFontFamily;
 		font-variant-numeric: tabular-nums;
 		color: rgb(var(--text-color));
 		line-height: 1.2;
 		letter-spacing: -0.01em;
+		text-align: left;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
 	&__exception {
@@ -157,26 +180,38 @@
 	}
 
 	@media (max-width: 768px) {
-		&__card {
-			gap: 12px;
+		&__header-row {
+			grid-template-columns: $case-stats-grid-mobile;
+			gap: 8px;
+			// Modal __center mobil padding: clamp(1rem, 3vw, 1.5rem). Negative
+			// margin/top'u ayni clamp ile dinamik olarak ezeriz; gorunur padding
+			// icerde restore edilir ki icerik modal'in ic kenari ile hizali kalsin.
+			margin: 0 calc(-1 * clamp(1rem, 3vw, 1.5rem));
+			padding: 10px clamp(1rem, 3vw, 1.5rem);
+			top: calc(-1 * clamp(1rem, 3vw, 1.5rem));
+		}
+
+		&__header-cell {
+			font-size: 0.6rem;
+			padding: 4px 6px;
+		}
+
+		&__row {
+			grid-template-columns: $case-stats-grid-mobile;
+			gap: 8px;
 			padding: 12px;
 		}
 
-		&__card-preview {
+		&__row-preview {
 			width: 60px;
 			height: 60px;
 		}
 
-		&__card-name {
-			width: 90px;
+		&__row-name {
 			font-size: 0.85rem;
 		}
 
-		&__card-stat {
-			min-width: 50px;
-		}
-
-		&__card-stat-value {
+		&__row-cell {
 			font-size: 0.95rem;
 			letter-spacing: -0.02em;
 		}
