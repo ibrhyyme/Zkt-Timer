@@ -1393,7 +1393,7 @@
     },
     "admin_users": {
         "page_title": "Kullanıcı Yönetimi",
-        "search_placeholder": "Kullanıcı adı veya email ara...",
+        "search_placeholder": "Kullanıcı adı, email veya WCA ismi/ID ara...",
         "total_users": "Toplam {{count}} kullanıcı",
         "loading": "Yükleniyor...",
         "user": "Kullanıcı",

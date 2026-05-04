@@ -68,6 +68,18 @@ export class AdminResolver {
 				OR: [
 					{username: {contains: pageArgs.searchQuery, mode: 'insensitive'}},
 					{email: {contains: pageArgs.searchQuery, mode: 'insensitive'}},
+					{
+						integrations: {
+							some: {
+								service_name: 'wca',
+								OR: [
+									{wca_name: {contains: pageArgs.searchQuery, mode: 'insensitive'}},
+									{wca_id: {contains: pageArgs.searchQuery, mode: 'insensitive'}},
+									{wca_user_id: {contains: pageArgs.searchQuery, mode: 'insensitive'}},
+								],
+							},
+						},
+					},
 				],
 			});
 		}

@@ -1393,7 +1393,7 @@
     },
     "admin_users": {
         "page_title": "Gestión de usuarios",
-        "search_placeholder": "Buscar por nombre de usuario o correo...",
+        "search_placeholder": "Buscar por nombre de usuario, correo o nombre/ID WCA...",
         "total_users": "Total {{count}} usuarios",
         "loading": "Cargando...",
         "user": "Usuario",

@@ -1393,7 +1393,7 @@
     },
     "admin_users": {
         "page_title": "User Management",
-        "search_placeholder": "Search by username or email...",
+        "search_placeholder": "Search by username, email or WCA name/ID...",
         "total_users": "Total {{count}} users",
         "loading": "Loading...",
         "user": "User",

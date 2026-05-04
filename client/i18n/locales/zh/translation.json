@@ -1393,7 +1393,7 @@
     },
     "admin_users": {
         "page_title": "用户管理",
-        "search_placeholder": "按用户名或邮箱搜索...",
+        "search_placeholder": "按用户名、邮箱或 WCA 姓名/ID 搜索...",
         "total_users": "共 {{count}} 位用户",
         "loading": "加载中...",
         "user": "用户",
