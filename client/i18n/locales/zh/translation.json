@@ -1326,7 +1326,12 @@
         "create_cuber_card": "创建 Cuber Card",
         "cuber_card_generating": "正在生成...",
         "cuber_card_ready": "Cuber Card 已准备好！",
-        "cuber_card_failed": "无法创建 Cuber Card"
+        "cuber_card_failed": "无法创建 Cuber Card",
+        "cuber_card_stat_competitions": "比赛",
+        "cuber_card_stat_gold": "金牌",
+        "cuber_card_stat_silver": "银牌",
+        "cuber_card_stat_bronze": "铜牌",
+        "cuber_card_records": "记录"
     },
     "stats_page": {
         "more_stats": "更多统计数据",

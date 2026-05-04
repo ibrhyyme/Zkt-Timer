@@ -1326,7 +1326,12 @@
         "create_cuber_card": "Создать Cuber Card",
         "cuber_card_generating": "Создание...",
         "cuber_card_ready": "Cuber Card готова!",
-        "cuber_card_failed": "Не удалось создать Cuber Card"
+        "cuber_card_failed": "Не удалось создать Cuber Card",
+        "cuber_card_stat_competitions": "Сорев.",
+        "cuber_card_stat_gold": "Золото",
+        "cuber_card_stat_silver": "Серебро",
+        "cuber_card_stat_bronze": "Бронза",
+        "cuber_card_records": "Рекорды"
     },
     "stats_page": {
         "more_stats": "Больше статистики",
