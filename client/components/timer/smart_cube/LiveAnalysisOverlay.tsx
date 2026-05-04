@@ -37,6 +37,46 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
 
     const analysis = useLiveAnalysis(shouldRun ? processedTurns : [], startState);
 
+    // ── DEBUG: window.__SMART_DEBUG__ = true ile aktif olur ──
+    // Solve sirasinda analysis her degistiginde + solve bitince correctedAnalysis geldiginde dump
+    const lastDebugLogRef = React.useRef<string>('');
+    React.useEffect(() => {
+        if (typeof window === 'undefined' || !(window as any).__SMART_DEBUG__) return;
+        const target = timeStartedAt && shouldRun
+            ? analysis
+            : (lastSmartSolveStats?.correctedAnalysis || null);
+        if (!target) return;
+        const stepsActive = target.steps
+            ? Object.keys(target.steps).filter(k => target.steps[k]).reduce((acc: any, k) => {
+                const s = target.steps[k];
+                acc[k] = { idx: s.index, side: s.side, case: s.case };
+                return acc;
+            }, {})
+            : {};
+        const snapshot = {
+            src: timeStartedAt && shouldRun ? 'live' : 'corrected',
+            phase: target.currentPhase,
+            crossSolved: target.crossSolved,
+            f2lCount: target.f2lCount,
+            oll: target.ollIdentified,
+            pll: target.pllIdentified,
+            isSolved: target.isSolved,
+            steps: stepsActive,
+            times: target.times,
+            shouldRun,
+            is3x3,
+            cubeType,
+            scrambleSubset,
+            turns: smartTurns?.length || 0,
+            startState: startState ? startState.slice(0, 20) + '...' : 'NONE'
+        };
+        // Sadece JSON degisirse logla (gurultu onleme)
+        const json = JSON.stringify(snapshot);
+        if (json === lastDebugLogRef.current) return;
+        lastDebugLogRef.current = json;
+        console.log('%c[ANALYSIS]', 'color:#E91E63;font-weight:bold', snapshot);
+    }, [analysis, lastSmartSolveStats, shouldRun, is3x3, timeStartedAt]);
+
     // Clear cache on new start
     React.useEffect(() => {
         if (timeStartedAt) {

@@ -8,6 +8,7 @@ import {
     FriendlyRoomClientEvent,
     FriendlyRoomServerEvent,
     FriendlyRoomSocketRoom,
+    MyActiveRoomPayload,
 } from '../../../shared/friendly_room';
 import CreateRoomModal from './CreateRoomModal';
 import RoomCard from './RoomCard';
@@ -22,6 +23,7 @@ export default function RoomsList() {
     const { t } = useTranslation();
     const [rooms, setRooms] = useState<FriendlyRoomData[]>([]);
     const [loading, setLoading] = useState(true);
+    const [myActiveRoomId, setMyActiveRoomId] = useState<string | null>(null);
     const history = useHistory();
     const dispatch = useDispatch();
     const me = useMe();
@@ -52,6 +54,13 @@ export default function RoomsList() {
         // Listen for room deleted
         socket.on(FriendlyRoomServerEvent.ROOM_DELETED, (roomId: string) => {
             setRooms((prev) => prev.filter((r) => r.id !== roomId));
+            // Eger silinen oda kullanicinin aktif odasiysa badge'i temizle
+            setMyActiveRoomId((prev) => (prev === roomId ? null : prev));
+        });
+
+        // Kullanicinin aktif odasi (lobby'de "Buradasin" rozeti icin)
+        socket.on(FriendlyRoomServerEvent.MY_ACTIVE_ROOM, (data: MyActiveRoomPayload) => {
+            setMyActiveRoomId(data.room_id);
         });
 
         return () => {
@@ -59,6 +68,7 @@ export default function RoomsList() {
             socket.off(FriendlyRoomServerEvent.ROOMS_LIST);
             socket.off(FriendlyRoomServerEvent.ROOM_CREATED);
             socket.off(FriendlyRoomServerEvent.ROOM_DELETED);
+            socket.off(FriendlyRoomServerEvent.MY_ACTIVE_ROOM);
         };
     }, [history]);
 
@@ -129,6 +139,7 @@ export default function RoomsList() {
                                                         room={room}
                                                         onJoin={() => handleJoinRoom(room)}
                                                         isAdmin={isAdmin}
+                                                        isMyActiveRoom={room.id === myActiveRoomId}
                                                     />
                                                 ))}
                                             </div>
@@ -147,6 +158,7 @@ export default function RoomsList() {
                                                         room={room}
                                                         onJoin={() => handleJoinRoom(room)}
                                                         isAdmin={isAdmin}
+                                                        isMyActiveRoom={room.id === myActiveRoomId}
                                                     />
                                                 ))}
                                             </div>

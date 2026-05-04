@@ -47,6 +47,9 @@ export enum FriendlyRoomServerEvent {
     NOTIFICATION = 'friendlyRoomNotification',
     BANNED_USERS_LIST = 'friendlyRoomBannedUsersList',
     USER_UNBANNED = 'friendlyRoomUserUnbanned',
+    SESSION_TAKEOVER = 'friendlyRoomSessionTakeover',
+    ALREADY_IN_OTHER_ROOM = 'friendlyRoomAlreadyInOtherRoom',
+    MY_ACTIVE_ROOM = 'friendlyRoomMyActiveRoom',
 }
 
 export const FriendlyRoomSocketRoom = {

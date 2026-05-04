@@ -94,8 +94,7 @@ export default function Login() {
 				<div>
 					<label
 						htmlFor="email"
-						className="block text-sm mb-1"
-						style={{ color: 'rgba(255, 255, 255, 0.7)' }}
+						className="block text-sm mb-1 text-white/70"
 					>
 						{t('login.email')}
 					</label>
@@ -105,13 +104,8 @@ export default function Login() {
 						value={email}
 						onChange={setEmail}
 						placeholder={t('login.email_placeholder')}
-						autoComplete="off"
-						className="w-full h-11 px-4 rounded-2xl border focus:outline-none focus:ring-2 focus:ring-indigo-400/70 transition"
-						style={{
-							backgroundColor: 'rgba(255, 255, 255, 0.05)',
-							borderColor: 'rgba(255, 255, 255, 0.1)',
-							color: '#ffffff'
-						} as React.CSSProperties}
+						autoComplete="username"
+						className="w-full h-11 px-4 rounded-2xl border bg-white/5 border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-indigo-400/70 transition"
 					/>
 				</div>
 
@@ -119,8 +113,7 @@ export default function Login() {
 				<div className="relative">
 					<label
 						htmlFor="password"
-						className="block text-sm mb-1"
-						style={{ color: 'rgba(255, 255, 255, 0.7)' }}
+						className="block text-sm mb-1 text-white/70"
 					>
 						{t('login.password')}
 					</label>
@@ -131,12 +124,8 @@ export default function Login() {
 							value={password}
 							onChange={setPassword}
 							placeholder={t('login.password_placeholder')}
-							className="w-full h-11 px-4 pr-12 rounded-2xl border focus:outline-none focus:ring-2 focus:ring-indigo-400/70 transition"
-							style={{
-								backgroundColor: 'rgba(255, 255, 255, 0.05)',
-								borderColor: 'rgba(255, 255, 255, 0.1)',
-								color: '#ffffff'
-							} as React.CSSProperties}
+							autoComplete="current-password"
+							className="w-full h-11 px-4 pr-12 rounded-2xl border bg-white/5 border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-indigo-400/70 transition"
 						/>
 						<button
 							type="button"
@@ -160,11 +149,11 @@ export default function Login() {
 							type="checkbox"
 							checked={rememberMe}
 							onChange={(e) => setRememberMe(e.target.checked)}
-							className="appearance-none w-5 h-5 rounded border cursor-pointer transition-colors focus:ring-2 focus:ring-indigo-400/70"
-							style={{
-								backgroundColor: rememberMe ? '#7c3aed' : 'rgba(255, 255, 255, 0.05)',
-								borderColor: rememberMe ? '#7c3aed' : 'rgba(255, 255, 255, 0.2)',
-							}}
+							className={`appearance-none w-5 h-5 rounded border cursor-pointer transition-colors focus:ring-2 focus:ring-indigo-400/70 ${
+								rememberMe
+									? 'bg-violet-600 border-violet-600'
+									: 'bg-white/5 border-white/20'
+							}`}
 						/>
 						<Check
 							size={14}
@@ -174,8 +163,7 @@ export default function Login() {
 					</div>
 					<label
 						htmlFor="rememberMe"
-						className="text-sm cursor-pointer select-none"
-						style={{ color: 'rgba(255, 255, 255, 0.7)' }}
+						className="text-sm cursor-pointer select-none text-white/70"
 					>
 						{t('login.remember_me')}
 					</label>
@@ -192,11 +180,7 @@ export default function Login() {
 				<button
 					type="submit"
 					disabled={authUserData?.loading}
-					className="w-full h-11 rounded-2xl font-semibold text-white disabled:opacity-60 disabled:pointer-events-none hover:brightness-110 active:brightness-95 transition relative overflow-hidden"
-					style={{
-						background: 'linear-gradient(90deg, #7c3aed 0%, #3b82f6 100%)',
-						boxShadow: '0 10px 30px rgba(124, 58, 237, 0.3)'
-					}}
+					className="w-full h-11 rounded-2xl font-semibold text-white disabled:opacity-60 disabled:pointer-events-none hover:brightness-110 active:brightness-95 transition relative overflow-hidden bg-gradient-to-r from-violet-600 to-blue-500 shadow-[0_10px_30px_rgba(124,58,237,0.3)]"
 				>
 					{authUserData?.loading ? (
 						<div className="flex items-center justify-center">
@@ -212,15 +196,13 @@ export default function Login() {
 			<div className="flex justify-between text-sm pt-2">
 				<Link
 					to="/forgot"
-					className="hover:text-white transition"
-					style={{ color: 'rgba(255, 255, 255, 0.6)' }}
+					className="hover:text-white transition text-white/60"
 				>
 					{t('login.forgot_password')}
 				</Link>
 				<Link
 					to={getSignUpLink()}
-					className="hover:text-white transition"
-					style={{ color: 'rgba(255, 255, 255, 0.6)' }}
+					className="hover:text-white transition text-white/60"
 				>
 					{t('login.no_account')}
 				</Link>

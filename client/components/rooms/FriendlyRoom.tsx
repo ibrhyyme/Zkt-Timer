@@ -10,6 +10,8 @@ import {
     FriendlyRoomSolveData,
     FriendlyRoomParticipantData,
     JoinFriendlyRoomInput,
+    SessionTakeoverPayload,
+    AlreadyInOtherRoomPayload,
 } from '../../../shared/friendly_room';
 import Button from '../common/button/Button';
 import { useMe } from '../../util/hooks/useMe';
@@ -18,6 +20,8 @@ import { setSetting } from '../../db/settings/update';
 import RoomParticipants from './RoomParticipants';
 import RoomChat from './RoomChat';
 import PasswordModal from './PasswordModal';
+import SessionTakeoverModal from './SessionTakeoverModal';
+import AlreadyInOtherRoomModal from './AlreadyInOtherRoomModal';
 import RoomTable from './RoomTable';
 import ScrambleVisual from '../modules/scramble/ScrambleVisual';
 import RoomTimerOverlay from './RoomTimerOverlay';
@@ -67,6 +71,8 @@ export default function FriendlyRoom() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [needsPassword, setNeedsPassword] = useState(false);
+    const [takenOver, setTakenOver] = useState(false);
+    const [alreadyInRoom, setAlreadyInRoom] = useState<{ id: string; name: string } | null>(null);
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [manageUsersModalOpen, setManageUsersModalOpen] = useState(false);
@@ -684,6 +690,8 @@ export default function FriendlyRoom() {
             setRoom(roomData);
             setLoading(false);
             setNeedsPassword(false);
+            setAlreadyInRoom(null);
+            setTakenOver(false);
 
             // Reconnect sonrasi full hydrate: live statuslari sifirla, manuel input/inspection temizle
             if (isReconnectingRef.current) {
@@ -708,6 +716,21 @@ export default function FriendlyRoom() {
                 setError(errorMsg);
                 setLoading(false);
             }
+        });
+
+        // Tek aktif oturum: bu cihazin oturumu baska bir cihaza devredildi
+        socket.on(FriendlyRoomServerEvent.SESSION_TAKEOVER, (_data: SessionTakeoverPayload) => {
+            // BLE bagliysa serbest birak ki yeni cihaz bagli kup ile baglanabilsin
+            try { disconnectSmartCube(); } catch { /* zaten kapali olabilir */ }
+            try { disconnectGanTimer(); } catch { /* zaten kapali olabilir */ }
+            setTakenOver(true);
+            setLoading(false);
+        });
+
+        // Tek aktif oturum: kullanici zaten baska bir odada
+        socket.on(FriendlyRoomServerEvent.ALREADY_IN_OTHER_ROOM, (data: AlreadyInOtherRoomPayload) => {
+            setAlreadyInRoom({ id: data.current_room_id, name: data.current_room_name });
+            setLoading(false);
         });
 
         // Listen for updates
@@ -896,6 +919,8 @@ export default function FriendlyRoom() {
             socket.off(FriendlyRoomServerEvent.USER_STATUS);
             socket.off(FriendlyRoomServerEvent.SPECTATOR_CHANGED);
             socket.off(FriendlyRoomServerEvent.NOTIFICATION);
+            socket.off(FriendlyRoomServerEvent.SESSION_TAKEOVER);
+            socket.off(FriendlyRoomServerEvent.ALREADY_IN_OTHER_ROOM);
         };
     }, [roomId, history, me]);
 
@@ -1124,6 +1149,35 @@ export default function FriendlyRoom() {
                 <PasswordModal
                     onSubmit={handlePasswordSubmit}
                     onCancel={() => history.push('/rooms')}
+                />
+            </div>
+        );
+    }
+
+    if (takenOver) {
+        return (
+            <div className="flex h-[100dvh] w-full flex-col items-center justify-center bg-background p-4 text-text">
+                <SessionTakeoverModal onConfirm={() => history.push('/rooms')} />
+            </div>
+        );
+    }
+
+    if (alreadyInRoom) {
+        const currentRoomId = alreadyInRoom.id;
+        return (
+            <div className="flex h-[100dvh] w-full flex-col items-center justify-center bg-background p-4 text-text">
+                <AlreadyInOtherRoomModal
+                    currentRoomName={alreadyInRoom.name}
+                    onGoToCurrentRoom={() => {
+                        // State'i hemen temizle, navigasyondan sonra yeni JOIN tetiklenecek
+                        setAlreadyInRoom(null);
+                        setLoading(true);
+                        history.push(`/rooms/${currentRoomId}`);
+                    }}
+                    onCancel={() => {
+                        setAlreadyInRoom(null);
+                        history.push('/rooms');
+                    }}
                 />
             </div>
         );

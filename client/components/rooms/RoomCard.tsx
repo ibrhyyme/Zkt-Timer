@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { FriendlyRoomData, FriendlyRoomClientEvent } from '../../../shared/friendly_room';
 import Button from '../common/button/Button';
-import { Users, Lock, LockOpen, Cube, DotsThreeVertical, Trash, PencilSimple, UserList, Eye } from 'phosphor-react';
+import { Users, Lock, LockOpen, Cube, DotsThreeVertical, Trash, PencilSimple, UserList, Eye, MapPin } from 'phosphor-react';
 import { socketClient } from '../../util/socket/socketio';
 import EditRoomModal from './EditRoomModal';
 import ManageUsersModal from './ManageUsersModal';
@@ -13,9 +13,10 @@ interface RoomCardProps {
     room: FriendlyRoomData;
     onJoin: () => void;
     isAdmin?: boolean;
+    isMyActiveRoom?: boolean;
 }
 
-export default function RoomCard({ room, onJoin, isAdmin = false }: RoomCardProps) {
+export default function RoomCard({ room, onJoin, isAdmin = false, isMyActiveRoom = false }: RoomCardProps) {
     const { t } = useTranslation();
     const [menuOpen, setMenuOpen] = useState(false);
     const [editModalOpen, setEditModalOpen] = useState(false);
@@ -61,7 +62,13 @@ export default function RoomCard({ room, onJoin, isAdmin = false }: RoomCardProp
     };
 
     return (
-        <div className="room-card">
+        <div className={`room-card${isMyActiveRoom ? ' room-card--my-active' : ''}`}>
+            {isMyActiveRoom && (
+                <div className="room-card__here-badge">
+                    <MapPin size={14} weight="fill" />
+                    <span>{t('rooms.you_are_here')}</span>
+                </div>
+            )}
             <div className="room-card__header">
                 <div className="room-card__title">
                     {room.is_private ? (
@@ -104,12 +111,16 @@ export default function RoomCard({ room, onJoin, isAdmin = false }: RoomCardProp
 
             <div className="room-card__footer">
                 <Button
-                    primary={!isFull}
-                    disabled={isFull}
+                    primary={isMyActiveRoom || !isFull}
+                    disabled={!isMyActiveRoom && isFull}
                     small
                     onClick={onJoin}
                 >
-                    {isFull ? t('rooms.full') : t('rooms.join')}
+                    {isMyActiveRoom
+                        ? t('rooms.return_to_room')
+                        : isFull
+                            ? t('rooms.full')
+                            : t('rooms.join')}
                 </Button>
 
                 {/* Admin Menu */}

@@ -32,6 +32,13 @@ import {
 } from './room_manager';
 import { sendChatMessage } from './chat';
 import { logger } from '../services/logger';
+import {
+    createRedisKey,
+    deleteKeyInRedis,
+    getValueFromRedis,
+    RedisNamespace,
+    setKeyInRedis,
+} from '../services/redis';
 
 // Helper to get untyped socket.io server for friendly room events
 const io = (): any => getSocketIO();
@@ -43,6 +50,43 @@ type DisconnectEntry = {
     activeSocketIds: Set<string>;
 };
 const disconnectTimers = new Map<string, DisconnectEntry>();
+
+// Tek aktif oturum: userID -> { roomId, socketId }
+// Redis'te tutulur — multi-instance (cluster/k8s) safe.
+// Ayni anda tek odada, tek socket'ten oynanmasini garanti eder.
+// Yeni cihaz ayni odaya girince eski socket "takeover" ile dusurulur.
+// Farkli odaya girme denemesi reddedilir (ALREADY_IN_OTHER_ROOM).
+type ActiveSession = { roomId: string; socketId: string };
+
+// 4 saatlik guvenlik TTL'i — leak olursa otomatik temizlenir.
+const SESSION_TTL_SECONDS = 4 * 60 * 60;
+
+async function getActiveSession(userId: string): Promise<ActiveSession | null> {
+    const key = createRedisKey(RedisNamespace.FRIENDLY_ROOM_SESSION, userId);
+    const value = await getValueFromRedis(key);
+    if (!value) return null;
+    try {
+        return JSON.parse(value) as ActiveSession;
+    } catch {
+        return null;
+    }
+}
+
+async function setActiveSession(userId: string, roomId: string, socketId: string): Promise<void> {
+    const key = createRedisKey(RedisNamespace.FRIENDLY_ROOM_SESSION, userId);
+    await setKeyInRedis(key, JSON.stringify({ roomId, socketId }), SESSION_TTL_SECONDS);
+}
+
+// Sadece beklenen socket aktif oturumun sahibiyse temizler.
+// Takeover sonrasi eski socket LEAVE_ROOM yollarsa yeni oturumu silmemek icin gerekli.
+async function clearActiveSession(userId: string, expectedSocketId?: string): Promise<void> {
+    if (expectedSocketId) {
+        const current = await getActiveSession(userId);
+        if (!current || current.socketId !== expectedSocketId) return;
+    }
+    const key = createRedisKey(RedisNamespace.FRIENDLY_ROOM_SESSION, userId);
+    await deleteKeyInRedis(key);
+}
 
 function getOrCreateEntry(userId: string): DisconnectEntry {
     let entry = disconnectTimers.get(userId);
@@ -95,6 +139,19 @@ export function listenForFriendlyRoomEvents(client: Socket) {
 
             const rooms = await getAllActiveRooms();
             client.emit(FriendlyRoomServerEvent.ROOMS_LIST, rooms);
+
+            // Bu client'in hangi odada aktif oturumu var? Lobby badge icin
+            try {
+                const { user } = await getDetailedClientInfo(client);
+                if (user) {
+                    const session = await getActiveSession(user.id);
+                    client.emit(FriendlyRoomServerEvent.MY_ACTIVE_ROOM, {
+                        room_id: session?.roomId ?? null,
+                    });
+                }
+            } catch (e) {
+                // Anonymous user — sessizce gec
+            }
         } catch (error) {
             logger.error('Error getting friendly rooms', { error });
             client.emit(FriendlyRoomServerEvent.ERROR, 'Could not fetch rooms');
@@ -125,6 +182,26 @@ export function listenForFriendlyRoomEvents(client: Socket) {
                 return;
             }
 
+            // Tek aktif oturum kontrolu: kullanici baska bir odadaysa olusturma reddedilir.
+            const existingSession = await getActiveSession(user.id);
+            if (existingSession) {
+                const existingRoom = await getRoomForClient(existingSession.roomId);
+                if (existingRoom) {
+                    logger.info('Friendly room create blocked: user already in another room', {
+                        userId: user.id,
+                        username: user.username,
+                        currentRoomId: existingRoom.id,
+                    });
+                    client.emit(FriendlyRoomServerEvent.ALREADY_IN_OTHER_ROOM, {
+                        current_room_id: existingRoom.id,
+                        current_room_name: existingRoom.name,
+                    });
+                    return;
+                }
+                // Stale entry — aktif oda yok, temizle ve devam et
+                await clearActiveSession(user.id);
+            }
+
             // Multi-tab safe: socket'i aktif olarak kaydet, varsa grace timer'i iptal et
             registerActiveSocket(user.id, client.id);
 
@@ -136,6 +213,9 @@ export function listenForFriendlyRoomEvents(client: Socket) {
 
             // Join the socket room
             joinRoom(client, socketRoom);
+
+            // Aktif oturumu kaydet
+            await setActiveSession(user.id, room.id, client.id);
 
             // Notify creator
             client.emit(FriendlyRoomServerEvent.ROOM_CREATED, room);
@@ -171,6 +251,60 @@ export function listenForFriendlyRoomEvents(client: Socket) {
                 return;
             }
 
+            // Tek aktif oturum kontrolu
+            const existingSession = await getActiveSession(user.id);
+            let didTakeover = false;
+            if (existingSession) {
+                if (existingSession.roomId !== input.room_id) {
+                    // Farkli odada acik oturum: blok
+                    const existingRoom = await getRoomForClient(existingSession.roomId);
+                    if (existingRoom) {
+                        logger.info('Friendly room join blocked: user already in another room', {
+                            userId: user.id,
+                            username: user.username,
+                            attemptedRoomId: input.room_id,
+                            currentRoomId: existingRoom.id,
+                        });
+                        client.emit(FriendlyRoomServerEvent.ALREADY_IN_OTHER_ROOM, {
+                            current_room_id: existingRoom.id,
+                            current_room_name: existingRoom.name,
+                        });
+                        return;
+                    }
+                    // Stale entry: temizle ve normal akisa devam et
+                    await clearActiveSession(user.id);
+                } else if (existingSession.socketId !== client.id) {
+                    // Ayni oda farkli cihaz/sekme: takeover
+                    const oldSocketId = existingSession.socketId;
+                    const targetRoom = await getRoomForClient(input.room_id);
+                    const roomName = targetRoom?.name ?? '';
+
+                    logger.info('Friendly room session takeover', {
+                        userId: user.id,
+                        username: user.username,
+                        roomId: input.room_id,
+                        oldSocketId,
+                        newSocketId: client.id,
+                    });
+
+                    // Eski socket'e takeover bildirimi (hayatta degilse sessizce duser)
+                    io().to(oldSocketId).emit(FriendlyRoomServerEvent.SESSION_TAKEOVER, {
+                        room_id: input.room_id,
+                        room_name: roomName,
+                    });
+
+                    // Eski socket'i odadan dusur (artik event almasin)
+                    try {
+                        const socketRoom = getFriendlyRoomSocketRoom(input.room_id);
+                        io().in(oldSocketId).socketsLeave(socketRoom);
+                    } catch (e) {
+                        // Eski socket zaten gitmis olabilir, sorun degil
+                    }
+
+                    didTakeover = true;
+                }
+            }
+
             const result = await addParticipant(input.room_id, user, input.password);
             if (!result.room) {
                 client.emit(FriendlyRoomServerEvent.ERROR, 'Could not join room');
@@ -181,6 +315,17 @@ export function listenForFriendlyRoomEvents(client: Socket) {
 
             // Join the socket room
             joinRoom(client, socketRoom);
+
+            // Aktif oturumu yeni socket olarak isaretle (takeover sonrasi map overwrite)
+            await setActiveSession(user.id, result.room.id, client.id);
+
+            // Takeover olduysa odadakilere kisa bilgi notu (cihaz degisikligi)
+            if (didTakeover) {
+                io().to(socketRoom).emit(FriendlyRoomServerEvent.NOTIFICATION, {
+                    type: 'INFO',
+                    message: `${user.username} cihaz değiştirdi`,
+                });
+            }
 
             // Send room data to joining user
             client.emit(FriendlyRoomServerEvent.ROOM_DATA, result.room);
@@ -237,6 +382,10 @@ export function listenForFriendlyRoomEvents(client: Socket) {
 
             // Leave the socket room
             leaveRoom(client, socketRoom);
+
+            // Aktif oturumu sadece bu socket aktif sahipse temizle.
+            // Takeover sonrasi eski socket gelirse yeni oturumu silmemis oluruz.
+            await clearActiveSession(user.id, client.id);
 
             if (result.deleted) {
                 // Room was deleted (no more participants)
@@ -459,6 +608,9 @@ export function listenForFriendlyRoomEvents(client: Socket) {
             if (success) {
                 const socketRoom = getFriendlyRoomSocketRoom(roomId);
 
+                // Atilan kullanicinin aktif oturumunu zorla temizle (yeni odaya hemen girebilsin)
+                await clearActiveSession(targetUserId);
+
                 // Notify everyone (including kicked user)
                 io().to(socketRoom).emit(FriendlyRoomServerEvent.PLAYER_LEFT, {
                     room_id: roomId,
@@ -490,6 +642,9 @@ export function listenForFriendlyRoomEvents(client: Socket) {
             const success = await banParticipant(roomId, user.id, targetUserId, user.admin === true);
             if (success) {
                 const socketRoom = getFriendlyRoomSocketRoom(roomId);
+
+                // Banlanan kullanicinin aktif oturumunu zorla temizle
+                await clearActiveSession(targetUserId);
 
                 // Notify everyone (including banned user)
                 io().to(socketRoom).emit(FriendlyRoomServerEvent.PLAYER_LEFT, {
@@ -608,12 +763,24 @@ export function listenForFriendlyRoomEvents(client: Socket) {
                 return;
             }
 
+            // Silmeden once katilimcilari al ki aktif oturumlarini temizleyelim
+            const roomBeforeDelete = await getRoomForClient(roomId);
+            const participantIds = roomBeforeDelete?.participants.map((p) => p.user_id) ?? [];
+
             const success = await deleteRoom(roomId, user.id, true);
 
             logger.info('Admin delete room result', { roomId, success });
 
             if (success) {
                 const socketRoom = getFriendlyRoomSocketRoom(roomId);
+
+                // Bu odadaki herkesin aktif oturumunu temizle (yeni odaya girebilsinler)
+                for (const participantId of participantIds) {
+                    const session = await getActiveSession(participantId);
+                    if (session && session.roomId === roomId) {
+                        await clearActiveSession(participantId);
+                    }
+                }
 
                 // Notify everyone in the room that it was deleted
                 io().to(socketRoom).emit(FriendlyRoomServerEvent.ROOM_DELETED, roomId);
@@ -756,6 +923,8 @@ async function startGracePeriod(user: any) {
         }
         // Cleanup entry
         disconnectTimers.delete(user.id);
+        // Aktif oturum kaydini da temizle: kullanici 45sn icinde donmedi, slot serbest.
+        await clearActiveSession(user.id);
         try {
             const rooms = await getRoomsForUser(user.id);
             for (const room of rooms) {

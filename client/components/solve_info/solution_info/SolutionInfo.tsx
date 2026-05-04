@@ -21,6 +21,21 @@ export default function SolutionInfo(props: Props) {
 	const { t } = useTranslation();
 	const steps = getSolveStepsWithoutParents(solve);
 
+	// [SOLUTION_INFO] window.__SMART_DEBUG__ ile aktif. steps array sirasi (render_idx) vs step_index degerleri.
+	// Eger render_idx=0'da step_index=5 cikiyorsa client'ta siralama atlanmis demek; tutarli ise sorun backend'den gelmis.
+	React.useEffect(() => {
+		if (typeof window === 'undefined' || !(window as any).__SMART_DEBUG__) return;
+		const summary = steps.map((s, i) => ({
+			render_idx: i,
+			step_index: (s as any).step_index,
+			step_name: s.step_name,
+			parent_name: s.parent_name,
+			turns_head: (s.turns || '').slice(0, 30)
+		}));
+		console.log('%c[SOLUTION_INFO]', 'color:#00BCD4;font-weight:bold',
+			`solve=${solve.id} | steps=${steps.length}`, summary);
+	}, [solve.id, steps.length]);
+
 	const crossStep = steps.find((s) => s.step_name === 'cross');
 	const rotation = useMemo(
 		() => (crossStep ? getCrossRotation(solve.scramble, crossStep.turns) : ''),
