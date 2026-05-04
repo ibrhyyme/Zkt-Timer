@@ -49,22 +49,48 @@ function topSticker(idx: number) {
 	};
 }
 
-// Yan strip sticker konumlari — PLL_DATA stickers indekslemesine uygun
-function sideSticker(idx: number) {
-	// 0..2 front (alt strip, sol→sag)
-	if (idx < 3) {
-		return { x: TX + idx * S, y: TY + 3 * S, w: S, h: W };
-	}
-	// 3..5 right (sag strip, ust→alt)
-	if (idx < 6) {
-		return { x: TX + 3 * S, y: TY + (idx - 3) * S, w: W, h: S };
-	}
-	// 6..8 back (ust strip, sag→sol)
-	if (idx < 9) {
-		return { x: TX + (2 - (idx - 6)) * S, y: TY - W, w: S, h: W };
-	}
-	// 9..11 left (sol strip, alt→ust)
-	return { x: TX - W, y: TY + (2 - (idx - 9)) * S, w: W, h: S };
+// Yan strip trapezoid kose noktalari — cstimer perspektif efektine uygun.
+// Outer edge (uzak kenar) 0.9x merkeze dogru daraltilir.
+//
+// Strip = idx / 3 (0=front/alt, 1=right/sag, 2=back/ust, 3=left/sol).
+// pos = idx % 3 (strip ici sol→sag, rotation flip'i halleder).
+function sideStickerPoints(idx: number): string {
+	const cx = TX + 1.5 * S;
+	const cy = TY + 1.5 * S;
+	const strip = Math.floor(idx / 3);
+	const pos = idx % 3;
+
+	// Canonical "bottom strip" frame (cube center at origin):
+	//   inner edge at y = +1.5 (cube edge), outer at y = +1.5 + W
+	//   inner x: pos - 1.5 to pos - 0.5
+	//   outer x: scaled 0.9x toward center axis
+	const gap = G / 2;
+	const innerY = 1.5;
+	const outerY = 1.5 + W;
+	const innerL = pos - 1.5 + gap;
+	const innerR = pos - 0.5 - gap;
+	const outerL = (pos - 1.5) * 0.9 + gap * 0.9;
+	const outerR = (pos - 0.5) * 0.9 - gap * 0.9;
+
+	const localPts: Array<[number, number]> = [
+		[innerL, innerY],
+		[innerR, innerY],
+		[outerR, outerY],
+		[outerL, outerY],
+	];
+
+	// cstimer convention: -strip * PI/2 rotation (bottom→right→top→left)
+	const rotRad = -strip * Math.PI / 2;
+	const cosR = Math.cos(rotRad);
+	const sinR = Math.sin(rotRad);
+
+	return localPts
+		.map(([x, y]) => {
+			const rx = x * cosR - y * sinR;
+			const ry = x * sinR + y * cosR;
+			return `${(cx + rx).toFixed(3)},${(cy + ry).toFixed(3)}`;
+		})
+		.join(' ');
 }
 
 function arrowPath(fromIdx: number, toIdx: number): string {
@@ -79,40 +105,36 @@ function arrowPath(fromIdx: number, toIdx: number): string {
 	const length = Math.sqrt(dx * dx + dy * dy);
 	if (length < 0.01) return '';
 	const angle = Math.atan2(dy, dx);
-	// Inset start/end so arrow doesn't touch sticker edges
-	const inset = S * 0.18;
-	const usableLen = length - 2 * inset;
-	if (usableLen <= 0) return '';
 
-	// Arrow shape (origin = base, +x = forward):
-	//   shaft: rectangle 0.06 thick, length L*0.7
-	//   head: triangle width 0.18, length L*0.3
-	const shaftThick = 0.07;
-	const headWidth = 0.16;
-	const headLen = Math.min(0.22, usableLen * 0.4);
-	const shaftLen = usableLen - headLen;
+	// cstimer arrow geometry (image.js:670-673):
+	//   shaft x: 0.2 .. length-0.4, thickness 0.10 (y: ±0.05)
+	//   head:   length-0.4 .. length-0.1, width 0.30 (y: ±0.15)
+	const startX = 0.2;
+	const tipX = length - 0.1;
+	const headLen = 0.3;
+	const shaftEnd = tipX - headLen;
+	const shaftThick = 0.10;
+	const headWidth = 0.30;
 
-	// Local coords (before rotation)
+	if (shaftEnd <= startX) return '';
+
 	const pts: Array<[number, number]> = [
-		[0, -shaftThick / 2],
-		[shaftLen, -shaftThick / 2],
-		[shaftLen, -headWidth / 2],
-		[shaftLen + headLen, 0],
-		[shaftLen, headWidth / 2],
-		[shaftLen, shaftThick / 2],
-		[0, shaftThick / 2],
+		[startX, -shaftThick / 2],
+		[shaftEnd, -shaftThick / 2],
+		[shaftEnd, -headWidth / 2],
+		[tipX, 0],
+		[shaftEnd, headWidth / 2],
+		[shaftEnd, shaftThick / 2],
+		[startX, shaftThick / 2],
 	];
 
-	// Rotate + translate from (cx1, cy1) shifted by inset along angle
 	const cos = Math.cos(angle);
 	const sin = Math.sin(angle);
-	const ox = cx1 + cos * inset;
-	const oy = cy1 + sin * inset;
 
 	return pts
 		.map((p, i) => {
-			const px = ox + p[0] * cos - p[1] * sin;
-			const py = oy + p[0] * sin + p[1] * cos;
+			const px = cx1 + p[0] * cos - p[1] * sin;
+			const py = cy1 + p[0] * sin + p[1] * cos;
 			return `${i === 0 ? 'M' : 'L'}${px.toFixed(3)} ${py.toFixed(3)}`;
 		})
 		.join(' ') + ' Z';
@@ -143,22 +165,18 @@ export default function PLLArrowView({ pllKey, size }: Props) {
 		);
 	}
 
-	// Side strip stickers
+	// Side strip stickers — trapezoid (cstimer perspektif efekti)
 	const sideRects = [];
 	for (let i = 0; i < 12; i++) {
-		const p = sideSticker(i);
+		const points = sideStickerPoints(i);
 		const ch = stickers[i] || 'X';
 		sideRects.push(
-			<rect
+			<polygon
 				key={`s${i}`}
-				x={p.x + G / 2}
-				y={p.y + G / 2}
-				width={p.w - G}
-				height={p.h - G}
+				points={points}
 				fill={FACE_COLOR[ch] || FACE_COLOR.X}
 				stroke="#222"
 				strokeWidth={STROKE}
-				rx={0.04}
 			/>
 		);
 	}
@@ -180,7 +198,7 @@ export default function PLLArrowView({ pllKey, size }: Props) {
 			{topRects}
 			{sideRects}
 			{arrowPaths.filter(Boolean).map((d, i) => (
-				<path key={`a${i}`} d={d} fill={ARROW_COLOR} stroke="#fff" strokeWidth={0.025} />
+				<path key={`a${i}`} d={d} fill={ARROW_COLOR} />
 			))}
 		</svg>
 	);
