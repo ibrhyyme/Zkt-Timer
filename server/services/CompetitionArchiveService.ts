@@ -123,7 +123,7 @@ export async function archiveCompetition(
 				country_iso2: countryIso2,
 				city,
 				wcif_data: wcifData,
-				live_data: liveDataPayload as any,
+				live_data: (liveDataPayload as any) ?? undefined,
 			},
 			update: {
 				name,
@@ -132,7 +132,7 @@ export async function archiveCompetition(
 				country_iso2: countryIso2,
 				city,
 				wcif_data: wcifData,
-				live_data: liveDataPayload as any,
+				live_data: (liveDataPayload as any) ?? undefined,
 				last_synced_at: new Date(),
 			},
 		});
