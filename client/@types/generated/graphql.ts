@@ -271,6 +271,16 @@ export type BanUserInput = {
   user_id?: InputMaybe<Scalars['String']>;
 };
 
+export type BulkArchiveResult = {
+  __typename?: 'BulkArchiveResult';
+  failed?: Maybe<Scalars['Int']>;
+  failedIds?: Maybe<Array<Maybe<Scalars['String']>>>;
+  imported?: Maybe<Scalars['Int']>;
+  lastProcessedId?: Maybe<Scalars['String']>;
+  skipped?: Maybe<Scalars['Int']>;
+  total?: Maybe<Scalars['Int']>;
+};
+
 export type BulkAssignCompetitorsInput = {
   groupCount?: InputMaybe<Scalars['Int']>;
   roundId?: InputMaybe<Scalars['String']>;
@@ -770,6 +780,7 @@ export type Mutation = {
   backfillSmartCubeMethodSteps?: Maybe<MethodStepsBackfillResult>;
   backfillWcaIds?: Maybe<BackfillResult>;
   banUserAccount?: Maybe<BanLog>;
+  bulkArchiveWcaCompetitions?: Maybe<BulkArchiveResult>;
   bulkAssignCompetitors?: Maybe<Array<Maybe<ZktAssignment>>>;
   bulkCreateSessions?: Maybe<Scalars['Void']>;
   bulkCreateSolves?: Maybe<Scalars['Void']>;
@@ -961,6 +972,14 @@ export type MutationAuthenticateWithWcaArgs = {
 
 export type MutationBanUserAccountArgs = {
   input?: InputMaybe<BanUserInput>;
+};
+
+
+export type MutationBulkArchiveWcaCompetitionsArgs = {
+  endDate?: InputMaybe<Scalars['String']>;
+  rateLimitMs?: InputMaybe<Scalars['Int']>;
+  skipExisting?: InputMaybe<Scalars['Boolean']>;
+  startDate?: InputMaybe<Scalars['String']>;
 };
 
 

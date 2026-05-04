@@ -1322,7 +1322,11 @@
         "update_wca_data": "Verileri Güncelle",
         "wca_data_updated": "WCA verileri başarıyla güncellendi!",
         "wca_results_tab": "WCA Sonuçları",
-        "wca_results_tab_short": "Sonuçlar"
+        "wca_results_tab_short": "Sonuçlar",
+        "create_cuber_card": "Cuber Card Oluştur",
+        "cuber_card_generating": "Oluşturuluyor...",
+        "cuber_card_ready": "Cuber Card hazır!",
+        "cuber_card_failed": "Cuber Card oluşturulamadı"
     },
     "stats_page": {
         "more_stats": "Daha Fazla İstatistik",

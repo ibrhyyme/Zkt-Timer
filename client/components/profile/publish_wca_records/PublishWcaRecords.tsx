@@ -6,9 +6,10 @@ import {gqlMutate, gqlQuery} from '../../api';
 import {useMe} from '../../../util/hooks/useMe';
 import Button from '../../common/button/Button';
 import {toastError, toastSuccess} from '../../../util/toast';
-import {Eye, EyeSlash} from 'phosphor-react';
+import {Eye, EyeSlash, ShareNetwork} from 'phosphor-react';
 import block from '../../../styles/bem';
 import './PublishWcaRecords.scss';
+import {generateCuberCardDataUrl, shareOrDownloadCuberCard} from '../../../util/cuber_card';
 
 const b = block('publish-wca-records');
 
@@ -35,11 +36,14 @@ interface VisibilityState {
 export default function PublishWcaRecords(props: IModalProps) {
 	const { t } = useTranslation();
 	const {onComplete} = props;
+	const me = useMe();
 
 	const [records, setRecords] = useState<WcaRecord[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [fetching, setFetching] = useState(false);
 	const [publishing, setPublishing] = useState(false);
+	const [generatingCard, setGeneratingCard] = useState(false);
+	const [integrationCardData, setIntegrationCardData] = useState<any>(null);
 	const [visibility, setVisibility] = useState<VisibilityState>({
 		showCompetitions: true,
 		showMedals: true,
@@ -91,6 +95,14 @@ export default function PublishWcaRecords(props: IModalProps) {
 						wca_show_records
 						wca_show_rank
 						wca_show_results
+						wca_id
+						wca_name
+						wca_avatar_url
+						wca_country_iso2
+						wca_competition_count
+						wca_medal_gold
+						wca_medal_silver
+						wca_medal_bronze
 					}
 				}
 			`;
@@ -104,9 +116,46 @@ export default function PublishWcaRecords(props: IModalProps) {
 					showRank: int.wca_show_rank !== false,
 					showResults: int.wca_show_results !== false,
 				});
+				setIntegrationCardData(int);
 			}
 		} catch (error) {
 			// Defaults are true
+		}
+	}
+
+	async function handleCreateCuberCard() {
+		if (generatingCard) return;
+		setGeneratingCard(true);
+		try {
+			const fullName = me ? `${me.first_name || ''} ${me.last_name || ''}`.trim() : '';
+			const username = me?.username || integrationCardData?.wca_name || 'Cuber';
+
+			const dataUrl = await generateCuberCardDataUrl({
+				username,
+				fullName: fullName || integrationCardData?.wca_name || username,
+				avatarUrl: integrationCardData?.wca_avatar_url || null,
+				countryIso2: integrationCardData?.wca_country_iso2 || null,
+				wcaId: integrationCardData?.wca_id || null,
+				competitionCount: integrationCardData?.wca_competition_count ?? null,
+				goldMedals: integrationCardData?.wca_medal_gold ?? null,
+				silverMedals: integrationCardData?.wca_medal_silver ?? null,
+				bronzeMedals: integrationCardData?.wca_medal_bronze ?? null,
+				records: records
+					.filter((r) => r.single_record || r.average_record)
+					.map((r) => ({
+						event: getEventName(r.wca_event),
+						single: r.single_record,
+						average: r.average_record,
+					})),
+			});
+
+			const filename = `${username.replace(/[^a-z0-9-_]/gi, '_')}-cuber-card.png`;
+			await shareOrDownloadCuberCard(dataUrl, filename);
+			toastSuccess(t('profile.cuber_card_ready'));
+		} catch (error: any) {
+			toastError(error?.message || t('profile.cuber_card_failed'));
+		} finally {
+			setGeneratingCard(false);
 		}
 	}
 
@@ -262,6 +311,15 @@ export default function PublishWcaRecords(props: IModalProps) {
 						</div>
 					))}
 				</div>
+				<button
+					type="button"
+					className={b('cuber-card-btn')}
+					onClick={handleCreateCuberCard}
+					disabled={generatingCard}
+				>
+					<ShareNetwork weight="bold" />
+					<span>{generatingCard ? t('profile.cuber_card_generating') : t('profile.create_cuber_card')}</span>
+				</button>
 			</div>
 
 			{/* Rekor listesi */}

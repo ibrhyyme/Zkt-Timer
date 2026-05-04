@@ -408,6 +408,7 @@ type Mutation {
   testWcaNotification(wcaId: String): Boolean
   backfillWcaIds: BackfillResult
   backfillSmartCubeMethodSteps: MethodStepsBackfillResult
+  bulkArchiveWcaCompetitions(skipExisting: Boolean = true, rateLimitMs: Int = 1500, endDate: String, startDate: String): BulkArchiveResult
   updateStatsModuleBlocks(blocks: [StatsModuleBlockInput]): StatsModule
   fetchWcaRecords: [WcaRecord]
   publishWcaRecord(recordId: String): WcaRecord
@@ -1169,6 +1170,15 @@ type WcaStats {
   wcaConnected: Int
   wcaWithId: Int
   wcaWithoutId: Int
+}
+
+type BulkArchiveResult {
+  total: Int
+  imported: Int
+  skipped: Int
+  failed: Int
+  lastProcessedId: String
+  failedIds: [String]
 }
 
 type StatsModule {

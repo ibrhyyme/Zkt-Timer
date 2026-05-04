@@ -36,4 +36,5 @@ export * from './Ranking.schema';
 export * from './ZktCompetition.schema';
 export * from './IAP.schema';
 export * from './CompetitionFollow.schema';
+export * from './ArchiveAdmin.schema';
 export * from './Translation.schema';

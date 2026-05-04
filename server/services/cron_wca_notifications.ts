@@ -11,6 +11,7 @@ import WcaFollowResultEnteredNotification from '../resources/notification_types/
 import WcaFollowRoundFinishedNotification from '../resources/notification_types/wca_follow_round_finished';
 import {WcaApiService} from './WcaApiService';
 import {createI18nInstance} from '../i18n_server';
+import {archiveCompetition} from './CompetitionArchiveService';
 
 const TICK_LOCK_TTL_MS = 55_000;
 const LOCK_KEY = createRedisKey(RedisNamespace.WCA_WCIF, 'notifications_cron_lock');
@@ -336,6 +337,14 @@ async function processCompetition(compId: string, states: StateRow[]): Promise<n
 			});
 			logger.info('[WcaNotify] comp auto-cleaned', {compId});
 		}
+	}
+
+	// --- Auto-archive: yarismanin tum round'lari bitti, DB'ye yaz/guncelle (idempotent) ---
+	// states.length kontrolu yok — kullanici kayitli olmasa bile (sadece takipci olabilir) arsivle
+	if (allFinished) {
+		archiveCompetition(compId).catch((err: any) => {
+			logger.warn('[Archive] auto-archive failed', {compId, err: err?.message});
+		});
 	}
 
 	return pushed;

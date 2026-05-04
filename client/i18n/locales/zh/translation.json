@@ -1322,7 +1322,11 @@
         "update_wca_data": "更新数据",
         "wca_data_updated": "WCA 数据更新成功！",
         "wca_results_tab": "WCA 结果",
-        "wca_results_tab_short": "结果"
+        "wca_results_tab_short": "结果",
+        "create_cuber_card": "创建 Cuber Card",
+        "cuber_card_generating": "正在生成...",
+        "cuber_card_ready": "Cuber Card 已准备好！",
+        "cuber_card_failed": "无法创建 Cuber Card"
     },
     "stats_page": {
         "more_stats": "更多统计数据",

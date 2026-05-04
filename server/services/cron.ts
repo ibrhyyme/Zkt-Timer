@@ -6,6 +6,7 @@ import {sendPushToUser} from './push';
 import {initWcaCompetitionNotificationCronJob} from './cron_wca_notifications';
 import {initWcaCompetitionCountdownCronJob} from './cron_wca_countdown';
 import {syncAllWorldRecords} from './WorldRecordSyncService';
+import {freezeOldArchives} from './CompetitionArchiveService';
 
 const CUBE_NAMES: Record<string, string> = {
 	'222': '2x2', '333': '3x3', '444': '4x4', '555': '5x5',
@@ -25,6 +26,26 @@ export function initCronJobs() {
 	initWorldRecordSyncCronJob();
 	initRankingRecalculationCronJob();
 	initCompetitionFollowCleanupCronJob();
+	initArchiveFreezeCronJob();
+}
+
+function initArchiveFreezeCronJob() {
+	// Her gun 04:00 LA — end_date'i 30 gun gecen arsivleri donmus yap
+	// Donmus arsivler artik re-sync'lenmez, sadece okunur
+	const job = new CronJob(
+		'0 0 4 * * *',
+		async () => {
+			try {
+				await freezeOldArchives();
+			} catch (e) {
+				logger.error('[Archive] freeze cron failed', {error: e});
+			}
+		},
+		null,
+		true,
+		'America/Los_Angeles',
+	);
+	logger.debug('Initiated cron job for archive freeze.', {running: job.running});
 }
 
 function initCompetitionFollowCleanupCronJob() {
