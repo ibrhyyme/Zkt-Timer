@@ -48,7 +48,8 @@ import { fetchAndSaveWcaRecords } from '../models/wca_record';
 import { getOAuthPostRequest } from '../integrations/oauth';
 import { getIpDetail } from '../services/ipstack';
 import { archiveCompetition } from '../services/CompetitionArchiveService';
-import { BulkArchiveResult } from '../schemas/ArchiveAdmin.schema';
+import { BulkArchiveResult, ReindexESResult } from '../schemas/ArchiveAdmin.schema';
+import { ARCHIVED_COMP_INDEX, bootstrapArchivedCompIndex, getSearchClient } from '../services/search';
 
 @Resolver()
 export class AdminResolver {
@@ -775,6 +776,88 @@ export class AdminResolver {
 		}
 
 		console.log(`[BulkArchive] Done.`, result);
+		return result;
+	}
+
+	@Authorized([Role.ADMIN])
+	@Mutation(() => ReindexESResult)
+	async reindexArchivedCompsToES(): Promise<ReindexESResult> {
+		const prisma = getPrisma();
+		const client = getSearchClient();
+		if (!client) {
+			throw new Error('ES client not initialized');
+		}
+
+		// Index yoksa olustur (mappings ile)
+		await bootstrapArchivedCompIndex();
+
+		const result: ReindexESResult = {total: 0, indexed: 0, failed: 0};
+		const BATCH_SIZE = 100;
+		let cursor: string | undefined;
+
+		while (true) {
+			const batch: any[] = await prisma.archivedWcaCompetition.findMany({
+				take: BATCH_SIZE,
+				...(cursor ? {skip: 1, cursor: {id: cursor}} : {}),
+				orderBy: {id: 'asc'},
+				select: {
+					id: true,
+					name: true,
+					start_date: true,
+					end_date: true,
+					country_iso2: true,
+					city: true,
+					wcif_data: true,
+				},
+			});
+			if (batch.length === 0) break;
+
+			result.total += batch.length;
+
+			const body: any[] = [];
+			for (const arc of batch) {
+				const persons = Array.isArray(arc.wcif_data?.persons) ? arc.wcif_data.persons : [];
+				const competitors = persons
+					.filter((p: any) => p?.registration?.status === 'accepted')
+					.map((p: any) => ({wca_id: p.wcaId || null, name: p.name || ''}));
+				const eventIds = Array.isArray(arc.wcif_data?.events)
+					? arc.wcif_data.events.map((e: any) => e.id).filter(Boolean)
+					: [];
+
+				body.push({index: {_index: ARCHIVED_COMP_INDEX, _id: arc.id}});
+				body.push({
+					id: arc.id,
+					name: arc.name,
+					start_date: arc.start_date,
+					end_date: arc.end_date,
+					country_iso2: arc.country_iso2,
+					city: arc.city,
+					event_ids: eventIds,
+					competitors,
+				});
+			}
+
+			try {
+				const resp: any = await client.bulk({body});
+				const items: any[] = resp?.body?.items || resp?.items || [];
+				if (items.length > 0) {
+					for (const item of items) {
+						if (item.index?.error) result.failed++;
+						else result.indexed++;
+					}
+				} else {
+					result.indexed += batch.length;
+				}
+			} catch (e: any) {
+				console.error('[ReindexES] bulk failed', e?.message);
+				result.failed += batch.length;
+			}
+
+			cursor = batch[batch.length - 1].id;
+			if (batch.length < BATCH_SIZE) break;
+		}
+
+		console.log('[ReindexES] Done.', result);
 		return result;
 	}
 }

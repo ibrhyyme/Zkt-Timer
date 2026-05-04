@@ -38,7 +38,7 @@ export function getSearchClient() {
 	return client;
 }
 
-async function bootstrapArchivedCompIndex() {
+export async function bootstrapArchivedCompIndex() {
 	if (!client) return;
 	try {
 		const exists = await client.indices.exists({index: ARCHIVED_COMP_INDEX});

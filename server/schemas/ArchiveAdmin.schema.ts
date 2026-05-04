@@ -20,3 +20,15 @@ export class BulkArchiveResult {
 	@Field(() => [String])
 	failedIds: string[];
 }
+
+@ObjectType()
+export class ReindexESResult {
+	@Field(() => Int)
+	total: number;
+
+	@Field(() => Int)
+	indexed: number;
+
+	@Field(() => Int)
+	failed: number;
+}
