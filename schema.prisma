@@ -971,6 +971,28 @@ model PushToken {
   @@map("push_tokens")
 }
 
+model ArchivedWcaCompetition {
+  id              String   @id // WCA comp ID (orn. "LobaApril2026")
+  name            String
+  start_date      DateTime @db.Date
+  end_date        DateTime @db.Date
+  country_iso2    String?
+  city            String?
+
+  wcif_data       Json     // ham WCIF (WcaApiService'den geldigi gibi)
+  live_data       Json?    // ham WCA Live verisi (compId, competitors, roundMap, rounds[])
+
+  archived_at     DateTime @default(now())
+  last_synced_at  DateTime @default(now())
+  is_frozen       Boolean  @default(false) // end_date'ten 30 gun gecti, bir daha guncellenmez
+
+  @@index([start_date])
+  @@index([end_date])
+  @@index([country_iso2])
+  @@index([is_frozen, end_date])
+  @@map("archived_wca_competition")
+}
+
 model WcaCompetitionNotificationState {
   id             String   @id @default(uuid())
   user_id        String

@@ -1322,7 +1322,11 @@
         "update_wca_data": "Actualizar datos",
         "wca_data_updated": "Datos WCA actualizados correctamente!",
         "wca_results_tab": "Resultados WCA",
-        "wca_results_tab_short": "Resultados"
+        "wca_results_tab_short": "Resultados",
+        "create_cuber_card": "Crear Cuber Card",
+        "cuber_card_generating": "Generando...",
+        "cuber_card_ready": "¡Cuber Card lista!",
+        "cuber_card_failed": "No se pudo crear la Cuber Card"
     },
     "stats_page": {
         "more_stats": "Más estadísticas",

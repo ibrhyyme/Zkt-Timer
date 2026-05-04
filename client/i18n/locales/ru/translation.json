@@ -1322,7 +1322,11 @@
         "update_wca_data": "Обновить данные",
         "wca_data_updated": "Данные WCA успешно обновлены!",
         "wca_results_tab": "Результаты WCA",
-        "wca_results_tab_short": "Результаты"
+        "wca_results_tab_short": "Результаты",
+        "create_cuber_card": "Создать Cuber Card",
+        "cuber_card_generating": "Создание...",
+        "cuber_card_ready": "Cuber Card готова!",
+        "cuber_card_failed": "Не удалось создать Cuber Card"
     },
     "stats_page": {
         "more_stats": "Больше статистики",

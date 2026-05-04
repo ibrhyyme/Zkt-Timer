@@ -13,10 +13,11 @@ import {GraphQLContext} from '../@types/interfaces/server.interface';
 import {getIntegration} from '../models/integration';
 import {WcaApiService} from '../services/WcaApiService';
 import {buildCompetitionDetail} from '../services/WcifTransformer';
-import {fetchDataFromCache, createRedisKey, RedisNamespace, deleteKeyInRedis} from '../services/redis';
+import {fetchDataFromCache, createRedisKey, RedisNamespace, deleteKeyInRedis, getValueFromRedis, setKeyInRedis} from '../services/redis';
 import {logger} from '../services/logger';
 import {getWcaLiveData as wcaLiveGetData, fetchLiveRoundResults as wcaLiveFetchRound} from '../services/WcaLiveService';
 import {ensureNotificationState} from '../services/WcaNotificationState';
+import {getArchivedCompetition, archiveCompetition, isStaleArchive} from '../services/CompetitionArchiveService';
 
 function getErrorType(err: any): string {
 	if (!err) return 'unknown';
@@ -30,6 +31,7 @@ function getErrorType(err: any): string {
 
 const WCIF_CACHE_TTL = 60; // 60 saniye — canli yarismada atamalar guncellenir
 const WCA_LIVE_ROUND_TTL = 60;
+const WCA_LIVE_ROUND_FINISHED_TTL = 24 * 60 * 60; // bitmiş round için 24 saat — sonuçlar değişmez
 const WCA_LIVE_OVERVIEW_TTL = 60;
 const WCA_LIVE_COMPETITOR_TTL = 60;
 
@@ -47,6 +49,51 @@ export class WcaScheduleResolver {
 		const wcaId = integration?.wca_id || '';
 		const wcaUserId = integration?.wca_user_id || '';
 
+		// 1. Once arsiv DB'sine bak — varsa WCA'ya gitme
+		const archive = await getArchivedCompetition(input.competitionId).catch(() => null);
+		if (archive) {
+			const detail = buildCompetitionDetail(archive.wcif_data as any, wcaId, wcaUserId);
+			if (detail && archive.live_data) {
+				const liveData = (archive.live_data as any).wcaLiveData;
+				if (liveData) {
+					detail.wcaLiveCompId = liveData.compId;
+					detail.wcaLiveCompetitors = liveData.competitors;
+					detail.wcaLiveRoundMap = liveData.roundMap;
+				}
+			}
+
+			// Stale ise arka planda yenile — kullanici beklemiyor
+			if (isStaleArchive(archive)) {
+				archiveCompetition(input.competitionId).catch((err: any) => {
+					logger.warn('[Archive] background re-sync failed', {
+						competitionId: input.competitionId,
+						err: err?.message,
+					});
+				});
+			}
+
+			// Kullanici kayitli ve accepted ise notification state'i otomatik kur (fire-and-forget)
+			if (detail && wcaId && detail.myRegistrationStatus === 'accepted') {
+				const myPerson = (archive.wcif_data as any).persons?.find((p: any) => p.wcaId === wcaId);
+				ensureNotificationState(
+					ctx.user.id,
+					input.competitionId,
+					wcaId,
+					myPerson?.name || '',
+					(archive.wcif_data as any).schedule?.startDate || '',
+					(archive.wcif_data as any).schedule?.numberOfDays || 1,
+				).catch((err: any) => {
+					logger.warn('[WcaNotify] ensureNotificationState failed', {
+						competitionId: input.competitionId,
+						err: err?.message,
+					});
+				});
+			}
+
+			return detail;
+		}
+
+		// 2. Arsivde yok — mevcut akis (WCIF + Live fetch)
 		const cacheKey = createRedisKey(RedisNamespace.WCA_WCIF, input.competitionId);
 
 		const wcifData = await fetchDataFromCache(
@@ -92,6 +139,15 @@ export class WcaScheduleResolver {
 			});
 		}
 
+		// 3. Lazy archive — kullanici cevabi gondermeden arka planda DB'ye yaz
+		// prefetchedWcif geciyoruz — WCA'ya tekrar gidilmesin
+		archiveCompetition(input.competitionId, undefined, wcifData).catch((err: any) => {
+			logger.warn('[Archive] lazy archive failed', {
+				competitionId: input.competitionId,
+				err: err?.message,
+			});
+		});
+
 		return detail;
 	}
 
@@ -132,11 +188,19 @@ export class WcaScheduleResolver {
 				`liveround:${input.competitionId}:${input.liveRoundId}`
 			);
 
-			const result = await fetchDataFromCache(
-				cacheKey,
-				() => wcaLiveFetchRound(input.liveRoundId),
-				WCA_LIVE_ROUND_TTL
-			);
+			// Manual cache: round.finished durumuna gore farkli TTL uygula
+			// Bitmis round'lar bir daha degismez → 24 saat cache; aktif round 60 saniye
+			const cached = await getValueFromRedis(cacheKey);
+			let result: WcaLiveRoundResults | null;
+			if (cached) {
+				result = JSON.parse(cached);
+			} else {
+				result = await wcaLiveFetchRound(input.liveRoundId);
+				if (result && result.results && result.results.length > 0) {
+					const ttl = result.finished ? WCA_LIVE_ROUND_FINISHED_TTL : WCA_LIVE_ROUND_TTL;
+					await setKeyInRedis(cacheKey, JSON.stringify(result), ttl);
+				}
+			}
 
 			// Bos/null sonuc geldiyse cache'i sil ki sonraki istek tekrar denesin
 			if (!result || !result.results || result.results.length === 0) {

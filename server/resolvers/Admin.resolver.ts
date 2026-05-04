@@ -1,4 +1,4 @@
-import { Arg, Authorized, Ctx, Mutation, Query, Resolver } from 'type-graphql';
+import { Arg, Authorized, Ctx, Int, Mutation, Query, Resolver } from 'type-graphql';
 import { GraphQLContext } from '../@types/interfaces/server.interface';
 import { Role } from '../middlewares/auth';
 import GraphQLError from '../util/graphql_error';
@@ -47,6 +47,8 @@ import { updateIntegration } from '../models/integration';
 import { fetchAndSaveWcaRecords } from '../models/wca_record';
 import { getOAuthPostRequest } from '../integrations/oauth';
 import { getIpDetail } from '../services/ipstack';
+import { archiveCompetition } from '../services/CompetitionArchiveService';
+import { BulkArchiveResult } from '../schemas/ArchiveAdmin.schema';
 
 @Resolver()
 export class AdminResolver {
@@ -680,4 +682,103 @@ export class AdminResolver {
 		console.log(`[MethodStepsBackfill] Done.`, result);
 		return result;
 	}
+
+	@Authorized([Role.ADMIN])
+	@Mutation(() => BulkArchiveResult)
+	async bulkArchiveWcaCompetitions(
+		@Arg('startDate') startDate: string,
+		@Arg('endDate', {nullable: true}) endDate: string | undefined,
+		@Arg('rateLimitMs', () => Int, {defaultValue: 1500}) rateLimitMs: number,
+		@Arg('skipExisting', {defaultValue: true}) skipExisting: boolean,
+	): Promise<BulkArchiveResult> {
+		const prisma = getPrisma();
+		const result: BulkArchiveResult = {
+			total: 0,
+			imported: 0,
+			skipped: 0,
+			failed: 0,
+			lastProcessedId: undefined,
+			failedIds: [],
+		};
+
+		// 1. WCA'dan yarisma listesini sayfa sayfa cek
+		const PER_PAGE = 100;
+		const allComps: any[] = [];
+		const baseUrl = 'https://www.worldcubeassociation.org/api/v0/competitions';
+		const params: Record<string, any> = {
+			start: startDate,
+			sort: 'start_date',
+			per_page: PER_PAGE,
+		};
+		if (endDate) params.end = endDate;
+
+		let page = 1;
+		while (true) {
+			try {
+				const res = await axios.get(baseUrl, {
+					params: {...params, page},
+					timeout: 20000,
+				});
+				const data: any[] = res.data || [];
+				if (data.length === 0) break;
+				allComps.push(...data.filter((c) => !c.cancelled_at));
+				if (data.length < PER_PAGE) break;
+				page++;
+				await sleep(500); // sayfalar arasi nazik bekleme
+			} catch (err: any) {
+				console.error('[BulkArchive] list fetch failed', err?.message);
+				break;
+			}
+		}
+
+		result.total = allComps.length;
+		console.log(`[BulkArchive] ${result.total} comp(s) found, starting import...`);
+
+		// 2. Mevcut arsivleri tek seferde cek (skipExisting icin)
+		const existingIds = new Set<string>();
+		if (skipExisting) {
+			const existing = await prisma.archivedWcaCompetition.findMany({
+				where: {id: {in: allComps.map((c) => c.id)}},
+				select: {id: true},
+			});
+			existing.forEach((e) => existingIds.add(e.id));
+		}
+
+		// 3. Tek tek arsivle, rate-limit ile
+		for (const comp of allComps) {
+			result.lastProcessedId = comp.id;
+
+			if (skipExisting && existingIds.has(comp.id)) {
+				result.skipped++;
+				continue;
+			}
+
+			const archiveResult = await archiveCompetition(comp.id, {
+				name: comp.name,
+				start_date: comp.start_date ? new Date(comp.start_date + 'T00:00:00Z') : undefined,
+				end_date: comp.end_date ? new Date(comp.end_date + 'T00:00:00Z') : undefined,
+				country_iso2: comp.country_iso2 || null,
+				city: comp.city || null,
+			});
+
+			if (archiveResult.success) {
+				result.imported++;
+				if (result.imported % 50 === 0) {
+					console.log(`[BulkArchive] ${result.imported}/${result.total} imported...`);
+				}
+			} else {
+				result.failed++;
+				result.failedIds.push(comp.id);
+			}
+
+			await sleep(rateLimitMs);
+		}
+
+		console.log(`[BulkArchive] Done.`, result);
+		return result;
+	}
+}
+
+function sleep(ms: number): Promise<void> {
+	return new Promise((resolve) => setTimeout(resolve, ms));
 }
