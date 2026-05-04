@@ -33,8 +33,9 @@ import { sendPushToUser } from '../services/push';
 import { AdminSendPushResult, PushTokenInfo } from '../schemas/PushToken.schema';
 import { OnlineStats, OnlineUser, BackfillResult, WcaStats, IpInfo, MethodStepsBackfillResult } from '../schemas/SiteConfig.schema';
 import { getSolveSteps } from '../util/solve/solve_method';
-import { createSolveMethodSteps } from '../models/solve_method_step';
+import { createSolveMethodSteps, deleteSolveMethodSteps } from '../models/solve_method_step';
 import { parseSmartTurns } from '../../shared/smart_cube/parse_turns';
+import { countHTM } from '../../shared/util/solve/move_counter';
 import { updateSolveLiteral } from '../models/solve';
 import { getOnlineCounts, getOnlineUsers } from '../services/socket_util';
 import WcaResultEnteredNotification from '../resources/notification_types/wca_result_entered';
@@ -603,13 +604,20 @@ export class AdminResolver {
 	}
 
 	/**
-	 * Eski smart cube solve'larin SolveMethodStep kayitlarini geriye donuk olusturur.
-	 * smart_turns JSON parse edilir → getSolveSteps calistirilir → createSolveMethodSteps ile DB'ye yazilir.
-	 * Parse hatasi alan solve'lar is_smart_cube=false olarak downgrade edilir (createSolve resolver'i ile ayni davranis).
+	 * Tum smart cube solve'larin SolveMethodStep kayitlarini SILER ve yeniden hesaplar.
+	 *
+	 * Tek kapsayici mutation:
+	 *   - Step kaydi olmayan solve'lar -> olusturulur (eski backfill davranisi)
+	 *   - Step kaydi olan solve'lar -> silinip yeniden hesaplanir (engine fix sonrasi
+	 *     eski step.turn_count degerleri duzelir)
+	 *   - smart_turns yoksa veya parse edilemez ise solve is_smart_cube=false olarak
+	 *     downgrade edilir (eski bozuk veri temizligi).
+	 *
+	 * Engine algoritmasi degistiginde (orn. boundary-aware HTM duzeltmesi) calistir.
 	 */
 	@Authorized([Role.ADMIN])
 	@Mutation(() => MethodStepsBackfillResult)
-	async backfillSmartCubeMethodSteps(): Promise<MethodStepsBackfillResult> {
+	async reindexSmartCubeMethodSteps(): Promise<MethodStepsBackfillResult> {
 		const prisma = getPrisma();
 
 		const result: MethodStepsBackfillResult = {
@@ -622,29 +630,18 @@ export class AdminResolver {
 			error: 0,
 		};
 
-		// is_smart_cube=true olan tum solve'lari bul
 		const candidates = await prisma.solve.findMany({
 			where: { is_smart_cube: true },
-			select: {
-				id: true,
-				smart_turns: true,
-				_count: { select: { solve_method_steps: true } },
-			},
+			select: { id: true, smart_turns: true },
 		});
 
 		result.totalCandidates = candidates.length;
-		console.log(`[MethodStepsBackfill] ${candidates.length} aday solve bulundu`);
+		console.log(`[MethodStepsReindex] ${candidates.length} aday solve bulundu`);
 
 		for (const cand of candidates) {
 			result.processed++;
 
-			// Zaten step kaydi olan solve'lari atla
-			if (cand._count.solve_method_steps > 0) {
-				result.skippedAlreadyHasSteps++;
-				continue;
-			}
-
-			// smart_turns yoksa parse edilemez — downgrade
+			// smart_turns yoksa parse edilemez -> downgrade
 			if (!cand.smart_turns || typeof cand.smart_turns !== 'string') {
 				result.skippedNoTurns++;
 				try {
@@ -659,28 +656,31 @@ export class AdminResolver {
 			try {
 				const turns = parseSmartTurns(cand.smart_turns);
 				if (!turns.length) {
-					// Bos turns — parse edilebildi ama icerik yok, downgrade
+					// Bos turns -> downgrade
 					await updateSolveLiteral(cand.id, { is_smart_cube: false });
 					result.downgraded++;
 					continue;
 				}
 				const steps = getSolveSteps(turns);
+				const htmCount = countHTM(turns.map((t) => t.turn));
+				await deleteSolveMethodSteps({ id: cand.id });
 				await createSolveMethodSteps({ id: cand.id }, steps);
+				// Eski solve'larda smart_turn_count null veya yanlis olabilir — engine ile yeniden
+				// hesapla. Bu UI'daki tum turn/TPS gosterimleri icin tek dogru kaynak.
+				await updateSolveLiteral(cand.id, { smart_turn_count: htmCount });
 				result.filled++;
 			} catch (e: any) {
-				// Eski format / bozuk veri — solve metadata'sini bozma, sadece skip et.
-				// is_smart_cube=true kalir, method_steps bos kalir, UI '–' gosterir.
-				console.warn(`[MethodStepsBackfill] solve ${cand.id} skipped: ${e?.message}`);
+				// Bozuk veri — solve metadata'sini bozma, sadece skip et.
+				console.warn(`[MethodStepsReindex] solve ${cand.id} skipped: ${e?.message}`);
 				result.error++;
 			}
 
-			// Her 100 solve'da bir progress logu
 			if (result.processed % 100 === 0) {
-				console.log(`[MethodStepsBackfill] ${result.processed}/${result.totalCandidates}...`);
+				console.log(`[MethodStepsReindex] ${result.processed}/${result.totalCandidates}...`);
 			}
 		}
 
-		console.log(`[MethodStepsBackfill] Done.`, result);
+		console.log(`[MethodStepsReindex] Done.`, result);
 		return result;
 	}
 

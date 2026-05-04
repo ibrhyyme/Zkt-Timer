@@ -125,18 +125,24 @@ export default function SessionStepsTable({ sessionId, filterOptions, title }: P
 
 	if (!visiblePhases.length) return null;
 
-	// Footer toplamları (ortalamaların toplamı)
+	// Footer toplamları — sure ve recognition/execution ortalamalarinin toplami,
+	// ama turns/TPS solve.smart_turn_count uzerinden (countHTM monolitik, tek dogru
+	// kaynak — projedeki diger turn gosterimleriyle uyumlu).
 	let totalRec = 0;
 	let totalExec = 0;
 	let totalStepTime = 0;
-	let totalTurns = 0;
 	for (const phase of visiblePhases) {
 		totalRec += avg(aggregates[phase].recognition);
 		totalExec += avg(aggregates[phase].execution);
 		totalStepTime += avg(aggregates[phase].stepTime);
-		totalTurns += avg(aggregates[phase].turns);
 	}
-	const totalTps = totalStepTime > 0 ? (totalTurns / totalStepTime).toFixed(2) : '-';
+	const turnCounts = solves
+		.map((s) => s.smart_turn_count)
+		.filter((n): n is number => n != null);
+	const totalTurns = turnCounts.length > 0 ? avg(turnCounts) : 0;
+	const totalTps = totalStepTime > 0 && totalTurns > 0
+		? (totalTurns / totalStepTime).toFixed(2)
+		: '-';
 
 	return (
 		<div className={bSession()}>

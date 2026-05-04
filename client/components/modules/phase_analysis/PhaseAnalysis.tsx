@@ -61,33 +61,42 @@ function phaseAvg(solves: Solve[], phase: string): number | null {
 	return vals.reduce((a, b) => a + b, 0) / vals.length;
 }
 
-function solveTurns(steps: StepType[]): number | null {
-	let total = 0, found = false;
+// Solve total turns / TPS — solve.smart_turn_count tek dogru kaynak (countHTM,
+// boundary-aware monolitik). Tum projedeki diger turn gosterimleri (SmartSolveLayout
+// header, SmartStats badge) ayni alandan beslenir. Per-phase step.turn_count engine
+// fix sonrasi zaten Sigma === smart_turn_count olur.
+function solveTotalStepTime(steps: StepType[]): number {
+	let time = 0;
 	for (const phase of PHASES) {
 		const s = steps.find((x) => x.step_name === phase);
-		if (s?.turn_count != null) { total += s.turn_count; found = true; }
+		if (s?.total_time != null) time += s.total_time;
 	}
-	return found ? total : null;
+	return time;
 }
 
-function solveTps(steps: StepType[]): string {
-	let time = 0, turns = 0, found = false;
+function solveTurns(solve: Solve): number | null {
+	// Tek kaynak: solve.smart_turn_count. Reindex calismadigi cok eski solve'larda null
+	// olabilir; o durumda step toplamina fallback (engine fix sonrasi ikisi esit).
+	if (solve.smart_turn_count != null) return solve.smart_turn_count;
+	let sum = 0, found = false;
 	for (const phase of PHASES) {
-		const s = steps.find((x) => x.step_name === phase);
-		if (s?.total_time != null && s?.turn_count != null) {
-			time += s.total_time;
-			turns += s.turn_count;
-			found = true;
-		}
+		const s = (solve.solve_method_steps || []).find((x) => x.step_name === phase);
+		if (s?.turn_count != null) { sum += s.turn_count; found = true; }
 	}
-	if (!found || time === 0) return '–';
+	return found ? sum : null;
+}
+
+function solveTps(solve: Solve): string {
+	const turns = solveTurns(solve);
+	const time = solveTotalStepTime(solve.solve_method_steps || []);
+	if (!turns || time === 0) return '–';
 	return (turns / time).toFixed(2);
 }
 
 function avgTurns(solves: Solve[]): number | null {
 	const vals: number[] = [];
 	for (const solve of solves) {
-		const t = solveTurns(solve.solve_method_steps || []);
+		const t = solveTurns(solve);
 		if (t != null) vals.push(t);
 	}
 	if (!vals.length) return null;
@@ -97,13 +106,12 @@ function avgTurns(solves: Solve[]): number | null {
 function avgTps(solves: Solve[]): string {
 	let time = 0, turns = 0, found = false;
 	for (const solve of solves) {
-		for (const phase of PHASES) {
-			const s = (solve.solve_method_steps || []).find((x) => x.step_name === phase);
-			if (s?.total_time != null && s?.turn_count != null) {
-				time += s.total_time;
-				turns += s.turn_count;
-				found = true;
-			}
+		const t = solveTurns(solve);
+		const stepTime = solveTotalStepTime(solve.solve_method_steps || []);
+		if (t != null && stepTime > 0) {
+			time += stepTime;
+			turns += t;
+			found = true;
 		}
 	}
 	if (!found || time === 0) return '–';
@@ -203,10 +211,10 @@ export default function PhaseAnalysis(props: Props) {
 					);
 				})}
 				<div className="cd-phase-analysis__cell cd-phase-analysis__cell--stat">
-					{solve.is_smart_cube ? (solveTurns(steps) ?? '–') : '–'}
+					{solve.is_smart_cube ? (solveTurns(solve) ?? '–') : '–'}
 				</div>
 				<div className="cd-phase-analysis__cell cd-phase-analysis__cell--stat">
-					{solve.is_smart_cube ? solveTps(steps) : '–'}
+					{solve.is_smart_cube ? solveTps(solve) : '–'}
 				</div>
 			</div>
 		);

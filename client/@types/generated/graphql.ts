@@ -850,6 +850,7 @@ export type Mutation = {
   registerForZktCompetition?: Maybe<ZktRegistration>;
   registerPushToken?: Maybe<PushTokenResult>;
   reindexArchivedCompsToES?: Maybe<ReindexEsResult>;
+  reindexSmartCubeMethodSteps?: Maybe<MethodStepsBackfillResult>;
   removeBadgeFromUser?: Maybe<Badge>;
   removeDailyGoal?: Maybe<Scalars['Boolean']>;
   removeZktDelegate?: Maybe<Scalars['Boolean']>;
