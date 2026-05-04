@@ -11,6 +11,7 @@ import HourlyConsistency from './hourly_consistency/HourlyConsistency';
 import PhaseSplits from './phase_splits/PhaseSplits';
 import SessionStepsTable from '../../sessions/smart_cube_steps_table/SessionStepsTable';
 import SmartCubeSummary from '../../sessions/smart_cube_summary/SmartCubeSummary';
+import CaseSection from './cases/CaseSection';
 import SubStats from '../common/sub_stats/SubStats';
 import {StatsContext} from '../Stats';
 import {useSolveDb} from '../../../util/hooks/useSolveDb';
@@ -34,6 +35,13 @@ export default function CubeStats() {
 				<StatSection title={t('stats_page.smart_cube_summary')} className={b('summary')}>
 					<StatModule>
 						<SmartCubeSummary filterOptions={filterOptions} />
+					</StatModule>
+				</StatSection>
+			)}
+			{hasSmartCubeData && (
+				<StatSection title={t('stats_page.cases')} className={b('cases')}>
+					<StatModule>
+						<CaseSection />
 					</StatModule>
 				</StatSection>
 			)}

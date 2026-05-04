@@ -1009,6 +1009,11 @@
         "scramble_label": "Mezcla",
         "notes_label": "Notas",
         "copy_moves": "Copiar movimientos",
+        "copy_detailed": "Copiar detallado",
+        "copied_detailed": "Reconstrucción detallada copiada al portapapeles",
+        "skip_badge": "SALTAR",
+        "recognition_short": "R",
+        "execution_short": "E",
         "step": "Paso",
         "case": "Caso",
         "recognition": "Reconocimiento",
@@ -1342,7 +1347,8 @@
         "time_focus": "Tiempo y enfoque",
         "phase_splits": "División por fase",
         "steps_detail": "Tabla detalle de fases",
-        "smart_cube_summary": "Resumen de Cubo Inteligente"
+        "smart_cube_summary": "Resumen de Cubo Inteligente",
+        "cases": "Casos"
     },
     "common": {
         "results_count": "{{count}} resultados",
@@ -1798,6 +1804,7 @@
         "inspection": "Inspección",
         "hide_time_when_solving": "Ocultar tiempo mientras resuelves",
         "haptic_feedback": "Vibración",
+        "show_recognition_split": "Mostrar Reconocimiento/Ejecución (escritorio)",
         "freeze_time": "Tiempo de Espera (s)",
         "none": "Ninguno",
         "multi_phase": "Multifase",
@@ -3030,5 +3037,23 @@
             "message_expiry": "¡Felicitaciones! Tu membresía {{label}} de Zkt Timer ha sido activada exitosamente. Tu membresía es válida hasta {{date}}.",
             "link_text": "Ver tu configuración"
         }
+    },
+    "case_stats": {
+        "modal_title_oll": "Estadísticas de Casos OLL",
+        "modal_title_pll": "Estadísticas de Casos PLL",
+        "tab_oll": "OLL",
+        "tab_pll": "PLL",
+        "col_case": "Caso",
+        "col_count": "Cant.",
+        "col_avg": "Tiempo",
+        "col_best": "Mejor",
+        "col_recognition": "Reconocimiento",
+        "col_execution": "Ejecución",
+        "col_tps": "TPS",
+        "col_turns": "Movs.",
+        "loading": "Cargando...",
+        "empty_state": "Aún no hay registros OLL/PLL con smart cube",
+        "sort_by": "Ordenar por:",
+        "sort_recent": "Más reciente"
     }
 }

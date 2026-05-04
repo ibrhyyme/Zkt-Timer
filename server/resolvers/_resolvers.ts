@@ -5,6 +5,7 @@ export * from './Solve.resolver';
 export * from './Session.resolver';
 export * from './Setting.resolver';
 export * from './Stats.resolver';
+export * from './CaseStats.resolver';
 export * from './Integration.resolver';
 export * from './Report.resolver';
 export * from './Leaderboards.resolver';

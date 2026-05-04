@@ -1,0 +1,80 @@
+@import '../../../../styles/config';
+
+.#{$namespace}-case-section {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 16px;
+	padding: 8px 0;
+
+	&__card {
+		flex: 1 1 220px;
+		max-width: 360px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 12px;
+		padding: 24px 16px;
+		background: rgb(var(--button-color));
+		border: 1px solid rgba(var(--text-color), 0.08);
+		border-radius: 14px;
+		cursor: pointer;
+		transition: box-shadow 0.15s, border-color 0.15s, transform 0.15s;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+		&:hover {
+			box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+			border-color: rgba(var(--primary-color), 0.4);
+			transform: translateY(-1px);
+		}
+
+		&:focus-visible {
+			outline: 2px solid rgb(var(--primary-color));
+			outline-offset: 2px;
+		}
+	}
+
+	&__card-icon {
+		width: 56px;
+		height: 56px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	&__card-label {
+		font-size: 1.1rem;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+		letter-spacing: 0.04em;
+	}
+
+	@media (max-width: 600px) {
+		gap: 8px;
+		padding: 4px 0;
+
+		&__card {
+			flex: 1 1 calc(50% - 4px);
+			max-width: calc(50% - 4px);
+			min-width: 0;
+			gap: 8px;
+			padding: 14px 8px;
+			border-radius: 12px;
+		}
+
+		&__card-icon {
+			width: 36px;
+			height: 36px;
+
+			svg {
+				width: 100%;
+				height: 100%;
+			}
+		}
+
+		&__card-label {
+			font-size: 0.9rem;
+			letter-spacing: 0.02em;
+		}
+	}
+}

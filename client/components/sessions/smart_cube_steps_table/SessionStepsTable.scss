@@ -27,4 +27,14 @@
 		}
 	}
 
+	// Mobilde tablo min-width kaldir — sutunlar kuculup ekrana sigsin
+	@media (max-width: 600px) {
+		.#{$namespace}-solve-info-steps-table {
+			&__table {
+				min-width: 0;
+				width: 100%;
+			}
+		}
+	}
+
 }

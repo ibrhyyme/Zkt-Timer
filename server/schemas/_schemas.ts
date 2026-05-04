@@ -19,6 +19,7 @@ export * from './CustomCubeType.schema';
 export * from './Store.schema';
 export * from './NotificationPreference.schema';
 export * from './Stats.schema';
+export * from './CaseStat.schema';
 export * from './TrainerAlgorithm.schema';
 export * from './TrainerAlternative.schema';
 export * from './StatsModule.schema';

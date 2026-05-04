@@ -32,6 +32,7 @@ import { saveSolve } from '../helpers/save';
 import { useMe } from '../../../util/hooks/useMe';
 import { isPro } from '../../../lib/pro';
 import { serializeSmartTurnsCompact } from '../../../../shared/smart_cube/parse_turns';
+import { countHTM } from '../../../../shared/util/solve/move_counter';
 import AbortSolveOverlay from './abort_solve/AbortSolveOverlay';
 import BluetoothErrorMessage from '../common/BluetoothErrorMessage';
 import BleScanningModal from './ble_scanning_modal/BleScanningModal';
@@ -851,26 +852,31 @@ export default function SmartCube() {
 				);
 			}
 
+			// cstimer-grade HTM hamle sayisi: ardisik paralel duzlemde ayni yuze tekrarli
+			// hamleler 1 sayilir (R R = R2 = 1, R U R = 2). Ham move dizisinin uzunlugu yerine
+			// HTM kullanmak DB'ye, TPS hesabina ve UI'a tutarli, dogru deger yansitir.
+			const htmCount = countHTM(correctedMoves.map((m: any) => m.turn));
+
 			endTimer(context, finalTimeMilli, {
 				inspection_time: inspectionTime,
 				smart_device_id: smartDeviceId,
 				is_smart_cube: true,
-				smart_turn_count: correctedMoves.length,
+				smart_turn_count: htmCount,
 				smart_turns: smartTurnsToSave,
 			});
 
 			// Düzeltilmiş evre analizi: LiveAnalysisOverlay'in doğru süreleri göstermesi için
 			// correctedMoves.completedAt linear fit ile düzeltilmiş — ham timestamp'lerden daha doğru
-			dbgCorr(`CORR_ANALYSIS start | corrected.length=${correctedMoves.length} | startState=${startState?.length === 54 ? startState.slice(0, 27) + '...' : `INVALID(len=${startState?.length})`} | first3=${correctedMoves.slice(0, 3).map((m: any) => m.turn).join(' ')} | last3=${correctedMoves.slice(-3).map((m: any) => m.turn).join(' ')}`);
+			dbgCorr(`CORR_ANALYSIS start | corrected.length=${correctedMoves.length} | htm=${htmCount} | startState=${startState?.length === 54 ? startState.slice(0, 27) + '...' : `INVALID(len=${startState?.length})`} | first3=${correctedMoves.slice(0, 3).map((m: any) => m.turn).join(' ')} | last3=${correctedMoves.slice(-3).map((m: any) => m.turn).join(' ')}`);
 			try {
 				const correctedTurns = correctedMoves.map(m => ({ ...m, time: m.completedAt }));
 				const correctedAnalysis = analyzeCurrentState(correctedTurns, startState);
-				const tps = finalTimeMilli > 0
-					? Number((correctedMoves.length / (finalTimeMilli / 1000)).toFixed(2))
+				const tps = finalTimeMilli && finalTimeMilli > 0
+					? Number((htmCount / (finalTimeMilli / 1000)).toFixed(2))
 					: 0;
 				dbgCorr(`CORR_ANALYSIS success | phase=${correctedAnalysis.currentPhase} | crossSolved=${correctedAnalysis.crossSolved} | isSolved=${correctedAnalysis.isSolved} | oll=${correctedAnalysis.ollIdentified || '-'} | pll=${correctedAnalysis.pllIdentified || '-'} | times=${JSON.stringify(correctedAnalysis.times)}`);
 				setTimerParams({
-					lastSmartSolveStats: { turns: correctedMoves.length, tps, correctedAnalysis }
+					lastSmartSolveStats: { turns: htmCount, tps, correctedAnalysis }
 				});
 			} catch (e: any) {
 				// Analiz başarısız olursa endTimer'daki basit stats yeterli

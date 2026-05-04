@@ -12,7 +12,7 @@ import { baseResolvers, baseScalars } from './graphql';
 import * as Sentry from '@sentry/node';
 import '@sentry/tracing';
 
-import { initLLStates } from './util/solve/ll_states';
+import { initLLStates } from '../shared/util/solve/ll_identification';
 import { initSocket } from './services/socket';
 import 'seedrandom';
 import { initMjmlTemplates } from './services/ses';
