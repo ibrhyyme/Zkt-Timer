@@ -32,6 +32,24 @@ export function isStaleArchive(archive: {is_frozen: boolean; last_synced_at: Dat
 }
 
 /**
+ * Yarisma su an aktif mi (canli devam ediyor)?
+ * start_date <= bugun <= end_date + 1 gun (timezone toleransi)
+ *
+ * Aktif yarismalarda arsivi BYPASS edip canli akisa dusulmeli — cunku
+ * delegeler real-time veri giriyor, arsiv snapshot'i eski kalir.
+ */
+export function isCompetitionActive(archive: {start_date: Date; end_date: Date}): boolean {
+	const now = new Date();
+	now.setHours(0, 0, 0, 0);
+	const start = new Date(archive.start_date);
+	start.setHours(0, 0, 0, 0);
+	const end = new Date(archive.end_date);
+	end.setHours(23, 59, 59, 999);
+	end.setDate(end.getDate() + 1); // 1 gun ekstra timezone tolerans
+	return now >= start && now <= end;
+}
+
+/**
  * Bir yarismayi WCA + WCA Live'dan cek ve DB'ye yaz (upsert).
  * Idempotent — kayit varsa guncellenir, yoksa olusturulur.
  *

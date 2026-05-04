@@ -17,7 +17,7 @@ import {fetchDataFromCache, createRedisKey, RedisNamespace, deleteKeyInRedis, ge
 import {logger} from '../services/logger';
 import {getWcaLiveData as wcaLiveGetData, fetchLiveRoundResults as wcaLiveFetchRound} from '../services/WcaLiveService';
 import {ensureNotificationState} from '../services/WcaNotificationState';
-import {getArchivedCompetition, archiveCompetition, isStaleArchive} from '../services/CompetitionArchiveService';
+import {getArchivedCompetition, archiveCompetition, isStaleArchive, isCompetitionActive} from '../services/CompetitionArchiveService';
 
 function getErrorType(err: any): string {
 	if (!err) return 'unknown';
@@ -50,8 +50,10 @@ export class WcaScheduleResolver {
 		const wcaUserId = integration?.wca_user_id || '';
 
 		// 1. Once arsiv DB'sine bak — varsa WCA'ya gitme
+		// AMA: yarisma su an aktif (canli devam ediyor) ise arsivi atla — delegeler
+		// real-time veri giriyor, arsiv snapshot'i eski kalir. Canli akisi kullan.
 		const archive = await getArchivedCompetition(input.competitionId).catch(() => null);
-		if (archive) {
+		if (archive && !isCompetitionActive(archive)) {
 			const detail = buildCompetitionDetail(archive.wcif_data as any, wcaId, wcaUserId);
 			if (detail && archive.live_data) {
 				const liveData = (archive.live_data as any).wcaLiveData;
