@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+import { useTranslation } from 'react-i18next';
 import { TimerContext } from '../Timer';
 import { useLiveAnalysis } from '../../../util/hooks/useLiveAnalysis';
 import './LiveAnalysisOverlay.scss';
@@ -9,11 +10,36 @@ import { getTimeString } from '../../../util/time';
 
 const b = block('live-analysis');
 
+// Phase ID -> wrapper steps key. Cf_plus_op gibi composite ID'ler en yakin gercek step'e map'lenir.
+function phaseIdToStepKey(id: string): string | null {
+    switch (id) {
+        case 'Cross': return 'cross';
+        case 'F2L': return 'f2l';
+        case 'F2L_1': return 'f2l_1';
+        case 'F2L_2': return 'f2l_2';
+        case 'F2L_3': return 'f2l_3';
+        case 'F2L_4': return 'f2l_4';
+        case 'OLL':
+        case 'OLL_EO':
+        case 'OLL_CO':
+            return 'oll';
+        case 'PLL':
+        case 'PLL_CP':
+        case 'PLL_EP':
+            return 'pll';
+        case 'CF': return 'f2l';
+        case 'OP': return 'pll';
+        default: return null;
+    }
+}
+
 export default function LiveAnalysisOverlay({ startState, mobile }: { startState?: string, mobile?: boolean }) {
+    const { t: tr } = useTranslation();
     const { smartTurns, timeStartedAt, lastSmartSolveStats } = useContext(TimerContext);
     const rawAnalysisMode = useSettings('smart_cube_analysis_mode') || 'cffffop';
     // Mobilde cffffoopp 11 satira cikiyor — sigmaz. cffffop'a (7 satir) fallback yap.
     const analysisMode = (mobile && rawAnalysisMode === 'cffffoopp') ? 'cffffop' : rawAnalysisMode;
+    const showRecognition = !!useSettings('smart_cube_show_recognition');
     const cubeType = useSettings('cube_type');
     const scrambleSubset = useSettings('scramble_subset');
 
@@ -249,6 +275,16 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
         ];
     }
 
+    // Engine'den skipped + recognition/execution split ek alanlarini her phase'e enjekte et.
+    // Wrapper steps[stepKey] = { skipped, recognitionMs, executionMs, ... }
+    phases.forEach((p) => {
+        const stepKey = phaseIdToStepKey(p.id);
+        const step = stepKey ? displayAnalysis.steps?.[stepKey] : null;
+        p.skipped = !!step?.skipped;
+        p.recognitionTime = step?.recognitionMs != null ? step.recognitionMs / 1000 : undefined;
+        p.executionTime = step?.executionMs != null ? step.executionMs / 1000 : undefined;
+    });
+
     // Re-mapping labels for all modes to numeric style
     phases.forEach((p, i) => {
         p.label = i === 0 ? '=' : '+';
@@ -280,8 +316,11 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
         currentPhase === 'Scramble/Inspection'
     ) return null;
 
-    // Sadece zamani olan ve done olan fazlari render et — cumulative hesabi icin
-    const renderableRows = mergedPhases.filter(p => p.done && p.time != null && p.time > 0);
+    // Done olan fazlari render et. Skipped phase'ler time=0 ile gelir; gostermek istiyoruz
+    // (rozet icin) — ama cumulative'a etki etmez.
+    const renderableRows = mergedPhases.filter(p =>
+        p.done && (p.skipped || (p.time != null && p.time > 0))
+    );
     let cumulative = 0;
 
     return (
@@ -297,14 +336,22 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
                 justifyItems: 'start'
             } : {}}>
                 {renderableRows.map((p, idx) => {
-                    cumulative += p.time;
-                    const showCumulative = idx > 0;
+                    if (!p.skipped) cumulative += p.time;
+                    const showCumulative = idx > 0 && !p.skipped;
 
-                    const timeStr = getTimeString(p.time, 2);
+                    const timeStr = getTimeString(p.time || 0, 2);
                     const [sec, dec] = timeStr.split('.');
 
                     const cumStr = getTimeString(cumulative, 2);
                     const [cSec, cDec] = cumStr.split('.');
+
+                    // Recognition/execution split string'i — sadece desktop'ta, toggle aciksa.
+                    // Mobile'de yer yok (1.4rem font + dar grid), gizliyoruz.
+                    const showSplit = showRecognition && !mobile && !p.skipped &&
+                        p.recognitionTime != null && p.executionTime != null;
+                    const splitStr = showSplit
+                        ? `${tr('solve_info.recognition_short')}:${p.recognitionTime.toFixed(2)} + ${tr('solve_info.execution_short')}:${p.executionTime.toFixed(2)}`
+                        : null;
 
                     const rowStyle: React.CSSProperties = {
                         display: 'flex',
@@ -318,18 +365,35 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
                         fontWeight: '700',
                     };
 
+                    const splitRowStyle: React.CSSProperties = {
+                        fontSize: '0.95rem',
+                        opacity: 0.65,
+                        fontWeight: 500,
+                        lineHeight: '1',
+                        alignSelf: 'baseline',
+                        marginRight: '4px',
+                    };
+
+                    const skipBadge = p.skipped ? (
+                        <span className={b('skip-badge')}>{tr('solve_info.skip_badge')}</span>
+                    ) : null;
+
                     // Mobilde 2-sutun grid: sutun 1 split, sutun 2 cumulative
                     if (mobile) {
                         return (
                             <React.Fragment key={p.id}>
-                                <div className={b('row', { active: p.active, done: p.done })} style={rowStyle}>
+                                <div className={b('row', { active: p.active, done: p.done, skipped: p.skipped })} style={rowStyle}>
                                     <span className={b('symbol')} style={{ color: '#fff' }}>{p.label}</span>
-                                    <span className={b('time-val')} style={{ color: '#60a5fa' }}>
-                                        <span>
-                                            {sec}
-                                            <span style={{ fontSize: '0.6em', opacity: 0.8 }}>.{dec}</span>
+                                    {p.skipped ? (
+                                        skipBadge
+                                    ) : (
+                                        <span className={b('time-val')} style={{ color: '#60a5fa' }}>
+                                            <span>
+                                                {sec}
+                                                <span style={{ fontSize: '0.6em', opacity: 0.8 }}>.{dec}</span>
+                                            </span>
                                         </span>
-                                    </span>
+                                    )}
                                 </div>
                                 <div className={b('row', { done: p.done })} style={rowStyle}>
                                     {showCumulative && (
@@ -348,19 +412,27 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
                         );
                     }
 
-                    // Desktop: tek satir icinde split + cumulative yan yana
+                    // Desktop: split (T:.. U:..) inline solda + label/zaman + cumulative yan yana.
+                    // Toggle kapaliysa split gozukmez, layout daralir.
                     return (
-                        <div key={p.id} className={b('row', { active: p.active, done: p.done })} style={rowStyle}>
+                        <div key={p.id} className={b('row', { active: p.active, done: p.done, skipped: p.skipped })} style={rowStyle}>
+                            {splitStr && (
+                                <div className={b('split-inline')} style={splitRowStyle}>{splitStr}</div>
+                            )}
                             <div style={{ display: 'flex', alignItems: 'baseline' }}>
                                 <span className={b('symbol')} style={{ color: '#fff' }}>
                                     {p.label}
                                 </span>
-                                <span className={b('time-val')} style={{ color: '#60a5fa' }}>
-                                    <span>
-                                        {sec}
-                                        <span style={{ fontSize: '0.6em', opacity: 0.8 }}>.{dec}</span>
+                                {p.skipped ? (
+                                    skipBadge
+                                ) : (
+                                    <span className={b('time-val')} style={{ color: '#60a5fa' }}>
+                                        <span>
+                                            {sec}
+                                            <span style={{ fontSize: '0.6em', opacity: 0.8 }}>.{dec}</span>
+                                        </span>
                                     </span>
-                                </span>
+                                )}
                             </div>
                             {showCumulative && (
                                 <div style={{

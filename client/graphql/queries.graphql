@@ -646,3 +646,19 @@ query myCompetitionFollows($competitionId: String!) {
 		created_at
 	}
 }
+
+query caseStats($type: String!) {
+	caseStats(type: $type) {
+		caseKey
+		caseName
+		caseType
+		count
+		averageTime
+		bestTime
+		avgRecognition
+		avgExecution
+		avgTps
+		avgTurns
+		lastSeenAt
+	}
+}

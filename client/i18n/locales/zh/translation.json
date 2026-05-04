@@ -1009,6 +1009,11 @@
         "scramble_label": "打乱",
         "notes_label": "笔记",
         "copy_moves": "复制步法",
+        "copy_detailed": "复制详细",
+        "copied_detailed": "详细重构已复制到剪贴板",
+        "skip_badge": "跳过",
+        "recognition_short": "识",
+        "execution_short": "执",
         "step": "步骤",
         "case": "情况",
         "recognition": "识别",
@@ -1342,7 +1347,8 @@
         "time_focus": "时间与专注",
         "phase_splits": "阶段拆分",
         "steps_detail": "阶段详情表",
-        "smart_cube_summary": "智能魔方概览"
+        "smart_cube_summary": "智能魔方概览",
+        "cases": "情况"
     },
     "common": {
         "results_count": "{{count}} 条结果",
@@ -1798,6 +1804,7 @@
         "inspection": "观察",
         "hide_time_when_solving": "拧的时候隐藏时间",
         "haptic_feedback": "触觉反馈",
+        "show_recognition_split": "显示识别/执行（桌面）",
         "freeze_time": "冻结时间 (秒)",
         "none": "无",
         "multi_phase": "多阶段",
@@ -3117,5 +3124,23 @@
             "message_expiry": "恭喜！您的 Zkt Timer {{label}} 会员资格已成功激活。会员资格有效期至 {{date}}。",
             "link_text": "查看设置"
         }
+    },
+    "case_stats": {
+        "modal_title_oll": "OLL 情况统计",
+        "modal_title_pll": "PLL 情况统计",
+        "tab_oll": "OLL",
+        "tab_pll": "PLL",
+        "col_case": "情况",
+        "col_count": "次数",
+        "col_avg": "时间",
+        "col_best": "最佳",
+        "col_recognition": "识别",
+        "col_execution": "执行",
+        "col_tps": "TPS",
+        "col_turns": "步数",
+        "loading": "加载中...",
+        "empty_state": "尚无智能魔方 OLL/PLL 记录",
+        "sort_by": "排序:",
+        "sort_recent": "最近"
     }
 }

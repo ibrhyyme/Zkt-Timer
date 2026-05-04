@@ -180,6 +180,7 @@ export default function ExtrasTab() {
 	const timerType = useSettings('timer_type');
 	const freezeTime = useSettings('freeze_time');
 	const analysisMode = useSettings('smart_cube_analysis_mode');
+	const showRecognition = useSettings('smart_cube_show_recognition');
 	const mobileModules = useSettings('mobile_timer_modules');
 	const mobileMode = useGeneral('mobile_mode');
 
@@ -201,6 +202,12 @@ export default function ExtrasTab() {
 			isActive: hapticFeedback,
 			hidden: !isNative(),
 			onClick: () => toggleSetting('haptic_feedback'),
+		},
+		{
+			label: t('quick_controls.show_recognition_split'),
+			isActive: !!showRecognition,
+			hidden: timerType !== 'smart',
+			onClick: () => toggleSetting('smart_cube_show_recognition'),
 		},
 	];
 

@@ -1009,6 +1009,11 @@
         "scramble_label": "Karıştırma",
         "notes_label": "Notlar",
         "copy_moves": "Hamleleri kopyala",
+        "copy_detailed": "Detaylı kopyala",
+        "copied_detailed": "Detaylı rekonstrüksiyon panoya kopyalandı",
+        "skip_badge": "ATLA",
+        "recognition_short": "T",
+        "execution_short": "U",
         "step": "Adım",
         "case": "Durum",
         "recognition": "Tanıma",
@@ -1342,7 +1347,8 @@
         "time_focus": "Zaman & Odak",
         "phase_splits": "Evre Analizi",
         "steps_detail": "Evre Analiz Detay Tablosu",
-        "smart_cube_summary": "Akıllı Küp Özeti"
+        "smart_cube_summary": "Akıllı Küp Özeti",
+        "cases": "Vakalar"
     },
     "common": {
         "results_count": "{{count}} sonuç",
@@ -1798,6 +1804,7 @@
         "inspection": "İnceleme",
         "hide_time_when_solving": "Çözerken Süreyi Gizle",
         "haptic_feedback": "Titreşim",
+        "show_recognition_split": "Tanıma/Uygulama Gösterimi (masaüstü)",
         "freeze_time": "Dondurma Süresi (sn)",
         "none": "Yok",
         "multi_phase": "Multi-Evre",
@@ -3115,5 +3122,23 @@
             "message_expiry": "Tebrikler! Zkt Timer {{label}} üyeliğiniz başarıyla aktif edildi. Üyeliğiniz {{date}} tarihine kadar geçerlidir.",
             "link_text": "Ayarlarını görüntüle"
         }
+    },
+    "case_stats": {
+        "modal_title_oll": "OLL Vaka İstatistikleri",
+        "modal_title_pll": "PLL Vaka İstatistikleri",
+        "tab_oll": "OLL",
+        "tab_pll": "PLL",
+        "col_case": "Vaka",
+        "col_count": "Adet",
+        "col_avg": "Süre",
+        "col_best": "En iyi",
+        "col_recognition": "Tanıma",
+        "col_execution": "Uygulama",
+        "col_tps": "TPS",
+        "col_turns": "Hamle",
+        "loading": "Yükleniyor...",
+        "empty_state": "Henüz smart cube ile yeterli OLL/PLL kaydı yok",
+        "sort_by": "Sırala:",
+        "sort_recent": "En Son"
     }
 }

@@ -1,557 +1,180 @@
-import Cube from 'cubejs';
-import { cascadeQuartersForDisplay, SmartTurn } from '../../../client/util/smart_scramble';
-import { getLLState, reverseTurns } from './turns';
-import { getMatchingOLLState, getMatchingPLLState } from './ll_states';
+/**
+ * Backend wrapper — shared phase engine'i Solve.resolver.ts'in bekledigi DB steps shape'ine
+ * cevirir. Eski 558-satirlik phase detection logic'i shared/util/solve/phase_engine.ts'e
+ * tasindi; bu dosya ince adapter.
+ *
+ * Engine output (PhaseEngineResult) -> backend steps shape donusumu:
+ *   - transitions[] -> { cross, f2l, oll, pll, f2l_1..4 } objesi
+ *   - Her step: turn_count, turns string, total_time (saniye), tps, parent_name,
+ *     recognition_time, oll_case_key, pll_case_key, step_index, step_name
+ *
+ * createSolveMethodSteps (server/models/solve_method_step.ts) bu shape'i alir, DB'ye yazar.
+ */
 
-export function getSolveSteps(turns) {
+import { cascadeQuartersForDisplay, SmartTurn } from '../../../client/util/smart_scramble';
+import { analyzePhases } from '../../../shared/util/solve/phase_engine';
+import { CFOPPhase, SolveTurn, PhaseTransition } from '../../../shared/util/solve/types';
+import { countHTM } from '../../../shared/util/solve/move_counter';
+
+export function getSolveSteps(turns: SmartTurn[]) {
 	try {
 		return getSolveStepsInner(turns);
 	} catch (e: any) {
-		// Patolojik solve (cross color shift mid-solve, vs.) — sessizce skip et,
-		// solve kayıtta kalsın ama method_steps boş olsun.
-		console.warn('[getSolveSteps] parse failed (likely cross-color shift):', e?.message);
+		console.warn('[getSolveSteps] engine failed:', e?.message);
 		return { cross: null, f2l: null, oll: null, pll: null };
 	}
 }
 
-function getSolveStepsInner(turns) {
-	const SOLVED_STATE = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
+function getSolveStepsInner(turns: SmartTurn[]) {
+	const engineTurns: SolveTurn[] = (turns || [])
+		.filter((t) => t && typeof t.turn === 'string')
+		.map((t) => ({
+			turn: t.turn,
+			timestamp: typeof (t as any).completedAt === 'number'
+				? (t as any).completedAt
+				: typeof (t as any).time === 'number'
+					? (t as any).time
+					: 0,
+		}));
 
-	const cubejs = new Cube();
+	if (engineTurns.length === 0) {
+		return { cross: null, f2l: null, oll: null, pll: null };
+	}
 
-	// Going backwards to get the cube in the right state
-	reverseTurns(cubejs, turns);
+	// Backend'de start state yok — engine bunsuz da calisir (varsayilan: solved cube),
+	// ama o zaman cross detection sallar. solve_method'un mevcut yaklasimi: turns
+	// dizisini ters cevirip cube'u scrambled state'e getirmek (reverseTurns). Ama bu
+	// dogru sirayla phase detection yapmaz; biz zaten engine'i kullanip turns'u sirayla
+	// uygulariz.
+	//
+	// Onemli: backend solve_method end-state olarak SOLVED varsayar (turn dizisi cozulmus
+	// bir solve'dur). Bu yuzden basla = ters-uygulanan turns + solved = orijinal scramble state.
+	const startState = computeStartStateFromSolvedEnd(engineTurns);
 
-	// Per side, we need the cross, which is static
-	// Depending on what side we're on, we also need the sides filled in
+	const result = analyzePhases(engineTurns, startState, {
+		method: 'cfop',
+		identifyOLL: true,
+		identifyPLL: true,
+	});
 
-	const sideIndex = {
-		U: 0,
-		R: 1,
-		F: 2,
-		D: 3,
-		L: 4,
-		B: 5,
-	};
-	const sideOpposites = {
-		U: 'D',
-		L: 'R',
-		R: 'L',
-		D: 'U',
-		F: 'B',
-		B: 'F',
-	};
-	const cornerAdjSide = {
-		U: {
-			0: ['L:0', 'B:2'],
-			2: ['B:0', 'R:2'],
-			6: ['L:2', 'F:0'],
-			8: ['F:2', 'R:0'],
-		},
-		R: {
-			0: ['F:2', 'U:8'],
-			2: ['U:2', 'B:0'],
-			6: ['F:8', 'D:2'],
-			8: ['D:8', 'B:6'],
-		},
-		L: {
-			0: ['U:6', 'B:2'],
-			2: ['U:8', 'F:0'],
-			6: ['B:8', 'D:0'],
-			8: ['F:6', 'D:2'],
-		},
-		F: {
-			0: ['L:2', 'U:6'],
-			2: ['U:8', 'R:0'],
-			6: ['L:8', 'D:0'],
-			8: ['D:2', 'R:6'],
-		},
-		D: {
-			0: ['L:8', 'F:6'],
-			2: ['F:8', 'R:6'],
-			6: ['L:6', 'B:8'],
-			8: ['R:8', 'B:6'],
-		},
-		B: {
-			0: ['R:2', 'U:2'],
-			2: ['U:0', 'L:0'],
-			6: ['R:8', 'D:8'],
-			8: ['L:6', 'D:6'],
-		},
-	};
-	const edgeAdj = {
-		U: {
-			R: 1,
-			F: 1,
-			L: 1,
-			B: 1,
-		},
-		R: {
-			U: 5,
-			F: 5,
-			B: 3,
-			D: 5,
-		},
-		L: {
-			U: 3,
-			F: 3,
-			D: 3,
-			B: 5,
-		},
-		F: {
-			U: 7,
-			R: 3,
-			D: 1,
-			L: 5,
-		},
-		D: {
-			R: 7,
-			F: 7,
-			L: 7,
-			B: 7,
-		},
-		B: {
-			U: 1,
-			R: 5,
-			D: 7,
-			L: 3,
-		},
-	};
+	const transitionByPhase: Partial<Record<CFOPPhase, PhaseTransition>> = {};
+	for (const t of result.transitions) transitionByPhase[t.phase] = t;
 
-	let stepTurns = [];
-	const steps = {
+	const steps: any = {
 		cross: null,
 		f2l: null,
 		oll: null,
 		pll: null,
 	};
-	const cornerIndices = [0, 2, 6, 8];
-	const edgeIndices = [1, 3, 5, 7];
-	let sides = ['U', 'R', 'F', 'L', 'D', 'B'];
-	let lastStepCompletedAt = new Date(turns[0].completedAt).getTime();
 
-	for (const [index, turn] of turns.entries()) {
-		const move = turn.turn;
-		const completedAt = new Date(turn.completedAt).getTime();
-
-		stepTurns.push(move);
-		cubejs.move(move);
-
-		const state = cubejs.asString();
-
-		for (const side of sides) {
-			if (!steps.cross && areEdgesSolved(side, state)) {
-				setStep(completedAt, side, 'cross', 0, null, stepTurns, index);
-			}
-
-			if (steps.cross && !steps.f2l && areFirstTwoLayersSolved(side, state)) {
-				setStep(completedAt, side, 'f2l', 1, null, stepTurns, index);
-				populateF2lStages(index, side);
-			}
-
-			if (steps.f2l && !steps.oll && isFaceOriented(getOppositeSide(side), state)) {
-				const opposite = getOppositeSide(side);
-				let ollState = getCubejsWithUOnTop(side, getLLState(stepTurns));
-
-				if (opposite !== 'U') {
-					ollState = ollState.replace(/U/g, 'X');
-					ollState = ollState.replace(new RegExp(opposite, 'g'), 'U');
-				}
-
-				const matchingOll = getMatchingOLLState(ollState);
-
-				setStep(completedAt, side, 'oll', 2, null, stepTurns, index, {
-					ollCaseKey: matchingOll?.key,
-				});
-				break;
-			}
-
-			if (steps.oll && !steps.pll && isSolved(state)) {
-				const opposite = getOppositeSide(side);
-				let pllState = getCubejsWithUOnTop(side, getLLState(stepTurns));
-
-				pllState = pllState.replace(new RegExp(side, 'g'), 'X');
-				pllState = pllState.replace(new RegExp(opposite, 'g'), 'X');
-
-				const uSides = Object.keys(edgeAdj['U']);
-				const baseSides = Object.keys(edgeAdj[opposite]);
-
-				for (const [index, bs] of baseSides.entries()) {
-					pllState = pllState.replace(new RegExp(bs, 'g'), index);
-				}
-
-				for (const [index, us] of uSides.entries()) {
-					pllState = pllState.replace(new RegExp(String(index), 'g'), us);
-				}
-
-				const matchingPll = getMatchingPLLState(pllState);
-
-				setStep(completedAt, side, 'pll', 3, null, stepTurns, index, {
-					pllCaseKey: matchingPll?.key,
-				});
-			}
-		}
-	}
-
-	function setStep(completedAt: number, side: string, name: string, index: number, parent: string, moves: SmartTurn[], turnsIndex: number, options?: {
-		ollCaseKey?: string
-		pllCaseKey?: string
-	}) {
-		sides = [side];
-		const time = (completedAt - lastStepCompletedAt) / 1000;
-
-		let recognitionTime = 0;
-
-		const firstTurnIndex = turnsIndex - (moves.length - 1);
-		if (
-			firstTurnIndex > 0 &&
-			firstTurnIndex < turns.length &&
-			turns[firstTurnIndex - 1] &&
-			turns[firstTurnIndex]
-		) {
-			const lastTime = new Date(turns[firstTurnIndex - 1].completedAt).getTime();
-			const firstTime = new Date(turns[firstTurnIndex].completedAt).getTime();
-			recognitionTime = (firstTime - lastTime) / 1000;
-		}
-
-		const skipped = moves.length <= 2;
-
-		let tps = 0.0;
-		if (moves.length && time) {
-			tps = Math.floor((moves.length / time) * 100) / 100;
-		}
-
-		steps[name] = {
-			index,
-			parentName: parent,
-			skipped,
-			turns: [...moves],
-			recognitionTime,
+	const buildStep = (
+		t: PhaseTransition | undefined,
+		stepName: string,
+		stepIndex: number,
+		parentName: string | null,
+		extra?: { ollCaseKey?: string; pllCaseKey?: string }
+	) => {
+		if (!t) return null;
+		const totalSec = Math.max(0, (t.timestamp - t.recognitionStart) / 1000);
+		const recognitionSec = Math.max(
+			0,
+			(isFinite(t.firstMoveTimestamp) ? t.firstMoveTimestamp : t.timestamp) - t.recognitionStart
+		) / 1000;
+		const moves = t.moves;
+		// cstimer-grade HTM: engine her transition icin moveCount.htm hesabi yapiyor.
+		// Ham moves.length yerine HTM kullanmak DB tutarli, TPS dogru.
+		const moveCount = t.moveCount.htm;
+		const tps = moveCount && totalSec > 0 ? Math.floor((moveCount / totalSec) * 100) / 100 : 0;
+		const turnsAsObjects: any[] = moves.map((m) => ({ turn: m }));
+		return {
+			index: stepIndex,
+			parentName,
+			skipped: t.skipped || moveCount <= 2,
+			turns: turnsAsObjects,
+			recognitionTime: recognitionSec,
 			tps,
-			turnsString: cascadeQuartersForDisplay(moves).join(' '),
-			turnCount: moves.length,
-			time,
-			...(options || {}),
+			turnsString: cascadeQuartersForDisplay(turnsAsObjects).join(' '),
+			turnCount: moveCount,
+			time: totalSec,
+			...(extra || {}),
+		};
+	};
+
+	const ollExtra = result.ollIdentified ? { ollCaseKey: result.ollIdentified.key } : undefined;
+	const pllExtra = result.pllIdentified ? { pllCaseKey: result.pllIdentified.key } : undefined;
+
+	steps.cross = buildStep(transitionByPhase.cross, 'cross', 0, null);
+
+	// f2l parent + 4 sub-step. Backend'de toplu f2l "parent" step ile 4 sub-step sakliyor.
+	// Engine bize 4 ayri f2l_1..4 transition veriyor. f2l parent ozellikle ihtiyac duyulan
+	// alanlar icin (toplam sure) f2l_4'un timestamp'inden, ilk slot recognitionStart'indan
+	// yola cikilarak agregat olusturulur.
+	const f2lTransitions = ['f2l_1', 'f2l_2', 'f2l_3', 'f2l_4']
+		.map((p) => transitionByPhase[p as CFOPPhase])
+		.filter(Boolean) as PhaseTransition[];
+
+	if (f2lTransitions.length > 0) {
+		const first = f2lTransitions[0];
+		const last = f2lTransitions[f2lTransitions.length - 1];
+		const f2lMoves = f2lTransitions.flatMap((t) => t.moves);
+		const f2lMovesAsObj = f2lMoves.map((m) => ({ turn: m }));
+		const f2lTotalSec = Math.max(0, (last.timestamp - first.recognitionStart) / 1000);
+		// cstimer-grade HTM: tum F2L hamlelerini tek seferde say (phase boundary'sinde
+		// olusabilecek paralel duzlem cancel'lari yakalanir).
+		const f2lHtm = countHTM(f2lMoves);
+		const f2lTps = f2lHtm && f2lTotalSec > 0
+			? Math.floor((f2lHtm / f2lTotalSec) * 100) / 100
+			: 0;
+
+		steps.f2l = {
+			index: 1,
+			parentName: null,
+			skipped: f2lHtm <= 2,
+			turns: f2lMovesAsObj,
+			recognitionTime: 0,
+			tps: f2lTps,
+			turnsString: cascadeQuartersForDisplay(f2lMovesAsObj).join(' '),
+			turnCount: f2lHtm,
+			time: f2lTotalSec,
 		};
 
-		if (!parent) {
-			stepTurns = [];
-		}
-
-		lastStepCompletedAt = completedAt;
+		// Sub-step'ler parent='f2l' ile DB'ye yazilir.
+		f2lTransitions.forEach((t, idx) => {
+			const stepName = `f2l_${idx + 1}`;
+			(steps as any)[stepName] = buildStep(t, stepName, idx, 'f2l');
+		});
 	}
 
-	function populateF2lStages(turnIndex, base) {
-		const moves = steps.f2l.turns;
-
-		turnIndex = steps.cross.turns.length;
-
-		reverseTurns(cubejs, moves);
-
-		let tempTurns = [];
-		const cornerMem = {};
-		let slotCounter = 1;
-
-		// Wobble false-positive korumasi: corner "tamamlandi" detect edildiginde anlik
-		// commit yapma. Sonraki K hamleyi simule et — slot hala completed kaliyor mu?
-		// 3 hamle stable kalirsa gercek completion. Aksi halde wobble (orn. F F' F).
-		function isSlotStablyCompleted(cornerAbsIndex: number, currentIdx: number, lookahead = 3): boolean {
-			const remaining = Math.min(lookahead, moves.length - currentIdx - 1);
-			if (remaining <= 0) {
-				return true;
-			}
-			let simCube;
-			try {
-				simCube = Cube.fromString(cubejs.asString());
-			} catch {
-				return true;
-			}
-			for (let i = 1; i <= remaining; i++) {
-				simCube.move(moves[currentIdx + i]);
-				if (!cornerBlockCompleted(cornerAbsIndex, simCube.asString())) {
-					return false;
-				}
-			}
-			return true;
-		}
-
-		for (const [index, turn] of moves.entries()) {
-			const realTurn = turns[turnIndex + index];
-			const completedAt = new Date(realTurn.completedAt).getTime();
-
-			if (index === 0) {
-				// Cross'un bitiş zamanını kullan — F2L pair 1 tanıma süresi dahil olsun
-				const lastCrossTurn = turns[turnIndex - 1];
-				lastStepCompletedAt = new Date(lastCrossTurn.completedAt).getTime();
-			}
-
-			cubejs.move(turn);
-			tempTurns.push(turn);
-
-			const state = cubejs.asString();
-
-			for (const corner of cornerIndices) {
-				const stepName = `f2l_${slotCounter}`;
-				const cornerAbsIndex = getAbsoluteIndexByLocalIndex(base, corner);
-
-				if (cornerMem[corner] || !cornerBlockCompleted(cornerAbsIndex, state)) {
-					continue;
-				}
-
-				if (!isSlotStablyCompleted(cornerAbsIndex, index)) {
-					continue;
-				}
-
-				setStep(completedAt, base, stepName, slotCounter - 1, 'f2l', [...tempTurns], turnIndex + index);
-				tempTurns = [];
-				cornerMem[corner] = true;
-				slotCounter += 1;
-				break;
-			}
-		}
-	}
-
-	function isSolved(state) {
-		return state === SOLVED_STATE;
-	}
-
-	function getOppositeSide(side) {
-		return sideOpposites[side];
-	}
-
-	function areOpposites(side1, side2) {
-		return sideOpposites[side1] === side2;
-	}
-
-	function getAbsoluteIndexByLocalIndex(side, localIndex) {
-		if (typeof localIndex === 'string') {
-			localIndex = parseInt(localIndex);
-		}
-
-		return sideIndex[side] * 9 + localIndex;
-	}
-
-	function getLocalIndexByAbsoluteIndex(absoluteIndex) {
-		return absoluteIndex % 9;
-	}
-
-	// Given a piece index anywhere, it will find the side, the center of that side, and return true
-	// if they are both the same color
-	function pieceSameAsCenter(absoluteIndex, state) {
-		const centerIndex = getCenterIndexGivenAnyIndex(absoluteIndex);
-		return state[absoluteIndex] === state[centerIndex];
-	}
-
-	function getSideFromAbsoluteIndex(absoluteIndex) {
-		const centerIndex = getCenterIndexGivenAnyIndex(absoluteIndex);
-		return SOLVED_STATE[centerIndex];
-	}
-
-	function getCornerAdjacentOffset(localIndex) {
-		if (localIndex === 0) {
-			return [1, 3];
-		} else if (localIndex === 2) {
-			return [-1, 3];
-		} else if (localIndex === 6) {
-			return [-3, 1];
-		} else if (localIndex === 8) {
-			return [-1, -3];
-		}
-	}
-
-	function cornerBlockCompleted(absoluteIndex, state) {
-		const side = getSideFromAbsoluteIndex(absoluteIndex);
-		const localIndex = getLocalIndexByAbsoluteIndex(absoluteIndex);
-
-		const edgeLocalIndices = getCornerAdjacentOffset(localIndex);
-
-		const side1Index = absoluteIndex + edgeLocalIndices[0];
-		const side2Index = absoluteIndex + edgeLocalIndices[1];
-
-		// Check for one square
-		if (
-			!pieceSameAsCenter(absoluteIndex, state) ||
-			!pieceSameAsCenter(side1Index, state) ||
-			!pieceSameAsCenter(side2Index, state)
-		) {
-			return false;
-		}
-
-		const cornerAdjacents = cornerAdjSide[side][localIndex];
-
-		for (const sides of cornerAdjacents) {
-			const [adjSide, connectingIndex] = sides.split(':');
-			const abs = getAbsoluteIndexByLocalIndex(adjSide, connectingIndex);
-
-			if (!pieceSameAsCenter(abs, state)) {
-				return false;
-			}
-		}
-
-		const adjSideToCorners = cornerAdjSide[side][localIndex].map((s) => s.split(':')[0]);
-		return edgeBetweenCentersSolved(adjSideToCorners[0], adjSideToCorners[1], state);
-	}
-
-	function getCubejsWithUOnTop(base, state) {
-		const cj = Cube.fromString(state);
-
-		if (base === 'U') {
-			cj.move('x2');
-		} else if (base === 'R') {
-			cj.move('z');
-		} else if (base === 'L') {
-			cj.move("z'");
-		} else if (base === 'F') {
-			cj.move("x'");
-		} else if (base === 'B') {
-			cj.move('x');
-		}
-
-		return cj.asString();
-	}
-
-	function getCenterFromSide(side, state) {
-		const first = getFirstIndexFromSide(side);
-		return state[getCenterIndexGivenAnyIndex(first)];
-	}
-
-	function getCenterGivenAnyIndex(absoluteIndex, state) {
-		return state[getCenterIndexGivenAnyIndex(absoluteIndex)];
-	}
-
-	// Given a piece index, it will find the face and return the index of that center piece
-	function getCenterIndexGivenAnyIndex(absoluteIndex) {
-		const firstPieceOfFaceIndex = 9 * Math.floor(absoluteIndex / 9);
-		return firstPieceOfFaceIndex + 4;
-	}
-
-	function isFaceOriented(side, state) {
-		return areCornersOriented(side, state) && areEdgesOriented(side, state);
-	}
-
-	function areFirstTwoLayersSolved(base, state) {
-		const adjs = Object.keys(edgeAdj[base]);
-
-		// Checking if edges between second layer are solved
-		for (const side of adjs) {
-			for (const side2 of adjs) {
-				if (side === side2 || areOpposites(side, side2)) {
-					continue;
-				}
-
-				const sideCenter = getCenterFromSide(side, state);
-				const side2Center = getCenterFromSide(side2, state);
-
-				if (!edgeBetweenCentersSolved(sideCenter, side2Center, state)) {
-					return false;
-				}
-			}
-		}
-
-		return isFaceSolved(base, state);
-	}
-
-	function isFaceSolved(side, state) {
-		return areCornersSolved(side, state) && areEdgesSolved(side, state);
-	}
-
-	function getFirstIndexFromSide(side) {
-		return sideIndex[side] * 9;
-	}
-
-	// Checks if the corner pieces are the same as the center
-	function areCornersOriented(side, state) {
-		const firstIndex = getFirstIndexFromSide(side);
-
-		for (const cornerIndex of cornerIndices) {
-			const sameAsCenter = pieceSameAsCenter(firstIndex + cornerIndex, state);
-			if (!sameAsCenter) {
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	// Checks if the corner pieces are the same as the center AND that
-	function areCornersSolved(side, state) {
-		for (const cornerIndex of cornerIndices) {
-			const cornerAbsoluteIndex = getAbsoluteIndexByLocalIndex(side, cornerIndex);
-			const center = getCenterIndexGivenAnyIndex(cornerAbsoluteIndex);
-
-			if (state[center] !== state[cornerAbsoluteIndex]) {
-				return false;
-			}
-
-			const adjFaces = Object.keys(edgeAdj[side]);
-
-			for (const adjFace of adjFaces) {
-				const adjEdgeIndex = edgeAdj[side][adjFace];
-				const adjLocalIndex = getAbsoluteIndexByLocalIndex(adjFace, adjEdgeIndex);
-				const corners = getEdgeAdjacentOffset(adjEdgeIndex);
-
-				const leftIndex = adjLocalIndex + corners[0];
-				const rightIndex = adjLocalIndex + corners[1];
-
-				const leftPiece = state[leftIndex];
-				const rightPiece = state[rightIndex];
-
-				if (leftPiece !== rightPiece) {
-					return false;
-				}
-			}
-		}
-
-		return true;
-	}
-
-	// center1 and center2 should be side names
-	function edgeBetweenCentersSolved(center1, center2, state) {
-		const center1Edge = edgeAdj[center1][center2];
-		const center1Abs = getAbsoluteIndexByLocalIndex(center2, center1Edge);
-
-		const center2Edge = edgeAdj[center2][center1];
-		const center2Abs = getAbsoluteIndexByLocalIndex(center1, center2Edge);
-
-		return pieceSameAsCenter(center1Abs, state) && pieceSameAsCenter(center2Abs, state);
-	}
-
-	function areEdgesOriented(side, state) {
-		for (const edgeIndex of edgeIndices) {
-			const index = getAbsoluteIndexByLocalIndex(side, edgeIndex);
-			if (!pieceSameAsCenter(index, state)) {
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	function areEdgesSolved(side, state) {
-		if (!areEdgesOriented(side, state)) {
-			return false;
-		}
-
-		const keys = Object.keys(edgeAdj[side]);
-		for (const key of keys) {
-			const index = getAbsoluteIndexByLocalIndex(key, edgeAdj[side][key]);
-
-			if (!pieceSameAsCenter(index, state)) {
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	// Given a *local* index, it will find the two piece that are side by side to that piece
-	function getEdgeAdjacentOffset(localIndex) {
-		if (localIndex === 1 || localIndex === 7) {
-			return [-1, 1];
-		} else if (localIndex === 3 || localIndex === 5) {
-			return [-3, 3];
-		}
-	}
+	steps.oll = buildStep(transitionByPhase.oll, 'oll', 2, null, ollExtra);
+	steps.pll = buildStep(transitionByPhase.pll, 'pll', 3, null, pllExtra);
 
 	return steps;
+}
+
+/**
+ * Backend'de turns dizisi cozulmus solve oldugu icin end-state SOLVED'dir.
+ * Start-state hesaplamak icin: solved cube'a turns'u TERS sirada UYGULA — bu cube'u
+ * scrambled state'e getirir.
+ */
+function computeStartStateFromSolvedEnd(turns: SolveTurn[]): string | undefined {
+	try {
+		// Lazy import — shared engine already imports Cube; burada da kullanmak icin require.
+		const Cube = require('cubejs');
+		const cube = new Cube();
+		for (let i = turns.length - 1; i >= 0; i--) {
+			const m = turns[i].turn;
+			let inv: string;
+			if (m.endsWith("'")) inv = m.slice(0, -1);
+			else if (m.endsWith('2')) inv = m;
+			else inv = m + "'";
+			try {
+				cube.move(inv);
+			} catch {
+				// Skip
+			}
+		}
+		return cube.asString();
+	} catch {
+		return undefined;
+	}
 }

@@ -1009,6 +1009,11 @@
         "scramble_label": "Скрамбл",
         "notes_label": "Заметки",
         "copy_moves": "Копировать ходы",
+        "copy_detailed": "Копировать подробно",
+        "copied_detailed": "Подробная реконструкция скопирована в буфер",
+        "skip_badge": "СКИП",
+        "recognition_short": "Р",
+        "execution_short": "В",
         "step": "Шаг",
         "case": "Случай",
         "recognition": "Распознавание",
@@ -1342,7 +1347,8 @@
         "time_focus": "Время и фокус",
         "phase_splits": "Разделение фаз",
         "steps_detail": "Таблица деталей фаз",
-        "smart_cube_summary": "Сводка по умному кубу"
+        "smart_cube_summary": "Сводка по умному кубу",
+        "cases": "Случаи"
     },
     "common": {
         "results_count": "{{count}} результатов",
@@ -1798,6 +1804,7 @@
         "inspection": "Инспекция",
         "hide_time_when_solving": "Скрывать время во время сборки",
         "haptic_feedback": "Вибрация",
+        "show_recognition_split": "Распознавание/Выполнение (десктоп)",
         "freeze_time": "Время Задержки (с)",
         "none": "Нет",
         "multi_phase": "Многофазный",
@@ -3030,5 +3037,23 @@
             "message_expiry": "Поздравляем! Ваше членство {{label}} в Zkt Timer успешно активировано. Членство действительно до {{date}}.",
             "link_text": "Просмотреть настройки"
         }
+    },
+    "case_stats": {
+        "modal_title_oll": "Статистика по OLL случаям",
+        "modal_title_pll": "Статистика по PLL случаям",
+        "tab_oll": "OLL",
+        "tab_pll": "PLL",
+        "col_case": "Случай",
+        "col_count": "Кол.",
+        "col_avg": "Время",
+        "col_best": "Лучшее",
+        "col_recognition": "Распознавание",
+        "col_execution": "Выполнение",
+        "col_tps": "TPS",
+        "col_turns": "Ходы",
+        "loading": "Загрузка...",
+        "empty_state": "Пока нет записей OLL/PLL со smart cube",
+        "sort_by": "Сортировка:",
+        "sort_recent": "Недавние"
     }
 }

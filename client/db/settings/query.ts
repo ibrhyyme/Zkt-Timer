@@ -62,6 +62,7 @@ export interface AllSettings {
 	timer_avg_6: string;
 	scramble_subset: string | null;
 	smart_cube_analysis_mode: string;
+	smart_cube_show_recognition: boolean;
 
 	// Kullanicinin kendi default'lari — "Varsayilan" butonu ile o anki deger buraya kaydedilir.
 	// "Sifirla" butonu varsa once buna doner, yoksa factory default'a.
@@ -136,6 +137,7 @@ const defaultSettings: AllSettings = {
 	stackmat_auto_inspection_warning_shown: false,
 	scramble_subset: null,
 	smart_cube_analysis_mode: 'cffffop', // 'none' | 'cfop' | 'cf_plus_op' | 'cffffop' | 'cffffoopp'
+	smart_cube_show_recognition: false,
 
 	timer_scramble_size_user_default: null,
 	timer_time_size_user_default: null,

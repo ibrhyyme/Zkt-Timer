@@ -8,6 +8,7 @@
 		'featured averages chart'
 		'substats hourly hourly'
 		'summary summary summary'
+		'cases cases cases'
 		'splits splits splits'
 		'steps-table steps-table steps-table';
 	column-gap: 1.333rem;
@@ -17,6 +18,10 @@
 
 	&__summary {
 		grid-area: summary;
+	}
+
+	&__cases {
+		grid-area: cases;
 	}
 
 	&__featured {
@@ -54,6 +59,7 @@
 			'chart chart'
 			'substats hourly'
 			'summary summary'
+			'cases cases'
 			'splits splits'
 			'steps-table steps-table';
 	}
@@ -67,6 +73,7 @@
 			'substats'
 			'hourly'
 			'summary'
+			'cases'
 			'splits'
 			'steps-table';
 		column-gap: 16px;

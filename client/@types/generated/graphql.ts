@@ -299,6 +299,21 @@ export type CancelZktCompetitionInput = {
   reason?: InputMaybe<Scalars['String']>;
 };
 
+export type CaseStat = {
+  __typename?: 'CaseStat';
+  averageTime?: Maybe<Scalars['Float']>;
+  avgExecution?: Maybe<Scalars['Float']>;
+  avgRecognition?: Maybe<Scalars['Float']>;
+  avgTps?: Maybe<Scalars['Float']>;
+  avgTurns?: Maybe<Scalars['Float']>;
+  bestTime?: Maybe<Scalars['Float']>;
+  caseKey?: Maybe<Scalars['String']>;
+  caseName?: Maybe<Scalars['String']>;
+  caseType?: Maybe<Scalars['String']>;
+  count?: Maybe<Scalars['Int']>;
+  lastSeenAt?: Maybe<Scalars['Float']>;
+};
+
 export type CompetitionFollow = {
   __typename?: 'CompetitionFollow';
   competition_id?: Maybe<Scalars['String']>;
@@ -1746,6 +1761,7 @@ export type Query = {
   adminUserSearch?: Maybe<PaginatedUserAccountsForAdmin>;
   algorithmOverrides?: Maybe<Array<Maybe<AlgorithmOverride>>>;
   badgeTypes?: Maybe<Array<Maybe<BadgeType>>>;
+  caseStats?: Maybe<Array<Maybe<CaseStat>>>;
   customCubeTypes?: Maybe<Array<Maybe<CustomCubeType>>>;
   customTrainer?: Maybe<CustomTrainer>;
   customTrainers?: Maybe<Array<Maybe<CustomTrainer>>>;
@@ -1832,6 +1848,11 @@ export type QueryAdminTrainerAlternativesArgs = {
 export type QueryAdminUserSearchArgs = {
   filters?: InputMaybe<AdminUserFiltersInput>;
   pageArgs?: InputMaybe<PaginationArgsInput>;
+};
+
+
+export type QueryCaseStatsArgs = {
+  type?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -4223,6 +4244,13 @@ export type MyCompetitionFollowsQueryVariables = Exact<{
 
 export type MyCompetitionFollowsQuery = { __typename?: 'Query', myCompetitionFollows?: Array<{ __typename?: 'CompetitionFollow', id?: string | null, competition_id?: string | null, followed_registrant_id?: number | null, followed_wca_id?: string | null, followed_name?: string | null, created_at?: any | null } | null> | null };
 
+export type CaseStatsQueryVariables = Exact<{
+  type: Scalars['String'];
+}>;
+
+
+export type CaseStatsQuery = { __typename?: 'Query', caseStats?: Array<{ __typename?: 'CaseStat', caseKey?: string | null, caseName?: string | null, caseType?: string | null, count?: number | null, averageTime?: number | null, bestTime?: number | null, avgRecognition?: number | null, avgExecution?: number | null, avgTps?: number | null, avgTurns?: number | null, lastSeenAt?: number | null } | null> | null };
+
 export const MiniSolveFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"MiniSolveFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Solve"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"time"}},{"kind":"Field","name":{"kind":"Name","value":"raw_time"}},{"kind":"Field","name":{"kind":"Name","value":"cube_type"}},{"kind":"Field","name":{"kind":"Name","value":"scramble_subset"}},{"kind":"Field","name":{"kind":"Name","value":"session_id"}},{"kind":"Field","name":{"kind":"Name","value":"trainer_name"}},{"kind":"Field","name":{"kind":"Name","value":"bulk"}},{"kind":"Field","name":{"kind":"Name","value":"scramble"}},{"kind":"Field","name":{"kind":"Name","value":"from_timer"}},{"kind":"Field","name":{"kind":"Name","value":"training_session_id"}},{"kind":"Field","name":{"kind":"Name","value":"dnf"}},{"kind":"Field","name":{"kind":"Name","value":"plus_two"}},{"kind":"Field","name":{"kind":"Name","value":"is_smart_cube"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"started_at"}},{"kind":"Field","name":{"kind":"Name","value":"ended_at"}}]}}]} as unknown as DocumentNode<MiniSolveFragmentFragment, unknown>;
 export const StatsFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"StatsFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Stats"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"profile_views"}},{"kind":"Field","name":{"kind":"Name","value":"solve_views"}}]}}]} as unknown as DocumentNode<StatsFragmentFragment, unknown>;
 export const StatsModuleBlockFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"StatsModuleBlockFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"StatsModuleBlock"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"statType"}},{"kind":"Field","name":{"kind":"Name","value":"sortBy"}},{"kind":"Field","name":{"kind":"Name","value":"session"}},{"kind":"Field","name":{"kind":"Name","value":"colorName"}},{"kind":"Field","name":{"kind":"Name","value":"averageCount"}}]}}]} as unknown as DocumentNode<StatsModuleBlockFragmentFragment, unknown>;
@@ -4365,3 +4393,4 @@ export const ZktMyAssignmentsDocument = {"kind":"Document", "definitions":[{"kin
 export const ZktUserAssignmentsDocument = {"kind":"Document", "definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"zktUserAssignments"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"competitionId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"userId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"zktUserAssignments"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"competitionId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"competitionId"}}},{"kind":"Argument","name":{"kind":"Name","value":"userId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"userId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ZktAssignmentFragment"}}]}}]}},...ZktAssignmentFragmentFragmentDoc.definitions,...PublicUserFragmentFragmentDoc.definitions,...ImageFragmentFragmentDoc.definitions]} as unknown as DocumentNode<ZktUserAssignmentsQuery, ZktUserAssignmentsQueryVariables>;
 export const LandingStatsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"landingStats"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"landingStats"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"upcoming_wca_competition_count"}},{"kind":"Field","name":{"kind":"Name","value":"total_competitor_capacity"}},{"kind":"Field","name":{"kind":"Name","value":"supported_event_count"}},{"kind":"Field","name":{"kind":"Name","value":"supported_language_count"}},{"kind":"Field","name":{"kind":"Name","value":"cuber_count"}},{"kind":"Field","name":{"kind":"Name","value":"solve_count"}}]}}]}}]} as unknown as DocumentNode<LandingStatsQuery, LandingStatsQueryVariables>;
 export const MyCompetitionFollowsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"myCompetitionFollows"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"competitionId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"myCompetitionFollows"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"competitionId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"competitionId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"competition_id"}},{"kind":"Field","name":{"kind":"Name","value":"followed_registrant_id"}},{"kind":"Field","name":{"kind":"Name","value":"followed_wca_id"}},{"kind":"Field","name":{"kind":"Name","value":"followed_name"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}}]}}]}}]} as unknown as DocumentNode<MyCompetitionFollowsQuery, MyCompetitionFollowsQueryVariables>;
+export const CaseStatsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"caseStats"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"type"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"caseStats"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"type"},"value":{"kind":"Variable","name":{"kind":"Name","value":"type"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"caseKey"}},{"kind":"Field","name":{"kind":"Name","value":"caseName"}},{"kind":"Field","name":{"kind":"Name","value":"caseType"}},{"kind":"Field","name":{"kind":"Name","value":"count"}},{"kind":"Field","name":{"kind":"Name","value":"averageTime"}},{"kind":"Field","name":{"kind":"Name","value":"bestTime"}},{"kind":"Field","name":{"kind":"Name","value":"avgRecognition"}},{"kind":"Field","name":{"kind":"Name","value":"avgExecution"}},{"kind":"Field","name":{"kind":"Name","value":"avgTps"}},{"kind":"Field","name":{"kind":"Name","value":"avgTurns"}},{"kind":"Field","name":{"kind":"Name","value":"lastSeenAt"}}]}}]}}]} as unknown as DocumentNode<CaseStatsQuery, CaseStatsQueryVariables>;

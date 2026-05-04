@@ -270,6 +270,7 @@ type Query {
   sessions: [Session]
   settings: Setting
   stats: Stats
+  caseStats(type: String): [CaseStat]
   integration(integrationType: IntegrationType): Integration
   wcaMe: WcaAccount
   integrations: [Integration]
@@ -1069,6 +1070,20 @@ type Session {
 type Stats {
   profile_views: Float
   solve_views: Float
+}
+
+type CaseStat {
+  caseKey: String
+  caseName: String
+  caseType: String
+  count: Int
+  averageTime: Float
+  bestTime: Float
+  avgRecognition: Float
+  avgExecution: Float
+  avgTps: Float
+  avgTurns: Float
+  lastSeenAt: Float
 }
 
 type WcaAccount {

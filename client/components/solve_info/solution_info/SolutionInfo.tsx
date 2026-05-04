@@ -9,6 +9,8 @@ import block from '../../../styles/bem';
 import { Solve } from '../../../../server/schemas/Solve.schema';
 import ReplayPlayer from './replay/ReplayPlayer';
 import { useFlattenedMoves } from './replay/useFlattenedMoves';
+import { parseSmartTurns } from '../../../../shared/smart_cube/parse_turns';
+import { analyzePhases } from '../../../../shared/util/solve/phase_engine';
 
 const b = block('solve-info-solution-info');
 
@@ -61,6 +63,20 @@ export default function SolutionInfo(props: Props) {
 		return `${prefix}${transformed} // ${label}`;
 	}).filter(Boolean).join('\n');
 
+	// Detayli rekonstruksiyon: cstimer formatinda annotated solve string.
+	// Smart cube ile yapilmis solve'lar icin engine canli regenerate eder; klasik solve'larda bos.
+	const prettyRecon = useMemo(() => {
+		if (!solve.is_smart_cube || !solve.smart_turns) return '';
+		const parsed = parseSmartTurns(solve.smart_turns);
+		if (!parsed.length) return '';
+		const engineTurns = parsed.map((p) => ({ turn: p.turn, timestamp: p.completedAt }));
+		try {
+			return analyzePhases(engineTurns).prettyRecon || '';
+		} catch {
+			return '';
+		}
+	}, [solve.id, solve.smart_turns, solve.is_smart_cube]);
+
 	return (
 		<div className={b()}>
 			<div className={b('column', { table: true })}>
@@ -74,6 +90,13 @@ export default function SolutionInfo(props: Props) {
 									text={allTurnsWithRotation}
 									buttonProps={{ text: '' }}
 								/>
+								{prettyRecon && (
+									<CopyText
+										text={prettyRecon}
+										buttonProps={{ text: t('solve_info.copy_detailed') }}
+										toastifyMessageOnCopy={t('solve_info.copied_detailed')}
+									/>
+								)}
 							</th>
 						</tr>
 					</thead>

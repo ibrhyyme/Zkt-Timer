@@ -21,6 +21,7 @@ import { hapticImpact } from '../../../util/native-plugins';
 import { getStore } from '../../store';
 import { isPro } from '../../../lib/pro';
 import { serializeSmartTurnsCompact } from '../../../../shared/smart_cube/parse_turns';
+import { countHTM } from '../../../../shared/util/solve/move_counter';
 
 let endLocked = false;
 
@@ -131,6 +132,7 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 		let turnCount = 0;
 
 		// If overrides provided (e.g. from SmartCube auto-finish), use them
+		// (Already cstimer-grade HTM from SmartCube.tsx countHTM call)
 		if (overrides && overrides.smart_turn_count !== undefined) {
 			turnCount = overrides.smart_turn_count;
 		} else {
@@ -138,7 +140,8 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 			const startTime = timeStartedAt.getTime();
 			// Allow moves up to 500ms before timer start (to catch the starting move)
 			const solutionTurns = (context.smartTurns || []).filter((t: any) => t.completedAt >= startTime - 500);
-			turnCount = solutionTurns.length;
+			// cstimer-grade HTM: ardisik paralel duzlemde ayni yuze tekrarli hamleler 1 sayilir
+			turnCount = countHTM(solutionTurns.map((t: any) => t.turn));
 		}
 
 		const timeInSeconds = finalTime / 1000;

@@ -1009,6 +1009,11 @@
         "scramble_label": "Scramble",
         "notes_label": "Notes",
         "copy_moves": "Copy moves",
+        "copy_detailed": "Copy detailed",
+        "copied_detailed": "Detailed reconstruction copied to clipboard",
+        "skip_badge": "SKIP",
+        "recognition_short": "I",
+        "execution_short": "E",
         "step": "Step",
         "case": "Case",
         "recognition": "Recognition",
@@ -1342,7 +1347,8 @@
         "time_focus": "Time & Focus",
         "phase_splits": "Phase Split",
         "steps_detail": "Phase Detail Table",
-        "smart_cube_summary": "Smart Cube Summary"
+        "smart_cube_summary": "Smart Cube Summary",
+        "cases": "Cases"
     },
     "common": {
         "results_count": "{{count}} results",
@@ -1798,6 +1804,7 @@
         "inspection": "Inspection",
         "hide_time_when_solving": "Hide Time When Solving",
         "haptic_feedback": "Haptic Feedback",
+        "show_recognition_split": "Show Recognition/Execution (desktop)",
         "freeze_time": "Freeze Time (s)",
         "none": "None",
         "multi_phase": "Multi-Phase",
@@ -3117,5 +3124,23 @@
             "message_expiry": "Congratulations! Your Zkt Timer {{label}} membership has been successfully activated. Your membership is valid until {{date}}.",
             "link_text": "View your settings"
         }
+    },
+    "case_stats": {
+        "modal_title_oll": "OLL Case Statistics",
+        "modal_title_pll": "PLL Case Statistics",
+        "tab_oll": "OLL",
+        "tab_pll": "PLL",
+        "col_case": "Case",
+        "col_count": "Count",
+        "col_avg": "Time",
+        "col_best": "Best",
+        "col_recognition": "Recognition",
+        "col_execution": "Execution",
+        "col_tps": "TPS",
+        "col_turns": "Turns",
+        "loading": "Loading...",
+        "empty_state": "No smart cube OLL/PLL records yet",
+        "sort_by": "Sort by:",
+        "sort_recent": "Most Recent"
     }
 }
