@@ -62,11 +62,11 @@ export default function Stats() {
 	const tabCubeType = urlParams.get(CUBE_TYPE_QUERY_PARAM);
 	const tabSubset = urlParams.get(SCRAMBLE_SUBSET_QUERY_PARAM);
 
-	useSolveDb();
+	const solveUpdate = useSolveDb();
 
 	const cubeTypes = useMemo(() => {
 		return fetchAllCubeTypesSolved();
-	}, []);
+	}, [solveUpdate]);
 
 	const history = useHistory();
 
@@ -75,8 +75,9 @@ export default function Stats() {
 			history.push('/stats');
 			return;
 		}
-		if (!scramble_subset) {
-			// Subset zorunlu — ilk bucket'a auto-redirect
+		// Bos string ('') gecerli bir subset id (777 WCA, 333 Random State) — sadece null/undefined
+		// "subset secilmemis" anlamina gelir.
+		if (scramble_subset == null) {
 			const subs = getSubsetsForBuckets(cube_type, cubeTypes);
 			if (subs.length === 0) {
 				history.push('/stats');
@@ -94,9 +95,11 @@ export default function Stats() {
 		return getSubsetsForBuckets(tabCubeType, cubeTypes);
 	}, [tabCubeType, cubeTypes]);
 
-	// Eski URL ('?cubeType=wca' subset'siz) → ilk subset'e otomatik yonlendir
+	// Eski URL ('?cubeType=wca' subset'siz) → ilk subset'e otomatik yonlendir.
+	// `subset=` bos string default subset (orn 777 WCA, 333 Random State) — null degil,
+	// dolayisiyla redirect tetiklemez.
 	useEffect(() => {
-		if (tabCubeType && !tabSubset) {
+		if (tabCubeType && tabSubset === null) {
 			if (subsetsForCurrentCube.length > 0) {
 				history.replace(
 					`/stats?${CUBE_TYPE_QUERY_PARAM}=${tabCubeType}&${SCRAMBLE_SUBSET_QUERY_PARAM}=${subsetsForCurrentCube[0].id}`
@@ -107,10 +110,9 @@ export default function Stats() {
 		}
 	}, [tabCubeType, tabSubset, subsetsForCurrentCube]);
 
-	// "Tumu" modu: cubeType yok VEYA henuz subset set olmamis (eski URL redirect arasi).
-	// Boylece auto-redirect bir frame surdugunde CubeStatHero/CubeStats yerine AllStats render edilir,
-	// flicker engellenir.
-	const all = !tabCubeType || !tabSubset;
+	// "Tumu" modu: cubeType yok VEYA subset URL parametresi hic verilmemis (null).
+	// Bos string ('') gecerli bir subset id'si (777 WCA, 333 Random State, vb).
+	const all = !tabCubeType || tabSubset === null;
 	const filterOptions: FilterSolvesOptions = {
 		from_timer: true,
 	};
