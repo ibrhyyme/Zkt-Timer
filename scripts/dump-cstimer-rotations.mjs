@@ -15,6 +15,26 @@ const mathlibSrc = readFileSync('Referans/cstimer-master/src/js/lib/mathlib.js',
 const cubeutilSrc = readFileSync('Referans/cstimer-master/src/js/lib/cubeutil.js', 'utf8');
 const scrambleEditSrc = readFileSync('Referans/cstimer-master/src/js/scramble/scramble_333_edit.js', 'utf8');
 
+// algorithms.ts'i block-bazli parse et — her case bir block, key ve defaultSolution
+// regex *? non-greedy bazı case'leri kaçırıyordu (333_pll_20 gibi). Block-split daha güvenli.
+const algSrcGlobal = readFileSync('client/util/algorithms/algorithms.ts', 'utf8');
+const keyAlgsAll = (() => {
+	const out = {};
+	const blocks = algSrcGlobal.split(/(?=key:\s*'333_(?:oll|pll)_\d+')/);
+	for (const block of blocks) {
+		const keyMatch = block.match(/key:\s*'(333_(?:oll|pll)_\d+)'/);
+		// defaultSolution hem "..." hem '...' format'inda olabilir (linter formatter'a gore)
+		const algMatch = block.match(/defaultSolution:\s*(['"])((?:(?!\1).)*)\1/);
+		const nameMatch = block.match(/name:\s*['"]([^'"]+)['"]/);
+		if (keyMatch && algMatch) {
+			// algMatch[1] = quote char, algMatch[2] = solution string
+			out[keyMatch[1]] = { alg: algMatch[2], name: (nameMatch && nameMatch[1]) || keyMatch[1] };
+		}
+	}
+	return out;
+})();
+console.log('algorithms.ts toplam:', Object.keys(keyAlgsAll).length, 'case (PLL:', Object.keys(keyAlgsAll).filter(k => k.includes('pll')).length, 'OLL:', Object.keys(keyAlgsAll).filter(k => k.includes('oll')).length, ')');
+
 // scramble_333_edit.js'ten pllImgParam, oll_map ve pll_map'i parse et
 const pllImgParamMatch = scrambleEditSrc.match(/var pllImgParam = (\[[\s\S]*?\]);/);
 const ollMapMatch = scrambleEditSrc.match(/var oll_map = (\[[\s\S]*?\]);/);
@@ -37,7 +57,7 @@ const PLL_NAME_TO_KEY = {
 	'Ga': '333_pll_9', 'Gb': '333_pll_10', 'Gc': '333_pll_11', 'Gd': '333_pll_12',
 	'Ja': '333_pll_15', 'Jb': '333_pll_16', 'Na': '333_pll_17', 'Nb': '333_pll_18',
 	'Ra': '333_pll_13', 'Rb': '333_pll_14', 'T': '333_pll_19', 'Y': '333_pll_21',
-	'V': null, // algorithms.ts'te V-Perm yok (333_pll_20 atlanmis)
+	'V': '333_pll_20',
 };
 // cstimer index 0-20: pll_map sirasiyla, 21 = identity (skip)
 const pllIndexToKey = pll_map.map((row) => PLL_NAME_TO_KEY[row[3]] || null);
