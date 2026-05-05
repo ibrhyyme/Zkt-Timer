@@ -108,11 +108,17 @@ app.use(helmet({
 				"'unsafe-inline'", // SSR window.__STORE__ + Apollo inline script'leri
 				"'unsafe-eval'",   // Apollo Client dev tools, esbuild dynamic
 				"https://challenges.cloudflare.com",
+				"https://static.cloudflareinsights.com", // Cloudflare Web Analytics (auto-injected)
 				"https://plausible.io",
 				"https://cdn.jsdelivr.net",
 				"https://www.googletagmanager.com",
 				"https://www.google-analytics.com",
+				"https://googleads.g.doubleclick.net",   // Google Ads conversion tracking
+				"https://www.google.com",                 // Google Ads remarketing
 			],
+			// Inline event handlers (onclick, onload) — eski kod pattern'lerinde mevcut.
+			// Long-term: addEventListener ile refactor. Su an 'unsafe-inline' ile gec.
+			scriptSrcAttr: ["'unsafe-inline'"],
 			styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
 			fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
 			imgSrc: ["'self'", "data:", "blob:", "https:"],
@@ -122,10 +128,18 @@ app.use(helmet({
 				"https://api.revenuecat.com",
 				"https://o637154.ingest.sentry.io",
 				"https://plausible.io",
+				"https://www.google-analytics.com",
+				"https://www.google.com",                // Google Ads collect endpoints
+				"https://googleads.g.doubleclick.net",
+				"https://static.cloudflareinsights.com", // Cloudflare Insights beacon
 				"wss:",
 				"ws:",
 			],
-			frameSrc: ["'self'", "https://challenges.cloudflare.com"],
+			frameSrc: [
+				"'self'",
+				"https://challenges.cloudflare.com",
+				"https://googleads.g.doubleclick.net",   // Google Ads iframe
+			],
 			mediaSrc: ["'self'", "blob:"],
 			objectSrc: ["'none'"],
 			workerSrc: ["'self'", "blob:"],
