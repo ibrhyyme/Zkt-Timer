@@ -15,6 +15,8 @@ import { cascadeQuartersForDisplay, SmartTurn } from '../../../client/util/smart
 import { analyzePhases } from '../../../shared/util/solve/phase_engine';
 import { CFOPPhase, SolveTurn, PhaseTransition } from '../../../shared/util/solve/types';
 import { countHTM } from '../../../shared/util/solve/move_counter';
+import { getPrettyMoves, TimedMove } from '../../../shared/util/solve/pretty_moves';
+void cascadeQuartersForDisplay; // legacy import — yeni getPrettyMoves'a gecildi
 
 export function getSolveSteps(turns: SmartTurn[]) {
 	try {
@@ -86,6 +88,10 @@ function getSolveStepsInner(turns: SmartTurn[]) {
 		const moveCount = t.moveCount.htm;
 		const tps = moveCount && totalSec > 0 ? Math.floor((moveCount / totalSec) * 100) / 100 : 0;
 		const turnsAsObjects: any[] = moves.map((m) => ({ turn: m }));
+		const timed: TimedMove[] = moves.map((turn, i) => ({
+			turn,
+			timestamp: t.moveTimestamps?.[i] ?? 0,
+		}));
 		return {
 			index: stepIndex,
 			parentName,
@@ -93,7 +99,7 @@ function getSolveStepsInner(turns: SmartTurn[]) {
 			turns: turnsAsObjects,
 			recognitionTime: recognitionSec,
 			tps,
-			turnsString: cascadeQuartersForDisplay(turnsAsObjects).join(' '),
+			turnsString: getPrettyMoves(timed),
 			turnCount: moveCount,
 			time: totalSec,
 			...(extra || {}),
@@ -118,6 +124,10 @@ function getSolveStepsInner(turns: SmartTurn[]) {
 		const last = f2lTransitions[f2lTransitions.length - 1];
 		const f2lMoves = f2lTransitions.flatMap((t) => t.moves);
 		const f2lMovesAsObj = f2lMoves.map((m) => ({ turn: m }));
+		// Per-move timestamps tum F2L sub-phase'leri concat ederek getPrettyMoves'a ver
+		const f2lTimed: TimedMove[] = f2lTransitions.flatMap((t) =>
+			t.moves.map((turn, i) => ({ turn, timestamp: t.moveTimestamps?.[i] ?? 0 }))
+		);
 		const f2lTotalSec = Math.max(0, (last.timestamp - first.recognitionStart) / 1000);
 		// cstimer-grade HTM: tum F2L hamlelerini tek seferde say (phase boundary'sinde
 		// olusabilecek paralel duzlem cancel'lari yakalanir).
@@ -133,7 +143,7 @@ function getSolveStepsInner(turns: SmartTurn[]) {
 			turns: f2lMovesAsObj,
 			recognitionTime: 0,
 			tps: f2lTps,
-			turnsString: cascadeQuartersForDisplay(f2lMovesAsObj).join(' '),
+			turnsString: getPrettyMoves(f2lTimed),
 			turnCount: f2lHtm,
 			time: f2lTotalSec,
 		};
