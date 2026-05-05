@@ -10,10 +10,22 @@ import Button from '../../common/button/Button';
 import {toastError, toastSuccess} from '../../../util/toast';
 import {validateStrongPassword} from '../../../util/auth/password';
 import PasswordStrength from '../../common/password_strength/PasswordStrength';
+import block from '../../../styles/bem';
+import './PersonalInfo.scss';
+
+const b = block('pending-email');
 
 const UPDATE_ME_MUTATION = gql`
-	mutation Mutate($firstName: String!, $lastName: String!, $email: String!, $username: String!) {
-		updateUserAccount(first_name: $firstName, last_name: $lastName, email: $email, username: $username) {
+	mutation Mutate($firstName: String!, $lastName: String!, $email: String!, $username: String!, $language: String) {
+		updateUserAccount(first_name: $firstName, last_name: $lastName, email: $email, username: $username, language: $language) {
+			id
+		}
+	}
+`;
+
+const CONFIRM_EMAIL_CHANGE_MUTATION = gql`
+	mutation Mutate($code: String!) {
+		confirmEmailChange(code: $code) {
 			id
 		}
 	}
@@ -36,7 +48,7 @@ const SET_PASSWORD_MUTATION = gql`
 `;
 
 export default function PersonalInfo() {
-	const {t} = useTranslation();
+	const {t, i18n} = useTranslation();
 	const me = useMe();
 
 	const [firstName, setFirstName] = useInput(me.first_name);
@@ -47,13 +59,21 @@ export default function PersonalInfo() {
 	const [oldPassword, setOldPassword] = useInput('');
 	const [newPassword, setNewPassword] = useInput('');
 	const [passwordError, setPasswordError] = useState('');
+	const [emailChangeCode, setEmailChangeCode] = useInput('');
+	const [emailChangeError, setEmailChangeError] = useState('');
 
 	const hasPassword = me.has_password;
+	const pendingEmail = (me as any).pending_email as string | null | undefined;
 
 	const [updateAccount] = useMutation<
 		{updateUserAccount: UserAccount},
-		{firstName: string; lastName: string; email: string; username: string}
+		{firstName: string; lastName: string; email: string; username: string; language: string}
 	>(UPDATE_ME_MUTATION);
+
+	const [confirmEmailChange, confirmEmailChangeData] = useMutation<
+		{confirmEmailChange: UserAccount},
+		{code: string}
+	>(CONFIRM_EMAIL_CHANGE_MUTATION);
 
 	const [updatePassword, updatePasswordData] = useMutation<
 		{updateUserPassword: UserAccount},
@@ -68,11 +88,34 @@ export default function PersonalInfo() {
 	async function clickUpdate() {
 		try {
 			await updateAccount({
-				variables: {firstName, lastName, username, email},
+				variables: {firstName, lastName, username, email, language: i18n.language},
 			});
-			window.location.reload();
+			const emailChanged = email.toLowerCase() !== me.email.toLowerCase();
+			if (emailChanged) {
+				toastSuccess(t('personal_info.email_change_pending'));
+				setEmailChangeCode('');
+				// pending_email cache'de hemen yansiyabilir veya reload ile dusurelim
+				window.location.reload();
+			} else {
+				window.location.reload();
+			}
 		} catch (err) {
 			toastError(err);
+		}
+	}
+
+	async function clickConfirmEmailChange() {
+		setEmailChangeError('');
+		if (!emailChangeCode.trim()) {
+			setEmailChangeError(t('personal_info.email_change_enter_code'));
+			return;
+		}
+		try {
+			await confirmEmailChange({variables: {code: emailChangeCode.trim()}});
+			toastSuccess(t('personal_info.email_change_confirmed'));
+			window.location.reload();
+		} catch (err: any) {
+			setEmailChangeError(err.message);
 		}
 	}
 
@@ -114,6 +157,37 @@ export default function PersonalInfo() {
 				<Input value={lastName} legend={t('personal_info.last_name')} onChange={setLastName} name="lastName" />
 				<Input value={username} legend={t('personal_info.username')} onChange={setUsername} name="username" />
 				<Input value={email} legend={t('personal_info.email')} onChange={setEmail} name="email" />
+
+				{pendingEmail && (
+					<div className={b()}>
+						<div className={b('title')}>
+							<span className={b('icon')}>!</span>
+							{t('personal_info.email_change_title')}
+						</div>
+						<div className={b('description')}>
+							{t('personal_info.email_change_description')}
+						</div>
+						<div className={b('email')}>{pendingEmail}</div>
+						<Input
+							value={emailChangeCode}
+							legend={t('personal_info.email_change_code')}
+							onChange={setEmailChangeCode}
+							name="emailChangeCode"
+						/>
+						{emailChangeError && (
+							<div className={b('error')}>{emailChangeError}</div>
+						)}
+						<Button
+							primary
+							large
+							glow
+							text={t('personal_info.email_change_confirm_button')}
+							loading={confirmEmailChangeData?.loading}
+							onClick={clickConfirmEmailChange}
+						/>
+					</div>
+				)}
+
 				<Button primary large glow text={t('personal_info.update_button')} onClick={clickUpdate} />
 			</div>
 

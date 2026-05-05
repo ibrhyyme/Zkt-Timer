@@ -8,7 +8,7 @@ import {createUserAccount, getUserByEmail, getUserById, getUserByUsername, sanit
 import {createIntegration, getIntegration, getIntegrationByWcaId, updateIntegration} from '../models/integration';
 import {createSetting} from '../models/settings';
 import {createNotificationPreference} from '../models/notification_preference';
-import {getJwtString} from '../util/auth';
+import {getJwtString, setSessionCookie} from '../util/auth';
 import GraphQLError from '../util/graphql_error';
 import {ErrorCode} from '../constants/errors';
 import {getPrisma} from '../database';
@@ -36,7 +36,7 @@ export class WcaAuthResolver {
 		@Ctx() context: GraphQLContext,
 		@Arg('code') code: string
 	): Promise<WcaOAuthResult> {
-		const {res, req} = context;
+		const {res} = context;
 
 		// 1. WCA'dan token ve profil bilgilerini al
 		const wcaData = await exchangeWcaLoginCode(code);
@@ -45,19 +45,14 @@ export class WcaAuthResolver {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'WCA hesabinizdan e-posta bilgisi alinamadi. Lutfen WCA hesabinizda e-posta adresinizin tanimli oldugundan emin olun.');
 		}
 
-		// 2. Once wca_id ile Integration tablosundan ara
+		// 2. Once wca_id ile Integration tablosundan ara — bu hesap zaten WCA bagli
 		if (wcaData.wcaId) {
 			const existingIntegration = await getIntegrationByWcaId(wcaData.wcaId);
 			if (existingIntegration) {
 				const user = await getUserById(existingIntegration.user_id);
 				if (user) {
 					const jwtToken = getJwtString(user);
-					res.cookie('session', jwtToken, {
-						httpOnly: true,
-						maxAge: 315360000000,
-						sameSite: 'none' as const,
-						secure: true,
-					});
+					setSessionCookie(res, jwtToken);
 
 					return {
 						success: true,
@@ -67,59 +62,59 @@ export class WcaAuthResolver {
 			}
 		}
 
-		// 3. wca_id ile bulunamadiysa email ile ara
+		// 3. wca_id ile bulunamadiysa email ile ara — otomatik linking YOK
+		// Saldirgan kurbanin email'i ile local hesap acabilir; otomatik link
+		// kurbanin WCA verilerini saldirgana baglar. Bu yuzden email match'te
+		// her zaman hata atiyoruz; kullanici manuel link yapmali (Ayarlar > Bagli Hesaplar).
+		//
+		// ISTISNA: Kullanici zaten login ve email match'lenen hesap kendi hesabi.
+		// Bu manuel link senaryosu — sifresiyle giris yapip Ayarlar'dan WCA bagla butonuna bastiginda
+		// OAuth donusunde bu mutation cagrilir. Sahibi oldugu kanitli, link yapilabilir.
 		const existingUser = await getUserByEmail(wcaData.email);
+		const loggedInUser = context.user;
 
 		if (existingUser) {
-			if ((existingUser as any).email_verified) {
-				// Dogrulanmis hesap — otomatik giris yap
-				const jwtToken = getJwtString(existingUser);
-				res.cookie('session', jwtToken, {
-					httpOnly: true,
-					maxAge: 315360000000,
-					sameSite: 'none' as const,
-					secure: true,
-				});
+			const isManualLink = loggedInUser && loggedInUser.id === existingUser.id;
 
-				// Integration yoksa olustur (ayni WCA baska hesapta degilse)
-				const existing = await getIntegration(existingUser, 'wca');
-				if (!existing && wcaData.wcaId) {
-					const existingWca = await getIntegrationByWcaId(wcaData.wcaId);
-					if (existingWca) {
-						return {
-							success: true,
-							needsUsername: false,
-						};
-					}
-				}
-				if (!existing) {
-					const integration = await createIntegration(
-						existingUser,
-						'wca',
-						wcaData.accessToken,
-						wcaData.refreshToken,
-						wcaData.expiresAt
+			if (!isManualLink) {
+				if ((existingUser as any).email_verified) {
+					throw new GraphQLError(
+						ErrorCode.BAD_INPUT,
+						'Bu e-posta zaten kullanimda. Lutfen sifrenizle giris yapin, ardindan Ayarlar > Bagli Hesaplar bolumunden WCA hesabinizi baglayabilirsiniz.'
 					);
-					if (wcaData.wcaId) {
-						await updateIntegration(integration, {
-							wca_id: wcaData.wcaId,
-							wca_country_iso2: wcaData.countryIso2 || null,
-						});
-						// WCA kayitlarini cek + ranking hesapla
-						fetchAndSaveWcaRecords(existingUser, {...integration, wca_id: wcaData.wcaId} as any).catch((err) => {
-							console.error('[Rankings] Auto-fetch on login failed:', err?.message);
-						});
-					}
+				} else {
+					throw new GraphQLError(
+						ErrorCode.BAD_INPUT,
+						'Bu e-posta ile dogrulanmamis bir kayit var. Lutfen onceki kaydinizi tamamlayin veya farkli bir e-posta kullanin.'
+					);
 				}
-
-				return {
-					success: true,
-					needsUsername: false,
-				};
-			} else {
-				// Dogrulanmamis hesap — sil
-				await getPrisma().userAccount.delete({where: {id: existingUser.id}});
 			}
+
+			// Manuel link — Integration olustur, kullanici zaten oturum acmis durumda
+			const existingIntegration = await getIntegration(existingUser, 'wca');
+			if (!existingIntegration) {
+				const integration = await createIntegration(
+					existingUser,
+					'wca',
+					wcaData.accessToken,
+					wcaData.refreshToken,
+					wcaData.expiresAt
+				);
+				if (wcaData.wcaId) {
+					await updateIntegration(integration, {
+						wca_id: wcaData.wcaId,
+						wca_country_iso2: wcaData.countryIso2 || null,
+					});
+					fetchAndSaveWcaRecords(existingUser, {...integration, wca_id: wcaData.wcaId} as any).catch((err) => {
+						console.error('[Rankings] Auto-fetch on manual link failed:', err?.message);
+					});
+				}
+			}
+
+			return {
+				success: true,
+				needsUsername: false,
+			};
 		}
 
 		// 3. Hesap yok — wca_pending cookie'ye bilgileri yaz
@@ -187,11 +182,14 @@ export class WcaAuthResolver {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Bu kullanici adi zaten kullaniliyor');
 		}
 
-		// 3. Email tekrar kontrol (race condition onlemi)
+		// 3. Email tekrar kontrol (race condition onlemi) — otomatik silme YOK
 		const existingEmail = await getUserByEmail(payload.email);
 		if (existingEmail) {
 			if (!(existingEmail as any).email_verified) {
-				await getPrisma().userAccount.delete({where: {id: existingEmail.id}});
+				throw new GraphQLError(
+					ErrorCode.BAD_INPUT,
+					'Bu e-posta ile dogrulanmamis bir kayit var. Lutfen onceki kaydinizi tamamlayin veya farkli bir e-posta kullanin.'
+				);
 			} else {
 				throw new GraphQLError(ErrorCode.BAD_INPUT, 'Bu e-posta adresi zaten kullanimda');
 			}
@@ -251,12 +249,7 @@ export class WcaAuthResolver {
 		res.clearCookie(WCA_PENDING_COOKIE, { sameSite: 'none' as const, secure: true });
 
 		const jwtToken = getJwtString(user);
-		res.cookie('session', jwtToken, {
-			httpOnly: true,
-			maxAge: 315360000000, // 10 yil
-			sameSite: 'none' as const,
-			secure: true,
-		});
+		setSessionCookie(res, jwtToken);
 
 		notifyAdminsOfNewUser(user, 'wca').catch(err =>
 			console.error('[AdminNotification] WCA signup notification failed:', err)

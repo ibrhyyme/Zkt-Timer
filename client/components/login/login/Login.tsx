@@ -82,7 +82,14 @@ export default function Login() {
 			localStorage.setItem('zkt_has_auth', 'true');
 			const redirect = getRedirectLink();
 			window.location.href = redirect || '/timer';
-		} catch (err) {
+		} catch (err: any) {
+			// Email dogrulanmamissa kullaniciyi /verify-email akisina yonlendir
+			const gqlErr = err?.graphQLErrors?.[0];
+			if (gqlErr?.extensions?.code === 'EMAIL_NOT_VERIFIED') {
+				const targetEmail = (gqlErr.extensions?.email as string) || email;
+				window.location.href = `/verify-email?email=${encodeURIComponent(targetEmail)}`;
+				return;
+			}
 			setError(err.message);
 		}
 	}

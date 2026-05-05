@@ -123,3 +123,25 @@ export function getJwtString(user: UserAccount) {
 
 	return jwt.sign(payload, jwtSecret);
 }
+
+const SESSION_MAX_AGE_REMEMBER = 315360000000; // 10 yil
+const SESSION_MAX_AGE_DEFAULT = 31536000000;   // 1 yil
+
+export function setSessionCookie(res: any, jwtToken: string, opts: {remember?: boolean} = {}) {
+	const isProduction = process.env.NODE_ENV === 'production';
+	const remember = opts.remember !== false;
+	res.cookie('session', jwtToken, {
+		httpOnly: true,
+		maxAge: remember ? SESSION_MAX_AGE_REMEMBER : SESSION_MAX_AGE_DEFAULT,
+		sameSite: isProduction ? 'none' : 'lax',
+		secure: isProduction,
+	});
+}
+
+export function clearSessionCookie(res: any) {
+	const isProduction = process.env.NODE_ENV === 'production';
+	res.clearCookie('session', {
+		sameSite: isProduction ? 'none' : 'lax',
+		secure: isProduction,
+	});
+}

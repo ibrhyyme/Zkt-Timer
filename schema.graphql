@@ -344,7 +344,7 @@ type Mutation {
   deleteAllTrainingSolves: Void
   deleteAllSolves: Void
   createUserAccount(first_name: String!, last_name: String!, email: String!, username: String!, password: String!, language: String, turnstile_token: String!): PublicUserAccount
-  updateUserAccount(first_name: String!, last_name: String!, email: String!, username: String!): PublicUserAccount
+  updateUserAccount(first_name: String!, last_name: String!, email: String!, username: String!, language: String): PublicUserAccount
   updateUserPassword(old_password: String!, new_password: String!): PublicUserAccount
   setUserPassword(new_password: String!): PublicUserAccount
   deleteUserAccount: PublicUserAccount
@@ -371,6 +371,7 @@ type Mutation {
   updateForgotPassword(email: String, code: String, password: String): PublicUserAccount
   resendEmailVerificationCode(email: String!, language: String): Void
   verifyEmailCode(email: String!, code: String!, language: String): PublicUserAccount
+  confirmEmailChange(code: String!): PublicUserAccount
   createSolve(input: SolveInput): Solve
   deleteAllSolvesInSession(sessionId: String): Void
   deleteSolves(ids: [String]): Boolean
@@ -824,6 +825,8 @@ type UserAccount implements IPublicUserAccount & IUserAccount {
   top_solves: [TopSolve]
   top_averages: [TopAverage]
   email: String
+  pending_email: String
+  email_verified: Boolean
   first_name: String
   last_name: String
   offline_hash: String
@@ -853,6 +856,8 @@ interface IUserAccount implements IPublicUserAccount {
   top_solves: [TopSolve]
   top_averages: [TopAverage]
   email: String
+  pending_email: String
+  email_verified: Boolean
   first_name: String
   last_name: String
   offline_hash: String
@@ -896,6 +901,8 @@ type UserAccountForAdmin implements IPublicUserAccount & IUserAccount & IUserAcc
   top_solves: [TopSolve]
   top_averages: [TopAverage]
   email: String
+  pending_email: String
+  email_verified: Boolean
   first_name: String
   last_name: String
   offline_hash: String
@@ -903,7 +910,6 @@ type UserAccountForAdmin implements IPublicUserAccount & IUserAccount & IUserAcc
   has_password: Boolean
   timer_background: TimerBackground
   bans: [BanLog]
-  email_verified: Boolean
   join_ip: String
   reports_for: [Report]
   notification_preferences: NotificationPreference
@@ -938,6 +944,8 @@ interface IUserAccountForAdmin implements IUserAccount & IPublicUserAccount {
   top_solves: [TopSolve]
   top_averages: [TopAverage]
   email: String
+  pending_email: String
+  email_verified: Boolean
   first_name: String
   last_name: String
   offline_hash: String
@@ -945,7 +953,6 @@ interface IUserAccountForAdmin implements IUserAccount & IPublicUserAccount {
   has_password: Boolean
   timer_background: TimerBackground
   bans: [BanLog]
-  email_verified: Boolean
   join_ip: String
   reports_for: [Report]
   notification_preferences: NotificationPreference
@@ -984,6 +991,8 @@ type InternalUserAccount implements IPublicUserAccount & IUserAccount & IUserAcc
   top_solves: [TopSolve]
   top_averages: [TopAverage]
   email: String
+  pending_email: String
+  email_verified: Boolean
   first_name: String
   last_name: String
   offline_hash: String
@@ -991,7 +1000,6 @@ type InternalUserAccount implements IPublicUserAccount & IUserAccount & IUserAcc
   has_password: Boolean
   timer_background: TimerBackground
   bans: [BanLog]
-  email_verified: Boolean
   join_ip: String
   reports_for: [Report]
   notification_preferences: NotificationPreference
@@ -1027,6 +1035,8 @@ interface IInternalUserAccount implements IUserAccountForAdmin & IUserAccount & 
   top_solves: [TopSolve]
   top_averages: [TopAverage]
   email: String
+  pending_email: String
+  email_verified: Boolean
   first_name: String
   last_name: String
   offline_hash: String
@@ -1034,7 +1044,6 @@ interface IInternalUserAccount implements IUserAccountForAdmin & IUserAccount & 
   has_password: Boolean
   timer_background: TimerBackground
   bans: [BanLog]
-  email_verified: Boolean
   join_ip: String
   reports_for: [Report]
   notification_preferences: NotificationPreference

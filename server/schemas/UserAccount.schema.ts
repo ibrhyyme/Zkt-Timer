@@ -119,6 +119,12 @@ class IUserAccount extends IPublicUserAccount {
 	@Field()
 	email: string;
 
+	@Field({nullable: true})
+	pending_email?: string;
+
+	@Field()
+	email_verified: boolean;
+
 	@Field()
 	first_name: string;
 

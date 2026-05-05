@@ -21,6 +21,12 @@ interface EmailStrings {
 	code_label: string;
 	expiry_text: string;
 	footer_rights: string;
+	// Email change templates
+	email_change_subject: string;
+	email_change_warning_subject: string;
+	email_change_warning_title: string;
+	email_change_warning_intro: string;
+	email_change_warning_closing: string;
 }
 
 const emailTranslations: Record<SupportedLang, EmailStrings> = {
@@ -44,6 +50,11 @@ const emailTranslations: Record<SupportedLang, EmailStrings> = {
 		code_label: 'TEK KULLANIMLIK KODUN',
 		expiry_text: '{{minutes}} dakika sonra eriyecek',
 		footer_rights: 'ZKT TIMER © 2026 Tüm hakları saklıdır.',
+		email_change_subject: 'ZKT Timer E-posta Değişikliği Doğrulama',
+		email_change_warning_subject: 'ZKT Timer hesabınızda e-posta değişikliği isteği',
+		email_change_warning_title: 'E-postanı değiştirmek istedin mi?',
+		email_change_warning_intro: 'Selam <strong>{{name}}</strong>! Hesabındaki e-posta adresi <strong>{{new_email}}</strong> olarak değiştirilmek isteniyor. Bu sen değilsen, en kısa sürede şifreni sıfırla ve hesabını koru.',
+		email_change_warning_closing: 'Görüşmek üzere',
 	},
 	en: {
 		greeting: 'Hi',
@@ -65,6 +76,11 @@ const emailTranslations: Record<SupportedLang, EmailStrings> = {
 		code_label: 'YOUR ONE-TIME CODE',
 		expiry_text: 'expires in {{minutes}} min',
 		footer_rights: 'ZKT TIMER © 2026 All rights reserved.',
+		email_change_subject: 'ZKT Timer Email Change Verification',
+		email_change_warning_subject: 'Email change request on your ZKT Timer account',
+		email_change_warning_title: 'Did you request an email change?',
+		email_change_warning_intro: 'Hi <strong>{{name}}</strong>! Your account email is being changed to <strong>{{new_email}}</strong>. If this was not you, please reset your password immediately to secure your account.',
+		email_change_warning_closing: 'Stay safe',
 	},
 	es: {
 		greeting: 'Hola',
@@ -86,6 +102,11 @@ const emailTranslations: Record<SupportedLang, EmailStrings> = {
 		code_label: 'TU CÓDIGO DE UN SOLO USO',
 		expiry_text: 'expira en {{minutes}} min',
 		footer_rights: 'ZKT TIMER © 2026 Todos los derechos reservados.',
+		email_change_subject: 'Verificación de cambio de correo - ZKT Timer',
+		email_change_warning_subject: 'Solicitud de cambio de correo en tu cuenta ZKT Timer',
+		email_change_warning_title: '¿Solicitaste cambiar tu correo?',
+		email_change_warning_intro: 'Hola <strong>{{name}}</strong>! El correo de tu cuenta se está cambiando a <strong>{{new_email}}</strong>. Si no fuiste tú, restablece tu contraseña de inmediato para proteger tu cuenta.',
+		email_change_warning_closing: 'Cuídate',
 	},
 	ru: {
 		greeting: 'Привет',
@@ -107,6 +128,11 @@ const emailTranslations: Record<SupportedLang, EmailStrings> = {
 		code_label: 'ТВОЙ ОДНОРАЗОВЫЙ КОД',
 		expiry_text: 'истекает через {{minutes}} мин',
 		footer_rights: 'ZKT TIMER © 2026 Все права защищены.',
+		email_change_subject: 'Подтверждение смены почты - ZKT Timer',
+		email_change_warning_subject: 'Запрос на смену почты в твоём аккаунте ZKT Timer',
+		email_change_warning_title: 'Ты запросил смену почты?',
+		email_change_warning_intro: 'Привет <strong>{{name}}</strong>! Почта твоего аккаунта меняется на <strong>{{new_email}}</strong>. Если это был не ты, немедленно сбрось пароль, чтобы защитить аккаунт.',
+		email_change_warning_closing: 'Береги себя',
 	},
 	zh: {
 		greeting: '你好',
@@ -128,6 +154,11 @@ const emailTranslations: Record<SupportedLang, EmailStrings> = {
 		code_label: '你的一次性验证码',
 		expiry_text: '{{minutes}} 分钟后失效',
 		footer_rights: 'ZKT TIMER © 2026 版权所有。',
+		email_change_subject: 'ZKT Timer 邮箱变更验证',
+		email_change_warning_subject: '你的 ZKT Timer 账户有邮箱变更请求',
+		email_change_warning_title: '你请求更改邮箱了吗？',
+		email_change_warning_intro: '你好 <strong>{{name}}</strong>！你的账户邮箱正在被更改为 <strong>{{new_email}}</strong>。如果不是你本人，请立即重置密码以保护账户。',
+		email_change_warning_closing: '注意安全',
 	},
 };
 
@@ -171,6 +202,18 @@ export function buildVerificationEmailData(user: MailUser, code: string, lang?: 
 		team: s.team,
 		code_label: s.code_label,
 		expiry_text: s.expiry_text.replace('{{minutes}}', String(s.verification_expiry_minutes)),
+		footer_rights: s.footer_rights,
+	};
+}
+
+export function buildEmailChangeWarningData(user: MailUser, newEmail: string, lang?: string) {
+	const s = getEmailStrings(lang);
+	const name = user.first_name || '';
+	return {
+		title: s.email_change_warning_title,
+		intro: s.email_change_warning_intro.replace('{{name}}', name).replace('{{new_email}}', newEmail),
+		closing: s.email_change_warning_closing,
+		team: s.team,
 		footer_rights: s.footer_rights,
 	};
 }

@@ -6,8 +6,11 @@ import {
 import { sendEmail, sendEmailWithTemplate } from '../services/ses';
 import { claimForgotPassword, createForgotPassword, getForgotPassword } from '../models/forgot_password';
 import GraphQLError from '../util/graphql_error';
-import { getJwtString } from '../util/auth';
+import { getJwtString, setSessionCookie } from '../util/auth';
 import { getEmailStrings, buildForgotEmailData } from '../util/email_translations';
+import { checkRateLimit } from '../services/rate_limit';
+import { extractIp } from '../util/request';
+import { logger } from '../services/logger';
 
 export const gqlMutation = `
 	sendForgotPasswordCode(email: String, language: String): Void
@@ -23,10 +26,28 @@ function forgotPasswordLessThan15Min(fp) {
 }
 
 export const mutateActions = {
-	sendForgotPasswordCode: async (_, { email, language }) => {
+	sendForgotPasswordCode: async (_, { email, language }, { req }) => {
+		const ip = extractIp(req);
+		const emailKey = (email || '').toLowerCase();
+
+		const perEmail = await checkRateLimit(`forgot:email:${emailKey}`, 3, 3600);
+		if (!perEmail.allowed) {
+			logger.warn('Forgot password rate limit (email)', {email: emailKey, count: perEmail.count});
+			throw new GraphQLError(400, 'Cok fazla istek. Lutfen bir sure sonra tekrar deneyin.');
+		}
+		if (ip) {
+			const perIp = await checkRateLimit(`forgot:ip:${ip}`, 10, 3600);
+			if (!perIp.allowed) {
+				logger.warn('Forgot password rate limit (ip)', {ip, count: perIp.count});
+				throw new GraphQLError(400, 'Cok fazla istek. Lutfen bir sure sonra tekrar deneyin.');
+			}
+		}
+
 		const user = await getUserByEmail(email);
 
-		if (user) {
+		// Unverified hesaplara forgot password kodu gondermiyoruz — silently OK donuyoruz
+		// boylece email enumeration sizdirma yok
+		if (user && user.email_verified) {
 			const fp = await createForgotPassword(user);
 			const emailStrings = getEmailStrings(language);
 
@@ -56,6 +77,11 @@ export const mutateActions = {
 			return false;
 		}
 
+		// Unverified hesaplar forgot password ile auth bypass yapamasin
+		if (!user.email_verified) {
+			throw new GraphQLError(400, 'Bu hesap henuz dogrulanmadi. Lutfen once e-posta dogrulamasini tamamlayin.');
+		}
+
 		const fp = (await getForgotPassword(user))[0];
 		if (!fp) {
 			throw new GraphQLError(400, 'Invalid code');
@@ -70,7 +96,7 @@ export const mutateActions = {
 		await updateUserAccountPassword(user.id, password);
 
 		const jwt = getJwtString(user);
-		res.cookie('session', jwt, { maxAge: 2147483647, httpOnly: true, sameSite: 'none', secure: true });
+		setSessionCookie(res, jwt);
 
 		return sanitizeUser(user);
 	},

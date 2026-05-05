@@ -19,6 +19,7 @@ const CUBE_NAMES: Record<string, string> = {
 export function initCronJobs() {
 	initSiteMapGenerationCronJob();
 	initUnverifiedAccountCleanupCronJob();
+	initAuthArtifactCleanupCronJob();
 	initDailyGoalReminderCronJob();
 	initProPremiumExpiryCronJob();
 	initWcaCompetitionNotificationCronJob();
@@ -181,6 +182,43 @@ function initUnverifiedAccountCleanupCronJob() {
 	);
 
 	logger.debug('Initiated cron job for unverified account cleanup.', {
+		running: job.running,
+	});
+}
+
+/**
+ * Eski EmailVerification ve ForgotPassword kayitlarini siler.
+ * EV expiry: 30 dakika, FP expiry: 15 dakika. Suresi dolmus tum kayitlar
+ * temizlenir — DB sismesini onler ve eski kodlarla brute force yuzeyini azaltir.
+ */
+function initAuthArtifactCleanupCronJob() {
+	const job = new CronJob(
+		'0 */10 * * * *',
+		async () => {
+			try {
+				const evThreshold = new Date(Date.now() - 30 * 60 * 1000);
+				const evResult = await getPrisma().emailVerification.deleteMany({
+					where: {created_at: {lt: evThreshold}},
+				});
+
+				const fpThreshold = new Date(Date.now() - 15 * 60 * 1000);
+				const fpResult = await getPrisma().forgotPassword.deleteMany({
+					where: {created_at: {lt: fpThreshold}},
+				});
+
+				if (evResult.count > 0 || fpResult.count > 0) {
+					logger.info(`Cleaned auth artifacts: ${evResult.count} EV, ${fpResult.count} FP`);
+				}
+			} catch (e) {
+				logger.error('Error cleaning up auth artifacts', {error: e});
+			}
+		},
+		null,
+		true,
+		'America/Los_Angeles'
+	);
+
+	logger.debug('Initiated cron job for auth artifact cleanup.', {
 		running: job.running,
 	});
 }

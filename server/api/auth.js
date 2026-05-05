@@ -1,7 +1,11 @@
-import { getJwtString } from '../util/auth';
+import { getJwtString, setSessionCookie, clearSessionCookie } from '../util/auth';
 import GraphQLError from '../util/graphql_error';
 import { checkPassword } from '../util/password';
 import { getUserByEmail, sanitizeUser } from '../models/user_account';
+import { checkRateLimit } from '../services/rate_limit';
+import { extractIp } from '../util/request';
+import { logger } from '../services/logger';
+import { ErrorCode } from '../constants/errors';
 
 const gqlMutation = `
 	logOut: PublicUserAccount!
@@ -9,7 +13,24 @@ authenticateUser(email: String!, password: String!, remember: Boolean): PublicUs
 `;
 
 const mutateActions = {
-	authenticateUser: async (_, { email, password, remember }, { res }) => {
+	authenticateUser: async (_, { email, password, remember }, { req, res }) => {
+		const ip = extractIp(req);
+		const emailKey = (email || '').toLowerCase();
+
+		// Brute force korumasi: 10 dak / 10 deneme per email, 30 deneme per IP
+		const perEmail = await checkRateLimit(`login:email:${emailKey}`, 10, 600);
+		if (!perEmail.allowed) {
+			logger.warn('Login rate limit (email)', {email: emailKey, count: perEmail.count});
+			throw new GraphQLError(400, 'Cok fazla giris denemesi. Lutfen birkac dakika sonra tekrar deneyin.');
+		}
+		if (ip) {
+			const perIp = await checkRateLimit(`login:ip:${ip}`, 30, 600);
+			if (!perIp.allowed) {
+				logger.warn('Login rate limit (ip)', {ip, count: perIp.count});
+				throw new GraphQLError(400, 'Cok fazla giris denemesi. Lutfen birkac dakika sonra tekrar deneyin.');
+			}
+		}
+
 		const user = await getUserByEmail(email);
 		if (!user) {
 			throw new GraphQLError(400, 'Geçersiz kullanıcı adı veya şifre');
@@ -25,28 +46,20 @@ const mutateActions = {
 		}
 
 		if (!user.email_verified) {
-			throw new GraphQLError(400, 'Lütfen önce e-posta adresinizi doğrulayın');
+			throw new GraphQLError(
+				ErrorCode.EMAIL_NOT_VERIFIED,
+				'Lütfen önce e-posta adresinizi doğrulayın',
+				{email: user.email}
+			);
 		}
 
 		const jwt = getJwtString(user);
-
-		// If remember me is true, set cookie for 10 years (effectively forever)
-		// If false, set cookie for 1 year (also effectively forever for normal users unless they clear cookies)
-		const isProduction = process.env.NODE_ENV === 'production';
-		const cookieOptions = {
-			httpOnly: true,
-			maxAge: remember ? 315360000000 : 31536000000, // 10 years vs 1 year
-			sameSite: isProduction ? 'none' : 'lax',
-			secure: isProduction,
-		};
-
-		res.cookie('session', jwt, cookieOptions);
+		setSessionCookie(res, jwt, {remember: !!remember});
 
 		return sanitizeUser(user);
 	},
 	logOut: async (_, params, { res, user }) => {
-		const isProduction = process.env.NODE_ENV === 'production';
-		res.clearCookie('session', { sameSite: isProduction ? 'none' : 'lax', secure: isProduction });
+		clearSessionCookie(res);
 		return sanitizeUser(user);
 	},
 };
