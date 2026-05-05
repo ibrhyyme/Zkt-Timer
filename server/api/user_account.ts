@@ -5,10 +5,13 @@ import {
 	getUserByEmail,
 	getUserByIdWithProfile,
 	getUserByUsername,
+	isEmailReserved,
+	refreshUnverifiedAccount,
 	sanitizeUser,
-	updateUserAccount,
+	updateUserAccountWithParams,
 	updateUserAccountPassword,
 } from '../models/user_account';
+import { extractIp } from '../util/request';
 import { sendEmailWithTemplate } from '../services/ses';
 import { createSetting } from '../models/settings';
 import { checkLoggedIn } from '../util/auth';
@@ -17,23 +20,12 @@ import { createNotificationPreference } from '../models/notification_preference'
 import { createEmailVerification } from '../models/email_verification';
 import { GraphQLContext } from '../@types/interfaces/server.interface';
 import { ErrorCode } from '../constants/errors';
-import { getPrisma } from '../database';
-import { getEmailStrings, buildVerificationEmailData } from '../util/email_translations';
+import { getEmailStrings, buildVerificationEmailData, buildEmailChangeWarningData } from '../util/email_translations';
 import { validateEmailMx } from '../util/email_validation';
 import { validateName } from '../util/name_validation';
 import { checkRateLimit } from '../services/rate_limit';
 import { logger } from '../services/logger';
 import { notifyAdminsOfNewUser } from '../services/admin_notification';
-
-function extractIp(req: any): string {
-	let ip = req?.headers?.['x-forwarded-for'] || req?.connection?.remoteAddress || '';
-	if (Array.isArray(ip)) {
-		ip = ip[0];
-	} else if (typeof ip === 'string' && ip.indexOf(',') > -1) {
-		ip = ip.split(',')[0];
-	}
-	return (ip || '').trim();
-}
 
 export const gqlQuery = `
 	me: UserAccount!
@@ -41,7 +33,7 @@ export const gqlQuery = `
 
 export const gqlMutation = `
 	createUserAccount(first_name: String!, last_name: String!, email: String!, username: String!, password: String!, language: String, turnstile_token: String!): PublicUserAccount
-	updateUserAccount(first_name: String!, last_name: String!, email: String!, username: String!): PublicUserAccount
+	updateUserAccount(first_name: String!, last_name: String!, email: String!, username: String!, language: String): PublicUserAccount
 	updateUserPassword(old_password: String!, new_password: String!): PublicUserAccount
 	setUserPassword(new_password: String!): PublicUserAccount
 	deleteUserAccount: PublicUserAccount
@@ -123,11 +115,18 @@ export const mutateActions = {
 		}
 
 		const existingUser = await getUserByEmail(email);
-		if (existingUser) {
-			if (!existingUser.email_verified) {
-				// Dogrulanmamis hesabi sil, yeni kayda izin ver
-				await getPrisma().userAccount.delete({where: {id: existingUser.id}});
-			} else {
+		const isRefresh = existingUser && !existingUser.email_verified;
+
+		if (existingUser && existingUser.email_verified) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'That email address is already in use');
+		}
+
+		// Refresh durumu DEGILSE pending_email kontrolu — baska kullanici bu email'i
+		// degisiklik bekliyor olabilir, signup'a izin verirsek confirmEmailChange anasinda
+		// email @unique ihlali olur.
+		if (!existingUser) {
+			const reservedAsPending = await isEmailReserved(email);
+			if (reservedAsPending) {
 				throw new GraphQLError(ErrorCode.BAD_INPUT, 'That email address is already in use');
 			}
 		}
@@ -149,14 +148,25 @@ export const mutateActions = {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Username can only contain letters, numbers, and underscores');
 		}
 
-		const newUsername = await getUserByUsername(username);
-		if (newUsername && newUsername.length) {
+		// Username kontrolu — refresh durumunda kendi satirimizi sayma
+		const usernameOwners = await getUserByUsername(username);
+		const conflict = usernameOwners?.find((u: any) => !existingUser || u.id !== existingUser.id);
+		if (conflict) {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'That username is already in use');
 		}
 
-		const user = await createUserAccount(first_name.trim(), last_name.trim(), email, username, password, ip);
-		await createSetting(user, language || 'en');
-		await createNotificationPreference(user);
+		let user;
+		if (isRefresh) {
+			// Var olan unverified hesabi sil + yeniden olustur YERINE GUNCELLE.
+			// Saldirgan kurbanin kaydini siliyordu (DoS); artik ayni satir tazelenir.
+			user = await refreshUnverifiedAccount(
+				existingUser.id, first_name.trim(), last_name.trim(), username, password, ip
+			);
+		} else {
+			user = await createUserAccount(first_name.trim(), last_name.trim(), email, username, password, ip);
+			await createSetting(user, language || 'en');
+			await createNotificationPreference(user);
+		}
 
 		// Dogrulama kodu olustur ve mail gonder
 		const ev = await createEmailVerification(user);
@@ -176,7 +186,7 @@ export const mutateActions = {
 
 	updateUserAccount: async (
 		_: any,
-		{ first_name, last_name, email, username }: CreateAccountInput,
+		{ first_name, last_name, email, username, language }: CreateAccountInput,
 		{ user }: GraphQLContext
 	) => {
 		checkLoggedIn(user);
@@ -193,13 +203,6 @@ export const mutateActions = {
 		const lastNameError = validateName(last_name, 'Soyad');
 		if (lastNameError) {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, lastNameError);
-		}
-
-		if (email !== user.email) {
-			const newEmail = await getUserByEmail(email);
-			if (newEmail) {
-				throw new GraphQLError(ErrorCode.BAD_INPUT, 'That email address is already in use');
-			}
 		}
 
 		if (username.length < 2) {
@@ -221,7 +224,49 @@ export const mutateActions = {
 			}
 		}
 
-		return await updateUserAccount(user.id, first_name.trim(), last_name.trim(), email, username);
+		const emailLower = email.toLowerCase();
+		const emailChanged = emailLower !== user.email.toLowerCase();
+		let pendingEmailUpdate: string | null | undefined = undefined;
+
+		if (emailChanged) {
+			// Yeni email baska kullanici tarafindan rezerve edilmis mi (email VEYA pending_email)?
+			const taken = await isEmailReserved(emailLower);
+			if (taken) {
+				throw new GraphQLError(ErrorCode.BAD_INPUT, 'That email address is already in use');
+			}
+			pendingEmailUpdate = emailLower;
+		}
+
+		// Email haric alanlari hemen guncelle. Email degisikligi onay akisina dusurulur.
+		const updated = await updateUserAccountWithParams(user.id, {
+			first_name: first_name.trim(),
+			last_name: last_name.trim(),
+			username,
+			...(pendingEmailUpdate !== undefined ? {pending_email: pendingEmailUpdate} : {}),
+		});
+
+		if (emailChanged && pendingEmailUpdate) {
+			// Yeni email'e dogrulama kodu yolla (mevcut EV pattern'i — confirmEmailChange tuketir)
+			const ev = await createEmailVerification(updated as any);
+			const emailStrings = getEmailStrings(language);
+
+			const newEmailRecipient = {email: pendingEmailUpdate, first_name: updated.first_name};
+			sendEmailWithTemplate(newEmailRecipient as any, emailStrings.email_change_subject, 'email_verification',
+				buildVerificationEmailData(newEmailRecipient as any, ev.code, language)
+			).catch(error => {
+				console.error('Email change verification could not be sent:', error);
+			});
+
+			// Eski email'e bilgilendirme uyari yolla
+			const oldEmailRecipient = {email: user.email, first_name: updated.first_name};
+			sendEmailWithTemplate(oldEmailRecipient as any, emailStrings.email_change_warning_subject, 'email_change_request',
+				buildEmailChangeWarningData(oldEmailRecipient as any, pendingEmailUpdate, language)
+			).catch(error => {
+				console.error('Email change warning could not be sent:', error);
+			});
+		}
+
+		return updated;
 	},
 
 	updateUserPassword: async (_: any, { old_password, new_password }: UpdatePasswordInput, { user }: GraphQLContext) => {

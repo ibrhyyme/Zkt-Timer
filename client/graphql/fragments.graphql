@@ -177,6 +177,8 @@ fragment PublicUserWithEloFragment on IPublicUserAccount {
 fragment UserAccountFragment on IUserAccount {
 	...PublicUserFragment
 	email
+	pending_email
+	email_verified
 	offline_hash
 }
 

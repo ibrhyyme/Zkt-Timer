@@ -529,6 +529,7 @@ export type IInternalUserAccount = {
   notification_preferences?: Maybe<NotificationPreference>;
   offline_hash?: Maybe<Scalars['String']>;
   password?: Maybe<Scalars['String']>;
+  pending_email?: Maybe<Scalars['String']>;
   premium_expires_at?: Maybe<Scalars['DateTime']>;
   pro_expires_at?: Maybe<Scalars['DateTime']>;
   profile?: Maybe<Profile>;
@@ -616,6 +617,7 @@ export type InternalUserAccount = IInternalUserAccount & IPublicUserAccount & IU
   notification_preferences?: Maybe<NotificationPreference>;
   offline_hash?: Maybe<Scalars['String']>;
   password?: Maybe<Scalars['String']>;
+  pending_email?: Maybe<Scalars['String']>;
   premium_expires_at?: Maybe<Scalars['DateTime']>;
   pro_expires_at?: Maybe<Scalars['DateTime']>;
   profile?: Maybe<Profile>;
@@ -675,6 +677,7 @@ export type IUserAccount = {
   bans?: Maybe<Array<Maybe<BanLog>>>;
   created_at?: Maybe<Scalars['DateTime']>;
   email?: Maybe<Scalars['String']>;
+  email_verified?: Maybe<Scalars['Boolean']>;
   first_name?: Maybe<Scalars['String']>;
   has_password?: Maybe<Scalars['Boolean']>;
   id?: Maybe<Scalars['String']>;
@@ -686,6 +689,7 @@ export type IUserAccount = {
   last_solve_at?: Maybe<Scalars['DateTime']>;
   mod?: Maybe<Scalars['Boolean']>;
   offline_hash?: Maybe<Scalars['String']>;
+  pending_email?: Maybe<Scalars['String']>;
   premium_expires_at?: Maybe<Scalars['DateTime']>;
   pro_expires_at?: Maybe<Scalars['DateTime']>;
   profile?: Maybe<Profile>;
@@ -723,6 +727,7 @@ export type IUserAccountForAdmin = {
   mod?: Maybe<Scalars['Boolean']>;
   notification_preferences?: Maybe<NotificationPreference>;
   offline_hash?: Maybe<Scalars['String']>;
+  pending_email?: Maybe<Scalars['String']>;
   premium_expires_at?: Maybe<Scalars['DateTime']>;
   pro_expires_at?: Maybe<Scalars['DateTime']>;
   profile?: Maybe<Profile>;
@@ -789,6 +794,7 @@ export type Mutation = {
   changeSmartDeviceName?: Maybe<SmartDevice>;
   checkForgotPasswordCode?: Maybe<Scalars['Boolean']>;
   completeWcaSignup?: Maybe<PublicUserAccount>;
+  confirmEmailChange?: Maybe<PublicUserAccount>;
   confirmZktCompetition?: Maybe<ZktCompetition>;
   createAnnouncement?: Maybe<Announcement>;
   createBadgeType?: Maybe<BadgeType>;
@@ -1029,6 +1035,11 @@ export type MutationCheckForgotPasswordCodeArgs = {
 
 export type MutationCompleteWcaSignupArgs = {
   username?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationConfirmEmailChangeArgs = {
+  code: Scalars['String'];
 };
 
 
@@ -1530,6 +1541,7 @@ export type MutationUpdateStatsModuleBlocksArgs = {
 export type MutationUpdateUserAccountArgs = {
   email: Scalars['String'];
   first_name: Scalars['String'];
+  language?: InputMaybe<Scalars['String']>;
   last_name: Scalars['String'];
   username: Scalars['String'];
 };
@@ -2682,6 +2694,7 @@ export type UserAccount = IPublicUserAccount & IUserAccount & {
   bans?: Maybe<Array<Maybe<BanLog>>>;
   created_at?: Maybe<Scalars['DateTime']>;
   email?: Maybe<Scalars['String']>;
+  email_verified?: Maybe<Scalars['Boolean']>;
   first_name?: Maybe<Scalars['String']>;
   has_password?: Maybe<Scalars['Boolean']>;
   id?: Maybe<Scalars['String']>;
@@ -2693,6 +2706,7 @@ export type UserAccount = IPublicUserAccount & IUserAccount & {
   last_solve_at?: Maybe<Scalars['DateTime']>;
   mod?: Maybe<Scalars['Boolean']>;
   offline_hash?: Maybe<Scalars['String']>;
+  pending_email?: Maybe<Scalars['String']>;
   premium_expires_at?: Maybe<Scalars['DateTime']>;
   pro_expires_at?: Maybe<Scalars['DateTime']>;
   profile?: Maybe<Profile>;
@@ -2731,6 +2745,7 @@ export type UserAccountForAdmin = IPublicUserAccount & IUserAccount & IUserAccou
   mod?: Maybe<Scalars['Boolean']>;
   notification_preferences?: Maybe<NotificationPreference>;
   offline_hash?: Maybe<Scalars['String']>;
+  pending_email?: Maybe<Scalars['String']>;
   premium_expires_at?: Maybe<Scalars['DateTime']>;
   pro_expires_at?: Maybe<Scalars['DateTime']>;
   profile?: Maybe<Profile>;
@@ -3526,11 +3541,11 @@ type PublicUserWithEloFragment_UserAccountForAdmin_Fragment = { __typename?: 'Us
 
 export type PublicUserWithEloFragmentFragment = PublicUserWithEloFragment_InternalUserAccount_Fragment | PublicUserWithEloFragment_PublicUserAccount_Fragment | PublicUserWithEloFragment_UserAccount_Fragment | PublicUserWithEloFragment_UserAccountForAdmin_Fragment;
 
-type UserAccountFragment_InternalUserAccount_Fragment = { __typename?: 'InternalUserAccount', email?: string | null, offline_hash?: string | null, id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null };
+type UserAccountFragment_InternalUserAccount_Fragment = { __typename?: 'InternalUserAccount', email?: string | null, pending_email?: string | null, email_verified?: boolean | null, offline_hash?: string | null, id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null };
 
-type UserAccountFragment_UserAccount_Fragment = { __typename?: 'UserAccount', email?: string | null, offline_hash?: string | null, id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null };
+type UserAccountFragment_UserAccount_Fragment = { __typename?: 'UserAccount', email?: string | null, pending_email?: string | null, email_verified?: boolean | null, offline_hash?: string | null, id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null };
 
-type UserAccountFragment_UserAccountForAdmin_Fragment = { __typename?: 'UserAccountForAdmin', email?: string | null, offline_hash?: string | null, id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null };
+type UserAccountFragment_UserAccountForAdmin_Fragment = { __typename?: 'UserAccountForAdmin', email?: string | null, pending_email?: string | null, email_verified?: boolean | null, offline_hash?: string | null, id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null };
 
 export type UserAccountFragmentFragment = UserAccountFragment_InternalUserAccount_Fragment | UserAccountFragment_UserAccount_Fragment | UserAccountFragment_UserAccountForAdmin_Fragment;
 
@@ -4036,7 +4051,7 @@ export type AdminUserSearchQueryVariables = Exact<{
 }>;
 
 
-export type AdminUserSearchQuery = { __typename?: 'Query', adminUserSearch?: { __typename?: 'PaginatedUserAccountsForAdmin', hasMore?: boolean | null, total?: number | null, items?: Array<{ __typename?: 'UserAccountForAdmin', email?: string | null, offline_hash?: string | null, id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null> | null } | null };
+export type AdminUserSearchQuery = { __typename?: 'Query', adminUserSearch?: { __typename?: 'PaginatedUserAccountsForAdmin', hasMore?: boolean | null, total?: number | null, items?: Array<{ __typename?: 'UserAccountForAdmin', email?: string | null, pending_email?: string | null, email_verified?: boolean | null, offline_hash?: string | null, id?: string | null, username?: string | null, verified?: boolean | null, created_at?: any | null, banned_forever?: boolean | null, is_pro?: boolean | null, is_premium?: boolean | null, banned_until?: any | null, admin?: boolean | null, mod?: boolean | null, integrations?: Array<{ __typename?: 'Integration', id?: string | null, service_name?: IntegrationType | null } | null> | null, profile?: { __typename?: 'Profile', pfp_image?: { __typename?: 'Image', id?: string | null, user_id?: string | null, storage_path?: string | null } | null } | null } | null> | null } | null };
 
 export type GetActiveAnnouncementsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -4297,7 +4312,7 @@ export const TrainerAlgorithmFragmentFragmentDoc = {"kind":"Document","definitio
 export const SessionFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SessionFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Session"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"order"}}]}}]} as unknown as DocumentNode<SessionFragmentFragment, unknown>;
 export const ImageFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ImageFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Image"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"user_id"}},{"kind":"Field","name":{"kind":"Name","value":"storage_path"}}]}}]} as unknown as DocumentNode<ImageFragmentFragment, unknown>;
 export const PublicUserFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"PublicUserFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"IPublicUserAccount"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"username"}},{"kind":"Field","name":{"kind":"Name","value":"verified"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"banned_forever"}},{"kind":"Field","name":{"kind":"Name","value":"is_pro"}},{"kind":"Field","name":{"kind":"Name","value":"is_premium"}},{"kind":"Field","name":{"kind":"Name","value":"banned_until"}},{"kind":"Field","name":{"kind":"Name","value":"admin"}},{"kind":"Field","name":{"kind":"Name","value":"mod"}},{"kind":"Field","name":{"kind":"Name","value":"integrations"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"service_name"}}]}},{"kind":"Field","name":{"kind":"Name","value":"profile"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"pfp_image"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ImageFragment"}}]}}]}}]}}]} as unknown as DocumentNode<PublicUserFragmentFragment, unknown>;
-export const UserAccountFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"UserAccountFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"IUserAccount"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PublicUserFragment"}},{"kind":"Field","name":{"kind":"Name","value":"email"}},{"kind":"Field","name":{"kind":"Name","value":"offline_hash"}}]}}]} as unknown as DocumentNode<UserAccountFragmentFragment, unknown>;
+export const UserAccountFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"UserAccountFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"IUserAccount"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PublicUserFragment"}},{"kind":"Field","name":{"kind":"Name","value":"email"}},{"kind":"Field","name":{"kind":"Name","value":"pending_email"}},{"kind":"Field","name":{"kind":"Name","value":"email_verified"}},{"kind":"Field","name":{"kind":"Name","value":"offline_hash"}}]}}]} as unknown as DocumentNode<UserAccountFragmentFragment, unknown>;
 export const SolveFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SolveFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Solve"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"time"}},{"kind":"Field","name":{"kind":"Name","value":"raw_time"}},{"kind":"Field","name":{"kind":"Name","value":"cube_type"}},{"kind":"Field","name":{"kind":"Name","value":"scramble_subset"}},{"kind":"Field","name":{"kind":"Name","value":"user_id"}},{"kind":"Field","name":{"kind":"Name","value":"scramble"}},{"kind":"Field","name":{"kind":"Name","value":"session_id"}},{"kind":"Field","name":{"kind":"Name","value":"started_at"}},{"kind":"Field","name":{"kind":"Name","value":"ended_at"}},{"kind":"Field","name":{"kind":"Name","value":"dnf"}},{"kind":"Field","name":{"kind":"Name","value":"plus_two"}},{"kind":"Field","name":{"kind":"Name","value":"notes"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"is_smart_cube"}},{"kind":"Field","name":{"kind":"Name","value":"smart_turn_count"}},{"kind":"Field","name":{"kind":"Name","value":"share_code"}},{"kind":"Field","name":{"kind":"Name","value":"smart_turns"}},{"kind":"Field","name":{"kind":"Name","value":"smart_put_down_time"}},{"kind":"Field","name":{"kind":"Name","value":"inspection_time"}},{"kind":"Field","name":{"kind":"Name","value":"smart_device"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"internal_name"}},{"kind":"Field","name":{"kind":"Name","value":"device_id"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}}]}},{"kind":"Field","name":{"kind":"Name","value":"solve_method_steps"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"turn_count"}},{"kind":"Field","name":{"kind":"Name","value":"turns"}},{"kind":"Field","name":{"kind":"Name","value":"total_time"}},{"kind":"Field","name":{"kind":"Name","value":"tps"}},{"kind":"Field","name":{"kind":"Name","value":"recognition_time"}},{"kind":"Field","name":{"kind":"Name","value":"oll_case_key"}},{"kind":"Field","name":{"kind":"Name","value":"pll_case_key"}},{"kind":"Field","name":{"kind":"Name","value":"skipped"}},{"kind":"Field","name":{"kind":"Name","value":"parent_name"}},{"kind":"Field","name":{"kind":"Name","value":"method_name"}},{"kind":"Field","name":{"kind":"Name","value":"step_index"}},{"kind":"Field","name":{"kind":"Name","value":"step_name"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}}]}}]}}]} as unknown as DocumentNode<SolveFragmentFragment, unknown>;
 export const PublicUserWithEloFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"PublicUserWithEloFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"IPublicUserAccount"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PublicUserFragment"}}]}}]} as unknown as DocumentNode<PublicUserWithEloFragmentFragment, unknown>;
 export const SolveWithUserFragmentFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"SolveWithUserFragment"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Solve"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"SolveFragment"}},{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PublicUserWithEloFragment"}}]}}]}}]} as unknown as DocumentNode<SolveWithUserFragmentFragment, unknown>;

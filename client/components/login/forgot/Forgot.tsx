@@ -1,5 +1,5 @@
-import React, {useState} from 'react';
-import {Link} from 'react-router-dom';
+import React, {useEffect, useState} from 'react';
+import {Link, useHistory, useLocation} from 'react-router-dom';
 import PasswordStrength from '../../common/password_strength/PasswordStrength';
 import {validateStrongPassword} from '../../../util/auth/password';
 import {gql, useMutation} from '@apollo/client';
@@ -8,10 +8,14 @@ import {getRedirectLink} from '../../../util/auth/login';
 import {UserAccount} from '../../../@types/generated/graphql';
 import {useTranslation} from 'react-i18next';
 
-enum ForgotStage {
-	EnterEmail,
-	EnterCode,
-	NewPassword,
+type ForgotStage = 'email' | 'code' | 'reset';
+
+function readStageFromSearch(search: string): {stage: ForgotStage; email: string} {
+	const params = new URLSearchParams(search);
+	const rawStage = params.get('step');
+	const email = params.get('email') || '';
+	const stage: ForgotStage = rawStage === 'code' || rawStage === 'reset' ? rawStage : 'email';
+	return {stage, email};
 }
 
 const SENT_FORGOT_PASSWORD_CODE_MUTATION = gql`
@@ -36,12 +40,44 @@ const UPDATE_FORGOT_PASSWORD_MUTATION = gql`
 
 export default function Forgot() {
 	const { t, i18n } = useTranslation();
-	const [stage, setStage] = useState<ForgotStage>(ForgotStage.EnterEmail);
+	const history = useHistory();
+	const location = useLocation();
+	const urlState = readStageFromSearch(location.search);
+
+	const [stage, setStageInternal] = useState<ForgotStage>(urlState.stage);
 	const [code, setCode] = useInput('');
-	const [email, setEmail] = useInput('');
+	const [email, setEmail] = useInput(urlState.email);
 	const [newPassword, setNewPassword] = useInput('');
 	const [confirmPassword, setConfirmPassword] = useInput('');
 	const [error, setError] = useState('');
+
+	// URL degisirse stage'i yansit (back/forward butonu, deeplink)
+	useEffect(() => {
+		const next = readStageFromSearch(location.search);
+		setStageInternal(next.stage);
+		if (next.email && next.email !== email) {
+			setEmail({target: {value: next.email}} as any);
+		}
+		// Reset stage'i ama kod yok — code stage'ine dus (sayfa yenilemede kod kaybolur)
+		if (next.stage === 'reset' && !code) {
+			navigateToStage('code', next.email);
+		}
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [location.search]);
+
+	function navigateToStage(next: ForgotStage, mail?: string) {
+		const params = new URLSearchParams();
+		if (next !== 'email') {
+			params.set('step', next);
+			if (mail) params.set('email', mail);
+		}
+		const search = params.toString();
+		history.push({pathname: '/forgot', search: search ? `?${search}` : ''});
+	}
+
+	function setStage(next: ForgotStage) {
+		navigateToStage(next, email.trim());
+	}
 
 	const [forgotCode, forgotCodeData] = useMutation<{sendForgotPasswordCode: void}, {email: string; language: string}>(
 		SENT_FORGOT_PASSWORD_CODE_MUTATION
@@ -74,27 +110,27 @@ export default function Forgot() {
 		}
 
 		switch (stage) {
-			case ForgotStage.EnterEmail: {
+			case 'email': {
 				if (!email.trim()) {
 					setError(t('forgot.enter_email_error'));
 					return;
 				}
 
 				await forgotCode({variables: {email: email.trim(), language: i18n.language}});
-				setStage(ForgotStage.EnterCode);
+				setStage('code');
 				break;
 			}
-			case ForgotStage.EnterCode: {
+			case 'code': {
 				if (!code) {
 					setError(t('forgot.enter_code_error'));
 					return;
 				}
 
 				await checkForgot({variables: {email: email.trim(), code}});
-				setStage(ForgotStage.NewPassword);
+				setStage('reset');
 				break;
 			}
-			case ForgotStage.NewPassword: {
+			case 'reset': {
 				const validate = validateStrongPassword(newPassword, confirmPassword);
 
 				if (!validate.isStrong) {
@@ -111,7 +147,7 @@ export default function Forgot() {
 	}
 
 	// Stage 1: Email Input
-	if (stage === ForgotStage.EnterEmail) {
+	if (stage === 'email') {
 		return (
 			<div className="space-y-4">
 				<form onSubmit={nextStage} className="space-y-4">
@@ -188,7 +224,7 @@ export default function Forgot() {
 	}
 
 	// Stage 2: Code Input
-	if (stage === ForgotStage.EnterCode) {
+	if (stage === 'code') {
 		return (
 			<div className="space-y-4">
 				<div className="text-center mb-4">
@@ -252,7 +288,7 @@ export default function Forgot() {
 				{/* Back Button */}
 				<div className="text-center pt-2">
 					<button
-						onClick={() => setStage(ForgotStage.EnterEmail)}
+						onClick={() => setStage('email')}
 						className="text-sm hover:text-white transition"
 						style={{ color: 'rgba(255, 255, 255, 0.6)' }}
 					>
@@ -264,7 +300,7 @@ export default function Forgot() {
 	}
 
 	// Stage 3: New Password
-	if (stage === ForgotStage.NewPassword) {
+	if (stage === 'reset') {
 		return (
 			<div className="space-y-4">
 				<div className="text-center mb-4">
@@ -357,7 +393,7 @@ export default function Forgot() {
 				{/* Back Button */}
 				<div className="text-center pt-2">
 					<button
-						onClick={() => setStage(ForgotStage.EnterCode)}
+						onClick={() => setStage('code')}
 						className="text-sm hover:text-white transition"
 						style={{ color: 'rgba(255, 255, 255, 0.6)' }}
 					>

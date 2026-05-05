@@ -180,6 +180,21 @@ export async function getUserByEmail(email: string): Promise<InternalUserAccount
 	});
 }
 
+/**
+ * Email hem `email` hem `pending_email` kolonlarinda kontrol edilir.
+ * Signup ve email change icin: ayni email'i baska kullanici "rezerve" etmis olabilir.
+ */
+export async function isEmailReserved(email: string): Promise<boolean> {
+	const lower = email.toLowerCase();
+	const found = await getPrisma().userAccount.findFirst({
+		where: {
+			OR: [{email: lower}, {pending_email: lower}],
+		},
+		select: {id: true},
+	});
+	return !!found;
+}
+
 export async function getUserByUsername(username: string): Promise<UserAccount[]> {
 	return await getPrisma().userAccount.findMany({
 		where: {
@@ -284,6 +299,54 @@ export async function deleteUserAccount(user: UserAccount): Promise<UserAccount 
 
 		return null;
 	}
+}
+
+/**
+ * Var olan unverified hesabi yeni signup verisi ile gunceller (silmek yerine).
+ * Race / DoS yuzeyini kapatir: saldirgan ayni email'le defalarca signup denerse
+ * kurbanin hesabi silinmez, ayni satir tazelenir; kurban hala dogrulayabilir.
+ *
+ * Username @unique kisitini ihlal etmez cunku ayni satir guncellenir.
+ * Eski EmailVerification kayitlari silinir, yeni 6 haneli kod uretilir.
+ */
+export async function refreshUnverifiedAccount(
+	userId: string,
+	firstName: string,
+	lastName: string,
+	username: string,
+	password: string | null,
+	ip: string | undefined
+) {
+	let country = 'NONE';
+	try {
+		const location = await getLocationFromIp(ip);
+		country = location.country_iso || 'NONE';
+	} catch (e) {
+		logger.warn('Could not get location for IP', {
+			ip,
+			error: e instanceof Error ? e.message : String(e),
+		});
+	}
+
+	const hashedPassword = password ? await hashPassword(password) : null;
+	const prisma = getPrisma();
+
+	const [updated] = await prisma.$transaction([
+		prisma.userAccount.update({
+			where: {id: userId},
+			data: {
+				first_name: firstName,
+				last_name: lastName,
+				username,
+				password: hashedPassword,
+				join_ip: ip || '',
+				join_country: country,
+			},
+		}),
+		prisma.emailVerification.deleteMany({where: {user_id: userId}}),
+	]);
+
+	return updated;
 }
 
 export async function createUserAccount(

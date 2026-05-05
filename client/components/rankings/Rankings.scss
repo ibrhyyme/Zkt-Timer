@@ -369,8 +369,11 @@
 	}
 
 	&__flag {
-		font-size: 0.9rem;
+		font-size: 0.8rem;
+		font-weight: 700;
+		color: rgb(var(--text-color));
 		flex-shrink: 0;
+		letter-spacing: 0.5px;
 	}
 
 	&__username {

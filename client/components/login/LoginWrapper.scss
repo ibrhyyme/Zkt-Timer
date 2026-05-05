@@ -135,6 +135,25 @@
 				0 0 30px rgba(59, 130, 246, 0.08) !important;
 			transition: border-color 0.3s ease, box-shadow 0.3s ease;
 		}
+
+		// Browser autofill — Chrome/Safari override.
+		// Why: tarayici autofill koyu temayi yok sayip beyaz background basiyor.
+		// inset box-shadow ile background'i bastir, text-fill-color ile yaziyi beyaz tut.
+		input:-webkit-autofill,
+		input:-webkit-autofill:hover,
+		input:-webkit-autofill:focus,
+		input:-webkit-autofill:active {
+			-webkit-box-shadow: 0 0 0 1000px rgba(20, 20, 25, 0.95) inset !important;
+			-webkit-text-fill-color: #fff !important;
+			caret-color: #fff;
+			border-color: rgba(255, 255, 255, 0.1) !important;
+			transition: background-color 9999s ease-in-out 0s;
+		}
+
+		input:-webkit-autofill:focus,
+		input:-webkit-autofill:focus-visible {
+			border-color: rgba(124, 58, 237, 0.5) !important;
+		}
 	}
 
 	// ============================================
