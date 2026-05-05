@@ -61,6 +61,8 @@ RUN yarn install --production --frozen-lockfile --network-timeout 600000 --netwo
 COPY --from=builder /app/build/server ./server
 # 2. Shared kodu (Compiled JS)
 COPY --from=builder /app/build/shared ./shared
+# 2b. Shared data (JSON dosyalari Babel tarafindan derlenmiyor — runtime'da require ile yukleniyor)
+COPY --from=builder /app/shared/data ./shared/data
 # 3. Client build dosyaları (Nginx için gerekli statik dosyalar)
 COPY --from=builder /app/dist ./dist
 # 4. Public klasörü (Resimler vs. için)
