@@ -31,7 +31,7 @@ import {
 	MoveCounts,
 } from './types';
 import { buildPrettyRecon } from './pretty_recon';
-import { getMatchingOLLState, getMatchingPLLState, buildOLLLookupState, buildPLLLookupState } from './ll_identification';
+import { getMatchingOLLState, getMatchingPLLState } from './ll_identification';
 
 const ROTATION_MOVES = new Set(['x', 'y', 'z', "x'", "y'", "z'", 'x2', 'y2', 'z2']);
 
@@ -170,8 +170,7 @@ export function analyzePhases(
 		const beforeOLLState = phaseEndStates.f2l_4 || phaseEndStates.f2l_3 || phaseEndStates.f2l_2 || phaseEndStates.f2l_1 || phaseEndStates.cross;
 		const axisForOLL = phaseEndAxis.oll ?? phaseEndAxis.f2l_4 ?? crossAxisIndex ?? 0;
 		if (beforeOLLState) {
-			const lookup = buildOLLLookupState(CROSS_AXIS_LABELS[axisForOLL], beforeOLLState);
-			const m = getMatchingOLLState(lookup);
+			const m = getMatchingOLLState(beforeOLLState, CROSS_AXIS_LABELS[axisForOLL]);
 			if (m) ollIdentified = m;
 		}
 	}
@@ -179,8 +178,7 @@ export function analyzePhases(
 		const beforePLLState = phaseEndStates.oll;
 		const axisForPLL = phaseEndAxis.pll ?? phaseEndAxis.oll ?? crossAxisIndex ?? 0;
 		if (beforePLLState) {
-			const lookup = buildPLLLookupState(CROSS_AXIS_LABELS[axisForPLL], beforePLLState);
-			const m = getMatchingPLLState(lookup);
+			const m = getMatchingPLLState(beforePLLState, CROSS_AXIS_LABELS[axisForPLL]);
 			if (m) pllIdentified = m;
 		}
 	}

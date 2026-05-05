@@ -410,6 +410,7 @@ type Mutation {
   reindexSmartCubeMethodSteps: MethodStepsBackfillResult
   bulkArchiveWcaCompetitions(skipExisting: Boolean = true, rateLimitMs: Int = 1500, endDate: String, startDate: String): BulkArchiveResult
   reindexArchivedCompsToES: ReindexESResult
+  reindexLLCaseKeys: ReindexLLResult
   updateStatsModuleBlocks(blocks: [StatsModuleBlockInput]): StatsModule
   fetchWcaRecords: [WcaRecord]
   publishWcaRecord(recordId: String): WcaRecord
@@ -1185,6 +1186,14 @@ type BulkArchiveResult {
 type ReindexESResult {
   total: Int
   indexed: Int
+  failed: Int
+}
+
+type ReindexLLResult {
+  total: Int
+  scanned: Int
+  ollUpdated: Int
+  pllUpdated: Int
   failed: Int
 }
 

@@ -23,6 +23,7 @@ const b = block('site-config-panel');
 
 const BACKFILL_WCA_IDS = gql`mutation { backfillWcaIds { total filled tokenFailed noWcaId error recordsTotal recordsFilled recordsError } }`;
 const REINDEX_METHOD_STEPS = gql`mutation { reindexSmartCubeMethodSteps { totalCandidates processed filled skippedNoTurns downgraded error } }`;
+const REINDEX_LL_CASE_KEYS = gql`mutation { reindexLLCaseKeys { total scanned ollUpdated pllUpdated failed } }`;
 const WCA_STATS = gql`query { wcaStats { totalUsers wcaConnected wcaWithId wcaWithoutId } }`;
 const TEST_WCA_NOTIFICATION = gql`mutation TestWcaNotification($wcaId: String!) { testWcaNotification(wcaId: $wcaId) }`;
 const MY_PUSH_TOKENS = gql`query { adminMyPushTokens { platform } }`;
@@ -49,6 +50,9 @@ export default function SiteConfigPanel() {
 
 	const [reindexLoading, setReindexLoading] = useState(false);
 	const [reindexResult, setReindexResult] = useState<string | null>(null);
+
+	const [reindexLLLoading, setReindexLLLoading] = useState(false);
+	const [reindexLLResult, setReindexLLResult] = useState<string | null>(null);
 
 	const [wcaIdInput, setWcaIdInput] = useState('');
 	const [testPushLoading, setTestPushLoading] = useState(false);
@@ -426,6 +430,56 @@ export default function SiteConfigPanel() {
 					<div className={b('row')}>
 						<div className={b('row-text')}>
 							<div className={b('row-desc')}>{reindexResult}</div>
+						</div>
+					</div>
+				)}
+			</div>
+
+			{/* OLL/PLL Case Keys Reindex */}
+			<div className={b('section')}>
+				<div className={b('section-header')}>
+					<Database size={20} weight="fill" />
+					<h3>OLL/PLL Vaka Tanima Reindex</h3>
+				</div>
+				<div className={b('row')}>
+					<div className={b('row-text')}>
+						<div className={b('row-label')}>OLL/PLL Case Keys Backfill</div>
+						<div className={b('row-desc')}>
+							case_key alani NULL olan smart cube solve'larini yeni identification algoritmasi (cstimer-bazli pattern matching) ile yeniden tanir. Mevcut step kayitlarini SILMEZ — sadece eksik OLL/PLL case_key'leri doldurur. Method Steps Reindex'ten cok daha hizli.
+						</div>
+					</div>
+					<button
+						className={b('action-btn')}
+						disabled={reindexLLLoading}
+						onClick={async () => {
+							setReindexLLLoading(true);
+							setReindexLLResult(null);
+							try {
+								const res = await gqlMutate(REINDEX_LL_CASE_KEYS);
+								const r = res?.data?.reindexLLCaseKeys;
+								if (r) {
+									const parts = [`${r.scanned}/${r.total} solve tarandi`];
+									if (r.ollUpdated > 0) parts.push(`${r.ollUpdated} OLL guncellendi`);
+									if (r.pllUpdated > 0) parts.push(`${r.pllUpdated} PLL guncellendi`);
+									if (r.failed > 0) parts.push(`${r.failed} hata`);
+									setReindexLLResult(parts.join(' | '));
+								} else {
+									setReindexLLResult('Sonuc alinamadi');
+								}
+							} catch (err) {
+								setReindexLLResult('Hata: ' + (err as any)?.message);
+							} finally {
+								setReindexLLLoading(false);
+							}
+						}}
+					>
+						{reindexLLLoading ? 'Calisiyor...' : 'Calistir'}
+					</button>
+				</div>
+				{reindexLLResult && (
+					<div className={b('row')}>
+						<div className={b('row-text')}>
+							<div className={b('row-desc')}>{reindexLLResult}</div>
 						</div>
 					</div>
 				)}
