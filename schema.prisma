@@ -20,6 +20,7 @@ model UserAccount {
   created_at         DateTime    @default(now())
   last_name          String
   username           String?     @unique
+  username_changed_at DateTime?
   verified           Boolean     @default(false)
   email_verified     Boolean     @default(false)
   banned_forever     Boolean     @default(false)

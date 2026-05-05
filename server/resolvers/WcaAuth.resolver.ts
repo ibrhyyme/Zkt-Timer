@@ -36,7 +36,7 @@ export class WcaAuthResolver {
 		@Ctx() context: GraphQLContext,
 		@Arg('code') code: string
 	): Promise<WcaOAuthResult> {
-		const {res} = context;
+		const {req, res} = context;
 
 		// 1. WCA'dan token ve profil bilgilerini al
 		const wcaData = await exchangeWcaLoginCode(code);
@@ -52,7 +52,7 @@ export class WcaAuthResolver {
 				const user = await getUserById(existingIntegration.user_id);
 				if (user) {
 					const jwtToken = getJwtString(user);
-					setSessionCookie(res, jwtToken);
+					setSessionCookie(req, res, jwtToken);
 
 					return {
 						success: true,
@@ -249,7 +249,7 @@ export class WcaAuthResolver {
 		res.clearCookie(WCA_PENDING_COOKIE, { sameSite: 'none' as const, secure: true });
 
 		const jwtToken = getJwtString(user);
-		setSessionCookie(res, jwtToken);
+		setSessionCookie(req, res, jwtToken);
 
 		notifyAdminsOfNewUser(user, 'wca').catch(err =>
 			console.error('[AdminNotification] WCA signup notification failed:', err)

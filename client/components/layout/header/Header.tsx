@@ -318,7 +318,11 @@ export default function Header(props: Props) {
 			pageDesc = t('seo.settings_description');
 		} else if (currentPath.startsWith('/user/')) {
 			const parts = currentPath.split('/');
-			const username = parts[2] || t('seo.user_fallback');
+			// SSR meta tag XSS koruma: username alfanumerik + underscore ile sinirli
+			// (signup'ta zaten bu pattern zorunlu). URL'den gelen baska karakterler silinir.
+			const rawUsername = parts[2] ? decodeURIComponent(parts[2]) : '';
+			const sanitizedUsername = rawUsername.replace(/[^a-zA-Z0-9_]/g, '');
+			const username = sanitizedUsername || t('seo.user_fallback');
 			pageTitle = t('seo.user_profile_title', { username });
 			pageDesc = t('seo.user_profile_description', { username });
 		} else if (currentPath.startsWith('/trainer')) {

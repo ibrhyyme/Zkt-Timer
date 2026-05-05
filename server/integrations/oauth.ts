@@ -96,13 +96,13 @@ export async function getOAuthPostRequest(
 		const clientSecret = process.env.WCA_CLIENT_SECRET || '';
 		const redirectUri = overrideRedirectUri || getWcaRedirectUri();
 
-		// Debug logging
+		// Debug logging (secrets redacted — sadece varlik kontrolu)
 		console.log('WCA OAuth request details:', {
-			clientId: `"${clientId}"`,
-			clientSecret: `"${clientSecret}"`,
+			clientId: clientId ? 'PRESENT' : 'MISSING',
+			clientSecret: clientSecret ? 'PRESENT' : 'MISSING',
 			redirectUri,
 			endpoint: serviceEndpoint,
-			additionalData
+			additionalDataKeys: Object.keys(additionalData),
 		});
 
 		const body = new URLSearchParams();
@@ -130,10 +130,9 @@ export async function getOAuthPostRequest(
 				createdAt: new Date().getTime(),
 			};
 		} catch (error) {
-			// Log and re-throw error with response body for debugging
+			// Log and re-throw error (request body sirlari icerir, log'lanmaz)
 			if (error.response) {
 				console.error('WCA token exchange failed:', error.response.status, error.response.data);
-				console.error('Request body was:', body.toString());
 				throw new Error(error.response.data?.error_description || error.response.data?.error || 'WCA token exchange failed');
 			}
 			throw error;

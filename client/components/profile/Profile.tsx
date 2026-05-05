@@ -17,6 +17,7 @@ import WCA from './wca/WCA';
 import Avatar from '../common/avatar/Avatar';
 import { getStorageURL, resourceUri } from '../../util/storage';
 import { Image, Profile as ProfileSchema, PublicUserAccount, TopAverage, TopSolve } from '../../@types/generated/graphql';
+import { safeExternalUrl } from '../../../shared/util/url';
 import { useRouteMatch } from 'react-router-dom';
 import { useSsr } from '../../util/hooks/useSsr';
 import block from '../../styles/bem';
@@ -110,21 +111,25 @@ export async function prefetchProfileData(store, req) {
 function SocialIcons({ profile }: { profile: ProfileSchema }) {
 	const links: { key: string; icon: React.ReactNode; href: string }[] = [];
 
-	if (profile.youtube_link) {
+	// safeExternalUrl: javascript:, data: gibi tehlikeli protokolleri reddet (XSS koruma)
+	const youtubeHref = safeExternalUrl(profile.youtube_link);
+	if (youtubeHref) {
 		links.push({
 			key: 'youtube',
 			icon: <YoutubeLogo weight="fill" />,
-			href: profile.youtube_link,
+			href: youtubeHref,
 		});
 	}
-	if (profile.twitch_link) {
+	const twitchHref = safeExternalUrl(profile.twitch_link);
+	if (twitchHref) {
 		links.push({
 			key: 'twitch',
 			icon: <TwitchLogo weight="fill" />,
-			href: profile.twitch_link,
+			href: twitchHref,
 		});
 	}
-	if (profile.twitter_link) {
+	const twitterHref = safeExternalUrl(profile.twitter_link);
+	if (twitterHref) {
 		links.push({
 			key: 'twitter',
 			icon: (
@@ -132,10 +137,11 @@ function SocialIcons({ profile }: { profile: ProfileSchema }) {
 					<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
 				</svg>
 			),
-			href: profile.twitter_link,
+			href: twitterHref,
 		});
 	}
-	if (profile.reddit_link) {
+	const redditHref = safeExternalUrl(profile.reddit_link);
+	if (redditHref) {
 		links.push({
 			key: 'wca',
 			icon: (
@@ -145,7 +151,7 @@ function SocialIcons({ profile }: { profile: ProfileSchema }) {
 					style={{ width: '14px', height: '14px' }}
 				/>
 			),
-			href: profile.reddit_link,
+			href: redditHref,
 		});
 	}
 

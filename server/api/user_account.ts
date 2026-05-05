@@ -217,10 +217,21 @@ export const mutateActions = {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Username can only contain letters, numbers, and underscores');
 		}
 
-		if (username !== user.username) {
+		// Username degisikligi: 30 gun cooldown — impersonation/scam koruma
+		const usernameChanged = username !== user.username;
+		const USERNAME_CHANGE_COOLDOWN_MS = 30 * 24 * 60 * 60 * 1000;
+		if (usernameChanged) {
 			const newUsername = await getUserByUsername(username);
 			if (newUsername && newUsername.length) {
 				throw new GraphQLError(ErrorCode.BAD_INPUT, 'That username is already in use');
+			}
+			const lastChange = (user as any).username_changed_at;
+			if (lastChange) {
+				const elapsed = Date.now() - new Date(lastChange).getTime();
+				if (elapsed < USERNAME_CHANGE_COOLDOWN_MS) {
+					const daysLeft = Math.ceil((USERNAME_CHANGE_COOLDOWN_MS - elapsed) / (24 * 60 * 60 * 1000));
+					throw new GraphQLError(ErrorCode.BAD_INPUT, `Kullanici adini cok sik degistiremezsin. ${daysLeft} gun sonra tekrar deneyin.`);
+				}
 			}
 		}
 
@@ -242,6 +253,7 @@ export const mutateActions = {
 			first_name: first_name.trim(),
 			last_name: last_name.trim(),
 			username,
+			...(usernameChanged ? {username_changed_at: new Date()} : {}),
 			...(pendingEmailUpdate !== undefined ? {pending_email: pendingEmailUpdate} : {}),
 		});
 

@@ -35,10 +35,12 @@ export function deleteAllTopAverages(user) {
 	});
 }
 
-export function deleteTopSolveById(id) {
-	return getPrisma().topSolve.delete({
+export function deleteTopSolveById(id: string, userId: string) {
+	// Ownership zorunlu — sadece kayit sahibi silebilir
+	return getPrisma().topSolve.deleteMany({
 		where: {
 			id,
+			user_id: userId,
 		},
 	});
 }
@@ -53,10 +55,12 @@ export function deleteTopAverage(cubeType, user, scrambleSubset?: string | null)
 	});
 }
 
-export function deleteTopAverageById(id) {
-	return getPrisma().topAverage.delete({
+export function deleteTopAverageById(id: string, userId: string) {
+	// Ownership zorunlu — sadece kayit sahibi silebilir
+	return getPrisma().topAverage.deleteMany({
 		where: {
 			id,
+			user_id: userId,
 		},
 	});
 }

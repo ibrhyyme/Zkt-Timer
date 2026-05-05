@@ -37,7 +37,9 @@ export function getSignUpLink() {
 	return getLinkHelper(SIGN_UP_PATH);
 }
 
-// Falls back to timer path if nothing can be found
+// Falls back to timer path if nothing can be found.
+// Open redirect korumasi: sadece same-origin path'lere izin verilir.
+// "//evil.com" (protocol-relative) ve "https://evil.com" gibi cross-origin redirect'leri engeller.
 export function getRedirectLink() {
 	if (typeof window === 'undefined') {
 		return '/timer';
@@ -50,9 +52,15 @@ export function getRedirectLink() {
 		return '/timer';
 	}
 
-	if (redirect.indexOf('/') > -1) {
-		return redirect;
+	try {
+		// URL constructor protocol-relative ve absolute URL'leri parse eder
+		const decoded = decodeURIComponent(redirect);
+		const url = new URL(decoded, window.location.origin);
+		if (url.origin !== window.location.origin) {
+			return '/timer';
+		}
+		return url.pathname + url.search + url.hash;
+	} catch {
+		return '/timer';
 	}
-
-	return decodeURIComponent(redirect) || '/timer';
 }

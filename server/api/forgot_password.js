@@ -70,7 +70,7 @@ export const mutateActions = {
 
 		return fp && fp.code === code && forgotPasswordLessThan15Min(fp);
 	},
-	updateForgotPassword: async (_, { email, code, password }, { res }) => {
+	updateForgotPassword: async (_, { email, code, password }, { req, res }) => {
 		const user = await getUserByEmail(email);
 
 		if (!user) {
@@ -80,6 +80,11 @@ export const mutateActions = {
 		// Unverified hesaplar forgot password ile auth bypass yapamasin
 		if (!user.email_verified) {
 			throw new GraphQLError(400, 'Bu hesap henuz dogrulanmadi. Lutfen once e-posta dogrulamasini tamamlayin.');
+		}
+
+		// Sifre minimum uzunluk kontrolu (Phase 3.7)
+		if (!password || password.length < 8) {
+			throw new GraphQLError(400, 'Sifre en az 8 karakter olmali');
 		}
 
 		const fp = (await getForgotPassword(user))[0];
@@ -96,7 +101,7 @@ export const mutateActions = {
 		await updateUserAccountPassword(user.id, password);
 
 		const jwt = getJwtString(user);
-		setSessionCookie(res, jwt);
+		setSessionCookie(req, res, jwt);
 
 		return sanitizeUser(user);
 	},

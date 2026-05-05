@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {LINKED_SERVICES} from '../../../../shared/integration';
 import {resourceUri} from '../../../util/storage';
+import {createAndStoreOAuthState} from '../../../util/oauth_state';
 
 export default function WcaLoginButton() {
 	const {t} = useTranslation();
@@ -11,12 +12,16 @@ export default function WcaLoginButton() {
 		if (loading) return;
 		setLoading(true);
 
+		// CSRF korumasi: state parametresi — saldirgan kurban'i kendi WCA code'una yonlendiremesin
+		const oauthState = createAndStoreOAuthState();
+
 		const service = LINKED_SERVICES.wca;
 		const params = new URLSearchParams({
 			client_id: service.clientId,
 			response_type: service.responseType,
 			scope: service.scope.join(' '),
 			redirect_uri: window.location.origin + '/oauth/wca/login',
+			state: oauthState,
 		});
 
 		window.location.href = `${service.authEndpoint}?${params.toString()}`;

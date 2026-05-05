@@ -92,12 +92,20 @@ export class LeaderboardsResolver {
 	@Authorized([Role.LOGGED_IN])
 	@Mutation(() => TopSolve)
 	async deleteTopSolve(@Ctx() context: GraphQLContext, @Arg('id') id: string) {
-		return deleteTopSolveById(id);
+		const result = await deleteTopSolveById(id, context.user.id);
+		if (result.count === 0) {
+			throw new GraphQLError(ErrorCode.NOT_FOUND, 'Top solve not found');
+		}
+		return {id} as TopSolve;
 	}
 
 	@Authorized([Role.LOGGED_IN])
 	@Mutation(() => TopAverage)
 	async deleteTopAverage(@Ctx() context: GraphQLContext, @Arg('id') id: string) {
-		return deleteTopAverageById(id);
+		const result = await deleteTopAverageById(id, context.user.id);
+		if (result.count === 0) {
+			throw new GraphQLError(ErrorCode.NOT_FOUND, 'Top average not found');
+		}
+		return {id} as TopAverage;
 	}
 }
