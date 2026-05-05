@@ -849,6 +849,7 @@ export type Mutation = {
   registerForZktCompetition?: Maybe<ZktRegistration>;
   registerPushToken?: Maybe<PushTokenResult>;
   reindexArchivedCompsToES?: Maybe<ReindexEsResult>;
+  reindexLLCaseKeys?: Maybe<ReindexLlResult>;
   reindexSmartCubeMethodSteps?: Maybe<MethodStepsBackfillResult>;
   removeBadgeFromUser?: Maybe<Badge>;
   removeDailyGoal?: Maybe<Scalars['Boolean']>;
@@ -2168,6 +2169,15 @@ export type ReindexEsResult = {
   __typename?: 'ReindexESResult';
   failed?: Maybe<Scalars['Int']>;
   indexed?: Maybe<Scalars['Int']>;
+  total?: Maybe<Scalars['Int']>;
+};
+
+export type ReindexLlResult = {
+  __typename?: 'ReindexLLResult';
+  failed?: Maybe<Scalars['Int']>;
+  ollUpdated?: Maybe<Scalars['Int']>;
+  pllUpdated?: Maybe<Scalars['Int']>;
+  scanned?: Maybe<Scalars['Int']>;
   total?: Maybe<Scalars['Int']>;
 };
 

@@ -49,7 +49,7 @@ import { fetchAndSaveWcaRecords } from '../models/wca_record';
 import { getOAuthPostRequest } from '../integrations/oauth';
 import { getIpDetail } from '../services/ipstack';
 import { archiveCompetition } from '../services/CompetitionArchiveService';
-import { BulkArchiveResult, ReindexESResult } from '../schemas/ArchiveAdmin.schema';
+import { BulkArchiveResult, ReindexESResult, ReindexLLResult } from '../schemas/ArchiveAdmin.schema';
 import { ARCHIVED_COMP_INDEX, bootstrapArchivedCompIndex, getSearchClient } from '../services/search';
 
 @Resolver()
@@ -870,6 +870,82 @@ export class AdminResolver {
 		}
 
 		console.log('[ReindexES] Done.', result);
+		return result;
+	}
+
+	@Authorized([Role.ADMIN])
+	@Mutation(() => ReindexLLResult)
+	async reindexLLCaseKeys(): Promise<ReindexLLResult> {
+		const prisma = getPrisma();
+		const result: ReindexLLResult = { total: 0, scanned: 0, ollUpdated: 0, pllUpdated: 0, failed: 0 };
+		const BATCH_SIZE = 200;
+		let cursor: string | undefined;
+
+		while (true) {
+			const batch: any[] = await prisma.solve.findMany({
+				take: BATCH_SIZE,
+				...(cursor ? { skip: 1, cursor: { id: cursor } } : {}),
+				where: {
+					is_smart_cube: true,
+					smart_turns: { not: null },
+					solve_method_steps: {
+						some: {
+							step_name: { in: ['oll', 'pll'] },
+							OR: [{ oll_case_key: null }, { pll_case_key: null }],
+						},
+					},
+				},
+				select: {
+					id: true,
+					smart_turns: true,
+					solve_method_steps: {
+						where: { step_name: { in: ['oll', 'pll'] } },
+						select: { id: true, step_name: true, oll_case_key: true, pll_case_key: true },
+					},
+				},
+				orderBy: { id: 'asc' },
+			});
+			if (batch.length === 0) break;
+
+			result.total += batch.length;
+
+			for (const solve of batch) {
+				try {
+					const turns = parseSmartTurns(solve.smart_turns);
+					if (turns.length === 0) continue;
+					const steps = getSolveSteps(turns);
+					result.scanned++;
+
+					for (const step of solve.solve_method_steps) {
+						if (step.step_name === 'oll' && steps.oll?.ollCaseKey && step.oll_case_key !== steps.oll.ollCaseKey) {
+							await prisma.solveMethodStep.update({
+								where: { id: step.id },
+								data: { oll_case_key: steps.oll.ollCaseKey },
+							});
+							result.ollUpdated++;
+						} else if (step.step_name === 'pll' && steps.pll?.pllCaseKey && step.pll_case_key !== steps.pll.pllCaseKey) {
+							await prisma.solveMethodStep.update({
+								where: { id: step.id },
+								data: { pll_case_key: steps.pll.pllCaseKey },
+							});
+							result.pllUpdated++;
+						}
+					}
+				} catch (e: any) {
+					result.failed++;
+					console.warn('[ReindexLL] solve failed', solve.id, e?.message);
+				}
+			}
+
+			if (result.total % 1000 === 0) {
+				console.log(`[ReindexLL] ${result.total} scanned, OLL: ${result.ollUpdated}, PLL: ${result.pllUpdated}`);
+			}
+
+			cursor = batch[batch.length - 1].id;
+			if (batch.length < BATCH_SIZE) break;
+		}
+
+		console.log('[ReindexLL] Done.', result);
 		return result;
 	}
 }

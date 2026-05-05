@@ -32,3 +32,21 @@ export class ReindexESResult {
 	@Field(() => Int)
 	failed: number;
 }
+
+@ObjectType()
+export class ReindexLLResult {
+	@Field(() => Int)
+	total: number;
+
+	@Field(() => Int)
+	scanned: number;
+
+	@Field(() => Int)
+	ollUpdated: number;
+
+	@Field(() => Int)
+	pllUpdated: number;
+
+	@Field(() => Int)
+	failed: number;
+}
