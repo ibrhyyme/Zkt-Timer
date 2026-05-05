@@ -73,6 +73,7 @@ export function analyzePhases(
 	// = R2 (1 HTM) olarak yakalanir. Garanti: SUM(transitions[i].moveCount.htm) === totalMoves.htm.
 	let phaseStartSnapshot: MoveCounts = totalCounter.snapshot();
 	let phaseMoves: string[] = [];
+	let phaseMoveTimestamps: number[] = [];
 	let phaseStartMs = turns.length > 0 ? turns[0].timestamp : 0;
 	let firstMoveMs = Infinity;
 
@@ -99,6 +100,7 @@ export function analyzePhases(
 			totalCounter.push(move);
 		}
 		phaseMoves.push(move);
+		phaseMoveTimestamps.push(t.timestamp);
 
 		const stateNow = cube.asString();
 		const cur = getCFOPProgress(stateNow);
@@ -122,6 +124,7 @@ export function analyzePhases(
 					firstMoveTimestamp: isFinite(firstMoveMs) ? firstMoveMs : t.timestamp,
 					moveCount: deltaCounts(curSnapshot, phaseStartSnapshot),
 					moves: phaseMoves.slice(),
+					moveTimestamps: phaseMoveTimestamps.slice(),
 					skipped: false,
 				});
 				phaseStartSnapshot = curSnapshot;
@@ -153,6 +156,7 @@ export function analyzePhases(
 			// Reset for next phase. phaseStartSnapshot zaten guncel (yukarida set edildi).
 			// totalCounter state'ini KORUYORUZ — yeni MoveCounter yok, axis-mask phase'ler arasi akar.
 			phaseMoves = [];
+			phaseMoveTimestamps = [];
 			phaseStartMs = t.timestamp;
 			firstMoveMs = Infinity;
 		}

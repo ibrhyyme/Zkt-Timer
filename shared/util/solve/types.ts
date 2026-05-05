@@ -38,6 +38,7 @@ export interface PhaseTransition {
 	firstMoveTimestamp: number;
 	moveCount: MoveCounts;
 	moves: string[];
+	moveTimestamps?: number[]; // cstimer getPrettyMoves 100ms burst detection icin
 	skipped: boolean;
 }
 

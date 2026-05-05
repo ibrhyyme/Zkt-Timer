@@ -79,13 +79,13 @@ export function processSmartTurns(smartTurns: SmartTurn[], skipCompress: boolean
 }
 
 /**
- * Sadece SolveInfo cozum gorunumu icin — ardisik ayni-yon hamleleri keyfi-n
- * notation'a sikistirir: U + U → U2, U2 + U → U3, U3 + U → U4 ...
+ * @deprecated cstimer'in getPrettyMoves'undan once kullanilan basit collapse.
+ * Sadece same-face same-axis collapse yapar (R + R = R2). Yeni yerlerde
+ * `shared/util/solve/pretty_moves.ts` `getPrettyMoves` kullan — slice merge
+ * (R + L' = M), 100ms burst detection, center tracking dahil tam cstimer port.
  *
- * processSmartTurns'tan FARKI: bu fonksiyon U2 + U gibi durumlari U3'e cascade eder.
- * Scramble dogrulama / preflight gibi yerlerde KULLANILMAZ — onlar `U2 U` gibi
- * ayri tokenlari olduğu gibi gosterip eslestirir. Sadece tamamlanmis solve'un
- * cozum tablosunda goruntulemek icin.
+ * Eski kullanim: SolveInfo cozum gorunumu icin ardisik ayni-yon hamleleri
+ * keyfi-n notation'a sikistirir: U + U → U2, U2 + U → U3 ...
  */
 export function cascadeQuartersForDisplay(smartTurns: (SmartTurn | string)[]): string[] {
 	const accum: { face: string; quarters: number; raw?: string }[] = [];
