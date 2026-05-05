@@ -85,11 +85,11 @@ COPY docker-entrypoint.sh ./docker-entrypoint.sh
 RUN chmod +x ./docker-entrypoint.sh
 
 # Non-root user — container escape sonrasinda root erisim engeli
+# node:20-slim image'inda 'node' user'i (UID 1000) hazir gelir, onu kullaniyoruz.
 # /app/public/uploads klasoru kullanici tarafindan yazilabilir olmali (volume mount)
-RUN groupadd -r app && useradd -r -g app -u 1000 -d /app -s /bin/sh app && \
-    mkdir -p /app/public/uploads && \
-    chown -R app:app /app
-USER app
+RUN mkdir -p /app/public/uploads && \
+    chown -R node:node /app
+USER node
 
 EXPOSE 3000
 
