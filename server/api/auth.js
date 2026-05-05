@@ -1,4 +1,5 @@
-import { getJwtString, setSessionCookie, clearSessionCookie } from '../util/auth';
+import { getJwtString, setSessionCookie, clearSessionCookie, revokeJwt } from '../util/auth';
+import jwtLib from 'jsonwebtoken';
 import GraphQLError from '../util/graphql_error';
 import { checkPassword } from '../util/password';
 import { getUserByEmail, sanitizeUser } from '../models/user_account';
@@ -54,12 +55,24 @@ const mutateActions = {
 		}
 
 		const jwt = getJwtString(user);
-		setSessionCookie(res, jwt, {remember: !!remember});
+		setSessionCookie(req, res, jwt, {remember: !!remember});
 
 		return sanitizeUser(user);
 	},
-	logOut: async (_, params, { res, user }) => {
-		clearSessionCookie(res);
+	logOut: async (_, params, { req, res, user }) => {
+		// Token revocation: cookie'den JWT'yi cikar, jti'yi Redis'e blacklist et
+		const session = req?.cookies?.session;
+		if (session) {
+			try {
+				const decoded = jwtLib.decode(session);
+				if (decoded && typeof decoded === 'object' && decoded.jti) {
+					await revokeJwt(decoded.jti, decoded.exp);
+				}
+			} catch {
+				// Decode edilemezse de cookie'yi temizle
+			}
+		}
+		clearSessionCookie(req, res);
 		return sanitizeUser(user);
 	},
 };

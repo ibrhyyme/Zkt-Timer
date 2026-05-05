@@ -4,6 +4,7 @@ import {gqlMutate} from '../api';
 import {toastError} from '../../util/toast';
 import {useTranslation} from 'react-i18next';
 import {resourceUri} from '../../util/storage';
+import {consumeAndValidateOAuthState} from '../../util/oauth_state';
 
 const AUTHENTICATE_WITH_WCA = gql`
 	mutation Mutate($code: String!) {
@@ -23,10 +24,21 @@ export default function WcaLoginCallback() {
 	useEffect(() => {
 		const urlParams = new URLSearchParams(window.location.search);
 		const code = urlParams.get('code');
+		const state = urlParams.get('state');
 
 		if (!code) {
 			toastError(t('wca_signup.session_expired'));
 			window.location.href = '/login';
+			return;
+		}
+
+		// OAuth CSRF korumasi: state parametresi sessionStorage'taki ile eslesmeli
+		// Eslesmezse saldirgan kullaniciyi kendi code'una yonlendirmis olabilir — abort
+		if (!consumeAndValidateOAuthState(state)) {
+			toastError(t('wca_signup.session_expired'));
+			setTimeout(() => {
+				window.location.href = '/login';
+			}, 1500);
 			return;
 		}
 

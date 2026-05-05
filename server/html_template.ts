@@ -36,7 +36,8 @@ export default (payload: HtmlPagePayload) => {
 				<!-- PWA Manifest -->
 				<link rel="manifest" href="/public/manifest.webmanifest">
 				<!-- iOS PWA Uyumluluğu (Otomatik Splash Screen Oluşturucu) -->
-				<script async src="https://cdn.jsdelivr.net/npm/pwacompat" crossorigin="anonymous"></script>
+				<!-- Supply chain attack koruma: versiyon pinli. SRI hash ekle (kullanici manuel: jsdelivr SRI generator) -->
+				<script async src="https://cdn.jsdelivr.net/npm/pwacompat@2.0.17/pwacompat.min.js" crossorigin="anonymous"></script>
 				<meta name="theme-color" content="#0F142B">
 
 				<!-- iOS / PWA -->

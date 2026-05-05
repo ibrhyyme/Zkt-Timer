@@ -8,6 +8,9 @@ import {getPrisma} from '../database';
 import {getUserByIdWithSettings, updateUserAccountWithParams} from '../models/user_account';
 import MembershipGrantedNotification from '../resources/notification_types/membership_granted';
 import {sendPushToUser} from '../services/push';
+import {checkRateLimit} from '../services/rate_limit';
+import {extractIp} from '../util/request';
+import {logger} from '../services/logger';
 
 @Resolver()
 export class PromoCodeResolver {
@@ -57,6 +60,22 @@ export class PromoCodeResolver {
 	async redeemPromoCode(@Ctx() context: GraphQLContext, @Arg('code') code: string) {
 		const normalizedCode = code.trim().toUpperCase();
 		const userId = context.user.id;
+
+		// Brute force korumasi: kullanici basina saatte 10 deneme, IP basina 30 deneme
+		// Anlamli kod (ZKT2026, VIP gibi) konulursa otomatik bot deneyemesin
+		const userLimit = await checkRateLimit(`promo:user:${userId}`, 10, 3600);
+		if (!userLimit.allowed) {
+			logger.warn('Promo code rate limit (user)', {userId, count: userLimit.count});
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Cok fazla promo kodu denemesi. Lutfen daha sonra tekrar deneyin.');
+		}
+		const ip = extractIp(context.req);
+		if (ip) {
+			const ipLimit = await checkRateLimit(`promo:ip:${ip}`, 30, 3600);
+			if (!ipLimit.allowed) {
+				logger.warn('Promo code rate limit (ip)', {ip, count: ipLimit.count});
+				throw new GraphQLError(ErrorCode.BAD_INPUT, 'Cok fazla promo kodu denemesi. Lutfen daha sonra tekrar deneyin.');
+			}
+		}
 
 		const promoCode = await getPrisma().promoCode.findUnique({
 			where: {code: normalizedCode},

@@ -174,9 +174,26 @@ interface MailUser {
 	first_name?: string;
 }
 
+// XSS koruma: kullanici-controlled string'ler ({{name}}, email vs.) intro template'ine
+// koyulmadan once HTML special karakterler escape edilmeli — ciktida `{{{intro}}}` (raw HTML)
+// kullanildigi icin defansif olarak burada sanitize ediyoruz. validateName regex
+// `<>` karakterlerini engellese de, derinligi savunma ilkesi.
+function escapeHtml(s: string): string {
+	return String(s).replace(/[&<>"']/g, (c) => {
+		const map: Record<string, string> = {
+			'&': '&amp;',
+			'<': '&lt;',
+			'>': '&gt;',
+			'"': '&quot;',
+			"'": '&#39;',
+		};
+		return map[c];
+	});
+}
+
 export function buildForgotEmailData(user: MailUser, code: string, lang?: string) {
 	const s = getEmailStrings(lang);
-	const name = user.first_name || '';
+	const name = escapeHtml(user.first_name || '');
 	return {
 		code,
 		code_chars: code.split(''),
@@ -192,7 +209,7 @@ export function buildForgotEmailData(user: MailUser, code: string, lang?: string
 
 export function buildVerificationEmailData(user: MailUser, code: string, lang?: string) {
 	const s = getEmailStrings(lang);
-	const name = user.first_name || '';
+	const name = escapeHtml(user.first_name || '');
 	return {
 		code,
 		code_chars: code.split(''),
@@ -208,10 +225,11 @@ export function buildVerificationEmailData(user: MailUser, code: string, lang?: 
 
 export function buildEmailChangeWarningData(user: MailUser, newEmail: string, lang?: string) {
 	const s = getEmailStrings(lang);
-	const name = user.first_name || '';
+	const name = escapeHtml(user.first_name || '');
+	const escapedNewEmail = escapeHtml(newEmail);
 	return {
 		title: s.email_change_warning_title,
-		intro: s.email_change_warning_intro.replace('{{name}}', name).replace('{{new_email}}', newEmail),
+		intro: s.email_change_warning_intro.replace('{{name}}', name).replace('{{new_email}}', escapedNewEmail),
 		closing: s.email_change_warning_closing,
 		team: s.team,
 		footer_rights: s.footer_rights,

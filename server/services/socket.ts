@@ -8,10 +8,36 @@ import { subscribeRound, unsubscribeRound, unsubscribeAllRounds, setPollerIOGett
 
 let io: Server;
 
+// Cross-Site WebSocket Hijacking koruma: sadece bilinen origin'lerden baglanti kabul et
+// Capacitor mobile origin'leri: iOS WKWebView "capacitor://localhost",
+// Android "https://localhost" / "http://localhost" / Capacitor v6 default'larina gore
+const ALLOWED_SOCKET_ORIGINS = process.env.NODE_ENV === 'production'
+	? [
+		'https://zktimer.app',
+		'https://www.zktimer.app',
+		'capacitor://localhost',
+		'http://localhost',
+		'https://localhost',
+		'ionic://localhost',
+	]
+	: [
+		'http://localhost:3000',
+		'http://localhost:8100',
+		'http://localhost:5173',
+		'capacitor://localhost',
+		'https://localhost',
+	];
+
 export function initSocket(server: any) {
 	io = new Server(server, {
 		cors: {
-			origin: '*',
+			origin: (origin, callback) => {
+				// Origin yoksa native app baglantisi olabilir — gec
+				if (!origin) return callback(null, true);
+				if (ALLOWED_SOCKET_ORIGINS.includes(origin)) return callback(null, true);
+				return callback(new Error('CORS: origin not allowed'));
+			},
+			credentials: true,
 		},
 	});
 

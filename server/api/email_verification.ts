@@ -56,7 +56,7 @@ export const mutateActions = {
 		}
 	},
 
-	verifyEmailCode: async (_: any, {email, code, language}: {email: string; code: string; language?: string}, {res}: GraphQLContext) => {
+	verifyEmailCode: async (_: any, {email, code, language}: {email: string; code: string; language?: string}, {req, res}: GraphQLContext) => {
 		const user = await getUserByEmail(email);
 
 		if (!user) {
@@ -85,7 +85,7 @@ export const mutateActions = {
 		);
 
 		const jwt = getJwtString(user);
-		setSessionCookie(res, jwt);
+		setSessionCookie(req, res, jwt);
 
 		return sanitizeUser(user);
 	},

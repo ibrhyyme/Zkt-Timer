@@ -29,15 +29,22 @@ services:
     image: postgres:14
     container_name: zkt-timer-postgres-1
     environment:
-      POSTGRES_DB: Zkt-Timer
-      POSTGRES_USER: root
-      POSTGRES_PASSWORD: root
+      # Production'da .env icinden DB_USER + DB_PASSWORD set et.
+      # Eski "root/root" geriye-uyumluluk default — yeni deploy'larda override edilmeli.
+      POSTGRES_DB: ${DB_NAME:-Zkt-Timer}
+      POSTGRES_USER: ${DB_USER:-root}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-root}
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
   redis:
     image: redis:7
     container_name: zkt-timer-redis-1
+    # Redis sadece Docker network icinde erisilebilir; yine de defansif olarak
+    # production'da REDIS_PASSWORD set edilirse auth ile baslat
+    command: ["sh", "-c", "if [ -n \"$$REDIS_PASSWORD\" ]; then redis-server --requirepass \"$$REDIS_PASSWORD\"; else redis-server; fi"]
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
     volumes:
       - redis_data:/data
 
@@ -46,7 +53,9 @@ services:
     container_name: zkt-timer-elasticsearch-1
     environment:
       - discovery.type=single-node
-      - xpack.security.enabled=false
+      # xpack.security: production'da auth zorunlu. Bos birakilirsa eski davranis korunur (geriye uyumluluk).
+      - xpack.security.enabled=${ES_SECURITY_ENABLED:-false}
+      - ELASTIC_PASSWORD=${ES_PASSWORD:-}
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
 
 volumes:
