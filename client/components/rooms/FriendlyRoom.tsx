@@ -12,6 +12,7 @@ import {
     JoinFriendlyRoomInput,
     SessionTakeoverPayload,
     AlreadyInOtherRoomPayload,
+    FriendlyRoomConst,
 } from '../../../shared/friendly_room';
 import Button from '../common/button/Button';
 import { useMe } from '../../util/hooks/useMe';
@@ -934,14 +935,11 @@ export default function FriendlyRoom() {
         const socket = getSocket();
 
         const joinRoom = () => {
-            // If we were disconnected for more than 45 seconds (server grace period), 
-            // we have likely been kicked by the server. 
-            // In this case, do NOT rejoin, but redirect to /rooms to reflect the kick.
+            // Server grace period gectiyse kullanici cikarilmistir — odaya rejoin yerine
+            // lobby'e yonlendir. Sure shared FriendlyRoomConst.PLAYER_DISCONNECT_GRACE_MS'ten gelir.
             if (lastDisconnectRef.current) {
                 const elapsed = Date.now() - lastDisconnectRef.current;
-                // Use slightly less than 45s to be safe? No, server is 45s. 
-                // If we are definitely over 45s, we are kicked.
-                if (elapsed > 45000) {
+                if (elapsed > FriendlyRoomConst.PLAYER_DISCONNECT_GRACE_MS) {
                     history.push('/rooms');
                     return;
                 }

@@ -9,7 +9,9 @@ export const FriendlyRoomConst = {
 
     // Timeouts
     ROOM_INACTIVE_TIMEOUT_MS: 5 * 60 * 1000, // 5 minutes
-    PLAYER_DISCONNECT_GRACE_MS: 30 * 1000, // 30 seconds
+    // Disconnect/away grace: bilgisayar kullanicilari sekme degistirince SIGNAL_AWAY tetikleniyor.
+    // 4 dakika tab gezintisi, kisa internet kopmasi, telefon ekran kapatmasina tolerans saglar.
+    PLAYER_DISCONNECT_GRACE_MS: 4 * 60 * 1000,
 
     // UI
     MAX_CHAT_MESSAGE_LENGTH: 500,
