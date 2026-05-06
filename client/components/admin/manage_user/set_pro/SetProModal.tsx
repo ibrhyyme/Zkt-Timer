@@ -24,7 +24,7 @@ export default function SetProModal(props: Props) {
 	const {t} = useTranslation('translation', {keyPrefix: 'admin_users.manage_user'});
 
 	const [durationCount, setDurationCount] = useInput(1);
-	const [durationUnit, setDurationUnit] = useInput('day');
+	const [durationUnit, setDurationUnit] = useInput('year');
 	const [forever, toggleForever] = useToggle(false);
 
 	const label = type === 'pro' ? 'Pro' : 'Premium';
