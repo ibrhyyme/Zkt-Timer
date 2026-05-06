@@ -200,6 +200,9 @@ class IUserAccountForAdmin extends IUserAccount {
 	@Field(() => Date, {nullable: true})
 	iap_paused_until?: Date;
 
+	@Field(() => Date, {nullable: true})
+	iap_latest_event_at?: Date;
+
 	@Field({nullable: true})
 	revenuecat_user_id?: string;
 }

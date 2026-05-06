@@ -77,8 +77,13 @@ export async function initRevenueCat(): Promise<void> {
  * Logout'ta logoutRevenueCat() cagrilir.
  */
 export async function identifyUser(userId: string): Promise<void> {
-	if (!isNative() || !initialized) return;
+	if (!isNative()) return;
 	if (currentUserId === userId) return;
+	if (!initialized) {
+		// initRevenueCat fire-and-forget olarak baslamis olabilir; tamamlanmasini bekle.
+		await initRevenueCat();
+	}
+	if (!initialized) return;
 	const mod = await loadPurchases();
 	if (!mod) return;
 	try {

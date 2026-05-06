@@ -27,6 +27,7 @@ const ADMIN_PRO_USERS_QUERY = gql`
 				iap_cancellation_at
 				iap_billing_issue_at
 				iap_paused_until
+				iap_latest_event_at
 				revenuecat_user_id
 				profile {
 					pfp_image {
@@ -52,6 +53,7 @@ interface ProUserData {
 	iap_cancellation_at?: string | null;
 	iap_billing_issue_at?: string | null;
 	iap_paused_until?: string | null;
+	iap_latest_event_at?: string | null;
 	revenuecat_user_id?: string | null;
 	profile?: {pfp_image?: {storage_path?: string}};
 }
@@ -75,6 +77,11 @@ function subscriptionStatus(user: ProUserData): {label: string; color: string} {
 function expiryLabel(user: ProUserData): string {
 	if (!user.pro_expires_at) return 'Unlimited';
 	return dayjs(user.pro_expires_at).format('DD MMM YYYY');
+}
+
+function startLabel(user: ProUserData): string {
+	if (!user.iap_latest_event_at) return '—';
+	return dayjs(user.iap_latest_event_at).format('DD MMM YYYY');
 }
 
 function ProUserRow({user}: {user: ProUserData}) {
@@ -117,6 +124,12 @@ function ProUserRow({user}: {user: ProUserData}) {
 					</span>
 				) : (
 					<span style={{color: '#666'}}>—</span>
+				)}
+			</td>
+			<td className="cd-admin-users__cell cd-admin-users__cell--date">
+				<div className="cd-admin-users__date-main">{startLabel(user)}</div>
+				{user.iap_latest_event_at && (
+					<div className="cd-admin-users__date-sub">{dayjs(user.iap_latest_event_at).fromNow()}</div>
 				)}
 			</td>
 			<td className="cd-admin-users__cell cd-admin-users__cell--date">
@@ -211,6 +224,7 @@ export default function AdminProUsers() {
 							<th className="cd-admin-users__th">User</th>
 							<th className="cd-admin-users__th">Subscription</th>
 							<th className="cd-admin-users__th">Platform</th>
+							<th className="cd-admin-users__th">Started</th>
 							<th className="cd-admin-users__th">Expires</th>
 							<th className="cd-admin-users__th">Status</th>
 							<th className="cd-admin-users__th">RevenueCat ID</th>
@@ -218,9 +232,9 @@ export default function AdminProUsers() {
 					</thead>
 					<tbody>
 						{loading ? (
-							<tr><td colSpan={6} style={{textAlign: 'center', padding: '32px', color: '#666'}}>Loading...</td></tr>
+							<tr><td colSpan={7} style={{textAlign: 'center', padding: '32px', color: '#666'}}>Loading...</td></tr>
 						) : users.length === 0 ? (
-							<tr><td colSpan={6} style={{textAlign: 'center', padding: '32px', color: '#666'}}>No pro users found</td></tr>
+							<tr><td colSpan={7} style={{textAlign: 'center', padding: '32px', color: '#666'}}>No pro users found</td></tr>
 						) : (
 							users.map((u) => <ProUserRow key={u.id} user={u} />)
 						)}

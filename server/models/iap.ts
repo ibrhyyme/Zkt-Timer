@@ -290,3 +290,104 @@ export async function linkRevenueCatUserId(userId: string): Promise<void> {
 		data: {revenuecat_user_id: userId},
 	});
 }
+
+/**
+ * RevenueCat REST API'den entitlement durumunu cek + applyIapPurchase ile DB'yi guncelle.
+ * Restore, manuel sync, TRANSFER webhook event'i ve identify race fallback'lerinde cagrilir.
+ *
+ * revenuecat_user_id DB'de bos ise userId fallback — Purchases.logIn(userId) aliasladiysa
+ * RC subscriber kaydini userId ile bulabilir.
+ */
+export async function syncEntitlementFromRevenueCat(userId: string): Promise<{synced: boolean; isPro: boolean}> {
+	const prisma = getPrisma();
+	const user = await prisma.userAccount.findUnique({
+		where: {id: userId},
+		select: {revenuecat_user_id: true},
+	});
+	if (!user) return {synced: false, isPro: false};
+
+	const rcUserId = user.revenuecat_user_id || userId;
+
+	const secretKey = process.env.REVENUECAT_SECRET_KEY;
+	if (!secretKey) {
+		logger.error('[IAP-Sync] REVENUECAT_SECRET_KEY env var eksik');
+		return {synced: false, isPro: false};
+	}
+
+	let rcData: any;
+	try {
+		const response = await fetch(`https://api.revenuecat.com/v1/subscribers/${encodeURIComponent(rcUserId)}`, {
+			headers: {
+				Authorization: `Bearer ${secretKey}`,
+				'Content-Type': 'application/json',
+			},
+		});
+		if (!response.ok) {
+			logger.warn('[IAP-Sync] RevenueCat API hatasi', {status: response.status, userId});
+			return {synced: false, isPro: false};
+		}
+		rcData = await response.json();
+	} catch (err) {
+		logger.error('[IAP-Sync] RevenueCat API istegi basarisiz', {err, userId});
+		return {synced: false, isPro: false};
+	}
+
+	const proEnt = rcData?.subscriber?.entitlements?.pro;
+	const now = new Date();
+	const isActive = !!proEnt && (proEnt.expires_date === null || new Date(proEnt.expires_date) > now);
+
+	if (!isActive) {
+		return {synced: true, isPro: false};
+	}
+
+	const productId: string = proEnt.product_identifier || '';
+
+	// `store` field'i entitlement'ta DEGIL — subscriptions[productId].store veya
+	// non_subscriptions[productId][last].store icindedir (RC REST API formati).
+	const subscriptions = rcData?.subscriber?.subscriptions || {};
+	const nonSubs = rcData?.subscriber?.non_subscriptions || {};
+	const sub = productId ? subscriptions[productId] : null;
+	const nonSubArr = productId ? nonSubs[productId] : null;
+	const lastNonSub = Array.isArray(nonSubArr) && nonSubArr.length > 0 ? nonSubArr[nonSubArr.length - 1] : null;
+	const storeRaw: string = (sub?.store || lastNonSub?.store || '').toLowerCase();
+
+	let platform: IapPlatform | null = null;
+	if (storeRaw === 'app_store' || storeRaw === 'mac_app_store') platform = 'ios';
+	else if (storeRaw === 'play_store') platform = 'android';
+
+	if (!platform) {
+		// Son care: user'in mevcut iap_platform field'i varsa onu fallback olarak kullan
+		const existing = await prisma.userAccount.findUnique({
+			where: {id: userId},
+			select: {iap_platform: true},
+		});
+		if (existing?.iap_platform === 'ios' || existing?.iap_platform === 'android') {
+			platform = existing.iap_platform;
+		} else {
+			logger.warn('[IAP-Sync] Bilinmeyen store, atlandi', {userId, storeRaw, productId});
+			return {synced: true, isPro: false};
+		}
+	}
+
+	if (!user.revenuecat_user_id) {
+		await prisma.userAccount.update({
+			where: {id: userId},
+			data: {revenuecat_user_id: userId},
+		});
+	}
+
+	await applyIapPurchase(
+		{
+			userId,
+			platform,
+			productId,
+			originalTxId: null,
+			expiresAt: proEnt.expires_date ? new Date(proEnt.expires_date) : null,
+			eventAt: now,
+		},
+		'silent',
+	);
+
+	logger.info('[IAP-Sync] Pro senkronize edildi', {userId, platform, productId});
+	return {synced: true, isPro: true};
+}
