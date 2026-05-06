@@ -514,6 +514,7 @@ export type IInternalUserAccount = {
   has_password?: Maybe<Scalars['Boolean']>;
   iap_billing_issue_at?: Maybe<Scalars['DateTime']>;
   iap_cancellation_at?: Maybe<Scalars['DateTime']>;
+  iap_latest_event_at?: Maybe<Scalars['DateTime']>;
   iap_paused_until?: Maybe<Scalars['DateTime']>;
   iap_platform?: Maybe<Scalars['String']>;
   iap_product_id?: Maybe<Scalars['String']>;
@@ -602,6 +603,7 @@ export type InternalUserAccount = IInternalUserAccount & IPublicUserAccount & IU
   has_password?: Maybe<Scalars['Boolean']>;
   iap_billing_issue_at?: Maybe<Scalars['DateTime']>;
   iap_cancellation_at?: Maybe<Scalars['DateTime']>;
+  iap_latest_event_at?: Maybe<Scalars['DateTime']>;
   iap_paused_until?: Maybe<Scalars['DateTime']>;
   iap_platform?: Maybe<Scalars['String']>;
   iap_product_id?: Maybe<Scalars['String']>;
@@ -713,6 +715,7 @@ export type IUserAccountForAdmin = {
   has_password?: Maybe<Scalars['Boolean']>;
   iap_billing_issue_at?: Maybe<Scalars['DateTime']>;
   iap_cancellation_at?: Maybe<Scalars['DateTime']>;
+  iap_latest_event_at?: Maybe<Scalars['DateTime']>;
   iap_paused_until?: Maybe<Scalars['DateTime']>;
   iap_platform?: Maybe<Scalars['String']>;
   iap_product_id?: Maybe<Scalars['String']>;
@@ -2734,6 +2737,7 @@ export type UserAccountForAdmin = IPublicUserAccount & IUserAccount & IUserAccou
   has_password?: Maybe<Scalars['Boolean']>;
   iap_billing_issue_at?: Maybe<Scalars['DateTime']>;
   iap_cancellation_at?: Maybe<Scalars['DateTime']>;
+  iap_latest_event_at?: Maybe<Scalars['DateTime']>;
   iap_paused_until?: Maybe<Scalars['DateTime']>;
   iap_platform?: Maybe<Scalars['String']>;
   iap_product_id?: Maybe<Scalars['String']>;

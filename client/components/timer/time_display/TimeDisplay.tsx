@@ -15,6 +15,7 @@ import { onVisibilityChange } from '../../../util/app-visibility';
 import StartInstructions from './start_instructions/StartInstructions';
 import StackMat from './stackmat/StackMat';
 import GanTimer from './gantimer/GanTimer';
+import QiyiTimer from './qiyitimer/QiyiTimer';
 import SolveDiff from './SolveDiff';
 import OfflineModeIndicator from './OfflineModeIndicator';
 
@@ -52,6 +53,7 @@ export default function TimeDisplay() {
 	const timerType = useSettings('timer_type');
 	const stackMatOn = timerType === 'stackmat';
 	const ganTimerOn = timerType === 'gantimer';
+	const qiyiTimerOn = timerType === 'qiyitimer';
 	const zeroOutTimeAfterSolve = useSettings('zero_out_time_after_solve');
 
 	const mobileMode = useGeneral('mobile_mode');
@@ -238,6 +240,8 @@ export default function TimeDisplay() {
 		bottomInfo = <StackMat />;
 	} else if (ganTimerOn) {
 		bottomInfo = <GanTimer />;
+	} else if (qiyiTimerOn) {
+		bottomInfo = <QiyiTimer />;
 	} else if (smartCubeSelected(context) && !mobileMode) {
 		if (context.smartNeedsCubeReset) {
 			bottomInfo = (

@@ -2,6 +2,9 @@ import Particula from './particula';
 import SmartCube from './smart_cube';
 import GAN from './gan';
 import Giiker from './giiker';
+import MoYu from './moyu';
+import MoYu32 from './moyu32';
+import QiYi from './qiyi';
 import { getBleAdapter } from '../../../../util/ble';
 import { isNative } from '../../../../util/platform';
 import { setTimerParams } from '../../helpers/params';
@@ -12,7 +15,18 @@ export default class Connect extends SmartCube {
 	_cancelled = false;
 
 	_deviceOptions = {
-		nameFilters: ['Gi', 'Mi Smart Magic Cube', 'GAN', 'Gan', 'gan', 'GoCube', 'Rubiks'],
+		nameFilters: [
+			// Giiker / Xiaomi
+			'Gi', 'Mi Smart Magic Cube', 'Hi-',
+			// GAN ailesi (GAN cube + Monster Go AI + AiCube)
+			'GAN', 'Gan', 'gan', 'MG', 'AiCube',
+			// Particula (GoCube + Rubik's Connected)
+			'GoCube', 'Rubiks',
+			// MoYu MHC + MoYu WeiLong AI 2024
+			'MHC', 'WCU_MY3',
+			// QiYi Smart Cube + Tornado V4 i
+			'QY-QYSC', 'XMD-TornadoV4-i',
+		],
 		serviceFilters: [],
 		optionalServices: [
 			'0000180a-0000-1000-8000-00805f9b34fb', // device_information
@@ -36,21 +50,41 @@ export default class Connect extends SmartCube {
 			'8653000a-43e6-47b7-9cb0-5fc21d4ae340',
 			'00000010-0000-fff7-fff6-fff5fff4fff0',
 			'00001805-0000-1000-8000-00805f9b34fb',
+			// MoYu MHC
+			...MoYu.opServices,
+			// MoYu WeiLong AI 2024
+			...MoYu32.opServices,
+			// QiYi Smart Cube + Tornado V4 i
+			...QiYi.opServices,
 		],
 	};
 
 	_initCube = async (device) => {
 		let cube;
 		let cubeType = 'unknown';
-		if (device.name.startsWith('Gi') || device.name.startsWith('Mi Smart Magic Cube')) {
+		const name = device.name || '';
+		const nameLower = name.toLowerCase();
+
+		// Cstimer routing sirasi: en spesifik prefix once
+		if (name.startsWith('Gi') || name.startsWith('Mi Smart Magic Cube') || name.startsWith('Hi-')) {
 			cube = new Giiker(device, this.adapter);
 			cubeType = 'Giiker';
-		} else if (device.name.toLowerCase().startsWith('gan')) {
+		} else if (nameLower.startsWith('gan') || name.startsWith('MG') || name.startsWith('AiCube')) {
+			// GAN ailesi: GAN cube, Monster Go AI (MG), AiCube hepsi GAN protokolu (key seciminde gan.js icinde ayrim)
 			cube = new GAN(device, this.adapter);
 			cubeType = 'GAN';
-		} else if (device.name.startsWith('GoCube') || device.name.startsWith('Rubiks')) {
+		} else if (name.startsWith('GoCube') || name.startsWith('Rubiks')) {
 			cube = new Particula(device, this.adapter);
 			cubeType = 'Particula';
+		} else if (name.startsWith('MHC')) {
+			cube = new MoYu(device, this.adapter);
+			cubeType = 'MoYu MHC';
+		} else if (name.startsWith('WCU_MY3')) {
+			cube = new MoYu32(device, this.adapter);
+			cubeType = 'MoYu WeiLong AI';
+		} else if (name.startsWith('QY-QYSC') || name.startsWith('XMD-TornadoV4-i')) {
+			cube = new QiYi(device, this.adapter);
+			cubeType = 'QiYi';
 		}
 
 		console.log(`[BLE-CONNECT] _initCube | type: ${cubeType} | name: ${device.name} | id: ${device.deviceId}`);

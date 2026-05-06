@@ -29,6 +29,29 @@ const aes128 = (function () {
 		}
 	}
 
+	// cstimer port: encrypt yonu icin shiftSubAdd'in tersi
+	function shiftSubAddI(state, rkey) {
+		var state0 = state.slice();
+		for (var i = 0; i < 16; i++) {
+			state[ShiftTabI[i]] = Sbox[state0[i] ^ rkey[i]];
+		}
+	}
+
+	// cstimer port: encrypt yonu icin mixColumns
+	function mixColumns(state) {
+		for (var i = 12; i >= 0; i -= 4) {
+			var s0 = state[i + 0];
+			var s1 = state[i + 1];
+			var s2 = state[i + 2];
+			var s3 = state[i + 3];
+			var h = s0 ^ s1 ^ s2 ^ s3;
+			state[i + 0] ^= h ^ xtime[s0 ^ s1];
+			state[i + 1] ^= h ^ xtime[s1 ^ s2];
+			state[i + 2] ^= h ^ xtime[s2 ^ s3];
+			state[i + 3] ^= h ^ xtime[s3 ^ s0];
+		}
+	}
+
 	function mixColumnsInv(state) {
 		for (var i = 0; i < 16; i += 4) {
 			var s0 = state[i + 0];
@@ -83,6 +106,17 @@ const aes128 = (function () {
 			mixColumnsInv(block);
 		}
 		shiftSubAdd(block, this.key.slice(0, 16));
+		return block;
+	};
+
+	// cstimer port: encrypt — moyu32, qiyi cube, qiyi timer icin gerekli
+	AES128.prototype.encrypt = function (block) {
+		shiftSubAddI(block, this.key.slice(0, 16));
+		for (var i = 16; i < 160; i += 16) {
+			mixColumns(block);
+			shiftSubAddI(block, this.key.slice(i, i + 16));
+		}
+		addRoundKey(block, this.key.slice(160, 176));
 		return block;
 	};
 

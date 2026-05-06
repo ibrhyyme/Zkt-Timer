@@ -53,7 +53,8 @@ export default function KeyWatcher(props: Props) {
 	const modals = useGeneral('modals');
 	const timerType = useSettings('timer_type');
 	const stackMatOn = timerType === 'stackmat';
-	const ganTimerOn = timerType === 'gantimer';
+	// Hardware timer'lar (GAN Timer + QiYi Timer) keyboard'u devre disi birakir
+	const ganTimerOn = timerType === 'gantimer' || timerType === 'qiyitimer';
 	const inspection = useSettings('inspection');
 	const manualEntry = useSettings('manual_entry');
 	const useSpaceWithSmartCube = useSettings('use_space_with_smart_cube');
