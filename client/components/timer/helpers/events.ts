@@ -258,7 +258,8 @@ export function startInspection(context: ITimerContext) {
 	} = getSettings();
 
 	const stackMatOn = timerType === 'stackmat';
-	const ganTimerOn = timerType === 'gantimer';
+	// Hardware timer'lar (GAN Timer + QiYi Timer) inspection auto-start'i devre disi birakir
+	const ganTimerOn = timerType === 'gantimer' || timerType === 'qiyitimer';
 
 	setTimerParams({
 		inInspection: true,

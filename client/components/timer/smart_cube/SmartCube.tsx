@@ -687,6 +687,16 @@ export default function SmartCube() {
 
 		if (scrambleCompletedAtRef.current) {
 			const firstSolveTurn = currentTurns[currentTurns.length - 1];
+
+			// GUARD: scramble bittikten sonra resetMoves smartTurns'u sifirlar.
+			// Bu sifirlama useEffect'i bos array ile yeniden tetikler — kullanici fiziksel
+			// olarak hamle yapmadan startTimer'in yanlislikla cagrilmasini onle.
+			// Gerçek "ilk solve hamlesi" gelene kadar bekle.
+			if (!firstSolveTurn) {
+				dbgTimer('CHECK_START | scrambleCompletedAtRef set ama henuz yeni solve hamlesi YOK — beklenecek');
+				return;
+			}
+
 			const msSinceScrambleEnd = Date.now() - scrambleCompletedAtRef.current.getTime();
 			// [CHECK_START] startTimer cagrisindan ONCE detayli context — ilk solve hamlesi mi yoksa scramble batch'inin parcasi mi?
 			dbgTimer(`!!! TIMER START tetiklendi | firstSolveTurn=${firstSolveTurn?.turn} (completedAt=${firstSolveTurn?.completedAt}) | scramble bitti=${msSinceScrambleEnd}ms once | currentTurns.length=${currentTurns.length} | appliedTurnsRef=${appliedTurnsRef.current} | son 3 turn=[${currentTurns.slice(-3).map((t: any) => t.turn).join(' ')}]`);

@@ -132,6 +132,13 @@ export default function TimerTab({ allowedTimerTypes, requireProForSmart }: Time
 			onClick: () => selectTimerType('gantimer'),
 		},
 		{
+			typeKey: 'qiyitimer',
+			label: isProGated ? proLabel(t('quick_controls.qiyi_smart_timer')) : t('quick_controls.qiyi_smart_timer'),
+			isActive: timerType === 'qiyitimer' && !manualEntry,
+			disabled: isProGated,
+			onClick: () => selectTimerType('qiyitimer'),
+		},
+		{
 			typeKey: 'manual',
 			label: t('quick_controls.manual_entry'),
 			isActive: manualEntry,

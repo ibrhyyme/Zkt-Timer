@@ -1,3 +1,6 @@
+// QiYi Timer React component — GanTimer.tsx pattern (singleton conn + scope-level state)
+// Referans state mapping: cstimer BluetoothTimer.CONST
+
 import React, {useContext, useEffect, useRef, useState} from 'react';
 import {ITimerContext, TimerContext} from '../../Timer';
 import {Bluetooth} from 'phosphor-react';
@@ -14,20 +17,18 @@ import {useTranslation} from 'react-i18next';
 
 import {SubscriptionLike} from 'rxjs';
 import {
-	GanTimerConnection,
-	GanTimerEvent,
-	GanTimerState,
-	connectGanTimer,
-	abortGanTimerScan,
-} from './ganTimerConnection';
+	QiyiTimerConnection,
+	QiyiTimerEvent,
+	QiyiTimerState,
+	connectQiyiTimer,
+	abortQiyiTimerScan,
+} from './qiyiTimerConnection';
 
-// Since this component is singleton and should never have multiple instances,
-// also will never be used in different contexts, we won't pollute context
-// with connection status and event subscription. Just use module-scoped variables.
-let conn: GanTimerConnection | null = null;
+// Singleton connection (GanTimer.tsx ile ayni pattern)
+let conn: QiyiTimerConnection | null = null;
 let subs: SubscriptionLike | null = null;
 
-export default function GanTimer() {
+export default function QiyiTimer() {
 	const dispatch = useDispatch();
 	const {t} = useTranslation();
 	const inspectionEnabled = useSettings('inspection');
@@ -40,47 +41,54 @@ export default function GanTimer() {
 		contextRef.current = context;
 	}, [context]);
 
-	// Subscribe/unsubscribe to GAN Smart Timer events when component being mounted/unmounted
 	useEffect(() => {
 		subs = conn?.events$.subscribe(handleTimerEvent);
 		setConnected(!!conn);
 		return () => subs?.unsubscribe();
 	}, []);
 
-	function handleTimerEvent(event: GanTimerEvent) {
+	function handleTimerEvent(event: QiyiTimerEvent) {
 		switch (event.state) {
-			case GanTimerState.HANDS_ON:
+			case QiyiTimerState.HANDS_ON:
 				setTimerParams({canStart: false, spaceTimerStarted: 1});
 				break;
-			case GanTimerState.HANDS_OFF:
+			case QiyiTimerState.HANDS_OFF:
 				setTimerParams({canStart: false, spaceTimerStarted: 0});
 				break;
-			case GanTimerState.GET_SET:
+			case QiyiTimerState.GET_SET:
 				setTimerParams({canStart: true, spaceTimerStarted: 0});
 				break;
-			case GanTimerState.RUNNING:
+			case QiyiTimerState.RUNNING:
 				setTimerParams({canStart: false, spaceTimerStarted: 0});
 				startTimer();
 				break;
-			case GanTimerState.STOPPED:
-				endTimer(contextRef.current, event.recordedTime.asTimestamp);
+			case QiyiTimerState.STOPPED:
+				if (event.recordedTime) {
+					endTimer(contextRef.current, event.recordedTime.asTimestamp);
+				}
 				break;
-			case GanTimerState.IDLE:
-				if (!inspectionEnabled || contextRef.current.inInspection || contextRef.current.finalTime > 0) {
+			case QiyiTimerState.IDLE:
+				if (!inspectionEnabled || contextRef.current.inInspection || (contextRef.current.finalTime ?? 0) > 0) {
 					cancelInspection();
 					setTimerParams({spaceTimerStarted: 0, canStart: false, finalTime: -1});
 				} else {
 					startInspection(contextRef.current);
 				}
 				break;
-			case GanTimerState.DISCONNECT:
+			case QiyiTimerState.INSPECTION:
+				if (inspectionEnabled && !contextRef.current.inInspection) {
+					startInspection(contextRef.current);
+				}
+				break;
+			case QiyiTimerState.DISCONNECT:
 				setConnected(false);
+				conn = null;
 				break;
 		}
 	}
 
-	function cancelGanScan() {
-		abortGanTimerScan();
+	function cancelQiyiScan() {
+		abortQiyiTimerScan();
 		dispatch(closeModal());
 		setScanning(false);
 	}
@@ -91,16 +99,16 @@ export default function GanTimer() {
 			conn = null;
 			setConnected(false);
 		} else {
-			console.log('[BLE] GanTimer handleConnectButton, isNative:', isNative());
+			console.log('[BLE] QiyiTimer handleConnectButton, isNative:', isNative());
 			let bluetoothAvailable = isNative() || (!!navigator.bluetooth && (await navigator.bluetooth.getAvailability()));
-			console.log('[BLE] GanTimer bluetoothAvailable:', bluetoothAvailable);
+			console.log('[BLE] QiyiTimer bluetoothAvailable:', bluetoothAvailable);
 			if (bluetoothAvailable) {
 				if (isNative()) {
 					setScanning(true);
 					dispatch(openModal(
 						<BleScanningModal
 							mode="gantimer"
-							onCancel={cancelGanScan}
+							onCancel={cancelQiyiScan}
 						/>,
 						{
 							title: t('smart_cube.ble_scan_title'),
@@ -111,15 +119,15 @@ export default function GanTimer() {
 					));
 				}
 				try {
-					conn = await connectGanTimer();
+					conn = await connectQiyiTimer();
 					if (isNative()) {
 						dispatch(closeModal());
 					}
-					conn.events$.subscribe((evt) => evt.state == GanTimerState.DISCONNECT && (conn = null));
+					conn.events$.subscribe((evt) => evt.state === QiyiTimerState.DISCONNECT && (conn = null));
 					subs = conn.events$.subscribe(handleTimerEvent);
 					setConnected(true);
 				} catch (e) {
-					console.error('[BLE] GanTimer connection error:', e);
+					console.error('[BLE] QiyiTimer connection error:', e);
 					if (isNative()) {
 						dispatch(closeModal());
 					}

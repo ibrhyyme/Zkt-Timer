@@ -921,6 +921,7 @@ type UserAccountForAdmin implements IPublicUserAccount & IUserAccount & IUserAcc
   iap_cancellation_at: DateTime
   iap_billing_issue_at: DateTime
   iap_paused_until: DateTime
+  iap_latest_event_at: DateTime
   revenuecat_user_id: String
 }
 
@@ -964,6 +965,7 @@ interface IUserAccountForAdmin implements IUserAccount & IPublicUserAccount {
   iap_cancellation_at: DateTime
   iap_billing_issue_at: DateTime
   iap_paused_until: DateTime
+  iap_latest_event_at: DateTime
   revenuecat_user_id: String
 }
 
@@ -1011,6 +1013,7 @@ type InternalUserAccount implements IPublicUserAccount & IUserAccount & IUserAcc
   iap_cancellation_at: DateTime
   iap_billing_issue_at: DateTime
   iap_paused_until: DateTime
+  iap_latest_event_at: DateTime
   revenuecat_user_id: String
   password: String
 }
@@ -1055,6 +1058,7 @@ interface IInternalUserAccount implements IUserAccountForAdmin & IUserAccount & 
   iap_cancellation_at: DateTime
   iap_billing_issue_at: DateTime
   iap_paused_until: DateTime
+  iap_latest_event_at: DateTime
   revenuecat_user_id: String
   password: String
 }
