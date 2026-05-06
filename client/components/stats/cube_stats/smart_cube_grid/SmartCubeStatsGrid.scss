@@ -1,0 +1,83 @@
+@import '../../../../styles/config';
+
+.#{$namespace}-smart-cube-stats-grid {
+	display: flex;
+	flex-direction: column;
+	gap: 1.067rem;
+
+	&__grid {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 0.667rem;
+
+		&--detail {
+			grid-template-columns: repeat(4, minmax(0, 1fr));
+		}
+	}
+
+	&__stat {
+		display: flex;
+		flex-direction: column;
+		gap: 0.267rem;
+		padding: 0.733rem 0.867rem;
+		background-color: rgba(var(--button-color), 0.4);
+		border-radius: 8px;
+		min-width: 0;
+	}
+
+	&__stat-label {
+		color: rgba(var(--text-color), 0.55);
+		font-size: 0.75rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+	}
+
+	&__stat-value {
+		color: rgb(var(--text-color));
+		font-size: 1.35rem;
+		font-weight: 700;
+		font-family: 'SF Mono', 'Roboto Mono', 'Fira Code', monospace;
+		overflow-wrap: anywhere;
+	}
+
+	&__subtitle {
+		color: rgb(var(--text-color));
+		font-size: 1rem;
+		font-weight: 600;
+		padding-top: 0.4rem;
+		padding-bottom: 0.2rem;
+		border-bottom: 1px solid rgba(var(--primary-color), 0.25);
+	}
+
+	@media (max-width: 900px) {
+		&__grid {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+
+			&--detail {
+				grid-template-columns: repeat(2, minmax(0, 1fr));
+			}
+		}
+	}
+
+	@media (max-width: 600px) {
+		&__grid,
+		&__grid--detail {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 0.5rem;
+		}
+
+		&__stat {
+			padding: 0.55rem 0.6rem;
+		}
+
+		&__stat-label {
+			font-size: 0.65rem;
+			letter-spacing: 0.02em;
+		}
+
+		&__stat-value {
+			font-size: 1.05rem;
+		}
+	}
+}

@@ -78,6 +78,7 @@
     "stats": {
         "page_title": "Statistics",
         "all": "All",
+        "all_sessions": "All Sessions",
         "select_cube": "Select cube",
         "hero": {
             "title": "Statistics",
@@ -1364,7 +1365,24 @@
         "phase_splits": "Phase Split",
         "steps_detail": "Phase Detail Table",
         "smart_cube_summary": "Smart Cube Summary",
-        "cases": "Cases"
+        "cases": "Cases",
+        "view_all": "Solves",
+        "view_all_sub": "Manual · Keyboard",
+        "view_smart_cube": "Smart Cube",
+        "view_smart_cube_sub": "Bluetooth · Motion"
+    },
+    "smart_cube_grid": {
+        "avg_time": "Average Time",
+        "best": "Best",
+        "worst": "Worst",
+        "solve_count": "# Solves",
+        "avg_turns": "Avg Turns",
+        "avg_tps": "Avg TPS",
+        "best_ao5": "Best ao5",
+        "best_ao12": "Best ao12",
+        "best_ao100": "Best ao100",
+        "total_time": "Total Time",
+        "detail_section": "Smart Cube Details"
     },
     "common": {
         "results_count": "{{count}} results",

@@ -84,6 +84,27 @@ export function analyzePhases(
 	const phaseEndStates: Partial<Record<CFOPPhase, string>> = {};
 	const phaseEndAxis: Partial<Record<CFOPPhase, number>> = {};
 
+	// Kismi-cozum subsetleri (333cfop>oll, >pll, >ll vb.) icin: scramble cube'u zaten bazi
+	// fazlar cozulu halde getirir. Engine bu fazlar icin transition uretmez (curProg < progress
+	// dususu olmaz). Identification chain'i (`beforeOLLState = phaseEndStates.f2l_4 || ...`)
+	// bu durumda null kalir → OLL/PLL case key bulunamaz, vakalar/istatistikler kirik.
+	//
+	// Cozum: initial state'ten "kac faz zaten cozulu" inferle, o fazlarin phaseEndStates'ini
+	// initialState ile pre-populate et. Cross/F2L/OLL atlanmissa identification chain'i dolu
+	// kalir, kullanicinin yaptigi son fazlar (orn. PLL-only) icin case key dogru bulunur.
+	//
+	// progress 7 = full scramble (hicbir faz cozulu degil)
+	// progress 6 = cross cozulu, f2l_1'den itibaren cozulecek
+	// progress 1 = cross+f2l+oll cozulu, sadece pll cozulecek
+	// progress 0 = cube zaten solved
+	//
+	// numCompleted = 7 - initial.progress  (clamped to PHASE_ORDER length).
+	const numCompleted = Math.max(0, Math.min(PHASE_ORDER.length, 7 - initial.progress));
+	for (let i = 0; i < numCompleted; i++) {
+		phaseEndStates[PHASE_ORDER[i]] = initialState;
+		phaseEndAxis[PHASE_ORDER[i]] = initial.axisIndex;
+	}
+
 	for (let i = 0; i < turns.length; i++) {
 		const t = turns[i];
 		const move = t.turn;

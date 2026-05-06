@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import './CaseSection.scss';
@@ -8,6 +8,7 @@ import { openProOnlyModal } from '../../../common/pro_only/openProOnlyModal';
 import { useMe } from '../../../../util/hooks/useMe';
 import { isPro } from '../../../../lib/pro';
 import CaseStatsModal from './CaseStatsModal';
+import { StatsContext } from '../../Stats';
 
 const b = block('case-section');
 
@@ -53,6 +54,7 @@ export default function CaseSection() {
 	const dispatch = useDispatch();
 	const me = useMe();
 	const userIsPro = isPro(me);
+	const { filterOptions } = useContext(StatsContext);
 
 	function handleClick(type: CaseType) {
 		if (!userIsPro) {
@@ -62,11 +64,22 @@ export default function CaseSection() {
 		const title = type === 'oll'
 			? t('case_stats.modal_title_oll')
 			: t('case_stats.modal_title_pll');
-		dispatch(openModal(<CaseStatsModal type={type} />, {
-			title,
-			closeButtonText: t('solve_info.done'),
-			width: 1100,
-		}));
+		const cubeType = (filterOptions?.cube_type as string) || null;
+		const subset = (filterOptions?.scramble_subset as string | null | undefined) ?? null;
+		const sessionId = (filterOptions?.session_id as string) || null;
+		dispatch(openModal(
+			<CaseStatsModal
+				type={type}
+				cubeType={cubeType}
+				subset={subset}
+				sessionId={sessionId}
+			/>,
+			{
+				title,
+				closeButtonText: t('solve_info.done'),
+				width: 1100,
+			}
+		));
 	}
 
 	return (

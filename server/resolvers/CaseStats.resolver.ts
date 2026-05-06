@@ -48,22 +48,31 @@ export class CaseStatsResolver {
 	@Query(() => [CaseStat])
 	async caseStats(
 		@Ctx() context: GraphQLContext,
-		@Arg('type') type: string
+		@Arg('type') type: string,
+		@Arg('cubeType', { nullable: true }) cubeType?: string,
+		@Arg('subset', { nullable: true }) subset?: string,
+		@Arg('sessionId', { nullable: true }) sessionId?: string
 	): Promise<CaseStat[]> {
 		const { prisma, user } = context;
 		if (type !== 'oll' && type !== 'pll') return [];
 		const caseField: 'oll_case_key' | 'pll_case_key' =
 			type === 'oll' ? 'oll_case_key' : 'pll_case_key';
 
+		const solveFilter: any = {
+			user_id: user.id,
+			is_smart_cube: true,
+		};
+		if (cubeType) solveFilter.cube_type = cubeType;
+		// Bos string ('') gecerli bir subset id (333 Random State, 777 WCA, vb).
+		// Sadece null/undefined "tum subset'ler" anlamina gelir.
+		if (subset != null) solveFilter.scramble_subset = subset;
+		if (sessionId) solveFilter.session_id = sessionId;
+
 		const steps = await prisma.solveMethodStep.findMany({
 			where: {
 				step_name: type,
 				[caseField]: { not: null },
-				solve: {
-					user_id: user.id,
-					is_smart_cube: true,
-					// cube_type filtresi kaldirildi — smart cube zaten 3x3 (BLE 3x3-only).
-				},
+				solve: solveFilter,
 			},
 			select: {
 				oll_case_key: true,

@@ -78,6 +78,7 @@
     "stats": {
         "page_title": "İstatistikler",
         "all": "Tümü",
+        "all_sessions": "Tüm Sezonlar",
         "select_cube": "Cube seç",
         "hero": {
             "title": "İstatistikler",
@@ -1364,7 +1365,24 @@
         "phase_splits": "Evre Analizi",
         "steps_detail": "Evre Analiz Detay Tablosu",
         "smart_cube_summary": "Akıllı Küp Özeti",
-        "cases": "Vakalar"
+        "cases": "Vakalar",
+        "view_all": "Çözümler",
+        "view_all_sub": "Manuel · Klavye",
+        "view_smart_cube": "Akıllı Küp",
+        "view_smart_cube_sub": "Bluetooth · Hareket"
+    },
+    "smart_cube_grid": {
+        "avg_time": "Ortalama Süre",
+        "best": "En İyi",
+        "worst": "En Kötü",
+        "solve_count": "Çözüm Sayısı",
+        "avg_turns": "Ort. Hamle",
+        "avg_tps": "Ort. TPS",
+        "best_ao5": "En İyi ao5",
+        "best_ao12": "En İyi ao12",
+        "best_ao100": "En İyi ao100",
+        "total_time": "Toplam Süre",
+        "detail_section": "Akıllı Küp Detayları"
     },
     "common": {
         "results_count": "{{count}} sonuç",

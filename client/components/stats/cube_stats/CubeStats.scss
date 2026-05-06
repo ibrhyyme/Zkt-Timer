@@ -2,19 +2,47 @@
 
 .#{$namespace}-cube-stats {
 	width: 100%;
-	display: grid;
-	grid-template-columns: minmax(0, 22rem) minmax(0, 24rem) minmax(0, 1fr);
-	grid-template-areas:
-		'featured averages chart'
-		'substats hourly hourly'
-		'summary summary summary'
-		'cases cases cases'
-		'splits splits splits'
-		'steps-table steps-table steps-table';
-	column-gap: 1.333rem;
-	row-gap: 1.333rem;
+	display: flex;
+	flex-direction: column;
+	gap: 1.333rem;
 	overflow-x: hidden;
-	align-items: start;
+
+	&__view-toggle {
+		display: flex;
+		justify-content: center;
+		padding: 0.5rem 0;
+
+		@media (max-width: 768px) {
+			padding: 0.25rem 0;
+
+			> * {
+				width: 100%;
+			}
+		}
+	}
+
+	&__view {
+		display: grid;
+		column-gap: 1.333rem;
+		row-gap: 1.333rem;
+		align-items: start;
+	}
+
+	&__view--all {
+		grid-template-columns: minmax(0, 22rem) minmax(0, 24rem) minmax(0, 1fr);
+		grid-template-areas:
+			'featured averages chart'
+			'substats hourly hourly';
+	}
+
+	&__view--smart {
+		grid-template-columns: 1fr;
+		grid-template-areas:
+			'summary'
+			'cases'
+			'splits'
+			'steps-table';
+	}
 
 	&__summary {
 		grid-area: summary;
@@ -53,30 +81,31 @@
 	}
 
 	@media (max-width: 1300px) {
-		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-		grid-template-areas:
-			'featured averages'
-			'chart chart'
-			'substats hourly'
-			'summary summary'
-			'cases cases'
-			'splits splits'
-			'steps-table steps-table';
+		&__view--all {
+			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+			grid-template-areas:
+				'featured averages'
+				'chart chart'
+				'substats hourly';
+		}
 	}
 
 	@media (max-width: 900px) {
-		grid-template-columns: 1fr;
-		grid-template-areas:
-			'featured'
-			'averages'
-			'chart'
-			'substats'
-			'hourly'
-			'summary'
-			'cases'
-			'splits'
-			'steps-table';
-		column-gap: 16px;
-		row-gap: 16px;
+		&__view--all {
+			grid-template-columns: 1fr;
+			grid-template-areas:
+				'featured'
+				'averages'
+				'chart'
+				'substats'
+				'hourly';
+			column-gap: 16px;
+			row-gap: 16px;
+		}
+
+		&__view--smart {
+			column-gap: 16px;
+			row-gap: 16px;
+		}
 	}
 }
