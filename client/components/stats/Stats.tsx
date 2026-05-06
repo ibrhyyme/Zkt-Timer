@@ -95,6 +95,12 @@ export default function Stats() {
 		return getSubsetsForBuckets(tabCubeType, cubeTypes);
 	}, [tabCubeType, cubeTypes]);
 
+	// Bucket degisikliginde scroll'u tepeye al — ScrollReset sadece pathname'i izliyor,
+	// query string degistiginde (PuzzleCard tiklamasi, dropdown secimi) tetiklenmiyor.
+	useEffect(() => {
+		window.scrollTo({top: 0, left: 0, behavior: 'instant'} as ScrollToOptions);
+	}, [tabCubeType, tabSubset]);
+
 	// Eski URL ('?cubeType=wca' subset'siz) → ilk subset'e otomatik yonlendir.
 	// `subset=` bos string default subset (orn 777 WCA, 333 Random State) — null degil,
 	// dolayisiyla redirect tetiklemez.
