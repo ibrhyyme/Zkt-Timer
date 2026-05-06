@@ -197,6 +197,31 @@ export default function App(props: Props = {}) {
 		}
 	}, [me?.id]);
 
+	// Pro durumu otomatik tazeleme: uygulama foreground'a gelince yenile.
+	// Kullanici uygulamayi arkaya alip geri donunce abonelik durumu guncellenir.
+	useEffect(() => {
+		if (!me?.id) return;
+
+		const refreshMe = () => { dispatch(getMe() as any); };
+
+		let nativeListener: {remove: () => void} | null = null;
+		const onVisibilityChange = () => { if (!document.hidden) refreshMe(); };
+		if (Capacitor.isNativePlatform()) {
+			CapApp.addListener('appStateChange', ({isActive}) => {
+				if (isActive) refreshMe();
+			}).then((l) => { nativeListener = l; }).catch(() => {});
+		} else {
+			document.addEventListener('visibilitychange', onVisibilityChange);
+		}
+
+		return () => {
+			if (!Capacitor.isNativePlatform()) {
+				document.removeEventListener('visibilitychange', onVisibilityChange);
+			}
+			if (nativeListener) nativeListener.remove();
+		};
+	}, [me?.id]);
+
 	// Fetch announcements when user logs in
 	useEffect(() => {
 		if (!me || !appLoaded) return;

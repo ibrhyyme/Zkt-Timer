@@ -353,7 +353,11 @@ function ProPageContent() {
 			await purchasePackage(selectedPackage, oldProductId, isUpgrade);
 			toastSuccess(t('pro_page.iap.purchase_success'));
 			await syncWithServer();
-			setTimeout(() => { refetchIap(); dispatch(getMe()); }, 1000);
+			refetchIap();
+			dispatch(getMe());
+			// Tum Pro feature'larin (paywall, kilitli ekranlar, nav badge) anlik
+			// guncellenmesi icin sayfa reload — me/Apollo cache'lerinin tutarsiz kalmasini onler.
+			setTimeout(() => window.location.reload(), 1500);
 		} catch (err: any) {
 			const code = err?.code || '';
 			const msg = String(err?.message || '').toLowerCase();
@@ -376,7 +380,10 @@ function ProPageContent() {
 			if (result?.isPro) {
 				toastSuccess(t('pro_page.iap.restore_success'));
 				await syncWithServer();
-				setTimeout(() => { refetchIap(); dispatch(getMe()); }, 500);
+				refetchIap();
+				dispatch(getMe());
+				// Pro durumu uygulamanin her yerinde tutarli yansisin diye sayfayi yeniden yukle.
+				setTimeout(() => window.location.reload(), 1500);
 			} else {
 				toastError(t('pro_page.iap.restore_empty'));
 			}
