@@ -9,6 +9,7 @@ import {
 	pauseSubscription,
 	isEventProcessed,
 	markEventProcessed,
+	syncEntitlementFromRevenueCat,
 	IapPlatform,
 } from '../models/iap';
 
@@ -152,9 +153,11 @@ export async function revenueCatWebhookHandler(req: Request, res: Response): Pro
 				break;
 			}
 			case 'TRANSFER': {
-				// Nadiren olur — eski kullanicinin entitlement'i yeniye gecti.
-				// RevenueCat otomatik halleder, biz sadece log'larız.
+				// Anonim ID'den gercek user.id'ye alias edildiginde tetiklenir
+				// (kullanici satin alma yaptiktan sonra logIn(user.id) cagrildiginda).
+				// Event payload'inda product/expiration yoktur — REST API ile durumu cek.
 				logger.info('[RC-Webhook] TRANSFER event', {userId, originalTxId});
+				await syncEntitlementFromRevenueCat(userId);
 				break;
 			}
 			case 'TEST': {

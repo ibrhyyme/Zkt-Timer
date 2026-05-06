@@ -186,8 +186,10 @@ export default function App(props: Props = {}) {
 	useEffect(() => {
 		if (!Capacitor.isNativePlatform()) return;
 		if (me?.id && iapLinkedRef.current !== me.id) {
-			iapLinkedRef.current = me.id;
-			iapIdentifyUser(me.id).catch(() => {});
+			const targetId = me.id;
+			iapIdentifyUser(targetId)
+				.then(() => { iapLinkedRef.current = targetId; })
+				.catch(() => {});
 			gqlMutate(LinkRevenueCatUserDocument, {}).catch(() => {});
 		} else if (!me && iapLinkedRef.current) {
 			iapLinkedRef.current = null;

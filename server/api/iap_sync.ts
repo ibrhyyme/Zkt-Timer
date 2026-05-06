@@ -1,8 +1,6 @@
 import {Request, Response} from 'express';
 import {getMe} from '../util/auth';
-import {getPrisma} from '../database';
-import {logger} from '../services/logger';
-import {applyIapPurchase, IapPlatform} from '../models/iap';
+import {syncEntitlementFromRevenueCat} from '../models/iap';
 
 /**
  * POST /api/iap/sync
@@ -21,81 +19,6 @@ export async function iapSyncHandler(req: Request, res: Response): Promise<void>
 		return;
 	}
 
-	const prisma = getPrisma();
-	const user = await prisma.userAccount.findUnique({
-		where: {id: me.id},
-		select: {revenuecat_user_id: true},
-	});
-
-	if (!user?.revenuecat_user_id) {
-		res.status(200).json({synced: false, isPro: false});
-		return;
-	}
-
-	const secretKey = process.env.REVENUECAT_SECRET_KEY;
-	if (!secretKey) {
-		logger.error('[IAP-Sync] REVENUECAT_SECRET_KEY env var eksik');
-		res.status(500).json({error: 'config_error'});
-		return;
-	}
-
-	const rcUserId = encodeURIComponent(user.revenuecat_user_id);
-	let rcData: any;
-	try {
-		const response = await fetch(`https://api.revenuecat.com/v1/subscribers/${rcUserId}`, {
-			headers: {
-				Authorization: `Bearer ${secretKey}`,
-				'Content-Type': 'application/json',
-			},
-		});
-		if (!response.ok) {
-			logger.warn('[IAP-Sync] RevenueCat API hatasi', {status: response.status, userId: me.id});
-			res.status(502).json({error: 'revenuecat_error'});
-			return;
-		}
-		rcData = await response.json();
-	} catch (err) {
-		logger.error('[IAP-Sync] RevenueCat API istegi basarisiz', {err, userId: me.id});
-		res.status(502).json({error: 'network_error'});
-		return;
-	}
-
-	const proEnt = rcData?.subscriber?.entitlements?.pro;
-	const now = new Date();
-	// expires_date === null → lifetime (sonsuz); varsa gelecekte mi kontrolu
-	const isActive = !!proEnt && (proEnt.expires_date === null || new Date(proEnt.expires_date) > now);
-
-	if (isActive) {
-		const storeRaw: string = (proEnt.store || '').toLowerCase();
-		// Webhook'taki getPlatform() ile tutarli olsun: explicit eslesme, fallback null degil ios olmasin.
-		let platform: IapPlatform | null = null;
-		if (storeRaw === 'app_store' || storeRaw === 'mac_app_store') platform = 'ios';
-		else if (storeRaw === 'play_store') platform = 'android';
-		if (!platform) {
-			logger.warn('[IAP-Sync] Bilinmeyen store, atlandi', {userId: me.id, storeRaw});
-			res.status(200).json({synced: true, isPro: false});
-			return;
-		}
-		const productId: string = proEnt.product_identifier || '';
-		const expiresAt: Date | null = proEnt.expires_date ? new Date(proEnt.expires_date) : null;
-
-		await applyIapPurchase(
-			{
-				userId: me.id,
-				platform,
-				productId,
-				originalTxId: null,
-				expiresAt,
-				eventAt: now,
-			},
-			'silent', // kullanici zaten biliyor, push gonderme
-		);
-
-		logger.info('[IAP-Sync] Pro geri yuklendi', {userId: me.id, platform, productId});
-		res.status(200).json({synced: true, isPro: true});
-	} else {
-		// Aktif entitlement yok — admin-granted Pro korunur, DB degistirilmez
-		logger.info('[IAP-Sync] Aktif RevenueCat entitlement yok', {userId: me.id});
-		res.status(200).json({synced: true, isPro: false});
-	}
+	const result = await syncEntitlementFromRevenueCat(me.id);
+	res.status(200).json(result);
 }
