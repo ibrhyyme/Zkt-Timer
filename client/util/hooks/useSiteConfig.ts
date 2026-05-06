@@ -77,21 +77,41 @@ export function useSiteConfig(): SiteConfigData | null {
 			}
 		};
 		window.addEventListener('focus', handleFocus);
+
+		// Polling sadece sayfa goruntulenirken calissin — pil tasarrufu
+		let pollInterval: ReturnType<typeof setInterval> | null = null;
+		const startPolling = () => {
+			if (pollInterval) return;
+			pollInterval = setInterval(() => {
+				refreshSiteConfig();
+			}, 30 * 1000);
+		};
+		const stopPolling = () => {
+			if (pollInterval) {
+				clearInterval(pollInterval);
+				pollInterval = null;
+			}
+		};
+
 		const handleVisibility = () => {
-			if (document.visibilityState === 'visible') handleFocus();
+			if (document.visibilityState === 'visible') {
+				handleFocus();
+				startPolling();
+			} else {
+				stopPolling();
+			}
 		};
 		document.addEventListener('visibilitychange', handleVisibility);
 
-		// Polling: 30 saniyede bir sessiz refresh (cache bozmaz, UI loading gostermez)
-		const pollInterval = setInterval(() => {
-			refreshSiteConfig();
-		}, 30 * 1000);
+		if (typeof document === 'undefined' || document.visibilityState === 'visible') {
+			startPolling();
+		}
 
 		return () => {
 			subscribers.delete(setConfig);
 			window.removeEventListener('focus', handleFocus);
 			document.removeEventListener('visibilitychange', handleVisibility);
-			clearInterval(pollInterval);
+			stopPolling();
 		};
 	}, []);
 
