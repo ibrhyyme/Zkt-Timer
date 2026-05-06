@@ -9,6 +9,7 @@ import {
     CreateFriendlyRoomInput,
     JoinFriendlyRoomInput,
     FriendlyRoomSolveData,
+    FriendlyRoomConst,
 } from '../../shared/friendly_room';
 import {
     createRoom,
@@ -50,6 +51,11 @@ type DisconnectEntry = {
     activeSocketIds: Set<string>;
 };
 const disconnectTimers = new Map<string, DisconnectEntry>();
+
+// Grace period: kullanici disconnect/away olduktan sonra otomatik odadan
+// cikarilana kadar gecen sure. Shared FriendlyRoomConst'tan okunur — client tarafi
+// (FriendlyRoom.tsx kick redirect kontrolu) ayni degeri kullanir.
+const GRACE_PERIOD_MS = FriendlyRoomConst.PLAYER_DISCONNECT_GRACE_MS;
 
 // Tek aktif oturum: userID -> { roomId, socketId }
 // Redis'te tutulur — multi-instance (cluster/k8s) safe.
@@ -890,7 +896,7 @@ async function startGracePeriod(user: any) {
     logger.debug('Starting friendly room grace period', { userId: user.id, username: user.username });
 
     // Mark user as DISCONNECTED immediately in all their rooms
-    const expireTime = Date.now() + 45000; // 45s from now
+    const expireTime = Date.now() + GRACE_PERIOD_MS;
     try {
         const rooms = await getRoomsForUser(user.id);
         for (const room of rooms) {
@@ -923,7 +929,7 @@ async function startGracePeriod(user: any) {
         }
         // Cleanup entry
         disconnectTimers.delete(user.id);
-        // Aktif oturum kaydini da temizle: kullanici 45sn icinde donmedi, slot serbest.
+        // Aktif oturum kaydini da temizle: kullanici grace period icinde donmedi, slot serbest.
         await clearActiveSession(user.id);
         try {
             const rooms = await getRoomsForUser(user.id);
@@ -964,7 +970,7 @@ async function startGracePeriod(user: any) {
         } catch (innerError) {
             logger.error('Error handling disconnect timeout', { error: innerError });
         }
-    }, 45000); // 45s
+    }, GRACE_PERIOD_MS);
 }
 
 // Helper: Cancel Grace Period (Reconnected or Back)
