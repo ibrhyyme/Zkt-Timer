@@ -77,18 +77,24 @@ export async function applyIapPurchase(
 	// pro_expires_at icin max(mevcut, yeni) — admin/promo Pro'nun suresi IAP'tan uzunsa korunur.
 	// Senaryo: kullanicida 6 ayligina admin Pro var, 1 aylik IAP aldi -> 6 ay korunmali.
 	// Lifetime (expiresAt=null) her zaman kazanir.
+	//
+	// KRITIK: pro_expires_at=null tek basina "lifetime" anlamina gelmez — admin Pro'yu kaldirdiysa
+	// is_pro=false + pro_expires_at=null olur. Sadece is_pro=true VE pro_expires_at=null durumunda
+	// kullanici gercek Lifetime sahibidir.
+	const currentIsPro = (targetUser as any).is_pro === true;
 	const currentExpiry = (targetUser as any).pro_expires_at as Date | null | undefined;
 	let newExpiry: Date | null;
 	if (update.expiresAt === null) {
-		// Lifetime — sonsuz, mevcut tarihten uzun
+		// Yeni IAP lifetime — sonsuz, her zaman kazanir
 		newExpiry = null;
-	} else if (currentExpiry === null) {
-		// Mevcut zaten lifetime (sonsuz) — IAP suresi gelse bile sonsuz korunur
+	} else if (currentIsPro && currentExpiry === null) {
+		// Kullanici zaten gercek Lifetime sahibi — IAP suresi gelse bile sonsuz korunur
 		newExpiry = null;
-	} else if (currentExpiry && currentExpiry > update.expiresAt) {
-		// Mevcut tarih daha uzak — koru
+	} else if (currentIsPro && currentExpiry && currentExpiry > update.expiresAt) {
+		// Mevcut Pro suresi daha uzak — koru (admin/promo IAP'tan uzun olabilir)
 		newExpiry = currentExpiry;
 	} else {
+		// Pro yok ya da mevcut sure yeni IAP'tan kisa — RC'den gelen tarihi kullan
 		newExpiry = update.expiresAt;
 	}
 
