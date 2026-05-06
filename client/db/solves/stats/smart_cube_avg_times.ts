@@ -34,6 +34,9 @@ export function getSmartCubeAvgTimes(filter: FilterSolvesOptions): SmartCubeAvgT
 			let recog = 0;
 			let exec = 0;
 			for (const step of steps) {
+				// f2l parent step'in total_time'i = f2l_1..4 toplami (solve_method.ts:131).
+				// Atomik step'lerle birlikte sayilirsa double-count olur. Skip.
+				if (step.step_name === 'f2l') continue;
 				const recogTime = step.recognition_time || 0;
 				const totalTime = step.total_time || 0;
 				recog += recogTime;

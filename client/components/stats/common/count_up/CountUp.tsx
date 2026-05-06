@@ -61,12 +61,15 @@ export default function CountUp({
 		[maxDecimals, separator, formatFn]
 	);
 
-	// Set initial display value
+	// Set initial display value — sadece mount'ta. formatValue inline geldiginde
+	// her render'da effect tetiklenip "0" yazip spring animation'i steamroll'luyordu
+	// (animasyon tamamlanmissa onChange tekrar fire etmez → "0" takili kalir).
+	// eslint-disable-next-line react-hooks/exhaustive-deps
 	useEffect(() => {
 		if (ref.current) {
 			ref.current.textContent = formatValue(from);
 		}
-	}, [from, formatValue]);
+	}, []);
 
 	// Trigger animation when in view
 	useEffect(() => {

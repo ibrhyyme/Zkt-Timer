@@ -26,6 +26,9 @@ type SortKey =
 
 interface Props {
 	type: CaseType;
+	cubeType?: string | null;
+	subset?: string | null;
+	sessionId?: string | null;
 }
 
 interface ColumnDef {
@@ -73,7 +76,7 @@ function SortArrow({ desc }: { desc: boolean }) {
 	return <span className={b('sort-arrow')}>{desc ? '↓' : '↑'}</span>;
 }
 
-export default function CaseStatsModal({ type }: Props) {
+export default function CaseStatsModal({ type, cubeType, subset, sessionId }: Props) {
 	const { t } = useTranslation();
 	const [sortKey, setSortKey] = useState<SortKey>('lastSeenAt');
 	const [sortDesc, setSortDesc] = useState(true);
@@ -83,7 +86,12 @@ export default function CaseStatsModal({ type }: Props) {
 	useLLPatternsReady();
 
 	const { data, loading } = useQuery<CaseStatsQuery, CaseStatsQueryVariables>(CaseStatsDocument, {
-		variables: { type },
+		variables: {
+			type,
+			cubeType: cubeType ?? undefined,
+			subset: subset ?? undefined,
+			sessionId: sessionId ?? undefined,
+		},
 		fetchPolicy: 'cache-and-network',
 	});
 

@@ -644,7 +644,7 @@ export class AdminResolver {
 
 		const candidates = await prisma.solve.findMany({
 			where: { is_smart_cube: true },
-			select: { id: true, smart_turns: true },
+			select: { id: true, smart_turns: true, scramble: true },
 		});
 
 		result.totalCandidates = candidates.length;
@@ -673,7 +673,7 @@ export class AdminResolver {
 					result.downgraded++;
 					continue;
 				}
-				const steps = getSolveSteps(turns);
+				const steps = getSolveSteps(turns, cand.scramble);
 				const htmCount = countHTM(turns.map((t) => t.turn));
 				await deleteSolveMethodSteps({ id: cand.id });
 				await createSolveMethodSteps({ id: cand.id }, steps);
@@ -898,6 +898,7 @@ export class AdminResolver {
 				select: {
 					id: true,
 					smart_turns: true,
+					scramble: true,
 					solve_method_steps: {
 						where: { step_name: { in: ['oll', 'pll'] } },
 						select: { id: true, step_name: true, oll_case_key: true, pll_case_key: true },
@@ -913,7 +914,7 @@ export class AdminResolver {
 				try {
 					const turns = parseSmartTurns(solve.smart_turns);
 					if (turns.length === 0) continue;
-					const steps = getSolveSteps(turns);
+					const steps = getSolveSteps(turns, solve.scramble);
 					result.scanned++;
 
 					for (const step of solve.solve_method_steps) {

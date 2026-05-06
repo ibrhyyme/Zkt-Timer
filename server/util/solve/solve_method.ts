@@ -18,16 +18,16 @@ import { countHTM } from '../../../shared/util/solve/move_counter';
 import { getPrettyMoves, TimedMove } from '../../../shared/util/solve/pretty_moves';
 void cascadeQuartersForDisplay; // legacy import — yeni getPrettyMoves'a gecildi
 
-export function getSolveSteps(turns: SmartTurn[]) {
+export function getSolveSteps(turns: SmartTurn[], scramble?: string) {
 	try {
-		return getSolveStepsInner(turns);
+		return getSolveStepsInner(turns, scramble);
 	} catch (e: any) {
 		console.warn('[getSolveSteps] engine failed:', e?.message);
 		return { cross: null, f2l: null, oll: null, pll: null };
 	}
 }
 
-function getSolveStepsInner(turns: SmartTurn[]) {
+function getSolveStepsInner(turns: SmartTurn[], scramble?: string) {
 	const engineTurns: SolveTurn[] = (turns || [])
 		.filter((t) => t && typeof t.turn === 'string')
 		.map((t) => ({
@@ -43,15 +43,17 @@ function getSolveStepsInner(turns: SmartTurn[]) {
 		return { cross: null, f2l: null, oll: null, pll: null };
 	}
 
-	// Backend'de start state yok — engine bunsuz da calisir (varsayilan: solved cube),
-	// ama o zaman cross detection sallar. solve_method'un mevcut yaklasimi: turns
-	// dizisini ters cevirip cube'u scrambled state'e getirmek (reverseTurns). Ama bu
-	// dogru sirayla phase detection yapmaz; biz zaten engine'i kullanip turns'u sirayla
-	// uygulariz.
+	// Start state hesabi:
+	// IDEAL: scramble'i solved cube'a uygula → gercek baslangic state. Kismi-cozum subsetleri
+	// (333cfop>oll, >pll vb.) icin DOGRU sonuc bu yolla gelir; engine zaten cozulu fazlari
+	// pre-populate eder ve OLL/PLL identification calisir.
 	//
-	// Onemli: backend solve_method end-state olarak SOLVED varsayar (turn dizisi cozulmus
-	// bir solve'dur). Bu yuzden basla = ters-uygulanan turns + solved = orijinal scramble state.
-	const startState = computeStartStateFromSolvedEnd(engineTurns);
+	// FALLBACK (legacy): scramble verilmediyse (eski admin script'leri) turns'u ters uygulayarak
+	// hesapla — tam 333 solve'larinda calisir, kismi subsetlerde identification kirik kalir.
+	let startState = scramble ? computeStartStateFromScramble(scramble) : undefined;
+	if (!startState) {
+		startState = computeStartStateFromSolvedEnd(engineTurns);
+	}
 
 	const result = analyzePhases(engineTurns, startState, {
 		method: 'cfop',
@@ -162,9 +164,30 @@ function getSolveStepsInner(turns: SmartTurn[]) {
 }
 
 /**
- * Backend'de turns dizisi cozulmus solve oldugu icin end-state SOLVED'dir.
- * Start-state hesaplamak icin: solved cube'a turns'u TERS sirada UYGULA — bu cube'u
- * scrambled state'e getirir.
+ * Scramble string'ini solved cube'a uygulayarak gercek baslangic state'i hesaplar.
+ * Bu kismi-cozum subsetleri icin de DOGRU sonuc verir (cube zaten yari cozulu gelir).
+ */
+function computeStartStateFromScramble(scramble: string): string | undefined {
+	try {
+		const Cube = require('cubejs');
+		const cube = new Cube();
+		const moves = (scramble || '').trim().split(/\s+/).filter(Boolean);
+		for (const m of moves) {
+			try {
+				cube.move(m);
+			} catch {
+				// Gecersiz move: atla
+			}
+		}
+		return cube.asString();
+	} catch {
+		return undefined;
+	}
+}
+
+/**
+ * LEGACY fallback: turns'u ters uygulayarak start state hesaplar. Sadece tam-cozum
+ * (WCA 333) solve'larinda dogru calisir. Scramble erisilemediginde kullanilir.
  */
 function computeStartStateFromSolvedEnd(turns: SolveTurn[]): string | undefined {
 	try {

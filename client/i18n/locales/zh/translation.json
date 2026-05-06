@@ -78,6 +78,7 @@
     "stats": {
         "page_title": "统计",
         "all": "全部",
+        "all_sessions": "所有赛季",
         "select_cube": "选择魔方",
         "hero": {
             "title": "统计",
@@ -1364,7 +1365,24 @@
         "phase_splits": "阶段拆分",
         "steps_detail": "阶段详情表",
         "smart_cube_summary": "智能魔方概览",
-        "cases": "情况"
+        "cases": "情况",
+        "view_all": "还原",
+        "view_all_sub": "手动 · 键盘",
+        "view_smart_cube": "智能魔方",
+        "view_smart_cube_sub": "蓝牙 · 动作"
+    },
+    "smart_cube_grid": {
+        "avg_time": "平均时间",
+        "best": "最佳",
+        "worst": "最差",
+        "solve_count": "还原次数",
+        "avg_turns": "平均步数",
+        "avg_tps": "平均 TPS",
+        "best_ao5": "最佳 ao5",
+        "best_ao12": "最佳 ao12",
+        "best_ao100": "最佳 ao100",
+        "total_time": "总时间",
+        "detail_section": "智能魔方详情"
     },
     "common": {
         "results_count": "{{count}} 条结果",

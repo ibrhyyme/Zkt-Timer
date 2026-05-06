@@ -78,6 +78,7 @@
     "stats": {
         "page_title": "Estadísticas",
         "all": "Todas",
+        "all_sessions": "Todas las sesiones",
         "select_cube": "Seleccionar cubo",
         "hero": {
             "title": "Estadísticas",
@@ -1364,7 +1365,24 @@
         "phase_splits": "División por fase",
         "steps_detail": "Tabla detalle de fases",
         "smart_cube_summary": "Resumen de Cubo Inteligente",
-        "cases": "Casos"
+        "cases": "Casos",
+        "view_all": "Resoluciones",
+        "view_all_sub": "Manual · Teclado",
+        "view_smart_cube": "Cubo Inteligente",
+        "view_smart_cube_sub": "Bluetooth · Movimiento"
+    },
+    "smart_cube_grid": {
+        "avg_time": "Tiempo medio",
+        "best": "Mejor",
+        "worst": "Peor",
+        "solve_count": "N.º resoluciones",
+        "avg_turns": "Giros medios",
+        "avg_tps": "TPS medio",
+        "best_ao5": "Mejor ao5",
+        "best_ao12": "Mejor ao12",
+        "best_ao100": "Mejor ao100",
+        "total_time": "Tiempo total",
+        "detail_section": "Detalles del Cubo Inteligente"
     },
     "common": {
         "results_count": "{{count}} resultados",

@@ -1,0 +1,93 @@
+@import '../../../../styles/config';
+
+.#{$namespace}-stats-filter-controls {
+	display: inline-flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 0.4rem;
+	min-width: 0;
+
+	&__chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		padding: 0.45rem 0.85rem;
+		background-color: rgba(var(--button-color), 0.5);
+		border: 1px solid transparent;
+		border-radius: 999px;
+		color: rgb(var(--text-color));
+		font-size: 0.875rem;
+		font-weight: 600;
+		font-family: inherit;
+		cursor: pointer;
+		transition: background-color 0.15s ease, border-color 0.15s ease;
+		max-width: 16rem;
+		min-width: 0;
+
+		&:hover {
+			background-color: rgba(var(--button-color), 0.75);
+		}
+
+		&--active {
+			background-color: rgba(var(--primary-color), 0.18);
+			border-color: rgba(var(--primary-color), 0.45);
+		}
+
+		&--all {
+			padding: 0.45rem 1rem;
+		}
+	}
+
+	&__chip-label {
+		max-width: 13rem;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	&__chip-caret {
+		flex-shrink: 0;
+		opacity: 0.7;
+		font-size: 0.7rem;
+	}
+
+	&__separator {
+		display: inline-flex;
+		align-items: center;
+		color: rgba(var(--text-color), 0.35);
+		font-size: 0.85rem;
+	}
+
+	// Dropdown component'in icindeki Button'i sifirla — biz handle prop ile chip render ediyoruz
+	.#{$namespace}-common-dropdown__custom-handle {
+		all: unset;
+		display: inline-flex;
+		cursor: pointer;
+	}
+
+	// Dropdown body'nin viewport'tan tasmasini engelle (mobilde uzun sezon adlari)
+	.#{$namespace}-common-dropdown__body {
+		max-width: calc(100vw - 24px);
+	}
+
+	@media (max-width: 768px) {
+		gap: 0.3rem;
+
+		&__chip {
+			padding: 0.35rem 0.7rem;
+			font-size: 0.8rem;
+		}
+
+		&__chip--all {
+			padding: 0.35rem 0.8rem;
+		}
+
+		&__chip-label {
+			max-width: 10rem;
+		}
+
+		&__separator {
+			font-size: 0.75rem;
+		}
+	}
+}

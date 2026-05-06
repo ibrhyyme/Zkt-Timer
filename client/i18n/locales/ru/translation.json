@@ -78,6 +78,7 @@
     "stats": {
         "page_title": "Статистика",
         "all": "Все",
+        "all_sessions": "Все сезоны",
         "select_cube": "Выбрать куб",
         "hero": {
             "title": "Статистика",
@@ -1364,7 +1365,24 @@
         "phase_splits": "Разделение фаз",
         "steps_detail": "Таблица деталей фаз",
         "smart_cube_summary": "Сводка по умному кубу",
-        "cases": "Случаи"
+        "cases": "Случаи",
+        "view_all": "Сборки",
+        "view_all_sub": "Ручной · Клавиатура",
+        "view_smart_cube": "Умный куб",
+        "view_smart_cube_sub": "Bluetooth · Движение"
+    },
+    "smart_cube_grid": {
+        "avg_time": "Средн. время",
+        "best": "Лучшее",
+        "worst": "Худшее",
+        "solve_count": "Кол-во сборок",
+        "avg_turns": "Средн. ходов",
+        "avg_tps": "Средн. TPS",
+        "best_ao5": "Лучшее ao5",
+        "best_ao12": "Лучшее ao12",
+        "best_ao100": "Лучшее ao100",
+        "total_time": "Общее время",
+        "detail_section": "Детали умного куба"
     },
     "common": {
         "results_count": "{{count}} результатов",

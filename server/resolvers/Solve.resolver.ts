@@ -121,7 +121,7 @@ export class SolveResolver {
 			if (userIsPro) {
 				try {
 					const turns = parseSmartTurns(input.smart_turns);
-					const steps = getSolveSteps(turns);
+					const steps = getSolveSteps(turns, input.scramble);
 					const methodStepsData = await createSolveMethodSteps(createdSolve, steps);
 					(createdSolve as any).solve_method_steps = methodStepsData.map((s) => ({
 						...s,

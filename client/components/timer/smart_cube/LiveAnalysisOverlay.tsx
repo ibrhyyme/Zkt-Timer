@@ -145,6 +145,18 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
     const t = displayAnalysis.times || {};
     const f2lPairs = t.f2l_pairs || [];
 
+    // Kismi-cozum subsetlerinde (333cfop>oll, >pll vb.) onceki fazlar yapilmadigi icin
+    // t.cross/f2l undefined olabilir. Eger eski mantik (t.X && t.prev) kullanilirsa
+    // splits null olur ve satir render edilmez. Bunun yerine: bu fazin absolute time'i
+    // var ise, en yakin onceki var-olan absolute'tan (yoksa 0=solve basi) farki al.
+    const splitFrom = (current: number | undefined, ...prevCandidates: (number | undefined)[]): number | undefined => {
+        if (current == null) return undefined;
+        for (const p of prevCandidates) {
+            if (p != null) return Math.max(0, current - p);
+        }
+        return Math.max(0, current); // hicbir onceki yoksa solve basindan farki
+    };
+
     // Logic for different modes
     let phases: any[] = [];
     const currentPhase = displayAnalysis.currentPhase;
@@ -156,8 +168,8 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
         const cfDone = ['OLL', 'PLL', 'Solved'].includes(currentPhase);
         const cfActive = ['Cross', 'F2L'].some(p => currentPhase.startsWith(p));
 
-        // OP = OLL + PLL (LL)
-        const opTime = t.pll && t.f2l ? t.pll - t.f2l : undefined;
+        // OP = OLL + PLL (LL) — kismi LL subset icin t.f2l yoksa solve basindan say
+        const opTime = splitFrom(t.pll, t.f2l, t.cross);
         const opDone = currentPhase === 'Solved';
         const opActive = ['OLL', 'PLL'].includes(currentPhase);
 
@@ -170,9 +182,9 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
         // Standard CFOP
         const splits = {
             cross: t.cross,
-            f2l: t.f2l && t.cross ? t.f2l - t.cross : undefined,
-            oll: t.oll && t.f2l ? t.oll - t.f2l : undefined,
-            pll: t.pll && t.oll ? t.pll - t.oll : undefined
+            f2l: splitFrom(t.f2l, t.cross),
+            oll: splitFrom(t.oll, t.f2l, t.cross),
+            pll: splitFrom(t.pll, t.oll, t.f2l, t.cross),
         };
         phases = [
             { id: 'Cross', label: 'Cross', done: displayAnalysis.crossSolved, active: currentPhase === 'Cross' || (!displayAnalysis.crossSolved && currentPhase === 'Scramble/Inspection'), time: splits.cross },
@@ -185,12 +197,12 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
         // Granular F2L (Standard CFFFFOP)
         const splits = {
             cross: t.cross,
-            f2l_1: f2lPairs[0] && t.cross ? f2lPairs[0] - t.cross : undefined,
-            f2l_2: f2lPairs[1] && f2lPairs[0] ? f2lPairs[1] - f2lPairs[0] : undefined,
-            f2l_3: f2lPairs[2] && f2lPairs[1] ? f2lPairs[2] - f2lPairs[1] : undefined,
-            f2l_4: f2lPairs[3] && f2lPairs[2] ? f2lPairs[3] - f2lPairs[2] : (t.f2l && f2lPairs[2] ? t.f2l - f2lPairs[2] : undefined),
-            oll: t.oll && t.f2l ? t.oll - t.f2l : undefined,
-            pll: t.pll && t.oll ? t.pll - t.oll : undefined
+            f2l_1: splitFrom(f2lPairs[0], t.cross),
+            f2l_2: splitFrom(f2lPairs[1], f2lPairs[0], t.cross),
+            f2l_3: splitFrom(f2lPairs[2], f2lPairs[1], f2lPairs[0], t.cross),
+            f2l_4: splitFrom(f2lPairs[3] || t.f2l, f2lPairs[2], f2lPairs[1], f2lPairs[0], t.cross),
+            oll: splitFrom(t.oll, t.f2l, f2lPairs[3], f2lPairs[2], f2lPairs[1], f2lPairs[0], t.cross),
+            pll: splitFrom(t.pll, t.oll, t.f2l, f2lPairs[3], f2lPairs[2], f2lPairs[1], f2lPairs[0], t.cross),
         };
 
         const isF2LActive = (pairIndex: number) => {
@@ -224,24 +236,19 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
         const pllAbs = t.pll;
         const f2lAbs = t.f2l;
 
-        // Split calc
-        // EO Split = EO - F2L
-        const eoSplit = eoAbs && f2lAbs ? eoAbs - f2lAbs : undefined;
-        // OLL (CO) Split = OLL - EO
-        const coSplit = ollAbs && eoAbs ? ollAbs - eoAbs : (ollAbs && f2lAbs ? ollAbs - f2lAbs : undefined);
-
-        // CP Split = CP - OLL
-        const cpSplit = cpAbs && ollAbs ? cpAbs - ollAbs : undefined;
-        // EP Split = PLL - CP
-        const epSplit = pllAbs && cpAbs ? pllAbs - cpAbs : (pllAbs && ollAbs ? pllAbs - ollAbs : undefined);
+        // Split calc — kismi subset'lerde F2L/Cross olmasa bile solve basindan say
+        const eoSplit = splitFrom(eoAbs, f2lAbs, f2lPairs[3], f2lPairs[2], f2lPairs[1], f2lPairs[0], t.cross);
+        const coSplit = splitFrom(ollAbs, eoAbs, f2lAbs, f2lPairs[3], f2lPairs[2], f2lPairs[1], f2lPairs[0], t.cross);
+        const cpSplit = splitFrom(cpAbs, ollAbs, eoAbs, f2lAbs, t.cross);
+        const epSplit = splitFrom(pllAbs, cpAbs, ollAbs, eoAbs, f2lAbs, t.cross);
 
         // F2L Logic identical to CFFFFOP
         const splits = {
             cross: t.cross,
-            f2l_1: f2lPairs[0] && t.cross ? f2lPairs[0] - t.cross : undefined,
-            f2l_2: f2lPairs[1] && f2lPairs[0] ? f2lPairs[1] - f2lPairs[0] : undefined,
-            f2l_3: f2lPairs[2] && f2lPairs[1] ? f2lPairs[2] - f2lPairs[1] : undefined,
-            f2l_4: f2lPairs[3] && f2lPairs[2] ? f2lPairs[3] - f2lPairs[2] : (t.f2l && f2lPairs[2] ? t.f2l - f2lPairs[2] : undefined),
+            f2l_1: splitFrom(f2lPairs[0], t.cross),
+            f2l_2: splitFrom(f2lPairs[1], f2lPairs[0], t.cross),
+            f2l_3: splitFrom(f2lPairs[2], f2lPairs[1], f2lPairs[0], t.cross),
+            f2l_4: splitFrom(f2lPairs[3] || t.f2l, f2lPairs[2], f2lPairs[1], f2lPairs[0], t.cross),
         };
         const isF2LActive = (pairIndex: number) => {
             if (!currentPhase.startsWith('F2L')) return false;
