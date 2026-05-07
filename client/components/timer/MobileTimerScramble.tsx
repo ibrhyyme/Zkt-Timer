@@ -1,7 +1,7 @@
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import {useTranslation} from 'react-i18next';
-import { Check, Copy, X } from 'phosphor-react';
+import { Check, Copy, FloppyDisk, PencilSimple, X } from 'phosphor-react';
 import { copyText } from '../common/copy_text/CopyText';
 import { TimerContext } from './Timer';
 import { useSettings } from '../../util/hooks/useSettings';
@@ -10,7 +10,7 @@ import SmartScramble from './time_display/timer_scramble/smart_scramble/SmartScr
 import block from '../../styles/bem';
 import './MobileTimerScramble.scss';
 import { resetScramble } from './helpers/scramble';
-import { setTimerParam } from './helpers/params';
+import { setTimerParam, setTimerParams } from './helpers/params';
 import { hapticImpact } from '../../util/native-plugins';
 
 const b = block('mobile-timer-scramble');
@@ -30,6 +30,9 @@ export default function MobileTimerScramble() {
     const [adjustedFontSize, setAdjustedFontSize] = useState<number | null>(null);
     const [expanded, setExpanded] = useState(false);
     const [expandedCopied, setExpandedCopied] = useState(false);
+    const [editMode, setEditMode] = useState(false);
+    const [editValue, setEditValue] = useState('');
+    const editTextareaRef = useRef<HTMLTextAreaElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const textRef = useRef<HTMLDivElement>(null);
 
@@ -158,6 +161,27 @@ export default function MobileTimerScramble() {
 
     function closeExpanded() {
         setExpanded(false);
+        setEditMode(false);
+    }
+
+    function enterEditMode() {
+        setEditValue(context.scramble || '');
+        setEditMode(true);
+        hapticImpact('light');
+        setTimeout(() => {
+            editTextareaRef.current?.focus();
+        }, 50);
+    }
+
+    function saveEdit() {
+        const trimmed = editValue.trim();
+        if (!trimmed) {
+            setEditMode(false);
+            return;
+        }
+        setTimerParams({ scramble: trimmed, originalScramble: trimmed, smartTurnOffset: 0 });
+        setEditMode(false);
+        hapticImpact('medium');
     }
 
     // Tap/long-press detection (mobil)
@@ -236,7 +260,7 @@ export default function MobileTimerScramble() {
 
     const expandedOverlay = expanded && scramble && typeof document !== 'undefined'
         ? ReactDOM.createPortal(
-            <div className={b('expanded')} onClick={closeExpanded}>
+            <div className={b('expanded')} onClick={() => { if (!editMode) closeExpanded(); }}>
                 <button
                     className={b('expanded-close')}
                     onClick={(e) => { e.stopPropagation(); closeExpanded(); }}
@@ -245,20 +269,53 @@ export default function MobileTimerScramble() {
                 >
                     <X size={24} weight="bold" />
                 </button>
-                <div
-                    className={b('expanded-text', { megaminx: isMegaminx })}
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    {scramble}
+                {editMode ? (
+                    <textarea
+                        ref={editTextareaRef}
+                        className={b('expanded-edit', { megaminx: isMegaminx })}
+                        value={editValue}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        onClick={(e) => e.stopPropagation()}
+                    />
+                ) : (
+                    <div
+                        className={b('expanded-text', { megaminx: isMegaminx })}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {scramble}
+                    </div>
+                )}
+                <div className={b('expanded-actions')} onClick={(e) => e.stopPropagation()}>
+                    {!editMode && (
+                        <button
+                            className={b('expanded-copy', { copied: expandedCopied })}
+                            onClick={(e) => { e.stopPropagation(); handleCopy(true); }}
+                            type="button"
+                        >
+                            {expandedCopied ? <Check size={20} weight="bold" /> : <Copy size={20} weight="bold" />}
+                            <span>{expandedCopied ? t('mobile_scramble.copied') : t('mobile_scramble.copy')}</span>
+                        </button>
+                    )}
+                    {editMode ? (
+                        <button
+                            className={b('expanded-save')}
+                            onClick={(e) => { e.stopPropagation(); saveEdit(); }}
+                            type="button"
+                        >
+                            <FloppyDisk size={20} weight="bold" />
+                            <span>{t('mobile_scramble.save')}</span>
+                        </button>
+                    ) : (
+                        <button
+                            className={b('expanded-edit-btn')}
+                            onClick={(e) => { e.stopPropagation(); enterEditMode(); }}
+                            type="button"
+                        >
+                            <PencilSimple size={20} weight="bold" />
+                            <span>{t('mobile_scramble.edit')}</span>
+                        </button>
+                    )}
                 </div>
-                <button
-                    className={b('expanded-copy', { copied: expandedCopied })}
-                    onClick={(e) => { e.stopPropagation(); handleCopy(true); }}
-                    type="button"
-                >
-                    {expandedCopied ? <Check size={20} weight="bold" /> : <Copy size={20} weight="bold" />}
-                    <span>{expandedCopied ? t('mobile_scramble.copied') : t('mobile_scramble.copy')}</span>
-                </button>
             </div>,
             document.body,
         )
