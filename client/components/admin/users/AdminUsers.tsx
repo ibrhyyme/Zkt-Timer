@@ -26,6 +26,7 @@ interface UserAccountData {
 	email_verified: boolean;
 	created_at: string;
 	last_solve_at?: string;
+	last_seen_at?: string;
 	join_country?: string;
 	join_ip?: string;
 	banned_forever: boolean;
@@ -56,6 +57,7 @@ const ADMIN_USER_SEARCH_QUERY = gql`
 				email_verified
 				created_at
 				last_solve_at
+				last_seen_at
 				join_country
 				join_ip
 				banned_forever
@@ -120,13 +122,13 @@ function UserTableRow({user}: {user: UserAccountData}) {
 				<div className="cd-admin-users__date-sub">{dayjs(user.created_at).fromNow()}</div>
 			</td>
 			<td className="cd-admin-users__cell cd-admin-users__cell--date">
-				{user.last_solve_at ? (
+				{user.last_seen_at ? (
 					<>
-						<div className="cd-admin-users__date-main">{dayjs(user.last_solve_at).format('DD MMM YYYY')}</div>
-						<div className="cd-admin-users__date-sub">{dayjs(user.last_solve_at).fromNow()}</div>
+						<div className="cd-admin-users__date-main">{dayjs(user.last_seen_at).format('DD MMM YYYY')}</div>
+						<div className="cd-admin-users__date-sub">{dayjs(user.last_seen_at).fromNow()}</div>
 					</>
 				) : (
-					<span className="cd-admin-users__no-data">{t('admin_users.never_solved')}</span>
+					<span className="cd-admin-users__no-data">{t('admin_users.never_seen')}</span>
 				)}
 			</td>
 			<td className="cd-admin-users__cell cd-admin-users__cell--country">{user.join_country || '-'}</td>
@@ -331,7 +333,7 @@ export default function AdminUsers() {
 									<tr className="cd-admin-users__header-row">
 										<th className="cd-admin-users__header-cell">{t('admin_users.user')}</th>
 										<th className="cd-admin-users__header-cell">{t('admin_users.register_date')}</th>
-										<th className="cd-admin-users__header-cell">{t('admin_users.last_solve')}</th>
+										<th className="cd-admin-users__header-cell">{t('admin_users.last_seen')}</th>
 										<th className="cd-admin-users__header-cell">{t('admin_users.country')}</th>
 										<th className="cd-admin-users__header-cell">IP</th>
 										<th className="cd-admin-users__header-cell">{t('admin_users.status')}</th>

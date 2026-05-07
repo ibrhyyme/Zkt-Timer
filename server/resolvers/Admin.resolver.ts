@@ -118,6 +118,7 @@ export class AdminResolver {
 					email_verified: true,
 					created_at: true,
 					last_solve_at: true,
+					last_seen_at: true,
 					join_country: true,
 					join_ip: true,
 					banned_forever: true,
