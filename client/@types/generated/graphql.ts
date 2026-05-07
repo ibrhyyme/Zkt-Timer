@@ -139,6 +139,22 @@ export type AddZktDelegateInput = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type AdminDashboardStats = {
+  __typename?: 'AdminDashboardStats';
+  dau?: Maybe<Scalars['Int']>;
+  mau?: Maybe<Scalars['Int']>;
+  online_users?: Maybe<Scalars['Int']>;
+  pending_reports_count?: Maybe<Scalars['Int']>;
+  pro_users_count?: Maybe<Scalars['Int']>;
+  signups_today?: Maybe<Scalars['Int']>;
+  signups_week?: Maybe<Scalars['Int']>;
+  solves_today?: Maybe<Scalars['Int']>;
+  solves_week?: Maybe<Scalars['Int']>;
+  total_users?: Maybe<Scalars['Int']>;
+  wau?: Maybe<Scalars['Int']>;
+  wca_connected?: Maybe<Scalars['Int']>;
+};
+
 export type AdminSendPushResult = {
   __typename?: 'AdminSendPushResult';
   success?: Maybe<Scalars['Boolean']>;
@@ -1798,6 +1814,7 @@ export type PushTokenResult = {
 
 export type Query = {
   __typename?: 'Query';
+  adminDashboardStats?: Maybe<AdminDashboardStats>;
   adminMyPushTokens?: Maybe<Array<Maybe<PushTokenInfo>>>;
   adminTrainerAlternatives?: Maybe<PaginatedTrainerAlternatives>;
   adminUserSearch?: Maybe<PaginatedUserAccountsForAdmin>;

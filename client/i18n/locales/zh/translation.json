@@ -1417,6 +1417,32 @@
         "got_it": "知道了",
         "view_details": "查看详情"
     },
+    "admin_nav": {
+        "other_pages": "其他页面"
+    },
+    "admin_dashboard": {
+        "title": "管理面板",
+        "loading": "加载中...",
+        "activity": "活动",
+        "users": "用户",
+        "solves_section": "还原",
+        "action_required": "需要处理",
+        "online_now": "当前在线",
+        "dau": "日活跃",
+        "wau": "周活跃",
+        "mau": "月活跃",
+        "last_24h": "最近 24 小时",
+        "last_7d": "最近 7 天",
+        "last_30d": "最近 30 天",
+        "total_users": "用户总数",
+        "new_today": "今日新增",
+        "new_week_count": "本周：{{count}}",
+        "pro_users": "Pro 用户",
+        "wca_connected": "已绑定 WCA",
+        "solves_today": "今日还原",
+        "solves_week": "本周还原",
+        "pending_reports": "待处理举报"
+    },
     "admin_users": {
         "page_title": "用户管理",
         "search_placeholder": "按用户名、邮箱或 WCA 姓名/ID 搜索...",

@@ -32,6 +32,7 @@ import ForceSignOut from '../login/force_sign_out/ForceSignOut';
 import AnnouncementHistory from '../profile/AnnouncementHistory';
 import type { Store } from 'redux';
 import Reports from '../admin/reports/Reports';
+import AdminDashboard from '../admin/dashboard/AdminDashboard';
 import DefaultTimer from '../timer/DefaultTimer';
 import AdminUsers from '../admin/users/AdminUsers';
 import AdminProUsers from '../admin/pro_users/AdminProUsers';
@@ -191,6 +192,7 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/rooms/:roomId', null, App, FriendlyRoom),
 
 	// Admin
+	route('/admin/dashboard', App, Admin, AdminDashboard, true, false, true),
 	route('/admin/reports', App, Admin, Reports, true, false, true),
 	route('/admin/users', App, Admin, AdminUsers, true, false, true),
 	route('/admin/pro-users', App, Admin, AdminProUsers, true, false, true),
@@ -213,5 +215,5 @@ export const routes: (PageContext | RedirectPath)[] = [
 	routeRedirect('/account/password', '/account/personal-info'),
 	routeRedirect('/community/friends', '/community/competitions'),
 	routeRedirect('/community', '/community/competitions'),
-	routeRedirect('/admin', '/admin/reports'),
+	routeRedirect('/admin', '/admin/dashboard'),
 ];

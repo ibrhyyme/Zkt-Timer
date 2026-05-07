@@ -1,0 +1,139 @@
+@import '../../../styles/config';
+
+.#{$namespace}-admin-dashboard {
+	width: 100%;
+	padding: 20px;
+
+	&__container {
+		max-width: 1400px;
+		margin: 0 auto;
+	}
+
+	&__loading {
+		text-align: center;
+		padding: 60px 20px;
+		color: rgba(var(--text-color), 0.6);
+	}
+
+	&__title {
+		font-size: 2rem;
+		font-weight: 600;
+		color: rgb(var(--text-color));
+		margin-bottom: 24px;
+	}
+
+	&__section {
+		margin-bottom: 32px;
+	}
+
+	&__section-title {
+		font-size: 0.85rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		color: rgba(var(--text-color), 0.5);
+		margin-bottom: 12px;
+	}
+
+	&__grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+		gap: 14px;
+	}
+
+	&__card-link {
+		text-decoration: none;
+		color: inherit;
+		display: block;
+
+		.#{$namespace}-admin-dashboard__card {
+			cursor: pointer;
+			transition: transform 0.15s ease, background-color 0.15s ease;
+
+			&:hover {
+				transform: translateY(-2px);
+				background-color: rgba(var(--text-color), 0.05);
+			}
+		}
+	}
+
+	&__card {
+		display: flex;
+		align-items: center;
+		gap: 14px;
+		padding: 18px 20px;
+		background-color: rgba(var(--text-color), 0.03);
+		border: 1px solid rgba(var(--text-color), 0.06);
+		border-radius: 14px;
+
+		&--highlight {
+			background-color: rgba(var(--primary-color), 0.08);
+			border-color: rgba(var(--primary-color), 0.25);
+		}
+	}
+
+	&__card-icon {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 44px;
+		height: 44px;
+		flex-shrink: 0;
+		border-radius: 12px;
+		background-color: rgba(var(--text-color), 0.06);
+		color: rgb(var(--text-color));
+	}
+
+	&__card-body {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		min-width: 0;
+	}
+
+	&__card-label {
+		font-size: 0.8rem;
+		color: rgba(var(--text-color), 0.6);
+		font-weight: 500;
+	}
+
+	&__card-value {
+		font-size: 1.6rem;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+		line-height: 1.2;
+	}
+
+	&__card-sub {
+		font-size: 0.7rem;
+		color: rgba(var(--text-color), 0.45);
+		margin-top: 2px;
+	}
+
+	@media (max-width: 750px) {
+		padding: 12px;
+
+		&__title {
+			font-size: 1.5rem;
+		}
+
+		&__grid {
+			grid-template-columns: repeat(2, 1fr);
+			gap: 10px;
+		}
+
+		&__card {
+			padding: 14px;
+			gap: 10px;
+		}
+
+		&__card-icon {
+			width: 36px;
+			height: 36px;
+		}
+
+		&__card-value {
+			font-size: 1.3rem;
+		}
+	}
+}

@@ -199,6 +199,45 @@ export class WcaStats {
 	wcaWithoutId: number;
 }
 
+@ObjectType()
+export class AdminDashboardStats {
+	@Field(() => Int)
+	total_users: number;
+
+	@Field(() => Int)
+	dau: number;
+
+	@Field(() => Int)
+	wau: number;
+
+	@Field(() => Int)
+	mau: number;
+
+	@Field(() => Int)
+	signups_today: number;
+
+	@Field(() => Int)
+	signups_week: number;
+
+	@Field(() => Int)
+	solves_today: number;
+
+	@Field(() => Int)
+	solves_week: number;
+
+	@Field(() => Int)
+	pro_users_count: number;
+
+	@Field(() => Int)
+	pending_reports_count: number;
+
+	@Field(() => Int)
+	online_users: number;
+
+	@Field(() => Int)
+	wca_connected: number;
+}
+
 @InputType()
 export class UpdateSiteConfigInput {
 	@Field({nullable: true})

@@ -45,7 +45,7 @@ export default function AccountDropdown() {
 	aviDropDownOptions.push({ onClick: openSettings, text: t('account_dropdown.general_settings'), icon: <Gear weight="bold" /> });
 
 	if (me.admin) {
-		aviDropDownOptions.push({ link: '/admin/reports', text: t('account_dropdown.admin') });
+		aviDropDownOptions.push({ link: '/admin/dashboard', text: t('account_dropdown.admin') });
 	}
 	aviDropDownOptions.push({ onClick: logOut, text: t('account_dropdown.logout') });
 
