@@ -31,7 +31,7 @@ import { PaginationArgsInput, AdminUserFiltersInput } from '../schemas/Paginatio
 import { getPaginatedResponse, PaginatedRequestInput } from '../util/pagination/paginated_response';
 import { sendPushToUser } from '../services/push';
 import { AdminSendPushResult, PushTokenInfo } from '../schemas/PushToken.schema';
-import { OnlineStats, OnlineUser, BackfillResult, WcaStats, IpInfo, MethodStepsBackfillResult } from '../schemas/SiteConfig.schema';
+import { OnlineStats, OnlineUser, BackfillResult, WcaStats, IpInfo, MethodStepsBackfillResult, AdminDashboardStats } from '../schemas/SiteConfig.schema';
 import { getSolveSteps } from '../util/solve/solve_method';
 import { createSolveMethodSteps, deleteSolveMethodSteps } from '../models/solve_method_step';
 import { parseSmartTurns } from '../../shared/smart_cube/parse_turns';
@@ -358,6 +358,59 @@ export class AdminResolver {
 	@Query(() => [OnlineUser])
 	async onlineUsers(): Promise<OnlineUser[]> {
 		return getOnlineUsers();
+	}
+
+	@Authorized([Role.ADMIN])
+	@Query(() => AdminDashboardStats)
+	async adminDashboardStats(): Promise<AdminDashboardStats> {
+		const prisma = getPrisma();
+		const now = new Date();
+		const dayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+		const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+		const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+		const [
+			total_users,
+			dau,
+			wau,
+			mau,
+			signups_today,
+			signups_week,
+			solves_today,
+			solves_week,
+			pro_users_count,
+			pending_reports_count,
+			online,
+			wca_connected,
+		] = await Promise.all([
+			prisma.userAccount.count(),
+			prisma.userAccount.count({ where: { last_seen_at: { gte: dayAgo } } }),
+			prisma.userAccount.count({ where: { last_seen_at: { gte: weekAgo } } }),
+			prisma.userAccount.count({ where: { last_seen_at: { gte: monthAgo } } }),
+			prisma.userAccount.count({ where: { created_at: { gte: dayAgo } } }),
+			prisma.userAccount.count({ where: { created_at: { gte: weekAgo } } }),
+			prisma.solve.count({ where: { created_at: { gte: dayAgo }, OR: [{ trainer_name: null }, { trainer_name: '' }] } }),
+			prisma.solve.count({ where: { created_at: { gte: weekAgo }, OR: [{ trainer_name: null }, { trainer_name: '' }] } }),
+			prisma.userAccount.count({ where: { OR: [{ is_pro: true }, { is_premium: true }] } }),
+			prisma.report.count({ where: { resolved_at: null } }),
+			getOnlineCounts(),
+			prisma.integration.count({ where: { service_name: 'wca' } }),
+		]);
+
+		return {
+			total_users,
+			dau,
+			wau,
+			mau,
+			signups_today,
+			signups_week,
+			solves_today,
+			solves_week,
+			pro_users_count,
+			pending_reports_count,
+			online_users: online.uniqueUsers,
+			wca_connected,
+		};
 	}
 
 	/**

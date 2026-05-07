@@ -1417,6 +1417,32 @@
         "got_it": "Понятно",
         "view_details": "Подробнее"
     },
+    "admin_nav": {
+        "other_pages": "Другие страницы"
+    },
+    "admin_dashboard": {
+        "title": "Панель администратора",
+        "loading": "Загрузка...",
+        "activity": "Активность",
+        "users": "Пользователи",
+        "solves_section": "Сборки",
+        "action_required": "Требуется действие",
+        "online_now": "Сейчас онлайн",
+        "dau": "Активные за день",
+        "wau": "Активные за неделю",
+        "mau": "Активные за месяц",
+        "last_24h": "Последние 24 ч",
+        "last_7d": "Последние 7 дней",
+        "last_30d": "Последние 30 дней",
+        "total_users": "Всего пользователей",
+        "new_today": "Новые сегодня",
+        "new_week_count": "На этой неделе: {{count}}",
+        "pro_users": "Pro пользователи",
+        "wca_connected": "Привязано к WCA",
+        "solves_today": "Сборок сегодня",
+        "solves_week": "Сборок за неделю",
+        "pending_reports": "Открытые жалобы"
+    },
     "admin_users": {
         "page_title": "Управление пользователями",
         "search_placeholder": "Поиск по имени пользователя, почте или имени/ID WCA...",

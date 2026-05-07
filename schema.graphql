@@ -284,6 +284,7 @@ type Query {
   adminMyPushTokens: [PushTokenInfo]
   onlineStats: OnlineStats
   onlineUsers: [OnlineUser]
+  adminDashboardStats: AdminDashboardStats
   ipInfo(ip: String): IpInfo
   wcaStats: WcaStats
   statsModule: StatsModule
@@ -1193,6 +1194,21 @@ type WcaStats {
   wcaConnected: Int
   wcaWithId: Int
   wcaWithoutId: Int
+}
+
+type AdminDashboardStats {
+  total_users: Int
+  dau: Int
+  wau: Int
+  mau: Int
+  signups_today: Int
+  signups_week: Int
+  solves_today: Int
+  solves_week: Int
+  pro_users_count: Int
+  pending_reports_count: Int
+  online_users: Int
+  wca_connected: Int
 }
 
 type BulkArchiveResult {

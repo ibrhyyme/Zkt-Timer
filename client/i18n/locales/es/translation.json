@@ -1417,6 +1417,32 @@
         "got_it": "Entendido",
         "view_details": "Ver detalles"
     },
+    "admin_nav": {
+        "other_pages": "Otras páginas"
+    },
+    "admin_dashboard": {
+        "title": "Panel de administración",
+        "loading": "Cargando...",
+        "activity": "Actividad",
+        "users": "Usuarios",
+        "solves_section": "Resoluciones",
+        "action_required": "Acción requerida",
+        "online_now": "En línea ahora",
+        "dau": "Activos diarios",
+        "wau": "Activos semanales",
+        "mau": "Activos mensuales",
+        "last_24h": "Últimas 24h",
+        "last_7d": "Últimos 7 días",
+        "last_30d": "Últimos 30 días",
+        "total_users": "Usuarios totales",
+        "new_today": "Nuevos hoy",
+        "new_week_count": "Esta semana: {{count}}",
+        "pro_users": "Usuarios Pro",
+        "wca_connected": "Conectados a WCA",
+        "solves_today": "Resoluciones hoy",
+        "solves_week": "Resoluciones esta semana",
+        "pending_reports": "Reportes pendientes"
+    },
     "admin_users": {
         "page_title": "Gestión de usuarios",
         "search_placeholder": "Buscar por nombre de usuario, correo o nombre/ID WCA...",

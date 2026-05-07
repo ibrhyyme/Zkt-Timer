@@ -1417,6 +1417,32 @@
         "got_it": "Anladım",
         "view_details": "Detayları Gör"
     },
+    "admin_nav": {
+        "other_pages": "Diğer Sayfalar"
+    },
+    "admin_dashboard": {
+        "title": "Yönetim Panosu",
+        "loading": "Yükleniyor...",
+        "activity": "Aktivite",
+        "users": "Kullanıcılar",
+        "solves_section": "Çözümler",
+        "action_required": "Aksiyon Gerekli",
+        "online_now": "Şu An Online",
+        "dau": "Günlük Aktif",
+        "wau": "Haftalık Aktif",
+        "mau": "Aylık Aktif",
+        "last_24h": "Son 24 saat",
+        "last_7d": "Son 7 gün",
+        "last_30d": "Son 30 gün",
+        "total_users": "Toplam Kullanıcı",
+        "new_today": "Bugün Yeni",
+        "new_week_count": "Bu hafta: {{count}}",
+        "pro_users": "Pro Kullanıcı",
+        "wca_connected": "WCA Bağlı",
+        "solves_today": "Bugün Çözüm",
+        "solves_week": "Bu Hafta Çözüm",
+        "pending_reports": "Bekleyen Şikayet"
+    },
     "admin_users": {
         "page_title": "Kullanıcı Yönetimi",
         "search_placeholder": "Kullanıcı adı, email veya WCA ismi/ID ara...",

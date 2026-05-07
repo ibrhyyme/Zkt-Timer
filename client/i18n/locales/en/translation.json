@@ -1417,6 +1417,32 @@
         "got_it": "Got It",
         "view_details": "View Details"
     },
+    "admin_nav": {
+        "other_pages": "Other Pages"
+    },
+    "admin_dashboard": {
+        "title": "Admin Dashboard",
+        "loading": "Loading...",
+        "activity": "Activity",
+        "users": "Users",
+        "solves_section": "Solves",
+        "action_required": "Action Required",
+        "online_now": "Online Now",
+        "dau": "Daily Active",
+        "wau": "Weekly Active",
+        "mau": "Monthly Active",
+        "last_24h": "Last 24h",
+        "last_7d": "Last 7 days",
+        "last_30d": "Last 30 days",
+        "total_users": "Total Users",
+        "new_today": "New Today",
+        "new_week_count": "This week: {{count}}",
+        "pro_users": "Pro Users",
+        "wca_connected": "WCA Linked",
+        "solves_today": "Solves Today",
+        "solves_week": "Solves This Week",
+        "pending_reports": "Pending Reports"
+    },
     "admin_users": {
         "page_title": "User Management",
         "search_placeholder": "Search by username, email or WCA name/ID...",
