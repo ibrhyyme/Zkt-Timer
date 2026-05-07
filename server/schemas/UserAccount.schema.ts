@@ -47,6 +47,9 @@ class IPublicUserAccount {
 	@Field({ nullable: true })
 	last_solve_at?: Date;
 
+	@Field({ nullable: true })
+	last_seen_at?: Date;
+
 	@Field()
 	banned_forever: boolean;
 

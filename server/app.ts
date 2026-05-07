@@ -39,6 +39,7 @@ import { printSchema } from 'graphql';
 import depthLimit from 'graphql-depth-limit';
 import { getComplexity, simpleEstimator } from 'graphql-query-complexity';
 import { initRedisClient } from './services/redis';
+import { updateLastSeen } from './services/last_seen';
 
 import { initCronJobs } from './services/cron';
 import { initWebhookListeners } from './webhooks';
@@ -414,6 +415,10 @@ if (!isDev) {
 
 			if (user && (user.banned_until || user.banned_forever)) {
 				throw new GraphQLError(ErrorCode.FORBIDDEN, ErrorMessage.BANNED);
+			}
+
+			if (user?.id) {
+				updateLastSeen(user.id);
 			}
 
 			return { user, ipAddress, req, res, prisma: getPrisma() };

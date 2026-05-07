@@ -42,6 +42,7 @@ model UserAccount {
   offline_hash       String?
   unsub_id           String?     @default(uuid())
   last_solve_at              DateTime?
+  last_seen_at               DateTime?
   daily_goal_reminder        Boolean     @default(false)
   last_daily_goal_reminder   DateTime?
   action_log                 ActionLog[]

@@ -525,6 +525,7 @@ export type IInternalUserAccount = {
   join_country?: Maybe<Scalars['String']>;
   join_ip?: Maybe<Scalars['String']>;
   last_name?: Maybe<Scalars['String']>;
+  last_seen_at?: Maybe<Scalars['DateTime']>;
   last_solve_at?: Maybe<Scalars['DateTime']>;
   mod?: Maybe<Scalars['Boolean']>;
   notification_preferences?: Maybe<NotificationPreference>;
@@ -614,6 +615,7 @@ export type InternalUserAccount = IInternalUserAccount & IPublicUserAccount & IU
   join_country?: Maybe<Scalars['String']>;
   join_ip?: Maybe<Scalars['String']>;
   last_name?: Maybe<Scalars['String']>;
+  last_seen_at?: Maybe<Scalars['DateTime']>;
   last_solve_at?: Maybe<Scalars['DateTime']>;
   mod?: Maybe<Scalars['Boolean']>;
   notification_preferences?: Maybe<NotificationPreference>;
@@ -660,6 +662,7 @@ export type IPublicUserAccount = {
   integrations?: Maybe<Array<Maybe<Integration>>>;
   is_premium?: Maybe<Scalars['Boolean']>;
   is_pro?: Maybe<Scalars['Boolean']>;
+  last_seen_at?: Maybe<Scalars['DateTime']>;
   last_solve_at?: Maybe<Scalars['DateTime']>;
   mod?: Maybe<Scalars['Boolean']>;
   premium_expires_at?: Maybe<Scalars['DateTime']>;
@@ -688,6 +691,7 @@ export type IUserAccount = {
   is_pro?: Maybe<Scalars['Boolean']>;
   join_country?: Maybe<Scalars['String']>;
   last_name?: Maybe<Scalars['String']>;
+  last_seen_at?: Maybe<Scalars['DateTime']>;
   last_solve_at?: Maybe<Scalars['DateTime']>;
   mod?: Maybe<Scalars['Boolean']>;
   offline_hash?: Maybe<Scalars['String']>;
@@ -726,6 +730,7 @@ export type IUserAccountForAdmin = {
   join_country?: Maybe<Scalars['String']>;
   join_ip?: Maybe<Scalars['String']>;
   last_name?: Maybe<Scalars['String']>;
+  last_seen_at?: Maybe<Scalars['DateTime']>;
   last_solve_at?: Maybe<Scalars['DateTime']>;
   mod?: Maybe<Scalars['Boolean']>;
   notification_preferences?: Maybe<NotificationPreference>;
@@ -1769,6 +1774,7 @@ export type PublicUserAccount = IPublicUserAccount & {
   integrations?: Maybe<Array<Maybe<Integration>>>;
   is_premium?: Maybe<Scalars['Boolean']>;
   is_pro?: Maybe<Scalars['Boolean']>;
+  last_seen_at?: Maybe<Scalars['DateTime']>;
   last_solve_at?: Maybe<Scalars['DateTime']>;
   mod?: Maybe<Scalars['Boolean']>;
   premium_expires_at?: Maybe<Scalars['DateTime']>;
@@ -2709,6 +2715,7 @@ export type UserAccount = IPublicUserAccount & IUserAccount & {
   is_pro?: Maybe<Scalars['Boolean']>;
   join_country?: Maybe<Scalars['String']>;
   last_name?: Maybe<Scalars['String']>;
+  last_seen_at?: Maybe<Scalars['DateTime']>;
   last_solve_at?: Maybe<Scalars['DateTime']>;
   mod?: Maybe<Scalars['Boolean']>;
   offline_hash?: Maybe<Scalars['String']>;
@@ -2748,6 +2755,7 @@ export type UserAccountForAdmin = IPublicUserAccount & IUserAccount & IUserAccou
   join_country?: Maybe<Scalars['String']>;
   join_ip?: Maybe<Scalars['String']>;
   last_name?: Maybe<Scalars['String']>;
+  last_seen_at?: Maybe<Scalars['DateTime']>;
   last_solve_at?: Maybe<Scalars['DateTime']>;
   mod?: Maybe<Scalars['Boolean']>;
   notification_preferences?: Maybe<NotificationPreference>;
