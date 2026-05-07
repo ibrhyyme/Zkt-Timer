@@ -2053,7 +2053,9 @@
         "tap_hint": "点击：展开 · 长按：复制",
         "copy": "复制",
         "copied": "已复制",
-        "close": "关闭"
+        "close": "关闭",
+        "edit": "编辑",
+        "save": "保存"
     },
     "theme_options": {
         "themes_title": "主题",

@@ -172,8 +172,10 @@ export default function SolveInfo(props: Props) {
 	}
 
 	function handleChange(e) {
+		const { name, value } = e.target;
+		setSolve((prev) => ({ ...prev, [name]: value }));
 		updateSolveDb(dbSolve, {
-			[e.target.name]: e.target.value,
+			[name]: value,
 		});
 	}
 

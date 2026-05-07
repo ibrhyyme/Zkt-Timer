@@ -2053,7 +2053,9 @@
         "tap_hint": "Toca: ampliar · Mantén: copiar",
         "copy": "Copiar",
         "copied": "Copiado",
-        "close": "Cerrar"
+        "close": "Cerrar",
+        "edit": "Editar",
+        "save": "Guardar"
     },
     "theme_options": {
         "themes_title": "Temas",

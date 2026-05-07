@@ -117,7 +117,8 @@ export default function TimerScramble() {
 
 	function handleScrambleChange(e) {
 		e.preventDefault();
-		setTimerParam('scramble', e.target.value);
+		const value = e.target.value;
+		setTimerParams({ scramble: value, originalScramble: value });
 	}
 
 	function handlePlusTwo() {

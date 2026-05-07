@@ -2053,7 +2053,9 @@
         "tap_hint": "Tıkla: büyüt · Basılı tut: kopyala",
         "copy": "Kopyala",
         "copied": "Kopyalandı",
-        "close": "Kapat"
+        "close": "Kapat",
+        "edit": "Düzenle",
+        "save": "Kaydet"
     },
     "theme_options": {
         "themes_title": "Temalar",
