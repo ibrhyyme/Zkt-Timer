@@ -82,9 +82,14 @@
 	&__row {
 		border-bottom: 1px solid rgba(var(--text-color), 0.05);
 		transition: background-color 0.2s ease;
+		cursor: pointer;
 
 		&:hover {
 			background-color: rgba(var(--text-color), 0.02);
+		}
+
+		&:active {
+			background-color: rgba(var(--text-color), 0.05);
 		}
 	}
 

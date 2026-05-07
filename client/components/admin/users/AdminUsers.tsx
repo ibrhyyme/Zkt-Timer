@@ -105,7 +105,7 @@ function UserTableRow({user}: {user: UserAccountData}) {
 	};
 
 	return (
-		<tr className="cd-admin-users__row">
+		<tr className="cd-admin-users__row" onClick={handleManage}>
 			<td className="cd-admin-users__cell cd-admin-users__cell--user">
 				<div className="cd-admin-users__user-info">
 					<div className="cd-admin-users__avatar-wrapper">
@@ -143,7 +143,7 @@ function UserTableRow({user}: {user: UserAccountData}) {
 				</div>
 			</td>
 			<td className="cd-admin-users__cell cd-admin-users__cell--actions">
-				<button className="cd-admin-users__manage-btn" onClick={handleManage}>
+				<button className="cd-admin-users__manage-btn" onClick={(e) => { e.stopPropagation(); handleManage(); }}>
 					{t('admin_users.manage')}
 				</button>
 			</td>
