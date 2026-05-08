@@ -185,7 +185,7 @@ export const IMAGE_FRAGMENT = gql`
 export const PUBLIC_USER_FRAGMENT = gql`
 	${IMAGE_FRAGMENT}
 
-	fragment PublicUserFragment on PublicUserAccount {
+	fragment PublicUserFragment on IPublicUserAccount {
 		id
 		username
 		verified
@@ -211,7 +211,7 @@ export const PUBLIC_USER_FRAGMENT = gql`
 export const PUBLIC_USER_WITH_ELO_FRAGMENT = gql`
 	${PUBLIC_USER_FRAGMENT}
 
-	fragment PublicUserWithEloFragment on PublicUserAccount {
+	fragment PublicUserWithEloFragment on IPublicUserAccount {
 		...PublicUserFragment
 	}
 `;
