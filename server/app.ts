@@ -133,6 +133,9 @@ app.use(helmet({
 				"https://www.google.com",                // Google Ads collect endpoints
 				"https://googleads.g.doubleclick.net",
 				"https://static.cloudflareinsights.com", // Cloudflare Insights beacon
+				"https://firebaseinstallations.googleapis.com", // FCM web push - installation token
+				"https://fcmregistrations.googleapis.com",      // FCM web push - registration
+				"https://fcm.googleapis.com",                   // FCM legacy endpoint
 				"wss:",
 				"ws:",
 			],
