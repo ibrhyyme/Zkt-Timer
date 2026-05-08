@@ -37,6 +37,7 @@ export default function Privacy() {
 				<li>{t('privacy.section_2_item_4')}</li>
 				<li>{t('privacy.section_2_item_5')}</li>
 				<li>{t('privacy.section_2_item_6')}</li>
+				<li>{t('privacy.section_2_item_7')}</li>
 			</ul>
 
 			<h2>{t('privacy.section_3_title')}</h2>

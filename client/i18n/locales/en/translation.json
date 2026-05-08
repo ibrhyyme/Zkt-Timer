@@ -2545,6 +2545,7 @@
         "section_2_item_4": "Fulfilling legal obligations (e.g., traffic data retention, Law No. 5651 requirements).",
         "section_2_item_5": "Conducting communication activities and responding to support requests.",
         "section_2_item_6": "Managing marketing and analytics processes (through cookies).",
+        "section_2_item_7": "Recording session minutes for anonymous active-user statistics in the admin panel (not shared with third parties).",
         "section_3_title": "3. Personal Data Processed",
         "section_3_text": "The following categories of data may be collected through the Platform:",
         "section_3_item_1": "<strong>Identity Information:</strong> Name, surname (if provided), username.",
