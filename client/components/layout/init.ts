@@ -6,7 +6,7 @@ import {
 	STATS_MODULE_BLOCK_FRAGMENT,
 } from '../../util/graphql/fragments';
 import { gqlQuery, removeTypename } from '../api';
-import { initSessionCollection, initSessionDb, reconcileSessionDb } from '../../db/sessions/init';
+import { ensureLocalDefaultSession, initSessionCollection, initSessionDb, reconcileSessionDb } from '../../db/sessions/init';
 import { Dispatch } from 'redux';
 import { clearOfflineData, initOfflineData, updateOfflineHash } from './offline';
 import { initSettingsDb, SettingValue } from '../../db/settings/init';
@@ -55,6 +55,7 @@ export function initAnonymousAppData(callback) {
 	initSettingsDb(settingValues);
 	initSessionCollection();
 	initSolvesCollection(true);
+	ensureLocalDefaultSession();
 
 	callback();
 }
@@ -130,6 +131,12 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 		} else if (!passed) {
 			// Basic kullanici: bos session collection olustur
 			initSessionDb([]);
+		}
+
+		// Sync etmeyen kullanicilar (Basic) icin lokal default sezon garantisi.
+		// Pro/sync user'larda server signup'ta zaten sezon olusturuluyor.
+		if (!canSyncUser) {
+			ensureLocalDefaultSession();
 		}
 
 		criticalPromises.push(getAllSettings(me?.id));
@@ -542,7 +549,10 @@ async function getAllSessions() {
 		reconcileSessionDb(res.data.sessions);
 		emitEvent('sessionsDbUpdatedEvent');
 	} catch (error) {
-		console.warn('Offline: Could not fetch sessions', error);
+		// Fetch fail — local cache'e dokunma, sadece collection'i ensure et.
+		// Auto-create kaldirildigi icin "bos sezon" durumunda hayalet sezon olusmaz;
+		// kullanici en kotu ihtimalle bos sezon listesi gorur, sayfa yenilemesi cozer.
+		console.error('[getAllSessions] Failed to fetch sessions, keeping local cache as-is:', error);
 		initSessionCollection();
 	}
 }

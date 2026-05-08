@@ -8,6 +8,7 @@ import {createUserAccount, getUserByEmail, getUserById, getUserByUsername, sanit
 import {createIntegration, getIntegration, getIntegrationByWcaId, updateIntegration} from '../models/integration';
 import {createSetting} from '../models/settings';
 import {createNotificationPreference} from '../models/notification_preference';
+import {createDefaultSession} from '../models/session';
 import {getJwtString, setSessionCookie} from '../util/auth';
 import GraphQLError from '../util/graphql_error';
 import {ErrorCode} from '../constants/errors';
@@ -216,10 +217,11 @@ export class WcaAuthResolver {
 			data: {email_verified: true},
 		});
 
-		// 6. Setting + NotificationPreference olustur
+		// 6. Setting + NotificationPreference + default Session olustur
 		const wcaLocale = req.cookies?.zkt_language || 'en';
 		await createSetting(user, wcaLocale);
 		await createNotificationPreference(user);
+		await createDefaultSession(user);
 
 		// 7. WCA ID baska hesaba bagli mi kontrol et
 		if (payload.wcaId) {
