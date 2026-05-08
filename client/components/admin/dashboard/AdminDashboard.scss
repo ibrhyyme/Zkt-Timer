@@ -75,10 +75,13 @@
 	}
 
 	&__card-caret {
+		position: absolute;
+		top: 12px;
+		right: 12px;
 		display: flex;
 		align-items: center;
-		color: rgba(var(--text-color), 0.5);
-		margin-left: auto;
+		color: rgba(var(--text-color), 0.4);
+		pointer-events: none;
 	}
 
 	&__expand-panel {
@@ -168,6 +171,9 @@
 		background-color: rgba(var(--text-color), 0.03);
 		border: 1px solid rgba(var(--text-color), 0.06);
 		border-radius: 14px;
+		position: relative;
+		min-height: 92px;
+		box-sizing: border-box;
 
 		&--highlight {
 			background-color: rgba(var(--primary-color), 0.08);
