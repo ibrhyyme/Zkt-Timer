@@ -1207,6 +1207,7 @@ type AdminDashboardStats {
   signups_week: Int
   solves_today: Int
   solves_week: Int
+  solves_total: Int
   pro_users_count: Int
   pending_reports_count: Int
   online_users: Int

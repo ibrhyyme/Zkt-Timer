@@ -16,6 +16,7 @@ interface DashboardStats {
 	signups_week: number;
 	solves_today: number;
 	solves_week: number;
+	solves_total: number;
 	pro_users_count: number;
 	pending_reports_count: number;
 	online_users: number;
@@ -33,6 +34,7 @@ const STATS_QUERY = gql`
 			signups_week
 			solves_today
 			solves_week
+			solves_total
 			pro_users_count
 			pending_reports_count
 			online_users
@@ -313,6 +315,13 @@ export default function AdminDashboard() {
 							label={t('admin_dashboard.solves_week')}
 							value={stats.solves_week}
 							color="#f97316"
+						/>
+						<StatCard
+							icon={<Cube size={28} weight="bold" />}
+							label={t('admin_dashboard.solves_total')}
+							value={stats.solves_total}
+							subValue={t('admin_dashboard.solves_total_sub')}
+							color="#ea580c"
 						/>
 					</div>
 				</div>

@@ -1441,6 +1441,8 @@
         "wca_connected": "已绑定 WCA",
         "solves_today": "今日还原",
         "solves_week": "本周还原",
+        "solves_total": "总还原数",
+        "solves_total_sub": "服务器上的全部历史",
         "pending_reports": "待处理举报",
         "tbl_user": "用户",
         "tbl_active_time": "活跃时长",

@@ -1441,6 +1441,8 @@
         "wca_connected": "Conectados a WCA",
         "solves_today": "Resoluciones hoy",
         "solves_week": "Resoluciones esta semana",
+        "solves_total": "Total de resoluciones",
+        "solves_total_sub": "Histórico en el servidor",
         "pending_reports": "Reportes pendientes",
         "tbl_user": "Usuario",
         "tbl_active_time": "Tiempo activo",

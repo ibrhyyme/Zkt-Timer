@@ -161,6 +161,7 @@ export type AdminDashboardStats = {
   signups_today?: Maybe<Scalars['Int']>;
   signups_week?: Maybe<Scalars['Int']>;
   solves_today?: Maybe<Scalars['Int']>;
+  solves_total?: Maybe<Scalars['Int']>;
   solves_week?: Maybe<Scalars['Int']>;
   total_users?: Maybe<Scalars['Int']>;
   wau?: Maybe<Scalars['Int']>;

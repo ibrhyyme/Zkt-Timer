@@ -1441,6 +1441,8 @@
         "wca_connected": "WCA Bağlı",
         "solves_today": "Bugün Çözüm",
         "solves_week": "Bu Hafta Çözüm",
+        "solves_total": "Toplam Çözüm",
+        "solves_total_sub": "Sunucudaki tüm zamanlar",
         "pending_reports": "Bekleyen Şikayet",
         "tbl_user": "Kullanıcı",
         "tbl_active_time": "Aktif Süre",

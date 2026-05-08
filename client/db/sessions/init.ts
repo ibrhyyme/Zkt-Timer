@@ -1,6 +1,7 @@
 import {getLokiDb} from '../lokijs';
 import {Session} from '../../../server/schemas/Session.schema';
 import {generateId} from '../../../shared/code';
+import i18n from '../../i18n/i18n';
 
 export function getSessionDb(): Collection<Session> {
 	const db = getLokiDb();
@@ -41,7 +42,7 @@ export function ensureLocalDefaultSession() {
 
 	db.insert({
 		id: generateId(),
-		name: 'Yeni Sezon',
+		name: i18n.t('sessions.new_session'),
 		order: 0,
 		created_at: new Date(),
 		user_id: '_local',

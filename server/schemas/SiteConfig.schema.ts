@@ -226,6 +226,9 @@ export class AdminDashboardStats {
 	solves_week: number;
 
 	@Field(() => Int)
+	solves_total: number;
+
+	@Field(() => Int)
 	pro_users_count: number;
 
 	@Field(() => Int)
