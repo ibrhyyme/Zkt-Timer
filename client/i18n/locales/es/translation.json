@@ -2545,6 +2545,7 @@
         "section_2_item_4": "Cumplimiento de obligaciones legales (ej. retención de datos de tráfico, requisitos de la Ley N.° 5651).",
         "section_2_item_5": "Realización de actividades de comunicación y respuesta a solicitudes de soporte.",
         "section_2_item_6": "Gestión de procesos de marketing y análisis (mediante cookies).",
+        "section_2_item_7": "Registro de minutos de sesión para estadísticas anónimas de usuarios activos en el panel de administración (no se comparten con terceros).",
         "section_3_title": "3. Datos Personales Procesados",
         "section_3_text": "Las siguientes categorías de datos pueden ser recopiladas a través de la Plataforma:",
         "section_3_item_1": "<strong>Información de Identidad:</strong> Nombre, apellido (si se proporciona), nombre de usuario.",
