@@ -1441,7 +1441,17 @@
         "wca_connected": "已绑定 WCA",
         "solves_today": "今日还原",
         "solves_week": "本周还原",
-        "pending_reports": "待处理举报"
+        "pending_reports": "待处理举报",
+        "tbl_user": "用户",
+        "tbl_active_time": "活跃时长",
+        "tbl_last_seen": "最后在线",
+        "duration_min": "分钟",
+        "duration_hour": "小时",
+        "just_now": "刚刚",
+        "min_ago": "{{count}} 分钟前",
+        "hour_ago": "{{count}} 小时前",
+        "day_ago": "{{count}} 天前",
+        "no_active_users": "此期间无活跃用户"
     },
     "admin_users": {
         "page_title": "用户管理",

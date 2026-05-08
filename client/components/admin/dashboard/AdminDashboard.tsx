@@ -2,8 +2,9 @@ import React from 'react';
 import { gql } from '@apollo/client';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { Users, ChartLineUp, UserPlus, Cube, CrownSimple, Flag, WifiHigh, Globe } from 'phosphor-react';
+import { Users, ChartLineUp, UserPlus, Cube, CrownSimple, Flag, WifiHigh, Globe, CaretDown, CaretUp } from 'phosphor-react';
 import { gqlQuery } from '../../api';
+import AvatarImage from '../../common/avatar/avatar_image/AvatarImage';
 import './AdminDashboard.scss';
 
 interface DashboardStats {
@@ -40,6 +41,40 @@ const STATS_QUERY = gql`
 	}
 `;
 
+const ACTIVE_USERS_QUERY = gql`
+	query AdminActiveUsers($period: String!) {
+		adminActiveUsers(period: $period) {
+			user {
+				id
+				username
+				is_pro
+				profile {
+					pfp_image {
+						id
+						user_id
+						storage_path
+					}
+				}
+			}
+			active_minutes
+			last_seen_at
+		}
+	}
+`;
+
+interface ActiveUserRow {
+	user: {
+		id: string;
+		username: string;
+		is_pro: boolean;
+		profile?: {
+			pfp_image?: { id: string; user_id: string; storage_path: string } | null;
+		};
+	};
+	active_minutes: number;
+	last_seen_at?: string | null;
+}
+
 interface CardProps {
 	icon: React.ReactNode;
 	label: string;
@@ -48,30 +83,108 @@ interface CardProps {
 	color?: string;
 	to?: string;
 	highlight?: boolean;
+	onClick?: () => void;
+	expanded?: boolean;
+	expandable?: boolean;
 }
 
-function StatCard({ icon, label, value, subValue, color, to, highlight }: CardProps) {
+function StatCard({ icon, label, value, subValue, color, to, highlight, onClick, expanded, expandable }: CardProps) {
 	const content = (
-		<div className={`cd-admin-dashboard__card${highlight ? ' cd-admin-dashboard__card--highlight' : ''}`}>
+		<div className={`cd-admin-dashboard__card${highlight ? ' cd-admin-dashboard__card--highlight' : ''}${expandable ? ' cd-admin-dashboard__card--expandable' : ''}${expanded ? ' cd-admin-dashboard__card--expanded' : ''}`}>
 			<div className="cd-admin-dashboard__card-icon" style={color ? { color } : undefined}>{icon}</div>
 			<div className="cd-admin-dashboard__card-body">
 				<div className="cd-admin-dashboard__card-label">{label}</div>
 				<div className="cd-admin-dashboard__card-value">{value}</div>
 				{subValue && <div className="cd-admin-dashboard__card-sub">{subValue}</div>}
 			</div>
+			{expandable && (
+				<div className="cd-admin-dashboard__card-caret">
+					{expanded ? <CaretUp size={18} weight="bold" /> : <CaretDown size={18} weight="bold" />}
+				</div>
+			)}
 		</div>
 	);
 
 	if (to) {
 		return <Link to={to} className="cd-admin-dashboard__card-link">{content}</Link>;
 	}
+	if (onClick) {
+		return <button type="button" onClick={onClick} className="cd-admin-dashboard__card-button">{content}</button>;
+	}
 	return content;
+}
+
+function formatDuration(minutes: number, t: (k: string) => string): string {
+	const h = Math.floor(minutes / 60);
+	const m = minutes % 60;
+	if (h === 0) return `${m} ${t('admin_dashboard.duration_min')}`;
+	if (m === 0) return `${h} ${t('admin_dashboard.duration_hour')}`;
+	return `${h} ${t('admin_dashboard.duration_hour')} ${m} ${t('admin_dashboard.duration_min')}`;
+}
+
+function formatRelative(iso: string | null | undefined, t: (k: string, opts?: any) => string): string {
+	if (!iso) return '-';
+	const ms = Date.now() - new Date(iso).getTime();
+	const min = Math.floor(ms / 60000);
+	if (min < 1) return t('admin_dashboard.just_now');
+	if (min < 60) return t('admin_dashboard.min_ago', { count: min });
+	const h = Math.floor(min / 60);
+	if (h < 24) return t('admin_dashboard.hour_ago', { count: h });
+	const d = Math.floor(h / 24);
+	return t('admin_dashboard.day_ago', { count: d });
+}
+
+interface ActiveUsersTableProps {
+	period: 'day' | 'week' | 'month';
+}
+
+function ActiveUsersTable({ period }: ActiveUsersTableProps) {
+	const { t } = useTranslation();
+	const [rows, setRows] = React.useState<ActiveUserRow[] | null>(null);
+	const [loading, setLoading] = React.useState(true);
+
+	React.useEffect(() => {
+		let cancelled = false;
+		setLoading(true);
+		gqlQuery<{ adminActiveUsers: ActiveUserRow[] }>(ACTIVE_USERS_QUERY, { period }, 'no-cache')
+			.then((res) => {
+				if (cancelled) return;
+				setRows(res.data.adminActiveUsers || []);
+			})
+			.catch(() => { if (!cancelled) setRows([]); })
+			.finally(() => { if (!cancelled) setLoading(false); });
+		return () => { cancelled = true; };
+	}, [period]);
+
+	if (loading) return <div className="cd-admin-dashboard__table-loading">{t('admin_dashboard.loading')}</div>;
+	if (!rows || rows.length === 0) return <div className="cd-admin-dashboard__table-empty">{t('admin_dashboard.no_active_users')}</div>;
+
+	return (
+		<div className="cd-admin-dashboard__table">
+			<div className="cd-admin-dashboard__table-header">
+				<span>{t('admin_dashboard.tbl_user')}</span>
+				<span>{t('admin_dashboard.tbl_active_time')}</span>
+				<span>{t('admin_dashboard.tbl_last_seen')}</span>
+			</div>
+			{rows.map((row) => (
+				<div key={row.user.id} className="cd-admin-dashboard__table-row">
+					<span className="cd-admin-dashboard__table-user">
+						<AvatarImage user={row.user as any} tiny />
+						<span className="cd-admin-dashboard__table-username">{row.user.username}</span>
+					</span>
+					<span className="cd-admin-dashboard__table-time">{formatDuration(row.active_minutes, t)}</span>
+					<span className="cd-admin-dashboard__table-last">{formatRelative(row.last_seen_at, t)}</span>
+				</div>
+			))}
+		</div>
+	);
 }
 
 export default function AdminDashboard() {
 	const { t } = useTranslation();
 	const [stats, setStats] = React.useState<DashboardStats | null>(null);
 	const [loading, setLoading] = React.useState(true);
+	const [expanded, setExpanded] = React.useState<'day' | 'week' | 'month' | null>(null);
 
 	React.useEffect(() => {
 		fetchStats();
@@ -88,6 +201,10 @@ export default function AdminDashboard() {
 		} finally {
 			setLoading(false);
 		}
+	}
+
+	function toggleExpand(period: 'day' | 'week' | 'month') {
+		setExpanded((prev) => (prev === period ? null : period));
 	}
 
 	if (loading || !stats) {
@@ -116,7 +233,9 @@ export default function AdminDashboard() {
 							value={stats.dau}
 							subValue={t('admin_dashboard.last_24h')}
 							color="#3b82f6"
-							to="/admin/users"
+							onClick={() => toggleExpand('day')}
+							expanded={expanded === 'day'}
+							expandable
 						/>
 						<StatCard
 							icon={<ChartLineUp size={28} weight="bold" />}
@@ -124,7 +243,9 @@ export default function AdminDashboard() {
 							value={stats.wau}
 							subValue={t('admin_dashboard.last_7d')}
 							color="#8b5cf6"
-							to="/admin/users"
+							onClick={() => toggleExpand('week')}
+							expanded={expanded === 'week'}
+							expandable
 						/>
 						<StatCard
 							icon={<ChartLineUp size={28} weight="bold" />}
@@ -132,9 +253,16 @@ export default function AdminDashboard() {
 							value={stats.mau}
 							subValue={t('admin_dashboard.last_30d')}
 							color="#a855f7"
-							to="/admin/users"
+							onClick={() => toggleExpand('month')}
+							expanded={expanded === 'month'}
+							expandable
 						/>
 					</div>
+					{expanded && (
+						<div className="cd-admin-dashboard__expand-panel">
+							<ActiveUsersTable period={expanded} />
+						</div>
+					)}
 				</div>
 
 				<div className="cd-admin-dashboard__section">

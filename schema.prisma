@@ -109,6 +109,9 @@ model UserAccount {
   promo_codes_created           PromoCode[]            @relation("promo_code_creator")
   promo_code_redemptions        PromoCodeRedemption[]   @relation("promo_redemption_user")
 
+  // Activity heartbeats — admin gorunurlugu icin dakika bucket'lari
+  activity_heartbeats           UserActivityHeartbeat[] @relation("activity_heartbeat_user")
+
   // ZKT Unofficial Competitions
   zkt_competitions_created      ZktCompetition[]        @relation("zkt_comp_creator")
   zkt_registrations             ZktRegistration[]       @relation("zkt_registration_user")
@@ -1119,6 +1122,20 @@ model PromoCodeRedemption {
   @@unique([promo_code_id, user_id])
   @@index([user_id])
   @@map("promo_code_redemption")
+}
+
+// Kullanici basina dakika bucket'i: idempotent heartbeat. Ayni dakika 1 satir.
+// minute_bucket = floor(unix_ms / 60000). 90 gun sonra cron temizler.
+model UserActivityHeartbeat {
+  id            String      @id @default(uuid())
+  user_id       String
+  minute_bucket BigInt
+  created_at    DateTime    @default(now())
+  user          UserAccount @relation("activity_heartbeat_user", fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, minute_bucket])
+  @@index([minute_bucket])
+  @@map("user_activity_heartbeat")
 }
 
 // ============================================================================

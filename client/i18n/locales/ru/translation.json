@@ -1441,7 +1441,17 @@
         "wca_connected": "Привязано к WCA",
         "solves_today": "Сборок сегодня",
         "solves_week": "Сборок за неделю",
-        "pending_reports": "Открытые жалобы"
+        "pending_reports": "Открытые жалобы",
+        "tbl_user": "Пользователь",
+        "tbl_active_time": "Время активности",
+        "tbl_last_seen": "Последний визит",
+        "duration_min": "мин",
+        "duration_hour": "ч",
+        "just_now": "Только что",
+        "min_ago": "{{count}} мин назад",
+        "hour_ago": "{{count}} ч назад",
+        "day_ago": "{{count}} дн назад",
+        "no_active_users": "Нет активных пользователей за этот период"
     },
     "admin_users": {
         "page_title": "Управление пользователями",

@@ -1441,7 +1441,17 @@
         "wca_connected": "WCA Linked",
         "solves_today": "Solves Today",
         "solves_week": "Solves This Week",
-        "pending_reports": "Pending Reports"
+        "pending_reports": "Pending Reports",
+        "tbl_user": "User",
+        "tbl_active_time": "Active Time",
+        "tbl_last_seen": "Last Seen",
+        "duration_min": "min",
+        "duration_hour": "hr",
+        "just_now": "Just now",
+        "min_ago": "{{count}} min ago",
+        "hour_ago": "{{count}} hr ago",
+        "day_ago": "{{count}} days ago",
+        "no_active_users": "No active users in this period"
     },
     "admin_users": {
         "page_title": "User Management",

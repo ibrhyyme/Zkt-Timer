@@ -1441,7 +1441,17 @@
         "wca_connected": "WCA Bağlı",
         "solves_today": "Bugün Çözüm",
         "solves_week": "Bu Hafta Çözüm",
-        "pending_reports": "Bekleyen Şikayet"
+        "pending_reports": "Bekleyen Şikayet",
+        "tbl_user": "Kullanıcı",
+        "tbl_active_time": "Aktif Süre",
+        "tbl_last_seen": "Son Görülme",
+        "duration_min": "dk",
+        "duration_hour": "sa",
+        "just_now": "Az önce",
+        "min_ago": "{{count}} dk önce",
+        "hour_ago": "{{count}} sa önce",
+        "day_ago": "{{count}} gün önce",
+        "no_active_users": "Bu dönemde aktif kullanıcı yok"
     },
     "admin_users": {
         "page_title": "Kullanıcı Yönetimi",

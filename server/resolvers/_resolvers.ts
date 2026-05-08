@@ -40,3 +40,4 @@ export * from './ZktAssignment.resolver';
 export * from './LandingStats.resolver';
 export * from './IAP.resolver';
 export * from './CompetitionFollow.resolver';
+export * from './Activity.resolver';
