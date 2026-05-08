@@ -1441,6 +1441,8 @@
         "wca_connected": "WCA Linked",
         "solves_today": "Solves Today",
         "solves_week": "Solves This Week",
+        "solves_total": "Total Solves",
+        "solves_total_sub": "All time on server",
         "pending_reports": "Pending Reports",
         "tbl_user": "User",
         "tbl_active_time": "Active Time",

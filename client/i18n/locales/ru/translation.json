@@ -1441,6 +1441,8 @@
         "wca_connected": "Привязано к WCA",
         "solves_today": "Сборок сегодня",
         "solves_week": "Сборок за неделю",
+        "solves_total": "Всего сборок",
+        "solves_total_sub": "За всё время на сервере",
         "pending_reports": "Открытые жалобы",
         "tbl_user": "Пользователь",
         "tbl_active_time": "Время активности",

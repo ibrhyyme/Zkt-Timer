@@ -167,7 +167,7 @@ export const mutateActions = {
 			user = await createUserAccount(first_name.trim(), last_name.trim(), email, username, password, ip);
 			await createSetting(user, language || 'en');
 			await createNotificationPreference(user);
-			await createDefaultSession(user);
+			await createDefaultSession(user, language || 'en');
 		}
 
 		// Dogrulama kodu olustur ve mail gonder

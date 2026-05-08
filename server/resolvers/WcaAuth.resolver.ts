@@ -221,7 +221,7 @@ export class WcaAuthResolver {
 		const wcaLocale = req.cookies?.zkt_language || 'en';
 		await createSetting(user, wcaLocale);
 		await createNotificationPreference(user);
-		await createDefaultSession(user);
+		await createDefaultSession(user, wcaLocale);
 
 		// 7. WCA ID baska hesaba bagli mi kontrol et
 		if (payload.wcaId) {
