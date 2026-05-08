@@ -335,6 +335,7 @@ type Query {
   landingStats: LandingStats
   getIapStatus: IapStatus
   myCompetitionFollows(competitionId: String): [CompetitionFollow]
+  adminActiveUsers(period: String): [ActiveUserRow]
 }
 
 type Mutation {
@@ -481,6 +482,7 @@ type Mutation {
   linkRevenueCatUser: Boolean
   followCompetitor(input: FollowCompetitorInput): CompetitionFollow
   unfollowCompetitor(id: String): Boolean
+  recordActivityHeartbeat: ActivityHeartbeatResult
 }
 
 type SmartDevice {
@@ -2001,6 +2003,16 @@ type CompetitionFollow {
   followed_wca_id: String
   followed_name: String
   created_at: DateTime
+}
+
+type ActiveUserRow {
+  user: PublicUserAccount
+  active_minutes: Int
+  last_seen_at: DateTime
+}
+
+type ActivityHeartbeatResult {
+  success: Boolean
 }
 
 type Notification {

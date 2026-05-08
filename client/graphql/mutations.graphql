@@ -356,3 +356,9 @@ mutation followCompetitor($input: FollowCompetitorInput!) {
 mutation unfollowCompetitor($id: String!) {
 	unfollowCompetitor(id: $id)
 }
+
+mutation recordActivityHeartbeat {
+	recordActivityHeartbeat {
+		success
+	}
+}

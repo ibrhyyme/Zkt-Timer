@@ -1,5 +1,7 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import { useEventListener } from '../util/event_handler';
+import { startActivityHeartbeat, stopActivityHeartbeat } from '../util/activity-heartbeat';
 
 interface DataContextType {
 	settingsChangeCounter: number;
@@ -49,6 +51,14 @@ export function DataProvider({ children }: DataProviderProps) {
 	useEventListener('trainerDbDeletedEvent', () => {
 		setTrainerDbChangeCounter(prev => prev + 1);
 	});
+
+	// Login'li kullanicilar icin heartbeat — admin paneli icin aktivite tracking
+	const meId = useSelector((s: any) => s?.account?.me?.id) as string | undefined;
+	useEffect(() => {
+		if (!meId) return;
+		startActivityHeartbeat();
+		return () => stopActivityHeartbeat();
+	}, [meId]);
 
 	const value: DataContextType = {
 		settingsChangeCounter,

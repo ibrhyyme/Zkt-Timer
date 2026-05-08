@@ -28,6 +28,31 @@ export function initCronJobs() {
 	initRankingRecalculationCronJob();
 	initCompetitionFollowCleanupCronJob();
 	initArchiveFreezeCronJob();
+	initActivityHeartbeatCleanupCronJob();
+}
+
+function initActivityHeartbeatCleanupCronJob() {
+	// Her gun 03:45 LA — 90 gun once heartbeat'leri sil. Tablonun sismesini onler.
+	const job = new CronJob(
+		'0 45 3 * * *',
+		async () => {
+			try {
+				const ninetyDaysAgo = BigInt(Math.floor((Date.now() - 90 * 24 * 60 * 60 * 1000) / 60000));
+				const result = await getPrisma().userActivityHeartbeat.deleteMany({
+					where: {minute_bucket: {lt: ninetyDaysAgo}},
+				});
+				if (result.count > 0) {
+					logger.info(`[ActivityCleanup] Deleted ${result.count} old heartbeat(s)`);
+				}
+			} catch (e) {
+				logger.error('[ActivityCleanup] cron failed', {error: e});
+			}
+		},
+		null,
+		true,
+		'America/Los_Angeles'
+	);
+	logger.debug('Initiated cron job for activity heartbeat cleanup.', {running: job.running});
 }
 
 function initArchiveFreezeCronJob() {

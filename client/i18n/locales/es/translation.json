@@ -1441,7 +1441,17 @@
         "wca_connected": "Conectados a WCA",
         "solves_today": "Resoluciones hoy",
         "solves_week": "Resoluciones esta semana",
-        "pending_reports": "Reportes pendientes"
+        "pending_reports": "Reportes pendientes",
+        "tbl_user": "Usuario",
+        "tbl_active_time": "Tiempo activo",
+        "tbl_last_seen": "Última vez",
+        "duration_min": "min",
+        "duration_hour": "h",
+        "just_now": "Ahora mismo",
+        "min_ago": "Hace {{count}} min",
+        "hour_ago": "Hace {{count}} h",
+        "day_ago": "Hace {{count}} días",
+        "no_active_users": "No hay usuarios activos en este período"
     },
     "admin_users": {
         "page_title": "Gestión de usuarios",

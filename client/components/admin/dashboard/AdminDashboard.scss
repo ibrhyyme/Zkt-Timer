@@ -57,6 +57,109 @@
 		}
 	}
 
+	&__card-button {
+		all: unset;
+		display: block;
+		width: 100%;
+		cursor: pointer;
+		font-family: inherit;
+
+		.#{$namespace}-admin-dashboard__card {
+			transition: transform 0.15s ease, background-color 0.15s ease;
+		}
+
+		&:hover .#{$namespace}-admin-dashboard__card {
+			transform: translateY(-2px);
+			background-color: rgba(var(--text-color), 0.05);
+		}
+	}
+
+	&__card-caret {
+		display: flex;
+		align-items: center;
+		color: rgba(var(--text-color), 0.5);
+		margin-left: auto;
+	}
+
+	&__expand-panel {
+		margin-top: 14px;
+		background-color: rgba(var(--text-color), 0.03);
+		border: 1px solid rgba(var(--text-color), 0.06);
+		border-radius: 14px;
+		padding: 14px;
+		animation: dashboardExpand 0.2s ease;
+	}
+
+	&__table {
+		display: flex;
+		flex-direction: column;
+	}
+
+	&__table-header {
+		display: grid;
+		grid-template-columns: 2fr 1fr 1fr;
+		padding: 8px 12px;
+		font-size: 0.75rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		color: rgba(var(--text-color), 0.5);
+		border-bottom: 1px solid rgba(var(--text-color), 0.06);
+	}
+
+	&__table-row {
+		display: grid;
+		grid-template-columns: 2fr 1fr 1fr;
+		padding: 10px 12px;
+		font-size: 0.85rem;
+		color: rgb(var(--text-color));
+		align-items: center;
+		border-bottom: 1px solid rgba(var(--text-color), 0.04);
+
+		&:last-child {
+			border-bottom: none;
+		}
+
+		&:hover {
+			background-color: rgba(var(--text-color), 0.03);
+		}
+	}
+
+	&__table-user {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		min-width: 0;
+	}
+
+	&__table-username {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	&__table-time {
+		font-weight: 600;
+	}
+
+	&__table-last {
+		color: rgba(var(--text-color), 0.6);
+		font-size: 0.8rem;
+	}
+
+	&__table-loading,
+	&__table-empty {
+		padding: 24px;
+		text-align: center;
+		color: rgba(var(--text-color), 0.5);
+		font-size: 0.9rem;
+	}
+
+	@keyframes dashboardExpand {
+		from { opacity: 0; transform: translateY(-6px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
 	&__card {
 		display: flex;
 		align-items: center;

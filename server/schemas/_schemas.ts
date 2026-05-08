@@ -38,3 +38,4 @@ export * from './IAP.schema';
 export * from './CompetitionFollow.schema';
 export * from './ArchiveAdmin.schema';
 export * from './Translation.schema';
+export * from './Activity.schema';
