@@ -1,5 +1,4 @@
 import { fetchSessionById, fetchSessions } from '../../../db/sessions/query';
-import { createSessionDb } from '../../../db/sessions/update';
 import { setSetting } from '../../../db/settings/update';
 import { ITimerContext } from '../Timer';
 import { Dispatch } from 'redux';
@@ -8,10 +7,8 @@ import { getSetting } from '../../../db/settings/query';
 import { fetchLastSolve } from '../../../db/solves/query';
 import { setTimerParam } from './params';
 import { resetScramble } from './scramble';
-import i18n from '../../../i18n/i18n';
 import { getSolveDb } from '../../../db/solves/init';
 
-// Creates session if none exist already
 export async function initTimer(dispatch: Dispatch<any>, context: ITimerContext) {
 	const { inModal } = context;
 	const sessionId = getSetting('session_id');
@@ -20,18 +17,15 @@ export async function initTimer(dispatch: Dispatch<any>, context: ITimerContext)
 
 	if (!inModal) {
 		if (!sessionId || (sessionId && !fetchSessionById(sessionId))) {
-			// Mevcut session varsa onu kullan (IndexedDB silindikten sonra oluşabilecek uyumsuzluğu önler)
+			// Mevcut session varsa onu kullan (IndexedDB silindikten sonra oluşabilecek uyumsuzluğu önler).
+			// Tarayıcı kendi başına ASLA yeni sezon oluşturmaz — server signup'ta default sezon garanti ediyor.
+			// Eski auto-create logic'i race condition'da hayalet sezonlara sebep oluyordu.
 			const existingSessions = fetchSessions();
 			if (existingSessions.length > 0) {
 				setSetting('session_id', existingSessions[0].id);
+				migrateOrphanSolves(existingSessions[0].id);
 			} else {
-				const session = await createSessionDb({
-					name: i18n.t('sessions.new_session'),
-				});
-				setSetting('session_id', session.id);
-
-				// Yeni session oluşturulduysa ve yetim solve'lar varsa, onları bu session'a taşı
-				migrateOrphanSolves(session.id);
+				console.error('[initTimer] User has zero sessions — server signup must have created a default session.');
 			}
 		}
 

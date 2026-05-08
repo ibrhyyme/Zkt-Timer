@@ -14,6 +14,7 @@ import {
 import { extractIp } from '../util/request';
 import { sendEmailWithTemplate } from '../services/ses';
 import { createSetting } from '../models/settings';
+import { createDefaultSession } from '../models/session';
 import { checkLoggedIn } from '../util/auth';
 import { checkPassword, hashPassword } from '../util/password';
 import { createNotificationPreference } from '../models/notification_preference';
@@ -166,6 +167,7 @@ export const mutateActions = {
 			user = await createUserAccount(first_name.trim(), last_name.trim(), email, username, password, ip);
 			await createSetting(user, language || 'en');
 			await createNotificationPreference(user);
+			await createDefaultSession(user);
 		}
 
 		// Dogrulama kodu olustur ve mail gonder

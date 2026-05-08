@@ -206,6 +206,14 @@ export class SessionResolver {
 			throw new GraphQLError(ErrorCode.NOT_FOUND, 'Invalid session ID');
 		}
 
+		// Son sezon silinemez — kullanicinin her zaman en az 1 sezonu olmali.
+		const sessionCount = await getPrisma().session.count({
+			where: {user_id: context.user.id},
+		});
+		if (sessionCount <= 1) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Son sezonunuzu silemezsiniz');
+		}
+
 		await deleteSession(context, session);
 		await updateOrderOfSessionsForUser(context.user);
 
@@ -245,6 +253,14 @@ export class SessionResolver {
 		const sessions = await getSessionsByIds(context.user, ids);
 		if (sessions.length !== ids.length) {
 			throw new GraphQLError(ErrorCode.NOT_FOUND, 'Invalid session ID list');
+		}
+
+		// Bulk silmeden sonra en az 1 sezon kalmali.
+		const totalSessionCount = await getPrisma().session.count({
+			where: {user_id: context.user.id},
+		});
+		if (totalSessionCount - ids.length < 1) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Son sezonunuzu silemezsiniz');
 		}
 
 		await getPrisma().session.deleteMany({
