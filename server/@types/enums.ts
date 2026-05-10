@@ -1,6 +1,7 @@
 export enum NotificationType {
 	NEW_USER_SIGNUP = 'new_user_signup',
 	MEMBERSHIP_GRANTED = 'membership_granted',
+	ADMIN_PRO_PURCHASE = 'admin_pro_purchase',
 	WCA_RESULT_ENTERED = 'wca_result_entered',
 	WCA_ROUND_FINISHED = 'wca_round_finished',
 	WCA_COMPETITION_COUNTDOWN = 'wca_competition_countdown',

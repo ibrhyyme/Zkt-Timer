@@ -1,6 +1,7 @@
 import {getPrisma} from '../database';
 import {UserAccount, InternalUserAccount} from '../schemas/UserAccount.schema';
 import NewUserSignupNotification from '../resources/notification_types/new_user_signup';
+import AdminProPurchaseNotification from '../resources/notification_types/admin_pro_purchase';
 import {sendPushToUser} from './push';
 import {getRedisPubClient} from './redis';
 
@@ -48,6 +49,30 @@ export async function notifyAdminsOfNewUser(
 			await sendPushToUser(admin.id, 'Zkt Timer', notification.data().inAppMessage);
 		} catch (error) {
 			console.error(`[AdminNotification] Failed to notify admin ${admin.id}:`, error);
+		}
+	}
+}
+
+export async function notifyAdminsOfProPurchase(
+	buyer: InternalUserAccount,
+	plan: 'monthly' | 'yearly' | 'lifetime' | 'unknown',
+	platform: 'ios' | 'android'
+): Promise<void> {
+	const admins = await getPrisma().userAccount.findMany({
+		where: {admin: true},
+	});
+
+	for (const admin of admins) {
+		try {
+			const notification = new AdminProPurchaseNotification(
+				{user: admin as UserAccount, triggeringUser: buyer, sendEmail: false},
+				plan,
+				platform
+			);
+			await notification.send();
+			await sendPushToUser(admin.id, 'Zkt Timer', notification.inAppMessage());
+		} catch (error) {
+			console.error(`[AdminNotification] Failed to notify admin ${admin.id} of Pro purchase:`, error);
 		}
 	}
 }

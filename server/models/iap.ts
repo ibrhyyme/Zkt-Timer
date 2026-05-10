@@ -4,8 +4,9 @@ import {logger} from '../services/logger';
 import {sendPushToUser} from '../services/push';
 import {createRedisKey, keyExistsInRedis, setKeyInRedis, RedisNamespace} from '../services/redis';
 import MembershipGrantedNotification from '../resources/notification_types/membership_granted';
-import {UserAccount} from '../schemas/UserAccount.schema';
+import {UserAccount, InternalUserAccount} from '../schemas/UserAccount.schema';
 import {createI18nInstance} from '../i18n_server';
+import {notifyAdminsOfProPurchase} from '../services/admin_notification';
 
 const SUPPORTED_LOCALES = ['tr', 'en', 'es', 'ru', 'zh'];
 
@@ -127,6 +128,16 @@ export async function applyIapPurchase(
 			});
 		} catch (error) {
 			logger.error('[IAP] Initial push gonderilemedi', {error, userId: update.userId});
+		}
+
+		try {
+			await notifyAdminsOfProPurchase(
+				targetUser as unknown as InternalUserAccount,
+				planFromProductId(update.productId).tier,
+				update.platform
+			);
+		} catch (error) {
+			logger.error('[IAP] Admin Pro purchase notification gonderilemedi', {error, userId: update.userId});
 		}
 	} else if (pushKind === 'change') {
 		try {
