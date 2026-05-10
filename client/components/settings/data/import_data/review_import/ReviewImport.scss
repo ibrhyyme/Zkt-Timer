@@ -58,16 +58,16 @@
 
 	&__session-header {
 		display: grid;
-		grid-template-columns: 1fr 1fr 60px;
-		gap: 12px;
+		grid-template-columns: minmax(160px, 1fr) minmax(260px, 1.4fr) auto;
+		gap: 14px;
 		padding: 0 4px 6px;
 		border-bottom: 1px solid rgba(var(--text-color), 0.08);
 	}
 
 	&__session {
 		display: grid;
-		grid-template-columns: 1fr 1fr 60px;
-		gap: 12px;
+		grid-template-columns: minmax(160px, 1fr) minmax(260px, 1.4fr) auto;
+		gap: 14px;
 		align-items: center;
 		padding: 10px 4px;
 
@@ -83,6 +83,33 @@
 				justify-content: flex-end;
 			}
 		}
+	}
+
+	&__bucket {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		flex-wrap: wrap;
+		min-width: 0;
+	}
+
+	&__mixed-badge {
+		display: inline-flex;
+		align-items: center;
+		padding: 4px 10px;
+		background-color: rgba(245, 158, 11, 0.15);
+		color: #f59e0b;
+		border-radius: 6px;
+		font-size: 0.78rem;
+		font-weight: 700;
+		white-space: nowrap;
+	}
+
+	&__actions-col {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		justify-content: flex-end;
 	}
 
 	&__actions {

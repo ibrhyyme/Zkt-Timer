@@ -894,6 +894,8 @@
         "invalid_cube_type": "Неизвестный тип кубика — изменение не применено.",
         "review_and_import": "Проверить и импортировать",
         "review_description": "Убедитесь, что числа ниже верны. Затем импортируйте данные!",
+        "mixed_session": "Смешанная ({{count}})",
+        "split_session": "Разделить",
         "import": "Импортировать",
         "importing_progress": "Импорт... {{percent}}%",
         "import_success": "{{sessions}} сессий и {{solves}} сборок успешно импортированы!",
@@ -2408,7 +2410,7 @@
     "scramble_subsets": {
         "h_std": "=== СТАНДАРТ ===",
         "h_std_wca": "=== СТАНДАРТ (WCA) ===",
-        "random_state": "Случайное состояние",
+        "random_state": "Стандарт WCA",
         "optimal": "Оптимальный",
         "three_gen": "3-gen",
         "no_bar": "Без бара (No Bar)",

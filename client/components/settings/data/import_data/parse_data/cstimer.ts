@@ -2,6 +2,7 @@ import {IImportDataContext, ImportableData} from '../ImportData';
 import {v4 as uuid, v5 as uuidv5} from 'uuid';
 import {SessionInput, SolveInput} from '../../../../../@types/generated/graphql';
 import {normalizeBucketForImport} from './normalize-bucket';
+import {detectCubeFromScramble} from './detect-cube-from-scramble';
 
 // Namespace UUID for csTimer sessions (randomly generated, constant for this app)
 const CSTIMER_NAMESPACE = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
@@ -187,10 +188,23 @@ export function parseCsTimerData(txt: string, context: IImportDataContext): Impo
 	});
 
 	// CubePicker'da kullanici-yuzlu WCA event ID'sini goster (333/222/444...).
-	// updateSessionCubeType bunu normalize edip cube_type='wca' + subset yapar.
-	const sessionIdCubeTypeMap = {};
+	// Detection solve-level oldugu icin sezon icindeki COGUNLUK subset'i kullaniyoruz
+	// — boylece karisik sezonlarda en yaygin kup gozukur, ReviewImport'ta kullanici
+	// "Karisik" badge'i gorup gerekirse split edebilir.
+	const sessionIdCubeTypeMap: Record<string, string> = {};
 	for (const session of validSessions) {
-		sessionIdCubeTypeMap[session.id] = session.scrambleSubset ?? session.cubeType;
+		const sessionSolves = solves.filter(s => s.session_id === session.id);
+		if (sessionSolves.length === 0) {
+			sessionIdCubeTypeMap[session.id] = session.scrambleSubset ?? session.cubeType;
+			continue;
+		}
+		const counts: Record<string, number> = {};
+		for (const sv of sessionSolves) {
+			const key = sv.scramble_subset ?? sv.cube_type;
+			counts[key] = (counts[key] || 0) + 1;
+		}
+		const majority = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0];
+		sessionIdCubeTypeMap[session.id] = majority ?? session.scrambleSubset ?? session.cubeType;
 	}
 
 	const sessionIds = new Set(sessions.map(s => s.id));
@@ -276,9 +290,13 @@ function getSessionData(sesData: string | object) {
 			continue;
 		}
 
-		// srcType undefined (opt:{}) -> '333' default; kullanici ReviewImport'ta override edebilir.
+		// Once detayli normalize dene (VARIANT_MAP'te 222eg0, cmll, pll gibi alt-subset'ler var).
+		// Yoksa CSTIMER_MAP'ten flat parent event'e dus, WCA bucket'a normalize et.
+		let normalized = srcType ? normalizeBucketForImport(srcType) : null;
 		const mappedFlat = srcType ? CSTIMER_ZKTTIMER_CUBETYPE_MAP[srcType] : '333';
-		const normalized = normalizeBucketForImport(mappedFlat);
+		if (!normalized) {
+			normalized = normalizeBucketForImport(mappedFlat);
+		}
 
 		if (!normalized) {
 			// Bu noktaya gelmemeli (haritadaki tum degerler WCA event); savunma amacli skip.
@@ -352,14 +370,21 @@ function getSolveInputFromCsTimerSolve(csSolve: CsTimerSolve, session: CsTimerSe
 		time = -1;
 	}
 
+	// ONCE scramble icerigine bak — gercek cube'i tespit et. Tespit edilemezse
+	// session-level scrType'a dus. csTimer karisik sezonlari icin kritik
+	// (kullanici ayni sezonda hem 2x2 hem 3x3 cozmus olabilir).
+	const detected = detectCubeFromScramble(scramble);
+	const cube_type = detected?.cube_type ?? session.cubeType;
+	const scramble_subset = detected?.scramble_subset ?? session.scrambleSubset ?? null;
+
 	return {
 		time,
 		raw_time: rawTime,
 		plus_two: plusTwo,
 		dnf,
 		scramble,
-		cube_type: session.cubeType,
-		scramble_subset: session.scrambleSubset ?? null,
+		cube_type,
+		scramble_subset,
 		session_id: session.id,
 		notes,
 		started_at: startTime,
