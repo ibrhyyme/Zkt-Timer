@@ -18,6 +18,7 @@ export enum FriendlyRoomClientEvent {
     BAN_USER = 'friendlyRoomBanUser',
     TOGGLE_SPECTATOR = 'friendlyRoomToggleSpectator',
     ADMIN_DELETE_ROOM = 'friendlyRoomAdminDelete',
+    DELETE_ROOM = 'friendlyRoomDelete',
     ADMIN_VIEW_ROOM = 'friendlyRoomAdminViewRoom',
     SIGNAL_AWAY = 'friendlyRoomSignalAway', // Tab hidden / minimized
     SIGNAL_BACK = 'friendlyRoomSignalBack', // Tab visible again

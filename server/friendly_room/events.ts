@@ -748,6 +748,56 @@ export function listenForFriendlyRoomEvents(client: Socket) {
         }
     });
 
+    // Owner delete room (room creator only — unconditional, kicks all participants)
+    client.on(FriendlyRoomClientEvent.DELETE_ROOM, async (roomId: string) => {
+        try {
+            const { user } = await getDetailedClientInfo(client);
+
+            if (!user) {
+                client.emit(FriendlyRoomServerEvent.ERROR, 'Giriş yapmalısınız');
+                return;
+            }
+
+            const roomBeforeDelete = await getRoomForClient(roomId);
+            if (!roomBeforeDelete) {
+                client.emit(FriendlyRoomServerEvent.ERROR, 'Oda bulunamadı');
+                return;
+            }
+
+            if (roomBeforeDelete.created_by.id !== user.id) {
+                client.emit(FriendlyRoomServerEvent.ERROR, 'Sadece oda sahibi silebilir');
+                return;
+            }
+
+            const participantIds = roomBeforeDelete.participants.map((p) => p.user_id);
+
+            // isAdmin=false; deleteRoom owner kontrolu zaten yapiyor
+            const success = await deleteRoom(roomId, user.id, false);
+
+            if (success) {
+                const socketRoom = getFriendlyRoomSocketRoom(roomId);
+
+                // Tum katilimcilarin aktif oturumunu temizle
+                for (const participantId of participantIds) {
+                    const session = await getActiveSession(participantId);
+                    if (session && session.roomId === roomId) {
+                        await clearActiveSession(participantId);
+                    }
+                }
+
+                io().to(socketRoom).emit(FriendlyRoomServerEvent.ROOM_DELETED, roomId);
+
+                const rooms = await getAllActiveRooms();
+                io().to(FriendlyRoomSocketRoom.LOBBY).emit(FriendlyRoomServerEvent.ROOMS_LIST, rooms);
+            } else {
+                client.emit(FriendlyRoomServerEvent.ERROR, 'Oda silinemedi');
+            }
+        } catch (error) {
+            logger.error('Error deleting room (owner)', { error });
+            client.emit(FriendlyRoomServerEvent.ERROR, 'Oda silinirken hata oluştu');
+        }
+    });
+
     // Admin delete room (site admins only)
     client.on(FriendlyRoomClientEvent.ADMIN_DELETE_ROOM, async (roomId: string) => {
         try {
