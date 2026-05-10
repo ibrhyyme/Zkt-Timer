@@ -663,6 +663,11 @@ async function getAllSettings(userId: string) {
  * Basic → Pro gecisinde lokal verileri sunucuya aktar.
  * initOfflineData passed=true olduktan sonra cagirilmali (LokiDB zaten yuklu).
  * Return: true (basarili veya zaten bos), false (hata — flag korunmali).
+ *
+ * Guvenlik: Server'da zaten sezon varsa migration'a girilmez. Bu, Pro kullanicinin
+ * cache stale olunca yanlislikla 'wasBasicUser' flag'i set edildiginde yapay
+ * default sezonlarin server'a push edilmesini engeller. Gercek Basic→Pro
+ * gecisinde server'da sezon yoktur cunku Basic sync etmez.
  */
 async function migrateLocalDataToServer(): Promise<boolean> {
 	const solveCollection = getLokiDb().getCollection('solves');
@@ -672,6 +677,24 @@ async function migrateLocalDataToServer(): Promise<boolean> {
 	const localSolves = solveCollection ? solveCollection.find() : [];
 
 	if (!localSessions.length && !localSolves.length) return true;
+
+	// Defansif kontrol: server'da zaten veri varsa migration'a girilmemeli.
+	// Bu durumda kullanici Pro'ydu, sadece flag yanlis set edilmis demektir.
+	try {
+		const query = gql`
+			query Query {
+				sessions { id }
+			}
+		`;
+		const res = await gqlQuery<{ sessions: { id: string }[] }>(query);
+		if (res.data.sessions && res.data.sessions.length > 0) {
+			console.log('[Migration] Server zaten sezon iceriyor, migration atlandi (yanlis wasBasicUser flag)');
+			return true;
+		}
+	} catch (e) {
+		console.error('[Migration] Server sezon kontrolu basarisiz, abort:', e);
+		return false; // flag korunsun, sonraki acilista yeniden dene
+	}
 
 	console.log(`[Migration] ${localSessions.length} session, ${localSolves.length} solve aktarilacak`);
 
