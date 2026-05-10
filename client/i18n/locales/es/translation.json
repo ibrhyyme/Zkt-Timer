@@ -894,6 +894,8 @@
         "invalid_cube_type": "Tipo de cubo desconocido — el cambio no se aplicó.",
         "review_and_import": "Revisar e importar",
         "review_description": "Asegúrate de que los números a continuación sean correctos. ¡Luego importa los datos!",
+        "mixed_session": "Mixta ({{count}})",
+        "split_session": "Dividir",
         "import": "Importar",
         "importing_progress": "Importando... {{percent}}%",
         "import_success": "¡{{sessions}} sesiones y {{solves}} resoluciones importadas exitosamente!",
@@ -2408,7 +2410,7 @@
     "scramble_subsets": {
         "h_std": "=== ESTÁNDAR ===",
         "h_std_wca": "=== ESTÁNDAR (WCA) ===",
-        "random_state": "Estado Aleatorio",
+        "random_state": "Estándar WCA",
         "optimal": "Óptimo",
         "three_gen": "3-gen",
         "no_bar": "Sin Barra (No Bar)",

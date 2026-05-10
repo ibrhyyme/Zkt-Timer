@@ -12,13 +12,50 @@ import ImportErrorSummary from './error_summary/ImportErrorSummary';
 import ImportSection from '../import_section/ImportSection';
 import { clearOfflineData } from '../../../../layout/offline';
 import CubePicker from '../../../../common/cube_picker/CubePicker';
+import SubsetPicker from '../../../../timer/header_control/SubsetPicker';
 import Input from '../../../../common/inputs/input/Input';
 import InputLegend from '../../../../common/inputs/input/input_legend/InputLegend';
-import { normalizeBucketForImport } from '../parse_data/normalize-bucket';
+import { VARIANT_MAP } from '../parse_data/normalize-bucket';
+import { getSubsetsForCube } from '../../../../../util/cubes/scramble_subsets';
+import { getCubeTypeBucketLabel } from '../../../../../util/cubes/util';
+import { SessionInput } from '../../../../../@types/generated/graphql';
 
 // Import yalnizca WCA event'lerine kayit yapar (cube_type='wca' + bu subset).
 // Method-based cube_type'lar (333cfop/roux/mehta/zz, 444yau, other, wca parent) gosterilmez.
 const WCA_IMPORT_EVENTS = ['333', '222', '444', '555', '666', '777', 'sq1', 'pyram', 'clock', 'skewb', 'minx'];
+
+// Method-based cube_type'lar (333cfop/333roux/vs) parent WCA event'e indirir.
+function getParentWcaEvent(input: string): string {
+	if (!input) return '333';
+	if (WCA_IMPORT_EVENTS.includes(input)) return input;
+	const variant = VARIANT_MAP[input];
+	if (variant) {
+		const ct = variant.cube_type;
+		if (WCA_IMPORT_EVENTS.includes(ct)) return ct;
+		if (ct.startsWith('333')) return '333';
+		if (ct.startsWith('222')) return '222';
+		if (ct.startsWith('444')) return '444';
+		if (ct.startsWith('555')) return '555';
+	}
+	return input;
+}
+
+// sessionIdCubeTypeMap'te tek string olarak tutulan degeri (cube veya subset id)
+// UI'in tukettigi {cubeType, subset} parina cevirir.
+function deriveBucket(rawId: string): { cubeType: string; subset: string | null } {
+	if (!rawId) return { cubeType: '333', subset: null };
+	const variant = VARIANT_MAP[rawId];
+	if (variant) {
+		// VARIANT_MAP cube_type method-based olabilir (333roux vs). UI WCA event gosterir,
+		// subset gercek bilgi tasiyor; method bilgisi solve.cube_type'a kullaniciya gozukmez sekilde gider.
+		const wcaParent = WCA_IMPORT_EVENTS.includes(variant.cube_type)
+			? variant.cube_type
+			: getParentWcaEvent(variant.cube_type);
+		return { cubeType: wcaParent, subset: variant.scramble_subset };
+	}
+	if (WCA_IMPORT_EVENTS.includes(rawId)) return { cubeType: rawId, subset: null };
+	return { cubeType: getParentWcaEvent(rawId), subset: null };
+}
 
 const b = block('review-import');
 
@@ -220,31 +257,85 @@ export default function ReviewImport() {
 		});
 	}
 
-	function updateSessionCubeType(sessionId: string, cubeType: string) {
-		const newSessionId = {
-			...data.sessionIdCubeTypeMap,
-			[sessionId]: cubeType,
-		};
-
-		// Kullanici override yapinca subset'i de paralelde guncelle.
-		// Tanimlanmamis cube_type secilirse normalize null doner — degisiklik uygulanmaz.
-		const normalized = normalizeBucketForImport(cubeType);
-		if (!normalized) {
-			toastError(t('data_settings.invalid_cube_type'));
-			return;
+	// Sezon icindeki (cube_type, subset) kombinasyonlarini ve solve sayilarini doner.
+	// Karisik sezon detection icin.
+	function getSessionBuckets(sessionId: string): Map<string, number> {
+		const buckets = new Map<string, number>();
+		for (const sv of data.solves) {
+			if (sv.session_id !== sessionId) continue;
+			const key = `${sv.cube_type}/${sv.scramble_subset ?? ''}`;
+			buckets.set(key, (buckets.get(key) || 0) + 1);
 		}
+		return buckets;
+	}
+
+	// Karisik sezonu (cube_type, subset) bazinda alt-sezonlara boler.
+	// Eski sezonun ismi her yeni sezona suffix olarak (orn "Calisma (2x2)") eklenir.
+	function splitSession(sessionId: string) {
+		const buckets = getSessionBuckets(sessionId);
+		if (buckets.size <= 1) return;
+
+		const oldSession = data.sessions.find(s => s.id === sessionId);
+		if (!oldSession) return;
+
+		const newSessions: SessionInput[] = [];
+		const newSessionMap = { ...data.sessionIdCubeTypeMap };
+		const solves = [...data.solves];
+
+		let order = oldSession.order;
+		for (const [bucketKey] of buckets) {
+			const [cube_type, subsetRaw] = bucketKey.split('/');
+			const subset = subsetRaw === '' ? null : subsetRaw;
+			const newId = `${oldSession.id}__${cube_type}_${subset ?? 'default'}`;
+			const label = getCubeTypeBucketLabel(cube_type, subset);
+			newSessions.push({
+				id: newId,
+				name: `${oldSession.name} (${label})`,
+				order: order++,
+			});
+			newSessionMap[newId] = subset ?? cube_type;
+			for (const sv of solves) {
+				if (sv.session_id === sessionId &&
+					sv.cube_type === cube_type &&
+					(sv.scramble_subset ?? '') === (subset ?? '')) {
+					sv.session_id = newId;
+				}
+			}
+		}
+		delete newSessionMap[sessionId];
+
+		const sessions = data.sessions
+			.filter(s => s.id !== sessionId)
+			.concat(newSessions);
+
+		context.setImportableData({ ...data, sessions, solves, sessionIdCubeTypeMap: newSessionMap });
+	}
+
+	function updateSessionBucket(sessionId: string, cubeType: string, subset: string | null) {
+		// sessionIdCubeTypeMap tek string tutar: subset varsa subset, yoksa cube_type.
+		const flatKey = subset ?? cubeType;
+		const newSessionMap = {
+			...data.sessionIdCubeTypeMap,
+			[sessionId]: flatKey,
+		};
 
 		const solves = [...data.solves];
 		for (const solve of solves) {
-			if (solve.session_id === sessionId) {
-				solve.cube_type = normalized.cube_type;
-				solve.scramble_subset = normalized.scramble_subset;
+			if (solve.session_id !== sessionId) continue;
+			if (WCA_IMPORT_EVENTS.includes(cubeType)) {
+				// WCA bucket: cube_type='wca', subset = secilen subset veya parent event
+				solve.cube_type = 'wca';
+				solve.scramble_subset = subset ?? cubeType;
+			} else {
+				// Method-based cube_type (333cfop, 333roux, vs.) — olduğu gibi
+				solve.cube_type = cubeType;
+				solve.scramble_subset = subset;
 			}
 		}
 
 		context.setImportableData({
 			...data,
-			sessionIdCubeTypeMap: newSessionId,
+			sessionIdCubeTypeMap: newSessionMap,
 			solves,
 		});
 	}
@@ -252,20 +343,47 @@ export default function ReviewImport() {
 	let sessionMapper: ReactNode[] = [];
 	if (data.sessionIdCubeTypeMap) {
 		sessionMapper = data.sessions.map((session) => {
-			const cubeType = data.sessionIdCubeTypeMap[session.id];
+			const rawId = data.sessionIdCubeTypeMap[session.id];
+			const { cubeType, subset } = deriveBucket(rawId);
+			const subsets = getSubsetsForCube(cubeType);
+			const sessionBuckets = getSessionBuckets(session.id);
+			const isMixed = sessionBuckets.size > 1;
+			// Subset picker'i sadece anlamli secenek varsa goster (default disinda).
+			// 1 item varsa (sadece random_state) gizle — UI temiz olur.
+			const showSubsetPicker = subsets.length > 1;
 			return (
 				<div className={b('session')} key={session.id}>
 					<div>
 						<Input value={session.name} onChange={(e) => updateSessionName(session.id, e.target.value)} />
 					</div>
-					<div>
+					<div className={b('bucket')}>
 						<CubePicker
 							cubeTypes={WCA_IMPORT_EVENTS}
-							onChange={(ct) => updateSessionCubeType(session.id, ct.id)}
+							onChange={(ct) => updateSessionBucket(session.id, ct.id, null)}
 							value={cubeType}
 						/>
+						{showSubsetPicker && (
+							<SubsetPicker
+								subsets={subsets}
+								selectedSubset={subset}
+								onChange={(s) => updateSessionBucket(session.id, cubeType, s)}
+							/>
+						)}
+						{isMixed && (
+							<span className={b('mixed-badge')}>
+								{t('data_settings.mixed_session', { count: sessionBuckets.size })}
+							</span>
+						)}
 					</div>
-					<div>
+					<div className={b('actions-col')}>
+						{isMixed && (
+							<Button
+								small
+								secondary
+								text={t('data_settings.split_session')}
+								onClick={() => splitSession(session.id)}
+							/>
+						)}
 						<Button icon={<X />} onClick={() => removeSession(session.id)} transparent />
 					</div>
 				</div>

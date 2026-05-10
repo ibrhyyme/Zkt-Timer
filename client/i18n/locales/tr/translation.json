@@ -894,6 +894,8 @@
         "invalid_cube_type": "Tanımlanmamış küp türü — değişiklik uygulanmadı.",
         "review_and_import": "İncele ve içe aktar",
         "review_description": "Aşağıdaki sayıların doğru olduğundan emin olun. Ardından verileri içe aktarın!",
+        "mixed_session": "Karışık ({{count}})",
+        "split_session": "Ayır",
         "import": "İçe aktar",
         "importing_progress": "İçe aktarılıyor... %{{percent}}",
         "import_success": "{{sessions}} sezon ve {{solves}} çözüm başarıyla aktarıldı!",
@@ -2408,7 +2410,7 @@
     "scramble_subsets": {
         "h_std": "=== STANDART ===",
         "h_std_wca": "=== STANDART (WCA) ===",
-        "random_state": "Rastgele Durum",
+        "random_state": "WCA Standart",
         "optimal": "Optimal",
         "three_gen": "3-tür (3-gen)",
         "no_bar": "Çubuk Yok (No Bar)",

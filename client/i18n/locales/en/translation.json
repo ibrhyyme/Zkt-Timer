@@ -894,6 +894,8 @@
         "invalid_cube_type": "Unknown cube type — change was not applied.",
         "review_and_import": "Review and Import",
         "review_description": "Make sure the numbers below are correct. Then import the data!",
+        "mixed_session": "Mixed ({{count}})",
+        "split_session": "Split",
         "import": "Import",
         "importing_progress": "Importing... {{percent}}%",
         "import_success": "{{sessions}} sessions and {{solves}} solves imported successfully!",
@@ -2408,7 +2410,7 @@
     "scramble_subsets": {
         "h_std": "=== STANDARD ===",
         "h_std_wca": "=== STANDARD (WCA) ===",
-        "random_state": "Random State",
+        "random_state": "WCA Standard",
         "optimal": "Optimal",
         "three_gen": "3-gen",
         "no_bar": "No Bar",

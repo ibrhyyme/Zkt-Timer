@@ -894,6 +894,8 @@
         "invalid_cube_type": "未知的魔方类型 — 未应用更改。",
         "review_and_import": "审阅并导入",
         "review_description": "请确保以下数字正确。然后导入数据！",
+        "mixed_session": "混合 ({{count}})",
+        "split_session": "拆分",
         "import": "导入",
         "importing_progress": "正在导入... {{percent}}%",
         "import_success": "{{sessions}} 个阶段和 {{solves}} 次还原已成功导入！",
@@ -2408,7 +2410,7 @@
     "scramble_subsets": {
         "h_std": "=== 标准 ===",
         "h_std_wca": "=== 标准 (WCA) ===",
-        "random_state": "随机状态",
+        "random_state": "WCA 标准",
         "optimal": "最优",
         "three_gen": "3步生成",
         "no_bar": "无长条",
