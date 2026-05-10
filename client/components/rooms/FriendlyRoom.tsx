@@ -1249,7 +1249,7 @@ export default function FriendlyRoom() {
             {/* 1. Header & Scramble (Fixed) */}
             <div className="shrink-0 flex flex-col">
                 {/* Top Bar - Native App Header Style */}
-                <div className="flex items-center justify-between bg-blue-600 px-3 md:px-4 py-2 md:py-3 shadow-lg z-10 relative gap-2">
+                <div className="flex items-center justify-between bg-blue-600 px-3 md:px-4 py-2 md:py-3 shadow-lg z-30 relative gap-2">
                     {/* Hamburger Menu (Only for Host) */}
                     {isHost ? (
                         <div className="relative z-50 shrink-0" ref={hostMenuRef}>
