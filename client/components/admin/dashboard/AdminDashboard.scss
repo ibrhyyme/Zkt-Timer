@@ -126,6 +126,15 @@
 		&:hover {
 			background-color: rgba(var(--text-color), 0.03);
 		}
+
+		&--clickable {
+			cursor: pointer;
+			transition: background-color 120ms ease;
+
+			&:hover {
+				background-color: rgba(var(--text-color), 0.06);
+			}
+		}
 	}
 
 	&__table-user {

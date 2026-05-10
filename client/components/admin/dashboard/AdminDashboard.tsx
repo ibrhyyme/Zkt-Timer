@@ -2,9 +2,12 @@ import React from 'react';
 import { gql } from '@apollo/client';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
 import { Users, ChartLineUp, UserPlus, Cube, CrownSimple, Flag, WifiHigh, Globe, CaretDown, CaretUp } from 'phosphor-react';
 import { gqlQuery } from '../../api';
 import AvatarImage from '../../common/avatar/avatar_image/AvatarImage';
+import { openModal } from '../../../actions/general';
+import ManageUser from '../manage_user/ManageUser';
 import './AdminDashboard.scss';
 
 interface DashboardStats {
@@ -142,6 +145,7 @@ interface ActiveUsersTableProps {
 
 function ActiveUsersTable({ period }: ActiveUsersTableProps) {
 	const { t } = useTranslation();
+	const dispatch = useDispatch();
 	const [rows, setRows] = React.useState<ActiveUserRow[] | null>(null);
 	const [loading, setLoading] = React.useState(true);
 
@@ -158,6 +162,10 @@ function ActiveUsersTable({ period }: ActiveUsersTableProps) {
 		return () => { cancelled = true; };
 	}, [period]);
 
+	function openManageUser(userId: string) {
+		dispatch(openModal(<ManageUser userId={userId} />, { width: 1100 }));
+	}
+
 	if (loading) return <div className="cd-admin-dashboard__table-loading">{t('admin_dashboard.loading')}</div>;
 	if (!rows || rows.length === 0) return <div className="cd-admin-dashboard__table-empty">{t('admin_dashboard.no_active_users')}</div>;
 
@@ -169,7 +177,19 @@ function ActiveUsersTable({ period }: ActiveUsersTableProps) {
 				<span>{t('admin_dashboard.tbl_last_seen')}</span>
 			</div>
 			{rows.map((row) => (
-				<div key={row.user.id} className="cd-admin-dashboard__table-row">
+				<div
+					key={row.user.id}
+					className="cd-admin-dashboard__table-row cd-admin-dashboard__table-row--clickable"
+					onClick={() => openManageUser(row.user.id)}
+					role="button"
+					tabIndex={0}
+					onKeyDown={(e) => {
+						if (e.key === 'Enter' || e.key === ' ') {
+							e.preventDefault();
+							openManageUser(row.user.id);
+						}
+					}}
+				>
 					<span className="cd-admin-dashboard__table-user">
 						<AvatarImage user={row.user as any} tiny />
 						<span className="cd-admin-dashboard__table-username">{row.user.username}</span>
