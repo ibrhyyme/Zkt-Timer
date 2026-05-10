@@ -15,9 +15,7 @@ let timer: number | null = null;
 let started = false;
 
 async function tick() {
-	// Sadece sekme onde ise (visibility) — arka planda heartbeat atma
 	if (typeof document === 'undefined') return;
-	if (document.visibilityState !== 'visible') return;
 
 	try {
 		await gqlMutate(HEARTBEAT_MUTATION, {});
