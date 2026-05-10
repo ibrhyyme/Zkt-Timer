@@ -1012,6 +1012,11 @@ export default function FriendlyRoom() {
         history.push('/rooms');
     }
 
+    function handleDeleteRoom() {
+        getSocket().emit(FriendlyRoomClientEvent.DELETE_ROOM, roomId);
+        history.push('/rooms');
+    }
+
     function handleStartRoom() {
         getSocket().emit(FriendlyRoomClientEvent.START_ROOM, roomId);
     }
@@ -1281,7 +1286,7 @@ export default function FriendlyRoom() {
                                         </button>
                                         <div className="h-px bg-text/[0.1] my-1" />
                                         <button
-                                            onClick={handleLeaveRoom}
+                                            onClick={handleDeleteRoom}
                                             className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 flex items-center gap-3 transition-colors"
                                         >
                                             <Trash size={18} />
