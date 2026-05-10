@@ -7,6 +7,9 @@ import {fetchSessionById, fetchSessions} from '../../db/sessions/query';
 import {fetchLastBucketForSession} from '../../db/solves/query';
 import {useSettings} from '../../util/hooks/useSettings';
 import {getSetting} from '../../db/settings/query';
+import {getCubeTypeInfoById} from '../../util/cubes/util';
+import {getNewScrambleAsync} from '../timer/helpers/scramble';
+import {setTimerParam, setTimerParams} from '../timer/helpers/params';
 import Dropdown from '../common/inputs/dropdown/Dropdown';
 import {Session} from '../../../server/schemas/Session.schema';
 import {openModal} from '../../actions/general';
@@ -89,11 +92,28 @@ export default function SessionPicker(props: Props) {
 		const lastCubeType = lastBucket?.cube_type || '333';
 		const currentCubeType = getSetting('cube_type');
 		const currentSubset = getSetting('scramble_subset');
-		if (lastCubeType !== currentCubeType) {
+		const newSubset = lastBucket?.scramble_subset ?? null;
+		const cubeTypeChanged = lastCubeType !== currentCubeType;
+		const subsetChanged = newSubset !== (currentSubset ?? null);
+
+		if (cubeTypeChanged) {
 			setCubeType(lastCubeType);
 		}
-		if ((lastBucket?.scramble_subset ?? null) !== (currentSubset ?? null)) {
-			setScrambleSubset(lastBucket?.scramble_subset ?? null);
+		if (subsetChanged) {
+			setScrambleSubset(newSubset);
+		}
+
+		if (cubeTypeChanged || subsetChanged) {
+			const ct = getCubeTypeInfoById(lastCubeType);
+			if (ct) {
+				setTimerParam('scrambleSubset', newSubset);
+				setTimerParams({scramble: '', originalScramble: '', smartTurnOffset: 0});
+				getNewScrambleAsync(ct.scramble, newSubset ?? undefined).then((newScramble) => {
+					setTimerParams({scramble: newScramble, originalScramble: newScramble, smartTurnOffset: 0});
+				}).catch((e) => {
+					console.error('[scramble] switchSession failed:', e);
+				});
+			}
 		}
 	}
 
