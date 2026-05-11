@@ -381,6 +381,7 @@ export class AdminResolver {
 			solves_total,
 			pro_users_count,
 			pending_reports_count,
+			pending_support_tickets_count,
 			online,
 			wca_connected,
 		] = await Promise.all([
@@ -395,6 +396,7 @@ export class AdminResolver {
 			prisma.solve.count({ where: { OR: [{ trainer_name: null }, { trainer_name: '' }] } }),
 			prisma.userAccount.count({ where: { OR: [{ is_pro: true }, { is_premium: true }] } }),
 			prisma.report.count({ where: { resolved_at: null } }),
+			prisma.supportTicket.count({ where: { resolved_at: null } }),
 			getOnlineCounts(),
 			prisma.integration.count({ where: { service_name: 'wca' } }),
 		]);
@@ -411,6 +413,7 @@ export class AdminResolver {
 			solves_total,
 			pro_users_count,
 			pending_reports_count,
+			pending_support_tickets_count,
 			online_users: online.uniqueUsers,
 			wca_connected,
 		};

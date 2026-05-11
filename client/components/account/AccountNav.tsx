@@ -33,6 +33,11 @@ export default function AccountNav() {
 			value: t('account_nav.announcements'),
 		},
 		{
+			id: 'support',
+			link: '/account/support',
+			value: t('account_nav.support'),
+		},
+		{
 			id: 'danger-zone',
 			link: '/account/danger-zone',
 			value: t('account_nav.danger_zone'),

@@ -1,0 +1,130 @@
+@import '../../../styles/config';
+
+.#{$namespace}-support {
+	max-width: 720px;
+	display: flex;
+	flex-direction: column;
+	gap: 18px;
+
+	&__title {
+		font-size: 1.4rem;
+		font-weight: 700;
+		margin: 0;
+		color: rgb(var(--text-color));
+	}
+
+	&__description {
+		font-size: 0.95rem;
+		color: rgb(var(--text-color));
+		margin: 0;
+	}
+
+	&__field {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+	}
+
+	&__label {
+		font-size: 0.9rem;
+		font-weight: 600;
+		color: rgb(var(--text-color));
+	}
+
+	&__textarea {
+		width: 100%;
+		padding: 12px 14px;
+		background-color: rgb(var(--button-color));
+		border: 1px solid rgba(var(--text-color), 0.1);
+		border-radius: 10px;
+		color: rgb(var(--text-color));
+		font-family: inherit;
+		font-size: 0.95rem;
+		line-height: 1.5;
+		resize: vertical;
+		min-height: 140px;
+
+		&:focus {
+			outline: none;
+			border-color: rgb(var(--primary-color));
+		}
+	}
+
+	&__char-count {
+		align-self: flex-end;
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: rgb(var(--text-color));
+	}
+
+	&__history {
+		margin-top: 20px;
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+	}
+
+	&__history-title {
+		font-size: 1.1rem;
+		font-weight: 700;
+		margin: 0;
+		color: rgb(var(--text-color));
+		padding-bottom: 8px;
+		border-bottom: 1px solid rgba(var(--text-color), 0.08);
+	}
+
+	&__history-empty {
+		padding: 24px 16px;
+		text-align: center;
+		font-size: 0.9rem;
+		color: rgb(var(--text-color));
+		background-color: rgb(var(--button-color));
+		border-radius: 10px;
+	}
+
+	&__history-list {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	&__history-item {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+		padding: 12px 14px;
+		background-color: rgb(var(--button-color));
+		border: 1px solid rgba(var(--text-color), 0.08);
+		border-radius: 10px;
+		cursor: pointer;
+		transition: background-color 120ms ease, border-color 120ms ease;
+
+		&:hover {
+			background-color: rgba(var(--text-color), 0.04);
+			border-color: rgba(var(--text-color), 0.15);
+		}
+	}
+
+	&__history-item-main {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+		flex: 1;
+		min-width: 0;
+	}
+
+	&__history-item-subject {
+		font-weight: 700;
+		font-size: 0.95rem;
+		color: rgb(var(--text-color));
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	&__history-item-time {
+		font-size: 0.8rem;
+		color: rgb(var(--text-color));
+	}
+}

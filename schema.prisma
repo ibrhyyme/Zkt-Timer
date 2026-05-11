@@ -71,6 +71,8 @@ model UserAccount {
   viewed_profiles               ProfileView[]           @relation("viewer")
   reports_created               Report[]                @relation("report_created_by")
   reports_for                   Report[]                @relation("report_for")
+  support_tickets               SupportTicket[]         @relation("support_ticket_created_by")
+  support_ticket_messages       SupportTicketMessage[]  @relation("support_ticket_message_sender")
   sessions                      Session[]
   settings                      Setting?
   smart_device                  SmartDevice[]
@@ -485,6 +487,35 @@ model Report {
   reported_user    UserAccount @relation("report_for", fields: [reported_user_id], references: [id], onDelete: Cascade)
 
   @@map("report")
+}
+
+model SupportTicket {
+  id            String                 @id @default(uuid())
+  created_at    DateTime               @default(now())
+  subject       String
+  message       String
+  resolved_at   DateTime?
+  created_by_id String
+  created_by    UserAccount            @relation("support_ticket_created_by", fields: [created_by_id], references: [id], onDelete: Cascade)
+  messages      SupportTicketMessage[]
+
+  @@index([created_at])
+  @@index([resolved_at])
+  @@map("support_ticket")
+}
+
+model SupportTicketMessage {
+  id         String        @id @default(uuid())
+  ticket_id  String
+  sender_id  String
+  body       String
+  is_admin   Boolean       @default(false)
+  created_at DateTime      @default(now())
+  ticket     SupportTicket @relation(fields: [ticket_id], references: [id], onDelete: Cascade)
+  sender     UserAccount   @relation("support_ticket_message_sender", fields: [sender_id], references: [id], onDelete: Cascade)
+
+  @@index([ticket_id])
+  @@map("support_ticket_message")
 }
 
 model BanLog {

@@ -275,6 +275,9 @@ type Query {
   wcaMe: WcaAccount
   integrations: [Integration]
   reports: [ReportSummary]
+  supportTickets(resolved: Boolean): [SupportTicket]
+  mySupportTickets: [SupportTicket]
+  supportTicket(id: String): SupportTicket
   topSolves(scrambleSubset: String, page: Int, cubeType: String): [TopSolve]
   topAverages(scrambleSubset: String, page: Int, cubeType: String): [TopAverage]
   customCubeTypes: [CustomCubeType]
@@ -392,6 +395,9 @@ type Mutation {
   deleteIntegration(integrationType: IntegrationType): Integration
   reportProfile(reason: String, userId: String): Report
   resolveReports(userId: String): Float
+  createSupportTicket(input: SupportTicketInput): SupportTicket
+  addSupportTicketMessage(body: String, ticketId: String): SupportTicketMessage
+  resolveSupportTicket(id: String): SupportTicket
   publishTopSolve(solveId: String): TopSolve
   publishTopAverages(solveIds: [String]): TopAverage
   deleteTopSolve(id: String): TopSolve
@@ -1121,6 +1127,27 @@ type WcaAccount {
   created_at: String
 }
 
+type SupportTicketMessage {
+  id: String
+  ticket_id: String
+  sender_id: String
+  body: String
+  is_admin: Boolean
+  created_at: DateTime
+  sender: PublicUserAccount
+}
+
+type SupportTicket {
+  id: String
+  created_at: DateTime
+  subject: String
+  message: String
+  resolved_at: DateTime
+  created_by_id: String
+  created_by: PublicUserAccount
+  messages: [SupportTicketMessage!]
+}
+
 type FeatureOverrideUser {
   id: String
   username: String
@@ -1210,6 +1237,7 @@ type AdminDashboardStats {
   solves_total: Int
   pro_users_count: Int
   pending_reports_count: Int
+  pending_support_tickets_count: Int
   online_users: Int
   wca_connected: Int
 }
@@ -2146,6 +2174,11 @@ input SessionInput {
   id: String
   name: String
   order: Float
+}
+
+input SupportTicketInput {
+  subject: String
+  message: String
 }
 
 input FeatureOverrideUserInput {

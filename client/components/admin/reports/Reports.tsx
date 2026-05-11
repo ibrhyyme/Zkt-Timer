@@ -1,4 +1,5 @@
-import React from 'react';
+import React, {useState, useMemo} from 'react';
+import {useTranslation} from 'react-i18next';
 import './Reports.scss';
 import block from '../../../styles/bem';
 import {gql, useQuery} from '@apollo/client';
@@ -7,6 +8,8 @@ import {ReportSummary as ReportSummarySchema} from '../../../@types/generated/gr
 import Loading from '../../common/loading/Loading';
 import Empty from '../../common/empty/Empty';
 import ReportSummary from './report_summary/ReportSummary';
+import HorizontalNav from '../../common/horizontal_nav/HorizontalNav';
+import SupportTickets from './support_tickets/SupportTickets';
 
 const b = block('admin-report-list');
 
@@ -20,7 +23,34 @@ const REPORTS_QUERY = gql`
 	}
 `;
 
+type Tab = 'reports' | 'support';
+
 export default function Reports() {
+	const {t} = useTranslation();
+
+	// URL query param ile baslangic tabini sec (notification linki support'a yonlendirebilir)
+	const initialTab: Tab = useMemo(() => {
+		if (typeof window === 'undefined') return 'reports';
+		const params = new URLSearchParams(window.location.search);
+		return params.get('tab') === 'support' ? 'support' : 'reports';
+	}, []);
+
+	const [activeTab, setActiveTab] = useState<Tab>(initialTab);
+
+	const TABS = [
+		{id: 'reports', value: t('admin_reports.tab_reports')},
+		{id: 'support', value: t('admin_reports.tab_support')},
+	];
+
+	return (
+		<div className={b()}>
+			<HorizontalNav tabs={TABS} tabId={activeTab} onChange={(id) => setActiveTab(id as Tab)} />
+			{activeTab === 'reports' ? <ReportsList /> : <SupportTickets />}
+		</div>
+	);
+}
+
+function ReportsList() {
 	const {data, loading} = useQuery<{reports: ReportSummarySchema[]}>(REPORTS_QUERY, {
 		fetchPolicy: 'no-cache',
 	});
@@ -41,5 +71,5 @@ export default function Reports() {
 
 	const reports = data.reports.map((report) => <ReportSummary reportSummary={report} key={report.last_report} />);
 
-	return <div className={b()}>{reports}</div>;
+	return <div>{reports}</div>;
 }

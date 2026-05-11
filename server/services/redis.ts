@@ -25,6 +25,7 @@ export enum RedisNamespace {
 	ZKT_RECORDS = 'cd:zktcomp:records',
 	IAP_EVENTS = 'cd:iap:events',
 	FRIENDLY_ROOM_SESSION = 'cd:friendly_room:session',
+	SUPPORT_TICKET_RATE = 'cd:support:rate',
 }
 
 export type generatedRedisKey = {

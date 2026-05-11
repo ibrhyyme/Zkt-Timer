@@ -235,6 +235,9 @@ export class AdminDashboardStats {
 	pending_reports_count: number;
 
 	@Field(() => Int)
+	pending_support_tickets_count: number;
+
+	@Field(() => Int)
 	online_users: number;
 
 	@Field(() => Int)
