@@ -30,6 +30,7 @@ import OAuthService from '../oauth/OAuthService';
 import WcaLoginCallback from '../oauth/WcaLoginCallback';
 import ForceSignOut from '../login/force_sign_out/ForceSignOut';
 import AnnouncementHistory from '../profile/AnnouncementHistory';
+import Support from '../account/support/Support';
 import type { Store } from 'redux';
 import Reports from '../admin/reports/Reports';
 import AdminDashboard from '../admin/dashboard/AdminDashboard';
@@ -159,6 +160,7 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/account/linked-accounts', App, Account, LinkedAccounts),
 	route('/account/notifications', App, Account, NotificationPreferences),
 	route('/account/announcements', App, Account, AnnouncementHistory),
+	route('/account/support', App, Account, Support),
 
 	// Community - WCA Competitions (public for SEO, public data)
 	route('/community/competitions/:competitionId/personal-bests/:wcaId', App, Community, MySchedule, false),

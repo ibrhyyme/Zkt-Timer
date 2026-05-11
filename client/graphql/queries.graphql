@@ -1,3 +1,109 @@
+query AdminSupportTickets($resolved: Boolean) {
+	supportTickets(resolved: $resolved) {
+		id
+		created_at
+		subject
+		message
+		resolved_at
+		created_by_id
+		created_by {
+			id
+			username
+			profile {
+				pfp_image {
+					id
+					user_id
+					storage_path
+				}
+			}
+		}
+		messages {
+			id
+			body
+			is_admin
+			created_at
+			sender {
+				id
+				username
+				profile {
+					pfp_image {
+						id
+						user_id
+						storage_path
+					}
+				}
+			}
+		}
+	}
+}
+
+query MySupportTickets {
+	mySupportTickets {
+		id
+		created_at
+		subject
+		message
+		resolved_at
+		created_by_id
+		messages {
+			id
+			body
+			is_admin
+			created_at
+			sender {
+				id
+				username
+				profile {
+					pfp_image {
+						id
+						user_id
+						storage_path
+					}
+				}
+			}
+		}
+	}
+}
+
+query SupportTicketDetail($id: String!) {
+	supportTicket(id: $id) {
+		id
+		created_at
+		subject
+		message
+		resolved_at
+		created_by_id
+		created_by {
+			id
+			username
+			profile {
+				pfp_image {
+					id
+					user_id
+					storage_path
+				}
+			}
+		}
+		messages {
+			id
+			body
+			is_admin
+			created_at
+			sender {
+				id
+				username
+				profile {
+					pfp_image {
+						id
+						user_id
+						storage_path
+					}
+				}
+			}
+		}
+	}
+}
+
 query getIapStatus {
 	getIapStatus {
 		is_pro

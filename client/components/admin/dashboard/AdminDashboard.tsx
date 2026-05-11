@@ -3,7 +3,7 @@ import { gql } from '@apollo/client';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { Users, ChartLineUp, UserPlus, Cube, CrownSimple, Flag, WifiHigh, Globe, CaretDown, CaretUp } from 'phosphor-react';
+import { Users, ChartLineUp, UserPlus, Cube, CrownSimple, Flag, WifiHigh, Globe, CaretDown, CaretUp, Lifebuoy } from 'phosphor-react';
 import { gqlQuery } from '../../api';
 import AvatarImage from '../../common/avatar/avatar_image/AvatarImage';
 import { openModal } from '../../../actions/general';
@@ -22,6 +22,7 @@ interface DashboardStats {
 	solves_total: number;
 	pro_users_count: number;
 	pending_reports_count: number;
+	pending_support_tickets_count: number;
 	online_users: number;
 	wca_connected: number;
 }
@@ -40,6 +41,7 @@ const STATS_QUERY = gql`
 			solves_total
 			pro_users_count
 			pending_reports_count
+			pending_support_tickets_count
 			online_users
 			wca_connected
 		}
@@ -356,6 +358,14 @@ export default function AdminDashboard() {
 							color={stats.pending_reports_count > 0 ? '#ef4444' : '#6b7280'}
 							to="/admin/reports"
 							highlight={stats.pending_reports_count > 0}
+						/>
+						<StatCard
+							icon={<Lifebuoy size={28} weight="bold" />}
+							label={t('admin_dashboard.pending_support_tickets')}
+							value={stats.pending_support_tickets_count}
+							color={stats.pending_support_tickets_count > 0 ? '#f59e0b' : '#6b7280'}
+							to="/admin/reports?tab=support"
+							highlight={stats.pending_support_tickets_count > 0}
 						/>
 					</div>
 				</div>

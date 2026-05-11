@@ -15,6 +15,8 @@ export * from './AlgorithmOverride.schema';
 export * from './TimerBackground.schema';
 export * from './Integration.schema';
 export * from './Report.schema';
+export * from './SupportTicket.schema';
+export * from './SupportTicketMessage.schema';
 export * from './CustomCubeType.schema';
 export * from './Store.schema';
 export * from './NotificationPreference.schema';
