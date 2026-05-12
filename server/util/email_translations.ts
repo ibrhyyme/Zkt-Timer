@@ -40,7 +40,7 @@ const emailTranslations: Record<SupportedLang, EmailStrings> = {
 		forgot_subject: 'ZKT Timer Şifre Sıfırlama',
 		forgot_message: 'Şifreni sıfırlamak için aşağıdaki kodu kullan.',
 		forgot_title: 'Şifreni yeniliyoruz',
-		forgot_intro: 'Selam <strong>{{name}}</strong>! Şifreni sıfırlamak istemişsin. Şu kodu uygulamaya yapıştır, kaldığın yerden çözmeye dön.',
+		forgot_intro: 'Selam <strong>{{name}}</strong>! Şifreni sıfırlamak istemişsin. Şu kodu uygulamaya yapıştır, kaldığın yerden devam et.',
 		forgot_closing: "Hızlı solve'lar!",
 		forgot_expiry_minutes: 15,
 		verification_title: 'Hesabını aktifleştirelim',
