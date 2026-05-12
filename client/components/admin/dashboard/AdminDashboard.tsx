@@ -49,22 +49,27 @@ const STATS_QUERY = gql`
 `;
 
 const ACTIVE_USERS_QUERY = gql`
-	query AdminActiveUsers($period: String!) {
-		adminActiveUsers(period: $period) {
-			user {
-				id
-				username
-				is_pro
-				profile {
-					pfp_image {
-						id
-						user_id
-						storage_path
+	query AdminActiveUsers($period: String!, $monthYear: String) {
+		adminActiveUsers(period: $period, monthYear: $monthYear) {
+			rows {
+				user {
+					id
+					username
+					is_pro
+					profile {
+						pfp_image {
+							id
+							user_id
+							storage_path
+						}
 					}
 				}
+				active_minutes
+				last_seen_at
 			}
-			active_minutes
-			last_seen_at
+			total_active_users
+			total_active_minutes
+			available_months
 		}
 	}
 `;
@@ -80,6 +85,13 @@ interface ActiveUserRow {
 	};
 	active_minutes: number;
 	last_seen_at?: string | null;
+}
+
+interface AdminActiveUsersResult {
+	rows: ActiveUserRow[];
+	total_active_users: number;
+	total_active_minutes: number;
+	available_months: string[];
 }
 
 interface CardProps {
@@ -141,65 +153,148 @@ function formatRelative(iso: string | null | undefined, t: (k: string, opts?: an
 	return t('admin_dashboard.day_ago', { count: d });
 }
 
-interface ActiveUsersTableProps {
+function formatMonthLabel(ym: string, locale: string): string {
+	const m = /^(\d{4})-(\d{2})$/.exec(ym);
+	if (!m) return ym;
+	const date = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, 1));
+	try {
+		return new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' }).format(date);
+	} catch {
+		return ym;
+	}
+}
+
+function getCurrentIstanbulMonthYear(): string {
+	const parts = new Intl.DateTimeFormat('en-GB', {
+		timeZone: 'Europe/Istanbul',
+		year: 'numeric',
+		month: '2-digit',
+	}).formatToParts(new Date());
+	const year = parts.find((p) => p.type === 'year')?.value || '';
+	const month = parts.find((p) => p.type === 'month')?.value || '';
+	return `${year}-${month}`;
+}
+
+interface ActiveUsersPanelProps {
 	period: 'day' | 'week' | 'month';
 }
 
-function ActiveUsersTable({ period }: ActiveUsersTableProps) {
-	const { t } = useTranslation();
+function ActiveUsersPanel({ period }: ActiveUsersPanelProps) {
+	const { t, i18n } = useTranslation();
 	const dispatch = useDispatch();
-	const [rows, setRows] = React.useState<ActiveUserRow[] | null>(null);
+	const [result, setResult] = React.useState<AdminActiveUsersResult | null>(null);
 	const [loading, setLoading] = React.useState(true);
+	const [selectedMonth, setSelectedMonth] = React.useState<string | null>(null);
+
+	const currentMonth = React.useMemo(() => getCurrentIstanbulMonthYear(), []);
+	const effectiveMonth = period === 'month' ? (selectedMonth ?? currentMonth) : null;
 
 	React.useEffect(() => {
 		let cancelled = false;
 		setLoading(true);
-		gqlQuery<{ adminActiveUsers: ActiveUserRow[] }>(ACTIVE_USERS_QUERY, { period }, 'no-cache')
+		const variables: { period: string; monthYear?: string } = { period };
+		if (period === 'month' && selectedMonth && selectedMonth !== currentMonth) {
+			variables.monthYear = selectedMonth;
+		}
+		gqlQuery<{ adminActiveUsers: AdminActiveUsersResult }>(ACTIVE_USERS_QUERY, variables, 'no-cache')
 			.then((res) => {
 				if (cancelled) return;
-				setRows(res.data.adminActiveUsers || []);
+				setResult(res.data.adminActiveUsers || null);
 			})
-			.catch(() => { if (!cancelled) setRows([]); })
-			.finally(() => { if (!cancelled) setLoading(false); });
-		return () => { cancelled = true; };
-	}, [period]);
+			.catch(() => {
+				if (!cancelled) setResult(null);
+			})
+			.finally(() => {
+				if (!cancelled) setLoading(false);
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, [period, selectedMonth, currentMonth]);
 
 	function openManageUser(userId: string) {
 		dispatch(openModal(<ManageUser userId={userId} />, { width: 1100 }));
 	}
 
-	if (loading) return <div className="cd-admin-dashboard__table-loading">{t('admin_dashboard.loading')}</div>;
-	if (!rows || rows.length === 0) return <div className="cd-admin-dashboard__table-empty">{t('admin_dashboard.no_active_users')}</div>;
+	const monthOptions = React.useMemo(() => {
+		if (period !== 'month') return [];
+		const fromServer = result?.available_months ?? [];
+		const merged = Array.from(new Set([currentMonth, ...fromServer]));
+		merged.sort((a, b) => (a < b ? 1 : -1));
+		return merged;
+	}, [period, result?.available_months, currentMonth]);
 
 	return (
-		<div className="cd-admin-dashboard__table">
-			<div className="cd-admin-dashboard__table-header">
-				<span>{t('admin_dashboard.tbl_user')}</span>
-				<span>{t('admin_dashboard.tbl_active_time')}</span>
-				<span>{t('admin_dashboard.tbl_last_seen')}</span>
-			</div>
-			{rows.map((row) => (
-				<div
-					key={row.user.id}
-					className="cd-admin-dashboard__table-row cd-admin-dashboard__table-row--clickable"
-					onClick={() => openManageUser(row.user.id)}
-					role="button"
-					tabIndex={0}
-					onKeyDown={(e) => {
-						if (e.key === 'Enter' || e.key === ' ') {
-							e.preventDefault();
-							openManageUser(row.user.id);
-						}
-					}}
-				>
-					<span className="cd-admin-dashboard__table-user">
-						<AvatarImage user={row.user as any} tiny />
-						<span className="cd-admin-dashboard__table-username">{row.user.username}</span>
-					</span>
-					<span className="cd-admin-dashboard__table-time">{formatDuration(row.active_minutes, t)}</span>
-					<span className="cd-admin-dashboard__table-last">{formatRelative(row.last_seen_at, t)}</span>
+		<div className="cd-admin-dashboard__expand-panel">
+			{period === 'month' && monthOptions.length > 0 && (
+				<div className="cd-admin-dashboard__month-controls">
+					<label className="cd-admin-dashboard__month-label" htmlFor="cd-admin-dashboard-month-select">
+						{t('admin_dashboard.select_month')}
+					</label>
+					<select
+						id="cd-admin-dashboard-month-select"
+						className="cd-admin-dashboard__month-select"
+						value={effectiveMonth ?? currentMonth}
+						onChange={(e) => {
+							const v = e.target.value;
+							setSelectedMonth(v === currentMonth ? null : v);
+						}}
+					>
+						{monthOptions.map((ym) => (
+							<option key={ym} value={ym}>
+								{ym === currentMonth ? t('admin_dashboard.this_month') : formatMonthLabel(ym, i18n.language)}
+							</option>
+						))}
+					</select>
 				</div>
-			))}
+			)}
+
+			{!loading && result && result.rows.length > 0 && (
+				<div className="cd-admin-dashboard__panel-summary">
+					{t('admin_dashboard.month_summary', {
+						users: result.total_active_users,
+						duration: formatDuration(result.total_active_minutes, t),
+					})}
+				</div>
+			)}
+
+			{loading && <div className="cd-admin-dashboard__table-loading">{t('admin_dashboard.loading')}</div>}
+
+			{!loading && (!result || result.rows.length === 0) && (
+				<div className="cd-admin-dashboard__table-empty">{t('admin_dashboard.no_active_users')}</div>
+			)}
+
+			{!loading && result && result.rows.length > 0 && (
+				<div className="cd-admin-dashboard__table">
+					<div className="cd-admin-dashboard__table-header">
+						<span>{t('admin_dashboard.tbl_user')}</span>
+						<span>{t('admin_dashboard.tbl_active_time')}</span>
+						<span>{t('admin_dashboard.tbl_last_seen')}</span>
+					</div>
+					{result.rows.map((row) => (
+						<div
+							key={row.user.id}
+							className="cd-admin-dashboard__table-row cd-admin-dashboard__table-row--clickable"
+							onClick={() => openManageUser(row.user.id)}
+							role="button"
+							tabIndex={0}
+							onKeyDown={(e) => {
+								if (e.key === 'Enter' || e.key === ' ') {
+									e.preventDefault();
+									openManageUser(row.user.id);
+								}
+							}}
+						>
+							<span className="cd-admin-dashboard__table-user">
+								<AvatarImage user={row.user as any} tiny />
+								<span className="cd-admin-dashboard__table-username">{row.user.username}</span>
+							</span>
+							<span className="cd-admin-dashboard__table-time">{formatDuration(row.active_minutes, t)}</span>
+							<span className="cd-admin-dashboard__table-last">{formatRelative(row.last_seen_at, t)}</span>
+						</div>
+					))}
+				</div>
+			)}
 		</div>
 	);
 }
@@ -255,7 +350,7 @@ export default function AdminDashboard() {
 							icon={<ChartLineUp size={28} weight="bold" />}
 							label={t('admin_dashboard.dau')}
 							value={stats.dau}
-							subValue={t('admin_dashboard.last_24h')}
+							subValue={t('admin_dashboard.today')}
 							color="#3b82f6"
 							onClick={() => toggleExpand('day')}
 							expanded={expanded === 'day'}
@@ -265,7 +360,7 @@ export default function AdminDashboard() {
 							icon={<ChartLineUp size={28} weight="bold" />}
 							label={t('admin_dashboard.wau')}
 							value={stats.wau}
-							subValue={t('admin_dashboard.last_7d')}
+							subValue={t('admin_dashboard.this_week')}
 							color="#8b5cf6"
 							onClick={() => toggleExpand('week')}
 							expanded={expanded === 'week'}
@@ -275,18 +370,14 @@ export default function AdminDashboard() {
 							icon={<ChartLineUp size={28} weight="bold" />}
 							label={t('admin_dashboard.mau')}
 							value={stats.mau}
-							subValue={t('admin_dashboard.last_30d')}
+							subValue={t('admin_dashboard.this_month')}
 							color="#a855f7"
 							onClick={() => toggleExpand('month')}
 							expanded={expanded === 'month'}
 							expandable
 						/>
 					</div>
-					{expanded && (
-						<div className="cd-admin-dashboard__expand-panel">
-							<ActiveUsersTable period={expanded} />
-						</div>
-					)}
+					{expanded && <ActiveUsersPanel period={expanded} />}
 				</div>
 
 				<div className="cd-admin-dashboard__section">

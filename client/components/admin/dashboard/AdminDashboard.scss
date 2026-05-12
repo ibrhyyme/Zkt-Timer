@@ -93,6 +93,51 @@
 		animation: dashboardExpand 0.2s ease;
 	}
 
+	&__month-controls {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		margin-bottom: 12px;
+	}
+
+	&__month-label {
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: rgb(var(--text-color));
+	}
+
+	&__month-select {
+		background-color: rgba(var(--text-color), 0.06);
+		border: 1px solid rgba(var(--text-color), 0.12);
+		border-radius: 8px;
+		color: rgb(var(--text-color));
+		padding: 6px 10px;
+		font-size: 0.9rem;
+		font-family: inherit;
+		cursor: pointer;
+		min-width: 160px;
+
+		&:focus {
+			outline: 2px solid rgba(var(--primary-color), 0.4);
+			outline-offset: 1px;
+		}
+
+		option {
+			background-color: rgb(var(--theme-background));
+			color: rgb(var(--text-color));
+		}
+	}
+
+	&__panel-summary {
+		padding: 10px 12px;
+		margin-bottom: 8px;
+		background-color: rgba(var(--primary-color), 0.08);
+		border-radius: 10px;
+		font-size: 0.95rem;
+		font-weight: 600;
+		color: rgb(var(--text-color));
+	}
+
 	&__table {
 		display: flex;
 		flex-direction: column;

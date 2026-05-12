@@ -769,12 +769,17 @@ query caseStats($type: String!, $cubeType: String, $subset: String, $sessionId: 
 	}
 }
 
-query adminActiveUsers($period: String!) {
-	adminActiveUsers(period: $period) {
-		user {
-			...PublicUserFragment
+query adminActiveUsers($period: String!, $monthYear: String) {
+	adminActiveUsers(period: $period, monthYear: $monthYear) {
+		rows {
+			user {
+				...PublicUserFragment
+			}
+			active_minutes
+			last_seen_at
 		}
-		active_minutes
-		last_seen_at
+		total_active_users
+		total_active_minutes
+		available_months
 	}
 }
