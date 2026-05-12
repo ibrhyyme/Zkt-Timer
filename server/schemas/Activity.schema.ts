@@ -18,3 +18,18 @@ export class ActivityHeartbeatResult {
 	@Field()
 	success: boolean;
 }
+
+@ObjectType()
+export class AdminActiveUsersResult {
+	@Field(() => [ActiveUserRow])
+	rows: ActiveUserRow[];
+
+	@Field(() => Int)
+	total_active_users: number;
+
+	@Field(() => Int)
+	total_active_minutes: number;
+
+	@Field(() => [String])
+	available_months: string[];
+}

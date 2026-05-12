@@ -338,7 +338,7 @@ type Query {
   landingStats: LandingStats
   getIapStatus: IapStatus
   myCompetitionFollows(competitionId: String): [CompetitionFollow]
-  adminActiveUsers(period: String): [ActiveUserRow]
+  adminActiveUsers(monthYear: String, period: String): AdminActiveUsersResult
 }
 
 type Mutation {
@@ -2042,6 +2042,13 @@ type ActiveUserRow {
 
 type ActivityHeartbeatResult {
   success: Boolean
+}
+
+type AdminActiveUsersResult {
+  rows: [ActiveUserRow]
+  total_active_users: Int
+  total_active_minutes: Int
+  available_months: [String]
 }
 
 type Notification {

@@ -51,6 +51,7 @@ import { getIpDetail } from '../services/ipstack';
 import { archiveCompetition } from '../services/CompetitionArchiveService';
 import { BulkArchiveResult, ReindexESResult, ReindexLLResult } from '../schemas/ArchiveAdmin.schema';
 import { ARCHIVED_COMP_INDEX, bootstrapArchivedCompIndex, getSearchClient } from '../services/search';
+import { todayBoundsIstanbul, thisWeekBoundsIstanbul, thisMonthBoundsIstanbul } from '../util/calendar_window';
 
 @Resolver()
 export class AdminResolver {
@@ -364,10 +365,9 @@ export class AdminResolver {
 	@Query(() => AdminDashboardStats)
 	async adminDashboardStats(): Promise<AdminDashboardStats> {
 		const prisma = getPrisma();
-		const now = new Date();
-		const dayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-		const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-		const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+		const {start: todayStart} = todayBoundsIstanbul();
+		const {start: weekStart} = thisWeekBoundsIstanbul();
+		const {start: monthStart} = thisMonthBoundsIstanbul();
 
 		const [
 			total_users,
@@ -386,13 +386,13 @@ export class AdminResolver {
 			wca_connected,
 		] = await Promise.all([
 			prisma.userAccount.count(),
-			prisma.userAccount.count({ where: { last_seen_at: { gte: dayAgo } } }),
-			prisma.userAccount.count({ where: { last_seen_at: { gte: weekAgo } } }),
-			prisma.userAccount.count({ where: { last_seen_at: { gte: monthAgo } } }),
-			prisma.userAccount.count({ where: { created_at: { gte: dayAgo } } }),
-			prisma.userAccount.count({ where: { created_at: { gte: weekAgo } } }),
-			prisma.solve.count({ where: { created_at: { gte: dayAgo }, OR: [{ trainer_name: null }, { trainer_name: '' }] } }),
-			prisma.solve.count({ where: { created_at: { gte: weekAgo }, OR: [{ trainer_name: null }, { trainer_name: '' }] } }),
+			prisma.userAccount.count({ where: { last_seen_at: { gte: todayStart } } }),
+			prisma.userAccount.count({ where: { last_seen_at: { gte: weekStart } } }),
+			prisma.userAccount.count({ where: { last_seen_at: { gte: monthStart } } }),
+			prisma.userAccount.count({ where: { created_at: { gte: todayStart } } }),
+			prisma.userAccount.count({ where: { created_at: { gte: weekStart } } }),
+			prisma.solve.count({ where: { created_at: { gte: todayStart }, OR: [{ trainer_name: null }, { trainer_name: '' }] } }),
+			prisma.solve.count({ where: { created_at: { gte: weekStart }, OR: [{ trainer_name: null }, { trainer_name: '' }] } }),
 			prisma.solve.count({ where: { OR: [{ trainer_name: null }, { trainer_name: '' }] } }),
 			prisma.userAccount.count({ where: { OR: [{ is_pro: true }, { is_premium: true }] } }),
 			prisma.report.count({ where: { resolved_at: null } }),
