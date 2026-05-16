@@ -36,7 +36,7 @@ import { is3x3CubeType } from '../timer/helpers/util';
 import { getTimeString, convertTimeStringToSeconds } from '../../util/time';
 import { toastError } from '../../util/toast';
 import { resourceUri } from '../../util/storage';
-import { connectGanTimer, GanTimerConnection } from 'gan-web-bluetooth';
+import { connectGanTimer, GanTimerConnection } from '../timer/time_display/gantimer/ganTimerConnection';
 import { openModal, closeModal } from '../../actions/general';
 import BleScanningModal from '../timer/smart_cube/ble_scanning_modal/BleScanningModal';
 import { isNative } from '../../util/platform';

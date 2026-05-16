@@ -111,7 +111,6 @@ export async function connectGanTimer(): Promise<GanTimerConnection> {
 	try {
 		device = await adapter.requestDevice({
 			nameFilters: ['GAN', 'gan', 'Gan'],
-			serviceFilters: [GAN_TIMER_SERVICE],
 			optionalServices: [GAN_TIMER_SERVICE],
 		});
 	} finally {

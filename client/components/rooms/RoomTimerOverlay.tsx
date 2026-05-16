@@ -7,7 +7,7 @@ import { convertTimeStringToSeconds } from '../../util/time';
 import { openModal, closeModal } from '../../actions/general';
 import { Bluetooth, Timer, Keyboard, X, Check } from 'phosphor-react';
 import Stackmat from '../../util/vendor/stackmat';
-import { GanTimerConnection, GanTimerEvent, GanTimerState, connectGanTimer } from 'gan-web-bluetooth';
+import { GanTimerConnection, GanTimerEvent, GanTimerState, connectGanTimer } from '../timer/time_display/gantimer/ganTimerConnection';
 import BluetoothErrorMessage from '../timer/common/BluetoothErrorMessage';
 import BleScanningModal from '../timer/smart_cube/ble_scanning_modal/BleScanningModal';
 import { isNative } from '../../util/platform';
