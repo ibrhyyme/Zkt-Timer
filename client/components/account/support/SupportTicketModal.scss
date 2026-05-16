@@ -3,7 +3,7 @@
 .#{$namespace}-support-ticket-modal {
 	display: flex;
 	flex-direction: column;
-	gap: 14px;
+	gap: 16px;
 	max-height: 80vh;
 
 	&--loading {
@@ -15,9 +15,9 @@
 	&__header {
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
-		gap: 10px;
-		padding-bottom: 10px;
+		gap: 12px;
+		padding-right: 96px; // modal close button (Bitti / X) icin yer
+		padding-bottom: 12px;
 		border-bottom: 1px solid rgba(var(--text-color), 0.08);
 	}
 
@@ -28,62 +28,55 @@
 		color: rgb(var(--text-color));
 		flex: 1;
 		min-width: 0;
-	}
-
-	&__header-meta {
-		display: flex;
-		align-items: center;
-		gap: 8px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	&__timeline {
 		display: flex;
 		flex-direction: column;
-		gap: 12px;
+		gap: 14px;
 		overflow-y: auto;
-		max-height: 50vh;
-		padding: 6px 2px;
+		max-height: 55vh;
+		padding: 4px 2px;
 	}
 
 	&__row {
 		display: flex;
-		align-items: flex-end;
+		align-items: flex-start;
 		gap: 8px;
+		max-width: 100%;
 
-		&--right {
+		&--mine {
 			flex-direction: row-reverse;
+			margin-left: auto;
 		}
 	}
 
 	&__avatar {
 		flex-shrink: 0;
+		padding-top: 22px; // username satirinin altina hizala
 	}
 
-	&__bubble {
-		max-width: 70%;
-		padding: 10px 14px;
-		background-color: rgb(var(--button-color));
-		border: 1px solid rgba(var(--text-color), 0.08);
-		border-radius: 12px;
+	&__bubble-group {
 		display: flex;
 		flex-direction: column;
 		gap: 4px;
+		max-width: 78%;
+		min-width: 0;
+	}
 
-		&--admin {
-			background-color: rgba(var(--primary-color), 0.12);
-			border-color: rgba(var(--primary-color), 0.3);
-		}
-
-		&--mine {
-			background-color: rgba(var(--primary-color), 0.18);
-		}
+	&__row--mine &__bubble-group {
+		align-items: flex-end;
 	}
 
 	&__bubble-meta {
 		display: flex;
-		align-items: center;
+		align-items: baseline;
 		gap: 8px;
-		font-size: 0.75rem;
+		font-size: 0.78rem;
+		padding: 0 4px;
 	}
 
 	&__bubble-author {
@@ -92,32 +85,33 @@
 	}
 
 	&__bubble-time {
+		font-size: 0.72rem;
 		color: rgb(var(--text-color));
 	}
 
-	&__bubble-body {
+	&__bubble {
+		padding: 10px 14px;
+		background-color: rgb(var(--button-color));
+		border: 1px solid rgba(var(--text-color), 0.08);
+		border-radius: 14px 14px 14px 4px;
+		color: rgb(var(--text-color));
 		font-size: 0.95rem;
-		color: rgb(var(--text-color));
-		white-space: pre-wrap;
 		line-height: 1.5;
-	}
+		white-space: pre-wrap;
+		word-break: break-word;
 
-	&__closed-notice {
-		padding: 12px 16px;
-		background-color: rgba(245, 158, 11, 0.12);
-		border: 1px solid rgba(245, 158, 11, 0.3);
-		border-radius: 10px;
-		color: #f59e0b;
-		font-weight: 600;
-		font-size: 0.9rem;
-		text-align: center;
+		&--mine {
+			background-color: rgba(var(--primary-color), 0.22);
+			border-color: rgba(var(--primary-color), 0.35);
+			border-radius: 14px 14px 4px 14px;
+		}
 	}
 
 	&__reply {
 		display: flex;
 		flex-direction: column;
 		gap: 10px;
-		padding-top: 10px;
+		padding-top: 12px;
 		border-top: 1px solid rgba(var(--text-color), 0.08);
 	}
 
@@ -137,17 +131,60 @@
 		&:focus {
 			outline: none;
 			border-color: rgb(var(--primary-color));
+			box-shadow: 0 0 0 2px rgba(var(--primary-color), 0.18);
+		}
+
+		&:disabled {
+			cursor: not-allowed;
+			background-color: rgba(var(--button-color), 0.6);
 		}
 	}
 
 	&__reply-actions {
 		display: flex;
 		justify-content: flex-end;
+		align-items: center;
+		gap: 10px;
+		flex-wrap: wrap;
 	}
 
-	&__footer {
-		display: flex;
-		justify-content: flex-end;
-		padding-top: 8px;
+	@media (max-width: 600px) {
+		gap: 12px;
+
+		&__header {
+			gap: 8px;
+			padding-right: 84px;
+			padding-bottom: 10px;
+		}
+
+		&__subject {
+			font-size: 1rem;
+		}
+
+		&__timeline {
+			gap: 12px;
+			max-height: 50vh;
+		}
+
+		&__bubble-group {
+			max-width: 88%;
+		}
+
+		&__bubble {
+			font-size: 0.92rem;
+			padding: 9px 12px;
+		}
+
+		&__bubble-meta {
+			font-size: 0.72rem;
+		}
+
+		&__reply-actions {
+			justify-content: stretch;
+
+			> * {
+				flex: 1;
+			}
+		}
 	}
 }
