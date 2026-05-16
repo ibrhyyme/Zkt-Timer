@@ -5,6 +5,44 @@ import { IntegrationType, LINKED_SERVICES, LinkedServiceData, getWcaRedirectUri,
 import { Integration } from '../schemas/Integration.schema';
 import { updateUserProfile } from '../models/profile';
 
+// WCA /me response sekli — tum OAuth path'lerinde tek nokta sync icin
+// Her path'in kendi field-by-field updateIntegration cagrisi yerine bunu kullanmalidir.
+// Idempotent: bos update obj'si no-op, mevcut wca_id NEVER nullable'a dusurulmez.
+// Parametre `any` — Prisma model ile GraphQL Integration tipi arasinda yapisal uyum tam degil,
+// bu fonksiyon sadece integration.id'yi (updateIntegration uzerinden) kullaniyor.
+export async function syncWcaProfileToIntegration(
+	integration: any,
+	wcaData: any,
+): Promise<any> {
+	if (!wcaData) return integration;
+
+	const update: any = {};
+
+	if (wcaData.id) {
+		update.wca_user_id = String(wcaData.id);
+	}
+	if (wcaData.wca_id) {
+		update.wca_id = wcaData.wca_id;
+	}
+	if (wcaData.name) {
+		update.wca_name = wcaData.name;
+	}
+	const avatarUrl = wcaData.avatar?.thumb_url || wcaData.avatar?.url || null;
+	if (avatarUrl) {
+		update.wca_avatar_url = avatarUrl;
+	}
+	if (wcaData.country_iso2) {
+		update.wca_country_iso2 = wcaData.country_iso2;
+	}
+
+	if (Object.keys(update).length === 0) return integration;
+
+	// last_synced_at her basarili sync sonunda set edilir (schema bu alani icermek zorunda)
+	update.last_synced_at = new Date();
+
+	return await updateIntegration(integration, update);
+}
+
 
 export async function linkOAuthAccount(intType: IntegrationType, user: InternalUserAccount, code: string) {
 	const int = await getIntegration(user, intType);
@@ -32,15 +70,7 @@ export async function linkOAuthAccount(intType: IntegrationType, user: InternalU
 					headers: { Authorization: 'Bearer ' + accessToken },
 				});
 				const wcaData = res?.data?.me || res?.data;
-				const update: any = {};
-				if (wcaData?.wca_id) update.wca_id = wcaData.wca_id;
-				if (wcaData?.id) update.wca_user_id = String(wcaData.id);
-				if (wcaData?.name) update.wca_name = wcaData.name;
-				if (wcaData?.avatar?.thumb_url || wcaData?.avatar?.url) update.wca_avatar_url = wcaData.avatar.thumb_url || wcaData.avatar.url;
-				if (wcaData?.country_iso2) update.wca_country_iso2 = wcaData.country_iso2;
-				if (Object.keys(update).length > 0) {
-					await updateIntegration(int, update);
-				}
+				await syncWcaProfileToIntegration(int, wcaData);
 			} catch (error) {
 				console.warn('Failed to fetch WCA ID on re-link:', error.message);
 			}
@@ -58,7 +88,6 @@ export async function linkOAuthAccount(intType: IntegrationType, user: InternalU
 		});
 		const wcaData = res?.data?.me || res?.data;
 		const wcaId = wcaData?.wca_id || null;
-		const wcaUserId = wcaData?.id ? String(wcaData.id) : null;
 
 		// Baska kullaniciya bagli wca_id kontrolu (sadece wca_id varsa)
 		if (wcaId) {
@@ -69,13 +98,7 @@ export async function linkOAuthAccount(intType: IntegrationType, user: InternalU
 		}
 
 		let integration = await createIntegration(user, intType, accessToken, refreshToken, createdAt + expiresIn * 1000);
-		integration = await updateIntegration(integration, {
-			wca_id: wcaId,
-			wca_user_id: wcaUserId,
-			wca_name: wcaData?.name || null,
-			wca_avatar_url: wcaData?.avatar?.thumb_url || wcaData?.avatar?.url || null,
-			wca_country_iso2: wcaData.country_iso2 || null,
-		});
+		integration = await syncWcaProfileToIntegration(integration, wcaData);
 		return integration;
 	}
 
@@ -202,14 +225,21 @@ export async function exchangeWcaLoginCode(code: string) {
 	return {
 		email: wcaData.email,
 		name: wcaData.name || '',
-		wcaId: wcaData.wca_id,
-		countryIso2: wcaData.country_iso2,
+		wcaId: wcaData.wca_id || null,
+		wcaUserId: wcaData.id ? String(wcaData.id) : null,
+		wcaAvatarUrl: (wcaData.avatar?.thumb_url || wcaData.avatar?.url || null) as string | null,
+		countryIso2: wcaData.country_iso2 || null,
 		gender: wcaData.gender,
 		accessToken,
 		refreshToken,
 		expiresAt: createdAt + expiresIn * 1000,
+		rawWcaData: wcaData,
 	};
 }
+
+// Sentinel: token kalici olarak gecersiz (WCA tarafinda revoke edildi veya kullanici sildi)
+// Caller'lar bu mesaji yakalayip integration'i revoked_at ile isaretler.
+export const WCA_TOKEN_REVOKED = 'WCA_TOKEN_REVOKED';
 
 export async function getAuthToken(intType: IntegrationType, user: UserAccount) {
 	const integration = await getIntegration(user, intType);
@@ -223,7 +253,19 @@ export async function getAuthToken(intType: IntegrationType, user: UserAccount) 
 	const now = new Date();
 
 	if (expiresAt < now) {
-		authToken = await getNewAuthToken(integration);
+		try {
+			authToken = await getNewAuthToken(integration);
+		} catch (e: any) {
+			// Refresh kalici hata aldi — integration'i revoked olarak isaretle, error'i re-throw et
+			if (e?.message === WCA_TOKEN_REVOKED) {
+				try {
+					await updateIntegration(integration, {revoked_at: new Date()} as any);
+				} catch (markErr: any) {
+					console.warn('[oauth] Failed to mark integration revoked:', markErr?.message);
+				}
+			}
+			throw e;
+		}
 	}
 
 	return authToken;
@@ -250,9 +292,14 @@ async function getNewAuthToken(integration: Integration) {
 		});
 
 		return int.auth_token;
-	} catch (e) {
-		console.warn('Token refresh failed for', integration.service_name, ':', e?.message);
-		return null;
+	} catch (e: any) {
+		const status = e?.response?.status;
+		console.warn('Token refresh failed for', integration.service_name, 'status=', status, ':', e?.message);
+		// 400/401 -> refresh_token gecersiz, kalici hata. Diger durumlar transient.
+		if (status === 400 || status === 401) {
+			throw new Error(WCA_TOKEN_REVOKED);
+		}
+		throw e;
 	}
 }
 
@@ -260,11 +307,29 @@ export async function getIntegrationGetMe(intType: IntegrationType, user: UserAc
 	const authToken = await getAuthToken(intType, user);
 	const service = LINKED_SERVICES[intType];
 
-	const res = await axios.get(service.meEndpoint, {
-		headers: {
-			Authorization: 'Bearer ' + authToken,
-		},
-	});
+	let res;
+	try {
+		res = await axios.get(service.meEndpoint, {
+			headers: {
+				Authorization: 'Bearer ' + authToken,
+			},
+		});
+	} catch (e: any) {
+		const status = e?.response?.status;
+		// 401: token revoked/invalid (sentinel davranis)
+		// 404: WCA hesabi silinmis
+		if (status === 401 || status === 404) {
+			const integration = await getIntegration(user, intType);
+			if (integration) {
+				try {
+					await updateIntegration(integration, {revoked_at: new Date()} as any);
+				} catch (markErr: any) {
+					console.warn('[oauth] Failed to mark integration revoked on /me:', markErr?.message);
+				}
+			}
+		}
+		throw e;
+	}
 
 	const me = res?.data?.me;
 

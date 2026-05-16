@@ -167,6 +167,8 @@ model Integration {
   sor_single             Int?
   sor_average            Int?
   ranks_updated_at       DateTime?
+  revoked_at             DateTime?
+  last_synced_at         DateTime?
   created_at             DateTime    @default(now())
   user                   UserAccount @relation(fields: [user_id], references: [id], onDelete: Cascade)
   wca_records            WcaRecord[]
@@ -175,6 +177,8 @@ model Integration {
   @@index([kinch_score])
   @@index([sor_single])
   @@index([sor_average])
+  @@index([wca_user_id])
+  @@index([revoked_at])
   @@map("integration")
 }
 
@@ -247,6 +251,7 @@ model SiteConfig {
   rooms_enabled        Boolean  @default(true)
   battle_enabled       Boolean  @default(true)
   pro_enabled          Boolean  @default(false)
+  wca_backfill_enabled Boolean  @default(true)
   feature_overrides    Json     @default("{}")
   updated_at           DateTime @updatedAt @default(now())
   updated_by           String?

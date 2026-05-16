@@ -25,6 +25,7 @@ export interface SiteConfigData {
 	rooms_enabled: boolean;
 	battle_enabled: boolean;
 	pro_enabled: boolean;
+	wca_backfill_enabled: boolean;
 	feature_overrides: Record<string, {mode: string; users: FeatureOverrideUserData[]}>;
 	featureOverrides: FeatureOverrideEntryData[];
 	updated_at: Date;
@@ -38,6 +39,7 @@ const DEFAULT_CONFIG: Omit<SiteConfigData, 'id' | 'updated_at' | 'featureOverrid
 	rooms_enabled: true,
 	battle_enabled: true,
 	pro_enabled: false,
+	wca_backfill_enabled: true,
 	feature_overrides: {},
 };
 
@@ -53,6 +55,7 @@ export async function getSiteConfig(): Promise<SiteConfigData> {
 			rooms_enabled: false,
 			battle_enabled: false,
 			pro_enabled: false,
+			wca_backfill_enabled: false,
 			feature_overrides: {},
 			featureOverrides: [],
 			updated_at: new Date(),

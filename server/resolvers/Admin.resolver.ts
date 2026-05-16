@@ -42,11 +42,8 @@ import WcaResultEnteredNotification from '../resources/notification_types/wca_re
 import WcaRoundFinishedNotification from '../resources/notification_types/wca_round_finished';
 import { getPrisma } from '../database';
 import { WcaApiService } from '../services/WcaApiService';
-import { LINKED_SERVICES } from '../../shared/integration';
 import axios from 'axios';
-import { updateIntegration } from '../models/integration';
-import { fetchAndSaveWcaRecords } from '../models/wca_record';
-import { getOAuthPostRequest } from '../integrations/oauth';
+import { runWcaBackfill } from '../services/WcaBackfillService';
 import { getIpDetail } from '../services/ipstack';
 import { archiveCompetition } from '../services/CompetitionArchiveService';
 import { BulkArchiveResult, ReindexESResult, ReindexLLResult } from '../schemas/ArchiveAdmin.schema';
@@ -561,127 +558,32 @@ export class AdminResolver {
 	@Query(() => WcaStats)
 	async wcaStats(): Promise<WcaStats> {
 		const prisma = getPrisma();
-		const [totalUsers, wcaConnected, wcaWithId] = await Promise.all([
+		const [totalUsers, wcaConnected, wcaWithId, wcaWithoutUserId, wcaRevoked, wcaBackfillPending] = await Promise.all([
 			prisma.userAccount.count(),
 			prisma.integration.count({where: {service_name: 'wca'}}),
 			prisma.integration.count({where: {service_name: 'wca', wca_id: {not: null}}}),
+			prisma.integration.count({where: {service_name: 'wca', wca_user_id: null}}),
+			prisma.integration.count({where: {service_name: 'wca', revoked_at: {not: null}} as any}),
+			prisma.integration.count({where: {service_name: 'wca', revoked_at: null, OR: [{wca_user_id: null}, {wca_id: null}]} as any}),
 		]);
-		return {totalUsers, wcaConnected, wcaWithId, wcaWithoutId: wcaConnected - wcaWithId};
+		return {
+			totalUsers,
+			wcaConnected,
+			wcaWithId,
+			wcaWithoutId: wcaConnected - wcaWithId,
+			wcaWithoutUserId,
+			wcaRevoked,
+			wcaBackfillPending,
+		};
 	}
 
 	@Authorized([Role.ADMIN])
 	@Mutation(() => BackfillResult)
 	async backfillWcaIds(): Promise<BackfillResult> {
-		const prisma = getPrisma();
-		const wcaService = LINKED_SERVICES['wca'];
-
-		const result: BackfillResult = {
-			total: 0, filled: 0, tokenFailed: 0, noWcaId: 0, error: 0,
-			recordsTotal: 0, recordsFilled: 0, recordsError: 0,
-		};
-
-		// Phase 1: wca_user_id veya wca_id eksik olan integration'lari guncelle
-		// wca_name/wca_avatar_url intentionally excluded — avatari olmayan kullanicilari sonsuz donguye sokmasin
-		const needsUpdate = await prisma.integration.findMany({
-			where: {
-				service_name: 'wca',
-				OR: [{wca_user_id: null}, {wca_id: null}],
-			},
-			include: {user: true},
-		});
-
-		result.total = needsUpdate.length;
-
-		for (const int of needsUpdate) {
-			try {
-				let authToken = int.auth_token;
-				const expiresAt = new Date(Number(int.auth_expires_at));
-				if (expiresAt < new Date()) {
-					try {
-						const refreshResult = await getOAuthPostRequest(
-							wcaService,
-							wcaService.tokenEndpoint,
-							{grant_type: 'refresh_token', refresh_token: int.refresh_token}
-						);
-						authToken = refreshResult.accessToken;
-						await updateIntegration(int, {
-							auth_token: refreshResult.accessToken,
-							refresh_token: refreshResult.refreshToken,
-							auth_expires_at: refreshResult.createdAt + refreshResult.expiresIn * 1000,
-						});
-					} catch (e) {
-						console.warn(`[Backfill] Token refresh failed for user ${int.user_id}:`, e?.message);
-						result.tokenFailed++;
-						continue;
-					}
-				}
-
-				await new Promise((r) => setTimeout(r, 300));
-				const res = await axios.get(wcaService.meEndpoint, {
-					headers: {Authorization: 'Bearer ' + authToken},
-					timeout: 8000,
-				});
-
-				const wcaData = res?.data?.me || res?.data;
-				const wcaUserId = wcaData?.id ? String(wcaData.id) : null;
-				const wcaId = wcaData?.wca_id || null;
-
-				const update: any = {};
-				if (wcaUserId) update.wca_user_id = wcaUserId;
-				if (wcaId && !int.wca_id) update.wca_id = wcaId;
-				if (wcaData?.name && !int.wca_name) update.wca_name = wcaData.name;
-				if (!int.wca_avatar_url) {
-					const avatarUrl = wcaData?.avatar?.thumb_url || wcaData?.avatar?.url || null;
-					if (avatarUrl) update.wca_avatar_url = avatarUrl;
-				}
-				if (wcaData?.country_iso2 && !int.wca_country_iso2) update.wca_country_iso2 = wcaData.country_iso2;
-
-				if (Object.keys(update).length > 0) {
-					await updateIntegration(int, update);
-				}
-
-				if (!wcaId) {
-					result.noWcaId++;
-					console.log(`[Backfill] Newcomer — wca_user_id=${wcaUserId} saved for user ${int.user_id}`);
-				} else {
-					result.filled++;
-					console.log(`[Backfill] Filled wca_user_id=${wcaUserId} wca_id=${wcaId} for user ${int.user_id}`);
-				}
-			} catch (e) {
-				if (e?.response?.status === 429) {
-					console.warn(`[Backfill] Rate limited by WCA, sleeping 10s...`);
-					await new Promise((r) => setTimeout(r, 10_000));
-				}
-				console.warn(`[Backfill] Failed for user ${int.user_id}:`, e?.message);
-				result.error++;
-			}
-		}
-
-		// Phase 2: wca_id var ama ranking skoru olmayan herkese WCA record cek + ranking hesapla
-		const missingRankings = await prisma.integration.findMany({
-			where: {
-				service_name: 'wca',
-				wca_id: {not: null},
-				kinch_score: null,
-			},
-			include: {user: true},
-		});
-
-		result.recordsTotal = missingRankings.length;
-
-		for (const int of missingRankings) {
-			try {
-				await fetchAndSaveWcaRecords(int.user as any, int as any);
-				result.recordsFilled++;
-				console.log(`[Backfill] Records fetched for wca_id=${int.wca_id} user=${int.user_id}`);
-			} catch (e) {
-				console.warn(`[Backfill] Records failed for user ${int.user_id}:`, e?.message);
-				result.recordsError++;
-			}
-		}
-
-		console.log(`[Backfill] Done.`, result);
-		return result;
+		// Mevcut tum logic WcaBackfillService'e tasindi (cron da ayni fonksiyonu cagiriyor).
+		// Admin mutation manuel tetikleme icin saklaniyor — boylece "site_config wca_backfill_enabled=false"
+		// olsa bile admin tek seferlik calistirma yapabilir.
+		return await runWcaBackfill();
 	}
 
 	/**

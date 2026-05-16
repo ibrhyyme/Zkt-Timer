@@ -81,6 +81,12 @@ export class Integration {
 	@Field(() => Boolean, { nullable: true })
 	wca_show_results?: boolean;
 
+	@Field(() => Date, { nullable: true })
+	revoked_at?: Date;
+
+	@Field(() => Date, { nullable: true })
+	last_synced_at?: Date;
+
 	@Field()
 	created_at: Date;
 
