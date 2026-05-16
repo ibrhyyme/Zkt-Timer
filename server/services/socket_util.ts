@@ -193,6 +193,31 @@ export type OnlineUserEntry = {
 	tabCount: number;
 };
 
+export const ADMIN_ONLINE_WATCHERS_ROOM = 'admin:online-watchers';
+
+let broadcastDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+const BROADCAST_DEBOUNCE_MS = 500;
+
+export function broadcastOnlineUsersChanged(): void {
+	if (broadcastDebounceTimer) {
+		clearTimeout(broadcastDebounceTimer);
+	}
+	broadcastDebounceTimer = setTimeout(async () => {
+		broadcastDebounceTimer = null;
+		try {
+			const io = getSocketIO();
+			if (!io) return;
+			const room = io.in(ADMIN_ONLINE_WATCHERS_ROOM);
+			const sockets = await room.fetchSockets();
+			if (sockets.length === 0) return;
+			const users = await getOnlineUsers();
+			io.to(ADMIN_ONLINE_WATCHERS_ROOM).emit('admin:online_users_changed', users);
+		} catch {
+			// Hata loglamayi sessizce yut — broadcast best-effort
+		}
+	}, BROADCAST_DEBOUNCE_MS);
+}
+
 export async function getOnlineUsers(): Promise<OnlineUserEntry[]> {
 	const sockets = await getSocketIO().fetchSockets();
 	const byUserId = new Map<string, { user: PublicUserAccount; tabCount: number }>();

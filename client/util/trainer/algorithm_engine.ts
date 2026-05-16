@@ -324,6 +324,19 @@ export function getDefaultFrontFace(topFace: CubeFace): CubeFace {
 }
 
 /**
+ * Etkin top/front face'i dondurur. `whiteOnBottom` aktifse user'in secimi
+ * yerine D/F preset'i kullanilir (cuber'larin %80'inin yaptigi orientation).
+ */
+export function getEffectiveOrientation(opts: {
+	topFace: CubeFace;
+	frontFace: CubeFace;
+	whiteOnBottom?: boolean;
+}): {topFace: CubeFace; frontFace: CubeFace} {
+	if (opts.whiteOnBottom) return {topFace: 'D', frontFace: 'F'};
+	return {topFace: opts.topFace, frontFace: opts.frontFace};
+}
+
+/**
  * Check if a category is a Last Layer category (OLL, PLL, COLL, OLLCP, ZBLL, etc.)
  * LL categories don't need front face selection — only top face matters.
  */

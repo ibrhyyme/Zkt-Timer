@@ -3,7 +3,7 @@ import { getRedisPubClient, getRedisSubClient } from './redis';
 import { createAdapter } from '@socket.io/redis-adapter';
 import { listenForFriendlyRoomEvents } from '../friendly_room';
 import { listenForZktCompEvents } from '../zkt_competition';
-import { getUserFromClient } from './socket_util';
+import { getUserFromClient, broadcastOnlineUsersChanged, ADMIN_ONLINE_WATCHERS_ROOM, getOnlineUsers } from './socket_util';
 import { subscribeRound, unsubscribeRound, unsubscribeAllRounds, setPollerIOGetter } from './WcaLivePoller';
 
 let io: Server;

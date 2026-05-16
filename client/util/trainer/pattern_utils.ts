@@ -22,6 +22,12 @@ export function getKPuzzle(): KPuzzle | null {
 	return KPUZZLE_333 || null;
 }
 
+/**
+ * Cozulmus 3x3 cube'un Kociemba facelet string'i (54 karakter).
+ * Hem TrainerSmartCube hem trainer disindaki yerlerde safety net olarak kullanilir.
+ */
+export const SOLVED_STATE = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
+
 const REID_EDGE_ORDER = 'UF UR UB UL DF DR DB DL FR FL BR BL'.split(' ');
 const REID_CORNER_ORDER = 'UFR URB UBL ULF DRF DFL DLB DBR'.split(' ');
 const REID_CENTER_ORDER = 'U L F R B D'.split(' ');
@@ -228,6 +234,9 @@ export function fixOrientation(pattern: KPattern): KPattern {
 			}
 		}
 	}
+	// Sessiz hata yerine fail-loud — bu durum 3x3 KPattern icin neredeyse imkansiz
+	// ama yine de bir kez yakalanirsa kullanici/gelistirici farkinda olsun
+	console.warn('[trainer] fixOrientation: kanonik center pozisyonuna ulasilamadi, orijinal pattern donduruluyor');
 	return pattern;
 }
 

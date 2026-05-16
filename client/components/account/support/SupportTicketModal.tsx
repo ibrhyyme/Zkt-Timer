@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {gql, useMutation, useQuery} from '@apollo/client';
 import Avatar from '../../common/avatar/Avatar';
@@ -78,6 +78,13 @@ interface Props {
 	onUpdate?: () => void;
 }
 
+type TimelineMessage = {
+	id: string;
+	body: string;
+	created_at: any;
+	sender?: {id?: string | null; username?: string | null; profile?: any} | null;
+};
+
 export default function SupportTicketModal({ticketId, isAdminView, onUpdate}: Props) {
 	const {t} = useTranslation();
 	const me = useMe();
@@ -85,7 +92,7 @@ export default function SupportTicketModal({ticketId, isAdminView, onUpdate}: Pr
 
 	const {data, loading, refetch} = useQuery<{supportTicket: SupportTicketSchema}>(SUPPORT_TICKET_DETAIL, {
 		variables: {id: ticketId},
-		fetchPolicy: 'network-only',
+		fetchPolicy: 'cache-and-network',
 	});
 
 	const [addMessage, {loading: sending}] = useMutation(ADD_MESSAGE);
@@ -93,6 +100,19 @@ export default function SupportTicketModal({ticketId, isAdminView, onUpdate}: Pr
 
 	const ticket = data?.supportTicket;
 	const isResolved = !!ticket?.resolved_at;
+
+	const allMessages = useMemo<TimelineMessage[]>(() => {
+		if (!ticket) return [];
+		return [
+			{
+				id: 'initial',
+				body: ticket.message,
+				created_at: ticket.created_at,
+				sender: ticket.created_by,
+			},
+			...((ticket.messages || []) as TimelineMessage[]),
+		];
+	}, [ticket?.id, ticket?.message, ticket?.created_at, ticket?.created_by, ticket?.messages]);
 
 	async function handleSend() {
 		const trimmed = reply.trim();
@@ -128,16 +148,6 @@ export default function SupportTicketModal({ticketId, isAdminView, onUpdate}: Pr
 
 	const canSend = reply.trim().length > 0 && !sending && !isResolved;
 
-	// Konunun ilk mesaji: subject + ticket.message birlikte, ticket sahibi tarafindan gonderilmis kabul edilir
-	const initialMessage = {
-		id: 'initial',
-		body: ticket.message,
-		is_admin: false,
-		created_at: ticket.created_at,
-		sender: ticket.created_by,
-	};
-	const allMessages = [initialMessage, ...(ticket.messages || [])];
-
 	return (
 		<div className={b()}>
 			<div className={b('header')}>
@@ -150,7 +160,7 @@ export default function SupportTicketModal({ticketId, isAdminView, onUpdate}: Pr
 			</div>
 
 			<div className={b('timeline')} role="log" aria-live="polite">
-				{allMessages.map((msg: any) => {
+				{allMessages.map((msg) => {
 					const isMine = msg.sender?.id === me?.id;
 					const username = msg.sender?.username || '';
 					const displayName = isMine ? `${username} (${t('support.you')})` : username;

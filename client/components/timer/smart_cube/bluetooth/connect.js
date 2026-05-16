@@ -100,12 +100,12 @@ export default class Connect extends SmartCube {
 		}
 	};
 
-	connect = async () => {
+	connect = async (acceptAll = false) => {
 		const MAX_RETRIES = 3;
 		const excludeDeviceIds = [];
 		this._cancelled = false;
 
-		console.log('[BLE-CONNECT] connect() basladi | isNative:', isNative());
+		console.log('[BLE-CONNECT] connect() basladi | isNative:', isNative(), '| acceptAll:', acceptAll);
 
 		try {
 			this.adapter = await getBleAdapter();
@@ -119,6 +119,7 @@ export default class Connect extends SmartCube {
 				const device = await this.adapter.requestDevice({
 					...this._deviceOptions,
 					excludeDeviceIds,
+					acceptAll,
 				});
 
 				console.log('[BLE-CONNECT] Cihaz bulundu:', device.name, '| deviceId:', device.deviceId);

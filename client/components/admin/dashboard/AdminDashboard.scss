@@ -141,6 +141,13 @@
 	&__table {
 		display: flex;
 		flex-direction: column;
+
+		&--online {
+			.cd-admin-dashboard__table-header,
+			.cd-admin-dashboard__table-row {
+				grid-template-columns: 2fr 1fr;
+			}
+		}
 	}
 
 	&__table-header {

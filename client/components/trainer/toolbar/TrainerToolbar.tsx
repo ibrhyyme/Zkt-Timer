@@ -1,8 +1,12 @@
 import React, {useCallback} from 'react';
+import {useDispatch} from 'react-redux';
 import block from '../../../styles/bem';
 import {useTrainerContext} from '../TrainerContext';
 import {getPuzzleType} from '../../../util/trainer/algorithm_engine';
 import {useTranslation} from 'react-i18next';
+import {openModal} from '../../../actions/general';
+import TrainerSettingsModal from '../options/TrainerSettingsModal';
+import type {TrainerOptions} from '../types';
 import {
 	Eye,
 	EyeSlash,
@@ -12,12 +16,14 @@ import {
 	ArrowCounterClockwise,
 	Compass,
 	Crosshair,
+	GearSix,
 } from 'phosphor-react';
 
 const b = block('trainer');
 
 export default function TrainerToolbar() {
 	const {t} = useTranslation();
+	const reduxDispatch = useDispatch();
 	const {state, dispatch, connectRef} = useTrainerContext();
 	const toggleMask = useCallback(() => {
 		dispatch({type: 'SET_MOVE_MASKED', payload: !state.isMoveMasked});
@@ -35,7 +41,7 @@ export default function TrainerToolbar() {
 			dispatch({type: 'SMART_DISCONNECT'});
 		} else {
 			try {
-				await conn.connect();
+				await conn.connect(state.options.showAllBleDevices);
 			} catch (e) {
 				// connect hatalari alertScanError callback'inde handle ediliyor
 			}
@@ -45,7 +51,25 @@ export default function TrainerToolbar() {
 				dispatch({type: 'SMART_CONNECTION', payload: {scanning: false, connecting: false}});
 			}
 		}
-	}, [connectRef, state.smartConnected, dispatch]);
+	}, [connectRef, state.smartConnected, state.options.showAllBleDevices, dispatch]);
+
+	const handleOpenSettings = useCallback(() => {
+		// Modal Redux ile App root'unda render edildigi icin TrainerProvider
+		// disinda kaliyor — useTrainerContext() default no-op dispatch verir.
+		// Prop drilling ile current options snapshot + onChange callback'i geciriyoruz.
+		const onOptionChange = <K extends keyof TrainerOptions>(key: K, value: TrainerOptions[K]) => {
+			dispatch({type: 'SET_OPTIONS', payload: {[key]: value} as Partial<TrainerOptions>});
+		};
+		reduxDispatch(openModal(
+			<TrainerSettingsModal initialOptions={state.options} onOptionChange={onOptionChange} />,
+			{
+				title: t('trainer.settings'),
+				width: 560,
+				compact: true,
+				closeButtonText: t('solve_info.done'),
+			}
+		));
+	}, [reduxDispatch, t, state.options, dispatch]);
 
 	return (
 		<>
@@ -135,6 +159,15 @@ export default function TrainerToolbar() {
 						</button>
 					)}
 
+					{(state.view === 'training' || state.view === 'selection') && (
+						<button
+							className={b('toolbar-btn')}
+							onClick={handleOpenSettings}
+							title={t('trainer.settings')}
+						>
+							<GearSix size={20} />
+						</button>
+					)}
 					</div>
 			</div>
 		</>
