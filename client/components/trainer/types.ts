@@ -31,6 +31,7 @@ export interface TrainerSolveRecord {
 	p2?: boolean;    // plus_two (only present if true)
 	dnf?: boolean;   // (only present if true)
 	ts?: number;     // timestamp (Date.now())
+	mistakes?: number; // smart cube'da yapilan yanlis hamle sayisi (0 ise kaydedilmez)
 }
 
 // Smart Cube Types
@@ -48,8 +49,11 @@ export type CubeFace = 'U' | 'D' | 'F' | 'B' | 'R' | 'L';
 export interface TrainerOptions {
 	randomOrder: boolean;
 	prioritizeSlow: boolean;
+	prioritizeFailed: boolean;
 	selectLearning: boolean;
 	randomizeAUF: boolean;
+	autoLearnEnabled: boolean;
+	autoLearnThreshold: number;
 	topFace: CubeFace;
 	frontFace: CubeFace;
 }

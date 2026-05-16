@@ -289,6 +289,8 @@
         "option_random_auf": "随机 AUF",
         "option_prioritize_slow": "优先训练慢速情况",
         "option_prioritize_failed": "优先训练失败情况",
+        "option_auto_learn_enabled": "自动标记为「已学会」",
+        "option_auto_learn_threshold": "阈值（连续正确解答次数）",
         "option_show_alg_name": "显示公式名称",
         "option_flash_indicator": "闪烁指示器",
         "top_layer": "顶层",

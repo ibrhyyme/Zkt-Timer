@@ -114,9 +114,11 @@ function recalculateBest(algId: string) {
 	}
 }
 
-export function addTime(algId: string, time: number) {
+export function addTime(algId: string, time: number, mistakes?: number) {
 	const records = getLastTimes(algId);
-	records.push({t: time, ts: Date.now()});
+	const rec: TrainerSolveRecord = {t: time, ts: Date.now()};
+	if (mistakes !== undefined && mistakes > 0) rec.mistakes = mistakes;
+	records.push(rec);
 	const trimmed = records.slice(-100);
 	saveRecords(algId, trimmed);
 	recalculateBest(algId);
@@ -163,6 +165,44 @@ export function getLearnedStatus(algId: string): LearnedStatus {
 export function setLearnedStatus(algId: string, status: LearnedStatus) {
 	localStorage.setItem(PREFIX + 'Learned-' + algId, String(status));
 	emitEvent('trainerDbUpdatedEvent');
+}
+
+// --- Fail counter (queue sort icin) ---
+
+export function getFailCount(algId: string): number {
+	const val = localStorage.getItem(PREFIX + 'FailCount-' + algId);
+	if (!val) return 0;
+	const num = Number(val);
+	return Number.isFinite(num) ? num : 0;
+}
+
+export function incrementFailCount(algId: string): void {
+	const next = getFailCount(algId) + 1;
+	localStorage.setItem(PREFIX + 'FailCount-' + algId, String(next));
+	emitEvent('trainerDbUpdatedEvent');
+}
+
+export function resetFailCount(algId: string): void {
+	localStorage.removeItem(PREFIX + 'FailCount-' + algId);
+	emitEvent('trainerDbUpdatedEvent');
+}
+
+/**
+ * Auto-update Learning State kontrolu.
+ * Son `threshold` kayit hepsi temiz ise (DNF/+2/mistakes yok) algoritmayi
+ * "learned" (status=2) olarak isaretler. Zaten learned ise no-op.
+ * Donus: gercekten guncellendi mi.
+ */
+export function checkAutoLearn(algId: string, threshold: number): boolean {
+	if (threshold <= 0) return false;
+	if (getLearnedStatus(algId) === 2) return false;
+	const records = getLastTimes(algId);
+	if (records.length < threshold) return false;
+	const lastN = records.slice(-threshold);
+	const allClean = lastN.every((r) => !r.dnf && !r.p2 && !r.mistakes);
+	if (!allClean) return false;
+	setLearnedStatus(algId, 2);
+	return true;
 }
 
 /**
@@ -255,6 +295,7 @@ export function deleteAlgorithm(category: string, algorithm: string) {
 	localStorage.removeItem(PREFIX + 'Best-' + id);
 	localStorage.removeItem(PREFIX + 'LastTimes-' + id);
 	localStorage.removeItem(PREFIX + 'Learned-' + id);
+	localStorage.removeItem(PREFIX + 'FailCount-' + id);
 
 	setSavedAlgorithms(saved);
 }

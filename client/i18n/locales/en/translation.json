@@ -289,6 +289,8 @@
         "option_random_auf": "Random AUF",
         "option_prioritize_slow": "Prioritize slow cases",
         "option_prioritize_failed": "Prioritize failed cases",
+        "option_auto_learn_enabled": "Auto-mark as 'Learned'",
+        "option_auto_learn_threshold": "Threshold (consecutive correct solves)",
         "option_show_alg_name": "Show algorithm name",
         "option_flash_indicator": "Flash indicator",
         "top_layer": "Top Layer",

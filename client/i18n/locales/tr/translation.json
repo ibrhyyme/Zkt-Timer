@@ -298,6 +298,8 @@
         "option_random_auf": "AUF rastgele",
         "option_prioritize_slow": "Yavaş vakalara öncelik ver",
         "option_prioritize_failed": "Başarısız vakalara öncelik ver",
+        "option_auto_learn_enabled": "Otomatik 'Öğrenildi' işaretle",
+        "option_auto_learn_threshold": "Eşik (ardışık doğru çözüm)",
         "option_show_alg_name": "Algoritma adını göster",
         "option_flash_indicator": "Doğru/yanlış gösterge",
         "top_layer": "Üst Katman",
