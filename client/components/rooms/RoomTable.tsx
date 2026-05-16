@@ -343,10 +343,13 @@ function RoomTableInner({ participants, scrambleIndex, userStatuses = {}, curren
                                             );
                                         }
 
+                                        const isClickable = !!solve;
                                         return (
                                             <div
                                                 key={p.id}
-                                                className={`flex-1 min-w-[100px] flex items-center justify-center py-1.5 border-r border-text/[0.1] last:border-0`}
+                                                onClick={isClickable ? () => setSelectedRound(round) : undefined}
+                                                title={isClickable ? t('rooms.scrambleModal.view') : undefined}
+                                                className={`flex-1 min-w-[100px] flex items-center justify-center py-1.5 border-r border-text/[0.1] last:border-0 ${isClickable ? 'cursor-pointer hover:bg-text/[0.05] transition-colors' : ''}`}
                                             >
                                                 {cellContent}
                                             </div>
