@@ -11,6 +11,7 @@ export default class SmartCube {
 		setTimerParams({
 			smartCubeScanning: true,
 			smartCubeScanError: null,
+			smartCubeConnectStep: null,
 		});
 	};
 
@@ -18,6 +19,7 @@ export default class SmartCube {
 		setTimerParams({
 			smartCubeScanning: false,
 			smartCubeScanError: errorMessage,
+			smartCubeConnectStep: null,
 		});
 	};
 
@@ -38,6 +40,7 @@ export default class SmartCube {
 			smartCubeConnected: false,
 			smartCubeScanError: null,
 			smartCurrentState: null,
+			smartCubeConnectStep: null,
 		});
 	};
 
@@ -119,6 +122,7 @@ export default class SmartCube {
 			smartCubeConnecting: false,
 			smartCubeConnected: true,
 			smartDeviceId: dev.id,
+			smartCubeConnectStep: 'done',
 		});
 	};
 

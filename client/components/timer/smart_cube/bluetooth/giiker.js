@@ -1,5 +1,6 @@
 import SmartCube from './smart_cube';
 import GiikerUtil from './giiker_util';
+import { setTimerParams } from '../../helpers/params';
 
 export default class Giiker extends SmartCube {
 	device;
@@ -29,7 +30,9 @@ export default class Giiker extends SmartCube {
 
 		giiker.on('connected', (server) => {
 			this.connected = true;
+			setTimerParams({ smartCubeConnectStep: 'paired' });
 			const ate = giiker.stateString;
+			setTimerParams({ smartCubeConnectStep: 'reading_service' });
 			this.alertConnected(server);
 			this.alertCubeState(ate);
 			this.updateBattery();
