@@ -8,6 +8,7 @@ import { gqlQuery } from '../../api';
 import AvatarImage from '../../common/avatar/avatar_image/AvatarImage';
 import { openModal } from '../../../actions/general';
 import ManageUser from '../manage_user/ManageUser';
+import { socketClient } from '../../../util/socket/socketio';
 import './AdminDashboard.scss';
 
 interface DashboardStats {
@@ -70,26 +71,6 @@ const ACTIVE_USERS_QUERY = gql`
 			total_active_users
 			total_active_minutes
 			available_months
-		}
-	}
-`;
-
-const ONLINE_USERS_QUERY = gql`
-	query AdminOnlineUsers {
-		onlineUsers {
-			tabCount
-			user {
-				id
-				username
-				is_pro
-				profile {
-					pfp_image {
-						id
-						user_id
-						storage_path
-					}
-				}
-			}
 		}
 	}
 `;
@@ -331,6 +312,11 @@ function ActiveUsersPanel({ period }: ActiveUsersPanelProps) {
 	);
 }
 
+function sortOnlineUsers(users: OnlineUserRow[] | null | undefined): OnlineUserRow[] {
+	if (!users || users.length === 0) return [];
+	return [...users].sort((a, b) => b.tabCount - a.tabCount);
+}
+
 function OnlineUsersPanel() {
 	const { t } = useTranslation();
 	const dispatch = useDispatch();
@@ -338,26 +324,36 @@ function OnlineUsersPanel() {
 	const [loading, setLoading] = React.useState(true);
 
 	React.useEffect(() => {
+		const socket = socketClient();
 		let cancelled = false;
 
-		async function fetchOnline() {
-			try {
-				const res = await gqlQuery<{ onlineUsers: OnlineUserRow[] }>(ONLINE_USERS_QUERY, {}, 'no-cache');
-				if (cancelled) return;
-				const sorted = [...(res.data.onlineUsers || [])].sort((a, b) => b.tabCount - a.tabCount);
-				setRows(sorted);
-			} catch {
-				if (!cancelled) setRows([]);
-			} finally {
-				if (!cancelled) setLoading(false);
-			}
+		function applyInitial(users: OnlineUserRow[]) {
+			if (cancelled) return;
+			setRows(sortOnlineUsers(users));
+			setLoading(false);
 		}
 
-		fetchOnline();
-		const interval = setInterval(fetchOnline, 10_000);
+		function handleUpdate(users: OnlineUserRow[]) {
+			if (cancelled) return;
+			setRows(sortOnlineUsers(users));
+		}
+
+		function startWatch() {
+			socket.emit('admin:watch_online', applyInitial);
+		}
+
+		startWatch();
+		socket.on('admin:online_users_changed', handleUpdate);
+		// Reconnect olunca admin watch room'unu yeniden kur (rejoinMyRooms server'da yok)
+		socket.on('connect', startWatch);
+
 		return () => {
 			cancelled = true;
-			clearInterval(interval);
+			socket.off('admin:online_users_changed', handleUpdate);
+			socket.off('connect', startWatch);
+			if (socket.connected) {
+				socket.emit('admin:unwatch_online');
+			}
 		};
 	}, []);
 

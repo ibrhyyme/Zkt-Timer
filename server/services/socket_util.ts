@@ -195,6 +195,24 @@ export type OnlineUserEntry = {
 
 export const ADMIN_ONLINE_WATCHERS_ROOM = 'admin:online-watchers';
 
+// Bir kullanicinin tum socket bag.larini koparir. Logout / ban / account deletion akislarinda
+// "ghost online user" durumunu engellemek icin kullanilir. Best-effort, hata atmaz.
+export async function disconnectUserSockets(userId: string): Promise<void> {
+	try {
+		const io = getSocketIO();
+		if (!io || !userId) return;
+		const sockets = await io.fetchSockets();
+		for (const s of sockets) {
+			const uid = (s as any).data?.userId ?? (s as any).userId;
+			if (uid === userId) {
+				s.disconnect(true);
+			}
+		}
+	} catch {
+		// best-effort
+	}
+}
+
 let broadcastDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 const BROADCAST_DEBOUNCE_MS = 500;
 

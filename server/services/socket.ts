@@ -53,6 +53,7 @@ export function initSocket(server: any) {
 			if (user) {
 				(client as any).userId = user.id;
 				client.data.userId = user.id;
+				broadcastOnlineUsersChanged();
 			}
 		} catch (err) {
 			// Auth fail durumunda anonymous olarak devam
@@ -77,8 +78,32 @@ export function initSocket(server: any) {
 			unsubscribeRound(client.id, liveRoundId);
 		});
 
+		// Admin dashboard "Su An Online" panel — sadece admin/mod, push-based.
+		// ack callback ile initial state doner, sonraki guncellemeler broadcast ile.
+		client.on('admin:watch_online', async (ack?: (users: any) => void) => {
+			try {
+				const user = await getUserFromClient(client);
+				if (!user || (!user.admin && !user.mod)) {
+					if (typeof ack === 'function') ack([]);
+					return;
+				}
+				client.join(ADMIN_ONLINE_WATCHERS_ROOM);
+				const users = await getOnlineUsers();
+				if (typeof ack === 'function') ack(users);
+			} catch {
+				if (typeof ack === 'function') ack([]);
+			}
+		});
+
+		client.on('admin:unwatch_online', () => {
+			client.leave(ADMIN_ONLINE_WATCHERS_ROOM);
+		});
+
 		client.on('disconnect', () => {
 			unsubscribeAllRounds(client.id);
+			if ((client as any).userId) {
+				broadcastOnlineUsersChanged();
+			}
 		});
 	});
 }
