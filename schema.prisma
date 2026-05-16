@@ -850,10 +850,25 @@ model FriendlyRoom {
   participants     FriendlyRoomParticipant[]
   solves           FriendlyRoomSolve[]
   chat_messages    FriendlyRoomChat[]
+  scramble_history FriendlyRoomScramble[]
 
   @@index([created_by_id])
   @@index([status])
   @@map("friendly_room")
+}
+
+model FriendlyRoomScramble {
+  id             String       @id @default(uuid())
+  room_id        String
+  scramble_index Int
+  scramble       String
+  created_at     DateTime     @default(now())
+
+  room           FriendlyRoom @relation(fields: [room_id], references: [id], onDelete: Cascade)
+
+  @@unique([room_id, scramble_index])
+  @@index([room_id])
+  @@map("friendly_room_scramble")
 }
 
 model FriendlyRoomParticipant {

@@ -1233,6 +1233,14 @@
         "back_to_rooms": "Volver a salas",
         "click_to_change_event": "Haz clic para cambiar evento",
         "spectator": "Espectador",
+        "scrambleModal": {
+            "title": "Mezcla de la ronda {{round}}",
+            "notStored": "La mezcla de esta ronda no se guardó.",
+            "copy": "Copiar",
+            "copied": "Copiado",
+            "close": "Cerrar",
+            "view": "Ver mezcla"
+        },
         "compete": "Competir",
         "disconnect": "Desconectar",
         "connect_timer": "Conectar Timer",

@@ -1233,6 +1233,14 @@
         "back_to_rooms": "返回房间列表",
         "click_to_change_event": "点击更改项目",
         "spectator": "观众",
+        "scrambleModal": {
+            "title": "第 {{round}} 轮打乱",
+            "notStored": "本轮打乱未保存。",
+            "copy": "复制",
+            "copied": "已复制",
+            "close": "关闭",
+            "view": "查看打乱"
+        },
         "compete": "比赛",
         "disconnect": "断开连接",
         "connect_timer": "连接计时器",

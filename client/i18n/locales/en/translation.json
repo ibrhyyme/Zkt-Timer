@@ -1233,6 +1233,14 @@
         "back_to_rooms": "Back to Rooms",
         "click_to_change_event": "Click to change event",
         "spectator": "Spectator",
+        "scrambleModal": {
+            "title": "Round {{round}} Scramble",
+            "notStored": "This round's scramble wasn't stored.",
+            "copy": "Copy",
+            "copied": "Copied",
+            "close": "Close",
+            "view": "View scramble"
+        },
         "compete": "Compete",
         "disconnect": "Disconnect",
         "connect_timer": "Connect Timer",

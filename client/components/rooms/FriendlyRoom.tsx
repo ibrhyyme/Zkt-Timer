@@ -1737,6 +1737,7 @@ export default function FriendlyRoom() {
                                     scrambleIndex={room.scramble_index}
                                     userStatuses={userStatuses}
                                     currentUserId={me?.id}
+                                    scrambleHistory={room.scramble_history}
                                 />
                             </div>
 

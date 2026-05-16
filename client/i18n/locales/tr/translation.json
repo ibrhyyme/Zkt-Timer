@@ -1233,6 +1233,14 @@
         "back_to_rooms": "Odalara Dön",
         "click_to_change_event": "Etkinliği değiştirmek için tıkla",
         "spectator": "İzleyici",
+        "scrambleModal": {
+            "title": "Round {{round}} Karıştırma",
+            "notStored": "Bu round'un karıştırması saklanmıyordu.",
+            "copy": "Kopyala",
+            "copied": "Kopyalandı",
+            "close": "Kapat",
+            "view": "Karıştırmayı gör"
+        },
         "compete": "Mücadele",
         "disconnect": "Bağlantıyı Kes",
         "connect_timer": "Timer Bağla",
