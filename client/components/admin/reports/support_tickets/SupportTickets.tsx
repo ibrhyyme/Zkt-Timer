@@ -54,7 +54,12 @@ export default function SupportTickets() {
 	});
 
 	function openTicket(ticketId: string) {
-		dispatch(openModal(<SupportTicketModal ticketId={ticketId} isAdminView onUpdate={() => refetch()} />, {width: 720}));
+		dispatch(
+			openModal(<SupportTicketModal ticketId={ticketId} isAdminView onUpdate={() => refetch()} />, {
+				width: 720,
+				closeButtonText: t('solve_info.done'),
+			})
+		);
 	}
 
 	if (loading) {

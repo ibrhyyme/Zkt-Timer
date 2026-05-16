@@ -1,6 +1,5 @@
 import React, {useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {useDispatch} from 'react-redux';
 import {gql, useMutation, useQuery} from '@apollo/client';
 import Avatar from '../../common/avatar/Avatar';
 import Tag from '../../common/tag/Tag';
@@ -10,7 +9,6 @@ import {toastError} from '../../../util/toast';
 import {getDateFromNow} from '../../../util/dates';
 import {SupportTicket as SupportTicketSchema} from '../../../@types/generated/graphql';
 import {useMe} from '../../../util/hooks/useMe';
-import {closeModal} from '../../../actions/general';
 import block from '../../../styles/bem';
 import './SupportTicketModal.scss';
 
@@ -82,7 +80,6 @@ interface Props {
 
 export default function SupportTicketModal({ticketId, isAdminView, onUpdate}: Props) {
 	const {t} = useTranslation();
-	const dispatch = useDispatch();
 	const me = useMe();
 	const [reply, setReply] = useState('');
 
@@ -131,7 +128,7 @@ export default function SupportTicketModal({ticketId, isAdminView, onUpdate}: Pr
 
 	const canSend = reply.trim().length > 0 && !sending && !isResolved;
 
-	// Bubble'lar: ilk konu mesaji (creator) + sonraki messages
+	// Konunun ilk mesaji: subject + ticket.message birlikte, ticket sahibi tarafindan gonderilmis kabul edilir
 	const initialMessage = {
 		id: 'initial',
 		body: ticket.message,
@@ -145,62 +142,57 @@ export default function SupportTicketModal({ticketId, isAdminView, onUpdate}: Pr
 		<div className={b()}>
 			<div className={b('header')}>
 				<h2 className={b('subject')}>{ticket.subject}</h2>
-				<div className={b('header-meta')}>
-					<Tag
-						small
-						backgroundColor={isResolved ? 'green' : 'orange'}
-						text={isResolved ? t('support.status_resolved') : t('support.status_open')}
-					/>
-					{isAdminView && !isResolved && (
-						<Button
-							small
-							secondary
-							text={t('admin_reports.ticket_resolve')}
-							loading={resolving}
-							onClick={handleResolve}
-						/>
-					)}
-				</div>
+				<Tag
+					small
+					backgroundColor={isResolved ? 'green' : 'orange'}
+					text={isResolved ? t('support.status_resolved') : t('support.status_open')}
+				/>
 			</div>
 
-			<div className={b('timeline')}>
+			<div className={b('timeline')} role="log" aria-live="polite">
 				{allMessages.map((msg: any) => {
 					const isMine = msg.sender?.id === me?.id;
-					const side = msg.is_admin ? 'right' : 'left';
+					const username = msg.sender?.username || '';
+					const displayName = isMine ? `${username} (${t('support.you')})` : username;
 					return (
-						<div key={msg.id} className={b('row', {side})}>
+						<div key={msg.id} className={b('row', {mine: isMine})}>
 							{!isMine && msg.sender && (
 								<div className={b('avatar')}>
-									<Avatar user={msg.sender} />
+									<Avatar user={msg.sender} tiny noLink hideBadges />
 								</div>
 							)}
-							<div className={b('bubble', {admin: msg.is_admin, mine: isMine})}>
+							<div className={b('bubble-group')}>
 								<div className={b('bubble-meta')}>
-									<span className={b('bubble-author')}>
-										{isMine ? t('support.you') : msg.is_admin ? t('support.admin_label') : msg.sender?.username}
-									</span>
+									<span className={b('bubble-author')}>{displayName}</span>
 									<span className={b('bubble-time')}>{getDateFromNow(msg.created_at)}</span>
 								</div>
-								<div className={b('bubble-body')}>{msg.body}</div>
+								<div className={b('bubble', {mine: isMine})}>{msg.body}</div>
 							</div>
 						</div>
 					);
 				})}
 			</div>
 
-			{isResolved ? (
-				<div className={b('closed-notice')}>{t('support.closed_cant_reply')}</div>
-			) : (
-				<div className={b('reply')}>
-					<textarea
-						className={b('reply-input')}
-						value={reply}
-						onChange={(e) => setReply(e.target.value)}
-						placeholder={t('support.reply_placeholder')}
-						rows={3}
-						maxLength={5000}
-					/>
-					<div className={b('reply-actions')}>
+			<div className={b('reply')}>
+				<textarea
+					className={b('reply-input')}
+					value={isResolved ? '' : reply}
+					onChange={(e) => setReply(e.target.value)}
+					placeholder={isResolved ? t('support.closed_cant_reply') : t('support.reply_placeholder')}
+					rows={3}
+					maxLength={5000}
+					disabled={isResolved}
+				/>
+				<div className={b('reply-actions')}>
+					{isAdminView && !isResolved && (
+						<Button
+							warning
+							text={t('admin_reports.ticket_resolve')}
+							loading={resolving}
+							onClick={handleResolve}
+						/>
+					)}
+					{!isResolved && (
 						<Button
 							text={sending ? t('support.sending') : t('support.send_reply')}
 							primary
@@ -208,12 +200,8 @@ export default function SupportTicketModal({ticketId, isAdminView, onUpdate}: Pr
 							disabled={!canSend}
 							onClick={handleSend}
 						/>
-					</div>
+					)}
 				</div>
-			)}
-
-			<div className={b('footer')}>
-				<Button text={t('support.modal_close')} secondary onClick={() => dispatch(closeModal())} />
 			</div>
 		</div>
 	);

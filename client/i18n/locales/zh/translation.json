@@ -541,7 +541,7 @@
     "admin_reports": {
         "tab_reports": "用户举报",
         "tab_support": "支持工单",
-        "ticket_resolve": "已解决",
+        "ticket_resolve": "标记为已解决",
         "no_tickets": "没有打开的支持工单",
         "ticket_message_count": "{{count}} 条消息",
         "ticket_awaiting_reply": "等待回复"

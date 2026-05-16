@@ -541,7 +541,7 @@
     "admin_reports": {
         "tab_reports": "Kullanıcı Raporları",
         "tab_support": "Destek Talepleri",
-        "ticket_resolve": "Çözüldü",
+        "ticket_resolve": "Çözüldü Olarak İşaretle",
         "no_tickets": "Açık destek talebi yok",
         "ticket_message_count": "{{count}} mesaj",
         "ticket_awaiting_reply": "Cevap bekleniyor"

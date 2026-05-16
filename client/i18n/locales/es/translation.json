@@ -541,7 +541,7 @@
     "admin_reports": {
         "tab_reports": "Reportes de usuarios",
         "tab_support": "Tickets de soporte",
-        "ticket_resolve": "Resolver",
+        "ticket_resolve": "Marcar como resuelto",
         "no_tickets": "No hay tickets de soporte abiertos",
         "ticket_message_count": "{{count}} mensajes",
         "ticket_awaiting_reply": "Esperando respuesta"

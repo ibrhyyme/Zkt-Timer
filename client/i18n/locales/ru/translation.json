@@ -541,7 +541,7 @@
     "admin_reports": {
         "tab_reports": "Жалобы пользователей",
         "tab_support": "Запросы в поддержку",
-        "ticket_resolve": "Решено",
+        "ticket_resolve": "Отметить как решённое",
         "no_tickets": "Нет открытых запросов в поддержку",
         "ticket_message_count": "{{count}} сообщений",
         "ticket_awaiting_reply": "Ожидает ответа"

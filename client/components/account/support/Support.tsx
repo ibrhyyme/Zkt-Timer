@@ -74,7 +74,12 @@ export default function Support() {
 	}
 
 	function openTicket(ticketId: string) {
-		dispatch(openModal(<SupportTicketModal ticketId={ticketId} onUpdate={() => refetch()} />, {width: 720}));
+		dispatch(
+			openModal(<SupportTicketModal ticketId={ticketId} onUpdate={() => refetch()} />, {
+				width: 720,
+				closeButtonText: t('solve_info.done'),
+			})
+		);
 	}
 
 	const canSubmit = subject.trim().length > 0 && message.trim().length > 0 && !loading;
