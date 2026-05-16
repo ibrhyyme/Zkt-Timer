@@ -6,9 +6,14 @@ export interface BleDevice {
 
 export interface BleRequestDeviceOptions {
 	nameFilters: string[];
-	serviceFilters: string[];
+	serviceFilters?: string[];
 	optionalServices: string[];
 	excludeDeviceIds?: string[];
+	/**
+	 * Eger true ise name filter'lari bypass edilir, tum BLE cihazlari listede gozukur.
+	 * Standart disi isimli cube'lar (clone, firmware update, garip varyant) icin debug ozelligi.
+	 */
+	acceptAll?: boolean;
 }
 
 export interface BleAdapter {

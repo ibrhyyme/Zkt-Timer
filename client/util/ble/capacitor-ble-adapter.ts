@@ -99,11 +99,14 @@ export class CapacitorBleAdapter implements BleAdapter {
 							return;
 						}
 
-						const matches = options.nameFilters.some(
-							(prefix) =>
-								name.startsWith(prefix) ||
-								name.toLowerCase().startsWith(prefix.toLowerCase())
-						);
+						// acceptAll: name filter'lari bypass et (debug ozelligi)
+						const matches = options.acceptAll
+							? true
+							: options.nameFilters.some(
+								(prefix) =>
+									name.startsWith(prefix) ||
+									name.toLowerCase().startsWith(prefix.toLowerCase())
+							);
 
 						if (matches) {
 							this.scanResolved = true;
@@ -226,6 +229,8 @@ export class CapacitorBleAdapter implements BleAdapter {
 		characteristicUuid: string,
 		callback: (value: DataView) => void
 	): Promise<void> {
+		// @capacitor-community/bluetooth-le callback'i bridge'e gondermeden once
+		// native tarafa kayit eder; WebBleAdapter'daki gibi race window yok.
 		await BleClient.startNotifications(device.deviceId, serviceUuid, characteristicUuid, callback);
 	}
 

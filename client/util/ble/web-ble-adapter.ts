@@ -6,24 +6,37 @@ interface WebBleDeviceState {
 	characteristics: Map<string, BluetoothRemoteGATTCharacteristic>;
 }
 
+interface NotificationListenerEntry {
+	char: BluetoothRemoteGATTCharacteristic;
+	listener: (event: Event) => void;
+}
+
 export class WebBleAdapter implements BleAdapter {
 	private devices = new Map<string, WebBleDeviceState>();
 	private nextId = 0;
+	private listeners = new Map<string, NotificationListenerEntry>();
 
 	async requestDevice(options: BleRequestDeviceOptions): Promise<BleDevice> {
-		const filters: BluetoothLEScanFilter[] = [];
-
-		for (const name of options.nameFilters) {
-			filters.push({ namePrefix: name });
+		// acceptAll: name filter'lari bypass et, tum BLE cihazlari listele (debug ozelligi)
+		let device: BluetoothDevice;
+		if (options.acceptAll) {
+			device = await navigator.bluetooth.requestDevice({
+				acceptAllDevices: true,
+				optionalServices: options.optionalServices,
+			});
+		} else {
+			const filters: BluetoothLEScanFilter[] = [];
+			for (const name of options.nameFilters) {
+				filters.push({ namePrefix: name });
+			}
+			for (const service of options.serviceFilters || []) {
+				filters.push({ services: [service] });
+			}
+			device = await navigator.bluetooth.requestDevice({
+				filters,
+				optionalServices: options.optionalServices,
+			});
 		}
-		for (const service of options.serviceFilters) {
-			filters.push({ services: [service] });
-		}
-
-		const device = await navigator.bluetooth.requestDevice({
-			filters,
-			optionalServices: options.optionalServices,
-		});
 
 		const id = `web_${this.nextId++}`;
 		this.devices.set(id, {
@@ -77,19 +90,37 @@ export class WebBleAdapter implements BleAdapter {
 		callback: (value: DataView) => void
 	): Promise<void> {
 		const char = await this.getCharacteristic(device.deviceId, serviceUuid, characteristicUuid);
-		await char.startNotifications();
-		char.addEventListener('characteristicvaluechanged', (event: Event) => {
+		const listener = (event: Event) => {
 			const target = event.target as BluetoothRemoteGATTCharacteristic;
 			if (target.value) {
 				callback(target.value);
 			}
-		});
+		};
+		// Listener'i startNotifications'tan ONCE ekle — cihaz notification enable
+		// olur olmaz ilk paketi (GAN Timer current state gibi) yayinlar; sirayi
+		// ters yaparsak ilk paket listener bagli olmadigi icin kaybolur.
+		char.addEventListener('characteristicvaluechanged', listener);
+		const listenerKey = `${device.deviceId}|${serviceUuid.toLowerCase()}|${characteristicUuid.toLowerCase()}`;
+		const existing = this.listeners.get(listenerKey);
+		if (existing) {
+			existing.char.removeEventListener('characteristicvaluechanged', existing.listener);
+		}
+		this.listeners.set(listenerKey, {char, listener});
+		await char.startNotifications();
 	}
 
 	async stopNotifications(device: BleDevice, serviceUuid: string, characteristicUuid: string): Promise<void> {
 		const key = `${serviceUuid}:${characteristicUuid}`;
 		const state = this.devices.get(device.deviceId);
 		const char = state?.characteristics.get(key);
+
+		const listenerKey = `${device.deviceId}|${serviceUuid.toLowerCase()}|${characteristicUuid.toLowerCase()}`;
+		const entry = this.listeners.get(listenerKey);
+		if (entry) {
+			entry.char.removeEventListener('characteristicvaluechanged', entry.listener);
+			this.listeners.delete(listenerKey);
+		}
+
 		if (char) {
 			await char.stopNotifications();
 		}

@@ -42,9 +42,15 @@ export default function GanTimer() {
 
 	// Subscribe/unsubscribe to GAN Smart Timer events when component being mounted/unmounted
 	useEffect(() => {
-		subs = conn?.events$.subscribe(handleTimerEvent);
-		setConnected(!!conn);
-		return () => subs?.unsubscribe();
+		if (conn) {
+			subs?.unsubscribe();
+			subs = conn.events$.subscribe(handleTimerEvent);
+			setConnected(true);
+		}
+		return () => {
+			subs?.unsubscribe();
+			subs = null;
+		};
 	}, []);
 
 	function handleTimerEvent(event: GanTimerEvent) {
@@ -65,16 +71,22 @@ export default function GanTimer() {
 			case GanTimerState.STOPPED:
 				endTimer(contextRef.current, event.recordedTime.asTimestamp);
 				break;
-			case GanTimerState.IDLE:
-				if (!inspectionEnabled || contextRef.current.inInspection || contextRef.current.finalTime > 0) {
-					cancelInspection();
-					setTimerParams({spaceTimerStarted: 0, canStart: false, finalTime: -1});
-				} else {
-					startInspection(contextRef.current);
+			case GanTimerState.IDLE: {
+				const ctx = contextRef.current;
+				// Onceki solve state'ini her IDLE'da temizle
+				cancelInspection();
+				setTimerParams({spaceTimerStarted: 0, canStart: false, finalTime: -1});
+				// Sonra eligible ise inspection'i ayni event icinde yeniden ac
+				if (inspectionEnabled && !ctx.inInspection) {
+					startInspection(ctx);
 				}
 				break;
+			}
 			case GanTimerState.DISCONNECT:
 				setConnected(false);
+				subs?.unsubscribe();
+				subs = null;
+				conn = null;
 				break;
 		}
 	}
@@ -115,7 +127,7 @@ export default function GanTimer() {
 					if (isNative()) {
 						dispatch(closeModal());
 					}
-					conn.events$.subscribe((evt) => evt.state == GanTimerState.DISCONNECT && (conn = null));
+					subs?.unsubscribe();
 					subs = conn.events$.subscribe(handleTimerEvent);
 					setConnected(true);
 				} catch (e) {
