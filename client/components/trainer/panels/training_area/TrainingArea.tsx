@@ -2,7 +2,7 @@ import React, {useState, useEffect, useMemo, useCallback} from 'react';
 import block from '../../../../styles/bem';
 import {useTrainerContext} from '../../TrainerContext';
 import {useLLPatternsReady} from '../../../../util/trainer/ll_patterns';
-import {isLLCategory, getDefaultFrontFace, getPuzzleType, algToId, expandNotation, computeSetupInverse} from '../../../../util/trainer/algorithm_engine';
+import {isLLCategory, getDefaultFrontFace, getPuzzleType, algToId, expandNotation, computeSetupInverse, getEffectiveOrientation} from '../../../../util/trainer/algorithm_engine';
 import {fetchDefaultAlgs, getLastTimes, getEffectiveTime, deleteTrainerSolve} from '../../hooks/useAlgorithmData';
 import {useTrainerDb} from '../../../../util/hooks/useTrainerDb';
 import CubeViewer from './CubeViewer';
@@ -108,6 +108,17 @@ export default function TrainingArea() {
 	const is3x3 = getPuzzleType(currentAlgorithm.category) === '3x3x3';
 	const useSmartCube = state.smartConnected && is3x3 && (!isProEnabled() || isPro(me));
 
+	// Etkin top/front face — whiteOnBottom aktifse D/F preset'i uygulanir
+	const effectiveOrientation = getEffectiveOrientation({
+		topFace: options.topFace,
+		frontFace: options.frontFace,
+		whiteOnBottom: options.whiteOnBottom,
+	});
+	const cubeViewerTopFace = effectiveOrientation.topFace;
+	const cubeViewerFrontFace = isLLCategory(currentAlgorithm.category)
+		? getDefaultFrontFace(cubeViewerTopFace)
+		: effectiveOrientation.frontFace;
+
 	// Mobilde training-area'nin herhangi bir yerine dokunarak timer baslatma/durdurma
 	const handleAreaTouch = useCallback((e: React.MouseEvent) => {
 		if (window.innerWidth > 768) return;
@@ -168,13 +179,15 @@ export default function TrainingArea() {
 			)}
 
 			{/* Mobilde: kompakt alg ismi + alternatifler dropdown */}
-			<div className={b('mobile-alg-header')} onClick={(e) => {
-				e.stopPropagation();
-				setShowMobileAlts((v) => !v);
-			}}>
-				<span className={b('mobile-alg-name')}>{currentAlgorithm.name}</span>
-				{showMobileAlts ? <CaretUp size={14} weight="bold" /> : <CaretDown size={14} weight="bold" />}
-			</div>
+			{options.showCaseName && (
+				<div className={b('mobile-alg-header')} onClick={(e) => {
+					e.stopPropagation();
+					setShowMobileAlts((v) => !v);
+				}}>
+					<span className={b('mobile-alg-name')}>{currentAlgorithm.name}</span>
+					{showMobileAlts ? <CaretUp size={14} weight="bold" /> : <CaretDown size={14} weight="bold" />}
+				</div>
+			)}
 			<div className={b('mobile-alts-dropdown', {open: showMobileAlts})} onClick={(e) => e.stopPropagation()}>
 				<AlternativesPicker />
 			</div>
@@ -186,13 +199,16 @@ export default function TrainingArea() {
 						<CubeViewer
 							algorithm={currentAlgorithm.algorithm}
 							category={currentAlgorithm.category}
-							topFace={options.topFace}
-							frontFace={isLLCategory(currentAlgorithm.category) ? getDefaultFrontFace(options.topFace) : options.frontFace}
+							topFace={cubeViewerTopFace}
+							frontFace={cubeViewerFrontFace}
+							backView={options.backView}
 						/>
 					</div>
-					<div className={b('training-info-meta')}>
-						<div className={b('training-alg-name')}>{currentAlgorithm.name}</div>
-					</div>
+					{options.showCaseName && (
+						<div className={b('training-info-meta')}>
+							<div className={b('training-alg-name')}>{currentAlgorithm.name}</div>
+						</div>
+					)}
 				</div>
 			</div>
 
@@ -211,8 +227,9 @@ export default function TrainingArea() {
 							<CubeViewer
 								algorithm={currentAlgorithm.algorithm}
 								category={currentAlgorithm.category}
-								topFace={options.topFace}
-								frontFace={isLLCategory(currentAlgorithm.category) ? getDefaultFrontFace(options.topFace) : options.frontFace}
+								topFace={cubeViewerTopFace}
+								frontFace={cubeViewerFrontFace}
+								backView={options.backView}
 							/>
 						</div>
 						{!state.isMoveMasked && (

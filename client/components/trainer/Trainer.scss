@@ -2412,6 +2412,293 @@
 		background: rgba(var(--button-color), 0.15);
 		padding: 0.4rem;
 	}
+
+	// --- Hata flash overlay (yanlis hamlede 300ms kirmizi flash) ---
+	// Radial gradient ile kenarlarda kirmizi, ortada saydam — cube goruluyor
+	&__error-flash {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		border-radius: inherit;
+		background: radial-gradient(
+			circle farthest-corner at center,
+			rgba(239, 68, 68, 0) 30%,
+			rgba(239, 68, 68, 0.55) 100%
+		);
+		opacity: 0;
+		animation: trainer-error-flash 300ms ease-out;
+		z-index: 5;
+	}
+
+	// --- Settings Modal ---
+	&__settings-modal {
+		display: flex;
+		flex-direction: column;
+		gap: 1.25rem;
+		padding: 0.5rem 0;
+	}
+
+	&__settings-section {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	&__settings-section-title {
+		font-size: 0.75rem;
+		font-weight: 600;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: rgba(var(--text-color), 0.5);
+		margin: 0 0 0.25rem 0;
+		padding: 0 0.25rem;
+	}
+
+	&__settings-section-body {
+		display: flex;
+		flex-direction: column;
+		background: rgba(var(--button-color), 0.15);
+		border-radius: 10px;
+		overflow: hidden;
+	}
+
+	&__settings-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		padding: 0.85rem 1rem;
+		border-bottom: 1px solid rgba(var(--text-color), 0.06);
+
+		&:last-child {
+			border-bottom: none;
+		}
+
+		&--disabled {
+			opacity: 0.5;
+			pointer-events: none;
+		}
+
+		// Slider satiri: label uste, slider altta full-width
+		&--slider {
+			flex-direction: column;
+			align-items: stretch;
+			gap: 0.6rem;
+		}
+	}
+
+	&__settings-row-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+	}
+
+	&__settings-row-info-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 20px;
+		height: 20px;
+		margin-left: 0.4rem;
+		padding: 0;
+		border: none;
+		background: rgba(var(--text-color), 0.12);
+		color: rgb(var(--text-color));
+		border-radius: 50%;
+		cursor: pointer;
+		transition: background 0.15s ease;
+		vertical-align: middle;
+
+		&:hover {
+			background: rgba(var(--primary-color), 0.3);
+			color: rgb(var(--primary-color));
+		}
+
+		&--active {
+			background: rgb(var(--primary-color));
+			color: #fff;
+		}
+	}
+
+	&__settings-row-tooltip {
+		padding: 0.65rem 0.85rem;
+		background: rgba(var(--primary-color), 0.12);
+		border-left: 3px solid rgb(var(--primary-color));
+		border-radius: 6px;
+		font-size: 0.85rem;
+		line-height: 1.5;
+		color: rgb(var(--text-color));
+		margin-top: 0.25rem;
+	}
+
+	&__settings-row-text {
+		flex: 1;
+		min-width: 0;
+	}
+
+	&__settings-row-label {
+		font-size: 0.95rem;
+		color: rgb(var(--text-color));
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+	}
+
+	&__settings-row-desc {
+		font-size: 0.8rem;
+		color: rgba(var(--text-color), 0.6);
+		margin-top: 0.25rem;
+	}
+
+	&__settings-row-value {
+		font-size: 0.85rem;
+		color: rgba(var(--text-color), 0.7);
+		font-variant-numeric: tabular-nums;
+	}
+
+	&__settings-toggle {
+		position: relative;
+		width: 42px;
+		height: 24px;
+		border-radius: 12px;
+		border: none;
+		cursor: pointer;
+		flex-shrink: 0;
+		transition: background-color 0.2s ease;
+		padding: 0;
+
+		&--on {
+			background: rgb(var(--primary-color));
+		}
+
+		&--off {
+			background: rgba(var(--text-color), 0.2);
+		}
+
+		&:disabled {
+			cursor: not-allowed;
+			opacity: 0.5;
+		}
+	}
+
+	&__settings-toggle-knob {
+		position: absolute;
+		top: 2px;
+		left: 2px;
+		width: 20px;
+		height: 20px;
+		border-radius: 50%;
+		background: #fff;
+		transition: transform 0.2s ease;
+		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+	}
+
+	&__settings-toggle--on &__settings-toggle-knob {
+		transform: translateX(18px);
+	}
+
+	&__settings-slider {
+		width: 100%;
+		display: block;
+		-webkit-appearance: none;
+		appearance: none;
+		height: 6px;
+		border-radius: 3px;
+		background: rgba(var(--text-color), 0.12);
+		outline: none;
+		cursor: pointer;
+		padding: 0;
+		margin: 0;
+
+		&::-webkit-slider-thumb {
+			-webkit-appearance: none;
+			appearance: none;
+			width: 20px;
+			height: 20px;
+			border-radius: 50%;
+			background: rgb(var(--primary-color));
+			cursor: pointer;
+			border: 2px solid rgb(var(--background-color));
+			box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+			transition: transform 0.15s ease;
+
+			&:hover {
+				transform: scale(1.1);
+			}
+
+			&:active {
+				transform: scale(1.15);
+			}
+		}
+
+		&::-moz-range-thumb {
+			width: 20px;
+			height: 20px;
+			border-radius: 50%;
+			background: rgb(var(--primary-color));
+			cursor: pointer;
+			border: 2px solid rgb(var(--background-color));
+			box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+			transition: transform 0.15s ease;
+
+			&:hover {
+				transform: scale(1.1);
+			}
+
+			&:active {
+				transform: scale(1.15);
+			}
+		}
+
+		&::-moz-range-track {
+			background: rgba(var(--text-color), 0.12);
+			height: 6px;
+			border-radius: 3px;
+		}
+	}
+
+	&__settings-select {
+		padding: 0.4rem 0.6rem;
+		border-radius: 6px;
+		border: 1px solid rgba(var(--text-color), 0.15);
+		background: rgb(var(--background-color));
+		color: rgb(var(--text-color));
+		font-size: 0.9rem;
+		cursor: pointer;
+		min-width: 140px;
+		max-width: 50%;
+	}
+
+	// Mobile: settings modal kompakt — section padding ve font kucult
+	@media (max-width: 640px) {
+		&__settings-modal {
+			gap: 1rem;
+		}
+
+		&__settings-section-title {
+			font-size: 0.7rem;
+		}
+
+		&__settings-row {
+			padding: 0.75rem 0.85rem;
+			gap: 0.75rem;
+		}
+
+		&__settings-row-label {
+			font-size: 0.88rem;
+		}
+
+		&__settings-row-desc {
+			font-size: 0.75rem;
+		}
+
+		&__settings-select {
+			min-width: 110px;
+			font-size: 0.85rem;
+		}
+	}
 }
 
 @keyframes trainer-spin {
@@ -2421,4 +2708,10 @@
 @keyframes landing-fadeIn {
 	from { opacity: 0; transform: translateY(16px); }
 	to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes trainer-error-flash {
+	0% { opacity: 0; }
+	35% { opacity: 1; }
+	100% { opacity: 0; }
 }

@@ -46,6 +46,8 @@ export type SmartPhase = 'idle' | 'ready' | 'solving' | 'completed';
 
 export type CubeFace = 'U' | 'D' | 'F' | 'B' | 'R' | 'L';
 
+export type TrainerBackView = 'none' | 'side-by-side' | 'top-right';
+
 export interface TrainerOptions {
 	randomOrder: boolean;
 	prioritizeSlow: boolean;
@@ -56,6 +58,11 @@ export interface TrainerOptions {
 	autoLearnThreshold: number;
 	cubeSize: number;
 	wakeLockEnabled: boolean;
+	flashingError: boolean;
+	showCaseName: boolean;
+	whiteOnBottom: boolean;
+	showAllBleDevices: boolean;
+	backView: TrainerBackView;
 	topFace: CubeFace;
 	frontFace: CubeFace;
 }

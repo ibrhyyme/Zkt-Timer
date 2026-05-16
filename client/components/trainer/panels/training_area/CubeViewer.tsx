@@ -12,14 +12,15 @@ import PyraminxPatternView from '../PyraminxPatternView';
 import SkewbPatternView from '../SkewbPatternView';
 import SQ1PatternView from '../SQ1PatternView';
 import type { TwistyPlayer } from 'cubing/twisty';
-import type { CubeFace } from '../../types';
+import type { CubeFace, TrainerBackView } from '../../types';
 
 const b = block('trainer');
 
 interface CubeViewerProps {
 	algorithm: string;
 	category: string;
-	backView?: boolean;
+	/** Backwards-compatible: bool (true → top-right) veya 'none'/'side-by-side'/'top-right' */
+	backView?: boolean | TrainerBackView;
 	topFace?: CubeFace;
 	frontFace?: CubeFace;
 }
@@ -91,8 +92,10 @@ export default function CubeViewer({ algorithm, category, backView, topFace = 'U
 				...(baseStickering !== 'full' ? { experimentalStickering: baseStickering as any } : {}),
 			});
 
-			if (backView) {
-				player.backView = 'top-right';
+			// backView normalize: true → 'top-right', string olarak gelirse oldugu gibi
+			const bv = backView === true ? 'top-right' : (backView || 'none');
+			if (bv !== 'none') {
+				player.backView = bv as any;
 			}
 
 			if (containerRef.current && !cancelled) {

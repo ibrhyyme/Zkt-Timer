@@ -74,6 +74,38 @@ const ACTIVE_USERS_QUERY = gql`
 	}
 `;
 
+const ONLINE_USERS_QUERY = gql`
+	query AdminOnlineUsers {
+		onlineUsers {
+			tabCount
+			user {
+				id
+				username
+				is_pro
+				profile {
+					pfp_image {
+						id
+						user_id
+						storage_path
+					}
+				}
+			}
+		}
+	}
+`;
+
+interface OnlineUserRow {
+	tabCount: number;
+	user: {
+		id: string;
+		username: string;
+		is_pro: boolean;
+		profile?: {
+			pfp_image?: { id: string; user_id: string; storage_path: string } | null;
+		};
+	};
+}
+
 interface ActiveUserRow {
 	user: {
 		id: string;
@@ -299,11 +331,86 @@ function ActiveUsersPanel({ period }: ActiveUsersPanelProps) {
 	);
 }
 
+function OnlineUsersPanel() {
+	const { t } = useTranslation();
+	const dispatch = useDispatch();
+	const [rows, setRows] = React.useState<OnlineUserRow[] | null>(null);
+	const [loading, setLoading] = React.useState(true);
+
+	React.useEffect(() => {
+		let cancelled = false;
+
+		async function fetchOnline() {
+			try {
+				const res = await gqlQuery<{ onlineUsers: OnlineUserRow[] }>(ONLINE_USERS_QUERY, {}, 'no-cache');
+				if (cancelled) return;
+				const sorted = [...(res.data.onlineUsers || [])].sort((a, b) => b.tabCount - a.tabCount);
+				setRows(sorted);
+			} catch {
+				if (!cancelled) setRows([]);
+			} finally {
+				if (!cancelled) setLoading(false);
+			}
+		}
+
+		fetchOnline();
+		const interval = setInterval(fetchOnline, 10_000);
+		return () => {
+			cancelled = true;
+			clearInterval(interval);
+		};
+	}, []);
+
+	function openManageUser(userId: string) {
+		dispatch(openModal(<ManageUser userId={userId} />, { width: 1100 }));
+	}
+
+	return (
+		<div className="cd-admin-dashboard__expand-panel">
+			{loading && <div className="cd-admin-dashboard__table-loading">{t('admin_dashboard.loading')}</div>}
+
+			{!loading && (!rows || rows.length === 0) && (
+				<div className="cd-admin-dashboard__table-empty">{t('admin_dashboard.online_empty')}</div>
+			)}
+
+			{!loading && rows && rows.length > 0 && (
+				<div className="cd-admin-dashboard__table cd-admin-dashboard__table--online">
+					<div className="cd-admin-dashboard__table-header">
+						<span>{t('admin_dashboard.tbl_user')}</span>
+						<span>{t('admin_dashboard.tbl_tabs')}</span>
+					</div>
+					{rows.map((row) => (
+						<div
+							key={row.user.id}
+							className="cd-admin-dashboard__table-row cd-admin-dashboard__table-row--clickable"
+							onClick={() => openManageUser(row.user.id)}
+							role="button"
+							tabIndex={0}
+							onKeyDown={(e) => {
+								if (e.key === 'Enter' || e.key === ' ') {
+									e.preventDefault();
+									openManageUser(row.user.id);
+								}
+							}}
+						>
+							<span className="cd-admin-dashboard__table-user">
+								<AvatarImage user={row.user as any} tiny />
+								<span className="cd-admin-dashboard__table-username">{row.user.username}</span>
+							</span>
+							<span className="cd-admin-dashboard__table-time">{row.tabCount}</span>
+						</div>
+					))}
+				</div>
+			)}
+		</div>
+	);
+}
+
 export default function AdminDashboard() {
 	const { t } = useTranslation();
 	const [stats, setStats] = React.useState<DashboardStats | null>(null);
 	const [loading, setLoading] = React.useState(true);
-	const [expanded, setExpanded] = React.useState<'day' | 'week' | 'month' | null>(null);
+	const [expanded, setExpanded] = React.useState<'day' | 'week' | 'month' | 'online' | null>(null);
 
 	React.useEffect(() => {
 		fetchStats();
@@ -322,7 +429,7 @@ export default function AdminDashboard() {
 		}
 	}
 
-	function toggleExpand(period: 'day' | 'week' | 'month') {
+	function toggleExpand(period: 'day' | 'week' | 'month' | 'online') {
 		setExpanded((prev) => (prev === period ? null : period));
 	}
 
@@ -344,7 +451,9 @@ export default function AdminDashboard() {
 							value={stats.online_users}
 							color="#22c55e"
 							highlight
-							to="/admin/site-config"
+							onClick={() => toggleExpand('online')}
+							expanded={expanded === 'online'}
+							expandable
 						/>
 						<StatCard
 							icon={<ChartLineUp size={28} weight="bold" />}
@@ -377,7 +486,8 @@ export default function AdminDashboard() {
 							expandable
 						/>
 					</div>
-					{expanded && <ActiveUsersPanel period={expanded} />}
+					{expanded === 'online' && <OnlineUsersPanel />}
+					{expanded && expanded !== 'online' && <ActiveUsersPanel period={expanded} />}
 				</div>
 
 				<div className="cd-admin-dashboard__section">

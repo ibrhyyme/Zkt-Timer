@@ -329,22 +329,6 @@ export default function AlgorithmSelector() {
 		}
 	}, [me, checkedAlgorithms, filteredAlgorithmsWithSubset, selectedCategory, options.topFace, effectiveFrontFace, reduxDispatch, t]);
 
-	const handleOptionChange = useCallback(
-		(key: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
-			const updates: Record<string, boolean> = {[key]: e.target.checked};
-
-			// Mutual exclusion: randomOrder <-> prioritizeSlow
-			if (key === 'randomOrder' && e.target.checked) {
-				updates.prioritizeSlow = false;
-			} else if (key === 'prioritizeSlow' && e.target.checked) {
-				updates.randomOrder = false;
-			}
-
-			dispatch({type: 'SET_OPTIONS', payload: updates});
-		},
-		[dispatch]
-	);
-
 	const handleTopFaceChange = useCallback(
 		(e: React.ChangeEvent<HTMLSelectElement>) => {
 			const newTop = e.target.value as CubeFace;
@@ -488,16 +472,6 @@ export default function AlgorithmSelector() {
 							)}
 						</>
 					)}
-				</div>
-
-				<div className={b('selector-section')}>
-					<label className={b('selector-label')}>{t('trainer.options')}</label>
-					<div className={b('selector-options')}>
-						<Checkbox text={t('trainer.option_random_order')} checked={options.randomOrder} onChange={handleOptionChange('randomOrder')} noMargin />
-						<Checkbox text={t('trainer.option_prioritize_slow')} checked={options.prioritizeSlow} onChange={handleOptionChange('prioritizeSlow')} noMargin />
-						<Checkbox text={t('trainer.option_select_learning')} checked={options.selectLearning} onChange={handleOptionChange('selectLearning')} noMargin />
-						<Checkbox text={t('trainer.option_random_auf')} checked={options.randomizeAUF} onChange={handleOptionChange('randomizeAUF')} noMargin />
-					</div>
 				</div>
 
 				{catInfoTitle && catInfoDesc && (

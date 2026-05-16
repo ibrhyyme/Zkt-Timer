@@ -22,6 +22,11 @@ const DEFAULT_OPTIONS: TrainerOptions = {
 	autoLearnThreshold: 5,
 	cubeSize: 280,
 	wakeLockEnabled: true,
+	flashingError: true,
+	showCaseName: true,
+	whiteOnBottom: false,
+	showAllBleDevices: false,
+	backView: 'none',
 	topFace: 'U',
 	frontFace: 'F',
 };
