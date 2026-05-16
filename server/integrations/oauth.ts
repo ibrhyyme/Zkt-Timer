@@ -37,6 +37,9 @@ export async function syncWcaProfileToIntegration(
 
 	if (Object.keys(update).length === 0) return integration;
 
+	// Anlamli sync var → revoked_at mark'i temizle (kullanici WCA'ya geri bagland)
+	// Idempotent: zaten null ise no-op (DB last-write-wins, problem yok)
+	update.revoked_at = null;
 	// last_synced_at her basarili sync sonunda set edilir (schema bu alani icermek zorunda)
 	update.last_synced_at = new Date();
 
