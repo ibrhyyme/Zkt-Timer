@@ -3,7 +3,7 @@ import {getPrisma} from '../database';
 import {LINKED_SERVICES} from '../../shared/integration';
 import {updateIntegration} from '../models/integration';
 import {fetchAndSaveWcaRecords} from '../models/wca_record';
-import {getOAuthPostRequest, syncWcaProfileToIntegration, WCA_TOKEN_REVOKED} from '../integrations/oauth';
+import {getOAuthPostRequest, syncWcaProfileToIntegration} from '../integrations/oauth';
 import {logger} from './logger';
 
 export interface WcaBackfillResult {
@@ -49,11 +49,23 @@ export async function runWcaBackfill(opts: WcaBackfillOptions = {}): Promise<Wca
 	};
 
 	// Phase 1: profil alanlari eksik olanlari sirayla doldur
+	// - wca_user_id null: gercek bug, her gece dene
+	// - wca_id null: newcomer, 30 gunde bir dene (WCA resmi yarisma kontrolu 2-4 hafta surer)
+	const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 	const needsUpdate = await prisma.integration.findMany({
 		where: {
 			service_name: 'wca',
 			revoked_at: null,
-			OR: [{wca_user_id: null}, {wca_id: null}],
+			OR: [
+				{wca_user_id: null},
+				{
+					wca_id: null,
+					OR: [
+						{last_synced_at: null},
+						{last_synced_at: {lt: thirtyDaysAgo}},
+					],
+				},
+			],
 		},
 		include: {user: true},
 		orderBy: {created_at: 'asc'},
@@ -153,10 +165,18 @@ export async function runWcaBackfill(opts: WcaBackfillOptions = {}): Promise<Wca
 
 		for (const int of missingRankings) {
 			try {
+				// Records icin de WCA'ya nazik davran — 500 ardisik istek 429 yer
+				await new Promise((r) => setTimeout(r, 500));
 				await fetchAndSaveWcaRecords(int.user as any, int as any);
 				result.recordsFilled++;
 				logger.info(`[WcaBackfill] Records fetched wca_id=${int.wca_id} user=${int.user_id}`);
 			} catch (e: any) {
+				if (e?.response?.status === 429) {
+					logger.warn(`[WcaBackfill] Records 429, sleeping 10s...`);
+					await new Promise((r) => setTimeout(r, 10_000));
+					result.rateLimited++;
+					continue;
+				}
 				logger.warn(`[WcaBackfill] Records failed user=${int.user_id}: ${e?.message}`);
 				result.recordsError++;
 			}
