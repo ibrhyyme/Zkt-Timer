@@ -106,6 +106,9 @@ export async function createRoom(input: CreateFriendlyRoomInput, user: PublicUse
                     is_ready: false,
                 },
             },
+            scramble_history: {
+                create: { scramble_index: 1, scramble: initialScramble },
+            },
         },
         include: {
             created_by: {
@@ -116,6 +119,10 @@ export async function createRoom(input: CreateFriendlyRoomInput, user: PublicUse
                     user: { select: { id: true, username: true } },
                     solves: true,
                 },
+            },
+            scramble_history: {
+                orderBy: { scramble_index: 'asc' },
+                select: { scramble_index: true, scramble: true },
             },
         },
     });
@@ -134,6 +141,10 @@ export async function getRoom(roomId: string) {
                     user: { select: { id: true, username: true } },
                     solves: { orderBy: { scramble_index: 'asc' } },
                 },
+            },
+            scramble_history: {
+                orderBy: { scramble_index: 'asc' },
+                select: { scramble_index: true, scramble: true },
             },
         },
     });
@@ -174,6 +185,10 @@ export async function getAllActiveRooms(): Promise<FriendlyRoomData[]> {
                     solves: true,
                 },
             },
+            scramble_history: {
+                orderBy: { scramble_index: 'asc' },
+                select: { scramble_index: true, scramble: true },
+            },
         },
         orderBy: { created_at: 'desc' },
     });
@@ -195,6 +210,10 @@ export async function getRoomsForUser(userId: string): Promise<FriendlyRoomData[
                     user: { select: { id: true, username: true } },
                     solves: true,
                 },
+            },
+            scramble_history: {
+                orderBy: { scramble_index: 'asc' },
+                select: { scramble_index: true, scramble: true },
             },
         },
     });
@@ -399,14 +418,24 @@ export async function nextScramble(roomId: string, userId: string): Promise<Frie
     if (room.created_by_id !== userId) return null;
 
     const newScramble = generateScrambleForCubeType(room.cube_type);
+    const newIndex = room.scramble_index + 1;
 
-    await prisma().friendlyRoom.update({
-        where: { id: roomId },
-        data: {
-            current_scramble: newScramble,
-            scramble_index: room.scramble_index + 1,
-        },
-    });
+    await prisma().$transaction([
+        prisma().friendlyRoom.update({
+            where: { id: roomId },
+            data: {
+                current_scramble: newScramble,
+                scramble_index: newIndex,
+            },
+        }),
+        prisma().friendlyRoomScramble.create({
+            data: {
+                room_id: roomId,
+                scramble_index: newIndex,
+                scramble: newScramble,
+            },
+        }),
+    ]);
 
     const updatedRoom = await getRoom(roomId);
     return mapRoomToData(updatedRoom);
@@ -468,26 +497,37 @@ export async function updateRoom(
     }
 
     // Handle Cube Type Change (RESET ROOM)
+    let cubeTypeChanged = false;
+    let newCubeScramble: string | null = null;
     if (updates.cube_type) {
         const newCubeType = normalizeCubeType(updates.cube_type);
         if (newCubeType !== room.cube_type) {
+            cubeTypeChanged = true;
+            newCubeScramble = generateScrambleForCubeType(newCubeType);
             data.cube_type = newCubeType;
-            data.current_scramble = generateScrambleForCubeType(newCubeType);
+            data.current_scramble = newCubeScramble;
             data.scramble_index = 1;
-
-            // Reset all solves
-            await prisma().friendlyRoomSolve.deleteMany({
-                where: { room_id: roomId }
-            });
         }
     }
 
     // Note: allowed_timer_types is handled via raw query below to support outdated Prisma Client
 
-    await prisma().friendlyRoom.update({
-        where: { id: roomId },
-        data,
-    });
+    if (cubeTypeChanged && newCubeScramble) {
+        // Atomik reset: solves + scramble history + room update + yeni scramble satiri
+        await prisma().$transaction([
+            prisma().friendlyRoomSolve.deleteMany({ where: { room_id: roomId } }),
+            prisma().friendlyRoomScramble.deleteMany({ where: { room_id: roomId } }),
+            prisma().friendlyRoom.update({ where: { id: roomId }, data }),
+            prisma().friendlyRoomScramble.create({
+                data: { room_id: roomId, scramble_index: 1, scramble: newCubeScramble },
+            }),
+        ]);
+    } else {
+        await prisma().friendlyRoom.update({
+            where: { id: roomId },
+            data,
+        });
+    }
 
     if (updates.allowed_timer_types) {
         try {
@@ -655,6 +695,10 @@ function mapRoomToData(room: any): FriendlyRoomData {
                 created_at: s.created_at.toISOString(),
             })) || [],
         })),
+        scramble_history: room.scramble_history?.map((s: any) => ({
+            scramble_index: s.scramble_index,
+            scramble: s.scramble,
+        })) ?? [],
     };
 }
 

@@ -1,14 +1,16 @@
-import React, { useMemo, useEffect, useRef } from 'react';
+import React, { useMemo, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FriendlyRoomParticipantData } from '../../../shared/friendly_room';
+import { FriendlyRoomParticipantData, FriendlyRoomScrambleHistoryEntry } from '../../../shared/friendly_room';
 import { getTimeString } from '../../util/time';
 import { WifiSlash } from 'phosphor-react';
+import ScrambleViewModal from './ScrambleViewModal';
 
 interface RoomTableProps {
     participants: FriendlyRoomParticipantData[];
     scrambleIndex: number;
     userStatuses?: { [userId: string]: string };
     currentUserId?: string;
+    scrambleHistory?: FriendlyRoomScrambleHistoryEntry[];
 }
 
 // Timer component for dynamic countdown
@@ -27,8 +29,9 @@ const DisconnectTimer = ({ expireTime }: { expireTime: number }) => {
     return <>{timeLeft}sn</>;
 };
 
-function RoomTableInner({ participants, scrambleIndex, userStatuses = {}, currentUserId }: RoomTableProps) {
+function RoomTableInner({ participants, scrambleIndex, userStatuses = {}, currentUserId, scrambleHistory = [] }: RoomTableProps) {
     const { t } = useTranslation();
+    const [selectedRound, setSelectedRound] = useState<number | null>(null);
 
     // Map status to display text
     const getStatusText = (status: string): string => {
@@ -275,9 +278,14 @@ function RoomTableInner({ participants, scrambleIndex, userStatuses = {}, curren
                                     key={round}
                                     className={`flex w-full border-b border-text/[0.1] ${isCurrentRound ? 'bg-blue-500/10' : isEven ? 'bg-button' : 'bg-module'}`}
                                 >
-                                    <div className={`w-12 shrink-0 sticky left-0 z-10 flex items-center justify-center py-1.5 font-mono border-r border-text/[0.1] ${isCurrentRound ? 'text-blue-400 font-bold bg-module' : isEven ? 'bg-button text-text/40' : 'bg-module text-text/40'}`}>
+                                    <button
+                                        type="button"
+                                        onClick={() => setSelectedRound(round)}
+                                        title={t('rooms.scrambleModal.view')}
+                                        className={`w-12 shrink-0 sticky left-0 z-10 flex items-center justify-center py-1.5 font-mono border-r border-text/[0.1] cursor-pointer hover:bg-text/[0.05] transition-colors ${isCurrentRound ? 'text-blue-400 font-bold bg-module' : isEven ? 'bg-button text-text/40' : 'bg-module text-text/40'}`}
+                                    >
                                         {round}
-                                    </div>
+                                    </button>
                                     {participants.map(p => {
                                         const solve = p.solves.find(s => s.scramble_index === round);
                                         const bestTime = bestTimes[round];
@@ -352,6 +360,12 @@ function RoomTableInner({ participants, scrambleIndex, userStatuses = {}, curren
                     </div>
                 </div>
             </div>
+            <ScrambleViewModal
+                isOpen={selectedRound !== null}
+                onClose={() => setSelectedRound(null)}
+                round={selectedRound}
+                scrambleHistory={scrambleHistory}
+            />
         </div>
     );
 }
@@ -363,6 +377,7 @@ function arePropsEqual(prev: RoomTableProps, next: RoomTableProps): boolean {
     if (prev.scrambleIndex !== next.scrambleIndex) return false;
     if (prev.currentUserId !== next.currentUserId) return false;
     if (prev.userStatuses !== next.userStatuses) return false;
+    if ((prev.scrambleHistory?.length ?? 0) !== (next.scrambleHistory?.length ?? 0)) return false;
 
     const a = prev.participants;
     const b = next.participants;

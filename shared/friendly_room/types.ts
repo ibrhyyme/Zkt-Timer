@@ -13,6 +13,12 @@ export interface FriendlyRoomData {
     created_at: string;
     created_by: FriendlyRoomUser;
     participants: FriendlyRoomParticipantData[];
+    scramble_history: FriendlyRoomScrambleHistoryEntry[];
+}
+
+export interface FriendlyRoomScrambleHistoryEntry {
+    scramble_index: number;
+    scramble: string;
 }
 
 export interface FriendlyRoomUser {
