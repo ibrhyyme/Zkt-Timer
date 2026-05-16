@@ -786,10 +786,16 @@ export default function FriendlyRoom() {
             if (data.room_id === roomId) {
                 setRoom((prev) => {
                     if (!prev) return prev;
+                    const prevHistory = prev.scramble_history ?? [];
+                    const filtered = prevHistory.filter(s => s.scramble_index !== data.scramble_index);
                     return {
                         ...prev,
                         current_scramble: data.scramble,
                         scramble_index: data.scramble_index,
+                        scramble_history: [
+                            ...filtered,
+                            { scramble_index: data.scramble_index, scramble: data.scramble },
+                        ].sort((a, b) => a.scramble_index - b.scramble_index),
                     };
                 });
                 // Clear statuses for new round
