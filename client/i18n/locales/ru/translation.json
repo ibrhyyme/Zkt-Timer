@@ -300,6 +300,8 @@
         "option_prioritize_failed": "Приоритет неудачным случаям",
         "option_auto_learn_enabled": "Автоматическая отметка 'Изучено'",
         "option_auto_learn_threshold": "Порог (последовательных правильных решений)",
+        "option_cube_size": "Размер кубика",
+        "option_wake_lock": "Не выключать экран",
         "option_show_alg_name": "Показать название алгоритма",
         "option_flash_indicator": "Индикатор правильно/неправильно",
         "top_layer": "Верхний Слой",

@@ -20,6 +20,8 @@ const DEFAULT_OPTIONS: TrainerOptions = {
 	randomizeAUF: true,
 	autoLearnEnabled: true,
 	autoLearnThreshold: 5,
+	cubeSize: 280,
+	wakeLockEnabled: true,
 	topFace: 'U',
 	frontFace: 'F',
 };
