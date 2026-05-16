@@ -298,6 +298,8 @@
         "option_random_auf": "Случайный AUF",
         "option_prioritize_slow": "Приоритет медленным случаям",
         "option_prioritize_failed": "Приоритет неудачным случаям",
+        "option_auto_learn_enabled": "Автоматическая отметка 'Изучено'",
+        "option_auto_learn_threshold": "Порог (последовательных правильных решений)",
         "option_show_alg_name": "Показать название алгоритма",
         "option_flash_indicator": "Индикатор правильно/неправильно",
         "top_layer": "Верхний Слой",

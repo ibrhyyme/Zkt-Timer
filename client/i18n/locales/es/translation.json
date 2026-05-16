@@ -298,6 +298,8 @@
         "option_random_auf": "AUF aleatorio",
         "option_prioritize_slow": "Priorizar casos lentos",
         "option_prioritize_failed": "Priorizar casos fallidos",
+        "option_auto_learn_enabled": "Marcar como 'Aprendido' automáticamente",
+        "option_auto_learn_threshold": "Umbral (resoluciones correctas consecutivas)",
         "option_show_alg_name": "Mostrar nombre del algoritmo",
         "option_flash_indicator": "Indicador correcto/incorrecto",
         "top_layer": "Capa Superior",

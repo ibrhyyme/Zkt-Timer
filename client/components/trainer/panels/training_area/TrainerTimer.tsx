@@ -1,7 +1,7 @@
 import React, {useEffect, useRef, useCallback} from 'react';
 import block from '../../../../styles/bem';
 import {useTrainerContext} from '../../TrainerContext';
-import {addTime} from '../../hooks/useAlgorithmData';
+import {addTime, resetFailCount, checkAutoLearn} from '../../hooks/useAlgorithmData';
 import {algToId, getPuzzleType} from '../../../../util/trainer/algorithm_engine';
 import {useTranslation} from 'react-i18next';
 
@@ -43,8 +43,14 @@ export default function TrainerTimer() {
 		if (currentAlgorithm) {
 			const algId = algToId(currentAlgorithm.algorithm);
 			addTime(algId, finalTime);
+			// Standard mode'da hata tracking yok — manuel timer kullanildigi icin
+			// her solve temiz kabul edilir. Fail counter sifirlanir, auto-learn cagrilir.
+			resetFailCount(algId);
+			if (state.options.autoLearnEnabled) {
+				checkAutoLearn(algId, state.options.autoLearnThreshold);
+			}
 		}
-	}, [currentAlgorithm, dispatch]);
+	}, [currentAlgorithm, dispatch, state.options.autoLearnEnabled, state.options.autoLearnThreshold]);
 
 	const startTimer = useCallback(() => {
 		startTimeRef.current = Date.now();

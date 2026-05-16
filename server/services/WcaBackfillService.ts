@@ -183,6 +183,8 @@ export async function runWcaBackfill(opts: WcaBackfillOptions = {}): Promise<Wca
 		}
 	}
 
-	logger.info('[WcaBackfill] Done', result);
+	// ES log mapping'inde "error" field'i obj olarak indexlenmis — integer cakismasi olmasin diye rename
+	const {error: errorCount, ...logSafeResult} = result;
+	logger.info('[WcaBackfill] Done', {...logSafeResult, errorCount});
 	return result;
 }

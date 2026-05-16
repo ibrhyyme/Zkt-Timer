@@ -9,14 +9,17 @@ import type {
 	SmartPhase,
 } from './types';
 import {algToId} from '../../util/trainer/algorithm_engine';
-import {getBestTime} from './hooks/useAlgorithmData';
+import {getBestTime, getFailCount} from './hooks/useAlgorithmData';
 import Connect from '../timer/smart_cube/bluetooth/connect';
 
 const DEFAULT_OPTIONS: TrainerOptions = {
 	randomOrder: true,
 	prioritizeSlow: false,
+	prioritizeFailed: false,
 	selectLearning: false,
 	randomizeAUF: true,
+	autoLearnEnabled: true,
+	autoLearnThreshold: 5,
 	topFace: 'U',
 	frontFace: 'F',
 };
@@ -77,12 +80,20 @@ const initialState: TrainerSessionState = {
 function buildQueue(algorithms: CheckedAlgorithm[], options: TrainerOptions): CheckedAlgorithm[] {
 	let queue = [...algorithms];
 
-	// Prioritize Slow: slowest best-time first
-	if (options.prioritizeSlow) {
+	// Prioritize Failed (primary) + Prioritize Slow (tie-break) tek sort'ta birlestirilir
+	if (options.prioritizeFailed || options.prioritizeSlow) {
 		queue.sort((a, b) => {
-			const aTime = getBestTime(algToId(a.algorithm)) ?? Infinity;
-			const bTime = getBestTime(algToId(b.algorithm)) ?? Infinity;
-			return bTime - aTime;
+			if (options.prioritizeFailed) {
+				const failDiff =
+					getFailCount(algToId(b.algorithm)) - getFailCount(algToId(a.algorithm));
+				if (failDiff !== 0) return failDiff;
+			}
+			if (options.prioritizeSlow) {
+				const aTime = getBestTime(algToId(a.algorithm)) ?? Infinity;
+				const bTime = getBestTime(algToId(b.algorithm)) ?? Infinity;
+				return bTime - aTime;
+			}
+			return 0;
 		});
 	}
 

@@ -22,7 +22,7 @@ import {
 	isIdenticalIgnoringCenters,
 } from '../../../../util/trainer/pattern_utils';
 import {getRemappedMask} from '../../../../util/trainer/stickering_remap';
-import {addTime} from '../../hooks/useAlgorithmData';
+import {addTime, incrementFailCount, resetFailCount, checkAutoLearn} from '../../hooks/useAlgorithmData';
 import {algToId} from '../../../../util/trainer/algorithm_engine';
 import {cubeTimestampLinearFit} from '../../../../util/smart_cube_timing';
 import {onVisibilityChange} from '../../../../util/app-visibility';
@@ -68,6 +68,8 @@ export default function TrainerSmartCube() {
 	const currentMoveIndexRef = useRef<number>(-1);
 	const badAlgRef = useRef<string[]>([]);
 	const lastMovesRef = useRef<{move: string}[]>([]);
+	// Solve sirasinda en az bir yanlis hamle yapildi mi (auto-learn + fail counter icin)
+	const solveHasMistakeRef = useRef<boolean>(false);
 
 	// Timer refs
 	const solutionMovesRef = useRef<SmartTurn[]>([]);
@@ -83,6 +85,8 @@ export default function TrainerSmartCube() {
 	currentAlgorithmRef.current = currentAlgorithm;
 	const isMoveMaskedRef = useRef(state.isMoveMasked);
 	isMoveMaskedRef.current = state.isMoveMasked;
+	const optionsRef = useRef(options);
+	optionsRef.current = options;
 
 	// -- Timer helpers --
 	const startTimerInterval = useCallback(() => {
@@ -121,8 +125,21 @@ export default function TrainerSmartCube() {
 
 		const alg = currentAlgorithmRef.current;
 		if (alg) {
-			addTime(algToId(alg.algorithm), finalTime);
+			const algId = algToId(alg.algorithm);
+			const hadMistakes = solveHasMistakeRef.current;
+			addTime(algId, finalTime, hadMistakes ? 1 : 0);
+			// Fail counter: hata yapildiysa arttir, temiz cozumdeyse sifirla
+			if (hadMistakes) {
+				incrementFailCount(algId);
+			} else {
+				resetFailCount(algId);
+			}
+			// Auto-update Learning State: son N temiz cozum varsa "learned" isaretle
+			if (optionsRef.current.autoLearnEnabled) {
+				checkAutoLearn(algId, optionsRef.current.autoLearnThreshold);
+			}
 		}
+		solveHasMistakeRef.current = false;
 
 		// Sonraki algoritmaya gec (minimal gecikme — tamamlanma geri bildirimi icin)
 		setTimeout(() => {
@@ -189,13 +206,17 @@ export default function TrainerSmartCube() {
 		}
 
 		// Solved detection helper (Issue 10 + 11)
+		// Algoritmanin HEDEF state'i ile karsilastir — patternStates'in son elemani.
+		// LL kategorilerinde hedef = solved (mevcut davranis korunur).
+		// F2L gibi mid-solve kategorilerde hedef = ilgili adim cozulmus state.
+		// Bu sayede mask mode'da kullanici kendi yontemiyle cozse de yakalanir.
 		const checkSolvedFallback = (): boolean => {
 			if (smartPhaseRef.current !== 'solving') return false;
-			const kpuzzle = getKPuzzle();
-			if (!kpuzzle || !myKpatternRef.current) return false;
+			if (!myKpatternRef.current) return false;
+			const targetState = patternStatesRef.current[patternStatesRef.current.length - 1];
+			if (!targetState) return false;
 			const fixedMy = fixOrientation(myKpatternRef.current);
-			const fixedDefault = fixOrientation(kpuzzle.defaultPattern());
-			if (isIdenticalIgnoringCenters(fixedMy, fixedDefault)) {
+			if (isIdenticalIgnoringCenters(fixedMy, targetState)) {
 				handleSolveComplete();
 				return true;
 			}
@@ -239,6 +260,7 @@ export default function TrainerSmartCube() {
 
 		if (!found) {
 			badAlgRef.current.push(move);
+			solveHasMistakeRef.current = true;
 			handleBadAlg();
 			dispatch({type: 'SET_BAD_ALG', payload: [...badAlgRef.current]});
 
@@ -481,6 +503,7 @@ export default function TrainerSmartCube() {
 			badAlgRef.current = [];
 			lastMovesRef.current = [];
 			solutionMovesRef.current = [];
+			solveHasMistakeRef.current = false;
 
 			dispatch({type: 'SET_MATCHED_MOVE_COUNT', payload: 0});
 			dispatch({type: 'SET_TOTAL_EXPECTED_MOVES', payload: algMoves.length});
@@ -588,6 +611,7 @@ export default function TrainerSmartCube() {
 		badAlgRef.current = [];
 		lastMovesRef.current = [];
 		solutionMovesRef.current = [];
+		solveHasMistakeRef.current = false;
 		stopTimerInterval();
 		dispatch({type: 'SET_MATCHED_MOVE_COUNT', payload: 0});
 		dispatch({type: 'SET_BAD_ALG', payload: []});
