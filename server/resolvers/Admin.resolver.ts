@@ -37,7 +37,7 @@ import { createSolveMethodSteps, deleteSolveMethodSteps } from '../models/solve_
 import { parseSmartTurns } from '../../shared/smart_cube/parse_turns';
 import { countHTM } from '../../shared/util/solve/move_counter';
 import { updateSolveLiteral } from '../models/solve';
-import { getOnlineCounts, getOnlineUsers } from '../services/socket_util';
+import { getOnlineCounts, getOnlineUsers, disconnectUserSockets } from '../services/socket_util';
 import WcaResultEnteredNotification from '../resources/notification_types/wca_result_entered';
 import WcaRoundFinishedNotification from '../resources/notification_types/wca_round_finished';
 import { getPrisma } from '../database';
@@ -203,6 +203,9 @@ export class AdminResolver {
 		}
 
 		await resolveReportsOfUserId(context, targetUser.id);
+		// Banlanan kullanicinin tum socket'lerini kopar — listede ghost user kalmasin,
+		// real-time bildirim/chat akislari engellensin.
+		disconnectUserSockets(targetUser.id);
 		return await createBanLog(admin, targetUser, reason, min, forever, res.banned_until);
 	}
 
@@ -320,6 +323,7 @@ export class AdminResolver {
 	@Mutation(() => UserAccount)
 	async adminDeleteUserAccount(@Ctx() context: GraphQLContext, @Arg('userId') userId: string) {
 		const targetUser = await getUserByIdOrThrow404(userId);
+		disconnectUserSockets(targetUser.id);
 		await deleteUserAccount(targetUser);
 
 		return targetUser;

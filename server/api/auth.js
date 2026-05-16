@@ -7,6 +7,7 @@ import { checkRateLimit } from '../services/rate_limit';
 import { extractIp } from '../util/request';
 import { logger } from '../services/logger';
 import { ErrorCode } from '../constants/errors';
+import { disconnectUserSockets } from '../services/socket_util';
 
 const gqlMutation = `
 	logOut: PublicUserAccount!
@@ -73,6 +74,9 @@ const mutateActions = {
 			}
 		}
 		clearSessionCookie(req, res);
+		if (user?.id) {
+			disconnectUserSockets(user.id);
+		}
 		return sanitizeUser(user);
 	},
 };
