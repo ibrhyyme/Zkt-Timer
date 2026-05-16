@@ -155,7 +155,7 @@ export async function shareContent(options: { title: string; text: string; url?:
 		await Share.share({
 			title: options.title,
 			text: options.text,
-			url: options.url || 'https://zktimer.app',
+			...(options.url ? { url: options.url } : {}),
 			dialogTitle: options.title,
 		});
 		return true;
