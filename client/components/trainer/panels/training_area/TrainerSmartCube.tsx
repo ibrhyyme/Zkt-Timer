@@ -23,6 +23,7 @@ import {
 } from '../../../../util/trainer/pattern_utils';
 import {getRemappedMask} from '../../../../util/trainer/stickering_remap';
 import {addTime, incrementFailCount, resetFailCount, checkAutoLearn} from '../../hooks/useAlgorithmData';
+import {useWakeLock} from '../../../../util/hooks/useWakeLock';
 import {algToId} from '../../../../util/trainer/algorithm_engine';
 import {cubeTimestampLinearFit} from '../../../../util/smart_cube_timing';
 import {onVisibilityChange} from '../../../../util/app-visibility';
@@ -37,6 +38,9 @@ const b = block('trainer');
 export default function TrainerSmartCube() {
 	const {state, dispatch, connectRef} = useTrainerContext();
 	const {currentAlgorithm, options} = state;
+
+	// Wake lock — smart cube bagliyken ekran sonmesin
+	useWakeLock(options.wakeLockEnabled && state.smartConnected);
 
 	// Camera pad state
 	const [isDragging, setIsDragging] = useState(false);
@@ -663,7 +667,7 @@ export default function TrainerSmartCube() {
 		<div className={b('smart-cube-area')}>
 			{/* 3D Kup */}
 			<div className={b('smart-cube-wrapper')}>
-				<div ref={containerRef} className={b('smart-cube-viewer')} style={{width: 280, height: 280}} />
+				<div ref={containerRef} className={b('smart-cube-viewer')} style={{width: options.cubeSize, height: options.cubeSize}} />
 				{state.showCameraPad && (
 					<div
 						ref={padRef}

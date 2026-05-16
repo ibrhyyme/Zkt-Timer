@@ -54,6 +54,8 @@ export interface TrainerOptions {
 	randomizeAUF: boolean;
 	autoLearnEnabled: boolean;
 	autoLearnThreshold: number;
+	cubeSize: number;
+	wakeLockEnabled: boolean;
 	topFace: CubeFace;
 	frontFace: CubeFace;
 }

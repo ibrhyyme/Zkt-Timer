@@ -291,6 +291,8 @@
         "option_prioritize_failed": "Prioritize failed cases",
         "option_auto_learn_enabled": "Auto-mark as 'Learned'",
         "option_auto_learn_threshold": "Threshold (consecutive correct solves)",
+        "option_cube_size": "Cube Size",
+        "option_wake_lock": "Keep Screen On",
         "option_show_alg_name": "Show algorithm name",
         "option_flash_indicator": "Flash indicator",
         "top_layer": "Top Layer",

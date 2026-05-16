@@ -14,6 +14,7 @@ import {useTranslation} from 'react-i18next';
 import {CaretLeft, CaretRight, CaretDown, CaretUp} from 'phosphor-react';
 import {useMe} from '../../../../util/hooks/useMe';
 import {isPro, isProEnabled} from '../../../../lib/pro';
+import {useWakeLock} from '../../../../util/hooks/useWakeLock';
 
 const b = block('trainer');
 
@@ -24,6 +25,9 @@ export default function TrainingArea() {
 	useLLPatternsReady();
 	const {currentAlgorithm, options} = state;
 	const dbVersion = useTrainerDb();
+
+	// Wake lock — timer aktifken ekran sonmesin (smart mode kendi wake lock'unu yonetir)
+	useWakeLock(options.wakeLockEnabled && state.timerState === 'RUNNING');
 
 	const hasMultipleAlgorithms = state.checkedAlgorithms.length > 1;
 
