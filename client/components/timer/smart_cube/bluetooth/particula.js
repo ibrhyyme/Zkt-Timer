@@ -1,4 +1,5 @@
 import SmartCube from './smart_cube';
+import { setTimerParams } from '../../helpers/params';
 
 export default class Particula extends SmartCube {
 	device;
@@ -42,12 +43,16 @@ export default class Particula extends SmartCube {
 			this.alertDisconnected();
 		});
 
+		setTimerParams({ smartCubeConnectStep: 'paired' });
+
 		await this.adapter.startNotifications(
 			this.device,
 			Particula.SERVICE_UUID,
 			this.CHRCT_UUID_READ,
 			(value) => this.parseData(value)
 		);
+
+		setTimerParams({ smartCubeConnectStep: 'reading_service' });
 
 		await this.adapter.writeCharacteristic(
 			this.device,

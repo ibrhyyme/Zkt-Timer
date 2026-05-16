@@ -5,6 +5,7 @@ const smartState = {
 	smartCubeConnecting: false,
 	smartCubeScanning: false,
 	smartCubeScanError: null,
+	smartCubeConnectStep: null,
 	smartCanStart: false,
 	smartTurns: [],
 	smartDeviceId: '',

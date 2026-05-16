@@ -6,6 +6,7 @@
 
 import SmartCube from './smart_cube';
 import Cube from 'cubejs';
+import { setTimerParams } from '../../helpers/params';
 
 const SOLVED_FACELET = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
 
@@ -43,6 +44,8 @@ export default class MoYu extends SmartCube {
 			this.alertDisconnected();
 		});
 
+		setTimerParams({ smartCubeConnectStep: 'paired' });
+
 		// READ, TURN, GYRO notifications baslat
 		await this.adapter.startNotifications(
 			this.device,
@@ -62,6 +65,8 @@ export default class MoYu extends SmartCube {
 			CHRCT_UUID_GYRO,
 			(value) => this.onGyroEvent(value)
 		);
+
+		setTimerParams({ smartCubeConnectStep: 'reading_service' });
 
 		const dummyServer = {
 			device: {

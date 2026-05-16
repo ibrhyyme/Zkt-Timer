@@ -215,10 +215,9 @@ export default function FriendlyRoom() {
                     }}
                 />,
                 {
-                    title: t('smart_cube.ble_scan_title'),
+                    position: 'bottom',
                     hideCloseButton: true,
                     disableBackdropClick: true,
-                    width: 400,
                 }
             ));
         }

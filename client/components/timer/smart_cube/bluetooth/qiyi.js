@@ -8,6 +8,7 @@ import SmartCube from './smart_cube';
 import LZString from './lz_string';
 import aes128 from './ae128';
 import Cube from 'cubejs';
+import { setTimerParams } from '../../helpers/params';
 
 const SOLVED_FACELET = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
 
@@ -176,6 +177,8 @@ export default class QiYi extends SmartCube {
 			this.alertDisconnected();
 		});
 
+		setTimerParams({ smartCubeConnectStep: 'paired' });
+
 		// Notification baslat
 		await this.adapter.startNotifications(
 			this.device,
@@ -183,6 +186,8 @@ export default class QiYi extends SmartCube {
 			CHRCT_UUID_CUBE,
 			(value) => this.onCubeEvent(value)
 		);
+
+		setTimerParams({ smartCubeConnectStep: 'reading_service' });
 
 		// MAC al ve hello gonder
 		this.deviceMac = await this.resolveMac();

@@ -27,6 +27,7 @@ export interface IModalProps {
 	fullSize?: boolean;
 	compact?: boolean;
 	disableBackdropClick?: boolean;
+	position?: 'center' | 'bottom';
 }
 
 export default function Modal(props: IModalProps) {
@@ -45,7 +46,10 @@ export default function Modal(props: IModalProps) {
 		noPadding,
 		onComplete,
 		disableBackdropClick,
+		position,
 	} = props;
+
+	const isBottomSheet = position === 'bottom';
 
 	const modalRef = useRef<HTMLDivElement>(null);
 	const [active, setActive] = useState(false);
@@ -146,10 +150,10 @@ export default function Modal(props: IModalProps) {
 	}
 
 	return (
-		<div ref={modalRef} className={b({ active, fullSize, compact })} style={style} onClick={handleBackdropClick}>
+		<div ref={modalRef} className={b({ active, fullSize, compact, 'position-bottom': isBottomSheet })} style={style} onClick={handleBackdropClick}>
 			<div className={b('center')} style={centerStyle} onClick={(e) => e.stopPropagation()}>
-				<ModalHeader title={title} description={description} />
-				{closeButton}
+				{!isBottomSheet && <ModalHeader title={title} description={description} />}
+				{!isBottomSheet && closeButton}
 				{React.isValidElement(children) && typeof (children as any).type !== 'string'
 					? React.cloneElement(children as any, {
 						onClose: clickClose,

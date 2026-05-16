@@ -8,6 +8,7 @@ import { isNative } from '../../../../util/platform';
 import Cube from 'cubejs';
 import { getStore } from '../../../store';
 import { setSmartSolveEndTime, setSmartCubeClockSkew, getSmartCubeClockSkew } from '../../helpers/events';
+import { setTimerParams } from '../../helpers/params';
 
 // Simple linear regression: y = slope * x + intercept
 // Returns [slope, intercept]
@@ -1152,7 +1153,11 @@ export default class GAN extends SmartCube {
 			return mac;
 		});
 
+		setTimerParams({ smartCubeConnectStep: 'paired' });
+
 		this.conn.events$.subscribe(this.handleCubeEvent);
+
+		setTimerParams({ smartCubeConnectStep: 'reading_service' });
 
 		await this.conn.sendCubeCommand({ type: 'REQUEST_BATTERY' });
 		await this.conn.sendCubeCommand({ type: 'REQUEST_HARDWARE' });

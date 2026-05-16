@@ -124,6 +124,8 @@ export default class Connect extends SmartCube {
 
 				console.log('[BLE-CONNECT] Cihaz bulundu:', device.name, '| deviceId:', device.deviceId);
 
+				setTimerParams({ smartCubeConnectStep: 'found' });
+
 				if (this._cancelled) {
 					console.log('[BLE-CONNECT] Iptal edildi, cikiliyor');
 					try { await this.adapter.disconnect(device); } catch (e) { /* ignore */ }
@@ -165,6 +167,7 @@ export default class Connect extends SmartCube {
 					smartCubeScanning: false,
 					smartCubeConnecting: false,
 					smartCubeScanError: null,
+					smartCubeConnectStep: null,
 				});
 			} else if (error.message === 'BLE_SCAN_TIMEOUT') {
 				console.warn('[BLE-CONNECT] 15s tarama timeout — cihaz bulunamadi');

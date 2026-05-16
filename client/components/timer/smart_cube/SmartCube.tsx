@@ -1024,10 +1024,9 @@ export default function SmartCube() {
 							onRetry={retryBleScan}
 						/>,
 						{
-							title: t('smart_cube.ble_scan_title'),
+							position: 'bottom',
 							hideCloseButton: true,
 							disableBackdropClick: true,
-							width: 400,
 						}
 					));
 				}
@@ -1048,6 +1047,7 @@ export default function SmartCube() {
 			smartCubeScanning: false,
 			smartCubeConnecting: false,
 			smartCubeScanError: null,
+			smartCubeConnectStep: null,
 		});
 	}
 
@@ -1055,6 +1055,7 @@ export default function SmartCube() {
 		setTimerParams({
 			smartCubeScanning: true,
 			smartCubeScanError: null,
+			smartCubeConnectStep: null,
 		});
 		connect.current.connect();
 	}

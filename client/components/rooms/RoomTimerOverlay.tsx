@@ -994,10 +994,9 @@ export default function RoomTimerOverlay({
                             onCancel={() => dispatch(closeModal())}
                         />,
                         {
-                            title: t('smart_cube.ble_scan_title'),
+                            position: 'bottom',
                             hideCloseButton: true,
                             disableBackdropClick: true,
-                            width: 400,
                         }
                     ));
                 }

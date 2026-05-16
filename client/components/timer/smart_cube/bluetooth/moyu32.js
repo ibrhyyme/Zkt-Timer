@@ -8,6 +8,7 @@
 import SmartCube from './smart_cube';
 import LZString from './lz_string';
 import aes128 from './ae128';
+import { setTimerParams } from '../../helpers/params';
 import Cube from 'cubejs';
 
 const SOLVED_FACELET = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
@@ -222,6 +223,8 @@ export default class MoYu32 extends SmartCube {
 			this.alertDisconnected();
 		});
 
+		setTimerParams({ smartCubeConnectStep: 'paired' });
+
 		// Notification baslat
 		await this.adapter.startNotifications(
 			this.device,
@@ -229,6 +232,8 @@ export default class MoYu32 extends SmartCube {
 			CHRT_UUID_READ,
 			(value) => this.onStateChanged(value)
 		);
+
+		setTimerParams({ smartCubeConnectStep: 'reading_service' });
 
 		// MAC al
 		this.deviceMac = await this.resolveMac();
