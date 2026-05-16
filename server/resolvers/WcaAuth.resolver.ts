@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import {GraphQLContext} from '../@types/interfaces/server.interface';
 import {WcaOAuthResult} from '../schemas/WcaOAuthResult.schema';
 import {PublicUserAccount} from '../schemas/UserAccount.schema';
-import {exchangeWcaLoginCode} from '../integrations/oauth';
+import {exchangeWcaLoginCode, syncWcaProfileToIntegration} from '../integrations/oauth';
 import {createUserAccount, getUserByEmail, getUserById, getUserByUsername, sanitizeUser} from '../models/user_account';
 import {createIntegration, getIntegration, getIntegrationByWcaId, updateIntegration} from '../models/integration';
 import {createSetting} from '../models/settings';
@@ -23,8 +23,10 @@ const WCA_PENDING_EXPIRY = 15 * 60; // 15 dakika (saniye)
 interface WcaPendingPayload {
 	email: string;
 	name: string;
-	wcaId: string;
-	countryIso2: string;
+	wcaId: string | null;
+	wcaUserId: string | null;
+	wcaAvatarUrl: string | null;
+	countryIso2: string | null;
 	accessToken: string;
 	refreshToken: string;
 	expiresAt: number;
@@ -52,6 +54,18 @@ export class WcaAuthResolver {
 			if (existingIntegration) {
 				const user = await getUserById(existingIntegration.user_id);
 				if (user) {
+					// Profili ve token'lari tazele — login'i bloklamasin (best-effort)
+					try {
+						const refreshed = await updateIntegration(existingIntegration, {
+							auth_token: wcaData.accessToken,
+							refresh_token: wcaData.refreshToken,
+							auth_expires_at: wcaData.expiresAt,
+						});
+						await syncWcaProfileToIntegration(refreshed, (wcaData as any).rawWcaData);
+					} catch (e: any) {
+						console.warn('[WcaAuth] Profile sync on login failed:', e?.message);
+					}
+
 					const jwtToken = getJwtString(user);
 					setSessionCookie(req, res, jwtToken);
 
@@ -94,19 +108,16 @@ export class WcaAuthResolver {
 			// Manuel link — Integration olustur, kullanici zaten oturum acmis durumda
 			const existingIntegration = await getIntegration(existingUser, 'wca');
 			if (!existingIntegration) {
-				const integration = await createIntegration(
+				let integration = await createIntegration(
 					existingUser,
 					'wca',
 					wcaData.accessToken,
 					wcaData.refreshToken,
 					wcaData.expiresAt
 				);
+				integration = await syncWcaProfileToIntegration(integration, (wcaData as any).rawWcaData);
 				if (wcaData.wcaId) {
-					await updateIntegration(integration, {
-						wca_id: wcaData.wcaId,
-						wca_country_iso2: wcaData.countryIso2 || null,
-					});
-					fetchAndSaveWcaRecords(existingUser, {...integration, wca_id: wcaData.wcaId} as any).catch((err) => {
+					fetchAndSaveWcaRecords(existingUser, integration as any).catch((err) => {
 						console.error('[Rankings] Auto-fetch on manual link failed:', err?.message);
 					});
 				}
@@ -119,11 +130,14 @@ export class WcaAuthResolver {
 		}
 
 		// 3. Hesap yok — wca_pending cookie'ye bilgileri yaz
+		// Avatar URL'i 500 char'a kirpiyoruz; cookie 4KB sinirini asmamasi icin guvenlik onlemi
 		const pendingPayload: WcaPendingPayload = {
 			email: wcaData.email,
 			name: wcaData.name,
-			wcaId: wcaData.wcaId,
-			countryIso2: wcaData.countryIso2,
+			wcaId: wcaData.wcaId || null,
+			wcaUserId: (wcaData as any).wcaUserId || null,
+			wcaAvatarUrl: ((wcaData as any).wcaAvatarUrl || '').slice(0, 500) || null,
+			countryIso2: wcaData.countryIso2 || null,
 			accessToken: wcaData.accessToken,
 			refreshToken: wcaData.refreshToken,
 			expiresAt: wcaData.expiresAt,
@@ -231,18 +245,27 @@ export class WcaAuthResolver {
 			}
 		}
 
-		// 8. Integration record olustur
-		const integration = await createIntegration(
+		// 8. Integration record olustur — pendingPayload'taki tum WCA bilgilerini yaz
+		let integration = await createIntegration(
 			user,
 			'wca',
 			payload.accessToken,
 			payload.refreshToken,
 			payload.expiresAt
 		);
+		// Synthetic wcaData — pendingPayload icin syncWcaProfileToIntegration'a ayni shape'i ver
+		const syntheticWcaData: any = {
+			id: payload.wcaUserId,
+			wca_id: payload.wcaId,
+			name: payload.name,
+			avatar: payload.wcaAvatarUrl ? {thumb_url: payload.wcaAvatarUrl} : null,
+			country_iso2: payload.countryIso2,
+		};
+		integration = await syncWcaProfileToIntegration(integration, syntheticWcaData);
+
 		if (payload.wcaId) {
-			await updateIntegration(integration, {wca_id: payload.wcaId});
 			// WCA kayitlarini cek + ranking hesapla
-			fetchAndSaveWcaRecords(user, {...integration, wca_id: payload.wcaId} as any).catch((err) => {
+			fetchAndSaveWcaRecords(user, integration as any).catch((err) => {
 				console.error('[Rankings] Auto-fetch on signup failed:', err?.message);
 			});
 		}

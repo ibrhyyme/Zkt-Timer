@@ -90,6 +90,9 @@ export class SiteConfig {
 	@Field()
 	pro_enabled: boolean;
 
+	@Field()
+	wca_backfill_enabled: boolean;
+
 	@Field(() => [FeatureOverrideEntry])
 	featureOverrides: FeatureOverrideEntry[];
 
@@ -109,7 +112,13 @@ export class BackfillResult {
 	tokenFailed: number;
 
 	@Field(() => Int)
+	revoked: number;
+
+	@Field(() => Int)
 	noWcaId: number;
+
+	@Field(() => Int)
+	rateLimited: number;
 
 	@Field(() => Int)
 	error: number;
@@ -197,6 +206,15 @@ export class WcaStats {
 
 	@Field(() => Int)
 	wcaWithoutId: number;
+
+	@Field(() => Int)
+	wcaWithoutUserId: number;
+
+	@Field(() => Int)
+	wcaRevoked: number;
+
+	@Field(() => Int)
+	wcaBackfillPending: number;
 }
 
 @ObjectType()
@@ -266,6 +284,9 @@ export class UpdateSiteConfigInput {
 
 	@Field({nullable: true})
 	pro_enabled?: boolean;
+
+	@Field({nullable: true})
+	wca_backfill_enabled?: boolean;
 
 	@Field(() => [FeatureOverrideEntryInput], {nullable: true})
 	featureOverrides?: FeatureOverrideEntryInput[];

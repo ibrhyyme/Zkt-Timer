@@ -21,14 +21,14 @@ import './SiteConfigPanel.scss';
 
 const b = block('site-config-panel');
 
-const BACKFILL_WCA_IDS = gql`mutation { backfillWcaIds { total filled tokenFailed noWcaId error recordsTotal recordsFilled recordsError } }`;
+const BACKFILL_WCA_IDS = gql`mutation { backfillWcaIds { total filled tokenFailed revoked noWcaId rateLimited error recordsTotal recordsFilled recordsError } }`;
 const REINDEX_METHOD_STEPS = gql`mutation { reindexSmartCubeMethodSteps { totalCandidates processed filled skippedNoTurns downgraded error } }`;
 const REINDEX_LL_CASE_KEYS = gql`mutation { reindexLLCaseKeys { total scanned ollUpdated pllUpdated failed } }`;
-const WCA_STATS = gql`query { wcaStats { totalUsers wcaConnected wcaWithId wcaWithoutId } }`;
+const WCA_STATS = gql`query { wcaStats { totalUsers wcaConnected wcaWithId wcaWithoutId wcaWithoutUserId wcaRevoked wcaBackfillPending } }`;
 const TEST_WCA_NOTIFICATION = gql`mutation TestWcaNotification($wcaId: String!) { testWcaNotification(wcaId: $wcaId) }`;
 const MY_PUSH_TOKENS = gql`query { adminMyPushTokens { platform } }`;
 
-type FeatureKey = 'maintenance_mode' | 'trainer_enabled' | 'community_enabled' | 'leaderboards_enabled' | 'rooms_enabled' | 'battle_enabled' | 'pro_enabled';
+type FeatureKey = 'maintenance_mode' | 'trainer_enabled' | 'community_enabled' | 'leaderboards_enabled' | 'rooms_enabled' | 'battle_enabled' | 'pro_enabled' | 'wca_backfill_enabled';
 
 const PAGE_TOGGLES: {key: FeatureKey; label: string; description: string}[] = [
 	{key: 'trainer_enabled', label: 'Trainer', description: 'Algoritma trainer sayfasi'},
@@ -61,7 +61,7 @@ export default function SiteConfigPanel() {
 	const [tokenCheckLoading, setTokenCheckLoading] = useState(false);
 	const [tokenCheckResult, setTokenCheckResult] = useState<string | null>(null);
 
-	const {data: wcaStatsData, refetch: refetchWcaStats, loading: wcaStatsLoading} = useQuery<{wcaStats: {totalUsers: number; wcaConnected: number; wcaWithId: number; wcaWithoutId: number}}>(WCA_STATS, {fetchPolicy: 'no-cache'});
+	const {data: wcaStatsData, refetch: refetchWcaStats, loading: wcaStatsLoading} = useQuery<{wcaStats: {totalUsers: number; wcaConnected: number; wcaWithId: number; wcaWithoutId: number; wcaWithoutUserId: number; wcaRevoked: number; wcaBackfillPending: number}}>(WCA_STATS, {fetchPolicy: 'no-cache'});
 
 	// Canli online sayaci — 10 saniyede bir polling
 	const {data: onlineData} = useQuery<OnlineStatsQuery>(OnlineStatsDocument, {
@@ -310,6 +310,9 @@ export default function SiteConfigPanel() {
 						{label: 'WCA Linked', value: wcaStatsData?.wcaStats?.wcaConnected},
 						{label: 'With WCA ID', value: wcaStatsData?.wcaStats?.wcaWithId},
 						{label: 'Without WCA ID', value: wcaStatsData?.wcaStats?.wcaWithoutId},
+						{label: 'Without User ID', value: wcaStatsData?.wcaStats?.wcaWithoutUserId},
+						{label: 'Revoked', value: wcaStatsData?.wcaStats?.wcaRevoked},
+						{label: 'Backfill Pending', value: wcaStatsData?.wcaStats?.wcaBackfillPending},
 					].map(({label, value}) => (
 						<div key={label} className={b('stat-card')}>
 							<div className={b('stat-label')}>{label}</div>
@@ -333,9 +336,28 @@ export default function SiteConfigPanel() {
 				</div>
 				<div className={b('row')}>
 					<div className={b('row-text')}>
-						<div className={b('row-label')}>WCA ID Backfill</div>
+						<div className={b('row-label')}>Otomatik Backfill Cron</div>
 						<div className={b('row-desc')}>
-							WCA hesabi bagli ama WCA ID'si eksik kullanicilarin verilerini WCA API'den cekip rankings'i hesaplar.
+							Her gece LA 03:00 (TR 13:00) eksik wca_user_id / wca_id kayitlarini tarayip otomatik doldurur.
+							WCA API rate-limit veya acil durum icin kapatabilirsin.
+						</div>
+					</div>
+					<button
+						className={b('toggle', {on: (config as any).wca_backfill_enabled !== false})}
+						onClick={() => handleToggle('wca_backfill_enabled', (config as any).wca_backfill_enabled !== false)}
+						disabled={saving === 'wca_backfill_enabled'}
+					>
+						<span className={b('toggle-track')}>
+							<span className={b('toggle-thumb')} />
+						</span>
+					</button>
+				</div>
+				<div className={b('row')}>
+					<div className={b('row-text')}>
+						<div className={b('row-label')}>Manuel Backfill</div>
+						<div className={b('row-desc')}>
+							WCA hesabi bagli ama wca_user_id / wca_id eksik kullanicilari simdi WCA API'den cekip doldurur + rankings hesaplar.
+							Cron beklemeden tetiklemek icin.
 						</div>
 					</div>
 					<button
@@ -351,7 +373,9 @@ export default function SiteConfigPanel() {
 									const parts = [`${r.filled + r.noWcaId}/${r.total} islendi`];
 									if (r.filled > 0) parts.push(`${r.filled} WCA ID dolduruldu`);
 									if (r.noWcaId > 0) parts.push(`${r.noWcaId} newcomer (ID yok, user_id kaydedildi)`);
-									if (r.tokenFailed > 0) parts.push(`${r.tokenFailed} token gecersiz`);
+									if (r.tokenFailed > 0) parts.push(`${r.tokenFailed} token transient`);
+									if (r.revoked > 0) parts.push(`${r.revoked} revoked (isaretlendi)`);
+									if (r.rateLimited > 0) parts.push(`${r.rateLimited} rate-limit`);
 									if (r.error > 0) parts.push(`${r.error} hata`);
 									parts.push(`Ranking: ${r.recordsFilled}/${r.recordsTotal} hesaplandi`);
 									if (r.recordsError > 0) parts.push(`${r.recordsError} ranking hatasi`);
@@ -359,6 +383,7 @@ export default function SiteConfigPanel() {
 								} else {
 									setBackfillResult('Sonuc alinamadi');
 								}
+								refetchWcaStats();
 							} catch (err) {
 								setBackfillResult('Hata: ' + (err as any)?.message);
 							} finally {
