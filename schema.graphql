@@ -707,6 +707,7 @@ type Setting {
   smart_cube_size_user_default: Int
   timer_scramble_size_user_default: Int
   timer_time_size_user_default: Int
+  scramble_top_color: String
   custom_cube_types: [CustomCubeType]
 }
 
@@ -2182,6 +2183,7 @@ input SettingInput {
   smart_cube_size_user_default: Int
   timer_scramble_size_user_default: Int
   timer_time_size_user_default: Int
+  scramble_top_color: String
   locale: String
 }
 

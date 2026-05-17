@@ -25,10 +25,13 @@ import { useMe } from '../../../util/hooks/useMe';
 import { useQuickControlsModal } from '../../quick-controls/useQuickControlsModal';
 import AccountDropdown from '../../layout/nav/account_dropdown/AccountDropdown';
 import SubsetPicker from './SubsetPicker';
+import CrossColorPicker from './CrossColorPicker';
 import { getSubsetsForCube } from '../../../util/cubes/scramble_subsets';
 import { getNewScrambleAsync } from '../helpers/scramble';
 import { getCubeTypeInfoById } from '../../../util/cubes/util';
 import { setTimerParam, setTimerParams } from '../helpers/params';
+import { setScrambleTopColor } from '../../../db/settings/update';
+import { applyTopColorTransform, isTopColorAvailable, isTopColorFace, TopColorFace } from '../../../util/scramble_transform';
 
 
 const b = block('timer-header-control');
@@ -59,6 +62,27 @@ export default function HeaderControl() {
 		}));
 	}
 
+	const scrambleTopColorSetting = useSettings('scramble_top_color');
+
+	/**
+	 * Top color secimi sadece 3x3 CFOP + PLL/OLL/f2l subset'lerinde etkin.
+	 * Aktif degilse null doner — applyTopColorTransform raw scramble verir.
+	 */
+	function getEffectiveTopColor(ct: string, sub: string | null | undefined): TopColorFace | null {
+		if (!isTopColorAvailable(ct, sub)) return null;
+		return isTopColorFace(scrambleTopColorSetting) ? scrambleTopColorSetting : null;
+	}
+
+	async function generateAndSet(scrambleType: string, subset: string | null | undefined, topColor: TopColorFace | null) {
+		try {
+			const raw = await getNewScrambleAsync(scrambleType, subset ?? undefined);
+			const transformed = await applyTopColorTransform(raw, topColor);
+			setTimerParams({ scramble: transformed, originalScramble: transformed, smartTurnOffset: 0 });
+		} catch (e) {
+			console.error('[scramble] generateAndSet failed:', e);
+		}
+	}
+
 	function changeCubeType(cubeTypeId: string) {
 		setCubeType(cubeTypeId);
 
@@ -74,9 +98,8 @@ export default function HeaderControl() {
 		setTimerParam('scrambleSubset', newSubset);
 
 		setTimerParams({ scramble: '', originalScramble: '', smartTurnOffset: 0 });
-		getNewScrambleAsync(ct.scramble, newSubset ?? undefined).then((newScramble) => {
-			setTimerParams({ scramble: newScramble, originalScramble: newScramble, smartTurnOffset: 0 });
-		}).catch((e) => { console.error('[scramble] changeCubeType failed:', e); });
+		const topColor = getEffectiveTopColor(cubeTypeId, newSubset);
+		generateAndSet(ct.scramble, newSubset, topColor);
 	}
 
 	function handleSubsetChange(subset: string | null) {
@@ -86,9 +109,20 @@ export default function HeaderControl() {
 		const ct = getCubeTypeInfoById(cubeType);
 		if (ct) {
 			setTimerParams({ scramble: '', originalScramble: '', smartTurnOffset: 0 });
-			getNewScrambleAsync(ct.scramble, subset).then((newScramble) => {
-				setTimerParams({ scramble: newScramble, originalScramble: newScramble, smartTurnOffset: 0 });
-			}).catch((e) => { console.error('[scramble] handleSubsetChange failed:', e); });
+			const topColor = getEffectiveTopColor(cubeType, subset);
+			generateAndSet(ct.scramble, subset, topColor);
+		}
+	}
+
+	function handleColorChange(color: TopColorFace) {
+		setScrambleTopColor(color);
+
+		const ct = getCubeTypeInfoById(cubeType);
+		const curSubset = getSetting('scramble_subset') as string | null | undefined;
+		if (ct) {
+			setTimerParams({ scramble: '', originalScramble: '', smartTurnOffset: 0 });
+			const topColor = isTopColorAvailable(cubeType, curSubset) ? color : null;
+			generateAndSet(ct.scramble, curSubset, topColor);
 		}
 	}
 
@@ -122,6 +156,12 @@ export default function HeaderControl() {
 		manualDisabled = true;
 	}
 
+	const currentScrambleSubset = useSettings('scramble_subset');
+	const showCrossColorPicker = isTopColorAvailable(cubeType, currentScrambleSubset);
+	const currentTopColor: TopColorFace | null = isTopColorFace(scrambleTopColorSetting)
+		? scrambleTopColorSetting
+		: null;
+
 	const cubePicker = !headerOptions.hideCubeType && (
 		<div className="flex items-center gap-2">
 			<CubePicker
@@ -131,10 +171,17 @@ export default function HeaderControl() {
 			/>
 			<SubsetPicker
 				subsets={getSubsetsForCube(cubeType)}
-				selectedSubset={useSettings('scramble_subset')}
+				selectedSubset={currentScrambleSubset}
 				onChange={handleSubsetChange}
 				mobile={mobileMode}
 			/>
+			{showCrossColorPicker && (
+				<CrossColorPicker
+					value={currentTopColor}
+					onChange={handleColorChange}
+					mobile={mobileMode}
+				/>
+			)}
 		</div>
 	);
 

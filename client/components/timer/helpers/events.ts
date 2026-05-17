@@ -99,7 +99,8 @@ export function startTimer(smartStartTimestamp?: number, touchTimestamp?: number
 	const cubeType = getSetting('cube_type');
 	if (cubeType) {
 		const scrambleSubset = getTimerStore('scrambleSubset');
-		preGenerateScramble(cubeType, scrambleSubset);
+		const scrambleTopColor = getSetting('scramble_top_color');
+		preGenerateScramble(cubeType, scrambleSubset, scrambleTopColor);
 	}
 }
 
@@ -170,7 +171,7 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 
 	setTimeout(() => {
 		// Pre-generated scramble varsa anlik swap, yoksa senkron uret
-		const preScramble = consumePreGeneratedScramble(context.cubeType);
+		const preScramble = consumePreGeneratedScramble(context.cubeType, context.scrambleSubset, getSetting('scramble_top_color'));
 		if (preScramble && !context.scrambleLocked && !context.customScrambleFunc) {
 			setTimerParams({
 				scramble: preScramble,

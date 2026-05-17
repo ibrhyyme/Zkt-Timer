@@ -168,6 +168,7 @@ export const SETTING_FRAGMENT = gql`
 		require_period_in_manual_time_entry
 		cube_type
 		scramble_subset
+		scramble_top_color
 		custom_cube_types {
 			...CustomCubeTypeFragment
 		}
