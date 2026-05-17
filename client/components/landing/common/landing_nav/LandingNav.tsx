@@ -82,7 +82,11 @@ export default function LandingNav(props: Props) {
 		}
 
 		showNavLinks.push(
-			<a key={link} href={link} className={linkClasses.join(' ')}>
+			<a
+				key={link}
+				href={link}
+				className={linkClasses.join(' ')}
+			>
 				{label}
 			</a>
 		);

@@ -1,10 +1,10 @@
-import React, {useEffect} from 'react';
-import {gql} from '@apollo/client';
-import {gqlMutate} from '../api';
-import {toastError} from '../../util/toast';
-import {useTranslation} from 'react-i18next';
-import {resourceUri} from '../../util/storage';
-import {consumeAndValidateOAuthState} from '../../util/oauth_state';
+import React, { useEffect, useRef, useState } from 'react';
+import { gql } from '@apollo/client';
+import { useTranslation } from 'react-i18next';
+import { gqlMutate } from '../api';
+import { toastError } from '../../util/toast';
+import { consumeAndValidateOAuthState } from '../../util/oauth_state';
+import ZktAuthScene from '../login/zkt_auth/ZktAuthScene';
 
 const AUTHENTICATE_WITH_WCA = gql`
 	mutation Mutate($code: String!) {
@@ -18,8 +18,13 @@ const AUTHENTICATE_WITH_WCA = gql`
 	}
 `;
 
+const STEP_COUNT = 4;
+const AUTO_ADVANCE_MS = 1400;
+
 export default function WcaLoginCallback() {
-	const {t} = useTranslation();
+	const { t } = useTranslation();
+	const [step, setStep] = useState(0);
+	const advancedToFinalRef = useRef(false);
 
 	useEffect(() => {
 		const urlParams = new URLSearchParams(window.location.search);
@@ -32,8 +37,6 @@ export default function WcaLoginCallback() {
 			return;
 		}
 
-		// OAuth CSRF korumasi: state parametresi sessionStorage'taki ile eslesmeli
-		// Eslesmezse saldirgan kullaniciyi kendi code'una yonlendirmis olabilir — abort
 		if (!consumeAndValidateOAuthState(state)) {
 			toastError(t('wca_signup.session_expired'));
 			setTimeout(() => {
@@ -42,25 +45,43 @@ export default function WcaLoginCallback() {
 			return;
 		}
 
-		gqlMutate(AUTHENTICATE_WITH_WCA, {code})
+		// Auto-advance fallback: backend tek mutation yapar, gercek 4 sinyal yok.
+		// 1400ms araliklarla step ilerlet, gercek sonuc geldiginde clear.
+		const interval = setInterval(() => {
+			setStep((s) => {
+				if (advancedToFinalRef.current) return s;
+				return Math.min(s + 1, STEP_COUNT - 2);
+			});
+		}, AUTO_ADVANCE_MS);
+
+		// Mutation baslat → step 1 (Yetki alindi) hizla
+		setStep(1);
+
+		gqlMutate(AUTHENTICATE_WITH_WCA, { code })
 			.then((res) => {
 				const result = res?.data?.authenticateWithWca;
+				clearInterval(interval);
+				advancedToFinalRef.current = true;
+				setStep(STEP_COUNT - 1);
 
-				if (result?.success && !result?.needsUsername) {
-					localStorage.setItem('zkt_has_auth', 'true');
-					window.location.href = '/timer';
-				} else if (result?.needsUsername) {
-					const params = new URLSearchParams();
-					if (result.wcaName) params.set('name', result.wcaName);
-					if (result.wcaEmail) params.set('email', result.wcaEmail);
-					if (result.wcaId) params.set('wcaId', result.wcaId);
-					window.location.href = `/wca-signup?${params.toString()}`;
-				} else {
-					window.location.href = '/login';
-				}
+				setTimeout(() => {
+					if (result?.success && !result?.needsUsername) {
+						localStorage.setItem('zkt_has_auth', 'true');
+						window.location.href = '/timer';
+					} else if (result?.needsUsername) {
+						const params = new URLSearchParams();
+						if (result.wcaName) params.set('name', result.wcaName);
+						if (result.wcaEmail) params.set('email', result.wcaEmail);
+						if (result.wcaId) params.set('wcaId', result.wcaId);
+						window.location.href = `/wca-signup?${params.toString()}`;
+					} else {
+						window.location.href = '/login';
+					}
+				}, 800);
 			})
 			.catch((e) => {
 				console.error('WCA login error:', e);
+				clearInterval(interval);
 				const errorMessage =
 					e?.graphQLErrors?.[0]?.extensions?.exception?.message ||
 					e?.graphQLErrors?.[0]?.message ||
@@ -71,28 +92,9 @@ export default function WcaLoginCallback() {
 					window.location.href = '/login';
 				}, 2000);
 			});
-	}, []);
 
-	return (
-		<div
-			style={{
-				display: 'flex',
-				flexDirection: 'column',
-				justifyContent: 'center',
-				alignItems: 'center',
-				minHeight: '100vh',
-				gap: '1.5rem',
-			}}
-		>
-			<img
-				src={resourceUri('/images/logos/wca_logo.svg')}
-				alt="WCA"
-				style={{width: '64px', height: '64px', opacity: 0.9}}
-			/>
-			<div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
-			<p style={{color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.9rem'}}>
-				{t('wca_signup.loading')}
-			</p>
-		</div>
-	);
+		return () => clearInterval(interval);
+	}, [t]);
+
+	return <ZktAuthScene initialMode="wca-callback" wcaStep={step} />;
 }

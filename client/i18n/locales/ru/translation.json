@@ -2130,6 +2130,30 @@
         "login": "Вход",
         "signup": "Регистрация"
     },
+    "zkt_auth": {
+        "divider_or_email": "или по email",
+        "continue_with_wca": "Войти через WCA",
+        "connecting": "Подключение…",
+        "submit_login": "Войти",
+        "submit_signup": "Создать аккаунт",
+        "error_invalid_credentials": "Неверный email или пароль. Попробуйте снова.",
+        "email_suggest_cta": "Вы имели в виду?",
+        "turnstile_verified": "Подтверждено, что вы не робот",
+        "timer_reveal_hint": "НАЖМИТЕ ПРОБЕЛ",
+        "timer_event_label": "3x3x3 · Solo",
+        "wca_callback": {
+            "title": "Подключение к WCA",
+            "subtitle": "Связываем ваш аккаунт WCA с профилем.",
+            "step1_title": "Перенаправлено в WCA",
+            "step1_sub": "Открыт экран авторизации.",
+            "step2_title": "Авторизация получена",
+            "step2_sub": "Вы подтвердили аккаунт WCA.",
+            "step3_title": "Создание профиля",
+            "step3_sub": "Синхронизация рекордов и соревнований.",
+            "step4_title": "Готово",
+            "step4_sub": "Открывается Timer."
+        }
+    },
     "landing_nav": {
         "login": "Войти",
         "signup": "Регистрация"

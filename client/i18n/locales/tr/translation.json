@@ -2130,6 +2130,30 @@
         "login": "Giriş",
         "signup": "Kayıt Ol"
     },
+    "zkt_auth": {
+        "divider_or_email": "veya email ile",
+        "continue_with_wca": "WCA ile giriş yap",
+        "connecting": "Bağlanıyor…",
+        "submit_login": "Giriş Yap",
+        "submit_signup": "Hesap Oluştur",
+        "error_invalid_credentials": "Email veya şifre hatalı. Tekrar dene.",
+        "email_suggest_cta": "Bunu mu demek istedin?",
+        "turnstile_verified": "Robot olmadığın doğrulandı",
+        "timer_reveal_hint": "BOŞLUK TUŞUNA BAS",
+        "timer_event_label": "3x3x3 · Solo",
+        "wca_callback": {
+            "title": "WCA bağlanıyor",
+            "subtitle": "WCA hesabınla profilini eşliyoruz.",
+            "step1_title": "WCA'ya yönlendirildin",
+            "step1_sub": "Yetki ekranı açıldı.",
+            "step2_title": "Yetki alındı",
+            "step2_sub": "WCA hesabını onayladın.",
+            "step3_title": "Profil oluşturuluyor",
+            "step3_sub": "Rekorların ve yarışmaların eşleniyor.",
+            "step4_title": "Hazır",
+            "step4_sub": "Timer açılıyor."
+        }
+    },
     "landing_nav": {
         "login": "Giriş Yap",
         "signup": "Kayıt Ol"

@@ -35,6 +35,23 @@
 
         // White when in dark mode, black when in light mode
         --theme-color-opposite: 255, 255, 255;
+
+        ///// ZKT AUTH SCENE (login + signup + wca-callback) /////
+        --auth-accent: 167, 139, 250;
+        --auth-module-elevated: 22, 26, 40;
+        --auth-module-border: 38, 42, 56;
+        --auth-module-border-strong: 60, 66, 86;
+        --auth-text-soft: 184, 192, 214;
+        --auth-text-mute: 130, 138, 160;
+
+        // Cube sticker colors — HeroCube WCA palette (NOT design AI de-saturated)
+        --st-white: 255, 255, 255;
+        --st-yellow: 255, 213, 0;
+        --st-red: 183, 18, 52;
+        --st-orange: 255, 88, 0;
+        --st-blue: 0, 70, 173;
+        --st-green: 0, 155, 72;
+        --st-piece-body: 8, 16, 26;
     }
 }
 

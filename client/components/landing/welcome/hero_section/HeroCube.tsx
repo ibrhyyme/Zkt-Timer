@@ -26,8 +26,19 @@ export default function HeroCube() {
 
 	const [phase, setPhase] = useState<Phase>('idle');
 	const [elapsed, setElapsed] = useState(0);
+	const phaseRef = useRef<Phase>('idle');
+
+	useEffect(() => {
+		phaseRef.current = phase;
+	}, [phase]);
 
 	const tick = useCallback(() => {
+		// Self-terminate if phase changed (race-safe: cleanup may run after a
+		// tick already scheduled the next RAF, so we re-check inside).
+		if (phaseRef.current !== 'timing') {
+			rafRef.current = 0;
+			return;
+		}
 		setElapsed(performance.now() - startTimeRef.current);
 		rafRef.current = requestAnimationFrame(tick);
 	}, []);
@@ -60,6 +71,7 @@ export default function HeroCube() {
 			};
 
 			game.onSolved = () => {
+				if (phaseRef.current === 'solved') return;
 				setPhase('solved');
 				triggerHeroCubeConfetti();
 			};

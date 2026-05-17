@@ -2130,6 +2130,30 @@
         "login": "登录",
         "signup": "注册"
     },
+    "zkt_auth": {
+        "divider_or_email": "或使用邮箱",
+        "continue_with_wca": "使用 WCA 登录",
+        "connecting": "连接中…",
+        "submit_login": "登录",
+        "submit_signup": "创建账户",
+        "error_invalid_credentials": "邮箱或密码错误。请重试。",
+        "email_suggest_cta": "你是不是想输入？",
+        "turnstile_verified": "已验证你不是机器人",
+        "timer_reveal_hint": "按空格键",
+        "timer_event_label": "3x3x3 · 单人",
+        "wca_callback": {
+            "title": "正在连接 WCA",
+            "subtitle": "正在将你的 WCA 账户与个人资料关联。",
+            "step1_title": "已跳转至 WCA",
+            "step1_sub": "授权页面已打开。",
+            "step2_title": "已获得授权",
+            "step2_sub": "你已批准 WCA 账户。",
+            "step3_title": "正在创建个人资料",
+            "step3_sub": "正在同步记录和比赛。",
+            "step4_title": "准备就绪",
+            "step4_sub": "正在打开 Timer。"
+        }
+    },
     "landing_nav": {
         "login": "登录",
         "signup": "注册"
