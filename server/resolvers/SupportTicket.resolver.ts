@@ -1,4 +1,5 @@
 import {Arg, Authorized, Ctx, Mutation, Query, Resolver} from 'type-graphql';
+import {GraphQLUpload, FileUpload} from 'graphql-upload';
 import {GraphQLContext} from '../@types/interfaces/server.interface';
 import {Role} from '../middlewares/auth';
 import {SupportTicket, SupportTicketInput} from '../schemas/SupportTicket.schema';
@@ -9,6 +10,10 @@ import {getUserById, publicUserInclude} from '../models/user_account';
 import {notifyAdminsOfSupportTicket, notifyAdminsOfTicketReply, notifyUserOfTicketReply} from '../services/admin_notification';
 import {createRedisKey, getValueFromRedis, setKeyInRedis, RedisNamespace} from '../services/redis';
 import {logger} from '../services/logger';
+import {uploadSupportTicketAttachment} from '../models/support_ticket_attachment';
+
+const MAX_ATTACHMENTS_PER_MESSAGE = 1;
+const attachmentInclude = {attachments: {orderBy: {created_at: 'asc' as const}}};
 
 const RATE_LIMIT_WINDOW_SECONDS = 5 * 60; // 5 dakika
 const RATE_LIMIT_MAX = 5;
@@ -96,7 +101,7 @@ export class SupportTicketResolver {
 			include: {
 				created_by: publicUserInclude,
 				messages: {
-					include: {sender: publicUserInclude},
+					include: {sender: publicUserInclude, ...attachmentInclude},
 					orderBy: {created_at: 'asc'},
 				},
 			},
@@ -116,7 +121,7 @@ export class SupportTicketResolver {
 			include: {
 				created_by: publicUserInclude,
 				messages: {
-					include: {sender: publicUserInclude},
+					include: {sender: publicUserInclude, ...attachmentInclude},
 					orderBy: {created_at: 'asc'},
 				},
 			},
@@ -139,7 +144,7 @@ export class SupportTicketResolver {
 			include: {
 				created_by: publicUserInclude,
 				messages: {
-					include: {sender: publicUserInclude},
+					include: {sender: publicUserInclude, ...attachmentInclude},
 					orderBy: {created_at: 'asc'},
 				},
 			},
@@ -160,14 +165,12 @@ export class SupportTicketResolver {
 	async addSupportTicketMessage(
 		@Ctx() context: GraphQLContext,
 		@Arg('ticketId') ticketId: string,
-		@Arg('body') body: string
+		@Arg('body') body: string,
+		@Arg('attachments', () => [GraphQLUpload], {nullable: true}) attachments?: Promise<FileUpload>[]
 	): Promise<SupportTicketMessage> {
 		const {prisma, user} = context;
 
 		const trimmed = (body || '').trim();
-		if (!trimmed) {
-			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Mesaj bos olamaz');
-		}
 		if (trimmed.length > MAX_MESSAGE_LENGTH) {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, `Mesaj ${MAX_MESSAGE_LENGTH} karakteri gecemez`);
 		}
@@ -189,6 +192,18 @@ export class SupportTicketResolver {
 			throw new GraphQLError(ErrorCode.FORBIDDEN, 'Bu destek talebine yanit yazma yetkin yok');
 		}
 
+		// Sadece admin/mod attachment yukleyebilir. Kullanici array verirse sessizce yok say.
+		const effectiveAttachments = isAdminOrMod ? (attachments || []) : [];
+
+		if (effectiveAttachments.length > MAX_ATTACHMENTS_PER_MESSAGE) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, `En fazla ${MAX_ATTACHMENTS_PER_MESSAGE} dosya eklenebilir`);
+		}
+
+		// Body bos VE attachment bos olamaz
+		if (!trimmed && effectiveAttachments.length === 0) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Mesaj bos olamaz');
+		}
+
 		const message = await prisma.supportTicketMessage.create({
 			data: {
 				ticket_id: ticketId,
@@ -196,7 +211,28 @@ export class SupportTicketResolver {
 				body: trimmed,
 				is_admin: !!isAdminOrMod,
 			},
-			include: {sender: publicUserInclude},
+		});
+
+		// Attachment upload — herhangi biri fail olursa mesaji ve uploaded olanlari rollback et
+		if (effectiveAttachments.length > 0) {
+			try {
+				for (const filePromise of effectiveAttachments) {
+					const file = await filePromise;
+					await uploadSupportTicketAttachment(message.id, file.filename, file.createReadStream, file.mimetype);
+				}
+			} catch (e) {
+				logger.error('[SupportTicket] Attachment upload failed, rolling back message', {
+					messageId: message.id,
+					error: (e as any)?.message,
+				});
+				await prisma.supportTicketMessage.delete({where: {id: message.id}}).catch(() => undefined);
+				throw new GraphQLError(ErrorCode.BAD_INPUT, (e as any)?.message || 'Dosya yuklenemedi');
+			}
+		}
+
+		const finalMessage = await prisma.supportTicketMessage.findUnique({
+			where: {id: message.id},
+			include: {sender: publicUserInclude, ...attachmentInclude},
 		});
 
 		// Notification — fail edilirse mesaj olusumunu engelleme
@@ -212,7 +248,7 @@ export class SupportTicketResolver {
 			});
 		}
 
-		return message as any;
+		return finalMessage as any;
 	}
 
 	@Authorized([Role.MOD])

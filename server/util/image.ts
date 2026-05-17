@@ -10,7 +10,7 @@ export interface ImageFileToBuffer {
 
 // Magic byte (file signature) check — extension spoofing'i engeller.
 // Saldirgan ".jpg.exe" gibi dosya yuklerse, ilk birkac byte'a bakarak gercek tipi tespit ederiz.
-function detectImageType(buffer: Buffer): 'png' | 'jpeg' | 'gif' | 'webp' | null {
+export function detectImageType(buffer: Buffer): 'png' | 'jpeg' | 'gif' | 'webp' | null {
 	if (buffer.length < 12) return null;
 	// PNG: 89 50 4E 47 0D 0A 1A 0A
 	if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4E && buffer[3] === 0x47) {
@@ -63,7 +63,25 @@ export async function getImageBufferFromFileStream(
 		.getBufferAsync(mimeType);
 }
 
-async function getFileStreamAsBufferStream(readStream: ReadStream): Promise<Buffer> {
+// Video magic byte detection. Image gibi extension spoofing korumasi.
+// mp4/quicktime: offset 4-7 'ftyp', sonraki 4 byte brand
+// webm/matroska: 1A 45 DF A3
+export function detectVideoType(buffer: Buffer): 'mp4' | 'webm' | 'quicktime' | null {
+	if (buffer.length >= 12 &&
+		buffer[4] === 0x66 && buffer[5] === 0x74 && buffer[6] === 0x79 && buffer[7] === 0x70) {
+		const brand = buffer.slice(8, 12).toString('ascii');
+		// QuickTime brand: 'qt  '
+		if (brand.startsWith('qt')) return 'quicktime';
+		return 'mp4';
+	}
+	if (buffer.length >= 4 &&
+		buffer[0] === 0x1A && buffer[1] === 0x45 && buffer[2] === 0xDF && buffer[3] === 0xA3) {
+		return 'webm';
+	}
+	return null;
+}
+
+export async function getFileStreamAsBufferStream(readStream: ReadStream): Promise<Buffer> {
 	return new Promise((resolve, reject) => {
 		readStream.pipe(
 			BufferListStream((err: any, data: any) => {

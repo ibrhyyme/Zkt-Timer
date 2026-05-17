@@ -1,5 +1,6 @@
 import {Field, ObjectType} from 'type-graphql';
 import {PublicUserAccount} from './UserAccount.schema';
+import {SupportTicketAttachment} from './SupportTicketAttachment.schema';
 
 @ObjectType()
 export class SupportTicketMessage {
@@ -23,4 +24,7 @@ export class SupportTicketMessage {
 
 	@Field(() => PublicUserAccount, {nullable: true})
 	sender?: PublicUserAccount;
+
+	@Field(() => [SupportTicketAttachment], {nullable: true})
+	attachments?: SupportTicketAttachment[];
 }

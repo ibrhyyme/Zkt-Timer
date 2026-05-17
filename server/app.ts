@@ -430,7 +430,8 @@ if (!isDev) {
 
 	const path = '/graphql';
 
-	app.use(graphqlUploadExpress());
+	// Destek talebi ekleri icin: 30MB / 4 dosya. Profil resmi + diger upload'lar da bu sinirlara dahil.
+	app.use(graphqlUploadExpress({ maxFileSize: 30 * 1024 * 1024, maxFiles: 4 }));
 	server.applyMiddleware({ app, path });
 
 	// Setup code

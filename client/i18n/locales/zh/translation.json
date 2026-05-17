@@ -554,7 +554,13 @@
         "reply_placeholder": "输入您的回复...",
         "send_reply": "发送",
         "closed_cant_reply": "此工单已标记为已解决,无法添加新消息。",
-        "modal_close": "关闭"
+        "modal_close": "关闭",
+        "attach_file": "添加附件",
+        "attach_max_reached": "最多可附加 {{count}} 个文件",
+        "attach_invalid_type": "仅可上传图片和视频",
+        "attach_too_large": "文件过大(最大 {{size}})",
+        "attachments": "附件",
+        "remove_attachment": "移除附件"
     },
     "admin_reports": {
         "tab_reports": "用户举报",

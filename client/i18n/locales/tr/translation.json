@@ -554,7 +554,13 @@
         "reply_placeholder": "Cevabını yaz...",
         "send_reply": "Gönder",
         "closed_cant_reply": "Bu talep çözüldü olarak işaretlendi, yeni mesaj yazılamaz.",
-        "modal_close": "Kapat"
+        "modal_close": "Kapat",
+        "attach_file": "Dosya ekle",
+        "attach_max_reached": "En fazla {{count}} dosya ekleyebilirsin",
+        "attach_invalid_type": "Sadece resim ve video yüklenebilir",
+        "attach_too_large": "Dosya çok büyük (en fazla {{size}})",
+        "attachments": "Ekler",
+        "remove_attachment": "Eki kaldır"
     },
     "admin_reports": {
         "tab_reports": "Kullanıcı Raporları",

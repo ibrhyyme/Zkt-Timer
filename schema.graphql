@@ -396,7 +396,7 @@ type Mutation {
   reportProfile(reason: String, userId: String): Report
   resolveReports(userId: String): Float
   createSupportTicket(input: SupportTicketInput): SupportTicket
-  addSupportTicketMessage(body: String, ticketId: String): SupportTicketMessage
+  addSupportTicketMessage(attachments: [Upload!], body: String, ticketId: String): SupportTicketMessage
   resolveSupportTicket(id: String): SupportTicket
   publishTopSolve(solveId: String): TopSolve
   publishTopAverages(solveIds: [String]): TopAverage
@@ -1130,6 +1130,17 @@ type WcaAccount {
   created_at: String
 }
 
+type SupportTicketAttachment {
+  id: String
+  message_id: String
+  storage_path: String
+  mime_type: String
+  kind: String
+  size_bytes: Int
+  original_name: String
+  created_at: DateTime
+}
+
 type SupportTicketMessage {
   id: String
   ticket_id: String
@@ -1138,6 +1149,7 @@ type SupportTicketMessage {
   is_admin: Boolean
   created_at: DateTime
   sender: PublicUserAccount
+  attachments: [SupportTicketAttachment!]
 }
 
 type SupportTicket {
