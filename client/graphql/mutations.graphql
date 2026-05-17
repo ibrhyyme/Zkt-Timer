@@ -15,12 +15,20 @@ mutation ResolveSupportTicket($id: String!) {
 	}
 }
 
-mutation AddSupportTicketMessage($ticketId: String!, $body: String!) {
-	addSupportTicketMessage(ticketId: $ticketId, body: $body) {
+mutation AddSupportTicketMessage($ticketId: String!, $body: String!, $attachments: [Upload!]) {
+	addSupportTicketMessage(ticketId: $ticketId, body: $body, attachments: $attachments) {
 		id
 		body
 		is_admin
 		created_at
+		attachments {
+			id
+			storage_path
+			mime_type
+			kind
+			size_bytes
+			original_name
+		}
 	}
 }
 

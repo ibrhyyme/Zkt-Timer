@@ -554,7 +554,13 @@
         "reply_placeholder": "Escribe tu respuesta...",
         "send_reply": "Enviar",
         "closed_cant_reply": "Este ticket está marcado como resuelto, no se pueden agregar más mensajes.",
-        "modal_close": "Cerrar"
+        "modal_close": "Cerrar",
+        "attach_file": "Adjuntar archivo",
+        "attach_max_reached": "Puedes adjuntar hasta {{count}} archivos",
+        "attach_invalid_type": "Solo se pueden subir imágenes y vídeos",
+        "attach_too_large": "El archivo es demasiado grande (máx {{size}})",
+        "attachments": "Adjuntos",
+        "remove_attachment": "Quitar adjunto"
     },
     "admin_reports": {
         "tab_reports": "Reportes de usuarios",

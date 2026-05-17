@@ -554,7 +554,13 @@
         "reply_placeholder": "Write your reply...",
         "send_reply": "Send",
         "closed_cant_reply": "This ticket is marked resolved, new messages cannot be added.",
-        "modal_close": "Close"
+        "modal_close": "Close",
+        "attach_file": "Attach file",
+        "attach_max_reached": "You can attach up to {{count}} files",
+        "attach_invalid_type": "Only images and videos can be uploaded",
+        "attach_too_large": "File is too large (max {{size}})",
+        "attachments": "Attachments",
+        "remove_attachment": "Remove attachment"
     },
     "admin_reports": {
         "tab_reports": "User Reports",

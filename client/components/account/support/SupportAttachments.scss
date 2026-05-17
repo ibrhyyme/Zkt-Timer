@@ -1,0 +1,146 @@
+@import '../../../styles/config';
+
+.#{$namespace}-support-attachments {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(180px, 240px));
+	gap: 8px;
+	margin-top: 8px;
+
+	&__image-button {
+		display: block;
+		padding: 0;
+		line-height: 0;
+		background: transparent;
+		border: 1px solid rgba(var(--text-color), 0.1);
+		border-radius: 10px;
+		overflow: hidden;
+		cursor: pointer;
+		transition: transform 0.12s ease;
+
+		&:hover {
+			transform: translateY(-1px);
+		}
+	}
+
+	&__image {
+		width: 100%;
+		height: auto;
+		max-height: 240px;
+		object-fit: cover;
+		display: block;
+	}
+
+	&__video {
+		width: 100%;
+		max-width: 320px;
+		border-radius: 10px;
+		background: #000;
+		border: 1px solid rgba(var(--text-color), 0.1);
+	}
+
+	&__lightbox {
+		position: fixed;
+		inset: 0;
+		z-index: 10000;
+		background: rgba(0, 0, 0, 0.92);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 24px;
+		overflow: hidden;
+		user-select: none;
+		animation: support-attachments-fade-in 0.12s ease;
+		touch-action: none;
+
+		&--zoom-in {
+			cursor: zoom-in;
+		}
+
+		&--grab {
+			cursor: grab;
+		}
+
+		&--grabbing {
+			cursor: grabbing;
+		}
+	}
+
+	&__lightbox-image {
+		max-width: 100%;
+		max-height: 100%;
+		object-fit: contain;
+		border-radius: 6px;
+		box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+		transition: transform 0.08s ease-out;
+		will-change: transform;
+		-webkit-user-drag: none;
+		pointer-events: none;
+
+		&--dragging {
+			transition: none;
+		}
+	}
+
+	&__lightbox-hint {
+		position: fixed;
+		bottom: 16px;
+		left: 50%;
+		transform: translateX(-50%);
+		padding: 6px 12px;
+		border-radius: 999px;
+		background: rgba(255, 255, 255, 0.15);
+		color: #fff;
+		font-size: 12px;
+		font-weight: 600;
+		pointer-events: none;
+	}
+
+	&__lightbox-close {
+		position: fixed;
+		top: 16px;
+		right: 16px;
+		width: 40px;
+		height: 40px;
+		border-radius: 50%;
+		background: rgba(255, 255, 255, 0.15);
+		border: 1px solid rgba(255, 255, 255, 0.25);
+		color: #fff;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		padding: 0;
+		z-index: 1;
+
+		svg {
+			width: 18px;
+			height: 18px;
+		}
+
+		&:hover {
+			background: rgba(255, 255, 255, 0.25);
+		}
+	}
+
+	@media (max-width: 600px) {
+		grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+		gap: 6px;
+
+		&__image {
+			max-height: 180px;
+		}
+
+		&__video {
+			max-width: 100%;
+		}
+
+		&__lightbox {
+			padding: 12px;
+		}
+	}
+}
+
+@keyframes support-attachments-fade-in {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}

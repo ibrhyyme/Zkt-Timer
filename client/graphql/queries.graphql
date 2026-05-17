@@ -33,6 +33,14 @@ query AdminSupportTickets($resolved: Boolean) {
 					}
 				}
 			}
+			attachments {
+				id
+				storage_path
+				mime_type
+				kind
+				size_bytes
+				original_name
+			}
 		}
 	}
 }
@@ -60,6 +68,14 @@ query MySupportTickets {
 						storage_path
 					}
 				}
+			}
+			attachments {
+				id
+				storage_path
+				mime_type
+				kind
+				size_bytes
+				original_name
 			}
 		}
 	}
@@ -99,6 +115,14 @@ query SupportTicketDetail($id: String!) {
 						storage_path
 					}
 				}
+			}
+			attachments {
+				id
+				storage_path
+				mime_type
+				kind
+				size_bytes
+				original_name
 			}
 		}
 	}

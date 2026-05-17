@@ -554,7 +554,13 @@
         "reply_placeholder": "Напишите ответ...",
         "send_reply": "Отправить",
         "closed_cant_reply": "Этот запрос помечен как решённый, новые сообщения нельзя добавлять.",
-        "modal_close": "Закрыть"
+        "modal_close": "Закрыть",
+        "attach_file": "Прикрепить файл",
+        "attach_max_reached": "Можно прикрепить не более {{count}} файлов",
+        "attach_invalid_type": "Можно загружать только изображения и видео",
+        "attach_too_large": "Файл слишком большой (макс {{size}})",
+        "attachments": "Вложения",
+        "remove_attachment": "Удалить вложение"
     },
     "admin_reports": {
         "tab_reports": "Жалобы пользователей",
