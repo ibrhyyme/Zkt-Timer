@@ -36,16 +36,16 @@ export function isTopColorFace(value: unknown): value is TopColorFace {
  * |---------|------|----------|
  * | Beyaz   | U    | ''       | Default, no-op
  * | Sari    | D    | x2       | Sari ust drill
- * | Kirmizi | R    | z'       | Kirmizi ust drill
- * | Turuncu | L    | z        | Turuncu ust drill
+ * | Kirmizi | R    | z        | Kirmizi ust drill
+ * | Turuncu | L    | z'       | Turuncu ust drill
  * | Yesil   | F    | x'       | Yesil ust drill
  * | Mavi    | B    | x        | Mavi ust drill
  */
 const FACE_TO_U_ROTATION: Record<TopColorFace, string> = {
 	U: '',
 	D: 'x2',
-	R: "z'",
-	L: 'z',
+	R: 'z',
+	L: "z'",
 	F: "x'",
 	B: 'x',
 };
