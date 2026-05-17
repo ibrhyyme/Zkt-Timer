@@ -71,17 +71,16 @@ export default function GanTimer() {
 			case GanTimerState.STOPPED:
 				endTimer(contextRef.current, event.recordedTime.asTimestamp);
 				break;
-			case GanTimerState.IDLE: {
-				const ctx = contextRef.current;
-				// Onceki solve state'ini her IDLE'da temizle
-				cancelInspection();
-				setTimerParams({spaceTimerStarted: 0, canStart: false, finalTime: -1});
-				// Sonra eligible ise inspection'i ayni event icinde yeniden ac
-				if (inspectionEnabled && !ctx.inInspection) {
-					startInspection(ctx);
+			case GanTimerState.IDLE:
+				// 2-asamali reset: ilk IDLE onceki solve state'ini temizler ama
+				// inspection BASLATMAZ; ikinci IDLE (finalTime artik -1) inspection acar.
+				if (!inspectionEnabled || contextRef.current.inInspection || contextRef.current.finalTime > 0) {
+					cancelInspection();
+					setTimerParams({spaceTimerStarted: 0, canStart: false, finalTime: -1});
+				} else {
+					startInspection(contextRef.current);
 				}
 				break;
-			}
 			case GanTimerState.DISCONNECT:
 				setConnected(false);
 				subs?.unsubscribe();
@@ -143,9 +142,12 @@ export default function GanTimer() {
 		}
 	}
 
-	let emblemText = connected ? t('smart_cube.connecting').replace('...', '') : t('smart_cube.connect');
+	// Connected iken metin yok — yesil renk + Bluetooth icon yeterli.
+	let emblemText: string | undefined = t('smart_cube.connect');
 	if (scanning) {
 		emblemText = t('smart_cube.scanning_short');
+	} else if (connected) {
+		emblemText = undefined;
 	}
 
 	return (

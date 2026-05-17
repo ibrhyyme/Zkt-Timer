@@ -139,9 +139,12 @@ export default function QiyiTimer() {
 		}
 	}
 
-	let emblemText = connected ? t('smart_cube.connecting').replace('...', '') : t('smart_cube.connect');
+	// Connected iken metin yok — yesil renk + Bluetooth icon yeterli.
+	let emblemText: string | undefined = t('smart_cube.connect');
 	if (scanning) {
 		emblemText = t('smart_cube.scanning_short');
+	} else if (connected) {
+		emblemText = undefined;
 	}
 
 	return (
