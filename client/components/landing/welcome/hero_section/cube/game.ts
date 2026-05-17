@@ -442,9 +442,21 @@ export class CubeGame {
 	private initDrag() {
 		this.draggable.onDragStart = (pos) => {
 			if (this.isScrambling) return;
-			if (this.state === State.PREPARING || this.state === State.ROTATING) return;
+			// Reject new drags during PREPARING/ROTATING/ANIMATING. Original reference
+			// queued drags via gettingDrag during ANIMATING, but that races with our
+			// per-frame holder idle-float: dragIntersect captured mid-rotation pointed
+			// at a piece in an interpolated transform, and dragTotal accumulated against
+			// a stale helperPlane — yielding wrong-layer selectLayer() after the tween
+			// finished and physically detaching pieces.
+			if (this.state !== State.STILL) return;
 
-			this.gettingDrag = this.state === State.ANIMATING;
+			this.gettingDrag = false;
+
+			// Refresh matrixWorlds before raycasting / helperPlane setup. Pointer events
+			// run between RAFs; without this the holder's position.y update from the
+			// previous frame may not have propagated to descendants, skewing the
+			// helperPlane frame and downstream getMainAxis(dragTotal) decisions.
+			this.scene.updateMatrixWorld(true);
 
 			const edgeHit = this.intersect(pos, this.edges, false);
 
@@ -467,11 +479,11 @@ export class CubeGame {
 				this.helperPlane.updateMatrixWorld();
 				this.detachFrom(this.helperPlane, this.edges);
 			} else {
-				this.dragNormal = new THREE.Vector3(0, 0, 1);
-				this.flipType = 'cube';
-				this.helperPlane.position.set(0, 0, 0);
-				this.helperPlane.rotation.set(0, Math.PI / 4, 0);
-				this.helperPlane.updateMatrixWorld();
+				// Cube-flip drag intentionally disabled. Mixing cube rotation with layer
+				// rotation produces wrong axis math in getLayer/flipAxis (cube-local vs
+				// edges-local frame mismatch when cubeObject.rotation is non-zero),
+				// observed corrupting layer pieces (n=4, 8, 12 instead of 9) and cascading.
+				return;
 			}
 
 			const planeHit = this.intersect(pos, this.helperPlane, false);
@@ -497,7 +509,17 @@ export class CubeGame {
 			this.addMomentum(new THREE.Vector2(dragDelta.x, dragDelta.y));
 
 			if (this.state === State.PREPARING && this.dragTotal.length() > 0.05) {
-				this.dragDirection = this.getMainAxis(this.dragTotal);
+				// Require the dominant axis to clearly lead the secondary one before
+				// committing to a direction. Circular/zigzag drags produce dragTotal
+				// vectors where x ≈ y; getMainAxis() then picks a near-arbitrary axis,
+				// flipAxis comes out perpendicular to the user's intent, and the layer
+				// rotation winds up around the wrong axis — observed as center pieces
+				// permuting to neighboring face positions.
+				const absX = Math.abs(this.dragTotal.x);
+				const absY = Math.abs(this.dragTotal.y);
+				if (Math.max(absX, absY) < Math.min(absX, absY) * 1.4) return;
+
+				this.dragDirection = absX > absY ? 'x' : 'y';
 
 				if (this.flipType === 'layer') {
 					const dir = new THREE.Vector3();
@@ -536,7 +558,10 @@ export class CubeGame {
 			if (this.isScrambling) return;
 			if (this.state !== State.ROTATING) {
 				this.gettingDrag = false;
-				this.state = State.STILL;
+				// Don't clobber ANIMATING — the tween's onComplete owns that transition.
+				// Otherwise dragEnd-during-tween drops state to STILL, lets a new
+				// dragStart through, and selectLayer races the in-flight Tween.
+				if (this.state !== State.ANIMATING) this.state = State.STILL;
 				return;
 			}
 
@@ -544,11 +569,31 @@ export class CubeGame {
 
 			const mom = this.getMomentum();
 			const momVal = this.dragDirection === 'x' ? mom.x : mom.y;
+			// When the user releases near zero rotation (e.g. rotated then pulled back
+			// to start), Math.sign(flipAngle) returns the sign of microscopic noise,
+			// causing the tween to commit to a full 90° flip the user never intended.
+			// Fall back to momentum direction when flipAngle is essentially zero.
+			const FLIP_ANGLE_EPSILON = 0.05;
+			const flipSign = Math.abs(this.flipAngle) < FLIP_ANGLE_EPSILON
+				? Math.sign(momVal)
+				: Math.sign(this.flipAngle);
 			const shouldFlip = Math.abs(momVal) > 0.05 && Math.abs(this.flipAngle) < Math.PI / 2;
 
 			const targetAngle = shouldFlip
-				? this.roundAngle(this.flipAngle + Math.sign(this.flipAngle) * (Math.PI / 4))
+				? this.roundAngle(this.flipAngle + flipSign * (Math.PI / 4))
 				: this.roundAngle(this.flipAngle);
+
+			console.log('[CUBE] dragEnd', {
+				flipType: this.flipType,
+				dragDir: this.dragDirection,
+				flipAngle: +this.flipAngle.toFixed(3),
+				momVal: +momVal.toFixed(3),
+				shouldFlip,
+				flipSign,
+				targetAngle: +targetAngle.toFixed(3),
+				deltaAngle: +(targetAngle - this.flipAngle).toFixed(3),
+				flipAxis: this.flipAxis.toArray(),
+			});
 
 			const deltaAngle = targetAngle - this.flipAngle;
 
@@ -579,23 +624,38 @@ export class CubeGame {
 		this.controlGroup.rotation.set(0, 0, 0);
 		this.movePieces(layer, this.cubeObject, this.controlGroup);
 		this.flipLayer = layer;
+		console.log('[CUBE] selectLayer', {
+			n: layer.length,
+			ids: layer.join(','),
+			flipAxis: this.flipAxis.toArray(),
+			cubeRot: this.cubeObject.rotation.toArray().slice(0, 3).map((v: any) => +v.toFixed(3)),
+		});
 	}
 
 	private deselectLayer(layer: number[]) {
+		console.log('[CUBE] deselectLayer', {
+			n: layer.length,
+			ctrlRot: this.controlGroup.rotation.toArray().slice(0, 3).map((v: any) => +v.toFixed(3)),
+		});
 		this.movePieces(layer, this.controlGroup, this.cubeObject);
 		this.flipLayer = [];
 
-		// Snap all piece positions to clean grid values to prevent floating point drift
+		// Snap all piece transforms to clean values to prevent floating point drift
+		// from accumulating across applyMatrix4 decompose calls in movePieces.
 		for (const piece of this.pieces) {
 			piece.position.x = Math.round(piece.position.x * 3) / 3;
 			piece.position.y = Math.round(piece.position.y * 3) / 3;
 			piece.position.z = Math.round(piece.position.z * 3) / 3;
+			piece.rotation.setFromVector3(this.snapRotation(piece.rotation));
+			piece.scale.set(1, 1, 1);
 		}
 	}
 
 	private movePieces(layer: number[], from: THREE.Object3D, to: THREE.Object3D) {
-		// Update entire scene hierarchy to ensure all matrixWorlds are current
-		this.scene.updateMatrixWorld();
+		// Only update the two nodes involved — matches the reference implementation
+		// and avoids re-folding ancestor transforms (e.g. holder idle-float) into pieces.
+		from.updateMatrixWorld(true);
+		to.updateMatrixWorld(true);
 
 		for (const idx of layer) {
 			const piece = this.pieces[idx];
@@ -828,10 +888,12 @@ export class CubeGame {
 		if (this.disposed) return;
 		this.reqId = requestAnimationFrame(this.render);
 
-		// Subtle idle float
+		// Holder must stay identity. Idle rotation here would desync edges (scene-direct)
+		// from cubeObject.worldQuaternion (holder-multiplied), breaking helperPlane setup
+		// and getMainAxis(dragTotal) — observed corrupting centers in the cube state.
+		// Translation-only idle is safe since piece.position is cubeObject-local.
 		const t = performance.now() * 0.001;
 		this.holder.position.y = Math.sin(t * 0.5) * 0.003;
-		this.holder.rotation.y = Math.sin(t * 0.3) * 0.01;
 
 		this.renderer.render(this.scene, this.camera);
 	};

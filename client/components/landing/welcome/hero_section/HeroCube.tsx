@@ -52,6 +52,7 @@ export default function HeroCube() {
 			if (disposed) return;
 			const game = new CubeGame(container);
 			gameRef.current = game;
+			if (typeof window !== 'undefined') (window as any).__heroCube = game;
 
 			game.onFirstMove = () => {
 				startTimeRef.current = performance.now();
