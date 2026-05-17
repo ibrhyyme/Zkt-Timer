@@ -2130,6 +2130,30 @@
         "login": "Login",
         "signup": "Sign Up"
     },
+    "zkt_auth": {
+        "divider_or_email": "or with email",
+        "continue_with_wca": "Log in with WCA",
+        "connecting": "Connecting…",
+        "submit_login": "Log in",
+        "submit_signup": "Create account",
+        "error_invalid_credentials": "Email or password is incorrect. Try again.",
+        "email_suggest_cta": "Did you mean this?",
+        "turnstile_verified": "Verified you're not a robot",
+        "timer_reveal_hint": "PRESS SPACEBAR",
+        "timer_event_label": "3x3x3 · Solo",
+        "wca_callback": {
+            "title": "Connecting to WCA",
+            "subtitle": "Pairing your WCA account with your profile.",
+            "step1_title": "Redirected to WCA",
+            "step1_sub": "Authorization screen opened.",
+            "step2_title": "Authorization received",
+            "step2_sub": "You approved your WCA account.",
+            "step3_title": "Building your profile",
+            "step3_sub": "Syncing records and competitions.",
+            "step4_title": "Ready",
+            "step4_sub": "Opening Timer."
+        }
+    },
     "landing_nav": {
         "login": "Log In",
         "signup": "Sign Up"

@@ -2130,6 +2130,30 @@
         "login": "Iniciar sesión",
         "signup": "Registrarse"
     },
+    "zkt_auth": {
+        "divider_or_email": "o con email",
+        "continue_with_wca": "Iniciar sesión con WCA",
+        "connecting": "Conectando…",
+        "submit_login": "Iniciar sesión",
+        "submit_signup": "Crear cuenta",
+        "error_invalid_credentials": "Email o contraseña incorrectos. Inténtalo de nuevo.",
+        "email_suggest_cta": "¿Quisiste decir esto?",
+        "turnstile_verified": "Verificamos que no eres un robot",
+        "timer_reveal_hint": "PULSA LA BARRA ESPACIADORA",
+        "timer_event_label": "3x3x3 · Solo",
+        "wca_callback": {
+            "title": "Conectando con WCA",
+            "subtitle": "Vinculando tu cuenta WCA con tu perfil.",
+            "step1_title": "Redirigido a WCA",
+            "step1_sub": "Pantalla de autorización abierta.",
+            "step2_title": "Autorización recibida",
+            "step2_sub": "Aprobaste tu cuenta WCA.",
+            "step3_title": "Creando tu perfil",
+            "step3_sub": "Sincronizando récords y competiciones.",
+            "step4_title": "Listo",
+            "step4_sub": "Abriendo Timer."
+        }
+    },
     "landing_nav": {
         "login": "Iniciar sesión",
         "signup": "Registrarse"
