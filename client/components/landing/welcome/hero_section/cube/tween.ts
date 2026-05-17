@@ -63,7 +63,11 @@ class AnimationEngine {
 		const delta = now - this.lastTime;
 		this.lastTime = now;
 
-		this.tweens.forEach((tw) => tw.update(delta));
+		const ids = Array.from(this.tweens.keys());
+		for (let i = ids.length - 1; i >= 0; i--) {
+			const tw = this.tweens.get(ids[i]);
+			if (tw) tw.update(delta);
+		}
 
 		this.raf = this.tweens.size > 0 ? requestAnimationFrame(this.tick) : 0;
 	};
