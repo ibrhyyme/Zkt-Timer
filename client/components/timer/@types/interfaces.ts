@@ -95,6 +95,7 @@ export interface TimerStore {
 	smartGyroSupported?: boolean;
 	scramble?: string;
 	scrambleSubset?: string;
+	scrambleTopColor?: string | null;
 	disabled?: boolean;
 	smartPickUpTime?: number;
 	lastSmartMoveTime?: number;

@@ -49,6 +49,7 @@ export default function Timer(props: TimerProps) {
 	const manualEntry = useSettings('manual_entry');
 	const useSpaceWithSmartCube = useSettings('use_space_with_smart_cube');
 	const scrambleSubset = useSettings('scramble_subset');
+	const scrambleTopColor = useSettings('scramble_top_color');
 let timerLayout = props.timerLayout || useSettings('timer_layout');
 
 	const me = useMe();
@@ -57,10 +58,11 @@ let timerLayout = props.timerLayout || useSettings('timer_layout');
 	const context: ITimerContext = useMemo(() => ({
 		cubeType,
 		scrambleSubset,
+		scrambleTopColor,
 		...timerStore,
 		...props,
 		timerLayout,
-	}), [cubeType, scrambleSubset, timerStore, props, timerLayout]);
+	}), [cubeType, scrambleSubset, scrambleTopColor, timerStore, props, timerLayout]);
 
 	// Event listeners for single and AVG PBs
 	listenForPbEvents(context);

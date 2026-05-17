@@ -24,6 +24,10 @@ export function setScrambleSubset(subset: string | null) {
 	return setSetting('scramble_subset', subset);
 }
 
+export function setScrambleTopColor(color: string | null) {
+	return setSetting('scramble_top_color', color);
+}
+
 export async function refreshSettings() {
 	const query = gql`
 		${SETTING_FRAGMENT}

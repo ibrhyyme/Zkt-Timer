@@ -61,6 +61,7 @@ export interface AllSettings {
 	timer_avg_5: string;
 	timer_avg_6: string;
 	scramble_subset: string | null;
+	scramble_top_color: string | null;
 	smart_cube_analysis_mode: string;
 	smart_cube_show_recognition: boolean;
 
@@ -136,6 +137,7 @@ const defaultSettings: AllSettings = {
 	stackmat_auto_inspection: 0, // 0 = kapalı, aktifken varsayılan 2 saniye
 	stackmat_auto_inspection_warning_shown: false,
 	scramble_subset: null,
+	scramble_top_color: null, // 'U' | 'D' | 'F' | 'B' | 'R' | 'L' | null (default beyaz/U)
 	smart_cube_analysis_mode: 'cffffop', // 'none' | 'cfop' | 'cf_plus_op' | 'cffffop' | 'cffffoopp'
 	smart_cube_show_recognition: false,
 

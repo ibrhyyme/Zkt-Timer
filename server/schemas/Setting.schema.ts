@@ -84,6 +84,9 @@ export class Setting {
 	@Field(() => Int, { nullable: true })
 	timer_time_size_user_default?: number;
 
+	@Field({ nullable: true })
+	scramble_top_color?: string;
+
 	@Field(() => [CustomCubeType])
 	custom_cube_types?: CustomCubeType[];
 }
@@ -161,6 +164,9 @@ export class SettingInput implements Partial<Setting> {
 
 	@Field(() => Int, { nullable: true })
 	timer_time_size_user_default?: number;
+
+	@Field({ nullable: true })
+	scramble_top_color?: string;
 
 	@Field({ nullable: true })
 	locale?: string;

@@ -5,6 +5,7 @@ import { getSubsetsForCube } from '../../../util/cubes/scramble_subsets';
 import { generateScramble, hasGenerator } from '../../../../shared/scramble/registry';
 import { isAsyncScrambleType } from '../../../../shared/scramble/types';
 import { generateScrambleAsync, initScrambleWorker } from '../../../util/scramble-worker-manager';
+import { applyTopColorTransform, isTopColorAvailable, isTopColorFace, TopColorFace } from '../../../util/scramble_transform';
 
 // Generator'lari kaydet — side-effect import
 // Sadece hafif generator'lar main bundle'a girer
@@ -226,33 +227,60 @@ export async function getNewScrambleAsync(scrambleTypeId: string, subset?: strin
 // Pre-generate: solve sirasinda yeni karistirmayi arka planda hazirla
 let _preGeneratedScramble: string | null = null;
 let _preGeneratedForType: string | null = null;
+let _preGeneratedForSubset: string | null = null;
+let _preGeneratedForTopColor: TopColorFace | null = null;
 
-export function preGenerateScramble(cubeType: string, subset?: string) {
+export function preGenerateScramble(cubeType: string, subset?: string, topColor?: string | null) {
 	const ct = getCubeTypeInfoById(cubeType);
 	if (!ct) return;
 
+	const effectiveTopColor: TopColorFace | null =
+		isTopColorAvailable(cubeType, subset) && isTopColorFace(topColor)
+			? topColor
+			: null;
+
 	_preGeneratedScramble = null;
 	_preGeneratedForType = cubeType;
+	_preGeneratedForSubset = subset ?? null;
+	_preGeneratedForTopColor = effectiveTopColor;
 
-	// Async: worker uzerinden arka planda uret
-	getNewScrambleAsync(ct.scramble, subset).then((scramble) => {
-		if (_preGeneratedForType !== cubeType) return;
+	// Async: worker uzerinden arka planda uret + transform uygula
+	getNewScrambleAsync(ct.scramble, subset).then(async (rawScramble) => {
+		if (_preGeneratedForType !== cubeType || _preGeneratedForSubset !== (subset ?? null) || _preGeneratedForTopColor !== effectiveTopColor) return;
+		const scramble = await applyTopColorTransform(rawScramble, effectiveTopColor);
+		if (_preGeneratedForType !== cubeType || _preGeneratedForSubset !== (subset ?? null) || _preGeneratedForTopColor !== effectiveTopColor) return;
 		_preGeneratedScramble = scramble;
 	});
 }
 
-export function consumePreGeneratedScramble(cubeType: string): string | null {
-	if (_preGeneratedScramble && _preGeneratedForType === cubeType) {
+/**
+ * Pre-generated scramble'i tuket. cubeType + subset + topColor mismatch varsa null doner
+ * (yeni scramble taze uretilir, eski cache'li yanlis renkli scramble servis edilmez).
+ */
+export function consumePreGeneratedScramble(cubeType: string, subset?: string, topColor?: string | null): string | null {
+	const effectiveTopColor: TopColorFace | null =
+		isTopColorAvailable(cubeType, subset) && isTopColorFace(topColor)
+			? topColor
+			: null;
+
+	if (
+		_preGeneratedScramble &&
+		_preGeneratedForType === cubeType &&
+		_preGeneratedForSubset === (subset ?? null) &&
+		_preGeneratedForTopColor === effectiveTopColor
+	) {
 		const scramble = _preGeneratedScramble;
 		_preGeneratedScramble = null;
 		_preGeneratedForType = null;
+		_preGeneratedForSubset = null;
+		_preGeneratedForTopColor = null;
 		return scramble;
 	}
 	return null;
 }
 
 export function resetScramble(context: ITimerContext) {
-	const { cubeType, scrambleLocked, customScrambleFunc, scrambleSubset } = context;
+	const { cubeType, scrambleLocked, customScrambleFunc, scrambleSubset, scrambleTopColor } = context;
 	const ct = getCubeTypeInfoById(cubeType);
 	if (!ct) return;
 
@@ -264,7 +292,15 @@ export function resetScramble(context: ITimerContext) {
 
 	if (scrambleLocked) return;
 
-	getNewScrambleAsync(ct.scramble, scrambleSubset).then((newScramble) => {
+	// Top color transform sadece 3x3 CFOP + PLL/OLL/f2l subset'lerinde aktif.
+	// Diger durumlarda topColor null → applyTopColorTransform raw scramble doner.
+	const effectiveTopColor: TopColorFace | null =
+		isTopColorAvailable(cubeType, scrambleSubset) && isTopColorFace(scrambleTopColor)
+			? scrambleTopColor
+			: null;
+
+	getNewScrambleAsync(ct.scramble, scrambleSubset).then(async (rawScramble) => {
+		const newScramble = await applyTopColorTransform(rawScramble, effectiveTopColor);
 		setTimerParams({ scramble: newScramble, originalScramble: newScramble, smartTurnOffset: 0 });
 	}).catch((e) => { console.error('[scramble] resetScramble failed:', e); });
 }
