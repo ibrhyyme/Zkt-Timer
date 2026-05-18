@@ -31,7 +31,8 @@ export function saveSolve(
 		time: finalTime,
 		raw_time: Math.max(time, 0),
 		cube_type: cubeType,
-		scramble_subset: scrambleSubset || null,
+		// cube_type='wca' icin subset zorunlu (cube-subset-bucket kurali); bos kalirsa '333' default'una dus
+		scramble_subset: cubeType === 'wca' ? (scrambleSubset || '333') : (scrambleSubset || null),
 		id: uuid(),
 		dnf: dnf || false,
 		plus_two: !!plusTwo,

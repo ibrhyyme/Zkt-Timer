@@ -38,6 +38,9 @@ export function migrateLokiSolvesToWcaSubset(): number {
 	const db = getSolveDb();
 	if (!db) return 0;
 
+	let migrated = 0;
+
+	// Faz 1: Legacy cube_type'lari yeni (wca, <subset>) bucket'ina cevir
 	const legacyIds = [...PURE_WCA_IDS, ...Object.keys(VARIANT_MAP)];
 	const legacySolves = db.chain()
 		.find({
@@ -49,13 +52,30 @@ export function migrateLokiSolvesToWcaSubset(): number {
 		})
 		.data();
 
-	let migrated = 0;
 	for (const solve of legacySolves) {
 		const mapped = mapLegacySolve(solve);
 		if (!mapped) continue;
 
 		solve.cube_type = mapped.cube_type;
 		solve.scramble_subset = mapped.scramble_subset;
+		db.update(solve);
+		migrated++;
+	}
+
+	// Faz 2: (wca, NULL/empty) "hayalet" kayitlari (wca, '333') olarak duzelt — kural ihlali
+	const orphanWcaSolves = db.chain()
+		.find({
+			cube_type: 'wca',
+			$or: [
+				{ scramble_subset: { $exists: false } },
+				{ scramble_subset: null },
+				{ scramble_subset: '' },
+			],
+		})
+		.data();
+
+	for (const solve of orphanWcaSolves) {
+		solve.scramble_subset = '333';
 		db.update(solve);
 		migrated++;
 	}
