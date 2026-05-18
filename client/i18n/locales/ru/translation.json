@@ -112,6 +112,10 @@
             "subtitle": "Последние {{value}} решений",
             "best_block": "★ Самый стабильный блок"
         },
+        "last_n": {
+            "all": "Все",
+            "option": "Последние {{count}}"
+        },
         "focus": {
             "total_time": "Общее время",
             "total_solves_count": "{{value}} решений",

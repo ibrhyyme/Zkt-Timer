@@ -1,4 +1,4 @@
-import React, {useContext, useMemo, useState} from 'react';
+import React, {useContext, useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import './CubeStats.scss';
 import block from '../../../styles/bem';
@@ -24,9 +24,8 @@ type View = StatsView;
 
 export default function CubeStats() {
 	const {t} = useTranslation();
-	const {filterOptions} = useContext(StatsContext);
+	const {filterOptions, view, setView, smartLastN} = useContext(StatsContext);
 	const solveUpdate = useSolveDb();
-	const [view, setView] = useState<View>('all');
 
 	const smartCubeCount = useMemo(
 		() => fetchSolveCount({...filterOptions, is_smart_cube: true}),
@@ -84,7 +83,7 @@ export default function CubeStats() {
 				<div className={b('view', {smart: true})}>
 					<StatSection title={t('stats_page.smart_cube_summary')} className={b('summary')}>
 						<StatModule>
-							<SmartCubeStatsGrid filterOptions={filterOptions} />
+							<SmartCubeStatsGrid filterOptions={filterOptions} lastN={smartLastN} />
 						</StatModule>
 					</StatSection>
 					<StatSection title={t('stats_page.cases')} className={b('cases')}>
@@ -101,6 +100,7 @@ export default function CubeStats() {
 						<StatModule>
 							<SessionStepsTable
 								filterOptions={filterOptions}
+								lastN={smartLastN}
 								title={t('stats_page.steps_detail')}
 							/>
 						</StatModule>

@@ -8,6 +8,7 @@ import { getTimeString } from '../../../../util/time';
 import { getSinglePB } from '../../../../db/solves/stats/solves/single/single_pb';
 import { getWorstTime } from '../../../../db/solves/stats/solves/single/single_worst';
 import { getAveragePB } from '../../../../db/solves/stats/solves/average/average_pb';
+import { getBestAverageFromSolves } from '../../../../db/solves/stats/solves/average/best_in_list';
 import { getSmartCubeAvgTimes } from '../../../../db/solves/stats/smart_cube_avg_times';
 import Empty from '../../../common/empty/Empty';
 import CountUp from '../../common/count_up/CountUp';
@@ -16,6 +17,7 @@ const b = block('smart-cube-stats-grid');
 
 interface Props {
 	filterOptions: FilterSolvesOptions;
+	lastN?: number | null;
 }
 
 function formatTotalDuration(totalSeconds: number, t: (k: string) => string): string {
@@ -58,7 +60,7 @@ function renderValue(cell: StatCell): React.ReactNode {
 	);
 }
 
-export default function SmartCubeStatsGrid({ filterOptions }: Props) {
+export default function SmartCubeStatsGrid({ filterOptions, lastN }: Props) {
 	const { t } = useTranslation();
 	const solveUpdate = useSolveDb();
 
@@ -67,7 +69,11 @@ export default function SmartCubeStatsGrid({ filterOptions }: Props) {
 		[filterOptions]
 	);
 
-	const solves = useMemo(() => fetchSolves(smartFilter), [smartFilter, solveUpdate]);
+	// lastN varsa pencereyi en son N cozumle sinirla (fetchSolves default'u ended_at desc).
+	const solves = useMemo(
+		() => fetchSolves(smartFilter, lastN ? { limit: lastN } : undefined),
+		[smartFilter, lastN, solveUpdate]
+	);
 
 	const count = solves.length;
 	const totalSeconds = useMemo(
@@ -91,13 +97,49 @@ export default function SmartCubeStatsGrid({ filterOptions }: Props) {
 	const avgTurns = totalTurns.n > 0 ? totalTurns.sum / totalTurns.n : 0;
 	const avgTps = avgSeconds > 0 && avgTurns > 0 ? avgTurns / avgSeconds : 0;
 
-	const best = useMemo(() => getSinglePB(smartFilter), [smartFilter, solveUpdate]);
-	const worst = useMemo(() => getWorstTime(smartFilter), [smartFilter, solveUpdate]);
-	const ao5 = useMemo(() => getAveragePB(smartFilter, 5), [smartFilter, solveUpdate]);
-	const ao12 = useMemo(() => getAveragePB(smartFilter, 12), [smartFilter, solveUpdate]);
-	const ao100 = useMemo(() => getAveragePB(smartFilter, 100), [smartFilter, solveUpdate]);
+	// lastN varsa cache'lenmis getSinglePB/getAveragePB cagrilari yanlilik gosterir
+	// (cache key'leri filter'a baglidir, limit'i bilmez). Pencere icindeki listeden inline hesapla.
+	const best = useMemo(() => {
+		if (lastN) {
+			let min = Infinity;
+			let s: any = null;
+			for (const sv of solves) {
+				if (sv.time > 0 && sv.time < min) { min = sv.time; s = sv; }
+			}
+			return s ? { time: min } : null;
+		}
+		return getSinglePB(smartFilter);
+	}, [solves, lastN, smartFilter, solveUpdate]);
 
-	const avgTimes = useMemo(() => getSmartCubeAvgTimes(smartFilter), [smartFilter, solveUpdate]);
+	const worst = useMemo(() => {
+		if (lastN) {
+			let max = -Infinity;
+			let s: any = null;
+			for (const sv of solves) {
+				if (sv.time > max) { max = sv.time; s = sv; }
+			}
+			return s ? { time: max } : null;
+		}
+		return getWorstTime(smartFilter);
+	}, [solves, lastN, smartFilter, solveUpdate]);
+
+	const ao5 = useMemo(
+		() => (lastN ? getBestAverageFromSolves(solves, 5) : getAveragePB(smartFilter, 5)),
+		[solves, lastN, smartFilter, solveUpdate]
+	);
+	const ao12 = useMemo(
+		() => (lastN ? getBestAverageFromSolves(solves, 12) : getAveragePB(smartFilter, 12)),
+		[solves, lastN, smartFilter, solveUpdate]
+	);
+	const ao100 = useMemo(
+		() => (lastN ? getBestAverageFromSolves(solves, 100) : getAveragePB(smartFilter, 100)),
+		[solves, lastN, smartFilter, solveUpdate]
+	);
+
+	const avgTimes = useMemo(
+		() => getSmartCubeAvgTimes(smartFilter, lastN ?? undefined),
+		[smartFilter, lastN, solveUpdate]
+	);
 
 	if (count === 0) {
 		return (

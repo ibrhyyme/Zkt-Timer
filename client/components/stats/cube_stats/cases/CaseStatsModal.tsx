@@ -29,6 +29,7 @@ interface Props {
 	cubeType?: string | null;
 	subset?: string | null;
 	sessionId?: string | null;
+	lastN?: number | null;
 }
 
 interface ColumnDef {
@@ -76,7 +77,7 @@ function SortArrow({ desc }: { desc: boolean }) {
 	return <span className={b('sort-arrow')}>{desc ? '↓' : '↑'}</span>;
 }
 
-export default function CaseStatsModal({ type, cubeType, subset, sessionId }: Props) {
+export default function CaseStatsModal({ type, cubeType, subset, sessionId, lastN }: Props) {
 	const { t } = useTranslation();
 	const [sortKey, setSortKey] = useState<SortKey>('lastSeenAt');
 	const [sortDesc, setSortDesc] = useState(true);
@@ -91,6 +92,7 @@ export default function CaseStatsModal({ type, cubeType, subset, sessionId }: Pr
 			cubeType: cubeType ?? undefined,
 			subset: subset ?? undefined,
 			sessionId: sessionId ?? undefined,
+			lastN: lastN ?? undefined,
 		},
 		fetchPolicy: 'cache-and-network',
 	});

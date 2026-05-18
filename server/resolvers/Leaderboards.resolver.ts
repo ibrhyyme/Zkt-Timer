@@ -61,7 +61,7 @@ export class LeaderboardsResolver {
 
 	@Authorized([Role.LOGGED_IN, Role.PRO])
 	@Mutation(() => TopAverage)
-	async publishTopAverages(@Ctx() context: GraphQLContext, @Arg('solveIds', () => [String]) solveIds: string[]) {
+	async publishTopAverages(@Ctx() context: GraphQLContext, @Arg('solveIds', () => [String], { validate: false }) solveIds: string[]) {
 		const {user} = context;
 		checkLoggedIn(user);
 

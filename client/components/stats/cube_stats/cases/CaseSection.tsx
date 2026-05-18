@@ -54,7 +54,7 @@ export default function CaseSection() {
 	const dispatch = useDispatch();
 	const me = useMe();
 	const userIsPro = isPro(me);
-	const { filterOptions } = useContext(StatsContext);
+	const { filterOptions, smartLastN } = useContext(StatsContext);
 
 	function handleClick(type: CaseType) {
 		if (!userIsPro) {
@@ -73,6 +73,7 @@ export default function CaseSection() {
 				cubeType={cubeType}
 				subset={subset}
 				sessionId={sessionId}
+				lastN={smartLastN}
 			/>,
 			{
 				title,

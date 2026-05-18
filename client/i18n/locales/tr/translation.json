@@ -112,6 +112,10 @@
             "subtitle": "Son {{value}} çözüm",
             "best_block": "★ En tutarlı blok"
         },
+        "last_n": {
+            "all": "Tümü",
+            "option": "Son {{count}}"
+        },
         "focus": {
             "total_time": "Toplam süre",
             "total_solves_count": "{{value}} çözüm",
