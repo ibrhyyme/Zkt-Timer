@@ -1,4 +1,4 @@
-import React, {createContext, useEffect, useMemo} from 'react';
+import React, {createContext, useEffect, useMemo, useState} from 'react';
 import {useHistory} from 'react-router-dom';
 import './Stats.scss';
 import block from '../../styles/bem';
@@ -19,12 +19,17 @@ import {Stats as StatsSchema} from '../../@types/generated/graphql';
 import {STATS_FRAGMENT} from '../../util/graphql/fragments';
 import {useMe} from '../../util/hooks/useMe';
 import {useTranslation} from 'react-i18next';
+import {StatsView} from './cube_stats/view_toggle/StatsViewToggle';
 
 const b = block('stats');
 
 const CUBE_TYPE_QUERY_PARAM = 'cubeType';
 const SCRAMBLE_SUBSET_QUERY_PARAM = 'subset';
 const SESSION_QUERY_PARAM = 'session';
+const LAST_N_QUERY_PARAM = 'lastN';
+
+export const LAST_N_OPTIONS = [12, 25, 50, 100, 500, 1000, 2000] as const;
+const LAST_N_SET = new Set<number>(LAST_N_OPTIONS);
 
 interface StatsQueryData {
 	stats: StatsSchema;
@@ -35,6 +40,9 @@ export interface IStatsContext {
 	cubeType: CubeType;
 	stats: StatsSchema;
 	filterOptions: FilterSolvesOptions;
+	view: StatsView;
+	setView: (view: StatsView) => void;
+	smartLastN: number | null;
 }
 
 const STATS_QUERY = gql`
@@ -62,6 +70,11 @@ export default function Stats() {
 	const tabCubeType = urlParams.get(CUBE_TYPE_QUERY_PARAM);
 	const tabSubset = urlParams.get(SCRAMBLE_SUBSET_QUERY_PARAM);
 	const tabSession = urlParams.get(SESSION_QUERY_PARAM);
+	const rawLastN = urlParams.get(LAST_N_QUERY_PARAM);
+	const tabLastN = rawLastN && LAST_N_SET.has(Number(rawLastN)) ? Number(rawLastN) : null;
+
+	// URL'de lastN varsa kullanici smart view'i hedefliyor demektir — paylasilan link bozulmasin.
+	const [view, setView] = useState<StatsView>(tabLastN !== null ? 'smart' : 'all');
 
 	const solveUpdate = useSolveDb();
 	const sessionUpdate = useSessionDb();
@@ -74,18 +87,24 @@ export default function Stats() {
 
 	const history = useHistory();
 
-	function buildStatsUrl(cube_type: string | null, scramble_subset?: string | null, session_id?: string | null) {
+	function buildStatsUrl(
+		cube_type: string | null,
+		scramble_subset?: string | null,
+		session_id?: string | null,
+		last_n?: number | null,
+	) {
 		const params = new URLSearchParams();
 		if (cube_type) params.set(CUBE_TYPE_QUERY_PARAM, cube_type);
 		if (scramble_subset != null) params.set(SCRAMBLE_SUBSET_QUERY_PARAM, scramble_subset);
 		if (session_id) params.set(SESSION_QUERY_PARAM, session_id);
+		if (last_n != null) params.set(LAST_N_QUERY_PARAM, String(last_n));
 		const qs = params.toString();
 		return qs ? `/stats?${qs}` : '/stats';
 	}
 
 	function navigateToBucket(cube_type: string | null, scramble_subset?: string | null) {
 		if (!cube_type) {
-			history.push(buildStatsUrl(null, null, tabSession));
+			history.push(buildStatsUrl(null, null, tabSession, tabLastN));
 			return;
 		}
 		// Bos string ('') gecerli bir subset id (777 WCA, 333 Random State) — sadece null/undefined
@@ -93,17 +112,21 @@ export default function Stats() {
 		if (scramble_subset == null) {
 			const subs = getSubsetsForBuckets(cube_type, cubeTypes);
 			if (subs.length === 0) {
-				history.push(buildStatsUrl(null, null, tabSession));
+				history.push(buildStatsUrl(null, null, tabSession, tabLastN));
 				return;
 			}
-			history.push(buildStatsUrl(cube_type, subs[0].id, tabSession));
+			history.push(buildStatsUrl(cube_type, subs[0].id, tabSession, tabLastN));
 			return;
 		}
-		history.push(buildStatsUrl(cube_type, scramble_subset, tabSession));
+		history.push(buildStatsUrl(cube_type, scramble_subset, tabSession, tabLastN));
 	}
 
 	function navigateToSession(session_id: string | null) {
-		history.push(buildStatsUrl(tabCubeType, tabSubset, session_id));
+		history.push(buildStatsUrl(tabCubeType, tabSubset, session_id, tabLastN));
+	}
+
+	function navigateToLastN(last_n: number | null) {
+		history.push(buildStatsUrl(tabCubeType, tabSubset, tabSession, last_n));
 	}
 
 	const uniqueCubeTypes = useMemo(() => getUniqueCubeTypes(cubeTypes), [cubeTypes]);
@@ -124,12 +147,19 @@ export default function Stats() {
 	useEffect(() => {
 		if (tabCubeType && tabSubset === null) {
 			if (subsetsForCurrentCube.length > 0) {
-				history.replace(buildStatsUrl(tabCubeType, subsetsForCurrentCube[0].id, tabSession));
+				history.replace(buildStatsUrl(tabCubeType, subsetsForCurrentCube[0].id, tabSession, tabLastN));
 			} else {
-				history.replace(buildStatsUrl(null, null, tabSession));
+				history.replace(buildStatsUrl(null, null, tabSession, tabLastN));
 			}
 		}
-	}, [tabCubeType, tabSubset, subsetsForCurrentCube, tabSession]);
+	}, [tabCubeType, tabSubset, subsetsForCurrentCube, tabSession, tabLastN]);
+
+	// view 'smart'tan 'all'a donerse lastN'i URL'den dusur (smart-only secim).
+	useEffect(() => {
+		if (view !== 'smart' && tabLastN !== null) {
+			history.replace(buildStatsUrl(tabCubeType, tabSubset, tabSession, null));
+		}
+	}, [view, tabLastN, tabCubeType, tabSubset, tabSession]);
 
 	// "Tumu" modu: cubeType yok VEYA subset URL parametresi hic verilmemis (null).
 	// Bos string ('') gecerli bir subset id'si (777 WCA, 333 Random State, vb).
@@ -226,7 +256,33 @@ export default function Stats() {
 		cubeType: getCubeTypeInfoById(tabCubeType),
 		filterOptions,
 		stats: statsData?.stats || {},
+		view,
+		setView,
+		smartLastN: tabLastN,
 	};
+
+	const lastNDropdownText = useMemo(() => {
+		if (tabLastN == null) return t('stats.last_n.all');
+		return t('stats.last_n.option', {count: tabLastN.toLocaleString()});
+	}, [tabLastN, t]);
+
+	const lastNOptions: IDropdownOption[] = useMemo(() => {
+		const opts: IDropdownOption[] = [
+			{
+				text: t('stats.last_n.all'),
+				selected: tabLastN == null,
+				onClick: () => navigateToLastN(null),
+			},
+		];
+		for (const n of LAST_N_OPTIONS) {
+			opts.push({
+				text: t('stats.last_n.option', {count: n.toLocaleString()}),
+				selected: tabLastN === n,
+				onClick: () => navigateToLastN(n),
+			});
+		}
+		return opts;
+	}, [tabLastN, t]);
 
 	const cubeChip: FilterChip | null = uniqueCubeTypes.length > 0 ? {
 		label: cubeDropdownText,
@@ -246,6 +302,13 @@ export default function Stats() {
 		visible: true,
 	} : null;
 
+	// SonN chip sadece smart view aktifken (yani cube secili VE kullanici smart toggle'a basmis) gozukur.
+	const lastNChip: FilterChip | null = !all && view === 'smart' ? {
+		label: lastNDropdownText,
+		options: lastNOptions,
+		visible: true,
+	} : null;
+
 	const filtersBody = (
 		<StatsFilterControls
 			allMode={all}
@@ -254,6 +317,7 @@ export default function Stats() {
 			cubeChip={cubeChip}
 			subsetChip={subsetChip}
 			sessionChip={sessionChip}
+			lastNChip={lastNChip}
 		/>
 	);
 

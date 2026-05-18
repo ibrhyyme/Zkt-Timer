@@ -12,7 +12,7 @@ import HistoryModal from '../../../modules/history/history_modal/HistoryModal';
 
 const b = block('cube-stat-avg');
 
-const COUNTS = [50, 100, 500, 1000, 2000];
+const COUNTS = [12, 25, 50, 100, 500, 1000, 2000];
 
 export default function CubeStatAverages() {
 	const {t} = useTranslation();

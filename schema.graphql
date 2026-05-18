@@ -270,7 +270,7 @@ type Query {
   sessions: [Session]
   settings: Setting
   stats: Stats
-  caseStats(sessionId: String, subset: String, cubeType: String, type: String): [CaseStat]
+  caseStats(lastN: Int, sessionId: String, subset: String, cubeType: String, type: String): [CaseStat]
   integration(integrationType: IntegrationType): Integration
   wcaMe: WcaAccount
   integrations: [Integration]

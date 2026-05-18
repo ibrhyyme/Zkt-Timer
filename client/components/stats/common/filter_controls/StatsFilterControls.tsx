@@ -20,6 +20,7 @@ interface Props {
 	cubeChip: FilterChip | null;
 	subsetChip: FilterChip | null;
 	sessionChip: FilterChip | null;
+	lastNChip?: FilterChip | null;
 }
 
 function ChipDropdown({chip, active}: {chip: FilterChip; active: boolean}) {
@@ -49,7 +50,7 @@ function Separator() {
 }
 
 export default function StatsFilterControls(props: Props) {
-	const {allMode, allLabel, onAllClick, cubeChip, subsetChip, sessionChip} = props;
+	const {allMode, allLabel, onAllClick, cubeChip, subsetChip, sessionChip, lastNChip} = props;
 
 	return (
 		<div className={b()}>
@@ -76,6 +77,12 @@ export default function StatsFilterControls(props: Props) {
 				<>
 					<Separator />
 					<ChipDropdown chip={sessionChip} active={!allMode} />
+				</>
+			)}
+			{lastNChip?.visible && (
+				<>
+					<Separator />
+					<ChipDropdown chip={lastNChip} active={!allMode} />
 				</>
 			)}
 		</div>

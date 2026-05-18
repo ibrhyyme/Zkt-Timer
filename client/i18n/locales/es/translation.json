@@ -112,6 +112,10 @@
             "subtitle": "Últimas {{value}} resoluciones",
             "best_block": "★ Bloque más consistente"
         },
+        "last_n": {
+            "all": "Todos",
+            "option": "Últimas {{count}}"
+        },
         "focus": {
             "total_time": "Tiempo total",
             "total_solves_count": "{{value}} resoluciones",

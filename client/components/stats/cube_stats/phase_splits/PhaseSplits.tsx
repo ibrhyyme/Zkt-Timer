@@ -17,14 +17,14 @@ const ORDER: PhaseKey[] = ['cross', 'f2l_1', 'f2l_2', 'f2l_3', 'f2l_4', 'oll', '
 export default function PhaseSplits() {
 	const {t} = useTranslation();
 	const me = useMe();
-	const {filterOptions} = useContext(StatsContext);
+	const {filterOptions, smartLastN} = useContext(StatsContext);
 	const solveUpdate = useSolveDb();
 
 	const showProOverlay = isProEnabled() && !isPro(me);
 
 	const result = useMemo(
-		() => getAveragePhaseSplits(filterOptions),
-		[filterOptions, solveUpdate]
+		() => getAveragePhaseSplits(filterOptions, smartLastN),
+		[filterOptions, smartLastN, solveUpdate]
 	);
 
 	if (showProOverlay) {

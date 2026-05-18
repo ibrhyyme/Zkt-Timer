@@ -257,8 +257,11 @@ const Sq1Renderer: React.FC<Props> = ({ scramble, className, baseWidth: baseWidt
 		const dpr = window.devicePixelRatio || 1;
 		canvas.width = w * dpr;
 		canvas.height = h * dpr;
-		canvas.style.width = `${w}px`;
-		canvas.style.height = `${h}px`;
+		// Container'a fit ederken aspect ratio'yu koru (yatay 1.74:1)
+		canvas.style.maxWidth = `${w}px`;
+		canvas.style.width = '100%';
+		canvas.style.height = 'auto';
+		canvas.style.aspectRatio = `${w} / ${h}`;
 		ctx.scale(dpr, dpr);
 
 		// Temizle

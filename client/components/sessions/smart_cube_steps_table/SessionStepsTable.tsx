@@ -22,6 +22,7 @@ const PHASE_ORDER = ['cross', 'f2l_1', 'f2l_2', 'f2l_3', 'f2l_4', 'oll', 'pll'];
 interface Props {
 	sessionId?: string;
 	filterOptions?: FilterSolvesOptions;
+	lastN?: number | null;
 	title?: string;
 }
 
@@ -47,7 +48,7 @@ function fmt(val: number | null | undefined, suffix = 's'): string {
 	return getTimeString(val, 2) + suffix;
 }
 
-export default function SessionStepsTable({ sessionId, filterOptions, title }: Props) {
+export default function SessionStepsTable({ sessionId, filterOptions, lastN, title }: Props) {
 	const { t } = useTranslation();
 	const dispatch = useDispatch();
 	const me = useMe();
@@ -61,7 +62,7 @@ export default function SessionStepsTable({ sessionId, filterOptions, title }: P
 		? { session_id: sessionId, is_smart_cube: true, dnf: false }
 		: { ...filterOptions, is_smart_cube: true, dnf: false };
 
-	const solves = fetchSolves(baseFilter);
+	const solves = fetchSolves(baseFilter, lastN ? { limit: lastN } : undefined);
 
 	if (!solves.length) return null;
 

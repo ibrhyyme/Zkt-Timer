@@ -778,8 +778,8 @@ query myCompetitionFollows($competitionId: String!) {
 	}
 }
 
-query caseStats($type: String!, $cubeType: String, $subset: String, $sessionId: String) {
-	caseStats(type: $type, cubeType: $cubeType, subset: $subset, sessionId: $sessionId) {
+query caseStats($type: String!, $cubeType: String, $subset: String, $sessionId: String, $lastN: Int) {
+	caseStats(type: $type, cubeType: $cubeType, subset: $subset, sessionId: $sessionId, lastN: $lastN) {
 		caseKey
 		caseName
 		caseType

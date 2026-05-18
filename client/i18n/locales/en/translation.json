@@ -112,6 +112,10 @@
             "subtitle": "Last {{value}} solves",
             "best_block": "★ Most consistent block"
         },
+        "last_n": {
+            "all": "All",
+            "option": "Last {{count}}"
+        },
         "focus": {
             "total_time": "Total time",
             "total_solves_count": "{{value}} solves",

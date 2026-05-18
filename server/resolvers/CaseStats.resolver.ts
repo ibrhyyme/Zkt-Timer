@@ -1,4 +1,4 @@
-import { Arg, Authorized, Ctx, Query, Resolver } from 'type-graphql';
+import { Arg, Authorized, Ctx, Int, Query, Resolver } from 'type-graphql';
 import { GraphQLContext } from '../@types/interfaces/server.interface';
 import { Role } from '../middlewares/auth';
 import { CaseStat } from '../schemas/CaseStat.schema';
@@ -51,7 +51,8 @@ export class CaseStatsResolver {
 		@Arg('type') type: string,
 		@Arg('cubeType', { nullable: true }) cubeType?: string,
 		@Arg('subset', { nullable: true }) subset?: string,
-		@Arg('sessionId', { nullable: true }) sessionId?: string
+		@Arg('sessionId', { nullable: true }) sessionId?: string,
+		@Arg('lastN', () => Int, { nullable: true }) lastN?: number
 	): Promise<CaseStat[]> {
 		const { prisma, user } = context;
 		if (type !== 'oll' && type !== 'pll') return [];
@@ -67,6 +68,18 @@ export class CaseStatsResolver {
 		// Sadece null/undefined "tum subset'ler" anlamina gelir.
 		if (subset != null) solveFilter.scramble_subset = subset;
 		if (sessionId) solveFilter.session_id = sessionId;
+
+		// lastN varsa once en son N solve id'sini cek ve step filter'ini bu kumeye kisitla.
+		// Sort: client-side fetchSolves'la ayni (ended_at desc); null ended_at fallback'i created_at desc.
+		if (lastN && lastN > 0) {
+			const lastSolves = await prisma.solve.findMany({
+				where: solveFilter,
+				orderBy: [{ ended_at: 'desc' }, { created_at: 'desc' }],
+				take: lastN,
+				select: { id: true },
+			});
+			solveFilter.id = { in: lastSolves.map((s) => s.id) };
+		}
 
 		const steps = await prisma.solveMethodStep.findMany({
 			where: {

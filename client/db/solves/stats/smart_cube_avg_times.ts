@@ -9,13 +9,13 @@ export interface SmartCubeAvgTimes {
 	methodStepsSampleCount: number;
 }
 
-export function getSmartCubeAvgTimes(filter: FilterSolvesOptions): SmartCubeAvgTimes {
+export function getSmartCubeAvgTimes(filter: FilterSolvesOptions, lastN?: number): SmartCubeAvgTimes {
 	const solves = fetchSolves({
 		...filter,
 		dnf: false,
 		is_smart_cube: true,
 		time: {$gt: 0},
-	}) as Solve[];
+	}, lastN ? { limit: lastN } : undefined) as Solve[];
 
 	let inspectionSum = 0;
 	let inspectionCount = 0;

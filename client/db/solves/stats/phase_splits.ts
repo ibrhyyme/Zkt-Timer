@@ -23,13 +23,13 @@ function singleStepTime(steps: any[], stepName: string): number | null {
 	return null;
 }
 
-export function getAveragePhaseSplits(filter: FilterSolvesOptions): PhaseSplitsResult {
+export function getAveragePhaseSplits(filter: FilterSolvesOptions, lastN?: number | null): PhaseSplitsResult {
 	const solves = fetchSolves({
 		...filter,
 		dnf: false,
 		is_smart_cube: true,
 		time: {$gt: 0},
-	}) as Solve[];
+	}, lastN ? { limit: lastN } : undefined) as Solve[];
 
 	const buckets: Record<PhaseKey, number[]> = {
 		cross: [],
