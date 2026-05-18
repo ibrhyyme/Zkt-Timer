@@ -112,6 +112,10 @@ export class SolveResolver {
 		const { user } = context;
 
 		input.bulk = false;
+		// cube_type='wca' icin subset zorunlu (cube-subset-bucket kurali) — defense in depth
+		if (input.cube_type === 'wca' && !input.scramble_subset) {
+			input.scramble_subset = '333';
+		}
 		const createdSolve = await createSolve(user, input);
 
 		if (input.is_smart_cube && input.smart_turns) {

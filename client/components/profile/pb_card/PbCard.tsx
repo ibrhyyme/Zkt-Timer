@@ -3,7 +3,7 @@ import './PbCard.scss';
 import { getTimeString } from '../../../util/time';
 import Scramble from '../../modules/scramble/ScrambleVisual';
 import SolveInfo from '../../solve_info/SolveInfo';
-import { getCubeTypeInfoById } from '../../../util/cubes/util';
+import { getBucketShortLabel, getCubeTypeInfoById } from '../../../util/cubes/util';
 import block from '../../../styles/bem';
 import { PublicUserAccount, TopAverage, TopSolve } from '../../../@types/generated/graphql';
 import { useDispatch } from 'react-redux';
@@ -144,7 +144,7 @@ export default function PbCard(props: Props) {
 				<div className={b('scramble-visual')}>
 					<Scramble frontFace scramble={scramble} cubeType={cubeType.id} />
 				</div>
-				<Tag large text={`${cubeType.name} ${single ? 'Single' : 'Average'}`} />
+				<Tag large text={`${getBucketShortLabel(firstSolve.cube_type, firstSolve.scramble_subset)} ${single ? 'Single' : 'Average'}`} />
 			</div>
 		</div>
 	);
