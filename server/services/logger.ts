@@ -28,12 +28,15 @@ export function initLogger() {
 			})
 		);
 	} else {
-		transports.push(
-			new ElasticsearchTransport({
-				client: getSearchClient(),
-				level: process.env.LOG_LEVEL,
-			})
-		);
+		const esTransport = new ElasticsearchTransport({
+			client: getSearchClient(),
+			level: process.env.LOG_LEVEL,
+		});
+		// winston-elasticsearch bulk_writer rejection'i yutmuyor — unhandled rejection birikmesin
+		esTransport.on('error', (err) => {
+			console.error('[Logger] ES transport error:', (err as any)?.message ?? err);
+		});
+		transports.push(esTransport);
 
 		addFormats.push(winston.format.json());
 	}
@@ -48,6 +51,11 @@ export function initLogger() {
 				meta.error = {message: err.message, stack: err.stack};
 			} else if (typeof err === 'string') {
 				meta.error = {message: err};
+			} else if (err !== null && typeof err === 'object') {
+				// zaten obj — mapping ile uyumlu, pass through
+			} else {
+				// number/boolean/null/undefined — primitive'i obj wrap'le ki ES mapping'i kirlenmesin
+				meta.error = {value: String(err)};
 			}
 		}
 		return info;

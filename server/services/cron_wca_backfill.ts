@@ -31,7 +31,9 @@ export function initWcaBackfillCronJob() {
 
 				logger.info('[WcaBackfill] starting tick');
 				const result = await runWcaBackfill({batchSize: 500});
-				logger.info('[WcaBackfill] tick done', result);
+				// ES log mapping'inde "error" field'i obj olarak indexlenmis — integer cakismasi olmasin diye rename
+				const {error: errorCount, ...logSafeResult} = result;
+				logger.info('[WcaBackfill] tick done', {...logSafeResult, errorCount});
 			} catch (e: any) {
 				logger.error('[WcaBackfill] cron failed', {error: e?.message});
 			}
