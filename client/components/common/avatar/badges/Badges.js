@@ -28,7 +28,23 @@ export default class Badges extends React.Component {
 		}
 
 		if (wca) {
-			ems.push(<Emblem small={small} key={wca.id} text="WCA Profile" green />);
+			const wcaEmblem = <Emblem small={small} text="WCA Profile" green />;
+			if (wca.wca_id) {
+				ems.push(
+					<a
+						key={wca.id}
+						href={`https://www.worldcubeassociation.org/persons/${wca.wca_id}`}
+						target="_blank"
+						rel="noopener noreferrer"
+						style={{textDecoration: 'none'}}
+						onClick={(e) => e.stopPropagation()}
+					>
+						{wcaEmblem}
+					</a>
+				);
+			} else {
+				ems.push(<React.Fragment key={wca.id}>{wcaEmblem}</React.Fragment>);
+			}
 		}
 
 		const badges = [...(user.badges || [])].sort((a, b) => a.priority - b.priority);
