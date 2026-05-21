@@ -2156,6 +2156,14 @@
             "step3_sub": "正在同步记录和比赛。",
             "step4_title": "准备就绪",
             "step4_sub": "正在打开 Timer。"
+        },
+        "wca_conflict": {
+            "title": "此 WCA 账户已绑定到其他账户",
+            "subtitle": "操作无法完成",
+            "description_with_username": "此 WCA 账户已绑定到 <strong>{{username}}</strong>。请先登录该账户,在「设置 > 已关联账户」中解除 WCA 绑定,然后回到这里重试。",
+            "description_no_username": "此 WCA 账户已绑定到其他账户。请先登录该账户,在「设置 > 已关联账户」中解除 WCA 绑定,然后回到这里重试。",
+            "go_to_other_account_button": "前往其他账户",
+            "cancel_button": "取消"
         }
     },
     "landing_nav": {

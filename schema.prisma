@@ -147,7 +147,7 @@ model Integration {
   refresh_token   String
   auth_expires_at BigInt
   wca_id                 String?     @unique
-  wca_user_id            String?
+  wca_user_id            String?     @unique
   wca_name               String?
   wca_avatar_url         String?
   wca_country_iso2       String?
@@ -177,7 +177,6 @@ model Integration {
   @@index([kinch_score])
   @@index([sor_single])
   @@index([sor_average])
-  @@index([wca_user_id])
   @@index([revoked_at])
   @@map("integration")
 }

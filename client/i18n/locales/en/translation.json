@@ -2156,6 +2156,14 @@
             "step3_sub": "Syncing records and competitions.",
             "step4_title": "Ready",
             "step4_sub": "Opening Timer."
+        },
+        "wca_conflict": {
+            "title": "This WCA account is linked to another account",
+            "subtitle": "Action could not be completed",
+            "description_with_username": "This WCA account is already linked to <strong>{{username}}</strong>. Sign in to that account first, unlink WCA from Settings > Linked Accounts, then come back here and try again.",
+            "description_no_username": "This WCA account is already linked to another account. Sign in to that account first, unlink WCA from Settings > Linked Accounts, then come back here and try again.",
+            "go_to_other_account_button": "Go to other account",
+            "cancel_button": "Cancel"
         }
     },
     "landing_nav": {

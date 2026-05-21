@@ -736,6 +736,100 @@
 		flex-shrink: 0;
 	}
 
+	/* ── WCA Conflict (already-linked) error scene ───────────── */
+	&__wca-conflict {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+		padding: 8px 4px 4px;
+		gap: 14px;
+	}
+
+	&__wca-conflict-icon {
+		width: 64px;
+		height: 64px;
+		border-radius: 18px;
+		display: grid;
+		place-items: center;
+		background: linear-gradient(135deg, rgb(var(--danger-color)), rgb(var(--auth-accent)));
+		color: white;
+		box-shadow: 0 0 0 4px rgba(var(--danger-color), 0.18), 0 0 24px rgba(var(--danger-color), 0.32);
+	}
+
+	&__wca-conflict-title {
+		font-family: $font-display;
+		font-weight: 800;
+		font-size: 22px;
+		color: rgb(var(--text-color));
+		margin: 0;
+	}
+
+	&__wca-conflict-subtitle {
+		font-weight: 700;
+		font-size: 14px;
+		color: rgb(var(--danger-color));
+		margin: 0;
+	}
+
+	&__wca-conflict-description {
+		font-weight: 600;
+		font-size: 14px;
+		line-height: 1.55;
+		color: rgb(var(--text-color));
+		margin: 0;
+		max-width: 360px;
+
+		strong {
+			font-weight: 800;
+			color: rgb(var(--primary-color));
+		}
+	}
+
+	&__wca-conflict-actions {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		width: 100%;
+		margin-top: 6px;
+	}
+
+	&__wca-conflict-primary,
+	&__wca-conflict-secondary {
+		width: 100%;
+		padding: 12px 18px;
+		border-radius: 14px;
+		font-weight: 800;
+		font-size: 14.5px;
+		cursor: pointer;
+		border: none;
+		transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+
+		&:active {
+			transform: scale(0.98);
+		}
+	}
+
+	&__wca-conflict-primary {
+		background: linear-gradient(135deg, rgb(var(--primary-color)), rgb(var(--auth-accent)));
+		color: white;
+		box-shadow: 0 6px 20px rgba(var(--primary-color), 0.35);
+
+		&:hover {
+			box-shadow: 0 8px 24px rgba(var(--primary-color), 0.48);
+		}
+	}
+
+	&__wca-conflict-secondary {
+		background: rgba(12, 13, 20, 0.5);
+		color: rgb(var(--text-color));
+		border: 1px solid rgb(var(--auth-module-border));
+
+		&:hover {
+			background: rgba(12, 13, 20, 0.7);
+		}
+	}
+
 	/* ── Timer reveal (post-success) ──────────── */
 	&__timer-reveal {
 		position: absolute;

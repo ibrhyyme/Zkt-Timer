@@ -7,6 +7,7 @@ import AuthCube from './AuthCube';
 import LoginPane from './LoginPane';
 import SignupPane from './SignupPane';
 import WcaCallbackPane from './WcaCallbackPane';
+import WcaConflictPane from './WcaConflictPane';
 import WcaSection from './WcaSection';
 import { useChoreography } from './useChoreography';
 import './zkt_auth.scss';
@@ -16,6 +17,7 @@ const b = block('zkt-auth');
 interface Props {
 	initialMode: AuthMode;
 	wcaStep?: number;
+	wcaConflictData?: { ownerUsername: string | null };
 	legacyChild?: ReactNode;
 	legacyTitle?: string;
 }
@@ -23,6 +25,7 @@ interface Props {
 export default function ZktAuthScene({
 	initialMode,
 	wcaStep = 0,
+	wcaConflictData,
 	legacyChild,
 	legacyTitle,
 }: Props) {
@@ -88,6 +91,8 @@ export default function ZktAuthScene({
 		);
 	} else if (mode === 'wca-callback') {
 		body = <WcaCallbackPane activeStep={wcaStep} />;
+	} else if (mode === 'wca-conflict') {
+		body = <WcaConflictPane ownerUsername={wcaConflictData?.ownerUsername ?? null} />;
 	} else {
 		body = legacyChild;
 	}
