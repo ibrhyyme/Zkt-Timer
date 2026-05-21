@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {gqlMutate} from '../api';
 import {gql} from '@apollo/client';
 import {useRouteMatch} from 'react-router-dom';
@@ -7,6 +7,11 @@ import {useMe} from '../../util/hooks/useMe';
 import {useTranslation} from 'react-i18next';
 import {LINKED_SERVICES} from '../../../shared/integration';
 import {IntegrationType} from '../../../shared/integration';
+import ZktAuthScene from '../login/zkt_auth/ZktAuthScene';
+
+interface ConflictData {
+	ownerUsername: string | null;
+}
 
 export default function OAuthService() {
 	const me = useMe();
@@ -14,6 +19,7 @@ export default function OAuthService() {
 	const match = useRouteMatch() as any;
 	const integrationType = match?.params?.integrationType as IntegrationType;
 	const service = LINKED_SERVICES[integrationType];
+	const [conflict, setConflict] = useState<ConflictData | null>(null);
 
 	useEffect(() => {
 		const urlParams = new URLSearchParams(window.location.search);
@@ -37,6 +43,18 @@ export default function OAuthService() {
 			})
 			.catch((e) => {
 				const msg = e?.graphQLErrors?.[0]?.message || e?.message || '';
+
+				// Structured conflict payload — dedicated scene goster, redirect yapma
+				try {
+					const parsed = JSON.parse(msg);
+					if (parsed?.code === 'WCA_ACCOUNT_ALREADY_LINKED') {
+						setConflict({ownerUsername: parsed.ownerUsername ?? null});
+						return;
+					}
+				} catch {
+					// JSON degil, normal toast yoluna devam
+				}
+
 				// Zaten bagli ise sessizce redirect yap
 				if (msg.includes('already linked')) {
 					const state = urlParams.get('state');
@@ -50,6 +68,10 @@ export default function OAuthService() {
 				}, 2000);
 			});
 	}, []);
+
+	if (conflict) {
+		return <ZktAuthScene initialMode="wca-conflict" wcaConflictData={conflict} />;
+	}
 
 	return (
 		<div

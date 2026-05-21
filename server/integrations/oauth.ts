@@ -1,9 +1,10 @@
-import { createIntegration, getIntegration, getIntegrationByWcaId, updateIntegration } from '../models/integration';
+import { createIntegration, getIntegration, getIntegrationByWcaId, getIntegrationByWcaUserId, updateIntegration } from '../models/integration';
 import axios from 'axios';
 import { InternalUserAccount, UserAccount } from '../schemas/UserAccount.schema';
 import { IntegrationType, LINKED_SERVICES, LinkedServiceData, getWcaRedirectUri, getWcaLoginRedirectUri } from '../../shared/integration';
 import { Integration } from '../schemas/Integration.schema';
 import { updateUserProfile } from '../models/profile';
+import { getUserById } from '../models/user_account';
 
 // WCA /me response sekli — tum OAuth path'lerinde tek nokta sync icin
 // Her path'in kendi field-by-field updateIntegration cagrisi yerine bunu kullanmalidir.
@@ -91,13 +92,24 @@ export async function linkOAuthAccount(intType: IntegrationType, user: InternalU
 		});
 		const wcaData = res?.data?.me || res?.data;
 		const wcaId = wcaData?.wca_id || null;
+		const wcaUserId = wcaData?.id ? String(wcaData.id) : null;
 
-		// Baska kullaniciya bagli wca_id kontrolu (sadece wca_id varsa)
-		if (wcaId) {
-			const existingWca = await getIntegrationByWcaId(wcaId);
-			if (existingWca && existingWca.user_id !== user.id) {
-				throw new Error('Bu WCA hesabi baska bir kullaniciya bagli.');
-			}
+		// Baska kullaniciya bagli kontrolu — wca_user_id (newcomer dahil her zaman var) ve wca_id (yarismaya katilanlar)
+		let conflict: Integration | null = null;
+		if (wcaUserId) {
+			const byUser = await getIntegrationByWcaUserId(wcaUserId);
+			if (byUser && byUser.user_id !== user.id) conflict = byUser;
+		}
+		if (!conflict && wcaId) {
+			const byId = await getIntegrationByWcaId(wcaId);
+			if (byId && byId.user_id !== user.id) conflict = byId;
+		}
+		if (conflict) {
+			const owner = await getUserById(conflict.user_id);
+			throw new Error(JSON.stringify({
+				code: 'WCA_ACCOUNT_ALREADY_LINKED',
+				ownerUsername: owner?.username ?? null,
+			}));
 		}
 
 		let integration = await createIntegration(user, intType, accessToken, refreshToken, createdAt + expiresIn * 1000);

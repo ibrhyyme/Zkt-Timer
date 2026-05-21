@@ -47,3 +47,12 @@ export async function getIntegrationByWcaId(wcaId: string): Promise<Integration>
 		},
 	});
 }
+
+export async function getIntegrationByWcaUserId(wcaUserId: string): Promise<Integration> {
+	return getPrisma().integration.findFirst({
+		where: {
+			wca_user_id: wcaUserId,
+			service_name: 'wca',
+		},
+	});
+}

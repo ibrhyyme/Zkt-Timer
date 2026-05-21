@@ -2156,6 +2156,14 @@
             "step3_sub": "Sincronizando récords y competiciones.",
             "step4_title": "Listo",
             "step4_sub": "Abriendo Timer."
+        },
+        "wca_conflict": {
+            "title": "Esta cuenta WCA está vinculada a otra cuenta",
+            "subtitle": "No se pudo completar la acción",
+            "description_with_username": "Esta cuenta WCA ya está vinculada a <strong>{{username}}</strong>. Inicia sesión en esa cuenta primero, desvincula WCA en Ajustes > Cuentas Vinculadas, luego vuelve aquí e inténtalo de nuevo.",
+            "description_no_username": "Esta cuenta WCA ya está vinculada a otra cuenta. Inicia sesión en esa cuenta primero, desvincula WCA en Ajustes > Cuentas Vinculadas, luego vuelve aquí e inténtalo de nuevo.",
+            "go_to_other_account_button": "Ir a la otra cuenta",
+            "cancel_button": "Cancelar"
         }
     },
     "landing_nav": {

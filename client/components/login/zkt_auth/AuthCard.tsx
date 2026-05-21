@@ -5,7 +5,7 @@ import block from '../../../styles/bem';
 
 const b = block('zkt-auth');
 
-export type AuthMode = 'login' | 'signup' | 'wca-callback' | 'legacy';
+export type AuthMode = 'login' | 'signup' | 'wca-callback' | 'wca-conflict' | 'legacy';
 
 interface Props {
 	mode: AuthMode;

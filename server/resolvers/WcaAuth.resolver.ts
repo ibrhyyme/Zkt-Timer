@@ -5,7 +5,7 @@ import {WcaOAuthResult} from '../schemas/WcaOAuthResult.schema';
 import {PublicUserAccount} from '../schemas/UserAccount.schema';
 import {exchangeWcaLoginCode, syncWcaProfileToIntegration} from '../integrations/oauth';
 import {createUserAccount, getUserByEmail, getUserById, getUserByUsername, sanitizeUser} from '../models/user_account';
-import {createIntegration, getIntegration, getIntegrationByWcaId, updateIntegration} from '../models/integration';
+import {createIntegration, getIntegration, getIntegrationByWcaId, getIntegrationByWcaUserId, updateIntegration} from '../models/integration';
 import {createSetting} from '../models/settings';
 import {createNotificationPreference} from '../models/notification_preference';
 import {createDefaultSession} from '../models/session';
@@ -237,10 +237,16 @@ export class WcaAuthResolver {
 		await createNotificationPreference(user);
 		await createDefaultSession(user, wcaLocale);
 
-		// 7. WCA ID baska hesaba bagli mi kontrol et
+		// 7. WCA hesabi baska kullaniciya bagli mi kontrol et — wca_user_id newcomer dahil her zaman var
+		if (payload.wcaUserId) {
+			const existing = await getIntegrationByWcaUserId(payload.wcaUserId);
+			if (existing) {
+				throw new GraphQLError(ErrorCode.BAD_INPUT, 'Bu WCA hesabi baska bir kullaniciya bagli.');
+			}
+		}
 		if (payload.wcaId) {
-			const existingWca = await getIntegrationByWcaId(payload.wcaId);
-			if (existingWca) {
+			const existingByWcaId = await getIntegrationByWcaId(payload.wcaId);
+			if (existingByWcaId) {
 				throw new GraphQLError(ErrorCode.BAD_INPUT, 'Bu WCA hesabi baska bir kullaniciya bagli.');
 			}
 		}

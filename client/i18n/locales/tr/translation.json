@@ -2156,6 +2156,14 @@
             "step3_sub": "Rekorların ve yarışmaların eşleniyor.",
             "step4_title": "Hazır",
             "step4_sub": "Timer açılıyor."
+        },
+        "wca_conflict": {
+            "title": "Bu WCA hesabı başka bir hesaba bağlı",
+            "subtitle": "İşlem tamamlanamadı",
+            "description_with_username": "Bu WCA hesabı zaten <strong>{{username}}</strong> adlı hesabına bağlı. Önce o hesaba giriş yap, Ayarlar > Bağlı Hesaplar bölümünden WCA bağlantısını kopart, sonra bu hesaba dönüp tekrar dene.",
+            "description_no_username": "Bu WCA hesabı zaten başka bir hesaba bağlı. Önce o hesaba giriş yap, Ayarlar > Bağlı Hesaplar bölümünden WCA bağlantısını kopart, sonra bu hesaba dönüp tekrar dene.",
+            "go_to_other_account_button": "Diğer hesaba git",
+            "cancel_button": "Vazgeç"
         }
     },
     "landing_nav": {
