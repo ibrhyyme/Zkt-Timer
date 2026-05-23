@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CaretDown } from 'phosphor-react';
 import { setSetting } from '../../../db/settings/update';
+import { getSetting } from '../../../db/settings/query';
 import Dropdown from '../../common/inputs/dropdown/Dropdown';
 import { useSettings } from '../../../util/hooks/useSettings';
 import Button from '../../common/button/Button';
@@ -82,7 +83,11 @@ export default function StackMatPicker(props: IModalProps) {
 	}
 
 	function saveSelectedAudio() {
-		setSetting('timer_type', 'stackmat');
+		// MoYu Timer da audio path'i paylasiyor; secimi koru, yoksa stackmat'a duser
+		const currentTimerType = getSetting('timer_type');
+		if (currentTimerType !== 'moyutimer') {
+			setSetting('timer_type', 'stackmat');
+		}
 		setSetting('stackmat_id', selectedStackMatId);
 		onComplete();
 	}

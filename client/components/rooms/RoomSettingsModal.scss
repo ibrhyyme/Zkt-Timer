@@ -93,12 +93,14 @@
     }
 
     &__content {
-        height: 360px;
+        // 6+ timer turu (Klavye, StackMat, MoYu, Akilli Kup, GAN, QiYi, Manuel)
+        // sigmasi icin 480px. Daha kucuk overflow-y: auto ile scroll'a duser.
+        height: 480px;
     }
 
     @media (max-width: 767px) {
         &__content {
-            height: 50vh;
+            height: 65vh;
         }
     }
 

@@ -52,7 +52,8 @@ export default function KeyWatcher(props: Props) {
 
 	const modals = useGeneral('modals');
 	const timerType = useSettings('timer_type');
-	const stackMatOn = timerType === 'stackmat';
+	// stackmat + moyutimer ortak audio path (vendor/stackmat.js), keyboard etkilesimi ayni
+	const stackMatOn = timerType === 'stackmat' || timerType === 'moyutimer';
 	// Hardware timer'lar (GAN Timer + QiYi Timer) keyboard'u devre disi birakir
 	const ganTimerOn = timerType === 'gantimer' || timerType === 'qiyitimer';
 	const inspection = useSettings('inspection');
