@@ -528,15 +528,19 @@
 	}
 
 	&__selector-subsets {
-		display: flex;
-		flex-direction: column;
-		gap: 0.25rem;
+		columns: 140px;
+		column-gap: 1rem;
 		padding: 0.75rem;
 		border: 1px solid rgba(var(--text-color), 0.08);
 		border-radius: 10px;
 		background: rgba(var(--button-color), 0.15);
-		max-height: 200px;
+		max-height: 240px;
 		overflow-y: auto;
+
+		> * {
+			break-inside: avoid;
+			padding-bottom: 0.5rem;
+		}
 	}
 
 	&__selector-algs {
@@ -1864,6 +1868,18 @@
 		&__selector-algs {
 			grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
 			gap: 10px;
+		}
+
+		&__selector-subsets {
+			columns: auto;
+			display: flex;
+			flex-direction: column;
+			gap: 0.25rem;
+			-webkit-overflow-scrolling: touch;
+
+			> * {
+				padding-bottom: 0;
+			}
 		}
 
 		&__alg-card {
