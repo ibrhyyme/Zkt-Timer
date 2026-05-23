@@ -7,7 +7,14 @@ import Stackmat from '../../../../util/vendor/stackmat';
 import { endTimer, startTimer, startInspection } from '../../helpers/events';
 import { setTimerParams } from '../../helpers/params';
 
-export default function StackMat() {
+interface Props {
+	// cstimer mode: '' = StackMat (1200 Hz), 'm' = MoYu Timer (8000 Hz BCD)
+	// MoYu Timer ayri bir timer_type olarak expose ediliyor; ortak ses isleme path'ini
+	// paylasiyor — sadece sample rate + bit analyzer farkli (vendor/stackmat.js).
+	mode?: '' | 'm';
+}
+
+export default function StackMat({mode = ''}: Props = {}) {
 	const { t } = useTranslation();
 	const stackMatId = useSettings('stackmat_id');
 	const stackMatAutoInspection = useSettings('stackmat_auto_inspection');
@@ -75,7 +82,8 @@ export default function StackMat() {
 		}
 
 		stackMat.current = new Stackmat();
-		return stackMat.current.init('', stackMatId, false, (timer) => {
+		// cstimer init(timer, deviceId, force): 's' (boş = standard) vs 'm' (MoYu)
+		return stackMat.current.init(mode, stackMatId, false, (timer) => {
 			if (timerInitCounter.current < 2) {
 				timerInitCounter.current++;
 				return;

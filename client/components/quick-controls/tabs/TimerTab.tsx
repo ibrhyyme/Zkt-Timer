@@ -139,6 +139,12 @@ export default function TimerTab({ allowedTimerTypes, requireProForSmart }: Time
 			onClick: () => selectTimerType('qiyitimer'),
 		},
 		{
+			typeKey: 'moyutimer',
+			label: t('quick_controls.moyu_timer'),
+			isActive: timerType === 'moyutimer' && !manualEntry,
+			onClick: () => selectTimerType('moyutimer'),
+		},
+		{
 			typeKey: 'manual',
 			label: t('quick_controls.manual_entry'),
 			isActive: manualEntry,

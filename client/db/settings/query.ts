@@ -35,7 +35,7 @@ export interface AllSettings {
 
 	// Local
 	haptic_feedback: boolean;
-	timer_type: 'keyboard' | 'smart' | 'stackmat' | 'gantimer' | 'qiyitimer';
+	timer_type: 'keyboard' | 'smart' | 'stackmat' | 'gantimer' | 'qiyitimer' | 'moyutimer';
 	timer_layout: TimerLayoutPosition;
 	timer_module_count: number;
 	stackmat_id: string;

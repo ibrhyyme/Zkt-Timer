@@ -25,6 +25,7 @@ export const TIMER_INPUT_TYPE_KEYS = {
 	smart: 'timer_settings.input_smart',
 	gantimer: 'timer_settings.input_gantimer',
 	qiyitimer: 'timer_settings.input_qiyitimer',
+	moyutimer: 'timer_settings.input_moyutimer',
 };
 
 // Uyarı modalı componenti
@@ -200,11 +201,11 @@ export default function TimerSettings() {
 					label={t('timer_settings.input_type')}
 					description={t('timer_settings.input_type_desc')}
 					value={timerType}
-					options={['keyboard', 'stackmat', 'smart', 'gantimer', 'qiyitimer'].map((c) => ({
+					options={['keyboard', 'stackmat', 'moyutimer', 'smart', 'gantimer', 'qiyitimer'].map((c) => ({
 						label: getTimerTypeName(c),
 						value: c,
 					}))}
-					onChange={(v) => setSetting('timer_type', v as 'keyboard' | 'smart' | 'stackmat' | 'gantimer' | 'qiyitimer')}
+					onChange={(v) => setSetting('timer_type', v as 'keyboard' | 'smart' | 'stackmat' | 'gantimer' | 'qiyitimer' | 'moyutimer')}
 				/>
 				<TimerSettingsAction
 					label={t('timer_settings.cube_types')}

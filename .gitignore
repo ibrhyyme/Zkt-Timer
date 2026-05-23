@@ -40,3 +40,6 @@ Referans/
 # Claude config/skills
 .claude/
 CLAUDE.md
+
+# Local dev tooling (adb, frida, sniffer, vs) — repo'ya commit edilmez
+.tools/

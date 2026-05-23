@@ -258,7 +258,8 @@ export function startInspection(context: ITimerContext) {
 		timer_type: timerType
 	} = getSettings();
 
-	const stackMatOn = timerType === 'stackmat';
+	// stackmat + moyutimer ortak audio path (vendor/stackmat.js); auto-inspection ayni davranis
+	const stackMatOn = timerType === 'stackmat' || timerType === 'moyutimer';
 	// Hardware timer'lar (GAN Timer + QiYi Timer) inspection auto-start'i devre disi birakir
 	const ganTimerOn = timerType === 'gantimer' || timerType === 'qiyitimer';
 
