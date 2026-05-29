@@ -31,8 +31,8 @@ function safeStringify(object) {
 	return JSON.stringify(object)
 		.replace(/<\/(script)/gi, '<\\/$1')
 		.replace(/<!--/g, '<\\!--')
-		.replace(/ /g, '\\u2028')
-		.replace(/ /g, '\\u2029');
+		.replace(/\u2028/g, '\\u2028')
+		.replace(/\u2029/g, '\\u2029');
 }
 
 function renderFullPage(html, helmet, preloadedState, lang: string = 'en') {
