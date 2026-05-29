@@ -176,17 +176,22 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 		callback();
 
 		// PHASE 2: Non-critical data — loads in background after UI is visible
-		loadNonCriticalData(me, dispatch, passed, canSyncUser);
+		loadNonCriticalData(me, dispatch, passed, canSyncUser, migrationSkipped);
 	});
 }
 
-async function loadNonCriticalData(_me: UserAccount, dispatch: Dispatch<any>, passedFromOffline: boolean, canSyncUser: boolean) {
+async function loadNonCriticalData(_me: UserAccount, dispatch: Dispatch<any>, passedFromOffline: boolean, canSyncUser: boolean, migrationSkipped: boolean = false) {
 	try {
 		const bgPromises: Promise<any>[] = [];
 
 		if (passedFromOffline && canSyncUser) {
 			emitEvent('solveDbUpdatedEvent');
-			bgPromises.push(syncNewSolves());
+			// Migration atlandi/basarisiz (lokal veri henuz server'a gitmedi): syncNewSolves
+			// server'i bos gorup TUM lokal solve'lari "stale" diye silerdi — atla.
+			// syncNewSessions guvenli, calismaya devam eder.
+			if (!migrationSkipped) {
+				bgPromises.push(syncNewSolves());
+			}
 			bgPromises.push(syncNewSessions());
 		}
 
@@ -664,10 +669,13 @@ async function getAllSettings(userId: string) {
  * initOfflineData passed=true olduktan sonra cagirilmali (LokiDB zaten yuklu).
  * Return: true (basarili veya zaten bos), false (hata — flag korunmali).
  *
- * Guvenlik: Server'da zaten sezon varsa migration'a girilmez. Bu, Pro kullanicinin
- * cache stale olunca yanlislikla 'wasBasicUser' flag'i set edildiginde yapay
- * default sezonlarin server'a push edilmesini engeller. Gercek Basic→Pro
- * gecisinde server'da sezon yoktur cunku Basic sync etmez.
+ * Guvenlik: Server'da zaten SOLVE varsa migration'a girilmez. Bu, Pro kullanicinin
+ * cache stale olunca yanlislikla 'wasBasicUser' flag'i set edildiginde lokal
+ * verinin tekrar push edilmesini engeller. Gercek Basic→Pro gecisinde server'da
+ * solve yoktur cunku Basic sync etmez.
+ * NOT: Sezon sayisina BAKMA — signup'ta server-side default sezon olusturuluyor
+ * (her kullanicida, Basic dahil, en az 1 sezon var). Sezon kontrolu migration'i
+ * her zaman yanlislikla atlatir ve solve'lar hic tasinmadan veri kaybina yol acardi.
  */
 async function migrateLocalDataToServer(): Promise<boolean> {
 	const solveCollection = getLokiDb().getCollection('solves');
@@ -678,21 +686,23 @@ async function migrateLocalDataToServer(): Promise<boolean> {
 
 	if (!localSessions.length && !localSolves.length) return true;
 
-	// Defansif kontrol: server'da zaten veri varsa migration'a girilmemeli.
+	// Defansif kontrol: server'da zaten SOLVE varsa migration'a girilmemeli.
 	// Bu durumda kullanici Pro'ydu, sadece flag yanlis set edilmis demektir.
+	// Sezon sayisina BAKMA — signup'ta her kullanicida server-side default sezon
+	// olusur, sezon kontrolu migration'i her zaman yanlislikla atlatir (veri kaybi).
 	try {
 		const query = gql`
-			query Query {
-				sessions { id }
+			query Query($take: Int, $skip: Int) {
+				solves(take: $take, skip: $skip) { id }
 			}
 		`;
-		const res = await gqlQuery<{ sessions: { id: string }[] }>(query);
-		if (res.data.sessions && res.data.sessions.length > 0) {
-			console.log('[Migration] Server zaten sezon iceriyor, migration atlandi (yanlis wasBasicUser flag)');
+		const res = await gqlQuery<{ solves: { id: string }[] }>(query, { take: 0, skip: 0 });
+		if (res.data.solves && res.data.solves.length > 0) {
+			console.log('[Migration] Server zaten solve iceriyor, migration atlandi (yanlis wasBasicUser flag)');
 			return true;
 		}
 	} catch (e) {
-		console.error('[Migration] Server sezon kontrolu basarisiz, abort:', e);
+		console.error('[Migration] Server solve kontrolu basarisiz, abort:', e);
 		return false; // flag korunsun, sonraki acilista yeniden dene
 	}
 
@@ -706,7 +716,13 @@ async function migrateLocalDataToServer(): Promise<boolean> {
 				name: s.name || 'Sezon',
 				order: s.order || 0,
 			}));
-			await importSessionsInChunks(sessionInputs, () => {});
+			const sessionResult = await importSessionsInChunks(sessionInputs, () => {});
+			// Sessiz fail koruma: bir chunk bile basarisizsa migration'i basarisiz say.
+			// Flag korunur, lokal DB silinmez, sonraki acilista tekrar denenir.
+			if (sessionResult.failureCount > 0) {
+				console.error(`[Migration] ${sessionResult.failureCount} session chunk basarisiz — flag korunuyor`, sessionResult.errors);
+				return false;
+			}
 		}
 
 		// Sonra solve'lari yukle (sadece SolveInput alanlarini gonder)
@@ -735,7 +751,13 @@ async function migrateLocalDataToServer(): Promise<boolean> {
 				smart_pick_up_time: s.smart_pick_up_time,
 				inspection_time: s.inspection_time,
 			}));
-			await importSolvesInChunks(solveInputs, () => {});
+			const solveResult = await importSolvesInChunks(solveInputs, () => {});
+			// Sessiz fail koruma: solve chunk'i basarisizsa migration basarisiz.
+			// Bu olmazsa flag silinir + fresh fetch ile lokal solve'lar yok olurdu.
+			if (solveResult.failureCount > 0) {
+				console.error(`[Migration] ${solveResult.failureCount} solve chunk basarisiz — flag korunuyor`, solveResult.errors);
+				return false;
+			}
 		}
 
 		console.log('[Migration] Aktarim tamamlandi');
