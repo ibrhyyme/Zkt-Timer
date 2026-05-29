@@ -14,6 +14,7 @@
 		"compile-client": "babel client --out-dir ./build/client --extensions \".ts,.js,.jsx,.tsx\" -s --config-file ./prod.babelrc",
 		"compile-shared": "babel shared --out-dir ./build/shared --extensions \".ts,.js,.jsx,.tsx\" -s --config-file ./prod.babelrc",
 		"stamp-sw": "node -e \"const fs=require('fs');const f='public/sw.js';const s=fs.readFileSync(f,'utf8');fs.writeFileSync(f,s.replace('__DEPLOY_VERSION__',process.env.RELEASE_NAME||Date.now().toString()));\"",
+		"generate-pll-lookup": "node scripts/generate-pll-recognition-guide-lookup.mjs",
 		"deploy": "graphql-codegen && yarn build && yarn stamp-sw && yarn compile-server && yarn compile-client && yarn compile-shared"
 	},
 	"engines": {
@@ -107,6 +108,7 @@
 		"class-validator": "^0.14.0",
 		"classnames": "^2.3.1",
 		"color": "^3.1.3",
+		"colord": "^2.9.3",
 		"colors": "^1.4.0",
 		"compression": "^1.8.1",
 		"cookie-parser": "^1.4.5",
@@ -116,6 +118,7 @@
 		"cubing": "0.56.0",
 		"d3-array": "^2.9.1",
 		"dayjs": "^1.10.7",
+		"dexie": "^4.4.2",
 		"discord.js": "^13.6.0",
 		"dotenv": "^14.2.0",
 		"elo-rank": "^1.0.4",
@@ -190,6 +193,7 @@
 		"socket.io": "^4.2.0",
 		"socket.io-client": "^4.2.0",
 		"sorted-array": "^2.0.4",
+		"sr-puzzlegen-pll": "^1.0.4",
 		"three": "0.125.0",
 		"tinycolor2": "^1.6.0",
 		"tslib": "^2.5.0",

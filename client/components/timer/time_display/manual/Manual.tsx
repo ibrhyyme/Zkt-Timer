@@ -32,7 +32,6 @@ export default function Manual() {
 
 	const mobileMode = useGeneral('mobile_mode');
 	const timerFontFamily = useSettings('timer_font_family');
-	const requirePeriodInManualTimeEntry = useSettings('require_period_in_manual_time_entry');
 	const sessionId = useSettings('session_id');
 
 	useSolveDb();
@@ -90,7 +89,7 @@ export default function Manual() {
 		if (error) return;
 
 		try {
-			const seconds = convertTimeStringToSeconds(manualTime, requirePeriodInManualTimeEntry);
+			const seconds = convertTimeStringToSeconds(manualTime, false);
 			const endedAt = new Date().getTime();
 			const startedAt = endedAt - seconds.timeMilli;
 
@@ -122,9 +121,9 @@ export default function Manual() {
 		let manualEntryErr = false;
 		let time;
 		try {
-			time = convertTimeStringToSeconds(val, requirePeriodInManualTimeEntry);
+			time = convertTimeStringToSeconds(val, false);
 
-			if (time.time <= 0 && !time.dnf) {
+			if (time.timeSeconds <= 0 && !time.dnf) {
 				manualEntryErr = true;
 			}
 		} catch (err) {

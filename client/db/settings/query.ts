@@ -32,6 +32,8 @@ export interface AllSettings {
 	smart_cube_size: number;
 	stackmat_auto_inspection: number; // 0 = kapalı, >0 = gecikme süresi (saniye)
 	stackmat_auto_inspection_warning_shown: boolean; // Uyarı modalı gösterildi mi?
+	qiyi_auto_inspection: boolean; // QiYi Timer restart 1-tıkla inspection birlesik baslat
+	qiyi_auto_inspection_warning_shown: boolean; // Uyarı modalı gösterildi mi?
 
 	// Local
 	haptic_feedback: boolean;
@@ -136,6 +138,8 @@ const defaultSettings: AllSettings = {
 	smart_cube_size: 400,
 	stackmat_auto_inspection: 0, // 0 = kapalı, aktifken varsayılan 2 saniye
 	stackmat_auto_inspection_warning_shown: false,
+	qiyi_auto_inspection: true, // default açık (cihaz restart 1-tıkla sıfırla + inspection birleşik)
+	qiyi_auto_inspection_warning_shown: false,
 	scramble_subset: null,
 	scramble_top_color: null, // 'U' | 'D' | 'F' | 'B' | 'R' | 'L' | null (default beyaz/U)
 	smart_cube_analysis_mode: 'cffffop', // 'none' | 'cfop' | 'cf_plus_op' | 'cffffop' | 'cffffoopp'

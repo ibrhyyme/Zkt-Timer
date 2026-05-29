@@ -11,6 +11,7 @@ import TrainingArea from './panels/training_area/TrainingArea';
 import StatsPanel from './panels/stats_panel/StatsPanel';
 import TrainerToolbar from './toolbar/TrainerToolbar';
 import TrainerLanding from './TrainerLanding';
+import RecognitionRoot from './recognition/RecognitionRoot';
 import {ensureCubingReady} from '../../util/trainer/algorithm_engine';
 import {ensureKPuzzleReady} from '../../util/trainer/pattern_utils';
 import {loadLLPatterns} from '../../util/trainer/ll_patterns';
@@ -48,6 +49,11 @@ function TrainerContent() {
 
 	if (state.view === 'landing') {
 		return <TrainerLanding />;
+	}
+
+	// Recognition modu kendi tum view'larini yonetir
+	if (state.mode === 'recognition') {
+		return <RecognitionRoot />;
 	}
 
 	if (state.view === 'training') {

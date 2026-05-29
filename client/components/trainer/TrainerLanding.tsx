@@ -1,5 +1,5 @@
 import React from 'react';
-import {BluetoothConnected, Lock, Check, Crown, Timer} from 'phosphor-react';
+import {BluetoothConnected, Lock, Check, Crown, Timer, Eye} from 'phosphor-react';
 import block from '../../styles/bem';
 import {useTrainerContext} from './TrainerContext';
 import {useMe} from '../../util/hooks/useMe';
@@ -28,6 +28,10 @@ export default function TrainerLanding() {
 			return;
 		}
 		dispatch({type: 'SET_MODE', payload: 'smart'});
+	};
+
+	const handleSelectRecognition = () => {
+		dispatch({type: 'SET_MODE', payload: 'recognition'});
 	};
 
 	return (
@@ -189,6 +193,53 @@ export default function TrainerLanding() {
 						</button>
 					</div>
 				</ElectricBorder>
+
+				{/* Recognition Mode — ucuncu kart, free, basit yapi */}
+				<div
+					className={b('landing-card')}
+					onClick={handleSelectRecognition}
+					role="button"
+					tabIndex={0}
+					onKeyDown={(e) => e.key === 'Enter' && handleSelectRecognition()}
+				>
+					<div className={b('landing-card-top')}>
+						<div className={b('landing-card-icon', {orange: true})}>
+							<Eye size={28} weight="duotone" />
+						</div>
+						<h2 className={b('landing-card-name')}>{t('trainer.landing_recognition_title')}</h2>
+						<p className={b('landing-card-desc')}>{t('trainer.landing_recognition_desc')}</p>
+					</div>
+
+					<div className={b('landing-card-divider')} />
+
+					<div className={b('landing-card-includes')}>
+						<span className={b('landing-card-includes-label')}>
+							{t('trainer.landing_recognition_features')}
+						</span>
+						<div className={b('landing-card-features')}>
+							<div className={b('landing-card-feature')}>
+								<Check weight="bold" />
+								<span>{t('trainer.landing_recognition_feat1')}</span>
+							</div>
+							<div className={b('landing-card-feature')}>
+								<Check weight="bold" />
+								<span>{t('trainer.landing_recognition_feat2')}</span>
+							</div>
+							<div className={b('landing-card-feature')}>
+								<Check weight="bold" />
+								<span>{t('trainer.landing_recognition_feat3')}</span>
+							</div>
+							<div className={b('landing-card-feature')}>
+								<Check weight="bold" />
+								<span>{t('trainer.landing_recognition_feat4')}</span>
+							</div>
+						</div>
+					</div>
+
+					<button type="button" className={b('landing-card-cta')}>
+						{t('trainer.landing_recognition_title')}
+					</button>
+				</div>
 			</div>
 		</div>
 	);

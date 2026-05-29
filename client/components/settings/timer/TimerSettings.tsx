@@ -1,16 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import MicAccess from '../mic_access/MicAccess';
 import StackMatPicker from '../stackmat_picker/StackMatPicker';
 import { openModal } from '../../../actions/general';
 import CubeTypes from '../cube_types/CubeTypes';
 import { useDispatch } from 'react-redux';
-import Button from '../../common/button/Button';
 import { setSetting, toggleSetting } from '../../../db/settings/update';
 import { useSettings } from '../../../util/hooks/useSettings';
 import { useGeneral } from '../../../util/hooks/useGeneral';
-import ModalHeader from '../../common/modal/modal_header/ModalHeader';
-import Checkbox from '../../common/checkbox/Checkbox';
+import InfoWarningModal from '../../common/info_warning_modal/InfoWarningModal';
 import {
 	TimerSettingsGroup,
 	TimerSettingsToggle,
@@ -28,62 +26,6 @@ export const TIMER_INPUT_TYPE_KEYS = {
 	moyutimer: 'timer_settings.input_moyutimer',
 };
 
-// Uyarı modalı componenti
-function AutoInspectionWarningModal({ onComplete }: { onComplete?: () => void }) {
-	const { t } = useTranslation();
-	const [dontShowAgain, setDontShowAgain] = useState(false);
-
-	function handleClose() {
-		if (dontShowAgain) {
-			setSetting('stackmat_auto_inspection_warning_shown', true);
-		}
-		if (onComplete) {
-			onComplete();
-		}
-	}
-
-	return (
-		<div style={{ maxWidth: '500px' }}>
-			<ModalHeader
-				title={t('timer_settings.stackmat_warning_title')}
-				description={t('timer_settings.stackmat_warning_desc')}
-			/>
-			<div style={{ marginBottom: '16px', lineHeight: '1.6' }}>
-				<p style={{ marginBottom: '12px' }}>
-					<strong>{t('timer_settings.stackmat_warning_how_it_works')}</strong>
-				</p>
-				<ul style={{ paddingLeft: '20px', marginBottom: '12px' }}>
-					<li>{t('timer_settings.stackmat_warning_step1')}</li>
-					<li>{t('timer_settings.stackmat_warning_step2')}</li>
-					<li>{t('timer_settings.stackmat_warning_step3')}</li>
-				</ul>
-				<p style={{ marginBottom: '12px', padding: '10px', backgroundColor: 'rgba(255,150,0,0.15)', borderRadius: '8px', border: '1px solid rgba(255,150,0,0.3)' }}>
-					<strong>{t('timer_settings.stackmat_warning_limitation_title')}</strong> {t('timer_settings.stackmat_warning_limitation_desc')}
-				</p>
-				<p style={{ marginTop: '12px', fontWeight: 'bold' }}>
-					{t('timer_settings.stackmat_warning_protocol_note')}
-				</p>
-				<p style={{ marginTop: '12px', padding: '10px', backgroundColor: 'rgba(255,0,0,0.1)', color: '#d32f2f', borderRadius: '8px', border: '1px solid rgba(255,0,0,0.3)', fontWeight: 'bold' }}>
-					{t('timer_settings.stackmat_warning_critical')}
-				</p>
-			</div>
-			<div style={{ marginBottom: '16px' }}>
-				<Checkbox
-					checked={dontShowAgain}
-					onChange={() => setDontShowAgain(!dontShowAgain)}
-					text={t('timer_settings.dont_show_again')}
-				/>
-			</div>
-			<Button
-				text={t('timer_settings.understood')}
-				primary
-				large
-				onClick={handleClose}
-			/>
-		</div>
-	);
-}
-
 export default function TimerSettings() {
 	const { t } = useTranslation();
 	const dispatch = useDispatch();
@@ -100,7 +42,6 @@ export default function TimerSettings() {
 	// Giris
 	const timerType = useSettings('timer_type');
 	const useSpaceWithSmartCube = useSettings('use_space_with_smart_cube');
-	const requirePeriod = useSettings('require_period_in_manual_time_entry');
 
 	// Onaylar
 	const confirmDeleteSolve = useSettings('confirm_delete_solve');
@@ -117,14 +58,73 @@ export default function TimerSettings() {
 	const stackMatAutoInspection = useSettings('stackmat_auto_inspection');
 	const stackMatAutoInspectionWarningShown = useSettings('stackmat_auto_inspection_warning_shown');
 
+	// QiYi Timer
+	const qiyiAutoInspection = useSettings('qiyi_auto_inspection');
+	const qiyiAutoInspectionWarningShown = useSettings('qiyi_auto_inspection_warning_shown');
+
+	function showStackmatWarning() {
+		dispatch(
+			openModal(
+				<InfoWarningModal
+					stepsHeading={t('timer_settings.stackmat_warning_how_it_works')}
+					steps={[
+						t('timer_settings.stackmat_warning_step1'),
+						t('timer_settings.stackmat_warning_step2'),
+						t('timer_settings.stackmat_warning_step3'),
+					]}
+					warning={{
+						title: t('timer_settings.stackmat_warning_limitation_title'),
+						text: t('timer_settings.stackmat_warning_limitation_desc'),
+					}}
+					protocolNote={t('timer_settings.stackmat_warning_protocol_note')}
+					critical={t('timer_settings.stackmat_warning_critical')}
+					showAgainKey="stackmat_auto_inspection_warning_shown"
+				/>,
+				{
+					title: t('timer_settings.stackmat_warning_title'),
+					description: t('timer_settings.stackmat_warning_desc'),
+				},
+			),
+		);
+	}
+
+	function showQiyiWarning() {
+		dispatch(
+			openModal(
+				<InfoWarningModal
+					stepsHeading={t('timer_settings.qiyi_warning_how_it_works')}
+					steps={[
+						t('timer_settings.qiyi_warning_step1'),
+						t('timer_settings.qiyi_warning_step2'),
+					]}
+					critical={t('timer_settings.qiyi_warning_critical')}
+					showAgainKey="qiyi_auto_inspection_warning_shown"
+				/>,
+				{
+					title: t('timer_settings.qiyi_warning_title'),
+					description: t('timer_settings.qiyi_warning_desc'),
+				},
+			),
+		);
+	}
+
 	function handleAutoInspectionToggle() {
 		if (stackMatAutoInspection > 0) {
 			setSetting('stackmat_auto_inspection', 0);
 		} else {
 			setSetting('stackmat_auto_inspection', 2);
 			if (!stackMatAutoInspectionWarningShown) {
-				dispatch(openModal(<AutoInspectionWarningModal />));
+				showStackmatWarning();
 			}
+		}
+	}
+
+	function handleQiyiAutoInspectionToggle() {
+		const next = !qiyiAutoInspection;
+		setSetting('qiyi_auto_inspection', next);
+		// Sadece ACILIRKEN uyari, yanlis aliskanlik olmasin
+		if (next && !qiyiAutoInspectionWarningShown) {
+			showQiyiWarning();
 		}
 	}
 
@@ -225,12 +225,6 @@ export default function TimerSettings() {
 					isActive={useSpaceWithSmartCube}
 					onClick={() => toggleSetting('use_space_with_smart_cube')}
 				/>
-				<TimerSettingsToggle
-					label={t('timer_settings.require_period')}
-					description={t('timer_settings.require_period_desc')}
-					isActive={requirePeriod}
-					onClick={() => toggleSetting('require_period_in_manual_time_entry')}
-				/>
 			</TimerSettingsGroup>
 
 			{/* Onaylar */}
@@ -317,6 +311,16 @@ export default function TimerSettings() {
 						{stackMatId ? t('timer_settings.stackmat_change_device') : t('timer_settings.stackmat_select')}
 					</button>
 				</TimerSettingsAction>
+			</TimerSettingsGroup>
+
+			{/* QiYi Timer */}
+			<TimerSettingsGroup id="timer-qiyi" label={t('timer_settings.category_qiyi')}>
+				<TimerSettingsToggle
+					label={t('timer_settings.qiyi_auto_inspection')}
+					description={t('timer_settings.qiyi_auto_inspection_desc')}
+					isActive={qiyiAutoInspection}
+					onClick={handleQiyiAutoInspectionToggle}
+				/>
 			</TimerSettingsGroup>
 		</div>
 	);

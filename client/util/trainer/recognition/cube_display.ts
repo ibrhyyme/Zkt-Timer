@@ -1,0 +1,55 @@
+export interface FaceColor {
+	value: string;
+	name: string;
+}
+
+export type ColorScheme = Record<'U' | 'R' | 'F' | 'D' | 'L' | 'B', FaceColor>;
+
+export interface Rotation {
+	x: number;
+	y: number;
+	z: number;
+}
+
+export const DefaultColorScheme: ColorScheme = {
+	U: {value: '#FFFF00', name: 'YELLOW'},
+	R: {value: '#FF0000', name: 'RED'},
+	F: {value: '#0000FF', name: 'BLUE'},
+	D: {value: '#FFFFFF', name: 'WHITE'},
+	L: {value: '#FFA500', name: 'ORANGE'},
+	B: {value: '#32CD32', name: 'LIGHT_GREEN'},
+};
+
+export const CubeViews: Record<string, Rotation[]> = {
+	Right: [{x: 35, y: 50, z: 29}],
+	Left: [{x: 25, y: 30, z: 13}],
+	Center: [{x: 29, y: 40, z: 20}],
+	'Center (CubeSkills)': [{x: 43, y: 35, z: 29}],
+};
+
+export function topViewAdjustment(puzzleRotations: Rotation[] | undefined): string {
+	const right = CubeViews['Right'][0];
+	const current = puzzleRotations?.[0];
+	if (!current) return '';
+	if (current.x === right.x && current.y === right.y && current.z === right.z) return '';
+	return 'y';
+}
+
+export function randomRotationOffset(baseRotations: Rotation[]): Rotation[] {
+	if (!baseRotations || baseRotations.length === 0) return baseRotations;
+	return baseRotations.map((rot) => ({
+		x: rot.x + (Math.random() * 14 - 7),
+		y: rot.y + (Math.random() * 26 - 13),
+		z: rot.z + (Math.random() * 8 - 4),
+	}));
+}
+
+export const strokeWidthOptions: Record<string, number> = {
+	'0': 0,
+	'1/2': 0.005,
+	'1/4': 0.0025,
+	'1': 0.01,
+	'2': 0.02,
+	'3': 0.03,
+	'4': 0.04,
+};
