@@ -203,6 +203,12 @@ app.get('/.well-known/apple-app-site-association', (req, res) => {
 	res.sendFile('apple-app-site-association', {root: `${__dirname}/../public/.well-known`});
 });
 
+app.get('/.well-known/assetlinks.json', (req, res) => {
+	res.setHeader('Content-Type', 'application/json');
+	res.setHeader('Cache-Control', 'public, max-age=86400');
+	res.sendFile('assetlinks.json', {root: `${__dirname}/../public/.well-known`});
+});
+
 app.get(['/favicon.ico', '/apple-touch-icon.png', '/apple-touch-icon-precomposed.png'], (_req, res) => {
 	res.setHeader('Cache-Control', 'public, max-age=2592000, immutable');
 	res.sendFile('apple-touch-icon.png', {root: `${__dirname}/../public/images`});
