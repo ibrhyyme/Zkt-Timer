@@ -45,7 +45,7 @@ function loadMode(): TrainerMode | null {
 	if (typeof window === 'undefined') return null;
 	try {
 		const raw = localStorage.getItem('trainer_mode');
-		if (raw === 'standard' || raw === 'smart' || raw === 'recognition') return raw;
+		if (raw === 'standard' || raw === 'smart' || raw === 'recognition' || raw === 'efficiency') return raw;
 	} catch {
 		// ignore
 	}

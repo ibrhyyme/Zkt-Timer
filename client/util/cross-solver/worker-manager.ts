@@ -10,6 +10,11 @@ const pendingRequests = new Map<
 	number,
 	{resolve: (results: SolverResult[]) => void; reject: (e: Error) => void}
 >();
+// Easy cross/xcross mask istekleri (getEasyCrossAsync) — ayri pending map (farkli donus tipi)
+const pendingEasy = new Map<
+	number,
+	{resolve: (mask: number[][] | null) => void; reject: (e: Error) => void}
+>();
 let initPromise: Promise<void> | null = null;
 let workerFailed = false;
 
@@ -33,6 +38,16 @@ function getWorker(): Worker | null {
 						pending.resolve(data.results || []);
 					}
 				}
+			} else if ((data as any).cmd === 'easy' && data.id !== undefined) {
+				const pending = pendingEasy.get(data.id);
+				if (pending) {
+					pendingEasy.delete(data.id);
+					if (data.error) {
+						pending.reject(new Error(data.error));
+					} else {
+						pending.resolve((data as any).mask ?? null);
+					}
+				}
 			}
 		};
 
@@ -42,7 +57,11 @@ function getWorker(): Worker | null {
 			for (const [, p] of pendingRequests) {
 				p.reject(new Error('Cross solver worker error: ' + (ev.message || 'unknown')));
 			}
+			for (const [, p] of pendingEasy) {
+				p.reject(new Error('Cross solver worker error: ' + (ev.message || 'unknown')));
+			}
 			pendingRequests.clear();
+			pendingEasy.clear();
 			worker = null;
 		};
 
@@ -97,6 +116,29 @@ export async function solveCrossAsync(
 	return new Promise((resolve, reject) => {
 		pendingRequests.set(id, {resolve, reject});
 		w.postMessage({cmd: 'solve', id, scramble, solverType, orientation});
+	});
+}
+
+/**
+ * Belirli uzunlukta cross/xcross pozisyonu uret → mask [ep,eo(,cp,co)].
+ * solverType: 'cross' | 'xcross'. length: tek deger (tam N icin N*11 gonder).
+ * getAnyScramble'a beslenip gercek WCA scramble'a cevrilir (scrambleFromMaskAsync).
+ */
+export async function getEasyCrossAsync(
+	length: number,
+	solverType: 'cross' | 'xcross'
+): Promise<number[][] | null> {
+	await initCrossSolverWorker();
+
+	const w = getWorker();
+	if (!w) {
+		return null;
+	}
+
+	const id = ++requestId;
+	return new Promise((resolve, reject) => {
+		pendingEasy.set(id, {resolve, reject});
+		w.postMessage({cmd: 'easy', id, solverType, length});
 	});
 }
 

@@ -81,6 +81,7 @@ export default function CreatePresetModal({onSave, onClose}: CreatePresetModalPr
 		<div className={b('preset-modal')}>
 			<input
 				type="text"
+				maxLength={100}
 				placeholder={t('trainer.recognition.preset_custom_name', {defaultValue: 'Preset name'})}
 				value={presetName}
 				onChange={(e) => {

@@ -8,5 +8,11 @@ declare module 'cubing/twisty' {
         controlPanel: string;
         hintFacelets: string;
         backView: string;
+        experimentalSetupAlg: string;
+        experimentalDragInput: string;
+        experimentalStickering: string;
+        experimentalStickeringMaskOrbits: any;
+        tempoScale: number;
+        experimentalAddMove(move: string, options?: {cancel?: boolean}): void;
     }
 }

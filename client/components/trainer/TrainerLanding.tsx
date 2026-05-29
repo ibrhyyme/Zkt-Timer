@@ -1,5 +1,5 @@
 import React from 'react';
-import {BluetoothConnected, Lock, Check, Crown, Timer, Eye} from 'phosphor-react';
+import {BluetoothConnected, Lock, Check, Crown, Timer, Eye, Lightning} from 'phosphor-react';
 import block from '../../styles/bem';
 import {useTrainerContext} from './TrainerContext';
 import {useMe} from '../../util/hooks/useMe';
@@ -32,6 +32,10 @@ export default function TrainerLanding() {
 
 	const handleSelectRecognition = () => {
 		dispatch({type: 'SET_MODE', payload: 'recognition'});
+	};
+
+	const handleSelectEfficiency = () => {
+		dispatch({type: 'SET_MODE', payload: 'efficiency'});
 	};
 
 	return (
@@ -194,7 +198,54 @@ export default function TrainerLanding() {
 					</div>
 				</ElectricBorder>
 
-				{/* Recognition Mode — ucuncu kart, free, basit yapi */}
+				{/* Efficiency Mode — dorduncu kart, free, cross/xcross/eocross verimlilik */}
+					<div
+						className={b('landing-card')}
+						onClick={handleSelectEfficiency}
+						role="button"
+						tabIndex={0}
+						onKeyDown={(e) => e.key === 'Enter' && handleSelectEfficiency()}
+					>
+						<div className={b('landing-card-top')}>
+							<div className={b('landing-card-icon', {green: true})}>
+								<Lightning size={28} weight="duotone" />
+							</div>
+							<h2 className={b('landing-card-name')}>{t('trainer.landing_efficiency_title')}</h2>
+							<p className={b('landing-card-desc')}>{t('trainer.landing_efficiency_desc')}</p>
+						</div>
+
+						<div className={b('landing-card-divider')} />
+
+						<div className={b('landing-card-includes')}>
+							<span className={b('landing-card-includes-label')}>
+								{t('trainer.landing_efficiency_features')}
+							</span>
+							<div className={b('landing-card-features')}>
+								<div className={b('landing-card-feature')}>
+									<Check weight="bold" />
+									<span>{t('trainer.landing_efficiency_feat1')}</span>
+								</div>
+								<div className={b('landing-card-feature')}>
+									<Check weight="bold" />
+									<span>{t('trainer.landing_efficiency_feat2')}</span>
+								</div>
+								<div className={b('landing-card-feature')}>
+									<Check weight="bold" />
+									<span>{t('trainer.landing_efficiency_feat3')}</span>
+								</div>
+								<div className={b('landing-card-feature')}>
+									<Check weight="bold" />
+									<span>{t('trainer.landing_efficiency_feat4')}</span>
+								</div>
+							</div>
+						</div>
+
+						<button type="button" className={b('landing-card-cta')}>
+							{t('trainer.landing_efficiency_title')}
+						</button>
+					</div>
+
+					{/* Recognition Mode — ucuncu kart, free, basit yapi */}
 				<div
 					className={b('landing-card')}
 					onClick={handleSelectRecognition}

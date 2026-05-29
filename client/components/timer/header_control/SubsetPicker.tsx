@@ -1,64 +1,78 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { CaretDown, ArrowDown } from 'phosphor-react';
-import Dropdown from '../../common/inputs/dropdown/Dropdown';
-import { IDropdownOption } from '../../common/inputs/dropdown/dropdown_option/DropdownOption';
+import FancyDropdown, { FancyDropdownGroup } from './FancyDropdown';
 import { ScrambleSubset } from '../../../util/cubes/scramble_subsets';
 
 interface Props {
-    subsets: ScrambleSubset[];
-    selectedSubset?: string | null;
-    onChange: (subset: string | null) => void;
-    mobile?: boolean;
+	subsets: ScrambleSubset[];
+	selectedSubset?: string | null;
+	onChange: (subset: string | null) => void;
+	mobile?: boolean;
 }
 
-export default function SubsetPicker({ subsets, selectedSubset, onChange, mobile }: Props) {
-    const { t } = useTranslation();
+// Radix Select empty string value'ya izin vermiyor — null/'' subset icin virtual value
+const NONE_VALUE = '__default__';
 
-    if (!subsets || subsets.length === 0) return null;
+function toFancyValue(subset: string | null): string {
+	return subset === null || subset === '' ? NONE_VALUE : subset;
+}
 
-    // Find current selection (null ve '' ayni anlama gelir — default subset)
-    const effectiveSelected = selectedSubset ?? '';
-    const currentSubset = subsets.find(s => s.id === effectiveSelected);
+function fromFancyValue(value: string): string | null {
+	return value === NONE_VALUE ? null : value;
+}
 
-    // Translate label: if it's an i18n key (contains dot), translate it; otherwise use as-is
-    function translateLabel(label: string): string {
-        if (label.includes('.')) {
-            return t(label);
-        }
-        return label;
-    }
+export default function SubsetPicker({ subsets, selectedSubset, onChange }: Props) {
+	const { t } = useTranslation();
 
-    // Build options
-    const options: IDropdownOption[] = subsets.map(sub => {
-        const isSelected = !sub.isHeader && sub.id === effectiveSelected;
-        return {
-            text: translateLabel(sub.label),
-            selected: isSelected,
-            header: sub.isHeader,
-            onClick: () => {
-                if (sub.isHeader) return;
+	if (!subsets || subsets.length === 0) return null;
 
-                // Handle "None" or valid ID
-                const val = sub.id === '' ? null : sub.id;
-                onChange(val);
-            }
-        };
-    });
+	const effectiveSelected = selectedSubset ?? '';
 
-    const icon = mobile ? <ArrowDown weight="bold" /> : <CaretDown weight="bold" />;
-    const firstNonHeader = subsets.find(s => !s.isHeader);
-    const displaySubset = currentSubset || firstNonHeader;
-    const text = mobile ? undefined : (displaySubset ? translateLabel(displaySubset.label) : '');
+	function translateLabel(label: string): string {
+		if (label.includes('.')) {
+			return t(label);
+		}
+		return label;
+	}
 
-    return (
-        <Dropdown
-            text={text}
-            icon={icon}
-            options={options}
-            dropdownMaxHeight={300}
-            noMargin
-            openLeft
-        />
-    );
+	// isHeader=true → yeni grup baslangici; isHeader=false → onceki gruba ekle
+	const groups: FancyDropdownGroup[] = [];
+	let currentGroup: FancyDropdownGroup | null = null;
+
+	for (const sub of subsets) {
+		if (sub.isHeader) {
+			currentGroup = { header: translateLabel(sub.label), options: [] };
+			groups.push(currentGroup);
+		} else {
+			if (!currentGroup) {
+				// Header'siz baslangic (default subset gibi)
+				currentGroup = { options: [] };
+				groups.push(currentGroup);
+			}
+			currentGroup.options.push({
+				value: toFancyValue(sub.id),
+				label: translateLabel(sub.label),
+			});
+		}
+	}
+
+	const firstNonHeader = subsets.find(s => !s.isHeader);
+	const currentSubset = subsets.find(s => !s.isHeader && s.id === effectiveSelected);
+	const displaySubset = currentSubset || firstNonHeader;
+	const triggerLabel = displaySubset ? translateLabel(displaySubset.label) : '';
+
+	function handleValueChange(value: string) {
+		onChange(fromFancyValue(value));
+	}
+
+	return (
+		<FancyDropdown
+			value={toFancyValue(effectiveSelected)}
+			onValueChange={handleValueChange}
+			groups={groups}
+			triggerLabel={triggerLabel}
+			ariaLabel="Scramble Subset"
+			maxHeight={400}
+		/>
+	);
 }

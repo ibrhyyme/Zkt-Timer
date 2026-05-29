@@ -104,6 +104,26 @@ export async function generateScrambleAsync(typeId: string, length?: number, sta
 }
 
 /**
+ * Efficiency Faz 3: getEasyCross mask'inden gercek WCA scramble uret (worker'da min2phase).
+ * mask: cross [ep,eo]; xcross [ep,eo,cp,co]. Worker yoksa main thread fallback.
+ */
+export async function scrambleFromCrossMaskAsync(mask: number[][], isXCross: boolean): Promise<string> {
+	await initScrambleWorker();
+
+	const w = getWorker();
+	if (!w) {
+		const { getEasyCrossScramble } = await import('../../shared/scramble/generators/scramble-333');
+		return getEasyCrossScramble(mask, isXCross);
+	}
+
+	const id = ++requestId;
+	return new Promise((resolve, reject) => {
+		pendingRequests.set(id, { resolve, reject });
+		w.postMessage({ cmd: 'fromCrossMask', id, mask, isXCross });
+	});
+}
+
+/**
  * Check if the scramble worker is available and ready.
  */
 export function isScrambleWorkerReady(): boolean {

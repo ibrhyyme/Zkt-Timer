@@ -1,8 +1,9 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {useTranslation} from 'react-i18next';
 import {createPortal} from 'react-dom';
 import {X} from 'phosphor-react';
 import {useQuickControlsModal} from './useQuickControlsModal';
+import {useGeneral} from '../../util/hooks/useGeneral';
 import TimerTab from './tabs/TimerTab';
 import ExtrasTab from './tabs/ExtrasTab';
 import GoalsTab from './tabs/GoalsTab';
@@ -11,6 +12,16 @@ import '../rooms/RoomSettingsModal.scss';
 export default function QuickControlsModal() {
 	const {t} = useTranslation();
 	const {isOpen, activeTab, close, setActiveTab} = useQuickControlsModal();
+	const mobileMode = useGeneral('mobile_mode');
+
+	// Desktop'ta Timer tab artik TimerTypePicker'a tasindi (HeaderControl) —
+	// modal'i sadece Hizli Ayarlar + Hedefler ile actiginda 'timer' tab degil
+	// 'extras' default. Mobile'da modal Timer tab koruyor.
+	useEffect(() => {
+		if (isOpen && !mobileMode && activeTab === 'timer') {
+			setActiveTab('extras');
+		}
+	}, [isOpen, mobileMode, activeTab, setActiveTab]);
 
 	if (!isOpen) {
 		return null;
@@ -27,13 +38,15 @@ export default function QuickControlsModal() {
 			<div className="room-settings-modal" onClick={(e) => e.stopPropagation()}>
 				<div className="room-settings-modal__header">
 					<div className="room-settings-modal__tabs">
-						<button
-							type="button"
-							className={`room-settings-modal__tab ${activeTab === 'timer' ? 'room-settings-modal__tab--active' : ''}`}
-							onClick={() => setActiveTab('timer')}
-						>
-							{t('quick_controls.timer')}
-						</button>
+						{mobileMode && (
+							<button
+								type="button"
+								className={`room-settings-modal__tab ${activeTab === 'timer' ? 'room-settings-modal__tab--active' : ''}`}
+								onClick={() => setActiveTab('timer')}
+							>
+								{t('quick_controls.timer')}
+							</button>
+						)}
 						<button
 							type="button"
 							className={`room-settings-modal__tab ${activeTab === 'extras' ? 'room-settings-modal__tab--active' : ''}`}
@@ -60,7 +73,7 @@ export default function QuickControlsModal() {
 				</div>
 
 				<div className="room-settings-modal__content overflow-y-auto">
-					{activeTab === 'timer' && <TimerTab />}
+					{activeTab === 'timer' && mobileMode && <TimerTab />}
 					{activeTab === 'extras' && <ExtrasTab />}
 					{activeTab === 'goals' && <GoalsTab />}
 				</div>

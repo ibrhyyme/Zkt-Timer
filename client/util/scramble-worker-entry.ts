@@ -7,6 +7,7 @@
  */
 
 import { generateScramble, initScramblers } from '../../shared/scramble';
+import { getEasyCrossScramble } from '../../shared/scramble/generators/scramble-333';
 import type { ScrambleWorkerRequest, ScrambleWorkerResponse, ScrambleWorkerInitResponse } from '../../shared/scramble/types';
 
 // Listen for messages from main thread
@@ -22,6 +23,17 @@ self.onmessage = (e: MessageEvent) => {
 			elapsed: Date.now() - t,
 		};
 		(self as any).postMessage(response);
+		return;
+	}
+
+	if (data.cmd === 'fromCrossMask') {
+		// Efficiency Faz 3: getEasyCross mask → gercek WCA scramble (min2phase)
+		try {
+			const scramble = getEasyCrossScramble(data.mask, data.isXCross);
+			(self as any).postMessage({ cmd: 'generate', id: data.id, scramble });
+		} catch (err) {
+			(self as any).postMessage({ cmd: 'generate', id: data.id, scramble: '', error: err instanceof Error ? err.message : String(err) });
+		}
 		return;
 	}
 

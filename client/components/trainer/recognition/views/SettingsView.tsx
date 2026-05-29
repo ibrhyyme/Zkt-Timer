@@ -130,7 +130,7 @@ export default function SettingsView() {
 			{/* GORSEL KART: form alanlari + canli preview */}
 			<section className={b('settings-card')}>
 				<header className={b('settings-card-header')}>
-					{t('trainer.recognition.settings_card_visual', {defaultValue: 'Görsel'})}
+					{t('trainer.recognition.settings_card_visual', {defaultValue: 'Visual'})}
 				</header>
 				<div className={b('settings-visual')}>
 					<div className={b('settings-visual-form')}>
@@ -217,8 +217,8 @@ export default function SettingsView() {
 							key={opt.key as string}
 							label={opt.label}
 							description={opt.help}
-							checked={Boolean((settings as any)[opt.key])}
-							onChange={(next) => updateSettings({[opt.key]: next} as any)}
+							checked={Boolean(settings[opt.key])}
+							onChange={(next) => updateSettings({[opt.key]: next} as unknown as Partial<typeof settings>)}
 						/>
 					))}
 				</div>
