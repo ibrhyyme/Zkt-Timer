@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { createPortal } from 'react-dom';
-import { X, Lock, Check, Cube } from 'phosphor-react';
+import { X, Lock, Check, Cube, Crown } from 'phosphor-react';
 import Button from '../common/button/Button';
 import { ALLOWED_CUBE_TYPES } from '../../../shared/friendly_room/consts';
 import { getCubeTypeInfoById } from '../../util/cubes/util';
@@ -27,7 +27,8 @@ export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate,
     const [password, setPassword] = useState('');
 
     // Default all allowed if undefined
-    const allTypes = ['keyboard', 'stackmat', 'gantimer', 'smart', 'manual'];
+    const allTypes = ['keyboard', 'stackmat', 'gantimer', 'qiyitimer', 'moyutimer', 'smart', 'manual'];
+    const proTypes = ['gantimer', 'qiyitimer', 'smart'];
     const [allowedTypes, setAllowedTypes] = useState<string[]>(
         currentAllowedTypes && currentAllowedTypes.length > 0 ? currentAllowedTypes : allTypes
     );
@@ -48,6 +49,8 @@ export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate,
             case 'keyboard': return t('rooms.keyboard');
             case 'stackmat': return 'StackMat';
             case 'gantimer': return 'GAN Timer';
+            case 'qiyitimer': return t('rooms.qiyi_timer');
+            case 'moyutimer': return t('rooms.moyu_timer');
             case 'smart': return t('rooms.smart_cube');
             case 'manual': return t('rooms.manual_entry');
             default: return type;
@@ -147,8 +150,14 @@ export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate,
                                         : 'bg-module border-text/[0.1] hover:border-text/[0.2]'
                                         }`}
                                 >
-                                    <span className={`text-sm font-medium ${allowedTypes.includes(type) ? 'text-blue-200' : 'text-text/50'}`}>
+                                    <span className={`text-sm font-medium flex items-center gap-2 ${allowedTypes.includes(type) ? 'text-blue-200' : 'text-text/50'}`}>
                                         {getTypeName(type)}
+                                        {proTypes.includes(type) && (
+                                            <span className="text-[10px] text-primary bg-primary/10 px-1.5 py-0.5 rounded flex items-center gap-1 font-bold">
+                                                <Crown size={10} weight="fill" />
+                                                Pro
+                                            </span>
+                                        )}
                                     </span>
                                     <div className={`w-5 h-5 rounded flex items-center justify-center transition-colors ${allowedTypes.includes(type) ? 'bg-blue-500 text-white' : 'bg-gray-800'
                                         }`}>

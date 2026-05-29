@@ -1417,6 +1417,8 @@
         "allowed_timer_types": "允许的计时器类型",
         "keyboard": "键盘",
         "smart_cube": "智能魔方",
+        "qiyi_timer": "QiYi 计时器",
+        "moyu_timer": "MoYu 计时器",
         "manual_entry": "手动输入",
         "cancel": "取消",
         "save": "保存",
@@ -1470,6 +1472,8 @@
         "connect_smart_cube": "连接智能魔方",
         "cube_connected": "魔方已连接",
         "connect_cube": "连接魔方",
+        "connect_qiyi_timer": "连接 QiYi 计时器",
+        "qiyi_timer_connected": "QiYi 计时器已连接",
         "next_scramble_tooltip": "将所有人移至下一个打乱",
         "new_scramble": "新打乱",
         "scramble": "打乱",
@@ -2194,7 +2198,12 @@
         "smart_cube": "智能魔方",
         "smart_cube_3x3_only": "智能魔方仅支持3x3x3",
         "not_supported_in_room": "房间内暂不支持",
-        "use_keyboard_or_manual": "使用键盘或手动输入"
+        "use_keyboard_or_manual": "使用键盘或手动输入",
+        "qiyi_smart_timer": "QiYi 智能计时器",
+        "place_hands_on_qiyi": "将双手放在 QiYi 计时器上开始",
+        "connect_qiyi_in_header": "从顶部菜单连接 QiYi 计时器",
+        "moyu_timer": "MoYu 计时器",
+        "place_hands_on_moyu": "将双手放在 MoYu 计时器上开始"
     },
     "smart_cube": {
         "manage_smart_cubes": "管理智能魔方",

@@ -13,7 +13,7 @@ type Step = 'found' | 'paired' | 'reading_service' | 'done';
 type StepStatus = 'pending' | 'active' | 'done';
 
 interface BleScanningModalProps {
-	mode: 'smartcube' | 'gantimer';
+	mode: 'smartcube' | 'gantimer' | 'qiyitimer';
 	onCancel: () => void;
 	onRetry?: () => void;
 	onClose?: () => void;

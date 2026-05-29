@@ -37,6 +37,7 @@ import { getTimeString, convertTimeStringToSeconds } from '../../util/time';
 import { toastError } from '../../util/toast';
 import { resourceUri } from '../../util/storage';
 import { connectGanTimer, GanTimerConnection } from '../timer/time_display/gantimer/ganTimerConnection';
+import { connectQiyiTimer, QiyiTimerConnection } from '../timer/time_display/qiyitimer/qiyiTimerConnection';
 import { openModal, closeModal } from '../../actions/general';
 import BleScanningModal from '../timer/smart_cube/ble_scanning_modal/BleScanningModal';
 import { isNative } from '../../util/platform';
@@ -101,6 +102,7 @@ export default function FriendlyRoom() {
     useEffect(() => {
         return () => {
             disconnectSmartCube();
+            disconnectQiyiTimer();
         };
     }, []);
 
@@ -156,8 +158,8 @@ export default function FriendlyRoom() {
         // Check if allowed
         if (room.allowed_timer_types.length > 0 && !room.allowed_timer_types.includes(currentTypeKey)) {
             // Find first allowed valid type to switch to
-            // Priority: keyboard -> manual -> stackmat -> smart -> gantimer
-            const allTypes = ['keyboard', 'manual', 'stackmat', 'smart', 'gantimer'];
+            // Priority: keyboard -> manual -> stackmat -> moyutimer -> smart -> gantimer -> qiyitimer
+            const allTypes = ['keyboard', 'manual', 'stackmat', 'moyutimer', 'smart', 'gantimer', 'qiyitimer'];
             const targetType = allTypes.find(t => room.allowed_timer_types.includes(t)) || room.allowed_timer_types[0];
 
             if (targetType === 'manual') {
@@ -193,12 +195,22 @@ export default function FriendlyRoom() {
             disconnectSmartCube();
         }
 
+        // QiYi: tur degisiminde disconnect
+        if (prevTimerTypeRef.current === 'qiyitimer' && timerType !== 'qiyitimer') {
+            disconnectQiyiTimer();
+        }
+
         // Şimdiki timer türünü kaydet
         prevTimerTypeRef.current = timerType;
     }, [timerType]);
 
     const [ganTimerConnecting, setGanTimerConnecting] = useState(false);
     const ganTimerRef = useRef<GanTimerConnection | null>(null);
+
+    // QiYi Timer connection state
+    const [qiyiTimerConnected, setQiyiTimerConnected] = useState(false);
+    const [qiyiTimerConnecting, setQiyiTimerConnecting] = useState(false);
+    const qiyiTimerRef = useRef<QiyiTimerConnection | null>(null);
 
     const handleConnectGanTimer = async () => {
         if (ganTimerConnecting) return;
@@ -244,6 +256,52 @@ export default function FriendlyRoom() {
             ganTimerRef.current = null;
         }
         setGanTimerConnected(false);
+    };
+
+    const handleConnectQiyiTimer = async () => {
+        if (qiyiTimerConnecting) return;
+        setQiyiTimerConnecting(true);
+
+        if (isNative()) {
+            dispatch(openModal(
+                <BleScanningModal
+                    mode="qiyitimer"
+                    onCancel={() => {
+                        dispatch(closeModal());
+                        setQiyiTimerConnecting(false);
+                    }}
+                />,
+                {
+                    position: 'bottom',
+                    hideCloseButton: true,
+                    disableBackdropClick: true,
+                }
+            ));
+        }
+
+        try {
+            const conn = await connectQiyiTimer();
+            if (isNative()) {
+                dispatch(closeModal());
+            }
+            qiyiTimerRef.current = conn;
+            setQiyiTimerConnected(true);
+        } catch (err) {
+            console.error('QiYi Timer connection failed:', err);
+            if (isNative()) {
+                dispatch(closeModal());
+            }
+        } finally {
+            setQiyiTimerConnecting(false);
+        }
+    };
+
+    const disconnectQiyiTimer = () => {
+        if (qiyiTimerRef.current) {
+            qiyiTimerRef.current.disconnect();
+            qiyiTimerRef.current = null;
+        }
+        setQiyiTimerConnected(false);
     };
 
     // Smart Cube connection state - read from Redux store
@@ -722,6 +780,7 @@ export default function FriendlyRoom() {
             // BLE bagliysa serbest birak ki yeni cihaz bagli kup ile baglanabilsin
             try { disconnectSmartCube(); } catch { /* zaten kapali olabilir */ }
             try { disconnectGanTimer(); } catch { /* zaten kapali olabilir */ }
+            try { disconnectQiyiTimer(); } catch { /* zaten kapali olabilir */ }
             setTakenOver(true);
             setLoading(false);
         });
@@ -1362,6 +1421,28 @@ export default function FriendlyRoom() {
                             </button>
                         )}
 
+                        {/* Bluetooth Connect Button for QiYi Timer */}
+                        {timerType === 'qiyitimer' && (
+                            <button
+                                onClick={qiyiTimerConnected ? disconnectQiyiTimer : handleConnectQiyiTimer}
+                                disabled={qiyiTimerConnecting}
+                                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded transition-all ${qiyiTimerConnected
+                                    ? 'bg-green-500 hover:bg-green-600 text-white'
+                                    : qiyiTimerConnecting
+                                        ? 'bg-blue-400 text-white cursor-wait'
+                                        : 'bg-blue-500 hover:bg-blue-600 text-white'
+                                    }`}
+                                title={qiyiTimerConnected ? t('rooms.disconnect') : t('rooms.connect_qiyi_timer')}
+                            >
+                                {qiyiTimerConnected ? (
+                                    <BluetoothConnected size={16} weight="bold" />
+                                ) : (
+                                    <Bluetooth size={16} weight="bold" />
+                                )}
+                                <span className="hidden md:inline">{qiyiTimerConnecting ? t('rooms.connecting') : qiyiTimerConnected ? t('rooms.qiyi_timer_connected') : t('rooms.connect_qiyi_timer')}</span>
+                            </button>
+                        )}
+
                         {/* Bluetooth Connect Button for Smart Cube */}
                         {timerType === 'smart' && (
                             <button
@@ -1956,6 +2037,8 @@ export default function FriendlyRoom() {
                 smartStats={smartStats || undefined}
                 warning={smartWarning}
                 isMobile={isMobile}
+                qiyiTimerRef={qiyiTimerRef}
+                qiyiTimerConnected={qiyiTimerConnected}
             />
 
             {/* Settings Modal */}
