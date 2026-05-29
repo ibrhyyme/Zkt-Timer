@@ -1690,7 +1690,7 @@ export default function RoomTimerOverlay({
                                 >
                                     {smartInspectionTime <= -2 ? 'DNF' :
                                         smartInspectionTime <= 0 ? '+2' :
-                                            (smartInspectionTime).toFixed(dp)}
+                                            truncateToDp(smartInspectionTime, dp)}
                                 </div>
                             ) : (
                                 <div className="room-timer-overlay__time">
@@ -1719,7 +1719,14 @@ export default function RoomTimerOverlay({
     );
 }
 
-// Helper function for time formatting
+// Helper function for time formatting.
+// Cubing standardi: truncation (kesim) — yuvarlama YOK. 6.705 dp=2 ile -> "6.70".
+// Pattern: bir fazla ondalik basamak al, son karakteri kes (getTimeString ile ayni).
+function truncateToDp(value: number, dp: number): string {
+    if (dp === 0) return Math.floor(value).toString();
+    return value.toFixed(dp + 1).slice(0, -1);
+}
+
 function formatTime(ms: number, dp: number = 2): string {
     if (ms < 0) ms = 0;
 
@@ -1727,11 +1734,13 @@ function formatTime(ms: number, dp: number = 2): string {
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
 
+    const secondsStr = truncateToDp(seconds, dp);
+
     if (minutes > 0) {
-        return `${minutes}:${seconds.toFixed(dp).padStart(dp + 3, '0')}`;
+        return `${minutes}:${secondsStr.padStart(dp + 3, '0')}`;
     }
 
-    return seconds.toFixed(dp);
+    return secondsStr;
 }
 
 

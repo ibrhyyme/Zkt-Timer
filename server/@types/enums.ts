@@ -2,6 +2,7 @@ export enum NotificationType {
 	NEW_USER_SIGNUP = 'new_user_signup',
 	MEMBERSHIP_GRANTED = 'membership_granted',
 	ADMIN_PRO_PURCHASE = 'admin_pro_purchase',
+	ADMIN_PRO_CANCELLATION = 'admin_pro_cancellation',
 	ADMIN_SUPPORT_TICKET = 'admin_support_ticket',
 	SUPPORT_TICKET_REPLY = 'support_ticket_reply',
 	ADMIN_SUPPORT_TICKET_REPLY = 'admin_support_ticket_reply',
