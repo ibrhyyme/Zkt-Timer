@@ -105,4 +105,22 @@
 			}
 		}
 	}
+
+	// Masaustu: nav zaten aktif sayfayi gosterdigi icin baslik tekrari gereksiz.
+	// Mobil override'in (max-width:768px / max-height:500px) tam tumleyeni kullanilir
+	// ki landscape/kisa ekranlarda yanlislikla tetiklenmesin.
+	// NOT: &__title / &__lines tanimlarindan SONRA gelmeli — esit specificity'de
+	// kaynak sirasinda sonraki kazanir, yoksa display:flex bizim display:none'i ezer.
+	@media (min-width: 769px) and (min-height: 501px) {
+		&__title,
+		&__lines {
+			display: none;
+		}
+
+		// Baslik blogu gidince bos sticky serit/gap kalmasin.
+		// margin-top:0 -> Wrapper'in dogal --wrapper-padding ust boslugu geri gelir = nefes payi.
+		margin-top: 0;
+		padding-top: 0;
+		padding-bottom: 0;
+	}
 }

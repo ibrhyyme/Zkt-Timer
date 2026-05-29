@@ -15,10 +15,11 @@ interface Props {
 	children: ReactNode;
 	rowSpan?: number | string;
 	colSpan?: number | string;
+	headerAction?: ReactNode;
 }
 
 export default function StatSection(props: Props) {
-	const {title, minWidth, proOnly, description, children, className, rowSpan, colSpan} = props;
+	const {title, minWidth, proOnly, description, children, className, rowSpan, colSpan, headerAction} = props;
 
 	let desc = null;
 	if (description) {
@@ -39,8 +40,11 @@ export default function StatSection(props: Props) {
 	return (
 		<div className={b.mix(className)} style={style}>
 			<div className={b('header')}>
-				<h2>{title}</h2>
-				{desc}
+				<div className={b('header-main')}>
+					<h2>{title}</h2>
+					{desc}
+				</div>
+				{headerAction ? <div className={b('header-action')}>{headerAction}</div> : null}
 			</div>
 			{children}
 		</div>

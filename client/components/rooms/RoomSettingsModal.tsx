@@ -59,7 +59,7 @@ export default function RoomSettingsModal({ isOpen, onClose, allowedTimerTypes, 
 
                 <div className="room-settings-modal__content overflow-y-auto max-h-[70vh] px-2">
                     {activeTab === 'timer' && <TimerTab allowedTimerTypes={allowedTimerTypes} requireProForSmart={requireProForSmart} />}
-                    {activeTab === 'extras' && <ExtrasTab />}
+                    {activeTab === 'extras' && <ExtrasTab hideMobileModules hideSmartCubeFeatures />}
                 </div>
             </div>
         </div>,

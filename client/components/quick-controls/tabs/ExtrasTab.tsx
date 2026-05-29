@@ -172,7 +172,17 @@ function ExtrasSelect({ label, value, options, hidden, openUp, onChange }: Extra
 	);
 }
 
-export default function ExtrasTab() {
+interface ExtrasTabProps {
+	// FriendlyRoom (oda) icinden acildiginda mobile timer modul secicilerini gizle.
+	// Bu modul ayari Timer sayfasinin mobil gorunumu icin — odanin kendi layout'u var.
+	hideMobileModules?: boolean;
+	// FriendlyRoom'da smart cube'a ozgu ayarlari (multi-phase analiz, tanima sureleri)
+	// gizle — odanin smart cube akisi LiveAnalysisOverlay'i ve recognition'u kullanmiyor,
+	// bu yuzden ayarlar etkisiz kalir.
+	hideSmartCubeFeatures?: boolean;
+}
+
+export default function ExtrasTab({ hideMobileModules = false, hideSmartCubeFeatures = false }: ExtrasTabProps = {}) {
 	const { t } = useTranslation();
 	const inspection = useSettings('inspection');
 	const hideTimeWhenSolving = useSettings('hide_time_when_solving');
@@ -206,7 +216,7 @@ export default function ExtrasTab() {
 		{
 			label: t('quick_controls.show_recognition_split'),
 			isActive: !!showRecognition,
-			hidden: timerType !== 'smart',
+			hidden: timerType !== 'smart' || hideSmartCubeFeatures,
 			onClick: () => toggleSetting('smart_cube_show_recognition'),
 		},
 	];
@@ -275,7 +285,7 @@ export default function ExtrasTab() {
 				label={t('quick_controls.multi_phase')}
 				value={analysisMode || 'none'}
 				options={analysisOptions}
-				hidden={timerType !== 'smart'} // Only show if Smart Cube is selected
+				hidden={timerType !== 'smart' || hideSmartCubeFeatures}
 				openUp
 				onChange={(val) => setSetting('smart_cube_analysis_mode', val)}
 			/>
@@ -284,7 +294,7 @@ export default function ExtrasTab() {
 				label={t('mobile_modules.slot_left')}
 				value={slot0}
 				options={moduleOptions(0)}
-				hidden={!mobileMode}
+				hidden={!mobileMode || hideMobileModules}
 				openUp
 				onChange={(val) => handleModuleChange(0, val)}
 			/>
@@ -293,7 +303,7 @@ export default function ExtrasTab() {
 				label={t('mobile_modules.slot_right')}
 				value={slot1}
 				options={moduleOptions(1)}
-				hidden={!mobileMode}
+				hidden={!mobileMode || hideMobileModules}
 				openUp
 				onChange={(val) => handleModuleChange(1, val)}
 			/>

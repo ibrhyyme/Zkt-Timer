@@ -18,6 +18,7 @@ import {gql, useQuery} from '@apollo/client';
 import {Stats as StatsSchema} from '../../@types/generated/graphql';
 import {STATS_FRAGMENT} from '../../util/graphql/fragments';
 import {useMe} from '../../util/hooks/useMe';
+import {useGeneral} from '../../util/hooks/useGeneral';
 import {useTranslation} from 'react-i18next';
 import {StatsView} from './cube_stats/view_toggle/StatsViewToggle';
 
@@ -60,6 +61,7 @@ export const StatsContext = createContext<IStatsContext>(null);
 export default function Stats() {
 	const {t} = useTranslation();
 	const me = useMe();
+	const mobileMode = useGeneral('mobile_mode');
 
 	const {data: statsData} = useQuery<StatsQueryData>(STATS_QUERY, {
 		fetchPolicy: 'no-cache',
@@ -244,13 +246,6 @@ export default function Stats() {
 		}));
 	}, [subsetsForCurrentCube, tabSubset, tabCubeType]);
 
-	// Mod 2 (cube secili, subset null) artik mumkun degil — auto-redirect oncesi gecici frame'de
-	// "AllStats" yerine bos render'a dusmemek icin: subset henuz set olmadiysa AllStats goster.
-	let body = <AllStats />;
-	if (!all) {
-		body = <CubeStats />;
-	}
-
 	const context: IStatsContext = {
 		all,
 		cubeType: getCubeTypeInfoById(tabCubeType),
@@ -263,7 +258,7 @@ export default function Stats() {
 
 	const lastNDropdownText = useMemo(() => {
 		if (tabLastN == null) return t('stats.last_n.all');
-		return t('stats.last_n.option', {count: tabLastN.toLocaleString()});
+		return t('stats.last_n.option', {value: tabLastN.toLocaleString()});
 	}, [tabLastN, t]);
 
 	const lastNOptions: IDropdownOption[] = useMemo(() => {
@@ -276,7 +271,7 @@ export default function Stats() {
 		];
 		for (const n of LAST_N_OPTIONS) {
 			opts.push({
-				text: t('stats.last_n.option', {count: n.toLocaleString()}),
+				text: t('stats.last_n.option', {value: n.toLocaleString()}),
 				selected: tabLastN === n,
 				onClick: () => navigateToLastN(n),
 			});
@@ -321,18 +316,25 @@ export default function Stats() {
 		/>
 	);
 
+	// "Tumu" gorunumu: masaustunde baslik tekrar oldugu icin HeroBand'i gizle, filtreleri
+	// "Genel Bakis" basliginin yanina tasi (AllStats'a prop ile). Mobilde HeroBand korunur
+	// (konum isareti + gomulu nav/avatar). Kup gorunumu (CubeStatHero) bilgi tasidigi icin degismez.
 	return (
 		<StatsContext.Provider value={context}>
 			<div className={b()}>
 				<div className={b('shell')}>
 					{all ? (
-						<HeroBand title={t('stats.hero.title')} subtitle={t('stats.hero.subtitle')}>
-							{filtersBody}
-						</HeroBand>
+						mobileMode ? (
+							<HeroBand title={t('stats.hero.title')} subtitle={t('stats.hero.subtitle')}>
+								{filtersBody}
+							</HeroBand>
+						) : null
 					) : (
 						<CubeStatHero>{filtersBody}</CubeStatHero>
 					)}
-					{body}
+					{/* Mod 2 (cube secili, subset null) artik mumkun degil — auto-redirect oncesi
+					    gecici frame'de bos render'a dusmemek icin: subset henuz set olmadiysa AllStats goster. */}
+					{all ? <AllStats filters={mobileMode ? null : filtersBody} /> : <CubeStats />}
 				</div>
 			</div>
 		</StatsContext.Provider>
