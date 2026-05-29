@@ -61,12 +61,15 @@ export default function EmailVerification() {
 		setError('');
 		try {
 			await verifyCode({variables: {email, code: full, language: i18n.language}});
+			// hold the merged/verifying band briefly before the success screen
+			await new Promise((r) => setTimeout(r, 850));
 			setStatus('success');
 			localStorage.setItem('zkt_has_auth', 'true');
 			setTimeout(() => {
 				window.location.href = getRedirectLink();
 			}, 1200);
 		} catch (e) {
+			await new Promise((r) => setTimeout(r, 500));
 			setStatus('error');
 			setError(e.message);
 			setTimeout(() => {

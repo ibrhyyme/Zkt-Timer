@@ -2351,6 +2351,7 @@
         "email_verified": "Your account is verified, redirecting…",
         "password_updated": "Your password has been updated, redirecting…",
         "forgot_email_sub": "Enter your account email and we'll send you a 6-character recovery code.",
+        "code_verified": "Code verified",
         "pw_levels": ["Very weak", "Weak", "Fair", "Good", "Strong"]
     },
     "email_verification": {

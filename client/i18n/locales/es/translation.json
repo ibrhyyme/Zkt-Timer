@@ -2351,6 +2351,7 @@
         "email_verified": "Tu cuenta está verificada, redirigiendo…",
         "password_updated": "Tu contraseña se ha actualizado, redirigiendo…",
         "forgot_email_sub": "Introduce el correo de tu cuenta y te enviaremos un código de recuperación de 6 caracteres.",
+        "code_verified": "Código verificado",
         "pw_levels": ["Muy débil", "Débil", "Media", "Buena", "Fuerte"]
     },
     "email_verification": {
