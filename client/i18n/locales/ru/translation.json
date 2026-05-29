@@ -1417,6 +1417,8 @@
         "allowed_timer_types": "Разрешённые типы таймера",
         "keyboard": "Клавиатура",
         "smart_cube": "Умный куб",
+        "qiyi_timer": "QiYi Timer",
+        "moyu_timer": "MoYu Timer",
         "manual_entry": "Ручной ввод",
         "cancel": "Отмена",
         "save": "Сохранить",
@@ -1470,6 +1472,8 @@
         "connect_smart_cube": "Подключить умный куб",
         "cube_connected": "Куб подключён",
         "connect_cube": "Подключить куб",
+        "connect_qiyi_timer": "Подключить QiYi Timer",
+        "qiyi_timer_connected": "QiYi Timer подключён",
         "next_scramble_tooltip": "Перевести всех на следующий скрамбл",
         "new_scramble": "Новый скрамбл",
         "scramble": "Скрамбл",
@@ -2194,7 +2198,12 @@
         "smart_cube": "Умный куб",
         "smart_cube_3x3_only": "Умный куб поддерживается только для 3x3x3",
         "not_supported_in_room": "В данный момент не поддерживается в комнатах",
-        "use_keyboard_or_manual": "Используйте клавиатуру или ручной ввод"
+        "use_keyboard_or_manual": "Используйте клавиатуру или ручной ввод",
+        "qiyi_smart_timer": "QiYi Smart Timer",
+        "place_hands_on_qiyi": "Положите руки на QiYi таймер, чтобы начать",
+        "connect_qiyi_in_header": "Подключите QiYi Timer из верхнего меню",
+        "moyu_timer": "MoYu Timer",
+        "place_hands_on_moyu": "Положите руки на MoYu таймер, чтобы начать"
     },
     "smart_cube": {
         "manage_smart_cubes": "Управление умными кубами",

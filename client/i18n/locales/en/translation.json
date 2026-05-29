@@ -1417,6 +1417,8 @@
         "allowed_timer_types": "Allowed Timer Types",
         "keyboard": "Keyboard",
         "smart_cube": "Smart Cube",
+        "qiyi_timer": "QiYi Timer",
+        "moyu_timer": "MoYu Timer",
         "manual_entry": "Manual Entry",
         "cancel": "Cancel",
         "save": "Save",
@@ -1470,6 +1472,8 @@
         "connect_smart_cube": "Connect Smart Cube",
         "cube_connected": "Cube Connected",
         "connect_cube": "Connect Cube",
+        "connect_qiyi_timer": "Connect QiYi Timer",
+        "qiyi_timer_connected": "QiYi Timer Connected",
         "next_scramble_tooltip": "Move everyone to the next scramble",
         "new_scramble": "New Scramble",
         "scramble": "Scramble",
@@ -2194,7 +2198,12 @@
         "smart_cube": "Smart Cube",
         "smart_cube_3x3_only": "Smart cube is only supported for 3x3x3",
         "not_supported_in_room": "Not currently supported in rooms",
-        "use_keyboard_or_manual": "Use keyboard or manual entry"
+        "use_keyboard_or_manual": "Use keyboard or manual entry",
+        "qiyi_smart_timer": "QiYi Smart Timer",
+        "place_hands_on_qiyi": "Place your hands on the QiYi timer to start",
+        "connect_qiyi_in_header": "Connect QiYi Timer from the header menu",
+        "moyu_timer": "MoYu Timer",
+        "place_hands_on_moyu": "Place your hands on the MoYu timer to start"
     },
     "smart_cube": {
         "manage_smart_cubes": "Manage Smart Cubes",

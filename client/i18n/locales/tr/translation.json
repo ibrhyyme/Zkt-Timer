@@ -1417,6 +1417,8 @@
         "allowed_timer_types": "İzin Verilen Timer Türleri",
         "keyboard": "Klavye",
         "smart_cube": "Akıllı Küp",
+        "qiyi_timer": "QiYi Timer",
+        "moyu_timer": "MoYu Timer",
         "manual_entry": "Manuel Giriş",
         "cancel": "İptal",
         "save": "Kaydet",
@@ -1470,6 +1472,8 @@
         "connect_smart_cube": "Akıllı Küp Bağla",
         "cube_connected": "Küp Bağlı",
         "connect_cube": "Küp Bağla",
+        "connect_qiyi_timer": "QiYi Timer Bağla",
+        "qiyi_timer_connected": "QiYi Timer Bağlı",
         "next_scramble_tooltip": "Herkesi bir sonraki karıştırmaya geçir",
         "new_scramble": "Yeni Karıştırma",
         "scramble": "Karıştır",
@@ -2194,7 +2198,12 @@
         "smart_cube": "Akıllı Küp",
         "smart_cube_3x3_only": "Akıllı küp sadece 3x3x3 için destekleniyor",
         "not_supported_in_room": "Şu an oda içinde desteklenmiyor",
-        "use_keyboard_or_manual": "Klavye veya manuel giriş kullanın"
+        "use_keyboard_or_manual": "Klavye veya manuel giriş kullanın",
+        "qiyi_smart_timer": "QiYi Akıllı Timer",
+        "place_hands_on_qiyi": "QiYi timer'a ellerinizi koyarak başlayın",
+        "connect_qiyi_in_header": "Üst menüden QiYi Timer'a bağlanın",
+        "moyu_timer": "MoYu Timer",
+        "place_hands_on_moyu": "MoYu timer'a ellerinizi koyarak başlayın"
     },
     "smart_cube": {
         "manage_smart_cubes": "Akıllı küpleri yönet",

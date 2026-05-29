@@ -8,6 +8,7 @@ import { openModal, closeModal } from '../../actions/general';
 import { Bluetooth, Timer, Keyboard, X, Check } from 'phosphor-react';
 import Stackmat from '../../util/vendor/stackmat';
 import { GanTimerConnection, GanTimerEvent, GanTimerState, connectGanTimer } from '../timer/time_display/gantimer/ganTimerConnection';
+import { QiyiTimerConnection, QiyiTimerEvent, QiyiTimerState, connectQiyiTimer } from '../timer/time_display/qiyitimer/qiyiTimerConnection';
 import BluetoothErrorMessage from '../timer/common/BluetoothErrorMessage';
 import BleScanningModal from '../timer/smart_cube/ble_scanning_modal/BleScanningModal';
 import { isNative } from '../../util/platform';
@@ -53,6 +54,13 @@ interface RoomTimerOverlayProps {
     smartStats?: { turns: number; tps: number };
     warning?: string;
     isMobile?: boolean;
+    // QiYi Timer connection ref'i FriendlyRoom'dan paylasilir (header buton ile
+    // bagliyorsun, overlay event'leri buradan dinler). GAN Timer da ayni patternde
+    // olmali fakat mevcut yapida ayri ref var — QiYi'yi temiz pattern ile ekliyoruz.
+    qiyiTimerRef?: React.MutableRefObject<QiyiTimerConnection | null>;
+    // Parent'in QiYi connected state'i: useEffect'in re-run icin trigger
+    // (ref degisikligi React'i tetiklemez, bu prop tetikler)
+    qiyiTimerConnected?: boolean;
 }
 
 // Module-scoped GAN Timer connection
@@ -77,6 +85,8 @@ export default function RoomTimerOverlay({
     smartStats,
     warning,
     isMobile = false,
+    qiyiTimerRef: parentQiyiTimerRef,
+    qiyiTimerConnected: parentQiyiTimerConnected = false,
 }: RoomTimerOverlayProps) {
     const dispatch = useDispatch();
     const { t } = useTranslation();
@@ -103,8 +113,14 @@ export default function RoomTimerOverlay({
 
     // Device connection states
     const [ganTimerConnected, setGanTimerConnected] = useState(false);
+    // QiYi connected state'i parent (FriendlyRoom) yonetiyor — prop ile alinir
+    const qiyiTimerConnected = parentQiyiTimerConnected;
     const [stackmatConnected, setStackmatConnected] = useState(false);
     const ganTimerRef = useRef<GanTimerConnection | null>(null);
+    // QiYi Timer connection ref'i: parent'tan (FriendlyRoom) prop ile geliyorsa onu kullan,
+    // yoksa lokal fallback (overlay icinde direkt baglanma — su an dead code).
+    const localQiyiTimerRef = useRef<QiyiTimerConnection | null>(null);
+    const qiyiTimerRef = parentQiyiTimerRef ?? localQiyiTimerRef;
 
     const timerRef = useRef<NodeJS.Timeout | null>(null);
     const keyIsDown = useRef(false);
@@ -252,6 +268,67 @@ export default function RoomTimerOverlay({
 
         return () => subscription?.unsubscribe();
     }, [timerType, isActive, handleGanTimerEvent]);
+
+    // QiYi Timer event handler — GAN ile ayni state machine (state ID'leri identical),
+    // INSPECTION case'i ignore edilir (cihaz auto-inspection oda akisiyla uyumsuz).
+    const handleQiyiTimerEvent = useCallback((event: QiyiTimerEvent) => {
+        switch (event.state) {
+            case QiyiTimerState.HANDS_ON:
+                if (statusRef.current === STATUS.RESTING) {
+                    setStatus(STATUS.PRIMING);
+                } else if (statusRef.current === STATUS.INSPECTING) {
+                    setStatus(STATUS.INSPECTING_PRIMING);
+                }
+                break;
+            case QiyiTimerState.HANDS_OFF:
+                if (statusRef.current === STATUS.PRIMING) {
+                    if (effectiveInspection) {
+                        startInspection();
+                    }
+                }
+                break;
+            case QiyiTimerState.GET_SET:
+                break;
+            case QiyiTimerState.RUNNING:
+                // QiYi cihaz solve sirasinda her ~2s'de bir RUNNING event'i yayinliyor
+                // (cstimer protokolu canli sure update'i icin). Sadece ilk RUNNING'de
+                // startTiming() cagir — sonrakileri ignore et, yoksa timer sifirlanir.
+                if (statusRef.current !== STATUS.TIMING) {
+                    startTiming();
+                }
+                break;
+            case QiyiTimerState.STOPPED:
+                if (event.recordedTime) {
+                    setTime(event.recordedTime.asTimestamp);
+                }
+                stopTimer();
+                break;
+            case QiyiTimerState.IDLE:
+                if (!effectiveInspection || statusRef.current === STATUS.INSPECTING) {
+                    // Timer ready
+                } else if (statusRef.current === STATUS.RESTING) {
+                    startInspection();
+                }
+                break;
+            case QiyiTimerState.DISCONNECT:
+                // Parent (FriendlyRoom) zaten DISCONNECT'i kendi events$ listener'inde
+                // yakaliyor — ref'i null'lamak ve UI state'i o tarafa birakiliyor.
+                break;
+        }
+    }, [effectiveInspection]);
+
+    // Subscribe to QiYi Timer events
+    // Dependency'ye parentQiyiTimerConnected eklenir cunku ref degisikligi useEffect'i
+    // tetiklemez — parent connect oldugunda bu prop true olur ve subscription yapilir.
+    useEffect(() => {
+        if (timerType !== 'qiyitimer' || !isActive) return;
+
+        const conn = qiyiTimerRef.current;
+        if (!conn) return;
+        const subscription = conn.events$.subscribe(handleQiyiTimerEvent);
+
+        return () => subscription?.unsubscribe();
+    }, [timerType, isActive, handleQiyiTimerEvent, parentQiyiTimerConnected]);
 
     const now = () => performance.now();
 
@@ -408,15 +485,19 @@ export default function RoomTimerOverlay({
     }, [onRedo]);
 
     const connectStackmat = useCallback(async () => {
-        if (timerType !== 'stackmat' || !isActive) return;
+        if (timerType !== 'stackmat' && timerType !== 'moyutimer') return;
+        if (!isActive) return;
 
         // Ensure stackmat instance exists
         if (!stackmatRef.current) {
             stackmatRef.current = new Stackmat();
         }
 
+        // MoYu Timer = StackMat audio protocol mode='m' (8 kHz BCD), StackMat mode=''
+        const stackmatMode = timerType === 'moyutimer' ? 'm' : '';
+
         try {
-            await stackmatRef.current.init('', stackmatId || '', false, (timerState) => {
+            await stackmatRef.current.init(stackmatMode, stackmatId || '', false, (timerState) => {
                 const now = performance.now();
 
                 // This callback runs on every signal packet
@@ -444,13 +525,22 @@ export default function RoomTimerOverlay({
 
     // Auto-connect attempts logic
     useEffect(() => {
-        if (timerType === 'stackmat' && isActive && !stackmatConnected && stackmatId) {
+        const isStackmatLike = timerType === 'stackmat' || timerType === 'moyutimer';
+        if (isStackmatLike && isActive && !stackmatConnected && stackmatId) {
             const timeout = setTimeout(() => {
                 connectStackmat().catch(err => console.error("Auto connect failed", err));
             }, 500);
             return () => clearTimeout(timeout);
         }
     }, [timerType, isActive, stackmatId, connectStackmat, stackmatConnected]);
+
+    // Mode degisiminde (StackMat <-> MoYu) reinit gerek — stackmatRef'i sifirla
+    useEffect(() => {
+        if (stackmatRef.current) {
+            stackmatRef.current = null;
+            setStackmatConnected(false);
+        }
+    }, [timerType]);
 
     // Keyboard/Touch timer controls
     const simulateSpaceDown = useCallback((stopTs?: number) => {
@@ -459,7 +549,9 @@ export default function RoomTimerOverlay({
         // STRICT timer type enforcement: Only keyboard mode allows keyboard/touch input
         // Other modes should ONLY work with their respective devices
         if (timerType === 'stackmat') return; // Stackmat mode: only stackmat works
+        if (timerType === 'moyutimer') return; // MoYu mode: only MoYu (audio jack) works
         if (timerType === 'gantimer') return; // GAN Timer mode: only GAN timer works
+        if (timerType === 'qiyitimer') return; // QiYi Timer mode: only QiYi timer works
         if (timerType === 'smart') return; // Smart cube mode: only smart cube works
 
         if (keyIsDown.current) return;
@@ -523,7 +615,9 @@ export default function RoomTimerOverlay({
 
         // STRICT timer type enforcement
         if (timerType === 'stackmat') return;
+        if (timerType === 'moyutimer') return;
         if (timerType === 'gantimer') return;
+        if (timerType === 'qiyitimer') return;
         if (timerType === 'smart') return;
 
         keyIsDown.current = false;
@@ -643,8 +737,8 @@ export default function RoomTimerOverlay({
             // Anasayfa hizalamasi: TIMING'de Space disinda herhangi bir tus timer'i durdurur
             // (Space zaten asagidaki keydown bloku ile simulateSpaceDown'a gidiyor — SUBMITTING_DOWN ara durumu uzerinden)
             if (currentStatus === STATUS.TIMING && e.keyCode !== 32) {
-                // Cihaz bazli modlarda (stackmat / gantimer / smart) klavye ile durdurma yok
-                if (timerType === 'stackmat' || timerType === 'gantimer' || timerType === 'smart') {
+                // Cihaz bazli modlarda (stackmat / moyutimer / gantimer / qiyitimer / smart) klavye ile durdurma yok
+                if (timerType === 'stackmat' || timerType === 'moyutimer' || timerType === 'gantimer' || timerType === 'qiyitimer' || timerType === 'smart') {
                     return;
                 }
                 e.preventDefault();
@@ -1035,6 +1129,70 @@ export default function RoomTimerOverlay({
         setGanTimerConnected(false);
     };
 
+    // Connect QiYi Timer (GAN pattern bire bir)
+    const connectQiyiTimerDevice = async () => {
+        try {
+            let bluetoothAvailable = false;
+
+            if (isNative()) {
+                bluetoothAvailable = true;
+            } else if (navigator.bluetooth) {
+                if (typeof navigator.bluetooth.getAvailability === 'function') {
+                    bluetoothAvailable = await navigator.bluetooth.getAvailability();
+                } else {
+                    bluetoothAvailable = true;
+                }
+            }
+
+            if (bluetoothAvailable) {
+                if (isNative()) {
+                    dispatch(openModal(
+                        <BleScanningModal
+                            mode="qiyitimer"
+                            onCancel={() => dispatch(closeModal())}
+                        />,
+                        {
+                            position: 'bottom',
+                            hideCloseButton: true,
+                            disableBackdropClick: true,
+                        }
+                    ));
+                }
+                try {
+                    const conn = await connectQiyiTimer();
+                    if (isNative()) {
+                        dispatch(closeModal());
+                    }
+                    qiyiTimerRef.current = conn;
+
+                    conn.events$.subscribe((evt) => {
+                        if (evt.state === QiyiTimerState.DISCONNECT) {
+                            qiyiTimerRef.current = null;
+                        }
+                    });
+                    conn.events$.subscribe(handleQiyiTimerEvent);
+                    // qiyiTimerConnected state'i parent (FriendlyRoom) yonetiyor — bu blok dead code
+                    // (renderDeviceConnect'ten cagriliyor ama o da render edilmiyor)
+                } catch (e) {
+                    console.error('QiYi Timer connection error:', e);
+                    if (isNative()) {
+                        dispatch(closeModal());
+                    }
+                }
+            } else {
+                dispatch(openModal(<BluetoothErrorMessage />));
+            }
+        } catch (e) {
+            console.error('QiYi Timer connection error:', e);
+        }
+    };
+
+    const disconnectQiyiTimer = () => {
+        qiyiTimerRef.current?.disconnect();
+        qiyiTimerRef.current = null;
+        // qiyiTimerConnected state'i parent yonetiyor
+    };
+
     // Open Stackmat picker
     const openStackmatPicker = () => {
         dispatch(openModal(<StackMatPicker />, { width: 400, compact: true, title: t('stackmat.select_input'), description: t('stackmat.description'), closeButtonText: t('solve_info.done') }));
@@ -1378,20 +1536,23 @@ export default function RoomTimerOverlay({
             );
         }
 
-        if (timerType === 'stackmat') {
+        if (timerType === 'stackmat' || timerType === 'moyutimer') {
+            const isMoYu = timerType === 'moyutimer';
+            const label = isMoYu ? t('room_timer.moyu_timer') : 'StackMat Timer';
+            const handsOnHint = isMoYu ? t('room_timer.place_hands_on_moyu') : t('room_timer.place_hands_on_stackmat');
             return (
                 <div className="room-timer-overlay__device">
                     <div className="room-timer-overlay__device-icon">
                         <Keyboard size={48} weight={stackmatConnected ? 'fill' : 'regular'} />
                     </div>
-                    <h3>StackMat Timer</h3>
+                    <h3>{label}</h3>
                     {stackmatConnected ? (
                         <>
                             <p className="room-timer-overlay__device-status room-timer-overlay__device-status--connected">
                                 {t('room_timer.connected')}
                             </p>
                             <p className="room-timer-overlay__hint">
-                                {t('room_timer.place_hands_on_stackmat')}
+                                {handsOnHint}
                             </p>
                         </>
                     ) : (
@@ -1406,6 +1567,39 @@ export default function RoomTimerOverlay({
                             )}
                             <button className="room-timer-overlay__btn" onClick={openStackmatPicker}>
                                 {t('room_timer.setup_stackmat')}
+                            </button>
+                        </>
+                    )}
+                </div>
+            );
+        }
+
+        if (timerType === 'qiyitimer') {
+            return (
+                <div className="room-timer-overlay__device">
+                    <div className="room-timer-overlay__device-icon">
+                        <Timer size={48} weight={qiyiTimerConnected ? 'fill' : 'regular'} />
+                    </div>
+                    <h3>{t('room_timer.qiyi_smart_timer')}</h3>
+                    {qiyiTimerConnected ? (
+                        <>
+                            <p className="room-timer-overlay__device-status room-timer-overlay__device-status--connected">
+                                <Bluetooth size={16} weight="fill" /> {t('room_timer.connected')}
+                            </p>
+                            <button className="room-timer-overlay__btn room-timer-overlay__btn--secondary" onClick={disconnectQiyiTimer}>
+                                {t('room_timer.disconnect')}
+                            </button>
+                            <p className="room-timer-overlay__hint">
+                                {t('room_timer.place_hands_on_qiyi')}
+                            </p>
+                        </>
+                    ) : (
+                        <>
+                            <p className="room-timer-overlay__device-status">
+                                {t('room_timer.not_connected')}
+                            </p>
+                            <button className="room-timer-overlay__btn" onClick={connectQiyiTimerDevice}>
+                                <Bluetooth size={18} /> {t('room_timer.connect')}
                             </button>
                         </>
                     )}

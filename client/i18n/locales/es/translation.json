@@ -1417,6 +1417,8 @@
         "allowed_timer_types": "Tipos de timer permitidos",
         "keyboard": "Teclado",
         "smart_cube": "Cubo inteligente",
+        "qiyi_timer": "QiYi Timer",
+        "moyu_timer": "MoYu Timer",
         "manual_entry": "Entrada manual",
         "cancel": "Cancelar",
         "save": "Guardar",
@@ -1470,6 +1472,8 @@
         "connect_smart_cube": "Conectar cubo inteligente",
         "cube_connected": "Cubo conectado",
         "connect_cube": "Conectar cubo",
+        "connect_qiyi_timer": "Conectar QiYi Timer",
+        "qiyi_timer_connected": "QiYi Timer conectado",
         "next_scramble_tooltip": "Mover a todos a la siguiente mezcla",
         "new_scramble": "Nueva mezcla",
         "scramble": "Mezcla",
@@ -2194,7 +2198,12 @@
         "smart_cube": "Cubo inteligente",
         "smart_cube_3x3_only": "El cubo inteligente solo es compatible con 3x3x3",
         "not_supported_in_room": "Actualmente no es compatible en salas",
-        "use_keyboard_or_manual": "Usa el teclado o entrada manual"
+        "use_keyboard_or_manual": "Usa el teclado o entrada manual",
+        "qiyi_smart_timer": "QiYi Smart Timer",
+        "place_hands_on_qiyi": "Coloca las manos en el timer QiYi para comenzar",
+        "connect_qiyi_in_header": "Conecta el QiYi Timer desde el menú superior",
+        "moyu_timer": "MoYu Timer",
+        "place_hands_on_moyu": "Coloca las manos en el timer MoYu para comenzar"
     },
     "smart_cube": {
         "manage_smart_cubes": "Gestionar cubos inteligentes",
