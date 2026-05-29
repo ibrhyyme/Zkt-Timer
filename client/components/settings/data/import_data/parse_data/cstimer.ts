@@ -8,11 +8,11 @@ import {detectCubeFromScramble} from './detect-cube-from-scramble';
 const CSTIMER_NAMESPACE = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
 
 // csTimer scrType -> Zkt-Timer flat WCA event ID.
-// Tum WCA varyantlari (oh/bld/fm/mirror/cll/eg/method-trainer'lar) parent event'e duser.
-// normalizeBucketForImport bu degeri WCA bucket'ina (cube_type='wca' + subset) cevirir.
-// Burada OLMAYAN scrType -> session skip + raporlanir.
+// All WCA variants (oh/bld/fm/mirror/cll/eg/method-trainers) fall back to parent event.
+// normalizeBucketForImport converts this value to WCA bucket (cube_type='wca' + subset).
+// scrType NOT in this map -> session skip + reported.
 const CSTIMER_ZKTTIMER_CUBETYPE_MAP: Record<string, string> = {
-	// 3x3 ve tum 3x3 method/varyantlari -> 333
+	// 3x3 and all 3x3 methods/variants -> 333
 	'333': '333',
 	'333wca': '333',
 	'333o': '333',
@@ -37,7 +37,7 @@ const CSTIMER_ZKTTIMER_CUBETYPE_MAP: Record<string, string> = {
 	cmll: '333',
 	cmll2: '333',
 
-	// 2x2 ve tum varyantlari -> 222
+	// 2x2 and all variants -> 222
 	'222': '222',
 	'222o': '222',
 	'222so': '222',
@@ -84,7 +84,7 @@ const CSTIMER_ZKTTIMER_CUBETYPE_MAP: Record<string, string> = {
 	'777si': '777',
 	'7edge': '777',
 
-	// Megaminx ailesi -> minx
+	// Megaminx family -> minx
 	mgmp: 'minx',
 	mgmo: 'minx',
 	mgmc: 'minx',
@@ -94,7 +94,7 @@ const CSTIMER_ZKTTIMER_CUBETYPE_MAP: Record<string, string> = {
 	mlsll: 'minx',
 	minx2g: 'minx',
 
-	// Pyraminx ailesi -> pyraminx
+	// Pyraminx family -> pyraminx
 	pyrso: 'pyraminx',
 	pyro: 'pyraminx',
 	pyrm: 'pyraminx',
@@ -104,13 +104,13 @@ const CSTIMER_ZKTTIMER_CUBETYPE_MAP: Record<string, string> = {
 	mpyr: 'pyraminx',
 	mpyrso: 'pyraminx',
 
-	// Skewb ailesi -> skewb
+	// Skewb family -> skewb
 	skbso: 'skewb',
 	skbo: 'skewb',
 	skb: 'skewb',
 	skbnb: 'skewb',
 
-	// Square-1 ailesi -> sq1
+	// Square-1 family -> sq1
 	sqrs: 'sq1',
 	sq1t: 'sq1',
 	sq1h: 'sq1',
@@ -120,7 +120,7 @@ const CSTIMER_ZKTTIMER_CUBETYPE_MAP: Record<string, string> = {
 	ssq1t: 'sq1',
 	bsq: 'sq1',
 
-	// Clock ailesi -> clock
+	// Clock family -> clock
 	clkwca: 'clock',
 	clkwcab: 'clock',
 	clknf: 'clock',
@@ -142,7 +142,7 @@ interface CsTimerSession {
 	name: string;
 	rank: number;
 	cubeType: string;
-	// Tanimadigimiz cube_type ile gelen sezonlar — solve'lari import'a dahil edilmez.
+	// Sessions with unrecognized cube_type — solves not included in import.
 	skip?: boolean;
 	scrambleSubset?: string | null;
 	originalCubeType?: string;
@@ -162,7 +162,7 @@ export function parseCsTimerData(txt: string, context: IImportDataContext): Impo
 	const csTimerData = parseAndValidateInput(txt);
 	const properties = getCsTimerProperties(csTimerData);
 
-	// Tanimlanmamis cube_type'li sezonlari ayikla — solve'lari import'a girmez.
+	// Filter out sessions with unrecognized cube_type — solves not included in import.
 	const skippedCubeTypes: Record<string, number> = {};
 	let skippedSolveCount = 0;
 	const validSessions: CsTimerSession[] = [];
@@ -187,10 +187,10 @@ export function parseCsTimerData(txt: string, context: IImportDataContext): Impo
 		skippedCubeTypes,
 	});
 
-	// CubePicker'da kullanici-yuzlu WCA event ID'sini goster (333/222/444...).
-	// Detection solve-level oldugu icin sezon icindeki COGUNLUK subset'i kullaniyoruz
-	// — boylece karisik sezonlarda en yaygin kup gozukur, ReviewImport'ta kullanici
-	// "Karisik" badge'i gorup gerekirse split edebilir.
+	// Show user-facing WCA event ID in CubePicker (333/222/444...).
+	// Since detection is at solve level, use MAJORITY subset in session
+	// — in mixed sessions, most common cube appears; in ReviewImport user sees
+	// "Mixed" badge and can split if needed.
 	const sessionIdCubeTypeMap: Record<string, string> = {};
 	for (const session of validSessions) {
 		const sessionSolves = solves.filter(s => s.session_id === session.id);
@@ -276,7 +276,7 @@ function getSessionData(sesData: string | object) {
 		const srcType = ses?.opt?.scrType;
 		const deterministicId = uuidv5(`cstimer-session-${sessionId}`, CSTIMER_NAMESPACE);
 
-		// srcType var ama haritada yok -> WCA disi puzzle (gear/fto/relay/15p vs). Skip.
+		// srcType exists but not in map -> non-WCA puzzle (gear/fto/relay/15p etc). Skip.
 		if (srcType && !CSTIMER_ZKTTIMER_CUBETYPE_MAP[srcType]) {
 			sessionInput.push({
 				id: deterministicId,
@@ -290,8 +290,8 @@ function getSessionData(sesData: string | object) {
 			continue;
 		}
 
-		// Once detayli normalize dene (VARIANT_MAP'te 222eg0, cmll, pll gibi alt-subset'ler var).
-		// Yoksa CSTIMER_MAP'ten flat parent event'e dus, WCA bucket'a normalize et.
+		// Try detailed normalization first (VARIANT_MAP has sub-subsets like 222eg0, cmll, pll).
+		// Otherwise fall back from CSTIMER_MAP to flat parent event, normalize to WCA bucket.
 		let normalized = srcType ? normalizeBucketForImport(srcType) : null;
 		const mappedFlat = srcType ? CSTIMER_ZKTTIMER_CUBETYPE_MAP[srcType] : '333';
 		if (!normalized) {
@@ -299,7 +299,7 @@ function getSessionData(sesData: string | object) {
 		}
 
 		if (!normalized) {
-			// Bu noktaya gelmemeli (haritadaki tum degerler WCA event); savunma amacli skip.
+			// Should not reach here (all map values are WCA events); defensive skip.
 			sessionInput.push({
 				id: deterministicId,
 				key: String(sessionId),
@@ -370,9 +370,9 @@ function getSolveInputFromCsTimerSolve(csSolve: CsTimerSolve, session: CsTimerSe
 		time = -1;
 	}
 
-	// ONCE scramble icerigine bak — gercek cube'i tespit et. Tespit edilemezse
-	// session-level scrType'a dus. csTimer karisik sezonlari icin kritik
-	// (kullanici ayni sezonda hem 2x2 hem 3x3 cozmus olabilir).
+	// FIRST look at scramble content — detect real cube. Fall back to
+	// session-level scrType if detection fails. Critical for csTimer mixed sessions
+	// (user may have solved both 2x2 and 3x3 in same session).
 	const detected = detectCubeFromScramble(scramble);
 	const cube_type = detected?.cube_type ?? session.cubeType;
 	const scramble_subset = detected?.scramble_subset ?? session.scrambleSubset ?? null;

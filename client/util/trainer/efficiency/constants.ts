@@ -1,10 +1,10 @@
 /**
- * Efficiency Trainer sabitleri.
+ * Efficiency Trainer constants.
  */
 import type {EfficiencyType, EoAxis} from '../../../components/trainer/efficiency/types';
 import {CUBE_ORIENTATIONS} from '../../cross-solver/types';
 
-// localStorage key'leri
+// localStorage keys
 export const LS_SESSION = 'trainer_efficiency_session';
 export const LS_SETTINGS = 'trainer_efficiency_settings';
 export const LS_VIEW = 'trainer_efficiency_view';
@@ -12,16 +12,16 @@ export const LS_VIEW = 'trainer_efficiency_view';
 export const EFFICIENCY_TYPES: EfficiencyType[] = ['cross', 'xcross', 'eocross'];
 export const EO_AXES: EoAxis[] = ['LR', 'FB'];
 
-// Faz 3 — hedef-uzunluk secici aralilari (ture gore tam aralik, 1'den max'a)
+// Phase 3 — target-length selector ranges (full range per type, 1 to max)
 export const LENGTH_RANGES: Record<EfficiencyType, number[]> = {
 	cross: [1, 2, 3, 4, 5, 6, 7, 8],
 	xcross: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
 	eocross: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
 };
 
-// Nadir/yavas uzunluk uyarisi — SADECE uret-ve-ele kullanan kombinasyonlar yavas.
-// cross + xcross(1-9): getEasyCross (full pruning) ile ANINDA → uyari yok.
-// xcross 10 + tum eocross: uret-ve-ele → nadir uzunluklarda yavas/timeout.
+// Rare/slow length warning — ONLY combinations using generate-and-retry are slow.
+// cross + xcross(1-9): with getEasyCross (full pruning) INSTANT → no warning.
+// xcross 10 + all eocross: generate-and-retry → slow/timeout on rare lengths.
 export const RARE_LENGTHS: Record<EfficiencyType, number[]> = {
 	cross: [],
 	xcross: [10],
@@ -29,11 +29,11 @@ export const RARE_LENGTHS: Record<EfficiencyType, number[]> = {
 };
 
 /**
- * XCross F2L slot secenekleri. UI gorsel sirasi BL,BR,FR,FL (referans xcross_trainer
- * ile ayni). idx = solveXCross slot index = cstimer corner numaralandirmasi:
- * c1[idx] (cross-solver.ts) -> corner pozisyon idx+4 -> idx0=DFR(FR), idx1=DLF(FL),
- * idx2=DBL(BL), idx3=DRB(BR). Bu yuzden isim<->idx: BL=2, BR=3, FR=0, FL=1
- * (kullanici BL secince gercekten BL pair'i cozulur).
+ * XCross F2L slot options. UI visual order BL,BR,FR,FL (same as reference xcross_trainer).
+ * idx = solveXCross slot index = cstimer corner numbering:
+ * c1[idx] (cross-solver.ts) -> corner position idx+4 -> idx0=DFR(FR), idx1=DLF(FL),
+ * idx2=DBL(BL), idx3=DRB(BR). Therefore name<->idx: BL=2, BR=3, FR=0, FL=1
+ * (when user picks BL, actually solves BL pair).
  */
 export const XCROSS_SLOTS: Array<{idx: number; name: string}> = [
 	{idx: 2, name: 'BL'},
@@ -42,9 +42,9 @@ export const XCROSS_SLOTS: Array<{idx: number; name: string}> = [
 	{idx: 1, name: 'FL'},
 ];
 
-// Rotation/orientation secenekleri — kup tutus acisi. '' = None (varsayilan).
-// cross-solver CUBE_ORIENTATIONS (24: '', z2, z, z', x, x', y kombinasyonlari).
+// Rotation/orientation options — cube orientation angle. '' = None (default).
+// cross-solver CUBE_ORIENTATIONS (24: '', z2, z, z', x, x', y combinations).
 export const ROTATION_OPTIONS: string[] = CUBE_ORIENTATIONS;
 
-// Back navigasyonu icin tutulacak max scramble gecmisi
+// Max scramble history to keep for back navigation
 export const HISTORY_CAP = 30;

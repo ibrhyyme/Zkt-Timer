@@ -25,7 +25,7 @@ export function initSmartSolver(): void {
 		solverInitializing = false;
 	};
 
-	// requestIdleCallback ile tarayıcı boşken çalıştır (UI kasması önlenir)
+	// Run when browser is idle via requestIdleCallback (prevents UI jank)
 	if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
 		(window as any).requestIdleCallback(doInit, { timeout: 10000 });
 	} else {
@@ -79,13 +79,13 @@ export function processSmartTurns(smartTurns: SmartTurn[], skipCompress: boolean
 }
 
 /**
- * @deprecated cstimer'in getPrettyMoves'undan once kullanilan basit collapse.
- * Sadece same-face same-axis collapse yapar (R + R = R2). Yeni yerlerde
- * `shared/util/solve/pretty_moves.ts` `getPrettyMoves` kullan — slice merge
- * (R + L' = M), 100ms burst detection, center tracking dahil tam cstimer port.
+ * @deprecated Simple collapse used before cstimer's getPrettyMoves.
+ * Only performs same-face same-axis collapse (R + R = R2). For new uses,
+ * use `getPrettyMoves` from `shared/util/solve/pretty_moves.ts` — full cstimer port
+ * including slice merge (R + L' = M), 100ms burst detection, and center tracking.
  *
- * Eski kullanim: SolveInfo cozum gorunumu icin ardisik ayni-yon hamleleri
- * keyfi-n notation'a sikistirir: U + U → U2, U2 + U → U3 ...
+ * Old usage: For SolveInfo solve display, compresses consecutive same-direction moves
+ * into arbitrary-n notation: U + U → U2, U2 + U → U3, etc.
  */
 export function cascadeQuartersForDisplay(smartTurns: (SmartTurn | string)[]): string[] {
 	const accum: { face: string; quarters: number; raw?: string }[] = [];
@@ -96,9 +96,9 @@ export function cascadeQuartersForDisplay(smartTurns: (SmartTurn | string)[]): s
 			turn = (turn as SmartTurn).turn;
 		}
 
-		const m = turn.match(/^([URFDLB])(\d+)?(['‘])?$/);
+		const m = turn.match(/^([URFDLB])(\d+)?([''])?$/);
 		if (!m) {
-			// Rotation/wide/slice/bilinmeyen — olduğu gibi yaz
+			// Rotation/wide/slice/unknown — write as-is
 			accum.push({ face: turn, quarters: 0, raw: turn });
 			continue;
 		}
@@ -110,7 +110,7 @@ export function cascadeQuartersForDisplay(smartTurns: (SmartTurn | string)[]): s
 		const last = accum[accum.length - 1];
 		if (last && last.face === face && last.raw === undefined) {
 			last.quarters += quarters;
-			continue; // skipCompress=true gibi davran — 0 olsa bile drop etme
+			continue; // Act like skipCompress=true — don't drop even if 0
 		}
 		accum.push({ face, quarters });
 	}
@@ -234,7 +234,7 @@ export function areCommutative(turn1: string, turn2: string): boolean {
  * Matches user moves against expected scramble, allowing commutative reordering.
  * Returns an array of matched moves in the order they should be displayed,
  * along with match status for each position.
- * 
+ *
  * Example: Expected ["U", "D", "L"], User did ["D", "U", "L"]
  * Since U and D are commutative, this should match successfully.
  */
@@ -396,4 +396,3 @@ export class IncrementalCompressor {
 		this.processedCount = 0;
 	}
 }
-

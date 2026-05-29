@@ -33,13 +33,13 @@ export class Announcement {
 	isActive: boolean;
 
 	@Field(() => Int, { nullable: true })
-	viewCount?: number;  // Computed field - toplam görüntülenme
+	viewCount?: number;  // Computed field - total views
 
 	@Field({ nullable: true })
-	hasViewed?: boolean; // Kullanıcının gördüğü mü?
+	hasViewed?: boolean; // Has user viewed?
 
 	@Field({ nullable: true })
-	targetUrl?: string; // Bildirime tiklayinca acilacak sayfa: "/pro" veya "https://..."
+	targetUrl?: string; // Page to open when notification is clicked: "/pro" or "https://..."
 
 	@Field({ nullable: true })
 	translations?: string; // JSON string: {"en": {"title":"...","content":"..."}, ...}

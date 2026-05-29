@@ -1350,14 +1350,14 @@ export class CubeGame {
 	}
 
 	/**
-	 * Programmatic animasyonlu hamle dizisi uygula.
-	 * AuthCube auto-solve choreography icin eklendi (login/signup sayfasi).
-	 * Mevcut Scrambler + Controls.scrambleCube pipeline'ini reuse eder.
+	 * Apply programmatic animated move sequence.
+	 * Added for AuthCube auto-solve choreography (login/signup page).
+	 * Reuses existing Scrambler + Controls.scrambleCube pipeline.
 	 *
-	 * Onemli: scrambler.moves mutate edilir; caller original scramble moves'i
-	 * korumak istiyorsa onceden capture etmelidir.
+	 * Important: scrambler.moves is mutated; if the caller wants to preserve
+	 * original scramble moves, it should capture them beforehand.
 	 *
-	 * @param moves WCA notation hamle dizisi, ornek: ["R'", "U", "F2"]
+	 * @param moves WCA notation move sequence, example: ["R'", "U", "F2"]
 	 */
 	applyMovesAnimated(moves: string[]) {
 		if (this.controls.scramble !== null) return;

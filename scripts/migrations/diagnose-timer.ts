@@ -1,7 +1,7 @@
 /**
- * Diagnose: Timer'da neden cozumler gorunmuyor?
+ * Diagnose: Why are solves not showing in Timer?
  *
- * Kullanim:
+ * Usage:
  *   npx ts-node scripts/migrations/diagnose-timer.ts
  */
 
@@ -26,13 +26,13 @@ async function main() {
 		return;
 	}
 
-	// Tek kullanici varsaysayiyoruz
+	// Assuming single user
 	const setting = settings[0];
 	const sessionId = setting.session_id;
 	const userId = setting.user_id;
 
-	// 2. Current session'da solveler (cube_type, scramble_subset) grup
-	console.log(`\n=== 2) Current session (${sessionId}) solveler ===\n`);
+	// 2. Solves in current session (cube_type, scramble_subset) grouped
+	console.log(`\n=== 2) Current session (${sessionId}) solves ===\n`);
 	if (!sessionId) {
 		console.log('  (Session_id null, skipping)');
 	} else {
@@ -45,7 +45,7 @@ async function main() {
 			sessionId, userId
 		);
 		if (sessionGroups.length === 0) {
-			console.log('  (bu session\'da hic solve yok)');
+			console.log('  (no solves in this session)');
 		} else {
 			for (const r of sessionGroups) {
 				console.log(`  ${r.cube_type.padEnd(12)} / ${(r.scramble_subset ?? 'NULL').padEnd(10)} | from_timer=${r.from_timer} | ${Number(r.count)}`);
@@ -53,8 +53,8 @@ async function main() {
 		}
 	}
 
-	// 3. wca/333 solveler - hangi session'da?
-	console.log(`\n=== 3) wca/333 solveler session dagilimi ===\n`);
+	// 3. wca/333 solves - which session?
+	console.log(`\n=== 3) wca/333 solves session distribution ===\n`);
 	const wca333 = await prisma.$queryRawUnsafe<Array<{ session_id: string | null; session_name: string | null; count: bigint }>>(
 		`SELECT s.session_id, se.name AS session_name, COUNT(*)::bigint AS count
 		 FROM solve s
@@ -65,7 +65,7 @@ async function main() {
 		userId
 	);
 	if (wca333.length === 0) {
-		console.log('  (wca/333 solve yok!)');
+		console.log('  (no wca/333 solves!)');
 	} else {
 		for (const r of wca333) {
 			const isCurrent = r.session_id === sessionId ? ' <-- CURRENT' : '';
@@ -73,8 +73,8 @@ async function main() {
 		}
 	}
 
-	// 4. wca/NULL solvelerin session dagilimi
-	console.log(`\n=== 4) wca/NULL solveler session dagilimi ===\n`);
+	// 4. wca/NULL solves session distribution
+	console.log(`\n=== 4) wca/NULL solves session distribution ===\n`);
 	const wcaNull = await prisma.$queryRawUnsafe<Array<{ session_id: string | null; session_name: string | null; count: bigint }>>(
 		`SELECT s.session_id, se.name AS session_name, COUNT(*)::bigint AS count
 		 FROM solve s
@@ -89,8 +89,8 @@ async function main() {
 		console.log(`  session_id=${r.session_id?.slice(0, 8)}... | name="${r.session_name ?? '??'}" | count=${Number(r.count)}${isCurrent}`);
 	}
 
-	// 5. from_timer dagilimi tum wca/333 icin
-	console.log(`\n=== 5) wca/333 -> from_timer dagilimi ===\n`);
+	// 5. from_timer distribution for all wca/333
+	console.log(`\n=== 5) wca/333 -> from_timer distribution ===\n`);
 	const fromTimer = await prisma.$queryRawUnsafe<Array<{ from_timer: boolean; trainer_name: string | null; count: bigint }>>(
 		`SELECT from_timer, trainer_name, COUNT(*)::bigint AS count
 		 FROM solve
@@ -103,8 +103,8 @@ async function main() {
 		console.log(`  from_timer=${r.from_timer} | trainer_name=${r.trainer_name ?? 'NULL'} | ${Number(r.count)}`);
 	}
 
-	// 6. Session ozeti
-	console.log(`\n=== 6) Tum sessionlarin ozeti ===\n`);
+	// 6. Session summary
+	console.log(`\n=== 6) Summary of all sessions ===\n`);
 	const allSessions = await prisma.session.findMany({
 		where: { user_id: userId },
 		select: { id: true, name: true, created_at: true, _count: { select: { solves: true } } },

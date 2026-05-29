@@ -30,10 +30,10 @@ export interface AllSettings {
 	custom_cube_types: CustomCubeType[];
 	locked_scramble: string;
 	smart_cube_size: number;
-	stackmat_auto_inspection: number; // 0 = kapalı, >0 = gecikme süresi (saniye)
-	stackmat_auto_inspection_warning_shown: boolean; // Uyarı modalı gösterildi mi?
-	qiyi_auto_inspection: boolean; // QiYi Timer restart 1-tıkla inspection birlesik baslat
-	qiyi_auto_inspection_warning_shown: boolean; // Uyarı modalı gösterildi mi?
+	stackmat_auto_inspection: number; // 0 = off, >0 = delay time (seconds)
+	stackmat_auto_inspection_warning_shown: boolean; // Was warning modal shown?
+	qiyi_auto_inspection: boolean; // QiYi Timer restart one-click inspection combined start
+	qiyi_auto_inspection_warning_shown: boolean; // Was warning modal shown?
 
 	// Local
 	haptic_feedback: boolean;
@@ -67,8 +67,8 @@ export interface AllSettings {
 	smart_cube_analysis_mode: string;
 	smart_cube_show_recognition: boolean;
 
-	// Kullanicinin kendi default'lari — "Varsayilan" butonu ile o anki deger buraya kaydedilir.
-	// "Sifirla" butonu varsa once buna doner, yoksa factory default'a.
+	// User's custom defaults — current value is saved here with "Set Default" button.
+	// "Reset" button returns to this first, or to factory default if not set.
 	timer_scramble_size_user_default: number | null;
 	timer_time_size_user_default: number | null;
 	smart_cube_size_user_default: number | null;
@@ -123,7 +123,7 @@ const defaultSettings: AllSettings = {
 	// U R F D L B
 	cube_face_colors: ['#43FF43', '#FF9826', '#FFFFFF', '#246BFD', '#FF4343', '#FFFF49'],
 
-	// User defined vallues
+	// User-defined values
 	...APP_THEME_PRESETS.dark.values,
 
 	hide_mobile_timer_footer: true,
@@ -136,12 +136,12 @@ const defaultSettings: AllSettings = {
 	timer_avg_6: 'ao50',
 
 	smart_cube_size: 400,
-	stackmat_auto_inspection: 0, // 0 = kapalı, aktifken varsayılan 2 saniye
+	stackmat_auto_inspection: 0, // 0 = off, default 2 seconds when active
 	stackmat_auto_inspection_warning_shown: false,
-	qiyi_auto_inspection: true, // default açık (cihaz restart 1-tıkla sıfırla + inspection birleşik)
+	qiyi_auto_inspection: true, // default on (device restart one-click reset + inspection combined)
 	qiyi_auto_inspection_warning_shown: false,
 	scramble_subset: null,
-	scramble_top_color: null, // 'U' | 'D' | 'F' | 'B' | 'R' | 'L' | null (default beyaz/U)
+	scramble_top_color: null, // 'U' | 'D' | 'F' | 'B' | 'R' | 'L' | null (default white/U)
 	smart_cube_analysis_mode: 'cffffop', // 'none' | 'cfop' | 'cf_plus_op' | 'cffffop' | 'cffffoopp'
 	smart_cube_show_recognition: false,
 
@@ -150,7 +150,7 @@ const defaultSettings: AllSettings = {
 	smart_cube_size_user_default: null,
 };
 
-// Mobil cihazlar icin responsive varsayilan degerler
+// Responsive default values for mobile devices
 const mobileDefaultOverrides: Partial<AllSettings> = {
 	timer_time_size: 60,
 	timer_scramble_size: 17,
@@ -158,8 +158,8 @@ const mobileDefaultOverrides: Partial<AllSettings> = {
 };
 
 function isMobileViewport(): boolean {
-	// HeaderNav ve Nav ile ayni breakpoint: < 1024 (katlanir telefon acik ekrani dahil)
-	// veya kisa landscape (innerHeight <= 500 — landscape telefon)
+	// Same breakpoint as HeaderNav and Nav: < 1024 (folded phone open screen included)
+	// or short landscape (innerHeight <= 500 — landscape phone)
 	if (typeof window === 'undefined') return false;
 	return window.innerWidth < 1024 || window.innerHeight <= 500;
 }

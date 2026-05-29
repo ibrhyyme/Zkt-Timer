@@ -1,15 +1,15 @@
 /**
- * Case key (orn '333_oll_29') -> 21-char LL pattern lookup.
+ * Case key (e.g., '333_oll_29') -> 21-char LL pattern lookup.
  *
- * Sync getCasePattern: ll-patterns.json cache + bizim in-memory cache.
- * Async ensureCasePattern: cache miss durumunda runtime'da cubing.js ile uretip
- * yerel Map'e yazar — sonraki getCasePattern bulur.
+ * Sync getCasePattern: ll-patterns.json cache + in-memory cache.
+ * Async ensureCasePattern: on cache miss, generate at runtime with cubing.js
+ * and write to local Map — next getCasePattern will find it.
  *
- * algorithms.ts ile ll-patterns.json arasinda 18-20 case senkronize degil
- * (farkli kaynaklardan generate edildi); fallback bu uretim farkini kapatir.
+ * algorithms.ts and ll-patterns.json are not fully in sync: 18-20 cases
+ * differ (generated from different sources); fallback generation closes this gap.
  *
- * NOT: Trainer'in localStorage custom_patterns alanina YAZMIYORUZ — kullanicinin
- * trainer'da manuel atadigi custom pattern'leri ezmemek icin yerel cache.
+ * NOTE: We do NOT write to trainer's localStorage custom_patterns field — to avoid
+ * overwriting user's manually-assigned patterns in trainer, we use local cache.
  */
 
 import algorithms from '../../../../util/algorithms/algorithms';

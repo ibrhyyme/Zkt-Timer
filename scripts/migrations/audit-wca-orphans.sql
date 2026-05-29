@@ -1,14 +1,14 @@
 -- ============================================================================
 -- AUDIT: cube_type='wca' + scramble_subset=NULL orphans
 -- ----------------------------------------------------------------------------
--- Read-only. Hicbir UPDATE/DELETE yok. Sadece rapor.
+-- Read-only. No UPDATE/DELETE operations. Report only.
 --
--- Kullanim:
+-- Usage:
 --   docker compose exec -T postgres psql -U root -d Zkt-Timer < scripts/migrations/audit-wca-orphans.sql
 -- ============================================================================
 
 \echo '================================================================'
-\echo 'SOLVE TABLE — cube_type=wca dagilimi (subset bazinda)'
+\echo 'SOLVE TABLE — cube_type=wca distribution (by subset)'
 \echo '================================================================'
 SELECT
     COALESCE(scramble_subset, '<NULL>') AS subset,
@@ -20,7 +20,7 @@ ORDER BY count DESC;
 
 \echo ''
 \echo '================================================================'
-\echo 'SOLVE — orphan siniflandirma onizlemesi'
+\echo 'SOLVE — orphan classification preview'
 \echo '================================================================'
 SELECT
     CASE
@@ -47,7 +47,7 @@ ORDER BY count DESC;
 
 \echo ''
 \echo '================================================================'
-\echo 'TOP_SOLVE TABLE — cube_type=wca dagilimi'
+\echo 'TOP_SOLVE TABLE — cube_type=wca distribution'
 \echo '================================================================'
 SELECT
     COALESCE(scramble_subset, '<NULL>') AS subset,
@@ -59,7 +59,7 @@ ORDER BY count DESC;
 
 \echo ''
 \echo '================================================================'
-\echo 'TOP_AVERAGE TABLE — cube_type=wca dagilimi'
+\echo 'TOP_AVERAGE TABLE — cube_type=wca distribution'
 \echo '================================================================'
 SELECT
     COALESCE(scramble_subset, '<NULL>') AS subset,
@@ -71,7 +71,7 @@ ORDER BY count DESC;
 
 \echo ''
 \echo '================================================================'
-\echo 'SOLVE — en cok orphan iceren 5 kullanici'
+\echo 'SOLVE — top 5 users with most orphans'
 \echo '================================================================'
 SELECT
     user_id,
@@ -84,7 +84,7 @@ LIMIT 5;
 
 \echo ''
 \echo '================================================================'
-\echo 'SOLVE — ilk 10 orphan ornek scramble'
+\echo 'SOLVE — first 10 orphan example scrambles'
 \echo '================================================================'
 SELECT
     length(scramble) AS scr_len,

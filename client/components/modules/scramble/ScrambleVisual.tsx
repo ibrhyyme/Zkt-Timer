@@ -9,9 +9,9 @@ import { useTranslation } from 'react-i18next';
 
 // Dynamically import TwistyPlayerWrapper
 const TwistyPlayerWrapper = React.lazy(() => import('./TwistyPlayerWrapper'));
-// Sq1 icin custom 2D canvas renderer (cstimer style)
+// Custom 2D canvas renderer for Sq1 (cstimer style)
 const Sq1Renderer = React.lazy(() => import('./Sq1Renderer'));
-// Clock icin custom 2D canvas renderer (cstimer style)
+// Custom 2D canvas renderer for Clock (cstimer style)
 const ClockRenderer = React.lazy(() => import('./ClockRenderer'));
 
 const b = block('scramble-visual');
@@ -74,7 +74,7 @@ function ScrambleVisual(props: Props) {
 	// Determine puzzle details for TwistyPlayer
 	const puzzleId = PUZZLE_MAPPING[cubeType] || cubeType;
 
-	// SQ1: backtick karakteri cubing.js parser'ini kiriyor — temizle
+	// SQ1: backtick character breaks cubing.js parser — clean it
 	const viewerAlg = puzzleId === 'square1' && scramble
 		? scramble.replace(/`/g, '')
 		: scramble;
@@ -173,28 +173,28 @@ function ScrambleVisual(props: Props) {
 			? { width: '100%', display: 'flex', justifyContent: 'center' }
 			: { width: '100%' };
 
-	// === Early returns (tum hook'lardan SONRA) ===
+	// === Early returns (AFTER all hooks) ===
 
-	// Desteklenmeyen puzzle tipi
+	// Unsupported puzzle type
 	if (!VALID_TWISTY_PUZZLES.has(puzzleId)) {
 		return null;
 	}
 
-	// Relay: multi-scramble formati, tek viewer ile gosterilemez
+	// Relay: multi-scramble format, cannot be shown with single viewer
 	if (cubeType === 'relay') {
 		return null;
 	}
 
-	// Clock: kendi custom renderer'imiz var, tum notasyonlar destekleniyor
+	// Clock: we have custom renderer, all notations supported
 
-	// Megaminx: TwistyPlayer sadece Pochmann (R++ D--) ve 2-Gen (R, U) destekliyor
+	// Megaminx: TwistyPlayer only supports Pochmann (R++ D--) and 2-Gen (R, U)
 	if (puzzleId === 'megaminx' && scramble && !scramble.includes('++') && !scramble.includes('--')) {
 		const moves = scramble.trim().split(/\s+/);
 		const is2Gen = moves.every(m => /^[RU](2'?|')?$/.test(m));
 		if (!is2Gen) return null;
 	}
 
-	// Custom 2D canvas renderer'lar (cstimer style)
+	// Custom 2D canvas renderers (cstimer style)
 	const isSquareOne = puzzleId === 'square1';
 	const isClockCustom = puzzleId === 'clock';
 

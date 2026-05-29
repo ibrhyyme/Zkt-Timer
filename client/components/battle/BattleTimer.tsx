@@ -33,20 +33,20 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 
 	const alreadySolved = player === 1 ? !!currentRoundData?.player1Solve : !!currentRoundData?.player2Solve;
 	const bothSolved = !!currentRoundData?.player1Solve && !!currentRoundData?.player2Solve;
-	// Her iki oyuncu bitene kadar sadece timer gosterilir
+	// Only show timer until both players finish
 	const roundActive = state.roundStarted && !bothSolved;
 
-	// statusRef ve status state'ini senkron güncelle — useEffect bekleme, race condition önle
+	// Synchronously update statusRef and status state — don't wait for useEffect, prevent race conditions
 	const updateStatus = useCallback((newStatus: TimerStatus) => {
 		statusRef.current = newStatus;
 		setStatus(newStatus);
 	}, []);
 
-	// Round degistiginde veya scramble yenilendiginde reset (cube type degisimi, RESET,
-	// CHANGE_SCRAMBLE — hepsi yeni currentScramble uretir). currentRound tek basina yetmez
-	// cunku ilk round'dayken RESET sonrasi currentRound hala 0 olur, effect tetiklenmez.
+	// Reset when round changes or scramble refreshes (cube type change, RESET,
+	// CHANGE_SCRAMBLE — all generate new currentScramble). currentRound alone isn't sufficient
+	// because after RESET on first round, currentRound is still 0, so effect won't trigger.
 	useEffect(() => {
-		// Timer zaten calisiyor — dokunma (handler'dan baslatildi)
+		// Timer already running — don't touch (started from handler)
 		if (statusRef.current === 'TIMING') return;
 
 		setDisplayTime(0);
@@ -54,7 +54,7 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 		if (rafRef.current) cancelAnimationFrame(rafRef.current);
 
 		if (touchActiveRef.current) {
-			// Oyuncu hala basili tutuyor — direkt PRIMING'e gec
+			// Player still holding down — go straight to PRIMING
 			updateStatus('PRIMING');
 			dispatch({ type: 'PLAYER_READY', player });
 		} else {
@@ -93,10 +93,10 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 				return;
 			}
 
-			// Bu oyuncu cozdu ama rakip henuz cozmedi — engelle
+			// This player solved but opponent hasn't — block
 			if (alreadySolved && !bothSolved) return;
 
-			// Sadece RESTING veya DONE (tur tamamlanmissa) durumunda izin ver
+			// Only allow in RESTING or DONE (if round is complete) state
 			if (s !== 'RESTING' && !(s === 'DONE' && bothSolved)) return;
 
 			touchActiveRef.current = true;
@@ -105,7 +105,7 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 				setDisplayTime(0);
 				setPenalty('none');
 			}
-			// Gecikme olmadan aninda PRIMING — parmak deger degmez yesile gec
+			// No delay, go straight to PRIMING — hand touches green light immediately
 			updateStatus('PRIMING');
 			dispatch({ type: 'PLAYER_READY', player });
 		},
@@ -121,15 +121,15 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 				const cs = stateRef.current;
 				const otherReady = player === 1 ? cs.player2Ready : cs.player1Ready;
 				const otherStarted = player === 1 ? cs.player2StartedAt : cs.player1StartedAt;
-				// Diger oyuncu bu tur icerisinde coktan bitirmisse de baslatilabilir.
-				// roundStarted sarti zorunlu: tamamlanmis eski round'un solve verisini yanlis
-				// okuyup tek basina baslatmayi onlemek icin.
+				// Other player may have already finished this round.
+				// roundStarted condition is required: prevent misreading solve data from a completed
+				// previous round and starting alone.
 				const otherSolvedThisRound = cs.roundStarted && !!(player === 1
 					? cs.rounds[cs.currentRound]?.player2Solve
 					: cs.rounds[cs.currentRound]?.player1Solve);
 
 				if (otherReady || otherStarted || otherSolvedThisRound) {
-					// Timer'i dogrudan baslat — useEffect zincirine bagimli degil
+					// Start timer directly — not dependent on useEffect chain
 					const startTime = performance.now();
 					startTimeRef.current = startTime;
 					updateStatus('TIMING');
@@ -203,7 +203,7 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 	const isLosing =
 		player === 1 ? player1Score < player2Score : player2Score < player1Score;
 
-	// roundActive: herhangi biri basladi ama ikisi birden bitirmedi — sadece timer goster
+	// roundActive: someone started but both didn't finish together — show timer only
 	const showPenalties = !roundActive && (status === 'DONE' || (alreadySolved && status === 'RESTING'));
 
 	return (
@@ -217,7 +217,7 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 				<div className={b('score-badge', { winning: isWinning, losing: isLosing })}>{score}</div>
 			)}
 
-			{/* Penalty buttons — sag ust kose */}
+			{/* Penalty buttons — top right corner */}
 			{showPenalties && (
 				<div className={b('penalties')}>
 					<button
@@ -255,10 +255,10 @@ export default function BattleTimer({ player, onSolve }: BattleTimerProps) {
 				</div>
 			)}
 
-			{/* Time — lang="en" locale bazli nokta->virgul font substitution'i onler */}
+			{/* Time — lang="en" locale-based dot->comma font substitution prevention */}
 			<div className={b('time', timeMod)} lang="en">{timeText}</div>
 
-			{/* Scramble — round aktifken (herhangi biri cozuyor) gizle */}
+			{/* Scramble — hide when round is active (someone solving) */}
 			{settings.showScramble && !roundActive && status !== 'TIMING' && (
 				<div className={b('scramble')}>{currentScramble}</div>
 			)}

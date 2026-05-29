@@ -1,6 +1,6 @@
 /**
- * Gemini API runtime wrapper. Duyuru cevirisi icin kullanilir.
- * Mevcut scripts/translate-zh.mjs ile ayni endpoint + model + system prompt mantigini paylasir.
+ * Gemini API runtime wrapper. Used for announcement translation.
+ * Shares the same endpoint + model + system prompt logic as existing scripts/translate-zh.mjs.
  */
 
 const GEMINI_MODEL = 'gemini-2.5-flash-lite';

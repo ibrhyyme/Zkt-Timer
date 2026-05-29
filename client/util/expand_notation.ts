@@ -1,9 +1,8 @@
-// Cube notation tek bir hamlede n quarter taşıyabilir: U2, U3, U4...
-// cubejs sadece U/U'/U2 destekler — U3 throw eder. Bu util keyfi-n notation'i
-// ham quarter listesine acar (U3 → "U U U") oyle ki cubejs / istatistik kodu
-// bozulmadan calisir. TwistyPlayer Un native destekler, expand orada gereksiz.
+// Cube notation can carry n quarters in a single move: U2, U3, U4...
+// cubejs only supports U/U'/U2 — U3 throws. This util expands arbitrary-n notation
+// to raw quarter list (U3 → "U U U") so cubejs / stats code works unmodified. TwistyPlayer natively supports Un, expand is unnecessary there.
 
-const QUARTER_RE = /^([UDLRFBudlrfbMESxyz])(\d+)?(['‘])?$/;
+const QUARTER_RE = /^([UDLRFBudlrfbMESxyz])(\d+)?([''])?$/;
 
 export interface ParsedMove {
 	face: string;
@@ -28,9 +27,9 @@ export function quartersToNotation(face: string, quarters: number): string {
 }
 
 /**
- * Tek hamleyi (U3, U2', U4...) tek-quarter dizisine cevirir.
+ * Converts a single move (U3, U2', U4...) to a single-quarter sequence.
  * U3 → "U U U" | U2' → "U' U'" | U → "U" | U4 → "U U U U"
- * Tanimsiz hamleler (orn rotation cubejs'te yok) olduklari gibi kalir.
+ * Undefined moves (e.g. rotation not in cubejs) remain as-is.
  */
 export function expandMove(move: string): string {
 	const parsed = parseMove(move);

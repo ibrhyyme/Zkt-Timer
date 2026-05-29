@@ -1,7 +1,7 @@
 /**
  * 3x3 Corners Only scramble generator.
- * Edge'leri solved tutup corner'lari randomize eder, cubejs (Kociemba) ile cozer.
- * cstimer'daki getCornerScramble() ile ayni mantik.
+ * Keeps edges solved and randomizes corners, solves with cubejs (Kociemba).
+ * Same logic as getCornerScramble() in cstimer.
  */
 import Cube from 'cubejs';
 import 'cubejs/lib/solve';

@@ -59,7 +59,7 @@ export default function BottomSheetNav() {
 		return drawerRef.current?.querySelector(`.${b('grid')}`)?.clientWidth || 250;
 	}
 
-	// Grid Y pozisyonu — centik konumuna gore, ekran disina tasmaz
+	// Grid Y position — based on notch location, doesn't overflow screen
 	function gridTop(): number {
 		if (typeof window === 'undefined') return 200;
 		const vh = window.innerHeight;
@@ -98,7 +98,7 @@ export default function BottomSheetNav() {
 		return () => window.removeEventListener('timerInteractionStart', close);
 	}, [open]);
 
-	// --- Android gesture exclusion: centik bolgesini geri hareketinden muaf tut ---
+	// --- Android gesture exclusion: exempt notch area from back gesture ---
 	useEffect(() => {
 		updateGestureExclusion(notchY, 115);
 		return () => clearGestureExclusion();
@@ -114,13 +114,13 @@ export default function BottomSheetNav() {
 		}
 
 		function onStart(e: TouchEvent) {
-			// Timer'in inspection/cozum baslatmasini engelle
+			// Prevent timer from starting inspection/solve
 			e.stopPropagation();
 			e.preventDefault();
 
-			// Android back gesture'u engellemek icin flag
+			// Flag to block Android back gesture
 			(window as any).__notchTouching = true;
-			// Guvenlik: touchend/touchcancel firlamazsa 2s sonra temizle
+			// Safety: clear after 2s if touchend/touchcancel doesn't fire
 			setTimeout(clearNotchFlag, 2000);
 
 			startX.current = e.touches[0].clientX;
@@ -136,13 +136,13 @@ export default function BottomSheetNav() {
 		function onMove(e: TouchEvent) {
 			e.stopPropagation();
 
-			// Swipe ile acildiysa sonraki hareketleri yoksay
+			// If already opened by swipe, ignore subsequent movements
 			if (openedBySwipe.current) return;
 
 			const tx = e.touches[0].clientX;
 			const ty = e.touches[0].clientY;
 
-			// Repositioning mode — surukle yukari/asagi
+			// Repositioning mode — drag up/down
 			if (repositioning) {
 				e.preventDefault();
 				const newY = Math.max(10, Math.min(90, (ty / window.innerHeight) * 100));
@@ -169,7 +169,7 @@ export default function BottomSheetNav() {
 			if (!horizontal.current) return;
 			e.preventDefault();
 
-			// Esige ulasinca hemen ac, parmagi takip etmeyi birak
+			// When threshold reached, open immediately and stop following finger
 			if (dx > gridWidth() * 0.25) {
 				markNotchUsed();
 				openedBySwipe.current = true;
@@ -199,20 +199,20 @@ export default function BottomSheetNav() {
 				return;
 			}
 
-			// Swipe mid-gesture acildiysa sadece flag temizle
+			// If swipe already opened drawer mid-gesture, just clear flag
 			if (openedBySwipe.current) {
 				openedBySwipe.current = false;
 				return;
 			}
 
-			// Esige ulasmadan birakildi — drawer'i geri kapat
+			// Released before threshold — close drawer
 			if (swipeOffset !== null) {
 				setSwipeOffset(null);
 				locked.current = false;
 				return;
 			}
 
-			// Tap (ne swipe ne long-press)
+			// Tap (not swipe, not long-press)
 			if (!locked.current) {
 				markNotchUsed();
 				setOpen(true);
@@ -244,7 +244,7 @@ export default function BottomSheetNav() {
 		if (!drawer || !open) return;
 
 		function onStart(e: TouchEvent) {
-			// Centik swipe'indan acildiysa bu dokunusu yoksay (parmak hala ekranda)
+			// If opened by notch swipe, ignore this touch (finger still on screen)
 			if (openedBySwipe.current) return;
 
 			startX.current = e.touches[0].clientX;
@@ -271,7 +271,7 @@ export default function BottomSheetNav() {
 		}
 
 		function onEnd() {
-			// Centik swipe flag'ini temizle — sonraki dokunuslar normal calismali
+			// Clear notch swipe flag — subsequent touches should work normally
 			if (openedBySwipe.current) {
 				openedBySwipe.current = false;
 				return;
@@ -322,7 +322,7 @@ export default function BottomSheetNav() {
 		setOpen(false);
 	}
 
-	// Centik native uygulamada + mobil tarayicida gorunur, masaustu tarayicida gizli
+	// Notch visible in native app + mobile browser, hidden in desktop browser
 	if (!isNative() && !mobileMode) return null;
 
 	return (

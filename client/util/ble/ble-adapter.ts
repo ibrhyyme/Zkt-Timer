@@ -10,8 +10,8 @@ export interface BleRequestDeviceOptions {
 	optionalServices: string[];
 	excludeDeviceIds?: string[];
 	/**
-	 * Eger true ise name filter'lari bypass edilir, tum BLE cihazlari listede gozukur.
-	 * Standart disi isimli cube'lar (clone, firmware update, garip varyant) icin debug ozelligi.
+	 * If true, name filters are bypassed, all BLE devices appear in the list.
+	 * Debug feature for non-standard named cubes (clone, firmware update, odd variant).
 	 */
 	acceptAll?: boolean;
 }

@@ -22,8 +22,8 @@ export default function PublishSolves(props: IModalProps) {
 	const { t } = useTranslation();
 	const {onComplete} = props;
 
-	// cube_type='wca' bucket'i icin subset zorunlu (cube-subset-bucket kurali).
-	// Eski sistemden kalan subset=null kayitlari yayinlama listesine girmesin.
+	// For cube_type='wca' bucket, subset is required (cube-subset-bucket rule).
+	// Records with subset=null from the old system should not appear in the publish list.
 	const cubeTypes = fetchAllCubeTypesSolved(true).filter(
 		(t) => !(t.cube_type === 'wca' && !t.scramble_subset)
 	);

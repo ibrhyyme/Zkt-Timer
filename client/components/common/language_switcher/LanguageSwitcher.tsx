@@ -18,7 +18,7 @@ interface Props {
 	openLeft?: boolean;
 }
 
-// i18n dil kodu → ISO country code (bayrak icin). en → us (global tercih), zh → cn.
+// i18n language code → ISO country code (for flag). en → us (global preference), zh → cn.
 const LANG_OPTIONS: { code: string; flag: string; label: string }[] = [
 	{ code: 'tr', flag: 'tr', label: 'Türkçe' },
 	{ code: 'en', flag: 'us', label: 'English' },
@@ -29,8 +29,8 @@ const LANG_OPTIONS: { code: string; flag: string; label: string }[] = [
 
 const FLAG_SIZE = 18;
 
-// CircleFlag prop'lari bazi durumlarda boyutu uygulamiyor (SVG native size sızıyor).
-// Bu wrapper sabit boyutu garanti eder.
+// CircleFlag props sometimes don't apply size (SVG native size leaks through).
+// This wrapper guarantees fixed size.
 function FlagIcon({ code, size = FLAG_SIZE }: { code: string; size?: number }) {
 	return (
 		<span

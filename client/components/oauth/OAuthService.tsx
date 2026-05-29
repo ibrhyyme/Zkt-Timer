@@ -44,7 +44,7 @@ export default function OAuthService() {
 			.catch((e) => {
 				const msg = e?.graphQLErrors?.[0]?.message || e?.message || '';
 
-				// Structured conflict payload — dedicated scene goster, redirect yapma
+				// Structured conflict payload — show dedicated scene, don't redirect
 				try {
 					const parsed = JSON.parse(msg);
 					if (parsed?.code === 'WCA_ACCOUNT_ALREADY_LINKED') {
@@ -52,17 +52,17 @@ export default function OAuthService() {
 						return;
 					}
 				} catch {
-					// JSON degil, normal toast yoluna devam
+					// Not JSON, continue to normal toast path
 				}
 
-				// Zaten bagli ise sessizce redirect yap
+				// If already linked, silently redirect
 				if (msg.includes('already linked')) {
 					const state = urlParams.get('state');
 					window.location.href = state || '/account/linked-accounts';
 					return;
 				}
 				toastError(msg || t('integration.oauth_error'));
-				// Hata durumunda da geri yonlendir — overlay takilı kalmasın
+				// On error also redirect — don't leave overlay stuck
 				setTimeout(() => {
 					window.location.href = '/account/linked-accounts';
 				}, 2000);

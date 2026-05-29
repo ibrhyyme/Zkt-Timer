@@ -2,7 +2,7 @@
 	position: relative;
 
 	&__nav {
-		// Mobilde tab bar olmadigi icin alt bosluk azaltildi
+		// On mobile, bottom spacing is reduced since there's no tab bar
 		@media (max-width: 768px), (max-height: 500px) {
 			.cd-page-title {
 				padding-bottom: 0.85rem !important;

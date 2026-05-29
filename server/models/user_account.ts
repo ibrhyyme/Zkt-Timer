@@ -47,7 +47,7 @@ export function sanitizeUsers(users: InternalUserAccount[], forPublic = false): 
 			return user;
 		}
 
-		// has_password flag'i frontend icin set et
+		// Set has_password flag for frontend
 		user.has_password = !!user.password;
 
 		// User's password should never go to the front-end
@@ -181,8 +181,8 @@ export async function getUserByEmail(email: string): Promise<InternalUserAccount
 }
 
 /**
- * Email hem `email` hem `pending_email` kolonlarinda kontrol edilir.
- * Signup ve email change icin: ayni email'i baska kullanici "rezerve" etmis olabilir.
+ * Email is checked in both `email` and `pending_email` columns.
+ * For signup and email change: the same email may be "reserved" by another user.
  */
 export async function isEmailReserved(email: string): Promise<boolean> {
 	const lower = email.toLowerCase();
@@ -302,12 +302,12 @@ export async function deleteUserAccount(user: UserAccount): Promise<UserAccount 
 }
 
 /**
- * Var olan unverified hesabi yeni signup verisi ile gunceller (silmek yerine).
- * Race / DoS yuzeyini kapatir: saldirgan ayni email'le defalarca signup denerse
- * kurbanin hesabi silinmez, ayni satir tazelenir; kurban hala dogrulayabilir.
+ * Updates an existing unverified account with new signup data (instead of deleting it).
+ * Closes a race/DoS surface: if an attacker tries signup multiple times with the same email,
+ * the victim's account is not deleted, the same row is refreshed; the victim can still verify.
  *
- * Username @unique kisitini ihlal etmez cunku ayni satir guncellenir.
- * Eski EmailVerification kayitlari silinir, yeni 6 haneli kod uretilir.
+ * Does not violate username @unique constraint because the same row is updated.
+ * Old EmailVerification records are deleted, a new 6-digit code is generated.
  */
 export async function refreshUnverifiedAccount(
 	userId: string,

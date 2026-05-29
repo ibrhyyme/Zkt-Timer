@@ -1,7 +1,7 @@
 @import '../../../styles/config';
 
-// Radix Select primitives icin stil — data-state, data-side, data-highlighted attributes.
-// Animasyonlar CSS keyframes + stagger entrance ile (Linear, Vercel, Notion stili).
+// Styles for Radix Select primitives — data-state, data-side, data-highlighted attributes.
+// Animations via CSS keyframes + stagger entrance (Linear, Vercel, Notion style).
 
 .#{$namespace}-timer-type-picker {
 	&__trigger {
@@ -183,7 +183,7 @@
 			transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 		z-index: 1;
 
-		// Stagger entrance — item'lar tek tek giriyor
+		// Stagger entrance — items enter one by one
 		animation: timer-type-picker-item-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) backwards;
 
 		@for $i from 1 through 7 {
@@ -192,7 +192,7 @@
 			}
 		}
 
-		// Sol yan active stripe (gizli baslangic)
+		// Left side active stripe (hidden start)
 		&::before {
 			content: '';
 			position: absolute;
@@ -206,7 +206,7 @@
 			transition: height 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 		}
 
-		// Sade hover: background dolgusu YOK, sadece sol stripe partial + text color
+		// Simple hover: no background fill, just partial left stripe + text color
 		&[data-highlighted] {
 			background: transparent;
 			color: rgb(var(--text-color));
@@ -231,7 +231,7 @@
 				color: #fff;
 			}
 
-			// Active + hover: solid bg kalir
+			// Active + hover: solid bg remains
 			&[data-highlighted] {
 				background: rgb(var(--primary-color));
 				color: #fff;
@@ -309,7 +309,7 @@
 	}
 }
 
-// Spring-like animasyonlar
+// Spring-like animations
 @keyframes timer-type-picker-content-in {
 	from {
 		opacity: 0;
@@ -357,7 +357,7 @@
 	}
 }
 
-// Mobile'da trigger gizli (modal Timer tab kullaniliyor)
+// Mobile: trigger hidden (modal Timer tab used)
 @media (max-width: 1023px) {
 	.#{$namespace}-timer-type-picker {
 		&__trigger {

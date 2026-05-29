@@ -1,11 +1,11 @@
 /**
- * SolutionPlayer — scramble'i setup olarak kurup cozumu modern, kendi
- * kontrol cubuguyla adim adim oynatir (ReplayPlayer ilhamli):
- *   - cubing controlPanel: 'none' (gri kutu yok) — kontrol bizim
- *   - forward: experimentalAddMove (akici animasyon) · backward: reset + replay
- *   - kendi UI: seek slider + play/pause + hiz + hamle sayaci
- * alg boş (reveal oncesi) ise sadece scramble gosterilir, kontrol gizli.
- * SSR guvenligi: React.lazy ile yuklenir (cubing/twisty HTMLElement extend eder).
+ * SolutionPlayer — sets up scramble and plays solution step-by-step with custom
+ * control bar (ReplayPlayer-inspired):
+ *   - cubing controlPanel: 'none' (no gray box) — controls are ours
+ *   - forward: experimentalAddMove (smooth animation) · backward: reset + replay
+ *   - own UI: seek slider + play/pause + speed + move counter
+ * if alg empty (before reveal) shows only scramble, controls hidden.
+ * SSR safety: loaded with React.lazy (cubing/twisty extends HTMLElement).
  */
 import React, {useEffect, useRef, useState, useMemo, useCallback} from 'react';
 import {useTranslation} from 'react-i18next';
@@ -33,7 +33,7 @@ const SolutionPlayer: React.FC<Props> = ({scramble, alg, className, maskType, ma
 	const containerRef = useRef<HTMLDivElement>(null);
 	const playerRef = useRef<TwistyPlayer | null>(null);
 	const appliedRef = useRef(0);
-	const maskRef = useRef<any>(null); // son hesaplanan mask — setupAlg reset'inden sonra geri uygulanir
+	const maskRef = useRef<any>(null); // last calculated mask — reapplied after setupAlg reset
 
 	const [ready, setReady] = useState(false);
 	const [moveIdx, setMoveIdx] = useState(0);
@@ -43,7 +43,7 @@ const SolutionPlayer: React.FC<Props> = ({scramble, alg, className, maskType, ma
 	const moves = useMemo(() => (alg.trim() ? alg.trim().split(/\s+/) : []), [alg]);
 	const total = moves.length;
 
-	// Player tek sefer kurulur (puzzle hep 3x3x3)
+	// Player set up once (puzzle always 3x3x3)
 	useEffect(() => {
 		if (typeof window === 'undefined' || !containerRef.current) return;
 		const player = new TwistyPlayer({
@@ -73,8 +73,8 @@ const SolutionPlayer: React.FC<Props> = ({scramble, alg, className, maskType, ma
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
-	// Sticker mask — sadece algoritmayi ilgilendiren parcalar renkli, kalan gri.
-	// type/slot/rotation degisince yeniden hesaplanir (rotation-aware, cache'li).
+	// Sticker mask — only parts relevant to algorithm in color, rest gray.
+	// Recalculated when type/slot/rotation change (rotation-aware, cached).
 	useEffect(() => {
 		if (!ready || !playerRef.current || !maskType) return;
 		let cancelled = false;
@@ -87,18 +87,18 @@ const SolutionPlayer: React.FC<Props> = ({scramble, alg, className, maskType, ma
 					if (mask) (p as any).experimentalStickeringMaskOrbits = mask;
 					else (p as any).experimentalStickering = 'full';
 				} catch {
-					// stickering desteklenmiyor — full kalir
+					// stickering not supported — stays full color
 				}
 			})
 			.catch(() => {
-				// mask hesabi reddedildi — full renkli kalir
+				// mask calculation rejected — stays full color
 			});
 		return () => {
 			cancelled = true;
 		};
 	}, [maskType, maskSlot, maskRotation, ready]);
 
-	// scramble veya alg degisince: setup'a don, hamleyi sifirla
+	// When scramble or alg changes: return to setup, reset move
 	useEffect(() => {
 		const p = playerRef.current;
 		setMoveIdx(0);
@@ -108,14 +108,14 @@ const SolutionPlayer: React.FC<Props> = ({scramble, alg, className, maskType, ma
 		try {
 			p.alg = '';
 			(p as TwistyPlayer & {experimentalSetupAlg: string}).experimentalSetupAlg = scramble;
-			// setupAlg degisimi stickering'i sifirlayabilir → mask'i geri uygula (next()'te kaybolmasin)
+			// setupAlg change may reset stickering → reapply mask (don't lose on next())
 			if (maskRef.current) (p as any).experimentalStickeringMaskOrbits = maskRef.current;
 		} catch {
-			// cubing notasyonu parse edemedi
+			// cubing notation parse failed
 		}
 	}, [scramble, alg]);
 
-	// moveIdx degisince TwistyPlayer'i senkronize et
+	// Sync TwistyPlayer when moveIdx changes
 	useEffect(() => {
 		if (!ready || !playerRef.current) return;
 		const p = playerRef.current;
@@ -124,12 +124,12 @@ const SolutionPlayer: React.FC<Props> = ({scramble, alg, className, maskType, ma
 		const target = Math.max(0, Math.min(moveIdx, total));
 		try {
 			if (target > applied) {
-				// Forward — akici animasyon
+				// Forward — smooth animation
 				for (let i = applied; i < target; i++) {
 					(p as any).experimentalAddMove(moves[i], {cancel: false});
 				}
 			} else {
-				// Backward — sifirla + 0..target uygula (instant)
+				// Backward — reset + apply 0..target (instant)
 				p.alg = '';
 				(p as TwistyPlayer & {experimentalSetupAlg: string}).experimentalSetupAlg = scramble;
 				for (let i = 0; i < target; i++) {
@@ -138,11 +138,11 @@ const SolutionPlayer: React.FC<Props> = ({scramble, alg, className, maskType, ma
 			}
 			appliedRef.current = target;
 		} catch {
-			// notasyon hatasi — sessizce gec
+			// notation error — silently skip
 		}
 	}, [moveIdx, moves, ready, scramble, total]);
 
-	// Playback — currentMoveIdx'i ilerletir
+	// Playback — advances currentMoveIdx
 	useEffect(() => {
 		if (!isPlaying || !ready) return;
 		if (moveIdx >= total) {

@@ -2,14 +2,14 @@ import React, { useMemo } from 'react';
 import type { CubeFace } from '../types';
 
 /**
- * Isometric 3-yuz kup gorunumu (U + F + R).
- * cubingapp/speedcubedb stilinde 2D izometrik projeksiyon.
+ * Isometric 3-face cube view (U + F + R).
+ * 2D isometric projection in cubingapp/speedcubedb style.
  *
- * Pattern formati: 27 char (column-major sirayla)
+ * Pattern format: 27 char (column-major order)
  *   - 0..8:  U face
  *   - 9..17: F face
  *   - 18..26: R face
- *   - Her char: U/F/D/B/L/R (yuz rengi) veya X (gray)
+ *   - Each char: U/F/D/B/L/R (face color) or X (gray)
  *
  * Column-major → (row, col) mapping: index = col * 3 + row
  */
@@ -58,7 +58,7 @@ function computeMapping(top: CubeFace, front: CubeFace): Record<CubeFace, CubeFa
 
 type Pt = [number, number];
 
-/** Polygon'u merkezine dogru shrink_factor kadar kucultur */
+/** Shrink polygon toward its center by shrink_factor */
 function shrinkPolygon(pts: Pt[], factor: number): Pt[] {
 	const cx = pts.reduce((s, p) => s + p[0], 0) / pts.length;
 	const cy = pts.reduce((s, p) => s + p[1], 0) / pts.length;
@@ -90,18 +90,18 @@ export default function CubeIsometricView({ pattern, topFace = 'U', frontFace = 
 		const cellDx = 20;
 		const cellDy = 11.5;
 		const cellH = 20;
-		const shrink = 0.88; // gap icin kuculme orani
+		const shrink = 0.88; // shrink ratio for gap
 
 		const result: React.ReactElement[] = [];
 
-		// ── U face (ust parallelogram — elmas seklinde) ──
+		// ── U face (top parallelogram — diamond shape) ──
 		// rightStep = (cellDx, cellDy), leftStep = (-cellDx, cellDy)
 		for (let row = 0; row < N; row++) {
 			for (let col = 0; col < N; col++) {
 				const cmIdx = col * N + row;
 				const color = getColor(pattern[cmIdx]);
 
-				// Hucre kose noktalari (saat yonunde: top, right, bottom, left)
+				// Cell corner points (clockwise: top, right, bottom, left)
 				const tl: Pt = [(N + col - row) * cellDx, (col + row) * cellDy];
 				const tr: Pt = [(N + col + 1 - row) * cellDx, (col + 1 + row) * cellDy];
 				const br: Pt = [(N + col - row) * cellDx, (col + row + 2) * cellDy];
@@ -115,7 +115,7 @@ export default function CubeIsometricView({ pattern, topFace = 'U', frontFace = 
 			}
 		}
 
-		// ── F face (on-sol parallelogram) ──
+		// ── F face (front-left parallelogram) ──
 		// Origin: Left = (0, N*cellDy)
 		// rightStep = (cellDx, cellDy), downStep = (0, cellH)
 		for (let row = 0; row < N; row++) {
@@ -139,7 +139,7 @@ export default function CubeIsometricView({ pattern, topFace = 'U', frontFace = 
 			}
 		}
 
-		// ── R face (on-sag parallelogram) ──
+		// ── R face (front-right parallelogram) ──
 		// Origin: Center = (N*cellDx, 2*N*cellDy)
 		// rightStep = (cellDx, -cellDy), downStep = (0, cellH)
 		for (let row = 0; row < N; row++) {

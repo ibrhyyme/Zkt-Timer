@@ -1,7 +1,7 @@
 /**
- * Note — per-case kullanici notu, Shift+N hotkey (enableHotkeys=true).
- * Tamamen prop-driven (Provider erisimi yok) — boylece openModal ile mount edilen
- * CaseVariationsModal icinde de calisir.
+ * Note — per-case user note, Shift+N hotkey (enableHotkeys=true).
+ * Fully prop-driven (no Provider access) — works even inside
+ * CaseVariationsModal mounted via openModal.
  */
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import block from '../../../../styles/bem';

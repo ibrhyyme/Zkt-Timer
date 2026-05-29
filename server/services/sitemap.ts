@@ -193,7 +193,7 @@ function getDefaultSiteMapUrls() {
 	const urls: SiteMapUrl[] = [];
 	const today = new Date().toISOString().split('T')[0];
 
-	// Sitemap'e dahil edilmemesi gereken path'ler
+	// Paths that should not be included in the sitemap
 	const excludedPaths = [
 		'/settings',
 		'/sessions',
@@ -203,7 +203,7 @@ function getDefaultSiteMapUrls() {
 		'/account',
 		'/oauth',
 		'/admin',
-		// ZKT yarismalari ozel — Google'a hicbir formda verme
+		// ZKT competitions are private — never expose to Google in any form
 		'/community/zkt-competitions',
 		'/community/zkt-records',
 		'/community/zkt-rankings',
@@ -244,8 +244,8 @@ function getSiteMapXmlFromSchemaUrlList(urls: SiteMapUrl[]): string {
 
 	return `
 		<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-			${urlListInXml}		  
-		</urlset> 
+			${urlListInXml}
+		</urlset>
 	`;
 }
 
@@ -270,24 +270,24 @@ async function uploadProfileSiteMaps(): Promise<{ urls: string[]; totalProfiles:
 	const prisma = getPrisma();
 	const activeThreshold = new Date(Date.now() - ACTIVE_DAYS_WINDOW * 24 * 60 * 60 * 1000);
 
-	// Kaliteli profil filtresi:
-	// - Banli degil, email dogrulanmis, username var
-	// - WCA hesabi baglamis ZORUNLU (kullanici tercihi: WCA bagli olmayan profilleri Google'a sunma)
-	// - Ek olarak en az BIR aktiflik/kalite sinyali (solve, pfp, bio, Pro/Premium, top solves)
+	// Quality profile filter:
+	// - Not banned, email verified, has username
+	// - Must have WCA account linked (user preference: don't expose non-WCA profiles to Google)
+	// - Additionally, at least ONE activity/quality signal (solve, pfp, bio, Pro/Premium, top solves)
 	const users = await prisma.userAccount.findMany({
 		where: {
 			banned_forever: false,
 			email_verified: true,
 			username: { not: null },
-			integrations: { some: {} },                         // WCA bagli zorunlu
+			integrations: { some: {} },                         // WCA link required
 			OR: [
-				{ last_solve_at: { gte: activeThreshold } },   // son 30 gunde solve
-				{ is_pro: true },                               // Pro uye
-				{ is_premium: true },                           // Premium uye
-				{ profile: { bio: { not: null } } },            // bio yazmis
-				{ profile: { pfp_image_id: { not: null } } },   // profil fotosu yuklemis
-				{ top_solves: { some: {} } },                   // top solve'a girmis
-				{ top_average: { some: {} } },                  // top average'a girmis
+				{ last_solve_at: { gte: activeThreshold } },   // solved in last 30 days
+				{ is_pro: true },                               // Pro subscriber
+				{ is_premium: true },                           // Premium subscriber
+				{ profile: { bio: { not: null } } },            // has written bio
+				{ profile: { pfp_image_id: { not: null } } },   // has uploaded profile picture
+				{ top_solves: { some: {} } },                   // has top solve
+				{ top_average: { some: {} } },                  // has top average
 			],
 		},
 		select: {
@@ -333,4 +333,3 @@ async function uploadProfileSiteMaps(): Promise<{ urls: string[]; totalProfiles:
 
 	return { urls: uploadedUrls, totalProfiles: users.length };
 }
-

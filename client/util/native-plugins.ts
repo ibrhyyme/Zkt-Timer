@@ -1,7 +1,7 @@
 import { isNative } from './platform';
 import { getSetting } from '../db/settings/query';
 
-// Keep Awake — cozum sirasinda ekran acik tutar
+// Keep Awake — keeps screen on during solve
 export async function keepScreenAwake(): Promise<void> {
 	if (!isNative()) return;
 	try {
@@ -22,7 +22,7 @@ export async function allowScreenSleep(): Promise<void> {
 	}
 }
 
-// Haptics — dokunsal geri bildirim
+// Haptics — tactile feedback
 export async function hapticImpact(style: 'light' | 'medium' | 'heavy' = 'medium'): Promise<void> {
 	if (!isNative()) return;
 	if (getSetting('haptic_feedback') === false) return;
@@ -35,7 +35,7 @@ export async function hapticImpact(style: 'light' | 'medium' | 'heavy' = 'medium
 		};
 		await Haptics.impact({ style: styleMap[style] });
 	} catch (e) {
-		// Sessizce basarisiz ol — haptic kritik degil
+		// Fail silently — haptic is not critical
 	}
 }
 
@@ -51,11 +51,11 @@ export async function hapticNotification(type: 'success' | 'warning' | 'error' =
 		};
 		await Haptics.notification({ type: typeMap[type] });
 	} catch (e) {
-		// Sessizce basarisiz ol
+		// Fail silently
 	}
 }
 
-// Status Bar — koyu tema + arka plan rengi
+// Status Bar — dark theme + background color
 export async function initStatusBar(): Promise<void> {
 	if (!isNative()) return;
 	try {
@@ -67,7 +67,7 @@ export async function initStatusBar(): Promise<void> {
 	}
 }
 
-// Text Zoom — iOS yazi boyutu kilidleme
+// Text Zoom — iOS text size locking
 export async function lockTextZoom(): Promise<void> {
 	if (!isNative()) return;
 	try {
@@ -78,7 +78,7 @@ export async function lockTextZoom(): Promise<void> {
 	}
 }
 
-// Safe Area — native safe area inset'lerini CSS env() degiskenlerine uygular
+// Safe Area — applies native safe area insets to CSS env() variables
 export async function initSafeArea(): Promise<void> {
 	if (!isNative()) return;
 	try {
@@ -97,7 +97,7 @@ export async function initSafeArea(): Promise<void> {
 	}
 }
 
-// Network — baglanti durumu izleme
+// Network — connection status monitoring
 export async function initNetworkListener(
 	onStatusChange: (connected: boolean) => void
 ): Promise<(() => void) | undefined> {
@@ -125,18 +125,18 @@ export async function getNetworkStatus(): Promise<boolean> {
 	}
 }
 
-// Toast — native toast mesajlari
+// Toast — native toast messages
 export async function showNativeToast(text: string, duration: 'short' | 'long' = 'short'): Promise<void> {
 	if (!isNative()) return;
 	try {
 		const { Toast } = await import('@capacitor/toast');
 		await Toast.show({ text, duration, position: 'bottom' });
 	} catch (e) {
-		// Fallback: web toast kullanilacak
+		// Fallback: web toast will be used
 	}
 }
 
-// Share — native paylasim dialog'u
+// Share — native share dialog
 export async function shareContent(options: { title: string; text: string; url?: string }): Promise<boolean> {
 	if (!isNative()) {
 		// Web Share API fallback
@@ -164,7 +164,7 @@ export async function shareContent(options: { title: string; text: string; url?:
 	}
 }
 
-// In-App Review — store degerlendirme istegi
+// In-App Review — store rating request
 let _reviewRequested = false;
 export async function requestInAppReview(): Promise<void> {
 	if (!isNative() || _reviewRequested) return;
@@ -177,7 +177,7 @@ export async function requestInAppReview(): Promise<void> {
 	}
 }
 
-// Local Notifications — yerel bildirim gonderme
+// Local Notifications — local notification sending
 export async function scheduleLocalNotification(options: {
 	title: string;
 	body: string;

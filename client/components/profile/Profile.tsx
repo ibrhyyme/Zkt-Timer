@@ -67,8 +67,8 @@ export async function getProfileData(username: string): Promise<IProfileData> {
 		username,
 	} as any);
 
-	// cube_type='wca' bucket'i icin subset zorunlu — subset'siz PB kayitlari
-	// eski sistemden kalan orphan'lar, profil listesine girmesin.
+	// For cube_type='wca' bucket, subset is required — PB records without subset
+	// are orphans from the old system and should not appear in the profile list.
 	const topSolves = (result.data.profile.top_solves || []).filter(
 		(ts) => !(ts.solve?.cube_type === 'wca' && !ts.solve?.scramble_subset)
 	);
@@ -111,7 +111,7 @@ export async function prefetchProfileData(store, req) {
 function SocialIcons({ profile }: { profile: ProfileSchema }) {
 	const links: { key: string; icon: React.ReactNode; href: string }[] = [];
 
-	// safeExternalUrl: javascript:, data: gibi tehlikeli protokolleri reddet (XSS koruma)
+	// safeExternalUrl: reject dangerous protocols like javascript:, data: (XSS protection)
 	const youtubeHref = safeExternalUrl(profile.youtube_link);
 	if (youtubeHref) {
 		links.push({
@@ -262,22 +262,22 @@ export default function Profile() {
 			const records = (res.data as any).wcaRecords || [];
 			setWcaRecords(records);
 
-			// PB yoksa ve WCA kaydi varsa varsayilan tab'i degistir
+			// If no PB but WCA records exist, change the default tab
 			if (Object.keys(pbs || {}).length === 0 && records.length > 0) {
 				setRecordsTab('wca');
 			}
 
-			// Integration metadata'yi ilk record'dan al
+			// Get integration metadata from first record
 			if (records.length > 0 && records[0].integration) {
 				const int = records[0].integration;
 				setWcaIntegration(int);
 
-				// WCA results verisini de burada cek (tab degisiminde remount olmasin)
+				// Also fetch WCA results data here (to prevent remount on tab change)
 				if (int.wca_id && int.wca_show_results !== false) {
 					loadWcaResultsData(int.wca_id);
 				}
 
-				// PB ve WCA kaydi yoksa ama results varsa
+				// If no PB and no WCA records but results exist
 				if (Object.keys(pbs || {}).length === 0 && records.length === 0 && int.wca_id && int.wca_show_results !== false) {
 					setRecordsTab('results');
 				}
@@ -375,7 +375,7 @@ export default function Profile() {
 		setCuberCardOpen(true);
 		setCuberCardGenerating(true);
 		try {
-			// Hidden component'in DOM'a girmesi + cubing-icon font yuklenmesi icin kucuk bekleme
+			// Small delay for hidden component to enter DOM + cubing-icon font to load
 			await new Promise((r) => setTimeout(r, 100));
 			if (!cuberCardRef.current) {
 				throw new Error('Card ref not ready');
@@ -436,7 +436,7 @@ export default function Profile() {
 	const pbCount = topCubeTypes.length;
 	const wcaCount = wcaRecords.length;
 
-	// En iyi world rank hesapla
+	// Calculate best world rank
 	let bestWorldRank: number | undefined;
 	let bestWorldRankEvent: string | undefined;
 	for (const rec of wcaRecords as any[]) {
@@ -450,7 +450,7 @@ export default function Profile() {
 		}
 	}
 
-	// Varsayilan tab: PB yoksa WCA'ya, WCA da yoksa results'a gec
+	// Default tab: if no PB switch to WCA, if no WCA switch to results
 	const hasResults = wcaIntegration?.wca_id && wcaIntegration.wca_show_results !== false;
 	const showTabs = pbCards.length > 0 || wcaCards.length > 0 || hasResults;
 
@@ -578,7 +578,7 @@ export default function Profile() {
 			/>
 			<h1 className="sr-only">{user.username} - Cuber Profile | Zkt Timer</h1>
 			<div className={b({ me: myProfile })}>
-				{/* Banner — sadece kapak resmi varsa ve desktop'taysa goster */}
+				{/* Banner — show only if header image exists and on desktop */}
 				{headerImage && !mobileMode && (
 					<div className={b('banner')}>
 						{myProfile && <UploadCover upload={uploadProfileHeader} />}
@@ -587,7 +587,7 @@ export default function Profile() {
 					</div>
 				)}
 
-				{/* Identity Block — banner yoksa centered layout */}
+				{/* Identity Block — if no banner use centered layout */}
 				{headerImage && !mobileMode ? (
 					<div className={b('identity')}>
 						<div className={b('identity-pfp')}>
@@ -616,7 +616,7 @@ export default function Profile() {
 					</div>
 				) : (
 					<>
-						{/* Mobilde AvatarDropdown sayfanin sag ustunde */}
+						{/* On mobile, AvatarDropdown is in the top right corner */}
 						{mobileMode && (
 							<div className={b('corner-dropdown')}>
 								<AvatarDropdown user={user as any} />
@@ -652,7 +652,7 @@ export default function Profile() {
 					{/* Desktop publish buttons */}
 					{desktopPublishButtons}
 
-					{/* Bio Card — en ustte, bossa gizle */}
+					{/* Bio Card — at the top, hidden if empty */}
 					{profile.bio && <About profile={profile} />}
 
 					{/* WCA Summary Card */}
@@ -692,7 +692,7 @@ export default function Profile() {
 			{/* Mobile FAB */}
 			{fab}
 
-			{/* Hidden Cuber Card snapshot kaynagi — sadece olusturma sirasinda DOM'da */}
+			{/* Hidden Cuber Card snapshot source — only in DOM during generation */}
 			{cuberCardOpen && me && (
 				<div
 					ref={cuberCardRef}

@@ -1,8 +1,8 @@
 /**
- * TrainerView — efficiency cekirdek akisi. Tek-ekran 2-sutun (scroll yok):
- *  ust: kompakt kontrol cubugu (tur + rotasyon/slot/uzunluk dropdown)
- *  algoritma (scramble) tam genislik bar
- *  sol: tek 3D kup (SolutionPlayer) + Back/Next · sag: Goster / cozum paneli
+ * TrainerView — efficiency core flow. Single-screen 2-column (no scroll):
+ *  top: compact control bar (type + rotation/slot/length dropdown)
+ *  algorithm (scramble) full-width bar
+ *  left: single 3D cube (SolutionPlayer) + Back/Next · right: Show / solution panel
  */
 import React, {Suspense, useEffect, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
@@ -44,8 +44,8 @@ export default function TrainerView() {
 		() => (settings.showAllSolutions ? sortSolutions(session.results) : []),
 		[settings.showAllSolutions, session.results]
 	);
-	// Rotation setup'a dahil (kup dogru acida baslar), oynatici SADECE cozum hamlelerini
-	// oynatir → seek/sayac (X/total) ile SolutionList moveCount tutarli.
+	// Rotation included in setup (cube starts at correct angle), player ONLY plays solution moves
+	// → seek/counter (X/total) matches SolutionList moveCount.
 	const setupAlg = [session.scramble, selected?.rotation].filter(Boolean).join(' ');
 	const solutionAlg = selected ? selected.solution.join(' ') : '';
 
@@ -55,7 +55,7 @@ export default function TrainerView() {
 
 	return (
 		<div className={b('trainer')}>
-			{/* Kompakt kontrol cubugu */}
+			{/* Compact control bar */}
 			<div className={b('controls')}>
 				<EfficiencyTypePicker value={session.type} onChange={setType} />
 				<RotationPicker value={session.rotation} onChange={setRotation} />
@@ -81,7 +81,7 @@ export default function TrainerView() {
 				<TargetLengthPicker type={session.type} value={session.targetLength} onChange={setTargetLength} />
 			</div>
 
-			{/* Algoritma (scramble) — ortada buyuk, Geri/Sonraki yanlarda */}
+			{/* Algorithm (scramble) — large in center, Back/Next on sides */}
 			{session.scramble && (
 				<div className={b('scramble-bar')}>
 					<Button
@@ -108,7 +108,7 @@ export default function TrainerView() {
 
 			{session.scramble && (
 				<div className={b('stage', {loading: session.loading})}>
-					{/* SOL — tek kup + oynatici */}
+					{/* LEFT — single cube + player */}
 					<div className={b('cube-col')}>
 						<Suspense fallback={<div className={b('skeleton')} />}>
 							<SolutionPlayer
@@ -122,7 +122,7 @@ export default function TrainerView() {
 						</Suspense>
 					</div>
 
-					{/* SAG — Goster / cozum paneli */}
+					{/* RIGHT — Show / solution panel */}
 					<div className={b('panel', {revealed: session.revealed})}>
 						<div className={b('panel-body')}>
 							{!session.revealed ? (

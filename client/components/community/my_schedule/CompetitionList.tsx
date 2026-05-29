@@ -55,7 +55,7 @@ function getZktCache(): any[] | null {
 }
 
 // Module-level cache with TTL
-const LIST_CACHE_TTL = 30 * 60 * 1000; // 30 dakika
+const LIST_CACHE_TTL = 30 * 60 * 1000; // 30 minutes
 let cachedCompetitions: {data: any[]; ts: number} | null = null;
 let cachedMyComps: {data: any[]; ts: number} | null = null;
 
@@ -93,7 +93,7 @@ export default function CompetitionList() {
 				(c: any) => c.name.toLowerCase().includes(q) || c.city?.toLowerCase().includes(q)
 			);
 		}
-		// Devam eden yarismalari listenin basina koy
+		// Display ongoing competitions first, then others
 		const now = new Date();
 		const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 		const ongoing = list.filter((c: any) => c.start_date <= today && c.end_date >= today);
@@ -106,7 +106,7 @@ export default function CompetitionList() {
 		if (!getZktCache()) fetchZktCompetitions();
 	}, []);
 
-	// Live refresh: any ZKT competition create/update/delete → refetch list.
+	// Live refresh: when any ZKT competition is created/updated/deleted, refetch list
 	useZktCompListRefetch(fetchZktCompetitions);
 
 	useEffect(() => {
@@ -124,17 +124,17 @@ export default function CompetitionList() {
 			cachedZktComps = {data, ts: Date.now()};
 			setZktComps(data);
 		} catch (err) {
-			// sessiz — ZKT yarisma yoksa veya login degilse zaten bos gosterilecek
+			// silent — if no ZKT competitions or not logged in, empty list will be shown anyway
 			setZktComps([]);
 		}
 	}
 
-	// App resume / tab focus: arka planda sessiz refresh et — cached liste varken
-	// kullanici yeni yarismalari gorebilsin, manuel aç/kapa gerekmesin
+	// App resume / tab focus: silently refresh in background — so users see new competitions
+	// without manually refreshing
 	useEffect(() => {
 		const silentRefresh = () => {
 			if (document.visibilityState !== 'visible') return;
-			// Son fetch 2 dakikadan eskiyse tekrar dene (cok sik istek atma)
+			// If last fetch was older than 2 minutes, refetch (avoid excessive requests)
 			const cache = cachedCompetitions;
 			if (!cache || Date.now() - cache.ts > 2 * 60 * 1000) {
 				fetchCompetitions();
@@ -154,10 +154,10 @@ export default function CompetitionList() {
 		};
 	}, [me]);
 
-	// Prefetch: kullanicinin yarismalari + en yakin 3 yarisma
+	// Prefetch: user's competitions + next 3 upcoming competitions
 	useEffect(() => {
 		if (!myComps || myComps.length === 0) return;
-		// Kullanici yarismalari yuklenince ilk 3'unu prefetch et
+		// Once user competitions load, prefetch first 3
 		const targets = myComps.slice(0, 3);
 		targets.forEach((c: any, i: number) => {
 			setTimeout(() => prefetchCompetitionDetail(c.competitionId || c.id), 500 + i * 200);
@@ -166,14 +166,14 @@ export default function CompetitionList() {
 
 	useEffect(() => {
 		if (!competitions || competitions.length === 0) return;
-		// Genel listeden ilk 3 (genelde upcoming en yakin)
+		// Prefetch first 3 from general list (usually the nearest upcoming)
 		const targets = competitions.slice(0, 3);
 		targets.forEach((c: any, i: number) => {
 			setTimeout(() => prefetchCompetitionDetail(c.id), 1500 + i * 300);
 		});
 	}, [competitions]);
 
-	// Hover prefetch (web)
+	// On hover, prefetch competition detail after 200ms
 	const hoverTimerRef = useRef<any>(null);
 	function handleHoverPrefetch(competitionId: string) {
 		clearTimeout(hoverTimerRef.current);
@@ -201,11 +201,11 @@ export default function CompetitionList() {
 			const res = await gqlQueryTyped(WcaCompetitionsDocument, {filter: {}}, {fetchPolicy: 'no-cache'});
 			const data = res.data?.wcaCompetitions || [];
 			if (data.length > 0) {
-				// Sadece gercek data cache'lenir — bos dondugunde cache yazarsak 30 dk boyunca
-				// "bulunamadi" kalir, kullanici her aç/kapa'da tekrar dener
+				// Only cache data with results — if empty, don't cache to avoid showing
+				// "no competitions found" for 30 minutes when user force-refreshes
 				cachedCompetitions = {data, ts: Date.now()};
 			} else {
-				console.warn('[CompetitionList] wcaCompetitions returned empty array — cache yazilmadi');
+				console.warn('[CompetitionList] wcaCompetitions returned empty array — cache not written');
 			}
 			setCompetitions(data);
 		} catch (err: any) {
@@ -307,7 +307,7 @@ export default function CompetitionList() {
 	return (
 		<div className={b('content')}>
 			<h1 className="sr-only">{t('seo.wca_competitions_title')}</h1>
-			{/* WCA banner — sadece WCA bagli degilken goster */}
+			{/* WCA banner — show only when WCA is not linked */}
 			{!compSearch.trim() && !me?.integrations?.some((i: any) => i.service_name === 'wca') && (
 				<div className={b('wca-banner')}>
 					<img src={resourceUri('/images/logos/wca_logo.svg')} alt="WCA" className={b('wca-banner-logo')} />
@@ -338,7 +338,7 @@ export default function CompetitionList() {
 				</div>
 			)}
 
-			{/* Benim Yarismalarin — WCA bagliysa her zaman goster */}
+			{/* My Competitions — show only if WCA is linked */}
 			{!compSearch.trim() && me?.integrations?.some((i: any) => i.service_name === 'wca') && (
 				<div className={b('my-competitions')}>
 					<h3 className={b('section-title')}>{t('my_schedule.my_competitions')}</h3>
@@ -354,7 +354,7 @@ export default function CompetitionList() {
 				</div>
 			)}
 
-			{/* Yaklasan Sampiyonalar — ozel vitrin */}
+			{/* Upcoming Championships — special showcase */}
 			{!compSearch.trim() && zktComps && zktComps.some((c: any) => c.championship_type && c.date_end >= todayStr) && (
 				<div className={b('zkt-championships')}>
 					<h3 className={b('section-title')}>
@@ -389,8 +389,8 @@ export default function CompetitionList() {
 				</div>
 			)}
 
-			{/* ZKT Yarismalari — aktif sampiyonalari yukaridaki vitrinden tekrar
-			     gosterme, sadece sampiyona olmayan veya gecmis olanlar burada. */}
+			{/* ZKT Competitions — don't repeat championships from section above,
+			     only display non-championship or past competitions here */}
 			{(() => {
 				const regularZkt = (zktComps || []).filter(
 					(c: any) => !c.championship_type || c.date_end < todayStr
@@ -434,7 +434,7 @@ export default function CompetitionList() {
 				);
 			})()}
 
-			{/* Arama */}
+			{/* Search */}
 			<div className={b('search-box')}>
 				<MagnifyingGlass size={18} weight="bold" />
 				<input

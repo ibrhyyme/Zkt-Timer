@@ -1,6 +1,6 @@
 /**
- * Session history (Dexie/IndexedDB) — referans `session_history.js` birebir portu.
- * SSR safe: indexedDB yoksa no-op + bos cevap.
+ * Session history (Dexie/IndexedDB) — exact port of reference `session_history.js`.
+ * SSR safe: if indexedDB missing, no-op + empty response.
  */
 import {getRecognitionDb, isRecognitionDbAvailable, type RecognitionSessionRecord} from '../../../db/recognition_db';
 import {allPllKeys} from './pll_cases';
@@ -25,7 +25,7 @@ export async function saveSession({pool, sizeOption, presetLabel, results}: Save
 	const correctCount = results.filter((r) => r.mistake === '').length;
 	let totalTimeMs = 0;
 	results.forEach((r) => {
-		// Saat geri alinirsa negatif sure olusabilir; istatistik bozulmasin diye 0'a clamp'le
+		// If clock goes back, negative duration can occur; clamp to 0 to avoid stats corruption
 		totalTimeMs += Math.max(0, new Date(r.finished).getTime() - new Date(r.started).getTime());
 	});
 

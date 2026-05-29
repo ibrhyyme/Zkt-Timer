@@ -1,35 +1,35 @@
 /**
- * Move counter — cstimer-grade HTM/OBTM/ETM/STM hesabi.
+ * Move counter — cstimer-grade HTM/OBTM/ETM/STM calculation.
  *
- * cstimer recons.js (GPL v3) MoveCounterHTM/MoveCounterLFMC siniflarindan birebir port.
- * Lisans: cstimer GPL v3 — direkt port, header'da credit.
+ * Direct port from cstimer recons.js (GPL v3) MoveCounterHTM/MoveCounterLFMC classes.
+ * License: cstimer GPL v3 — direct port, credit in header.
  *
- * Metrik tanimlari:
- *   HTM (Half Turn Metric): cstimer-style — paralel duzlem mantigi.
- *     Ardisik paralel duzlemde ayni yuze tekrarli hamleler 1 hamle sayilir.
- *     Ornek: R R = 1 (R2 esdeger), R L = 2, R U R = 2 (yeni paralel grup), R U R' = 3.
+ * Metric definitions:
+ *   HTM (Half Turn Metric): cstimer-style — parallel plane logic.
+ *     Consecutive parallel plane repeated moves on same face count as 1 move.
+ *     Example: R R = 1 (equivalent to R2), R L = 2, R U R = 2 (new parallel group), R U R' = 3.
  *
  *   OBTM (Outer Block Turn Metric): face + wide turns 1, slice/rotation 0.
- *     Burst counting yok — ham hamle sayisi.
+ *     No burst counting — raw move count.
  *
  *   ETM (Execution Turn Metric): face + wide + slice 1, rotation 0.
  *
  *   STM (Slice Turn Metric): face + slice 1, wide 1, rotation 0.
- *     (Outer Block + Slice ayri sayilir.)
+ *     (Outer block + slice counted separately.)
  *
- * Move encoding (cstimer convention, URFDLB sirasi):
+ * Move encoding (cstimer convention, URFDLB order):
  *   axis 0=U, 1=R, 2=F, 3=D, 4=L, 5=B (face turns)
  *   axis 6=E, 7=M, 8=S (slice turns)
- *   axis%3 ile paralel duzlem belirlenir: 0=U-D-E, 1=R-L-M, 2=F-B-S
- *   Wide moves (Rw, r, vb.) outer face axis'ini paylasir
- *   Rotation (x, y, z) sayilmaz (axis = -1)
+ *   axis%3 determines parallel plane: 0=U-D-E, 1=R-L-M, 2=F-B-S
+ *   Wide moves (Rw, r, etc.) share outer face axis
+ *   Rotation (x, y, z) not counted (axis = -1)
  *
  * Move integer = axis * 3 + power (power: 0=normal, 1=double, 2=prime).
  */
 
 const FACE_AXIS_MAP: Record<string, number> = {
 	U: 0, R: 1, F: 2, D: 3, L: 4, B: 5,
-	// Wide moves outer face axis'i
+	// Wide moves use outer face axis
 	Uw: 0, Rw: 1, Fw: 2, Dw: 3, Lw: 4, Bw: 5,
 	u: 0, r: 1, f: 2, d: 3, l: 4, b: 5,
 	// Slice
@@ -60,7 +60,7 @@ function parseMove(move: string): ParsedMove | null {
 }
 
 /**
- * Move'i cstimer integer encoding'ine cevirir. Rotation icin -1 doner.
+ * Converts move to cstimer integer encoding. Returns -1 for rotation.
  */
 function encodeMove(base: string, power: number): number {
 	if (ROTATION_BASES.has(base)) return -1;
@@ -88,7 +88,7 @@ export class MoveCounter {
 
 		const isRotation = ROTATION_BASES.has(base);
 		if (isRotation) {
-			// Rotation: hicbir metrik artmaz.
+			// Rotation: no metric increments.
 			return;
 		}
 
@@ -96,16 +96,16 @@ export class MoveCounter {
 		const isWide = WIDE_BASES.has(base);
 		const isSlice = SLICE_BASES.has(base);
 
-		// OBTM/ETM/STM (cstimer-grade degil, basit ham sayim)
+		// OBTM/ETM/STM (not cstimer-grade, simple raw counting)
 		if (isFace || isWide) {
 			this.obtm += 1;
 			this.stm += 1;
 		} else if (isSlice) {
 			this.stm += 1;
 		}
-		this.etm += 1; // face + wide + slice (rotation hariç) = ETM
+		this.etm += 1; // face + wide + slice (excluding rotation) = ETM
 
-		// HTM: cstimer MoveCounterHTM logic — paralel düzlem mantigi
+		// HTM: cstimer MoveCounterHTM logic — parallel plane logic
 		const moveInt = encodeMove(base, parsed.power);
 		if (moveInt < 0) return;
 		const axis = Math.floor(moveInt / 3);
@@ -153,7 +153,7 @@ export class MoveCounter {
 }
 
 /**
- * Verilen hamle dizisinin tum metriklerini doner.
+ * Returns all metrics for the given move sequence.
  */
 export function countMoves(moves: string[]) {
 	const counter = new MoveCounter();
@@ -162,14 +162,14 @@ export function countMoves(moves: string[]) {
 }
 
 /**
- * cstimer-grade HTM hamle sayisi — projedeki tum turn count gosterimleri icin tek kaynak.
+ * cstimer-grade HTM move count — single source of truth for all turn count displays in project.
  */
 export function countHTM(moves: string[]): number {
 	return countMoves(moves).htm;
 }
 
 /**
- * Verilen hamle dizisi ve sure (saniye) icin TPS hesabi (HTM-bazli).
+ * Calculates TPS (HTM-based) for given move sequence and time (seconds).
  */
 export function calculateTPS(moves: string[], timeSeconds: number): number {
 	if (timeSeconds <= 0) return 0;

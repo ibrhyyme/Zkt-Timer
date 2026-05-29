@@ -7,8 +7,8 @@ export default function ZktEventsTab({detail}: {detail: any}) {
 	const {t} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
 	const [expandedRound, setExpandedRound] = useState<string | null>(null);
 
-	// Her event'in her round'u tek satır. Event adı sadece ilk round'da yazılır
-	// (WCA EventsTab pattern'i — göz tarama için).
+	// Each round of every event in one row. Event name only on first round
+	// (WCA EventsTab pattern — for easy scanning).
 	const rows = useMemo(() => {
 		const out: any[] = [];
 		for (const ev of detail.events) {

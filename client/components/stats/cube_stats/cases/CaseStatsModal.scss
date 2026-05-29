@@ -14,26 +14,25 @@ $case-stats-grid-mobile: 60px minmax(80px, 1.2fr) repeat(7, minmax(50px, 1fr));
 		grid-template-columns: $case-stats-grid;
 		align-items: center;
 		gap: 12px;
-		// Negative yatay margin modal __center'in 1.5rem padding'ini ezer:
-		// header modal'in ic kenarlarina dayasir, gercek bir tablo basligi gibi.
+		// Negative horizontal margin overrides modal __center's 1.5rem padding:
+		// header aligns to modal's inner edges, like a real table header.
 		margin: 0 -1.5rem;
-		// Yatay padding modal padding'i ile birebir; gorunur icerik eski yerinde.
+		// Horizontal padding exactly matches modal padding; visible content stays in place.
 		padding: 14px 1.5rem;
 		position: sticky;
-		// CSS sticky padding-edge'e gore olcer. Modal __center'in 1.5rem
-		// padding-top'unu da kapsamak icin top: -1.5rem; aksi halde header
-		// padding-top'un altina yapisir ve onceki row'lar padding-top alani
-		// icinden gecerek header'in ustunde gorunur kalir.
+		// CSS sticky measures from padding-edge. To cover modal __center's 1.5rem
+		// padding-top, use top: -1.5rem; otherwise header sticks under padding-top
+		// and previous rows appear above header through the padding area.
 		top: -1.5rem;
 		z-index: 5;
-		// Modal background ile ozdes — askida durma hissini ortadan kaldirir.
+		// Same as modal background — removes floating feeling.
 		background: rgb(var(--background-color));
 		border-bottom: 1px solid rgba(var(--text-color), 0.15);
-		// Scroll edilince header altindaki satirlardan ayrildigini gosterir.
+		// Shows header separating from rows below when scrolled.
 		box-shadow: 0 6px 12px -8px rgba(0, 0, 0, 0.5);
 	}
 
-	// header-preview: bos grid hucresi, style gereksiz (TSX'te div kalir)
+	// header-preview: empty grid cell, no styling needed (TSX div remains)
 
 	&__header-name-cell {
 		display: flex;
@@ -183,9 +182,9 @@ $case-stats-grid-mobile: 60px minmax(80px, 1.2fr) repeat(7, minmax(50px, 1fr));
 		&__header-row {
 			grid-template-columns: $case-stats-grid-mobile;
 			gap: 8px;
-			// Modal __center mobil padding: clamp(1rem, 3vw, 1.5rem). Negative
-			// margin/top'u ayni clamp ile dinamik olarak ezeriz; gorunur padding
-			// icerde restore edilir ki icerik modal'in ic kenari ile hizali kalsin.
+			// Modal __center mobile padding: clamp(1rem, 3vw, 1.5rem). Override negative
+			// margin/top with same clamp for dynamic effect; visible padding restored
+			// inside so content aligns with modal's inner edge.
 			margin: 0 calc(-1 * clamp(1rem, 3vw, 1.5rem));
 			padding: 10px clamp(1rem, 3vw, 1.5rem);
 			top: calc(-1 * clamp(1rem, 3vw, 1.5rem));

@@ -32,8 +32,8 @@ export function initFirebase(): void {
 }
 
 /**
- * Tum kayitli cihazlara push notification gonder.
- * Fire-and-forget: Hata durumunda sadece log, duyuru islemini bloklamaz.
+ * Send push notifications to all registered devices.
+ * Fire-and-forget: on error, only log without blocking the notification process.
  */
 export async function sendPushToAll(title: string, body: string, data?: Record<string, string>): Promise<void> {
 	if (!firebaseInitialized) {
@@ -54,7 +54,7 @@ export async function sendPushToAll(title: string, body: string, data?: Record<s
 
 		const tokenStrings = tokens.map((t) => t.token);
 
-		// FCM 500'erli batch limiti var
+		// FCM has a batch limit of 500
 		const BATCH_SIZE = 500;
 		let totalSuccess = 0;
 		let totalFailure = 0;
@@ -85,7 +85,7 @@ export async function sendPushToAll(title: string, body: string, data?: Record<s
 				totalSuccess += response.successCount;
 				totalFailure += response.failureCount;
 
-				// Gecersiz token'lari temizle
+				// Clean up invalid tokens
 				response.responses.forEach((resp, idx) => {
 					if (resp.error) {
 						const code = resp.error.code;
@@ -102,7 +102,7 @@ export async function sendPushToAll(title: string, body: string, data?: Record<s
 			}
 		}
 
-		// Gecersiz token'lari DB'den sil
+		// Delete invalid tokens from database
 		if (tokensToRemove.length > 0) {
 			await prisma.pushToken.deleteMany({
 				where: { token: { in: tokensToRemove } },
@@ -117,7 +117,7 @@ export async function sendPushToAll(title: string, body: string, data?: Record<s
 }
 
 /**
- * Belirli platformlardaki cihazlara push notification gonder.
+ * Send push notifications to devices on specific platforms.
  */
 export async function sendPushToPlatforms(platforms: string[], title: string, body: string, data?: Record<string, string>): Promise<void> {
 	if (!firebaseInitialized) {
@@ -203,7 +203,7 @@ export async function sendPushToPlatforms(platforms: string[], title: string, bo
 }
 
 /**
- * Belirli bir kullanicinin tum cihazlarina push notification gonder.
+ * Send push notifications to all devices of a specific user.
  */
 export async function sendPushToUser(userId: string, title: string, body: string, data?: Record<string, string>): Promise<void> {
 	if (!firebaseInitialized) return;
@@ -236,7 +236,7 @@ export async function sendPushToUser(userId: string, title: string, body: string
 			},
 		});
 
-		// Gecersiz token'lari temizle
+		// Clean up invalid tokens
 		const tokensToRemove: string[] = [];
 		response.responses.forEach((resp, idx) => {
 			if (resp.error) {

@@ -39,7 +39,7 @@
 			padding: 0.45rem 1rem;
 		}
 
-		// Radix Select Trigger acikken (FancyDropdown panel acik) — chip vurgulu
+		// When Radix Select Trigger opens (FancyDropdown panel visible) — highlight chip
 		&[data-state='open'] {
 			background-color: rgba(var(--primary-color), 0.28);
 			border-color: rgba(var(--primary-color), 0.7);
@@ -72,7 +72,7 @@
 		font-size: 0.85rem;
 	}
 
-	// Eski Dropdown override'lari kaldirildi — artik FancyDropdown kullaniyoruz.
+	// Old Dropdown overrides removed — now using FancyDropdown.
 
 	@media (max-width: 768px) {
 		gap: 0.3rem;

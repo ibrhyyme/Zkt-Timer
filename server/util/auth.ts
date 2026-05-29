@@ -13,20 +13,20 @@ const jwtSecret = (process as any).env.JWT_SECRET as string;
 
 const JWT_EXPIRY = '90d';
 const JWT_ALGORITHM = 'HS256' as const;
-// Token revoke edildiginde Redis'te bu prefix ile saklanir, TTL = token kalan suresi
+// When token is revoked, stored in Redis with this prefix, TTL = token remaining lifetime
 const REVOKED_JWT_KEY_PREFIX = 'revoked_jwt:';
-// 90 gun saniye cinsinden — revoke entry max bu kadar yasar (token zaten o zaman dolar)
+// 90 days in seconds — revoke entry expires after this duration (token already invalid by then)
 const JWT_REVOKE_TTL_SECONDS = 90 * 24 * 60 * 60;
 
 async function isJwtRevoked(jti: string | undefined): Promise<boolean> {
-	if (!jti) return false; // Eski JWT'lerde jti yok — revoke edilemez (geriye uyumluluk)
+	if (!jti) return false; // Old JWTs lack jti — cannot be revoked (backward compatibility)
 	try {
 		const client = getRedisPubClient();
 		if (!client) return false;
 		const exists = await client.exists(`${REVOKED_JWT_KEY_PREFIX}${jti}`);
 		return exists === 1;
 	} catch {
-		return false; // Redis hatasinda token gecerli kabul (fail-open: kullanicilari kapidan disari atmamak icin)
+		return false; // On Redis error, treat token as valid (fail-open: don't lock users out)
 	}
 }
 
@@ -35,7 +35,7 @@ export async function revokeJwt(jti: string | undefined, exp: number | undefined
 	try {
 		const client = getRedisPubClient();
 		if (!client) return;
-		// TTL = token'in kalan omru (saniye). Yoksa default 90 gun.
+		// TTL = token's remaining lifetime (seconds). Otherwise default 90 days.
 		let ttl = JWT_REVOKE_TTL_SECONDS;
 		if (exp) {
 			const remaining = exp - Math.floor(Date.now() / 1000);
@@ -43,7 +43,7 @@ export async function revokeJwt(jti: string | undefined, exp: number | undefined
 		}
 		await client.set(`${REVOKED_JWT_KEY_PREFIX}${jti}`, '1', 'EX', ttl);
 	} catch {
-		// Sessizce gec — revoke best-effort
+		// Fail silently — revocation is best-effort
 	}
 }
 
@@ -59,7 +59,7 @@ export async function getMe(req: Request) {
 		const output: any = jwt.verify(session, jwtSecret);
 
 		if (output) {
-			// Token revoke edilmis mi (logout sonrasi)?
+			// Is token revoked (after logout)?
 			if (await isJwtRevoked(output.jti)) {
 				return null;
 			}
@@ -82,14 +82,14 @@ export async function getMe(req: Request) {
 				deactivateAllBanLogs(me.id);
 			}
 
-			// Pro expire check
+			// Pro expiry check
 			if (me.pro_expires_at && new Date() > new Date(me.pro_expires_at)) {
 				me.is_pro = false;
 				me.pro_expires_at = null;
 				updateUserAccountWithParams(me.id, {is_pro: false, pro_expires_at: null});
 			}
 
-			// Premium expire check
+			// Premium expiry check
 			if (me.premium_expires_at && new Date() > new Date(me.premium_expires_at)) {
 				me.is_premium = false;
 				me.premium_expires_at = null;
@@ -132,7 +132,7 @@ export async function getMeWithCookieString(cookies: string | any): Promise<User
 	try {
 		const output: any = jwt.verify(session, jwtSecret);
 		if (output) {
-			// Token revoke edilmis mi?
+			// Is token revoked?
 			if (await isJwtRevoked(output.jti)) {
 				return null;
 			}
@@ -167,7 +167,7 @@ export function getJwtString(user: UserAccount) {
 	const payload = {
 		user_id: user.id,
 		createdAt: new Date().getTime(),
-		jti: uuidv4(), // Token revocation icin benzersiz id
+		jti: uuidv4(), // Unique ID for token revocation
 	};
 
 	return jwt.sign(payload, jwtSecret, {
@@ -176,13 +176,13 @@ export function getJwtString(user: UserAccount) {
 	});
 }
 
-// Cookie omurleri JWT_EXPIRY (90d) ile uyumlu — JWT zaten 90 gun sonra invalidate edildigi icin
-// daha uzun cookie tutmak anlamsiz. remember=false 30 gun, remember=true 90 gun.
-const SESSION_MAX_AGE_REMEMBER = 90 * 24 * 60 * 60 * 1000; // 90 gun
-const SESSION_MAX_AGE_DEFAULT = 30 * 24 * 60 * 60 * 1000;  // 30 gun
+// Cookie lifetimes align with JWT_EXPIRY (90d) — JWT already invalidates after 90 days,
+// so keeping cookies longer is pointless. remember=false → 30 days, remember=true → 90 days.
+const SESSION_MAX_AGE_REMEMBER = 90 * 24 * 60 * 60 * 1000; // 90 days
+const SESSION_MAX_AGE_DEFAULT = 30 * 24 * 60 * 60 * 1000;  // 30 days
 
-// Native (Capacitor mobile) WebView icin sameSite='none' zorunlu (cross-origin context).
-// Web icin 'lax' — CSRF korumasi.
+// Native (Capacitor mobile) WebView requires sameSite='none' (cross-origin context).
+// Web uses 'lax' — CSRF protection.
 function getSameSitePolicy(req: any): 'none' | 'lax' {
 	return (req as any)?.isWebView ? 'none' : 'lax';
 }
@@ -195,7 +195,7 @@ export function setSessionCookie(req: any, res: any, jwtToken: string, opts: {re
 		httpOnly: true,
 		maxAge: remember ? SESSION_MAX_AGE_REMEMBER : SESSION_MAX_AGE_DEFAULT,
 		sameSite,
-		// sameSite='none' icin secure zorunlu — native/production'da daima true
+		// sameSite='none' requires secure — always true on native/production
 		secure: isProduction || sameSite === 'none',
 	});
 }

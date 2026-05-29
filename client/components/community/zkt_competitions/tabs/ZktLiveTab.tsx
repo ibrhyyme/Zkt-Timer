@@ -19,7 +19,7 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 		? parseInt(matchEvent.params.roundNumber, 10)
 		: null;
 
-	// URL'de eventId yoksa welcome screen goster
+	// If no eventId in URL, show welcome screen
 	const [selectedEventId, setSelectedEventId] = useState<string>(
 		urlEventId
 			? detail.events.find((e: any) => e.event_id === urlEventId)?.id || ''

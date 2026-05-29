@@ -1,5 +1,5 @@
 // QiYi Timer React component — GanTimer.tsx pattern (singleton conn + scope-level state)
-// Referans state mapping: cstimer BluetoothTimer.CONST
+// Reference state mapping: cstimer BluetoothTimer.CONST
 
 import React, {useContext, useEffect, useRef, useState} from 'react';
 import {ITimerContext, TimerContext} from '../../Timer';
@@ -25,7 +25,7 @@ import {
 	abortQiyiTimerScan,
 } from './qiyiTimerConnection';
 
-// Singleton connection (GanTimer.tsx ile ayni pattern)
+// Singleton connection (same pattern as GanTimer.tsx)
 let conn: QiyiTimerConnection | null = null;
 let subs: SubscriptionLike | null = null;
 
@@ -53,18 +53,18 @@ export default function QiyiTimer() {
 		contextRef.current = context;
 	}, [context]);
 
-	// Solve sirasinda kullanici Escape basinca cihazdan gelen sonraki RUNNING/STOPPED
-	// event'lerini ignore etmek icin flag. HANDS_ON, IDLE, STOPPED'de reset edilir.
+	// Flag to ignore subsequent RUNNING/STOPPED events from device when user presses Escape during solve.
+	// Reset on HANDS_ON, IDLE, STOPPED.
 	const cancelledRef = useRef(false);
-	// Cihazin son bildirimini lokal olarak takip et — Redux yerine bunu kullaniyoruz
-	// cunku KeyWatcher.escapePressed Escape basildiginda resetTimerParams cagiriyor
-	// (solving=false yapar), bizim listener Redux'u okusa false gorur → flag set olmaz.
+	// Track device's last state locally — we use this instead of Redux
+	// because KeyWatcher.escapePressed calls resetTimerParams on Escape
+	// (sets solving=false), our listener reads Redux and sees false → flag won't set.
 	const lastDeviceStateRef = useRef<QiyiTimerState | null>(null);
 	useEffect(() => {
 		const onKeyDown = (e: KeyboardEvent) => {
 			if (e.key === 'Escape') {
-				// Cihaz aktif solve dongusunde ise (RUNNING/INSPECTION/GET_SET/HANDS_ON)
-				// Escape ile iptal say
+				// If device is in active solve loop (RUNNING/INSPECTION/GET_SET/HANDS_ON)
+				// treat Escape as cancellation
 				const s = lastDeviceStateRef.current;
 				if (s === QiyiTimerState.RUNNING || s === QiyiTimerState.INSPECTION ||
 					s === QiyiTimerState.GET_SET || s === QiyiTimerState.HANDS_ON) {
@@ -86,7 +86,7 @@ export default function QiyiTimer() {
 		lastDeviceStateRef.current = event.state;
 		switch (event.state) {
 			case QiyiTimerState.HANDS_ON:
-				// Yeni dongu basliyor, iptal flag'ini temizle
+				// New loop starting, clear cancel flag
 				cancelledRef.current = false;
 				setTimerParams({canStart: false, spaceTimerStarted: 1});
 				break;
@@ -97,43 +97,43 @@ export default function QiyiTimer() {
 				setTimerParams({canStart: true, spaceTimerStarted: 0});
 				break;
 			case QiyiTimerState.RUNNING:
-				// Escape ile iptal edildiyse cihazdan gelen RUNNING event'lerini ignore et
+				// If cancelled via Escape, ignore RUNNING events from device
 				if (cancelledRef.current) return;
 				setTimerParams({canStart: false, spaceTimerStarted: 0});
 				startTimer();
 				break;
 			case QiyiTimerState.STOPPED:
-				// Escape ile iptal edildiyse solve kaydetme, bir sonraki dongu icin flag reset
+				// If cancelled via Escape, don't save solve, reset flag for next loop
 				if (cancelledRef.current) {
 					cancelledRef.current = false;
 					break;
 				}
 				if (event.recordedTime) {
-					// cstimer record-time event'inde QiYi hem solveTime hem inspectTime gonderir
-					// (qiyitimer.js:143-150, dpId=1 dpType=1). cstimer kendi local inspection
-					// counter'ini kullaniyor, hardware inspectTime'i sadece bilgi icin tutuyor —
-					// aynisini yapiyoruz. Ileride DNF/+2 mantigina baglanabilir.
+					// In cstimer record-time event, QiYi sends both solveTime and inspectTime
+					// (qiyitimer.js:143-150, dpId=1 dpType=1). cstimer uses its own local inspection
+					// counter, keeps hardware inspectTime for reference only —
+					// we do the same. Could be wired to DNF/+2 logic in future.
 					endTimer(contextRef.current, event.recordedTime.asTimestamp);
 				}
 				break;
 			case QiyiTimerState.IDLE: {
-				// Cihazdaki "reset/restart" tusu basildiginda gelir.
-				// Cihaz 2. tik restart event'i gondermez (state degismiyor) — bu yuzden
-				// 2-tik mantigi fiziksel olarak imkansiz. 1-tikla birlesik davranis:
-				//   - qiyi_auto_inspection ACIK: sure sifir + (inspection ayari acikssa) inspection baslat
-				//   - qiyi_auto_inspection KAPALI: sadece sure sifir, inspection elle baslatilir
-				// Default ACIK; ayar TimerSettings'te toggle.
+				// Arrives when device's "reset/restart" button is pressed.
+				// Device doesn't send 2nd tick restart event (state unchanged) — so
+				// 2-tick logic is physically impossible. 1-tick combined behavior:
+				//   - qiyi_auto_inspection ON: time to zero + (if inspection on) start inspection
+				//   - qiyi_auto_inspection OFF: just time to zero, inspection started manually
+				// Default ON; setting toggled in TimerSettings.
 				cancelledRef.current = false;  // yeni dongu
 
-				// getTimerStore ile Redux'tan ANLIK state oku (contextRef stale olabilir)
+				// Read LIVE state from Redux via getTimerStore (contextRef may be stale)
 				const finalTime = getTimerStore('finalTime') ?? 0;
 				const inInspection = getTimerStore('inInspection');
 				const solving = getTimerStore('solving');
 
 				if (solving) {
-					// V2 firmware solve sirasinda IDLE event gondermiyor — defensive
+					// V2 firmware doesn't send IDLE event during solve — defensive
 				} else if (finalTime > 0 || inInspection) {
-					// Onceki solve veya inspection ekranda → sifirla
+					// Previous solve or inspection on screen → clear
 					cancelInspection();
 					setTimerParams({
 						spaceTimerStarted: 0,
@@ -143,20 +143,20 @@ export default function QiyiTimer() {
 						dnfTime: false,
 						addTwoToSolve: false,
 					});
-					// qiyi_auto_inspection + inspection setting ACIK ise inspection baslat
+					// If qiyi_auto_inspection + inspection setting ON, start inspection
 					if (qiyiAutoInspectionRef.current && inspectionEnabledRef.current) {
 						startInspection(contextRef.current);
 					}
 				} else if (qiyiAutoInspectionRef.current && inspectionEnabledRef.current) {
-					// Baseline idle + iki ayar da acik → inspection baslat
+					// Baseline idle + both settings ON → start inspection
 					startInspection(contextRef.current);
 				}
 				break;
 			}
 			case QiyiTimerState.INSPECTION:
-				// Cihaz "eli timer'a koy → inspection baslat" davranisi kup incelemeyi
-				// engelliyor (resmi ex.rubik'te de aynisi var, kullanici sacma buldu).
-				// Zkt-Timer tarafindan ignore et — sadece bizim 2-tik mantigi inspection baslatir.
+				// Device's "put hand on timer → start inspection" behavior blocks cube inspection
+				// (same on official ex.rubik's, user found it stupid).
+				// Ignore in Zkt-Timer — only our 2-tick logic starts inspection.
 				break;
 			case QiyiTimerState.DISCONNECT:
 				setConnected(false);
@@ -215,7 +215,7 @@ export default function QiyiTimer() {
 		}
 	}
 
-	// Connected iken metin yok — yesil renk + Bluetooth icon yeterli.
+	// When connected no text — green color + Bluetooth icon sufficient.
 	let emblemText: string | undefined = t('smart_cube.connect');
 	if (scanning) {
 		emblemText = t('smart_cube.scanning_short');

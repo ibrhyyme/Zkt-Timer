@@ -143,8 +143,8 @@ export class WcaApiService {
 
 	/**
 	 * Hardcoded fallback WRs (centiseconds, FMC=moves, MBLD=encoded).
-	 * Kullanim: DB'deki world_record tablosu bos/eksik oldugunda (ilk deploy, sync hatasi).
-	 * Prod'da asil kaynak: WorldRecordSyncService haftalik sync ile DB'yi doldurur.
+	 * Usage: when world_record table in DB is empty/incomplete (first deploy, sync error).
+	 * In prod, actual source: WorldRecordSyncService fills DB with weekly sync.
 	 */
 	static getWorldRecords(): Record<string, { single: number; average: number }> {
 		return {
@@ -195,7 +195,7 @@ export class WcaApiService {
 
 	/**
 	 * Get WR + max rank data for ranking calculations.
-	 * WRs DB'den (WorldRecordSyncService tarafindan haftalik guncellenir); eksikse hardcode fallback.
+	 * WRs from DB (updated weekly by WorldRecordSyncService); if missing, hardcode fallback.
 	 */
 	static async fetchRankingData(): Promise<{
 		worldRecords: Record<string, { single: number; average: number }>;
@@ -210,7 +210,7 @@ export class WcaApiService {
 			console.error('[WcaApiService] Failed to read world_record from DB, using hardcoded fallback:', err);
 		}
 
-		// Event basinda DB degeri gecerliyse onu kullan, yoksa hardcode'a dus
+		// If DB value exists per event, use it; otherwise fall back to hardcode
 		const merged: Record<string, { single: number; average: number }> = {};
 		const allEvents = new Set([...Object.keys(hardcoded), ...Object.keys(dbRecords)]);
 		for (const event of allEvents) {
@@ -233,7 +233,7 @@ export class WcaApiService {
 	 */
 	static async fetchUpcomingCompetitions(countryIso2?: string): Promise<any[]> {
 		try {
-			// Bu ayin basindan itibaren cek (bitmis ama bu aydaki yarismalar da gorunsun)
+			// Fetch from start of this month onwards (including competitions happening this month even though some are past)
 			const now = new Date();
 			const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 			const startFrom = monthStart.toISOString().split('T')[0];
@@ -251,7 +251,7 @@ export class WcaApiService {
 				baseParams.country_iso2 = countryIso2;
 			}
 
-			// Sayfa 1'i cek, toplam sayfa sayisini hesapla
+			// Fetch page 1, calculate total pages
 			const firstRes = await axios.get(`${this.BASE_URL}/competitions`, {
 				params: { ...baseParams, page: 1 },
 				timeout: 15000,
@@ -266,7 +266,7 @@ export class WcaApiService {
 				return firstPage.filter((c: any) => !c.cancelled_at);
 			}
 
-			// Kalan sayfalari paralel cek
+			// Fetch remaining pages in parallel
 			const pagePromises = [];
 			for (let p = 2; p <= totalPages; p++) {
 				pagePromises.push(
@@ -282,8 +282,8 @@ export class WcaApiService {
 
 			return allCompetitions.filter((c: any) => !c.cancelled_at);
 		} catch (error) {
-			// Hatayı yutup [] dondurmek tehlikeli — client bunu "gercekten bos" sanip
-			// "bulunamadi" gosteriyor. Throw ederek client'in gercek hata UI'i acmasini saglayalim.
+			// Swallowing the error and returning [] is dangerous — client treats this as "truly empty"
+			// and shows "not found". Throw to ensure client opens real error UI.
 			console.error('[WCA API] fetchUpcomingCompetitions error:', error.message);
 			throw new Error(`WCA API fetch failed: ${error.message}`);
 		}
@@ -318,8 +318,8 @@ export class WcaApiService {
 	}
 
 	/**
-	 * Bildirim ve kisa goruntuleme icin kisaltilmis event isimleri.
-	 * "3x3x3 Cube" yerine "3x3", "3x3x3 One-Handed" yerine "3x3 OH" vs.
+	 * Abbreviated event names for notifications and brief display.
+	 * Instead of "3x3x3 Cube" use "3x3", instead of "3x3x3 One-Handed" use "3x3 OH", etc.
 	 */
 	static getShortEventName(eventCode: string): string {
 		const shortNames: Record<string, string> = {
@@ -332,7 +332,7 @@ export class WcaApiService {
 			'333bf': '3x3 BLD',
 			'333fm': 'FMC',
 			'333oh': '3x3 OH',
-			'333ft': '3x3 Ayak',
+			'333ft': '3x3 Feet',
 			'minx': 'Megaminx',
 			'pyram': 'Pyraminx',
 			'clock': 'Clock',

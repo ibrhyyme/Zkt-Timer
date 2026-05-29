@@ -8,9 +8,9 @@ export default function WCA({ myProfile, user }) {
 
 	const wcaInt = WCA.getWcaIntegration(user);
 
-	// WCA bagliysa hicbir rozet gosterilmez — yarisma gecmisi acildiginda WCA ID linki
-	// zaten WCA records bolumunden uretiliyor.
-	// Sadece kendi profilinde ve henuz baglamadiysa "Bagla" butonu cikar.
+	// If WCA is linked, no badge is shown — when competition history is opened, the WCA ID link
+	// is already generated from the WCA records section.
+	// Only show "Link" button on own profile if not yet linked.
 	if (wcaInt) return null;
 
 	if (!myProfile) return null;

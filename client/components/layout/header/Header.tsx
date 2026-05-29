@@ -289,11 +289,11 @@ export default function Header(props: Props) {
 	const currentPath = props.path || '';
 	const fullUrl = `https://zktimer.app${currentPath}`;
 
-	// Sayfa bazlı varsayılan SEO bilgileri
+	// Page-specific default SEO metadata
 	let pageTitle = props.title;
 	let pageDesc = props.description;
 
-	// Eğer component'e özel title/desc gelmediyse, path'e göre belirle
+	// If no custom title/desc passed to component, determine by path
 	if (!pageTitle) {
 		if (currentPath === '/' || currentPath === '') {
 			pageTitle = t('seo.home_title');
@@ -318,8 +318,8 @@ export default function Header(props: Props) {
 			pageDesc = t('seo.settings_description');
 		} else if (currentPath.startsWith('/user/')) {
 			const parts = currentPath.split('/');
-			// SSR meta tag XSS koruma: username alfanumerik + underscore ile sinirli
-			// (signup'ta zaten bu pattern zorunlu). URL'den gelen baska karakterler silinir.
+			// SSR meta tag XSS protection: username limited to alphanumeric + underscore
+			// (already enforced in signup). Other characters from URL are stripped.
 			const rawUsername = parts[2] ? decodeURIComponent(parts[2]) : '';
 			const sanitizedUsername = rawUsername.replace(/[^a-zA-Z0-9_]/g, '');
 			const username = sanitizedUsername || t('seo.user_fallback');
@@ -382,20 +382,20 @@ export default function Header(props: Props) {
 		}
 	}
 
-	// Varsayılanlara geri dön (Hala boşsa)
+	// Fall back to defaults (if still empty)
 	const finalTitle = pageTitle || DEFAULT_TITLE;
 	const finalDesc = pageDesc || DEFAULT_DESCRIPTION;
 	const rawImage = props.featuredImage || DEFAULT_FEATURED_IMAGE;
 	const secureImage = rawImage.startsWith('http') ? rawImage : `${SITE_URL}${rawImage}`;
 
-	// İndekslenmemesi gereken sayfalar (NoIndex)
-	// ZKT yarismalari kapali — sadece kayitli kullanicilara ozel
+	// Pages that should not be indexed (NoIndex)
+	// ZKT competitions private — accessible only to registered users
 	const noIndexPaths = [
 		'/settings', '/sessions', '/force-log-out', '/account', '/oauth', '/admin',
 		'/community/zkt-competitions', '/community/zkt-records', '/community/zkt-rankings',
 	];
-	// WCA yarisma alt sayfalari — sınırsız URL, thin content riski (WCA Live ile ayni strateji)
-	// Ana yarisma sayfasi (`/community/competitions/:id`) ve liste indexlenebilir kalacak.
+	// WCA competition sub-pages — unlimited URLs, thin content risk (same strategy as WCA Live)
+	// Main competition page (`/community/competitions/:id`) and list remain indexable.
 	const noIndexPatterns = [
 		/^\/community\/competitions\/[^/]+\/wca-live\//,
 		/^\/community\/competitions\/[^/]+\/persons\//,

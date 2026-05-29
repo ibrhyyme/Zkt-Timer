@@ -45,26 +45,26 @@ import {
 const io = (): any => getSocketIO();
 
 // Grace period entries: userID -> { timer, activeSocketIds }
-// activeSocketIds: kullanicinin acik tablari/baglantilari. Bos olunca grace baslar.
+// activeSocketIds: user's open tabs/connections. Grace period starts when empty.
 type DisconnectEntry = {
     timer: NodeJS.Timeout | null;
     activeSocketIds: Set<string>;
 };
 const disconnectTimers = new Map<string, DisconnectEntry>();
 
-// Grace period: kullanici disconnect/away olduktan sonra otomatik odadan
-// cikarilana kadar gecen sure. Shared FriendlyRoomConst'tan okunur — client tarafi
-// (FriendlyRoom.tsx kick redirect kontrolu) ayni degeri kullanir.
+// Grace period: time elapsed from when user disconnects/goes away until
+// automatically removed from room. Read from shared FriendlyRoomConst — client side
+// (FriendlyRoom.tsx kick redirect control) uses the same value.
 const GRACE_PERIOD_MS = FriendlyRoomConst.PLAYER_DISCONNECT_GRACE_MS;
 
-// Tek aktif oturum: userID -> { roomId, socketId }
-// Redis'te tutulur — multi-instance (cluster/k8s) safe.
-// Ayni anda tek odada, tek socket'ten oynanmasini garanti eder.
-// Yeni cihaz ayni odaya girince eski socket "takeover" ile dusurulur.
-// Farkli odaya girme denemesi reddedilir (ALREADY_IN_OTHER_ROOM).
+// Single active session: userID -> { roomId, socketId }
+// Stored in Redis — multi-instance (cluster/k8s) safe.
+// Guarantees that the same user plays from one room, one socket at a time.
+// When a new device joins the same room, the old socket is dropped with "takeover".
+// Attempt to join a different room is rejected (ALREADY_IN_OTHER_ROOM).
 type ActiveSession = { roomId: string; socketId: string };
 
-// 4 saatlik guvenlik TTL'i — leak olursa otomatik temizlenir.
+// 4-hour security TTL — auto-cleaned if leaked.
 const SESSION_TTL_SECONDS = 4 * 60 * 60;
 
 async function getActiveSession(userId: string): Promise<ActiveSession | null> {
@@ -83,8 +83,8 @@ async function setActiveSession(userId: string, roomId: string, socketId: string
     await setKeyInRedis(key, JSON.stringify({ roomId, socketId }), SESSION_TTL_SECONDS);
 }
 
-// Sadece beklenen socket aktif oturumun sahibiyse temizler.
-// Takeover sonrasi eski socket LEAVE_ROOM yollarsa yeni oturumu silmemek icin gerekli.
+// Only clears if the expected socket is the active session owner.
+// Needed to prevent deleting the new session if the old socket sends LEAVE_ROOM after takeover.
 async function clearActiveSession(userId: string, expectedSocketId?: string): Promise<void> {
     if (expectedSocketId) {
         const current = await getActiveSession(userId);
@@ -103,7 +103,7 @@ function getOrCreateEntry(userId: string): DisconnectEntry {
     return entry;
 }
 
-// Yeni socket aktif: timer'i iptal et, socket'i set'e ekle
+// New socket active: cancel timer, add socket to set
 function registerActiveSocket(userId: string, socketId: string): { hadTimer: boolean } {
     const entry = getOrCreateEntry(userId);
     entry.activeSocketIds.add(socketId);
@@ -115,10 +115,10 @@ function registerActiveSocket(userId: string, socketId: string): { hadTimer: boo
     return { hadTimer };
 }
 
-// Socket pasif (disconnect/away): set'ten cikar, hala aktif socket varsa false dondur
+// Socket inactive (disconnect/away): remove from set, return false if other active sockets still exist
 function unregisterActiveSocket(userId: string, socketId: string): boolean {
     const entry = disconnectTimers.get(userId);
-    if (!entry) return true; // hic kayit yoksa "tum socket'ler kapali" davranisi
+    if (!entry) return true; // no record means "all sockets closed" behavior
     entry.activeSocketIds.delete(socketId);
     return entry.activeSocketIds.size === 0;
 }
@@ -146,7 +146,7 @@ export function listenForFriendlyRoomEvents(client: Socket) {
             const rooms = await getAllActiveRooms();
             client.emit(FriendlyRoomServerEvent.ROOMS_LIST, rooms);
 
-            // Bu client'in hangi odada aktif oturumu var? Lobby badge icin
+            // Which room does this client have an active session in? For lobby badge
             try {
                 const { user } = await getDetailedClientInfo(client);
                 if (user) {
@@ -156,7 +156,7 @@ export function listenForFriendlyRoomEvents(client: Socket) {
                     });
                 }
             } catch (e) {
-                // Anonymous user — sessizce gec
+                // Anonymous user — pass silently
             }
         } catch (error) {
             logger.error('Error getting friendly rooms', { error });
@@ -188,7 +188,7 @@ export function listenForFriendlyRoomEvents(client: Socket) {
                 return;
             }
 
-            // Tek aktif oturum kontrolu: kullanici baska bir odadaysa olusturma reddedilir.
+            // Single active session control: if user is in another room, creation is rejected.
             const existingSession = await getActiveSession(user.id);
             if (existingSession) {
                 const existingRoom = await getRoomForClient(existingSession.roomId);
@@ -204,11 +204,11 @@ export function listenForFriendlyRoomEvents(client: Socket) {
                     });
                     return;
                 }
-                // Stale entry — aktif oda yok, temizle ve devam et
+                // Stale entry — no active room, clean up and continue
                 await clearActiveSession(user.id);
             }
 
-            // Multi-tab safe: socket'i aktif olarak kaydet, varsa grace timer'i iptal et
+            // Multi-tab safe: register socket as active, cancel grace timer if present
             registerActiveSocket(user.id, client.id);
 
             // Cache user ID for disconnect handling
@@ -220,7 +220,7 @@ export function listenForFriendlyRoomEvents(client: Socket) {
             // Join the socket room
             joinRoom(client, socketRoom);
 
-            // Aktif oturumu kaydet
+            // Record active session
             await setActiveSession(user.id, room.id, client.id);
 
             // Notify creator
@@ -244,7 +244,7 @@ export function listenForFriendlyRoomEvents(client: Socket) {
                 return;
             }
 
-            // Multi-tab safe: socket'i aktif olarak kaydet, varsa grace timer'i iptal et
+            // Multi-tab safe: register socket as active, cancel grace timer if present
             registerActiveSocket(user.id, client.id);
 
             // Cache user ID for disconnect handling
@@ -257,12 +257,12 @@ export function listenForFriendlyRoomEvents(client: Socket) {
                 return;
             }
 
-            // Tek aktif oturum kontrolu
+            // Single active session control
             const existingSession = await getActiveSession(user.id);
             let didTakeover = false;
             if (existingSession) {
                 if (existingSession.roomId !== input.room_id) {
-                    // Farkli odada acik oturum: blok
+                    // Open session in different room: block
                     const existingRoom = await getRoomForClient(existingSession.roomId);
                     if (existingRoom) {
                         logger.info('Friendly room join blocked: user already in another room', {
@@ -277,10 +277,10 @@ export function listenForFriendlyRoomEvents(client: Socket) {
                         });
                         return;
                     }
-                    // Stale entry: temizle ve normal akisa devam et
+                    // Stale entry: clean up and proceed with normal flow
                     await clearActiveSession(user.id);
                 } else if (existingSession.socketId !== client.id) {
-                    // Ayni oda farkli cihaz/sekme: takeover
+                    // Same room, different device/tab: takeover
                     const oldSocketId = existingSession.socketId;
                     const targetRoom = await getRoomForClient(input.room_id);
                     const roomName = targetRoom?.name ?? '';
@@ -293,18 +293,18 @@ export function listenForFriendlyRoomEvents(client: Socket) {
                         newSocketId: client.id,
                     });
 
-                    // Eski socket'e takeover bildirimi (hayatta degilse sessizce duser)
+                    // Notify old socket of takeover (silently fails if not alive)
                     io().to(oldSocketId).emit(FriendlyRoomServerEvent.SESSION_TAKEOVER, {
                         room_id: input.room_id,
                         room_name: roomName,
                     });
 
-                    // Eski socket'i odadan dusur (artik event almasin)
+                    // Drop old socket from room (no longer receive events)
                     try {
                         const socketRoom = getFriendlyRoomSocketRoom(input.room_id);
                         io().in(oldSocketId).socketsLeave(socketRoom);
                     } catch (e) {
-                        // Eski socket zaten gitmis olabilir, sorun degil
+                        // Old socket may already be gone, no problem
                     }
 
                     didTakeover = true;
@@ -322,10 +322,10 @@ export function listenForFriendlyRoomEvents(client: Socket) {
             // Join the socket room
             joinRoom(client, socketRoom);
 
-            // Aktif oturumu yeni socket olarak isaretle (takeover sonrasi map overwrite)
+            // Mark active session with new socket (map overwrites after takeover)
             await setActiveSession(user.id, result.room.id, client.id);
 
-            // Takeover olduysa odadakilere kisa bilgi notu (cihaz degisikligi)
+            // If takeover occurred, brief info note to room occupants (device change)
             if (didTakeover) {
                 io().to(socketRoom).emit(FriendlyRoomServerEvent.NOTIFICATION, {
                     type: 'INFO',
@@ -389,8 +389,8 @@ export function listenForFriendlyRoomEvents(client: Socket) {
             // Leave the socket room
             leaveRoom(client, socketRoom);
 
-            // Aktif oturumu sadece bu socket aktif sahipse temizle.
-            // Takeover sonrasi eski socket gelirse yeni oturumu silmemis oluruz.
+            // Only clean up active session if this socket is the active owner.
+            // If old socket comes after takeover, we won't delete the new session.
             await clearActiveSession(user.id, client.id);
 
             if (result.deleted) {
@@ -614,7 +614,7 @@ export function listenForFriendlyRoomEvents(client: Socket) {
             if (success) {
                 const socketRoom = getFriendlyRoomSocketRoom(roomId);
 
-                // Atilan kullanicinin aktif oturumunu zorla temizle (yeni odaya hemen girebilsin)
+                // Force clean the kicked user's active session (so they can join a new room immediately)
                 await clearActiveSession(targetUserId);
 
                 // Notify everyone (including kicked user)
@@ -649,7 +649,7 @@ export function listenForFriendlyRoomEvents(client: Socket) {
             if (success) {
                 const socketRoom = getFriendlyRoomSocketRoom(roomId);
 
-                // Banlanan kullanicinin aktif oturumunu zorla temizle
+                // Force clean the banned user's active session
                 await clearActiveSession(targetUserId);
 
                 // Notify everyone (including banned user)
@@ -710,7 +710,7 @@ export function listenForFriendlyRoomEvents(client: Socket) {
                 return;
             }
 
-            // Requester'a guncel listeyi tekrar yolla
+            // Send requester the updated list again
             const bannedUsers = await getBannedUsersForRoom(roomId, user.id, user.admin === true);
             client.emit(FriendlyRoomServerEvent.USER_UNBANNED, {
                 room_id: roomId,
@@ -771,13 +771,13 @@ export function listenForFriendlyRoomEvents(client: Socket) {
 
             const participantIds = roomBeforeDelete.participants.map((p) => p.user_id);
 
-            // isAdmin=false; deleteRoom owner kontrolu zaten yapiyor
+            // isAdmin=false; deleteRoom already performs owner control
             const success = await deleteRoom(roomId, user.id, false);
 
             if (success) {
                 const socketRoom = getFriendlyRoomSocketRoom(roomId);
 
-                // Tum katilimcilarin aktif oturumunu temizle
+                // Clean all participants' active sessions
                 for (const participantId of participantIds) {
                     const session = await getActiveSession(participantId);
                     if (session && session.roomId === roomId) {
@@ -819,7 +819,7 @@ export function listenForFriendlyRoomEvents(client: Socket) {
                 return;
             }
 
-            // Silmeden once katilimcilari al ki aktif oturumlarini temizleyelim
+            // Get participants before deleting so we can clean their active sessions
             const roomBeforeDelete = await getRoomForClient(roomId);
             const participantIds = roomBeforeDelete?.participants.map((p) => p.user_id) ?? [];
 
@@ -830,7 +830,7 @@ export function listenForFriendlyRoomEvents(client: Socket) {
             if (success) {
                 const socketRoom = getFriendlyRoomSocketRoom(roomId);
 
-                // Bu odadaki herkesin aktif oturumunu temizle (yeni odaya girebilsinler)
+                // Clean everyone's active sessions in this room (so they can join new rooms)
                 for (const participantId of participantIds) {
                     const session = await getActiveSession(participantId);
                     if (session && session.roomId === roomId) {
@@ -902,7 +902,7 @@ export function listenForFriendlyRoomEvents(client: Socket) {
                 }
             }
             if (user) {
-                // Sadece tum aktif socket'leri kapanmissa grace baslat
+                // Only start grace if all active sockets are closed
                 const allClosed = unregisterActiveSocket(user.id, client.id);
                 if (allClosed) await startGracePeriod(user);
             }
@@ -972,14 +972,14 @@ async function startGracePeriod(user: any) {
     // Start removal timer
     entry.timer = setTimeout(async () => {
         const currentEntry = disconnectTimers.get(user.id);
-        // Eger bu sirada yeni socket bagli ise (activeSocketIds dolduysa) timer'i pas gec
+        // If a new socket connected meanwhile (activeSocketIds filled up), skip timer
         if (currentEntry && currentEntry.activeSocketIds.size > 0) {
             currentEntry.timer = null;
             return;
         }
         // Cleanup entry
         disconnectTimers.delete(user.id);
-        // Aktif oturum kaydini da temizle: kullanici grace period icinde donmedi, slot serbest.
+        // Also clean the active session record: user didn't return during grace period, slot is free.
         await clearActiveSession(user.id);
         try {
             const rooms = await getRoomsForUser(user.id);
@@ -1014,7 +1014,7 @@ async function startGracePeriod(user: any) {
                 }
             }
 
-            // Lobby update tek seferde
+            // Lobby update in one go
             const updatedRooms = await getAllActiveRooms();
             io().to(FriendlyRoomSocketRoom.LOBBY).emit(FriendlyRoomServerEvent.ROOMS_LIST, updatedRooms);
         } catch (innerError) {

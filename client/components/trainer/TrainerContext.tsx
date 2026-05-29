@@ -1,14 +1,17 @@
 import React, {createContext, useContext, useReducer, useRef, useEffect, ReactNode} from 'react';
+import {useLocation} from 'react-router-dom';
 import type {
 	TrainerSessionState,
 	TrainerAction,
 	TrainerContextType,
 	TrainerOptions,
 	TrainerMode,
+	TrainerView,
 	CheckedAlgorithm,
 	SmartPhase,
 } from './types';
 import {algToId} from '../../util/trainer/algorithm_engine';
+import {parseTrainerPath} from '../../util/trainer/url/trainer_url';
 import {getBestTime, getFailCount} from './hooks/useAlgorithmData';
 import Connect from '../timer/smart_cube/bluetooth/connect';
 
@@ -84,10 +87,28 @@ const initialState: TrainerSessionState = {
 	...SMART_DEFAULTS,
 };
 
+/**
+ * Derives initial mode/view from URL path (SSR + client same → no flicker).
+ * Deep-link to a mode: on cold start, selection/alg not set, starts from 'selection'
+ * (training/sub-view handled by URL sync hook + sub-contexts). bare/unknown path
+ * → localStorage fallback (current behavior preserved).
+ */
+function resolveInitialNav(pathname: string): {mode: TrainerMode | null; view: TrainerView} {
+	const {mode} = parseTrainerPath(pathname);
+	if (mode) return {mode, view: 'selection'};
+	const saved = loadMode();
+	return {mode: saved, view: saved ? 'selection' : 'landing'};
+}
+
+function makeInitialState(pathname: string): TrainerSessionState {
+	const {mode, view} = resolveInitialNav(pathname);
+	return {...initialState, mode, view, options: loadOptions()};
+}
+
 function buildQueue(algorithms: CheckedAlgorithm[], options: TrainerOptions): CheckedAlgorithm[] {
 	let queue = [...algorithms];
 
-	// Prioritize Failed (primary) + Prioritize Slow (tie-break) tek sort'ta birlestirilir
+	// Prioritize Failed (primary) + Prioritize Slow (tie-break) combined in single sort
 	if (options.prioritizeFailed || options.prioritizeSlow) {
 		queue.sort((a, b) => {
 			if (options.prioritizeFailed) {
@@ -283,8 +304,8 @@ function trainerReducer(state: TrainerSessionState, action: TrainerAction): Trai
 		}
 
 		case 'ADVANCE_ALGORITHM': {
-			// Tek kart: aynı algoritmayı tekrarla (queue rebuild yok, cycling riski yok)
-			// Spread ile yeni referans olustur — smart cube useEffect'i tetiklemek icin gerekli
+			// Single card: repeat same algorithm (no queue rebuild, no cycling risk)
+			// Create new reference with spread — needed to trigger smart cube useEffect
 			if (state.algorithmQueue.length <= 1) {
 				return {
 					...state,
@@ -325,7 +346,7 @@ function trainerReducer(state: TrainerSessionState, action: TrainerAction): Trai
 				(a) => a.algorithm === state.currentAlgorithm?.algorithm
 			);
 			if (prevIdx <= 0) {
-				// Kuyruk basindayiz, sona sar
+				// At queue start, wrap to end
 				const last = state.algorithmQueue[state.algorithmQueue.length - 1];
 				return {
 					...state,
@@ -398,26 +419,28 @@ interface TrainerProviderProps {
 }
 
 export function TrainerProvider({children}: TrainerProviderProps) {
-	const [state, dispatch] = useReducer(trainerReducer, initialState);
+	// Initial state derived from URL path (SSR + client same render → no hydration mismatch / flicker).
+	const location = useLocation();
+	const [state, dispatch] = useReducer(trainerReducer, location.pathname, makeInitialState);
 	const connectRef = useRef(new Connect());
 
-	// Temel BLE callback'leri Provider seviyesinde kur
+	// Set up base BLE callbacks at Provider level
 	useEffect(() => {
 		const conn = connectRef.current;
 
-		// Connect instance callback'leri (scanning/connecting/error — bunlar Connect'ten cagirilir)
+		// Connect instance callbacks (scanning/connecting/error — called from Connect)
 		conn.alertScanning = () => dispatch({type: 'SMART_CONNECTION', payload: {scanning: true, scanError: null}});
 		conn.alertConnecting = () => dispatch({type: 'SMART_CONNECTION', payload: {scanning: false, connecting: true}});
 		conn.alertScanError = (msg: string) => dispatch({type: 'SMART_CONNECTION', payload: {scanning: false, scanError: msg}});
 		conn.alertDisconnected = () => dispatch({type: 'SMART_DISCONNECT'});
 
-		// _initCube override: kup sinifi (GAN/Giiker/Particula) SmartCube base class'indan
-		// kendi callback'lerini inherit ediyor. Bu callback'ler Redux/setTimerParams'a gidiyor.
-		// Trainer icin bu callback'leri TrainerContext dispatch'e yonlendirmemiz gerekiyor.
-		// Callback'leri cube.init() ONCESINDE set etmeliyiz cunku init() icinde event
-		// listener'lar ekleniyor ve alertConnected/alertCubeState hemen cagirilabilir.
+		// _initCube override: cube class (GAN/Giiker/Particula) inherits from SmartCube base class
+		// with its own callbacks. These callbacks go to Redux/setTimerParams.
+		// For Trainer, we need to redirect these callbacks to TrainerContext dispatch.
+		// Set callbacks BEFORE cube.init() because init() adds event listeners
+		// and alertConnected/alertCubeState may be called immediately.
 		conn._initCube = async (device: any) => {
-			// Kup sinifini belirle (Connect._initCube mantigi)
+			// Determine cube class (Connect._initCube logic)
 			let cube: any;
 			const GAN = (await import('../timer/smart_cube/bluetooth/gan')).default;
 			const Giiker = (await import('../timer/smart_cube/bluetooth/giiker')).default;
@@ -435,7 +458,7 @@ export function TrainerProvider({children}: TrainerProviderProps) {
 
 			conn.activeCube = cube;
 
-			// Callback'leri init() ONCESINDE set et
+			// Set callbacks BEFORE init()
 			cube.alertConnected = async (server: any) => {
 				let dev;
 				try {
@@ -458,7 +481,7 @@ export function TrainerProvider({children}: TrainerProviderProps) {
 				conn.alertCubeState?.(facelets);
 			};
 
-			// _onCubeCreated callback (gyro subscription icin)
+			// _onCubeCreated callback (for gyro subscription)
 			if ((conn as any)._onCubeCreated) (conn as any)._onCubeCreated(cube);
 
 			await cube.init();

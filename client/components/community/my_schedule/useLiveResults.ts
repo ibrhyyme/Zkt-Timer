@@ -14,13 +14,13 @@ export type LiveRoundData = WcaLiveRoundResultsQuery['wcaLiveRoundResults'];
 export type LiveOverviewData = WcaLiveCompetitionOverviewQuery['wcaLiveCompetitionOverview'];
 export type LiveCompetitorData = WcaLiveCompetitorResultsQuery['wcaLiveCompetitorResults'];
 
-const ROUND_POLL_INTERVAL = 60 * 1000; // Socket.IO push varken fallback
-const OVERVIEW_CACHE_TTL = 60 * 1000; // 60s — server cache ile align
+const ROUND_POLL_INTERVAL = 60 * 1000; // Fallback when Socket.IO push is available
+const OVERVIEW_CACHE_TTL = 60 * 1000; // 60s — align with server cache
 const OVERVIEW_CACHE_MAX = 20;
 const COMPETITOR_CACHE_TTL = 60 * 1000;
 const COMPETITOR_CACHE_MAX = 20;
 
-// Module-level cache: overview verisi sayfa gecislerinde kaybolmasin
+// Module-level cache: prevent overview data loss during page transitions
 const overviewCache = new Map<string, {data: LiveOverviewData; timestamp: number}>();
 
 function setOverviewCache(key: string, data: LiveOverviewData) {
@@ -32,7 +32,7 @@ function setOverviewCache(key: string, data: LiveOverviewData) {
 	}
 }
 
-// Sessiz prefetch — disaridan cagrilabilir, cache'i doldurur
+// Silent prefetch — can be called externally, populates cache
 export async function prefetchWcaLiveOverview(competitionId: string): Promise<LiveOverviewData | null> {
 	if (!competitionId) return null;
 	const cached = overviewCache.get(competitionId);
@@ -48,7 +48,7 @@ export async function prefetchWcaLiveOverview(competitionId: string): Promise<Li
 		const overview = res?.data?.wcaLiveCompetitionOverview || null;
 		if (overview) {
 			setOverviewCache(competitionId, overview);
-			// Ilk event'in default round'unu da prefetch et (sessiz)
+			// Also prefetch default round of first event (silent)
 			const firstEvent = overview.events?.[0];
 			if (firstEvent && firstEvent.rounds?.length > 0) {
 				const active = firstEvent.rounds.find((r: any) => r.active);
@@ -75,7 +75,7 @@ export async function prefetchWcaLiveRound(competitionId: string, liveRoundId: s
 			{fetchPolicy: 'no-cache'}
 		);
 	} catch {
-		// sessiz
+		// silent
 	}
 }
 
@@ -198,7 +198,7 @@ export function useLiveRoundResults(
 		setLoading(true);
 		doFetch(myRequestId);
 
-		// Socket.IO subscription — server push ile anlık guncelleme
+		// Socket.IO subscription — real-time update via server push
 		const socket = socketClient();
 		socket.emit('wca-live:subscribe', {competitionId, liveRoundId});
 
@@ -218,7 +218,7 @@ export function useLiveRoundResults(
 		};
 	}, [competitionId, liveRoundId, enabled, doFetch]);
 
-	// Polling: SADECE active round'da
+	// Polling: ONLY on active round
 	useEffect(() => {
 		if (intervalRef.current) {
 			clearInterval(intervalRef.current);
@@ -270,7 +270,7 @@ export function useLiveRoundResults(
 	};
 }
 
-// --- Competitor Live Results (in-app yarismaci sonuc gosterimi) ---
+// --- Competitor Live Results (in-app competitor result display) ---
 
 const competitorCache = new Map<string, {data: LiveCompetitorData; timestamp: number}>();
 

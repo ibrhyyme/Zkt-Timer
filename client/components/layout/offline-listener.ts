@@ -1,7 +1,7 @@
 /**
  * Global Offline Sync Listener
  *
- * Online/offline event'lerini dinler ve automatik sync yapar
+ * Listens for online/offline events and performs automatic sync
  */
 
 import { processQueue, registerBackgroundSync, isOnline } from '../../util/offline-sync';
@@ -12,13 +12,13 @@ import { isNative } from '../../util/platform';
 let syncInProgress = false;
 
 /**
- * Online/offline event listener'larını başlat
+ * Start online/offline event listeners
  */
 export function initOfflineSyncListener() {
-    // Online olunca sync et
+    // Sync when online
     window.addEventListener('online', handleOnline);
 
-    // Native network listener — navigator.onLine'dan daha guvenilir
+    // Native network listener — more reliable than navigator.onLine
     initNetworkListener((connected) => {
         if (connected) handleOnline();
     });
@@ -32,39 +32,39 @@ export function initOfflineSyncListener() {
         });
     }
 
-    // Service Worker'ı register et
+    // Register Service Worker
     registerServiceWorker();
 }
 
 async function handleOnline() {
-    // Zaten sync yapılıyorsa skip
+    // Skip if sync is already in progress
     if (syncInProgress) return;
 
-    // Service Worker'ın online durumu algılaması için kısa gecikme
+    // Short delay for Service Worker to detect online status
     await new Promise(r => setTimeout(r, 2000));
 
-    // Gecikme sonrası hala online mı kontrol et
+    // Check if still online after delay
     const online = await getNetworkStatus();
     if (!online) return;
 
-    // Pending yoksa skip
+    // Skip if no pending items
     const pendingCount = await getPendingCount();
     if (pendingCount === 0) return;
 
-    // Sync yap
+    // Perform sync
     syncInProgress = true;
     try {
         await processQueue();
         await registerBackgroundSync();
     } catch (error) {
-        console.error('Auto-sync hatası:', error);
+        console.error('Auto-sync error:', error);
     } finally {
         syncInProgress = false;
     }
 }
 
 /**
- * Service Worker register et
+ * Register Service Worker
  */
 async function registerServiceWorker() {
     console.log('[SW-DEBUG] serviceWorker in navigator:', 'serviceWorker' in navigator);
@@ -80,10 +80,10 @@ async function registerServiceWorker() {
 
             console.log('[SW-DEBUG] Registered:', registration.scope);
 
-            // Yeni SW tespit edilince install olur ama beklemede kalir.
-            // Kullanici uygulamayi tamamen kapatip acana kadar aktif olmaz -- mid-session reload yok.
+            // When new SW is detected, it installs but waits for activation.
+            // It won't become active until user completely closes and reopens the app — no mid-session reload.
 
-            // SW guncelleme kontrolu -- platform'a gore
+            // SW update check -- varies by platform
             if (isNative()) {
                 import('@capacitor/app').then(({ App }) => {
                     App.addListener('appStateChange', ({ isActive }) => {
@@ -99,15 +99,15 @@ async function registerServiceWorker() {
                 });
             }
 
-            // Her 5 dakikada bir periyodik güncelleme kontrolü
+            // Periodic update check every 5 minutes
             setInterval(() => {
                 registration.update().catch(() => {});
             }, 5 * 60 * 1000);
 
-            // Background Sync register et
+            // Register Background Sync
             await registerBackgroundSync();
         } catch (error) {
-            console.error('Service Worker registration başarısız:', error);
+            console.error('Service Worker registration failed:', error);
         }
     }
 }

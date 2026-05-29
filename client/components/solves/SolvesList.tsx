@@ -208,7 +208,7 @@ export default function SolvesList() {
 	function changeCubeType(ct: CubeType) {
 		setPage(0);
 		setCubeType(ct.id);
-		// Yeni cube_type icin ilk bucket subset'ini auto-sec
+		// Auto-select first bucket subset for new cube_type
 		const subs = getSubsetsForBuckets(ct.id, allBuckets);
 		setScrambleSubset(subs[0]?.id ?? null);
 	}

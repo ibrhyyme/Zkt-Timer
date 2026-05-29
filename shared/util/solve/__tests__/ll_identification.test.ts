@@ -1,10 +1,10 @@
 /**
- * OLL/PLL identification tests — saf cstimer port.
+ * OLL/PLL identification tests — pure cstimer port.
  *
- * Test stratejisi:
- *   1. Engine JSON varlik kontrolu (cubeRots, masks, patterns yuklendi mi)
- *   2. cubejs ile bilinen PLL/OLL setup state uretip identification denemesi
- *   3. Production'dan gelen gerçek user state ile dogrulama
+ * Test strategy:
+ *   1. Engine JSON existence check (cubeRots, masks, patterns loaded?)
+ *   2. Generate known PLL/OLL setup state with cubejs and attempt identification
+ *   3. Validate with real user state from production
  */
 
 import { getMatchingOLLState, getMatchingPLLState } from '../ll_identification';
@@ -91,8 +91,8 @@ describe('LL identification — production scenario', () => {
 
 describe('LL identification — actual production user state', () => {
 	it('U-cross PLL state from production logs identifies correctly', () => {
-		// Bu state production log'undan alindi (ibrhyyme kullanicisi):
-		// cross=U yapilmis, post-OLL state (PLL start). Eski kod MISS donuyordu, bu test fix'i kanitliyor.
+		// This state was taken from production logs (ibrhyyme user):
+		// cross=U completed, post-OLL state (PLL start). Old code returned MISS, this test proves the fix.
 		const userState = 'UUUUUUUUURRRRRRLLLFFFFFFBFBDDDDDDDDDLLLLLLRBRBBBBBBFRF';
 		const result = getMatchingPLLState(userState);
 		expect(result).not.toBeNull();

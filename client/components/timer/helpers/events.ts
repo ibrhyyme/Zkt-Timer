@@ -25,16 +25,16 @@ import { countHTM } from '../../../../shared/util/solve/move_counter';
 
 let endLocked = false;
 
-// Touch/keyboard: endTimer anında display'i dondur — React re-render beklemeden
-// 33ms interval overshoot'unu engeller (smart cube freeze ile aynı pattern)
+// Touch/keyboard: freeze display at endTimer — don't wait for React re-render
+// Prevents 33ms interval overshoot (same pattern as smart cube freeze)
 let _timerEndFinalTime: number | null = null;
 
 export function getTimerEndFinalTime(): number | null {
 	return _timerEndFinalTime;
 }
 
-// Smart cube: BLE katmanından senkron solved tespiti için
-// Timer display interval'ı bu değeri kontrol eder — React render beklemeden display donar
+// Smart cube: for sync solved detection from BLE layer
+// Timer display interval controls this value — display freezes without waiting for React render
 let _smartSolveEndTime: number | null = null;
 
 export function getSmartSolveEndTime(): number | null {
@@ -43,15 +43,15 @@ export function getSmartSolveEndTime(): number | null {
 
 export function setSmartSolveEndTime(time: number | null) {
 	_smartSolveEndTime = time;
-	// Anında display güncellemesi: 33ms interval tick'ini beklemeden TimeDisplay'e haber ver
-	// Bu olmadan timer "ileri kaçıp geri düşme" efekti yaşanır
+	// Immediate display update: notify TimeDisplay without waiting for 33ms interval tick
+	// Without this, timer has "jump forward then drop back" effect
 	if (time !== null) {
 		window.dispatchEvent(new CustomEvent('smartSolveFreeze'));
 	}
 }
 
-// Smart cube: clock skew düzeltme yüzdesi (linear regression ile hesaplanır)
-// Negatif = küp saati gerçek zamandan yavaş (ör. -0.719 → küp %0.719 yavaş)
+// Smart cube: clock skew correction percentage (calculated via linear regression)
+// Negative = cube clock slower than real time (e.g. -0.719 → cube is 0.719% slow)
 let _smartCubeClockSkew: number = 0;
 
 export function getSmartCubeClockSkew(): number {
@@ -77,7 +77,7 @@ export function startTimer(smartStartTimestamp?: number, touchTimestamp?: number
 	_timerEndFinalTime = null;
 	hapticImpact('light');
 
-	// Acik dropdown menuleri kapat (hamburger, kup secici vb.)
+	// Close open dropdowns (hamburger, cube picker, etc)
 	window.dispatchEvent(new CustomEvent('timerInteractionStart'));
 
 	clearInspectionTimers(false, true);
@@ -95,7 +95,7 @@ export function startTimer(smartStartTimestamp?: number, touchTimestamp?: number
 		timeStartedAt,
 	});
 
-	// Cozum sirasinda yeni karistirmayi arka planda hazirla
+	// Pre-generate next scramble in background during solve
 	const cubeType = getSetting('cube_type');
 	if (cubeType) {
 		const scrambleSubset = getTimerStore('scrambleSubset');
@@ -123,11 +123,11 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 		finalTime = now - timeStartedAt.getTime();
 	}
 
-	// Display'i HEMEN dondur — Redux dispatch ve React re-render beklemeden
+	// Freeze display IMMEDIATELY — don't wait for Redux dispatch and React re-render
 	_timerEndFinalTime = finalTime;
 	window.dispatchEvent(new CustomEvent('timerEndFreeze'));
 
-	// Smart cube stats hesapla (dispatch oncesi)
+	// Calculate smart cube stats (before dispatch)
 	let smartStats: { turns: number; tps: number } | null = null;
 	if (smartCubeSelected(context)) {
 		let turnCount = 0;
@@ -141,7 +141,7 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 			const startTime = timeStartedAt.getTime();
 			// Allow moves up to 500ms before timer start (to catch the starting move)
 			const solutionTurns = (context.smartTurns || []).filter((t: any) => t.completedAt >= startTime - 500);
-			// cstimer-grade HTM: ardisik paralel duzlemde ayni yuze tekrarli hamleler 1 sayilir
+			// cstimer-grade HTM: repeated moves on same face in consecutive parallel planes count as 1
 			turnCount = countHTM(solutionTurns.map((t: any) => t.turn));
 		}
 
@@ -150,11 +150,11 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 		smartStats = { turns: turnCount, tps };
 	}
 
-	// Timer/interval temizligi
+	// Timer/interval cleanup
 	stopTimer(START_TIMEOUT);
 	clearInspectionTimers(false, true);
 
-	// Tek dispatch: solving durumu + stats + timer reset
+	// Single dispatch: solving state + stats + timer reset
 	setTimerParams({
 		solving: false,
 		finalTime,
@@ -170,7 +170,7 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 	});
 
 	setTimeout(() => {
-		// Pre-generated scramble varsa anlik swap, yoksa senkron uret
+		// If pre-generated scramble exists, swap immediately; otherwise generate synchronously
 		const preScramble = consumePreGeneratedScramble(context.cubeType, context.scrambleSubset, getSetting('scramble_top_color'));
 		if (preScramble && !context.scrambleLocked && !context.customScrambleFunc) {
 			setTimerParams({
@@ -192,8 +192,8 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 			overridesCombined.smart_device_id = context.smartDeviceId;
 			overridesCombined.smart_turn_count = solutionTurns.length;
 
-			// Pro user: hamleler compact format'a serialize edilir + server method_steps olusturur.
-			// Free user: smart_turns null kalir, method_steps olusmaz, DB sismez.
+			// Pro user: moves serialized to compact format + server creates method_steps.
+			// Free user: smart_turns stays null, method_steps not created, doesn't store in DB.
 			const me = getStore()?.getState()?.account?.me;
 			if (isPro(me)) {
 				overridesCombined.smart_turns = serializeSmartTurnsCompact(
@@ -226,9 +226,9 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 }
 
 export function resetTimerParams(context: ITimerContext, skipScramble?: boolean) {
-	// skipScramble: inspection-DNF gibi durumlarda kullanici puzzle'i karistirmis
-	// halde tutuyor — yeni scramble vermek WCA mantigina aykiri ve kullanici
-	// yanlislikla eski scramble'in solve'unu yeni scramble'a kaydedebilir.
+	// skipScramble: in cases like inspection-DNF, user keeps puzzle scrambled
+	// — giving new scramble contradicts WCA logic and user might accidentally save
+	// old scramble's solve with new scramble.
 	if (!skipScramble) {
 		resetScramble(context);
 	}
@@ -252,7 +252,7 @@ export function cancelInspection() {
 }
 
 export function startInspection(context: ITimerContext) {
-	// Acik dropdown menuleri kapat
+	// Close open dropdowns
 	window.dispatchEvent(new CustomEvent('timerInteractionStart'));
 	hapticImpact('medium');
 
@@ -263,9 +263,9 @@ export function startInspection(context: ITimerContext) {
 		timer_type: timerType
 	} = getSettings();
 
-	// stackmat + moyutimer ortak audio path (vendor/stackmat.js); auto-inspection ayni davranis
+	// stackmat + moyutimer shared audio path (vendor/stackmat.js); auto-inspection behaves same
 	const stackMatOn = timerType === 'stackmat' || timerType === 'moyutimer';
-	// Hardware timer'lar (GAN Timer + QiYi Timer) inspection auto-start'i devre disi birakir
+	// Hardware timers (GAN Timer + QiYi Timer) disable inspection auto-start
 	const ganTimerOn = timerType === 'gantimer' || timerType === 'qiyitimer';
 
 	setTimerParams({
@@ -294,9 +294,8 @@ export function startInspection(context: ITimerContext) {
 			saveSolve(context, 0, context.scramble, now, now, true, false);
 
 			setTimeout(() => {
-				// Inspection-DNF: scramble degistirme (kullanici puzzle'i ayni scramble
-				// ile karistirmis halde, tekrar deneyebilmeli). Yeni scramble icin
-				// kullanici ArrowRight veya UI buton kullanir.
+				// Inspection-DNF: don't change scramble (user keeps puzzle scrambled same way,
+				// should be able to retry). For new scramble, user presses ArrowRight or UI button.
 				resetTimerParams(context, true);
 			}, 2000);
 		}, inspectionDelay * 1000 + 2000)

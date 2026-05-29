@@ -1,15 +1,15 @@
 /**
- * One-shot temizlik: 0 sezonu olan kullanicilara default "Yeni Sezon" olusturur.
+ * One-shot cleanup: creates a default "New Session" for users with 0 sessions.
  *
- * Kullanim:
+ * Usage:
  *   npx ts-node scripts/backfill-default-sessions.ts
  *   npx ts-node scripts/backfill-default-sessions.ts --dry-run
  *
- * Neden var: Eski signup akislari default sezon olusturmuyordu. Client tarafinda
- * race-prone bir auto-create logic'i bu bosluku doldurmaya calisiyordu ama
- * hayalet sezonlara sebep oluyordu. Bu script, fix sonrasi tek seferlik calisir.
+ * Why it exists: Old signup flows did not create a default session. Client-side
+ * had a race-prone auto-create logic trying to fill this gap, but it caused
+ * ghost sessions. This script runs once after the fix.
  *
- * Idempotent: ayni kullaniciya iki kez sezon olusturmaz (en az 1 sezonu olanlar atlanir).
+ * Idempotent: does not create duplicate sessions for the same user (users with at least 1 session are skipped).
  */
 
 import { PrismaClient } from '@prisma/client';
@@ -19,9 +19,9 @@ const prisma = new PrismaClient();
 const dryRun = process.argv.includes('--dry-run');
 
 async function main() {
-	console.log(dryRun ? '[DRY RUN] Hicbir yazma yapilmayacak.' : '[LIVE] Yazma modu aktif.');
+	console.log(dryRun ? '[DRY RUN] No writes will be performed.' : '[LIVE] Write mode active.');
 
-	// 0 sezonu olan kullanicilari bul
+	// Find users with 0 sessions
 	const usersWithoutSessions = await prisma.userAccount.findMany({
 		where: {
 			sessions: {
@@ -36,24 +36,24 @@ async function main() {
 		},
 	});
 
-	console.log(`0 sezonu olan kullanici sayisi: ${usersWithoutSessions.length}`);
+	console.log(`Number of users with 0 sessions: ${usersWithoutSessions.length}`);
 
 	if (!usersWithoutSessions.length) {
-		console.log('Yapacak is yok, cikiyorum.');
+		console.log('Nothing to do, exiting.');
 		return;
 	}
 
-	// Ozet log
+	// Summary log
 	for (const u of usersWithoutSessions) {
-		console.log(`  - ${u.username} (${u.email}) - kayit: ${u.created_at.toISOString()}`);
+		console.log(`  - ${u.username} (${u.email}) - registered: ${u.created_at.toISOString()}`);
 	}
 
 	if (dryRun) {
-		console.log(`[DRY RUN] ${usersWithoutSessions.length} kullaniciya default sezon olusturulacak.`);
+		console.log(`[DRY RUN] Default session will be created for ${usersWithoutSessions.length} users.`);
 		return;
 	}
 
-	// Toplu olusturma
+	// Batch creation
 	const data = usersWithoutSessions.map((u) => ({
 		id: uniqid('se-'),
 		name: 'Yeni Sezon',
@@ -66,7 +66,7 @@ async function main() {
 		skipDuplicates: true,
 	});
 
-	console.log(`Olusturulan sezon sayisi: ${result.count}`);
+	console.log(`Sessions created: ${result.count}`);
 }
 
 main()

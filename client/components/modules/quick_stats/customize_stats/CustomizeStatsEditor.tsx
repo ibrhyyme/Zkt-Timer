@@ -59,7 +59,7 @@ export default function CustomizeStatsEditor(props: Props) {
 			clearTimeout(saveStatusTimer.current);
 		}
 
-		// Timeout here so that the store has time to update
+		// Timeout to allow store to update
 		setTimeout(async () => {
 			const updatedStat: StatsModuleBlock = {
 				colorName,
@@ -75,7 +75,7 @@ export default function CustomizeStatsEditor(props: Props) {
 				await saveStatsModuleBlocks();
 				setSavedStatus('saved');
 			} catch (e) {
-				setError('Sunucuya kaydedilemedi. Lütfen daha sonra tekrar deneyin.');
+				setError('Failed to save to server. Please try again later.');
 			}
 		}, 100);
 
@@ -111,13 +111,13 @@ export default function CustomizeStatsEditor(props: Props) {
 			const avgInt = parseInt(averageCount, 10);
 			setAverageCountInt(avgInt);
 		} catch (e) {
-			setError('Değişiklikler kaydedilmedi. Ortalama sayısı 3 ile 10.000 arasında bir sayı olmalıdır.');
+			setError('Changes not saved. Average count must be a number between 3 and 10,000.');
 		}
 	}
 
 	function onSelectColor(colorName: ColorName) {
 		if (!colorNames.includes(colorName)) {
-			setError('Değişiklikler kaydedilmedi. Geçersiz renk adı.');
+			setError('Changes not saved. Invalid color name.');
 			return;
 		}
 
@@ -139,9 +139,9 @@ export default function CustomizeStatsEditor(props: Props) {
 
 		averageCountDiv = (
 			<FormSection>
-				<InputLegend text="Ortalama Türü" />
+				<InputLegend text="Average Type" />
 				<div>
-					<Checkbox text="Genel ortalama" checked={averageAll} onChange={() => toggleSetAverageAll()} />
+					<Checkbox text="Overall average" checked={averageAll} onChange={() => toggleSetAverageAll()} />
 				</div>
 				<div className="my-2 opacity-80">
 					<Tag text="OR" textColor="text" />
@@ -149,8 +149,8 @@ export default function CustomizeStatsEditor(props: Props) {
 				<div className={avgCountClasses.join(' ')}>
 					<Input
 						value={averageCount}
-						legend="Belirli sayı"
-						info="3 ile 10.000 arasında bir sayı olmalıdır"
+						legend="Specific count"
+						info="Must be a number between 3 and 10,000"
 						type="number"
 						onChange={(e) => setAverageCount(e.target.value)}
 						onBlur={blurAverageCount}
@@ -182,9 +182,9 @@ export default function CustomizeStatsEditor(props: Props) {
 
 	let saveDiv = null;
 	if (savedStatus === 'saved') {
-		saveDiv = <Tag textColor="green" text="Kaydedildi" icon={<Check weight="bold" />} />;
+		saveDiv = <Tag textColor="green" text="Saved" icon={<Check weight="bold" />} />;
 	} else if (savedStatus === 'saving') {
-		saveDiv = <Tag textColor="orange" text="Kaydediliyor..." />;
+		saveDiv = <Tag textColor="orange" text="Saving..." />;
 	}
 
 	return (
@@ -202,8 +202,8 @@ export default function CustomizeStatsEditor(props: Props) {
 						tabId={statType}
 						onChange={(val) => selectStatType(val)}
 						tabs={[
-							{ id: 'single', value: 'Tekil' },
-							{ id: 'average', value: 'Ortalama' },
+							{ id: 'single', value: 'Single' },
+							{ id: 'average', value: 'Average' },
 						]}
 					/>
 				</FormSection>
@@ -215,15 +215,15 @@ export default function CustomizeStatsEditor(props: Props) {
 						tabId={sortBy}
 						onChange={(val) => setSortBy(val as any)}
 						tabs={[
-							{ id: 'current', value: 'Güncel', skip: statType !== 'average' },
-							{ id: 'best', value: 'En İyi' },
-							{ id: 'worst', value: 'En Kötü' },
+							{ id: 'current', value: 'Current', skip: statType !== 'average' },
+							{ id: 'best', value: 'Best' },
+							{ id: 'worst', value: 'Worst' },
 						]}
 					/>
 				</FormSection>
 				<FormSection>
-					<InputLegend text="Seçenekler" />
-					<Checkbox text="Sadece seans çözümleri" checked={session} onChange={() => toggleSession()} />
+					<InputLegend text="Options" />
+					<Checkbox text="Session solves only" checked={session} onChange={() => toggleSession()} />
 				</FormSection>
 				<FormSection proOnly>
 					<InputLegend text={t('timer_modules.stat_color')} />
@@ -233,7 +233,7 @@ export default function CustomizeStatsEditor(props: Props) {
 					<Button
 						hidden={hideRemoveButton}
 						flat
-						text="Kaldır"
+						text="Remove"
 						danger
 						onClick={(e) => {
 							e.stopPropagation();

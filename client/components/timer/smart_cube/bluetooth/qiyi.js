@@ -1,8 +1,8 @@
-// QiYi Smart Cube (QY-QYSC) + QiYi Tornado V4 i (XMD-TornadoV4-i) BLE protokol port'u
-// Referans: e:/Projects/Zkt-Timer/Referans/cstimer-master/src/js/hardware/qiyicube.js (271 satir)
-// %100 port: AES-128 encryption, CRC16-MODBUS, MAC discovery, hello handshake, history move recovery
+// QiYi Smart Cube (QY-QYSC) + QiYi Tornado V4 i (XMD-TornadoV4-i) BLE protocol port
+// Reference: e:/Projects/Zkt-Timer/Reference/cstimer-master/src/js/hardware/qiyicube.js (271 lines)
+// 100% port: AES-128 encryption, CRC16-MODBUS, MAC discovery, hello handshake, history move recovery
 //
-// State takibi: cstimer mathlib.CubieCube yerine cubejs
+// State tracking: cubejs instead of cstimer mathlib.CubieCube
 
 import SmartCube from './smart_cube';
 import LZString from './lz_string';
@@ -16,7 +16,7 @@ const UUID_SUFFIX = '-0000-1000-8000-00805f9b34fb';
 const SERVICE_UUID = '0000fff0' + UUID_SUFFIX;
 const CHRCT_UUID_CUBE = '0000fff6' + UUID_SUFFIX;
 
-// cstimer'dan ayni — QiYi CIC list
+// Same as cstimer — QiYi CIC list
 const QIYI_CIC_LIST = [0x0504];
 
 // cstimer KEYS — LZString compressed AES-128 key
@@ -24,7 +24,7 @@ const KEYS = ['NoDg7ANAjGkEwBYCc0xQnADAVgkzGAzHNAGyRTanQi5QIFyHrjQMQgsC6QA'];
 
 const MAC_CACHE_KEY = 'qiyi_cube_mac';
 
-// cstimer crc16modbus() — bire bir port
+// cstimer crc16modbus() — 1:1 port
 function crc16modbus(data) {
 	let crc = 0xFFFF;
 	for (let i = 0; i < data.length; i++) {
@@ -67,7 +67,7 @@ export default class QiYi extends SmartCube {
 		return this.decoder;
 	}
 
-	// cstimer sendMessage() — bire bir port
+	// cstimer sendMessage() — 1:1 port
 	async sendMessage(content) {
 		const msg = [0xfe];
 		msg.push(4 + content.length); // length = 1 (op) + cont.length + 2 (crc)
@@ -97,7 +97,7 @@ export default class QiYi extends SmartCube {
 		);
 	}
 
-	// cstimer sendHello() — bire bir port
+	// cstimer sendHello() — 1:1 port
 	async sendHello(mac) {
 		if (!mac) {
 			throw new Error('[qiyi] empty mac');
@@ -111,7 +111,7 @@ export default class QiYi extends SmartCube {
 
 	// MAC discovery: 1) manufacturer data, 2) device name pattern, 3) cache, 4) prompt
 	async resolveMac() {
-		// 1) Manufacturer data'dan otomatik MAC
+		// 1) Automatic MAC from manufacturer data
 		if (this.adapter.watchAdvertisements) {
 			try {
 				const mfData = await this.adapter.watchAdvertisements(this.device);
@@ -137,11 +137,11 @@ export default class QiYi extends SmartCube {
 					}
 				}
 			} catch (e) {
-				console.warn('[qiyi] watchAdvertisements hatasi:', e);
+				console.warn('[qiyi] watchAdvertisements error:', e);
 			}
 		}
 
-		// 2) Device name pattern: QY-QYSC-X-XXXX veya XMD-TornadoV4-i-X-XXXX
+		// 2) Device name pattern: QY-QYSC-X-XXXX or XMD-TornadoV4-i-X-XXXX
 		let defaultMac = null;
 		const m = /^(QY-QYSC|XMD-TornadoV4-i)-.-[0-9A-F]{4}$/.exec(this.deviceName);
 		if (m) {
@@ -155,7 +155,7 @@ export default class QiYi extends SmartCube {
 		}
 
 		// 4) Prompt
-		const promptMsg = 'QiYi Smart Cube: Otomatik MAC adresi bulunamadi.\nLutfen kupun MAC adresini girin (ornek: CC:A3:00:00:AB:CD):';
+		const promptMsg = 'QiYi Smart Cube: Could not auto-discover MAC address.\nPlease enter the cube\'s MAC address (example: CC:A3:00:00:AB:CD):';
 		const userInput = typeof window !== 'undefined' ? window.prompt(promptMsg, defaultMac || '') : null;
 		if (userInput) {
 			const cleaned = userInput.trim().toUpperCase();
@@ -172,7 +172,7 @@ export default class QiYi extends SmartCube {
 
 		setTimerParams({ smartCubeConnectStep: 'paired' });
 
-		// Notification baslat
+		// Start notification
 		await this.adapter.startNotifications(
 			this.device,
 			SERVICE_UUID,
@@ -182,10 +182,10 @@ export default class QiYi extends SmartCube {
 
 		setTimerParams({ smartCubeConnectStep: 'reading_service' });
 
-		// MAC al ve hello gonder
+		// Get MAC and send hello
 		this.deviceMac = await this.resolveMac();
 		if (!this.deviceMac) {
-			throw new Error('[qiyi] MAC adresi alinamadi, baglanti mumkun degil');
+			throw new Error('[qiyi] Could not obtain MAC address, connection not possible');
 		}
 
 		// Connected callback
@@ -197,11 +197,11 @@ export default class QiYi extends SmartCube {
 		};
 		await this.alertConnected(dummyServer);
 
-		// Hello mesaji ile handshake
+		// Handshake with hello message
 		await this.sendHello(this.deviceMac);
 	}
 
-	// cstimer onCubeEvent() — bire bir port
+	// cstimer onCubeEvent() — 1:1 port
 	onCubeEvent(value) {
 		const encMsg = [];
 		for (let i = 0; i < value.byteLength; i++) {
@@ -224,7 +224,7 @@ export default class QiYi extends SmartCube {
 		this.parseCubeData(trimmed);
 	}
 
-	// cstimer parseCubeData() — bire bir port (state takibi cubejs ile)
+	// cstimer parseCubeData() — 1:1 port (state tracking with cubejs)
 	parseCubeData(msg) {
 		const locTime = Date.now();
 		if (msg[0] !== 0xfe) {
@@ -244,7 +244,7 @@ export default class QiYi extends SmartCube {
 		} else if (opcode === 0x3) { // state change
 			this.sendMessage(msg.slice(2, 7));
 
-			// History moves recovery — cstimer mantigi
+			// History moves recovery — cstimer logic
 			const todoMoves = [[msg[34], ts]];
 			while (todoMoves.length < 10) {
 				const off = 91 - 5 * todoMoves.length;
@@ -255,7 +255,7 @@ export default class QiYi extends SmartCube {
 				}
 				todoMoves.push([hisMv, hisTs]);
 			}
-			// Eski->yeni sirayla hamleleri uygula
+			// Apply moves in old -> new order
 			const batch = [];
 			let curFacelet;
 			for (let i = todoMoves.length - 1; i >= 0; i--) {
@@ -277,7 +277,7 @@ export default class QiYi extends SmartCube {
 				});
 			}
 
-			// FACELETS karsilastirmasi (drift kontrolu)
+			// FACELETS comparison (drift control)
 			const newFacelet = this.parseFacelet(msg.slice(7, 34));
 			if (newFacelet !== curFacelet) {
 				console.warn('[qiyi] facelet mismatch — resync to', newFacelet);
@@ -293,7 +293,7 @@ export default class QiYi extends SmartCube {
 				}
 			}
 
-			// Battery guncellemesi
+			// Battery update
 			const newBatteryLevel = msg[35];
 			if (newBatteryLevel !== this.batteryLevel) {
 				this.batteryLevel = newBatteryLevel;
@@ -303,8 +303,8 @@ export default class QiYi extends SmartCube {
 		this.lastTs = ts;
 	}
 
-	// cstimer parseFacelet() — bire bir port
-	// Input: 27-byte msg (54 facelet, 4 bit/facelet)
+	// cstimer parseFacelet() — 1:1 port
+	// Input: 27-byte msg (54 facelets, 4 bit/facelet)
 	parseFacelet(faceMsg) {
 		const ret = [];
 		for (let i = 0; i < 54; i++) {

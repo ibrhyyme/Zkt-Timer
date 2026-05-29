@@ -62,7 +62,7 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 	const searchResults = data?.youtubeSearch || [];
 	const hasSearched = !!data || !!error;
 
-	// YouTube IFrame API yukleme
+	// Load YouTube IFrame API
 	useEffect(() => {
 		if (apiLoadedRef.current) return;
 
@@ -78,7 +78,7 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 		apiLoadedRef.current = true;
 	}, []);
 
-	// Player olustur veya video degistir
+	// Create or change player video
 	useEffect(() => {
 		if (!currentVideo || !playerContainerRef.current) return;
 
@@ -104,8 +104,8 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 				},
 				events: {
 					onReady: (event: any) => {
-						// Video kalitesini en dusuge zorla — bant genisligi tasarrufu
-						// Ses kalitesi video kalitesinden bagimsiz, etkilenmez
+						// Force video quality to lowest — saves bandwidth
+						// Audio quality is independent from video quality, unaffected
 						event.target.setPlaybackQuality('tiny');
 						event.target.playVideo();
 						setIsPlaying(true);
@@ -116,7 +116,7 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 						} else if (event.data === 2) {
 							setIsPlaying(false);
 						} else if (event.data === 0) {
-							// Video bitti — sonraki sarki varsa cal
+							// Video ended — play next song if available
 							handleNext();
 						}
 					},
@@ -135,7 +135,7 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 		}
 	}, [currentVideo?.videoId]);
 
-	// Player zaman takibi (her 500ms)
+	// Track player time (every 500ms)
 	useEffect(() => {
 		if (isPlaying && playerRef.current?.getCurrentTime) {
 			seekIntervalRef.current = setInterval(() => {
@@ -153,7 +153,7 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 		};
 	}, [isPlaying]);
 
-	// Arama — sadece Enter veya buton ile tetiklenir
+	// Search — triggered only by Enter or button
 	const handleSearch = useCallback(() => {
 		if (searchQuery.trim().length >= 2) {
 			searchYoutube({ variables: { input: { query: searchQuery.trim() } } });
@@ -165,7 +165,7 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 		setCurrentVideo(videoData);
 		setSearchQuery('');
 
-		// Arama sonuclarini playlist olarak kaydet
+		// Save search results as playlist
 		if (searchResults.length > 0) {
 			setPlaylist(searchResults);
 			setPlaylistIndex(index !== undefined ? index : searchResults.findIndex(v => v.videoId === video.videoId));
@@ -208,7 +208,7 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 
 	const handleNext = () => {
 		if (playlist.length === 0 || playlistIndex >= playlist.length - 1) {
-			// Playlist bitti — tekrar bastan
+			// Playlist finished — restart from beginning
 			if (playlist.length > 0) {
 				const first = playlist[0];
 				setPlaylistIndex(0);
@@ -245,7 +245,7 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 					</button>
 				</div>
 
-				{/* Arama */}
+				{/* Search */}
 				<div className="px-3 py-2">
 					<div className="relative flex gap-1.5">
 						<div className="relative flex-1">
@@ -272,7 +272,7 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 					</div>
 				</div>
 
-				{/* Sonuc listesi */}
+				{/* Results list */}
 				{(searchResults.length > 0 || loading || hasSearched) && (
 					<div className="max-h-[200px] overflow-y-auto border-t border-text/[0.08]">
 						{loading ? (
@@ -331,7 +331,7 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 							</div>
 						)}
 
-						{/* Kontroller */}
+						{/* Controls */}
 						<div className="flex items-center justify-center gap-1.5">
 							<button
 								onClick={handlePrev}
@@ -364,7 +364,7 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 				)}
 			</div>
 
-			{/* Gizli YouTube iframe container */}
+			{/* Hidden YouTube iframe container */}
 			<div
 				ref={playerContainerRef}
 				style={{ width: 0, height: 0, overflow: 'hidden', position: 'absolute', pointerEvents: 'none' }}

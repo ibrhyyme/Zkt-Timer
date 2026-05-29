@@ -52,9 +52,9 @@ export default function KeyWatcher(props: Props) {
 
 	const modals = useGeneral('modals');
 	const timerType = useSettings('timer_type');
-	// stackmat + moyutimer ortak audio path (vendor/stackmat.js), keyboard etkilesimi ayni
+	// stackmat + moyutimer share common audio path (vendor/stackmat.js), keyboard interaction same
 	const stackMatOn = timerType === 'stackmat' || timerType === 'moyutimer';
-	// Hardware timer'lar (GAN Timer + QiYi Timer) keyboard'u devre disi birakir
+	// Hardware timers (GAN Timer + QiYi Timer) disable keyboard
 	const ganTimerOn = timerType === 'gantimer' || timerType === 'qiyitimer';
 	const inspection = useSettings('inspection');
 	const manualEntry = useSettings('manual_entry');
@@ -91,13 +91,13 @@ export default function KeyWatcher(props: Props) {
 	useWindowListener('touchmove', touchMove, [], { passive: false });
 
 	function touchStart(e) {
-		// Sag kenar dead zone — centik (notch) alani, timer tetiklemesin
+		// Right edge dead zone — notch area, timer should not trigger
 		if (e.touches?.[0] && window.innerWidth - e.touches[0].clientX < 20) {
 			return;
 		}
 
-		// Touch event timestamp'ini DOM traversal'dan ONCE yakala — mobil zamanlama dogrulugu icin
-		// Touch event timestamp: iki kaynaktan erkek olani kullan (iOS WKWebView IPC gecikmesi icin)
+		// Capture touch event timestamp BEFORE DOM traversal — for mobile timing accuracy
+		// Touch event timestamp: use earlier of two sources (for iOS WKWebView IPC delay)
 		const eventTs = Math.round(Math.min(performance.timeOrigin + e.timeStamp, Date.now()));
 
 		let target = e.target;
@@ -143,12 +143,12 @@ export default function KeyWatcher(props: Props) {
 	function touchEnd(e) {
 		if (e.touches && e.touches.length > 0) return;
 
-		// Sag kenar dead zone — centik (notch) alani
+		// Right edge dead zone — notch area
 		if (e.changedTouches?.[0] && window.innerWidth - e.changedTouches[0].clientX < 20) {
 			return;
 		}
 
-		// Touch event timestamp: iki kaynaktan erkek olani kullan (iOS WKWebView IPC gecikmesi icin)
+		// Touch event timestamp: use earlier of two sources (for iOS WKWebView IPC delay)
 		const eventTs = Math.round(Math.min(performance.timeOrigin + e.timeStamp, Date.now()));
 
 		touchStartX.current = null;
@@ -346,9 +346,9 @@ export default function KeyWatcher(props: Props) {
 		if (e.code !== 'Escape' && e.keyCode !== 27) {
 			return;
 		}
-		// Hardware timer (GAN/QiYi) running iken cihaz reset tusuna tepki vermiyorsa
-		// kullanici Zkt-Timer'i Escape ile iptal edebilsin. Sonradan cihazdan gelen
-		// STOPPED/record_time event'i endTimer'in `!timeStartedAt` check'i ile ignore edilir.
+		// If hardware timer (GAN/QiYi) running doesn't respond to device reset button,
+		// user can cancel Zkt-Timer with Escape. Subsequently, STOPPED/record_time event
+		// from device will be ignored by endTimer's `!timeStartedAt` check.
 
 		e.preventDefault();
 

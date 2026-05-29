@@ -18,7 +18,7 @@ export default class Connect extends SmartCube {
 		nameFilters: [
 			// Giiker / Xiaomi
 			'Gi', 'Mi Smart Magic Cube', 'Hi-',
-			// GAN ailesi (GAN cube + Monster Go AI + AiCube)
+			// GAN family (GAN cube + Monster Go AI + AiCube)
 			'GAN', 'Gan', 'gan', 'MG', 'AiCube',
 			// Particula (GoCube + Rubik's Connected)
 			'GoCube', 'Rubiks',
@@ -65,12 +65,12 @@ export default class Connect extends SmartCube {
 		const name = device.name || '';
 		const nameLower = name.toLowerCase();
 
-		// Cstimer routing sirasi: en spesifik prefix once
+		// cstimer routing order: most specific prefix first
 		if (name.startsWith('Gi') || name.startsWith('Mi Smart Magic Cube') || name.startsWith('Hi-')) {
 			cube = new Giiker(device, this.adapter);
 			cubeType = 'Giiker';
 		} else if (nameLower.startsWith('gan') || name.startsWith('MG') || name.startsWith('AiCube')) {
-			// GAN ailesi: GAN cube, Monster Go AI (MG), AiCube hepsi GAN protokolu (key seciminde gan.js icinde ayrim)
+			// GAN family: GAN cube, Monster Go AI (MG), AiCube all use GAN protocol (differentiation in key selection inside gan.js)
 			cube = new GAN(device, this.adapter);
 			cubeType = 'GAN';
 		} else if (name.startsWith('GoCube') || name.startsWith('Rubiks')) {
@@ -92,11 +92,11 @@ export default class Connect extends SmartCube {
 		if (cube) {
 			this.activeCube = cube;
 			if (this._onCubeCreated) this._onCubeCreated(cube);
-			console.log(`[BLE-CONNECT] cube.init() baslatiliyor (${cubeType})...`);
+			console.log(`[BLE-CONNECT] cube.init() starting (${cubeType})...`);
 			await cube.init();
-			console.log(`[BLE-CONNECT] cube.init() TAMAMLANDI (${cubeType})`);
+			console.log(`[BLE-CONNECT] cube.init() COMPLETED (${cubeType})`);
 		} else {
-			console.warn('[BLE-CONNECT] _initCube: Cihaz taninamadi, cube olusturulmadi:', device.name);
+			console.warn('[BLE-CONNECT] _initCube: Device not recognized, cube not created:', device.name);
 		}
 	};
 
@@ -105,16 +105,16 @@ export default class Connect extends SmartCube {
 		const excludeDeviceIds = [];
 		this._cancelled = false;
 
-		console.log('[BLE-CONNECT] connect() basladi | isNative:', isNative(), '| acceptAll:', acceptAll);
+		console.log('[BLE-CONNECT] connect() started | isNative:', isNative(), '| acceptAll:', acceptAll);
 
 		try {
 			this.adapter = await getBleAdapter();
-			console.log('[BLE-CONNECT] adapter alindi:', this.adapter.constructor.name);
+			console.log('[BLE-CONNECT] adapter obtained:', this.adapter.constructor.name);
 
 			this.alertScanning();
 
 			for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-				console.log(`[BLE-CONNECT] Tarama denemesi ${attempt + 1}/${MAX_RETRIES} | excludeIds:`, excludeDeviceIds);
+				console.log(`[BLE-CONNECT] Scan attempt ${attempt + 1}/${MAX_RETRIES} | excludeIds:`, excludeDeviceIds);
 
 				const device = await this.adapter.requestDevice({
 					...this._deviceOptions,
@@ -122,12 +122,12 @@ export default class Connect extends SmartCube {
 					acceptAll,
 				});
 
-				console.log('[BLE-CONNECT] Cihaz bulundu:', device.name, '| deviceId:', device.deviceId);
+				console.log('[BLE-CONNECT] Device found:', device.name, '| deviceId:', device.deviceId);
 
 				setTimerParams({ smartCubeConnectStep: 'found' });
 
 				if (this._cancelled) {
-					console.log('[BLE-CONNECT] Iptal edildi, cikiliyor');
+					console.log('[BLE-CONNECT] Cancelled, exiting');
 					try { await this.adapter.disconnect(device); } catch (e) { /* ignore */ }
 					return;
 				}
@@ -136,15 +136,15 @@ export default class Connect extends SmartCube {
 				this.alertConnecting();
 
 				try {
-					console.log('[BLE-CONNECT] _initCube basladi...');
+					console.log('[BLE-CONNECT] _initCube started...');
 					await this._initCube(device);
-					console.log('[BLE-CONNECT] _initCube BASARILI');
-					return; // Başarılı, çık
+					console.log('[BLE-CONNECT] _initCube SUCCESS');
+					return; // Success, exit
 				} catch (error) {
-					console.error(`[BLE-CONNECT] _initCube HATA (deneme ${attempt + 1}):`, error.message, error);
+					console.error(`[BLE-CONNECT] _initCube ERROR (attempt ${attempt + 1}):`, error.message, error);
 					try { await this.adapter.disconnect(device); } catch (e) { /* ignore */ }
 
-					// Desteklenmeyen cihaz tipiyse exclude et, GATT hatasiysa ayni cihazi tekrar dene
+					// If unsupported device type, exclude it; if GATT error, retry same device
 					if (error.message?.includes('unsupported') || error.message?.includes("Can't find target")) {
 						excludeDeviceIds.push(device.deviceId);
 					}
@@ -153,16 +153,16 @@ export default class Connect extends SmartCube {
 						throw error;
 					}
 
-					// GATT toparlanmasi icin 2s bekle
+					// Wait 2s for GATT recovery
 					await new Promise((r) => setTimeout(r, 2000));
 					this.alertScanning();
 				}
 			}
 		} catch (error) {
-			console.error('[BLE-CONNECT] connect() HATA:', error.message, error);
+			console.error('[BLE-CONNECT] connect() ERROR:', error.message, error);
 
 			if (error.message === 'BLE_SCAN_ABORTED') {
-				console.log('[BLE-CONNECT] Kullanici iptal etti');
+				console.log('[BLE-CONNECT] User cancelled');
 				setTimerParams({
 					smartCubeScanning: false,
 					smartCubeConnecting: false,
@@ -170,16 +170,16 @@ export default class Connect extends SmartCube {
 					smartCubeConnectStep: null,
 				});
 			} else if (error.message === 'BLE_SCAN_TIMEOUT') {
-				console.warn('[BLE-CONNECT] 15s tarama timeout — cihaz bulunamadi');
+				console.warn('[BLE-CONNECT] 15s scan timeout — device not found');
 				this.alertScanError('timeout');
 			} else if (error.message === 'BLE_PERMISSION_DENIED') {
-				console.warn('[BLE-CONNECT] BLE izni reddedildi');
+				console.warn('[BLE-CONNECT] BLE permission denied');
 				this.alertScanError('permission');
 			} else if (error.message === 'BLE_DISABLED') {
-				console.warn('[BLE-CONNECT] Bluetooth kapali');
+				console.warn('[BLE-CONNECT] Bluetooth disabled');
 				this.alertScanError('disabled');
 			} else {
-				console.error('[BLE-CONNECT] Beklenmeyen hata:', error);
+				console.error('[BLE-CONNECT] Unexpected error:', error);
 				this.alertDisconnected();
 			}
 		}

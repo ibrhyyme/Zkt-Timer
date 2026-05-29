@@ -46,7 +46,7 @@ export async function initializeDefaultAlgorithms() {
 	const saved = JSON.parse(existing) as Record<string, AlgorithmSubset[]>;
 	let changed = false;
 
-	// Yeni kategorileri ekle
+	// Add new categories
 	for (const category of Object.keys(defaultAlgs)) {
 		if (!saved[category]) {
 			saved[category] = defaultAlgs[category];
@@ -54,7 +54,7 @@ export async function initializeDefaultAlgorithms() {
 		}
 	}
 
-	// Defaults'tan kaldirilan kategorileri temizle
+	// Clean up categories removed from defaults
 	for (const category of Object.keys(saved)) {
 		if (!defaultAlgs[category]) {
 			delete saved[category];
@@ -85,7 +85,7 @@ export function setBestTime(algId: string, time: number) {
 export function getLastTimes(algId: string): TrainerSolveRecord[] {
 	const raw = localStorage.getItem(PREFIX + 'LastTimes-' + algId);
 	if (!raw) return [];
-	// Eski format: "338,293,338" — auto-migrate
+	// Old format: "338,293,338" — auto-migrate
 	if (!raw.startsWith('[')) {
 		const records: TrainerSolveRecord[] = raw.split(',').map((n) => ({t: Number(n.trim())}));
 		localStorage.setItem(PREFIX + 'LastTimes-' + algId, JSON.stringify(records));
@@ -167,7 +167,7 @@ export function setLearnedStatus(algId: string, status: LearnedStatus) {
 	emitEvent('trainerDbUpdatedEvent');
 }
 
-// --- Fail counter (queue sort icin) ---
+// --- Fail counter (for queue sort) ---
 
 export function getFailCount(algId: string): number {
 	const val = localStorage.getItem(PREFIX + 'FailCount-' + algId);
@@ -188,10 +188,10 @@ export function resetFailCount(algId: string): void {
 }
 
 /**
- * Auto-update Learning State kontrolu.
- * Son `threshold` kayit hepsi temiz ise (DNF/+2/mistakes yok) algoritmayi
- * "learned" (status=2) olarak isaretler. Zaten learned ise no-op.
- * Donus: gercekten guncellendi mi.
+ * Auto-update Learning State check.
+ * If last `threshold` records are all clean (no DNF/+2/mistakes), mark algorithm
+ * as "learned" (status=2). If already learned, no-op.
+ * Returns: whether it actually updated.
  */
 export function checkAutoLearn(algId: string, threshold: number): boolean {
 	if (threshold <= 0) return false;
@@ -208,13 +208,13 @@ export function checkAutoLearn(algId: string, threshold: number): boolean {
 /**
  * Rolling Ao5 at position idx in the records array.
  * Trims best and worst, averages middle 3.
- * DNF iceren average null dondurur.
+ * Returns null if average contains DNF.
  */
 export function rollingAo5(records: TrainerSolveRecord[], idx: number): number | null {
 	if (idx < 4) return null;
 	const slice = records.slice(idx - 4, idx + 1);
 	const effTimes = slice.map((r) => getEffectiveTime(r));
-	// 1+ DNF varsa average null
+	// If 1+ DNF, average is null
 	if (effTimes.some((t) => t === null)) return null;
 	const sorted = (effTimes as number[]).sort((a, b) => a - b);
 	const trimmed = sorted.slice(1, 4);
@@ -224,7 +224,7 @@ export function rollingAo5(records: TrainerSolveRecord[], idx: number): number |
 /**
  * Rolling Ao12 at position idx in the records array.
  * Trims best and worst, averages middle 10.
- * 2+ DNF varsa average null.
+ * Returns null if 2+ DNF.
  */
 export function rollingAo12(records: TrainerSolveRecord[], idx: number): number | null {
 	if (idx < 11) return null;
@@ -232,7 +232,7 @@ export function rollingAo12(records: TrainerSolveRecord[], idx: number): number 
 	const effTimes = slice.map((r) => getEffectiveTime(r));
 	const dnfCount = effTimes.filter((t) => t === null).length;
 	if (dnfCount > 1) return null;
-	// DNF'yi Infinity olarak say (trim'de en kotu olarak cikar)
+	// Count DNF as Infinity (removed as worst during trim)
 	const sorted = effTimes.map((t) => t ?? Infinity).sort((a, b) => a - b);
 	const trimmed = sorted.slice(1, 11);
 	if (trimmed.some((t) => t === Infinity)) return null;

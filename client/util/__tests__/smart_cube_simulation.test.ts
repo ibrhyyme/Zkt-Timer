@@ -1,10 +1,10 @@
 /**
  * Smart Cube Simulation Test
  *
- * SmartCube.tsx'deki state machine'i pure fonksiyonlarla simule eder.
- * React/Redux yok — sadece cubejs, IncrementalCompressor, matchScrambleWithCommutative.
+ * Simulates the state machine from SmartCube.tsx with pure functions.
+ * No React/Redux — only cubejs, IncrementalCompressor, matchScrambleWithCommutative.
  *
- * Her senaryo detayli log uretir: hamle, match durumu, undo, correction, restore.
+ * Each scenario produces detailed logs: moves, match status, undo, correction, restore.
  */
 
 import Cube from 'cubejs';
@@ -22,11 +22,11 @@ const SOLVED = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
 // ── SIMULATOR ──
 
 class SmartCubeSimulator {
-	// Fiziksel kup (BLE'den gelen durum)
+	// Physical cube (state from BLE)
 	physicalCube: Cube;
-	// Sanal kup (her hamle event'inde senkron guncellenir)
+	// Virtual cube (synced on each move event)
 	cubejs: Cube;
-	// Hamle sikistirici
+	// Move compressor
 	compressor: IncrementalCompressor;
 
 	// State
@@ -62,7 +62,7 @@ class SmartCubeSimulator {
 		this.connected = false;
 		this.log = [];
 
-		// Hedef durumu hesapla (orijinal scramble sonucu)
+		// Calculate target state (result of original scramble)
 		const targetCube = new Cube();
 		scramble.split(' ').filter(m => m.trim()).forEach(m => targetCube.move(m));
 		this.targetFacelets = targetCube.asString();
@@ -77,7 +77,7 @@ class SmartCubeSimulator {
 		console.log(line);
 	}
 
-	// ── BLE Baglanti ──
+	// ── BLE Connection ──
 
 	connect(physicalState?: string) {
 		this.connected = true;
@@ -85,7 +85,7 @@ class SmartCubeSimulator {
 		if (physicalState) {
 			this.physicalCube = Cube.fromString(physicalState);
 		}
-		// else: physicalCube olduğu gibi kalır (default: solved)
+		// else: physicalCube stays as-is (default: solved)
 
 		const facelets = this.physicalCube.asString();
 		this.emit('CONNECT', `facelets: ${facelets.slice(0, 20)}... | solved: ${facelets === SOLVED}`);
@@ -96,7 +96,7 @@ class SmartCubeSimulator {
 	disconnect() {
 		this.connected = false;
 		this.initialSyncDone = false;
-		this.emit('DISCONN', 'BLE baglanti kesildi | initialSyncDone reset');
+		this.emit('DISCONN', 'BLE connection closed | initialSyncDone reset');
 	}
 
 	// ── Initial Sync (SmartCube.tsx:476-570) ──
@@ -104,13 +104,13 @@ class SmartCubeSimulator {
 	private initialSync() {
 		const facelets = this.physicalCube.asString();
 
-		// Guard: zaten yapildi
+		// Guard: already done
 		if (this.initialSyncDone) {
 			this.emit('SYNC', 'SKIP — initialSyncDone=true');
 			return;
 		}
 
-		// Guard: correction mode'dayken reconnect (SmartCube.tsx:481-482)
+		// Guard: reconnect during correction mode (SmartCube.tsx:481-482)
 		if (this.originalScramble && this.scramble !== this.originalScramble) {
 			this.emit('SYNC', 'SKIP — correction mode guard (scramble !== originalScramble)');
 			return;
@@ -118,15 +118,15 @@ class SmartCubeSimulator {
 
 		this.initialSyncDone = true;
 
-		// Kup cozukse sync gerekmez
+		// Cube is solved, no sync needed
 		if (facelets === SOLVED) {
-			this.emit('SYNC', 'Kup COZULMUS — sync gerekmez');
+			this.emit('SYNC', 'Cube SOLVED — no sync needed');
 			return;
 		}
 
-		this.emit('SYNC', `Kup KARISIK — correction hesaplaniyor...`);
+		this.emit('SYNC', `Cube SCRAMBLED — calculating correction...`);
 
-		// Fiziksel durumu coz (current → solved)
+		// Solve physical state (current → solved)
 		const currentCube = Cube.fromString(facelets);
 		const solveStr = currentCube.solve();
 		const toCurrentMoves: string[] = solveStr
@@ -135,18 +135,18 @@ class SmartCubeSimulator {
 
 		this.emit('SYNC', `toCurrentMoves: [${toCurrentMoves.join(' ')}]`);
 
-		// cubejs'i fiziksel duruma sync et
+		// Sync cubejs to physical state
 		this.cubejs = Cube.fromString(facelets);
 
-		// Kup zaten hedef durumda mi?
+		// Cube already at target state?
 		if (facelets === this.targetFacelets) {
-			this.emit('SYNC', 'Kup zaten hedef durumda — scramble tamamlandi');
+			this.emit('SYNC', 'Cube already at target — scramble complete');
 			this.scrambleCompletedAt = new Date();
 			this.smartCanStart = true;
 			return;
 		}
 
-		// Correction path hesapla (sync — Worker yok)
+		// Calculate correction path (sync — no Worker)
 		// diffCube = S^-1 x U
 		const cachedInverse = getReverseTurns(this.scramble);
 		const diffCube = new Cube();
@@ -154,7 +154,7 @@ class SmartCubeSimulator {
 		for (const m of toCurrentMoves) diffCube.move(m);
 
 		if (diffCube.asString() === SOLVED) {
-			this.emit('SYNC', 'diffCube SOLVED — correction gerekmez');
+			this.emit('SYNC', 'diffCube SOLVED — no correction needed');
 			this.scrambleCompletedAt = new Date();
 			this.smartCanStart = true;
 			return;
@@ -166,13 +166,13 @@ class SmartCubeSimulator {
 			: [];
 
 		if (correctionMoves.length === 0) {
-			this.emit('SYNC', 'Correction bos — kup hedefte');
+			this.emit('SYNC', 'Correction empty — cube at target');
 			this.scrambleCompletedAt = new Date();
 			this.smartCanStart = true;
 			return;
 		}
 
-		// Yeni scramble = correction path
+		// New scramble = correction path
 		const newScramble = correctionMoves.join(' ');
 		this.originalScramble = this.scramble;
 		this.scramble = newScramble;
@@ -183,49 +183,49 @@ class SmartCubeSimulator {
 		this.emit('SYNC', `originalScramble: ${this.originalScramble} | scramble: ${this.scramble}`);
 	}
 
-	// ── Hamle ──
+	// ── Move ──
 
 	move(turn: string) {
 		if (!this.connected) {
-			this.emit('ERROR', `Kup bagli degil — hamle reddedildi: ${turn}`);
+			this.emit('ERROR', `Cube not connected — move rejected: ${turn}`);
 			return;
 		}
 
-		// Fiziksel kup + sanal kup guncelle
+		// Update physical + virtual cube
 		this.physicalCube.move(turn);
 		this.cubejs.move(turn);
 
-		// SmartTurn kaydet
+		// Record SmartTurn
 		this.smartTurns.push({ turn, time: Date.now() });
 
 		const facelets = this.physicalCube.asString();
 		const cubejsState = this.cubejs.asString();
 
-		// Timer calisiyorsa → solve kontrolu
+		// If timer running → check for solve
 		if (this.timeStartedAt) {
 			this.emit('MOVE', `${turn} | cubejs: ${cubejsState.slice(0, 15)}... | solving`);
 			this.checkSolved();
 			return;
 		}
 
-		// Scramble tamamlanmis, ilk hamle → timer baslat
+		// Scramble complete, first move → start timer
 		if (this.scrambleCompletedAt) {
-			this.emit('MOVE', `${turn} | TIMER START (scramble onceden tamamlandi)`);
+			this.emit('MOVE', `${turn} | TIMER START (scramble already complete)`);
 			this.timeStartedAt = new Date();
 			this.smartCanStart = false;
 			this.scrambleCompletedAt = null;
 			return;
 		}
 
-		// Scramble fazinda — match kontrolu
+		// Scramble phase — check match
 		this.emit('MOVE', `${turn} | facelets: ${facelets.slice(0, 15)}...`);
 
-		// FACELETS restore kontrolu (SmartCube.tsx:395-406)
+		// FACELETS restore check (SmartCube.tsx:395-406)
 		this.checkFaceletsRestore();
 
 		// FACELETS scramble safety net
 		if (facelets === this.targetFacelets) {
-			this.emit('FACELETS', 'Fiziksel kup HEDEFTE — scramble tamamlandi');
+			this.emit('FACELETS', 'Physical cube AT TARGET — scramble complete');
 			this.scrambleCompletedAt = new Date();
 			this.smartCanStart = true;
 			this.smartUndoMoves = null;
@@ -252,14 +252,14 @@ class SmartCubeSimulator {
 		this.emit('MATCH', `matched: ${matched} | status: [${matchStatus.join(', ')}]`);
 
 		if (matched) {
-			// cubejs dogrulama
+			// cubejs validation
 			const cubejsState = this.cubejs.asString();
 			if (cubejsState !== this.targetFacelets) {
-				this.emit('MATCH', `MATCHED ama cubejs UYUSMUYOR — FACELETS bekle`);
+				this.emit('MATCH', `MATCHED but cubejs MISMATCH — wait for FACELETS`);
 				return;
 			}
 
-			this.emit('MATCH', 'SCRAMBLE TAMAMLANDI');
+			this.emit('MATCH', 'SCRAMBLE COMPLETE');
 			this.scrambleCompletedAt = new Date();
 			this.smartCanStart = true;
 			this.smartUndoMoves = null;
@@ -271,7 +271,7 @@ class SmartCubeSimulator {
 			const wrongUserMoves = userMoves.slice(firstWrongIdx);
 
 			if (wrongUserMoves.length > 7) {
-				this.emit('WRONG', `${wrongUserMoves.length} yanlis hamle — TOO_MANY`);
+				this.emit('WRONG', `${wrongUserMoves.length} wrong moves — TOO_MANY`);
 				this.smartUndoMoves = ['TOO_MANY'];
 			} else {
 				const undoSequence = wrongUserMoves.slice().reverse().map(invertMove);
@@ -279,10 +279,10 @@ class SmartCubeSimulator {
 				this.smartUndoMoves = undoSequence;
 			}
 		} else if (matchStatus.includes('half')) {
-			this.emit('HALF', 'Yarim esleme — undo temizlendi');
+			this.emit('HALF', 'Half match — undo cleared');
 			this.smartUndoMoves = null;
 		} else {
-			// Hepsi perfect veya pending
+			// All perfect or pending
 			this.smartUndoMoves = null;
 		}
 	}
@@ -297,7 +297,7 @@ class SmartCubeSimulator {
 			this.originalScramble &&
 			this.scramble !== this.originalScramble
 		) {
-			this.emit('RESTORE', `Kup correction sirasinda cozuldu — orijinal scramble restore`);
+			this.emit('RESTORE', `Cube solved during correction — restore original scramble`);
 			this.emit('RESTORE', `${this.scramble} → ${this.originalScramble}`);
 
 			this.scramble = this.originalScramble;
@@ -327,34 +327,34 @@ class SmartCubeSimulator {
 
 	startTimer() {
 		if (!this.scrambleCompletedAt && !this.smartCanStart) {
-			this.emit('ERROR', 'Timer baslatilamaz — scramble tamamlanmadi');
+			this.emit('ERROR', 'Cannot start timer — scramble not complete');
 			return;
 		}
 		this.timeStartedAt = new Date();
 		this.smartCanStart = false;
 		this.scrambleCompletedAt = null;
-		this.emit('TIMER', 'Timer baslatildi');
+		this.emit('TIMER', 'Timer started');
 	}
 
-	// ── Toplu Hamle (kolaylik) ──
+	// ── Batch moves (convenience) ──
 
 	moves(turns: string) {
 		turns.split(' ').filter(m => m.trim()).forEach(m => this.move(m));
 	}
 
-	// ── Kupu tamamen coz (fiziksel + sanal) ──
+	// ── Completely solve cube (physical + virtual) ──
 
 	solveCube() {
 		const solution = this.physicalCube.solve();
 		if (solution && solution.trim()) {
-			this.emit('ACTION', `Kup cozuluyor: ${solution}`);
+			this.emit('ACTION', `Solving cube: ${solution}`);
 			solution.trim().split(' ').filter(m => m.trim()).forEach(m => this.move(m));
 		} else {
-			this.emit('ACTION', 'Kup zaten cozulmus');
+			this.emit('ACTION', 'Cube already solved');
 		}
 	}
 
-	// ── State ozeti ──
+	// ── State summary ──
 
 	status(): string {
 		return [
@@ -377,18 +377,18 @@ class SmartCubeSimulator {
 
 beforeAll(() => {
 	Cube.initSolver();
-}, 30000); // Solver init 2-5 saniye surebilir
+}, 30000); // Solver init can take 2-5 seconds
 
 describe('Smart Cube Simulation', () => {
 
-	// ── Senaryo 1: Normal Akis ──
-	test('Cozuk kup + dogru scramble takibi', () => {
-		console.log('\n=== SENARYO 1: Normal Akis ===\n');
+	// ── Scenario 1: Normal Flow ──
+	test('Solved cube + correct scramble tracking', () => {
+		console.log('\n=== SCENARIO 1: Normal Flow ===\n');
 		const sim = new SmartCubeSimulator('R U F2');
 
-		sim.connect(); // SOLVED kup
+		sim.connect(); // SOLVED cube
 
-		// Dogru hamleler
+		// Correct moves
 		sim.move('R');
 		sim.move('U');
 		sim.move('F2');
@@ -400,22 +400,22 @@ describe('Smart Cube Simulation', () => {
 		console.log('STATUS:', sim.status());
 	});
 
-	// ── Senaryo 2: Yanlis Hamle + Undo ──
-	test('Yanlis hamle → undo → devam', () => {
-		console.log('\n=== SENARYO 2: Yanlis Hamle + Undo ===\n');
+	// ── Scenario 2: Wrong move + Undo ──
+	test('Wrong move → undo → continue', () => {
+		console.log('\n=== SCENARIO 2: Wrong Move + Undo ===\n');
 		const sim = new SmartCubeSimulator('R U F2');
 
 		sim.connect();
 
-		sim.move('R');  // Dogru
-		sim.move('L');  // YANLIS (beklenen: U)
+		sim.move('R');  // Correct
+		sim.move('L');  // WRONG (expected: U)
 
 		expect(sim.smartUndoMoves).toEqual(["L'"]);
 
-		// Geri al
+		// Undo
 		sim.move("L'");
 
-		// Devam
+		// Continue
 		sim.move('U');
 		sim.move('F2');
 
@@ -423,15 +423,15 @@ describe('Smart Cube Simulation', () => {
 		console.log('STATUS:', sim.status());
 	});
 
-	// ── Senaryo 3: TOO_MANY (8+) ──
-	test('8+ yanlis hamle → TOO_MANY', () => {
-		console.log('\n=== SENARYO 3: TOO_MANY ===\n');
+	// ── Scenario 3: TOO_MANY (8+) ──
+	test('8+ wrong moves → TOO_MANY', () => {
+		console.log('\n=== SCENARIO 3: TOO_MANY ===\n');
 		const sim = new SmartCubeSimulator('R U F2');
 
 		sim.connect();
-		sim.move('R');  // Dogru
+		sim.move('R');  // Correct
 
-		// 8+ yanlis hamle
+		// 8+ wrong moves
 		const wrongMoves = ['L', 'D', 'B', 'L', 'D', 'B', 'L', 'D'];
 		wrongMoves.forEach(m => sim.move(m));
 
@@ -439,28 +439,28 @@ describe('Smart Cube Simulation', () => {
 		console.log('STATUS:', sim.status());
 	});
 
-	// ── Senaryo 4: Karisik Kup + Correction ──
-	test('Karisik kup baglama → correction path → tamamlama', () => {
-		console.log('\n=== SENARYO 4: Karisik Kup + Correction ===\n');
+	// ── Scenario 4: Scrambled cube + Correction ──
+	test('Scrambled cube connect → correction path → complete', () => {
+		console.log('\n=== SCENARIO 4: Scrambled Cube + Correction ===\n');
 		const sim = new SmartCubeSimulator('R U');
 
-		// Fiziksel kupu karistir
+		// Scramble physical cube
 		const scrambledCube = new Cube();
 		scrambledCube.move('F');
 		scrambledCube.move('D');
 		sim.connect(scrambledCube.asString());
 
-		// Correction path hesaplandi — orijinal scramble korundu
+		// Correction path calculated — original scramble preserved
 		expect(sim.originalScramble).toBe('R U');
-		expect(sim.scramble).not.toBe('R U'); // Correction path farkli olmali
+		expect(sim.scramble).not.toBe('R U'); // Correction path should differ
 
 		console.log('Correction path:', sim.scramble);
 
-		// Correction'i takip et
+		// Follow correction
 		const correctionMoves = sim.scramble.split(' ').filter(m => m.trim());
 		correctionMoves.forEach(m => sim.move(m));
 
-		// Kup hedef duruma ulasti mi?
+		// Cube reached target state?
 		const targetCube = new Cube();
 		'R U'.split(' ').forEach(m => targetCube.move(m));
 
@@ -468,12 +468,12 @@ describe('Smart Cube Simulation', () => {
 		console.log('STATUS:', sim.status());
 	});
 
-	// ── Senaryo 5: Correction + Kupu Coz → Restore ──
-	test('Correction → TOO_MANY → kupu coz → orijinal restore', () => {
-		console.log('\n=== SENARYO 5: Correction + Restore ===\n');
+	// ── Scenario 5: Correction + Solve cube → Restore ──
+	test('Correction → TOO_MANY → solve cube → original restore', () => {
+		console.log('\n=== SCENARIO 5: Correction + Restore ===\n');
 		const sim = new SmartCubeSimulator('R U');
 
-		// Karisik kup bagla
+		// Connect scrambled cube
 		const scrambledCube = new Cube();
 		scrambledCube.move('F');
 		scrambledCube.move('D');
@@ -482,15 +482,15 @@ describe('Smart Cube Simulation', () => {
 		const correctionPath = sim.scramble;
 		console.log('Correction path:', correctionPath);
 
-		// Yanlis hamleler yap (8+ → TOO_MANY)
+		// Make wrong moves (8+ → TOO_MANY)
 		const wrongMoves = ['L', 'D', 'B', 'L', 'D', 'B', 'L', 'D', 'B'];
 		wrongMoves.forEach(m => sim.move(m));
 		expect(sim.smartUndoMoves).toEqual(['TOO_MANY']);
 
-		// Kupu tamamen coz
+		// Completely solve cube
 		sim.solveCube();
 
-		// Orijinal scramble restore edildi mi?
+		// Original scramble restored?
 		expect(sim.scramble).toBe('R U');
 		expect(sim.originalScramble).toBe('R U');
 		expect(sim.smartUndoMoves).toBeNull();
@@ -498,7 +498,7 @@ describe('Smart Cube Simulation', () => {
 
 		console.log('STATUS after restore:', sim.status());
 
-		// Simdi orijinal scramble'i takip et
+		// Now follow original scramble
 		sim.move('R');
 		sim.move('U');
 
@@ -506,12 +506,12 @@ describe('Smart Cube Simulation', () => {
 		console.log('STATUS after scramble:', sim.status());
 	});
 
-	// ── Senaryo 6: BLE Reconnect During Correction ──
-	test('Correction mode → disconnect → reconnect → yeni sync yok', () => {
-		console.log('\n=== SENARYO 6: BLE Reconnect ===\n');
+	// ── Scenario 6: BLE Reconnect During Correction ──
+	test('Correction mode → disconnect → reconnect → no new sync', () => {
+		console.log('\n=== SCENARIO 6: BLE Reconnect ===\n');
 		const sim = new SmartCubeSimulator('R U');
 
-		// Karisik kup bagla
+		// Connect scrambled cube
 		const scrambledCube = new Cube();
 		scrambledCube.move('F');
 		scrambledCube.move('D');
@@ -520,27 +520,27 @@ describe('Smart Cube Simulation', () => {
 		const correctionPathBefore = sim.scramble;
 		console.log('Correction path (1st connect):', correctionPathBefore);
 
-		// BLE kopma + tekrar baglama
+		// BLE disconnect + reconnect
 		sim.disconnect();
-		expect(sim.initialSyncDone).toBe(false); // Disconnect resetler
+		expect(sim.initialSyncDone).toBe(false); // Disconnect resets
 
-		// Ayni fiziksel durumla tekrar baglan
+		// Reconnect with same physical state
 		sim.connect(sim.physicalCube.asString());
 
-		// Correction mode guard — yeni sync CALISMADI
-		expect(sim.scramble).toBe(correctionPathBefore); // Ayni correction path
+		// Correction mode guard — new sync did NOT run
+		expect(sim.scramble).toBe(correctionPathBefore); // Same correction path
 		console.log('Correction path (2nd connect):', sim.scramble);
 		console.log('STATUS:', sim.status());
 	});
 
-	// ── Senaryo 7: Komutatif Esleme ──
-	test('Komutatif ciftler: U D → D U', () => {
-		console.log('\n=== SENARYO 7: Komutatif Esleme ===\n');
+	// ── Scenario 7: Commutative matching ──
+	test('Commutative pairs: U D → D U', () => {
+		console.log('\n=== SCENARIO 7: Commutative Matching ===\n');
 		const sim = new SmartCubeSimulator('U D R');
 
 		sim.connect();
 
-		// Ters sira: D once, U sonra (komutatif)
+		// Reverse order: D first, U second (commutative)
 		sim.move('D');
 		sim.move('U');
 		sim.move('R');
@@ -549,45 +549,45 @@ describe('Smart Cube Simulation', () => {
 		console.log('STATUS:', sim.status());
 	});
 
-	// ── Senaryo 8: Half Match ──
-	test('Half match: R yerine R2', () => {
-		console.log('\n=== SENARYO 8: Half Match ===\n');
+	// ── Scenario 8: Half match ──
+	test('Half match: R2 instead of R', () => {
+		console.log('\n=== SCENARIO 8: Half Match ===\n');
 		const sim = new SmartCubeSimulator('R U');
 
 		sim.connect();
 
-		sim.move('R2'); // Half — beklenen R ama R2 yapildi
+		sim.move('R2'); // Half — expected R but R2 executed
 
-		// Half match → undo yok, ama tamamlanmamis
+		// Half match → no undo, but not complete
 		expect(sim.smartCanStart).toBe(false);
-		expect(sim.smartUndoMoves).toBeNull(); // Half → undo gosterilmez
+		expect(sim.smartUndoMoves).toBeNull(); // Half → undo not shown
 
 		console.log('STATUS:', sim.status());
 	});
 
-	// ── Senaryo 9: Tam Akis (scramble → solve → bitis) ──
-	test('Tam akis: scramble → timer → solve', () => {
-		console.log('\n=== SENARYO 9: Tam Akis ===\n');
+	// ── Scenario 9: Full flow (scramble → solve → complete) ──
+	test('Full flow: scramble → timer → solve', () => {
+		console.log('\n=== SCENARIO 9: Full Flow ===\n');
 		const sim = new SmartCubeSimulator('R U');
 
 		sim.connect();
 
-		// Scramble takip et
+		// Follow scramble
 		sim.move('R');
 		sim.move('U');
 		expect(sim.smartCanStart).toBe(true);
 
-		// Ilk hamle timer baslatir
-		sim.move("U'"); // Solve baslangiçi
+		// First move starts timer
+		sim.move("U'"); // Solve begins
 		expect(sim.timeStartedAt).not.toBeNull();
 
-		// Solve devam
+		// Solve continues
 		sim.move("R'");
 
-		// cubejs ve fiziksel kup SOLVED olmali
+		// cubejs and physical cube should be SOLVED
 		expect(sim.physicalCube.asString()).toBe(SOLVED);
 		expect(sim.cubejs.asString()).toBe(SOLVED);
-		expect(sim.timeStartedAt).toBeNull(); // Timer durdu
+		expect(sim.timeStartedAt).toBeNull(); // Timer stopped
 
 		console.log('STATUS:', sim.status());
 	});

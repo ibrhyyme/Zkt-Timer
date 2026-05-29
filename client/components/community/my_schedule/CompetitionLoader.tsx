@@ -29,10 +29,10 @@ interface CompetitionData {
 	isFinished: boolean;
 }
 
-// Yarisma bitti mi? schedule dizisinin son gunu bugunden once mi?
+// Is competition finished? Check if the last day of schedule is before today
 function isCompetitionFinished(detail: any): boolean {
 	if (!detail?.schedule || !Array.isArray(detail.schedule) || detail.schedule.length === 0) {
-		return false; // veri yoksa "bitmis" demek hatali olur, izin ver
+		return false; // If no data, saying "finished" would be wrong, allow it
 	}
 	const dates = detail.schedule
 		.map((d: any) => d?.date)
@@ -42,7 +42,7 @@ function isCompetitionFinished(detail: any): boolean {
 	const today = new Date();
 	today.setHours(0, 0, 0, 0);
 	const cutoff = new Date(lastDate + 'T00:00:00');
-	cutoff.setDate(cutoff.getDate() + 1); // son gunden bir gun sonrasi 00:00 — o ana kadar aktif say
+	cutoff.setDate(cutoff.getDate() + 1); // one day after last day at 00:00 — count as active until then
 	return today >= cutoff;
 }
 
@@ -54,10 +54,10 @@ export function useCompetitionData(): CompetitionData {
 	return ctx;
 }
 
-// Module-level cache - component unmount olsa bile veri korunur
-// SWR pattern: stale veriyi hemen goster, arka planda yenile
-const FRESH_TTL = 0; // her zaman background refetch (stale veriyi aninda goster)
-const STALE_TTL = 24 * 60 * 60 * 1000; // 24 saat — stale-but-show
+// Module-level cache - data survives even if component unmounts
+// SWR pattern: show stale data immediately, refresh in background
+const FRESH_TTL = 0; // always background refetch (show stale data immediately)
+const STALE_TTL = 24 * 60 * 60 * 1000; // 24 hours — cache data beyond this is discarded
 const detailCache = new Map<string, {data: any; ts: number}>();
 
 function getCached(id: string): {data: any; isStale: boolean} | null {
@@ -76,10 +76,10 @@ interface CompetitionLoaderProps {
 	children: React.ReactNode;
 }
 
-// Background prefetch helper — disaridan cagrilabilir (liste/hover prefetch icin)
+// Background prefetch helper — can be called externally (for list/hover prefetch)
 export function prefetchCompetitionDetail(competitionId: string): void {
 	const cached = getCached(competitionId);
-	if (cached && !cached.isStale) return; // taze, gerek yok
+	if (cached && !cached.isStale) return; // fresh, no need
 
 	gqlQueryTyped(WcaCompetitionDetailDocument, {input: {competitionId}}, {fetchPolicy: 'no-cache'})
 		.then((res) => {
@@ -112,7 +112,7 @@ export default function CompetitionLoader({competitionId, children}: Competition
 			const data = (res.data as any)?.myCompetitionFollows;
 			setFollows(Array.isArray(data) ? data : []);
 		} catch {
-			// sessizce gec — Pro olmayanda da bos liste OK
+			// silently continue — empty list is OK for non-Pro users
 		}
 	}, [competitionId, me]);
 
@@ -120,7 +120,7 @@ export default function CompetitionLoader({competitionId, children}: Competition
 		refetchFollows();
 	}, [refetchFollows]);
 
-	// WCA Live overview prefetch — detail geldiginde sessizce arka planda yukle
+	// WCA Live overview prefetch — silently load in background when detail is ready
 	useEffect(() => {
 		if (detail?.wcaLiveCompId) {
 			prefetchWcaLiveOverview(competitionId).catch(() => {});
@@ -130,13 +130,13 @@ export default function CompetitionLoader({competitionId, children}: Competition
 	useEffect(() => {
 		const cached = getCached(competitionId);
 
-		// Cache'de var (fresh veya stale) → hemen goster
+		// Data in cache (fresh or stale) → show immediately
 		if (cached) {
 			setDetail(cached.data);
 			setLoading(false);
 			setError(null);
 
-			// Stale ise arka planda sessizce yenile
+			// If stale, silently refresh in background
 			if (cached.isStale) {
 				gqlQueryTyped(WcaCompetitionDetailDocument, {input: {competitionId}}, {fetchPolicy: 'no-cache'})
 					.then((res) => {
@@ -151,7 +151,7 @@ export default function CompetitionLoader({competitionId, children}: Competition
 			return;
 		}
 
-		// Cache'de yok → loading goster, fetch et
+		// Not in cache → show loading, fetch
 		let cancelled = false;
 		setLoading(true);
 		setError(null);
@@ -180,7 +180,7 @@ export default function CompetitionLoader({competitionId, children}: Competition
 		};
 	}, [competitionId]);
 
-	// Kullanici uygulamaya geri dondugunde (arka plandan one alma) sessizce yenile
+	// When user returns to app (resuming from background) silently refresh
 	useEffect(() => {
 		const handleVisibility = () => {
 			if (document.visibilityState !== 'visible') return;

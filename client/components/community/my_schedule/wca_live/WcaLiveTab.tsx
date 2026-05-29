@@ -17,7 +17,7 @@ interface Props {
 	roundNumber: number | null;
 }
 
-// Error Boundary: WCA Live tab'i icin crash isolation
+// Error Boundary: crash isolation for WCA Live tab
 class WcaLiveErrorBoundary extends Component<{children: ReactNode}, {hasError: boolean}> {
 	state = {hasError: false};
 
@@ -94,7 +94,7 @@ function WcaLiveTabInner({eventId, roundNumber}: Props) {
 
 	return (
 		<div className={b('wca-live')}>
-			{/* Event secici: mobilde dropdown, web'de wrap chip'ler */}
+			{/* Event selector: dropdown on mobile, wrapped chips on web */}
 			{isMobile ? (
 				<div className={b('wca-live-event-select-wrapper')}>
 					<select

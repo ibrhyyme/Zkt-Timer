@@ -9,8 +9,8 @@ export const FriendlyRoomConst = {
 
     // Timeouts
     ROOM_INACTIVE_TIMEOUT_MS: 5 * 60 * 1000, // 5 minutes
-    // Disconnect/away grace: bilgisayar kullanicilari sekme degistirince SIGNAL_AWAY tetikleniyor.
-    // 4 dakika tab gezintisi, kisa internet kopmasi, telefon ekran kapatmasina tolerans saglar.
+    // Disconnect/away grace: desktop users trigger SIGNAL_AWAY when switching tabs.
+    // Provides tolerance for 4 minutes of tab navigation, brief internet disconnections, and phone screen shutoff.
     PLAYER_DISCONNECT_GRACE_MS: 4 * 60 * 1000,
 
     // UI

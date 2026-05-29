@@ -31,8 +31,8 @@ function safeStringify(object) {
 	return JSON.stringify(object)
 		.replace(/<\/(script)/gi, '<\\/$1')
 		.replace(/<!--/g, '<\\!--')
-		.replace(/\u2028/g, '\\u2028')
-		.replace(/\u2029/g, '\\u2029');
+		.replace(/ /g, '\\u2028')
+		.replace(/ /g, '\\u2029');
 }
 
 function renderFullPage(html, helmet, preloadedState, lang: string = 'en') {
@@ -94,7 +94,7 @@ function createComponents(req, store) {
 
 function appUseRouteForPage(routePath, route: PageContext) {
 	global.app.all(routePath, async (req, res) => {
-		// İlk ziyarette dil cookie'si yoksa Accept-Language'dan tespit et
+		// If no language cookie on first visit, detect from Accept-Language
 		if (!req.cookies?.zkt_language) {
 			const acceptLang = req.headers['accept-language'] || '';
 			const preferred = ['zh', 'en', 'es', 'ru', 'tr'].find(
@@ -129,8 +129,8 @@ function appUseRouteForPage(routePath, route: PageContext) {
 			return;
 		}
 
-		// Admin sayfalarına sadece admin/mod erişebilir, geri kalanı 404 görür.
-		// Mod (ama admin değil) sadece ZKT yarışma sayfalarına erişebilir.
+		// Only admin/mod can access admin pages; others see 404.
+		// Mod (but not admin) can only access ZKT competition pages.
 		if (route.admin) {
 			if (!me || (!me.admin && !me.mod)) {
 				res.status(404).sendFile(`${__dirname}/resources/not_found.html`);
@@ -171,7 +171,7 @@ function appUseRouteForPage(routePath, route: PageContext) {
 				return;
 			}
 
-			// GraphQL dışı hatalar için logla ve sayfayı prefetch verisi olmadan render et
+			// For non-GraphQL errors, log and render page without prefetched data
 			logger.warn('SSR prefetch failed, rendering without prefetched data', {
 				path: routePath,
 				error: e?.message || e,

@@ -40,7 +40,7 @@ export function useChoreography(): Choreography {
 		if (filledRef.current.has(name)) return;
 		filledRef.current.add(name);
 		// chaos = 1 - (filledCount / totalFields)
-		// Tum alanlar dolunca chaos = 0 → AuthCube cube'u tam cozer
+		// When all fields are filled, chaos = 0 → AuthCube fully solves cube
 		const filled = filledRef.current.size;
 		setChaos(Math.max(0, 1 - filled / Math.max(1, total)));
 	}, []);
@@ -57,8 +57,8 @@ export function useChoreography(): Choreography {
 	}, [fireMoves]);
 
 	const onSubmitError = useCallback(() => {
-		// Hata feedback'i: sadece shake + banner. Cube'a dokunmuyoruz —
-		// auto-solve mantigi tek-yonlu (sadece progress ileri, geri scramble yok).
+		// Error feedback: shake + banner only. Don't touch cube —
+		// auto-solve logic is one-way (progress forward only, no backward scramble).
 		setSlideStage('shake');
 		setTimeout(() => setSlideStage(''), 500);
 	}, []);

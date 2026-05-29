@@ -156,7 +156,7 @@ export function fetchAdjacentSolve(currentSolve: Solve): Solve | null {
 	const solveDb = getSolveDb();
 	const sessionId = currentSolve.session_id;
 
-	// fetch all solves in session, sorted by ended_at DESC (same as main list)
+	// Fetch all solves in session, sorted by ended_at DESC (same as main list)
 	const solves = solveDb.chain()
 		.find({ session_id: sessionId })
 		.simplesort('ended_at', true)

@@ -1,16 +1,16 @@
 /**
- * Facelet mask sabitleri — cstimer cubeutil.js:24-28'den birebir port.
+ * Facelet mask constants — direct port from cstimer cubeutil.js:24-28.
  *
- * Cube facelet ordering: URFDLB (cubejs Cube.asString() ile uyumlu).
- * Pozisyonlar: U=0-8, R=9-17, F=18-26, D=27-35, L=36-44, B=45-53.
+ * Cube facelet ordering: URFDLB (compatible with cubejs Cube.asString()).
+ * Positions: U=0-8, R=9-17, F=18-26, D=27-35, L=36-44, B=45-53.
  *
- * Mask formati: 54-char string. Her karakter:
- *   - U/R/F/D/L/B: bu pozisyon o renkte olmali
- *   - "-": dont care (wildcard)
+ * Mask format: 54-char string. Each character:
+ *   - U/R/F/D/L/B: this position must be that color
+ *   - "-": don't care (wildcard)
  *
- * toEqus() bu mask'i equivalence class'lara cevirir — ayni renge sahip
- * tum pozisyonlar bir array'de toplanir. Progress kontrolu sirasinda her
- * sinifin tum elemanlarinin esit renge sahip oldugunu kontrol ederiz.
+ * toEqus() converts this mask to equivalence classes — all positions with same color
+ * are gathered in one array. During progress check, we verify that all elements of each
+ * class have the same color.
  */
 
 export type EquivalenceClass = number[];

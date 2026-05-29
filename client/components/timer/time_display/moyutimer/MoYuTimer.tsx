@@ -1,13 +1,13 @@
-// MoYu Timer — cstimer "MoYuTimer" mode'unun React wrapper'i.
+// MoYu Timer — React wrapper for cstimer "MoYuTimer" mode.
 //
-// cstimer'da MoYu Timer ayri bir timer mode olarak listeleniyor (timer.js
-// PROPERTY_ENTERING_STR: 'timer|typing|stackmat|MoYuTimer|...'), kodu paylasiyor:
-// hardware/stackmat.js icinde curTimer === 'm' iken sample_rate = 8000 Hz ve
-// bitAnalyzer = appendBitMoyu (24-bit BCD) kullaniliyor.
+// In cstimer, MoYu Timer is listed as a separate timer mode (timer.js
+// PROPERTY_ENTERING_STR: 'timer|typing|stackmat|MoYuTimer|...'), sharing code:
+// in hardware/stackmat.js when curTimer === 'm', sample_rate = 8000 Hz and
+// bitAnalyzer = appendBitMoyu (24-bit BCD) is used.
 //
-// Bizim port'umuzda ortak StackMat component'i `mode` prop'u alir; MoYuTimer
-// sadece <StackMat mode="m" /> render eder. Audio dispatch ve inspection
-// callback'leri aynidir.
+// In our port, the shared StackMat component accepts a `mode` prop; MoYuTimer
+// just renders <StackMat mode="m" />. Audio dispatch and inspection
+// callbacks are the same.
 
 import React from 'react';
 import StackMat from '../stackmat/StackMat';

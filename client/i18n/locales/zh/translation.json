@@ -2341,6 +2341,18 @@
         "linking_account": "正在关联账户...",
         "oauth_error": "OAuth 连接期间发生错误"
     },
+    "otp": {
+        "verifying": "验证中…",
+        "error_retry": "验证码错误，请重试。",
+        "didnt_get_code": "没有收到验证码？",
+        "resend": "重新发送",
+        "resend_in": "重新发送（{{seconds}}秒）",
+        "auto_verify_hint": "输入后将自动验证。",
+        "email_verified": "账户已验证，正在跳转…",
+        "password_updated": "密码已更新，正在跳转…",
+        "forgot_email_sub": "输入账户邮箱，我们将发送 6 位恢复验证码。",
+        "pw_levels": ["非常弱", "弱", "一般", "良好", "强"]
+    },
     "email_verification": {
         "title": "邮箱验证",
         "check_email": "我们已向您的邮箱发送了一个验证码。请检查您的收件箱。",

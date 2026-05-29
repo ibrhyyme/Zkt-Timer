@@ -31,7 +31,7 @@ export function DataProvider({ children }: DataProviderProps) {
 	const [sessionDbChangeCounter, setSessionDbChangeCounter] = useState(0);
 	const [trainerDbChangeCounter, setTrainerDbChangeCounter] = useState(0);
 
-	// SINGLE subscription per event across entire app
+	// Single subscription per event across entire app
 	useEventListener('settingsDbUpdatedEvent', () => {
 		setSettingsChangeCounter(prev => prev + 1);
 	});
@@ -52,7 +52,7 @@ export function DataProvider({ children }: DataProviderProps) {
 		setTrainerDbChangeCounter(prev => prev + 1);
 	});
 
-	// Login'li kullanicilar icin heartbeat — admin paneli icin aktivite tracking
+	// Heartbeat for logged-in users — activity tracking for admin panel
 	const meId = useSelector((s: any) => s?.account?.me?.id) as string | undefined;
 	useEffect(() => {
 		if (!meId) return;

@@ -3,10 +3,11 @@
  * Trainer.tsx, mode === 'efficiency' iken bunu render eder.
  * Sub-view'lar: trainer / settings.
  */
-import React, {useEffect} from 'react';
+import React from 'react';
 import block from '../../../styles/bem';
 import './efficiency.scss';
 import {EfficiencyProvider, useEfficiencyContext} from './EfficiencyContext';
+import {useEfficiencyUrlSync} from './useEfficiencyUrlSync';
 import TrainerView from './views/TrainerView';
 import SettingsView from './views/SettingsView';
 import {ArrowLeft, Gear} from 'phosphor-react';
@@ -56,13 +57,8 @@ function EfficiencyToolbar() {
 function EfficiencyRouter() {
 	const {state} = useEfficiencyContext();
 
-	useEffect(() => {
-		if (typeof window === 'undefined') return;
-		window.history.pushState({efficiencyView: state.view}, '');
-		const onPopState = () => {};
-		window.addEventListener('popstate', onPopState);
-		return () => window.removeEventListener('popstate', onPopState);
-	}, [state.view]);
+	// view ↔ URL senkronu (eski manuel pushState hack'inin yerine).
+	useEfficiencyUrlSync();
 
 	switch (state.view as EfficiencyView) {
 		case 'settings':

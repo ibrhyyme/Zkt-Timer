@@ -1,6 +1,6 @@
 /**
  * SettingsView — cross color, view angle, stroke, color editor, variance, fullName, danger zone.
- * Masaustunde 2 sutun grid: sol form kolonu + sag preview/toggle kolonu.
+ * Desktop: 2-column grid layout: left form column + right preview/toggle column.
  */
 import React, {useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
@@ -18,7 +18,7 @@ import {clearAllSessions} from '../../../../util/trainer/recognition/session_his
 
 const b = block('trainer-recognition');
 
-// SSR-safe confirm: window yoksa (server render) onayı reddet
+// SSR-safe confirm: if window doesn't exist (server render), decline confirmation
 function safeConfirm(message: string): boolean {
 	if (typeof window === 'undefined') return false;
 	return window.confirm(message);
@@ -127,7 +127,7 @@ export default function SettingsView() {
 		<div className={b('settings')}>
 			<h2 className={b('settings-title')}>{t('trainer.recognition.settings_title', {defaultValue: 'Settings'})}</h2>
 
-			{/* GORSEL KART: form alanlari + canli preview */}
+			{/* VISUAL CARD: form fields + live preview */}
 			<section className={b('settings-card')}>
 				<header className={b('settings-card-header')}>
 					{t('trainer.recognition.settings_card_visual', {defaultValue: 'Visual'})}
@@ -200,16 +200,16 @@ export default function SettingsView() {
 							colorScheme={settings.colorScheme}
 						/>
 						<small className={b('settings-visual-preview-hint')}>
-							{t('trainer.recognition.settings_preview_hint', {defaultValue: 'Canlı önizleme'})}
+							{t('trainer.recognition.settings_preview_hint', {defaultValue: 'Live preview'})}
 						</small>
 					</div>
 				</div>
 			</section>
 
-			{/* DAVRANIS KART: toggle'lar 2-sutun */}
+			{/* BEHAVIOR CARD: toggles 2-column */}
 			<section className={b('settings-card')}>
 				<header className={b('settings-card-header')}>
-					{t('trainer.recognition.settings_card_behavior', {defaultValue: 'Davranış'})}
+					{t('trainer.recognition.settings_card_behavior', {defaultValue: 'Behavior'})}
 				</header>
 				<div className={b('settings-toggles')}>
 					{toggles.map((opt) => (
@@ -224,7 +224,7 @@ export default function SettingsView() {
 				</div>
 			</section>
 
-			{/* Aksiyon row: Start Training prominent primary, Reset secondary pill */}
+			{/* Action row: Start Training prominent primary, Reset secondary pill */}
 			<div className={b('settings-actions')}>
 				<Button
 					theme={CommonType.TRANSPARENT}
@@ -244,7 +244,7 @@ export default function SettingsView() {
 				/>
 			</div>
 
-			{/* Tehlikeli Bolge kart */}
+			{/* Danger Zone card */}
 			<section className={b('settings-danger-card')}>
 				<header className={b('settings-danger-card-header')}>
 					<span className={b('settings-danger-badge')}>!</span>

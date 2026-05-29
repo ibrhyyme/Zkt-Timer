@@ -12,7 +12,7 @@ import PersonalBests from './PersonalBests';
 import CompetitorLiveResults from './wca_live/CompetitorLiveResults';
 import {resourceUri} from '../../../util/storage';
 
-// Code splitting: WCA Live tab sadece kullanildiginda yuklensin
+// Code splitting: WCA Live tab should load only when used
 const WcaLiveTab = React.lazy(() => import('./wca_live/WcaLiveTab'));
 import {b} from './shared';
 import FeatureGuard from '../../common/page_disabled/FeatureGuard';
@@ -49,7 +49,7 @@ function MyScheduleInner() {
 		'/community/competitions/:competitionId'
 	);
 
-	// competitionId'yi herhangi bir match'ten al
+	// Get competitionId from any match
 	const competitionId = matchPersonalBests?.params.competitionId
 		|| matchCompetitorResults?.params.competitionId
 		|| matchPerson?.params.competitionId
@@ -59,7 +59,7 @@ function MyScheduleInner() {
 		|| matchWcaLive?.params.competitionId
 		|| matchCompetition?.params.competitionId;
 
-	// Yarisma sayfalarinin hepsi tek CompetitionLoader altinda
+	// All competition pages are under a single CompetitionLoader
 	if (competitionId) {
 		let child: React.ReactNode;
 
@@ -127,7 +127,7 @@ function MyScheduleInner() {
 		);
 	}
 
-	// Yarisma listesi
+	// Competition list
 	return (
 		<div className={b()}>
 			<Header path="/community/competitions" title={t('my_schedule.page_title')} />

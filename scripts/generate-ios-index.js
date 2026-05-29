@@ -1,11 +1,11 @@
 /**
- * iOS offline bundle olusturur.
- * Online'da sunucudan yuklenir, offline'da bu bundle fallback olarak kullanilir.
+ * Creates iOS offline bundle.
+ * Loaded from server when online, used as fallback bundle offline.
  *
- * Kullanim:
+ * Usage:
  *   yarn build
  *   node scripts/generate-ios-index.js
- *   Cikan "offline-bundle" klasorunu Xcode projesine ekle (Add Files > Create folder reference)
+ *   Add the resulting "offline-bundle" folder to Xcode project (Add Files > Create folder reference)
  */
 
 const fs = require('fs');
@@ -39,16 +39,16 @@ const distDir = path.join(__dirname, '..', 'dist');
 const bundleDir = path.join(distDir, 'offline-bundle');
 const publicDir = path.join(__dirname, '..', 'public');
 
-// offline-bundle klasorunu olustur
+// Create offline-bundle folder
 if (fs.existsSync(bundleDir)) {
 	fs.rmSync(bundleDir, { recursive: true });
 }
 fs.mkdirSync(bundleDir, { recursive: true });
 
-// index.html olustur
+// Create index.html
 fs.writeFileSync(path.join(bundleDir, 'index.html'), html);
 
-// JS ve CSS kopyala
+// Copy JS and CSS
 const filesToCopy = [jsFile, cssFile, 'solver-worker.js', 'cross-solver-worker.js'];
 for (const file of filesToCopy) {
 	const src = path.join(distDir, file);
@@ -57,7 +57,7 @@ for (const file of filesToCopy) {
 	}
 }
 
-// public/images kopyala (logo, ikonlar vs.)
+// Copy public/images (logo, icons, etc.)
 function copyDirSync(src, dest) {
 	if (!fs.existsSync(src)) return;
 	if (!fs.existsSync(dest)) fs.mkdirSync(dest, { recursive: true });
@@ -78,5 +78,5 @@ if (fs.existsSync(imagesDir)) {
 	copyDirSync(imagesDir, path.join(bundleDir, 'public', 'images'));
 }
 
-console.log('[generate-ios-index] offline-bundle olusturuldu: dist/offline-bundle/');
-console.log('[generate-ios-index] Xcode\'a "offline-bundle" klasorunu ekle (Add Files > Create folder reference)');
+console.log('[generate-ios-index] offline-bundle created: dist/offline-bundle/');
+console.log('[generate-ios-index] Add "offline-bundle" folder to Xcode (Add Files > Create folder reference)');

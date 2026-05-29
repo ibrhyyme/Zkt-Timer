@@ -17,7 +17,7 @@ export class WebBleAdapter implements BleAdapter {
 	private listeners = new Map<string, NotificationListenerEntry>();
 
 	async requestDevice(options: BleRequestDeviceOptions): Promise<BleDevice> {
-		// acceptAll: name filter'lari bypass et, tum BLE cihazlari listele (debug ozelligi)
+		// acceptAll: bypass name filters, list all BLE devices (debug feature)
 		let device: BluetoothDevice;
 		if (options.acceptAll) {
 			device = await navigator.bluetooth.requestDevice({
@@ -96,9 +96,8 @@ export class WebBleAdapter implements BleAdapter {
 				callback(target.value);
 			}
 		};
-		// Listener'i startNotifications'tan ONCE ekle — cihaz notification enable
-		// olur olmaz ilk paketi (GAN Timer current state gibi) yayinlar; sirayi
-		// ters yaparsak ilk paket listener bagli olmadigi icin kaybolur.
+		// Add listener BEFORE startNotifications — device broadcasts first packet (like GAN Timer current state)
+		// as soon as notification is enabled; reverse order would lose the first packet since listener is not attached.
 		char.addEventListener('characteristicvaluechanged', listener);
 		const listenerKey = `${device.deviceId}|${serviceUuid.toLowerCase()}|${characteristicUuid.toLowerCase()}`;
 		const existing = this.listeners.get(listenerKey);

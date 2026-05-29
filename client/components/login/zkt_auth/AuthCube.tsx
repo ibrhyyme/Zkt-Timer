@@ -4,11 +4,11 @@ import block from '../../../styles/bem';
 const b = block('zkt-auth');
 
 /**
- * Sabit auth scramble — her ziyarette ayni cube state'i.
- * 20 hamle, tum face'leri kullanir, gorsel olarak yeterince karisik.
- * Login (2 alan) → her alan 10 hamle cozer.
- * Signup (5 alan) → her alan 4 hamle cozer.
- * Tum alanlar dolunca cube tamamen solved olur, submit sadece slide-up.
+ * Fixed auth scramble — same cube state on every visit.
+ * 20 moves, uses all faces, visually sufficiently scrambled.
+ * Login (2 fields) → each field solves 10 moves.
+ * Signup (5 fields) → each field solves 4 moves.
+ * When all fields are filled, cube is completely solved, submit is just slide-up.
  */
 const AUTH_SCRAMBLE = [
 	'R', 'U', "R'", 'F', "L'", 'D2',
@@ -20,13 +20,13 @@ const SCRAMBLE_LENGTH = AUTH_SCRAMBLE.length;
 const DRAIN_POLL_MS = 80;
 
 interface AuthCubeProps {
-	/** 0 (fully solved) .. 1 (max scrambled). useChoreography'den gelir. */
+	/** 0 (fully solved) .. 1 (max scrambled). Comes from useChoreography. */
 	chaos?: number;
-	/** Submit success bayragi. true olunca kalan tum hamleler tamamlanir. */
+	/** Submit success flag. When true, all remaining moves are completed. */
 	solvedGlow?: boolean;
-	/** Mode switch / reset tetikleyici. Her artisinda cube rescramble olur. */
+	/** Mode switch / reset trigger. Cube rescrambles on each increment. */
 	resetSignal?: number;
-	/** Cube canvas piksel boyutu (kare). */
+	/** Cube canvas pixel size (square). */
 	size?: number;
 }
 
@@ -39,7 +39,7 @@ function invertMove(move: string): string {
 	return move;
 }
 
-// Solve sequence = scramble'i ters siraya alip her hamleyi inverse et
+// Solve sequence = reverse scramble order and invert each move
 const AUTH_SOLVE = AUTH_SCRAMBLE.slice().reverse().map(invertMove);
 
 export default function AuthCube({
@@ -51,10 +51,10 @@ export default function AuthCube({
 	const containerRef = useRef<HTMLDivElement>(null);
 	const gameRef = useRef<any>(null);
 
-	// pendingTargetRef = chaos diff'inden hesaplanan hedef solve hamle sayisi.
-	// appliedSolveCountRef = gercekten kuyruga gonderilmis hamle sayisi.
-	// pollingRef = animasyon dolu iken pending'i drain etmek icin interval id.
-	// rescrambleNeededRef = resetSignal tarafindan setlenir, drain icinde tuketilir.
+	// pendingTargetRef = target solve move count calculated from chaos diff.
+	// appliedSolveCountRef = actual move count sent to queue.
+	// pollingRef = interval id to drain pending moves while animation queue is full.
+	// rescrambleNeededRef = set by resetSignal, consumed in drain.
 	const appliedSolveCountRef = useRef<number>(0);
 	const pendingTargetRef = useRef<number>(0);
 	const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -68,10 +68,10 @@ export default function AuthCube({
 		}
 	}, []);
 
-	// tryDrain: animasyon kuyrugunu surekli senkron tut. Cubey controls.scramble
-	// doluysa polling kur, bos ise siradaki isi yap (rescramble veya solve chunk).
-	// F1: dropped-moves race fix → applyMovesAnimated bail ederse polling devam
-	// eder, animasyon bos kalir kalmaz chunk uygulanir.
+	// tryDrain: keep animation queue continuously in sync. If Cube controls.scramble
+	// is full, set up polling; if empty, do next task (rescramble or solve chunk).
+	// F1: dropped-moves race fix → if applyMovesAnimated bails, polling continues,
+	// chunk applies as soon as animation empties.
 	const tryDrain = useCallback(() => {
 		const game = gameRef.current;
 		if (!game) return;
@@ -82,13 +82,13 @@ export default function AuthCube({
 			}
 		};
 
-		// Animasyon dolu — bos kalana kadar bekle
+		// Animation queue full — wait until empty
 		if (game.controls.scramble !== null) {
 			ensurePolling();
 			return;
 		}
 
-		// Rescramble bekliyorsa once onu yap (F3: mode switch)
+		// If rescramble pending, do it first (F3: mode switch)
 		if (rescrambleNeededRef.current) {
 			rescrambleNeededRef.current = false;
 			appliedSolveCountRef.current = 0;
@@ -98,7 +98,7 @@ export default function AuthCube({
 			return;
 		}
 
-		// Solve chunk uygula
+		// Apply solve chunk
 		if (pendingTargetRef.current <= appliedSolveCountRef.current) {
 			stopPolling();
 			return;
@@ -122,8 +122,8 @@ export default function AuthCube({
 	useEffect(() => {
 		const container = containerRef.current;
 		if (!container) return;
-		// Mobilde Three.js init etme — parent CSS display:none ile zaten gizliyor,
-		// bundle/perf tasarrufu icin WebGL canvas yaratmiyoruz.
+		// Don't init Three.js on mobile — parent CSS display:none already hides it,
+		// we skip WebGL canvas creation for bundle/perf savings.
 		if (typeof window !== 'undefined' && window.innerWidth <= 768) return;
 
 		let disposed = false;
@@ -133,21 +133,21 @@ export default function AuthCube({
 			const game = new CubeGame(container);
 			gameRef.current = game;
 
-			// Drag YOK — auth cube sadece otomatik animasyon
+			// No drag — auth cube is auto-animation only
 			game.controls.disable();
 
-			// Kisa gecikme: kullanici once solved cube'u gorur, sonra scramble baslar
+			// Brief delay: user sees solved cube first, then scramble starts
 			setTimeout(() => {
 				if (disposed) return;
 				game.applyMovesAnimated(AUTH_SCRAMBLE.slice());
 				appliedSolveCountRef.current = 0;
 				pendingTargetRef.current = 0;
-				// F2: ready state'i set et → chaos useEffect re-fire eder, init
-				// sirasinda kacirilmis chaos degisikliklerini drain ile yakalar.
+				// F2: set ready state → chaos useEffect re-fires, drain catches
+				// chaos changes missed during init.
 				setReady(true);
 			}, 600);
 		}).catch((err) => {
-			console.warn('[AuthCube] CubeGame yuklenemedi:', err);
+			console.warn('[AuthCube] CubeGame failed to load:', err);
 		});
 
 		return () => {
@@ -160,10 +160,10 @@ export default function AuthCube({
 		};
 	}, [stopPolling]);
 
-	// chaos prop degisiminde — hedef solve count'u guncelle + drain.
-	// F1: applyMovesAnimated bail ederse appliedSolveCountRef sicramaz, polling
-	// drain bittiginde dogru chunk'i uygular.
-	// F2: ready dependency'sine eklendi → init bittiginde missed chaos catch-up.
+	// On chaos prop change — update target solve count + drain.
+	// F1: if applyMovesAnimated bails, appliedSolveCountRef doesn't jump, polling
+	// applies correct chunk when drain finishes.
+	// F2: added to ready dependency → catch-up missed chaos at init end.
 	useEffect(() => {
 		if (!ready) return;
 		const game = gameRef.current;
@@ -179,14 +179,14 @@ export default function AuthCube({
 		tryDrain();
 	}, [chaos, ready, tryDrain]);
 
-	// solvedGlow → kalan tum solve hamlelerini uygula (yedek hat)
+	// solvedGlow → apply all remaining solve moves (fallback path)
 	useEffect(() => {
 		if (!ready || !solvedGlow) return;
 		pendingTargetRef.current = SCRAMBLE_LENGTH;
 		tryDrain();
 	}, [solvedGlow, ready, tryDrain]);
 
-	// F3: resetSignal degisiminde rescramble tetikle. Initial value 0 → skip.
+	// F3: on resetSignal change, trigger rescramble. Initial value 0 → skip.
 	useEffect(() => {
 		if (resetSignal === 0) return;
 		if (!ready) return;

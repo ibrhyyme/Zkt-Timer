@@ -37,7 +37,7 @@
 		align-items: center !important;
 		gap: 4px;
 		backdrop-filter: blur(10px);
-		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); // Biraz daha belirgin gölge
+		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); // Slightly more prominent shadow
 		width: fit-content;
 
 		>* {
@@ -104,9 +104,9 @@
 			}
 		}
 
-		// Not: .cd-common-dropdown override'lari kaldirildi — header'daki tum
-		// dropdown'lar artik FancyDropdown'a (Radix Select) gecti, kendi SCSS'leri
-		// var. Override gerekmiyor.
+		// Note: .cd-common-dropdown overrides removed — all header dropdowns
+		// have migrated to FancyDropdown (Radix Select), each has its own SCSS.
+		// No overrides needed.
 	}
 
 	>div:first-of-type {
@@ -118,7 +118,7 @@
 	}
 }
 
-// Mobil özel stiller
+// Mobile-specific styles
 @media (max-width: 1023px) {
 	.#{$namespace}-timer-header-control {
 		padding: calc(10px + env(safe-area-inset-top, 0px)) 12px 10px 12px !important;
@@ -153,7 +153,7 @@
 	}
 }
 
-// Küçük ekranlar (iPhone SE, iPhone 12 mini vb.)
+// Small screens (iPhone SE, iPhone 12 mini, etc.)
 @media (max-width: 390px) {
 	.#{$namespace}-timer-header-control {
 		padding: calc(8px + env(safe-area-inset-top, 0px)) 10px 8px 10px !important;

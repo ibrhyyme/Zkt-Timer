@@ -27,8 +27,8 @@ function initAll(): void {
 	initCross();
 	initEOLine();
 	initRoux1();
-	// Full pruning tablosunu (getEasyCross/getEasyXCross) init'te pre-warm et —
-	// yoksa ilk rare-length scramble isteginde ~100-300ms senkron blok olusur.
+	// Pre-warm full pruning table (getEasyCross/getEasyXCross) on init —
+	// otherwise first rare-length scramble request causes ~100-300ms synchronous block.
 	fullInit();
 	initialized = true;
 }
@@ -101,7 +101,7 @@ self.onmessage = function (event: MessageEvent) {
 		}
 
 		case 'easy': {
-			// Belirli uzunlukta cross/xcross pozisyonu uret → mask [ep,eo(,cp,co)]
+			// Generate cross/xcross position of specific length → mask [ep,eo(,cp,co)]
 			try {
 				initAll();
 				const mask = solverType === 'xcross' ? getEasyXCross(length) : getEasyCross(length);

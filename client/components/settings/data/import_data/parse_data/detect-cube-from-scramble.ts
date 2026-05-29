@@ -1,10 +1,10 @@
-// Scramble icerigine bakarak cube_type ve subset'i tespit eder.
-// csTimer / Twisty Timer parser'i session-level scrType'i baz alir ama bir csTimer
-// sezonunda kullanici farkli kuplerle cozum yapabilir. Bu helper her solve icin
-// **gercek** scramble'a bakarak cube'u cikarir.
+// Detects cube_type and subset by examining scramble content.
+// The csTimer / Twisty Timer parser bases on session-level scrType, but in a csTimer
+// season a user can solve with different cubes. This helper examines the **actual**
+// scramble for each solve to extract the cube.
 //
-// Oncelik: spesifikten genele (sq1/minx/big cubes once, sonra 3x3/2x2 default).
-// Tespit edilemezse null doner — caller session-level fallback'e dusebilir.
+// Priority: specific to general (sq1/minx/big cubes first, then 3x3/2x2 default).
+// If not detected, returns null — caller can fall back to session-level.
 
 export interface DetectedBucket {
 	cube_type: string;
@@ -16,13 +16,13 @@ export function detectCubeFromScramble(scramble: string | null | undefined): Det
 	const s = String(scramble).trim();
 	if (!s) return null;
 
-	// Square-1: / veya parantez/virgul iceriyor
+	// Square-1: contains / or parentheses/commas
 	if (/[/(),]/.test(s)) return { cube_type: 'wca', scramble_subset: 'sq1' };
 
-	// Megaminx: ++ veya -- cifte isaretler
+	// Megaminx: ++ or -- double signs
 	if (/(\+\+|--)/.test(s)) return { cube_type: 'wca', scramble_subset: 'minx' };
 
-	// Clock: UR0+ DL3- ALL2+ tarzi pin notation
+	// Clock: UR0+ DL3- ALL2+ style pin notation
 	if (/\b(ALL|UR|DR|UL|DL)[0-9]+[+-]/.test(s)) {
 		return { cube_type: 'wca', scramble_subset: 'clock' };
 	}
@@ -39,23 +39,23 @@ export function detectCubeFromScramble(scramble: string | null | undefined): Det
 		return { cube_type: 'wca', scramble_subset: moveCount > 50 ? '555' : '444' };
 	}
 
-	// Pyraminx: kucuk harf tweaker (u r b l) — buyuk harflerle birlikte
+	// Pyraminx: lowercase tweaker (u r b l) — together with uppercase letters
 	if (/(^|\s)[ulrb]'?(\s|$)/.test(s)) {
 		return { cube_type: 'wca', scramble_subset: 'pyram' };
 	}
 
 	const moves = s.split(/\s+/).filter(Boolean);
 
-	// Skewb: kisa scramble (cogunlukla 7-9 hamle), sadece ULRBFxyz harfleri
+	// Skewb: short scramble (usually 7-9 moves), only ULRBF x y z letters
 	if (moves.length < 12 && /^[ULRBFxyz'2\s]+$/.test(s)) {
-		// Skewb'de cogunlukla F yok ama xyz var; 3x3 de tek harfli yapabilir.
-		// Eger xyz iceriyor ve cok kisa ise muhtemelen skewb.
+		// Skewb usually has no F but has xyz; 3x3 can have single letters.
+		// If it contains xyz and very short, probably skewb.
 		if (/[xyz]/.test(s) || moves.length <= 9) {
 			return { cube_type: 'wca', scramble_subset: 'skewb' };
 		}
 	}
 
-	// 2x2: kisa, sadece R U F (D, L, B yok; wide yok)
+	// 2x2: short, only R U F (no D, L, B; no wide moves)
 	if (moves.length <= 12 && /^[RUF'2\s]+$/.test(s)) {
 		return { cube_type: 'wca', scramble_subset: '222' };
 	}

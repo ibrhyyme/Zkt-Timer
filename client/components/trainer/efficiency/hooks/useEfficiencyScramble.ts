@@ -1,9 +1,9 @@
 /**
- * Scramble uretip cozum hazirlar.
- * - reqId guard: stale-request korumasi
- * - stateRef: next() stable referans (deps sadece dispatch) -> useEffect sonsuz dongu yok
- * - targetLength + rotation yok -> getEasyCross (aninda). getEasy patlarsa/null -> uret-ve-ele.
- * - Tum yollar throw-safe: ekran her durumda dolar (en kotu random scramble).
+ * Generate scramble and prepare solutions.
+ * - reqId guard: stale-request protection
+ * - stateRef: next() stable reference (deps only dispatch) -> no infinite useEffect loop
+ * - targetLength + rotation absent -> getEasyCross (instant). getEasy fails/null -> generate-and-solve.
+ * - All paths throw-safe: screen always fills (worst case random scramble).
  */
 import {useCallback, useRef} from 'react';
 import {useEfficiencyContext} from '../EfficiencyContext';
@@ -34,8 +34,8 @@ export function useEfficiencyScramble() {
 		const deadline = Date.now() + TIMEOUT_MS;
 
 		try {
-			// targetLength + rotation yok -> getEasyCross (full pruning, aninda + tam uzunluk).
-			// getEasy patlarsa/null donerse sessizce uret-ve-ele'ye dus (ekran bos kalmasin).
+			// targetLength + rotation absent -> getEasyCross (full pruning, instant + exact length).
+			// getEasy fails/null -> silently fall through to generate-and-solve (don't leave screen empty).
 			if (targetLength !== undefined) {
 				let easy: {scramble: string; results: import('../../../../util/cross-solver/types').SolverResult[]} | null = null;
 				try {
@@ -49,11 +49,11 @@ export function useEfficiencyScramble() {
 				}
 			}
 
-			// Uret-ve-ele / random fallback
+			// Generate-and-solve / random fallback
 			let chosen = await generateAndSolve(type, xcrossSlot, rotation);
 
 			if (targetLength !== undefined) {
-				// timeout/limit'te hedefe EN YAKIN sonucu tut — rastgele dondurme yok
+				// On timeout/limit keep closest result to target — no random reshuffle
 				let best = chosen;
 				let bestDist = Infinity;
 				for (let i = 0; i < MAX_ATTEMPTS; i++) {
@@ -63,8 +63,8 @@ export function useEfficiencyScramble() {
 						bestDist = dist;
 						best = chosen;
 					}
-					if (dist === 0) break; // tam hedef
-					if (Date.now() > deadline) break; // timeout -> best (en yakin) kullanilir
+					if (dist === 0) break; // exact target
+					if (Date.now() > deadline) break; // timeout -> best (closest) used
 					if (reqIdRef.current !== reqId) return; // stale
 					chosen = await generateAndSolve(type, xcrossSlot, rotation);
 				}

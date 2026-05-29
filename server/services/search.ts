@@ -9,7 +9,7 @@ export function initSearch() {
 	try {
 		const clientOptions: ClientOptions = {};
 
-		// Hem Cloud hem Docker desteği
+		// Support both Cloud and Docker configurations
 		if (process.env.ELASTICSEARCH_CLOUD_ID) {
 			clientOptions.cloud = {
 				id: process.env.ELASTICSEARCH_CLOUD_ID,
@@ -19,13 +19,13 @@ export function initSearch() {
 				password: process.env.ELASTICSEARCH_ELASTIC_PASSWORD,
 			};
 		} else {
-			// Docker için bu satır şart
+			// This line is required for Docker configuration
 			clientOptions.node = process.env.ELASTICSEARCH_NODE || 'http://localhost:9200';
 		}
 
 		client = new Client(clientOptions);
 
-		// Index bootstrap — yoksa olustur (fire-and-forget, server start'i blokmuyor)
+		// Index bootstrap — create if it doesn't exist (fire-and-forget, doesn't block server startup)
 		bootstrapArchivedCompIndex().catch((e) => {
 			console.warn('[ES] archived comp index bootstrap failed', e?.message);
 		});
@@ -69,7 +69,7 @@ export async function bootstrapArchivedCompIndex() {
 		});
 		console.log(`[ES] Created index: ${ARCHIVED_COMP_INDEX}`);
 	} catch (e: any) {
-		// Index zaten varsa "resource_already_exists_exception" gelebilir — sessiz ignore
+		// If the index already exists, we may get "resource_already_exists_exception" — silently ignore
 		if (e?.meta?.body?.error?.type !== 'resource_already_exists_exception') {
 			throw e;
 		}

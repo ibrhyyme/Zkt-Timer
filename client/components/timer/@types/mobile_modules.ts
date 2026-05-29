@@ -1,9 +1,9 @@
 import { TimerModuleType } from './enums';
 
-// Mobilde kullanilabilecek modul tipleri.
-// Son Cozum -> Cozumler'de zaten gorunuyor
-// Tutarlilik, Istatistikler -> StatsBar ve Stats sayfasinda zaten var
-// Hicbiri -> kullanici illa bir sey secmeli
+// Module types available on mobile.
+// Last Solve -> already shown in Solves
+// Consistency, Statistics -> already in StatsBar and Stats page
+// None -> user must select something
 export const MOBILE_MODULE_OPTIONS: TimerModuleType[] = [
 	TimerModuleType.HISTORY,
 	TimerModuleType.SCRAMBLE,

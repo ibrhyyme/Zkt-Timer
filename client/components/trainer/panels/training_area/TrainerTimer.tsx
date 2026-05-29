@@ -43,8 +43,8 @@ export default function TrainerTimer() {
 		if (currentAlgorithm) {
 			const algId = algToId(currentAlgorithm.algorithm);
 			addTime(algId, finalTime);
-			// Standard mode'da hata tracking yok — manuel timer kullanildigi icin
-			// her solve temiz kabul edilir. Fail counter sifirlanir, auto-learn cagrilir.
+			// In standard mode, there is no error tracking — since manual timer is used,
+			// each solve is considered clean. Fail counter is reset, auto-learn is called.
 			resetFailCount(algId);
 			if (state.options.autoLearnEnabled) {
 				checkAutoLearn(algId, state.options.autoLearnThreshold);
@@ -76,7 +76,7 @@ export default function TrainerTimer() {
 				if (timerState === 'STOPPED') {
 					handleAdvance();
 				} else if (state.smartPhase === 'solving') {
-					// Manuel durdurma — kullanici kupu sezgisel cozduyse
+					// Manual stop — user intuitively solved the cube
 					dispatch({type: 'SET_TIMER_STATE', payload: 'STOPPED'});
 					dispatch({type: 'SMART_SET_PHASE', payload: 'completed'});
 					if (currentAlgorithm) {
@@ -90,7 +90,7 @@ export default function TrainerTimer() {
 			if (timerState === 'RUNNING') {
 				stopTimer();
 			} else if (timerState === 'STOPPED') {
-				handleAdvance(); // ADVANCE_ALGORITHM reducer IDLE'a set eder
+				handleAdvance(); // ADVANCE_ALGORITHM reducer sets to IDLE
 			} else if (timerState === 'IDLE') {
 				dispatch({type: 'SET_TIMER_STATE', payload: 'READY'});
 			}
@@ -116,7 +116,7 @@ export default function TrainerTimer() {
 		};
 	}, [timerState, isSmartMode, stopTimer, startTimer, handleAdvance, dispatch, state.smartPhase, currentTimerValue, currentAlgorithm]);
 
-	// Cleanup interval on unmount
+	// Clean up interval on unmount
 	useEffect(() => {
 		return () => {
 			if (intervalRef.current) {

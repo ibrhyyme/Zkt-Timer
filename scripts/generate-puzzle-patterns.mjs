@@ -1,15 +1,15 @@
 /**
- * 2x2, 4x4, Pyraminx, Skewb ve SQ1 kategorileri icin algoritma pattern'lerini hesaplar.
- * cubingapp alg-codegen/main.js'den port edilmis puzzle simulatorleri kullanir.
+ * Calculates algorithm patterns for 2x2, 4x4, Pyraminx, Skewb and SQ1 categories.
+ * Uses puzzle simulators ported from cubingapp alg-codegen/main.js.
  *
- * Cikti: public/trainer/puzzle-patterns.json
+ * Output: public/trainer/puzzle-patterns.json
  *
- * Kullanim: node scripts/generate-puzzle-patterns.mjs
+ * Usage: node scripts/generate-puzzle-patterns.mjs
  */
 
 import { readFileSync, writeFileSync } from 'fs';
 
-// ─── Yardimci fonksiyonlar (cubingapp main.js'den port) ───
+// ─── Helper functions (ported from cubingapp main.js) ───
 
 function invertAlg(alg) {
 	if (!alg) return '';
@@ -251,8 +251,8 @@ class Cube {
 	}
 
 	/**
-	 * 2D top-view sticker indekslerini dondurur.
-	 * cubingapp main.js Cube.getSvg()'den birebir.
+	 * Returns 2D top-view sticker indices.
+	 * Directly from cubingapp main.js Cube.getSvg().
 	 */
 	getTopViewIndices() {
 		if (this.layers === 2) {
@@ -277,7 +277,7 @@ class Cube {
 	}
 
 	/**
-	 * Top-view pattern string olusturur.
+	 * Creates top-view pattern string.
 	 * Format: [top stickers][front strip][right strip][back strip][left strip]
 	 */
 	getPattern() {
@@ -401,8 +401,8 @@ class Skewb {
 	}
 
 	/**
-	 * 17 visible sticker degerini cubingapp SVG polygon sirasina gore dondurur.
-	 * Sira: U, UBL, URB, UFR, ULF, FUL, F, FRU, RUF, R, RBU, BLU, B, BUR, LFU, L, LUB
+	 * Returns 17 visible sticker values in cubingapp SVG polygon order.
+	 * Order: U, UBL, URB, UFR, ULF, FUL, F, FRU, RUF, R, RBU, BLU, B, BUR, LFU, L, LUB
 	 */
 	getPattern() {
 		const order = ['U','UBL','URB','UFR','ULF','FUL','F','FRU','RUF','R','RBU','BLU','B','BUR','LFU','L','LUB'];
@@ -475,10 +475,10 @@ class SQ1 {
 	}
 }
 
-// ─── expandNotation (algorithm_engine.ts'den port) ───
+// ─── expandNotation (ported from algorithm_engine.ts) ───
 
 function expandNotation(input) {
-	// SQ1 detection: / iceriyorsa SQ1 notasyonu
+	// SQ1 detection: if contains "/" then SQ1 notation
 	if (input.includes('/')) {
 		return input.replace(/\s+/g, ' ').trim();
 	}
@@ -500,14 +500,14 @@ function expandNotation(input) {
 	return output.trim();
 }
 
-// ─── Kategori tanimlari ───
+// ─── Category definitions ───
 
 const GRAY_MASKS = {
 	'Sarah Intermediate': ['F','R','B','L','FUL','FRU','RUF','RBU','BUR','BLU','LUB','LFU'],
 	'Sarah Advanced': ['FUL','FRU','RUF','RBU','BUR','BLU','LUB','LFU'],
 };
 
-// SQ1 Cube Shape ve CSP icin bottom face mirror
+// SQ1 Cube Shape and CSP need bottom face mirror
 const SQ1_MIRROR_CATEGORIES = new Set(['SQ1 Cube Shape', 'SQ1 CSP']);
 
 const CATEGORY_CONFIG = {
@@ -557,16 +557,16 @@ function applyGrayMask(puzzle, category) {
 }
 
 function cleanAlgorithm(alg, puzzleType) {
-	// SQ1: parantez kaldir, fazla bosluk temizle
+	// SQ1: remove parentheses, clean extra whitespace
 	if (puzzleType === 'sq1') {
 		return alg.replace(/[()]/g, '').replace(/\s+/g, ' ').trim();
 	}
-	// Diger: parantez kaldir
+	// Others: remove parentheses
 	return alg.replace(/[()]/g, '').replace(/\s+/g, ' ').trim();
 }
 
 function main() {
-	console.log('Puzzle pattern uretimi basliyor...\n');
+	console.log('Starting puzzle pattern generation...\n');
 
 	const algsData = JSON.parse(readFileSync('public/trainer/default-algs.json', 'utf8'));
 	const result = {};
@@ -576,7 +576,7 @@ function main() {
 	for (const [category, config] of Object.entries(CATEGORY_CONFIG)) {
 		const subsets = algsData[category];
 		if (!subsets) {
-			console.warn(`Kategori bulunamadi: ${category}`);
+			console.warn(`Category not found: ${category}`);
 			continue;
 		}
 
@@ -596,8 +596,8 @@ function main() {
 						const cleanAlg = cleanAlgorithm(algorithm, config.puzzle);
 						const inverted = invertAlg(cleanAlg);
 
-						// cubingapp birebir: gray mask ONCE, inverted alg SONRA
-						// Gray sticker'lar hareket eder, nereye giderse gitsin gray kalir
+						// cubingapp exact: apply gray mask ONCE, then inverted alg
+						// Gray stickers move, but remain gray wherever they go
 						applyGrayMask(puzzle, category);
 						puzzle.performAlg(inverted);
 
@@ -608,25 +608,25 @@ function main() {
 						catCount++;
 						totalCount++;
 					} catch (e) {
-						console.error(`  HATA [${category}] "${algorithm}":`, e.message);
+						console.error(`  ERROR [${category}] "${algorithm}":`, e.message);
 						errors++;
 					}
 				}
 			}
 		}
 
-		console.log(`  ${category}: ${catCount} pattern`);
+		console.log(`  ${category}: ${catCount} patterns`);
 	}
 
-	// SQ1 icin mirror bilgisini metadata olarak ekle
+	// For SQ1 add mirror info as metadata
 	if (result.sq1) {
 		result.sq1._mirror = [...SQ1_MIRROR_CATEGORIES];
 	}
 
 	writeFileSync('public/trainer/puzzle-patterns.json', JSON.stringify(result));
 	const fileSize = (readFileSync('public/trainer/puzzle-patterns.json').length / 1024).toFixed(1);
-	console.log(`\nToplam: ${totalCount} pattern, ${errors} hata`);
-	console.log(`Dosya: public/trainer/puzzle-patterns.json (${fileSize} KB)`);
+	console.log(`\nTotal: ${totalCount} patterns, ${errors} errors`);
+	console.log(`File: public/trainer/puzzle-patterns.json (${fileSize} KB)`);
 }
 
 main();

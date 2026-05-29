@@ -18,7 +18,7 @@ const LOCK_KEY = createRedisKey(RedisNamespace.WCA_WCIF, 'notifications_cron_loc
 
 export function initWcaCompetitionNotificationCronJob() {
 	const job = new CronJob(
-		'0 * * * * *', // Her 1 dakikada bir
+		'0 * * * * *', // Every 1 minute
 		async () => {
 			try {
 				await runTick();
@@ -43,7 +43,7 @@ async function runTick() {
 	try {
 		const prisma = getPrisma();
 
-		// Aktif pencere: bugun -1 ile +2 gun arasi (timezone toleransi)
+		// Active window: today -1 to +2 days (timezone tolerance)
 		const today = new Date();
 		today.setHours(0, 0, 0, 0);
 		today.setDate(today.getDate() - 1);
@@ -66,19 +66,19 @@ async function runTick() {
 			},
 		});
 
-		// Takipci olan yarismalar — kullanici kayitli olmasa bile cron'un islemesi gerekir
+		// Followed competitions — cron must process even if user isn't registered
 		const followCompIdsRaw = await prisma.competitionFollow.findMany({
 			distinct: ['competition_id'],
 			select: {competition_id: true},
 		});
 
-		// Yarismaya gore grupla
+		// Group by competition
 		const byComp = new Map<string, typeof states>();
 		for (const s of states) {
 			if (!byComp.has(s.competition_id)) byComp.set(s.competition_id, []);
 			byComp.get(s.competition_id)!.push(s);
 		}
-		// Takip edilen yarismalari da listeye ekle (state'i olmasa bile)
+		// Add followed competitions to the list (even if no state exists)
 		for (const f of followCompIdsRaw) {
 			if (!byComp.has(f.competition_id)) byComp.set(f.competition_id, []);
 		}
@@ -130,7 +130,7 @@ async function processCompetition(compId: string, states: StateRow[]): Promise<n
 	const liveData = await getWcaLiveData(compId).catch(() => null);
 	if (!liveData) return 0;
 
-	// Hizli erisim icin map'ler — bos string key'leri kabul etme
+	// Maps for fast access — reject empty string keys
 	const byWcaId = new Map<string, StateRow>();
 	const byName = new Map<string, StateRow>();
 	for (const s of states) {
@@ -138,7 +138,7 @@ async function processCompetition(compId: string, states: StateRow[]): Promise<n
 		if (s.person_name && s.person_name.trim()) byName.set(s.person_name, s);
 	}
 
-	// Bu yarismaya ait takipciler (Pro ozelligi) — ayni yarismaciyi birden fazla kullanici takip edebilir
+	// Followers for this competition (Pro feature) — same competitor can be followed by multiple users
 	const follows = await getPrisma().competitionFollow.findMany({
 		where: {competition_id: compId},
 		include: {
@@ -165,7 +165,7 @@ async function processCompetition(compId: string, states: StateRow[]): Promise<n
 		followsByRegistrant.set(f.followed_registrant_id, arr);
 	}
 
-	// Event basina max round numarasi (final tespiti icin)
+	// Max round number per event (for final detection)
 	const maxRoundByEvent = new Map<string, number>();
 	for (const rm of liveData.roundMap) {
 		const m = rm.activityCode.match(/^(.+)-r(\d+)$/);
@@ -214,7 +214,7 @@ async function processCompetition(compId: string, states: StateRow[]): Promise<n
 			if (state) {
 				const existingNr = state.notified_rounds.find((nr) => nr.activity_code === rm.activityCode);
 
-				// --- Sonuc girildi bildirimi ---
+				// --- Result entered notification ---
 				if (result.best && result.best > 0 && !existingNr?.result_notified) {
 					try {
 						await sendResultEntered(
@@ -237,7 +237,7 @@ async function processCompetition(compId: string, states: StateRow[]): Promise<n
 					}
 				}
 
-				// --- Round bitti bildirimi ---
+				// --- Round finished notification ---
 				if (round.finished && !existingNr?.finish_notified) {
 					try {
 						await sendRoundFinished(
@@ -261,15 +261,15 @@ async function processCompetition(compId: string, states: StateRow[]): Promise<n
 				}
 			}
 
-			// --- Takipci bildirimleri (Pro) ---
+			// --- Follower notifications (Pro) ---
 			const matchedFollows =
 				(result.personWcaId && followsByWcaId.get(result.personWcaId)) ||
 				followsByName.get(result.personName) ||
 				[];
 
 			for (const follow of matchedFollows) {
-				// Self-bildirim koruma: kullanici ayni anda hem state hem follow'a sahipse
-				// state uzerinden zaten bildirim aldi, follow'u atla
+				// Self-notification protection: if user has both state and follow for this person,
+				// already notified via state, skip follow
 				if (state && state.user_id === follow.user_id) continue;
 
 				const existingFollowNr = follow.notified_rounds.find(
@@ -323,7 +323,7 @@ async function processCompetition(compId: string, states: StateRow[]): Promise<n
 		}
 	}
 
-	// --- Auto-cleanup: tum roundlar bitti ve yarisma tarihi gecti ---
+	// --- Auto-cleanup: all rounds finished and competition date passed ---
 	if (allFinished && states.length > 0) {
 		const endDate = states[0].end_date;
 		const now = new Date();
@@ -339,8 +339,8 @@ async function processCompetition(compId: string, states: StateRow[]): Promise<n
 		}
 	}
 
-	// --- Auto-archive: yarismanin tum round'lari bitti, DB'ye yaz/guncelle (idempotent) ---
-	// states.length kontrolu yok — kullanici kayitli olmasa bile (sadece takipci olabilir) arsivle
+	// --- Auto-archive: all competition rounds finished, write/update in DB (idempotent) ---
+	// no states.length check — archive even if user not registered (may be followers only)
 	if (allFinished) {
 		archiveCompetition(compId).catch((err: any) => {
 			logger.warn('[Archive] auto-archive failed', {compId, err: err?.message});
@@ -471,7 +471,7 @@ async function upsertNotifiedRound(
 	});
 }
 
-// ===== Takipci (Pro) bildirimleri =====
+// ===== Follower (Pro) notifications =====
 
 type FollowRow = Awaited<ReturnType<typeof loadFollows>>[number];
 async function loadFollows() {

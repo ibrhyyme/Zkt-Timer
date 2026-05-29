@@ -1,9 +1,9 @@
-// Header'da kullanilan generic dropdown — Radix Select + havali stil.
-// TimerTypePicker'in pattern'i generic'lestirilmis hali. Headers / groups / icons / disabled / badge destegi.
+// Generic dropdown used in header — Radix Select + polished style.
+// Genericized pattern from TimerTypePicker. Supports headers / groups / icons / disabled / badge.
 //
-// Mimari notu: Tek seferlik secim icin Radix Select primitives. Action item'lar (ornek:
-// "Yeni Session +") icin virtual value (ornek: "__action__new_session") kullanilir —
-// parent component'in handleValueChange'i switch ile bu virtual value'lari yakalar.
+// Architecture note: Radix Select primitives for single selection. For action items (e.g.
+// "New Session +"), virtual values (e.g. "__action__new_session") are used —
+// parent component's handleValueChange catches these with switch statement.
 
 import React, { useLayoutEffect, useRef, useState } from 'react';
 import * as Select from '@radix-ui/react-select';
@@ -22,7 +22,7 @@ export interface FancyDropdownOption {
 }
 
 export interface FancyDropdownGroup {
-	// Grup basligi (Select.Label) — null/undefined ise sadece separator gibi davranir
+	// Group header (Select.Label) — if null/undefined, acts like a separator
 	header?: string;
 	options: FancyDropdownOption[];
 }
@@ -30,27 +30,27 @@ export interface FancyDropdownGroup {
 interface FancyDropdownProps {
 	value: string;
 	onValueChange: (value: string) => void;
-	// Flat liste mi gruplu liste mi (ikisinden biri verilmeli)
+	// Flat list or grouped list (one of these must be provided)
 	options?: FancyDropdownOption[];
 	groups?: FancyDropdownGroup[];
-	// Trigger gorunumu
+	// Trigger appearance
 	triggerIcon?: React.ReactNode;
 	triggerLabel?: React.ReactNode;
-	// Custom trigger content (ornek: CrossColorPicker icin sadece swatch + caret)
+	// Custom trigger content (e.g. for CrossColorPicker: just swatch + caret)
 	triggerContent?: React.ReactNode;
 	ariaLabel: string;
-	// Acilma yonu (default 'start' — panel sol kenari trigger sol kenari ile hizali, saga genisler)
+	// Open direction (default 'start' — panel's left edge aligns with trigger's left edge, expands right)
 	align?: 'start' | 'end' | 'center';
-	// Maks panel yuksekligi (scrollable)
+	// Max panel height (scrollable)
 	maxHeight?: number;
-	// Trigger min/max width (default genis label icin ayarlanabilir)
+	// Trigger min/max width (default adjustable for wide labels)
 	triggerMinWidth?: number;
 	triggerMaxWidth?: number;
 	className?: string;
-	// Mobile'da gizle (default true — header dropdown'lari mobile'da mevcut moda dusuyor)
+	// Hide on mobile (default true — header dropdowns fall into modal on mobile)
 	hideOnMobile?: boolean;
-	// Default trigger SCSS class'ini ekleme — kullanan kendi triggerStyle'ini className ile verir
-	// (ornek: StatsFilterControls'da chip stili)
+	// Don't add default trigger SCSS class — consumer provides their own triggerStyle via className
+	// (e.g. StatsFilterControls uses chip style)
 	noTriggerStyles?: boolean;
 }
 
@@ -72,12 +72,12 @@ export default function FancyDropdown(props: FancyDropdownProps) {
 		noTriggerStyles,
 	} = props;
 
-	// Acilma kontrolu — selected item'i panel ortasina scroll yapmak icin
+	// Open control — scroll selected item to center of panel
 	const [open, setOpen] = useState(false);
 	const viewportRef = useRef<HTMLDivElement>(null);
 
-	// Panel acildiginda secili item'i viewport'in ortasina kaydir
-	// (Radix default sadece visible yapar, ortalamak icin manuel scroll lazim)
+	// When panel opens, scroll selected item to viewport center
+	// (Radix default only makes it visible, manual scroll needed to center)
 	useLayoutEffect(() => {
 		if (!open) return;
 		const raf = requestAnimationFrame(() => {
@@ -99,8 +99,8 @@ export default function FancyDropdown(props: FancyDropdownProps) {
 				disabled={opt.disabled}
 				className={b('option', { disabled: opt.disabled })}
 				style={{
-					// Stagger entrance — her item'a animation-delay (inline cunku
-					// SCSS'te nth-child group icinde calismaz)
+					// Stagger entrance — each item gets animation-delay (inline because
+					// nth-child doesn't work inside group in SCSS)
 					animationDelay: `${30 + indexInGroup * 25}ms`,
 				}}
 			>

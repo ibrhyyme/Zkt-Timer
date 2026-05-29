@@ -1,24 +1,24 @@
 /**
- * PLL preview verisi — top face stickers (post-scramble, pre-PLL state) +
+ * PLL preview data — top face stickers (post-scramble, pre-PLL state) +
  * permutation cycles.
  *
- * Top face cstimer convention'unda solved (sari) gosterilir; aciklayici sticker
- * bilgisi 4 yan stripte. Arrow'lar top face uzerinde 3-cycle'larin yonunu
- * gosterir (Aa/Ab/G perm vb. icin parca dolasimi).
+ * Top face shown in cstimer convention as solved (yellow); explanatory sticker
+ * info in 4 side strips. Arrows show direction of 3-cycles on top face
+ * (e.g., Aa/Ab/G perms, piece rotations).
  *
- * Veri kaynagi: cstimer pllImgParam tablosu (cube science facts: sticker layout
- * + permutation cycles). Render kodu tamamen orijinal.
+ * Data source: cstimer pllImgParam table (cube science facts: sticker layout
+ * + permutation cycles). Render code entirely original.
  *
- * stickers (12 char): yan striplerin acgi sticker harfleri, sirasi
- *   - 0..2: front strip (top face'in alt kenari boyunca, sol → sag)
- *   - 3..5: right strip (sag kenari boyunca, ust → alt)
- *   - 6..8: back strip (ust kenari boyunca, sag → sol)
- *   - 9..11: left strip (sol kenari boyunca, alt → ust)
+ * stickers (12 chars): side strip identifying sticker letters, ordered:
+ *   - 0..2: front strip (along top face's bottom edge, left → right)
+ *   - 3..5: right strip (along right edge, top → bottom)
+ *   - 6..8: back strip (along top edge, right → left)
+ *   - 9..11: left strip (along left edge, bottom → top)
  *
- * arrows: top face index pair'leri. Index 0..8 row-major (0=top-left,
- *   2=top-right, 4=center, 6=bottom-left, 8=bottom-right). Her arrow her iki
- *   yonlu (komutent: PLLArrowView 2-element list olunca inverse'i otomatik
- *   ekler veya gosterir).
+ * arrows: top face index pairs. Index 0..8 row-major (0=top-left,
+ *   2=top-right, 4=center, 6=bottom-left, 8=bottom-right). Each arrow is bidirectional
+ *   (commutative: PLLArrowView automatically adds inverse or shows both when
+ *   2-element list).
  */
 
 export interface PLLData {
@@ -52,11 +52,11 @@ export const PLL_DATA: Record<string, PLLData> = {
 
 /**
  * caseName ('J-Perm (b)', 'T-Perm', 'E-Perm') → PLL key ('Jb', 'T', 'E').
- * Backend'de caseName lookupCaseName() ile uretiliyor (algorithms.ts entry.name).
+ * Backend generates caseName via lookupCaseName() from algorithms.ts entry.name.
  */
 export function pllNameFromCaseName(caseName: string): string | null {
 	if (!caseName) return null;
-	// Trim + remove backend "PLL " prefix if exists
+	// Trim + remove backend "PLL " prefix if present
 	const clean = caseName.replace(/^PLL\s+/i, '').trim();
 	// "J-Perm (b)" → ["J", "b"]
 	const m = clean.match(/^([A-Za-z])-?Perm\s*(?:\(([a-d])\))?/i);

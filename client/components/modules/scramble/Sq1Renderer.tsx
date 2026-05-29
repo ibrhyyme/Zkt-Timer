@@ -1,24 +1,24 @@
 /**
  * Square-1 custom 2D canvas renderer.
- * cstimer image_sq1 + scramble_sq1_new.js portu.
+ * Port of cstimer image_sq1 + scramble_sq1_new.js.
  *
- * State: SquareOneState class — 24 slice (12 ust + 12 alt), her biri 4-bit piece id
- * Render: HTML Canvas 2D, iki daire yanyana + orta katman
+ * State: SquareOneState class — 24 slices (12 top + 12 bottom), each with 4-bit piece id
+ * Render: HTML Canvas 2D, two circles side-by-side + middle layer
  */
 
 import React, { useEffect, useRef } from 'react';
 
-// ==================== SquareOneState (cstimer sq1.SqCubie portu) ====================
+// ==================== SquareOneState (cstimer sq1.SqCubie port) ====================
 
 class SquareOneState {
 	ul: number; // Top-left 6 slice (24 bit = 6 x 4 bit piece id)
 	ur: number; // Top-right 6 slice
 	dl: number; // Bottom-left 6 slice
 	dr: number; // Bottom-right 6 slice
-	ml: number; // Middle layer flipped (0 veya 1)
+	ml: number; // Middle layer flipped (0 or 1)
 
 	constructor() {
-		// Solved state piece siralamasi:
+		// Solved state piece sequence:
 		// 0 UB, 1 UBL, 2 UL, 3 UFL, 4 UF, 5 UFR, 6 UR, 7 UBR
 		// 8 DF, 9 DFR, a DR, b DBR, c DB, d DBL, e DL, f DFL
 		this.ul = 0x011233;
@@ -78,12 +78,12 @@ class SquareOneState {
 const MOVE_RE = /^\s*\(\s*(-?\d+),\s*(-?\d+)\s*\)\s*$/;
 
 function parseAndApply(scramble: string, sc: SquareOneState): void {
-	const cleaned = scramble.replace(/`/g, ''); // backtick temizle (generator bazen ekliyor)
+	const cleaned = scramble.replace(/`/g, ''); // Clean backticks (generator adds them sometimes)
 	const moves = cleaned.split('/');
 	for (let i = 0; i < moves.length; i++) {
 		const mv = moves[i];
 		if (/^\s*$/.test(mv)) {
-			// Bos move, ama slash var → sadece slash uygula (son iterasyon haric)
+			// Empty move, but slash present — apply only slash (except last iteration)
 			if (i < moves.length - 1) sc.doMove(0);
 			continue;
 		}
@@ -93,38 +93,38 @@ function parseAndApply(scramble: string, sc: SquareOneState): void {
 		const bot = ((~~Number(m[2])) + 12) % 12;
 		if (top !== 0) sc.doMove(top);
 		if (bot !== 0) sc.doMove(-bot);
-		if (i < moves.length - 1) sc.doMove(0); // son degilse slash uygula
+		if (i < moves.length - 1) sc.doMove(0); // Apply slash if not last
 	}
 }
 
-// ==================== Geometri sabitleri ====================
+// ==================== Geometry constants ====================
 
 const HSQ3 = Math.sqrt(3) / 2;
 const SQA = HSQ3 + 1;
 const SQB = SQA * Math.SQRT2;
 
-// Edge polygon (uc nokta - trapez)
+// Edge polygon (three points - trapezoid)
 const EP: number[][] = [
 	[0, -0.5, 0.5],
 	[0, -SQA, -SQA],
 ];
-// Corner polygon (4 nokta)
+// Corner polygon (4 points)
 const CP: number[][] = [
 	[0, -0.5, -SQA, -SQA],
 	[0, -SQA, -SQA, -0.5],
 ];
-// Corner sag yarisi
+// Corner right half
 const CPR: number[][] = [
 	[0, -0.5, -SQA],
 	[0, -SQA, -SQA],
 ];
-// Corner sol yarisi
+// Corner left half
 const CPL: number[][] = [
 	[0, -SQA, -SQA],
 	[0, -SQA, -0.5],
 ];
 
-// Ust-yuz renk indikatoru (0.66 scale inner)
+// Top-face color indicator (0.66 scale inner)
 const EPS = scalePoly(EP, 0.66);
 const CPS = scalePoly(CP, 0.66);
 const CPRS = scalePoly(CPR, 0.66);
@@ -167,7 +167,7 @@ function drawPoly(
 	ctx.stroke();
 }
 
-// ==================== Renk tablolari (cstimer image.js'den) ====================
+// ==================== Color tables (from cstimer image.js) ====================
 
 const COLORS: Record<string, string> = {
 	U: '#ffff00',
@@ -179,19 +179,19 @@ const COLORS: Record<string, string> = {
 };
 
 const UDCOL = 'UD';
-// Edge renkleri (piece 0, 2, 4, 6 ve 8, 10, 12, 14 icin yan renk)
+// Edge colors (pieces 0, 2, 4, 6 and 8, 10, 12, 14 side color)
 const ECOL = 'R-B-L-F-F-L-B-R-';
-// Corner renkleri (piece 1, 3, 5, 7 ve 9, 11, 13, 15 icin 2 renk: sol + sag)
+// Corner colors (pieces 1, 3, 5, 7 and 9, 11, 13, 15 two colors: left + right)
 const CCOL = 'RBBLLFFRRFFLLBBR';
 
-// ==================== Draw tum state ====================
+// ==================== Draw entire state ====================
 
 function drawState(
 	ctx: CanvasRenderingContext2D,
 	sc: SquareOneState,
 	width: number
 ): void {
-	// Tum slice'lar (ust 12 + alt 12)
+	// All slices (top 12 + bottom 12)
 	for (let i = 0; i < 24; i++) {
 		const trans: [number, number, number] = i < 12
 			? [width, SQB, SQB]
@@ -202,11 +202,11 @@ function drawState(
 		const eRot = -(i < 12 ? i : (i - 5)) * Math.PI / 6;
 
 		if (val % 2 === 1) {
-			// Corner — 2 slice kaplar
+			// Corner — covers 2 slices
 			drawPoly(ctx, COLORS[CCOL[val - 1]], rotatePoly(CPR, cRot), trans);
 			drawPoly(ctx, COLORS[CCOL[val]], rotatePoly(CPL, cRot), trans);
 			drawPoly(ctx, colorUD, rotatePoly(CPS, cRot), trans);
-			i++; // corner 2 slice kaplar, sonraki slice'i atla
+			i++; // corner covers 2 slices, skip next
 		} else {
 			// Edge — 1 slice
 			drawPoly(ctx, COLORS[ECOL[val]], rotatePoly(EP, eRot), trans);
@@ -214,14 +214,14 @@ function drawState(
 		}
 	}
 
-	// Orta katman (L/R renk barlari)
+	// Middle layer (L/R color bars)
 	for (let i = 0; i < 2; i++) {
 		const trans: [number, number, number] = i === 0
 			? [width, SQB, SQB + SQA]
 			: [width, SQB * 3, SQB - SQA - 0.7];
-		// Sol yarim (hep L)
+		// Left half (always L)
 		drawPoly(ctx, COLORS['L'], [[-SQA, -SQA, -0.5, -0.5], [0, 0.7, 0.7, 0]], trans);
-		// Sag yarim — ml=0 ise L (duz), ml=1 ise R (caprazlanmis)
+		// Right half — if ml=0 then L (straight), if ml=1 then R (crossed)
 		if (sc.ml === 0) {
 			drawPoly(ctx, COLORS['L'], [[SQA, SQA, -0.5, -0.5], [0, 0.7, 0.7, 0]], trans);
 		} else {
@@ -248,8 +248,8 @@ const Sq1Renderer: React.FC<Props> = ({ scramble, className, baseWidth: baseWidt
 		const ctx = canvas.getContext('2d');
 		if (!ctx) return;
 
-		// Canvas boyutu — cstimer 4*sqb*width x 2*sqb*width
-		const baseWidth = baseWidthProp ?? 28; // scale factor (web boyutu icin optimize)
+		// Canvas size — cstimer 4*sqb*width x 2*sqb*width
+		const baseWidth = baseWidthProp ?? 28; // scale factor (optimized for web size)
 		const w = 4 * SQB * baseWidth;
 		const h = 2 * SQB * baseWidth + baseWidth; // +extra for middle bar
 
@@ -257,22 +257,22 @@ const Sq1Renderer: React.FC<Props> = ({ scramble, className, baseWidth: baseWidt
 		const dpr = window.devicePixelRatio || 1;
 		canvas.width = w * dpr;
 		canvas.height = h * dpr;
-		// Container'a fit ederken aspect ratio'yu koru (yatay 1.74:1)
+		// Preserve aspect ratio when fitting to container (1.74:1 aspect)
 		canvas.style.maxWidth = `${w}px`;
 		canvas.style.width = '100%';
 		canvas.style.height = 'auto';
 		canvas.style.aspectRatio = `${w} / ${h}`;
 		ctx.scale(dpr, dpr);
 
-		// Temizle
+		// Clear
 		ctx.clearRect(0, 0, w, h);
 
-		// State olustur, scramble uygula
+		// Create state and apply scramble
 		const sc = new SquareOneState();
 		try {
 			parseAndApply(scramble || '', sc);
 		} catch {
-			// Parse hatasi — solved state cizilecek
+			// Parse error — solved state will be drawn
 		}
 
 		drawState(ctx, sc, baseWidth);

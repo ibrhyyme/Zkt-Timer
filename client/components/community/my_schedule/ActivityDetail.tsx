@@ -60,7 +60,7 @@ export default function ActivityDetail({activityCode}: ActivityDetailProps) {
 			};
 		}
 
-		// Round seviyesi: prev/next round (ayni event icinde)
+		// Round level: prev/next round (within the same event)
 		const event = detail.events.find((e: any) => e.eventId === parsed.eventId);
 		const maxRound = event?.rounds?.length || 0;
 		return {

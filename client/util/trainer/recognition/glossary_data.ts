@@ -1,13 +1,13 @@
 /**
- * Sözlük (Glossary) statik veri.
- * Renk kodları + pattern terimleri.
+ * Glossary static data.
+ * Color codes + pattern terms.
  * i18n key prefix: trainer.recognition.glossary.
  */
 
 export interface GlossaryColorEntry {
 	id: string; // i18n key suffix: colors_g, colors_o, ...
-	cellCode: string; // StickerPattern cells icin (örn. 'g', 'g!', 'x')
-	swatch: string; // CSS rengi (görsel)
+	cellCode: string; // For StickerPattern cells (e.g., 'g', 'g!', 'x')
+	swatch: string; // CSS color (visual)
 }
 
 export const GLOSSARY_COLORS: GlossaryColorEntry[] = [
@@ -21,8 +21,8 @@ export const GLOSSARY_COLORS: GlossaryColorEntry[] = [
 
 export interface GlossaryPatternEntry {
 	id: string; // i18n key suffix: patterns_bar, patterns_lights, ...
-	term: string; // gösterilecek başlık (cubing jargon, çevrilmez)
-	exampleCells?: string[]; // opsiyonel: StickerPattern row için 6 cell
+	term: string; // title to display (cubing jargon, untranslated)
+	exampleCells?: string[]; // optional: 6 cells for StickerPattern row
 }
 
 export const GLOSSARY_PATTERNS: GlossaryPatternEntry[] = [

@@ -10,7 +10,7 @@ import { getTimeString } from '../../../util/time';
 
 const b = block('live-analysis');
 
-// Phase ID -> wrapper steps key. Cf_plus_op gibi composite ID'ler en yakin gercek step'e map'lenir.
+// Phase ID -> wrapper steps key. Composite IDs like cf_plus_op are mapped to the nearest actual step.
 function phaseIdToStepKey(id: string): string | null {
     switch (id) {
         case 'Cross': return 'cross';
@@ -37,14 +37,14 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
     const { t: tr } = useTranslation();
     const { smartTurns, timeStartedAt, lastSmartSolveStats } = useContext(TimerContext);
     const rawAnalysisMode = useSettings('smart_cube_analysis_mode') || 'cffffop';
-    // Mobilde cffffoopp 11 satira cikiyor — sigmaz. cffffop'a (7 satir) fallback yap.
+    // On mobile, cffffoopp wraps to 11 lines — not ideal. Fallback to cffffop (7 lines).
     const analysisMode = (mobile && rawAnalysisMode === 'cffffoopp') ? 'cffffop' : rawAnalysisMode;
     const showRecognition = !!useSettings('smart_cube_show_recognition');
     const cubeType = useSettings('cube_type');
     const scrambleSubset = useSettings('scramble_subset');
 
-    // Tum 3x3 varyantlarinda (333, 333cfop, 333roux, 333zz, 333mehta, 333sub ve wca+333) calisir.
-    // Subset'lerde de aktif (OLL, PLL, ZBLL) — kullanici tercihi: tum 3x3 cozumlerinde analiz olsun.
+    // Works for all 3x3 variants (333, 333cfop, 333roux, 333zz, 333mehta, 333sub, and wca+333).
+    // Also active for subsets (OLL, PLL, ZBLL) — user preference: analysis on all 3x3 solves.
     const is3x3 = is3x3CubeType(cubeType, scrambleSubset);
     const shouldRun = (!!timeStartedAt || (smartTurns && smartTurns.length > 0)) && is3x3;
 
@@ -63,8 +63,8 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
 
     const analysis = useLiveAnalysis(shouldRun ? processedTurns : [], startState);
 
-    // ── DEBUG: window.__SMART_DEBUG__ = true ile aktif olur ──
-    // Solve sirasinda analysis her degistiginde + solve bitince correctedAnalysis geldiginde dump
+    // ── DEBUG: Activated with window.__SMART_DEBUG__ = true ──
+    // Dumps every analysis change during solve + correctedAnalysis when solve finishes
     const lastDebugLogRef = React.useRef<string>('');
     React.useEffect(() => {
         if (typeof window === 'undefined' || !(window as any).__SMART_DEBUG__) return;
@@ -96,7 +96,7 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
             turns: smartTurns?.length || 0,
             startState: startState ? startState.slice(0, 20) + '...' : 'NONE'
         };
-        // Sadece JSON degisirse logla (gurultu onleme)
+        // Log only if JSON changes (noise prevention)
         const json = JSON.stringify(snapshot);
         if (json === lastDebugLogRef.current) return;
         lastDebugLogRef.current = json;
@@ -116,7 +116,7 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
     // Persist logic
     React.useEffect(() => {
         // Only update cache if we have turns and it's different from current cache
-        // CRITICAL: Only update while timer is RUNNING (timeStartedAt). 
+        // CRITICAL: Only update while timer is RUNNING (timeStartedAt).
         // If we update during scrambling (timeStartedAt is null), we overwrite the previous result with empty scramble data.
         if (timeStartedAt && analysis.steps) {
             setCachedAnalysis(prev => {
@@ -131,8 +131,8 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
     // Display Logic:
     // If Timer is RUNNING, show live 'analysis'.
     // Otherwise (Scramble/Inspection/Finished), show corrected analysis (linear fit) or cached.
-    // correctedAnalysis = linear fit ile düzeltilmiş evre süreleri (doğru)
-    // cachedAnalysis = ham BLE timestamp'lerinden hesaplanmış (yaklaşık)
+    // correctedAnalysis = phase durations corrected via linear fit (accurate)
+    // cachedAnalysis = calculated from raw BLE timestamps (approximate)
     const displayAnalysis = timeStartedAt && shouldRun
         ? analysis
         : (lastSmartSolveStats?.correctedAnalysis || cachedAnalysis);
@@ -145,16 +145,16 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
     const t = displayAnalysis.times || {};
     const f2lPairs = t.f2l_pairs || [];
 
-    // Kismi-cozum subsetlerinde (333cfop>oll, >pll vb.) onceki fazlar yapilmadigi icin
-    // t.cross/f2l undefined olabilir. Eger eski mantik (t.X && t.prev) kullanilirsa
-    // splits null olur ve satir render edilmez. Bunun yerine: bu fazin absolute time'i
-    // var ise, en yakin onceki var-olan absolute'tan (yoksa 0=solve basi) farki al.
+    // In partial-solve subsets (333cfop>oll, >pll etc.), earlier phases aren't performed,
+    // so t.cross/f2l may be undefined. If using old logic (t.X && t.prev),
+    // splits become null and the row doesn't render. Instead: if this phase has an absolute time,
+    // take the difference from the nearest preceding existing absolute time (or 0 = start of solve).
     const splitFrom = (current: number | undefined, ...prevCandidates: (number | undefined)[]): number | undefined => {
         if (current == null) return undefined;
         for (const p of prevCandidates) {
             if (p != null) return Math.max(0, current - p);
         }
-        return Math.max(0, current); // hicbir onceki yoksa solve basindan farki
+        return Math.max(0, current); // no prior time, so difference from start of solve
     };
 
     // Logic for different modes
@@ -168,7 +168,7 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
         const cfDone = ['OLL', 'PLL', 'Solved'].includes(currentPhase);
         const cfActive = ['Cross', 'F2L'].some(p => currentPhase.startsWith(p));
 
-        // OP = OLL + PLL (LL) — kismi LL subset icin t.f2l yoksa solve basindan say
+        // OP = OLL + PLL (LL) — for partial LL subset, if t.f2l is absent, count from start
         const opTime = splitFrom(t.pll, t.f2l, t.cross);
         const opDone = currentPhase === 'Solved';
         const opActive = ['OLL', 'PLL'].includes(currentPhase);
@@ -236,7 +236,7 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
         const pllAbs = t.pll;
         const f2lAbs = t.f2l;
 
-        // Split calc — kismi subset'lerde F2L/Cross olmasa bile solve basindan say
+        // Split calc — for partial subsets where F2L/Cross may not exist, count from start
         const eoSplit = splitFrom(eoAbs, f2lAbs, f2lPairs[3], f2lPairs[2], f2lPairs[1], f2lPairs[0], t.cross);
         const coSplit = splitFrom(ollAbs, eoAbs, f2lAbs, f2lPairs[3], f2lPairs[2], f2lPairs[1], f2lPairs[0], t.cross);
         const cpSplit = splitFrom(cpAbs, ollAbs, eoAbs, f2lAbs, t.cross);
@@ -282,7 +282,7 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
         ];
     }
 
-    // Engine'den skipped + recognition/execution split ek alanlarini her phase'e enjekte et.
+    // Inject fields from engine: skipped + recognition/execution split into each phase.
     // Wrapper steps[stepKey] = { skipped, recognitionMs, executionMs, ... }
     phases.forEach((p) => {
         const stepKey = phaseIdToStepKey(p.id);
@@ -323,8 +323,8 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
         currentPhase === 'Scramble/Inspection'
     ) return null;
 
-    // Done olan fazlari render et. Skipped phase'ler time=0 ile gelir; gostermek istiyoruz
-    // (rozet icin) — ama cumulative'a etki etmez.
+    // Render phases that are done. Skipped phases come with time=0; we want to show them
+    // (for the badge) — but they don't affect the cumulative.
     const renderableRows = mergedPhases.filter(p =>
         p.done && (p.skipped || (p.time != null && p.time > 0))
     );
@@ -352,8 +352,8 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
                     const cumStr = getTimeString(cumulative, 2);
                     const [cSec, cDec] = cumStr.split('.');
 
-                    // Recognition/execution split string'i — sadece desktop'ta, toggle aciksa.
-                    // Mobile'de yer yok (1.4rem font + dar grid), gizliyoruz.
+                    // Recognition/execution split string — desktop only, if toggle is on.
+                    // On mobile there's no space (1.4rem font + narrow grid), so we hide it.
                     const showSplit = showRecognition && !mobile && !p.skipped &&
                         p.recognitionTime != null && p.executionTime != null;
                     const splitStr = showSplit
@@ -385,7 +385,7 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
                         <span className={b('skip-badge')}>{tr('solve_info.skip_badge')}</span>
                     ) : null;
 
-                    // Mobilde 2-sutun grid: sutun 1 split, sutun 2 cumulative
+                    // On mobile: 2-column grid — column 1 split, column 2 cumulative
                     if (mobile) {
                         return (
                             <React.Fragment key={p.id}>
@@ -419,8 +419,8 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
                         );
                     }
 
-                    // Desktop: split (T:.. U:..) inline solda + label/zaman + cumulative yan yana.
-                    // Toggle kapaliysa split gozukmez, layout daralir.
+                    // Desktop: split (T:.. U:..) inline on left + label/time + cumulative side by side.
+                    // If toggle is off, split is hidden and layout narrows.
                     return (
                         <div key={p.id} className={b('row', { active: p.active, done: p.done, skipped: p.skipped })} style={rowStyle}>
                             {splitStr && (

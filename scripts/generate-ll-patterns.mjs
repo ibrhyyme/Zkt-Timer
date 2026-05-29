@@ -1,15 +1,15 @@
 /**
- * 2D-LL kategorileri için algoritma pattern'lerini önceden hesaplar.
- * Çıktı: public/trainer/ll-patterns.json
+ * Pre-computes algorithm patterns for 2D-LL categories.
+ * Output: public/trainer/ll-patterns.json
  *
- * Kullanım: node scripts/generate-ll-patterns.mjs
+ * Usage: node scripts/generate-ll-patterns.mjs
  */
 
 import { readFileSync, writeFileSync } from 'fs';
 import { cube3x3x3 } from 'cubing/puzzles';
 import { Alg } from 'cubing/alg';
 
-// ─── Reid ordering (pattern_utils.ts'den port) ───
+// ─── Reid ordering (ported from pattern_utils.ts) ───
 
 const REID_EDGE_ORDER = 'UF UR UB UL DF DR DB DL FR FL BR BL'.split(' ');
 const REID_CORNER_ORDER = 'UFR URB UBL ULF DRF DFL DLB DBR'.split(' ');
@@ -71,7 +71,7 @@ const LL_FACELET_INDICES = [
 	36, 37, 38,
 ];
 
-// 2D-LL kategorileri (category name contains 'll' or has OLL stickering)
+// 2D-LL categories (category name contains 'll' or has OLL stickering)
 const LL_CATEGORIES = [
 	'PLL', 'OLL', '2-Look PLL', '2-Look OLL',
 	'COLL', 'OLLCP', 'ZBLL', 'ZBLS', 'CMLL',
@@ -79,31 +79,31 @@ const LL_CATEGORIES = [
 ];
 
 /**
- * cubing.js'in parse edebileceği formata dönüştürür.
+ * Converts algorithm to a format cubing.js can parse.
  */
 function cleanAlgorithm(alg) {
 	let s = alg
 		.replace(/\+/g, ' ')    // D+U' → D U'
-		.replace(/\u2019/g, "'") // curly apostrophe
-		.replace(/["\u201C\u201D]/g, "'") // smart quotes
-		.replace(/'2/g, "2'");   // U'2 → U2' (cubing.js formatı)
+		.replace(/’/g, "'") // curly apostrophe
+		.replace(/["“”]/g, "'") // smart quotes
+		.replace(/'2/g, "2'");   // U'2 → U2' (cubing.js format)
 
-	// Wide move notasyonu: Rw → r, Lw → l, vb.
+	// Wide move notation: Rw → r, Lw → l, etc.
 	s = s.replace(/([RLFBUD])w/g, (_, m) => m.toLowerCase());
 
-	// Tek-move parantezler: (U2) → U2, (U') → U'
+	// Single-move parentheses: (U2) → U2, (U') → U'
 	s = s.replace(/\(([RLFBUDMESrlfbudxyz][2']?)\)/g, '$1');
 
-	// Bosluk yoksa expandNotation ile ekle (ZBLS notasyonu)
+	// Add spacing with expandNotation (ZBLS notation)
 	s = expandNotation(s);
 
 	return s;
 }
 
 /**
- * algorithm_engine.ts'deki expandNotation'ın portu.
- * AlgorithmCard'a giden algorithm prop'u bu fonksiyonla genişletiliyor,
- * bu yüzden JSON anahtarları da aynı formatta olmalı.
+ * Port of expandNotation from algorithm_engine.ts.
+ * The algorithm prop passed to AlgorithmCard is expanded with this function,
+ * so JSON keys must use the same format.
  */
 function expandNotation(input) {
 	let output = input
@@ -124,7 +124,7 @@ function expandNotation(input) {
 }
 
 async function main() {
-	console.log('cubing.js kpuzzle yükleniyor...');
+	console.log('Loading cubing.js kpuzzle...');
 	const kpuzzle = await cube3x3x3.kpuzzle();
 	const solved = kpuzzle.defaultPattern();
 
@@ -137,14 +137,14 @@ async function main() {
 	for (const category of LL_CATEGORIES) {
 		const subsets = algsData[category];
 		if (!subsets) {
-			console.warn(`Kategori bulunamadı: ${category}`);
+			console.warn(`Category not found: ${category}`);
 			continue;
 		}
 
 		let catCount = 0;
 		for (const subset of subsets) {
 			for (const entry of subset.algorithms) {
-				// Primary + alternatives hepsini isle
+				// Process both primary + alternatives
 				const allAlgs = [entry.algorithm, ...(entry.alternatives || [])];
 
 				for (const algorithm of allAlgs) {
@@ -163,22 +163,22 @@ async function main() {
 						catCount++;
 						count++;
 					} catch (e) {
-						console.error(`  HATA [${category}] "${algorithm}":`, e.message);
+						console.error(`  ERROR [${category}] "${algorithm}":`, e.message);
 						errors++;
 					}
 				}
 			}
 		}
-		console.log(`  ${category}: ${catCount} pattern üretildi`);
+		console.log(`  ${category}: ${catCount} patterns generated`);
 	}
 
 	writeFileSync('public/trainer/ll-patterns.json', JSON.stringify(patterns));
 	const fileSize = (readFileSync('public/trainer/ll-patterns.json').length / 1024).toFixed(1);
-	console.log(`\nToplam: ${count} pattern, ${errors} hata`);
-	console.log(`Dosya: public/trainer/ll-patterns.json (${fileSize} KB)`);
+	console.log(`\nTotal: ${count} patterns, ${errors} errors`);
+	console.log(`File: public/trainer/ll-patterns.json (${fileSize} KB)`);
 }
 
 main().catch(err => {
-	console.error('Script başarısız:', err);
+	console.error('Script failed:', err);
 	process.exit(1);
 });

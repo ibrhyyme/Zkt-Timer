@@ -62,7 +62,7 @@ interface ParamsType {
 // Helper to get socket with any cast
 const getSocket = () => socketClient() as any;
 
-// Bluetooth connect butonu icin glassmorphism class — mobile mavi banttayken white, desktop dark bantta text-color.
+// Bluetooth connect button glassmorphism class — mobile has white text on blue bar, desktop has text-color on dark bar.
 function connectButtonClass(connected: boolean, connecting: boolean): string {
     const base = 'flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition-all border backdrop-blur-sm';
     if (connecting) {
@@ -113,7 +113,7 @@ export default function FriendlyRoom() {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    // Component unmount olduğunda (odadan çıkış) smart cube bağlantısını kes
+    // When component unmounts (leaving room), disconnect smart cube
     useEffect(() => {
         return () => {
             disconnectSmartCube();
@@ -142,8 +142,8 @@ export default function FriendlyRoom() {
     const [manualInspectionTime, setManualInspectionTime] = useState(15000); // ms
     const manualInspectionRef = useRef<NodeJS.Timeout | null>(null);
     const manualInspectionStartRef = useRef<number | null>(null);
-    const manualTimeInputRef = useRef<HTMLInputElement>(null); // ✅ Manuel input ref
-    const prevTimerTypeRef = useRef<string | null>(null); // ✅ Önceki timer türünü takip et
+    const manualTimeInputRef = useRef<HTMLInputElement>(null); // Manual input ref
+    const prevTimerTypeRef = useRef<string | null>(null); // Track previous timer type
 
     // Settings
     const manualEntry = useSettings('manual_entry');
@@ -188,7 +188,7 @@ export default function FriendlyRoom() {
         }
     }, [room?.allowed_timer_types, timerType, manualEntry]);
 
-    // Oda küp türü değiştiğinde smart cube uyumluluğunu kontrol et
+    // When room cube type changes, check smart cube compatibility
     useEffect(() => {
         if (!room?.cube_type) return;
 
@@ -196,26 +196,26 @@ export default function FriendlyRoom() {
         const smartSupported = is3x3CubeType(room.cube_type, roomSubset);
 
         if (timerType === 'smart' && !smartSupported) {
-            // Smart cube bağlantısını kes
+            // Disconnect smart cube
             disconnectSmartCube();
-            // Timer türünü klavyeye çevir
+            // Switch timer to keyboard
             setSetting('timer_type', 'keyboard');
         }
     }, [room?.cube_type, timerType]);
 
-    // Timer türü smart cube'dan başka bir türe değiştiğinde Bluetooth bağlantısını kes
+    // When timer type changes from smart cube to another type, disconnect Bluetooth
     useEffect(() => {
-        // Eğer önceki tür 'smart' idiyse ve şimdi başka bir şeyse, disconnect et
+        // If previous type was 'smart' and now it's something else, disconnect
         if (prevTimerTypeRef.current === 'smart' && timerType !== 'smart') {
             disconnectSmartCube();
         }
 
-        // QiYi: tur degisiminde disconnect
+        // QiYi: disconnect on type change
         if (prevTimerTypeRef.current === 'qiyitimer' && timerType !== 'qiyitimer') {
             disconnectQiyiTimer();
         }
 
-        // Şimdiki timer türünü kaydet
+        // Save current timer type
         prevTimerTypeRef.current = timerType;
     }, [timerType]);
 
@@ -619,8 +619,8 @@ export default function FriendlyRoom() {
         }
     }, [smartTurns, smartCubeConnected, room?.current_scramble, smartTiming, smartScrambleCompletedAt, smartInspecting, inspection, smartTimerStartedAt, smartReviewing, reduxSmartSolvedState]);
 
-    // M' hamle güvenlik ağı: fiziksel küp çözüldüyse timer durdur
-    // Ana useEffect'te reduxSmartPhysicallySolved dependency'de yok, bu yüzden ayrı useEffect
+    // M' move safety net: if physical cube is solved, stop timer
+    // Not in main useEffect's reduxSmartPhysicallySolved dependency, so separate useEffect
     useEffect(() => {
         if (
             reduxSmartPhysicallySolved &&
@@ -635,7 +635,7 @@ export default function FriendlyRoom() {
 
             setSmartFinalTime(timeMs);
 
-            // İstatistik hesapla
+            // Calculate stats
             const solutionTurns = smartTurns.slice(scrambleTurnCountRef.current);
             const turnCount = solutionTurns.length;
             const timeInSeconds = timeMs / 1000;
@@ -646,7 +646,7 @@ export default function FriendlyRoom() {
         }
     }, [reduxSmartStateSeq, smartTiming]);
 
-    // Fiziksel küp çözüldüğünde mismatch bayrağını otomatik temizle
+    // When physical cube is solved, auto-clear mismatch flag
     useEffect(() => {
         if (reduxSmartPhysicallySolved && needsCubeReset) {
             setNeedsCubeReset(false);
@@ -657,7 +657,7 @@ export default function FriendlyRoom() {
         }
     }, [reduxSmartStateSeq]);
 
-    // 5 saniye hareketsizlik → abort butonu göster
+    // 5 seconds inactivity → show abort button
     useEffect(() => {
         if (inactivityTimerRef.current) {
             clearTimeout(inactivityTimerRef.current);
@@ -670,7 +670,7 @@ export default function FriendlyRoom() {
             return;
         }
 
-        // Yeni hamle geldiğinde abort butonunu gizle
+        // Hide abort button when new move arrives
         if (smartAbortVisible) {
             setSmartAbortVisible(false);
         }
@@ -747,7 +747,7 @@ export default function FriendlyRoom() {
     // Throttled status update
 
 
-    // Reconnect bayragi: socket reconnect oldugunda ROOM_DATA full hydrate yapsin
+    // Reconnect flag: socket reconnect should do full ROOM_DATA hydration
     const isReconnectingRef = useRef(false);
 
     // Fetch room data
@@ -765,7 +765,7 @@ export default function FriendlyRoom() {
             setAlreadyInRoom(null);
             setTakenOver(false);
 
-            // Reconnect sonrasi full hydrate: live statuslari sifirla, manuel input/inspection temizle
+            // After reconnect, full hydration: reset live statuses, clear manual input/inspection
             if (isReconnectingRef.current) {
                 isReconnectingRef.current = false;
                 setUserStatuses({});
@@ -790,17 +790,17 @@ export default function FriendlyRoom() {
             }
         });
 
-        // Tek aktif oturum: bu cihazin oturumu baska bir cihaza devredildi
+        // Single active session: this device's session was taken over by another device
         socket.on(FriendlyRoomServerEvent.SESSION_TAKEOVER, (_data: SessionTakeoverPayload) => {
-            // BLE bagliysa serbest birak ki yeni cihaz bagli kup ile baglanabilsin
-            try { disconnectSmartCube(); } catch { /* zaten kapali olabilir */ }
-            try { disconnectGanTimer(); } catch { /* zaten kapali olabilir */ }
-            try { disconnectQiyiTimer(); } catch { /* zaten kapali olabilir */ }
+            // If BLE is connected, release it so the new device can connect the cube
+            try { disconnectSmartCube(); } catch { /* already closed */ }
+            try { disconnectGanTimer(); } catch { /* already closed */ }
+            try { disconnectQiyiTimer(); } catch { /* already closed */ }
             setTakenOver(true);
             setLoading(false);
         });
 
-        // Tek aktif oturum: kullanici zaten baska bir odada
+        // Single active session: user is already in another room
         socket.on(FriendlyRoomServerEvent.ALREADY_IN_OTHER_ROOM, (data: AlreadyInOtherRoomPayload) => {
             setAlreadyInRoom({ id: data.current_room_id, name: data.current_room_name });
             setLoading(false);
@@ -1013,8 +1013,8 @@ export default function FriendlyRoom() {
         const socket = getSocket();
 
         const joinRoom = () => {
-            // Server grace period gectiyse kullanici cikarilmistir — odaya rejoin yerine
-            // lobby'e yonlendir. Sure shared FriendlyRoomConst.PLAYER_DISCONNECT_GRACE_MS'ten gelir.
+            // If server grace period has passed, user was removed — redirect to lobby instead of rejoin.
+            // Timeout value comes from shared FriendlyRoomConst.PLAYER_DISCONNECT_GRACE_MS.
             if (lastDisconnectRef.current) {
                 const elapsed = Date.now() - lastDisconnectRef.current;
                 if (elapsed > FriendlyRoomConst.PLAYER_DISCONNECT_GRACE_MS) {
@@ -1036,7 +1036,7 @@ export default function FriendlyRoom() {
         };
 
         const onReconnect = () => {
-            // Reconnect: server'dan tam state iste; ROOM_DATA handler hydrate yapacak
+            // Reconnect: request full state from server; ROOM_DATA handler will hydrate
             isReconnectingRef.current = true;
             joinRoom();
             socket.emit(FriendlyRoomClientEvent.GET_ROOM, roomId);
@@ -1187,7 +1187,7 @@ export default function FriendlyRoom() {
         return myParticipant.solves.some((s) => s.scramble_index === room.scramble_index);
     })();
 
-    // Yeni round başladığında (alreadySolvedThisRound false olunca) input'a focus ver
+    // When new round starts (alreadySolvedThisRound becomes false), focus on input
     useEffect(() => {
         if (!alreadySolvedThisRound && isManualMode && room?.status === 'ACTIVE') {
             requestAnimationFrame(() => {
@@ -1207,11 +1207,11 @@ export default function FriendlyRoom() {
     // Smart cube: isSpectator check for various logic
     const isSpectator = room?.participants.find((p) => p.user_id === me?.id)?.is_spectator;
 
-    // NOTE: Smart cube auto-submit REMOVED - user must manually click KAYDET in review screen
-    // This allows user to choose DNF, +2, or İPTAL before saving
+    // NOTE: Smart cube auto-submit REMOVED - user must manually click SAVE in review screen
+    // This allows user to choose DNF, +2, or CANCEL before saving
 
     // Smart cube: Reset submit flag on new scramble or scramble index change
-    // FIX: Also reset on scramble_index to handle spectator mode changes
+    // Also reset on scramble_index to handle spectator mode changes
     useEffect(() => {
         smartCubeSolveSubmittedRef.current = false;
     }, [room?.current_scramble, room?.scramble_index]);
@@ -1326,7 +1326,7 @@ export default function FriendlyRoom() {
         <div className="fixed inset-0 z-[100] md:fixed md:inset-0 md:top-[var(--nav-h)] md:h-[calc(100vh-var(--nav-h))] flex flex-col bg-background text-text overflow-hidden font-sans pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
             {/* 1. Header & Scramble (Fixed) */}
             <div className="shrink-0 flex flex-col">
-                {/* Top Bar - Native App Header Style (mobile mavi, desktop dark glassmorphism — scramble alanindan ayri ton + belirgin border) */}
+                {/* Top Bar - Native App Header Style (mobile blue, desktop dark glassmorphism — distinct tone from scramble area + clear border) */}
                 <div className="flex items-center justify-between bg-blue-600 md:bg-text/[0.04] md:backdrop-blur-2xl md:border-b md:border-text/[0.15] px-3 md:px-4 py-2 md:py-3 shadow-lg md:shadow-[0_6px_24px_rgba(0,0,0,0.35)] z-30 relative gap-2">
                     {/* Hamburger Menu (Only for Host) — glassmorphism */}
                     {isHost ? (
@@ -1342,7 +1342,7 @@ export default function FriendlyRoom() {
                                 <List size={20} weight="bold" />
                             </button>
 
-                            {/* Dropdown Menu — havali glassmorphism */}
+                            {/* Dropdown Menu — glassmorphism */}
                             {hostMenuOpen && (
                                 <div
                                     className="absolute top-full left-0 mt-2 w-60 rounded-xl border border-text/[0.12] shadow-[0_20px_50px_rgba(0,0,0,0.6)] z-50 overflow-hidden"
@@ -1429,7 +1429,7 @@ export default function FriendlyRoom() {
                             {room.cube_type.toUpperCase()}
                         </span>
 
-                        {/* Spectator/Competing Mode Toggle - Hidden on very small screens if needed, but important */}
+                        {/* Spectator/Competing Mode Toggle */}
                         {isActive && myParticipant && (
                             <button
                                 onClick={() => getSocket().emit(FriendlyRoomClientEvent.TOGGLE_SPECTATOR, roomId)}
@@ -1444,7 +1444,7 @@ export default function FriendlyRoom() {
                         )}
                     </div>
                     <div className="flex items-center gap-1 md:gap-2 shrink-0">
-                        {/* Timer Type Picker (desktop only, mobile'da modal Timer tab kullaniliyor) */}
+                        {/* Timer Type Picker (desktop only, mobile uses modal Timer tab) */}
                         <TimerTypePicker
                             allowedTimerTypes={room.allowed_timer_types}
                             requireProForSmart
@@ -2059,7 +2059,7 @@ export default function FriendlyRoom() {
                 }}
                 onRedo={() => {
                     handleSolveRedo();
-                    // FIX: Full smart cube state reset for re-solve
+                    // Full smart cube state reset for re-solve
                     setSmartReviewing(false);
                     setSmartScrambleCompletedAt(null);
                     setSmartFinalTime(0);

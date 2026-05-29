@@ -3,23 +3,23 @@ import {logger} from './logger';
 import {getWcaLiveData, fetchLiveRoundResults} from './WcaLiveService';
 
 /**
- * Kullanici bir WCA yarismasina kayitli ve accepted ise dedup state olustur.
- * Halihazirda olusmussa no-op. Olustuktan sonra mevcut sonuclar retroactive olarak
- * "notified" isaretlenir ki kullaniciya eski sonuclardan spam push atmasin.
+ * If a user is registered and accepted for a WCA competition, create dedup state.
+ * If it already exists, no-op. After creation, existing results are retroactively
+ * marked "notified" so we don't send spam push notifications for old results.
  *
- * Bu fonksiyon yarisma detay resolver'indan fire-and-forget cagrilir.
+ * This function is called fire-and-forget from competition detail resolver.
  */
 export async function ensureNotificationState(
 	userId: string,
 	competitionId: string,
 	wcaId: string,
 	personName: string,
-	scheduleStartDate: string, // ISO date, orn. "2026-04-11"
+	scheduleStartDate: string, // ISO date, e.g. "2026-04-11"
 	numberOfDays: number,
 ): Promise<void> {
 	const prisma = getPrisma();
 
-	// Tarih hesaplamalari — start_date ve end_date (son gun dahil)
+	// Date calculations — start_date and end_date (last day inclusive)
 	const startDate = new Date(scheduleStartDate);
 	if (isNaN(startDate.getTime())) {
 		logger.warn('[WcaNotify] invalid scheduleStartDate', {competitionId, scheduleStartDate});
@@ -28,23 +28,23 @@ export async function ensureNotificationState(
 	const endDate = new Date(startDate);
 	endDate.setDate(endDate.getDate() + Math.max(0, numberOfDays - 1));
 
-	// Yarisma bitmisse state kurma
+	// Don't create state if competition is finished
 	const cutoff = new Date();
-	cutoff.setDate(cutoff.getDate() - 1); // 1 gun tolerans
+	cutoff.setDate(cutoff.getDate() - 1); // 1 day tolerance
 	if (endDate < cutoff) {
 		return;
 	}
 
-	// Zaten var mi?
+	// Already exists?
 	const existing = await prisma.wcaCompetitionNotificationState.findUnique({
 		where: {user_id_competition_id: {user_id: userId, competition_id: competitionId}},
 		select: {id: true},
 	});
 	if (existing) {
-		return; // Zaten takipte
+		return; // Already tracked
 	}
 
-	// Yeni state olustur + retroactive suppression
+	// Create new state + retroactive suppression
 	try {
 		const state = await prisma.wcaCompetitionNotificationState.create({
 			data: {
@@ -57,7 +57,7 @@ export async function ensureNotificationState(
 			},
 		});
 
-		// WCA Live'dan mevcut round durumunu cek ve gecmis sonuclari suppress et
+		// Fetch current round status from WCA Live and suppress old results
 		try {
 			const liveData = await getWcaLiveData(competitionId);
 			if (liveData) {
@@ -66,12 +66,12 @@ export async function ensureNotificationState(
 						const round = await fetchLiveRoundResults(rm.liveRoundId);
 						if (!round) continue;
 
-						// Kullanicinin bu round'da sonucu var mi?
+						// Does user have a result in this round?
 						const userResult = round.results.find(
 							(r) => (r.personWcaId && r.personWcaId === wcaId) || r.personName === personName,
 						);
 
-						// Sonuc varsa veya round bitmisse: notified isaretle
+						// If user has result or round is finished: mark notified
 						const hasResult = userResult && userResult.best > 0;
 						const isFinished = round.finished;
 
@@ -105,8 +105,8 @@ export async function ensureNotificationState(
 				}
 			}
 		} catch (err: any) {
-			// Retroactive adim hata verdi: guvenli taraf — tum roundlari notified isaretle,
-			// eski sonuclar icin spam atma riski yok
+			// Retroactive step failed: safe side — mark all rounds as notified,
+			// no risk of spam for old results
 			logger.warn('[WcaNotify] retroactive suppression failed, marking all rounds as notified', {
 				competitionId,
 				err: err?.message,
@@ -139,7 +139,7 @@ export async function ensureNotificationState(
 
 		logger.info('[WcaNotify] state created', {userId, competitionId});
 	} catch (err: any) {
-		// Race condition: ayni anda iki request gelirse unique constraint patlar, sessizce gec
+		// Race condition: if two requests arrive simultaneously, unique constraint fails silently
 		if (err?.code !== 'P2002') {
 			logger.warn('[WcaNotify] ensureNotificationState create failed', {
 				userId,

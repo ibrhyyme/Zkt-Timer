@@ -6,11 +6,11 @@ import { Integration } from '../schemas/Integration.schema';
 import { updateUserProfile } from '../models/profile';
 import { getUserById } from '../models/user_account';
 
-// WCA /me response sekli — tum OAuth path'lerinde tek nokta sync icin
-// Her path'in kendi field-by-field updateIntegration cagrisi yerine bunu kullanmalidir.
-// Idempotent: bos update obj'si no-op, mevcut wca_id NEVER nullable'a dusurulmez.
-// Parametre `any` — Prisma model ile GraphQL Integration tipi arasinda yapisal uyum tam degil,
-// bu fonksiyon sadece integration.id'yi (updateIntegration uzerinden) kullaniyor.
+// WCA /me response shape — single source of truth for sync across all OAuth paths
+// Each path should use this instead of its own field-by-field updateIntegration calls.
+// Idempotent: empty update object is no-op, existing wca_id is NEVER downcast to nullable.
+// Parameter `any` — structural alignment between Prisma model and GraphQL Integration type is incomplete;
+// this function only uses integration.id (via updateIntegration).
 export async function syncWcaProfileToIntegration(
 	integration: any,
 	wcaData: any,
@@ -38,10 +38,10 @@ export async function syncWcaProfileToIntegration(
 
 	if (Object.keys(update).length === 0) return integration;
 
-	// Anlamli sync var → revoked_at mark'i temizle (kullanici WCA'ya geri bagland)
-	// Idempotent: zaten null ise no-op (DB last-write-wins, problem yok)
+	// Meaningful sync detected → clear revoked_at marker (user reconnected to WCA)
+	// Idempotent: if already null, no-op (DB last-write-wins, no issue)
 	update.revoked_at = null;
-	// last_synced_at her basarili sync sonunda set edilir (schema bu alani icermek zorunda)
+	// last_synced_at is set after every successful sync (schema must include this field)
 	update.last_synced_at = new Date();
 
 	return await updateIntegration(integration, update);
@@ -80,12 +80,12 @@ export async function linkOAuthAccount(intType: IntegrationType, user: InternalU
 			}
 		}
 
-		// Guncel integration'i dondur (wca_id dahil)
+		// Return updated integration (including wca_id)
 		const updated = await getIntegration(user, intType);
 		return updated || int;
 	}
 
-	// WCA icin: kullanici bilgilerini al, sonra integration olustur
+	// For WCA: fetch user info, then create integration
 	if (intType === 'wca') {
 		const res = await axios.get(service.meEndpoint, {
 			headers: {Authorization: 'Bearer ' + accessToken},
@@ -94,7 +94,7 @@ export async function linkOAuthAccount(intType: IntegrationType, user: InternalU
 		const wcaId = wcaData?.wca_id || null;
 		const wcaUserId = wcaData?.id ? String(wcaData.id) : null;
 
-		// Baska kullaniciya bagli kontrolu — wca_user_id (newcomer dahil her zaman var) ve wca_id (yarismaya katilanlar)
+		// Check for existing account linked — wca_user_id (always present, including newcomers) and wca_id (for competitors)
 		let conflict: Integration | null = null;
 		if (wcaUserId) {
 			const byUser = await getIntegrationByWcaUserId(wcaUserId);
@@ -134,7 +134,7 @@ export async function getOAuthPostRequest(
 		const clientSecret = process.env.WCA_CLIENT_SECRET || '';
 		const redirectUri = overrideRedirectUri || getWcaRedirectUri();
 
-		// Debug logging (secrets redacted — sadece varlik kontrolu)
+		// Debug logging (secrets redacted — only existence check)
 		console.log('WCA OAuth request details:', {
 			clientId: clientId ? 'PRESENT' : 'MISSING',
 			clientSecret: clientSecret ? 'PRESENT' : 'MISSING',
@@ -168,7 +168,7 @@ export async function getOAuthPostRequest(
 				createdAt: new Date().getTime(),
 			};
 		} catch (error) {
-			// Log and re-throw error (request body sirlari icerir, log'lanmaz)
+			// Log and re-throw error (request body contains secrets, not logged)
 			if (error.response) {
 				console.error('WCA token exchange failed:', error.response.status, error.response.data);
 				throw new Error(error.response.data?.error_description || error.response.data?.error || 'WCA token exchange failed');
@@ -230,11 +230,11 @@ export async function exchangeWcaLoginCode(code: string) {
 		wcaData = res?.data?.me || res?.data;
 	} catch (error) {
 		console.error('Failed to fetch WCA user data:', error?.message);
-		throw new Error('WCA kullanici bilgileri alinamadi');
+		throw new Error('WCA user information could not be retrieved');
 	}
 
 	if (!wcaData) {
-		throw new Error('WCA kullanici bilgileri alinamadi');
+		throw new Error('WCA user information could not be retrieved');
 	}
 
 	return {
@@ -252,8 +252,8 @@ export async function exchangeWcaLoginCode(code: string) {
 	};
 }
 
-// Sentinel: token kalici olarak gecersiz (WCA tarafinda revoke edildi veya kullanici sildi)
-// Caller'lar bu mesaji yakalayip integration'i revoked_at ile isaretler.
+// Sentinel: token is permanently invalid (revoked by WCA or user deleted)
+// Callers catch this message and mark integration with revoked_at.
 export const WCA_TOKEN_REVOKED = 'WCA_TOKEN_REVOKED';
 
 export async function getAuthToken(intType: IntegrationType, user: UserAccount) {
@@ -271,7 +271,7 @@ export async function getAuthToken(intType: IntegrationType, user: UserAccount) 
 		try {
 			authToken = await getNewAuthToken(integration);
 		} catch (e: any) {
-			// Refresh kalici hata aldi — integration'i revoked olarak isaretle, error'i re-throw et
+			// Refresh hit permanent error — mark integration as revoked, re-throw error
 			if (e?.message === WCA_TOKEN_REVOKED) {
 				try {
 					await updateIntegration(integration, {revoked_at: new Date()} as any);
@@ -310,7 +310,7 @@ async function getNewAuthToken(integration: Integration) {
 	} catch (e: any) {
 		const status = e?.response?.status;
 		console.warn('Token refresh failed for', integration.service_name, 'status=', status, ':', e?.message);
-		// 400/401 -> refresh_token gecersiz, kalici hata. Diger durumlar transient.
+		// 400/401 -> refresh_token invalid, permanent error. Other cases are transient.
 		if (status === 400 || status === 401) {
 			throw new Error(WCA_TOKEN_REVOKED);
 		}
@@ -331,8 +331,8 @@ export async function getIntegrationGetMe(intType: IntegrationType, user: UserAc
 		});
 	} catch (e: any) {
 		const status = e?.response?.status;
-		// 401: token revoked/invalid (sentinel davranis)
-		// 404: WCA hesabi silinmis
+		// 401: token revoked/invalid (sentinel behavior)
+		// 404: WCA account deleted
 		if (status === 401 || status === 404) {
 			const integration = await getIntegration(user, intType);
 			if (integration) {

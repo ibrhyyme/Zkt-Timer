@@ -41,14 +41,14 @@ export default function TrainerSmartCube() {
 	const {state, dispatch, connectRef} = useTrainerContext();
 	const {currentAlgorithm, options} = state;
 
-	// Wake lock — smart cube bagliyken ekran sonmesin
+	// Wake lock — screen should not turn off when smart cube is connected
 	useWakeLock(options.wakeLockEnabled && state.smartConnected);
 
 	// Camera pad state
 	const [isDragging, setIsDragging] = useState(false);
 	const padRef = useRef<HTMLDivElement>(null);
 
-	// Flashing error indicator — key her artisindan sonra animasyon yeniden tetiklenir
+	// Flashing error indicator — animation re-triggers after each key increment
 	const [flashKey, setFlashKey] = useState(0);
 
 	// TwistyPlayer refs
@@ -65,8 +65,8 @@ export default function TrainerSmartCube() {
 	const cubeQuaternion = useRef(HOME_ORIENTATION.current.clone());
 	const animFrameRef = useRef<number | null>(null);
 	const unsubGyroRef = useRef<(() => void) | null>(null);
-	// Net rotation-aware gyro reset: onceki algoritmanin net rotasyonunu
-	// yeni basis hesabinda kullanarak drift'i duzeltirken oryantasyonu korur
+	// Net rotation-aware gyro reset: uses previous algorithm's net rotation
+	// in new basis calculation to correct drift while preserving orientation
 	const netRotationQuatRef = useRef<THREE.Quaternion>(new THREE.Quaternion());
 	const pendingNetRotRef = useRef<THREE.Quaternion | null>(null);
 
@@ -76,9 +76,9 @@ export default function TrainerSmartCube() {
 	const currentMoveIndexRef = useRef<number>(-1);
 	const badAlgRef = useRef<string[]>([]);
 	const lastMovesRef = useRef<{move: string}[]>([]);
-	// Solve sirasinda en az bir yanlis hamle yapildi mi (auto-learn + fail counter icin)
+	// Did at least one wrong move happen during solve (for auto-learn + fail counter)
 	const solveHasMistakeRef = useRef<boolean>(false);
-	// algMoves stable referans — FACELETS update'te patternStates rebuild icin
+	// algMoves stable reference — for patternStates rebuild on FACELETS update
 	const algMovesRef = useRef<string[]>([]);
 
 	// Timer refs
@@ -86,7 +86,7 @@ export default function TrainerSmartCube() {
 	const timerStartRef = useRef<number>(0);
 	const timerIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-	// State refs (stale closure onlemi)
+	// State refs (stale closure prevention)
 	const smartPhaseRef = useRef(state.smartPhase);
 	smartPhaseRef.current = state.smartPhase;
 	const userAlgRef = useRef(state.userAlg);
@@ -138,20 +138,20 @@ export default function TrainerSmartCube() {
 			const algId = algToId(alg.algorithm);
 			const hadMistakes = solveHasMistakeRef.current;
 			addTime(algId, finalTime, hadMistakes ? 1 : 0);
-			// Fail counter: hata yapildiysa arttir, temiz cozumdeyse sifirla
+			// Fail counter: increment if mistakes, reset if clean solve
 			if (hadMistakes) {
 				incrementFailCount(algId);
 			} else {
 				resetFailCount(algId);
 			}
-			// Auto-update Learning State: son N temiz cozum varsa "learned" isaretle
+			// Auto-update Learning State: mark "learned" if last N solves are clean
 			if (optionsRef.current.autoLearnEnabled) {
 				checkAutoLearn(algId, optionsRef.current.autoLearnThreshold);
 			}
 		}
 		solveHasMistakeRef.current = false;
 
-		// Sonraki algoritmaya gec (minimal gecikme — tamamlanma geri bildirimi icin)
+		// Move to next algorithm (minimal delay — for completion feedback)
 		setTimeout(() => {
 			dispatch({type: 'ADVANCE_ALGORITHM'});
 		}, 150);
@@ -164,19 +164,19 @@ export default function TrainerSmartCube() {
 		const userAlg = userAlgRef.current;
 		const idx = currentMoveIndexRef.current;
 
-		// Case 1: Ilk dogru hamleyi geri alma
+		// Case 1: Undo first correct move
 		if (idx === 0 && badAlg.length === 1 &&
 			lastMoves[lastMoves.length - 1]?.move === getInverseMove(userAlg[idx]?.replace(/[()]/g, '') || '')) {
 			currentMoveIndexRef.current = -1;
 			badAlgRef.current.pop();
 		}
-		// Case 2: Son yanlis hamlenin tersi
+		// Case 2: Inverse of last wrong move
 		else if (badAlg.length >= 2 &&
 			lastMoves[lastMoves.length - 1]?.move === getInverseMove(badAlg[badAlg.length - 2])) {
 			badAlgRef.current.pop();
 			badAlgRef.current.pop();
 		}
-		// Case 3: 4 ayni hamle (tam tur)
+		// Case 3: 4 same moves (full rotation)
 		else if (badAlg.length > 3 && lastMoves.length > 3 &&
 			lastMoves[lastMoves.length - 1].move === lastMoves[lastMoves.length - 2].move &&
 			lastMoves[lastMoves.length - 2].move === lastMoves[lastMoves.length - 3].move &&
@@ -192,21 +192,21 @@ export default function TrainerSmartCube() {
 		const move = smartTurn.turn;
 		if (!myKpatternRef.current || patternStatesRef.current.length === 0) return;
 
-		// Visual guncelleme
+		// Update 3D visualization
 		if (twistyPlayerRef.current) {
 			(twistyPlayerRef.current as any).experimentalAddMove(move, {cancel: false});
 		}
 
-		// KPattern guncelleme
+		// Update KPattern
 		myKpatternRef.current = myKpatternRef.current.applyMove(move);
 		lastMovesRef.current.push({move});
 		if (lastMovesRef.current.length > 256) {
 			lastMovesRef.current = lastMovesRef.current.slice(-256);
 		}
 
-		// Solved detection helper — algoritmanin HEDEF state'i ile karsilastir.
-		// patternStates'in son elemani = initialState.applyAlg(algMoves) = fiziksel hedef state.
-		// Phase ne olursa olsun (ready veya solving) cagrilabilir.
+		// Solved detection helper — compare with algorithm's TARGET state.
+		// patternStates' last element = initialState.applyAlg(algMoves) = physical target state.
+		// Can be called regardless of phase (ready or solving).
 		const checkSolvedFallback = (): boolean => {
 			if (!myKpatternRef.current) return false;
 			const targetState = patternStatesRef.current[patternStatesRef.current.length - 1];
@@ -219,19 +219,19 @@ export default function TrainerSmartCube() {
 			return false;
 		};
 
-		// Mask mode — per-move eslestirme yok, sadece solved detection
+		// Mask mode — no per-move matching, only solved detection
 		if (isMoveMaskedRef.current) {
 			checkSolvedFallback();
 			return;
 		}
 
-		// KPattern eslestirme — fixOrientation her iki tarafa da uygulanmali.
+		// KPattern matching — fixOrientation must be applied to both sides.
 		const patterns = patternStatesRef.current;
 		const fixedMyKpattern = fixOrientation(myKpatternRef.current);
 		let matchIdx = -1;
 		for (let i = 0; i < patterns.length; i++) {
 			if (isIdenticalIgnoringCenters(fixedMyKpattern, patterns[i])) {
-				// Trailing rotation'lari otomatik atla (fixOrientation ayni state uretir)
+				// Auto-skip trailing rotations (fixOrientation produces same state)
 				matchIdx = i;
 				while (matchIdx + 1 < patterns.length &&
 					isIdenticalIgnoringCenters(patterns[i], patterns[matchIdx + 1])) {
@@ -241,12 +241,12 @@ export default function TrainerSmartCube() {
 			}
 		}
 
-		// Phase='ready': match dene; eslesirse solving'e gec, eslesmezse setup hamlesi
-		// sayilir (badAlg eklenmez). Bu sayede kullanici cube'u setup'a getirirken
-		// engine "yanlis hamle" yapmaz.
+		// Phase='ready': try to match; if match, transition to solving, else it's setup move
+		// (not added to badAlg). This way, while user is setting up cube,
+		// engine doesn't report "wrong move".
 		if (smartPhaseRef.current === 'ready') {
 			if (matchIdx >= 0) {
-				// Algoritmayi uygulamaya basladi
+				// Started applying algorithm
 				currentMoveIndexRef.current = matchIdx;
 				badAlgRef.current = [];
 				dispatch({type: 'SMART_SET_PHASE', payload: 'solving'});
@@ -258,13 +258,13 @@ export default function TrainerSmartCube() {
 					handleSolveComplete();
 				}
 			} else {
-				// Setup hamlesi veya kendi yontem — sadece solved detection
+				// Setup move or own method — only solved detection
 				checkSolvedFallback();
 			}
 			return;
 		}
 
-		// Phase='solving': normal matching akisi
+		// Phase='solving': normal matching flow
 		solutionMovesRef.current.push(smartTurn);
 
 		if (matchIdx >= 0) {
@@ -278,25 +278,25 @@ export default function TrainerSmartCube() {
 		} else {
 			badAlgRef.current.push(move);
 			solveHasMistakeRef.current = true;
-			// Flashing error indicator (kullanici hata gostergeci ayari aciksa)
+			// Flashing error indicator (if user enabled error indicator setting)
 			if (optionsRef.current.flashingError) {
 				setFlashKey((k) => k + 1);
 			}
 			handleBadAlg();
 			dispatch({type: 'SET_BAD_ALG', payload: [...badAlgRef.current]});
 
-			// Yanlis algoritma toleransi: en az 1 dogru hamle eslesmis olmali —
-			// yanlis+duzeltme ile solved'a donmek false positive yaratir.
+			// Wrong algorithm tolerance: at least 1 correct move must be matched —
+			// wrong+correct back to solved creates false positive.
 			if (currentMoveIndexRef.current > 0) {
 				checkSolvedFallback();
 			}
 		}
 	}, [dispatch, startTimerInterval, handleSolveComplete, handleBadAlg]);
 
-	// -- patternStates rebuilder (FACELETS update'te de cagrilir) --
-	// myKpatternRef'in mevcut degerinden + algMovesRef'ten patternStates'i kurar.
-	// Kullanici cube'u setup'a getirirken FACELETS gelir, myKpattern guncellenir
-	// ve patternStates'in initialState'i guncel kalsin diye burayi cagiririz.
+	// -- patternStates rebuilder (also called on FACELETS update) --
+	// Builds patternStates from current myKpatternRef value + algMovesRef.
+	// When user is setting up cube, FACELETS arrives, myKpattern is updated,
+	// and we call this to keep patternStates' initialState current.
 	const rebuildPatternStates = useCallback(async () => {
 		await ensureCubingReady();
 		await ensureKPuzzleReady();
@@ -328,10 +328,10 @@ export default function TrainerSmartCube() {
 				const {x: qx, y: qy, z: qz, w: qw} = event.quaternion;
 				const quat = new THREE.Quaternion(qx, qz, -qy, qw).normalize();
 				if (!gyroBasisRef.current) {
-					// Lazy basis yakalama — ilk gyro event'inde tetiklenir.
-					// pendingNetRot varsa: basis = netRot × conj(quat)
-					// Boylece display = HOME × netRot × conj(quat) × quat = HOME × netRot
-					// (onceki algoritmanin net rotasyonu korunur, drift duzeltilir)
+					// Lazy basis capture — triggered on first gyro event.
+					// If pendingNetRot exists: basis = netRot × conj(quat)
+					// Thus display = HOME × netRot × conj(quat) × quat = HOME × netRot
+					// (previous algorithm's net rotation is preserved, drift is corrected)
 					const baseConj = quat.clone().conjugate();
 					const pending = pendingNetRotRef.current;
 					if (pending) {
@@ -357,7 +357,7 @@ export default function TrainerSmartCube() {
 		const conn = connectRef.current;
 		if (!conn) return;
 
-		// Move callbacks — dogrudan isleme (Redux bypass)
+		// Move callbacks — process directly (Redux bypass)
 		conn.alertTurnCube = (move: string) => processMove({
 			turn: move.replace(/\s/g, ''),
 			completedAt: Date.now(),
@@ -375,16 +375,16 @@ export default function TrainerSmartCube() {
 			formatted.forEach(processMove);
 		};
 
-		// FACELETS callback: engine state senkronizasyonu
-		// - Solving sirasinda OVERWRITE ETMEZ (per-move kpattern matching bozulur)
-		// - Solving disinda (ready/idle/completed) overwrite eder — fiziksel cube state'ini yansitir
-		// - Phase='ready' iken patternStates de yeniden kurulur — kullanici setup'a getirirken
-		//   initialState guncel kalsin diye. Bu sayede mask mode + kendi yontemle cozme F2L gibi
-		//   mid-solve kategorilerde de yakalanir.
-		// - Solving sirasinda fiziksel cube SOLVED ise handleSolveComplete tetiklenir (safety net).
+		// FACELETS callback: engine state synchronization
+		// - During solving: does NOT overwrite (breaks per-move kpattern matching)
+		// - Outside solving (ready/idle/completed): overwrites — reflects physical cube state
+		// - When phase='ready': also rebuilds patternStates — to keep initialState current while
+		//   user is setting up. This way, mask mode + own method solving in mid-solve categories
+		//   like F2L is also caught.
+		// - During solving: if physical cube is SOLVED, handleSolveComplete is triggered (safety net).
 		conn.alertCubeState = (faceletStr: string) => {
 			if (smartPhaseRef.current === 'solving') {
-				// Solving sirasinda overwrite yok — sadece solved detection safety net
+				// No overwrite during solving — only solved detection safety net
 				if (faceletStr === SOLVED_FACELETS) {
 					handleSolveCompleteRef.current();
 				}
@@ -394,23 +394,23 @@ export default function TrainerSmartCube() {
 			const pattern = faceletsToPattern(faceletStr);
 			if (!pattern) return;
 
-			// Ready/idle/completed: fiziksel cube state'ini yansit
+			// Ready/idle/completed: reflect physical cube state
 			myKpatternRef.current = pattern;
 
-			// Phase='ready' iken patternStates'i yeniden kur — kullanici setup yapiyor olabilir.
-			// Bu sayede ilk algoritma hamlesi geldiginde patternStates[0] guncel initialState'ten
-			// kurulmus olur.
+			// When phase='ready': rebuild patternStates — user might be setting up.
+			// This way, when first algorithm move arrives, patternStates[0] is built
+			// from current initialState.
 			if (smartPhaseRef.current === 'ready' && algMovesRef.current.length > 0) {
 				rebuildPatternStates();
 			}
 		};
 
-		// Issue 3: Mount'ta mevcut cube'u kontrol et (selection view'da baglantı kurulmuş olabilir)
+		// Issue 3: Check for existing cube on mount (may have been connected in selection view)
 		if (conn.activeCube) {
 			subscribeToGyro(conn.activeCube);
 		}
 
-		// Yeni cube baglantisi icin callback
+		// Callback for new cube connection
 		conn._onCubeCreated = (cube: any) => subscribeToGyro(cube);
 
 		return () => {
@@ -466,7 +466,7 @@ export default function TrainerSmartCube() {
 						twistyVantageRef.current = [...vantageList][0];
 						twistySceneRef.current = await twistyVantageRef.current.scene.scene();
 					} catch {
-						// Scene henuz hazir degil
+						// Scene not yet ready
 					}
 				}
 
@@ -504,12 +504,12 @@ export default function TrainerSmartCube() {
 			twistySceneRef.current = null;
 			twistyVantageRef.current = null;
 		};
-		// backView TwistyPlayer'in constructor option'i — runtime'da degisemez,
-		// degisikligi yansitmak icin player yeniden olusturulur.
+		// backView is a TwistyPlayer constructor option — cannot be changed at runtime,
+		// player must be recreated to reflect the change.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [options.backView]);
 
-	// -- Algoritma degistiginde patternStates olustur --
+	// -- Build patternStates when algorithm changes --
 	useEffect(() => {
 		if (!currentAlgorithm) return;
 
@@ -519,9 +519,9 @@ export default function TrainerSmartCube() {
 			const kpuzzle = getKPuzzle();
 			if (!kpuzzle) return;
 
-			// Algoritma hamlelerini parse et (AUF dahil)
-			// cleanAlgorithmForCubing: Rw→r, smart quotes, tek-move parantezler normalize eder
-			// Custom alternatif algoritmalarda bu normalizasyon kritik
+			// Parse algorithm moves (including AUF)
+			// cleanAlgorithmForCubing: normalizes Rw→r, smart quotes, single-move parens
+			// This normalization is critical in custom alternative algorithms
 			const expandedAlg = cleanAlgorithmForCubing(currentAlgorithm.algorithm);
 			const algMoves = buildRandomAUFAlg(
 				expandedAlg.split(/\s+/),
@@ -530,25 +530,24 @@ export default function TrainerSmartCube() {
 			);
 			algMovesRef.current = algMoves;
 
-			// myKpatternRef BLE bagliyken FACELETS callback ile fiziksel cube'u yansitir;
-			// null ise solved varsay. patternStates bu initialState'ten algoritmayi uygulayarak insa edilir.
+			// myKpatternRef reflects physical cube via FACELETS callback when BLE is connected;
+			// if null, assume solved. patternStates is built from this initialState by applying algorithm.
 			if (!myKpatternRef.current) {
 				myKpatternRef.current = kpuzzle.defaultPattern();
 			}
 
 			// Net rotation-aware gyro reset:
-			// Onceki algoritmanin net rotasyonunu kaydet, sonra basis'i null yap.
-			// Gyro callback'te ilk event geldiginde, pendingNetRot kullanilarak
-			// yeni basis = netRot × conj(hardwareQuat) hesaplanir.
-			// Boylece drift duzeltilir ama algoritmanin net rotasyonu korunur.
+			// Save previous algorithm's net rotation, then null basis.
+			// On first gyro event in callback, calculate new basis = netRot × conj(hardwareQuat).
+			// This corrects drift while preserving algorithm's net rotation.
 			pendingNetRotRef.current = netRotationQuatRef.current.clone();
 			gyroBasisRef.current = null;
 
-			// patternStates'i kur (rebuild yardimcisi ile)
+			// Build patternStates (using rebuild helper)
 			await rebuildPatternStates();
 
-			// Bu algoritmanin net rotasyonunu hesapla ve sakla.
-			// Sonraki algoritma gecisinde gyro basis'i buna gore ayarlanacak.
+			// Calculate and save net rotation for this algorithm.
+			// Will be used to adjust gyro basis on next algorithm transition.
 			netRotationQuatRef.current = calculateNetRotationQuat(algMoves);
 
 			currentMoveIndexRef.current = -1;
@@ -564,10 +563,10 @@ export default function TrainerSmartCube() {
 			dispatch({type: 'SET_USER_ALG', payload: algMoves});
 			dispatch({type: 'SET_ORIGINAL_USER_ALG', payload: algMoves});
 
-			// Visual TwistyPlayer'i guncelle
+			// Update visual TwistyPlayer
 			if (twistyPlayerRef.current) {
 				const isLL = isLLCategory(currentAlgorithm.category);
-				// whiteOnBottom preset aktifse top/front face override edilir
+				// If whiteOnBottom preset is active, top/front face is overridden
 				const effective = getEffectiveOrientation({
 					topFace: options.topFace,
 					frontFace: options.frontFace,
@@ -578,7 +577,7 @@ export default function TrainerSmartCube() {
 				const stickering = getStickering(currentAlgorithm.category);
 				const is3x3 = getPuzzleType(currentAlgorithm.category) === '3x3x3';
 
-				// Cubing.js Alg — inverse hesapla
+				// Cubing.js Alg — calculate inverse
 				const {Alg} = await import('cubing/alg');
 				const inverseAlg = Alg.fromString(algMoves.join(' ')).invert().toString();
 				const setupAlg = rotation ? `${rotation} ${inverseAlg}` : inverseAlg;
@@ -604,7 +603,7 @@ export default function TrainerSmartCube() {
 		setupPatterns();
 	}, [currentAlgorithm, options.randomizeAUF, options.topFace, options.frontFace, options.whiteOnBottom, dispatch, rebuildPatternStates]);
 
-	// Cleanup timer on unmount or external phase change (manuel stop)
+	// Clean up timer on unmount or external phase change (manual stop)
 	useEffect(() => {
 		if (state.smartPhase === 'completed') {
 			stopTimerInterval();
@@ -614,11 +613,11 @@ export default function TrainerSmartCube() {
 		};
 	}, [state.smartPhase, stopTimerInterval]);
 
-	// -- Partial/wide match detection (CubeDex yaklasimi) --
-	// GAN kupler sadece 6 face move raporlar (URFDLB). Wide (r,l,f,b,u,d),
-	// slice (M,E,S) ve rotation (x,y,z) move'lari fiziksel olarak yapilir ama
-	// BLE uzerinden farkli face turn'ler olarak gelir. Bu yuzden display seviyesinde
-	// yarim/ara hamleleri hata degil partial olarak gosteriyoruz.
+	// -- Partial/wide match detection (CubeDex approach) --
+	// GAN cubes only report 6 face moves (URFDLB). Wide (r,l,f,b,u,d),
+	// slice (M,E,S), and rotation (x,y,z) moves are physically performed but
+	// come across BLE as different face turns. Therefore, at display level,
+	// we show half/intermediate moves as partial, not as error.
 	const matchedIdx = state.matchedMoveCount - 1;
 	const nextExpected = state.userAlg[matchedIdx + 1]?.replace(/[()]/g, '') || '';
 
@@ -628,17 +627,17 @@ export default function TrainerSmartCube() {
 		const badCount = state.badAlg.length;
 		const expectedBase = nextExpected[0];
 
-		// Onceki hamlelerde veya beklenen hamlede wide/slice/rotation var mi?
+		// Is there wide/slice/rotation in preceding moves or expected move?
 		const precedingMoves = state.userAlg.slice(0, matchedIdx + 1).join(' ');
 		const hasSliceOrWide = /[MESudlrbfxyz]/.test(precedingMoves) || /[MESudlrbfxyz]/.test(nextExpected);
 
-		// Case 1: Tek bad move + ilk harf eslesmesi (R2→R, r2→R, U2→U, case-insensitive)
+		// Case 1: Single bad move + first letter match (R2→R, r2→R, U2→U, case-insensitive)
 		if (badCount === 1 && state.badAlg[0][0].toUpperCase() === expectedBase.toUpperCase()) return true;
 
-		// Case 2: Tek bad move + algoritmada wide/slice/rotation move var
+		// Case 2: Single bad move + algorithm has wide/slice/rotation move
 		if (badCount === 1 && hasSliceOrWide) return true;
 
-		// Case 3: 2-3 bad move + M/E/S beklenen hamle (slice move'lar 2-3 face turn uretir)
+		// Case 3: 2-3 bad moves + M/E/S expected move (slice moves produce 2-3 face turns)
 		if ((badCount === 2 || badCount === 3) && 'MES'.includes(expectedBase)) return true;
 
 		return false;
@@ -680,7 +679,7 @@ export default function TrainerSmartCube() {
 
 	const handleResetGyro = useCallback(() => {
 		gyroBasisRef.current = null;
-		pendingNetRotRef.current = null; // Manuel reset — net rotation kompanzasyonu yok
+		pendingNetRotRef.current = null; // Manual reset — no net rotation compensation
 	}, []);
 
 	// -- Toolbar event listeners (reset/gyro from toolbar buttons) --
@@ -719,7 +718,7 @@ export default function TrainerSmartCube() {
 
 	return (
 		<div className={b('smart-cube-area')}>
-			{/* 3D Kup */}
+			{/* 3D Cube */}
 			<div className={b('smart-cube-wrapper')}>
 				<div ref={containerRef} className={b('smart-cube-viewer')} style={{width: options.cubeSize, height: options.cubeSize}} />
 				{options.flashingError && flashKey > 0 && (
@@ -739,7 +738,7 @@ export default function TrainerSmartCube() {
 				)}
 			</div>
 
-			{/* Cozum hamleleri */}
+			{/* Solution moves */}
 			{state.userAlg.length > 0 && !state.isMoveMasked && (
 				<div className={b('smart-moves')}>
 					{state.userAlg.map((move, i) => {

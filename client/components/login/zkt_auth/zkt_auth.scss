@@ -1,9 +1,9 @@
 /* ───────────────────────────────────────────────────
    Fonts — Inter Tight + JetBrains Mono
    ───────────────────────────────────────────────────
-   Google Fonts CDN ile (browser subset'leri otomatik secer — TR/EN/ES/RU
-   icin latin + latin-ext + cyrillic indirilir, ZH fallback'e duser).
-   font-display: swap Google CSS'inde tanimli, FOUT yok.
+   Via Google Fonts CDN (automatically selects browser subsets — TR/EN/ES/RU
+   loads latin + latin-ext + cyrillic; ZH falls back).
+   font-display: swap defined in Google CSS, no FOUT.
    ─────────────────────────────────────────────────── */
 @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
 
@@ -36,7 +36,7 @@
 	isolation: isolate;
 	gap: 24px;
 
-	// Desktop: split — cube sol, card sag
+	// Desktop: split — cube left, card right
 	@media (min-width: 768px) {
 		flex-direction: row;
 		gap: 48px;
@@ -102,10 +102,10 @@
 		}
 	}
 
-	/* ── Cube stage — sadece desktop, sol sutun, entry: sagdan kayma.
-	   Mobilde display:none — DOM'da kalir ama gozukmez (AuthCube içindeki
-	   guard Three.js init'i atlar). Bu sayede SSR ve client render tutarli,
-	   layout shift jank'i yok. */
+	/* ── Cube stage — desktop only, left column, entry: slide from right.
+	   On mobile display:none — remains in DOM but hidden (guard in AuthCube
+	   skips Three.js init). This keeps SSR and client render consistent,
+	   avoids layout shift jank. */
 	&__stage-cube {
 		position: relative;
 		display: flex;
@@ -125,14 +125,14 @@
 			display: none;
 		}
 
-		// reduce-motion override — animasyon kullanicinin kayma istegi
-		// degil, brand identity. yine de kisa tut.
+		// reduce-motion override — animation is brand identity, not user preference,
+		// but keep it brief.
 		@media (prefers-reduced-motion: reduce) {
 			animation: zkt-auth-cube-enter 0.5s ease-out 0s both;
 		}
 	}
 
-	/* Floating language switcher — sayfanin sag ust kosesi */
+	/* Floating language switcher — top-right corner of page */
 	&__lang-floating {
 		position: absolute;
 		top: 18px;
@@ -140,7 +140,7 @@
 		z-index: 10;
 	}
 
-	/* ── Card stage (foreground) — entry: yukaridan kayma ── */
+	/* ── Card stage (foreground) — entry: slide from top ── */
 	&__stage-card-wrap {
 		position: relative;
 		z-index: 3;
@@ -152,10 +152,10 @@
 			transform 0.9s cubic-bezier(0.6, 0.05, 0.05, 1),
 			opacity 0.6s ease;
 
-		// Mobilde animasyon YOK — kart anlik gozukur, hareket etmez
+		// NO animation on mobile — card appears instantly, no movement
 		animation: none;
 
-		// Desktop only (min-width 768): cube yaninda dramatik bouncy entry
+		// Desktop only (min-width 768): dramatic bouncy entry beside cube
 		@media (min-width: 768px) {
 			flex: 0 0 440px;
 			animation: zkt-auth-card-enter 1.2s cubic-bezier(0.22, 1.2, 0.36, 1) 0.25s both;
@@ -210,8 +210,8 @@
 		}
 	}
 
-	/* ── Title + subtitle — sadece legacy ve wca-callback modlarinda kullanilir
-	   (login/signup'ta logo + tabs var, baslik yok) ── */
+	/* ── Title + subtitle — only used in legacy and wca-callback modes
+	   (login/signup has logo + tabs, no title) ── */
 	&__title {
 		font-family: $font-display;
 		font-size: 22px;
@@ -232,7 +232,7 @@
 		letter-spacing: 0.005em;
 	}
 
-	/* ── Logo (Zeka Kupu Turkiye) — kart icinde ust orta ── */
+	/* ── Logo (Zeka Kupu Turkiye) — top center in card ── */
 	&__logo-container {
 		display: flex;
 		justify-content: center;
@@ -288,7 +288,7 @@
 		}
 	}
 
-	/* ── Mode pane (form swap) ──────────────────── */
+	/* ── Mode pane (form transition) ──────────────────── */
 	&__mode-stage {
 		position: relative;
 	}
@@ -298,7 +298,7 @@
 		transform-origin: center top;
 		animation: zkt-auth-mode-morph 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 
-		// Mobilde animasyon YOK
+		// NO animation on mobile
 		@media (max-width: 767px) {
 			animation: none;
 		}
@@ -958,9 +958,9 @@
 		z-index: -1;
 	}
 
-	/* HeroCube/CubeGame canvas wrapper — Three.js renderer.domElement buraya
-	   append edilir. Container'in pointer events'i kullanicinin cube'u
-	   drag etmesine izin verir; card uzerine geldiginde card overlap eder. */
+	/* HeroCube/CubeGame canvas wrapper — Three.js renderer.domElement is
+	   appended here. Container's pointer events allow user to drag cube;
+	   card overlaps when hovering. */
 	&__cube-canvas {
 		position: relative;
 		z-index: 1;
@@ -1110,8 +1110,8 @@
 	}
 }
 
-/* Entry animations — landing'den /login'e geciste cube sagdan, card ustten kayar.
-   Dramatik mesafe (cube 80vw, card -80vh) + bouncy easing → gozle gorulur transition. */
+/* Entry animations — on transition from landing to /login, cube slides from right, card from top.
+   Dramatic distance (cube 80vw, card -80vh) + bouncy easing → visible transition. */
 @keyframes zkt-auth-cube-enter {
 	from {
 		transform: translateX(80vw) scale(0.7);
@@ -1134,9 +1134,8 @@
 	}
 }
 
-/* Mobile card fade — sadece opacity, transform yok → jank imkansiz */
+/* Mobile card fade — opacity only, no transform → jank impossible */
 @keyframes zkt-auth-card-fade {
 	from { opacity: 0; }
 	to { opacity: 1; }
 }
-

@@ -1,8 +1,8 @@
-// MoYu MHC (Hi-Cube) BLE protokol port'u — cstimer moyucube.js (148 satır) %100 port
-// Referans: e:/Projects/Zkt-Timer/Referans/cstimer-master/src/js/hardware/moyucube.js
+// MoYu MHC (Hi-Cube) BLE protocol port — cstimer moyucube.js (148 lines) 100% port
+// Reference: e:/Projects/Zkt-Timer/Reference/cstimer-master/src/js/hardware/moyucube.js
 //
-// State takibi: cstimer'in mathlib.CubieCube'u yerine cubejs (proje genelinde kullanilan)
-// Protokol mantigi (parseTurn, faceStatus, ts hesabi, axis mapping) cstimer ile bire bir.
+// State tracking: cubejs (used throughout the project) instead of cstimer's mathlib.CubieCube
+// Protocol logic (parseTurn, faceStatus, ts calculation, axis mapping) 1:1 with cstimer.
 
 import SmartCube from './smart_cube';
 import Cube from 'cubejs';
@@ -37,7 +37,7 @@ export default class MoYu extends SmartCube {
 	}
 
 	init = async () => {
-		console.log('[moyu] init basladi');
+		console.log('[moyu] init started');
 
 		await this.adapter.connect(this.device, () => {
 			console.log('[moyu] disconnect');
@@ -46,7 +46,7 @@ export default class MoYu extends SmartCube {
 
 		setTimerParams({ smartCubeConnectStep: 'paired' });
 
-		// READ, TURN, GYRO notifications baslat
+		// Start READ, TURN, GYRO notifications
 		await this.adapter.startNotifications(
 			this.device,
 			SERVICE_UUID,
@@ -96,7 +96,7 @@ export default class MoYu extends SmartCube {
 		this.parseTurn(value);
 	}
 
-	// cstimer parseTurn() — bire bir port
+	// cstimer parseTurn() — 1:1 port
 	parseTurn(data) {
 		const locTime = Date.now();
 		if (data.byteLength < 1) {
@@ -131,17 +131,17 @@ export default class MoYu extends SmartCube {
 			const cubejsMove = moveStr.replace(' ', ''); // " 2'" -> "" / "2" / "'"
 			console.log('[moyu] move', moveStr);
 
-			// State update via cubejs (cstimer'in CubeMult+moveCube[m] mantigi)
+			// State update via cubejs (cstimer's CubeMult+moveCube[m] logic)
 			this.prevCube.move(cubejsMove);
 			this.curFacelet = this.prevCube.asString();
 
-			// prevMoves tracking (cstimer ile ayni — son 8 hamle)
+			// prevMoves tracking (same as cstimer — last 8 moves)
 			this.prevMoves.unshift(moveStr);
 			if (this.prevMoves.length > 8) {
 				this.prevMoves = this.prevMoves.slice(0, 8);
 			}
 
-			// Bizim Redux pipeline'a uygun callback'ler
+			// Callbacks matching our Redux pipeline
 			this.alertTurnCube(cubejsMove);
 			this.alertCubeState(this.curFacelet);
 		}

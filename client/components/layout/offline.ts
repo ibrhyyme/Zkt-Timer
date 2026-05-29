@@ -16,9 +16,9 @@ export async function initOfflineData(me, callback) {
 		return;
 	}
 
-	// Guard: callback'in birden fazla kez cagirilmasini engelle.
-	// loadDatabase 2s'den uzun surerse fallback timeout ateşlenir, sonra loadDatabase
-	// tamamlaninca callback tekrar cagirilir — bu tum init mantığini iki kez calistirir.
+	// Guard: prevent callback from being called more than once.
+	// If loadDatabase takes longer than 2s, fallback timeout fires, then when loadDatabase
+	// completes, callback is called again — this would run all init logic twice.
 	let callbackFired = false;
 	const safeCallback = (passed: boolean) => {
 		if (callbackFired) return;
@@ -56,21 +56,21 @@ export async function shouldFetchDataFromDb(me: UserAccount): Promise<boolean> {
 		return true;
 	}
 
-	// Basic kullanicilar sunucuyla hash karsilastirmasi yapmaz,
-	// her zaman lokal IndexedDB'den yuklemeyi dene
+	// Basic users don't compare hash with server,
+	// always try to load from local IndexedDB
 	if (isProEnabled() && !me?.is_pro && !me?.is_premium) {
 		setLocalStorage('wasBasicUser', 'true');
 		return false;
 	}
 
-	// Yeni Pro kullanici (onceden Basic'ti) - once lokal veriyi yukle, migration yapilacak
+	// New Pro user (was Basic before) - load local data first, migration will be done
 	if (isProEnabled() && (me?.is_pro || me?.is_premium) && getLocalStorage('wasBasicUser') === 'true') {
 		return false;
 	}
 
 	const offlineHash = getLocalStorage('offlineHash');
 
-	// Iki hash de null/undefined ise sunucudan cek (yeni kullanici veya temiz state)
+	// If both hashes are null/undefined, fetch from server (new user or clean state)
 	if (!me.offline_hash && !offlineHash) {
 		return true;
 	}
@@ -79,8 +79,8 @@ export async function shouldFetchDataFromDb(me: UserAccount): Promise<boolean> {
 }
 
 /**
- * LokiJS DB'yi IndexedDB'ye kaydet.
- * Hem Basic hem Pro kullanicilar icin calismali.
+ * Save LokiJS DB to IndexedDB.
+ * Should work for both Basic and Pro users.
  */
 export async function saveLokiDb(): Promise<boolean> {
 	return new Promise<boolean>((resolve) => {
@@ -91,7 +91,7 @@ export async function saveLokiDb(): Promise<boolean> {
 				return;
 			}
 
-			// throttledSaves bypass — onceki basarisiz save'den kalan kuyruk tikanmasini onler
+			// throttledSaves bypass — prevent queue blockage from previous failed saves
 			const origThrottled = db.throttledSaves;
 			db.throttledSaves = false;
 
@@ -119,7 +119,7 @@ export async function saveLokiDb(): Promise<boolean> {
 export async function updateOfflineHash() {
 	const dbSaved = await saveLokiDb();
 
-	// DB kaydedilemezse hash'i guncelleme — tutarsizlik onlenir
+	// Don't update hash if DB couldn't be saved — prevents inconsistency
 	if (!dbSaved) {
 		console.warn('[Offline] Skipping hash update because DB save failed');
 		return;
@@ -141,7 +141,7 @@ export async function updateOfflineHash() {
 		setLocalStorage('offlineHash', hash);
 		console.log('[Offline] Hash updated successfully');
 	} catch (e) {
-		// Offline — hash güncellenmez, sonraki online'da tekrar denenecek
+		// Offline — hash won't be updated, will retry next time we go online
 	}
 }
 

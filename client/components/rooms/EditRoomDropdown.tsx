@@ -1,8 +1,8 @@
-// EditRoomModal'in Popover dropdown versiyonu — desktop'ta kalem ikonu tiklayinca
-// modal yerine inline panel acilir. Mobile'da hala EditRoomModal kullaniliyor.
+// Popover dropdown version of EditRoomModal — on desktop, clicking the pencil icon
+// opens an inline panel instead of a modal. On mobile, EditRoomModal is still used.
 //
-// Mimari notu: Form mantigi EditRoomModal ile ortak (kopyalanmis). Ileride EditRoomForm
-// component'i ayrilirsa iki taraf da bunu reuse edebilir.
+// Architecture note: Form logic is shared with EditRoomModal (copied). If EditRoomForm
+// component is extracted in the future, both sides can reuse it.
 
 import React, { useState } from 'react';
 import * as Popover from '@radix-ui/react-popover';
@@ -37,8 +37,8 @@ export default function EditRoomDropdown({
 	const { t } = useTranslation();
 	const [open, setOpen] = useState(false);
 
-	// Form state — panel her acildiginda mevcut degerlerle resetlemeyiz, kullanici tek
-	// oturumda degisiklik yapip kaydeder veya iptal eder.
+	// Form state — we don't reset to current values every time panel opens; user makes changes
+	// and saves or cancels within a single session.
 	const [name, setName] = useState(currentName);
 	const [selectedCubeType, setSelectedCubeType] = useState(cubeType || '333');
 	const [privateRoom, setPrivateRoom] = useState(isPrivate);
@@ -47,7 +47,7 @@ export default function EditRoomDropdown({
 		currentAllowedTypes && currentAllowedTypes.length > 0 ? currentAllowedTypes : ALL_TYPES
 	);
 
-	// Panel acildiginda mevcut degerlere senkronize et (oda dis degisikligi yansisin)
+	// When panel opens, synchronize to current values (reflect external room changes)
 	React.useEffect(() => {
 		if (open) {
 			setName(currentName);

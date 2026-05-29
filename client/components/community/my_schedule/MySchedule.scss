@@ -17,7 +17,7 @@
 		padding: 4rem 0;
 	}
 
-	// WCA loading: ortada WCA logosu + altinda linear progress bar + metin
+	// WCA loading: WCA logo in center + linear progress bar below + text
 	&__wca-loading {
 		display: flex;
 		flex-direction: column;
@@ -218,7 +218,7 @@
 		left: 110%;
 	}
 
-	// "Kayitlisin" pill above the title
+	// "Registered" pill above the title
 	&__mine-tag {
 		display: inline-flex;
 		align-items: center;
@@ -517,7 +517,7 @@
 		}
 	}
 
-	// Tabs — web: tek satir (flex 1), mobil: 2 satir (3 sutun grid)
+	// Tabs — web: single row (flex 1), mobile: 2 rows (3 column grid)
 	&__tabs {
 		display: flex;
 		flex-wrap: nowrap;
@@ -1558,7 +1558,7 @@
 		margin-bottom: 1rem;
 	}
 
-	// Activity role sections (referans gibi renkli header)
+	// Activity role sections (colored header like reference)
 	&__activity-section-header {
 		display: flex;
 		align-items: center;
@@ -1588,7 +1588,7 @@
 		color: rgba(var(--text-color), 0.5);
 	}
 
-	// Tek sutun liste (karistirmaci, runner, hakem)
+	// Single column list (scrambler, runner, judge)
 	&__activity-role-list {
 		display: flex;
 		flex-direction: column;
@@ -2329,8 +2329,8 @@
 		background: rgba(var(--text-color), 0.03);
 	}
 
-	// Mobile garanti: 768px alti her ne olursa olsun
-	// attempt + country sutunlarini gizle, table-layout fixed
+	// Mobile guarantee: under 768px regardless
+	// Hide attempt + country columns, set table-layout to fixed
 	@media (max-width: 768px) {
 		&__wca-live-th-attempt,
 		&__wca-live-attempt,
@@ -2387,14 +2387,14 @@
 			background: rgba(var(--text-color), 0.04);
 		}
 
-		// Web: attempt sutunlarini kucult
+		// Web: reduce attempt column sizes
 		&:not(&--mobile) {
 			th, td {
 				font-size: 0.8rem;
 			}
 		}
 
-		// Mobil: sadece # name avg best
+		// Mobile: only # name avg best
 		&--mobile {
 			th, td {
 				padding: 0.7rem 0.4rem;
@@ -2890,9 +2890,9 @@
 		margin-top: 0.1rem;
 	}
 
-	// --- Competitor Live Results sayfasi (in-app WCA Live yarismaci sonuclari) ---
+	// --- Competitor Live Results page (in-app WCA Live competitor results) ---
 
-	// Sayfa genisligi: bu sayfada attempt sutunlari sigsin diye content max-width artar
+	// Page width: on this page content max-width increases so attempt columns fit
 	&__content--wide {
 		max-width: 64rem;
 	}

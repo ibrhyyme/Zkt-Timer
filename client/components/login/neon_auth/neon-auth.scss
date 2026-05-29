@@ -1,0 +1,494 @@
+@import '../../../styles/config';
+
+/* Animated conic-gradient angle — must be registered at top level for @property */
+@property --neon-spin {
+	syntax: '<angle>';
+	inherits: false;
+	initial-value: 0deg;
+}
+
+/* ───────────────────────────────────────────────────
+   Neon OTP boxes — ported from the "Animasyonlu OTP"
+   design, re-themed to the auth scene tokens. Neon glow
+   maps: --auth-accent (purple) + --primary-color (blue).
+   States driven by data-state / data-status + keyframes.
+   ─────────────────────────────────────────────────── */
+.#{$namespace}-neon-otp {
+	--neon-a: var(--auth-accent); // purple glow
+	--neon-b: var(--primary-color); // blue glow
+	--neon-radius: 14px;
+	--neon-spin-dur: 3.2s;
+	--neon-pulse-dur: 1.8s;
+
+	position: relative;
+	width: 100%;
+
+	&__goo {
+		position: absolute;
+		width: 0;
+		height: 0;
+		pointer-events: none;
+	}
+
+	&__row {
+		position: relative;
+		display: flex;
+		gap: 12px;
+		width: 100%;
+		justify-content: center;
+		transition: gap 0.4s cubic-bezier(0.4, 0.1, 0.2, 1);
+	}
+
+	&[data-size='md'] &__row {
+		gap: 9px;
+	}
+
+	// on completion the boxes pull together so their neon outlines fuse
+	&[data-merge='true'] &__row {
+		gap: 3px;
+	}
+
+	/* merge layer — neon outlines fused by the goo filter */
+	&__merge {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		display: flex;
+		gap: inherit;
+		justify-content: center;
+		pointer-events: none;
+	}
+
+	&__merge-cell {
+		flex: 1 1 0;
+		min-width: 0;
+		max-width: 64px;
+		align-self: stretch;
+		border-radius: var(--neon-radius);
+		border: 4.5px solid rgb(var(--neon-a));
+		background: transparent;
+		opacity: 0;
+		transform: scale(0.72);
+		transition: opacity 0.22s ease, transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.5);
+
+		&[data-on='true'] {
+			opacity: 1;
+			transform: scale(1);
+		}
+	}
+
+	&[data-size='md'] &__merge-cell {
+		max-width: 52px;
+		border-width: 4px;
+	}
+
+	&__row[data-status='error'] &__merge-cell {
+		border-color: rgb(var(--error-color));
+	}
+
+	&[data-merge='true'] &__merge-cell[data-on='true'] {
+		animation: cd-neon-breath var(--neon-pulse-dur) ease-in-out infinite alternate;
+	}
+
+	/* box */
+	&__box {
+		position: relative;
+		z-index: 1;
+		flex: 1 1 0;
+		min-width: 0;
+		max-width: 64px;
+		aspect-ratio: 1 / 1.16;
+		display: grid;
+		place-items: center;
+		border-radius: var(--neon-radius);
+		background: transparent;
+		border: 1px solid rgb(var(--auth-module-border));
+		cursor: text;
+		transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+	}
+
+	&[data-size='md'] &__box {
+		max-width: 52px;
+	}
+
+	&__input {
+		position: absolute;
+		inset: 0;
+		z-index: 2;
+		width: 100%;
+		height: 100%;
+		background: transparent;
+		border: 0;
+		outline: none;
+		text-align: center;
+		color: transparent;
+		caret-color: transparent;
+		font: inherit;
+		cursor: text;
+	}
+
+	&__glyph {
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		display: grid;
+		place-items: center;
+		pointer-events: none;
+		color: rgb(var(--text-color));
+		font-weight: 700;
+		font-size: 30px;
+		font-variant-numeric: tabular-nums;
+		animation: cd-neon-pop 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.4) both;
+	}
+
+	&[data-size='md'] &__glyph {
+		font-size: 25px;
+	}
+
+	&__box[data-state='filled'] &__glyph {
+		text-shadow: 0 0 14px rgba(var(--neon-a), 0.7);
+	}
+
+	&__ring {
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+		padding: 1.6px;
+		background: conic-gradient(from var(--neon-spin), rgb(var(--neon-a)), rgb(var(--neon-b)), rgb(var(--neon-a)));
+		-webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+		-webkit-mask-composite: xor;
+		mask-composite: exclude;
+		opacity: 0;
+		transition: opacity 0.25s;
+		pointer-events: none;
+	}
+
+	// filled — the neon edge comes from the merge layer behind; keep interior dark
+	&__box[data-state='filled'] {
+		border-color: transparent;
+	}
+
+	// active (caret box) — pulsing glow + spinning conic ring
+	&__box[data-state='active'] {
+		border-color: transparent;
+		animation: cd-neon-pulse var(--neon-pulse-dur) ease-in-out infinite alternate;
+	}
+
+	&__box[data-state='active'] &__ring {
+		opacity: 1;
+		animation: cd-neon-ringspin var(--neon-spin-dur) linear infinite;
+	}
+
+	&__caret {
+		width: 2px;
+		height: 46%;
+		border-radius: 2px;
+		z-index: 1;
+		background: rgb(var(--neon-a));
+		box-shadow: 0 0 8px rgb(var(--neon-a)), 0 0 2px rgb(var(--neon-a));
+		animation: cd-neon-blink 1.05s steps(1) infinite;
+	}
+
+	// verifying — outlines fused & glowing via the merge layer
+	&__row[data-status='verifying'] &__box {
+		border-color: transparent;
+		animation: none;
+	}
+
+	// error
+	&__row[data-status='error'] {
+		animation: cd-neon-shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+	}
+
+	&__row[data-status='error'] &__box {
+		border-color: rgba(var(--error-color), 0.5);
+		animation: none;
+	}
+
+	&__row[data-status='error'] &__glyph {
+		color: rgb(var(--error-color));
+		text-shadow: 0 0 14px rgba(var(--error-color), 0.6);
+	}
+}
+
+/* ───────────────────────────────────────────────────
+   Neon success check — halo + spinning ring + drawn tick
+   ─────────────────────────────────────────────────── */
+.#{$namespace}-neon-check {
+	--neon-a: var(--auth-accent);
+	--neon-b: var(--primary-color);
+
+	position: relative;
+	display: grid;
+	place-items: center;
+	border-radius: 26px;
+	background: rgba(12, 13, 20, 0.55);
+	box-shadow: 0 0 48px -10px rgb(var(--neon-a));
+	animation: cd-neon-check-pop 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+
+	&__halo {
+		position: absolute;
+		inset: -45%;
+		border-radius: 50%;
+		background: radial-gradient(circle, transparent 32%, rgba(var(--neon-a), 0.85) 46%, transparent 70%);
+		opacity: 0.6;
+		filter: blur(7px);
+		animation: cd-neon-halo 2.4s ease-in-out infinite;
+	}
+
+	&__ring {
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+		padding: 2px;
+		background: conic-gradient(from var(--neon-spin), rgb(var(--neon-a)), rgb(var(--neon-b)), rgb(var(--neon-a)));
+		-webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+		-webkit-mask-composite: xor;
+		mask-composite: exclude;
+		animation: cd-neon-ringspin 3.5s linear infinite;
+	}
+
+	&__path {
+		stroke-dasharray: 100;
+		stroke-dashoffset: 0;
+		animation: cd-neon-draw 0.6s cubic-bezier(0.6, 0, 0.3, 1) forwards;
+		filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.6));
+	}
+}
+
+/* ───────────────────────────────────────────────────
+   Layout helpers for the auth panes (code / success /
+   password-strength). Re-uses auth tokens; full colors
+   only (no opacity-based faded text).
+   ─────────────────────────────────────────────────── */
+.#{$namespace}-neon-auth {
+	&__stack {
+		display: flex;
+		flex-direction: column;
+		gap: 18px;
+	}
+
+	&__sub-strong {
+		color: rgb(var(--text-color));
+		font-weight: 800;
+	}
+
+	&__status {
+		min-height: 22px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+		font-size: 14px;
+		font-weight: 600;
+		text-align: center;
+		color: rgb(var(--auth-text-soft));
+
+		&--verifying {
+			color: rgb(var(--text-color));
+		}
+	}
+
+	&__err {
+		color: rgb(var(--error-color));
+		font-weight: 700;
+	}
+
+	&__resend {
+		color: rgb(var(--auth-text-soft));
+		font-weight: 600;
+	}
+
+	&__resend-btn {
+		background: none;
+		border: 0;
+		padding: 0;
+		cursor: pointer;
+		font: inherit;
+		font-weight: 800;
+		color: rgb(var(--primary-color));
+
+		&:disabled {
+			color: rgb(var(--auth-text-mute));
+			cursor: default;
+			font-weight: 700;
+		}
+	}
+
+	&__resent {
+		color: rgb(var(--success-color));
+		font-weight: 700;
+	}
+
+	&__done {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 24px;
+		padding: 8px 0 4px;
+	}
+
+	/* password strength bar meter */
+	&__pw-meter {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+	}
+
+	&__pw-bars {
+		display: flex;
+		gap: 6px;
+		flex: 1;
+	}
+
+	&__pw-bar {
+		height: 4px;
+		flex: 1;
+		border-radius: 999px;
+		background: rgb(var(--auth-module-border));
+		transition: background 0.25s;
+	}
+
+	&__pw-meter[data-score='1'] &__pw-bar[data-on='true'] {
+		background: rgb(var(--error-color));
+	}
+
+	&__pw-meter[data-score='2'] &__pw-bar[data-on='true'] {
+		background: rgb(var(--warning-color));
+	}
+
+	&__pw-meter[data-score='3'] &__pw-bar[data-on='true'] {
+		background: rgb(var(--primary-color));
+	}
+
+	&__pw-meter[data-score='4'] &__pw-bar[data-on='true'] {
+		background: rgb(var(--success-color));
+	}
+
+	&__pw-label {
+		font-size: 12px;
+		font-weight: 700;
+		min-width: 56px;
+		text-align: right;
+		color: rgb(var(--text-color));
+	}
+}
+
+/* ───────────────────────────────────────────────────
+   Keyframes (globally prefixed to avoid collisions)
+   ─────────────────────────────────────────────────── */
+@keyframes cd-neon-ringspin {
+	to {
+		--neon-spin: 360deg;
+	}
+}
+
+@keyframes cd-neon-pop {
+	0% {
+		transform: scale(0.35);
+		opacity: 0;
+	}
+	60% {
+		transform: scale(1.16);
+	}
+	100% {
+		transform: scale(1);
+		opacity: 1;
+	}
+}
+
+@keyframes cd-neon-blink {
+	0%,
+	50% {
+		opacity: 1;
+	}
+	50.01%,
+	100% {
+		opacity: 0;
+	}
+}
+
+@keyframes cd-neon-pulse {
+	from {
+		box-shadow: 0 0 11px -3px rgb(var(--neon-a)), 0 0 24px -9px rgb(var(--neon-b));
+	}
+	to {
+		box-shadow: 0 0 22px -1px rgb(var(--neon-a)), 0 0 44px -4px rgb(var(--neon-b));
+	}
+}
+
+@keyframes cd-neon-breath {
+	from {
+		box-shadow: 0 0 12px -5px rgb(var(--neon-a));
+	}
+	to {
+		box-shadow: 0 0 24px -2px rgb(var(--neon-a));
+	}
+}
+
+@keyframes cd-neon-shake {
+	10%,
+	90% {
+		transform: translateX(-2px);
+	}
+	20%,
+	80% {
+		transform: translateX(4px);
+	}
+	30%,
+	50%,
+	70% {
+		transform: translateX(-7px);
+	}
+	40%,
+	60% {
+		transform: translateX(7px);
+	}
+}
+
+@keyframes cd-neon-check-pop {
+	0% {
+		transform: scale(0.4);
+		opacity: 0;
+	}
+	65% {
+		transform: scale(1.08);
+	}
+	100% {
+		transform: scale(1);
+		opacity: 1;
+	}
+}
+
+@keyframes cd-neon-halo {
+	0%,
+	100% {
+		opacity: 0.4;
+		transform: scale(0.94);
+	}
+	50% {
+		opacity: 0.7;
+		transform: scale(1.06);
+	}
+}
+
+@keyframes cd-neon-draw {
+	from {
+		stroke-dashoffset: 100;
+	}
+	to {
+		stroke-dashoffset: 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.#{$namespace}-neon-otp__box,
+	.#{$namespace}-neon-otp__ring,
+	.#{$namespace}-neon-otp__glyph,
+	.#{$namespace}-neon-check,
+	.#{$namespace}-neon-check__ring,
+	.#{$namespace}-neon-check__halo,
+	.#{$namespace}-neon-check__path {
+		animation: none !important;
+	}
+}

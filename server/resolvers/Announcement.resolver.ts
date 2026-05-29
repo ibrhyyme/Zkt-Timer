@@ -31,7 +31,7 @@ function resolveLocale(announcement: any, lang: string) {
 @Resolver()
 export class AnnouncementResolver {
 
-	// Kullanıcının görmediği aktif duyurular (öncelik sıralı)
+	// Active announcements not seen by the user (sorted by priority)
 	@Query(() => [Announcement])
 	async getActiveAnnouncements(@Ctx() context: GraphQLContext): Promise<Announcement[]> {
 		if (!context.user) {
@@ -41,7 +41,7 @@ export class AnnouncementResolver {
 		try {
 			const lang = getLocale(context);
 
-			// N+1 problem'i önlemek için include kullanıyoruz
+			// Using include to prevent N+1 problem
 			const announcements = await context.prisma.announcement.findMany({
 				where: {
 					isActive: true,
@@ -62,7 +62,7 @@ export class AnnouncementResolver {
 				]
 			});
 
-			// Kullanıcının görmediklerini filtrele
+			// Filter out announcements already seen by the user
 			return announcements
 				.filter(a => a.views.length === 0)
 				.map(a => {
@@ -79,7 +79,7 @@ export class AnnouncementResolver {
 		}
 	}
 
-	// Okunmamış duyuru sayısı (NavBar badge için)
+	// Unread announcement count (for NavBar badge)
 	@Query(() => UnreadAnnouncementCount)
 	async getUnreadAnnouncementCount(@Ctx() context: GraphQLContext): Promise<UnreadAnnouncementCount> {
 		if (!context.user) {
@@ -105,7 +105,7 @@ export class AnnouncementResolver {
 		}
 	}
 
-	// Admin - Tüm duyurular (filtre ile) — translations raw olarak döndürülür
+	// Admin - All announcements (with filter) — translations returned as raw strings
 	@Authorized([Role.ADMIN])
 	@Query(() => [Announcement])
 	async getAllAnnouncements(
@@ -140,7 +140,7 @@ export class AnnouncementResolver {
 		}
 	}
 
-	// Kullanıcının görüntülediği duyuru geçmişi (pagination ile)
+	// User's announcement viewing history (with pagination)
 	@Query(() => [Announcement])
 	async getMyAnnouncementHistory(
 		@Arg('limit', () => Int, { defaultValue: 20 }) limit: number,
@@ -182,7 +182,7 @@ export class AnnouncementResolver {
 		}
 	}
 
-	// Admin - Duyuru oluştur
+	// Admin - Create announcement
 	@Authorized([Role.ADMIN])
 	@Mutation(() => Announcement)
 	async createAnnouncement(
@@ -207,7 +207,7 @@ export class AnnouncementResolver {
 				}
 			});
 
-			// Bildirim gonder (fire-and-forget, duyuru olusturmayı bloklamaz)
+			// Send notification (fire-and-forget, does not block announcement creation)
 			if (input.sendNotification && !input.isDraft) {
 				const body = announcement.content.substring(0, 200);
 				const pushData: Record<string, string> = {
@@ -240,7 +240,7 @@ export class AnnouncementResolver {
 		}
 	}
 
-	// Admin - Gemini ile TR icerigi 4 dile cevir (EN/ES/RU/ZH)
+	// Admin - Translate TR content to 4 languages (EN/ES/RU/ZH) using Gemini
 	@Authorized([Role.ADMIN])
 	@Mutation(() => TranslateAnnouncementResult)
 	async translateAnnouncementContent(
@@ -255,7 +255,7 @@ export class AnnouncementResolver {
 		}
 	}
 
-	// Admin - Duyuru güncelle
+	// Admin - Update announcement
 	@Authorized([Role.ADMIN])
 	@Mutation(() => Announcement)
 	async updateAnnouncement(
@@ -269,18 +269,18 @@ export class AnnouncementResolver {
 				throw new GraphQLError(ErrorCode.NOT_FOUND, 'Announcement not found');
 			}
 
-			// Draft'tan publish'e geçiyorsa publishedAt güncelle
+			// Update publishedAt when transitioning from draft to published
 			const updateData: any = { ...input };
 			if (existing.isDraft && input.isDraft === false && !existing.publishedAt) {
 				updateData.publishedAt = new Date();
 			}
 
-			// translations JSON string → object
+			// Translations JSON string → object
 			if (updateData.translations) {
 				updateData.translations = JSON.parse(updateData.translations);
 			}
 
-			// Bos string → null (alan temizlendi)
+			// Empty string → null (field was cleared)
 			if (updateData.targetUrl === '') {
 				updateData.targetUrl = null;
 			}
@@ -305,7 +305,7 @@ export class AnnouncementResolver {
 		}
 	}
 
-	// Duyuruyu görüldü olarak işaretle
+	// Mark announcement as viewed
 	@Mutation(() => Boolean)
 	async markAnnouncementAsViewed(
 		@Arg('announcementId') announcementId: string,
@@ -337,7 +337,7 @@ export class AnnouncementResolver {
 		}
 	}
 
-	// Admin - Duyuru sil
+	// Admin - Delete announcement
 	@Authorized([Role.ADMIN])
 	@Mutation(() => Boolean)
 	async deleteAnnouncement(

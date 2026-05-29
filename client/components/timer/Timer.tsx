@@ -23,7 +23,7 @@ import { QuickControlsProvider } from '../quick-controls/useQuickControlsModal';
 import QuickControlsModal from '../quick-controls/QuickControlsModal';
 import DailyGoalProgressBar from '../daily-goal/DailyGoalProgressBar';
 import { keepScreenAwake, allowScreenSleep } from '../../util/native-plugins';
-// Yeni mobil layout componentleri
+// New mobile layout components
 import TimerControls from './TimerControls';
 import Dashboard from './Dashboard';
 import StatsBar from './StatsBar';
@@ -50,7 +50,7 @@ export default function Timer(props: TimerProps) {
 	const useSpaceWithSmartCube = useSettings('use_space_with_smart_cube');
 	const scrambleSubset = useSettings('scramble_subset');
 	const scrambleTopColor = useSettings('scramble_top_color');
-let timerLayout = props.timerLayout || useSettings('timer_layout');
+	let timerLayout = props.timerLayout || useSettings('timer_layout');
 
 	const me = useMe();
 
@@ -105,7 +105,7 @@ let timerLayout = props.timerLayout || useSettings('timer_layout');
 		return null;
 	}
 
-	// Masaüstü için ana timer alanı
+	// Main timer area for desktop
 	const timeBar = (
 		<div className={b('main', { mobile: mobileMode })}>
 			<div className={b('main-center')}>
@@ -122,22 +122,22 @@ let timerLayout = props.timerLayout || useSettings('timer_layout');
 		</div>
 	);
 
-	// Mobil için yeni vertical layout
+	// New vertical layout for mobile
 	const mobileTimeBar = (
 		<div className={b('mobile-container')}>
-			{/* Scroll edilebilir içerik alanı */}
+			{/* Scrollable content area */}
 			<div className={b('mobile-layout', { manual: manualEntry })}>
-				{/* Scramble alanı - sadece metin, tıkla kopyala */}
+				{/* Scramble area - text only, click to copy */}
 				<MobileTimerScramble />
 
-				{/* Bildirim zone — sadece bildirim varken render et (bos yer kapsamasin) */}
+				{/* Notification zone — only render when notification exists (don't waste space) */}
 				{timerStore.notification && (
 					<div className={b('notification-zone')}>
 						{timerStore.notification}
 					</div>
 				)}
 
-				{/* Akıllı küp: SOL=dar analiz portal, SAĞ=cube+timer yapışık */}
+				{/* Smart cube: LEFT=narrow analysis portal, RIGHT=cube+timer stuck together */}
 				{smartActive ? (
 					<div className={b('mobile-smart-grid')}>
 						<div className={b('mobile-smart-grid-left')}>
@@ -153,33 +153,33 @@ let timerLayout = props.timerLayout || useSettings('timer_layout');
 						</div>
 					</div>
 				) : (
-					/* Normal mod - timer tam genişlik */
+					/* Normal mode - timer full width */
 					<div className={`${b('mobile-timer', { manual: manualEntry })} ${b('main', { mobile: true })}`}>
 						<TimeDisplay />
 					</div>
 				)}
 
-				{/* Smart cube DEĞİLKEN portal eski yerde (timer_type=smart ama 3x3 değil veya manual entry) */}
+				{/* Smart cube NOT active - portal in old spot (timer_type=smart but not 3x3 or manual entry) */}
 				{mobileMode && timerType === 'smart' && !smartActive && (
 					<div id="mobile-smart-phases-container" style={{ width: '100%', padding: '0 10px' }}></div>
 				)}
 
-				{/* Kontrol çubuğu */}
+				{/* Control bar */}
 				<TimerControls />
 
-				{/* Günlük hedef progress bar */}
+				{/* Daily goal progress bar */}
 				<DailyGoalProgressBar cubeType={cubeType} scrambleSubset={scrambleSubset} compact />
 
-				{/* Orta panel - Son çözümler ve Scramble görseli */}
+				{/* Middle panel - Last solves and Scramble visual */}
 				<Dashboard />
 			</div>
 
-			{/* Sabit alt istatistik çubuğu */}
+			{/* Fixed bottom stats bar */}
 			<StatsBar />
 		</div>
 	);
 
-	// Mobil modda her zaman TimeBar üstte, Footer altta olmalı
+	// In mobile mode, TimeBar should always be at top, Footer at bottom
 	const renderFirst = (mobileMode || timerLayout !== 'left') ? timeBar : <TimerFooter />;
 	const renderSecond = (mobileMode || timerLayout !== 'left') ? <TimerFooter /> : timeBar;
 
@@ -191,7 +191,7 @@ let timerLayout = props.timerLayout || useSettings('timer_layout');
 		</>
 	);
 
-	// Mobil modda yeni layout'u kullan (maç modunda PC layout kullan)
+	// In mobile mode, use new layout (use PC layout in match mode)
 	if (mobileMode && !props.inModal) {
 		body = mobileTimeBar;
 	}
@@ -216,13 +216,13 @@ let timerLayout = props.timerLayout || useSettings('timer_layout');
 				<TimerContext.Provider value={context}>
 					<KeyWatcher>
 						<HeaderControl />
-						{/* Timer çalışırken mobilde tüm ekrana dokunarak durdurma overlay'i ve Inspection iptali */}
+						{/* On mobile, while timer running, tap entire screen to stop or cancel Inspection */}
 						{mobileMode && (
 							<div
 								className={b('touch-overlay', { active: !!context.timeStartedAt || !!context.inInspection })}
 								onTouchStart={(e) => {
 									if (context.inInspection) {
-										// Swipe için başlangıç noktasını kaydet
+										// Store start point for swipe
 										// @ts-ignore
 										e.target.touchStartY = e.touches[0].clientY;
 									}
@@ -235,11 +235,11 @@ let timerLayout = props.timerLayout || useSettings('timer_layout');
 											endTimer(context);
 										}
 									} else if (context.inInspection) {
-										// Swipe yukarı algıla
+										// Detect swipe up
 										// @ts-ignore
 										const startY = e.target.touchStartY;
 										const endY = e.changedTouches[0].clientY;
-										if (startY - endY > 50) { // 50px yukarı kaydırma
+										if (startY - endY > 50) { // 50px upward swipe
 											clearInspectionTimers(true, true);
 										}
 									}

@@ -1,13 +1,13 @@
 /**
- * cubingapp (spencerchubb/cubingapp) algoritma verilerini
- * Zkt-Timer default-algs.json formatina donusturur.
+ * Converts cubingapp (spencerchubb/cubingapp) algorithm data
+ * to Zkt-Timer default-algs.json format.
  *
- * Kullanim: node scripts/convert-cubingapp-algs.mjs
+ * Usage: node scripts/convert-cubingapp-algs.mjs
  *
- * 1. cubingapp reposundan JSON dosyalarini indirir
- * 2. Her dosya icin ilk (en populer) algoritmmayi secer
- * 3. Mevcut default-algs.json'daki cubingapp'te olmayan kategorileri korur
- * 4. Sonucu public/trainer/default-algs.json olarak yazar
+ * 1. Downloads JSON files from cubingapp repository
+ * 2. Selects first (most popular) algorithm for each file
+ * 3. Preserves categories from existing default-algs.json that are not in cubingapp
+ * 4. Writes result as public/trainer/default-algs.json
  */
 
 import { writeFileSync, readFileSync, existsSync } from 'fs';
@@ -21,7 +21,7 @@ const EXISTING = existsSync(OUTPUT) ? JSON.parse(readFileSync(OUTPUT, 'utf-8')) 
 
 const BASE_URL = 'https://raw.githubusercontent.com/spencerchubb/cubingapp/main/alg-codegen/algs';
 
-// cubingapp dosyasi → Zkt-Timer kategori adi
+// cubingapp file → Zkt-Timer category name
 const FILE_MAP = {
 	// 3x3
 	'PLL.json': 'PLL',
@@ -60,7 +60,7 @@ const FILE_MAP = {
 	'SQ1-OBL.json': 'SQ1 OBL',
 };
 
-// Kategori sirasi (dropdown'da bu sirada gorunecek)
+// Category order (will appear in dropdown in this order)
 const CATEGORY_ORDER = [
 	// 3x3
 	'PLL', 'OLL', 'F2L', '2-Look PLL', '2-Look OLL',
@@ -79,13 +79,13 @@ const CATEGORY_ORDER = [
 ];
 
 /**
- * cubingapp JSON → Zkt-Timer AlgorithmSubset[] formatina donustur
+ * Convert cubingapp JSON to Zkt-Timer AlgorithmSubset[] format
  */
 function convertFile(data, categoryName) {
 	const cases = data.cases || {};
 	const subsetOrder = data.subsets || [];
 
-	// Subset'lere gore gruplama
+	// Group by subsets
 	const subsetMap = {};
 
 	for (const [caseName, caseData] of Object.entries(cases)) {
@@ -101,7 +101,7 @@ function convertFile(data, categoryName) {
 				algorithm: allAlgs[0],
 			};
 
-			// Geri kalan alternatifleri ekle
+			// Add remaining alternatives
 			if (allAlgs.length > 1) {
 				entry.alternatives = allAlgs.slice(1);
 			}
@@ -110,7 +110,7 @@ function convertFile(data, categoryName) {
 		}
 	}
 
-	// Subset sirasini koru (cubingapp'teki siraya gore)
+	// Preserve subset order (according to cubingapp order)
 	const orderedSubsets = subsetOrder.length > 0
 		? subsetOrder
 		: Object.keys(subsetMap);
@@ -133,7 +133,7 @@ async function main() {
 	const result = {};
 	const errors = [];
 
-	console.log('cubingapp algoritma verilerini indiriliyor...\n');
+	console.log('Downloading cubingapp algorithm data...\n');
 
 	for (const [filename, categoryName] of Object.entries(FILE_MAP)) {
 		const url = `${BASE_URL}/${filename}`;
@@ -144,27 +144,27 @@ async function main() {
 
 			const algCount = converted.reduce((sum, s) => sum + s.algorithms.length, 0);
 			result[categoryName] = converted;
-			console.log(`${algCount} algoritma, ${converted.length} subset`);
+			console.log(`${algCount} algorithms, ${converted.length} subsets`);
 		} catch (err) {
 			errors.push({ filename, categoryName, error: err.message });
-			console.log(`HATA: ${err.message}`);
+			console.log(`ERROR: ${err.message}`);
 		}
 	}
 
-	// Mevcut default-algs.json'daki cubingapp'te olmayan kategorileri koru
+	// Preserve categories from existing default-algs.json that are not in cubingapp
 	for (const [category, subsets] of Object.entries(EXISTING)) {
 		if (!result[category]) {
 			result[category] = subsets;
-			console.log(`  ${category} — mevcut veriden korundu`);
+			console.log(`  ${category} — preserved from existing data`);
 		}
 	}
 
-	// Sirala
+	// Sort
 	const ordered = {};
 	for (const cat of CATEGORY_ORDER) {
 		if (result[cat]) ordered[cat] = result[cat];
 	}
-	// Siralamada olmayan kategorileri sona ekle
+	// Add categories not in sort order to the end
 	for (const [cat, data] of Object.entries(result)) {
 		if (!ordered[cat]) ordered[cat] = data;
 	}
@@ -176,17 +176,17 @@ async function main() {
 		.reduce((sum, s) => sum + s.algorithms.length, 0);
 	const totalCats = Object.keys(ordered).length;
 
-	console.log(`\nToplam: ${totalCats} kategori, ${totalAlgs} algoritma`);
-	console.log(`Yazildi: ${OUTPUT}`);
+	console.log(`\nTotal: ${totalCats} categories, ${totalAlgs} algorithms`);
+	console.log(`Written: ${OUTPUT}`);
 
 	if (errors.length > 0) {
-		console.log('\nHatalar:');
+		console.log('\nErrors:');
 		for (const e of errors) {
 			console.log(`  - ${e.categoryName}: ${e.error}`);
 		}
 	}
 
-	console.log('\nSonraki adim: node scripts/generate-ll-patterns.mjs');
+	console.log('\nNext step: node scripts/generate-ll-patterns.mjs');
 }
 
 main().catch(console.error);

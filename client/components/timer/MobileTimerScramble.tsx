@@ -16,9 +16,9 @@ import { hapticImpact } from '../../util/native-plugins';
 const b = block('mobile-timer-scramble');
 
 /**
- * Mobil için basitleştirilmiş scramble componentı.
- * Sadece metin gösterir, tıklandığında kopyalar.
- * Tüm butonlar (Edit, +2, DNF, Lock, Refresh) TimerControls'a taşındı.
+ * Simplified scramble component for mobile.
+ * Shows text only, copies on click.
+ * All buttons (Edit, +2, DNF, Lock, Refresh) moved to TimerControls.
  */
 export default function MobileTimerScramble() {
     const {t} = useTranslation();
@@ -36,7 +36,7 @@ export default function MobileTimerScramble() {
     const containerRef = useRef<HTMLDivElement>(null);
     const textRef = useRef<HTMLDivElement>(null);
 
-    // Long-press state: tap (kisa) modal acar, uzun basma kopyalar
+    // Long-press state: tap (short) opens modal, long press copies
     const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
     const longPressFired = useRef(false);
     const touchStartPos = useRef<{ x: number; y: number } | null>(null);
@@ -49,7 +49,7 @@ export default function MobileTimerScramble() {
 
     const isSmart = smartCubeSelected(context);
 
-    // Küp türü veya subset değiştiğinde scramble generate et
+    // Generate scramble when cube type or subset changes
     useEffect(() => {
         if (lockedScramble && !timeStartedAt) {
             setTimerParam('scramble', lockedScramble);
@@ -59,7 +59,7 @@ export default function MobileTimerScramble() {
         }
     }, [cubeType, scrambleSubset]);
 
-    // Karistirma alana sigmiyorsa font boyutunu otomatik kucult (binary search)
+    // Auto-shrink font size if scramble doesn't fit container (binary search)
     const runFit = useCallback(() => {
         const container = containerRef.current;
         const text = textRef.current;
@@ -68,7 +68,7 @@ export default function MobileTimerScramble() {
             return;
         }
 
-        // Once tam boyutta kontrol et
+        // First check at full size
         setAdjustedFontSize(null);
 
         requestAnimationFrame(() => {
@@ -79,7 +79,7 @@ export default function MobileTimerScramble() {
                 text.style.lineHeight = size * 1.4 + 'px';
             };
 
-            // Tam boyutta sigiyor mu?
+            // Does full size fit?
             setFontOnElement(timerScrambleSize);
             const containerH = container.clientHeight;
 
@@ -88,7 +88,7 @@ export default function MobileTimerScramble() {
                 return;
             }
 
-            // Binary search: sigacak en buyuk fontu bul
+            // Binary search: find largest font that fits
             let lo = 8;
             let hi = timerScrambleSize;
 
@@ -107,12 +107,12 @@ export default function MobileTimerScramble() {
         });
     }, [timerScrambleSize]);
 
-    // Scramble/cubeType/font setting degisiminde re-fit
+    // Re-fit on scramble/cubeType/font setting change
     useEffect(() => {
         runFit();
     }, [scramble, cubeType, timerScrambleSize, isSmart, runFit]);
 
-    // Container yuksekligi degisirse (SmartCube async yuklenince, klavye acilinca, vs) re-fit
+    // Re-fit if container height changes (SmartCube async loads, keyboard opens, etc)
     useEffect(() => {
         const container = containerRef.current;
         if (!container || typeof ResizeObserver === 'undefined') return;
@@ -127,19 +127,19 @@ export default function MobileTimerScramble() {
     if (hideScramble) {
         scramble = '';
     } else if (isMegaminx && scramble) {
-        // Sadece Pochmann notasyonlu scramble'larda (WCA/Carrot/OldStyle — "++" iceriyor) satir kir.
-        // 2-gen R,U / Random-state / S2L subset'lerinde "++" olmadigi icin bu split atlanir.
+        // Only break lines in Pochmann notation scrambles (WCA/Carrot/OldStyle — contains "++").
+        // 2-gen R,U / Random-state / S2L subsets don't have "++", so this split is skipped.
         if (!scramble.includes('\n') && scramble.includes('++')) {
             scramble = scramble.replace(/ (U'?)( |$)/g, ' $1\n').trim();
         }
     }
 
-    // SQ1: "/" satirda kalsin, yeni satir "(" ile baslasin
+    // SQ1: "/" stays on same line, new line starts with "("
     if (cubeType === 'sq1' && scramble) {
-        scramble = scramble.replace(/ \/ /g, '\u00A0/ ');
+        scramble = scramble.replace(/ \/ /g, ' / ');
     }
 
-    // Scramble'ı kopyala (uzun basma)
+    // Copy scramble (long press)
     function handleCopy(showInExpanded = false) {
         if (!scramble) return;
         copyText(scramble);
@@ -153,7 +153,7 @@ export default function MobileTimerScramble() {
         }
     }
 
-    // Fullscreen modal ac (kisa tap)
+    // Open fullscreen modal (short tap)
     function openExpanded() {
         if (!scramble) return;
         setExpanded(true);
@@ -184,7 +184,7 @@ export default function MobileTimerScramble() {
         hapticImpact('medium');
     }
 
-    // Tap/long-press detection (mobil)
+    // Tap/long-press detection (mobile)
     function handleTouchStart(e: React.TouchEvent) {
         if (!scramble) return;
         longPressFired.current = false;
@@ -225,9 +225,9 @@ export default function MobileTimerScramble() {
         touchStartPos.current = null;
     }
 
-    // Desktop: onClick ile modal ac
+    // Desktop: open modal via onClick
     function handleClick(e: React.MouseEvent) {
-        // Touch olaylari zaten handle ediyor, desktop'ta calissin
+        // Touch events already handled, let this run on desktop
         if ('ontouchstart' in window) return;
         e.stopPropagation();
         openExpanded();
@@ -235,7 +235,7 @@ export default function MobileTimerScramble() {
 
     const fontSize = adjustedFontSize || timerScrambleSize;
 
-    // Smart cube ise SmartScramble göster
+    // If smart cube, show SmartScramble
     if (isSmart && scramble) {
         return (
             <div className={b()} ref={containerRef}>
@@ -253,7 +253,7 @@ export default function MobileTimerScramble() {
         );
     }
 
-    // Abort sonrası scramble boşken gizle (mismatch banner ile çakışmasın)
+    // After abort, hide when scramble is empty (don't overlap mismatch banner)
     if (isSmart && !scramble) {
         return null;
     }

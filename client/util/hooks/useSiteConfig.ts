@@ -4,7 +4,7 @@ import {SiteConfigDocument, SiteConfigQuery} from '../../@types/generated/graphq
 
 export type SiteConfigData = SiteConfigQuery['siteConfig'];
 
-const SITE_CONFIG_TTL = 30 * 1000; // 30s — server ile align
+const SITE_CONFIG_TTL = 30 * 1000; // 30s — aligned with server
 let cachedConfig: {data: SiteConfigData; ts: number} | null = null;
 const subscribers = new Set<(data: SiteConfigData | null) => void>();
 
@@ -32,9 +32,9 @@ function fetchSiteConfig(): Promise<void> {
 	return inFlight;
 }
 
-// Force fresh fetch — cache'i bozmadan, sadece yeniden ister, sonuc gelince subscriber'lara dagitir
+// Force fresh fetch — doesn't break cache, just re-requests; distributes result to subscribers when it arrives
 export function refreshSiteConfig() {
-	// in-flight'i bypass et
+	// Bypass in-flight check
 	inFlight = null;
 	gqlQueryTyped(SiteConfigDocument, {}, {fetchPolicy: 'no-cache'})
 		.then((res) => {
@@ -47,7 +47,7 @@ export function refreshSiteConfig() {
 		.catch(() => {});
 }
 
-// Manuel cache set (admin mutation sonrasi optimistic update)
+// Manual cache set (optimistic update after admin mutation)
 export function setSiteConfigCache(data: SiteConfigData) {
 	cachedConfig = {data, ts: Date.now()};
 	subscribers.forEach((cb) => cb(data));
@@ -60,7 +60,7 @@ export function useSiteConfig(): SiteConfigData | null {
 		// Subscribe to global cache changes
 		subscribers.add(setConfig);
 
-		// Cache fresh ise hicbir sey yapma
+		// If cache is fresh, do nothing
 		const cached = getCached();
 		if (cached) {
 			setConfig(cached);
@@ -69,8 +69,8 @@ export function useSiteConfig(): SiteConfigData | null {
 			fetchSiteConfig();
 		}
 
-		// Window focus → fresh fetch (kullanici tab'a geri donerse)
-		// Cache'i null'lamayiz, sessizce arka planda yenileriz — UI loading gostermez
+		// Window focus — fresh fetch (user returns to tab)
+		// Don't null cache, refresh silently in background — no UI loading shown
 		const handleFocus = () => {
 			if (!cachedConfig || Date.now() - cachedConfig.ts > 10 * 1000) {
 				refreshSiteConfig();
@@ -78,7 +78,7 @@ export function useSiteConfig(): SiteConfigData | null {
 		};
 		window.addEventListener('focus', handleFocus);
 
-		// Polling sadece sayfa goruntulenirken calissin — pil tasarrufu
+		// Polling only runs when page is visible — battery saving
 		let pollInterval: ReturnType<typeof setInterval> | null = null;
 		const startPolling = () => {
 			if (pollInterval) return;

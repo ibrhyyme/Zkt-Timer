@@ -41,7 +41,7 @@ export class CompetitionFollowResolver {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Invalid follow input');
 		}
 
-		// Self-follow guard: kullanicinin kendi WCA hesabi ile esleserse reddet
+		// Self-follow guard: reject if user matches their own WCA account
 		if (input.wca_id) {
 			const myWca = await getIntegration(user, 'wca');
 			if (myWca?.wca_id && myWca.wca_id === input.wca_id) {
@@ -49,7 +49,7 @@ export class CompetitionFollowResolver {
 			}
 		}
 
-		// Limit kontrolu (yarisma basina max 5)
+		// Limit check (max 5 per competition)
 		const existingCount = await getPrisma().competitionFollow.count({
 			where: {
 				user_id: user.id,
@@ -57,7 +57,7 @@ export class CompetitionFollowResolver {
 			},
 		});
 
-		// Mevcut takip kontrolu (idempotent)
+		// Existing follow check (idempotent)
 		const existing = await getPrisma().competitionFollow.findUnique({
 			where: {
 				user_id_competition_id_followed_registrant_id: {
@@ -89,8 +89,8 @@ export class CompetitionFollowResolver {
 			},
 		});
 
-		// Backfill: yarismadaki mevcut/biten round'lari "bildirim gonderildi" olarak isaretle
-		// Aksi halde bir sonraki cron tick'inde gecmis tum round'lar icin push atilir (50+ bildirim spam)
+		// Backfill: mark existing/finished rounds in competition as "notification sent"
+		// Otherwise, the next cron tick would send push for all past rounds (50+ notification spam)
 		try {
 			const liveData = await getWcaLiveData(competitionId).catch(() => null);
 			if (liveData?.roundMap?.length) {
@@ -99,7 +99,7 @@ export class CompetitionFollowResolver {
 						const round = await fetchLiveRoundResults(rm.liveRoundId).catch(() => null);
 						if (!round) return;
 						const hasResults = round.results?.some((r: {best: number}) => r.best && r.best > 0);
-						// Round bitti VEYA mevcut sonuc var → bildirimi atlanmis say
+						// Round finished OR has existing results → mark notification as sent
 						if (round.finished || hasResults) {
 							await getPrisma()
 								.competitionFollowNotifiedRound.create({
@@ -116,7 +116,7 @@ export class CompetitionFollowResolver {
 				);
 			}
 		} catch (err: any) {
-			logger.warn('[CompetitionFollow] backfill failed — kullanici eski bildirimler alabilir', {
+			logger.warn('[CompetitionFollow] backfill failed — user may receive old notifications', {
 				followId: created.id,
 				err: err?.message,
 			});

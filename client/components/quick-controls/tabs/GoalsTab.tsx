@@ -34,13 +34,13 @@ export default function GoalsTab() {
 
 	return (
 		<div className="space-y-3">
-			{/* Baslik */}
+			{/* Title */}
 			<div className="flex items-center space-x-1.5 mb-1">
 				<div className="h-1.5 w-1.5 bg-primary rounded-full"></div>
 				<p className="text-text/50 text-xs font-medium">{t('quick_controls.goals_description')}</p>
 			</div>
 
-			{/* Aktif kup turu icin hedef */}
+			{/* Goal for active cube type */}
 			<CurrentCubeGoal
 				cubeType={cubeType}
 				scrambleSubset={scrambleSubset}
@@ -61,7 +61,7 @@ export default function GoalsTab() {
 				t={t}
 			/>
 
-			{/* Diger kup turlerinin hedefleri */}
+			{/* Goals for other cube types */}
 			{otherGoals.length > 0 && (
 				<>
 					<div className="flex items-center space-x-2 mt-6 mb-3">
@@ -96,7 +96,7 @@ export default function GoalsTab() {
 				</>
 			)}
 
-			{/* Hatirlatma toggle */}
+			{/* Reminder toggle */}
 			<div className="mt-4">
 				<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-module border border-text/[0.08] hover:border-text/[0.15] transition-all duration-200">
 					<div className="flex items-center space-x-3">
@@ -163,7 +163,7 @@ function CurrentCubeGoal({cubeType, scrambleSubset, goal, progress, onSave, onTo
 
 	return (
 		<div className="rounded-xl bg-module border border-text/[0.08] p-4 space-y-3">
-			{/* Kup adi + baslik */}
+			{/* Cube name + title */}
 			<div className="flex items-center justify-between">
 				<div className="flex items-center space-x-2">
 					<Target size={18} weight="bold" className="text-primary" />
@@ -187,7 +187,7 @@ function CurrentCubeGoal({cubeType, scrambleSubset, goal, progress, onSave, onTo
 								}`}
 							/>
 						</button>
-						{/* Sil */}
+						{/* Delete */}
 						<button
 							type="button"
 							onClick={onRemove}
@@ -199,7 +199,7 @@ function CurrentCubeGoal({cubeType, scrambleSubset, goal, progress, onSave, onTo
 				)}
 			</div>
 
-			{/* Hedef input veya progress */}
+			{/* Goal input or progress */}
 			{editing || !goal ? (
 				<div className="flex items-center space-x-2">
 					<input
@@ -243,7 +243,7 @@ function CurrentCubeGoal({cubeType, scrambleSubset, goal, progress, onSave, onTo
 					{progress?.completed && (
 						<p className="text-green-400 text-xs font-medium">{t('quick_controls.goal_reached')}</p>
 					)}
-					{/* Duzenleme butonu */}
+					{/* Edit button */}
 					<button
 						type="button"
 						onClick={() => {
@@ -257,7 +257,7 @@ function CurrentCubeGoal({cubeType, scrambleSubset, goal, progress, onSave, onTo
 				</div>
 			)}
 
-			{/* Hedef yoksa mesaj */}
+			{/* Message if no goal is set */}
 			{!goal && !editing && (
 				<p className="text-text/30 text-sm">{t('quick_controls.no_goal_set')}</p>
 			)}

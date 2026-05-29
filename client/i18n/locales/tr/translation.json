@@ -2341,6 +2341,18 @@
         "linking_account": "Hesap bağlanıyor...",
         "oauth_error": "OAuth bağlantısı sırasında hata oluştu"
     },
+    "otp": {
+        "verifying": "Doğrulanıyor…",
+        "error_retry": "Kod hatalı. Tekrar dene.",
+        "didnt_get_code": "Kodu almadın mı?",
+        "resend": "Tekrar gönder",
+        "resend_in": "Tekrar gönder ({{seconds}}s)",
+        "auto_verify_hint": "Kod girilince otomatik doğrulanır.",
+        "email_verified": "Hesabın doğrulandı, yönlendiriliyorsun…",
+        "password_updated": "Şifren güncellendi, yönlendiriliyorsun…",
+        "forgot_email_sub": "Hesabının e-posta adresini gir, sana 6 haneli bir kurtarma kodu gönderelim.",
+        "pw_levels": ["Çok zayıf", "Zayıf", "Orta", "İyi", "Güçlü"]
+    },
     "email_verification": {
         "title": "E-posta Doğrulama",
         "check_email": "E-posta adresinize bir doğrulama kodu gönderdik. Lütfen gelen kutunuzu kontrol edin.",

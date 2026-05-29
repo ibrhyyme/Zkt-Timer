@@ -17,9 +17,9 @@ export async function initTimer(dispatch: Dispatch<any>, context: ITimerContext)
 
 	if (!inModal) {
 		if (!sessionId || (sessionId && !fetchSessionById(sessionId))) {
-			// Mevcut session varsa onu kullan (IndexedDB silindikten sonra oluşabilecek uyumsuzluğu önler).
-			// Tarayıcı kendi başına ASLA yeni sezon oluşturmaz — server signup'ta default sezon garanti ediyor.
-			// Eski auto-create logic'i race condition'da hayalet sezonlara sebep oluyordu.
+			// Use existing session if available (prevents mismatch after IndexedDB clear).
+			// Browser should NEVER create new session on its own — server guarantees default session at signup.
+			// Old auto-create logic caused ghost sessions in race conditions.
 			const existingSessions = fetchSessions();
 			if (existingSessions.length > 0) {
 				setSetting('session_id', existingSessions[0].id);
@@ -34,8 +34,8 @@ export async function initTimer(dispatch: Dispatch<any>, context: ITimerContext)
 			setSetting('cube_type', '333');
 		}
 
-		// cube_type='wca' icin subset zorunlu — eski user'larin Setting'inde
-		// subset=null kalmissa default '333' atanir (yoksa save'de orphan olur).
+		// For cube_type='wca', subset is required — if old users have
+		// subset=null in settings, default to '333' (otherwise orphans on save).
 		const currentCubeType = getSetting('cube_type');
 		const currentSubset = getSetting('scramble_subset');
 		if (currentCubeType === 'wca' && !currentSubset) {
@@ -43,14 +43,14 @@ export async function initTimer(dispatch: Dispatch<any>, context: ITimerContext)
 		}
 	}
 
-	// Sayfa yüklendiğinde son çözümün süresini timer'a yükle
+	// On page load, load last solve's time into timer
 	const currentSessionId = getSetting('session_id');
 	const lastSolve = fetchLastSolve({ session_id: currentSessionId });
 	if (lastSolve && !inModal) {
 		setTimerParam('finalTime', lastSolve.time * 1000);
 	}
 
-	// Sayfa ilk yüklendiğinde scramble generate et
+	// Generate scramble on initial page load
 	resetScramble(context);
 }
 
@@ -68,4 +68,3 @@ function migrateOrphanSolves(newSessionId: string) {
 		solveDb.update(solve);
 	}
 }
-

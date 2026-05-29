@@ -1,10 +1,10 @@
 /**
- * Scramble uretimi + cozum. Mevcut altyapiyi (scramble worker + cross solver worker)
- * yapistirir; yeni motor yok.
+ * Scramble generation + solving. Glues together existing infrastructure (scramble worker + cross solver worker);
+ * no new engine.
  *
- * rotation: kullanicinin tutus acisi (CUBE_ORIENTATIONS). scramble'a prepend edilir →
- * solver rotated state'i cozer, alt yuz (D) rotation'a gore degisir. selectSolution hep
- * D secer (rotation alt yuzu belirledi).
+ * rotation: user's cube orientation angle (CUBE_ORIENTATIONS). Prepended to scramble →
+ * solver solves rotated state, bottom face (D) changes according to rotation. selectSolution always
+ * picks D (rotation determined bottom face).
  */
 import {getNewScrambleAsync} from '../../../components/timer/helpers/scramble';
 import {solveCrossAsync, getEasyCrossAsync} from '../../cross-solver/worker-manager';
@@ -20,8 +20,8 @@ export async function generateAndSolve(
 ): Promise<{scramble: string; results: SolverResult[]}> {
 	const raw = await getNewScrambleAsync('333');
 	const scramble = rotation ? `${rotation} ${raw}`.replace(/\s+/g, ' ').trim() : raw;
-	// Slot'u rotation'a gore remap et: twisty rotation'i gorsel uyguluyor ama solver
-	// raw cozuyor (slot mutlak) → kullanicinin gordugu slot ile hizalamak icin remap.
+	// Remap slot according to rotation: twisty applies rotation visually but solver
+	// solves raw (slot absolute) → remap to align with what user sees.
 	const solverSlot = xcrossSlot !== undefined ? remapSlot(xcrossSlot, rotation) : undefined;
 	const orientation = type === 'xcross' && solverSlot !== undefined ? String(solverSlot) : undefined;
 	const results = await solveCrossAsync(scramble, type, orientation);
@@ -29,9 +29,9 @@ export async function generateAndSolve(
 }
 
 /**
- * Faz 3 hedef-uzunluk (getEasyCross full pruning) — TAM targetLength-move cross/xcross.
- * Rotation seciliyse getEasy D-cross'u bozar → null don (caller uret-ve-ele'ye duser).
- * Sadece cross/xcross + 1-9 + rotation yok.
+ * Phase 3 target-length (getEasyCross full pruning) — EXACT targetLength-move cross/xcross.
+ * If rotation selected, getEasy breaks D-cross → return null (caller falls back to generate-and-retry).
+ * Only cross/xcross + 1-9 + no rotation.
  */
 export async function generateEasyScramble(
 	type: EfficiencyType,

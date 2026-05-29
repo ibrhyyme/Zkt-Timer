@@ -56,7 +56,7 @@ export default function WcaSummary({ integration, bestWorldRank, bestWorldRankEv
 
 	const totalRecords = (wca_record_nr || 0) + (wca_record_cr || 0) + (wca_record_wr || 0);
 
-	// Hicbir sey gosterilmiyorsa karti gizle
+	// If nothing should be shown, hide the card
 	if (!showComps && !showMedals && !showRecords && !showRank) return null;
 
 	return (

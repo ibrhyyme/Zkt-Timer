@@ -132,7 +132,7 @@ export default function SessionPicker(props: Props) {
 		sessionName = selectedSession.name;
 	}
 
-	// Radix Select empty string'i sevmiyor — selectedSession yokken virtual placeholder
+	// Radix Select doesn't like empty string — use virtual placeholder when no selectedSession
 	const NO_SESSION = '__no_session__';
 
 	return (

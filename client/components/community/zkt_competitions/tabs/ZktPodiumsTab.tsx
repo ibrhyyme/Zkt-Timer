@@ -102,7 +102,7 @@ export default function ZktPodiumsTab({detail}: {detail: any}) {
 		[podiums, selectedEventId]
 	);
 
-	// Pull full ranking for the selected event's final round.
+	// Fetch full ranking for the selected event's final round.
 	useEffect(() => {
 		if (!selectedPodium) {
 			setEventResults([]);
@@ -138,7 +138,7 @@ export default function ZktPodiumsTab({detail}: {detail: any}) {
 
 	return (
 		<div className={b('rankings-tab')}>
-			{/* Event filter chips — WCA pattern */}
+			{/* Event filter chips — WCA style */}
 			<div className={b('ranking-events')}>
 				{podiums.map((p) => (
 					<button
@@ -155,7 +155,7 @@ export default function ZktPodiumsTab({detail}: {detail: any}) {
 
 			{selectedPodium && (
 				<>
-					{/* Top 3 podium banner — sadece görsel, ranking tablosunda da yer alır */}
+					{/* Top 3 podium banner — visual only, also appears in ranking table */}
 					<div className={b('podium-banner')}>
 						{selectedPodium.results
 							.filter((r: any) => r.ranking !== null && r.ranking <= 3)

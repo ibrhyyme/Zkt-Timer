@@ -54,7 +54,7 @@ export default class EditProfile extends React.Component {
 
 		if (twitchLink && !/https:\/\/(www\.)?twitch\.tv.+/.test(twitchLink)) {
 			this.setState({
-				error: 'Geçersiz Twitch linki',
+				error: 'Invalid Twitch link',
 			});
 			return;
 		}
@@ -62,14 +62,14 @@ export default class EditProfile extends React.Component {
 		if (youtubeLink && (!/https:\/\/(www\.)?youtube\.com\/(user|channel|u|c)\/.+/.test(youtubeLink)
 		   		&& !/https:\/\/(www\.)?youtube\.com\/@.+/.test(youtubeLink))) {
 			this.setState({
-				error: 'Geçersiz YouTube linki',
+				error: 'Invalid YouTube link',
 			});
 			return;
 		}
 
 		if (wcaProfileLink && !/https:\/\/(www\.)?worldcubeassociation\.org\/persons\/.+/.test(wcaProfileLink)) {
 			this.setState({
-				error: 'Geçersiz WCA Profil linki',
+				error: 'Invalid WCA Profile link',
 			});
 			return;
 		}
@@ -77,7 +77,7 @@ export default class EditProfile extends React.Component {
 		if (twitterLink && (!/https:\/\/(www\.)?twitter\.com\/.+/.test(twitterLink)
 				&& !/https:\/\/(www\.)?x\.com\/.+/.test(twitterLink))) {
 			this.setState({
-				error: 'Geçersiz X (Twitter) Profil linki',
+				error: 'Invalid X (Twitter) Profile link',
 			});
 			return;
 		}
@@ -86,7 +86,7 @@ export default class EditProfile extends React.Component {
 			loading: true,
 		});
 
-		// Bos string'leri null'a cevir — profil alanlarini temizleyebilmek icin
+		// Convert empty strings to null — to allow clearing profile fields
 		const toNull = (v) => (v === '' || v === undefined ? null : v);
 
 		const input = {
@@ -146,64 +146,64 @@ export default class EditProfile extends React.Component {
 						<TextArea
 							maxLength={250}
 							fullWidth
-							legend="Biyografi"
+							legend="Biography"
 							value={bio}
 							onChange={this.handleChange}
 							name="bio"
 						/>
 					</div>
 					<Input
-						legend="YouTube Kanalı"
+						legend="YouTube Channel"
 						placeholder="https://www.youtube.com/@ibrhyyme"
 						name="youtubeLink"
 						value={youtubeLink}
 						onChange={this.handleChange}
 					/>
 					<Input
-						legend="Twitch Kanalı"
+						legend="Twitch Channel"
 						placeholder="https://www.twitch.tv/ishowspeed"
 						name="twitchLink"
 						value={twitchLink}
 						onChange={this.handleChange}
 					/>
 					<Input
-						legend="X (Twitter) Profili"
+						legend="X (Twitter) Profile"
 						placeholder="https://x.com/nezevanun"
 						name="twitterLink"
 						value={twitterLink}
 						onChange={this.handleChange}
 					/>
 					<Input
-						legend="WCA Profili"
+						legend="WCA Profile"
 						placeholder="https://www.worldcubeassociation.org/persons/xxxx"
 						name="wcaProfileLink"
 						value={wcaProfileLink}
 						onChange={this.handleChange}
 					/>
 					<Input
-						legend="3x3 Yöntemi"
-						info="Örn: CFOP, ROUX"
+						legend="3x3 Method"
+						info="Ex: CFOP, ROUX"
 						name="threeMethod"
 						value={threeMethod}
 						onChange={this.handleChange}
 					/>
 					<Input
-						legend="3x3 Hedefi"
-						info="Örn: Sub 10"
+						legend="3x3 Goal"
+						info="Ex: Sub 10"
 						name="threeGoal"
 						value={threeGoal}
 						onChange={this.handleChange}
 					/>
 					<Input
-						legend="Ana 3x3 Küpü"
-						info="Örn: GAN 11 M Pro 3x3"
+						legend="Main 3x3 Cube"
+						info="Ex: GAN 11 M Pro 3x3"
 						name="mainThreeCube"
 						value={mainThreeCube}
 						onChange={this.handleChange}
 					/>
 					<Input
-						legend="Favori Etkinlik"
-						info="Örn: Pyraminx"
+						legend="Favorite Event"
+						info="Ex: Pyraminx"
 						name="favoriteEvent"
 						value={favoriteEvent}
 						onChange={this.handleChange}
@@ -211,7 +211,7 @@ export default class EditProfile extends React.Component {
 				</div>
 				<div className="cd-profile__edit__actions">
 					<Button
-						text="Profili Güncelle"
+						text="Update Profile"
 						primary
 						glow
 						large

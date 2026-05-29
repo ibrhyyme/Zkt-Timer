@@ -14,7 +14,7 @@ const VALID_WCA_SUBSETS = new Set([
 	'clock',
 	'skewb',
 	'minx',
-	// WCA event variantlari
+	// WCA event variants
 	'333bld',
 	'333oh',
 	'333fm',
@@ -31,7 +31,7 @@ interface OrphanReport {
 
 async function reportSolves() {
 	console.log('='.repeat(80));
-	console.log('SOLVE TABLE — cube_type=wca dagilimi');
+	console.log('SOLVE TABLE — cube_type=wca distribution');
 	console.log('='.repeat(80));
 
 	const groups = await prisma.solve.groupBy({
@@ -41,7 +41,7 @@ async function reportSolves() {
 		orderBy: { _count: { id: 'desc' } },
 	});
 
-	console.log(`Toplam ${groups.length} farkli subset degeri:\n`);
+	console.log(`Total ${groups.length} different subset values:\n`);
 	for (const g of groups) {
 		const sub = g.scramble_subset ?? '<NULL>';
 		const tag = g.scramble_subset && VALID_WCA_SUBSETS.has(g.scramble_subset) ? 'OK' : 'ORPHAN';
@@ -68,7 +68,7 @@ async function reportSolves() {
 		orderBy: { created_at: 'asc' },
 	});
 
-	console.log(`\nToplam orphan solve: ${orphans.length}`);
+	console.log(`\nTotal orphan solves: ${orphans.length}`);
 	if (!orphans.length) return;
 
 	const userCounts: Record<string, number> = {};
@@ -78,12 +78,12 @@ async function reportSolves() {
 	const topUsers = Object.entries(userCounts)
 		.sort((a, b) => b[1] - a[1])
 		.slice(0, 5);
-	console.log('\nEn cok orphan iceren 5 kullanici:');
+	console.log('\nTop 5 users with most orphans:');
 	for (const [uid, c] of topUsers) {
 		console.log(`  ${uid}: ${c}`);
 	}
 
-	console.log('\nIlk 10 orphan ornegi:');
+	console.log('\nFirst 10 orphan examples:');
 	for (const o of orphans.slice(0, 10)) {
 		const sub = o.scramble_subset ?? '<NULL>';
 		const scr = (o.scramble || '').slice(0, 60);
@@ -95,7 +95,7 @@ async function reportSolves() {
 
 async function reportTopSolves() {
 	console.log('\n' + '='.repeat(80));
-	console.log('TOP_SOLVE TABLE — cube_type=wca dagilimi');
+	console.log('TOP_SOLVE TABLE — cube_type=wca distribution');
 	console.log('='.repeat(80));
 
 	const groups = await prisma.topSolve.groupBy({
@@ -124,9 +124,9 @@ async function reportTopSolves() {
 		},
 	});
 
-	console.log(`\nToplam top_solve orphan: ${orphans.length}`);
+	console.log(`\nTotal top_solve orphans: ${orphans.length}`);
 	if (!orphans.length) return;
-	console.log('\nIlk 5 ornek:');
+	console.log('\nFirst 5 examples:');
 	for (const o of orphans.slice(0, 5)) {
 		console.log(
 			`  topSolve.id=${o.id}, ts.subset=${o.scramble_subset ?? '<NULL>'}, solve.subset=${
@@ -138,7 +138,7 @@ async function reportTopSolves() {
 
 async function reportTopAverages() {
 	console.log('\n' + '='.repeat(80));
-	console.log('TOP_AVERAGE TABLE — cube_type=wca dagilimi');
+	console.log('TOP_AVERAGE TABLE — cube_type=wca distribution');
 	console.log('='.repeat(80));
 
 	const groups = await prisma.topAverage.groupBy({
@@ -165,9 +165,9 @@ async function reportTopAverages() {
 		select: { id: true, scramble_subset: true, user_id: true, time: true },
 	});
 
-	console.log(`\nToplam top_average orphan: ${orphans.length}`);
+	console.log(`\nTotal top_average orphans: ${orphans.length}`);
 	if (!orphans.length) return;
-	console.log('\nIlk 5 ornek:');
+	console.log('\nFirst 5 examples:');
 	for (const o of orphans.slice(0, 5)) {
 		console.log(
 			`  id=${o.id}, subset=${o.scramble_subset ?? '<NULL>'}, user=${o.user_id}, time=${o.time}s`
@@ -177,19 +177,19 @@ async function reportTopAverages() {
 
 async function main() {
 	console.log('Zkt-Timer WCA Orphan Audit\n');
-	console.log(`Gecerli WCA subset'leri: ${Array.from(VALID_WCA_SUBSETS).join(', ')}\n`);
+	console.log(`Valid WCA subsets: ${Array.from(VALID_WCA_SUBSETS).join(', ')}\n`);
 
 	await reportSolves();
 	await reportTopSolves();
 	await reportTopAverages();
 
 	console.log('\n' + '='.repeat(80));
-	console.log('AUDIT TAMAMLANDI');
+	console.log('AUDIT COMPLETED');
 	console.log('='.repeat(80));
-	console.log('\nOnerilen aksiyon:');
-	console.log('  1. Orphan dagilimi rapor edildi.');
-	console.log('  2. Karar: (a) 333\'e migrate, (b) sil, (c) elle duzelt.');
-	console.log('  3. Cleanup script\'i ayri bir geciste uygulanir.');
+	console.log('\nRecommended action:');
+	console.log('  1. Orphan distribution reported.');
+	console.log('  2. Decision: (a) migrate to 333, (b) delete, (c) fix manually.');
+	console.log('  3. Cleanup script applied in separate pass.');
 }
 
 main()

@@ -44,8 +44,8 @@ export default function Dropdown(props: InputProps<DropdownProps>) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const bodyRef = useRef<HTMLDivElement>(null);
 
-	// Acildiginda secili option'u listenin ortasina kaydir — kullanici hem ust hem alt
-	// option'lari goresin, ekstra scroll atmak zorunda kalmasin.
+	// When open, scroll the selected option to the middle of the list — so user can see both top and bottom
+	// options, avoiding need for extra scrolling.
 	useEffect(() => {
 		if (!open) return;
 		const raf = requestAnimationFrame(() => {
@@ -91,7 +91,7 @@ export default function Dropdown(props: InputProps<DropdownProps>) {
 		};
 	}, [open, onClose]);
 
-	// Timer basladiginda acik dropdown'lari kapat
+	// Close open dropdowns when timer starts
 	useEffect(() => {
 		if (!open) return;
 

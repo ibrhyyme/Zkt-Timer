@@ -1,19 +1,19 @@
 /**
- * cstimer getPrettyMoves birebir port — slice/wide move collapse + 100ms burst detection.
+ * cstimer getPrettyMoves direct port — slice/wide move collapse + 100ms burst detection.
  *
- * Kaynak: Referans/cstimer-master/src/js/lib/cubeutil.js:254-321
+ * Source: Reference/cstimer-master/src/js/lib/cubeutil.js:254-321
  *
- * Davranis:
+ * Behavior:
  *   - Same-axis collapse: R + R = R2, R + R' = (cancel), R + R2 = R', R2 + R2 = (cancel)
- *   - Slice merge (parallel-axis opposite-power): R + L' = M, R' + L = M', U + D' = E', vs.
- *   - 100ms burst detection: ardisik move'lar 100ms'den az aralikla yapildiysa slice
- *     merge dener. Daha uzun aralikta merge yok (kullanici dusunmus, slice yapmamis).
- *   - Center rotation tracking: M/E/S move sonrasi cube'un center pozisyonlari degisir,
- *     sonraki move'lar bu degismis pozisyonlara gore yorumlanir.
+ *   - Slice merge (parallel-axis opposite-power): R + L' = M, R' + L = M', U + D' = E', etc.
+ *   - 100ms burst detection: if consecutive moves occur less than 100ms apart, attempt slice
+ *     merge. At longer intervals no merge (user thought it out, didn't intend slice).
+ *   - Center rotation tracking: after M/E/S moves, the cube's center positions change,
+ *     and subsequent moves are interpreted relative to those changed positions.
  *
- * Sadece face turns (URFDLB) input olarak kabul edilir. Wide moves (Rw, r),
- * cube rotations (x/y/z), slices (M/E/S input olarak), 'NONE' veya bos string'ler
- * pass-through olarak output'a eklenir, collapse logic'ine girmez.
+ * Only face turns (URFDLB) are accepted as input. Wide moves (Rw, r),
+ * cube rotations (x/y/z), slices (M/E/S input), 'NONE', or empty strings
+ * are passed through to output unchanged, bypassing collapse logic.
  */
 
 export interface TimedMove {
@@ -25,14 +25,14 @@ const FACE_CHARS = 'URFDLB';
 const POW_CHARS = " 2'";
 const OUTPUT_CHARS = 'URFDLBEMS';
 
-// Center rotation lookup — cstimer cubeutil.js:254-258 birebir.
+// Center rotation lookup — cstimer cubeutil.js:254-258 direct port.
 const CENTER_ROT: number[][] = [
 	[0, 2, 4, 3, 5, 1], // axisM=0 (E slice / y' rotation)
 	[5, 1, 0, 2, 4, 3], // axisM=1 (M slice / x' rotation)
 	[4, 0, 2, 1, 3, 5], // axisM=2 (S slice / z rotation)
 ];
 
-// powM hesabi icin sign tablosu — cstimer cubeutil.js:301
+// Power sign table for powM calculation — cstimer cubeutil.js:301
 const POWER_SIGN = [1, 1, -1, -1, -1, 1];
 
 function isCollapsibleFaceMove(turn: string): boolean {
@@ -45,15 +45,15 @@ function isCollapsibleFaceMove(turn: string): boolean {
 }
 
 /**
- * cstimer getPrettyMoves birebir port. Tek bir move sequence'i icin.
+ * cstimer getPrettyMoves direct port. For a single move sequence.
  *
- * Pass-through pattern: non-URFDLB move'lar (Rw, M, x, y2, vs.) collapse logic'ine
- * girmez. Cstimer pure URFDLB bekler — bizdeki engine bazen wide/slice gonderebilir.
- * Bu durumda non-collapsible move'lar kanonik output'ta yer alir, ardisik collapsible
- * grubu mevcut center state'iyle isler ama pass-through ile arada kirilir.
+ * Pass-through pattern: non-URFDLB moves (Rw, M, x, y2, etc.) bypass collapse logic.
+ * cstimer expects pure URFDLB — our engine sometimes sends wide/slice moves.
+ * In this case, non-collapsible moves appear in canonical output, consecutive collapsible
+ * groups operate with current center state but are split by pass-through moves.
  *
- * @param moves Per-move timestamp'li dizi.
- * @returns cstimer notation string (orn "R U' R'", "M U' M'", "R U R' L").
+ * @param moves Array of moves with per-move timestamps.
+ * @returns cstimer notation string (e.g., "R U' R'", "M U' M'", "R U R' L").
  */
 export function getPrettyMoves(moves: TimedMove[]): string {
 	if (!moves || moves.length === 0) return '';
@@ -86,8 +86,8 @@ export function getPrettyMoves(moves: TimedMove[]): string {
 }
 
 /**
- * cstimer cubeutil.js:290-314 birebir port. Bir face-turn-only sequence'i isler,
- * collapse + slice merge yapar, encoded ret array'i doner. center array mutable.
+ * cstimer cubeutil.js:290-314 direct port. Processes a face-turn-only sequence,
+ * performs collapse + slice merge, returns encoded ret array. center array is mutable.
  */
 function processFaceMoves(
 	moveSeq: TimedMove[],
@@ -142,7 +142,7 @@ function processFaceMoves(
 			}
 			center = cur;
 			updateCenter(cur);
-			i++; // sonraki move merge edildi, atla
+			i++; // next move was merged, skip it
 			continue;
 		}
 
@@ -152,10 +152,10 @@ function processFaceMoves(
 	return ret;
 }
 
-// cstimer raw output ' '/'2'/"'" suffix kullanir — space'siz prime+face
-// kombinasyonlari olusur ("R'L'"). Format'i space-aware yap (her move arasinda
-// tek space) — algoritma cstimer ile birebir, sadece son string formatting daha
-// okunaklı/parse edilebilir.
+// cstimer raw output uses ' '/'2'/"'" suffix — space-less prime+face
+// combinations create ambiguity ("R'L'"). Format with space-awareness (single space between moves) —
+// algorithm is identical to cstimer, only final string formatting is more
+// readable/parseable.
 function formatRet(ret: number[]): string {
 	if (ret.length === 0) return '';
 	return ret
@@ -170,8 +170,8 @@ function formatRet(ret: number[]): string {
 }
 
 /**
- * Convenience: timestamp olmayan caller'lar icin. Tum move'lar tek burst kabul edilir
- * (timestamp 0, burst threshold asilmaz).
+ * Convenience: for callers without timestamps. All moves treated as single burst
+ * (timestamp 0, burst threshold not exceeded).
  */
 export function getPrettyMovesFromStrings(moves: string[]): string {
 	const timed: TimedMove[] = moves.map((turn) => ({ turn, timestamp: 0 }));

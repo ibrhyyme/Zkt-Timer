@@ -22,12 +22,12 @@ export default function SmartScramble() {
 	// Use matching function that handles commutative moves
 	const { matchStatus } = matchScrambleWithCommutative(expectedMoves, userMoves);
 
-	// 8+ yanlis hamle — kupu coz mesaji (fallback — correction basarisiz olursa)
+	// 8+ wrong moves — reset cube message (fallback — if correction fails)
 	if (smartUndoMoves?.length === 1 && smartUndoMoves[0] === 'TOO_MANY') {
 		return <span className={b('turn', { red: true })}>{t('smart_scramble.too_many_wrong')}</span>;
 	}
 
-	// Undo moves varsa — algoritmayı gizle, sadece undo hamleleri goster (ortali)
+	// If undo moves exist — hide algorithm, show only undo moves (centered)
 	if (smartUndoMoves?.length && !smartCanStart) {
 		return (
 			<span className={b('undo-move')}>

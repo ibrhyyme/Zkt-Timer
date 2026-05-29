@@ -32,7 +32,7 @@ export default class SmartCube {
 	};
 
 	alertDisconnected = () => {
-		toastError('Akıllı küp bağlantısı kesildi');
+		toastError('Smart cube connection lost');
 
 		setTimerParams({
 			smartCubeScanning: false,
@@ -107,13 +107,13 @@ export default class SmartCube {
 
 		const store = getStore();
 
-		// Scanning modal açıksa kapat
+		// Close scanning modal if open
 		if (store.getState().general.modals.length > 0) {
 			store.dispatch(closeModal());
 		}
 
-		// SolveCheck modali kaldirildi — direkt baglan
-		// Bozuk kup durumu SmartCube.tsx'te otomatik handle ediliyor (initial sync)
+		// SolveCheck modal removed — connect directly
+		// Broken cube state handled automatically in SmartCube.tsx (initial sync)
 		this.confirmConnected(dev);
 	};
 
@@ -160,8 +160,8 @@ export default class SmartCube {
 	alertCubeState = (state) => {
 		const store = getStore();
 
-		// DEDUP: Ayni state tekrar geliyorsa Redux guncelleme
-		// Kup periyodik FACELETS gonderiyor (~1s) — state degismemisse gereksiz render onlenir
+		// DEDUP: Skip Redux update if same state received again
+		// Cube sends FACELETS periodically (~1s) — avoid unnecessary render if state unchanged
 		const currentState = store.getState().timer.smartCurrentState;
 		if (state === currentState) {
 			return;

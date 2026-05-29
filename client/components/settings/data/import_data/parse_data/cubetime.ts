@@ -1,9 +1,9 @@
 import { IImportDataContext, ImportableData } from '../ImportData';
 import { parseCsTimerData } from './cstimer';
 
-// CubeTime'in JSON export'u csTimer formatiyla birebir ayni — parseCsTimerData'ya delege ediyoruz.
-// CSV export'u session/cube_type/penalty bilgisi tasimadigi icin desteklemiyoruz; kullanici yanlislikla
-// CSV yuklerse net bir yonlendirme mesaji veriyoruz (yoksa csTimer parser'i 'invalid file' der, kafa karistirici).
+// CubeTime's JSON export is identical to csTimer format — delegate to parseCsTimerData.
+// CSV export doesn't carry session/cube_type/penalty info so we don't support it; if user
+// accidentally uploads CSV, show clear redirect message (otherwise csTimer parser says 'invalid file', confusing).
 export function parseCubeTimeData(txt: string, context: IImportDataContext): ImportableData {
 	const firstLine = txt.split(/\r?\n/, 1)[0]?.trim().toLowerCase() ?? '';
 

@@ -54,11 +54,11 @@ export default function RoomsList() {
         // Listen for room deleted
         socket.on(FriendlyRoomServerEvent.ROOM_DELETED, (roomId: string) => {
             setRooms((prev) => prev.filter((r) => r.id !== roomId));
-            // Eger silinen oda kullanicinin aktif odasiysa badge'i temizle
+            // If the deleted room was user's active room, clear the badge
             setMyActiveRoomId((prev) => (prev === roomId ? null : prev));
         });
 
-        // Kullanicinin aktif odasi (lobby'de "Buradasin" rozeti icin)
+        // User's active room (for "You are here" badge in lobby)
         socket.on(FriendlyRoomServerEvent.MY_ACTIVE_ROOM, (data: MyActiveRoomPayload) => {
             setMyActiveRoomId(data.room_id);
         });

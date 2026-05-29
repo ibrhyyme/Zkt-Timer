@@ -51,7 +51,7 @@ export function formatDateRange(startDate: string, endDate: string, locale: stri
 export function formatWcaTime(centiseconds: number): string {
 	if (centiseconds === -1) return 'DNF';
 	if (centiseconds === -2) return 'DNS';
-	if (!centiseconds || centiseconds <= 0) return '\u2014';
+	if (!centiseconds || centiseconds <= 0) return '—';
 	const minutes = Math.floor(centiseconds / 6000);
 	const seconds = Math.floor((centiseconds % 6000) / 100);
 	const cs = centiseconds % 100;
@@ -64,18 +64,18 @@ export function formatWcaTime(centiseconds: number): string {
 export function formatAttempts(attempts: {result: number}[], numberOfAttempts: number, eventId?: string): string[] {
 	const out: string[] = [];
 	for (let i = 0; i < numberOfAttempts; i++) {
-		out.push(attempts[i] ? formatResult(attempts[i].result, eventId, false) : '\u2014');
+		out.push(attempts[i] ? formatResult(attempts[i].result, eventId, false) : '—');
 	}
 	return out;
 }
 
-// MBLD (3x3 Multi-Blind) decoded: result encoding
+// MBLD (3x3 Multi-Blind) decoding: result encoding
 // (99 - solved + missed) * 10000000 + centiseconds * 100 + missed
 // Format: "{solved}/{attempted} HH:MM:SS"
 export function formatMbldResult(result: number): string {
 	if (result === -1) return 'DNF';
 	if (result === -2) return 'DNS';
-	if (!result || result <= 0) return '\u2014';
+	if (!result || result <= 0) return '—';
 
 	const missed = result % 100;
 	const seconds = Math.floor(result / 100) % 100000;
@@ -98,19 +98,19 @@ export function formatMbldResult(result: number): string {
 export function formatFmcResult(result: number, isAverage: boolean): string {
 	if (result === -1) return 'DNF';
 	if (result === -2) return 'DNS';
-	if (!result || result <= 0) return '\u2014';
+	if (!result || result <= 0) return '—';
 	if (isAverage) return (result / 100).toFixed(2);
 	return String(result);
 }
 
-// Event-aware result formatter — herhangi bir event icin dogru formatla
+// Event-aware result formatter — format correctly for any event
 export function formatResult(result: number, eventId?: string, isAverage: boolean = false): string {
 	if (eventId === '333mbf') return formatMbldResult(result);
 	if (eventId === '333fm') return formatFmcResult(result, isAverage);
 	return formatWcaTime(result);
 }
 
-// ISO2 ulke kodu → flag emoji (orn 'TR' → '🇹🇷')
+// ISO2 country code → flag emoji (e.g. 'TR' → '🇹🇷')
 export function countryFlag(iso2: string | null | undefined): string {
 	if (!iso2 || iso2.length !== 2) return '';
 	try {
@@ -124,7 +124,7 @@ export function countryFlag(iso2: string | null | undefined): string {
 	}
 }
 
-// "5 saniye once", "2 dakika once", "1 saat once", "3 gun once"
+// "5 seconds ago", "2 minutes ago", "1 hour ago", "3 days ago"
 export function formatTimeAgo(timestamp: number, t: any): string {
 	const seconds = Math.floor((Date.now() - timestamp) / 1000);
 	if (seconds < 5) return t('my_schedule.updated_just_now');
@@ -244,4 +244,3 @@ const FORMAT_MAP: Record<string, string> = {
 export function formatRoundFormat(format: string): string {
 	return FORMAT_MAP[format] || format;
 }
-

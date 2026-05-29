@@ -2,8 +2,8 @@ import {Capacitor} from '@capacitor/core';
 import {isNative} from './platform';
 
 /**
- * WCA, WCA Live gibi web sayfalari icin
- * Web'de yeni sekmede acar, Capacitor'de sistem tarayicisinda acar
+ * For web pages like WCA, WCA Live
+ * Opens in new tab on web, opens in system browser on Capacitor
  */
 export function openInAppBrowser(url: string) {
 	if (isNative()) {
@@ -14,8 +14,8 @@ export function openInAppBrowser(url: string) {
 }
 
 /**
- * Harita linkleri icin - native harita uygulamasina yonlendir
- * Web'de Google Maps'e yonlendirir
+ * For map links — redirect to native maps app
+ * On web, redirects to Google Maps
  */
 export function openInMaps(query: string) {
 	const encoded = encodeURIComponent(query);

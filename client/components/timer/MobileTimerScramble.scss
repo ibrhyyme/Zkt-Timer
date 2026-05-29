@@ -2,11 +2,11 @@
 
 .cd-mobile-timer-scramble {
     width: 100%;
-    padding: 1.5rem 1rem 0.5rem; // Üstten header'a mesafe, alttan timer'a yakın
+    padding: 1.5rem 1rem 0.5rem; // Distance from header at top, close to timer below
     text-align: center;
     box-sizing: border-box;
 
-    // Kalan alani kapla — alt kisim (timer, kontroller, dashboard) sabit kalsin
+    // Fill remaining area — bottom section (timer, controls, dashboard) stays fixed
     flex: 1;
     min-height: 60px;
 
@@ -14,13 +14,13 @@
         padding-top: 1rem;
     }
 
-    overflow: hidden; // Font otomatik kuculdugu icin tasma olmaz
+    overflow: hidden; // No overflow since font auto-shrinks
 
     display: flex;
     flex-direction: column;
-    justify-content: flex-start; // Metin ustten baslar (header'in hemen altinda)
+    justify-content: flex-start; // Text starts at top (right below header)
 
-    // SmartScramble wrapper - flex-wrap ile alt satıra geçsin
+    // SmartScramble wrapper - wraps to next line with flex-wrap
     &__smart-scramble {
         display: flex;
         flex-wrap: wrap;
@@ -30,7 +30,7 @@
         line-height: 1.6;
     }
 
-    // SmartScramble span'ları için wrap
+    // SmartScramble spans with wrapping
     .cd-timer-scramble__turn {
         display: inline;
     }
@@ -69,7 +69,7 @@
         font-size: 1.2em;
     }
 
-    // Tam ekran scramble overlay
+    // Fullscreen scramble overlay
     &__expanded {
         position: fixed;
         inset: 0;

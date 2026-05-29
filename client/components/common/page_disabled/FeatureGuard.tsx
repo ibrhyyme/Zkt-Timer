@@ -9,17 +9,17 @@ type FeatureKey = 'trainer_enabled' | 'community_enabled' | 'leaderboards_enable
 
 interface Props {
 	feature: FeatureKey;
-	pageNameKey: string; // i18n key (orn 'nav.trainer')
+	pageNameKey: string; // i18n key (e.g. 'nav.trainer')
 	children: React.ReactNode;
 }
 
 /**
- * Sayfa-bazinda feature flag guard'i.
- * - Admin: her zaman icerik goster (kapaliysa AdminDisabledBanner ekle)
- * - EXCLUDE override && kullanici listede: PageDisabled
- * - Feature acik: icerik goster
- * - INCLUDE override && kullanici listede: icerik goster
- * - Diger: PageDisabled
+ * Per-page feature flag guard.
+ * - Admin: always show content (if disabled, add AdminDisabledBanner)
+ * - EXCLUDE override && user in list: PageDisabled
+ * - Feature enabled: show content
+ * - INCLUDE override && user in list: show content
+ * - Other: PageDisabled
  */
 export default function FeatureGuard({feature, pageNameKey, children}: Props) {
 	const {t} = useTranslation();
@@ -28,7 +28,7 @@ export default function FeatureGuard({feature, pageNameKey, children}: Props) {
 	const isAdmin = !!me?.admin;
 	const pageName = t(pageNameKey);
 
-	// Config henuz yuklenmediyse icerik gosterme (SSR + ilk client render)
+	// Don't show content if config not yet loaded (SSR + first client render)
 	if (!config) {
 		return null;
 	}
@@ -37,7 +37,7 @@ export default function FeatureGuard({feature, pageNameKey, children}: Props) {
 	const override = config.featureOverrides?.find((o) => o.feature === feature);
 	const userId = me?.id;
 
-	// Admin her zaman gorer
+	// Admin always sees content
 	if (isAdmin) {
 		if (!enabled) {
 			return (
@@ -50,12 +50,12 @@ export default function FeatureGuard({feature, pageNameKey, children}: Props) {
 		return <>{children}</>;
 	}
 
-	// Feature acik — herkes gorer
+	// Feature enabled — everyone sees content
 	if (enabled) {
 		return <>{children}</>;
 	}
 
-	// Feature kapali — ozel erisim listesinde var mi?
+	// Feature disabled — is user in special access list?
 	if (userId && override?.users?.some((u) => u?.id === userId)) {
 		return <>{children}</>;
 	}

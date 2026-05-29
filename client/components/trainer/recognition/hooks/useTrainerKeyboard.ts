@@ -1,10 +1,10 @@
 /**
  * useTrainerKeyboard — PLL letter state machine.
- * Referans `composables/useTrainerKeyboard.js` portu.
+ * Reference: port of `composables/useTrainerKeyboard.js`.
  *
- * Kurallar:
- *   - Modal acik veya note input focus'taysa ignore
- *   - fullNameMode + pending prefix → suffix bekle (validPllSuffixes)
+ * Rules:
+ *   - Ignore if modal open or note input focused
+ *   - fullNameMode + pending prefix → wait for suffix (validPllSuffixes)
  *   - Escape → pause, Space → resume, A-Z → submitAnswer
  *   - Help keys (-, F1, ?, s, S, /) → giveUpOnCase
  *   - Shift+C → cheat (debug)
@@ -25,7 +25,7 @@ export function useTrainerKeyboard(): {pendingKey: string | null} {
 	const currentCase = useCurrentCase();
 	const [pendingKey, setPendingKey] = useState<string | null>(null);
 
-	// Case degisirse pendingKey'i temizle
+	// Clear pendingKey when case changes
 	useEffect(() => {
 		setPendingKey(null);
 	}, [currentCase]);
@@ -33,7 +33,7 @@ export function useTrainerKeyboard(): {pendingKey: string | null} {
 	const fullNameMode = state.settings.fullNameMode;
 	const showResultsModal = state.session.showResultsModal;
 
-	// Latest values icin ref (useKeydown bagimliliklar)
+	// Ref for latest values (useKeydown dependencies)
 	const stateRef = useRef({fullNameMode, showResultsModal, pendingKey, currentCase});
 	useEffect(() => {
 		stateRef.current = {fullNameMode, showResultsModal, pendingKey, currentCase};
@@ -43,7 +43,7 @@ export function useTrainerKeyboard(): {pendingKey: string | null} {
 		(e: KeyboardEvent) => {
 			const {fullNameMode: fNM, showResultsModal: sRM, pendingKey: pK, currentCase: cC} = stateRef.current;
 
-			// Modal acik veya note input focus'ta
+			// Modal open or note input focused
 			if (
 				document.querySelector('.modal.show') ||
 				sRM ||
@@ -55,7 +55,7 @@ export function useTrainerKeyboard(): {pendingKey: string | null} {
 
 			const withModifiers = e.altKey || e.ctrlKey || e.metaKey || e.shiftKey;
 
-			// fullNameMode + pendingKey buffer modu
+			// fullNameMode + pendingKey buffer mode
 			if (fNM && pK) {
 				if (!withModifiers && e.key === 'Escape') {
 					setPendingKey(null);
@@ -89,7 +89,7 @@ export function useTrainerKeyboard(): {pendingKey: string | null} {
 				}
 			}
 
-			// Default mod
+			// Default mode
 			if (!withModifiers && e.key === 'Escape') {
 				setPendingKey(null);
 				pausePlay();

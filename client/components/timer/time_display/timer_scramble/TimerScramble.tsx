@@ -21,7 +21,7 @@ import { getCubeTypeInfoById } from '../../../../util/cubes/util';
 
 const b = block('timer-scramble');
 
-// Scramble history için max geri adım sayısı
+// Max number of back steps for scramble history
 const MAX_HISTORY_BACK_STEPS = 2;
 
 export default function TimerScramble() {
@@ -45,7 +45,7 @@ export default function TimerScramble() {
 	const isSmart = smartCubeSelected(context);
 	const isSmartScrambling = isSmart && context.smartTurns && context.smartTurns.length > 0 && !timeStartedAt;
 
-	// Son solve için +2 ve DNF
+	// +2 and DNF for latest solve
 	const latestSolve = useLatestSolve();
 
 	// Scramble history state
@@ -55,7 +55,7 @@ export default function TimerScramble() {
 	const lastScrambleSubsetRef = useRef(scrambleSubset);
 	const isNavigatingRef = useRef(false);
 
-	// Kategori değiştiğinde history'yi sıfırla
+	// Reset history when category changes
 	useEffect(() => {
 		if (lastCubeTypeRef.current !== cubeType || lastScrambleSubsetRef.current !== scrambleSubset) {
 			setScrambleHistory([]);
@@ -65,16 +65,16 @@ export default function TimerScramble() {
 		}
 	}, [cubeType, scrambleSubset]);
 
-	// Scramble değiştiğinde (navigasyon dışında) history'ye ekle
-	// Correction scramble'ları (smartTurnOffset > 0) history'ye ekleme - gereksiz state güncellemesi yapar
+	// When scramble changes (outside navigation) add to history
+	// Don't add correction scrambles (smartTurnOffset > 0) to history - causes unnecessary state updates
 	const smartTurnOffset = context.smartTurnOffset || 0;
 	useEffect(() => {
 		if (scramble && !isNavigatingRef.current && smartTurnOffset === 0) {
 			setScrambleHistory((prev) => {
-				// Eğer currentIndex ortadaysa, ondan sonrasını sil ve yeni ekle
+				// If currentIndex is in the middle, delete everything after it and add new
 				let newHistory = prev.slice(0, currentIndex + 1);
 				newHistory.push(scramble);
-				// Sadece son 3 scramble'ı tut (mevcut + max 2 geri)
+				// Keep only last 3 scrambles (current + max 2 back)
 				if (newHistory.length > MAX_HISTORY_BACK_STEPS + 1) {
 					newHistory = newHistory.slice(-MAX_HISTORY_BACK_STEPS - 1);
 				}
@@ -133,7 +133,7 @@ export default function TimerScramble() {
 		}
 	}
 
-	// Önceki scramble'a git (max 2 adım geri)
+	// Go to previous scramble (max 2 steps back)
 	const handlePreviousScramble = useCallback(() => {
 		if (timeStartedAt || scrambleLocked || isSmartScrambling) return;
 
@@ -146,7 +146,7 @@ export default function TimerScramble() {
 		}
 	}, [currentIndex, scrambleHistory, timeStartedAt, scrambleLocked, isSmartScrambling]);
 
-	// Sonraki scramble'a git veya yeni üret
+	// Go to next scramble or generate new one
 	const nextScrambleRef = useRef(0);
 	const handleNextScramble = useCallback(() => {
 		if (timeStartedAt || scrambleLocked || isSmartScrambling) return;
@@ -170,13 +170,13 @@ export default function TimerScramble() {
 		}
 	}, [currentIndex, scrambleHistory, timeStartedAt, scrambleLocked, isSmartScrambling, cubeType, scrambleSubset]);
 
-	// Klavye kısayolları (Sol/Sağ ok tuşları)
+	// Keyboard shortcuts (Left/Right arrow keys)
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
-			// Input/Textarea odaklıysa çalışma
+			// Don't work if input/textarea is focused
 			const target = e.target as HTMLElement;
 			if (target.closest('input, textarea')) return;
-			// Timer çalışırken çalışma
+			// Don't work while timer is running
 			if (timeStartedAt) return;
 
 			if (e.key === 'ArrowLeft') {
@@ -192,7 +192,7 @@ export default function TimerScramble() {
 		return () => window.removeEventListener('keydown', handleKeyDown);
 	}, [handlePreviousScramble, handleNextScramble, timeStartedAt]);
 
-	// Navigasyon butonları için disable durumları
+	// Navigation button disabled states
 	const minHistoryIndex = Math.max(0, scrambleHistory.length - 1 - MAX_HISTORY_BACK_STEPS);
 	const canGoPrevious = currentIndex > minHistoryIndex && !scrambleLocked && !timeStartedAt && !isSmartScrambling;
 	const canGoNext = !scrambleLocked && !timeStartedAt && !isSmartScrambling;
@@ -200,17 +200,17 @@ export default function TimerScramble() {
 	if (hideScramble) {
 		scramble = '';
 	} else if (isMegaminx && scramble) {
-		// Pochmann/Carrot/OldStyle zaten \n iceriyor — dokunma
-		// Sadece tek satirlik Megaminx scramble'larinda (2-Gen, random-state) satir kir
+		// Pochmann/Carrot/OldStyle already contain \n — don't touch
+		// Only break lines on single-line Megaminx scrambles (2-Gen, random-state)
 		if (!scramble.includes('\n') && scramble.includes('++')) {
-			// Pochmann notasyonu ama \n silinmis — U/U' sonrasi satir kir
+			// Pochmann notation but \n removed — break line after U/U'
 			scramble = scramble.replace(/ (U'?)( |$)/g, ' $1\n').trim();
 		}
 	}
 
 	let scrambleBody: ReactNode;
 
-	// Megaminx: her satiri ayri div olarak render et (wrap kaymasi onlenir)
+	// Megaminx: render each line as separate div (prevents wrap shift)
 	if (isMegaminx && !editScramble && scramble && scramble.includes('\n')) {
 		scrambleBody = (
 			<div className={b('megaminx-lines')}>
@@ -237,19 +237,19 @@ export default function TimerScramble() {
 	if (isSmart && !timeStartedAt && scramble) {
 		scrambleBody = <SmartScramble />;
 	} else if (isSmart && timeStartedAt) {
-		// Timer çalışırken scramble'ı gizle
+		// Hide scramble while timer is running
 		scrambleBody = null;
 	} else if (isSmart && !scramble) {
-		// Abort sonrası scramble boşken gizle (mismatch banner ile çakışmasın)
+		// Hide scramble when empty after abort (so it doesn't overlap mismatch banner)
 		scrambleBody = null;
 	}
 
-	// +2 ve DNF butonları artık üstteki actions alanında, aşağıda duplike yok
+	// +2 and DNF buttons now in actions area above, no duplicate below
 
 	return (
 		<div className={b()}>
 			{notification}
-			{/* Scramble navigasyon butonları - timer çalışmıyorken ve maç modunda değilken göster */}
+			{/* Scramble navigation buttons - show when timer not running and not in match mode */}
 			{scrambleLocked && !timeStartedAt && !matchMode && (
 				<div className={b('locked-banner')}>
 					{t('timer_scramble.scramble_locked')}
@@ -290,7 +290,7 @@ export default function TimerScramble() {
 				{scrambleBody}
 			</div>
 			<div className={b('actions')}>
-				{/* Maç modunda sadece +2 ve DNF göster */}
+				{/* In match mode show only +2 and DNF */}
 				{!matchMode && (
 					<Button
 						onClick={toggleEditScramble}

@@ -50,7 +50,7 @@ export default function SupportAttachments({attachments}: Props) {
 		resetView();
 	}, [resetView]);
 
-	// Esc ile kapat
+	// Close with Esc
 	useEffect(() => {
 		if (!lightboxUrl) return;
 		function onKey(e: KeyboardEvent) {
@@ -60,7 +60,7 @@ export default function SupportAttachments({attachments}: Props) {
 		return () => window.removeEventListener('keydown', onKey);
 	}, [lightboxUrl, closeLightbox]);
 
-	// Wheel zoom — native listener'la ekle, React'in passive handler'ina yakalanmasin
+	// Wheel zoom — add with native listener, don't let React's passive handler catch it
 	useEffect(() => {
 		const el = lightboxRef.current;
 		if (!el || !lightboxUrl) return;
@@ -77,7 +77,7 @@ export default function SupportAttachments({attachments}: Props) {
 		return () => el.removeEventListener('wheel', onWheel);
 	}, [lightboxUrl]);
 
-	// Pointer move/up dokumanda dinle — mouse, touch ve pen icin unified
+	// Listen for pointer move/up on document — unified for mouse, touch, and pen
 	useEffect(() => {
 		if (!lightboxUrl) return;
 
@@ -110,7 +110,7 @@ export default function SupportAttachments({attachments}: Props) {
 	}, [lightboxUrl]);
 
 	function handlePointerDown(e: React.PointerEvent) {
-		// Mouse'un sol tusu disinda baska bir mouse button yok say (touch icin button=0)
+		// Don't count any mouse button other than left (for touch button=0)
 		if (e.pointerType === 'mouse' && e.button !== 0) return;
 		if ((e.target as HTMLElement).closest(`.${b('lightbox-close')}`)) return;
 		dragRef.current = {

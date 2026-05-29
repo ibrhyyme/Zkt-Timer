@@ -1,20 +1,20 @@
 /**
- * CFOP progress detection — cstimer cubeutil.js'den port.
+ * CFOP progress detection — ported from cstimer cubeutil.js.
  *
  * Progress level (cstimer getCF4OPProgress):
- *   7 = hicbir sey cozulmedi
- *   6 = cross cozuldu
+ *   7 = nothing solved
+ *   6 = cross solved
  *   5 = cross + 1 f2l slot
- *   4 = cross + 2 f2l slot
- *   3 = cross + 3 f2l slot
- *   2 = cross + 4 f2l slot (full F2L)
- *   1 = OLL cozuldu (top face solid color)
- *   0 = solved (PLL dahil)
+ *   4 = cross + 2 f2l slots
+ *   3 = cross + 3 f2l slots
+ *   2 = cross + 4 f2l slots (full F2L)
+ *   1 = OLL solved (top face solid color)
+ *   0 = solved (PLL included)
  *
- * Engine progress level monoton azaldigi icin level dususleri faz gecislerini gosterir.
+ * Progress level monotonically decreases; level drops indicate phase transitions.
  *
- * 6-axis kontrol: cross hangi yuze yapilmis olabilir? Mask equivalence-class kullandigindan
- * y rotasyonlarina karsi rotation-invariant. Sadece "hangi yuz down" kontrolu gerekir.
+ * 6-axis check: which face can cross be on? Uses mask equivalence-class,
+ * rotation-invariant against y rotations. Only "which face is down" check needed.
  */
 
 import Cube from 'cubejs';
@@ -31,7 +31,7 @@ import {
 } from './facelet_masks';
 
 /**
- * Mask satisfied mi? cstimer convention: 0 = satisfied, 1 = NOT satisfied.
+ * Is mask satisfied? cstimer convention: 0 = satisfied, 1 = NOT satisfied.
  */
 export function checkMask(facelet: string, mask: EquivalenceClass[]): number {
 	for (const equ of mask) {
@@ -46,7 +46,7 @@ export function checkMask(facelet: string, mask: EquivalenceClass[]): number {
 }
 
 /**
- * cstimer getCF4OPProgress port. Tek bir oryantasyon icin progress level hesabi.
+ * cstimer getCF4OPProgress port. Progress level calculation for single orientation.
  */
 export function getCF4OPProgressOneAxis(facelet: string): number {
 	if (checkMask(facelet, CROSS_MASK)) {
@@ -71,8 +71,8 @@ export function getCF4OPProgressOneAxis(facelet: string): number {
 }
 
 /**
- * 6-axis rotation: cross face hangi yuzde olabilir.
- * Index sirasi sabit; minimum progress sahibi axis = cross face'in oturdugu axis.
+ * 6-axis rotation: which face can cross be on.
+ * Index order fixed; axis with minimum progress = the axis cross face sits on.
  */
 export const CROSS_AXIS_LABELS: Array<'D' | 'U' | 'F' | 'B' | 'R' | 'L'> = [
 	'D', // identity
@@ -104,7 +104,7 @@ function rotateFacelet(facelet: string, rotMove: string | null): string {
 }
 
 /**
- * 6 axis kontrol. Minimum progress (en cok cozulmus axis) ve hangi axis oldugunu doner.
+ * 6 axis check. Returns minimum progress (most solved axis) and which axis it is.
  */
 export function getCFOPProgress(facelet: string): {
 	progress: number;
@@ -130,8 +130,8 @@ export function getCFOPProgress(facelet: string): {
 }
 
 /**
- * Verili axis (sabit cross face) icin progress hesabi. Cross faz tespit edildikten
- * sonra calismaya devam eder, axis-locked progress saglar.
+ * Progress calculation for given axis (fixed cross face). Continues working after cross phase is detected,
+ * provides axis-locked progress.
  */
 export function getCFOPProgressOnAxis(facelet: string, axisIndex: number): number {
 	const rotated = rotateFacelet(facelet, AXIS_ROTATIONS[axisIndex]);
@@ -139,7 +139,7 @@ export function getCFOPProgressOnAxis(facelet: string, axisIndex: number): numbe
 }
 
 /**
- * Progress level → CFOP phase ismi. data[--progress] mantigi:
+ * Progress level → CFOP phase name. data[--progress] logic:
  *   progress 7→6 = cross
  *   6→5 = f2l_1, 5→4 = f2l_2, 4→3 = f2l_3, 3→2 = f2l_4
  *   2→1 = oll

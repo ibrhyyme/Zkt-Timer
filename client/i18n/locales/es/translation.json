@@ -2341,6 +2341,18 @@
         "linking_account": "Vinculando cuenta...",
         "oauth_error": "Se produjo un error durante la conexión OAuth"
     },
+    "otp": {
+        "verifying": "Verificando…",
+        "error_retry": "Código incorrecto. Inténtalo de nuevo.",
+        "didnt_get_code": "¿No recibiste el código?",
+        "resend": "Reenviar",
+        "resend_in": "Reenviar ({{seconds}}s)",
+        "auto_verify_hint": "Se verifica automáticamente al introducirlo.",
+        "email_verified": "Tu cuenta está verificada, redirigiendo…",
+        "password_updated": "Tu contraseña se ha actualizado, redirigiendo…",
+        "forgot_email_sub": "Introduce el correo de tu cuenta y te enviaremos un código de recuperación de 6 caracteres.",
+        "pw_levels": ["Muy débil", "Débil", "Media", "Buena", "Fuerte"]
+    },
     "email_verification": {
         "title": "Verificación de correo",
         "check_email": "Hemos enviado un código de verificación a tu correo. Revisa tu bandeja de entrada.",

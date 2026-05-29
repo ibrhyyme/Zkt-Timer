@@ -1,14 +1,14 @@
 /**
- * Backend wrapper — shared phase engine'i Solve.resolver.ts'in bekledigi DB steps shape'ine
- * cevirir. Eski 558-satirlik phase detection logic'i shared/util/solve/phase_engine.ts'e
- * tasindi; bu dosya ince adapter.
+ * Backend wrapper — converts shared phase engine output to DB steps shape expected by Solve.resolver.ts.
+ * Old 558-line phase detection logic was moved to shared/util/solve/phase_engine.ts;
+ * this file is a thin adapter.
  *
- * Engine output (PhaseEngineResult) -> backend steps shape donusumu:
- *   - transitions[] -> { cross, f2l, oll, pll, f2l_1..4 } objesi
- *   - Her step: turn_count, turns string, total_time (saniye), tps, parent_name,
+ * Engine output (PhaseEngineResult) -> backend steps shape conversion:
+ *   - transitions[] -> { cross, f2l, oll, pll, f2l_1..4 } object
+ *   - Each step: turn_count, turns string, total_time (seconds), tps, parent_name,
  *     recognition_time, oll_case_key, pll_case_key, step_index, step_name
  *
- * createSolveMethodSteps (server/models/solve_method_step.ts) bu shape'i alir, DB'ye yazar.
+ * createSolveMethodSteps (server/models/solve_method_step.ts) takes this shape, writes to DB.
  */
 
 import { cascadeQuartersForDisplay, SmartTurn } from '../../../client/util/smart_scramble';
@@ -16,7 +16,7 @@ import { analyzePhases } from '../../../shared/util/solve/phase_engine';
 import { CFOPPhase, SolveTurn, PhaseTransition } from '../../../shared/util/solve/types';
 import { countHTM } from '../../../shared/util/solve/move_counter';
 import { getPrettyMoves, TimedMove } from '../../../shared/util/solve/pretty_moves';
-void cascadeQuartersForDisplay; // legacy import — yeni getPrettyMoves'a gecildi
+void cascadeQuartersForDisplay; // legacy import — migrated to getPrettyMoves
 
 export function getSolveSteps(turns: SmartTurn[], scramble?: string) {
 	try {
@@ -43,13 +43,13 @@ function getSolveStepsInner(turns: SmartTurn[], scramble?: string) {
 		return { cross: null, f2l: null, oll: null, pll: null };
 	}
 
-	// Start state hesabi:
-	// IDEAL: scramble'i solved cube'a uygula → gercek baslangic state. Kismi-cozum subsetleri
-	// (333cfop>oll, >pll vb.) icin DOGRU sonuc bu yolla gelir; engine zaten cozulu fazlari
-	// pre-populate eder ve OLL/PLL identification calisir.
+	// Start state calculation:
+	// IDEAL: apply scramble to solved cube -> actual starting state. For partial-solve subsets
+	// (333cfop>oll, >pll etc.) this is the CORRECT approach; engine already pre-populates
+	// solved phases and OLL/PLL identification works.
 	//
-	// FALLBACK (legacy): scramble verilmediyse (eski admin script'leri) turns'u ters uygulayarak
-	// hesapla — tam 333 solve'larinda calisir, kismi subsetlerde identification kirik kalir.
+	// FALLBACK (legacy): if scramble not provided (old admin scripts), calculate by reversing
+	// turns — works for full 333 solves, identification breaks for partial subsets.
 	let startState = scramble ? computeStartStateFromScramble(scramble) : undefined;
 	if (!startState) {
 		startState = computeStartStateFromSolvedEnd(engineTurns);
@@ -85,8 +85,8 @@ function getSolveStepsInner(turns: SmartTurn[], scramble?: string) {
 			(isFinite(t.firstMoveTimestamp) ? t.firstMoveTimestamp : t.timestamp) - t.recognitionStart
 		) / 1000;
 		const moves = t.moves;
-		// cstimer-grade HTM: engine her transition icin moveCount.htm hesabi yapiyor.
-		// Ham moves.length yerine HTM kullanmak DB tutarli, TPS dogru.
+		// cstimer-grade HTM: engine calculates moveCount.htm for each transition.
+		// Using HTM instead of raw moves.length ensures DB consistency and correct TPS.
 		const moveCount = t.moveCount.htm;
 		const tps = moveCount && totalSec > 0 ? Math.floor((moveCount / totalSec) * 100) / 100 : 0;
 		const turnsAsObjects: any[] = moves.map((m) => ({ turn: m }));
@@ -113,10 +113,9 @@ function getSolveStepsInner(turns: SmartTurn[], scramble?: string) {
 
 	steps.cross = buildStep(transitionByPhase.cross, 'cross', 0, null);
 
-	// f2l parent + 4 sub-step. Backend'de toplu f2l "parent" step ile 4 sub-step sakliyor.
-	// Engine bize 4 ayri f2l_1..4 transition veriyor. f2l parent ozellikle ihtiyac duyulan
-	// alanlar icin (toplam sure) f2l_4'un timestamp'inden, ilk slot recognitionStart'indan
-	// yola cikilarak agregat olusturulur.
+	// f2l parent + 4 sub-steps. Backend stores aggregated f2l "parent" step with 4 sub-steps.
+	// Engine gives us 4 separate f2l_1..4 transitions. f2l parent is computed from aggregate
+	// timing (f2l_4's timestamp for end, first slot's recognitionStart for start).
 	const f2lTransitions = ['f2l_1', 'f2l_2', 'f2l_3', 'f2l_4']
 		.map((p) => transitionByPhase[p as CFOPPhase])
 		.filter(Boolean) as PhaseTransition[];
@@ -126,13 +125,13 @@ function getSolveStepsInner(turns: SmartTurn[], scramble?: string) {
 		const last = f2lTransitions[f2lTransitions.length - 1];
 		const f2lMoves = f2lTransitions.flatMap((t) => t.moves);
 		const f2lMovesAsObj = f2lMoves.map((m) => ({ turn: m }));
-		// Per-move timestamps tum F2L sub-phase'leri concat ederek getPrettyMoves'a ver
+		// Per-move timestamps by concatenating all F2L sub-phases and passing to getPrettyMoves
 		const f2lTimed: TimedMove[] = f2lTransitions.flatMap((t) =>
 			t.moves.map((turn, i) => ({ turn, timestamp: t.moveTimestamps?.[i] ?? 0 }))
 		);
 		const f2lTotalSec = Math.max(0, (last.timestamp - first.recognitionStart) / 1000);
-		// cstimer-grade HTM: tum F2L hamlelerini tek seferde say (phase boundary'sinde
-		// olusabilecek paralel duzlem cancel'lari yakalanir).
+		// cstimer-grade HTM: count all F2L moves at once (captures parallel plane cancels
+		// that may occur at phase boundaries).
 		const f2lHtm = countHTM(f2lMoves);
 		const f2lTps = f2lHtm && f2lTotalSec > 0
 			? Math.floor((f2lHtm / f2lTotalSec) * 100) / 100
@@ -150,7 +149,7 @@ function getSolveStepsInner(turns: SmartTurn[], scramble?: string) {
 			time: f2lTotalSec,
 		};
 
-		// Sub-step'ler parent='f2l' ile DB'ye yazilir.
+		// Sub-steps are written to DB with parent='f2l'.
 		f2lTransitions.forEach((t, idx) => {
 			const stepName = `f2l_${idx + 1}`;
 			(steps as any)[stepName] = buildStep(t, stepName, idx, 'f2l');
@@ -164,8 +163,8 @@ function getSolveStepsInner(turns: SmartTurn[], scramble?: string) {
 }
 
 /**
- * Scramble string'ini solved cube'a uygulayarak gercek baslangic state'i hesaplar.
- * Bu kismi-cozum subsetleri icin de DOGRU sonuc verir (cube zaten yari cozulu gelir).
+ * Apply scramble string to a solved cube to compute the actual starting state.
+ * This gives the CORRECT result even for partial-solve subsets (cube already partially solved).
  */
 function computeStartStateFromScramble(scramble: string): string | undefined {
 	try {
@@ -176,7 +175,7 @@ function computeStartStateFromScramble(scramble: string): string | undefined {
 			try {
 				cube.move(m);
 			} catch {
-				// Gecersiz move: atla
+				// Invalid move: skip
 			}
 		}
 		return cube.asString();
@@ -186,12 +185,12 @@ function computeStartStateFromScramble(scramble: string): string | undefined {
 }
 
 /**
- * LEGACY fallback: turns'u ters uygulayarak start state hesaplar. Sadece tam-cozum
- * (WCA 333) solve'larinda dogru calisir. Scramble erisilemediginde kullanilir.
+ * LEGACY fallback: compute start state by reversing turns. Only works correctly
+ * for full-solve (WCA 333) solves. Used when scramble is unavailable.
  */
 function computeStartStateFromSolvedEnd(turns: SolveTurn[]): string | undefined {
 	try {
-		// Lazy import — shared engine already imports Cube; burada da kullanmak icin require.
+		// Lazy import — shared engine already imports Cube; use require here too.
 		const Cube = require('cubejs');
 		const cube = new Cube();
 		for (let i = turns.length - 1; i >= 0; i--) {

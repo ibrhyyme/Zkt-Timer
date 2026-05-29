@@ -44,7 +44,7 @@ const DEFAULT_CONFIG: Omit<SiteConfigData, 'id' | 'updated_at' | 'featureOverrid
 };
 
 export async function getSiteConfig(): Promise<SiteConfigData> {
-	// Acil durum kill switch
+	// Emergency kill switch
 	if (process.env.EMERGENCY_MAINTENANCE === 'true') {
 		return {
 			id: 'singleton',
@@ -70,7 +70,7 @@ export async function getSiteConfig(): Promise<SiteConfigData> {
 				where: {id: 'singleton'},
 			});
 
-			// Ilk seferde otomatik olustur (singleton row)
+			// Auto-create on first run (singleton row)
 			if (!config) {
 				config = await prisma.siteConfig.create({
 					data: {
@@ -78,7 +78,7 @@ export async function getSiteConfig(): Promise<SiteConfigData> {
 						...(DEFAULT_CONFIG as any),
 					},
 				});
-				logger.info('[SiteConfig] Singleton row olusturuldu');
+				logger.info('[SiteConfig] Singleton row created');
 			}
 
 			return config as unknown as SiteConfigData;
@@ -93,7 +93,7 @@ export async function getSiteConfig(): Promise<SiteConfigData> {
 		users: Array.isArray(data?.users) ? data.users : [],
 	}));
 
-	// Redis'ten gelen JSON'da Date string olur — type-graphql Date instance bekliyor
+	// JSON from Redis is a Date string — type-graphql expects a Date instance
 	return {
 		...cached,
 		feature_overrides: rawOverrides,
@@ -108,7 +108,7 @@ export async function updateSiteConfig(
 ): Promise<SiteConfigData> {
 	const prisma = getPrisma();
 
-	// Upsert: row yoksa olustur, varsa update et — tek atomik islem
+	// Upsert: create if row doesn't exist, update if it does — single atomic operation
 	const updated = await prisma.siteConfig.upsert({
 		where: {id: 'singleton'},
 		update: {
@@ -125,8 +125,8 @@ export async function updateSiteConfig(
 
 	logger.info('[SiteConfig] Updated', {updates, userId, result: updated});
 
-	// Cache'i yeni deger ile DOGRUDAN overwrite et (delete sonra fetch yerine)
-	// Boylece sonraki istek anlik fresh deger gorur, race condition yok
+	// Directly overwrite cache with new value (instead of delete then fetch)
+	// This way the next request sees fresh value immediately, no race condition
 	try {
 		await setKeyInRedis(
 			SITE_CONFIG_CACHE_KEY,
@@ -135,7 +135,7 @@ export async function updateSiteConfig(
 		);
 	} catch (err: any) {
 		logger.warn('[SiteConfig] Cache write failed, trying delete', {error: err?.message});
-		// Fallback: delete et, sonraki cagri DB'den okur
+		// Fallback: delete it, next call will read from DB
 		try {
 			await deleteKeyInRedis(SITE_CONFIG_CACHE_KEY);
 		} catch {}

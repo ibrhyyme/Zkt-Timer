@@ -8,8 +8,8 @@ export interface ImageFileToBuffer {
 	quality?: number; // Default is 80
 }
 
-// Magic byte (file signature) check — extension spoofing'i engeller.
-// Saldirgan ".jpg.exe" gibi dosya yuklerse, ilk birkac byte'a bakarak gercek tipi tespit ederiz.
+// Magic byte (file signature) check — prevents extension spoofing.
+// If an attacker uploads a file like ".jpg.exe", we detect the real type by examining the first few bytes.
 export function detectImageType(buffer: Buffer): 'png' | 'jpeg' | 'gif' | 'webp' | null {
 	if (buffer.length < 12) return null;
 	// PNG: 89 50 4E 47 0D 0A 1A 0A
@@ -42,7 +42,7 @@ export async function getImageBufferFromFileStream(
 	const readStream = fileStream();
 	const bufferStream = await getFileStreamAsBufferStream(readStream);
 
-	// Magic byte ile gercek tip tespit — extension spoofing koruma
+	// Detect real type via magic byte — protection against extension spoofing
 	const detected = detectImageType(bufferStream);
 	if (!detected) {
 		throw new Error('Invalid image file: only PNG, JPEG, GIF, WebP allowed');
@@ -54,7 +54,7 @@ export async function getImageBufferFromFileStream(
 	} else if (detected === 'jpeg') {
 		mimeType = Jimp.MIME_JPEG;
 	}
-	// WebP icin Jimp PNG olarak yeniden encode eder — guvenli
+	// For WebP, Jimp re-encodes as PNG — safe
 
 	const img = await Jimp.read(bufferStream);
 	return await img
@@ -63,8 +63,8 @@ export async function getImageBufferFromFileStream(
 		.getBufferAsync(mimeType);
 }
 
-// Video magic byte detection. Image gibi extension spoofing korumasi.
-// mp4/quicktime: offset 4-7 'ftyp', sonraki 4 byte brand
+// Video magic byte detection. Extension spoofing protection like images.
+// mp4/quicktime: offset 4-7 'ftyp', next 4 bytes brand
 // webm/matroska: 1A 45 DF A3
 export function detectVideoType(buffer: Buffer): 'mp4' | 'webm' | 'quicktime' | null {
 	if (buffer.length >= 12 &&

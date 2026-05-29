@@ -108,23 +108,23 @@ export function getSubsetLabel(cubeType: string, subsetId: string | null | undef
 	return subset.label;
 }
 
-// Composite label for a (cube_type, subset) pair — sade format.
-// WCA standartlarinda "WCA" prefix'i gereksiz: 3x3 yeterli.
+// Composite label for a (cube_type, subset) pair — clean format.
+// By WCA standards "WCA" prefix is unnecessary: 3x3 is sufficient.
 // Examples: "3x3", "Random State", "Square-1"
-// Kullanici-yuzlu yerler (Bulmaca Basina, PuzzleCard, profil PB liste) bu helper'i kullanir.
+// User-facing places (Puzzle Per-solve, PuzzleCard, profile PB list) use this helper.
 export function getCubeTypeBucketLabel(cubeType: string, subsetId: string | null | undefined): string {
 	const ct = getCubeTypeInfoById(cubeType);
 	if (!ct) return cubeType;
 
 	const subsetLabel = getSubsetLabel(cubeType, subsetId);
 
-	// WCA category zaten "standart" cozum demek — "3x3" kafidir, "WCA > 3x3" tekrar.
+	// WCA category already means "standard" solve — "3x3" is sufficient, "WCA > 3x3" is redundant.
 	if (cubeType === 'wca' && subsetLabel) return subsetLabel;
 	if (cubeType === 'wca' && subsetId) return subsetId;
 
 	if (subsetLabel) return `${ct.name} > ${subsetLabel}`;
 
-	// Config'de yok ama raw subset ID var — ham haliyle goster (yoksa sadece "WCA" gibi muphem kalir)
+	// Not in config but raw subset ID exists — show as-is (otherwise just "WCA" would be ambiguous)
 	if (subsetId) return `${ct.name} > ${subsetId}`;
 
 	return ct.name;
@@ -132,7 +132,7 @@ export function getCubeTypeBucketLabel(cubeType: string, subsetId: string | null
 
 // Composite label that always includes the cube category prefix.
 // Examples: "WCA > 3x3", "3x3 > Random State", "Square-1"
-// SolveInfo karti gibi solve detay yerlerinde kullanilir (kategori bilgisi anlamli).
+// Used in solve detail cards like SolveInfo (category information is meaningful).
 export function getCubeTypeBucketLabelWithCategory(
 	cubeType: string,
 	subsetId: string | null | undefined
@@ -147,8 +147,8 @@ export function getCubeTypeBucketLabelWithCategory(
 	return ct.name;
 }
 
-// Short label — subset varsa sadece subset, yoksa cube type adi.
-// Charts/widget'larda daha kompakt gosterim icin (CubeDistro gibi).
+// Short label — subset if present, otherwise cube type name.
+// For more compact display in charts/widgets (like CubeDistro).
 export function getBucketShortLabel(cubeType: string, subsetId: string | null | undefined): string {
 	const subsetLabel = getSubsetLabel(cubeType, subsetId);
 	if (subsetLabel) return subsetLabel;
@@ -202,10 +202,10 @@ export function getSubsetsForBuckets(
 		}
 	}
 
-	// Canonical listede olmayan ama bucket'ta bulunan subset'ler (orphan/legacy)
+	// Subsets in bucket but not in canonical list (orphan/legacy)
 	for (const id of present) {
 		if (seen.has(id)) continue;
-		if (!id) continue; // bos id'yi WCA'da zaten canonical yakaliyor, digerlerinde atla
+		if (!id) continue; // empty id already handled by canonical for WCA, skip for others
 		const label = getSubsetLabel(cubeType, id) || id;
 		result.push({ id, label });
 	}

@@ -67,8 +67,8 @@ export default function HeaderControl() {
 	const scrambleTopColorSetting = useSettings('scramble_top_color');
 
 	/**
-	 * Top color secimi sadece 3x3 CFOP + PLL/OLL/f2l subset'lerinde etkin.
-	 * Aktif degilse null doner — applyTopColorTransform raw scramble verir.
+	 * Top color selection is only active for 3x3 CFOP + PLL/OLL/f2l subsets.
+	 * If not active, returns null — applyTopColorTransform returns raw scramble.
 	 */
 	function getEffectiveTopColor(ct: string, sub: string | null | undefined): TopColorFace | null {
 		if (!isTopColorAvailable(ct, sub)) return null;
@@ -91,7 +91,7 @@ export default function HeaderControl() {
 		const ct = getCubeTypeInfoById(cubeTypeId);
 		if (!ct) return;
 
-		// Yeni cube type'in ilk non-header subset'ini default olarak sec
+		// Select the first non-header subset of the new cube type as default
 		const subsets = getSubsetsForCube(cubeTypeId);
 		const defaultSubset = subsets.find(s => !s.isHeader);
 		const newSubset = defaultSubset ? defaultSubset.id : null;
@@ -187,15 +187,15 @@ export default function HeaderControl() {
 		</div>
 	);
 
-	// Timer type dropdown: desktop'ta header'da TimerTypePicker (sol grup, gear oncesi).
-	// Mobile'da gizli — modal'daki Timer tab'i kullaniliyor (TimerTypePicker.scss media query).
+	// Timer type dropdown: on desktop in header TimerTypePicker (left group, before gear).
+	// On mobile hidden — modal's Timer tab is used (TimerTypePicker.scss media query).
 	const timerTypeDropdown = !matchMode && <TimerTypePicker />;
 
 	const sessionSwitcher = !headerOptions.hideSessionSelector && <SessionSwitcher />;
 
-	// Maç modunda gear butonunu gizle.
-	// Mobile: mevcut Button + modal (QuickControlsModal Timer/Extras/Goals tab'lariyla).
-	// Desktop: SettingsDropdown (Popover panel + tab switcher) — modal acmaz.
+	// Hide gear button in match mode.
+	// Mobile: current Button + modal (QuickControlsModal with Timer/Extras/Goals tabs).
+	// Desktop: SettingsDropdown (Popover panel + tab switcher) — does not open modal.
 	const gearButtonMobile = !matchMode && (
 		<Button
 			gray

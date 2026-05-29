@@ -1,6 +1,6 @@
 @import '../../styles/config';
 
-// Oda duzenleme dropdown — SettingsDropdown stiline benzer glassmorphism.
+// Room edit dropdown — similar glassmorphism to SettingsDropdown.
 
 .#{$namespace}-edit-room-dropdown {
 	&__panel {
@@ -327,6 +327,6 @@
 	}
 }
 
-// Mobile'da trigger gizli degil — parent component (FriendlyRoom) zaten
-// mobile branch'inde EditRoomDropdown yerine EditRoomModal render ediyor.
-// Bu nedenle burada ekstra media query'ye gerek yok.
+// On mobile, trigger is not hidden — parent component (FriendlyRoom) already
+// renders EditRoomDropdown with EditRoomModal in the mobile branch.
+// Therefore no extra media query is needed here.
