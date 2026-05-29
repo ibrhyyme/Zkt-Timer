@@ -10,8 +10,10 @@ import {
 	isEventProcessed,
 	markEventProcessed,
 	syncEntitlementFromRevenueCat,
+	planFromProductId,
 	IapPlatform,
 } from '../models/iap';
+import {notifyAdminsOfProCancellation} from '../services/admin_notification';
 
 interface RCEvent {
 	id: string;
@@ -129,6 +131,12 @@ export async function revenueCatWebhookHandler(req: Request, res: Response): Pro
 			case 'CANCELLATION': {
 				// Kullanici iptal etti ama period devam ediyor
 				await markCancellation(userId, eventAt);
+				// Admin'e bildir (manuel jest/iletisim icin). Bildirim hatasi event islemeyi bozmasin.
+				try {
+					await notifyAdminsOfProCancellation(userId, planFromProductId(productId).tier, platform ?? undefined);
+				} catch (notifyErr) {
+					logger.error('[RC-Webhook] Admin iptal bildirimi gonderilemedi', {notifyErr, userId});
+				}
 				break;
 			}
 			case 'UNCANCELLATION': {

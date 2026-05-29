@@ -16,7 +16,7 @@ interface ProductPlan {
 	tier: 'monthly' | 'yearly' | 'lifetime' | 'unknown';
 }
 
-function planFromProductId(productId: string | null | undefined): ProductPlan {
+export function planFromProductId(productId: string | null | undefined): ProductPlan {
 	if (!productId) return {tier: 'unknown'};
 	if (productId.endsWith('lifetime')) return {tier: 'lifetime'};
 	if (productId.endsWith('yearly')) return {tier: 'yearly'};

@@ -2,11 +2,13 @@ import {getPrisma} from '../database';
 import {UserAccount, InternalUserAccount} from '../schemas/UserAccount.schema';
 import NewUserSignupNotification from '../resources/notification_types/new_user_signup';
 import AdminProPurchaseNotification from '../resources/notification_types/admin_pro_purchase';
+import AdminProCancellationNotification from '../resources/notification_types/admin_pro_cancellation';
 import AdminSupportTicketNotification from '../resources/notification_types/admin_support_ticket';
 import AdminSupportTicketReplyNotification from '../resources/notification_types/admin_support_ticket_reply';
 import SupportTicketReplyNotification from '../resources/notification_types/support_ticket_reply';
 import {sendPushToUser} from './push';
 import {getRedisPubClient} from './redis';
+import {getUserByIdWithSettings} from '../models/user_account';
 
 // Bot signup spam'a karsi cooldown: ayni email icin 24 saatte sadece bir kez admin bildirimi.
 // Saldirgan farkli IP'lerden 100 hesap acsa bile her admin sadece bir kez bilgilendirilir.
@@ -76,6 +78,39 @@ export async function notifyAdminsOfProPurchase(
 			await sendPushToUser(admin.id, 'Zkt Timer', notification.inAppMessage());
 		} catch (error) {
 			console.error(`[AdminNotification] Failed to notify admin ${admin.id} of Pro purchase:`, error);
+		}
+	}
+}
+
+export async function notifyAdminsOfProCancellation(
+	userId: string,
+	plan?: 'monthly' | 'yearly' | 'lifetime' | 'unknown',
+	platform?: 'ios' | 'android'
+): Promise<void> {
+	const user = await getUserByIdWithSettings(userId);
+	if (!user) {
+		return;
+	}
+
+	const admins = await getPrisma().userAccount.findMany({
+		where: {admin: true},
+	});
+
+	for (const admin of admins) {
+		try {
+			const notification = new AdminProCancellationNotification(
+				{
+					user: admin as UserAccount,
+					triggeringUser: user,
+					sendEmail: false,
+				},
+				plan,
+				platform
+			);
+			await notification.send();
+			await sendPushToUser(admin.id, 'Zkt Timer', notification.inAppMessage());
+		} catch (error) {
+			console.error(`[AdminNotification] Failed to notify admin ${admin.id} of Pro cancellation:`, error);
 		}
 	}
 }
