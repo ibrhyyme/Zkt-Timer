@@ -208,7 +208,7 @@ function RoomTableInner({ participants, scrambleIndex, userStatuses = {}, curren
                 ref={tableRef}
 
                 className="flex-1 w-full overflow-auto bg-button text-text/70 font-sans border border-text/[0.1] text-sm min-h-0 room-table-custom-scroll"
-                style={{ touchAction: 'pan-y', overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}
+                style={{ touchAction: 'pan-x pan-y', overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}
             >
                 <div ref={contentRef} className="flex flex-col min-w-full w-max">
 

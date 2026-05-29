@@ -133,7 +133,6 @@ export default function FriendlyRoom() {
     const timerType = useSettings('timer_type');
     const inspection = useSettings('inspection');
     const inspectionDelay = useSettings('inspection_delay');
-    const requirePeriod = useSettings('require_period_in_manual_time_entry');
     const timerDecimalPoints = useSettings('timer_decimal_points');
     const isManualMode = manualEntry && timerType !== 'smart';
 
@@ -1578,7 +1577,7 @@ export default function FriendlyRoom() {
                                                 e.preventDefault();
                                                 if (!manualTimeError && manualTimeInput.trim() && !alreadySolvedThisRound) {
                                                     try {
-                                                        const parsed = convertTimeStringToSeconds(manualTimeInput, !!requirePeriod);
+                                                        const parsed = convertTimeStringToSeconds(manualTimeInput, false);
                                                         const finalDnf = parsed.dnf || penalties.DNF;
                                                         const finalPlusTwo = parsed.plusTwo || penalties.AUF || penalties.inspection;
 
@@ -1625,7 +1624,7 @@ export default function FriendlyRoom() {
                                                     const val = e.target.value;
                                                     setManualTimeInput(val);
                                                     try {
-                                                        const parsed = convertTimeStringToSeconds(val, !!requirePeriod);
+                                                        const parsed = convertTimeStringToSeconds(val, false);
                                                         setManualTimeError(parsed.timeSeconds <= 0 && !parsed.dnf);
                                                     } catch {
                                                         setManualTimeError(true);

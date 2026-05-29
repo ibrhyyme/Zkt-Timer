@@ -343,9 +343,12 @@ export default function KeyWatcher(props: Props) {
 	 * @param e
 	 */
 	function escapePressed(e) {
-		if (ganTimerOn || (e.code !== 'Escape' && e.keyCode !== 27)) {
+		if (e.code !== 'Escape' && e.keyCode !== 27) {
 			return;
 		}
+		// Hardware timer (GAN/QiYi) running iken cihaz reset tusuna tepki vermiyorsa
+		// kullanici Zkt-Timer'i Escape ile iptal edebilsin. Sonradan cihazdan gelen
+		// STOPPED/record_time event'i endTimer'in `!timeStartedAt` check'i ile ignore edilir.
 
 		e.preventDefault();
 

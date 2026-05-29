@@ -1,0 +1,294 @@
+{
+  "Aa/": {
+    "groupId": "lone_lights",
+    "rowIndex": 3
+  },
+  "Aa/y": {
+    "groupId": "outside_2bar",
+    "rowIndex": 4
+  },
+  "Aa/y2": {
+    "groupId": "double_2bar",
+    "rowIndex": 1
+  },
+  "Aa/y'": {
+    "groupId": "lights_plus_2bar",
+    "rowIndex": 2
+  },
+  "Ab/": {
+    "groupId": "lone_lights",
+    "rowIndex": 3
+  },
+  "Ab/y": {
+    "groupId": "lights_plus_2bar",
+    "rowIndex": 2
+  },
+  "Ab/y2": {
+    "groupId": "double_2bar",
+    "rowIndex": 1
+  },
+  "Ab/y'": {
+    "groupId": "outside_2bar",
+    "rowIndex": 4
+  },
+  "E/": {
+    "groupId": "no_bookends",
+    "rowIndex": 2
+  },
+  "E/y": {
+    "groupId": "no_bookends",
+    "rowIndex": 2
+  },
+  "F/": {
+    "groupId": "bookends_no_bar",
+    "rowIndex": 0
+  },
+  "F/y": {
+    "groupId": "bookends_no_bar",
+    "rowIndex": 0
+  },
+  "F/y2": {
+    "groupId": "three_bar",
+    "rowIndex": 3
+  },
+  "F/y'": {
+    "groupId": "three_bar",
+    "rowIndex": 3
+  },
+  "Ga/": {
+    "groupId": "lone_lights",
+    "rowIndex": 1
+  },
+  "Ga/y": {
+    "groupId": "bookends_no_bar",
+    "rowIndex": 2
+  },
+  "Ga/y2": {
+    "groupId": "inside_2bar",
+    "rowIndex": 0
+  },
+  "Ga/y'": {
+    "groupId": "lights_plus_2bar",
+    "rowIndex": 3
+  },
+  "Gb/": {
+    "groupId": "lone_lights",
+    "rowIndex": 2
+  },
+  "Gb/y": {
+    "groupId": "lone_lights",
+    "rowIndex": 2
+  },
+  "Gb/y2": {
+    "groupId": "inside_2bar",
+    "rowIndex": 1
+  },
+  "Gb/y'": {
+    "groupId": "outside_2bar",
+    "rowIndex": 2
+  },
+  "Gc/": {
+    "groupId": "bookends_no_bar",
+    "rowIndex": 2
+  },
+  "Gc/y": {
+    "groupId": "lone_lights",
+    "rowIndex": 1
+  },
+  "Gc/y2": {
+    "groupId": "lights_plus_2bar",
+    "rowIndex": 3
+  },
+  "Gc/y'": {
+    "groupId": "inside_2bar",
+    "rowIndex": 0
+  },
+  "Gd/": {
+    "groupId": "lone_lights",
+    "rowIndex": 2
+  },
+  "Gd/y": {
+    "groupId": "lone_lights",
+    "rowIndex": 2
+  },
+  "Gd/y2": {
+    "groupId": "outside_2bar",
+    "rowIndex": 2
+  },
+  "Gd/y'": {
+    "groupId": "inside_2bar",
+    "rowIndex": 1
+  },
+  "H/": {
+    "groupId": "double_lights",
+    "rowIndex": 2
+  },
+  "Ja/": {
+    "groupId": "double_2bar",
+    "rowIndex": 3
+  },
+  "Ja/y": {
+    "groupId": "double_2bar",
+    "rowIndex": 3
+  },
+  "Ja/y2": {
+    "groupId": "three_bar",
+    "rowIndex": 1
+  },
+  "Ja/y'": {
+    "groupId": "three_bar",
+    "rowIndex": 2
+  },
+  "Jb/": {
+    "groupId": "double_2bar",
+    "rowIndex": 3
+  },
+  "Jb/y": {
+    "groupId": "double_2bar",
+    "rowIndex": 3
+  },
+  "Jb/y2": {
+    "groupId": "three_bar",
+    "rowIndex": 2
+  },
+  "Jb/y'": {
+    "groupId": "three_bar",
+    "rowIndex": 1
+  },
+  "Na/": {
+    "groupId": "double_2bar",
+    "rowIndex": 4
+  },
+  "Na/y": {
+    "groupId": "double_2bar",
+    "rowIndex": 4
+  },
+  "Nb/": {
+    "groupId": "double_2bar",
+    "rowIndex": 4
+  },
+  "Nb/y": {
+    "groupId": "double_2bar",
+    "rowIndex": 4
+  },
+  "Ra/": {
+    "groupId": "lone_lights",
+    "rowIndex": 0
+  },
+  "Ra/y": {
+    "groupId": "bookends_no_bar",
+    "rowIndex": 1
+  },
+  "Ra/y2": {
+    "groupId": "outside_2bar",
+    "rowIndex": 1
+  },
+  "Ra/y'": {
+    "groupId": "lights_plus_2bar",
+    "rowIndex": 1
+  },
+  "Rb/": {
+    "groupId": "bookends_no_bar",
+    "rowIndex": 1
+  },
+  "Rb/y": {
+    "groupId": "lone_lights",
+    "rowIndex": 0
+  },
+  "Rb/y2": {
+    "groupId": "lights_plus_2bar",
+    "rowIndex": 1
+  },
+  "Rb/y'": {
+    "groupId": "outside_2bar",
+    "rowIndex": 1
+  },
+  "T/": {
+    "groupId": "outside_2bar",
+    "rowIndex": 3
+  },
+  "T/y": {
+    "groupId": "lights_plus_2bar",
+    "rowIndex": 0
+  },
+  "T/y2": {
+    "groupId": "lights_plus_2bar",
+    "rowIndex": 0
+  },
+  "T/y'": {
+    "groupId": "outside_2bar",
+    "rowIndex": 3
+  },
+  "Ua/": {
+    "groupId": "double_lights",
+    "rowIndex": 3
+  },
+  "Ua/y": {
+    "groupId": "double_lights",
+    "rowIndex": 3
+  },
+  "Ua/y2": {
+    "groupId": "three_bar",
+    "rowIndex": 0
+  },
+  "Ua/y'": {
+    "groupId": "three_bar",
+    "rowIndex": 0
+  },
+  "Ub/": {
+    "groupId": "double_lights",
+    "rowIndex": 3
+  },
+  "Ub/y": {
+    "groupId": "double_lights",
+    "rowIndex": 3
+  },
+  "Ub/y2": {
+    "groupId": "three_bar",
+    "rowIndex": 0
+  },
+  "Ub/y'": {
+    "groupId": "three_bar",
+    "rowIndex": 0
+  },
+  "V/": {
+    "groupId": "no_bookends",
+    "rowIndex": 0
+  },
+  "V/y": {
+    "groupId": "outside_2bar",
+    "rowIndex": 0
+  },
+  "V/y2": {
+    "groupId": "double_2bar",
+    "rowIndex": 2
+  },
+  "V/y'": {
+    "groupId": "outside_2bar",
+    "rowIndex": 0
+  },
+  "Y/": {
+    "groupId": "no_bookends",
+    "rowIndex": 1
+  },
+  "Y/y": {
+    "groupId": "inside_2bar",
+    "rowIndex": 2
+  },
+  "Y/y2": {
+    "groupId": "double_2bar",
+    "rowIndex": 0
+  },
+  "Y/y'": {
+    "groupId": "inside_2bar",
+    "rowIndex": 2
+  },
+  "Z/": {
+    "groupId": "double_lights",
+    "rowIndex": 1
+  },
+  "Z/y": {
+    "groupId": "double_lights",
+    "rowIndex": 0
+  }
+}

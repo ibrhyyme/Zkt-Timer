@@ -166,34 +166,34 @@ const MAC_CACHE_KEY = 'qiyi_timer_mac_map';
 //
 // QiYi V1 timer (eski donanim, "QY-Timer-XXXX" veya "QY-Adapter-XXXX"):
 //   AES key = [0x77]*16 — cstimer qiyitimer.js'ten birebir port
+//   Hello magic = [0, 0, 0, 0, 0, 33, 8, 0, 1, 5, 90]
 //
 // QiYi V2 timer (yeni donanim, "QY-Timer-V2-XXXX"):
-//   AES key hipotez = QiYi Cube ile ayni public key
-//   (Flying-Toast/qiyi_smartcube_protocol GitHub'da public,
-//    cstimer qiyicube.js'te LZString-compressed halde)
-//   Hex: 57b1f9abcd5ae8a79cb98ce7578c5108
+//   AES key = [0x77]*16 — V1 ile AYNI (reverse engineer'da yakalandi)
+//   Hello magic = [0, 0, 0, 0, 0, 36, 5, 0, 4, 77, 20] — yeni firmware
 //
-// Phase 1 hipotezi: V2 firmware cube ile ayni AES key kullaniyor olabilir
-// (ayni sirket, modern crypto migration). Test edilecek.
-//
-// Phase 2/3'te V2 paket yapisinin (magic bytes, cmd kodlari) de degisip
-// degismedigini test ederiz; degisirse VariantConfig tablosu genisler.
+// Reverse engineering bulgulari (29 Mayis 2026, V2 timer + ex.rubik + HCI sniff):
+//   - V2 protokol structure cstimer V1 ile bire bir AYNI
+//   - Service UUID, characteristic UUIDs, packet framing, CRC16-MODBUS, AES key: AYNI
+//   - SADECE hello magic byte'lar (data[5..10]) farkli
+//   - Notify cmd 0x1003 dpId=1/dpType=1 (record time) AYNI
+//   - Notify cmd 0x1003 dpId=4/dpType=4 (state change) AYNI
+//   - V2 ekstra: dpId=3/dpType=2 mesajlari (muhtemelen pil seviyesi) — ignore edilebilir
 
 type QiyiVariant = 'v1' | 'v2';
 
-const AES_KEY_V1: number[] = Array(16).fill(0x77);
+const AES_KEY: number[] = Array(16).fill(0x77); // V1 ve V2 ortak
 
-const AES_KEY_V2: number[] = [
-	0x57, 0xb1, 0xf9, 0xab, 0xcd, 0x5a, 0xe8, 0xa7,
-	0x9c, 0xb9, 0x8c, 0xe7, 0x57, 0x8c, 0x51, 0x08,
-];
+// Hello sendMessage data icindeki ilk 11 byte (sonra reversed MAC 6 byte gelir)
+const HELLO_MAGIC_V1: number[] = [0, 0, 0, 0, 0, 33, 8, 0, 1, 5, 90];
+const HELLO_MAGIC_V2: number[] = [0, 0, 0, 0, 0, 36, 5, 0, 4, 77, 20];
 
 function detectVariant(deviceName: string): QiyiVariant {
 	return /^QY-Timer-V2-/i.test(deviceName) ? 'v2' : 'v1';
 }
 
-function aesKeyForVariant(variant: QiyiVariant): number[] {
-	return variant === 'v2' ? AES_KEY_V2 : AES_KEY_V1;
+function helloMagicForVariant(variant: QiyiVariant): number[] {
+	return variant === 'v2' ? HELLO_MAGIC_V2 : HELLO_MAGIC_V1;
 }
 
 // ===========================================================================
@@ -288,6 +288,7 @@ let _deviceName = '';
 let _deviceMac = '';
 let _eventSubject: Subject<QiyiTimerEvent> | null = null;
 let _disposed = false;
+let _notifyReceived = false;
 
 // onReadEvent state (cstimer qiyitimer.js:84-86)
 let _waitPkg = 0;
@@ -337,9 +338,9 @@ async function sendMessage(sendSN: number, ackSN: number, cmd: number, data: num
 	console.log('[QiyiTimer] send message to timer', fullMsg);
 }
 
-// sendHello — cstimer qiyitimer.js:72-78 birebir
-function sendHello(mac: string): Promise<void> {
-	const content = [0, 0, 0, 0, 0, 33, 8, 0, 1, 5, 90];
+// sendHello — V1 ve V2 ortak yapi, sadece magic byte'lar variant'a gore degisik
+function sendHello(mac: string, variant: QiyiVariant): Promise<void> {
+	const content = helloMagicForVariant(variant).slice();
 	for (let i = 5; i >= 0; i--) {
 		content.push(parseInt(mac.slice(i * 3, i * 3 + 2), 16));
 	}
@@ -358,6 +359,7 @@ function sendAck(sendSN: number, ackSN: number, cmd: number): Promise<void> {
 function onReadEvent(value: DataView): void {
 	if (!_decoder || !_eventSubject) return;
 
+	_notifyReceived = true;
 	console.log('[QiyiTimer] onReadEvent, byteLength=', value.byteLength);
 	let msg: number[] = [];
 	for (let i = 0; i < value.byteLength; i++) msg[i] = value.getUint8(i);
@@ -451,6 +453,13 @@ function onReadEvent(value: DataView): void {
 			state,
 			recordedTime: state === QiyiTimerState.STOPPED ? makeTimeFromMs(solveTime) : undefined,
 		});
+	} else if (dpId === 3 && dpType === 2) {
+		// V2 pil seviyesi mesaji — dpLen=4, payload[4..7] big-endian u32 (0-100)
+		if (payload.length >= 8) {
+			const battery = (payload[4] << 24) | (payload[5] << 16) | (payload[6] << 8) | payload[7];
+			console.log('[QiyiTimer] battery=' + battery + '%');
+		}
+		// UI'da pil ikonu gosterimi sonraki PR'a birakildi
 	} else {
 		console.log('[QiyiTimer] unknown dpId/dpType', dpId, dpType, payload);
 	}
@@ -588,14 +597,10 @@ export async function connectQiyiTimer(): Promise<QiyiTimerConnection> {
 	_deviceName = (device.name || '').trim();
 	console.log('[QiyiTimer] cihaz secildi, name=' + _deviceName);
 
-	// AES decoder — variant'a gore key sec
-	// V1 (QY-Timer-XXXX, QY-Adapter-XXXX): cstimer port'u, key = [0x77]*16
-	// V2 (QY-Timer-V2-XXXX): Phase 1 hipotezi, key = QiYi Cube public key
+	// AES decoder — V1 ve V2 ortak [0x77]*16 key, sadece hello magic byte'lar farkli
 	const variant = detectVariant(_deviceName);
-	const aesKey = aesKeyForVariant(variant);
-	console.log('[QiyiTimer] variant=' + variant + ' device="' + _deviceName + '" key=' +
-		aesKey.map((b) => b.toString(16).padStart(2, '0')).join(''));
-	_decoder = new AES128(aesKey);
+	console.log('[QiyiTimer] variant=' + variant + ' device="' + _deviceName + '"');
+	_decoder = new AES128(AES_KEY);
 
 	// onReadEvent state'ini sifirla (yeniden baglanma icin)
 	_waitPkg = 0;
@@ -704,21 +709,23 @@ export async function connectQiyiTimer(): Promise<QiyiTimerConnection> {
 
 	// === Adim 8: sendHello (cstimer init:236) ===
 	try {
-		await sendHello(finalMac);
-		console.log('[QiyiTimer] hello gonderildi, handshake bekleniyor');
-		// 5s sonra notification gelmediyse uyari — protokol/MAC uyumsuzlugunu gosterir
+		await sendHello(finalMac, variant);
+		console.log('[QiyiTimer] hello gonderildi (variant=' + variant + '), handshake bekleniyor');
+		// 8s sonra hicbir notification gelmediyse uyari (MAC yanlis veya cihaz kapali)
+		// _notifyReceived flag onReadEvent'te set ediliyor
+		const helloAt = Date.now();
 		setTimeout(() => {
-			if (_eventSubject && !_disposed && _payloadData.length === 0 && _waitPkg === 0) {
+			if (_eventSubject && !_disposed && !_notifyReceived) {
 				console.warn(
-					'[QiyiTimer] UYARI: Hello gonderildi ama 5s icinde notification yok.\n' +
+					'[QiyiTimer] UYARI: Hello gonderildi ama 8s icinde hicbir notification yok.\n' +
 					'  Olasi sebepler:\n' +
-					'  1) MAC yanlis (gercek MAC\'i Bluetooth ayarlarinda kontrol edin)\n' +
-					'  2) V2 firmware cstimer protokolu ile uyumsuz olabilir\n' +
-					'  3) Cihaz kapali/uyku modunda\n' +
-					'  localStorage.removeItem("' + MAC_CACHE_KEY + '") ile cache temizleyip tekrar deneyebilirsiniz.'
+					'  1) MAC yanlis (Bluetooth ayarlarinda kontrol edin)\n' +
+					'  2) Cihaz kapali/uyku modunda\n' +
+					'  localStorage.removeItem("' + MAC_CACHE_KEY + '") ile cache temizleyip tekrar deneyebilirsiniz.\n' +
+					'  helloAt=' + helloAt
 				);
 			}
-		}, 5000);
+		}, 8000);
 	} catch (e) {
 		console.error('[QiyiTimer] sendHello hatasi:', e);
 		// Hello fail olursa baglantiyi temizle
@@ -776,6 +783,7 @@ function _clearModuleState(): void {
 	_deviceName = '';
 	_deviceMac = '';
 	_eventSubject = null;
+	_notifyReceived = false;
 	// _decoder kalir — cstimer'da da `decoder = decoder || ...` mantigi var
 	_waitPkg = 0;
 	_payloadLen = 0;

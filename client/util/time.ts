@@ -131,7 +131,8 @@ export function convertTimeStringToSeconds(timeString: string, requirePeriod: bo
 
 	let regex = /^(\d{1,2}:)?(\d{1,2}:)?\d{1,2}(\.\d{0,4})?$/;
 	if (!requirePeriod) {
-		regex = /^(\d{1,2}:)?(\d{1,2}:)?\d{1,4}(\.\d{0,4})?$/;
+		// Noktasiz mod: tek parca MMSScc olarak okunur (12345 -> 1:23.45), 6 haneye kadar (max 99:59.99)
+		regex = /^(\d{1,2}:)?(\d{1,2}:)?\d{1,6}(\.\d{0,4})?$/;
 	}
 
 	const test = regex.test(timeString);
@@ -147,10 +148,9 @@ export function convertTimeStringToSeconds(timeString: string, requirePeriod: bo
 		switch (i) {
 			case parts.length - 1: {
 				// Seconds
-				if (
-					(val >= 60 && (requirePeriod || parts.length > 1)) ||
-					(val >= 6000 && !requirePeriod && parts.length === 1)
-				) {
+				// Noktasiz tek parca MMSScc yolu (asagida) saniyeyi yeniden hesaplar; burada sadece
+				// noktali/kolonlu girislerde 60+ saniye girisini engelle.
+				if (val >= 60 && (requirePeriod || parts.length > 1)) {
 					throw new Error();
 				}
 				timeSeconds += val;
@@ -181,7 +181,9 @@ export function convertTimeStringToSeconds(timeString: string, requirePeriod: bo
 		timeSeconds = minutes * 60 + seconds + centiseconds / 100;
 	}
 
-	const timeMilli = Math.floor(timeSeconds * 1000);
+	// Float gosterimi yuzunden 8.03 gibi degerler 8.029... cikiyor; floor 0.01 dusurur.
+	// Manuel giris milisaniye hassasiyetinde, dogru olan en yakina yuvarlamak.
+	const timeMilli = Math.round(timeSeconds * 1000);
 	timeSeconds = timeMilli / 1000;
 
 	return {

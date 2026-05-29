@@ -225,8 +225,13 @@ export function endTimer(context: ITimerContext, finalTimeMilli?: number, overri
 	}, 10);
 }
 
-export function resetTimerParams(context: ITimerContext) {
-	resetScramble(context);
+export function resetTimerParams(context: ITimerContext, skipScramble?: boolean) {
+	// skipScramble: inspection-DNF gibi durumlarda kullanici puzzle'i karistirmis
+	// halde tutuyor — yeni scramble vermek WCA mantigina aykiri ve kullanici
+	// yanlislikla eski scramble'in solve'unu yeni scramble'a kaydedebilir.
+	if (!skipScramble) {
+		resetScramble(context);
+	}
 	stopTimer(START_TIMEOUT);
 	clearInspectionTimers(true, true);
 	setTimerParams({
@@ -289,7 +294,10 @@ export function startInspection(context: ITimerContext) {
 			saveSolve(context, 0, context.scramble, now, now, true, false);
 
 			setTimeout(() => {
-				resetTimerParams(context);
+				// Inspection-DNF: scramble degistirme (kullanici puzzle'i ayni scramble
+				// ile karistirmis halde, tekrar deneyebilmeli). Yeni scramble icin
+				// kullanici ArrowRight veya UI buton kullanir.
+				resetTimerParams(context, true);
 			}, 2000);
 		}, inspectionDelay * 1000 + 2000)
 	);
