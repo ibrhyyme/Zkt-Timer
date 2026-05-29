@@ -26,6 +26,8 @@ import { useQuickControlsModal } from '../../quick-controls/useQuickControlsModa
 import AccountDropdown from '../../layout/nav/account_dropdown/AccountDropdown';
 import SubsetPicker from './SubsetPicker';
 import CrossColorPicker from './CrossColorPicker';
+import TimerTypePicker from './TimerTypePicker';
+import SettingsDropdown from '../../quick-controls/SettingsDropdown';
 import { getSubsetsForCube } from '../../../util/cubes/scramble_subsets';
 import { getNewScrambleAsync } from '../helpers/scramble';
 import { getCubeTypeInfoById } from '../../../util/cubes/util';
@@ -185,13 +187,16 @@ export default function HeaderControl() {
 		</div>
 	);
 
-	// Timer type dropdown moved to Quick Controls modal
-	const timerTypeDropdown = null;
+	// Timer type dropdown: desktop'ta header'da TimerTypePicker (sol grup, gear oncesi).
+	// Mobile'da gizli — modal'daki Timer tab'i kullaniliyor (TimerTypePicker.scss media query).
+	const timerTypeDropdown = !matchMode && <TimerTypePicker />;
 
 	const sessionSwitcher = !headerOptions.hideSessionSelector && <SessionSwitcher />;
 
-	// Maç modunda gear butonunu gizle
-	const gearButton = !matchMode && (
+	// Maç modunda gear butonunu gizle.
+	// Mobile: mevcut Button + modal (QuickControlsModal Timer/Extras/Goals tab'lariyla).
+	// Desktop: SettingsDropdown (Popover panel + tab switcher) — modal acmaz.
+	const gearButtonMobile = !matchMode && (
 		<Button
 			gray
 			icon={<Gear weight="bold" />}
@@ -201,6 +206,7 @@ export default function HeaderControl() {
 			}}
 		/>
 	);
+	const gearButtonDesktop = !matchMode && <SettingsDropdown />;
 
 	// Mobile: minimal header with account dropdown on right
 	if (mobileMode) {
@@ -210,7 +216,7 @@ export default function HeaderControl() {
 					<div className={b('left-controls')}>
 						{cubePicker}
 						{sessionSwitcher}
-						{gearButton}
+						{gearButtonMobile}
 					</div>
 					<div />
 					<div className={b('right-controls')}>
@@ -229,12 +235,12 @@ export default function HeaderControl() {
 					{headerOptions?.customHeadersLeft}
 					{cubePicker}
 					{sessionSwitcher}
-					{gearButton}
+					{timerTypeDropdown}
+					{gearButtonDesktop}
 				</div>
 				<div />
 				<div>
 					{headerOptions?.customHeadersRight}
-					{timerTypeDropdown}
 				</div>
 			</div>
 		</GlobalHotKeys>

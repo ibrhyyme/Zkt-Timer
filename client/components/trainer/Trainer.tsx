@@ -12,6 +12,7 @@ import StatsPanel from './panels/stats_panel/StatsPanel';
 import TrainerToolbar from './toolbar/TrainerToolbar';
 import TrainerLanding from './TrainerLanding';
 import RecognitionRoot from './recognition/RecognitionRoot';
+import EfficiencyRoot from './efficiency/EfficiencyRoot';
 import {ensureCubingReady} from '../../util/trainer/algorithm_engine';
 import {ensureKPuzzleReady} from '../../util/trainer/pattern_utils';
 import {loadLLPatterns} from '../../util/trainer/ll_patterns';
@@ -54,6 +55,11 @@ function TrainerContent() {
 	// Recognition modu kendi tum view'larini yonetir
 	if (state.mode === 'recognition') {
 		return <RecognitionRoot />;
+	}
+
+	// Efficiency modu (cross/xcross/eocross) kendi view'larini yonetir
+	if (state.mode === 'efficiency') {
+		return <EfficiencyRoot />;
 	}
 
 	if (state.view === 'training') {

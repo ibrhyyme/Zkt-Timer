@@ -111,14 +111,8 @@ export default function QiyiTimer() {
 				if (event.recordedTime) {
 					// cstimer record-time event'inde QiYi hem solveTime hem inspectTime gonderir
 					// (qiyitimer.js:143-150, dpId=1 dpType=1). cstimer kendi local inspection
-					// counter'ini kullaniyor, hardware inspectTime'i sadece log icin tutuyor —
+					// counter'ini kullaniyor, hardware inspectTime'i sadece bilgi icin tutuyor —
 					// aynisini yapiyoruz. Ileride DNF/+2 mantigina baglanabilir.
-					if (event.inspectionTime) {
-						console.log(
-							'[QiyiTimer] STOPPED solve=' + event.recordedTime.asTimestamp +
-							'ms inspect=' + event.inspectionTime.asTimestamp + 'ms'
-						);
-					}
 					endTimer(contextRef.current, event.recordedTime.asTimestamp);
 				}
 				break;
@@ -183,9 +177,7 @@ export default function QiyiTimer() {
 			conn = null;
 			setConnected(false);
 		} else {
-			console.log('[BLE] QiyiTimer handleConnectButton, isNative:', isNative());
 			let bluetoothAvailable = isNative() || (!!navigator.bluetooth && (await navigator.bluetooth.getAvailability()));
-			console.log('[BLE] QiyiTimer bluetoothAvailable:', bluetoothAvailable);
 			if (bluetoothAvailable) {
 				if (isNative()) {
 					setScanning(true);

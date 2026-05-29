@@ -8,6 +8,7 @@
 	min-width: 0;
 
 	&__chip {
+		all: unset;
 		display: inline-flex;
 		align-items: center;
 		gap: 0.35rem;
@@ -20,9 +21,10 @@
 		font-weight: 600;
 		font-family: inherit;
 		cursor: pointer;
-		transition: background-color 0.15s ease, border-color 0.15s ease;
+		transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 		max-width: 16rem;
 		min-width: 0;
+		box-sizing: border-box;
 
 		&:hover {
 			background-color: rgba(var(--button-color), 0.75);
@@ -35,6 +37,17 @@
 
 		&--all {
 			padding: 0.45rem 1rem;
+		}
+
+		// Radix Select Trigger acikken (FancyDropdown panel acik) — chip vurgulu
+		&[data-state='open'] {
+			background-color: rgba(var(--primary-color), 0.28);
+			border-color: rgba(var(--primary-color), 0.7);
+			box-shadow: 0 0 0 3px rgba(var(--primary-color), 0.15);
+
+			.#{$namespace}-stats-filter-controls__chip-caret {
+				transform: rotate(180deg);
+			}
 		}
 	}
 
@@ -49,6 +62,7 @@
 		flex-shrink: 0;
 		opacity: 0.7;
 		font-size: 0.7rem;
+		transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 	}
 
 	&__separator {
@@ -58,17 +72,7 @@
 		font-size: 0.85rem;
 	}
 
-	// Dropdown component'in icindeki Button'i sifirla — biz handle prop ile chip render ediyoruz
-	.#{$namespace}-common-dropdown__custom-handle {
-		all: unset;
-		display: inline-flex;
-		cursor: pointer;
-	}
-
-	// Dropdown body'nin viewport'tan tasmasini engelle (mobilde uzun sezon adlari)
-	.#{$namespace}-common-dropdown__body {
-		max-width: calc(100vw - 24px);
-	}
+	// Eski Dropdown override'lari kaldirildi — artik FancyDropdown kullaniyoruz.
 
 	@media (max-width: 768px) {
 		gap: 0.3rem;

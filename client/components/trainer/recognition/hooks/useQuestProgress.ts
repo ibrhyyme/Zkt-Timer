@@ -29,7 +29,7 @@ export function useQuestProgress(): UseQuestProgressResult {
 	const [stepStatuses, setStepStatuses] = useState<QuestStepStatus[]>([]);
 	const [loading, setLoading] = useState(true);
 
-	const load = useCallback(async () => {
+	const load = useCallback(async (isActive: () => boolean = () => true) => {
 		setLoading(true);
 		const results = await Promise.all(
 			QUEST_STEPS.map(async (step) => {
@@ -43,12 +43,20 @@ export function useQuestProgress(): UseQuestProgressResult {
 				} as QuestStepStatus;
 			})
 		);
+		// Unmount sonrasi setState'i onle (useSessionPB ile ayni cancelled pattern)
+		if (!isActive()) return;
 		setStepStatuses(results);
 		setLoading(false);
 	}, []);
 
 	useEffect(() => {
-		load().catch(() => setLoading(false));
+		let cancelled = false;
+		load(() => !cancelled).catch(() => {
+			if (!cancelled) setLoading(false);
+		});
+		return () => {
+			cancelled = true;
+		};
 	}, [load]);
 
 	const currentStepIndex = useMemo(() => {

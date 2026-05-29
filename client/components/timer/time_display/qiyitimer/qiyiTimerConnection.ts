@@ -270,7 +270,6 @@ let _scanningAdapter: BleAdapter | null = null;
 
 export function abortQiyiTimerScan(): void {
 	if (_scanningAdapter?.abortScan) {
-		console.log('[QiyiTimer] abortScan cagriliyor');
 		_scanningAdapter.abortScan();
 	}
 	_scanningAdapter = null;
@@ -335,7 +334,6 @@ async function sendMessage(sendSN: number, ackSN: number, cmd: number, data: num
 			throw e;
 		}
 	}
-	console.log('[QiyiTimer] send message to timer', fullMsg);
 }
 
 // sendHello — V1 ve V2 ortak yapi, sadece magic byte'lar variant'a gore degisik
@@ -360,7 +358,6 @@ function onReadEvent(value: DataView): void {
 	if (!_decoder || !_eventSubject) return;
 
 	_notifyReceived = true;
-	console.log('[QiyiTimer] onReadEvent, byteLength=', value.byteLength);
 	let msg: number[] = [];
 	for (let i = 0; i < value.byteLength; i++) msg[i] = value.getUint8(i);
 
@@ -402,7 +399,6 @@ function onReadEvent(value: DataView): void {
 	_waitPkg = 0;
 	_payloadData = [];
 
-	console.log('[QiyiTimer] receive data', data);
 	const len = (data[10] << 8) | data[11];
 	// CRC kontrolu: cstimer trailing 2 byte'i (data[len+12], data[len+13]) reverse edip
 	// crc16modbus(data[0..len+12].concat([data[len+13], data[len+12]])) == 0 olmali
@@ -417,10 +413,8 @@ function onReadEvent(value: DataView): void {
 	const payload = data.slice(12, len + 12);
 
 	if (cmd !== 0x1003) {
-		console.log('[QiyiTimer] cmd != 0x1003, skip', cmd);
 		return;
 	}
-	console.log('[QiyiTimer] receive 1003 message', payload);
 
 	const dpId = payload[0];
 	const dpType = payload[1];
@@ -455,13 +449,9 @@ function onReadEvent(value: DataView): void {
 		});
 	} else if (dpId === 3 && dpType === 2) {
 		// V2 pil seviyesi mesaji — dpLen=4, payload[4..7] big-endian u32 (0-100)
-		if (payload.length >= 8) {
-			const battery = (payload[4] << 24) | (payload[5] << 16) | (payload[6] << 8) | payload[7];
-			console.log('[QiyiTimer] battery=' + battery + '%');
-		}
 		// UI'da pil ikonu gosterimi sonraki PR'a birakildi
 	} else {
-		console.log('[QiyiTimer] unknown dpId/dpType', dpId, dpType, payload);
+		console.warn('[QiyiTimer] unknown dpId/dpType', dpId, dpType, payload);
 	}
 }
 
@@ -471,13 +461,11 @@ function onReadEvent(value: DataView): void {
 
 async function tryMacFromAdvertisement(adapter: BleAdapter, device: BleDevice): Promise<string | null> {
 	if (!adapter.watchAdvertisements) {
-		console.log('[QiyiTimer] watchAdvertisements bu adapter\'da yok');
 		return null;
 	}
 	try {
 		const mfData = await adapter.watchAdvertisements(device);
 		if (!mfData) {
-			console.log('[QiyiTimer] watchAdvertisements null donerdi');
 			return null;
 		}
 
@@ -489,7 +477,6 @@ async function tryMacFromAdvertisement(adapter: BleAdapter, device: BleDevice): 
 		} else {
 			for (const id of QIYI_CIC_LIST) {
 				if (mfData.has(id)) {
-					console.log('[QiyiTimer] CIC bulundu: 0x' + id.toString(16).padStart(4, '0'));
 					dataView = mfData.get(id) || null;
 					break;
 				}
@@ -572,7 +559,6 @@ function promptForMac(defaultMac: string | null, currentMac: string | null): str
 
 export async function connectQiyiTimer(): Promise<QiyiTimerConnection> {
 	if (_connection) {
-		console.log('[QiyiTimer] zaten baglanti var, eskiyi don');
 		return _connection;
 	}
 
@@ -595,11 +581,9 @@ export async function connectQiyiTimer(): Promise<QiyiTimerConnection> {
 	_scanningAdapter = null;
 	_device = device;
 	_deviceName = (device.name || '').trim();
-	console.log('[QiyiTimer] cihaz secildi, name=' + _deviceName);
 
 	// AES decoder — V1 ve V2 ortak [0x77]*16 key, sadece hello magic byte'lar farkli
 	const variant = detectVariant(_deviceName);
-	console.log('[QiyiTimer] variant=' + variant + ' device="' + _deviceName + '"');
 	_decoder = new AES128(AES_KEY);
 
 	// onReadEvent state'ini sifirla (yeniden baglanma icin)
@@ -613,15 +597,11 @@ export async function connectQiyiTimer(): Promise<QiyiTimerConnection> {
 	// === Adim 1: waitForAdvs — MAC discovery (cstimer init:196-210) ===
 	let mac = await tryMacFromAdvertisement(adapter, device);
 	if (mac) {
-		console.log('[QiyiTimer] init, found cube bluetooth hardware MAC = ' + mac);
 		_deviceMac = mac;
-	} else {
-		console.log('[QiyiTimer] init, unable to automatically determine cube MAC');
 	}
 
 	// === Adim 2: GATT connect (cstimer init:212-213) ===
 	try {
-		console.log('[QiyiTimer] connecting to GATT server');
 		await adapter.connect(device, () => {
 			if (_disposed) return;
 			console.warn('[QiyiTimer] hardware disconnect event');
@@ -641,7 +621,6 @@ export async function connectQiyiTimer(): Promise<QiyiTimerConnection> {
 	// findUUID cstimer'da gerekli cunku tum karakteristikleri tek tek aliyor, biz isim
 	// ile direkt sorguluyoruz. Adapter UUID expand'ini kendi yapiyor.
 	try {
-		console.log('[QiyiTimer] start listening to state characteristic value updates');
 		await adapter.startNotifications(device, SERVICE_UUID, CHRCT_READ, onReadEvent);
 	} catch (e) {
 		console.error('[QiyiTimer] startNotifications hatasi:', e);
@@ -656,9 +635,6 @@ export async function connectQiyiTimer(): Promise<QiyiTimerConnection> {
 
 	// === Adim 5: Device name regex'ten defaultMac (cstimer init:230-234) ===
 	const defaultMac = defaultMacFromDeviceName(_deviceName);
-	if (defaultMac) {
-		console.log('[QiyiTimer] device name pattern defaultMac:', defaultMac);
-	}
 
 	// === Adim 6-7: cstimer reqMacAddr semantic'i (bluetoothutil.js:760-784) ===
 	//
@@ -675,7 +651,6 @@ export async function connectQiyiTimer(): Promise<QiyiTimerConnection> {
 	const cachedMac = getCachedMacForDevice(_deviceName);
 
 	if (!finalMac && cachedMac) {
-		console.log('[QiyiTimer] cached MAC for "' + _deviceName + '" = ' + cachedMac);
 		finalMac = cachedMac;
 	}
 
@@ -705,12 +680,10 @@ export async function connectQiyiTimer(): Promise<QiyiTimerConnection> {
 	finalMac = finalMac.toUpperCase();
 	_deviceMac = finalMac;
 	setCachedMacForDevice(_deviceName, finalMac);
-	console.log('[QiyiTimer] final MAC for hello:', finalMac);
 
 	// === Adim 8: sendHello (cstimer init:236) ===
 	try {
 		await sendHello(finalMac, variant);
-		console.log('[QiyiTimer] hello gonderildi (variant=' + variant + '), handshake bekleniyor');
 		// 8s sonra hicbir notification gelmediyse uyari (MAC yanlis veya cihaz kapali)
 		// _notifyReceived flag onReadEvent'te set ediliyor
 		const helloAt = Date.now();
@@ -758,7 +731,6 @@ export async function connectQiyiTimer(): Promise<QiyiTimerConnection> {
 async function disconnectQiyi(): Promise<void> {
 	if (_disposed) return;
 	_disposed = true;
-	console.log('[QiyiTimer] kullanici disconnect');
 	if (_adapter && _device) {
 		try {
 			await _adapter.stopNotifications(_device, SERVICE_UUID, CHRCT_READ);

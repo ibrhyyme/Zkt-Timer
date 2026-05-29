@@ -1,43 +1,42 @@
-import React, {useEffect, useMemo, useState} from 'react';
-import {CaretDown} from 'phosphor-react';
-import {useDispatch} from 'react-redux';
-import {useTranslation} from 'react-i18next';
-import {setCubeType, setCurrentSession, setScrambleSubset} from '../../db/settings/update';
-import {fetchSessionById, fetchSessions} from '../../db/sessions/query';
-import {fetchLastBucketForSession} from '../../db/solves/query';
-import {useSettings} from '../../util/hooks/useSettings';
-import {getSetting} from '../../db/settings/query';
-import {getCubeTypeInfoById} from '../../util/cubes/util';
-import {getNewScrambleAsync} from '../timer/helpers/scramble';
-import {setTimerParam, setTimerParams} from '../timer/helpers/params';
-import Dropdown from '../common/inputs/dropdown/Dropdown';
-import {Session} from '../../../server/schemas/Session.schema';
-import {openModal} from '../../actions/general';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Plus } from 'phosphor-react';
+import { useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
+import { setCubeType, setCurrentSession, setScrambleSubset } from '../../db/settings/update';
+import { fetchSessionById, fetchSessions } from '../../db/sessions/query';
+import { fetchLastBucketForSession } from '../../db/solves/query';
+import { useSettings } from '../../util/hooks/useSettings';
+import { getSetting } from '../../db/settings/query';
+import { getCubeTypeInfoById } from '../../util/cubes/util';
+import { getNewScrambleAsync } from '../timer/helpers/scramble';
+import { setTimerParam, setTimerParams } from '../timer/helpers/params';
+import FancyDropdown, { FancyDropdownGroup } from '../timer/header_control/FancyDropdown';
+import { Session } from '../../../server/schemas/Session.schema';
+import { openModal } from '../../actions/general';
 import CreateNewSession from './new_session/CreateNewSession';
-import {useMe} from '../../util/hooks/useMe';
-import {useSessionDb} from '../../util/hooks/useSessionDb';
+import { useMe } from '../../util/hooks/useMe';
+import { useSessionDb } from '../../util/hooks/useSessionDb';
 
 interface Props {
 	stateless?: boolean;
-	hideSessionName?: boolean; // Will just show "Session"
+	hideSessionName?: boolean;
 	onChange?: (session: Session) => void;
 }
 
+const ACTION_NEW_SESSION = '__action__new_session';
+
 export default function SessionPicker(props: Props) {
 	const dispatch = useDispatch();
-	const {t} = useTranslation();
+	const { t } = useTranslation();
 	const me = useMe();
 	const sessionId = useSettings('session_id');
 	const sessionDbChangeCounter = useSessionDb();
 
 	const [selectedSession, setSelectedSession] = useState<Session>();
-	const {onChange, hideSessionName, stateless} = props;
+	const { onChange, hideSessionName, stateless } = props;
 
 	useEffect(() => {
-		if (stateless) {
-			return;
-		}
-
+		if (stateless) return;
 		const currentSession = fetchSessionById(sessionId);
 		setSelectedSession(currentSession);
 	}, [sessionId]);
@@ -52,39 +51,39 @@ export default function SessionPicker(props: Props) {
 		}));
 	}
 
-	const options = useMemo(() => {
+	const groups: FancyDropdownGroup[] = useMemo(() => {
 		const sessions = fetchSessions();
 		const showNewSessionButton = me && !stateless;
 
-		const sessionOptions = sessions.map((ses, i) => ({
-			text: ses.name,
-			disabled: selectedSession?.id === ses.id,
-			onClick: () => switchSession(ses),
-			separator: showNewSessionButton && i === sessions.length - 1,
-		}));
+		const sessionGroup: FancyDropdownGroup = {
+			options: sessions.map((ses) => ({
+				value: ses.id,
+				label: ses.name,
+			})),
+		};
 
 		if (showNewSessionButton) {
 			return [
-				...sessionOptions,
+				sessionGroup,
 				{
-					text: `${t('sessions.new_session')} +`,
-					onClick: toggleCreateNewSession,
+					options: [
+						{
+							value: ACTION_NEW_SESSION,
+							label: `${t('sessions.new_session')}`,
+							icon: <Plus weight="bold" size={16} />,
+						},
+					],
 				},
 			];
 		}
-
-		return sessionOptions;
+		return [sessionGroup];
 	}, [selectedSession, me, stateless, t, sessionDbChangeCounter]);
 
 	function switchSession(session: Session) {
 		setSelectedSession(session);
-		if (onChange) {
-			onChange(session);
-		}
+		if (onChange) onChange(session);
 
-		if (stateless) {
-			return;
-		}
+		if (stateless) return;
 
 		setCurrentSession(session.id);
 
@@ -107,13 +106,24 @@ export default function SessionPicker(props: Props) {
 			const ct = getCubeTypeInfoById(lastCubeType);
 			if (ct) {
 				setTimerParam('scrambleSubset', newSubset);
-				setTimerParams({scramble: '', originalScramble: '', smartTurnOffset: 0});
+				setTimerParams({ scramble: '', originalScramble: '', smartTurnOffset: 0 });
 				getNewScrambleAsync(ct.scramble, newSubset ?? undefined).then((newScramble) => {
-					setTimerParams({scramble: newScramble, originalScramble: newScramble, smartTurnOffset: 0});
+					setTimerParams({ scramble: newScramble, originalScramble: newScramble, smartTurnOffset: 0 });
 				}).catch((e) => {
 					console.error('[scramble] switchSession failed:', e);
 				});
 			}
+		}
+	}
+
+	function handleValueChange(value: string) {
+		if (value === ACTION_NEW_SESSION) {
+			toggleCreateNewSession();
+			return;
+		}
+		const session = fetchSessions().find(s => s.id === value);
+		if (session) {
+			switchSession(session);
 		}
 	}
 
@@ -122,9 +132,20 @@ export default function SessionPicker(props: Props) {
 		sessionName = selectedSession.name;
 	}
 
+	// Radix Select empty string'i sevmiyor — selectedSession yokken virtual placeholder
+	const NO_SESSION = '__no_session__';
+
 	return (
 		<div className="cd-session-picker">
-			<Dropdown noMargin openLeft text={sessionName} icon={<CaretDown />} options={options} />
+			<FancyDropdown
+				value={selectedSession?.id || NO_SESSION}
+				onValueChange={handleValueChange}
+				groups={groups}
+				triggerLabel={sessionName}
+				ariaLabel="Session"
+				maxHeight={400}
+				triggerMaxWidth={180}
+			/>
 		</div>
 	);
 }

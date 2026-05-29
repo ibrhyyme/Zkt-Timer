@@ -244,7 +244,8 @@ export function solveCross(scramble: string): SolverResult[] {
 	return results;
 }
 
-export function solveXCross(scramble: string, face: number): SolverResult {
+// slot: undefined = 4 slot'tan optimal (en kisa) pair; 0-3 = belirli F2L slot
+export function solveXCross(scramble: string, face: number, slot?: number): SolverResult {
 	initXCrossInternal();
 	const moves = parseScramble(scramble, 'FRUBLD');
 
@@ -267,8 +268,14 @@ export function solveXCross(scramble: string, face: number): SolverResult {
 	}
 
 	const idxs: number[][] = [];
-	for (let i = 0; i < 4; i++) {
-		idxs.push([perm, flip, e1[i], c1[i], i]);
+	if (slot !== undefined && slot >= 0 && slot < 4) {
+		// Belirli slot — sadece o pair'i coz
+		idxs.push([perm, flip, e1[slot], c1[slot], slot]);
+	} else {
+		// Optimal — 4 slot'tan en kisasi (solveMulti ilk cozuleni dondurur)
+		for (let i = 0; i < 4; i++) {
+			idxs.push([perm, flip, e1[i], c1[i], i]);
+		}
 	}
 
 	const solResult = solvXCross.solveMulti(idxs, 0, 20);
@@ -286,4 +293,183 @@ export function solveXCross(scramble: string, face: number): SolverResult {
 		solution,
 		moveCount: solution.length,
 	};
+}
+
+// ==================== Easy Cross / XCross (belirli uzunlukta pattern) ====================
+// cstimer cross.js getEasyCross/getEasyXCross birebir port. Full pruning table (190080
+// state, ~100KB packed) ile TAM N-move cross/xcross pozisyonu uretir — uret-ve-ele yok.
+// Donen [ep,eo(,cp,co)] mask, getAnyScramble'a beslenip gercek WCA scramble'a cevrilir.
+
+let fullPrun: number[] = [];
+let fullInited = false;
+
+function fullmv(idx: number, move: number): number {
+	const slice = cmv[move][~~(idx / 384)];
+	const flip = fmul[idx & 15][(slice >> 4) % 24] ^ (slice & 15);
+	const perm = pmul[(idx >> 4) % 24][(slice >> 4) % 24];
+	return ~~(slice / 384) * 384 + 16 * perm + flip;
+}
+
+export function fullInit(): void {
+	if (fullInited) return;
+	fullInited = true;
+	initCrossInternal();
+	fullPrun = [];
+	createPrun(fullPrun, 0, 190080, 7, fullmv, 6, 3, 6);
+}
+
+function rn(n: number): number {
+	return Math.floor(Math.random() * n);
+}
+
+function rndPerm(n: number): number[] {
+	const arr: number[] = [];
+	for (let i = 0; i < n; i++) arr[i] = i;
+	for (let i = n - 1; i > 0; i--) {
+		const j = rn(i + 1);
+		const t = arr[i];
+		arr[i] = arr[j];
+		arr[j] = t;
+	}
+	return arr;
+}
+
+function valuedArray(len: number, val: number): number[] {
+	const a: number[] = [];
+	for (let i = 0; i < len; i++) a[i] = val;
+	return a;
+}
+
+// idx (cross coord) → [edgePerm[12], edgeFlip[12]] (cstimer mapCross)
+function mapCross(idx: number): number[][] {
+	let comb = ~~(idx / 384);
+	const perm = (idx >> 4) % 24;
+	const flip = idx & 15;
+	const arrp: number[] = [];
+	const arrf: number[] = [];
+	const pm: number[] = [];
+	const fl: number[] = [];
+	i2f(flip, fl);
+	setNPerm(pm, perm, 4);
+	let r = 4;
+	const map = [7, 6, 5, 4, 10, 9, 8, 11, 3, 2, 1, 0];
+	for (let i = 0; i < 12; i++) {
+		if (comb >= Cnk[11 - i][r]) {
+			comb -= Cnk[11 - i][r--];
+			arrp[map[i]] = pm[r];
+			arrf[map[i]] = fl[r];
+		} else {
+			arrp[map[i]] = arrf[map[i]] = -1;
+		}
+	}
+	return [arrp, arrf];
+}
+
+/**
+ * Tam `length`-move cross pozisyonu uretir → [edgePerm[12], edgeFlip[12]] mask.
+ * length: tek deger (lenB*10+lenA aralik kodlamasi); tam N icin N*11 gonder (lenA=lenB=N).
+ */
+export function getEasyCross(length: number): number[][] {
+	fullInit();
+	const lenA = Math.min(length % 10, 8);
+	const lenB = Math.min(~~(length / 10), 8);
+	const minLen = Math.min(lenA, lenB);
+	const maxLen = Math.max(lenA, lenB);
+	const ncase = [0, 1, 16, 174, 1568, 11377, 57758, 155012, 189978, 190080];
+	let cases = rn(ncase[maxLen + 1] - ncase[minLen]) + 1;
+	let i: number;
+	for (i = 0; i < 190080; i++) {
+		const prun = getPruning(fullPrun, i);
+		if (prun <= maxLen && prun >= minLen && --cases === 0) {
+			break;
+		}
+	}
+	return mapCross(i);
+}
+
+/**
+ * Tam `length`-move XCross pozisyonu uretir → [edgePerm[12], edgeFlip[12], cornerPerm[8], cornerOri[8]].
+ */
+export function getEasyXCross(length: number): number[][] | null {
+	fullInit();
+	initXCrossInternal();
+	const lenA = length % 10;
+	const lenB = ~~(length / 10);
+	const minLen = Math.min(lenA, lenB, 8);
+	const maxLen = Math.max(lenA, lenB);
+	const ncase = [1, 16, 174, 1568, 11377, 57758, 155012, 189978, 190080];
+	const lenClamp = Math.max(0, Math.min(maxLen, 8)); // cross length
+	const remain = ncase[lenClamp];
+	let isFound = false;
+	// Donma korumasi: nadir/imkansiz uzunluk (orn 3-move XCross) sonsuz dongu yapmasin
+	let outerTries = 0;
+	const MAX_OUTER = 6;
+
+	while (!isFound && outerTries < MAX_OUTER) {
+		outerTries++;
+		const rndIdx: number[] = [];
+		const sample = 500;
+		for (let i = 0; i < sample; i++) rndIdx.push(rn(remain));
+		rndIdx.sort((a, b) => b - a);
+		const rndCases: number[] = [];
+		let cnt = 0;
+		for (let i = 0; i < 190080; i++) {
+			const prun = getPruning(fullPrun, i);
+			if (prun > lenClamp) continue;
+			while (rndIdx[rndIdx.length - 1] === cnt) {
+				rndCases.push(i);
+				rndIdx.pop();
+			}
+			if (rndIdx.length === 0) break;
+			cnt++;
+		}
+		const order = rndPerm(sample);
+		for (let s = 0; s < sample; s++) {
+			const caze = rndCases[order[s]];
+			let comb = ~~(caze / 384);
+			const perm = ~~(caze / 384) * 24 + ((caze >> 4) % 24);
+			const flip = (~~(caze / 384) << 4) | (caze & 15);
+			const corns = rndPerm(8).slice(4);
+			const edges = rndPerm(8);
+
+			const arr = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+			let r = 4;
+			for (let j = 0; j < 12; j++) {
+				if (comb >= Cnk[11 - j][r]) {
+					comb -= Cnk[11 - j][r--];
+					arr[j] = -1;
+				} else {
+					arr[j] = edges.pop() as number;
+				}
+			}
+			for (let j = 0; j < 4; j++) {
+				corns[j] = corns[j] * 3 + rn(3);
+				edges[j] = arr.indexOf(j) * 2 + rn(2);
+				const sol = solvXCross.solve([perm, flip, edges[j], corns[j], j], 0, isFound ? minLen - 1 : maxLen);
+				if (sol == null) {
+					continue;
+				} else if (sol.length < minLen) {
+					isFound = false;
+					break;
+				} else if (sol.length <= maxLen) {
+					isFound = true;
+				}
+			}
+			if (!isFound) continue;
+
+			const crossArr = mapCross(caze);
+			crossArr[2] = valuedArray(8, -1);
+			crossArr[3] = valuedArray(8, -1);
+			const map = [7, 6, 5, 4, 10, 9, 8, 11, 3, 2, 1, 0];
+			const map2 = [6, 5, 4, 7, 2, 1, 0, 3];
+			for (let i = 0; i < 4; i++) {
+				crossArr[0][map[edges[i] >> 1]] = map[i + 4];
+				crossArr[1][map[edges[i] >> 1]] = edges[i] % 2;
+				crossArr[2][map2[~~(corns[i] / 3)]] = map2[i + 4];
+				crossArr[3][map2[~~(corns[i] / 3)]] = (30 - corns[i]) % 3;
+			}
+			return crossArr;
+		}
+	}
+	return null; // bulunamadi (cok nadir/imkansiz uzunluk) → caller uret-ve-ele fallback'e duser
 }

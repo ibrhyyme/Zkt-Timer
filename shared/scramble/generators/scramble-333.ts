@@ -208,6 +208,18 @@ function getAnyScramble(
 	return solution.replace(/ +/g, ' ');
 }
 
+/**
+ * Efficiency Trainer (Faz 3): cross/xcross getEasyCross mask'inden gercek WCA scramble.
+ * cstimer getEasyCrossScramble/getEasyXCrossScramble birlesik portu.
+ * mask: cross → [edgePerm[12], edgeFlip[12]]; xcross → +[cornerPerm[8], cornerOri[8]].
+ */
+export function getEasyCrossScramble(mask: number[][], isXCross: boolean): string {
+	if (isXCross) {
+		return getAnyScramble(mask[0], mask[1], mask[2], mask[3]);
+	}
+	return getAnyScramble(mask[0], mask[1], 0xffffffff, 0xffffffff);
+}
+
 // ==================== Basic Scramble Types ====================
 
 function getRandomScramble(): string {

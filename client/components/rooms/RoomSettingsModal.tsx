@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'phosphor-react';
 import { useTranslation } from 'react-i18next';
 import TimerTab from '../quick-controls/tabs/TimerTab';
 import ExtrasTab from '../quick-controls/tabs/ExtrasTab';
+import { useGeneral } from '../../util/hooks/useGeneral';
 import './RoomSettingsModal.scss';
 
 interface RoomSettingsModalProps {
@@ -15,7 +16,16 @@ interface RoomSettingsModalProps {
 
 export default function RoomSettingsModal({ isOpen, onClose, allowedTimerTypes, requireProForSmart }: RoomSettingsModalProps) {
     const { t } = useTranslation();
+    const mobileMode = useGeneral('mobile_mode');
     const [activeTab, setActiveTab] = useState<'timer' | 'extras'>('timer');
+
+    // Desktop'ta Timer tab artik header'daki TimerTypePicker'a tasindi —
+    // modal sadece "Hizli Ayarlar" tab'i gosterir. Mobile'da modal Timer tab koruyor.
+    useEffect(() => {
+        if (isOpen && !mobileMode && activeTab === 'timer') {
+            setActiveTab('extras');
+        }
+    }, [isOpen, mobileMode, activeTab]);
 
     if (!isOpen) {
         return null;
@@ -32,13 +42,15 @@ export default function RoomSettingsModal({ isOpen, onClose, allowedTimerTypes, 
             <div className="room-settings-modal" onClick={(e) => e.stopPropagation()}>
                 <div className="room-settings-modal__header">
                     <div className="room-settings-modal__tabs">
-                        <button
-                            type="button"
-                            className={`room-settings-modal__tab ${activeTab === 'timer' ? 'room-settings-modal__tab--active' : ''}`}
-                            onClick={() => setActiveTab('timer')}
-                        >
-                            Timer
-                        </button>
+                        {mobileMode && (
+                            <button
+                                type="button"
+                                className={`room-settings-modal__tab ${activeTab === 'timer' ? 'room-settings-modal__tab--active' : ''}`}
+                                onClick={() => setActiveTab('timer')}
+                            >
+                                Timer
+                            </button>
+                        )}
                         <button
                             type="button"
                             className={`room-settings-modal__tab ${activeTab === 'extras' ? 'room-settings-modal__tab--active' : ''}`}
@@ -58,7 +70,7 @@ export default function RoomSettingsModal({ isOpen, onClose, allowedTimerTypes, 
                 </div>
 
                 <div className="room-settings-modal__content overflow-y-auto max-h-[70vh] px-2">
-                    {activeTab === 'timer' && <TimerTab allowedTimerTypes={allowedTimerTypes} requireProForSmart={requireProForSmart} />}
+                    {activeTab === 'timer' && mobileMode && <TimerTab allowedTimerTypes={allowedTimerTypes} requireProForSmart={requireProForSmart} />}
                     {activeTab === 'extras' && <ExtrasTab hideMobileModules hideSmartCubeFeatures />}
                 </div>
             </div>

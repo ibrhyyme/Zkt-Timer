@@ -1,0 +1,389 @@
+@import '../../../styles/config';
+
+// Generic header dropdown — TimerTypePicker ile ayni pattern.
+// Sade satirlar (background fill yok), sol stripe + check ile active gosterim.
+
+.#{$namespace}-fancy-dropdown {
+	&__trigger {
+		all: unset;
+		box-sizing: border-box;
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		height: 36px;
+		padding: 0 10px 0 12px;
+		background: linear-gradient(
+			135deg,
+			rgba(var(--text-color), 0.1) 0%,
+			rgba(var(--text-color), 0.06) 100%
+		);
+		border: 1px solid rgba(var(--text-color), 0.08);
+		border-radius: 10px;
+		color: rgba(var(--text-color), 0.92);
+		font-size: 0.85rem;
+		font-weight: 500;
+		font-family: inherit;
+		cursor: pointer;
+		transition:
+			background 0.2s ease,
+			border-color 0.2s ease,
+			transform 0.15s cubic-bezier(0.16, 1, 0.3, 1),
+			box-shadow 0.2s ease;
+		white-space: nowrap;
+		min-width: 0;
+		position: relative;
+		overflow: hidden;
+
+		// Subtle shimmer overlay
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 0;
+			background: linear-gradient(
+				115deg,
+				transparent 30%,
+				rgba(255, 255, 255, 0.04) 50%,
+				transparent 70%
+			);
+			opacity: 0;
+			transition: opacity 0.3s ease;
+			pointer-events: none;
+		}
+
+		&:hover {
+			background: linear-gradient(
+				135deg,
+				rgba(var(--text-color), 0.18) 0%,
+				rgba(var(--text-color), 0.1) 100%
+			);
+			border-color: rgba(var(--text-color), 0.2);
+			transform: translateY(-1px);
+			box-shadow:
+				0 4px 12px rgba(0, 0, 0, 0.25),
+				0 0 0 1px rgba(var(--text-color), 0.05);
+
+			&::before {
+				opacity: 1;
+			}
+		}
+
+		&:active {
+			transform: translateY(0);
+		}
+
+		&:focus-visible {
+			outline: 2px solid rgba(var(--primary-color), 0.5);
+			outline-offset: 2px;
+		}
+
+		&[data-state='open'] {
+			background: linear-gradient(
+				135deg,
+				rgba(var(--primary-color), 0.18) 0%,
+				rgba(var(--text-color), 0.12) 100%
+			);
+			border-color: rgba(var(--primary-color), 0.6);
+			box-shadow:
+				0 0 0 3px rgba(var(--primary-color), 0.18),
+				0 4px 16px rgba(0, 0, 0, 0.3);
+
+			.#{$namespace}-fancy-dropdown__trigger-caret {
+				transform: rotate(180deg);
+				color: rgb(var(--primary-color));
+			}
+
+			.#{$namespace}-fancy-dropdown__trigger-icon {
+				color: rgb(var(--primary-color));
+				transform: scale(1.05);
+			}
+		}
+	}
+
+	&__trigger-icon {
+		display: inline-flex;
+		align-items: center;
+		color: rgba(var(--text-color), 0.8);
+		transition: color 0.2s ease, transform 0.2s ease;
+
+		> img,
+		> svg,
+		> span > img,
+		> span > svg {
+			max-width: 22px;
+			max-height: 22px;
+		}
+	}
+
+	&__trigger-label {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	&__trigger-caret {
+		display: inline-flex;
+		align-items: center;
+		color: rgba(var(--text-color), 0.5);
+		transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.2s ease;
+	}
+
+	&__panel {
+		min-width: 240px;
+		max-width: 380px;
+		background: rgba(var(--background-color), 0.85);
+		backdrop-filter: blur(20px) saturate(180%);
+		-webkit-backdrop-filter: blur(20px) saturate(180%);
+		border: 1px solid rgba(var(--text-color), 0.12);
+		border-radius: 12px;
+		box-shadow:
+			0 20px 50px rgba(0, 0, 0, 0.6),
+			0 8px 20px rgba(0, 0, 0, 0.4),
+			0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+		padding: 6px;
+		z-index: 10001;
+		overflow: hidden;
+		transform-origin: var(--radix-select-content-transform-origin);
+		will-change: transform, opacity;
+
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 0;
+			background: radial-gradient(
+				120% 60% at 50% 0%,
+				rgba(var(--primary-color), 0.06) 0%,
+				transparent 60%
+			);
+			border-radius: inherit;
+			pointer-events: none;
+			z-index: 0;
+		}
+
+		&[data-state='open'] {
+			animation: fancy-dropdown-content-in 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+		}
+
+		&[data-state='closed'] {
+			animation: fancy-dropdown-content-out 0.1s ease-in;
+		}
+	}
+
+	&__viewport {
+		position: relative;
+		z-index: 1;
+		max-height: inherit;
+		overflow-y: auto;
+		// Subtle scrollbar
+		scrollbar-width: thin;
+		scrollbar-color: rgba(var(--text-color), 0.2) transparent;
+
+		&::-webkit-scrollbar {
+			width: 6px;
+		}
+		&::-webkit-scrollbar-track {
+			background: transparent;
+		}
+		&::-webkit-scrollbar-thumb {
+			background: rgba(var(--text-color), 0.2);
+			border-radius: 3px;
+		}
+	}
+
+	&__group-label {
+		display: block;
+		padding: 8px 12px 4px;
+		font-size: 0.62rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: rgba(var(--text-color), 0.5);
+		user-select: none;
+	}
+
+	&__separator {
+		height: 1px;
+		background: rgba(var(--text-color), 0.08);
+		margin: 6px 8px;
+	}
+
+	&__option {
+		all: unset;
+		box-sizing: border-box;
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		padding: 10px 12px;
+		border-radius: 8px;
+		color: rgba(var(--text-color), 0.85);
+		font-size: 0.85rem;
+		font-weight: 500;
+		font-family: inherit;
+		cursor: pointer;
+		user-select: none;
+		width: 100%;
+		position: relative;
+		transition:
+			color 0.15s ease,
+			transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+		z-index: 1;
+		animation: fancy-dropdown-item-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+
+		// Sol yan stripe (gizli baslangic — hover/active'de buyur)
+		&::before {
+			content: '';
+			position: absolute;
+			left: 4px;
+			top: 50%;
+			width: 3px;
+			height: 0;
+			background: rgb(var(--primary-color));
+			border-radius: 2px;
+			transform: translateY(-50%);
+			transition:
+				height 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+				background 0.15s ease;
+		}
+
+		// Hover (Radix data-highlighted): sol stripe partial + text rengi acilir, background YOK
+		&[data-highlighted] {
+			background: transparent;
+			color: rgb(var(--text-color));
+			outline: none;
+			transform: translateX(2px);
+
+			&::before {
+				height: 10px;
+				background: rgba(var(--text-color), 0.4);
+			}
+		}
+
+		// Active (Radix data-state='checked'): solid mavi arkaplan + beyaz text + check icon
+		&[data-state='checked'] {
+			background: rgb(var(--primary-color));
+			color: #fff;
+
+			&::before {
+				// Solid bg ile sol stripe redundant
+				height: 0;
+			}
+
+			.#{$namespace}-fancy-dropdown__option-icon {
+				color: #fff;
+			}
+
+			// Active + hover (highlight) — solid bg kalir
+			&[data-highlighted] {
+				background: rgb(var(--primary-color));
+				color: #fff;
+				transform: none;
+
+				&::before {
+					height: 0;
+				}
+			}
+		}
+
+		&[data-disabled],
+		&--disabled {
+			cursor: not-allowed;
+			color: rgba(var(--text-color), 0.4);
+			pointer-events: none;
+
+			.#{$namespace}-fancy-dropdown__option-icon {
+				color: rgba(var(--text-color), 0.3);
+			}
+		}
+	}
+
+	&__option-icon {
+		display: inline-flex;
+		align-items: center;
+		flex-shrink: 0;
+		color: rgba(var(--text-color), 0.7);
+		transition: color 0.15s ease;
+
+		// Icon icindeki img/svg native boyutla sismesin
+		> img,
+		> svg,
+		> span > img,
+		> span > svg {
+			max-width: 22px;
+			max-height: 22px;
+		}
+	}
+
+	&__option-label {
+		flex: 1;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	&__option-badge-slot {
+		display: inline-flex;
+		align-items: center;
+		flex-shrink: 0;
+		margin-left: auto;
+	}
+
+	&__check {
+		display: inline-flex;
+		align-items: center;
+		color: #fff;
+		margin-left: auto;
+		flex-shrink: 0;
+
+		// Sade pop-in animasyon (active satira gecince)
+		animation: fancy-dropdown-check-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+	}
+}
+
+@keyframes fancy-dropdown-check-in {
+	from {
+		opacity: 0;
+		transform: scale(0);
+	}
+	60% {
+		transform: scale(1.2);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+
+// Animations
+@keyframes fancy-dropdown-content-in {
+	from {
+		opacity: 0;
+		transform: scale(0.88) translateY(-8px);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1) translateY(0);
+	}
+}
+
+@keyframes fancy-dropdown-content-out {
+	from {
+		opacity: 1;
+		transform: scale(1) translateY(0);
+	}
+	to {
+		opacity: 0;
+		transform: scale(0.94) translateY(-4px);
+	}
+}
+
+@keyframes fancy-dropdown-item-in {
+	from {
+		opacity: 0;
+		transform: translateX(-8px);
+	}
+	to {
+		opacity: 1;
+		transform: translateX(0);
+	}
+}
+
+// Mobile gizleme bu sviste yok — kullanan component kendi mobile davranisini ayarlar

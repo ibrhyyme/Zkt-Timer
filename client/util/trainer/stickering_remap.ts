@@ -104,6 +104,33 @@ const STICKERING_FIXUPS: Record<string, (mask: StickeringMask) => StickeringMask
 	F2L: fixF2LCenters,
 };
 
+const FACELET_COUNT: Record<string, number> = { EDGES: 2, CORNERS: 3, CENTERS: 1 };
+
+/**
+ * Belirtilen orbit'lerdeki piece index'lerini 'regular' (renkli) yapar.
+ * Efficiency XCross icin: Cross mask + secili slot edge/corner'i renkli.
+ * normalize/fixup sonrasi, remap ONCESI cagrilir (index'ler mutlak/rotation-oncesi).
+ */
+function applyExtraRegular(mask: StickeringMask, extra: Record<string, number[]>): StickeringMask {
+	const result: StickeringMask = { orbits: {} };
+	for (const [orbitName, orbit] of Object.entries(mask.orbits)) {
+		const idxs = extra[orbitName];
+		if (!idxs || !idxs.length) {
+			result.orbits[orbitName] = orbit;
+			continue;
+		}
+		const set = new Set(idxs);
+		result.orbits[orbitName] = {
+			pieces: orbit.pieces.map((p, i) => {
+				if (!set.has(i)) return p;
+				const n = p ? p.facelets.length : (FACELET_COUNT[orbitName] || 1);
+				return { facelets: new Array(n).fill('regular') as FaceletMask[] };
+			}),
+		};
+	}
+	return result;
+}
+
 function remapMask(
 	mask: StickeringMask,
 	transformData: Record<string, { permutation: number[]; orientationDelta: number[] }>
@@ -154,11 +181,12 @@ function remapMask(
  */
 export async function getRemappedMask(
 	stickeringName: string,
-	rotation: string
+	rotation: string,
+	extraRegular?: Record<string, number[]>
 ): Promise<StickeringMask | null> {
 	if (!stickeringName || stickeringName === 'full') return null;
 
-	const key = `${stickeringName}|${rotation || 'none'}`;
+	const key = `${stickeringName}|${rotation || 'none'}|${extraRegular ? JSON.stringify(extraRegular) : ''}`;
 	const cached = cache.get(key);
 	if (cached) return cached;
 
@@ -171,12 +199,21 @@ export async function getRemappedMask(
 			mask = fixup(mask);
 		}
 
+		if (extraRegular) {
+			mask = applyExtraRegular(mask, extraRegular);
+		}
+
 		if (rotation) {
 			const kpuzzle = await loadKPuzzle();
 			const transform = kpuzzle.algToTransformation(rotation);
 			mask = remapMask(mask, transform.transformationData);
 		}
 
+		// Sinirsiz buyumeyi onle (tip×rotation×slot kombinasyonu) — basit FIFO bound
+		if (cache.size >= 64) {
+			const firstKey = cache.keys().next().value;
+			if (firstKey !== undefined) cache.delete(firstKey);
+		}
 		cache.set(key, mask);
 		return mask;
 	} catch (err) {

@@ -89,7 +89,6 @@ export default class QiYi extends SmartCube {
 				encMsg[i + j] = block[j];
 			}
 		}
-		console.log('[qiyi] send message', msg, encMsg);
 		return this.adapter.writeCharacteristic(
 			this.device,
 			SERVICE_UUID,
@@ -123,7 +122,6 @@ export default class QiYi extends SmartCube {
 					} else {
 						for (const id of QIYI_CIC_LIST) {
 							if (mfData.has(id)) {
-								console.log('[qiyi] CIC bulundu: 0x' + id.toString(16).padStart(4, '0'));
 								dataView = mfData.get(id);
 								break;
 							}
@@ -135,7 +133,6 @@ export default class QiYi extends SmartCube {
 							mac.push((dataView.getUint8(i) + 0x100).toString(16).slice(1));
 						}
 						const macStr = mac.join(':').toUpperCase();
-						console.log('[qiyi] MAC otomatik bulundu:', macStr);
 						return macStr;
 					}
 				}
@@ -149,7 +146,6 @@ export default class QiYi extends SmartCube {
 		const m = /^(QY-QYSC|XMD-TornadoV4-i)-.-[0-9A-F]{4}$/.exec(this.deviceName);
 		if (m) {
 			defaultMac = 'CC:A3:00:00:' + this.deviceName.slice(-4, -2) + ':' + this.deviceName.slice(-2);
-			console.log('[qiyi] Default MAC device name pattern:', defaultMac);
 		}
 
 		// 3) Cache
@@ -170,10 +166,7 @@ export default class QiYi extends SmartCube {
 	}
 
 	async init() {
-		console.log('[qiyi] init basladi, device:', this.deviceName);
-
 		await this.adapter.connect(this.device, () => {
-			console.log('[qiyi] disconnect');
 			this.alertDisconnected();
 		});
 
@@ -194,7 +187,6 @@ export default class QiYi extends SmartCube {
 		if (!this.deviceMac) {
 			throw new Error('[qiyi] MAC adresi alinamadi, baglanti mumkun degil');
 		}
-		console.log('[qiyi] MAC kullaniliyor:', this.deviceMac);
 
 		// Connected callback
 		const dummyServer = {
@@ -215,7 +207,6 @@ export default class QiYi extends SmartCube {
 		for (let i = 0; i < value.byteLength; i++) {
 			encMsg[i] = value.getUint8(i);
 		}
-		console.log('[qiyi] receive enc data', encMsg);
 		const decoder = this.getDecoder();
 		const msg = [];
 		for (let i = 0; i < encMsg.length; i += 16) {
@@ -225,7 +216,6 @@ export default class QiYi extends SmartCube {
 				msg[i + j] = block[j];
 			}
 		}
-		console.log('[qiyi] decrypted msg', msg);
 		const trimmed = msg.slice(0, msg[1]);
 		if (trimmed.length < 3 || crc16modbus(trimmed) !== 0) {
 			console.warn('[qiyi] crc check error');
@@ -251,7 +241,6 @@ export default class QiYi extends SmartCube {
 			this.prevCube = Cube.fromString(newFacelet);
 			this.alertCubeState(newFacelet);
 			this.alertBatteryLevel(this.batteryLevel);
-			console.log('[qiyi] hello acknowledged, facelet:', newFacelet, 'battery:', this.batteryLevel);
 		} else if (opcode === 0x3) { // state change
 			this.sendMessage(msg.slice(2, 7));
 
@@ -266,10 +255,6 @@ export default class QiYi extends SmartCube {
 				}
 				todoMoves.push([hisMv, hisTs]);
 			}
-			if (todoMoves.length > 1) {
-				console.log('[qiyi] miss history moves', JSON.stringify(todoMoves), 'lastTs:', this.lastTs);
-			}
-
 			// Eski->yeni sirayla hamleleri uygula
 			const batch = [];
 			let curFacelet;

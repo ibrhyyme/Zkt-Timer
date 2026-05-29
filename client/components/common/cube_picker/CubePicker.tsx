@@ -1,9 +1,8 @@
 import React from 'react';
-import Dropdown, {DropdownProps} from '../inputs/dropdown/Dropdown';
-import {getAllCubeTypeNames, getDefaultCubeTypeNames, getCubeTypeInfoById} from '../../../util/cubes/util';
-import {Cube} from 'phosphor-react';
-import {IDropdownOption} from '../inputs/dropdown/dropdown_option/DropdownOption';
-import {CubeType} from '../../../util/cubes/cube_types';
+import { Cube } from 'phosphor-react';
+import FancyDropdown, { FancyDropdownGroup, FancyDropdownOption } from '../../timer/header_control/FancyDropdown';
+import { getCubeTypeInfoById } from '../../../util/cubes/util';
+import { CubeType } from '../../../util/cubes/cube_types';
 
 interface Props {
 	value: string;
@@ -13,7 +12,13 @@ interface Props {
 	excludeCustomCubeTypes?: boolean;
 	onChange?: (cubeType: CubeType) => void;
 	excludeOtherCubeType?: boolean;
-	dropdownProps?: Partial<DropdownProps>;
+	// Geriye uyumluluk icin tutuluyor — yeni FancyDropdown align/maxHeight prop'larini kullanir
+	dropdownProps?: {
+		openLeft?: boolean;
+		openUp?: boolean;
+		noMargin?: boolean;
+		[key: string]: any;
+	};
 }
 
 // BL/FM/OH/MBLD/Mirror/Yau variant'lari artik parent cube'un subset'i — burada tek grup
@@ -37,50 +42,82 @@ export default function CubePicker(props: Props) {
 		value,
 		cubeTypes,
 		handlePrefix,
-		excludeCustomCubeTypes,
 		excludeSelected,
 		onChange,
-		dropdownProps,
 		excludeOtherCubeType,
 	} = props;
 
-	const options: IDropdownOption[] = [];
-
-	if (cubeTypes) {
-		// Custom list — flat
-		for (const name of cubeTypes) {
-			const ct = getCubeTypeInfoById(name);
-			const isSelected = ct?.id === value;
-			if (!name || !ct || (excludeOtherCubeType && name === 'other') || (excludeSelected && isSelected)) continue;
-			options.push({ text: ct.name, selected: isSelected, onClick: () => onChange && onChange(ct) });
-		}
-	} else {
-		// Default — cstimer style grouped with headers
-		for (const group of CUBE_TYPE_GROUPS) {
-			if (group.header) {
-				options.push({ text: group.header, header: true });
-			}
-			for (const name of group.types) {
-				const ct = getCubeTypeInfoById(name);
-				const isSelected = ct?.id === value;
-				if (!ct || (excludeOtherCubeType && name === 'other') || (excludeSelected && isSelected)) continue;
-				options.push({ text: ct.name, selected: isSelected, onClick: () => onChange && onChange(ct) });
-			}
-		}
+	function makeOption(name: string): FancyDropdownOption | null {
+		const ct = getCubeTypeInfoById(name);
+		if (!ct) return null;
+		if (excludeOtherCubeType && name === 'other') return null;
+		if (excludeSelected && ct.id === value) return null;
+		return {
+			value: ct.id,
+			label: ct.name,
+		};
 	}
 
 	const cubeType = getCubeTypeInfoById(value);
 
-	let text = handlePrefix || '';
-	text += cubeType?.name || '';
+	function handleValueChange(newValue: string) {
+		const ct = getCubeTypeInfoById(newValue);
+		if (ct && onChange) onChange(ct);
+	}
+
+	// WCA cube type — text yerine WCA logosu. Cube ikon da gizlenir cunku logo zaten ayirt edici.
+	const isWca = cubeType?.id === 'wca';
+	const triggerLabel: React.ReactNode = isWca ? (
+		<img
+			src="/images/logos/wca_logo.svg"
+			alt="WCA"
+			style={{ height: 18, display: 'block' }}
+		/>
+	) : ((handlePrefix || '') + (cubeType?.name || ''));
+	const triggerIcon = isWca ? undefined : <Cube weight="bold" size={16} />;
+
+	// Flat list (custom cubeTypes) vs grouped (default)
+	if (cubeTypes) {
+		const options = cubeTypes
+			.map(makeOption)
+			.filter((o): o is FancyDropdownOption => !!o);
+
+		return (
+			<FancyDropdown
+				value={value}
+				onValueChange={handleValueChange}
+				options={options}
+				triggerIcon={triggerIcon}
+				triggerLabel={triggerLabel}
+				ariaLabel="Cube Type"
+				triggerMaxWidth={160}
+			/>
+		);
+	}
+
+	const groups: FancyDropdownGroup[] = CUBE_TYPE_GROUPS
+		.map((group) => {
+			const opts = group.types
+				.map(makeOption)
+				.filter((o): o is FancyDropdownOption => !!o);
+			if (opts.length === 0) return null;
+			return {
+				header: group.header || undefined,
+				options: opts,
+			};
+		})
+		.filter((g): g is NonNullable<typeof g> => g !== null);
 
 	return (
-		<Dropdown
-			text={text}
-			icon={<Cube weight="bold" />}
-			options={options}
-			dropdownMaxHeight={400}
-			{...(dropdownProps || {})}
+		<FancyDropdown
+			value={value}
+			onValueChange={handleValueChange}
+			groups={groups}
+			triggerIcon={triggerIcon}
+			triggerLabel={triggerLabel}
+			ariaLabel="Cube Type"
+			maxHeight={500}
+			triggerMaxWidth={160}
 		/>
 	);
 }

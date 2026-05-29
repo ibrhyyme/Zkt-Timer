@@ -3,7 +3,7 @@
  * Ported from cstimer's IDA* and gSolver algorithms.
  * Built as a separate esbuild entry -> dist/cross-solver-worker.js (iife).
  */
-import {initCross, solveCross, solveXCross} from './cross-solver';
+import {initCross, solveCross, solveXCross, getEasyCross, getEasyXCross, fullInit} from './cross-solver';
 import {initEOLine, solveEOLine, solveEOCross} from './eoline-solver';
 import {initRoux1, solveRoux1} from './roux1-solver';
 import {
@@ -27,6 +27,9 @@ function initAll(): void {
 	initCross();
 	initEOLine();
 	initRoux1();
+	// Full pruning tablosunu (getEasyCross/getEasyXCross) init'te pre-warm et —
+	// yoksa ilk rare-length scramble isteginde ~100-300ms senkron blok olusur.
+	fullInit();
 	initialized = true;
 }
 
@@ -39,7 +42,7 @@ function solve(scramble: string, solverType: SolverType, orientation?: string): 
 		case 'cross':
 			return solveCross(scramble);
 		case 'xcross':
-			return Array.from({length: 6}, (_, i) => solveXCross(scramble, i));
+			return Array.from({length: 6}, (_, i) => solveXCross(scramble, i, orientation !== undefined && orientation !== '' ? parseInt(orientation, 10) : undefined));
 		case 'eoline':
 			return solveEOLine(scramble);
 		case 'eocross':
@@ -72,7 +75,7 @@ function solve(scramble: string, solverType: SolverType, orientation?: string): 
 }
 
 self.onmessage = function (event: MessageEvent) {
-	const {cmd, id, scramble, solverType, orientation} = event.data;
+	const {cmd, id, scramble, solverType, orientation, length} = event.data;
 
 	switch (cmd) {
 		case 'init': {
@@ -88,14 +91,24 @@ self.onmessage = function (event: MessageEvent) {
 
 		case 'solve': {
 			try {
-				console.log('[cross-solver-worker] solving', solverType, scramble?.substring(0, 30));
-				const t = Date.now();
 				const results = solve(scramble, solverType, orientation);
-				console.log('[cross-solver-worker] done in', Date.now() - t, 'ms, results:', results?.length);
 				(self as unknown as Worker).postMessage({cmd: 'solve', id, results});
 			} catch (e) {
 				console.error('[cross-solver-worker] solve error:', solverType, e);
 				(self as unknown as Worker).postMessage({cmd: 'solve', id, results: [], error: String(e)});
+			}
+			break;
+		}
+
+		case 'easy': {
+			// Belirli uzunlukta cross/xcross pozisyonu uret → mask [ep,eo(,cp,co)]
+			try {
+				initAll();
+				const mask = solverType === 'xcross' ? getEasyXCross(length) : getEasyCross(length);
+				(self as unknown as Worker).postMessage({cmd: 'easy', id, mask});
+			} catch (e) {
+				console.error('[cross-solver-worker] easy error:', e);
+				(self as unknown as Worker).postMessage({cmd: 'easy', id, mask: null, error: String(e)});
 			}
 			break;
 		}

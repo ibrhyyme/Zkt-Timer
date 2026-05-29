@@ -28,6 +28,7 @@ import ScrambleVisual from '../modules/scramble/ScrambleVisual';
 import RoomTimerOverlay from './RoomTimerOverlay';
 import RoomSettingsModal from './RoomSettingsModal';
 import EditRoomModal from './EditRoomModal';
+import EditRoomDropdown from './EditRoomDropdown';
 import ManageUsersModal from './ManageUsersModal';
 import { Gear, List, PencilSimple, Users, Trash, BluetoothConnected, Bluetooth, CheckCircle, CircleNotch, Check, MusicNote } from 'phosphor-react';
 import RoomMusicPlayer from './RoomMusicPlayer';
@@ -38,6 +39,8 @@ import { toastError } from '../../util/toast';
 import { resourceUri } from '../../util/storage';
 import { connectGanTimer, GanTimerConnection } from '../timer/time_display/gantimer/ganTimerConnection';
 import { connectQiyiTimer, QiyiTimerConnection } from '../timer/time_display/qiyitimer/qiyiTimerConnection';
+import TimerTypePicker from '../timer/header_control/TimerTypePicker';
+import SettingsDropdown from '../quick-controls/SettingsDropdown';
 import { openModal, closeModal } from '../../actions/general';
 import BleScanningModal from '../timer/smart_cube/ble_scanning_modal/BleScanningModal';
 import { isNative } from '../../util/platform';
@@ -58,6 +61,18 @@ interface ParamsType {
 
 // Helper to get socket with any cast
 const getSocket = () => socketClient() as any;
+
+// Bluetooth connect butonu icin glassmorphism class — mobile mavi banttayken white, desktop dark bantta text-color.
+function connectButtonClass(connected: boolean, connecting: boolean): string {
+    const base = 'flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-md transition-all border backdrop-blur-sm';
+    if (connecting) {
+        return `${base} cursor-wait bg-white/10 md:bg-text/[0.08] border-white/20 md:border-text/[0.15] text-white/70 md:text-text/60`;
+    }
+    if (connected) {
+        return `${base} bg-green-500/25 hover:bg-green-500/35 border-green-400/40 hover:border-green-400/60 text-white md:text-green-400`;
+    }
+    return `${base} bg-white/15 hover:bg-white/25 md:bg-text/[0.08] md:hover:bg-text/[0.15] border-white/20 hover:border-white/35 md:border-text/[0.15] md:hover:border-text/[0.25] text-white md:text-text/90`;
+}
 
 // Throttle delay for status updates (ms)
 const STATUS_THROTTLE_MS = 100;
@@ -1311,30 +1326,42 @@ export default function FriendlyRoom() {
         <div className="fixed inset-0 z-[100] md:fixed md:inset-0 md:top-[var(--nav-h)] md:h-[calc(100vh-var(--nav-h))] flex flex-col bg-background text-text overflow-hidden font-sans pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
             {/* 1. Header & Scramble (Fixed) */}
             <div className="shrink-0 flex flex-col">
-                {/* Top Bar - Native App Header Style */}
-                <div className="flex items-center justify-between bg-blue-600 px-3 md:px-4 py-2 md:py-3 shadow-lg z-30 relative gap-2">
-                    {/* Hamburger Menu (Only for Host) */}
+                {/* Top Bar - Native App Header Style (mobile mavi, desktop dark glassmorphism — scramble alanindan ayri ton + belirgin border) */}
+                <div className="flex items-center justify-between bg-blue-600 md:bg-text/[0.04] md:backdrop-blur-2xl md:border-b md:border-text/[0.15] px-3 md:px-4 py-2 md:py-3 shadow-lg md:shadow-[0_6px_24px_rgba(0,0,0,0.35)] z-30 relative gap-2">
+                    {/* Hamburger Menu (Only for Host) — glassmorphism */}
                     {isHost ? (
                         <div className="relative z-50 shrink-0" ref={hostMenuRef}>
                             <button
-                                className={`p-1 text-white hover:bg-white/10 rounded-md transition-colors ${hostMenuOpen ? 'bg-white/10' : ''}`}
+                                className={`p-1.5 md:p-2 rounded-lg transition-all border ${
+                                    hostMenuOpen
+                                        ? 'bg-white/15 border-white/20 md:bg-text/15 md:border-text/20'
+                                        : 'bg-white/5 border-white/10 hover:bg-white/15 hover:border-white/20 md:bg-text/5 md:border-text/10 md:hover:bg-text/15 md:hover:border-text/20'
+                                } text-white md:text-text`}
                                 onClick={() => setHostMenuOpen(!hostMenuOpen)}
                             >
-                                <List size={24} weight="bold" />
+                                <List size={20} weight="bold" />
                             </button>
 
-                            {/* Dropdown Menu */}
+                            {/* Dropdown Menu — havali glassmorphism */}
                             {hostMenuOpen && (
-                                <div className="absolute top-full left-0 mt-2 w-56 bg-module border border-text/[0.1] rounded-lg shadow-xl transition-all transform origin-top-left z-50 overflow-hidden">
-                                    <div className="py-1">
+                                <div
+                                    className="absolute top-full left-0 mt-2 w-60 rounded-xl border border-text/[0.12] shadow-[0_20px_50px_rgba(0,0,0,0.6)] z-50 overflow-hidden"
+                                    style={{
+                                        background: 'rgba(var(--background-color), 0.92)',
+                                        backdropFilter: 'blur(20px) saturate(180%)',
+                                        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+                                        animation: 'host-menu-in 0.18s cubic-bezier(0.16, 1, 0.3, 1)',
+                                    }}
+                                >
+                                    <div className="py-1.5 px-1.5">
                                         <button
                                             onClick={() => {
                                                 setEditModalOpen(true);
                                                 setHostMenuOpen(false);
                                             }}
-                                            className="w-full text-left px-4 py-3 text-sm text-text/70 hover:bg-text/[0.05] hover:text-text flex items-center gap-3 transition-colors"
+                                            className="w-full text-left px-3 py-2.5 rounded-lg text-sm text-text/80 hover:bg-text/[0.08] hover:text-text flex items-center gap-3 transition-colors"
                                         >
-                                            <PencilSimple size={18} />
+                                            <PencilSimple size={18} weight="bold" />
                                             {t('rooms.edit_room')}
                                         </button>
                                         <button
@@ -1342,17 +1369,17 @@ export default function FriendlyRoom() {
                                                 setManageUsersModalOpen(true);
                                                 setHostMenuOpen(false);
                                             }}
-                                            className="w-full text-left px-4 py-3 text-sm text-text/70 hover:bg-text/[0.05] hover:text-text flex items-center gap-3 transition-colors"
+                                            className="w-full text-left px-3 py-2.5 rounded-lg text-sm text-text/80 hover:bg-text/[0.08] hover:text-text flex items-center gap-3 transition-colors"
                                         >
-                                            <Users size={18} />
+                                            <Users size={18} weight="bold" />
                                             {t('rooms.manage_users')}
                                         </button>
-                                        <div className="h-px bg-text/[0.1] my-1" />
+                                        <div className="h-px bg-text/[0.1] my-1.5 mx-1" />
                                         <button
                                             onClick={handleDeleteRoom}
-                                            className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 flex items-center gap-3 transition-colors"
+                                            className="w-full text-left px-3 py-2.5 rounded-lg text-sm text-red-400 hover:bg-red-500/15 hover:text-red-300 flex items-center gap-3 transition-colors"
                                         >
-                                            <Trash size={18} />
+                                            <Trash size={18} weight="bold" />
                                             {t('rooms.delete_room')}
                                         </button>
                                     </div>
@@ -1363,22 +1390,40 @@ export default function FriendlyRoom() {
 
                     <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0 overflow-hidden">
                         <div className="flex items-center gap-2 min-w-0 overflow-hidden">
-                            <h1 className="text-lg md:text-xl font-bold tracking-tight text-white m-0 leading-none truncate block">
+                            <h1 className="text-lg md:text-xl font-bold tracking-tight text-white md:text-text m-0 leading-none truncate block">
                                 {room.name}
                             </h1>
                             {isHost && (
-                                <button
-                                    onClick={() => setEditModalOpen(true)}
-                                    className="shrink-0 p-1 text-gray-400 hover:text-white transition-colors rounded-full hover:bg-white/10 focus:outline-none"
-                                    title={t('rooms.edit_room')}
-                                >
-                                    <PencilSimple size={18} weight="bold" />
-                                </button>
+                                isMobile ? (
+                                    <button
+                                        onClick={() => setEditModalOpen(true)}
+                                        className="shrink-0 p-1 text-gray-300 hover:text-white transition-colors rounded-md hover:bg-white/10 focus:outline-none"
+                                        title={t('rooms.edit_room')}
+                                    >
+                                        <PencilSimple size={18} weight="bold" />
+                                    </button>
+                                ) : (
+                                    <EditRoomDropdown
+                                        currentName={room.name}
+                                        isPrivate={room.is_private}
+                                        currentAllowedTypes={room.allowed_timer_types}
+                                        cubeType={room.cube_type}
+                                        onSubmit={(name, isPrivate, password, allowedTypes, cubeType) => {
+                                            getSocket().emit(FriendlyRoomClientEvent.UPDATE_ROOM, roomId, {
+                                                name,
+                                                is_private: isPrivate,
+                                                password,
+                                                allowed_timer_types: allowedTypes,
+                                                cube_type: cubeType,
+                                            });
+                                        }}
+                                    />
+                                )
                             )}
                         </div>
                         <span
                             onClick={() => isHost && setEditModalOpen(true)}
-                            className={`shrink-0 rounded-full bg-white/20 px-2 py-0.5 text-xs font-semibold text-white backdrop-blur-sm transition-colors ${isHost ? 'cursor-pointer hover:bg-white/30' : ''}`}
+                            className={`shrink-0 rounded-md px-2.5 py-1 text-[11px] font-bold tracking-wider text-white md:text-primary bg-white/20 md:bg-primary/12 border border-white/10 md:border-primary/25 backdrop-blur-sm transition-all ${isHost ? 'cursor-pointer hover:bg-white/30 md:hover:bg-primary/20' : ''}`}
                             title={isHost ? t('rooms.click_to_change_event') : undefined}
                         >
                             {room.cube_type.toUpperCase()}
@@ -1399,17 +1444,18 @@ export default function FriendlyRoom() {
                         )}
                     </div>
                     <div className="flex items-center gap-1 md:gap-2 shrink-0">
-                        {/* Bluetooth Connect Button for GAN Timer */}
+                        {/* Timer Type Picker (desktop only, mobile'da modal Timer tab kullaniliyor) */}
+                        <TimerTypePicker
+                            allowedTimerTypes={room.allowed_timer_types}
+                            requireProForSmart
+                        />
+
+                        {/* Bluetooth Connect Button for GAN Timer — glassmorphism */}
                         {timerType === 'gantimer' && (
                             <button
                                 onClick={ganTimerConnected ? disconnectGanTimer : handleConnectGanTimer}
                                 disabled={ganTimerConnecting}
-                                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded transition-all ${ganTimerConnected
-                                    ? 'bg-green-500 hover:bg-green-600 text-white'
-                                    : ganTimerConnecting
-                                        ? 'bg-blue-400 text-white cursor-wait'
-                                        : 'bg-blue-500 hover:bg-blue-600 text-white'
-                                    }`}
+                                className={connectButtonClass(ganTimerConnected, ganTimerConnecting)}
                                 title={ganTimerConnected ? t('rooms.disconnect') : t('rooms.connect_timer')}
                             >
                                 {ganTimerConnected ? (
@@ -1421,17 +1467,12 @@ export default function FriendlyRoom() {
                             </button>
                         )}
 
-                        {/* Bluetooth Connect Button for QiYi Timer */}
+                        {/* Bluetooth Connect Button for QiYi Timer — glassmorphism */}
                         {timerType === 'qiyitimer' && (
                             <button
                                 onClick={qiyiTimerConnected ? disconnectQiyiTimer : handleConnectQiyiTimer}
                                 disabled={qiyiTimerConnecting}
-                                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded transition-all ${qiyiTimerConnected
-                                    ? 'bg-green-500 hover:bg-green-600 text-white'
-                                    : qiyiTimerConnecting
-                                        ? 'bg-blue-400 text-white cursor-wait'
-                                        : 'bg-blue-500 hover:bg-blue-600 text-white'
-                                    }`}
+                                className={connectButtonClass(qiyiTimerConnected, qiyiTimerConnecting)}
                                 title={qiyiTimerConnected ? t('rooms.disconnect') : t('rooms.connect_qiyi_timer')}
                             >
                                 {qiyiTimerConnected ? (
@@ -1443,17 +1484,12 @@ export default function FriendlyRoom() {
                             </button>
                         )}
 
-                        {/* Bluetooth Connect Button for Smart Cube */}
+                        {/* Bluetooth Connect Button for Smart Cube — glassmorphism */}
                         {timerType === 'smart' && (
                             <button
                                 onClick={smartCubeConnected ? disconnectSmartCube : handleConnectSmartCube}
                                 disabled={smartCubeConnecting}
-                                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded transition-all ${smartCubeConnected
-                                    ? 'bg-green-500 hover:bg-green-600 text-white'
-                                    : smartCubeConnecting
-                                        ? 'bg-blue-400 text-white cursor-wait'
-                                        : 'bg-blue-500 hover:bg-blue-600 text-white'
-                                    }`}
+                                className={connectButtonClass(smartCubeConnected, smartCubeConnecting)}
                                 title={smartCubeConnected ? t('rooms.disconnect') : t('rooms.connect_smart_cube')}
                             >
                                 {smartCubeConnected ? (
@@ -1464,12 +1500,20 @@ export default function FriendlyRoom() {
                                 <span className="hidden md:inline">{smartCubeConnecting ? t('rooms.connecting') : smartCubeConnected ? t('rooms.cube_connected') : t('rooms.connect_cube')}</span>
                             </button>
                         )}
-                        <button
-                            onClick={() => setSettingsOpen(true)}
-                            className="p-1 md:p-2 text-white/90 hover:text-white transition-colors"
-                        >
-                            <Gear weight="bold" size={20} />
-                        </button>
+                        {isMobile ? (
+                            <button
+                                onClick={() => setSettingsOpen(true)}
+                                className="p-1 md:p-2 text-white/90 hover:text-white transition-colors"
+                            >
+                                <Gear weight="bold" size={20} />
+                            </button>
+                        ) : (
+                            <SettingsDropdown
+                                hideMobileModules
+                                hideSmartCubeFeatures
+                                hideGoals
+                            />
+                        )}
                         <button
                             onClick={() => {
                                 if (isPro(me)) {
@@ -1478,16 +1522,20 @@ export default function FriendlyRoom() {
                                     openProOnlyModal(dispatch, t, 'room_music');
                                 }
                             }}
-                            className={`p-1 md:p-2 transition-colors ${musicPlayerOpen ? 'text-green-400' : 'text-white/90 hover:text-white'}`}
+                            className={`p-1.5 md:p-2 rounded-lg transition-all border ${
+                                musicPlayerOpen
+                                    ? 'bg-green-500/20 border-green-400/40 text-green-300 md:text-green-400'
+                                    : 'bg-white/10 border-white/15 hover:bg-white/20 hover:border-white/25 md:bg-text/[0.08] md:border-text/[0.12] md:hover:bg-text/[0.15] md:hover:border-text/[0.25] text-white/90 md:text-text/80 hover:text-white md:hover:text-text'
+                            }`}
                             title={t('rooms.music_player')}
                         >
-                            <MusicNote weight="bold" size={20} />
+                            <MusicNote weight="bold" size={18} />
                         </button>
 
                         {isHost && isActive && (
                             <button
                                 onClick={handleNextScramble}
-                                className={`${isMobile ? 'h-8 px-2 text-[10px]' : 'px-3 py-1.5 text-xs'} bg-blue-600 hover:bg-blue-700 text-white font-bold rounded transition-colors shadow-sm whitespace-nowrap`}
+                                className={`${isMobile ? 'h-8 px-2.5 text-[10px]' : 'px-3.5 py-1.5 text-xs'} bg-blue-500 hover:bg-blue-400 text-white font-bold rounded-md transition-all whitespace-nowrap shadow-[0_4px_14px_rgba(59,130,246,0.4)] hover:shadow-[0_6px_18px_rgba(59,130,246,0.55)] hover:-translate-y-px`}
                                 title={t('rooms.next_scramble_tooltip')}
                             >
                                 {isMobile ? t('rooms.scramble') : t('rooms.new_scramble')}
@@ -1496,7 +1544,7 @@ export default function FriendlyRoom() {
 
                         <button
                             onClick={handleLeaveRoom}
-                            className={`${isMobile ? 'h-8 px-2 text-[10px]' : 'px-3 py-1.5 text-xs'} bg-red-500 hover:bg-red-600 text-white font-bold rounded transition-colors shadow-sm`}
+                            className={`${isMobile ? 'h-8 px-2.5 text-[10px]' : 'px-3.5 py-1.5 text-xs'} bg-red-500/85 hover:bg-red-500 text-white font-bold rounded-md transition-all shadow-[0_4px_12px_rgba(239,68,68,0.35)] hover:shadow-[0_6px_18px_rgba(239,68,68,0.5)] hover:-translate-y-px border border-red-400/30`}
                         >
                             {t('rooms.exit')}
                         </button>

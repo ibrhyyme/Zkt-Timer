@@ -103,11 +103,25 @@ function buildInitialState(): RecognitionState & {view: RecognitionView} {
 	if (!SIZE_OPTIONS.includes(session.sizeOption) && session.sizeOption !== -1) {
 		session.sizeOption = SIZE_DEFAULT;
 	}
+	// Bozuk/eski-schema localStorage'a karsi array alanlarini guard'la (mount'ta .map/.filter crash onleme)
+	if (!Array.isArray(session.queue)) session.queue = [];
+	if (!Array.isArray(session.results)) session.results = [];
+	if (!Array.isArray(session.allowedCrossColors)) session.allowedCrossColors = DefaultAllowedCrossColors;
+
+	const settings = loadFromStorage<SettingsSlice>(LS_SETTINGS, defaultSettings);
+	if (!Array.isArray(settings.allowedCrossColors)) settings.allowedCrossColors = DefaultAllowedCrossColors;
+
+	const notes = loadFromStorage<NotesSlice>(LS_NOTES, defaultNotes);
+	if (!notes.notes || typeof notes.notes !== 'object' || Array.isArray(notes.notes)) notes.notes = {};
+
+	const presets = loadFromStorage<CustomPresetsSlice>(LS_PRESETS, defaultPresets);
+	if (!Array.isArray(presets.customPresets)) presets.customPresets = [];
+
 	return {
 		session,
-		settings: loadFromStorage<SettingsSlice>(LS_SETTINGS, defaultSettings),
-		notes: loadFromStorage<NotesSlice>(LS_NOTES, defaultNotes),
-		presets: loadFromStorage<CustomPresetsSlice>(LS_PRESETS, defaultPresets),
+		settings,
+		notes,
+		presets,
 		view: loadView(),
 	};
 }
@@ -368,8 +382,10 @@ export function RecognitionProvider({children}: ProviderProps) {
 
 	// ── Persistence (debounce'lu) ────────────────────
 	const writeTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+	const stateRef = useRef(state);
 	useEffect(() => {
 		if (typeof window === 'undefined') return;
+		stateRef.current = state;
 		const debounceWrite = (key: string, value: unknown) => {
 			if (writeTimers.current[key]) clearTimeout(writeTimers.current[key]);
 			writeTimers.current[key] = setTimeout(() => {
@@ -385,7 +401,29 @@ export function RecognitionProvider({children}: ProviderProps) {
 		debounceWrite(LS_NOTES, state.notes);
 		debounceWrite(LS_PRESETS, state.presets);
 		debounceWrite(LS_VIEW, state.view);
+		// Bekleyen timer'lari temizle (state degisiminde reschedule, unmount'ta orphan onleme)
+		return () => {
+			Object.values(writeTimers.current).forEach((tid) => clearTimeout(tid));
+			writeTimers.current = {};
+		};
 	}, [state]);
+
+	// Unmount'ta bekleyen debounce'li yazimlari senkron flush et (son degisiklik kaybolmasin)
+	useEffect(() => {
+		return () => {
+			if (typeof window === 'undefined') return;
+			const s = stateRef.current;
+			try {
+				localStorage.setItem(LS_SESSION, JSON.stringify(s.session));
+				localStorage.setItem(LS_SETTINGS, JSON.stringify(s.settings));
+				localStorage.setItem(LS_NOTES, JSON.stringify(s.notes));
+				localStorage.setItem(LS_PRESETS, JSON.stringify(s.presets));
+				localStorage.setItem(LS_VIEW, s.view);
+			} catch {
+				// ignore quota errors
+			}
+		};
+	}, []);
 
 	// ── Action helpers (Pinia method karsiliklari) ────────────────────
 

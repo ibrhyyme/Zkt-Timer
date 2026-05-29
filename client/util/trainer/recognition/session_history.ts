@@ -25,7 +25,8 @@ export async function saveSession({pool, sizeOption, presetLabel, results}: Save
 	const correctCount = results.filter((r) => r.mistake === '').length;
 	let totalTimeMs = 0;
 	results.forEach((r) => {
-		totalTimeMs += new Date(r.finished).getTime() - new Date(r.started).getTime();
+		// Saat geri alinirsa negatif sure olusabilir; istatistik bozulmasin diye 0'a clamp'le
+		totalTimeMs += Math.max(0, new Date(r.finished).getTime() - new Date(r.started).getTime());
 	});
 
 	const record: RecognitionSessionRecord = {

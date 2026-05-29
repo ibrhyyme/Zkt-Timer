@@ -1,9 +1,9 @@
 import React from 'react';
-import {CaretRight, CaretDown} from 'phosphor-react';
+import { CaretRight, CaretDown } from 'phosphor-react';
 import './StatsFilterControls.scss';
 import block from '../../../../styles/bem';
-import Dropdown from '../../../common/inputs/dropdown/Dropdown';
-import {IDropdownOption} from '../../../common/inputs/dropdown/dropdown_option/DropdownOption';
+import FancyDropdown, { FancyDropdownOption } from '../../../timer/header_control/FancyDropdown';
+import { IDropdownOption } from '../../../common/inputs/dropdown/dropdown_option/DropdownOption';
 
 const b = block('stats-filter-controls');
 
@@ -23,20 +23,43 @@ interface Props {
 	lastNChip?: FilterChip | null;
 }
 
-function ChipDropdown({chip, active}: {chip: FilterChip; active: boolean}) {
+function ChipDropdown({ chip, active }: { chip: FilterChip; active: boolean }) {
 	if (!chip.visible) return null;
-	// openLeft KASTEN yok: default `right: 0` davranisi ile dropdown chip'in altinda
-	// saga hizali acilir (sola dogru sarkar), bu sayede en sondaki session chip mobilde
-	// ekran disina tasmaz.
+
+	// IDropdownOption (legacy, onClick-based) -> FancyDropdownOption (value-based) conversion.
+	// header'li option'lari atliyoruz — StatsFilterControls flat liste kullaniyor.
+	const fancyOptions: FancyDropdownOption[] = chip.options
+		.filter((o) => !o.hidden && !o.header)
+		.map((opt, i) => ({
+			value: opt.text || `__opt_${i}__`,
+			label: opt.text,
+			disabled: opt.disabled,
+		}));
+
+	const selectedOption = chip.options.find((o) => o.selected);
+	const value = selectedOption?.text || '__none__';
+
+	function handleValueChange(newValue: string) {
+		const opt = chip.options.find((o) => o.text === newValue);
+		if (opt?.onClick) opt.onClick({} as any);
+	}
+
 	return (
-		<Dropdown
-			options={chip.options}
-			handle={
-				<span className={b('chip', {active})}>
+		<FancyDropdown
+			value={value}
+			onValueChange={handleValueChange}
+			options={fancyOptions}
+			noTriggerStyles
+			className={b('chip', { active })}
+			triggerContent={
+				<>
 					<span className={b('chip-label')}>{chip.label}</span>
 					<CaretDown weight="bold" className={b('chip-caret')} />
-				</span>
+				</>
 			}
+			ariaLabel={chip.label}
+			align="start"
+			maxHeight={400}
 		/>
 	);
 }
@@ -50,13 +73,13 @@ function Separator() {
 }
 
 export default function StatsFilterControls(props: Props) {
-	const {allMode, allLabel, onAllClick, cubeChip, subsetChip, sessionChip, lastNChip} = props;
+	const { allMode, allLabel, onAllClick, cubeChip, subsetChip, sessionChip, lastNChip } = props;
 
 	return (
 		<div className={b()}>
 			<button
 				type="button"
-				className={b('chip', {active: allMode, all: true})}
+				className={b('chip', { active: allMode, all: true })}
 				onClick={onAllClick}
 			>
 				<span className={b('chip-label')}>{allLabel}</span>

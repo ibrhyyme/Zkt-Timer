@@ -1,0 +1,697 @@
+/**
+ * Efficiency Trainer stilleri.
+ * Namespace: cd-trainer-efficiency (+ modern oynatici: cd-eff-player)
+ * Konvansiyon (recognition ile ayni): rgb(var(--x)) / rgba(var(--x), opacity),
+ * card bg rgb(var(--button-color)), border rgba(var(--text-color), 0.08).
+ */
+@import '../../../styles/config';
+
+.cd-trainer-efficiency {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+	height: 100%;
+	overflow: hidden;
+	color: rgb(var(--text-color));
+	background: rgb(var(--background-color));
+
+	// Mobil: KENDISI scroll container (parent cd-trainer overflow:hidden + sabit
+	// yukseklikte; height:auto verirsek icerik kesilir, scroll olmaz). height:100%
+	// + overflow-y:auto → icerik (kup+oynatici+cozum) tasarsa BU eleman scroll eder.
+	@media (max-width: 900px) {
+		height: 100%;
+		overflow-y: auto;
+	}
+
+	// ────────── Toolbar (recognition pattern) ──────────
+	&__toolbar {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		padding: 12px 16px;
+		border-bottom: 1px solid rgba(var(--text-color), 0.08);
+		background: rgba(var(--module-color), 0.65);
+		backdrop-filter: blur(10px);
+		flex-shrink: 0;
+
+		@media (max-width: 600px) {
+			padding: 10px 8px;
+			gap: 6px;
+		}
+	}
+	&__toolbar-title {
+		flex: 1;
+		font-weight: 700;
+		font-size: 1.05rem;
+		color: rgb(var(--text-color));
+		text-align: center;
+
+		@media (max-width: 600px) {
+			display: none;
+		}
+	}
+	&__toolbar-actions {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+	}
+	&__toolbar-back {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		padding: 9px 16px;
+		border-radius: 22px;
+		border: 1px solid rgba(var(--text-color), 0.15);
+		background: rgba(var(--text-color), 0.04);
+		color: rgb(var(--text-color));
+		font-weight: 600;
+		font-size: 0.92rem;
+		cursor: pointer;
+		transition: background 0.15s ease, transform 0.1s ease, border-color 0.15s ease;
+
+		&:hover {
+			background: rgba(var(--text-color), 0.1);
+			border-color: rgba(var(--text-color), 0.28);
+		}
+		&:active {
+			transform: scale(0.97);
+		}
+		span {
+			line-height: 1;
+		}
+		@media (max-width: 600px) {
+			padding: 9px 12px;
+			font-size: 0.88rem;
+			span {
+				display: none;
+			}
+		}
+	}
+	&__toolbar-btn {
+		width: 44px;
+		height: 44px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 12px;
+		border: 1px solid rgba(var(--text-color), 0.15);
+		background: rgba(var(--text-color), 0.04);
+		color: rgb(var(--text-color));
+		cursor: pointer;
+		transition: background 0.15s ease, transform 0.1s ease, border-color 0.15s ease;
+
+		&:hover {
+			background: rgba(var(--text-color), 0.1);
+			border-color: rgba(var(--text-color), 0.28);
+			transform: scale(1.05);
+		}
+		&:active {
+			transform: scale(0.96);
+		}
+		&--active {
+			background: rgba(var(--primary-color), 0.15);
+			border-color: rgb(var(--primary-color));
+			color: rgb(var(--primary-color));
+		}
+	}
+
+	// ────────── Controls (tur / eksen / rotasyon / slot / uzunluk) ──────────
+	// Kompakt kontrol cubugu — yatay, wrap (dikey yiginti yok, alan verimli)
+	&__controls {
+		display: flex;
+		flex-flow: row wrap;
+		align-items: flex-end;
+		justify-content: center;
+		gap: 10px 18px;
+		padding: 14px 16px;
+		flex-shrink: 0;
+		border-bottom: 1px solid rgba(var(--text-color), 0.06);
+	}
+
+	&__segment {
+		display: inline-flex;
+		gap: 4px;
+		padding: 4px;
+		border-radius: 12px;
+		background: rgba(var(--text-color), 0.05);
+		border: 1px solid rgba(var(--text-color), 0.08);
+	}
+	&__segment-btn {
+		padding: 8px 18px;
+		border-radius: 9px;
+		border: none;
+		background: transparent;
+		color: rgb(var(--text-color));
+		font-weight: 600;
+		font-size: 0.92rem;
+		cursor: pointer;
+		transition: background 0.15s ease, color 0.15s ease;
+
+		&:hover {
+			color: rgb(var(--text-color));
+		}
+		&--active {
+			background: rgb(var(--primary-color));
+			color: #fff;
+		}
+	}
+
+	// ────────── Dropdown field (rotasyon / slot / uzunluk) ──────────
+	&__field {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+	&__field-label {
+		font-size: 0.7rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: rgb(var(--text-color));
+	}
+	&__field-select {
+		background: rgb(var(--button-color));
+		border: 1px solid rgba(var(--text-color), 0.15);
+		border-radius: 8px;
+		color: rgb(var(--text-color));
+		padding: 7px 12px;
+		font-size: 0.9rem;
+		font-weight: 600;
+		cursor: pointer;
+		outline: none;
+		min-width: 88px;
+
+		&:focus {
+			border-color: rgba(var(--primary-color), 0.5);
+		}
+		option {
+			background: rgb(var(--button-color));
+			color: rgb(var(--text-color));
+		}
+	}
+
+	// ────────── Algoritma (scramble) bar — Geri | algoritma | Sonraki ──────────
+	&__scramble-bar {
+		flex-shrink: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 18px;
+		padding: 14px 24px;
+		border-bottom: 1px solid rgba(var(--text-color), 0.06);
+
+		// Mobil: algoritma ust satir (tam genislik), Geri/Sonraki alt satirda ortali
+		@media (max-width: 900px) {
+			flex-wrap: wrap;
+			gap: 10px;
+		}
+	}
+	&__scramble-nav {
+		flex-shrink: 0;
+	}
+	&__scramble-text {
+		text-align: center;
+		font-family: 'Roboto Mono', 'Courier New', monospace;
+		font-size: 1.45rem;
+		font-weight: 600;
+		letter-spacing: 0.04em;
+		line-height: 1.6;
+		color: rgb(var(--text-color));
+		word-break: break-word;
+		max-width: 70%;
+
+		@media (max-width: 900px) {
+			order: -1;
+			flex-basis: 100%;
+			max-width: 100%;
+			font-size: 1.1rem;
+		}
+	}
+
+	// ────────── Stage (2-sutun: sol kup | sag panel) ──────────
+	// TrainerView kok — tek ekran, scroll yok
+	&__trainer {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		min-height: 0;
+		overflow: hidden;
+
+		// Mobil: dogal yukseklik (flex:none) — parent scroll eder, ic kesme yok
+		@media (max-width: 900px) {
+			flex: none;
+			overflow: visible;
+		}
+	}
+
+	&__stage {
+		flex: 1;
+		min-height: 0;
+		display: grid;
+		grid-template-columns: 1fr minmax(300px, 380px);
+		gap: 20px;
+		padding: 16px;
+		align-items: stretch;
+		transition: opacity 0.2s ease;
+
+		&--loading {
+			opacity: 0.45;
+			pointer-events: none;
+		}
+
+		// Mobil: grid degil — dogal dikey akis (flex:none, parent scroll eder)
+		@media (max-width: 900px) {
+			display: flex;
+			flex-direction: column;
+			flex: none;
+			min-height: 0;
+			overflow: visible;
+			gap: 16px;
+		}
+	}
+
+	// Sol sutun: kup + nav altta
+	&__cube-col {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 14px;
+		min-height: 0;
+
+		// Mobil: icerik kadar (dikey akista tasma/cakisma yok)
+		@media (max-width: 900px) {
+			flex: none;
+		}
+	}
+
+	// Sag panel: dark-glass kart
+	&__panel {
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+		min-height: 0;
+		padding: 18px;
+		border-radius: 16px;
+		background: rgba(var(--module-color), 0.55);
+		border: 1px solid rgba(var(--text-color), 0.08);
+		backdrop-filter: blur(10px);
+		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+		overflow: hidden;
+
+		// Mobil reveal ONCESI: kupten ONCE (order:-1) — "Cozumu Goster" scramble'in
+		// hemen altinda gorunur, kup asagida.
+		@media (max-width: 900px) {
+			order: -1;
+			overflow: visible;
+			padding: 14px;
+			gap: 10px;
+		}
+
+		// Mobil reveal SONRASI: kup+oynatici ust, cozum ALTTA (order:0).
+		// Dogal yukseklik — sayfa scroll (cd-trainer-efficiency) tum cozumleri tasir;
+		// ic-scroll YOK (flex cokme riski). Optimal kupun hemen altinda, digerleri asagi.
+		&--revealed {
+			@media (max-width: 900px) {
+				order: 0;
+			}
+		}
+	}
+	&__panel-body {
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+		flex: 1;
+		min-height: 0;
+		overflow-y: auto;
+
+		// Mobil: ic-scroll yok, dogal yukseklik (cozum listesi tam gorunur)
+		@media (max-width: 900px) {
+			flex: none;
+			overflow: visible;
+		}
+	}
+	// Cozumu Goster — panel ustunde, tam genislik (algoritma hizasi)
+	&__reveal-btn {
+		width: 100%;
+		justify-content: center;
+	}
+	&__skeleton {
+		min-height: 240px;
+		width: 100%;
+		max-width: 320px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 14px;
+		color: rgb(var(--text-color));
+		background: radial-gradient(circle at 50% 40%, rgba(var(--primary-color), 0.06), transparent 70%);
+	}
+
+	// Sol sutundaki oynaticinin dis konumu (ic stil .cd-eff-player'da)
+	&__player {
+		flex: 1;
+		min-height: 0;
+		width: 100%;
+		max-width: 360px;
+		display: flex;
+
+		// Mobil: icerik kadar (kup + kontrol birlikte, panelle cakismaz)
+		@media (max-width: 900px) {
+			flex: none;
+			margin: 0 auto;
+		}
+	}
+
+	// ────────── Solutions ──────────
+	&__solutions {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		width: 100%;
+	}
+	&__solution-row {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		padding: 10px 14px;
+		border-radius: 10px;
+		background: rgb(var(--button-color));
+		border: 1px solid rgba(var(--text-color), 0.08);
+
+		&--primary {
+			border-color: rgba(var(--primary-color), 0.4);
+			background: rgba(var(--primary-color), 0.06);
+		}
+	}
+	&__solution-badge {
+		font-size: 0.72rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: rgb(var(--primary-color));
+		flex-shrink: 0;
+	}
+	&__solution-face {
+		font-weight: 700;
+		font-size: 0.9rem;
+		color: rgb(var(--text-color));
+		min-width: 48px;
+		flex-shrink: 0;
+	}
+	&__solution-alg {
+		flex: 1;
+		font-family: 'Roboto Mono', 'Courier New', monospace;
+		font-size: 0.95rem;
+		font-weight: 600;
+		color: rgb(var(--text-color));
+		word-break: break-word;
+	}
+	&__solution-count {
+		font-size: 0.85rem;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+		flex-shrink: 0;
+	}
+	&__solution-alt-label {
+		font-size: 0.75rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: rgb(var(--text-color));
+		margin-top: 6px;
+	}
+	&__solution-empty {
+		padding: 16px;
+		text-align: center;
+		font-weight: 600;
+		color: rgb(var(--text-color));
+	}
+
+	// ────────── Settings ──────────
+	&__settings {
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
+		padding: 20px 16px;
+		max-width: 640px;
+		width: 100%;
+		margin: 0 auto;
+	}
+	&__settings-card {
+		background: rgb(var(--button-color));
+		border: 1px solid rgba(var(--text-color), 0.08);
+		border-radius: 14px;
+		padding: 16px 20px;
+	}
+	&__toggle-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 16px;
+		cursor: pointer;
+	}
+	&__toggle-text {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+	&__toggle-title {
+		font-weight: 600;
+		font-size: 0.95rem;
+		color: rgb(var(--text-color));
+	}
+	&__toggle-desc {
+		font-size: 0.82rem;
+		color: rgb(var(--text-color));
+		line-height: 1.4;
+	}
+	// Toggle switch (acik/kapali net gorunur)
+	&__switch {
+		position: relative;
+		width: 48px;
+		height: 28px;
+		border-radius: 14px;
+		background: rgba(var(--text-color), 0.2);
+		flex-shrink: 0;
+		cursor: pointer;
+		transition: background 0.2s ease;
+
+		&--on {
+			background: rgb(var(--primary-color));
+		}
+	}
+	&__switch-input {
+		position: absolute;
+		opacity: 0;
+		width: 100%;
+		height: 100%;
+		margin: 0;
+		cursor: pointer;
+	}
+	&__switch-knob {
+		position: absolute;
+		top: 3px;
+		left: 3px;
+		width: 22px;
+		height: 22px;
+		border-radius: 50%;
+		background: #fff;
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+		transition: transform 0.2s ease;
+		pointer-events: none;
+	}
+	&__switch--on &__switch-knob {
+		transform: translateX(20px);
+	}
+}
+
+// ────────── Modern cozum oynaticisi (ReplayPlayer ilhamli) ──────────
+// controlPanel:'none' — kontrol bizim: seek + play/pause + hiz + sayac
+.cd-eff-player {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+	width: 100%;
+	height: 100%;
+	min-height: 0;
+
+	// Mobil: dikey akista dogal yukseklik (parent flex degil)
+	@media (max-width: 900px) {
+		height: auto;
+	}
+
+	&__cube {
+		// Sabit yukseklik (flex:1 degil) → kup buyumez, kontroller hemen altinda yakin.
+		// twisty-player'in intrinsic yuksekligi yok; height:100% + cube'a sabit height SART.
+		flex: 0 0 auto;
+		min-height: 0;
+		width: 100%;
+		height: 38vh;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		@media (max-width: 900px) {
+			height: 26vh;
+		}
+
+		twisty-player {
+			width: 100%;
+			height: 100%;
+			max-height: 38vh;
+
+			@media (max-width: 900px) {
+				max-height: 26vh;
+			}
+		}
+	}
+
+	&__controls {
+		flex-shrink: 0;
+		width: 100%;
+		max-width: 340px;
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+		padding: 12px 16px;
+		border-radius: 14px;
+		background: rgba(var(--module-color), 0.6);
+		border: 1px solid rgba(var(--text-color), 0.08);
+		backdrop-filter: blur(8px);
+		box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
+	}
+
+	&__seek {
+		-webkit-appearance: none;
+		appearance: none;
+		width: 100%;
+		height: 6px;
+		border-radius: 3px;
+		background: linear-gradient(
+			to right,
+			rgb(var(--primary-color)) var(--pct, 0%),
+			rgba(var(--text-color), 0.12) var(--pct, 0%)
+		);
+		cursor: pointer;
+		outline: none;
+
+		&::-webkit-slider-thumb {
+			-webkit-appearance: none;
+			appearance: none;
+			width: 16px;
+			height: 16px;
+			border-radius: 50%;
+			background: rgb(var(--primary-color));
+			border: 2px solid #fff;
+			box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+			cursor: pointer;
+		}
+		&::-moz-range-thumb {
+			width: 16px;
+			height: 16px;
+			border: 2px solid #fff;
+			border-radius: 50%;
+			background: rgb(var(--primary-color));
+			cursor: pointer;
+		}
+	}
+
+	&__row {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+	}
+
+	&__btn {
+		width: 40px;
+		height: 40px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 50%;
+		border: 1px solid rgba(var(--text-color), 0.15);
+		background: rgba(var(--text-color), 0.05);
+		color: rgb(var(--text-color));
+		cursor: pointer;
+		flex-shrink: 0;
+		transition: transform 0.1s ease, background 0.15s ease, filter 0.15s ease;
+
+		&:hover {
+			background: rgba(var(--text-color), 0.12);
+		}
+		&:active {
+			transform: scale(0.94);
+		}
+		&--primary {
+			background: rgb(var(--primary-color));
+			border-color: rgb(var(--primary-color));
+			color: #fff;
+
+			&:hover {
+				filter: brightness(1.08);
+			}
+		}
+	}
+
+	&__count {
+		font-weight: 700;
+		font-size: 0.95rem;
+		color: rgb(var(--text-color));
+		font-variant-numeric: tabular-nums;
+		min-width: 52px;
+		text-align: center;
+	}
+	&__count-sep {
+		color: rgb(var(--text-color));
+		margin: 0 3px;
+	}
+
+	&__speeds {
+		margin-left: auto;
+		display: flex;
+		gap: 4px;
+	}
+	&__speed {
+		padding: 5px 9px;
+		border-radius: 7px;
+		border: none;
+		background: rgba(var(--text-color), 0.06);
+		color: rgb(var(--text-color));
+		font-weight: 700;
+		font-size: 0.8rem;
+		cursor: pointer;
+		transition: background 0.15s ease, color 0.15s ease;
+
+		&:hover {
+			color: rgb(var(--text-color));
+		}
+		&--active {
+			background: rgb(var(--primary-color));
+			color: #fff;
+		}
+	}
+}
+
+// Geri / Sonraki / Cozumu Goster — Button primary temasi bazi state'lerde soluk
+// kaliyor. Segment active ile BIREBIR parlak mavi olmasi icin yuksek specificity
+// (.cd-trainer-efficiency .cd-...) + !important ile Button !important'ini ez;
+// golge/opacity/filter katmanlarini temizle.
+.cd-trainer-efficiency .cd-trainer-efficiency__scramble-nav,
+.cd-trainer-efficiency .cd-trainer-efficiency__reveal-btn {
+	background: rgb(var(--primary-color)) !important;
+	color: #fff !important;
+	border: none !important;
+	box-shadow: none !important;
+	opacity: 1 !important;
+	filter: none !important;
+	backdrop-filter: none !important;
+}
+.cd-trainer-efficiency .cd-trainer-efficiency__scramble-nav:hover,
+.cd-trainer-efficiency .cd-trainer-efficiency__reveal-btn:hover {
+	background: rgb(var(--primary-color)) !important;
+	filter: brightness(1.08) !important;
+}
