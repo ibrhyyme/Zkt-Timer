@@ -114,7 +114,7 @@
         },
         "last_n": {
             "all": "Tümü",
-            "option": "Son {{count}}"
+            "option": "Son {{value}}"
         },
         "focus": {
             "total_time": "Toplam süre",

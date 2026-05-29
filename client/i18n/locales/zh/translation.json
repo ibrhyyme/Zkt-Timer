@@ -114,7 +114,7 @@
         },
         "last_n": {
             "all": "全部",
-            "option": "最近 {{count}}"
+            "option": "最近 {{value}}"
         },
         "focus": {
             "total_time": "总时长",

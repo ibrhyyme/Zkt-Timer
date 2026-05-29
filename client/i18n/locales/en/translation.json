@@ -114,7 +114,7 @@
         },
         "last_n": {
             "all": "All",
-            "option": "Last {{count}}"
+            "option": "Last {{value}}"
         },
         "focus": {
             "total_time": "Total time",

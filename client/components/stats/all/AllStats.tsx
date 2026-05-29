@@ -1,4 +1,4 @@
-import React, {useContext, useMemo} from 'react';
+import React, {ReactNode, useContext, useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import './AllStats.scss';
 import block from '../../../styles/bem';
@@ -16,7 +16,14 @@ import {StatsContext} from '../Stats';
 
 const b = block('overall-stats');
 
-export default function AllStats() {
+interface Props {
+	// Masaustunde filtreler (cube/session/lastN) "Genel Bakis" basliginin yanina tasinir.
+	// Mobilde HeroBand icinde kaldigi icin burada null gelir.
+	filters?: ReactNode;
+}
+
+export default function AllStats(props: Props) {
+	const {filters} = props;
 	const {t} = useTranslation();
 	const solveUpdate = useSolveDb();
 	const {filterOptions} = useContext(StatsContext);
@@ -25,7 +32,7 @@ export default function AllStats() {
 
 	return (
 		<div className={b()}>
-			<StatSection colSpan={2} title={t('stats_page.overview')}>
+			<StatSection colSpan={2} title={t('stats_page.overview')} headerAction={filters}>
 				<AllStatsFeatured />
 			</StatSection>
 			<StatSection title={t('stats_page.more_stats')}>

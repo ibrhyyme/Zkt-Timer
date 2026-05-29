@@ -114,7 +114,7 @@
         },
         "last_n": {
             "all": "Все",
-            "option": "Последние {{count}}"
+            "option": "Последние {{value}}"
         },
         "focus": {
             "total_time": "Общее время",
