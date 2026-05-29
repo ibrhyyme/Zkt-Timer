@@ -66,6 +66,7 @@ export default function Forgot() {
 	const [status, setStatus] = useState<OtpStatus>('idle');
 	const [focusKey, setFocusKey] = useState(0);
 	const [resend, setResend] = useState(30);
+	const [codeVerified, setCodeVerified] = useState(false);
 	const [done, setDone] = useState(false);
 
 	// URL degisirse stage'i yansit (back/forward butonu, deeplink)
@@ -141,9 +142,17 @@ export default function Forgot() {
 		try {
 			await checkForgot({variables: {email: email.trim(), code: full}});
 			setCode(full); // keep — needed for updateForgotPassword on the reset stage
+			// hold the merged/verifying state so the gooey band animation is visible
+			await new Promise((r) => setTimeout(r, 750));
+			// confirm with the neon ✓ before moving on to the new-password stage
+			setStatus('success');
+			setCodeVerified(true);
+			await new Promise((r) => setTimeout(r, 950));
+			setCodeVerified(false);
 			setStatus('idle');
 			setStage('reset');
 		} catch (err) {
+			await new Promise((r) => setTimeout(r, 500));
 			setStatus('error');
 			setTimeout(() => {
 				setCode('');
@@ -252,6 +261,14 @@ export default function Forgot() {
 
 	// ───── Stage 2: Code ─────
 	if (stage === 'code') {
+		if (codeVerified) {
+			return (
+				<div className={n('done').toString()}>
+					<p className={z('subtitle').toString()}>{t('otp.code_verified')}</p>
+					<NeonSuccessCheck size={96} />
+				</div>
+			);
+		}
 		return (
 			<div className={n('stack').toString()}>
 				<p className={z('subtitle').toString()}>

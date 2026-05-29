@@ -2351,6 +2351,7 @@
         "email_verified": "Hesabın doğrulandı, yönlendiriliyorsun…",
         "password_updated": "Şifren güncellendi, yönlendiriliyorsun…",
         "forgot_email_sub": "Hesabının e-posta adresini gir, sana 6 haneli bir kurtarma kodu gönderelim.",
+        "code_verified": "Kod doğrulandı",
         "pw_levels": ["Çok zayıf", "Zayıf", "Orta", "İyi", "Güçlü"]
     },
     "email_verification": {

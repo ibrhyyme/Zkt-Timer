@@ -2351,6 +2351,7 @@
         "email_verified": "账户已验证，正在跳转…",
         "password_updated": "密码已更新，正在跳转…",
         "forgot_email_sub": "输入账户邮箱，我们将发送 6 位恢复验证码。",
+        "code_verified": "验证码已确认",
         "pw_levels": ["非常弱", "弱", "一般", "良好", "强"]
     },
     "email_verification": {
