@@ -156,6 +156,7 @@
 		padding: 1.6px;
 		background: conic-gradient(from var(--neon-spin), rgb(var(--neon-a)), rgb(var(--neon-b)), rgb(var(--neon-a)));
 		-webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+		mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
 		-webkit-mask-composite: xor;
 		mask-composite: exclude;
 		opacity: 0;
@@ -243,6 +244,7 @@
 		padding: 2px;
 		background: conic-gradient(from var(--neon-spin), rgb(var(--neon-a)), rgb(var(--neon-b)), rgb(var(--neon-a)));
 		-webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+		mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
 		-webkit-mask-composite: xor;
 		mask-composite: exclude;
 		animation: cd-neon-ringspin 3.5s linear infinite;
