@@ -18,7 +18,7 @@ import {fetchAndSaveWcaRecords} from '../models/wca_record';
 
 const jwtSecret = (process as any).env.JWT_SECRET as string;
 const WCA_PENDING_COOKIE = 'wca_pending';
-const WCA_PENDING_EXPIRY = 15 * 60; // 15 dakika (saniye)
+const WCA_PENDING_EXPIRY = 15 * 60; // 15 minutes (seconds)
 
 interface WcaPendingPayload {
 	email: string;
@@ -41,20 +41,20 @@ export class WcaAuthResolver {
 	): Promise<WcaOAuthResult> {
 		const {req, res} = context;
 
-		// 1. WCA'dan token ve profil bilgilerini al
+		// 1. Get token and profile information from WCA
 		const wcaData = await exchangeWcaLoginCode(code);
 
 		if (!wcaData.email) {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'WCA hesabinizdan e-posta bilgisi alinamadi. Lutfen WCA hesabinizda e-posta adresinizin tanimli oldugundan emin olun.');
 		}
 
-		// 2. Once wca_id ile Integration tablosundan ara — bu hesap zaten WCA bagli
+		// 2. First search Integration table by wca_id — this account is already linked to WCA
 		if (wcaData.wcaId) {
 			const existingIntegration = await getIntegrationByWcaId(wcaData.wcaId);
 			if (existingIntegration) {
 				const user = await getUserById(existingIntegration.user_id);
 				if (user) {
-					// Profili ve token'lari tazele — login'i bloklamasin (best-effort)
+					// Refresh profile and tokens — do not block login (best-effort)
 					try {
 						const refreshed = await updateIntegration(existingIntegration, {
 							auth_token: wcaData.accessToken,
@@ -77,14 +77,15 @@ export class WcaAuthResolver {
 			}
 		}
 
-		// 3. wca_id ile bulunamadiysa email ile ara — otomatik linking YOK
-		// Saldirgan kurbanin email'i ile local hesap acabilir; otomatik link
-		// kurbanin WCA verilerini saldirgana baglar. Bu yuzden email match'te
-		// her zaman hata atiyoruz; kullanici manuel link yapmali (Ayarlar > Bagli Hesaplar).
+		// 3. Not found by wca_id, search by email — automatic linking NOT allowed
+		// An attacker can create a local account with the victim's email; automatic linking
+		// would bind the victim's WCA data to the attacker. This is why we always throw
+		// an error on email match; the user must manually link (Settings > Linked Accounts).
 		//
-		// ISTISNA: Kullanici zaten login ve email match'lenen hesap kendi hesabi.
-		// Bu manuel link senaryosu — sifresiyle giris yapip Ayarlar'dan WCA bagla butonuna bastiginda
-		// OAuth donusunde bu mutation cagrilir. Sahibi oldugu kanitli, link yapilabilir.
+		// EXCEPTION: User is already logged in and the email-matched account is their own.
+		// This is the manual link scenario — they log in with their password and click the
+		// WCA link button in Settings. On OAuth return, this mutation is called. They've
+		// proven ownership, so linking is allowed.
 		const existingUser = await getUserByEmail(wcaData.email);
 		const loggedInUser = context.user;
 
@@ -105,7 +106,7 @@ export class WcaAuthResolver {
 				}
 			}
 
-			// Manuel link — Integration olustur, kullanici zaten oturum acmis durumda
+			// Manual link — create Integration, user is already logged in
 			const existingIntegration = await getIntegration(existingUser, 'wca');
 			if (!existingIntegration) {
 				let integration = await createIntegration(
@@ -129,8 +130,8 @@ export class WcaAuthResolver {
 			};
 		}
 
-		// 3. Hesap yok — wca_pending cookie'ye bilgileri yaz
-		// Avatar URL'i 500 char'a kirpiyoruz; cookie 4KB sinirini asmamasi icin guvenlik onlemi
+		// 3. Account does not exist — write information to wca_pending cookie
+		// Trim avatar URL to 500 chars; safety measure to not exceed 4KB cookie limit
 		const pendingPayload: WcaPendingPayload = {
 			email: wcaData.email,
 			name: wcaData.name,
@@ -168,7 +169,7 @@ export class WcaAuthResolver {
 	): Promise<PublicUserAccount> {
 		const {req, res} = context;
 
-		// 1. wca_pending cookie'den JWT oku
+		// 1. Read JWT from wca_pending cookie
 		const pendingToken = req.cookies[WCA_PENDING_COOKIE];
 		if (!pendingToken) {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Oturum suresi doldu. Lutfen tekrar WCA ile giris yapin.');
@@ -181,7 +182,7 @@ export class WcaAuthResolver {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Oturum suresi doldu. Lutfen tekrar WCA ile giris yapin.');
 		}
 
-		// 2. Username validasyonu
+		// 2. Username validation
 		if (!username || username.length < 2) {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Kullanici adi en az 2 karakter olmalidir');
 		}
@@ -197,7 +198,7 @@ export class WcaAuthResolver {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Bu kullanici adi zaten kullaniliyor');
 		}
 
-		// 3. Email tekrar kontrol (race condition onlemi) — otomatik silme YOK
+		// 3. Re-check email (race condition prevention) — no automatic deletion
 		const existingEmail = await getUserByEmail(payload.email);
 		if (existingEmail) {
 			if (!(existingEmail as any).email_verified) {
@@ -210,12 +211,12 @@ export class WcaAuthResolver {
 			}
 		}
 
-		// 4. WCA name'i split et
+		// 4. Split WCA name
 		const nameParts = (payload.name || '').trim().split(/\s+/);
 		const firstName = nameParts[0] || '';
 		const lastName = nameParts.slice(1).join(' ') || '';
 
-		// 5. Hesap olustur (sifresiz)
+		// 5. Create account (passwordless)
 		let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 		if (Array.isArray(ip)) {
 			ip = ip[0];
@@ -225,19 +226,19 @@ export class WcaAuthResolver {
 
 		const user = await createUserAccount(firstName, lastName, payload.email, username, null, ip as string);
 
-		// email_verified = true (WCA email'i guvenilir)
+		// email_verified = true (WCA email is trusted)
 		await getPrisma().userAccount.update({
 			where: {id: user.id},
 			data: {email_verified: true},
 		});
 
-		// 6. Setting + NotificationPreference + default Session olustur
+		// 6. Create Setting + NotificationPreference + default Session
 		const wcaLocale = req.cookies?.zkt_language || 'en';
 		await createSetting(user, wcaLocale);
 		await createNotificationPreference(user);
 		await createDefaultSession(user, wcaLocale);
 
-		// 7. WCA hesabi baska kullaniciya bagli mi kontrol et — wca_user_id newcomer dahil her zaman var
+		// 7. Check if WCA account is linked to another user — wca_user_id always exists including newcomers
 		if (payload.wcaUserId) {
 			const existing = await getIntegrationByWcaUserId(payload.wcaUserId);
 			if (existing) {
@@ -251,7 +252,7 @@ export class WcaAuthResolver {
 			}
 		}
 
-		// 8. Integration record olustur — pendingPayload'taki tum WCA bilgilerini yaz
+		// 8. Create Integration record — write all WCA information from pendingPayload
 		let integration = await createIntegration(
 			user,
 			'wca',
@@ -259,7 +260,7 @@ export class WcaAuthResolver {
 			payload.refreshToken,
 			payload.expiresAt
 		);
-		// Synthetic wcaData — pendingPayload icin syncWcaProfileToIntegration'a ayni shape'i ver
+		// Synthetic wcaData — provide same shape to syncWcaProfileToIntegration for pendingPayload
 		const syntheticWcaData: any = {
 			id: payload.wcaUserId,
 			wca_id: payload.wcaId,
@@ -270,13 +271,13 @@ export class WcaAuthResolver {
 		integration = await syncWcaProfileToIntegration(integration, syntheticWcaData);
 
 		if (payload.wcaId) {
-			// WCA kayitlarini cek + ranking hesapla
+			// Fetch WCA records + calculate ranking
 			fetchAndSaveWcaRecords(user, integration as any).catch((err) => {
 				console.error('[Rankings] Auto-fetch on signup failed:', err?.message);
 			});
 		}
 
-		// 8. wca_pending cookie temizle + session cookie set et
+		// 8. Clear wca_pending cookie + set session cookie
 		res.clearCookie(WCA_PENDING_COOKIE, { sameSite: 'none' as const, secure: true });
 
 		const jwtToken = getJwtString(user);

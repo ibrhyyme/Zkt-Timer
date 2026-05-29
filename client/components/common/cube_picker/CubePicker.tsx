@@ -12,7 +12,7 @@ interface Props {
 	excludeCustomCubeTypes?: boolean;
 	onChange?: (cubeType: CubeType) => void;
 	excludeOtherCubeType?: boolean;
-	// Geriye uyumluluk icin tutuluyor — yeni FancyDropdown align/maxHeight prop'larini kullanir
+	// Kept for backwards compatibility — new FancyDropdown uses align/maxHeight props
 	dropdownProps?: {
 		openLeft?: boolean;
 		openUp?: boolean;
@@ -21,7 +21,7 @@ interface Props {
 	};
 }
 
-// BL/FM/OH/MBLD/Mirror/Yau variant'lari artik parent cube'un subset'i — burada tek grup
+// BL/FM/OH/MBLD/Mirror/Yau variants are now subsets of parent cube — single group here
 const CUBE_TYPE_GROUPS: { header: string; types: string[] }[] = [
 	{ header: '', types: ['wca'] },
 	{
@@ -65,7 +65,7 @@ export default function CubePicker(props: Props) {
 		if (ct && onChange) onChange(ct);
 	}
 
-	// WCA cube type — text yerine WCA logosu. Cube ikon da gizlenir cunku logo zaten ayirt edici.
+	// WCA cube type — show WCA logo instead of text. Cube icon hidden because logo is already distinctive.
 	const isWca = cubeType?.id === 'wca';
 	const triggerLabel: React.ReactNode = isWca ? (
 		<img

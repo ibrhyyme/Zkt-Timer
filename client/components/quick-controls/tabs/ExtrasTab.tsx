@@ -173,12 +173,12 @@ function ExtrasSelect({ label, value, options, hidden, openUp, onChange }: Extra
 }
 
 interface ExtrasTabProps {
-	// FriendlyRoom (oda) icinden acildiginda mobile timer modul secicilerini gizle.
-	// Bu modul ayari Timer sayfasinin mobil gorunumu icin — odanin kendi layout'u var.
+	// Hide mobile timer module selectors when opened from FriendlyRoom (room).
+	// This setting is for the Timer page's mobile view — the room has its own layout.
 	hideMobileModules?: boolean;
-	// FriendlyRoom'da smart cube'a ozgu ayarlari (multi-phase analiz, tanima sureleri)
-	// gizle — odanin smart cube akisi LiveAnalysisOverlay'i ve recognition'u kullanmiyor,
-	// bu yuzden ayarlar etkisiz kalir.
+	// Hide smart cube-specific settings in FriendlyRoom (multi-phase analysis, recognition times)
+	// — the room's smart cube flow uses LiveAnalysisOverlay and recognition, but the settings
+	// remain ineffective because the room has its own flow.
 	hideSmartCubeFeatures?: boolean;
 }
 
@@ -253,7 +253,7 @@ export default function ExtrasTab({ hideMobileModules = false, hideSmartCubeFeat
 		{ label: 'CF+OP', value: 'cf_plus_op' }, // Multi-phase (4 steps: Cross, F2L, OLL, PLL)
 		{ label: 'CFFFFOP', value: 'cffffop' }, // F2L Split (Cross, F2L1, F2L2, F2L3, F2L4, OLL, PLL)
 		{ label: 'CFFFFOOPP', value: 'cffffoopp' }, // Detailed (Cross, F2L1...4, 2-look OLL/PLL?) - User requested name.
-	].filter((opt) => !(mobileMode && opt.value === 'cffffoopp')); // Mobilde 11 satir sigmaz, cffffoopp gizli
+	].filter((opt) => !(mobileMode && opt.value === 'cffffoopp')); // On mobile, 11 lines don't fit, cffffoopp hidden
 
 	return (
 		<div className="space-y-3">

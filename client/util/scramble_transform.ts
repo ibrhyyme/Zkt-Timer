@@ -1,18 +1,17 @@
 /**
- * Scramble Renk Transform
+ * Scramble Color Transform
  *
- * Cstimer standart 3x3 scramble'lari cube'un U layer (beyaz yuz, cube ref) pieces'ini
- * permute eder. Kullanici farkli bir cross/drill rengi tercih ediyorsa scramble'i
- * conjugate ile transform ederiz: rotation + SCRAM + rotation^-1.
+ * cstimer standard 3x3 scrambles permute the U layer pieces (white face, cube ref).
+ * If the user prefers a different cross/drill color, we transform the scramble
+ * via conjugation: rotation + SCRAM + rotation^-1.
  *
- * Net rotation identity (cube standart orientation'da kalir), ama scramble'in etkisi
- * secilen renge denk yuze tasinir. Kullanici cube'u STANDART tutusta tutar, smart cube
- * uyumlu, klasik mode da calisir.
+ * Net rotation is identity (cube remains in standard orientation), but the scramble's
+ * effect is transferred to the selected color's corresponding face. User holds cube
+ * in STANDARD grip, compatible with smart cube and classic mode.
  *
- * Matematiksel olarak: A · SCRAM · A^(-1) (A = rotation) = SCRAM'in her face turn'unun
- * A altinda transform edilmis hali. transformMoves(SCRAM, A) bu islemi yapar.
- * Boylece cube'a ekstra cube rotation (x/y/z) eklemeden temiz face turn'lerden
- * olusan bir scramble elde edilir.
+ * Mathematically: A · SCRAM · A^(-1) (A = rotation) = each face turn of SCRAM
+ * transformed under A. transformMoves(SCRAM, A) performs this operation.
+ * This yields a clean scramble of only face turns without extra cube rotations (x/y/z).
  */
 
 import {transformMoves} from '../components/solve_info/util/cross_rotation';
@@ -28,18 +27,18 @@ export function isTopColorFace(value: unknown): value is TopColorFace {
 /**
  * Selected face → U position rotation map.
  *
- * Kullanicinin drill yapmak istedigi yuzu cube'un U pozisyonuna getiren rotation.
- * Scramble standart referansta U layer permute eder. transformMoves bu rotation
- * altinda her face turn'unu donusturur — scramble'in etkisi selected face'e tasinir.
+ * Rotation that moves the face the user wants to drill to the cube's U position.
+ * Scramble permutes U layer in standard reference. transformMoves transforms each face turn
+ * under this rotation — the scramble's effect is transferred to the selected face.
  *
- * | Renk    | Face | Rotation |
- * |---------|------|----------|
- * | Beyaz   | U    | ''       | Default, no-op
- * | Sari    | D    | x2       | Sari ust drill
- * | Kirmizi | R    | z        | Kirmizi ust drill
- * | Turuncu | L    | z'       | Turuncu ust drill
- * | Yesil   | F    | x'       | Yesil ust drill
- * | Mavi    | B    | x        | Mavi ust drill
+ * | Color  | Face | Rotation |
+ * |--------|------|----------|
+ * | White  | U    | ''       | Default, no-op
+ * | Yellow | D    | x2       | Yellow top drill
+ * | Red    | R    | z        | Red top drill
+ * | Orange | L    | z'       | Orange top drill
+ * | Green  | F    | x'       | Green top drill
+ * | Blue   | B    | x        | Blue top drill
  */
 const FACE_TO_U_ROTATION: Record<TopColorFace, string> = {
 	U: '',
@@ -51,8 +50,8 @@ const FACE_TO_U_ROTATION: Record<TopColorFace, string> = {
 };
 
 /**
- * Top color secimi hangi cube_type + subset kombinasyonlarinda gosterilir.
- * Sadece 3x3 CFOP'ta PLL/OLL/Cross Cozuldu (f2l) subset'lerinde.
+ * Top color selection is shown in which cube_type + subset combinations.
+ * Only in 3x3 CFOP with PLL/OLL/Cross Solved (f2l) subsets.
  */
 const TOP_COLOR_SUBSETS = new Set(['pll', 'oll', 'f2l']);
 
@@ -63,18 +62,18 @@ export function isTopColorAvailable(cubeType: string | null | undefined, subset:
 }
 
 /**
- * Standart 3x3 scramble'i secilen ust katman rengine gore transform et.
+ * Transform a standard 3x3 scramble according to the selected top layer color.
  *
- * Implementation: transformMoves(scramble, rotation) — rotation altinda her face
- * turn'u donusturur. Sonuc: yalniz face turn'lerden olusan temiz bir scramble,
- * cube'da rotation kalintisi yok.
+ * Implementation: transformMoves(scramble, rotation) — transforms each face turn
+ * under the rotation. Result: a clean scramble of only face turns with no residual
+ * cube rotations.
  *
- * @param scramble  Standart cstimer scramble (ornek: "R U R' F D L'")
- * @param topColor  Kullanicinin ust katmanda tutmak istedigi yuz. null/'U' ise transform yok.
- * @returns Transform edilmis scramble. Hata durumunda orijinal scramble.
+ * @param scramble  Standard cstimer scramble (example: "R U R' F D L'")
+ * @param topColor  The color the user wants to hold on top. null/'U' = no transform.
+ * @returns Transformed scramble. On error, returns original scramble.
  *
- * NOT: Async imzasi geriye uyumluluk icin — eski cubing.js Alg lazy load gerekli idi.
- * Su an sync calisir ama caller'lar await ediyor; imzayi degistirmedik.
+ * NOTE: Async signature for backward compatibility — old cubing.js Alg required lazy load.
+ * Currently runs synchronously but callers still await; signature unchanged.
  */
 export async function applyTopColorTransform(
 	scramble: string,

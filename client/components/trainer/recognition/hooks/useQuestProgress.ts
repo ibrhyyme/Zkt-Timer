@@ -1,6 +1,6 @@
 /**
- * useQuestProgress — 13 quest step icin Dexie'den mastery durumunu yukler.
- * Referans `composables/useQuestProgress.js` portu.
+ * useQuestProgress — loads mastery status from Dexie for 13 quest steps.
+ * Reference: port of `composables/useQuestProgress.js`.
  */
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {QUEST_STEPS, MASTERY_ACCURACY, poolKeyForStep, type QuestStep} from '../../../../util/trainer/recognition/quest';
@@ -43,7 +43,7 @@ export function useQuestProgress(): UseQuestProgressResult {
 				} as QuestStepStatus;
 			})
 		);
-		// Unmount sonrasi setState'i onle (useSessionPB ile ayni cancelled pattern)
+		// Prevent setState after unmount (same cancelled pattern as useSessionPB)
 		if (!isActive()) return;
 		setStepStatuses(results);
 		setLoading(false);

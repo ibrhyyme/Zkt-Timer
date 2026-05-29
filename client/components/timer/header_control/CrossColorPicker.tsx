@@ -52,7 +52,7 @@ export default function CrossColorPicker({ value, onChange }: Props) {
 		onChange(newValue as TopColorFace);
 	}
 
-	// Trigger: swatch + harf + caret (sadece icon-text-caret)
+	// Trigger: swatch + letter + caret (just icon-text-caret)
 	const triggerContent = (
 		<>
 			<span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>

@@ -30,7 +30,7 @@
 			&--replay {
 				flex: 0 0 auto;
 				max-width: 100%;
-				order: -1; // Mobilde replay ustte, tablo altta
+				order: -1; // On mobile: replay on top, table below
 			}
 		}
 	}
@@ -70,7 +70,7 @@
 		th:last-child {
 			text-align: center;
 
-			// Copy butonu inline
+			// Copy button inline
 			> button,
 			> div {
 				display: inline-flex;
@@ -94,7 +94,7 @@
 				border-bottom: none;
 			}
 
-			// Hover ile seçili satır
+			// Highlight selected row on hover
 			&:hover {
 				background-color: rgba(var(--text-color), 0.05);
 			}
@@ -125,7 +125,7 @@
 		margin-right: 6px;
 	}
 
-	// Tablo satiri — replay'in oynadigi step icin highlight + tiklanabilir cursor
+	// Table row — highlight for step being played in replay + clickable cursor
 	&__row {
 		transition: background-color 0.15s ease;
 
@@ -143,13 +143,13 @@
 		}
 	}
 
-	// Her hamle ayri span — current move highlight
+	// Each move in separate span — current move highlight
 	&__move {
 		display: inline-block;
 		padding: 1px 4px;
 		margin: 0 2px;
 		border-radius: 3px;
-		white-space: nowrap; // Tek hamle (orn "U2") asla bolunmesin
+		white-space: nowrap; // Single move (e.g. "U2") must never wrap
 		transition: background-color 0.1s ease, color 0.1s ease;
 
 		&--current {

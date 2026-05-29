@@ -1,8 +1,8 @@
-// Header'da timer turu secici dropdown — Radix UI Select primitives + Framer Motion animasyon.
-// Radix sayesinde auto-flip, keyboard nav (arrow + enter + escape), type-ahead, ARIA hepsi hazir.
+// Header timer type selector dropdown — Radix UI Select primitives + Framer Motion animation.
+// Thanks to Radix: auto-flip, keyboard nav (arrow + enter + escape), type-ahead, ARIA all built-in.
 //
-// Mimari notu: TimerTab.tsx (modal) ile bu picker ayni state'i (timer_type + manual_entry settings)
-// okur/yazar. Mobile'da modal Timer tab, desktop'ta bu picker — UI tarafi ayri, mantik paylasilir.
+// Architecture note: TimerTab.tsx (modal) and this picker share the same state (timer_type + manual_entry settings).
+// Mobile uses modal Timer tab, desktop uses this picker — UI is separate, logic is shared.
 
 import React, { useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -37,9 +37,9 @@ type TypeKey = 'keyboard' | 'stackmat' | 'smart' | 'gantimer' | 'qiyitimer' | 'm
 
 type TimerOption = {
 	typeKey: TypeKey;
-	// Panel icinde gozuken tam label
+	// Full label shown inside panel
 	label: string;
-	// Trigger'da gozuken kompakt label (yer kazanmak icin)
+	// Compact label shown on trigger (to save space)
 	shortLabel: string;
 	icon: React.ReactNode;
 	isActive: boolean;
@@ -70,7 +70,7 @@ export default function TimerTypePicker({ allowedTimerTypes, requireProForSmart 
 	const isProGated = !!requireProForSmart && !isPro(me);
 	const smartSupported = is3x3CubeType(cubeType, scrambleSubset);
 
-	// Acilma kontrolu — selected item'i panel ortasina scroll yapmak icin
+	// Open control — scroll selected item to center of panel
 	const [open, setOpen] = useState(false);
 	const viewportRef = useRef<HTMLDivElement>(null);
 
@@ -112,7 +112,7 @@ export default function TimerTypePicker({ allowedTimerTypes, requireProForSmart 
 		toggleSetting('manual_entry');
 	}
 
-	// Radix Select onValueChange handler — value bizim TypeKey
+	// Radix Select onValueChange handler — value is our TypeKey
 	function handleValueChange(value: string) {
 		const opt = options.find((o) => o.typeKey === value);
 		if (!opt || opt.disabled) return;

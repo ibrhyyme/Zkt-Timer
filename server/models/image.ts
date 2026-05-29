@@ -36,20 +36,20 @@ export async function uploadImageWithFile(user, fileName, fileStream, options: I
 	const path = `images/${name}`;
 
 	const uploadBuffer = await getImageBufferFromFileStream(fileName, fileStream, options);
-	
-	// Development ortamında local file system'e kaydet
+
+	// Save to local file system in development environment
 	const isDev = process.env.ENV === 'development';
 	if (isDev) {
 		const fs = require('fs');
 		const uploadPath = `./public/uploads/${path}`;
-		
-		// uploads klasörünü oluştur
+
+		// Create uploads folder
 		const dir = uploadPath.substring(0, uploadPath.lastIndexOf('/'));
 		if (!fs.existsSync(dir)) {
 			fs.mkdirSync(dir, { recursive: true });
 		}
-		
-		// Dosyayı local'e kaydet
+
+		// Save file locally
 		fs.writeFileSync(uploadPath, uploadBuffer);
 		logger.info(`Image saved locally in development: ${uploadPath}`);
 	} else {

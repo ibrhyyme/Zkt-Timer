@@ -138,7 +138,7 @@ function FeatureRow({featureKey, upcoming}: {featureKey: string; upcoming?: bool
 				</span>
 				<span className={b('feature-label')}>
 					{t(`pro_page.features.${featureKey}.title`)}
-					{upcoming && <span className={b('feat-soon')}>Yakında</span>}
+					{upcoming && <span className={b('feat-soon')}>Coming soon</span>}
 				</span>
 				<CaretDown weight="bold" className={b('feature-caret')} />
 			</button>
@@ -355,8 +355,8 @@ function ProPageContent() {
 			await syncWithServer();
 			refetchIap();
 			dispatch(getMe());
-			// Tum Pro feature'larin (paywall, kilitli ekranlar, nav badge) anlik
-			// guncellenmesi icin sayfa reload — me/Apollo cache'lerinin tutarsiz kalmasini onler.
+			// Page reload for instant update of all Pro features (paywall, locked screens, nav badge)
+			// — prevents me/Apollo cache inconsistency.
 			setTimeout(() => window.location.reload(), 1500);
 		} catch (err: any) {
 			const code = err?.code || '';
@@ -382,7 +382,7 @@ function ProPageContent() {
 				await syncWithServer();
 				refetchIap();
 				dispatch(getMe());
-				// Pro durumu uygulamanin her yerinde tutarli yansisin diye sayfayi yeniden yukle.
+				// Reload so Pro status is consistent throughout app.
 				setTimeout(() => window.location.reload(), 1500);
 			} else {
 				toastError(t('pro_page.iap.restore_empty'));

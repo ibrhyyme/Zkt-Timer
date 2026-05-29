@@ -14,9 +14,9 @@ export default function QuickControlsModal() {
 	const {isOpen, activeTab, close, setActiveTab} = useQuickControlsModal();
 	const mobileMode = useGeneral('mobile_mode');
 
-	// Desktop'ta Timer tab artik TimerTypePicker'a tasindi (HeaderControl) —
-	// modal'i sadece Hizli Ayarlar + Hedefler ile actiginda 'timer' tab degil
-	// 'extras' default. Mobile'da modal Timer tab koruyor.
+	// On desktop, Timer tab has moved to TimerTypePicker (HeaderControl) —
+	// when modal is opened for Quick Settings + Goals, 'timer' tab is not shown,
+	// 'extras' is default instead. On mobile, the modal still shows Timer tab.
 	useEffect(() => {
 		if (isOpen && !mobileMode && activeTab === 'timer') {
 			setActiveTab('extras');

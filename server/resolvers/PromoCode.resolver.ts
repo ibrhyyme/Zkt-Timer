@@ -61,8 +61,8 @@ export class PromoCodeResolver {
 		const normalizedCode = code.trim().toUpperCase();
 		const userId = context.user.id;
 
-		// Brute force korumasi: kullanici basina saatte 10 deneme, IP basina 30 deneme
-		// Anlamli kod (ZKT2026, VIP gibi) konulursa otomatik bot deneyemesin
+		// Brute force protection: 10 attempts per user per hour, 30 attempts per IP per hour
+		// Using meaningful codes (ZKT2026, VIP, etc.) prevents automated bot testing
 		const userLimit = await checkRateLimit(`promo:user:${userId}`, 10, 3600);
 		if (!userLimit.allowed) {
 			logger.warn('Promo code rate limit (user)', {userId, count: userLimit.count});
@@ -145,7 +145,7 @@ export class PromoCodeResolver {
 			});
 		}
 
-		// Uyelik bildirimi gonder
+		// Send membership notification
 		const user = await getUserByIdWithSettings(userId);
 		if (user) {
 			try {

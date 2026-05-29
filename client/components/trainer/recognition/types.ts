@@ -1,13 +1,13 @@
 /**
- * Recognition modu icin tum tipler.
- * Referans Pinia store'larinin TypeScript karsiligi.
+ * All types for Recognition mode.
+ * TypeScript counterpart of reference Pinia stores.
  */
 import type {PllCase} from '../../../util/trainer/recognition/scramble';
 import type {ResultRecord} from '../../../util/trainer/recognition/evaluation';
 import type {ColorScheme, Rotation} from '../../../util/trainer/recognition/cube_display';
 import type {GameStateValue} from '../../../util/trainer/recognition/game_constants';
 
-// ──────────────────── Slice'lar ────────────────────
+// ──────────────────── Slices ────────────────────
 
 export interface SessionSlice {
 	state: GameStateValue; // Paused=0 / Playing=1 / EvaluationDone=2
@@ -18,7 +18,7 @@ export interface SessionSlice {
 	currentRecognitionStarted: number; // Date.now()
 	allowedCrossColors: string[];
 	showResultsModal: boolean;
-	sizeOption: number; // SIZE_UNIQUE/MEDIUM/LARGE veya -1 (personalized)
+	sizeOption: number; // SIZE_UNIQUE/MEDIUM/LARGE or -1 (personalized)
 	presetLabel: string;
 }
 
@@ -64,7 +64,7 @@ export type RecognitionView = 'home' | 'setup' | 'trainer' | 'results' | 'settin
 // ──────────────────── Non-persisted UI Feedback ────────────────────
 
 export interface LastSubmission {
-	key: string; // 'A', 'Gb' vb.
+	key: string; // 'A', 'Gb', etc.
 	type: 'correct' | 'wrong';
 }
 

@@ -31,7 +31,7 @@ export function saveSolve(
 		time: finalTime,
 		raw_time: Math.max(time, 0),
 		cube_type: cubeType,
-		// cube_type='wca' icin subset zorunlu (cube-subset-bucket kurali); bos kalirsa '333' default'una dus
+		// For cube_type='wca', subset is required (cube-subset-bucket rule); if empty, defaults to '333'
 		scramble_subset: cubeType === 'wca' ? (scrambleSubset || '333') : (scrambleSubset || null),
 		id: uuid(),
 		dnf: dnf || false,
@@ -51,7 +51,7 @@ export function saveSolve(
 	setTimerParam('sessionSolveCount', newCount);
 	emitEvent('solveSavedEvent', solveObject);
 
-	// Her 50 cozumde bir review istegi (session basina 1 kez, plugin kontrol ediyor)
+	// Request review every 50 solves (once per session, plugin controls it)
 	if (newCount === 50) {
 		requestInAppReview();
 	}

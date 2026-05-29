@@ -1,16 +1,16 @@
 /**
- * Smart cube reconstruction engine — ana entry point.
+ * Smart cube reconstruction engine — main entry point.
  *
- * cstimer recons.js calcRecons() port + Zkt-Timer adaptasyonu:
- *   - Progress-based monoton seviye dususu ile faz tespiti
- *   - 6-axis rotation (cstimer'da CFOP icin n_axis=6)
- *   - Burst handling: ardisik fazlar tek hamlede atlanirsa skipped:true ile doldurulur
- *   - 1-move phase merge: cok kisa noisy phase'leri sonraki phase'e baglar
- *   - OLL/PLL case identification phase boundary'lerinde
+ * cstimer recons.js calcRecons() port + Zkt-Timer adaptation:
+ *   - Phase detection with progress-based monotonic level descent
+ *   - 6-axis rotation (cstimer CFOP uses n_axis=6)
+ *   - Burst handling: if consecutive phases are skipped in one turn, filled with skipped:true
+ *   - 1-move phase merge: merges very short noisy phases into next phase
+ *   - OLL/PLL case identification at phase boundaries
  *   - Recognition vs execution time split (tsStart vs tsFirst)
  *
- * Engine SAF: turn dizisi + start state -> transitions array. Wrapper'lar bu output'u
- * frontend (LiveAnalysisResult) veya backend (DB steps) shape'ine donusturur.
+ * Engine SAF: turn sequence + start state -> transitions array. Wrappers convert this output
+ * to frontend (LiveAnalysisResult) or backend (DB steps) shape.
  */
 
 import Cube from 'cubejs';
@@ -44,11 +44,11 @@ function isEffectiveMove(move: string): boolean {
 const PHASE_ORDER: CFOPPhase[] = ['cross', 'f2l_1', 'f2l_2', 'f2l_3', 'f2l_4', 'oll', 'pll'];
 
 /**
- * Verili turn dizisi + start state'den CFOP phase analiz uretir.
+ * Produces CFOP phase analysis from given turn sequence + start state.
  *
  * @param turns        SolveTurn[] (turn + ms timestamp)
- * @param startState   54-char facelet (scramble bittiginde cube state'i)
- * @param options      method (CFOP only su an), OLL/PLL identification toggle'lari
+ * @param startState   54-char facelet (cube state when scramble ends)
+ * @param options      method (CFOP only for now), OLL/PLL identification toggles
  */
 export function analyzePhases(
 	turns: SolveTurn[],
@@ -68,35 +68,35 @@ export function analyzePhases(
 	let progress = initial.progress;
 	let crossAxisIndex: number | null = null;
 
-	// Boundary-aware HTM: tek totalCounter, phase basinda snapshot, phase sonunda delta.
-	// Boylece axis-mask state phase boundary'sinde kaybolmaz; cross sonu R + F2L_1 basi R
-	// = R2 (1 HTM) olarak yakalanir. Garanti: SUM(transitions[i].moveCount.htm) === totalMoves.htm.
+	// Boundary-aware HTM: single totalCounter, snapshot at phase start, delta at phase end.
+	// This way axis-mask state doesn't get lost at phase boundary; cross end R + F2L_1 start R
+	// = R2 (1 HTM) is correctly captured. Guaranteed: SUM(transitions[i].moveCount.htm) === totalMoves.htm.
 	let phaseStartSnapshot: MoveCounts = totalCounter.snapshot();
 	let phaseMoves: string[] = [];
 	let phaseMoveTimestamps: number[] = [];
 	let phaseStartMs = turns.length > 0 ? turns[0].timestamp : 0;
 	let firstMoveMs = Infinity;
 
-	// State snapshot'lari OLL/PLL identification icin: phase boyunca state'leri sakla
-	// "before-phase" state = onceki phase'in sonu = bu phase'in basi
-	// OLL identifikasyonu icin: f2l_4 sonu state (= OLL phase'i basi)
-	// PLL icin: oll sonu state (= PLL basi)
+	// State snapshots for OLL/PLL identification: store states throughout phase
+	// "before-phase" state = previous phase's end = this phase's start
+	// For OLL identification: f2l_4 end state (= OLL phase start)
+	// For PLL: oll end state (= PLL start)
 	const phaseEndStates: Partial<Record<CFOPPhase, string>> = {};
 	const phaseEndAxis: Partial<Record<CFOPPhase, number>> = {};
 
-	// Kismi-cozum subsetleri (333cfop>oll, >pll, >ll vb.) icin: scramble cube'u zaten bazi
-	// fazlar cozulu halde getirir. Engine bu fazlar icin transition uretmez (curProg < progress
-	// dususu olmaz). Identification chain'i (`beforeOLLState = phaseEndStates.f2l_4 || ...`)
-	// bu durumda null kalir → OLL/PLL case key bulunamaz, vakalar/istatistikler kirik.
+	// For partial-solve subsets (333cfop>oll, >pll, >ll etc.): scramble cube already
+	// brings some phases to solved state. Engine doesn't produce transitions for those phases
+	// (no curProg < progress descent). Identification chain (`beforeOLLState = phaseEndStates.f2l_4 || ...`)
+	// stays null in this case → OLL/PLL case key not found, stats broken.
 	//
-	// Cozum: initial state'ten "kac faz zaten cozulu" inferle, o fazlarin phaseEndStates'ini
-	// initialState ile pre-populate et. Cross/F2L/OLL atlanmissa identification chain'i dolu
-	// kalir, kullanicinin yaptigi son fazlar (orn. PLL-only) icin case key dogru bulunur.
+	// Solution: infer from initial state "how many phases already solved", pre-populate
+	// those phases' phaseEndStates with initialState. If Cross/F2L/OLL skipped, identification chain
+	// stays filled, case key correctly found for user's final phases (e.g. PLL-only).
 	//
-	// progress 7 = full scramble (hicbir faz cozulu degil)
-	// progress 6 = cross cozulu, f2l_1'den itibaren cozulecek
-	// progress 1 = cross+f2l+oll cozulu, sadece pll cozulecek
-	// progress 0 = cube zaten solved
+	// progress 7 = full scramble (no phase solved)
+	// progress 6 = cross solved, solve from f2l_1 onwards
+	// progress 1 = cross+f2l+oll solved, only pll to solve
+	// progress 0 = cube already solved
 	//
 	// numCompleted = 7 - initial.progress  (clamped to PHASE_ORDER length).
 	const numCompleted = Math.max(0, Math.min(PHASE_ORDER.length, 7 - initial.progress));
@@ -111,7 +111,7 @@ export function analyzePhases(
 		try {
 			cube.move(move);
 		} catch {
-			// Gecersiz move: atla.
+			// Invalid move: skip.
 			continue;
 		}
 
@@ -128,12 +128,12 @@ export function analyzePhases(
 		const curProg = cur.progress;
 
 		if (curProg < progress) {
-			// One ya da daha fazla phase tamamlandi (burst varsa whileloop)
+			// One or more phases completed (burst handled with while loop)
 			if (crossAxisIndex === null) {
 				crossAxisIndex = cur.axisIndex;
 			}
 
-			// Ilk dusus: progress -> progress-1 phase'i tamamlandi
+			// First descent: progress -> progress-1 phase completed
 			const completedPhase = progressToPhaseName(progress - 1);
 			if (completedPhase) {
 				const curSnapshot = totalCounter.snapshot();
@@ -154,7 +154,7 @@ export function analyzePhases(
 			}
 			progress -= 1;
 
-			// Burst: progress hala curProg'dan buyukse, ara phase'leri skipped:true ile doldur
+			// Burst: if progress still > curProg, fill intermediate phases with skipped:true
 			while (progress > curProg) {
 				const skipPhase = progressToPhaseName(progress - 1);
 				if (skipPhase) {
@@ -174,8 +174,8 @@ export function analyzePhases(
 				progress -= 1;
 			}
 
-			// Reset for next phase. phaseStartSnapshot zaten guncel (yukarida set edildi).
-			// totalCounter state'ini KORUYORUZ — yeni MoveCounter yok, axis-mask phase'ler arasi akar.
+			// Reset for next phase. phaseStartSnapshot already current (set above).
+			// PRESERVE totalCounter state — no new MoveCounter, axis-mask flows across phases.
 			phaseMoves = [];
 			phaseMoveTimestamps = [];
 			phaseStartMs = t.timestamp;
@@ -183,15 +183,15 @@ export function analyzePhases(
 		}
 	}
 
-	// 1-move phase merge pass: HTM=1 olan phase'leri sonraki "real" phase'e baglar
+	// 1-move phase merge pass: phases with HTM=1 are merged into next "real" phase
 	mergeOneMovePhases(transitions);
 
 	// OLL/PLL identification
 	let ollIdentified: PhaseEngineResult['ollIdentified'];
 	let pllIdentified: PhaseEngineResult['pllIdentified'];
 	if (identifyOLL && phaseEndStates.oll) {
-		// OLL phase sonunda state = OLL solved (top face solid). Identification icin
-		// OLL phase BASLAMADAN onceki state'i kullaniriz (= f2l_4 sonu).
+		// State at OLL phase end = OLL solved (top face solid). For identification we use
+		// state BEFORE OLL phase started (= f2l_4 end).
 		const beforeOLLState = phaseEndStates.f2l_4 || phaseEndStates.f2l_3 || phaseEndStates.f2l_2 || phaseEndStates.f2l_1 || phaseEndStates.cross;
 		const axisForOLL = phaseEndAxis.oll ?? phaseEndAxis.f2l_4 ?? crossAxisIndex ?? 0;
 		if (beforeOLLState) {
@@ -232,14 +232,14 @@ function safeFromString(facelet: string): any {
 	try {
 		return Cube.fromString(facelet);
 	} catch {
-		// Patolojik input — solved cube ile basla.
+		// Pathological input — start with solved cube.
 		return new Cube();
 	}
 }
 
 /**
- * Transitions'i CFOP sirasina sirala. Engine zaten siralanmis ekler,
- * bu sadece guvence amacli.
+ * Orders transitions in CFOP sequence. Engine already adds them in order,
+ * this is just safety assurance.
  */
 function orderTransitions(transitions: PhaseTransition[]): PhaseTransition[] {
 	const order: Record<CFOPPhase, number> = {
@@ -255,10 +255,10 @@ function orderTransitions(transitions: PhaseTransition[]): PhaseTransition[] {
 }
 
 /**
- * cstimer recons.js:127-151 port. HTM=1 olan phase'leri bir sonraki real phase'e merge eder.
- * Genellikle "noise" hamleler (yanlislikla yapilan tek hamle, geri alinmis) bu sekilde temizlenir.
+ * cstimer recons.js:127-151 port. Merges phases with HTM=1 into next real phase.
+ * Typically "noise" moves (accidentally made single move, undone) are cleaned this way.
  *
- * Algoritma: HTM=1 phase bulunca, bir sonraki HTM>0 phase'i bul, ikisini birlestir.
+ * Algorithm: when HTM=1 phase found, find next HTM>0 phase, merge the two.
  */
 function mergeOneMovePhases(transitions: PhaseTransition[]) {
 	for (let i = 0; i < transitions.length; i++) {
@@ -266,7 +266,7 @@ function mergeOneMovePhases(transitions: PhaseTransition[]) {
 		if (cur.skipped) continue;
 		if (cur.moveCount.htm !== 1) continue;
 
-		// Sonraki real phase'i bul
+		// Find next real phase
 		let j = i + 1;
 		while (j < transitions.length && (transitions[j].skipped || transitions[j].moves.length === 0)) {
 			j++;
@@ -275,18 +275,18 @@ function mergeOneMovePhases(transitions: PhaseTransition[]) {
 
 		const next = transitions[j];
 
-		// Mevcut phase'in hamlelerini next phase'in basina ekle (kronolojik sira)
+		// Add current phase's moves to next phase start (chronological order)
 		next.moves = cur.moves.concat(next.moves);
 
-		// HTM toplami: cur ve next zaten boundary-aware delta'lar. Basit toplama,
-		// SUM(transitions.htm) === totalCounter.htm invariant'ini korur.
+		// HTM sum: cur and next are already boundary-aware deltas. Simple addition,
+		// SUM(transitions.htm) === totalCounter.htm invariant is preserved.
 		next.moveCount = addCounts(cur.moveCount, next.moveCount);
 
-		// Recognition start'i kaydir: artik bu birlesik phase mevcut phase'in startindan basliyor
+		// Shift recognition start: this merged phase now starts from current phase's start
 		next.recognitionStart = cur.recognitionStart;
 		next.firstMoveTimestamp = Math.min(cur.firstMoveTimestamp, next.firstMoveTimestamp);
 
-		// Mevcut phase'i degistir: sifir-hamle skipped'a donustur (gorunmez yap)
+		// Transform current phase: change to zero-move skipped (make invisible)
 		cur.skipped = true;
 		cur.moves = [];
 		cur.moveCount = { htm: 0, obtm: 0, etm: 0, stm: 0 };

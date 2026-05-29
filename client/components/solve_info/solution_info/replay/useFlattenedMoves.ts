@@ -6,31 +6,31 @@ export interface FlattenedMove {
 	move: string;
 	stepIdx: number;
 	stepName: string;
-	moveInStepIdx: number; // Orijinal step.turns icindeki index — tablo highlight icin
+	moveInStepIdx: number; // Index in original step.turns — used for table highlighting
 	relativeMs: number;
 }
 
 export interface FlattenedMovesResult {
 	allMoves: FlattenedMove[];
-	stepStartIndices: number[]; // stepStartIndices[stepIdx] = global flat-quarter index'i
-	// tokenStartIndices[stepIdx][tokenIdx] = bu token'in ILK quarter'inin global index'i
-	// tokenQuarterCounts[stepIdx][tokenIdx] = bu token'in quarter sayisi (1, 2, 3...)
-	// SolutionInfo tablo highlight'inda kullaniliyor: currentMoveIdx range'ine duser mi?
+	stepStartIndices: number[]; // stepStartIndices[stepIdx] = global flat-quarter index
+	// tokenStartIndices[stepIdx][tokenIdx] = global index of this token's FIRST quarter
+	// tokenQuarterCounts[stepIdx][tokenIdx] = quarter count for this token (1, 2, 3...)
+	// Used in SolutionInfo table highlighting: does currentMoveIdx fall in this range?
 	tokenStartIndices: number[][];
 	tokenQuarterCounts: number[][];
 }
 
 /**
- * Method step'leri tek bir flat hamle listesine cevirir.
- * Hem ReplayPlayer (TwistyPlayer hamleleri) hem SolutionInfo (tablo highlight)
- * tarafindan ayni veriyle calisilir.
+ * Converts method steps into a single flat moves list.
+ * Used by both ReplayPlayer (TwistyPlayer moves) and SolutionInfo (table highlighting)
+ * with the same data.
  *
- * U3/U4/U5 gibi cok-quarter notation'lar ayni-yonlu tek-quarter dizisine acilir
- * (U3 → U U U). Bu sayede TwistyPlayer her quarter'i ayri animasyonla oynatir,
- * timing dogru hizalanir, ve tablo highlight'inda orijinal step.turns index'i
- * (moveInStepIdx) korunur.
+ * Multi-quarter notation like U3/U4/U5 is expanded into same-direction single-quarter sequences
+ * (U3 → U U U). This way TwistyPlayer plays each quarter with separate animation,
+ * timing is properly aligned, and table highlighting preserves the original step.turns index
+ * (moveInStepIdx).
  *
- * Per-hamle ms'i step toplam suresini ham quarter sayisina bolerek hesaplar.
+ * Per-move ms is calculated by dividing step total time by raw quarter count.
  */
 export function useFlattenedMoves(steps: SolveMethodStep[]): FlattenedMovesResult {
 	return useMemo(() => {
@@ -42,7 +42,7 @@ export function useFlattenedMoves(steps: SolveMethodStep[]): FlattenedMovesResul
 
 		steps.forEach((step, sIdx) => {
 			const tokens = (step.turns || '').split(' ').filter(Boolean);
-			// Her token'i tek-quarter dizisine ac (U3 → [U,U,U]). Total quarter sayisi:
+			// Expand each token to single-quarter sequence (U3 → [U,U,U]). Total quarter count:
 			const expandedPerToken = tokens.map((t) => expandMove(t).split(' ').filter(Boolean));
 			const totalQuarters = expandedPerToken.reduce((s, arr) => s + arr.length, 0);
 			const stepMs = (step.total_time || 0) * 1000;

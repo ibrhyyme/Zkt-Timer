@@ -60,7 +60,7 @@ export default function AlgorithmCard({
 	const containerRef = useRef<HTMLDivElement>(null);
 	const [isVisible, setIsVisible] = useState(false);
 
-	// Puzzle tipi ve 2D/3D secimi
+	// Puzzle type and 2D/3D selection
 	const puzzleType = getPuzzleType(category);
 	const is3x3 = puzzleType === '3x3x3';
 	const isLL = isLLCategory(category);
@@ -77,7 +77,7 @@ export default function AlgorithmCard({
 	const puzzlePatternsLoaded = isPuzzlePatternsLoaded();
 	const puzzlePattern = is2DPuzzle && puzzlePatternType ? getPuzzlePattern(puzzlePatternType, algorithm, category) : null;
 
-	// 3D gerekli mi?
+	// Is 3D needed?
 	const use3D = isIso
 		? (isometricPatternsLoaded ? !isometricPattern : false)
 		: isLL
@@ -86,7 +86,7 @@ export default function AlgorithmCard({
 				? (puzzlePatternsLoaded ? !puzzlePattern : false)
 				: true;
 
-	// Lazy load: sadece 3D (TwistyPlayer) gerektiren kartlar için IntersectionObserver
+	// Lazy load: IntersectionObserver only for cards requiring 3D (TwistyPlayer)
 	useEffect(() => {
 		if (!use3D || !containerRef.current) return;
 
@@ -106,7 +106,7 @@ export default function AlgorithmCard({
 
 	const twistyRef = useRef<HTMLDivElement>(null);
 
-	// 3D TwistyPlayer — sadece pattern bulunamayan kategoriler için
+	// 3D TwistyPlayer — only for categories where pattern not found
 	useEffect(() => {
 		if (!use3D || !isVisible || !twistyRef.current) return;
 

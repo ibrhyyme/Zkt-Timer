@@ -112,15 +112,15 @@ export class SolveResolver {
 		const { user } = context;
 
 		input.bulk = false;
-		// cube_type='wca' icin subset zorunlu (cube-subset-bucket kurali) — defense in depth
+		// cube_type='wca' requires subset (cube-subset-bucket rule) — defense in depth
 		if (input.cube_type === 'wca' && !input.scramble_subset) {
 			input.scramble_subset = '333';
 		}
 		const createdSolve = await createSolve(user, input);
 
 		if (input.is_smart_cube && input.smart_turns) {
-			// Pro gating: free user smart_turns null gonderiyor (client tarafinda).
-			// Defensive olarak server'da da kontrol et — malicious bypass'i engelle.
+			// Pro gating: free user sends null smart_turns (client side).
+			// Defensively check server too — prevent malicious bypass.
 			const userIsPro = !!(user && ((user as any).is_pro || (user as any).is_premium));
 			if (userIsPro) {
 				try {
@@ -138,12 +138,12 @@ export class SolveResolver {
 					await updateSolve(createdSolve.id, {
 						is_smart_cube: false,
 					});
-					// Client'a downgrade'i bildir — yoksa client is_smart_cube=true olarak kalir
+					// Notify client of downgrade — otherwise client remains is_smart_cube=true
 					(createdSolve as any).is_smart_cube = false;
 					(createdSolve as any).solve_method_steps = [];
 				}
 			} else {
-				// Free user yanlislikla smart_turns gonderdiyse DB'ye yazma — sil
+				// Free user accidentally sent smart_turns — don't write to DB, clear it
 				await updateSolve(createdSolve.id, { smart_turns: null });
 				(createdSolve as any).smart_turns = null;
 			}

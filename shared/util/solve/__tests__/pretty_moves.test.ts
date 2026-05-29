@@ -1,8 +1,8 @@
 /**
- * cstimer getPrettyMoves port doğrulaması.
+ * cstimer getPrettyMoves port validation.
  *
- * Test case'leri cstimer'in beklenen output'una göre. Her test case tek seq input
- * (cstimer'in nested rawMoveSeqs[0] ile aynı).
+ * Test cases based on cstimer's expected output. Each test case single seq input
+ * (same as cstimer's nested rawMoveSeqs[0]).
  */
 
 import { getPrettyMoves, getPrettyMovesFromStrings, TimedMove } from '../pretty_moves';
@@ -86,7 +86,7 @@ describe('getPrettyMoves — burst detection (100ms threshold)', () => {
 
 	it("R + L' exactly 100ms = R L' (>100ms condition: strictly greater than)", () => {
 		// cstimer: moveSeq[i+1] - moveSeq[i] > 100 → burst broken
-		// Tam 100ms: NOT broken, slice merge tetiklenir → "M"
+		// Exactly 100ms: NOT broken, slice merge triggered → "M"
 		expect(getPrettyMoves([
 			{ turn: 'R', timestamp: 0 },
 			{ turn: "L'", timestamp: 100 },
@@ -107,15 +107,15 @@ describe('getPrettyMoves — complex sequences', () => {
 	});
 
 	it("R L U' R' L' (no slice — same direction parallel pairs)", () => {
-		// R+L: parallel same direction, no merge. R'+L': aynı, no merge. Hepsi pass through.
+		// R+L: parallel same direction, no merge. R'+L': same, no merge. All pass through.
 		expect(getPrettyMoves(timed(['R', 'L', "U'", "R'", "L'"]))).toBe("R L U' R' L'");
 	});
 
-	it("R L' U' R' L (cstimer: center tracking sonrasi U' → F')", () => {
-		// R + L' = M (slice, center rotate). U' artik F' olarak yorumlanir cstimer'de.
-		// R' + L = M' (sonraki slice, center geri donuyor).
-		// Cstimer'in birebir output'u — smart cube context'inde kullaniciya garip
-		// gorunebilir ama cstimer convention bu.
+	it("R L' U' R' L (cstimer: after center tracking U' → F')", () => {
+		// R + L' = M (slice, center rotate). U' is now interpreted as F' in cstimer.
+		// R' + L = M' (next slice, center rotates back).
+		// This is cstimer's exact output — may look odd in smart cube context
+		// but this is cstimer convention.
 		expect(getPrettyMoves(timed(['R', "L'", "U'", "R'", 'L']))).toBe("M F' M'");
 	});
 });

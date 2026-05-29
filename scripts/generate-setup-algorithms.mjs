@@ -1,11 +1,11 @@
 /**
- * Her algoritma için en kısa setup algoritmasını hesaplar.
- * 3x3 kategorilerinde Kociemba solver kullanır, basit inverse ile karşılaştırır.
- * Non-3x3 kategorilerde (2x2, Pyraminx, Skewb, SQ1) algoritma inverse'ünü kullanır.
+ * Calculates the shortest setup algorithm for each algorithm.
+ * Uses Kociemba solver for 3x3 categories, compares with simple inverse.
+ * For non-3x3 categories (2x2, Pyraminx, Skewb, SQ1), uses algorithm inverse.
  *
- * Çıktı: default-algs.json'a her algoritmaya "setup" field'i eklenir.
+ * Output: Adds "setup" field to each algorithm in default-algs.json.
  *
- * Kullanım: node scripts/generate-setup-algorithms.mjs
+ * Usage: node scripts/generate-setup-algorithms.mjs
  */
 
 import {readFileSync, writeFileSync, copyFileSync} from 'fs';
@@ -16,7 +16,7 @@ import {Alg} from 'cubing/alg';
 const require = createRequire(import.meta.url);
 const Cube = require('cubejs');
 
-// ─── Reid ordering (pattern_utils.ts'den port) ───
+// ─── Reid ordering (ported from pattern_utils.ts) ───
 
 const REID_EDGE_ORDER = 'UF UR UB UL DF DR DB DL FR FL BR BL'.split(' ');
 const REID_CORNER_ORDER = 'UFR URB UBL ULF DRF DFL DLB DBR'.split(' ');
@@ -36,7 +36,7 @@ const REID_TO_FACELETS_MAP = [
 
 const CANONICAL_CENTERS = JSON.stringify([0, 1, 2, 3, 4, 5]);
 
-// ─── 3x3 kategorileri (Kociemba solver kullanılacak) ───
+// ─── 3x3 categories (will use Kociemba solver) ───
 
 const CATEGORIES_3X3 = [
 	'PLL', 'OLL', 'F2L', '2-Look PLL', '2-Look OLL',
@@ -44,7 +44,7 @@ const CATEGORIES_3X3 = [
 	'WVLS', 'L6E-EO', 'L6E-EOLR', 'VHLS',
 ];
 
-// Non-3x3 kategoriler: setup olarak inverse kullan
+// Non-3x3 categories: use inverse as setup
 const CATEGORIES_NON_3X3 = [
 	'2x2 CLL', '2x2 EG1', '2x2 EG2', '2x2 PBL',
 	'4x4 PLL Parity',
@@ -53,7 +53,7 @@ const CATEGORIES_NON_3X3 = [
 	'SQ1 Cube Shape', 'SQ1 CP', 'SQ1 CSP', 'SQ1 EO', 'SQ1 EP', 'SQ1 OBL',
 ];
 
-// ─── Utility fonksiyonlar ───
+// ─── Utility functions ───
 
 function rotateLeft(s, i) {
 	return s.slice(i) + s.slice(0, i);
@@ -82,8 +82,8 @@ function patternToFacelets(pattern) {
 }
 
 /**
- * 24 oryantasyonun tamamını deneyerek center'ları kanonik konuma getirir.
- * {I, x, x2, x', z, z'} × {I, y, y2, y'} = 24 oryantasyon
+ * Try all 24 orientations to bring centers to canonical position.
+ * {I, x, x2, x', z, z'} × {I, y, y2, y'} = 24 orientations
  */
 function fixOrientation24(pattern) {
 	if (JSON.stringify(pattern.patternData['CENTERS'].pieces) === CANONICAL_CENTERS) {
@@ -96,7 +96,7 @@ function fixOrientation24(pattern) {
 	for (const base of bases) {
 		for (const yRot of yRots) {
 			const rotation = [base, yRot].filter(Boolean).join(' ');
-			if (!rotation) continue; // identity zaten denendi
+			if (!rotation) continue; // identity already tried
 			const result = pattern.applyAlg(rotation);
 			if (JSON.stringify(result.patternData['CENTERS'].pieces) === CANONICAL_CENTERS) {
 				return result;
@@ -104,17 +104,17 @@ function fixOrientation24(pattern) {
 		}
 	}
 
-	return null; // 24 oryantasyonun hiçbiri çalışmadı
+	return null; // None of the 24 orientations worked
 }
 
 /**
- * cubing.js'in parse edebileceği formata dönüştürür.
+ * Converts to a format cubing.js can parse.
  */
 function cleanAlgorithm(alg) {
 	let s = alg
 		.replace(/\+/g, ' ')
-		.replace(/\u2019/g, "'")
-		.replace(/["\u201C\u201D]/g, "'")
+		.replace(/’/g, "'")
+		.replace(/["“”]/g, "'")
 		.replace(/'2/g, "2'");
 
 	s = s.replace(/([RLFBUD])w/g, (_, m) => m.toLowerCase());
@@ -124,7 +124,7 @@ function cleanAlgorithm(alg) {
 }
 
 /**
- * algorithm_engine.ts'deki expandNotation'ın portu.
+ * Port of expandNotation from algorithm_engine.ts.
  */
 function expandNotation(input) {
 	let output = input
@@ -145,7 +145,7 @@ function expandNotation(input) {
 }
 
 /**
- * Tek bir move'u invert eder: R → R', R' → R, R2 → R2
+ * Inverts a single move: R → R', R' → R, R2 → R2
  */
 function invertMove(move) {
 	if (move.endsWith("'")) return move.slice(0, -1);
@@ -154,40 +154,40 @@ function invertMove(move) {
 }
 
 /**
- * Face move mi kontrol eder (U, D, L, R, F, B + 2 veya ')
+ * Checks if it's a face move (U, D, L, R, F, B + 2 or ')
  */
 function isFaceMove(m) {
 	return /^[UDLRFB][2']?$/.test(m);
 }
 
 /**
- * Algoritma stringini move count (ETM) olarak say.
+ * Counts algorithm string as move count (ETM).
  */
 function countMoves(algStr) {
 	return algStr.trim().split(/\s+/).filter(Boolean).length;
 }
 
 /**
- * Kociemba çözümünü invert eder: "R U2 F'" → "F U2 R'"
+ * Inverts Kociemba solution: "R U2 F'" → "F U2 R'"
  */
 function invertSolution(solution) {
 	return solution.trim().split(/\s+/).reverse().map(invertMove).join(' ');
 }
 
 /**
- * SQ1 algoritma notasyonunda inverse yapar.
- * SQ1 notasyonu: (a,b) / (c,d) / ... şeklinde tuple'lar.
- * Inverse: sırayı ters çevir, sayıları negate et.
+ * Performs inverse on SQ1 algorithm notation.
+ * SQ1 notation: (a,b) / (c,d) / ... with tuples.
+ * Inverse: reverse order, negate numbers.
  */
 function invertSQ1(alg) {
-	// SQ1 notasyonunu parse et
+	// Parse SQ1 notation
 	const tokens = [];
 	const parts = alg.split('/');
 
 	for (let i = 0; i < parts.length; i++) {
 		const part = parts[i].trim();
 		if (part) {
-			// (a,b) tuple'ını parse et
+			// Parse (a,b) tuple
 			const match = part.match(/\(?\s*(-?\d+)\s*,\s*(-?\d+)\s*\)?/);
 			if (match) {
 				tokens.push({type: 'tuple', a: parseInt(match[1]), b: parseInt(match[2])});
@@ -198,7 +198,7 @@ function invertSQ1(alg) {
 		}
 	}
 
-	// Reverse ve negate
+	// Reverse and negate
 	tokens.reverse();
 	return tokens.map(t => {
 		if (t.type === 'slash') return '/';
@@ -206,39 +206,39 @@ function invertSQ1(alg) {
 	}).join(' ');
 }
 
-// ─── Ana fonksiyon ───
+// ─── Main function ───
 
 async function main() {
-	console.log('cubing.js kpuzzle yükleniyor...');
+	console.log('Loading cubing.js kpuzzle...');
 	const kpuzzle = await cube3x3x3.kpuzzle();
 	const solved = kpuzzle.defaultPattern();
 
-	console.log('cubejs solver başlatılıyor...');
+	console.log('Starting cubejs solver...');
 	Cube.initSolver();
-	console.log('Solver hazır.\n');
+	console.log('Solver ready.\n');
 
 	const inputPath = 'public/trainer/default-algs.json';
 	const backupPath = 'public/trainer/default-algs.backup.json';
 
 	const algsData = JSON.parse(readFileSync(inputPath, 'utf8'));
 
-	// Backup al
+	// Backup
 	copyFileSync(inputPath, backupPath);
 	console.log(`Backup: ${backupPath}\n`);
 
-	// İstatistikler
+	// Statistics
 	let total = 0;
 	let kociembaUsed = 0;
 	let inverseUsed = 0;
 	let skipped = 0;
 	let errors = 0;
 
-	// ─── 3x3 kategorileri: Kociemba solver ───
+	// ─── 3x3 categories: Kociemba solver ───
 
 	for (const category of CATEGORIES_3X3) {
 		const subsets = algsData[category];
 		if (!subsets) {
-			console.warn(`Kategori bulunamadı: ${category}`);
+			console.warn(`Category not found: ${category}`);
 			continue;
 		}
 
@@ -252,18 +252,18 @@ async function main() {
 					const cleanAlg = cleanAlgorithm(entry.algorithm);
 					const algObj = Alg.fromString(cleanAlg);
 
-					// 1. Recognition state hesapla
+					// 1. Calculate recognition state
 					const inverse = algObj.invert();
 					const recognitionState = solved.applyAlg(inverse);
 
-					// 2. Center normalizasyonu
+					// 2. Center normalization
 					let normalized = recognitionState;
 					const centersStr = JSON.stringify(normalized.patternData['CENTERS'].pieces);
 
 					if (centersStr !== CANONICAL_CENTERS) {
 						normalized = fixOrientation24(recognitionState);
 						if (!normalized) {
-							console.error(`  HATA [${category}] "${entry.name}": Center normalize edilemedi`);
+							console.error(`  ERROR [${category}] "${entry.name}": Could not normalize centers`);
 							catErrors++;
 							errors++;
 							total++;
@@ -275,12 +275,12 @@ async function main() {
 					const facelets = patternToFacelets(normalized);
 					const cube = Cube.fromString(facelets);
 
-					// 4. Kociemba çözümü (recognition → solved)
+					// 4. Kociemba solution (recognition → solved)
 					const solution = cube.solve();
 					const kociembaSetup = invertSolution(solution);
 					const kociembaMoves = countMoves(kociembaSetup);
 
-					// 5. Basit inverse ile karşılaştır (tüm move tipleri: face, wide, M/E/S, rotasyon)
+					// 5. Compare with simple inverse (all move types: face, wide, M/E/S, rotation)
 					const algMoves = cleanAlg.replace(/[()]/g, '').trim().split(/\s+/).filter(Boolean);
 					const simpleInverse = algMoves.slice().reverse().map(invertMove).join(' ');
 					const inverseMoves = countMoves(simpleInverse);
@@ -297,7 +297,7 @@ async function main() {
 					entry.setup = bestSetup;
 					total++;
 				} catch (e) {
-					console.error(`  HATA [${category}] "${entry.name}" (${entry.algorithm}): ${e.message}`);
+					console.error(`  ERROR [${category}] "${entry.name}" (${entry.algorithm}): ${e.message}`);
 					catErrors++;
 					errors++;
 					total++;
@@ -306,18 +306,18 @@ async function main() {
 		}
 
 		const catTotal = catKociemba + catInverse + catErrors;
-		console.log(`  ${category}: ${catTotal} algoritma (kociemba: ${catKociemba}, inverse: ${catInverse}, hata: ${catErrors})`);
+		console.log(`  ${category}: ${catTotal} algorithms (kociemba: ${catKociemba}, inverse: ${catInverse}, errors: ${catErrors})`);
 		kociembaUsed += catKociemba;
 		inverseUsed += catInverse;
 	}
 
-	// ─── Non-3x3 kategorileri: inverse kullan ───
+	// ─── Non-3x3 categories: use inverse ───
 
 	console.log('');
 	for (const category of CATEGORIES_NON_3X3) {
 		const subsets = algsData[category];
 		if (!subsets) {
-			console.warn(`Kategori bulunamadı: ${category}`);
+			console.warn(`Category not found: ${category}`);
 			continue;
 		}
 
@@ -331,7 +331,7 @@ async function main() {
 				try {
 					const alg = entry.algorithm;
 
-					// SQ1 notasyonu "/" içerir
+					// SQ1 notation contains "/"
 					if (alg.includes('/')) {
 						entry.setup = invertSQ1(alg);
 						catCount++;
@@ -339,7 +339,7 @@ async function main() {
 						continue;
 					}
 
-					// Genel non-3x3: cleanAlgorithm + cubing.js invert
+					// General non-3x3: cleanAlgorithm + cubing.js invert
 					const cleanAlg = cleanAlgorithm(alg);
 					const algMoves = cleanAlg.replace(/[()]/g, '').trim().split(/\s+/).filter(Boolean);
 					const simpleInverse = algMoves.slice().reverse().map(invertMove).join(' ');
@@ -347,7 +347,7 @@ async function main() {
 					catCount++;
 					inverseUsed++;
 				} catch (e) {
-					console.error(`  HATA [${category}] "${entry.name}": ${e.message}`);
+					console.error(`  ERROR [${category}] "${entry.name}": ${e.message}`);
 					errors++;
 				}
 			}
@@ -359,21 +359,21 @@ async function main() {
 		skipped += catSkipped;
 	}
 
-	// ─── JSON yaz ───
+	// ─── Write JSON ───
 
 	writeFileSync(inputPath, JSON.stringify(algsData, null, '\t'));
 	const fileSize = (readFileSync(inputPath).length / 1024).toFixed(1);
 
 	console.log(`\n${'─'.repeat(50)}`);
-	console.log(`Toplam: ${total} algoritma`);
+	console.log(`Total: ${total} algorithms`);
 	console.log(`  Kociemba: ${kociembaUsed}`);
 	console.log(`  Inverse: ${inverseUsed}`);
-	console.log(`  Atlanan: ${skipped}`);
-	console.log(`  Hata: ${errors}`);
-	console.log(`Dosya: ${inputPath} (${fileSize} KB)`);
+	console.log(`  Skipped: ${skipped}`);
+	console.log(`  Errors: ${errors}`);
+	console.log(`File: ${inputPath} (${fileSize} KB)`);
 }
 
 main().catch(err => {
-	console.error('Script başarısız:', err);
+	console.error('Script failed:', err);
 	process.exit(1);
 });

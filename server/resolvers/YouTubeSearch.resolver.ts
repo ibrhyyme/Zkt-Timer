@@ -6,11 +6,11 @@ import { ErrorCode } from '../constants/errors';
 import { Role } from '../middlewares/auth';
 import axios from 'axios';
 
-// Kullanici bazli basit rate limit (2 saniye aralik)
+// Per-user simple rate limit (2 second interval)
 const lastSearchMap = new Map<string, number>();
 const THROTTLE_MS = 2000;
 
-// Bellek sizmesini onlemek icin eski kayitlari temizle (her 10 dakikada)
+// Clean old entries to prevent memory leak (every 10 minutes)
 setInterval(() => {
 	const now = Date.now();
 	for (const [key, timestamp] of lastSearchMap) {
@@ -31,7 +31,7 @@ export class YouTubeSearchResolver {
 		const userId = context.user.id;
 		const query = input.query.trim();
 
-		// Rate limit kontrolu
+		// Rate limit check
 		const now = Date.now();
 		const lastSearch = lastSearchMap.get(userId) || 0;
 		if (now - lastSearch < THROTTLE_MS) {

@@ -20,11 +20,11 @@ import { getSubsetsForCube } from '../../../../../util/cubes/scramble_subsets';
 import { getCubeTypeBucketLabel } from '../../../../../util/cubes/util';
 import { SessionInput } from '../../../../../@types/generated/graphql';
 
-// Import yalnizca WCA event'lerine kayit yapar (cube_type='wca' + bu subset).
-// Method-based cube_type'lar (333cfop/roux/mehta/zz, 444yau, other, wca parent) gosterilmez.
+// Import only registers WCA events (cube_type='wca' + this subset).
+// Method-based cube_type's (333cfop/roux/mehta/zz, 444yau, other, wca parent) are not shown.
 const WCA_IMPORT_EVENTS = ['333', '222', '444', '555', '666', '777', 'sq1', 'pyram', 'clock', 'skewb', 'minx'];
 
-// Method-based cube_type'lar (333cfop/333roux/vs) parent WCA event'e indirir.
+// Method-based cube_type's (333cfop/333roux/etc.) reduced to parent WCA event.
 function getParentWcaEvent(input: string): string {
 	if (!input) return '333';
 	if (WCA_IMPORT_EVENTS.includes(input)) return input;
@@ -40,14 +40,14 @@ function getParentWcaEvent(input: string): string {
 	return input;
 }
 
-// sessionIdCubeTypeMap'te tek string olarak tutulan degeri (cube veya subset id)
-// UI'in tukettigi {cubeType, subset} parina cevirir.
+// Converts the value held as a single string in sessionIdCubeTypeMap (cube or subset id)
+// to the {cubeType, subset} pair that the UI consumes.
 function deriveBucket(rawId: string): { cubeType: string; subset: string | null } {
 	if (!rawId) return { cubeType: '333', subset: null };
 	const variant = VARIANT_MAP[rawId];
 	if (variant) {
-		// VARIANT_MAP cube_type method-based olabilir (333roux vs). UI WCA event gosterir,
-		// subset gercek bilgi tasiyor; method bilgisi solve.cube_type'a kullaniciya gozukmez sekilde gider.
+		// VARIANT_MAP cube_type can be method-based (333roux etc.). UI shows WCA event,
+		// subset carries the real information; method info goes into solve.cube_type invisibly to user.
 		const wcaParent = WCA_IMPORT_EVENTS.includes(variant.cube_type)
 			? variant.cube_type
 			: getParentWcaEvent(variant.cube_type);
@@ -174,7 +174,7 @@ export default function ReviewImport() {
 					return;
 				}
 
-				// Session'lar basarili oldu, simdi tum solve'lari import et
+				// Sessions succeeded, now import all solves
 				const solveResult = await importSolvesInChunks(data.solves, (progress) =>
 					context.setImportProgress(progress)
 				);
@@ -257,8 +257,8 @@ export default function ReviewImport() {
 		});
 	}
 
-	// Sezon icindeki (cube_type, subset) kombinasyonlarini ve solve sayilarini doner.
-	// Karisik sezon detection icin.
+	// Returns (cube_type, subset) combinations and solve counts within a session.
+	// Used for mixed session detection.
 	function getSessionBuckets(sessionId: string): Map<string, number> {
 		const buckets = new Map<string, number>();
 		for (const sv of data.solves) {
@@ -269,8 +269,8 @@ export default function ReviewImport() {
 		return buckets;
 	}
 
-	// Karisik sezonu (cube_type, subset) bazinda alt-sezonlara boler.
-	// Eski sezonun ismi her yeni sezona suffix olarak (orn "Calisma (2x2)") eklenir.
+	// Splits a mixed session into sub-sessions based on (cube_type, subset).
+	// The old session name is added to each new session as a suffix (e.g. "Practice (2x2)").
 	function splitSession(sessionId: string) {
 		const buckets = getSessionBuckets(sessionId);
 		if (buckets.size <= 1) return;
@@ -312,7 +312,7 @@ export default function ReviewImport() {
 	}
 
 	function updateSessionBucket(sessionId: string, cubeType: string, subset: string | null) {
-		// sessionIdCubeTypeMap tek string tutar: subset varsa subset, yoksa cube_type.
+		// sessionIdCubeTypeMap holds a single string: subset if present, otherwise cube_type.
 		const flatKey = subset ?? cubeType;
 		const newSessionMap = {
 			...data.sessionIdCubeTypeMap,
@@ -323,11 +323,11 @@ export default function ReviewImport() {
 		for (const solve of solves) {
 			if (solve.session_id !== sessionId) continue;
 			if (WCA_IMPORT_EVENTS.includes(cubeType)) {
-				// WCA bucket: cube_type='wca', subset = secilen subset veya parent event
+				// WCA bucket: cube_type='wca', subset = selected subset or parent event
 				solve.cube_type = 'wca';
 				solve.scramble_subset = subset ?? cubeType;
 			} else {
-				// Method-based cube_type (333cfop, 333roux, vs.) — olduğu gibi
+				// Method-based cube_type (333cfop, 333roux, etc.) — as-is
 				solve.cube_type = cubeType;
 				solve.scramble_subset = subset;
 			}
@@ -348,8 +348,8 @@ export default function ReviewImport() {
 			const subsets = getSubsetsForCube(cubeType);
 			const sessionBuckets = getSessionBuckets(session.id);
 			const isMixed = sessionBuckets.size > 1;
-			// Subset picker'i sadece anlamli secenek varsa goster (default disinda).
-			// 1 item varsa (sadece random_state) gizle — UI temiz olur.
+			// Show subset picker only if there are meaningful options (apart from default).
+			// If 1 item (only random_state), hide it — keeps UI clean.
 			const showSubsetPicker = subsets.length > 1;
 			return (
 				<div className={b('session')} key={session.id}>

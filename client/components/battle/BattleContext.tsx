@@ -44,9 +44,9 @@ export interface BattleState {
 	player2Ready: boolean;
 	player1StartedAt: number | null;
 	player2StartedAt: number | null;
-	// true: herhangi biri basladi, false: ikisi de bitmeden veya yeni round
+	// true: anyone started, false: before both finish or new round
 	roundStarted: boolean;
-	// L2: Round detail modal
+	// Round detail modal
 	selectedRound: number | null;
 }
 
@@ -93,7 +93,7 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
 			const rounds = [...state.rounds];
 			const round = { ...rounds[state.currentRound] };
 			const previousWinner = round.winner;
-			// Penalty update mi, ilk bitiris mi ayirt et
+			// Distinguish penalty update vs first completion
 			const wasAlreadyBothDone = !!round.player1Solve && !!round.player2Solve;
 
 			if (action.player === 1) {
@@ -112,12 +112,12 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
 
 			if (round.winner) {
 				if (!previousWinner) {
-					// Ilk kez winner belirlendi
+					// Winner determined for the first time
 					if (round.winner === 1) player1Score++;
 					else if (round.winner === 2) player2Score++;
 					winStreak = updateStreak(state.winStreak, round.winner);
 				} else if (round.winner !== previousWinner) {
-					// Penalty ile winner degisti — eski skoru geri al, yenisini ekle
+					// Winner changed due to penalty — revert old score, add new one
 					if (previousWinner === 1) player1Score--;
 					else if (previousWinner === 2) player2Score--;
 					if (round.winner === 1) player1Score++;
@@ -130,8 +130,8 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
 			const bothDone = !!round.player1Solve && !!round.player2Solve;
 
 			if (bothDone && !wasAlreadyBothDone) {
-				// Ilk kez her ikisi bitti — yeni scramble hemen set et, bayrakları sifirla
-				// (wasAlreadyBothDone: penalty update ise bu daldan gec, sadece skoru guncelle)
+				// Both finished for the first time — generate new scramble immediately, reset flags
+				// (wasAlreadyBothDone: if penalty update, skip this branch and only update score)
 				const nextScramble = getNewScramble(state.settings.cubeType);
 				return {
 					...state,
@@ -264,8 +264,8 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
 			const bothDone = !!round.player1Solve && !!round.player2Solve;
 			const startKey = action.player === 1 ? 'player1StartedAt' : 'player2StartedAt';
 			if (bothDone) {
-				// Onceki tur tamamlanmis — yeni tur olustur.
-				// Scramble PLAYER_SOLVE (bothDone)'da zaten uretildi ve currentScramble'a yazildi.
+				// Previous round finished — create new round.
+				// Scramble was already generated in PLAYER_SOLVE (bothDone) and written to currentScramble.
 				return {
 					...state,
 					rounds: [...state.rounds, { scramble: state.currentScramble }],
@@ -279,7 +279,7 @@ function battleReducer(state: BattleState, action: BattleAction): BattleState {
 				};
 			}
 
-			// Tamamlanmamis tur — sadece bu oyuncuyu baslat
+			// Incomplete round — start only this player
 			return {
 				...state,
 				roundStarted: true,
@@ -339,8 +339,8 @@ const BattleCtx = createContext<BattleContextValue | null>(null);
 export function BattleProvider({ children }: { children: React.ReactNode }) {
 	const [state, dispatch] = useReducer(battleReducer, createInitialState());
 
-	// Ust uste 3+ kazanma ani — yuksek mutluluk noktasi, native review prompt tetikle.
-	// requestInAppReview session-level dedup yapiyor; tekrar tetiklense de gosterilmez.
+	// 3+ consecutive wins — high satisfaction point, trigger native review prompt.
+	// requestInAppReview does session-level dedup; won't show if triggered again.
 	useEffect(() => {
 		if (state.winStreak.count >= 3) {
 			const timer = setTimeout(() => {

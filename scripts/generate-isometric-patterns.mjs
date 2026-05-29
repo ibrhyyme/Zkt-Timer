@@ -1,20 +1,20 @@
 /**
- * WVLS/VHLS kategorileri icin izometrik 3-yuz pattern'lerini hesaplar.
- * cubingapp Cube class'i kullanarak gray mask + inverse alg uygular.
+ * Computes isometric 3-face patterns for WVLS/VHLS categories.
+ * Uses cubingapp Cube class with gray mask + inverse algorithm.
  *
- * Cikti: public/trainer/isometric-patterns.json
+ * Output: public/trainer/isometric-patterns.json
  * Format: { "algorithm": "27-char-pattern" }
- *   - Ilk 9 char: U face (column-major)
- *   - Sonraki 9 char: F face (column-major)
- *   - Son 9 char: R face (column-major)
- *   - Her char: U/F/D/B/L/R (yuz rengi) veya X (gray)
+ *   - First 9 chars: U face (column-major)
+ *   - Next 9 chars: F face (column-major)
+ *   - Last 9 chars: R face (column-major)
+ *   - Each char: U/F/D/B/L/R (face color) or X (gray)
  *
- * Kullanim: node scripts/generate-isometric-patterns.mjs
+ * Usage: node scripts/generate-isometric-patterns.mjs
  */
 
 import { readFileSync, writeFileSync } from 'fs';
 
-// ─── cubingapp Cube class portu (minimal) ───
+// ─── cubingapp Cube class port (minimal) ───
 
 function sq(x) { return x * x; }
 
@@ -236,8 +236,8 @@ class Cube {
 	}
 
 	/**
-	 * Sticker degerini yuz harfine cevirir.
-	 * cubingapp renk mantigi: Math.floor(sticker / layersSq) → face index
+	 * Converts sticker value to face letter.
+	 * cubingapp color logic: Math.floor(sticker / layersSq) → face index
 	 * Face order: 0=U, 1=F, 2=D, 3=B, 4=L, 5=R, 6+=gray
 	 */
 	stickerToFace(stickerValue) {
@@ -247,8 +247,8 @@ class Cube {
 	}
 
 	/**
-	 * U + F + R yuzlerinin pattern string'ini dondurur.
-	 * Her yuz 9 char (column-major), toplam 27 char.
+	 * Returns pattern string for U + F + R faces.
+	 * Each face 9 chars (column-major), total 27 chars.
 	 */
 	getIsometricPattern() {
 		const layersSq = sq(this.layers);
@@ -273,7 +273,7 @@ class Cube {
 	}
 }
 
-// ─── Algorithm temizleme (generate-ll-patterns.mjs'den) ───
+// ─── Algorithm cleanup (from generate-ll-patterns.mjs) ───
 
 function expandNotation(input) {
 	let output = input
@@ -296,30 +296,30 @@ function expandNotation(input) {
 function cleanAlgorithm(alg) {
 	let s = alg
 		.replace(/\+/g, ' ')
-		.replace(/\u2019/g, "'")
-		.replace(/["\u201C\u201D]/g, "'")
+		.replace(/’/g, "'")
+		.replace(/["“”]/g, "'")
 		.replace(/'2/g, "2'");
 	s = s.replace(/([RLFBUD])w/g, (_, m) => m.toLowerCase());
 	s = s.replace(/\(([RLFBUDMESrlfbudxyz][2']?)\)/g, '$1');
-	// Parantezleri kaldir (cubingapp da ayni seyi yapiyor)
+	// Remove parentheses (cubingapp does the same)
 	s = s.replace(/\(/g, '').replace(/\)/g, '');
 	s = expandNotation(s);
 	return s;
 }
 
-// ─── Kategori konfigurasyonu ───
+// ─── Category configuration ───
 
-// WVLS/VHLS icin gray mask: tum 12 LL side sticker
-// cubingapp Winter-Variation.json'dan: [9,12,15,29,32,35,36,39,42,45,48,51]
+// WVLS/VHLS gray mask: all 12 LL side stickers
+// from cubingapp Winter-Variation.json: [9,12,15,29,32,35,36,39,42,45,48,51]
 const ISOMETRIC_CATEGORIES = {
 	'WVLS': { gray: [9, 12, 15, 29, 32, 35, 36, 39, 42, 45, 48, 51] },
 	'VHLS': { gray: [9, 12, 15, 29, 32, 35, 36, 39, 42, 45, 48, 51] },
 };
 
-// ─── Ana script ───
+// ─── Main script ───
 
 function main() {
-	console.log('Isometric pattern uretici baslatiliyor...');
+	console.log('Starting isometric pattern generator...');
 
 	const algsData = JSON.parse(readFileSync('public/trainer/default-algs.json', 'utf8'));
 	const patterns = {};
@@ -329,7 +329,7 @@ function main() {
 	for (const [category, config] of Object.entries(ISOMETRIC_CATEGORIES)) {
 		const subsets = algsData[category];
 		if (!subsets) {
-			console.warn(`  Kategori bulunamadi: ${category}`);
+			console.warn(`  Category not found: ${category}`);
 			continue;
 		}
 
@@ -345,15 +345,15 @@ function main() {
 
 						const cube = new Cube(3);
 
-						// Gray mask uygula (solved state uzerinde)
+						// Apply gray mask (on solved state)
 						for (const idx of config.gray) {
 							cube.stickers[idx] = sq(3) * 6; // 54 = gray
 						}
 
-						// Inverse algoritmmayi uygula
+						// Apply inverse algorithm
 						cube.performAlg(inverted);
 
-						// U + F + R pattern'i al
+						// Get U + F + R pattern
 						const pattern = cube.getIsometricPattern();
 
 						const expandedAlg = expandNotation(algorithm);
@@ -361,19 +361,19 @@ function main() {
 						catCount++;
 						count++;
 					} catch (e) {
-						console.error(`  HATA [${category}] "${algorithm}":`, e.message);
+						console.error(`  ERROR [${category}] "${algorithm}":`, e.message);
 						errors++;
 					}
 				}
 			}
 		}
-		console.log(`  ${category}: ${catCount} pattern uretildi`);
+		console.log(`  ${category}: ${catCount} patterns generated`);
 	}
 
 	writeFileSync('public/trainer/isometric-patterns.json', JSON.stringify(patterns));
 	const fileSize = (readFileSync('public/trainer/isometric-patterns.json').length / 1024).toFixed(1);
-	console.log(`\nToplam: ${count} pattern, ${errors} hata`);
-	console.log(`Dosya: public/trainer/isometric-patterns.json (${fileSize} KB)`);
+	console.log(`\nTotal: ${count} patterns, ${errors} errors`);
+	console.log(`File: public/trainer/isometric-patterns.json (${fileSize} KB)`);
 }
 
 main();

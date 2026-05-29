@@ -1,17 +1,17 @@
 /**
  * Stickering Mask Remapper
  *
- * cubing.js experimentalStickering parca-bazli (piece-based) calisiyor.
- * x/z rotasyonlarinda parcalar katman degistirdigi icin stickering yanlis oluyor.
+ * cubing.js experimentalStickering works piece-based (piece-based).
+ * During x/z rotations pieces change layers, so stickering becomes incorrect.
  *
- * Bu modul: standart maskeyi alip, rotasyon permutasyonu uzerinden
- * pozisyon-bazli olacak sekilde remap eder.
+ * This module: takes the standard mask and remaps it to be
+ * position-based using the rotation permutation.
  *
- * Ayrica cubing.js'in bazi stickering mask hatalarini duzeltir:
- * - F2L: Center'lari dim yerine regular yapar (recognition icin renkli gerekli)
+ * Also fixes some cubing.js stickering mask errors:
+ * - F2L: Makes centers regular instead of dim (recognition needs colors)
  */
 
-// cubing.js StickeringMask tipleri
+// cubing.js StickeringMask types
 type FaceletMeshMask = 'regular' | 'dim' | 'oriented' | 'experimentalOriented2' | 'ignored' | 'invisible' | 'mystery';
 type FaceletMask = FaceletMeshMask | { mask: FaceletMeshMask; hintMask?: FaceletMeshMask } | null;
 interface PieceMask { facelets: FaceletMask[] }
@@ -43,9 +43,9 @@ async function getStandardMask(name: string): Promise<StickeringMask> {
 }
 
 /**
- * cubing.js mask'indeki 'oriented'/'experimentalOriented2' gibi
- * ozel facelet tiplerini 'regular' ile degistirir.
- * cubingapp referansinda sadece 'regular' (renkli) ve 'dim' (soluk) var.
+ * Replaces special facelet types like 'oriented'/'experimentalOriented2' in cubing.js masks
+ * with 'regular'.
+ * In cubingapp reference only 'regular' (colored) and 'dim' (faded) exist.
  */
 function normalizeMask(mask: StickeringMask): StickeringMask {
 	const result: StickeringMask = { orbits: {} };
@@ -68,8 +68,8 @@ function normalizeMask(mask: StickeringMask): StickeringMask {
 }
 
 /**
- * Bir piece'in TUM facelet'lerini verilen degerle degistirir.
- * normalizeMask sonrasi cagrilir (zaten yeni obje olusturulmus).
+ * Changes ALL facelets of a piece to the given value.
+ * Called after normalizeMask (new object already created).
  */
 function overridePieceFacelets(piece: PieceMask | null, value: FaceletMeshMask): PieceMask | null {
 	if (!piece) return null;
@@ -77,10 +77,10 @@ function overridePieceFacelets(piece: PieceMask | null, value: FaceletMeshMask):
 }
 
 /**
- * F2L fixup: Tum 6 center'i 'regular' yapar.
- * cubing.js F2L stickering center'lari dim yapiyor,
- * ama kullanicinin ust katman rengini gorebilmesi icin
- * center'lar renkli olmali.
+ * F2L fixup: Makes all 6 centers 'regular'.
+ * cubing.js F2L stickering makes centers dim,
+ * but the user needs to see the top layer colors,
+ * so centers must be colored.
  */
 function fixF2LCenters(mask: StickeringMask): StickeringMask {
 	const result: StickeringMask = { orbits: {} };
@@ -97,8 +97,8 @@ function fixF2LCenters(mask: StickeringMask): StickeringMask {
 }
 
 /**
- * Stickering-specific fixup fonksiyonlari.
- * normalizeMask sonrasi, remapMask oncesi uygulanir.
+ * Stickering-specific fixup functions.
+ * Applied after normalizeMask, before remapMask.
  */
 const STICKERING_FIXUPS: Record<string, (mask: StickeringMask) => StickeringMask> = {
 	F2L: fixF2LCenters,
@@ -107,9 +107,9 @@ const STICKERING_FIXUPS: Record<string, (mask: StickeringMask) => StickeringMask
 const FACELET_COUNT: Record<string, number> = { EDGES: 2, CORNERS: 3, CENTERS: 1 };
 
 /**
- * Belirtilen orbit'lerdeki piece index'lerini 'regular' (renkli) yapar.
- * Efficiency XCross icin: Cross mask + secili slot edge/corner'i renkli.
- * normalize/fixup sonrasi, remap ONCESI cagrilir (index'ler mutlak/rotation-oncesi).
+ * Makes piece indices in specified orbits 'regular' (colored).
+ * For Efficiency XCross: Cross mask + selected slot edge/corner colored.
+ * Called after normalize/fixup, before remap (indices are absolute/pre-rotation).
  */
 function applyExtraRegular(mask: StickeringMask, extra: Record<string, number[]>): StickeringMask {
 	const result: StickeringMask = { orbits: {} };
@@ -175,9 +175,9 @@ function remapMask(
 }
 
 /**
- * Verilen stickering ismi ve rotasyon icin islenmis maske dondurur.
- * F2L ile ayni akis: cubing.js standart mask → normalize → fixup → remap.
- * Sonuclar cache'lenir. Hata durumunda null doner (fallback: string stickering).
+ * Returns the processed mask for the given stickering name and rotation.
+ * Same flow as F2L: cubing.js standard mask → normalize → fixup → remap.
+ * Results are cached. Returns null on error (fallback: string stickering).
  */
 export async function getRemappedMask(
 	stickeringName: string,
@@ -209,7 +209,7 @@ export async function getRemappedMask(
 			mask = remapMask(mask, transform.transformationData);
 		}
 
-		// Sinirsiz buyumeyi onle (tip×rotation×slot kombinasyonu) — basit FIFO bound
+		// Prevent unlimited growth (type×rotation×slot combination) — simple FIFO bound
 		if (cache.size >= 64) {
 			const firstKey = cache.keys().next().value;
 			if (firstKey !== undefined) cache.delete(firstKey);

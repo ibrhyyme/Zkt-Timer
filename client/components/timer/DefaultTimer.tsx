@@ -16,8 +16,8 @@ export default function DefaultTimer() {
 		cube_type: cubeType,
 	};
 
-	// cube_type='wca' subset'siz duremez — kullanici WCA secip subset seciyor, her zaman filtrele
-	// Diger cube_type'larda subset opsiyonel — sadece secilmisse filtrele
+	// cube_type='wca' can't exist without subset — user picks WCA and subset, always filter
+	// For other cube_types, subset is optional — only filter if selected
 	if (cubeType === 'wca' || scrambleSubset) {
 		timerSolveData.scramble_subset = scrambleSubset || null;
 	}

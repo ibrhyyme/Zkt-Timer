@@ -1,11 +1,11 @@
 import { Field, Float, Int, ObjectType } from 'type-graphql';
 
 /**
- * Per-case istatistikleri — kullanicinin OLL/PLL case bazinda performans verisi.
+ * Per-case statistics — user's OLL/PLL case-based performance data.
  *
- * Veri kaynagi: solve_method_step tablosundaki step_name='oll'/'pll' kayitlari
- * group by oll_case_key veya pll_case_key. Wrapper (server/util/solve/solve_method.ts)
- * her smart cube solve sonrasi bu alanlari otomatik dolduruyor.
+ * Data source: step_name='oll'/'pll' records in solve_method_step table
+ * grouped by oll_case_key or pll_case_key. Wrapper (server/util/solve/solve_method.ts)
+ * automatically populates these fields after each smart cube solve.
  */
 @ObjectType()
 export class CaseStat {

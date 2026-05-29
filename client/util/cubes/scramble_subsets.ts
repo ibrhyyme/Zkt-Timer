@@ -5,10 +5,10 @@ export interface ScrambleSubset {
     isHeader?: boolean;
 }
 
-// cstimer scrdata'sinin birebir karsiligi.
-// Her cube type icin alt tipler (2. dropdown icerik).
+// Exact counterpart of cstimer scrdata.
+// Sub-types for each cube type (2nd dropdown content).
 export const SCRAMBLE_SUBSETS: Record<string, ScrambleSubset[]> = {
-    // ==================== WCA (tum WCA etkinlikleri) ====================
+    // ==================== WCA (all WCA events) ====================
     'wca': [
         { id: '333', label: '3x3x3' },
         { id: '222', label: '2x2x2' },
@@ -169,7 +169,7 @@ export const SCRAMBLE_SUBSETS: Record<string, ScrambleSubset[]> = {
         { id: 'minx2g', label: '2-Generator R, U' },
         { id: 'mgmso', label: 'scramble_subsets.random_state' },
         { id: 'mgms2l', label: 'S2L' },
-        // cstimer'da ayrica: mlsll (LSLL), mgmpll (PLL), mgmll (LL) — generator port edilmedi
+        // In cstimer also: mlsll (LSLL), mgmpll (PLL), mgmll (LL) — generator not ported
     ],
 
     // ==================== Pyraminx ====================

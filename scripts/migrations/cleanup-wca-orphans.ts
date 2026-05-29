@@ -1,29 +1,29 @@
 /**
  * ONE-TIME CLEANUP: cube_type='wca' + scramble_subset=NULL orphans.
  *
- * Tum kullanicilarda calisir (user_id filtresi yok). solve, top_solve, top_average
- * tablolarini birlikte temizler.
+ * Works on all users (no user_id filter). Cleans solve, top_solve, top_average
+ * tables together.
  *
- * Sinif inferansi — scramble notation pattern'ine bakar:
- *   - "/" var               → sq1
- *   - "++" / "--" var       → minx (megaminx)
- *   - "Rw"/"Lw"/"Uw"/"Dw"/"Fw"/"Bw" var → 4x4-7x7 (length'e gore)
- *   - "(",")" + sayi (clock) → clock
- *   - kucuk harfler (l/u/r/b) ve length<40 → pyram
- *   - sadece UDRLFB harfleri, length 25-80 → 333
- *   - sadece URF (D/L/B yok), length<30 → 222
- *   - diger her sey         → SKIP (manuel inceleme)
+ * Classification inference — looks at scramble notation pattern:
+ *   - "/" present               → sq1
+ *   - "++" / "--" present       → minx (megaminx)
+ *   - "Rw"/"Lw"/"Uw"/"Dw"/"Fw"/"Bw" present → 4x4-7x7 (by length)
+ *   - "(",")" + number (clock) → clock
+ *   - lowercase letters (l/u/r/b) and length<40 → pyram
+ *   - only UDRLFB letters, length 25-80 → 333
+ *   - only URF (D/L/B absent), length<30 → 222
+ *   - everything else         → SKIP (manual review)
  *
- * Cok temkinli — supheli ise SKIP eder, otomatik atama yapmaz.
+ * Very conservative — if suspicious, SKIPs instead of auto-assigning.
  *
  * Usage:
- *   npx ts-node scripts/migrations/cleanup-wca-orphans.ts            # dry-run (varsayilan)
- *   npx ts-node scripts/migrations/cleanup-wca-orphans.ts --apply    # gercekten yaz
+ *   npx ts-node scripts/migrations/cleanup-wca-orphans.ts            # dry-run (default)
+ *   npx ts-node scripts/migrations/cleanup-wca-orphans.ts --apply    # actually write
  *
  * Safe properties:
  *   - No DELETEs. UPDATE only.
- *   - Idempotent: ikinci kosturmada 0 satir eslesir, hata olursa tekrar calistir.
- *   - Bir tablo basarisiz olursa digerleri etkilenmez (transaction yok — gerek de yok).
+ *   - Idempotent: second run matches 0 rows, safe to retry on error.
+ *   - One table failure doesn't affect others (no transaction — not needed).
  */
 
 import { PrismaClient } from '@prisma/client';
@@ -40,8 +40,8 @@ interface OrphanSolve {
 }
 
 /**
- * Scramble pattern'ine bakarak hangi WCA event oldugunu tahmin eder.
- * Supheli ise null doner — caller SKIP eder.
+ * Infers WCA event from scramble pattern.
+ * Returns null if suspicious — caller SKIPs.
  */
 function classifyScramble(scramble: string | null): string | null {
 	if (!scramble) return null;
@@ -51,7 +51,7 @@ function classifyScramble(scramble: string | null): string | null {
 	// sq1: slash notation "(a,b)/"
 	if (s.includes('/')) return 'sq1';
 
-	// megaminx: "++" veya "--" (Pochmann)
+	// megaminx: "++" or "--" (Pochmann)
 	if (s.includes('++') || s.includes('--')) return 'minx';
 
 	// clock: "UR2+ DL3-" pattern
@@ -65,20 +65,20 @@ function classifyScramble(scramble: string | null): string | null {
 		return '777';
 	}
 
-	// pyramid: kucuk harf turns "l", "r", "u", "b"
+	// pyramid: lowercase letter turns "l", "r", "u", "b"
 	if (/(^|\s)[lrub]'?(\s|$)/.test(s) && s.length < 50) return 'pyram';
 
-	// Sadece [UDLRFB] turn'leri var mi?
+	// Do we have only [UDLRFB] turns?
 	const moves = s.replace(/\s+/g, ' ').split(' ').filter(Boolean);
 	const validNxN = moves.every((m) => /^[UDLRFB][2']?$/.test(m));
 	if (!validNxN) return null;
 
 	const distinctFaces = new Set(moves.map((m) => m[0]));
 
-	// 2x2: kisa scramble + sinirli yuz cesitliligi
+	// 2x2: short scramble + limited face variety
 	if (s.length < 30 && distinctFaces.size <= 3) return '222';
 
-	// 3x3: 6-yuz scramble, orta uzunluk
+	// 3x3: 6-face scramble, medium length
 	if (s.length >= 25 && s.length <= 80 && distinctFaces.size >= 4) return '333';
 
 	return null;
@@ -107,7 +107,7 @@ function classifyAll<T extends { id: string }>(
 }
 
 function logBuckets(label: string, buckets: BucketResult, skipped: string[]) {
-	console.log(`\n[${label}] Siniflandirma:`);
+	console.log(`\n[${label}] Classification:`);
 	const keys = Object.keys(buckets).sort();
 	for (const k of keys) {
 		console.log(`  ${k.padEnd(8)} ${buckets[k].length}`);
@@ -127,7 +127,7 @@ async function applySolveCleanup(orphans: OrphanSolve[]) {
 	logBuckets('solve', buckets, skipped);
 
 	if (DRY_RUN) {
-		console.log('  [dry-run] UPDATE yapilmadi.');
+		console.log('  [dry-run] UPDATE not applied.');
 		printSampleSkipped(orphans, skipped, (o) => o.scramble);
 		return;
 	}
@@ -139,7 +139,7 @@ async function applySolveCleanup(orphans: OrphanSolve[]) {
 			where: { id: { in: ids } },
 			data: { scramble_subset: subset },
 		});
-		console.log(`  [apply]  ${r.count} solve '${subset}' olarak guncellendi`);
+		console.log(`  [apply]  ${r.count} solves updated to '${subset}'`);
 	}
 }
 
@@ -153,7 +153,7 @@ function printSampleSkipped<T>(
 	const samples = orphans
 		.filter((o: any) => skippedSet.has(o.id))
 		.slice(0, 5);
-	console.log('  SKIPPED ornek scramble\'lar:');
+	console.log('  SKIPPED example scrambles:');
 	for (const s of samples) {
 		const scr = getScramble(s) || '<empty>';
 		console.log(`    [${scr.length} char] "${scr.slice(0, 70)}${scr.length > 70 ? '...' : ''}"`);
@@ -172,7 +172,7 @@ async function applyTopSolveCleanup(orphans: Awaited<ReturnType<typeof fetchTopS
 	logBuckets('top_solve', buckets, skipped);
 
 	if (DRY_RUN) {
-		console.log('  [dry-run] UPDATE yapilmadi.');
+		console.log('  [dry-run] UPDATE not applied.');
 		return;
 	}
 
@@ -183,7 +183,7 @@ async function applyTopSolveCleanup(orphans: Awaited<ReturnType<typeof fetchTopS
 			where: { id: { in: ids } },
 			data: { scramble_subset: subset },
 		});
-		console.log(`  [apply]  ${r.count} top_solve '${subset}' olarak guncellendi`);
+		console.log(`  [apply]  ${r.count} top_solves updated to '${subset}'`);
 	}
 }
 
@@ -199,7 +199,7 @@ async function applyTopAverageCleanup(orphans: Awaited<ReturnType<typeof fetchTo
 	logBuckets('top_average', buckets, skipped);
 
 	if (DRY_RUN) {
-		console.log('  [dry-run] UPDATE yapilmadi.');
+		console.log('  [dry-run] UPDATE not applied.');
 		return;
 	}
 
@@ -210,28 +210,28 @@ async function applyTopAverageCleanup(orphans: Awaited<ReturnType<typeof fetchTo
 			where: { id: { in: ids } },
 			data: { scramble_subset: subset },
 		});
-		console.log(`  [apply]  ${r.count} top_average '${subset}' olarak guncellendi`);
+		console.log(`  [apply]  ${r.count} top_averages updated to '${subset}'`);
 	}
 }
 
 async function main() {
 	console.log('='.repeat(70));
 	console.log('Zkt-Timer WCA Orphan Cleanup');
-	console.log(`Mode: ${APPLY ? 'APPLY (gercek yazim)' : 'DRY-RUN (sadece rapor)'}`);
-	console.log('Sinif: scramble notation pattern\'ine gore (sq1, minx, clock, 222-777, pyram, 333)');
+	console.log(`Mode: ${APPLY ? 'APPLY (actual write)' : 'DRY-RUN (report only)'}`);
+	console.log('Classification: by scramble notation pattern (sq1, minx, clock, 222-777, pyram, 333)');
 	console.log('='.repeat(70));
 
 	const solveOrphans = await fetchSolveOrphans();
 	const topSolveOrphans = await fetchTopSolveOrphans();
 	const topAverageOrphans = await fetchTopAverageOrphans();
 
-	console.log(`\nBulunan orphan'lar:`);
+	console.log(`\nOrphans found:`);
 	console.log(`  solve:       ${solveOrphans.length}`);
 	console.log(`  top_solve:   ${topSolveOrphans.length}`);
 	console.log(`  top_average: ${topAverageOrphans.length}`);
 
 	if (solveOrphans.length === 0 && topSolveOrphans.length === 0 && topAverageOrphans.length === 0) {
-		console.log('\nHic orphan yok. Cikiliyor.');
+		console.log('\nNo orphans found. Exiting.');
 		return;
 	}
 
@@ -241,9 +241,9 @@ async function main() {
 
 	console.log('\n' + '='.repeat(70));
 	if (DRY_RUN) {
-		console.log('DRY-RUN tamamlandi. Gercekten uygulamak icin: --apply');
+		console.log('DRY-RUN completed. To apply for real: --apply');
 	} else {
-		console.log('CLEANUP tamamlandi.');
+		console.log('CLEANUP completed.');
 	}
 	console.log('='.repeat(70));
 }

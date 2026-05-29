@@ -81,7 +81,7 @@ export default function SessionStepsTable({ sessionId, filterOptions, lastN, tit
 		);
 	}
 
-	// Phase başına aggregate
+	// Aggregate per phase
 	const aggregates: Record<string, PhaseAggregate> = {};
 	for (const phase of PHASE_ORDER) {
 		aggregates[phase] = emptyAgg();
@@ -90,7 +90,7 @@ export default function SessionStepsTable({ sessionId, filterOptions, lastN, tit
 	for (const solve of solves) {
 		const steps = getSolveStepsWithoutParents(solve);
 
-		// Önce phase'leri sırayla map'e koy
+		// First map phases sequentially into object
 		const byPhase: Record<string, any> = {};
 		for (const step of steps) {
 			byPhase[step.step_name] = step;
@@ -101,7 +101,7 @@ export default function SessionStepsTable({ sessionId, filterOptions, lastN, tit
 		for (const phase of PHASE_ORDER) {
 			const step = byPhase[phase];
 			if (!step) {
-				// Bu phase eksik, sonraki phase'lerin cumulative'i artik biased — chain'i kir
+				// This phase is missing; subsequent phases' cumulative is now biased — break chain
 				chainBroken = true;
 				continue;
 			}
@@ -114,21 +114,21 @@ export default function SessionStepsTable({ sessionId, filterOptions, lastN, tit
 			aggregates[phase].execution.push(exec);
 			aggregates[phase].stepTime.push(total);
 			aggregates[phase].turns.push(step.turn_count || 0);
-			// Cumulative'i sadece zincir kirilmadiysa ekle (bias'i onler)
+			// Add cumulative only if chain not broken (prevent bias)
 			if (!chainBroken) {
 				aggregates[phase].cumulative.push(cumulative);
 			}
 		}
 	}
 
-	// Hangi phase'lerde data var?
+	// Which phases have data?
 	const visiblePhases = PHASE_ORDER.filter(p => aggregates[p].stepTime.length > 0);
 
 	if (!visiblePhases.length) return null;
 
-	// Footer toplamları — sure ve recognition/execution ortalamalarinin toplami,
-	// ama turns/TPS solve.smart_turn_count uzerinden (countHTM monolitik, tek dogru
-	// kaynak — projedeki diger turn gosterimleriyle uyumlu).
+	// Footer totals — time and recognition/execution averages sum,
+	// but turns/TPS from solve.smart_turn_count (countHTM is monolithic, single source of truth
+	// — consistent with other turn representations in project).
 	let totalRec = 0;
 	let totalExec = 0;
 	let totalStepTime = 0;

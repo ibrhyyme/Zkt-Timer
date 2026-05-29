@@ -122,9 +122,9 @@ export const mutateActions = {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'That email address is already in use');
 		}
 
-		// Refresh durumu DEGILSE pending_email kontrolu — baska kullanici bu email'i
-		// degisiklik bekliyor olabilir, signup'a izin verirsek confirmEmailChange anasinda
-		// email @unique ihlali olur.
+		// If NOT a refresh state, check pending_email — another user may be
+		// waiting for this email change; if we allow signup, confirmEmailChange will have
+		// an email @unique violation.
 		if (!existingUser) {
 			const reservedAsPending = await isEmailReserved(email);
 			if (reservedAsPending) {
@@ -149,7 +149,7 @@ export const mutateActions = {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Username can only contain letters, numbers, and underscores');
 		}
 
-		// Username kontrolu — refresh durumunda kendi satirimizi sayma
+		// Username check — in refresh state, don't count our own row
 		const usernameOwners = await getUserByUsername(username);
 		const conflict = usernameOwners?.find((u: any) => !existingUser || u.id !== existingUser.id);
 		if (conflict) {
@@ -158,8 +158,8 @@ export const mutateActions = {
 
 		let user;
 		if (isRefresh) {
-			// Var olan unverified hesabi sil + yeniden olustur YERINE GUNCELLE.
-			// Saldirgan kurbanin kaydini siliyordu (DoS); artik ayni satir tazelenir.
+			// Instead of deleting and recreating an existing unverified account, UPDATE it.
+			// An attacker was deleting the victim's registration (DoS); now the same row is refreshed.
 			user = await refreshUnverifiedAccount(
 				existingUser.id, first_name.trim(), last_name.trim(), username, password, ip
 			);
@@ -170,7 +170,7 @@ export const mutateActions = {
 			await createDefaultSession(user, language || 'en');
 		}
 
-		// Dogrulama kodu olustur ve mail gonder
+		// Create verification code and send email
 		const ev = await createEmailVerification(user);
 		const emailStrings = getEmailStrings(language);
 		sendEmailWithTemplate(user, emailStrings.verification_subject, 'email_verification',
@@ -219,7 +219,7 @@ export const mutateActions = {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Username can only contain letters, numbers, and underscores');
 		}
 
-		// Username degisikligi: 30 gun cooldown — impersonation/scam koruma
+		// Username change: 30 day cooldown — impersonation/scam protection
 		const usernameChanged = username !== user.username;
 		const USERNAME_CHANGE_COOLDOWN_MS = 30 * 24 * 60 * 60 * 1000;
 		if (usernameChanged) {
@@ -242,7 +242,7 @@ export const mutateActions = {
 		let pendingEmailUpdate: string | null | undefined = undefined;
 
 		if (emailChanged) {
-			// Yeni email baska kullanici tarafindan rezerve edilmis mi (email VEYA pending_email)?
+			// Is the new email reserved by another user (either email or pending_email)?
 			const taken = await isEmailReserved(emailLower);
 			if (taken) {
 				throw new GraphQLError(ErrorCode.BAD_INPUT, 'That email address is already in use');
@@ -250,7 +250,7 @@ export const mutateActions = {
 			pendingEmailUpdate = emailLower;
 		}
 
-		// Email haric alanlari hemen guncelle. Email degisikligi onay akisina dusurulur.
+		// Update fields other than email immediately. Email change goes through verification flow.
 		const updated = await updateUserAccountWithParams(user.id, {
 			first_name: first_name.trim(),
 			last_name: last_name.trim(),
@@ -260,7 +260,7 @@ export const mutateActions = {
 		});
 
 		if (emailChanged && pendingEmailUpdate) {
-			// Yeni email'e dogrulama kodu yolla (mevcut EV pattern'i — confirmEmailChange tuketir)
+			// Send verification code to new email (existing EV pattern — confirmEmailChange consumes it)
 			const ev = await createEmailVerification(updated as any);
 			const emailStrings = getEmailStrings(language);
 
@@ -271,7 +271,7 @@ export const mutateActions = {
 				console.error('Email change verification could not be sent:', error);
 			});
 
-			// Eski email'e bilgilendirme uyari yolla
+			// Send notification warning to old email
 			const oldEmailRecipient = {email: user.email, first_name: updated.first_name};
 			sendEmailWithTemplate(oldEmailRecipient as any, emailStrings.email_change_warning_subject, 'email_change_request',
 				buildEmailChangeWarningData(oldEmailRecipient as any, pendingEmailUpdate, language)

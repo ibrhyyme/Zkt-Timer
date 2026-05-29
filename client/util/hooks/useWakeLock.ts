@@ -1,17 +1,17 @@
 import {useEffect} from 'react';
 
 /**
- * Screen wake lock — antrenman/timer aktifken cihazin ekranini acik tutar.
+ * Screen wake lock — keeps device screen on during training/timer.
  *
- * Tarayici destegi:
+ * Browser support:
  * - Chrome (Android) 84+
  * - Safari (iOS) 16.4+
- * - Eski tarayicilarda sessizce no-op.
+ * - Silently no-op on older browsers.
  *
- * Visibility change'e duyarli: kullanici sekmeye geri donduktan sonra
- * tarayici wake lock'u otomatik birakir — biz yeniden request ederiz.
+ * Responsive to visibility changes: after user returns to tab, browser
+ * automatically releases wake lock — we request it again.
  *
- * @param active true iken wake lock alinir, false iken birakilir.
+ * @param active When true, acquire wake lock; when false, release it.
  */
 export function useWakeLock(active: boolean): void {
 	useEffect(() => {
@@ -30,7 +30,7 @@ export function useWakeLock(active: boolean): void {
 				}
 				sentinel = s;
 			} catch {
-				// Permission denied veya cihaz desteklemiyor — sessiz gec
+				// Permission denied or device not supported — silently continue
 			}
 		};
 

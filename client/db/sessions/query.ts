@@ -56,7 +56,7 @@ export interface SessionCubeBucket {
 	scramble_subset: string | null;
 }
 
-// Session icindeki (cube_type, subset) ciftlerini dondur. WCA altinda farkli etkinlikler icin ayri bucket.
+// Return (cube_type, subset) pairs within a session. Different events under WCA have separate buckets.
 export function getCubeBucketsFromSession(session: Session): SessionCubeBucket[] {
 	if (!session) {
 		return [];

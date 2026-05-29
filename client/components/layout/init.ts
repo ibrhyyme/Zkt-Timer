@@ -43,7 +43,7 @@ export function initAnonymousAppData(callback) {
 		autosave: false,
 		autosaveInterval: undefined,
 		adapter: undefined,
-		disableAdapter: true, // Anonim kullanıcı için veri saklanmasın
+		disableAdapter: true, // Don't persist data for anonymous users
 	});
 
 	const localSettings = getAllLocalSettings('_anon');
@@ -68,15 +68,15 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 	const canSyncUser = !isProEnabled() || isPro(me);
 
 	await initOfflineData(me, async (passed) => {
-		// Basic → Pro gecisi: lokal verileri sunucuya aktar.
-		// Veri kaybi onleme: migration BASARILI olmadan flag'i sakin silme,
-		// lokal IndexedDB'yi sakin temizleme — sonraki acilista tekrar denesin.
+		// Basic → Pro migration: upload local data to server.
+		// Data loss prevention: don't delete flag before migration SUCCESS,
+		// don't clear local IndexedDB — retry on next launch.
 		const needsMigration = canSyncUser && getLocalStorage('wasBasicUser') === 'true';
 		let migrationSkipped = false;
 
 		if (needsMigration) {
-			// passed=false → IndexedDB ilk loadDatabase'de yuklenmedi (timeout/err/eksik collection).
-			// Tekrar yuklemeyi dene; basarisiz olursa flag KORUNUR.
+			// passed=false → IndexedDB failed to load on initial loadDatabase (timeout/err/missing collection).
+			// Retry loading; if failed, flag is PRESERVED.
 			if (!passed) {
 				passed = await tryLoadExistingDb();
 			}
@@ -85,16 +85,16 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 				const migrationOk = await migrateLocalDataToServer();
 				if (migrationOk) {
 					deleteLocalStorage('wasBasicUser');
-					// Migration sonrasi fresh fetch yapilmali
+					// After migration, fresh fetch should occur
 					passed = false;
 				} else {
-					// Migration fail — flag ve lokal LokiDB korunur,
-					// kullanici lokal verisini gormeye devam eder, sonraki acilista tekrar denenir.
+					// Migration failed — flag and local LokiDB are preserved,
+					// user continues to see local data, retry on next launch.
 					migrationSkipped = true;
 				}
 			} else {
-				// IndexedDB yuklenemedi; gerçekten data yok ya da bozuk.
-				// Flag'i tut (sonraki acilista yeniden dene), lokal DB'yi temizleme.
+				// IndexedDB failed to load; data truly missing or corrupted.
+				// Keep flag (retry next launch), don't clear local DB.
 				migrationSkipped = true;
 			}
 		}
@@ -102,20 +102,20 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 		let hasLocalData = false;
 
 		if (!passed) {
-			// Delta sync: IndexedDB'deki mevcut veriyi koruyarak sadece farki cek
+			// Delta sync: fetch only diff while preserving existing data in IndexedDB
 			if (canSyncUser && !needsMigration) {
 				hasLocalData = await tryLoadExistingDb();
 			}
 
 			if (!hasLocalData) {
-				// migrationSkipped: lokal IndexedDB'yi temizleme (sonraki acilista veri yine denenir)
+				// migrationSkipped: don't clear local IndexedDB (data will be retried next launch)
 				if (!migrationSkipped) {
 					try {
 						await clearOfflineData();
 					} catch (e) {
 						console.error(e);
 					}
-					// IndexedDB delete transaction'in tamamen kapanmasi icin bekle
+					// Wait for IndexedDB delete transaction to fully close
 					await new Promise(r => setTimeout(r, 100));
 				}
 				initLokiDb({
@@ -129,12 +129,12 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 		if (!passed && canSyncUser) {
 			criticalPromises.push(getAllSessions());
 		} else if (!passed) {
-			// Basic kullanici: bos session collection olustur
+			// Basic user: create empty session collection
 			initSessionDb([]);
 		}
 
-		// Sync etmeyen kullanicilar (Basic) icin lokal default sezon garantisi.
-		// Pro/sync user'larda server signup'ta zaten sezon olusturuluyor.
+		// For non-syncing users (Basic), guarantee local default session.
+		// Pro/sync users already have session created server-side on signup.
 		if (!canSyncUser) {
 			ensureLocalDefaultSession();
 		}
@@ -148,21 +148,21 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 
 			if (!passed && canSyncUser) {
 				if (hasLocalData) {
-					// Delta sync: sadece farki cek
+					// Delta sync: fetch only diff
 					const deltaSuccess = await deltaSyncSolves();
 
 					if (!deltaSuccess) {
-						// Delta sync basarisiz — fallback: full fetch
+						// Delta sync failed — fallback: full fetch
 						initSolvesCollection(true);
 						await initAllSolves();
 					}
 				} else {
-					// Ilk acilis veya bozuk DB: tum solve'lari cek
+					// First launch or corrupted DB: fetch all solves
 					await initAllSolves();
 				}
 			}
 
-			// Background: eksik method_steps'leri backfill et (passed=true durumunda da calismali)
+			// Background: backfill missing method_steps (should also work when passed=true)
 			if (canSyncUser) {
 				backfillMissingMethodSteps().catch((e) => {
 					console.error('[Backfill] failed:', e);
@@ -186,9 +186,9 @@ async function loadNonCriticalData(_me: UserAccount, dispatch: Dispatch<any>, pa
 
 		if (passedFromOffline && canSyncUser) {
 			emitEvent('solveDbUpdatedEvent');
-			// Migration atlandi/basarisiz (lokal veri henuz server'a gitmedi): syncNewSolves
-			// server'i bos gorup TUM lokal solve'lari "stale" diye silerdi — atla.
-			// syncNewSessions guvenli, calismaya devam eder.
+			// Migration skipped/failed (local data not yet on server): syncNewSolves would see
+			// empty server and delete ALL local solves as "stale" — skip it.
+			// syncNewSessions is safe and continues working.
 			if (!migrationSkipped) {
 				bgPromises.push(syncNewSolves());
 			}
@@ -207,7 +207,7 @@ async function loadNonCriticalData(_me: UserAccount, dispatch: Dispatch<any>, pa
 		console.error(e);
 	}
 
-	// Tab gorunur oldugunda stale solve'lari temizle
+	// Clean up stale solves when tab becomes visible
 	if (canSyncUser) {
 		initVisibilitySyncListener();
 	}
@@ -218,7 +218,7 @@ async function loadNonCriticalData(_me: UserAccount, dispatch: Dispatch<any>, pa
  * (with everything else)
  */
 async function initNewScramble() {
-	// Worker uzerinden arka planda — main thread bloke olmaz
+	// Load via Worker in background on main thread — prevents blocking
 	await getNewScrambleAsync('333');
 }
 
@@ -227,8 +227,8 @@ const DELTA_SYNC_BATCH_SIZE = 500;
 const VISIBILITY_SYNC_DEBOUNCE_MS = 10_000;
 
 /**
- * Mevcut IndexedDB'den LokiJS'e veri yuklemeyi dener.
- * Cache MISS durumunda bile eski veriyi korumak icin kullanilir (delta sync oncesi).
+ * Attempts to load data from existing IndexedDB into LokiJS.
+ * Used to preserve old data even on cache MISS (before delta sync).
  */
 async function tryLoadExistingDb(): Promise<boolean> {
 	try {
@@ -262,12 +262,12 @@ async function tryLoadExistingDb(): Promise<boolean> {
 }
 
 /**
- * Delta sync: sunucudan sadece solve ID listesini cek, local ile karsilastir,
- * sadece farki uygula (yeni solve'lari cek, silinen solve'lari kaldir).
+ * Delta sync: fetch only solve ID list from server, compare with local,
+ * apply only diff (fetch new solves, remove deleted solves).
  */
 async function deltaSyncSolves(): Promise<boolean> {
 	try {
-		// 1. Sunucudan tum solve ID'lerini cek (sadece id field'i)
+		// 1. Fetch all solve IDs from server (only id field)
 		const idsQuery = gql`
 			query Query($take: Int, $skip: Int) {
 				solves(take: $take, skip: $skip) {
@@ -278,13 +278,13 @@ async function deltaSyncSolves(): Promise<boolean> {
 		const idsRes = await gqlQuery<{ solves: { id: string }[] }>(idsQuery, { take: 0, skip: 0 });
 		const serverIds = new Set(idsRes.data.solves.map((s) => s.id));
 
-		// 2. Local solve ID'lerini al
+		// 2. Get local solve IDs
 		const solveDb = getSolveDb();
 		if (!solveDb) return false;
 		const localSolves = solveDb.find();
 		const localIds = new Set(localSolves.map((s) => s.id));
 
-		// 3. Offline queue'daki pending mutation'lari al (race condition onleme)
+		// 3. Get pending mutations from offline queue (race condition prevention)
 		let pendingCreateIds = new Set<string>();
 		let pendingDeleteIds = new Set<string>();
 		try {
@@ -303,10 +303,10 @@ async function deltaSyncSolves(): Promise<boolean> {
 				}
 			}
 		} catch (e) {
-			// Offline queue okunamadiysa devam et, sadece pending korumasi olmaz
+			// If offline queue can't be read, continue without pending protection
 		}
 
-		// 4. Diff hesapla
+		// 4. Calculate diff
 		const toFetch: string[] = [];
 		for (const id of serverIds) {
 			if (!localIds.has(id) && !pendingDeleteIds.has(id)) {
@@ -321,14 +321,14 @@ async function deltaSyncSolves(): Promise<boolean> {
 			}
 		}
 
-		// 5. Silinenleri local'den kaldir
+		// 5. Remove deleted solves from local
 		if (toRemove.length > 0) {
 			const toRemoveSet = new Set(toRemove);
 			const solvesToRemove = solveDb.find().filter((s) => toRemoveSet.has(s.id));
 			solvesToRemove.forEach((s) => solveDb.remove(s));
 		}
 
-		// 6. Yenileri batch'ler halinde cek (solvesByIds query'si)
+		// 6. Fetch new solves in batches (solvesByIds query)
 		if (toFetch.length > 0) {
 			const fetchQuery = gql`
 				${MICRO_SOLVE_FRAGMENT}
@@ -349,7 +349,7 @@ async function deltaSyncSolves(): Promise<boolean> {
 			}
 		}
 
-		// 7. Degisiklik varsa event emit et
+		// 7. Emit event if changes occurred
 		if (toFetch.length > 0 || toRemove.length > 0) {
 			emitEvent('solveDbUpdatedEvent');
 		}
@@ -362,9 +362,9 @@ async function deltaSyncSolves(): Promise<boolean> {
 }
 
 /**
- * LokiJS IndexedDB adapter catalog'unu on-initialize et.
- * Adapter'in saveDatabase metodu catalog null iken lazy-init yapiyor ama
- * recursive cagridaki callback wrapping bug'i yuzunden save her zaman basarisiz oluyor.
+ * Pre-initialize LokiJS IndexedDB adapter catalog.
+ * The adapter's saveDatabase method does lazy-init when catalog is null, but
+ * due to callback wrapping bug in recursive calls, save always fails.
  */
 async function initAdapterCatalog(): Promise<void> {
 	await new Promise<void>((resolve) => {
@@ -422,17 +422,17 @@ async function syncNewSolves() {
 			appendSolvesToDb(serverSolves);
 		}
 
-		// Stale solve'lari tespit et ve sil (baska cihazdan silinmis olabilir)
+		// Detect and delete stale solves (may have been deleted from another device)
 		const serverIds = new Set(serverSolves.map((s) => s.id));
 		const solveDb = getSolveDb();
 		if (!solveDb) return;
 
 		let stale: Solve[];
 		if (serverSolves.length < SYNC_SOLVE_COUNT) {
-			// Sunucuda 500'den az solve var — tum local solve'lari kontrol et
+			// Server has fewer than 500 solves — check all local solves
 			stale = solveDb.find().filter((s) => !serverIds.has(s.id));
 		} else {
-			// Sunucuda 500+ solve var — sadece son 500'un zaman araligindakileri kontrol et
+			// Server has 500+ solves — only check recent 500's time range
 			const oldestServerTime = parseInt(String(serverSolves[serverSolves.length - 1].started_at), 10);
 			const recentLocal = solveDb.find({ started_at: { $gte: oldestServerTime } });
 			stale = recentLocal.filter((s) => !serverIds.has(s.id));
@@ -448,8 +448,8 @@ async function syncNewSolves() {
 }
 
 /**
- * Eski sync edilmis smart cube solve'lar (MICRO_SOLVE_FRAGMENT'a method_steps eklenmeden once)
- * solve_method_steps olmadan LokiJS'te bulunabilir. Bu fonksiyon onlari tespit edip backfill eder.
+ * Old synced smart cube solves (before method_steps added to MICRO_SOLVE_FRAGMENT)
+ * may exist in LokiJS without solve_method_steps. This function detects and backfills them.
  */
 async function backfillMissingMethodSteps(): Promise<void> {
 	const db = getSolveDb();
@@ -462,7 +462,7 @@ async function backfillMissingMethodSteps(): Promise<void> {
 
 	if (!missingIds.length) return;
 
-	console.log(`[Backfill] ${missingIds.length} smart cube solve'un method_steps'i eksik, fetch ediliyor...`);
+	console.log(`[Backfill] ${missingIds.length} smart cube solves missing method_steps, fetching...`);
 
 	const fetchQuery = gql`
 		${MICRO_SOLVE_FRAGMENT}
@@ -484,7 +484,7 @@ async function backfillMissingMethodSteps(): Promise<void> {
 				const existing = db.findOne({ id: fetched.id });
 				if (!existing) continue;
 
-				// Server downgrade ettiyse is_smart_cube'i sync et
+				// Server downgraded is_smart_cube flag — sync it
 				if (typeof fetched.is_smart_cube === 'boolean' && fetched.is_smart_cube !== existing.is_smart_cube) {
 					existing.is_smart_cube = fetched.is_smart_cube;
 				}
@@ -500,7 +500,7 @@ async function backfillMissingMethodSteps(): Promise<void> {
 	}
 
 	if (updated > 0) {
-		console.log(`[Backfill] ${updated} solve guncellendi`);
+		console.log(`[Backfill] ${updated} solves updated`);
 		emitEvent('solveDbUpdatedEvent');
 	}
 }
@@ -554,9 +554,9 @@ async function getAllSessions() {
 		reconcileSessionDb(res.data.sessions);
 		emitEvent('sessionsDbUpdatedEvent');
 	} catch (error) {
-		// Fetch fail — local cache'e dokunma, sadece collection'i ensure et.
-		// Auto-create kaldirildigi icin "bos sezon" durumunda hayalet sezon olusmaz;
-		// kullanici en kotu ihtimalle bos sezon listesi gorur, sayfa yenilemesi cozer.
+		// Fetch failed — don't touch local cache, just ensure collection.
+		// Auto-create removed, so "empty session" won't create phantom session;
+		// worst case user sees empty list, page refresh fixes it.
 		console.error('[getAllSessions] Failed to fetch sessions, keeping local cache as-is:', error);
 		initSessionCollection();
 	}
@@ -617,7 +617,7 @@ async function getAllSettings(userId: string) {
 		const res = await gqlQuery<{ settings: Setting }>(query);
 		backendSettings = res.data.settings;
 
-		// Sunucu settings'lerini localStorage'a yedekle (offline fallback)
+		// Back up server settings to localStorage (offline fallback)
 		if (backendSettings && Object.keys(backendSettings).length > 0) {
 			const allSettingsVal = getLocalStorage('settings') || {};
 			if (!allSettingsVal[userId]) {
@@ -644,12 +644,12 @@ async function getAllSettings(userId: string) {
 		};
 
 		if (key in backendSettings) {
-			// Mobilde viewport-dependent ayarlari backend'den alma — cihaza ozel kalsin
+			// On mobile, don't use viewport-dependent settings from backend — keep device-specific
 			if (isMobileViewport() && viewportDependentKeys.has(key as keyof AllSettings)) {
 				if (localSettings[key] !== undefined && localSettings[key] !== null) {
 					setting.value = localSettings[key];
 				}
-				// else: mobile-aware default zaten yuklendi (getDefaultSettings'ten)
+				// else: mobile-aware default already loaded (from getDefaultSettings)
 			} else {
 				setting.value = backendSettings[key];
 				setting.local = false;
@@ -665,17 +665,16 @@ async function getAllSettings(userId: string) {
 }
 
 /**
- * Basic → Pro gecisinde lokal verileri sunucuya aktar.
- * initOfflineData passed=true olduktan sonra cagirilmali (LokiDB zaten yuklu).
- * Return: true (basarili veya zaten bos), false (hata — flag korunmali).
+ * Basic → Pro migration: upload local data to server.
+ * Should be called after initOfflineData passed=true (LokiDB already loaded).
+ * Return: true (success or already empty), false (error — flag should be preserved).
  *
- * Guvenlik: Server'da zaten SOLVE varsa migration'a girilmez. Bu, Pro kullanicinin
- * cache stale olunca yanlislikla 'wasBasicUser' flag'i set edildiginde lokal
- * verinin tekrar push edilmesini engeller. Gercek Basic→Pro gecisinde server'da
- * solve yoktur cunku Basic sync etmez.
- * NOT: Sezon sayisina BAKMA — signup'ta server-side default sezon olusturuluyor
- * (her kullanicida, Basic dahil, en az 1 sezon var). Sezon kontrolu migration'i
- * her zaman yanlislikla atlatir ve solve'lar hic tasinmadan veri kaybina yol acardi.
+ * Safety: if server already has any SOLVE, skip migration. This prevents re-pushing
+ * local data when Pro user's cache goes stale and 'wasBasicUser' flag is accidentally set.
+ * In a real Basic→Pro transition, server has no solves (Basic doesn't sync).
+ * NOTE: Don't check session count — server-side default session created on signup
+ * (every user, Basic included, has at least 1 session). Checking sessions would
+ * accidentally skip migration every time, causing data loss with solves never moved.
  */
 async function migrateLocalDataToServer(): Promise<boolean> {
 	const solveCollection = getLokiDb().getCollection('solves');
@@ -686,10 +685,10 @@ async function migrateLocalDataToServer(): Promise<boolean> {
 
 	if (!localSessions.length && !localSolves.length) return true;
 
-	// Defansif kontrol: server'da zaten SOLVE varsa migration'a girilmemeli.
-	// Bu durumda kullanici Pro'ydu, sadece flag yanlis set edilmis demektir.
-	// Sezon sayisina BAKMA — signup'ta her kullanicida server-side default sezon
-	// olusur, sezon kontrolu migration'i her zaman yanlislikla atlatir (veri kaybi).
+	// Defensive check: if server already has SOLVE, don't start migration.
+	// This means user was Pro; flag was just set wrong.
+	// Don't check session count — server-side default created on signup,
+	// checking sessions would accidentally skip migration (data loss).
 	try {
 		const query = gql`
 			query Query($take: Int, $skip: Int) {
@@ -698,34 +697,34 @@ async function migrateLocalDataToServer(): Promise<boolean> {
 		`;
 		const res = await gqlQuery<{ solves: { id: string }[] }>(query, { take: 0, skip: 0 });
 		if (res.data.solves && res.data.solves.length > 0) {
-			console.log('[Migration] Server zaten solve iceriyor, migration atlandi (yanlis wasBasicUser flag)');
+			console.log('[Migration] Server already has solves, skipping (incorrect wasBasicUser flag)');
 			return true;
 		}
 	} catch (e) {
-		console.error('[Migration] Server solve kontrolu basarisiz, abort:', e);
-		return false; // flag korunsun, sonraki acilista yeniden dene
+		console.error('[Migration] Server solve check failed, aborting:', e);
+		return false; // preserve flag, retry on next launch
 	}
 
-	console.log(`[Migration] ${localSessions.length} session, ${localSolves.length} solve aktarilacak`);
+	console.log(`[Migration] Uploading ${localSessions.length} sessions, ${localSolves.length} solves`);
 
 	try {
-		// Once session'lari yukle (solve'lar session_id'ye bagimli)
+		// First upload sessions (solves depend on session_id)
 		if (localSessions.length > 0) {
 			const sessionInputs = localSessions.map((s) => ({
 				id: s.id,
-				name: s.name || 'Sezon',
+				name: s.name || 'Session',
 				order: s.order || 0,
 			}));
 			const sessionResult = await importSessionsInChunks(sessionInputs, () => {});
-			// Sessiz fail koruma: bir chunk bile basarisizsa migration'i basarisiz say.
-			// Flag korunur, lokal DB silinmez, sonraki acilista tekrar denenir.
+			// Silent fail protection: if any chunk fails, mark migration failed.
+			// Flag is preserved, local DB not cleared, retry on next launch.
 			if (sessionResult.failureCount > 0) {
-				console.error(`[Migration] ${sessionResult.failureCount} session chunk basarisiz — flag korunuyor`, sessionResult.errors);
+				console.error(`[Migration] ${sessionResult.failureCount} session chunks failed — preserving flag`, sessionResult.errors);
 				return false;
 			}
 		}
 
-		// Sonra solve'lari yukle (sadece SolveInput alanlarini gonder)
+		// Then upload solves (only send SolveInput fields)
 		if (localSolves.length > 0) {
 			const solveInputs = localSolves.map((s) => ({
 				id: s.id,
@@ -752,15 +751,15 @@ async function migrateLocalDataToServer(): Promise<boolean> {
 				inspection_time: s.inspection_time,
 			}));
 			const solveResult = await importSolvesInChunks(solveInputs, () => {});
-			// Sessiz fail koruma: solve chunk'i basarisizsa migration basarisiz.
-			// Bu olmazsa flag silinir + fresh fetch ile lokal solve'lar yok olurdu.
+			// Silent fail protection: if solve chunk fails, migration failed.
+			// Otherwise flag deleted + fresh fetch would lose local solves.
 			if (solveResult.failureCount > 0) {
-				console.error(`[Migration] ${solveResult.failureCount} solve chunk basarisiz — flag korunuyor`, solveResult.errors);
+				console.error(`[Migration] ${solveResult.failureCount} solve chunks failed — preserving flag`, solveResult.errors);
 				return false;
 			}
 		}
 
-		console.log('[Migration] Aktarim tamamlandi');
+		console.log('[Migration] Upload complete');
 		return true;
 	} catch (e) {
 		console.error('[Migration] Failed:', e);

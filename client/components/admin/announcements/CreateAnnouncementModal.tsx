@@ -1,11 +1,11 @@
-import React, {useState} from 'react';
-import {useTranslation} from 'react-i18next';
-import {createPortal} from 'react-dom';
-import {X, Translate, CircleNotch} from 'phosphor-react';
-import {gql} from '@apollo/client';
-import {gqlMutate} from '../../api';
+import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { createPortal } from 'react-dom';
+import { X, Translate, CircleNotch } from 'phosphor-react';
+import { gql } from '@apollo/client';
+import { gqlMutate } from '../../api';
 import Checkbox from '../../common/checkbox/Checkbox';
-import {toastError, toastSuccess} from '../../../util/toast';
+import { toastError, toastSuccess } from '../../../util/toast';
 
 const CREATE_ANNOUNCEMENT = gql`
 	mutation CreateAnnouncement($input: CreateAnnouncementInput) {
@@ -35,17 +35,17 @@ const TRANSLATE_ANNOUNCEMENT = gql`
 `;
 
 const LANG_TABS = [
-	{code: 'tr', label: 'TR'},
-	{code: 'en', label: 'EN'},
-	{code: 'es', label: 'ES'},
-	{code: 'ru', label: 'RU'},
-	{code: 'zh', label: 'ZH'},
+	{ code: 'tr', label: 'TR' },
+	{ code: 'en', label: 'EN' },
+	{ code: 'es', label: 'ES' },
+	{ code: 'ru', label: 'RU' },
+	{ code: 'zh', label: 'ZH' },
 ] as const;
 
 const PLATFORMS = [
-	{key: 'WEB', label: 'Web'},
-	{key: 'ANDROID', label: 'Android'},
-	{key: 'IOS', label: 'iOS'},
+	{ key: 'WEB', label: 'Web' },
+	{ key: 'ANDROID', label: 'Android' },
+	{ key: 'IOS', label: 'iOS' },
 ] as const;
 
 interface LangContent {
@@ -61,31 +61,31 @@ interface AnnouncementForEdit {
 	priority: number;
 	imageUrl?: string | null;
 	targetUrl?: string | null;
-	translations?: string | null;
+	translations?: string | null; // JSON string
 	isDraft: boolean;
 	isActive?: boolean;
 }
 
 interface CreateAnnouncementModalProps {
 	onClose: () => void;
-	announcement?: AnnouncementForEdit;  // varsa edit mode
+	announcement?: AnnouncementForEdit;  // if present, edit mode
 }
 
 function parseTranslations(raw?: string | null): Record<string, LangContent> {
 	const empty = {
-		en: {title: '', content: ''},
-		es: {title: '', content: ''},
-		ru: {title: '', content: ''},
-		zh: {title: '', content: ''},
+		en: { title: '', content: '' },
+		es: { title: '', content: '' },
+		ru: { title: '', content: '' },
+		zh: { title: '', content: '' },
 	};
 	if (!raw) return empty;
 	try {
 		const parsed = JSON.parse(raw);
 		return {
-			en: {title: parsed.en?.title || '', content: parsed.en?.content || ''},
-			es: {title: parsed.es?.title || '', content: parsed.es?.content || ''},
-			ru: {title: parsed.ru?.title || '', content: parsed.ru?.content || ''},
-			zh: {title: parsed.zh?.title || '', content: parsed.zh?.content || ''},
+			en: { title: parsed.en?.title || '', content: parsed.en?.content || '' },
+			es: { title: parsed.es?.title || '', content: parsed.es?.content || '' },
+			ru: { title: parsed.ru?.title || '', content: parsed.ru?.content || '' },
+			zh: { title: parsed.zh?.title || '', content: parsed.zh?.content || '' },
 		};
 	} catch {
 		return empty;
@@ -93,8 +93,8 @@ function parseTranslations(raw?: string | null): Record<string, LangContent> {
 }
 
 export default function CreateAnnouncementModal(props: CreateAnnouncementModalProps) {
-	const {t} = useTranslation();
-	const {onClose, announcement} = props;
+	const { t } = useTranslation();
+	const { onClose, announcement } = props;
 	const isEdit = !!announcement;
 	const [activeLang, setActiveLang] = useState('tr');
 	const [formData, setFormData] = useState({
@@ -121,11 +121,11 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 
 	function updateLangField(field: 'title' | 'content', value: string) {
 		if (activeLang === 'tr') {
-			setFormData({...formData, [field]: value});
+			setFormData({ ...formData, [field]: value });
 		} else {
 			setTranslations({
 				...translations,
-				[activeLang]: {...translations[activeLang], [field]: value},
+				[activeLang]: { ...translations[activeLang], [field]: value },
 			});
 		}
 	}
@@ -146,7 +146,7 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 	function togglePlatform(platform: string) {
 		const current = formData.notificationPlatforms;
 		const next = current.includes(platform) ? current.filter((p) => p !== platform) : [...current, platform];
-		setFormData({...formData, notificationPlatforms: next});
+		setFormData({ ...formData, notificationPlatforms: next });
 	}
 
 	const handleTranslate = async () => {
@@ -160,10 +160,10 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 			const data = result?.data?.translateAnnouncementContent;
 			if (!data) throw new Error('Empty response');
 			setTranslations({
-				en: {title: data.title.en, content: data.content.en},
-				es: {title: data.title.es, content: data.content.es},
-				ru: {title: data.title.ru, content: data.content.ru},
-				zh: {title: data.title.zh, content: data.content.zh},
+				en: { title: data.title.en, content: data.content.en },
+				es: { title: data.title.es, content: data.content.es },
+				ru: { title: data.title.ru, content: data.content.ru },
+				zh: { title: data.title.zh, content: data.content.zh },
 			});
 			toastSuccess(t('create_announcement.translate_success'));
 		} catch (err) {
@@ -242,16 +242,15 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 				<form onSubmit={handleSubmit} className="overflow-y-auto flex-1 px-5 py-4">
 					{/* Language Tabs */}
 					<div className="flex gap-1 bg-zinc-900 p-1 rounded-lg mb-4">
-						{LANG_TABS.map(({code, label}) => (
+						{LANG_TABS.map(({ code, label }) => (
 							<button
 								key={code}
 								type="button"
 								onClick={() => setActiveLang(code)}
-								className={`flex-1 px-3 py-1.5 rounded-md text-sm font-medium transition ${
-									activeLang === code
+								className={`flex-1 px-3 py-1.5 rounded-md text-sm font-medium transition ${activeLang === code
 										? 'bg-blue-600 text-white'
 										: 'text-zinc-400 hover:text-white hover:bg-zinc-700'
-								}`}
+									}`}
 							>
 								{label}
 								{code === 'tr' && ' *'}
@@ -290,7 +289,7 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 								</label>
 								<select
 									value={formData.category}
-									onChange={(e) => setFormData({...formData, category: e.target.value})}
+									onChange={(e) => setFormData({ ...formData, category: e.target.value })}
 									className="w-full px-3 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white text-sm focus:border-blue-500 focus:outline-none"
 								>
 									<option value="FEATURE">{t('create_announcement.category_feature')}</option>
@@ -309,7 +308,7 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 									max="10"
 									value={formData.priority}
 									onChange={(e) =>
-										setFormData({...formData, priority: parseInt(e.target.value)})
+										setFormData({ ...formData, priority: parseInt(e.target.value) })
 									}
 									className="w-full px-3 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white text-sm focus:border-blue-500 focus:outline-none"
 								/>
@@ -325,7 +324,7 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 							<input
 								type="url"
 								value={formData.imageUrl}
-								onChange={(e) => setFormData({...formData, imageUrl: e.target.value})}
+								onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
 								className="w-full px-3 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white text-sm placeholder-zinc-500 focus:border-blue-500 focus:outline-none"
 								placeholder="https://..."
 							/>
@@ -348,7 +347,7 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 							placeholder={
 								activeLang !== 'tr'
 									? formData.content?.substring(0, 100) ||
-									  t('create_announcement.content_placeholder')
+									t('create_announcement.content_placeholder')
 									: t('create_announcement.content_placeholder')
 							}
 						/>
@@ -378,7 +377,7 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 						</div>
 					)}
 
-					{/* Target URL - tab disinda, ortak alan, sadece TR'de goster */}
+					{/* Target URL - outside tabs, shared field, show only on TR */}
 					{activeLang === 'tr' && (
 						<div className="mb-3">
 							<label className="block text-sm font-medium text-zinc-300 mb-1.5">
@@ -387,7 +386,7 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 							<input
 								type="text"
 								value={formData.targetUrl}
-								onChange={(e) => setFormData({...formData, targetUrl: e.target.value})}
+								onChange={(e) => setFormData({ ...formData, targetUrl: e.target.value })}
 								className="w-full px-3 py-2 bg-zinc-900 border border-zinc-600 rounded-lg text-white text-sm placeholder-zinc-500 focus:border-blue-500 focus:outline-none"
 								placeholder={t('create_announcement.target_url_placeholder')}
 							/>
@@ -415,7 +414,7 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 									text={t('create_announcement.is_active')}
 									checked={formData.isActive}
 									onChange={(e) =>
-										setFormData({...formData, isActive: e.target.checked})
+										setFormData({ ...formData, isActive: e.target.checked })
 									}
 									noMargin
 								/>
@@ -428,7 +427,7 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 										checked={formData.sendNotification}
 										disabled={formData.isDraft}
 										onChange={(e) =>
-											setFormData({...formData, sendNotification: e.target.checked})
+											setFormData({ ...formData, sendNotification: e.target.checked })
 										}
 										noMargin
 									/>
@@ -442,18 +441,17 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 									{/* Platform Selection */}
 									{formData.sendNotification && !formData.isDraft && (
 										<div className="ml-6 mt-1 flex gap-3">
-											{PLATFORMS.map(({key, label}) => {
+											{PLATFORMS.map(({ key, label }) => {
 												const selected = formData.notificationPlatforms.includes(key);
 												return (
 													<button
 														key={key}
 														type="button"
 														onClick={() => togglePlatform(key)}
-														className={`px-3 py-1 rounded-md text-sm font-medium transition ${
-															selected
+														className={`px-3 py-1 rounded-md text-sm font-medium transition ${selected
 																? 'bg-blue-600 text-white'
 																: 'bg-zinc-700 text-zinc-400 hover:bg-zinc-600'
-														}`}
+															}`}
 													>
 														{label}
 													</button>
@@ -511,10 +509,10 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 							{loading
 								? (isEdit ? t('create_announcement.updating') : t('create_announcement.creating'))
 								: isEdit
-								? t('create_announcement.update')
-								: formData.isDraft
-								? t('create_announcement.save_draft')
-								: t('create_announcement.publish')}
+									? t('create_announcement.update')
+									: formData.isDraft
+										? t('create_announcement.save_draft')
+										: t('create_announcement.publish')}
 						</button>
 					</div>
 				</div>

@@ -10,7 +10,7 @@ const pendingRequests = new Map<
 	number,
 	{resolve: (results: SolverResult[]) => void; reject: (e: Error) => void}
 >();
-// Easy cross/xcross mask istekleri (getEasyCrossAsync) — ayri pending map (farkli donus tipi)
+// Easy cross/xcross mask requests (getEasyCrossAsync) — separate pending map (different return type)
 const pendingEasy = new Map<
 	number,
 	{resolve: (mask: number[][] | null) => void; reject: (e: Error) => void}
@@ -120,9 +120,9 @@ export async function solveCrossAsync(
 }
 
 /**
- * Belirli uzunlukta cross/xcross pozisyonu uret → mask [ep,eo(,cp,co)].
- * solverType: 'cross' | 'xcross'. length: tek deger (tam N icin N*11 gonder).
- * getAnyScramble'a beslenip gercek WCA scramble'a cevrilir (scrambleFromMaskAsync).
+ * Generate cross/xcross position of specific length → mask [ep,eo(,cp,co)].
+ * solverType: 'cross' | 'xcross'. length: single value (for exact N pass N*11).
+ * Fed to getAnyScramble and converted to real WCA scramble (scrambleFromMaskAsync).
  */
 export async function getEasyCrossAsync(
 	length: number,

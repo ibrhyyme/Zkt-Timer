@@ -5,12 +5,12 @@ import {syncEntitlementFromRevenueCat} from '../models/iap';
 /**
  * POST /api/iap/sync
  *
- * RevenueCat REST API'yi sunucu tarafından sorgular, kullanicinin `pro`
- * entitlement'i aktifse DB'yi gunceller. Restore ve satin alma sonrasi
- * cagrilir — webhook gecikmesinden bagimsiz ani senkronizasyon saglar.
+ * Queries the RevenueCat REST API server-side, updates the DB if the user's `pro`
+ * entitlement is active. Called after restore and purchase — provides instant
+ * synchronization independent of webhook delays.
  *
- * Kural: sadece YUKSELIR (Pro verir), hicbir zaman DUSURULMEZ.
- * Revokasyon sadece webhook uzerinden yapilir.
+ * Rule: only INCREASES (grants Pro), never DECREASES.
+ * Revocation only happens through webhook.
  */
 export async function iapSyncHandler(req: Request, res: Response): Promise<void> {
 	const me = await getMe(req as any);

@@ -26,7 +26,7 @@ interface Props {
 export default function ReplayPlayer({ solve, steps, rotation, currentMoveIdx, onMoveIdxChange }: Props) {
 	const { t } = useTranslation();
 	const me = useMe();
-	const userIsPro = isPro(me) || !isProEnabled(); // Pro feature disable ise herkese acik
+	const userIsPro = isPro(me) || !isProEnabled(); // If Pro feature disabled, open to everyone
 
 	const containerRef = useRef<HTMLDivElement>(null);
 	const twistyRef = useRef<any>(null);
@@ -34,20 +34,20 @@ export default function ReplayPlayer({ solve, steps, rotation, currentMoveIdx, o
 	const [isPlaying, setIsPlaying] = useState(false);
 	const [speed, setSpeed] = useState(1);
 
-	// Flat hamle listesi — SolutionInfo da ayni hook'u kullanarak ayni listeyi alir
+	// Flat moves list — SolutionInfo uses the same hook to get the same list
 	const { allMoves, stepStartIndices } = useFlattenedMoves(steps);
 
 	const totalMs = (solve.time || 0) * 1000;
 
-	// Setup alg = SADECE scramble (rotation cube state'e EKLENMEZ).
-	// Sebep: solver step.turns'leri default cube state'e gore hesapladi (scramble'i cozmek icin).
-	// Eger setup'a rotation eklersek cube state rotated olur, ham hamleler scramble'i COZEMEZ.
-	// Rotation gorsel olarak sahne quaternion ile uygulanir (animation loop asagida).
+	// Setup alg = ONLY scramble (rotation is NOT added to cube state).
+	// Reason: solver calculated step.turns against default cube state (to solve the scramble).
+	// If we add rotation to setup, cube state becomes rotated, and raw moves won't solve the scramble.
+	// Rotation is applied visually via scene quaternion (animation loop below).
 	const setupAlg = solve.scramble || '';
 
 	const appliedMoveIdxRef = useRef(0);
 
-	// Hedef sahne quaternion'u — rotation prop'undan hesaplaniyor.
+	// Target scene quaternion — calculated from rotation prop.
 	const targetQuatRef = useRef(new THREE.Quaternion());
 	useEffect(() => {
 		const rotMoves = (rotation || '').split(' ').filter(Boolean);
@@ -55,8 +55,8 @@ export default function ReplayPlayer({ solve, steps, rotation, currentMoveIdx, o
 	}, [rotation]);
 
 	// TwistyPlayer init — async dynamic import (SSR-safe)
-	// requestAnimationFrame loop ile sahne quaternion'unu surekli targetQuatRef'e zorlar
-	// (TwistyPlayer'in render loop'u override etse bile her frame'de geri set ediyoruz).
+	// requestAnimationFrame loop continuously forces scene quaternion to targetQuatRef
+	// (even if TwistyPlayer's render loop overrides it, we reset it every frame).
 	useEffect(() => {
 		if (!containerRef.current || !userIsPro) return;
 		let cancelled = false;
@@ -77,7 +77,7 @@ export default function ReplayPlayer({ solve, steps, rotation, currentMoveIdx, o
 					background: 'none',
 					controlPanel: 'none',
 					hintFacelets: 'none',
-					experimentalDragInput: 'auto',  // Mouse/touch ile cube'u dondurme
+					experimentalDragInput: 'auto',  // Rotate cube with mouse/touch
 					cameraLatitude: 30,
 					cameraLongitude: -30,
 					tempoScale: 4,
@@ -92,7 +92,7 @@ export default function ReplayPlayer({ solve, steps, rotation, currentMoveIdx, o
 					setTwistyReady(true);
 				}
 
-				// Sahne quaternion sync animation loop
+				// Scene quaternion sync animation loop
 				const animate = async () => {
 					if (cancelled) return;
 					try {
@@ -108,7 +108,7 @@ export default function ReplayPlayer({ solve, steps, rotation, currentMoveIdx, o
 							vantageRef.render();
 						}
 					} catch {
-						// Scene henuz hazir degil, sonraki frame'de tekrar dene
+						// Scene not ready yet, try again next frame
 					}
 					if (!cancelled) {
 						animFrameId = requestAnimationFrame(animate);
@@ -132,9 +132,9 @@ export default function ReplayPlayer({ solve, steps, rotation, currentMoveIdx, o
 		};
 	}, [solve.id, setupAlg, userIsPro]);
 
-	// currentMoveIdx degistiginde TwistyPlayer state'ini senkronize et.
+	// Synchronize TwistyPlayer state when currentMoveIdx changes.
 	// Forward (next move): incremental experimentalAddMove (smooth animation)
-	// Backward (seek geriye): TwistyPlayer'i sifirla + setup + 0..currentIdx hamle uygula (instant)
+	// Backward (seek backward): reset TwistyPlayer + setup + apply moves 0..currentIdx (instant)
 	useEffect(() => {
 		if (!twistyReady || !twistyRef.current) return;
 		const player = twistyRef.current;
@@ -142,17 +142,17 @@ export default function ReplayPlayer({ solve, steps, rotation, currentMoveIdx, o
 
 		if (currentMoveIdx === applied) return;
 
-		// Defansif clamp: currentMoveIdx > allMoves.length ise undefined access olur
+		// Defensive clamp: if currentMoveIdx > allMoves.length, undefined access would occur
 		const maxIdx = Math.max(0, Math.min(currentMoveIdx, allMoves.length));
 
 		try {
 			if (maxIdx > applied) {
-				// Forward — eklenen hamleleri tek tek uygula (animasyonlu)
+				// Forward — apply added moves one by one (smooth animation)
 				for (let i = applied; i < maxIdx; i++) {
 					player.experimentalAddMove(allMoves[i].move, { cancel: false });
 				}
 			} else {
-				// Backward — alg sifirla, setup'tan baslayip maxIdx'e kadar uygula (instant)
+				// Backward — reset alg, restart from setup, apply moves up to maxIdx (instant)
 				player.alg = '';
 				player.experimentalSetupAlg = setupAlg;
 				for (let i = 0; i < maxIdx; i++) {
@@ -165,7 +165,7 @@ export default function ReplayPlayer({ solve, steps, rotation, currentMoveIdx, o
 		}
 	}, [currentMoveIdx, allMoves, setupAlg, twistyReady]);
 
-	// Playback timer — currentMoveIdx'i ilerletir
+	// Playback timer — advances currentMoveIdx
 	useEffect(() => {
 		if (!isPlaying || !twistyReady) return;
 		if (currentMoveIdx >= allMoves.length) {
@@ -184,7 +184,7 @@ export default function ReplayPlayer({ solve, steps, rotation, currentMoveIdx, o
 		return () => clearTimeout(tid);
 	}, [isPlaying, currentMoveIdx, allMoves, speed, twistyReady, onMoveIdxChange]);
 
-	// Seek — sadece currentMoveIdx degistir, sync useEffect TwistyPlayer'i gunceller
+	// Seek — only change currentMoveIdx, sync useEffect updates TwistyPlayer
 	function seekTo(targetIdx: number) {
 		const clamped = Math.max(0, Math.min(targetIdx, allMoves.length));
 		onMoveIdxChange(clamped);

@@ -13,7 +13,7 @@ const prisma = () => getPrisma();
 
 import { generateScramble, hasGenerator } from '../../shared/scramble/registry';
 
-// Generator'lari kaydet
+// Register generators
 import '../../shared/scramble/generators/scramble-pyraminx';
 import '../../shared/scramble/generators/scramble-skewb';
 import '../../shared/scramble/generators/scramble-333lse';
@@ -26,7 +26,7 @@ import '../../shared/scramble/generators/scramble-megaminx';
 import '../../shared/scramble/generators/scramble-222';
 import { generateClockScramble } from '../../client/util/cubes/scramble_clock';
 
-// WCA cube type ID -> cstimer scramble type ID mapping (sadece WCA events)
+// WCA cube type ID -> cstimer scramble type ID mapping (only WCA events)
 const CUBE_TO_SCRAMBLE_TYPE: Record<string, string> = {
     '222': '222so',
     '333': '333',
@@ -41,7 +41,7 @@ const CUBE_TO_SCRAMBLE_TYPE: Record<string, string> = {
     'minx': 'mgmp',
 };
 
-// Invalid/eski cube_type'lari default'a normalize et
+// Normalize invalid/old cube_types to default
 function normalizeCubeType(cubeType: string | null | undefined): string {
     if (cubeType && ALLOWED_CUBE_TYPES.includes(cubeType)) {
         return cubeType;
@@ -52,7 +52,7 @@ function normalizeCubeType(cubeType: string | null | undefined): string {
 function generateScrambleForCubeType(cubeType: string): string {
     const normalized = normalizeCubeType(cubeType);
 
-    // Clock — mevcut port
+    // Clock — existing port
     if (normalized === 'clock') {
         return generateClockScramble();
     }
@@ -356,7 +356,7 @@ export async function submitSolve(roomId: string, userId: string, solveData: Fri
         typeof solveData.time !== 'number' ||
         !Number.isFinite(solveData.time) ||
         solveData.time < 0 ||
-        solveData.time > 600 || // 10 dakika ust siniri (saniye)
+        solveData.time > 600 || // 10 minute upper limit (seconds)
         typeof solveData.scramble_index !== 'number' ||
         !Number.isInteger(solveData.scramble_index) ||
         solveData.scramble_index < 1
@@ -367,7 +367,7 @@ export async function submitSolve(roomId: string, userId: string, solveData: Fri
     const dnf = solveData.dnf === true;
     const plusTwo = solveData.plus_two === true;
 
-    // Room state ile karsilastir: sadece guncel scramble_index icin solve kabul et
+    // Compare with room state: only accept solves for current scramble_index
     const room = await prisma().friendlyRoom.findUnique({
         where: { id: roomId },
         select: { scramble_index: true },
@@ -382,7 +382,7 @@ export async function submitSolve(roomId: string, userId: string, solveData: Fri
 
     if (!participant) return null;
 
-    // Duplicate check: ayni participant + scramble_index icin solve varsa sessizce reddet
+    // Duplicate check: if solve exists for same participant + scramble_index, silently reject
     const existing = await prisma().friendlyRoomSolve.findFirst({
         where: {
             participant_id: participant.id,
@@ -403,7 +403,7 @@ export async function submitSolve(roomId: string, userId: string, solveData: Fri
             },
         });
     } catch (error: any) {
-        // Unique constraint race condition (P2002) - duplicate ayni anda gelirse
+        // Unique constraint race condition (P2002) - if duplicate arrives concurrently
         if (error.code === 'P2002') return null;
         throw error;
     }
@@ -513,7 +513,7 @@ export async function updateRoom(
     // Note: allowed_timer_types is handled via raw query below to support outdated Prisma Client
 
     if (cubeTypeChanged && newCubeScramble) {
-        // Atomik reset: solves + scramble history + room update + yeni scramble satiri
+        // Atomic reset: solves + scramble history + room update + new scramble row
         await prisma().$transaction([
             prisma().friendlyRoomSolve.deleteMany({ where: { room_id: roomId } }),
             prisma().friendlyRoomScramble.deleteMany({ where: { room_id: roomId } }),
@@ -606,7 +606,7 @@ export async function unbanParticipant(
         });
         return true;
     } catch (error: any) {
-        // P2025 = record not found (zaten ban'i kaldirilmis)
+        // P2025 = record not found (already unbanned)
         if (error.code === 'P2025') return true;
         throw error;
     }
@@ -630,7 +630,7 @@ export async function getBannedUsersForRoom(
 
     if (bans.length === 0) return [];
 
-    // FriendlyRoomBan modelinde user relation tanimli degil; user'lari ayri sorguyla cek
+    // FriendlyRoomBan model doesn't have user relation defined; fetch users separately
     const userIds = bans.map((b) => b.user_id);
     const users = await prisma().userAccount.findMany({
         where: { id: { in: userIds } },
@@ -640,7 +640,7 @@ export async function getBannedUsersForRoom(
 
     return bans.map((b) => ({
         user_id: b.user_id,
-        username: userMap.get(b.user_id) ?? 'Silinmis kullanici',
+        username: userMap.get(b.user_id) ?? 'Deleted user',
         banned_at: b.banned_at.toISOString(),
     }));
 }
@@ -663,7 +663,7 @@ export async function toggleSpectator(roomId: string, userId: string): Promise<{
 
 // Map database room to client data format
 function mapRoomToData(room: any): FriendlyRoomData {
-    const DELETED_USER_LABEL = 'Silinmis kullanici';
+    const DELETED_USER_LABEL = 'Deleted user';
     return {
         id: room.id,
         name: room.name,
@@ -701,4 +701,3 @@ function mapRoomToData(room: any): FriendlyRoomData {
         })) ?? [],
     };
 }
-

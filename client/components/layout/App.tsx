@@ -64,18 +64,18 @@ export default function App(props: Props = {}) {
 		setBrowserSessionId(dispatch);
 		initPageTitleBlink();
 		updateThemeColors();
-		initOfflineSyncListener(); // Offline sync başlat
+		initOfflineSyncListener(); // Start offline sync listener
 		dispatch(setGeneral('app_loaded', true));
 
-		// Capacitor native'de splash screen'i kapat ve native pluginleri baslat
+		// On native: hide splash screen and initialize native plugins
 		if (Capacitor.isNativePlatform()) {
 			SplashScreen.hide();
 			initStatusBar();
 			lockTextZoom();
 			initSafeArea();
-			initRevenueCat(); // RevenueCat IAP SDK'sini hazirla
+			initRevenueCat(); // Prepare RevenueCat IAP SDK
 
-			// iOS WKWebView pinch-to-zoom engelle
+			// Block iOS WKWebView pinch-to-zoom
 			if (Capacitor.getPlatform() === 'ios') {
 				document.addEventListener('gesturestart', (e) => e.preventDefault());
 				document.addEventListener('gesturechange', (e) => e.preventDefault());
@@ -85,7 +85,7 @@ export default function App(props: Props = {}) {
 			let lastBackPress = 0;
 
 			CapApp.addListener('backButton', () => {
-				// Centik (notch) dokunulmaktaysa geri hareketini yoksay
+				// If notch is being touched, ignore back gesture
 				if ((window as any).__notchTouching) return;
 
 				const state = getStore().getState();
@@ -99,13 +99,13 @@ export default function App(props: Props = {}) {
 				} else if (window.history.length > 1) {
 					window.history.back();
 				} else {
-					// Cift-geri-ile-cik: kazara uygulamayi kapatmayi engelle
+					// Double back to exit: prevent accidental app closure
 					const now = Date.now();
 					if (now - lastBackPress < 2000) {
 						CapApp.exitApp();
 					} else {
 						lastBackPress = now;
-						showNativeToast('Cikmak icin tekrar geri basin');
+						showNativeToast('Press back again to exit');
 					}
 				}
 			});
@@ -140,11 +140,11 @@ export default function App(props: Props = {}) {
 								window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
 							} else {
 								// If init failed in PWA without flag, go to welcome (or login)
-								// But App.tsx handles general auth state. 
+								// But App.tsx handles general auth state.
 								// We'll let initAnonymousAppData handle the fallback if this promise resolves empty?
 								// Actually getMe() usually throws or returns null.
 								if (window.location.pathname !== '/welcome') {
-									// window.location.href = '/welcome'; 
+									// window.location.href = '/welcome';
 									// Let's just fall through to anonymous init?
 									// No, getMeFromStore being null means we are NOT logged in.
 									initAnonymousAppData(appInitiated);
@@ -181,7 +181,7 @@ export default function App(props: Props = {}) {
 		initPushNotifications();
 	}, [me]);
 
-	// RevenueCat: login olunca kullaniciyi tanitir, DB'de revenuecat_user_id set olur
+	// RevenueCat: on login, identify user and set revenuecat_user_id in DB
 	const iapLinkedRef = useRef<string | null>(null);
 	useEffect(() => {
 		if (!Capacitor.isNativePlatform()) return;
@@ -197,8 +197,8 @@ export default function App(props: Props = {}) {
 		}
 	}, [me?.id]);
 
-	// Pro durumu otomatik tazeleme: uygulama foreground'a gelince yenile.
-	// Kullanici uygulamayi arkaya alip geri donunce abonelik durumu guncellenir.
+	// Auto-refresh Pro status: update when app comes to foreground.
+	// When user backgrounds and returns, subscription status is refreshed.
 	useEffect(() => {
 		if (!me?.id) return;
 
@@ -272,8 +272,8 @@ export default function App(props: Props = {}) {
 		return <Banned />;
 	}
 
-	// Bakim modu — admin haric herkese MaintenancePage goster
-	// Login/signup/oauth/admin sayfalarinda bypass
+	// Maintenance mode — show MaintenancePage to everyone except admins
+	// Bypass on login/signup/oauth/admin pages
 	const pathname = location.pathname;
 	const bypassMaintenance =
 		pathname.startsWith('/login') ||

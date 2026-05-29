@@ -1,7 +1,7 @@
-// Gear icon dropdown — modal yerine inline panel. Radix Popover primitives + tab switcher.
-// Mobile'da gizli — orada hala QuickControlsModal kullaniliyor.
+// Gear icon dropdown — inline panel instead of modal. Radix Popover primitives + tab switcher.
+// Hidden on mobile — QuickControlsModal is still used there.
 //
-// Mimari notu: ExtrasTab ve GoalsTab direkt reuse — sadece sarmalayici (Popover + tabs) yeniden yaziliyor.
+// Architecture note: ExtrasTab and GoalsTab are reused directly — only the wrapper (Popover + tabs) is rewritten.
 
 import React, { useEffect, useState } from 'react';
 import * as Popover from '@radix-ui/react-popover';
@@ -17,13 +17,13 @@ const b = block('settings-dropdown');
 type Tab = 'extras' | 'goals';
 
 interface Props {
-	// Trigger'a ek className (HeaderControl'da gear stilini sariyor)
+	// Additional className for trigger (wraps gear style in HeaderControl)
 	triggerClassName?: string;
-	// FriendlyRoom (oda) icinden acildiginda mobile timer modul secicilerini gizle
+	// Hide mobile timer module selectors when opened from FriendlyRoom (room)
 	hideMobileModules?: boolean;
-	// FriendlyRoom'da smart cube'a ozgu ayarlari (multi-phase, recognition) gizle
+	// Hide smart cube-specific settings (multi-phase, recognition) in FriendlyRoom
 	hideSmartCubeFeatures?: boolean;
-	// Hedefler tab'ini gizle (oda akisinda goal sistemi kullanilmaz)
+	// Hide goals tab (goal system is not used in room flow)
 	hideGoals?: boolean;
 }
 
@@ -37,7 +37,7 @@ export default function SettingsDropdown({
 	const [tab, setTab] = useState<Tab>('extras');
 	const [open, setOpen] = useState(false);
 
-	// Timer baslayinca panel'i kapat (Dropdown.tsx ile ayni pattern)
+	// Close panel when timer starts (same pattern as Dropdown.tsx)
 	useEffect(() => {
 		if (!open) return;
 		const handleTimerStart = () => setOpen(false);

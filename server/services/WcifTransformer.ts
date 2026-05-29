@@ -347,7 +347,7 @@ function buildCompetitorsList(persons: WcifPerson[], activityMap: Map<number, Ac
 				});
 			}
 
-			// startTime'a gore sirala
+			// Sort by startTime
 			assignments.sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''));
 
 			return {
@@ -377,7 +377,7 @@ function buildCompetitorsList(persons: WcifPerson[], activityMap: Map<number, Ac
 function buildEventDetails(wcifData: WcifData, activityMap: Map<number, ActivityInfo>): EventDetailEntry[] {
 	const persons = (wcifData.persons || []).filter((p) => p.registration?.status === 'accepted');
 
-	// Ters mapping: activityId → atanmis kisiler
+	// Reverse mapping: activityId → assigned persons
 	const activityPersonMap = new Map<number, {name: string; wcaId: string | null; registrantId: number; assignmentCode: string}[]>();
 	for (const person of persons) {
 		for (const assignment of person.assignments || []) {
@@ -393,7 +393,7 @@ function buildEventDetails(wcifData: WcifData, activityMap: Map<number, Activity
 		}
 	}
 
-	// Schedule'dan group aktivitelerini bul
+	// Find group activities from schedule
 	const groupActivities = new Map<string, {activity: ActivityInfo; children: ActivityInfo[]}>();
 
 	for (const venue of wcifData.schedule?.venues || []) {
@@ -418,7 +418,7 @@ function buildEventDetails(wcifData: WcifData, activityMap: Map<number, Activity
 
 	const events = wcifData.events || [];
 
-	// Onceki round sonuclarini seed olarak kullanmak icin result map
+	// Use previous round results as seed; build result map
 	const personBestMap = new Map<string, Map<number, number>>(); // eventId → registrantId → best
 	for (const event of events) {
 		for (const round of event.rounds) {
@@ -434,7 +434,7 @@ function buildEventDetails(wcifData: WcifData, activityMap: Map<number, Activity
 		}
 	}
 
-	// Round 1 icin personalBests fallback — round results yoksa kişinin PR'ini seed olarak kullan
+	// For Round 1, fall back to personalBests — if round results don't exist, use person's PR as seed
 	const BLD_EVENTS = new Set(['333bf', '444bf', '555bf', '333mbf']);
 	for (const person of persons) {
 		if (!person.personalBests?.length) continue;
@@ -522,7 +522,7 @@ function buildRankings(persons: WcifPerson[], competitionEventIds: Set<string>):
 	for (const person of accepted) {
 		if (!person.personalBests?.length) continue;
 
-		// eventId bazli gruplama: single ve average ayri satirlarda geliyor
+		// Group by eventId: single and average come as separate rows
 		const eventMap = new Map<string, {single?: WcifPersonalBest; average?: WcifPersonalBest}>();
 
 		for (const pb of person.personalBests) {

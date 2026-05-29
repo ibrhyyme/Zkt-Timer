@@ -1,17 +1,17 @@
 /**
- * Recognition time hesabi — her phase icin "dusunme suresi" vs "uygulama suresi" ayrimi.
+ * Recognition time calculation — distinction between "thinking time" vs "execution time" for each phase.
  *
  * cstimer convention:
- *   - tsStart: phase'in baslangici (onceki phase'in bitis zamani)
- *   - tsFirst: bu phase'in ILK efektif hamlesi (rotation degil)
- *   - tsEnd: phase'in bitisi
+ *   - tsStart: start of phase (end time of previous phase)
+ *   - tsFirst: first effective move of this phase (not rotation)
+ *   - tsEnd: end of phase
  *
- *   recognitionTime = tsFirst - tsStart  (kullanici phase'i tanidi, uygulamaya basladi)
- *   executionTime   = tsEnd - tsFirst    (hamleleri uyguladi)
+ *   recognitionTime = tsFirst - tsStart  (user recognized phase, started execution)
+ *   executionTime   = tsEnd - tsFirst    (executed moves)
  *
- * Eger phase rotation-only ise (ornek: y rotation yapip durduktan sonra phase basladi),
- * tsFirst halen efektif move'a esit olur, recognition cogunlukla rotation suresinin
- * dahili olarak verilir (cstimer tarzi).
+ * If phase is rotation-only (example: y rotation then stop, phase starts),
+ * tsFirst still equals effective move, recognition is mostly given rotation duration
+ * internally (cstimer style).
  */
 
 export interface PhaseTiming {

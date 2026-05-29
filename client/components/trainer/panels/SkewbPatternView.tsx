@@ -1,7 +1,7 @@
 import React, {useMemo} from 'react';
 import type {CubeFace} from '../types';
 
-// Standart renk paleti (face index sirali: U, F, R, B, L, D, gray)
+// Standard color palette (face index order: U, F, R, B, L, D, gray)
 const FACE_COLORS: Record<string, string> = {
 	U: '#ffffff',
 	F: '#009b48',
@@ -16,7 +16,7 @@ const OPPOSITE: Record<CubeFace, CubeFace> = {
 	U: 'D', D: 'U', F: 'B', B: 'F', R: 'L', L: 'R',
 };
 
-// Pattern'deki face index → standart face harfi
+// Pattern's face index → standard face letter
 const INDEX_TO_FACE: CubeFace[] = ['U', 'F', 'R', 'B', 'L', 'D'];
 
 function getRightFace(top: CubeFace, front: CubeFace): CubeFace {
@@ -36,8 +36,8 @@ function getRightFace(top: CubeFace, front: CubeFace): CubeFace {
 }
 
 function computeMapping(top: CubeFace): Record<CubeFace, CubeFace> {
-	// Skewb icin front face sabit 'F' kabul — sadece topFace degisir
-	// Default front face secimi: top=U->F, top=D->B, top=F->D, top=B->U, top=R->F, top=L->F
+	// For Skewb, front face is fixed as 'F' — only topFace changes
+	// Default front face selection: top=U->F, top=D->B, top=F->D, top=B->U, top=R->F, top=L->F
 	const DEFAULT_FRONT: Record<CubeFace, CubeFace> = {
 		U: 'F', D: 'B', F: 'D', B: 'U', R: 'F', L: 'F',
 	};
@@ -53,7 +53,7 @@ function computeMapping(top: CubeFace): Record<CubeFace, CubeFace> {
 	};
 }
 
-// cubingapp main.js Skewb.getSvg()'den birebir polygon koordinatlari
+// Exact polygon coordinates from cubingapp main.js Skewb.getSvg()
 const SKEWB_POLYGONS: {points: string}[] = [
 	{points: '500,250 750,500 500,750 250,500'},    // U center
 	{points: '250,250 500,250 250,500'},             // UBL
@@ -82,8 +82,8 @@ interface SkewbPatternViewProps {
 
 /**
  * Skewb 2D diamond layout SVG rendering.
- * Pattern: 17 digit string, her digit 0-5=face index, 6=gray (masked).
- * topFace degistiginde renk mapping'i uygulanir.
+ * Pattern: 17 digit string, each digit 0-5=face index, 6=gray (masked).
+ * Color mapping is applied when topFace changes.
  */
 export default function SkewbPatternView({pattern, topFace = 'U', size}: SkewbPatternViewProps) {
 	const polygons = useMemo(() => {

@@ -1,8 +1,8 @@
 import {useEffect, useState} from 'react';
 
 /**
- * Her N saniyede bir Date.now() doner, re-render trigger eder.
- * Default 60s. Ongoing/current activity highlight'lari icin kullanilir.
+ * Returns Date.now() every N milliseconds, triggers re-render.
+ * Default 60s. Used for ongoing/current activity highlights.
  */
 export function useNow(intervalMs: number = 60000): number {
 	const [now, setNow] = useState<number>(() => Date.now());

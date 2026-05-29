@@ -2,11 +2,11 @@ import SortedArray from 'sorted-array';
 import {getAverage} from './average';
 import {Solve} from '../../../../../../server/schemas/Solve.schema';
 
-// average_pb.ts'in window-min algoritmasinin saf, cache'siz, fetch'siz variant'i.
-// Liste zaten kisitlanmis (orn. son N cozum) oldugunda `getAveragePB`'nin filterOptions
-// bazli cache key'i bozulmadan in-place hesap icin kullanilir.
+// Pure, cache-less variant of average_pb.ts's window-min algorithm.
+// Used for in-place calculation when list is already constrained (e.g., last N solves)
+// without breaking average_pb's filterOptions-based cache key.
 //
-// Liste'nin sort sirasi onemli degil — window kayar, her pencereden trimmed average alinir.
+// List sort order doesn't matter — window slides, trimmed average taken from each window.
 export function getBestAverageFromSolves(solves: Solve[], count: number): { time: number; solves: Solve[] } | null {
 	if (!solves || solves.length < count || count < 3) {
 		return null;

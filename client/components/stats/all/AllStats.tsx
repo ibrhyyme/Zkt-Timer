@@ -17,8 +17,8 @@ import {StatsContext} from '../Stats';
 const b = block('overall-stats');
 
 interface Props {
-	// Masaustunde filtreler (cube/session/lastN) "Genel Bakis" basliginin yanina tasinir.
-	// Mobilde HeroBand icinde kaldigi icin burada null gelir.
+	// On desktop, filters (cube/session/lastN) are moved to "Overview" title.
+	// On mobile, they stay in HeroBand, so this prop is null.
 	filters?: ReactNode;
 }
 

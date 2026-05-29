@@ -4,6 +4,8 @@
  */
 import React, {createContext, useContext, useReducer, useEffect, useRef, useCallback} from 'react';
 import type {ReactNode} from 'react';
+import {useLocation} from 'react-router-dom';
+import {parseTrainerPath, efficiencySubToView} from '../../../util/trainer/url/trainer_url';
 import type {EfficiencyState, EfficiencyAction, EfficiencyView, SessionSlice, SettingsSlice} from './types';
 import {LS_SESSION, LS_SETTINGS, LS_VIEW, EFFICIENCY_TYPES, EO_AXES, ROTATION_OPTIONS, HISTORY_CAP, LENGTH_RANGES} from '../../../util/trainer/efficiency/constants';
 
@@ -55,7 +57,7 @@ function loadView(): EfficiencyView {
 
 type FullState = EfficiencyState & {view: EfficiencyView};
 
-function buildInitialState(): FullState {
+function buildInitialState(initialView?: EfficiencyView): FullState {
 	const session = loadFromStorage<SessionSlice>(LS_SESSION, defaultSession);
 	if (!EFFICIENCY_TYPES.includes(session.type)) session.type = 'cross';
 	if (!EO_AXES.includes(session.eoAxis)) session.eoAxis = 'LR';
@@ -80,7 +82,7 @@ function buildInitialState(): FullState {
 	return {
 		session,
 		settings: loadFromStorage<SettingsSlice>(LS_SETTINGS, defaultSettings),
-		view: loadView(),
+		view: initialView ?? loadView(),
 	};
 }
 
@@ -190,7 +192,13 @@ export function useEfficiencyContext(): EfficiencyContextValue {
 // ──────────────────── Provider ────────────────────
 
 export function EfficiencyProvider({children}: {children: ReactNode}) {
-	const [state, dispatch] = useReducer(reducer, undefined, buildInitialState);
+	// İlk view URL path'inden turetilir (deep-link → dogru alt-view, flicker yok).
+	const location = useLocation();
+	const [state, dispatch] = useReducer(reducer, location.pathname, (path: string) => {
+		const {mode, sub} = parseTrainerPath(path);
+		const v = mode === 'efficiency' ? efficiencySubToView(sub) : null;
+		return buildInitialState(v ?? undefined);
+	});
 
 	// Persistence (debounce'lu)
 	const writeTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});

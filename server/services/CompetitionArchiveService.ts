@@ -4,8 +4,8 @@ import {WcaApiService} from './WcaApiService';
 import {getWcaLiveData, fetchLiveRoundResults, WcaLiveData, WcaLiveRoundData} from './WcaLiveService';
 import {getSearchClient, ARCHIVED_COMP_INDEX} from './search';
 
-const STALE_THRESHOLD_MS = 7 * 24 * 60 * 60 * 1000; // 7 gun
-const FREEZE_AGE_DAYS = 30; // end_date'ten 30 gun sonra dondur
+const STALE_THRESHOLD_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+const FREEZE_AGE_DAYS = 30; // freeze competition 30 days after end_date
 
 export interface ArchiveMeta {
 	name?: string;
@@ -32,11 +32,11 @@ export function isStaleArchive(archive: {is_frozen: boolean; last_synced_at: Dat
 }
 
 /**
- * Yarisma su an aktif mi (canli devam ediyor)?
- * start_date <= bugun <= end_date + 1 gun (timezone toleransi)
+ * Is the competition currently active (live ongoing)?
+ * start_date <= today <= end_date + 1 day (timezone tolerance)
  *
- * Aktif yarismalarda arsivi BYPASS edip canli akisa dusulmeli — cunku
- * delegeler real-time veri giriyor, arsiv snapshot'i eski kalir.
+ * For active competitions, bypass the archive and use live stream — because
+ * delegates are entering data in real-time, archive snapshot becomes stale.
  */
 export function isCompetitionActive(archive: {start_date: Date; end_date: Date}): boolean {
 	const now = new Date();
@@ -45,17 +45,17 @@ export function isCompetitionActive(archive: {start_date: Date; end_date: Date})
 	start.setHours(0, 0, 0, 0);
 	const end = new Date(archive.end_date);
 	end.setHours(23, 59, 59, 999);
-	end.setDate(end.getDate() + 1); // 1 gun ekstra timezone tolerans
+	end.setDate(end.getDate() + 1); // 1 day extra for timezone tolerance
 	return now >= start && now <= end;
 }
 
 /**
- * Bir yarismayi WCA + WCA Live'dan cek ve DB'ye yaz (upsert).
- * Idempotent — kayit varsa guncellenir, yoksa olusturulur.
+ * Fetch a competition from WCA + WCA Live and write to DB (upsert).
+ * Idempotent — updates record if it exists, creates if not.
  *
  * @param competitionId WCA competition ID
- * @param meta Opsiyonel meta override (bulk import sirasinda comp list'ten geliyor)
- * @param prefetchedWcif Resolver zaten cektiyse tekrar cekme — direkt onu kullan
+ * @param meta Optional meta override (during bulk import comes from comp list)
+ * @param prefetchedWcif if resolver already fetched this, reuse it — don't fetch again
  */
 export async function archiveCompetition(
 	competitionId: string,
@@ -64,7 +64,7 @@ export async function archiveCompetition(
 ): Promise<{success: boolean; error?: string}> {
 	const prisma = getPrisma();
 
-	// 1. WCIF cek (prefetch verilmediyse)
+	// 1. Fetch WCIF (if not prefetched)
 	let wcifData: any = prefetchedWcif;
 	if (!wcifData) {
 		try {
@@ -76,13 +76,13 @@ export async function archiveCompetition(
 	}
 	if (!wcifData) return {success: false, error: 'wcif_empty'};
 
-	// 2. WCA Live cek (opsiyonel — eski yarismalarda olmayabilir)
+	// 2. Fetch WCA Live (optional — may not exist for old competitions)
 	let liveDataPayload: ArchiveCacheLiveData | null = null;
 	try {
 		const liveData = await getWcaLiveData(competitionId);
 		if (liveData) {
 			const rounds: Record<string, WcaLiveRoundData | null> = {};
-			// Tum round'lari paralel cek
+			// Fetch all rounds in parallel
 			await Promise.all(
 				liveData.roundMap.map(async (rm) => {
 					try {
@@ -99,7 +99,7 @@ export async function archiveCompetition(
 		logger.warn('[Archive] WCA Live fetch failed (skipping)', {competitionId, err: err?.message});
 	}
 
-	// 3. Meta'yi WCIF'ten cikar veya override'i kullan
+	// 3. Extract meta from WCIF or use override
 	const name = meta?.name || wcifData.name || competitionId;
 	const startDate = meta?.start_date || extractStartDate(wcifData);
 	const endDate = meta?.end_date || extractEndDate(wcifData);
@@ -111,7 +111,7 @@ export async function archiveCompetition(
 		return {success: false, error: 'date_extract_failed'};
 	}
 
-	// 4. DB'ye upsert
+	// 4. Upsert to DB
 	try {
 		await prisma.archivedWcaCompetition.upsert({
 			where: {id: competitionId},
@@ -141,7 +141,7 @@ export async function archiveCompetition(
 		return {success: false, error: 'db_upsert_failed'};
 	}
 
-	// 5. ES'e mirror — fire-and-forget, ES erisilemese bile arsiv DB'de
+	// 5. Mirror to ES — fire-and-forget, archive stays in DB even if ES unreachable
 	indexCompetitionInES({
 		id: competitionId,
 		name,
@@ -198,8 +198,8 @@ async function indexCompetitionInES(archive: {
 }
 
 /**
- * end_date'i 30 gun gecmis arsivleri donmus yap.
- * Cron'dan gunluk cagirilir.
+ * Mark archives as frozen if end_date is 30 days in the past.
+ * Called daily from cron.
  */
 export async function freezeOldArchives(): Promise<number> {
 	const cutoff = new Date();

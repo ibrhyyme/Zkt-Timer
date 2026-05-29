@@ -53,10 +53,10 @@
 		z-index: 9999;
 		background: transparent;
 		-webkit-tap-highlight-color: transparent;
-		pointer-events: none; // Pasifken tıklamaları engelleme
+		pointer-events: none; // When inactive, block touches
 
 		&--active {
-			pointer-events: auto; // Aktifken (Timer/Inspection) dokunmaları yakala
+			pointer-events: auto; // When active (Timer/Inspection), capture touches
 		}
 	}
 
@@ -98,7 +98,7 @@
 			-webkit-touch-callout: none;
 			-moz-user-select: none;
 			-ms-user-select: none;
-			margin-bottom: 20px; // Footer için minimal alan
+			margin-bottom: 20px; // Minimal area for footer
 		}
 	}
 
@@ -243,10 +243,10 @@
 		display: flex;
 		flex-direction: column;
 		height: 100vh;
-		height: var(--stable-vh, 100dvh); // Klavye açılınca sabit kalır
-		overflow: hidden; // Ana sayfa scrollunu kapat
-		padding: 0 !important; // Root padding'i sıfırla
-		position: fixed; // Garanti olsun diye fixed
+		height: var(--stable-vh, 100dvh); // Stays fixed when keyboard opens
+		overflow: hidden; // Prevent main page scroll
+		padding: 0 !important; // Reset root padding
+		position: fixed; // Guaranteed fixed
 		top: 0;
 		left: 0;
 		width: 100%;
@@ -255,10 +255,10 @@
 			flex: 1;
 			display: flex;
 			flex-direction: column;
-			padding-top: 60px; // Header yüksekliği
+			padding-top: 60px; // Header height
 			overflow-y: auto;
 
-			// Manual entry modunda scroll'u tamamen engelle
+			// In manual entry mode, completely block scroll
 			&#{$self}__mobile-timer--manual {
 				overflow: hidden;
 				overscroll-behavior: none;
@@ -350,8 +350,8 @@
 		}
 
 
-		// Timer calisirken sadece sure gozuksun, her sey gizlensin
-		// Smart cube gorunumu ve evre analizi haric
+		// While timer running, only show time, hide everything else
+		// Except smart cube visual and phase analysis
 		#{$self}__mobile-layout {
 
 			.cd-timer-controls,
@@ -364,7 +364,7 @@
 			}
 		}
 
-		// StatsBar mobile-layout disinda — ayri gizle
+		// StatsBar outside mobile-layout — hide separately
 		.cd-stats-bar {
 			opacity: 0;
 			pointer-events: none;
@@ -372,7 +372,7 @@
 		}
 	}
 
-	// Yeni mobil vertical layout container
+	// New mobile vertical layout container
 	&__mobile-container {
 		display: flex;
 		flex-direction: column;
@@ -385,15 +385,15 @@
 		display: flex;
 		flex-direction: column;
 		width: 100%;
-		flex: 1; // Kalan alanı doldur
+		flex: 1; // Fill remaining space
 		padding-top: calc(56px + env(safe-area-inset-top, 0px));
 
 		@media (max-height: 745px) {
-			padding-top: calc(45px + env(safe-area-inset-top, 0px)); // Header'a yaklaştır
-			gap: 0.2rem; // Öğeler arası boşluğu azalt
+			padding-top: calc(45px + env(safe-area-inset-top, 0px)); // Closer to header
+			gap: 0.2rem; // Reduce gap between items
 		}
 
-		// Cok kucuk ekranlarda son care olarak scroll edilebilsin (normal cihazlarda sigar)
+		// On very small screens, allow scroll as last resort (silent on normal devices)
 		overflow-y: auto;
 		overscroll-behavior: contain;
 		-webkit-overflow-scrolling: touch;
@@ -442,13 +442,13 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		flex: 0 0 auto; // flex: 1 kaldırıldı, diğer öğelere yer açılsın
-		padding: 3vh 0; // Timer'a biraz boşluk
+		flex: 0 0 auto; // flex: 1 removed, open space for other items
+		padding: 3vh 0; // Some spacing for timer
 		will-change: auto;
-		touch-action: none; // iOS visual viewport kaymasını engelle
+		touch-action: none; // Prevent iOS visual viewport shift
 
 		@media (max-height: 745px) {
-			padding: 1vh 0; // Küçük ekranlarda boşluğu iyice azalt
+			padding: 1vh 0; // Reduce spacing on small screens
 			min-height: 100px;
 		}
 
@@ -470,7 +470,7 @@
 		}
 	}
 
-	// Akıllı küp için timer ve küp yan yana satır
+	// Smart cube: timer and cube side by side row
 	&__mobile-smart-row {
 		display: flex;
 		flex-direction: row;
@@ -483,9 +483,9 @@
 		padding: 0;
 		min-height: 180px;
 		box-sizing: border-box;
-		overflow: visible; // Dropdown menü taşabilsin diye visible yapıldı
+		overflow: visible; // Set visible to allow dropdown menu to overflow
 		position: relative;
-		z-index: 50; // Alttaki elemanların (TimerControls) üstünde görünsün
+		z-index: 50; // Appear above elements below (TimerControls)
 	}
 
 	&__mobile-smart-cube {
@@ -495,9 +495,9 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		overflow: visible; // overflow hidden kaldırıldı, küp taşarsa görünsün
+		overflow: visible; // Removed overflow hidden, allow cube to show if it overflows
 
-		// SmartCube componentini mobilde küçült - ARTIK CANVAS BOYUTU OUTOMATİK AYARLANIYOR
+		// SmartCube component mobile shrink - CANVAS SIZE NOW AUTOMATICALLY ADJUSTED
 		.cd-smart-cube {
 			display: flex;
 			justify-content: center;
@@ -505,7 +505,7 @@
 			width: 100%;
 
 			&__cube {
-				zoom: 1 !important; // Desktop'taki zoom: 0.4'ü iptal et
+				zoom: 1 !important; // Override desktop's zoom: 0.4
 				margin: 0 !important;
 				width: 100%;
 				display: flex;
@@ -514,23 +514,23 @@
 				canvas {
 					width: 100% !important;
 					height: auto !important;
-					max-width: 300px; // Render boyutuyla eşleşsin
+					max-width: 300px; // Match render size
 					object-fit: contain;
 				}
 			}
 		}
 	}
 
-	// Smart cube mobile layout: SOL=dar analiz, SAG=cube+timer yapisik
+	// Smart cube mobile layout: LEFT=narrow analysis, RIGHT=cube+timer stuck together
 	&__mobile-smart-grid {
 		display: grid;
 		grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr);
-		align-items: start; // Sabit ust hizalama — analiz buyudukce kaymasin
+		align-items: start; // Fixed top alignment — analysis won't shift as it grows
 		gap: 0.5rem;
 		width: 100%;
 		max-width: 100%;
 		flex: 0 0 auto;
-		max-height: 36vh; // Dashboard'i ezmesin (38→36 ile dashboard'a daha fazla yer)
+		max-height: 36vh; // Don't crush dashboard (38→36 gives dashboard more space)
 		overflow: visible;
 		padding: 0 0.5rem;
 		box-sizing: border-box;
@@ -541,9 +541,9 @@
 	&__mobile-smart-grid-left {
 		display: flex;
 		flex-direction: column;
-		justify-content: center; // Sol panel icerigi (analiz / baglan butonu) ekran ortasi
+		justify-content: center; // Left panel content (analysis / connect button) screen center
 		align-items: center;
-		align-self: stretch; // Grid'in align-items: start'ini override et — hucre yuksekligi icin
+		align-self: stretch; // Override grid's align-items: start — for cell height
 		gap: 0.5rem;
 		min-width: 0;
 		max-height: 36vh;
@@ -556,12 +556,12 @@
 			display: flex;
 			flex-direction: column;
 			align-items: center;
-			justify-content: center; // Portal icerigi de dikey ortali
+			justify-content: center; // Portal content also vertically centered
 			gap: 0.5rem;
 		}
 	}
 
-	// Smart Cube + GAN Timer ortak "Baglan" emblem wrapper — sade, biraz buyuk
+	// Smart Cube + GAN Timer shared "Connect" emblem wrapper — simple, slightly large
 	&__connect-trigger {
 		display: inline-flex;
 		justify-content: center;
@@ -611,7 +611,7 @@
 		}
 	}
 
-	// Mobile sol paneldeki connect-trigger wrapper'i ortala
+	// Center connect-trigger wrapper on mobile left panel
 	&__mobile-action {
 		display: flex;
 		justify-content: center;
@@ -625,7 +625,7 @@
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		gap: 0; // Cube + timer YAPISIK
+		gap: 0; // Cube + timer stuck together
 		min-width: 0;
 	}
 
@@ -635,10 +635,10 @@
 		justify-content: center;
 		width: 100%;
 		flex: 0 0 auto;
-		max-height: 30vh; // Kucuk telefonlarda dashboard/stats'i ezmesin
+		max-height: 30vh; // Don't crush dashboard/stats on small phones
 		overflow: visible;
 
-		// Desktop'ta zoom: 0.4 var — mobilde JS effectiveCubeSize zaten viewport-aware
+		// Desktop has zoom: 0.4 — on mobile JS effectiveCubeSize is already viewport-aware
 		.cd-smart-cube__cube {
 			zoom: 1 !important;
 			margin: 0 !important;
@@ -652,7 +652,7 @@
 			object-fit: contain;
 		}
 
-		// Battery + BT emblem cube'a yapisik kalsin, asagi gecmesin
+		// Battery + BT emblem should stick to cube, not move down
 		.cd-smart-cube__info {
 			margin-top: 0;
 		}

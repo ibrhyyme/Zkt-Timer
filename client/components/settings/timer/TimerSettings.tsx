@@ -31,7 +31,7 @@ export default function TimerSettings() {
 	const dispatch = useDispatch();
 	const mobileMode = useGeneral('mobile_mode');
 
-	// Genel
+	// General
 	const timerDecimalPoints = useSettings('timer_decimal_points');
 	const freezeTime = useSettings('freeze_time');
 	const hideTimeWhenSolving = useSettings('hide_time_when_solving');
@@ -39,11 +39,11 @@ export default function TimerSettings() {
 	const pbConfetti = useSettings('pb_confetti');
 	const use2dScramble = useSettings('use_2d_scramble_visual');
 
-	// Giris
+	// Input
 	const timerType = useSettings('timer_type');
 	const useSpaceWithSmartCube = useSettings('use_space_with_smart_cube');
 
-	// Onaylar
+	// Confirmations
 	const confirmDeleteSolve = useSettings('confirm_delete_solve');
 	const confirmDeleteSeason = useSettings('confirm_delete_season');
 
@@ -122,7 +122,7 @@ export default function TimerSettings() {
 	function handleQiyiAutoInspectionToggle() {
 		const next = !qiyiAutoInspection;
 		setSetting('qiyi_auto_inspection', next);
-		// Sadece ACILIRKEN uyari, yanlis aliskanlik olmasin
+		// Only warn when OPENING, not on closing, to avoid bad habits
 		if (next && !qiyiAutoInspectionWarningShown) {
 			showQiyiWarning();
 		}
@@ -150,7 +150,7 @@ export default function TimerSettings() {
 
 	return (
 		<div className="space-y-2">
-			{/* Genel */}
+			{/* General */}
 			<TimerSettingsGroup id="timer-general" label={t('timer_settings.category_general')}>
 				<TimerSettingsSelect
 					label={t('timer_settings.decimal_points')}
@@ -195,7 +195,7 @@ export default function TimerSettings() {
 				/>
 			</TimerSettingsGroup>
 
-			{/* Giris */}
+			{/* Input */}
 			<TimerSettingsGroup id="timer-input" label={t('timer_settings.category_input')}>
 				<TimerSettingsSelect
 					label={t('timer_settings.input_type')}
@@ -227,7 +227,7 @@ export default function TimerSettings() {
 				/>
 			</TimerSettingsGroup>
 
-			{/* Onaylar */}
+			{/* Confirmations */}
 			<TimerSettingsGroup id="timer-confirmations" label={t('timer_settings.category_confirmations')}>
 				<TimerSettingsToggle
 					label={t('timer_settings.confirm_delete_solve')}
@@ -243,7 +243,7 @@ export default function TimerSettings() {
 				/>
 			</TimerSettingsGroup>
 
-			{/* Inceleme */}
+			{/* Inspection */}
 			<TimerSettingsGroup id="timer-inspection" label={t('timer_settings.category_inspection')}>
 				<TimerSettingsToggle
 					label={t('timer_settings.inspection')}

@@ -177,7 +177,7 @@ function CompetitorDays({assignments, competitionId, locale, t}: any) {
 				initialOpen.add(date);
 				continue;
 			}
-			// Gun icindeki son activity'nin bitis zamanini bul
+			// Find the end time of the last activity of the day
 			let lastEnd = 0;
 			for (const a of dayAssignments) {
 				if (a.endTime) {
@@ -185,7 +185,7 @@ function CompetitorDays({assignments, competitionId, locale, t}: any) {
 					if (ts > lastEnd) lastEnd = ts;
 				}
 			}
-			// Eger son activity 4 saatten kisa sure once bitti veya hala bitmedi → ac
+			// If last activity ended less than 4 hours ago or hasn't finished yet → open
 			if (lastEnd === 0 || (Date.now() - lastEnd) < FOUR_HOURS) {
 				initialOpen.add(date);
 			}

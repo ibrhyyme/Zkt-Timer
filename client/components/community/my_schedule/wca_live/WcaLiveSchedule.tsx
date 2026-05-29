@@ -14,7 +14,7 @@ export default function WcaLiveSchedule({schedule, competitionId}: Props) {
 	const history = useHistory();
 	const locale = I18N_LOCALE_MAP[i18n.language] || i18n.language;
 
-	// Tum activity'leri toparla, gun bazli grupla (sadece yarisma round'lari)
+	// Gather all activities, group by day (competition rounds only)
 	const days = useMemo(() => {
 		const dayMap = new Map<string, any[]>();
 		if (!Array.isArray(schedule)) return [];
@@ -23,7 +23,7 @@ export default function WcaLiveSchedule({schedule, competitionId}: Props) {
 			for (const room of venue.rooms || []) {
 				for (const activity of room.activities || []) {
 					if (!activity.startTime) continue;
-					// Sadece yarisma round'larini goster (check-in, tutorial, lunch vb. filtrele)
+					// Show only competition rounds (filter out check-in, tutorial, lunch, etc.)
 					const parsed = parseActivityCodeParts(activity.activityCode);
 					if (!parsed) continue;
 					const date = activity.startTime.substring(0, 10);
@@ -37,7 +37,7 @@ export default function WcaLiveSchedule({schedule, competitionId}: Props) {
 				}
 			}
 		}
-		// Tarihe gore sirala
+		// Sort by date
 		return Array.from(dayMap.entries())
 			.sort(([a], [b]) => a.localeCompare(b))
 			.map(([date, activities]) => ({

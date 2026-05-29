@@ -48,8 +48,8 @@ export function getBasicUser(user: PublicUserAccount): PublicUserAccount {
 		created_at,
 		verified,
 		badges,
-		// PublicUserFragment integrations istiyor ve schema'da non-nullable.
-		// Socket context'inde DB hit yapmamak icin bos array dondur.
+		// PublicUserFragment requires integrations and the schema defines it as non-nullable.
+		// To avoid a DB hit in the socket context, return an empty array.
 		integrations: [],
 		profile: {
 			id: profileId,
@@ -195,8 +195,8 @@ export type OnlineUserEntry = {
 
 export const ADMIN_ONLINE_WATCHERS_ROOM = 'admin:online-watchers';
 
-// Bir kullanicinin tum socket bag.larini koparir. Logout / ban / account deletion akislarinda
-// "ghost online user" durumunu engellemek icin kullanilir. Best-effort, hata atmaz.
+// Disconnects all socket connections for a user. Used during logout / ban / account deletion flows
+// to prevent "ghost online user" states. Best-effort, does not throw errors.
 export async function disconnectUserSockets(userId: string): Promise<void> {
 	try {
 		const io = getSocketIO();
@@ -231,7 +231,7 @@ export function broadcastOnlineUsersChanged(): void {
 			const users = await getOnlineUsers();
 			io.to(ADMIN_ONLINE_WATCHERS_ROOM).emit('admin:online_users_changed', users);
 		} catch {
-			// Hata loglamayi sessizce yut — broadcast best-effort
+			// Silently suppress errors on broadcast — broadcast is best-effort
 		}
 	}, BROADCAST_DEBOUNCE_MS);
 }
@@ -260,16 +260,16 @@ export async function getOnlineUsers(): Promise<OnlineUserEntry[]> {
 
 		try {
 			const user = JSON.parse(userJson) as PublicUserAccount;
-			// Eski cache kayitlarinda integrations/badges bulunmayabilir — non-null schema ihlali
-			// olmasin diye bos array ile doldur.
+			// Older cache entries may not have integrations/badges — fill with empty arrays
+			// to avoid schema violations for non-null fields.
 			if (!user.integrations) user.integrations = [];
 			if (!user.badges) user.badges = [];
-			// JSON.parse Date alanlarini string birakir — type-graphql "@Field() Date"
-			// string kabul etmiyor, manuel new Date() ile hydrate et.
+			// JSON.parse leaves Date fields as strings — type-graphql "@Field() Date"
+			// doesn't accept strings, so manually hydrate with new Date().
 			rehydrateUserDates(user);
 			byUserId.set(uid, { user, tabCount: 1 });
 		} catch {
-			// Bozuk cache satiri — atla
+			// Corrupted cache entry — skip
 		}
 	}
 

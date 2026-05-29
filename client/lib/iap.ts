@@ -1,7 +1,7 @@
 import {Capacitor} from '@capacitor/core';
 import {isNative, isAndroidNative} from '../util/platform';
 
-// RevenueCat SDK lazy-load — build sirasinda web'de yuklenmesin diye
+// RevenueCat SDK lazy-load — don't load on web during build time
 let PurchasesModule: any = null;
 
 async function loadPurchases(): Promise<any> {
@@ -11,7 +11,7 @@ async function loadPurchases(): Promise<any> {
 		PurchasesModule = await import('@revenuecat/purchases-capacitor');
 		return PurchasesModule;
 	} catch (err) {
-		console.error('[IAP] RevenueCat SDK yuklenemedi', err);
+		console.error('[IAP] RevenueCat SDK failed to load', err);
 		return null;
 	}
 }
@@ -47,7 +47,7 @@ let initialized = false;
 let currentUserId: string | null = null;
 
 /**
- * App mount'ta cagrilir. Sadece native platformda gercek iş yapar.
+ * Called at app mount. Only does real work on native platforms.
  */
 export async function initRevenueCat(): Promise<void> {
 	if (!isNative() || initialized) return;
@@ -60,7 +60,7 @@ export async function initRevenueCat(): Promise<void> {
 		: (window as any).__REVENUECAT_IOS_KEY__ || '';
 
 	if (!apiKey) {
-		console.warn('[IAP] RevenueCat API key eksik (platform=' + Capacitor.getPlatform() + ')');
+		console.warn('[IAP] RevenueCat API key missing (platform=' + Capacitor.getPlatform() + ')');
 		return;
 	}
 
@@ -68,19 +68,19 @@ export async function initRevenueCat(): Promise<void> {
 		await mod.Purchases.configure({apiKey});
 		initialized = true;
 	} catch (err) {
-		console.error('[IAP] configure hatasi', err);
+		console.error('[IAP] configure error', err);
 	}
 }
 
 /**
- * Login sonrasinda, kullaniciyi RevenueCat'a taniti.
- * Logout'ta logoutRevenueCat() cagrilir.
+ * After login, identify the user to RevenueCat.
+ * logoutRevenueCat() is called on logout.
  */
 export async function identifyUser(userId: string): Promise<void> {
 	if (!isNative()) return;
 	if (currentUserId === userId) return;
 	if (!initialized) {
-		// initRevenueCat fire-and-forget olarak baslamis olabilir; tamamlanmasini bekle.
+		// initRevenueCat may have started as fire-and-forget; wait for completion.
 		await initRevenueCat();
 	}
 	if (!initialized) return;
@@ -90,7 +90,7 @@ export async function identifyUser(userId: string): Promise<void> {
 		await mod.Purchases.logIn({appUserID: userId});
 		currentUserId = userId;
 	} catch (err) {
-		console.error('[IAP] logIn hatasi', err);
+		console.error('[IAP] logIn error', err);
 	}
 }
 
@@ -102,12 +102,12 @@ export async function logoutRevenueCat(): Promise<void> {
 		await mod.Purchases.logOut();
 		currentUserId = null;
 	} catch (err) {
-		// "already anonymous" hatasi normal, sessizce gec
+		// "already anonymous" error is normal, pass silently
 	}
 }
 
 /**
- * Default offering'i cek, paywall'da gosterilecek 3 paketi topla.
+ * Fetch default offering and gather 3 packages to show on paywall.
  */
 export async function getOfferings(): Promise<OfferingsSnapshot> {
 	if (!isNative() || !initialized) return {};
@@ -115,7 +115,7 @@ export async function getOfferings(): Promise<OfferingsSnapshot> {
 	if (!mod) return {};
 	try {
 		const result = await mod.Purchases.getOfferings();
-		// current yoksa all'dan default'a fallback
+		// fallback from current to all.default if current doesn't exist
 		const current = result?.current || result?.all?.default || Object.values(result?.all || {})[0];
 		if (!current) return {};
 		return {
@@ -124,14 +124,14 @@ export async function getOfferings(): Promise<OfferingsSnapshot> {
 			lifetime: current.lifetime || current.availablePackages?.find((p: any) => p.packageType === 'LIFETIME'),
 		};
 	} catch (err: any) {
-		console.error('[IAP] getOfferings hatasi', err);
+		console.error('[IAP] getOfferings error', err);
 		return {};
 	}
 }
 
 /**
- * Paket satin al. Apple/Google kendi sheet'ini acar.
- * Android'de aktif abonelik varsa upgrade/downgrade icin googleProductChangeInfo geciyoruz.
+ * Purchase a package. Apple/Google opens their own sheet.
+ * On Android, if there's an active subscription, pass googleProductChangeInfo for upgrade/downgrade.
  */
 export async function purchasePackage(
 	pkg: PurchasesPackage,
@@ -146,7 +146,7 @@ export async function purchasePackage(
 
 	const params: any = {aPackage: pkg};
 
-	// Android-specific: upgrade/downgrade icin eski product ve replacement mode
+	// Android-specific: old product and replacement mode for upgrade/downgrade
 	if (isAndroidNative() && oldProductId) {
 		const REPLACEMENT_MODE = mod.GOOGLE_PRODUCT_CHANGE_REPLACEMENT_MODE || {};
 		params.googleProductChangeInfo = {
@@ -162,8 +162,8 @@ export async function purchasePackage(
 }
 
 /**
- * "Satin alimlarimi geri yukle" butonunda cagrilir.
- * Cross-device restore icin de login sonrasi cagrilabilir.
+ * Called when user clicks "Restore purchases" button.
+ * Also called after login for cross-device restore.
  */
 export async function restorePurchases(): Promise<EntitlementSnapshot | null> {
 	if (!isNative() || !initialized) return null;
@@ -173,14 +173,14 @@ export async function restorePurchases(): Promise<EntitlementSnapshot | null> {
 		const res = await mod.Purchases.restorePurchases();
 		return extractEntitlement(res?.customerInfo);
 	} catch (err) {
-		console.error('[IAP] restore hatasi', err);
+		console.error('[IAP] restore error', err);
 		return null;
 	}
 }
 
 /**
- * iOS: abonelik yonetim sayfasini acar (Settings > Subscriptions).
- * Android: Play Store abonelik sayfasini acar.
+ * iOS: opens subscription management page (Settings > Subscriptions).
+ * Android: opens Play Store subscription page.
  */
 export async function showManageSubscriptions(): Promise<void> {
 	if (!isNative() || !initialized) return;
@@ -189,7 +189,7 @@ export async function showManageSubscriptions(): Promise<void> {
 	try {
 		await mod.Purchases.showManageSubscriptions();
 	} catch (err) {
-		console.error('[IAP] showManageSubscriptions hatasi', err);
+		console.error('[IAP] showManageSubscriptions error', err);
 	}
 }
 

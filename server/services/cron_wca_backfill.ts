@@ -4,13 +4,13 @@ import {acquireRedisLock, createRedisKey, RedisNamespace} from './redis';
 import {runWcaBackfill} from './WcaBackfillService';
 import {getSiteConfig} from '../models/site_config';
 
-const TICK_LOCK_TTL_MS = 30 * 60 * 1000; // 30 dakika
+const TICK_LOCK_TTL_MS = 30 * 60 * 1000; // 30 minutes
 const LOCK_KEY = createRedisKey(RedisNamespace.WCA_WCIF, 'backfill_cron_lock');
 
 /**
- * Her gece LA 03:00 (= TR 13:00) — eksik wca_user_id / wca_id kayitlari tarayip doldurur.
- * Site config "wca_backfill_enabled=false" ile durdurulabilir.
- * Redis distributed lock — multi-instance deploy'da sadece bir instance calistirir.
+ * Every night at LA 03:00 (= TR 13:00) — scan and fill missing wca_user_id / wca_id records.
+ * Can be disabled via site config "wca_backfill_enabled=false".
+ * Redis distributed lock — in multi-instance deploy, only one instance runs at a time.
  */
 export function initWcaBackfillCronJob() {
 	const job = new CronJob(
@@ -31,7 +31,7 @@ export function initWcaBackfillCronJob() {
 
 				logger.info('[WcaBackfill] starting tick');
 				const result = await runWcaBackfill({batchSize: 500});
-				// ES log mapping'inde "error" field'i obj olarak indexlenmis — integer cakismasi olmasin diye rename
+				// In ES log mapping "error" field is indexed as object — rename to avoid integer conflict
 				const {error: errorCount, ...logSafeResult} = result;
 				logger.info('[WcaBackfill] tick done', {...logSafeResult, errorCount});
 			} catch (e: any) {

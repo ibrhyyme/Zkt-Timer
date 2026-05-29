@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react';
 
 /**
- * Layout viewport yuksekligini --stable-vh CSS degiskenine yazar.
- * Capacitor KeyboardResize.None + window.innerHeight kullanildigi icin
- * klavye acilsa da deger degismez; sadece oryantasyon / gercek resize tetikler.
+ * Writes layout viewport height to --stable-vh CSS variable.
+ * Since Capacitor KeyboardResize.None + window.innerHeight are used,
+ * value doesn't change even if keyboard opens; only orientation/real resize triggers.
  */
 export function useStableViewportHeight() {
 	const stableHeight = useRef<number>(0);
@@ -22,8 +22,8 @@ export function useStableViewportHeight() {
 
 		function onResize() {
 			const currentHeight = getViewportHeight();
-			// Sadece buyuyen resize'i kabul et — klavye acildiginda Android WebView kuculebilir,
-			// bu --stable-vh'yi yanlis sekilde dusurur ve klavye kapandiktan sonra siyah bosluk birakirdi.
+			// Only accept growing resize — Android WebView can shrink when keyboard opens,
+			// which would incorrectly lower --stable-vh and leave black space after keyboard closes.
 			if (currentHeight > stableHeight.current) {
 				setStableHeight(currentHeight);
 			}

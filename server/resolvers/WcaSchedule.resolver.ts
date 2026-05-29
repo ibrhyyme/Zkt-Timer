@@ -29,9 +29,9 @@ function getErrorType(err: any): string {
 	return 'unknown';
 }
 
-const WCIF_CACHE_TTL = 60; // 60 saniye — canli yarismada atamalar guncellenir
+const WCIF_CACHE_TTL = 60; // 60 seconds — assignments updated during live competition
 const WCA_LIVE_ROUND_TTL = 60;
-const WCA_LIVE_ROUND_FINISHED_TTL = 24 * 60 * 60; // bitmiş round için 24 saat — sonuçlar değişmez
+const WCA_LIVE_ROUND_FINISHED_TTL = 24 * 60 * 60; // 24 hours for finished rounds — results don't change
 const WCA_LIVE_OVERVIEW_TTL = 60;
 const WCA_LIVE_COMPETITOR_TTL = 60;
 
@@ -49,9 +49,10 @@ export class WcaScheduleResolver {
 		const wcaId = integration?.wca_id || '';
 		const wcaUserId = integration?.wca_user_id || '';
 
-		// 1. Once arsiv DB'sine bak — varsa WCA'ya gitme
-		// AMA: yarisma su an aktif (canli devam ediyor) ise arsivi atla — delegeler
-		// real-time veri giriyor, arsiv snapshot'i eski kalir. Canli akisi kullan.
+		// 1. First check archive DB — if found and not active, use archived data
+		// BUT: if the competition is currently active (live), skip the archive
+		// because judges are entering real-time data and the archived snapshot is stale.
+		// Use the live stream instead.
 		const archive = await getArchivedCompetition(input.competitionId).catch(() => null);
 		if (archive && !isCompetitionActive(archive)) {
 			const detail = buildCompetitionDetail(archive.wcif_data as any, wcaId, wcaUserId);
@@ -64,7 +65,7 @@ export class WcaScheduleResolver {
 				}
 			}
 
-			// Stale ise arka planda yenile — kullanici beklemiyor
+			// If stale, refresh in background — user doesn't wait
 			if (isStaleArchive(archive)) {
 				archiveCompetition(input.competitionId).catch((err: any) => {
 					logger.warn('[Archive] background re-sync failed', {
@@ -74,7 +75,7 @@ export class WcaScheduleResolver {
 				});
 			}
 
-			// Kullanici kayitli ve accepted ise notification state'i otomatik kur (fire-and-forget)
+			// If user is registered and accepted, automatically set up notification state (fire-and-forget)
 			if (detail && wcaId && detail.myRegistrationStatus === 'accepted') {
 				const myPerson = (archive.wcif_data as any).persons?.find((p: any) => p.wcaId === wcaId);
 				ensureNotificationState(
@@ -95,7 +96,7 @@ export class WcaScheduleResolver {
 			return detail;
 		}
 
-		// 2. Arsivde yok — mevcut akis (WCIF + Live fetch)
+		// 2. Archive doesn't exist — fetch current data (WCIF + Live)
 		const cacheKey = createRedisKey(RedisNamespace.WCA_WCIF, input.competitionId);
 
 		const wcifData = await fetchDataFromCache(
@@ -123,7 +124,7 @@ export class WcaScheduleResolver {
 			});
 		}
 
-		// Kullanici kayitli ve accepted ise notification state'i otomatik kur (fire-and-forget)
+		// If user is registered and accepted, automatically set up notification state (fire-and-forget)
 		if (detail && wcaId && detail.myRegistrationStatus === 'accepted') {
 			const myPerson = (wcifData as any).persons?.find((p: any) => p.wcaId === wcaId);
 			ensureNotificationState(
@@ -141,8 +142,8 @@ export class WcaScheduleResolver {
 			});
 		}
 
-		// 3. Lazy archive — kullanici cevabi gondermeden arka planda DB'ye yaz
-		// prefetchedWcif geciyoruz — WCA'ya tekrar gidilmesin
+		// 3. Lazy archive — write to DB in background before returning response
+		// Pass prefetchedWcif to avoid fetching from WCA again
 		archiveCompetition(input.competitionId, undefined, wcifData).catch((err: any) => {
 			logger.warn('[Archive] lazy archive failed', {
 				competitionId: input.competitionId,
@@ -190,8 +191,8 @@ export class WcaScheduleResolver {
 				`liveround:${input.competitionId}:${input.liveRoundId}`
 			);
 
-			// Manual cache: round.finished durumuna gore farkli TTL uygula
-			// Bitmis round'lar bir daha degismez → 24 saat cache; aktif round 60 saniye
+			// Manual cache: apply different TTL based on round.finished status
+			// Finished rounds never change → 24 hour cache; active rounds use 60 seconds
 			const cached = await getValueFromRedis(cacheKey);
 			let result: WcaLiveRoundResults | null;
 			if (cached) {
@@ -204,7 +205,7 @@ export class WcaScheduleResolver {
 				}
 			}
 
-			// Bos/null sonuc geldiyse cache'i sil ki sonraki istek tekrar denesin
+			// If empty/null result returned, clear cache so next request retries
 			if (!result || !result.results || result.results.length === 0) {
 				try {
 					await deleteKeyInRedis(cacheKey);
@@ -230,7 +231,7 @@ export class WcaScheduleResolver {
 		@Arg('input') input: WcaLiveCompetitorInput
 	): Promise<WcaLiveCompetitorResults | null> {
 		try {
-			// personLiveId numerik olmali (WCA Live person ID), guvenlik icin sanitize
+			// personLiveId must be numeric (WCA Live person ID), sanitize for safety
 			const sanitizedId = String(parseInt(input.personLiveId, 10));
 			if (sanitizedId === 'NaN') return null;
 
@@ -245,7 +246,7 @@ export class WcaScheduleResolver {
 				WCA_LIVE_COMPETITOR_TTL
 			);
 
-			// Bos/null sonuc geldiyse cache'i sil ki sonraki istek tekrar denesin
+			// If empty/null result returned, clear cache so next request retries
 			if (!result || !result.results || result.results.length === 0) {
 				try {
 					await deleteKeyInRedis(cacheKey);
@@ -317,7 +318,7 @@ export class WcaScheduleResolver {
 	private async fetchLiveOverview(competitionId: string): Promise<WcaLiveCompetitionOverview | null> {
 		const axios = (await import('axios')).default;
 
-		// Once liveCompId'yi al
+		// First get liveCompId
 		const liveData = await wcaLiveGetData(competitionId);
 		if (!liveData) return null;
 
@@ -354,16 +355,16 @@ export class WcaScheduleResolver {
 		const comp = res.data?.data?.competition;
 		if (!comp) return null;
 
-		// Podium icin: her event'in son finished round'unu bul
+		// For podium: find last finished round of each event
 		const finalRounds: {liveRoundId: string; eventId: string; eventName: string; sortBy: string}[] = [];
 		for (const ce of comp.competitionEvents || []) {
 			const rounds = ce.rounds || [];
 			const finished = rounds.filter((r: any) => r.finished);
 			if (finished.length === 0) continue;
-			// Son finished round (en yuksek number)
+			// Last finished round (highest number)
 			const last = finished.reduce((a: any, b: any) => (a.number > b.number ? a : b));
-			// Sadece event'in genel finali (last finished) her zaman secilir;
-			// daha kati: sadece tum round'lar finished ise hesapla
+			// Only select event's general final (last finished) when all rounds are finished;
+			// stricter: only compute if all rounds finished
 			const allFinished = rounds.every((r: any) => r.finished);
 			if (!allFinished) continue;
 			finalRounds.push({
@@ -460,7 +461,7 @@ export class WcaScheduleResolver {
 		const person = res.data?.data?.person;
 		if (!person) return null;
 
-		// Round'lari event ID'ye, sonra round number'a gore sirala
+		// Sort rounds by event ID, then by round number
 		const sorted = (person.results || []).slice().sort((a: any, b: any) => {
 			const eA = a.round?.competitionEvent?.event?.id || '';
 			const eB = b.round?.competitionEvent?.event?.id || '';

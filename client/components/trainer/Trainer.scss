@@ -1093,7 +1093,7 @@
 		height: 100%;
 	}
 
-	// -- Info Panel (sol ust: pattern + isim + alternatifler) --
+	// -- Info Panel (top left: pattern + name + alternatives) --
 	&__training-info-panel {
 		position: absolute;
 		top: 0.75rem;
@@ -1128,7 +1128,7 @@
 		color: rgb(var(--text-color));
 	}
 
-	// -- Alg ismi + alternatifler toggle --
+	// -- Algorithm name + alternatives toggle --
 	&__mobile-alg-header {
 		display: flex;
 		align-items: center;
@@ -1185,7 +1185,7 @@
 		}
 	}
 
-	// -- Onceki / Sonraki navigasyon butonlari --
+	// -- Previous / Next navigation buttons --
 	&__training-nav {
 		position: absolute;
 		top: 50%;
@@ -1217,7 +1217,7 @@
 		}
 	}
 
-	// -- Ana icerik (kup + hamleler + timer + grafik) --
+	// -- Main content (cube + moves + timer + chart) --
 	&__training-main {
 		display: flex;
 		flex-direction: column;
@@ -1724,7 +1724,7 @@
 			padding: 0 0.5rem;
 		}
 
-		// ── Info panel: mobilde gizle (alg ismi zaten ortada gorunuyor) ──
+		// ── Info panel: hide on mobile (alg name already visible in center) ──
 		&__training-info-panel {
 			display: none;
 		}
@@ -1735,26 +1735,26 @@
 			overflow-y: auto;
 		}
 
-		// Alternatifler mobilde gizle (info-panel icinde)
+		// Hide alternatives on mobile (inside info-panel)
 		&__alt-picker {
 			display: none;
 		}
 
-		// ── Mobil: alt-picker override (info-panel icindeki gizli, dropdown icindeki gorunsun) ──
+		// ── Mobile: alt-picker override (hidden in info-panel, shown in dropdown) ──
 		&__mobile-alts-dropdown--open {
 			.#{$namespace}-trainer__alt-picker {
 				display: block;
 			}
 		}
 
-		// ── Nav butonlari mobil ──
+		// ── Nav buttons mobile ──
 		&__training-nav {
 			width: 28px;
 			height: 48px;
 			border-radius: 6px;
 		}
 
-		// ── Standart mod ──
+		// ── Standard mode ──
 		&__training-setup code {
 			font-size: 0.85rem;
 		}
@@ -1776,7 +1776,7 @@
 			margin-bottom: 0.25rem;
 		}
 
-		// Chart gizle (standart mod)
+		// Hide chart (standard mode)
 		&__training-chart-row {
 			display: none;
 		}
@@ -1798,7 +1798,7 @@
 			display: none;
 		}
 
-		// ── Smart cube mod ──
+		// ── Smart cube mode ──
 		&__smart-cube-area {
 			gap: 0.25rem;
 		}
@@ -1813,7 +1813,7 @@
 			gap: 0.5rem;
 		}
 
-		// Chart gizle (smart cube mod)
+		// Hide chart (smart cube mode)
 		&__training-chart--compact {
 			display: none;
 		}
@@ -2277,7 +2277,7 @@
 		}
 	}
 
-	// PageTitle sticky'yi Trainer icinde devre disi birak
+	// Disable PageTitle sticky inside Trainer
 	.#{$namespace}-page-title {
 		position: static;
 		margin-top: 0;
@@ -2439,8 +2439,8 @@
 		padding: 0.4rem;
 	}
 
-	// --- Hata flash overlay (yanlis hamlede 300ms kirmizi flash) ---
-	// Radial gradient ile kenarlarda kirmizi, ortada saydam — cube goruluyor
+	// --- Error flash overlay (red flash 300ms on wrong move) ---
+	// Radial gradient with red at edges, transparent in center — cube stays visible
 	&__error-flash {
 		position: absolute;
 		inset: 0;
@@ -2505,7 +2505,7 @@
 			pointer-events: none;
 		}
 
-		// Slider satiri: label uste, slider altta full-width
+		// Slider row: label top, slider bottom full-width
 		&--slider {
 			flex-direction: column;
 			align-items: stretch;
@@ -2697,7 +2697,7 @@
 		max-width: 50%;
 	}
 
-	// Mobile: settings modal kompakt — section padding ve font kucult
+	// Mobile: settings modal compact — reduce section padding and font size
 	@media (max-width: 640px) {
 		&__settings-modal {
 			gap: 1rem;

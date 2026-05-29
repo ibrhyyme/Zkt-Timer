@@ -1,7 +1,7 @@
 /**
- * Efficiency Trainer stilleri.
- * Namespace: cd-trainer-efficiency (+ modern oynatici: cd-eff-player)
- * Konvansiyon (recognition ile ayni): rgb(var(--x)) / rgba(var(--x), opacity),
+ * Efficiency Trainer styles.
+ * Namespace: cd-trainer-efficiency (+ modern player: cd-eff-player)
+ * Convention (same as recognition): rgb(var(--x)) / rgba(var(--x), opacity),
  * card bg rgb(var(--button-color)), border rgba(var(--text-color), 0.08).
  */
 @import '../../../styles/config';
@@ -16,9 +16,9 @@
 	color: rgb(var(--text-color));
 	background: rgb(var(--background-color));
 
-	// Mobil: KENDISI scroll container (parent cd-trainer overflow:hidden + sabit
-	// yukseklikte; height:auto verirsek icerik kesilir, scroll olmaz). height:100%
-	// + overflow-y:auto → icerik (kup+oynatici+cozum) tasarsa BU eleman scroll eder.
+	// Mobile: ITSELF scroll container (parent cd-trainer overflow:hidden + fixed
+	// height; if height:auto content gets cut, no scroll). height:100%
+	// + overflow-y:auto → if content (cube+player+solution) overflows THIS element scrolls.
 	@media (max-width: 900px) {
 		height: 100%;
 		overflow-y: auto;
@@ -116,8 +116,8 @@
 		}
 	}
 
-	// ────────── Controls (tur / eksen / rotasyon / slot / uzunluk) ──────────
-	// Kompakt kontrol cubugu — yatay, wrap (dikey yiginti yok, alan verimli)
+	// ────────── Controls (type / axis / rotation / slot / length) ──────────
+	// Compact control bar — horizontal, wrap (no vertical stacking, space efficient)
 	&__controls {
 		display: flex;
 		flex-flow: row wrap;
@@ -157,7 +157,7 @@
 		}
 	}
 
-	// ────────── Dropdown field (rotasyon / slot / uzunluk) ──────────
+	// ────────── Dropdown field (rotation / slot / length) ──────────
 	&__field {
 		display: flex;
 		flex-direction: column;
@@ -191,7 +191,7 @@
 		}
 	}
 
-	// ────────── Algoritma (scramble) bar — Geri | algoritma | Sonraki ──────────
+	// ────────── Algorithm (scramble) bar — Back | algorithm | Next ──────────
 	&__scramble-bar {
 		flex-shrink: 0;
 		display: flex;
@@ -201,7 +201,7 @@
 		padding: 14px 24px;
 		border-bottom: 1px solid rgba(var(--text-color), 0.06);
 
-		// Mobil: algoritma ust satir (tam genislik), Geri/Sonraki alt satirda ortali
+		// Mobile: algorithm top row (full width), Back/Next bottom row centered
 		@media (max-width: 900px) {
 			flex-wrap: wrap;
 			gap: 10px;
@@ -229,8 +229,8 @@
 		}
 	}
 
-	// ────────── Stage (2-sutun: sol kup | sag panel) ──────────
-	// TrainerView kok — tek ekran, scroll yok
+	// ────────── Stage (2-column: left cube | right panel) ──────────
+	// TrainerView root — single screen, no scroll
 	&__trainer {
 		display: flex;
 		flex-direction: column;
@@ -238,7 +238,7 @@
 		min-height: 0;
 		overflow: hidden;
 
-		// Mobil: dogal yukseklik (flex:none) — parent scroll eder, ic kesme yok
+		// Mobile: natural height (flex:none) — parent scrolls, no internal cut
 		@media (max-width: 900px) {
 			flex: none;
 			overflow: visible;
@@ -260,7 +260,7 @@
 			pointer-events: none;
 		}
 
-		// Mobil: grid degil — dogal dikey akis (flex:none, parent scroll eder)
+		// Mobile: not grid — natural vertical flow (flex:none, parent scrolls)
 		@media (max-width: 900px) {
 			display: flex;
 			flex-direction: column;
@@ -271,7 +271,7 @@
 		}
 	}
 
-	// Sol sutun: kup + nav altta
+	// Left column: cube + nav below
 	&__cube-col {
 		display: flex;
 		flex-direction: column;
@@ -280,13 +280,13 @@
 		gap: 14px;
 		min-height: 0;
 
-		// Mobil: icerik kadar (dikey akista tasma/cakisma yok)
+		// Mobile: content-sized (no overflow/overlap in vertical flow)
 		@media (max-width: 900px) {
 			flex: none;
 		}
 	}
 
-	// Sag panel: dark-glass kart
+	// Right panel: dark-glass card
 	&__panel {
 		display: flex;
 		flex-direction: column;
@@ -300,8 +300,8 @@
 		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 		overflow: hidden;
 
-		// Mobil reveal ONCESI: kupten ONCE (order:-1) — "Cozumu Goster" scramble'in
-		// hemen altinda gorunur, kup asagida.
+		// Mobile before reveal: BEFORE cube (order:-1) — "Show Solution" appears
+		// just below scramble, cube below.
 		@media (max-width: 900px) {
 			order: -1;
 			overflow: visible;
@@ -309,9 +309,9 @@
 			gap: 10px;
 		}
 
-		// Mobil reveal SONRASI: kup+oynatici ust, cozum ALTTA (order:0).
-		// Dogal yukseklik — sayfa scroll (cd-trainer-efficiency) tum cozumleri tasir;
-		// ic-scroll YOK (flex cokme riski). Optimal kupun hemen altinda, digerleri asagi.
+		// Mobile after reveal: cube+player top, solution BOTTOM (order:0).
+		// Natural height — page scroll (cd-trainer-efficiency) carries all solutions;
+		// no internal-scroll (flex collapse risk). Optimal: cube immediately below, others lower.
 		&--revealed {
 			@media (max-width: 900px) {
 				order: 0;
@@ -326,13 +326,13 @@
 		min-height: 0;
 		overflow-y: auto;
 
-		// Mobil: ic-scroll yok, dogal yukseklik (cozum listesi tam gorunur)
+		// Mobile: no internal-scroll, natural height (solution list fully visible)
 		@media (max-width: 900px) {
 			flex: none;
 			overflow: visible;
 		}
 	}
-	// Cozumu Goster — panel ustunde, tam genislik (algoritma hizasi)
+	// Show Solution — above panel, full width (algorithm-aligned)
 	&__reveal-btn {
 		width: 100%;
 		justify-content: center;
@@ -349,7 +349,7 @@
 		background: radial-gradient(circle at 50% 40%, rgba(var(--primary-color), 0.06), transparent 70%);
 	}
 
-	// Sol sutundaki oynaticinin dis konumu (ic stil .cd-eff-player'da)
+	// Left column player outer styling (inner styles in .cd-eff-player)
 	&__player {
 		flex: 1;
 		min-height: 0;
@@ -357,7 +357,7 @@
 		max-width: 360px;
 		display: flex;
 
-		// Mobil: icerik kadar (kup + kontrol birlikte, panelle cakismaz)
+		// Mobile: content-sized (cube + controls together, don't overlap panel)
 		@media (max-width: 900px) {
 			flex: none;
 			margin: 0 auto;
@@ -467,7 +467,7 @@
 		color: rgb(var(--text-color));
 		line-height: 1.4;
 	}
-	// Toggle switch (acik/kapali net gorunur)
+	// Toggle switch (on/off clearly visible)
 	&__switch {
 		position: relative;
 		width: 48px;
@@ -507,8 +507,8 @@
 	}
 }
 
-// ────────── Modern cozum oynaticisi (ReplayPlayer ilhamli) ──────────
-// controlPanel:'none' — kontrol bizim: seek + play/pause + hiz + sayac
+// ────────── Modern solution player (ReplayPlayer-inspired) ──────────
+// controlPanel:'none' — controls are ours: seek + play/pause + speed + counter
 .cd-eff-player {
 	display: flex;
 	flex-direction: column;
@@ -519,14 +519,14 @@
 	height: 100%;
 	min-height: 0;
 
-	// Mobil: dikey akista dogal yukseklik (parent flex degil)
+	// Mobile: natural height in vertical flow (parent not flex)
 	@media (max-width: 900px) {
 		height: auto;
 	}
 
 	&__cube {
-		// Sabit yukseklik (flex:1 degil) → kup buyumez, kontroller hemen altinda yakin.
-		// twisty-player'in intrinsic yuksekligi yok; height:100% + cube'a sabit height SART.
+		// Fixed height (not flex:1) → cube doesn't grow, controls close below.
+		// twisty-player has no intrinsic height; height:100% + fixed cube height REQUIRED.
 		flex: 0 0 auto;
 		min-height: 0;
 		width: 100%;
@@ -676,10 +676,10 @@
 	}
 }
 
-// Geri / Sonraki / Cozumu Goster — Button primary temasi bazi state'lerde soluk
-// kaliyor. Segment active ile BIREBIR parlak mavi olmasi icin yuksek specificity
-// (.cd-trainer-efficiency .cd-...) + !important ile Button !important'ini ez;
-// golge/opacity/filter katmanlarini temizle.
+// Back / Next / Show Solution — Button primary theme looks faded in some states.
+// For bright blue matching segment active, use high specificity
+// (.cd-trainer-efficiency .cd-...) + !important to override Button !important;
+// clear shadow/opacity/filter layers.
 .cd-trainer-efficiency .cd-trainer-efficiency__scramble-nav,
 .cd-trainer-efficiency .cd-trainer-efficiency__reveal-btn {
 	background: rgb(var(--primary-color)) !important;

@@ -28,7 +28,7 @@ const SOLVED_STATE = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
  * Cleans up various quote characters, brackets, spacing, and ensures consistent format.
  */
 export function expandNotation(input: string): string {
-	// SQ1 notasyonu farkli format kullanir (/ -3,0 / 3,3 /) — cube cleanup'i bozar
+	// SQ1 notation uses different format (/ -3,0 / 3,3 /) — cube cleanup breaks it
 	if (input.includes('/')) {
 		return input.replace(/\s+/g, ' ').trim();
 	}
@@ -215,7 +215,7 @@ function arraysEqual(arr1: number[], arr2: number[]): boolean {
  * Determine the appropriate stickering mode for a given category.
  */
 export function getStickering(category: string): string {
-	// Cubing.js'de birebir karsiligi olmayan kategoriler icin alias
+	// Categories without direct match in cubing.js aliased here
 	const STICKERING_ALIASES: Record<string, string> = {
 		'vhls': 'VLS',
 	};
@@ -324,8 +324,8 @@ export function getDefaultFrontFace(topFace: CubeFace): CubeFace {
 }
 
 /**
- * Etkin top/front face'i dondurur. `whiteOnBottom` aktifse user'in secimi
- * yerine D/F preset'i kullanilir (cuber'larin %80'inin yaptigi orientation).
+ * Returns the effective top/front face orientation. If `whiteOnBottom` is active,
+ * uses D/F preset instead of user selection (orientation used by ~80% of cubers).
  */
 export function getEffectiveOrientation(opts: {
 	topFace: CubeFace;
@@ -352,29 +352,29 @@ export function isLLCategory(category: string): boolean {
 }
 
 /**
- * Isometric 3-yuz 2D gorunum kullanan kategoriler.
- * Simdilik kullanilmiyor — WVLS/VHLS LL pattern'e gecti.
+ * Categories using isometric 3-face 2D view.
+ * Currently unused — LL pattern switched to WVLS/VHLS.
  */
 export function isIsometricCategory(_category: string): boolean {
 	return false;
 }
 
 /**
- * 2D pattern rendering kullanan kategoriler.
- * 3x3 LL ayri (LLPatternView), buradakiler puzzle_patterns.json'dan gelir.
+ * Categories using 2D pattern rendering.
+ * 3x3 LL uses separate LLPatternView; these come from puzzle_patterns.json.
  */
 export function is2DPatternCategory(category: string): boolean {
 	if (!category) return false;
 	const puzzleType = getPuzzleType(category);
 	if (puzzleType === '2x2x2') {
-		// PBL 3D kalir, diger 2x2 subsetleri 2D
+		// PBL stays 3D, other 2x2 subsets are 2D
 		return !category.includes('PBL');
 	}
 	return ['4x4x4', 'pyraminx', 'skewb', 'square1'].includes(puzzleType);
 }
 
 /**
- * Sadece top face secilebilen kategoriler (front face selector gizlenir).
+ * Categories where only top face can be selected (front face selector hidden).
  * 3x3 LL + 2x2 non-PBL + 4x4
  */
 export function isTopFaceOnlyCategory(category: string): boolean {
@@ -388,8 +388,8 @@ export function isTopFaceOnlyCategory(category: string): boolean {
 }
 
 /**
- * Puzzle pattern type'ini dondurur (puzzle-patterns.json key'i).
- * null → 2D puzzle pattern kullanilmaz.
+ * Returns the puzzle pattern type (puzzle-patterns.json key).
+ * null → 2D puzzle pattern is not used.
  */
 export function getPuzzlePatternType(category: string): '2x2' | '4x4' | 'pyraminx' | 'skewb' | 'sq1' | null {
 	if (!is2DPatternCategory(category)) return null;
@@ -405,7 +405,7 @@ export function getPuzzlePatternType(category: string): '2x2' | '4x4' | 'pyramin
 }
 
 /**
- * SQ1 kategorilerinde bottom face mirror gerekip gerekmedigi.
+ * Whether SQ1 categories need bottom face mirroring.
  */
 export function isSQ1MirrorCategory(category: string): boolean {
 	return category === 'SQ1 Cube Shape' || category === 'SQ1 CSP';
@@ -522,8 +522,8 @@ export function formatTimeShort(ms: number | null): string {
 export function cleanAlgorithmForCubing(alg: string): string {
 	let s = alg
 		.replace(/\+/g, ' ')
-		.replace(/\u2019/g, "'")
-		.replace(/["\u201C\u201D]/g, "'")
+		.replace(/’/g, "'")
+		.replace(/["“”]/g, "'")
 		.replace(/'2/g, "2'");
 
 	s = s.replace(/([RLFBUD])w/g, (_, m: string) => m.toLowerCase());

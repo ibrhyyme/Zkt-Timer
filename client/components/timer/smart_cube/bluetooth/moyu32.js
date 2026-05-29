@@ -1,9 +1,9 @@
-// MoYu WeiLong AI 2024 (WCU_MY3) BLE protokol port'u
-// Referans: e:/Projects/Zkt-Timer/Referans/cstimer-master/src/js/hardware/moyu32cube.js (392 satir)
-// %100 port: encryption (GAN Gen2/3 sema), MAC discovery, message parsing, time correction
+// MoYu WeiLong AI 2024 (WCU_MY3) BLE protocol port
+// Reference: e:/Projects/Zkt-Timer/Reference/cstimer-master/src/js/hardware/moyu32cube.js (392 lines)
+// 100% port: encryption (GAN Gen2/3 schema), MAC discovery, message parsing, time correction
 //
-// State takibi: cstimer mathlib.CubieCube yerine cubejs (proje genelinde kullanilan)
-// AES + LZString proje icindeki ./ae128 + ./lz_string (cstimer ile API uyumlu)
+// State tracking: cubejs (used throughout the project) instead of cstimer mathlib.CubieCube
+// AES + LZString project's ./ae128 + ./lz_string (API compatible with cstimer)
 
 import SmartCube from './smart_cube';
 import LZString from './lz_string';
@@ -23,7 +23,7 @@ const KEYS = [
 	'NoRg7ANAzArNAc1IigFgqgTB9MCcE8cAbBCJpKgeaSAAxTSPxgC6QA',
 ];
 
-// CICs 0x(01..=FF)00 — cstimer dan ayni
+// CICs 0x(01..=FF)00 — same as cstimer
 const MOYU32_CIC_LIST = Array(255).fill(undefined).map((_, i) => (i + 1) << 8);
 
 const MAC_CACHE_KEY = 'moyu32_cube_mac';
@@ -66,7 +66,7 @@ export default class MoYu32 extends SmartCube {
 		this.batteryLevel = 0;
 	}
 
-	// cstimer getKeyAndIv() — bire bir port
+	// cstimer getKeyAndIv() — 1:1 port
 	getKeyAndIv(value) {
 		const key = JSON.parse(LZString.decompressFromEncodedURIComponent(KEYS[0]));
 		const iv = JSON.parse(LZString.decompressFromEncodedURIComponent(KEYS[1]));
@@ -77,7 +77,7 @@ export default class MoYu32 extends SmartCube {
 		return [key, iv];
 	}
 
-	// cstimer initDecoder() — bire bir port
+	// cstimer initDecoder() — 1:1 port
 	initDecoder(mac) {
 		const value = [];
 		for (let i = 0; i < 6; i++) {
@@ -88,7 +88,7 @@ export default class MoYu32 extends SmartCube {
 		this.decoder.iv = keyiv[1];
 	}
 
-	// cstimer decode() — bire bir port
+	// cstimer decode() — 1:1 port
 	decode(value) {
 		const ret = [];
 		for (let i = 0; i < value.byteLength; i++) {
@@ -112,7 +112,7 @@ export default class MoYu32 extends SmartCube {
 		return ret;
 	}
 
-	// cstimer encode() — bire bir port
+	// cstimer encode() — 1:1 port
 	encode(ret) {
 		if (this.decoder == null) {
 			return ret;
@@ -157,9 +157,9 @@ export default class MoYu32 extends SmartCube {
 	requestCubeStatus() { return this.sendSimpleRequest(163); }
 	requestCubePower() { return this.sendSimpleRequest(164); }
 
-	// MAC adresini bul: 1) manufacturer data (auto), 2) device name pattern, 3) prompt
+	// Find MAC address: 1) manufacturer data (auto), 2) device name pattern, 3) prompt
 	async resolveMac() {
-		// 1) Manufacturer data'dan otomatik MAC
+		// 1) Automatic MAC from manufacturer data
 		if (this.adapter.watchAdvertisements) {
 			try {
 				const mfData = await this.adapter.watchAdvertisements(this.device);
@@ -170,7 +170,7 @@ export default class MoYu32 extends SmartCube {
 					} else {
 						for (const id of MOYU32_CIC_LIST) {
 							if (mfData.has(id)) {
-								console.log('[Moyu32] CIC bulundu: 0x' + id.toString(16).padStart(4, '0'));
+								console.log('[Moyu32] CIC found: 0x' + id.toString(16).padStart(4, '0'));
 								dataView = mfData.get(id);
 								break;
 							}
@@ -182,12 +182,12 @@ export default class MoYu32 extends SmartCube {
 							mac.push((dataView.getUint8(dataView.byteLength - i - 1) + 0x100).toString(16).slice(1));
 						}
 						const macStr = mac.join(':').toUpperCase();
-						console.log('[Moyu32] MAC otomatik bulundu:', macStr);
+						console.log('[Moyu32] MAC auto-discovered:', macStr);
 						return macStr;
 					}
 				}
 			} catch (e) {
-				console.warn('[Moyu32] watchAdvertisements hatasi:', e);
+				console.warn('[Moyu32] watchAdvertisements error:', e);
 			}
 		}
 
@@ -196,16 +196,16 @@ export default class MoYu32 extends SmartCube {
 		const m = /^WCU_MY32_[0-9A-F]{4}$/.exec(this.deviceName);
 		if (m) {
 			defaultMac = 'CF:30:16:00:' + this.deviceName.slice(9, 11) + ':' + this.deviceName.slice(11, 13);
-			console.log('[Moyu32] Default MAC device name pattern:', defaultMac);
+			console.log('[Moyu32] Default MAC from device name pattern:', defaultMac);
 		}
 
-		// 3) Cache veya prompt
+		// 3) Cache or prompt
 		const cached = localStorage.getItem(MAC_CACHE_KEY);
 		if (cached) {
 			return cached;
 		}
 
-		const promptMsg = 'MoYu WeiLong AI: Otomatik MAC adresi bulunamadi.\nLutfen kupun MAC adresini girin (ornek: CF:30:16:00:AB:CD):';
+		const promptMsg = 'MoYu WeiLong AI: Could not auto-discover MAC address.\nPlease enter the cube\'s MAC address (example: CF:30:16:00:AB:CD):';
 		const userInput = typeof window !== 'undefined' ? window.prompt(promptMsg, defaultMac || '') : null;
 		if (userInput) {
 			const cleaned = userInput.trim().toUpperCase();
@@ -216,7 +216,7 @@ export default class MoYu32 extends SmartCube {
 	}
 
 	async init() {
-		console.log('[Moyu32] init basladi, device:', this.deviceName);
+		console.log('[Moyu32] init started, device:', this.deviceName);
 
 		await this.adapter.connect(this.device, () => {
 			console.log('[Moyu32] disconnect');
@@ -225,7 +225,7 @@ export default class MoYu32 extends SmartCube {
 
 		setTimerParams({ smartCubeConnectStep: 'paired' });
 
-		// Notification baslat
+		// Start notification
 		await this.adapter.startNotifications(
 			this.device,
 			SERVICE_UUID,
@@ -235,12 +235,12 @@ export default class MoYu32 extends SmartCube {
 
 		setTimerParams({ smartCubeConnectStep: 'reading_service' });
 
-		// MAC al
+		// Get MAC
 		this.deviceMac = await this.resolveMac();
 		if (!this.deviceMac) {
-			throw new Error('[Moyu32] MAC adresi alinamadi, baglanti mumkun degil');
+			throw new Error('[Moyu32] Could not obtain MAC address, connection not possible');
 		}
-		console.log('[Moyu32] MAC kullaniliyor:', this.deviceMac);
+		console.log('[Moyu32] MAC in use:', this.deviceMac);
 		this.initDecoder(this.deviceMac);
 
 		// Connected callback (dummy server)
@@ -252,7 +252,7 @@ export default class MoYu32 extends SmartCube {
 		};
 		await this.alertConnected(dummyServer);
 
-		// cstimer ile ayni initial request sirasi: info -> status -> power
+		// Same initial request order as cstimer: info -> status -> power
 		await this.requestCubeInfo();
 		await this.requestCubeStatus();
 		await this.requestCubePower();
@@ -272,12 +272,12 @@ export default class MoYu32 extends SmartCube {
 		this.prevMoveCnt = this.moveCnt;
 	}
 
-	// cstimer parseData() — bire bir port
+	// cstimer parseData() — 1:1 port
 	parseData(value) {
 		const locTime = Date.now();
 		let decoded = this.decode(value);
 
-		// cstimer'in bit-string conversion'i
+		// cstimer's bit-string conversion
 		const bits = [];
 		for (let i = 0; i < decoded.length; i++) {
 			bits.push((decoded[i] + 256).toString(2).slice(1));
@@ -296,7 +296,7 @@ export default class MoYu32 extends SmartCube {
 			const softwareVersion = parseInt(bitStr.slice(72, 80), 2) + '.' + parseInt(bitStr.slice(80, 88), 2);
 			console.log('[Moyu32] HW Version:', hardwareVersion, '| SW Version:', softwareVersion, '| Device:', devName);
 		} else if (msgType === 163) { // state (facelets)
-			if (this.prevMoveCnt === -1) { // sadece initial state
+			if (this.prevMoveCnt === -1) { // initial state only
 				this.moveCnt = parseInt(bitStr.slice(152, 160), 2);
 				this.latestFacelet = this.parseFacelet(bitStr.slice(8, 152));
 				this.initCubeState();
@@ -326,10 +326,10 @@ export default class MoYu32 extends SmartCube {
 				this.updateMoveTimes(locTime);
 			}
 		}
-		// msgType 171 = gyro (cstimer'da da disabled)
+		// msgType 171 = gyro (also disabled in cstimer)
 	}
 
-	// cstimer updateMoveTimes() — bire bir port + bizim Redux pipeline'a uyarlama
+	// cstimer updateMoveTimes() — 1:1 port + adaptation to our Redux pipeline
 	updateMoveTimes(locTime) {
 		let moveDiff = (this.moveCnt - this.prevMoveCnt) & 0xff;
 		if (moveDiff > 1) {
@@ -348,10 +348,10 @@ export default class MoYu32 extends SmartCube {
 			this.deviceTime += locTime - calcTs;
 		}
 
-		// Batch hamleleri topla
+		// Batch moves together
 		const batch = [];
 		for (let i = moveDiff - 1; i >= 0; i--) {
-			const moveRaw = this.prevMoves[i]; // ornek: "R " veya "R'"
+			const moveRaw = this.prevMoves[i]; // example: "R " or "R'"
 			const cubejsMove = moveRaw.replace(' ', ''); // " '" -> "'" / ""
 			this.prevCube.move(cubejsMove);
 			this.deviceTime += this.timeOffs[i];
@@ -366,18 +366,18 @@ export default class MoYu32 extends SmartCube {
 		}
 		this.deviceTimeOffset = locTime - this.deviceTime;
 
-		// Cube state ve hamleleri Redux'a push et
+		// Push cube state and moves to Redux
 		if (batch.length > 0) {
 			this.alertTurnCubeBatch(batch);
 			this.alertCubeState(this.prevCube.asString());
 		}
 	}
 
-	// cstimer parseFacelet() — bire bir port
-	// Input: 144-bit string (24 bit / face, 6 face) — face order FBUDLR
+	// cstimer parseFacelet() — 1:1 port
+	// Input: 144-bit string (24 bit / face, 6 faces) — face order FBUDLR
 	parseFacelet(faceletBits) {
 		const state = [];
-		const faces = [2, 5, 0, 3, 4, 1]; // URFDLB sirasinda parse, FBUDLR'den
+		const faces = [2, 5, 0, 3, 4, 1]; // parse in URFDLB order, from FBUDLR
 		for (let i = 0; i < 6; i++) {
 			const face = faceletBits.slice(faces[i] * 24, 24 + faces[i] * 24);
 			for (let j = 0; j < 8; j++) {

@@ -80,7 +80,7 @@ export default function SolveInfo(props: Props) {
 	function updateSolve(targetSolveId?: string) {
 		const id = targetSolveId || solveId;
 
-		// Basic kullanici: sunucudan cekme, direkt lokal'den goster
+		// Basic user: do not fetch from server, show directly from local storage
 		if (!canSync()) {
 			const localSolve = fetchSolve(id);
 			if (localSolve) {
@@ -114,7 +114,7 @@ export default function SolveInfo(props: Props) {
 			setSolve(res.data.solve);
 			setLoading(false);
 		}).catch((err) => {
-			// Offline/network hatasi ise solve'u silme — sadece local veriyi goster
+			// If offline/network error, don't delete solve — just show local data
 			const isOffline = err?.networkError?.statusCode === 503
 				|| err?.message?.includes('Offline')
 				|| err?.message?.includes('Failed to fetch')
@@ -130,7 +130,7 @@ export default function SolveInfo(props: Props) {
 				}
 			}
 
-			// Gercek NOT_FOUND: baska cihazdan silinmis
+			// Actual NOT_FOUND: deleted from another device
 			const localSolve = fetchSolve(id);
 			if (localSolve) {
 				getSolveDb().remove(localSolve);
@@ -154,19 +154,19 @@ export default function SolveInfo(props: Props) {
 		const solveToDelete = dbSolve || solve;
 		if (!solveToDelete) return;
 
-		// Silmeden ÖNCE bir sonraki çözümü al
+		// Get next solve BEFORE deleting
 		const adjacentSolve = fetchAdjacentSolve(solveToDelete);
 
-		// confirmed: true ile geçiyoruz çünkü zaten modal içindeyiz
-		// iç içe modal açmak sorun yaratıyor
+		// Pass confirmed: true because we're already in a modal
+		// Opening nested modal would cause issues
 		await deleteSolveDb(solveToDelete, true);
 
-		// Eğer bir sonraki çözüm varsa ona geç
+		// If there's a next solve, navigate to it
 		if (adjacentSolve) {
 			setLoading(true);
 			updateSolve(adjacentSolve.id);
 		} else {
-			// Son çözüm silinmiş, modal'ı kapat
+			// Last solve deleted, close modal
 			onComplete?.();
 		}
 	}

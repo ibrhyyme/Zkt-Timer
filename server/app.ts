@@ -77,36 +77,36 @@ process.on('SIGINT', () => {
 initSearch();
 initLogger();
 
-// IP spoofing korumasi: Cloudflare/Nginx onunde 1 hop guven (cf-connecting-ip kullanilir).
-// Bu olmadan saldirgan X-Forwarded-For ile rate limit'i atlatabilir.
+// IP spoofing protection: Trust 1 hop in front of Cloudflare/Nginx (cf-connecting-ip is used).
+// Without this, an attacker could bypass rate limiting with X-Forwarded-For.
 app.set('trust proxy', 1);
 
 app.use(compression());
 
-// Body limit: GraphQL + REST icin 5mb yeterli (DoS koruma — onceden 200mb idi).
-// IAP webhook payload'lari kucuk, 256kb yeterli. Upload route ayri.
+// Body limit: 5MB is sufficient for GraphQL + REST (DoS protection — previously 200MB).
+// IAP webhook payloads are small, 256KB is enough. Upload route is separate.
 app.use('/api/iap/revenuecat-webhook', bodyParser.json({ limit: '256kb' }));
 app.use(bodyParser.json({ limit: '5mb' }));
 app.use(cookieParser());
 
-// WebView (mobile app) trafigini organic web trafiginden ayirt et.
-// UA suffix capacitor.config.ts'de "ZktTimerApp" olarak ekleniyor.
-// CSRF ve cookie sameSite ayrimi bu flag'e bagli — onceden gelmeli.
+// Distinguish WebView (mobile app) traffic from organic web traffic.
+// UA suffix is added as "ZktTimerApp" in capacitor.config.ts.
+// CSRF and cookie sameSite differentiation depend on this flag — should arrive first.
 app.use((req, _res, next) => {
 	const ua = req.headers['user-agent'] || '';
 	(req as any).isWebView = ua.includes('ZktTimerApp');
 	next();
 });
 
-// Helmet: HTTP security header'lari (X-Frame-Options, HSTS, X-Content-Type-Options vs.)
-// CSP: XSS'e karsi katmanli savunma. SSR inline script (window.__STORE__) icin 'unsafe-inline' zorunlu.
+// Helmet: HTTP security headers (X-Frame-Options, HSTS, X-Content-Type-Options, etc.)
+// CSP: Layered defense against XSS. SSR inline script (window.__STORE__) requires 'unsafe-inline'.
 app.use(helmet({
 	contentSecurityPolicy: {
 		directives: {
 			defaultSrc: ["'self'"],
 			scriptSrc: [
 				"'self'",
-				"'unsafe-inline'", // SSR window.__STORE__ + Apollo inline script'leri
+				"'unsafe-inline'", // SSR window.__STORE__ + Apollo inline scripts
 				"'unsafe-eval'",   // Apollo Client dev tools, esbuild dynamic
 				"https://challenges.cloudflare.com",
 				"https://static.cloudflareinsights.com", // Cloudflare Web Analytics (auto-injected)
@@ -117,8 +117,8 @@ app.use(helmet({
 				"https://googleads.g.doubleclick.net",   // Google Ads conversion tracking
 				"https://www.google.com",                 // Google Ads remarketing
 			],
-			// Inline event handlers (onclick, onload) — eski kod pattern'lerinde mevcut.
-			// Long-term: addEventListener ile refactor. Su an 'unsafe-inline' ile gec.
+			// Inline event handlers (onclick, onload) — present in legacy code patterns.
+			// Long-term: refactor to addEventListener. For now, allow via 'unsafe-inline'.
 			scriptSrcAttr: ["'unsafe-inline'"],
 			styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
 			fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
@@ -150,14 +150,14 @@ app.use(helmet({
 			upgradeInsecureRequests: [],
 		},
 	},
-	// Capacitor WebView uyumlulugu icin COEP kapali (cross-origin asset'lere izin)
+	// Capacitor WebView compatibility: disable COEP (allow cross-origin assets)
 	crossOriginEmbedderPolicy: false,
-	// HSTS: production'da Cloudflare zaten ekliyor, defansif olarak burada da
+	// HSTS: production already has it via Cloudflare, defensively added here too
 	hsts: {maxAge: 31536000, includeSubDomains: true, preload: true},
 }));
 
-// CSRF korumasi: state-mutating method'lar icin Content-Type/header check
-// JSON body veya apollo-require-preflight zorunlu — form-based saldirilari engeller
+// CSRF protection: state-mutating methods require Content-Type/header check
+// JSON body or apollo-require-preflight mandatory — prevents form-based attacks
 app.use(requireCsrfHeader);
 
 app.use((req, res, next) => {
@@ -231,10 +231,10 @@ app.get(['/security.txt', '/.well-known/security.txt'], (_req, res) => {
 	);
 });
 
-// JS/CSS dosyalari deployment hash'li → uzun sureli cache guvenli
+// JS/CSS files with deployment hash → safe for long-term caching
 app.use('/dist', express.static(`${__dirname}/../dist`, { maxAge: '1y', immutable: true }));
 
-// /public — image/font dosyalarina 30g cache (LCP icin onemli), digerleri 1g
+// /public — 30-day cache for image/font files (important for LCP), 1-day for others
 const longLivedAssetRegex = /\.(png|jpg|jpeg|svg|webp|avif|ico|woff2?|ttf|otf)$/i;
 const publicStaticOptions = {
 	maxAge: '1d',
@@ -297,14 +297,14 @@ if (!isDev) {
 		tracesSampleRate: 1.0,
 		environment: env,
 		beforeSend(event) {
-			// PII / hassas header'lari Sentry'ye gonderme
+			// Don't send PII / sensitive headers to Sentry
 			if (event.request?.headers) {
 				delete event.request.headers['cookie'];
 				delete event.request.headers['authorization'];
 				delete event.request.headers['x-csrf-token'];
 				delete event.request.headers['cf-connecting-ip'];
 			}
-			// Body icinde sifre/token varsa redact et
+			// Redact password/token in body if present
 			if (event.request?.data) {
 				const data: any = event.request.data;
 				for (const key of Object.keys(data || {})) {
@@ -314,7 +314,7 @@ if (!isDev) {
 					}
 				}
 			}
-			// Extra context icinde de redact
+			// Also redact in extra context
 			if (event.extra) {
 				for (const key of Object.keys(event.extra)) {
 					const lower = key.toLowerCase();
@@ -333,7 +333,7 @@ if (!isDev) {
 	const oldTypeDef = `
 		${baseScalars}
 		${gqlTypes.join('\n')}
-		
+
 		type Query { ${gqlQueries.join('\n')} }
 		type Mutation { ${gqlMutations.join('\n')} }
 	`;
@@ -361,8 +361,8 @@ if (!isDev) {
 		resolvers: oldResolver
 	});
 
-	// GraphQL DoS korumasi: 11 derinlikten daha derin query'leri reddet,
-	// query complexity 1500 puanin uzerine ciktiginda reddet
+	// GraphQL DoS protection: reject queries deeper than 11 levels,
+	// reject if query complexity exceeds 1500 points
 	const MAX_QUERY_DEPTH = 11;
 	const MAX_QUERY_COMPLEXITY = 1500;
 
@@ -371,7 +371,7 @@ if (!isDev) {
 		uploads: false,
 		schema: mergedSchema,
 		playground: isDev,
-		introspection: isDev, // Production'da API harita cikarmayi engelle
+		introspection: isDev, // Block API schema discovery in production
 		validationRules: [depthLimit(MAX_QUERY_DEPTH)],
 		plugins: [
 			{
@@ -393,7 +393,7 @@ if (!isDev) {
 							}
 						} catch (err) {
 							if (err instanceof GraphQLError) throw err;
-							// Complexity hesaplama hatasi — sessizce gec, validation degil
+							// Complexity calculation error — silently continue, not validation
 						}
 					},
 				}),
@@ -401,7 +401,7 @@ if (!isDev) {
 		],
 		formatError: (err: any) => {
 			if (isDev) return err;
-			// Production: stack trace ve internal detay sizdirmasin, Sentry'ye gonder
+			// Production: don't leak stack traces and internal details, send to Sentry
 			const code = err?.extensions?.code;
 			if (code === 'INTERNAL_SERVER_ERROR' || !code) {
 				try { Sentry.captureException(err); } catch { /* ignore */ }
@@ -410,8 +410,8 @@ if (!isDev) {
 					extensions: { code: 'INTERNAL_SERVER_ERROR' },
 				};
 			}
-			// Beklenen hatalar (BAD_INPUT, FORBIDDEN, NOT_FOUND vs.) kullaniciya iletilir,
-			// stack trace temizlenir
+			// Expected errors (BAD_INPUT, FORBIDDEN, NOT_FOUND, etc.) are delivered to user,
+			// stack trace cleaned up
 			return {
 				message: err.message,
 				extensions: { code },
@@ -436,7 +436,7 @@ if (!isDev) {
 
 	const path = '/graphql';
 
-	// Destek talebi ekleri icin: 30MB / 4 dosya. Profil resmi + diger upload'lar da bu sinirlara dahil.
+	// Support ticket attachments: 30MB / 4 files. Profile picture + other uploads also count toward this limit.
 	app.use(graphqlUploadExpress({ maxFileSize: 30 * 1024 * 1024, maxFiles: 4 }));
 	server.applyMiddleware({ app, path });
 
@@ -490,17 +490,17 @@ if (!isDev) {
 	}
 })();
 
-// Admin REST endpoint rate limit helper — admin token sizmasi veya bot abuse'a karsi
+// Admin REST endpoint rate limit helper — against admin token leaks or bot abuse
 async function checkAdminEndpointRateLimit(adminId: string, endpoint: string, res: any): Promise<boolean> {
-	const rl = await checkRateLimit(`admin:${endpoint}:${adminId}`, 1, 300); // 5 dk'da 1 istek
+	const rl = await checkRateLimit(`admin:${endpoint}:${adminId}`, 1, 300); // 1 request per 5 min
 	if (!rl.allowed) {
-		res.status(429).json({error: 'Rate limit: bu admin endpoint 5 dk icinde tekrar tetiklenemez'});
+		res.status(429).json({error: 'Rate limit: this admin endpoint cannot be triggered again within 5 minutes'});
 		return false;
 	}
 	return true;
 }
 
-// Admin: Tum WCA bagli kullanicilarin Kinch + SoR skorlarini yeniden hesapla
+// Admin: Recalculate Kinch + SoR scores for all WCA-linked users
 app.post('/api/admin/recalculate-rankings', async (req, res) => {
 	const {getMe} = require('./util/auth');
 	const {recalculateAllRankings} = require('./models/ranking');
@@ -527,8 +527,8 @@ app.post('/api/admin/recalculate-rankings', async (req, res) => {
 	}
 });
 
-// Admin: Sitemap'i manuel yeniden olustur (cron 2 saatte bir, acelen varsa buradan tetikle)
-// Query param ?force=1 → ENV check'i ve Redis lock'u bypass et (debug icin)
+// Admin: Manually regenerate sitemap (cron runs every 2 hours, trigger here if urgent)
+// Query param ?force=1 → bypass ENV check and Redis lock (for debugging)
 app.post('/api/admin/regenerate-sitemap', async (req, res) => {
 	const {getMe} = require('./util/auth');
 	const {initSiteMapGeneration} = require('./services/sitemap');
@@ -549,7 +549,7 @@ app.post('/api/admin/regenerate-sitemap', async (req, res) => {
 			res.json({success: true, result});
 		} catch (err: any) {
 			console.error('[Sitemap] Manual regeneration failed:', err);
-			// Stack trace prod'da sizdirma — sadece message
+			// Don't leak stack trace in production — message only
 			res.status(500).json({error: err?.message || 'unknown'});
 		}
 	} catch (err) {
@@ -558,7 +558,7 @@ app.post('/api/admin/regenerate-sitemap', async (req, res) => {
 	}
 });
 
-// Admin: Dunya rekorlarini Robin WCA REST API'dan yeniden senkronize et
+// Admin: Re-sync world records from Robin WCA REST API
 app.post('/api/admin/sync-world-records', async (req, res) => {
 	const {getMe} = require('./util/auth');
 	const {syncAllWorldRecords} = require('./services/WorldRecordSyncService');
@@ -585,15 +585,15 @@ app.post('/api/admin/sync-world-records', async (req, res) => {
 	}
 });
 
-// RevenueCat webhook — in-app purchase eventleri
+// RevenueCat webhook — in-app purchase events
 import { revenueCatWebhookHandler } from './api/revenuecat_webhook';
 app.post('/api/iap/revenuecat-webhook', revenueCatWebhookHandler);
 
-// IAP sync — restore/satin alma sonrasi anlık RevenueCat sorgulama
+// IAP sync — instant RevenueCat check after restore/purchase
 import { iapSyncHandler } from './api/iap_sync';
 app.post('/api/iap/sync', iapSyncHandler);
 
-// Cache-busting: Capacitor ve web istemciler güncel versiyonu kontrol eder
+// Cache-busting: Capacitor and web clients check for updated version
 app.get('/api/version', (req, res) => {
 	res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
 	res.json({ version: process.env.RELEASE_NAME || '1.0' });

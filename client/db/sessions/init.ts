@@ -30,9 +30,9 @@ export function initSessionDb(sessions: Session[]) {
 	}
 }
 
-// Sync etmeyen kullanicilar (anonim, Basic) icin local default sezon garantisi.
-// Server'a gonderim YOK — sadece lokal LokiJS'e ekler. Basic'ten Pro'ya gecerken
-// migrateLocalDataToServer akisi bu sezonu da bulkCreate ile sunucuya tasir.
+// Guarantee local default session for non-syncing users (anonymous, Basic).
+// NO server submission — only added to local LokiJS. When upgrading from Basic to Pro,
+// migrateLocalDataToServer flow transfers this session to server via bulkCreate.
 export function ensureLocalDefaultSession() {
 	if (typeof window === 'undefined') return;
 
@@ -74,9 +74,9 @@ export function reconcileSessionDb(serverSessions: Session[]): boolean {
 		}
 	}
 
-	// Defansif: server bos array dondurduyse local'i silme. Bu durum normalde olmamali
-	// (server signup'ta default sezon yaratiyor, son sezon silme korumasi var).
-	// Anomali durumunda local cache'i koruyoruz; kullanicinin sezonlari kaybolmasin.
+	// Defensive: if server returns empty array, don't delete local. This shouldn't normally happen
+	// (server creates default session on signup, last session has deletion protection).
+	// In anomaly cases, preserve local cache so user's sessions aren't lost.
 	if (serverSessions.length === 0 && localSessions.length > 0) {
 		console.error('[reconcileSessionDb] Server returned 0 sessions but local has data — preserving local cache');
 		return changed;

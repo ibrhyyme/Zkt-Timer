@@ -16,7 +16,7 @@ $self: '.cd-battle';
 	-webkit-tap-highlight-color: transparent;
 
 	// =====================
-	// TIMER ALANLARI
+	// TIMER AREAS
 	// =====================
 	&__timer {
 		flex: 1;
@@ -77,9 +77,9 @@ $self: '.cd-battle';
 	&__time {
 		font-family: 'Roboto Mono', monospace;
 		font-weight: 500;
-		// tabular-nums icin font-variant yerine font-feature-settings kullan:
-		// font-variant-numeric iOS Turkce locale'de locl feature'ini tetikleyip
-		// ondalik noktayi virgule cevirebiliyor.
+		// Use font-feature-settings instead of font-variant for tabular-nums:
+		// font-variant-numeric can trigger locl feature on iOS Turkish locale,
+		// which converts decimal point to comma.
 		font-feature-settings: 'tnum' 1, 'locl' 0;
 		letter-spacing: -0.02em;
 		font-size: clamp(2.5rem, 12vw, 4.5rem);
@@ -106,7 +106,7 @@ $self: '.cd-battle';
 	}
 
 	// =====================
-	// STATS (timer koselerinde)
+	// STATS (in timer corners)
 	// =====================
 	&__stats {
 		position: absolute;
@@ -166,7 +166,7 @@ $self: '.cd-battle';
 	}
 
 	// =====================
-	// SCRAMBLE (timer icinde)
+	// SCRAMBLE (inside timer)
 	// =====================
 	&__scramble {
 		font-size: 1.1rem;
@@ -181,7 +181,7 @@ $self: '.cd-battle';
 	}
 
 	// =====================
-	// PENALTY BUTONLARI
+	// PENALTY BUTTONS
 	// =====================
 	&__penalties {
 		position: absolute;
@@ -217,7 +217,7 @@ $self: '.cd-battle';
 	}
 
 	// =====================
-	// ORTA TOOLBAR
+	// CENTER TOOLBAR
 	// =====================
 	&__toolbar {
 		flex-shrink: 0;

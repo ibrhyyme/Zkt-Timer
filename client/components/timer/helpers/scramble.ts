@@ -7,27 +7,27 @@ import { isAsyncScrambleType } from '../../../../shared/scramble/types';
 import { generateScrambleAsync, initScrambleWorker } from '../../../util/scramble-worker-manager';
 import { applyTopColorTransform, isTopColorAvailable, isTopColorFace, TopColorFace } from '../../../util/scramble_transform';
 
-// Generator'lari kaydet — side-effect import
-// Sadece hafif generator'lar main bundle'a girer
+// Register generators — side-effect import
+// Only light generators enter main bundle
 import '../../../../shared/scramble/generators/scramble-pyraminx';
 import '../../../../shared/scramble/generators/scramble-skewb';
 import '../../../../shared/scramble/generators/scramble-333lse';
 import '../../../../shared/scramble/generators/megascramble';
 import '../../../../shared/scramble/generators/utilscramble';
-// Agir generator'lar (min2phase, 444, megaminx, sq1) — lazily loaded
+// Heavy generators (min2phase, 444, megaminx, sq1) — lazily loaded
 import '../../../../shared/scramble/generators/scramble-333';
 import '../../../../shared/scramble/generators/scramble-444';
 import '../../../../shared/scramble/generators/scramble-sq1';
 import '../../../../shared/scramble/generators/scramble-megaminx';
 
-// 2x2 generator — shared registry'ye kayitli
+// 2x2 generator — registered in shared registry
 import '../../../../shared/scramble/generators/scramble-222';
-// Clock — mevcut custom generator
+// Clock — existing custom generator
 import { generateClockScramble } from '../../../util/cubes/scramble_clock';
 
-// Cube type ID -> cstimer scramble type ID mapping (sadece WCA + variants)
+// Cube type ID -> cstimer scramble type ID mapping (WCA + variants only)
 const CUBE_TO_SCRAMBLE_TYPE: Record<string, string> = {
-	'wca': '333',        // WCA kategori — default 3x3
+	'wca': '333',        // WCA category — default to 3x3
 	'222': '222so',      // 2x2 random-state
 	'333': '333',        // 3x3 random-state (min2phase Kociemba)
 	'444': '444m',       // 4x4 random-move
@@ -49,14 +49,14 @@ const CUBE_TO_SCRAMBLE_TYPE: Record<string, string> = {
 	'333sub': '2gen',       // default to 2-gen
 };
 
-// WCA subset ID'si olup ayrı bir cube type olmayan eventler için fallback mapping
-// (333oh, 333mbld: dedicated generator yok — normal 3x3 scramble kullanılır)
+// Fallback mapping for WCA subset IDs that aren't separate cube types
+// (333oh, 333mbld: no dedicated generator — use normal 3x3 scramble)
 const WCA_EVENT_TO_GEN: Record<string, string> = {
 	'333oh': '333',
 	'333mbld': '333',
 };
 
-// Scramble temizleme: satirlari koru, satir ici bosluklari normalize et
+// Scramble cleanup: preserve lines, normalize spacing within lines
 function cleanScramble(s: string): string {
 	return s.split('\n').map(line => line.replace(/ {2,}/g, ' ').trim()).filter(Boolean).join('\n');
 }
@@ -82,7 +82,7 @@ export function getNewScramble(scrambleTypeId: string, _seed?: number, subset?: 
 		}
 	}
 
-	// WCA kategori: subset aslinda bir cube type ID — onu cube type olarak coz
+	// WCA category: subset is actually a cube type ID — resolve it as cube type
 	if (baseType === 'wca' && effectiveSubset) {
 		const result = getNewScramble(effectiveSubset);
 		if (result) return result;
@@ -92,19 +92,19 @@ export function getNewScramble(scrambleTypeId: string, _seed?: number, subset?: 
 		return '';
 	}
 
-	// Clock — mevcut port (Faz 5'te shared'e tasinacak)
+	// Clock — current port (to be moved to shared in Phase 5)
 	if (baseType === 'clock' && !effectiveSubset) {
 		return generateClockScramble();
 	}
 
 	try {
-		// Yeni sistem: subset varsa ve registry'de kayitliysa onu kullan
+		// New system: if subset exists and is registered, use it
 		if (effectiveSubset && hasGenerator(effectiveSubset)) {
 			const scramble = generateScramble(effectiveSubset);
 			return cleanScramble(scramble);
 		}
 
-		// Yeni sistem: cube type mapping
+		// New system: cube type mapping
 		const scrambleTypeForGen = CUBE_TO_SCRAMBLE_TYPE[baseType];
 		if (scrambleTypeForGen && hasGenerator(scrambleTypeForGen)) {
 			const scramble = generateScramble(scrambleTypeForGen);
@@ -120,14 +120,14 @@ export function getNewScramble(scrambleTypeId: string, _seed?: number, subset?: 
 	return '';
 }
 
-// Worker baslat (SSR guard)
+// Initialize scramble worker (SSR guard)
 if (typeof window !== 'undefined') {
 	initScrambleWorker();
 }
 
-// ==================== Scramble Cache (cstimer mantigi) ====================
-// Her scramble uretildiginde bir sonrakini arka planda hazirla.
-// Kullanici istediginde cache'den aninda don, yenisini uret.
+// ==================== Scramble Cache (cstimer logic) ====================
+// Each time scramble is generated, pre-generate next one in background.
+// Return immediately from cache when user requests, generate new one.
 const _scrambleCache = new Map<string, string>();
 let _cacheGenerating = new Set<string>();
 
@@ -159,7 +159,7 @@ function resolveGenType(scrambleTypeId: string, subset?: string): string | null 
 		: CUBE_TO_SCRAMBLE_TYPE[baseType] || null;
 }
 
-// Arka planda bir sonraki scramble'i uret ve cache'le
+// Generate and cache next scramble in background
 function warmCache(scrambleTypeId: string, subset?: string) {
 	const key = getCacheKey(scrambleTypeId, subset);
 	if (_scrambleCache.has(key) || _cacheGenerating.has(key)) return;
@@ -186,20 +186,20 @@ function warmCache(scrambleTypeId: string, subset?: string) {
 	}
 }
 
-// Async scramble uretim — cache varsa aninda don, yoksa uret + sonrakini cache'le
+// Async scramble generation — return immediately from cache if available, otherwise generate + pre-cache next
 export async function getNewScrambleAsync(scrambleTypeId: string, subset?: string): Promise<string> {
 	const key = getCacheKey(scrambleTypeId, subset);
 
-	// Cache'de varsa aninda don
+	// If in cache, return immediately
 	const cached = _scrambleCache.get(key);
 	if (cached) {
 		_scrambleCache.delete(key);
-		// Bir sonrakini arka planda hazirla
+		// Pre-generate next in background
 		warmCache(scrambleTypeId, subset);
 		return cached;
 	}
 
-	// Cache'de yok — uret
+	// Not in cache — generate
 	const genType = resolveGenType(scrambleTypeId, subset);
 	if (!genType) return '';
 
@@ -219,12 +219,12 @@ export async function getNewScrambleAsync(scrambleTypeId: string, subset?: strin
 		scramble = getNewScramble(scrambleTypeId, undefined, subset);
 	}
 
-	// Bir sonrakini arka planda hazirla
+	// Pre-generate next in background
 	warmCache(scrambleTypeId, subset);
 	return scramble;
 }
 
-// Pre-generate: solve sirasinda yeni karistirmayi arka planda hazirla
+// Pre-generate: generate next scramble in background during solve
 let _preGeneratedScramble: string | null = null;
 let _preGeneratedForType: string | null = null;
 let _preGeneratedForSubset: string | null = null;
@@ -244,7 +244,7 @@ export function preGenerateScramble(cubeType: string, subset?: string, topColor?
 	_preGeneratedForSubset = subset ?? null;
 	_preGeneratedForTopColor = effectiveTopColor;
 
-	// Async: worker uzerinden arka planda uret + transform uygula
+	// Async: generate in background via worker + apply transform
 	getNewScrambleAsync(ct.scramble, subset).then(async (rawScramble) => {
 		if (_preGeneratedForType !== cubeType || _preGeneratedForSubset !== (subset ?? null) || _preGeneratedForTopColor !== effectiveTopColor) return;
 		const scramble = await applyTopColorTransform(rawScramble, effectiveTopColor);
@@ -254,8 +254,8 @@ export function preGenerateScramble(cubeType: string, subset?: string, topColor?
 }
 
 /**
- * Pre-generated scramble'i tuket. cubeType + subset + topColor mismatch varsa null doner
- * (yeni scramble taze uretilir, eski cache'li yanlis renkli scramble servis edilmez).
+ * Consume pre-generated scramble. Returns null on cubeType + subset + topColor mismatch
+ * (generates fresh scramble, doesn't serve old cached wrong-colored scramble).
  */
 export function consumePreGeneratedScramble(cubeType: string, subset?: string, topColor?: string | null): string | null {
 	const effectiveTopColor: TopColorFace | null =
@@ -292,8 +292,8 @@ export function resetScramble(context: ITimerContext) {
 
 	if (scrambleLocked) return;
 
-	// Top color transform sadece 3x3 CFOP + PLL/OLL/f2l subset'lerinde aktif.
-	// Diger durumlarda topColor null → applyTopColorTransform raw scramble doner.
+	// Top color transform only active for 3x3 CFOP + PLL/OLL/f2l subsets.
+	// In other cases, topColor is null → applyTopColorTransform returns raw scramble.
 	const effectiveTopColor: TopColorFace | null =
 		isTopColorAvailable(cubeType, scrambleSubset) && isTopColorFace(scrambleTopColor)
 			? scrambleTopColor

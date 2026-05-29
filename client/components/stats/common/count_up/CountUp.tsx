@@ -61,9 +61,9 @@ export default function CountUp({
 		[maxDecimals, separator, formatFn]
 	);
 
-	// Set initial display value — sadece mount'ta. formatValue inline geldiginde
-	// her render'da effect tetiklenip "0" yazip spring animation'i steamroll'luyordu
-	// (animasyon tamamlanmissa onChange tekrar fire etmez → "0" takili kalir).
+	// Set initial display value — only on mount. When formatValue changes inline,
+	// every render triggers effect, rewriting "0" and overriding spring animation
+	// (completed animations don't re-fire onChange → "0" stays stuck).
 	// eslint-disable-next-line react-hooks/exhaustive-deps
 	useEffect(() => {
 		if (ref.current) {

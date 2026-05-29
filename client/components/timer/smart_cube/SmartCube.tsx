@@ -46,7 +46,7 @@ const b = block('smart-cube');
 const DEFAULT_SOLVED_STATE = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
 
 // ── DEBUG LOGGING ──
-// Runtime aktivasyon: browser console'da `window.__SMART_DEBUG__ = true`
+// Runtime activation: set `window.__SMART_DEBUG__ = true` in browser console
 const _log = (cat: string, color: string, ...args: any[]) => {
 	if (typeof window === 'undefined' || !(window as any).__SMART_DEBUG__) return;
 	const ts = performance.now().toFixed(1);
@@ -106,7 +106,7 @@ export default function SmartCube() {
 
 	const smartCubeSize = useSettings('smart_cube_size');
 
-	// Mobilde kup boyutunu viewport'a gore sinirla (kucuk telefonlarda timer/dashboard'i ezmesin)
+	// Limit cube size on mobile based on viewport (prevent timer/dashboard from being squeezed on small phones)
 	const [viewportH, setViewportH] = useState(typeof window !== 'undefined' ? window.innerHeight : 800);
 	const [viewportW, setViewportW] = useState(typeof window !== 'undefined' ? window.innerWidth : 400);
 	useEffect(() => {
@@ -143,7 +143,7 @@ export default function SmartCube() {
 		dnfTime,
 	} = context;
 
-	// Polling safety refs (avoid stale closures in setInterval)
+	// Polling safety refs (avoid stale closures in setInterval and effect handlers)
 	const needsCubeResetRef = useRef(needsCubeReset);
 	needsCubeResetRef.current = needsCubeReset;
 	const smartPhysicallySolvedRef = useRef(smartPhysicallySolved);
@@ -190,12 +190,12 @@ export default function SmartCube() {
 		dbgCorr(`COMPRESSOR RESET | scramble: ${scramble?.slice(0, 40)}... | offset: ${smartTurnOffset}`);
 		compressorRef.current.reset();
 		validationCacheRef.current.lastValidatedLength = 0;
-		// Yeni scramble geldiginde eski scramble completion'i gecersiz — timer yanlislikla baslamasin
+		// When new scramble arrives, old scramble completion is invalidated — prevent timer from starting accidentally
 		scrambleCompletedAtRef.current = null;
 	}, [scramble, smartTurnOffset]);
 
-	// Inspection timeout → dnfTime:true olunca scramble completion ref'i temizle
-	// ve kupu coz moduna gec (timer baslamasin, kullanici kupu cozsun)
+	// Inspection timeout → when dnfTime:true, clear scramble completion ref
+	// and transition to cube solve mode (prevent timer start, user must solve cube)
 	useEffect(() => {
 		if (dnfTime && !timeStartedAt) {
 			scrambleCompletedAtRef.current = null;
@@ -204,8 +204,8 @@ export default function SmartCube() {
 		}
 	}, [dnfTime]);
 
-	// Precompute target FACELETS (scramble'in hedef durumu)
-	// Her zaman originalScramble kullan — correction scramble degil, orijinal scramble
+	// Precompute target FACELETS (target state of scramble)
+	// Always use originalScramble — not correction scramble, original scramble
 	useEffect(() => {
 		const origScramble = originalScramble || scramble;
 		if (origScramble) {
@@ -252,7 +252,7 @@ export default function SmartCube() {
 					cameraLatitude: 0,
 					cameraLongitude: 0,
 					cameraLatitudeLimit: 0,
-					tempoScale: 5  // Referans (gan-cube-sample) ile ayni — gorunur ama hizli animasyon
+					tempoScale: 5  // Same as reference (gan-cube-sample) — visible but fast animation
 				});
 
 				if (containerRef.current) {
@@ -287,7 +287,7 @@ export default function SmartCube() {
 				};
 				animate();
 
-				// Arka plana gecildiginde render loop'u durdur, on plana donulunce baslat
+				// Stop render loop when moving to background, resume when returning to foreground
 				unsubVisibility = onVisibilityChange((visible) => {
 					if (visible && !animRunning && !cancelled) {
 						animRunning = true;
@@ -331,11 +331,11 @@ export default function SmartCube() {
 			// BATCH PROCESSING: Apply all new turns at once
 			const newTurns = smartTurns.slice(appliedTurnsRef.current);
 
-			// [BATCH] race signature: scramble bittiyse + birden fazla hamle aynı tick'te geldiyse
-			// sorun 2'nin (timer auto-start) en güçlü hipotezi
+			// [BATCH] race signature: if scramble finished + multiple moves in same tick
+			// strongest hypothesis for issue 2 (timer auto-start)
 			dbgMove(`BATCH count=${newTurns.length} | new=[${newTurns.map(t => t.turn).join(' ')}] | total=${smartTurns.length} | scrambleCompleted=${scrambleCompletedAtRef.current ? 'SET(' + (Date.now() - scrambleCompletedAtRef.current.getTime()) + 'ms ago)' : 'null'} | timeStartedAt=${!!timeStartedAt}`);
 			if (newTurns.length > 1 && scrambleCompletedAtRef.current && !timeStartedAt) {
-				dbgMove(`!!! BATCH RACE SUSPECT — ${newTurns.length} hamle aynı tick'te + scramble bitmiş + timer henüz baslamadi. Bunlardan biri belki "ilk solve hamlesi" sayilacak!`);
+				dbgMove(`!!! BATCH RACE SUSPECT — ${newTurns.length} moves in same tick + scramble finished + timer not started yet. One of these may be counted as "first solve move"!`);
 			}
 
 			newTurns.forEach(turnObj => {
@@ -346,8 +346,8 @@ export default function SmartCube() {
 				cubejs.current.move(turnObj.turn);
 			});
 
-			dbgMove(`+${newTurns.length} hamle:`, newTurns.map(t => t.turn).join(' '),
-				`| toplam: ${smartTurns.length} | cubejs: ${cubejs.current.asString().slice(0, 18)}...`);
+			dbgMove(`+${newTurns.length} moves:`, newTurns.map(t => t.turn).join(' '),
+				`| total: ${smartTurns.length} | cubejs: ${cubejs.current.asString().slice(0, 18)}...`);
 
 			appliedTurnsRef.current = smartTurns.length;
 
@@ -358,9 +358,9 @@ export default function SmartCube() {
 			if (isSolved || smartPhysicallySolved) {
 				dbgTimer(`SOLVE DETECT | cubejs_solved: ${isSolved} | facelets_solved: ${smartPhysicallySolved} | timeStartedAt: ${!!timeStartedAt}`);
 			}
-			// Yedek: cubejs yanlışsa (cascading gap) ama fiziksel küp çözüldüyse
+			// Fallback: cubejs incorrect (cascading gap) but physical cube is solved
 			if (!useSpaceWithSmartCube && (isSolved || (smartPhysicallySolved && timeStartedAt)) && smartTurns.length) {
-				// Her iki yolda da son hamle timestamp'ini kullan (display overshoot önlenir)
+				// Use last move timestamp in both paths (prevents display overshoot)
 				const lastMove = smartTurns[smartTurns.length - 1];
 				const endTs = lastMove?.completedAt || lastSmartMoveTime || undefined;
 				if (needsCubeReset) {
@@ -373,9 +373,9 @@ export default function SmartCube() {
 				}
 			}
 
-			// NOT: startState artik resetMoves(isScrambleFinish=true) icinde set ediliyor.
-			// Solve bittiginde burada set etmek yanlis: cubejs solved state olur ve
-			// bir sonraki cozumun faz takibi bozulur.
+			// NOTE: startState is now set inside resetMoves(isScrambleFinish=true).
+			// Setting it here after solve finishes is incorrect: cubejs becomes solved state and
+			// phase tracking breaks for the next solve.
 		} else if (smartTurns.length === 0 && appliedTurnsRef.current > 0) {
 			// Reset detected
 			cubejs.current = new Cube();
@@ -385,8 +385,8 @@ export default function SmartCube() {
 				// We DO NOT reset TwistyPlayer.alg here. We want to keep the visual state (orientation/rotations) as is.
 				// The user just finished scrambling, so the visual state IS the scrambled state.
 
-				// Scramble hamleleriyle init et — FACELETS'e guvenme
-				// (bazi kup modellerinde FACELETS parsing hatali olabiliyor, move tracking daha guvenilir)
+				// Initialize with scramble moves — do not trust FACELETS
+				// (on some cube models FACELETS parsing can be incorrect, move tracking is more reliable)
 				const targetScramble = originalScrambleRef.current || preservedScrambleRef.current;
 				const moves = targetScramble.split(' ').filter(m => m.trim());
 				for (const move of moves) {
@@ -396,7 +396,7 @@ export default function SmartCube() {
 				// Solve finished or manual reset, initialize to solved state
 				if (twistyPlayerRef.current) {
 					twistyPlayerRef.current.alg = '';
-					// Scene degisti — ref'leri sifirla
+					// Scene changed — reset refs
 					twistySceneRef.current = null;
 					twistyVantageRef.current = null;
 				}
@@ -406,25 +406,25 @@ export default function SmartCube() {
 			validationCacheRef.current.lastValidatedLength = 0;
 			validationCacheRef.current.lastMatchedIndex = 0;
 			compressorRef.current.reset();
-			// startState'i sadece resetMoves(isScrambleFinish=true) SET ETMEDIYSE guncelle.
-			// preservedScrambleRef varsa, resetMoves zaten dogru startState'i set etti —
-			// burada uzerine yazmak stale smartCurrentState ile race condition yaratir.
+			// Update startState only if NOT already set by resetMoves(isScrambleFinish=true).
+			// If preservedScrambleRef exists, resetMoves already set correct startState —
+			// overwriting here creates race condition with stale smartCurrentState.
 			if (!preservedScrambleRef.current) {
 				setStartState(cubejs.current.asString());
 			}
 		}
 	}, [smartTurns, smartSolvedState]);
 
-	// FACELETS güvenlik ağı: fiziksel küp çözüldüyse timer durdur
-	// cubejs'e DOKUNMAZ - sadece fiziksel durumu kontrol eder
+	// FACELETS safety net: stop timer if physical cube is solved
+	// Does NOT touch cubejs - only checks physical state
 	//
-	// RACE CONDITION KORUMASI: BLE hamle event ile FACELETS event paralel gelir.
-	// FACELETS bazen ÖNCE gelir (cube state degisti) → hamle event henuz Redux'ta yok →
-	// resetMoves smartTurns'u eksik halde commit ederdi → son hamle kaydolmaz, sonraki
-	// scramble'a kayar ve "geri al" denirdi.
-	// 350ms bekle: bu sure icinde BLE hamle gelirse useEffect[smartTurns] otomatik
-	// resetMoves'i tetikler (timeStartedAt reset olur → bu setTimeout guard fail eder).
-	// Gelmezse FACELETS yedek olarak yine devreye girer.
+	// RACE CONDITION PROTECTION: BLE move event and FACELETS event arrive in parallel.
+	// FACELETS sometimes arrives FIRST (cube state changed) → move event not yet in Redux →
+	// resetMoves would commit smartTurns incomplete → last move not recorded, carries to next
+	// scramble and would be "undone".
+	// Wait 350ms: if BLE move arrives within this time, useEffect[smartTurns] automatically
+	// triggers resetMoves (timeStartedAt resets → this setTimeout guard fails).
+	// If not, FACELETS engages as fallback anyway.
 	useEffect(() => {
 		if (
 			!smartPhysicallySolved ||
@@ -434,12 +434,12 @@ export default function SmartCube() {
 			return;
 		}
 
-		dbgFace(`FACELETS SOLVE SAFETY NET arm edildi (350ms) | smartStateSeq: ${smartStateSeq} | lastSmartMoveTime: ${lastSmartMoveTime} | now: ${Date.now()} | gecikme: ${lastSmartMoveTime ? Date.now() - lastSmartMoveTime : 'N/A'}ms`);
+		dbgFace(`FACELETS SOLVE SAFETY NET armed (350ms) | smartStateSeq: ${smartStateSeq} | lastSmartMoveTime: ${lastSmartMoveTime} | now: ${Date.now()} | delay: ${lastSmartMoveTime ? Date.now() - lastSmartMoveTime : 'N/A'}ms`);
 
 		const tid = setTimeout(() => {
-			// 350ms sonra hala timeStartedAt varsa BLE hamle event gelmemis demektir
-			// — yedek olarak FACELETS ile commit et.
-			dbgFace(`FACELETS SOLVE SAFETY NET fire (BLE hamle gecikti)`);
+			// If timeStartedAt still exists after 350ms, BLE move event did not arrive
+			// — commit via FACELETS as fallback.
+			dbgFace(`FACELETS SOLVE SAFETY NET fire (BLE move delayed)`);
 			if (needsCubeReset) {
 				resetMovesRef.current?.(true, false, lastSmartMoveTimeRef.current || undefined);
 				setNeedsCubeReset(false);
@@ -453,20 +453,20 @@ export default function SmartCube() {
 	}, [smartStateSeq, timeStartedAt]);
 
 	// FACELETS scramble completion safety net:
-	// smartCurrentState BLE'den her FACELETS event'inde guncellenir.
-	// Eger fiziksel kup hedef duruma ulastiysa, move matcher'i beklemeden tamamla.
+	// smartCurrentState is updated from BLE on each FACELETS event.
+	// If physical cube reaches target state, complete without waiting for move matcher.
 	useEffect(() => {
 		if (!smartCurrentState || !targetFaceletsRef.current) return;
-		if (timeStartedAt || !scramble) return; // solve sirasinda veya scramble yokken calisma
+		if (timeStartedAt || !scramble) return; // do not run during solve or when no scramble exists
 		if (useSpaceWithSmartCube || smartCubeConnecting) return;
-		// Scramble zaten tamamlandiysa (correction veya matcher tarafindan) tekrar tetikleme
+		// Do not retrigger if scramble already completed (via correction or matcher)
 		if (scrambleCompletedAtRef.current) return;
 
-		// Correction modunda kup cozulduyse → orijinal scramble'a don
-		// Senaryo: karisik kup baglandi → correction path gosterildi → kullanici tamamlayamadi
-		// (TOO_MANY) → kupu cozdu → simdi orijinal scramble'i cozulmus kupten takip etsin
+		// If cube is solved during correction mode → restore original scramble
+		// Scenario: mixed cube connected → correction path shown → user could not complete
+		// (TOO_MANY) → solved cube → now track original scramble from solved cube
 		if (smartCurrentState === DEFAULT_SOLVED_STATE && originalScramble && scramble !== originalScramble) {
-			dbgSync('Kup correction sirasinda cozuldu — orijinal scramble restore ediliyor');
+			dbgSync('Cube solved during correction — restoring original scramble');
 			setTimerParams({
 				scramble: originalScramble,
 				smartTurnOffset: smartTurns.length,
@@ -476,7 +476,7 @@ export default function SmartCube() {
 		}
 
 		if (smartCurrentState === targetFaceletsRef.current) {
-			dbgFace('FACELETS SCRAMBLE SAFETY NET tetiklendi — fiziksel kup hedefte (useEffect)',
+			dbgFace('FACELETS SCRAMBLE SAFETY NET triggered — physical cube at target (useEffect)',
 				`\n  facelets: ${smartCurrentState.slice(0, 27)}...`,
 				`\n  target:   ${targetFaceletsRef.current.slice(0, 27)}...`,
 				`\n  scramble: ${scramble?.slice(0, 50)}`,
@@ -495,7 +495,7 @@ export default function SmartCube() {
 					audio.volume = 1.0;
 					audio.play().catch(e => console.warn('Audio play failed:', e));
 				} catch (err) {
-					// Audio hata — kritik degil
+					// Audio error — not critical
 				}
 			}
 
@@ -512,7 +512,7 @@ export default function SmartCube() {
 
 		const interval = setInterval(() => {
 			if (smartPhysicallySolvedRef.current) {
-				dbgFace('POLLING SAFETY NET — fiziksel kup cozulmus, timer durduruluyor');
+				dbgFace('POLLING SAFETY NET — physical cube solved, stopping timer');
 				if (needsCubeResetRef.current) {
 					resetMovesRef.current?.(true, false, lastSmartMoveTimeRef.current || undefined);
 				} else {
@@ -524,7 +524,7 @@ export default function SmartCube() {
 		return () => clearInterval(interval);
 	}, [timeStartedAt, useSpaceWithSmartCube]);
 
-	// Direct Gyro Subscription (Bylassing Redux)
+	// Direct Gyro Subscription (Bypassing Redux)
 	useEffect(() => {
 		if (!connect.current || !connect.current.activeCube) return;
 
@@ -538,8 +538,8 @@ export default function SmartCube() {
 					const quat = new THREE.Quaternion(qx, qz, -qy, qw).normalize();
 
 					if (!gyroBasisRef.current) {
-						// Full basis: ilk okumanin tamamini yakalayip tersinir
-						// Referans (gan-cube-sample) ile ayni yaklasim
+						// Full basis: capture complete first reading and invert
+						// Same approach as reference (gan-cube-sample)
 						gyroBasisRef.current = quat.clone().conjugate();
 					}
 
@@ -553,35 +553,35 @@ export default function SmartCube() {
 		}
 	}, [smartCubeConnected]); // Re-subscribe if connection changes
 
-	// ── Initial Sync: kup baglaninca fiziksel durumu oku ve scramble hesapla ──
+	// ── Initial Sync: when cube connects, read physical state and calculate scramble ──
 	const initialSyncDoneRef = useRef(false);
 
 	useEffect(() => {
 		if (!smartCubeConnected || !smartCurrentState || !scramble) return;
-		if (timeStartedAt) return; // Solve sirasinda calismaz
+		if (timeStartedAt) return; // Do not run during solve
 		if (initialSyncDoneRef.current) return;
-		// Correction mode'dayken reconnect olursa tekrar calismamali
-		// BLE disconnect/reconnect initialSyncDoneRef'i resetler ama bu guard yeni correction'i engeller
+		// If reconnect during correction mode, should not run again
+		// BLE disconnect/reconnect resets initialSyncDoneRef but this guard prevents new correction
 		if (originalScramble && scramble !== originalScramble) return;
 		initialSyncDoneRef.current = true;
 
 		const SOLVED = DEFAULT_SOLVED_STATE;
 		const currentFacelets = smartCurrentState;
 
-		// Kup cozukse — orijinal scramble'i oldugu gibi kullan, TwistyPlayer solved (alg='')
+		// If cube is solved — use original scramble as is, TwistyPlayer solved (alg='')
 		if (currentFacelets === SOLVED) {
-			dbgSync('Kup COZULMUS baglandi — sync gerekmez');
+			dbgSync('Cube SOLVED when connected — no sync needed');
 
 			return;
 		}
-		// FACELETS solved degil — karisik kup baglanmis olabilir VEYA FACELETS parsing hatali.
-		// Bazi GAN modellerinde (orn. GAN 12) FACELETS byte offset'leri farkli olabiliyor,
-		// bu da cozulmus kupu karisik olarak gosteriyor. Correction path hesaplamak yerine
-		// solved olarak devam et. Gercekten karisiksa kullanici "Cozulmus olarak isaretle" butonunu kullanabilir.
-		dbgSync(`FACELETS ≠ SOLVED (${currentFacelets.slice(0, 18)}...) — correction path atlanıyor`);
+		// FACELETS not solved — might be mixed cube connected OR FACELETS parsing error.
+		// On some GAN models (e.g. GAN 12) FACELETS byte offsets differ,
+		// which shows solved cube as mixed. Instead of computing correction path,
+		// continue as solved. If truly mixed, user can use "Mark as solved" button.
+		dbgSync(`FACELETS ≠ SOLVED (${currentFacelets.slice(0, 18)}...) — skipping correction path`);
 	}, [smartCubeConnected, smartCurrentState]);
 
-	// Disconnect olunca initial sync'i resetle (reconnect'te tekrar calissin)
+	// Reset initial sync when disconnected (so it runs again on reconnect)
 	useEffect(() => {
 		if (!smartCubeConnected) {
 			initialSyncDoneRef.current = false;
@@ -595,7 +595,7 @@ export default function SmartCube() {
 		};
 	}, []);
 
-	// Arka planda BLE pil yoklamasini durdur, on planda yeniden baslat
+	// Stop BLE battery polling in background, restart in foreground
 	useEffect(() => {
 		const unsub = onVisibilityChange((visible) => {
 			const cube = connect.current?.activeCube as any;
@@ -681,26 +681,26 @@ export default function SmartCube() {
 	function checkForStartAfterTurn(currentTurns: any[]) {
 		if (useSpaceWithSmartCube || smartCubeConnecting) return;
 
-		// [CHECK_START] Entry — checkForStartAfterTurn'e her giriste hangi state ile geldigimizi izle
+		// [CHECK_START] Entry — track which state we enter with on each checkForStartAfterTurn call
 		const lastTurn = currentTurns[currentTurns.length - 1];
 		dbgTimer(`CHECK_START entry | currentTurns.length=${currentTurns.length} | lastTurn=${lastTurn?.turn || '-'} (completedAt=${lastTurn?.completedAt || '-'}) | scrambleCompletedAtRef=${scrambleCompletedAtRef.current ? 'SET(' + (Date.now() - scrambleCompletedAtRef.current.getTime()) + 'ms ago)' : 'null'} | timeStartedAt=${!!timeStartedAt} | scramble.head=${scramble?.slice(0, 30) || 'null'}`);
 
 		if (scrambleCompletedAtRef.current) {
 			const firstSolveTurn = currentTurns[currentTurns.length - 1];
 
-			// GUARD: scramble bittikten sonra resetMoves smartTurns'u sifirlar.
-			// Bu sifirlama useEffect'i bos array ile yeniden tetikler — kullanici fiziksel
-			// olarak hamle yapmadan startTimer'in yanlislikla cagrilmasini onle.
-			// Gerçek "ilk solve hamlesi" gelene kadar bekle.
+			// GUARD: after scramble finishes, resetMoves clears smartTurns.
+			// This clearing triggers useEffect with empty array — prevent startTimer being
+			// accidentally called before user physically makes a move.
+			// Wait until real "first solve move" arrives.
 			if (!firstSolveTurn) {
-				dbgTimer('CHECK_START | scrambleCompletedAtRef set ama henuz yeni solve hamlesi YOK — beklenecek');
+				dbgTimer('CHECK_START | scrambleCompletedAtRef set but no new solve move yet — waiting');
 				return;
 			}
 
 			const msSinceScrambleEnd = Date.now() - scrambleCompletedAtRef.current.getTime();
-			// [CHECK_START] startTimer cagrisindan ONCE detayli context — ilk solve hamlesi mi yoksa scramble batch'inin parcasi mi?
-			dbgTimer(`!!! TIMER START tetiklendi | firstSolveTurn=${firstSolveTurn?.turn} (completedAt=${firstSolveTurn?.completedAt}) | scramble bitti=${msSinceScrambleEnd}ms once | currentTurns.length=${currentTurns.length} | appliedTurnsRef=${appliedTurnsRef.current} | son 3 turn=[${currentTurns.slice(-3).map((t: any) => t.turn).join(' ')}]`);
-			dbgTimer('TIMER START — scramble onceden tamamlanmis, ilk hamle geldi');
+			// [CHECK_START] detailed context BEFORE startTimer call — is it first solve move or part of scramble batch?
+			dbgTimer(`!!! TIMER START triggered | firstSolveTurn=${firstSolveTurn?.turn} (completedAt=${firstSolveTurn?.completedAt}) | scramble finished=${msSinceScrambleEnd}ms ago | currentTurns.length=${currentTurns.length} | appliedTurnsRef=${appliedTurnsRef.current} | last 3 moves=[${currentTurns.slice(-3).map((t: any) => t.turn).join(' ')}]`);
+			dbgTimer('TIMER START — scramble already completed, first move received');
 			startTimer(firstSolveTurn?.completedAt);
 			let it = msSinceScrambleEnd / 1000;
 			it = Math.floor(it * 100) / 100;
@@ -714,11 +714,11 @@ export default function SmartCube() {
 
 		if (!currentTurns.length || timeStartedAt || !scramble) return;
 
-		// FACELETS-based completion: fiziksel kup hedef durumda mi?
-		// Move matcher'dan bagimsiz, en guvenilir yontem.
-		// L2 = L'+L' gibi ikili hamleler, hatali hamleler vs. sorun yaratmaz.
+		// FACELETS-based completion: is physical cube at target state?
+		// Independent from move matcher, most reliable method.
+		// Double moves like L2 = L'+L', wrong moves, etc. do not cause issues.
 		if (targetFaceletsRef.current && smartCurrentState === targetFaceletsRef.current) {
-			dbgFace('FACELETS MATCH (checkForStart) — fiziksel kup hedefte!');
+			dbgFace('FACELETS MATCH (checkForStart) — physical cube at target!');
 
 			scrambleCompletedAtRef.current = new Date();
 
@@ -761,20 +761,20 @@ export default function SmartCube() {
 		);
 
 		if (matched) {
-			// Move matcher eslesti — cubejs ile dogrula (FACELETS lag'inden bagimsiz)
-			// cubejs her hamle event'inde senkron guncellenir, FACELETS 1+ batch geride kalabilir
+			// Move matcher matched — verify with cubejs (independent from FACELETS lag)
+			// cubejs updates synchronously on each move event, FACELETS can lag by 1+ batches
 			if (smartCubeConnected && targetFaceletsRef.current) {
 				const cubejsState = cubejs.current.asString();
 				if (cubejsState !== targetFaceletsRef.current) {
-					// BLE move kaybi — FACELETS safety net yakalayacak
-					dbgMatch('MATCHED ama cubejs UYUSMUYOR — FACELETS safety net bekleniyor',
+					// BLE move loss — FACELETS safety net will catch
+					dbgMatch('MATCHED but cubejs DOES NOT MATCH — waiting for FACELETS safety net',
 						`\n  cubejs:  ${cubejsState.slice(0, 27)}...`,
 						`\n  target:  ${targetFaceletsRef.current.slice(0, 27)}...`);
 					return;
 				}
-				// cubejs eslesti — FACELETS geride olsa bile guvenli
+				// cubejs matched — safe even if FACELETS is behind
 			}
-			dbgMatch('SCRAMBLE TAMAMLANDI (move matcher + cubejs onayladi)');
+			dbgMatch('SCRAMBLE COMPLETED (move matcher + cubejs confirmed)');
 
 			scrambleCompletedAtRef.current = new Date();
 
@@ -797,37 +797,37 @@ export default function SmartCube() {
 				startInspection(context);
 			}
 		} else if (matchStatus.includes('wrong')) {
-			// Yanlis hamle tespit — undo sirasini hesapla ve goster
+			// Wrong move detected — calculate and show undo sequence
 			const firstWrongIdx = matchStatus.indexOf('wrong');
 			const wrongUserMoves = userMoves.slice(firstWrongIdx);
 
 			if (wrongUserMoves.length > 7) {
-				// 8+ yanlis hamle — kupu coz mesaji goster
-				dbgCorr(`WRONG tespit | ${wrongUserMoves.length} yanlis hamle — TOO_MANY`);
+				// 8+ wrong moves — show solve cube message
+				dbgCorr(`WRONG detected | ${wrongUserMoves.length} wrong moves — TOO_MANY`);
 				setTimerParams({ smartUndoMoves: ['TOO_MANY'] });
 			} else {
 				const undoSequence = wrongUserMoves.slice().reverse().map(invertMove);
-				dbgCorr(`WRONG tespit | undo sirasi: [${undoSequence.join(' ')}]`);
+				dbgCorr(`WRONG detected | undo sequence: [${undoSequence.join(' ')}]`);
 				setTimerParams({ smartUndoMoves: undoSequence });
 			}
 		} else if (matchStatus.includes('half')) {
-			// Yarim esleme — turuncu renk yeterli bilgi veriyor
+			// Partial match — orange color provides sufficient info
 			setTimerParams({ smartUndoMoves: null });
 		} else {
-			// Hepsi perfect veya pending — undo temizle
+			// All perfect or pending — clear undo
 			setTimerParams({ smartUndoMoves: null });
 		}
 	}
 
 	function resetMoves(markSolved: boolean = false, isScrambleFinish: boolean = false, endTimestamp?: number) {
-		dbgReset(`resetMoves() | markSolved: ${markSolved} | isScrambleFinish: ${isScrambleFinish} | endTimestamp: ${endTimestamp || 'yok'} | isSolveEnd: ${!!timeStartedAt}`);
+		dbgReset(`resetMoves() | markSolved: ${markSolved} | isScrambleFinish: ${isScrambleFinish} | endTimestamp: ${endTimestamp || 'not set'} | isSolveEnd: ${!!timeStartedAt}`);
 
 		const isSolveEnd = !!timeStartedAt;
 
 		if (isSolveEnd) {
-			// Per-solve post-solve linear fit: cstimer tsLinearFix / gan-cube-sample cubeTimestampLinearFit ile aynı yaklaşım
-			// Çözüm hamlelerinin (cubeTimestamp, localTimestamp) çiftleri üzerinde linear regression yaparak
-			// her hamlenin zamanını yeniden hesaplar — pre-solve tahminden çok daha doğru
+			// Per-solve post-solve linear fit: same approach as cstimer tsLinearFix / gan-cube-sample cubeTimestampLinearFit
+			// Performs linear regression on solution move (cubeTimestamp, localTimestamp) pairs,
+			// recalculating each move's time — much more accurate than pre-solve estimate
 			const { correctedMoves, finalTimeMs } = cubeTimestampLinearFit(
 				smartTurns,
 				timeStartedAt.getTime()
@@ -835,21 +835,21 @@ export default function SmartCube() {
 
 			let finalTimeMilli: number | null = Math.round(finalTimeMs);
 
-			// Fallback: linear fit sonucu geçersizse ham fark kullan
+			// Fallback: if linear fit result is invalid, use raw difference
 			if (finalTimeMilli <= 0 && endTimestamp && timeStartedAt) {
 				finalTimeMilli = endTimestamp - timeStartedAt.getTime();
 			}
 
 			dbgTimer(`TIMER STOP (linear fit) | finalTimeMilli: ${finalTimeMilli} | moves: ${correctedMoves.length}`);
 
-			// Pro user: compact format ile kayit, server method_steps olusturur.
-			// Free user: smart_turns yazilmaz, method_steps olusmaz, DB sismez.
+			// Pro user: save in compact format, server creates method_steps.
+			// Free user: smart_turns not written, method_steps not created, DB unchanged.
 			//
-			// IMPORTANT: correctedMoves[i].completedAt cubeTimestampLinearFit'ten cikiyor —
-			// bu BLE adapter'in localTimestamp'i (Date.now()-benzeri MUTLAK epoch ms).
-			// timeStartedAt.getTime() ile cikartmak BLE clock vs JS clock drift yuzunden
-			// devasa offsetler uretebiliyor. Daima ilk move'u 0 baseline yap → 4-byte/move
-			// ortalama offset, parser tarafinda ekstra is yok.
+			// IMPORTANT: correctedMoves[i].completedAt comes from cubeTimestampLinearFit —
+			// this is BLE adapter's localTimestamp (absolute epoch ms like Date.now()).
+			// Subtracting with timeStartedAt.getTime() can produce huge offsets due to
+			// BLE clock vs JS clock drift. Always use first move as 0 baseline → 4-byte/move
+			// average offset, no extra work for parser.
 			let smartTurnsToSave: string | null = null;
 			if (userIsPro) {
 				const baseMs = correctedMoves.length > 0 ? correctedMoves[0].completedAt : 0;
@@ -862,9 +862,9 @@ export default function SmartCube() {
 				);
 			}
 
-			// cstimer-grade HTM hamle sayisi: ardisik paralel duzlemde ayni yuze tekrarli
-			// hamleler 1 sayilir (R R = R2 = 1, R U R = 2). Ham move dizisinin uzunlugu yerine
-			// HTM kullanmak DB'ye, TPS hesabina ve UI'a tutarli, dogru deger yansitir.
+			// cstimer-grade HTM move count: consecutive parallel plane same face repeated
+			// moves count as 1 (R R = R2 = 1, R U R = 2). Using HTM instead of raw move length
+			// reflects consistent, correct values to DB, TPS calculation, and UI.
 			const htmCount = countHTM(correctedMoves.map((m: any) => m.turn));
 
 			endTimer(context, finalTimeMilli, {
@@ -875,8 +875,8 @@ export default function SmartCube() {
 				smart_turns: smartTurnsToSave,
 			});
 
-			// Düzeltilmiş evre analizi: LiveAnalysisOverlay'in doğru süreleri göstermesi için
-			// correctedMoves.completedAt linear fit ile düzeltilmiş — ham timestamp'lerden daha doğru
+			// Corrected phase analysis: so LiveAnalysisOverlay shows correct times
+			// correctedMoves.completedAt corrected via linear fit — more accurate than raw timestamps
 			dbgCorr(`CORR_ANALYSIS start | corrected.length=${correctedMoves.length} | htm=${htmCount} | startState=${startState?.length === 54 ? startState.slice(0, 27) + '...' : `INVALID(len=${startState?.length})`} | first3=${correctedMoves.slice(0, 3).map((m: any) => m.turn).join(' ')} | last3=${correctedMoves.slice(-3).map((m: any) => m.turn).join(' ')}`);
 			try {
 				const correctedTurns = correctedMoves.map(m => ({ ...m, time: m.completedAt }));
@@ -889,7 +889,7 @@ export default function SmartCube() {
 					lastSmartSolveStats: { turns: htmCount, tps, correctedAnalysis }
 				});
 			} catch (e: any) {
-				// Analiz başarısız olursa endTimer'daki basit stats yeterli
+				// If analysis fails, simple stats from endTimer are sufficient
 				dbgCorr(`CORR_ANALYSIS FAIL | message=${e?.message} | startStateLen=${startState?.length} | corrLen=${correctedMoves.length} | stack=${e?.stack?.slice(0, 200)}`);
 			}
 		}
@@ -902,8 +902,8 @@ export default function SmartCube() {
 			// (which might be just a short correction path).
 			preservedScrambleRef.current = originalScrambleRef.current || scramble;
 
-			// Faz takibi icin: scramble bittigindeki kup durumunu kaydet
-			// Bu, LiveAnalysisOverlay'in dogru baslangic durumundan analiz yapmasini saglar
+			// For phase tracking: save cube state when scramble finishes
+			// This allows LiveAnalysisOverlay to analyze from correct starting state
 			const scrambledState = cubejs.current.asString();
 			setStartState(scrambledState);
 		} else {
@@ -914,17 +914,17 @@ export default function SmartCube() {
 			smartSolvedState: markSolved ? DEFAULT_SOLVED_STATE : smartSolvedState,
 			smartTurnOffset: 0,
 			smartUndoMoves: null,
-			// isSolveEnd ise smartTurns/smartPickUpTime/lastSmartMoveTime endTimer'da zaten reset edildi
-			// Tekrar set edersek useEffect([smartTurns]) gereksiz yere ikinci kez tetiklenir
+			// If isSolveEnd, smartTurns/smartPickUpTime/lastSmartMoveTime already reset in endTimer
+			// Setting again unnecessarily triggers useEffect([smartTurns]) a second time
 			...(isSolveEnd
 				? { originalScramble: '' }
 				: { smartTurns: [], smartPickUpTime: 0, lastSmartMoveTime: 0 }),
 		});
 
-		// NOT: Gyro basis SIFIRLANMIYOR. Referans projede de (gan-cube-sample) basis
-		// tum session boyunca korunuyor. Sadece yeni BLE baglantisi veya kullanici
-		// "Reset Gyro" butonu ile sifirlanir. Bu sayede sanal kup her zaman
-		// fiziksel kupun gercek orientasyonunu yansitir.
+		// NOTE: Gyro basis NOT reset. In reference project too (gan-cube-sample), basis
+		// is preserved throughout session. Only reset on new BLE connection or user
+		// "Reset Gyro" button. This way virtual cube always reflects physical cube's
+		// actual orientation.
 
 		// Note: Visual cube and CubeJS reset is handled in the useEffect detecting smartTurns change
 	}
@@ -1085,7 +1085,7 @@ export default function SmartCube() {
 			smartPhysicallySolved: true,
 		});
 
-		// Correction mode'daysa orijinal scramble'i restore et
+		// If in correction mode, restore original scramble
 		if (originalScramble && scramble !== originalScramble) {
 			setTimerParams({
 				scramble: originalScramble,
@@ -1099,7 +1099,7 @@ export default function SmartCube() {
 			originalScrambleRef.current = scramble;
 		}
 
-		// _trackerCube'u da solved'a resetle
+		// Also reset _trackerCube to solved
 		const activeCube = (connect.current as any)?.activeCube;
 		if (activeCube && activeCube._trackerCube) {
 			activeCube._trackerCube = new Cube();

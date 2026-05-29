@@ -203,8 +203,8 @@ export class AdminResolver {
 		}
 
 		await resolveReportsOfUserId(context, targetUser.id);
-		// Banlanan kullanicinin tum socket'lerini kopar — listede ghost user kalmasin,
-		// real-time bildirim/chat akislari engellensin.
+		// Disconnect all sockets of banned user — prevent ghost users in lists,
+		// and block real-time notification/chat flows.
 		disconnectUserSockets(targetUser.id);
 		return await createBanLog(admin, targetUser, reason, min, forever, res.banned_until);
 	}
@@ -421,9 +421,9 @@ export class AdminResolver {
 	}
 
 	/**
-	 * Test mutation: WCA bildirimlerini bir kullaniciya yollar.
-	 * WCA ID ile kullaniciyi bulur, hem result_entered hem round_finished push'larini test eder.
-	 * Sample data ile calisir, gercek yarisma gerekli degil.
+	 * Test mutation: Sends WCA notifications to a user.
+	 * Finds user by WCA ID, tests both result_entered and round_finished pushes.
+	 * Works with sample data, no real competition required.
 	 */
 	@Authorized([Role.ADMIN])
 	@Mutation(() => Boolean)
@@ -432,7 +432,7 @@ export class AdminResolver {
 	): Promise<boolean> {
 		const prisma = getPrisma();
 
-		// WCA ID ile kullaniciyi bul
+		// Find user by WCA ID
 		const integration = await prisma.integration.findFirst({
 			where: {service_name: 'wca', wca_id: wcaId},
 			include: {
@@ -443,7 +443,7 @@ export class AdminResolver {
 		});
 
 		if (!integration?.user) {
-			throw new GraphQLError(ErrorCode.NOT_FOUND, `WCA ID '${wcaId}' icin kullanici bulunamadi`);
+			throw new GraphQLError(ErrorCode.NOT_FOUND, `User not found for WCA ID '${wcaId}'`);
 		}
 
 		const user = integration.user;
@@ -451,7 +451,7 @@ export class AdminResolver {
 		const eventId = '333';
 		const eventName = WcaApiService.getShortEventName(eventId);
 		const compId = 'TestCompetition2026';
-		const compName = 'Test Yarismasi 2026';
+		const compName = 'Test Competition 2026';
 
 		const baseInput = {
 			user: user as any,
@@ -459,7 +459,7 @@ export class AdminResolver {
 			sendEmail: false,
 		};
 
-		// --- Test 1: Sonuc girildi (Avg + Single) ---
+		// --- Test 1: Result entered (Avg + Single) ---
 		{
 			const body = 'Avg: 12.45 · Single: 11.20';
 			const notif = new WcaResultEnteredNotification(baseInput, {
@@ -480,7 +480,7 @@ export class AdminResolver {
 			});
 		}
 
-		// --- Test 2: Round 1 bitti, ust tura yukseldi ---
+		// --- Test 2: Round 1 finished, advanced to next round ---
 		{
 			const notif = new WcaRoundFinishedNotification(baseInput, {
 				competitionId: compId,
@@ -503,7 +503,7 @@ export class AdminResolver {
 			});
 		}
 
-		// --- Test 3: Round 2 bitti, ust tura YUKSELEMEDI ---
+		// --- Test 3: Round 2 finished, did NOT advance ---
 		{
 			const notif = new WcaRoundFinishedNotification(baseInput, {
 				competitionId: compId,
@@ -526,7 +526,7 @@ export class AdminResolver {
 			});
 		}
 
-		// --- Test 4: Final bitti ---
+		// --- Test 4: Final finished ---
 		{
 			const notif = new WcaRoundFinishedNotification(baseInput, {
 				competitionId: compId,
@@ -584,23 +584,23 @@ export class AdminResolver {
 	@Authorized([Role.ADMIN])
 	@Mutation(() => BackfillResult)
 	async backfillWcaIds(): Promise<BackfillResult> {
-		// Mevcut tum logic WcaBackfillService'e tasindi (cron da ayni fonksiyonu cagiriyor).
-		// Admin mutation manuel tetikleme icin saklaniyor — boylece "site_config wca_backfill_enabled=false"
-		// olsa bile admin tek seferlik calistirma yapabilir.
+		// All current logic moved to WcaBackfillService (cron calls the same function).
+		// Admin mutation kept for manual triggering — so even if "site_config wca_backfill_enabled=false"
+		// is set, admin can still run it once.
 		return await runWcaBackfill();
 	}
 
 	/**
-	 * Tum smart cube solve'larin SolveMethodStep kayitlarini SILER ve yeniden hesaplar.
+	 * DELETES and recalculates SolveMethodStep records for all smart cube solves.
 	 *
-	 * Tek kapsayici mutation:
-	 *   - Step kaydi olmayan solve'lar -> olusturulur (eski backfill davranisi)
-	 *   - Step kaydi olan solve'lar -> silinip yeniden hesaplanir (engine fix sonrasi
-	 *     eski step.turn_count degerleri duzelir)
-	 *   - smart_turns yoksa veya parse edilemez ise solve is_smart_cube=false olarak
-	 *     downgrade edilir (eski bozuk veri temizligi).
+	 * Single comprehensive mutation:
+	 *   - Solves without step records -> created (old backfill behavior)
+	 *   - Solves with step records -> deleted and recalculated (fixes old step.turn_count values
+	 *     after engine fix)
+	 *   - If smart_turns missing or unparseable, solve downgraded to is_smart_cube=false
+	 *     (old corrupted data cleanup).
 	 *
-	 * Engine algoritmasi degistiginde (orn. boundary-aware HTM duzeltmesi) calistir.
+	 * Run when engine algorithm changes (e.g. boundary-aware HTM fix).
 	 */
 	@Authorized([Role.ADMIN])
 	@Mutation(() => MethodStepsBackfillResult)
@@ -623,12 +623,12 @@ export class AdminResolver {
 		});
 
 		result.totalCandidates = candidates.length;
-		console.log(`[MethodStepsReindex] ${candidates.length} aday solve bulundu`);
+		console.log(`[MethodStepsReindex] ${candidates.length} candidate solves found`);
 
 		for (const cand of candidates) {
 			result.processed++;
 
-			// smart_turns yoksa parse edilemez -> downgrade
+			// smart_turns missing or unparseable -> downgrade
 			if (!cand.smart_turns || typeof cand.smart_turns !== 'string') {
 				result.skippedNoTurns++;
 				try {
@@ -643,7 +643,7 @@ export class AdminResolver {
 			try {
 				const turns = parseSmartTurns(cand.smart_turns);
 				if (!turns.length) {
-					// Bos turns -> downgrade
+					// Empty turns -> downgrade
 					await updateSolveLiteral(cand.id, { is_smart_cube: false });
 					result.downgraded++;
 					continue;
@@ -652,12 +652,12 @@ export class AdminResolver {
 				const htmCount = countHTM(turns.map((t) => t.turn));
 				await deleteSolveMethodSteps({ id: cand.id });
 				await createSolveMethodSteps({ id: cand.id }, steps);
-				// Eski solve'larda smart_turn_count null veya yanlis olabilir — engine ile yeniden
-				// hesapla. Bu UI'daki tum turn/TPS gosterimleri icin tek dogru kaynak.
+				// Old solves may have null or incorrect smart_turn_count — recalculate with engine.
+				// This is the single source of truth for all turn/TPS displays in the UI.
 				await updateSolveLiteral(cand.id, { smart_turn_count: htmCount });
 				result.filled++;
 			} catch (e: any) {
-				// Bozuk veri — solve metadata'sini bozma, sadece skip et.
+				// Corrupted data — don't corrupt solve metadata, just skip it.
 				console.warn(`[MethodStepsReindex] solve ${cand.id} skipped: ${e?.message}`);
 				result.error++;
 			}
@@ -689,7 +689,7 @@ export class AdminResolver {
 			failedIds: [],
 		};
 
-		// 1. WCA'dan yarisma listesini sayfa sayfa cek
+		// 1. Fetch competition list from WCA page by page
 		const PER_PAGE = 100;
 		const allComps: any[] = [];
 		const baseUrl = 'https://www.worldcubeassociation.org/api/v0/competitions';
@@ -712,7 +712,7 @@ export class AdminResolver {
 				allComps.push(...data.filter((c) => !c.cancelled_at));
 				if (data.length < PER_PAGE) break;
 				page++;
-				await sleep(500); // sayfalar arasi nazik bekleme
+				await sleep(500); // polite wait between pages
 			} catch (err: any) {
 				console.error('[BulkArchive] list fetch failed', err?.message);
 				break;
@@ -722,7 +722,7 @@ export class AdminResolver {
 		result.total = allComps.length;
 		console.log(`[BulkArchive] ${result.total} comp(s) found, starting import...`);
 
-		// 2. Mevcut arsivleri tek seferde cek (skipExisting icin)
+		// 2. Fetch existing archives at once (for skipExisting)
 		const existingIds = new Set<string>();
 		if (skipExisting) {
 			const existing = await prisma.archivedWcaCompetition.findMany({
@@ -732,7 +732,7 @@ export class AdminResolver {
 			existing.forEach((e) => existingIds.add(e.id));
 		}
 
-		// 3. Tek tek arsivle, rate-limit ile
+		// 3. Archive one by one, with rate-limiting
 		for (const comp of allComps) {
 			result.lastProcessedId = comp.id;
 
@@ -775,7 +775,7 @@ export class AdminResolver {
 			throw new Error('ES client not initialized');
 		}
 
-		// Index yoksa olustur (mappings ile)
+		// Create index if it doesn't exist (with mappings)
 		await bootstrapArchivedCompIndex();
 
 		const result: ReindexESResult = {total: 0, indexed: 0, failed: 0};

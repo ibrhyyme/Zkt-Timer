@@ -26,11 +26,11 @@ export function planFromProductId(productId: string | null | undefined): Product
 
 const PLAN_RANK: Record<string, number> = {monthly: 1, yearly: 2, lifetime: 3, unknown: 0};
 
-const IDEMPOTENCY_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 gun
+const IDEMPOTENCY_TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days
 
 /**
- * RevenueCat event id'si icin idempotency kontrolu.
- * Ayni event 2. kez gelirse true doner (skip).
+ * Idempotency check for RevenueCat event ID.
+ * Returns true if the same event arrives a second time (skip).
  */
 export async function isEventProcessed(eventId: string): Promise<boolean> {
 	const key = createRedisKey(RedisNamespace.IAP_EVENTS, eventId);
@@ -55,13 +55,13 @@ export interface IapPurchaseUpdate {
 }
 
 /**
- * INITIAL_PURCHASE, RENEWAL, PRODUCT_CHANGE, NON_RENEWING_PURCHASE (lifetime) event'lerinde cagrilir.
- * is_pro=true + pro_expires_at guncellenir.
+ * Called on INITIAL_PURCHASE, RENEWAL, PRODUCT_CHANGE, NON_RENEWING_PURCHASE (lifetime) events.
+ * Updates is_pro=true + pro_expires_at.
  *
  * pushKind:
- *   'initial' — yeni satin alma, "Pro hosgeldin" notification + push
- *   'change'  — plan degisikligi (upgrade/downgrade), "yukseltildi/dusuruldu" push (sadece push, DB notification yok)
- *   'silent'  — RENEWAL gibi sessiz update, hicbir bildirim
+ *   'initial' — new purchase, "Pro welcome" notification + push
+ *   'change'  — plan change (upgrade/downgrade), "upgraded/downgraded" push (push only, no DB notification)
+ *   'silent'  — silent update like RENEWAL, no notification
  */
 export async function applyIapPurchase(
 	update: IapPurchaseUpdate,
@@ -71,31 +71,30 @@ export async function applyIapPurchase(
 
 	const targetUser = await getUserByIdWithSettings(update.userId);
 	if (!targetUser) {
-		logger.warn('[IAP] Kullanici bulunamadi', {userId: update.userId});
+		logger.warn('[IAP] User not found', {userId: update.userId});
 		return;
 	}
 
-	// pro_expires_at icin max(mevcut, yeni) — admin/promo Pro'nun suresi IAP'tan uzunsa korunur.
-	// Senaryo: kullanicida 6 ayligina admin Pro var, 1 aylik IAP aldi -> 6 ay korunmali.
-	// Lifetime (expiresAt=null) her zaman kazanir.
+	// For pro_expires_at: max(current, new) — admin/promo Pro's duration is preserved if longer than IAP.
+	// Scenario: user has admin Pro for 6 months, buys 1 month IAP -> 6 months should be preserved.
+	// Lifetime (expiresAt=null) always wins.
 	//
-	// KRITIK: pro_expires_at=null tek basina "lifetime" anlamina gelmez — admin Pro'yu kaldirdiysa
-	// is_pro=false + pro_expires_at=null olur. Sadece is_pro=true VE pro_expires_at=null durumunda
-	// kullanici gercek Lifetime sahibidir.
+	// CRITICAL: pro_expires_at=null alone does NOT mean "lifetime" — if admin Pro was removed,
+	// is_pro=false + pro_expires_at=null. User is truly Lifetime only when is_pro=true AND pro_expires_at=null.
 	const currentIsPro = (targetUser as any).is_pro === true;
 	const currentExpiry = (targetUser as any).pro_expires_at as Date | null | undefined;
 	let newExpiry: Date | null;
 	if (update.expiresAt === null) {
-		// Yeni IAP lifetime — sonsuz, her zaman kazanir
+		// New IAP lifetime — infinite, always wins
 		newExpiry = null;
 	} else if (currentIsPro && currentExpiry === null) {
-		// Kullanici zaten gercek Lifetime sahibi — IAP suresi gelse bile sonsuz korunur
+		// User already has true Lifetime — IAP duration is preserved even if it expires
 		newExpiry = null;
 	} else if (currentIsPro && currentExpiry && currentExpiry > update.expiresAt) {
-		// Mevcut Pro suresi daha uzak — koru (admin/promo IAP'tan uzun olabilir)
+		// Current Pro duration is longer — preserve it (admin/promo may be longer than IAP)
 		newExpiry = currentExpiry;
 	} else {
-		// Pro yok ya da mevcut sure yeni IAP'tan kisa — RC'den gelen tarihi kullan
+		// No Pro or current duration shorter than new IAP — use RC date
 		newExpiry = update.expiresAt;
 	}
 
@@ -108,7 +107,7 @@ export async function applyIapPurchase(
 			iap_product_id: update.productId,
 			iap_original_tx_id: update.originalTxId,
 			iap_latest_event_at: update.eventAt,
-			iap_cancellation_at: null, // yeni satin almada cancel state temizlenir
+			iap_cancellation_at: null, // clear cancel state on new purchase
 			iap_billing_issue_at: null,
 			iap_paused_until: null,
 		},
@@ -127,7 +126,7 @@ export async function applyIapPurchase(
 				membershipType: 'pro',
 			});
 		} catch (error) {
-			logger.error('[IAP] Initial push gonderilemedi', {error, userId: update.userId});
+			logger.error('[IAP] Failed to send initial push', {error, userId: update.userId});
 		}
 
 		try {
@@ -137,7 +136,7 @@ export async function applyIapPurchase(
 				update.platform
 			);
 		} catch (error) {
-			logger.error('[IAP] Admin Pro purchase notification gonderilemedi', {error, userId: update.userId});
+			logger.error('[IAP] Failed to send admin Pro purchase notification', {error, userId: update.userId});
 		}
 	} else if (pushKind === 'change') {
 		try {
@@ -145,15 +144,15 @@ export async function applyIapPurchase(
 			const newPlan = planFromProductId(update.productId);
 			await sendSubscriptionChangedPush(targetUser, oldPlan, newPlan);
 		} catch (error) {
-			logger.error('[IAP] Change push gonderilemedi', {error, userId: update.userId});
+			logger.error('[IAP] Failed to send change push', {error, userId: update.userId});
 		}
 	}
 }
 
 /**
- * PRODUCT_CHANGE event'inde kullaniciya plan degisikligi bildirimi gonderir.
- * Sadece push (DB notification yok) — kullanici zaten degisiklik yaptigini biliyor,
- * bu sadece confirmation. Direction: upgrade vs downgrade i18n key'ine gore mesaj.
+ * Sends plan change notification on PRODUCT_CHANGE event.
+ * Push only (no DB notification) — user already knows they made the change,
+ * this is just confirmation. Direction: upgrade vs downgrade determines i18n key.
  */
 async function sendSubscriptionChangedPush(
 	targetUser: any,
@@ -185,14 +184,14 @@ async function sendSubscriptionChangedPush(
 }
 
 /**
- * EXPIRATION / REFUND event'lerinde cagrilir.
- * Sadece IAP-kaynakli Pro'yu iptal eder. Admin/promo ile verilmis Pro KORUNUR — iap_product_id
- * null ise hicbir sey yapilmaz (kullanici IAP almamis ama admin Pro vermis senaryosu).
+ * Called on EXPIRATION / REFUND events.
+ * Revokes only IAP-sourced Pro. Admin/promo Pro is PRESERVED — if iap_product_id
+ * is null, nothing happens (user never bought IAP but admin granted Pro).
  *
- * Senaryo: kullanici IAP Pro almis, sen sonra promo ile suresi uzatmissin. IAP iptal edilince
- * Apple EXPIRATION yollar — eskiden hepsini siliyordu, simdi sadece IAP product_id'yi temizleyip
- * pro_expires_at'i admin tarafinin kontrolune birakir. Ama IAP onerildiginde admin suresi de
- * sifirlanmali mi? Hayir — admin Pro'nun pro_expires_at'i max() ile zaten korunmus oluyor.
+ * Scenario: user bought IAP Pro, then you extended duration via promo. IAP gets cancelled,
+ * Apple sends EXPIRATION — previously deleted everything, now just clears IAP product_id
+ * and lets admin duration take over. But when IAP is revoked, should admin duration also
+ * reset? No — admin Pro's pro_expires_at is already protected via max() logic.
  */
 export async function revokeIapPro(userId: string, reason: 'expiration' | 'refund'): Promise<void> {
 	const prisma = getPrisma();
@@ -202,23 +201,23 @@ export async function revokeIapPro(userId: string, reason: 'expiration' | 'refun
 	});
 
 	if (!user) {
-		logger.warn('[IAP] revokeIapPro: kullanici bulunamadi', {userId});
+		logger.warn('[IAP] revokeIapPro: user not found', {userId});
 		return;
 	}
 
 	if (!user.iap_product_id) {
-		// IAP-kaynakli degil (admin/promo Pro). Pro'ya dokunma.
+		// Not IAP-sourced (admin/promo Pro). Don't touch Pro.
 		logger.info('[IAP] revokeIapPro skipped: not IAP-sourced Pro', {userId, reason});
 		return;
 	}
 
-	// IAP-kaynakli Pro: iptal et. is_pro=false yalnizca admin suresi de gecmisteyse anlamli;
-	// admin Pro hala aktifse onun pro_expires_at'i bizi koruyor — ama IAP product_id'yi temizleyip
-	// is_pro flag'ini DB'deki pro_expires_at'a uygun set etmeliyiz.
+	// IAP-sourced Pro: revoke. is_pro=false makes sense only if admin duration also expired;
+	// if admin Pro is still active, its pro_expires_at protects us — but we must clear IAP product_id
+	// and set is_pro flag based on DB's pro_expires_at.
 	const now = new Date();
 	const adminProActive = user.pro_expires_at && user.pro_expires_at > now;
-	// Admin pro_expires_at IAP'in expires_at'inden uzunsa, max() koymustuk —
-	// o yuzden IAP iptal edilse bile pro_expires_at admin sayesinde gelecekte kalmis olabilir.
+	// If admin pro_expires_at is longer than IAP's expires_at, we used max() logic —
+	// so when IAP is revoked, pro_expires_at may still be in the future due to admin duration.
 
 	await prisma.userAccount.update({
 		where: {id: userId},
@@ -233,12 +232,12 @@ export async function revokeIapPro(userId: string, reason: 'expiration' | 'refun
 			iap_billing_issue_at: null,
 		},
 	});
-	logger.info('[IAP] Pro iptal edildi', {userId, reason, adminProActive});
+	logger.info('[IAP] Pro revoked', {userId, reason, adminProActive});
 }
 
 /**
- * CANCELLATION — kullanici iptal etti ama period sonuna kadar access var.
- * is_pro DEGISMEZ, sadece iap_cancellation_at set edilir.
+ * CANCELLATION — user cancelled but has access until period end.
+ * is_pro DOES NOT CHANGE, only iap_cancellation_at is set.
  */
 export async function markCancellation(userId: string, cancelledAt: Date): Promise<void> {
 	const prisma = getPrisma();
@@ -252,7 +251,7 @@ export async function markCancellation(userId: string, cancelledAt: Date): Promi
 }
 
 /**
- * UNCANCELLATION — iptal geri alindi.
+ * UNCANCELLATION — cancellation was reverted.
  */
 export async function clearCancellation(userId: string): Promise<void> {
 	const prisma = getPrisma();
@@ -266,7 +265,7 @@ export async function clearCancellation(userId: string): Promise<void> {
 }
 
 /**
- * BILLING_ISSUE — kart reddedildi, grace period'da. Access devam.
+ * BILLING_ISSUE — card declined, in grace period. Access continues.
  */
 export async function markBillingIssue(userId: string, issueAt: Date): Promise<void> {
 	const prisma = getPrisma();
@@ -280,7 +279,7 @@ export async function markBillingIssue(userId: string, issueAt: Date): Promise<v
 }
 
 /**
- * SUBSCRIPTION_PAUSED (Android only) — pause suresince is_pro=false.
+ * SUBSCRIPTION_PAUSED (Android only) — while paused, is_pro=false.
  */
 export async function pauseSubscription(userId: string, pausedUntil: Date): Promise<void> {
 	const prisma = getPrisma();
@@ -295,8 +294,8 @@ export async function pauseSubscription(userId: string, pausedUntil: Date): Prom
 }
 
 /**
- * Kullanici RevenueCat app_user_id'sini kaydeder (login sirasinda).
- * Zaten kayitliysa no-op.
+ * Records user's RevenueCat app_user_id (during login).
+ * If already recorded, no-op.
  */
 export async function linkRevenueCatUserId(userId: string): Promise<void> {
 	const prisma = getPrisma();
@@ -309,11 +308,11 @@ export async function linkRevenueCatUserId(userId: string): Promise<void> {
 }
 
 /**
- * RevenueCat REST API'den entitlement durumunu cek + applyIapPurchase ile DB'yi guncelle.
- * Restore, manuel sync, TRANSFER webhook event'i ve identify race fallback'lerinde cagrilir.
+ * Fetches entitlement status from RevenueCat REST API + updates DB via applyIapPurchase.
+ * Called from restore, manual sync, TRANSFER webhook event, and identify race fallbacks.
  *
- * revenuecat_user_id DB'de bos ise userId fallback — Purchases.logIn(userId) aliasladiysa
- * RC subscriber kaydini userId ile bulabilir.
+ * If revenuecat_user_id is empty in DB, fall back to userId — if Purchases.logIn(userId)
+ * was aliased, RC subscriber record can be found by userId.
  */
 export async function syncEntitlementFromRevenueCat(userId: string): Promise<{synced: boolean; isPro: boolean}> {
 	const prisma = getPrisma();
@@ -327,7 +326,7 @@ export async function syncEntitlementFromRevenueCat(userId: string): Promise<{sy
 
 	const secretKey = process.env.REVENUECAT_SECRET_KEY;
 	if (!secretKey) {
-		logger.error('[IAP-Sync] REVENUECAT_SECRET_KEY env var eksik');
+		logger.error('[IAP-Sync] REVENUECAT_SECRET_KEY env var missing');
 		return {synced: false, isPro: false};
 	}
 
@@ -340,12 +339,12 @@ export async function syncEntitlementFromRevenueCat(userId: string): Promise<{sy
 			},
 		});
 		if (!response.ok) {
-			logger.warn('[IAP-Sync] RevenueCat API hatasi', {status: response.status, userId});
+			logger.warn('[IAP-Sync] RevenueCat API error', {status: response.status, userId});
 			return {synced: false, isPro: false};
 		}
 		rcData = await response.json();
 	} catch (err) {
-		logger.error('[IAP-Sync] RevenueCat API istegi basarisiz', {err, userId});
+		logger.error('[IAP-Sync] RevenueCat API request failed', {err, userId});
 		return {synced: false, isPro: false};
 	}
 
@@ -359,8 +358,8 @@ export async function syncEntitlementFromRevenueCat(userId: string): Promise<{sy
 
 	const productId: string = proEnt.product_identifier || '';
 
-	// `store` field'i entitlement'ta DEGIL — subscriptions[productId].store veya
-	// non_subscriptions[productId][last].store icindedir (RC REST API formati).
+	// `store` field is NOT in entitlement — it's in subscriptions[productId].store or
+	// non_subscriptions[productId][last].store (RC REST API format).
 	const subscriptions = rcData?.subscriber?.subscriptions || {};
 	const nonSubs = rcData?.subscriber?.non_subscriptions || {};
 	const sub = productId ? subscriptions[productId] : null;
@@ -373,7 +372,7 @@ export async function syncEntitlementFromRevenueCat(userId: string): Promise<{sy
 	else if (storeRaw === 'play_store') platform = 'android';
 
 	if (!platform) {
-		// Son care: user'in mevcut iap_platform field'i varsa onu fallback olarak kullan
+		// Last resort: if user has existing iap_platform field, use it as fallback
 		const existing = await prisma.userAccount.findUnique({
 			where: {id: userId},
 			select: {iap_platform: true},
@@ -381,7 +380,7 @@ export async function syncEntitlementFromRevenueCat(userId: string): Promise<{sy
 		if (existing?.iap_platform === 'ios' || existing?.iap_platform === 'android') {
 			platform = existing.iap_platform;
 		} else {
-			logger.warn('[IAP-Sync] Bilinmeyen store, atlandi', {userId, storeRaw, productId});
+			logger.warn('[IAP-Sync] Unknown store, skipped', {userId, storeRaw, productId});
 			return {synced: true, isPro: false};
 		}
 	}
@@ -405,6 +404,6 @@ export async function syncEntitlementFromRevenueCat(userId: string): Promise<{sy
 		'silent',
 	);
 
-	logger.info('[IAP-Sync] Pro senkronize edildi', {userId, platform, productId});
+	logger.info('[IAP-Sync] Pro synchronized', {userId, platform, productId});
 	return {synced: true, isPro: true};
 }

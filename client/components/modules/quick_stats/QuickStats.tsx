@@ -24,7 +24,7 @@ export default function QuickStats(props: Props) {
 	const mobileMode = useGeneral('mobile_mode');
 	let statsModuleBlocks = (stats.blocks as StatsModuleBlock[]) || [];
 
-	// Mobilde sadece 4 blok göster: AO5 best, AO12 best, PB, Worst
+	// On mobile, show only 4 blocks: AO5 best, AO12 best, PB, Worst
 	if (mobileMode && statsModuleBlocks.length > 4) {
 		statsModuleBlocks = statsModuleBlocks.slice(0, 4);
 	}
@@ -66,7 +66,7 @@ export default function QuickStats(props: Props) {
 		dispatch(
 			openModal(<CustomizeStats filterOptions={filterOptions} />, {
 				title: t('timer_modules.customize_stats'),
-				description: 'Burada özelleştir ve hemen gör',
+				description: 'Customize here and see immediately',
 			})
 		);
 	}

@@ -97,8 +97,8 @@ export async function revenueCatWebhookHandler(req: Request, res: Response): Pro
 				const pushKind = event.type === 'INITIAL_PURCHASE'
 					? 'initial'
 					: event.type === 'PRODUCT_CHANGE'
-						? 'change'   // upgrade/downgrade — "yukseltildi/dusuruldu" push
-						: 'silent';   // RENEWAL — sessiz, otomatik yenileme
+						? 'change'   // upgrade/downgrade
+						: 'silent';   // RENEWAL — silent, automatic renewal
 				await applyIapPurchase(
 					{
 						userId,
@@ -113,7 +113,7 @@ export async function revenueCatWebhookHandler(req: Request, res: Response): Pro
 				break;
 			}
 			case 'NON_RENEWING_PURCHASE': {
-				// Lifetime satin alma — expires_at null
+				// Lifetime purchase — expires_at is null
 				if (!platform || !productId) break;
 				await applyIapPurchase(
 					{
@@ -129,13 +129,13 @@ export async function revenueCatWebhookHandler(req: Request, res: Response): Pro
 				break;
 			}
 			case 'CANCELLATION': {
-				// Kullanici iptal etti ama period devam ediyor
+				// User cancelled but period continues
 				await markCancellation(userId, eventAt);
-				// Admin'e bildir (manuel jest/iletisim icin). Bildirim hatasi event islemeyi bozmasin.
+				// Notify admin (for manual follow-up/outreach). Notification error should not break event processing.
 				try {
 					await notifyAdminsOfProCancellation(userId, planFromProductId(productId).tier, platform ?? undefined);
 				} catch (notifyErr) {
-					logger.error('[RC-Webhook] Admin iptal bildirimi gonderilemedi', {notifyErr, userId});
+					logger.error('[RC-Webhook] Admin cancellation notification could not be sent', {notifyErr, userId});
 				}
 				break;
 			}
@@ -161,9 +161,9 @@ export async function revenueCatWebhookHandler(req: Request, res: Response): Pro
 				break;
 			}
 			case 'TRANSFER': {
-				// Anonim ID'den gercek user.id'ye alias edildiginde tetiklenir
-				// (kullanici satin alma yaptiktan sonra logIn(user.id) cagrildiginda).
-				// Event payload'inda product/expiration yoktur — REST API ile durumu cek.
+				// Triggered when anonymous ID is aliased to real user.id
+				// (when logIn(user.id) is called after user makes a purchase).
+				// Event payload has no product/expiration — fetch status via REST API.
 				logger.info('[RC-Webhook] TRANSFER event', {userId, originalTxId});
 				await syncEntitlementFromRevenueCat(userId);
 				break;
@@ -182,7 +182,7 @@ export async function revenueCatWebhookHandler(req: Request, res: Response): Pro
 		res.status(200).json({status: 'ok'});
 	} catch (err) {
 		logger.error('[RC-Webhook] Handler error', {err, eventId: event.id, type: event.type});
-		// 5xx dondur ki RevenueCat retry yapsin
+		// Return 5xx so RevenueCat retries
 		res.status(500).json({error: 'internal_error'});
 	}
 }

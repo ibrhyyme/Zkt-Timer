@@ -1,6 +1,6 @@
 import {ObjectType, Field, InputType, Int} from 'type-graphql';
 
-// Tab 3 - Schedule (mevcut)
+// Tab 3 - Schedule (current)
 @ObjectType()
 export class WcaScheduleAssignment {
 	@Field()
@@ -579,7 +579,7 @@ export class WcaLiveRoundResults {
 	results: WcaLiveResult[];
 }
 
-// Bir yarismacinin tum round sonuclari (in-app gosterim icin)
+// All round results for a competitor (for in-app display)
 @ObjectType()
 export class WcaLiveCompetitorResultEntry {
 	@Field()

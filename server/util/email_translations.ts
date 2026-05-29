@@ -174,10 +174,9 @@ interface MailUser {
 	first_name?: string;
 }
 
-// XSS koruma: kullanici-controlled string'ler ({{name}}, email vs.) intro template'ine
-// koyulmadan once HTML special karakterler escape edilmeli — ciktida `{{{intro}}}` (raw HTML)
-// kullanildigi icin defansif olarak burada sanitize ediyoruz. validateName regex
-// `<>` karakterlerini engellese de, derinligi savunma ilkesi.
+// XSS protection: user-controlled strings ({{name}}, email, etc.) in intro template
+// must have HTML special chars escaped before insertion — output uses `{{{intro}}}` (raw HTML),
+// so we defensively sanitize here. validateName regex blocks `<>` chars, but defense-in-depth applies.
 function escapeHtml(s: string): string {
 	return String(s).replace(/[&<>"']/g, (c) => {
 		const map: Record<string, string> = {

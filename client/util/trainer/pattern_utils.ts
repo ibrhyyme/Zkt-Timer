@@ -23,8 +23,8 @@ export function getKPuzzle(): KPuzzle | null {
 }
 
 /**
- * Cozulmus 3x3 cube'un Kociemba facelet string'i (54 karakter).
- * Hem TrainerSmartCube hem trainer disindaki yerlerde safety net olarak kullanilir.
+ * Solved 3x3 cube Kociemba facelet string (54 characters).
+ * Used as safety net in TrainerSmartCube and elsewhere outside the trainer.
  */
 export const SOLVED_STATE = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
 
@@ -234,9 +234,9 @@ export function fixOrientation(pattern: KPattern): KPattern {
 			}
 		}
 	}
-	// Sessiz hata yerine fail-loud — bu durum 3x3 KPattern icin neredeyse imkansiz
-	// ama yine de bir kez yakalanirsa kullanici/gelistirici farkinda olsun
-	console.warn('[trainer] fixOrientation: kanonik center pozisyonuna ulasilamadi, orijinal pattern donduruluyor');
+	// Fail-loud instead of silent error — this condition is nearly impossible for 3x3 KPattern
+	// but if caught once, user/developer should be aware
+	console.warn('[trainer] fixOrientation: could not reach canonical center position, returning original pattern');
 	return pattern;
 }
 
@@ -308,18 +308,18 @@ export function rotateLLPatternCW(pattern: string): string {
 
 /**
  * Validate whether a candidate algorithm solves the same case as the original.
- * Pre-AUF: pattern rotation (4x CW) ile kontrol edilir.
- * Post-AUF: candidate algoritmaya U/U2/U' eklenerek 4 varyasyon uretilir.
- * Toplam 16 kombinasyon (4 post-AUF x 4 pre-AUF rotation) tam AUF coverage saglar.
- * OLL/2-Look OLL: orientation mask karsilastirmasi (U vs non-U).
- * PLL/ZBLL/COLL/CMLL/OLLCP/diger: full 21-char pattern karsilastirmasi.
+ * Pre-AUF: pattern rotation (4x CW) is checked.
+ * Post-AUF: candidate algorithm with U/U2/U' appended generates 4 variations.
+ * Total 16 combinations (4 post-AUF x 4 pre-AUF rotation) provides full AUF coverage.
+ * OLL/2-Look OLL: orientation mask comparison (U vs non-U).
+ * PLL/ZBLL/COLL/CMLL/OLLCP/other: full 21-char pattern comparison.
  */
 export async function validateSameCase(
 	originalAlg: string,
 	candidateAlg: string,
 	category: string
 ): Promise<{valid: boolean; error?: string}> {
-	// Original + candidate'in 4 post-AUF varyasyonu paralel uretilir
+	// Original + 4 post-AUF variations of candidate generated in parallel
 	const [origPattern, ...candPatterns] = await Promise.all([
 		generateLLPattern(originalAlg),
 		generateLLPattern(candidateAlg),
@@ -338,7 +338,7 @@ export async function validateSameCase(
 	for (const candPattern of candPatterns) {
 		if (!candPattern) continue;
 
-		// 4 pre-AUF rotasyonu dene
+		// Try 4 pre-AUF rotations
 		let rotated = candPattern;
 		for (let i = 0; i < 4; i++) {
 			if (compare(origPattern, rotated)) return {valid: true};

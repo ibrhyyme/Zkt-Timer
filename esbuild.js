@@ -106,7 +106,7 @@ require('esbuild')
 	.then((result) => {
 		console.info('Watching...');
 
-		// Temiz kapanma - zombie süreç bırakmaz
+		// Clean shutdown - does not leave zombie process
 		const cleanup = () => {
 			if (result.stop) {
 				result.stop();

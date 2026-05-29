@@ -209,8 +209,8 @@ function getAnyScramble(
 }
 
 /**
- * Efficiency Trainer (Faz 3): cross/xcross getEasyCross mask'inden gercek WCA scramble.
- * cstimer getEasyCrossScramble/getEasyXCrossScramble birlesik portu.
+ * Efficiency Trainer (Phase 3): cross/xcross from getEasyCross mask to real WCA scramble.
+ * cstimer getEasyCrossScramble/getEasyXCrossScramble combined port.
  * mask: cross → [edgePerm[12], edgeFlip[12]]; xcross → +[cornerPerm[8], cornerOri[8]].
  */
 export function getEasyCrossScramble(mask: number[][], isXCross: boolean): string {
@@ -640,7 +640,7 @@ registerGenerator('2genl', () => subsetScramble(['U', 'L']));
 registerGenerator('RrU', () => subsetScramble(['R', 'Rw', 'U']));
 registerGenerator('roux', () => subsetScramble(['M', 'U']));
 
-// Note: easyc/easyxc require cross-solver module — will be connected in Faz 4.
+// Note: easyc/easyxc require cross-solver module — will be connected in Phase 4.
 
 // Note: 333custom, zbll, ttll, eols, wvls, vls are complex case-selection types.
 // Registered with simplified random case selection (no filter UI for now).

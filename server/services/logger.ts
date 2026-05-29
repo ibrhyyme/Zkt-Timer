@@ -32,7 +32,7 @@ export function initLogger() {
 			client: getSearchClient(),
 			level: process.env.LOG_LEVEL,
 		});
-		// winston-elasticsearch bulk_writer rejection'i yutmuyor — unhandled rejection birikmesin
+		// winston-elasticsearch bulk_writer doesn't suppress rejections — prevent unhandled rejection buildup
 		esTransport.on('error', (err) => {
 			console.error('[Logger] ES transport error:', (err as any)?.message ?? err);
 		});
@@ -41,8 +41,8 @@ export function initLogger() {
 		addFormats.push(winston.format.json());
 	}
 
-	// Elasticsearch'te 'error' field'i her zaman obje olarak indexlenmeli.
-	// Kimi yerde Error objesi, kimi yerde string geciyor — tip catismasi onlemek icin normalize et.
+	// In Elasticsearch, the 'error' field must always be indexed as an object.
+	// Some places pass Error objects, others pass strings — normalize to prevent type mismatches.
 	const normalizeErrorField = winston.format((info) => {
 		const meta = (info as any).metadata;
 		if (meta && 'error' in meta) {
@@ -52,9 +52,9 @@ export function initLogger() {
 			} else if (typeof err === 'string') {
 				meta.error = {message: err};
 			} else if (err !== null && typeof err === 'object') {
-				// zaten obj — mapping ile uyumlu, pass through
+				// already an object — compatible with mapping, pass through
 			} else {
-				// number/boolean/null/undefined — primitive'i obj wrap'le ki ES mapping'i kirlenmesin
+				// number/boolean/null/undefined — wrap primitive in object so ES mapping doesn't break
 				meta.error = {value: String(err)};
 			}
 		}

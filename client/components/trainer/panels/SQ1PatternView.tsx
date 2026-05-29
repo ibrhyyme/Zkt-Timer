@@ -1,6 +1,6 @@
 import React, {useMemo} from 'react';
 
-// Zkt-Timer renk paleti ile eslesmis cubingapp SQ1 renkleri
+// Zkt-Timer color palette matched cubingapp SQ1 colors
 const WHITE = '#ffffff';
 const DARK_GRAY = '#444444';
 const BLUE = '#0046ad';
@@ -9,10 +9,10 @@ const RED = '#b71234';
 const GREEN = '#009b48';
 const YELLOW = '#fedd00';
 
-// cubingapp main.js SQ1.getSvg()'den birebir piece renk tablosu
+// Exact piece color table from cubingapp main.js SQ1.getSvg()
 // 0-7: top layer (U/D face = DARK_GRAY/WHITE)
 // 8-15: bottom layer
-// Even indices = corner (3 renk, 60°), odd indices = edge (2 renk, 30°)
+// Even indices = corner (3 colors, 60°), odd indices = edge (2 colors, 30°)
 const PIECES: string[][] = [
 	[DARK_GRAY, BLUE, RED],       // 0: top corner
 	[DARK_GRAY, BLUE],            // 1: top edge
@@ -39,7 +39,7 @@ const WIDTH = 0.1 * SIZE;
 const INNER = (WIDTH + PAD - MID) / Math.tan((75 * Math.PI) / 180) + MID;
 const OUTER = (PAD - MID) / Math.tan((75 * Math.PI) / 180) + MID;
 
-// cubingapp polygon sablonlari
+// cubingapp polygon templates
 const CORNER1 = `${MID},${MID} ${INNER},${SIZE - WIDTH - PAD} ${WIDTH + PAD},${SIZE - WIDTH - PAD} ${WIDTH + PAD},${SIZE - INNER}`;
 const CORNER2 = `${PAD},${SIZE - PAD} ${WIDTH + PAD},${SIZE - WIDTH - PAD} ${WIDTH + PAD},${SIZE - INNER} ${PAD},${SIZE - OUTER}`;
 const CORNER3 = `${PAD},${SIZE - PAD} ${WIDTH + PAD},${SIZE - WIDTH - PAD} ${INNER},${SIZE - WIDTH - PAD} ${OUTER},${SIZE - PAD}`;
@@ -73,7 +73,7 @@ interface FacePolygon {
 }
 
 function buildFacePolygons(face: number[], isTop: boolean): FacePolygon[] {
-	// Bottom face: corner2 ve corner3 swap (cubingapp'ten birebir)
+	// Bottom face: swap corner2 and corner3 (exact from cubingapp)
 	let c2 = CORNER2;
 	let c3 = CORNER3;
 	if (!isTop) {
@@ -113,9 +113,9 @@ interface SQ1PatternViewProps {
 
 /**
  * Square-1 dual-octagon SVG rendering.
- * cubingapp main.js SQ1.getSvg()'den birebir port.
+ * Exact port from cubingapp main.js SQ1.getSvg().
  * top/bottom: 8 piece index array (even=corner 60°, odd=edge 30°)
- * mirror: bottom face'i dik cev (Cube Shape ve CSP icin)
+ * mirror: flip bottom face vertically (for Cube Shape and CSP)
  */
 export default function SQ1PatternView({top, bottom, mirror = false, size}: SQ1PatternViewProps) {
 	const topPolygons = useMemo(() => buildFacePolygons(top, true), [top]);

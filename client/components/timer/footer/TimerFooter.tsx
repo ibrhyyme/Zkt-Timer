@@ -24,7 +24,7 @@ export default function TimerFooter() {
 	const timerModules = useSettings('timer_modules');
 	const timerModuleCount = useSettings('timer_module_count');
 
-	// Mobil footer'ın varsayılan olarak gizli olmasını sağla
+	// Ensure mobile footer is hidden by default
 	useEffect(() => {
 		if (mobileMode && hideMobileTimerFooter === undefined) {
 			setSetting('hide_mobile_timer_footer', true);
@@ -39,7 +39,7 @@ export default function TimerFooter() {
 
 		if (customModules && customModules.length) {
 
-			// Maç modunda özel layout: Sadece ilk modülü (Tur Listesi) tam ekran göster
+			// In match mode, special layout: show only first module (Round List) fullscreen
 			if (matchMode && customModules.length > 0) {
 				const mod = customModules[0];
 				modules.push(
@@ -48,7 +48,7 @@ export default function TimerFooter() {
 					</div>
 				);
 			} else {
-				// Normal, non-match custom modules layout (eski mantık)
+				// Normal, non-match custom modules layout (old logic)
 				customModules.forEach((mod, i) => {
 					let className = '';
 					let style = {};
@@ -74,8 +74,8 @@ export default function TimerFooter() {
 				});
 			}
 		} else {
-			// Mobil için özel 3 bölümlü layout (Default)
-			// Sol: Çözümler (History)
+			// Special 3-section layout for mobile (Default)
+			// Left: Solutions (History)
 			modules.push(
 				<div key="mobile-history" className="cd-timer-footer__mobile-history">
 					<TimerModule
@@ -88,7 +88,7 @@ export default function TimerFooter() {
 					/>
 				</div>
 			);
-			// Sağ üst: İstatistikler (4 blok)
+			// Right top: Statistics (4 blocks)
 			modules.push(
 				<div key="mobile-stats" className="cd-timer-footer__mobile-stats">
 					<TimerModule
@@ -101,7 +101,7 @@ export default function TimerFooter() {
 					/>
 				</div>
 			);
-			// Sağ alt: Scramble görseli
+			// Right bottom: Scramble visual
 			modules.push(
 				<div key="mobile-scramble" className="cd-timer-footer__mobile-scramble">
 					<TimerModule
@@ -116,8 +116,8 @@ export default function TimerFooter() {
 			);
 		}
 	} else {
-		// Desktop versiyonda normal modülleri göster
-		// Right/left layout'ta dikey alan sınırlı → max 2 modül
+		// Show normal modules on desktop version
+		// In right/left layout, vertical space is limited → max 2 modules
 		const isVerticalLayout = timerLayout === 'right' || timerLayout === 'left';
 		const moduleLimit = isVerticalLayout ? 2 : timerModuleCount;
 

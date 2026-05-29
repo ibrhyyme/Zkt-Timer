@@ -9,8 +9,8 @@ import { setTimerParams } from '../../helpers/params';
 
 interface Props {
 	// cstimer mode: '' = StackMat (1200 Hz), 'm' = MoYu Timer (8000 Hz BCD)
-	// MoYu Timer ayri bir timer_type olarak expose ediliyor; ortak ses isleme path'ini
-	// paylasiyor — sadece sample rate + bit analyzer farkli (vendor/stackmat.js).
+	// MoYu Timer is exposed as a separate timer_type; shares common audio processing path —
+	// only sample rate + bit analyzer differ (vendor/stackmat.js).
 	mode?: '' | 'm';
 }
 
@@ -23,7 +23,7 @@ export default function StackMat({mode = ''}: Props = {}) {
 	const context = useContext(TimerContext);
 	const localContext = useRef<ITimerContext>(context);
 
-	// Settings'i ref olarak tut (stale closure önleme)
+	// Keep settings as refs (prevent stale closures)
 	const stackMatAutoInspectionRef = useRef(stackMatAutoInspection);
 	const inspectionEnabledRef = useRef(inspectionEnabled);
 
@@ -38,7 +38,7 @@ export default function StackMat({mode = ''}: Props = {}) {
 		localContext.current = context;
 	}, [context]);
 
-	// Settings değiştiğinde ref'leri güncelle
+	// Update refs when settings change
 	useEffect(() => {
 		stackMatAutoInspectionRef.current = stackMatAutoInspection;
 	}, [stackMatAutoInspection]);
@@ -82,17 +82,17 @@ export default function StackMat({mode = ''}: Props = {}) {
 		}
 
 		stackMat.current = new Stackmat();
-		// cstimer init(timer, deviceId, force): 's' (boş = standard) vs 'm' (MoYu)
+		// cstimer init(timer, deviceId, force): '' (empty = standard) vs 'm' (MoYu)
 		return stackMat.current.init(mode, stackMatId, false, (timer) => {
 			if (timerInitCounter.current < 2) {
 				timerInitCounter.current++;
 				return;
 			}
 
-			// Timer başladığında bekleyen inspection timeout'u iptal et
+			// Cancel pending inspection timeout when timer starts
 			if (timer.running && !stackMatStarted.current) {
 				stackMatStarted.current = true;
-				// Bekleyen auto-inspection'ı iptal et
+				// Cancel pending auto-inspection
 				if (inspectionTimeoutRef.current) {
 					clearTimeout(inspectionTimeoutRef.current);
 					inspectionTimeoutRef.current = null;
@@ -103,15 +103,15 @@ export default function StackMat({mode = ''}: Props = {}) {
 				endTimer(localContext.current, timer.time_milli);
 			}
 
-			// Mat sıfırlandığında
+			// When mat is reset
 			if (timer.time_milli === 0 && prevTime.current > 0 && !timer.running) {
-				// Ekrandaki süreyi sıfırla
+				// Reset displayed time on screen
 				setTimerParams({ finalTime: 0 });
 
-				// Otomatik inceleme aktifse kullanıcının belirlediği süre sonra başlat
+				// If auto-inspection is active, start after user-specified delay
 				const delaySeconds = stackMatAutoInspectionRef.current;
 				if (delaySeconds > 0 && inspectionEnabledRef.current) {
-					// Önceki timeout varsa iptal et
+					// Cancel previous timeout if exists
 					if (inspectionTimeoutRef.current) {
 						clearTimeout(inspectionTimeoutRef.current);
 					}
@@ -123,13 +123,13 @@ export default function StackMat({mode = ''}: Props = {}) {
 				}
 			}
 
-			// Süre > 0 olduğunda veya timer çalışıyorsa timeout'u iptal et
+			// Cancel timeout when time > 0 or timer is running
 			if ((timer.time_milli > 0 || timer.running) && inspectionTimeoutRef.current) {
 				clearTimeout(inspectionTimeoutRef.current);
 				inspectionTimeoutRef.current = null;
 			}
 
-			// Önceki süreyi güncelle
+			// Update previous time
 			prevTime.current = timer.time_milli;
 		});
 	}

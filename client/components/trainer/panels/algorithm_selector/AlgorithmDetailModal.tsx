@@ -67,7 +67,7 @@ export default function AlgorithmDetailModal({
 	const [validationSuccess, setValidationSuccess] = useState(false);
 	const isLL = isLLCategory(category);
 
-	// Alternatifleri default-algs.json'dan yukle (her zaman ana algortimayi dahil et)
+	// Load alternatives from default-algs.json (always include primary algorithm)
 	useEffect(() => {
 		fetchDefaultAlgs().then((defaults) => {
 			const categoryData = defaults[category];
@@ -86,12 +86,12 @@ export default function AlgorithmDetailModal({
 		});
 	}, [category, subset, name]);
 
-	// Custom alternatifleri yukle (localStorage)
+	// Load custom alternatives (localStorage)
 	useEffect(() => {
 		setCustomAlts(getCustomAlternatives(category, subset, name));
 	}, [category, subset, name, dbVersion]);
 
-	// DB alternatifleri yukle (giris yapmis kullanicilar icin)
+	// Load DB alternatives (for logged-in users)
 	useEffect(() => {
 		if (!me || !isLL) return;
 		gqlQueryTyped(TrainerAlternativesDocument, {category, caseName: name}).then((res) => {
@@ -101,14 +101,14 @@ export default function AlgorithmDetailModal({
 		}).catch(() => {});
 	}, [me, category, name, isLL]);
 
-	// Birlesik alternatif listesi: default (ana dahil) + DB + localStorage custom
+	// Combined alternatives list: default (primary included) + DB + localStorage custom
 	const allAlternatives = useMemo(() => {
 		const combined = [...alternatives];
 		const seen = new Set(combined.map(a => expandNotation(a)));
 		const customSet = new Set(customAlts.map(a => expandNotation(a)));
 		const dbSet = new Set(dbAlts.map(a => expandNotation(a)));
 
-		// DB alternatiflerini ekle
+		// Add DB alternatives
 		for (const alt of dbAlts) {
 			const exp = expandNotation(alt);
 			if (!seen.has(exp)) {
@@ -117,7 +117,7 @@ export default function AlgorithmDetailModal({
 			}
 		}
 
-		// localStorage custom alternatiflerini ekle (DB'de olmayanlari)
+		// Add localStorage custom alternatives (not in DB)
 		for (const alt of customAlts) {
 			const exp = expandNotation(alt);
 			if (!seen.has(exp)) {
@@ -138,7 +138,7 @@ export default function AlgorithmDetailModal({
 		setValidationSuccess(false);
 
 		try {
-			// Primary algortimayi bul
+			// Find primary algorithm
 			const defaults = await fetchDefaultAlgs();
 			const categoryData = defaults[category];
 			let primaryAlg = '';
@@ -155,19 +155,19 @@ export default function AlgorithmDetailModal({
 				return;
 			}
 
-			// Dogrula
+			// Validate
 			const result = await validateSameCase(primaryAlg, trimmed, category);
 			if (!result.valid) {
 				setValidationError(result.error || 'different_case');
 				return;
 			}
 
-			// LL pattern uret ve cache'le
+			// Generate LL pattern and cache it
 			const expanded = expandNotation(trimmed);
 			const pattern = await generateLLPattern(trimmed);
 			if (pattern) saveCustomPattern(expanded, pattern);
 
-			// Giris yapmissa DB'ye kaydet, localStorage'a yazma (DB global havuz yeterli)
+			// If logged in, save to DB (not to localStorage — DB is global pool)
 			if (me) {
 				try {
 					let setup: string | undefined;
@@ -187,16 +187,16 @@ export default function AlgorithmDetailModal({
 						},
 					});
 
-					// DB listesini guncelle
+					// Update DB list
 					setDbAlts((prev) => [...prev, trimmed]);
 				} catch (err: any) {
 					const errMsg = err?.graphQLErrors?.[0]?.message || err?.message || '';
 					if (errMsg === 'ALGORITHM_ALREADY_EXISTS') {
-						// Zaten havuzda — sorun yok
+						// Already in pool — no problem
 					}
 				}
 			} else {
-				// Giris yapmamissa sadece localStorage'a kaydet
+				// If not logged in, only save to localStorage
 				addCustomAlternative(category, subset, name, trimmed);
 				setCustomAlts(getCustomAlternatives(category, subset, name));
 			}
@@ -277,7 +277,7 @@ export default function AlgorithmDetailModal({
 				twistyRef.current.innerHTML = '';
 				twistyRef.current.appendChild(player);
 
-				// Custom mask override: DOM'a eklendikten sonra uygula
+				// Custom mask override: apply after DOM insertion
 				if (customMask) {
 					(player as any).experimentalStickeringMaskOrbits = customMask;
 				}

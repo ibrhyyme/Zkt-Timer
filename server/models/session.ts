@@ -2,7 +2,7 @@ import uniqid from 'uniqid';
 import {getPrisma} from '../database';
 import {UserAccount} from '../schemas/UserAccount.schema';
 
-// Client'taki i18n key 'sessions.new_session' ile birebir esit kalmali.
+// Must match the i18n key in client 'sessions.new_session' exactly.
 const DEFAULT_SESSION_NAME: Record<string, string> = {
 	tr: 'Yeni Sezon',
 	en: 'New Session',

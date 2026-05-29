@@ -83,7 +83,7 @@ export default function CaseStatsModal({ type, cubeType, subset, sessionId, last
 	const [sortDesc, setSortDesc] = useState(true);
 	const [, setPatternTick] = useState(0);
 
-	// LL pattern verisini bir kere yukle (trainer altyapisi)
+	// Load LL pattern data once (trainer infrastructure)
 	useLLPatternsReady();
 
 	const { data, loading } = useQuery<CaseStatsQuery, CaseStatsQueryVariables>(CaseStatsDocument, {
@@ -111,8 +111,8 @@ export default function CaseStatsModal({ type, cubeType, subset, sessionId, last
 		return list;
 	}, [data, sortKey, sortDesc]);
 
-	// OLL icin cache miss case'leri runtime'da uret. PLL artik PLLArrowView
-	// kullaniyor — LL pattern lookup gerekmiyor.
+	// For OLL, generate cache-miss cases at runtime. PLL now uses PLLArrowView
+	// — LL pattern lookup not needed.
 	useEffect(() => {
 		if (type !== 'oll' || !rows.length) return;
 		let cancelled = false;
@@ -136,7 +136,7 @@ export default function CaseStatsModal({ type, cubeType, subset, sessionId, last
 			return;
 		}
 		setSortKey(k);
-		// Default: caseName ascending, geri kalan descending (en buyuk ustte)
+		// Default: caseName ascending, others descending (largest on top)
 		setSortDesc(k !== 'caseName');
 	}
 
@@ -150,8 +150,8 @@ export default function CaseStatsModal({ type, cubeType, subset, sessionId, last
 		{ key: 'avgTurns', label: t('case_stats.col_turns') },
 	];
 
-	// OLL icin LLPatternView kullaniyoruz (top U=beyaz/X). PLL icin custom
-	// PLLArrowView — top sari + yan strip renkli + permutasyon ok'lari.
+	// For OLL, use LLPatternView (top U=white/X). For PLL, custom
+	// PLLArrowView — top yellow + side strip colors + permutation arrows.
 	const stickering = 'oll';
 
 	return (

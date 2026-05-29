@@ -1,12 +1,14 @@
 /**
- * Recognition Context — 4 Pinia store'unun useReducer karsiligi.
- * Referans `SessionStore.js`, `SettingsStore.js`, `NotesStore.js`, `CustomPresetsStore.js` portu.
+ * Recognition Context — useReducer equivalent of 4 Pinia stores.
+ * Reference: port of `SessionStore.js`, `SettingsStore.js`, `NotesStore.js`, `CustomPresetsStore.js`.
  *
- * Persistence: her slice debounce'lu localStorage'a yazilir.
- * Sub-view (home/setup/trainer/...) yine bu context icinde tutulur.
+ * Persistence: each slice is debounce-written to localStorage.
+ * Sub-view (home/setup/trainer/...) is also managed within this context.
  */
 import React, {createContext, useContext, useReducer, useEffect, useRef, useState, useCallback} from 'react';
 import type {ReactNode} from 'react';
+import {useLocation} from 'react-router-dom';
+import {parseTrainerPath, recognitionSubToView} from '../../../util/trainer/url/trainer_url';
 import {GameState} from '../../../util/trainer/recognition/game_constants';
 import {CubeViews, DefaultColorScheme, strokeWidthOptions} from '../../../util/trainer/recognition/cube_display';
 import {DefaultAllowedCrossColors, randomCrossColor} from '../../../util/trainer/recognition/colors';
@@ -97,13 +99,13 @@ function loadView(): RecognitionView {
 	return defaultView;
 }
 
-function buildInitialState(): RecognitionState & {view: RecognitionView} {
+function buildInitialState(initialView?: RecognitionView): RecognitionState & {view: RecognitionView} {
 	const session = loadFromStorage<SessionSlice>(LS_SESSION, defaultSession);
 	// Validate sizeOption (schema migration)
 	if (!SIZE_OPTIONS.includes(session.sizeOption) && session.sizeOption !== -1) {
 		session.sizeOption = SIZE_DEFAULT;
 	}
-	// Bozuk/eski-schema localStorage'a karsi array alanlarini guard'la (mount'ta .map/.filter crash onleme)
+	// Guard array fields against corrupted/old-schema localStorage (prevent .map/.filter crash on mount)
 	if (!Array.isArray(session.queue)) session.queue = [];
 	if (!Array.isArray(session.results)) session.results = [];
 	if (!Array.isArray(session.allowedCrossColors)) session.allowedCrossColors = DefaultAllowedCrossColors;
@@ -117,12 +119,17 @@ function buildInitialState(): RecognitionState & {view: RecognitionView} {
 	const presets = loadFromStorage<CustomPresetsSlice>(LS_PRESETS, defaultPresets);
 	if (!Array.isArray(presets.customPresets)) presets.customPresets = [];
 
+	let view = initialView ?? loadView();
+	// Guard: avoid falling into view without live data on deep-link (prevent broken render)
+	if (view === 'results' && session.results.length === 0) view = 'home';
+	if (view === 'trainer' && session.queue.length === 0) view = 'home';
+
 	return {
 		session,
 		settings,
 		notes,
 		presets,
-		view: loadView(),
+		view,
 	};
 }
 
@@ -157,7 +164,7 @@ function reducer(state: FullState, action: RecognitionAction): FullState {
 			const s = state.session;
 			if (s.state !== GameState.Playing) return state;
 			if (s.mistake) {
-				// nextCase mantigi: queue shift + state continue
+				// Next case logic: queue shift + state continue
 				const newQueue = s.queue.slice(1);
 				const newState = newQueue.length === 0 ? GameState.EvaluationDone : GameState.Paused;
 				return {
@@ -196,7 +203,7 @@ function reducer(state: FullState, action: RecognitionAction): FullState {
 				};
 			}
 			if (advance) {
-				// nextCase
+				// Next case
 				const newQueue = newSession.queue.slice(1);
 				const newState = newQueue.length === 0 ? GameState.EvaluationDone : newSession.state;
 				newSession = {
@@ -275,7 +282,7 @@ function reducer(state: FullState, action: RecognitionAction): FullState {
 		case 'SESSION_SET_ALLOWED_CROSS_COLORS': {
 			const {crossColors, regeneratedQueue} = action.payload;
 			const s = shiftMistakeIfAnyHelper(state.session);
-			// Eger ayni renkler ise no-op
+			// If same colors, no-op
 			if (s.allowedCrossColors.length === crossColors.length && s.allowedCrossColors.every((v, i) => v === crossColors[i])) {
 				return {...state, session: s};
 			}
@@ -343,7 +350,7 @@ interface RecognitionContextValue {
 	lastSubmission: LastSubmission | null;
 	setLastSubmission: (s: LastSubmission | null) => void;
 
-	// Action helpers (Pinia method karsiliklari)
+	// Action helpers (Pinia method equivalents)
 	setInitial: () => void;
 	pausePlay: () => void;
 	resumePlay: () => void;
@@ -377,10 +384,16 @@ interface ProviderProps {
 }
 
 export function RecognitionProvider({children}: ProviderProps) {
-	const [state, dispatch] = useReducer(reducer, undefined, buildInitialState);
+	// Initial view derived from URL path (deep-link → correct sub-view, no flicker).
+	const location = useLocation();
+	const [state, dispatch] = useReducer(reducer, location.pathname, (path: string) => {
+		const {mode, sub} = parseTrainerPath(path);
+		const v = mode === 'recognition' ? recognitionSubToView(sub) : null;
+		return buildInitialState(v ?? undefined);
+	});
 	const [lastSubmission, setLastSubmission] = useState<LastSubmission | null>(null);
 
-	// ── Persistence (debounce'lu) ────────────────────
+	// ── Persistence (debounced) ────────────────────
 	const writeTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 	const stateRef = useRef(state);
 	useEffect(() => {
@@ -401,14 +414,14 @@ export function RecognitionProvider({children}: ProviderProps) {
 		debounceWrite(LS_NOTES, state.notes);
 		debounceWrite(LS_PRESETS, state.presets);
 		debounceWrite(LS_VIEW, state.view);
-		// Bekleyen timer'lari temizle (state degisiminde reschedule, unmount'ta orphan onleme)
+		// Clean pending timers (reschedule on state change, prevent orphans on unmount)
 		return () => {
 			Object.values(writeTimers.current).forEach((tid) => clearTimeout(tid));
 			writeTimers.current = {};
 		};
 	}, [state]);
 
-	// Unmount'ta bekleyen debounce'li yazimlari senkron flush et (son degisiklik kaybolmasin)
+	// On unmount, synchronously flush pending debounced writes (prevent last change loss)
 	useEffect(() => {
 		return () => {
 			if (typeof window === 'undefined') return;
@@ -425,7 +438,7 @@ export function RecognitionProvider({children}: ProviderProps) {
 		};
 	}, []);
 
-	// ── Action helpers (Pinia method karsiliklari) ────────────────────
+	// ── Action helpers (Pinia method equivalents) ────────────────────
 
 	const setInitial = useCallback(() => dispatch({type: 'SESSION_SET_INITIAL'}), []);
 	const pausePlay = useCallback(() => dispatch({type: 'SESSION_PAUSE'}), []);
@@ -523,7 +536,7 @@ export function RecognitionProvider({children}: ProviderProps) {
 	const updateSettings = useCallback((patch: Partial<SettingsSlice>) => dispatch({type: 'SETTINGS_UPDATE', payload: patch}), []);
 	const resetSettings = useCallback(() => dispatch({type: 'SETTINGS_RESET'}), []);
 
-	// Session auto-save: queue tukenince Dexie'ye yaz
+	// Session auto-save: write to Dexie when queue exhausted
 	const lastSavedResultsRef = useRef<ResultRecord[] | null>(null);
 	useEffect(() => {
 		if (state.session.state === GameState.EvaluationDone && state.session.results !== lastSavedResultsRef.current) {

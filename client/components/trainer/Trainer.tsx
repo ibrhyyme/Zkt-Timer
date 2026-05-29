@@ -6,6 +6,7 @@ import Header from '../layout/header/Header';
 import {useLocation} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {TrainerProvider, useTrainerContext} from './TrainerContext';
+import {useTrainerUrlSync} from './hooks/useTrainerUrlSync';
 import AlgorithmSelector from './panels/algorithm_selector/AlgorithmSelector';
 import TrainingArea from './panels/training_area/TrainingArea';
 import StatsPanel from './panels/stats_panel/StatsPanel';
@@ -23,41 +24,22 @@ import FeatureGuard from '../common/page_disabled/FeatureGuard';
 const b = block('trainer');
 
 function TrainerContent() {
-	const {state, dispatch} = useTrainerContext();
+	const {state} = useTrainerContext();
 
-	useEffect(() => {
-		if (state.view === 'landing') return;
-
-		const stateKey = state.view === 'training'
-			? {trainerTraining: true}
-			: {trainerSelection: true};
-
-		window.history.pushState(stateKey, '');
-
-		const handlePopState = () => {
-			if (state.view === 'training') {
-				dispatch({type: 'SET_VIEW', payload: 'selection'});
-			} else if (state.view === 'selection') {
-				dispatch({type: 'SET_VIEW', payload: 'landing'});
-			}
-		};
-
-		window.addEventListener('popstate', handlePopState);
-		return () => {
-			window.removeEventListener('popstate', handlePopState);
-		};
-	}, [state.view, dispatch]);
+	// URL ↔ reducer synchronization (mode + standard/smart view). Replaces old manual pushState/popstate
+	// hack; back/forward, deep-link, refresh and mobile swipe-back now work correctly.
+	useTrainerUrlSync();
 
 	if (state.view === 'landing') {
 		return <TrainerLanding />;
 	}
 
-	// Recognition modu kendi tum view'larini yonetir
+	// Recognition mode manages all its own views
 	if (state.mode === 'recognition') {
 		return <RecognitionRoot />;
 	}
 
-	// Efficiency modu (cross/xcross/eocross) kendi view'larini yonetir
+	// Efficiency mode (cross/xcross/eocross) manages its own views
 	if (state.mode === 'efficiency') {
 		return <EfficiencyRoot />;
 	}

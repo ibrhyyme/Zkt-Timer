@@ -1,7 +1,7 @@
 /**
- * OnScreenKeyboard — mobil PLL buton grid.
- * 13 letter modu veya 21 full-name modu. 300ms button feedback.
- * Mobile viewport tespiti: <1024px ise settings ne olursa olsun zorunlu göster.
+ * OnScreenKeyboard — mobile PLL button grid.
+ * 13 letter mode or 21 full-name mode. 300ms button feedback.
+ * Mobile viewport detection: if <1024px, force show regardless of settings.
  */
 import React, {useEffect, useRef, useState} from 'react';
 import block from '../../../../styles/bem';
@@ -44,7 +44,7 @@ export default function OnScreenKeyboard() {
 		};
 	}, []);
 
-	// Mobilde her zaman göster; desktop'ta sadece settings true ise
+	// Show always on mobile; on desktop only if settings true
 	const shouldShow = isMobileViewport || state.settings.showOnScreenKeyboard;
 	if (!shouldShow) return null;
 	if (state.session.state !== GameState.Playing) return null;

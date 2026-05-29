@@ -10,7 +10,7 @@ interface Props {
 	mobile?: boolean;
 }
 
-// Radix Select empty string value'ya izin vermiyor — null/'' subset icin virtual value
+// Radix Select doesn't allow empty string value — use virtual value for null/'' subset
 const NONE_VALUE = '__default__';
 
 function toFancyValue(subset: string | null): string {
@@ -35,7 +35,7 @@ export default function SubsetPicker({ subsets, selectedSubset, onChange }: Prop
 		return label;
 	}
 
-	// isHeader=true → yeni grup baslangici; isHeader=false → onceki gruba ekle
+	// isHeader=true → start new group; isHeader=false → add to previous group
 	const groups: FancyDropdownGroup[] = [];
 	let currentGroup: FancyDropdownGroup | null = null;
 
@@ -45,7 +45,7 @@ export default function SubsetPicker({ subsets, selectedSubset, onChange }: Prop
 			groups.push(currentGroup);
 		} else {
 			if (!currentGroup) {
-				// Header'siz baslangic (default subset gibi)
+				// Headerless start (like default subset)
 				currentGroup = { options: [] };
 				groups.push(currentGroup);
 			}

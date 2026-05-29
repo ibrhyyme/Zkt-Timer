@@ -1,18 +1,18 @@
 /**
- * Frontend wrapper — shared phase engine'i LiveAnalysisOverlay/useLiveAnalysis API'sine
- * uyarlar. Eski 460-satirlik phase detection logic'i shared/util/solve/phase_engine.ts'e
- * tasindi; bu dosya ince bir adapter.
+ * Frontend wrapper — adapts shared phase engine to LiveAnalysisOverlay/useLiveAnalysis API.
+ * Old 460-line phase detection logic was moved to shared/util/solve/phase_engine.ts;
+ * this file is a thin adapter.
  *
- * Engine output (PhaseEngineResult) -> LiveAnalysisResult shape donusumu:
+ * Engine output (PhaseEngineResult) -> LiveAnalysisResult shape conversion:
  *   - transitions[] -> steps map (cross, f2l_1..4, oll, pll)
  *   - timestamps -> seconds (relative to first turn)
- *   - ollIdentified/pllIdentified -> string adlari
- *   - currentPhase derivation: en son tamamlanan phase + 1 sonraki phase
- *   - recognition/execution split her phase icin (engine recognitionStart/firstMoveTimestamp'tan)
- *   - prettyRecon: cstimer formatinda annotated solve string (clipboard icin)
+ *   - ollIdentified/pllIdentified -> string names
+ *   - currentPhase derivation: last completed phase + 1 next phase
+ *   - recognition/execution split per phase (engine recognitionStart/firstMoveTimestamp from)
+ *   - prettyRecon: cstimer format annotated solve string (for clipboard)
  *
- * useLiveAnalysis hook'u (client/util/hooks/useLiveAnalysis.ts) bu fonksiyonu cagiriyor;
- * shape eski alanlarda korundugu icin LiveAnalysisOverlay degismez.
+ * useLiveAnalysis hook (client/util/hooks/useLiveAnalysis.ts) calls this function;
+ * shape preserved in old fields so LiveAnalysisOverlay doesn't change.
  */
 
 import { SmartTurn } from '../smart_scramble';
@@ -58,12 +58,12 @@ export interface LiveAnalysisResult {
 		pll?: number;
 		pll_cp?: number;
 		total?: number;
-		// Yeni: recognition (tanima) ve execution (uygulama) bazli her phase icin saniye.
-		// Engine PhaseTransition.recognitionStart vs firstMoveTimestamp vs timestamp uclusunden hesaplanir.
+		// New: recognition and execution times per phase in seconds.
+		// Computed from engine PhaseTransition.recognitionStart vs firstMoveTimestamp vs timestamp triple.
 		recognition?: PhaseTimes;
 		execution?: PhaseTimes;
 	};
-	// Yeni: cstimer-format annotated solve string. SolutionInfo'da "Detayli kopyala" butonu icin.
+	// New: cstimer-format annotated solve string. For "Copy Detailed" button in SolutionInfo.
 	prettyRecon?: string;
 }
 
@@ -145,7 +145,7 @@ export function analyzeCurrentState(turns: SmartTurn[], startState?: string): Li
 	else if (crossT) currentPhase = 'F2L (1)';
 	else currentPhase = turns.length > 0 ? 'Cross' : 'Scramble/Inspection';
 
-	// Wrapper steps shape: LiveAnalysisOverlay'e uyumlu (case, key, side, index alanlari).
+	// Wrapper steps shape: compatible with LiveAnalysisOverlay (case, key, side, index fields).
 	const steps: any = {};
 	const fillStep = (
 		key: string,

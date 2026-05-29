@@ -65,15 +65,15 @@ export default function AlgorithmSelector() {
 	const isF2L = selectedCategory === 'F2L';
 	const [slotFilter, setSlotFilter] = useState('all');
 	const [showCatInfo, setShowCatInfo] = useState(false);
-	useLLPatternsReady(); // Pattern yuklendiginde kartlari yeniden render et
-	usePuzzlePatternsReady(); // Puzzle pattern'leri yuklendiginde kartlari yeniden render et
-	useIsometricPatternsReady(); // Isometric pattern'leri yuklendiginde kartlari yeniden render et
+	useLLPatternsReady(); // Re-render cards when patterns are loaded
+	usePuzzlePatternsReady(); // Re-render cards when puzzle patterns are loaded
+	useIsometricPatternsReady(); // Re-render cards when isometric patterns are loaded
 
 	// Derive cube types and filtered categories
 	const cubeTypes = useMemo(() => {
 		const available = new Set(categories.map(getCubeType));
 		const types = CUBE_TYPE_ORDER.filter((ct) => available.has(ct));
-		// Smart modda sadece 3x3 ve 3x3 Roux (BLE sadece 3x3 kuplerde calisir)
+		// In smart mode, only 3x3 and 3x3 Roux (Bluetooth only works with 3x3 cubes)
 		if (state.mode === 'smart') {
 			return types.filter((ct) => ct === '3x3' || ct === '3x3 Roux');
 		}
@@ -122,7 +122,7 @@ export default function AlgorithmSelector() {
 		[checkedAlgorithms]
 	);
 
-	// selectLearning: acildiginda turuncu bayrakli (status=1) algoritmalari sec, kapatildiginda temizle
+	// selectLearning: when enabled, select learning-status (status=1) algorithms, when disabled, clear selection
 	const prevSelectLearningRef = useRef(options.selectLearning);
 	useEffect(() => {
 		const prev = prevSelectLearningRef.current;
@@ -130,7 +130,7 @@ export default function AlgorithmSelector() {
 
 		if (!options.selectLearning) {
 			if (prev) {
-				// Kapatildi — secimi temizle
+				// Turned off — clear selection
 				dispatch({type: 'SET_CHECKED_ALGORITHMS', payload: []});
 			}
 			return;
@@ -236,7 +236,7 @@ export default function AlgorithmSelector() {
 	);
 
 	const handleSelectAllAlgs = useCallback(() => {
-		// Select All ile selectLearning cakisir — kapat
+		// Select All conflicts with selectLearning — disable it
 		if (options.selectLearning) {
 			dispatch({type: 'SET_OPTIONS', payload: {selectLearning: false}});
 		}
@@ -288,7 +288,7 @@ export default function AlgorithmSelector() {
 			return;
 		}
 
-		// Secili algoritmalar varsa onlari, yoksa tum gorunur algoritmalari al
+		// If selected algorithms exist, use them; otherwise use all visible algorithms
 		const baseAlgs = checkedAlgorithms.length > 0
 			? checkedAlgorithms.map((a) => ({name: a.name, algorithm: a.algorithm, subset: a.subset}))
 			: filteredAlgorithmsWithSubset.flatMap((group) =>
@@ -299,11 +299,11 @@ export default function AlgorithmSelector() {
 
 		setPdfLoading(true);
 		try {
-			// Default alternatifleri yukle
+			// Load default alternatives
 			const defaultAlgs = await fetchDefaultAlgs();
 			const categoryData = defaultAlgs[selectedCategory] || [];
 
-			// Her algoritma icin default + custom alternatifleri merge et
+			// Merge default + custom alternatives for each algorithm
 			const algsToExport = baseAlgs.map((alg) => {
 				const subsetData = categoryData.find((s) => s.subset === alg.subset);
 				const entry = subsetData?.algorithms.find((a) => a.name === alg.name);

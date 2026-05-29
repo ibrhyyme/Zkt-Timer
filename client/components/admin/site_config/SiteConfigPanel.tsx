@@ -31,12 +31,12 @@ const MY_PUSH_TOKENS = gql`query { adminMyPushTokens { platform } }`;
 type FeatureKey = 'maintenance_mode' | 'trainer_enabled' | 'community_enabled' | 'leaderboards_enabled' | 'rooms_enabled' | 'battle_enabled' | 'pro_enabled' | 'wca_backfill_enabled';
 
 const PAGE_TOGGLES: {key: FeatureKey; label: string; description: string}[] = [
-	{key: 'trainer_enabled', label: 'Trainer', description: 'Algoritma trainer sayfasi'},
-	{key: 'community_enabled', label: 'Yarismalar', description: 'WCA yarismalar sayfasi + WCA Live'},
-	{key: 'rooms_enabled', label: 'Rooms', description: 'Multiplayer rooms sayfasi'},
-	{key: 'battle_enabled', label: 'Battle', description: '1v1 battle modu (mobile)'},
-	{key: 'leaderboards_enabled', label: 'Siralama', description: 'Kinch Ranks + Sum of Ranks siralama sayfasi'},
-	{key: 'pro_enabled', label: 'Pro Uyelik', description: 'Pro abonelik satis sayfasi + paywall. Banka/odeme hazir degilse kapali tut.'},
+	{key: 'trainer_enabled', label: 'Trainer', description: 'Algorithm trainer page'},
+	{key: 'community_enabled', label: 'Competitions', description: 'WCA competitions page + WCA Live'},
+	{key: 'rooms_enabled', label: 'Rooms', description: 'Multiplayer rooms page'},
+	{key: 'battle_enabled', label: 'Battle', description: '1v1 battle mode (mobile)'},
+	{key: 'leaderboards_enabled', label: 'Rankings', description: 'Kinch Ranks + Sum of Ranks leaderboard page'},
+	{key: 'pro_enabled', label: 'Pro Membership', description: 'Pro subscription sales page + paywall. Keep off if payment not ready.'},
 ];
 
 export default function SiteConfigPanel() {
@@ -63,13 +63,13 @@ export default function SiteConfigPanel() {
 
 	const {data: wcaStatsData, refetch: refetchWcaStats, loading: wcaStatsLoading} = useQuery<{wcaStats: {totalUsers: number; wcaConnected: number; wcaWithId: number; wcaWithoutId: number; wcaWithoutUserId: number; wcaRevoked: number; wcaBackfillPending: number}}>(WCA_STATS, {fetchPolicy: 'no-cache'});
 
-	// Canli online sayaci — 10 saniyede bir polling
+	// Live online counter — poll every 10 seconds
 	const {data: onlineData} = useQuery<OnlineStatsQuery>(OnlineStatsDocument, {
 		pollInterval: 10000,
 		fetchPolicy: 'no-cache',
 	});
 
-	// Online kullanici listesi — sadece expand acikken polling
+	// Online user list — poll only when expanded
 	const [showOnlineList, setShowOnlineList] = useState(false);
 	const {data: onlineUsersData, error: onlineUsersError} = useQuery<OnlineUsersQuery>(OnlineUsersDocument, {
 		pollInterval: showOnlineList ? 10000 : 0,
@@ -83,7 +83,7 @@ export default function SiteConfigPanel() {
 		}
 	}, [onlineUsersError]);
 
-	// Mount'ta bir kez fetch et (kendi state'imiz, hook bagimli degil)
+	// Fetch once on mount (own state, not hook-dependent)
 	useEffect(() => {
 		gqlQueryTyped(SiteConfigDocument, {}, {fetchPolicy: 'no-cache'})
 			.then((res) => {
@@ -91,12 +91,12 @@ export default function SiteConfigPanel() {
 				if (data) {
 					setConfig(data as SiteConfigData);
 				} else {
-					setError('siteConfig query bos data dondu');
+					setError('siteConfig query returned empty data');
 				}
 			})
 			.catch((err) => {
-				console.error('[SiteConfigPanel] fetch hatasi:', err);
-				setError(err?.message || 'Bilinmeyen hata');
+				console.error('[SiteConfigPanel] fetch error:', err);
+				setError(err?.message || 'Unknown error');
 			});
 	}, []);
 
@@ -111,14 +111,14 @@ export default function SiteConfigPanel() {
 	async function handleToggle(key: FeatureKey, currentValue: boolean) {
 		const newValue = !currentValue;
 
-		// Bakim modu icin confirm
+		// Confirm for maintenance mode
 		if (key === 'maintenance_mode' && newValue === true) {
-			if (!window.confirm('Tum kullanicilar bakim sayfasini gorecek. Sadece sen (admin) erisebileceksin. Devam?')) {
+			if (!window.confirm('All users will see maintenance page. Only you (admin) can access. Continue?')) {
 				return;
 			}
 		}
 
-		// Optimistic local update — UI hemen toggle olur
+		// Optimistic local update — UI toggles immediately
 		if (config) {
 			setConfig({...config, [key]: newValue} as SiteConfigData);
 		}
@@ -133,12 +133,12 @@ export default function SiteConfigPanel() {
 				setConfig(updated as SiteConfigData);
 			}
 		} catch (err) {
-			// Hata ise rollback
+			// Rollback on error
 			if (config) {
 				setConfig({...config, [key]: currentValue} as SiteConfigData);
 			}
 			// eslint-disable-next-line no-alert
-			alert('Hata: ' + (err as any)?.message);
+			alert('Error: ' + (err as any)?.message);
 		} finally {
 			setSaving(null);
 		}
@@ -147,11 +147,11 @@ export default function SiteConfigPanel() {
 	function formatTime(date: Date | string): string {
 		const d = new Date(date);
 		const seconds = Math.floor((Date.now() - d.getTime()) / 1000);
-		if (seconds < 60) return `${seconds} saniye once`;
+		if (seconds < 60) return `${seconds} seconds ago`;
 		const minutes = Math.floor(seconds / 60);
-		if (minutes < 60) return `${minutes} dakika once`;
+		if (minutes < 60) return `${minutes} minutes ago`;
 		const hours = Math.floor(minutes / 60);
-		if (hours < 24) return `${hours} saat once`;
+		if (hours < 24) return `${hours} hours ago`;
 		return d.toLocaleString('tr-TR');
 	}
 
@@ -163,19 +163,19 @@ export default function SiteConfigPanel() {
 			</div>
 
 			<p className={b('hint')}>
-				Toggle degisiklikleri <strong>en fazla 60 saniye icinde</strong> tum kullanicilara yansir. Sen (admin) hicbir kapaliliktan etkilenmezsin.
+				Toggle changes reflect to all users <strong>within max 60 seconds</strong>. You (admin) are unaffected by any closures.
 			</p>
 
-			{/* Canli Aktivite */}
+			{/* Live Activity */}
 			<div className={b('section')}>
 				<div className={b('section-header')}>
-					<h3>Canli Aktivite</h3>
+					<h3>Live Activity</h3>
 				</div>
 				<div className={b('live')}>
 					<div className={b('live-main')}>
 						<span className={b('live-dot')} />
 						<span className={b('live-number')}>{onlineData?.onlineStats?.uniqueUsers ?? '—'}</span>
-						<span className={b('live-label')}>online kullanici</span>
+						<span className={b('live-label')}>online users</span>
 					</div>
 					<div className={b('live-meta')}>
 						<span className={b('live-meta-item')}>
@@ -234,18 +234,18 @@ export default function SiteConfigPanel() {
 				)}
 			</div>
 
-			{/* Bakim Modu */}
+			{/* Maintenance Mode */}
 			<div className={b('section', {danger: true})}>
 				<div className={b('section-header')}>
 					<Warning size={20} weight="fill" />
-					<h3>Bakim Modu</h3>
+					<h3>Maintenance Mode</h3>
 				</div>
 				<div className={b('row')}>
 					<div className={b('row-text')}>
-						<div className={b('row-label')}>Tam Site Bakimi</div>
+						<div className={b('row-label')}>Full Site Maintenance</div>
 						<div className={b('row-desc')}>
-							Tum kullanicilar bakim sayfasini gorur. Sadece admin (sen) site'a erisebilir.
-							Login/signup acik kalir.
+							All users see maintenance page. Only admin (you) can access site.
+							Login/signup remain open.
 						</div>
 					</div>
 					<button
@@ -260,10 +260,10 @@ export default function SiteConfigPanel() {
 				</div>
 			</div>
 
-			{/* Sayfa Toggles */}
+			{/* Page Toggles */}
 			<div className={b('section')}>
 				<div className={b('section-header')}>
-					<h3>Sayfa Erisimi</h3>
+					<h3>Page Access</h3>
 				</div>
 				{PAGE_TOGGLES.map(({key, label, description}) => {
 					const value = (config as any)[key];
@@ -298,7 +298,7 @@ export default function SiteConfigPanel() {
 				})}
 			</div>
 
-			{/* WCA Istatistikleri */}
+			{/* WCA Statistics */}
 			<div className={b('section')}>
 				<div className={b('section-header')}>
 					<Database size={20} weight="fill" />
@@ -328,18 +328,18 @@ export default function SiteConfigPanel() {
 				</div>
 			</div>
 
-			{/* WCA Backfill */}
+			{/* WCA Data Repair */}
 			<div className={b('section')}>
 				<div className={b('section-header')}>
 					<Database size={20} weight="fill" />
-					<h3>WCA Veri Onarimi</h3>
+					<h3>WCA Data Repair</h3>
 				</div>
 				<div className={b('row')}>
 					<div className={b('row-text')}>
-						<div className={b('row-label')}>Otomatik Backfill Cron</div>
+						<div className={b('row-label')}>Automatic Backfill Cron</div>
 						<div className={b('row-desc')}>
-							Her gece LA 03:00 (TR 13:00) eksik wca_user_id / wca_id kayitlarini tarayip otomatik doldurur.
-							WCA API rate-limit veya acil durum icin kapatabilirsin.
+							Every night at LA 03:00 (TR 13:00) scans and auto-fills missing wca_user_id / wca_id records.
+							Can disable for WCA API rate-limit or emergency.
 						</div>
 					</div>
 					<button
@@ -354,10 +354,10 @@ export default function SiteConfigPanel() {
 				</div>
 				<div className={b('row')}>
 					<div className={b('row-text')}>
-						<div className={b('row-label')}>Manuel Backfill</div>
+						<div className={b('row-label')}>Manual Backfill</div>
 						<div className={b('row-desc')}>
-							WCA hesabi bagli ama wca_user_id / wca_id eksik kullanicilari simdi WCA API'den cekip doldurur + rankings hesaplar.
-							Cron beklemeden tetiklemek icin.
+							Fetches from WCA API and fills users with linked WCA account but missing wca_user_id / wca_id + recalculates rankings.
+							Trigger now instead of waiting for cron.
 						</div>
 					</div>
 					<button
@@ -407,7 +407,7 @@ export default function SiteConfigPanel() {
 			<div className={b('section')}>
 				<div className={b('section-header')}>
 					<Database size={20} weight="fill" />
-					<h3>Smart Cube Evre Verisi</h3>
+					<h3>Smart Cube Step Data</h3>
 				</div>
 				<div className={b('row')}>
 					<div className={b('row-text')}>
@@ -464,13 +464,13 @@ export default function SiteConfigPanel() {
 			<div className={b('section')}>
 				<div className={b('section-header')}>
 					<Database size={20} weight="fill" />
-					<h3>OLL/PLL Vaka Tanima Reindex</h3>
+					<h3>OLL/PLL Case Recognition Reindex</h3>
 				</div>
 				<div className={b('row')}>
 					<div className={b('row-text')}>
 						<div className={b('row-label')}>OLL/PLL Case Keys Backfill</div>
 						<div className={b('row-desc')}>
-							case_key alani NULL olan smart cube solve'larini yeni identification algoritmasi (cstimer-bazli pattern matching) ile yeniden tanir. Mevcut step kayitlarini SILMEZ — sadece eksik OLL/PLL case_key'leri doldurur. Method Steps Reindex'ten cok daha hizli.
+							Re-identifies smart cube solves with NULL case_key using new identification algorithm (cstimer-based pattern matching). DOES NOT DELETE step records — only fills missing OLL/PLL case_keys. Much faster than Method Steps Reindex.
 						</div>
 					</div>
 					<button
@@ -492,13 +492,13 @@ export default function SiteConfigPanel() {
 									setReindexLLResult('Sonuc alinamadi');
 								}
 							} catch (err) {
-								setReindexLLResult('Hata: ' + (err as any)?.message);
+								setReindexLLResult('Error: ' + (err as any)?.message);
 							} finally {
 								setReindexLLLoading(false);
 							}
 						}}
 					>
-						{reindexLLLoading ? 'Calisiyor...' : 'Calistir'}
+						{reindexLLLoading ? 'Running...' : 'Run'}
 					</button>
 				</div>
 				{reindexLLResult && (
@@ -510,11 +510,11 @@ export default function SiteConfigPanel() {
 				)}
 			</div>
 
-			{/* WCA Bildirim Testi */}
+			{/* WCA Notification Test */}
 			<div className={b('section')}>
 				<div className={b('section-header')}>
 					<Database size={20} weight="fill" />
-					<h3>WCA Bildirim Testi</h3>
+					<h3>WCA Notification Test</h3>
 				</div>
 				<div className={b('row')}>
 					<div className={b('row-text')}>

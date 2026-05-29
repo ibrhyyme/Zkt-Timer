@@ -26,16 +26,16 @@ export interface WcaBackfillOptions {
 }
 
 /**
- * WCA Integration tablosundaki eksik alanlari (wca_user_id, wca_id, wca_name, wca_avatar_url, wca_country_iso2)
- * arka planda doldurur. Hem admin mutation hem cron ayni fonksiyonu cagirir.
+ * Fills in missing fields (wca_user_id, wca_id, wca_name, wca_avatar_url, wca_country_iso2)
+ * in WCA Integration table in the background. Both admin mutation and cron call this same function.
  *
- * Davranis kurallari:
- *  - Sadece service_name='wca' AND revoked_at IS NULL kayitlari isler.
- *  - Token expired ise refresh dener; refresh kalici hata verirse revoked_at isaretler ve atlanir.
- *  - WCA /me 401/404 dondururse revoked_at isaretler.
- *  - WCA /me 429 (rate limit) dondururse 10s bekler, kaydi atlar (sonraki tick yeniden dener).
- *  - syncWcaProfileToIntegration ile alanlari yazar (idempotent).
- *  - Sonra Phase 2: wca_id var ama kinch_score yok olanlar icin records fetch + ranking compute.
+ * Behavior rules:
+ *  - Only processes records with service_name='wca' AND revoked_at IS NULL.
+ *  - If token expired, tries refresh; if refresh fails permanently, marks revoked_at and skips.
+ *  - If WCA /me returns 401/404, marks revoked_at.
+ *  - If WCA /me returns 429 (rate limit), sleeps 10s and skips (retry next tick).
+ *  - Writes fields via syncWcaProfileToIntegration (idempotent).
+ *  - Then Phase 2: fetches records + computes ranking for those with wca_id but no kinch_score.
  */
 export async function runWcaBackfill(opts: WcaBackfillOptions = {}): Promise<WcaBackfillResult> {
 	const {batchSize = 500, requestDelayMs = 300, includeRecords = true} = opts;
@@ -48,9 +48,9 @@ export async function runWcaBackfill(opts: WcaBackfillOptions = {}): Promise<Wca
 		recordsTotal: 0, recordsFilled: 0, recordsError: 0,
 	};
 
-	// Phase 1: profil alanlari eksik olanlari sirayla doldur
-	// - wca_user_id null: gercek bug, her gece dene
-	// - wca_id null: newcomer, 30 gunde bir dene (WCA resmi yarisma kontrolu 2-4 hafta surer)
+	// Phase 1: fill missing profile fields in order
+	// - wca_user_id null: real bug, retry every night
+	// - wca_id null: newcomer, retry once every 30 days (WCA official competition check takes 2-4 weeks)
 	const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 	const needsUpdate = await prisma.integration.findMany({
 		where: {
@@ -95,7 +95,7 @@ export async function runWcaBackfill(opts: WcaBackfillOptions = {}): Promise<Wca
 					const status = e?.response?.status;
 					logger.warn(`[WcaBackfill] Token refresh failed user=${int.user_id} status=${status}: ${e?.message}`);
 					if (status === 400 || status === 401) {
-						// Refresh kalici hata — revoked olarak isaretle, ileride deneme
+						// Refresh permanent error — mark revoked, skip future attempts
 						await updateIntegration(int, {revoked_at: new Date()} as any);
 						result.revoked++;
 					} else {
@@ -148,7 +148,7 @@ export async function runWcaBackfill(opts: WcaBackfillOptions = {}): Promise<Wca
 		}
 	}
 
-	// Phase 2: wca_id var ama kinch_score yok olanlar — records fetch + ranking compute
+	// Phase 2: fetch records + compute ranking for those with wca_id but no kinch_score
 	if (includeRecords) {
 		const missingRankings = await prisma.integration.findMany({
 			where: {
@@ -165,7 +165,7 @@ export async function runWcaBackfill(opts: WcaBackfillOptions = {}): Promise<Wca
 
 		for (const int of missingRankings) {
 			try {
-				// Records icin de WCA'ya nazik davran — 500 ardisik istek 429 yer
+				// Be kind to WCA API for records too — 500ms between consecutive requests avoids 429
 				await new Promise((r) => setTimeout(r, 500));
 				await fetchAndSaveWcaRecords(int.user as any, int as any);
 				result.recordsFilled++;
@@ -183,7 +183,7 @@ export async function runWcaBackfill(opts: WcaBackfillOptions = {}): Promise<Wca
 		}
 	}
 
-	// ES log mapping'inde "error" field'i obj olarak indexlenmis — integer cakismasi olmasin diye rename
+	// ES log mapping indexes "error" field as object — rename to avoid integer collision
 	const {error: errorCount, ...logSafeResult} = result;
 	logger.info('[WcaBackfill] Done', {...logSafeResult, errorCount});
 	return result;

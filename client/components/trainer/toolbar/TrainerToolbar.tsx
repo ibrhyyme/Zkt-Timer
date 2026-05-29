@@ -43,10 +43,10 @@ export default function TrainerToolbar() {
 			try {
 				await conn.connect(state.options.showAllBleDevices);
 			} catch (e) {
-				// connect hatalari alertScanError callback'inde handle ediliyor
+				// Connect errors are handled in alertScanError callback
 			}
-			// BLE_SCAN_ABORTED durumunda connect.js direkt setTimerParams cagirir,
-			// trainer state'ini sifirlamaz. Her durumda scanning/connecting resetle.
+			// On BLE_SCAN_ABORTED, connect.js calls setTimerParams directly,
+			// doesn't reset trainer state. Always reset scanning/connecting in any case.
 			if (!state.smartConnected) {
 				dispatch({type: 'SMART_CONNECTION', payload: {scanning: false, connecting: false}});
 			}
@@ -54,9 +54,9 @@ export default function TrainerToolbar() {
 	}, [connectRef, state.smartConnected, state.options.showAllBleDevices, dispatch]);
 
 	const handleOpenSettings = useCallback(() => {
-		// Modal Redux ile App root'unda render edildigi icin TrainerProvider
-		// disinda kaliyor — useTrainerContext() default no-op dispatch verir.
-		// Prop drilling ile current options snapshot + onChange callback'i geciriyoruz.
+		// Modal is rendered at App root via Redux, so it stays outside TrainerProvider —
+		// useTrainerContext() returns default no-op dispatch.
+		// Prop drilling passes current options snapshot + onChange callback.
 		const onOptionChange = <K extends keyof TrainerOptions>(key: K, value: TrainerOptions[K]) => {
 			dispatch({type: 'SET_OPTIONS', payload: {[key]: value} as Partial<TrainerOptions>});
 		};

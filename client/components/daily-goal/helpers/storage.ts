@@ -174,20 +174,20 @@ export async function syncDailyGoalsFromServer(): Promise<void> {
 		const serverGoals = res.data.dailyGoals;
 		const storage = getDailyGoalStorage();
 
-		// Reminder durumunu server'dan al
+		// Get reminder status from server
 		storage.reminder_enabled = res.data.dailyGoalReminderStatus.enabled;
 
 		if (serverGoals.length === 0 && storage.goals.length > 0) {
-			// Migration: localStorage'da goal var ama server bos → push et
+			// Migration: goal exists in localStorage but server is empty → push it
 			for (const goal of storage.goals) {
 				syncGoalToServer(goal.cube_type, goal.target, goal.enabled, goal.scramble_subset);
 			}
-			// localStorage'daki reminder_enabled'i da server'a push et
+			// Also push reminder_enabled from localStorage to server
 			if (storage.reminder_enabled) {
 				syncReminderToServer(true);
 			}
 		} else if (serverGoals.length > 0) {
-			// Server'dan gelen goals ile localStorage'i guncelle
+			// Update localStorage with goals from server
 			storage.goals = serverGoals.map((g) => ({
 				cube_type: g.cube_type,
 				scramble_subset: g.scramble_subset ?? null,

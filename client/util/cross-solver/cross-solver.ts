@@ -244,7 +244,7 @@ export function solveCross(scramble: string): SolverResult[] {
 	return results;
 }
 
-// slot: undefined = 4 slot'tan optimal (en kisa) pair; 0-3 = belirli F2L slot
+// slot: undefined = optimal from 4 slots (shortest pair); 0-3 = specific F2L slot
 export function solveXCross(scramble: string, face: number, slot?: number): SolverResult {
 	initXCrossInternal();
 	const moves = parseScramble(scramble, 'FRUBLD');
@@ -269,10 +269,10 @@ export function solveXCross(scramble: string, face: number, slot?: number): Solv
 
 	const idxs: number[][] = [];
 	if (slot !== undefined && slot >= 0 && slot < 4) {
-		// Belirli slot — sadece o pair'i coz
+		// Specific slot — solve only that pair
 		idxs.push([perm, flip, e1[slot], c1[slot], slot]);
 	} else {
-		// Optimal — 4 slot'tan en kisasi (solveMulti ilk cozuleni dondurur)
+		// Optimal — shortest from 4 slots (solveMulti returns first solution)
 		for (let i = 0; i < 4; i++) {
 			idxs.push([perm, flip, e1[i], c1[i], i]);
 		}
@@ -295,10 +295,10 @@ export function solveXCross(scramble: string, face: number, slot?: number): Solv
 	};
 }
 
-// ==================== Easy Cross / XCross (belirli uzunlukta pattern) ====================
-// cstimer cross.js getEasyCross/getEasyXCross birebir port. Full pruning table (190080
-// state, ~100KB packed) ile TAM N-move cross/xcross pozisyonu uretir — uret-ve-ele yok.
-// Donen [ep,eo(,cp,co)] mask, getAnyScramble'a beslenip gercek WCA scramble'a cevrilir.
+// ==================== Easy Cross / XCross (pattern of specific length) ====================
+// Direct port of cstimer cross.js getEasyCross/getEasyXCross. Uses full pruning table (190080
+// states, ~100KB packed) to produce exact N-move cross/xcross positions — no generate-and-test.
+// Returns [ep,eo(,cp,co)] mask, fed to getAnyScramble and converted to real WCA scramble.
 
 let fullPrun: number[] = [];
 let fullInited = false;
@@ -366,8 +366,8 @@ function mapCross(idx: number): number[][] {
 }
 
 /**
- * Tam `length`-move cross pozisyonu uretir → [edgePerm[12], edgeFlip[12]] mask.
- * length: tek deger (lenB*10+lenA aralik kodlamasi); tam N icin N*11 gonder (lenA=lenB=N).
+ * Generate exact `length`-move cross position → [edgePerm[12], edgeFlip[12]] mask.
+ * length: single value (encoded as lenB*10+lenA); for exact N pass N*11 (lenA=lenB=N).
  */
 export function getEasyCross(length: number): number[][] {
 	fullInit();
@@ -388,7 +388,7 @@ export function getEasyCross(length: number): number[][] {
 }
 
 /**
- * Tam `length`-move XCross pozisyonu uretir → [edgePerm[12], edgeFlip[12], cornerPerm[8], cornerOri[8]].
+ * Generate exact `length`-move XCross position → [edgePerm[12], edgeFlip[12], cornerPerm[8], cornerOri[8]].
  */
 export function getEasyXCross(length: number): number[][] | null {
 	fullInit();
@@ -401,7 +401,7 @@ export function getEasyXCross(length: number): number[][] | null {
 	const lenClamp = Math.max(0, Math.min(maxLen, 8)); // cross length
 	const remain = ncase[lenClamp];
 	let isFound = false;
-	// Donma korumasi: nadir/imkansiz uzunluk (orn 3-move XCross) sonsuz dongu yapmasin
+	// Freeze protection: prevent infinite loop for rare/impossible lengths (e.g., 3-move XCross)
 	let outerTries = 0;
 	const MAX_OUTER = 6;
 
@@ -471,5 +471,5 @@ export function getEasyXCross(length: number): number[][] | null {
 			return crossArr;
 		}
 	}
-	return null; // bulunamadi (cok nadir/imkansiz uzunluk) → caller uret-ve-ele fallback'e duser
+	return null; // Not found (very rare/impossible length) → caller falls back to generate-and-test
 }

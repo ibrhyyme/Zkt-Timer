@@ -1,6 +1,6 @@
 /**
- * CreatePresetModal — 9 grup grid'i ile custom preset olusturma modal'i.
- * Provider'siz — sadece onSave callback alir.
+ * CreatePresetModal — custom preset creation modal with 9-group grid.
+ * Provider-less — takes only onSave callback.
  */
 import React, {useEffect, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';

@@ -8,8 +8,7 @@ import {linkRevenueCatUserId} from '../models/iap';
 @Resolver()
 export class IAPResolver {
 	/**
-	 * Login sirasinda client cagirir — RevenueCat app_user_id olarak
-	 * kullanicinin kendi id'sini kaydeder. Idempotent.
+	 * Client calls during login — records the user's own ID as RevenueCat app_user_id. Idempotent.
 	 */
 	@Authorized([Role.LOGGED_IN])
 	@Mutation(() => Boolean)
@@ -19,9 +18,9 @@ export class IAPResolver {
 	}
 
 	/**
-	 * Paywall acilmadan once client cagirir — mevcut IAP durumunu ogrenir.
-	 * is_iap_pro: IAP kaynakli Pro mu, admin/promo mu?
-	 * can_purchase: yeni bir plan satin alabilir mi?
+	 * Client calls before paywall opens — learns current IAP status.
+	 * is_iap_pro: Is Pro from IAP, admin, or promo?
+	 * can_purchase: Can purchase a new plan?
 	 */
 	@Authorized([Role.LOGGED_IN])
 	@Query(() => IapStatus)
@@ -40,8 +39,8 @@ export class IAPResolver {
 			iap_billing_issue_at: (user as any)?.iap_billing_issue_at || undefined,
 			iap_paused_until: (user as any)?.iap_paused_until || undefined,
 			is_iap_pro: isIapPro,
-			// applyIapPurchase artik max(currentExpiry, newExpiry) ile admin/promo suresini koruyor —
-			// promo Pro aktifken IAP satin alma artik guvenli (hak kaybi yok). Her zaman izin ver.
+			// applyIapPurchase now preserves admin/promo duration with max(currentExpiry, newExpiry) —
+			// IAP purchase while promo Pro is active is now safe (no loss of entitlement). Always allow.
 			can_purchase: true,
 		};
 	}

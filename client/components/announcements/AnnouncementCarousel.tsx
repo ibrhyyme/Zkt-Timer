@@ -27,7 +27,7 @@ export default function AnnouncementCarousel(props: AnnouncementCarouselProps) {
 	};
 
 	const handleNext = async () => {
-		// Mevcut duyuruyu mark as viewed
+		// Mark current announcement as viewed
 		await markAsViewed(currentAnnouncement.id);
 
 		if (isLast) {
@@ -40,7 +40,7 @@ export default function AnnouncementCarousel(props: AnnouncementCarouselProps) {
 	const handleClose = async () => {
 		setIsClosing(true);
 
-		// Sadece mevcut duyuruyu mark as viewed
+		// Only mark current announcement as viewed
 		await markAsViewed(currentAnnouncement.id);
 
 		onClose();

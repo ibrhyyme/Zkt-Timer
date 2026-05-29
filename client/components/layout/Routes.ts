@@ -151,7 +151,21 @@ export const routes: (PageContext | RedirectPath)[] = [
 	// Pro — standalone page (not nested under Account)
 	route('/pro', null, App, ProPage),
 
-	// Trainer
+	// Trainer — deep-linkable (her derinlik explicit, exact match; hepsi child=Trainer).
+	// Spesifik-once: client <Switch> ilk eslesen route'u render eder.
+	route('/trainer/standard/train', null, App, Trainer),
+	route('/trainer/standard', null, App, Trainer),
+	route('/trainer/smart/train', null, App, Trainer),
+	route('/trainer/smart', null, App, Trainer),
+	route('/trainer/recognition/setup', null, App, Trainer),
+	route('/trainer/recognition/train', null, App, Trainer),
+	route('/trainer/recognition/results', null, App, Trainer),
+	route('/trainer/recognition/history', null, App, Trainer),
+	route('/trainer/recognition/settings', null, App, Trainer),
+	route('/trainer/recognition/glossary', null, App, Trainer),
+	route('/trainer/recognition', null, App, Trainer),
+	route('/trainer/efficiency/settings', null, App, Trainer),
+	route('/trainer/efficiency', null, App, Trainer),
 	route('/trainer', null, App, Trainer),
 
 	// Account

@@ -2341,6 +2341,18 @@
         "linking_account": "Linking account...",
         "oauth_error": "An error occurred during OAuth connection"
     },
+    "otp": {
+        "verifying": "Verifying…",
+        "error_retry": "Incorrect code. Try again.",
+        "didnt_get_code": "Didn't get the code?",
+        "resend": "Resend",
+        "resend_in": "Resend ({{seconds}}s)",
+        "auto_verify_hint": "It verifies automatically once entered.",
+        "email_verified": "Your account is verified, redirecting…",
+        "password_updated": "Your password has been updated, redirecting…",
+        "forgot_email_sub": "Enter your account email and we'll send you a 6-character recovery code.",
+        "pw_levels": ["Very weak", "Weak", "Fair", "Good", "Strong"]
+    },
     "email_verification": {
         "title": "Email Verification",
         "check_email": "We've sent a verification code to your email. Please check your inbox.",

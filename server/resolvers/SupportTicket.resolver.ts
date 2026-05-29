@@ -15,7 +15,7 @@ import {uploadSupportTicketAttachment} from '../models/support_ticket_attachment
 const MAX_ATTACHMENTS_PER_MESSAGE = 1;
 const attachmentInclude = {attachments: {orderBy: {created_at: 'asc' as const}}};
 
-const RATE_LIMIT_WINDOW_SECONDS = 5 * 60; // 5 dakika
+const RATE_LIMIT_WINDOW_SECONDS = 5 * 60; // 5 minutes
 const RATE_LIMIT_MAX = 5;
 const MAX_SUBJECT_LENGTH = 200;
 const MAX_MESSAGE_LENGTH = 5000;
@@ -32,7 +32,7 @@ async function checkRateLimit(userId: string): Promise<boolean> {
 		return true;
 	} catch (e) {
 		logger.error('[SupportTicket] Rate limit check failed', {userId, error: (e as any)?.message});
-		// Fail-open: Redis sorununda kullaniciyi engelleme
+		// Fail-open: don't block user if Redis fails
 		return true;
 	}
 }
@@ -73,7 +73,7 @@ export class SupportTicketResolver {
 			},
 		});
 
-		// Admin'lere bildirim — fail edilirse ticket olusumunu engelleme
+		// Notify admins — don't block ticket creation if notification fails
 		notifyAdminsOfSupportTicket(user as any, subject).catch((e) => {
 			logger.error('[SupportTicket] Admin notification failed', {ticketId: ticket.id, error: (e as any)?.message});
 		});
@@ -192,14 +192,14 @@ export class SupportTicketResolver {
 			throw new GraphQLError(ErrorCode.FORBIDDEN, 'Bu destek talebine yanit yazma yetkin yok');
 		}
 
-		// Sadece admin/mod attachment yukleyebilir. Kullanici array verirse sessizce yok say.
+		// Only admin/mod can upload attachments. If user provides array, silently ignore.
 		const effectiveAttachments = isAdminOrMod ? (attachments || []) : [];
 
 		if (effectiveAttachments.length > MAX_ATTACHMENTS_PER_MESSAGE) {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, `En fazla ${MAX_ATTACHMENTS_PER_MESSAGE} dosya eklenebilir`);
 		}
 
-		// Body bos VE attachment bos olamaz
+		// Body and attachments cannot both be empty
 		if (!trimmed && effectiveAttachments.length === 0) {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Mesaj bos olamaz');
 		}
@@ -213,7 +213,7 @@ export class SupportTicketResolver {
 			},
 		});
 
-		// Attachment upload — herhangi biri fail olursa mesaji ve uploaded olanlari rollback et
+		// Attachment upload — if any fails, rollback message and uploaded files
 		if (effectiveAttachments.length > 0) {
 			try {
 				for (const filePromise of effectiveAttachments) {
@@ -235,7 +235,7 @@ export class SupportTicketResolver {
 			include: {sender: publicUserInclude, ...attachmentInclude},
 		});
 
-		// Notification — fail edilirse mesaj olusumunu engelleme
+		// Notification — don't block message creation if notification fails
 		if (isAdminOrMod) {
 			// Admin → user
 			notifyUserOfTicketReply(ticket.created_by as any, user as any, ticket.subject, ticket.id).catch((e) => {

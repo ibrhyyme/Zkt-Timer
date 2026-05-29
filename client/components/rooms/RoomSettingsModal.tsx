@@ -19,8 +19,8 @@ export default function RoomSettingsModal({ isOpen, onClose, allowedTimerTypes, 
     const mobileMode = useGeneral('mobile_mode');
     const [activeTab, setActiveTab] = useState<'timer' | 'extras'>('timer');
 
-    // Desktop'ta Timer tab artik header'daki TimerTypePicker'a tasindi —
-    // modal sadece "Hizli Ayarlar" tab'i gosterir. Mobile'da modal Timer tab koruyor.
+    // On desktop, Timer tab is now moved to header TimerTypePicker —
+    // modal only shows "Quick Settings" tab. On mobile, modal preserves Timer tab.
     useEffect(() => {
         if (isOpen && !mobileMode && activeTab === 'timer') {
             setActiveTab('extras');

@@ -29,7 +29,7 @@ const aes128 = (function () {
 		}
 	}
 
-	// cstimer port: encrypt yonu icin shiftSubAdd'in tersi
+	// cstimer port: inverse of shiftSubAdd for encryption direction
 	function shiftSubAddI(state, rkey) {
 		var state0 = state.slice();
 		for (var i = 0; i < 16; i++) {
@@ -37,7 +37,7 @@ const aes128 = (function () {
 		}
 	}
 
-	// cstimer port: encrypt yonu icin mixColumns
+	// cstimer port: mixColumns for encryption direction
 	function mixColumns(state) {
 		for (var i = 12; i >= 0; i -= 4) {
 			var s0 = state[i + 0];
@@ -109,7 +109,7 @@ const aes128 = (function () {
 		return block;
 	};
 
-	// cstimer port: encrypt — moyu32, qiyi cube, qiyi timer icin gerekli
+	// cstimer port: encrypt — required for moyu32, qiyi cube, qiyi timer
 	AES128.prototype.encrypt = function (block) {
 		shiftSubAddI(block, this.key.slice(0, 16));
 		for (var i = 16; i < 160; i += 16) {

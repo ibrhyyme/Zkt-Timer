@@ -28,7 +28,7 @@
 	&__stats-container {
 		position: fixed;
 		top: 35%;
-		right: 20px; // Ekranın en sağına sabitle
+		right: 20px; // Fix to far right of screen
 		transform: translateY(-50%);
 		z-index: 10;
 		text-align: left;

@@ -27,7 +27,7 @@ function ChipDropdown({ chip, active }: { chip: FilterChip; active: boolean }) {
 	if (!chip.visible) return null;
 
 	// IDropdownOption (legacy, onClick-based) -> FancyDropdownOption (value-based) conversion.
-	// header'li option'lari atliyoruz — StatsFilterControls flat liste kullaniyor.
+	// Skip header options — StatsFilterControls uses flat list.
 	const fancyOptions: FancyDropdownOption[] = chip.options
 		.filter((o) => !o.hidden && !o.header)
 		.map((opt, i) => ({

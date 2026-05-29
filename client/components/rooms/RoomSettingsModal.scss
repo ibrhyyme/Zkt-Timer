@@ -93,8 +93,8 @@
     }
 
     &__content {
-        // 6+ timer turu (Klavye, StackMat, MoYu, Akilli Kup, GAN, QiYi, Manuel)
-        // sigmasi icin 480px. Daha kucuk overflow-y: auto ile scroll'a duser.
+        // 6+ timer types (Keyboard, StackMat, MoYu, Smart Cube, GAN, QiYi, Manual)
+        // fits in 480px. Smaller sizes fall back to scroll (overflow-y: auto).
         height: 480px;
     }
 

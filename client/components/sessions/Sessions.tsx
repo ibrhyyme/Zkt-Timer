@@ -121,7 +121,7 @@ export default function Sessions() {
 			target = target.parentNode;
 		}
 
-		// Ctrl+Click: çoklu seçim
+		// Ctrl+Click: multi-select
 		if (e && (e.ctrlKey || e.metaKey)) {
 			setMultiSelectedIds((prev) => {
 				const next = new Set(prev);
@@ -135,7 +135,7 @@ export default function Sessions() {
 			return;
 		}
 
-		// Normal tıklama: çoklu seçimi temizle
+		// Normal click: clear multi-select
 		setMultiSelectedIds(new Set());
 		setSelectedSessionId(id);
 		setIsEditingName(false);
@@ -147,14 +147,14 @@ export default function Sessions() {
 
 	function handleCubeTypeChange(ct: CubeType) {
 		setCubeType(ct.id);
-		// Yeni cube_type icin: sezondaki ilk bucket subset'ini auto-sec
+		// For new cube_type: auto-select first bucket subset in session
 		const buckets = session ? getCubeBucketsFromSession(session) : [];
 		const subs = getSubsetsForBuckets(ct.id, buckets);
 		setScrambleSubset(subs[0]?.id ?? null);
 	}
 
 	function handleSubsetChange(subset: string | null) {
-		// SubsetPicker '' subset'i null olarak gonderir
+		// SubsetPicker sends empty string subset as null
 		setScrambleSubset(subset);
 	}
 
@@ -310,7 +310,7 @@ export default function Sessions() {
 		);
 	}
 
-	// İkinci onay modalı: pendingBulkDelete set edildiğinde açılır
+	// Second confirmation modal: opens when pendingBulkDelete is set
 	useEffect(() => {
 		if (!pendingBulkDelete) return;
 
@@ -388,7 +388,7 @@ export default function Sessions() {
 				<div className={b('info-container')}>
 					<h3 className={b('info-title')}>{t('sessions.settings_title')}</h3>
 
-					{/* Sezon Adı */}
+					{/* Session Name */}
 					<div className={b('info-section')}>
 						<label className={b('info-label')}>{t('sessions.session_name')}</label>
 						{isEditingName ? (
@@ -405,7 +405,7 @@ export default function Sessions() {
 						)}
 					</div>
 
-					{/* Aksiyon Butonları */}
+					{/* Action Buttons */}
 					<div className={b('info-actions')}>
 						{isEditingName ? (
 							<Button
@@ -459,7 +459,7 @@ export default function Sessions() {
 			</Module>
 			</div>
 
-			{/* İstatistikler bucket picker - Stats bölümünün başında */}
+			{/* Statistics bucket picker - at start of Stats section */}
 			<Module>
 				<div className={b('stats-header')}>
 					<div className={b('stats-picker')}>

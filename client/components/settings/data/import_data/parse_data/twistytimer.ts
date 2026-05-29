@@ -80,7 +80,7 @@ export function parseTwistyTimerData(txt: string, context: IImportDataContext): 
 		throw new Error('Empty file. No solves found.');
 	}
 
-	// 1) Once tum satirlari parse et — scramble detect icin ilk gecerli scramble'a ihtiyacimiz var
+	// 1) Parse all lines first — scramble detection needs the first valid scramble
 	type ParsedRow = { rawTime: number; scramble: string; isDnf: boolean; startedAt: number; endedAt: number };
 	const rows: ParsedRow[] = [];
 
@@ -116,11 +116,11 @@ export function parseTwistyTimerData(txt: string, context: IImportDataContext): 
 		throw new Error('No valid solves found in Twisty Timer file.');
 	}
 
-	// 2) Cube type tespit oncelik sirasi:
-	//    a) Kullanici context'te belirtmis -> mutlak oncelik
-	//    b) Filename pattern (Solves_222_2x2_..._.txt) -> guvenilir
-	//    c) Ilk solve'un scramble'indan auto-detect
-	//    d) Hepsi basarisiz -> '333' default (kullanici CubePicker ile override edebilir)
+	// 2) Cube type detection priority:
+	//    a) User specified in context -> absolute priority
+	//    b) Filename pattern (Solves_222_2x2_..._.txt) -> reliable
+	//    c) Auto-detect from first solve's scramble
+	//    d) All fail -> '333' default (user can override with CubePicker)
 	let cubeType: string | null = null;
 	let puzzleName = '3x3';
 
@@ -135,7 +135,7 @@ export function parseTwistyTimerData(txt: string, context: IImportDataContext): 
 	}
 
 	if (!cubeType) {
-		// Ilk birkac satira bakip detect — tek satir hatali olabilir
+		// Check first few lines for detection — single line may be invalid
 		for (let i = 0; i < Math.min(rows.length, 5); i++) {
 			const detected = detectCubeTypeFromScramble(rows[i].scramble);
 			if (detected) {
@@ -147,7 +147,7 @@ export function parseTwistyTimerData(txt: string, context: IImportDataContext): 
 
 	const finalCubeType = cubeType || '333';
 
-	// WCA bucket'ina normalize et
+	// Normalize to WCA bucket
 	const normalized = normalizeBucketForImport(finalCubeType);
 	if (!normalized) {
 		const skippedCount = rows.length;
@@ -177,8 +177,8 @@ export function parseTwistyTimerData(txt: string, context: IImportDataContext): 
 
 	console.log(`[TwistyTimer] Parsed ${solves.length} solves (bucket: ${normalized.cube_type}/${normalized.scramble_subset}, source: ${cubeType ? 'detected' : 'default'})`);
 
-	// sessionIdCubeTypeMap set et -> ReviewImport CubePicker render eder, kullanici override edebilir.
-	// Picker WCA event ID'sini gosterir (333/222/444/...), updateSessionCubeType normalize eder.
+	// Set sessionIdCubeTypeMap -> ReviewImport renders CubePicker, user can override.
+	// Picker shows WCA event ID (333/222/444/...), updateSessionCubeType normalizes.
 	const sessionIdCubeTypeMap: Record<string, string> = {
 		[sessionId]: normalized.scramble_subset ?? finalCubeType,
 	};

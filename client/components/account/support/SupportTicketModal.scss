@@ -16,7 +16,7 @@
 		display: flex;
 		align-items: center;
 		gap: 12px;
-		padding-right: 96px; // modal close button (Bitti / X) icin yer
+		padding-right: 96px; // space for modal close button (Done / X)
 		padding-bottom: 12px;
 		border-bottom: 1px solid rgba(var(--text-color), 0.08);
 	}
@@ -56,7 +56,7 @@
 
 	&__avatar {
 		flex-shrink: 0;
-		padding-top: 22px; // username satirinin altina hizala
+		padding-top: 22px; // align with username line bottom
 	}
 
 	&__bubble-group {
@@ -163,7 +163,7 @@
 		justify-content: center;
 		color: rgb(var(--text-color));
 		cursor: pointer;
-		margin-right: auto; // sola yasla — Send/Resolve sagda kalsin
+		margin-right: auto; // align left — keep Send/Resolve on right
 		transition: background 0.12s ease, border-color 0.12s ease;
 
 		svg {

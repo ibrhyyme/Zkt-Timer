@@ -61,10 +61,10 @@ function phaseAvg(solves: Solve[], phase: string): number | null {
 	return vals.reduce((a, b) => a + b, 0) / vals.length;
 }
 
-// Solve total turns / TPS — solve.smart_turn_count tek dogru kaynak (countHTM,
-// boundary-aware monolitik). Tum projedeki diger turn gosterimleri (SmartSolveLayout
-// header, SmartStats badge) ayni alandan beslenir. Per-phase step.turn_count engine
-// fix sonrasi zaten Sigma === smart_turn_count olur.
+// Solve total turns / TPS — solve.smart_turn_count is the single source of truth (countHTM,
+// boundary-aware monolithic). All other turn representations in the project (SmartSolveLayout
+// header, SmartStats badge) are fed from this field. After engine fix, per-phase step.turn_count
+// sum equals smart_turn_count.
 function solveTotalStepTime(steps: StepType[]): number {
 	let time = 0;
 	for (const phase of PHASES) {
@@ -75,8 +75,8 @@ function solveTotalStepTime(steps: StepType[]): number {
 }
 
 function solveTurns(solve: Solve): number | null {
-	// Tek kaynak: solve.smart_turn_count. Reindex calismadigi cok eski solve'larda null
-	// olabilir; o durumda step toplamina fallback (engine fix sonrasi ikisi esit).
+	// Single source: solve.smart_turn_count. May be null in very old solves where reindex didn't run;
+	// in that case fall back to step sum (after engine fix, both are equal).
 	if (solve.smart_turn_count != null) return solve.smart_turn_count;
 	let sum = 0, found = false;
 	for (const phase of PHASES) {
@@ -130,8 +130,8 @@ export default function PhaseAnalysis(props: Props) {
 	useSolveDb();
 	const mobileMode = useGeneral('mobile_mode');
 
-	// Non-Pro user solve'lari server'a sync edemedigi icin method_steps olusmuyor —
-	// Phase Analysis hem desktop hem mobile'da Pro-gate'li
+	// Non-Pro user solves don't sync to server, so method_steps don't exist —
+	// Phase Analysis is Pro-gated on both desktop and mobile
 	const showProOverlay = isProEnabled() && !isPro(me);
 
 	if (showProOverlay) {
@@ -296,7 +296,7 @@ function MobileView({ solves }: { solves: Solve[] }) {
 
 		let comparison: 'better' | 'worse' | null = null;
 		if (val != null && prevVal != null) {
-			// F2L için pair sayisi farkliysa karsilastirma fair degil
+			// For F2L, if pair count differs, comparison is unfair
 			const fairCompare = phase !== 'f2l' || f2lPairCount(currentSteps) === f2lPairCount(prevSteps);
 			if (fairCompare) {
 				comparison = val < prevVal ? 'better' : val > prevVal ? 'worse' : null;
@@ -306,7 +306,7 @@ function MobileView({ solves }: { solves: Solve[] }) {
 		return { label: MOBILE_LABELS[i], val, comparison };
 	});
 
-	// Herhangi bir phase eksikse total da '–' gostermeli (yarim toplam yaniltici)
+	// If any phase is missing, total should show '–' (partial sum is misleading)
 	const hasNullPhase = rows.some(r => r.val == null);
 	const total = hasNullPhase ? null : rows.reduce((sum, r) => sum + (r.val ?? 0), 0);
 

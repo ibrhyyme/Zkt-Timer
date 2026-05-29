@@ -1,10 +1,10 @@
 /**
- * cstimer'in cubeRots (24x54) + mask'larini + LLPattern template'ini Node'da uretip
- * JSON'a dump eder. Bu cubie-level matematik mathlib.CubieCube'a baglidir; runtime'a
- * tasimak istemiyoruz, build-time bir kez ureteyim.
+ * Generates cstimer's cubeRots (24x54) + masks + LLPattern template in Node
+ * and dumps to JSON. This cubie-level math depends on mathlib.CubieCube; we don't
+ * want to carry it to runtime, so generate once at build-time.
  *
- * Kullanim: node scripts/dump-cstimer-rotations.mjs
- * Cikti: shared/data/cstimer_ll_engine.json
+ * Usage: node scripts/dump-cstimer-rotations.mjs
+ * Output: shared/data/cstimer_ll_engine.json
  */
 
 import { readFileSync, writeFileSync } from 'fs';
@@ -15,15 +15,15 @@ const mathlibSrc = readFileSync('Referans/cstimer-master/src/js/lib/mathlib.js',
 const cubeutilSrc = readFileSync('Referans/cstimer-master/src/js/lib/cubeutil.js', 'utf8');
 const scrambleEditSrc = readFileSync('Referans/cstimer-master/src/js/scramble/scramble_333_edit.js', 'utf8');
 
-// algorithms.ts'i block-bazli parse et — her case bir block, key ve defaultSolution
-// regex *? non-greedy bazı case'leri kaçırıyordu (333_pll_20 gibi). Block-split daha güvenli.
+// Parse algorithms.ts block-by-block — each case is one block with key and defaultSolution
+// regex *? non-greedy was missing some cases (like 333_pll_20). Block-split is safer.
 const algSrcGlobal = readFileSync('client/util/algorithms/algorithms.ts', 'utf8');
 const keyAlgsAll = (() => {
 	const out = {};
 	const blocks = algSrcGlobal.split(/(?=key:\s*'333_(?:oll|pll)_\d+')/);
 	for (const block of blocks) {
 		const keyMatch = block.match(/key:\s*'(333_(?:oll|pll)_\d+)'/);
-		// defaultSolution hem "..." hem '...' format'inda olabilir (linter formatter'a gore)
+		// defaultSolution can be in both "..." and '...' format (depends on linter/formatter)
 		const algMatch = block.match(/defaultSolution:\s*(['"])((?:(?!\1).)*)\1/);
 		const nameMatch = block.match(/name:\s*['"]([^'"]+)['"]/);
 		if (keyMatch && algMatch) {
@@ -33,24 +33,24 @@ const keyAlgsAll = (() => {
 	}
 	return out;
 })();
-console.log('algorithms.ts toplam:', Object.keys(keyAlgsAll).length, 'case (PLL:', Object.keys(keyAlgsAll).filter(k => k.includes('pll')).length, 'OLL:', Object.keys(keyAlgsAll).filter(k => k.includes('oll')).length, ')');
+console.log('algorithms.ts total:', Object.keys(keyAlgsAll).length, 'cases (PLL:', Object.keys(keyAlgsAll).filter(k => k.includes('pll')).length, 'OLL:', Object.keys(keyAlgsAll).filter(k => k.includes('oll')).length, ')');
 
-// scramble_333_edit.js'ten pllImgParam, oll_map ve pll_map'i parse et
+// Parse pllImgParam, oll_map and pll_map from scramble_333_edit.js
 const pllImgParamMatch = scrambleEditSrc.match(/var pllImgParam = (\[[\s\S]*?\]);/);
 const ollMapMatch = scrambleEditSrc.match(/var oll_map = (\[[\s\S]*?\]);/);
 const pllMapMatch = scrambleEditSrc.match(/var pll_map = (\[[\s\S]*?\]);/);
 if (!pllImgParamMatch || !ollMapMatch || !pllMapMatch) {
-	console.error('pllImgParam / oll_map / pll_map parse edilemedi');
+	console.error('pllImgParam / oll_map / pll_map could not be parsed');
 	process.exit(1);
 }
 const pllImgParam = eval(pllImgParamMatch[1]);
 const oll_map = eval(ollMapMatch[1]);
 const pll_map = eval(pllMapMatch[1]);
-console.log('pllImgParam:', pllImgParam.length, 'entry');
-console.log('oll_map:', oll_map.length, 'entry');
-console.log('pll_map:', pll_map.length, 'entry');
+console.log('pllImgParam:', pllImgParam.length, 'entries');
+console.log('oll_map:', oll_map.length, 'entries');
+console.log('pll_map:', pll_map.length, 'entries');
 
-// cstimer PLL index -> bizim algorithms.ts key (manuel mapping, name'lerden cikartildi)
+// cstimer PLL index -> our algorithms.ts key (manual mapping, extracted from names)
 const PLL_NAME_TO_KEY = {
 	'H': '333_pll_3', 'Ua': '333_pll_1', 'Ub': '333_pll_2', 'Z': '333_pll_4',
 	'Aa': '333_pll_5', 'Ab': '333_pll_6', 'E': '333_pll_7', 'F': '333_pll_8',
@@ -59,12 +59,12 @@ const PLL_NAME_TO_KEY = {
 	'Ra': '333_pll_13', 'Rb': '333_pll_14', 'T': '333_pll_19', 'Y': '333_pll_21',
 	'V': '333_pll_20',
 };
-// cstimer index 0-20: pll_map sirasiyla, 21 = identity (skip)
+// cstimer indices 0-20: pll_map order, 21 = identity (skip)
 const pllIndexToKey = pll_map.map((row) => PLL_NAME_TO_KEY[row[3]] || null);
 pllIndexToKey.push(null); // index 21 = skip case
 
-// cstimer OLL index 0 = 'PLL' (skip = OLL solved). Index 1-57 = OLL case'ler.
-// oll_map[i][3] = '<type>-<n>' formatinda (orn 'Awkward-29'), n parse edip 333_oll_<n>.
+// cstimer OLL index 0 = 'PLL' (skip = OLL solved). Indices 1-57 = OLL cases.
+// oll_map[i][3] = format '<type>-<n>' (e.g., 'Awkward-29'), parse n and get 333_oll_<n>.
 const ollIndexToKey = oll_map.map((row) => {
 	const name = row[3];
 	if (name === 'PLL') return null; // skip
@@ -73,12 +73,12 @@ const ollIndexToKey = oll_map.map((row) => {
 	return '333_oll_' + m[1];
 });
 
-// cubeutil.js scramble_333.getPLLImage / getOLLImage cagriyor (identPLL/identOLL icinde).
-// Sadece cubeRots + maskler + LLPattern yeter — pattern uretimi ayri (algorithms.ts'imizden).
-// O yuzden cubeutil.js'in identStep ve scramble_333 bagimliliklarini stub'la.
+// cubeutil.js calls scramble_333.getPLLImage / getOLLImage (inside identPLL/identOLL).
+// We only need cubeRots + masks + LLPattern — pattern generation is separate (from our algorithms.ts).
+// So stub out cubeutil.js's identStep and scramble_333 dependencies.
 
-// IIFE'in son return'unu (public API) bul ve internal'lari ekle.
-// Ayrica identPLL/identOLL'u tetiklemek icin warm-up cagrilar ekle (lazy pattern[] init).
+// Find the final return statement (public API) and add internals.
+// Also add warm-up calls to trigger identPLL/identOLL (lazy pattern[] init).
 const patchedCubeutilSrc = cubeutilSrc.replace(
 	"return {\n\t\tgetProgress: getProgress,",
 	`identPLL(mathlib.SOLVED_FACELET);
@@ -95,12 +95,12 @@ const patchedCubeutilSrc = cubeutilSrc.replace(
 		getProgress: getProgress,`
 );
 if (!patchedCubeutilSrc.includes('__cubeRots')) {
-	console.error('PATCH FAILED — return signature degismis olabilir');
+	console.error('PATCH FAILED — return signature may have changed');
 	process.exit(1);
 }
 
-// Pattern array'lerini IIFE icindeki private degiskenler. Warm-up sonrasi 'pllPattern'
-// ve 'ollPattern' degiskenleri populated. Onlari da export edelim — patch ile.
+// Pattern arrays are private variables inside the IIFE. After warm-up, 'pllPattern'
+// and 'ollPattern' are populated. Export them too — via patch.
 const patchedCubeutilSrc2 = patchedCubeutilSrc.replace(
 	"\t\t__identPLL: identPLL,",
 	`\t\t__identPLL: identPLL,
@@ -126,7 +126,7 @@ const patchedCubeutilSrc2 = patchedCubeutilSrc.replace(
 		})(),`
 );
 
-// Gerçek cstimer getPLLImage / getOLLImage mantigi
+// Real cstimer getPLLImage / getOLLImage logic
 function getPLLImage(i) {
 	return ['DDDDDDDDD' + pllImgParam[i][0]];
 }
@@ -193,5 +193,5 @@ const output = {
 };
 
 writeFileSync('shared/data/cstimer_ll_engine.json', JSON.stringify(output));
-console.log('Yazildi: shared/data/cstimer_ll_engine.json');
-console.log('Boyut:', (readFileSync('shared/data/cstimer_ll_engine.json').length / 1024).toFixed(1), 'KB');
+console.log('Written: shared/data/cstimer_ll_engine.json');
+console.log('Size:', (readFileSync('shared/data/cstimer_ll_engine.json').length / 1024).toFixed(1), 'KB');

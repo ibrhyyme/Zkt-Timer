@@ -1,13 +1,13 @@
 /**
- * PLL Recognition Trainer stilleri.
+ * PLL Recognition Trainer styles.
  * Namespace: cd-trainer-recognition
  *
- * Yaklasim:
- * - CSS variables: rgb(var(--x)) ve rgba(var(--x), opacity)
- * - Border: rgba(var(--text-color), 0.08) (mevcut konvansiyon)
+ * Approach:
+ * - CSS variables: rgb(var(--x)) and rgba(var(--x), opacity)
+ * - Border: rgba(var(--text-color), 0.08) (existing convention)
  * - Modal/dropdown bg: rgb(var(--background-color))
  * - Card bg: rgb(var(--button-color))
- * - Text: rgb(var(--text-color)) + 0.85/0.7/0.5 hiyerarsi
+ * - Text: rgb(var(--text-color)) + 0.85/0.7/0.5 hierarchy
  * - Card pattern: border-radius 14px, padding 16px 20px, hover lift
  */
 @import '../../../styles/config';
@@ -453,7 +453,7 @@
 
 		&:active { transform: scale(0.94); }
 
-		// fullname modu: 21 buton, 3 satır × 7 = ekran genişliğine eşit dağıt
+		// fullname mode: 21 buttons, 3 rows × 7 = distribute evenly across screen width
 		&--fullname {
 			flex: 1 1 0;
 			min-width: 0;
@@ -473,7 +473,7 @@
 			border-color: rgb(var(--error-color));
 		}
 
-		// Mobil: ekrana sığsın diye min biraz küçült (44px touch min uyumlu)
+		// Mobile: slightly reduce min to fit screen (44px touch minimum compatible)
 		@media (max-width: 767px) {
 			min-width: 44px;
 			min-height: 52px;
@@ -488,7 +488,7 @@
 			}
 		}
 
-		// Touch cihazlarda hover sticking sorununu engelle
+		// Prevent hover sticking problem on touch devices
 		@media (hover: none) {
 			&:not(:active):hover {
 				background: rgb(var(--button-color));
@@ -1411,8 +1411,8 @@
 		gap: 8px;
 		margin-top: 4px;
 	}
-	// Secondary CTA butonlari (Kisisellestirilmis / Tekrarla / Serbest Antrenman)
-	// gradient kart uzerinde belirgin olsun diye solid pill + clear border
+	// Secondary CTA buttons (Customize / Retry / Free Train)
+	// Solid pill + clear border to stand out on gradient card
 	&__eval-cta-secondary,
 	&__eval-cta-secondary button {
 		border-radius: 22px !important;
@@ -1438,7 +1438,7 @@
 
 		svg, i { font-size: 1em; opacity: 0.85; }
 	}
-	// Danger variant (delete) — kirmizi outline, hover'da kirmizi tint
+	// Danger variant (delete) — red outline, red tint on hover
 	&__eval-cta-secondary--danger,
 	&__eval-cta-secondary--danger button {
 		border-color: rgba(var(--error-color), 0.45) !important;
@@ -1592,7 +1592,7 @@
 		gap: 22px;
 	}
 
-	// Kart container — visual + behavior bolumleri icin
+	// Card container — for visual + behavior sections
 	&__settings-card {
 		display: flex;
 		flex-direction: column;
@@ -1612,7 +1612,7 @@
 		border-bottom: 1px solid rgba(var(--text-color), 0.08);
 	}
 
-	// Gorsel kart: sol form, sag preview (masaüstü)
+	// Visual card: left form, right preview (desktop)
 	&__settings-visual {
 		display: flex;
 		flex-direction: column;
@@ -1652,7 +1652,7 @@
 		text-transform: uppercase;
 	}
 
-	// Davranis kart: toggle 2-sutun grid
+	// Behavior card: toggle 2-column grid
 	&__settings-toggles {
 		display: flex;
 		flex-direction: column;
@@ -1672,7 +1672,7 @@
 	}
 	&__settings-section { display: flex; flex-direction: column; gap: 8px; }
 	&__settings-label { font-size: 0.88rem; font-weight: 600; }
-	// Form row: label ust + input alt, full-width input (eski label-left/input-right yapısı yerine)
+	// Form row: label top + input bottom, full-width input (instead of old label-left/input-right pattern)
 	&__settings-row {
 		display: flex;
 		flex-direction: column;
@@ -1715,7 +1715,7 @@
 		letter-spacing: 0.02em;
 	}
 
-	// Tehlikeli Bolge: bordered card with subtle red tint
+	// Danger Zone: bordered card with subtle red tint
 	&__settings-danger-card {
 		display: flex;
 		flex-direction: column;
@@ -1776,8 +1776,8 @@
 	}
 
 	// ────────── Pill secondary button override ──────────
-	// Mevcut Button component'inin uzerine SCSS override.
-	// `className` prop'u ile <Button className={b('btn-pill')} />.
+	// SCSS override over existing Button component.
+	// Use via `className` prop: <Button className={b('btn-pill')} />.
 	&__btn-pill,
 	&__btn-pill button {
 		border-radius: 22px !important;
@@ -2121,9 +2121,9 @@
 	}
 	&__variations-cell { text-align: center; }
 
-	// ────────── Landing card icon variant (TrainerLanding 3. kart) ──────────
-	// Trainer.scss icindeki .cd-trainer__landing-card-icon ile uyumlu olmasi icin
-	// custom class kullanmiyoruz — eklenen `orange` modifier'i mevcut SCSS'te tanimli.
+	// ────────── Landing card icon variant (TrainerLanding 3rd card) ──────────
+	// To be compatible with .cd-trainer__landing-card-icon in Trainer.scss,
+	// we don't use a custom class — the added `orange` modifier is defined in existing SCSS.
 
 	@include lg {
 		&__layout-sidebar { width: 320px; }

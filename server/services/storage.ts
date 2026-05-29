@@ -3,21 +3,21 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 /**
- * Her zaman yerel dosya sistemini kullanır (AWS S3 desteği kaldırıldı)
- * Dosyalar public/uploads klasörüne kaydedilir
+ * Always uses local file system (AWS S3 support removed)
+ * Files are saved to public/uploads folder
  */
 export async function uploadObject(fileBuffer: Buffer, filePath: string, options: any = {}) {
-	// Yerel dosya sistemini kullan
+	// Use local file system
 	const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
 	const fullPath = path.join(uploadsDir, filePath);
 
-	// Klasörü oluştur
+	// Create folder
 	const dir = path.dirname(fullPath);
 	if (!fs.existsSync(dir)) {
 		fs.mkdirSync(dir, { recursive: true });
 	}
 
-	// Dosyayı kaydet
+	// Save file
 	fs.writeFileSync(fullPath, fileBuffer);
 
 	logger.info('File uploaded to local storage', {
@@ -29,7 +29,7 @@ export async function uploadObject(fileBuffer: Buffer, filePath: string, options
 }
 
 export async function deleteObject(filePath: string) {
-	// Yerel dosyayı sil
+	// Delete local file
 	const fullPath = path.join(process.cwd(), 'public', 'uploads', filePath);
 
 	if (fs.existsSync(fullPath)) {

@@ -12,7 +12,7 @@ const TwistyPlayerWrapper: React.FC<Props> = ({ puzzle, alg, visualization = '2D
     const containerRef = useRef<HTMLDivElement>(null);
     const playerRef = useRef<TwistyPlayer | null>(null);
 
-    // Puzzle/visualization degistiginde yeniden olustur
+    // Recreate when puzzle/visualization changes
     useEffect(() => {
         if (typeof window !== 'undefined' && containerRef.current) {
             if (playerRef.current) {
@@ -40,13 +40,13 @@ const TwistyPlayerWrapper: React.FC<Props> = ({ puzzle, alg, visualization = '2D
         };
     }, [puzzle, visualization]);
 
-    // Scramble degistiginde sadece alg guncelle (yikip yeniden olusturma)
+    // When scramble changes, only update alg (don't tear down and recreate)
     useEffect(() => {
         if (playerRef.current) {
             try {
                 playerRef.current.alg = alg;
             } catch {
-                // TwistyPlayer notasyonu parse edemedi
+                // TwistyPlayer could not parse notation
             }
         }
     }, [alg]);

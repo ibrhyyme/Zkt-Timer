@@ -83,32 +83,32 @@ export function suggestEmailDomain(email: string): EmailSuggestion | null {
 
 	const lowerDomain = domain.toLowerCase().trim();
 
-	// Exact match — oneri yok
+	// Exact match — no suggestion
 	if (KNOWN_DOMAINS.includes(lowerDomain)) return null;
 
-	// Non-ASCII karakter kontrolu (ı, ş, ğ, ü, ö, ç vb.)
-	// Email domain'lerinde ASLA non-ASCII karakter olmamali
+	// Non-ASCII character check (ı, ş, ğ, ü, ö, ç, etc.)
+	// Email domains should NEVER contain non-ASCII characters
 	const hasInvalidChars = /[^\x20-\x7E]/.test(lowerDomain);
 
 	if (hasInvalidChars) {
 		const normalized = normalizeToAscii(lowerDomain);
 
-		// Normalize sonrasi exact match
+		// Exact match after normalization
 		if (KNOWN_DOMAINS.includes(normalized)) {
 			return { fullEmail: `${localPart}@${normalized}`, suggestedDomain: normalized, originalDomain: lowerDomain, hasInvalidChars: true };
 		}
 
-		// Normalize sonrasi Levenshtein (daha genis threshold: 3)
+		// Levenshtein after normalization (wider threshold: 3)
 		const closest = findClosestDomain(normalized);
 		if (closest && closest.distance <= 3 && normalized.length >= 4) {
 			return { fullEmail: `${localPart}@${closest.match}`, suggestedDomain: closest.match, originalDomain: lowerDomain, hasInvalidChars: true };
 		}
 
-		// Non-ASCII var ama yakin domain bulunamadi — yine de uyar
+		// Has non-ASCII but no close domain found — still warn
 		return { fullEmail: email, suggestedDomain: '', originalDomain: lowerDomain, hasInvalidChars: true };
 	}
 
-	// ASCII domain icin standart Levenshtein (threshold: 2)
+	// Standard Levenshtein for ASCII domain (threshold: 2)
 	const closest = findClosestDomain(lowerDomain);
 	if (closest && closest.distance > 0 && closest.distance <= 2 && lowerDomain.length >= 4) {
 		return { fullEmail: `${localPart}@${closest.match}`, suggestedDomain: closest.match, originalDomain: lowerDomain, hasInvalidChars: false };

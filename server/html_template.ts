@@ -14,7 +14,7 @@ export interface HtmlPagePayload {
 export default (payload: HtmlPagePayload) => {
 	const { html, cleanState, helmet, distBase, resourceBase, cssFileName, jsFileName, lang } = payload;
 
-	// Cache-busting: Her deployment'ta tarayıcılar yeni dosyaları indirsin
+	// Cache-busting: Browsers download new files at each deployment
 	const version = process.env.RELEASE_NAME || Date.now().toString();
 
 	return `
@@ -35,8 +35,8 @@ export default (payload: HtmlPagePayload) => {
 				<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 				<!-- PWA Manifest -->
 				<link rel="manifest" href="/public/manifest.webmanifest">
-				<!-- iOS PWA Uyumluluğu (Otomatik Splash Screen Oluşturucu) -->
-				<!-- Supply chain attack koruma: versiyon pinli. SRI hash ekle (kullanici manuel: jsdelivr SRI generator) -->
+				<!-- iOS PWA Compatibility (Automatic Splash Screen Generator) -->
+				<!-- Supply chain attack protection: version pinned. Add SRI hash (user manual: jsdelivr SRI generator) -->
 				<script async src="https://cdn.jsdelivr.net/npm/pwacompat@2.0.17/pwacompat.min.js" crossorigin="anonymous"></script>
 				<meta name="theme-color" content="#0F142B">
 
@@ -47,17 +47,17 @@ export default (payload: HtmlPagePayload) => {
 				<meta name="apple-mobile-web-app-title" content="Zkt Timer">
 				<meta name="application-name" content="Zkt Timer">
 				<meta name="format-detection" content="telephone=no">
-				<!-- Smart App Banner: Safari'de "Uygulamada Ac" butonu gosterir -->
+				<!-- Smart App Banner: shows "Open in App" button in Safari -->
 				<meta name="apple-itunes-app" content="app-id=6760920873">
-				<!-- Android: Chrome'a native app uyarisi -->
+				<!-- Android: native app prompt in Chrome -->
 				<meta name="google-play-app" content="app-id=com.zktimer.app">
 				<link rel="alternate" href="android-app://com.zktimer.app/https/zktimer.app/">
-				<!-- iOS Ana Ekran İkonu (Mutlaka PNG olmalı, SVG desteklenmez) -->
+				<!-- iOS Home Screen Icon (Must be PNG, SVG not supported) -->
 				<link rel="apple-touch-icon" href="${resourceBase}/images/apple-touch-icon.png">
 				<link rel="apple-touch-icon" sizes="152x152" href="${resourceBase}/images/apple-touch-icon.png">
 				<link rel="apple-touch-icon" sizes="180x180" href="${resourceBase}/images/apple-touch-icon.png">
 				<link rel="apple-touch-icon" sizes="167x167" href="${resourceBase}/images/apple-touch-icon.png">
-				<!-- iOS Açılış Ekranı (Splash Screen benzeri etki için) -->
+				<!-- iOS Launch Screen (Splash screen-like effect) -->
 				<link rel="apple-touch-startup-image" href="${resourceBase}/images/apple-touch-icon.png">
 				${process.env.NODE_ENV === "production" ? `<script async defer data-domain="zktimer.app" src="https://plausible.io/js/plausible.js"></script>` : ""}
 				<script async defer src="https://www.googletagmanager.com/gtag/js?id=AW-354788011"></script>

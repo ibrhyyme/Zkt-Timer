@@ -75,7 +75,7 @@ export default function Stats() {
 	const rawLastN = urlParams.get(LAST_N_QUERY_PARAM);
 	const tabLastN = rawLastN && LAST_N_SET.has(Number(rawLastN)) ? Number(rawLastN) : null;
 
-	// URL'de lastN varsa kullanici smart view'i hedefliyor demektir — paylasilan link bozulmasin.
+	// If lastN is in URL, user is targeting smart view — don't break the shared link.
 	const [view, setView] = useState<StatsView>(tabLastN !== null ? 'smart' : 'all');
 
 	const solveUpdate = useSolveDb();
@@ -109,8 +109,8 @@ export default function Stats() {
 			history.push(buildStatsUrl(null, null, tabSession, tabLastN));
 			return;
 		}
-		// Bos string ('') gecerli bir subset id (777 WCA, 333 Random State) — sadece null/undefined
-		// "subset secilmemis" anlamina gelir.
+		// Empty string ('') is a valid subset id (777 WCA, 333 Random State) — only null/undefined
+		// means "no subset selected".
 		if (scramble_subset == null) {
 			const subs = getSubsetsForBuckets(cube_type, cubeTypes);
 			if (subs.length === 0) {
@@ -137,15 +137,15 @@ export default function Stats() {
 		return getSubsetsForBuckets(tabCubeType, cubeTypes);
 	}, [tabCubeType, cubeTypes]);
 
-	// Bucket degisikliginde scroll'u tepeye al — ScrollReset sadece pathname'i izliyor,
-	// query string degistiginde (PuzzleCard tiklamasi, dropdown secimi) tetiklenmiyor.
+	// When bucket changes, scroll to top — ScrollReset only watches pathname,
+	// not triggered when query string changes (PuzzleCard click, dropdown selection).
 	useEffect(() => {
 		window.scrollTo({top: 0, left: 0, behavior: 'instant'} as ScrollToOptions);
 	}, [tabCubeType, tabSubset]);
 
-	// Eski URL ('?cubeType=wca' subset'siz) → ilk subset'e otomatik yonlendir.
-	// `subset=` bos string default subset (orn 777 WCA, 333 Random State) — null degil,
-	// dolayisiyla redirect tetiklemez.
+	// Old URL ('?cubeType=wca' without subset) → auto-redirect to first subset.
+	// `subset=` empty string is default subset (e.g., 777 WCA, 333 Random State) — not null,
+	// so redirect is not triggered.
 	useEffect(() => {
 		if (tabCubeType && tabSubset === null) {
 			if (subsetsForCurrentCube.length > 0) {
@@ -156,15 +156,15 @@ export default function Stats() {
 		}
 	}, [tabCubeType, tabSubset, subsetsForCurrentCube, tabSession, tabLastN]);
 
-	// view 'smart'tan 'all'a donerse lastN'i URL'den dusur (smart-only secim).
+	// When view changes from 'smart' to 'all', remove lastN from URL (smart-only selection).
 	useEffect(() => {
 		if (view !== 'smart' && tabLastN !== null) {
 			history.replace(buildStatsUrl(tabCubeType, tabSubset, tabSession, null));
 		}
 	}, [view, tabLastN, tabCubeType, tabSubset, tabSession]);
 
-	// "Tumu" modu: cubeType yok VEYA subset URL parametresi hic verilmemis (null).
-	// Bos string ('') gecerli bir subset id'si (777 WCA, 333 Random State, vb).
+	// "All" mode: no cubeType OR subset URL parameter never provided (null).
+	// Empty string ('') is a valid subset id (777 WCA, 333 Random State, etc.).
 	const all = !tabCubeType || tabSubset === null;
 	const filterOptions: FilterSolvesOptions = {
 		from_timer: true,
@@ -177,8 +177,8 @@ export default function Stats() {
 		filterOptions.session_id = tabSession;
 	}
 
-	// Sezon dropdown'u: secili bucket'a (cube_type+subset) solve'u olan sezonlari goster.
-	// "Tumu" modunda tum sezonlari goster.
+	// Session dropdown: show sessions with solves for the selected bucket (cube_type+subset).
+	// In "all" mode, show all sessions.
 	const sessionsForCurrentBucket = useMemo(() => {
 		if (all) return allSessions;
 		const sessionFilter: any = { cube_type: tabCubeType };
@@ -297,7 +297,7 @@ export default function Stats() {
 		visible: true,
 	} : null;
 
-	// SonN chip sadece smart view aktifken (yani cube secili VE kullanici smart toggle'a basmis) gozukur.
+	// LastN chip only appears in smart view (cube selected AND user toggled smart).
 	const lastNChip: FilterChip | null = !all && view === 'smart' ? {
 		label: lastNDropdownText,
 		options: lastNOptions,
@@ -316,9 +316,9 @@ export default function Stats() {
 		/>
 	);
 
-	// "Tumu" gorunumu: masaustunde baslik tekrar oldugu icin HeroBand'i gizle, filtreleri
-	// "Genel Bakis" basliginin yanina tasi (AllStats'a prop ile). Mobilde HeroBand korunur
-	// (konum isareti + gomulu nav/avatar). Kup gorunumu (CubeStatHero) bilgi tasidigi icin degismez.
+	// "All" view: on desktop hide HeroBand (title repeated), move filters to "Overview" title.
+	// On mobile, HeroBand is preserved (location icon + embedded nav/avatar).
+	// Cube view (CubeStatHero) carries info, so it never changes.
 	return (
 		<StatsContext.Provider value={context}>
 			<div className={b()}>
@@ -332,8 +332,8 @@ export default function Stats() {
 					) : (
 						<CubeStatHero>{filtersBody}</CubeStatHero>
 					)}
-					{/* Mod 2 (cube secili, subset null) artik mumkun degil — auto-redirect oncesi
-					    gecici frame'de bos render'a dusmemek icin: subset henuz set olmadiysa AllStats goster. */}
+					{/* Mode 2 (cube selected, subset null) no longer possible — to avoid empty render
+					    in transient frame before auto-redirect: if subset not yet set, show AllStats. */}
 					{all ? <AllStats filters={mobileMode ? null : filtersBody} /> : <CubeStats />}
 				</div>
 			</div>

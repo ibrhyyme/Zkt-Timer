@@ -38,7 +38,7 @@ export default function FollowBellButton({
 	const {follows, refetchFollows, isFinished} = useCompetitionData();
 	const [busy, setBusy] = useState(false);
 
-	// Yarisma bitti — yeni bildirim gelmez, bell anlamsiz
+	// Competition finished — no new notifications will arrive, bell is meaningless
 	if (isFinished) return null;
 
 	const isFollowing = follows.some((f) => f.followed_registrant_id === registrantId);

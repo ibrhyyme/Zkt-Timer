@@ -1,16 +1,16 @@
 -- ============================================================================
 -- CLEANUP: cube_type='wca' + scramble_subset=NULL orphans
 -- ----------------------------------------------------------------------------
--- Scramble pattern heuristic'iyle subset atar. Tum tablolari (solve, top_solve,
--- top_average) birlikte temizler. Idempotent — ikinci kosturmada 0 satir eslesir.
+-- Assigns subset using scramble pattern heuristic. Cleans all tables together
+-- (solve, top_solve, top_average). Idempotent — second run matches 0 rows.
 --
--- Transaction icinde calisir. Hata olursa rollback otomatik. Apply icin SQL
--- sonundaki COMMIT'i acik birak. Dry-run icin COMMIT yerine ROLLBACK koy.
+-- Runs within transaction. Auto-rollback on error. For apply, leave COMMIT at
+-- end of SQL. For dry-run, replace COMMIT with ROLLBACK.
 --
--- Kullanim (APPLY):
+-- Usage (APPLY):
 --   docker compose exec -T postgres psql -U root -d Zkt-Timer < scripts/migrations/cleanup-wca-orphans.sql
 --
--- Kullanim (DRY-RUN):
+-- Usage (DRY-RUN):
 --   sed 's/^COMMIT;$/ROLLBACK;/' scripts/migrations/cleanup-wca-orphans.sql | \
 --     docker compose exec -T postgres psql -U root -d Zkt-Timer
 -- ============================================================================
@@ -21,7 +21,7 @@ BEGIN;
 -- SOLVE TABLE
 -- ============================================================================
 
-\echo '[solve] Once durumu:'
+\echo '[solve] Before state:'
 SELECT
     COALESCE(scramble_subset, '<NULL>') AS subset,
     COUNT(*) AS count
@@ -48,7 +48,7 @@ SET scramble_subset = CASE
 END
 WHERE cube_type = 'wca'
   AND scramble_subset IS NULL
-  -- Sadece classifier'in atayabildigi satirlar (NULL kalanlar SKIP)
+  -- Only rows the classifier can assign (ones staying NULL are SKIP)
   AND (
       scramble LIKE '%/%'
       OR scramble LIKE '%++%' OR scramble LIKE '%--%'
@@ -59,7 +59,7 @@ WHERE cube_type = 'wca'
   );
 
 \echo ''
-\echo '[solve] Sonra durumu:'
+\echo '[solve] After state:'
 SELECT
     COALESCE(scramble_subset, '<NULL>') AS subset,
     COUNT(*) AS count
@@ -69,7 +69,7 @@ GROUP BY scramble_subset
 ORDER BY count DESC;
 
 \echo ''
-\echo '[solve] SKIPPED (manuel inceleme):'
+\echo '[solve] SKIPPED (manual review needed):'
 SELECT
     length(scramble) AS scr_len,
     LEFT(scramble, 60) AS scr_preview
@@ -81,7 +81,7 @@ LIMIT 10;
 -- TOP_SOLVE TABLE
 -- ============================================================================
 \echo ''
-\echo '[top_solve] Once durumu:'
+\echo '[top_solve] Before state:'
 SELECT
     COALESCE(scramble_subset, '<NULL>') AS subset,
     COUNT(*) AS count
@@ -120,7 +120,7 @@ WHERE ts.solve_id = s.id
   );
 
 \echo ''
-\echo '[top_solve] Sonra durumu:'
+\echo '[top_solve] After state:'
 SELECT
     COALESCE(scramble_subset, '<NULL>') AS subset,
     COUNT(*) AS count
@@ -133,7 +133,7 @@ ORDER BY count DESC;
 -- TOP_AVERAGE TABLE
 -- ============================================================================
 \echo ''
-\echo '[top_average] Once durumu:'
+\echo '[top_average] Before state:'
 SELECT
     COALESCE(scramble_subset, '<NULL>') AS subset,
     COUNT(*) AS count
@@ -172,7 +172,7 @@ WHERE ta.solve_1_id = s.id
   );
 
 \echo ''
-\echo '[top_average] Sonra durumu:'
+\echo '[top_average] After state:'
 SELECT
     COALESCE(scramble_subset, '<NULL>') AS subset,
     COUNT(*) AS count
@@ -181,5 +181,5 @@ WHERE cube_type = 'wca'
 GROUP BY scramble_subset
 ORDER BY count DESC;
 
--- DRY-RUN icin: bu satiri ROLLBACK; yap.
+-- For dry-run: change this line to ROLLBACK;
 COMMIT;

@@ -1,29 +1,29 @@
-// QiYi Timer (QY-Timer + QY-Adapter) BLE port — cstimer'dan satir satir port.
+// QiYi Timer (QY-Timer + QY-Adapter) BLE port — ported line-by-line from cstimer.
 //
-// Kaynak referanslar (birebir, kisaltma YOK):
-//   Referans/cstimer-master/src/js/hardware/qiyitimer.js (247 satir, protokol)
-//   Referans/cstimer-master/src/js/hardware/bluetooth.js (BluetoothTimer.CONST, waitForAdvs, findUUID)
-//   Referans/cstimer-master/src/js/lib/sha256.js:107-218 (AES128 + Sbox + xtime tablolari)
+// Source references (exact, no abbreviation):
+//   Reference/cstimer-master/src/js/hardware/qiyitimer.js (247 lines, protocol)
+//   Reference/cstimer-master/src/js/hardware/bluetooth.js (BluetoothTimer.CONST, waitForAdvs, findUUID)
+//   Reference/cstimer-master/src/js/lib/sha256.js:107-218 (AES128 + Sbox + xtime tables)
 //
-// Onemli fark cstimer'la: cstimer JS'te global $.aes128 var; bizde shared ae128.js dosyasi
-// `new` olmadan cagriliyor (qiyi.js ve moyu32.js'te de var) — strict ES module'de bu
-// gercekten calisip calismadigi belirsiz, bu yuzden AES'i bu dosyaya INLINE port ediyoruz.
+// Key difference from cstimer: cstimer has global $.aes128 in JS; we have shared ae128.js file
+// called without `new` (also in qiyi.js and moyu32.js) — in strict ES modules this
+// is unclear if it works, so we INLINE port AES to this file.
 //
-// MAC discovery sirasi cstimer init() ile birebir:
-//   (1) waitForAdvs() — manufacturer data CIC 0x0504, BLE adapter destekliyorsa
+// MAC discovery sequence matches cstimer init() exactly:
+//   (1) waitForAdvs() — manufacturer data CIC 0x0504, if BLE adapter supports it
 //   (2) gatt.connect()
 //   (3) getPrimaryService(SERVICE_UUID) → getCharacteristics
 //   (4) startNotifications(readChrct)
 //   (5) device name regex (defaultMac fallback)
-//   (6) localStorage cache (cstimer'da yok, biz ekledik)
-//   (7) prompt (cstimer'da reqMacAddr; bizde window.prompt)
+//   (6) localStorage cache (not in cstimer, we added it)
+//   (7) prompt (cstimer has reqMacAddr; we use window.prompt)
 //   (8) sendHello(mac)
 
 import {Observable, Subject} from 'rxjs';
 import {getBleAdapter, BleAdapter, BleDevice} from '../../../../util/ble';
 
 // ===========================================================================
-// AES-128-ECB (cstimer sha256.js:107-218 satir satir port)
+// AES-128-ECB (cstimer sha256.js:107-218 ported line-by-line)
 // ===========================================================================
 
 const Sbox: number[] = [
@@ -156,35 +156,35 @@ const UUID_SUFFIX = '-0000-1001-8001-00805f9b07d0';
 const CHRCT_WRITE = '00000001' + UUID_SUFFIX;
 const CHRCT_READ = '00000002' + UUID_SUFFIX;
 const QIYI_CIC_LIST: number[] = [0x0504];
-// cstimer'in giiMacMap pattern'i: device adi bazli MAC cache. QY-Timer ve QY-Timer-V2
-// gibi farkli model adlari ayri cache'lenir.
+// cstimer's giiMacMap pattern: device name-based MAC cache. Different model names like
+// QY-Timer and QY-Timer-V2 are cached separately.
 const MAC_CACHE_KEY = 'qiyi_timer_mac_map';
 
 // ===========================================================================
 // Firmware variant routing
 // ===========================================================================
 //
-// QiYi V1 timer (eski donanim, "QY-Timer-XXXX" veya "QY-Adapter-XXXX"):
-//   AES key = [0x77]*16 — cstimer qiyitimer.js'ten birebir port
+// QiYi V1 timer (old hardware, "QY-Timer-XXXX" or "QY-Adapter-XXXX"):
+//   AES key = [0x77]*16 — exact port from cstimer qiyitimer.js
 //   Hello magic = [0, 0, 0, 0, 0, 33, 8, 0, 1, 5, 90]
 //
-// QiYi V2 timer (yeni donanim, "QY-Timer-V2-XXXX"):
-//   AES key = [0x77]*16 — V1 ile AYNI (reverse engineer'da yakalandi)
-//   Hello magic = [0, 0, 0, 0, 0, 36, 5, 0, 4, 77, 20] — yeni firmware
+// QiYi V2 timer (new hardware, "QY-Timer-V2-XXXX"):
+//   AES key = [0x77]*16 — SAME as V1 (captured via reverse engineering)
+//   Hello magic = [0, 0, 0, 0, 0, 36, 5, 0, 4, 77, 20] — new firmware
 //
-// Reverse engineering bulgulari (29 Mayis 2026, V2 timer + ex.rubik + HCI sniff):
-//   - V2 protokol structure cstimer V1 ile bire bir AYNI
-//   - Service UUID, characteristic UUIDs, packet framing, CRC16-MODBUS, AES key: AYNI
-//   - SADECE hello magic byte'lar (data[5..10]) farkli
-//   - Notify cmd 0x1003 dpId=1/dpType=1 (record time) AYNI
-//   - Notify cmd 0x1003 dpId=4/dpType=4 (state change) AYNI
-//   - V2 ekstra: dpId=3/dpType=2 mesajlari (muhtemelen pil seviyesi) — ignore edilebilir
+// Reverse engineering findings (May 29, 2026, V2 timer + ex.rubik + HCI sniff):
+//   - V2 protocol structure is IDENTICAL to cstimer V1
+//   - Service UUID, characteristic UUIDs, packet framing, CRC16-MODBUS, AES key: SAME
+//   - ONLY hello magic bytes (data[5..10]) differ
+//   - Notify cmd 0x1003 dpId=1/dpType=1 (record time) SAME
+//   - Notify cmd 0x1003 dpId=4/dpType=4 (state change) SAME
+//   - V2 extra: dpId=3/dpType=2 messages (likely battery level) — can be ignored
 
 type QiyiVariant = 'v1' | 'v2';
 
-const AES_KEY: number[] = Array(16).fill(0x77); // V1 ve V2 ortak
+const AES_KEY: number[] = Array(16).fill(0x77); // V1 and V2 shared
 
-// Hello sendMessage data icindeki ilk 11 byte (sonra reversed MAC 6 byte gelir)
+// Hello sendMessage first 11 bytes of data (then 6 bytes of reversed MAC)
 const HELLO_MAGIC_V1: number[] = [0, 0, 0, 0, 0, 33, 8, 0, 1, 5, 90];
 const HELLO_MAGIC_V2: number[] = [0, 0, 0, 0, 0, 36, 5, 0, 4, 77, 20];
 
@@ -222,9 +222,9 @@ export interface QiyiTimerTime {
 
 export interface QiyiTimerEvent {
 	state: QiyiTimerState;
-	// cstimer: solveTime (ms) — record time event'inde dolu
+	// cstimer: solveTime (ms) — filled in record time event
 	recordedTime?: QiyiTimerTime;
-	// cstimer: inspectTime (ms) — record time event'inde dolu (cstimer dpId=1/dpType=1 bytes 12-15)
+	// cstimer: inspectTime (ms) — filled in record time event (cstimer dpId=1/dpType=1 bytes 12-15)
 	inspectionTime?: QiyiTimerTime;
 }
 
@@ -248,7 +248,7 @@ function makeTimeFromMs(totalMs: number): QiyiTimerTime {
 }
 
 // ===========================================================================
-// CRC16-MODBUS (cstimer qiyitimer.js:31-40 birebir)
+// CRC16-MODBUS (cstimer qiyitimer.js:31-40 exact)
 // ===========================================================================
 
 function crc16modbus(data: number[]): number {
@@ -263,7 +263,7 @@ function crc16modbus(data: number[]): number {
 }
 
 // ===========================================================================
-// Scan abort (UI'dan iptal icin)
+// Scan abort (cancellation from UI)
 // ===========================================================================
 
 let _scanningAdapter: BleAdapter | null = null;
@@ -276,7 +276,7 @@ export function abortQiyiTimerScan(): void {
 }
 
 // ===========================================================================
-// Module-level state — cstimer'da global. Tek QiYi connection olabilir.
+// Module-level state — global in cstimer. Only one QiYi connection possible.
 // ===========================================================================
 
 let _connection: QiyiTimerConnection | null = null;
@@ -295,12 +295,12 @@ let _payloadLen = 0;
 let _payloadData: number[] = [];
 
 // ===========================================================================
-// sendMessage — cstimer qiyitimer.js:42-70 birebir
+// sendMessage — cstimer qiyitimer.js:42-70 exact
 // ===========================================================================
 
 async function sendMessage(sendSN: number, ackSN: number, cmd: number, data: number[]): Promise<void> {
 	if (!_adapter || !_device || !_decoder) {
-		console.warn('[QiyiTimer] sendMessage: adapter/device/decoder yok');
+		console.warn('[QiyiTimer] sendMessage: adapter/device/decoder missing');
 		return;
 	}
 	const msg: number[] = [];
@@ -313,9 +313,9 @@ async function sendMessage(sendSN: number, ackSN: number, cmd: number, data: num
 	const crc = crc16modbus(fullMsg);
 	fullMsg.push(crc >> 8, crc & 0xff);
 
-	// 16-byte block'lar halinde encrypt + characteristic write
-	// cstimer: ilk paket [0x00, msgLen+2, 0x40, 0x00] header'i ekler;
-	//          sonraki paketler [i >> 4] block number ekler.
+	// Encrypt and write characteristic in 16-byte blocks
+	// cstimer: first packet adds [0x00, msgLen+2, 0x40, 0x00] header;
+	//          subsequent packets add [i >> 4] block number.
 	for (let i = 0; i < fullMsg.length; i += 16) {
 		const block = fullMsg.slice(i, i + 16);
 		while (block.length < 16) block.push(1); // padding byte 0x01
@@ -330,13 +330,13 @@ async function sendMessage(sendSN: number, ackSN: number, cmd: number, data: num
 				new Uint8Array(curBlock).buffer,
 			);
 		} catch (e) {
-			console.error('[QiyiTimer] writeCharacteristic hatasi:', e);
+			console.error('[QiyiTimer] writeCharacteristic error:', e);
 			throw e;
 		}
 	}
 }
 
-// sendHello — V1 ve V2 ortak yapi, sadece magic byte'lar variant'a gore degisik
+// sendHello — shared structure for V1 and V2, only magic bytes differ per variant
 function sendHello(mac: string, variant: QiyiVariant): Promise<void> {
 	const content = helloMagicForVariant(variant).slice();
 	for (let i = 5; i >= 0; i--) {
@@ -345,13 +345,13 @@ function sendHello(mac: string, variant: QiyiVariant): Promise<void> {
 	return sendMessage(1, 0, 1, content);
 }
 
-// sendAck — cstimer qiyitimer.js:80-82 birebir
+// sendAck — cstimer qiyitimer.js:80-82 exact
 function sendAck(sendSN: number, ackSN: number, cmd: number): Promise<void> {
 	return sendMessage(sendSN, ackSN, cmd, [0x00]);
 }
 
 // ===========================================================================
-// onReadEvent — cstimer qiyitimer.js:88-170 birebir
+// onReadEvent — cstimer qiyitimer.js:88-170 exact
 // ===========================================================================
 
 function onReadEvent(value: DataView): void {
@@ -361,7 +361,7 @@ function onReadEvent(value: DataView): void {
 	let msg: number[] = [];
 	for (let i = 0; i < value.byteLength; i++) msg[i] = value.getUint8(i);
 
-	// Packet sequence dogrulamasi
+	// Packet sequence validation
 	if (msg[0] !== _waitPkg) {
 		_waitPkg = 0;
 		_payloadData = [];
@@ -369,15 +369,15 @@ function onReadEvent(value: DataView): void {
 	}
 
 	if (msg[0] === 0) {
-		// Ilk paket: [0x00, payloadLen+2, 0x40, 0x00] header
+		// First packet: [0x00, payloadLen+2, 0x40, 0x00] header
 		_payloadLen = msg[1] - 2;
 		msg = msg.slice(4);
 	} else {
-		// Sonraki paket: [blockNum] (i >> 4)
+		// Subsequent packet: [blockNum] (i >> 4)
 		msg = msg.slice(1);
 	}
 
-	// 16-byte block'lari decrypt
+	// Decrypt 16-byte blocks
 	for (let i = 0; i < msg.length; i += 16) {
 		const block = msg.slice(i, i + 16);
 		if (block.length < 16) {
@@ -389,7 +389,7 @@ function onReadEvent(value: DataView): void {
 		_payloadData = _payloadData.concat(block);
 	}
 
-	// Daha cok paket bekleniyorsa wait
+	// Wait if more packets expected
 	if (_payloadData.length < _payloadLen) {
 		_waitPkg++;
 		return;
@@ -400,10 +400,10 @@ function onReadEvent(value: DataView): void {
 	_payloadData = [];
 
 	const len = (data[10] << 8) | data[11];
-	// CRC kontrolu: cstimer trailing 2 byte'i (data[len+12], data[len+13]) reverse edip
-	// crc16modbus(data[0..len+12].concat([data[len+13], data[len+12]])) == 0 olmali
+	// CRC check: cstimer reverses trailing 2 bytes (data[len+12], data[len+13])
+	// crc16modbus(data[0..len+12].concat([data[len+13], data[len+12]])) should be 0
 	if (crc16modbus(data.slice(0, len + 12).concat([data[len + 13], data[len + 12]])) !== 0) {
-		console.warn('[QiyiTimer] crc checked error');
+		console.warn('[QiyiTimer] crc check error');
 		return;
 	}
 
@@ -418,7 +418,7 @@ function onReadEvent(value: DataView): void {
 
 	const dpId = payload[0];
 	const dpType = payload[1];
-	// dpLen = (payload[2] << 8) | payload[3]; — cstimer hesapliyor ama kullanmiyor
+	// dpLen = (payload[2] << 8) | payload[3]; — cstimer calculates it but doesn't use it
 
 	if (dpId === 1 && dpType === 1) {
 		// Record time — bytes 8-11 solveTime, bytes 12-15 inspectTime
@@ -448,15 +448,15 @@ function onReadEvent(value: DataView): void {
 			recordedTime: state === QiyiTimerState.STOPPED ? makeTimeFromMs(solveTime) : undefined,
 		});
 	} else if (dpId === 3 && dpType === 2) {
-		// V2 pil seviyesi mesaji — dpLen=4, payload[4..7] big-endian u32 (0-100)
-		// UI'da pil ikonu gosterimi sonraki PR'a birakildi
+		// V2 battery level message — dpLen=4, payload[4..7] big-endian u32 (0-100)
+		// Battery icon display in UI deferred to next PR
 	} else {
 		console.warn('[QiyiTimer] unknown dpId/dpType', dpId, dpType, payload);
 	}
 }
 
 // ===========================================================================
-// MAC discovery (cstimer qiyitimer.js:196-236 + bizim ek katmanlar)
+// MAC discovery (cstimer qiyitimer.js:196-236 + our additions)
 // ===========================================================================
 
 async function tryMacFromAdvertisement(adapter: BleAdapter, device: BleDevice): Promise<string | null> {
@@ -469,8 +469,8 @@ async function tryMacFromAdvertisement(adapter: BleAdapter, device: BleDevice): 
 			return null;
 		}
 
-		// cstimer getManufacturerDataBytes: DataView ise Bluefy workaround (buffer.slice(2));
-		// Map ise CIC ile lookup
+		// cstimer getManufacturerDataBytes: if DataView, Bluefy workaround (buffer.slice(2));
+		// if Map, lookup by CIC
 		let dataView: DataView | null = null;
 		if (mfData instanceof DataView) {
 			dataView = new DataView((mfData as DataView).buffer.slice(2));
@@ -491,7 +491,7 @@ async function tryMacFromAdvertisement(adapter: BleAdapter, device: BleDevice): 
 			return macParts.join(':');
 		}
 	} catch (e) {
-		console.warn('[QiyiTimer] tryMacFromAdvertisement hatasi:', e);
+		console.warn('[QiyiTimer] tryMacFromAdvertisement error:', e);
 	}
 	return null;
 }
@@ -506,7 +506,7 @@ function defaultMacFromDeviceName(name: string): string | null {
 	return null;
 }
 
-// cstimer giiMacMap mantigi: device adi bazli MAC cache (JSON object).
+// cstimer giiMacMap logic: device name-based MAC cache (JSON object).
 function getCachedMacForDevice(deviceName: string): string | null {
 	if (!deviceName) return null;
 	try {
@@ -531,30 +531,30 @@ function setCachedMacForDevice(deviceName: string, mac: string): void {
 	}
 }
 
-// cstimer reqMacAddr semantic — defaultMac otomatik kabul edilmez, sadece prompt'a initial value.
+// cstimer reqMacAddr semantic — defaultMac is not auto-accepted, only initial value for prompt.
 function promptForMac(defaultMac: string | null, currentMac: string | null): string | null {
 	if (typeof window === 'undefined') return null;
 	const initial = currentMac || defaultMac || 'xx:xx:xx:xx:xx:xx';
 	const promptMsg =
-		'QiYi Timer MAC adresi (format: XX:XX:XX:XX:XX:XX)\n\n' +
-		'Nereden bulunur:\n' +
-		'  Windows: Ayarlar > Bluetooth ve cihazlar > QY-Timer > Detaylar > Bluetooth adresi\n' +
-		'  macOS:   Sistem Ayarlari > Bluetooth > cihaz sag-tik > Adresi kopyala\n' +
-		'  Android: Ayarlar > Bluetooth > QY-Timer (ⓘ) > MAC adresi\n\n' +
-		'Asagidaki tahmini onaylayabilir veya dogru MAC ile degistirebilirsiniz.\n' +
-		'Bir kez girince cihaz adina kaydedilir, bir daha sorulmaz.';
+		'QiYi Timer MAC address (format: XX:XX:XX:XX:XX:XX)\n\n' +
+		'How to find it:\n' +
+		'  Windows: Settings > Bluetooth and devices > QY-Timer > Details > Bluetooth address\n' +
+		'  macOS:   System Settings > Bluetooth > device right-click > Copy address\n' +
+		'  Android: Settings > Bluetooth > QY-Timer (ⓘ) > MAC address\n\n' +
+		'You can confirm the suggestion below or replace it with the correct MAC.\n' +
+		'Once entered, it will be saved to the device name and not asked again.';
 	const userInput = window.prompt(promptMsg, initial);
 	if (!userInput) return null;
 	const cleaned = userInput.trim().toUpperCase().replace(/-/g, ':');
 	if (!/^[0-9A-F]{2}(:[0-9A-F]{2}){5}$/.test(cleaned)) {
-		console.warn('[QiyiTimer] gecersiz MAC formati:', cleaned);
+		console.warn('[QiyiTimer] invalid MAC format:', cleaned);
 		return null;
 	}
 	return cleaned;
 }
 
 // ===========================================================================
-// init — cstimer qiyitimer.js:193-238 birebir akis
+// init — cstimer qiyitimer.js:193-238 exact flow
 // ===========================================================================
 
 export async function connectQiyiTimer(): Promise<QiyiTimerConnection> {
@@ -582,11 +582,11 @@ export async function connectQiyiTimer(): Promise<QiyiTimerConnection> {
 	_device = device;
 	_deviceName = (device.name || '').trim();
 
-	// AES decoder — V1 ve V2 ortak [0x77]*16 key, sadece hello magic byte'lar farkli
+	// AES decoder — V1 and V2 shared [0x77]*16 key, only hello magic bytes differ
 	const variant = detectVariant(_deviceName);
 	_decoder = new AES128(AES_KEY);
 
-	// onReadEvent state'ini sifirla (yeniden baglanma icin)
+	// Reset onReadEvent state (for reconnection)
 	_waitPkg = 0;
 	_payloadLen = 0;
 	_payloadData = [];
@@ -594,13 +594,13 @@ export async function connectQiyiTimer(): Promise<QiyiTimerConnection> {
 
 	_eventSubject = new Subject<QiyiTimerEvent>();
 
-	// === Adim 1: waitForAdvs — MAC discovery (cstimer init:196-210) ===
+	// === Step 1: waitForAdvs — MAC discovery (cstimer init:196-210) ===
 	let mac = await tryMacFromAdvertisement(adapter, device);
 	if (mac) {
 		_deviceMac = mac;
 	}
 
-	// === Adim 2: GATT connect (cstimer init:212-213) ===
+	// === Step 2: GATT connect (cstimer init:212-213) ===
 	try {
 		await adapter.connect(device, () => {
 			if (_disposed) return;
@@ -611,19 +611,19 @@ export async function connectQiyiTimer(): Promise<QiyiTimerConnection> {
 			_clearModuleState();
 		});
 	} catch (e) {
-		console.error('[QiyiTimer] GATT connect hatasi:', e);
+		console.error('[QiyiTimer] GATT connect error:', e);
 		_clearModuleState();
 		throw e;
 	}
 
-	// === Adim 3-4: getPrimaryService + getCharacteristics + startNotifications ===
-	// Bizim BLE adapter abstraction'i `getCharacteristic(service, char)` yapiyor — yani
-	// findUUID cstimer'da gerekli cunku tum karakteristikleri tek tek aliyor, biz isim
-	// ile direkt sorguluyoruz. Adapter UUID expand'ini kendi yapiyor.
+	// === Step 3-4: getPrimaryService + getCharacteristics + startNotifications ===
+	// Our BLE adapter abstraction does `getCharacteristic(service, char)` — in other words,
+	// findUUID is needed in cstimer because it gets all characteristics one by one, we
+	// query by name directly. Adapter does UUID expansion itself.
 	try {
 		await adapter.startNotifications(device, SERVICE_UUID, CHRCT_READ, onReadEvent);
 	} catch (e) {
-		console.error('[QiyiTimer] startNotifications hatasi:', e);
+		console.error('[QiyiTimer] startNotifications error:', e);
 		try {
 			await adapter.disconnect(device);
 		} catch (_) {
@@ -633,19 +633,19 @@ export async function connectQiyiTimer(): Promise<QiyiTimerConnection> {
 		throw e;
 	}
 
-	// === Adim 5: Device name regex'ten defaultMac (cstimer init:230-234) ===
+	// === Step 5: Device name regex to defaultMac (cstimer init:230-234) ===
 	const defaultMac = defaultMacFromDeviceName(_deviceName);
 
-	// === Adim 6-7: cstimer reqMacAddr semantic'i (bluetoothutil.js:760-784) ===
+	// === Step 6-7: cstimer reqMacAddr semantic (bluetoothutil.js:760-784) ===
 	//
-	// 1) Eger advs ile gercek MAC bulunduysa (deviceMac dolu): direkt kullan + cache et.
-	// 2) Bulunamadiysa: per-device cache var mi? Varsa kullan.
-	// 3) Yine yoksa: prompt et — defaultMac (device name tahmini) prompt initial value.
-	//    Kullanici "OK" basarsa default kabul edilir, edit ederse gercek MAC girilir.
-	// 4) Gecerli MAC alinirsa cache'e yaz, sonraki baglantilarda otomatik kullan.
+	// 1) If real MAC found via advs (deviceMac populated): use directly + cache it.
+	// 2) If not found: is there a per-device cache? Use it if present.
+	// 3) Still nothing: prompt — defaultMac (device name guess) is initial prompt value.
+	//    User presses "OK" to accept default, or edits to enter real MAC.
+	// 4) Once valid MAC obtained, write to cache, auto-use on subsequent connections.
 	//
-	// QY-Timer-V2 gibi yeni cihazlarda device name regex'inden gelen defaultMac yanlis
-	// olabilir (timer cevap vermez); bu yuzden defaultMac sessizce kullanmiyoruz.
+	// On new devices like QY-Timer-V2, defaultMac from device name regex may be wrong
+	// (timer won't respond); so we don't silently use defaultMac.
 
 	let finalMac: string | null = _deviceMac || null;
 	const cachedMac = getCachedMacForDevice(_deviceName);
@@ -655,12 +655,12 @@ export async function connectQiyiTimer(): Promise<QiyiTimerConnection> {
 	}
 
 	if (!finalMac) {
-		// Cache de yok, kullaniciya prompt et — defaultMac initial value
+		// No cache, prompt user — defaultMac as initial value
 		finalMac = promptForMac(defaultMac, null);
 	}
 
 	if (!finalMac) {
-		console.error('[QiyiTimer] MAC adresi bulunamadi, disconnect');
+		console.error('[QiyiTimer] MAC address not found, disconnecting');
 		try {
 			await adapter.stopNotifications(device, SERVICE_UUID, CHRCT_READ);
 		} catch (_) {
@@ -674,34 +674,34 @@ export async function connectQiyiTimer(): Promise<QiyiTimerConnection> {
 		_eventSubject?.next({state: QiyiTimerState.DISCONNECT});
 		_eventSubject?.complete();
 		_clearModuleState();
-		throw new Error('[QiyiTimer] MAC adresi alinamadi');
+		throw new Error('[QiyiTimer] MAC address could not be obtained');
 	}
 
 	finalMac = finalMac.toUpperCase();
 	_deviceMac = finalMac;
 	setCachedMacForDevice(_deviceName, finalMac);
 
-	// === Adim 8: sendHello (cstimer init:236) ===
+	// === Step 8: sendHello (cstimer init:236) ===
 	try {
 		await sendHello(finalMac, variant);
-		// 8s sonra hicbir notification gelmediyse uyari (MAC yanlis veya cihaz kapali)
-		// _notifyReceived flag onReadEvent'te set ediliyor
+		// After 8s, if no notification received, warn (wrong MAC or device off)
+		// _notifyReceived flag is set in onReadEvent
 		const helloAt = Date.now();
 		setTimeout(() => {
 			if (_eventSubject && !_disposed && !_notifyReceived) {
 				console.warn(
-					'[QiyiTimer] UYARI: Hello gonderildi ama 8s icinde hicbir notification yok.\n' +
-					'  Olasi sebepler:\n' +
-					'  1) MAC yanlis (Bluetooth ayarlarinda kontrol edin)\n' +
-					'  2) Cihaz kapali/uyku modunda\n' +
-					'  localStorage.removeItem("' + MAC_CACHE_KEY + '") ile cache temizleyip tekrar deneyebilirsiniz.\n' +
+					'[QiyiTimer] WARNING: Hello sent but no notification received within 8s.\n' +
+					'  Possible reasons:\n' +
+					'  1) Wrong MAC (check Bluetooth settings)\n' +
+					'  2) Device off/in sleep mode\n' +
+					'  You can clear cache with localStorage.removeItem("' + MAC_CACHE_KEY + '") and try again.\n' +
 					'  helloAt=' + helloAt
 				);
 			}
 		}, 8000);
 	} catch (e) {
-		console.error('[QiyiTimer] sendHello hatasi:', e);
-		// Hello fail olursa baglantiyi temizle
+		console.error('[QiyiTimer] sendHello error:', e);
+		// If hello fails, clean up connection
 		try {
 			await adapter.stopNotifications(device, SERVICE_UUID, CHRCT_READ);
 		} catch (_) {
@@ -718,7 +718,7 @@ export async function connectQiyiTimer(): Promise<QiyiTimerConnection> {
 		throw e;
 	}
 
-	// Connection object'i
+	// Connection object
 	_connection = {
 		events$: _eventSubject.asObservable(),
 		disconnect: disconnectQiyi,
@@ -727,7 +727,7 @@ export async function connectQiyiTimer(): Promise<QiyiTimerConnection> {
 	return _connection;
 }
 
-// cstimer clear(isHardwareEvent) — qiyitimer.js:181-191 birebir
+// cstimer clear(isHardwareEvent) — qiyitimer.js:181-191 exact
 async function disconnectQiyi(): Promise<void> {
 	if (_disposed) return;
 	_disposed = true;
@@ -756,7 +756,7 @@ function _clearModuleState(): void {
 	_deviceMac = '';
 	_eventSubject = null;
 	_notifyReceived = false;
-	// _decoder kalir — cstimer'da da `decoder = decoder || ...` mantigi var
+	// _decoder persists — cstimer also uses `decoder = decoder || ...` pattern
 	_waitPkg = 0;
 	_payloadLen = 0;
 	_payloadData = [];

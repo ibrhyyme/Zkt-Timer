@@ -5,7 +5,7 @@ import {createRedisKey, RedisNamespace, getValueFromRedis, setKeyInRedis} from '
 import {GraphQLContext} from '../@types/interfaces/server.interface';
 import {getAuthToken} from '../integrations/oauth';
 
-const CACHE_TTL_SECONDS = 2 * 60 * 60; // 2 saat
+const CACHE_TTL_SECONDS = 2 * 60 * 60; // 2 hours
 
 @Resolver()
 export class WcaCompetitionResolver {
@@ -23,7 +23,7 @@ export class WcaCompetitionResolver {
 			if (Array.isArray(parsed) && parsed.length > 0) {
 				return parsed;
 			}
-			// Bos array cache'lenmis (eski deploy bug'i) — gormezden gel, fresh cek
+			// Empty array cached (old deploy bug) — ignore, fetch fresh
 		}
 
 		const raw = await WcaApiService.fetchUpcomingCompetitions(country || undefined);
@@ -43,12 +43,12 @@ export class WcaCompetitionResolver {
 			competitor_limit: c.competitor_limit || null,
 		}));
 
-		// Sadece gercek data cache'lenir. WCA API hatasi durumunda bos array
-		// cache'e yazilirsa 2 saat boyunca herkes "bulunamadi" gorur.
+		// Only real data is cached. If WCA API fails and an empty array is written
+		// to cache, everyone will see "not found" for 2 hours.
 		if (mapped.length > 0) {
 			await setKeyInRedis(cacheKey, JSON.stringify(mapped), CACHE_TTL_SECONDS);
 		} else {
-			console.warn('[wcaCompetitions] WCA API bos liste dondurdu — cache atlandi');
+			console.warn('[wcaCompetitions] WCA API returned empty list — cache skipped');
 		}
 
 		return mapped;

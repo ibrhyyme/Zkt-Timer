@@ -50,7 +50,7 @@ interface CubeTopPatternViewProps {
 }
 
 /**
- * 2x2 ve 4x4 icin 2D top-view SVG rendering.
+ * 2D top-view SVG rendering for 2x2 and 4x4.
  * Pattern format:
  *   2x2 (12 char): [4 top][2 front][2 right][2 back][2 left]
  *   4x4 (32 char): [16 top][4 front][4 right][4 back][4 left]
@@ -60,7 +60,7 @@ export default function CubeTopPatternView({pattern, layers, topFace = 'U', size
 		const expectedLen = layers === 2 ? 12 : 32;
 		if (!pattern || pattern.length < expectedLen) return null;
 
-		// Sadece topFace mapping — frontFace gerekmez (full stickering, side strip'ler zaten dogru renkte)
+		// Only topFace mapping — frontFace not needed (full stickering, side strips already correct color)
 		const mapping = computeMapping(topFace, 'F');
 		const getColor = (face: string): string =>
 			FACE_COLORS[mapping[face as CubeFace]] || FACE_COLORS[face] || '#444444';

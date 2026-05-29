@@ -42,7 +42,7 @@ function formatTime(cs: number): string {
 function formatAttempts(attempts: number[], bestIndex?: number, worstIndex?: number): React.ReactNode[] {
 	if (!attempts || !attempts.length) return [];
 
-	// best ve worst index'lerini bul (average icin paranteze alinir)
+	// Find best and worst indices (parenthesized for average)
 	let best = -1;
 	let worst = -1;
 
@@ -85,7 +85,7 @@ function formatCompDate(dateStr: string): string {
 	return d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-// Yarisma bazli gruplama
+// Group by competition
 interface CompetitionGroup {
 	id: string;
 	name: string;
@@ -133,13 +133,13 @@ export default function WcaResults({ wcaId, data }: Props) {
 		);
 	}
 
-	// Unique event'leri cek (filtre icin)
+	// Extract unique events (for filter)
 	const uniqueEvents = Array.from(new Set(results.map((r) => r.event_id)));
 
-	// Filtre uygula
+	// Apply filter
 	const filtered = eventFilter === 'all' ? results : results.filter((r) => r.event_id === eventFilter);
 
-	// Yarisma bazli grupla
+	// Group by competition
 	const groups = groupByCompetition(filtered);
 
 	return (

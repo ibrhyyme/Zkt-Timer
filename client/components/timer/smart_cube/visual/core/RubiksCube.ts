@@ -8,12 +8,12 @@ export class RubiksCube {
 	private renderer: THREE.WebGLRenderer;
 	private movePromise: Promise<void> = Promise.resolve();
 
-	// Jiroskop desteği için eklenen alanlar
+	// Fields added for gyroscope support
 	private cubeContainer: THREE.Object3D;
 	private gyroBasis: THREE.Quaternion | null = null;
 	private targetQuaternion: THREE.Quaternion = new THREE.Quaternion(); // identity
 	private currentQuaternion: THREE.Quaternion = new THREE.Quaternion(); // identity
-	// Standart pozisyon: identity quaternion (kamera açısı zaten doğru görünümü sağlıyor)
+	// Standard position: identity quaternion (camera angle already provides correct view)
 	private readonly HOME_ORIENTATION = new THREE.Quaternion(); // identity quaternion
 
 	constructor(
@@ -43,11 +43,11 @@ export class RubiksCube {
 		fillLight.position.set(-10, -10, -5);
 		this.scene.add(fillLight);
 
-		// Jiroskop desteği için container oluştur
+		// Create container for gyroscope support
 		this.cubeContainer = new THREE.Object3D();
 		this.scene.add(this.cubeContainer);
 
-		// Küp parçalarını container'a ekle
+		// Add cube pieces to container
 		const cubes = this.generateCubeCluster(initState);
 		cubes.forEach(cube => this.cubeContainer.add(cube));
 
@@ -305,51 +305,51 @@ export class RubiksCube {
 	private render() {
 		if (this.paused) return;
 		this.reqId = window.requestAnimationFrame(this.render.bind(this));
-		// Jiroskop animasyonu için smooth interpolasyon
+		// Smooth interpolation for gyroscope animation
 		this.animateGyro();
 		this.renderer.render(this.scene, this.camera);
 	}
 
 	/**
-	 * Jiroskop quaternion verisini ayarla
-	 * @param quaternion { x, y, z, w } quaternion verisi
+	 * Set gyroscope quaternion data
+	 * @param quaternion { x, y, z, w } quaternion data
 	 */
 	public setGyroQuaternion(quaternion: { x: number; y: number; z: number; w: number } | null) {
 		if (!quaternion) {
 			return;
 		}
 
-		// GAN küpün quaternion formatını THREE.js formatına dönüştür
+		// Convert GAN cube quaternion format to THREE.js format
 		const { x: qx, y: qy, z: qz, w: qw } = quaternion;
 		const quat = new THREE.Quaternion(qx, qz, -qy, qw).normalize();
 
-		// İlk veri geldiğinde basis'i kaydet
+		// Store basis on first data received
 		if (!this.gyroBasis) {
 			this.gyroBasis = quat.clone().conjugate();
 		}
 
-		// Hedef quaternion'u hesapla
+		// Calculate target quaternion
 		this.targetQuaternion.copy(quat.premultiply(this.gyroBasis).premultiply(this.HOME_ORIENTATION));
 	}
 
 	/**
-	 * Jiroskop basis'ini sıfırla ve küpü standart pozisyona döndür
-	 * Standart pozisyon: Beyaz üstte, Yeşil önde, Kırmızı sağda
+	 * Reset gyroscope basis and return cube to standard position
+	 * Standard position: white top, green front, red right
 	 */
 	public resetGyroBasis() {
 		this.gyroBasis = null;
-		// Küpü başlangıç pozisyonuna döndür (HOME_ORIENTATION)
+		// Return cube to starting position (HOME_ORIENTATION)
 		this.targetQuaternion.copy(this.HOME_ORIENTATION);
 		this.currentQuaternion.copy(this.HOME_ORIENTATION);
 		this.cubeContainer.quaternion.copy(this.HOME_ORIENTATION);
 	}
 
 	/**
-	 * Her frame'de jiroskop animasyonunu uygula
+	 * Apply gyroscope animation each frame
 	 */
 	private animateGyro() {
 		if (this.gyroBasis) {
-			// Smooth interpolasyon için slerp kullan (0.25 faktörü)
+			// Use slerp for smooth interpolation (0.25 factor)
 			this.currentQuaternion.slerp(this.targetQuaternion, 0.25);
 			this.cubeContainer.quaternion.copy(this.currentQuaternion);
 		}

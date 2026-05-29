@@ -20,7 +20,7 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 	const {detail} = useCompetitionData();
 	const [modalRow, setModalRow] = useState<any | null>(null);
 
-	// Yarismaci → registrantId mapping (competition results sayfasina yonlendirme icin)
+	// Competitor → registrantId mapping (for redirecting to competition results page)
 	const findRegistrantId = useMemo(() => {
 		const byWcaId = new Map<string, number>();
 		const byName = new Map<string, number>();
@@ -35,7 +35,7 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 		};
 	}, [detail?.competitors]);
 
-	// Giris yapan kullanicinin WCIF'teki ismini bul (WCA ID eslesmese bile isim ile highlight icin)
+	// Find logged-in user's name in WCIF (for highlighting even if WCA ID doesn't match)
 	const myName = useMemo(() => {
 		if (!detail?.myWcaId || !detail?.competitors) return null;
 		const me = detail.competitors.find((c: any) => c.wcaId === detail.myWcaId);
@@ -70,7 +70,7 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 	const liveRoundId = selectedRound?.liveRoundId || null;
 	const {data: roundResults, loading, lastUpdated, lastError, refresh, isActive} = useLiveRoundResults(competitionId, liveRoundId, !!liveRoundId);
 
-	// "Tick" — last updated metnini her 30s yenile
+	// "Tick" — refresh "last updated" text every 30s
 	const [, forceTick] = useState(0);
 	useEffect(() => {
 		const id = setInterval(() => forceTick((x) => x + 1), 30000);
@@ -165,7 +165,7 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 				</button>
 			</div>
 
-			{/* Round chips */}
+			{/* Round tabs */}
 			<div className={b('wca-live-rounds')}>
 				{(event?.rounds || []).map((round: any) => {
 					const isSelected = round.liveRoundId === selectedRound.liveRoundId;
@@ -204,7 +204,7 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 				</div>
 			)}
 
-			{/* Stale data banner */}
+			{/* Stale data warning banner */}
 			{showStaleBanner && (
 				<div className={b('wca-live-stale-banner')}>
 					<Warning size={16} />
@@ -322,7 +322,7 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 				)
 			)}
 
-			{/* Mobil detay modal */}
+			{/* Mobile detail modal */}
 			{modalRow && (
 				<ResultModal
 					row={{

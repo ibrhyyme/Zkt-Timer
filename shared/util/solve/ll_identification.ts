@@ -1,17 +1,17 @@
 /**
- * OLL/PLL case identification — cstimer cubeutil.js'in birebir port'u.
+ * OLL/PLL case identification — exact port of cstimer cubeutil.js.
  *
- * Kaynak: Referans/cstimer-master/src/js/lib/cubeutil.js
+ * Source: Reference/cstimer-master/src/js/lib/cubeutil.js
  *   - identPLL: searchCaseByPattern(facelet, ollMask, pllPatterns)
  *   - identOLL: searchCaseByPattern(facelet, f2lMask, ollPatterns)
  *
- * cstimer'in 24-cube-rotation cubeRots tablosu + mask'lar + pattern'leri build-time'da
- * scripts/dump-cstimer-rotations.mjs ile cstimer source'undan dump edildi
+ * cstimer's 24-cube-rotation cubeRots table + masks + patterns dumped at build-time
+ * via scripts/dump-cstimer-rotations.mjs from cstimer source
  * (shared/data/cstimer_ll_engine.json).
  *
- * Runtime sadece saf string operasyonlari yapar — cubejs/cubing.js bagimliligi yok.
- * Algoritma renk-agnostik (toEqus equivalence sınıfları) — kullanicinin cube
- * orientation'ı veya cross face'i fark etmez.
+ * Runtime only performs pure string operations — no cubejs/cubing.js dependency.
+ * Algorithm is color-agnostic (toEqus equivalence classes) — user's cube
+ * orientation or cross face doesn't matter.
  */
 
 import engine from '../../data/cstimer_ll_engine.json';
@@ -33,8 +33,8 @@ const OLL_CASE_NAMES: string[] = (engine as any).ollCaseNames;
 
 /**
  * cstimer cubeutil.js solvedProgress (facelet variant) port:
- *   facelet'i rotIdx ile rotate edip mask'taki her equivalence class icin
- *   stikker'larin ayni renk olup olmadigini kontrol eder. Hepsi ayniysa "solved".
+ *   Rotates facelet by rotIdx and checks for each equivalence class in mask
+ *   whether the stickers are the same color. If all are, return "solved".
  */
 function solvedProgress(facelet: string, rotIdx: number, mask: number[][]): boolean {
 	const cubeRot = CUBE_ROTS[rotIdx];
@@ -49,9 +49,9 @@ function solvedProgress(facelet: string, rotIdx: number, mask: number[][]): bool
 
 /**
  * cstimer searchCaseByPattern port:
- *   1. baseMask'a gore solved olan rotation'lari bul (24 cube symmetry icinde)
- *   2. Her pattern icin chkList'teki rotation'larda match ara
- *   3. Match olan ilk pattern'in index'ini dondur, yoksa -1
+ *   1. Find rotations that are solved according to baseMask (within 24 cube symmetries)
+ *   2. For each pattern, search for matches in rotations from chkList
+ *   3. Return index of first matching pattern, or -1 if none
  */
 function searchCaseByPattern(
 	facelet: string,
@@ -75,7 +75,7 @@ export function getMatchingOLLState(facelet54: string, _crossFace?: string): Cas
 	const idx = searchCaseByPattern(facelet54, F2L_MASK, OLL_PATTERNS);
 	if (idx < 0) return null;
 	const key = OLL_INDEX_TO_KEY[idx];
-	if (!key) return null; // skip case veya mapping yok
+	if (!key) return null; // skip case or no mapping
 	return { case: OLL_CASE_NAMES[idx] || key, key };
 }
 
@@ -88,7 +88,7 @@ export function getMatchingPLLState(facelet54: string, _crossFace?: string): Cas
 	return { case: PLL_CASE_NAMES[idx] || key, key };
 }
 
-// Eski API ile uyumluluk (initLLStates eski kodda call ediliyordu, no-op).
+// Backward compatibility with old API (initLLStates was called in old code, no-op).
 export function initLLStates() {
 	void CUBE_ROTS;
 }

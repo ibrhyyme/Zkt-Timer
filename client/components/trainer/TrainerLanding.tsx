@@ -198,7 +198,7 @@ export default function TrainerLanding() {
 					</div>
 				</ElectricBorder>
 
-				{/* Efficiency Mode — dorduncu kart, free, cross/xcross/eocross verimlilik */}
+				{/* Efficiency Mode — fourth card, free, cross/xcross/eocross efficiency */}
 					<div
 						className={b('landing-card')}
 						onClick={handleSelectEfficiency}
@@ -245,7 +245,7 @@ export default function TrainerLanding() {
 						</button>
 					</div>
 
-					{/* Recognition Mode — ucuncu kart, free, basit yapi */}
+					{/* Recognition Mode — third card, free, simple structure */}
 				<div
 					className={b('landing-card')}
 					onClick={handleSelectRecognition}

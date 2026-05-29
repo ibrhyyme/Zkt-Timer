@@ -12,14 +12,14 @@ export class CapacitorBleAdapter implements BleAdapter {
 		if (!this.initialized) {
 			console.log('[BLE] CapacitorBleAdapter: initializing...');
 			try {
-				// iOS: Bu cagri Bluetooth izin dialog'unu otomatik tetikler
-				// Android: androidNeverForLocation: true ile konum izni sormaz
+				// iOS: This call automatically triggers Bluetooth permission dialog
+				// Android: androidNeverForLocation: true prevents location permission request
 				await BleClient.initialize({ androidNeverForLocation: true });
 				this.initialized = true;
 				console.log('[BLE] CapacitorBleAdapter: initialized successfully');
 			} catch (e) {
 				const msg = e instanceof Error ? e.message : String(e);
-				console.error('[BLE] CapacitorBleAdapter: initialize HATA:', msg);
+				console.error('[BLE] CapacitorBleAdapter: initialize ERROR:', msg);
 				if (msg.includes('permission') || msg.includes('unauthorized')) {
 					throw new Error('BLE_PERMISSION_DENIED');
 				}
@@ -66,7 +66,7 @@ export class CapacitorBleAdapter implements BleAdapter {
 
 			this.scanTimeoutId = setTimeout(() => {
 				if (!this.scanResolved) {
-					console.warn('[BLE] 15s scan TIMEOUT — hic cihaz bulunamadi');
+					console.warn('[BLE] 15s scan TIMEOUT — no devices found');
 					this.scanResolved = true;
 					this.scanRejectFn = null;
 					BleClient.stopLEScan();
@@ -75,7 +75,7 @@ export class CapacitorBleAdapter implements BleAdapter {
 			}, 15000);
 
 			try {
-				console.log('[BLE] requestLEScan baslatiliyor...');
+				console.log('[BLE] Starting requestLEScan...');
 				await BleClient.requestLEScan(
 					{ allowDuplicates: false },
 					(result) => {
@@ -84,9 +84,9 @@ export class CapacitorBleAdapter implements BleAdapter {
 						const name = result.device.name || result.localName || '';
 						const deviceId = result.device.deviceId;
 
-						// Isimsiz cihazlar dahil hepsini logla
-						console.log('[BLE] Cihaz goruldu:', {
-							name: name || '(isimsiz)',
+						// Log all devices including unnamed ones
+						console.log('[BLE] Device found:', {
+							name: name || '(unnamed)',
 							deviceId,
 							rssi: (result as any).rssi ?? 'N/A',
 							localName: result.localName || 'N/A',
@@ -95,11 +95,11 @@ export class CapacitorBleAdapter implements BleAdapter {
 						if (!name) return;
 
 						if (excludeIds.has(deviceId)) {
-							console.log('[BLE] Cihaz exclude listesinde, atlaniyor:', name);
+							console.log('[BLE] Device in exclude list, skipping:', name);
 							return;
 						}
 
-						// acceptAll: name filter'lari bypass et (debug ozelligi)
+						// acceptAll: bypass name filters (debug feature)
 						const matches = options.acceptAll
 							? true
 							: options.nameFilters.some(
@@ -117,7 +117,7 @@ export class CapacitorBleAdapter implements BleAdapter {
 							this.scanRejectFn = null;
 							BleClient.stopLEScan();
 
-							// Manufacturer data'yi yakala (GAN kuplerde gercek MAC adresi icin gerekli)
+							// Capture manufacturer data (needed for real MAC address in GAN cubes)
 							let mfData: Map<number, DataView> | undefined;
 							const rawMf = (result as any).manufacturerData;
 							if (rawMf && typeof rawMf === 'object') {
@@ -128,24 +128,24 @@ export class CapacitorBleAdapter implements BleAdapter {
 									}
 								}
 								if (mfData.size > 0) {
-									console.log('[BLE] Manufacturer data yakalandi, key count:', mfData.size);
+									console.log('[BLE] Manufacturer data captured, key count:', mfData.size);
 								}
 							}
 
-							console.log('[BLE] ESLESEN cihaz bulundu:', name, deviceId);
+							console.log('[BLE] MATCHING device found:', name, deviceId);
 							resolve({
 								deviceId: deviceId,
 								name: name,
 								manufacturerData: mfData,
 							});
 						} else {
-							console.log('[BLE] Cihaz isim filtresiyle UYUSMUYOR:', name, '| filtreler:', options.nameFilters);
+							console.log('[BLE] Device name DOES NOT MATCH:', name, '| filters:', options.nameFilters);
 						}
 					}
 				);
-				console.log('[BLE] requestLEScan BASARILI — tarama aktif, 15s bekleniyor...');
+				console.log('[BLE] requestLEScan SUCCESSFUL — scan active, waiting 15s...');
 			} catch (error) {
-				console.error('[BLE] requestLEScan HATA:', error);
+				console.error('[BLE] requestLEScan ERROR:', error);
 				if (!this.scanResolved) {
 					this.scanResolved = true;
 					if (this.scanTimeoutId) {
@@ -168,29 +168,29 @@ export class CapacitorBleAdapter implements BleAdapter {
 
 		const MAX_GATT_RETRIES = 3;
 		for (let attempt = 0; attempt < MAX_GATT_RETRIES; attempt++) {
-			console.log(`[BLE] BleClient.connect deneme ${attempt + 1}/${MAX_GATT_RETRIES}:`, device.name, device.deviceId);
+			console.log(`[BLE] BleClient.connect attempt ${attempt + 1}/${MAX_GATT_RETRIES}:`, device.name, device.deviceId);
 			try {
 				if (attempt > 0) {
-					// GATT stack'in toparlanması için bekle
+					// Wait for GATT stack to recover
 					await new Promise((r) => setTimeout(r, 1000 + attempt * 500));
 				}
 				await BleClient.connect(device.deviceId, (deviceId) => {
-					console.warn('[BLE] Cihaz DISCONNECT oldu:', deviceId);
+					console.warn('[BLE] Device DISCONNECTED:', deviceId);
 					const cb = this.disconnectCallbacks.get(deviceId);
 					if (cb) {
 						cb();
 						this.disconnectCallbacks.delete(deviceId);
 					}
 				});
-				console.log('[BLE] BleClient.connect BASARILI:', device.name);
+				console.log('[BLE] BleClient.connect SUCCESSFUL:', device.name);
 				return;
 			} catch (e) {
-				console.error(`[BLE] BleClient.connect HATA (deneme ${attempt + 1}):`, e);
-				// Son denemede hatayı fırlat
+				console.error(`[BLE] BleClient.connect ERROR (attempt ${attempt + 1}):`, e);
+				// Throw error on final attempt
 				if (attempt === MAX_GATT_RETRIES - 1) {
 					throw e;
 				}
-				// Onceki GATT instance'i temizle
+				// Clean up previous GATT instance
 				try {
 					await BleClient.disconnect(device.deviceId);
 				} catch (_) {
@@ -204,7 +204,7 @@ export class CapacitorBleAdapter implements BleAdapter {
 		try {
 			await BleClient.disconnect(device.deviceId);
 		} catch (e) {
-			// Zaten bağlı değilse hata vermez
+			// Ignore error if already disconnected
 		}
 		this.disconnectCallbacks.delete(device.deviceId);
 	}
@@ -229,8 +229,8 @@ export class CapacitorBleAdapter implements BleAdapter {
 		characteristicUuid: string,
 		callback: (value: DataView) => void
 	): Promise<void> {
-		// @capacitor-community/bluetooth-le callback'i bridge'e gondermeden once
-		// native tarafa kayit eder; WebBleAdapter'daki gibi race window yok.
+		// @capacitor-community/bluetooth-le registers callback to native side before sending to bridge;
+		// no race condition like in WebBleAdapter.
 		await BleClient.startNotifications(device.deviceId, serviceUuid, characteristicUuid, callback);
 	}
 
@@ -239,10 +239,10 @@ export class CapacitorBleAdapter implements BleAdapter {
 	}
 
 	async watchAdvertisements(device: BleDevice): Promise<Map<number, DataView> | null> {
-		// Scan sirasinda yakalanan manufacturer data'yi don
-		// GAN kuplerde gercek MAC adresi manufacturer data icinde gomulu
+		// Return manufacturer data captured during scan
+		// Real MAC address is embedded in manufacturer data for GAN cubes
 		if (device.manufacturerData && device.manufacturerData.size > 0) {
-			console.log('[BLE] watchAdvertisements: scan sirasinda yakalanan manufacturer data donuyor');
+			console.log('[BLE] watchAdvertisements: returning manufacturer data captured during scan');
 			return device.manufacturerData;
 		}
 		return null;

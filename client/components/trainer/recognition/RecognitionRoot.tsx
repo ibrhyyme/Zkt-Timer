@@ -3,10 +3,11 @@
  * Recognition modu seciliyse Trainer.tsx bunu render eder.
  * Kendi 7 sub-view'ini (home/setup/trainer/results/settings/history/glossary) yonetir.
  */
-import React, {useEffect} from 'react';
+import React from 'react';
 import block from '../../../styles/bem';
 import './recognition.scss';
 import {RecognitionProvider, useRecognitionContext} from './RecognitionContext';
+import {useRecognitionUrlSync} from './useRecognitionUrlSync';
 import HomeView from './views/HomeView';
 import SessionSetupView from './views/SessionSetupView';
 import TrainerView from './views/TrainerView';
@@ -102,13 +103,8 @@ function RecognitionToolbar() {
 function RecognitionRouter() {
 	const {state} = useRecognitionContext();
 
-	useEffect(() => {
-		if (typeof window === 'undefined') return;
-		window.history.pushState({recognitionView: state.view}, '');
-		const onPopState = () => {};
-		window.addEventListener('popstate', onPopState);
-		return () => window.removeEventListener('popstate', onPopState);
-	}, [state.view]);
+	// view ↔ URL senkronu (eski manuel pushState hack'inin yerine).
+	useRecognitionUrlSync();
 
 	switch (state.view as RecognitionView) {
 		case 'home':

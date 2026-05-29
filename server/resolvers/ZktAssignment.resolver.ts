@@ -96,9 +96,9 @@ export class ZktAssignmentResolver {
 
 		await assertCanModifyCompetition(context.user, round.comp_event.competition_id);
 
-		// WCA-live parity: aynı kullanıcı aynı grup içinde birden fazla rolde olamaz
-		// (yarışmacı aynı anda aynı grupta hakemlik edemez). Farklı gruplarda
-		// farklı roller serbest (COMPETITOR grup A, JUDGE grup B OK).
+		// WCA-live parity: same user cannot have multiple roles within the same group
+		// (competitor cannot be judge in same group). Different roles in different groups are OK
+		// (COMPETITOR in group A, JUDGE in group B OK).
 		if (input.groupId) {
 			const conflicting = await getPrisma().zktAssignment.findFirst({
 				where: {
@@ -116,7 +116,7 @@ export class ZktAssignmentResolver {
 			}
 		}
 
-		// Upsert: ayni (round, user, role) icin tek kayit
+		// Upsert: single record per (round, user, role)
 		const existing = await getPrisma().zktAssignment.findUnique({
 			where: {
 				round_id_user_id_role: {
@@ -245,13 +245,13 @@ export class ZktAssignmentResolver {
 	}
 
 	/**
-	 * Otomatik dagitim: onaylanan yarismacilari N grupa dagit.
-	 * Round >= 2 ise önceki tur ranking'ine göre serpentine seeding
-	 * (en iyiler gruplara dengeli dağıtılır: #1→G1, #2→G2, ..., #N→GN,
-	 * sonraki katman ters: #N+1→GN, ..., #2N→G1). Round 1'de userIds sırası
-	 * kullanılır (stable fallback).
-	 * Station number her grup içinde 1'den başlayarak seed sırasına verilir.
-	 * Mevcut gruplar + COMPETITOR assignment'ları silinip yeniden oluşturulur.
+	 * Automatic distribution: distribute approved competitors into N groups.
+	 * If round >= 2, use previous round's ranking for serpentine seeding
+	 * (best performers distributed evenly: #1→G1, #2→G2, ..., #N→GN,
+	 * then reverse next layer: #N+1→GN, ..., #2N→G1). For round 1, use
+	 * userIds order (stable fallback).
+	 * Station numbers are assigned within each group starting from 1 in seed order.
+	 * Existing groups + COMPETITOR assignments are deleted and recreated.
 	 */
 	@Authorized([Role.LOGGED_IN])
 	@Mutation(() => [ZktAssignment])
