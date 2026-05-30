@@ -2,8 +2,9 @@
  * GlossaryView — terim sözlüğü.
  * 3 sekme: Colors / Patterns / Groups.
  */
-import React, {useState} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {useTranslation} from 'react-i18next';
+import {useHistory, useLocation} from 'react-router-dom';
 import block from '../../../../styles/bem';
 import {Info} from 'phosphor-react';
 import StickerPattern from '../components/StickerPattern';
@@ -14,10 +15,36 @@ const b = block('trainer-recognition');
 
 type Tab = 'colors' | 'patterns' | 'groups';
 
+const TABS: Tab[] = ['colors', 'patterns', 'groups'];
+
+function tabFromSearch(search: string): Tab {
+	const raw = new URLSearchParams(search).get('tab');
+	return raw && (TABS as string[]).includes(raw) ? (raw as Tab) : 'colors';
+}
+
 export default function GlossaryView() {
 	const {t} = useTranslation();
-	const [tab, setTab] = useState<Tab>('colors');
+	const history = useHistory();
+	const location = useLocation();
+	// Tab ↔ ?tab query (deep-link + geri/ileri). Recognition sync hook path-only karsilastirir,
+	// glossary path'i sabit kaldigi icin bu query'yi ezmez.
+	const [tab, setTab] = useState<Tab>(() => tabFromSearch(location.search));
 	const guideData = getGuideData();
+
+	// URL → tab (browser back/forward, deep-link)
+	useEffect(() => {
+		const urlTab = tabFromSearch(location.search);
+		setTab((cur) => (cur === urlTab ? cur : urlTab));
+	}, [location.search]);
+
+	const changeTab = useCallback(
+		(next: Tab) => {
+			setTab(next);
+			const target = `/trainer/recognition/glossary${next === 'colors' ? '' : `?tab=${next}`}`;
+			if (target !== location.pathname + location.search) history.replace(target);
+		},
+		[history, location.pathname, location.search],
+	);
 
 	const tabs: {key: Tab; label: string}[] = [
 		{key: 'colors', label: t('trainer.recognition.glossary.tab_colors', {defaultValue: 'Colors'})},
@@ -37,7 +64,7 @@ export default function GlossaryView() {
 						key={tb.key}
 						type="button"
 						className={b('glossary-tab', {active: tab === tb.key})}
-						onClick={() => setTab(tb.key)}
+						onClick={() => changeTab(tb.key)}
 					>
 						{tb.label}
 					</button>
