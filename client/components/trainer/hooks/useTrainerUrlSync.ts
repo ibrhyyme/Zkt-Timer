@@ -33,7 +33,6 @@ export function useTrainerUrlSync() {
 	locRef.current = location;
 	const catsRef = useRef(categories);
 	catsRef.current = categories;
-	const urlInitRef = useRef(false);
 	const reducerMountRef = useRef(false);
 
 	// ── URL → reducer ────────────────────────────────────────────────
@@ -44,15 +43,6 @@ export function useTrainerUrlSync() {
 		if (unknownMode) {
 			history.replace('/trainer'); // bilinmeyen mod → landing
 			return;
-		}
-
-		// İlk mount: bare /trainer + kayitli mod → canonical URL'e tasi
-		if (!urlInitRef.current) {
-			urlInitRef.current = true;
-			if (mode === null && s.mode) {
-				history.replace(buildTrainerPath(s.mode));
-				return;
-			}
 		}
 
 		if (mode === null) {
