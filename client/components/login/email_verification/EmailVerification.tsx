@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {gql, useMutation} from '@apollo/client';
 import {getRedirectLink} from '../../../util/auth/login';
 import {UserAccount} from '../../../@types/generated/graphql';
@@ -39,6 +39,12 @@ export default function EmailVerification() {
 	const [resend, setResend] = useState(30);
 	const [resent, setResent] = useState(false);
 
+	// guard async setState after the animation delays if the user leaves the page
+	const mountedRef = useRef(true);
+	useEffect(() => () => {
+		mountedRef.current = false;
+	}, []);
+
 	const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
 	const email = urlParams?.get('email') || '';
 
@@ -63,6 +69,7 @@ export default function EmailVerification() {
 			await verifyCode({variables: {email, code: full, language: i18n.language}});
 			// hold the merged/verifying band briefly before the success screen
 			await new Promise((r) => setTimeout(r, 850));
+			if (!mountedRef.current) return;
 			setStatus('success');
 			localStorage.setItem('zkt_has_auth', 'true');
 			setTimeout(() => {
@@ -70,6 +77,7 @@ export default function EmailVerification() {
 			}, 1200);
 		} catch (e) {
 			await new Promise((r) => setTimeout(r, 500));
+			if (!mountedRef.current) return;
 			setStatus('error');
 			setError(e.message);
 			setTimeout(() => {
