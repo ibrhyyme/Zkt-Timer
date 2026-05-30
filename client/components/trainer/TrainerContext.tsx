@@ -93,13 +93,13 @@ const initialState: TrainerSessionState = {
  * app_loaded + FeatureGuard and never server-renders, so this is not an SSR/hydration concern).
  * Deep-link to a mode: on cold start, selection/alg not set, starts from 'selection'
  * (training/sub-view handled by URL sync hook + sub-contexts). bare/unknown path
- * → localStorage fallback (current behavior preserved).
+ * → landing (mode picker); the last-used mode is intentionally NOT restored — /trainer
+ * always shows the mode-picker, matching the nav button's expectation.
  */
 function resolveInitialNav(pathname: string): {mode: TrainerMode | null; view: TrainerView} {
 	const {mode} = parseTrainerPath(pathname);
 	if (mode) return {mode, view: 'selection'};
-	const saved = loadMode();
-	return {mode: saved, view: saved ? 'selection' : 'landing'};
+	return {mode: null, view: 'landing'};
 }
 
 function makeInitialState(pathname: string): TrainerSessionState {
