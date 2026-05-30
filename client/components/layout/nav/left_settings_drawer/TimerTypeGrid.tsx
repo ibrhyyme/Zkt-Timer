@@ -115,7 +115,7 @@ export default function TimerTypeGrid({
 		},
 		{
 			typeKey: 'manual',
-			label: 'Manuel',
+			label: t('quick_controls.manual_entry'),
 			icon: <PencilSimple weight="bold" size={ICON_SIZE} />,
 			isActive: manualEntry,
 		},

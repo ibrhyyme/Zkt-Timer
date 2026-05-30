@@ -1,5 +1,5 @@
 // Gear icon dropdown — inline panel instead of modal. Radix Popover primitives + tab switcher.
-// Hidden on mobile — QuickControlsModal is still used there.
+// Desktop-only (hidden on mobile via @media). Mobile uses the left settings drawer (LeftSettingsDrawer).
 //
 // Architecture note: ExtrasTab and GoalsTab are reused directly — only the wrapper (Popover + tabs) is rewritten.
 

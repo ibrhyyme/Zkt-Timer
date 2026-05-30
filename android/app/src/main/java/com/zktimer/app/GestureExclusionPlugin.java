@@ -2,6 +2,7 @@ package com.zktimer.app;
 
 import android.graphics.Rect;
 import android.os.Build;
+import android.util.Log;
 import android.view.View;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
@@ -45,33 +46,57 @@ public class GestureExclusionPlugin extends Plugin {
                 call.resolve();
                 return;
             }
-
-            int viewHeight = contentView.getHeight();
-            int viewWidth = contentView.getWidth();
-            float density = getActivity().getResources().getDisplayMetrics().density;
-
-            // Centik merkez Y'si (yuzde -> piksel)
-            int centerY = (int) (viewHeight * yPercent / 100.0);
-            // Centik yuksekligi + ekstra dokunma alani
-            int exclusionHeight = (int) (heightPx * density) + (int) (40 * density);
-            // Kenardan 48dp genislik
-            int exclusionWidth = (int) (48 * density);
-
-            int top = Math.max(0, centerY - exclusionHeight / 2);
-            int bottom = Math.min(viewHeight, centerY + exclusionHeight / 2);
-
-            Rect newRect;
-            if ("left".equals(side)) {
-                newRect = new Rect(0, top, exclusionWidth, bottom);
-                leftRect = newRect;
-            } else {
-                newRect = new Rect(viewWidth - exclusionWidth, top, viewWidth, bottom);
-                rightRect = newRect;
-            }
-
-            contentView.setSystemGestureExclusionRects(currentRects());
-            call.resolve();
+            applyExclusion(contentView, side, yPercent, heightPx, call, true);
         });
+    }
+
+    // Rect hesapla + uygula. Ilk layout pass'inde contentView boyutu 0 olabilir;
+    // o durumda contentView.post() ile next-layout'a defer edilir (retryOnZero).
+    // Aksi halde rect 0-yukseklik kaydedilir ve Android sistem geri jesti notch
+    // alanini exclusion'a alamaz (sol drawer acilmaz, uygulamadan geri atar).
+    private void applyExclusion(View contentView, String side, double yPercent, double heightPx,
+                                PluginCall call, boolean retryOnZero) {
+        int viewHeight = contentView.getHeight();
+        int viewWidth = contentView.getWidth();
+
+        if (viewHeight <= 0 || viewWidth <= 0) {
+            if (retryOnZero) {
+                Log.d("GestureExclusion", "view not laid out yet (w=" + viewWidth + " h=" + viewHeight
+                        + "), deferring side=" + side);
+                contentView.post(() -> applyExclusion(contentView, side, yPercent, heightPx, call, false));
+            } else {
+                Log.d("GestureExclusion", "view still 0 after defer, skip side=" + side);
+                if (call != null) call.resolve();
+            }
+            return;
+        }
+
+        float density = getActivity().getResources().getDisplayMetrics().density;
+
+        // Centik merkez Y'si (yuzde -> piksel)
+        int centerY = (int) (viewHeight * yPercent / 100.0);
+        // Centik yuksekligi + ekstra dokunma alani
+        int exclusionHeight = (int) (heightPx * density) + (int) (40 * density);
+        // Kenardan 48dp genislik
+        int exclusionWidth = (int) (48 * density);
+
+        int top = Math.max(0, centerY - exclusionHeight / 2);
+        int bottom = Math.min(viewHeight, centerY + exclusionHeight / 2);
+
+        Rect newRect;
+        if ("left".equals(side)) {
+            newRect = new Rect(0, top, exclusionWidth, bottom);
+            leftRect = newRect;
+        } else {
+            newRect = new Rect(viewWidth - exclusionWidth, top, viewWidth, bottom);
+            rightRect = newRect;
+        }
+
+        contentView.setSystemGestureExclusionRects(currentRects());
+        Log.d("GestureExclusion", "update side=" + side + " y=" + yPercent + " rect=["
+                + newRect.left + "," + newRect.top + "," + newRect.right + "," + newRect.bottom
+                + "] view=[" + viewWidth + "," + viewHeight + "]");
+        if (call != null) call.resolve();
     }
 
     @PluginMethod()

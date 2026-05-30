@@ -19,8 +19,6 @@ import { is3x3CubeType, smartCubeSelected } from './helpers/util';
 import { listenForPbEvents } from './helpers/pb';
 import { useStableViewportHeight } from '../../util/hooks/useStableViewportHeight';
 import SmartCube from './smart_cube/SmartCube';
-import { QuickControlsProvider } from '../quick-controls/useQuickControlsModal';
-import QuickControlsModal from '../quick-controls/QuickControlsModal';
 import DailyGoalProgressBar from '../daily-goal/DailyGoalProgressBar';
 import { keepScreenAwake, allowScreenSleep } from '../../util/native-plugins';
 // New mobile layout components
@@ -205,7 +203,7 @@ export default function Timer(props: TimerProps) {
 	}
 
 	return (
-		<QuickControlsProvider>
+		<>
 			<h1 className="sr-only">Rubik's Cube Timer - Zkt Timer</h1>
 			<div
 				className={b({
@@ -256,10 +254,9 @@ export default function Timer(props: TimerProps) {
 							{body}
 							</div>
 						</KeyWatcher>
-					<QuickControlsModal />
 				</TimerContext.Provider>
 				{background}
 			</div>
-		</QuickControlsProvider>
+		</>
 	);
 }
