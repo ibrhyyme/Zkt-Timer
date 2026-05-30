@@ -1,7 +1,6 @@
 import React, { useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import './HeaderControl.scss';
-import { Gear } from 'phosphor-react';
 import { GlobalHotKeys } from 'react-hotkeys';
 import { setCubeType, setSetting } from '../../../db/settings/update';
 import CubePicker from '../../common/cube_picker/CubePicker';
@@ -10,19 +9,18 @@ import { HOTKEY_MAP } from '../../../util/timer/hotkeys';
 import CreateNewSession from '../../sessions/new_session/CreateNewSession';
 import { openModal } from '../../../actions/general';
 import BottomSheetNav from '../../layout/nav/bottom_sheet_nav/BottomSheetNav';
+import LeftSettingsDrawer from '../../layout/nav/left_settings_drawer/LeftSettingsDrawer';
 import { TimerContext } from '../Timer';
 import { toggleSetting } from '../../../db/settings/update';
 import { useDispatch } from 'react-redux';
 import { useGeneral } from '../../../util/hooks/useGeneral';
 import { smartCubeSelected } from '../helpers/util';
-import Button from '../../common/button/Button';
 import block from '../../../styles/bem';
 import StackMatPicker from '../../settings/stackmat_picker/StackMatPicker';
 import { TIMER_INPUT_TYPE_KEYS } from '../../settings/timer/TimerSettings';
 import { useSettings } from '../../../util/hooks/useSettings';
 import { AllSettings, getSetting } from '../../../db/settings/query';
 import { useMe } from '../../../util/hooks/useMe';
-import { useQuickControlsModal } from '../../quick-controls/useQuickControlsModal';
 import AccountDropdown from '../../layout/nav/account_dropdown/AccountDropdown';
 import SubsetPicker from './SubsetPicker';
 import CrossColorPicker from './CrossColorPicker';
@@ -41,7 +39,6 @@ const b = block('timer-header-control');
 export default function HeaderControl() {
 	const { t } = useTranslation();
 	const dispatch = useDispatch();
-	const quickControls = useQuickControlsModal();
 
 	const me = useMe();
 	const context = useContext(TimerContext);
@@ -176,6 +173,7 @@ export default function HeaderControl() {
 				selectedSubset={currentScrambleSubset}
 				onChange={handleSubsetChange}
 				mobile={mobileMode}
+				cubeTypeId={cubeType}
 			/>
 			{showCrossColorPicker && (
 				<CrossColorPicker
@@ -193,19 +191,8 @@ export default function HeaderControl() {
 
 	const sessionSwitcher = !headerOptions.hideSessionSelector && <SessionSwitcher />;
 
-	// Hide gear button in match mode.
-	// Mobile: current Button + modal (QuickControlsModal with Timer/Extras/Goals tabs).
-	// Desktop: SettingsDropdown (Popover panel + tab switcher) — does not open modal.
-	const gearButtonMobile = !matchMode && (
-		<Button
-			gray
-			icon={<Gear weight="bold" />}
-			onClick={(e) => {
-				e.stopPropagation();
-				quickControls.open();
-			}}
-		/>
-	);
+	// Desktop gear: SettingsDropdown (Popover panel + tab switcher).
+	// Mobile gear: kaldirildi — sol drawer (LeftSettingsDrawer) bunun yerini aldi.
 	const gearButtonDesktop = !matchMode && <SettingsDropdown />;
 
 	// Mobile: minimal header with account dropdown on right
@@ -216,7 +203,6 @@ export default function HeaderControl() {
 					<div className={b('left-controls')}>
 						{cubePicker}
 						{sessionSwitcher}
-						{gearButtonMobile}
 					</div>
 					<div />
 					<div className={b('right-controls')}>
@@ -224,6 +210,7 @@ export default function HeaderControl() {
 					</div>
 				</div>
 				{!matchMode && <BottomSheetNav />}
+				{!matchMode && <LeftSettingsDrawer />}
 			</GlobalHotKeys>
 		);
 	}
