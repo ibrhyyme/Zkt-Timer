@@ -88,7 +88,9 @@ const initialState: TrainerSessionState = {
 };
 
 /**
- * Derives initial mode/view from URL path (SSR + client same → no flicker).
+ * Derives initial mode/view from URL path so a deep-linked mount lands directly in the
+ * correct view (CLIENT-only first-mount optimization — the trainer is gated behind
+ * app_loaded + FeatureGuard and never server-renders, so this is not an SSR/hydration concern).
  * Deep-link to a mode: on cold start, selection/alg not set, starts from 'selection'
  * (training/sub-view handled by URL sync hook + sub-contexts). bare/unknown path
  * → localStorage fallback (current behavior preserved).
@@ -419,7 +421,9 @@ interface TrainerProviderProps {
 }
 
 export function TrainerProvider({children}: TrainerProviderProps) {
-	// Initial state derived from URL path (SSR + client same render → no hydration mismatch / flicker).
+	// Initial state derived from URL path so a deep-linked mount lands directly in the right view
+	// (client-only first-mount optimization; trainer is gated behind app_loaded/FeatureGuard and
+	// never server-renders — not an SSR/hydration concern).
 	const location = useLocation();
 	const [state, dispatch] = useReducer(trainerReducer, location.pathname, makeInitialState);
 	const connectRef = useRef(new Connect());
