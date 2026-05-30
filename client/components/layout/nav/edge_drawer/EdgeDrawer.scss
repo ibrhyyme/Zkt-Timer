@@ -1,0 +1,239 @@
+@import '../../../../styles/config';
+
+// Shared edge drawer styles. `--right` ve `--left` modifier'lari ile
+// notch konumu, drawer translateX yonu, tooltip taraf, box-shadow yonu mirror'lanir.
+//
+// Backdrop, grid, item, item-icon, item-label stilleri side-agnostic.
+
+.#{$namespace}-edge-drawer {
+	&__notch {
+		position: fixed;
+		top: 50%;
+		transform: translateY(-50%);
+		width: 8px;
+		height: 115px;
+		background: rgba(var(--text-color), 0.35);
+		z-index: 99999;
+		cursor: pointer;
+		// Gorunen alan 8x115px, dokunma alani padding ile genisletilmis
+		box-sizing: content-box;
+		// Padding arka plani gorunmesin
+		background-clip: content-box;
+
+		// --- SIDE-SPECIFIC ---
+		&--right {
+			right: 0;
+			border-radius: 6px 0 0 6px;
+			padding: 30px 0 30px 16px;
+		}
+
+		&--left {
+			left: 0;
+			border-radius: 0 6px 6px 0;
+			padding: 30px 16px 30px 0;
+		}
+
+		// ---------------------
+
+		&:active {
+			width: 12px;
+			background: rgba(var(--primary-color), 0.4);
+			background-clip: content-box;
+		}
+
+		&--hidden {
+			opacity: 0;
+			pointer-events: none;
+		}
+
+		&--hint {
+			// Sag/sol icin ayri keyframe (asagida)
+			&.#{$namespace}-edge-drawer__notch--right {
+				animation: edgeDrawerNotchHintRight 3s ease-in-out infinite;
+			}
+			&.#{$namespace}-edge-drawer__notch--left {
+				animation: edgeDrawerNotchHintLeft 3s ease-in-out infinite;
+			}
+		}
+
+		&--repositioning {
+			width: 14px;
+			background: rgba(var(--primary-color), 0.5);
+			background-clip: content-box;
+		}
+
+		&-tooltip {
+			position: absolute;
+			top: 50%;
+			transform: translateY(-50%);
+			background: rgb(var(--background-color));
+			border: 1px solid rgba(var(--text-color), 0.15);
+			border-radius: 12px;
+			padding: 10px 14px;
+			white-space: nowrap;
+			box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+			display: flex;
+			flex-direction: column;
+			gap: 4px;
+			pointer-events: none;
+
+			&--right {
+				right: calc(100% + 10px);
+			}
+
+			&--left {
+				left: calc(100% + 10px);
+			}
+
+			span {
+				color: rgb(var(--text-color));
+				font-size: 0.88rem;
+				font-weight: 500;
+			}
+		}
+	}
+
+	&__backdrop {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100vw;
+		height: 100vh;
+		background: rgba(0, 0, 0, 0.35);
+		z-index: 100000;
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 0.25s ease;
+
+		&--visible {
+			opacity: 1;
+			pointer-events: auto;
+		}
+	}
+
+	&__drawer {
+		position: fixed;
+		top: 0;
+		bottom: 0;
+		display: flex;
+		flex-direction: column;
+		padding: 0 12px;
+		z-index: 100001;
+		pointer-events: none;
+		transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
+
+		&--right {
+			right: 0;
+			transform: translateX(100%);
+		}
+
+		&--left {
+			left: 0;
+			transform: translateX(-100%);
+		}
+
+		&--open {
+			transform: translateX(0);
+		}
+
+		&--no-transition {
+			transition: none !important;
+		}
+	}
+
+	&__grid {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: 8px;
+		background: rgb(var(--background-color));
+		border: 1px solid rgba(var(--text-color), 0.1);
+		border-radius: 18px;
+		padding: 12px;
+		pointer-events: auto;
+		position: relative;
+
+		// Shadow yonu drawer side'ine gore
+		.#{$namespace}-edge-drawer__drawer--right & {
+			box-shadow: -8px 0 32px rgba(0, 0, 0, 0.3);
+		}
+		.#{$namespace}-edge-drawer__drawer--left & {
+			box-shadow: 8px 0 32px rgba(0, 0, 0, 0.3);
+		}
+	}
+
+	&__item {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 5px;
+		padding: 12px 8px;
+		border-radius: 12px;
+		background: rgb(var(--button-color));
+		border: 1px solid rgba(var(--text-color), 0.06);
+		color: rgb(var(--text-color));
+		cursor: pointer;
+		transition: all 0.15s ease;
+
+		&:active {
+			transform: scale(0.95);
+		}
+
+		&--active {
+			border-color: rgba(var(--primary-color), 0.5);
+			background: rgba(var(--primary-color), 0.12);
+		}
+	}
+
+	&__item-icon {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		opacity: 0.9;
+		color: rgb(var(--text-color));
+
+		.#{$namespace}-edge-drawer__item--active & {
+			color: rgb(var(--primary-color));
+		}
+	}
+
+	&__item-label {
+		font-size: 0.78rem;
+		font-weight: 500;
+		opacity: 0.85;
+
+		.#{$namespace}-edge-drawer__item--active & {
+			color: rgb(var(--primary-color));
+			opacity: 1;
+			font-weight: 600;
+		}
+	}
+}
+
+@keyframes edgeDrawerNotchHintRight {
+	0%, 50% { transform: translateY(-50%) translateX(0); }
+	55% { transform: translateY(-50%) translateX(-14px); }
+	60% { transform: translateY(-50%) translateX(0); }
+	65% { transform: translateY(-50%) translateX(-14px); }
+	70% { transform: translateY(-50%) translateX(0); }
+	75% { transform: translateY(-50%) translateX(-12px); }
+	80% { transform: translateY(-50%) translateX(0); }
+	85% { transform: translateY(-50%) translateX(-10px); }
+	90% { transform: translateY(-50%) translateX(0); }
+	95% { transform: translateY(-50%) translateX(-8px); }
+	100% { transform: translateY(-50%) translateX(0); }
+}
+
+@keyframes edgeDrawerNotchHintLeft {
+	0%, 50% { transform: translateY(-50%) translateX(0); }
+	55% { transform: translateY(-50%) translateX(14px); }
+	60% { transform: translateY(-50%) translateX(0); }
+	65% { transform: translateY(-50%) translateX(14px); }
+	70% { transform: translateY(-50%) translateX(0); }
+	75% { transform: translateY(-50%) translateX(12px); }
+	80% { transform: translateY(-50%) translateX(0); }
+	85% { transform: translateY(-50%) translateX(10px); }
+	90% { transform: translateY(-50%) translateX(0); }
+	95% { transform: translateY(-50%) translateX(8px); }
+	100% { transform: translateY(-50%) translateX(0); }
+}
