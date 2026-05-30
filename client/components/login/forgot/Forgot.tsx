@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {Link, useHistory, useLocation} from 'react-router-dom';
 import {Eye, EyeSlash} from 'phosphor-react';
 import {validateStrongPassword} from '../../../util/auth/password';
@@ -69,6 +69,12 @@ export default function Forgot() {
 	const [codeVerified, setCodeVerified] = useState(false);
 	const [done, setDone] = useState(false);
 
+	// guard async setState after the animation delays if the user leaves the page
+	const mountedRef = useRef(true);
+	useEffect(() => () => {
+		mountedRef.current = false;
+	}, []);
+
 	// URL degisirse stage'i yansit (back/forward butonu, deeplink)
 	useEffect(() => {
 		const next = readStageFromSearch(location.search);
@@ -100,7 +106,7 @@ export default function Forgot() {
 	const [forgotCode, forgotCodeData] = useMutation<{sendForgotPasswordCode: void}, {email: string; language: string}>(
 		SENT_FORGOT_PASSWORD_CODE_MUTATION
 	);
-	const [checkForgot] = useMutation<{checkForgotPasswordCode: void}, {email: string; code: string}>(
+	const [checkForgot] = useMutation<{checkForgotPasswordCode: boolean}, {email: string; code: string}>(
 		CHECK_FORGOT_PASSWORD_CODE
 	);
 	const [updatePass, updatePassData] = useMutation<
@@ -136,29 +142,46 @@ export default function Forgot() {
 		}
 	}
 
+	function rejectCode() {
+		setStatus('error');
+		setTimeout(() => {
+			if (!mountedRef.current) return;
+			setCode('');
+			setStatus('idle');
+			setFocusKey((k) => k + 1);
+		}, 800);
+	}
+
 	async function runCheck(full: string) {
 		setStatus('verifying');
 		setError('');
 		try {
-			await checkForgot({variables: {email: email.trim(), code: full}});
+			// checkForgotPasswordCode yanlis/suresi dolmus kodda exception ATMAZ, false doner —
+			// donus degerini kontrol et, yoksa yanlis kod sessizce reset asamasina gecer.
+			const res = await checkForgot({variables: {email: email.trim(), code: full}});
+			if (!mountedRef.current) return;
+			if (!res.data?.checkForgotPasswordCode) {
+				await new Promise((r) => setTimeout(r, 500));
+				if (!mountedRef.current) return;
+				rejectCode();
+				return;
+			}
 			setCode(full); // keep — needed for updateForgotPassword on the reset stage
 			// hold the merged/verifying state so the gooey band animation is visible
 			await new Promise((r) => setTimeout(r, 750));
+			if (!mountedRef.current) return;
 			// confirm with the neon ✓ before moving on to the new-password stage
 			setStatus('success');
 			setCodeVerified(true);
 			await new Promise((r) => setTimeout(r, 950));
+			if (!mountedRef.current) return;
 			setCodeVerified(false);
 			setStatus('idle');
 			setStage('reset');
 		} catch (err) {
 			await new Promise((r) => setTimeout(r, 500));
-			setStatus('error');
-			setTimeout(() => {
-				setCode('');
-				setStatus('idle');
-				setFocusKey((k) => k + 1);
-			}, 800);
+			if (!mountedRef.current) return;
+			rejectCode();
 		}
 	}
 
@@ -192,6 +215,7 @@ export default function Forgot() {
 		setError('');
 		try {
 			await updatePass({variables: {email: email.trim(), code, password: newPassword}});
+			if (!mountedRef.current) return;
 			localStorage.setItem('zkt_has_auth', 'true');
 			setDone(true);
 			setTimeout(() => {
@@ -206,7 +230,8 @@ export default function Forgot() {
 	const pwScore = [validation.char8Check, validation.cap1Check, validation.lower1Check, validation.number1Check].filter(
 		Boolean
 	).length;
-	const pwLevels = t('otp.pw_levels', {returnObjects: true}) as unknown as string[];
+	const pwLevelsRaw = t('otp.pw_levels', {returnObjects: true});
+	const pwLevels: string[] = Array.isArray(pwLevelsRaw) ? pwLevelsRaw : [];
 
 	// ───── DONE (password updated) ─────
 	if (done) {
