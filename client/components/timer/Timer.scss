@@ -609,6 +609,30 @@
 			cursor: default;
 			opacity: 0.85;
 		}
+
+		// Mobile: kompakt boyut — kisa telefonlarda timer ekranina sigsin
+		@media (max-width: 768px) {
+			.cd-common__emblem {
+				padding: 0.3rem 0.7rem !important;
+				box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+
+				.cd-common__emblem__body {
+					gap: 0.3rem;
+				}
+
+				span {
+					font-size: 0.78rem !important;
+				}
+
+				i, svg {
+					font-size: 0.9rem !important;
+				}
+
+				i + span {
+					margin-left: 0.3rem;
+				}
+			}
+		}
 	}
 
 	// Center connect-trigger wrapper on mobile left panel
