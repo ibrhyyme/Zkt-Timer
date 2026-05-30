@@ -10,12 +10,14 @@ import {EfficiencyProvider, useEfficiencyContext} from './EfficiencyContext';
 import {useEfficiencyUrlSync} from './useEfficiencyUrlSync';
 import TrainerView from './views/TrainerView';
 import SettingsView from './views/SettingsView';
-import {ArrowLeft, Gear} from 'phosphor-react';
+import {Gear} from 'phosphor-react';
 import {useTranslation} from 'react-i18next';
 import {useTrainerContext} from '../TrainerContext';
+import TrainerModeHeader from '../common/TrainerModeHeader';
 import type {EfficiencyView} from './types';
 
 const b = block('trainer-efficiency');
+const bh = block('trainer-header');
 
 function EfficiencyToolbar() {
 	const {t} = useTranslation();
@@ -31,26 +33,22 @@ function EfficiencyToolbar() {
 	};
 
 	return (
-		<div className={b('toolbar')}>
-			<button type="button" className={b('toolbar-back')} onClick={onBack}>
-				<ArrowLeft size={18} weight="bold" />
-				<span>{t('trainer.efficiency.toolbar_back', {defaultValue: 'Back'})}</span>
-			</button>
-			<div className={b('toolbar-title')}>
-				{t('trainer.efficiency.toolbar_title', {defaultValue: 'Efficiency Trainer'})}
-			</div>
-			<div className={b('toolbar-actions')}>
+		<TrainerModeHeader
+			mode="efficiency"
+			backToRoot={state.view === 'trainer'}
+			onBack={onBack}
+			actions={
 				<button
 					type="button"
-					className={b('toolbar-btn', {active: state.view === 'settings'})}
+					className={bh('btn', {active: state.view === 'settings'})}
 					onClick={() => setEfficiencyView(state.view === 'settings' ? 'trainer' : 'settings')}
 					title={t('trainer.efficiency.toolbar_settings', {defaultValue: 'Settings'})}
 					aria-label={t('trainer.efficiency.toolbar_settings', {defaultValue: 'Settings'})}
 				>
-					<Gear size={22} weight="duotone" />
+					<Gear size={20} weight="duotone" />
 				</button>
-			</div>
-		</div>
+			}
+		/>
 	);
 }
 
