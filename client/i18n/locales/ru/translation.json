@@ -440,6 +440,7 @@
             "settings_show_all_desc": "Также показывать решения для других граней, отсортированные по ходам."
         },
         "header_to_landing": "Тренажёр",
+        "landing_eyebrow": "РЕЖИМ",
         "landing_recognition_title": "Распознавание PLL",
         "landing_recognition_desc": "Тренируй распознавание PLL — введи букву кейса",
         "landing_recognition_features": "Возможности",

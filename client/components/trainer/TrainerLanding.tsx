@@ -1,41 +1,125 @@
+/**
+ * TrainerLanding — "Solid Editorial" yon (Claude Design B handoff).
+ * Sol-hizali header + alt cizgi, numaralandirilmis eyebrow (MOD 01 / PRO · MOD 02),
+ * accent ikon, faint cube watermark. Metinler i18n; accent renkleri TrainerModeHeader
+ * ile paylasilir. Hardcoded dark degerler tema-aware degiskenlere cevrildi (accent hex'leri
+ * ve Pro moru bilincli korunur).
+ */
 import React from 'react';
-import {BluetoothConnected, Lock, Check, Crown, Timer, Eye, Lightning} from 'phosphor-react';
+import {Timer, BluetoothConnected, Lightning, Eye, Check, Lock, Cube} from 'phosphor-react';
 import block from '../../styles/bem';
+import './TrainerLanding.scss';
 import {useTrainerContext} from './TrainerContext';
 import {useMe} from '../../util/hooks/useMe';
 import {isProEnabled, isPro} from '../../lib/pro';
 import {useTranslation} from 'react-i18next';
 import {useHistory} from 'react-router-dom';
-import ElectricBorder from '../common/electric_border/ElectricBorder';
+import type {TrainerMode} from './types';
 
 const b = block('trainer');
+
+interface ModeConfig {
+	id: TrainerMode;
+	icon: React.ReactNode;
+	accent: 'blue' | 'purple' | 'green' | 'orange';
+	pro?: boolean;
+	titleKey: string;
+	descKey: string;
+	groups: {labelKey: string; itemKeys: string[]}[];
+}
+
+const MODES: ModeConfig[] = [
+	{
+		id: 'standard',
+		icon: <Timer size={24} />,
+		accent: 'blue',
+		titleKey: 'trainer.landing_standard_title',
+		descKey: 'trainer.landing_standard_desc',
+		groups: [
+			{
+				labelKey: 'trainer.landing_standard_categories',
+				itemKeys: ['trainer.landing_standard_3x3', 'trainer.landing_standard_roux', 'trainer.landing_standard_other'],
+			},
+			{
+				labelKey: 'trainer.landing_standard_features',
+				itemKeys: ['trainer.landing_standard_feat1', 'trainer.landing_standard_feat2', 'trainer.landing_standard_feat3'],
+			},
+		],
+	},
+	{
+		id: 'smart',
+		icon: <BluetoothConnected size={24} />,
+		accent: 'purple',
+		pro: true,
+		titleKey: 'trainer.landing_smart_title',
+		descKey: 'trainer.landing_smart_desc',
+		groups: [
+			{
+				labelKey: 'trainer.landing_smart_categories',
+				itemKeys: ['trainer.landing_smart_3x3', 'trainer.landing_smart_roux'],
+			},
+			{
+				labelKey: 'trainer.landing_smart_features',
+				itemKeys: [
+					'trainer.landing_smart_feat1',
+					'trainer.landing_smart_feat2',
+					'trainer.landing_smart_feat3',
+					'trainer.landing_smart_feat4',
+				],
+			},
+		],
+	},
+	{
+		id: 'efficiency',
+		icon: <Lightning size={24} />,
+		accent: 'green',
+		titleKey: 'trainer.landing_efficiency_title',
+		descKey: 'trainer.landing_efficiency_desc',
+		groups: [
+			{
+				labelKey: 'trainer.landing_efficiency_features',
+				itemKeys: [
+					'trainer.landing_efficiency_feat1',
+					'trainer.landing_efficiency_feat2',
+					'trainer.landing_efficiency_feat3',
+					'trainer.landing_efficiency_feat4',
+				],
+			},
+		],
+	},
+	{
+		id: 'recognition',
+		icon: <Eye size={24} />,
+		accent: 'orange',
+		titleKey: 'trainer.landing_recognition_title',
+		descKey: 'trainer.landing_recognition_desc',
+		groups: [
+			{
+				labelKey: 'trainer.landing_recognition_features',
+				itemKeys: [
+					'trainer.landing_recognition_feat1',
+					'trainer.landing_recognition_feat2',
+					'trainer.landing_recognition_feat3',
+					'trainer.landing_recognition_feat4',
+				],
+			},
+		],
+	},
+];
 
 export default function TrainerLanding() {
 	const {t} = useTranslation();
 	const {dispatch} = useTrainerContext();
 	const me = useMe();
-
 	const history = useHistory();
 	const smartLocked = isProEnabled() && !isPro(me);
 
-	const handleSelectStandard = () => {
-		dispatch({type: 'SET_MODE', payload: 'standard'});
-	};
-
-	const handleSelectSmart = () => {
-		if (smartLocked) {
+	const selectMode = (mode: TrainerMode, locked: boolean) => {
+		if (locked) {
 			history.push('/pro');
 			return;
 		}
-		dispatch({type: 'SET_MODE', payload: 'smart'});
-	};
-
-	const handleSelectRecognition = () => {
-		dispatch({type: 'SET_MODE', payload: 'recognition'});
-	};
-
-	const handleSelectEfficiency = () => {
-		dispatch({type: 'SET_MODE', payload: 'efficiency'});
+		dispatch({type: 'SET_MODE', payload: mode});
 	};
 
 	return (
@@ -46,251 +130,68 @@ export default function TrainerLanding() {
 			</div>
 
 			<div className={b('landing-cards')}>
-				{/* Standard Mode */}
-				<div
-					className={b('landing-card')}
-					onClick={handleSelectStandard}
-					role="button"
-					tabIndex={0}
-					onKeyDown={(e) => e.key === 'Enter' && handleSelectStandard()}
-				>
-					<div className={b('landing-card-top')}>
-						<div className={b('landing-card-icon', {blue: true})}>
-							<Timer size={28} weight="duotone" />
-						</div>
-						<h2 className={b('landing-card-name')}>{t('trainer.landing_standard_title')}</h2>
-						<p className={b('landing-card-desc')}>{t('trainer.landing_standard_desc')}</p>
-					</div>
-
-					<div className={b('landing-card-divider')} />
-
-					<div className={b('landing-card-includes')}>
-						<span className={b('landing-card-includes-label')}>
-							{t('trainer.landing_standard_categories')}
-						</span>
-						<div className={b('landing-card-features')}>
-							<div className={b('landing-card-feature')}>
-								<Check weight="bold" />
-								<span>{t('trainer.landing_standard_3x3')}</span>
-							</div>
-							<div className={b('landing-card-feature')}>
-								<Check weight="bold" />
-								<span>{t('trainer.landing_standard_roux')}</span>
-							</div>
-							<div className={b('landing-card-feature')}>
-								<Check weight="bold" />
-								<span>{t('trainer.landing_standard_other')}</span>
-							</div>
-						</div>
-					</div>
-
-					<div className={b('landing-card-includes')}>
-						<span className={b('landing-card-includes-label')}>
-							{t('trainer.landing_standard_features')}
-						</span>
-						<div className={b('landing-card-features')}>
-							<div className={b('landing-card-feature')}>
-								<Check weight="bold" />
-								<span>{t('trainer.landing_standard_feat1')}</span>
-							</div>
-							<div className={b('landing-card-feature')}>
-								<Check weight="bold" />
-								<span>{t('trainer.landing_standard_feat2')}</span>
-							</div>
-							<div className={b('landing-card-feature')}>
-								<Check weight="bold" />
-								<span>{t('trainer.landing_standard_feat3')}</span>
-							</div>
-						</div>
-					</div>
-
-					<button type="button" className={b('landing-card-cta')}>
-						{t('trainer.landing_standard_title')}
-					</button>
-				</div>
-
-				{/* Smart Cube Mode */}
-				<ElectricBorder
-					color="#7c3aed"
-					speed={0.6}
-					chaos={0.1}
-					borderRadius={20}
-					className={b('landing-electric-wrap')}
-				>
-					<div
-						className={b('landing-card', {pro: true, locked: smartLocked})}
-						onClick={handleSelectSmart}
-						role="button"
-						tabIndex={smartLocked ? -1 : 0}
-						onKeyDown={(e) => e.key === 'Enter' && handleSelectSmart()}
-					>
-						<div className={b('landing-pro-badge')}>
-							<Crown weight="fill" />
-							<span>PRO</span>
-						</div>
-
-						<div className={b('landing-card-top')}>
-							<div className={b('landing-card-icon', {purple: true})}>
-								<BluetoothConnected size={28} weight="duotone" />
-							</div>
-							<h2 className={b('landing-card-name', {pro: true})}>
-								{t('trainer.landing_smart_title')}
-							</h2>
-							<p className={b('landing-card-desc', {pro: true})}>
-								{t('trainer.landing_smart_desc')}
-							</p>
-						</div>
-
-						<div className={b('landing-card-divider', {pro: true})} />
-
-						<div className={b('landing-card-includes')}>
-							<span className={b('landing-card-includes-label', {pro: true})}>
-								{t('trainer.landing_smart_categories')}
-							</span>
-							<div className={b('landing-card-features')}>
-								<div className={b('landing-card-feature', {pro: true})}>
-									<Check weight="bold" />
-									<span>{t('trainer.landing_smart_3x3')}</span>
-								</div>
-								<div className={b('landing-card-feature', {pro: true})}>
-									<Check weight="bold" />
-									<span>{t('trainer.landing_smart_roux')}</span>
-								</div>
-							</div>
-						</div>
-
-						<div className={b('landing-card-includes')}>
-							<span className={b('landing-card-includes-label', {pro: true})}>
-								{t('trainer.landing_smart_features')}
-							</span>
-							<div className={b('landing-card-features')}>
-								<div className={b('landing-card-feature', {pro: true})}>
-									<Check weight="bold" />
-									<span>{t('trainer.landing_smart_feat1')}</span>
-								</div>
-								<div className={b('landing-card-feature', {pro: true})}>
-									<Check weight="bold" />
-									<span>{t('trainer.landing_smart_feat2')}</span>
-								</div>
-								<div className={b('landing-card-feature', {pro: true})}>
-									<Check weight="bold" />
-									<span>{t('trainer.landing_smart_feat3')}</span>
-								</div>
-								<div className={b('landing-card-feature', {pro: true})}>
-									<Check weight="bold" />
-									<span>{t('trainer.landing_smart_feat4')}</span>
-								</div>
-							</div>
-						</div>
-
-						<button
-							type="button"
-							className={b('landing-card-cta', {pro: true})}
-							onClick={(e) => {
-								if (smartLocked) {
-									e.stopPropagation();
-									history.push('/pro');
-								}
-							}}
+				{MODES.map((mode, i) => {
+					const pro = !!mode.pro;
+					const locked = pro && smartLocked;
+					const num = String(i + 1).padStart(2, '0');
+					return (
+						<div
+							key={mode.id}
+							className={b('landing-card', {[mode.accent]: true, pro, locked})}
+							onClick={() => selectMode(mode.id, locked)}
+							role="button"
+							tabIndex={locked ? -1 : 0}
+							onKeyDown={(e) => e.key === 'Enter' && selectMode(mode.id, locked)}
 						>
-							{smartLocked ? t('trainer.landing_pro_required') : t('trainer.landing_smart_title')}
-						</button>
-					</div>
-				</ElectricBorder>
-
-				{/* Efficiency Mode — fourth card, free, cross/xcross/eocross efficiency */}
-					<div
-						className={b('landing-card')}
-						onClick={handleSelectEfficiency}
-						role="button"
-						tabIndex={0}
-						onKeyDown={(e) => e.key === 'Enter' && handleSelectEfficiency()}
-					>
-						<div className={b('landing-card-top')}>
-							<div className={b('landing-card-icon', {green: true})}>
-								<Lightning size={28} weight="duotone" />
-							</div>
-							<h2 className={b('landing-card-name')}>{t('trainer.landing_efficiency_title')}</h2>
-							<p className={b('landing-card-desc')}>{t('trainer.landing_efficiency_desc')}</p>
-						</div>
-
-						<div className={b('landing-card-divider')} />
-
-						<div className={b('landing-card-includes')}>
-							<span className={b('landing-card-includes-label')}>
-								{t('trainer.landing_efficiency_features')}
+							<span className={b('landing-card-watermark')} aria-hidden="true">
+								<Cube size={150} weight="thin" />
 							</span>
-							<div className={b('landing-card-features')}>
-								<div className={b('landing-card-feature')}>
-									<Check weight="bold" />
-									<span>{t('trainer.landing_efficiency_feat1')}</span>
-								</div>
-								<div className={b('landing-card-feature')}>
-									<Check weight="bold" />
-									<span>{t('trainer.landing_efficiency_feat2')}</span>
-								</div>
-								<div className={b('landing-card-feature')}>
-									<Check weight="bold" />
-									<span>{t('trainer.landing_efficiency_feat3')}</span>
-								</div>
-								<div className={b('landing-card-feature')}>
-									<Check weight="bold" />
-									<span>{t('trainer.landing_efficiency_feat4')}</span>
-								</div>
+
+							<div className={b('landing-card-eyebrow-row')}>
+								<span className={b('landing-card-eyebrow')}>
+									{pro ? 'PRO · ' : ''}
+									{t('trainer.landing_eyebrow', {defaultValue: 'MOD'})} {num}
+								</span>
+								<span className={b('landing-card-icon')}>{mode.icon}</span>
 							</div>
+
+							<h2 className={b('landing-card-name')}>{t(mode.titleKey)}</h2>
+							<p className={b('landing-card-desc')}>{t(mode.descKey)}</p>
+
+							<div className={b('landing-card-groups')}>
+								{mode.groups.map((g, gi) => (
+									<div key={gi} className={b('landing-card-group')}>
+										<span className={b('landing-card-group-label')}>{t(g.labelKey)}</span>
+										<div className={b('landing-card-features')}>
+											{g.itemKeys.map((ik) => (
+												<div key={ik} className={b('landing-card-feature')}>
+													<span className={b('landing-card-check')}>
+														<Check size={15} weight="bold" />
+													</span>
+													<span>{t(ik)}</span>
+												</div>
+											))}
+										</div>
+									</div>
+								))}
+							</div>
+
+							<button
+								type="button"
+								className={b('landing-card-cta', {pro})}
+								onClick={(e) => {
+									if (locked) {
+										e.stopPropagation();
+										history.push('/pro');
+									}
+								}}
+							>
+								{locked && <Lock size={14} />}
+								{locked ? t('trainer.landing_pro_required') : t(mode.titleKey)}
+							</button>
 						</div>
-
-						<button type="button" className={b('landing-card-cta')}>
-							{t('trainer.landing_efficiency_title')}
-						</button>
-					</div>
-
-					{/* Recognition Mode — third card, free, simple structure */}
-				<div
-					className={b('landing-card')}
-					onClick={handleSelectRecognition}
-					role="button"
-					tabIndex={0}
-					onKeyDown={(e) => e.key === 'Enter' && handleSelectRecognition()}
-				>
-					<div className={b('landing-card-top')}>
-						<div className={b('landing-card-icon', {orange: true})}>
-							<Eye size={28} weight="duotone" />
-						</div>
-						<h2 className={b('landing-card-name')}>{t('trainer.landing_recognition_title')}</h2>
-						<p className={b('landing-card-desc')}>{t('trainer.landing_recognition_desc')}</p>
-					</div>
-
-					<div className={b('landing-card-divider')} />
-
-					<div className={b('landing-card-includes')}>
-						<span className={b('landing-card-includes-label')}>
-							{t('trainer.landing_recognition_features')}
-						</span>
-						<div className={b('landing-card-features')}>
-							<div className={b('landing-card-feature')}>
-								<Check weight="bold" />
-								<span>{t('trainer.landing_recognition_feat1')}</span>
-							</div>
-							<div className={b('landing-card-feature')}>
-								<Check weight="bold" />
-								<span>{t('trainer.landing_recognition_feat2')}</span>
-							</div>
-							<div className={b('landing-card-feature')}>
-								<Check weight="bold" />
-								<span>{t('trainer.landing_recognition_feat3')}</span>
-							</div>
-							<div className={b('landing-card-feature')}>
-								<Check weight="bold" />
-								<span>{t('trainer.landing_recognition_feat4')}</span>
-							</div>
-						</div>
-					</div>
-
-					<button type="button" className={b('landing-card-cta')}>
-						{t('trainer.landing_recognition_title')}
-					</button>
-				</div>
+					);
+				})}
 			</div>
 		</div>
 	);

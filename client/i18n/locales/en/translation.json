@@ -440,6 +440,7 @@
             "settings_show_all_desc": "Also list solutions for the other faces, sorted by move count."
         },
         "header_to_landing": "Trainer",
+        "landing_eyebrow": "MODE",
         "landing_recognition_title": "PLL Recognition",
         "landing_recognition_desc": "Practice recognizing PLL patterns — type the case letter",
         "landing_recognition_features": "Features",

@@ -1,0 +1,258 @@
+@import '../../styles/config';
+
+// Trainer landing — "Solid Editorial" yon (Claude Design B handoff).
+// Hardcoded dark degerler tema-aware degiskenlere cevrildi; accent hex'leri (mavi/mor/yesil/
+// turuncu) ve Pro moru (#7c3aed) bilincli korunur (TrainerModeHeader ile paylasilir).
+.#{$namespace}-trainer {
+	&__landing {
+		flex: 1;
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
+		padding: 44px 40px 40px;
+		overflow-y: auto;
+		overflow-x: hidden;
+		width: 100%;
+		max-width: 100%;
+		background: rgb(var(--background-color));
+		animation: landing-fadeIn 0.5s ease-out;
+
+		@media (max-width: 768px) {
+			padding: 24px 16px 32px;
+		}
+	}
+
+	// Sol-hizali editorial header + alt cizgi
+	&__landing-header {
+		text-align: left;
+		width: 100%;
+		max-width: 1400px;
+		margin: 0 auto 40px;
+		padding-bottom: 24px;
+		border-bottom: 1px solid rgba(var(--text-color), 0.08);
+	}
+
+	&__landing-title {
+		font-family: Kontora, Poppins, Arial, Helvetica, sans-serif;
+		font-size: 2rem;
+		font-weight: 800;
+		letter-spacing: -0.025em;
+		margin: 0 0 0.5rem;
+		color: rgb(var(--text-color));
+	}
+
+	&__landing-subtitle {
+		font-size: 1rem;
+		font-weight: 500;
+		margin: 0;
+		color: rgba(var(--text-color), 0.42);
+	}
+
+	&__landing-cards {
+		display: grid;
+		grid-template-columns: repeat(4, 1fr);
+		gap: 18px;
+		align-items: stretch;
+		width: 100%;
+		max-width: 1400px;
+		margin: 0 auto;
+
+		@media (max-width: 1100px) {
+			grid-template-columns: 1fr 1fr;
+		}
+		@media (max-width: 600px) {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	// ── Solid Editorial card ──
+	&__landing-card {
+		--mode-accent: #5b8df7;
+		position: relative;
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+		border-radius: 20px;
+		padding: 30px;
+		cursor: pointer;
+		background: linear-gradient(165deg, rgba(var(--text-color), 0.05), rgba(var(--text-color), 0.015));
+		backdrop-filter: blur(6px);
+		border: 1px solid rgba(var(--text-color), 0.06);
+		transition: transform 0.25s cubic-bezier(0.2, 0.7, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+
+		&--blue { --mode-accent: #5b8df7; }
+		&--purple { --mode-accent: #a78bfa; }
+		&--green { --mode-accent: #4ade80; }
+		&--orange { --mode-accent: #fb923c; }
+
+		&:hover {
+			transform: translateY(-5px);
+			box-shadow: 0 16px 40px rgba(0, 0, 0, 0.38);
+			border-color: rgba(var(--text-color), 0.14);
+		}
+
+		// Pro (Akilli Kup) — mor editorial vurgu (electric border yok)
+		&--pro {
+			background: linear-gradient(165deg, rgba(124, 58, 237, 0.12), rgba(124, 58, 237, 0.03));
+			border-color: rgba(167, 139, 250, 0.22);
+
+			&:hover {
+				box-shadow: 0 16px 44px rgba(124, 58, 237, 0.22);
+				border-color: rgba(167, 139, 250, 0.45);
+			}
+		}
+
+		&--locked {
+			cursor: not-allowed;
+			&:hover {
+				transform: none;
+			}
+		}
+	}
+
+	// Faint cube watermark — sag alt, accent renginde, hover'da doner
+	&__landing-card-watermark {
+		position: absolute;
+		right: -18px;
+		bottom: -14px;
+		display: flex;
+		line-height: 0;
+		color: var(--mode-accent);
+		opacity: 0.16;
+		pointer-events: none;
+		transition: transform 0.5s cubic-bezier(0.2, 0.7, 0.3, 1);
+	}
+	&__landing-card:hover &__landing-card-watermark {
+		transform: rotate(-8deg) translateY(-2px);
+	}
+
+	&__landing-card-eyebrow-row {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: 26px;
+	}
+	&__landing-card-eyebrow {
+		font-size: 11px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.14em;
+		color: var(--mode-accent);
+	}
+	&__landing-card-icon {
+		display: flex;
+		line-height: 0;
+		color: var(--mode-accent);
+		opacity: 0.9;
+	}
+
+	&__landing-card-name {
+		position: relative;
+		font-family: Kontora, Poppins, Arial, Helvetica, sans-serif;
+		font-size: 1.4rem;
+		font-weight: 700;
+		letter-spacing: -0.02em;
+		line-height: 1.15;
+		margin: 0 0 10px;
+		color: rgb(var(--text-color));
+	}
+	&__landing-card-desc {
+		position: relative;
+		font-size: 0.85rem;
+		line-height: 1.5;
+		margin: 0 0 24px;
+		color: rgba(var(--text-color), 0.5);
+	}
+
+	&__landing-card-groups {
+		position: relative;
+		margin-bottom: 24px;
+	}
+	&__landing-card-group {
+		& + & {
+			margin-top: 18px;
+		}
+	}
+	&__landing-card-group-label {
+		display: block;
+		margin-bottom: 10px;
+		font-size: 11px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: rgba(var(--text-color), 0.38);
+	}
+	&__landing-card-features {
+		display: flex;
+		flex-direction: column;
+		gap: 1px;
+	}
+	&__landing-card-feature {
+		display: flex;
+		align-items: flex-start;
+		gap: 10px;
+		padding: 5px 0;
+
+		span:last-child {
+			font-size: 13px;
+			line-height: 1.4;
+			font-weight: 500;
+			color: rgba(var(--text-color), 0.78);
+		}
+	}
+	&__landing-card-check {
+		flex: 0 0 auto;
+		margin-top: 1px;
+		display: flex;
+		line-height: 0;
+		color: var(--mode-accent);
+	}
+
+	&__landing-card-cta {
+		position: relative;
+		margin-top: auto;
+		width: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+		border-radius: 9px;
+		padding: 13px 18px;
+		font-size: 13.5px;
+		font-weight: 700;
+		font-family: inherit;
+		cursor: pointer;
+		border: 1px solid rgba(var(--text-color), 0.1);
+		background: rgba(var(--text-color), 0.06);
+		color: rgba(var(--text-color), 0.72);
+		transition: all 0.2s ease;
+
+		&:hover {
+			background: rgba(var(--text-color), 0.1);
+		}
+
+		&--pro {
+			border: none;
+			background: #7c3aed;
+			color: #fff;
+			box-shadow: 0 6px 22px rgba(124, 58, 237, 0.4);
+
+			&:hover {
+				filter: brightness(1.1);
+				box-shadow: 0 8px 28px rgba(124, 58, 237, 0.5);
+			}
+		}
+	}
+}
+
+@keyframes landing-fadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
