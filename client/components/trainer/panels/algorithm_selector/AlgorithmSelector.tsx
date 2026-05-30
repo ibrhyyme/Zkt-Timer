@@ -93,6 +93,8 @@ export default function AlgorithmSelector() {
 	// Auto-select first category
 	useEffect(() => {
 		if (!selectedCategory && categories.length > 0) {
+			// URL'de ?cat varsa onu useTrainerUrlSync hidrate edecek — auto-select clobber etmesin
+			if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('cat')) return;
 			dispatch({type: 'SET_CATEGORY', payload: categories[0]});
 		}
 	}, [categories, selectedCategory, dispatch]);
