@@ -95,6 +95,13 @@ const INSPIRATIONS: Reference[] = [
 		link: 'https://github.com/Dev-tanay/Rubik-Cube',
 		descKey: 'credits.inspiration_rubikcube',
 	},
+	{
+		project: 'pll_recognition_trainer',
+		user: 'Roman Strakhov',
+		username: 'Roman-',
+		link: 'https://github.com/Roman-/pll_recognition_trainer',
+		descKey: 'credits.inspiration_pllrecognition',
+	},
 ];
 
 const LIBRARIES: Reference[] = [

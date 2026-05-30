@@ -49,7 +49,13 @@ export function usePuzzlePatternsReady(): boolean {
 
 	useEffect(() => {
 		if (ready) return;
-		loadPuzzlePatterns().then(() => setReady(true));
+		let cancelled = false;
+		loadPuzzlePatterns().then(() => {
+			if (!cancelled) setReady(true);
+		});
+		return () => {
+			cancelled = true;
+		};
 	}, [ready]);
 
 	return ready;

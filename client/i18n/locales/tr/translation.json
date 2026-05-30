@@ -2868,6 +2868,7 @@
         "inspiration_wcalive": "WCA Live entegrasyonunun yapısal yaklaşımı, <strong>WCA Software Team</strong> tarafından geliştirilen bu platformdan doğrudan ilham almıştır. Tur tur canlı sonuç akışının nasıl kurgulandığı buradan öğrenilmiştir.",
         "inspiration_recordranks": "Sport cubing'e özgü rekor ve sıralama mimarisinin nasıl kurulabileceği konusunda <strong>Deni Mintsaev</strong>'in bu projesinden faydalanılmıştır.",
         "inspiration_rubikcube": "Web ortamında basit ama akıcı küp etkileşimlerinin nasıl tasarlanabileceği konusunda faydalı bir referans olmuştur.",
+        "inspiration_pllrecognition": "PLL Recognition Trainer modülünün doğrudan çıkış noktasıdır. Klavyeyle PLL tanıma pratiği, two-sided recognition guide ve adaptif tekrar mantığı, <strong>Roman Strakhov</strong> tarafından geliştirilen bu projeden port edilerek Zkt Timer'a uyarlanmıştır.",
         "libraries_title": "Kullanılan Kütüphaneler",
         "libraries_desc": "Zkt Timer'ın altyapısında doğrudan kullanılan temel cubing kütüphaneleri.",
         "libraries_cubingjs": "Akıllı küp durum takibi, WCA notasyonu ve KPattern eşleştirme için kullanılan temel kütüphanedir. <strong>Lucas Garron</strong> ve cubing.js katkıcıları tarafından geliştirilmektedir.",

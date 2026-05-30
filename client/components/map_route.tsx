@@ -6,7 +6,7 @@ export function mapSingleRoute(route) {
 
 	return (
 		<Route
-			key={route.path}
+			key={route.groupKey || route.path}
 			{...route}
 			render={(props) => {
 				const Child = route.child;

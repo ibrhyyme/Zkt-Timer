@@ -37,7 +37,13 @@ export function useIsometricPatternsReady(): boolean {
 
 	useEffect(() => {
 		if (ready) return;
-		loadIsometricPatterns().then(() => setReady(true));
+		let cancelled = false;
+		loadIsometricPatterns().then(() => {
+			if (!cancelled) setReady(true);
+		});
+		return () => {
+			cancelled = true;
+		};
 	}, [ready]);
 
 	return ready;

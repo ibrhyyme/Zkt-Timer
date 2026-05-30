@@ -13,21 +13,43 @@ const b = block('trainer-efficiency');
 interface Props {
 	selected: SolverResult | null;
 	alternatives: SolverResult[];
+	/** 'primary' → sadece optimal (+ empty/skip durumlari); 'alternatives' → sadece diger
+	 * cozumler. Mobilde 3D player optimal ile alternatifler arasina girdigi icin ayri render. */
+	section?: 'primary' | 'alternatives';
 }
 
-export default function SolutionList({selected, alternatives}: Props) {
+export default function SolutionList({selected, alternatives, section = 'primary'}: Props) {
 	const {t} = useTranslation();
 
-	// Skip / cozum yok
+	// Alternatifler: secili olani disla (skip/cozumsuzde bos)
+	const others = selected && selected.solution.length > 0 ? alternatives.filter((r) => r.face !== selected.face) : [];
+
+	// ── Alternatives section ──
+	if (section === 'alternatives') {
+		if (others.length === 0) return null;
+		return (
+			<div className={b('solutions')}>
+				<div className={b('solution-alt-label')}>{t('trainer.efficiency.alternatives', {defaultValue: 'Other solutions'})}</div>
+				{others.map((r) => (
+					<div key={r.face} className={b('solution-row')}>
+						<span className={b('solution-face')}>{r.face}</span>
+						<span className={b('solution-alg')}>{solutionToString(r)}</span>
+						<span className={b('solution-count')}>
+							{t('trainer.efficiency.move_count', {count: r.moveCount, defaultValue: '{{count}} moves'})}
+						</span>
+					</div>
+				))}
+			</div>
+		);
+	}
+
+	// ── Primary section (optimal + empty/skip) ──
 	if (!selected) {
 		return <div className={b('solution-empty')}>{t('trainer.efficiency.no_solution', {defaultValue: 'No solution found'})}</div>;
 	}
 	if (selected.solution.length === 0) {
 		return <div className={b('solution-empty')}>{t('trainer.efficiency.skip', {defaultValue: 'Skip — already solved'})}</div>;
 	}
-
-	// Alternatifler: secili olani disla
-	const others = alternatives.filter((r) => r.face !== selected.face);
 
 	return (
 		<div className={b('solutions')}>
@@ -38,21 +60,6 @@ export default function SolutionList({selected, alternatives}: Props) {
 					{t('trainer.efficiency.move_count', {count: selected.moveCount, defaultValue: '{{count}} moves'})}
 				</span>
 			</div>
-
-			{others.length > 0 && (
-				<>
-					<div className={b('solution-alt-label')}>{t('trainer.efficiency.alternatives', {defaultValue: 'Other solutions'})}</div>
-					{others.map((r) => (
-						<div key={r.face} className={b('solution-row')}>
-							<span className={b('solution-face')}>{r.face}</span>
-							<span className={b('solution-alg')}>{solutionToString(r)}</span>
-							<span className={b('solution-count')}>
-								{t('trainer.efficiency.move_count', {count: r.moveCount, defaultValue: '{{count}} moves'})}
-							</span>
-						</div>
-					))}
-				</>
-			)}
 		</div>
 	);
 }

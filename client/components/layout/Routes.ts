@@ -74,6 +74,13 @@ export interface PageContext extends PageOptions {
 	grandparent: any;
 	parent: any;
 	child: any;
+	/**
+	 * Shared React key for routes that render the same component across multiple paths.
+	 * When set, the <Switch>-rendered <Route> keeps a stable identity across intra-group
+	 * navigation, so the component tree is NOT remounted (state preserved). Used by the
+	 * trainer routes so e.g. /trainer/standard -> /trainer/standard/train does not reset state.
+	 */
+	groupKey?: string;
 }
 
 export interface RedirectPath {
@@ -112,6 +119,18 @@ function routeRedirect(path: string, redirect: string): RedirectPath {
 		path,
 		redirect,
 	};
+}
+
+/**
+ * Trainer routes all render <Trainer> and must share a single mount group so that
+ * navigating between modes/sub-views (e.g. /trainer/standard -> /trainer/standard/train)
+ * does NOT remount the tree and wipe TrainerProvider state. The shared groupKey gives the
+ * <Switch>-rendered <Route> a stable React key across these paths.
+ */
+function trainerRoute(path: string): PageContext {
+	const r = route(path, null, App, Trainer);
+	r.groupKey = 'trainer-shell';
+	return r;
 }
 
 // Order by importance (at least the public routes)
@@ -153,20 +172,20 @@ export const routes: (PageContext | RedirectPath)[] = [
 
 	// Trainer — deep-linkable (her derinlik explicit, exact match; hepsi child=Trainer).
 	// Spesifik-once: client <Switch> ilk eslesen route'u render eder.
-	route('/trainer/standard/train', null, App, Trainer),
-	route('/trainer/standard', null, App, Trainer),
-	route('/trainer/smart/train', null, App, Trainer),
-	route('/trainer/smart', null, App, Trainer),
-	route('/trainer/recognition/setup', null, App, Trainer),
-	route('/trainer/recognition/train', null, App, Trainer),
-	route('/trainer/recognition/results', null, App, Trainer),
-	route('/trainer/recognition/history', null, App, Trainer),
-	route('/trainer/recognition/settings', null, App, Trainer),
-	route('/trainer/recognition/glossary', null, App, Trainer),
-	route('/trainer/recognition', null, App, Trainer),
-	route('/trainer/efficiency/settings', null, App, Trainer),
-	route('/trainer/efficiency', null, App, Trainer),
-	route('/trainer', null, App, Trainer),
+	trainerRoute('/trainer/standard/train'),
+	trainerRoute('/trainer/standard'),
+	trainerRoute('/trainer/smart/train'),
+	trainerRoute('/trainer/smart'),
+	trainerRoute('/trainer/recognition/setup'),
+	trainerRoute('/trainer/recognition/train'),
+	trainerRoute('/trainer/recognition/results'),
+	trainerRoute('/trainer/recognition/history'),
+	trainerRoute('/trainer/recognition/settings'),
+	trainerRoute('/trainer/recognition/glossary'),
+	trainerRoute('/trainer/recognition'),
+	trainerRoute('/trainer/efficiency/settings'),
+	trainerRoute('/trainer/efficiency'),
+	trainerRoute('/trainer'),
 
 	// Account
 	route('/account/personal-info', App, Account, PersonalInfo),

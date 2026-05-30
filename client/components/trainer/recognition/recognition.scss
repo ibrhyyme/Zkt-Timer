@@ -19,6 +19,8 @@
 	min-height: 0;
 	overflow-y: auto;
 	overflow-x: hidden;
+	-webkit-overflow-scrolling: touch; // iOS momentum scroll katmanı
+	overscroll-behavior-y: contain; // rubber-band'i container'a hapset (body'ye zincirlenip geri zıplatmasın)
 	color: rgb(var(--text-color));
 	background: rgb(var(--background-color));
 
@@ -731,7 +733,7 @@
 
 	// ────────── SessionSetup ──────────
 	&__setup {
-		padding: 24px 16px;
+		padding: 24px 16px calc(24px + env(safe-area-inset-bottom, 0px)); // CTA home-indicator altında kalmasın
 		display: flex;
 		flex-direction: column;
 		gap: 20px;
@@ -790,6 +792,7 @@
 	&__preset-scroll {
 		overflow-x: auto;
 		-webkit-overflow-scrolling: touch;
+		touch-action: pan-x; // kartlar üzerinde dikey sürükleme sayfayı kaydırsın (yatay scroller yutmasın)
 		scrollbar-width: none;
 		&::-webkit-scrollbar { display: none; }
 

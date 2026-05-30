@@ -250,6 +250,7 @@
 		min-height: 0;
 		display: grid;
 		grid-template-columns: 1fr minmax(300px, 380px);
+		grid-template-rows: auto 1fr; // sağ kolon: optimal (auto) / alternatifler (kalan)
 		gap: 20px;
 		padding: 16px;
 		align-items: stretch;
@@ -279,6 +280,8 @@
 		justify-content: center;
 		gap: 14px;
 		min-height: 0;
+		grid-column: 1; // masaüstü: sol kolon, iki satırı kapla (optimal+alternatif yanında)
+		grid-row: 1 / -1;
 
 		// Mobile: content-sized (no overflow/overlap in vertical flow)
 		@media (max-width: 900px) {
@@ -292,6 +295,9 @@
 		flex-direction: column;
 		gap: 14px;
 		min-height: 0;
+		grid-column: 2; // masaüstü: sağ-üst (optimal)
+		grid-row: 1;
+		align-self: start;
 		padding: 18px;
 		border-radius: 16px;
 		background: rgba(var(--module-color), 0.55);
@@ -304,6 +310,7 @@
 		// just below scramble, cube below.
 		@media (max-width: 900px) {
 			order: -1;
+			align-self: stretch; // grid'deki align-self:start'i sıfırla (mobilde tam genişlik)
 			overflow: visible;
 			padding: 14px;
 			gap: 10px;
@@ -335,6 +342,27 @@
 	&__reveal-btn {
 		width: 100%;
 		justify-content: center;
+	}
+
+	// Alternatif çözümler kartı — masaüstü sağ-alt (col2 row2), mobil küpün ALTINDA.
+	&__alt-panel {
+		display: flex;
+		flex-direction: column;
+		min-height: 0;
+		grid-column: 2;
+		grid-row: 2;
+		padding: 18px;
+		border-radius: 16px;
+		background: rgba(var(--module-color), 0.55);
+		border: 1px solid rgba(var(--text-color), 0.08);
+		backdrop-filter: blur(10px);
+		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+		overflow-y: auto;
+
+		@media (max-width: 900px) {
+			overflow: visible;
+			padding: 14px;
+		}
 	}
 	&__skeleton {
 		min-height: 240px;

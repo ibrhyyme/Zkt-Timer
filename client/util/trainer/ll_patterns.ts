@@ -54,7 +54,13 @@ export function useLLPatternsReady(): boolean {
 
 	useEffect(() => {
 		if (ready) return;
-		loadLLPatterns().then(() => setReady(true));
+		let cancelled = false;
+		loadLLPatterns().then(() => {
+			if (!cancelled) setReady(true);
+		});
+		return () => {
+			cancelled = true;
+		};
 	}, [ready]);
 
 	return ready;

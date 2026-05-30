@@ -2868,6 +2868,7 @@
         "inspiration_wcalive": "The structural approach for the WCA Live integration was directly inspired by this platform, developed by the <strong>WCA Software Team</strong>. How round-by-round live result flows are designed was learned here.",
         "inspiration_recordranks": "<strong>Deni Mintsaev</strong>'s project provided insight into how records and ranking architectures specific to sport cubing can be built.",
         "inspiration_rubikcube": "A useful reference for how simple yet fluid cube interactions can be designed in a web environment.",
+        "inspiration_pllrecognition": "The direct basis for the PLL Recognition Trainer module. The keyboard-driven PLL recognition practice, two-sided recognition guide, and adaptive repetition logic were ported and adapted to Zkt Timer from <strong>Roman Strakhov</strong>'s project.",
         "libraries_title": "Libraries Used",
         "libraries_desc": "Core cubing libraries used directly in Zkt Timer's infrastructure.",
         "libraries_cubingjs": "The core library used for smart cube state tracking, WCA notation, and KPattern matching. Developed by <strong>Lucas Garron</strong> and the cubing.js contributors.",
