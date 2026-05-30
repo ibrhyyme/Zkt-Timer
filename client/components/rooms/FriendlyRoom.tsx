@@ -26,11 +26,11 @@ import AlreadyInOtherRoomModal from './AlreadyInOtherRoomModal';
 import RoomTable from './RoomTable';
 import ScrambleVisual from '../modules/scramble/ScrambleVisual';
 import RoomTimerOverlay from './RoomTimerOverlay';
-import RoomSettingsModal from './RoomSettingsModal';
+import LeftSettingsDrawer from '../layout/nav/left_settings_drawer/LeftSettingsDrawer';
 import EditRoomModal from './EditRoomModal';
 import EditRoomDropdown from './EditRoomDropdown';
 import ManageUsersModal from './ManageUsersModal';
-import { Gear, List, PencilSimple, Users, Trash, BluetoothConnected, Bluetooth, CheckCircle, CircleNotch, Check, MusicNote } from 'phosphor-react';
+import { List, PencilSimple, Users, Trash, BluetoothConnected, Bluetooth, CheckCircle, CircleNotch, Check, MusicNote } from 'phosphor-react';
 import RoomMusicPlayer from './RoomMusicPlayer';
 import {openProOnlyModal} from '../common/pro_only/openProOnlyModal';
 import { is3x3CubeType } from '../timer/helpers/util';
@@ -90,7 +90,6 @@ export default function FriendlyRoom() {
     const [needsPassword, setNeedsPassword] = useState(false);
     const [takenOver, setTakenOver] = useState(false);
     const [alreadyInRoom, setAlreadyInRoom] = useState<{ id: string; name: string } | null>(null);
-    const [settingsOpen, setSettingsOpen] = useState(false);
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [manageUsersModalOpen, setManageUsersModalOpen] = useState(false);
     const [userStatuses, setUserStatuses] = useState<{ [userId: string]: string }>({});
@@ -1500,14 +1499,9 @@ export default function FriendlyRoom() {
                                 <span className="hidden md:inline">{smartCubeConnecting ? t('rooms.connecting') : smartCubeConnected ? t('rooms.cube_connected') : t('rooms.connect_cube')}</span>
                             </button>
                         )}
-                        {isMobile ? (
-                            <button
-                                onClick={() => setSettingsOpen(true)}
-                                className="p-1 md:p-2 text-white/90 hover:text-white transition-colors"
-                            >
-                                <Gear weight="bold" size={20} />
-                            </button>
-                        ) : (
+                        {/* Mobile: gear button kaldirildi — sol drawer ile degistirildi (asagida mount).
+                            Desktop: SettingsDropdown inline ayni kalir. */}
+                        {!isMobile && (
                             <SettingsDropdown
                                 hideMobileModules
                                 hideSmartCubeFeatures
@@ -2074,7 +2068,7 @@ export default function FriendlyRoom() {
                     cubejsRef.current = new Cube();
                 }}
                 onStatusChange={handleStatusChange}
-                onOpenSettings={() => setSettingsOpen(true)}
+                onOpenSettings={() => {/* no-op — gear → sol drawer'a tasindi */}}
                 alreadySolvedThisRound={alreadySolvedThisRound}
                 smartInspecting={smartInspecting}
                 smartInspectionTime={smartInspectionTime}
@@ -2089,13 +2083,15 @@ export default function FriendlyRoom() {
                 qiyiTimerConnected={qiyiTimerConnected}
             />
 
-            {/* Settings Modal */}
-            <RoomSettingsModal
-                isOpen={settingsOpen}
-                onClose={() => setSettingsOpen(false)}
-                allowedTimerTypes={room.allowed_timer_types}
-                requireProForSmart={true}
-            />
+            {/* Mobile sol drawer — oda parametreleriyle. Desktop'ta SettingsDropdown inline. */}
+            {isMobile && (
+                <LeftSettingsDrawer
+                    allowedTimerTypes={room.allowed_timer_types}
+                    requireProForSmart
+                    hideSmartCubeFeatures
+                    hideMobileModules
+                />
+            )}
             {/* New Modals */}
             <EditRoomModal
                 isOpen={editModalOpen}

@@ -50,12 +50,33 @@ interface TimerOption {
 	disabled: boolean;
 	proGated: boolean;
 	smartUnsupported: boolean;
+	notAllowed: boolean;
 }
 
 const PRO_GATED_KEYS = new Set<TypeKey>(['smart', 'gantimer', 'qiyitimer']);
 const ICON_SIZE = 24;
 
-export default function TimerTypeGrid() {
+interface Props {
+	// Oda modu: izin verilen timer turleri (host belirler). undefined ise tum turler acik.
+	allowedTimerTypes?: string[];
+	// Oda modu: smart cube + GAN/QiYi timer icin Pro abonelik gerekli.
+	requireProForSmart?: boolean;
+	// ExtrasTab'a forward — multi-phase + recognition split satirlari gizli.
+	hideSmartCubeFeatures?: boolean;
+	// ExtrasTab'a forward — mobile module slot'lari gizli.
+	hideMobileModules?: boolean;
+}
+
+interface TimerOptionExt extends TimerOption {
+	notAllowed: boolean;
+}
+
+export default function TimerTypeGrid({
+	allowedTimerTypes,
+	requireProForSmart,
+	hideSmartCubeFeatures,
+	hideMobileModules,
+}: Props) {
 	const {t} = useTranslation();
 	const dispatch = useDispatch();
 	const me = useMe();
@@ -85,7 +106,7 @@ export default function TimerTypeGrid() {
 	const smartSupported = is3x3CubeType(cubeType, scrambleSubset);
 	const userIsPro = isPro(me);
 
-	const baseOptions: Omit<TimerOption, 'disabled' | 'proGated' | 'smartUnsupported'>[] = [
+	const baseOptions: Omit<TimerOption, 'disabled' | 'proGated' | 'smartUnsupported' | 'notAllowed'>[] = [
 		{
 			typeKey: 'keyboard',
 			label: mobileMode ? t('quick_controls.touch') : t('quick_controls.keyboard'),
@@ -131,14 +152,19 @@ export default function TimerTypeGrid() {
 		},
 	];
 
+	// Pro-gating: timer sayfasi (oda DEGIL) prop'suz cagrilir → `requireProForSmart` undefined/false,
+	// Pro badge gostermez. Oda modunda (requireProForSmart=true) Pro olmayan kullanici icin
+	// smart/gantimer/qiyitimer kartlari disable + Crown badge.
+	const isProGated = !!requireProForSmart && !userIsPro;
+
 	const options: TimerOption[] = baseOptions.map((opt) => {
-		// Pro-gated: timer sayfasi (oda degil) — `requireProForSmart` false, ama
-		// kart'ta Pro/Premium ikonu gostermek icin still tutuyoruz (kullanici
-		// bilsin). Pro degilse Pro-gated kartlar yine de SECILEMEZ.
-		const proGated = !userIsPro && PRO_GATED_KEYS.has(opt.typeKey);
+		const proGated = isProGated && PRO_GATED_KEYS.has(opt.typeKey);
 		const smartUnsupported = opt.typeKey === 'smart' && !smartSupported;
-		const disabled = proGated || smartUnsupported;
-		return {...opt, disabled, proGated, smartUnsupported};
+		// Oda host'unun izin verdigi timer turleri disindaki kartlar disable + kirmizi Lock badge.
+		// `allowedTimerTypes` undefined/null veya bos array ise filter atlanir (tum kartlar acik).
+		const notAllowed = !!allowedTimerTypes && allowedTimerTypes.length > 0 && !allowedTimerTypes.includes(opt.typeKey);
+		const disabled = proGated || smartUnsupported || notAllowed;
+		return {...opt, disabled, proGated, smartUnsupported, notAllowed};
 	});
 
 	function selectTimerType(newTimerType: AllSettings['timer_type']) {
@@ -200,7 +226,10 @@ export default function TimerTypeGrid() {
 					<span className={b('extras-title')}>{t('quick_controls.extras')}</span>
 				</header>
 				<div className={b('extras-content')}>
-					<ExtrasTab />
+					<ExtrasTab
+						hideSmartCubeFeatures={hideSmartCubeFeatures}
+						hideMobileModules={hideMobileModules}
+					/>
 				</div>
 			</>
 		);
