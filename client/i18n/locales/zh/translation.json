@@ -13,6 +13,7 @@
         "login": "登录",
         "signup": "注册",
         "notch_swipe": "滑动打开菜单",
+        "notch_settings_swipe": "向右滑动打开快速设置",
         "notch_hold": "长按移动位置"
     },
     "account_dropdown": {
