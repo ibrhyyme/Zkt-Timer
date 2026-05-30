@@ -5,7 +5,7 @@
 import React, {createContext, useContext, useReducer, useEffect, useRef, useCallback} from 'react';
 import type {ReactNode} from 'react';
 import {useLocation} from 'react-router-dom';
-import {parseTrainerPath, efficiencySubToView} from '../../../util/trainer/url/trainer_url';
+import {parseTrainerPath, efficiencySubToView, parseEfficiencyQuery, type EfficiencyConfigQuery} from '../../../util/trainer/url/trainer_url';
 import type {EfficiencyState, EfficiencyAction, EfficiencyView, SessionSlice, SettingsSlice} from './types';
 import {LS_SESSION, LS_SETTINGS, LS_VIEW, EFFICIENCY_TYPES, EO_AXES, ROTATION_OPTIONS, HISTORY_CAP, LENGTH_RANGES} from '../../../util/trainer/efficiency/constants';
 
@@ -57,8 +57,18 @@ function loadView(): EfficiencyView {
 
 type FullState = EfficiencyState & {view: EfficiencyView};
 
-function buildInitialState(initialView?: EfficiencyView): FullState {
+function buildInitialState(initialView?: EfficiencyView, urlConfig?: EfficiencyConfigQuery): FullState {
 	const session = loadFromStorage<SessionSlice>(LS_SESSION, defaultSession);
+	// Deep-link config (URL query) varsa seed et — URL kaynak (HYDRATE_CONFIG ile ayni semantik).
+	// Asagidaki normalize blogu gecersiz degerleri yine de duzeltir. Bu, mount'taki view->URL
+	// yazimi ile deep-link query'sinin yarisini (race + veri kaybi) onler.
+	if (urlConfig && urlConfig.type != null) {
+		session.type = urlConfig.type as SessionSlice['type'];
+		session.rotation = urlConfig.rot ?? '';
+		if (urlConfig.axis != null) session.eoAxis = urlConfig.axis as SessionSlice['eoAxis'];
+		session.targetLength = urlConfig.len ?? undefined;
+		session.xcrossSlot = urlConfig.slot ?? undefined;
+	}
 	if (!EFFICIENCY_TYPES.includes(session.type)) session.type = 'cross';
 	if (!EO_AXES.includes(session.eoAxis)) session.eoAxis = 'LR';
 	// targetLength: type'a OZGU aralikta degilse temizle (xcross'ta 10 secip cross'a
@@ -160,6 +170,27 @@ function reducer(state: FullState, action: EfficiencyAction): FullState {
 		case 'SET_EFFICIENCY_VIEW':
 			return {...state, view: action.payload};
 
+		case 'HYDRATE_CONFIG': {
+			// URL'den atomik config hidrasyonu — her alan constants'a karsi normalize edilir,
+			// gecersizse mevcut/varsayilan korunur. revealed/results sifirlanir (config degisti).
+			const c = action.payload;
+			const type = c.type && (EFFICIENCY_TYPES as readonly string[]).includes(c.type)
+				? (c.type as SessionSlice['type'])
+				: state.session.type;
+			const eoAxis = c.eoAxis && (EO_AXES as readonly string[]).includes(c.eoAxis)
+				? (c.eoAxis as SessionSlice['eoAxis'])
+				: state.session.eoAxis;
+			const rotation = c.rotation != null && ROTATION_OPTIONS.includes(c.rotation) ? c.rotation : '';
+			const targetLength =
+				c.targetLength != null && LENGTH_RANGES[type].includes(c.targetLength) ? c.targetLength : undefined;
+			const xcrossSlot =
+				c.xcrossSlot != null && c.xcrossSlot >= 0 && c.xcrossSlot <= 3 ? c.xcrossSlot : undefined;
+			return {
+				...state,
+				session: {...state.session, type, eoAxis, rotation, targetLength, xcrossSlot, revealed: false, results: []},
+			};
+		}
+
 		default:
 			return state;
 	}
@@ -196,8 +227,11 @@ export function EfficiencyProvider({children}: {children: ReactNode}) {
 	const location = useLocation();
 	const [state, dispatch] = useReducer(reducer, location.pathname, (path: string) => {
 		const {mode, sub} = parseTrainerPath(path);
-		const v = mode === 'efficiency' ? efficiencySubToView(sub) : null;
-		return buildInitialState(v ?? undefined);
+		if (mode !== 'efficiency') return buildInitialState();
+		const v = efficiencySubToView(sub) ?? undefined;
+		// Trainer view'da config query'sini de seed et (deep-link mount-race fix)
+		const cfg = v === 'trainer' ? parseEfficiencyQuery(location.search) : undefined;
+		return buildInitialState(v, cfg);
 	});
 
 	// Persistence (debounce'lu)
