@@ -85,8 +85,8 @@ export default function App(props: Props = {}) {
 			let lastBackPress = 0;
 
 			CapApp.addListener('backButton', () => {
-				// If notch is being touched, ignore back gesture
-				if ((window as any).__notchTouching) return;
+				// If either notch is being touched, ignore back gesture
+				if ((window as any).__notchTouchingLeft || (window as any).__notchTouchingRight) return;
 
 				const state = getStore().getState();
 				const modals = state?.general?.modals || [];
