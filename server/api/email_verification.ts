@@ -57,6 +57,23 @@ export const mutateActions = {
 	},
 
 	verifyEmailCode: async (_: any, {email, code, language}: {email: string; code: string; language?: string}, {req, res}: GraphQLContext) => {
+		const ip = extractIp(req);
+		const emailKey = (email || '').toLowerCase();
+
+		// Brute force korumasi: dogrulama kodu deneme-yanilma ile kirilmasin (30 dak pencere)
+		const perEmail = await checkRateLimit(`verify_ev:email:${emailKey}`, 10, 1800);
+		if (!perEmail.allowed) {
+			logger.warn('Verify EV rate limit (email)', {email: emailKey, count: perEmail.count});
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Cok fazla deneme. Lutfen bir sure sonra tekrar deneyin.');
+		}
+		if (ip) {
+			const perIp = await checkRateLimit(`verify_ev:ip:${ip}`, 30, 1800);
+			if (!perIp.allowed) {
+				logger.warn('Verify EV rate limit (ip)', {ip, count: perIp.count});
+				throw new GraphQLError(ErrorCode.BAD_INPUT, 'Cok fazla deneme. Lutfen bir sure sonra tekrar deneyin.');
+			}
+		}
+
 		const user = await getUserByEmail(email);
 
 		if (!user) {

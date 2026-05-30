@@ -55,7 +55,24 @@ export const mutateActions = {
 				buildForgotEmailData(user, fp.code, language));
 		}
 	},
-	checkForgotPasswordCode: async (_, { email, code }) => {
+	checkForgotPasswordCode: async (_, { email, code }, { req }) => {
+		const ip = extractIp(req);
+		const emailKey = (email || '').toLowerCase();
+
+		// Brute force korumasi: kod deneme-yanilma ile kirilmasin (15 dak pencere)
+		const perEmail = await checkRateLimit(`forgot_check:email:${emailKey}`, 10, 900);
+		if (!perEmail.allowed) {
+			logger.warn('Forgot code check rate limit (email)', {email: emailKey, count: perEmail.count});
+			throw new GraphQLError(400, 'Cok fazla deneme. Lutfen bir sure sonra tekrar deneyin.');
+		}
+		if (ip) {
+			const perIp = await checkRateLimit(`forgot_check:ip:${ip}`, 30, 900);
+			if (!perIp.allowed) {
+				logger.warn('Forgot code check rate limit (ip)', {ip, count: perIp.count});
+				throw new GraphQLError(400, 'Cok fazla deneme. Lutfen bir sure sonra tekrar deneyin.');
+			}
+		}
+
 		const user = await getUserByEmail(email);
 
 		if (!user) {
@@ -71,6 +88,23 @@ export const mutateActions = {
 		return fp && fp.code === code && forgotPasswordLessThan15Min(fp);
 	},
 	updateForgotPassword: async (_, { email, code, password }, { req, res }) => {
+		const ip = extractIp(req);
+		const emailKey = (email || '').toLowerCase();
+
+		// Brute force korumasi: kod deneme-yanilma ile kirilip sifre sifirlanmasin
+		const perEmail = await checkRateLimit(`forgot_update:email:${emailKey}`, 10, 900);
+		if (!perEmail.allowed) {
+			logger.warn('Forgot update rate limit (email)', {email: emailKey, count: perEmail.count});
+			throw new GraphQLError(400, 'Cok fazla deneme. Lutfen bir sure sonra tekrar deneyin.');
+		}
+		if (ip) {
+			const perIp = await checkRateLimit(`forgot_update:ip:${ip}`, 30, 900);
+			if (!perIp.allowed) {
+				logger.warn('Forgot update rate limit (ip)', {ip, count: perIp.count});
+				throw new GraphQLError(400, 'Cok fazla deneme. Lutfen bir sure sonra tekrar deneyin.');
+			}
+		}
+
 		const user = await getUserByEmail(email);
 
 		if (!user) {

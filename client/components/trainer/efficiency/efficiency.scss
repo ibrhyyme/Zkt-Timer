@@ -309,12 +309,11 @@
 			gap: 10px;
 		}
 
-		// Mobile after reveal: cube+player top, solution BOTTOM (order:0).
-		// Natural height — page scroll (cd-trainer-efficiency) carries all solutions;
-		// no internal-scroll (flex collapse risk). Optimal: cube immediately below, others lower.
+		// Mobile after reveal: solution STAYS above cube (order:-1) → optimal hemen görünür,
+		// scroll gerekmez. Cube+player altta kalır (animasyonu izlemek isteyen aşağı kaydırır).
 		&--revealed {
 			@media (max-width: 900px) {
-				order: 0;
+				order: -1;
 			}
 		}
 	}
@@ -537,6 +536,7 @@
 
 		@media (max-width: 900px) {
 			height: 26vh;
+			touch-action: pan-y; // dikey scroll küpü geçsin (drag mobilde kapalı)
 		}
 
 		twisty-player {
@@ -546,6 +546,7 @@
 
 			@media (max-width: 900px) {
 				max-height: 26vh;
+				touch-action: pan-y;
 			}
 		}
 	}

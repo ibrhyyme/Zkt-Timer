@@ -46,6 +46,9 @@ const SolutionPlayer: React.FC<Props> = ({scramble, alg, className, maskType, ma
 	// Player set up once (puzzle always 3x3x3)
 	useEffect(() => {
 		if (typeof window === 'undefined' || !containerRef.current) return;
+		// Mobilde drag-rotate kapali: acikken kube dikey touch'i yakalayip donduruyor,
+		// sayfa kaymiyor. Kapatinca kube scroll-saydam olur (animasyonu izlemek hala mumkun).
+		const isMobile = window.innerWidth <= 900;
 		const player = new TwistyPlayer({
 			puzzle: '3x3x3',
 			visualization: '3D',
@@ -55,7 +58,7 @@ const SolutionPlayer: React.FC<Props> = ({scramble, alg, className, maskType, ma
 			controlPanel: 'none',
 			hintFacelets: 'none',
 			backView: 'none',
-			experimentalDragInput: 'auto',
+			experimentalDragInput: isMobile ? 'none' : 'auto',
 			tempoScale: 4,
 		} as ConstructorParameters<typeof TwistyPlayer>[0]);
 		containerRef.current.innerHTML = '';
