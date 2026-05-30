@@ -13,6 +13,7 @@
         "login": "Log in",
         "signup": "Sign up",
         "notch_swipe": "Swipe to open menu",
+        "notch_settings_swipe": "Swipe right for quick settings",
         "notch_hold": "Hold to reposition"
     },
     "account_dropdown": {
