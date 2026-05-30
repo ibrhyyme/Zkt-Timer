@@ -1,395 +1,59 @@
-import React, {useState, useEffect, useRef} from 'react';
-import ReactDOM, {unstable_batchedUpdates} from 'react-dom';
-import './BottomSheetNav.scss';
+// Sag-kenar navigation drawer — EdgeDrawer primitive'inin sag wrapper'i.
+// Gesture/portal/state logic'i tamamen EdgeDrawer'da; burada sadece NAV_LINKS
+// + profile butonu render edilir.
+
+import React from 'react';
 import {useRouteMatch, useHistory} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {UserCircle} from 'phosphor-react';
+import EdgeDrawer from '../edge_drawer/EdgeDrawer';
 import {NAV_LINKS} from '../Nav';
 import {useMe} from '../../../../util/hooks/useMe';
-import {useGeneral} from '../../../../util/hooks/useGeneral';
-import {isNative, updateGestureExclusion, clearGestureExclusion} from '../../../../util/platform';
 import block from '../../../../styles/bem';
 
-const b = block('bottom-sheet-nav');
-const NOTCH_Y_KEY = 'zkt_notch_y';
-const NOTCH_USED_KEY = 'zkt_notch_used';
-
-function loadNotchY(): number {
-	try {
-		const v = localStorage.getItem(NOTCH_Y_KEY);
-		return v ? parseFloat(v) : 50;
-	} catch {
-		return 50;
-	}
-}
+const b = block('edge-drawer');
 
 export default function BottomSheetNav() {
-	const [open, setOpen] = useState(false);
-	const [swipeOffset, setSwipeOffset] = useState<number | null>(null);
-	const [notchY, setNotchY] = useState(loadNotchY);
-	const [repositioning, setRepositioning] = useState(false);
-	const [showHint, setShowHint] = useState(() => {
-		try { return !localStorage.getItem(NOTCH_USED_KEY); } catch { return true; }
-	});
-
-	function markNotchUsed() {
-		if (showHint) {
-			setShowHint(false);
-			try { localStorage.setItem(NOTCH_USED_KEY, '1'); } catch {}
-		}
-	}
-
 	const match = useRouteMatch();
 	const history = useHistory();
 	const {t} = useTranslation();
 	const me = useMe();
-	const mobileMode = useGeneral('mobile_mode');
-
-	const drawerRef = useRef<HTMLDivElement>(null);
-	const notchRef = useRef<HTMLDivElement>(null);
-	const startX = useRef(0);
-	const startY = useRef(0);
-	const locked = useRef(false);
-	const horizontal = useRef(false);
-	const longPressTimer = useRef<any>(null);
-	const openedBySwipe = useRef(false);
-	const swiping = swipeOffset !== null;
-
-	function gridWidth() {
-		return drawerRef.current?.querySelector(`.${b('grid')}`)?.clientWidth || 250;
-	}
-
-	// Grid Y position — based on notch location, doesn't overflow screen
-	function gridTop(): number {
-		if (typeof window === 'undefined') return 200;
-		const vh = window.innerHeight;
-		const gridH = 310;
-		const pad = 20;
-		const center = (notchY / 100) * vh;
-		return Math.max(pad, Math.min(vh - gridH - pad, center - gridH / 2));
-	}
-
-	// --- Click to close ---
-	useEffect(() => {
-		if (!open) return;
-
-		const handleClose = (e: Event) => {
-			const target = e.target as HTMLElement;
-			if (target?.closest(`.${b('grid')}`)) return;
-			if (notchRef.current?.contains(target)) return;
-			setOpen(false);
-		};
-
-		const timer = setTimeout(() => {
-			document.addEventListener('click', handleClose, true);
-		}, 100);
-
-		return () => {
-			clearTimeout(timer);
-			document.removeEventListener('click', handleClose, true);
-		};
-	}, [open]);
-
-	// --- Timer interaction close ---
-	useEffect(() => {
-		if (!open) return;
-		const close = () => setOpen(false);
-		window.addEventListener('timerInteractionStart', close);
-		return () => window.removeEventListener('timerInteractionStart', close);
-	}, [open]);
-
-	// --- Android gesture exclusion: exempt notch area from back gesture ---
-	useEffect(() => {
-		updateGestureExclusion(notchY, 115);
-		return () => clearGestureExclusion();
-	}, [notchY]);
-
-	// --- Notch touch: tap to open, swipe left to open, long-press to reposition ---
-	useEffect(() => {
-		const notch = notchRef.current;
-		if (!notch) return;
-
-		function clearNotchFlag() {
-			(window as any).__notchTouching = false;
-		}
-
-		function onStart(e: TouchEvent) {
-			// Prevent timer from starting inspection/solve
-			e.stopPropagation();
-			e.preventDefault();
-
-			// Flag to block Android back gesture
-			(window as any).__notchTouching = true;
-			// Safety: clear after 2s if touchend/touchcancel doesn't fire
-			setTimeout(clearNotchFlag, 2000);
-
-			startX.current = e.touches[0].clientX;
-			startY.current = e.touches[0].clientY;
-			locked.current = false;
-			horizontal.current = false;
-
-			longPressTimer.current = setTimeout(() => {
-				setRepositioning(true);
-			}, 400);
-		}
-
-		function onMove(e: TouchEvent) {
-			e.stopPropagation();
-
-			// If already opened by swipe, ignore subsequent movements
-			if (openedBySwipe.current) return;
-
-			const tx = e.touches[0].clientX;
-			const ty = e.touches[0].clientY;
-
-			// Repositioning mode — drag up/down
-			if (repositioning) {
-				e.preventDefault();
-				const newY = Math.max(10, Math.min(90, (ty / window.innerHeight) * 100));
-				setNotchY(newY);
-				return;
-			}
-
-			// Cancel long-press on any movement
-			if (longPressTimer.current) {
-				clearTimeout(longPressTimer.current);
-				longPressTimer.current = null;
-			}
-
-			// Swipe detection
-			const dx = startX.current - tx;
-			const dy = Math.abs(ty - startY.current);
-
-			if (!locked.current) {
-				if (Math.abs(dx) < 10 && dy < 10) return;
-				locked.current = true;
-				horizontal.current = dx > 0 && Math.abs(dx) > dy;
-			}
-
-			if (!horizontal.current) return;
-			e.preventDefault();
-
-			// When threshold reached, open immediately and stop following finger
-			if (dx > gridWidth() * 0.25) {
-				markNotchUsed();
-				openedBySwipe.current = true;
-				locked.current = false;
-				unstable_batchedUpdates(() => {
-					setSwipeOffset(null);
-					setOpen(true);
-				});
-				return;
-			}
-
-			setSwipeOffset(Math.max(0, dx));
-		}
-
-		function onEnd(e: TouchEvent) {
-			e.stopPropagation();
-			clearNotchFlag();
-
-			if (longPressTimer.current) {
-				clearTimeout(longPressTimer.current);
-				longPressTimer.current = null;
-			}
-
-			if (repositioning) {
-				setRepositioning(false);
-				try { localStorage.setItem(NOTCH_Y_KEY, String(notchY)); } catch {}
-				return;
-			}
-
-			// If swipe already opened drawer mid-gesture, just clear flag
-			if (openedBySwipe.current) {
-				openedBySwipe.current = false;
-				return;
-			}
-
-			// Released before threshold — close drawer
-			if (swipeOffset !== null) {
-				setSwipeOffset(null);
-				locked.current = false;
-				return;
-			}
-
-			// Tap (not swipe, not long-press)
-			if (!locked.current) {
-				markNotchUsed();
-				setOpen(true);
-			}
-			locked.current = false;
-		}
-
-		const opts = {passive: false} as AddEventListenerOptions;
-		notch.addEventListener('touchstart', onStart, opts);
-		notch.addEventListener('touchmove', onMove, opts);
-		notch.addEventListener('touchend', onEnd, opts);
-		notch.addEventListener('touchcancel', clearNotchFlag);
-
-		return () => {
-			notch.removeEventListener('touchstart', onStart);
-			notch.removeEventListener('touchmove', onMove);
-			notch.removeEventListener('touchend', onEnd);
-			notch.removeEventListener('touchcancel', clearNotchFlag);
-			clearNotchFlag();
-			if (longPressTimer.current) {
-				clearTimeout(longPressTimer.current);
-			}
-		};
-	});
-
-	// --- Drawer: swipe right to CLOSE ---
-	useEffect(() => {
-		const drawer = drawerRef.current;
-		if (!drawer || !open) return;
-
-		function onStart(e: TouchEvent) {
-			// If opened by notch swipe, ignore this touch (finger still on screen)
-			if (openedBySwipe.current) return;
-
-			startX.current = e.touches[0].clientX;
-			startY.current = e.touches[0].clientY;
-			locked.current = false;
-			horizontal.current = false;
-		}
-
-		function onMove(e: TouchEvent) {
-			if (openedBySwipe.current) return;
-
-			const dx = e.touches[0].clientX - startX.current;
-			const dy = Math.abs(e.touches[0].clientY - startY.current);
-
-			if (!locked.current) {
-				if (Math.abs(dx) < 10 && dy < 10) return;
-				locked.current = true;
-				horizontal.current = dx > 0 && Math.abs(dx) > dy;
-			}
-
-			if (!horizontal.current) return;
-			e.preventDefault();
-			setSwipeOffset(Math.max(0, dx));
-		}
-
-		function onEnd() {
-			// Clear notch swipe flag — subsequent touches should work normally
-			if (openedBySwipe.current) {
-				openedBySwipe.current = false;
-				return;
-			}
-
-			if (swipeOffset !== null && swipeOffset > gridWidth() * 0.25) {
-				setOpen(false);
-			}
-			setSwipeOffset(null);
-			locked.current = false;
-		}
-
-		const opts = {passive: false} as AddEventListenerOptions;
-		drawer.addEventListener('touchstart', onStart, opts);
-		drawer.addEventListener('touchmove', onMove, opts);
-		drawer.addEventListener('touchend', onEnd, opts);
-
-		return () => {
-			drawer.removeEventListener('touchstart', onStart);
-			drawer.removeEventListener('touchmove', onMove);
-			drawer.removeEventListener('touchend', onEnd);
-		};
-	});
-
-	// --- Transform ---
-	let transform: string;
-	let noTransition = false;
-
-	if (swiping) {
-		noTransition = true;
-		if (open) {
-			transform = `translateX(${swipeOffset}px)`;
-		} else {
-			transform = `translateX(calc(100% - ${swipeOffset}px))`;
-		}
-	} else if (open) {
-		transform = 'translateX(0)';
-	} else {
-		transform = 'translateX(100%)';
-	}
-
-	const backdropOpacity = swiping
-		? (open ? Math.max(0, 1 - swipeOffset / gridWidth()) : Math.min(1, swipeOffset / gridWidth()))
-		: open ? 1 : 0;
-
-	function navigateTo(link: string) {
-		history.push(link);
-		setOpen(false);
-	}
-
-	// Notch visible in native app + mobile browser, hidden in desktop browser
-	if (!isNative() && !mobileMode) return null;
 
 	return (
-		<>
-			{ReactDOM.createPortal(
-				<>
-					<div
-						ref={notchRef}
-						className={b('notch', {hidden: open, repositioning, hint: showHint && !open})}
-						style={{top: `${notchY}%`}}
-						onClick={() => {
-							if (repositioning) return;
-							markNotchUsed();
-							setOpen(true);
-						}}
+		<EdgeDrawer
+			side="right"
+			storageKeyY="zkt_notch_y"
+			storageKeyUsed="zkt_notch_used"
+			notchHintText={t('nav.notch_swipe')}
+			notchHintSubText={t('nav.notch_hold')}
+			gridHeightPx={310}
+		>
+			{NAV_LINKS.map((link) => {
+				const isActive = link.match.test(match.path);
+				return (
+					<button
+						key={link.link}
+						className={b('item', {active: isActive})}
+						onClick={() => !isActive && history.push(link.link)}
 					>
-						{showHint && !open && (
-							<div className={b('notch-tooltip')}>
-								<span>{t('nav.notch_swipe')}</span>
-								<span className={b('notch-tooltip-sub')}>{t('nav.notch_hold')}</span>
-							</div>
-						)}
-					</div>
-
-					<div
-						className={b('backdrop', {visible: open || swiping})}
-						style={{opacity: backdropOpacity}}
-					/>
-
-					<div
-						ref={drawerRef}
-						className={b('drawer', {open: open && !swiping, 'no-transition': noTransition})}
-						style={swiping ? {transform} : undefined}
-					>
-						<div style={{height: gridTop(), flexShrink: 0}} />
-						<div className={b('grid')}>
-							{NAV_LINKS.map((link) => {
-								const isActive = link.match.test(match.path);
-								return (
-									<button
-										key={link.link}
-										className={b('item', {active: isActive})}
-										onClick={() => !isActive && navigateTo(link.link)}
-									>
-										<div className={b('item-icon')}>
-											{React.cloneElement(link.icon, {size: 24})}
-										</div>
-										<span className={b('item-label')}>{t(link.name)}</span>
-									</button>
-								);
-							})}
-							{me && (
-								<button
-									className={b('item', {active: /^\/user\//.test(match.path)})}
-									onClick={() => navigateTo(`/user/${me.username}`)}
-								>
-									<div className={b('item-icon')}>
-										<UserCircle size={24} weight="bold" />
-									</div>
-									<span className={b('item-label')}>{t('account_dropdown.profile')}</span>
-								</button>
-							)}
+						<div className={b('item-icon')}>
+							{React.cloneElement(link.icon, {size: 24})}
 						</div>
+						<span className={b('item-label')}>{t(link.name)}</span>
+					</button>
+				);
+			})}
+			{me && (
+				<button
+					className={b('item', {active: /^\/user\//.test(match.path)})}
+					onClick={() => history.push(`/user/${me.username}`)}
+				>
+					<div className={b('item-icon')}>
+						<UserCircle size={24} weight="bold" />
 					</div>
-				</>,
-				document.body
+					<span className={b('item-label')}>{t('account_dropdown.profile')}</span>
+				</button>
 			)}
-		</>
+		</EdgeDrawer>
 	);
 }
