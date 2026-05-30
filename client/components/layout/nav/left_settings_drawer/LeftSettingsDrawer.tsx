@@ -1,10 +1,11 @@
 // Sol-kenar settings drawer — EdgeDrawer primitive'inin sol wrapper'i.
-// Icerik: 3 tab (Timer Turu / Hizli Ayarlar / Hedefler) DrawerSettingsContent'te.
+// Icerik: 8 kareli grid (7 timer turu + 1 Hizli Ayarlar Popover trigger).
+// Sag drawer'in nav grid'i ile birebir simetrik gorsel.
 
 import React from 'react';
 import {useTranslation} from 'react-i18next';
 import EdgeDrawer from '../edge_drawer/EdgeDrawer';
-import DrawerSettingsContent from './DrawerSettingsContent';
+import TimerTypeGrid from './TimerTypeGrid';
 
 export default function LeftSettingsDrawer() {
 	const {t} = useTranslation();
@@ -17,7 +18,7 @@ export default function LeftSettingsDrawer() {
 			notchHintText={t('nav.notch_settings_swipe')}
 			notchHintSubText={t('nav.notch_hold')}
 		>
-			<DrawerSettingsContent />
+			<TimerTypeGrid />
 		</EdgeDrawer>
 	);
 }

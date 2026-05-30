@@ -1,0 +1,120 @@
+@import '../../../../styles/config';
+
+// Sol drawer Timer tab — 7 timer turu kareli grid.
+// Sag drawer ile ayni `.edge-drawer__item` BEM class'larini reuse ediyor;
+// burada sadece grid kapsayicisi + badge (Pro/Locked) konumlandirma var.
+
+.#{$namespace}-timer-type-grid {
+	// Kartlar EdgeDrawer __grid (2-col) direct child'i. Burada sadece kart-ici
+	// override + badge + settings popover stilleri var.
+
+	&__card {
+		// .edge-drawer__item bg/border/padding/flex stillerini veriyor.
+		// Burada SADECE native button reset (font + position) yapiyoruz —
+		// `all: unset` agresif oldugu icin .edge-drawer__item ozelliklerini eziyordu.
+		font: inherit;
+		position: relative;
+		text-align: inherit;
+
+		&--disabled {
+			opacity: 0.4;
+			cursor: not-allowed;
+			pointer-events: none;
+		}
+	}
+
+	&__badge {
+		position: absolute;
+		top: 6px;
+		right: 6px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 16px;
+		height: 16px;
+		border-radius: 50%;
+		pointer-events: none;
+		z-index: 1;
+
+		&--pro {
+			background: rgba(var(--primary-color), 0.18);
+			color: rgb(var(--primary-color));
+			border: 1px solid rgba(var(--primary-color), 0.4);
+		}
+
+		&--locked {
+			background: rgba(239, 68, 68, 0.18);
+			color: rgb(239, 68, 68);
+			border: 1px solid rgba(239, 68, 68, 0.4);
+		}
+	}
+
+	// 8. kare (Hizli Ayarlar trigger) ekstra stil gerektirmiyor — .edge-drawer__item
+	// default davranisi (bg/border/hover/active) yeterli. Class TSX'te tutuldu, ileride
+	// modifier gerekirse buradan ekle.
+
+	// ===== EXTRAS VIEW (drawer ic-icine gecisli sayfa) =====
+
+	// Header tek hucre boyunca yayilir (EdgeDrawer __grid 2-col)
+	&__extras-header {
+		grid-column: 1 / -1;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 4px 4px 10px;
+		border-bottom: 1px solid rgba(var(--text-color), 0.08);
+		margin-bottom: 6px;
+	}
+
+	&__extras-back {
+		all: unset;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 32px;
+		height: 32px;
+		border-radius: 8px;
+		color: rgb(var(--text-color));
+		cursor: pointer;
+		transition: background 0.15s ease, transform 0.15s ease;
+
+		&:hover {
+			background: rgba(var(--text-color), 0.08);
+		}
+
+		&:active {
+			transform: scale(0.92);
+		}
+	}
+
+	&__extras-title {
+		font-size: 0.95rem;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+		flex: 1;
+	}
+
+	// ExtrasTab kapsayicisi — drawer'i extras view'da hafifce genisletir (toggle'lar rahat sigsin)
+	&__extras-content {
+		grid-column: 1 / -1;
+		min-width: 220px;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		max-height: calc(100vh - 200px);
+		overflow-y: auto;
+		padding-right: 2px;
+
+		// Thin scrollbar
+		&::-webkit-scrollbar {
+			width: 6px;
+		}
+		&::-webkit-scrollbar-thumb {
+			background: rgba(var(--text-color), 0.15);
+			border-radius: 3px;
+		}
+		&::-webkit-scrollbar-track {
+			background: transparent;
+		}
+	}
+}
