@@ -13,6 +13,7 @@
         "login": "Iniciar sesión",
         "signup": "Registrarse",
         "notch_swipe": "Desliza para abrir el menú",
+        "notch_settings_swipe": "Desliza a la derecha para ajustes rápidos",
         "notch_hold": "Mantén pulsado para mover"
     },
     "account_dropdown": {
