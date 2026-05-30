@@ -15,6 +15,9 @@ import {ErrorCode} from '../constants/errors';
 import {getPrisma} from '../database';
 import {notifyAdminsOfNewUser} from '../services/admin_notification';
 import {fetchAndSaveWcaRecords} from '../models/wca_record';
+import {checkRateLimit} from '../services/rate_limit';
+import {extractIp} from '../util/request';
+import {logger} from '../services/logger';
 
 const jwtSecret = (process as any).env.JWT_SECRET as string;
 const WCA_PENDING_COOKIE = 'wca_pending';
@@ -40,6 +43,16 @@ export class WcaAuthResolver {
 		@Arg('code') code: string
 	): Promise<WcaOAuthResult> {
 		const {req, res} = context;
+
+		// Abuse/DoS korumasi: WCA OAuth login akisini IP basina sinirla
+		const ip = extractIp(req);
+		if (ip) {
+			const perIp = await checkRateLimit(`wca_login:ip:${ip}`, 30, 600);
+			if (!perIp.allowed) {
+				logger.warn('WCA login rate limit (ip)', {ip, count: perIp.count});
+				throw new GraphQLError(ErrorCode.BAD_INPUT, 'Cok fazla deneme. Lutfen birkac dakika sonra tekrar deneyin.');
+			}
+		}
 
 		// 1. Get token and profile information from WCA
 		const wcaData = await exchangeWcaLoginCode(code);
@@ -217,12 +230,7 @@ export class WcaAuthResolver {
 		const lastName = nameParts.slice(1).join(' ') || '';
 
 		// 5. Create account (passwordless)
-		let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-		if (Array.isArray(ip)) {
-			ip = ip[0];
-		} else if (ip && ip.indexOf(',') > -1) {
-			ip = ip.split(',')[0];
-		}
+		const ip = extractIp(req);
 
 		const user = await createUserAccount(firstName, lastName, payload.email, username, null, ip as string);
 

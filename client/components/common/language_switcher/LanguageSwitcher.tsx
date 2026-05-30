@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { CircleFlag } from 'react-circle-flags';
+import { FlagSvg, FlagCode } from './flag-icons.generated';
 import FancyDropdown, { FancyDropdownOption } from '../../timer/header_control/FancyDropdown';
 import dayjs from 'dayjs';
 import { useSelector } from 'react-redux';
@@ -19,7 +19,7 @@ interface Props {
 }
 
 // i18n language code → ISO country code (for flag). en → us (global preference), zh → cn.
-const LANG_OPTIONS: { code: string; flag: string; label: string }[] = [
+const LANG_OPTIONS: { code: string; flag: FlagCode; label: string }[] = [
 	{ code: 'tr', flag: 'tr', label: 'Türkçe' },
 	{ code: 'en', flag: 'us', label: 'English' },
 	{ code: 'es', flag: 'es', label: 'Español' },
@@ -29,9 +29,9 @@ const LANG_OPTIONS: { code: string; flag: string; label: string }[] = [
 
 const FLAG_SIZE = 18;
 
-// CircleFlag props sometimes don't apply size (SVG native size leaks through).
-// This wrapper guarantees fixed size.
-function FlagIcon({ code, size = FLAG_SIZE }: { code: string; size?: number }) {
+// Fixed-size circular wrapper around the inline flag <svg>. The svg fills 100%
+// and `overflow:hidden + border-radius:50%` clips it to a circle.
+function FlagIcon({ code, size = FLAG_SIZE }: { code: FlagCode; size?: number }) {
 	return (
 		<span
 			style={{
@@ -46,12 +46,7 @@ function FlagIcon({ code, size = FLAG_SIZE }: { code: string; size?: number }) {
 				lineHeight: 0,
 			}}
 		>
-			<CircleFlag
-				countryCode={code}
-				height={String(size)}
-				width={String(size)}
-				style={{ width: size, height: size, display: 'block' }}
-			/>
+			<FlagSvg code={code} />
 		</span>
 	);
 }
