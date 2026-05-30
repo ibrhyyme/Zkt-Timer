@@ -29,11 +29,13 @@ interface Props {
 	onBack: () => void;
 	/** true → geri "Antrenor" (landing'e); false → "Geri" (mod koku) */
 	backToRoot: boolean;
+	/** Sol ile aksiyonlar arasi orta slot (moda ozel, or. efficiency type picker). */
+	center?: ReactNode;
 	actions?: ReactNode;
 }
 
 export default function TrainerModeHeader(props: Props) {
-	const {mode, onBack, backToRoot, actions} = props;
+	const {mode, onBack, backToRoot, center, actions} = props;
 	const {t} = useTranslation();
 	const meta = MODE_META[mode];
 
@@ -53,6 +55,7 @@ export default function TrainerModeHeader(props: Props) {
 				</span>
 				<span className={b('title')}>{t(meta.titleKey)}</span>
 			</div>
+			{center ? <div className={b('center')}>{center}</div> : null}
 			{actions ? <div className={b('actions')}>{actions}</div> : null}
 		</div>
 	);

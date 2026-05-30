@@ -91,6 +91,15 @@
 		text-overflow: ellipsis;
 	}
 
+	// Orta slot — sol ile aksiyonlar arasi bosluga oturur (moda ozel; efficiency type picker).
+	&__center {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex: 0 1 auto;
+		min-width: 0;
+	}
+
 	&__actions {
 		display: flex;
 		align-items: center;
