@@ -1,5 +1,4 @@
 import React from 'react';
-import { Cube } from 'phosphor-react';
 import FancyDropdown, { FancyDropdownGroup, FancyDropdownOption } from '../../timer/header_control/FancyDropdown';
 import { getCubeTypeInfoById } from '../../../util/cubes/util';
 import { CubeType } from '../../../util/cubes/cube_types';
@@ -65,7 +64,7 @@ export default function CubePicker(props: Props) {
 		if (ct && onChange) onChange(ct);
 	}
 
-	// WCA cube type — show WCA logo instead of text. Cube icon hidden because logo is already distinctive.
+	// WCA cube type — show WCA logo instead of text. Other cube types just show the name (no icon).
 	const isWca = cubeType?.id === 'wca';
 	const triggerLabel: React.ReactNode = isWca ? (
 		<img
@@ -74,7 +73,6 @@ export default function CubePicker(props: Props) {
 			style={{ height: 18, display: 'block' }}
 		/>
 	) : ((handlePrefix || '') + (cubeType?.name || ''));
-	const triggerIcon = isWca ? undefined : <Cube weight="bold" size={16} />;
 
 	// Flat list (custom cubeTypes) vs grouped (default)
 	if (cubeTypes) {
@@ -87,7 +85,6 @@ export default function CubePicker(props: Props) {
 				value={value}
 				onValueChange={handleValueChange}
 				options={options}
-				triggerIcon={triggerIcon}
 				triggerLabel={triggerLabel}
 				ariaLabel="Cube Type"
 				triggerMaxWidth={160}
@@ -113,7 +110,6 @@ export default function CubePicker(props: Props) {
 			value={value}
 			onValueChange={handleValueChange}
 			groups={groups}
-			triggerIcon={triggerIcon}
 			triggerLabel={triggerLabel}
 			ariaLabel="Cube Type"
 			maxHeight={500}
