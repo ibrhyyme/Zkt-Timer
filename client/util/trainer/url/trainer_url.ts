@@ -91,3 +91,39 @@ export function efficiencySubToView(sub: string | null): EfficiencyView | null {
 export function efficiencyViewToSub(view: EfficiencyView): string | null {
 	return view === 'settings' ? 'settings' : null;
 }
+
+// ──────────────────── Efficiency config query (Faz 4) ────────────────────
+// `?type=cross|xcross|eocross&rot=<orientation>&axis=LR|FB&len=<n>&slot=<0-3>`
+// axis sadece eocross'ta, slot sadece xcross'ta anlamli. Reducer normalize eder.
+
+export interface EfficiencyConfigQuery {
+	type: string | null;
+	rot: string | null;
+	axis: string | null;
+	len: number | null;
+	slot: number | null;
+}
+
+export function parseEfficiencyQuery(search: string): EfficiencyConfigQuery {
+	const p = new URLSearchParams(search);
+	const lenRaw = p.get('len');
+	const slotRaw = p.get('slot');
+	const num = (v: string | null): number | null =>
+		v !== null && v !== '' && Number.isFinite(Number(v)) ? Number(v) : null;
+	return {type: p.get('type'), rot: p.get('rot'), axis: p.get('axis'), len: num(lenRaw), slot: num(slotRaw)};
+}
+
+export function buildEfficiencySearch(
+	type: string,
+	rotation: string,
+	eoAxis: string,
+	targetLength?: number,
+	xcrossSlot?: number,
+): string {
+	const parts: string[] = ['type=' + type];
+	if (rotation) parts.push('rot=' + encodeURIComponent(rotation));
+	if (type === 'eocross') parts.push('axis=' + eoAxis);
+	if (targetLength !== undefined) parts.push('len=' + targetLength);
+	if (type === 'xcross' && xcrossSlot !== undefined) parts.push('slot=' + xcrossSlot);
+	return '?' + parts.join('&');
+}
