@@ -440,6 +440,7 @@
             "settings_show_all_desc": "同时列出其他面的解法，按步数排序。"
         },
         "header_to_landing": "训练器",
+        "landing_eyebrow": "模式",
         "landing_recognition_title": "PLL 识别",
         "landing_recognition_desc": "练习识别 PLL 图案 — 输入对应字母",
         "landing_recognition_features": "功能",

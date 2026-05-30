@@ -440,6 +440,7 @@
             "settings_show_all_desc": "Lista también las soluciones de las otras caras, ordenadas por movimientos."
         },
         "header_to_landing": "Entrenador",
+        "landing_eyebrow": "MODO",
         "landing_recognition_title": "Reconocimiento PLL",
         "landing_recognition_desc": "Practica el reconocimiento de patrones PLL — escribe la letra del caso",
         "landing_recognition_features": "Características",
