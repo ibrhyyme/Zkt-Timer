@@ -91,8 +91,12 @@ export default function KeyWatcher(props: Props) {
 	useWindowListener('touchmove', touchMove, [], { passive: false });
 
 	function touchStart(e) {
-		// Right edge dead zone — notch area, timer should not trigger
+		// Right edge dead zone — sag notch area, timer should not trigger
 		if (e.touches?.[0] && window.innerWidth - e.touches[0].clientX < 20) {
+			return;
+		}
+		// Left edge dead zone — sol notch area (LeftSettingsDrawer)
+		if (e.touches?.[0] && e.touches[0].clientX < 20) {
 			return;
 		}
 
@@ -143,8 +147,12 @@ export default function KeyWatcher(props: Props) {
 	function touchEnd(e) {
 		if (e.touches && e.touches.length > 0) return;
 
-		// Right edge dead zone — notch area
+		// Right edge dead zone — sag notch area
 		if (e.changedTouches?.[0] && window.innerWidth - e.changedTouches[0].clientX < 20) {
+			return;
+		}
+		// Left edge dead zone — sol notch area
+		if (e.changedTouches?.[0] && e.changedTouches[0].clientX < 20) {
 			return;
 		}
 
