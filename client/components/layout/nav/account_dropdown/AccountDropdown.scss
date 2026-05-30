@@ -1,101 +1,273 @@
 @import '../../../../styles/config';
-@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap');
+
+// Avatar dropdown — FancyDropdown estetigi (Radix Popover + ortak panel/option stilleri).
+// Pro item icin koyu mor glow korunur (legacy davranis).
 
 .#{$namespace}-nav-account-dropdown {
-    &__handle {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        cursor: pointer;
-        padding: 4px 8px;
-        border-radius: 8px;
-        transition: background-color 0.2s;
+	&__handle {
+		all: unset;
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		cursor: pointer;
+		padding: 4px 8px;
+		border-radius: 8px;
+		transition: background-color 0.2s ease;
 
-        &:hover {
-            background-color: rgba(var(--text-color), 0.05);
-        }
-    }
+		&:hover {
+			background-color: rgba(var(--text-color), 0.05);
+		}
 
-    &__username {
-        font-weight: 700;
-        font-size: 1.1rem;
-        color: rgb(var(--text-color));
-        line-height: 1.2;
-        white-space: nowrap;
+		&[data-state='open'] {
+			background-color: rgba(var(--primary-color), 0.1);
+		}
+	}
 
-        &--mobile-hide {
-            @media (max-width: 1023px) {
-                display: none;
-            }
-        }
-    }
+	&__username {
+		font-weight: 700;
+		font-size: 1.1rem;
+		color: rgb(var(--text-color));
+		line-height: 1.2;
+		white-space: nowrap;
 
-    &__pro-item {
-        background: #0e0c1c !important;
-        border: 1px solid rgba(139, 120, 255, 0.35) !important;
-        box-shadow: 0 0 0 1px rgba(139, 120, 255, 0.12), 0 0 18px rgba(91, 62, 240, 0.2) !important;
-        color: #c4b5ff !important;
-        position: relative !important;
-        overflow: hidden;
+		&--mobile-hide {
+			@media (max-width: 1023px) {
+				display: none;
+			}
+		}
+	}
 
-        &::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(139, 120, 255, 0.6), transparent);
-        }
+	&__pfp {
+		width: 40px;
+		height: 40px;
+		border-radius: 50%;
+		overflow: hidden;
+		flex-shrink: 0;
 
-        svg {
-            color: #a78bff !important;
-        }
+		img,
+		div {
+			width: 100%;
+			height: 100%;
+		}
+	}
 
-        &:hover {
-            background: #130f24 !important;
-            border-color: rgba(139, 120, 255, 0.55) !important;
-            color: #d4c4ff !important;
-        }
+	// ============================================================
+	// PANEL — FancyDropdown estetigi (blur + soft border + glow)
+	// ============================================================
+	&__panel {
+		min-width: 220px;
+		max-width: 320px;
+		background: rgba(var(--background-color), 0.85);
+		backdrop-filter: blur(20px) saturate(180%);
+		-webkit-backdrop-filter: blur(20px) saturate(180%);
+		border: 1px solid rgba(var(--text-color), 0.12);
+		border-radius: 12px;
+		box-shadow:
+			0 20px 50px rgba(0, 0, 0, 0.6),
+			0 8px 20px rgba(0, 0, 0, 0.4),
+			0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+		padding: 6px;
+		z-index: 10001;
+		position: relative;
+		overflow: hidden;
+		transform-origin: var(--radix-popover-content-transform-origin);
+		will-change: transform, opacity;
 
-        &--active {
-            color: #a78bff !important;
-        }
+		&::before {
+			content: '';
+			position: absolute;
+			inset: 0;
+			background: radial-gradient(
+				120% 60% at 50% 0%,
+				rgba(var(--primary-color), 0.06) 0%,
+				transparent 60%
+			);
+			border-radius: inherit;
+			pointer-events: none;
+			z-index: 0;
+		}
 
-        .theme-light & {
-            background: rgba(124, 58, 237, 0.08) !important;
-            border-color: rgba(124, 58, 237, 0.3) !important;
-            box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.1) !important;
-            color: #6d28d9 !important;
+		&[data-state='open'] {
+			animation: account-dropdown-content-in 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+		}
 
-            &::before {
-                background: linear-gradient(90deg, transparent, rgba(124, 58, 237, 0.4), transparent);
-            }
+		&[data-state='closed'] {
+			animation: account-dropdown-content-out 0.1s ease-in;
+		}
+	}
 
-            svg {
-                color: #7c3aed !important;
-            }
+	&__options {
+		position: relative;
+		z-index: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
 
-            &:hover {
-                background: rgba(124, 58, 237, 0.15) !important;
-                border-color: rgba(124, 58, 237, 0.5) !important;
-                color: #5b21b6 !important;
-            }
-        }
-    }
+	// ============================================================
+	// OPTION ROW — Fancy hover stripe + stagger entrance
+	// ============================================================
+	&__option {
+		all: unset;
+		box-sizing: border-box;
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		padding: 10px 12px;
+		border-radius: 8px;
+		color: rgba(var(--text-color), 0.85);
+		font-size: 0.85rem;
+		font-weight: 500;
+		font-family: inherit;
+		cursor: pointer;
+		user-select: none;
+		width: 100%;
+		position: relative;
+		transition:
+			color 0.15s ease,
+			background 0.15s ease,
+			transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+		animation: account-dropdown-item-in 0.28s cubic-bezier(0.16, 1, 0.3, 1) backwards;
 
-    &__pfp {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        overflow: hidden;
-        flex-shrink: 0;
+		// Sol yan stripe (hover'da uzar)
+		&::before {
+			content: '';
+			position: absolute;
+			left: 4px;
+			top: 50%;
+			width: 3px;
+			height: 0;
+			background: rgba(var(--text-color), 0.4);
+			border-radius: 2px;
+			transform: translateY(-50%);
+			transition: height 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+		}
 
-        // Ensure AvatarImage fits
-        img,
-        div {
-            width: 100%;
-            height: 100%;
-        }
-    }
+		&:hover,
+		&:focus-visible {
+			color: rgb(var(--text-color));
+			transform: translateX(2px);
+			outline: none;
+
+			&::before {
+				height: 10px;
+			}
+		}
+
+		// ===================================================
+		// Pro item — koyu mor glow (legacy custom davranis)
+		// ===================================================
+		&--pro {
+			background: #0e0c1c;
+			border: 1px solid rgba(139, 120, 255, 0.35);
+			box-shadow:
+				0 0 0 1px rgba(139, 120, 255, 0.12),
+				0 0 18px rgba(91, 62, 240, 0.2);
+			color: #c4b5ff;
+			overflow: hidden;
+			margin: 2px 0;
+
+			&::after {
+				content: '';
+				position: absolute;
+				top: 0;
+				left: 0;
+				right: 0;
+				height: 1px;
+				background: linear-gradient(90deg, transparent, rgba(139, 120, 255, 0.6), transparent);
+			}
+
+			.#{$namespace}-nav-account-dropdown__option-icon svg {
+				color: #a78bff;
+			}
+
+			&:hover,
+			&:focus-visible {
+				background: #130f24;
+				border-color: rgba(139, 120, 255, 0.55);
+				color: #d4c4ff;
+				transform: translateX(2px);
+
+				&::before {
+					height: 0; // pro item'da stripe yok (zaten kendi glow'u var)
+				}
+			}
+
+			.theme-light & {
+				background: rgba(124, 58, 237, 0.08);
+				border-color: rgba(124, 58, 237, 0.3);
+				box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.1);
+				color: #6d28d9;
+
+				&::after {
+					background: linear-gradient(90deg, transparent, rgba(124, 58, 237, 0.4), transparent);
+				}
+
+				.#{$namespace}-nav-account-dropdown__option-icon svg {
+					color: #7c3aed;
+				}
+
+				&:hover,
+				&:focus-visible {
+					background: rgba(124, 58, 237, 0.15);
+					border-color: rgba(124, 58, 237, 0.5);
+					color: #5b21b6;
+				}
+			}
+		}
+	}
+
+	&__option-icon {
+		display: inline-flex;
+		align-items: center;
+		flex-shrink: 0;
+		color: rgba(var(--text-color), 0.7);
+
+		> img,
+		> svg {
+			max-width: 18px;
+			max-height: 18px;
+		}
+	}
+
+	&__option-label {
+		flex: 1;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+}
+
+// Animations
+@keyframes account-dropdown-content-in {
+	from {
+		opacity: 0;
+		transform: scale(0.88) translateY(-8px);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1) translateY(0);
+	}
+}
+
+@keyframes account-dropdown-content-out {
+	from {
+		opacity: 1;
+		transform: scale(1) translateY(0);
+	}
+	to {
+		opacity: 0;
+		transform: scale(0.94) translateY(-4px);
+	}
+}
+
+@keyframes account-dropdown-item-in {
+	from {
+		opacity: 0;
+		transform: translateX(-8px);
+	}
+	to {
+		opacity: 1;
+		transform: translateX(0);
+	}
 }
