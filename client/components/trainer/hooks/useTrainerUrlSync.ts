@@ -1,32 +1,38 @@
 /**
- * useTrainerUrlSync — TrainerContext (mode + standard/smart view) ile URL arasinda
+ * useTrainerUrlSync — TrainerContext (mode + standard/smart view + KATEGORI) ile URL arasinda
  * cift yonlu senkronizasyon.
  *
- * OWNERSHIP: Bu hook SADECE mode + standard/smart view'i (landing/selection/training) yonetir.
- * mode 'recognition'/'efficiency' iken URL YAZMAZ — o modlarin alt-view URL'ini
- * ilgili sub-hook (useRecognitionUrlSync / useEfficiencyUrlSync) yazar. Boylece iki yazici
- * carpismaz. Bu hook yine de mode segmentini OKUR (state.mode'u set etmek icin).
+ * URL kapsami: mode (path) + view (path: selection/train) + kategori (`?cat=<slug>`).
+ * Subset ve algoritma secimi URL'e GIRMEZ — ZBLL gibi buyuk kategorilerde URL'i devasa/paylasilamaz
+ * yapardi; secim session-local'dir.
  *
- * Anti-echo: idempotent diff — her iki yon de mevcut deger hedefe esitse erken doner,
- * dolayisiyla URL→state→URL dongusu 1 adimda biter.
+ * OWNERSHIP: mode 'recognition'/'efficiency' iken URL yazmaz (sub-hook'lar yazar); mode segmentini
+ * yine de okur. Anti-echo: idempotent diff.
  */
 import {useEffect, useRef} from 'react';
 import {useHistory, useLocation} from 'react-router-dom';
 import {useTrainerContext} from '../TrainerContext';
+import {useAlgorithmData} from './useAlgorithmData';
 import {parseTrainerPath, buildTrainerPath} from '../../../util/trainer/url/trainer_url';
+import {categoryToSlug, slugToCategory} from '../../../util/trainer/url/category_slug';
+
+/** Kategori → `?cat=<slug>` (bos kategori → bos search). */
+function catSearch(category: string): string {
+	return category ? '?cat=' + encodeURIComponent(categoryToSlug(category)) : '';
+}
 
 export function useTrainerUrlSync() {
 	const {state, dispatch} = useTrainerContext();
+	const {categories} = useAlgorithmData();
 	const history = useHistory();
 	const location = useLocation();
 
-	// Stale-closure'dan kacinmak icin: URL→state effect'i sadece pathname'e bagli,
-	// guncel state'i ref'ten okur.
 	const stateRef = useRef(state);
 	stateRef.current = state;
 	const locRef = useRef(location);
 	locRef.current = location;
-
+	const catsRef = useRef(categories);
+	catsRef.current = categories;
 	const urlInitRef = useRef(false);
 	const reducerMountRef = useRef(false);
 
@@ -35,13 +41,12 @@ export function useTrainerUrlSync() {
 		const s = stateRef.current;
 		const {mode, sub, unknownMode} = parseTrainerPath(location.pathname);
 
-		// Guard: /trainer/foo gibi bilinmeyen mod → landing'e geri al
 		if (unknownMode) {
-			history.replace('/trainer');
+			history.replace('/trainer'); // bilinmeyen mod → landing
 			return;
 		}
 
-		// İlk mount: bare /trainer ama localStorage'da kayitli mod varsa canonical URL'e tasi
+		// İlk mount: bare /trainer + kayitli mod → canonical URL'e tasi
 		if (!urlInitRef.current) {
 			urlInitRef.current = true;
 			if (mode === null && s.mode) {
@@ -50,52 +55,66 @@ export function useTrainerUrlSync() {
 			}
 		}
 
-		// Landing (bare /trainer)
 		if (mode === null) {
 			if (s.view !== 'landing') dispatch({type: 'SET_VIEW', payload: 'landing'});
 			return;
 		}
 
-		// Bilinen mod — state.mode'u hizala (SET_MODE view'i 'selection' yapar)
-		if (s.mode !== mode) {
-			dispatch({type: 'SET_MODE', payload: mode});
+		if (s.mode !== mode) dispatch({type: 'SET_MODE', payload: mode});
+
+		// recognition/efficiency: alt-view'i kendi sub-hook'lari yonetir
+		if (mode !== 'standard' && mode !== 'smart') return;
+
+		// ── Kategori (?cat=) ──
+		const urlCat = new URLSearchParams(location.search).get('cat');
+		let category: string | null = null;
+		if (urlCat) {
+			const cats = catsRef.current;
+			if (cats.length === 0) return; // kategoriler yuklenmedi — categories.length dep'i ile tekrar calisir
+			category = slugToCategory(urlCat, cats);
+			if (!category) {
+				history.replace(buildTrainerPath(mode)); // cozulemeyen slug → selection
+				return;
+			}
+			// SADECE gercekten farkliysa dispatch et (SET_CATEGORY subset/secimi sifirlar — case-mismatch'te tetiklenmesin)
+			if (s.selectedCategory !== category) dispatch({type: 'SET_CATEGORY', payload: category});
 		}
 
-		// Standard/smart view'i sub segmentinden hizala (recognition/efficiency'yi sub-hook yapar)
-		if (mode === 'standard' || mode === 'smart') {
-			if (sub === 'train') {
-				// Guard: secili algoritma yoksa training kurulamaz → selection'a canonical'la
-				if (s.checkedAlgorithms.length === 0) {
-					history.replace(buildTrainerPath(mode));
-				} else if (s.view !== 'training') {
-					dispatch({type: 'SET_VIEW', payload: 'training'});
-				}
-			} else if (s.mode === mode && s.view !== 'selection') {
-				dispatch({type: 'SET_VIEW', payload: 'selection'});
+		// ── View (train / selection) ──
+		if (sub === 'train') {
+			if (s.checkedAlgorithms.length === 0) {
+				// Soguk /train (secim yok, alg URL'de tutulmuyor) → selection'a dus, kategoriyi koru
+				history.replace(buildTrainerPath(mode) + catSearch(category || s.selectedCategory));
+			} else if (s.view !== 'training') {
+				dispatch({type: 'SET_VIEW', payload: 'training'});
 			}
+		} else if (s.view !== 'selection') {
+			dispatch({type: 'SET_VIEW', payload: 'selection'});
 		}
-	}, [location.pathname, dispatch, history]);
+	}, [location.pathname, location.search, categories.length, dispatch, history]);
 
 	// ── reducer → URL ────────────────────────────────────────────────
-	// Sadece kullanici aksiyonlarinda (mount sonrasi) yazar. Mount'taki hizalama
-	// URL→state tarafinda yapilir, burada degil (cift navigasyon onleme).
 	useEffect(() => {
 		if (!reducerMountRef.current) {
 			reducerMountRef.current = true;
 			return;
 		}
-		// recognition/efficiency: URL'i sub-hook yazar
-		if (state.mode === 'recognition' || state.mode === 'efficiency') return;
+		const s = state;
+		if (s.mode === 'recognition' || s.mode === 'efficiency') return;
 
-		let target: string;
-		if (!state.mode || state.view === 'landing') {
-			target = '/trainer';
+		let path: string;
+		let search = '';
+		if (!s.mode || s.view === 'landing') {
+			path = '/trainer';
 		} else {
-			target = buildTrainerPath(state.mode, state.view === 'training' ? 'train' : null);
+			path = buildTrainerPath(s.mode, s.view === 'training' ? 'train' : null);
+			search = catSearch(s.selectedCategory);
 		}
-
-		if (target !== locRef.current.pathname) {
-			history.push(target);
+		const target = path + search;
+		const current = locRef.current.pathname + locRef.current.search;
+		if (target !== current) {
+			if (path !== locRef.current.pathname) history.push(target);
+			else history.replace(target);
 		}
-	}, [state.mode, state.view, history]);
+	}, [state.mode, state.view, state.selectedCategory, history]);
 }
