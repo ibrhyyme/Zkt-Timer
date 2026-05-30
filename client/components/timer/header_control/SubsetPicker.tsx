@@ -8,6 +8,10 @@ interface Props {
 	selectedSubset?: string | null;
 	onChange: (subset: string | null) => void;
 	mobile?: boolean;
+	// Cube type id — only WCA shows the subset name inline.
+	// Other cube types (3x3 CFOP, 4x4 Yau/Hoya, etc) keep the trigger compact
+	// (just the down arrow) to save header space on mobile.
+	cubeTypeId?: string;
 }
 
 // Radix Select doesn't allow empty string value — use virtual value for null/'' subset
@@ -21,7 +25,7 @@ function fromFancyValue(value: string): string | null {
 	return value === NONE_VALUE ? null : value;
 }
 
-export default function SubsetPicker({ subsets, selectedSubset, onChange }: Props) {
+export default function SubsetPicker({ subsets, selectedSubset, onChange, cubeTypeId }: Props) {
 	const { t } = useTranslation();
 
 	if (!subsets || subsets.length === 0) return null;
@@ -59,7 +63,9 @@ export default function SubsetPicker({ subsets, selectedSubset, onChange }: Prop
 	const firstNonHeader = subsets.find(s => !s.isHeader);
 	const currentSubset = subsets.find(s => !s.isHeader && s.id === effectiveSelected);
 	const displaySubset = currentSubset || firstNonHeader;
-	const triggerLabel = displaySubset ? translateLabel(displaySubset.label) : '';
+	// Only WCA shows the subset name inline; other cube types keep trigger compact (caret only).
+	const showInlineLabel = cubeTypeId === 'wca';
+	const triggerLabel = showInlineLabel && displaySubset ? translateLabel(displaySubset.label) : undefined;
 
 	function handleValueChange(value: string) {
 		onChange(fromFancyValue(value));
@@ -73,6 +79,7 @@ export default function SubsetPicker({ subsets, selectedSubset, onChange }: Prop
 			triggerLabel={triggerLabel}
 			ariaLabel="Scramble Subset"
 			maxHeight={400}
+			triggerMinWidth={showInlineLabel ? undefined : 40}
 		/>
 	);
 }
