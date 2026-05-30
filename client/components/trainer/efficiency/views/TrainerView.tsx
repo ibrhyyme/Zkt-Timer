@@ -43,6 +43,11 @@ export default function TrainerView() {
 		() => (settings.showAllSolutions ? sortSolutions(session.results) : []),
 		[settings.showAllSolutions, session.results]
 	);
+	// Alternatif (secili-disi) cozumler — alt-panel'i kosullu render icin (mobilde kup ALTINDA).
+	const others = useMemo(
+		() => (selected && selected.solution.length > 0 ? alternatives.filter((r) => r.face !== selected.face) : []),
+		[alternatives, selected]
+	);
 	// Rotation included in setup (cube starts at correct angle), player ONLY plays solution moves
 	// → seek/counter (X/total) matches SolutionList moveCount.
 	const setupAlg = [session.scramble, selected?.rotation].filter(Boolean).join(' ');
@@ -106,21 +111,7 @@ export default function TrainerView() {
 
 			{session.scramble && (
 				<div className={b('stage', {loading: session.loading})}>
-					{/* LEFT — single cube + player */}
-					<div className={b('cube-col')}>
-						<Suspense fallback={<div className={b('skeleton')} />}>
-							<SolutionPlayer
-								scramble={setupAlg}
-								alg={session.revealed ? solutionAlg : ''}
-								className={b('player')}
-								maskType={session.type}
-								maskSlot={session.xcrossSlot}
-								maskRotation={session.rotation}
-							/>
-						</Suspense>
-					</div>
-
-					{/* RIGHT — Show / solution panel */}
+					{/* PRIMARY — Show button OR optimal solution (mobil: küpün ÜSTÜnde) */}
 					<div className={b('panel', {revealed: session.revealed})}>
 						<div className={b('panel-body')}>
 							{!session.revealed ? (
@@ -134,10 +125,31 @@ export default function TrainerView() {
 									onClick={reveal}
 								/>
 							) : (
-								<SolutionList selected={selected} alternatives={alternatives} />
+								<SolutionList selected={selected} alternatives={alternatives} section="primary" />
 							)}
 						</div>
 					</div>
+
+					{/* CUBE — mobilde optimal ile alternatifler ARASINDA */}
+					<div className={b('cube-col')}>
+						<Suspense fallback={<div className={b('skeleton')} />}>
+							<SolutionPlayer
+								scramble={setupAlg}
+								alg={session.revealed ? solutionAlg : ''}
+								className={b('player')}
+								maskType={session.type}
+								maskSlot={session.xcrossSlot}
+								maskRotation={session.rotation}
+							/>
+						</Suspense>
+					</div>
+
+					{/* ALTERNATIVES — mobilde küpün ALTINDA, masaüstünde sağ-alt */}
+					{session.revealed && others.length > 0 && (
+						<div className={b('alt-panel')}>
+							<SolutionList selected={selected} alternatives={alternatives} section="alternatives" />
+						</div>
+					)}
 				</div>
 			)}
 		</div>
