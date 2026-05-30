@@ -88,7 +88,7 @@ export default function TrainerToolbar() {
 					{state.view === 'training' && (
 						<button
 							className={b('toolbar-back')}
-							onClick={() => window.history.back()}
+							onClick={() => dispatch({type: 'SET_VIEW', payload: 'selection'})}
 						>
 							<ArrowLeft size={18} />
 							{t('trainer.back')}
