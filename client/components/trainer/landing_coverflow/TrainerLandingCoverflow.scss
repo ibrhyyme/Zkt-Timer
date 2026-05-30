@@ -1,0 +1,248 @@
+@import '../../../styles/config';
+
+// Mobil Coverflow / 3D Fan mod secici. Transform'lar inline (drag'e bagli); burada gorunum.
+// Hardcoded dark degerler tema-aware'e cevrildi; accent hex'leri + Pro moru korunur.
+.#{$namespace}-trainer-cf {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	background: rgb(var(--background-color));
+	animation: landing-fadeIn 0.4s ease-out;
+
+	&__stage {
+		flex: 1;
+		min-height: 0;
+		position: relative;
+		perspective: 1150px;
+		touch-action: pan-y;
+		cursor: grab;
+
+		&:active {
+			cursor: grabbing;
+		}
+	}
+
+	&__deck {
+		position: absolute;
+		inset: 0;
+		transform-style: preserve-3d;
+	}
+
+	&__slot {
+		position: absolute;
+		top: 2px;
+		left: 50%;
+		width: 274px;
+		margin-left: -137px;
+		height: calc(100% - 30px);
+		transform-origin: 50% 50%;
+		will-change: transform, opacity;
+	}
+
+	// ── Kart ──
+	&__card {
+		--mode-accent: #5b8df7;
+		position: relative;
+		height: 100%;
+		box-sizing: border-box;
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+		border-radius: 22px;
+		padding: 18px;
+		background: rgb(var(--module-color));
+		border: 1px solid rgba(var(--text-color), 0.08);
+		box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45);
+
+		&--blue { --mode-accent: #5b8df7; }
+		&--purple { --mode-accent: #a78bfa; }
+		&--green { --mode-accent: #4ade80; }
+		&--orange { --mode-accent: #fb923c; }
+
+		&--center {
+			box-shadow: 0 26px 56px rgba(0, 0, 0, 0.55);
+		}
+
+		// Pro (Akilli Kup) — mor editorial vurgu
+		&--pro {
+			background: linear-gradient(165deg, rgba(124, 58, 237, 0.14), rgba(124, 58, 237, 0.04)), rgb(var(--module-color));
+			border-color: rgba(167, 139, 250, 0.32);
+
+			&.#{$namespace}-trainer-cf__card--center {
+				box-shadow: 0 26px 60px rgba(124, 58, 237, 0.4);
+			}
+		}
+	}
+
+	// Merkez-olmayan kartlari karart (derinlik) — bg inline (a'ya bagli)
+	&__dim {
+		position: absolute;
+		inset: 0;
+		z-index: 5;
+		pointer-events: none;
+	}
+
+	&__watermark {
+		position: absolute;
+		right: -14px;
+		bottom: -10px;
+		display: flex;
+		line-height: 0;
+		color: var(--mode-accent);
+		opacity: 0.15;
+		pointer-events: none;
+	}
+
+	&__eyebrow-row {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: 14px;
+	}
+	&__eyebrow {
+		font-size: 10.5px;
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 0.14em;
+		white-space: nowrap;
+		color: var(--mode-accent);
+	}
+	&__card--pro &__eyebrow {
+		color: #c4b4ff;
+	}
+	&__icon {
+		display: flex;
+		line-height: 0;
+		color: var(--mode-accent);
+	}
+
+	&__name {
+		position: relative;
+		font-family: Kontora, Poppins, Arial, Helvetica, sans-serif;
+		font-size: 21px;
+		font-weight: 800;
+		letter-spacing: -0.02em;
+		line-height: 1.12;
+		margin: 0 0 8px;
+		color: rgb(var(--text-color));
+	}
+	&__desc {
+		position: relative;
+		font-size: 12.5px;
+		line-height: 1.45;
+		margin: 0 0 14px;
+		color: rgba(var(--text-color), 0.5);
+	}
+
+	&__groups {
+		position: relative;
+		flex: 1;
+		min-height: 0;
+		overflow: hidden;
+	}
+	&__group {
+		& + & {
+			margin-top: 12px;
+		}
+	}
+	&__group-label {
+		display: block;
+		margin-bottom: 6px;
+		font-size: 9.5px;
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: rgba(var(--text-color), 0.36);
+	}
+	&__card--pro &__group-label {
+		color: rgba(199, 180, 255, 0.7);
+	}
+	&__feature {
+		display: flex;
+		align-items: flex-start;
+		gap: 8px;
+		padding: 3px 0;
+
+		span:last-child {
+			font-size: 12px;
+			line-height: 1.35;
+			font-weight: 500;
+			color: rgba(var(--text-color), 0.8);
+		}
+	}
+	&__check {
+		flex: 0 0 auto;
+		margin-top: 1px;
+		display: flex;
+		line-height: 0;
+		color: var(--mode-accent);
+	}
+
+	&__cta {
+		position: relative;
+		margin-top: 12px;
+		width: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 7px;
+		border-radius: 13px;
+		padding: 13px;
+		font-size: 13.5px;
+		font-weight: 800;
+		font-family: inherit;
+		cursor: pointer;
+		border: 1px solid rgba(var(--text-color), 0.1);
+		background: rgba(var(--text-color), 0.06);
+		color: rgba(var(--text-color), 0.74);
+		transition: filter 0.2s ease, background 0.2s ease;
+
+		&:hover {
+			background: rgba(var(--text-color), 0.1);
+		}
+
+		&--pro {
+			border: none;
+			background: #7c3aed;
+			color: #fff;
+			box-shadow: 0 6px 20px rgba(124, 58, 237, 0.45);
+
+			&:hover {
+				filter: brightness(1.1);
+			}
+		}
+	}
+
+	// ── Dots ──
+	&__dots {
+		position: absolute;
+		bottom: -2px;
+		left: 0;
+		right: 0;
+		display: flex;
+		gap: 7px;
+		justify-content: center;
+		z-index: 200;
+	}
+	&__dot {
+		width: 6px;
+		height: 6px;
+		border-radius: 4px;
+		cursor: pointer;
+		background: rgba(var(--text-color), 0.22);
+		transition: width 0.3s ease, background 0.3s ease;
+
+		&--blue { --mode-accent: #5b8df7; }
+		&--purple { --mode-accent: #a78bfa; }
+		&--green { --mode-accent: #4ade80; }
+		&--orange { --mode-accent: #fb923c; }
+
+		&--active {
+			width: 18px;
+			background: var(--mode-accent);
+		}
+	}
+}
