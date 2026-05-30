@@ -120,6 +120,14 @@ export default function EdgeDrawer(props: Props) {
 		return () => window.removeEventListener('timerInteractionStart', close);
 	}, [open]);
 
+	// --- Drawer kapanis sinyali — children'in ic state'ini sifirlamasi icin
+	// (ornek: sol drawer extras view'dan grid view'a geri donsun)
+	useEffect(() => {
+		if (!open) {
+			window.dispatchEvent(new CustomEvent('edgeDrawerClosed', {detail: {side}}));
+		}
+	}, [open, side]);
+
 	// --- Android gesture exclusion: centik bolgesini geri hareketinden muaf tut ---
 	useEffect(() => {
 		updateGestureExclusion(side, notchY, 115);

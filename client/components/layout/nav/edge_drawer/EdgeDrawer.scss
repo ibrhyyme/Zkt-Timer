@@ -179,10 +179,19 @@
 			transform: scale(0.95);
 		}
 
+		// Aktif kart — solid bg + beyaz text/ikon. Side-aware renk:
+		//   sag drawer (nav)        → mavi (primary)
+		//   sol drawer (settings)   → yesil (success / "secili" semantigi)
 		&--active {
-			border-color: rgba(var(--primary-color), 0.5);
-			background: rgba(var(--primary-color), 0.12);
+			background: rgb(var(--primary-color));
+			border-color: transparent;
+			color: #fff;
 		}
+	}
+
+	// Side-aware aktif renk override (sol drawer = koyu yesil)
+	&__drawer--left &__item--active {
+		background: rgb(var(--secondary-color));
 	}
 
 	&__item-icon {
@@ -193,7 +202,8 @@
 		color: rgb(var(--text-color));
 
 		.#{$namespace}-edge-drawer__item--active & {
-			color: rgb(var(--primary-color));
+			color: #fff;
+			opacity: 1;
 		}
 	}
 
@@ -203,7 +213,7 @@
 		opacity: 0.85;
 
 		.#{$namespace}-edge-drawer__item--active & {
-			color: rgb(var(--primary-color));
+			color: #fff;
 			opacity: 1;
 			font-weight: 600;
 		}

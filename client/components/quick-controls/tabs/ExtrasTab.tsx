@@ -216,7 +216,8 @@ export default function ExtrasTab({ hideMobileModules = false, hideSmartCubeFeat
 		{
 			label: t('quick_controls.show_recognition_split'),
 			isActive: !!showRecognition,
-			hidden: timerType !== 'smart' || hideSmartCubeFeatures,
+			// Bu ozellik desktop-only (label "(masaustu)") — mobilde de gizle
+			hidden: timerType !== 'smart' || hideSmartCubeFeatures || mobileMode,
 			onClick: () => toggleSetting('smart_cube_show_recognition'),
 		},
 	];
