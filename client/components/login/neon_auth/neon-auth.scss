@@ -487,10 +487,16 @@
 	.#{$namespace}-neon-otp__box,
 	.#{$namespace}-neon-otp__ring,
 	.#{$namespace}-neon-otp__glyph,
+	.#{$namespace}-neon-otp__merge-cell,
 	.#{$namespace}-neon-check,
 	.#{$namespace}-neon-check__ring,
 	.#{$namespace}-neon-check__halo,
 	.#{$namespace}-neon-check__path {
 		animation: none !important;
+	}
+
+	.#{$namespace}-neon-otp__row,
+	.#{$namespace}-neon-otp__merge-cell {
+		transition: none !important;
 	}
 }
