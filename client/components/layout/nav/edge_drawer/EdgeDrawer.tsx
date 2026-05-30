@@ -8,7 +8,7 @@
 // Bagimsiz localStorage: her side kendi `storageKeyY` + `storageKeyUsed` ile gelir.
 // __notchTouchingLeft / __notchTouchingRight globalleri ayri tutulur (Android back).
 
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useLayoutEffect, useRef} from 'react';
 import ReactDOM, {unstable_batchedUpdates} from 'react-dom';
 import {useGeneral} from '../../../../util/hooks/useGeneral';
 import {isNative, updateGestureExclusion, clearGestureExclusion} from '../../../../util/platform';
@@ -56,6 +56,11 @@ export default function EdgeDrawer(props: Props) {
 		try { return !localStorage.getItem(storageKeyUsed); } catch { return true; }
 	});
 
+	// Drawer acikken dikey pozisyonu (spacer yuksekligi) sabitlenir. Boylece
+	// icerik degisince (ornek: Hizli Ayarlar'da toggle on/off → ExtrasTab yuksekligi
+	// degisir) panel yukari/asagi KAYMAZ. Sadece [open, notchY] degisince yeniden olculur.
+	const [lockedTop, setLockedTop] = useState<number | null>(null);
+
 	function markNotchUsed() {
 		if (showHint) {
 			setShowHint(false);
@@ -97,6 +102,17 @@ export default function EdgeDrawer(props: Props) {
 		const center = (notchY / 100) * vh;
 		return Math.max(pad, Math.min(vh - gridH - pad, center - gridH / 2));
 	}
+
+	// Drawer acildiginda spacer yuksekligini bir kere olc + kilitle. Icerik
+	// degisikligi (toggle vb.) yeniden olcmeyi tetiklemez — sadece open/notchY.
+	useLayoutEffect(() => {
+		if (open) {
+			setLockedTop(gridTop());
+		} else {
+			setLockedTop(null);
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [open, notchY]);
 
 	// --- Click to close ---
 	useEffect(() => {
@@ -376,6 +392,8 @@ export default function EdgeDrawer(props: Props) {
 	if (!isNative() && !mobileMode) return null;
 
 	const sideMod = isLeft ? 'left' : 'right';
+	// Drawer acikken kilitli top (icerik degisiminde kaymaz), aksi halde anlik hesap
+	const spacerTop = open && lockedTop !== null ? lockedTop : gridTop();
 
 	return (
 		<>
@@ -409,7 +427,7 @@ export default function EdgeDrawer(props: Props) {
 						className={b('drawer', {open: open && !swiping, 'no-transition': noTransition, [sideMod]: true})}
 						style={swiping ? {transform} : undefined}
 					>
-						<div style={{height: gridTop(), flexShrink: 0}} />
+						<div style={{height: spacerTop, flexShrink: 0}} />
 						<div className={b('grid')}>
 							{children}
 						</div>
