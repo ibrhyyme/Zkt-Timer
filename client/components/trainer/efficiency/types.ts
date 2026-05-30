@@ -42,4 +42,8 @@ export type EfficiencyAction =
 	| {type: 'REVEAL'}
 	| {type: 'HISTORY_BACK'}
 	| {type: 'SETTINGS_UPDATE'; payload: Partial<SettingsSlice>}
-	| {type: 'SET_EFFICIENCY_VIEW'; payload: EfficiencyView};
+	| {type: 'SET_EFFICIENCY_VIEW'; payload: EfficiencyView}
+	| {
+			type: 'HYDRATE_CONFIG';
+			payload: {type?: string; rotation?: string; eoAxis?: string; targetLength?: number; xcrossSlot?: number};
+	  };
