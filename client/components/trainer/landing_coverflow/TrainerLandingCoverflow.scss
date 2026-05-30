@@ -110,9 +110,6 @@
 		white-space: nowrap;
 		color: var(--mode-accent);
 	}
-	&__card--pro &__eyebrow {
-		color: #c4b4ff;
-	}
 	&__icon {
 		display: flex;
 		line-height: 0;
@@ -131,10 +128,14 @@
 	}
 	&__desc {
 		position: relative;
+		display: -webkit-box;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 2;
+		overflow: hidden;
 		font-size: 12.5px;
 		line-height: 1.45;
 		margin: 0 0 14px;
-		color: rgba(var(--text-color), 0.5);
+		color: rgb(var(--text-color));
 	}
 
 	&__groups {
@@ -155,10 +156,7 @@
 		font-weight: 800;
 		text-transform: uppercase;
 		letter-spacing: 0.1em;
-		color: rgba(var(--text-color), 0.36);
-	}
-	&__card--pro &__group-label {
-		color: rgba(199, 180, 255, 0.7);
+		color: var(--mode-accent);
 	}
 	&__feature {
 		display: flex;
@@ -167,10 +165,15 @@
 		padding: 3px 0;
 
 		span:last-child {
+			display: -webkit-box;
+			-webkit-box-orient: vertical;
+			-webkit-line-clamp: 2;
+			overflow: hidden;
+			min-width: 0;
 			font-size: 12px;
 			line-height: 1.35;
 			font-weight: 500;
-			color: rgba(var(--text-color), 0.8);
+			color: rgb(var(--text-color));
 		}
 	}
 	&__check {
@@ -195,17 +198,17 @@
 		font-weight: 800;
 		font-family: inherit;
 		cursor: pointer;
-		border: 1px solid rgba(var(--text-color), 0.1);
-		background: rgba(var(--text-color), 0.06);
-		color: rgba(var(--text-color), 0.74);
-		transition: filter 0.2s ease, background 0.2s ease;
+		border: none;
+		background: var(--mode-accent);
+		color: #0e1015;
+		box-shadow: 0 6px 16px rgba(0, 0, 0, 0.22);
+		transition: filter 0.2s ease;
 
 		&:hover {
-			background: rgba(var(--text-color), 0.1);
+			filter: brightness(1.06);
 		}
 
 		&--pro {
-			border: none;
 			background: #7c3aed;
 			color: #fff;
 			box-shadow: 0 6px 20px rgba(124, 58, 237, 0.45);

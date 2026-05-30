@@ -26,8 +26,8 @@ interface Props {
 
 export default function TrainerLandingCoverflow({modes, smartLocked, onSelect}: Props) {
 	const {t} = useTranslation();
-	// Smart/PRO ortada baslar (design); mod sayisi azsa clamp.
-	const [active, setActive] = useState(Math.min(1, modes.length - 1));
+	// İlk kart (Standart) ortada baslar — hem ilk giriste hem moddan geri donuste.
+	const [active, setActive] = useState(0);
 	const [dx, setDx] = useState(0);
 	const drag = useRef<{x: number; moved: boolean} | null>(null);
 	// Son jest drag miydi? Kart onClick'i tap (drag degil) iken acsin diye.
