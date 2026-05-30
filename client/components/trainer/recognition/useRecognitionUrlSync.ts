@@ -32,7 +32,18 @@ export function useRecognitionUrlSync() {
 			history.replace('/trainer/recognition'); // bilinmeyen sub → home
 			return;
 		}
-		if (stateRef.current.view !== desired) setRecognitionView(desired);
+		const s = stateRef.current;
+		// buildInitialState ile AYNI data guard: canli veri olmayan view URL'i home'a canonical'la.
+		// Yoksa initializer view'i 'home'a indirir ama bu effect URL'den 'results'/'trainer'i geri
+		// dispatch eder → home<->results oscillation + junk history push. (review #4)
+		if (
+			(desired === 'results' && s.session.results.length === 0) ||
+			(desired === 'trainer' && s.session.queue.length === 0)
+		) {
+			if (locRef.current.pathname !== '/trainer/recognition') history.replace('/trainer/recognition');
+			return;
+		}
+		if (s.view !== desired) setRecognitionView(desired);
 	}, [location.pathname, history, setRecognitionView]);
 
 	// ── view → URL ──────────────────────────────────────────────────
