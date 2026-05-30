@@ -696,3 +696,22 @@
 	background: rgb(var(--primary-color)) !important;
 	filter: brightness(1.08) !important;
 }
+
+// Cross/XCross/EOCross segment'i header'in orta slotuna tasindi → kompakt (ayri
+// controls satiri kalkti, dikey alan kazanci). Header dar oldugu icin kucuk padding/font.
+.cd-trainer-header__center {
+	.cd-trainer-efficiency__segment {
+		padding: 3px;
+	}
+	.cd-trainer-efficiency__segment-btn {
+		padding: 6px 14px;
+		font-size: 0.85rem;
+	}
+
+	@media (max-width: 600px) {
+		.cd-trainer-efficiency__segment-btn {
+			padding: 5px 10px;
+			font-size: 0.8rem;
+		}
+	}
+}

@@ -10,6 +10,7 @@ import {EfficiencyProvider, useEfficiencyContext} from './EfficiencyContext';
 import {useEfficiencyUrlSync} from './useEfficiencyUrlSync';
 import TrainerView from './views/TrainerView';
 import SettingsView from './views/SettingsView';
+import EfficiencyTypePicker from './components/EfficiencyTypePicker';
 import {Gear} from 'phosphor-react';
 import {useTranslation} from 'react-i18next';
 import {useTrainerContext} from '../TrainerContext';
@@ -21,7 +22,7 @@ const bh = block('trainer-header');
 
 function EfficiencyToolbar() {
 	const {t} = useTranslation();
-	const {state, setEfficiencyView} = useEfficiencyContext();
+	const {state, setEfficiencyView, setType} = useEfficiencyContext();
 	const {dispatch: trainerDispatch} = useTrainerContext();
 
 	const onBack = () => {
@@ -37,6 +38,11 @@ function EfficiencyToolbar() {
 			mode="efficiency"
 			backToRoot={state.view === 'trainer'}
 			onBack={onBack}
+			center={
+				state.view === 'trainer' ? (
+					<EfficiencyTypePicker value={state.session.type} onChange={setType} />
+				) : undefined
+			}
 			actions={
 				<button
 					type="button"

@@ -8,7 +8,6 @@ import React, {Suspense, useEffect, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import block from '../../../../styles/bem';
 import Button from '../../../common/button/Button';
-import EfficiencyTypePicker from '../components/EfficiencyTypePicker';
 import RotationPicker from '../components/RotationPicker';
 import TargetLengthPicker from '../components/TargetLengthPicker';
 import XCrossSlotPicker from '../components/XCrossSlotPicker';
@@ -24,7 +23,7 @@ const b = block('trainer-efficiency');
 
 export default function TrainerView() {
 	const {t} = useTranslation();
-	const {state, setType, setEoAxis, setTargetLength, setXCrossSlot, setRotation, goBack, reveal} = useEfficiencyContext();
+	const {state, setEoAxis, setTargetLength, setXCrossSlot, setRotation, goBack, reveal} = useEfficiencyContext();
 	const {next} = useEfficiencyScramble();
 	const {session, settings} = state;
 
@@ -55,9 +54,8 @@ export default function TrainerView() {
 
 	return (
 		<div className={b('trainer')}>
-			{/* Compact control bar */}
+			{/* Compact control bar (type picker header'a tasindi) */}
 			<div className={b('controls')}>
-				<EfficiencyTypePicker value={session.type} onChange={setType} />
 				<RotationPicker value={session.rotation} onChange={setRotation} />
 				{session.type === 'eocross' && (
 					<div className={b('segment')} role="tablist" aria-label={t('trainer.efficiency.eo_axis_label', {defaultValue: 'EO axis'})}>
