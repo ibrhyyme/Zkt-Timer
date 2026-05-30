@@ -4,6 +4,7 @@
  */
 import React, {useCallback, useMemo, useState} from 'react';
 import {useDispatch as useReduxDispatch} from 'react-redux';
+import {useLocation} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import block from '../../../../styles/bem';
 import {CaretLeft, CaretRight, Plus, Lightning, ArrowLeft, Info} from 'phosphor-react';
@@ -33,7 +34,14 @@ export default function SessionSetupView() {
 	const {state, startSession, addPreset, removePreset, setRecognitionView, updateSettings} = useRecognitionContext();
 	const reduxDispatch = useReduxDispatch();
 	const {scrollRef, canScrollLeft, canScrollRight, scrollBy} = useHorizontalScroll();
-	const [selectedPresetId, setSelectedPresetId] = useState('all');
+	const location = useLocation();
+	// Deep-link: ?preset=<id> ile varsayilan bir preset on-secilir (tek yonlu okuma; setup
+	// gecici ekran oldugu icin URL'e geri yazilmaz). Sadece statik preset'ler paylasilabilir;
+	// custom preset id'leri (custom_<ts>) cihaza ozgu → eslesmezse 'all'.
+	const [selectedPresetId, setSelectedPresetId] = useState<string>(() => {
+		const raw = new URLSearchParams(location.search).get('preset');
+		return raw && presets.some((p) => p.id === raw) ? raw : 'all';
+	});
 	const [sizeOption, setSizeOption] = useState<number>(SIZE_DEFAULT);
 
 	const {presetPBs} = usePresetPBs(sizeOption);
