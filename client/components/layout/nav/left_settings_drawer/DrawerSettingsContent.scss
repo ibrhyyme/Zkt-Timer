@@ -1,0 +1,84 @@
+@import '../../../../styles/config';
+
+// DrawerSettingsContent EdgeDrawer'in .grid (2-col) icindedir. Tek hucreye
+// tam genislikte yayilir + tab UI icin minimum genislik garantilenir.
+
+.#{$namespace}-drawer-settings-content {
+	grid-column: 1 / -1;
+	min-width: 300px;
+	max-width: 320px;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	max-height: calc(100vh - 80px);
+	overflow: hidden;
+
+	&__tabs {
+		display: flex;
+		gap: 4px;
+		padding: 4px;
+		background: rgba(var(--text-color), 0.06);
+		border: 1px solid rgba(var(--text-color), 0.08);
+		border-radius: 12px;
+		flex-shrink: 0;
+	}
+
+	&__tab {
+		flex: 1;
+		min-width: 0;
+		padding: 8px 6px;
+		background: transparent;
+		border: none;
+		border-radius: 8px;
+		color: rgb(var(--text-color));
+		font-size: 0.78rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition: background-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		opacity: 0.75;
+
+		&:hover {
+			opacity: 1;
+			background: rgba(var(--text-color), 0.05);
+		}
+
+		&:active {
+			transform: scale(0.97);
+		}
+
+		&--active {
+			background: rgba(var(--primary-color), 0.18);
+			color: rgb(var(--primary-color));
+			opacity: 1;
+			box-shadow: inset 0 0 0 1px rgba(var(--primary-color), 0.4);
+		}
+	}
+
+	&__content {
+		flex: 1;
+		min-height: 0;
+		overflow-y: auto;
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		padding-right: 2px;
+
+		// Thin scrollbar
+		&::-webkit-scrollbar {
+			width: 6px;
+		}
+		&::-webkit-scrollbar-thumb {
+			background: rgba(var(--text-color), 0.15);
+			border-radius: 3px;
+		}
+		&::-webkit-scrollbar-thumb:hover {
+			background: rgba(var(--text-color), 0.25);
+		}
+		&::-webkit-scrollbar-track {
+			background: transparent;
+		}
+	}
+}
