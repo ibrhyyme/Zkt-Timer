@@ -503,7 +503,6 @@
             "home_guide_intro": "İki görünür yüzü şu sırayla tara: 3-bar → lights → 2-bar → bookends. Bulduğun ilk desenle eşleş, sonra grup içindeki case'i belirle.",
             "setup_title": "Oturum Kurulumu",
             "setup_subtitle": "Hangi desenleri çalışacağını seç",
-            "setup_back_to_quest": "Yolculuğa Dön",
             "setup_size_label": "Oturum boyutu",
             "setup_size_help_unique": "Tekrar yok — case sırası tahmin edilebilir hâle gelir",
             "setup_size_help_default": "Ek case'ler aynı setten rastgele tekrarlar, tahmin edilemez hâle getirir",

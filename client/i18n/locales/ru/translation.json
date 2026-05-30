@@ -503,7 +503,6 @@
             "home_guide_intro": "Сканируй две видимые грани по порядку: 3-bar → lights → 2-bar → bookends.",
             "setup_title": "Настройка Сессии",
             "setup_subtitle": "Выбери паттерны для тренировки",
-            "setup_back_to_quest": "Назад к Квесту",
             "setup_size_label": "Размер сессии",
             "setup_size_help_unique": "Без дубликатов — порядок становится предсказуемым",
             "setup_size_help_default": "Дополнительные кейсы — случайные дубликаты",

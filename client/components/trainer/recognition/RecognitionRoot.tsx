@@ -47,13 +47,18 @@ function ToolbarIconBtn({icon, title, active, onClick}: ToolbarIconBtnProps) {
 
 function RecognitionToolbar() {
 	const {t} = useTranslation();
-	const {state, setRecognitionView} = useRecognitionContext();
+	const {state, setRecognitionView, updateSettings} = useRecognitionContext();
 	const {dispatch: trainerDispatch} = useTrainerContext();
 
 	const onBack = () => {
 		if (state.view === 'home') {
 			trainerDispatch({type: 'SET_VIEW', payload: 'landing'});
 		} else {
+			// Home'a donerken aktif quest adimini temizle — quest step'in "aktif"
+			// kalmamasi icin (eski inline "Yolculuga Don" butonunun davranisi buraya tasindi).
+			if (state.settings.activeQuestStepId) {
+				updateSettings({activeQuestStepId: null});
+			}
 			setRecognitionView('home');
 		}
 	};

@@ -503,7 +503,6 @@
             "home_guide_intro": "按顺序扫描两个可见面：3-bar → lights → 2-bar → bookends。",
             "setup_title": "会话设置",
             "setup_subtitle": "选择要练习的图案",
-            "setup_back_to_quest": "返回旅程",
             "setup_size_label": "会话大小",
             "setup_size_help_unique": "无重复 — 顺序变得可预测",
             "setup_size_help_default": "额外案例为随机重复",

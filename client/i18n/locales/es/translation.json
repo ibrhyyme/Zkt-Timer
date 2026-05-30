@@ -503,7 +503,6 @@
             "home_guide_intro": "Escanea las dos caras visibles en orden: 3-bar → lights → 2-bar → bookends.",
             "setup_title": "Configuración de Sesión",
             "setup_subtitle": "Elige qué patrones practicar",
-            "setup_back_to_quest": "Volver al Viaje",
             "setup_size_label": "Tamaño de sesión",
             "setup_size_help_unique": "Sin duplicados — el orden se vuelve predecible",
             "setup_size_help_default": "Los casos extra son duplicados aleatorios",

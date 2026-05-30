@@ -503,7 +503,6 @@
             "home_guide_intro": "Scan the two visible faces in order: 3-bar → lights → 2-bar → bookends. Match the first pattern you find, then identify the case within that group.",
             "setup_title": "Session Setup",
             "setup_subtitle": "Choose which patterns to practice",
-            "setup_back_to_quest": "Back to Quest",
             "setup_size_label": "Session size",
             "setup_size_help_unique": "No duplicates — session order becomes predictable",
             "setup_size_help_default": "Extra cases are random duplicates to make it less predictable",

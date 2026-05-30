@@ -7,8 +7,8 @@ import {useDispatch as useReduxDispatch} from 'react-redux';
 import {useLocation} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import block from '../../../../styles/bem';
-import {CaretLeft, CaretRight, Plus, Lightning, ArrowLeft, Info} from 'phosphor-react';
-import Button, {CommonType} from '../../../common/button/Button';
+import {CaretLeft, CaretRight, Plus, Lightning, Info} from 'phosphor-react';
+import Button from '../../../common/button/Button';
 import {openModal, closeModal} from '../../../../actions/general';
 import PresetCard from '../components/PresetCard';
 import CreatePresetModal from '../components/CreatePresetModal';
@@ -31,7 +31,7 @@ const b = block('trainer-recognition');
 
 export default function SessionSetupView() {
 	const {t} = useTranslation();
-	const {state, startSession, addPreset, removePreset, setRecognitionView, updateSettings} = useRecognitionContext();
+	const {state, startSession, addPreset, removePreset, setRecognitionView} = useRecognitionContext();
 	const reduxDispatch = useReduxDispatch();
 	const {scrollRef, canScrollLeft, canScrollRight, scrollBy} = useHorizontalScroll();
 	const location = useLocation();
@@ -106,28 +106,10 @@ export default function SessionSetupView() {
 		[selectedPresetId, removePreset]
 	);
 
-	const questActive = state.settings.questMode && state.settings.questStarted;
 	const sizeWarn = sizeOption === SIZE_UNIQUE;
 
 	return (
 		<div className={b('setup')}>
-			{questActive && (
-				<div className={b('setup-back')}>
-					<Button
-						theme={CommonType.TRANSPARENT}
-						small
-						icon={<ArrowLeft />}
-						text={t('trainer.recognition.setup_back_to_quest', {defaultValue: 'Back to Quest'})}
-						className={b('btn-pill')}
-						onClick={() => {
-							updateSettings({activeQuestStepId: null});
-							setRecognitionView('home');
-						}}
-						noMargin
-					/>
-				</div>
-			)}
-
 			<div className={b('setup-header')}>
 				<h3 className={b('setup-header-title')}>
 					{t('trainer.recognition.setup_title', {defaultValue: 'Session Setup'})}
