@@ -15,12 +15,14 @@ import EvalResultsView from './views/EvalResultsView';
 import SettingsView from './views/SettingsView';
 import HistoryView from './views/HistoryView';
 import GlossaryView from './views/GlossaryView';
-import {ArrowLeft, Gear, ClockClockwise, House, BookOpen} from 'phosphor-react';
+import {Gear, ClockClockwise, House, BookOpen} from 'phosphor-react';
 import {useTranslation} from 'react-i18next';
 import {useTrainerContext} from '../TrainerContext';
+import TrainerModeHeader from '../common/TrainerModeHeader';
 import type {RecognitionView} from './types';
 
 const b = block('trainer-recognition');
+const bh = block('trainer-header');
 
 interface ToolbarIconBtnProps {
 	icon: React.ReactNode;
@@ -33,7 +35,7 @@ function ToolbarIconBtn({icon, title, active, onClick}: ToolbarIconBtnProps) {
 	return (
 		<button
 			type="button"
-			className={b('toolbar-btn', {active})}
+			className={bh('btn', {active})}
 			onClick={onClick}
 			title={title}
 			aria-label={title}
@@ -56,47 +58,40 @@ function RecognitionToolbar() {
 		}
 	};
 
-	const backLabel =
-		state.view === 'home'
-			? t('trainer.recognition.toolbar_trainer', {defaultValue: 'Trainer'})
-			: t('trainer.recognition.toolbar_back', {defaultValue: 'Back'});
-
 	return (
-		<div className={b('toolbar')}>
-			<button type="button" className={b('toolbar-back')} onClick={onBack}>
-				<ArrowLeft size={18} weight="bold" />
-				<span>{backLabel}</span>
-			</button>
-			<div className={b('toolbar-title')}>
-				{t('trainer.landing_recognition_title', {defaultValue: 'PLL Recognition'})}
-			</div>
-			<div className={b('toolbar-actions')}>
-				<ToolbarIconBtn
-					icon={<BookOpen size={22} weight="duotone" />}
-					title={t('trainer.recognition.toolbar_glossary', {defaultValue: 'Glossary'})}
-					active={state.view === 'glossary'}
-					onClick={() => setRecognitionView('glossary')}
-				/>
-				<ToolbarIconBtn
-					icon={<House size={22} weight="duotone" />}
-					title={t('trainer.recognition.toolbar_home', {defaultValue: 'Home'})}
-					active={state.view === 'home'}
-					onClick={() => setRecognitionView('home')}
-				/>
-				<ToolbarIconBtn
-					icon={<ClockClockwise size={22} weight="duotone" />}
-					title={t('trainer.recognition.toolbar_history', {defaultValue: 'History'})}
-					active={state.view === 'history'}
-					onClick={() => setRecognitionView('history')}
-				/>
-				<ToolbarIconBtn
-					icon={<Gear size={22} weight="duotone" />}
-					title={t('trainer.recognition.toolbar_settings', {defaultValue: 'Settings'})}
-					active={state.view === 'settings'}
-					onClick={() => setRecognitionView('settings')}
-				/>
-			</div>
-		</div>
+		<TrainerModeHeader
+			mode="recognition"
+			backToRoot={state.view === 'home'}
+			onBack={onBack}
+			actions={
+				<>
+					<ToolbarIconBtn
+						icon={<BookOpen size={20} weight="duotone" />}
+						title={t('trainer.recognition.toolbar_glossary', {defaultValue: 'Glossary'})}
+						active={state.view === 'glossary'}
+						onClick={() => setRecognitionView('glossary')}
+					/>
+					<ToolbarIconBtn
+						icon={<House size={20} weight="duotone" />}
+						title={t('trainer.recognition.toolbar_home', {defaultValue: 'Home'})}
+						active={state.view === 'home'}
+						onClick={() => setRecognitionView('home')}
+					/>
+					<ToolbarIconBtn
+						icon={<ClockClockwise size={20} weight="duotone" />}
+						title={t('trainer.recognition.toolbar_history', {defaultValue: 'History'})}
+						active={state.view === 'history'}
+						onClick={() => setRecognitionView('history')}
+					/>
+					<ToolbarIconBtn
+						icon={<Gear size={20} weight="duotone" />}
+						title={t('trainer.recognition.toolbar_settings', {defaultValue: 'Settings'})}
+						active={state.view === 'settings'}
+						onClick={() => setRecognitionView('settings')}
+					/>
+				</>
+			}
+		/>
 	);
 }
 

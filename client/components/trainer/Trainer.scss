@@ -1997,13 +1997,14 @@
 		display: grid;
 		grid-template-columns: 1fr;
 		gap: 20px;
-		max-width: 760px;
+		max-width: 1400px;
 		width: 100%;
 		align-items: stretch;
 
+		// Masaustu: 4 mod yan yana (tek satir). Ozel landing tasarimi sonra gelecek.
 		@include md {
-			grid-template-columns: 1fr 1fr;
-			gap: 24px;
+			grid-template-columns: repeat(4, 1fr);
+			gap: 16px;
 		}
 	}
 
