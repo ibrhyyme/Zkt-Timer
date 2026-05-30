@@ -50,8 +50,8 @@
 	}
 
 	// 8. kare (Hizli Ayarlar trigger) ekstra stil gerektirmiyor — .edge-drawer__item
-	// default davranisi (bg/border/hover/active) yeterli. Class TSX'te tutuldu, ileride
-	// modifier gerekirse buradan ekle.
+	// default davranisi (bg/border/hover/active) yeterli. b('settings-trigger') class'i
+	// TSX'te tutuldu (ileride modifier gerekirse), ama bos SCSS kurali eklenmedi.
 
 	// ===== EXTRAS VIEW (drawer ic-icine gecisli sayfa) =====
 

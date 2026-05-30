@@ -19,7 +19,7 @@
 		);
 		border: 1px solid rgba(var(--text-color), 0.08);
 		border-radius: 10px;
-		color: rgba(var(--text-color), 0.92);
+		color: rgb(var(--text-color));
 		font-size: 0.85rem;
 		font-weight: 500;
 		font-family: inherit;
@@ -196,7 +196,7 @@
 		font-weight: 700;
 		text-transform: uppercase;
 		letter-spacing: 0.08em;
-		color: rgba(var(--text-color), 0.5);
+		color: rgb(var(--text-color));
 		user-select: none;
 	}
 
@@ -214,7 +214,7 @@
 		gap: 8px;
 		padding: 8px 10px;
 		border-radius: 7px;
-		color: rgba(var(--text-color), 0.85);
+		color: rgb(var(--text-color));
 		font-size: 0.8rem;
 		font-weight: 500;
 		font-family: inherit;

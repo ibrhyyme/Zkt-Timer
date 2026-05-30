@@ -34,7 +34,11 @@ interface Props {
 function loadNotchY(key: string): number {
 	try {
 		const v = localStorage.getItem(key);
-		return v ? parseFloat(v) : 50;
+		if (!v) return 50;
+		const n = parseFloat(v);
+		// Bozuk/NaN deger UI'yi kirmasin (top: NaN%); 10-90 araligina clamp
+		if (Number.isNaN(n)) return 50;
+		return Math.max(10, Math.min(90, n));
 	} catch {
 		return 50;
 	}
@@ -69,6 +73,9 @@ export default function EdgeDrawer(props: Props) {
 	const horizontal = useRef(false);
 	const longPressTimer = useRef<any>(null);
 	const openedBySwipe = useRef(false);
+	// edgeDrawerClosed event'i sadece gercek open->close gecisinde firlasin
+	// (mount'ta open=false oldugu icin yanlis erken dispatch'i onler)
+	const wasOpened = useRef(false);
 	const swiping = swipeOffset !== null;
 
 	// Touch flag globali — App.tsx Android back-button listener bu globalleri
@@ -122,8 +129,11 @@ export default function EdgeDrawer(props: Props) {
 
 	// --- Drawer kapanis sinyali — children'in ic state'ini sifirlamasi icin
 	// (ornek: sol drawer extras view'dan grid view'a geri donsun)
+	// Sadece gercek open->close gecisinde dispatch (mount'taki open=false atlanir)
 	useEffect(() => {
-		if (!open) {
+		if (open) {
+			wasOpened.current = true;
+		} else if (wasOpened.current) {
 			window.dispatchEvent(new CustomEvent('edgeDrawerClosed', {detail: {side}}));
 		}
 	}, [open, side]);
