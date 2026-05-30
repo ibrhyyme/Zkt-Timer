@@ -136,34 +136,37 @@
 	&__ble {
 		display: flex;
 		align-items: center;
-		gap: 0.4rem;
-		padding: 0.4rem 0.8rem;
-		border-radius: 9px;
-		border: 1px solid rgba(var(--primary-color), 0.3);
-		background: rgba(var(--primary-color), 0.12);
-		color: rgb(var(--primary-color));
+		gap: 0.45rem;
+		padding: 0.45rem 0.9rem;
+		border-radius: 10px;
+		border: none;
+		background: rgb(var(--primary-color)); // dolu mavi → net "buton" hissi
+		color: #fff; // ikon (currentColor) + yazi beyaz
 		cursor: pointer;
 		font-size: 0.82rem;
-		font-weight: 600;
+		font-weight: 700;
 		white-space: nowrap;
-		transition: all 0.2s ease;
+		box-shadow: 0 4px 14px rgba(var(--primary-color), 0.35);
+		transition: filter 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
 
 		&:hover {
-			background: rgba(var(--primary-color), 0.22);
-			border-color: rgba(var(--primary-color), 0.5);
+			filter: brightness(1.08);
+			box-shadow: 0 6px 18px rgba(var(--primary-color), 0.45);
 		}
+		&:active {
+			transform: scale(0.97);
+		}
+		// Bagli → kirmizi "Baglantiyi Kes" (yine dolu + beyaz, tutarli)
 		&--connected {
-			border-color: rgba(var(--error-color), 0.3);
-			background: rgba(var(--error-color), 0.12);
-			color: rgb(var(--error-color));
+			background: rgb(var(--error-color));
+			box-shadow: 0 4px 14px rgba(var(--error-color), 0.35);
 
 			&:hover {
-				background: rgba(var(--error-color), 0.22);
-				border-color: rgba(var(--error-color), 0.5);
+				box-shadow: 0 6px 18px rgba(var(--error-color), 0.45);
 			}
 		}
 		&--busy {
-			opacity: 0.7;
+			opacity: 0.8;
 			cursor: wait;
 		}
 		&:disabled {
@@ -199,7 +202,9 @@
 			width: 34px;
 			height: 34px;
 		}
-		&__ble-label {
+		// "Küpü Bağla" mobilde de görünür (masaüstü gibi); yalnız bağlıyken
+		// (kalabalık training header) pill ikon-only kalır.
+		&__ble--connected &__ble-label {
 			display: none;
 		}
 	}

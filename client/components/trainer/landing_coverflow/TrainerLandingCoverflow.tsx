@@ -3,7 +3,7 @@
  * Kartlar 3D yelpazede; yana surukle, ortadaki secili mod, altta dots. Smart/PRO ortada baslar.
  * Transform'lar drag'e bagli → inline; gorunum SCSS. Metinler i18n; Pro mantigi parent'tan.
  */
-import React, {useRef, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {Check, Lock, Cube} from 'phosphor-react';
 import {useTranslation} from 'react-i18next';
 import block from '../../../styles/bem';
@@ -17,6 +17,9 @@ const STEP = 200;
 // "tap" sayilir (mod acilir), ustu "drag" (kart degisir). Cok dusuk olursa hafif kavisli
 // dokunus bile drag sanilir.
 const TAP_SLOP = 14;
+// Son merkezlenen kart index'i — mount'lar arasi korunur. Moda girip geri donunce
+// (component unmount/remount) Coverflow en son secili karttan acilir, 1. karta sifirlanmaz.
+let lastActiveIndex = 0;
 
 interface Props {
 	modes: ModeConfig[];
@@ -26,12 +29,17 @@ interface Props {
 
 export default function TrainerLandingCoverflow({modes, smartLocked, onSelect}: Props) {
 	const {t} = useTranslation();
-	// İlk kart (Standart) ortada baslar — hem ilk giriste hem moddan geri donuste.
-	const [active, setActive] = useState(0);
+	// İlk acilista 1. kart (Standart); sonraki mount'larda son secili karttan devam.
+	const [active, setActive] = useState(() => Math.min(lastActiveIndex, modes.length - 1));
 	const [dx, setDx] = useState(0);
 	const drag = useRef<{x: number; moved: boolean} | null>(null);
 	// Son jest drag miydi? Kart onClick'i tap (drag degil) iken acsin diye.
 	const movedRef = useRef(false);
+
+	// active degistikce modul-seviyesi index'i guncelle → moddan geri donunce korunur.
+	useEffect(() => {
+		lastActiveIndex = active;
+	}, [active]);
 
 	const onDown = (e: React.PointerEvent) => {
 		drag.current = {x: e.clientX, moved: false};

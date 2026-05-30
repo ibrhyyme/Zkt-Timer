@@ -8,6 +8,7 @@
 	display: flex;
 	flex-direction: column;
 	width: 100%;
+	padding-bottom: env(safe-area-inset-bottom, 0px);
 	background: rgb(var(--background-color));
 	animation: landing-fadeIn 0.4s ease-out;
 
@@ -32,11 +33,14 @@
 
 	&__slot {
 		position: absolute;
-		top: 2px;
+		top: 0;
 		left: 50%;
 		width: 274px;
 		margin-left: -137px;
-		height: calc(100% - 30px);
+		height: calc(100% - 22px); // alt 22px: dots bandi
+		display: flex;
+		align-items: center; // kart icerik-yuksekliginde, dikey ortali
+		justify-content: center;
 		transform-origin: 50% 50%;
 		will-change: transform, opacity;
 	}
@@ -45,7 +49,9 @@
 	&__card {
 		--mode-accent: #5b8df7;
 		position: relative;
-		height: 100%;
+		width: 100%;
+		height: 450px; // sabit uniform yukseklik — tum kartlar ayni boyda
+		max-height: 100%; // kucuk cihazda slot'u asma (taşma yok)
 		box-sizing: border-box;
 		overflow: hidden;
 		display: flex;
@@ -141,7 +147,7 @@
 
 	&__groups {
 		position: relative;
-		flex: 1;
+		flex: 1; // bos alani/farki yut → CTA hep kartin dibinde, hizali
 		min-height: 0;
 		overflow: hidden;
 	}
@@ -224,7 +230,7 @@
 	// ── Dots ──
 	&__dots {
 		position: absolute;
-		bottom: -2px;
+		bottom: 4px;
 		left: 0;
 		right: 0;
 		display: flex;
