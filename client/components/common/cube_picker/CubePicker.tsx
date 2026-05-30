@@ -2,6 +2,7 @@ import React from 'react';
 import FancyDropdown, { FancyDropdownGroup, FancyDropdownOption } from '../../timer/header_control/FancyDropdown';
 import { getCubeTypeInfoById } from '../../../util/cubes/util';
 import { CubeType } from '../../../util/cubes/cube_types';
+import { resourceUri } from '../../../util/storage';
 
 interface Props {
 	value: string;
@@ -68,7 +69,7 @@ export default function CubePicker(props: Props) {
 	const isWca = cubeType?.id === 'wca';
 	const triggerLabel: React.ReactNode = isWca ? (
 		<img
-			src="/images/logos/wca_logo.svg"
+			src={resourceUri('/images/logos/wca_logo.svg')}
 			alt="WCA"
 			style={{ height: 18, display: 'block' }}
 		/>
