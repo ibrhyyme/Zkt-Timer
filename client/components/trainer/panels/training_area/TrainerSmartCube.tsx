@@ -80,6 +80,12 @@ export default function TrainerSmartCube() {
 	const solveHasMistakeRef = useRef<boolean>(false);
 	// algMoves stable reference — for patternStates rebuild on FACELETS update
 	const algMovesRef = useRef<string[]>([]);
+	// True from algorithm load / reset until the first physical move. While true, FACELETS may
+	// sync myKpattern (idle baseline / manual setup positioning). Once a move is processed it
+	// flips false and FACELETS stops touching myKpattern — otherwise a FACELETS reporting the
+	// intermediate state of a multi-move turn (e.g. the single-M of an M2 = R' L) would re-anchor
+	// patternStates mid-sequence and desync the match permanently.
+	const awaitingBaselineRef = useRef<boolean>(true);
 
 	// Timer refs
 	const solutionMovesRef = useRef<SmartTurn[]>([]);
@@ -191,6 +197,9 @@ export default function TrainerSmartCube() {
 	const processMove = useCallback((smartTurn: SmartTurn) => {
 		const move = smartTurn.turn;
 		if (!myKpatternRef.current || patternStatesRef.current.length === 0) return;
+		// User is physically turning → myKpattern is move-driven from here on.
+		// FACELETS must not overwrite it mid-sequence (see alertCubeState).
+		awaitingBaselineRef.current = false;
 
 		// Update 3D visualization
 		if (twistyPlayerRef.current) {
@@ -394,28 +403,19 @@ export default function TrainerSmartCube() {
 			const pattern = faceletsToPattern(faceletStr);
 			if (!pattern) return;
 
-			// A FACELETS that already reflects an executed algorithm move must NOT overwrite
-			// myKpattern or re-anchor patternStates while in 'ready'. GAN cubes emit a FACELETS
-			// right after a move, before the debounced move event is flushed; if we absolute-set
-			// myKpattern here, the subsequent relative applyMove in processMove double-applies the
-			// move and the per-move match fails — leaving the engine stuck in 'ready' with no
-			// green/red feedback (the first-move bug). When the incoming state matches an algorithm
-			// target state, the cube has entered the algorithm: skip and let the move event drive
-			// the ready -> solving transition.
-			if (smartPhaseRef.current === 'ready' && patternStatesRef.current.length > 0) {
-				const fixed = fixOrientation(pattern);
-				const advancedIntoAlg = patternStatesRef.current.some(
-					(p) => isIdenticalIgnoringCenters(fixed, p)
-				);
-				if (advancedIntoAlg) return;
-			}
+			// Once the user has started turning (a move processed since the last reset / algorithm
+			// load), myKpattern is driven SOLELY by move events. A FACELETS here would otherwise
+			// overwrite an in-progress multi-move state — e.g. the intermediate single-M (R' L) of
+			// an M2 — and re-anchor patternStates to it, desyncing the per-move match permanently
+			// (matchIdx stuck at -1). Only sync from FACELETS while still awaiting the first move
+			// (idle baseline / manual setup positioning).
+			if (!awaitingBaselineRef.current) return;
 
-			// Genuine idle / setup positioning: reflect physical cube state.
+			// Idle / setup positioning: reflect physical cube state.
 			myKpatternRef.current = pattern;
 
-			// When phase='ready': rebuild patternStates — user might be setting up.
-			// This way, when first algorithm move arrives, patternStates[0] is built
-			// from current initialState.
+			// While awaiting the first move in 'ready', rebuild patternStates so the initialState
+			// tracks the physical cube (supports manually setting the cube up before starting).
 			if (smartPhaseRef.current === 'ready' && algMovesRef.current.length > 0) {
 				rebuildPatternStates();
 			}
@@ -571,6 +571,8 @@ export default function TrainerSmartCube() {
 			lastMovesRef.current = [];
 			solutionMovesRef.current = [];
 			solveHasMistakeRef.current = false;
+			// New algorithm → allow FACELETS baseline sync until the first physical move.
+			awaitingBaselineRef.current = true;
 
 			dispatch({type: 'SET_MATCHED_MOVE_COUNT', payload: 0});
 			dispatch({type: 'SET_TOTAL_EXPECTED_MOVES', payload: algMoves.length});
@@ -685,6 +687,8 @@ export default function TrainerSmartCube() {
 		lastMovesRef.current = [];
 		solutionMovesRef.current = [];
 		solveHasMistakeRef.current = false;
+		// Reset → allow FACELETS baseline sync until the first physical move.
+		awaitingBaselineRef.current = true;
 		stopTimerInterval();
 		dispatch({type: 'SET_MATCHED_MOVE_COUNT', payload: 0});
 		dispatch({type: 'SET_BAD_ALG', payload: []});
