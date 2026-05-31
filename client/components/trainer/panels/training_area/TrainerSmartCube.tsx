@@ -394,7 +394,23 @@ export default function TrainerSmartCube() {
 			const pattern = faceletsToPattern(faceletStr);
 			if (!pattern) return;
 
-			// Ready/idle/completed: reflect physical cube state
+			// A FACELETS that already reflects an executed algorithm move must NOT overwrite
+			// myKpattern or re-anchor patternStates while in 'ready'. GAN cubes emit a FACELETS
+			// right after a move, before the debounced move event is flushed; if we absolute-set
+			// myKpattern here, the subsequent relative applyMove in processMove double-applies the
+			// move and the per-move match fails — leaving the engine stuck in 'ready' with no
+			// green/red feedback (the first-move bug). When the incoming state matches an algorithm
+			// target state, the cube has entered the algorithm: skip and let the move event drive
+			// the ready -> solving transition.
+			if (smartPhaseRef.current === 'ready' && patternStatesRef.current.length > 0) {
+				const fixed = fixOrientation(pattern);
+				const advancedIntoAlg = patternStatesRef.current.some(
+					(p) => isIdenticalIgnoringCenters(fixed, p)
+				);
+				if (advancedIntoAlg) return;
+			}
+
+			// Genuine idle / setup positioning: reflect physical cube state.
 			myKpatternRef.current = pattern;
 
 			// When phase='ready': rebuild patternStates — user might be setting up.
