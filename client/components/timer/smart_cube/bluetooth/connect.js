@@ -120,6 +120,8 @@ export default class Connect extends SmartCube {
 					...this._deviceOptions,
 					excludeDeviceIds,
 					acceptAll,
+					// Native: surface the live device list so the user picks the right cube.
+					onScanUpdate: (devices) => setTimerParams({ smartScanDevices: devices }),
 				});
 
 				console.log('[BLE-CONNECT] Device found:', device.name, '| deviceId:', device.deviceId);

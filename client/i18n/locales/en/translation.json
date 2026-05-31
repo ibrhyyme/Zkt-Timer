@@ -2269,6 +2269,10 @@
         "place_hands_on_moyu": "Place your hands on the MoYu timer to start"
     },
     "smart_cube": {
+        "select_device": "Choose your device",
+        "select_device_desc": "Pick yours from the list — the closest one is usually at the top.",
+        "searching_devices": "Searching for devices…",
+        "nearest": "Nearest",
         "wrong_mac": "Wrong MAC address",
         "wrong_mac_desc": "The device didn't respond. The MAC address is likely wrong, or the device is off or asleep.",
         "wrong_mac_tip_1": "Double-check the MAC address and try again.",

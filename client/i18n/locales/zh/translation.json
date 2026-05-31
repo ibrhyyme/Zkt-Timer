@@ -2269,6 +2269,10 @@
         "place_hands_on_moyu": "将双手放在 MoYu 计时器上开始"
     },
     "smart_cube": {
+        "select_device": "选择你的设备",
+        "select_device_desc": "从列表中选择你的设备 — 最近的通常在最上面。",
+        "searching_devices": "正在搜索设备…",
+        "nearest": "最近",
         "wrong_mac": "MAC 地址错误",
         "wrong_mac_desc": "设备没有响应。MAC 地址可能有误，或设备已关闭或处于休眠状态。",
         "wrong_mac_tip_1": "请核对 MAC 地址后重试。",

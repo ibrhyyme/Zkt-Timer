@@ -1,6 +1,7 @@
 import {Observable, Subject} from 'rxjs';
 import {getBleAdapter, BleAdapter, BleDevice} from '../../../../util/ble';
 import {isNative} from '../../../../util/platform';
+import {setTimerParams} from '../../helpers/params';
 
 const GAN_TIMER_SERVICE = '0000fff0-0000-1000-8000-00805f9b34fb';
 const GAN_TIMER_TIME_CHARACTERISTIC = '0000fff2-0000-1000-8000-00805f9b34fb';
@@ -116,16 +117,22 @@ export async function connectGanTimer(): Promise<GanTimerConnection> {
 
 	const adapter = await getBleAdapter();
 	_scanningAdapter = adapter;
+	setTimerParams({smartScanDevices: []});
 
 	let device: BleDevice;
 	try {
 		device = await adapter.requestDevice({
 			nameFilters: ['GAN', 'gan', 'Gan'],
 			optionalServices: [GAN_TIMER_SERVICE],
+			// Native: surface the live device list so the user picks the right timer.
+			onScanUpdate: (devices) => setTimerParams({smartScanDevices: devices}),
 		});
 	} finally {
 		_scanningAdapter = null;
 	}
+
+	// Device chosen — clear the picker list so it doesn't linger in the modal.
+	setTimerParams({smartScanDevices: []});
 
 	const eventSubject = new Subject<GanTimerEvent>();
 	let disposed = false;

@@ -22,6 +22,7 @@
 import {Observable, Subject} from 'rxjs';
 import {getBleAdapter, BleAdapter, BleDevice} from '../../../../util/ble';
 import {requestMacFromUser} from '../../smart_cube/mac_input/requestMacFromUser';
+import {setTimerParams} from '../../helpers/params';
 
 // ===========================================================================
 // AES-128-ECB (cstimer sha256.js:107-218 ported line-by-line)
@@ -569,6 +570,7 @@ export async function connectQiyiTimer(): Promise<QiyiTimerConnection> {
 	const adapter = await getBleAdapter();
 	_scanningAdapter = adapter;
 	_adapter = adapter;
+	setTimerParams({smartScanDevices: []});
 
 	let device: BleDevice;
 	try {
@@ -576,6 +578,8 @@ export async function connectQiyiTimer(): Promise<QiyiTimerConnection> {
 			nameFilters: ['QY-Timer', 'QY-Adapter'],
 			serviceFilters: [SERVICE_UUID],
 			optionalServices: [SERVICE_UUID],
+			// Native: surface the live device list so the user picks the right timer.
+			onScanUpdate: (devices) => setTimerParams({smartScanDevices: devices}),
 		});
 	} catch (e) {
 		_scanningAdapter = null;
@@ -585,6 +589,8 @@ export async function connectQiyiTimer(): Promise<QiyiTimerConnection> {
 	_scanningAdapter = null;
 	_device = device;
 	_deviceName = (device.name || '').trim();
+	// Device chosen — clear the picker list so it doesn't linger in the modal.
+	setTimerParams({smartScanDevices: []});
 
 	// AES decoder — V1 and V2 shared [0x77]*16 key, only hello magic bytes differ
 	const variant = detectVariant(_deviceName);
