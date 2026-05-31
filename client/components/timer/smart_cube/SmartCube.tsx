@@ -36,6 +36,7 @@ import { countHTM } from '../../../../shared/util/solve/move_counter';
 import AbortSolveOverlay from './abort_solve/AbortSolveOverlay';
 import BluetoothErrorMessage from '../common/BluetoothErrorMessage';
 import BleScanningModal from './ble_scanning_modal/BleScanningModal';
+import {showBleConnectInfo} from '../common/showBleConnectInfo';
 import { isNative } from '../../../util/platform';
 import { resourceUri } from '../../../util/storage';
 import { onVisibilityChange } from '../../../util/app-visibility';
@@ -127,6 +128,7 @@ export default function SmartCube() {
 		smartTurns,
 		smartDeviceId,
 		smartCubeScanning,
+		smartCubeScanError,
 		smartCubeConnecting,
 		smartCubeBatteryLevel,
 		smartSolvedState,
@@ -142,6 +144,19 @@ export default function SmartCube() {
 		smartPhysicallySolved,
 		dnfTime,
 	} = context;
+
+	// Surface wrong-MAC handshake failures on web (native shows the BleScanningModal
+	// error state instead). Without this the cube would silently fail after the watchdog.
+	useEffect(() => {
+		if (smartCubeScanError === 'wrong_mac' && !isNative()) {
+			toastError(t('smart_cube.wrong_mac_desc'));
+			setTimerParams({
+				smartCubeScanError: null,
+				smartCubeScanning: false,
+				smartCubeConnecting: false,
+			});
+		}
+	}, [smartCubeScanError]);
 
 	// Polling safety refs (avoid stale closures in setInterval and effect handlers)
 	const needsCubeResetRef = useRef(needsCubeReset);
@@ -1014,6 +1029,8 @@ export default function SmartCube() {
 
 	async function connectBluetooth() {
 		try {
+			// Web-only pre-connection info screen (browser/Chrome-flag guidance + app links).
+			if (!(await showBleConnectInfo())) return;
 			let bluetoothAvailable = isNative() || (!!navigator.bluetooth && (await navigator.bluetooth.getAvailability()));
 			if (bluetoothAvailable) {
 				if (isNative()) {

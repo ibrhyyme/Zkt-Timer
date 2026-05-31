@@ -9,6 +9,7 @@ import Cube from 'cubejs';
 import { getStore } from '../../../store';
 import { setSmartSolveEndTime, setSmartCubeClockSkew, getSmartCubeClockSkew } from '../../helpers/events';
 import { setTimerParams } from '../../helpers/params';
+import { requestMacFromUser } from '../mac_input/requestMacFromUser';
 
 // Simple linear regression: y = slope * x + intercept
 // Returns [slope, intercept]
@@ -990,6 +991,11 @@ async function autoRetrieveMacAddress(adapter, device) {
 // MAIN GAN CLASS
 // ============================================================================
 
+// Wrong MAC => GAN packets never decrypt => no HARDWARE event arrives. The watchdog
+// tears the connection down instead of leaving it stuck on "connecting" forever.
+const GAN_HANDSHAKE_TIMEOUT_MS = 5000;
+const GAN_MAC_CACHE_KEY = 'gan_cube_mac';
+
 export default class GAN extends SmartCube {
 	device;
 	adapter;
@@ -1018,6 +1024,11 @@ export default class GAN extends SmartCube {
 		// Clock skew: (localTimestamp, cubeTimestamp) pairs — collected from pre-solve moves
 		this._skewSamples = [];
 		this._SKEW_WINDOW = 50; // Last N samples
+		// Handshake watchdog + deferred MAC caching. GAN already defers alertConnected to
+		// the HARDWARE event; these add wrong-MAC self-heal (don't persist a MAC until the
+		// cube proves it works, and surface an error if it never answers).
+		this._handshakeTimer = null;
+		this._pendingMac = null;
 	}
 
 	subscribeGyro(callback) {
@@ -1030,12 +1041,11 @@ export default class GAN extends SmartCube {
 	retryCount = 0;
 
 	customMacAddressProvider = async (device, isFallbackCall) => {
-		const CACHE_KEY = 'gan_cube_mac';
+		const CACHE_KEY = GAN_MAC_CACHE_KEY;
 		const cachedMac = localStorage.getItem(CACHE_KEY);
 
 		// Capacitor Android: deviceId is the MAC address
 		if (isNative() && device.deviceId && device.deviceId.includes(':')) {
-			localStorage.setItem(CACHE_KEY, device.deviceId);
 			return device.deviceId;
 		}
 
@@ -1056,27 +1066,24 @@ export default class GAN extends SmartCube {
 
 		let macAddress;
 		if (isFallbackCall) {
-			// If fallback (and we exhausted retries), prompt user
-			macAddress = prompt('Unable do determine cube MAC address!\nPlease enter MAC address manually:', cachedMac || '');
+			// Fallback (auto retries exhausted) — ask the user via modal.
+			macAddress = await requestMacFromUser({ defaultMac: cachedMac, deviceName: this.device?.name });
 		} else {
-			// On native, watchAdvertisements won't work, skip the prompt about chrome flags
+			// On native, watchAdvertisements won't work; skip the manual prompt entirely.
 			if (isNative()) {
 				macAddress = null;
 			} else {
-				macAddress =
-					this.adapter.watchAdvertisements
-						? null
-						: prompt(
-							'Seems like your browser does not support Web Bluetooth watchAdvertisements() API. Enable following flag in Chrome:\n\nchrome://flags/#enable-experimental-web-platform-features\n\nor enter cube MAC address manually:',
-							cachedMac || ''
-						);
+				// If the browser exposes watchAdvertisements the MAC is auto-resolved; only ask
+				// manually when it's unavailable.
+				macAddress = this.adapter.watchAdvertisements
+					? null
+					: await requestMacFromUser({ defaultMac: cachedMac, deviceName: this.device?.name });
 			}
 		}
 
 		if (macAddress) {
-			const cleanedMac = macAddress.trim().toUpperCase();
-			localStorage.setItem(CACHE_KEY, cleanedMac);
-			return cleanedMac;
+			// Already normalized by the modal. Persisted only after the cube confirms.
+			return macAddress;
 		}
 		return macAddress;
 	};
@@ -1153,6 +1160,9 @@ export default class GAN extends SmartCube {
 			return mac;
 		});
 
+		// Treat the resolved MAC as unverified until the cube answers (see _confirmGanConnected).
+		this._pendingMac = this.device?.mac || null;
+
 		setTimerParams({ smartCubeConnectStep: 'paired' });
 
 		this.conn.events$.subscribe(this.handleCubeEvent);
@@ -1163,7 +1173,35 @@ export default class GAN extends SmartCube {
 		await this.conn.sendCubeCommand({ type: 'REQUEST_HARDWARE' });
 		await this.conn.sendCubeCommand({ type: 'REQUEST_FACELETS' }); // Synchronize tracker with physical state
 
-		// Note: alertConnected is now called after HARDWARE event is received
+		// alertConnected is called after the HARDWARE event is received (handleCubeEvent).
+		// If it never arrives within the timeout, the MAC is wrong / cube is asleep.
+		this._startHandshakeWatchdog();
+	};
+
+	// Wrong MAC => packets never decrypt => no HARDWARE event. Tear the connection down,
+	// drop the bad cached MAC, and surface a clear error.
+	_startHandshakeWatchdog = () => {
+		if (this._handshakeTimer) clearTimeout(this._handshakeTimer);
+		this._handshakeTimer = setTimeout(() => {
+			this._handshakeTimer = null;
+			console.warn('[GAN] handshake timeout — wrong MAC or cube unresponsive');
+			try { localStorage.removeItem(GAN_MAC_CACHE_KEY); } catch (e) { /* ignore */ }
+			try { this.adapter.disconnect(this.device); } catch (e) { /* ignore */ }
+			this.alertScanError('wrong_mac');
+		}, GAN_HANDSHAKE_TIMEOUT_MS);
+	};
+
+	// Called once the HARDWARE event arrives — proof the MAC is right. Persists the MAC
+	// and stops the watchdog.
+	_confirmGanConnected = () => {
+		if (this._handshakeTimer) {
+			clearTimeout(this._handshakeTimer);
+			this._handshakeTimer = null;
+		}
+		if (this._pendingMac) {
+			try { localStorage.setItem(GAN_MAC_CACHE_KEY, this._pendingMac); } catch (e) { /* ignore */ }
+			this._pendingMac = null;
+		}
 	};
 
 	handleCubeEvent = (event) => {
@@ -1303,6 +1341,9 @@ export default class GAN extends SmartCube {
 			// Report gyroscope support status
 			this.alertGyroSupported(event.gyroSupported);
 
+			// HARDWARE event proves the MAC is correct — persist it and stop the watchdog.
+			this._confirmGanConnected();
+
 			// Complete connection after HARDWARE information received
 			const deviceId = this.conn?.deviceMAC || this.device?.deviceId || 'unknown';
 			const dummyServer = {
@@ -1315,6 +1356,10 @@ export default class GAN extends SmartCube {
 		} else if (event.type == 'BATTERY') {
 			this.alertBatteryLevel(event.batteryLevel);
 		} else if (event.type == 'DISCONNECT') {
+			if (this._handshakeTimer) {
+				clearTimeout(this._handshakeTimer);
+				this._handshakeTimer = null;
+			}
 			this.alertDisconnected();
 		}
 	};
