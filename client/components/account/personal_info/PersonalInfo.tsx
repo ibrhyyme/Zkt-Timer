@@ -63,7 +63,7 @@ export default function PersonalInfo() {
 	const [emailChangeError, setEmailChangeError] = useState('');
 
 	const hasPassword = me.has_password;
-	const pendingEmail = (me as any).pending_email as string | null | undefined;
+	const pendingEmail = me.pending_email;
 
 	const [updateAccount] = useMutation<
 		{updateUserAccount: UserAccount},
@@ -198,7 +198,7 @@ export default function PersonalInfo() {
 				</h3>
 
 				{!hasPassword && (
-					<p style={{marginBottom: '1rem', fontSize: '0.85rem', opacity: 0.7}}>
+					<p style={{marginBottom: '1rem', fontSize: '0.85rem'}}>
 						{t('personal_info.set_password_description')}
 					</p>
 				)}

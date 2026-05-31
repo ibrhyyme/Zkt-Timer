@@ -123,11 +123,15 @@ export default function SupportTicketModal({ticketId, isAdminView, onUpdate}: Pr
 	const [pending, setPending] = useState<PendingFile[]>([]);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
+	// Track the latest pending list so the unmount cleanup revokes the object URLs
+	// that actually exist at unmount — not the stale initial [] captured by an empty-dep effect.
+	const pendingRef = useRef<PendingFile[]>(pending);
+	pendingRef.current = pending;
+
 	useEffect(() => {
 		return () => {
-			pending.forEach((p) => URL.revokeObjectURL(p.previewUrl));
+			pendingRef.current.forEach((p) => URL.revokeObjectURL(p.previewUrl));
 		};
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	const {data, loading, refetch} = useQuery<{supportTicket: SupportTicketSchema}>(SUPPORT_TICKET_DETAIL, {

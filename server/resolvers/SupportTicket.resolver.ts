@@ -20,12 +20,13 @@ const RATE_LIMIT_MAX = 5;
 const MAX_SUBJECT_LENGTH = 200;
 const MAX_MESSAGE_LENGTH = 5000;
 
-async function checkRateLimit(userId: string): Promise<boolean> {
+// suffix lets messages use a separate (more generous) counter from new-ticket creation
+async function checkRateLimit(userId: string, max: number = RATE_LIMIT_MAX, suffix = ''): Promise<boolean> {
 	try {
-		const key = createRedisKey(RedisNamespace.SUPPORT_TICKET_RATE, userId);
+		const key = createRedisKey(RedisNamespace.SUPPORT_TICKET_RATE, suffix ? `${suffix}:${userId}` : userId);
 		const current = await getValueFromRedis(key);
 		const count = parseInt(current ?? '0', 10);
-		if (count >= RATE_LIMIT_MAX) {
+		if (count >= max) {
 			return false;
 		}
 		await setKeyInRedis(key, String(count + 1), RATE_LIMIT_WINDOW_SECONDS);
@@ -169,6 +170,11 @@ export class SupportTicketResolver {
 		@Arg('attachments', () => [GraphQLUpload], {nullable: true}) attachments?: Promise<FileUpload>[]
 	): Promise<SupportTicketMessage> {
 		const {prisma, user} = context;
+
+		const allowed = await checkRateLimit(user.id, 20, 'msg');
+		if (!allowed) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Cok fazla mesaj gonderdin, biraz bekle');
+		}
 
 		const trimmed = (body || '').trim();
 		if (trimmed.length > MAX_MESSAGE_LENGTH) {
