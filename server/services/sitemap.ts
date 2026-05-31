@@ -199,6 +199,8 @@ function getDefaultSiteMapUrls() {
 		'/sessions',
 		'/force-log-out',
 		'/forgot',
+		'/verify-email',
+		'/wca-signup',
 		'/unsub-emails',
 		'/account',
 		'/oauth',

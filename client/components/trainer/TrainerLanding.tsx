@@ -28,6 +28,12 @@ export default function TrainerLanding() {
 	const smartLocked = isProEnabled() && !isPro(me);
 
 	const selectMode = (mode: TrainerMode, locked: boolean) => {
+		// Landing is public for SEO, but actually training requires an account.
+		// Anonymous visitors get sent to login instead of dropping into the training UI.
+		if (!me) {
+			history.push('/login?redirect=' + encodeURIComponent('/trainer'));
+			return;
+		}
 		if (locked) {
 			history.push('/pro');
 			return;
@@ -101,6 +107,11 @@ export default function TrainerLanding() {
 								type="button"
 								className={b('landing-card-cta', {pro})}
 								onClick={(e) => {
+									if (!me) {
+										e.stopPropagation();
+										history.push('/login?redirect=' + encodeURIComponent('/trainer'));
+										return;
+									}
 									if (locked) {
 										e.stopPropagation();
 										history.push('/pro');

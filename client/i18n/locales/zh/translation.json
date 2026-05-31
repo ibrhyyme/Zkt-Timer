@@ -2016,14 +2016,20 @@
         "user_fallback": "用户",
         "user_profile_title": "{{username}} - 魔方玩家资料 | Zkt Timer",
         "user_profile_description": "{{username}}的魔方玩家资料。记录、还原统计和比赛历史。",
-        "trainer_title": "公式训练器 - Zkt Timer",
-        "trainer_description": "学习F2L、OLL、PLL等公式。使用交互式3D魔方进行训练，提高您的速度。",
+        "trainer_title": "魔方公式训练器 — OLL、PLL、F2L、ZBLL、PLL 识别与十字效率 | Zkt Timer",
+        "trainer_description": "通过间隔重复掌握魔方公式：OLL、PLL、F2L、ZBLL 等。练习一眼识别 PLL，训练 Cross / XCross / EOCross 效率，并连接智能魔方进行实时图案匹配。交互式 3D 魔方和每个公式的统计数据。",
         "stats_title": "还原统计 - Zkt Timer",
         "stats_description": "分析您的魔方表现。平均值、最佳时间、图表和详细统计。",
         "solves_title": "还原历史 - Zkt Timer",
         "solves_description": "查看您的所有魔方还原记录。包含打乱、时间、还原详情的性能分析。",
         "leaderboards_title": "排行榜 - Zkt Timer",
         "leaderboards_description": "最快的魔方还原者！单次和平均记录，按类别排名。",
+        "terms_title": "服务条款 - Zkt Timer",
+        "terms_description": "Zkt Timer 服务条款：使用规则、账户、内容以及您作为用户的权利和责任。",
+        "privacy_title": "隐私政策 - Zkt Timer",
+        "privacy_description": "Zkt Timer 如何收集、使用和保护您的数据。隐私政策和 Cookie 信息。",
+        "credits_title": "鸣谢与致谢 - Zkt Timer",
+        "credits_description": "启发并帮助构建 Zkt Timer 的开源项目、库和开发者。",
         "app_description": "最先进的在线魔方计时器、WCA比赛追踪器和速拧平台。毫秒级精度计时。",
         "feature_list": [
             "魔方计时器",
@@ -2031,7 +2037,9 @@
             "实时比赛成绩",
             "实时竞速房间",
             "全球排行榜",
-            "公式训练器",
+            "公式训练器（OLL、PLL、F2L、ZBLL）",
+            "PLL识别训练器",
+            "十字与EOCross效率训练器",
             "智能魔方支持",
             "Stackmat计时器支持"
         ],
@@ -2050,7 +2058,7 @@
         "keywords": "魔方计时器, 速拧计时器, 在线魔方计时器, WCA比赛, 魔方平台, 魔方, 速拧, 魔方玩家, 公式训练器",
         "home_keywords": "魔方计时器, 在线魔方计时器, 速拧平台, WCA计时器, 魔方社区",
         "timer_keywords": "魔方计时器, 在线计时器, WCA打乱, stackmat计时器, 智能魔方计时器, 魔方计时器, 毫秒精度",
-        "trainer_keywords": "OLL训练器, PLL训练器, F2L训练器, ZBLL训练器, 公式训练器, 魔方公式, 速拧公式",
+        "trainer_keywords": "OLL训练器, PLL训练器, F2L训练器, ZBLL训练器, PLL识别训练器, 十字训练器, 效率训练器, EOCross训练器, 智能魔方训练器, 公式训练器, 魔方公式, 速拧公式",
         "rooms_keywords": "在线魔方竞速, 多人魔方, 实时竞速房间, 速拧竞速, 在线魔方对战",
         "battle_keywords": "1v1魔方对战, 魔方决斗, 对战模式, 魔方对决, 速拧对战",
         "leaderboards_keywords": "魔方排名, 速拧排行榜, 最快玩家, 魔方记录, 顶尖玩家",
@@ -2159,8 +2167,8 @@
                 "a": "是的，完全可以。转到设置 > 账户 > 危险区域 > 删除账户。这将永久删除您所有的还原记录、阶段、个人资料数据和WCA链接。此操作不可逆。如果您想保留备份，请先导出您的数据。"
             },
             {
-                "q": "Zkt Timer是免费的吗？",
-                "a": "核心的Zkt Timer完全免费：计时器、打乱、基本统计、在线房间、排行榜和公式训练器。Pro会员（可选价格）解锁高级功能。没有广告。"
+                "q": "使用 Zkt Timer 需要付费吗？",
+                "a": "您可以注册并立即开始使用核心体验：计时器、WCA 打乱、统计、在线竞速房间、排行榜和公式训练器。Pro 会员可解锁高级统计、无限会话、PDF 导出、智能魔方训练模式、高级主题和优先支持。没有广告。"
             },
             {
                 "q": "有iOS或Android应用程序吗？",
@@ -2177,6 +2185,14 @@
             {
                 "q": "Zkt Timer如何在没有互联网的情况下工作？",
                 "a": "作为PWA，Zkt Timer在首次访问后会缓存所有应用程序文件。您可以完全离线地计时还原、生成打乱和查看缓存的统计数据。当您重新连接时，待处理的还原记录将通过后台同步API自动同步到服务器。"
+            },
+            {
+                "q": "什么是 PLL 识别训练器？",
+                "a": "PLL 识别训练器训练您一眼识别正确 PLL 情形并从键盘输入其字母名称的能力——无需还原。它包含分步引导任务、涵盖各个角度的双面识别指南、专注于您薄弱情形的自适应队列以及术语表。它作为一个独立的、基于键盘的模式运行。"
+            },
+            {
+                "q": "什么是十字效率训练器？",
+                "a": "效率训练器帮助您构建更高效的 Cross、XCross 和 EOCross 解法。它分析您的步骤，显示最优或接近最优的解法，并帮助您减少步数，实现更快、更流畅的还原。连接智能魔方后，它可以实时跟踪您的真实解法。"
             }
         ],
         "nav_timer_name": "计时器",

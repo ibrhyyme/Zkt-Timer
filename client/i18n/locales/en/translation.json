@@ -2016,14 +2016,20 @@
         "user_fallback": "User",
         "user_profile_title": "{{username}} - Cuber Profile | Zkt Timer",
         "user_profile_description": "{{username}}'s Rubik's cube profile. Records, solve statistics and competition history.",
-        "trainer_title": "Algorithm Trainer - Zkt Timer",
-        "trainer_description": "Learn F2L, OLL, PLL and more algorithms. Train with interactive 3D cube and improve your speed.",
+        "trainer_title": "Rubik's Cube Algorithm Trainer — OLL, PLL, F2L, ZBLL, PLL Recognition & Cross Efficiency | Zkt Timer",
+        "trainer_description": "Master Rubik's cube algorithms with spaced-repetition drilling: OLL, PLL, F2L, ZBLL and more. Practice PLL recognition by sight, train Cross / XCross / EOCross efficiency, and connect a smart cube for live pattern matching. Interactive 3D cube and per-algorithm stats.",
         "stats_title": "Solve Statistics - Zkt Timer",
         "stats_description": "Analyze your Rubik's cube performance. Averages, best times, graphs and detailed statistics.",
         "solves_title": "Solve History - Zkt Timer",
         "solves_description": "View all your Rubik's cube solves. Performance analysis with scramble, time and solve details.",
         "leaderboards_title": "Leaderboards - Zkt Timer",
         "leaderboards_description": "The fastest Rubik's cube solvers! Single and Average records, category-based rankings.",
+        "terms_title": "Terms of Service - Zkt Timer",
+        "terms_description": "Zkt Timer terms of service: usage rules, accounts, content and your rights and responsibilities as a user.",
+        "privacy_title": "Privacy Policy - Zkt Timer",
+        "privacy_description": "How Zkt Timer collects, uses and protects your data. Privacy policy and cookie information.",
+        "credits_title": "Credits & Acknowledgements - Zkt Timer",
+        "credits_description": "The open-source projects, libraries and developers that inspired and helped build Zkt Timer.",
         "app_description": "The most advanced online Rubik's cube timer, WCA competition tracker and speedcubing platform. Millisecond precision timing.",
         "feature_list": [
             "Rubik's cube timer",
@@ -2031,7 +2037,9 @@
             "Live competition results",
             "Live race rooms",
             "Global leaderboards",
-            "Algorithm trainer",
+            "Algorithm trainer (OLL, PLL, F2L, ZBLL)",
+            "PLL recognition trainer",
+            "Cross & EOCross efficiency trainer",
             "Smart cube support",
             "Stackmat Timer support"
         ],
@@ -2050,7 +2058,7 @@
         "keywords": "rubik's cube timer, speedcubing timer, online cube timer, WCA competitions, cubing platform, rubik cube, speedcubing, cubing, algorithm trainer",
         "home_keywords": "rubik's cube timer, online cube timer, speedcubing platform, WCA timer, cubing community",
         "timer_keywords": "rubik's cube timer, online timer, WCA scramble, stackmat timer, smart cube timer, cubing timer, millisecond precision",
-        "trainer_keywords": "OLL trainer, PLL trainer, F2L trainer, ZBLL trainer, algorithm trainer, rubik's cube algorithms, speedcubing algorithms",
+        "trainer_keywords": "OLL trainer, PLL trainer, F2L trainer, ZBLL trainer, PLL recognition trainer, cross trainer, efficiency trainer, EOCross trainer, smart cube trainer, algorithm trainer, rubik's cube algorithms, speedcubing algorithms",
         "rooms_keywords": "online cube race, multiplayer cubing, live race rooms, speedcubing race, cube battle online",
         "battle_keywords": "1v1 cube battle, rubik's cube duel, versus mode, cube versus, speedcubing battle",
         "leaderboards_keywords": "rubik's cube rankings, speedcubing leaderboards, fastest cubers, cube records, top solvers",
@@ -2159,8 +2167,8 @@
                 "a": "Yes, completely. Go to Settings > Account > Danger Zone > Delete Account. This permanently removes all your solves, sessions, profile data, and WCA link. The action is irreversible. Export your data first if you want to keep a backup."
             },
             {
-                "q": "Is Zkt Timer free?",
-                "a": "The core Zkt Timer is completely free: timer, scrambles, basic stats, online rooms, leaderboards, and the algorithm trainer. Pro membership ($optional) unlocks advanced features. There are no ads."
+                "q": "Do I need to pay to use Zkt Timer?",
+                "a": "You can sign up and use the core experience at no cost: the timer, WCA scrambles, statistics, online race rooms, leaderboards, and the algorithm trainer. Pro membership unlocks advanced statistics, unlimited sessions, PDF export, smart-cube trainer modes, premium themes, and priority support. There are no ads."
             },
             {
                 "q": "Is there an iOS or Android app?",
@@ -2177,6 +2185,14 @@
             {
                 "q": "How does Zkt Timer work without internet?",
                 "a": "As a PWA, Zkt Timer caches all app files after the first visit. You can time solves, generate scrambles, and view cached stats fully offline. When you reconnect, pending solves are automatically synced to the server via Background Sync API."
+            },
+            {
+                "q": "What is the PLL recognition trainer?",
+                "a": "The PLL recognition trainer drills your ability to identify the correct PLL case by sight and type its letter name from the keyboard — no solving required. It includes a guided multi-step quest, a two-sided recognition guide covering every angle, an adaptive queue that focuses on your weak cases, and a glossary. It runs as a separate, keyboard-based mode."
+            },
+            {
+                "q": "What is the cross efficiency trainer?",
+                "a": "The efficiency trainer helps you build more efficient Cross, XCross and EOCross solutions. It analyzes your moves, shows optimal or near-optimal solutions and helps you cut move count for faster, smoother solves. With a smart cube connected it can follow your real solution live."
             }
         ],
         "nav_timer_name": "Timer",

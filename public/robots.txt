@@ -43,6 +43,9 @@ Disallow: /unsub-emails
 Disallow: /verify-email
 Disallow: /wca-signup
 
+# Trainer landing (/trainer) public; alt modlar (standard/smart/recognition/efficiency) login arkasinda
+Disallow: /trainer/
+
 # Yarisma alt sayfalari - Engelle (sınırsız URL, thin content riski; WCA Live ile ayni strateji)
 Disallow: /community/competitions/*/personal-bests/
 Disallow: /community/competitions/*/persons/

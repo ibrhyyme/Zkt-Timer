@@ -47,7 +47,7 @@ export function getPageKeywords(currentPath: string, t: TFunction): string {
 	if (currentPath.startsWith('/community/zkt-competitions')) return t('seo.zkt_competitions_keywords', fallback);
 	if (currentPath === '/community/zkt-records') return t('seo.zkt_records_keywords', fallback);
 	if (currentPath === '/community/zkt-rankings') return t('seo.zkt_rankings_keywords', fallback);
-	if (currentPath === '/login' || currentPath === '/signup' || currentPath === '/wca-signup') return t('seo.login_keywords', fallback);
+	if (currentPath === '/login' || currentPath === '/signup' || currentPath === '/wca-signup' || currentPath === '/forgot') return t('seo.login_keywords', fallback);
 
 	return fallback;
 }
@@ -307,7 +307,7 @@ export default function Header(props: Props) {
 		} else if (currentPath === '/signup') {
 			pageTitle = t('seo.signup_title');
 			pageDesc = t('seo.signup_description');
-		} else if (currentPath === '/forgot-password') {
+		} else if (currentPath === '/forgot') {
 			pageTitle = t('seo.forgot_password_title');
 			pageDesc = t('seo.forgot_password_description');
 		} else if (currentPath.startsWith('/rooms')) {
@@ -379,6 +379,15 @@ export default function Header(props: Props) {
 		} else if (currentPath === '/battle') {
 			pageTitle = t('seo.battle_title');
 			pageDesc = t('seo.battle_description');
+		} else if (currentPath === '/terms') {
+			pageTitle = t('seo.terms_title');
+			pageDesc = t('seo.terms_description');
+		} else if (currentPath === '/privacy') {
+			pageTitle = t('seo.privacy_title');
+			pageDesc = t('seo.privacy_description');
+		} else if (currentPath === '/credits') {
+			pageTitle = t('seo.credits_title');
+			pageDesc = t('seo.credits_description');
 		}
 	}
 
@@ -392,6 +401,7 @@ export default function Header(props: Props) {
 	// ZKT competitions private — accessible only to registered users
 	const noIndexPaths = [
 		'/settings', '/sessions', '/force-log-out', '/account', '/oauth', '/admin',
+		'/verify-email', '/wca-signup',
 		'/community/zkt-competitions', '/community/zkt-records', '/community/zkt-rankings',
 	];
 	// WCA competition sub-pages — unlimited URLs, thin content risk (same strategy as WCA Live)

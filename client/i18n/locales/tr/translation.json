@@ -2016,14 +2016,20 @@
         "user_fallback": "Kullanıcı",
         "user_profile_title": "{{username}} - Cuber Profili | Zkt Timer",
         "user_profile_description": "{{username}} kullanıcısının zeka küpü profili. Rekorları, çözüm istatistikleri ve yarışma geçmişi.",
-        "trainer_title": "Algoritma Eğitmeni - Zkt Timer",
-        "trainer_description": "F2L, OLL, PLL ve daha fazla algoritma öğren. İnteraktif 3D küp ile antrenman yap ve hızını artır.",
+        "trainer_title": "Zeka Küpü Algoritma Antrenörü — OLL, PLL, F2L, ZBLL, PLL Tanıma ve Cross Verimliliği | Zkt Timer",
+        "trainer_description": "Zeka küpü algoritmalarını aralıklı tekrar ile çalış: OLL, PLL, F2L, ZBLL ve daha fazlası. PLL'i bakışta tanımayı çalış, Cross / XCross / EOCross verimliliğini antrenmana al ve canlı desen eşleştirme için akıllı küp bağla. İnteraktif 3D küp ve algoritma başına istatistik.",
         "stats_title": "Çözüm İstatistikleri - Zkt Timer",
         "stats_description": "Zeka küpü performansını analiz et. Ortalamalar, en iyi süreler, grafikler ve detaylı istatistikler.",
         "solves_title": "Çözüm Geçmişi - Zkt Timer",
         "solves_description": "Tüm zeka küpü çözümlerini görüntüle. Scramble, süre ve çözüm detayları ile performans analizi.",
         "leaderboards_title": "Sıralama - Zkt Timer",
         "leaderboards_description": "En hızlı zeka küpü çözücüler! Single ve Average rekorları, kategori bazlı sıralamalar.",
+        "terms_title": "Kullanım Şartları - Zkt Timer",
+        "terms_description": "Zkt Timer kullanım şartları: kullanım kuralları, hesaplar, içerik ve kullanıcı olarak hak ve sorumluluklarınız.",
+        "privacy_title": "Gizlilik Politikası - Zkt Timer",
+        "privacy_description": "Zkt Timer verilerinizi nasıl topluyor, kullanıyor ve koruyor. Gizlilik politikası ve çerez bilgileri.",
+        "credits_title": "Teşekkürler ve Katkılar - Zkt Timer",
+        "credits_description": "Zkt Timer'a ilham veren ve geliştirilmesine katkı sağlayan açık kaynak projeler, kütüphaneler ve geliştiriciler.",
         "app_description": "En gelişmiş online zeka küpü timer, WCA yarışma ve speedcubing platformu. Milisaniye hassasiyetinde zamanlayıcı.",
         "feature_list": [
             "Zeka küpü timer",
@@ -2031,7 +2037,9 @@
             "Canlı yarışma sonuçları",
             "Canlı yarışma odaları",
             "Global sıralama",
-            "Algoritma eğitmeni",
+            "Algoritma antrenörü (OLL, PLL, F2L, ZBLL)",
+            "PLL tanıma antrenörü",
+            "Cross ve EOCross verimlilik antrenörü",
             "Akıllı küp desteği",
             "Stackmat Timer desteği"
         ],
@@ -2050,7 +2058,7 @@
         "keywords": "rubik küp zamanlayıcı, zeka küpü timer, küp zamanlayıcı, online küp timer, WCA yarışmaları, speedcubing Türkiye, zeka küpü, algoritma antrenörü",
         "home_keywords": "rubik küp zamanlayıcı, online küp timer, speedcubing platformu, zeka küpü topluluğu, WCA timer",
         "timer_keywords": "rubik küp zamanlayıcı, online timer, WCA karıştırma, stackmat timer, akıllı küp timer, milisaniye hassasiyeti",
-        "trainer_keywords": "OLL antrenörü, PLL antrenörü, F2L antrenörü, ZBLL antrenörü, algoritma antrenörü, rubik küp algoritmaları, speedcubing algoritmaları",
+        "trainer_keywords": "OLL antrenörü, PLL antrenörü, F2L antrenörü, ZBLL antrenörü, PLL tanıma antrenörü, cross antrenörü, verimlilik antrenörü, EOCross antrenörü, akıllı küp antrenörü, algoritma antrenörü, rubik küp algoritmaları, speedcubing algoritmaları",
         "rooms_keywords": "online küp yarışı, çok oyunculu speedcubing, canlı yarış odaları, küp yarışı, speedcubing online",
         "battle_keywords": "1v1 küp düellosu, rubik küp düellosu, versus mod, küp karşılaşması, speedcubing düellosu",
         "leaderboards_keywords": "rubik küp sıralaması, speedcubing liderlik tablosu, en hızlı cuberlar, küp rekorları, en iyi çözücüler",
@@ -2159,8 +2167,8 @@
                 "a": "Evet, tamamen. Ayarlar > Hesap > Tehlike Bölgesi > Hesabı Sil'e gidin. Bu işlem tüm çözümlerinizi, oturumlarınızı, profil verilerinizi ve WCA bağlantınızı kalıcı olarak siler. İşlem geri alınamaz. Yedek istiyorsanız önce verilerinizi dışa aktarın."
             },
             {
-                "q": "Zkt Timer ücretsiz mi?",
-                "a": "Zkt Timer'ın temel özellikleri tamamen ücretsizdir: timer, scramble'lar, temel istatistikler, online odalar, liderlik tabloları ve algoritma antrenörü. Pro üyelik gelişmiş özellikleri açar. Reklam yoktur."
+                "q": "Zkt Timer'ı kullanmak için ödeme yapmam gerekiyor mu?",
+                "a": "Kayıt olup temel deneyimi kullanmaya hemen başlayabilirsiniz: timer, WCA scramble'ları, istatistikler, online yarış odaları, liderlik tabloları ve algoritma antrenörü. Pro üyelik; gelişmiş istatistikler, sınırsız oturum, PDF dışa aktarma, akıllı küp antrenör modları, premium temalar ve öncelikli destek açar. Reklam yoktur."
             },
             {
                 "q": "iOS veya Android uygulaması var mı?",
@@ -2177,6 +2185,14 @@
             {
                 "q": "Zkt Timer internet olmadan nasıl çalışır?",
                 "a": "PWA olarak Zkt Timer ilk ziyaretten sonra tüm uygulama dosyalarını önbelleğe alır. Tamamen offline olarak çözüm zamanlayabilir, scramble üretebilir ve önbelleğe alınmış istatistikleri görüntüleyebilirsiniz. Yeniden bağlandığınızda bekleyen çözümler Background Sync API ile otomatik senkronize edilir."
+            },
+            {
+                "q": "PLL tanıma antrenörü nedir?",
+                "a": "PLL tanıma antrenörü, doğru PLL vakasını bakışta tanıyıp harf adını klavyeden yazma becerinizi çalıştırır — çözmeye gerek yok. Rehberli çok adımlı bir görev, her açıyı kapsayan iki taraflı bir tanıma rehberi, zayıf vakalarınıza odaklanan uyarlanabilir bir kuyruk ve bir sözlük içerir. Klavye tabanlı, ayrı bir mod olarak çalışır."
+            },
+            {
+                "q": "Cross verimlilik antrenörü nedir?",
+                "a": "Verimlilik antrenörü daha verimli Cross, XCross ve EOCross çözümleri kurmana yardım eder. Hamlelerini analiz eder, optimal veya optimale yakın çözümleri gösterir ve daha hızlı, akıcı çözümler için hamle sayını düşürmene yardımcı olur. Akıllı küp bağlıyken gerçek çözümünü canlı takip edebilir."
             }
         ],
         "nav_timer_name": "Zamanlayıcı",
