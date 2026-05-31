@@ -9,6 +9,7 @@ import {useDispatch} from 'react-redux';
 import {openModal, closeModal} from '../../../../actions/general';
 import BluetoothErrorMessage from '../../common/BluetoothErrorMessage';
 import BleScanningModal from '../../smart_cube/ble_scanning_modal/BleScanningModal';
+import {showBleConnectInfo} from '../../common/showBleConnectInfo';
 import {isNative} from '../../../../util/platform';
 import {useTranslation} from 'react-i18next';
 
@@ -102,6 +103,8 @@ export default function GanTimer() {
 			conn = null;
 			setConnected(false);
 		} else {
+			// Web-only pre-connection info screen (browser/Chrome-flag guidance + app links).
+			if (!(await showBleConnectInfo())) return;
 			console.log('[BLE] GanTimer handleConnectButton, isNative:', isNative());
 			let bluetoothAvailable = isNative() || (!!navigator.bluetooth && (await navigator.bluetooth.getAvailability()));
 			console.log('[BLE] GanTimer bluetoothAvailable:', bluetoothAvailable);

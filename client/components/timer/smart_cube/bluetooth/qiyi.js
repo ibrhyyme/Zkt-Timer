@@ -9,6 +9,7 @@ import LZString from './lz_string';
 import aes128 from './ae128';
 import Cube from 'cubejs';
 import { setTimerParams } from '../../helpers/params';
+import { requestMacFromUser } from '../mac_input/requestMacFromUser';
 
 const SOLVED_FACELET = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
 
@@ -23,6 +24,11 @@ const QIYI_CIC_LIST = [0x0504];
 const KEYS = ['NoDg7ANAjGkEwBYCc0xQnADAVgkzGAzHNAGyRTanQi5QIFyHrjQMQgsC6QA'];
 
 const MAC_CACHE_KEY = 'qiyi_cube_mac';
+
+// Time to wait for the first valid (CRC-passing) packet after the hello handshake.
+// If nothing decrypts within this window the MAC is wrong (or the cube is asleep),
+// so we tear the connection down instead of showing a fake "connected" state.
+const HANDSHAKE_TIMEOUT_MS = 5000;
 
 // cstimer crc16modbus() — 1:1 port
 function crc16modbus(data) {
@@ -58,6 +64,12 @@ export default class QiYi extends SmartCube {
 		this.prevMoves = [];
 		this.lastTs = 0;
 		this.batteryLevel = 0;
+
+		// Handshake confirmation state — connection is only "real" once the cube
+		// answers with a packet that actually decrypts (proves the MAC is correct).
+		this._connected = false;
+		this._handshakeTimer = null;
+		this._pendingMac = null;
 	}
 
 	getDecoder() {
@@ -154,19 +166,17 @@ export default class QiYi extends SmartCube {
 			return cached;
 		}
 
-		// 4) Prompt
-		const promptMsg = 'QiYi Smart Cube: Could not auto-discover MAC address.\nPlease enter the cube\'s MAC address (example: CC:A3:00:00:AB:CD):';
-		const userInput = typeof window !== 'undefined' ? window.prompt(promptMsg, defaultMac || '') : null;
-		if (userInput) {
-			const cleaned = userInput.trim().toUpperCase();
-			localStorage.setItem(MAC_CACHE_KEY, cleaned);
-			return cleaned;
-		}
-		return null;
+		// 4) Ask the user via modal. Returns a normalized MAC or null (cancelled).
+		// Not persisted here — cached only after the cube proves it's correct (_confirmConnected).
+		return await requestMacFromUser({ defaultMac, deviceName: this.deviceName });
 	}
 
 	async init() {
 		await this.adapter.connect(this.device, () => {
+			if (this._handshakeTimer) {
+				clearTimeout(this._handshakeTimer);
+				this._handshakeTimer = null;
+			}
 			this.alertDisconnected();
 		});
 
@@ -187,18 +197,46 @@ export default class QiYi extends SmartCube {
 		if (!this.deviceMac) {
 			throw new Error('[qiyi] Could not obtain MAC address, connection not possible');
 		}
+		// Treat the MAC as unverified until the cube answers (see _confirmConnected).
+		this._pendingMac = this.deviceMac;
 
-		// Connected callback
-		const dummyServer = {
+		// Handshake with hello message. We do NOT mark the connection as established
+		// here — alertConnected fires only when the first packet actually decrypts.
+		await this.sendHello(this.deviceMac);
+		this._startHandshakeWatchdog();
+	}
+
+	// Wrong MAC => packets never decrypt/CRC-pass => the cube stays silent. Tear the
+	// connection down, drop the bad cached MAC, and surface a clear error.
+	_startHandshakeWatchdog() {
+		if (this._handshakeTimer) clearTimeout(this._handshakeTimer);
+		this._handshakeTimer = setTimeout(() => {
+			this._handshakeTimer = null;
+			if (this._connected) return;
+			console.warn('[qiyi] handshake timeout — wrong MAC or cube unresponsive');
+			try { localStorage.removeItem(MAC_CACHE_KEY); } catch (e) { /* ignore */ }
+			try { this.adapter.disconnect(this.device); } catch (e) { /* ignore */ }
+			this.alertScanError('wrong_mac');
+		}, HANDSHAKE_TIMEOUT_MS);
+	}
+
+	// Called on the first packet that decrypts and passes CRC — proof the MAC is right.
+	_confirmConnected() {
+		if (this._connected) return;
+		this._connected = true;
+		if (this._handshakeTimer) {
+			clearTimeout(this._handshakeTimer);
+			this._handshakeTimer = null;
+		}
+		if (this._pendingMac) {
+			try { localStorage.setItem(MAC_CACHE_KEY, this._pendingMac); } catch (e) { /* ignore */ }
+		}
+		this.alertConnected({
 			device: {
 				name: this.device.name,
 				id: this.device.deviceId,
 			},
-		};
-		await this.alertConnected(dummyServer);
-
-		// Handshake with hello message
-		await this.sendHello(this.deviceMac);
+		});
 	}
 
 	// cstimer onCubeEvent() — 1:1 port
@@ -221,6 +259,8 @@ export default class QiYi extends SmartCube {
 			console.warn('[qiyi] crc check error');
 			return;
 		}
+		// A decrypting, CRC-valid packet proves the MAC is correct — confirm the connection.
+		this._confirmConnected();
 		this.parseCubeData(trimmed);
 	}
 

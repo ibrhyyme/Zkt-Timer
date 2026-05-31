@@ -21,6 +21,7 @@
 
 import {Observable, Subject} from 'rxjs';
 import {getBleAdapter, BleAdapter, BleDevice} from '../../../../util/ble';
+import {requestMacFromUser} from '../../smart_cube/mac_input/requestMacFromUser';
 
 // ===========================================================================
 // AES-128-ECB (cstimer sha256.js:107-218 ported line-by-line)
@@ -160,6 +161,11 @@ const QIYI_CIC_LIST: number[] = [0x0504];
 // QY-Timer and QY-Timer-V2 are cached separately.
 const MAC_CACHE_KEY = 'qiyi_timer_mac_map';
 
+// Time to wait for the first notification after the hello handshake. A wrong MAC means
+// the encrypted hello is rejected and the timer stays silent, so if nothing arrives in
+// this window we treat the connection as failed instead of faking a "connected" state.
+const HANDSHAKE_TIMEOUT_MS = 5000;
+
 // ===========================================================================
 // Firmware variant routing
 // ===========================================================================
@@ -288,6 +294,8 @@ let _deviceMac = '';
 let _eventSubject: Subject<QiyiTimerEvent> | null = null;
 let _disposed = false;
 let _notifyReceived = false;
+// Resolved by the first notification — used to verify the handshake (correct MAC).
+let _firstNotifyResolve: (() => void) | null = null;
 
 // onReadEvent state (cstimer qiyitimer.js:84-86)
 let _waitPkg = 0;
@@ -358,6 +366,10 @@ function onReadEvent(value: DataView): void {
 	if (!_decoder || !_eventSubject) return;
 
 	_notifyReceived = true;
+	if (_firstNotifyResolve) {
+		_firstNotifyResolve();
+		_firstNotifyResolve = null;
+	}
 	let msg: number[] = [];
 	for (let i = 0; i < value.byteLength; i++) msg[i] = value.getUint8(i);
 
@@ -531,26 +543,18 @@ function setCachedMacForDevice(deviceName: string, mac: string): void {
 	}
 }
 
-// cstimer reqMacAddr semantic — defaultMac is not auto-accepted, only initial value for prompt.
-function promptForMac(defaultMac: string | null, currentMac: string | null): string | null {
-	if (typeof window === 'undefined') return null;
-	const initial = currentMac || defaultMac || 'xx:xx:xx:xx:xx:xx';
-	const promptMsg =
-		'QiYi Timer MAC address (format: XX:XX:XX:XX:XX:XX)\n\n' +
-		'How to find it:\n' +
-		'  Windows: Settings > Bluetooth and devices > QY-Timer > Details > Bluetooth address\n' +
-		'  macOS:   System Settings > Bluetooth > device right-click > Copy address\n' +
-		'  Android: Settings > Bluetooth > QY-Timer (ⓘ) > MAC address\n\n' +
-		'You can confirm the suggestion below or replace it with the correct MAC.\n' +
-		'Once entered, it will be saved to the device name and not asked again.';
-	const userInput = window.prompt(promptMsg, initial);
-	if (!userInput) return null;
-	const cleaned = userInput.trim().toUpperCase().replace(/-/g, ':');
-	if (!/^[0-9A-F]{2}(:[0-9A-F]{2}){5}$/.test(cleaned)) {
-		console.warn('[QiyiTimer] invalid MAC format:', cleaned);
-		return null;
+// Drop a bad cached MAC so the next attempt re-asks instead of silently failing again.
+function clearCachedMacForDevice(deviceName: string): void {
+	if (!deviceName) return;
+	try {
+		const raw = localStorage.getItem(MAC_CACHE_KEY);
+		if (!raw) return;
+		const map = JSON.parse(raw) as Record<string, string>;
+		delete map[deviceName];
+		localStorage.setItem(MAC_CACHE_KEY, JSON.stringify(map));
+	} catch (_) {
+		/* ignore */
 	}
-	return cleaned;
 }
 
 // ===========================================================================
@@ -655,8 +659,8 @@ export async function connectQiyiTimer(): Promise<QiyiTimerConnection> {
 	}
 
 	if (!finalMac) {
-		// No cache, prompt user — defaultMac as initial value
-		finalMac = promptForMac(defaultMac, null);
+		// No cache — ask the user via modal (returns a normalized MAC or null).
+		finalMac = await requestMacFromUser({ defaultMac, deviceName: _deviceName });
 	}
 
 	if (!finalMac) {
@@ -679,26 +683,12 @@ export async function connectQiyiTimer(): Promise<QiyiTimerConnection> {
 
 	finalMac = finalMac.toUpperCase();
 	_deviceMac = finalMac;
-	setCachedMacForDevice(_deviceName, finalMac);
+	// NOTE: the MAC is cached only AFTER the handshake is verified below. Persisting a
+	// wrong MAC here was the root cause of the "connected but not working" bug.
 
 	// === Step 8: sendHello (cstimer init:236) ===
 	try {
 		await sendHello(finalMac, variant);
-		// After 8s, if no notification received, warn (wrong MAC or device off)
-		// _notifyReceived flag is set in onReadEvent
-		const helloAt = Date.now();
-		setTimeout(() => {
-			if (_eventSubject && !_disposed && !_notifyReceived) {
-				console.warn(
-					'[QiyiTimer] WARNING: Hello sent but no notification received within 8s.\n' +
-					'  Possible reasons:\n' +
-					'  1) Wrong MAC (check Bluetooth settings)\n' +
-					'  2) Device off/in sleep mode\n' +
-					'  You can clear cache with localStorage.removeItem("' + MAC_CACHE_KEY + '") and try again.\n' +
-					'  helloAt=' + helloAt
-				);
-			}
-		}, 8000);
 	} catch (e) {
 		console.error('[QiyiTimer] sendHello error:', e);
 		// If hello fails, clean up connection
@@ -717,6 +707,44 @@ export async function connectQiyiTimer(): Promise<QiyiTimerConnection> {
 		_clearModuleState();
 		throw e;
 	}
+
+	// === Step 9: handshake verification ===
+	// A wrong MAC means the encrypted hello is rejected and the timer never notifies.
+	// Wait for the first notification; if none arrives within the window, the MAC is wrong
+	// (or the timer is off/asleep). Only then is the connection considered real.
+	const handshakeOk = await new Promise<boolean>((resolve) => {
+		if (_notifyReceived) {
+			resolve(true);
+			return;
+		}
+		_firstNotifyResolve = () => resolve(true);
+		setTimeout(() => {
+			_firstNotifyResolve = null;
+			resolve(_notifyReceived);
+		}, HANDSHAKE_TIMEOUT_MS);
+	});
+
+	if (!handshakeOk) {
+		console.warn('[QiyiTimer] handshake timeout — wrong MAC or timer off/asleep');
+		clearCachedMacForDevice(_deviceName);
+		try {
+			await adapter.stopNotifications(device, SERVICE_UUID, CHRCT_READ);
+		} catch (_) {
+			/* ignore */
+		}
+		try {
+			await adapter.disconnect(device);
+		} catch (_) {
+			/* ignore */
+		}
+		_eventSubject?.next({state: QiyiTimerState.DISCONNECT});
+		_eventSubject?.complete();
+		_clearModuleState();
+		throw new Error('QIYI_TIMER_WRONG_MAC');
+	}
+
+	// Verified — safe to persist the MAC for future auto-connects.
+	setCachedMacForDevice(_deviceName, finalMac);
 
 	// Connection object
 	_connection = {
@@ -756,6 +784,7 @@ function _clearModuleState(): void {
 	_deviceMac = '';
 	_eventSubject = null;
 	_notifyReceived = false;
+	_firstNotifyResolve = null;
 	// _decoder persists — cstimer also uses `decoder = decoder || ...` pattern
 	_waitPkg = 0;
 	_payloadLen = 0;

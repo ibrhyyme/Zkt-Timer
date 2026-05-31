@@ -8,7 +8,7 @@ import './BleScanningModal.scss';
 const b = block('ble-scanning-modal');
 
 type Phase = 'scanning' | 'connecting' | 'error';
-type ErrorKind = 'permission' | 'disabled' | 'notfound';
+type ErrorKind = 'permission' | 'disabled' | 'notfound' | 'wrong_mac';
 type Step = 'found' | 'paired' | 'reading_service' | 'done';
 type StepStatus = 'pending' | 'active' | 'done';
 
@@ -72,7 +72,9 @@ export default function BleScanningModal({ mode, onCancel, onRetry }: BleScannin
 			? 'permission'
 			: smartCubeScanError === 'disabled'
 				? 'disabled'
-				: 'notfound';
+				: smartCubeScanError === 'wrong_mac'
+					? 'wrong_mac'
+					: 'notfound';
 
 	const effectiveStep: Step = smartCubeConnectStep ?? 'found';
 
@@ -90,21 +92,27 @@ export default function BleScanningModal({ mode, onCancel, onRetry }: BleScannin
 			? 'smart_cube.permission_denied'
 			: errorKind === 'disabled'
 				? 'smart_cube.bluetooth_disabled'
-				: 'smart_cube.scan_failed';
+				: errorKind === 'wrong_mac'
+					? 'smart_cube.wrong_mac'
+					: 'smart_cube.scan_failed';
 
 	const errorDescKey =
 		errorKind === 'permission'
 			? 'smart_cube.permission_denied_desc'
 			: errorKind === 'disabled'
 				? 'smart_cube.bluetooth_disabled_desc'
-				: 'smart_cube.scan_failed_desc';
+				: errorKind === 'wrong_mac'
+					? 'smart_cube.wrong_mac_desc'
+					: 'smart_cube.scan_failed_desc';
 
 	const errorTipPrefix =
 		errorKind === 'permission'
 			? 'smart_cube.permission_denied_tip_'
 			: errorKind === 'disabled'
 				? 'smart_cube.bluetooth_disabled_tip_'
-				: 'smart_cube.scan_failed_tip_';
+				: errorKind === 'wrong_mac'
+					? 'smart_cube.wrong_mac_tip_'
+					: 'smart_cube.scan_failed_tip_';
 
 	const title =
 		phase === 'scanning'

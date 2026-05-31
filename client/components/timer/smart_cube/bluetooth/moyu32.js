@@ -9,6 +9,7 @@ import SmartCube from './smart_cube';
 import LZString from './lz_string';
 import aes128 from './ae128';
 import { setTimerParams } from '../../helpers/params';
+import { requestMacFromUser } from '../mac_input/requestMacFromUser';
 import Cube from 'cubejs';
 
 const SOLVED_FACELET = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
@@ -27,6 +28,11 @@ const KEYS = [
 const MOYU32_CIC_LIST = Array(255).fill(undefined).map((_, i) => (i + 1) << 8);
 
 const MAC_CACHE_KEY = 'moyu32_cube_mac';
+
+// Time to wait for the first real cube state after the initial requests. If the cube
+// never answers with a valid facelet state the MAC is wrong (decryption is garbage),
+// so we tear the connection down instead of faking a "connected" state.
+const HANDSHAKE_TIMEOUT_MS = 5000;
 
 function valuedArray(n, val) {
 	const arr = [];
@@ -64,6 +70,12 @@ export default class MoYu32 extends SmartCube {
 		this.moveCnt = -1;
 		this.prevMoveCnt = -1;
 		this.batteryLevel = 0;
+
+		// Handshake confirmation state — connection is only "real" once the cube
+		// answers with a valid state packet (proves the MAC is correct).
+		this._connected = false;
+		this._handshakeTimer = null;
+		this._pendingMac = null;
 	}
 
 	// cstimer getKeyAndIv() — 1:1 port
@@ -205,14 +217,9 @@ export default class MoYu32 extends SmartCube {
 			return cached;
 		}
 
-		const promptMsg = 'MoYu WeiLong AI: Could not auto-discover MAC address.\nPlease enter the cube\'s MAC address (example: CF:30:16:00:AB:CD):';
-		const userInput = typeof window !== 'undefined' ? window.prompt(promptMsg, defaultMac || '') : null;
-		if (userInput) {
-			const cleaned = userInput.trim().toUpperCase();
-			localStorage.setItem(MAC_CACHE_KEY, cleaned);
-			return cleaned;
-		}
-		return null;
+		// Ask the user via modal. Returns a normalized MAC or null (cancelled).
+		// Not persisted here — cached only after the cube proves it's correct (_confirmConnected).
+		return await requestMacFromUser({ defaultMac, deviceName: this.deviceName });
 	}
 
 	async init() {
@@ -220,6 +227,10 @@ export default class MoYu32 extends SmartCube {
 
 		await this.adapter.connect(this.device, () => {
 			console.log('[Moyu32] disconnect');
+			if (this._handshakeTimer) {
+				clearTimeout(this._handshakeTimer);
+				this._handshakeTimer = null;
+			}
 			this.alertDisconnected();
 		});
 
@@ -242,20 +253,49 @@ export default class MoYu32 extends SmartCube {
 		}
 		console.log('[Moyu32] MAC in use:', this.deviceMac);
 		this.initDecoder(this.deviceMac);
+		// Treat the MAC as unverified until the cube answers (see _confirmConnected).
+		this._pendingMac = this.deviceMac;
 
-		// Connected callback (dummy server)
-		const dummyServer = {
+		// Same initial request order as cstimer: info -> status -> power.
+		// We do NOT mark the connection as established here — alertConnected fires
+		// only when the first valid state packet arrives (see initCubeState).
+		await this.requestCubeInfo();
+		await this.requestCubeStatus();
+		await this.requestCubePower();
+		this._startHandshakeWatchdog();
+	}
+
+	// Wrong MAC => decryption is garbage => no valid state packet ever arrives. Tear the
+	// connection down, drop the bad cached MAC, and surface a clear error.
+	_startHandshakeWatchdog() {
+		if (this._handshakeTimer) clearTimeout(this._handshakeTimer);
+		this._handshakeTimer = setTimeout(() => {
+			this._handshakeTimer = null;
+			if (this._connected) return;
+			console.warn('[Moyu32] handshake timeout — wrong MAC or cube unresponsive');
+			try { localStorage.removeItem(MAC_CACHE_KEY); } catch (e) { /* ignore */ }
+			try { this.adapter.disconnect(this.device); } catch (e) { /* ignore */ }
+			this.alertScanError('wrong_mac');
+		}, HANDSHAKE_TIMEOUT_MS);
+	}
+
+	// Called on the first valid cube state — proof the MAC is right.
+	_confirmConnected() {
+		if (this._connected) return;
+		this._connected = true;
+		if (this._handshakeTimer) {
+			clearTimeout(this._handshakeTimer);
+			this._handshakeTimer = null;
+		}
+		if (this._pendingMac) {
+			try { localStorage.setItem(MAC_CACHE_KEY, this._pendingMac); } catch (e) { /* ignore */ }
+		}
+		this.alertConnected({
 			device: {
 				name: this.device.name,
 				id: this.device.deviceId,
 			},
-		};
-		await this.alertConnected(dummyServer);
-
-		// Same initial request order as cstimer: info -> status -> power
-		await this.requestCubeInfo();
-		await this.requestCubeStatus();
-		await this.requestCubePower();
+		});
 	}
 
 	onStateChanged(value) {
@@ -267,6 +307,8 @@ export default class MoYu32 extends SmartCube {
 
 	initCubeState() {
 		console.log('[Moyu32] initialising cube state, facelet:', this.latestFacelet);
+		// First valid state means the MAC decrypted correctly — confirm the connection.
+		this._confirmConnected();
 		this.alertCubeState(this.latestFacelet);
 		this.prevCube = Cube.fromString(this.latestFacelet);
 		this.prevMoveCnt = this.moveCnt;

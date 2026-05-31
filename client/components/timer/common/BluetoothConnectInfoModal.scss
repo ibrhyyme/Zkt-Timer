@@ -1,0 +1,133 @@
+.ble-info {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 12px;
+	padding: 4px 2px;
+
+	&__icon {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 56px;
+		height: 56px;
+		margin: 0 auto;
+		border-radius: 16px;
+		color: rgb(var(--primary-color));
+		background: rgba(var(--primary-color), 0.14);
+	}
+
+	&__title {
+		margin: 0;
+		text-align: center;
+		font-size: 18px;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+	}
+
+	&__lead {
+		margin: 0;
+		text-align: center;
+		font-size: 14px;
+		font-weight: 500;
+		line-height: 1.5;
+		color: rgb(var(--text-color));
+	}
+
+	&__list {
+		margin: 0;
+		padding-left: 20px;
+		list-style: disc;
+
+		li {
+			font-size: 13.5px;
+			font-weight: 500;
+			line-height: 1.7;
+			color: rgb(var(--text-color));
+		}
+	}
+
+	&__app {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		padding: 14px;
+		border-radius: 12px;
+		background: rgba(var(--text-color), 0.05);
+	}
+
+	&__app-text {
+		font-size: 13.5px;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+	}
+
+	&__app-buttons {
+		display: flex;
+		gap: 10px;
+	}
+
+	&__store {
+		display: flex;
+		flex: 1;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+		padding: 10px 12px;
+		font-size: 13px;
+		font-weight: 700;
+		text-decoration: none;
+		border-radius: 10px;
+		color: rgb(var(--text-color));
+		background: rgba(var(--text-color), 0.08);
+		transition: background 0.15s ease;
+
+		&:hover {
+			background: rgba(var(--text-color), 0.14);
+		}
+	}
+
+	&__dontshow {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		font-size: 13px;
+		font-weight: 500;
+		color: rgb(var(--text-color));
+		cursor: pointer;
+
+		input {
+			width: 16px;
+			height: 16px;
+			cursor: pointer;
+			accent-color: rgb(var(--primary-color));
+		}
+	}
+
+	&__actions {
+		display: flex;
+		justify-content: flex-end;
+		gap: 10px;
+		margin-top: 4px;
+	}
+
+	&__btn {
+		padding: 10px 22px;
+		font-size: 14px;
+		font-weight: 700;
+		border: none;
+		border-radius: 10px;
+		cursor: pointer;
+		transition: opacity 0.15s ease, background 0.15s ease;
+
+		&--ghost {
+			color: rgb(var(--text-color));
+			background: rgba(var(--text-color), 0.1);
+		}
+
+		&--primary {
+			color: #fff;
+			background: rgb(var(--primary-color));
+		}
+	}
+}

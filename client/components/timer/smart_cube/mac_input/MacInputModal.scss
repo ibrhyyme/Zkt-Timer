@@ -1,0 +1,111 @@
+.mac-input {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding: 4px 2px;
+
+	&__title {
+		margin: 0;
+		font-size: 18px;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+	}
+
+	&__intro {
+		margin: 0;
+		font-size: 14px;
+		font-weight: 500;
+		line-height: 1.5;
+		color: rgb(var(--text-color));
+	}
+
+	&__field {
+		width: 100%;
+		padding: 12px 14px;
+		font-size: 16px;
+		font-family: monospace;
+		letter-spacing: 1px;
+		text-transform: uppercase;
+		color: rgb(var(--text-color));
+		background: rgba(var(--text-color), 0.05);
+		border: 2px solid rgba(var(--text-color), 0.18);
+		border-radius: 10px;
+		outline: none;
+		transition: border-color 0.15s ease;
+
+		&:focus {
+			border-color: rgb(var(--primary-color));
+		}
+
+		&--invalid {
+			border-color: rgb(var(--error-color));
+		}
+	}
+
+	&__error {
+		font-size: 13px;
+		font-weight: 600;
+		color: rgb(var(--error-color));
+		margin-top: -4px;
+	}
+
+	&__help {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		padding: 12px 14px;
+		background: rgba(var(--text-color), 0.05);
+		border-radius: 10px;
+	}
+
+	&__help-title {
+		font-size: 13px;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+	}
+
+	&__help-list {
+		margin: 0;
+		padding-left: 18px;
+		list-style: disc;
+
+		li {
+			font-size: 13px;
+			font-weight: 500;
+			line-height: 1.6;
+			color: rgb(var(--text-color));
+		}
+	}
+
+	&__actions {
+		display: flex;
+		justify-content: flex-end;
+		gap: 10px;
+		margin-top: 4px;
+	}
+
+	&__btn {
+		padding: 10px 20px;
+		font-size: 14px;
+		font-weight: 700;
+		border: none;
+		border-radius: 10px;
+		cursor: pointer;
+		transition: opacity 0.15s ease, background 0.15s ease;
+
+		&--ghost {
+			color: rgb(var(--text-color));
+			background: rgba(var(--text-color), 0.1);
+		}
+
+		&--primary {
+			color: #fff;
+			background: rgb(var(--primary-color));
+		}
+
+		&:disabled {
+			cursor: not-allowed;
+			opacity: 0.4;
+		}
+	}
+}
