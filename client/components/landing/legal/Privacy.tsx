@@ -1,20 +1,23 @@
 import React from 'react';
 import {useTranslation} from 'react-i18next';
-import {useHistory} from 'react-router-dom';
+import {useHistory, useLocation} from 'react-router-dom';
 import {ArrowLeft} from 'phosphor-react';
 import './Legal.scss';
 import block from '../../../styles/bem';
 import {isNative} from '../../../util/platform';
+import Header from '../../layout/header/Header';
 
 const b = block('landing-legal');
 
 export default function Privacy() {
 	const {t, i18n} = useTranslation();
 	const history = useHistory();
+	const location = useLocation();
 	const isNonTurkish = !i18n.language?.startsWith('tr');
 
 	return (
 		<div className={b()}>
+			<Header path={location.pathname} />
 			{isNative() && (
 				<button type="button" className={b('back-btn')} onClick={() => history.goBack()}>
 					<ArrowLeft weight="bold" size={20} />

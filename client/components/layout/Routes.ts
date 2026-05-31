@@ -127,8 +127,8 @@ function routeRedirect(path: string, redirect: string): RedirectPath {
  * does NOT remount the tree and wipe TrainerProvider state. The shared groupKey gives the
  * <Switch>-rendered <Route> a stable React key across these paths.
  */
-function trainerRoute(path: string): PageContext {
-	const r = route(path, null, App, Trainer);
+function trainerRoute(path: string, restricted = true): PageContext {
+	const r = route(path, null, App, Trainer, restricted);
 	r.groupKey = 'trainer-shell';
 	return r;
 }
@@ -185,7 +185,9 @@ export const routes: (PageContext | RedirectPath)[] = [
 	trainerRoute('/trainer/recognition'),
 	trainerRoute('/trainer/efficiency/settings'),
 	trainerRoute('/trainer/efficiency'),
-	trainerRoute('/trainer'),
+	// Trainer landing (mode selection) is public for SEO — anon visitors see the cards,
+	// but selecting a mode requires login (handled in TrainerLanding + restricted sub-routes).
+	trainerRoute('/trainer', false),
 
 	// Account
 	route('/account/personal-info', App, Account, PersonalInfo),

@@ -1,8 +1,10 @@
 import React from 'react';
 import {useTranslation} from 'react-i18next';
+import {useLocation} from 'react-router-dom';
 import type {TFunction} from 'i18next';
 import './Legal.scss';
 import block from '../../../styles/bem';
+import Header from '../../layout/header/Header';
 
 const b = block('landing-legal');
 
@@ -177,11 +179,13 @@ function ReferenceItem({item, t}: {item: Reference; t: TFunction}) {
 
 export default function Credits() {
 	const {t} = useTranslation();
+	const location = useLocation();
 
 	const allRefs = [...INSPIRATIONS, ...LIBRARIES];
 
 	return (
 		<div className={b()}>
+			<Header path={location.pathname} />
 			<h1>{t('credits.title')}</h1>
 			<p dangerouslySetInnerHTML={{__html: t('credits.intro_1')}} />
 			<p dangerouslySetInnerHTML={{__html: t('credits.intro_2')}} />

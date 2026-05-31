@@ -2016,14 +2016,20 @@
         "user_fallback": "Usuario",
         "user_profile_title": "{{username}} - Perfil de cubero | Zkt Timer",
         "user_profile_description": "Perfil de cubo Rubik de {{username}}. Récords, estadísticas de resoluciones e historial de competencias.",
-        "trainer_title": "Entrenador de algoritmos - Zkt Timer",
-        "trainer_description": "Aprende algoritmos de F2L, OLL, PLL y más. Entrena con cubo 3D interactivo y mejora tu velocidad.",
+        "trainer_title": "Entrenador de Algoritmos de Cubo Rubik — OLL, PLL, F2L, ZBLL, Reconocimiento PLL y Eficiencia de Cross | Zkt Timer",
+        "trainer_description": "Domina los algoritmos del cubo Rubik con repetición espaciada: OLL, PLL, F2L, ZBLL y más. Practica el reconocimiento de PLL a simple vista, entrena la eficiencia de Cross / XCross / EOCross y conecta un cubo inteligente para emparejamiento de patrones en vivo. Cubo 3D interactivo y estadísticas por algoritmo.",
         "stats_title": "Estadísticas de resoluciones - Zkt Timer",
         "stats_description": "Analiza tu rendimiento en el cubo Rubik. Promedios, mejores tiempos, gráficos y estadísticas detalladas.",
         "solves_title": "Historial de resoluciones - Zkt Timer",
         "solves_description": "Ve todas tus resoluciones del cubo Rubik. Análisis de rendimiento con mezcla, tiempo y detalles de resolución.",
         "leaderboards_title": "Clasificaciones - Zkt Timer",
         "leaderboards_description": "¡Los resolvedores de cubo Rubik más rápidos! Récords individuales y de promedio, clasificaciones por categoría.",
+        "terms_title": "Términos de Servicio - Zkt Timer",
+        "terms_description": "Términos de servicio de Zkt Timer: reglas de uso, cuentas, contenido y tus derechos y responsabilidades como usuario.",
+        "privacy_title": "Política de Privacidad - Zkt Timer",
+        "privacy_description": "Cómo Zkt Timer recopila, usa y protege tus datos. Política de privacidad e información de cookies.",
+        "credits_title": "Créditos y Agradecimientos - Zkt Timer",
+        "credits_description": "Los proyectos de código abierto, bibliotecas y desarrolladores que inspiraron y ayudaron a construir Zkt Timer.",
         "app_description": "La aplicación de cronómetro de cubo Rubik, seguimiento de competiciones WCA y plataforma de speedcubing más avanzada. Precisión de milisegundos.",
         "feature_list": [
             "Cronómetro de cubo Rubik",
@@ -2031,7 +2037,9 @@
             "Resultados de competencia en vivo",
             "Salas de carreras en vivo",
             "Clasificaciones globales",
-            "Entrenador de algoritmos",
+            "Entrenador de algoritmos (OLL, PLL, F2L, ZBLL)",
+            "Entrenador de reconocimiento PLL",
+            "Entrenador de eficiencia Cross y EOCross",
             "Soporte para cubos inteligentes",
             "Soporte para Stackmat Timer"
         ],
@@ -2050,7 +2058,7 @@
         "keywords": "temporizador cubo rubik, cronómetro cubo rubik, timer cubo online, competiciones WCA, plataforma speedcubing, cubo rubik, speedcubing, cubing, entrenador de algoritmos",
         "home_keywords": "temporizador cubo rubik, timer cubo online, plataforma speedcubing, comunidad cubing, WCA timer",
         "timer_keywords": "cronómetro cubo rubik, timer online, scramble WCA, stackmat timer, smart cube timer, precisión milisegundos",
-        "trainer_keywords": "entrenador OLL, entrenador PLL, entrenador F2L, entrenador ZBLL, algoritmos cubo rubik, algoritmos speedcubing",
+        "trainer_keywords": "entrenador OLL, entrenador PLL, entrenador F2L, entrenador ZBLL, entrenador reconocimiento PLL, entrenador de cross, entrenador de eficiencia, entrenador EOCross, entrenador cubo inteligente, algoritmos cubo rubik, algoritmos speedcubing",
         "rooms_keywords": "carrera cubo online, speedcubing multijugador, salas de carrera en vivo, competencia cubo online",
         "battle_keywords": "duelo cubo 1v1, duelo rubik, modo versus, batalla de cubo, duelo speedcubing",
         "leaderboards_keywords": "ranking cubo rubik, tablas de clasificación speedcubing, cuberos más rápidos, récords cubo",
@@ -2159,8 +2167,8 @@
                 "a": "Sí, completamente. Ve a Ajustes > Cuenta > Zona de Peligro > Eliminar Cuenta. Esto elimina permanentemente todos tus solves, sesiones, datos de perfil y enlace WCA. La acción es irreversible. Exporta tus datos primero si quieres un respaldo."
             },
             {
-                "q": "¿Zkt Timer es gratis?",
-                "a": "El Zkt Timer básico es completamente gratis: timer, scrambles, estadísticas básicas, salas en línea, clasificaciones y el entrenador de algoritmos. La membresía Pro desbloquea funciones avanzadas. No hay anuncios."
+                "q": "¿Necesito pagar para usar Zkt Timer?",
+                "a": "Puedes registrarte y empezar a usar la experiencia básica de inmediato: el cronómetro, los scrambles WCA, las estadísticas, las salas de carreras en línea, las clasificaciones y el entrenador de algoritmos. La membresía Pro desbloquea estadísticas avanzadas, sesiones ilimitadas, exportación a PDF, los modos de entrenador con cubo inteligente, temas premium y soporte prioritario. No hay anuncios."
             },
             {
                 "q": "¿Hay aplicación iOS o Android?",
@@ -2177,6 +2185,14 @@
             {
                 "q": "¿Cómo funciona Zkt Timer sin internet?",
                 "a": "Como PWA, Zkt Timer almacena todos los archivos de la app después de la primera visita. Puedes cronometrar solves, generar scrambles y ver estadísticas cacheadas totalmente offline. Al reconectar, los solves pendientes se sincronizan automáticamente vía Background Sync API."
+            },
+            {
+                "q": "¿Qué es el entrenador de reconocimiento PLL?",
+                "a": "El entrenador de reconocimiento PLL ejercita tu capacidad de identificar el caso PLL correcto a simple vista y escribir su nombre de letra desde el teclado, sin necesidad de resolver. Incluye una misión guiada de varios pasos, una guía de reconocimiento de dos lados que cubre cada ángulo, una cola adaptativa que se centra en tus casos débiles y un glosario. Funciona como un modo independiente basado en teclado."
+            },
+            {
+                "q": "¿Qué es el entrenador de eficiencia de cross?",
+                "a": "El entrenador de eficiencia te ayuda a construir soluciones de Cross, XCross y EOCross más eficientes. Analiza tus movimientos, muestra soluciones óptimas o casi óptimas y te ayuda a reducir el número de movimientos para resoluciones más rápidas y fluidas. Con un cubo inteligente conectado puede seguir tu solución real en vivo."
             }
         ],
         "nav_timer_name": "Temporizador",
