@@ -66,7 +66,7 @@ export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate,
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-text/[0.05] bg-module shrink-0">
                     <h3 className="text-lg font-bold text-text">{t('rooms.edit_room')}</h3>
-                    <button onClick={onClose} className="text-text/50 hover:text-text transition-colors">
+                    <button onClick={onClose} className="text-text hover:text-text transition-colors">
                         <X size={20} />
                     </button>
                 </div>
@@ -75,7 +75,7 @@ export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate,
                 <div className="p-6 space-y-6 overflow-y-auto">
                     {/* Room Name */}
                     <div className="space-y-2">
-                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block">{t('rooms.room_name')}</label>
+                        <label className="text-xs font-bold text-text uppercase tracking-wider block">{t('rooms.room_name')}</label>
                         <input
                             type="text"
                             value={name}
@@ -89,7 +89,7 @@ export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate,
 
                     {/* Cube Type Selector */}
                     <div className="space-y-2">
-                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block">{t('rooms.cube_type')}</label>
+                        <label className="text-xs font-bold text-text uppercase tracking-wider block">{t('rooms.cube_type')}</label>
                         <div className="relative">
                             <select
                                 value={selectedCubeType}
@@ -105,7 +105,7 @@ export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate,
                                     );
                                 })}
                             </select>
-                            <Cube className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={20} />
+                            <Cube className="absolute right-3 top-1/2 -translate-y-1/2 text-text pointer-events-none" size={20} />
                         </div>
                     </div>
 
@@ -117,15 +117,15 @@ export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate,
                         >
                             <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${privateRoom ? 'left-7' : 'left-1'}`} />
                         </button>
-                        <span className="text-sm font-medium text-text/70">{t('rooms.private_room_q')}</span>
+                        <span className="text-sm font-medium text-text">{t('rooms.private_room_q')}</span>
                     </div>
 
                     {/* Password Input */}
                     {privateRoom && (
                         <div className="space-y-2 animate-fadeIn">
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block">{t('rooms.new_password')}</label>
+                            <label className="text-xs font-bold text-text uppercase tracking-wider block">{t('rooms.new_password')}</label>
                             <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-text" size={16} />
                                 <input
                                     type="password"
                                     value={password}
@@ -139,7 +139,7 @@ export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate,
 
                     {/* Allowed Timer Types */}
                     <div className="space-y-3 pt-2 border-t border-gray-800">
-                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block">{t('rooms.allowed_timer_types')}</label>
+                        <label className="text-xs font-bold text-text uppercase tracking-wider block">{t('rooms.allowed_timer_types')}</label>
                         <div className="grid grid-cols-1 gap-2">
                             {allTypes.map(type => (
                                 <div
@@ -150,7 +150,7 @@ export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate,
                                         : 'bg-module border-text/[0.1] hover:border-text/[0.2]'
                                         }`}
                                 >
-                                    <span className={`text-sm font-medium flex items-center gap-2 ${allowedTypes.includes(type) ? 'text-blue-200' : 'text-text/50'}`}>
+                                    <span className={`text-sm font-medium flex items-center gap-2 ${allowedTypes.includes(type) ? 'text-blue-200' : 'text-text'}`}>
                                         {getTypeName(type)}
                                         {proTypes.includes(type) && (
                                             <span className="text-[10px] text-primary bg-primary/10 px-1.5 py-0.5 rounded flex items-center gap-1 font-bold">
@@ -171,7 +171,7 @@ export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate,
 
                 {/* Footer */}
                 <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-text/[0.05] bg-module shrink-0">
-                    <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-text/50 hover:text-text transition-colors">
+                    <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-text hover:text-text transition-colors">
                         {t('rooms.cancel')}
                     </button>
                     <Button onClick={() => {

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { socketClient } from '../../util/socket/socketio';
 import {
     FriendlyRoomClientEvent,
@@ -12,6 +13,7 @@ interface RoomChatProps {
 }
 
 export default function RoomChat({ roomId }: RoomChatProps) {
+    const { t } = useTranslation();
     const [messages, setMessages] = useState<FriendlyRoomChatMessage[]>([]);
     const [inputValue, setInputValue] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -48,15 +50,15 @@ export default function RoomChat({ roomId }: RoomChatProps) {
     }
 
     return (
-        <div className="flex flex-col h-full w-full bg-background text-text/80 overflow-hidden relative">
-            <div className="shrink-0 p-3 border-b border-text/[0.1] bg-background text-xs font-bold uppercase tracking-wider text-text/50">
-                Sohbet
+        <div className="flex flex-col h-full w-full bg-background text-text overflow-hidden relative">
+            <div className="shrink-0 p-3 border-b border-text/[0.1] bg-background text-xs font-bold uppercase tracking-wider text-text">
+                {t('rooms.chat_title')}
             </div>
 
             <div className="flex-1 overflow-y-auto w-full p-2 space-y-2 scroll-smooth">
                 {messages.length === 0 ? (
-                    <div className="flex h-full items-center justify-center text-gray-500 text-sm italic">
-                        Henüz mesaj yok
+                    <div className="flex h-full items-center justify-center text-text text-sm italic">
+                        {t('rooms.chat_empty')}
                     </div>
                 ) : (
                     messages.map((msg) => (
@@ -64,12 +66,12 @@ export default function RoomChat({ roomId }: RoomChatProps) {
                             key={msg.id}
                             className={`flex flex-col max-w-[85%] ${msg.user_id === me?.id ? 'ml-auto items-end' : 'mr-auto items-start'}`}
                         >
-                            <span className={`text-[10px] mb-0.5 px-1 ${msg.user_id === me?.id ? 'text-blue-400' : 'text-text/40'}`}>
+                            <span className={`text-[10px] mb-0.5 px-1 ${msg.user_id === me?.id ? 'text-blue-400' : 'text-text'}`}>
                                 {msg.username}
                             </span>
                             <div className={`px-3 py-2 rounded-lg text-sm break-words ${msg.user_id === me?.id
                                     ? 'bg-blue-600 text-white rounded-br-none'
-                                    : 'bg-button text-text/80 rounded-bl-none'
+                                    : 'bg-button text-text rounded-bl-none'
                                 }`}>
                                 {msg.message}
                             </div>
@@ -87,7 +89,7 @@ export default function RoomChat({ roomId }: RoomChatProps) {
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        placeholder="Mesaj yaz..."
+                        placeholder={t('rooms.chat_placeholder')}
                         maxLength={500}
                     />
                     <button
@@ -95,7 +97,7 @@ export default function RoomChat({ roomId }: RoomChatProps) {
                         onClick={handleSend}
                         disabled={!inputValue.trim()}
                     >
-                        Gönder
+                        {t('rooms.chat_send')}
                     </button>
                 </div>
             </div>

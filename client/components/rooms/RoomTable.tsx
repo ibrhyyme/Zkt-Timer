@@ -207,14 +207,14 @@ function RoomTableInner({ participants, scrambleIndex, userStatuses = {}, curren
             <div
                 ref={tableRef}
 
-                className="flex-1 w-full overflow-auto bg-button text-text/70 font-sans border border-text/[0.1] text-sm min-h-0 room-table-custom-scroll"
+                className="flex-1 w-full overflow-auto bg-button text-text font-sans border border-text/[0.1] text-sm min-h-0 room-table-custom-scroll"
                 style={{ touchAction: 'pan-x pan-y', overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}
             >
                 <div ref={contentRef} className="flex flex-col min-w-full w-max">
 
                     {/* Header (Sticky) */}
                     <div
-                        className="sticky top-0 z-20 flex w-full bg-button border-b border-text/[0.1] text-xs font-bold uppercase tracking-wider text-text/50 shadow-[0_4px_10px_-2px_rgba(0,0,0,0.3)] cursor-grab active:cursor-grabbing select-none"
+                        className="sticky top-0 z-20 flex w-full bg-button border-b border-text/[0.1] text-xs font-bold uppercase tracking-wider text-text shadow-[0_4px_10px_-2px_rgba(0,0,0,0.3)] cursor-grab active:cursor-grabbing select-none"
                         onMouseDown={handleHeaderMouseDown}
                         onMouseLeave={handleHeaderMouseLeave}
                         onMouseUp={handleHeaderMouseUp}
@@ -239,9 +239,9 @@ function RoomTableInner({ participants, scrambleIndex, userStatuses = {}, curren
                     </div>
 
                     {/* Stats Summary Rows */}
-                    <div className="flex w-full bg-button border-b border-text/[0.1] font-mono text-text/70">
+                    <div className="flex w-full bg-button border-b border-text/[0.1] font-mono text-text">
 
-                        <div className="w-12 shrink-0 sticky left-0 z-10 flex items-center justify-center py-2 bg-button border-r border-text/[0.1] text-[10px] font-sans text-text/40 uppercase">
+                        <div className="w-12 shrink-0 sticky left-0 z-10 flex items-center justify-center py-2 bg-button border-r border-text/[0.1] text-[10px] font-sans text-text uppercase">
                             avg
                         </div>
                         {participants.map(p => {
@@ -254,8 +254,8 @@ function RoomTableInner({ participants, scrambleIndex, userStatuses = {}, curren
                             );
                         })}
                     </div>
-                    <div className="flex w-full bg-button border-b border-text/[0.1] font-mono text-text/70 mb-[1px]">
-                        <div className="w-12 shrink-0 sticky left-0 z-10 flex items-center justify-center py-2 bg-button border-r border-text/[0.1] text-[10px] font-sans text-text/40 uppercase">
+                    <div className="flex w-full bg-button border-b border-text/[0.1] font-mono text-text mb-[1px]">
+                        <div className="w-12 shrink-0 sticky left-0 z-10 flex items-center justify-center py-2 bg-button border-r border-text/[0.1] text-[10px] font-sans text-text uppercase">
                             win
                         </div>
                         {participants.map(p => {
@@ -282,7 +282,7 @@ function RoomTableInner({ participants, scrambleIndex, userStatuses = {}, curren
                                         type="button"
                                         onClick={() => setSelectedRound(round)}
                                         title={t('rooms.scrambleModal.view')}
-                                        className={`w-12 shrink-0 sticky left-0 z-10 flex items-center justify-center py-1.5 font-mono border-r border-text/[0.1] cursor-pointer hover:bg-text/[0.05] transition-colors ${isCurrentRound ? 'text-blue-400 font-bold bg-module' : isEven ? 'bg-button text-text/40' : 'bg-module text-text/40'}`}
+                                        className={`w-12 shrink-0 sticky left-0 z-10 flex items-center justify-center py-1.5 font-mono border-r border-text/[0.1] cursor-pointer hover:bg-text/[0.05] transition-colors ${isCurrentRound ? 'text-blue-400 font-bold bg-module' : isEven ? 'bg-button text-text' : 'bg-module text-text'}`}
                                     >
                                         {round}
                                     </button>
@@ -296,7 +296,7 @@ function RoomTableInner({ participants, scrambleIndex, userStatuses = {}, curren
 
                                         if (p.is_spectator) {
                                             // Spectator: tum data cell'lerini bos goster
-                                            cellContent = <span className="text-text/20">-</span>;
+                                            cellContent = <span className="text-text">-</span>;
                                         } else if (!solve) {
                                             if (isCurrentRound && userStatus) {
                                                 if (userStatus.startsWith('DISCONNECTED')) {
@@ -321,14 +321,14 @@ function RoomTableInner({ participants, scrambleIndex, userStatuses = {}, curren
                                                     cellContent = (
                                                         <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-sm ${userStatus === 'TIMING' ? 'text-emerald-400 bg-emerald-400/10' :
                                                             userStatus.includes('INSPECTING') ? 'text-amber-400 bg-amber-400/10' :
-                                                                'text-text/50'
+                                                                'text-text'
                                                             }`}>
                                                             {statusText}
                                                         </span>
                                                     );
                                                 }
                                             } else {
-                                                cellContent = <span className="text-text/30">-</span>;
+                                                cellContent = <span className="text-text">-</span>;
                                             }
                                         } else {
                                             const solveTime = solve.plus_two ? solve.time + 2 : solve.time;
@@ -336,7 +336,7 @@ function RoomTableInner({ participants, scrambleIndex, userStatuses = {}, curren
                                             cellContent = (
                                                 <span className={`font-mono tracking-tight ${solve.dnf ? 'text-rose-400' :
                                                     isBest ? 'text-emerald-400 font-bold' :
-                                                        'text-text/80'
+                                                        'text-text'
                                                     }`}>
                                                     {solve.dnf ? 'DNF' : getTimeString(solveTime) + (solve.plus_two ? '+' : '')}
                                                 </span>

@@ -4,7 +4,10 @@ import {onVisibilityChange} from '../app-visibility';
 
 const CLIENT_RECONNECT_BEFORE_ALERT_TIMEOUT_MS = 5000;
 
-let socket: Socket = io();
+// Guard module-scope socket creation: this file is imported on the server via the
+// SSR route table (Routes.ts -> FriendlyRoom -> socketio), and io() would open a stray
+// client connection during server render. socketClient() is only called in the browser.
+let socket: Socket = typeof window !== 'undefined' ? io() : (null as any);
 let initiated = false;
 let rooms = [];
 let backgroundTimer: ReturnType<typeof setTimeout> | null = null;

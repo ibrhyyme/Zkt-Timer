@@ -236,10 +236,10 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 			<div className="bg-module border border-text/[0.1] md:rounded-lg shadow-xl overflow-hidden">
 				{/* Header */}
 				<div className="flex items-center justify-between px-3 py-2 border-b border-text/[0.05] bg-background">
-					<span className="text-sm font-semibold text-text/90">{t('rooms.music_player')}</span>
+					<span className="text-sm font-semibold text-text">{t('rooms.music_player')}</span>
 					<button
 						onClick={onClose}
-						className="p-1 text-text/60 hover:text-text transition-colors"
+						className="p-1 text-text hover:text-text transition-colors"
 					>
 						<X size={16} weight="bold" />
 					</button>
@@ -251,7 +251,7 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 						<div className="relative flex-1">
 							<MagnifyingGlass
 								size={14}
-								className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text/40"
+								className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text"
 							/>
 							<input
 								type="text"
@@ -265,7 +265,7 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 						<button
 							onClick={handleSearch}
 							disabled={searchQuery.trim().length < 2 || loading}
-							className="px-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-button disabled:text-text/30 text-white text-xs font-medium rounded-md transition-colors shrink-0"
+							className="px-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-button disabled:text-text text-white text-xs font-medium rounded-md transition-colors shrink-0"
 						>
 							<MagnifyingGlass size={14} weight="bold" />
 						</button>
@@ -276,7 +276,7 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 				{(searchResults.length > 0 || loading || hasSearched) && (
 					<div className="max-h-[200px] overflow-y-auto border-t border-text/[0.08]">
 						{loading ? (
-							<div className="px-3 py-4 text-center text-text/40 text-xs">
+							<div className="px-3 py-4 text-center text-text text-xs">
 								{t('rooms.music_searching') || 'Searching...'}
 							</div>
 						) : error ? (
@@ -296,13 +296,13 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 										className="w-10 h-10 rounded object-cover shrink-0 bg-button"
 									/>
 									<div className="min-w-0 flex-1">
-										<div className="text-xs text-text/90 truncate" title={decodeHtmlEntities(video.title)}>{decodeHtmlEntities(video.title)}</div>
-										<div className="text-[10px] text-text/40 truncate">{video.channelTitle}</div>
+										<div className="text-xs text-text truncate" title={decodeHtmlEntities(video.title)}>{decodeHtmlEntities(video.title)}</div>
+										<div className="text-[10px] text-text truncate">{video.channelTitle}</div>
 									</div>
 								</button>
 							))
 						) : searchQuery.trim().length >= 2 ? (
-							<div className="px-3 py-4 text-center text-text/40 text-xs">
+							<div className="px-3 py-4 text-center text-text text-xs">
 								{t('rooms.music_no_results')}
 							</div>
 						) : null}
@@ -312,13 +312,13 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 				{/* Now Playing */}
 				{currentVideo && (
 					<div className="px-3 py-2.5 border-t border-text/[0.08]">
-						<div className="text-[10px] text-text/40 mb-1">{t('rooms.music_now_playing')}</div>
-						<div className="text-xs text-text/80 truncate mb-2" title={decodeHtmlEntities(currentVideo.title)}>{decodeHtmlEntities(currentVideo.title)}</div>
+						<div className="text-[10px] text-text mb-1">{t('rooms.music_now_playing')}</div>
+						<div className="text-xs text-text truncate mb-2" title={decodeHtmlEntities(currentVideo.title)}>{decodeHtmlEntities(currentVideo.title)}</div>
 
 						{/* Seek slider */}
 						{duration > 0 && (
 							<div className="flex items-center gap-1.5 mb-2">
-								<span className="text-[10px] text-text/40 w-8 text-right shrink-0">{formatTime(currentTime)}</span>
+								<span className="text-[10px] text-text w-8 text-right shrink-0">{formatTime(currentTime)}</span>
 								<input
 									type="range"
 									min={0}
@@ -327,7 +327,7 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 									onChange={(e) => handleSeek(Number(e.target.value))}
 									className="flex-1 h-1 accent-blue-500 cursor-pointer"
 								/>
-								<span className="text-[10px] text-text/40 w-8 shrink-0">{formatTime(duration)}</span>
+								<span className="text-[10px] text-text w-8 shrink-0">{formatTime(duration)}</span>
 							</div>
 						)}
 
@@ -335,7 +335,7 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 						<div className="flex items-center justify-center gap-1.5">
 							<button
 								onClick={handlePrev}
-								className={`p-1.5 rounded-full transition-colors ${hasPrev ? 'bg-text/10 hover:bg-text/20 text-text' : 'bg-text/5 text-text/20 cursor-default'}`}
+								className={`p-1.5 rounded-full transition-colors ${hasPrev ? 'bg-text/10 hover:bg-text/20 text-text' : 'bg-text/5 text-text cursor-default'}`}
 								disabled={!hasPrev}
 							>
 								<SkipBack size={14} weight="fill" />
@@ -348,7 +348,7 @@ export default function RoomMusicPlayer({ isOpen, onClose }: RoomMusicPlayerProp
 							</button>
 							<button
 								onClick={handleNext}
-								className={`p-1.5 rounded-full transition-colors ${hasNext ? 'bg-text/10 hover:bg-text/20 text-text' : 'bg-text/5 text-text/20 cursor-default'}`}
+								className={`p-1.5 rounded-full transition-colors ${hasNext ? 'bg-text/10 hover:bg-text/20 text-text' : 'bg-text/5 text-text cursor-default'}`}
 								disabled={!hasNext}
 							>
 								<SkipForward size={14} weight="fill" />

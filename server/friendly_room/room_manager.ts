@@ -193,7 +193,7 @@ export async function getAllActiveRooms(): Promise<FriendlyRoomData[]> {
         orderBy: { created_at: 'desc' },
     });
 
-    return rooms.map(mapRoomToData);
+    return rooms.map(mapRoomToLobbyData);
 }
 
 // Get only the rooms that a specific user is a participant of (active status)
@@ -699,5 +699,21 @@ function mapRoomToData(room: any): FriendlyRoomData {
             scramble_index: s.scramble_index,
             scramble: s.scramble,
         })) ?? [],
+    };
+}
+
+// Lobby-safe projection. The lobby ROOMS_LIST is broadcast to EVERYONE (including
+// non-members and non-members of private rooms), so it must not leak per-round
+// competitive data: current scramble, scramble history, and individual solve times
+// are stripped. Only what the lobby card renders (name, privacy, cube type, capacity,
+// status, participant names) is kept. Full data is served per-room via getRoomForClient
+// (membership-gated for private rooms in the GET_ROOM handler).
+function mapRoomToLobbyData(room: any): FriendlyRoomData {
+    const full = mapRoomToData(room);
+    return {
+        ...full,
+        current_scramble: '',
+        scramble_history: [],
+        participants: full.participants.map((p) => ({ ...p, solves: [] })),
     };
 }

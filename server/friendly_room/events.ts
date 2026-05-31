@@ -40,9 +40,26 @@ import {
     RedisNamespace,
     setKeyInRedis,
 } from '../services/redis';
+import { checkRateLimit } from '../services/rate_limit';
+import { isClientInRoom } from '../services/socket_util';
 
 // Helper to get untyped socket.io server for friendly room events
 const io = (): any => getSocketIO();
+
+// Per-user socket rate limit for friendly-room events. Returns true if allowed.
+// Keys by authenticated userId when known (explicit override or cached on the socket),
+// falling back to the socket id for unauthenticated reads (e.g. lobby fetch).
+async function socketRateLimit(
+    client: Socket,
+    action: string,
+    max: number,
+    windowSeconds: number,
+    explicitUserId?: string
+): Promise<boolean> {
+    const id = explicitUserId || (client as any).userId || client.id;
+    const { allowed } = await checkRateLimit(`friendly_room:${action}:${id}`, max, windowSeconds);
+    return allowed;
+}
 
 // Grace period entries: userID -> { timer, activeSocketIds }
 // activeSocketIds: user's open tabs/connections. Grace period starts when empty.
@@ -140,6 +157,7 @@ export function listenForFriendlyRoomEvents(client: Socket) {
     // Get all rooms
     client.on(FriendlyRoomClientEvent.GET_ROOMS, async () => {
         try {
+            if (!(await socketRateLimit(client, 'get_rooms', 30, 60))) return;
             // Also join the lobby room for updates
             joinRoom(client, FriendlyRoomSocketRoom.LOBBY);
 
@@ -167,12 +185,29 @@ export function listenForFriendlyRoomEvents(client: Socket) {
     // Get single room
     client.on(FriendlyRoomClientEvent.GET_ROOM, async (roomId: string) => {
         try {
+            if (typeof roomId !== 'string' || !roomId) return;
+            if (!(await socketRateLimit(client, 'get_room', 60, 60))) return;
+
             const room = await getRoomForClient(roomId);
-            if (room) {
-                client.emit(FriendlyRoomServerEvent.ROOM_DATA, room);
-            } else {
+            if (!room) {
                 client.emit(FriendlyRoomServerEvent.ERROR, 'Room not found');
+                return;
             }
+
+            // M1: a private room's content (scramble, participants, solves) must not be
+            // readable by non-members. Non-members get the password prompt instead — the
+            // client already maps 'Password required' to the join password modal.
+            if (room.is_private) {
+                const { user } = await getDetailedClientInfo(client);
+                const isMember = !!user && room.participants.some((p) => p.user_id === user.id);
+                const isSiteAdmin = user?.admin === true;
+                if (!isMember && !isSiteAdmin) {
+                    client.emit(FriendlyRoomServerEvent.ERROR, 'Password required');
+                    return;
+                }
+            }
+
+            client.emit(FriendlyRoomServerEvent.ROOM_DATA, room);
         } catch (error) {
             logger.error('Error getting friendly room', { error, roomId });
             client.emit(FriendlyRoomServerEvent.ERROR, 'Could not fetch room');
@@ -185,6 +220,11 @@ export function listenForFriendlyRoomEvents(client: Socket) {
             const { user } = await getDetailedClientInfo(client);
             if (!user) {
                 client.emit(FriendlyRoomServerEvent.ERROR, 'Must be logged in to create a room');
+                return;
+            }
+
+            if (!(await socketRateLimit(client, 'create', 5, 60, user.id))) {
+                client.emit(FriendlyRoomServerEvent.ERROR, 'Çok sık oda oluşturuyorsunuz. Lütfen biraz bekleyin.');
                 return;
             }
 
@@ -241,6 +281,13 @@ export function listenForFriendlyRoomEvents(client: Socket) {
             const { user } = await getDetailedClientInfo(client);
             if (!user) {
                 client.emit(FriendlyRoomServerEvent.ERROR, 'Must be logged in to join a room');
+                return;
+            }
+
+            // Caps repeated join attempts — also throttles private-room password brute-force
+            // (each attempt runs a bcrypt.compare in addParticipant).
+            if (!(await socketRateLimit(client, 'join', 15, 60, user.id))) {
+                client.emit(FriendlyRoomServerEvent.ERROR, 'Çok fazla katılma denemesi. Lütfen biraz bekleyin.');
                 return;
             }
 
@@ -460,6 +507,8 @@ export function listenForFriendlyRoomEvents(client: Socket) {
             const { user } = await getDetailedClientInfo(client);
             if (!user) return;
 
+            if (!(await socketRateLimit(client, 'solve', 30, 60, user.id))) return;
+
             const solve = await submitSolve(roomId, user.id, solveData);
             if (solve) {
                 const socketRoom = getFriendlyRoomSocketRoom(roomId);
@@ -485,6 +534,11 @@ export function listenForFriendlyRoomEvents(client: Socket) {
 
             const { user } = await getDetailedClientInfo(client);
             if (!user) return;
+
+            if (!(await socketRateLimit(client, 'chat', 20, 10, user.id))) {
+                client.emit(FriendlyRoomServerEvent.ERROR, 'Çok hızlı mesaj gönderiyorsunuz.');
+                return;
+            }
 
             const chatMessage = await sendChatMessage(roomId, user, message);
             if (chatMessage) {
@@ -548,10 +602,18 @@ export function listenForFriendlyRoomEvents(client: Socket) {
     // Send user status (inspecting, solving, etc.) - OPTIMIZED: skip DB lookup
     client.on(FriendlyRoomClientEvent.SEND_STATUS, async (roomId: string, status: string) => {
         try {
+            if (typeof roomId !== 'string' || !roomId) return;
+            if (typeof status !== 'string') return;
+            if (!(await socketRateLimit(client, 'status', 40, 10))) return;
+
+            const socketRoom = getFriendlyRoomSocketRoom(roomId);
+            // L1: only broadcast into a room the sender has actually joined — prevents
+            // emitting status into arbitrary rooms the user is not a participant of.
+            if (!isClientInRoom(client, socketRoom)) return;
+
             // Use cached user info from socket data if available to avoid DB hit
             const cachedUserId = (client as any).userId;
             if (cachedUserId) {
-                const socketRoom = getFriendlyRoomSocketRoom(roomId);
                 client.to(socketRoom).emit(FriendlyRoomServerEvent.USER_STATUS, {
                     room_id: roomId,
                     user_id: cachedUserId,
@@ -567,7 +629,6 @@ export function listenForFriendlyRoomEvents(client: Socket) {
             // Cache user ID for subsequent calls
             (client as any).userId = user.id;
 
-            const socketRoom = getFriendlyRoomSocketRoom(roomId);
             // Broadcast status to all users in the room except sender
             client.to(socketRoom).emit(FriendlyRoomServerEvent.USER_STATUS, {
                 room_id: roomId,

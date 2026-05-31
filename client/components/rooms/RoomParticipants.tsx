@@ -21,7 +21,7 @@ export default function RoomParticipants({ participants, currentScrambleIndex, h
 
     return (
         <div className="flex flex-col w-full h-full bg-background">
-            <div className="shrink-0 p-3 border-b border-text/[0.1] bg-background text-xs font-bold uppercase tracking-wider text-text/50">
+            <div className="shrink-0 p-3 border-b border-text/[0.1] bg-background text-xs font-bold uppercase tracking-wider text-text">
                 {t('rooms.participants')} ({participants.length})
             </div>
             <div className="flex-1 overflow-y-auto p-2 space-y-2 scroll-smooth">
@@ -44,7 +44,7 @@ export default function RoomParticipants({ participants, currentScrambleIndex, h
                                 {isHost && (
                                     <Crown size={16} weight="fill" className="text-orange-500" />
                                 )}
-                                <span className={`font-medium ${isHost ? 'text-text' : 'text-text/80'}`}>
+                                <span className={`font-medium ${isHost ? 'text-text' : 'text-text'}`}>
                                     {participant.username}
                                 </span>
                             </div>
@@ -52,7 +52,7 @@ export default function RoomParticipants({ participants, currentScrambleIndex, h
                                 {hasSolvedCurrent ? (
                                     <>
                                         <Check size={14} weight="bold" className="text-green-500" />
-                                        <span className="font-mono text-sm text-gray-400">
+                                        <span className="font-mono text-sm text-text">
                                             {currentSolve.dnf
                                                 ? 'DNF'
                                                 : getTimeString(
@@ -63,7 +63,7 @@ export default function RoomParticipants({ participants, currentScrambleIndex, h
                                         </span>
                                     </>
                                 ) : (
-                                    <Timer size={14} className="text-gray-600 animate-pulse" />
+                                    <Timer size={14} className="text-text animate-pulse" />
                                 )}
                             </div>
                         </div>

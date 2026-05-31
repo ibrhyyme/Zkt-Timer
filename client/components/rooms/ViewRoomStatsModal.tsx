@@ -68,7 +68,7 @@ export default function ViewRoomStatsModal({ isOpen, onClose, roomId, roomName }
                 {/* Header */}
                 <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-text/[0.05] bg-module">
                     <h3 className="text-lg font-bold text-text">{roomName} - {t('rooms.statistics')}</h3>
-                    <button onClick={onClose} className="text-text/50 hover:text-text transition-colors">
+                    <button onClick={onClose} className="text-text hover:text-text transition-colors">
                         <X size={20} />
                     </button>
                 </div>
@@ -76,7 +76,7 @@ export default function ViewRoomStatsModal({ isOpen, onClose, roomId, roomName }
                 {/* Content */}
                 <div className="flex-1 overflow-hidden p-6 min-h-[400px] flex flex-col">
                     {loading && (
-                        <div className="flex-1 flex items-center justify-center text-gray-400 text-sm">
+                        <div className="flex-1 flex items-center justify-center text-text text-sm">
                             {t('rooms.loading_stats')}
                         </div>
                     )}

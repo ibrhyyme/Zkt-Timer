@@ -24,7 +24,7 @@ export default function MusicProModal() {
 			<h2 className="text-2xl font-bold text-text mb-3">
 				{t('pro.music_title')}
 			</h2>
-			<p className="text-base text-text/70 mb-7">
+			<p className="text-base text-text mb-7">
 				{t('pro.music_description')}
 			</p>
 
