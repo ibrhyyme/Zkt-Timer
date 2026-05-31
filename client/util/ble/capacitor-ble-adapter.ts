@@ -1,5 +1,11 @@
 import { BleClient } from '@capacitor-community/bluetooth-le';
-import { BleAdapter, BleDevice, BleRequestDeviceOptions } from './ble-adapter';
+import { BleAdapter, BleDevice, BleRequestDeviceOptions, BleScannedDevice } from './ble-adapter';
+
+interface ScannedEntry {
+	name: string;
+	rssi: number | null;
+	manufacturerData?: Map<number, DataView>;
+}
 
 export class CapacitorBleAdapter implements BleAdapter {
 	private initialized = false;
@@ -7,6 +13,11 @@ export class CapacitorBleAdapter implements BleAdapter {
 	private scanRejectFn: ((reason: Error) => void) | null = null;
 	private scanTimeoutId: ReturnType<typeof setTimeout> | null = null;
 	private scanResolved = false;
+	// Devices collected during the current scan (deviceId -> entry). The user picks one
+	// from this set via selectScannedDevice; we no longer auto-connect to the first match.
+	private scannedDevices = new Map<string, ScannedEntry>();
+	private selectionResolve: ((device: BleDevice) => void) | null = null;
+	private onScanUpdate?: (devices: BleScannedDevice[]) => void;
 
 	private async ensureInitialized(): Promise<void> {
 		if (!this.initialized) {
@@ -42,6 +53,7 @@ export class CapacitorBleAdapter implements BleAdapter {
 				clearTimeout(this.scanTimeoutId);
 				this.scanTimeoutId = null;
 			}
+			this.selectionResolve = null;
 			BleClient.stopLEScan();
 			if (this.scanRejectFn) {
 				this.scanRejectFn(new Error('BLE_SCAN_ABORTED'));
@@ -50,12 +62,36 @@ export class CapacitorBleAdapter implements BleAdapter {
 		}
 	}
 
+	// Confirms the user's choice from the scan list. Resolves the pending requestDevice.
+	selectScannedDevice(deviceId: string): void {
+		const entry = this.scannedDevices.get(deviceId);
+		if (!entry || !this.selectionResolve) return;
+		console.log('[BLE] User selected device:', entry.name, deviceId);
+		this.selectionResolve({
+			deviceId,
+			name: entry.name,
+			manufacturerData: entry.manufacturerData,
+		});
+	}
+
+	private emitScanUpdate(): void {
+		if (!this.onScanUpdate) return;
+		const list: BleScannedDevice[] = [...this.scannedDevices.entries()]
+			.map(([id, d]) => ({ deviceId: id, name: d.name, rssi: d.rssi }))
+			// Strongest signal first (closest device). Null rssi sinks to the bottom.
+			.sort((a, b) => (b.rssi ?? -999) - (a.rssi ?? -999));
+		this.onScanUpdate(list);
+	}
+
 	async requestDevice(options: BleRequestDeviceOptions): Promise<BleDevice> {
 		await this.ensureInitialized();
 
 		this.scanResolved = false;
 		this.scanRejectFn = null;
 		this.scanTimeoutId = null;
+		this.scannedDevices = new Map();
+		this.selectionResolve = null;
+		this.onScanUpdate = options.onScanUpdate;
 
 		const excludeIds = new Set(options.excludeDeviceIds || []);
 		console.log('[BLE] CapacitorBleAdapter: scanning with nameFilters:', options.nameFilters,
@@ -64,40 +100,44 @@ export class CapacitorBleAdapter implements BleAdapter {
 		return new Promise<BleDevice>(async (resolve, reject) => {
 			this.scanRejectFn = reject;
 
+			// Resolve the scan once the user picks a device (no more auto-connect to first match).
+			this.selectionResolve = (device: BleDevice) => {
+				if (this.scanResolved) return;
+				this.scanResolved = true;
+				if (this.scanTimeoutId) {
+					clearTimeout(this.scanTimeoutId);
+					this.scanTimeoutId = null;
+				}
+				this.scanRejectFn = null;
+				this.selectionResolve = null;
+				BleClient.stopLEScan();
+				resolve(device);
+			};
+
+			// Safety timeout: if the user never picks and never cancels, give up eventually.
 			this.scanTimeoutId = setTimeout(() => {
 				if (!this.scanResolved) {
-					console.warn('[BLE] 15s scan TIMEOUT — no devices found');
+					console.warn('[BLE] 60s scan TIMEOUT — no selection');
 					this.scanResolved = true;
 					this.scanRejectFn = null;
+					this.selectionResolve = null;
 					BleClient.stopLEScan();
 					reject(new Error('BLE_SCAN_TIMEOUT'));
 				}
-			}, 15000);
+			}, 60000);
 
 			try {
 				console.log('[BLE] Starting requestLEScan...');
 				await BleClient.requestLEScan(
-					{ allowDuplicates: false },
+					// allowDuplicates so RSSI refreshes and late-advertising devices still appear.
+					{ allowDuplicates: true },
 					(result) => {
 						if (this.scanResolved) return;
 
 						const name = result.device.name || result.localName || '';
 						const deviceId = result.device.deviceId;
-
-						// Log all devices including unnamed ones
-						console.log('[BLE] Device found:', {
-							name: name || '(unnamed)',
-							deviceId,
-							rssi: (result as any).rssi ?? 'N/A',
-							localName: result.localName || 'N/A',
-						});
-
 						if (!name) return;
-
-						if (excludeIds.has(deviceId)) {
-							console.log('[BLE] Device in exclude list, skipping:', name);
-							return;
-						}
+						if (excludeIds.has(deviceId)) return;
 
 						// acceptAll: bypass name filters (debug feature)
 						const matches = options.acceptAll
@@ -107,43 +147,33 @@ export class CapacitorBleAdapter implements BleAdapter {
 									name.startsWith(prefix) ||
 									name.toLowerCase().startsWith(prefix.toLowerCase())
 							);
+						if (!matches) return;
 
-						if (matches) {
-							this.scanResolved = true;
-							if (this.scanTimeoutId) {
-								clearTimeout(this.scanTimeoutId);
-								this.scanTimeoutId = null;
-							}
-							this.scanRejectFn = null;
-							BleClient.stopLEScan();
-
-							// Capture manufacturer data (needed for real MAC address in GAN cubes)
-							let mfData: Map<number, DataView> | undefined;
-							const rawMf = (result as any).manufacturerData;
-							if (rawMf && typeof rawMf === 'object') {
-								mfData = new Map<number, DataView>();
-								for (const [key, value] of Object.entries(rawMf)) {
-									if (value instanceof DataView) {
-										mfData.set(Number(key), value);
-									}
-								}
-								if (mfData.size > 0) {
-									console.log('[BLE] Manufacturer data captured, key count:', mfData.size);
+						// Capture/refresh manufacturer data (needed for real MAC address discovery).
+						let mfData: Map<number, DataView> | undefined;
+						const rawMf = (result as any).manufacturerData;
+						if (rawMf && typeof rawMf === 'object') {
+							mfData = new Map<number, DataView>();
+							for (const [key, value] of Object.entries(rawMf)) {
+								if (value instanceof DataView) {
+									mfData.set(Number(key), value);
 								}
 							}
-
-							console.log('[BLE] MATCHING device found:', name, deviceId);
-							resolve({
-								deviceId: deviceId,
-								name: name,
-								manufacturerData: mfData,
-							});
-						} else {
-							console.log('[BLE] Device name DOES NOT MATCH:', name, '| filters:', options.nameFilters);
 						}
+
+						const rssi = typeof (result as any).rssi === 'number' ? (result as any).rssi : null;
+						const existing = this.scannedDevices.get(deviceId);
+						this.scannedDevices.set(deviceId, {
+							name,
+							rssi: rssi ?? existing?.rssi ?? null,
+							manufacturerData: (mfData && mfData.size > 0) ? mfData : existing?.manufacturerData,
+						});
+
+						// Surface the live list to the UI (sorted strongest-first).
+						this.emitScanUpdate();
 					}
 				);
-				console.log('[BLE] requestLEScan SUCCESSFUL — scan active, waiting 15s...');
+				console.log('[BLE] requestLEScan active — collecting devices, waiting for user selection');
 			} catch (error) {
 				console.error('[BLE] requestLEScan ERROR:', error);
 				if (!this.scanResolved) {
@@ -153,6 +183,7 @@ export class CapacitorBleAdapter implements BleAdapter {
 						this.scanTimeoutId = null;
 					}
 					this.scanRejectFn = null;
+					this.selectionResolve = null;
 					reject(error);
 				}
 			}

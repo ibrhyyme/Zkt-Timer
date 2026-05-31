@@ -2269,6 +2269,10 @@
         "place_hands_on_moyu": "MoYu timer'a ellerinizi koyarak başlayın"
     },
     "smart_cube": {
+        "select_device": "Cihazını seç",
+        "select_device_desc": "Listeden kendi cihazını seç — en yakın olan genelde en üsttedir.",
+        "searching_devices": "Cihazlar aranıyor…",
+        "nearest": "En yakın",
         "wrong_mac": "Yanlış MAC adresi",
         "wrong_mac_desc": "Cihaz yanıt vermedi. MAC adresi büyük olasılıkla yanlış ya da cihaz kapalı/uykuda.",
         "wrong_mac_tip_1": "MAC adresini kontrol edip tekrar deneyin.",

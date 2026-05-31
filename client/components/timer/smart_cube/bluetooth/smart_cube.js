@@ -12,6 +12,7 @@ export default class SmartCube {
 			smartCubeScanning: true,
 			smartCubeScanError: null,
 			smartCubeConnectStep: null,
+			smartScanDevices: [],
 		});
 	};
 
@@ -28,6 +29,7 @@ export default class SmartCube {
 			smartCubeScanning: false,
 			smartCubeConnecting: true,
 			smartCubeScanError: null,
+			smartScanDevices: [],
 		});
 	};
 

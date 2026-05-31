@@ -83,6 +83,8 @@ export interface TimerStore {
 	smartCubeConnecting?: boolean;
 	smartCubeScanning?: boolean;
 	smartCubeScanError?: string | null;
+	// Devices found during a native scan, for the user-facing picker (strongest signal first).
+	smartScanDevices?: { deviceId: string; name: string; rssi: number | null }[];
 	smartCubeConnectStep?: 'found' | 'paired' | 'reading_service' | 'done' | null;
 	smartCubeBatteryLevel?: number;
 	smartCanStart?: boolean;
