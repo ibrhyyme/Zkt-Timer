@@ -98,7 +98,7 @@ export default function EditRoomDropdown({
 			<Popover.Trigger asChild>
 				<button
 					type="button"
-					className="shrink-0 p-1 text-gray-300 md:text-text/50 hover:text-white md:hover:text-text transition-colors rounded-md hover:bg-white/10 md:hover:bg-text/10 focus:outline-none"
+					className="shrink-0 p-1 text-gray-300 md:text-text hover:text-white md:hover:text-text transition-colors rounded-md hover:bg-white/10 md:hover:bg-text/10 focus:outline-none"
 					title={t('rooms.edit_room')}
 				>
 					<PencilSimple size={18} weight="bold" />
