@@ -351,6 +351,11 @@ fragment TimerBackgroundFragment on TimerBackground {
 
 fragment UserForMeFragment on IUserAccount {
 	email
+	first_name
+	last_name
+	pending_email
+	email_verified
+	has_password
 	join_country
 	timer_background {
 		...TimerBackgroundFragment

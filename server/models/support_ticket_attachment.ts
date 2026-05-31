@@ -76,7 +76,7 @@ export async function uploadSupportTicketAttachment(
 			throw new Error('Invalid image file: only PNG, JPEG, GIF, WebP allowed');
 		}
 		if (buffer.length > SUPPORT_ATTACHMENT_MAX_IMAGE_BYTES) {
-			throw new Error('Image too large (max 8MB)');
+			throw new Error('Image too large (max 25MB)');
 		}
 		kind = 'image';
 		detectedExt = IMAGE_EXT_BY_TYPE[imageType];

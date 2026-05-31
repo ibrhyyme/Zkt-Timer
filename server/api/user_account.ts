@@ -193,6 +193,12 @@ export const mutateActions = {
 	) => {
 		checkLoggedIn(user);
 
+		const rl = await checkRateLimit(`account_update:user:${user.id}`, 20, 3600);
+		if (!rl.allowed) {
+			logger.warn('Account update rate limit', {userId: user.id, count: rl.count});
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Cok fazla deneme. Lutfen bir sure sonra tekrar deneyin.');
+		}
+
 		if (!first_name || !last_name || !email || !username) {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Please fill out all of the required fields');
 		}
@@ -242,6 +248,12 @@ export const mutateActions = {
 		let pendingEmailUpdate: string | null | undefined = undefined;
 
 		if (emailChanged) {
+			// Validate format + deliverability (same check as signup) — keeps garbage
+			// values out of pending_email that could never be confirmed via the EV flow.
+			const hasMx = await validateEmailMx(emailLower);
+			if (!hasMx) {
+				throw new GraphQLError(ErrorCode.BAD_INPUT, 'This email domain does not appear to accept emails. Please check your email address.');
+			}
 			// Is the new email reserved by another user (either email or pending_email)?
 			const taken = await isEmailReserved(emailLower);
 			if (taken) {
@@ -286,6 +298,13 @@ export const mutateActions = {
 	updateUserPassword: async (_: any, { old_password, new_password }: UpdatePasswordInput, { user }: GraphQLContext) => {
 		checkLoggedIn(user);
 
+		// Brute force / bcrypt CPU DoS korumasi — authenticated da olsa eski sifre deneme-yanilmasini sinirla
+		const rl = await checkRateLimit(`account_pw:user:${user.id}`, 10, 900);
+		if (!rl.allowed) {
+			logger.warn('Password change rate limit', {userId: user.id, count: rl.count});
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Cok fazla deneme. Lutfen bir sure sonra tekrar deneyin.');
+		}
+
 		const goodPass = await checkPassword(old_password, user.password);
 		if (!goodPass) {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Incorrect old password');
@@ -296,6 +315,12 @@ export const mutateActions = {
 
 	setUserPassword: async (_: any, { new_password }: { new_password: string }, { user }: GraphQLContext) => {
 		checkLoggedIn(user);
+
+		const rl = await checkRateLimit(`account_set_pw:user:${user.id}`, 10, 900);
+		if (!rl.allowed) {
+			logger.warn('Set password rate limit', {userId: user.id, count: rl.count});
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Cok fazla deneme. Lutfen bir sure sonra tekrar deneyin.');
+		}
 
 		if (user.password) {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Zaten bir sifreniz var. Sifre degistir bolumunu kullanin.');
@@ -310,6 +335,12 @@ export const mutateActions = {
 
 	deleteUserAccount: async (_: any, params: any, { user }: GraphQLContext) => {
 		checkLoggedIn(user);
+
+		const rl = await checkRateLimit(`account_delete:user:${user.id}`, 5, 3600);
+		if (!rl.allowed) {
+			logger.warn('Delete account rate limit', {userId: user.id, count: rl.count});
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Cok fazla deneme. Lutfen bir sure sonra tekrar deneyin.');
+		}
 
 		try {
 			return await deleteUserAccount(user);

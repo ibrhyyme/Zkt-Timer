@@ -388,6 +388,11 @@ export const USER_FOR_ME_FRAGMENT = gql`
 
 	fragment UserForMeFragment on UserAccount {
 		email
+		first_name
+		last_name
+		pending_email
+		email_verified
+		has_password
 		join_country
 		timer_background {
 			...TimerBackgroundFragment

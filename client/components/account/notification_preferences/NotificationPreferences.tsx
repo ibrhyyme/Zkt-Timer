@@ -51,10 +51,6 @@ export default function NotificationPreferences() {
 
 	const notificationTypeNames = [
 		{
-			key: 'elo_refund',
-			label: t('notification_prefs.elo_refund'),
-		},
-		{
 			key: 'marketing_emails',
 			label: t('notification_prefs.marketing_emails'),
 		},
