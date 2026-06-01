@@ -10,6 +10,7 @@ import LZString from './lz_string';
 import aes128 from './ae128';
 import { setTimerParams } from '../../helpers/params';
 import { requestMacFromUser } from '../mac_input/requestMacFromUser';
+import { macFromNativeDeviceId } from '../../../../util/ble/native-mac';
 import Cube from 'cubejs';
 
 const SOLVED_FACELET = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
@@ -169,8 +170,16 @@ export default class MoYu32 extends SmartCube {
 	requestCubeStatus() { return this.sendSimpleRequest(163); }
 	requestCubePower() { return this.sendSimpleRequest(164); }
 
-	// Find MAC address: 1) manufacturer data (auto), 2) device name pattern, 3) prompt
+	// Find MAC address: 0) native deviceId (Android), 1) manufacturer data (auto), 2) device name pattern, 3) prompt
 	async resolveMac() {
+		// 0) Capacitor Android: deviceId IS the BLE MAC address — the most reliable source.
+		// Manufacturer-data scans are unreliable on Android (issue #235), so without this the
+		// name-default guess is used. iOS/web return null here.
+		const nativeMac = macFromNativeDeviceId(this.device.deviceId);
+		if (nativeMac) {
+			return nativeMac;
+		}
+
 		// 1) Automatic MAC from manufacturer data
 		if (this.adapter.watchAdvertisements) {
 			try {

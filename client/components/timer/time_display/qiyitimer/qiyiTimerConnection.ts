@@ -23,6 +23,7 @@ import {Observable, Subject} from 'rxjs';
 import {getBleAdapter, BleAdapter, BleDevice} from '../../../../util/ble';
 import {requestMacFromUser} from '../../smart_cube/mac_input/requestMacFromUser';
 import {setTimerParams} from '../../helpers/params';
+import {macFromNativeDeviceId} from '../../../../util/ble/native-mac';
 
 // ===========================================================================
 // AES-128-ECB (cstimer sha256.js:107-218 ported line-by-line)
@@ -608,8 +609,15 @@ export async function connectQiyiTimer(): Promise<QiyiTimerConnection> {
 
 	_eventSubject = new Subject<QiyiTimerEvent>();
 
-	// === Step 1: waitForAdvs — MAC discovery (cstimer init:196-210) ===
-	let mac = await tryMacFromAdvertisement(adapter, device);
+	// === Step 1: MAC discovery ===
+	// 0) Capacitor Android: deviceId IS the BLE MAC address — the most reliable source.
+	// Manufacturer-data scans are unreliable on Android (issue #235), so without this the wrong
+	// name-default (CC:A1:00:00:..) is used and V2 timers never respond. iOS/web return null.
+	let mac: string | null = macFromNativeDeviceId(device.deviceId);
+	// 1) waitForAdvs — manufacturer data (cstimer init:196-210)
+	if (!mac) {
+		mac = await tryMacFromAdvertisement(adapter, device);
+	}
 	if (mac) {
 		_deviceMac = mac;
 	}

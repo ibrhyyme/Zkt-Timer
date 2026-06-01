@@ -36,13 +36,15 @@ export class CapacitorBleAdapter implements BleAdapter {
 				}
 				throw e;
 			}
+		}
 
-			const enabled = await BleClient.isEnabled();
-			if (!enabled) {
-				console.error('[BLE] CapacitorBleAdapter: Bluetooth is disabled');
-				throw new Error('BLE_DISABLED');
-			}
-			console.log('[BLE] CapacitorBleAdapter: Bluetooth is enabled');
+		// Always re-check — Bluetooth can be toggled off AFTER the adapter was first initialized.
+		// Gating this behind `!initialized` meant a later scan could start with BT off and just
+		// hang on "scanning" without telling the user (Android doesn't auto-prompt like iOS).
+		const enabled = await BleClient.isEnabled();
+		if (!enabled) {
+			console.error('[BLE] CapacitorBleAdapter: Bluetooth is disabled');
+			throw new Error('BLE_DISABLED');
 		}
 	}
 
