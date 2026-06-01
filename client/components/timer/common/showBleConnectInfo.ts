@@ -37,7 +37,8 @@ export function showBleConnectInfo(): Promise<boolean> {
 
 		store.dispatch(
 			openModal(React.createElement(BluetoothConnectInfoModal), {
-				width: 480,
+				width: 648,
+				noPadding: true,
 				hideCloseButton: true,
 				// Modal injects onComplete/onClose into BluetoothConnectInfoModal.
 				onComplete: () => finish(true),

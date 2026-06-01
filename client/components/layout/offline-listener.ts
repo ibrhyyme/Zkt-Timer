@@ -67,6 +67,31 @@ async function handleOnline() {
  * Register Service Worker
  */
 async function registerServiceWorker() {
+    // Dev / localhost: never register the SW. Its cache-first strategy serves a stale
+    // app.min.css/js during development, which hides every rebuild (the "design won't
+    // update" trap). Also tear down any SW + cache left from a previous session so the
+    // page stops being served stale assets.
+    const host = window.location.hostname;
+    const isLocalhost = host === 'localhost' || host === '127.0.0.1' || host === '[::1]';
+    if (isLocalhost && !isNative() && 'serviceWorker' in navigator) {
+        try {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(regs.map((r) => r.unregister()));
+            if (window.caches) {
+                const keys = await caches.keys();
+                await Promise.all(keys.filter((k) => k.startsWith('zkt-')).map((k) => caches.delete(k)));
+            }
+            // If a SW was actually controlling this page, reload once so the fresh
+            // (uncached) assets load. regs is empty after unregister, so no loop.
+            if (regs.length > 0) {
+                window.location.reload();
+            }
+        } catch (e) {
+            console.warn('[SW] dev cleanup failed:', e);
+        }
+        return;
+    }
+
     console.log('[SW-DEBUG] serviceWorker in navigator:', 'serviceWorker' in navigator);
     console.log('[SW-DEBUG] protocol:', window.location.protocol);
     console.log('[SW-DEBUG] origin:', window.location.origin);
