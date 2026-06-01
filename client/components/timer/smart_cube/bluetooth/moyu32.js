@@ -32,7 +32,7 @@ const MAC_CACHE_KEY = 'moyu32_cube_mac';
 // Time to wait for the first real cube state after the initial requests. If the cube
 // never answers with a valid facelet state the MAC is wrong (decryption is garbage),
 // so we tear the connection down instead of faking a "connected" state.
-const HANDSHAKE_TIMEOUT_MS = 5000;
+const HANDSHAKE_TIMEOUT_MS = 7000;
 
 function valuedArray(n, val) {
 	const arr = [];

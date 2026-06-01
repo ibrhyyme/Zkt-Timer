@@ -163,14 +163,25 @@ export class CapacitorBleAdapter implements BleAdapter {
 
 						const rssi = typeof (result as any).rssi === 'number' ? (result as any).rssi : null;
 						const existing = this.scannedDevices.get(deviceId);
+						const newRssi = rssi ?? existing?.rssi ?? null;
+
+						// allowDuplicates fires per advertisement (many/sec). Only re-emit to Redux
+						// when the list visibly changes — a new device, a rename, or a signal change
+						// big enough to matter (~one bar). Small RSSI jitter is absorbed silently.
+						const isNew = !existing;
+						const nameChanged = !!existing && existing.name !== name;
+						const rssiChanged = !!existing && Math.abs((existing.rssi ?? -100) - (newRssi ?? -100)) >= 8;
+
 						this.scannedDevices.set(deviceId, {
 							name,
-							rssi: rssi ?? existing?.rssi ?? null,
+							rssi: newRssi,
 							manufacturerData: (mfData && mfData.size > 0) ? mfData : existing?.manufacturerData,
 						});
 
-						// Surface the live list to the UI (sorted strongest-first).
-						this.emitScanUpdate();
+						if (isNew || nameChanged || rssiChanged) {
+							// Surface the live list to the UI (sorted strongest-first).
+							this.emitScanUpdate();
+						}
 					}
 				);
 				console.log('[BLE] requestLEScan active — collecting devices, waiting for user selection');
