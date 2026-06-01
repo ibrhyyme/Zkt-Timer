@@ -165,7 +165,7 @@ const MAC_CACHE_KEY = 'qiyi_timer_mac_map';
 // Time to wait for the first notification after the hello handshake. A wrong MAC means
 // the encrypted hello is rejected and the timer stays silent, so if nothing arrives in
 // this window we treat the connection as failed instead of faking a "connected" state.
-const HANDSHAKE_TIMEOUT_MS = 5000;
+const HANDSHAKE_TIMEOUT_MS = 7000;
 
 // ===========================================================================
 // Firmware variant routing

@@ -1065,6 +1065,7 @@ export default function SmartCube() {
 			smartCubeConnecting: false,
 			smartCubeScanError: null,
 			smartCubeConnectStep: null,
+			smartScanDevices: [],
 		});
 	}
 

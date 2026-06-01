@@ -28,7 +28,7 @@ const MAC_CACHE_KEY = 'qiyi_cube_mac';
 // Time to wait for the first valid (CRC-passing) packet after the hello handshake.
 // If nothing decrypts within this window the MAC is wrong (or the cube is asleep),
 // so we tear the connection down instead of showing a fake "connected" state.
-const HANDSHAKE_TIMEOUT_MS = 5000;
+const HANDSHAKE_TIMEOUT_MS = 7000;
 
 // cstimer crc16modbus() — 1:1 port
 function crc16modbus(data) {

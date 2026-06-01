@@ -993,7 +993,7 @@ async function autoRetrieveMacAddress(adapter, device) {
 
 // Wrong MAC => GAN packets never decrypt => no HARDWARE event arrives. The watchdog
 // tears the connection down instead of leaving it stuck on "connecting" forever.
-const GAN_HANDSHAKE_TIMEOUT_MS = 5000;
+const GAN_HANDSHAKE_TIMEOUT_MS = 7000;
 const GAN_MAC_CACHE_KEY = 'gan_cube_mac';
 
 export default class GAN extends SmartCube {
