@@ -231,6 +231,19 @@ app.get(['/security.txt', '/.well-known/security.txt'], (_req, res) => {
 	);
 });
 
+// TEMP BLE diagnostic sink — remote QiYi timer connect results (deviceId / used MAC / source /
+// OK|FAIL / userAgent) land in container stdout. Pull with:
+//   docker logs <app-server> 2>&1 | grep BLE_DIAG
+// No DB, no auth (low volume, transient). Remove this once Android connectivity is verified.
+app.post('/ble-diag', express.json({ limit: '4kb' }), (req, res) => {
+	try {
+		console.log('[BLE_DIAG]', JSON.stringify(req.body));
+	} catch (_) {
+		/* ignore */
+	}
+	res.sendStatus(204);
+});
+
 // JS/CSS files with deployment hash → safe for long-term caching
 app.use('/dist', express.static(`${__dirname}/../dist`, { maxAge: '1y', immutable: true }));
 
