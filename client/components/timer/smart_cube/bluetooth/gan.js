@@ -10,6 +10,7 @@ import { getStore } from '../../../store';
 import { setSmartSolveEndTime, setSmartCubeClockSkew, getSmartCubeClockSkew } from '../../helpers/events';
 import { setTimerParams } from '../../helpers/params';
 import { requestMacFromUser } from '../mac_input/requestMacFromUser';
+import { macFromNativeDeviceId } from '../../../../util/ble/native-mac';
 
 // Simple linear regression: y = slope * x + intercept
 // Returns [slope, intercept]
@@ -1048,9 +1049,10 @@ export default class GAN extends SmartCube {
 		const CACHE_KEY = GAN_MAC_CACHE_KEY;
 		const cachedMac = localStorage.getItem(CACHE_KEY);
 
-		// Capacitor Android: deviceId is the MAC address
-		if (isNative() && device.deviceId && device.deviceId.includes(':')) {
-			return device.deviceId;
+		// Capacitor Android: deviceId IS the BLE MAC address (iOS/web return null here).
+		const nativeMac = macFromNativeDeviceId(device.deviceId);
+		if (nativeMac) {
+			return nativeMac;
 		}
 
 		// If we have a cached MAC and this is NOT a fallback call (meaning first attempt), try using it.

@@ -11,6 +11,7 @@ import BluetoothErrorMessage from '../../common/BluetoothErrorMessage';
 import BleScanningModal from '../../smart_cube/ble_scanning_modal/BleScanningModal';
 import {showBleConnectInfo} from '../../common/showBleConnectInfo';
 import {isNative} from '../../../../util/platform';
+import {toastError} from '../../../../util/toast';
 import {useTranslation} from 'react-i18next';
 
 import {SubscriptionLike} from 'rxjs';
@@ -131,10 +132,16 @@ export default function GanTimer() {
 					subs?.unsubscribe();
 					subs = conn.events$.subscribe(handleTimerEvent);
 					setConnected(true);
-				} catch (e) {
+				} catch (e: any) {
 					console.error('[BLE] GanTimer connection error:', e);
 					if (isNative()) {
 						dispatch(closeModal());
+					}
+					// Android doesn't auto-prompt like iOS — surface BLE off / denied ourselves.
+					if (e?.message === 'BLE_DISABLED') {
+						toastError(t('smart_cube.bluetooth_disabled'));
+					} else if (e?.message === 'BLE_PERMISSION_DENIED') {
+						toastError(t('smart_cube.permission_denied'));
 					}
 				} finally {
 					setScanning(false);
