@@ -2275,6 +2275,7 @@
         "nearest": "Nearest",
         "wrong_mac": "Wrong MAC address",
         "wrong_mac_desc": "The device didn't respond. The MAC address is likely wrong, or the device is off or asleep.",
+        "wrong_mac_reset": "The device didn't respond. Hold the timer's power button to reset it, then try connecting again.",
         "wrong_mac_tip_1": "Double-check the MAC address and try again.",
         "wrong_mac_tip_2": "Make sure the cube/timer is awake (turn a face or press a button).",
         "wrong_mac_tip_3": "On Chrome, enabling the experimental flag lets the MAC be read automatically.",
