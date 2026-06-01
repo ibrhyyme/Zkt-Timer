@@ -50,7 +50,10 @@
     <!-- Bluetooth (API 31+ / Android 12+) -->
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- Location only required for BLE scan on API 30 and below; on 12+ the neverForLocation
+         flag above lets us scan without it. Without maxSdkVersion, 12+ devices were still
+         prompted for location. -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:maxSdkVersion="30" />
 
     <!-- Mikrofon (StackMat Timer) -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
