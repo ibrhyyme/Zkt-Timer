@@ -1000,6 +1000,10 @@ export default class GAN extends SmartCube {
 	device;
 	adapter;
 
+	// Company identifier codes for GAN cubes — declared in requestDevice so Chrome exposes
+	// the advertisement manufacturer data the MAC is read from (see connect.js _deviceOptions).
+	static cics = GAN_CIC_LIST;
+
 	constructor(device, adapter) {
 		super();
 		this.device = device;

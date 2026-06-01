@@ -25,7 +25,12 @@ export function initMjmlTemplates(): void {
 		const body = fs.readFileSync(directoryPath + '/' + file);
 		const fileName = file.replace('.mjml', '');
 
-		mjmlTemplates[fileName] = mjml2html(String(body)).html;
+		// Pass an empty `fonts` map to disable MJML's default font registry.
+		// Otherwise MJML auto-injects a <link> to fonts.googleapis.com whenever a
+		// registered font (e.g. Roboto) appears in any font-family stack, which
+		// deliverability checks flag as an off-domain asset. Email clients fall
+		// back to the system fonts in the stack anyway, so visuals are unchanged.
+		mjmlTemplates[fileName] = mjml2html(String(body), { fonts: {} }).html;
 	});
 }
 

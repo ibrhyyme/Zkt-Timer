@@ -11,8 +11,10 @@ const PLAY_STORE_ANDROID = 'https://play.google.com/store/apps/details?id=com.zk
 const FLAG_URL = 'chrome://flags/#enable-experimental-web-platform-features';
 
 // Served statically from public/ — esbuild has no svg loader, so we reference by URL.
-const APP_STORE_BADGE = '/images/ble_info/app-store.svg';
-const GOOGLE_PLAY_BADGE = '/images/ble_info/google-play.svg';
+// Use the /public/ prefix to match the app-wide convention (landing badges, logos);
+// the bare /images/... path is not reliably served in production.
+const APP_STORE_BADGE = '/public/images/ble_info/app-store.svg';
+const GOOGLE_PLAY_BADGE = '/public/images/ble_info/google-play.svg';
 
 interface BluetoothConnectInfoModalProps {
 	// Injected by Modal (cloneElement).

@@ -57,6 +57,14 @@ export default class Connect extends SmartCube {
 			// QiYi Smart Cube + Tornado V4 i
 			...QiYi.opServices,
 		],
+		// Company identifier codes whose manufacturer data we need to read for MAC discovery.
+		// Chrome strips advertisement manufacturerData unless its CIC is declared here — without
+		// this, GAN/MoYu32/QiYi MAC auto-read silently fails and a wrong name-derived MAC is used.
+		optionalManufacturerData: [
+			...GAN.cics,
+			...MoYu32.cics,
+			...QiYi.cics,
+		],
 	};
 
 	_initCube = async (device) => {

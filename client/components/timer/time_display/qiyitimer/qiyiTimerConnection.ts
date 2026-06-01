@@ -578,6 +578,10 @@ export async function connectQiyiTimer(): Promise<QiyiTimerConnection> {
 			nameFilters: ['QY-Timer', 'QY-Adapter'],
 			serviceFilters: [SERVICE_UUID],
 			optionalServices: [SERVICE_UUID],
+			// Grant access to the timer's manufacturer data so the real MAC can be read from
+			// the advertisement (web). Without this Chrome returns empty manufacturerData and we
+			// fall back to a name-derived guess (e.g. CC:A1:00:00:..) that's wrong on V2 timers.
+			optionalManufacturerData: QIYI_CIC_LIST,
 			// Native: surface the live device list so the user picks the right timer.
 			onScanUpdate: (devices) => setTimerParams({smartScanDevices: devices}),
 		});

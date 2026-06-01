@@ -26,6 +26,13 @@ export interface BleRequestDeviceOptions {
 	 */
 	acceptAll?: boolean;
 	/**
+	 * Web only: company identifier codes whose manufacturer data the page needs to read.
+	 * Chrome strips advertisement manufacturerData unless the matching CIC is declared here
+	 * in requestDevice — without it watchAdvertisements yields no MAC and connection falls
+	 * back to a (often wrong) name-derived guess. Native ignores this (it scans raw advs).
+	 */
+	optionalManufacturerData?: number[];
+	/**
 	 * Native only: called whenever the set of matching devices changes during a scan
 	 * (sorted strongest-signal first). The UI shows these and the user selects one via
 	 * BleAdapter.selectScannedDevice. Not called by the web adapter (Chrome picker handles it).
