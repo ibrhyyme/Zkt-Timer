@@ -2275,6 +2275,7 @@
         "nearest": "最近",
         "wrong_mac": "MAC 地址错误",
         "wrong_mac_desc": "设备没有响应。MAC 地址可能有误，或设备已关闭或处于休眠状态。",
+        "wrong_mac_reset": "设备没有响应。长按计时器电源键将其重置，然后重新连接。",
         "wrong_mac_tip_1": "请核对 MAC 地址后重试。",
         "wrong_mac_tip_2": "确保魔方/计时器处于唤醒状态（转动一个面或按下按钮）。",
         "wrong_mac_tip_3": "在 Chrome 中启用实验性标志后可自动读取 MAC 地址。",

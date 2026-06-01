@@ -2275,6 +2275,7 @@
         "nearest": "Más cercano",
         "wrong_mac": "Dirección MAC incorrecta",
         "wrong_mac_desc": "El dispositivo no respondió. Probablemente la dirección MAC es incorrecta o el dispositivo está apagado o en reposo.",
+        "wrong_mac_reset": "El dispositivo no respondió. Mantén pulsado el botón de encendido del timer para reiniciarlo y vuelve a intentarlo.",
         "wrong_mac_tip_1": "Verifica la dirección MAC e inténtalo de nuevo.",
         "wrong_mac_tip_2": "Asegúrate de que el cubo/temporizador esté activo (gira una cara o pulsa un botón).",
         "wrong_mac_tip_3": "En Chrome, activar la marca experimental permite leer la MAC automáticamente.",

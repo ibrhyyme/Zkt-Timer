@@ -212,7 +212,7 @@ export default function QiyiTimer() {
 					}
 					// Wrong MAC / no handshake — tell the user instead of silently failing.
 					if (e?.message === 'QIYI_TIMER_WRONG_MAC') {
-						toastError(t('smart_cube.wrong_mac_desc'));
+						toastError(t('smart_cube.wrong_mac_reset'));
 					} else if (e?.message === 'BLE_DISABLED') {
 						// Android doesn't auto-prompt like iOS — surface it ourselves.
 						toastError(t('smart_cube.bluetooth_disabled'));

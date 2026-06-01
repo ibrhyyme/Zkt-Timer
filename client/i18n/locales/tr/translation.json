@@ -2275,6 +2275,7 @@
         "nearest": "En yakın",
         "wrong_mac": "Yanlış MAC adresi",
         "wrong_mac_desc": "Cihaz yanıt vermedi. MAC adresi büyük olasılıkla yanlış ya da cihaz kapalı/uykuda.",
+        "wrong_mac_reset": "Cihaz yanıt vermedi. Timer'ı güç tuşuna basılı tutup resetleyin, sonra tekrar deneyin.",
         "wrong_mac_tip_1": "MAC adresini kontrol edip tekrar deneyin.",
         "wrong_mac_tip_2": "Küpün/zamanlayıcının uyanık olduğundan emin olun (bir yüz çevirin veya bir tuşa basın).",
         "wrong_mac_tip_3": "Chrome'da deneysel bayrağı açarsanız MAC otomatik okunur.",
