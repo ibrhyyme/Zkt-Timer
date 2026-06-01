@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Bluetooth, CircleNotch, WarningCircle, X, ArrowClockwise, CaretRight } from 'phosphor-react';
@@ -87,9 +87,27 @@ export default function BleScanningModal({ mode, onCancel, onRetry }: BleScannin
 	const smartCubeConnectStep: Step | null = useSelector((state: any) => state.timer.smartCubeConnectStep);
 	const devices: ScannedDevice[] = useSelector((state: any) => state.timer.smartScanDevices || []);
 
-	async function handleSelectDevice(deviceId: string) {
+	// Name of the device the user just tapped. Timer modes don't drive smartCubeConnecting,
+	// so without this the picker list empties and the modal falls back to the "searching"
+	// spinner during the handshake — looking like it's still scanning. This flips it to
+	// "connecting" the instant a device is chosen.
+	const [selectingName, setSelectingName] = useState<string | null>(null);
+
+	// Reset the pending selection when the flow errors out, so a retry shows the list again
+	// instead of staying stuck on "connecting".
+	useEffect(() => {
+		if (smartCubeScanError) setSelectingName(null);
+	}, [smartCubeScanError]);
+
+	async function handleSelectDevice(deviceId: string, name: string) {
+		setSelectingName(name);
 		const adapter = await getBleAdapter();
 		adapter.selectScannedDevice?.(deviceId);
+	}
+
+	function handleRetry() {
+		setSelectingName(null);
+		onRetry?.();
 	}
 
 	let phase: Phase = 'scanning';
@@ -102,6 +120,12 @@ export default function BleScanningModal({ mode, onCancel, onRetry }: BleScannin
 		} else if (smartCubeScanning) {
 			phase = 'scanning';
 		}
+	}
+
+	// A device was tapped — show "connecting" immediately. Covers timer modes (which don't
+	// set smartCubeConnecting) and bridges the brief gap before the cube path's alertConnecting.
+	if (phase === 'scanning' && selectingName) {
+		phase = 'connecting';
 	}
 
 	const errorKind: ErrorKind =
@@ -224,7 +248,7 @@ export default function BleScanningModal({ mode, onCancel, onRetry }: BleScannin
 									<button
 										className={b('device', { nearest: i === 0 })}
 										type="button"
-										onClick={() => handleSelectDevice(d.deviceId)}
+										onClick={() => handleSelectDevice(d.deviceId, d.name)}
 									>
 										<SignalBars rssi={d.rssi} />
 										<span className={b('device-info')}>
@@ -242,17 +266,25 @@ export default function BleScanningModal({ mode, onCancel, onRetry }: BleScannin
 				)}
 
 				{phase === 'connecting' && (
-					<ul className={b('steps')}>
-						{(['found', 'paired', 'reading_service'] as Step[]).map((s) => {
-							const status = stepStatus(s);
-							return (
-								<li key={s} className={b('step', { status })}>
-									<span className={b('step-dot')} />
-									<span className={b('step-label')}>{t(`smart_cube.step_${s}`)}</span>
-								</li>
-							);
-						})}
-					</ul>
+					mode === 'smartcube' ? (
+						<ul className={b('steps')}>
+							{(['found', 'paired', 'reading_service'] as Step[]).map((s) => {
+								const status = stepStatus(s);
+								return (
+									<li key={s} className={b('step', { status })}>
+										<span className={b('step-dot')} />
+										<span className={b('step-label')}>{t(`smart_cube.step_${s}`)}</span>
+									</li>
+								);
+							})}
+						</ul>
+					) : (
+						// Timer modes have no step pipeline — show the chosen device with a spinner.
+						<div className={b('empty')}>
+							<CircleNotch size={18} weight="bold" className={b('empty-spin')} />
+							<span className={b('empty-text')}>{selectingName || t('smart_cube.connecting_desc')}</span>
+						</div>
+					)
 				)}
 
 				{phase === 'error' && (
@@ -272,7 +304,7 @@ export default function BleScanningModal({ mode, onCancel, onRetry }: BleScannin
 					<button
 						className={b('btn', { primary: true })}
 						type="button"
-						onClick={onRetry}
+						onClick={handleRetry}
 					>
 						<ArrowClockwise size={18} weight="bold" />
 						{t('smart_cube.retry')}

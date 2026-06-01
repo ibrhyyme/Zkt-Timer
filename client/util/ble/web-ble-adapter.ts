@@ -19,10 +19,15 @@ export class WebBleAdapter implements BleAdapter {
 	async requestDevice(options: BleRequestDeviceOptions): Promise<BleDevice> {
 		// acceptAll: bypass name filters, list all BLE devices (debug feature)
 		let device: BluetoothDevice;
+		// Declaring the CICs grants permission to read manufacturer data from advertisements.
+		// Required for MAC auto-discovery (QiYi/GAN/MoYu) — without it Chrome hands back empty
+		// manufacturerData and the code falls back to a name-derived MAC guess that's often wrong.
+		const optionalManufacturerData = options.optionalManufacturerData;
 		if (options.acceptAll) {
 			device = await navigator.bluetooth.requestDevice({
 				acceptAllDevices: true,
 				optionalServices: options.optionalServices,
+				...(optionalManufacturerData ? { optionalManufacturerData } : {}),
 			});
 		} else {
 			const filters: BluetoothLEScanFilter[] = [];
@@ -35,6 +40,7 @@ export class WebBleAdapter implements BleAdapter {
 			device = await navigator.bluetooth.requestDevice({
 				filters,
 				optionalServices: options.optionalServices,
+				...(optionalManufacturerData ? { optionalManufacturerData } : {}),
 			});
 		}
 
