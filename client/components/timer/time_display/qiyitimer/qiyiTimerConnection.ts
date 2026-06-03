@@ -298,31 +298,6 @@ let _disposed = false;
 let _notifyReceived = false;
 // Resolved by the first notification — used to verify the handshake (correct MAC).
 let _firstNotifyResolve: (() => void) | null = null;
-// TEMP diagnostic — last connection attempt's MAC info (deviceId / used MAC / source).
-// Surfaced in the wrong-MAC toast so remote Android users can screenshot WHY it failed
-// (e.g. deviceId not a MAC → fell back to a wrong guess). Remove once Android is verified.
-let _lastDiagnostic = '';
-// TEMP: fire-and-forget the connection diagnostic to the server so remote Android failures can
-// be read from `docker logs <app-server> | grep BLE_DIAG` — no user screenshots needed. Logs
-// BOTH OK and FAIL so we can compare a working device's deviceId/src against a failing one.
-// Remove this (+ the /ble-diag endpoint) once Android is verified.
-function reportBleDiag(result: 'OK' | 'FAIL'): void {
-	try {
-		fetch('/ble-diag', {
-			method: 'POST',
-			headers: {'Content-Type': 'application/json'},
-			body: JSON.stringify({
-				result,
-				diag: _lastDiagnostic,
-				name: _deviceName,
-				ua: typeof navigator !== 'undefined' ? navigator.userAgent : '',
-			}),
-			keepalive: true,
-		}).catch(() => {});
-	} catch (_) {
-		/* ignore */
-	}
-}
 
 // onReadEvent state (cstimer qiyitimer.js:84-86)
 let _waitPkg = 0;
@@ -639,11 +614,9 @@ export async function connectQiyiTimer(): Promise<QiyiTimerConnection> {
 	// Manufacturer-data scans are unreliable on Android (issue #235), so without this the wrong
 	// name-default (CC:A1:00:00:..) is used and V2 timers never respond. iOS/web return null.
 	let mac: string | null = macFromNativeDeviceId(device.deviceId);
-	let macSource = mac ? 'deviceId' : '';
 	// 1) waitForAdvs — manufacturer data (cstimer init:196-210)
 	if (!mac) {
 		mac = await tryMacFromAdvertisement(adapter, device);
-		if (mac) macSource = 'adv';
 	}
 	if (mac) {
 		_deviceMac = mac;
@@ -701,13 +674,11 @@ export async function connectQiyiTimer(): Promise<QiyiTimerConnection> {
 
 	if (!finalMac && cachedMac) {
 		finalMac = cachedMac;
-		macSource = 'cache';
 	}
 
 	if (!finalMac) {
 		// No cache — ask the user via modal (returns a normalized MAC or null).
 		finalMac = await requestMacFromUser({ defaultMac, deviceName: _deviceName });
-		if (finalMac) macSource = 'modal';
 	}
 
 	if (!finalMac) {
@@ -730,9 +701,6 @@ export async function connectQiyiTimer(): Promise<QiyiTimerConnection> {
 
 	finalMac = finalMac.toUpperCase();
 	_deviceMac = finalMac;
-	// TEMP diagnostic: capture what MAC we ended up with and where it came from, so a remote
-	// user's wrong-MAC screenshot tells us the root cause (deviceId value is the key signal).
-	_lastDiagnostic = `dev:${device.deviceId || '?'} mac:${finalMac} src:${macSource || '?'}`;
 	// NOTE: the MAC is cached only AFTER the handshake is verified below. Persisting a
 	// wrong MAC here was the root cause of the "connected but not working" bug.
 
@@ -776,7 +744,6 @@ export async function connectQiyiTimer(): Promise<QiyiTimerConnection> {
 
 	if (!handshakeOk) {
 		console.warn('[QiyiTimer] handshake timeout — wrong MAC or timer off/asleep');
-		reportBleDiag('FAIL');
 		clearCachedMacForDevice(_deviceName);
 		try {
 			await adapter.stopNotifications(device, SERVICE_UUID, CHRCT_READ);
@@ -795,7 +762,6 @@ export async function connectQiyiTimer(): Promise<QiyiTimerConnection> {
 	}
 
 	// Verified — safe to persist the MAC for future auto-connects.
-	reportBleDiag('OK');
 	setCachedMacForDevice(_deviceName, finalMac);
 
 	// Connection object
