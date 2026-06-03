@@ -1488,6 +1488,7 @@
         "no_banned": "No banned users",
         "unban": "UNBAN",
         "close": "CLOSE",
+        "done": "DONE",
         "protected_room": "Protected Room",
         "password_required": "This room is protected. Please enter the password to join.",
         "password_placeholder": "Password...",

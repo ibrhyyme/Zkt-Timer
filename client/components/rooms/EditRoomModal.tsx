@@ -2,8 +2,9 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { createPortal } from 'react-dom';
-import { X, Lock, Check, Cube, Crown } from 'phosphor-react';
+import { Lock, Check, Crown } from 'phosphor-react';
 import Button from '../common/button/Button';
+import FancyDropdown from '../timer/header_control/FancyDropdown';
 import { ALLOWED_CUBE_TYPES } from '../../../shared/friendly_room/consts';
 import { getCubeTypeInfoById } from '../../util/cubes/util';
 
@@ -64,11 +65,8 @@ export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate,
             <div className="w-full max-w-md bg-background border border-text/[0.1] rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
 
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-text/[0.05] bg-module shrink-0">
+                <div className="flex items-center px-6 py-4 border-b border-text/[0.05] bg-module shrink-0">
                     <h3 className="text-lg font-bold text-text">{t('rooms.edit_room')}</h3>
-                    <button onClick={onClose} className="text-text hover:text-text transition-colors">
-                        <X size={20} />
-                    </button>
                 </div>
 
                 {/* Content */}
@@ -90,23 +88,18 @@ export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate,
                     {/* Cube Type Selector */}
                     <div className="space-y-2">
                         <label className="text-xs font-bold text-text uppercase tracking-wider block">{t('rooms.cube_type')}</label>
-                        <div className="relative">
-                            <select
-                                value={selectedCubeType}
-                                onChange={(e) => setSelectedCubeType(e.target.value)}
-                                className="w-full bg-module border border-text/[0.1] rounded-lg px-4 py-3 text-text appearance-none focus:outline-none focus:border-blue-500 transition-colors"
-                            >
-                                {ALLOWED_CUBE_TYPES.map((ct) => {
-                                    const info = getCubeTypeInfoById(ct);
-                                    return (
-                                        <option key={ct} value={ct}>
-                                            {info ? info.name : ct.toUpperCase()}
-                                        </option>
-                                    );
-                                })}
-                            </select>
-                            <Cube className="absolute right-3 top-1/2 -translate-y-1/2 text-text pointer-events-none" size={20} />
-                        </div>
+                        <FancyDropdown
+                            value={selectedCubeType}
+                            onValueChange={setSelectedCubeType}
+                            options={ALLOWED_CUBE_TYPES.map((ct) => {
+                                const info = getCubeTypeInfoById(ct);
+                                return { value: ct, label: info ? info.name : ct.toUpperCase() };
+                            })}
+                            triggerLabel={getCubeTypeInfoById(selectedCubeType)?.name || selectedCubeType.toUpperCase()}
+                            ariaLabel={t('rooms.cube_type')}
+                            noTriggerStyles
+                            className="w-full bg-module border border-text/[0.1] rounded-lg px-4 py-3 text-text flex items-center justify-between gap-2 focus:outline-none focus:border-blue-500 transition-colors"
+                        />
                     </div>
 
                     {/* Private Toggle */}

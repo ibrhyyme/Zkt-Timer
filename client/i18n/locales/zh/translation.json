@@ -1488,6 +1488,7 @@
         "no_banned": "没有被封禁的用户",
         "unban": "解除封禁",
         "close": "关闭",
+        "done": "完成",
         "protected_room": "受保护的房间",
         "password_required": "此房间受保护。请输入密码加入。",
         "password_placeholder": "密码...",
