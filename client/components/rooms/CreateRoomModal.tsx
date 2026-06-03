@@ -6,6 +6,7 @@ import { FriendlyRoomConst, ALLOWED_CUBE_TYPES } from '../../../shared/friendly_
 import { getCubeTypeInfoById } from '../../util/cubes/util';
 import { closeModal } from '../../actions/general';
 import { Cube, Users, Lock, LockOpen, Sparkle, GameController, X } from 'phosphor-react';
+import FancyDropdown from '../timer/header_control/FancyDropdown';
 import './CreateRoomModal.scss';
 import { useTranslation } from 'react-i18next';
 
@@ -102,23 +103,18 @@ function CreateRoomForm({ onClose }: CreateRoomFormProps) {
                             <Cube weight="fill" size={14} />
                             {t('create_room.cube_type')}
                         </label>
-                        <div className="create-room-modal__select-wrapper">
-                            <select
-                                className="create-room-modal__select"
-                                value={cubeType}
-                                onChange={(e) => setCubeType(e.target.value)}
-                            >
-                                {ALLOWED_CUBE_TYPES.map((ct) => {
-                                    const info = getCubeTypeInfoById(ct);
-                                    return (
-                                        <option key={ct} value={ct}>
-                                            {info ? info.name : ct.toUpperCase()}
-                                        </option>
-                                    );
-                                })}
-                            </select>
-                            <Cube className="create-room-modal__select-icon" weight="fill" size={18} />
-                        </div>
+                        <FancyDropdown
+                            value={cubeType}
+                            onValueChange={setCubeType}
+                            options={ALLOWED_CUBE_TYPES.map((ct) => {
+                                const info = getCubeTypeInfoById(ct);
+                                return { value: ct, label: info ? info.name : ct.toUpperCase() };
+                            })}
+                            triggerLabel={getCubeTypeInfoById(cubeType)?.name || cubeType.toUpperCase()}
+                            ariaLabel={t('create_room.cube_type')}
+                            noTriggerStyles
+                            className="create-room-modal__select flex items-center justify-between gap-2"
+                        />
                     </div>
 
                     <div className="create-room-modal__field">
@@ -126,20 +122,18 @@ function CreateRoomForm({ onClose }: CreateRoomFormProps) {
                             <Users weight="fill" size={14} />
                             {t('create_room.max_players')}
                         </label>
-                        <div className="create-room-modal__select-wrapper">
-                            <select
-                                className="create-room-modal__select"
-                                value={maxPlayers}
-                                onChange={(e) => setMaxPlayers(parseInt(e.target.value))}
-                            >
-                                {Array.from({ length: FriendlyRoomConst.MAX_PLAYERS - FriendlyRoomConst.MIN_PLAYERS + 1 }, (_, i) => i + FriendlyRoomConst.MIN_PLAYERS).map((num) => (
-                                    <option key={num} value={num}>
-                                        {num} {t('create_room.players_suffix')}
-                                    </option>
-                                ))}
-                            </select>
-                            <Users className="create-room-modal__select-icon" weight="fill" size={18} />
-                        </div>
+                        <FancyDropdown
+                            value={String(maxPlayers)}
+                            onValueChange={(v) => setMaxPlayers(parseInt(v))}
+                            options={Array.from({ length: FriendlyRoomConst.MAX_PLAYERS - FriendlyRoomConst.MIN_PLAYERS + 1 }, (_, i) => i + FriendlyRoomConst.MIN_PLAYERS).map((num) => ({
+                                value: String(num),
+                                label: `${num} ${t('create_room.players_suffix')}`,
+                            }))}
+                            triggerLabel={`${maxPlayers} ${t('create_room.players_suffix')}`}
+                            ariaLabel={t('create_room.max_players')}
+                            noTriggerStyles
+                            className="create-room-modal__select flex items-center justify-between gap-2"
+                        />
                     </div>
                 </div>
 

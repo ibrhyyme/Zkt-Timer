@@ -1488,6 +1488,7 @@
         "no_banned": "No hay usuarios prohibidos",
         "unban": "DESBLOQUEAR",
         "close": "CERRAR",
+        "done": "HECHO",
         "protected_room": "Sala protegida",
         "password_required": "Esta sala está protegida. Por favor ingresa la contraseña para unirte.",
         "password_placeholder": "Contraseña...",

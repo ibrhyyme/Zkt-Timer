@@ -67,11 +67,8 @@ export default function ManageUsersModal({ isOpen, onClose, roomId, participants
             <div className="w-full max-w-2xl bg-background border border-text/[0.1] rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]" onClick={e => e.stopPropagation()}>
 
                 {/* Header */}
-                <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-text/[0.05] bg-module">
+                <div className="shrink-0 flex items-center px-6 py-4 border-b border-text/[0.05] bg-module">
                     <h3 className="text-lg font-bold text-text">{t('rooms.manage_users')}</h3>
-                    <button onClick={onClose} className="text-text hover:text-text transition-colors">
-                        <X size={20} />
-                    </button>
                 </div>
 
                 {/* Content */}
@@ -155,7 +152,7 @@ export default function ManageUsersModal({ isOpen, onClose, roomId, participants
                 {/* Footer */}
                 <div className="shrink-0 flex items-center justify-end px-6 py-4 border-t border-text/[0.05] bg-module">
                     <button onClick={onClose} className="text-sm font-bold text-text hover:text-text transition-colors uppercase tracking-wider">
-                        {t('rooms.close')}
+                        {t('rooms.done')}
                     </button>
                 </div>
             </div>
