@@ -250,14 +250,10 @@
         }
     }
 
-    // Select
-    &__select-wrapper {
-        position: relative;
-    }
-
+    // Select (FancyDropdown trigger)
     &__select {
         width: 100%;
-        padding: 1rem 3rem 1rem 1.25rem;
+        padding: 1rem 1.25rem;
         font-size: 1rem;
         font-weight: 500;
         color: rgb(var(--text-color));
@@ -266,7 +262,6 @@
         border-radius: 12px;
         cursor: pointer;
         outline: none;
-        appearance: none;
         transition: all 0.25s;
 
         &:hover {
@@ -278,21 +273,6 @@
             border-color: rgb(var(--primary-color));
             box-shadow: 0 0 0 4px rgba(var(--primary-color), 0.15);
         }
-
-        option {
-            background: rgb(var(--module-color));
-            color: rgb(var(--text-color));
-            padding: 12px;
-        }
-    }
-
-    &__select-icon {
-        position: absolute;
-        right: 14px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: rgba(var(--text-color), 0.4);
-        pointer-events: none;
     }
 
     // Privacy Section

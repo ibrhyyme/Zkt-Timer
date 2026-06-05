@@ -1488,6 +1488,7 @@
         "no_banned": "No banned users",
         "unban": "UNBAN",
         "close": "CLOSE",
+        "done": "DONE",
         "protected_room": "Protected Room",
         "password_required": "This room is protected. Please enter the password to join.",
         "password_placeholder": "Password...",
@@ -2972,6 +2973,7 @@
     },
     "privacy": {
         "title": "Privacy Policy and Data Protection Notice",
+        "app_identity": "App: Zkt Timer Rubik's Timer & WCA (com.zktimer.app). Developer: İbrahim Yıldız.",
         "last_update": "Last updated: February 9, 2026",
         "intro_1": "At Zkt Timer (\"Platform\", \"We\"), we place great importance on the security and privacy of our users' (\"User\", \"You\") personal data. This notice has been prepared in accordance with the Turkish Personal Data Protection Law No. 6698 (\"KVKK\") and related legislation to inform you about the processing, storage, and transfer of your personal data.",
         "intro_2": "By using our Platform, you are deemed to have accepted this Privacy Policy and Data Protection Notice.",

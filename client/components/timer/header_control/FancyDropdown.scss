@@ -1,5 +1,17 @@
 @import '../../../styles/config';
 
+// Radix renders popper content (Select/Popover/etc.) inside a wrapper element
+// [data-radix-popper-content-wrapper] that receives a `transform` — which creates its
+// own stacking context — but no z-index (defaults to auto). App.tsx renders modals at
+// z-index 1000000+i, so that wrapper — and therefore the dropdown panel inside it —
+// falls behind the modal. Setting z-index on the panel itself does not help because it
+// is trapped inside the wrapper's stacking context; the WRAPPER must be lifted above the
+// modal layer. Kept under the critical full-screen overlays (banned/offline ≈ 100000000)
+// so those still cover the dropdown when shown.
+[data-radix-popper-content-wrapper] {
+	z-index: 2000000 !important;
+}
+
 // Generic header dropdown — TimerTypePicker ile ayni pattern.
 // Sade satirlar (background fill yok), sol stripe + check ile active gosterim.
 

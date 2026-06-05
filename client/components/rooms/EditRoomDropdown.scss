@@ -123,24 +123,10 @@
 		}
 	}
 
-	&__select-wrapper {
-		position: relative;
-	}
-
 	&__select {
 		@extend .#{$namespace}-edit-room-dropdown__input;
-		appearance: none;
-		padding-right: 36px;
+		width: 100%;
 		cursor: pointer;
-	}
-
-	&__select-icon {
-		position: absolute;
-		right: 12px;
-		top: 50%;
-		transform: translateY(-50%);
-		color: rgba(var(--text-color), 0.5);
-		pointer-events: none;
 	}
 
 	&__password-wrapper {

@@ -83,15 +83,6 @@ export default function RoomsList() {
         history.push(`/rooms/${room.id}`);
     }
 
-    // Admin functions
-    function handleAdminDeleteRoom(roomId: string) {
-        const socket = socketClient() as any;
-        socket.emit(FriendlyRoomClientEvent.KICK_USER, roomId, 'ADMIN_DELETE_ROOM');
-        // Actually delete the room by kicking all users or using a special admin delete
-        // For now, we'll use the existing leave mechanism but the backend should handle admin commands
-        // We need to add an admin-specific delete that works without being in the room
-    }
-
     const publicRooms = rooms.filter((r) => !r.is_private);
     const privateRooms = rooms.filter((r) => r.is_private);
 

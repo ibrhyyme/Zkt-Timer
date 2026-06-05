@@ -91,6 +91,8 @@ export default function FriendlyRoom() {
     const [takenOver, setTakenOver] = useState(false);
     const [alreadyInRoom, setAlreadyInRoom] = useState<{ id: string; name: string } | null>(null);
     const [editModalOpen, setEditModalOpen] = useState(false);
+    // Desktop edit popover (EditRoomDropdown) open state — shared so the cube-type chip can open the same popover
+    const [editPopoverOpen, setEditPopoverOpen] = useState(false);
     const [manageUsersModalOpen, setManageUsersModalOpen] = useState(false);
     const [userStatuses, setUserStatuses] = useState<{ [userId: string]: string }>({});
     const [mobileTab, setMobileTab] = useState<'timer' | 'chat'>('timer');
@@ -1407,6 +1409,8 @@ export default function FriendlyRoom() {
                                         isPrivate={room.is_private}
                                         currentAllowedTypes={room.allowed_timer_types}
                                         cubeType={room.cube_type}
+                                        open={editPopoverOpen}
+                                        onOpenChange={setEditPopoverOpen}
                                         onSubmit={(name, isPrivate, password, allowedTypes, cubeType) => {
                                             getSocket().emit(FriendlyRoomClientEvent.UPDATE_ROOM, roomId, {
                                                 name,
@@ -1421,7 +1425,12 @@ export default function FriendlyRoom() {
                             )}
                         </div>
                         <span
-                            onClick={() => isHost && setEditModalOpen(true)}
+                            onClick={() => {
+                                if (!isHost) return;
+                                // Desktop opens the same edit popover as the pencil; mobile uses the modal
+                                if (isMobile) setEditModalOpen(true);
+                                else setEditPopoverOpen(true);
+                            }}
                             className={`shrink-0 rounded-md px-2.5 py-1 text-[11px] font-bold tracking-wider text-white md:text-primary bg-white/20 md:bg-primary/12 border border-white/10 md:border-primary/25 backdrop-blur-sm transition-all ${isHost ? 'cursor-pointer hover:bg-white/30 md:hover:bg-primary/20' : ''}`}
                             title={isHost ? t('rooms.click_to_change_event') : undefined}
                         >

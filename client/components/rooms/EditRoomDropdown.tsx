@@ -7,8 +7,9 @@
 import React, { useState } from 'react';
 import * as Popover from '@radix-ui/react-popover';
 import { useTranslation } from 'react-i18next';
-import { Lock, Check, Cube, Crown, PencilSimple } from 'phosphor-react';
+import { Lock, Check, Crown, PencilSimple } from 'phosphor-react';
 import Button from '../common/button/Button';
+import FancyDropdown from '../timer/header_control/FancyDropdown';
 import { ALLOWED_CUBE_TYPES } from '../../../shared/friendly_room/consts';
 import { getCubeTypeInfoById } from '../../util/cubes/util';
 import block from '../../styles/bem';
@@ -22,6 +23,9 @@ interface Props {
 	currentAllowedTypes?: string[];
 	cubeType?: string;
 	onSubmit: (newName: string, isPrivate: boolean, newPassword?: string, allowedTimerTypes?: string[], cubeType?: string) => void;
+	// Optional controlled open state — lets a sibling trigger (e.g. the cube-type chip) open this same popover
+	open?: boolean;
+	onOpenChange?: (open: boolean) => void;
 }
 
 const ALL_TYPES = ['keyboard', 'stackmat', 'gantimer', 'qiyitimer', 'moyutimer', 'smart', 'manual'];
@@ -33,9 +37,13 @@ export default function EditRoomDropdown({
 	currentAllowedTypes,
 	cubeType,
 	onSubmit,
+	open: controlledOpen,
+	onOpenChange,
 }: Props) {
 	const { t } = useTranslation();
-	const [open, setOpen] = useState(false);
+	const [internalOpen, setInternalOpen] = useState(false);
+	const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+	const setOpen = onOpenChange || setInternalOpen;
 
 	// Form state — we don't reset to current values every time panel opens; user makes changes
 	// and saves or cancels within a single session.
@@ -132,23 +140,18 @@ export default function EditRoomDropdown({
 						{/* Cube Type Selector */}
 						<div className={b('field')}>
 							<label className={b('label')}>{t('rooms.cube_type')}</label>
-							<div className={b('select-wrapper')}>
-								<select
-									value={selectedCubeType}
-									onChange={(e) => setSelectedCubeType(e.target.value)}
-									className={b('select')}
-								>
-									{ALLOWED_CUBE_TYPES.map((ct) => {
-										const info = getCubeTypeInfoById(ct);
-										return (
-											<option key={ct} value={ct}>
-												{info ? info.name : ct.toUpperCase()}
-											</option>
-										);
-									})}
-								</select>
-								<Cube className={b('select-icon')} size={18} />
-							</div>
+							<FancyDropdown
+								value={selectedCubeType}
+								onValueChange={setSelectedCubeType}
+								options={ALLOWED_CUBE_TYPES.map((ct) => {
+									const info = getCubeTypeInfoById(ct);
+									return { value: ct, label: info ? info.name : ct.toUpperCase() };
+								})}
+								triggerLabel={getCubeTypeInfoById(selectedCubeType)?.name || selectedCubeType.toUpperCase()}
+								ariaLabel={t('rooms.cube_type')}
+								noTriggerStyles
+								className={`${b('select')} flex items-center justify-between gap-2`}
+							/>
 						</div>
 
 						{/* Private Toggle */}
