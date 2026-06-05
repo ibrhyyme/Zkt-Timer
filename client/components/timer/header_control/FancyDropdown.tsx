@@ -144,10 +144,12 @@ export default function FancyDropdown(props: FancyDropdownProps) {
 				<Select.Content
 					className={b('panel')}
 					position="popper"
+					side="bottom"
+					avoidCollisions={false}
 					sideOffset={6}
 					align={align}
 					collisionPadding={12}
-					style={{ maxHeight }}
+					style={{ maxHeight: `min(${maxHeight}px, var(--radix-select-content-available-height))` }}
 				>
 					<Select.Viewport className={b('viewport')} ref={viewportRef}>
 						{groups
