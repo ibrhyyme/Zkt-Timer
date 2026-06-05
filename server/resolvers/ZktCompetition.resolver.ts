@@ -60,13 +60,37 @@ export class ZktCompetitionResolver {
 			status: filter?.status ?? null,
 			onlyPublic: true,
 			viewerId: context.user?.id ?? null,
+			viewerCountry: context.user?.join_country ?? null,
+			viewerIsStaff: !!(context.user?.admin || context.user?.mod),
 		});
 	}
 
 	@Authorized([Role.LOGGED_IN])
 	@Query(() => ZktCompetition, {nullable: true})
-	async zktCompetition(@Arg('id') id: string) {
-		return getZktCompetitionWithDetails(id);
+	async zktCompetition(@Ctx() context: GraphQLContext, @Arg('id') id: string) {
+		const comp = await getZktCompetitionWithDetails(id);
+		if (!comp) return null;
+
+		const user = context.user;
+		const isStaff = !!(user?.admin || user?.mod);
+		if (isStaff) return comp;
+
+		// Non-staff access rules — mirror listZktCompetitions so the detail
+		// endpoint can't be used to bypass list filtering via direct ID lookup.
+		if (comp.status === 'DRAFT' || comp.status === 'CONFIRMED') return null;
+		// Country scoping: non-staff can't open competitions outside their country.
+		if (user?.join_country && comp.country_code && comp.country_code !== user.join_country) {
+			return null;
+		}
+		// PRIVATE competitions: only registered competitors, delegates, or creator.
+		if (comp.visibility === 'PRIVATE') {
+			const tied =
+				comp.created_by_id === user?.id ||
+				(comp.registrations || []).some((r: any) => r.user_id === user?.id) ||
+				(comp.delegates || []).some((d: any) => d.user_id === user?.id);
+			if (!tied) return null;
+		}
+		return comp;
 	}
 
 	@Authorized([Role.LOGGED_IN])

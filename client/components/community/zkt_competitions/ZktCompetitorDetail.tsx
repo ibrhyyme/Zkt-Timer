@@ -6,7 +6,7 @@ import {useTranslation} from 'react-i18next';
 import {useParams, useHistory} from 'react-router-dom';
 import {ArrowLeft, Trophy, ListBullets, Warning} from 'phosphor-react';
 import Loading from '../../common/loading/Loading';
-import {b, getEventName, formatCs, formatName, formatTimeRange} from './shared';
+import {b, getEventName, formatCs, formatName, formatTimeRange, competitorDisplayName, competitorFlag} from './shared';
 
 const COMPETITOR_DETAIL_QUERY = gql`
 	query ZktCompetitorDetailPublic($competitionId: String!, $userId: String!) {
@@ -26,6 +26,9 @@ const COMPETITOR_DETAIL_QUERY = gql`
 				user {
 					id
 					username
+					first_name
+					last_name
+					join_country
 					profile {
 						pfp_image {
 							url
@@ -181,7 +184,12 @@ export default function ZktCompetitorDetail() {
 				) : (
 					<div className={b('person-avatar-placeholder')} />
 				)}
-				<h1 className={b('person-name')}>{competitor.username}</h1>
+				<h1 className={b('person-name')}>
+					{competitorFlag(competitor) && (
+						<span className={b('flag')}>{competitorFlag(competitor)}</span>
+					)}
+					{competitorDisplayName(competitor) || competitor.username}
+				</h1>
 			</div>
 
 			{/* Cubing icon strip — yarışmacının kayıtlı olduğu eventler */}

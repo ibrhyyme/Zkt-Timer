@@ -223,6 +223,20 @@ export default function DashboardOverview({detail, onUpdated}: {detail: any; onU
 					{t('current_status')}: <strong>{t(`status_${detail.status.toLowerCase()}`)}</strong>
 				</div>
 
+				{['DRAFT', 'CONFIRMED'].includes(detail.status) &&
+					(() => {
+						// WCA guideline: competitions should be announced ≥28 days out.
+						// Soft warning only (ZKT is unofficial) so delegates feel at home.
+						const daysToStart = Math.ceil(
+							(new Date(detail.date_start).getTime() - Date.now()) / (24 * 3600 * 1000)
+						);
+						return daysToStart >= 0 && daysToStart < 28 ? (
+							<div className={b('announce-warning')}>
+								{t('announce_28day_warning', {days: daysToStart})}
+							</div>
+						) : null;
+					})()}
+
 				<div className={b('status-actions')}>
 					{detail.status === 'DRAFT' && (
 						<button

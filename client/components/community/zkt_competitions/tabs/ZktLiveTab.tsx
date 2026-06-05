@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {useParams, useHistory, useRouteMatch} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
-import {b, getEventName, formatCs, formatName, formatHasAverage, getFormatAttempts} from '../shared';
+import {b, getEventName, formatCs, formatName, formatHasAverage, getFormatAttempts, competitorDisplayName, competitorFlag} from '../shared';
 import {useZktLiveResults, LiveResult} from '../useZktLiveResults';
 import {ArrowClockwise, Broadcast} from 'phosphor-react';
 import ZktLivePodiums from './ZktLivePodiums';
@@ -269,7 +269,12 @@ function ResultsTable({
 											alt=""
 										/>
 									)}
-									<span>{r.user?.username || r.user_id}</span>
+									<span>
+										{competitorFlag(r.user) && (
+											<span className={b('flag')}>{competitorFlag(r.user)}</span>
+										)}
+										{competitorDisplayName(r.user) || r.user_id}
+									</span>
 								</div>
 							</td>
 							{hasAverage && (

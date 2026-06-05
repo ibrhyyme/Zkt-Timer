@@ -4,7 +4,7 @@ import {gql} from '@apollo/client';
 import {gqlMutate} from '../../api';
 import {useTranslation} from 'react-i18next';
 import {Link} from 'react-router-dom';
-import {b, formatCs, ZKT_WCA_EVENTS} from './shared';
+import {b, formatCs, formatDateRange, ZKT_WCA_EVENTS, competitorDisplayName, competitorFlag} from './shared';
 
 const RANKINGS_QUERY = gql`
 	query ZktAllTimeRankings($eventId: String!, $recordType: String!, $limit: Float) {
@@ -18,6 +18,9 @@ const RANKINGS_QUERY = gql`
 			user {
 				id
 				username
+				first_name
+				last_name
+				join_country
 				profile {
 					pfp_image {
 						url
@@ -109,29 +112,58 @@ export default function ZktRankingsPage() {
 			) : rows.length === 0 ? (
 				<div className={b('empty')}>{t('no_podiums_yet')}</div>
 			) : (
-				<div className={b('rankings-list')}>
-					{rows.map((row) => (
-						<div key={`${row.user?.id}-${row.result_id}`} className={b('ranking-row')}>
-							<span className={b('ranking-pos')}>#{row.ranking}</span>
-							{row.user?.profile?.pfp_image?.url && (
-								<img
-									className={b('user-avatar')}
-									src={row.user.profile.pfp_image.url}
-									alt=""
-								/>
-							)}
-							<span className={b('ranking-name')}>{row.user?.username}</span>
-							<span className={b('ranking-value')}>{formatCs(row.value)}</span>
-							{row.competition && (
-								<Link
-									className={b('ranking-comp-link')}
-									to={`/community/zkt-competitions/${row.competition.id}`}
-								>
-									{row.competition.name}
-								</Link>
-							)}
-						</div>
-					))}
+				<div className={b('ranking-table-wrapper')}>
+					<table className={b('ranking-table')}>
+						<thead>
+							<tr>
+								<th className={b('col-rank')}>#</th>
+								<th>{t('competitor')}</th>
+								<th className={b('col-result')}>
+									{recordType === 'single' ? t('best') : t('average')}
+								</th>
+								<th className={b('col-date')}>{t('date')}</th>
+								<th>{t('competition')}</th>
+							</tr>
+						</thead>
+						<tbody>
+							{rows.map((row) => (
+								<tr key={`${row.user?.id}-${row.result_id}`}>
+									<td className={b('col-rank')}>{row.ranking}</td>
+									<td>
+										<div className={b('ranking-competitor')}>
+											{row.user?.profile?.pfp_image?.url && (
+												<img
+													className={b('tiny-avatar')}
+													src={row.user.profile.pfp_image.url}
+													alt=""
+												/>
+											)}
+											{competitorFlag(row.user) && (
+												<span className={b('flag')}>{competitorFlag(row.user)}</span>
+											)}
+											<span>{competitorDisplayName(row.user) || row.user?.username}</span>
+										</div>
+									</td>
+									<td className={b('col-result', {mono: true})}>{formatCs(row.value)}</td>
+									<td className={b('col-date')}>
+										{row.competition?.date_start
+											? formatDateRange(row.competition.date_start, row.competition.date_start)
+											: '-'}
+									</td>
+									<td>
+										{row.competition && (
+											<Link
+												className={b('ranking-comp-link')}
+												to={`/community/zkt-competitions/${row.competition.id}`}
+											>
+												{row.competition.name}
+											</Link>
+										)}
+									</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
 				</div>
 			)}
 		</div>

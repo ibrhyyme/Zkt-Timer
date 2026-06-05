@@ -3,12 +3,21 @@ import {gql} from '@apollo/client';
 import {gqlMutate} from '../../../api';
 import {useTranslation} from 'react-i18next';
 import {toastSuccess, toastError} from '../../../../util/toast';
-import {b, getEventName, ZKT_ROUND_FORMATS} from '../shared';
-import {Plus, Minus, FilePdf, ArrowsClockwise} from 'phosphor-react';
+import {
+	b,
+	getEventName,
+	ZKT_ROUND_FORMATS,
+	formatCs,
+	getFormatAttempts,
+	formatHasAverage,
+	competitorDisplayName,
+} from '../shared';
+import {Plus, Minus, FilePdf, ArrowsClockwise, Table} from 'phosphor-react';
 import EditTimeLimitModal from '../modals/EditTimeLimitModal';
 import EditCutoffModal from '../modals/EditCutoffModal';
 import EditAdvancementModal from '../modals/EditAdvancementModal';
 import {generateScramblePdf} from '../../../../util/cubes/scramble_pdf';
+import {generateResultsPdf} from '../../../../util/cubes/results_pdf';
 
 const CREATE_ROUND = gql`
 	mutation CreateZktRound($input: CreateZktRoundInput!) {
@@ -37,6 +46,36 @@ const UPDATE_ROUND_STATUS = gql`
 		updateZktRoundStatus(input: $input) {
 			id
 			status
+		}
+	}
+`;
+
+const REOPEN_ROUND = gql`
+	mutation ReopenZktRoundInline($roundId: String!) {
+		reopenZktRound(roundId: $roundId) {
+			id
+			status
+		}
+	}
+`;
+
+const ROUND_RESULTS_FOR_PDF = gql`
+	query ZktRoundResultsForPdf($roundId: String!) {
+		zktRoundResults(roundId: $roundId) {
+			ranking
+			attempt_1
+			attempt_2
+			attempt_3
+			attempt_4
+			attempt_5
+			best
+			average
+			user {
+				username
+				first_name
+				last_name
+				join_country
+			}
 		}
 	}
 `;
@@ -127,6 +166,19 @@ export default function DashboardRounds({
 		}
 	}
 
+	// Reopen a finalized round (FINISHED -> ACTIVE). Untouched advancement carry
+	// rows in the next round are revoked server-side; admin re-finalizes to recompute.
+	async function reopenRound(roundId: string) {
+		if (!window.confirm(t('reopen_round_confirm'))) return;
+		try {
+			await gqlMutate(REOPEN_ROUND, {roundId});
+			toastSuccess(t('round_reopened'));
+			onUpdated();
+		} catch (e: any) {
+			toastError(e?.message || t('error'));
+		}
+	}
+
 	async function downloadScramblePdf(eventId: string, round: any) {
 		try {
 			// Lazy-ensure: server creates scrambles on first view if absent.
@@ -148,6 +200,46 @@ export default function DashboardRounds({
 					attemptNumber: s.attempt_number,
 					isExtra: s.is_extra,
 					scrambleString: s.scramble_string,
+				})),
+			});
+		} catch (e: any) {
+			toastError(e?.message || t('error'));
+		}
+	}
+
+	async function downloadResultsPdf(eventId: string, round: any) {
+		try {
+			const res: any = await gqlMutate(ROUND_RESULTS_FOR_PDF, {roundId: round.id});
+			const results = (res?.data?.zktRoundResults || []).filter(
+				(r: any) => r.best !== null && r.best !== undefined
+			);
+			if (results.length === 0) {
+				toastError(t('no_results_to_export'));
+				return;
+			}
+			const attemptCount = getFormatAttempts(round.format);
+			const hasAverage = formatHasAverage(round.format);
+			const sorted = results
+				.slice()
+				.sort(
+					(a: any, bx: any) =>
+						(a.ranking ?? Number.MAX_SAFE_INTEGER) - (bx.ranking ?? Number.MAX_SAFE_INTEGER)
+				);
+			generateResultsPdf({
+				competitionName: detail.name,
+				eventName: getEventName(eventId),
+				roundNumber: round.round_number,
+				attemptCount,
+				hasAverage,
+				rows: sorted.map((r: any) => ({
+					rank: r.ranking != null ? String(r.ranking) : '-',
+					name: competitorDisplayName(r.user),
+					country: r.user?.join_country || '',
+					attempts: Array.from({length: attemptCount}).map((_, i) =>
+						formatCs(r[`attempt_${i + 1}`])
+					),
+					best: formatCs(r.best),
+					average: hasAverage ? formatCs(r.average) : '',
 				})),
 			});
 		} catch (e: any) {
@@ -207,6 +299,16 @@ export default function DashboardRounds({
 										{t(`round_status_${round.status.toLowerCase()}`)}
 									</span>
 									<div style={{marginLeft: 'auto', display: 'flex', gap: '0.35rem'}}>
+											{(round.status === 'ACTIVE' || round.status === 'FINISHED') && (
+												<button
+													type="button"
+													className={b('scramble-action-btn')}
+													onClick={() => downloadResultsPdf(ev.event_id, round)}
+													title={t('download_results_pdf')}
+												>
+													<Table weight="bold" /> {t('results_pdf')}
+												</button>
+											)}
 										<button
 											type="button"
 											className={b('scramble-action-btn')}
@@ -288,6 +390,14 @@ export default function DashboardRounds({
 											onClick={() => setStatus(round.id, 'ACTIVE')}
 										>
 											{t('activate_round')}
+										</button>
+									)}
+									{round.status === 'FINISHED' && (
+										<button
+											className={b('modal-btn')}
+											onClick={() => reopenRound(round.id)}
+										>
+											{t('reopen_round')}
 										</button>
 									)}
 								</div>

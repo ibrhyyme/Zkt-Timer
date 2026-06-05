@@ -2,7 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {gql} from '@apollo/client';
 import {gqlMutate} from '../../../api';
 import {useTranslation} from 'react-i18next';
-import {b, getEventName, formatCs} from '../shared';
+import {b, getEventName, formatCs, competitorDisplayName, competitorFlag} from '../shared';
 
 const RECORDS_QUERY = gql`
 	query ZktRecordsForLive {
@@ -14,6 +14,9 @@ const RECORDS_QUERY = gql`
 			user {
 				id
 				username
+				first_name
+				last_name
+				join_country
 			}
 		}
 	}
@@ -71,7 +74,8 @@ export default function ZktLiveRecords() {
 							{formatCs(r.value)}
 						</span>
 						<span style={{color: 'rgba(var(--text-color), 0.6)'}}>
-							{r.user?.username || '-'}
+							{competitorFlag(r.user) ? competitorFlag(r.user) + ' ' : ''}
+							{competitorDisplayName(r.user) || '-'}
 						</span>
 					</div>
 				))}

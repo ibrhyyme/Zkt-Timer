@@ -5,7 +5,7 @@ import {gqlMutate} from '../../api';
 import {useTranslation} from 'react-i18next';
 import {useParams, useHistory} from 'react-router-dom';
 import Loading from '../../common/loading/Loading';
-import {b, getEventName, formatCs, formatName, formatTimeRange} from './shared';
+import {b, getEventName, formatCs, formatName, formatTimeRange, competitorDisplayName, competitorFlag} from './shared';
 import {CaretLeft, CaretRight} from 'phosphor-react';
 
 const GROUP_ASSIGNMENTS_QUERY = gql`
@@ -21,6 +21,9 @@ const GROUP_ASSIGNMENTS_QUERY = gql`
 			user {
 				id
 				username
+				first_name
+				last_name
+				join_country
 				profile {
 					pfp_image {
 						id
@@ -202,7 +205,12 @@ export default function ZktActivityDetail() {
 										alt=""
 									/>
 								)}
-								<span className={b('user-name')}>{a.user?.username || a.user_id}</span>
+								<span className={b('user-name')}>
+									{competitorFlag(a.user) && (
+										<span className={b('flag')}>{competitorFlag(a.user)}</span>
+									)}
+									{competitorDisplayName(a.user) || a.user_id}
+								</span>
 								{a.station_number && (
 									<span style={{fontSize: 12, color: 'rgba(var(--text-color), 0.5)'}}>
 										#{a.station_number}

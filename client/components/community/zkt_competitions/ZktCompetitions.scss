@@ -672,7 +672,8 @@
 	&__ranking-table-wrapper {
 		background: rgb(var(--module-color));
 		border-radius: 10px;
-		overflow: hidden;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
 	}
 
 	&__ranking-table {
@@ -709,6 +710,39 @@
 		&--no-show {
 			opacity: 0.5;
 			font-style: italic;
+		}
+	}
+
+	&__ranking-competitor {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	&__col-rank {
+		width: 48px;
+		font-weight: 700;
+		color: rgb(var(--primary-color));
+	}
+
+	&__col-result {
+		font-family: 'SF Mono', 'Courier New', monospace;
+		font-weight: 700;
+		white-space: nowrap;
+	}
+
+	&__col-date {
+		white-space: nowrap;
+		color: rgb(var(--text-color));
+		font-size: 12px;
+	}
+
+	&__ranking-comp-link {
+		color: rgb(var(--primary-color));
+		text-decoration: none;
+
+		&:hover {
+			text-decoration: underline;
 		}
 	}
 
@@ -1529,6 +1563,13 @@
 		}
 	}
 
+	&__flag {
+		font-size: 1.05em;
+		line-height: 1;
+		flex-shrink: 0;
+		margin-right: 0.15rem;
+	}
+
 	&__record-tag {
 		display: inline-block;
 		margin-left: 0.4rem;
@@ -1540,6 +1581,21 @@
 		font-weight: 800;
 		letter-spacing: 0.3px;
 		vertical-align: middle;
+
+		// wca-live RecordTag colors — WR red / CR yellow / NR green / PR blue
+		&--wr {
+			background: #f44336;
+		}
+		&--cr {
+			background: #ffd600;
+			color: #222;
+		}
+		&--nr {
+			background: $successColor;
+		}
+		&--pr {
+			background: #1976d2;
+		}
 	}
 
 	&__attempt-col {
@@ -1693,6 +1749,27 @@
 
 		.cubing-icon {
 			font-size: 24px;
+		}
+	}
+
+	&__record-type-col {
+		color: rgb(var(--text-color));
+		font-size: 12px;
+		white-space: nowrap;
+	}
+
+	&__record-date {
+		white-space: nowrap;
+		color: rgb(var(--text-color));
+		font-size: 12px;
+	}
+
+	&__record-comp-link {
+		color: rgb(var(--primary-color));
+		text-decoration: none;
+
+		&:hover {
+			text-decoration: underline;
 		}
 	}
 

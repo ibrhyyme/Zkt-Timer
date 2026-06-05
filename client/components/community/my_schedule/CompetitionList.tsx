@@ -23,6 +23,7 @@ const ZKT_COMPETITIONS_QUERY = gql`
 				location
 				status
 				championship_type
+				country_code
 				events {
 					id
 					event_id
@@ -253,6 +254,27 @@ export default function CompetitionList() {
 		return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`;
 	}, []);
 
+	// ZKT competitions live in their OWN section below — they're not WCA comps,
+	// so keep them separate to avoid confusion. Reuse the WCA card shape so the
+	// page stays visually consistent. Normalize to the WCA card fields here.
+	const zktCards = useMemo(() => {
+		if (showSearchResults) return [];
+		return (zktComps || [])
+			.filter((c: any) => !c.championship_type || c.date_end < todayStr)
+			.map((c: any) => ({
+				id: c.id,
+				name: c.name,
+				start_date: c.date_start,
+				end_date: c.date_end,
+				city: c.location,
+				country_iso2: c.country_code || 'TR',
+				status: c.status,
+				championship_type: c.championship_type,
+				__zkt: true,
+			}))
+			.sort((a: any, b: any) => (b.start_date || '').localeCompare(a.start_date || ''));
+	}, [showSearchResults, zktComps, todayStr]);
+
 	function renderCompCard(comp: any, opts: {mine?: boolean} = {}) {
 		const isFinished = comp.end_date < todayStr;
 		const isOngoing = comp.start_date <= todayStr && comp.end_date >= todayStr;
@@ -267,8 +289,12 @@ export default function CompetitionList() {
 			<div
 				key={comp.id}
 				className={b('comp-card', {finished: isFinished, ongoing: isOngoing, mine: opts.mine})}
-				onClick={() => handleSelectCompetition(comp.id)}
-				onMouseEnter={() => handleHoverPrefetch(comp.id)}
+				onClick={() =>
+					comp.__zkt
+						? history.push(`/community/zkt-competitions/${comp.id}`)
+						: handleSelectCompetition(comp.id)
+				}
+				onMouseEnter={() => !comp.__zkt && handleHoverPrefetch(comp.id)}
 				onMouseLeave={handleHoverLeave}
 			>
 				{opts.mine && <span className={b('mine-glow')} aria-hidden="true" />}
@@ -276,6 +302,7 @@ export default function CompetitionList() {
 					<span className={b('country-code')}>{comp.country_iso2}</span>
 				)}
 				<div className={b('comp-info')}>
+					{comp.__zkt && <span className={b('zkt-badge')}>ZKT</span>}
 					{opts.mine && (
 						<span className={b('mine-tag')}>
 							<Trophy weight="fill" size={11} style={{marginRight: 4}} />
@@ -389,50 +416,20 @@ export default function CompetitionList() {
 				</div>
 			)}
 
-			{/* ZKT Competitions — don't repeat championships from section above,
-			     only display non-championship or past competitions here */}
-			{(() => {
-				const regularZkt = (zktComps || []).filter(
-					(c: any) => !c.championship_type || c.date_end < todayStr
-				);
-				return !compSearch.trim() && regularZkt.length > 0 && (
-					<div className={b('zkt-competitions')}>
-						<h3 className={b('section-title')}>
-							<Trophy weight="fill" style={{marginRight: 8, verticalAlign: 'text-bottom', color: 'rgb(var(--primary-color))'}} />
-							{t('my_schedule.zkt_competitions')}
-						</h3>
-						<div className={b('comp-list')}>
-							{regularZkt.map((comp: any) => {
-							const champBadgeKey = championshipBadgeKey(comp.championship_type);
-							return (
-								<div
-									key={comp.id}
-									className={b('comp-card', {zkt: true, championship: !!comp.championship_type})}
-									onClick={() => history.push(`/community/zkt-competitions/${comp.id}`)}
-								>
-									<span className={b('zkt-badge')}>ZKT</span>
-									{champBadgeKey && (
-										<span className={b('championship-badge', {[(comp.championship_type || 'default').toLowerCase()]: true})}>
-											{t(champBadgeKey)}
-										</span>
-									)}
-									<div className={b('comp-info')}>
-										<span className={b('comp-title')}>{comp.name}</span>
-										<span className={b('comp-sub')}>
-											{formatDateRange(comp.date_start, comp.date_end, locale)}
-											{comp.location && ` \u2013 ${comp.location}`}
-										</span>
-									</div>
-									<span className={b('zkt-status', {[comp.status.toLowerCase()]: true})}>
-										{t(`zkt_comp.status_${comp.status.toLowerCase()}`)}
-									</span>
-								</div>
-							);
-						})}
-						</div>
+			{/* ZKT competitions — their OWN section (not WCA comps, avoid confusion),
+			     reusing the WCA card style so the page stays consistent. */}
+			{!compSearch.trim() && zktCards.length > 0 && (
+				<div className={b('zkt-competitions')}>
+					<h3 className={b('section-title')}>
+						<Trophy weight="fill" style={{marginRight: 8, verticalAlign: 'text-bottom', color: 'rgb(var(--primary-color))'}} />
+						{t('my_schedule.zkt_competitions')}
+					</h3>
+					<div className={b('comp-list')}>
+						{zktCards.map((comp: any) => renderCompCard(comp))}
 					</div>
-				);
-			})()}
+				</div>
+			)}
+
 
 			{/* Search */}
 			<div className={b('search-box')}>

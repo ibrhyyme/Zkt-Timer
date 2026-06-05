@@ -1786,6 +1786,31 @@ type RankingsPage {
   page: Int
 }
 
+type ZktCompetitorUser implements IPublicUserAccount {
+  id: String
+  admin: Boolean
+  mod: Boolean
+  created_at: DateTime
+  username: String
+  verified: Boolean
+  is_pro: Boolean
+  pro_expires_at: DateTime
+  is_premium: Boolean
+  premium_expires_at: DateTime
+  last_solve_at: DateTime
+  last_seen_at: DateTime
+  banned_forever: Boolean
+  banned_until: DateTime
+  profile: Profile
+  integrations: [Integration]
+  badges: [Badge]
+  top_solves: [TopSolve]
+  top_averages: [TopAverage]
+  first_name: String
+  last_name: String
+  join_country: String
+}
+
 type ZktResult {
   id: String
   round_id: String
@@ -1805,7 +1830,7 @@ type ZktResult {
   entered_by_id: String
   created_at: DateTime
   updated_at: DateTime
-  user: PublicUserAccount
+  user: ZktCompetitorUser
   entered_by: PublicUserAccount
 }
 
@@ -1892,7 +1917,7 @@ type ZktRegistration {
   waiting_list_position: Int
   created_at: DateTime
   updated_at: DateTime
-  user: PublicUserAccount
+  user: ZktCompetitorUser
   events: [ZktRegistrationEvent!]
   history: [ZktRegistrationHistory!]
 }
@@ -1931,6 +1956,7 @@ type ZktCompetition {
   date_end: DateTime
   location: String
   location_address: String
+  country_code: String
   competitor_limit: Int
   status: ZktCompStatus
   visibility: ZktCompVisibility
@@ -1989,7 +2015,7 @@ type ZktAllTimeRanking {
   record_type: String
   result_id: String
   round_id: String
-  user: PublicUserAccount
+  user: ZktCompetitorUser
   competition: ZktCompetition
 }
 
@@ -2003,7 +2029,8 @@ type ZktRecord {
   competition_id: String
   set_at: DateTime
   created_at: DateTime
-  user: PublicUserAccount
+  user: ZktCompetitorUser
+  competition: ZktCompetition
 }
 
 type PaginatedZktCompetitions {
@@ -2022,7 +2049,7 @@ type ZktAssignment {
   seed_result: Int
   created_at: DateTime
   updated_at: DateTime
-  user: PublicUserAccount
+  user: ZktCompetitorUser
 }
 
 enum ZktAssignmentRole {

@@ -1284,6 +1284,7 @@ model ZktCompetition {
   date_end                   DateTime           @db.Date
   location                   String
   location_address           String?
+  country_code               String             @default("TR")
   competitor_limit           Int?
   status                     ZktCompStatus      @default(DRAFT)
   visibility                 ZktCompVisibility  @default(PUBLIC)
@@ -1303,6 +1304,7 @@ model ZktCompetition {
   events           ZktCompEvent[]
   registrations    ZktRegistration[]
   delegates        ZktCompDelegate[]
+  records          ZktRecord[]
 
   @@index([status])
   @@index([created_by_id])
@@ -1493,7 +1495,8 @@ model ZktRecord {
   set_at         DateTime    @default(now())
   created_at     DateTime    @default(now())
 
-  user           UserAccount @relation("zkt_record_holder", fields: [user_id], references: [id], onDelete: Cascade)
+  user           UserAccount    @relation("zkt_record_holder", fields: [user_id], references: [id], onDelete: Cascade)
+  competition    ZktCompetition @relation(fields: [competition_id], references: [id], onDelete: Cascade)
 
   @@index([event_id, record_type])
   @@index([user_id])
