@@ -24,6 +24,9 @@ export default function Privacy() {
 				</button>
 			)}
 			<h1>{t('privacy.title')}</h1>
+			{/* App + developer identity — required by Google Play (privacy policy must name the
+			    app or the legal entity from the Play listing). */}
+			<p className={b('identity')}>{t('privacy.app_identity')}</p>
 			<p>{t('privacy.last_update')}</p>
 			<p dangerouslySetInnerHTML={{__html: t('privacy.intro_1')}} />
 			<p>{t('privacy.intro_2')}</p>
