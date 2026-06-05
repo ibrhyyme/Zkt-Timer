@@ -63,9 +63,12 @@ export async function listZktCompetitions(params: {
 	status?: ZktCompStatus | null;
 	onlyPublic?: boolean;
 	viewerId?: string | null;
+	viewerCountry?: string | null;
+	viewerIsStaff?: boolean;
 }) {
 	const prisma = getPrisma();
-	const {page, pageSize, searchQuery, status, onlyPublic, viewerId} = params;
+	const {page, pageSize, searchQuery, status, onlyPublic, viewerId, viewerCountry, viewerIsStaff} =
+		params;
 
 	const where: Prisma.ZktCompetitionWhereInput = {};
 
@@ -89,6 +92,11 @@ export async function listZktCompetitions(params: {
 			{OR: visibilityFilter},
 			{status: {notIn: ['DRAFT', 'CONFIRMED']}},
 		];
+		// Country scoping: non-staff viewers only see competitions in their own
+		// country (ZKT is TR-only today; this keeps it ready for multi-country).
+		if (!viewerIsStaff && viewerCountry) {
+			where.AND.push({country_code: viewerCountry});
+		}
 	}
 
 	if (status) {

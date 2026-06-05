@@ -88,6 +88,21 @@ registerEnumType(ZktAssignmentRole, {name: 'ZktAssignmentRole'});
 // OBJECT TYPES
 // ============================================================================
 
+// ZKT-specific competitor identity. Extends PublicUserAccount (username + profile)
+// with real name + country, exposed ONLY in competition contexts (WCA-live parity).
+// Global PublicUserAccount stays username-only, keeping the privacy surface scoped.
+@ObjectType()
+export class ZktCompetitorUser extends PublicUserAccount {
+	@Field({nullable: true})
+	first_name?: string;
+
+	@Field({nullable: true})
+	last_name?: string;
+
+	@Field({nullable: true})
+	join_country?: string;
+}
+
 @ObjectType()
 export class ZktResult {
 	@Field()
@@ -144,8 +159,8 @@ export class ZktResult {
 	@Field()
 	updated_at: Date;
 
-	@Field(() => PublicUserAccount, {nullable: true})
-	user?: PublicUserAccount;
+	@Field(() => ZktCompetitorUser, {nullable: true})
+	user?: ZktCompetitorUser;
 
 	@Field(() => PublicUserAccount, {nullable: true})
 	entered_by?: PublicUserAccount;
@@ -309,8 +324,8 @@ export class ZktRegistration {
 	@Field()
 	updated_at: Date;
 
-	@Field(() => PublicUserAccount, {nullable: true})
-	user?: PublicUserAccount;
+	@Field(() => ZktCompetitorUser, {nullable: true})
+	user?: ZktCompetitorUser;
 
 	@Field(() => [ZktRegistrationEvent], {nullable: true})
 	events?: ZktRegistrationEvent[];
@@ -384,6 +399,9 @@ export class ZktCompetition {
 
 	@Field({nullable: true})
 	location_address?: string;
+
+	@Field()
+	country_code: string;
 
 	@Field(() => Int, {nullable: true})
 	competitor_limit?: number;
@@ -472,8 +490,8 @@ export class ZktAllTimeRanking {
 	@Field()
 	round_id: string;
 
-	@Field(() => PublicUserAccount, {nullable: true})
-	user?: PublicUserAccount;
+	@Field(() => ZktCompetitorUser, {nullable: true})
+	user?: ZktCompetitorUser;
 
 	@Field(() => ZktCompetition, {nullable: true})
 	competition?: ZktCompetition;
@@ -508,8 +526,11 @@ export class ZktRecord {
 	@Field()
 	created_at: Date;
 
-	@Field(() => PublicUserAccount, {nullable: true})
-	user?: PublicUserAccount;
+	@Field(() => ZktCompetitorUser, {nullable: true})
+	user?: ZktCompetitorUser;
+
+	@Field(() => ZktCompetition, {nullable: true})
+	competition?: ZktCompetition;
 }
 
 @ObjectType()
@@ -791,8 +812,8 @@ export class ZktAssignment {
 	@Field()
 	updated_at: Date;
 
-	@Field(() => PublicUserAccount, {nullable: true})
-	user?: PublicUserAccount;
+	@Field(() => ZktCompetitorUser, {nullable: true})
+	user?: ZktCompetitorUser;
 }
 
 @InputType()

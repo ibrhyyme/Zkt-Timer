@@ -2,7 +2,7 @@ import React, {useEffect, useMemo, useState} from 'react';
 import {gql} from '@apollo/client';
 import {gqlMutate} from '../../../api';
 import {useTranslation} from 'react-i18next';
-import {b, formatCs, getEventName} from '../shared';
+import {b, formatCs, getEventName, competitorDisplayName, competitorFlag} from '../shared';
 import {Trophy} from 'phosphor-react';
 
 const PODIUMS_QUERY = gql`
@@ -21,6 +21,9 @@ const PODIUMS_QUERY = gql`
 				user {
 					id
 					username
+					first_name
+					last_name
+					join_country
 					profile {
 						pfp_image {
 							url
@@ -46,6 +49,9 @@ const ROUND_RESULTS = gql`
 			user {
 				id
 				username
+				first_name
+				last_name
+				join_country
 				profile {
 					pfp_image {
 						url
@@ -167,7 +173,7 @@ export default function ZktPodiumsTab({detail}: {detail: any}) {
 									<Trophy weight="fill" size={28} />
 									<div className={b('podium-medal-rank')}>#{r.ranking}</div>
 									<div className={b('podium-medal-name')}>
-										{r.user?.username || r.user_id}
+										{competitorFlag(r.user) ? competitorFlag(r.user) + ' ' : ''}{competitorDisplayName(r.user) || r.user_id}
 									</div>
 									<div className={b('podium-medal-time')}>{formatCs(r.best)}</div>
 								</div>
@@ -220,7 +226,7 @@ export default function ZktPodiumsTab({detail}: {detail: any}) {
 																alt=""
 															/>
 														)}
-														<span>{r.user?.username || r.user_id}</span>
+														<span>{competitorFlag(r.user) ? competitorFlag(r.user) + ' ' : ''}{competitorDisplayName(r.user) || r.user_id}</span>
 													</div>
 												</td>
 												<td className={b('rank-time')}>

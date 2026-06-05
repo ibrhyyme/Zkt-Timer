@@ -57,6 +57,9 @@ const DETAIL_QUERY = gql`
 				user {
 					id
 					username
+					first_name
+					last_name
+					join_country
 					profile {
 						pfp_image {
 							id

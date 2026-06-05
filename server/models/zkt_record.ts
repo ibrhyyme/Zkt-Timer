@@ -33,6 +33,7 @@ export async function getAllCurrentRecords(): Promise<ZktRecord[]> {
 					badges: {include: {badge_type: true}},
 				},
 			},
+			competition: true,
 		},
 	});
 
@@ -67,6 +68,7 @@ export async function getRecordHistory(
 					integrations: true,
 				},
 			},
+			competition: true,
 		},
 	});
 }

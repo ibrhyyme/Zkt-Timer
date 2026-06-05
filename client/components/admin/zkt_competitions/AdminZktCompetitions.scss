@@ -1388,6 +1388,173 @@
 		font-weight: 600;
 	}
 
+	&__batch-toggle {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		font-size: 0.82rem;
+		cursor: pointer;
+		user-select: none;
+
+		input {
+			cursor: pointer;
+		}
+	}
+
+	&__batch-submit {
+		padding: 0.4rem 0.9rem;
+		background: rgb(var(--primary-color));
+		color: #fff;
+		border: none;
+		border-radius: 6px;
+		font-size: 0.82rem;
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	&__flag {
+		font-size: 1.1em;
+		line-height: 1;
+		flex-shrink: 0;
+	}
+
+	&__quick-select {
+		position: relative;
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.6rem 0.75rem;
+		margin-bottom: 0.75rem;
+		background: rgb(var(--theme-background));
+		border: 1px solid rgba(var(--text-color), 0.12);
+		border-radius: 8px;
+
+		svg {
+			opacity: 0.55;
+			flex-shrink: 0;
+		}
+
+		input {
+			flex: 1;
+			min-width: 0;
+			background: none;
+			border: none;
+			outline: none;
+			color: rgb(var(--text-color));
+			font-size: 0.9rem;
+		}
+	}
+
+	&__quick-select-list {
+		position: absolute;
+		top: 100%;
+		left: 0;
+		right: 0;
+		margin-top: 4px;
+		background: rgb(var(--theme-background));
+		border: 1px solid rgba(var(--text-color), 0.15);
+		border-radius: 8px;
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+		z-index: 20;
+		overflow: hidden;
+	}
+
+	&__quick-select-item {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		width: 100%;
+		padding: 0.55rem 0.75rem;
+		background: none;
+		border: none;
+		text-align: left;
+		color: rgb(var(--text-color));
+		font-size: 0.9rem;
+		cursor: pointer;
+
+		&:hover {
+			background: rgba(var(--primary-color), 0.12);
+		}
+	}
+
+	&__ctx-overlay {
+		position: fixed;
+		inset: 0;
+		z-index: 40;
+	}
+
+	&__ctx-menu {
+		position: fixed;
+		z-index: 41;
+		min-width: 160px;
+		padding: 0.25rem;
+		background: rgb(var(--theme-background));
+		border: 1px solid rgba(var(--text-color), 0.15);
+		border-radius: 8px;
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+		overflow: hidden;
+
+		button {
+			display: block;
+			width: 100%;
+			padding: 0.5rem 0.75rem;
+			background: none;
+			border: none;
+			text-align: left;
+			color: rgb(var(--text-color));
+			font-size: 0.85rem;
+			border-radius: 5px;
+			cursor: pointer;
+
+			&:hover {
+				background: rgba(var(--primary-color), 0.12);
+			}
+		}
+	}
+
+	&__announce-warning {
+		margin: 0.6rem 0;
+		padding: 0.6rem 0.9rem;
+		background: rgba(255, 193, 7, 0.12);
+		border-left: 3px solid #ffc107;
+		border-radius: 6px;
+		font-size: 13px;
+		line-height: 1.4;
+		color: rgb(var(--text-color));
+	}
+
+	&__leaderboard-row--pending {
+		background: rgba(255, 193, 7, 0.12);
+	}
+
+	&__record-tag {
+		display: inline-block;
+		margin-left: 0.3rem;
+		padding: 0.05rem 0.3rem;
+		background: $successColor;
+		color: #fff;
+		font-size: 9px;
+		border-radius: 3px;
+		font-weight: 800;
+		letter-spacing: 0.3px;
+		vertical-align: middle;
+
+		// wca-live RecordTag colors — WR red / CR yellow / NR green / PR blue
+		&--wr {
+			background: #f44336;
+		}
+		&--cr {
+			background: #ffd600;
+			color: #222;
+		}
+		&--nr {
+			background: $successColor;
+		}
+		&--pr {
+			background: #1976d2;
+		}
+	}
+
 	&__scoretake-split {
 		display: grid;
 		grid-template-columns: minmax(280px, 1fr) 2.2fr;

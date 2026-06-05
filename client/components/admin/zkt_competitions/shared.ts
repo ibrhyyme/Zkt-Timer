@@ -1,6 +1,29 @@
 import block from '../../../styles/bem';
+import {countryFlag} from '../../community/my_schedule/shared';
 
 export const b = block('zkt-admin-comp');
+
+// Re-export so competition screens import identity helpers from one place.
+export {countryFlag};
+
+export interface CompetitorIdentity {
+	username?: string | null;
+	first_name?: string | null;
+	last_name?: string | null;
+	join_country?: string | null;
+}
+
+/** Display name: "First Last" when available, else username, else empty. */
+export function competitorDisplayName(user?: CompetitorIdentity | null): string {
+	if (!user) return '';
+	const full = [user.first_name, user.last_name].filter(Boolean).join(' ').trim();
+	return full || user.username || '';
+}
+
+/** Country flag emoji for a competitor; empty string when no country. */
+export function competitorFlag(user?: CompetitorIdentity | null): string {
+	return countryFlag(user?.join_country);
+}
 
 // WCA events supported by ZK competitions
 export const ZKT_WCA_EVENTS: Array<{id: string; name: string}> = [

@@ -9,6 +9,8 @@ import {
 	formatCs,
 	getFormatAttempts,
 	formatHasAverage,
+	competitorDisplayName,
+	competitorFlag,
 } from '../shared';
 import TimeField from '../TimeField';
 import {MagnifyingGlass, FloppyDisk, CaretLeft, CaretRight} from 'phosphor-react';
@@ -33,6 +35,9 @@ const ROUND_RESULTS = gql`
 			user {
 				id
 				username
+				first_name
+				last_name
+				join_country
 				profile {
 					pfp_image {
 						id
@@ -69,6 +74,28 @@ const FINALIZE_ROUND = gql`
 	}
 `;
 
+const SUBMIT_BATCH = gql`
+	mutation SubmitZktResultsBatchInline($input: SubmitZktResultsBatchInput!) {
+		submitZktResultsBatch(input: $input) {
+			id
+		}
+	}
+`;
+
+const MARK_NOSHOW = gql`
+	mutation MarkZktNoShowInline($input: MarkZktNoShowInput!) {
+		markZktNoShow(input: $input) {
+			id
+		}
+	}
+`;
+
+const DELETE_RESULT = gql`
+	mutation DeleteZktResultInline($resultId: String!) {
+		deleteZktResult(resultId: $resultId)
+	}
+`;
+
 
 const DNF = -1;
 const DNS = -2;
@@ -77,6 +104,9 @@ interface Competitor {
 	id: string;
 	user_id: string;
 	username: string;
+	first_name?: string | null;
+	last_name?: string | null;
+	join_country?: string | null;
 	avatarUrl?: string;
 }
 
@@ -89,6 +119,24 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 	const [results, setResults] = useState<any[]>([]);
 	const [activeUserId, setActiveUserId] = useState<string | null>(null);
 	const [search, setSearch] = useState('');
+
+	// Batch mode: collect entries locally, commit all at once (wca-live parity).
+	// Lets a delegate power through a stack of scorecards, then submit in one go.
+	const [batchMode, setBatchMode] = useState<boolean>(
+		() => typeof window !== 'undefined' && localStorage.getItem('zkt:batch-mode') === '1'
+	);
+	const [batch, setBatch] = useState<Record<string, (number | null)[]>>({});
+
+	useEffect(() => {
+		if (typeof window !== 'undefined') {
+			localStorage.setItem('zkt:batch-mode', batchMode ? '1' : '0');
+		}
+	}, [batchMode]);
+
+	// Pending batch is round-scoped; drop it when the round changes.
+	useEffect(() => {
+		setBatch({});
+	}, [selectedRoundId]);
 
 	useEffect(() => {
 		if (selectedEvent && selectedEvent.rounds.length > 0) {
@@ -126,6 +174,9 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 					id: r.id,
 					user_id: r.user_id,
 					username: r.user?.username || r.user_id,
+					first_name: r.user?.first_name,
+					last_name: r.user?.last_name,
+					join_country: r.user?.join_country,
 					avatarUrl: r.user?.profile?.pfp_image?.url,
 				}));
 		}
@@ -133,6 +184,9 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 			id: r.id,
 			user_id: r.user_id,
 			username: r.user?.username || r.user_id,
+			first_name: r.user?.first_name,
+			last_name: r.user?.last_name,
+			join_country: r.user?.join_country,
 			avatarUrl: r.user?.profile?.pfp_image?.url,
 		}));
 	}, [selectedRound, selectedEvent, detail.registrations, results]);
@@ -150,7 +204,11 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 	const filteredCompetitors = useMemo(() => {
 		if (!search.trim()) return competitors;
 		const q = search.toLowerCase();
-		return competitors.filter((c) => c.username.toLowerCase().includes(q));
+		return competitors.filter(
+			(c) =>
+				c.username.toLowerCase().includes(q) ||
+				competitorDisplayName(c).toLowerCase().includes(q)
+		);
 	}, [competitors, search]);
 
 	const activeCompetitor = competitors.find((c) => c.user_id === activeUserId);
@@ -161,6 +219,49 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 		const idx = competitors.findIndex((c) => c.user_id === activeUserId);
 		const next = (idx + delta + competitors.length) % competitors.length;
 		setActiveUserId(competitors[next].user_id);
+	}
+
+	function handleBatchAdd(userId: string, attempts: (number | null)[]) {
+		setBatch((prev) => ({...prev, [userId]: attempts}));
+	}
+
+	async function submitBatch() {
+		const entries = Object.entries(batch);
+		if (entries.length === 0) return;
+		try {
+			const batchResults = entries.map(([userId, attempts]) => ({
+				userId,
+				attempt1: attempts[0] ?? null,
+				attempt2: attempts[1] ?? null,
+				attempt3: attempts[2] ?? null,
+				attempt4: attempts[3] ?? null,
+				attempt5: attempts[4] ?? null,
+			}));
+			await gqlMutate(SUBMIT_BATCH, {input: {roundId: selectedRoundId, results: batchResults}});
+			toastSuccess(t('batch_submitted', {count: entries.length}));
+			setBatch({});
+			await fetchResults();
+		} catch (e: any) {
+			toastError(e?.message || t('error'));
+		}
+	}
+
+	async function handleNoShow(userId: string) {
+		try {
+			await gqlMutate(MARK_NOSHOW, {input: {roundId: selectedRoundId, userId}});
+			await fetchResults();
+		} catch (e: any) {
+			toastError(e?.message || t('error'));
+		}
+	}
+
+	async function handleClearResult(resultId: string) {
+		try {
+			await gqlMutate(DELETE_RESULT, {resultId});
+			await fetchResults();
+		} catch (e: any) {
+			toastError(e?.message || t('error'));
+		}
 	}
 
 	async function finalize() {
@@ -225,6 +326,19 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 						{results.filter((r) => r.best !== null && r.best !== undefined).length} / {competitors.length}{' '}
 						{t('entered')}
 					</span>
+					<label className={b('batch-toggle')}>
+						<input
+							type="checkbox"
+							checked={batchMode}
+							onChange={(e) => setBatchMode(e.target.checked)}
+						/>
+						<span>{t('batch_mode')}</span>
+					</label>
+					{Object.keys(batch).length > 0 && (
+						<button className={b('batch-submit')} onClick={submitBatch}>
+							{t('submit_batch', {count: Object.keys(batch).length})}
+						</button>
+					)}
 				</div>
 			)}
 
@@ -232,6 +346,9 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 				<div className={b('scoretake-split')}>
 					{/* LEFT: active competitor form */}
 					<div className={b('scoretake-left')}>
+						{competitors.length > 0 && (
+							<CompetitorQuickSelect competitors={competitors} onSelect={setActiveUserId} />
+						)}
 						{activeCompetitor ? (
 							<ActiveResultForm
 								key={activeCompetitor.user_id}
@@ -242,15 +359,18 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 								cutoffCs={selectedRound.cutoff_cs}
 								cutoffAttempts={selectedRound.cutoff_attempts}
 								existing={activeResult}
+								batchMode={batchMode}
+								onBatchAdd={handleBatchAdd}
 								onSaved={async () => {
-									await fetchResults();
-									// Advance to next competitor without an entered result, if any.
+									if (!batchMode) await fetchResults();
+									// Advance to next competitor without a result (or pending batch entry).
 									const idx = competitors.findIndex((c) => c.user_id === activeCompetitor.user_id);
 									for (let i = 1; i <= competitors.length; i++) {
 										const cand = competitors[(idx + i) % competitors.length];
 										const candRes = results.find((r) => r.user_id === cand.user_id);
+										const pending = batch[cand.user_id] !== undefined;
 										const empty = !candRes || (candRes.best === null || candRes.best === undefined);
-										if (empty) {
+										if (empty && !pending) {
 											setActiveUserId(cand.user_id);
 											return;
 										}
@@ -281,6 +401,9 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 							results={results}
 							activeUserId={activeUserId}
 							onSelect={setActiveUserId}
+							onClear={handleClearResult}
+							onNoShow={handleNoShow}
+							batch={batch}
 							format={selectedRound.format}
 						/>
 					</div>
@@ -315,6 +438,8 @@ function ActiveResultForm({
 	onSaved,
 	onPrev,
 	onNext,
+	batchMode,
+	onBatchAdd,
 }: {
 	competitor: Competitor;
 	roundId: string;
@@ -326,6 +451,8 @@ function ActiveResultForm({
 	onSaved: () => void;
 	onPrev: () => void;
 	onNext: () => void;
+	batchMode?: boolean;
+	onBatchAdd?: (userId: string, attempts: (number | null)[]) => void;
 }) {
 	const {t} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
 	const attemptCount = getFormatAttempts(format);
@@ -348,6 +475,13 @@ function ActiveResultForm({
 	}
 
 	async function save() {
+		// Batch mode: stash locally and move on; parent commits everything later.
+		if (batchMode && onBatchAdd) {
+			onBatchAdd(competitor.user_id, attempts.slice(0, attemptCount));
+			toastSuccess(t('added_to_batch'));
+			onSaved();
+			return;
+		}
 		setSaving(true);
 		try {
 			const input: any = {roundId, userId: competitor.user_id};
@@ -432,7 +566,12 @@ function ActiveResultForm({
 						<img className={b('user-avatar')} src={competitor.avatarUrl} alt="" />
 					)}
 					<div>
-						<div className={b('active-form-name')}>{competitor.username}</div>
+						<div className={b('active-form-name')}>
+							{competitorFlag(competitor) && (
+								<span className={b('flag')}>{competitorFlag(competitor)}</span>
+							)}
+							{competitorDisplayName(competitor)}
+						</div>
 						{existing?.ranking && (
 							<div className={b('active-form-rank')}>#{existing.ranking}</div>
 						)}
@@ -498,17 +637,24 @@ function LeaderboardTable({
 	results,
 	activeUserId,
 	onSelect,
+	onClear,
+	onNoShow,
+	batch,
 	format,
 }: {
 	competitors: Competitor[];
 	results: any[];
 	activeUserId: string | null;
 	onSelect: (userId: string) => void;
+	onClear: (resultId: string) => void;
+	onNoShow: (userId: string) => void;
+	batch: Record<string, (number | null)[]>;
 	format: string;
 }) {
 	const {t} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
 	const attemptCount = getFormatAttempts(format);
 	const hasAverage = formatHasAverage(format);
+	const [menu, setMenu] = useState<{userId: string; resultId?: string; x: number; y: number} | null>(null);
 
 	// Sort by ranking if available, then unranked after.
 	const sorted = [...competitors].sort((a, b) => {
@@ -520,6 +666,7 @@ function LeaderboardTable({
 	});
 
 	return (
+		<>
 		<div className={b('leaderboard')}>
 			<div className={b('leaderboard-head')}>
 				<span className={b('leaderboard-col', {rank: true})}>#</span>
@@ -536,19 +683,25 @@ function LeaderboardTable({
 				const r = results.find((x) => x.user_id === c.user_id);
 				const isActive = c.user_id === activeUserId;
 				const advancing = r?.proceeds;
+				const pending = batch[c.user_id] !== undefined;
 				return (
 					<button
 						key={c.user_id}
 						type="button"
-						className={b('leaderboard-row', {active: isActive, advancing, 'no-show': !!r?.no_show})}
+						className={b('leaderboard-row', {active: isActive, advancing, 'no-show': !!r?.no_show, pending})}
 						onClick={() => onSelect(c.user_id)}
+						onContextMenu={(e) => {
+							e.preventDefault();
+							setMenu({userId: c.user_id, resultId: r?.id, x: e.clientX, y: e.clientY});
+						}}
 					>
 						<span className={b('leaderboard-col', {rank: true})}>
 							{r?.ranking ?? '-'}
 						</span>
 						<span className={b('leaderboard-col', {name: true})}>
 							{c.avatarUrl && <img className={b('user-avatar')} src={c.avatarUrl} alt="" />}
-							<span>{c.username}</span>
+							{competitorFlag(c) && <span className={b('flag')}>{competitorFlag(c)}</span>}
+							<span>{competitorDisplayName(c)}</span>
 						</span>
 						{Array.from({length: attemptCount}).map((_, i) => (
 							<span key={i} className={b('leaderboard-col', {attempt: true})}>
@@ -576,6 +729,107 @@ function LeaderboardTable({
 					</button>
 				);
 			})}
+		</div>
+			{menu && (
+				<>
+					<div
+						className={b('ctx-overlay')}
+						onClick={() => setMenu(null)}
+						onContextMenu={(e) => {
+							e.preventDefault();
+							setMenu(null);
+						}}
+					/>
+					<div className={b('ctx-menu')} style={{top: menu.y, left: menu.x}}>
+						<button type="button" onClick={() => { onSelect(menu.userId); setMenu(null); }}>
+							{t('ctx_edit')}
+						</button>
+						{menu.resultId && (
+							<button type="button" onClick={() => { onClear(menu.resultId!); setMenu(null); }}>
+								{t('ctx_clear')}
+							</button>
+						)}
+						<button type="button" onClick={() => { onNoShow(menu.userId); setMenu(null); }}>
+							{t('ctx_no_show')}
+						</button>
+					</div>
+				</>
+			)}
+		</>
+	);
+}
+
+// Quick competitor jump: type a name/username, Enter (or click) jumps the
+// scoretaker straight to that competitor. Mirrors wca-live's ResultSelect so a
+// delegate can land on anyone without hunting the leaderboard.
+function CompetitorQuickSelect({
+	competitors,
+	onSelect,
+}: {
+	competitors: Competitor[];
+	onSelect: (userId: string) => void;
+}) {
+	const {t} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
+	const [query, setQuery] = useState('');
+	const [open, setOpen] = useState(false);
+
+	const matches = useMemo(() => {
+		const q = query.trim().toLowerCase();
+		if (!q) return [];
+		return competitors
+			.filter(
+				(c) =>
+					c.username.toLowerCase().includes(q) ||
+					competitorDisplayName(c).toLowerCase().includes(q)
+			)
+			.slice(0, 6);
+	}, [competitors, query]);
+
+	function pick(c: Competitor) {
+		onSelect(c.user_id);
+		setQuery('');
+		setOpen(false);
+	}
+
+	return (
+		<div className={b('quick-select')}>
+			<MagnifyingGlass weight="bold" />
+			<input
+				type="text"
+				placeholder={t('quick_select_placeholder')}
+				value={query}
+				onChange={(e) => {
+					setQuery(e.target.value);
+					setOpen(true);
+				}}
+				onFocus={() => setOpen(true)}
+				onBlur={() => setOpen(false)}
+				onKeyDown={(e) => {
+					if (e.key === 'Enter' && matches.length > 0) {
+						e.preventDefault();
+						pick(matches[0]);
+					}
+					if (e.key === 'Escape') setOpen(false);
+				}}
+			/>
+			{open && matches.length > 0 && (
+				<div className={b('quick-select-list')}>
+					{matches.map((c) => (
+						<button
+							key={c.user_id}
+							type="button"
+							className={b('quick-select-item')}
+							onMouseDown={(e) => {
+								e.preventDefault();
+								pick(c);
+							}}
+						>
+							{competitorFlag(c) && <span className={b('flag')}>{competitorFlag(c)}</span>}
+							<span>{competitorDisplayName(c)}</span>
+						</button>
+					))}
+				</div>
+			)}
 		</div>
 	);
 }

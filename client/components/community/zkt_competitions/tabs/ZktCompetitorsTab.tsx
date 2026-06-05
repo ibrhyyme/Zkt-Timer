@@ -3,7 +3,7 @@ import {useTranslation} from 'react-i18next';
 import {useHistory, useParams} from 'react-router-dom';
 import {useSelector} from 'react-redux';
 import {MagnifyingGlass} from 'phosphor-react';
-import {b, getEventName} from '../shared';
+import {b, getEventName, competitorDisplayName, competitorFlag} from '../shared';
 
 export default function ZktCompetitorsTab({detail}: {detail: any}) {
 	const {t} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
@@ -22,7 +22,11 @@ export default function ZktCompetitorsTab({detail}: {detail: any}) {
 		const approved = detail.registrations.filter((r: any) => r.status === 'APPROVED');
 		const q = search.trim().toLowerCase();
 		const matched = q
-			? approved.filter((r: any) => (r.user?.username || '').toLowerCase().includes(q))
+			? approved.filter(
+					(r: any) =>
+						(r.user?.username || '').toLowerCase().includes(q) ||
+						competitorDisplayName(r.user).toLowerCase().includes(q)
+				)
 			: approved;
 		// Pin "me" to the top so I always see my own registration first.
 		return [...matched].sort((a: any, bx: any) => {
@@ -30,7 +34,7 @@ export default function ZktCompetitorsTab({detail}: {detail: any}) {
 				if (a.user_id === me.id) return -1;
 				if (bx.user_id === me.id) return 1;
 			}
-			return (a.user?.username || '').localeCompare(bx.user?.username || '');
+			return competitorDisplayName(a.user).localeCompare(competitorDisplayName(bx.user));
 		});
 	}, [detail.registrations, search, me]);
 
@@ -79,7 +83,10 @@ export default function ZktCompetitorsTab({detail}: {detail: any}) {
 								)}
 								<div className={b('competitor-info')}>
 									<span className={b('competitor-name-list')}>
-										{r.user?.username || r.user_id}
+										{competitorFlag(r.user) && (
+											<span className={b('flag')}>{competitorFlag(r.user)}</span>
+										)}
+										{competitorDisplayName(r.user) || r.user_id}
 										{isMe && (
 											<span className={b('me-badge')}>{t('you')}</span>
 										)}
