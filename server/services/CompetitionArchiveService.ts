@@ -50,6 +50,22 @@ export function isCompetitionActive(archive: {start_date: Date; end_date: Date})
 }
 
 /**
+ * Is the competition over (end_date + 1 day tolerance has passed)?
+ *
+ * Only finished competitions are safe to read from / write to the archive —
+ * upcoming and active comps have a moving registration list, so a snapshot
+ * would be stale. They must always be read live from WCA instead.
+ */
+export function isCompetitionFinished(comp: {end_date: Date}): boolean {
+	const now = new Date();
+	now.setHours(0, 0, 0, 0);
+	const end = new Date(comp.end_date);
+	end.setHours(23, 59, 59, 999);
+	end.setDate(end.getDate() + 1); // 1 day extra for timezone tolerance
+	return now > end;
+}
+
+/**
  * Fetch a competition from WCA + WCA Live and write to DB (upsert).
  * Idempotent — updates record if it exists, creates if not.
  *
@@ -61,6 +77,7 @@ export async function archiveCompetition(
 	competitionId: string,
 	meta?: ArchiveMeta,
 	prefetchedWcif?: any,
+	opts?: {onlyIfFinished?: boolean},
 ): Promise<{success: boolean; error?: string}> {
 	const prisma = getPrisma();
 
@@ -109,6 +126,13 @@ export async function archiveCompetition(
 	if (!startDate || !endDate) {
 		logger.warn('[Archive] Could not extract dates', {competitionId});
 		return {success: false, error: 'date_extract_failed'};
+	}
+
+	// Only archive finished competitions when the caller requests it — upcoming
+	// and active comps have a moving registration list, so the snapshot would be
+	// stale. Those are always read live from WCA instead (see wcaCompetitionDetail).
+	if (opts?.onlyIfFinished && !isCompetitionFinished({end_date: endDate})) {
+		return {success: false, error: 'not_finished'};
 	}
 
 	// 4. Upsert to DB

@@ -747,13 +747,17 @@ export class AdminResolver {
 				end_date: comp.end_date ? new Date(comp.end_date + 'T00:00:00Z') : undefined,
 				country_iso2: comp.country_iso2 || null,
 				city: comp.city || null,
-			});
+			}, undefined, {onlyIfFinished: true});
 
 			if (archiveResult.success) {
 				result.imported++;
 				if (result.imported % 50 === 0) {
 					console.log(`[BulkArchive] ${result.imported}/${result.total} imported...`);
 				}
+			} else if (archiveResult.error === 'not_finished') {
+				// Upcoming/active comps aren't archived — their registration list is
+				// still changing, so they're read live instead. Not a failure.
+				result.skipped++;
 			} else {
 				result.failed++;
 				result.failedIds.push(comp.id);

@@ -17,7 +17,7 @@ import {fetchDataFromCache, createRedisKey, RedisNamespace, deleteKeyInRedis, ge
 import {logger} from '../services/logger';
 import {getWcaLiveData as wcaLiveGetData, fetchLiveRoundResults as wcaLiveFetchRound} from '../services/WcaLiveService';
 import {ensureNotificationState} from '../services/WcaNotificationState';
-import {getArchivedCompetition, archiveCompetition, isStaleArchive, isCompetitionActive} from '../services/CompetitionArchiveService';
+import {getArchivedCompetition, archiveCompetition, isStaleArchive, isCompetitionFinished} from '../services/CompetitionArchiveService';
 
 function getErrorType(err: any): string {
 	if (!err) return 'unknown';
@@ -54,7 +54,7 @@ export class WcaScheduleResolver {
 		// because judges are entering real-time data and the archived snapshot is stale.
 		// Use the live stream instead.
 		const archive = await getArchivedCompetition(input.competitionId).catch(() => null);
-		if (archive && !isCompetitionActive(archive)) {
+		if (archive && isCompetitionFinished(archive)) {
 			const detail = buildCompetitionDetail(archive.wcif_data as any, wcaId, wcaUserId);
 			if (detail && archive.live_data) {
 				const liveData = (archive.live_data as any).wcaLiveData;
@@ -144,7 +144,7 @@ export class WcaScheduleResolver {
 
 		// 3. Lazy archive — write to DB in background before returning response
 		// Pass prefetchedWcif to avoid fetching from WCA again
-		archiveCompetition(input.competitionId, undefined, wcifData).catch((err: any) => {
+		archiveCompetition(input.competitionId, undefined, wcifData, {onlyIfFinished: true}).catch((err: any) => {
 			logger.warn('[Archive] lazy archive failed', {
 				competitionId: input.competitionId,
 				err: err?.message,
