@@ -151,6 +151,11 @@ export type AddZktDelegateInput = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type AddZktOrganizerInput = {
+  competitionId?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type AdminActiveUsersResult = {
   __typename?: 'AdminActiveUsersResult';
   available_months?: Maybe<Array<Maybe<Scalars['String']>>>;
@@ -410,6 +415,12 @@ export type CreateZktCompetitionInput = {
   locationAddress?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   visibility?: InputMaybe<ZktCompVisibility>;
+};
+
+export type CreateZktCompTabInput = {
+  competitionId?: InputMaybe<Scalars['String']>;
+  content?: InputMaybe<Scalars['String']>;
+  title?: InputMaybe<Scalars['String']>;
 };
 
 export type CreateZktRoundInput = {
@@ -826,6 +837,7 @@ export type Mutation = {
   addSupportTicketMessage?: Maybe<SupportTicketMessage>;
   addZktCompetitorManually?: Maybe<ZktRegistration>;
   addZktDelegate?: Maybe<ZktCompDelegate>;
+  addZktOrganizer?: Maybe<ZktCompOrganizer>;
   adminDeleteTrainerAlternative?: Maybe<TrainerAlternative>;
   adminDeleteUserAccount?: Maybe<UserAccount>;
   adminSendPushToUser?: Maybe<AdminSendPushResult>;
@@ -859,6 +871,7 @@ export type Mutation = {
   createTrainerAlternative?: Maybe<TrainerAlternative>;
   createUserAccount?: Maybe<PublicUserAccount>;
   createZktCompetition?: Maybe<ZktCompetition>;
+  createZktCompTab?: Maybe<ZktCompTab>;
   createZktGroup?: Maybe<ZktGroup>;
   createZktRound?: Maybe<ZktRound>;
   deleteAlgorithmOverride?: Maybe<AlgorithmOverride>;
@@ -883,6 +896,7 @@ export type Mutation = {
   deleteTrainingSolves?: Maybe<Scalars['Void']>;
   deleteUserAccount?: Maybe<PublicUserAccount>;
   deleteZktCompetition?: Maybe<Scalars['Boolean']>;
+  deleteZktCompTab?: Maybe<Scalars['Boolean']>;
   deleteZktGroup?: Maybe<Scalars['Boolean']>;
   deleteZktResult?: Maybe<Scalars['Boolean']>;
   deleteZktRound?: Maybe<Scalars['Boolean']>;
@@ -913,8 +927,10 @@ export type Mutation = {
   removeBadgeFromUser?: Maybe<Badge>;
   removeDailyGoal?: Maybe<Scalars['Boolean']>;
   removeZktDelegate?: Maybe<Scalars['Boolean']>;
+  removeZktOrganizer?: Maybe<Scalars['Boolean']>;
   reopenZktRound?: Maybe<ZktRound>;
   reorderSessions?: Maybe<Scalars['Void']>;
+  reorderZktCompTabs?: Maybe<Scalars['Boolean']>;
   reportProfile?: Maybe<Report>;
   resendEmailVerificationCode?: Maybe<Scalars['Void']>;
   resetSettings?: Maybe<Setting>;
@@ -959,6 +975,7 @@ export type Mutation = {
   updateWcaVisibility?: Maybe<Integration>;
   updateZktCompetition?: Maybe<ZktCompetition>;
   updateZktCompetitionStatus?: Maybe<ZktCompetition>;
+  updateZktCompTab?: Maybe<ZktCompTab>;
   updateZktGroupSchedule?: Maybe<ZktGroup>;
   updateZktRegistrationStatus?: Maybe<ZktRegistration>;
   updateZktRound?: Maybe<ZktRound>;
@@ -997,6 +1014,11 @@ export type MutationAddZktCompetitorManuallyArgs = {
 
 export type MutationAddZktDelegateArgs = {
   input?: InputMaybe<AddZktDelegateInput>;
+};
+
+
+export type MutationAddZktOrganizerArgs = {
+  input?: InputMaybe<AddZktOrganizerInput>;
 };
 
 
@@ -1176,6 +1198,11 @@ export type MutationCreateZktCompetitionArgs = {
 };
 
 
+export type MutationCreateZktCompTabArgs = {
+  input?: InputMaybe<CreateZktCompTabInput>;
+};
+
+
 export type MutationCreateZktGroupArgs = {
   input?: InputMaybe<CreateGroupInput>;
 };
@@ -1273,6 +1300,11 @@ export type MutationDeleteTrainingSolvesArgs = {
 
 export type MutationDeleteZktCompetitionArgs = {
   id?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationDeleteZktCompTabArgs = {
+  tabId?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -1391,6 +1423,12 @@ export type MutationRemoveZktDelegateArgs = {
 };
 
 
+export type MutationRemoveZktOrganizerArgs = {
+  competitionId?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+
 export type MutationReopenZktRoundArgs = {
   roundId?: InputMaybe<Scalars['String']>;
 };
@@ -1398,6 +1436,11 @@ export type MutationReopenZktRoundArgs = {
 
 export type MutationReorderSessionsArgs = {
   ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+
+export type MutationReorderZktCompTabsArgs = {
+  input?: InputMaybe<ReorderZktCompTabsInput>;
 };
 
 
@@ -1641,6 +1684,11 @@ export type MutationUpdateZktCompetitionArgs = {
 
 export type MutationUpdateZktCompetitionStatusArgs = {
   input?: InputMaybe<UpdateZktCompetitionStatusInput>;
+};
+
+
+export type MutationUpdateZktCompTabArgs = {
+  input?: InputMaybe<UpdateZktCompTabInput>;
 };
 
 
@@ -2298,6 +2346,11 @@ export type ReindexLlResult = {
   total?: Maybe<Scalars['Int']>;
 };
 
+export type ReorderZktCompTabsInput = {
+  competitionId?: InputMaybe<Scalars['String']>;
+  tabIds?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
 export type Report = {
   __typename?: 'Report';
   created_at?: Maybe<Scalars['DateTime']>;
@@ -2806,6 +2859,12 @@ export type UpdateZktCompetitionInput = {
 export type UpdateZktCompetitionStatusInput = {
   competitionId?: InputMaybe<Scalars['String']>;
   status?: InputMaybe<ZktCompStatus>;
+};
+
+export type UpdateZktCompTabInput = {
+  content?: InputMaybe<Scalars['String']>;
+  tabId?: InputMaybe<Scalars['String']>;
+  title?: InputMaybe<Scalars['String']>;
 };
 
 export type UpdateZktGroupScheduleInput = {
@@ -3507,6 +3566,15 @@ export type ZktCompEvent = {
   rounds?: Maybe<Array<ZktRound>>;
 };
 
+export type ZktCompOrganizer = {
+  __typename?: 'ZktCompOrganizer';
+  competition_id?: Maybe<Scalars['String']>;
+  created_at?: Maybe<Scalars['DateTime']>;
+  id?: Maybe<Scalars['String']>;
+  user?: Maybe<PublicUserAccount>;
+  user_id?: Maybe<Scalars['String']>;
+};
+
 export enum ZktCompStatus {
   Announced = 'ANNOUNCED',
   Cancelled = 'CANCELLED',
@@ -3518,6 +3586,15 @@ export enum ZktCompStatus {
   RegistrationClosed = 'REGISTRATION_CLOSED',
   RegistrationOpen = 'REGISTRATION_OPEN'
 }
+
+export type ZktCompTab = {
+  __typename?: 'ZktCompTab';
+  competition_id?: Maybe<Scalars['String']>;
+  content?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  tab_order?: Maybe<Scalars['Int']>;
+  title?: Maybe<Scalars['String']>;
+};
 
 export enum ZktCompVisibility {
   Private = 'PRIVATE',
