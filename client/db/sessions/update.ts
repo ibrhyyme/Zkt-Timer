@@ -14,14 +14,14 @@ import {
 } from '../../@types/generated/graphql';
 import { fetchSessionById, fetchSessions } from './query';
 import { saveLokiDb, updateOfflineHash } from '../../components/layout/offline';
-import { canSync } from '../../lib/sync-gate';
+import { canReadSync, canWriteSync } from '../../lib/sync-gate';
 import { generateId } from '../../../shared/code';
 
 export async function createSessionDb(sessionInput: Partial<Session>) {
 	const sessionDb = getSessionDb();
 	let session = sessionInput as Session;
 
-	if (canSync()) {
+	if (canWriteSync()) {
 		try {
 			const res = await gqlMutateTyped(CreateSessionDocument, {
 				input: {
@@ -62,7 +62,7 @@ export async function deleteSessionDb(session: Session) {
 	postProcessDbUpdate(session);
 	updateLocalDbOrderValueForAllSessions();
 
-	if (canSync()) {
+	if (canWriteSync()) {
 		await gqlMutateTyped(DeleteSessionDocument, {
 			id: session.id,
 		});
@@ -91,12 +91,15 @@ export async function bulkDeleteSessionsDb(ids: string[]) {
 	emitEvent('solveDbUpdatedEvent');
 	emitEvent('sessionsDbUpdatedEvent');
 
-	if (canSync()) {
+	if (canWriteSync()) {
 		try {
 			await gqlMutateTyped(BulkDeleteSessionsDocument, {ids});
 		} catch (e) {
 			console.error('bulkDeleteSessions failed', e);
 		}
+	}
+
+	if (canReadSync()) {
 		updateOfflineHash();
 	} else {
 		saveLokiDb();
@@ -109,7 +112,7 @@ export async function reorderSessions(sessionIds: string[]) {
 
 	updateLocalDbOrderValuesForSessionIds(validIds);
 
-	if (canSync()) {
+	if (canWriteSync()) {
 		await gqlMutateTyped(ReorderSessionsDocument, {
 			ids: validIds,
 		});
@@ -146,7 +149,7 @@ export async function updateSessionDb(session: Session, input: Partial<Session>)
 	});
 	postProcessDbUpdate(session, false);
 
-	if (canSync()) {
+	if (canWriteSync()) {
 		await gqlMutateTyped(UpdateSessionDocument, {
 			id: session.id,
 			input: {
@@ -181,7 +184,7 @@ export async function mergeSessionsDb(oldSessionId: string, newSessionId: string
 	postProcessDbUpdate(newSession, true);
 	updateLocalDbOrderValueForAllSessions();
 
-	if (canSync()) {
+	if (canWriteSync()) {
 		await gqlMutateTyped(MergeSessionsDocument, {
 			oldSessionId,
 			newSessionId,
@@ -201,7 +204,7 @@ function postProcessDbUpdate(session: Session, clearSolveCache = true) {
 	emitEvent('solveDbUpdatedEvent');
 	emitEvent('sessionsDbUpdatedEvent', session);
 
-	if (canSync()) {
+	if (canReadSync()) {
 		updateOfflineHash();
 	} else {
 		saveLokiDb();

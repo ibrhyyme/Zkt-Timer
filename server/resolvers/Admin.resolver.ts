@@ -168,6 +168,18 @@ export class AdminResolver {
 		return userForAdmin;
 	}
 
+	// Exports a user's sessions + timer solves as a Zkt-Timer JSON string (import-compatible
+	// with parseZktTimerData). Used for data recovery: admin downloads a user's data and
+	// hands them the file to re-import via Settings → Import.
+	@Authorized([Role.ADMIN])
+	@Query(() => String)
+	async adminExportUserData(@Ctx() context: GraphQLContext, @Arg('userId') userId: string): Promise<string> {
+		const { prisma } = context;
+		const sessions = await prisma.session.findMany({ where: { user_id: userId } });
+		const solves = await prisma.solve.findMany({ where: { user_id: userId, from_timer: true } });
+		return JSON.stringify({ sessions, solves });
+	}
+
 	@Authorized([Role.ADMIN, Role.MOD])
 	@Mutation(() => BanLog)
 	async banUserAccount(@Ctx() context: GraphQLContext, @Arg('input') banInput: BanUserInput) {

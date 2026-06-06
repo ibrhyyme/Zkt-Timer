@@ -1856,6 +1856,8 @@
             "remove_premium": "Remove Premium",
             "delete_user": "Delete user",
             "send_push": "Send Notification",
+            "export_user_data": "Download solves as JSON",
+            "user_data_exported": "User data downloaded",
             "delete_confirm": "Are you sure you want to delete \"{{username}}\"? This action cannot be undone.",
             "user_deleted": "User account deleted",
             "user_verified": "User successfully verified",

@@ -1856,6 +1856,8 @@
             "remove_premium": "Premium Kaldır",
             "delete_user": "Kullanıcıyı Sil",
             "send_push": "Bildirim Gönder",
+            "export_user_data": "Çözümleri JSON indir",
+            "user_data_exported": "Kullanıcı verisi indirildi",
             "delete_confirm": "\"{{username}}\" kullanıcısını silmek istediğine emin misin? Bu işlem geri alınamaz.",
             "user_deleted": "Kullanıcı hesabı silindi",
             "user_verified": "Kullanıcı başarıyla onaylandı",

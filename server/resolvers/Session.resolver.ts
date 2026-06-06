@@ -138,13 +138,24 @@ async function updateOrderOfSessions(sessions: Session[]): Promise<Session[]> {
 
 @Resolver()
 export class SessionResolver {
-	@Authorized([Role.LOGGED_IN, Role.PRO])
+	@Authorized([Role.LOGGED_IN])
 	@Query(() => [Session])
 	async sessions(@Ctx() context: GraphQLContext) {
 		return getSessionsByUser(context.user);
 	}
 
-	@Authorized([Role.LOGGED_IN, Role.PRO])
+	// Lightweight: returns only the user's session IDs for the backfill diff.
+	@Authorized([Role.LOGGED_IN])
+	@Query(() => [String])
+	async mySessionIds(@Ctx() context: GraphQLContext): Promise<string[]> {
+		const sessions = await getPrisma().session.findMany({
+			where: {user_id: context.user.id},
+			select: {id: true},
+		});
+		return sessions.map((s) => s.id);
+	}
+
+	@Authorized([Role.LOGGED_IN])
 	@Mutation(() => Session)
 	async createSession(@Ctx() context: GraphQLContext, @Arg('input', () => SessionInput) input: SessionInput) {
 		const sessions = await getSessionsByUser(context.user);
@@ -160,7 +171,7 @@ export class SessionResolver {
 		return newSession;
 	}
 
-	@Authorized([Role.LOGGED_IN, Role.PRO])
+	@Authorized([Role.LOGGED_IN])
 	@Mutation(() => Session)
 	async updateSession(
 		@Ctx() context: GraphQLContext,
@@ -176,7 +187,7 @@ export class SessionResolver {
 		return updateSession(context, session, input);
 	}
 
-	@Authorized([Role.LOGGED_IN, Role.PRO])
+	@Authorized([Role.LOGGED_IN])
 	@Mutation(() => GraphQLVoid)
 	async reorderSessions(@Ctx() context: GraphQLContext, @Arg('ids', () => [String], {validate: false}) ids: string[]) {
 		const sessions = await getSessionsByIds(context.user, ids);
@@ -197,7 +208,7 @@ export class SessionResolver {
 		await updateOrderOfSessions(orderedSessions);
 	}
 
-	@Authorized([Role.LOGGED_IN, Role.PRO])
+	@Authorized([Role.LOGGED_IN])
 	@Mutation(() => Session)
 	async deleteSession(@Ctx() context: GraphQLContext, @Arg('id') id: string) {
 		const session = await getSessionById(id);
@@ -220,7 +231,7 @@ export class SessionResolver {
 		return session;
 	}
 
-	@Authorized([Role.LOGGED_IN, Role.PRO])
+	@Authorized([Role.LOGGED_IN])
 	@Mutation(() => Session)
 	async mergeSessions(
 		@Ctx() context: GraphQLContext,
@@ -243,7 +254,7 @@ export class SessionResolver {
 		return newSession;
 	}
 
-	@Authorized([Role.LOGGED_IN, Role.PRO])
+	@Authorized([Role.LOGGED_IN])
 	@Mutation(() => GraphQLVoid)
 	async bulkDeleteSessions(@Ctx() context: GraphQLContext, @Arg('ids', () => [String], {validate: false}) ids: string[]) {
 		if (!ids || !ids.length) {
@@ -273,7 +284,7 @@ export class SessionResolver {
 		await updateOrderOfSessionsForUser(context.user);
 	}
 
-	@Authorized([Role.LOGGED_IN, Role.PRO])
+	@Authorized([Role.LOGGED_IN])
 	@Mutation(() => GraphQLVoid)
 	async bulkCreateSessions(
 		@Ctx() context: GraphQLContext,
