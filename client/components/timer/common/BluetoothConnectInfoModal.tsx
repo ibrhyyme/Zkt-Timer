@@ -26,6 +26,7 @@ export default function BluetoothConnectInfoModal({onComplete, onClose}: Bluetoo
 	const {t} = useTranslation();
 	const [dontShow, setDontShow] = useState(false);
 	const [copied, setCopied] = useState(false);
+	const [troubleOpen, setTroubleOpen] = useState(false);
 
 	// chrome:// URLs can't be opened from a link (browser security), so clicking copies
 	// the flag path to the clipboard and the user pastes it into the address bar.
@@ -119,6 +120,46 @@ export default function BluetoothConnectInfoModal({onComplete, onClose}: Bluetoo
 						</div>
 					</li>
 				</ol>
+
+				{/* Troubleshooting — collapsed by default so it doesn't bloat the modal */}
+				<div className={b('trouble')}>
+					<button
+						type="button"
+						className={b('trouble-toggle')}
+						onClick={() => setTroubleOpen((v) => !v)}
+						aria-expanded={troubleOpen}
+					>
+						<span>{t('smart_cube.ble_info_trouble_toggle')}</span>
+						<CaretDown
+							size={14}
+							weight="bold"
+							className={b('trouble-caret', {open: troubleOpen})}
+						/>
+					</button>
+					{troubleOpen && (
+						<div className={b('trouble-body')}>
+							<div className={b('trouble-group')}>
+								<span className={b('trouble-group-title')}>
+									{t('smart_cube.ble_info_trouble_general_title')}
+								</span>
+								<ul className={b('trouble-list')}>
+									<li className={b('trouble-item')}>{t('smart_cube.ble_info_trouble_general_1')}</li>
+									<li className={b('trouble-item')}>{t('smart_cube.ble_info_trouble_general_2')}</li>
+								</ul>
+							</div>
+							<div className={b('trouble-group')}>
+								<span className={b('trouble-group-title')}>
+									{t('smart_cube.ble_info_trouble_mac_title')}
+								</span>
+								<ul className={b('trouble-list')}>
+									<li className={b('trouble-item')}>{t('smart_cube.ble_info_trouble_mac_1')}</li>
+									<li className={b('trouble-item')}>{t('smart_cube.ble_info_trouble_mac_2')}</li>
+									<li className={b('trouble-item')}>{t('smart_cube.ble_info_trouble_mac_3')}</li>
+								</ul>
+							</div>
+						</div>
+					)}
+				</div>
 
 				<div className={b('app')}>
 					<span className={b('app-text')}>{t('smart_cube.ble_info_app_cta')}</span>

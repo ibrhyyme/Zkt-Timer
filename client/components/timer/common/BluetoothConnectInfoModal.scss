@@ -241,6 +241,79 @@
 		box-shadow: 0 4px 12px -4px rgba(var(--primary-color), 0.75);
 	}
 
+	// ---- Troubleshooting accordion ----
+	&__trouble {
+		padding-top: 14px;
+		border-top: 1px solid rgba(var(--text-color), 0.1);
+	}
+
+	&__trouble-toggle {
+		width: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 10px;
+		margin: 0 -8px;
+		padding: 6px 8px;
+		background: none;
+		border: none;
+		border-radius: 8px;
+		cursor: pointer;
+		font-size: 13.5px;
+		font-weight: 700;
+		color: rgb(var(--primary-color));
+		text-align: left;
+		transition: background 0.15s ease;
+
+		&:hover {
+			background: rgba(var(--primary-color), 0.1);
+		}
+	}
+
+	&__trouble-caret {
+		flex-shrink: 0;
+		transition: transform 0.2s ease;
+
+		&--open {
+			transform: rotate(180deg);
+		}
+	}
+
+	&__trouble-body {
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+		margin-top: 12px;
+	}
+
+	&__trouble-group {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+	}
+
+	&__trouble-group-title {
+		font-size: 13px;
+		font-weight: 700;
+		color: rgb(var(--primary-color));
+	}
+
+	&__trouble-list {
+		list-style: disc;
+		margin: 0;
+		padding-left: 18px;
+		display: flex;
+		flex-direction: column;
+		gap: 5px;
+	}
+
+	&__trouble-item {
+		font-size: 13px;
+		font-weight: 500;
+		line-height: 1.5;
+		color: rgb(var(--text-color));
+	}
+
 	// ---- App download band ----
 	&__app {
 		display: flex;
