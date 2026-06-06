@@ -75,20 +75,25 @@ export class ZktCompetitionResolver {
 		const isStaff = !!(user?.admin || user?.mod);
 		if (isStaff) return comp;
 
-		// Non-staff access rules — mirror listZktCompetitions so the detail
+		// Tied users (creator, delegate, organizer) run the competition — they can
+		// always open it, including DRAFT, for the admin dashboard ("Yönet").
+		const tied =
+			comp.created_by_id === user?.id ||
+			(comp.delegates || []).some((d: any) => d.user_id === user?.id) ||
+			(comp.organizers || []).some((o: any) => o.user_id === user?.id);
+		if (tied) return comp;
+
+		// Public (non-tied) access rules — mirror listZktCompetitions so the detail
 		// endpoint can't be used to bypass list filtering via direct ID lookup.
 		if (comp.status === 'DRAFT' || comp.status === 'CONFIRMED') return null;
 		// Country scoping: non-staff can't open competitions outside their country.
 		if (user?.join_country && comp.country_code && comp.country_code !== user.join_country) {
 			return null;
 		}
-		// PRIVATE competitions: only registered competitors, delegates, or creator.
+		// PRIVATE competitions: visible to registered competitors only (tied handled above).
 		if (comp.visibility === 'PRIVATE') {
-			const tied =
-				comp.created_by_id === user?.id ||
-				(comp.registrations || []).some((r: any) => r.user_id === user?.id) ||
-				(comp.delegates || []).some((d: any) => d.user_id === user?.id);
-			if (!tied) return null;
+			const registrant = (comp.registrations || []).some((r: any) => r.user_id === user?.id);
+			if (!registrant) return null;
 		}
 		return comp;
 	}
