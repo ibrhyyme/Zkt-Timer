@@ -61,11 +61,16 @@ export default function ZktInfoTab({detail}: {detail: any}) {
 				</div>
 			)}
 
-			{/* Organizer (creator) */}
-			{detail.created_by && (
+			{/* Organizers (creator + added organizers) */}
+			{(detail.created_by || (detail.organizers && detail.organizers.length > 0)) && (
 				<div className={b('info-section')}>
-					<h4 className={b('info-section-title')}>{t('organizer')}</h4>
-					<PersonRow user={detail.created_by} />
+					<h4 className={b('info-section-title')}>{t('organizers')}</h4>
+					<div className={b('info-people-grid')}>
+						{detail.created_by && <PersonRow user={detail.created_by} />}
+						{(detail.organizers || []).map((o: any) => (
+							<PersonRow key={o.id} user={o.user} />
+						))}
+					</div>
 				</div>
 			)}
 

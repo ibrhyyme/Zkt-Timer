@@ -16,6 +16,8 @@ import DashboardRegistrations from './tabs/DashboardRegistrations';
 import DashboardRounds from './tabs/DashboardRounds';
 import DashboardResults from './tabs/DashboardResults';
 import DashboardDelegates from './tabs/DashboardDelegates';
+import DashboardOrganizers from './tabs/DashboardOrganizers';
+import ZktCompTabsManager from './tabs/ZktCompTabsManager';
 import DashboardAssignments from './tabs/DashboardAssignments';
 import {useZktCompRefetch} from '../../community/zkt_competitions/useZktCompRefetch';
 
@@ -105,11 +107,33 @@ const DETAIL_QUERY = gql`
 					}
 				}
 			}
+			organizers {
+				id
+				user_id
+				user {
+					id
+					username
+					verified
+					is_pro
+					profile {
+						pfp_image {
+							id
+							url
+						}
+					}
+				}
+			}
+			tabs {
+				id
+				title
+				content
+				tab_order
+			}
 		}
 	}
 `;
 
-type TabId = 'overview' | 'registrations' | 'rounds' | 'assignments' | 'results' | 'delegates';
+type TabId = 'overview' | 'registrations' | 'rounds' | 'assignments' | 'results' | 'delegates' | 'organizers' | 'tabs_manager';
 
 export default function CompetitionDashboard() {
 	const {competitionId} = useParams<{competitionId: string}>();
@@ -170,6 +194,8 @@ export default function CompetitionDashboard() {
 		{id: 'assignments', label: t('tab_assignments')},
 		{id: 'results', label: t('tab_results')},
 		{id: 'delegates', label: t('tab_delegates')},
+		{id: 'organizers', label: t('tab_organizers')},
+		{id: 'tabs_manager', label: t('tab_manage')},
 	];
 
 	return (
@@ -243,6 +269,8 @@ export default function CompetitionDashboard() {
 				{tab === 'assignments' && <DashboardAssignments detail={detail} onUpdated={fetch} />}
 				{tab === 'results' && <DashboardResults detail={detail} onUpdated={fetch} />}
 				{tab === 'delegates' && <DashboardDelegates detail={detail} onUpdated={fetch} />}
+				{tab === 'organizers' && <DashboardOrganizers detail={detail} onUpdated={fetch} />}
+				{tab === 'tabs_manager' && <ZktCompTabsManager detail={detail} onUpdated={fetch} />}
 			</div>
 		</div>
 	);

@@ -378,6 +378,42 @@ export class ZktCompDelegate {
 }
 
 @ObjectType()
+export class ZktCompOrganizer {
+	@Field()
+	id: string;
+
+	@Field()
+	competition_id: string;
+
+	@Field()
+	user_id: string;
+
+	@Field()
+	created_at: Date;
+
+	@Field(() => PublicUserAccount, {nullable: true})
+	user?: PublicUserAccount;
+}
+
+@ObjectType()
+export class ZktCompTab {
+	@Field()
+	id: string;
+
+	@Field()
+	competition_id: string;
+
+	@Field()
+	title: string;
+
+	@Field()
+	content: string;
+
+	@Field(() => Int)
+	tab_order: number;
+}
+
+@ObjectType()
 export class ZktCompetition {
 	@Field()
 	id: string;
@@ -700,6 +736,48 @@ export class AddZktDelegateInput {
 
 	@Field()
 	userId: string;
+}
+
+@InputType()
+export class AddZktOrganizerInput {
+	@Field()
+	competitionId: string;
+
+	@Field()
+	userId: string;
+}
+
+@InputType()
+export class CreateZktCompTabInput {
+	@Field()
+	competitionId: string;
+
+	@Field()
+	title: string;
+
+	@Field()
+	content: string;
+}
+
+@InputType()
+export class UpdateZktCompTabInput {
+	@Field()
+	tabId: string;
+
+	@Field({nullable: true})
+	title?: string;
+
+	@Field({nullable: true})
+	content?: string;
+}
+
+@InputType()
+export class ReorderZktCompTabsInput {
+	@Field()
+	competitionId: string;
+
+	@Field(() => [String])
+	tabIds: string[];
 }
 
 @InputType()

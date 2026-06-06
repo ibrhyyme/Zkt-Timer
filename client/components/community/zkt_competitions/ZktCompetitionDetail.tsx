@@ -14,7 +14,8 @@ import ZktLiveTab from './tabs/ZktLiveTab';
 import ZktPodiumsTab from './tabs/ZktPodiumsTab';
 import ZktRegistrationForm from './tabs/ZktRegistrationForm';
 import {useZktCompRefetch} from './useZktCompRefetch';
-import {Users, ListBullets, Globe, Broadcast, UserPlus, ChartBar} from 'phosphor-react';
+import {Users, ListBullets, Globe, Broadcast, UserPlus, ChartBar, FileText} from 'phosphor-react';
+import ReactMarkdown from 'react-markdown';
 
 const DETAIL_QUERY = gql`
 	query ZktCompetitionPublic($id: String!) {
@@ -80,11 +81,25 @@ const DETAIL_QUERY = gql`
 					username
 				}
 			}
+			organizers {
+				id
+				user_id
+				user {
+					id
+					username
+				}
+			}
+			tabs {
+				id
+				title
+				content
+				tab_order
+			}
 		}
 	}
 `;
 
-type TabId = 'groups' | 'live' | 'events' | 'rankings' | 'info' | 'register';
+type TabId = 'groups' | 'live' | 'events' | 'rankings' | 'info' | 'register' | string;
 
 export default function ZktCompetitionDetail() {
 	const {competitionId} = useParams<{competitionId: string}>();
@@ -144,6 +159,12 @@ export default function ZktCompetitionDetail() {
 		{id: 'events', label: t('tab_events'), icon: ListBullets, show: true, count: detail.events.length},
 		{id: 'rankings', label: t('tab_rankings'), icon: ChartBar, show: detail.status !== 'DRAFT'},
 		{id: 'info', label: t('tab_info'), icon: Globe, show: true},
+		...(detail.tabs || []).map((tb: any) => ({
+			id: `custom_${tb.id}`,
+			label: tb.title,
+			icon: FileText,
+			show: true,
+		})),
 		{id: 'register', label: t('tab_register'), icon: UserPlus, show: canRegister},
 	];
 
@@ -204,6 +225,17 @@ export default function ZktCompetitionDetail() {
 				{tab === 'rankings' && <ZktPodiumsTab detail={detail} />}
 				{tab === 'info' && <ZktInfoTab detail={detail} />}
 				{tab === 'register' && <ZktRegistrationForm detail={detail} onDone={fetch} />}
+				{typeof tab === 'string' &&
+					tab.startsWith('custom_') &&
+					(() => {
+						const tabId = tab.replace('custom_', '');
+						const customTab = (detail.tabs || []).find((tb: any) => tb.id === tabId);
+						return customTab ? (
+							<div className={b('custom-tab-content')}>
+								<ReactMarkdown>{customTab.content}</ReactMarkdown>
+							</div>
+						) : null;
+					})()}
 			</div>
 		</div>
 	);

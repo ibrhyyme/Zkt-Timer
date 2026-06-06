@@ -7,11 +7,17 @@ import {
 	ZktRegistration,
 	ZktRegistrationHistory,
 	ZktCompDelegate,
+	ZktCompOrganizer,
+	ZktCompTab,
 	ZktRegistrationInput,
 	UpdateZktRegistrationStatusInput,
 	UpdateMyZktRegistrationInput,
 	BulkUpdateZktRegistrationsInput,
 	AddZktDelegateInput,
+	AddZktOrganizerInput,
+	CreateZktCompTabInput,
+	UpdateZktCompTabInput,
+	ReorderZktCompTabsInput,
 	AddZktCompetitorManuallyInput,
 } from '../schemas/ZktCompetition.schema';
 import {getPrisma} from '../database';
@@ -565,6 +571,117 @@ export class ZktRegistrationResolver {
 				},
 			},
 		});
+		return true;
+	}
+
+	@Authorized([Role.LOGGED_IN])
+	@Mutation(() => ZktCompOrganizer)
+	async addZktOrganizer(
+		@Ctx() context: GraphQLContext,
+		@Arg('input') input: AddZktOrganizerInput
+	) {
+		await assertCanModifyCompetition(context.user, input.competitionId);
+
+		const existing = await getPrisma().zktCompOrganizer.findUnique({
+			where: {
+				competition_id_user_id: {
+					competition_id: input.competitionId,
+					user_id: input.userId,
+				},
+			},
+		});
+		if (existing) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Already an organizer');
+		}
+		return getPrisma().zktCompOrganizer.create({
+			data: {
+				competition_id: input.competitionId,
+				user_id: input.userId,
+			},
+			include: {user: publicUserInclude},
+		});
+	}
+
+	@Authorized([Role.LOGGED_IN])
+	@Mutation(() => Boolean)
+	async removeZktOrganizer(
+		@Ctx() context: GraphQLContext,
+		@Arg('competitionId') competitionId: string,
+		@Arg('userId') userId: string
+	) {
+		await assertCanModifyCompetition(context.user, competitionId);
+
+		await getPrisma().zktCompOrganizer.delete({
+			where: {
+				competition_id_user_id: {
+					competition_id: competitionId,
+					user_id: userId,
+				},
+			},
+		});
+		return true;
+	}
+
+	@Authorized([Role.LOGGED_IN])
+	@Mutation(() => ZktCompTab)
+	async createZktCompTab(
+		@Ctx() context: GraphQLContext,
+		@Arg('input') input: CreateZktCompTabInput
+	) {
+		await assertCanModifyCompetition(context.user, input.competitionId);
+		const count = await getPrisma().zktCompTab.count({
+			where: {competition_id: input.competitionId},
+		});
+		return getPrisma().zktCompTab.create({
+			data: {
+				competition_id: input.competitionId,
+				title: input.title,
+				content: input.content,
+				tab_order: count,
+			},
+		});
+	}
+
+	@Authorized([Role.LOGGED_IN])
+	@Mutation(() => ZktCompTab)
+	async updateZktCompTab(
+		@Ctx() context: GraphQLContext,
+		@Arg('input') input: UpdateZktCompTabInput
+	) {
+		const tab = await getPrisma().zktCompTab.findUnique({where: {id: input.tabId}});
+		if (!tab) throw new GraphQLError(ErrorCode.NOT_FOUND);
+		await assertCanModifyCompetition(context.user, tab.competition_id);
+		return getPrisma().zktCompTab.update({
+			where: {id: input.tabId},
+			data: {
+				...(input.title !== undefined ? {title: input.title} : {}),
+				...(input.content !== undefined ? {content: input.content} : {}),
+			},
+		});
+	}
+
+	@Authorized([Role.LOGGED_IN])
+	@Mutation(() => Boolean)
+	async deleteZktCompTab(@Ctx() context: GraphQLContext, @Arg('tabId') tabId: string) {
+		const tab = await getPrisma().zktCompTab.findUnique({where: {id: tabId}});
+		if (!tab) throw new GraphQLError(ErrorCode.NOT_FOUND);
+		await assertCanModifyCompetition(context.user, tab.competition_id);
+		await getPrisma().zktCompTab.delete({where: {id: tabId}});
+		return true;
+	}
+
+	@Authorized([Role.LOGGED_IN])
+	@Mutation(() => Boolean)
+	async reorderZktCompTabs(
+		@Ctx() context: GraphQLContext,
+		@Arg('input') input: ReorderZktCompTabsInput
+	) {
+		await assertCanModifyCompetition(context.user, input.competitionId);
+		await getPrisma().$transaction(
+			input.tabIds.map((id, idx) =>
+				getPrisma().zktCompTab.update({where: {id}, data: {tab_order: idx}})
+			)
+		);
 		return true;
 	}
 }
