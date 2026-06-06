@@ -492,6 +492,12 @@ export class ZktCompetition {
 
 	@Field(() => [ZktCompDelegate], {nullable: true})
 	delegates?: ZktCompDelegate[];
+
+	@Field(() => [ZktCompOrganizer], {nullable: true})
+	organizers?: ZktCompOrganizer[];
+
+	@Field(() => [ZktCompTab], {nullable: true})
+	tabs?: ZktCompTab[];
 }
 
 @ObjectType()

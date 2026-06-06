@@ -3517,10 +3517,12 @@ export type ZktCompetition = {
   location?: Maybe<Scalars['String']>;
   location_address?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
+  organizers?: Maybe<Array<ZktCompOrganizer>>;
   registration_edit_deadline?: Maybe<Scalars['DateTime']>;
   registrations?: Maybe<Array<ZktRegistration>>;
   results_published_at?: Maybe<Scalars['DateTime']>;
   status?: Maybe<ZktCompStatus>;
+  tabs?: Maybe<Array<ZktCompTab>>;
   updated_at?: Maybe<Scalars['DateTime']>;
   visibility?: Maybe<ZktCompVisibility>;
 };
