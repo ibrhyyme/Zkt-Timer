@@ -410,6 +410,7 @@ export const USER_ACCOUNT_SOLVES_SUMMARY_FRAGMENT = gql`
 		max_time
 		sum
 		cube_type
+		scramble_subset
 	}
 `;
 

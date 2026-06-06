@@ -1856,6 +1856,8 @@
             "remove_premium": "Quitar Premium",
             "delete_user": "Eliminar usuario",
             "send_push": "Enviar notificacion",
+            "export_user_data": "Descargar soluciones como JSON",
+            "user_data_exported": "Datos del usuario descargados",
             "delete_confirm": "¿Estás seguro de que quieres eliminar a \"{{username}}\"? Esta acción no se puede deshacer.",
             "user_deleted": "Cuenta de usuario eliminada",
             "user_verified": "Usuario verificado exitosamente",

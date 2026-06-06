@@ -18,7 +18,7 @@ import { fetchLastSolve } from './query';
 import { setTimerParam } from '../../components/timer/helpers/params';
 import { addToQueue } from '../../util/offline-queue';
 import { toastInfo } from '../../util/toast';
-import { canSync } from '../../lib/sync-gate';
+import { canReadSync, canWriteSync } from '../../lib/sync-gate';
 
 let offlineToastShown = false;
 if (typeof window !== 'undefined') {
@@ -42,7 +42,7 @@ export async function createSolveDb(solveInput: Solve) {
 
 	postProcessDbUpdate(solve, true);
 
-	if (canSync()) {
+	if (canWriteSync()) {
 		const query = gql`
 			mutation Mutate($input: SolveInput) {
 				createSolve(input: $input) {
@@ -131,7 +131,7 @@ export async function deleteSolveDb(solve: Solve, confirmed: boolean = false) {
 		setTimerParam('finalTime', 0);
 	}
 
-	if (canSync()) {
+	if (canWriteSync()) {
 		const query = gql`
 			mutation Mutate($id: String) {
 				deleteSolve(id: $id) {
@@ -165,7 +165,7 @@ export async function updateSolveDb(solve: Solve, input: Partial<Solve> = {}, up
 		postProcessDbUpdate(solve, false);
 	}
 
-	if (canSync()) {
+	if (canWriteSync()) {
 		const query = gql`
 			mutation Mutate($id: String, $input: SolveInput) {
 				updateSolve(id: $id, input: $input) {
@@ -203,7 +203,7 @@ function postProcessDbUpdate(solve: Solve, isNew: boolean) {
 	checkForPB(solve, isNew);
 	checkForWorst(solve, isNew);
 
-	if (canSync()) {
+	if (canReadSync()) {
 		updateOfflineHash();
 	} else {
 		saveLokiDb();
@@ -254,9 +254,7 @@ export async function deleteAllSolvesInSessionDb(sessionId: string, confirmed: b
 	clearSolveStatCacheForSession(sessionId);
 	emitEvent('solveDbUpdatedEvent', null);
 
-	if (canSync()) {
-		updateOfflineHash();
-
+	if (canWriteSync()) {
 		const query = gql`
 			mutation Mutate($sessionId: String!) {
 				deleteAllSolvesInSession(sessionId: $sessionId)
@@ -268,6 +266,10 @@ export async function deleteAllSolvesInSessionDb(sessionId: string, confirmed: b
 		} catch (e) {
 			// Log
 		}
+	}
+
+	if (canReadSync()) {
+		updateOfflineHash();
 	} else {
 		saveLokiDb();
 	}
@@ -315,7 +317,7 @@ export async function deleteMultipleSolvesDb(solves: Solve[], confirmed: boolean
 		}
 	}
 
-	if (solves.length > 0 && canSync()) {
+	if (solves.length > 0 && canWriteSync()) {
 		const query = gql`
 			mutation Mutate($ids: [String!]!) {
 				deleteSolves(ids: $ids)

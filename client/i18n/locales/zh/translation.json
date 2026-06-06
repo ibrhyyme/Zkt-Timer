@@ -1856,6 +1856,8 @@
             "remove_premium": "移除 Premium",
             "delete_user": "删除用户",
             "send_push": "发送通知",
+            "export_user_data": "下载解法为 JSON",
+            "user_data_exported": "用户数据已下载",
             "delete_confirm": "您确定要删除 \"{{username}}\" 吗？此操作无法撤销。",
             "user_deleted": "用户账户已删除",
             "user_verified": "用户已成功验证",

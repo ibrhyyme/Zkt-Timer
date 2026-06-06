@@ -29,7 +29,7 @@ import { emitEvent } from '../../util/event_handler';
 import { syncDailyGoalsFromServer } from '../daily-goal/helpers/storage';
 import { onVisibilityChange } from '../../util/app-visibility';
 import { isPro, isProEnabled } from '../../lib/pro';
-import { canSync } from '../../lib/sync-gate';
+import { canReadSync, canWriteSync } from '../../lib/sync-gate';
 import { importSessionsInChunks, importSolvesInChunks } from '../settings/data/import_data/review_import/chunked_import';
 import { getAllQueued } from '../../util/offline-queue';
 
@@ -205,6 +205,12 @@ async function loadNonCriticalData(_me: UserAccount, dispatch: Dispatch<any>, pa
 		}
 	} catch (e) {
 		console.error(e);
+	}
+
+	// Full-sync backfill: push local solves/sessions not yet on the server.
+	// Runs for every logged-in user (Basic included), idempotent via id-diff + skipDuplicates.
+	if (canWriteSync()) {
+		backfillLocalDataToServer().catch((e) => console.error('[Backfill] failed:', e));
 	}
 
 	// Clean up stale solves when tab becomes visible
@@ -391,7 +397,7 @@ function initVisibilitySyncListener() {
 
 	onVisibilityChange((visible) => {
 		if (!visible) return;
-		if (!canSync()) return;
+		if (!canReadSync()) return;
 
 		const now = Date.now();
 		if (now - lastSyncTime < VISIBILITY_SYNC_DEBOUNCE_MS) return;
@@ -764,5 +770,97 @@ async function migrateLocalDataToServer(): Promise<boolean> {
 	} catch (e) {
 		console.error('[Migration] Failed:', e);
 		return false;
+	}
+}
+
+/**
+ * Full-sync backfill: uploads local sessions/solves that don't yet exist on the server.
+ * Runs on every launch for any logged-in user (Basic included). Idempotent: diffs against
+ * server ids (mySessionIds/mySolveIds) and uses bulk mutations with skipDuplicates.
+ * Sessions go first (solve FK depends on session_id); on session failure, solve backfill
+ * is skipped to avoid orphan FK violations.
+ */
+async function backfillLocalDataToServer(): Promise<void> {
+	const sessionCollection = getLokiDb().getCollection('sessions');
+	const solveCollection = getLokiDb().getCollection('solves');
+
+	const localSessions = sessionCollection ? sessionCollection.find() : [];
+	const localSolves = solveCollection ? solveCollection.find() : [];
+	if (!localSessions.length && !localSolves.length) return;
+
+	// Fetch server-side ids (lightweight, id-only, LOGGED_IN-gated — no content exposure)
+	let serverSessionIds: Set<string>;
+	let serverSolveIds: Set<string>;
+	try {
+		const sesQuery = gql`
+			query Query {
+				mySessionIds
+			}
+		`;
+		const solQuery = gql`
+			query Query {
+				mySolveIds
+			}
+		`;
+		const sesRes = await gqlQuery<{ mySessionIds: string[] }>(sesQuery);
+		const solRes = await gqlQuery<{ mySolveIds: string[] }>(solQuery);
+		serverSessionIds = new Set(sesRes.data.mySessionIds || []);
+		serverSolveIds = new Set(solRes.data.mySolveIds || []);
+	} catch (e) {
+		console.error('[Backfill] Could not fetch server ids, skipping:', e);
+		return;
+	}
+
+	// Upload missing sessions first (FK dependency)
+	const missingSessions = localSessions.filter((s) => !serverSessionIds.has(s.id));
+	if (missingSessions.length > 0) {
+		const sessionInputs = missingSessions.map((s) => ({
+			id: s.id,
+			name: s.name || 'Session',
+			order: s.order || 0,
+		}));
+		const result = await importSessionsInChunks(sessionInputs, () => {});
+		if (result.failureCount > 0) {
+			console.error('[Backfill] Session chunks failed, skipping solve backfill', result.errors);
+			return;
+		}
+	}
+
+	// Upload missing solves (only SolveInput fields)
+	const missingSolves = localSolves.filter((s) => !serverSolveIds.has(s.id));
+	if (missingSolves.length > 0) {
+		const solveInputs = missingSolves.map((s) => ({
+			id: s.id,
+			time: s.time,
+			raw_time: s.raw_time,
+			cube_type: s.cube_type,
+			scramble_subset: s.scramble_subset,
+			scramble: s.scramble,
+			session_id: s.session_id,
+			started_at: s.started_at,
+			ended_at: s.ended_at,
+			dnf: s.dnf,
+			plus_two: s.plus_two,
+			bulk: s.bulk,
+			notes: s.notes,
+			from_timer: s.from_timer ?? true,
+			trainer_name: s.trainer_name,
+			is_smart_cube: s.is_smart_cube,
+			training_session_id: s.training_session_id,
+			smart_device_id: s.smart_device_id,
+			smart_turn_count: s.smart_turn_count,
+			smart_turns: s.smart_turns,
+			smart_put_down_time: s.smart_put_down_time,
+			smart_pick_up_time: s.smart_pick_up_time,
+			inspection_time: s.inspection_time,
+		}));
+		const result = await importSolvesInChunks(solveInputs, () => {});
+		if (result.failureCount > 0) {
+			console.error('[Backfill] Solve chunks failed', result.errors);
+		}
+	}
+
+	if (missingSessions.length > 0 || missingSolves.length > 0) {
+		console.log(`[Backfill] Uploaded ${missingSessions.length} sessions, ${missingSolves.length} solves`);
 	}
 }

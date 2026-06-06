@@ -15,7 +15,7 @@ import { useInput } from '../../../util/hooks/useInput';
 import { getFullFormattedDate } from '../../../util/dates';
 import { SolveLayoutProps } from '../SolveInfo';
 import { shareContent } from '../../../util/native-plugins';
-import { canSync } from '../../../lib/sync-gate';
+import { canReadSync } from '../../../lib/sync-gate';
 import './NormalSolveLayout.scss';
 
 const b = block('solve-info');
@@ -46,7 +46,7 @@ export default function NormalSolveLayout(props: SolveLayoutProps) {
 	}
 
 	let shareLink = null;
-	if (typeof window !== 'undefined' && canSync()) {
+	if (typeof window !== 'undefined' && canReadSync()) {
 		shareLink = (
 			<>
 				<CopyText

@@ -1,7 +1,7 @@
 import React from 'react';
 import './UserActions.scss';
 import {gql} from '@apollo/client';
-import {gqlMutate} from '../../../api';
+import {gqlMutate, gqlQuery} from '../../../api';
 import {openModal} from '../../../../actions/general';
 import BanUser from '../ban_user/BanUser';
 import SetProModal from '../set_pro/SetProModal';
@@ -12,6 +12,7 @@ import {useDispatch} from 'react-redux';
 import {UserAccountForAdmin} from '../../../../../server/schemas/UserAccount.schema';
 import {useTranslation} from 'react-i18next';
 import SendPushModal from '../send_push/SendPushModal';
+import fileDownload from 'js-file-download';
 
 const b = block('manage-user-actions');
 
@@ -126,6 +127,18 @@ export default function UserActions(props: Props) {
 		updateUser();
 	}
 
+	async function exportUserData() {
+		const query = gql`
+			query Query($userId: String!) {
+				adminExportUserData(userId: $userId)
+			}
+		`;
+
+		const res = await gqlQuery<{adminExportUserData: string}>(query, {userId: user.id});
+		fileDownload(res.data.adminExportUserData, `zkttimer_data_${user.username}.txt`);
+		toastSuccess(t('user_data_exported'));
+	}
+
 	function toggleBan() {
 		if (banned) {
 			unbanUser();
@@ -168,6 +181,7 @@ export default function UserActions(props: Props) {
 					{title: t('send_push'), width: 400}
 				))}
 			/>
+			<Button text={t('export_user_data')} onClick={exportUserData} />
 		</div>
 	);
 }

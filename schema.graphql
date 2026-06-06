@@ -267,7 +267,9 @@ type Query {
   userSearch(pageArgs: PaginationArgsInput): PaginatedUserAccounts
   solves(skip: Int, take: Int): [Solve]
   solvesByIds(ids: [String]): [Solve]
+  mySolveIds: [String]
   sessions: [Session]
+  mySessionIds: [String]
   settings: Setting
   stats: Stats
   caseStats(lastN: Int, sessionId: String, subset: String, cubeType: String, type: String): [CaseStat]
@@ -284,6 +286,7 @@ type Query {
   notificationPreferences: NotificationPreference
   adminUserSearch(filters: AdminUserFiltersInput, pageArgs: PaginationArgsInput): PaginatedUserAccountsForAdmin
   getUserAccountForAdmin(userId: String): UserAccountForAdmin
+  adminExportUserData(userId: String): String
   adminMyPushTokens: [PushTokenInfo]
   onlineStats: OnlineStats
   onlineUsers: [OnlineUser]

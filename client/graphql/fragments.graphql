@@ -371,6 +371,7 @@ fragment UserAccountSolvesSummaryFragment on UserAccountSolvesSummary {
 	max_time
 	sum
 	cube_type
+	scramble_subset
 }
 
 fragment UserAccountSummaryFragment on UserAccountSummary {

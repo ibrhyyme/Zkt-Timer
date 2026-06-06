@@ -106,7 +106,21 @@ export class SolveResolver {
 		});
 	}
 
-	@Authorized([Role.LOGGED_IN, Role.PRO])
+	// Lightweight: returns only the user's solve IDs (no content) so the client can
+	// compute the backfill diff (local IDs minus server IDs) without exposing solve data
+	// to non-Pro users. READ of full solves stays Pro-gated.
+	@Authorized([Role.LOGGED_IN])
+	@Query(() => [String])
+	async mySolveIds(@Ctx() context: GraphQLContext): Promise<string[]> {
+		const { prisma, user } = context;
+		const solves = await prisma.solve.findMany({
+			where: { user_id: user.id },
+			select: { id: true },
+		});
+		return solves.map((s) => s.id);
+	}
+
+	@Authorized([Role.LOGGED_IN])
 	@Mutation(() => Solve)
 	async createSolve(@Ctx() context: GraphQLContext, @Arg('input') input: SolveInput) {
 		const { user } = context;
@@ -156,7 +170,7 @@ export class SolveResolver {
 		return createdSolve;
 	}
 
-	@Authorized([Role.LOGGED_IN, Role.PRO])
+	@Authorized([Role.LOGGED_IN])
 	@Mutation(() => GraphQLVoid)
 	async deleteAllSolvesInSession(@Ctx() context: GraphQLContext, @Arg('sessionId') sessionId: string) {
 		const { prisma, user } = context;
@@ -184,7 +198,7 @@ export class SolveResolver {
 		});
 	}
 
-	@Authorized([Role.LOGGED_IN, Role.PRO])
+	@Authorized([Role.LOGGED_IN])
 	@Mutation(() => Boolean)
 	async deleteSolves(@Ctx() context: GraphQLContext, @Arg('ids', () => [String], { validate: false }) ids: string[]) {
 		const { prisma, user } = context;
@@ -205,7 +219,7 @@ export class SolveResolver {
 		return true;
 	}
 
-	@Authorized([Role.LOGGED_IN, Role.PRO])
+	@Authorized([Role.LOGGED_IN])
 	@Mutation(() => GraphQLVoid)
 	async bulkCreateSolves(@Ctx() context: GraphQLContext, @Arg('solves', () => [SolveInput]) solves: SolveInput[]) {
 		const { user } = context;
