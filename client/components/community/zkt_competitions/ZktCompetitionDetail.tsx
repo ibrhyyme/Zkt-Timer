@@ -15,7 +15,7 @@ import ZktPodiumsTab from './tabs/ZktPodiumsTab';
 import ZktRegistrationForm from './tabs/ZktRegistrationForm';
 import {useZktCompRefetch} from './useZktCompRefetch';
 import {Users, ListBullets, Globe, Broadcast, UserPlus, ChartBar, FileText} from 'phosphor-react';
-import ReactMarkdown from 'react-markdown';
+import MarkdownContent from './MarkdownContent';
 
 const DETAIL_QUERY = gql`
 	query ZktCompetitionPublic($id: String!) {
@@ -232,7 +232,7 @@ export default function ZktCompetitionDetail() {
 						const customTab = (detail.tabs || []).find((tb: any) => tb.id === tabId);
 						return customTab ? (
 							<div className={b('custom-tab-content')}>
-								<ReactMarkdown>{customTab.content}</ReactMarkdown>
+								<MarkdownContent content={customTab.content} />
 							</div>
 						) : null;
 					})()}
