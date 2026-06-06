@@ -1570,6 +1570,31 @@
 		margin-right: 0.15rem;
 	}
 
+	&__custom-tab-content {
+		line-height: 1.6;
+		color: rgb(var(--text-color));
+
+		h1,
+		h2,
+		h3 {
+			margin: 1rem 0 0.5rem;
+		}
+
+		p {
+			margin: 0.5rem 0;
+		}
+
+		ul,
+		ol {
+			margin: 0.5rem 0;
+			padding-left: 1.5rem;
+		}
+
+		a {
+			color: rgb(var(--primary-color));
+		}
+	}
+
 	&__record-tag {
 		display: inline-block;
 		margin-left: 0.4rem;

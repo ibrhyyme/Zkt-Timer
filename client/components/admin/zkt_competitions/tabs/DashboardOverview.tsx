@@ -3,7 +3,7 @@ import {gql} from '@apollo/client';
 import {gqlMutate} from '../../../api';
 import {useTranslation} from 'react-i18next';
 import {toastSuccess, toastError} from '../../../../util/toast';
-import {b} from '../shared';
+import {b, getEventName} from '../shared';
 
 const UPDATE_STATUS = gql`
 	mutation UpdateZktCompStatus($input: UpdateZktCompetitionStatusInput!) {
@@ -225,16 +225,36 @@ export default function DashboardOverview({detail, onUpdated}: {detail: any; onU
 
 				{['DRAFT', 'CONFIRMED'].includes(detail.status) &&
 					(() => {
-						// WCA guideline: competitions should be announced ≥28 days out.
-						// Soft warning only (ZKT is unofficial) so delegates feel at home.
+						// Pre-confirmation checklist (WCA Organizer-view style). Soft
+						// warnings only — ZKT is unofficial, nothing is enforced here.
+						const warnings: string[] = [];
 						const daysToStart = Math.ceil(
 							(new Date(detail.date_start).getTime() - Date.now()) / (24 * 3600 * 1000)
 						);
-						return daysToStart >= 0 && daysToStart < 28 ? (
-							<div className={b('announce-warning')}>
-								{t('announce_28day_warning', {days: daysToStart})}
+						if (daysToStart >= 0 && daysToStart < 28) {
+							warnings.push(t('announce_28day_warning', {days: daysToStart}));
+						}
+						if (detail.events.length === 0) {
+							warnings.push(t('warning_no_events'));
+						}
+						for (const ev of detail.events) {
+							if (ev.rounds.length === 0) {
+								warnings.push(t('warning_no_rounds', {event: getEventName(ev.event_id)}));
+								continue;
+							}
+							// Every non-final round needs an advancement condition.
+							const nonFinal = ev.rounds.slice(0, -1);
+							if (nonFinal.some((r: any) => !r.advancement_type)) {
+								warnings.push(
+									t('warning_no_advancement', {event: getEventName(ev.event_id)})
+								);
+							}
+						}
+						return warnings.map((w, i) => (
+							<div key={i} className={b('announce-warning')}>
+								{w}
 							</div>
-						) : null;
+						));
 					})()}
 
 				<div className={b('status-actions')}>

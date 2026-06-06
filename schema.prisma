@@ -118,6 +118,7 @@ model UserAccount {
   zkt_competitions_created      ZktCompetition[]        @relation("zkt_comp_creator")
   zkt_registrations             ZktRegistration[]       @relation("zkt_registration_user")
   zkt_comp_delegations          ZktCompDelegate[]       @relation("zkt_comp_delegate_user")
+  zkt_comp_organizations        ZktCompOrganizer[]      @relation("zkt_comp_organizer_user")
   zkt_results                   ZktResult[]             @relation("zkt_result_user")
   zkt_results_entered           ZktResult[]             @relation("zkt_result_entered_by")
   zkt_records                   ZktRecord[]             @relation("zkt_record_holder")
@@ -1304,6 +1305,8 @@ model ZktCompetition {
   events           ZktCompEvent[]
   registrations    ZktRegistration[]
   delegates        ZktCompDelegate[]
+  organizers       ZktCompOrganizer[]
+  tabs             ZktCompTab[]
   records          ZktRecord[]
 
   @@index([status])
@@ -1451,6 +1454,36 @@ model ZktCompDelegate {
   @@index([competition_id])
   @@index([user_id])
   @@map("zkt_comp_delegate")
+}
+
+model ZktCompOrganizer {
+  id             String         @id @default(uuid())
+  competition_id String
+  user_id        String
+  created_at     DateTime       @default(now())
+
+  competition    ZktCompetition @relation(fields: [competition_id], references: [id], onDelete: Cascade)
+  user           UserAccount    @relation("zkt_comp_organizer_user", fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([competition_id, user_id])
+  @@index([competition_id])
+  @@index([user_id])
+  @@map("zkt_comp_organizer")
+}
+
+model ZktCompTab {
+  id             String         @id @default(uuid())
+  competition_id String
+  title          String
+  content        String         @db.Text
+  tab_order      Int            @default(0)
+  created_at     DateTime       @default(now())
+  updated_at     DateTime       @updatedAt
+
+  competition    ZktCompetition @relation(fields: [competition_id], references: [id], onDelete: Cascade)
+
+  @@index([competition_id])
+  @@map("zkt_comp_tab")
 }
 
 model ZktResult {

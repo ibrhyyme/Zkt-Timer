@@ -41,6 +41,14 @@ export const zktCompetitionFullInclude = {
 			user: publicUserInclude,
 		},
 	},
+	organizers: {
+		include: {
+			user: publicUserInclude,
+		},
+	},
+	tabs: {
+		orderBy: {tab_order: 'asc' as const},
+	},
 };
 
 export async function getZktCompetitionById(id: string) {
@@ -386,12 +394,20 @@ export async function assertCanModifyCompetition(
 	if (user.admin || user.mod) return;
 
 	const prisma = getPrisma();
-	const [comp, delegate] = await Promise.all([
+	const [comp, delegate, organizer] = await Promise.all([
 		prisma.zktCompetition.findUnique({
 			where: {id: competitionId},
 			select: {created_by_id: true},
 		}),
 		prisma.zktCompDelegate.findUnique({
+			where: {
+				competition_id_user_id: {
+					competition_id: competitionId,
+					user_id: user.id,
+				},
+			},
+		}),
+		prisma.zktCompOrganizer.findUnique({
 			where: {
 				competition_id_user_id: {
 					competition_id: competitionId,
@@ -407,6 +423,7 @@ export async function assertCanModifyCompetition(
 
 	if (comp.created_by_id === user.id) return;
 	if (delegate) return;
+	if (organizer) return;
 
 	throw new GraphQLError(ErrorCode.FORBIDDEN);
 }
