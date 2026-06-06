@@ -2000,6 +2000,8 @@ type ZktCompetition {
   events: [ZktCompEvent!]
   registrations: [ZktRegistration!]
   delegates: [ZktCompDelegate!]
+  organizers: [ZktCompOrganizer!]
+  tabs: [ZktCompTab!]
 }
 
 enum ZktCompStatus {
