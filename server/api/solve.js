@@ -14,7 +14,6 @@ import {
 } from '../models/solve';
 import GraphQLError from '../util/graphql_error';
 import {checkLoggedIn} from '../util/auth';
-import {isProEnabled, isPro} from '../lib/pro';
 import {deleteAllTopAverages, deleteAllTopSolves, deleteTopAverage, deleteTopSolveById} from '../models/top_solve';
 import {deleteSolveMethodSteps} from '../models/solve_method_step';
 import {generateRandomString} from '../../shared/code';
@@ -139,16 +138,9 @@ export const queryActions = {
 	},
 };
 
-function checkProAccess(user) {
-	if (isProEnabled() && !isPro(user)) {
-		throw new GraphQLError(ErrorCode.FORBIDDEN, 'Pro feature');
-	}
-}
-
 export const mutateActions = {
 	deleteSolve: async (_, {id}, {user}) => {
 		checkLoggedIn(user);
-		checkProAccess(user);
 
 		const solve = await getSolve(id);
 
@@ -201,7 +193,6 @@ export const mutateActions = {
 
 	deleteAllSolves: async (_, params, {user}) => {
 		checkLoggedIn(user);
-		checkProAccess(user);
 
 		await deleteAllTopSolves(user);
 		await deleteAllTopAverages(user);
@@ -211,7 +202,6 @@ export const mutateActions = {
 
 	updateSolve: async (_, {id, input}, {user}) => {
 		checkLoggedIn(user);
-		checkProAccess(user);
 
 		const solve = await getBasicSolve(id);
 		if (!solve || solve.user_id !== user.id) {
@@ -230,7 +220,6 @@ export const mutateActions = {
 
 	deleteSolvesByCubeType: async (_, {cubeType}, {user}) => {
 		checkLoggedIn(user);
-		checkProAccess(user);
 
 		await deleteAllSolvesByCubeType(cubeType, user);
 	},
