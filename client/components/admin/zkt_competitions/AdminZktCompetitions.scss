@@ -2020,6 +2020,134 @@
 	&__time-field-special {
 		color: $warningColor;
 	}
+
+	// ── Create/Edit competition page (WCA-style full-page form) ──
+	&__create-page {
+		max-width: 760px;
+		margin: 0 auto;
+	}
+
+	&__create-page-head {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		margin-bottom: 1.5rem;
+		flex-wrap: wrap;
+	}
+
+	&__create-page-title {
+		font-size: 22px;
+		font-weight: 800;
+		color: rgb(var(--text-color));
+		margin: 0;
+	}
+
+	&__back-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
+		background: rgba(var(--text-color), 0.06);
+		color: rgb(var(--text-color));
+		border: none;
+		border-radius: 8px;
+		padding: 0.45rem 0.8rem;
+		font-size: 13px;
+		font-weight: 600;
+		cursor: pointer;
+
+		&:hover {
+			background: rgba(var(--text-color), 0.12);
+		}
+	}
+
+	&__create-page-form {
+		display: flex;
+		flex-direction: column;
+	}
+
+	&__create-page-actions {
+		display: flex;
+		justify-content: flex-end;
+		padding-top: 1.25rem;
+	}
+
+	&__field-hint {
+		font-size: 12px;
+		color: rgb(var(--text-color));
+		margin-top: 0.3rem;
+		line-height: 1.4;
+	}
+
+	&__checkbox-row {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		cursor: pointer;
+		font-size: 14px;
+		font-weight: 600;
+		color: rgb(var(--text-color));
+
+		input {
+			width: 16px;
+			height: 16px;
+			cursor: pointer;
+		}
+	}
+
+	&__map-wrap {
+		margin-top: 0.5rem;
+		margin-bottom: 0.75rem;
+	}
+
+	&__map-search {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.5rem 0.7rem;
+		background: rgb(var(--module-color));
+		border: 1px solid rgba(var(--text-color), 0.12);
+		border-bottom: none;
+		border-radius: 10px 10px 0 0;
+
+		svg {
+			color: rgb(var(--text-color));
+			flex-shrink: 0;
+		}
+	}
+
+	&__map-search-input {
+		flex: 1;
+		min-width: 0;
+		background: transparent;
+		border: none;
+		outline: none;
+		color: rgb(var(--text-color));
+		font-size: 14px;
+
+		&::placeholder {
+			color: rgb(var(--text-color));
+		}
+	}
+
+	&__map-search-btn {
+		flex-shrink: 0;
+		background: rgb(var(--primary-color));
+		color: #fff;
+		border: none;
+		border-radius: 6px;
+		padding: 0.4rem 0.9rem;
+		font-size: 13px;
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	&__map-picker {
+		height: 340px;
+		overflow: hidden;
+		border: 1px solid rgba(var(--text-color), 0.12);
+		border-radius: 0 0 10px 10px;
+		z-index: 0;
+	}
 }
 
 @keyframes zkt-pulse {

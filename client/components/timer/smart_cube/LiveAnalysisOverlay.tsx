@@ -43,7 +43,7 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
     const cubeType = useSettings('cube_type');
     const scrambleSubset = useSettings('scramble_subset');
 
-    // Works for all 3x3 variants (333, 333cfop, 333roux, 333zz, 333mehta, 333sub, and wca+333).
+    // Works for all 3x3 variants (333, 333cfop, 333roux, 333mehta, and wca+333).
     // Also active for subsets (OLL, PLL, ZBLL) — user preference: analysis on all 3x3 solves.
     const is3x3 = is3x3CubeType(cubeType, scrambleSubset);
     const shouldRun = (!!timeStartedAt || (smartTurns && smartTurns.length > 0)) && is3x3;

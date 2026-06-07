@@ -24,8 +24,9 @@ export const SCRAMBLE_SUBSETS: Record<string, ScrambleSubset[]> = {
     ],
 
     // ==================== 3x3x3 ====================
+    // Note: the old "WCA Standart" (random-state, id='') entry was removed —
+    // it duplicated the wca::333 bucket. Standalone 333 is for non-WCA practice only.
     '333': [
-        { id: '', label: 'scramble_subsets.random_state' },
         { id: '333o', label: 'scramble_subsets.random_move' },
         { id: 'edges', label: 'scramble_subsets.edges_only' },
         { id: 'corners', label: 'scramble_subsets.corners_only' },
@@ -34,6 +35,15 @@ export const SCRAMBLE_SUBSETS: Record<string, ScrambleSubset[]> = {
         { id: '333oh', label: 'scramble_subsets.one_handed' },
         { id: '333mbld', label: 'scramble_subsets.multi_bld' },
         { id: '333mirror', label: 'scramble_subsets.mirror' },
+        // Merged from the former '333sub' cube type (generator-limited scrambles)
+        { id: '2gen', label: '2-Generator R, U' },
+        { id: '2genl', label: '2-Generator L, U' },
+        { id: 'roux', label: 'Roux-Generator M, U' },
+        { id: '3gen_F', label: '3-Generator F, R, U' },
+        { id: '3gen_L', label: '3-Generator R, U, L' },
+        { id: 'RrU', label: '3-Generator R, r, U' },
+        { id: '333drud', label: 'Domino Subgroup' },
+        { id: 'half', label: 'scramble_subsets.half_turns' },
     ],
 
     // ==================== 3x3x3 CFOP ====================
@@ -75,15 +85,6 @@ export const SCRAMBLE_SUBSETS: Record<string, ScrambleSubset[]> = {
         { id: 'mtcdrll', label: 'CDRLL' },
         { id: 'mtl5ep', label: 'L5EP' },
         { id: 'ttll', label: 'TTLL' },
-    ],
-
-    // ==================== 3x3x3 ZZ ====================
-    '333zz': [
-        { id: 'eoline', label: 'EO Line' },
-        { id: 'eocross', label: 'EO Cross' },
-        { id: 'zzll', label: 'ZZLL' },
-        { id: 'zbll', label: 'ZBLL' },
-        { id: 'zbls', label: 'ZBLS' },
     ],
 
     // ==================== 2x2x2 ====================
@@ -196,18 +197,6 @@ export const SCRAMBLE_SUBSETS: Record<string, ScrambleSubset[]> = {
         { id: 'sq1pll', label: 'PLL' },
         { id: 'sq1h', label: 'scramble_subsets.face_turn_metric' },
         { id: 'sq1t', label: 'scramble_subsets.twist_metric' },
-    ],
-
-    // ==================== 3x3 Subsets ====================
-    '333sub': [
-        { id: '2gen', label: '2-Generator R, U' },
-        { id: '2genl', label: '2-Generator L, U' },
-        { id: 'roux', label: 'Roux-Generator M, U' },
-        { id: '3gen_F', label: '3-Generator F, R, U' },
-        { id: '3gen_L', label: '3-Generator R, U, L' },
-        { id: 'RrU', label: '3-Generator R, r, U' },
-        { id: '333drud', label: 'Domino Subgroup' },
-        { id: 'half', label: 'scramble_subsets.half_turns' },
     ],
 
 };

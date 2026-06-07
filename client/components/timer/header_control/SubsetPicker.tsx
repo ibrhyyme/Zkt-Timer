@@ -8,9 +8,8 @@ interface Props {
 	selectedSubset?: string | null;
 	onChange: (subset: string | null) => void;
 	mobile?: boolean;
-	// Cube type id — only WCA shows the subset name inline.
-	// Other cube types (3x3 CFOP, 4x4 Yau/Hoya, etc) keep the trigger compact
-	// (just the down arrow) to save header space on mobile.
+	// Cube type id — kept for caller compatibility. No longer used for display:
+	// the active subset label is now shown inline for ALL cube types.
 	cubeTypeId?: string;
 }
 
@@ -25,7 +24,7 @@ function fromFancyValue(value: string): string | null {
 	return value === NONE_VALUE ? null : value;
 }
 
-export default function SubsetPicker({ subsets, selectedSubset, onChange, cubeTypeId }: Props) {
+export default function SubsetPicker({ subsets, selectedSubset, onChange }: Props) {
 	const { t } = useTranslation();
 
 	if (!subsets || subsets.length === 0) return null;
@@ -63,9 +62,11 @@ export default function SubsetPicker({ subsets, selectedSubset, onChange, cubeTy
 	const firstNonHeader = subsets.find(s => !s.isHeader);
 	const currentSubset = subsets.find(s => !s.isHeader && s.id === effectiveSelected);
 	const displaySubset = currentSubset || firstNonHeader;
-	// Only WCA shows the subset name inline; other cube types keep trigger compact (caret only).
-	const showInlineLabel = cubeTypeId === 'wca';
-	const triggerLabel = showInlineLabel && displaySubset ? translateLabel(displaySubset.label) : undefined;
+	// Always show the active subset inline — it is the primary info on method cube
+	// types (e.g. CFOP → PLL), not just WCA. Width is capped in the timer header via
+	// the `subset-picker-trigger` class (HeaderControl.scss); page contexts (Sessions,
+	// Solves) have room and show the full label.
+	const triggerLabel = displaySubset ? translateLabel(displaySubset.label) : undefined;
 
 	function handleValueChange(value: string) {
 		onChange(fromFancyValue(value));
@@ -79,7 +80,7 @@ export default function SubsetPicker({ subsets, selectedSubset, onChange, cubeTy
 			triggerLabel={triggerLabel}
 			ariaLabel="Scramble Subset"
 			maxHeight={400}
-			triggerMinWidth={showInlineLabel ? undefined : 40}
+			className="subset-picker-trigger"
 		/>
 	);
 }

@@ -83,6 +83,12 @@
 			}
 		}
 
+		// Subset picker (FancyDropdown) — cap width so the inline subset label
+		// truncates with ellipsis instead of pushing the header row.
+		.subset-picker-trigger {
+			max-width: 120px;
+		}
+
 		// Button Overrides - Neutral Glass
 		.cd-common-button--theme-gray {
 			background: rgba(var(--text-color), 0.08) !important;
@@ -143,6 +149,10 @@
 			.cd-session-picker {
 				max-width: 100px;
 			}
+
+			.subset-picker-trigger {
+				max-width: 80px;
+			}
 		}
 
 		&__right-controls {
@@ -168,6 +178,10 @@
 
 			.cd-session-picker {
 				max-width: 80px;
+			}
+
+			.subset-picker-trigger {
+				max-width: 64px;
 			}
 		}
 	}

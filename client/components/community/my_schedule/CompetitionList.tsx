@@ -22,7 +22,6 @@ const ZKT_COMPETITIONS_QUERY = gql`
 				date_end
 				location
 				status
-				championship_type
 				country_code
 				events {
 					id
@@ -32,18 +31,6 @@ const ZKT_COMPETITIONS_QUERY = gql`
 		}
 	}
 `;
-
-function championshipBadgeKey(type: string | null | undefined): string | null {
-	if (!type) return null;
-	const map: Record<string, string> = {
-		NATIONAL: 'zkt_comp.championship_badge_national',
-		REGIONAL: 'zkt_comp.championship_badge_regional',
-		CITY: 'zkt_comp.championship_badge_city',
-		INVITATIONAL: 'zkt_comp.championship_badge_invitational',
-		YOUTH: 'zkt_comp.championship_badge_youth',
-	};
-	return map[type] || null;
-}
 
 let cachedZktComps: {data: any[]; ts: number} | null = null;
 function getZktCache(): any[] | null {
@@ -260,7 +247,6 @@ export default function CompetitionList() {
 	const zktCards = useMemo(() => {
 		if (showSearchResults) return [];
 		return (zktComps || [])
-			.filter((c: any) => !c.championship_type || c.date_end < todayStr)
 			.map((c: any) => ({
 				id: c.id,
 				name: c.name,
@@ -269,7 +255,6 @@ export default function CompetitionList() {
 				city: c.location,
 				country_iso2: c.country_code || 'TR',
 				status: c.status,
-				championship_type: c.championship_type,
 				__zkt: true,
 			}))
 			.sort((a: any, b: any) => (b.start_date || '').localeCompare(a.start_date || ''));
@@ -378,41 +363,6 @@ export default function CompetitionList() {
 							{myComps.map((comp: any) => renderCompCard(comp, {mine: true}))}
 						</div>
 					)}
-				</div>
-			)}
-
-			{/* Upcoming Championships — special showcase */}
-			{!compSearch.trim() && zktComps && zktComps.some((c: any) => c.championship_type && c.date_end >= todayStr) && (
-				<div className={b('zkt-championships')}>
-					<h3 className={b('section-title')}>
-						<Trophy weight="fill" style={{marginRight: 8, verticalAlign: 'text-bottom', color: '#ffc400'}} />
-						{t('zkt_comp.upcoming_championships')}
-					</h3>
-					<div className={b('comp-list')}>
-						{zktComps
-							.filter((c: any) => c.championship_type && c.date_end >= todayStr)
-							.map((comp: any) => {
-								const badgeKey = championshipBadgeKey(comp.championship_type);
-								return (
-									<div
-										key={`champ-${comp.id}`}
-										className={b('comp-card', {zkt: true, championship: true})}
-										onClick={() => history.push(`/community/zkt-competitions/${comp.id}`)}
-									>
-										<span className={b('championship-badge', {[(comp.championship_type || 'default').toLowerCase()]: true})}>
-											{badgeKey ? t(badgeKey) : ''}
-										</span>
-										<div className={b('comp-info')}>
-											<span className={b('comp-title')}>{comp.name}</span>
-											<span className={b('comp-sub')}>
-												{formatDateRange(comp.date_start, comp.date_end, locale)}
-												{comp.location && ` \u2013 ${comp.location}`}
-											</span>
-										</div>
-									</div>
-								);
-							})}
-					</div>
 				</div>
 			)}
 

@@ -1993,6 +1993,18 @@ type ZktCompetition {
   cancel_reason: String
   results_published_at: DateTime
   registration_edit_deadline: DateTime
+  short_name: String
+  latitude: Float
+  longitude: Float
+  registration_opens_at: DateTime
+  registration_closes_at: DateTime
+  on_spot_registration: Boolean
+  cancellation_policy: String
+  guests_enabled: Boolean
+  force_comment: Boolean
+  extra_requirements: String
+  contact: String
+  main_event_id: String
   created_by_id: String
   created_at: DateTime
   updated_at: DateTime
@@ -2376,6 +2388,19 @@ input CreateZktCompetitionInput {
   competitorLimit: Int
   visibility: ZktCompVisibility
   championshipType: ZktChampionshipType
+  shortName: String
+  latitude: Float
+  longitude: Float
+  registrationOpensAt: String
+  registrationClosesAt: String
+  registrationEditDeadline: String
+  onSpotRegistration: Boolean
+  cancellationPolicy: String
+  guestsEnabled: Boolean
+  forceComment: Boolean
+  extraRequirements: String
+  contact: String
+  mainEventId: String
   eventIds: [String]
 }
 
@@ -2389,6 +2414,19 @@ input UpdateZktCompetitionInput {
   competitorLimit: Int
   visibility: ZktCompVisibility
   championshipType: ZktChampionshipType
+  shortName: String
+  latitude: Float
+  longitude: Float
+  registrationOpensAt: String
+  registrationClosesAt: String
+  registrationEditDeadline: String
+  onSpotRegistration: Boolean
+  cancellationPolicy: String
+  guestsEnabled: Boolean
+  forceComment: Boolean
+  extraRequirements: String
+  contact: String
+  mainEventId: String
   eventIds: [String!]
 }
 

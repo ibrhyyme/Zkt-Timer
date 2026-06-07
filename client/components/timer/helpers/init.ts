@@ -4,7 +4,7 @@ import { ITimerContext } from '../Timer';
 import { Dispatch } from 'redux';
 import { getCubeTypeInfoById } from '../../../util/cubes/util';
 import { getSetting } from '../../../db/settings/query';
-import { fetchLastSolve } from '../../../db/solves/query';
+import { fetchLastSolve, buildBucketFilter } from '../../../db/solves/query';
 import { setTimerParam } from './params';
 import { resetScramble } from './scramble';
 import { getSolveDb } from '../../../db/solves/init';
@@ -34,6 +34,18 @@ export async function initTimer(dispatch: Dispatch<any>, context: ITimerContext)
 			setSetting('cube_type', 'wca');
 		}
 
+		// The standalone '333' random-state bucket ("WCA Standart", empty subset) was
+		// removed — it duplicated wca::333. Redirect any setting still stuck on it so the
+		// picker matches where the solves migrate (migrate_wca_subset Faz 1). Only the
+		// empty/null subset is moved; real 333 subsets (333oh, 2gen, ...) are untouched.
+		if (getSetting('cube_type') === '333') {
+			const sub = getSetting('scramble_subset');
+			if (sub === null || sub === undefined || sub === '') {
+				setSetting('cube_type', 'wca');
+				setSetting('scramble_subset', '333');
+			}
+		}
+
 		// For cube_type='wca', subset is required — if old users have
 		// subset=null in settings, default to '333' (otherwise orphans on save).
 		const currentCubeType = getSetting('cube_type');
@@ -43,9 +55,16 @@ export async function initTimer(dispatch: Dispatch<any>, context: ITimerContext)
 		}
 	}
 
-	// On page load, load last solve's time into timer
+	// On page load, load last solve's time into timer — scoped to the current
+	// bucket so the display matches the active cube_type/subset, not the global last.
 	const currentSessionId = getSetting('session_id');
-	const lastSolve = fetchLastSolve({ session_id: currentSessionId });
+	const lastSolve = fetchLastSolve(
+		buildBucketFilter({
+			session_id: currentSessionId,
+			cube_type: getSetting('cube_type'),
+			scramble_subset: getSetting('scramble_subset'),
+		})
+	);
 	if (lastSolve && !inModal) {
 		setTimerParam('finalTime', lastSolve.time * 1000);
 	}

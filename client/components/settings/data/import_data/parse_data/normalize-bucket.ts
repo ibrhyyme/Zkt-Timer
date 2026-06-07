@@ -45,8 +45,8 @@ export const VARIANT_MAP: Record<string, { cube_type: string; scramble_subset: s
 	'lse': { cube_type: '333roux', scramble_subset: 'lse' },
 	'lsemu': { cube_type: '333roux', scramble_subset: 'lsemu' },
 
-	// 3x3 ZZ variantlari
-	'eo': { cube_type: '333zz', scramble_subset: 'eoline' },
+	// 3x3 ZZ variantlari (333zz cube type kaldirildi -> 333cfop'a tasindi)
+	'eo': { cube_type: '333cfop', scramble_subset: 'eoline' },
 
 	// 3x3 Mehta variantlari
 	'mt3qb': { cube_type: '333mehta', scramble_subset: 'mt3qb' },
@@ -123,14 +123,17 @@ export function normalizeBucketForImport(parsedCubeType: string | null | undefin
 		return { cube_type: 'wca', scramble_subset: subset };
 	}
 
+	// Kaldirilan cube type'lar -> yeni hedeflerine remap (ölü cube_type'a düşmesin).
+	// 333sub subset'leri '333' altina, 333zz ise '333cfop' altina tasindi.
+	if (ct === '333sub') return { cube_type: '333', scramble_subset: null };
+	if (ct === '333zz') return { cube_type: '333cfop', scramble_subset: null };
+
 	// 3) Modern Zkt-Timer cube_type'lari (zaten yeni mimaride) — as-is
 	if (ct === 'wca') return null; // wca cube_type subset'i bilinmeden saglanamaz; caller atlasin
 	const MODERN_CUBE_TYPES = new Set([
 		'333cfop',
 		'333roux',
 		'333mehta',
-		'333zz',
-		'333sub',
 		'444yau',
 		'other',
 	]);

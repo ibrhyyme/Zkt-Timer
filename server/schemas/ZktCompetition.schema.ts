@@ -1,4 +1,4 @@
-import {Field, InputType, Int, ObjectType, registerEnumType} from 'type-graphql';
+import {Field, Float, InputType, Int, ObjectType, registerEnumType} from 'type-graphql';
 import PaginatedResponse from './Pagination.schema';
 import {PublicUserAccount} from './UserAccount.schema';
 
@@ -472,6 +472,42 @@ export class ZktCompetition {
 	@Field({nullable: true})
 	registration_edit_deadline?: Date;
 
+	@Field({nullable: true})
+	short_name?: string;
+
+	@Field(() => Float, {nullable: true})
+	latitude?: number;
+
+	@Field(() => Float, {nullable: true})
+	longitude?: number;
+
+	@Field({nullable: true})
+	registration_opens_at?: Date;
+
+	@Field({nullable: true})
+	registration_closes_at?: Date;
+
+	@Field()
+	on_spot_registration: boolean;
+
+	@Field({nullable: true})
+	cancellation_policy?: string;
+
+	@Field()
+	guests_enabled: boolean;
+
+	@Field()
+	force_comment: boolean;
+
+	@Field({nullable: true})
+	extra_requirements?: string;
+
+	@Field({nullable: true})
+	contact?: string;
+
+	@Field({nullable: true})
+	main_event_id?: string;
+
 	@Field()
 	created_by_id: string;
 
@@ -611,6 +647,45 @@ export class CreateZktCompetitionInput {
 	@Field(() => ZktChampionshipType, {nullable: true})
 	championshipType?: ZktChampionshipType;
 
+	@Field({nullable: true})
+	shortName?: string;
+
+	@Field(() => Float, {nullable: true})
+	latitude?: number;
+
+	@Field(() => Float, {nullable: true})
+	longitude?: number;
+
+	@Field({nullable: true})
+	registrationOpensAt?: string;
+
+	@Field({nullable: true})
+	registrationClosesAt?: string;
+
+	@Field({nullable: true})
+	registrationEditDeadline?: string;
+
+	@Field({nullable: true})
+	onSpotRegistration?: boolean;
+
+	@Field({nullable: true})
+	cancellationPolicy?: string;
+
+	@Field({nullable: true})
+	guestsEnabled?: boolean;
+
+	@Field({nullable: true})
+	forceComment?: boolean;
+
+	@Field({nullable: true})
+	extraRequirements?: string;
+
+	@Field({nullable: true})
+	contact?: string;
+
+	@Field({nullable: true})
+	mainEventId?: string;
+
 	@Field(() => [String])
 	eventIds: string[];
 }
@@ -643,6 +718,45 @@ export class UpdateZktCompetitionInput {
 
 	@Field(() => ZktChampionshipType, {nullable: true})
 	championshipType?: ZktChampionshipType;
+
+	@Field({nullable: true})
+	shortName?: string;
+
+	@Field(() => Float, {nullable: true})
+	latitude?: number;
+
+	@Field(() => Float, {nullable: true})
+	longitude?: number;
+
+	@Field({nullable: true})
+	registrationOpensAt?: string;
+
+	@Field({nullable: true})
+	registrationClosesAt?: string;
+
+	@Field({nullable: true})
+	registrationEditDeadline?: string;
+
+	@Field({nullable: true})
+	onSpotRegistration?: boolean;
+
+	@Field({nullable: true})
+	cancellationPolicy?: string;
+
+	@Field({nullable: true})
+	guestsEnabled?: boolean;
+
+	@Field({nullable: true})
+	forceComment?: boolean;
+
+	@Field({nullable: true})
+	extraRequirements?: string;
+
+	@Field({nullable: true})
+	contact?: string;
+
+	@Field({nullable: true})
+	mainEventId?: string;
 
 	@Field(() => [String], {nullable: true})
 	eventIds?: string[];

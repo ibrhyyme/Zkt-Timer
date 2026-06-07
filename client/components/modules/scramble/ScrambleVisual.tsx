@@ -37,10 +37,8 @@ const PUZZLE_MAPPING: Record<string, string> = {
 	'333cfop': '3x3x3',
 	'333roux': '3x3x3',
 	'333mehta': '3x3x3',
-	'333zz': '3x3x3',
 	'333fm': '3x3x3',
 	'333mbld': '3x3x3',
-	'333sub': '3x3x3',
 	// 4x4 variants
 	'444yau': '4x4x4',
 	'444bl': '4x4x4',

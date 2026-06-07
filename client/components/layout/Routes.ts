@@ -48,6 +48,7 @@ import AdminPromoCodes from '../admin/promo_codes/AdminPromoCodes';
 import SiteConfigPanel from '../admin/site_config/SiteConfigPanel';
 import AdminZktCompetitions from '../admin/zkt_competitions/AdminZktCompetitions';
 import CompetitionDashboard from '../admin/zkt_competitions/CompetitionDashboard';
+import CreateZktCompetitionPage from '../admin/zkt_competitions/CreateZktCompetitionPage';
 import ZktCompetitionDetail from '../community/zkt_competitions/ZktCompetitionDetail';
 import ZktCompetitorDetail from '../community/zkt_competitions/ZktCompetitorDetail';
 import ZktActivityDetail from '../community/zkt_competitions/ZktActivityDetail';
@@ -238,6 +239,8 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/admin/algorithms', App, Admin, AdminAlgorithms, true, false, true),
 	route('/admin/promo-codes', App, Admin, AdminPromoCodes, true, false, true),
 	route('/admin/site-config', App, Admin, SiteConfigPanel, true, false, true),
+	route('/admin/competitions/new', App, Admin, CreateZktCompetitionPage, true, false, true),
+	route('/admin/competitions/:competitionId/edit', App, Admin, CreateZktCompetitionPage, true, false, true),
 	route('/admin/competitions/:competitionId', App, Admin, CompetitionDashboard, true, false, true),
 	route('/admin/competitions', App, Admin, AdminZktCompetitions, true, false, true),
 

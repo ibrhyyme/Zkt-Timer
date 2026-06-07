@@ -80,5 +80,23 @@ export function migrateLokiSolvesToWcaSubset(): number {
 		migrated++;
 	}
 
+	// Faz 3: '333sub' cube type kaldirildi — subset'leri (2gen, roux, vs) '333' altina tasindi.
+	// Sadece cube_type degisir; scramble_subset oldugu gibi korunur (333'te cakisan id yok).
+	const subSolves = db.chain().find({ cube_type: '333sub' }).data();
+	for (const solve of subSolves) {
+		solve.cube_type = '333';
+		db.update(solve);
+		migrated++;
+	}
+
+	// Faz 4: '333zz' cube type kaldirildi — '333cfop' altina tasindi.
+	// ZZ subset'leri (eoline, eocross, zzll, zbll, zbls) zaten cfop'ta mevcut.
+	const zzSolves = db.chain().find({ cube_type: '333zz' }).data();
+	for (const solve of zzSolves) {
+		solve.cube_type = '333cfop';
+		db.update(solve);
+		migrated++;
+	}
+
 	return migrated;
 }

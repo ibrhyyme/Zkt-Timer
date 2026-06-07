@@ -15,7 +15,7 @@ interface SolverTab {
 }
 
 // Tum 3x3 scramble ureten cube type'lar — tum 3x3 solver'lari bu listedekilerde calisir
-const CUBE_TYPES_333 = new Set(['333', '333cfop', '333roux', '333mehta', '333zz', '333sub']);
+const CUBE_TYPES_333 = new Set(['333', '333cfop', '333roux', '333mehta']);
 
 // Cube type + subset -> gercek puzzle turu cozumu
 // WCA kategorisinde subset bizzat puzzle turudur (333, 222, sq1, vs)

@@ -27,6 +27,19 @@ const DETAIL_QUERY = gql`
 			date_end
 			location
 			location_address
+			short_name
+			latitude
+			longitude
+			registration_opens_at
+			registration_closes_at
+			registration_edit_deadline
+			on_spot_registration
+			cancellation_policy
+			guests_enabled
+			force_comment
+			extra_requirements
+			contact
+			main_event_id
 			competitor_limit
 			status
 			visibility
