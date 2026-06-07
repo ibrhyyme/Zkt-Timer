@@ -93,7 +93,7 @@ const defaultSettings: AllSettings = {
 	use_space_with_smart_cube: false,
 	use_2d_scramble_visual: true,
 	require_period_in_manual_time_entry: false,
-	cube_type: '333',
+	cube_type: 'wca',
 	session_id: null,
 	locked_scramble: null,
 	custom_cube_types: [],
@@ -140,7 +140,7 @@ const defaultSettings: AllSettings = {
 	stackmat_auto_inspection_warning_shown: false,
 	qiyi_auto_inspection: true, // default on (device restart one-click reset + inspection combined)
 	qiyi_auto_inspection_warning_shown: false,
-	scramble_subset: null,
+	scramble_subset: '333',
 	scramble_top_color: null, // 'U' | 'D' | 'F' | 'B' | 'R' | 'L' | null (default white/U)
 	smart_cube_analysis_mode: 'cffffop', // 'none' | 'cfop' | 'cf_plus_op' | 'cffffop' | 'cffffoopp'
 	smart_cube_show_recognition: false,
