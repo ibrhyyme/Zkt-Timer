@@ -17,6 +17,31 @@ export function fetchLastSolve(options: FilterSolvesOptions = {}) {
 	return null;
 }
 
+/**
+ * Builds a bucket-scoped solve filter (session + cube_type + subset) matching the
+ * timer's current-view semantics in DefaultTimer. Use this whenever you need "the
+ * last solve" for the timer display — filtering by session_id alone leaks the
+ * globally-last solve across cube types/subsets into a different bucket's view.
+ */
+export function buildBucketFilter(params: {
+	session_id: string;
+	cube_type: string;
+	scramble_subset?: string | null;
+}): FilterSolvesOptions {
+	const filter: FilterSolvesOptions = {
+		session_id: params.session_id,
+		cube_type: params.cube_type,
+	};
+
+	// Mirror DefaultTimer: subset constrains the bucket only when meaningful —
+	// always for WCA, otherwise only when a specific subset is selected.
+	if (params.cube_type === 'wca' || params.scramble_subset) {
+		filter.scramble_subset = params.scramble_subset ?? null;
+	}
+
+	return filter;
+}
+
 export function fetchSolve(solve: string | Solve): Solve {
 	const solveDb = getSolveDb();
 
@@ -154,11 +179,18 @@ export function fetchSolves(options: FilterSolvesOptions = {}, fetchOptions?: Lo
 
 export function fetchAdjacentSolve(currentSolve: Solve): Solve | null {
 	const solveDb = getSolveDb();
-	const sessionId = currentSolve.session_id;
 
-	// Fetch all solves in session, sorted by ended_at DESC (same as main list)
+	// Scope to the same bucket (session + cube_type + subset) so post-delete
+	// navigation stays within the list the user is actually viewing.
+	const bucketFilter = buildBucketFilter({
+		session_id: currentSolve.session_id,
+		cube_type: currentSolve.cube_type,
+		scramble_subset: currentSolve.scramble_subset,
+	});
+
+	// Fetch all solves in bucket, sorted by ended_at DESC (same as main list)
 	const solves = solveDb.chain()
-		.find({ session_id: sessionId })
+		.find(cleanFilterOptions(bucketFilter))
 		.simplesort('ended_at', true)
 		.data() as Solve[];
 

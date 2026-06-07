@@ -43,13 +43,9 @@ export const CUBE_TYPES: Record<string, CubeType> = {
 	'333cfop': getCubeType('333cfop', '3x3 CFOP', '333cfop', 3),
 	'333roux': getCubeType('333roux', '3x3 Roux', '333roux', 3),
 	'333mehta': getCubeType('333mehta', '3x3 Mehta', '333mehta', 3),
-	'333zz': getCubeType('333zz', '3x3 ZZ', '333zz', 3),
 
 	// === 4x4 Methods ===
 	'444yau': getCubeType('444yau', '4x4 Yau/Hoya', '444yau', 4),
-
-	// === 3x3 Subsets ===
-	'333sub': getCubeType('333sub', '3x3 Subsets', '333sub', 3),
 
 	// === Other ===
 	other: getCubeType('other', 'Other', 'none'),

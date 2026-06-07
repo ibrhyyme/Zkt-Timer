@@ -9,7 +9,7 @@ import {openModal} from '../../../actions/general';
 import ConfirmModal from '../../common/confirm_modal/ConfirmModal';
 import {toastSuccess, toastError} from '../../../util/toast';
 import Loading from '../../common/loading/Loading';
-import {Trash, ArrowLeft, CalendarBlank, MapPin, Eye} from 'phosphor-react';
+import {Trash, ArrowLeft, CalendarBlank, MapPin, Eye, PencilSimple} from 'phosphor-react';
 import {b, formatDateRange} from './shared';
 import DashboardOverview from './tabs/DashboardOverview';
 import DashboardRegistrations from './tabs/DashboardRegistrations';
@@ -228,6 +228,15 @@ export default function CompetitionDashboard() {
 					</div>
 
 					<div className={b('sticky-header-actions')}>
+						<button
+							type="button"
+							className={b('icon-btn', {ghost: true})}
+							onClick={() => history.push(`/admin/competitions/${detail.id}/edit`)}
+							title={t('edit_competition')}
+							aria-label={t('edit_competition')}
+						>
+							<PencilSimple weight="bold" />
+						</button>
 						<button
 							type="button"
 							className={b('icon-btn', {ghost: true})}

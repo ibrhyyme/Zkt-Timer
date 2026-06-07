@@ -38,9 +38,6 @@ export const CUBE_SCRAMBLES: Record<string, ScrambleType> = {
 	'333cfop': getCubeScramble('3x3 CFOP', 20, '333cfop', 3),
 	'333roux': getCubeScramble('3x3 Roux', 20, '333roux', 3),
 	'333mehta': getCubeScramble('3x3 Mehta', 20, '333mehta', 3),
-	'333zz': getCubeScramble('3x3 ZZ', 20, '333zz', 3),
 	'444yau': getCubeScramble('4x4 Yau/Hoya', 46, '444yau', 4),
-	// 3x3 Subsets
-	'333sub': getCubeScramble('3x3 Subsets', 20, '333sub', 3),
 	none: getCubeScramble('None', 0, 'none'),
 };

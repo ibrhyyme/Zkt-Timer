@@ -405,15 +405,28 @@ export type CreatePromoCodeInput = {
 };
 
 export type CreateZktCompetitionInput = {
+  cancellationPolicy?: InputMaybe<Scalars['String']>;
   championshipType?: InputMaybe<ZktChampionshipType>;
   competitorLimit?: InputMaybe<Scalars['Int']>;
+  contact?: InputMaybe<Scalars['String']>;
   dateEnd?: InputMaybe<Scalars['String']>;
   dateStart?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   eventIds?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  extraRequirements?: InputMaybe<Scalars['String']>;
+  forceComment?: InputMaybe<Scalars['Boolean']>;
+  guestsEnabled?: InputMaybe<Scalars['Boolean']>;
+  latitude?: InputMaybe<Scalars['Float']>;
   location?: InputMaybe<Scalars['String']>;
   locationAddress?: InputMaybe<Scalars['String']>;
+  longitude?: InputMaybe<Scalars['Float']>;
+  mainEventId?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
+  onSpotRegistration?: InputMaybe<Scalars['Boolean']>;
+  registrationClosesAt?: InputMaybe<Scalars['String']>;
+  registrationEditDeadline?: InputMaybe<Scalars['String']>;
+  registrationOpensAt?: InputMaybe<Scalars['String']>;
+  shortName?: InputMaybe<Scalars['String']>;
   visibility?: InputMaybe<ZktCompVisibility>;
 };
 
@@ -2844,15 +2857,28 @@ export type UpdateSiteConfigInput = {
 };
 
 export type UpdateZktCompetitionInput = {
+  cancellationPolicy?: InputMaybe<Scalars['String']>;
   championshipType?: InputMaybe<ZktChampionshipType>;
   competitorLimit?: InputMaybe<Scalars['Int']>;
+  contact?: InputMaybe<Scalars['String']>;
   dateEnd?: InputMaybe<Scalars['String']>;
   dateStart?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   eventIds?: InputMaybe<Array<Scalars['String']>>;
+  extraRequirements?: InputMaybe<Scalars['String']>;
+  forceComment?: InputMaybe<Scalars['Boolean']>;
+  guestsEnabled?: InputMaybe<Scalars['Boolean']>;
+  latitude?: InputMaybe<Scalars['Float']>;
   location?: InputMaybe<Scalars['String']>;
   locationAddress?: InputMaybe<Scalars['String']>;
+  longitude?: InputMaybe<Scalars['Float']>;
+  mainEventId?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
+  onSpotRegistration?: InputMaybe<Scalars['Boolean']>;
+  registrationClosesAt?: InputMaybe<Scalars['String']>;
+  registrationEditDeadline?: InputMaybe<Scalars['String']>;
+  registrationOpensAt?: InputMaybe<Scalars['String']>;
+  shortName?: InputMaybe<Scalars['String']>;
   visibility?: InputMaybe<ZktCompVisibility>;
 };
 
@@ -3500,10 +3526,12 @@ export type ZktCompetition = {
   announced_at?: Maybe<Scalars['DateTime']>;
   announced_by_id?: Maybe<Scalars['String']>;
   cancel_reason?: Maybe<Scalars['String']>;
+  cancellation_policy?: Maybe<Scalars['String']>;
   cancelled_at?: Maybe<Scalars['DateTime']>;
   championship_type?: Maybe<ZktChampionshipType>;
   competitor_limit?: Maybe<Scalars['Int']>;
   confirmed_at?: Maybe<Scalars['DateTime']>;
+  contact?: Maybe<Scalars['String']>;
   country_code?: Maybe<Scalars['String']>;
   created_at?: Maybe<Scalars['DateTime']>;
   created_by?: Maybe<PublicUserAccount>;
@@ -3513,14 +3541,24 @@ export type ZktCompetition = {
   delegates?: Maybe<Array<ZktCompDelegate>>;
   description?: Maybe<Scalars['String']>;
   events?: Maybe<Array<ZktCompEvent>>;
+  extra_requirements?: Maybe<Scalars['String']>;
+  force_comment?: Maybe<Scalars['Boolean']>;
+  guests_enabled?: Maybe<Scalars['Boolean']>;
   id?: Maybe<Scalars['String']>;
+  latitude?: Maybe<Scalars['Float']>;
   location?: Maybe<Scalars['String']>;
   location_address?: Maybe<Scalars['String']>;
+  longitude?: Maybe<Scalars['Float']>;
+  main_event_id?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
+  on_spot_registration?: Maybe<Scalars['Boolean']>;
   organizers?: Maybe<Array<ZktCompOrganizer>>;
+  registration_closes_at?: Maybe<Scalars['DateTime']>;
   registration_edit_deadline?: Maybe<Scalars['DateTime']>;
+  registration_opens_at?: Maybe<Scalars['DateTime']>;
   registrations?: Maybe<Array<ZktRegistration>>;
   results_published_at?: Maybe<Scalars['DateTime']>;
+  short_name?: Maybe<Scalars['String']>;
   status?: Maybe<ZktCompStatus>;
   tabs?: Maybe<Array<ZktCompTab>>;
   updated_at?: Maybe<Scalars['DateTime']>;

@@ -1,0 +1,32 @@
+@import '../../../styles/config';
+
+.#{$namespace}-cube-picker {
+	// "Resmi / Official" pill on the WCA option — marks it as the primary path.
+	&__wca-badge {
+		font-size: 0.58rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		padding: 1px 6px;
+		border-radius: 6px;
+		white-space: nowrap;
+		background: rgba(var(--primary-color), 0.18);
+		color: rgb(var(--primary-color));
+	}
+}
+
+// When the WCA row is active (checked) its background is solid primary, so the
+// primary-tinted badge would vanish — switch to white-on-translucent for contrast.
+.#{$namespace}-fancy-dropdown__option[data-state='checked'] .#{$namespace}-cube-picker__wca-badge {
+	background: rgba(255, 255, 255, 0.22);
+	color: #fff;
+}
+
+// Frame the section headers (3x3 / Other Puzzles) with a thin line below — the
+// group separator already sits above — so they read as titles without looking
+// lonely or too loud. Left-aligned, like before. Scoped to the cube picker panel.
+.cube-picker-panel .#{$namespace}-fancy-dropdown__group-label {
+	margin-bottom: 4px;
+	padding-bottom: 5px;
+	border-bottom: 1px solid rgba(var(--text-color), 0.1);
+}

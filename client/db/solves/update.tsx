@@ -14,7 +14,7 @@ import { Solve } from '../../../server/schemas/Solve.schema';
 import { checkForWorst } from './stats/solves/worst';
 import { sanitizeSolve } from '../../../shared/solve';
 import { checkForCurrentAverageUpdate } from './stats/solves/cache/average_cache';
-import { fetchLastSolve } from './query';
+import { fetchLastSolve, buildBucketFilter } from './query';
 import { setTimerParam } from '../../components/timer/helpers/params';
 import { addToQueue } from '../../util/offline-queue';
 import { toastInfo } from '../../util/toast';
@@ -122,8 +122,15 @@ export async function deleteSolveDb(solve: Solve, confirmed: boolean = false) {
 	solveDb.remove(solve);
 	postProcessDbUpdate(solve, false);
 
-	// Silme sonrası timer'daki son süreyi güncelle
-	const newLastSolve = fetchLastSolve({ session_id: solve.session_id });
+	// Silme sonrası timer'daki son süreyi güncelle — yalnizca silinen çözümün ait
+	// oldugu bucket (cube_type + subset) icinde ara; global son çözüme dusme.
+	const newLastSolve = fetchLastSolve(
+		buildBucketFilter({
+			session_id: solve.session_id,
+			cube_type: solve.cube_type,
+			scramble_subset: solve.scramble_subset,
+		})
+	);
 	if (newLastSolve) {
 		setTimerParam('finalTime', newLastSolve.time * 1000);
 	} else {
@@ -308,8 +315,13 @@ export async function deleteMultipleSolvesDb(solves: Solve[], confirmed: boolean
 	if (solves.length > 0) {
 		postProcessDbUpdate(solves[0], false);
 
-		const session_id = solves[0].session_id;
-		const newLastSolve = fetchLastSolve({ session_id });
+		const newLastSolve = fetchLastSolve(
+			buildBucketFilter({
+				session_id: solves[0].session_id,
+				cube_type: solves[0].cube_type,
+				scramble_subset: solves[0].scramble_subset,
+			})
+		);
 		if (newLastSolve) {
 			setTimerParam('finalTime', newLastSolve.time * 1000);
 		} else {

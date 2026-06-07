@@ -1297,6 +1297,18 @@ model ZktCompetition {
   cancel_reason              String?
   results_published_at       DateTime?
   registration_edit_deadline DateTime?
+  short_name                 String?
+  latitude                   Float?
+  longitude                  Float?
+  registration_opens_at      DateTime?
+  registration_closes_at     DateTime?
+  on_spot_registration       Boolean            @default(false)
+  cancellation_policy        String?            @db.Text
+  guests_enabled             Boolean            @default(true)
+  force_comment              Boolean            @default(false)
+  extra_requirements         String?            @db.Text
+  contact                    String?            @db.Text
+  main_event_id              String?
   created_by_id              String
   created_at                 DateTime           @default(now())
   updated_at                 DateTime           @updatedAt

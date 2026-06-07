@@ -47,6 +47,9 @@ interface FancyDropdownProps {
 	triggerMinWidth?: number;
 	triggerMaxWidth?: number;
 	className?: string;
+	// Extra class on the portaled panel (Select.Content) — lets a consumer scope
+	// panel-only styles (e.g. centered group headers) without affecting other dropdowns.
+	panelClassName?: string;
 	// Hide on mobile (default true — header dropdowns fall into modal on mobile)
 	hideOnMobile?: boolean;
 	// Don't add default trigger SCSS class — consumer provides their own triggerStyle via className
@@ -69,6 +72,7 @@ export default function FancyDropdown(props: FancyDropdownProps) {
 		triggerMinWidth,
 		triggerMaxWidth,
 		className,
+		panelClassName,
 		noTriggerStyles,
 	} = props;
 
@@ -142,7 +146,7 @@ export default function FancyDropdown(props: FancyDropdownProps) {
 
 			<Select.Portal>
 				<Select.Content
-					className={b('panel')}
+					className={[b('panel'), panelClassName].filter(Boolean).join(' ')}
 					position="popper"
 					side="bottom"
 					avoidCollisions={false}

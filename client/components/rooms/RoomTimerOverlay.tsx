@@ -217,6 +217,12 @@ export default function RoomTimerOverlay({
 
     // GAN Timer event handler
     const handleGanTimerEvent = useCallback((event: GanTimerEvent) => {
+        // Already solved this round → ignore new-solve hardware events (mirrors the keyboard
+        // simulateSpaceDown guard). DISCONNECT still falls through for connection cleanup.
+        if (alreadySolvedThisRoundRef.current && statusRef.current === STATUS.RESTING
+            && event.state !== GanTimerState.DISCONNECT) {
+            return;
+        }
         switch (event.state) {
             case GanTimerState.HANDS_ON:
                 if (statusRef.current === STATUS.RESTING) {
@@ -245,7 +251,11 @@ export default function RoomTimerOverlay({
                 stopTimer();
                 break;
             case GanTimerState.IDLE:
-                if (!effectiveInspection || statusRef.current === STATUS.INSPECTING) {
+                if (statusRef.current === STATUS.SUBMITTING) {
+                    // Pending solve on screen → hardware reset button saves it (same as
+                    // clicking "Kaydet"). Room solvers shouldn't reach for the mouse each solve.
+                    submitTimeRef.current();
+                } else if (!effectiveInspection || statusRef.current === STATUS.INSPECTING) {
                     // Timer ready
                 } else if (statusRef.current === STATUS.RESTING) {
                     startInspection();
@@ -272,6 +282,12 @@ export default function RoomTimerOverlay({
     // QiYi Timer event handler — GAN ile ayni state machine (state ID'leri identical),
     // INSPECTION case'i ignore edilir (cihaz auto-inspection oda akisiyla uyumsuz).
     const handleQiyiTimerEvent = useCallback((event: QiyiTimerEvent) => {
+        // Already solved this round → ignore new-solve hardware events (mirrors the keyboard
+        // simulateSpaceDown guard). DISCONNECT still falls through for connection cleanup.
+        if (alreadySolvedThisRoundRef.current && statusRef.current === STATUS.RESTING
+            && event.state !== QiyiTimerState.DISCONNECT) {
+            return;
+        }
         switch (event.state) {
             case QiyiTimerState.HANDS_ON:
                 if (statusRef.current === STATUS.RESTING) {
@@ -304,7 +320,11 @@ export default function RoomTimerOverlay({
                 stopTimer();
                 break;
             case QiyiTimerState.IDLE:
-                if (!effectiveInspection || statusRef.current === STATUS.INSPECTING) {
+                if (statusRef.current === STATUS.SUBMITTING) {
+                    // Pending solve on screen → hardware reset button saves it (same as
+                    // clicking "Kaydet"). Room solvers shouldn't reach for the mouse each solve.
+                    submitTimeRef.current();
+                } else if (!effectiveInspection || statusRef.current === STATUS.INSPECTING) {
                     // Timer ready
                 } else if (statusRef.current === STATUS.RESTING) {
                     startInspection();
@@ -474,6 +494,20 @@ export default function RoomTimerOverlay({
         onSubmit(finalTime / 1000, isPlusTwo, isDnf);
         reset();
     }, [penalties, time, onSubmit]);
+
+    // Always-fresh ref to submitTime so the GAN/QiYi event handlers (memoized on
+    // effectiveInspection only) can save the pending solve without capturing a stale time.
+    const submitTimeRef = useRef(submitTime);
+    useEffect(() => {
+        submitTimeRef.current = submitTime;
+    }, [submitTime]);
+
+    // Fresh ref for the same reason: GAN/QiYi handlers must know if the user already solved
+    // this round (keyboard/touch guard via simulateSpaceDown; hardware needs the equivalent).
+    const alreadySolvedThisRoundRef = useRef(alreadySolvedThisRound);
+    useEffect(() => {
+        alreadySolvedThisRoundRef.current = alreadySolvedThisRound;
+    }, [alreadySolvedThisRound]);
 
     const flipPenalty = useCallback((penalty: 'AUF' | 'DNF' | 'inspection') => {
         setPenalties((prev) => ({ ...prev, [penalty]: !prev[penalty] }));

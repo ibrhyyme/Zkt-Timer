@@ -3,6 +3,11 @@ import FancyDropdown, { FancyDropdownGroup, FancyDropdownOption } from '../../ti
 import { getCubeTypeInfoById } from '../../../util/cubes/util';
 import { CubeType } from '../../../util/cubes/cube_types';
 import { resourceUri } from '../../../util/storage';
+import { useTranslation } from 'react-i18next';
+import block from '../../../styles/bem';
+import './CubePicker.scss';
+
+const b = block('cube-picker');
 
 interface Props {
 	value: string;
@@ -21,23 +26,21 @@ interface Props {
 	};
 }
 
-// BL/FM/OH/MBLD/Mirror/Yau variants are now subsets of parent cube — single group here
+// WCA (official events) is the primary entry, kept alone at the top. The rest are
+// non-WCA practice buckets, split into 3x3 (methods) and other puzzles.
+// Header may be a literal ("3x3") or an i18n key ("cube_picker.*"), translated below.
 const CUBE_TYPE_GROUPS: { header: string; types: string[] }[] = [
 	{ header: '', types: ['wca'] },
+	{ header: '3x3', types: ['333', '333cfop', '333roux', '333mehta'] },
 	{
-		header: 'WCA',
-		types: [
-			'333', '333cfop', '333roux', '333mehta', '333zz', '333sub',
-			'222',
-			'444', '444yau',
-			'555', '666', '777',
-			'clock', 'minx', 'pyram', 'skewb', 'sq1',
-		],
+		header: 'cube_picker.other_puzzles',
+		types: ['222', '444', '444yau', '555', '666', '777', 'clock', 'minx', 'pyram', 'skewb', 'sq1'],
 	},
 	{ header: '', types: ['other'] },
 ];
 
 export default function CubePicker(props: Props) {
+	const { t } = useTranslation();
 	const {
 		value,
 		cubeTypes,
@@ -52,6 +55,21 @@ export default function CubePicker(props: Props) {
 		if (!ct) return null;
 		if (excludeOtherCubeType && name === 'other') return null;
 		if (excludeSelected && ct.id === value) return null;
+		// WCA is the primary/official path — emphasize with the WCA logo + a badge.
+		if (ct.id === 'wca') {
+			return {
+				value: ct.id,
+				label: ct.name,
+				icon: (
+					<img
+						src={resourceUri('/images/logos/wca_logo.svg')}
+						alt=""
+						style={{ height: 16, display: 'block' }}
+					/>
+				),
+				badge: <span className={b('wca-badge')}>{t('cube_picker.wca_badge')}</span>,
+			};
+		}
 		return {
 			value: ct.id,
 			label: ct.name,
@@ -99,8 +117,12 @@ export default function CubePicker(props: Props) {
 				.map(makeOption)
 				.filter((o): o is FancyDropdownOption => !!o);
 			if (opts.length === 0) return null;
+			// Header may be an i18n key (contains a dot) or a literal like "3x3".
+			const header = group.header
+				? (group.header.includes('.') ? t(group.header) : group.header)
+				: undefined;
 			return {
-				header: group.header || undefined,
+				header,
 				options: opts,
 			};
 		})
@@ -115,6 +137,7 @@ export default function CubePicker(props: Props) {
 			ariaLabel="Cube Type"
 			maxHeight={500}
 			triggerMaxWidth={160}
+			panelClassName="cube-picker-panel"
 		/>
 	);
 }

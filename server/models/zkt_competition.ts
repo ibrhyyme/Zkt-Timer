@@ -172,6 +172,19 @@ export async function createZktCompetitionWithEvents(params: {
 	competitorLimit?: number | null;
 	visibility: 'PUBLIC' | 'PRIVATE';
 	championshipType?: 'NATIONAL' | 'REGIONAL' | 'CITY' | 'INVITATIONAL' | 'YOUTH' | null;
+	shortName?: string | null;
+	latitude?: number | null;
+	longitude?: number | null;
+	registrationOpensAt?: Date | null;
+	registrationClosesAt?: Date | null;
+	registrationEditDeadline?: Date | null;
+	onSpotRegistration?: boolean;
+	cancellationPolicy?: string | null;
+	guestsEnabled?: boolean;
+	forceComment?: boolean;
+	extraRequirements?: string | null;
+	contact?: string | null;
+	mainEventId?: string | null;
 	eventIds: string[];
 }) {
 	const prisma = getPrisma();
@@ -187,6 +200,19 @@ export async function createZktCompetitionWithEvents(params: {
 			competitor_limit: params.competitorLimit ?? null,
 			visibility: params.visibility,
 			...({championship_type: params.championshipType ?? null} as any),
+			short_name: params.shortName ?? null,
+			latitude: params.latitude ?? null,
+			longitude: params.longitude ?? null,
+			registration_opens_at: params.registrationOpensAt ?? null,
+			registration_closes_at: params.registrationClosesAt ?? null,
+			registration_edit_deadline: params.registrationEditDeadline ?? null,
+			on_spot_registration: params.onSpotRegistration ?? false,
+			cancellation_policy: params.cancellationPolicy ?? null,
+			guests_enabled: params.guestsEnabled ?? true,
+			force_comment: params.forceComment ?? false,
+			extra_requirements: params.extraRequirements ?? null,
+			contact: params.contact ?? null,
+			main_event_id: params.mainEventId ?? null,
 			created_by_id: params.createdById,
 			events: {
 				create: params.eventIds.map((eventId, index) => ({

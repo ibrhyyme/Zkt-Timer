@@ -22,6 +22,7 @@ import { NAV_LINKS, NavLinkProps } from '../nav/Nav';
 import Button from '../../common/button/Button';
 import LoginNav from '../nav/LoginNav';
 import LanguageSwitcher from '../../common/language_switcher/LanguageSwitcher';
+import ThemeToggle from './ThemeToggle';
 import { resourceUri } from '../../../util/storage';
 import { isPro } from '../../../util/pro';
 import AnnouncementBell from '../../announcements/AnnouncementBell';
@@ -240,6 +241,7 @@ export default function HeaderNav() {
 					{me && <AnnouncementBell />}
 					<AccountDropdown />
 					<LanguageSwitcher />
+					<ThemeToggle />
 					{me && <LoginNav collapsed={false} />}
 				</div>
 			</div>

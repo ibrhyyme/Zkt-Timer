@@ -183,6 +183,21 @@ export class ZktCompetitionResolver {
 			competitorLimit: input.competitorLimit ?? null,
 			visibility: input.visibility,
 			championshipType: input.championshipType ?? null,
+			shortName: input.shortName ?? null,
+			latitude: input.latitude ?? null,
+			longitude: input.longitude ?? null,
+			registrationOpensAt: input.registrationOpensAt ? new Date(input.registrationOpensAt) : null,
+			registrationClosesAt: input.registrationClosesAt ? new Date(input.registrationClosesAt) : null,
+			registrationEditDeadline: input.registrationEditDeadline
+				? new Date(input.registrationEditDeadline)
+				: null,
+			onSpotRegistration: input.onSpotRegistration ?? false,
+			cancellationPolicy: input.cancellationPolicy ?? null,
+			guestsEnabled: input.guestsEnabled ?? true,
+			forceComment: input.forceComment ?? false,
+			extraRequirements: input.extraRequirements ?? null,
+			contact: input.contact ?? null,
+			mainEventId: input.mainEventId ?? null,
 			eventIds: input.eventIds,
 		});
 		emitZktCompListChanged({action: 'created', competitionId: created.id});
@@ -215,6 +230,24 @@ export class ZktCompetitionResolver {
 		if (input.competitorLimit !== undefined) data.competitor_limit = input.competitorLimit;
 		if (input.visibility !== undefined) data.visibility = input.visibility;
 		if (input.championshipType !== undefined) data.championship_type = input.championshipType;
+		if (input.shortName !== undefined) data.short_name = input.shortName;
+		if (input.latitude !== undefined) data.latitude = input.latitude;
+		if (input.longitude !== undefined) data.longitude = input.longitude;
+		if (input.registrationOpensAt !== undefined)
+			data.registration_opens_at = input.registrationOpensAt ? new Date(input.registrationOpensAt) : null;
+		if (input.registrationClosesAt !== undefined)
+			data.registration_closes_at = input.registrationClosesAt ? new Date(input.registrationClosesAt) : null;
+		if (input.registrationEditDeadline !== undefined)
+			data.registration_edit_deadline = input.registrationEditDeadline
+				? new Date(input.registrationEditDeadline)
+				: null;
+		if (input.onSpotRegistration !== undefined) data.on_spot_registration = input.onSpotRegistration;
+		if (input.cancellationPolicy !== undefined) data.cancellation_policy = input.cancellationPolicy;
+		if (input.guestsEnabled !== undefined) data.guests_enabled = input.guestsEnabled;
+		if (input.forceComment !== undefined) data.force_comment = input.forceComment;
+		if (input.extraRequirements !== undefined) data.extra_requirements = input.extraRequirements;
+		if (input.contact !== undefined) data.contact = input.contact;
+		if (input.mainEventId !== undefined) data.main_event_id = input.mainEventId;
 
 		const updated = await getPrisma().zktCompetition.update({
 			where: {id},

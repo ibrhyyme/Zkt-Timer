@@ -43,10 +43,7 @@ const CUBE_TO_SCRAMBLE_TYPE: Record<string, string> = {
 	'333cfop': '333',
 	'333roux': '333',
 	'333mehta': '333',
-	'333zz': '333',
 	'444yau': '444m',
-	// Special
-	'333sub': '2gen',       // default to 2-gen
 };
 
 // Fallback mapping for WCA subset IDs that aren't separate cube types

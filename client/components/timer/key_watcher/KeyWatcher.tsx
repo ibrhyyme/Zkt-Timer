@@ -20,7 +20,7 @@ import { useDocumentListener, useWindowListener } from '../../../util/hooks/useL
 import { useSettings } from '../../../util/hooks/useSettings';
 import { useGeneral } from '../../../util/hooks/useGeneral';
 import { getSettings } from '../../../db/settings/query';
-import { fetchLastSolve } from '../../../db/solves/query';
+import { fetchLastSolve, buildBucketFilter } from '../../../db/solves/query';
 import { deleteAllSolvesInSessionDb, deleteSolveDb } from '../../../db/solves/update';
 import { toggleDnfSolveDb, togglePlusTwoSolveDb } from '../../../db/solves/operations';
 
@@ -397,24 +397,34 @@ export default function KeyWatcher(props: Props) {
 			return;
 		}
 
-		const sessId = getSettings().session_id;
+		const settings = getSettings();
+		const sessId = settings.session_id;
+
+		// All shortcuts operate on the current bucket's last solve (cube_type +
+		// subset), not the session-global last solve — otherwise switching cube
+		// type/subset would target a solve from a different bucket's view.
+		const bucketFilter = buildBucketFilter({
+			session_id: sessId,
+			cube_type: settings.cube_type,
+			scramble_subset: settings.scramble_subset,
+		});
 
 		// +2
 		if (e.key === '2') {
-			const lastSolve = fetchLastSolve({ session_id: sessId });
-			togglePlusTwoSolveDb(lastSolve);
+			const lastSolve = fetchLastSolve(bucketFilter);
+			if (lastSolve) togglePlusTwoSolveDb(lastSolve);
 		}
 		// DNF
 		else if (e.key.toLowerCase() === 'd') {
-			const lastSolve = fetchLastSolve({ session_id: sessId });
-			toggleDnfSolveDb(lastSolve);
+			const lastSolve = fetchLastSolve(bucketFilter);
+			if (lastSolve) toggleDnfSolveDb(lastSolve);
 		}
 		// Delete (Backspace)
 		else if (e.key === 'Backspace') {
 			if (e.ctrlKey) {
 				deleteAllSolvesInSessionDb(sessId);
 			} else {
-				const lastSolve = fetchLastSolve({ session_id: sessId });
+				const lastSolve = fetchLastSolve(bucketFilter);
 				if (lastSolve) deleteSolveDb(lastSolve);
 			}
 		}

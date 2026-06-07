@@ -9,7 +9,6 @@ import {openModal} from '../../../actions/general';
 import {toastSuccess, toastError} from '../../../util/toast';
 import Loading from '../../common/loading/Loading';
 import ConfirmModal from '../../common/confirm_modal/ConfirmModal';
-import CreateZktCompetitionModal from './CreateZktCompetitionModal';
 import {b, formatDateRange, getEventName} from './shared';
 import {useHistory} from 'react-router-dom';
 import {useZktCompListRefetch} from '../../community/zkt_competitions/useZktCompRefetch';
@@ -90,11 +89,7 @@ export default function AdminZktCompetitions() {
 	useZktCompListRefetch(fetchList);
 
 	function openCreate() {
-		dispatch(
-			openModal(
-				<CreateZktCompetitionModal onComplete={fetchList} />
-			)
-		);
+		history.push('/admin/competitions/new');
 	}
 
 	function handleDelete(comp: CompItem) {

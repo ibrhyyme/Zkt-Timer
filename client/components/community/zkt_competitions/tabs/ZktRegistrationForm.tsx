@@ -48,6 +48,10 @@ export default function ZktRegistrationForm({detail, onDone}: {detail: any; onDo
 			toastError(t('select_at_least_one_event'));
 			return;
 		}
+		if (detail.force_comment && !notes.trim()) {
+			toastError(t('comment_required'));
+			return;
+		}
 		setSubmitting(true);
 		try {
 			await gqlMutate(REGISTER, {
@@ -112,7 +116,7 @@ export default function ZktRegistrationForm({detail, onDone}: {detail: any; onDo
 			</div>
 
 			<div className={b('field')}>
-				<label className={b('label')}>{t('notes_optional')}</label>
+				<label className={b('label')}>{detail.force_comment ? t('notes_required') : t('notes_optional')}</label>
 				<textarea
 					className={b('textarea')}
 					value={notes}
