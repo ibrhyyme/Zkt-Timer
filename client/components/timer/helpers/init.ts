@@ -29,9 +29,9 @@ export async function initTimer(dispatch: Dispatch<any>, context: ITimerContext)
 			}
 		}
 
-		// If, for some reason, the cube type is not valid, set it to 3x3
+		// If, for some reason, the cube type is not valid, default to WCA (3x3x3 via subset below)
 		if (!ct) {
-			setSetting('cube_type', '333');
+			setSetting('cube_type', 'wca');
 		}
 
 		// For cube_type='wca', subset is required — if old users have
