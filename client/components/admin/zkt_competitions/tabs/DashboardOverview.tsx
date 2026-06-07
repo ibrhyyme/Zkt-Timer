@@ -3,7 +3,8 @@ import {gql} from '@apollo/client';
 import {gqlMutate} from '../../../api';
 import {useTranslation} from 'react-i18next';
 import {toastSuccess, toastError} from '../../../../util/toast';
-import {b, getEventName} from '../shared';
+import {b, getEventName, formatCs, competitorDisplayName} from '../shared';
+import {generateCertificatesPdf} from '../../../../util/cubes/certificate_pdf';
 
 const UPDATE_STATUS = gql`
 	mutation UpdateZktCompStatus($input: UpdateZktCompetitionStatusInput!) {
@@ -71,6 +72,24 @@ const EXPORT_WCIF = gql`
 	}
 `;
 
+const PODIUMS_FOR_CERT = gql`
+	query ZktPodiumsForCert($id: String!) {
+		zktCompetitionPodiums(id: $id) {
+			event_id
+			results {
+				ranking
+				best
+				average
+				user {
+					username
+					first_name
+					last_name
+				}
+			}
+		}
+	}
+`;
+
 // Forward-path transitions that use the plain updateZktCompetitionStatus mutation.
 // Dedicated mutations handle: confirm, announce, cancel, publish, unpublish.
 const STATUS_FLOW: Record<string, string[]> = {
@@ -93,7 +112,7 @@ const CANCELLABLE = new Set([
 ]);
 
 export default function DashboardOverview({detail, onUpdated}: {detail: any; onUpdated: () => void}) {
-	const {t} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
+	const {t, i18n} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
 	const [working, setWorking] = useState(false);
 
 	const approvedCount = detail.registrations.filter((r: any) => r.status === 'APPROVED').length;
@@ -172,6 +191,54 @@ export default function DashboardOverview({detail, onUpdated}: {detail: any; onU
 			document.body.removeChild(a);
 			URL.revokeObjectURL(url);
 			toastSuccess(t('wcif_exported'));
+		} catch (e: any) {
+			toastError(e?.message || t('error'));
+		} finally {
+			setWorking(false);
+		}
+	}
+
+	// Podium certificates: top-3 of each event's final round → one A4 landscape
+	// certificate per page. i18n strings are built here; the generator is pure.
+	async function onDownloadCertificates() {
+		if (working) return;
+		setWorking(true);
+		try {
+			const res: any = await gqlMutate(PODIUMS_FOR_CERT, {id: detail.id});
+			const podiums: any[] = res?.data?.zktCompetitionPodiums || [];
+			const certs: {name: string; place: number; lines: string[]}[] = [];
+			for (const p of podiums) {
+				const eventName = getEventName(p.event_id);
+				for (const r of p.results || []) {
+					if (r.ranking == null || r.ranking > 3) continue;
+					const name = competitorDisplayName(r.user) || r.user?.username || '';
+					const resultLine =
+						r.average && r.average > 0
+							? `${t('average')}: ${formatCs(r.average)}`
+							: `${t('best')}: ${formatCs(r.best)}`;
+					certs.push({
+						name,
+						place: r.ranking,
+						lines: [`${r.ranking}. — ${eventName}`, resultLine],
+					});
+				}
+			}
+			if (certs.length === 0) {
+				toastError(t('no_podiums_for_certificate'));
+				return;
+			}
+			const locale = i18n.language === 'tr' ? 'tr-TR' : i18n.language;
+			const dateStr = new Date(detail.date_start).toLocaleDateString(locale);
+			await generateCertificatesPdf({
+				title: t('certificate_title'),
+				competitionName: detail.name,
+				subtitle: [dateStr, detail.location].filter(Boolean).join(' · '),
+				signerLabel: t('certificate_signer'),
+				signerName: detail.created_by?.username,
+				footerNote: t('certificate_footer'),
+				certificates: certs,
+			});
+			toastSuccess(t('certificates_downloaded'));
 		} catch (e: any) {
 			toastError(e?.message || t('error'));
 		} finally {
@@ -334,6 +401,15 @@ export default function DashboardOverview({detail, onUpdated}: {detail: any; onU
 					disabled={working}
 				>
 					{t('export_wcif')}
+				</button>
+				<button
+					type="button"
+					className={b('status-btn')}
+					onClick={onDownloadCertificates}
+					disabled={working}
+					style={{marginLeft: '0.5rem'}}
+				>
+					{t('download_certificates')}
 				</button>
 				<p style={{fontSize: 13, opacity: 0.7, marginTop: '0.5rem'}}>
 					{t('export_wcif_hint')}
