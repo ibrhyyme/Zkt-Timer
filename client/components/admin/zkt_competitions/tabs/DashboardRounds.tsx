@@ -12,12 +12,13 @@ import {
 	formatHasAverage,
 	competitorDisplayName,
 } from '../shared';
-import {Plus, Minus, FilePdf, ArrowsClockwise, Table} from 'phosphor-react';
+import {Plus, Minus, FilePdf, ArrowsClockwise, Table, IdentificationCard} from 'phosphor-react';
 import EditTimeLimitModal from '../modals/EditTimeLimitModal';
 import EditCutoffModal from '../modals/EditCutoffModal';
 import EditAdvancementModal from '../modals/EditAdvancementModal';
 import {generateScramblePdf} from '../../../../util/cubes/scramble_pdf';
 import {generateResultsPdf} from '../../../../util/cubes/results_pdf';
+import {generateScorecardsPdf} from '../../../../util/cubes/scorecard_pdf';
 
 const CREATE_ROUND = gql`
 	mutation CreateZktRound($input: CreateZktRoundInput!) {
@@ -257,6 +258,33 @@ export default function DashboardRounds({
 		}
 	}
 
+	// WCA scorecards: one per competitor registered for this event (APPROVED),
+	// name-sorted and seat-numbered. Scrambles are intentionally excluded — they
+	// print separately. Empty result/signature cells are filled by hand on site.
+	function downloadScorecards(ev: any, round: any) {
+		const names: string[] = (detail.registrations || [])
+			.filter(
+				(r: any) =>
+					r.status === 'APPROVED' &&
+					(r.events || []).some((e: any) => e.comp_event_id === ev.id)
+			)
+			.map((r: any) => competitorDisplayName(r.user) || r.user?.username || r.user_id)
+			.sort((a: string, bx: string) => a.localeCompare(bx));
+
+		const entries = names.map((name, i) => ({registrantId: i + 1, name}));
+
+		generateScorecardsPdf({
+			competitionName: detail.name,
+			eventName: getEventName(ev.event_id),
+			eventId: ev.event_id,
+			roundNumber: round.round_number,
+			attemptCount: getFormatAttempts(round.format),
+			cutoff: round.cutoff_cs ? formatCs(round.cutoff_cs) : '',
+			timeLimit: round.time_limit_cs ? formatCs(round.time_limit_cs) : '',
+			entries,
+		});
+	}
+
 	return (
 		<div className={b('event-card-grid')}>
 			{detail.events.map((ev: any) => (
@@ -299,6 +327,14 @@ export default function DashboardRounds({
 										{t(`round_status_${round.status.toLowerCase()}`)}
 									</span>
 									<div style={{marginLeft: 'auto', display: 'flex', gap: '0.35rem'}}>
+											<button
+												type="button"
+												className={b('scramble-action-btn')}
+												onClick={() => downloadScorecards(ev, round)}
+												title={t('download_scorecards')}
+											>
+												<IdentificationCard weight="bold" /> {t('scorecards')}
+											</button>
 											{(round.status === 'ACTIVE' || round.status === 'FINISHED') && (
 												<button
 													type="button"
