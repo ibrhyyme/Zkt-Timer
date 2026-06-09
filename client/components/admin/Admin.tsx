@@ -2,7 +2,6 @@ import React from 'react';
 import './Admin.scss';
 import block from '../../styles/bem';
 import PageTitle from '../common/page_title/PageTitle';
-import HorizontalNav from '../common/horizontal_nav/HorizontalNav';
 import {Link} from 'react-router-dom';
 import {SquaresFour, CaretDown, CaretRight} from 'phosphor-react';
 import {useTranslation} from 'react-i18next';
@@ -21,10 +20,7 @@ const SECONDARY_TABS = [
 	{id: 'algorithms', link: '/admin/algorithms', value: 'Algorithms'},
 	{id: 'promo-codes', link: '/admin/promo-codes', value: 'Promo'},
 	{id: 'site-config', link: '/admin/site-config', value: 'Site Config'},
-	{id: 'competitions', link: '/admin/competitions', value: 'Competitions'},
 ];
-
-const COMPETITIONS_ONLY = [{id: 'competitions', link: '/admin/competitions', value: 'Competitions'}];
 
 interface Props {
 	path: string;
@@ -57,15 +53,10 @@ export default function Admin(props: Props) {
 		};
 	}, [open]);
 
+	// Competition management moved to the standalone /organizer pages; mods no
+	// longer reach /admin/* at all (see server/router.tsx), so admin-only here.
 	if (!me?.admin) {
-		return (
-			<div className={b()}>
-				<PageTitle pageName="Admin">
-					<HorizontalNav tabId={page} tabs={COMPETITIONS_ONLY} />
-				</PageTitle>
-				{children}
-			</div>
-		);
+		return null;
 	}
 
 	const isPanoActive = page === PANO_TAB.id;

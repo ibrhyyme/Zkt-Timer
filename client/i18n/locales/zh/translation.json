@@ -22,6 +22,7 @@
         "general_settings": "通用设置",
         "notification_settings": "通知设置",
         "admin": "管理员",
+        "competition_management": "比赛管理",
         "logout": "退出登录",
         "pro_subscription": "Pro 订阅",
         "pro_subscription_cta": "✦ 升级到 Pro"
@@ -3375,6 +3376,7 @@
         "ongoing": "进行中",
         "create_competition": "创建比赛",
         "edit_competition": "编辑比赛",
+        "management_title": "比赛管理",
         "section_venue": "场地",
         "section_dates": "日期",
         "section_information": "信息",

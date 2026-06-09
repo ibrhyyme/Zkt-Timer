@@ -137,7 +137,8 @@ function appUseRouteForPage(routePath, route: PageContext) {
 				return;
 			}
 			if (me.mod && !me.admin) {
-				const isCompetitionsRoute = routePath.startsWith('/admin/competitions');
+				// Mods may only access the standalone competition management pages.
+				const isCompetitionsRoute = routePath.startsWith('/organizer');
 				if (!isCompetitionsRoute) {
 					res.status(404).sendFile(`${__dirname}/resources/not_found.html`);
 					return;

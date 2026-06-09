@@ -239,10 +239,13 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/admin/algorithms', App, Admin, AdminAlgorithms, true, false, true),
 	route('/admin/promo-codes', App, Admin, AdminPromoCodes, true, false, true),
 	route('/admin/site-config', App, Admin, SiteConfigPanel, true, false, true),
-	route('/admin/competitions/new', App, Admin, CreateZktCompetitionPage, true, false, true),
-	route('/admin/competitions/:competitionId/edit', App, Admin, CreateZktCompetitionPage, true, false, true),
-	route('/admin/competitions/:competitionId', App, Admin, CompetitionDashboard, true, false, true),
-	route('/admin/competitions', App, Admin, AdminZktCompetitions, true, false, true),
+
+	// ZKT competition management — standalone (out of the Admin layout). Admin-only
+	// link in the avatar dropdown for now; mods keep URL access (see server/router.tsx).
+	route('/organizer/new', null, App, CreateZktCompetitionPage, true, false, true),
+	route('/organizer/:competitionId/edit', null, App, CreateZktCompetitionPage, true, false, true),
+	route('/organizer/:competitionId', null, App, CompetitionDashboard, true, false, true),
+	route('/organizer', null, App, AdminZktCompetitions, true, false, true),
 
 	// OAuth
 	route('/oauth/wca/login', null, App, WcaLoginCallback, false, true, false, true),
@@ -256,4 +259,5 @@ export const routes: (PageContext | RedirectPath)[] = [
 	routeRedirect('/community/friends', '/community/competitions'),
 	routeRedirect('/community', '/community/competitions'),
 	routeRedirect('/admin', '/admin/dashboard'),
+	routeRedirect('/admin/competitions', '/organizer'),
 ];

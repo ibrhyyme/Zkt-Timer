@@ -154,7 +154,7 @@ export default function CompetitionDashboard() {
 						try {
 							await gqlMutate(DELETE_MUTATION, {id: competitionId});
 							toastSuccess(t('deleted'));
-							history.push('/admin/competitions');
+							history.push('/organizer');
 						} catch (e: any) {
 							toastError(e?.message || t('error'));
 						}
@@ -205,7 +205,7 @@ export default function CompetitionDashboard() {
 					<button
 						type="button"
 						className={b('icon-btn', {ghost: true})}
-						onClick={() => history.push('/admin/competitions')}
+						onClick={() => history.push('/organizer')}
 						title={t('back')}
 						aria-label={t('back')}
 					>
@@ -231,7 +231,7 @@ export default function CompetitionDashboard() {
 						<button
 							type="button"
 							className={b('icon-btn', {ghost: true})}
-							onClick={() => history.push(`/admin/competitions/${detail.id}/edit`)}
+							onClick={() => history.push(`/organizer/${detail.id}/edit`)}
 							title={t('edit_competition')}
 							aria-label={t('edit_competition')}
 						>

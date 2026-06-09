@@ -209,12 +209,12 @@ export default function CreateZktCompetitionPage() {
 			if (isEdit) {
 				await gqlMutate(UPDATE_MUTATION, {id: competitionId, input});
 				toastSuccess(t('saved'));
-				history.push(`/admin/competitions/${competitionId}`);
+				history.push(`/organizer/${competitionId}`);
 			} else {
 				const res: any = await gqlMutate(CREATE_MUTATION, {input});
 				const newId = res?.data?.createZktCompetition?.id;
 				toastSuccess(t('created'));
-				history.push(newId ? `/admin/competitions/${newId}` : '/admin/competitions');
+				history.push(newId ? `/organizer/${newId}` : '/organizer');
 			}
 		} catch (e: any) {
 			toastError(e?.message || t('error'));
@@ -231,7 +231,7 @@ export default function CreateZktCompetitionPage() {
 				<button
 					type="button"
 					className={b('back-btn')}
-					onClick={() => history.push('/admin/competitions')}
+					onClick={() => history.push('/organizer')}
 				>
 					<CaretLeft weight="bold" /> {t('back')}
 				</button>
