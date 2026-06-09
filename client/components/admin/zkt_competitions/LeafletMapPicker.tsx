@@ -122,8 +122,11 @@ export default function LeafletMapPicker({lat, lng, onChange}: Props) {
 				const startLng = lng ?? 35.2;
 				const zoom = lat != null && lng != null ? 14 : 6;
 				const map = L.map(containerRef.current).setView([startLat, startLng], zoom);
-				L.tileLayer(`https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png`, {
-					attribution: '© OpenStreetMap',
+				// CARTO basemap — OSM's own tile server rendered broken/partial grids
+				// here; CARTO is the provider used by WCA tooling and more tolerant.
+				L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+					attribution: '© OpenStreetMap © CARTO',
+					subdomains: 'abcd',
 					maxZoom: 19,
 				}).addTo(map);
 				mapRef.current = map;

@@ -13,10 +13,14 @@ import {
 	CancelZktCompetitionInput,
 	ZktPodium,
 	ZktAllTimeRanking,
+	ZktScheduleItem,
+	CreateZktScheduleItemInput,
+	UpdateZktScheduleItemInput,
 } from '../schemas/ZktCompetition.schema';
 import {PaginationArgs} from '../schemas/Pagination.schema';
 import {getPrisma} from '../database';
 import {
+	assertCanModifyCompetition,
 	createZktCompetitionWithEvents,
 	getMyZktCompetitions,
 	getZktCompetitionById,
@@ -143,7 +147,8 @@ export class ZktCompetitionResolver {
 	async zktAllTimeRankings(
 		@Arg('eventId') eventId: string,
 		@Arg('recordType') recordType: string,
-		@Arg('limit', () => Number, {nullable: true}) limit?: number
+		@Arg('limit', () => Number, {nullable: true}) limit?: number,
+		@Arg('mode', {nullable: true}) mode?: string
 	) {
 		if (recordType !== 'single' && recordType !== 'average') {
 			throw new Error('recordType must be "single" or "average"');
@@ -152,6 +157,7 @@ export class ZktCompetitionResolver {
 			eventId,
 			recordType: recordType as 'single' | 'average',
 			limit: limit ?? 100,
+			mode: mode === 'results' ? 'results' : 'persons',
 		});
 	}
 
@@ -366,6 +372,57 @@ export class ZktCompetitionResolver {
 		emitZktCompStatusChanged(id, updated.status);
 		emitZktCompListChanged({action: 'updated', competitionId: id});
 		return updated;
+	}
+
+	// ── Schedule items (custom rows: opening, lunch, awards...) ──
+
+	@Authorized([Role.LOGGED_IN])
+	@Mutation(() => ZktScheduleItem)
+	async createZktScheduleItem(
+		@Ctx() context: GraphQLContext,
+		@Arg('input') input: CreateZktScheduleItemInput
+	) {
+		await assertCanModifyCompetition(context.user, input.competitionId);
+		const start = new Date(input.startTime);
+		if (isNaN(start.getTime())) throw new GraphQLError(ErrorCode.BAD_INPUT, 'Invalid start time');
+		const item = await getPrisma().zktScheduleItem.create({
+			data: {
+				competition_id: input.competitionId,
+				title: input.title.trim(),
+				start_time: start,
+				end_time: input.endTime ? new Date(input.endTime) : null,
+			},
+		});
+		emitZktCompListChanged({action: 'updated', competitionId: input.competitionId});
+		return item;
+	}
+
+	@Authorized([Role.LOGGED_IN])
+	@Mutation(() => ZktScheduleItem)
+	async updateZktScheduleItem(
+		@Ctx() context: GraphQLContext,
+		@Arg('input') input: UpdateZktScheduleItemInput
+	) {
+		const item = await getPrisma().zktScheduleItem.findUnique({where: {id: input.itemId}});
+		if (!item) throw new GraphQLError(ErrorCode.NOT_FOUND);
+		await assertCanModifyCompetition(context.user, item.competition_id);
+
+		const data: any = {};
+		if (input.title !== undefined) data.title = input.title.trim();
+		if (input.startTime !== undefined) data.start_time = new Date(input.startTime);
+		if (input.endTime !== undefined) data.end_time = input.endTime ? new Date(input.endTime) : null;
+
+		return getPrisma().zktScheduleItem.update({where: {id: input.itemId}, data});
+	}
+
+	@Authorized([Role.LOGGED_IN])
+	@Mutation(() => Boolean)
+	async deleteZktScheduleItem(@Ctx() context: GraphQLContext, @Arg('itemId') itemId: string) {
+		const item = await getPrisma().zktScheduleItem.findUnique({where: {id: itemId}});
+		if (!item) throw new GraphQLError(ErrorCode.NOT_FOUND);
+		await assertCanModifyCompetition(context.user, item.competition_id);
+		await getPrisma().zktScheduleItem.delete({where: {id: itemId}});
+		return true;
 	}
 
 	@Authorized([Role.MOD])

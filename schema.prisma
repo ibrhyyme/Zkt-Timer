@@ -1322,6 +1322,7 @@ model ZktCompetition {
   organizers       ZktCompOrganizer[]
   tabs             ZktCompTab[]
   records          ZktRecord[]
+  schedule_items   ZktScheduleItem[]
 
   @@index([status])
   @@index([created_by_id])
@@ -1529,6 +1530,22 @@ model ZktResult {
   @@index([user_id])
   @@index([ranking])
   @@map("zkt_result")
+}
+
+// Custom schedule rows (opening, lunch, awards...). Round rows are derived at
+// runtime from rounds/groups — only non-round activities are stored here.
+model ZktScheduleItem {
+  id             String         @id @default(uuid())
+  competition_id String
+  title          String
+  start_time     DateTime
+  end_time       DateTime?
+  created_at     DateTime       @default(now())
+
+  competition    ZktCompetition @relation(fields: [competition_id], references: [id], onDelete: Cascade)
+
+  @@index([competition_id])
+  @@map("zkt_schedule_item")
 }
 
 model ZktRecord {

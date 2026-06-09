@@ -13,7 +13,7 @@ import {
 	competitorFlag,
 } from '../shared';
 import TimeField from '../TimeField';
-import {MagnifyingGlass, FloppyDisk, CaretLeft, CaretRight} from 'phosphor-react';
+import {MagnifyingGlass, FloppyDisk, CaretLeft, CaretRight, UserPlus} from 'phosphor-react';
 
 const ROUND_RESULTS = gql`
 	query ZktRoundResults($roundId: String!) {
@@ -44,6 +44,10 @@ const ROUND_RESULTS = gql`
 						url
 					}
 				}
+			}
+			entered_by {
+				id
+				username
 			}
 		}
 	}
@@ -93,6 +97,32 @@ const MARK_NOSHOW = gql`
 const DELETE_RESULT = gql`
 	mutation DeleteZktResultInline($resultId: String!) {
 		deleteZktResult(resultId: $resultId)
+	}
+`;
+
+const CANDIDATES_QUERY = gql`
+	query ZktRoundAdvancementCandidates($roundId: String!) {
+		zktRoundAdvancementCandidates(roundId: $roundId) {
+			id
+			username
+			first_name
+			last_name
+			join_country
+		}
+	}
+`;
+
+const ADD_COMPETITOR = gql`
+	mutation AddZktCompetitorToRound($roundId: String!, $userId: String!) {
+		addZktCompetitorToRound(roundId: $roundId, userId: $userId) {
+			id
+		}
+	}
+`;
+
+const QUIT_COMPETITOR = gql`
+	mutation QuitZktCompetitorFromRound($roundId: String!, $userId: String!, $replaceWithNext: Boolean!) {
+		quitZktCompetitorFromRound(roundId: $roundId, userId: $userId, replaceWithNext: $replaceWithNext)
 	}
 `;
 
@@ -255,6 +285,96 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 		}
 	}
 
+	// Late addition / quit (wca-live Add/QuitCompetitorDialog parity).
+	const [addPanelOpen, setAddPanelOpen] = useState(false);
+	const [candidates, setCandidates] = useState<any[]>([]);
+
+	async function toggleAddPanel() {
+		if (addPanelOpen) {
+			setAddPanelOpen(false);
+			return;
+		}
+		try {
+			const res: any = await gqlMutate(CANDIDATES_QUERY, {roundId: selectedRoundId});
+			setCandidates(res?.data?.zktRoundAdvancementCandidates || []);
+			setAddPanelOpen(true);
+		} catch (e: any) {
+			toastError(e?.message || t('error'));
+		}
+	}
+
+	async function handleAddCompetitor(userId: string) {
+		try {
+			await gqlMutate(ADD_COMPETITOR, {roundId: selectedRoundId, userId});
+			toastSuccess(t('competitor_added_to_round'));
+			setAddPanelOpen(false);
+			await fetchResults();
+			onUpdated();
+		} catch (e: any) {
+			toastError(e?.message || t('error'));
+		}
+	}
+
+	// Double-check mode (wca-live RoundDoubleCheck): step through entered
+	// results one by one to verify against the paper scorecards.
+	const [checkMode, setCheckMode] = useState(false);
+
+	// Bulk no-show (wca-live QuitNoShowsDialog) — round 1 only, where the bulk
+	// of no-shows happen. Lists competitors without any entered attempt.
+	const [noShowPanelOpen, setNoShowPanelOpen] = useState(false);
+	const [noShowSelection, setNoShowSelection] = useState<Set<string>>(new Set());
+
+	const noShowCandidates = useMemo(() => {
+		if (!selectedRound || selectedRound.round_number !== 1) return [];
+		return competitors.filter((c) => {
+			const r = results.find((x) => x.user_id === c.user_id);
+			return !r || ((r.best === null || r.best === undefined) && !r.no_show);
+		});
+	}, [selectedRound, competitors, results]);
+
+	function toggleNoShowSelection(userId: string) {
+		setNoShowSelection((prev) => {
+			const next = new Set(prev);
+			if (next.has(userId)) next.delete(userId);
+			else next.add(userId);
+			return next;
+		});
+	}
+
+	async function submitBulkNoShow() {
+		if (noShowSelection.size === 0) return;
+		if (!window.confirm(t('bulk_no_show_confirm', {count: noShowSelection.size}))) return;
+		try {
+			for (const userId of Array.from(noShowSelection)) {
+				await gqlMutate(MARK_NOSHOW, {input: {roundId: selectedRoundId, userId}});
+			}
+			toastSuccess(t('bulk_no_show_done', {count: noShowSelection.size}));
+			setNoShowSelection(new Set());
+			setNoShowPanelOpen(false);
+			await fetchResults();
+		} catch (e: any) {
+			toastError(e?.message || t('error'));
+		}
+	}
+
+	async function handleQuit(userId: string) {
+		if (!window.confirm(t('quit_competitor_confirm'))) return;
+		const replaceWithNext =
+			(selectedRound?.round_number || 1) > 1 && window.confirm(t('quit_replace_confirm'));
+		try {
+			await gqlMutate(QUIT_COMPETITOR, {
+				roundId: selectedRoundId,
+				userId,
+				replaceWithNext,
+			});
+			toastSuccess(t('competitor_quit_round'));
+			await fetchResults();
+			onUpdated();
+		} catch (e: any) {
+			toastError(e?.message || t('error'));
+		}
+	}
+
 	async function handleClearResult(resultId: string) {
 		try {
 			await gqlMutate(DELETE_RESULT, {resultId});
@@ -339,10 +459,83 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 							{t('submit_batch', {count: Object.keys(batch).length})}
 						</button>
 					)}
+					<button className={b('add-competitor-btn')} onClick={toggleAddPanel}>
+						<UserPlus weight="bold" /> {t('add_competitor_to_round')}
+					</button>
+					{selectedRound.round_number === 1 && noShowCandidates.length > 0 && (
+						<button
+							className={b('add-competitor-btn')}
+							onClick={() => setNoShowPanelOpen((v) => !v)}
+						>
+							{t('bulk_no_show')}
+						</button>
+					)}
+					<button
+						className={b('add-competitor-btn', {active: checkMode})}
+						onClick={() => setCheckMode((v) => !v)}
+					>
+						{t('double_check_mode')}
+					</button>
 				</div>
 			)}
 
-			{selectedRound && (
+			{noShowPanelOpen && (
+				<div className={b('add-panel')}>
+					{noShowCandidates.map((c) => (
+						<label key={c.user_id} className={b('add-panel-item', {checkbox: true})}>
+							<input
+								type="checkbox"
+								checked={noShowSelection.has(c.user_id)}
+								onChange={() => toggleNoShowSelection(c.user_id)}
+							/>
+							{competitorFlag(c) && <span className={b('flag')}>{competitorFlag(c)}</span>}
+							<span>{competitorDisplayName(c)}</span>
+						</label>
+					))}
+					<button
+						type="button"
+						className={b('batch-submit')}
+						onClick={submitBulkNoShow}
+						disabled={noShowSelection.size === 0}
+					>
+						{t('bulk_no_show_submit', {count: noShowSelection.size})}
+					</button>
+				</div>
+			)}
+
+			{addPanelOpen && (
+				<div className={b('add-panel')}>
+					{candidates.length === 0 ? (
+						<div className={b('add-panel-empty')}>{t('no_candidates')}</div>
+					) : (
+						candidates.map((u: any, i: number) => (
+							<button
+								key={u.id}
+								type="button"
+								className={b('add-panel-item')}
+								onClick={() => handleAddCompetitor(u.id)}
+							>
+								<span className={b('add-panel-order')}>{i + 1}</span>
+								{competitorFlag(u) && <span className={b('flag')}>{competitorFlag(u)}</span>}
+								<span>{competitorDisplayName(u) || u.username}</span>
+							</button>
+						))
+					)}
+				</div>
+			)}
+
+			{selectedRound && checkMode && (
+				<DoubleCheckView
+					results={results}
+					format={selectedRound.format}
+					onEdit={(userId) => {
+						setActiveUserId(userId);
+						setCheckMode(false);
+					}}
+				/>
+			)}
+
+			{selectedRound && !checkMode && (
 				<div className={b('scoretake-split')}>
 					{/* LEFT: active competitor form */}
 					<div className={b('scoretake-left')}>
@@ -403,6 +596,7 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 							onSelect={setActiveUserId}
 							onClear={handleClearResult}
 							onNoShow={handleNoShow}
+							onQuit={handleQuit}
 							batch={batch}
 							format={selectedRound.format}
 						/>
@@ -475,6 +669,22 @@ function ActiveResultForm({
 	}
 
 	async function save() {
+		// Typo guard (wca-live attemptResultsWarning): a valid attempt that is
+		// 10x+ away from another usually means a misplaced digit (8.34 vs 83.40).
+		const valid = attempts
+			.slice(0, attemptCount)
+			.filter((a): a is number => a !== null && a > 0);
+		if (valid.length >= 2) {
+			const min = Math.min(...valid);
+			const max = Math.max(...valid);
+			if (max > min * 10) {
+				const ok = window.confirm(
+					t('warning_10x_confirm', {min: formatCs(min), max: formatCs(max)})
+				);
+				if (!ok) return;
+			}
+		}
+
 		// Batch mode: stash locally and move on; parent commits everything later.
 		if (batchMode && onBatchAdd) {
 			onBatchAdd(competitor.user_id, attempts.slice(0, attemptCount));
@@ -535,6 +745,22 @@ function ActiveResultForm({
 			if (e.key === 'ArrowRight' && e.altKey) {
 				e.preventDefault();
 				onNext();
+				return;
+			}
+			// wca-live useKeyNavigation parity: vertical arrows move between
+			// attempts, Escape leaves the field.
+			if (e.key === 'ArrowDown') {
+				e.preventDefault();
+				if (idx < requiredCount - 1) inputRefs.current[idx + 1]?.focus();
+				return;
+			}
+			if (e.key === 'ArrowUp') {
+				e.preventDefault();
+				if (idx > 0) inputRefs.current[idx - 1]?.focus();
+				return;
+			}
+			if (e.key === 'Escape') {
+				(e.target as HTMLInputElement).blur();
 				return;
 			}
 			if (e.key === 'Enter') {
@@ -639,6 +865,7 @@ function LeaderboardTable({
 	onSelect,
 	onClear,
 	onNoShow,
+	onQuit,
 	batch,
 	format,
 }: {
@@ -648,6 +875,7 @@ function LeaderboardTable({
 	onSelect: (userId: string) => void;
 	onClear: (resultId: string) => void;
 	onNoShow: (userId: string) => void;
+	onQuit: (userId: string) => void;
 	batch: Record<string, (number | null)[]>;
 	format: string;
 }) {
@@ -752,6 +980,9 @@ function LeaderboardTable({
 						<button type="button" onClick={() => { onNoShow(menu.userId); setMenu(null); }}>
 							{t('ctx_no_show')}
 						</button>
+						<button type="button" onClick={() => { onQuit(menu.userId); setMenu(null); }}>
+							{t('ctx_quit_round')}
+						</button>
 					</div>
 				</>
 			)}
@@ -830,6 +1061,155 @@ function CompetitorQuickSelect({
 					))}
 				</div>
 			)}
+		</div>
+	);
+}
+
+// Step through entered results one at a time to verify against paper
+// scorecards (wca-live RoundDoubleCheck). Arrow keys navigate; the optional
+// scoretaker filter narrows to results entered by one person.
+function DoubleCheckView({
+	results,
+	format,
+	onEdit,
+}: {
+	results: any[];
+	format: string;
+	onEdit: (userId: string) => void;
+}) {
+	const {t} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
+	const attemptCount = getFormatAttempts(format);
+	const hasAverage = formatHasAverage(format);
+
+	const [scoretakerId, setScoretakerId] = useState('');
+	const [index, setIndex] = useState(0);
+
+	const scoretakers = useMemo(() => {
+		const map = new Map<string, string>();
+		for (const r of results) {
+			if (r.entered_by?.id) map.set(r.entered_by.id, r.entered_by.username);
+		}
+		return Array.from(map.entries()).map(([id, username]) => ({id, username}));
+	}, [results]);
+
+	const entered = useMemo(() => {
+		return results
+			.filter((r) => r.best !== null && r.best !== undefined)
+			.filter((r) => !scoretakerId || r.entered_by?.id === scoretakerId)
+			.slice()
+			.sort(
+				(a, bx) =>
+					(a.ranking ?? Number.MAX_SAFE_INTEGER) - (bx.ranking ?? Number.MAX_SAFE_INTEGER)
+			);
+	}, [results, scoretakerId]);
+
+	useEffect(() => {
+		setIndex(0);
+	}, [scoretakerId]);
+
+	useEffect(() => {
+		function onKey(e: KeyboardEvent) {
+			if (e.key === 'ArrowRight') setIndex((i) => Math.min(i + 1, entered.length - 1));
+			if (e.key === 'ArrowLeft') setIndex((i) => Math.max(i - 1, 0));
+		}
+		window.addEventListener('keydown', onKey);
+		return () => window.removeEventListener('keydown', onKey);
+	}, [entered.length]);
+
+	const current = entered[Math.min(index, Math.max(entered.length - 1, 0))];
+
+	if (entered.length === 0) {
+		return <div className={b('empty')}>{t('no_results_yet')}</div>;
+	}
+
+	return (
+		<div className={b('double-check')}>
+			<div className={b('double-check-toolbar')}>
+				{scoretakers.length > 1 && (
+					<select
+						className={b('select')}
+						value={scoretakerId}
+						onChange={(e) => setScoretakerId(e.target.value)}
+					>
+						<option value="">{t('all_scoretakers')}</option>
+						{scoretakers.map((s) => (
+							<option key={s.id} value={s.id}>
+								{s.username}
+							</option>
+						))}
+					</select>
+				)}
+				<span className={b('double-check-counter')}>
+					{index + 1} / {entered.length}
+				</span>
+			</div>
+
+			<div className={b('double-check-card')}>
+				<button
+					type="button"
+					className={b('icon-btn', {ghost: true})}
+					onClick={() => setIndex((i) => Math.max(i - 1, 0))}
+					disabled={index === 0}
+				>
+					<CaretLeft weight="bold" size={28} />
+				</button>
+
+				<div className={b('double-check-body')}>
+					<div className={b('double-check-name')}>
+						{competitorFlag(current.user) && (
+							<span className={b('flag')}>{competitorFlag(current.user)}</span>
+						)}
+						{competitorDisplayName(current.user) || current.user?.username}
+						{current.ranking != null && (
+							<span className={b('double-check-rank')}>#{current.ranking}</span>
+						)}
+					</div>
+					<div className={b('double-check-attempts')}>
+						{Array.from({length: attemptCount}).map((_, i) => (
+							<div key={i} className={b('double-check-attempt')}>
+								<span className={b('double-check-attempt-label')}>
+									{t('attempt_n', {n: i + 1})}
+								</span>
+								<span className={b('double-check-attempt-value')}>
+									{formatCs(current[`attempt_${i + 1}`])}
+								</span>
+							</div>
+						))}
+					</div>
+					<div className={b('double-check-stats')}>
+						<span>
+							{t('best')}: <strong>{formatCs(current.best)}</strong>
+						</span>
+						{hasAverage && (
+							<span>
+								{t('average')}: <strong>{formatCs(current.average)}</strong>
+							</span>
+						)}
+						{current.entered_by?.username && (
+							<span>
+								{t('entered_by')}: <strong>{current.entered_by.username}</strong>
+							</span>
+						)}
+					</div>
+					<button
+						type="button"
+						className={b('save-btn')}
+						onClick={() => onEdit(current.user_id)}
+					>
+						{t('ctx_edit')}
+					</button>
+				</div>
+
+				<button
+					type="button"
+					className={b('icon-btn', {ghost: true})}
+					onClick={() => setIndex((i) => Math.min(i + 1, entered.length - 1))}
+					disabled={index >= entered.length - 1}
+				>
+					<CaretRight weight="bold" size={28} />
+				</button>
+			</div>
+			<div className={b('active-form-hint')}>{t('double_check_hint')}</div>
 		</div>
 	);
 }

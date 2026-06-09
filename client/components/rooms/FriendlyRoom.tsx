@@ -1514,6 +1514,7 @@ export default function FriendlyRoom() {
                             <SettingsDropdown
                                 hideMobileModules
                                 hideSmartCubeFeatures
+                                hideSlamStop
                                 hideGoals
                             />
                         )}
@@ -2099,6 +2100,7 @@ export default function FriendlyRoom() {
                     requireProForSmart
                     hideSmartCubeFeatures
                     hideMobileModules
+                    hideSlamStop
                 />
             )}
             {/* New Modals */}

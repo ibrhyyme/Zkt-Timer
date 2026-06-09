@@ -7,6 +7,9 @@ import { isNative } from '../../../util/platform';
 import { CaretDown, CaretUp, Minus, Plus } from 'phosphor-react';
 import { TimerModuleType } from '../../timer/@types/enums';
 import { MOBILE_MODULE_OPTIONS } from '../../timer/@types/mobile_modules';
+import { useSlamStop } from '../../../util/slam-stop/settings';
+import { isSlamDetectorAvailable } from '../../../util/slam-stop/plugin';
+import SlamSensitivitySlider from './SlamSensitivitySlider';
 
 interface ExtrasNumberInputProps {
 	label: string;
@@ -180,9 +183,16 @@ interface ExtrasTabProps {
 	// — the room's smart cube flow uses LiveAnalysisOverlay and recognition, but the settings
 	// remain ineffective because the room has its own flow.
 	hideSmartCubeFeatures?: boolean;
+	// Hide slam-to-stop in FriendlyRoom — the room stops via RoomTimerOverlay,
+	// not KeyWatcher, so the setting would be ineffective there.
+	hideSlamStop?: boolean;
 }
 
-export default function ExtrasTab({ hideMobileModules = false, hideSmartCubeFeatures = false }: ExtrasTabProps = {}) {
+export default function ExtrasTab({
+	hideMobileModules = false,
+	hideSmartCubeFeatures = false,
+	hideSlamStop = false,
+}: ExtrasTabProps = {}) {
 	const { t } = useTranslation();
 	const inspection = useSettings('inspection');
 	const hideTimeWhenSolving = useSettings('hide_time_when_solving');
@@ -193,6 +203,13 @@ export default function ExtrasTab({ hideMobileModules = false, hideSmartCubeFeat
 	const showRecognition = useSettings('smart_cube_show_recognition');
 	const mobileModules = useSettings('mobile_timer_modules');
 	const mobileMode = useGeneral('mobile_mode');
+	const manualEntry = useSettings('manual_entry');
+	const slamStop = useSlamStop();
+
+	// Device-local setting (NOT a synced Redux setting) — only meaningful where
+	// the touch timer + KeyWatcher stop path is active. Availability check keeps
+	// it hidden on old binaries that don't ship the native plugin yet.
+	const slamVisible = isSlamDetectorAvailable() && timerType === 'keyboard' && !manualEntry && !hideSlamStop;
 
 	const extrasOptions = [
 		{
@@ -273,6 +290,14 @@ export default function ExtrasTab({ hideMobileModules = false, hideSmartCubeFeat
 					onClick={option.onClick}
 				/>
 			))}
+
+			<ExtrasOption
+				label={t('quick_controls.slam_to_stop')}
+				isActive={slamStop.enabled}
+				hidden={!slamVisible}
+				onClick={() => slamStop.setEnabled(!slamStop.enabled)}
+			/>
+			{slamVisible && slamStop.enabled && <SlamSensitivitySlider />}
 
 			<ExtrasNumberInput
 				label={t('quick_controls.freeze_time')}

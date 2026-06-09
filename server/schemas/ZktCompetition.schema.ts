@@ -414,6 +414,54 @@ export class ZktCompTab {
 }
 
 @ObjectType()
+export class ZktScheduleItem {
+	@Field()
+	id: string;
+
+	@Field()
+	competition_id: string;
+
+	@Field()
+	title: string;
+
+	@Field()
+	start_time: Date;
+
+	@Field({nullable: true})
+	end_time?: Date;
+}
+
+@InputType()
+export class CreateZktScheduleItemInput {
+	@Field()
+	competitionId: string;
+
+	@Field()
+	title: string;
+
+	@Field()
+	startTime: string;
+
+	@Field({nullable: true})
+	endTime?: string;
+}
+
+@InputType()
+export class UpdateZktScheduleItemInput {
+	@Field()
+	itemId: string;
+
+	@Field({nullable: true})
+	title?: string;
+
+	@Field({nullable: true})
+	startTime?: string;
+
+	@Field({nullable: true})
+	endTime?: string;
+}
+
+@ObjectType()
 export class ZktCompetition {
 	@Field()
 	id: string;
@@ -534,6 +582,9 @@ export class ZktCompetition {
 
 	@Field(() => [ZktCompTab], {nullable: true})
 	tabs?: ZktCompTab[];
+
+	@Field(() => [ZktScheduleItem], {nullable: true})
+	schedule_items?: ZktScheduleItem[];
 }
 
 @ObjectType()

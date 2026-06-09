@@ -327,11 +327,12 @@ type Query {
   zktCompetitionForAdmin(id: String): ZktCompetition
   exportZktCompetitionWcif(id: String): String
   zktCompetitionPodiums(id: String): [ZktPodium]
-  zktAllTimeRankings(limit: Float, recordType: String, eventId: String): [ZktAllTimeRanking]
+  zktAllTimeRankings(mode: String, limit: Float, recordType: String, eventId: String): [ZktAllTimeRanking]
   zktRegistrationHistory(registrationId: String): [ZktRegistrationHistory]
   zktRoundResults(roundId: String): [ZktResult]
   zktCompetitorResults(userId: String, competitionId: String): [ZktResult]
   zktRoundScrambles(roundId: String): [ZktScramble]
+  zktRoundAdvancementCandidates(roundId: String): [ZktCompetitorUser]
   zktRecords: [ZktRecord]
   zktRecordsForEvent(recordType: String, eventId: String): [ZktRecord]
   zktRoundAssignments(roundId: String): [ZktAssignment]
@@ -461,6 +462,9 @@ type Mutation {
   cancelZktCompetition(input: CancelZktCompetitionInput): ZktCompetition
   publishZktResults(id: String): ZktCompetition
   unpublishZktResults(id: String): ZktCompetition
+  createZktScheduleItem(input: CreateZktScheduleItemInput): ZktScheduleItem
+  updateZktScheduleItem(input: UpdateZktScheduleItemInput): ZktScheduleItem
+  deleteZktScheduleItem(itemId: String): Boolean
   deleteZktCompetition(id: String): Boolean
   registerForZktCompetition(input: ZktRegistrationInput): ZktRegistration
   withdrawZktRegistration(competitionId: String): ZktRegistration
@@ -484,6 +488,8 @@ type Mutation {
   regenerateZktScrambles(roundId: String): [ZktScramble]
   ensureZktScrambles(roundId: String): [ZktScramble]
   reopenZktRound(roundId: String): ZktRound
+  addZktCompetitorToRound(userId: String, roundId: String): ZktResult
+  quitZktCompetitorFromRound(replaceWithNext: Boolean, userId: String, roundId: String): Boolean
   markZktNoShow(input: MarkZktNoShowInput): ZktResult
   createZktRound(input: CreateZktRoundInput): ZktRound
   updateZktRound(input: UpdateZktRoundInput): ZktRound
@@ -1973,6 +1979,14 @@ type ZktCompTab {
   tab_order: Int
 }
 
+type ZktScheduleItem {
+  id: String
+  competition_id: String
+  title: String
+  start_time: DateTime
+  end_time: DateTime
+}
+
 type ZktCompetition {
   id: String
   name: String
@@ -2014,6 +2028,7 @@ type ZktCompetition {
   delegates: [ZktCompDelegate!]
   organizers: [ZktCompOrganizer!]
   tabs: [ZktCompTab!]
+  schedule_items: [ZktScheduleItem!]
 }
 
 enum ZktCompStatus {
@@ -2376,6 +2391,20 @@ input CreatePromoCodeInput {
   membership_type: String
   duration_minutes: Int
   max_uses: Int = 1
+}
+
+input CreateZktScheduleItemInput {
+  competitionId: String
+  title: String
+  startTime: String
+  endTime: String
+}
+
+input UpdateZktScheduleItemInput {
+  itemId: String
+  title: String
+  startTime: String
+  endTime: String
 }
 
 input CreateZktCompetitionInput {

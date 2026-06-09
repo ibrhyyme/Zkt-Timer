@@ -2,6 +2,7 @@ import {getPrisma} from '../database';
 import {ZktCompStatus, Prisma} from '@prisma/client';
 import GraphQLError from '../util/graphql_error';
 import {ErrorCode} from '../constants/errors';
+import {getAttemptCount} from './zkt_result';
 
 // Reusable includes
 export const publicUserInclude = {
@@ -48,6 +49,9 @@ export const zktCompetitionFullInclude = {
 	},
 	tabs: {
 		orderBy: {tab_order: 'asc' as const},
+	},
+	schedule_items: {
+		orderBy: {start_time: 'asc' as const},
 	},
 };
 
@@ -379,6 +383,54 @@ export async function publishZktResults(id: string) {
 			ErrorCode.BAD_INPUT,
 			`Cannot publish from status ${comp.status}`
 		);
+	}
+
+	// Publish blockers (recordranks finishContest validations): every round
+	// must be FINISHED and no result may be left with missing attempts —
+	// otherwise rankings/records go out the door half-entered.
+	const events = await prisma.zktCompEvent.findMany({
+		where: {competition_id: id},
+		include: {rounds: {include: {results: true}}},
+	});
+	const problems: string[] = [];
+	for (const ev of events) {
+		for (const round of ev.rounds) {
+			if (round.status !== 'FINISHED') {
+				problems.push(`${ev.event_id} R${round.round_number}: not finished`);
+				continue;
+			}
+			const fullCount = getAttemptCount(round.format);
+			for (const r of round.results) {
+				if (r.no_show) continue;
+				const attempts = [
+					r.attempt_1,
+					r.attempt_2,
+					r.attempt_3,
+					r.attempt_4,
+					r.attempt_5,
+				].slice(0, fullCount);
+				// A competitor that missed the cutoff legitimately has only the
+				// first cutoff_attempts attempts — don't flag those as missing.
+				let expected = fullCount;
+				if (round.cutoff_cs && round.cutoff_attempts && round.cutoff_attempts < fullCount) {
+					const madeCutoff = attempts
+						.slice(0, round.cutoff_attempts)
+						.some((a) => a !== null && a > 0 && a < round.cutoff_cs!);
+					if (!madeCutoff) expected = round.cutoff_attempts;
+				}
+				const filled = attempts.filter((a) => a !== null).length;
+				if (filled < expected) {
+					problems.push(
+						`${ev.event_id} R${round.round_number}: incomplete result (${filled}/${expected})`
+					);
+				}
+			}
+		}
+	}
+	if (problems.length > 0) {
+		const head = problems.slice(0, 5).join('; ');
+		const more = problems.length > 5 ? ` (+${problems.length - 5})` : '';
+		throw new GraphQLError(ErrorCode.BAD_INPUT, `Cannot publish: ${head}${more}`);
 	}
 
 	return prisma.zktCompetition.update({

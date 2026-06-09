@@ -447,6 +447,13 @@ export type CreateZktRoundInput = {
   timeLimitCs?: InputMaybe<Scalars['Int']>;
 };
 
+export type CreateZktScheduleItemInput = {
+  competitionId?: InputMaybe<Scalars['String']>;
+  endTime?: InputMaybe<Scalars['String']>;
+  startTime?: InputMaybe<Scalars['String']>;
+  title?: InputMaybe<Scalars['String']>;
+};
+
 export type CustomCubeType = {
   __typename?: 'CustomCubeType';
   created_at?: Maybe<Scalars['DateTime']>;
@@ -849,6 +856,7 @@ export type Mutation = {
   addNewSmartDevice?: Maybe<SmartDevice>;
   addSupportTicketMessage?: Maybe<SupportTicketMessage>;
   addZktCompetitorManually?: Maybe<ZktRegistration>;
+  addZktCompetitorToRound?: Maybe<ZktResult>;
   addZktDelegate?: Maybe<ZktCompDelegate>;
   addZktOrganizer?: Maybe<ZktCompOrganizer>;
   adminDeleteTrainerAlternative?: Maybe<TrainerAlternative>;
@@ -887,6 +895,7 @@ export type Mutation = {
   createZktCompTab?: Maybe<ZktCompTab>;
   createZktGroup?: Maybe<ZktGroup>;
   createZktRound?: Maybe<ZktRound>;
+  createZktScheduleItem?: Maybe<ZktScheduleItem>;
   deleteAlgorithmOverride?: Maybe<AlgorithmOverride>;
   deleteAllSolves?: Maybe<Scalars['Void']>;
   deleteAllSolvesInSession?: Maybe<Scalars['Void']>;
@@ -913,6 +922,7 @@ export type Mutation = {
   deleteZktGroup?: Maybe<Scalars['Boolean']>;
   deleteZktResult?: Maybe<Scalars['Boolean']>;
   deleteZktRound?: Maybe<Scalars['Boolean']>;
+  deleteZktScheduleItem?: Maybe<Scalars['Boolean']>;
   editBadgeType?: Maybe<BadgeType>;
   ensureZktScrambles?: Maybe<Array<Maybe<ZktScramble>>>;
   fetchWcaRecords?: Maybe<Array<Maybe<WcaRecord>>>;
@@ -928,6 +938,7 @@ export type Mutation = {
   publishTopSolve?: Maybe<TopSolve>;
   publishWcaRecord?: Maybe<WcaRecord>;
   publishZktResults?: Maybe<ZktCompetition>;
+  quitZktCompetitorFromRound?: Maybe<Scalars['Boolean']>;
   recalculateAllRankings?: Maybe<Scalars['Boolean']>;
   recordActivityHeartbeat?: Maybe<ActivityHeartbeatResult>;
   redeemPromoCode?: Maybe<RedeemPromoCodeResult>;
@@ -993,6 +1004,7 @@ export type Mutation = {
   updateZktRegistrationStatus?: Maybe<ZktRegistration>;
   updateZktRound?: Maybe<ZktRound>;
   updateZktRoundStatus?: Maybe<ZktRound>;
+  updateZktScheduleItem?: Maybe<ZktScheduleItem>;
   uploadProfileHeader: Image;
   uploadProfilePicture: Image;
   uploadTimerBackground: TimerBackground;
@@ -1022,6 +1034,12 @@ export type MutationAddSupportTicketMessageArgs = {
 
 export type MutationAddZktCompetitorManuallyArgs = {
   input?: InputMaybe<AddZktCompetitorManuallyInput>;
+};
+
+
+export type MutationAddZktCompetitorToRoundArgs = {
+  roundId?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -1226,6 +1244,11 @@ export type MutationCreateZktRoundArgs = {
 };
 
 
+export type MutationCreateZktScheduleItemArgs = {
+  input?: InputMaybe<CreateZktScheduleItemInput>;
+};
+
+
 export type MutationDeleteAlgorithmOverrideArgs = {
   algoKey?: InputMaybe<Scalars['String']>;
 };
@@ -1336,6 +1359,11 @@ export type MutationDeleteZktRoundArgs = {
 };
 
 
+export type MutationDeleteZktScheduleItemArgs = {
+  itemId?: InputMaybe<Scalars['String']>;
+};
+
+
 export type MutationEditBadgeTypeArgs = {
   id?: InputMaybe<Scalars['String']>;
   input?: InputMaybe<BadgeTypeInput>;
@@ -1395,6 +1423,13 @@ export type MutationPublishWcaRecordArgs = {
 
 export type MutationPublishZktResultsArgs = {
   id?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationQuitZktCompetitorFromRoundArgs = {
+  replaceWithNext?: InputMaybe<Scalars['Boolean']>;
+  roundId?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -1725,6 +1760,11 @@ export type MutationUpdateZktRoundStatusArgs = {
 };
 
 
+export type MutationUpdateZktScheduleItemArgs = {
+  input?: InputMaybe<UpdateZktScheduleItemInput>;
+};
+
+
 export type MutationUploadProfileHeaderArgs = {
   file?: InputMaybe<Scalars['Upload']>;
 };
@@ -2005,6 +2045,7 @@ export type Query = {
   zktRecords?: Maybe<Array<Maybe<ZktRecord>>>;
   zktRecordsForEvent?: Maybe<Array<Maybe<ZktRecord>>>;
   zktRegistrationHistory?: Maybe<Array<Maybe<ZktRegistrationHistory>>>;
+  zktRoundAdvancementCandidates?: Maybe<Array<Maybe<ZktCompetitorUser>>>;
   zktRoundAssignments?: Maybe<Array<Maybe<ZktAssignment>>>;
   zktRoundResults?: Maybe<Array<Maybe<ZktResult>>>;
   zktRoundScrambles?: Maybe<Array<Maybe<ZktScramble>>>;
@@ -2226,6 +2267,7 @@ export type QueryYoutubeSearchArgs = {
 export type QueryZktAllTimeRankingsArgs = {
   eventId?: InputMaybe<Scalars['String']>;
   limit?: InputMaybe<Scalars['Float']>;
+  mode?: InputMaybe<Scalars['String']>;
   recordType?: InputMaybe<Scalars['String']>;
 };
 
@@ -2285,6 +2327,11 @@ export type QueryZktRecordsForEventArgs = {
 
 export type QueryZktRegistrationHistoryArgs = {
   registrationId?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryZktRoundAdvancementCandidatesArgs = {
+  roundId?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -2918,6 +2965,13 @@ export type UpdateZktRoundInput = {
 export type UpdateZktRoundStatusInput = {
   roundId?: InputMaybe<Scalars['String']>;
   status?: InputMaybe<ZktRoundStatus>;
+};
+
+export type UpdateZktScheduleItemInput = {
+  endTime?: InputMaybe<Scalars['String']>;
+  itemId?: InputMaybe<Scalars['String']>;
+  startTime?: InputMaybe<Scalars['String']>;
+  title?: InputMaybe<Scalars['String']>;
 };
 
 export type UserAccount = IPublicUserAccount & IUserAccount & {
@@ -3558,6 +3612,7 @@ export type ZktCompetition = {
   registration_opens_at?: Maybe<Scalars['DateTime']>;
   registrations?: Maybe<Array<ZktRegistration>>;
   results_published_at?: Maybe<Scalars['DateTime']>;
+  schedule_items?: Maybe<Array<ZktScheduleItem>>;
   short_name?: Maybe<Scalars['String']>;
   status?: Maybe<ZktCompStatus>;
   tabs?: Maybe<Array<ZktCompTab>>;
@@ -3781,6 +3836,15 @@ export enum ZktRoundStatus {
   Open = 'OPEN',
   Upcoming = 'UPCOMING'
 }
+
+export type ZktScheduleItem = {
+  __typename?: 'ZktScheduleItem';
+  competition_id?: Maybe<Scalars['String']>;
+  end_time?: Maybe<Scalars['DateTime']>;
+  id?: Maybe<Scalars['String']>;
+  start_time?: Maybe<Scalars['DateTime']>;
+  title?: Maybe<Scalars['String']>;
+};
 
 export type ZktScramble = {
   __typename?: 'ZktScramble';

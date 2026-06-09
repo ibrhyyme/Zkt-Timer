@@ -50,6 +50,7 @@ const COMPETITOR_DETAIL_QUERY = gql`
 			round {
 				round_number
 				format
+				status
 				comp_event {
 					event_id
 				}
@@ -279,11 +280,16 @@ function ScheduleTable({assignments, t}: {assignments: any[]; t: any}) {
 						const timeRange = a.group?.start_time
 							? formatTimeRange(a.group.start_time, a.group.end_time)
 							: '';
+						const isLive =
+							(a.round as any)?.status === 'OPEN' || (a.round as any)?.status === 'ACTIVE';
 						return (
-							<tr key={a.id}>
+							<tr key={a.id} className={isLive ? b('schedule-row-live') : undefined}>
 								<td>
 									<span className={`cubing-icon event-${eventId}`} style={{marginRight: 8, fontSize: 16, verticalAlign: 'middle'}} />
 									{getEventName(eventId)}
+									{isLive && (
+										<span className={b('live-now-chip', {static: true})}>{t('live_now')}</span>
+									)}
 								</td>
 								<td>R{a.round?.round_number}</td>
 								<td className={b('schedule-cell-time')}>{timeRange || '-'}</td>

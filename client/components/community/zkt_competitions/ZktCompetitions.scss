@@ -1889,3 +1889,257 @@
 		opacity: 0.55;
 	}
 }
+
+// ── Projector mode (wca-live ResultsProjector parity) — fullscreen venue display
+.cd-zkt-comp {
+	&__projector {
+		position: fixed;
+		inset: 0;
+		z-index: 100000;
+		background: rgb(var(--theme-background));
+		color: rgb(var(--text-color));
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+	}
+
+	&__projector-bar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0.9rem 1.5rem;
+		background: rgb(var(--module-color));
+		border-bottom: 2px solid rgba(var(--primary-color), 0.5);
+		flex-shrink: 0;
+	}
+
+	&__projector-title {
+		display: flex;
+		align-items: baseline;
+		gap: 1rem;
+		font-size: 26px;
+		font-weight: 800;
+	}
+
+	&__projector-comp {
+		font-size: 17px;
+		font-weight: 600;
+	}
+
+	&__projector-actions {
+		display: flex;
+		gap: 0.5rem;
+	}
+
+	&__projector-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 46px;
+		height: 46px;
+		border: none;
+		border-radius: 10px;
+		background: rgba(var(--text-color), 0.08);
+		color: rgb(var(--text-color));
+		cursor: pointer;
+
+		&:hover {
+			background: rgba(var(--text-color), 0.16);
+		}
+	}
+
+	&__projector-table {
+		width: 100%;
+		border-collapse: collapse;
+		table-layout: fixed;
+
+		th {
+			text-align: right;
+			font-size: 17px;
+			font-weight: 700;
+			padding: 0.7rem 0.9rem;
+			border-bottom: 2px solid rgba(var(--text-color), 0.25);
+		}
+	}
+
+	&__projector-rank-col {
+		width: 76px;
+	}
+
+	&__projector-name-col {
+		width: 26%;
+		text-align: left !important;
+	}
+
+	&__projector-row {
+		opacity: 0;
+		transition: opacity 1s ease;
+
+		&--visible {
+			opacity: 1;
+		}
+
+		td {
+			font-size: 24px;
+			padding: 0.65rem 0.9rem;
+			text-align: right;
+			white-space: nowrap;
+			border-bottom: 1px solid rgba(var(--text-color), 0.1);
+		}
+	}
+
+	&__projector-rank {
+		font-weight: 800;
+
+		&--advancing {
+			background: #00e676;
+			color: #003915;
+			border-radius: 6px;
+		}
+	}
+
+	&__projector-name {
+		text-align: left !important;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		font-weight: 600;
+	}
+
+	&__projector-time {
+		font-variant-numeric: tabular-nums;
+
+		&--bold {
+			font-weight: 800;
+		}
+	}
+
+	&__projector-empty {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex: 1;
+		font-size: 24px;
+		font-weight: 600;
+	}
+}
+
+// ── "Happening now" live highlight (Competitor-groups parity)
+.cd-zkt-comp {
+	&__live-now {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		flex-wrap: wrap;
+		margin-bottom: 1.25rem;
+	}
+
+	&__live-now-label {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		font-size: 12px;
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: 0.6px;
+		color: #ff5252;
+
+		&::before {
+			content: '';
+			width: 9px;
+			height: 9px;
+			border-radius: 50%;
+			background: #ff5252;
+			animation: zkt-pulse 1.4s ease-in-out infinite;
+		}
+	}
+
+	&__live-now-chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		padding: 0.35rem 0.7rem;
+		border: 1px solid rgba(255, 82, 82, 0.45);
+		border-radius: 8px;
+		background: rgba(255, 82, 82, 0.1);
+		color: rgb(var(--text-color));
+		font-size: 13px;
+		font-weight: 700;
+		cursor: pointer;
+
+		&:hover {
+			background: rgba(255, 82, 82, 0.2);
+		}
+
+		&--static {
+			cursor: default;
+			margin-left: 0.5rem;
+			padding: 0.15rem 0.5rem;
+			font-size: 11px;
+			text-transform: uppercase;
+			letter-spacing: 0.5px;
+			color: #ff5252;
+
+			&:hover {
+				background: rgba(255, 82, 82, 0.1);
+			}
+		}
+	}
+
+	&__schedule-row-live td {
+		background: rgba(255, 82, 82, 0.07);
+	}
+}
+
+// ── Schedule tab (day timeline) + projector forecast toggle
+.cd-zkt-comp {
+	&__projector-btn--active {
+		background: rgba(var(--primary-color), 0.3);
+		color: rgb(var(--primary-color));
+	}
+
+	&__schedule-tab {
+		display: flex;
+		flex-direction: column;
+		gap: 1.25rem;
+	}
+
+	&__schedule-day-title {
+		font-size: 16px;
+		font-weight: 800;
+		margin: 0 0 0.5rem 0;
+		color: rgb(var(--text-color));
+		text-transform: capitalize;
+	}
+
+	&__schedule-rows {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+
+	&__schedule-item {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		padding: 0.6rem 0.9rem;
+		background: rgb(var(--module-color));
+		border-radius: 10px;
+		border-left: 4px solid rgba(var(--text-color), 0.15);
+
+		&--round {
+			border-left-color: rgb(var(--primary-color));
+		}
+	}
+
+	&__schedule-item-time {
+		min-width: 110px;
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+		font-size: 14px;
+	}
+
+	&__schedule-item-title {
+		font-size: 14px;
+		font-weight: 600;
+	}
+}
