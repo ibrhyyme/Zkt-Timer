@@ -1,4 +1,5 @@
 import {mean} from 'lodash';
+import dayjs from 'dayjs';
 import {fetchSolves, FilterSolvesOptions} from '../query';
 
 interface SolveStreak {
@@ -34,7 +35,15 @@ export function getSolveStreak(filter: FilterSolvesOptions): SolveStreak {
 	const end = new Date();
 	end.setHours(23, 59, 59, 999);
 
-	let solveIndex = solves.length - 1;
+	// Pre-bucket solve counts per day (full date key → year-safe). Order-independent:
+	// a solve whose start/end straddle midnight can no longer jam a sequential cursor
+	// and silently zero out every earlier day.
+	const dayCounts = new Map<string, number>();
+	for (const solve of solves) {
+		const key = dayjs(solve.started_at).format('YYYY-M-D');
+		dayCounts.set(key, (dayCounts.get(key) || 0) + 1);
+	}
+
 	let currentStreak = 0;
 	let currentStreakSolves = 0;
 	let currentEnded = false;
@@ -53,17 +62,8 @@ export function getSolveStreak(filter: FilterSolvesOptions): SolveStreak {
 	const solvesPerSession = [];
 
 	while (end.getTime() > firstSolveTime) {
-		let dayCount = 0;
-		while (solveIndex > -1) {
-			const solve = solves[solveIndex];
-			if (solve.started_at > start.getTime() && solve.ended_at < end.getTime()) {
-				tempStreakSolves++;
-				dayCount++;
-				solveIndex--;
-			} else {
-				break;
-			}
-		}
+		const dayCount = dayCounts.get(dayjs(start).format('YYYY-M-D')) || 0;
+		tempStreakSolves += dayCount;
 
 		if (dayCount > 0) {
 			tempStreakStart = new Date(start);
