@@ -8,6 +8,7 @@ import {Plus, Trash, PencilSimple} from 'phosphor-react';
 import {openModal} from '../../../actions/general';
 import {toastSuccess, toastError} from '../../../util/toast';
 import Loading from '../../common/loading/Loading';
+import PageTitle from '../../common/page_title/PageTitle';
 import ConfirmModal from '../../common/confirm_modal/ConfirmModal';
 import {b, formatDateRange, getEventName} from './shared';
 import {useHistory} from 'react-router-dom';
@@ -89,7 +90,7 @@ export default function AdminZktCompetitions() {
 	useZktCompListRefetch(fetchList);
 
 	function openCreate() {
-		history.push('/admin/competitions/new');
+		history.push('/organizer/new');
 	}
 
 	function handleDelete(comp: CompItem) {
@@ -116,6 +117,7 @@ export default function AdminZktCompetitions() {
 
 	return (
 		<div className={b()}>
+			<PageTitle pageName={t('management_title')} />
 			<div className={b('toolbar')}>
 				<input
 					className={b('search')}
@@ -176,7 +178,7 @@ export default function AdminZktCompetitions() {
 							<div className={b('card-actions')}>
 								<button
 									className={b('action-btn')}
-									onClick={() => history.push(`/admin/competitions/${comp.id}`)}
+									onClick={() => history.push(`/organizer/${comp.id}`)}
 								>
 									<PencilSimple weight="bold" /> {t('manage')}
 								</button>

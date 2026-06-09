@@ -22,6 +22,7 @@
         "general_settings": "Genel Ayarlar",
         "notification_settings": "Bildirim Ayarları",
         "admin": "Yönetici",
+        "competition_management": "Yarışma Yönetimi",
         "logout": "Çıkış Yap",
         "pro_subscription": "Pro Abonelik",
         "pro_subscription_cta": "✦ Pro'ya Geç"
@@ -3373,6 +3374,7 @@
         "ongoing": "Devam ediyor",
         "create_competition": "Yarışma Oluştur",
         "edit_competition": "Yarışmayı Düzenle",
+        "management_title": "Yarışma Yönetimi",
         "section_venue": "Mekan",
         "section_dates": "Tarihler",
         "section_information": "Bilgi",

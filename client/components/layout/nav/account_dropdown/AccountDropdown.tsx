@@ -7,7 +7,7 @@ import * as Popover from '@radix-ui/react-popover';
 import { useHistory } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Gear, Crown } from 'phosphor-react';
+import { Gear, Crown, Trophy } from 'phosphor-react';
 import block from '../../../../styles/bem';
 import AvatarImage from '../../../common/avatar/avatar_image/AvatarImage';
 import { logOut } from '../../../../util/auth/logout';
@@ -86,6 +86,15 @@ export default function AccountDropdown() {
 			key: 'admin',
 			label: t('account_dropdown.admin'),
 			link: '/admin/dashboard',
+		});
+	}
+	// Competition management — admin-only for now, mods will get it later.
+	if (me.admin) {
+		items.push({
+			key: 'organizer',
+			label: t('account_dropdown.competition_management'),
+			icon: <Trophy weight="fill" />,
+			link: '/organizer',
 		});
 	}
 	items.push({
