@@ -17,6 +17,7 @@ interface Props {
 	requireProForSmart?: boolean;
 	hideSmartCubeFeatures?: boolean;
 	hideMobileModules?: boolean;
+	hideSlamStop?: boolean;
 }
 
 export default function LeftSettingsDrawer(props: Props) {

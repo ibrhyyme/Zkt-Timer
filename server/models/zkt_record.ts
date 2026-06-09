@@ -129,6 +129,104 @@ async function getUserPersonalBest(
 }
 
 /**
+ * Full rebuild of records + result tags for one event.
+ *
+ * checkAndApplyRecords only ever ADDS records, so any backwards change —
+ * deleting a result, editing a finalized result, reopening a round — leaves
+ * stale ZktRecord rows and stale NR/PR tags behind. This rescans every result
+ * of the event's finished rounds in chronological order (competition start
+ * date, then round number, then entry time) and rewrites the record table and
+ * tags from scratch. Per-event data volume is small, so a full rebuild is the
+ * simplest correct approach (simplified from recordranks' cancel/setFutureRecords).
+ */
+export async function rebuildRecordsForEvent(eventId: string): Promise<void> {
+	const prisma = getPrisma();
+
+	const results = await prisma.zktResult.findMany({
+		where: {round: {status: 'FINISHED', comp_event: {event_id: eventId}}},
+		include: {round: {include: {comp_event: {include: {competition: true}}}}},
+	});
+
+	const sorted = results.slice().sort((a, b) => {
+		const da = a.round.comp_event.competition.date_start.getTime();
+		const db = b.round.comp_event.competition.date_start.getTime();
+		if (da !== db) return da - db;
+		if (a.round.round_number !== b.round.round_number) {
+			return a.round.round_number - b.round.round_number;
+		}
+		return a.created_at.getTime() - b.created_at.getTime();
+	});
+
+	const newRecords: {
+		event_id: string;
+		record_type: string;
+		value: number;
+		user_id: string;
+		result_id: string;
+		competition_id: string;
+		set_at: Date;
+	}[] = [];
+	const tags = new Map<string, {single: string | null; average: string | null}>();
+
+	for (const recordType of ['single', 'average'] as RecordType[]) {
+		let runningRecord: number | null = null;
+		const pbByUser = new Map<string, number>();
+
+		for (const r of sorted) {
+			const value = recordType === 'single' ? r.best : r.average;
+			const entry = tags.get(r.id) ?? {single: null, average: null};
+			let tag: string | null = null;
+
+			if (value !== null && value > 0) {
+				if (runningRecord === null || value < runningRecord) {
+					runningRecord = value;
+					newRecords.push({
+						event_id: eventId,
+						record_type: recordType,
+						value,
+						user_id: r.user_id,
+						result_id: r.id,
+						competition_id: r.round.comp_event.competition_id,
+						set_at: r.round.comp_event.competition.date_start,
+					});
+					tag = 'NR';
+				} else {
+					const pb = pbByUser.get(r.user_id);
+					if (pb === undefined || value < pb) tag = 'PR';
+				}
+				const pb = pbByUser.get(r.user_id);
+				if (pb === undefined || value < pb) pbByUser.set(r.user_id, value);
+			}
+
+			entry[recordType] = tag;
+			tags.set(r.id, entry);
+		}
+	}
+
+	// Apply atomically: wipe + rewrite records, update only changed tags.
+	const tagUpdates = sorted
+		.filter((r) => {
+			const t = tags.get(r.id);
+			return (
+				t && (r.single_record_tag !== t.single || r.average_record_tag !== t.average)
+			);
+		})
+		.map((r) => {
+			const t = tags.get(r.id)!;
+			return prisma.zktResult.update({
+				where: {id: r.id},
+				data: {single_record_tag: t.single, average_record_tag: t.average},
+			});
+		});
+
+	await prisma.$transaction([
+		prisma.zktRecord.deleteMany({where: {event_id: eventId}}),
+		...newRecords.map((rec) => prisma.zktRecord.create({data: rec})),
+		...tagUpdates,
+	]);
+}
+
+/**
  * Check a finalized result against current records + user PB.
  * Creates new record entries if beaten. Tag priority: NR > PR.
  * Returns tags to set on the result.

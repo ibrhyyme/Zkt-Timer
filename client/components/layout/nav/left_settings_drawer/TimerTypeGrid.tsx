@@ -65,6 +65,8 @@ interface Props {
 	hideSmartCubeFeatures?: boolean;
 	// ExtrasTab'a forward — mobile module slot'lari gizli.
 	hideMobileModules?: boolean;
+	// ExtrasTab'a forward — slam-to-stop satiri gizli (oda akisi KeyWatcher kullanmaz).
+	hideSlamStop?: boolean;
 }
 
 interface TimerOptionExt extends TimerOption {
@@ -76,6 +78,7 @@ export default function TimerTypeGrid({
 	requireProForSmart,
 	hideSmartCubeFeatures,
 	hideMobileModules,
+	hideSlamStop,
 }: Props) {
 	const {t} = useTranslation();
 	const dispatch = useDispatch();
@@ -229,6 +232,7 @@ export default function TimerTypeGrid({
 					<ExtrasTab
 						hideSmartCubeFeatures={hideSmartCubeFeatures}
 						hideMobileModules={hideMobileModules}
+						hideSlamStop={hideSlamStop}
 					/>
 				</div>
 			</>

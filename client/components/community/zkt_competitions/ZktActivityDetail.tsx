@@ -41,6 +41,7 @@ const GROUP_ASSIGNMENTS_QUERY = gql`
 				id
 				round_number
 				format
+				status
 				comp_event {
 					id
 					event_id
@@ -73,6 +74,7 @@ interface Assignment {
 		id: string;
 		round_number: number;
 		format: string;
+		status?: string;
 		comp_event?: {id: string; event_id: string};
 	};
 }
@@ -147,6 +149,9 @@ export default function ZktActivityDetail() {
 							)}
 							{groupNumber !== undefined && (
 								<span className={b('activity-group')}> · {t('col_group')} {groupNumber}</span>
+							)}
+							{(first.round?.status === 'OPEN' || first.round?.status === 'ACTIVE') && (
+								<span className={b('live-now-chip', {static: true})}>{t('live_now')}</span>
 							)}
 						</h1>
 						{(format || timeRange) && (

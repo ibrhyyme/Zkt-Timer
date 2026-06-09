@@ -19,6 +19,7 @@ import DashboardDelegates from './tabs/DashboardDelegates';
 import DashboardOrganizers from './tabs/DashboardOrganizers';
 import ZktCompTabsManager from './tabs/ZktCompTabsManager';
 import DashboardAssignments from './tabs/DashboardAssignments';
+import DashboardSchedule from './tabs/DashboardSchedule';
 import {useZktCompRefetch} from '../../community/zkt_competitions/useZktCompRefetch';
 
 const DELETE_MUTATION = gql`
@@ -62,6 +63,8 @@ const DETAIL_QUERY = gql`
 					groups {
 						id
 						group_number
+						start_time
+						end_time
 					}
 				}
 			}
@@ -129,11 +132,17 @@ const DETAIL_QUERY = gql`
 				content
 				tab_order
 			}
+			schedule_items {
+				id
+				title
+				start_time
+				end_time
+			}
 		}
 	}
 `;
 
-type TabId = 'overview' | 'registrations' | 'rounds' | 'assignments' | 'results' | 'delegates' | 'organizers' | 'tabs_manager';
+type TabId = 'overview' | 'registrations' | 'rounds' | 'assignments' | 'results' | 'schedule' | 'delegates' | 'organizers' | 'tabs_manager';
 
 export default function CompetitionDashboard() {
 	const {competitionId} = useParams<{competitionId: string}>();
@@ -193,6 +202,7 @@ export default function CompetitionDashboard() {
 		{id: 'rounds', label: t('tab_rounds')},
 		{id: 'assignments', label: t('tab_assignments')},
 		{id: 'results', label: t('tab_results')},
+		{id: 'schedule', label: t('tab_schedule')},
 		{id: 'delegates', label: t('tab_delegates')},
 		{id: 'organizers', label: t('tab_organizers')},
 		{id: 'tabs_manager', label: t('tab_manage')},
@@ -276,6 +286,7 @@ export default function CompetitionDashboard() {
 				{tab === 'registrations' && <DashboardRegistrations detail={detail} onUpdated={fetch} />}
 				{tab === 'rounds' && <DashboardRounds detail={detail} onUpdated={fetch} />}
 				{tab === 'assignments' && <DashboardAssignments detail={detail} onUpdated={fetch} />}
+				{tab === 'schedule' && <DashboardSchedule detail={detail} onUpdated={fetch} />}
 				{tab === 'results' && <DashboardResults detail={detail} onUpdated={fetch} />}
 				{tab === 'delegates' && <DashboardDelegates detail={detail} onUpdated={fetch} />}
 				{tab === 'organizers' && <DashboardOrganizers detail={detail} onUpdated={fetch} />}

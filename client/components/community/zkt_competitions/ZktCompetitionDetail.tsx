@@ -5,7 +5,7 @@ import {gqlMutate} from '../../api';
 import {useTranslation} from 'react-i18next';
 import {useParams, useHistory, useRouteMatch} from 'react-router-dom';
 import Loading from '../../common/loading/Loading';
-import {b, formatDateRange} from './shared';
+import {b, formatDateRange, getEventName} from './shared';
 import {useSelector} from 'react-redux';
 import ZktInfoTab from './tabs/ZktInfoTab';
 import ZktCompetitorsTab from './tabs/ZktCompetitorsTab';
@@ -13,8 +13,9 @@ import ZktEventsTab from './tabs/ZktEventsTab';
 import ZktLiveTab from './tabs/ZktLiveTab';
 import ZktPodiumsTab from './tabs/ZktPodiumsTab';
 import ZktRegistrationForm from './tabs/ZktRegistrationForm';
+import ZktScheduleTab from './tabs/ZktScheduleTab';
 import {useZktCompRefetch} from './useZktCompRefetch';
-import {Users, ListBullets, Globe, Broadcast, UserPlus, ChartBar, FileText} from 'phosphor-react';
+import {Users, ListBullets, Globe, Broadcast, UserPlus, ChartBar, FileText, CalendarBlank} from 'phosphor-react';
 import MarkdownContent from './MarkdownContent';
 
 const DETAIL_QUERY = gql`
@@ -62,6 +63,12 @@ const DETAIL_QUERY = gql`
 					advancement_type
 					advancement_level
 					status
+					groups {
+						id
+						group_number
+						start_time
+						end_time
+					}
 				}
 			}
 			registrations {
@@ -107,6 +114,12 @@ const DETAIL_QUERY = gql`
 				title
 				content
 				tab_order
+			}
+			schedule_items {
+				id
+				title
+				start_time
+				end_time
 			}
 		}
 	}
@@ -162,6 +175,17 @@ export default function ZktCompetitionDetail() {
 
 	const approvedCount = detail.registrations.filter((r: any) => r.status === 'APPROVED').length;
 
+	// "Happening now" — rounds currently OPEN/ACTIVE (Competitor-groups style
+	// live highlight, driven purely by round status; socket refetch keeps it hot).
+	const liveRounds: Array<{eventId: string; roundNumber: number}> = [];
+	for (const ev of detail.events) {
+		for (const r of ev.rounds) {
+			if (r.status === 'OPEN' || r.status === 'ACTIVE') {
+				liveRounds.push({eventId: ev.event_id, roundNumber: r.round_number});
+			}
+		}
+	}
+
 	// Tab order matches the WCA competitions page so users feel at home
 	// switching between WCA + ZKT competitions. "Rankings" replaces the
 	// stand-alone "Podiums" tab — final-round top 3 is the natural top of
@@ -171,6 +195,14 @@ export default function ZktCompetitionDetail() {
 		{id: 'live', label: t('tab_live'), icon: Broadcast, show: detail.status !== 'DRAFT'},
 		{id: 'events', label: t('tab_events'), icon: ListBullets, show: true, count: detail.events.length},
 		{id: 'rankings', label: t('tab_rankings'), icon: ChartBar, show: detail.status !== 'DRAFT'},
+		{
+			id: 'schedule',
+			label: t('tab_schedule'),
+			icon: CalendarBlank,
+			show:
+				(detail.schedule_items || []).length > 0 ||
+				detail.events.some((ev: any) => (ev.rounds || []).some((r: any) => (r.groups || []).some((g: any) => g.start_time))),
+		},
 		{id: 'info', label: t('tab_info'), icon: Globe, show: true},
 		...(detail.tabs || []).map((tb: any) => ({
 			id: `custom_${tb.id}`,
@@ -210,6 +242,27 @@ export default function ZktCompetitionDetail() {
 						</span>
 					)}
 				</div>
+
+				{liveRounds.length > 0 && (
+					<div className={b('live-now')}>
+						<span className={b('live-now-label')}>{t('live_now')}</span>
+						{liveRounds.map((lr) => (
+							<button
+								key={`${lr.eventId}-${lr.roundNumber}`}
+								type="button"
+								className={b('live-now-chip')}
+								onClick={() =>
+									history.push(
+										`/community/zkt-competitions/${competitionId}/live/${lr.eventId}/${lr.roundNumber}`
+									)
+								}
+							>
+								<span className={`cubing-icon event-${lr.eventId}`} />
+								{getEventName(lr.eventId)} — {t('round_n', {n: lr.roundNumber})}
+							</button>
+						))}
+					</div>
+				)}
 			</div>
 
 			<div className={b('tabs')}>
@@ -236,6 +289,7 @@ export default function ZktCompetitionDetail() {
 				{tab === 'live' && <ZktLiveTab detail={detail} />}
 				{tab === 'events' && <ZktEventsTab detail={detail} />}
 				{tab === 'rankings' && <ZktPodiumsTab detail={detail} />}
+				{tab === 'schedule' && <ZktScheduleTab detail={detail} />}
 				{tab === 'info' && <ZktInfoTab detail={detail} />}
 				{tab === 'register' && <ZktRegistrationForm detail={detail} onDone={fetch} />}
 				{typeof tab === 'string' &&

@@ -16,6 +16,7 @@
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
 		A084ECDBA7D38E1E42DFC39D /* Pods_App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */; };
 		B1A0E0012D0A00000016851F /* NativeAudioPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1A0E0002D0A00000016851F /* NativeAudioPlugin.swift */; };
+		B1A0E0092D0A00060016851F /* SlamDetectorPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1A0E0082D0A00050016851F /* SlamDetectorPlugin.swift */; };
 		B1A0E0032D0A00010016851F /* ZKTBridgeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1A0E0022D0A00010016851F /* ZKTBridgeViewController.swift */; };
 		B1A0E0052D0A00020016851F /* audio in Resources */ = {isa = PBXBuildFile; fileRef = B1A0E0042D0A00020016851F /* audio */; };
 		B1A0E0072D0A00040016851F /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = B1A0E0062D0A00030016851F /* GoogleService-Info.plist */; };
@@ -35,6 +36,7 @@
 		AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_App.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		AF51FD2D460BCFE21FA515B2 /* Pods-App.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.release.xcconfig"; path = "Pods/Target Support Files/Pods-App/Pods-App.release.xcconfig"; sourceTree = "<group>"; };
 		B1A0E0002D0A00000016851F /* NativeAudioPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeAudioPlugin.swift; sourceTree = "<group>"; };
+		B1A0E0082D0A00050016851F /* SlamDetectorPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SlamDetectorPlugin.swift; sourceTree = "<group>"; };
 		B1A0E0022D0A00010016851F /* ZKTBridgeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZKTBridgeViewController.swift; sourceTree = "<group>"; };
 		B1A0E0042D0A00020016851F /* audio */ = {isa = PBXFileReference; lastKnownFileType = folder; path = audio; sourceTree = "<group>"; };
 		B1A0E0062D0A00030016851F /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
@@ -90,6 +92,7 @@
 				50379B222058CBB4000EE86E /* capacitor.config.json */,
 				504EC3071FED79650016851F /* AppDelegate.swift */,
 				B1A0E0002D0A00000016851F /* NativeAudioPlugin.swift */,
+				B1A0E0082D0A00050016851F /* SlamDetectorPlugin.swift */,
 				B1A0E0022D0A00010016851F /* ZKTBridgeViewController.swift */,
 				B1A0E0042D0A00020016851F /* audio */,
 				504EC30B1FED79650016851F /* Main.storyboard */,
@@ -231,6 +234,7 @@
 			files = (
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
 				B1A0E0012D0A00000016851F /* NativeAudioPlugin.swift in Sources */,
+				B1A0E0092D0A00060016851F /* SlamDetectorPlugin.swift in Sources */,
 				B1A0E0032D0A00010016851F /* ZKTBridgeViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

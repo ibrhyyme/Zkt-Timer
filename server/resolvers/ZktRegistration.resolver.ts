@@ -31,6 +31,7 @@ import {
 	enqueueWaitlist,
 	promoteNextFromWaitlist,
 	normalizeWaitlistPositions,
+	notifyZktRegistrationStatus,
 	isWithinEditWindow,
 	HISTORY_ACTIONS,
 } from '../models/zkt_registration';
@@ -117,6 +118,9 @@ export class ZktRegistrationResolver {
 				guests: input.guests ?? 0,
 			}
 		);
+
+		// "Registration received" confirmation (WCA parity).
+		await notifyZktRegistrationStatus(context.user.id, input.competitionId, 'PENDING');
 
 		emitZktRegistrationUpdated(input.competitionId, {
 			registrationId: registration.id,
@@ -242,6 +246,14 @@ export class ZktRegistrationResolver {
 			registrationId: updated.id,
 			status: updated.status,
 		});
+
+		// Status-change notification to the competitor (approved/waitlisted/rejected).
+		if (
+			previousStatus !== input.status &&
+			(input.status === 'APPROVED' || input.status === 'WAITLISTED' || input.status === 'REJECTED')
+		) {
+			await notifyZktRegistrationStatus(reg.user_id, reg.competition_id, input.status);
+		}
 
 		// Leaving APPROVED frees up a slot — promote the next waitlisted user.
 		if (
@@ -421,6 +433,15 @@ export class ZktRegistrationResolver {
 				registrationId: u.registrationId,
 				status: u.status,
 			});
+		}
+
+		// Notify each competitor whose status actually changed.
+		for (const u of input.updates) {
+			const prev = prevById.get(u.registrationId);
+			if (!prev || prev.status === u.status) continue;
+			if (u.status === 'APPROVED' || u.status === 'WAITLISTED' || u.status === 'REJECTED') {
+				await notifyZktRegistrationStatus(prev.user_id, input.competitionId, u.status);
+			}
 		}
 
 		return getPrisma().zktRegistration.findMany({

@@ -49,6 +49,7 @@ public class MainActivity extends BridgeActivity {
             FirebaseApp.initializeApp(this, options);
         }
         registerPlugin(GestureExclusionPlugin.class);
+        registerPlugin(SlamDetectorPlugin.class);
         super.onCreate(savedInstanceState);
 
         updateOrientationLock();

@@ -12,7 +12,7 @@ import {
 	formatHasAverage,
 	competitorDisplayName,
 } from '../shared';
-import {Plus, Minus, FilePdf, ArrowsClockwise, Table, IdentificationCard} from 'phosphor-react';
+import {Plus, Minus, FilePdf, ArrowsClockwise, Table, IdentificationCard, MonitorPlay} from 'phosphor-react';
 import EditTimeLimitModal from '../modals/EditTimeLimitModal';
 import EditCutoffModal from '../modals/EditCutoffModal';
 import EditAdvancementModal from '../modals/EditAdvancementModal';
@@ -327,6 +327,21 @@ export default function DashboardRounds({
 										{t(`round_status_${round.status.toLowerCase()}`)}
 									</span>
 									<div style={{marginLeft: 'auto', display: 'flex', gap: '0.35rem'}}>
+											{(round.status === 'OPEN' || round.status === 'ACTIVE' || round.status === 'FINISHED') && (
+												<button
+													type="button"
+													className={b('scramble-action-btn')}
+													onClick={() =>
+														window.open(
+															`/community/zkt-competitions/${detail.id}/projector/${ev.event_id}/${round.round_number}`,
+															'_blank'
+														)
+													}
+													title={t('open_projector')}
+												>
+													<MonitorPlay weight="bold" /> {t('projector')}
+												</button>
+											)}
 											<button
 												type="button"
 												className={b('scramble-action-btn')}

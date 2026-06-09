@@ -23,6 +23,8 @@ interface Props {
 	hideMobileModules?: boolean;
 	// Hide smart cube-specific settings (multi-phase, recognition) in FriendlyRoom
 	hideSmartCubeFeatures?: boolean;
+	// Hide slam-to-stop in FriendlyRoom (room stop path is RoomTimerOverlay, not KeyWatcher)
+	hideSlamStop?: boolean;
 	// Hide goals tab (goal system is not used in room flow)
 	hideGoals?: boolean;
 }
@@ -31,6 +33,7 @@ export default function SettingsDropdown({
 	triggerClassName,
 	hideMobileModules,
 	hideSmartCubeFeatures,
+	hideSlamStop,
 	hideGoals,
 }: Props) {
 	const { t } = useTranslation();
@@ -87,6 +90,7 @@ export default function SettingsDropdown({
 							<ExtrasTab
 								hideMobileModules={hideMobileModules}
 								hideSmartCubeFeatures={hideSmartCubeFeatures}
+								hideSlamStop={hideSlamStop}
 							/>
 						)}
 						{tab === 'goals' && !hideGoals && <GoalsTab />}

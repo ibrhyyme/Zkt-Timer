@@ -58,6 +58,7 @@ export async function getZktAllTimeRankings(params: {
 	eventId: string;
 	recordType: 'single' | 'average';
 	limit?: number;
+	mode?: 'persons' | 'results';
 }) {
 	const prisma = getPrisma();
 	const column = params.recordType === 'single' ? 'best' : 'average';
@@ -87,19 +88,26 @@ export async function getZktAllTimeRankings(params: {
 		},
 	} as any);
 
-	// Keep best-per-user. Prisma can't distinctOn across JSON so we fold here.
-	const bestByUser = new Map<string, (typeof results)[number]>();
-	for (const r of results) {
-		const v = (r as any)[column] as number;
-		const existing = bestByUser.get(r.user_id);
-		if (!existing || v < ((existing as any)[column] as number)) {
-			bestByUser.set(r.user_id, r);
+	// "persons" (default): best result per user. "results": every result ranked
+	// (recordranks "Top Persons / Top Results" toggle).
+	let pool: typeof results;
+	if (params.mode === 'results') {
+		pool = results;
+	} else {
+		const bestByUser = new Map<string, (typeof results)[number]>();
+		for (const r of results) {
+			const v = (r as any)[column] as number;
+			const existing = bestByUser.get(r.user_id);
+			if (!existing || v < ((existing as any)[column] as number)) {
+				bestByUser.set(r.user_id, r);
+			}
 		}
+		pool = Array.from(bestByUser.values());
 	}
 
-	const sorted = Array.from(bestByUser.values()).sort(
-		(a, b) => ((a as any)[column] as number) - ((b as any)[column] as number)
-	);
+	const sorted = pool
+		.slice()
+		.sort((a, b) => ((a as any)[column] as number) - ((b as any)[column] as number));
 	const sliced = params.limit ? sorted.slice(0, params.limit) : sorted;
 	return sliced.map((r, i) => {
 		const row = r as any;

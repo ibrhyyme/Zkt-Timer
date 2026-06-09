@@ -1,5 +1,10 @@
 import {getPrisma} from '../database';
 import {ZktRegistrationStatus} from '@prisma/client';
+import ZktRegistrationStatusNotification, {
+	ZktRegistrationNotifyKind,
+} from '../resources/notification_types/zkt_registration_status';
+import {sendEmailWithTemplate} from '../services/ses';
+import {sendPushToUser} from '../services/push';
 
 /**
  * Registration history action codes. Kept as strings (not enum) so we can
@@ -31,6 +36,52 @@ export async function appendRegistrationHistory(
 			changed_attributes: (changedAttributes ?? undefined) as any,
 		},
 	});
+}
+
+/**
+ * Notify a competitor about their registration status (in-app + push + email).
+ * Email is sent directly (transactional, WCA RegistrationsMailer parity) rather
+ * than through notification preferences — a status change is something the
+ * competitor must learn about. Failures are swallowed so the registration flow
+ * never breaks because of mail/push hiccups.
+ */
+export async function notifyZktRegistrationStatus(
+	userId: string,
+	competitionId: string,
+	kind: ZktRegistrationNotifyKind
+): Promise<void> {
+	try {
+		const prisma = getPrisma();
+		const [user, comp] = await Promise.all([
+			prisma.userAccount.findUnique({
+				where: {id: userId},
+				include: {settings: true},
+			}),
+			prisma.zktCompetition.findUnique({
+				where: {id: competitionId},
+				select: {id: true, name: true},
+			}),
+		]);
+		if (!user || !comp) return;
+
+		const notif = new ZktRegistrationStatusNotification(
+			{user: user as any, triggeringUser: user as any, sendEmail: false},
+			{
+				competitionId: comp.id,
+				competitionName: comp.name,
+				kind,
+				locale: (user as any)?.settings?.locale,
+			}
+		);
+
+		await notif.send().catch(() => {});
+		await sendEmailWithTemplate(user as any, notif.subject(), 'notification', notif.data()).catch(
+			() => {}
+		);
+		await sendPushToUser(userId, notif.subject(), notif.inAppMessage()).catch(() => {});
+	} catch {
+		// Never let notification problems break registration handling.
+	}
 }
 
 /**
@@ -94,6 +145,9 @@ export async function promoteNextFromWaitlist(
 	await appendRegistrationHistory(next.id, actorId, HISTORY_ACTIONS.WAITLIST_AUTO_PROMOTED, {
 		previous_position: next.waiting_list_position,
 	});
+
+	// Single notify point for every promotion path (withdraw, reject, bulk).
+	await notifyZktRegistrationStatus(next.user_id, competitionId, 'PROMOTED');
 
 	return next.id;
 }

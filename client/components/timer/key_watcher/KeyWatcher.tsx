@@ -23,6 +23,7 @@ import { getSettings } from '../../../db/settings/query';
 import { fetchLastSolve, buildBucketFilter } from '../../../db/solves/query';
 import { deleteAllSolvesInSessionDb, deleteSolveDb } from '../../../db/solves/update';
 import { toggleDnfSolveDb, togglePlusTwoSolveDb } from '../../../db/solves/operations';
+import { useSlamToStop } from '../../../util/slam-stop/useSlamToStop';
 
 const timerClass = block('timer');
 
@@ -59,6 +60,9 @@ export default function KeyWatcher(props: Props) {
 	const inspection = useSettings('inspection');
 	const manualEntry = useSettings('manual_entry');
 	const useSpaceWithSmartCube = useSettings('use_space_with_smart_cube');
+
+	// Slam-to-stop: native-only extra stop trigger for the touch timer
+	useSlamToStop(context);
 
 	useWindowListener('keyup', keyupSpace);
 	useWindowListener('keydown', keydownSpace);

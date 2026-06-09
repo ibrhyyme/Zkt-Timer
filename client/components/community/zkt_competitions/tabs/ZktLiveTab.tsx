@@ -3,7 +3,7 @@ import {useParams, useHistory, useRouteMatch} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
 import {b, getEventName, formatCs, formatName, formatHasAverage, getFormatAttempts, competitorDisplayName, competitorFlag} from '../shared';
 import {useZktLiveResults, LiveResult} from '../useZktLiveResults';
-import {ArrowClockwise, Broadcast} from 'phosphor-react';
+import {ArrowClockwise, Broadcast, MonitorPlay} from 'phosphor-react';
 import ZktLivePodiums from './ZktLivePodiums';
 
 export default function ZktLiveTab({detail}: {detail: any}) {
@@ -200,6 +200,18 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 								)}
 								<button className={b('refresh-btn')} onClick={refresh} title={t('refresh')}>
 									<ArrowClockwise weight="bold" />
+								</button>
+								<button
+									className={b('refresh-btn')}
+									onClick={() =>
+										window.open(
+											`/community/zkt-competitions/${competitionId}/projector/${selectedEvent.event_id}/${selectedRound.round_number}`,
+											'_blank'
+										)
+									}
+									title={t('open_projector')}
+								>
+									<MonitorPlay weight="bold" />
 								</button>
 							</div>
 

@@ -7,8 +7,8 @@ import {Link} from 'react-router-dom';
 import {b, formatCs, formatDateRange, ZKT_WCA_EVENTS, competitorDisplayName, competitorFlag} from './shared';
 
 const RANKINGS_QUERY = gql`
-	query ZktAllTimeRankings($eventId: String!, $recordType: String!, $limit: Float) {
-		zktAllTimeRankings(eventId: $eventId, recordType: $recordType, limit: $limit) {
+	query ZktAllTimeRankings($eventId: String!, $recordType: String!, $limit: Float, $mode: String) {
+		zktAllTimeRankings(eventId: $eventId, recordType: $recordType, limit: $limit, mode: $mode) {
 			ranking
 			value
 			event_id
@@ -40,6 +40,8 @@ export default function ZktRankingsPage() {
 	const {t} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
 	const [eventId, setEventId] = useState<string>('333');
 	const [recordType, setRecordType] = useState<'single' | 'average'>('single');
+	const [mode, setMode] = useState<'persons' | 'results'>('persons');
+	const [topN, setTopN] = useState<number>(100);
 	const [rows, setRows] = useState<any[]>([]);
 	const [loading, setLoading] = useState(false);
 
@@ -51,7 +53,8 @@ export default function ZktRankingsPage() {
 				const res: any = await gqlMutate(RANKINGS_QUERY, {
 					eventId,
 					recordType,
-					limit: 100,
+					limit: topN,
+					mode,
 				});
 				if (!cancelled) setRows(res?.data?.zktAllTimeRankings || []);
 			} finally {
@@ -61,7 +64,7 @@ export default function ZktRankingsPage() {
 		return () => {
 			cancelled = true;
 		};
-	}, [eventId, recordType]);
+	}, [eventId, recordType, mode, topN]);
 
 	return (
 		<div className={b('rankings-page')}>
@@ -105,6 +108,42 @@ export default function ZktRankingsPage() {
 						{t('rankings_type_average')}
 					</button>
 				</div>
+
+				{/* recordranks "Top Persons / Top Results" toggle */}
+				<div role="tablist" style={{display: 'flex', gap: '0.5rem', alignItems: 'flex-end'}}>
+					<button
+						type="button"
+						role="tab"
+						aria-selected={mode === 'persons'}
+						className={b('filter-pill', {active: mode === 'persons'})}
+						onClick={() => setMode('persons')}
+					>
+						{t('rankings_mode_persons')}
+					</button>
+					<button
+						type="button"
+						role="tab"
+						aria-selected={mode === 'results'}
+						className={b('filter-pill', {active: mode === 'results'})}
+						onClick={() => setMode('results')}
+					>
+						{t('rankings_mode_results')}
+					</button>
+				</div>
+
+				<label>
+					<span style={{display: 'block', fontSize: 12, opacity: 0.7}}>{t('rankings_top_n')}</span>
+					<select
+						className={b('select')}
+						value={topN}
+						onChange={(e) => setTopN(parseInt(e.target.value, 10))}
+					>
+						<option value={10}>10</option>
+						<option value={50}>50</option>
+						<option value={100}>100</option>
+						<option value={1000}>1000</option>
+					</select>
+				</label>
 			</div>
 
 			{loading ? (

@@ -50,6 +50,7 @@ import AdminZktCompetitions from '../admin/zkt_competitions/AdminZktCompetitions
 import CompetitionDashboard from '../admin/zkt_competitions/CompetitionDashboard';
 import CreateZktCompetitionPage from '../admin/zkt_competitions/CreateZktCompetitionPage';
 import ZktCompetitionDetail from '../community/zkt_competitions/ZktCompetitionDetail';
+import ZktProjector from '../community/zkt_competitions/ZktProjector';
 import ZktCompetitorDetail from '../community/zkt_competitions/ZktCompetitorDetail';
 import ZktActivityDetail from '../community/zkt_competitions/ZktActivityDetail';
 import ZktRecordsPage from '../community/zkt_competitions/ZktRecordsPage';
@@ -212,6 +213,8 @@ export const routes: (PageContext | RedirectPath)[] = [
 	// ZKT Unofficial Competitions (public for SEO)
 	route('/community/zkt-competitions/:competitionId/competitors/:userId', App, Community, ZktCompetitorDetail, false),
 	route('/community/zkt-competitions/:competitionId/activities/:groupId', App, Community, ZktActivityDetail, false),
+	// Projector — fullscreen venue display (standalone, no nav)
+	route('/community/zkt-competitions/:competitionId/projector/:eventId/:roundNumber', null, App, ZktProjector, false, true, false, true),
 	route('/community/zkt-competitions/:competitionId/live/:eventId/:roundNumber', App, Community, ZktCompetitionDetail, false),
 	route('/community/zkt-competitions/:competitionId/live/:eventId', App, Community, ZktCompetitionDetail, false),
 	route('/community/zkt-competitions/:competitionId/live', App, Community, ZktCompetitionDetail, false),

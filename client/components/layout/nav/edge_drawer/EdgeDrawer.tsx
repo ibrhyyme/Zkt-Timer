@@ -309,6 +309,13 @@ export default function EdgeDrawer(props: Props) {
 			startY.current = e.touches[0].clientY;
 			locked.current = false;
 			horizontal.current = false;
+
+			// Yatay slider (orn. hassasiyet bari) uzerinde baslayan gesture'i
+			// close-swipe sayma — locked + !horizontal ile onMove tamamen pasif
+			// kalir, preventDefault cagrilmaz, slider native suruklenir.
+			if ((e.target as HTMLElement)?.closest?.('input[type="range"]')) {
+				locked.current = true;
+			}
 		}
 
 		function onMove(e: TouchEvent) {

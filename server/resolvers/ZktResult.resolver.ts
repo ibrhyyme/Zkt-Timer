@@ -7,6 +7,7 @@ import {
 	ZktResult,
 	ZktRound,
 	ZktScramble,
+	ZktCompetitorUser,
 	SubmitZktResultInput,
 	SubmitZktResultsBatchInput,
 	CreateZktRoundInput,
@@ -23,7 +24,7 @@ import {
 import {upsertZktResult, finalizeRound, markResultNoShow} from '../models/zkt_result';
 import {assertRoundTransition, revokeAdvancementCarry} from '../models/zkt_round';
 import {ensureScramblesForRound, regenerateScramblesForRound} from '../models/zkt_scramble';
-import {checkAndApplyRecords} from '../models/zkt_record';
+import {checkAndApplyRecords, rebuildRecordsForEvent} from '../models/zkt_record';
 import {emitZktResultUpdated, emitZktResultDeleted, emitZktRoundStatusChanged} from '../zkt_competition';
 
 @Resolver()
@@ -34,7 +35,8 @@ export class ZktResultResolver {
 		return getPrisma().zktResult.findMany({
 			where: {round_id: roundId},
 			orderBy: [{ranking: {sort: 'asc', nulls: 'last'}}, {created_at: 'asc'}],
-			include: {user: publicUserInclude},
+			// entered_by powers the double-check view's scoretaker filter.
+			include: {user: publicUserInclude, entered_by: publicUserInclude},
 		});
 	}
 
@@ -84,6 +86,12 @@ export class ZktResultResolver {
 			entered_by_id: context.user.id,
 		});
 
+		// Editing a result of an already-finalized round can invalidate or move
+		// records that were applied at finalize time.
+		if (round.status === 'FINISHED') {
+			await rebuildRecordsForEvent(round.comp_event.event_id);
+		}
+
 		emitZktResultUpdated(competitionId, {
 			roundId: input.roundId,
 			resultId: result.id,
@@ -125,6 +133,11 @@ export class ZktResultResolver {
 			saved.push(r);
 		}
 
+		// Same as single submit: batch edits on a finalized round invalidate records.
+		if (round.status === 'FINISHED' && saved.length > 0) {
+			await rebuildRecordsForEvent(round.comp_event.event_id);
+		}
+
 		for (const r of saved) {
 			emitZktResultUpdated(competitionId, {
 				roundId: input.roundId,
@@ -156,6 +169,10 @@ export class ZktResultResolver {
 		await assertCanModifyCompetition(context.user, competitionId);
 
 		await getPrisma().zktResult.delete({where: {id: resultId}});
+
+		// The deleted result may have held an NR (or shifted PR history) — the
+		// record table only ever grows, so rebuild this event from scratch.
+		await rebuildRecordsForEvent(result.round.comp_event.event_id);
 
 		emitZktResultDeleted(competitionId, {
 			roundId: result.round_id,
@@ -323,8 +340,200 @@ export class ZktResultResolver {
 			include: {results: true, groups: true},
 		});
 
+		// Reopening drops this round out of the FINISHED set — records that were
+		// applied at finalize must be recomputed without it.
+		await rebuildRecordsForEvent(round.comp_event.event_id);
+
 		emitZktRoundStatusChanged(competitionId, {roundId, status: 'ACTIVE'});
 		return updated;
+	}
+
+	// Candidates that can be added to a round (wca-live AddCompetitorDialog):
+	// round 1 → approved registrants of the event not yet in the round;
+	// round 2+ → previous round's ranked competitors not yet in this round,
+	// in ranking order (so the first entry is the next person in line).
+	@Authorized([Role.LOGGED_IN])
+	@Query(() => [ZktCompetitorUser])
+	async zktRoundAdvancementCandidates(
+		@Ctx() context: GraphQLContext,
+		@Arg('roundId') roundId: string
+	) {
+		const round = await getRoundWithCompetition(roundId);
+		if (!round) throw new GraphQLError(ErrorCode.NOT_FOUND);
+		const competitionId = round.comp_event.competition_id;
+		await assertCanModifyCompetition(context.user, competitionId);
+
+		const prisma = getPrisma();
+		const existing = await prisma.zktResult.findMany({
+			where: {round_id: roundId},
+			select: {user_id: true},
+		});
+		const existingIds = new Set(existing.map((e) => e.user_id));
+
+		if (round.round_number === 1) {
+			const regs = await prisma.zktRegistration.findMany({
+				where: {
+					competition_id: competitionId,
+					status: 'APPROVED',
+					events: {some: {comp_event_id: round.comp_event_id}},
+				},
+				include: {user: publicUserInclude},
+			});
+			return regs.filter((r) => !existingIds.has(r.user_id)).map((r) => r.user);
+		}
+
+		const prev = await prisma.zktRound.findFirst({
+			where: {
+				comp_event_id: round.comp_event_id,
+				round_number: round.round_number - 1,
+			},
+			include: {
+				results: {
+					where: {ranking: {not: null}},
+					orderBy: {ranking: 'asc'},
+					include: {user: publicUserInclude},
+				},
+			},
+		});
+		if (!prev) return [];
+		return prev.results.filter((r) => !existingIds.has(r.user_id)).map((r) => r.user);
+	}
+
+	// Late addition: create an empty result row so the competitor appears in
+	// the round (same shape as the advancement carry rows).
+	@Authorized([Role.LOGGED_IN])
+	@Mutation(() => ZktResult)
+	async addZktCompetitorToRound(
+		@Ctx() context: GraphQLContext,
+		@Arg('roundId') roundId: string,
+		@Arg('userId') userId: string
+	) {
+		const round = await getRoundWithCompetition(roundId);
+		if (!round) throw new GraphQLError(ErrorCode.NOT_FOUND);
+		const competitionId = round.comp_event.competition_id;
+		await assertCanModifyCompetition(context.user, competitionId);
+
+		const prisma = getPrisma();
+		const result = await prisma.zktResult.upsert({
+			where: {round_id_user_id: {round_id: roundId, user_id: userId}},
+			create: {round_id: roundId, user_id: userId, entered_by_id: context.user.id},
+			update: {},
+		});
+
+		// Keep the previous round's bookkeeping consistent for round 2+.
+		if (round.round_number > 1) {
+			await prisma.zktResult.updateMany({
+				where: {
+					user_id: userId,
+					round: {
+						comp_event_id: round.comp_event_id,
+						round_number: round.round_number - 1,
+					},
+				},
+				data: {proceeds: true},
+			});
+		}
+
+		emitZktResultUpdated(competitionId, {roundId, resultId: result.id, userId});
+
+		return prisma.zktResult.findUnique({
+			where: {id: result.id},
+			include: {user: publicUserInclude},
+		});
+	}
+
+	// Quit a competitor from a round (wca-live QuitCompetitorDialog). With
+	// `replaceWithNext`, the next ranked candidate from the previous round is
+	// pulled in automatically so the advancement count stays full.
+	@Authorized([Role.LOGGED_IN])
+	@Mutation(() => Boolean)
+	async quitZktCompetitorFromRound(
+		@Ctx() context: GraphQLContext,
+		@Arg('roundId') roundId: string,
+		@Arg('userId') userId: string,
+		@Arg('replaceWithNext') replaceWithNext: boolean
+	) {
+		const round = await getRoundWithCompetition(roundId);
+		if (!round) throw new GraphQLError(ErrorCode.NOT_FOUND);
+		const competitionId = round.comp_event.competition_id;
+		await assertCanModifyCompetition(context.user, competitionId);
+
+		const prisma = getPrisma();
+		const result = await prisma.zktResult.findUnique({
+			where: {round_id_user_id: {round_id: roundId, user_id: userId}},
+		});
+		if (!result) throw new GraphQLError(ErrorCode.NOT_FOUND);
+
+		await prisma.zktResult.delete({where: {id: result.id}});
+
+		if (round.round_number > 1) {
+			await prisma.zktResult.updateMany({
+				where: {
+					user_id: userId,
+					round: {
+						comp_event_id: round.comp_event_id,
+						round_number: round.round_number - 1,
+					},
+				},
+				data: {proceeds: false},
+			});
+		}
+
+		if (round.status === 'FINISHED') {
+			await rebuildRecordsForEvent(round.comp_event.event_id);
+		}
+
+		emitZktResultDeleted(competitionId, {
+			roundId,
+			resultId: result.id,
+			userId,
+		});
+
+		// Pull in the next person in line from the previous round.
+		if (replaceWithNext && round.round_number > 1) {
+			const existing = await prisma.zktResult.findMany({
+				where: {round_id: roundId},
+				select: {user_id: true},
+			});
+			const existingIds = new Set(existing.map((e) => e.user_id));
+			const prev = await prisma.zktRound.findFirst({
+				where: {
+					comp_event_id: round.comp_event_id,
+					round_number: round.round_number - 1,
+				},
+				include: {
+					results: {
+						where: {ranking: {not: null}},
+						orderBy: {ranking: 'asc'},
+					},
+				},
+			});
+			const candidate = prev?.results.find((r) => !existingIds.has(r.user_id));
+			if (candidate) {
+				const created = await prisma.zktResult.upsert({
+					where: {
+						round_id_user_id: {round_id: roundId, user_id: candidate.user_id},
+					},
+					create: {
+						round_id: roundId,
+						user_id: candidate.user_id,
+						entered_by_id: context.user.id,
+					},
+					update: {},
+				});
+				await prisma.zktResult.update({
+					where: {id: candidate.id},
+					data: {proceeds: true},
+				});
+				emitZktResultUpdated(competitionId, {
+					roundId,
+					resultId: created.id,
+					userId: candidate.user_id,
+				});
+			}
+		}
+
+		return true;
 	}
 
 	@Authorized([Role.LOGGED_IN])
