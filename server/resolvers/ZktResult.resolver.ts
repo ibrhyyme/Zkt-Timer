@@ -25,7 +25,78 @@ import {upsertZktResult, finalizeRound, markResultNoShow} from '../models/zkt_re
 import {assertRoundTransition, revokeAdvancementCarry} from '../models/zkt_round';
 import {ensureScramblesForRound, regenerateScramblesForRound} from '../models/zkt_scramble';
 import {checkAndApplyRecords, rebuildRecordsForEvent} from '../models/zkt_record';
+import ZktRoundFinishedNotification from '../resources/notification_types/zkt_round_finished';
+import {sendPushToUser} from '../services/push';
 import {emitZktResultUpdated, emitZktResultDeleted, emitZktRoundStatusChanged} from '../zkt_competition';
+
+// Human-readable event names for notification texts (server side has no access
+// to the client's ZKT_WCA_EVENTS list; keep these locale-neutral).
+const ZKT_EVENT_NAMES: Record<string, string> = {
+	'222': '2x2x2',
+	'333': '3x3x3',
+	'444': '4x4x4',
+	'555': '5x5x5',
+	'666': '6x6x6',
+	'777': '7x7x7',
+	'333oh': '3x3x3 OH',
+	'333bf': '3x3x3 BLD',
+	pyram: 'Pyraminx',
+	skewb: 'Skewb',
+	sq1: 'Square-1',
+	minx: 'Megaminx',
+	clock: 'Clock',
+};
+
+/**
+ * "Round finished" notifications to every ranked competitor (in-app + push) —
+ * fired after a delegate finalizes a round. Failures never break finalize.
+ */
+async function notifyZktRoundFinished(roundId: string): Promise<void> {
+	try {
+		const prisma = getPrisma();
+		const round = await prisma.zktRound.findUnique({
+			where: {id: roundId},
+			include: {
+				comp_event: {
+					include: {
+						competition: {select: {id: true, name: true}},
+						rounds: {select: {round_number: true}},
+					},
+				},
+			},
+		});
+		if (!round) return;
+		const maxRound = Math.max(...round.comp_event.rounds.map((r) => r.round_number));
+		const isFinal = round.round_number === maxRound;
+		const eventId = round.comp_event.event_id;
+
+		const results = await prisma.zktResult.findMany({
+			where: {round_id: roundId, ranking: {not: null}},
+			include: {user: {include: {settings: true}}},
+		});
+
+		for (const r of results) {
+			const notif = new ZktRoundFinishedNotification(
+				{user: r.user as any, triggeringUser: r.user as any, sendEmail: false},
+				{
+					competitionId: round.comp_event.competition.id,
+					competitionName: round.comp_event.competition.name,
+					eventId,
+					eventName: ZKT_EVENT_NAMES[eventId] || eventId,
+					roundNumber: round.round_number,
+					ranking: r.ranking as number,
+					advancing: r.proceeds,
+					isFinal,
+					locale: (r.user as any)?.settings?.locale,
+				}
+			);
+			await notif.send().catch(() => {});
+			await sendPushToUser(r.user_id, notif.subject(), notif.inAppMessage()).catch(() => {});
+		}
+	} catch {
+		// Notifications are best-effort.
+	}
+}
 
 @Resolver()
 export class ZktResultResolver {
@@ -219,6 +290,10 @@ export class ZktResultResolver {
 		}
 
 		emitZktRoundStatusChanged(competitionId, {roundId, status: 'FINISHED'});
+
+		// Fire-and-forget: "you placed Nth / you advance / podium" to every
+		// ranked competitor. Must never delay or break the finalize response.
+		void notifyZktRoundFinished(roundId);
 
 		return getPrisma().zktRound.findUnique({
 			where: {id: roundId},
