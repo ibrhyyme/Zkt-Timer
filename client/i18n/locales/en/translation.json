@@ -2792,15 +2792,15 @@
                 "desc": "Follow up to 5 competitors in any WCA competition. Receive real-time push notifications for results, round advancements, and podium finishes."
             },
             "ai_analysis": {
-                "title": "Smart cube AI analysis — Coming Soon",
+                "title": "Smart cube AI analysis",
                 "desc": "Analyze your smart cube data with AI. Automatically learn where you're losing time and which algorithms need improvement."
             },
             "pll_trainer": {
-                "title": "Advanced PLL recognition Trainer — Coming Soon",
+                "title": "Advanced PLL recognition Trainer",
                 "desc": "Learn all PLL cases with visual recognition. Random case generation, time tracking, and a smart training mode focused on your weak spots."
             },
             "cross_trainer": {
-                "title": "Advanced Cross / X-Cross Trainer — Coming Soon",
+                "title": "Advanced Cross / X-Cross Trainer",
                 "desc": "Advanced trainer for learning cross and extended cross solutions step by step. Discover the most efficient paths and boost your speed."
             },
             "early_access": {

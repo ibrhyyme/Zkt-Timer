@@ -2792,15 +2792,15 @@
                 "desc": "WCA yarışmalarında 5 yarışmacıya kadar takibe al. Sonuçlar, tur geçişleri ve podyum başarıları anlık bildirim olarak telefonuna ulaşır."
             },
             "ai_analysis": {
-                "title": "Akıllı küp AI analizi — Yakında",
+                "title": "Akıllı küp AI analizi",
                 "desc": "Akıllı küp verilerini yapay zeka ile analiz et. Hangi aşamada zaman kaybettiğini, hangi algoritmaları geliştirmen gerektiğini otomatik olarak öğren."
             },
             "pll_trainer": {
-                "title": "Gelişmiş PLL tanıma Trainer — Yakında",
+                "title": "Gelişmiş PLL tanıma Trainer",
                 "desc": "Tüm PLL vakalarını görsel tanıma ile öğren. Rastgele vaka üretimi, süre takibi ve zayıf noktalarına odaklanan akıllı antrenman modu."
             },
             "cross_trainer": {
-                "title": "Gelişmiş Cross / X-Cross Trainer — Yakında",
+                "title": "Gelişmiş Cross / X-Cross Trainer",
                 "desc": "Cross ve extended cross çözümlerini adım adım öğrenmek için gelişmiş antrenman aracı. En verimli çözüm yollarını keşfet, hızını artır."
             },
             "early_access": {

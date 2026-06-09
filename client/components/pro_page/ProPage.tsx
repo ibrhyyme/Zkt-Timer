@@ -89,9 +89,11 @@ const PRO_FEATURES = [
 	'pro_badge',
 	'stats_customization',
 	'solve_sharing',
+	'early_access',
+	'ai_analysis',
+	'pll_trainer',
+	'cross_trainer',
 ] as const;
-
-const UPCOMING_FEATURES = ['early_access', 'ai_analysis', 'pll_trainer', 'cross_trainer'] as const;
 
 const FEATURE_ICONS: Record<string, React.ElementType> = {
 	sync: CloudArrowUp,
@@ -122,15 +124,15 @@ const TESTIMONIALS = [
 ];
 
 
-function FeatureRow({featureKey, upcoming}: {featureKey: string; upcoming?: boolean}) {
+function FeatureRow({featureKey}: {featureKey: string}) {
 	const [open, setOpen] = useState(false);
 	const {t} = useTranslation();
 	const Icon = FEATURE_ICONS[featureKey];
 
 	return (
-		<li className={b('feature', {open, upcoming})}>
+		<li className={b('feature', {open})}>
 			<button type="button" className={b('feature-row')} onClick={() => setOpen(!open)}>
-				<span className={b('feat-icon', {soon: !!upcoming})}>
+				<span className={b('feat-icon')}>
 					{Icon
 						? <Icon weight="fill" />
 						: <Check weight="bold" />
@@ -138,7 +140,6 @@ function FeatureRow({featureKey, upcoming}: {featureKey: string; upcoming?: bool
 				</span>
 				<span className={b('feature-label')}>
 					{t(`pro_page.features.${featureKey}.title`)}
-					{upcoming && <span className={b('feat-soon')}>Coming soon</span>}
 				</span>
 				<CaretDown weight="bold" className={b('feature-caret')} />
 			</button>
@@ -413,7 +414,7 @@ function ProPageContent() {
 		return t('pro_page.iap.purchase_cta');
 	}
 
-	const totalFeatures = PRO_FEATURES.length + UPCOMING_FEATURES.length;
+	const totalFeatures = PRO_FEATURES.length;
 
 	return (
 		<div className={b()}>
@@ -675,9 +676,6 @@ function ProPageContent() {
 								<ul className={b('features-col')}>
 									{PRO_FEATURES.slice(8).map((key) => (
 										<FeatureRow key={key} featureKey={key} />
-									))}
-									{UPCOMING_FEATURES.map((key) => (
-										<FeatureRow key={key} featureKey={key} upcoming />
 									))}
 								</ul>
 							</div>
