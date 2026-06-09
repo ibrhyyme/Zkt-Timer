@@ -2792,15 +2792,15 @@
                 "desc": "在任何 WCA 比赛中关注最多 5 名选手。实时接收成绩、晋级和领奖台结果的推送通知。"
             },
             "ai_analysis": {
-                "title": "智能魔方 AI 分析 — 即将推出",
+                "title": "智能魔方 AI 分析",
                 "desc": "通过 AI 分析您的智能魔方数据。自动了解您在哪里浪费时间以及哪些公式需要改进。"
             },
             "pll_trainer": {
-                "title": "高级 PLL 识别训练器 — 即将推出",
+                "title": "高级 PLL 识别训练器",
                 "desc": "通过视觉识别学习所有 PLL 情况。随机案例生成、时间追踪和专注于您薄弱环节的智能训练模式。"
             },
             "cross_trainer": {
-                "title": "高级 Cross / X-Cross 训练器 — 即将推出",
+                "title": "高级 Cross / X-Cross 训练器",
                 "desc": "用于逐步学习 Cross 和扩展 Cross 解法的先进训练器。发现最高效的路径并提升您的速度。"
             },
             "early_access": {

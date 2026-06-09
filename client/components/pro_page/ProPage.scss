@@ -772,10 +772,6 @@ $radius-sm:   10px;
 		&--open {
 			background: rgba(139, 120, 255, 0.08);
 		}
-
-		&--upcoming {
-			opacity: 0.8;
-		}
 	}
 
 	&__feature-row {
@@ -807,12 +803,6 @@ $radius-sm:   10px;
 			width: 11px;
 			height: 11px;
 		}
-
-		&--soon {
-			background: rgba(var(--text-color), 0.04);
-			border-color: rgba(var(--text-color), 0.08);
-			color: rgba(var(--text-color), 0.40);
-		}
 	}
 
 	&__feature-label {
@@ -824,18 +814,6 @@ $radius-sm:   10px;
 		align-items: center;
 		gap: 6px;
 		flex-wrap: wrap;
-	}
-
-	&__feat-soon {
-		font-family: monospace;
-		font-size: 9px;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
-		color: rgba(var(--text-color), 0.40);
-		padding: 2px 6px;
-		border-radius: 4px;
-		background: rgba(var(--text-color), 0.04);
-		border: 1px solid rgba(var(--text-color), 0.07);
 	}
 
 	&__feature-caret {

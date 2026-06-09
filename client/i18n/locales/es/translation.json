@@ -2792,15 +2792,15 @@
                 "desc": "Sigue hasta 5 competidores en cualquier competencia WCA. Recibe notificaciones en tiempo real de resultados, avances de ronda y podios."
             },
             "ai_analysis": {
-                "title": "Análisis AI de cubo inteligente — Próximamente",
+                "title": "Análisis AI de cubo inteligente",
                 "desc": "Analiza los datos de tu cubo inteligente con IA. Aprende automáticamente dónde pierdes tiempo y qué algoritmos necesitas mejorar."
             },
             "pll_trainer": {
-                "title": "Trainer avanzado de reconocimiento PLL — Próximamente",
+                "title": "Trainer avanzado de reconocimiento PLL",
                 "desc": "Aprende todos los casos PLL con reconocimiento visual. Generación aleatoria de casos, seguimiento de tiempo y modo de entrenamiento inteligente enfocado en tus puntos débiles."
             },
             "cross_trainer": {
-                "title": "Trainer avanzado Cross / X-Cross — Próximamente",
+                "title": "Trainer avanzado Cross / X-Cross",
                 "desc": "Herramienta de entrenamiento avanzada para aprender soluciones de cross y extended cross paso a paso. Descubre los caminos más eficientes y aumenta tu velocidad."
             },
             "early_access": {
