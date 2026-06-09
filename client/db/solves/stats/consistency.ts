@@ -24,28 +24,23 @@ export function getSolveCountByDateData(filter: FilterSolvesOptions): BarGraphDa
 		}
 	);
 
-	let solveIndex = 0;
+	// Bucket each solve by its own day key. Order-independent: a single solve
+	// whose started/ended straddle midnight (e.g. a timer left running) can no
+	// longer jam a sequential cursor and zero out every following day.
+	const counts = new Map<string, number>();
+	for (const solve of solves) {
+		const key = dayjs(solve.started_at).format('M/D');
+		counts.set(key, (counts.get(key) || 0) + 1);
+	}
+
 	const data: BarGraphData[] = [];
 	const tempStart = new Date(start);
 
 	while (tempStart.getTime() < end.getTime()) {
-		const tempEnd = new Date(tempStart);
-		tempEnd.setHours(23, 59, 59, 999);
-
-		let solveCount = 0;
-		while (solveIndex < solves.length) {
-			const solve = solves[solveIndex];
-			if (solve.started_at > tempStart.getTime() && solve.ended_at < tempEnd.getTime()) {
-				solveCount++;
-				solveIndex++;
-			} else {
-				break;
-			}
-		}
-
+		const key = dayjs(tempStart).format('M/D');
 		data.push({
-			x: dayjs(tempStart).format('M/D'),
-			y: solveCount,
+			x: key,
+			y: counts.get(key) || 0,
 		});
 		tempStart.setDate(tempStart.getDate() + 1);
 	}
