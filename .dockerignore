@@ -10,3 +10,8 @@ migrations
 .github
 npm-debug.log
 .DS_Store
+public/uploads
+server/config/firebase-service-account.json
+ios
+android
+Referans

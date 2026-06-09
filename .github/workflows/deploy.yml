@@ -28,8 +28,8 @@ jobs:
           git fetch --all
           git reset --hard origin/main
 
-          # 3. Docker temizlik (disk dolmasın)
-          docker builder prune -af
+          # 3. Docker cleanup (cap cache at 20GB instead of wiping - keeps yarn/apt layers warm)
+          docker builder prune -f --keep-storage 20g
           docker image prune -af
 
           # 4. RELEASE_NAME'i git SHA olarak set et (cache-busting icin)
