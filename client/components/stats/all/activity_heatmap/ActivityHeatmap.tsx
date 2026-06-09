@@ -66,7 +66,7 @@ export default function ActivityHeatmap() {
 					continue;
 				}
 
-				const key = dayjs(cursor).format('M/D');
+				const key = dayjs(cursor).format('YYYY-M-D');
 				const count = dataMap.get(key) || 0;
 				const month = cursor.getMonth();
 

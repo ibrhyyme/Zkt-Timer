@@ -43,5 +43,13 @@ export function getChartData(filter: FilterSolvesOptions) {
 		index += 1;
 	}
 
+	// Flush the trailing partial bucket so the most recent solves still chart.
+	if (bucketSize > 0) {
+		data.push({
+			index,
+			value: runningTotal / bucketSize,
+		});
+	}
+
 	return data;
 }

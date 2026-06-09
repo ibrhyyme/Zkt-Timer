@@ -110,7 +110,7 @@ export default function SubStats(props: Props) {
 				small
 				center
 				icon={<Eye weight="bold" />}
-				title="Solve Views"
+				title={t('stats_page.solve_views')}
 				value={stats.solve_views || 0}
 				color={NEUTRAL}
 			/>
@@ -118,7 +118,7 @@ export default function SubStats(props: Props) {
 				small
 				center
 				icon={<Eye weight="bold" />}
-				title="Profile Views"
+				title={t('stats_page.profile_views')}
 				value={stats.profile_views || 0}
 				color={NEUTRAL}
 			/>

@@ -125,7 +125,7 @@
             "peak_hour_sub": "{{value}} solves at this time",
             "peak_hour_empty": "No data yet",
             "best_day": "Best day",
-            "best_day_sub": "Average Ao12 {{time}}",
+            "best_day_sub": "Average {{time}}",
             "best_day_empty": "Not enough data",
             "sessions": "Active sessions",
             "sessions_sub": "Avg {{avg}} solves/session"
@@ -1665,6 +1665,8 @@
         "solve_streak": "Solve Streak",
         "avg_solves_per_session": "Avg. Solves / Session",
         "first_solve": "First Solve",
+        "solve_views": "Solve Views",
+        "profile_views": "Profile Views",
         "solve_times": "Solve Times",
         "overview": "Overview",
         "community": "Community",

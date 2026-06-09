@@ -8,7 +8,7 @@ import {
 import { gqlQuery, removeTypename } from '../api';
 import { ensureLocalDefaultSession, initSessionCollection, initSessionDb, reconcileSessionDb } from '../../db/sessions/init';
 import { Dispatch } from 'redux';
-import { clearOfflineData, initOfflineData, updateOfflineHash } from './offline';
+import { clearOfflineData, initOfflineData, setDbLoadDegraded, updateOfflineHash } from './offline';
 import { initSettingsDb, SettingValue } from '../../db/settings/init';
 import { getDefaultSettings, viewportDependentKeys, isMobileViewport, AllSettings } from '../../db/settings/query';
 import { getLokiDb, initLokiDb } from '../../db/lokijs';
@@ -78,7 +78,7 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 			// passed=false → IndexedDB failed to load on initial loadDatabase (timeout/err/missing collection).
 			// Retry loading; if failed, flag is PRESERVED.
 			if (!passed) {
-				passed = await tryLoadExistingDb();
+				passed = (await tryLoadExistingDb()) === 'loaded';
 			}
 
 			if (passed) {
@@ -103,13 +103,20 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 
 		if (!passed) {
 			// Delta sync: fetch only diff while preserving existing data in IndexedDB
+			let loadResult: LocalDbLoadResult = 'empty';
 			if (canSyncUser && !needsMigration) {
-				hasLocalData = await tryLoadExistingDb();
+				loadResult = await tryLoadExistingDb();
 			}
+			hasLocalData = loadResult === 'loaded';
 
 			if (!hasLocalData) {
-				// migrationSkipped: don't clear local IndexedDB (data will be retried next launch)
-				if (!migrationSkipped) {
+				if (loadResult === 'error') {
+					// Slow or failed load is not corruption: keep the disk snapshot
+					// intact, lock persistence for this session and refetch into a
+					// fresh in-memory instance.
+					setDbLoadDegraded(true);
+				} else if (!migrationSkipped) {
+					// migrationSkipped: don't clear local IndexedDB (data will be retried next launch)
 					try {
 						await clearOfflineData();
 					} catch (e) {
@@ -232,38 +239,42 @@ const SYNC_SOLVE_COUNT = 500;
 const DELTA_SYNC_BATCH_SIZE = 500;
 const VISIBILITY_SYNC_DEBOUNCE_MS = 10_000;
 
+type LocalDbLoadResult = 'loaded' | 'empty' | 'error';
+
 /**
  * Attempts to load data from existing IndexedDB into LokiJS.
  * Used to preserve old data even on cache MISS (before delta sync).
+ *
+ * Distinguishes "genuinely no local data" ('empty') from "load failed or timed
+ * out" ('error') — callers must only clear the disk on 'empty'. A slow load is
+ * not corruption.
  */
-async function tryLoadExistingDb(): Promise<boolean> {
+async function tryLoadExistingDb(): Promise<LocalDbLoadResult> {
 	try {
 		initLokiDb({ autoload: false });
 
-		const loaded = await new Promise<boolean>((resolve) => {
-			const timeout = setTimeout(() => resolve(false), 2000);
+		return await new Promise<LocalDbLoadResult>((resolve) => {
+			const timeout = setTimeout(() => resolve('error'), 15000);
 
 			getLokiDb().loadDatabase(undefined, (err) => {
 				clearTimeout(timeout);
 				if (err) {
-					resolve(false);
+					resolve('error');
 					return;
 				}
 
 				const solves = getLokiDb().getCollection('solves');
 				const sessions = getLokiDb().getCollection('sessions');
 				if (solves && sessions && solves.count() > 0) {
-					resolve(true);
+					resolve('loaded');
 				} else {
-					resolve(false);
+					resolve('empty');
 				}
 			});
 		});
-
-		return loaded;
 	} catch (e) {
 		console.error('[DeltaSync] tryLoadExistingDb failed:', e);
-		return false;
+		return 'error';
 	}
 }
 
@@ -289,6 +300,14 @@ async function deltaSyncSolves(): Promise<boolean> {
 		if (!solveDb) return false;
 		const localSolves = solveDb.find();
 		const localIds = new Set(localSolves.map((s) => s.id));
+
+		// An empty id list alongside substantial local data is a suspicious
+		// response — skip reconciliation instead of deleting everything local.
+		// Genuine local-only solves are uploaded later by backfillLocalDataToServer.
+		if (serverIds.size === 0 && localIds.size > 50) {
+			console.error(`[DeltaSync] Server returned 0 ids while ${localIds.size} local solves exist — skipping`);
+			return true;
+		}
 
 		// 3. Get pending mutations from offline queue (race condition prevention)
 		let pendingCreateIds = new Set<string>();
@@ -429,19 +448,33 @@ async function syncNewSolves() {
 		}
 
 		// Detect and delete stale solves (may have been deleted from another device)
-		const serverIds = new Set(serverSolves.map((s) => s.id));
 		const solveDb = getSolveDb();
 		if (!solveDb) return;
+
+		// An empty response is indistinguishable from a failed/partial one —
+		// never treat it as "server has no solves" and wipe local data.
+		if (serverSolves.length === 0) return;
+
+		const serverIds = new Set(serverSolves.map((s) => s.id));
 
 		let stale: Solve[];
 		if (serverSolves.length < SYNC_SOLVE_COUNT) {
 			// Server has fewer than 500 solves — check all local solves
 			stale = solveDb.find().filter((s) => !serverIds.has(s.id));
 		} else {
-			// Server has 500+ solves — only check recent 500's time range
-			const oldestServerTime = parseInt(String(serverSolves[serverSolves.length - 1].started_at), 10);
+			// Server has 500+ solves — only check the recent window. The list is
+			// ordered by created_at (not started_at), so take the true minimum.
+			const oldestServerTime = Math.min(...serverSolves.map((s) => parseInt(String(s.started_at), 10)));
 			const recentLocal = solveDb.find({ started_at: { $gte: oldestServerTime } });
 			stale = recentLocal.filter((s) => !serverIds.has(s.id));
+		}
+
+		// Guard against partial server responses: deleting a large share of the
+		// local DB in one sweep is almost certainly a bad payload, not real deletes.
+		const localCount = solveDb.count();
+		if (stale.length > 50 && stale.length > localCount * 0.2) {
+			console.error(`[Sync] Refusing to delete ${stale.length}/${localCount} local solves — suspicious server response`);
+			return;
 		}
 
 		if (stale.length > 0) {
@@ -526,9 +559,14 @@ export async function initAllSolves() {
 		const res = await gqlQuery<{ solves: Solve[] }>(query, { take: 0, skip: 0 });
 		const solves = res.data.solves;
 		initSolveDb(solves);
+		// Full dataset is in RAM — safe to persist again.
+		setDbLoadDegraded(false);
 	} catch (e) {
 		console.error("Failed to load solves", e);
-		initSolveDb([]);
+		// Keep whatever is already in RAM and leave persistence locked: wiping
+		// here would let the next save overwrite the disk with an empty set.
+		setDbLoadDegraded(true);
+		initSolvesCollection();
 	}
 }
 

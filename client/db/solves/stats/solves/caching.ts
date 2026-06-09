@@ -30,13 +30,16 @@ export type SolveStat = SolveCacheKey & {
 type FilterSolveStats = LokiQuery<SolveStat>;
 
 function cleanFilterSolvesOptions(filter: FilterSolvesOptions) {
-	for (const key of Object.keys(filter)) {
-		if (filter[key] === undefined || filter[key] === null) {
-			delete filter[key];
+	// Work on a copy — deleting keys on the caller's filter object would leak
+	// the mutation back into reused filterOptions.
+	const copy: FilterSolvesOptions = {...filter};
+	for (const key of Object.keys(copy)) {
+		if (copy[key] === undefined || copy[key] === null) {
+			delete copy[key];
 		}
 	}
 
-	return flatten(filter);
+	return flatten(copy);
 }
 
 function getCacheKeyString(cacheKey: SolveCacheKey) {

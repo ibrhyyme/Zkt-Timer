@@ -29,7 +29,7 @@ export function getSolveCountByDateData(filter: FilterSolvesOptions): BarGraphDa
 	// longer jam a sequential cursor and zero out every following day.
 	const counts = new Map<string, number>();
 	for (const solve of solves) {
-		const key = dayjs(solve.started_at).format('M/D');
+		const key = dayjs(solve.started_at).format('YYYY-M-D');
 		counts.set(key, (counts.get(key) || 0) + 1);
 	}
 
@@ -37,7 +37,7 @@ export function getSolveCountByDateData(filter: FilterSolvesOptions): BarGraphDa
 	const tempStart = new Date(start);
 
 	while (tempStart.getTime() < end.getTime()) {
-		const key = dayjs(tempStart).format('M/D');
+		const key = dayjs(tempStart).format('YYYY-M-D');
 		data.push({
 			x: key,
 			y: counts.get(key) || 0,

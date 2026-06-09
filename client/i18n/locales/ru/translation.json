@@ -125,7 +125,7 @@
             "peak_hour_sub": "{{value}} решений в этот час",
             "peak_hour_empty": "Пока нет данных",
             "best_day": "Лучший день",
-            "best_day_sub": "Средний Ao12 {{time}}",
+            "best_day_sub": "В среднем {{time}}",
             "best_day_empty": "Недостаточно данных",
             "sessions": "Активные сессии",
             "sessions_sub": "Ср. {{avg}} решений/сессия"
@@ -1665,6 +1665,8 @@
         "solve_streak": "Серия сборок",
         "avg_solves_per_session": "Среднее сборок / сессия",
         "first_solve": "Первая сборка",
+        "solve_views": "Просмотры сборок",
+        "profile_views": "Просмотры профиля",
         "solve_times": "Времена сборок",
         "overview": "Обзор",
         "community": "Сообщество",

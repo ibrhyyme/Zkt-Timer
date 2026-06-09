@@ -45,8 +45,11 @@ export function getTimeDistro(filter: FilterSolvesOptions, buckets: number) {
 		const bucketMax = bucketMin + bucketSize;
 
 		let freq = 0;
+		// bucketSize rounding can leave the slowest solve past the last bucketMax;
+		// the final bucket absorbs the remainder so no solve goes uncounted.
+		const isLastBucket = i === buckets - 1;
 		for (let k = solveStart; k < solves.length; k += 1) {
-			if (solves[k].time < bucketMax) {
+			if (isLastBucket || solves[k].time < bucketMax) {
 				freq += 1;
 			} else {
 				solveStart = k;
