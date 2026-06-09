@@ -76,10 +76,11 @@ function generateScrambleForCubeType(cubeType: string): string {
 
 // Create a new room
 export async function createRoom(input: CreateFriendlyRoomInput, user: PublicUserAccount): Promise<FriendlyRoomData> {
-    // Hash password if provided
+    // Hash password if provided. Cap length before bcrypt (bounds CPU input) — sliced
+    // symmetrically on join, matching the room-name truncation convention.
     let hashedPassword = null;
     if (input.password) {
-        hashedPassword = await bcrypt.hash(input.password, 10);
+        hashedPassword = await bcrypt.hash(input.password.slice(0, FriendlyRoomConst.MAX_PASSWORD_LENGTH), 10);
     }
 
     const cubeType = normalizeCubeType(input.cube_type);
@@ -253,7 +254,7 @@ export async function addParticipant(
         if (!password) {
             throw new Error('Password required');
         }
-        const isValid = await bcrypt.compare(password, room.password);
+        const isValid = await bcrypt.compare(password.slice(0, FriendlyRoomConst.MAX_PASSWORD_LENGTH), room.password);
         if (!isValid) {
             throw new Error('Invalid password');
         }
@@ -490,7 +491,7 @@ export async function updateRoom(
     if (updates.name) data.name = updates.name.slice(0, FriendlyRoomConst.MAX_ROOM_NAME_LENGTH);
     if (updates.is_private !== undefined) data.is_private = updates.is_private;
     if (updates.password && updates.password.length > 0) {
-        data.password = await bcrypt.hash(updates.password, 10);
+        data.password = await bcrypt.hash(updates.password.slice(0, FriendlyRoomConst.MAX_PASSWORD_LENGTH), 10);
     } else if (updates.is_private === false) {
         // Clear password if switching to public
         data.password = null;

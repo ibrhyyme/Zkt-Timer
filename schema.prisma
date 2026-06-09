@@ -21,6 +21,8 @@ model UserAccount {
   last_name          String
   username           String?     @unique
   username_changed_at DateTime?
+  // Session epoch: JWTs created before this timestamp are rejected (set on password change/reset to revoke all other sessions)
+  tokens_valid_after DateTime?
   verified           Boolean     @default(false)
   email_verified     Boolean     @default(false)
   banned_forever     Boolean     @default(false)

@@ -218,6 +218,9 @@ export async function updateUserAccountPassword(userId: string, password: string
 		},
 		data: {
 			password: hashedPassword,
+			// Revoke all existing sessions: JWTs minted before now are rejected in getMe.
+			// The caller re-issues a fresh cookie so the current session stays valid.
+			tokens_valid_after: new Date(),
 		},
 	});
 }

@@ -15,7 +15,7 @@ import { extractIp } from '../util/request';
 import { sendEmailWithTemplate } from '../services/ses';
 import { createSetting } from '../models/settings';
 import { createDefaultSession } from '../models/session';
-import { checkLoggedIn } from '../util/auth';
+import { checkLoggedIn, getJwtString, setSessionCookie } from '../util/auth';
 import { checkPassword, hashPassword } from '../util/password';
 import { createNotificationPreference } from '../models/notification_preference';
 import { createEmailVerification } from '../models/email_verification';
@@ -113,6 +113,12 @@ export const mutateActions = {
 		const lastNameError = validateName(last_name, 'Soyad');
 		if (lastNameError) {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, lastNameError);
+		}
+
+		// Server-side password length check (client validation is bypassable via direct GraphQL).
+		// Matches the >= 8 enforced on setUserPassword / forgot-password reset.
+		if (!password || password.length < 8) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Sifre en az 8 karakter olmalidir');
 		}
 
 		const existingUser = await getUserByEmail(email);
@@ -295,7 +301,7 @@ export const mutateActions = {
 		return updated;
 	},
 
-	updateUserPassword: async (_: any, { old_password, new_password }: UpdatePasswordInput, { user }: GraphQLContext) => {
+	updateUserPassword: async (_: any, { old_password, new_password }: UpdatePasswordInput, { req, res, user }: GraphQLContext) => {
 		checkLoggedIn(user);
 
 		// Brute force / bcrypt CPU DoS korumasi — authenticated da olsa eski sifre deneme-yanilmasini sinirla
@@ -310,10 +316,18 @@ export const mutateActions = {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Incorrect old password');
 		}
 
-		return await updateUserAccountPassword(user.id, new_password);
+		if (!new_password || new_password.length < 8) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Sifre en az 8 karakter olmalidir');
+		}
+
+		const updated = await updateUserAccountPassword(user.id, new_password);
+		// Password change revokes all sessions (tokens_valid_after bumped) — re-issue the
+		// current session's cookie so the active tab stays logged in; other devices are dropped.
+		setSessionCookie(req, res, getJwtString(updated));
+		return updated;
 	},
 
-	setUserPassword: async (_: any, { new_password }: { new_password: string }, { user }: GraphQLContext) => {
+	setUserPassword: async (_: any, { new_password }: { new_password: string }, { req, res, user }: GraphQLContext) => {
 		checkLoggedIn(user);
 
 		const rl = await checkRateLimit(`account_set_pw:user:${user.id}`, 10, 900);
@@ -330,7 +344,10 @@ export const mutateActions = {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Sifre en az 8 karakter olmalidir');
 		}
 
-		return await updateUserAccountPassword(user.id, new_password);
+		const updated = await updateUserAccountPassword(user.id, new_password);
+		// tokens_valid_after is bumped on every password write — re-issue the current cookie.
+		setSessionCookie(req, res, getJwtString(updated));
+		return updated;
 	},
 
 	deleteUserAccount: async (_: any, params: any, { user }: GraphQLContext) => {

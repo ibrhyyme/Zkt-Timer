@@ -18,6 +18,14 @@ const REVOKED_JWT_KEY_PREFIX = 'revoked_jwt:';
 // 90 days in seconds — revoke entry expires after this duration (token already invalid by then)
 const JWT_REVOKE_TTL_SECONDS = 90 * 24 * 60 * 60;
 
+// Session epoch check: a JWT minted before the account's tokens_valid_after is rejected.
+// Used to revoke all sessions on password change/reset. Tokens lacking createdAt (legacy)
+// or accounts without the epoch (never changed password) are treated as valid (fail-open).
+function isTokenBeforeEpoch(tokenCreatedAtMs: number | undefined, tokensValidAfter: Date | string | null | undefined): boolean {
+	if (!tokensValidAfter || !tokenCreatedAtMs) return false;
+	return tokenCreatedAtMs < new Date(tokensValidAfter).getTime();
+}
+
 async function isJwtRevoked(jti: string | undefined): Promise<boolean> {
 	if (!jti) return false; // Old JWTs lack jti — cannot be revoked (backward compatibility)
 	try {
@@ -67,6 +75,11 @@ export async function getMe(req: Request) {
 			const me = await getUserByIdWithProfile(output.user_id, true);
 
 			if (!me) {
+				return null;
+			}
+
+			// Reject sessions issued before a password change/reset
+			if (isTokenBeforeEpoch(output.createdAt, (me as any).tokens_valid_after)) {
 				return null;
 			}
 
@@ -139,6 +152,11 @@ export async function getMeWithCookieString(cookies: string | any): Promise<User
 
 			const user = await getUserById(output.user_id);
 			if (!user) {
+				return null;
+			}
+
+			// Reject sessions issued before a password change/reset
+			if (isTokenBeforeEpoch(output.createdAt, (user as any).tokens_valid_after)) {
 				return null;
 			}
 
