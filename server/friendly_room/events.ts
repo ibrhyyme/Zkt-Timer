@@ -675,6 +675,18 @@ export function listenForFriendlyRoomEvents(client: Socket) {
             if (success) {
                 const socketRoom = getFriendlyRoomSocketRoom(roomId);
 
+                // Drop the kicked user's socket from the room so it stops receiving broadcasts
+                // (scrambles/solves/chat) — DB removal alone leaves the socket subscribed.
+                // Read the session before clearing it (clear removes the socketId mapping).
+                const kickedSession = await getActiveSession(targetUserId);
+                if (kickedSession?.socketId) {
+                    try {
+                        io().in(kickedSession.socketId).socketsLeave(socketRoom);
+                    } catch (e) {
+                        // Socket may already be gone — no problem
+                    }
+                }
+
                 // Force clean the kicked user's active session (so they can join a new room immediately)
                 await clearActiveSession(targetUserId);
 
@@ -709,6 +721,18 @@ export function listenForFriendlyRoomEvents(client: Socket) {
             const success = await banParticipant(roomId, user.id, targetUserId, user.admin === true);
             if (success) {
                 const socketRoom = getFriendlyRoomSocketRoom(roomId);
+
+                // Drop the banned user's socket from the room so it stops receiving broadcasts.
+                // Without this the banned socket stays subscribed and keeps getting scrambles/solves/chat.
+                // Read the session before clearing it (clear removes the socketId mapping).
+                const bannedSession = await getActiveSession(targetUserId);
+                if (bannedSession?.socketId) {
+                    try {
+                        io().in(bannedSession.socketId).socketsLeave(socketRoom);
+                    } catch (e) {
+                        // Socket may already be gone — no problem
+                    }
+                }
 
                 // Force clean the banned user's active session
                 await clearActiveSession(targetUserId);

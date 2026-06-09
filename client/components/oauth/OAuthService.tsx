@@ -21,6 +21,17 @@ export default function OAuthService() {
 	const service = LINKED_SERVICES[integrationType];
 	const [conflict, setConflict] = useState<ConflictData | null>(null);
 
+	// Only allow internal-path redirects from the OAuth `state` param — an attacker can craft
+	// the authorize URL with state=https://evil.com (or javascript:...) and the victim's own
+	// consent round-trips it back here. Reject anything that isn't a same-origin path.
+	function safeRedirectTarget(state: string | null): string {
+		const fallback = '/account/linked-accounts';
+		if (!state || !state.startsWith('/') || state.startsWith('//')) {
+			return fallback;
+		}
+		return state;
+	}
+
 	useEffect(() => {
 		const urlParams = new URLSearchParams(window.location.search);
 		const code = urlParams.get('code');
@@ -38,8 +49,7 @@ export default function OAuthService() {
 			integrationType,
 		})
 			.then(() => {
-				const state = urlParams.get('state');
-				window.location.href = state || '/account/linked-accounts';
+				window.location.href = safeRedirectTarget(urlParams.get('state'));
 			})
 			.catch((e) => {
 				const msg = e?.graphQLErrors?.[0]?.message || e?.message || '';
@@ -57,8 +67,7 @@ export default function OAuthService() {
 
 				// If already linked, silently redirect
 				if (msg.includes('already linked')) {
-					const state = urlParams.get('state');
-					window.location.href = state || '/account/linked-accounts';
+					window.location.href = safeRedirectTarget(urlParams.get('state'));
 					return;
 				}
 				toastError(msg || t('integration.oauth_error'));

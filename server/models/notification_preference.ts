@@ -1,6 +1,8 @@
 import {v4 as uuid} from 'uuid';
 import {getPrisma} from '../database';
 import {UserAccount} from '../schemas/UserAccount.schema';
+import GraphQLError from '../util/graphql_error';
+import {ErrorCode} from '../constants/errors';
 
 const GDPR_COUNTRY_CODES = [
 	'AT',
@@ -72,7 +74,15 @@ export async function createNotificationPreference(user: UserAccount) {
 	});
 }
 
+// Only user-toggleable boolean preference columns. The key is client-supplied, so it must
+// be whitelisted before reaching the Prisma `data` object (don't pass arbitrary input through).
+const ALLOWED_PREFERENCE_KEYS = ['marketing_emails', 'membership_granted'];
+
 export async function setNotificationPreference(user: UserAccount, key: string, value: boolean) {
+	if (!ALLOWED_PREFERENCE_KEYS.includes(key)) {
+		throw new GraphQLError(ErrorCode.BAD_INPUT, 'Invalid notification preference');
+	}
+
 	const np = await getOrCreateNotificationPreferences(user);
 
 	return await getPrisma().notificationPreference.update({

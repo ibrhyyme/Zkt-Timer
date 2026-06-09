@@ -60,7 +60,9 @@ export default function IntegrationService(props: Props) {
 	function getServiceUri(ser: LinkedServiceData) {
 		const base = ser.authEndpoint;
 		const scope = ser.scope.join(' ');
-		const redirectUri = `${window.origin}/oauth/${integrationType}`;
+		// Guard window for SSR — restricted account routes are rendered server-side via renderToString
+		const origin = typeof window !== 'undefined' ? window.origin : '';
+		const redirectUri = `${origin}/oauth/${integrationType}`;
 
 		const data = {
 			client_id: ser.clientId,

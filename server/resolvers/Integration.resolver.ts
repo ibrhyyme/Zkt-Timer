@@ -132,6 +132,17 @@ export class IntegrationResolver {
 			throw new GraphQLError(ErrorCode.FORBIDDEN, 'This account is not linked');
 		}
 
+		// Lockout guard: a user with no password must keep at least one OAuth login.
+		// The client hides the unlink button in this case, but a direct mutation would bypass it.
+		const hasPassword = !!(user as any).password;
+		if (!hasPassword) {
+			const allIntegrations = await getIntegrationsByUserId(context, user.id);
+			const remaining = allIntegrations.filter((i) => i.id !== integration.id);
+			if (remaining.length === 0) {
+				throw new GraphQLError(ErrorCode.FORBIDDEN, 'Bu hesabin tek giris yontemini kaldiramazsiniz. Once bir sifre belirleyin.');
+			}
+		}
+
 		await revokeIntegration(integrationType, user);
 		return deleteIntegrationById(context, integration.id);
 	}
