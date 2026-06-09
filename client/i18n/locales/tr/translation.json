@@ -125,7 +125,7 @@
             "peak_hour_sub": "{{value}} çözüm bu saatte",
             "peak_hour_empty": "Henüz veri yok",
             "best_day": "En iyi gün",
-            "best_day_sub": "Ortalama Ao12 {{time}}",
+            "best_day_sub": "Ortalama {{time}}",
             "best_day_empty": "Yeterli veri yok",
             "sessions": "Aktif seans",
             "sessions_sub": "Ortalama {{avg}} çözüm/seans"
@@ -1665,6 +1665,8 @@
         "solve_streak": "Çözüm Serisi",
         "avg_solves_per_session": "Ort. Çözüm / Seans",
         "first_solve": "İlk Çözüm",
+        "solve_views": "Çözüm Görüntülenme",
+        "profile_views": "Profil Görüntülenme",
         "solve_times": "Çözüm süreleri",
         "overview": "Genel Bakış",
         "community": "Topluluk",

@@ -25,6 +25,10 @@ export default function SolvesPerDay(props: Props) {
 			...filterOptions,
 			started_at: startDate.getTime(),
 			ended_at: endDate.getTime(),
+		}).map((d) => {
+			// Data keys are year-safe 'YYYY-M-D'; bars keep the short 'M/D' label.
+			const [, month, day] = d.x.split('-');
+			return {...d, x: `${month}/${day}`};
 		});
 	}, [jsonStr(filterOptions), filterOptions, solveUpdate]);
 

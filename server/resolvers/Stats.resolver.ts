@@ -5,12 +5,12 @@ import {Stats} from '../schemas/Stats.schema';
 
 
 export async function getStatsByUserId(context: GraphQLContext, userId: string) {
-	const {prisma, user} = context;
+	const {prisma} = context;
 
 	const promises = await Promise.all([
 		prisma.profileView.count({
 			where: {
-				profile_user_id: user.id,
+				profile_user_id: userId,
 			},
 		}),
 		prisma.solveView.count({

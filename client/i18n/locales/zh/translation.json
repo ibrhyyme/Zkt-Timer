@@ -125,7 +125,7 @@
             "peak_hour_sub": "此时段 {{value}} 次还原",
             "peak_hour_empty": "暂无数据",
             "best_day": "最佳日",
-            "best_day_sub": "平均 Ao12 {{time}}",
+            "best_day_sub": "平均 {{time}}",
             "best_day_empty": "数据不足",
             "sessions": "活跃会话",
             "sessions_sub": "平均 {{avg}} 还原/会话"
@@ -1665,6 +1665,8 @@
         "solve_streak": "连续还原天数",
         "avg_solves_per_session": "平均每阶段还原次数",
         "first_solve": "首次还原",
+        "solve_views": "还原浏览量",
+        "profile_views": "个人资料浏览量",
         "solve_times": "还原时间",
         "overview": "概览",
         "community": "社区",

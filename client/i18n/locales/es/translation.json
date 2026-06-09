@@ -125,7 +125,7 @@
             "peak_hour_sub": "{{value}} resoluciones a esta hora",
             "peak_hour_empty": "Sin datos aún",
             "best_day": "Mejor día",
-            "best_day_sub": "Ao12 promedio {{time}}",
+            "best_day_sub": "Promedio {{time}}",
             "best_day_empty": "Datos insuficientes",
             "sessions": "Sesiones activas",
             "sessions_sub": "Prom. {{avg}} resoluciones/sesión"
@@ -1665,6 +1665,8 @@
         "solve_streak": "Racha de resoluciones",
         "avg_solves_per_session": "Prom. resoluciones / sesión",
         "first_solve": "Primera resolución",
+        "solve_views": "Vistas de resoluciones",
+        "profile_views": "Vistas del perfil",
         "solve_times": "Tiempos de resolución",
         "overview": "Resumen",
         "community": "Comunidad",

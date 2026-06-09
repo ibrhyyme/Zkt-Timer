@@ -94,7 +94,7 @@ export function getSolveStreak(filter: FilterSolvesOptions): SolveStreak {
 			}
 
 			if (tempStreak > 0) {
-				solvesPerSession.push(tempStreak);
+				solvesPerSession.push(tempStreakSolves);
 			}
 
 			tempStreak = 0;

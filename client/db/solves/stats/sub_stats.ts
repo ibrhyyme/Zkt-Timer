@@ -43,8 +43,15 @@ export function getSubStats(filter: FilterSolvesOptions): SubStats {
 		plus_two: true,
 	});
 
-	const dnfPercent = Math.floor((dnfs.length / solves.length) * 100);
-	const plusTwoPercent = Math.floor((plusTwos.length / solves.length) * 100);
+	// Sub-1% values keep one decimal instead of flooring to a misleading "0%"
+	// (e.g. 22 +2s out of 13K solves should read "0.2%", not "0%").
+	function toPercent(count: number): number {
+		const pct = (count / solves.length) * 100;
+		return pct > 0 && pct < 1 ? Math.round(pct * 10) / 10 : Math.floor(pct);
+	}
+
+	const dnfPercent = toPercent(dnfs.length);
+	const plusTwoPercent = toPercent(plusTwos.length);
 
 	return {
 		firstSolve: solves[0],

@@ -51,6 +51,7 @@ export function getStandardDeviation(filter: FilterSolvesOptions, count: number 
 
 	const times = solves.map((s) => s.time);
 	const mean = times.reduce((s, t) => s + t, 0) / times.length;
-	const variance = times.reduce((s, t) => s + (t - mean) ** 2, 0) / times.length;
+	// Sample variance (n-1): the last N solves are a sample, not the population.
+	const variance = times.reduce((s, t) => s + (t - mean) ** 2, 0) / (times.length - 1);
 	return Math.sqrt(variance);
 }

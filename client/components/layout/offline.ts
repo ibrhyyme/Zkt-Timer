@@ -26,10 +26,13 @@ export async function initOfflineData(me, callback) {
 		callback(passed);
 	};
 
-	// If for whatever reason this is not resolved, fallback to db
+	// If for whatever reason this is not resolved, fallback to db.
+	// Large DBs (10K+ solves, multi-MB JSON) can legitimately take seconds to
+	// load/parse — a short timeout here misclassifies them as failed and sends
+	// the app down the destructive refetch path.
 	const fallbackTimeout = setTimeout(async () => {
 		safeCallback(false);
-	}, 2000);
+	}, 15000);
 
 	initLokiDb({ autoload: false });
 
@@ -78,6 +81,16 @@ export async function shouldFetchDataFromDb(me: UserAccount): Promise<boolean> {
 	return me.offline_hash !== offlineHash;
 }
 
+// Set when this session failed to load/fetch the full dataset. While degraded,
+// saveLokiDb refuses to persist: a partial in-RAM DB must never overwrite the
+// last good IndexedDB snapshot. updateOfflineHash also stays stale as a result,
+// which forces a fresh fetch on the next launch.
+let dbLoadDegraded = false;
+
+export function setDbLoadDegraded(value: boolean) {
+	dbLoadDegraded = value;
+}
+
 /**
  * Save LokiJS DB to IndexedDB.
  * Should work for both Basic and Pro users.
@@ -85,6 +98,12 @@ export async function shouldFetchDataFromDb(me: UserAccount): Promise<boolean> {
 export async function saveLokiDb(): Promise<boolean> {
 	return new Promise<boolean>((resolve) => {
 		try {
+			if (dbLoadDegraded) {
+				console.warn('[Offline] Degraded session — skipping DB save to protect last good snapshot');
+				resolve(false);
+				return;
+			}
+
 			const db = getLokiDb();
 			if (!db || !db.persistenceAdapter) {
 				resolve(false);

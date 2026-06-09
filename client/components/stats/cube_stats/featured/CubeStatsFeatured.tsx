@@ -53,7 +53,7 @@ export default function CubeStatsFeatured() {
 				large
 				onClick={singlePb ? () => openSolve(singlePb?.solve) : undefined}
 				icon={<Trophy weight="bold" />}
-				title="Single PB"
+				title={t('profile.single_pb')}
 				value={getTimeString(singlePb?.time)}
 				color="#23C586"
 			>
