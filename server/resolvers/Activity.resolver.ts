@@ -38,19 +38,14 @@ export class ActivityResolver {
 		const bucket = currentMinuteBucket();
 
 		try {
-			await getPrisma().userActivityHeartbeat.upsert({
-				where: {
-					user_id_minute_bucket: {
-						user_id: userId,
-						minute_bucket: bucket,
-					},
-				},
-				create: {
-					user_id: userId,
-					minute_bucket: bucket,
-				},
-				update: {},
-			});
+			// Atomic insert — ON CONFLICT DO NOTHING avoids the race where two
+			// concurrent heartbeats for the same (user_id, minute_bucket) both
+			// pass Prisma's non-atomic upsert SELECT and then collide on INSERT.
+			await getPrisma().$executeRaw`
+				INSERT INTO user_activity_heartbeat (id, user_id, minute_bucket, created_at)
+				VALUES (gen_random_uuid(), ${userId}, ${bucket}, now())
+				ON CONFLICT (user_id, minute_bucket) DO NOTHING
+			`;
 		} catch (e) {
 			logger.error('[Heartbeat] upsert failed', {userId, error: (e as any)?.message});
 		}
