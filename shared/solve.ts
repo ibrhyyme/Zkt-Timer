@@ -1,7 +1,43 @@
 import { Solve } from '../server/schemas/Solve.schema';
 
+// WCA official event ids. A standalone cube_type equal to one of these is the
+// legacy/duplicate of the canonical `wca` bucket (cube_type='wca' + subset=<event>).
+const WCA_EVENT_IDS = new Set([
+	'333', '222', '444', '555', '666', '777',
+	'sq1', 'pyram', 'clock', 'skewb', 'minx',
+]);
+
+/**
+ * Collapses a standalone WCA-event bucket onto the canonical `wca` bucket.
+ *
+ * `333::null`, `333::''`, `333::333` -> `wca::333` (the duplicate "3x3" boxes).
+ * Real variants (`333::333oh`, `333::333mirror`, `333o` random-move, ...) and
+ * method cube types (`333cfop`, `333mehta`, ...) are left untouched.
+ *
+ * Shared by client save (save.ts) and server sanitizeSolve so a malformed bucket
+ * can never reach the DB regardless of which path produced it.
+ */
+export function normalizeWcaEventBucket(
+	cubeType: string | null | undefined,
+	scrambleSubset: string | null | undefined
+): { cube_type: string | null | undefined; scramble_subset: string | null } {
+	if (cubeType && WCA_EVENT_IDS.has(cubeType)) {
+		if (!scrambleSubset || scrambleSubset === cubeType) {
+			return { cube_type: 'wca', scramble_subset: cubeType };
+		}
+	}
+	return { cube_type: cubeType, scramble_subset: scrambleSubset ?? null };
+}
+
 export function sanitizeSolve(s: Partial<Solve>): Partial<Solve> {
 	const solve = { ...s };
+
+	// Defensive bucket normalization — guarantees WCA-event solves land in the
+	// canonical `wca` bucket even if a stale client sends a legacy cube_type.
+	const bucket = normalizeWcaEventBucket(solve.cube_type, solve.scramble_subset);
+	solve.cube_type = bucket.cube_type;
+	solve.scramble_subset = bucket.scramble_subset;
+
 	delete solve.created_at;
 	delete solve.user;
 	delete solve.solve_method_steps;
