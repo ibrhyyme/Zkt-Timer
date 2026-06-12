@@ -5,6 +5,7 @@ import { emitEvent } from '../../../util/event_handler';
 import { setTimerParam } from './params';
 import { Solve, SolveInput } from '../../../../server/schemas/Solve.schema';
 import { requestInAppReview } from '../../../util/native-plugins';
+import { normalizeWcaEventBucket } from '../../../../shared/solve';
 
 export function saveSolve(
 	context: ITimerContext,
@@ -24,15 +25,20 @@ export function saveSolve(
 	time /= 1000;
 	const finalTime = dnf ? -1 : time + (plusTwo ? 2 : 0);
 
+	// For cube_type='wca', subset is required (cube-subset-bucket rule); if empty, defaults to '333'.
+	// normalizeWcaEventBucket then collapses any standalone WCA-event bucket (333::null, 333::333)
+	// onto the canonical wca::<event> bucket so the timer never writes the duplicate "3x3" box.
+	const rawSubset = cubeType === 'wca' ? (scrambleSubset || '333') : (scrambleSubset || null);
+	const bucket = normalizeWcaEventBucket(cubeType, rawSubset);
+
 	const solveObject: Solve = {
 		scramble,
 		started_at: new Date(startedAt).getTime(),
 		ended_at: new Date(endedAt).getTime(),
 		time: finalTime,
 		raw_time: Math.max(time, 0),
-		cube_type: cubeType,
-		// For cube_type='wca', subset is required (cube-subset-bucket rule); if empty, defaults to '333'
-		scramble_subset: cubeType === 'wca' ? (scrambleSubset || '333') : (scrambleSubset || null),
+		cube_type: bucket.cube_type,
+		scramble_subset: bucket.scramble_subset,
 		id: uuid(),
 		dnf: dnf || false,
 		plus_two: !!plusTwo,

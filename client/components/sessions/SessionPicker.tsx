@@ -87,11 +87,14 @@ export default function SessionPicker(props: Props) {
 
 		setCurrentSession(session.id);
 
+		// Empty session -> fall back to the canonical wca::333 bucket, NOT standalone
+		// 333::null (which is the duplicate "3x3" box and pollutes the global setting,
+		// making every subsequent solve land in the wrong bucket). See cube-subset-bucket.
 		const lastBucket = fetchLastBucketForSession(session.id);
-		const lastCubeType = lastBucket?.cube_type || '333';
+		const lastCubeType = lastBucket?.cube_type || 'wca';
 		const currentCubeType = getSetting('cube_type');
 		const currentSubset = getSetting('scramble_subset');
-		const newSubset = lastBucket?.scramble_subset ?? null;
+		const newSubset = lastBucket?.scramble_subset ?? (lastCubeType === 'wca' ? '333' : null);
 		const cubeTypeChanged = lastCubeType !== currentCubeType;
 		const subsetChanged = newSubset !== (currentSubset ?? null);
 

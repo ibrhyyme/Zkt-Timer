@@ -1,5 +1,7 @@
 import { getSolveDb } from './init';
 import { Solve } from '../../../server/schemas/Solve.schema';
+import { getSetting } from '../settings/query';
+import { setCubeType, setScrambleSubset } from '../settings/update';
 
 // One-time LokiJS migration: legacy cube_type -> (cube_type, scramble_subset)
 // Mirror of scripts/migrations/wca-subset-migration.sql but for local LokiJS.
@@ -99,4 +101,26 @@ export function migrateLokiSolvesToWcaSubset(): number {
 	}
 
 	return migrated;
+}
+
+// Migrate the user's active picker setting off a standalone WCA-event bucket.
+// A setting like 333::null or 333::333 is the duplicate of the canonical wca::333
+// and, left in place, makes every new solve land in the wrong "3x3" box again
+// (the leak SessionPicker used to produce). Real variants (333oh, 333mirror, ...)
+// keep a distinct subset and are untouched. Covers ALL WCA events, not just 333.
+// Idempotent: re-running matches nothing once the setting is canonical.
+export function migrateLokiSettingToWcaSubset(): boolean {
+	const cubeType = getSetting('cube_type');
+	if (!cubeType || !(PURE_WCA_IDS as readonly string[]).includes(cubeType)) {
+		return false;
+	}
+
+	const subset = getSetting('scramble_subset');
+	if (!subset || subset === cubeType) {
+		setCubeType('wca');
+		setScrambleSubset(cubeType);
+		return true;
+	}
+
+	return false;
 }
