@@ -141,8 +141,9 @@ export default function Sessions() {
 		setIsEditingName(false);
 
 		const lastBucket = fetchLastBucketForSession(id);
-		setCubeType(lastBucket?.cube_type || '333');
-		setScrambleSubset(lastBucket?.scramble_subset ?? null);
+		const lastCubeType = lastBucket?.cube_type || 'wca';
+		setCubeType(lastCubeType);
+		setScrambleSubset(lastBucket?.scramble_subset ?? (lastCubeType === 'wca' ? '333' : null));
 	}
 
 	function handleCubeTypeChange(ct: CubeType) {
@@ -201,8 +202,9 @@ export default function Sessions() {
 	function makeCurrent() {
 		const lastBucket = fetchLastBucketForSession(selectedSessionId);
 		setCurrentSession(selectedSessionId);
-		setCubeType(lastBucket?.cube_type || '333');
-		setScrambleSubset(lastBucket?.scramble_subset ?? null);
+		const lastCubeType = lastBucket?.cube_type || 'wca';
+		setCubeType(lastCubeType);
+		setScrambleSubset(lastBucket?.scramble_subset ?? (lastCubeType === 'wca' ? '333' : null));
 	}
 
 	async function mergeSessions() {
@@ -246,8 +248,9 @@ export default function Sessions() {
 				const fallbackBucket = fetchLastBucketForSession(fallback.id);
 
 				setCurrentSession(fallback.id);
-				setCubeType(fallbackBucket?.cube_type || '333');
-				setScrambleSubset(fallbackBucket?.scramble_subset ?? null);
+				const fallbackCubeType = fallbackBucket?.cube_type || 'wca';
+				setCubeType(fallbackCubeType);
+				setScrambleSubset(fallbackBucket?.scramble_subset ?? (fallbackCubeType === 'wca' ? '333' : null));
 
 				updatedSessionId = fallback.id;
 			}
@@ -329,8 +332,9 @@ export default function Sessions() {
 							const fallback = allSessions.find((s) => !idsToDelete.includes(s.id));
 							const fallbackBucket = fetchLastBucketForSession(fallback.id);
 							setCurrentSession(fallback.id);
-							setCubeType(fallbackBucket?.cube_type || '333');
-							setScrambleSubset(fallbackBucket?.scramble_subset ?? null);
+							const fallbackCubeType = fallbackBucket?.cube_type || 'wca';
+							setCubeType(fallbackCubeType);
+							setScrambleSubset(fallbackBucket?.scramble_subset ?? (fallbackCubeType === 'wca' ? '333' : null));
 							updatedSessionId = fallback.id;
 						}
 

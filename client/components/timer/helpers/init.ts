@@ -8,6 +8,7 @@ import { fetchLastSolve, buildBucketFilter } from '../../../db/solves/query';
 import { setTimerParam } from './params';
 import { resetScramble } from './scramble';
 import { getSolveDb } from '../../../db/solves/init';
+import { migrateLokiSettingToWcaSubset } from '../../../db/solves/migrate_wca_subset';
 
 export async function initTimer(dispatch: Dispatch<any>, context: ITimerContext) {
 	const { inModal } = context;
@@ -34,17 +35,12 @@ export async function initTimer(dispatch: Dispatch<any>, context: ITimerContext)
 			setSetting('cube_type', 'wca');
 		}
 
-		// The standalone '333' random-state bucket ("WCA Standart", empty subset) was
-		// removed — it duplicated wca::333. Redirect any setting still stuck on it so the
-		// picker matches where the solves migrate (migrate_wca_subset Faz 1). Only the
-		// empty/null subset is moved; real 333 subsets (333oh, 2gen, ...) are untouched.
-		if (getSetting('cube_type') === '333') {
-			const sub = getSetting('scramble_subset');
-			if (sub === null || sub === undefined || sub === '') {
-				setSetting('cube_type', 'wca');
-				setSetting('scramble_subset', '333');
-			}
-		}
+		// Standalone WCA-event picker buckets (333::null, 222::null, 333::333, ...) are
+		// duplicates of the canonical wca::<event>. Redirect the active setting so the
+		// picker matches where the solves migrate (migrate_wca_subset). Only empty/own-id
+		// subsets are moved; real variants (333oh, 333mirror, ...) are untouched.
+		// Covers ALL WCA events, not just 333.
+		migrateLokiSettingToWcaSubset();
 
 		// For cube_type='wca', subset is required — if old users have
 		// subset=null in settings, default to '333' (otherwise orphans on save).
