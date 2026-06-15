@@ -15,8 +15,9 @@ import ZktPodiumsTab from './tabs/ZktPodiumsTab';
 import ZktRegistrationForm from './tabs/ZktRegistrationForm';
 import ZktScheduleTab from './tabs/ZktScheduleTab';
 import {useZktCompRefetch} from './useZktCompRefetch';
-import {Users, ListBullets, Globe, Broadcast, UserPlus, ChartBar, FileText, CalendarBlank} from 'phosphor-react';
+import {Users, ListBullets, Globe, Broadcast, UserPlus, ChartBar, FileText, CalendarBlank, MapPin, ShieldCheck} from 'phosphor-react';
 import MarkdownContent from './MarkdownContent';
+import {openInMaps} from '../../../util/external-link';
 
 const DETAIL_QUERY = gql`
 	query ZktCompetitionPublic($id: String!) {
@@ -68,6 +69,14 @@ const DETAIL_QUERY = gql`
 						group_number
 						start_time
 						end_time
+					}
+					assignments {
+						id
+						user_id
+						role
+						group {
+							group_number
+						}
 					}
 				}
 			}
@@ -230,8 +239,41 @@ export default function ZktCompetitionDetail() {
 				</button>
 				<h1 className={b('detail-title')}>{detail.name}</h1>
 				<div className={b('detail-meta')}>
-					{formatDateRange(detail.date_start, detail.date_end, locale)} - {detail.location}
+					<span className={b('meta-item')}>
+						<CalendarBlank size={15} weight="bold" />
+						{formatDateRange(detail.date_start, detail.date_end, locale)}
+					</span>
+					<button
+						type="button"
+						className={b('meta-item', {link: true})}
+						onClick={() =>
+							openInMaps(
+								detail.latitude && detail.longitude
+									? `${detail.latitude},${detail.longitude}`
+									: [detail.location, detail.location_address].filter(Boolean).join(' ')
+							)
+						}
+					>
+						<MapPin size={15} weight="bold" />
+						{detail.location}
+					</button>
 				</div>
+				{(detail.delegates?.length > 0 || detail.organizers?.length > 0) && (
+					<div className={b('detail-people')}>
+						{detail.delegates?.length > 0 && (
+							<span className={b('detail-people-item')}>
+								<ShieldCheck size={14} weight="bold" />
+								{t('delegates')}: {detail.delegates.map((d: any) => d.user.username).join(', ')}
+							</span>
+						)}
+						{detail.organizers?.length > 0 && (
+							<span className={b('detail-people-item')}>
+								<Users size={14} weight="bold" />
+								{t('organizers')}: {detail.organizers.map((o: any) => o.user.username).join(', ')}
+							</span>
+						)}
+					</div>
+				)}
 				<div className={b('detail-status-row')}>
 					<span className={b('status', {[detail.status.toLowerCase()]: true})}>
 						{t(`status_${detail.status.toLowerCase()}`)}

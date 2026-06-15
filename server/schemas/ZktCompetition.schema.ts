@@ -164,6 +164,9 @@ export class ZktResult {
 
 	@Field(() => PublicUserAccount, {nullable: true})
 	entered_by?: PublicUserAccount;
+
+	@Field(() => ZktRound, {nullable: true})
+	round?: ZktRound;
 }
 
 @ObjectType()
@@ -254,6 +257,12 @@ export class ZktRound {
 
 	@Field(() => [ZktScramble], {nullable: true})
 	scrambles?: ZktScramble[];
+
+	@Field(() => ZktCompEvent, {nullable: true})
+	comp_event?: ZktCompEvent;
+
+	@Field(() => [ZktAssignment], {nullable: true})
+	assignments?: ZktAssignment[];
 }
 
 @ObjectType()
@@ -1063,6 +1072,12 @@ export class ZktAssignment {
 
 	@Field(() => ZktCompetitorUser, {nullable: true})
 	user?: ZktCompetitorUser;
+
+	@Field(() => ZktRound, {nullable: true})
+	round?: ZktRound;
+
+	@Field(() => ZktGroup, {nullable: true})
+	group?: ZktGroup;
 }
 
 @InputType()

@@ -5,6 +5,14 @@ import {useSelector} from 'react-redux';
 import {MagnifyingGlass} from 'phosphor-react';
 import {b, getEventName, competitorDisplayName, competitorFlag} from '../shared';
 
+// Staff role colors/labels — mirror ZktCompetitorDetail so badges look consistent.
+const ROLE_TINT: Record<string, string> = {
+	JUDGE: '#42a5f5', SCRAMBLER: '#9b59b6', RUNNER: '#ee6a26', ORGANIZER: '#246bfd', STAFF: '#95a5a6',
+};
+const ROLE_LABEL_KEY: Record<string, string> = {
+	JUDGE: 'role_judge', SCRAMBLER: 'role_scrambler', RUNNER: 'role_runner', ORGANIZER: 'role_organizer', STAFF: 'role_staff',
+};
+
 export default function ZktCompetitorsTab({detail}: {detail: any}) {
 	const {t} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
 	const history = useHistory();
@@ -15,6 +23,22 @@ export default function ZktCompetitorsTab({detail}: {detail: any}) {
 	const compEventMap = useMemo(() => {
 		const m = new Map<string, string>();
 		detail.events.forEach((e: any) => m.set(e.id, e.event_id));
+		return m;
+	}, [detail.events]);
+
+	// Staff roles (JUDGE/SCRAMBLER/RUNNER) per user, gathered across all rounds —
+	// so the competitor list itself shows who is staffing, not just who competes.
+	const staffRolesByUser = useMemo(() => {
+		const m = new Map<string, Set<string>>();
+		for (const ev of detail.events || []) {
+			for (const rd of ev.rounds || []) {
+				for (const a of rd.assignments || []) {
+					if (!a.role || a.role === 'COMPETITOR') continue;
+					if (!m.has(a.user_id)) m.set(a.user_id, new Set());
+					m.get(a.user_id)!.add(a.role);
+				}
+			}
+		}
 		return m;
 	}, [detail.events]);
 
@@ -92,6 +116,27 @@ export default function ZktCompetitorsTab({detail}: {detail: any}) {
 										)}
 									</span>
 								</div>
+								{(() => {
+									const roles = staffRolesByUser.get(r.user_id);
+									if (!roles || roles.size === 0) return null;
+									return (
+										<div className={b('competitor-roles')}>
+											{Array.from(roles).map((role) => (
+												<span
+													key={role}
+													className={b('role-pill', {mini: true})}
+													style={{
+														background: `${ROLE_TINT[role]}22`,
+														color: ROLE_TINT[role],
+														border: `1px solid ${ROLE_TINT[role]}55`,
+													}}
+												>
+													{t(ROLE_LABEL_KEY[role] || role)}
+												</span>
+											))}
+										</div>
+									);
+								})()}
 								<div className={b('competitor-events')}>
 									{r.events.map((e: any) => {
 										const eventId = compEventMap.get(e.comp_event_id);
