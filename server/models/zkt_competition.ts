@@ -20,6 +20,7 @@ export const zktCompetitionFullInclude = {
 			rounds: {
 				include: {
 					groups: true,
+					assignments: {include: {group: true}},
 					results: {
 						include: {
 							user: publicUserInclude,

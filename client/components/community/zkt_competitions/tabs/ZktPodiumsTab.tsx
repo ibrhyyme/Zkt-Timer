@@ -129,11 +129,8 @@ export default function ZktPodiumsTab({detail}: {detail: any}) {
 		};
 	}, [selectedPodium?.round_id]);
 
-	if (loading) return <div className={b('empty')}>{t('loading')}</div>;
-	if (podiums.length === 0) {
-		return <div className={b('empty')}>{t('no_podiums_yet')}</div>;
-	}
-
+	// All hooks must run before any early return — keep this useMemo above the
+	// loading/empty guards or React throws "Rendered more hooks than previous".
 	const sortedRanking = useMemo(() => {
 		return [...eventResults].sort((a, bx) => {
 			const ra = a.ranking ?? Number.MAX_SAFE_INTEGER;
@@ -141,6 +138,11 @@ export default function ZktPodiumsTab({detail}: {detail: any}) {
 			return ra - rb;
 		});
 	}, [eventResults]);
+
+	if (loading) return <div className={b('empty')}>{t('loading')}</div>;
+	if (podiums.length === 0) {
+		return <div className={b('empty')}>{t('no_podiums_yet')}</div>;
+	}
 
 	return (
 		<div className={b('rankings-tab')}>

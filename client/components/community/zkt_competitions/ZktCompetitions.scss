@@ -250,8 +250,57 @@
 	}
 
 	&__detail-meta {
-		color: rgba(var(--text-color), 0.65);
-		margin-bottom: 0.75rem;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem 1.1rem;
+		margin-bottom: 0.6rem;
+	}
+
+	&__meta-item {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		font-size: 0.9rem;
+		font-weight: 500;
+		color: rgb(var(--text-color));
+		background: none;
+		border: none;
+		padding: 0;
+
+		svg {
+			color: rgb(var(--primary-color));
+			flex-shrink: 0;
+		}
+
+		&--link {
+			cursor: pointer;
+
+			&:hover {
+				color: rgb(var(--primary-color));
+				text-decoration: underline;
+			}
+		}
+	}
+
+	&__detail-people {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem 1rem;
+		margin-bottom: 1.1rem;
+	}
+
+	&__detail-people-item {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		font-size: 0.82rem;
+		font-weight: 600;
+		color: rgb(var(--text-color));
+
+		svg {
+			color: rgb(var(--primary-color));
+			flex-shrink: 0;
+		}
 	}
 
 	&__detail-status-row {
@@ -287,7 +336,6 @@
 		background: none;
 		border: none;
 		padding: 8px 12px;
-		opacity: 0.75;
 		cursor: pointer;
 		border-radius: 8px;
 		transition: all 0.15s;
@@ -311,11 +359,10 @@
 		}
 
 		&:hover {
-			opacity: 1;
+			background: rgba(var(--text-color), 0.06);
 		}
 
 		&--active {
-			opacity: 1;
 			background: rgba(var(--primary-color), 0.2);
 		}
 	}
@@ -807,7 +854,7 @@
 
 	&__competitor-count {
 		font-size: 12px;
-		color: rgba(var(--text-color), 0.6);
+		color: rgb(var(--text-color));
 		font-weight: 600;
 		padding: 0 0.25rem;
 	}
@@ -820,7 +867,7 @@
 
 	&__competitor-card {
 		display: grid;
-		grid-template-columns: auto auto 1fr auto;
+		grid-template-columns: auto auto 1fr auto auto;
 		gap: 0.7rem;
 		align-items: center;
 		padding: 0.65rem 0.85rem;
@@ -843,10 +890,18 @@
 		}
 	}
 
+	&__competitor-roles {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 4px;
+		align-items: center;
+		justify-content: flex-end;
+	}
+
 	&__competitor-number {
 		font-size: 12px;
 		font-weight: 700;
-		color: rgba(var(--text-color), 0.55);
+		color: rgb(var(--text-color));
 		min-width: 22px;
 		text-align: center;
 	}
@@ -1208,6 +1263,13 @@
 		border-radius: 4px;
 		font-size: 11px;
 		font-weight: 700;
+
+		&--mini {
+			padding: 1px 6px;
+			font-size: 9.5px;
+			letter-spacing: 0.2px;
+			text-transform: uppercase;
+		}
 	}
 
 	&__person-results {
