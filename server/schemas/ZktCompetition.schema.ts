@@ -103,6 +103,41 @@ export class ZktCompetitorUser extends PublicUserAccount {
 	join_country?: string;
 }
 
+// Account-less ghost competitor (no UserAccount). Shares the identity shape
+// (first_name/last_name + country) so UI helpers work for user OR person.
+@ObjectType()
+export class ZktPerson {
+	@Field()
+	id: string;
+
+	@Field()
+	competition_id: string;
+
+	@Field()
+	first_name: string;
+
+	@Field()
+	last_name: string;
+
+	@Field({nullable: true})
+	country_code?: string;
+
+	@Field({nullable: true})
+	wca_id?: string;
+
+	@Field({nullable: true})
+	external_id?: string;
+
+	@Field({nullable: true})
+	gender?: string;
+
+	@Field({nullable: true})
+	date_of_birth?: Date;
+
+	@Field()
+	created_at: Date;
+}
+
 @ObjectType()
 export class ZktResult {
 	@Field()
@@ -111,8 +146,11 @@ export class ZktResult {
 	@Field()
 	round_id: string;
 
-	@Field()
-	user_id: string;
+	@Field({nullable: true})
+	user_id?: string;
+
+	@Field({nullable: true})
+	person_id?: string;
 
 	@Field(() => Int, {nullable: true})
 	attempt_1?: number;
@@ -162,11 +200,16 @@ export class ZktResult {
 	@Field(() => ZktCompetitorUser, {nullable: true})
 	user?: ZktCompetitorUser;
 
+	@Field(() => ZktPerson, {nullable: true})
+	person?: ZktPerson;
+
 	@Field(() => PublicUserAccount, {nullable: true})
 	entered_by?: PublicUserAccount;
 
+	// `any` (not ZktRound) avoids a TS design:type TDZ crash: ZktRound is
+	// declared later in this file. The thunk above still types the GraphQL field.
 	@Field(() => ZktRound, {nullable: true})
-	round?: ZktRound;
+	round?: any;
 }
 
 @ObjectType()
@@ -258,8 +301,9 @@ export class ZktRound {
 	@Field(() => [ZktScramble], {nullable: true})
 	scrambles?: ZktScramble[];
 
+	// `any` avoids a design:type TDZ crash — ZktCompEvent is declared later.
 	@Field(() => ZktCompEvent, {nullable: true})
-	comp_event?: ZktCompEvent;
+	comp_event?: any;
 
 	@Field(() => [ZktAssignment], {nullable: true})
 	assignments?: ZktAssignment[];
@@ -309,8 +353,11 @@ export class ZktRegistration {
 	@Field()
 	competition_id: string;
 
-	@Field()
-	user_id: string;
+	@Field({nullable: true})
+	user_id?: string;
+
+	@Field({nullable: true})
+	person_id?: string;
 
 	@Field(() => ZktRegistrationStatus)
 	status: ZktRegistrationStatus;
@@ -335,6 +382,9 @@ export class ZktRegistration {
 
 	@Field(() => ZktCompetitorUser, {nullable: true})
 	user?: ZktCompetitorUser;
+
+	@Field(() => ZktPerson, {nullable: true})
+	person?: ZktPerson;
 
 	@Field(() => [ZktRegistrationEvent], {nullable: true})
 	events?: ZktRegistrationEvent[];
@@ -973,6 +1023,93 @@ export class AddZktCompetitorManuallyInput {
 }
 
 @InputType()
+export class ZktPersonRowInput {
+	@Field()
+	firstName: string;
+
+	@Field()
+	lastName: string;
+
+	@Field({nullable: true})
+	country?: string;
+
+	@Field({nullable: true})
+	wcaId?: string;
+
+	@Field({nullable: true})
+	externalId?: string;
+
+	@Field({nullable: true})
+	gender?: string;
+
+	@Field(() => [String])
+	eventIds: string[];
+}
+
+@InputType()
+export class ImportZktCompetitorsInput {
+	@Field()
+	competitionId: string;
+
+	@Field(() => [ZktPersonRowInput])
+	rows: ZktPersonRowInput[];
+}
+
+@InputType()
+export class AddZktPersonInput {
+	@Field()
+	competitionId: string;
+
+	@Field()
+	firstName: string;
+
+	@Field()
+	lastName: string;
+
+	@Field({nullable: true})
+	country?: string;
+
+	@Field({nullable: true})
+	wcaId?: string;
+
+	@Field({nullable: true})
+	externalId?: string;
+
+	@Field({nullable: true})
+	gender?: string;
+
+	@Field(() => [String])
+	eventIds: string[];
+}
+
+@InputType()
+export class UpdateZktPersonInput {
+	@Field()
+	personId: string;
+
+	@Field({nullable: true})
+	firstName?: string;
+
+	@Field({nullable: true})
+	lastName?: string;
+
+	@Field({nullable: true})
+	country?: string;
+
+	@Field({nullable: true})
+	wcaId?: string;
+
+	@Field({nullable: true})
+	externalId?: string;
+
+	@Field({nullable: true})
+	gender?: string;
+
+	@Field(() => [String], {nullable: true})
+	eventIds?: string[];
+}
+
+@InputType()
 export class CreateZktRoundInput {
 	@Field()
 	compEventId: string;
@@ -1037,8 +1174,11 @@ export class MarkZktNoShowInput {
 	@Field()
 	roundId: string;
 
-	@Field()
-	userId: string;
+	@Field({nullable: true})
+	userId?: string;
+
+	@Field({nullable: true})
+	personId?: string;
 }
 
 @ObjectType()
@@ -1052,8 +1192,11 @@ export class ZktAssignment {
 	@Field({nullable: true})
 	group_id?: string;
 
-	@Field()
-	user_id: string;
+	@Field({nullable: true})
+	user_id?: string;
+
+	@Field({nullable: true})
+	person_id?: string;
 
 	@Field(() => ZktAssignmentRole)
 	role: ZktAssignmentRole;
@@ -1072,6 +1215,9 @@ export class ZktAssignment {
 
 	@Field(() => ZktCompetitorUser, {nullable: true})
 	user?: ZktCompetitorUser;
+
+	@Field(() => ZktPerson, {nullable: true})
+	person?: ZktPerson;
 
 	@Field(() => ZktRound, {nullable: true})
 	round?: ZktRound;
@@ -1136,8 +1282,11 @@ export class SubmitZktResultInput {
 	@Field()
 	roundId: string;
 
-	@Field()
-	userId: string;
+	@Field({nullable: true})
+	userId?: string;
+
+	@Field({nullable: true})
+	personId?: string;
 
 	@Field(() => Int, {nullable: true})
 	attempt1?: number;
@@ -1157,8 +1306,11 @@ export class SubmitZktResultInput {
 
 @InputType()
 export class SubmitZktResultBatchItem {
-	@Field()
-	userId: string;
+	@Field({nullable: true})
+	userId?: string;
+
+	@Field({nullable: true})
+	personId?: string;
 
 	@Field(() => Int, {nullable: true})
 	attempt1?: number;

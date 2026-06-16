@@ -64,6 +64,27 @@ export default function UserActions(props: Props) {
 		toastSuccess(user.verified ? t('user_unverified') : t('user_verified'));
 	}
 
+	// Mod = competition manager only (access to the /organizer pages); no other
+	// admin/moderation capability. Granting/revoking is admin-only on the server.
+	async function toggleModStatus() {
+		const query = gql`
+			mutation Mutate($userId: String, $isMod: Boolean) {
+				setModStatus(userId: $userId, isMod: $isMod) {
+					id
+					mod
+				}
+			}
+		`;
+
+		await gqlMutate(query, {
+			userId: user.id,
+			isMod: !user.mod,
+		});
+
+		updateUser();
+		toastSuccess(user.mod ? t('mod_removed') : t('mod_granted'));
+	}
+
 	function toggleProStatus() {
 		if (user.is_pro) {
 			// Remove Pro
@@ -159,6 +180,12 @@ export default function UserActions(props: Props) {
 				primary={!user.verified}
 				warning={user.verified}
 				onClick={toggleVerifyUser}
+			/>
+			<Button
+				text={user.mod ? t('remove_mod') : t('make_mod')}
+				primary={!user.mod}
+				warning={user.mod}
+				onClick={toggleModStatus}
 			/>
 			<Button
 				text={user.is_pro ? t('remove_pro') : t('make_pro')}

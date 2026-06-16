@@ -19,6 +19,8 @@ import {getPrisma, initPrisma} from '../server/database';
 import {createZktCompetitionWithEvents, publishZktResults} from '../server/models/zkt_competition';
 import {upsertZktResult, markResultNoShow, finalizeRound, DNF} from '../server/models/zkt_result';
 import {checkAndApplyRecords, rebuildRecordsForEvent, getCurrentRecord} from '../server/models/zkt_record';
+import {importZktCompetitors} from '../server/models/zkt_person';
+import {getZktPodiums, getZktAllTimeRankings} from '../server/models/zkt_podium';
 
 // The model layer reads a shared singleton; server boot calls this — we must too.
 initPrisma();
@@ -369,6 +371,66 @@ async function main() {
 	log(`In-app tur-bitti bildirimi (DB): ${notifCount}`);
 	log(`Toplam aktif rekor satiri (tum eventler): ${recCount}`);
 	log('Temizlemek icin: npx ts-node --transpile-only scripts/sim-competition.ts --cleanup');
+	hr();
+
+	// 13) GHOST (account-less) competitor flow — separate competition --------
+	hr(); log('HAYALET (HESAPSIZ) YARISMACI SENARYOSU'); hr();
+	const ghostComp = await createZktCompetitionWithEvents({
+		createdById: admin.id,
+		name: '[SIM] Hayalet Belediye Yarismasi',
+		description: 'Belediye listesinden hesapsiz yarismacilar (CSV import).',
+		dateStart: new Date(now.getTime() + 14 * 864e5),
+		dateEnd: new Date(now.getTime() + 14 * 864e5),
+		location: 'Beyoglu, Istanbul',
+		locationAddress: 'Beyoglu, Istanbul',
+		visibility: 'PUBLIC',
+		competitorLimit: 50,
+		eventIds: ['333', '222'],
+	});
+	const ghostCe: Record<string, any> = {};
+	for (const ce of ghostComp.events) ghostCe[ce.event_id] = ce;
+
+	// CSV-like rows: name + surname + municipality id, no ZKT/WCA accounts.
+	const ghostRows = [
+		{firstName: 'Deniz', lastName: 'Kaya', externalId: 'BLD-001'},
+		{firstName: 'Ela', lastName: 'Yildiz', externalId: 'BLD-002'},
+		{firstName: 'Mert', lastName: 'Sahin', externalId: 'BLD-003'},
+		{firstName: 'Naz', lastName: 'Aydin', externalId: 'BLD-004'},
+		{firstName: 'Kuzey', lastName: 'Arslan', externalId: 'BLD-005'},
+		{firstName: 'Ada', lastName: 'Dogan', externalId: 'BLD-006'},
+	].map((r) => ({...r, country: 'TR', eventIds: [ghostCe['333'].id, ghostCe['222'].id]}));
+	const persons = await importZktCompetitors(ghostComp.id, ghostRows);
+	log(`13a) Ice aktarildi: ${persons.length} hesapsiz yarismaci (APPROVED, hesap YOK).`);
+
+	// Open 333 Round 1, enter a time for each ghost person (person_id path).
+	await prisma.zktCompetition.update({where: {id: ghostComp.id}, data: {status: 'ONGOING'}});
+	const gr1 = ghostCe['333'].rounds.find((r: any) => r.round_number === 1);
+	await prisma.zktRound.update({where: {id: gr1.id}, data: {status: 'ACTIVE'}});
+	for (let i = 0; i < persons.length; i++) {
+		const t = realisticTimes('333', 0.8 + i * 0.05);
+		await upsertZktResult({
+			round_id: gr1.id, person_id: persons[i].id, entered_by_id: admin.id,
+			attempt_1: t[0], attempt_2: t[1], attempt_3: t[2], attempt_4: t[3], attempt_5: t[4],
+		});
+	}
+	await finalizeRound(gr1.id, admin.id);
+	// Isolation: records are user-only — checkAndApplyRecords is never called for ghosts.
+	log(`13b) ${persons.length} hayalet sonucu girildi + Tur 1 finalize (rekor cagrilmadi — izolasyon).`);
+
+	// Podium INCLUDES ghosts (within-competition visibility).
+	await prisma.zktCompetition.update({where: {id: ghostComp.id}, data: {status: 'FINISHED'}});
+	const ghostPodiums = await getZktPodiums(ghostComp.id);
+	const p333 = ghostPodiums.find((p: any) => p.event_id === '333');
+	log('13c) Podyum (yarisma-ici — hayaletler GORUNUR):');
+	for (const r of (p333?.results || [])) {
+		const name = r.person ? `${r.person.first_name} ${r.person.last_name}` : (r.user_id || '?');
+		log(`   ${r.ranking}. ${name} [${r.person?.country_code || '-'}] — ${r.best}cs`);
+	}
+
+	// All-time ranking EXCLUDES ghosts (global, user-only).
+	const allTime = await getZktAllTimeRankings({eventId: '333', recordType: 'single', limit: 100});
+	const ghostInRanking = allTime.filter((row: any) => !row.user).length;
+	log(`13d) Global all-time 333 single: ${allTime.length} kayit; hayalet=${ghostInRanking} (BEKLENEN 0 — izolasyon dogru).`);
 	hr();
 
 	await prisma.$disconnect();

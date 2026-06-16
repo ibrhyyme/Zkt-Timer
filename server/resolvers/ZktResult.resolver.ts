@@ -71,7 +71,8 @@ async function notifyZktRoundFinished(roundId: string): Promise<void> {
 		const eventId = round.comp_event.event_id;
 
 		const results = await prisma.zktResult.findMany({
-			where: {round_id: roundId, ranking: {not: null}},
+			// Only account-holding competitors get notified — ghosts have no account.
+			where: {round_id: roundId, ranking: {not: null}, user_id: {not: null}},
 			include: {user: {include: {settings: true}}},
 		});
 
@@ -107,7 +108,7 @@ export class ZktResultResolver {
 			where: {round_id: roundId},
 			orderBy: [{ranking: {sort: 'asc', nulls: 'last'}}, {created_at: 'asc'}],
 			// entered_by powers the double-check view's scoretaker filter.
-			include: {user: publicUserInclude, entered_by: publicUserInclude},
+			include: {user: publicUserInclude, person: true, entered_by: publicUserInclude},
 		});
 	}
 
@@ -115,11 +116,16 @@ export class ZktResultResolver {
 	@Query(() => [ZktResult])
 	async zktCompetitorResults(
 		@Arg('competitionId') competitionId: string,
-		@Arg('userId') userId: string
+		@Arg('userId', {nullable: true}) userId?: string,
+		@Arg('personId', {nullable: true}) personId?: string
 	) {
+		// The route passes one competitorId that may be either a user id or a
+		// ghost-person id (both globally unique), so match on either column.
+		const competitorId = personId || userId;
+		if (!competitorId) return [];
 		return getPrisma().zktResult.findMany({
 			where: {
-				user_id: userId,
+				OR: [{user_id: competitorId}, {person_id: competitorId}],
 				round: {
 					comp_event: {
 						competition_id: competitionId,
@@ -129,6 +135,7 @@ export class ZktResultResolver {
 			orderBy: {created_at: 'asc'},
 			include: {
 				user: publicUserInclude,
+				person: true,
 				round: {include: {comp_event: true}},
 			},
 		});
@@ -148,7 +155,8 @@ export class ZktResultResolver {
 
 		const result = await upsertZktResult({
 			round_id: input.roundId,
-			user_id: input.userId,
+			user_id: input.userId ?? null,
+			person_id: input.personId ?? null,
 			attempt_1: input.attempt1 ?? null,
 			attempt_2: input.attempt2 ?? null,
 			attempt_3: input.attempt3 ?? null,
@@ -193,7 +201,8 @@ export class ZktResultResolver {
 		for (const item of input.results) {
 			const r = await upsertZktResult({
 				round_id: input.roundId,
-				user_id: item.userId,
+				user_id: item.userId ?? null,
+				person_id: item.personId ?? null,
 				attempt_1: item.attempt1 ?? null,
 				attempt_2: item.attempt2 ?? null,
 				attempt_3: item.attempt3 ?? null,
@@ -266,38 +275,46 @@ export class ZktResultResolver {
 		const competitionId = round.comp_event.competition_id;
 		await assertCanModifyCompetition(context.user, competitionId);
 
-		await finalizeRound(roundId, context.user.id);
+		const {alreadyFinalized} = await finalizeRound(roundId, context.user.id);
 
-		const results = await getPrisma().zktResult.findMany({where: {round_id: roundId}});
-		for (const r of results) {
-			const tags = await checkAndApplyRecords({
-				resultId: r.id,
-				userId: r.user_id,
-				eventId: round.comp_event.event_id,
-				competitionId,
-				best: r.best,
-				average: r.average,
-			});
-			if (tags.singleTag || tags.averageTag) {
-				await getPrisma().zktResult.update({
-					where: {id: r.id},
-					data: {
-						single_record_tag: tags.singleTag,
-						average_record_tag: tags.averageTag,
-					},
+		// Records, notifications and the socket broadcast run ONLY for the call
+		// that actually finalized the round. A concurrent second "finalize" lost
+		// the atomic claim (alreadyFinalized) → skip, so competitors don't get
+		// duplicate "round finished" notifications.
+		if (!alreadyFinalized) {
+			const results = await getPrisma().zktResult.findMany({where: {round_id: roundId}});
+			for (const r of results) {
+				// Ghost competitors (person, no account) don't hold global records — skip.
+				if (!r.user_id) continue;
+				const tags = await checkAndApplyRecords({
+					resultId: r.id,
+					userId: r.user_id,
+					eventId: round.comp_event.event_id,
+					competitionId,
+					best: r.best,
+					average: r.average,
 				});
+				if (tags.singleTag || tags.averageTag) {
+					await getPrisma().zktResult.update({
+						where: {id: r.id},
+						data: {
+							single_record_tag: tags.singleTag,
+							average_record_tag: tags.averageTag,
+						},
+					});
+				}
 			}
+
+			emitZktRoundStatusChanged(competitionId, {roundId, status: 'FINISHED'});
+
+			// Fire-and-forget: "you placed Nth / you advance / podium" to every
+			// ranked competitor. Must never delay or break the finalize response.
+			void notifyZktRoundFinished(roundId);
 		}
-
-		emitZktRoundStatusChanged(competitionId, {roundId, status: 'FINISHED'});
-
-		// Fire-and-forget: "you placed Nth / you advance / podium" to every
-		// ranked competitor. Must never delay or break the finalize response.
-		void notifyZktRoundFinished(roundId);
 
 		return getPrisma().zktRound.findUnique({
 			where: {id: roundId},
-			include: {results: {include: {user: publicUserInclude}}, groups: true},
+			include: {results: {include: {user: publicUserInclude, person: true}}, groups: true},
 		});
 	}
 
@@ -321,13 +338,14 @@ export class ZktResultResolver {
 			include: {results: true, groups: true},
 		});
 
-		// Auto-generate scrambles the first time a round opens (UPCOMING → OPEN).
-		// Idempotent — already-existing scrambles aren't touched.
-		if (input.status === 'OPEN' && round.status === 'UPCOMING') {
+		// Auto-generate scrambles the first time a round becomes ACTIVE (the WCA
+		// "start round" step). Idempotent — already-existing scrambles aren't
+		// touched, so re-activating after a reopen is safe.
+		if (input.status === 'ACTIVE' && round.status !== 'ACTIVE') {
 			try {
 				await ensureScramblesForRound(input.roundId);
 			} catch (err) {
-				console.error('[zkt-scramble] auto-gen on open failed:', err);
+				console.error('[zkt-scramble] auto-gen on activate failed:', err);
 			}
 		}
 
@@ -625,7 +643,8 @@ export class ZktResultResolver {
 
 		const result = await markResultNoShow({
 			round_id: input.roundId,
-			user_id: input.userId,
+			user_id: input.userId ?? null,
+			person_id: input.personId ?? null,
 			entered_by_id: context.user.id,
 		});
 

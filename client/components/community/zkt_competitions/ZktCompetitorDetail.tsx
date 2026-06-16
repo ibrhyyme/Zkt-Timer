@@ -6,7 +6,7 @@ import {useTranslation} from 'react-i18next';
 import {useParams, useHistory} from 'react-router-dom';
 import {ArrowLeft, Trophy, ListBullets, Warning} from 'phosphor-react';
 import Loading from '../../common/loading/Loading';
-import {b, getEventName, formatCs, formatName, formatTimeRange, competitorDisplayName, competitorFlag} from './shared';
+import {b, getEventName, formatCs, formatName, formatTimeRange, competitorDisplayName, competitorFlag, competitorOf, ZKT_ROLE_COLORS} from './shared';
 
 const COMPETITOR_DETAIL_QUERY = gql`
 	query ZktCompetitorDetailPublic($competitionId: String!, $userId: String!) {
@@ -22,6 +22,7 @@ const COMPETITOR_DETAIL_QUERY = gql`
 			registrations {
 				id
 				user_id
+				person_id
 				status
 				user {
 					id
@@ -34,6 +35,12 @@ const COMPETITOR_DETAIL_QUERY = gql`
 							url
 						}
 					}
+				}
+				person {
+					id
+					first_name
+					last_name
+					country_code
 				}
 				events {
 					comp_event_id
@@ -95,14 +102,7 @@ const ROLE_LABELS: Record<string, string> = {
 	STAFF: 'role_staff',
 };
 
-const ROLE_TINT: Record<string, string> = {
-	COMPETITOR: '#2dbd61',
-	JUDGE: '#42a5f5',
-	SCRAMBLER: '#9b59b6',
-	RUNNER: '#ee6a26',
-	ORGANIZER: '#246bfd',
-	STAFF: '#95a5a6',
-};
+const ROLE_TINT = ZKT_ROLE_COLORS;
 
 type Mode = 'schedule' | 'results';
 
@@ -130,16 +130,17 @@ export default function ZktCompetitorDetail() {
 
 	const competitor = useMemo(() => {
 		if (!data) return null;
+		// userId route param is a competitorId: either a user id or a ghost id.
 		const reg = (data.zktCompetition?.registrations || []).find(
-			(r: any) => r.user_id === userId
+			(r: any) => r.user_id === userId || r.person_id === userId
 		);
-		return reg?.user || null;
+		return competitorOf(reg) || null;
 	}, [data, userId]);
 
 	const competitorEvents = useMemo(() => {
 		if (!data) return [] as string[];
 		const reg = (data.zktCompetition?.registrations || []).find(
-			(r: any) => r.user_id === userId
+			(r: any) => r.user_id === userId || r.person_id === userId
 		);
 		const compEventMap = new Map<string, string>();
 		(data.zktCompetition?.events || []).forEach((e: any) =>

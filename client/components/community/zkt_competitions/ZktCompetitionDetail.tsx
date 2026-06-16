@@ -73,6 +73,7 @@ const DETAIL_QUERY = gql`
 					assignments {
 						id
 						user_id
+						person_id
 						role
 						group {
 							group_number
@@ -83,6 +84,7 @@ const DETAIL_QUERY = gql`
 			registrations {
 				id
 				user_id
+				person_id
 				status
 				user {
 					id
@@ -96,6 +98,14 @@ const DETAIL_QUERY = gql`
 							url
 						}
 					}
+				}
+				person {
+					id
+					first_name
+					last_name
+					country_code
+					wca_id
+					external_id
 				}
 				events {
 					id

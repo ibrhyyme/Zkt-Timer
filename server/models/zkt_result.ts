@@ -251,7 +251,8 @@ export function determineAdvancement<T extends {best: number | null; average: nu
  */
 export async function upsertZktResult(input: {
 	round_id: string;
-	user_id: string;
+	user_id?: string | null;
+	person_id?: string | null;
 	attempt_1?: number | null;
 	attempt_2?: number | null;
 	attempt_3?: number | null;
@@ -296,16 +297,19 @@ export async function upsertZktResult(input: {
 		entered_by_id: input.entered_by_id,
 	};
 
+	// Identity is user XOR person (ghost competitor) — pick the matching key.
+	const identity = input.person_id
+		? {person_id: input.person_id}
+		: {user_id: input.user_id!};
+	const where = input.person_id
+		? {round_id_person_id: {round_id: input.round_id, person_id: input.person_id}}
+		: {round_id_user_id: {round_id: input.round_id, user_id: input.user_id!}};
+
 	return prisma.zktResult.upsert({
-		where: {
-			round_id_user_id: {
-				round_id: input.round_id,
-				user_id: input.user_id,
-			},
-		},
+		where,
 		create: {
 			round_id: input.round_id,
-			user_id: input.user_id,
+			...identity,
 			...persisted,
 		},
 		update: persisted,
@@ -319,7 +323,8 @@ export async function upsertZktResult(input: {
  */
 export async function markResultNoShow(input: {
 	round_id: string;
-	user_id: string;
+	user_id?: string | null;
+	person_id?: string | null;
 	entered_by_id: string;
 }) {
 	const prisma = getPrisma();
@@ -347,16 +352,19 @@ export async function markResultNoShow(input: {
 		entered_by_id: input.entered_by_id,
 	};
 
+	// Identity is user XOR person (ghost competitor) — pick the matching key.
+	const identity = input.person_id
+		? {person_id: input.person_id}
+		: {user_id: input.user_id!};
+	const where = input.person_id
+		? {round_id_person_id: {round_id: input.round_id, person_id: input.person_id}}
+		: {round_id_user_id: {round_id: input.round_id, user_id: input.user_id!}};
+
 	return prisma.zktResult.upsert({
-		where: {
-			round_id_user_id: {
-				round_id: input.round_id,
-				user_id: input.user_id,
-			},
-		},
+		where,
 		create: {
 			round_id: input.round_id,
-			user_id: input.user_id,
+			...identity,
 			...persisted,
 		},
 		update: persisted,
@@ -371,8 +379,21 @@ export async function markResultNoShow(input: {
 export async function finalizeRound(
 	roundId: string,
 	enteredById: string
-): Promise<void> {
+): Promise<{alreadyFinalized: boolean}> {
 	const prisma = getPrisma();
+
+	// Atomic claim: flip status to FINISHED only if it isn't already. When two
+	// scoretakers hit "finalize" at the same time, exactly one updateMany
+	// affects a row; the loser sees count === 0 and bails — so ranking/records
+	// run once and "round finished" notifications go out once, not twice.
+	const claim = await prisma.zktRound.updateMany({
+		where: {id: roundId, status: {not: 'FINISHED'}},
+		data: {status: 'FINISHED'},
+	});
+	if (claim.count === 0) {
+		return {alreadyFinalized: true};
+	}
+
 	const round = await prisma.zktRound.findUnique({
 		where: {id: roundId},
 		include: {
@@ -392,7 +413,7 @@ export async function finalizeRound(
 		round.format
 	);
 
-	// Persist ranking + proceeds
+	// Persist ranking + proceeds (status is already FINISHED from the claim).
 	await Promise.all(
 		withAdvancement.map((r) =>
 			prisma.zktResult.update({
@@ -402,21 +423,17 @@ export async function finalizeRound(
 		)
 	);
 
-	// Mark round as finished
-	await prisma.zktRound.update({
-		where: {id: roundId},
-		data: {status: 'FINISHED'},
-	});
-
 	// Advancement carry: if a next round exists, create empty result rows
 	// for competitors who advanced. Skips users that already have a row
 	// (idempotent — finalize can be called again after reopen without dupes).
 	await carryAdvancingToNextRound(roundId, withAdvancement, enteredById);
+
+	return {alreadyFinalized: false};
 }
 
 async function carryAdvancingToNextRound(
 	currentRoundId: string,
-	ranked: Array<{user_id: string; proceeds: boolean}>,
+	ranked: Array<{user_id?: string | null; person_id?: string | null; proceeds: boolean}>,
 	enteredById: string
 ): Promise<void> {
 	const prisma = getPrisma();
@@ -436,25 +453,22 @@ async function carryAdvancingToNextRound(
 	});
 	if (!nextRound) return;
 
-	const advancingUserIds = ranked.filter((r) => r.proceeds).map((r) => r.user_id);
-	if (advancingUserIds.length === 0) return;
+	// Carry both registered users AND account-less persons (each row is one or
+	// the other). composite key + identity pick the matching column.
+	const advancing = ranked.filter((r) => r.proceeds && (r.user_id || r.person_id));
+	if (advancing.length === 0) return;
 
 	await Promise.all(
-		advancingUserIds.map((userId) =>
-			prisma.zktResult.upsert({
-				where: {
-					round_id_user_id: {
-						round_id: nextRound.id,
-						user_id: userId,
-					},
-				},
-				create: {
-					round_id: nextRound.id,
-					user_id: userId,
-					entered_by_id: enteredById,
-				},
+		advancing.map((r) => {
+			const where = r.person_id
+				? {round_id_person_id: {round_id: nextRound.id, person_id: r.person_id}}
+				: {round_id_user_id: {round_id: nextRound.id, user_id: r.user_id!}};
+			const identity = r.person_id ? {person_id: r.person_id} : {user_id: r.user_id!};
+			return prisma.zktResult.upsert({
+				where,
+				create: {round_id: nextRound.id, ...identity, entered_by_id: enteredById},
 				update: {}, // don't overwrite if admin already started entering
-			})
-		)
+			});
+		})
 	);
 }

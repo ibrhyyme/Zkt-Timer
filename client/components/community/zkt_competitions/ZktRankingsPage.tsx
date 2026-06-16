@@ -72,7 +72,7 @@ export default function ZktRankingsPage() {
 
 			<div className={b('rankings-controls')} style={{display: 'flex', gap: '1rem', margin: '1rem 0', flexWrap: 'wrap'}}>
 				<label>
-					<span style={{display: 'block', fontSize: 12, opacity: 0.7}}>
+					<span style={{display: 'block', fontSize: 12, fontWeight: 600, color: 'rgb(var(--text-color))'}}>
 						{t('rankings_event')}
 					</span>
 					<select
@@ -132,7 +132,7 @@ export default function ZktRankingsPage() {
 				</div>
 
 				<label>
-					<span style={{display: 'block', fontSize: 12, opacity: 0.7}}>{t('rankings_top_n')}</span>
+					<span style={{display: 'block', fontSize: 12, fontWeight: 600, color: 'rgb(var(--text-color))'}}>{t('rankings_top_n')}</span>
 					<select
 						className={b('select')}
 						value={topN}

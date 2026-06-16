@@ -2,7 +2,7 @@ import React, {useEffect, useMemo, useState} from 'react';
 import {gql} from '@apollo/client';
 import {gqlMutate} from '../../../api';
 import {useTranslation} from 'react-i18next';
-import {b, formatCs, getEventName, competitorDisplayName, competitorFlag} from '../shared';
+import {b, formatCs, getEventName, competitorDisplayName, competitorFlag, competitorOf} from '../shared';
 import {Trophy} from 'phosphor-react';
 
 const PODIUMS_QUERY = gql`
@@ -13,6 +13,7 @@ const PODIUMS_QUERY = gql`
 			results {
 				id
 				user_id
+				person_id
 				best
 				average
 				ranking
@@ -30,6 +31,12 @@ const PODIUMS_QUERY = gql`
 						}
 					}
 				}
+				person {
+					id
+					first_name
+					last_name
+					country_code
+				}
 			}
 		}
 	}
@@ -40,6 +47,7 @@ const ROUND_RESULTS = gql`
 		zktRoundResults(roundId: $roundId) {
 			id
 			user_id
+			person_id
 			best
 			average
 			ranking
@@ -57,6 +65,12 @@ const ROUND_RESULTS = gql`
 						url
 					}
 				}
+			}
+			person {
+				id
+				first_name
+				last_name
+				country_code
 			}
 		}
 	}
@@ -175,7 +189,7 @@ export default function ZktPodiumsTab({detail}: {detail: any}) {
 									<Trophy weight="fill" size={28} />
 									<div className={b('podium-medal-rank')}>#{r.ranking}</div>
 									<div className={b('podium-medal-name')}>
-										{competitorFlag(r.user) ? competitorFlag(r.user) + ' ' : ''}{competitorDisplayName(r.user) || r.user_id}
+										{competitorFlag(competitorOf(r)) ? competitorFlag(competitorOf(r)) + ' ' : ''}{competitorDisplayName(competitorOf(r)) || r.user_id || r.person_id}
 									</div>
 									<div className={b('podium-medal-time')}>{formatCs(r.best)}</div>
 								</div>
@@ -228,7 +242,7 @@ export default function ZktPodiumsTab({detail}: {detail: any}) {
 																alt=""
 															/>
 														)}
-														<span>{competitorFlag(r.user) ? competitorFlag(r.user) + ' ' : ''}{competitorDisplayName(r.user) || r.user_id}</span>
+														<span>{competitorFlag(competitorOf(r)) ? competitorFlag(competitorOf(r)) + ' ' : ''}{competitorDisplayName(competitorOf(r)) || r.user_id || r.person_id}</span>
 													</div>
 												</td>
 												<td className={b('rank-time')}>

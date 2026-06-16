@@ -23,7 +23,7 @@ export default function EditTimeLimitModal({value, onChange}: Props) {
 			className={b('round-field-btn', {set: !!value})}
 			onClick={openEditor}
 		>
-			{value ? formatCs(value) : 'Ayarla'}
+			{value ? formatCs(value) : '—'}
 		</button>
 	);
 }

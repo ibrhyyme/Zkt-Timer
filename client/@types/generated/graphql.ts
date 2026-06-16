@@ -156,6 +156,17 @@ export type AddZktOrganizerInput = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type AddZktPersonInput = {
+  competitionId?: InputMaybe<Scalars['String']>;
+  country?: InputMaybe<Scalars['String']>;
+  eventIds?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  externalId?: InputMaybe<Scalars['String']>;
+  firstName?: InputMaybe<Scalars['String']>;
+  gender?: InputMaybe<Scalars['String']>;
+  lastName?: InputMaybe<Scalars['String']>;
+  wcaId?: InputMaybe<Scalars['String']>;
+};
+
 export type AdminActiveUsersResult = {
   __typename?: 'AdminActiveUsersResult';
   available_months?: Maybe<Array<Maybe<Scalars['String']>>>;
@@ -628,6 +639,11 @@ export type Image = {
   user_id?: Maybe<Scalars['String']>;
 };
 
+export type ImportZktCompetitorsInput = {
+  competitionId?: InputMaybe<Scalars['String']>;
+  rows?: InputMaybe<Array<InputMaybe<ZktPersonRowInput>>>;
+};
+
 export type Integration = {
   __typename?: 'Integration';
   auth_expires_at?: Maybe<Scalars['BigInt']>;
@@ -835,6 +851,7 @@ export type LandingStats = {
 };
 
 export type MarkZktNoShowInput = {
+  personId?: InputMaybe<Scalars['String']>;
   roundId?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -859,6 +876,7 @@ export type Mutation = {
   addZktCompetitorToRound?: Maybe<ZktResult>;
   addZktDelegate?: Maybe<ZktCompDelegate>;
   addZktOrganizer?: Maybe<ZktCompOrganizer>;
+  addZktPerson?: Maybe<ZktPerson>;
   adminDeleteTrainerAlternative?: Maybe<TrainerAlternative>;
   adminDeleteUserAccount?: Maybe<UserAccount>;
   adminSendPushToUser?: Maybe<AdminSendPushResult>;
@@ -920,6 +938,7 @@ export type Mutation = {
   deleteZktCompetition?: Maybe<Scalars['Boolean']>;
   deleteZktCompTab?: Maybe<Scalars['Boolean']>;
   deleteZktGroup?: Maybe<Scalars['Boolean']>;
+  deleteZktPerson?: Maybe<Scalars['Boolean']>;
   deleteZktResult?: Maybe<Scalars['Boolean']>;
   deleteZktRound?: Maybe<Scalars['Boolean']>;
   deleteZktScheduleItem?: Maybe<Scalars['Boolean']>;
@@ -928,6 +947,7 @@ export type Mutation = {
   fetchWcaRecords?: Maybe<Array<Maybe<WcaRecord>>>;
   finalizeZktRound?: Maybe<ZktRound>;
   followCompetitor?: Maybe<CompetitionFollow>;
+  importZktCompetitors?: Maybe<Array<Maybe<ZktPerson>>>;
   linkRevenueCatUser?: Maybe<Scalars['Boolean']>;
   logOut: PublicUserAccount;
   markAnnouncementAsViewed?: Maybe<Scalars['Boolean']>;
@@ -964,6 +984,7 @@ export type Mutation = {
   sendForgotPasswordCode?: Maybe<Scalars['Void']>;
   setDailyGoal?: Maybe<DailyGoalType>;
   setDailyGoalReminder?: Maybe<DailyGoalReminderResult>;
+  setModStatus?: Maybe<UserAccount>;
   setPremiumStatus?: Maybe<UserAccount>;
   setProStatus?: Maybe<UserAccount>;
   setSetting?: Maybe<Setting>;
@@ -1001,6 +1022,7 @@ export type Mutation = {
   updateZktCompetitionStatus?: Maybe<ZktCompetition>;
   updateZktCompTab?: Maybe<ZktCompTab>;
   updateZktGroupSchedule?: Maybe<ZktGroup>;
+  updateZktPerson?: Maybe<ZktPerson>;
   updateZktRegistrationStatus?: Maybe<ZktRegistration>;
   updateZktRound?: Maybe<ZktRound>;
   updateZktRoundStatus?: Maybe<ZktRound>;
@@ -1050,6 +1072,11 @@ export type MutationAddZktDelegateArgs = {
 
 export type MutationAddZktOrganizerArgs = {
   input?: InputMaybe<AddZktOrganizerInput>;
+};
+
+
+export type MutationAddZktPersonArgs = {
+  input?: InputMaybe<AddZktPersonInput>;
 };
 
 
@@ -1349,6 +1376,11 @@ export type MutationDeleteZktGroupArgs = {
 };
 
 
+export type MutationDeleteZktPersonArgs = {
+  personId?: InputMaybe<Scalars['String']>;
+};
+
+
 export type MutationDeleteZktResultArgs = {
   resultId?: InputMaybe<Scalars['String']>;
 };
@@ -1382,6 +1414,11 @@ export type MutationFinalizeZktRoundArgs = {
 
 export type MutationFollowCompetitorArgs = {
   input?: InputMaybe<FollowCompetitorInput>;
+};
+
+
+export type MutationImportZktCompetitorsArgs = {
+  input?: InputMaybe<ImportZktCompetitorsInput>;
 };
 
 
@@ -1532,6 +1569,12 @@ export type MutationSetDailyGoalArgs = {
 
 export type MutationSetDailyGoalReminderArgs = {
   enabled?: InputMaybe<Scalars['Boolean']>;
+};
+
+
+export type MutationSetModStatusArgs = {
+  isMod?: InputMaybe<Scalars['Boolean']>;
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -1742,6 +1785,11 @@ export type MutationUpdateZktCompTabArgs = {
 
 export type MutationUpdateZktGroupScheduleArgs = {
   input?: InputMaybe<UpdateZktGroupScheduleInput>;
+};
+
+
+export type MutationUpdateZktPersonArgs = {
+  input?: InputMaybe<UpdateZktPersonInput>;
 };
 
 
@@ -2035,6 +2083,7 @@ export type Query = {
   zktAllTimeRankings?: Maybe<Array<Maybe<ZktAllTimeRanking>>>;
   zktCompetition?: Maybe<ZktCompetition>;
   zktCompetitionForAdmin?: Maybe<ZktCompetition>;
+  zktCompetitionPersons?: Maybe<Array<Maybe<ZktPerson>>>;
   zktCompetitionPodiums?: Maybe<Array<Maybe<ZktPodium>>>;
   zktCompetitions?: Maybe<PaginatedZktCompetitions>;
   zktCompetitionsForAdmin?: Maybe<PaginatedZktCompetitions>;
@@ -2282,6 +2331,11 @@ export type QueryZktCompetitionForAdminArgs = {
 };
 
 
+export type QueryZktCompetitionPersonsArgs = {
+  competitionId?: InputMaybe<Scalars['String']>;
+};
+
+
 export type QueryZktCompetitionPodiumsArgs = {
   id?: InputMaybe<Scalars['String']>;
 };
@@ -2305,6 +2359,7 @@ export type QueryZktCompetitionsForAdminArgs = {
 
 export type QueryZktCompetitorResultsArgs = {
   competitionId?: InputMaybe<Scalars['String']>;
+  personId?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -2352,6 +2407,7 @@ export type QueryZktRoundScramblesArgs = {
 
 export type QueryZktUserAssignmentsArgs = {
   competitionId?: InputMaybe<Scalars['String']>;
+  personId?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -2709,6 +2765,7 @@ export type SubmitZktResultBatchItem = {
   attempt3?: InputMaybe<Scalars['Int']>;
   attempt4?: InputMaybe<Scalars['Int']>;
   attempt5?: InputMaybe<Scalars['Int']>;
+  personId?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -2718,6 +2775,7 @@ export type SubmitZktResultInput = {
   attempt3?: InputMaybe<Scalars['Int']>;
   attempt4?: InputMaybe<Scalars['Int']>;
   attempt5?: InputMaybe<Scalars['Int']>;
+  personId?: InputMaybe<Scalars['String']>;
   roundId?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -2944,6 +3002,17 @@ export type UpdateZktGroupScheduleInput = {
   endTime?: InputMaybe<Scalars['DateTime']>;
   groupId?: InputMaybe<Scalars['String']>;
   startTime?: InputMaybe<Scalars['DateTime']>;
+};
+
+export type UpdateZktPersonInput = {
+  country?: InputMaybe<Scalars['String']>;
+  eventIds?: InputMaybe<Array<Scalars['String']>>;
+  externalId?: InputMaybe<Scalars['String']>;
+  firstName?: InputMaybe<Scalars['String']>;
+  gender?: InputMaybe<Scalars['String']>;
+  lastName?: InputMaybe<Scalars['String']>;
+  personId?: InputMaybe<Scalars['String']>;
+  wcaId?: InputMaybe<Scalars['String']>;
 };
 
 export type UpdateZktRegistrationStatusInput = {
@@ -3538,9 +3607,13 @@ export type ZktAllTimeRanking = {
 export type ZktAssignment = {
   __typename?: 'ZktAssignment';
   created_at?: Maybe<Scalars['DateTime']>;
+  group?: Maybe<ZktGroup>;
   group_id?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
+  person?: Maybe<ZktPerson>;
+  person_id?: Maybe<Scalars['String']>;
   role?: Maybe<ZktAssignmentRole>;
+  round?: Maybe<ZktRound>;
   round_id?: Maybe<Scalars['String']>;
   seed_result?: Maybe<Scalars['Int']>;
   station_number?: Maybe<Scalars['Int']>;
@@ -3706,6 +3779,30 @@ export type ZktGroup = {
   start_time?: Maybe<Scalars['DateTime']>;
 };
 
+export type ZktPerson = {
+  __typename?: 'ZktPerson';
+  competition_id?: Maybe<Scalars['String']>;
+  country_code?: Maybe<Scalars['String']>;
+  created_at?: Maybe<Scalars['DateTime']>;
+  date_of_birth?: Maybe<Scalars['DateTime']>;
+  external_id?: Maybe<Scalars['String']>;
+  first_name?: Maybe<Scalars['String']>;
+  gender?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  last_name?: Maybe<Scalars['String']>;
+  wca_id?: Maybe<Scalars['String']>;
+};
+
+export type ZktPersonRowInput = {
+  country?: InputMaybe<Scalars['String']>;
+  eventIds?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  externalId?: InputMaybe<Scalars['String']>;
+  firstName?: InputMaybe<Scalars['String']>;
+  gender?: InputMaybe<Scalars['String']>;
+  lastName?: InputMaybe<Scalars['String']>;
+  wcaId?: InputMaybe<Scalars['String']>;
+};
+
 export type ZktPodium = {
   __typename?: 'ZktPodium';
   event_id?: Maybe<Scalars['String']>;
@@ -3738,6 +3835,8 @@ export type ZktRegistration = {
   history?: Maybe<Array<ZktRegistrationHistory>>;
   id?: Maybe<Scalars['String']>;
   notes?: Maybe<Scalars['String']>;
+  person?: Maybe<ZktPerson>;
+  person_id?: Maybe<Scalars['String']>;
   status?: Maybe<ZktRegistrationStatus>;
   updated_at?: Maybe<Scalars['DateTime']>;
   user?: Maybe<ZktCompetitorUser>;
@@ -3794,8 +3893,11 @@ export type ZktResult = {
   entered_by_id?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
   no_show?: Maybe<Scalars['Boolean']>;
+  person?: Maybe<ZktPerson>;
+  person_id?: Maybe<Scalars['String']>;
   proceeds?: Maybe<Scalars['Boolean']>;
   ranking?: Maybe<Scalars['Int']>;
+  round?: Maybe<ZktRound>;
   round_id?: Maybe<Scalars['String']>;
   single_record_tag?: Maybe<Scalars['String']>;
   updated_at?: Maybe<Scalars['DateTime']>;
@@ -3807,6 +3909,8 @@ export type ZktRound = {
   __typename?: 'ZktRound';
   advancement_level?: Maybe<Scalars['Int']>;
   advancement_type?: Maybe<ZktAdvancementType>;
+  assignments?: Maybe<Array<ZktAssignment>>;
+  comp_event?: Maybe<ZktCompEvent>;
   comp_event_id?: Maybe<Scalars['String']>;
   created_at?: Maybe<Scalars['DateTime']>;
   cutoff_attempts?: Maybe<Scalars['Int']>;

@@ -1,6 +1,6 @@
 import React from 'react';
 import {useTranslation} from 'react-i18next';
-import {b, getEventName, formatCs} from '../shared';
+import {b, getEventName, formatCs, ZKT_MEDAL_COLORS} from '../shared';
 
 interface Props {
 	detail: any;
@@ -43,7 +43,7 @@ export default function ZktLivePodiums({detail, results}: Props) {
 
 	if (podiums.length === 0) return null;
 
-	const medals = ['#FFD700', '#C0C0C0', '#CD7F32'];
+	const medals = ZKT_MEDAL_COLORS;
 
 	return (
 		<div style={{marginBottom: '2rem'}}>
