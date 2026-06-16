@@ -82,7 +82,7 @@ export class SupportTicketResolver {
 		return ticket as SupportTicket;
 	}
 
-	@Authorized([Role.MOD])
+	@Authorized([Role.ADMIN])
 	@Query(() => [SupportTicket])
 	async supportTickets(
 		@Ctx() context: GraphQLContext,
@@ -153,8 +153,9 @@ export class SupportTicketResolver {
 
 		if (!ticket) return null;
 
-		const isAdminOrMod = (user as any).admin || (user as any).mod;
-		if (ticket.created_by_id !== user.id && !isAdminOrMod) {
+		// Support is admin-only; mods are competition-only and have no support access.
+		const isAdmin = (user as any).admin;
+		if (ticket.created_by_id !== user.id && !isAdmin) {
 			throw new GraphQLError(ErrorCode.FORBIDDEN, 'Bu destek talebine erisim yetkin yok');
 		}
 
@@ -192,14 +193,15 @@ export class SupportTicketResolver {
 			throw new GraphQLError(ErrorCode.FORBIDDEN, 'Cozulmus talebe yeni mesaj yazilamaz');
 		}
 
-		const isAdminOrMod = (user as any).admin || (user as any).mod;
+		// Support is admin-only; mods are competition-only and have no support access.
+		const isAdmin = (user as any).admin;
 		const isOwner = ticket.created_by_id === user.id;
-		if (!isOwner && !isAdminOrMod) {
+		if (!isOwner && !isAdmin) {
 			throw new GraphQLError(ErrorCode.FORBIDDEN, 'Bu destek talebine yanit yazma yetkin yok');
 		}
 
 		// Only admin/mod can upload attachments. If user provides array, silently ignore.
-		const effectiveAttachments = isAdminOrMod ? (attachments || []) : [];
+		const effectiveAttachments = isAdmin ? (attachments || []) : [];
 
 		if (effectiveAttachments.length > MAX_ATTACHMENTS_PER_MESSAGE) {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, `En fazla ${MAX_ATTACHMENTS_PER_MESSAGE} dosya eklenebilir`);
@@ -215,7 +217,7 @@ export class SupportTicketResolver {
 				ticket_id: ticketId,
 				sender_id: user.id,
 				body: trimmed,
-				is_admin: !!isAdminOrMod,
+				is_admin: !!isAdmin,
 			},
 		});
 
@@ -242,7 +244,7 @@ export class SupportTicketResolver {
 		});
 
 		// Notification — don't block message creation if notification fails
-		if (isAdminOrMod) {
+		if (isAdmin) {
 			// Admin → user
 			notifyUserOfTicketReply(ticket.created_by as any, user as any, ticket.subject, ticket.id).catch((e) => {
 				logger.error('[SupportTicket] User notification failed', {ticketId, error: (e as any)?.message});
@@ -257,7 +259,7 @@ export class SupportTicketResolver {
 		return finalMessage as any;
 	}
 
-	@Authorized([Role.MOD])
+	@Authorized([Role.ADMIN])
 	@Mutation(() => SupportTicket)
 	async resolveSupportTicket(
 		@Ctx() context: GraphQLContext,

@@ -293,7 +293,6 @@ export default function DashboardAssignments({
 				style={{
 					marginBottom: '1.5rem',
 					fontSize: 13,
-					opacity: 0.75,
 				}}
 			>
 				{selectedRound && selectedRound.round_number > 1

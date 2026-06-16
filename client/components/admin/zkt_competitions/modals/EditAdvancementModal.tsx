@@ -22,7 +22,7 @@ export default function EditAdvancementModal({type, level, onChange}: Props) {
 			? type === 'PERCENT'
 				? `İlk %${level}`
 				: `İlk ${level}`
-			: 'Ayarla';
+			: '—';
 
 	return (
 		<button

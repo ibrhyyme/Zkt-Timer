@@ -7,8 +7,11 @@ import {jsPDF} from 'jspdf';
  * the system. So every result/signature cell is left blank for handwriting.
  */
 export interface ScorecardEntry {
-	registrantId: string | number; // competition-local seat number ("#3")
+	registrantId: string | number; // competition-local seat / registrant number
 	name: string;
+	wcaId?: string; // WCA / personal id, shown top-right (optional)
+	group?: number; // group number from the round's COMPETITOR assignment
+	station?: number; // table/station number from the assignment
 }
 
 export interface ScorecardPdfOptions {
@@ -16,12 +19,11 @@ export interface ScorecardPdfOptions {
 	eventName: string;
 	eventId: string;
 	roundNumber: number;
-	groupLabel?: string;
 	attemptCount: number; // BO1=1, BO2=2, BO3/MO3=3, AO5=5
-	extraCount?: number; // blank extra-attempt rows, default 2
+	extraCount?: number; // unused for layout; extra is a single delegate-signed row
 	cutoff?: string; // pre-formatted "1:00" or ''
 	timeLimit?: string; // pre-formatted "10:00" or ''
-	entries: ScorecardEntry[]; // competitors; if empty, `blankCount` blank cards are produced
+	entries: ScorecardEntry[]; // competitors; if empty, blank cards are produced
 	blankCount?: number; // number of empty cards when there are no entries, default 8
 }
 
@@ -37,7 +39,13 @@ function truncate(pdf: jsPDF, text: string, maxWidth: number): string {
 }
 
 /**
- * Draw a single scorecard inside the box (x, y, w, h).
+ * Draw a single WCA-style scorecard inside the box (x, y, w, h):
+ *   Competition title
+ *   Event | Round | Group | Station   (labelled boxes)
+ *   ID | Name                         (+ WCA id top-right)
+ *   # | Scr | Result | Judge | Comp   (attempt rows)
+ *   Extra attempt (Delegate initials ____)
+ *   Cutoff / Time limit (bottom-right)
  * `entry` null → a fully blank card (manual fill-in / spare).
  */
 function drawScorecard(
@@ -51,116 +59,175 @@ function drawScorecard(
 ): void {
 	const pad = 4;
 	const innerW = w - pad * 2;
+	const left = x + pad;
+	const right = x + w - pad;
+	const bottom = y + h - pad;
+
+	const ink = '#222222';
+	const sub = '#666666';
 
 	// Outer border
-	pdf.setDrawColor('#333333');
+	pdf.setDrawColor(ink);
 	pdf.setLineWidth(0.4);
 	pdf.rect(x, y, w, h);
 
-	let cy = y + pad + 3;
+	let cy = y + 6.5;
 
-	// Competition name (small, grey)
-	pdf.setFont('helvetica', 'normal');
-	pdf.setFontSize(8);
-	pdf.setTextColor('#777777');
-	pdf.text(truncate(pdf, opts.competitionName, innerW), x + pad, cy);
-	cy += 5;
-
-	// Event · Round · Group (bold)
+	// Competition name (bold, centered)
 	pdf.setFont('helvetica', 'bold');
 	pdf.setFontSize(11);
-	pdf.setTextColor('#000000');
-	const sub = `${opts.eventName} · R${opts.roundNumber}${opts.groupLabel ? ` · ${opts.groupLabel}` : ''}`;
-	pdf.text(truncate(pdf, sub, innerW), x + pad, cy);
-	cy += 5;
+	pdf.setTextColor(ink);
+	pdf.text(truncate(pdf, opts.competitionName, innerW), x + w / 2, cy, {align: 'center'});
+	cy += 4;
 
-	// Cutoff / time limit (small)
-	if (opts.cutoff || opts.timeLimit) {
-		pdf.setFont('helvetica', 'normal');
-		pdf.setFontSize(7.5);
-		pdf.setTextColor('#555555');
-		const parts: string[] = [];
-		if (opts.cutoff) parts.push(`Cutoff ${opts.cutoff}`);
-		if (opts.timeLimit) parts.push(`Limit ${opts.timeLimit}`);
-		pdf.text(parts.join('     '), x + pad, cy);
-		cy += 4.5;
-	} else {
-		cy += 0.5;
-	}
+	// --- Meta table: Event | Round | Group | Station ---
+	const metaH = 8.5;
+	const stationW = 13;
+	const groupW = 13;
+	const roundW = 13;
+	const eventW = innerW - stationW - groupW - roundW;
+	const exX = left;
+	const rdX = left + eventW;
+	const grX = rdX + roundW;
+	const stX = grX + groupW;
 
-	// Competitor: seat id (bold) + name
-	pdf.setTextColor('#000000');
-	pdf.setFont('helvetica', 'bold');
-	pdf.setFontSize(10);
-	const idStr = entry ? `#${entry.registrantId}` : '#____';
-	pdf.text(idStr, x + pad, cy + 1.5);
-	const idW = pdf.getTextWidth(idStr) + 3;
 	pdf.setFont('helvetica', 'normal');
-	pdf.setFontSize(10);
-	pdf.text(entry ? truncate(pdf, entry.name, innerW - idW) : '', x + pad + idW, cy + 1.5);
-	cy += 5.5;
+	pdf.setFontSize(6);
+	pdf.setTextColor(sub);
+	pdf.text('Event', exX + 1.5, cy + 2.6);
+	pdf.text('Round', rdX + 1.5, cy + 2.6);
+	pdf.text('Group', grX + 1.5, cy + 2.6);
+	pdf.text('Station', stX + 1.5, cy + 2.6);
+	cy += 3.6;
 
-	// Divider
-	pdf.setDrawColor('#999999');
-	pdf.setLineWidth(0.2);
-	pdf.line(x + pad, cy, x + w - pad, cy);
-	cy += 1.5;
+	pdf.setDrawColor(ink);
+	pdf.setLineWidth(0.3);
+	pdf.rect(exX, cy, eventW, metaH);
+	pdf.rect(rdX, cy, roundW, metaH);
+	pdf.rect(grX, cy, groupW, metaH);
+	pdf.rect(stX, cy, stationW, metaH);
 
-	// Table geometry
-	const tableX = x + pad;
-	const tableW = innerW;
-	const seqW = 8;
-	const sigW = 17; // judge + competitor signature columns
-	const resultW = tableW - seqW - sigW * 2;
+	pdf.setTextColor(ink);
+	pdf.setFont('helvetica', 'normal');
+	pdf.setFontSize(9);
+	const midY = cy + metaH / 2 + 1.6;
+	pdf.text(truncate(pdf, opts.eventName, eventW - 3), exX + 2, midY);
+	pdf.text(String(opts.roundNumber), rdX + roundW / 2, midY, {align: 'center'});
+	pdf.setFont('helvetica', 'bold');
+	pdf.text(entry?.group != null ? String(entry.group) : '', grX + groupW / 2, midY, {align: 'center'});
+	pdf.text(entry?.station != null ? String(entry.station) : '', stX + stationW / 2, midY, {align: 'center'});
+	cy += metaH + 1;
 
-	const colSeqX = tableX;
-	const colResX = tableX + seqW;
-	const colJudgeX = colResX + resultW;
-	const colCompX = colJudgeX + sigW;
+	// --- ID + Name row (+ WCA id top-right) ---
+	pdf.setFont('helvetica', 'normal');
+	pdf.setFontSize(6);
+	pdf.setTextColor(sub);
+	pdf.text('ID', left + 1.5, cy + 2.6);
+	pdf.text('Name', left + 15, cy + 2.6);
+	if (entry?.wcaId) {
+		pdf.text(entry.wcaId, right - 0.5, cy + 2.6, {align: 'right'});
+	}
+	cy += 3.6;
 
-	// Column header
+	const idNameH = 8;
+	const idW = 12;
+	pdf.setDrawColor(ink);
+	pdf.setLineWidth(0.3);
+	pdf.rect(left, cy, idW, idNameH);
+	pdf.rect(left + idW, cy, innerW - idW, idNameH);
+	pdf.setTextColor(ink);
+	pdf.setFont('helvetica', 'bold');
+	pdf.setFontSize(9);
+	pdf.text(entry ? `${entry.registrantId}` : '', left + idW / 2, cy + idNameH / 2 + 1.6, {align: 'center'});
+	pdf.setFont('helvetica', 'normal');
+	pdf.text(
+		entry ? truncate(pdf, entry.name, innerW - idW - 4) : '',
+		left + idW + 2,
+		cy + idNameH / 2 + 1.6
+	);
+	cy += idNameH + 2.5;
+
+	// --- Result table: # | Scr | Result | Judge | Comp ---
+	const numW = 8;
+	const scrW = 12;
+	const sigW = 15;
+	const resultW = innerW - numW - scrW - sigW * 2;
+	const cNum = left;
+	const cScr = cNum + numW;
+	const cRes = cScr + scrW;
+	const cJud = cRes + resultW;
+	const cComp = cJud + sigW;
+
+	// Header
 	pdf.setFont('helvetica', 'bold');
 	pdf.setFontSize(6.5);
-	pdf.setTextColor('#666666');
-	pdf.text('#', colSeqX + seqW / 2, cy + 3, {align: 'center'});
-	pdf.text('Result', colResX + 2, cy + 3);
-	pdf.text('Judge', colJudgeX + 2, cy + 3);
-	pdf.text('Comp', colCompX + 2, cy + 3);
-	cy += 4.5;
+	pdf.setTextColor(sub);
+	pdf.text('Scr', cScr + scrW / 2, cy + 2.6, {align: 'center'});
+	pdf.text('Result', cRes + 2, cy + 2.6);
+	pdf.text('Judge', cJud + sigW / 2, cy + 2.6, {align: 'center'});
+	pdf.text('Comp', cComp + sigW / 2, cy + 2.6, {align: 'center'});
+	cy += 4;
 
-	// Attempt rows + extras
 	const rows: string[] = [];
 	for (let i = 1; i <= opts.attemptCount; i++) rows.push(String(i));
-	const extras = opts.extraCount ?? 2;
-	for (let e = 1; e <= extras; e++) rows.push(`E${e}`);
 
-	// Fit rows in remaining card height, capped so cells stay handwriting-friendly.
-	const bottom = y + h - pad;
-	const available = bottom - cy;
-	const rowH = Math.max(6, Math.min(9, available / rows.length));
+	// Reserve space at the bottom for the extra-attempt row + limit line.
+	const bottomReserve = 17;
+	const tableBottom = bottom - bottomReserve;
+	const rowH = Math.max(7, Math.min(11, (tableBottom - cy) / rows.length));
 
-	pdf.setTextColor('#000000');
+	pdf.setDrawColor(ink);
+	pdf.setLineWidth(0.2);
 	for (const r of rows) {
-		pdf.setDrawColor('#bbbbbb');
-		pdf.setLineWidth(0.15);
-		pdf.rect(colSeqX, cy, seqW, rowH);
-		pdf.rect(colResX, cy, resultW, rowH);
-		pdf.rect(colJudgeX, cy, sigW, rowH);
-		pdf.rect(colCompX, cy, sigW, rowH);
-		// Extra rows get a lighter seq tint cue via italic
-		const isExtra = r.startsWith('E');
-		pdf.setFont('helvetica', isExtra ? 'italic' : 'bold');
-		pdf.setFontSize(8);
-		pdf.setTextColor(isExtra ? '#888888' : '#000000');
-		pdf.text(r, colSeqX + seqW / 2, cy + rowH / 2 + 1.3, {align: 'center'});
+		pdf.rect(cNum, cy, numW, rowH);
+		pdf.rect(cScr, cy, scrW, rowH);
+		pdf.rect(cRes, cy, resultW, rowH);
+		pdf.rect(cJud, cy, sigW, rowH);
+		pdf.rect(cComp, cy, sigW, rowH);
+		pdf.setFont('helvetica', 'bold');
+		pdf.setFontSize(10);
+		pdf.setTextColor(ink);
+		pdf.text(r, cNum + numW / 2, cy + rowH / 2 + 1.5, {align: 'center'});
 		cy += rowH;
+	}
+
+	// --- Extra attempt (delegate-signed) ---
+	cy += 2;
+	pdf.setFont('helvetica', 'normal');
+	pdf.setFontSize(6.5);
+	pdf.setTextColor(ink);
+	pdf.text('Extra attempt (Delegate initials ____)', left, cy + 2);
+	cy += 3;
+	const exRowH = 7;
+	pdf.setDrawColor(ink);
+	pdf.setLineWidth(0.2);
+	pdf.rect(cNum, cy, numW, exRowH);
+	pdf.rect(cScr, cy, scrW, exRowH);
+	pdf.rect(cRes, cy, resultW, exRowH);
+	pdf.rect(cJud, cy, sigW, exRowH);
+	pdf.rect(cComp, cy, sigW, exRowH);
+	pdf.setFont('helvetica', 'bold');
+	pdf.setFontSize(11);
+	pdf.text('–', cNum + numW / 2, cy + exRowH / 2 + 1.5, {align: 'center'});
+	cy += exRowH;
+
+	// --- Cutoff / time limit (bottom-right) ---
+	if (opts.cutoff || opts.timeLimit) {
+		pdf.setFont('helvetica', 'normal');
+		pdf.setFontSize(7);
+		pdf.setTextColor(sub);
+		const parts: string[] = [];
+		if (opts.cutoff) parts.push(`Cutoff: ${opts.cutoff}`);
+		if (opts.timeLimit) parts.push(`Time limit: ${opts.timeLimit}`);
+		pdf.text(parts.join('    '), right, bottom - 0.5, {align: 'right'});
 	}
 }
 
 /**
  * Build & download a competitor scorecards PDF — A4 portrait, 4 cards per page
- * (2×2). One card per competitor (sorted by name, seat numbered) plus a couple
- * of blank spares; if there are no competitors, a sheet of blank cards.
+ * (2×2). One card per competitor (group/station seating order when assigned,
+ * else name-sorted) plus a couple of blank spares; if there are no competitors,
+ * a sheet of blank cards.
  */
 export function generateScorecardsPdf(opts: ScorecardPdfOptions): void {
 	const pdf = new jsPDF({orientation: 'portrait', unit: 'mm', format: 'a4'});
@@ -194,9 +261,5 @@ export function generateScorecardsPdf(opts: ScorecardPdfOptions): void {
 	});
 
 	const safe = (s: string) => s.replace(/[^\w.-]+/g, '_');
-	pdf.save(
-		`${safe(opts.competitionName)}-${safe(opts.eventId)}-R${opts.roundNumber}${
-			opts.groupLabel ? `-${safe(opts.groupLabel)}` : ''
-		}-scorecards.pdf`
-	);
+	pdf.save(`${safe(opts.competitionName)}-${safe(opts.eventId)}-R${opts.roundNumber}-scorecards.pdf`);
 }

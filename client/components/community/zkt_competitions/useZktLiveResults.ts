@@ -12,6 +12,7 @@ const ROUND_RESULTS = gql`
 		zktRoundResults(roundId: $roundId) {
 			id
 			user_id
+			person_id
 			attempt_1
 			attempt_2
 			attempt_3
@@ -36,13 +37,20 @@ const ROUND_RESULTS = gql`
 					}
 				}
 			}
+			person {
+				id
+				first_name
+				last_name
+				country_code
+			}
 		}
 	}
 `;
 
 export interface LiveResult {
 	id: string;
-	user_id: string;
+	user_id: string | null;
+	person_id?: string | null;
 	attempt_1?: number;
 	attempt_2?: number;
 	attempt_3?: number;
@@ -57,8 +65,17 @@ export interface LiveResult {
 	user?: {
 		id: string;
 		username: string;
+		first_name?: string | null;
+		last_name?: string | null;
+		join_country?: string | null;
 		profile?: {pfp_image?: {url: string}};
-	};
+	} | null;
+	person?: {
+		id: string;
+		first_name?: string | null;
+		last_name?: string | null;
+		country_code?: string | null;
+	} | null;
 }
 
 /**

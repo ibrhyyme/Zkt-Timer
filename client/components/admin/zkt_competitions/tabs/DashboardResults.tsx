@@ -13,13 +13,16 @@ import {
 	competitorFlag,
 } from '../shared';
 import TimeField from '../TimeField';
-import {MagnifyingGlass, FloppyDisk, CaretLeft, CaretRight, UserPlus} from 'phosphor-react';
+import {MagnifyingGlass, FloppyDisk, CaretLeft, CaretRight, UserPlus, Play} from 'phosphor-react';
+import {socketClient} from '../../../../util/socket/socketio';
+import {ZktCompClientEvent, ZktCompServerEvent} from '../../../../../shared/zkt_competition/events';
 
 const ROUND_RESULTS = gql`
 	query ZktRoundResults($roundId: String!) {
 		zktRoundResults(roundId: $roundId) {
 			id
 			user_id
+			person_id
 			attempt_1
 			attempt_2
 			attempt_3
@@ -44,6 +47,12 @@ const ROUND_RESULTS = gql`
 						url
 					}
 				}
+			}
+			person {
+				id
+				first_name
+				last_name
+				country_code
 			}
 			entered_by {
 				id
@@ -72,6 +81,26 @@ const SUBMIT_RESULT = gql`
 const FINALIZE_ROUND = gql`
 	mutation FinalizeZktRound($roundId: String!) {
 		finalizeZktRound(roundId: $roundId) {
+			id
+			status
+		}
+	}
+`;
+
+// WCA-style: starting a round is a single confirmation (UPCOMING -> ACTIVE).
+// The server generates scrambles on this transition.
+const SET_ROUND_STATUS = gql`
+	mutation SetZktRoundStatusFromResults($input: UpdateZktRoundStatusInput!) {
+		updateZktRoundStatus(input: $input) {
+			id
+			status
+		}
+	}
+`;
+
+const REOPEN_ROUND = gql`
+	mutation ReopenZktRoundFromResults($roundId: String!) {
+		reopenZktRound(roundId: $roundId) {
 			id
 			status
 		}
@@ -132,12 +161,21 @@ const DNS = -2;
 
 interface Competitor {
 	id: string;
-	user_id: string;
+	// Exactly one of user_id / person_id is set. user_id = registered account,
+	// person_id = account-less ("ghost") competitor imported into this comp.
+	user_id: string | null;
+	person_id?: string | null;
 	username: string;
 	first_name?: string | null;
 	last_name?: string | null;
 	join_country?: string | null;
 	avatarUrl?: string;
+}
+
+// Stable competitor key: the account id when present, else the ghost-person id.
+// Works for both Competitor and result rows (both carry user_id / person_id).
+function idOf(x: {user_id?: string | null; person_id?: string | null}): string {
+	return (x.user_id || x.person_id) as string;
 }
 
 export default function DashboardResults({detail, onUpdated}: {detail: any; onUpdated: () => void}) {
@@ -191,6 +229,54 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 		fetchResults();
 	}, [fetchResults]);
 
+	// Live sync (multi-scoretaker): join the competition's socket room so this
+	// screen reacts when ANOTHER scoretaker enters/deletes a result or changes
+	// a round's status. Without this, a second scoretaker's leaderboard stays
+	// stale and the same competitor could be overwritten.
+	useEffect(() => {
+		if (!detail?.id) return;
+		const socket = socketClient();
+		socket.emit(ZktCompClientEvent.JOIN_COMP, detail.id);
+		return () => {
+			socket.emit(ZktCompClientEvent.LEAVE_COMP, detail.id);
+		};
+	}, [detail?.id]);
+
+	useEffect(() => {
+		if (!selectedRoundId) return;
+		const socket = socketClient();
+		const onChanged = (payload: {roundId: string}) => {
+			if (payload.roundId === selectedRoundId) fetchResults();
+		};
+		socket.on(ZktCompServerEvent.RESULT_UPDATED, onChanged);
+		socket.on(ZktCompServerEvent.RESULT_DELETED, onChanged);
+		socket.on(ZktCompServerEvent.ROUND_STATUS_CHANGED, onChanged);
+		return () => {
+			socket.off(ZktCompServerEvent.RESULT_UPDATED, onChanged);
+			socket.off(ZktCompServerEvent.RESULT_DELETED, onChanged);
+			socket.off(ZktCompServerEvent.ROUND_STATUS_CHANGED, onChanged);
+		};
+	}, [selectedRoundId, fetchResults]);
+
+	// Polling fallback — if a socket event is missed (proxy/disconnect/background
+	// throttle), a 10s refetch (only while visible) guarantees convergence.
+	useEffect(() => {
+		if (!selectedRoundId) return;
+		let active = typeof document !== 'undefined' && document.visibilityState === 'visible';
+		const onVis = () => {
+			active = document.visibilityState === 'visible';
+			if (active) fetchResults();
+		};
+		document.addEventListener('visibilitychange', onVis);
+		const id = window.setInterval(() => {
+			if (active) fetchResults();
+		}, 10000);
+		return () => {
+			window.clearInterval(id);
+			document.removeEventListener('visibilitychange', onVis);
+		};
+	}, [selectedRoundId, fetchResults]);
+
 	const competitors: Competitor[] = useMemo(() => {
 		if (!selectedRound || !selectedEvent) return [];
 		if (selectedRound.round_number === 1) {
@@ -203,20 +289,22 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 				.map((r: any) => ({
 					id: r.id,
 					user_id: r.user_id,
-					username: r.user?.username || r.user_id,
-					first_name: r.user?.first_name,
-					last_name: r.user?.last_name,
-					join_country: r.user?.join_country,
+					person_id: r.person_id,
+					username: r.user?.username || r.user_id || r.person_id,
+					first_name: r.user?.first_name ?? r.person?.first_name,
+					last_name: r.user?.last_name ?? r.person?.last_name,
+					join_country: r.user?.join_country ?? r.person?.country_code,
 					avatarUrl: r.user?.profile?.pfp_image?.url,
 				}));
 		}
 		return results.map((r) => ({
 			id: r.id,
 			user_id: r.user_id,
-			username: r.user?.username || r.user_id,
-			first_name: r.user?.first_name,
-			last_name: r.user?.last_name,
-			join_country: r.user?.join_country,
+			person_id: r.person_id,
+			username: r.user?.username || r.user_id || r.person_id,
+			first_name: r.user?.first_name ?? r.person?.first_name,
+			last_name: r.user?.last_name ?? r.person?.last_name,
+			join_country: r.user?.join_country ?? r.person?.country_code,
 			avatarUrl: r.user?.profile?.pfp_image?.url,
 		}));
 	}, [selectedRound, selectedEvent, detail.registrations, results]);
@@ -224,10 +312,10 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 	// Auto-pick the first competitor when loading the round.
 	useEffect(() => {
 		if (!activeUserId && competitors.length > 0) {
-			setActiveUserId(competitors[0].user_id);
+			setActiveUserId(idOf(competitors[0]));
 		}
-		if (activeUserId && !competitors.some((c) => c.user_id === activeUserId)) {
-			setActiveUserId(competitors[0]?.user_id || null);
+		if (activeUserId && !competitors.some((c) => idOf(c) === activeUserId)) {
+			setActiveUserId(competitors[0] ? idOf(competitors[0]) : null);
 		}
 	}, [competitors, activeUserId]);
 
@@ -241,32 +329,37 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 		);
 	}, [competitors, search]);
 
-	const activeCompetitor = competitors.find((c) => c.user_id === activeUserId);
-	const activeResult = results.find((r) => r.user_id === activeUserId);
+	const activeCompetitor = competitors.find((c) => idOf(c) === activeUserId);
+	const activeResult = results.find((r) => idOf(r) === activeUserId);
 
 	function goToAdjacent(delta: number) {
 		if (!activeUserId || competitors.length === 0) return;
-		const idx = competitors.findIndex((c) => c.user_id === activeUserId);
+		const idx = competitors.findIndex((c) => idOf(c) === activeUserId);
 		const next = (idx + delta + competitors.length) % competitors.length;
-		setActiveUserId(competitors[next].user_id);
+		setActiveUserId(idOf(competitors[next]));
 	}
 
-	function handleBatchAdd(userId: string, attempts: (number | null)[]) {
-		setBatch((prev) => ({...prev, [userId]: attempts}));
+	// Batch is keyed by competitor key (user_id || person_id).
+	function handleBatchAdd(key: string, attempts: (number | null)[]) {
+		setBatch((prev) => ({...prev, [key]: attempts}));
 	}
 
 	async function submitBatch() {
 		const entries = Object.entries(batch);
 		if (entries.length === 0) return;
 		try {
-			const batchResults = entries.map(([userId, attempts]) => ({
-				userId,
-				attempt1: attempts[0] ?? null,
-				attempt2: attempts[1] ?? null,
-				attempt3: attempts[2] ?? null,
-				attempt4: attempts[3] ?? null,
-				attempt5: attempts[4] ?? null,
-			}));
+			const batchResults = entries.map(([key, attempts]) => {
+				const c = competitors.find((x) => idOf(x) === key);
+				return {
+					userId: c?.user_id || null,
+					personId: c?.person_id || null,
+					attempt1: attempts[0] ?? null,
+					attempt2: attempts[1] ?? null,
+					attempt3: attempts[2] ?? null,
+					attempt4: attempts[3] ?? null,
+					attempt5: attempts[4] ?? null,
+				};
+			});
 			await gqlMutate(SUBMIT_BATCH, {input: {roundId: selectedRoundId, results: batchResults}});
 			toastSuccess(t('batch_submitted', {count: entries.length}));
 			setBatch({});
@@ -276,9 +369,12 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 		}
 	}
 
-	async function handleNoShow(userId: string) {
+	async function handleNoShow(key: string) {
+		const c = competitors.find((x) => idOf(x) === key);
 		try {
-			await gqlMutate(MARK_NOSHOW, {input: {roundId: selectedRoundId, userId}});
+			await gqlMutate(MARK_NOSHOW, {
+				input: {roundId: selectedRoundId, userId: c?.user_id || null, personId: c?.person_id || null},
+			});
 			await fetchResults();
 		} catch (e: any) {
 			toastError(e?.message || t('error'));
@@ -327,7 +423,7 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 	const noShowCandidates = useMemo(() => {
 		if (!selectedRound || selectedRound.round_number !== 1) return [];
 		return competitors.filter((c) => {
-			const r = results.find((x) => x.user_id === c.user_id);
+			const r = results.find((x) => idOf(x) === idOf(c));
 			return !r || ((r.best === null || r.best === undefined) && !r.no_show);
 		});
 	}, [selectedRound, competitors, results]);
@@ -345,8 +441,11 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 		if (noShowSelection.size === 0) return;
 		if (!window.confirm(t('bulk_no_show_confirm', {count: noShowSelection.size}))) return;
 		try {
-			for (const userId of Array.from(noShowSelection)) {
-				await gqlMutate(MARK_NOSHOW, {input: {roundId: selectedRoundId, userId}});
+			for (const key of Array.from(noShowSelection)) {
+				const c = competitors.find((x) => idOf(x) === key);
+				await gqlMutate(MARK_NOSHOW, {
+					input: {roundId: selectedRoundId, userId: c?.user_id || null, personId: c?.person_id || null},
+				});
 			}
 			toastSuccess(t('bulk_no_show_done', {count: noShowSelection.size}));
 			setNoShowSelection(new Set());
@@ -357,7 +456,9 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 		}
 	}
 
-	async function handleQuit(userId: string) {
+	async function handleQuit(userId: string | null) {
+		// Quit/replacement is account-only for now (server quit path is user-keyed).
+		if (!userId) return;
 		if (!window.confirm(t('quit_competitor_confirm'))) return;
 		const replaceWithNext =
 			(selectedRound?.round_number || 1) > 1 && window.confirm(t('quit_replace_confirm'));
@@ -389,6 +490,34 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 		try {
 			await gqlMutate(FINALIZE_ROUND, {roundId: selectedRoundId});
 			toastSuccess(t('round_finalized'));
+			await fetchResults();
+			onUpdated();
+		} catch (e: any) {
+			toastError(e?.message || t('error'));
+		}
+	}
+
+	// Single-confirmation start (UPCOMING -> ACTIVE). Covers both round 1 and any
+	// later round that is waiting with its carried-over competitors.
+	async function startRound() {
+		if (!selectedRoundId) return;
+		try {
+			await gqlMutate(SET_ROUND_STATUS, {input: {roundId: selectedRoundId, status: 'ACTIVE'}});
+			toastSuccess(t('round_started'));
+			await fetchResults();
+			onUpdated();
+		} catch (e: any) {
+			toastError(e?.message || t('error'));
+		}
+	}
+
+	// Undo a finalize (FINISHED -> ACTIVE); server revokes untouched carry rows.
+	async function reopenRound() {
+		if (!selectedRoundId) return;
+		if (!window.confirm(t('reopen_round_confirm'))) return;
+		try {
+			await gqlMutate(REOPEN_ROUND, {roundId: selectedRoundId});
+			toastSuccess(t('round_reopened'));
 			await fetchResults();
 			onUpdated();
 		} catch (e: any) {
@@ -430,7 +559,17 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 				))}
 			</div>
 
-			{selectedRound && (
+			{/* Round not started — single "start round" confirmation (WCA-style). */}
+			{selectedRound && selectedRound.status === 'UPCOMING' && (
+				<div className={b('round-start-panel')}>
+					<p className={b('round-start-hint')}>{t('round_not_started_hint')}</p>
+					<button className={b('start-round-btn')} onClick={startRound}>
+						<Play weight="fill" /> {t('start_round')}
+					</button>
+				</div>
+			)}
+
+			{selectedRound && selectedRound.status !== 'UPCOMING' && (
 				<div className={b('scoretake-info')}>
 					<span><strong>{t('format')}:</strong> {selectedRound.format}</span>
 					{selectedRound.time_limit_cs && (
@@ -482,11 +621,11 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 			{noShowPanelOpen && (
 				<div className={b('add-panel')}>
 					{noShowCandidates.map((c) => (
-						<label key={c.user_id} className={b('add-panel-item', {checkbox: true})}>
+						<label key={idOf(c)} className={b('add-panel-item', {checkbox: true})}>
 							<input
 								type="checkbox"
-								checked={noShowSelection.has(c.user_id)}
-								onChange={() => toggleNoShowSelection(c.user_id)}
+								checked={noShowSelection.has(idOf(c))}
+								onChange={() => toggleNoShowSelection(idOf(c))}
 							/>
 							{competitorFlag(c) && <span className={b('flag')}>{competitorFlag(c)}</span>}
 							<span>{competitorDisplayName(c)}</span>
@@ -535,7 +674,7 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 				/>
 			)}
 
-			{selectedRound && !checkMode && (
+			{selectedRound && selectedRound.status !== 'UPCOMING' && !checkMode && (
 				<div className={b('scoretake-split')}>
 					{/* LEFT: active competitor form */}
 					<div className={b('scoretake-left')}>
@@ -544,7 +683,7 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 						)}
 						{activeCompetitor ? (
 							<ActiveResultForm
-								key={activeCompetitor.user_id}
+								key={idOf(activeCompetitor)}
 								competitor={activeCompetitor}
 								roundId={selectedRound.id}
 								format={selectedRound.format}
@@ -557,14 +696,14 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 								onSaved={async () => {
 									if (!batchMode) await fetchResults();
 									// Advance to next competitor without a result (or pending batch entry).
-									const idx = competitors.findIndex((c) => c.user_id === activeCompetitor.user_id);
+									const idx = competitors.findIndex((c) => idOf(c) === idOf(activeCompetitor));
 									for (let i = 1; i <= competitors.length; i++) {
 										const cand = competitors[(idx + i) % competitors.length];
-										const candRes = results.find((r) => r.user_id === cand.user_id);
-										const pending = batch[cand.user_id] !== undefined;
+										const candRes = results.find((r) => idOf(r) === idOf(cand));
+										const pending = batch[idOf(cand)] !== undefined;
 										const empty = !candRes || (candRes.best === null || candRes.best === undefined);
 										if (empty && !pending) {
-											setActiveUserId(cand.user_id);
+											setActiveUserId(idOf(cand));
 											return;
 										}
 									}
@@ -604,8 +743,13 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 				</div>
 			)}
 
-			{selectedRound && (
+			{selectedRound && selectedRound.status !== 'UPCOMING' && (
 				<div className={b('sticky-footer')}>
+					{selectedRound.status === 'FINISHED' && (
+						<button className={b('reopen-btn')} onClick={reopenRound}>
+							{t('reopen_round')}
+						</button>
+					)}
 					<button
 						className={b('finalize-btn')}
 						onClick={finalize}
@@ -687,14 +831,14 @@ function ActiveResultForm({
 
 		// Batch mode: stash locally and move on; parent commits everything later.
 		if (batchMode && onBatchAdd) {
-			onBatchAdd(competitor.user_id, attempts.slice(0, attemptCount));
+			onBatchAdd(idOf(competitor), attempts.slice(0, attemptCount));
 			toastSuccess(t('added_to_batch'));
 			onSaved();
 			return;
 		}
 		setSaving(true);
 		try {
-			const input: any = {roundId, userId: competitor.user_id};
+			const input: any = {roundId, userId: competitor.user_id, personId: competitor.person_id};
 			for (let i = 0; i < attemptCount; i++) input[`attempt${i + 1}`] = attempts[i];
 			await gqlMutate(SUBMIT_RESULT, {input});
 			toastSuccess(t('saved'));
@@ -801,6 +945,11 @@ function ActiveResultForm({
 						{existing?.ranking && (
 							<div className={b('active-form-rank')}>#{existing.ranking}</div>
 						)}
+						{existing?.entered_by?.username && (
+							<div className={b('active-form-entered')}>
+								{t('entered_by')}: {existing.entered_by.username}
+							</div>
+						)}
 					</div>
 				</div>
 				<button type="button" className={b('icon-btn', {ghost: true})} onClick={onNext} title={t('next')}>
@@ -872,22 +1021,22 @@ function LeaderboardTable({
 	competitors: Competitor[];
 	results: any[];
 	activeUserId: string | null;
-	onSelect: (userId: string) => void;
+	onSelect: (key: string) => void;
 	onClear: (resultId: string) => void;
-	onNoShow: (userId: string) => void;
-	onQuit: (userId: string) => void;
+	onNoShow: (key: string) => void;
+	onQuit: (userId: string | null) => void;
 	batch: Record<string, (number | null)[]>;
 	format: string;
 }) {
 	const {t} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
 	const attemptCount = getFormatAttempts(format);
 	const hasAverage = formatHasAverage(format);
-	const [menu, setMenu] = useState<{userId: string; resultId?: string; x: number; y: number} | null>(null);
+	const [menu, setMenu] = useState<{key: string; userId: string | null; resultId?: string; x: number; y: number} | null>(null);
 
 	// Sort by ranking if available, then unranked after.
 	const sorted = [...competitors].sort((a, b) => {
-		const ra = results.find((r) => r.user_id === a.user_id);
-		const rb = results.find((r) => r.user_id === b.user_id);
+		const ra = results.find((r) => idOf(r) === idOf(a));
+		const rb = results.find((r) => idOf(r) === idOf(b));
 		const rankA = ra?.ranking ?? Number.MAX_SAFE_INTEGER;
 		const rankB = rb?.ranking ?? Number.MAX_SAFE_INTEGER;
 		return rankA - rankB;
@@ -908,19 +1057,19 @@ function LeaderboardTable({
 				)}
 			</div>
 			{sorted.map((c) => {
-				const r = results.find((x) => x.user_id === c.user_id);
-				const isActive = c.user_id === activeUserId;
+				const r = results.find((x) => idOf(x) === idOf(c));
+				const isActive = idOf(c) === activeUserId;
 				const advancing = r?.proceeds;
-				const pending = batch[c.user_id] !== undefined;
+				const pending = batch[idOf(c)] !== undefined;
 				return (
 					<button
-						key={c.user_id}
+						key={idOf(c)}
 						type="button"
 						className={b('leaderboard-row', {active: isActive, advancing, 'no-show': !!r?.no_show, pending})}
-						onClick={() => onSelect(c.user_id)}
+						onClick={() => onSelect(idOf(c))}
 						onContextMenu={(e) => {
 							e.preventDefault();
-							setMenu({userId: c.user_id, resultId: r?.id, x: e.clientX, y: e.clientY});
+							setMenu({key: idOf(c), userId: c.user_id, resultId: r?.id, x: e.clientX, y: e.clientY});
 						}}
 					>
 						<span className={b('leaderboard-col', {rank: true})}>
@@ -969,7 +1118,7 @@ function LeaderboardTable({
 						}}
 					/>
 					<div className={b('ctx-menu')} style={{top: menu.y, left: menu.x}}>
-						<button type="button" onClick={() => { onSelect(menu.userId); setMenu(null); }}>
+						<button type="button" onClick={() => { onSelect(menu.key); setMenu(null); }}>
 							{t('ctx_edit')}
 						</button>
 						{menu.resultId && (
@@ -977,12 +1126,14 @@ function LeaderboardTable({
 								{t('ctx_clear')}
 							</button>
 						)}
-						<button type="button" onClick={() => { onNoShow(menu.userId); setMenu(null); }}>
+						<button type="button" onClick={() => { onNoShow(menu.key); setMenu(null); }}>
 							{t('ctx_no_show')}
 						</button>
-						<button type="button" onClick={() => { onQuit(menu.userId); setMenu(null); }}>
-							{t('ctx_quit_round')}
-						</button>
+						{menu.userId && (
+							<button type="button" onClick={() => { onQuit(menu.userId); setMenu(null); }}>
+								{t('ctx_quit_round')}
+							</button>
+						)}
 					</div>
 				</>
 			)}
@@ -1017,7 +1168,7 @@ function CompetitorQuickSelect({
 	}, [competitors, query]);
 
 	function pick(c: Competitor) {
-		onSelect(c.user_id);
+		onSelect(idOf(c));
 		setQuery('');
 		setOpen(false);
 	}
@@ -1047,7 +1198,7 @@ function CompetitorQuickSelect({
 				<div className={b('quick-select-list')}>
 					{matches.map((c) => (
 						<button
-							key={c.user_id}
+							key={idOf(c)}
 							type="button"
 							className={b('quick-select-item')}
 							onMouseDown={(e) => {
@@ -1122,6 +1273,17 @@ function DoubleCheckView({
 		return <div className={b('empty')}>{t('no_results_yet')}</div>;
 	}
 
+	// Resolve the current row's identity (registered user or ghost person).
+	const currentIdent = current.user
+		? current.user
+		: current.person
+		? {
+				first_name: current.person.first_name,
+				last_name: current.person.last_name,
+				join_country: current.person.country_code,
+		  }
+		: null;
+
 	return (
 		<div className={b('double-check')}>
 			<div className={b('double-check-toolbar')}>
@@ -1156,10 +1318,10 @@ function DoubleCheckView({
 
 				<div className={b('double-check-body')}>
 					<div className={b('double-check-name')}>
-						{competitorFlag(current.user) && (
-							<span className={b('flag')}>{competitorFlag(current.user)}</span>
+						{competitorFlag(currentIdent) && (
+							<span className={b('flag')}>{competitorFlag(currentIdent)}</span>
 						)}
-						{competitorDisplayName(current.user) || current.user?.username}
+						{competitorDisplayName(currentIdent) || current.user?.username}
 						{current.ranking != null && (
 							<span className={b('double-check-rank')}>#{current.ranking}</span>
 						)}
@@ -1194,7 +1356,7 @@ function DoubleCheckView({
 					<button
 						type="button"
 						className={b('save-btn')}
-						onClick={() => onEdit(current.user_id)}
+						onClick={() => onEdit(idOf(current))}
 					>
 						{t('ctx_edit')}
 					</button>

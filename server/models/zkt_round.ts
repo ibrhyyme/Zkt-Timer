@@ -3,17 +3,19 @@ import {ZktRoundStatus} from '@prisma/client';
 import GraphQLError from '../util/graphql_error';
 import {ErrorCode} from '../constants/errors';
 
-// Round lifecycle:
-//   UPCOMING ─▶ OPEN ─▶ ACTIVE ─▶ FINISHED
-//              ◀──     ◀──        ◀── (reopen)
-// UPCOMING: default, not yet started.
-// OPEN: results can be created (first round) or inherited (later rounds).
-// ACTIVE: scoretakers entering attempts.
+// Round lifecycle (WCA-style, single confirmation):
+//   UPCOMING ─▶ ACTIVE ─▶ FINISHED
+//              ◀──        ◀── (reopen)
+// UPCOMING: configured but not started; later rounds wait here with their
+//   carried-over (advancing) competitors until the admin starts them.
+// ACTIVE: scoretakers entering attempts (scrambles generated on entry).
 // FINISHED: ranking/advancing frozen. Reopen sends back to ACTIVE.
+// OPEN is kept for backward compatibility with existing rows but the UI no
+// longer uses the two-step (open → activate) flow.
 const ROUND_STATUS_TRANSITIONS: Record<ZktRoundStatus, ZktRoundStatus[]> = {
-	UPCOMING: ['OPEN'],
+	UPCOMING: ['ACTIVE', 'OPEN'],
 	OPEN: ['ACTIVE', 'UPCOMING'],
-	ACTIVE: ['FINISHED', 'OPEN'],
+	ACTIVE: ['FINISHED', 'OPEN', 'UPCOMING'],
 	FINISHED: ['ACTIVE'],
 };
 

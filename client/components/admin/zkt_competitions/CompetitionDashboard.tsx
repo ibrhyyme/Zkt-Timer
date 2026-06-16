@@ -66,11 +66,22 @@ const DETAIL_QUERY = gql`
 						start_time
 						end_time
 					}
+					assignments {
+						id
+						role
+						user_id
+						person_id
+						station_number
+						group {
+							group_number
+						}
+					}
 				}
 			}
 			registrations {
 				id
 				user_id
+				person_id
 				status
 				notes
 				created_at
@@ -88,6 +99,14 @@ const DETAIL_QUERY = gql`
 							url
 						}
 					}
+				}
+				person {
+					id
+					first_name
+					last_name
+					country_code
+					wca_id
+					external_id
 				}
 				events {
 					id

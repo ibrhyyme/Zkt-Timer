@@ -21,6 +21,7 @@ export async function getZktPodiums(competitionId: string) {
 									badges: {include: {badge_type: true}},
 								},
 							},
+							person: true,
 						},
 						where: {ranking: {not: null}},
 						orderBy: {ranking: 'asc'},
@@ -71,6 +72,8 @@ export async function getZktAllTimeRankings(params: {
 			},
 			// Valid positive values only — DNF (-1) and DNS (-2) excluded.
 			[column]: {gt: 0},
+			// Ghost competitors (no account) never enter global all-time rankings.
+			user_id: {not: null},
 		},
 		include: {
 			user: {
@@ -97,9 +100,9 @@ export async function getZktAllTimeRankings(params: {
 		const bestByUser = new Map<string, (typeof results)[number]>();
 		for (const r of results) {
 			const v = (r as any)[column] as number;
-			const existing = bestByUser.get(r.user_id);
+			const existing = bestByUser.get(r.user_id!);
 			if (!existing || v < ((existing as any)[column] as number)) {
-				bestByUser.set(r.user_id, r);
+				bestByUser.set(r.user_id!, r);
 			}
 		}
 		pool = Array.from(bestByUser.values());

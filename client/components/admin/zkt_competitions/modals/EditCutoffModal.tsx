@@ -34,7 +34,7 @@ export default function EditCutoffModal({cutoffCs, cutoffAttempts, onChange}: Pr
 			className={b('round-field-btn', {set: isSet})}
 			onClick={openEditor}
 		>
-			{isSet ? `${formatCs(cutoffCs)} / ${cutoffAttempts}` : 'Ayarla'}
+			{isSet ? `${formatCs(cutoffCs)} / ${cutoffAttempts}` : '—'}
 		</button>
 	);
 }

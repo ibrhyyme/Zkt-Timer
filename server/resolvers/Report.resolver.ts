@@ -78,7 +78,7 @@ export function resolveReportsOfUserId(context: GraphQLContext, userId: string) 
 
 @Resolver()
 export class ReportResolver {
-	@Authorized([Role.MOD])
+	@Authorized([Role.ADMIN])
 	@Query(() => [ReportSummary])
 	async reports(@Ctx() context: GraphQLContext) {
 		return getUnresolvedReports(context);
@@ -100,7 +100,7 @@ export class ReportResolver {
 		return createReport(context, user.id, reason);
 	}
 
-	@Authorized([Role.MOD])
+	@Authorized([Role.ADMIN])
 	@Mutation(() => Number)
 	async resolveReports(@Ctx() context: GraphQLContext, @Arg('userId') userId: string) {
 		const res = await resolveReportsOfUserId(context, userId);

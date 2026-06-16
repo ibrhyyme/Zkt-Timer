@@ -52,7 +52,7 @@ import { todayBoundsIstanbul, thisWeekBoundsIstanbul, thisMonthBoundsIstanbul } 
 
 @Resolver()
 export class AdminResolver {
-	@Authorized([Role.ADMIN, Role.MOD])
+	@Authorized([Role.ADMIN])
 	@Query(() => PaginatedUserAccountsForAdmin)
 	async adminUserSearch(
 		@Ctx() context: GraphQLContext,
@@ -156,7 +156,7 @@ export class AdminResolver {
 		return getPaginatedResponse<UserAccountForAdmin>(requestInput);
 	}
 
-	@Authorized([Role.ADMIN, Role.MOD])
+	@Authorized([Role.ADMIN])
 	@Query(() => UserAccountForAdmin)
 	async getUserAccountForAdmin(@Ctx() context: GraphQLContext, @Arg('userId') userId: string) {
 		const userForAdmin = await getUserAccountForAdmin(userId);
@@ -180,7 +180,7 @@ export class AdminResolver {
 		return JSON.stringify({ sessions, solves });
 	}
 
-	@Authorized([Role.ADMIN, Role.MOD])
+	@Authorized([Role.ADMIN])
 	@Mutation(() => BanLog)
 	async banUserAccount(@Ctx() context: GraphQLContext, @Arg('input') banInput: BanUserInput) {
 		const admin = context.user;
@@ -221,7 +221,7 @@ export class AdminResolver {
 		return await createBanLog(admin, targetUser, reason, min, forever, res.banned_until);
 	}
 
-	@Authorized([Role.ADMIN, Role.MOD])
+	@Authorized([Role.ADMIN])
 	@Mutation(() => UserAccount)
 	async unbanUserAccount(@Ctx() context: GraphQLContext, @Arg('userId') userId: string) {
 		const targetUser = await getUserByIdOrThrow404(userId);
@@ -243,6 +243,25 @@ export class AdminResolver {
 
 		await updateUserAccountWithParams(targetUser.id, {
 			verified,
+		});
+
+		return getUserById(userId);
+	}
+
+	// Grant/revoke the "mod" flag. A mod can ONLY manage ZKT competitions
+	// (the /organizer pages + Role.MOD competition resolvers); every other
+	// admin/moderation capability is Role.ADMIN-only. Only admins assign it.
+	@Authorized([Role.ADMIN])
+	@Mutation(() => UserAccount)
+	async setModStatus(
+		@Ctx() context: GraphQLContext,
+		@Arg('userId') userId: string,
+		@Arg('isMod') isMod: boolean
+	) {
+		const targetUser = await getUserByIdOrThrow404(userId);
+
+		await updateUserAccountWithParams(targetUser.id, {
+			mod: isMod,
 		});
 
 		return getUserById(userId);
@@ -564,7 +583,7 @@ export class AdminResolver {
 		return true;
 	}
 
-	@Authorized([Role.ADMIN, Role.MOD])
+	@Authorized([Role.ADMIN])
 	@Query(() => IpInfo)
 	async ipInfo(@Arg('ip') ip: string): Promise<IpInfo> {
 		return getIpDetail(ip);

@@ -23,7 +23,7 @@ export class ZktAssignmentResolver {
 		return getPrisma().zktAssignment.findMany({
 			where: {round_id: roundId},
 			orderBy: [{role: 'asc'}, {station_number: 'asc'}, {created_at: 'asc'}],
-			include: {user: publicUserInclude},
+			include: {user: publicUserInclude, person: true},
 		});
 	}
 
@@ -35,6 +35,7 @@ export class ZktAssignmentResolver {
 			orderBy: [{role: 'asc'}, {station_number: 'asc'}, {seed_result: 'asc'}],
 			include: {
 				user: publicUserInclude,
+				person: true,
 				group: true,
 				round: {include: {comp_event: {include: {competition: true}}}},
 			},
@@ -57,6 +58,7 @@ export class ZktAssignmentResolver {
 			orderBy: [{role: 'asc'}, {created_at: 'asc'}],
 			include: {
 				user: publicUserInclude,
+				person: true,
 				round: {include: {comp_event: true}},
 				group: true,
 			},
@@ -67,11 +69,15 @@ export class ZktAssignmentResolver {
 	@Query(() => [ZktAssignment])
 	async zktUserAssignments(
 		@Arg('competitionId') competitionId: string,
-		@Arg('userId') userId: string
+		@Arg('userId', {nullable: true}) userId?: string,
+		@Arg('personId', {nullable: true}) personId?: string
 	) {
+		// competitorId may be a user id or a ghost-person id (both unique).
+		const competitorId = personId || userId;
+		if (!competitorId) return [];
 		return getPrisma().zktAssignment.findMany({
 			where: {
-				user_id: userId,
+				OR: [{user_id: competitorId}, {person_id: competitorId}],
 				round: {
 					comp_event: {competition_id: competitionId},
 				},
@@ -79,6 +85,7 @@ export class ZktAssignmentResolver {
 			orderBy: [{created_at: 'asc'}],
 			include: {
 				user: publicUserInclude,
+				person: true,
 				round: {include: {comp_event: true}},
 				group: true,
 			},

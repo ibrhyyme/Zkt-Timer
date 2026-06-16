@@ -330,7 +330,7 @@ type Query {
   zktAllTimeRankings(mode: String, limit: Float, recordType: String, eventId: String): [ZktAllTimeRanking]
   zktRegistrationHistory(registrationId: String): [ZktRegistrationHistory]
   zktRoundResults(roundId: String): [ZktResult]
-  zktCompetitorResults(userId: String, competitionId: String): [ZktResult]
+  zktCompetitorResults(personId: String, userId: String, competitionId: String): [ZktResult]
   zktRoundScrambles(roundId: String): [ZktScramble]
   zktRoundAdvancementCandidates(roundId: String): [ZktCompetitorUser]
   zktRecords: [ZktRecord]
@@ -338,7 +338,8 @@ type Query {
   zktRoundAssignments(roundId: String): [ZktAssignment]
   zktGroupAssignments(groupId: String): [ZktAssignment]
   zktMyAssignments(competitionId: String): [ZktAssignment]
-  zktUserAssignments(userId: String, competitionId: String): [ZktAssignment]
+  zktUserAssignments(personId: String, userId: String, competitionId: String): [ZktAssignment]
+  zktCompetitionPersons(competitionId: String): [ZktPerson]
   landingStats: LandingStats
   getIapStatus: IapStatus
   myCompetitionFollows(competitionId: String): [CompetitionFollow]
@@ -414,6 +415,7 @@ type Mutation {
   banUserAccount(input: BanUserInput): BanLog
   unbanUserAccount(userId: String): UserAccount
   setVerifiedStatus(verified: Boolean, userId: String): UserAccount
+  setModStatus(isMod: Boolean, userId: String): UserAccount
   setProStatus(minutes: Float, isPro: Boolean, userId: String): UserAccount
   setPremiumStatus(minutes: Float, isPremium: Boolean, userId: String): UserAccount
   adminDeleteUserAccount(userId: String): UserAccount
@@ -500,6 +502,10 @@ type Mutation {
   deleteZktGroup(groupId: String): Boolean
   updateZktGroupSchedule(input: UpdateZktGroupScheduleInput): ZktGroup
   bulkAssignCompetitors(input: BulkAssignCompetitorsInput): [ZktAssignment]
+  importZktCompetitors(input: ImportZktCompetitorsInput): [ZktPerson]
+  addZktPerson(input: AddZktPersonInput): ZktPerson
+  updateZktPerson(input: UpdateZktPersonInput): ZktPerson
+  deleteZktPerson(personId: String): Boolean
   linkRevenueCatUser: Boolean
   followCompetitor(input: FollowCompetitorInput): CompetitionFollow
   unfollowCompetitor(id: String): Boolean
@@ -1826,10 +1832,24 @@ type ZktCompetitorUser implements IPublicUserAccount {
   join_country: String
 }
 
+type ZktPerson {
+  id: String
+  competition_id: String
+  first_name: String
+  last_name: String
+  country_code: String
+  wca_id: String
+  external_id: String
+  gender: String
+  date_of_birth: DateTime
+  created_at: DateTime
+}
+
 type ZktResult {
   id: String
   round_id: String
   user_id: String
+  person_id: String
   attempt_1: Int
   attempt_2: Int
   attempt_3: Int
@@ -1846,7 +1866,9 @@ type ZktResult {
   created_at: DateTime
   updated_at: DateTime
   user: ZktCompetitorUser
+  person: ZktPerson
   entered_by: PublicUserAccount
+  round: ZktRound
 }
 
 type ZktScramble {
@@ -1883,6 +1905,8 @@ type ZktRound {
   results: [ZktResult!]
   groups: [ZktGroup!]
   scrambles: [ZktScramble!]
+  comp_event: ZktCompEvent
+  assignments: [ZktAssignment!]
 }
 
 enum ZktRoundFormat {
@@ -1925,6 +1949,7 @@ type ZktRegistration {
   id: String
   competition_id: String
   user_id: String
+  person_id: String
   status: ZktRegistrationStatus
   notes: String
   admin_comment: String
@@ -1933,6 +1958,7 @@ type ZktRegistration {
   created_at: DateTime
   updated_at: DateTime
   user: ZktCompetitorUser
+  person: ZktPerson
   events: [ZktRegistrationEvent!]
   history: [ZktRegistrationHistory!]
 }
@@ -2098,12 +2124,16 @@ type ZktAssignment {
   round_id: String
   group_id: String
   user_id: String
+  person_id: String
   role: ZktAssignmentRole
   station_number: Int
   seed_result: Int
   created_at: DateTime
   updated_at: DateTime
   user: ZktCompetitorUser
+  person: ZktPerson
+  round: ZktRound
+  group: ZktGroup
 }
 
 enum ZktAssignmentRole {
@@ -2537,6 +2567,43 @@ input AddZktCompetitorManuallyInput {
   eventIds: [String]
 }
 
+input ZktPersonRowInput {
+  firstName: String
+  lastName: String
+  country: String
+  wcaId: String
+  externalId: String
+  gender: String
+  eventIds: [String]
+}
+
+input ImportZktCompetitorsInput {
+  competitionId: String
+  rows: [ZktPersonRowInput]
+}
+
+input AddZktPersonInput {
+  competitionId: String
+  firstName: String
+  lastName: String
+  country: String
+  wcaId: String
+  externalId: String
+  gender: String
+  eventIds: [String]
+}
+
+input UpdateZktPersonInput {
+  personId: String
+  firstName: String
+  lastName: String
+  country: String
+  wcaId: String
+  externalId: String
+  gender: String
+  eventIds: [String!]
+}
+
 input CreateZktRoundInput {
   compEventId: String
   roundNumber: Int
@@ -2566,6 +2633,7 @@ input UpdateZktRoundStatusInput {
 input MarkZktNoShowInput {
   roundId: String
   userId: String
+  personId: String
 }
 
 input AssignUserInput {
@@ -2596,6 +2664,7 @@ input BulkAssignCompetitorsInput {
 input SubmitZktResultInput {
   roundId: String
   userId: String
+  personId: String
   attempt1: Int
   attempt2: Int
   attempt3: Int
@@ -2605,6 +2674,7 @@ input SubmitZktResultInput {
 
 input SubmitZktResultBatchItem {
   userId: String
+  personId: String
   attempt1: Int
   attempt2: Int
   attempt3: Int

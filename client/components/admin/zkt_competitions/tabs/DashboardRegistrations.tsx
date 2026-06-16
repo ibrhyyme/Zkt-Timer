@@ -4,9 +4,10 @@ import {gqlMutate} from '../../../api';
 import {useTranslation} from 'react-i18next';
 import {toastSuccess, toastError} from '../../../../util/toast';
 import {b, getEventName} from '../shared';
-import {Check, X, Clock, UserPlus, DownloadSimple} from 'phosphor-react';
+import {Check, X, Clock, UserPlus, DownloadSimple, UploadSimple} from 'phosphor-react';
 import fileDownload from 'js-file-download';
 import AddCompetitorModal from './AddCompetitorModal';
+import ImportCompetitorsModal from './ImportCompetitorsModal';
 import {useDispatch} from 'react-redux';
 import {openModal} from '../../../../actions/general';
 
@@ -97,6 +98,18 @@ export default function DashboardRegistrations({
 		);
 	}
 
+	function openImportModal() {
+		dispatch(
+			openModal(
+				<ImportCompetitorsModal
+					competitionId={detail.id}
+					compEvents={detail.events}
+					onComplete={onUpdated}
+				/>
+			)
+		);
+	}
+
 	const filtered = filter
 		? detail.registrations.filter((r: any) => r.status === filter)
 		: detail.registrations;
@@ -131,11 +144,13 @@ export default function DashboardRegistrations({
 				.filter(Boolean)
 				.map((eid: string) => getEventName(eid))
 				.join('; ');
-			const fullName = [r.user?.first_name, r.user?.last_name].filter(Boolean).join(' ');
+			const fullName =
+				[r.user?.first_name, r.user?.last_name].filter(Boolean).join(' ') ||
+				[r.person?.first_name, r.person?.last_name].filter(Boolean).join(' ');
 			return [
 				r.user?.username || '',
 				fullName,
-				r.user?.join_country || '',
+				r.user?.join_country || r.person?.country_code || '',
 				t(`registration_${r.status.toLowerCase()}`),
 				r.created_at ? new Date(r.created_at).toLocaleDateString() : '',
 				events,
@@ -193,9 +208,14 @@ export default function DashboardRegistrations({
 						</button>
 					</>
 				) : (
-					<button className={b('create-btn')} onClick={openAddModal}>
-						<UserPlus weight="bold" /> {t('add_competitor')}
-					</button>
+					<>
+						<button className={b('create-btn')} onClick={openAddModal}>
+							<UserPlus weight="bold" /> {t('add_competitor')}
+						</button>
+						<button className={b('create-btn', {ghost: true})} onClick={openImportModal}>
+							<UploadSimple weight="bold" /> {t('import_competitors')}
+						</button>
+					</>
 				)}
 			</div>
 
@@ -219,7 +239,16 @@ export default function DashboardRegistrations({
 									/>
 								)}
 								<span className={b('user-name')}>
-									{reg.user?.username || reg.user_id}
+									{reg.user?.username ||
+										[reg.person?.first_name, reg.person?.last_name]
+											.filter(Boolean)
+											.join(' ')
+											.trim() ||
+										reg.user_id ||
+										reg.person_id}
+									{reg.person && (
+										<span className={b('ghost-badge')}>{t('ghost_competitor')}</span>
+									)}
 								</span>
 							</label>
 

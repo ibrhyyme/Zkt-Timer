@@ -5,7 +5,7 @@ import {gqlMutate} from '../../api';
 import {useTranslation} from 'react-i18next';
 import {useParams, useHistory} from 'react-router-dom';
 import Loading from '../../common/loading/Loading';
-import {b, getEventName, formatCs, formatName, formatTimeRange, competitorDisplayName, competitorFlag} from './shared';
+import {b, getEventName, formatCs, formatName, formatTimeRange, competitorDisplayName, competitorFlag, ZKT_ROLE_COLORS} from './shared';
 import {CaretLeft, CaretRight} from 'phosphor-react';
 
 const GROUP_ASSIGNMENTS_QUERY = gql`
@@ -53,14 +53,7 @@ const GROUP_ASSIGNMENTS_QUERY = gql`
 
 const ROLE_ORDER = ['COMPETITOR', 'SCRAMBLER', 'RUNNER', 'JUDGE', 'ORGANIZER', 'STAFF'];
 
-const ROLE_HEADER_COLORS: Record<string, string> = {
-	COMPETITOR: '#2dbd61',
-	JUDGE: '#42a5f5',
-	SCRAMBLER: '#9b59b6',
-	RUNNER: '#ee6a26',
-	ORGANIZER: '#246bfd',
-	STAFF: '#95a5a6',
-};
+const ROLE_HEADER_COLORS = ZKT_ROLE_COLORS;
 
 interface Assignment {
 	id: string;
@@ -188,7 +181,7 @@ export default function ZktActivityDetail() {
 						<span style={{color: ROLE_HEADER_COLORS[role]}}>
 							{t(`role_${role.toLowerCase()}`)}
 						</span>
-						<span style={{marginLeft: 'auto', fontSize: 12, fontWeight: 500, opacity: 0.7}}>
+						<span style={{marginLeft: 'auto', fontSize: 13, fontWeight: 700, color: 'rgb(var(--text-color))'}}>
 							{byRole[role].length}
 						</span>
 					</div>

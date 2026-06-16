@@ -1323,6 +1323,7 @@ model ZktCompetition {
   tabs             ZktCompTab[]
   records          ZktRecord[]
   schedule_items   ZktScheduleItem[]
+  persons          ZktPerson[]
 
   @@index([status])
   @@index([created_by_id])
@@ -1405,7 +1406,8 @@ model ZktGroup {
 model ZktRegistration {
   id                    String                 @id @default(uuid())
   competition_id        String
-  user_id               String
+  user_id               String?
+  person_id             String?
   status                ZktRegistrationStatus  @default(PENDING)
   notes                 String?
   admin_comment         String?
@@ -1415,11 +1417,13 @@ model ZktRegistration {
   updated_at            DateTime               @updatedAt
 
   competition    ZktCompetition            @relation(fields: [competition_id], references: [id], onDelete: Cascade)
-  user           UserAccount               @relation("zkt_registration_user", fields: [user_id], references: [id], onDelete: Cascade)
+  user           UserAccount?              @relation("zkt_registration_user", fields: [user_id], references: [id], onDelete: Cascade)
+  person         ZktPerson?                @relation(fields: [person_id], references: [id], onDelete: Cascade)
   events         ZktRegistrationEvent[]
   history        ZktRegistrationHistory[]
 
   @@unique([competition_id, user_id])
+  @@unique([competition_id, person_id])
   @@index([competition_id])
   @@index([user_id])
   @@index([status])
@@ -1504,7 +1508,8 @@ model ZktCompTab {
 model ZktResult {
   id                  String      @id @default(uuid())
   round_id            String
-  user_id             String
+  user_id             String?
+  person_id           String?
   attempt_1           Int?
   attempt_2           Int?
   attempt_3           Int?
@@ -1522,10 +1527,12 @@ model ZktResult {
   updated_at          DateTime    @updatedAt
 
   round               ZktRound    @relation(fields: [round_id], references: [id], onDelete: Cascade)
-  user                UserAccount @relation("zkt_result_user", fields: [user_id], references: [id], onDelete: Cascade)
+  user                UserAccount? @relation("zkt_result_user", fields: [user_id], references: [id], onDelete: Cascade)
+  person              ZktPerson?  @relation(fields: [person_id], references: [id], onDelete: Cascade)
   entered_by          UserAccount @relation("zkt_result_entered_by", fields: [entered_by_id], references: [id], onDelete: Cascade)
 
   @@unique([round_id, user_id])
+  @@unique([round_id, person_id])
   @@index([round_id])
   @@index([user_id])
   @@index([ranking])
@@ -1582,7 +1589,8 @@ model ZktAssignment {
   id             String            @id @default(uuid())
   round_id       String
   group_id       String?
-  user_id        String
+  user_id        String?
+  person_id      String?
   role           ZktAssignmentRole
   station_number Int?
   seed_result    Int?
@@ -1591,12 +1599,38 @@ model ZktAssignment {
 
   round          ZktRound          @relation(fields: [round_id], references: [id], onDelete: Cascade)
   group          ZktGroup?         @relation(fields: [group_id], references: [id], onDelete: Cascade)
-  user           UserAccount       @relation("zkt_assignment_user", fields: [user_id], references: [id], onDelete: Cascade)
+  user           UserAccount?      @relation("zkt_assignment_user", fields: [user_id], references: [id], onDelete: Cascade)
+  person         ZktPerson?        @relation(fields: [person_id], references: [id], onDelete: Cascade)
 
   @@unique([round_id, user_id, role])
+  @@unique([round_id, person_id, role])
   @@index([round_id, role])
   @@index([group_id, role])
   @@index([user_id])
   @@map("zkt_assignment")
+}
+
+// Account-less ("ghost") competitor — name + optional WCA/external id, no
+// UserAccount link. Scoped to a single competition (no global registry, no
+// user merge): a person who later opens a ZKT account is NOT linked back.
+model ZktPerson {
+  id             String    @id @default(uuid())
+  competition_id String
+  first_name     String
+  last_name      String
+  country_code   String?   @default("TR")
+  wca_id         String?
+  external_id    String?
+  gender         String?
+  date_of_birth  DateTime?
+  created_at     DateTime  @default(now())
+
+  competition    ZktCompetition    @relation(fields: [competition_id], references: [id], onDelete: Cascade)
+  registrations  ZktRegistration[]
+  results        ZktResult[]
+  assignments    ZktAssignment[]
+
+  @@index([competition_id])
+  @@map("zkt_person")
 }
 

@@ -1,6 +1,21 @@
 @import '../../../styles/config';
 @import '../../common/old_generic_input/GenericInput';
 
+// Semantic, theme-independent colors (medals, WCA record tags, live/advance
+// indicators, schedule warning, mode accents). Centralised so the same hex
+// is never duplicated across rules. Theme-mappable accents use CSS vars inline.
+$zkt-gold: #f5c518;
+$zkt-silver: #c0c0c0;
+$zkt-bronze: #cd7f32;
+$zkt-record-wr: #f44336;
+$zkt-record-cr: #ffd600;
+$zkt-record-pr: #1976d2;
+$zkt-live: #ff5252;
+$zkt-advance: #00e676;
+$zkt-warn: #ffa500;
+$zkt-info-blue: #6ea8ff;
+$zkt-info-green: #45d97c;
+
 .cd-zkt-comp {
 	padding: 1rem;
 	max-width: 1200px;
@@ -23,7 +38,7 @@
 	}
 
 	&__page-subtitle {
-		color: rgba(var(--text-color), 0.6);
+		color: rgb(var(--text-color));
 		margin: 0 0 1.5rem 0;
 	}
 
@@ -54,7 +69,7 @@
 		}
 
 		svg {
-			color: rgba(var(--text-color), 0.5);
+			color: rgb(var(--text-color));
 		}
 	}
 
@@ -75,7 +90,7 @@
 	&__empty {
 		padding: 3rem 1rem;
 		text-align: center;
-		color: rgba(var(--text-color), 0.5);
+		color: rgb(var(--text-color));
 		font-style: italic;
 	}
 
@@ -113,7 +128,8 @@
 		}
 
 		&--finished {
-			opacity: 0.6;
+			// Past comps are marked (grey left-rail), not faded — readability rule.
+			border-left: 4px solid rgba(var(--text-color), 0.25);
 		}
 	}
 
@@ -126,7 +142,7 @@
 
 	&__card-meta {
 		font-size: 13px;
-		color: rgba(var(--text-color), 0.6);
+		color: rgb(var(--text-color));
 		margin-bottom: 0.5rem;
 	}
 
@@ -230,15 +246,16 @@
 		align-items: center;
 		padding: 0.5rem 0.9rem;
 		margin-bottom: 1rem;
-		border: 1px solid rgba(var(--text-color), 0.18);
+		border: 1px solid rgba(var(--text-color), 0.25);
 		border-radius: 6px;
-		background: transparent;
+		background: rgb(var(--button-color));
 		color: rgb(var(--text-color));
 		cursor: pointer;
 		font-size: 13px;
+		font-weight: 600;
 
 		&:hover {
-			background: rgba(var(--text-color), 0.08);
+			background: rgba(var(--text-color), 0.12);
 		}
 	}
 
@@ -382,7 +399,7 @@
 	// Info tab
 	&__info-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+		grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr));
 		gap: 0.75rem;
 		margin-bottom: 2rem;
 	}
@@ -404,7 +421,7 @@
 
 	&__info-label {
 		font-size: 12px;
-		color: rgba(var(--text-color), 0.6);
+		color: rgb(var(--text-color));
 		margin-bottom: 0.25rem;
 	}
 
@@ -416,7 +433,7 @@
 
 	&__info-sub {
 		font-size: 12px;
-		color: rgba(var(--text-color), 0.55);
+		color: rgb(var(--text-color));
 		margin-top: 0.25rem;
 	}
 
@@ -452,7 +469,7 @@
 	// Competitors
 	&__competitor-count {
 		padding: 0.5rem 0;
-		color: rgba(var(--text-color), 0.6);
+		color: rgb(var(--text-color));
 		font-size: 13px;
 	}
 
@@ -515,7 +532,7 @@
 			font-weight: 600;
 			letter-spacing: 0.4px;
 			text-transform: uppercase;
-			color: rgba(var(--text-color), 0.55);
+			color: rgb(var(--text-color));
 			border-bottom: 1px solid rgba(var(--text-color), 0.08);
 			background: rgba(var(--text-color), 0.02);
 		}
@@ -582,7 +599,7 @@
 
 	&__round-panel-empty {
 		font-size: 12px;
-		color: rgba(var(--text-color), 0.5);
+		color: rgb(var(--text-color));
 		padding: 0.5rem 0;
 	}
 
@@ -618,7 +635,7 @@
 
 	&__group-card-time {
 		font-size: 11px;
-		color: rgba(var(--text-color), 0.65);
+		color: rgb(var(--text-color));
 		font-family: 'SF Mono', Menlo, Consolas, monospace;
 	}
 
@@ -686,16 +703,16 @@
 		text-align: center;
 
 		&--pos-1 {
-			background: linear-gradient(135deg, rgba(245, 197, 24, 0.22), rgba(245, 197, 24, 0.08));
-			color: #f5c518;
+			background: linear-gradient(135deg, rgba($zkt-gold, 0.22), rgba($zkt-gold, 0.08));
+			color: $zkt-gold;
 		}
 		&--pos-2 {
-			background: linear-gradient(135deg, rgba(192, 192, 192, 0.22), rgba(192, 192, 192, 0.08));
-			color: #c0c0c0;
+			background: linear-gradient(135deg, rgba($zkt-silver, 0.22), rgba($zkt-silver, 0.08));
+			color: $zkt-silver;
 		}
 		&--pos-3 {
-			background: linear-gradient(135deg, rgba(205, 127, 50, 0.22), rgba(205, 127, 50, 0.08));
-			color: #cd7f32;
+			background: linear-gradient(135deg, rgba($zkt-bronze, 0.22), rgba($zkt-bronze, 0.08));
+			color: $zkt-bronze;
 		}
 	}
 
@@ -735,7 +752,7 @@
 			font-weight: 600;
 			letter-spacing: 0.4px;
 			text-transform: uppercase;
-			color: rgba(var(--text-color), 0.55);
+			color: rgb(var(--text-color));
 			border-bottom: 1px solid rgba(var(--text-color), 0.08);
 		}
 
@@ -796,7 +813,7 @@
 	&__rank-num {
 		font-weight: 700;
 		width: 50px;
-		color: rgba(var(--text-color), 0.75);
+		color: rgb(var(--text-color));
 	}
 
 	&__rank-name {
@@ -817,7 +834,7 @@
 	&__rankings-empty-cell {
 		text-align: center;
 		padding: 2rem !important;
-		color: rgba(var(--text-color), 0.5);
+		color: rgb(var(--text-color));
 		font-style: italic;
 	}
 
@@ -837,7 +854,7 @@
 		border-radius: 8px;
 
 		svg {
-			color: rgba(var(--text-color), 0.55);
+			color: rgb(var(--text-color));
 			flex-shrink: 0;
 		}
 
@@ -861,7 +878,7 @@
 
 	&__competitor-list {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+		grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
 		gap: 0.5rem;
 	}
 
@@ -924,7 +941,7 @@
 	}
 
 	&__me-badge {
-		font-size: 10px;
+		font-size: 11px;
 		font-weight: 700;
 		padding: 1px 6px;
 		border-radius: 4px;
@@ -949,7 +966,7 @@
 
 		.cubing-icon {
 			font-size: 16px;
-			color: rgba(var(--text-color), 0.75);
+			color: rgb(var(--text-color));
 		}
 	}
 
@@ -971,7 +988,7 @@
 		font-weight: 700;
 		letter-spacing: 0.6px;
 		text-transform: uppercase;
-		color: rgba(var(--text-color), 0.55);
+		color: rgb(var(--text-color));
 		margin: 0;
 	}
 
@@ -1027,7 +1044,7 @@
 		color: rgb(var(--text-color));
 
 		svg:first-child {
-			color: #f5c518;
+			color: $zkt-gold;
 		}
 	}
 
@@ -1052,7 +1069,7 @@
 
 	&__info-people-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+		grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr));
 		gap: 0.5rem;
 	}
 
@@ -1080,7 +1097,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		color: rgba(var(--text-color), 0.6);
+		color: rgb(var(--text-color));
 	}
 
 	&__info-person-text {
@@ -1100,7 +1117,7 @@
 
 	&__info-sub {
 		font-size: 12px;
-		color: rgba(var(--text-color), 0.6);
+		color: rgb(var(--text-color));
 		margin-top: 2px;
 	}
 
@@ -1185,15 +1202,15 @@
 		}
 
 		&--schedule.cd-zkt-comp__person-mode-btn--active {
-			background: rgba(36, 107, 253, 0.18);
-			border-color: rgba(36, 107, 253, 0.5);
-			color: #6ea8ff;
+			background: rgba(var(--primary-color), 0.18);
+			border-color: rgba(var(--primary-color), 0.5);
+			color: $zkt-info-blue;
 		}
 
 		&--results.cd-zkt-comp__person-mode-btn--active {
-			background: rgba(45, 189, 97, 0.18);
-			border-color: rgba(45, 189, 97, 0.5);
-			color: #45d97c;
+			background: rgba(var(--success-color), 0.18);
+			border-color: rgba(var(--success-color), 0.5);
+			color: $zkt-info-green;
 		}
 	}
 
@@ -1203,14 +1220,14 @@
 		gap: 0.6rem;
 		padding: 0.7rem 1rem;
 		margin-bottom: 0.85rem;
-		background: rgba(255, 165, 0, 0.1);
-		border: 1px solid rgba(255, 165, 0, 0.25);
+		background: rgba($zkt-warn, 0.1);
+		border: 1px solid rgba($zkt-warn, 0.25);
 		border-radius: 8px;
 		color: rgba(var(--text-color), 0.85);
 		font-size: 12px;
 
 		svg {
-			color: #ffa500;
+			color: $zkt-warn;
 			flex-shrink: 0;
 		}
 	}
@@ -1233,7 +1250,7 @@
 			font-weight: 600;
 			letter-spacing: 0.4px;
 			text-transform: uppercase;
-			color: rgba(var(--text-color), 0.55);
+			color: rgb(var(--text-color));
 			border-bottom: 1px solid rgba(var(--text-color), 0.08);
 		}
 
@@ -1329,13 +1346,13 @@
 
 	&__activity-round,
 	&__activity-group {
-		color: rgba(var(--text-color), 0.55);
+		color: rgb(var(--text-color));
 		font-weight: 500;
 	}
 
 	&__activity-meta {
 		font-size: 12px;
-		color: rgba(var(--text-color), 0.65);
+		color: rgb(var(--text-color));
 
 		strong {
 			color: rgb(var(--text-color));
@@ -1345,7 +1362,7 @@
 	// Live tab — "all rounds" özet grid
 	&__all-rounds-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+		grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr));
 		gap: 0.5rem;
 	}
 
@@ -1368,8 +1385,8 @@
 		}
 
 		&--active {
-			border-color: rgba(255, 100, 100, 0.5);
-			background: rgba(255, 100, 100, 0.08);
+			border-color: rgba($zkt-live, 0.5);
+			background: rgba($zkt-live, 0.08);
 		}
 
 		.cubing-icon {
@@ -1397,7 +1414,7 @@
 
 	&__all-rounds-card-round {
 		font-size: 11px;
-		color: rgba(var(--text-color), 0.6);
+		color: rgb(var(--text-color));
 	}
 
 	&__person-results-table {
@@ -1412,7 +1429,7 @@
 			font-weight: 600;
 			letter-spacing: 0.4px;
 			text-transform: uppercase;
-			color: rgba(var(--text-color), 0.55);
+			color: rgb(var(--text-color));
 		}
 
 		td {
@@ -1443,7 +1460,7 @@
 
 	&__event-card-sub {
 		font-size: 12px;
-		color: rgba(var(--text-color), 0.55);
+		color: rgb(var(--text-color));
 	}
 
 	&__event-card-rounds {
@@ -1478,7 +1495,7 @@
 	}
 
 	&__round-info-meta {
-		color: rgba(var(--text-color), 0.65);
+		color: rgb(var(--text-color));
 	}
 
 	&__round-status-pill {
@@ -1522,16 +1539,17 @@
 		align-items: center;
 		gap: 0.45rem;
 		padding: 0.55rem 0.9rem;
-		border: 1px solid rgba(var(--text-color), 0.15);
+		border: 1px solid rgba(var(--text-color), 0.2);
 		border-radius: 8px;
-		background: transparent;
+		background: rgb(var(--button-color));
 		color: rgb(var(--text-color));
 		cursor: pointer;
 		font-size: 13px;
+		font-weight: 600;
 		transition: all 0.15s ease;
 
 		&:hover {
-			background: rgba(var(--text-color), 0.06);
+			background: rgba(var(--text-color), 0.12);
 		}
 
 		&--active {
@@ -1622,7 +1640,7 @@
 			font-size: 11px;
 			font-weight: 700;
 			text-transform: uppercase;
-			color: rgba(var(--text-color), 0.55);
+			color: rgb(var(--text-color));
 			letter-spacing: 0.5px;
 		}
 
@@ -1709,7 +1727,7 @@
 		padding: 0.1rem 0.4rem;
 		background: $successColor;
 		color: #fff;
-		font-size: 10px;
+		font-size: 11px;
 		border-radius: 3px;
 		font-weight: 800;
 		letter-spacing: 0.3px;
@@ -1717,17 +1735,17 @@
 
 		// wca-live RecordTag colors — WR red / CR yellow / NR green / PR blue
 		&--wr {
-			background: #f44336;
+			background: $zkt-record-wr;
 		}
 		&--cr {
-			background: #ffd600;
+			background: $zkt-record-cr;
 			color: #222;
 		}
 		&--nr {
 			background: $successColor;
 		}
 		&--pr {
-			background: #1976d2;
+			background: $zkt-record-pr;
 		}
 	}
 
@@ -1755,16 +1773,16 @@
 
 	&__withdraw-btn {
 		padding: 0.45rem 0.9rem;
-		border: 1px solid rgba($errorColor, 0.4);
-		background: transparent;
+		border: 1px solid rgba($errorColor, 0.55);
+		background: rgba($errorColor, 0.12);
 		color: $errorColor;
 		border-radius: 6px;
 		cursor: pointer;
 		font-size: 13px;
-		font-weight: 500;
+		font-weight: 600;
 
 		&:hover {
-			background: rgba($errorColor, 0.12);
+			background: rgba($errorColor, 0.2);
 		}
 	}
 
@@ -1777,7 +1795,7 @@
 
 	&__label {
 		font-size: 13px;
-		color: rgba(var(--text-color), 0.75);
+		color: rgb(var(--text-color));
 		font-weight: 500;
 	}
 
@@ -1866,7 +1884,7 @@
 			font-size: 11px;
 			font-weight: 700;
 			text-transform: uppercase;
-			color: rgba(var(--text-color), 0.55);
+			color: rgb(var(--text-color));
 			letter-spacing: 0.5px;
 		}
 
@@ -2001,12 +2019,12 @@
 		height: 46px;
 		border: none;
 		border-radius: 10px;
-		background: rgba(var(--text-color), 0.08);
-		color: rgb(var(--text-color));
+		background: rgba(var(--primary-color), 0.15);
+		color: rgb(var(--primary-color));
 		cursor: pointer;
 
 		&:hover {
-			background: rgba(var(--text-color), 0.16);
+			background: rgba(var(--primary-color), 0.25);
 		}
 	}
 
@@ -2054,7 +2072,7 @@
 		font-weight: 800;
 
 		&--advancing {
-			background: #00e676;
+			background: $zkt-advance;
 			color: #003915;
 			border-radius: 6px;
 		}
@@ -2103,14 +2121,14 @@
 		font-weight: 800;
 		text-transform: uppercase;
 		letter-spacing: 0.6px;
-		color: #ff5252;
+		color: $zkt-live;
 
 		&::before {
 			content: '';
 			width: 9px;
 			height: 9px;
 			border-radius: 50%;
-			background: #ff5252;
+			background: $zkt-live;
 			animation: zkt-pulse 1.4s ease-in-out infinite;
 		}
 	}
@@ -2120,16 +2138,16 @@
 		align-items: center;
 		gap: 0.4rem;
 		padding: 0.35rem 0.7rem;
-		border: 1px solid rgba(255, 82, 82, 0.45);
+		border: 1px solid rgba($zkt-live, 0.45);
 		border-radius: 8px;
-		background: rgba(255, 82, 82, 0.1);
+		background: rgba($zkt-live, 0.1);
 		color: rgb(var(--text-color));
 		font-size: 13px;
 		font-weight: 700;
 		cursor: pointer;
 
 		&:hover {
-			background: rgba(255, 82, 82, 0.2);
+			background: rgba($zkt-live, 0.2);
 		}
 
 		&--static {
@@ -2139,16 +2157,16 @@
 			font-size: 11px;
 			text-transform: uppercase;
 			letter-spacing: 0.5px;
-			color: #ff5252;
+			color: $zkt-live;
 
 			&:hover {
-				background: rgba(255, 82, 82, 0.1);
+				background: rgba($zkt-live, 0.1);
 			}
 		}
 	}
 
 	&__schedule-row-live td {
-		background: rgba(255, 82, 82, 0.07);
+		background: rgba($zkt-live, 0.07);
 	}
 }
 

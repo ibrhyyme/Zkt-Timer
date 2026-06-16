@@ -38,6 +38,7 @@ export * from './ZktRegistration.resolver';
 export * from './ZktResult.resolver';
 export * from './ZktRecord.resolver';
 export * from './ZktAssignment.resolver';
+export * from './ZktPerson.resolver';
 export * from './LandingStats.resolver';
 export * from './IAP.resolver';
 export * from './CompetitionFollow.resolver';

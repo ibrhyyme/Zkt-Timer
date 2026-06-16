@@ -11,6 +11,9 @@ export interface CompetitorIdentity {
 	first_name?: string | null;
 	last_name?: string | null;
 	join_country?: string | null;
+	// Present only for registered users (the ghost-person branch leaves it
+	// undefined, so the UI falls back to an avatar placeholder).
+	profile?: {pfp_image?: {url?: string | null} | null} | null;
 }
 
 /** Display name: "First Last" when available, else username, else empty. */
@@ -24,6 +27,53 @@ export function competitorDisplayName(user?: CompetitorIdentity | null): string 
 export function competitorFlag(user?: CompetitorIdentity | null): string {
 	return countryFlag(user?.join_country);
 }
+
+/** Ghost person identity shape (mirror of ZktPerson scalar fields). */
+export interface PersonIdentity {
+	first_name?: string | null;
+	last_name?: string | null;
+	country_code?: string | null;
+	wca_id?: string | null;
+	external_id?: string | null;
+}
+
+/**
+ * Resolve a competitor row (result / registration / assignment) to one identity:
+ * the registered user, or the account-less person mapped to the same shape so
+ * competitorDisplayName/competitorFlag work unchanged.
+ */
+export function competitorOf(
+	row?: {user?: CompetitorIdentity | null; person?: PersonIdentity | null} | null
+): CompetitorIdentity | null {
+	if (!row) return null;
+	if (row.user) return row.user;
+	if (row.person) {
+		return {
+			username: null,
+			first_name: row.person.first_name,
+			last_name: row.person.last_name,
+			join_country: row.person.country_code,
+		};
+	}
+	return null;
+}
+
+/**
+ * Semantic role colors for competition staff badges. Centralised so
+ * ZktCompetitorDetail / ZktCompetitorsTab / ZktActivityDetail share one source
+ * instead of each redeclaring the same hardcoded hex set.
+ */
+export const ZKT_ROLE_COLORS: Record<string, string> = {
+	COMPETITOR: '#2dbd61',
+	JUDGE: '#42a5f5',
+	SCRAMBLER: '#9b59b6',
+	RUNNER: '#ee6a26',
+	ORGANIZER: '#246bfd',
+	STAFF: '#95a5a6',
+};
+
+/** Podium medal colors (gold / silver / bronze), index 0→2 = 1st→3rd. */
+export const ZKT_MEDAL_COLORS = ['#f5c518', '#c0c0c0', '#cd7f32'];
 
 export const ZKT_WCA_EVENTS: Array<{id: string; name: string}> = [
 	{id: '333', name: '3x3x3'},

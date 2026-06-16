@@ -3,12 +3,10 @@ import {useTranslation} from 'react-i18next';
 import {useHistory, useParams} from 'react-router-dom';
 import {useSelector} from 'react-redux';
 import {MagnifyingGlass} from 'phosphor-react';
-import {b, getEventName, competitorDisplayName, competitorFlag} from '../shared';
+import {b, getEventName, competitorDisplayName, competitorFlag, competitorOf, ZKT_ROLE_COLORS} from '../shared';
 
-// Staff role colors/labels — mirror ZktCompetitorDetail so badges look consistent.
-const ROLE_TINT: Record<string, string> = {
-	JUDGE: '#42a5f5', SCRAMBLER: '#9b59b6', RUNNER: '#ee6a26', ORGANIZER: '#246bfd', STAFF: '#95a5a6',
-};
+// Staff role colors/labels — shared source so badges look consistent everywhere.
+const ROLE_TINT = ZKT_ROLE_COLORS;
 const ROLE_LABEL_KEY: Record<string, string> = {
 	JUDGE: 'role_judge', SCRAMBLER: 'role_scrambler', RUNNER: 'role_runner', ORGANIZER: 'role_organizer', STAFF: 'role_staff',
 };
@@ -34,8 +32,10 @@ export default function ZktCompetitorsTab({detail}: {detail: any}) {
 			for (const rd of ev.rounds || []) {
 				for (const a of rd.assignments || []) {
 					if (!a.role || a.role === 'COMPETITOR') continue;
-					if (!m.has(a.user_id)) m.set(a.user_id, new Set());
-					m.get(a.user_id)!.add(a.role);
+					const key = a.user_id || a.person_id;
+					if (!key) continue;
+					if (!m.has(key)) m.set(key, new Set());
+					m.get(key)!.add(a.role);
 				}
 			}
 		}
@@ -48,8 +48,8 @@ export default function ZktCompetitorsTab({detail}: {detail: any}) {
 		const matched = q
 			? approved.filter(
 					(r: any) =>
-						(r.user?.username || '').toLowerCase().includes(q) ||
-						competitorDisplayName(r.user).toLowerCase().includes(q)
+						(competitorOf(r)?.username || '').toLowerCase().includes(q) ||
+						competitorDisplayName(competitorOf(r)).toLowerCase().includes(q)
 				)
 			: approved;
 		// Pin "me" to the top so I always see my own registration first.
@@ -58,7 +58,7 @@ export default function ZktCompetitorsTab({detail}: {detail: any}) {
 				if (a.user_id === me.id) return -1;
 				if (bx.user_id === me.id) return 1;
 			}
-			return competitorDisplayName(a.user).localeCompare(competitorDisplayName(bx.user));
+			return competitorDisplayName(competitorOf(a)).localeCompare(competitorDisplayName(competitorOf(bx)));
 		});
 	}, [detail.registrations, search, me]);
 
@@ -93,7 +93,7 @@ export default function ZktCompetitorsTab({detail}: {detail: any}) {
 								className={b('competitor-card', {me: isMe})}
 								onClick={() =>
 									history.push(
-										`/community/zkt-competitions/${competitionId}/competitors/${r.user_id}`
+										`/community/zkt-competitions/${competitionId}/competitors/${r.user_id || r.person_id}`
 									)
 								}
 							>
@@ -107,17 +107,17 @@ export default function ZktCompetitorsTab({detail}: {detail: any}) {
 								)}
 								<div className={b('competitor-info')}>
 									<span className={b('competitor-name-list')}>
-										{competitorFlag(r.user) && (
-											<span className={b('flag')}>{competitorFlag(r.user)}</span>
+										{competitorFlag(competitorOf(r)) && (
+											<span className={b('flag')}>{competitorFlag(competitorOf(r))}</span>
 										)}
-										{competitorDisplayName(r.user) || r.user_id}
+										{competitorDisplayName(competitorOf(r)) || r.user_id || r.person_id}
 										{isMe && (
 											<span className={b('me-badge')}>{t('you')}</span>
 										)}
 									</span>
 								</div>
 								{(() => {
-									const roles = staffRolesByUser.get(r.user_id);
+									const roles = staffRolesByUser.get(r.user_id || r.person_id);
 									if (!roles || roles.size === 0) return null;
 									return (
 										<div className={b('competitor-roles')}>

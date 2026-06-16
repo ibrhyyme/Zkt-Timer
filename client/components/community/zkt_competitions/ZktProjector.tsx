@@ -13,6 +13,7 @@ import {
 	formatHasAverage,
 	competitorDisplayName,
 	competitorFlag,
+	competitorOf,
 } from './shared';
 import {useZktLiveResults} from './useZktLiveResults';
 import {
@@ -346,8 +347,8 @@ export default function ZktProjector() {
 										{row.ranking ?? '-'}
 									</td>
 									<td className={b('projector-name')}>
-										{competitorFlag(row.user) ? competitorFlag(row.user) + ' ' : ''}
-										{competitorDisplayName(row.user) || row.user?.username}
+										{competitorFlag(competitorOf(row.original)) ? competitorFlag(competitorOf(row.original)) + ' ' : ''}
+										{competitorDisplayName(competitorOf(row.original)) || row.original?.user_id || row.original?.person_id}
 									</td>
 									{Array.from({length: attemptCount}).map((_, i) => (
 										<td key={i} className={b('projector-time')}>
