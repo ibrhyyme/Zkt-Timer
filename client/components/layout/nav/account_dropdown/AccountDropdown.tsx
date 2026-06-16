@@ -7,7 +7,7 @@ import * as Popover from '@radix-ui/react-popover';
 import { useHistory } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { Gear, Crown, Trophy } from 'phosphor-react';
+import { Gear, Crown, Trophy, User, IdentificationCard, ShieldStar, SignOut } from 'phosphor-react';
 import block from '../../../../styles/bem';
 import AvatarImage from '../../../common/avatar/avatar_image/AvatarImage';
 import { logOut } from '../../../../util/auth/logout';
@@ -60,19 +60,21 @@ export default function AccountDropdown() {
 		items.push({
 			key: 'profile',
 			label: t('account_dropdown.profile'),
+			icon: <User weight="bold" />,
 			link: `/user/${me.username}`,
 		});
 	}
 	items.push({
 		key: 'pro',
 		label: userIsPro ? t('account_dropdown.pro_subscription') : t('account_dropdown.pro_subscription_cta'),
-		icon: userIsPro ? undefined : <Crown weight="fill" />,
+		icon: <Crown weight="fill" />,
 		link: '/pro',
 		pro: !userIsPro,
 	});
 	items.push({
 		key: 'account',
 		label: t('account_dropdown.account'),
+		icon: <IdentificationCard weight="bold" />,
 		link: '/account/personal-info',
 	});
 	items.push({
@@ -85,6 +87,7 @@ export default function AccountDropdown() {
 		items.push({
 			key: 'admin',
 			label: t('account_dropdown.admin'),
+			icon: <ShieldStar weight="fill" />,
 			link: '/admin/dashboard',
 		});
 	}
@@ -100,6 +103,7 @@ export default function AccountDropdown() {
 	items.push({
 		key: 'logout',
 		label: t('account_dropdown.logout'),
+		icon: <SignOut weight="bold" />,
 		onClick: logOut,
 	});
 
