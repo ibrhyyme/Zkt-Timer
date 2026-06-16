@@ -24,7 +24,8 @@ export function isSlamDetectorAvailable(): boolean {
 	return isNative() && Capacitor.isPluginAvailable('SlamDetector');
 }
 
-const REFRACTORY_MS = 150;
+// FiveTimer grace window — no re-trigger for 750ms after a slam
+const REFRACTORY_MS = 750;
 
 // The native detector is a singleton shared by two consumers (solve mode and
 // the settings test indicator). Ownership tokens prevent a stale consumer's

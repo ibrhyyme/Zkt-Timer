@@ -2957,6 +2957,7 @@
         "inspiration_recordranks": "<strong>Deni Mintsaev</strong> 的项目让我了解了如何构建特定于速拧运动的记录和排名架构。ZKT 全局排名和记录表的布局（选手+旗帜、成绩、日期、比赛列）改编自该项目的表格结构。",
         "inspiration_rubikcube": "一个关于如何在 Web 环境中设计简单而流畅的魔方交互的有用参考。",
         "inspiration_pllrecognition": "PLL Recognition Trainer 模块的直接来源。键盘驱动的 PLL 识别练习、双面识别指南以及自适应重复逻辑均从 <strong>Roman Strakhov</strong> 的项目移植并适配到 Zkt Timer。",
+        "inspiration_fivetimer": "拍桌停止（Drop to Stop）功能背后的加速度计算法参考自 <strong>The Six Sides</strong> 的 FiveTimer 应用并适配到 Zkt Timer。",
         "libraries_title": "使用的库",
         "libraries_desc": "直接用于 Zkt Timer 基础设施的核心速拧库。",
         "libraries_cubingjs": "用于智能魔方状态跟踪、WCA 符号和 KPattern 匹配的核心库。由 <strong>Lucas Garron</strong> 和 cubing.js 贡献者开发。",

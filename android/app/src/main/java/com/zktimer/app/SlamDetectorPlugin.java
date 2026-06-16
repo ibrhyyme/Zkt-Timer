@@ -12,25 +12,30 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 
 /**
  * Thin native peak-detector for the "slam to stop" timer feature.
- * Streams nothing to JS — compares accelerometer magnitude deviation
+ * Streams nothing to JS — compares the Z-axis sample-to-sample delta
  * against a threshold supplied by the TS layer and emits a discrete
  * "slam" event when it fires. All decision logic (sensitivity mapping,
  * arming window, lifecycle) lives in TypeScript.
+ *
+ * Algorithm ported 1:1 from FiveTimer (com.thesixsides.cincotimer) —
+ * a 15-year-proven "Drop to Stop": Z-axis consecutive delta in m/s²,
+ * 0.3 noise deadband, threshold compare, refractory window.
  */
 @CapacitorPlugin(name = "SlamDetector")
 public class SlamDetectorPlugin extends Plugin implements SensorEventListener {
 
-    // 100Hz, matches iOS accelerometerUpdateInterval = 0.01
-    private static final int SENSOR_PERIOD_US = 10000;
-    private static final double GRAVITY = 9.81;
+    // Noise floor — deltas below this are treated as 0 (FiveTimer: 0.3f, m/s²)
+    private static final double DEADBAND = 0.3;
 
     private SensorManager sensorManager;
     private Sensor accelerometer;
     private boolean active = false;
-    // Threshold in g for |magnitude - 1g| deviation; set per start() call
+    // Threshold in m/s² for the Z-axis sample delta; set per start() call
     private double threshold = 1.0;
-    private long refractoryMs = 150;
+    private long refractoryMs = 750;
     private long lastFireAt = 0;
+    private float lastZ = 0f;
+    private boolean initialized = false;
 
     @PluginMethod()
     public void start(PluginCall call) {
@@ -47,15 +52,18 @@ public class SlamDetectorPlugin extends Plugin implements SensorEventListener {
         }
 
         threshold = call.getDouble("threshold", 1.0);
-        refractoryMs = call.getInt("refractoryMs", 150);
+        refractoryMs = call.getInt("refractoryMs", 750);
         lastFireAt = 0;
+        initialized = false;
 
         // Restart cleanly if already running (e.g. threshold update from slider)
         if (active) {
             sensorManager.unregisterListener(this);
         }
 
-        sensorManager.registerListener(this, accelerometer, SENSOR_PERIOD_US);
+        // SENSOR_DELAY_GAME (~50Hz) — matches iOS 0.02s and the FiveTimer reference.
+        // Delta metric is rate-dependent, so the rate must match for thresholds to hold.
+        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
         active = true;
         call.resolve();
     }
@@ -73,22 +81,30 @@ public class SlamDetectorPlugin extends Plugin implements SensorEventListener {
     public void onSensorChanged(SensorEvent event) {
         if (!active) return;
 
-        // Android reports m/s² — normalize to g so thresholds match iOS
-        double x = event.values[0] / GRAVITY;
-        double y = event.values[1] / GRAVITY;
-        double z = event.values[2] / GRAVITY;
-        double magnitude = Math.sqrt(x * x + y * y + z * z);
-        // Deviation from 1g — orientation- and sample-rate-independent
-        double deviation = Math.abs(magnitude - 1.0);
+        // Z axis in m/s² (gravity included — cancels out in the delta)
+        float z = event.values[2];
 
-        if (deviation > threshold) {
+        // First sample is the baseline, no delta yet
+        if (!initialized) {
+            lastZ = z;
+            initialized = true;
+            return;
+        }
+
+        double delta = Math.abs(lastZ - z);
+        lastZ = z;
+        if (delta < DEADBAND) {
+            delta = 0;
+        }
+
+        if (delta > threshold) {
             // Epoch ms — SensorEvent.timestamp is boot-relative nanos, unusable for endTimer
             long now = System.currentTimeMillis();
             if (now - lastFireAt >= refractoryMs) {
                 lastFireAt = now;
                 JSObject data = new JSObject();
                 data.put("timestamp", now);
-                data.put("magnitude", deviation);
+                data.put("magnitude", delta);
                 notifyListeners("slam", data);
             }
         }
@@ -113,7 +129,7 @@ public class SlamDetectorPlugin extends Plugin implements SensorEventListener {
     protected void handleOnResume() {
         super.handleOnResume();
         if (sensorManager != null && accelerometer != null && active) {
-            sensorManager.registerListener(this, accelerometer, SENSOR_PERIOD_US);
+            sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
         }
     }
 }

@@ -2957,6 +2957,7 @@
         "inspiration_recordranks": "<strong>Deni Mintsaev</strong>'s project provided insight into how records and ranking architectures specific to sport cubing can be built. The layout of ZKT's global rankings and records tables (competitor+flag, result, date, competition columns) was adapted from this project's table structure.",
         "inspiration_rubikcube": "A useful reference for how simple yet fluid cube interactions can be designed in a web environment.",
         "inspiration_pllrecognition": "The direct basis for the PLL Recognition Trainer module. The keyboard-driven PLL recognition practice, two-sided recognition guide, and adaptive repetition logic were ported and adapted to Zkt Timer from <strong>Roman Strakhov</strong>'s project.",
+        "inspiration_fivetimer": "The accelerometer algorithm behind the Slam to Stop (Drop to Stop) feature was referenced and adapted to Zkt Timer from the FiveTimer app by <strong>The Six Sides</strong>.",
         "libraries_title": "Libraries Used",
         "libraries_desc": "Core cubing libraries used directly in Zkt Timer's infrastructure.",
         "libraries_cubingjs": "The core library used for smart cube state tracking, WCA notation, and KPattern matching. Developed by <strong>Lucas Garron</strong> and the cubing.js contributors.",
