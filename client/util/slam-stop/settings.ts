@@ -8,17 +8,17 @@ const ENABLED_KEY = 'zkt_slam_enabled';
 const SENSITIVITY_KEY = 'zkt_slam_sensitivity';
 const CHANGE_EVENT = 'slamStopChanged';
 
-export const DEFAULT_SENSITIVITY = 38; // middle of the Medium zone
-
-// Threshold in g for |magnitude - 1g|; higher sensitivity = lower threshold
-const MAX_THRESHOLD = 2.5; // sensitivity=0 (Low): hard slam required
-const MIN_THRESHOLD = 0.35; // sensitivity=100 (Ultra): light tap fires
+export const DEFAULT_SENSITIVITY = 75; // FiveTimer reference default
 
 export type SlamZone = 'low' | 'medium' | 'high' | 'ultra';
 
+// Threshold in m/s² for the Z-axis sample delta; higher sensitivity = lower
+// threshold = easier to trigger. Formula ported 1:1 from FiveTimer
+// (com.thesixsides.cincotimer): (100 - sensitivity + 0.01) / 20.
+// e.g. sensitivity 75 → 1.25 m/s², 0 → 5.0, 100 → ~0.0005.
 export function sensitivityToThreshold(sensitivity: number): number {
 	const s = Math.min(100, Math.max(0, sensitivity));
-	return MAX_THRESHOLD - (s / 100) * (MAX_THRESHOLD - MIN_THRESHOLD);
+	return (100 - s + 0.01) / 20;
 }
 
 export function sensitivityZone(sensitivity: number): SlamZone {

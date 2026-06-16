@@ -104,6 +104,13 @@ const INSPIRATIONS: Reference[] = [
 		link: 'https://github.com/Roman-/pll_recognition_trainer',
 		descKey: 'credits.inspiration_pllrecognition',
 	},
+	{
+		project: 'FiveTimer',
+		user: 'The Six Sides',
+		username: '',
+		link: 'https://apps.apple.com/app/id471548639',
+		descKey: 'credits.inspiration_fivetimer',
+	},
 ];
 
 const LIBRARIES: Reference[] = [
