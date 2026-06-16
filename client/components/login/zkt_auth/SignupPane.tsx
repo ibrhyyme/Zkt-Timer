@@ -2,7 +2,8 @@ import React, { useRef, useState } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { gql } from '@apollo/client/core';
 import { useMutation } from '@apollo/client';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { Eye, EyeSlash, ArrowRight } from 'phosphor-react';
 import { UserAccount } from '../../../@types/generated/graphql';
 import { useInput } from '../../../util/hooks/useInput';
@@ -15,7 +16,7 @@ import TurnstileWidget from './TurnstileWidget';
 const b = block('zkt-auth');
 
 const CREATE_USER_ACCOUNT_MUTATION = gql`
-	mutation Mutate($firstName: String!, $lastName: String!, $email: String!, $username: String!, $password: String!, $language: String, $turnstileToken: String!) {
+	mutation Mutate($firstName: String!, $lastName: String!, $email: String!, $username: String!, $password: String!, $language: String, $turnstileToken: String!, $termsAgreed: Boolean!) {
 		createUserAccount(
 			first_name: $firstName
 			last_name: $lastName
@@ -24,6 +25,7 @@ const CREATE_USER_ACCOUNT_MUTATION = gql`
 			password: $password
 			language: $language
 			turnstile_token: $turnstileToken
+			terms_agreed: $termsAgreed
 		) {
 			id
 		}
@@ -50,6 +52,8 @@ export default function SignupPane({ onFieldFill, onSubmitSuccess, onSubmitError
 	const isNative = Capacitor.isNativePlatform();
 	const [turnstileToken, setTurnstileToken] = useState(isNative ? 'NATIVE_APP' : '');
 
+	const [agreed, setAgreed] = useState(false);
+
 	const [createAccount, createData] = useMutation<
 		{ createUserAccount: UserAccount },
 		{
@@ -60,6 +64,7 @@ export default function SignupPane({ onFieldFill, onSubmitSuccess, onSubmitError
 			password: string;
 			language: string;
 			turnstileToken: string;
+			termsAgreed: boolean;
 		}
 	>(CREATE_USER_ACCOUNT_MUTATION);
 
@@ -86,6 +91,12 @@ export default function SignupPane({ onFieldFill, onSubmitSuccess, onSubmitError
 		if (createData?.loading) return;
 		setError('');
 
+		if (!agreed) {
+			setError(t('signup.consent_required'));
+			onSubmitError();
+			return;
+		}
+
 		const validate = validateStrongPassword(password);
 		if (!validate.isStrong) {
 			setError(validate.errorMessage);
@@ -103,6 +114,7 @@ export default function SignupPane({ onFieldFill, onSubmitSuccess, onSubmitError
 					password,
 					language: i18n.language,
 					turnstileToken,
+					termsAgreed: agreed,
 				},
 			});
 
@@ -200,6 +212,23 @@ export default function SignupPane({ onFieldFill, onSubmitSuccess, onSubmitError
 			</div>
 
 			{!isNative && <TurnstileWidget onToken={setTurnstileToken} />}
+
+			<label className={b('consent')}>
+				<input
+					type="checkbox"
+					checked={agreed}
+					onChange={(e) => setAgreed(e.target.checked)}
+				/>
+				<span>
+					<Trans
+						i18nKey="signup.consent_label"
+						components={{
+							priv: <Link to="/privacy" target="_blank" rel="noopener noreferrer" />,
+							terms: <Link to="/terms" target="_blank" rel="noopener noreferrer" />,
+						}}
+					/>
+				</span>
+			</label>
 
 			<button
 				type="submit"

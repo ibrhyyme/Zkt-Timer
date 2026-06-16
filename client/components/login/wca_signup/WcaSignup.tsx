@@ -1,14 +1,20 @@
-import React, {useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {gql} from '@apollo/client/core';
 import {useMutation} from '@apollo/client';
-import {useTranslation} from 'react-i18next';
+import {Trans, useTranslation} from 'react-i18next';
+import {Link} from 'react-router-dom';
 import {useInput} from '../../../util/hooks/useInput';
 import {UserAccount} from '../../../@types/generated/graphql';
 import {resourceUri} from '../../../util/storage';
+import block from '../../../styles/bem';
+
+// WcaSignup renders inside the .cd-zkt-auth scope (ZktAuthScene legacyChild),
+// so it can reuse the shared zkt-auth consent style.
+const b = block('zkt-auth');
 
 const COMPLETE_WCA_SIGNUP = gql`
-	mutation Mutate($username: String!) {
-		completeWcaSignup(username: $username) {
+	mutation Mutate($username: String!, $acceptedTerms: Boolean!) {
+		completeWcaSignup(username: $username, acceptedTerms: $acceptedTerms) {
 			id
 		}
 	}
@@ -17,8 +23,31 @@ const COMPLETE_WCA_SIGNUP = gql`
 export default function WcaSignup() {
 	const {t} = useTranslation();
 	const [username, setUsername] = useInput('');
+	const [agreed, setAgreed] = useState(false);
 	const [error, setError] = useState('');
+	const [shake, setShake] = useState(false);
 	const [redirecting, setRedirecting] = useState(false);
+	const shakeTimer = useRef<number | null>(null);
+
+	// Clear any pending shake timer on unmount so it can't fire on an unmounted component.
+	useEffect(() => () => {
+		if (shakeTimer.current !== null) {
+			window.clearTimeout(shakeTimer.current);
+		}
+	}, []);
+
+	// Show an error banner + shake the card (parity with the email SignupPane flow).
+	// Reset to false then re-apply on the next frame so a rapid second error still
+	// replays the CSS animation (the browser won't restart it if the class never drops).
+	function flashError(msg: string) {
+		setError(msg);
+		setShake(false);
+		if (shakeTimer.current !== null) {
+			window.clearTimeout(shakeTimer.current);
+		}
+		requestAnimationFrame(() => setShake(true));
+		shakeTimer.current = window.setTimeout(() => setShake(false), 500);
+	}
 
 	const urlParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
 	const wcaName = urlParams.get('name') || '';
@@ -32,7 +61,7 @@ export default function WcaSignup() {
 
 	const [completeSignup, completeSignupData] = useMutation<
 		{completeWcaSignup: UserAccount},
-		{username: string}
+		{username: string; acceptedTerms: boolean}
 	>(COMPLETE_WCA_SIGNUP);
 
 	async function handleSubmit(e: React.FormEvent) {
@@ -45,17 +74,22 @@ export default function WcaSignup() {
 
 		const trimmed = username.trim();
 		if (!trimmed || trimmed.length < 2) {
-			setError(t('wca_signup.username_too_short'));
+			flashError(t('wca_signup.username_too_short'));
 			return;
 		}
 
 		if (trimmed.length > 18) {
-			setError(t('wca_signup.username_too_long'));
+			flashError(t('wca_signup.username_too_long'));
 			return;
 		}
 
 		if (!/^[a-zA-Z0-9_]+$/.test(trimmed)) {
-			setError(t('wca_signup.username_invalid'));
+			flashError(t('wca_signup.username_invalid'));
+			return;
+		}
+
+		if (!agreed) {
+			flashError(t('signup.consent_required'));
 			return;
 		}
 
@@ -63,6 +97,7 @@ export default function WcaSignup() {
 			await completeSignup({
 				variables: {
 					username: trimmed,
+					acceptedTerms: agreed,
 				},
 			});
 
@@ -75,7 +110,7 @@ export default function WcaSignup() {
 				e?.graphQLErrors?.[0]?.message ||
 				e?.message ||
 				t('wca_signup.session_expired');
-			setError(errorMessage);
+			flashError(errorMessage);
 		}
 	}
 
@@ -98,7 +133,7 @@ export default function WcaSignup() {
 	}
 
 	return (
-		<div className="space-y-4">
+		<div className={`space-y-4 ${shake ? b('legacy-shake') : ''}`}>
 			{/* WCA Logo */}
 			<div className="flex justify-center">
 				<img
@@ -179,8 +214,29 @@ export default function WcaSignup() {
 
 				{/* Error */}
 				{error && (
-					<div className="mt-1 text-xs text-rose-300">{error}</div>
+					<div className={b('banner')}>
+						<span className={b('banner-dot')} />
+						{error}
+					</div>
 				)}
+
+				{/* Consent: Privacy + Terms (mandatory) */}
+				<label className={b('consent')}>
+					<input
+						type="checkbox"
+						checked={agreed}
+						onChange={(e) => setAgreed(e.target.checked)}
+					/>
+					<span>
+						<Trans
+							i18nKey="signup.consent_label"
+							components={{
+								priv: <Link to="/privacy" target="_blank" rel="noopener noreferrer" />,
+								terms: <Link to="/terms" target="_blank" rel="noopener noreferrer" />,
+							}}
+						/>
+					</span>
+				</label>
 
 				{/* Submit */}
 				<button

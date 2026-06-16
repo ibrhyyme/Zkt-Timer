@@ -1175,6 +1175,7 @@ export type MutationCheckForgotPasswordCodeArgs = {
 
 
 export type MutationCompleteWcaSignupArgs = {
+  acceptedTerms: Scalars['Boolean'];
   username?: InputMaybe<Scalars['String']>;
 };
 
@@ -1246,6 +1247,7 @@ export type MutationCreateUserAccountArgs = {
   language?: InputMaybe<Scalars['String']>;
   last_name: Scalars['String'];
   password: Scalars['String'];
+  terms_agreed: Scalars['Boolean'];
   turnstile_token: Scalars['String'];
   username: Scalars['String'];
 };

@@ -42,6 +42,8 @@
         "wca_note": "If you already have an account, log in first and link your WCA account from Account > Linked Accounts."
     },
     "signup": {
+        "consent_label": "I have read and agree to the <priv>Privacy Policy</priv> and <terms>Terms of Service</terms>.",
+        "consent_required": "You must accept the Privacy Policy and Terms of Service to continue.",
         "first_name": "First Name",
         "last_name": "Last Name",
         "email": "Email",

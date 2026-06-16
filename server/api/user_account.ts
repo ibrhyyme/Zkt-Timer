@@ -33,7 +33,7 @@ export const gqlQuery = `
 `;
 
 export const gqlMutation = `
-	createUserAccount(first_name: String!, last_name: String!, email: String!, username: String!, password: String!, language: String, turnstile_token: String!): PublicUserAccount
+	createUserAccount(first_name: String!, last_name: String!, email: String!, username: String!, password: String!, language: String, turnstile_token: String!, terms_agreed: Boolean!): PublicUserAccount
 	updateUserAccount(first_name: String!, last_name: String!, email: String!, username: String!, language: String): PublicUserAccount
 	updateUserPassword(old_password: String!, new_password: String!): PublicUserAccount
 	setUserPassword(new_password: String!): PublicUserAccount
@@ -64,10 +64,16 @@ type UpdatePasswordInput = {
 export const mutateActions = {
 	createUserAccount: async (
 		_: any,
-		{ first_name, last_name, email, username, password, language, turnstile_token }: CreateAccountInput & { turnstile_token: string },
+		{ first_name, last_name, email, username, password, language, turnstile_token, terms_agreed }: CreateAccountInput & { turnstile_token: string; terms_agreed: boolean },
 		{ req, res }: GraphQLContext
 	) => {
 		const ip = extractIp(req);
+
+		// Consent is mandatory and enforced server-side — the client checkbox is bypassable
+		// via direct GraphQL. No account is created without explicit acceptance.
+		if (terms_agreed !== true) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Devam etmek icin Gizlilik Politikasi ve Kullanim Kosullari kabul edilmelidir.');
+		}
 
 		if (process.env.NODE_ENV === 'production' && turnstile_token !== 'NATIVE_APP') {
 			try {
