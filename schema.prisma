@@ -47,6 +47,10 @@ model UserAccount {
   last_seen_at               DateTime?
   daily_goal_reminder        Boolean     @default(false)
   last_daily_goal_reminder   DateTime?
+  // Consent: timestamp when Privacy Policy + Terms of Service were accepted at signup,
+  // and the policy version accepted. Null = legacy account created before consent gating.
+  terms_accepted_at          DateTime?
+  consent_version            String?
   action_log                 ActionLog[]
 
   algorithm_override            AlgorithmOverride[]

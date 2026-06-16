@@ -42,6 +42,8 @@
         "wca_note": "Zaten bir hesabınız varsa önce giriş yapıp Hesap > Bağlı Hesaplar bölümünden WCA hesabınızı bağlayın."
     },
     "signup": {
+        "consent_label": "<priv>Gizlilik Politikası</priv> ve <terms>Kullanım Koşulları</terms>'nı okudum, kabul ediyorum.",
+        "consent_required": "Devam etmek için Gizlilik Politikası ve Kullanım Koşulları'nı kabul etmelisin.",
         "first_name": "Ad",
         "last_name": "Soyad",
         "email": "E-posta",

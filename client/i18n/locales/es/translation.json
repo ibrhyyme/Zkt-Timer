@@ -42,6 +42,8 @@
         "wca_note": "Si ya tienes una cuenta, inicia sesion primero y vincula tu cuenta WCA desde Cuenta > Cuentas Vinculadas."
     },
     "signup": {
+        "consent_label": "He leído y acepto la <priv>Política de Privacidad</priv> y los <terms>Términos de Servicio</terms>.",
+        "consent_required": "Debes aceptar la Política de Privacidad y los Términos de Servicio para continuar.",
         "first_name": "Nombre",
         "last_name": "Apellido",
         "email": "Correo electrónico",

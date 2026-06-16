@@ -1,6 +1,7 @@
 import {getLocationFromIp} from '../services/ipstack';
 import {v4 as uuid} from 'uuid';
 import {hashPassword} from '../util/password';
+import {CURRENT_CONSENT_VERSION} from '../../shared/consent';
 import {Prisma} from '@prisma/client';
 import {getPrisma} from '../database';
 import dayjs from 'dayjs';
@@ -344,6 +345,10 @@ export async function refreshUnverifiedAccount(
 				password: hashedPassword,
 				join_ip: ip || '',
 				join_country: country,
+				// Re-signup re-affirms consent (resolver enforces terms_agreed before this).
+				// Record it so a pre-feature unverified account refreshed later isn't left with null consent.
+				terms_accepted_at: new Date(),
+				consent_version: CURRENT_CONSENT_VERSION,
 			},
 		}),
 		prisma.emailVerification.deleteMany({where: {user_id: userId}}),
@@ -389,6 +394,10 @@ export async function createUserAccount(
 			join_ip: ip || '',
 			join_country: country,
 			is_pro: false,
+			// Account creation == consent moment. Both signup paths (local + WCA) flow through
+			// here, so recording the acceptance once keeps it atomic with the create.
+			terms_accepted_at: new Date(),
+			consent_version: CURRENT_CONSENT_VERSION,
 		},
 	});
 }

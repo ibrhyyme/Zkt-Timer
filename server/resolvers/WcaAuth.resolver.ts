@@ -178,9 +178,18 @@ export class WcaAuthResolver {
 	@Mutation(() => PublicUserAccount)
 	async completeWcaSignup(
 		@Ctx() context: GraphQLContext,
-		@Arg('username') username: string
+		@Arg('username') username: string,
+		// Explicit non-nullable: schema-wide nullableByDefault is true, so without this
+		// the arg generates as `Boolean` — keep parity with createUserAccount's `terms_agreed: Boolean!`.
+		@Arg('acceptedTerms', {nullable: false}) acceptedTerms: boolean
 	): Promise<PublicUserAccount> {
 		const {req, res} = context;
+
+		// Consent is mandatory and enforced server-side — the client checkbox is bypassable
+		// via direct GraphQL. No account is created without explicit acceptance.
+		if (acceptedTerms !== true) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Devam etmek icin Gizlilik Politikasi ve Kullanim Kosullari kabul edilmelidir.');
+		}
 
 		// 1. Read JWT from wca_pending cookie
 		const pendingToken = req.cookies[WCA_PENDING_COOKIE];

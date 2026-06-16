@@ -42,6 +42,8 @@
         "wca_note": "如果您已有账户，请先登录，然后从“账户”>“关联账户”中关联您的 WCA 账户。"
     },
     "signup": {
+        "consent_label": "我已阅读并同意<priv>隐私政策</priv>和<terms>服务条款</terms>。",
+        "consent_required": "您必须接受隐私政策和服务条款才能继续。",
         "first_name": "名字",
         "last_name": "姓氏",
         "email": "邮箱",

@@ -175,6 +175,12 @@
 		animation: zkt-auth-shake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97);
 	}
 
+	/* Legacy panes (e.g. WcaSignup) shake their own content on error,
+	   since they render outside the choreography-driven card wrapper. */
+	&__legacy-shake {
+		animation: zkt-auth-shake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+	}
+
 	/* ── Card (glass) ──────────────────────────── */
 	&__card {
 		position: relative;
@@ -635,6 +641,66 @@
 
 	&__turnstile-label {
 		flex: 1;
+	}
+
+	/* ── Consent (Privacy + Terms acceptance) ──── */
+	&__consent {
+		display: flex;
+		align-items: flex-start;
+		gap: 10px;
+		font-size: 13px;
+		font-weight: 600;
+		line-height: 1.45;
+		color: rgb(var(--text-color));
+		cursor: pointer;
+
+		// Global reset.scss sets `input { appearance: none }`, so native checkboxes
+		// render invisible. Draw the box + checkmark ourselves.
+		input[type='checkbox'] {
+			position: relative;
+			flex-shrink: 0;
+			width: 18px;
+			height: 18px;
+			margin: 1px 0 0;
+			border-radius: 5px;
+			border: 1px solid rgb(var(--auth-module-border-strong));
+			background: rgba(12, 13, 20, 0.5);
+			cursor: pointer;
+			transition: background 0.15s, border-color 0.15s;
+
+			&:checked {
+				background: linear-gradient(135deg, rgb(var(--primary-color)), rgb(var(--auth-accent)));
+				border-color: transparent;
+			}
+
+			&:checked::after {
+				content: '';
+				position: absolute;
+				left: 5px;
+				top: 1px;
+				width: 5px;
+				height: 9px;
+				border: solid white;
+				border-width: 0 2px 2px 0;
+				transform: rotate(45deg);
+			}
+
+			&:focus-visible {
+				outline: 2px solid rgb(var(--primary-color));
+				outline-offset: 2px;
+			}
+		}
+
+		a {
+			color: rgb(var(--auth-accent));
+			font-weight: 700;
+			text-decoration: underline;
+			text-underline-offset: 2px;
+
+			&:hover {
+				color: rgb(var(--primary-color));
+			}
+		}
 	}
 
 	/* ── WCA Callback step list ───────────────── */
