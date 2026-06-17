@@ -91,8 +91,8 @@ export default function AccountDropdown() {
 			link: '/admin/dashboard',
 		});
 	}
-	// Competition management — admin-only for now, mods will get it later.
-	if (me.admin) {
+	// Competition management — admins and mods (mod = competition manager).
+	if (me.admin || me.mod) {
 		items.push({
 			key: 'organizer',
 			label: t('account_dropdown.competition_management'),
