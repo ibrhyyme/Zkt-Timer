@@ -449,7 +449,11 @@ export default function EdgeDrawer(props: Props) {
 						className={b('drawer', {open: open && !swiping, 'no-transition': noTransition, [sideMod]: true})}
 						style={swiping ? {transform} : undefined}
 					>
-						<div style={{height: spacerTop, flexShrink: 0, transition: noTransition ? undefined : 'height 0.18s ease'}} />
+						{/* No height transition — the drawer must open directly at its final
+					    position. A transition makes content/view changes (e.g. switching to
+					    the Hizli Ayarlar extras view, which is taller) visibly drag upward.
+					    Re-measure (ResizeObserver) still keeps the panel on-screen. */}
+					<div style={{height: spacerTop, flexShrink: 0}} />
 						<div className={b('grid')}>
 							{children}
 						</div>
