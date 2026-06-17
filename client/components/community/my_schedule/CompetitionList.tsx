@@ -255,6 +255,7 @@ export default function CompetitionList() {
 				city: c.location,
 				country_iso2: c.country_code || 'TR',
 				status: c.status,
+				events: c.events || [],
 				__zkt: true,
 			}))
 			.sort((a: any, b: any) => (b.start_date || '').localeCompare(a.start_date || ''));
@@ -312,6 +313,49 @@ export default function CompetitionList() {
 						)}
 					</span>
 				) : null}
+			</div>
+		);
+	}
+
+	// ZKT competitions get their OWN distinctive card (gradient rail + ZKT
+	// monogram + event-icon strip) — intentionally NOT the WCA/mine card shape.
+	function renderZktCard(comp: any) {
+		const isFinished = comp.end_date < todayStr;
+		const isOngoing = comp.start_date <= todayStr && comp.end_date >= todayStr;
+		const statusKey = (comp.status || '').toLowerCase();
+		const events = comp.events || [];
+		return (
+			<div
+				key={comp.id}
+				className={b('zkt-card', {finished: isFinished, ongoing: isOngoing})}
+				onClick={() => history.push(`/community/zkt-competitions/${comp.id}`)}
+			>
+				<span className={b('zkt-card-rail')} aria-hidden="true" />
+				<div className={b('zkt-card-main')}>
+					<div className={b('zkt-card-top')}>
+						<span className={b('zkt-card-mark')}>ZKT</span>
+						{comp.country_iso2 && (
+							<span className={b('zkt-card-flag')}>{comp.country_iso2}</span>
+						)}
+						{statusKey && (
+							<span className={b('zkt-status', {[statusKey]: true})}>
+								{t(`zkt_comp.status_${statusKey}`)}
+							</span>
+						)}
+					</div>
+					<span className={b('zkt-card-title')}>{comp.name}</span>
+					<span className={b('zkt-card-meta')}>
+						{formatDateRange(comp.start_date, comp.end_date, locale)}
+						{comp.city && ` · ${comp.city}`}
+					</span>
+					{events.length > 0 && (
+						<div className={b('zkt-card-events')}>
+							{events.slice(0, 10).map((e: any) => (
+								<span key={e.id} className={`cubing-icon event-${e.event_id}`} />
+							))}
+						</div>
+					)}
+				</div>
 			</div>
 		);
 	}
@@ -375,7 +419,7 @@ export default function CompetitionList() {
 						{t('my_schedule.zkt_competitions')}
 					</h3>
 					<div className={b('comp-list')}>
-						{zktCards.map((comp: any) => renderCompCard(comp))}
+						{zktCards.map((comp: any) => renderZktCard(comp))}
 					</div>
 				</div>
 			)}

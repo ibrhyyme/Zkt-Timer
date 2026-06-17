@@ -281,6 +281,112 @@
 	&__zkt-competitions {
 		margin-bottom: 1.5rem;
 	}
+	// ZKT competition card — distinctive surface (gradient rail + ZKT monogram +
+	// event-icon strip), intentionally different from the WCA/mine card so the
+	// ZKT section reads as its own brand, not "just another upcoming comp".
+	&__zkt-card {
+		position: relative;
+		display: flex;
+		align-items: stretch;
+		border-radius: 14px;
+		overflow: hidden;
+		cursor: pointer;
+		margin-bottom: 0.75rem;
+		background:
+			linear-gradient(135deg, rgba(var(--primary-color), 0.1), rgba(var(--primary-color), 0.02) 55%),
+			rgb(var(--module-color));
+		border: 1px solid rgba(var(--primary-color), 0.22);
+		transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+
+		&:hover {
+			transform: translateY(-2px);
+			border-color: rgba(var(--primary-color), 0.5);
+			box-shadow: 0 10px 30px rgba(var(--primary-color), 0.18);
+		}
+
+		&--ongoing {
+			border-color: rgba(var(--primary-color), 0.45);
+		}
+	}
+
+	&__zkt-card-rail {
+		flex-shrink: 0;
+		width: 5px;
+		background: linear-gradient(180deg, rgb(var(--primary-color)), rgb(var(--secondary-color)));
+	}
+
+	// Past comps: grey rail (marked, NOT faded text) — readability rule
+	&__zkt-card--finished &__zkt-card-rail {
+		background: linear-gradient(180deg, rgba(var(--text-color), 0.45), rgba(var(--text-color), 0.2));
+	}
+
+	&__zkt-card-main {
+		flex: 1;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+		padding: 0.9rem 1.1rem;
+	}
+
+	&__zkt-card-top {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+
+		.cd-my-schedule__zkt-status {
+			margin-left: auto;
+		}
+	}
+
+	// Corner ZKT monogram — small badge, NOT the old full-width bar
+	&__zkt-card-mark {
+		display: inline-flex;
+		align-items: center;
+		padding: 0.18rem 0.5rem;
+		border-radius: 6px;
+		background: linear-gradient(135deg, rgb(var(--primary-color)), rgb(var(--secondary-color)));
+		color: #fff;
+		font-size: 0.66rem;
+		font-weight: 800;
+		letter-spacing: 1.2px;
+	}
+
+	&__zkt-card-flag {
+		font-size: 0.74rem;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+		letter-spacing: 0.04em;
+	}
+
+	&__zkt-card-title {
+		font-size: 1.02rem;
+		font-weight: 700;
+		line-height: 1.25;
+		color: rgb(var(--text-color));
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	&__zkt-card-meta {
+		font-size: 0.82rem;
+		font-weight: 500;
+		color: rgb(var(--text-color));
+	}
+
+	&__zkt-card-events {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.45rem;
+		margin-top: 0.15rem;
+
+		.cubing-icon {
+			font-size: 20px;
+			color: rgb(var(--primary-color));
+		}
+	}
+
 
 	&__zkt-badge {
 		display: inline-flex;
