@@ -2483,6 +2483,7 @@
         "submit_signup": "创建账户",
         "error_invalid_credentials": "邮箱或密码错误。请重试。",
         "email_suggest_cta": "你是不是想输入？",
+        "turnstile_verify": "请验证你不是机器人",
         "turnstile_verified": "已验证你不是机器人",
         "timer_reveal_hint": "按空格键",
         "timer_event_label": "3x3x3 · 单人",

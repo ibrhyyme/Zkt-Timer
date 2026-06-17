@@ -2483,6 +2483,7 @@
         "submit_signup": "Crear cuenta",
         "error_invalid_credentials": "Email o contraseña incorrectos. Inténtalo de nuevo.",
         "email_suggest_cta": "¿Quisiste decir esto?",
+        "turnstile_verify": "Verifica que no eres un robot",
         "turnstile_verified": "Verificamos que no eres un robot",
         "timer_reveal_hint": "PULSA LA BARRA ESPACIADORA",
         "timer_event_label": "3x3x3 · Solo",

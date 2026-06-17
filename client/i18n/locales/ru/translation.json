@@ -2483,6 +2483,7 @@
         "submit_signup": "Создать аккаунт",
         "error_invalid_credentials": "Неверный email или пароль. Попробуйте снова.",
         "email_suggest_cta": "Вы имели в виду?",
+        "turnstile_verify": "Подтвердите, что вы не робот",
         "turnstile_verified": "Подтверждено, что вы не робот",
         "timer_reveal_hint": "НАЖМИТЕ ПРОБЕЛ",
         "timer_event_label": "3x3x3 · Solo",

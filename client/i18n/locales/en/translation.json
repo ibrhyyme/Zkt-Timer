@@ -2483,6 +2483,7 @@
         "submit_signup": "Create account",
         "error_invalid_credentials": "Email or password is incorrect. Try again.",
         "email_suggest_cta": "Did you mean this?",
+        "turnstile_verify": "Verify you're not a robot",
         "turnstile_verified": "Verified you're not a robot",
         "timer_reveal_hint": "PRESS SPACEBAR",
         "timer_event_label": "3x3x3 · Solo",
