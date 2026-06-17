@@ -1,29 +1,53 @@
 // Range input styling can't be done with utility classes (vendor thumb
 // pseudo-elements) — plain literal class, not a bem block.
+//
+// Touch target: the input box is 36px tall so a finger anywhere near the
+// bar drags it; the visible track stays thin (4px) via the runnable-track
+// pseudo-element, with the thumb centered on it.
 .slam-sensitivity-slider {
 	-webkit-appearance: none;
 	appearance: none;
-	height: 4px;
-	border-radius: 2px;
-	background: linear-gradient(
-		to right,
-		rgb(var(--primary-color)) 0%,
-		rgb(var(--primary-color)) calc(var(--slam-progress, 50%)),
-		rgba(var(--text-color), 0.15) calc(var(--slam-progress, 50%)),
-		rgba(var(--text-color), 0.15) 100%
-	);
+	height: 36px;
+	background: transparent;
 	outline: none;
 	cursor: pointer;
+	margin: 0;
+	padding: 0;
+
+	&::-webkit-slider-runnable-track {
+		height: 4px;
+		border-radius: 2px;
+		background: linear-gradient(
+			to right,
+			rgb(var(--primary-color)) 0%,
+			rgb(var(--primary-color)) var(--slam-progress, 50%),
+			rgba(var(--text-color), 0.15) var(--slam-progress, 50%),
+			rgba(var(--text-color), 0.15) 100%
+		);
+	}
 
 	&::-webkit-slider-thumb {
 		-webkit-appearance: none;
 		appearance: none;
 		height: 22px;
 		width: 22px;
+		margin-top: -9px; // (4 - 22) / 2 — center thumb on the 4px track
 		border-radius: 50%;
 		background: #fff;
 		border: none;
 		box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+	}
+
+	&::-moz-range-track {
+		height: 4px;
+		border-radius: 2px;
+		background: rgba(var(--text-color), 0.15);
+	}
+
+	&::-moz-range-progress {
+		height: 4px;
+		border-radius: 2px;
+		background: rgb(var(--primary-color));
 	}
 
 	&::-moz-range-thumb {
