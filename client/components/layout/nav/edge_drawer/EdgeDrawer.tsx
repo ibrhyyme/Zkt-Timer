@@ -114,6 +114,21 @@ export default function EdgeDrawer(props: Props) {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [open, notchY]);
 
+	// Re-measure when the open drawer's content grows/shrinks (e.g. the
+	// slam-stop slider expanding under its toggle). The lockedTop freeze was
+	// meant for tiny toggle height changes; a large addition would otherwise
+	// push the panel off-screen (bottom items unreachable). gridTop() clamps
+	// to the viewport, so re-measuring keeps the panel fully visible.
+	useEffect(() => {
+		if (!open || typeof ResizeObserver === 'undefined') return;
+		const gridEl = drawerRef.current?.querySelector(`.${b('grid')}`);
+		if (!gridEl) return;
+		const ro = new ResizeObserver(() => setLockedTop(gridTop()));
+		ro.observe(gridEl);
+		return () => ro.disconnect();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [open, notchY]);
+
 	// --- Click to close ---
 	useEffect(() => {
 		if (!open) return;
@@ -434,7 +449,7 @@ export default function EdgeDrawer(props: Props) {
 						className={b('drawer', {open: open && !swiping, 'no-transition': noTransition, [sideMod]: true})}
 						style={swiping ? {transform} : undefined}
 					>
-						<div style={{height: spacerTop, flexShrink: 0}} />
+						<div style={{height: spacerTop, flexShrink: 0, transition: noTransition ? undefined : 'height 0.18s ease'}} />
 						<div className={b('grid')}>
 							{children}
 						</div>

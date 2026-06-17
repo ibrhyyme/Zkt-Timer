@@ -71,12 +71,12 @@ export default function SlamSensitivitySlider() {
 			</div>
 			<div className="flex items-center space-x-3">
 				<div className="relative flex-1 flex items-center">
-					{/* Zone boundary ticks at 25/50/75 */}
-					<div className="absolute inset-x-0 flex justify-between px-[25%] pointer-events-none">
+					{/* Zone boundary ticks at 25/50/75 — centered on the thin track */}
+					<div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-between px-[25%] pointer-events-none">
 						<div className="w-px h-2 bg-text/40" />
 						<div className="w-px h-2 bg-text/40" />
 					</div>
-					<div className="absolute left-1/2 w-px h-2 bg-text/40 pointer-events-none" />
+					<div className="absolute left-1/2 top-1/2 -translate-y-1/2 w-px h-2 bg-text/40 pointer-events-none" />
 					<input
 						className="slam-sensitivity-slider w-full"
 						style={{ '--slam-progress': `${sensitivity}%` } as React.CSSProperties}
