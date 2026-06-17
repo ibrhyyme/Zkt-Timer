@@ -2483,6 +2483,7 @@
         "submit_signup": "Hesap Oluştur",
         "error_invalid_credentials": "Email veya şifre hatalı. Tekrar dene.",
         "email_suggest_cta": "Bunu mu demek istedin?",
+        "turnstile_verify": "Robot olmadığını doğrula",
         "turnstile_verified": "Robot olmadığın doğrulandı",
         "timer_reveal_hint": "BOŞLUK TUŞUNA BAS",
         "timer_event_label": "3x3x3 · Solo",
