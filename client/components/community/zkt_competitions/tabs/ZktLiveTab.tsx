@@ -123,7 +123,7 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 					)}
 
 					{/* Podiums */}
-					<ZktLivePodiums detail={detail} results={new Map()} />
+					<ZktLivePodiums detail={detail} />
 
 					{/* Tüm turlar — schedule benzeri liste, schedule modeli yokken
 					    her event için round'ların durumunu özet kart olarak gösterir */}
