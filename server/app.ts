@@ -143,6 +143,7 @@ app.use(helmet({
 				"'self'",
 				"https://challenges.cloudflare.com",
 				"https://googleads.g.doubleclick.net",   // Google Ads iframe
+				"https://www.openstreetmap.org",          // ZKT competition venue map embed
 			],
 			mediaSrc: ["'self'", "blob:"],
 			objectSrc: ["'none'"],
