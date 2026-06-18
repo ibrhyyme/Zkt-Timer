@@ -168,6 +168,22 @@ export function formatHasAverage(format: string): boolean {
 	return format === 'MO3' || format === 'AO5';
 }
 
+/**
+ * Format N attempts (centiseconds) to display strings (DNF/DNS aware), padding
+ * missing attempts with "-". Mirrors the WCA my_schedule formatAttempts so the
+ * live table + result modal render attempts identically to a WCA competition.
+ */
+export function formatAttempts(
+	attempts: Array<number | null | undefined>,
+	count: number
+): string[] {
+	const out: string[] = [];
+	for (let i = 0; i < count; i++) {
+		out.push(formatCs(attempts[i]) || '-');
+	}
+	return out;
+}
+
 export function formatName(format: string): string {
 	switch (format) {
 		case 'BO1':
