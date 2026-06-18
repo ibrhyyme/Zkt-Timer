@@ -102,7 +102,8 @@ export default function SlamSensitivitySlider() {
 			{/* TEMP DIAGNOSTIC — remove once iOS slam-stop is verified working */}
 			<div className="mt-3 px-2 py-1.5 rounded-md bg-yellow-500/15 border border-yellow-500/40 text-[11px] font-mono leading-tight text-yellow-200">
 				<div>tani · platform: {diag.platform}</div>
-				<div>motor kayitli: {diag.registered ? 'EVET' : 'HAYIR'}</div>
+				<div>slam motoru: {diag.registered ? 'EVET' : 'HAYIR'}</div>
+				<div>ses motoru (kiyas): {diag.refAudio ? 'EVET' : 'HAYIR'}</div>
 				<div>hata: {diag.lastError ?? 'yok'}</div>
 			</div>
 		</div>

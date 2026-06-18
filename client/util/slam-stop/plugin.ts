@@ -38,10 +38,14 @@ export function isSlamDetectorAvailable(): boolean {
 // apart from "plugin present but not emitting" without a Mac/Web Inspector.
 // Remove once the iOS slam-stop issue is resolved.
 let lastStartError: string | null = null;
-export function getSlamDiagnostics(): { platform: string; registered: boolean; lastError: string | null } {
+export function getSlamDiagnostics(): { platform: string; registered: boolean; refAudio: boolean; lastError: string | null } {
 	return {
 		platform: Capacitor.getPlatform(),
 		registered: isNative() && Capacitor.isPluginAvailable('SlamDetector'),
+		// Reference: NativeAudio is registered the same way (registerPluginInstance
+		// in ZKTBridgeViewController). If it's available but SlamDetector isn't,
+		// the slam register line simply isn't in this binary (need a fresh build).
+		refAudio: isNative() && Capacitor.isPluginAvailable('NativeAudio'),
 		lastError: lastStartError,
 	};
 }
