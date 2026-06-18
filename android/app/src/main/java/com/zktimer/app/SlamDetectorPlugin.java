@@ -24,14 +24,12 @@ import com.getcapacitor.annotation.CapacitorPlugin;
 @CapacitorPlugin(name = "SlamDetector")
 public class SlamDetectorPlugin extends Plugin implements SensorEventListener {
 
-    // Noise floor — deltas below this are treated as 0 (FiveTimer: 0.3f, m/s²)
-    private static final double DEADBAND = 0.3;
-
     private SensorManager sensorManager;
     private Sensor accelerometer;
     private boolean active = false;
-    // Threshold in m/s² for the Z-axis sample delta; set per start() call
+    // Threshold + noise-floor deadband (m/s²) for the Z-axis delta; set per start()
     private double threshold = 1.0;
+    private double deadband = 0.1;
     private long refractoryMs = 750;
     private long lastFireAt = 0;
     private float lastZ = 0f;
@@ -52,6 +50,7 @@ public class SlamDetectorPlugin extends Plugin implements SensorEventListener {
         }
 
         threshold = call.getDouble("threshold", 1.0);
+        deadband = call.getDouble("deadband", 0.1);
         refractoryMs = call.getInt("refractoryMs", 750);
         lastFireAt = 0;
         initialized = false;
@@ -93,7 +92,7 @@ public class SlamDetectorPlugin extends Plugin implements SensorEventListener {
 
         double delta = Math.abs(lastZ - z);
         lastZ = z;
-        if (delta < DEADBAND) {
+        if (delta < deadband) {
             delta = 0;
         }
 

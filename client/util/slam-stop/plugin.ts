@@ -7,7 +7,7 @@ export interface SlamEvent {
 }
 
 interface SlamDetectorNativePlugin {
-	start(options: { threshold: number; refractoryMs: number }): Promise<void>;
+	start(options: { threshold: number; refractoryMs: number; deadband: number }): Promise<void>;
 	stop(): Promise<void>;
 	addListener(eventName: 'slam', listener: (event: SlamEvent) => void): Promise<PluginListenerHandle>;
 }
@@ -35,6 +35,11 @@ export function isSlamDetectorAvailable(): boolean {
 
 // FiveTimer grace window — no re-trigger for 750ms after a slam
 const REFRACTORY_MS = 750;
+
+// Noise floor (m/s²) — deltas below this are ignored as sensor noise. FiveTimer
+// uses 0.3, but fingertip taps on iOS produce smaller deltas, so we go lower.
+// Tunable here (TS) without a native rebuild — native reads it from start().
+const DEADBAND = 0.1;
 
 // The native detector is a singleton shared by two consumers (solve mode and
 // the settings test indicator). Ownership tokens prevent a stale consumer's
@@ -67,7 +72,7 @@ export async function startSlamDetector(
 
 	try {
 		await ensureListener();
-		await SlamDetector.start({ threshold, refractoryMs: REFRACTORY_MS });
+		await SlamDetector.start({ threshold, refractoryMs: REFRACTORY_MS, deadband: DEADBAND });
 	} catch (e) {
 		// Accelerometer unavailable — feature silently disabled
 		if (activeOwner === owner) {

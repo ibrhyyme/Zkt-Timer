@@ -5,7 +5,7 @@ import {useTranslation} from 'react-i18next';
 import {toastSuccess, toastError} from '../../../../util/toast';
 import {IModalProps} from '../../../common/modal/Modal';
 import {b, getEventName} from '../shared';
-import {UploadSimple, UserPlus, FileCsv} from 'phosphor-react';
+import {UploadSimple, UserPlus, FileCsv, DownloadSimple} from 'phosphor-react';
 
 // Bulk import of account-less ("ghost") competitors: paste an Excel/CSV list
 // (e.g. a municipality registration export) or upload a .csv file. Each row
@@ -271,6 +271,34 @@ export default function ImportCompetitorsModal(props: Props) {
 		e.target.value = '';
 	}
 
+	// Build a ready-to-fill CSV the organiser can open in Excel, matching the
+	// currently selected bulk format. UTF-8 BOM so Excel renders Turkish chars.
+	function downloadTemplate() {
+		const rows =
+			bulkFormat === 'inline'
+				? [
+						['No', 'Ad Soyad', 'Etkinlikler'],
+						['1', 'İbrahim İskender', 'Üç çarpı üç', 'İki çarpı iki'],
+						['2', 'İskender Aznavur', 'Üç çarpı üç'],
+						['3', 'Ayşe Yılmaz', 'Üç çarpı üç', 'İki çarpı iki', 'Beş çarpı beş'],
+				  ]
+				: [
+						['Ad', 'Soyad', 'Ulke', 'WCA ID', 'Dis ID'],
+						['Ahmet', 'Yılmaz', 'TR', '', '12345'],
+						['Elif', 'Demir', 'TR', '', '12346'],
+				  ];
+		const csv = rows.map((r) => r.join(',')).join('\r\n');
+		const blob = new Blob(['﻿' + csv], {type: 'text/csv;charset=utf-8;'});
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = bulkFormat === 'inline' ? 'ornek-liste.csv' : 'ornek-liste-ortak.csv';
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+		URL.revokeObjectURL(url);
+	}
+
 	async function handleImport() {
 		// Build rows for whichever bulk format is active.
 		let rows: Array<{
@@ -387,27 +415,101 @@ export default function ImportCompetitorsModal(props: Props) {
 
 			{mode === 'bulk' ? (
 				<div className={b('form')}>
-					<div className={b('import-format-hint')}>{t('import_format_hint')}</div>
+					<div className={b('import-format-seg')}>
+						<button
+							type="button"
+							className={b('import-format-opt', {active: bulkFormat === 'inline'})}
+							onClick={() => setBulkFormat('inline')}
+						>
+							{t('import_format_inline')}
+						</button>
+						<button
+							type="button"
+							className={b('import-format-opt', {active: bulkFormat === 'common'})}
+							onClick={() => setBulkFormat('common')}
+						>
+							{t('import_format_common')}
+						</button>
+					</div>
 
-					<label className={b('import-file-btn')}>
-						<UploadSimple weight="bold" /> {t('import_choose_file')}
-						<input
-							type="file"
-							accept=".csv,.txt,text/csv,text/plain"
-							onChange={onFile}
-							style={{display: 'none'}}
-						/>
-					</label>
+					<div className={b('import-format-hint')}>
+						{bulkFormat === 'inline' ? t('import_format_inline_hint') : t('import_format_hint')}
+					</div>
+
+					<div className={b('import-file-row')}>
+						<label className={b('import-file-btn')}>
+							<UploadSimple weight="bold" /> {t('import_choose_file')}
+							<input
+								type="file"
+								accept=".csv,.txt,text/csv,text/plain"
+								onChange={onFile}
+								style={{display: 'none'}}
+							/>
+						</label>
+						<button type="button" className={b('import-template-btn')} onClick={downloadTemplate}>
+							<DownloadSimple weight="bold" /> {t('import_download_template')}
+						</button>
+					</div>
 
 					<textarea
 						className={b('import-textarea')}
 						value={raw}
 						onChange={(e) => setRaw(e.target.value)}
-						placeholder={t('import_paste_placeholder')}
+						placeholder={bulkFormat === 'inline' ? t('import_paste_inline_placeholder') : t('import_paste_placeholder')}
 						rows={6}
 					/>
 
-					{parsed.length > 0 && (
+					{bulkFormat === 'inline' && parsedInline.length > 0 && (
+						<div className={b('import-preview')}>
+							<div className={b('import-preview-count')}>
+								{t('import_preview_count', {count: parsedInline.length})}
+							</div>
+							<table className={b('import-table')}>
+								<thead>
+									<tr>
+										<th>{t('csv_col_name')}</th>
+										<th>{t('import_col_events')}</th>
+									</tr>
+								</thead>
+								<tbody>
+									{parsedInline.slice(0, PREVIEW_LIMIT).map((r, i) => (
+										<tr key={i}>
+											<td>{r.rawName}</td>
+											<td>
+												<span className={b('import-event-chips')}>
+													{r.eventIds.map((cid) => {
+														const ev = props.compEvents.find((e) => e.id === cid);
+														return ev ? (
+															<span
+																key={cid}
+																className={`cubing-icon event-${ev.event_id}`}
+																title={getEventName(ev.event_id)}
+															/>
+														) : null;
+													})}
+													{r.eventIds.length === 0 && r.unknownTokens.length === 0 && (
+														<span className={b('import-warn')}>{t('import_row_no_events')}</span>
+													)}
+													{r.unknownTokens.length > 0 && (
+														<span className={b('import-warn')}>
+															{t('import_unknown_events', {tokens: r.unknownTokens.join(', ')})}
+														</span>
+													)}
+												</span>
+											</td>
+										</tr>
+									))}
+								</tbody>
+							</table>
+							{parsedInline.length > PREVIEW_LIMIT && (
+								<div className={b('import-preview-more')}>
+									{t('import_preview_more', {count: parsedInline.length - PREVIEW_LIMIT})}
+								</div>
+							)}
+						</div>
+					)}
+
+					{bulkFormat === 'common' && parsed.length > 0 && (
 						<div className={b('import-preview')}>
 							<div className={b('import-preview-count')}>
 								{t('import_preview_count', {count: parsed.length})}
@@ -442,32 +544,32 @@ export default function ImportCompetitorsModal(props: Props) {
 						</div>
 					)}
 
-					<div className={b('field')}>
-						<label className={b('label')}>{t('import_common_events')}</label>
-						<div className={b('event-grid')}>
-							{props.compEvents.map((ev) => (
-								<button
-									key={ev.id}
-									type="button"
-									className={b('event-option', {selected: bulkEvents.has(ev.id)})}
-									onClick={() => toggle(bulkEvents, setBulkEvents, ev.id)}
-								>
-									<span className={`cubing-icon event-${ev.event_id}`} />
-									<span>{getEventName(ev.event_id)}</span>
-								</button>
-							))}
+					{bulkFormat === 'common' && (
+						<div className={b('field')}>
+							<label className={b('label')}>{t('import_common_events')}</label>
+							<div className={b('event-grid')}>
+								{props.compEvents.map((ev) => (
+									<button
+										key={ev.id}
+										type="button"
+										className={b('event-option', {selected: bulkEvents.has(ev.id)})}
+										onClick={() => toggle(bulkEvents, setBulkEvents, ev.id)}
+									>
+										<span className={`cubing-icon event-${ev.event_id}`} />
+										<span>{getEventName(ev.event_id)}</span>
+									</button>
+								))}
+							</div>
 						</div>
-					</div>
+					)}
 
 					<button
 						type="button"
 						className={b('cta')}
 						onClick={handleImport}
-						disabled={submitting || parsed.length === 0 || bulkEvents.size === 0}
+						disabled={submitting || (bulkFormat === 'inline' ? parsedInline.length === 0 : parsed.length === 0 || bulkEvents.size === 0)}
 					>
-						{submitting
-							? t('import_importing')
-							: t('import_submit', {count: parsed.length})}
+						{submitting ? t('import_importing') : t('import_submit', {count: bulkFormat === 'inline' ? parsedInline.length : parsed.length})}
 					</button>
 				</div>
 			) : (

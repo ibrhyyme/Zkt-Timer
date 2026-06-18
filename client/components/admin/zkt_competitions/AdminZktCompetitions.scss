@@ -600,6 +600,77 @@ $zkt-warn: #ffc107;
 		padding: 0.7rem 0.85rem;
 	}
 
+	&__import-format-seg {
+		display: flex;
+		gap: 0.4rem;
+		padding: 0.25rem;
+		background: rgba(var(--text-color), 0.05);
+		border-radius: 10px;
+	}
+
+	&__import-format-opt {
+		flex: 1;
+		padding: 0.5rem 0.75rem;
+		border: none;
+		border-radius: 8px;
+		background: transparent;
+		color: rgb(var(--text-color));
+		font-weight: 600;
+		font-size: 13px;
+		cursor: pointer;
+		transition: all 0.15s ease;
+
+		&--active {
+			background: rgb(var(--button-color));
+			color: rgb(var(--primary-color));
+			box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+		}
+	}
+
+	&__import-event-chips {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.3rem;
+		font-size: 16px;
+
+		.cubing-icon {
+			color: rgb(var(--text-color));
+		}
+	}
+
+	&__import-warn {
+		font-size: 12px;
+		font-weight: 600;
+		color: #e67e22;
+	}
+
+	&__import-file-row {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	&__import-template-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.45rem;
+		padding: 0.6rem 1rem;
+		border: 2px solid rgba(var(--text-color), 0.12);
+		border-radius: 8px;
+		background: rgb(var(--button-color));
+		color: rgb(var(--text-color));
+		font-weight: 600;
+		font-size: 14px;
+		cursor: pointer;
+		transition: all 0.15s ease;
+
+		&:hover {
+			border-color: rgba(var(--primary-color), 0.4);
+		}
+	}
+
 	&__import-file-btn {
 		display: inline-flex;
 		align-items: center;
