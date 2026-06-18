@@ -130,6 +130,7 @@ model UserAccount {
   zkt_records                   ZktRecord[]             @relation("zkt_record_holder")
   zkt_assignments               ZktAssignment[]         @relation("zkt_assignment_user")
   zkt_registration_history      ZktRegistrationHistory[] @relation("zkt_registration_history_actor")
+  zkt_competition_follows       ZktCompetitionFollow[]
 
   @@map("user_account")
 }
@@ -1328,6 +1329,7 @@ model ZktCompetition {
   records          ZktRecord[]
   schedule_items   ZktScheduleItem[]
   persons          ZktPerson[]
+  follows          ZktCompetitionFollow[]
 
   @@index([status])
   @@index([created_by_id])
@@ -1636,5 +1638,28 @@ model ZktPerson {
 
   @@index([competition_id])
   @@map("zkt_person")
+}
+
+// "Follow a competitor" — Pro users subscribe to a competitor (account user OR
+// ghost person) and get notified when that competitor's round result is posted.
+// followed_* is denormalized (no FK) like the WCA CompetitionFollow model so a
+// deleted competitor leaves a harmless orphan, not a cascade surprise.
+model ZktCompetitionFollow {
+  id                 String   @id @default(uuid())
+  user_id            String
+  competition_id     String
+  followed_user_id   String?
+  followed_person_id String?
+  followed_name      String
+  created_at         DateTime @default(now())
+
+  user        UserAccount    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  competition ZktCompetition @relation(fields: [competition_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, competition_id, followed_user_id])
+  @@unique([user_id, competition_id, followed_person_id])
+  @@index([competition_id, followed_user_id])
+  @@index([competition_id, followed_person_id])
+  @@map("zkt_competition_follow")
 }
 

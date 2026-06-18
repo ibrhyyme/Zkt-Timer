@@ -3381,6 +3381,13 @@
         "info_alt_sor": "Kinch Ranks is an alternative way to measure the all-round abilities of a cuber. Different methods will have different tradeoffs — that's why we provide multiple ways to measure your all-round abilities."
     },
     "zkt_comp": {
+        "follow_competitor": "Follow competitor",
+        "unfollow_competitor": "Unfollow",
+        "follow_success": "Following {{name}}",
+        "unfollow_success": "Unfollowed {{name}}",
+        "follow_limit_reached": "You can follow at most {{max}} competitors",
+        "follow_self_error": "You can't follow yourself",
+        "follow_error_generic": "Follow action failed",
         "title": "ZKT Competitions",
         "subtitle": "Unofficial competitions organized by Zeka Küpü Türkiye",
         "back": "Back",

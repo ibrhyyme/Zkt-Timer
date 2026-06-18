@@ -3379,6 +3379,13 @@
         "info_alt_sor": "Kinch Ranks, bir cuber'ın all-round yeteneğini ölçmenin alternatif bir yoludur. Farklı yöntemlerin farklı trade-off'ları vardır — bu yüzden birden fazla ölçüm sunuyoruz."
     },
     "zkt_comp": {
+        "follow_competitor": "Yarışmacıyı takip et",
+        "unfollow_competitor": "Takibi bırak",
+        "follow_success": "{{name}} takip ediliyor",
+        "unfollow_success": "{{name}} takipten çıkarıldı",
+        "follow_limit_reached": "En fazla {{max}} yarışmacı takip edebilirsin",
+        "follow_self_error": "Kendini takip edemezsin",
+        "follow_error_generic": "Takip işlemi başarısız oldu",
         "title": "ZKT Yarışmaları",
         "subtitle": "Zeka Küpü Türkiye tarafından düzenlenen unofficial yarışmalar",
         "back": "Geri",
