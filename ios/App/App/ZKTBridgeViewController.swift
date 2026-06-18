@@ -11,6 +11,7 @@ class ZKTBridgeViewController: CAPBridgeViewController {
 
     override func capacitorDidLoad() {
         bridge?.registerPluginInstance(NativeAudioPlugin())
+        bridge?.registerPluginInstance(SlamDetectorPlugin())
 
         // Back gesture toggle: Capacitor her decidePolicyFor'da bu notification'i gonderiyor.
         // WKNavigationDelegate'i override etmiyoruz, cunku Capacitor'un WebViewDelegationHandler'i
