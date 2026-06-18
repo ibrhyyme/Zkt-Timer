@@ -67,13 +67,13 @@ export default function ZktLiveRecords() {
 						<span className={`cubing-icon event-${r.event_id}`} style={{fontSize: 18}} />
 						<span style={{fontWeight: 600}}>{getEventName(r.event_id)}</span>
 						<span className={b('record-tag')}>NR</span>
-						<span style={{textTransform: 'capitalize', color: 'rgba(var(--text-color), 0.6)'}}>
+						<span style={{textTransform: 'capitalize', color: 'rgb(var(--text-color))'}}>
 							{r.record_type}
 						</span>
 						<span style={{fontFamily: 'monospace', fontWeight: 700, marginLeft: 'auto'}}>
 							{formatCs(r.value)}
 						</span>
-						<span style={{color: 'rgba(var(--text-color), 0.6)'}}>
+						<span style={{color: 'rgb(var(--text-color))'}}>
 							{competitorFlag(r.user) ? competitorFlag(r.user) + ' ' : ''}
 							{competitorDisplayName(r.user) || '-'}
 						</span>

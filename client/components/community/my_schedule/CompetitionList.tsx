@@ -89,6 +89,11 @@ export default function CompetitionList() {
 		return [...ongoing, ...rest];
 	}, [competitions, compSearch]);
 
+	const mountedRef = useRef(true);
+	useEffect(() => () => {
+		mountedRef.current = false;
+	}, []);
+
 	useEffect(() => {
 		if (!getListCache()) fetchCompetitions();
 		if (!getZktCache()) fetchZktCompetitions();
@@ -110,10 +115,10 @@ export default function CompetitionList() {
 			});
 			const data = res?.data?.zktCompetitions?.items || [];
 			cachedZktComps = {data, ts: Date.now()};
-			setZktComps(data);
+			if (mountedRef.current) setZktComps(data);
 		} catch (err) {
 			// silent — if no ZKT competitions or not logged in, empty list will be shown anyway
-			setZktComps([]);
+			if (mountedRef.current) setZktComps([]);
 		}
 	}
 
@@ -176,10 +181,10 @@ export default function CompetitionList() {
 			const res = await gqlQueryTyped(MyWcaCompetitionsDocument, {});
 			const data = res.data?.myWcaCompetitions || [];
 			cachedMyComps = {data, ts: Date.now()};
-			setMyComps(data);
+			if (mountedRef.current) setMyComps(data);
 		} catch (err) {
 			console.warn('[CompetitionList] myWcaCompetitions fetch failed:', err);
-			setMyComps([]);
+			if (mountedRef.current) setMyComps([]);
 		}
 	}
 
@@ -195,11 +200,13 @@ export default function CompetitionList() {
 			} else {
 				console.warn('[CompetitionList] wcaCompetitions returned empty array — cache not written');
 			}
-			setCompetitions(data);
+			if (mountedRef.current) setCompetitions(data);
 		} catch (err: any) {
 			console.warn('[CompetitionList] wcaCompetitions fetch failed:', err);
-			setLoadError(err?.message || 'network_error');
-			setCompetitions(null);
+			if (mountedRef.current) {
+				setLoadError(err?.message || 'network_error');
+				setCompetitions(null);
+			}
 		}
 	}
 
