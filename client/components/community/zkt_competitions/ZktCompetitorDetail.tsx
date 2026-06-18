@@ -6,7 +6,9 @@ import {useTranslation} from 'react-i18next';
 import {useParams, useHistory} from 'react-router-dom';
 import {ArrowLeft, Trophy, ListBullets, Warning} from 'phosphor-react';
 import Loading from '../../common/loading/Loading';
-import {b, getEventName, formatCs, formatName, formatTimeRange, competitorDisplayName, competitorFlag, competitorOf, ZKT_ROLE_COLORS} from './shared';
+import {b, getEventName, formatCs, formatName, formatTimeRange, formatAttempts, formatHasAverage, getFormatAttempts, competitorDisplayName, competitorFlag, competitorOf, ZKT_ROLE_COLORS} from './shared';
+import {useIsMobile} from '../../../util/hooks/useIsMobile';
+import ZktResultModal from './ZktResultModal';
 
 const COMPETITOR_DETAIL_QUERY = gql`
 	query ZktCompetitorDetailPublic($competitionId: String!, $userId: String!) {
@@ -238,7 +240,7 @@ export default function ZktCompetitorDetail() {
 			)}
 
 			{mode === 'results' && (
-				<ResultsList results={results} t={t} />
+				<ResultsList results={results} competitionId={competitionId} t={t} />
 			)}
 		</div>
 	);
@@ -321,7 +323,18 @@ function ScheduleTable({assignments, t}: {assignments: any[]; t: any}) {
 	);
 }
 
-function ResultsList({results, t}: {results: any[]; t: any}) {
+function ResultsList({
+	results,
+	competitionId,
+	t,
+}: {
+	results: any[];
+	competitionId: string;
+	t: any;
+}) {
+	const isMobile = useIsMobile();
+	const [modalRow, setModalRow] = useState<any | null>(null);
+
 	if (results.length === 0) {
 		return <div className={b('empty')}>{t('no_results_yet')}</div>;
 	}
@@ -336,64 +349,111 @@ function ResultsList({results, t}: {results: any[]; t: any}) {
 
 	return (
 		<div className={b('person-results')}>
-			{Array.from(byEvent.entries()).map(([eventId, rounds]) => (
-				<div key={eventId} className={b('person-results-event')}>
-					<div className={b('person-results-event-header')}>
-						<span className={`cubing-icon event-${eventId}`} style={{fontSize: 22}} />
-						<span className={b('person-results-event-title')}>{getEventName(eventId)}</span>
-					</div>
-					<table className={b('person-results-table')}>
-						<thead>
-							<tr>
-								<th>{t('col_round')}</th>
-								<th>#</th>
-								<th>{t('best')}</th>
-								<th>{t('average')}</th>
-								<th>{t('format')}</th>
-								<th>{t('attempts')}</th>
-							</tr>
-						</thead>
-						<tbody>
-							{[...rounds]
-								.sort(
-									(a, bx) =>
-										(a.round?.round_number || 0) - (bx.round?.round_number || 0)
-								)
-								.map((r) => (
-									<tr key={r.id}>
-										<td>R{r.round?.round_number}</td>
-										<td>{r.ranking ?? '-'}</td>
-										<td className={b('rank-time')}>
-											{formatCs(r.best)}
-											{r.single_record_tag && (
-												<span className={b('record-tag', {[r.single_record_tag.toLowerCase()]: true})}>
-													{r.single_record_tag}
-												</span>
-											)}
-										</td>
-										<td className={b('rank-time')}>
-											{formatCs(r.average)}
-											{r.average_record_tag && (
-												<span className={b('record-tag', {[r.average_record_tag.toLowerCase()]: true})}>
-													{r.average_record_tag}
-												</span>
-											)}
-										</td>
-										<td>{formatName(r.round?.format)}</td>
-										<td className={b('person-results-attempts')}>
-											{[r.attempt_1, r.attempt_2, r.attempt_3, r.attempt_4, r.attempt_5]
-												.map((a: any) => formatCs(a))
-												.filter(Boolean)
-												.map((a: string, i: number) => (
-													<span key={i} className={b('person-results-attempt')}>{a}</span>
-												))}
-										</td>
+			{Array.from(byEvent.entries()).map(([eventId, rounds]) => {
+				const maxAttempts = rounds.reduce(
+					(m: number, r: any) => Math.max(m, getFormatAttempts(r.round?.format || 'AO5')),
+					0
+				);
+				const hasAvg = rounds.some((r: any) => formatHasAverage(r.round?.format || 'AO5'));
+				const sorted = [...rounds].sort(
+					(a, bx) => (a.round?.round_number || 0) - (bx.round?.round_number || 0)
+				);
+				return (
+					<div key={eventId} className={b('person-results-event')}>
+						<div className={b('person-results-event-header')}>
+							<span className={`cubing-icon event-${eventId}`} style={{fontSize: 22}} />
+							<span className={b('person-results-event-title')}>{getEventName(eventId)}</span>
+						</div>
+						<div className={b('results-table-wrapper')}>
+							<table className={b('results-table', {mobile: isMobile})}>
+								<thead>
+									<tr>
+										<th>{t('col_round')}</th>
+										<th>#</th>
+										{hasAvg && <th>{t('average')}</th>}
+										<th>{t('best')}</th>
+										{!isMobile &&
+											Array.from({length: maxAttempts}).map((_, i) => (
+												<th key={i} className={b('attempt-col')}>
+													{i + 1}
+												</th>
+											))}
 									</tr>
-								))}
-						</tbody>
-					</table>
-				</div>
-			))}
+								</thead>
+								<tbody>
+									{sorted.map((r) => {
+										const attempts = formatAttempts(
+											[r.attempt_1, r.attempt_2, r.attempt_3, r.attempt_4, r.attempt_5],
+											maxAttempts
+										);
+										const openRow = () => {
+											if (!isMobile) return;
+											setModalRow({
+												title: `${getEventName(eventId)} — R${r.round?.round_number}`,
+												ranking: r.ranking,
+												best: r.best,
+												average: r.average,
+												attempts,
+												averageRecordTag: r.average_record_tag,
+												singleRecordTag: r.single_record_tag,
+												competitorId: null,
+											});
+										};
+										return (
+											<tr
+												key={r.id}
+												className={b('result-row', {advancing: r.proceeds, clickable: isMobile})}
+												onClick={openRow}
+											>
+												<td>R{r.round?.round_number}</td>
+												<td className={b('result-rank')}>{r.ranking ?? '-'}</td>
+												{hasAvg && (
+													<td className={b('time-cell', {nr: !!r.average_record_tag})}>
+														<span className={b('time-inner')}>
+															{formatCs(r.average)}
+															{r.average_record_tag && (
+																<span className={b('record-tag', {[r.average_record_tag.toLowerCase()]: true})}>
+																	{r.average_record_tag}
+																</span>
+															)}
+														</span>
+													</td>
+												)}
+												<td className={b('time-cell', {nr: !!r.single_record_tag})}>
+													<span className={b('time-inner')}>
+														{formatCs(r.best)}
+														{r.single_record_tag && (
+															<span className={b('record-tag', {[r.single_record_tag.toLowerCase()]: true})}>
+																{r.single_record_tag}
+															</span>
+														)}
+													</span>
+												</td>
+												{!isMobile &&
+													attempts.map((a, i) => (
+														<td key={i} className={b('result-attempt')}>
+															{a}
+														</td>
+													))}
+											</tr>
+										);
+									})}
+								</tbody>
+							</table>
+						</div>
+					</div>
+				);
+			})}
+
+			{modalRow && (
+				<ZktResultModal
+					row={modalRow}
+					competitionId={competitionId}
+					onClose={() => setModalRow(null)}
+					t={t}
+					showAverage={modalRow.average != null}
+				/>
+			)}
 		</div>
 	);
 }

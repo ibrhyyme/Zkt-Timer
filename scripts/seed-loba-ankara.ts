@@ -507,6 +507,70 @@ async function main() {
 	}
 	log(`7) ${persons.length} hayalet yarismaci ice aktarildi (5 gercek + 54 dolgu).`);
 
+	// 7.5) Round 1 groups + assignments (COMPETITOR + staff) — person-aware, so
+	// the public "Program ve Gorevler" + activity (group) pages have real data.
+	{
+		let totalGroups = 0;
+		let totalAssignments = 0;
+		for (let ei = 0; ei < EVENTS.length; ei++) {
+			const ev = EVENTS[ei];
+			const ce = ceByEvent[ev];
+			const round1 = roundsByEvent[ev][0];
+			const regs = await prisma.zktRegistration.findMany({
+				where: {
+					competition_id: comp.id,
+					status: 'APPROVED',
+					events: {some: {comp_event_id: ce.id}},
+				},
+				select: {person_id: true},
+			});
+			const entrants = regs.map((r) => r.person_id!).filter(Boolean);
+			if (entrants.length === 0) continue;
+			const groupCount = entrants.length > 12 ? 2 : 1;
+			const dayStart = ist('2026-03-07', 10 + (ei % 6), 0);
+			const groups: any[] = [];
+			for (let g = 0; g < groupCount; g++) {
+				const start = new Date(dayStart.getTime() + g * 30 * 60000);
+				const end = new Date(start.getTime() + 30 * 60000);
+				const grp = await prisma.zktGroup.create({
+					data: {round_id: round1.id, group_number: g + 1, start_time: start, end_time: end},
+				});
+				groups.push(grp);
+				totalGroups++;
+			}
+			for (let i = 0; i < entrants.length; i++) {
+				const grp = groups[i % groups.length];
+				await prisma.zktAssignment.create({
+					data: {
+						round_id: round1.id,
+						person_id: entrants[i],
+						role: 'COMPETITOR',
+						group_id: grp.id,
+						station_number: Math.floor(i / groups.length) + 1,
+					},
+				});
+				totalAssignments++;
+			}
+			// Staff = persons NOT competing this event (cross-event), grouped so the
+			// activity page shows judge/scrambler/runner per group.
+			const staffPool = persons.filter((p) => !entrants.includes(p.id));
+			const pool = staffPool.length >= 3 ? staffPool : persons;
+			const staffRoles = ['JUDGE', 'SCRAMBLER', 'RUNNER'] as const;
+			for (let i = 0; i < 3 && i < pool.length; i++) {
+				await prisma.zktAssignment.create({
+					data: {
+						round_id: round1.id,
+						person_id: pool[i].id,
+						role: staffRoles[i],
+						group_id: groups[i % groups.length].id,
+					},
+				});
+				totalAssignments++;
+			}
+		}
+		log(`7.5) Gorev: ${totalGroups} grup + ${totalAssignments} atama (yarismaci/hakem/karistirici/runner) olusturuldu.`);
+	}
+
 	// 8) Run every event: per round → ACTIVE → enter results → finalize -----
 	await prisma.zktCompetition.update({where: {id: comp.id}, data: {status: 'ONGOING'}});
 	for (const ev of EVENTS) {
