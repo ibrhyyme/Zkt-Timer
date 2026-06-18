@@ -1,17 +1,22 @@
 import { sensitivityToThreshold, sensitivityZone, DEFAULT_SENSITIVITY } from '../settings';
 
-// Threshold in m/s² — FiveTimer formula (100 - sensitivity + 0.01) / 20
+// Threshold in m/s² — quadratic curve MAX_THRESHOLD * ((100-s)/100)²
 describe('sensitivityToThreshold', () => {
-	it('maps sensitivity 0 (Low) to the maximum threshold (~5 m/s²)', () => {
-		expect(sensitivityToThreshold(0)).toBeCloseTo(5.0005);
+	it('maps sensitivity 0 (Low) to the maximum threshold (4 m/s²)', () => {
+		expect(sensitivityToThreshold(0)).toBeCloseTo(4);
 	});
 
-	it('maps sensitivity 100 (Ultra) to the minimum threshold (~0)', () => {
-		expect(sensitivityToThreshold(100)).toBeCloseTo(0.0005);
+	it('maps sensitivity 100 (Ultra) to ~0', () => {
+		expect(sensitivityToThreshold(100)).toBeCloseTo(0);
 	});
 
-	it('matches the FiveTimer default (75 → 1.25 m/s²)', () => {
-		expect(sensitivityToThreshold(75)).toBeCloseTo(1.2505);
+	it('drops the whole Ultra zone below the 0.3 deadband (s=75 → 0.25)', () => {
+		expect(sensitivityToThreshold(75)).toBeCloseTo(0.25);
+		expect(sensitivityToThreshold(75)).toBeLessThan(0.3);
+	});
+
+	it('keeps the mid range meaningful (s=50 → 1.0)', () => {
+		expect(sensitivityToThreshold(50)).toBeCloseTo(1);
 	});
 
 	it('is strictly decreasing — higher sensitivity means lower threshold', () => {

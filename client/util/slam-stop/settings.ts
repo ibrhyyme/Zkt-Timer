@@ -13,12 +13,19 @@ export const DEFAULT_SENSITIVITY = 75; // FiveTimer reference default
 export type SlamZone = 'low' | 'medium' | 'high' | 'ultra';
 
 // Threshold in m/s² for the Z-axis sample delta; higher sensitivity = lower
-// threshold = easier to trigger. Formula ported 1:1 from FiveTimer
-// (com.thesixsides.cincotimer): (100 - sensitivity + 0.01) / 20.
-// e.g. sensitivity 75 → 1.25 m/s², 0 → 5.0, 100 → ~0.0005.
+// threshold = easier to trigger.
+//
+// Non-linear (quadratic) curve. FiveTimer's linear (100-s)/20 left most of the
+// "Ultra" zone above the 0.3 deadband, so Ultra felt like FiveTimer's "High".
+// Squaring drops the whole upper range below the deadband fast: the entire
+// Ultra zone (s≥~75) reaches the effective floor (0.3 = FiveTimer Ultra), while
+// the low zone still demands a hard slam.
+// e.g. s=0 → 4.0, s=25 → 2.25, s=50 → 1.0, s=75 → 0.25 (<deadband → ~0.3), s=100 → 0.
+const MAX_THRESHOLD = 4; // m/s² at sensitivity 0 — tunable on-device
 export function sensitivityToThreshold(sensitivity: number): number {
 	const s = Math.min(100, Math.max(0, sensitivity));
-	return (100 - s + 0.01) / 20;
+	const t = (100 - s) / 100;
+	return MAX_THRESHOLD * t * t;
 }
 
 export function sensitivityZone(sensitivity: number): SlamZone {

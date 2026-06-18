@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import './SlamSensitivitySlider.scss';
-import { startSlamDetector, stopSlamDetector, getSlamDiagnostics } from '../../../util/slam-stop/plugin';
+import { startSlamDetector, stopSlamDetector } from '../../../util/slam-stop/plugin';
 import {
 	useSlamStop,
 	sensitivityToThreshold,
@@ -26,7 +26,6 @@ export default function SlamSensitivitySlider() {
 	const { sensitivity, setSensitivity } = useSlamStop();
 	const [flash, setFlash] = useState(false);
 	const flashTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-	const [diag, setDiag] = useState(getSlamDiagnostics); // TEMP DIAGNOSTIC
 
 	const zone = sensitivityZone(sensitivity);
 	const zoneLabels: Record<string, string> = {
@@ -47,7 +46,6 @@ export default function SlamSensitivitySlider() {
 				flashTimeout.current = setTimeout(() => setFlash(false), FLASH_MS);
 			}).then((result) => {
 				owner = result;
-				setDiag(getSlamDiagnostics()); // TEMP DIAGNOSTIC
 				if (cancelled) stopSlamDetector(owner);
 			});
 		}, REARM_DEBOUNCE_MS);
@@ -97,14 +95,6 @@ export default function SlamSensitivitySlider() {
 							: 'bg-button border-text/[0.15]'
 					}`}
 				/>
-			</div>
-
-			{/* TEMP DIAGNOSTIC — remove once iOS slam-stop is verified working */}
-			<div className="mt-3 px-2 py-1.5 rounded-md bg-yellow-500/15 border border-yellow-500/40 text-[11px] font-mono leading-tight text-yellow-200">
-				<div>tani · platform: {diag.platform}</div>
-				<div>slam motoru: {diag.registered ? 'EVET' : 'HAYIR'}</div>
-				<div>ses motoru (kiyas): {diag.refAudio ? 'EVET' : 'HAYIR'}</div>
-				<div>hata: {diag.lastError ?? 'yok'}</div>
 			</div>
 		</div>
 	);

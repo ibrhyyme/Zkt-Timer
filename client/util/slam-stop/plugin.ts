@@ -3,7 +3,7 @@ import { isNative } from '../platform';
 
 export interface SlamEvent {
 	timestamp: number; // epoch ms, emitted at detection time on the native side
-	magnitude: number; // |magnitude - 1g| deviation in g
+	magnitude: number; // Z-axis sample-to-sample delta (m/s²) that crossed the threshold
 }
 
 interface SlamDetectorNativePlugin {
@@ -20,34 +20,17 @@ const SlamDetector = isNative() ? registerPlugin<SlamDetectorNativePlugin>('Slam
  * Android: `isPluginAvailable` is reliable because the plugin is explicitly
  * registered in MainActivity (`registerPlugin(SlamDetectorPlugin.class)`).
  *
- * iOS: `isPluginAvailable` returns false for our Swift CAPBridgedPlugin even
- * when the binary ships it — the auto-discovery registry isn't reflected by
- * that check the same way, so the row stayed hidden on iOS despite the plugin
- * being present. On iOS we therefore gate on platform only; if the plugin is
- * genuinely missing (old binary), `start()` is wrapped in try/catch and the
- * feature just no-ops instead of crashing.
+ * iOS: the plugin is registered explicitly in ZKTBridgeViewController's
+ * `capacitorDidLoad` (`registerPluginInstance(SlamDetectorPlugin())`) — Capacitor
+ * does NOT auto-discover app-target plugins. `isPluginAvailable` is unreliable for
+ * such custom Swift plugins, so on iOS we gate on platform only. If the plugin is
+ * genuinely missing (old binary without the register line), `start()` is wrapped
+ * in try/catch and the feature just no-ops instead of crashing.
  */
 export function isSlamDetectorAvailable(): boolean {
 	if (!isNative()) return false;
 	if (Capacitor.getPlatform() === 'ios') return true;
 	return Capacitor.isPluginAvailable('SlamDetector');
-}
-
-// TEMP DIAGNOSTIC — shows on-screen whether the native plugin is actually
-// registered in the running binary. Lets us tell "binary missing the plugin"
-// apart from "plugin present but not emitting" without a Mac/Web Inspector.
-// Remove once the iOS slam-stop issue is resolved.
-let lastStartError: string | null = null;
-export function getSlamDiagnostics(): { platform: string; registered: boolean; refAudio: boolean; lastError: string | null } {
-	return {
-		platform: Capacitor.getPlatform(),
-		registered: isNative() && Capacitor.isPluginAvailable('SlamDetector'),
-		// Reference: NativeAudio is registered the same way (registerPluginInstance
-		// in ZKTBridgeViewController). If it's available but SlamDetector isn't,
-		// the slam register line simply isn't in this binary (need a fresh build).
-		refAudio: isNative() && Capacitor.isPluginAvailable('NativeAudio'),
-		lastError: lastStartError,
-	};
 }
 
 // FiveTimer grace window — no re-trigger for 750ms after a slam
@@ -85,9 +68,8 @@ export async function startSlamDetector(
 	try {
 		await ensureListener();
 		await SlamDetector.start({ threshold, refractoryMs: REFRACTORY_MS });
-	} catch (e: any) {
+	} catch (e) {
 		// Accelerometer unavailable — feature silently disabled
-		lastStartError = String(e?.message || e); // TEMP DIAGNOSTIC
 		if (activeOwner === owner) {
 			activeOwner = null;
 			activeCallback = null;
