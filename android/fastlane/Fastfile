@@ -7,10 +7,21 @@ platform :android do
   lane :beta do
     json_key_path = ENV["PLAY_STORE_JSON_KEY_PATH"]
 
+    # Auto-bump versionCode without touching build.gradle (was manual → easy to
+    # forget → "duplicate versionCode" rejection). Derived from the CI run number
+    # (monotonic, well above any existing Play code) and injected via AGP's
+    # android.injected.version.code.
+    # Deliberately NOT google_play_track_version_codes (nil flat_map bug on this
+    # fastlane) and NOT project.findProperty (clashes with the gradle versionCode
+    # DSL keyword) — see the github-actions-deploy skill for both traps.
+    next_version_code = 1000 + (ENV["GITHUB_RUN_NUMBER"] || "0").to_i
+    UI.message("Bumping versionCode -> #{next_version_code}")
+
     gradle(
       task: "clean bundleRelease",
       project_dir: ".",
       properties: {
+        "android.injected.version.code" => next_version_code,
         "android.injected.signing.store.file" => ENV["ANDROID_KEYSTORE_PATH"],
         "android.injected.signing.store.password" => ENV["ANDROID_KEYSTORE_PASSWORD"],
         "android.injected.signing.key.alias" => ENV["ANDROID_KEY_ALIAS"],
