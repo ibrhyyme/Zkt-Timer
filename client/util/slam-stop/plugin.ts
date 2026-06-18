@@ -15,13 +15,22 @@ interface SlamDetectorNativePlugin {
 const SlamDetector = isNative() ? registerPlugin<SlamDetectorNativePlugin>('SlamDetector') : null;
 
 /**
- * True only when the running native binary actually registered the plugin.
- * The app loads JS from the server (server.url), so new JS can run inside
- * old binaries that don't ship SlamDetectorPlugin yet — the setting must
- * stay hidden there instead of appearing as a dead toggle.
+ * Whether to show the slam-stop setting on this device.
+ *
+ * Android: `isPluginAvailable` is reliable because the plugin is explicitly
+ * registered in MainActivity (`registerPlugin(SlamDetectorPlugin.class)`).
+ *
+ * iOS: `isPluginAvailable` returns false for our Swift CAPBridgedPlugin even
+ * when the binary ships it — the auto-discovery registry isn't reflected by
+ * that check the same way, so the row stayed hidden on iOS despite the plugin
+ * being present. On iOS we therefore gate on platform only; if the plugin is
+ * genuinely missing (old binary), `start()` is wrapped in try/catch and the
+ * feature just no-ops instead of crashing.
  */
 export function isSlamDetectorAvailable(): boolean {
-	return isNative() && Capacitor.isPluginAvailable('SlamDetector');
+	if (!isNative()) return false;
+	if (Capacitor.getPlatform() === 'ios') return true;
+	return Capacitor.isPluginAvailable('SlamDetector');
 }
 
 // FiveTimer grace window — no re-trigger for 750ms after a slam
