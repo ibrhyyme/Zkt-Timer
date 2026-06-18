@@ -36,6 +36,8 @@ const PODIUMS_QUERY = gql`
 					first_name
 					last_name
 					country_code
+					wca_id
+					external_id
 				}
 			}
 		}
@@ -71,6 +73,8 @@ const ROUND_RESULTS = gql`
 				first_name
 				last_name
 				country_code
+					wca_id
+					external_id
 			}
 		}
 	}
@@ -162,12 +166,12 @@ export default function ZktPodiumsTab({detail}: {detail: any}) {
 	return (
 		<div className={b('rankings-tab')}>
 			{/* Event filter chips — WCA style */}
-			<div className={b('ranking-events')}>
+			<div className={b('event-chips')}>
 				{podiums.map((p) => (
 					<button
 						key={p.event_id}
 						type="button"
-						className={b('event-chip', {active: selectedEventId === p.event_id})}
+						className={b('event-chip-btn', {active: selectedEventId === p.event_id})}
 						onClick={() => setSelectedEventId(p.event_id)}
 					>
 						<span className={`cubing-icon event-${p.event_id}`} />
@@ -205,6 +209,7 @@ export default function ZktPodiumsTab({detail}: {detail: any}) {
 								) : (
 									sortedRanking.map((r) => {
 										const tint = r.ranking && r.ranking <= 3 ? MEDAL_TINT[r.ranking] : undefined;
+							const compId = r.person ? r.person.wca_id || r.person.external_id : null;
 										return (
 											<tr
 												key={r.id}
@@ -230,7 +235,10 @@ export default function ZktPodiumsTab({detail}: {detail: any}) {
 																alt=""
 															/>
 														)}
-														<span>{competitorFlag(competitorOf(r)) ? competitorFlag(competitorOf(r)) + ' ' : ''}{competitorDisplayName(competitorOf(r)) || r.user_id || r.person_id}</span>
+														<div className={b('rank-name-main')}>
+											<span className={b('rank-name-text')}>{competitorFlag(competitorOf(r)) ? competitorFlag(competitorOf(r)) + ' ' : ''}{competitorDisplayName(competitorOf(r)) || r.user_id || r.person_id}</span>
+											{compId && <span className={b('rank-id')}>{compId}</span>}
+										</div>
 													</div>
 												</td>
 												<td className={b('rank-time')}>
