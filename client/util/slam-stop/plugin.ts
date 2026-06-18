@@ -33,6 +33,19 @@ export function isSlamDetectorAvailable(): boolean {
 	return Capacitor.isPluginAvailable('SlamDetector');
 }
 
+// TEMP DIAGNOSTIC — shows on-screen whether the native plugin is actually
+// registered in the running binary. Lets us tell "binary missing the plugin"
+// apart from "plugin present but not emitting" without a Mac/Web Inspector.
+// Remove once the iOS slam-stop issue is resolved.
+let lastStartError: string | null = null;
+export function getSlamDiagnostics(): { platform: string; registered: boolean; lastError: string | null } {
+	return {
+		platform: Capacitor.getPlatform(),
+		registered: isNative() && Capacitor.isPluginAvailable('SlamDetector'),
+		lastError: lastStartError,
+	};
+}
+
 // FiveTimer grace window — no re-trigger for 750ms after a slam
 const REFRACTORY_MS = 750;
 
@@ -68,8 +81,9 @@ export async function startSlamDetector(
 	try {
 		await ensureListener();
 		await SlamDetector.start({ threshold, refractoryMs: REFRACTORY_MS });
-	} catch (e) {
+	} catch (e: any) {
 		// Accelerometer unavailable — feature silently disabled
+		lastStartError = String(e?.message || e); // TEMP DIAGNOSTIC
 		if (activeOwner === owner) {
 			activeOwner = null;
 			activeCallback = null;
