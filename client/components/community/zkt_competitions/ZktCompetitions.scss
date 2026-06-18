@@ -1710,12 +1710,21 @@ $zkt-info-green: #45d97c;
 	&__result-row {
 		transition: background 0.15s ease;
 
+		&--clickable {
+			cursor: pointer;
+		}
+
 		&:hover td {
 			background: rgba(var(--text-color), 0.03);
 		}
 
-		&--proceeds td {
+		&--proceeds td,
+		&--advancing td {
 			background: rgba($successColor, 0.08);
+		}
+
+		&--me td {
+			background: rgba(var(--primary-color), 0.08);
 		}
 	}
 
@@ -1723,7 +1732,18 @@ $zkt-info-green: #45d97c;
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
+		min-width: 0;
 		color: rgb(var(--text-color));
+	}
+
+	&__result-name-text {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.15rem;
 	}
 
 	&__tiny-avatar {
@@ -1806,6 +1826,291 @@ $zkt-info-green: #45d97c;
 	&__attempt-col {
 		font-family: 'SF Mono', 'Courier New', monospace;
 		color: rgba(var(--text-color), 0.85);
+	}
+
+	&__result-rank {
+		font-weight: 700;
+		white-space: nowrap;
+	}
+
+	&__result-medal {
+		font-size: 1.1em;
+	}
+
+	&__time-inner {
+		display: inline-flex;
+		align-items: center;
+		white-space: nowrap;
+	}
+
+	&__result-attempt {
+		font-family: 'SF Mono', 'Courier New', monospace;
+		color: rgb(var(--text-color));
+		white-space: nowrap;
+	}
+
+	// Live table mobile mode — name column must not squeeze the time columns
+	&__results-table--mobile {
+		th,
+		td {
+			padding: 0.6rem 0.5rem;
+		}
+
+		.cd-zkt-comp__result-name {
+			max-width: 46vw;
+		}
+	}
+
+	// Sıralama: clickable rows + name truncate
+	&__ranking-row--clickable {
+		cursor: pointer;
+	}
+
+	&__rank-name {
+		min-width: 0;
+
+		span {
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+	}
+
+	// Competitor detail: per-round attempts cell
+	&__person-results-attempts {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.3rem;
+	}
+
+	&__person-results-attempt {
+		font-family: 'SF Mono', 'Courier New', monospace;
+		font-size: 13px;
+		color: rgb(var(--text-color));
+		white-space: nowrap;
+	}
+
+	// Mobile result detail modal (ZktResultModal) — WCA ResultModal parity
+	&__result-modal-overlay {
+		position: fixed;
+		inset: 0;
+		z-index: 100000;
+		background: rgba(0, 0, 0, 0.55);
+		display: flex;
+		align-items: flex-end;
+		justify-content: center;
+
+		@media (min-width: 600px) {
+			align-items: center;
+		}
+	}
+
+	&__result-modal {
+		width: 100%;
+		max-width: 440px;
+		background: rgb(var(--background-color));
+		border: 1px solid rgba(var(--text-color), 0.1);
+		border-radius: 16px 16px 0 0;
+		padding: 1.25rem;
+		max-height: 85vh;
+		overflow-y: auto;
+
+		@media (min-width: 600px) {
+			border-radius: 16px;
+		}
+	}
+
+	&__result-modal-header {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 1rem;
+		margin-bottom: 1rem;
+	}
+
+	&__result-modal-rank {
+		font-size: 13px;
+		font-weight: 700;
+		color: rgb(var(--primary-color));
+	}
+
+	&__result-modal-name {
+		font-size: 1.15rem;
+		font-weight: 700;
+		margin: 0.1rem 0 0;
+		color: rgb(var(--text-color));
+	}
+
+	&__result-modal-subtitle {
+		font-size: 0.85rem;
+		color: rgb(var(--text-color));
+	}
+
+	&__result-modal-close {
+		flex-shrink: 0;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 34px;
+		height: 34px;
+		border: none;
+		border-radius: 8px;
+		background: rgb(var(--button-color));
+		color: rgb(var(--text-color));
+		cursor: pointer;
+	}
+
+	&__result-modal-body {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 0.75rem;
+		margin-bottom: 1rem;
+	}
+
+	&__result-modal-stat {
+		background: rgb(var(--module-color));
+		border-radius: 10px;
+		padding: 0.7rem 0.8rem;
+
+		&--full {
+			grid-column: 1 / -1;
+		}
+	}
+
+	&__result-modal-stat-label {
+		font-size: 11px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+		color: rgb(var(--text-color));
+		margin-bottom: 0.3rem;
+	}
+
+	&__result-modal-stat-value {
+		font-family: 'SF Mono', 'Courier New', monospace;
+		font-size: 1.15rem;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+		display: inline-flex;
+		align-items: center;
+	}
+
+	&__result-modal-attempts {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+	}
+
+	&__result-modal-attempt {
+		font-family: 'SF Mono', 'Courier New', monospace;
+		font-size: 14px;
+		padding: 0.25rem 0.5rem;
+		background: rgb(var(--button-color));
+		border-radius: 6px;
+		color: rgb(var(--text-color));
+	}
+
+	&__result-modal-profile-btn {
+		width: 100%;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		padding: 0.7rem;
+		border: 1px solid rgba(var(--primary-color), 0.4);
+		border-radius: 10px;
+		background: rgba(var(--primary-color), 0.1);
+		color: rgb(var(--primary-color));
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	&__activity-topbar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+		margin-bottom: 1rem;
+	}
+
+	&__activity-nav {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	&__activity-nav-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 34px;
+		height: 34px;
+		border: 1px solid rgba(var(--text-color), 0.15);
+		border-radius: 8px;
+		background: rgb(var(--button-color));
+		color: rgb(var(--text-color));
+		cursor: pointer;
+
+		&:hover:not(:disabled) {
+			border-color: rgba(var(--primary-color), 0.5);
+			color: rgb(var(--primary-color));
+		}
+
+		&:disabled {
+			opacity: 0.4;
+			cursor: default;
+		}
+	}
+
+	&__activity-nav-pos {
+		font-size: 13px;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+		min-width: 48px;
+		text-align: center;
+	}
+
+	&__activity-breakdown {
+		margin-bottom: 0.75rem;
+		font-size: 13px;
+		font-weight: 600;
+		color: rgb(var(--text-color));
+	}
+
+	&__activity-role-section {
+		margin-bottom: 1.5rem;
+	}
+
+	&__activity-role-header {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.5rem 0.85rem;
+		border-radius: 8px;
+		margin-bottom: 0.5rem;
+		font-size: 14px;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+	}
+
+	&__activity-role-count {
+		margin-left: auto;
+		font-size: 13px;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+	}
+
+	&__activity-station {
+		font-size: 12px;
+		font-weight: 600;
+		color: rgb(var(--text-color));
+	}
+
+	&__activity-seed {
+		margin-left: auto;
+		font-family: 'SF Mono', 'Courier New', monospace;
+		font-size: 13px;
+		color: rgb(var(--text-color));
 	}
 
 	// Register tab

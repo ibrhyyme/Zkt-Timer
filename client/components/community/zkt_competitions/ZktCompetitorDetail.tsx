@@ -350,6 +350,7 @@ function ResultsList({results, t}: {results: any[]; t: any}) {
 								<th>{t('best')}</th>
 								<th>{t('average')}</th>
 								<th>{t('format')}</th>
+								<th>{t('attempts')}</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -379,6 +380,14 @@ function ResultsList({results, t}: {results: any[]; t: any}) {
 											)}
 										</td>
 										<td>{formatName(r.round?.format)}</td>
+										<td className={b('person-results-attempts')}>
+											{[r.attempt_1, r.attempt_2, r.attempt_3, r.attempt_4, r.attempt_5]
+												.map((a: any) => formatCs(a))
+												.filter(Boolean)
+												.map((a: string, i: number) => (
+													<span key={i} className={b('person-results-attempt')}>{a}</span>
+												))}
+										</td>
 									</tr>
 								))}
 						</tbody>

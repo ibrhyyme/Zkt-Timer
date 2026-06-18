@@ -3381,6 +3381,10 @@
         "info_alt_sor": "Kinch Ranks — альтернативный способ измерить all-round способности кубера. У разных методов разные trade-off'ы — поэтому мы предлагаем несколько способов измерения."
     },
     "zkt_comp": {
+        "previous": "Назад",
+        "attempts": "Попытки",
+        "close": "Закрыть",
+        "view_full_results": "Все результаты",
         "follow_competitor": "Следить за участником",
         "unfollow_competitor": "Отписаться",
         "follow_success": "Вы следите за {{name}}",

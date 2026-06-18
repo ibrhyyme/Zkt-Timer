@@ -3379,6 +3379,10 @@
         "info_alt_sor": "Kinch Ranks, bir cuber'ın all-round yeteneğini ölçmenin alternatif bir yoludur. Farklı yöntemlerin farklı trade-off'ları vardır — bu yüzden birden fazla ölçüm sunuyoruz."
     },
     "zkt_comp": {
+        "previous": "Önceki",
+        "attempts": "Denemeler",
+        "close": "Kapat",
+        "view_full_results": "Tüm sonuçları gör",
         "follow_competitor": "Yarışmacıyı takip et",
         "unfollow_competitor": "Takibi bırak",
         "follow_success": "{{name}} takip ediliyor",

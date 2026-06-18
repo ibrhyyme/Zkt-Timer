@@ -4,6 +4,7 @@ import {gqlMutate} from '../../../api';
 import {useTranslation} from 'react-i18next';
 import {b, formatCs, getEventName, competitorDisplayName, competitorFlag, competitorOf} from '../shared';
 import {Trophy} from 'phosphor-react';
+import {useHistory} from 'react-router-dom';
 
 const PODIUMS_QUERY = gql`
 	query ZktPodiumsRankings($id: String!) {
@@ -90,6 +91,7 @@ const MEDAL_TINT: Record<number, string> = {
 
 export default function ZktPodiumsTab({detail}: {detail: any}) {
 	const {t} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
+	const history = useHistory();
 	const [podiums, setPodiums] = useState<PodiumBlock[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
@@ -229,8 +231,14 @@ export default function ZktPodiumsTab({detail}: {detail: any}) {
 												className={b('ranking-row', {
 													podium: !!tint,
 													'no-show': !!r.no_show,
+													clickable: true,
 												})}
 												style={tint ? {background: tint} : undefined}
+												onClick={() =>
+													history.push(
+														`/community/zkt-competitions/${detail.id}/competitors/${r.user_id || r.person_id}`
+													)
+												}
 											>
 												<td className={b('rank-num')}>{r.ranking ?? '-'}</td>
 												<td>

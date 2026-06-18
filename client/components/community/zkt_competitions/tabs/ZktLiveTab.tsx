@@ -1,10 +1,13 @@
 import React, {useState, useEffect} from 'react';
 import {useParams, useHistory, useRouteMatch} from 'react-router-dom';
+import {useSelector} from 'react-redux';
 import {useTranslation} from 'react-i18next';
-import {b, getEventName, formatCs, formatName, formatHasAverage, getFormatAttempts, competitorDisplayName, competitorFlag, competitorOf} from '../shared';
+import {b, getEventName, formatCs, formatName, formatHasAverage, getFormatAttempts, formatAttempts, competitorDisplayName, competitorFlag, competitorOf} from '../shared';
 import {useZktLiveResults, LiveResult} from '../useZktLiveResults';
+import {useIsMobile} from '../../../../util/hooks/useIsMobile';
 import {ArrowClockwise, Broadcast, MonitorPlay} from 'phosphor-react';
 import ZktLivePodiums from './ZktLivePodiums';
+import ZktResultModal, {ZktResultModalRow} from '../ZktResultModal';
 
 export default function ZktLiveTab({detail}: {detail: any}) {
 	const {t} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
@@ -219,6 +222,9 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 								results={results}
 								format={selectedRound.format}
 								loading={loading}
+								roundStatus={selectedRound.status}
+								eventId={selectedEvent.event_id}
+								competitionId={competitionId}
 							/>
 						</>
 					)}
@@ -228,18 +234,32 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 	);
 }
 
+const MEDALS = ['🥇', '🥈', '🥉'];
+
 function ResultsTable({
 	results,
 	format,
 	loading,
+	roundStatus,
+	eventId,
+	competitionId,
 }: {
 	results: LiveResult[];
 	format: string;
 	loading: boolean;
+	roundStatus?: string;
+	eventId: string;
+	competitionId: string;
 }) {
 	const {t} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
+	const history = useHistory();
+	const isMobile = useIsMobile();
+	const me = useSelector((state: any) => state.account.me);
+	const [modalRow, setModalRow] = useState<(ZktResultModalRow & {competitorId: string}) | null>(null);
+
 	const attemptCount = getFormatAttempts(format);
 	const hasAverage = formatHasAverage(format);
+	const isFinished = roundStatus === 'FINISHED';
 
 	if (loading && results.length === 0) {
 		return <div className={b('empty')}>{t('loading')}</div>;
@@ -251,66 +271,131 @@ function ResultsTable({
 
 	return (
 		<div className={b('results-table-wrapper')}>
-			<table className={b('results-table')}>
+			<table className={b('results-table', {mobile: isMobile})}>
 				<thead>
 					<tr>
 						<th>#</th>
 						<th>{t('competitor')}</th>
 						{hasAverage && <th>{t('average')}</th>}
 						<th>{t('best')}</th>
-						{Array.from({length: attemptCount}).map((_, i) => (
-							<th key={i} className={b('attempt-col')}>
-								{i + 1}
-							</th>
-						))}
+						{!isMobile &&
+							Array.from({length: attemptCount}).map((_, i) => (
+								<th key={i} className={b('attempt-col')}>
+									{i + 1}
+								</th>
+							))}
 					</tr>
 				</thead>
 				<tbody>
-					{results.map((r) => (
-						<tr
-							key={r.id}
-							className={b('result-row', {proceeds: r.proceeds})}
-						>
-							<td>{r.ranking ?? '-'}</td>
-							<td>
-								<div className={b('result-name')}>
-									{r.user?.profile?.pfp_image?.url && (
-										<img
-											className={b('tiny-avatar')}
-											src={r.user.profile.pfp_image.url}
-											alt=""
-										/>
-									)}
-									<span>
-										{competitorFlag(competitorOf(r)) && (
-											<span className={b('flag')}>{competitorFlag(competitorOf(r))}</span>
-										)}
-										{competitorDisplayName(competitorOf(r)) || r.user_id || r.person_id}
-									</span>
-								</div>
-							</td>
-							{hasAverage && (
-								<td className={b('time-cell', {nr: !!r.average_record_tag})}>
-									{formatCs(r.average)}
-									{r.average_record_tag && (
-										<span className={b('record-tag')}>{r.average_record_tag}</span>
+					{results.map((r) => {
+						const competitorId = (r.user_id || r.person_id) as string;
+						const displayName =
+							competitorDisplayName(competitorOf(r)) || competitorId;
+						const flag = competitorFlag(competitorOf(r));
+						const medal = isFinished ? MEDALS[(r.ranking || 0) - 1] || '' : '';
+						const isMe = !!(me && r.user_id && me.id === r.user_id);
+						const attempts = formatAttempts(
+							[r.attempt_1, r.attempt_2, r.attempt_3, r.attempt_4, r.attempt_5],
+							attemptCount
+						);
+						const openRow = () => {
+							if (isMobile) {
+								setModalRow({
+									title: displayName,
+									ranking: r.ranking,
+									best: r.best,
+									average: r.average,
+									attempts,
+									averageRecordTag: r.average_record_tag,
+									singleRecordTag: r.single_record_tag,
+									competitorId,
+								});
+							} else {
+								history.push(
+									`/community/zkt-competitions/${competitionId}/competitors/${competitorId}`
+								);
+							}
+						};
+						return (
+							<tr
+								key={r.id}
+								className={b('result-row', {advancing: r.proceeds, me: isMe, clickable: true})}
+								onClick={openRow}
+							>
+								<td className={b('result-rank')}>
+									{medal ? (
+										<span className={b('result-medal')}>{medal}</span>
+									) : (
+										r.ranking ?? '-'
 									)}
 								</td>
-							)}
-							<td className={b('time-cell', {nr: !!r.single_record_tag})}>
-								{formatCs(r.best)}
-								{r.single_record_tag && (
-									<span className={b('record-tag')}>{r.single_record_tag}</span>
+								<td>
+									<div className={b('result-name')}>
+										{r.user?.profile?.pfp_image?.url && (
+											<img
+												className={b('tiny-avatar')}
+												src={r.user.profile.pfp_image.url}
+												alt=""
+											/>
+										)}
+										<span className={b('result-name-text')}>
+											{flag && <span className={b('flag')}>{flag}</span>}
+											{displayName}
+										</span>
+										{isMe && <span className={b('me-badge')}>{t('you')}</span>}
+									</div>
+								</td>
+								{hasAverage && (
+									<td className={b('time-cell', {nr: !!r.average_record_tag})}>
+										<span className={b('time-inner')}>
+											{formatCs(r.average)}
+											{r.average_record_tag && (
+												<span
+													className={b('record-tag', {
+														[r.average_record_tag.toLowerCase()]: true,
+													})}
+												>
+													{r.average_record_tag}
+												</span>
+											)}
+										</span>
+									</td>
 								)}
-							</td>
-							{Array.from({length: attemptCount}).map((_, i) => {
-								const val = (r as any)[`attempt_${i + 1}`];
-								return <td key={i}>{formatCs(val)}</td>;
-							})}
-						</tr>
-					))}
+								<td className={b('time-cell', {nr: !!r.single_record_tag})}>
+									<span className={b('time-inner')}>
+										{formatCs(r.best)}
+										{r.single_record_tag && (
+											<span
+												className={b('record-tag', {
+													[r.single_record_tag.toLowerCase()]: true,
+												})}
+											>
+												{r.single_record_tag}
+											</span>
+										)}
+									</span>
+								</td>
+								{!isMobile &&
+									attempts.map((a, i) => (
+										<td key={i} className={b('result-attempt')}>
+											{a}
+										</td>
+									))}
+							</tr>
+						);
+					})}
 				</tbody>
 			</table>
+
+			{modalRow && (
+				<ZktResultModal
+					row={modalRow}
+					competitionId={competitionId}
+					onClose={() => setModalRow(null)}
+					t={t}
+					showAverage={hasAverage}
+				/>
+			)}
 		</div>
 	);
 }
