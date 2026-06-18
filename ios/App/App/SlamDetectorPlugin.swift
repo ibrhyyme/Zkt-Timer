@@ -22,13 +22,11 @@ public class SlamDetectorPlugin: CAPPlugin, CAPBridgedPlugin {
     // CoreMotion reports acceleration in g; convert to m/s² so thresholds
     // match the Android (SensorManager) units and the FiveTimer reference.
     private static let gravity = 9.81
-    // Noise floor — deltas below this are treated as 0 (FiveTimer: 0.3f)
-    private static let deadband = 0.3
-
     private let motionManager = CMMotionManager()
     private let queue = OperationQueue()
-    // Threshold in m/s² for the Z-axis sample delta; set per start() call
+    // Threshold + noise-floor deadband (m/s²) for the Z-axis delta; set per start()
     private var threshold: Double = 1.0
+    private var deadband: Double = 0.1
     private var refractorySeconds: Double = 0.75
     private var lastFireAt: TimeInterval = 0
     private var lastZ: Double = 0
@@ -41,6 +39,7 @@ public class SlamDetectorPlugin: CAPPlugin, CAPBridgedPlugin {
         }
 
         threshold = call.getDouble("threshold") ?? 1.0
+        deadband = call.getDouble("deadband") ?? 0.1
         refractorySeconds = Double(call.getInt("refractoryMs") ?? 750) / 1000.0
         lastFireAt = 0
         initialized = false
@@ -66,7 +65,7 @@ public class SlamDetectorPlugin: CAPPlugin, CAPBridgedPlugin {
 
             var delta = abs(self.lastZ - z)
             self.lastZ = z
-            if delta < SlamDetectorPlugin.deadband {
+            if delta < self.deadband {
                 delta = 0
             }
 
