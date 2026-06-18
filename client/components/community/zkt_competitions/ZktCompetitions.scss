@@ -2113,6 +2113,101 @@ $zkt-info-green: #45d97c;
 		color: rgb(var(--text-color));
 	}
 
+	// ZKT Live podiums (welcome) — WCA WcaLivePodiums parity
+	&__podiums {
+		margin-bottom: 2rem;
+	}
+
+	&__podiums-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+		gap: 0.75rem;
+	}
+
+	&__podium-card {
+		background: rgb(var(--module-color));
+		border: 1px solid rgba(var(--text-color), 0.1);
+		border-radius: 12px;
+		padding: 0.85rem 0.95rem;
+		cursor: pointer;
+		color: rgb(var(--text-color));
+		transition: border-color 0.15s ease, background 0.15s ease;
+
+		&:hover {
+			border-color: rgba(var(--primary-color), 0.4);
+			background: rgba(var(--primary-color), 0.05);
+		}
+	}
+
+	&__podium-header {
+		display: flex;
+		align-items: center;
+		gap: 0.55rem;
+		padding-bottom: 0.6rem;
+		margin-bottom: 0.6rem;
+		border-bottom: 1px solid rgba(var(--text-color), 0.08);
+	}
+
+	&__podium-event-name {
+		font-weight: 700;
+		font-size: 0.95rem;
+		color: rgb(var(--text-color));
+	}
+
+	&__podium-entries {
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
+	}
+
+	&__podium-entry {
+		display: flex;
+		align-items: center;
+		gap: 0.55rem;
+		padding: 0.35rem 0.5rem;
+		border-radius: 6px;
+		font-size: 0.85rem;
+
+		&--rank-1 {
+			background: rgba($zkt-gold, 0.14);
+			border-left: 3px solid $zkt-gold;
+		}
+		&--rank-2 {
+			background: rgba($zkt-silver, 0.12);
+			border-left: 3px solid $zkt-silver;
+		}
+		&--rank-3 {
+			background: rgba($zkt-bronze, 0.14);
+			border-left: 3px solid $zkt-bronze;
+		}
+	}
+
+	&__podium-medal {
+		font-size: 1.1rem;
+		flex-shrink: 0;
+	}
+
+	&__podium-name {
+		flex: 1;
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-weight: 500;
+		color: rgb(var(--text-color));
+	}
+
+	&__podium-time {
+		flex-shrink: 0;
+		font-family: 'SF Mono', 'Courier New', monospace;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+		position: relative;
+	}
+
 	// Register tab
 	&__register-tab {
 		max-width: 700px;

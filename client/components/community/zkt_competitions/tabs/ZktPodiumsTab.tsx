@@ -3,7 +3,6 @@ import {gql} from '@apollo/client';
 import {gqlMutate} from '../../../api';
 import {useTranslation} from 'react-i18next';
 import {b, formatCs, getEventName, competitorDisplayName, competitorFlag, competitorOf} from '../shared';
-import {Trophy} from 'phosphor-react';
 import {useHistory} from 'react-router-dom';
 
 const PODIUMS_QUERY = gql`
@@ -179,25 +178,6 @@ export default function ZktPodiumsTab({detail}: {detail: any}) {
 
 			{selectedPodium && (
 				<>
-					{/* Top 3 podium banner — visual only, also appears in ranking table */}
-					<div className={b('podium-banner')}>
-						{selectedPodium.results
-							.filter((r: any) => r.ranking !== null && r.ranking <= 3)
-							.map((r: any) => (
-								<div
-									key={r.id}
-									className={b('podium-medal-card', {[`pos-${r.ranking}`]: true})}
-								>
-									<Trophy weight="fill" size={28} />
-									<div className={b('podium-medal-rank')}>#{r.ranking}</div>
-									<div className={b('podium-medal-name')}>
-										{competitorFlag(competitorOf(r)) ? competitorFlag(competitorOf(r)) + ' ' : ''}{competitorDisplayName(competitorOf(r)) || r.user_id || r.person_id}
-									</div>
-									<div className={b('podium-medal-time')}>{formatCs(r.best)}</div>
-								</div>
-							))}
-					</div>
-
 					{/* Full ranking table */}
 					<div className={b('ranking-table-wrapper')}>
 						<table className={b('ranking-table')}>
