@@ -388,6 +388,21 @@ mutation unfollowCompetitor($id: String!) {
 	unfollowCompetitor(id: $id)
 }
 
+mutation followZktCompetitor($input: FollowZktCompetitorInput!) {
+	followZktCompetitor(input: $input) {
+		id
+		competition_id
+		followed_user_id
+		followed_person_id
+		followed_name
+		created_at
+	}
+}
+
+mutation unfollowZktCompetitor($id: String!) {
+	unfollowZktCompetitor(id: $id)
+}
+
 mutation recordActivityHeartbeat {
 	recordActivityHeartbeat {
 		success

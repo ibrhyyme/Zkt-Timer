@@ -343,6 +343,7 @@ type Query {
   landingStats: LandingStats
   getIapStatus: IapStatus
   myCompetitionFollows(competitionId: String): [CompetitionFollow]
+  myZktCompetitionFollows(competitionId: String): [ZktCompetitionFollow]
   adminActiveUsers(monthYear: String, period: String): AdminActiveUsersResult
 }
 
@@ -509,6 +510,8 @@ type Mutation {
   linkRevenueCatUser: Boolean
   followCompetitor(input: FollowCompetitorInput): CompetitionFollow
   unfollowCompetitor(id: String): Boolean
+  followZktCompetitor(input: FollowZktCompetitorInput): ZktCompetitionFollow
+  unfollowZktCompetitor(id: String): Boolean
   recordActivityHeartbeat: ActivityHeartbeatResult
 }
 
@@ -2166,6 +2169,15 @@ type CompetitionFollow {
   created_at: DateTime
 }
 
+type ZktCompetitionFollow {
+  id: String
+  competition_id: String
+  followed_user_id: String
+  followed_person_id: String
+  followed_name: String
+  created_at: DateTime
+}
+
 type ActiveUserRow {
   user: PublicUserAccount
   active_minutes: Int
@@ -2691,6 +2703,13 @@ input FollowCompetitorInput {
   competition_id: String
   registrant_id: Int
   wca_id: String
+  name: String
+}
+
+input FollowZktCompetitorInput {
+  competition_id: String
+  followed_user_id: String
+  followed_person_id: String
   name: String
 }
 

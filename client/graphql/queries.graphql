@@ -778,6 +778,17 @@ query myCompetitionFollows($competitionId: String!) {
 	}
 }
 
+query myZktCompetitionFollows($competitionId: String!) {
+	myZktCompetitionFollows(competitionId: $competitionId) {
+		id
+		competition_id
+		followed_user_id
+		followed_person_id
+		followed_name
+		created_at
+	}
+}
+
 query caseStats($type: String!, $cubeType: String, $subset: String, $sessionId: String, $lastN: Int) {
 	caseStats(type: $type, cubeType: $cubeType, subset: $subset, sessionId: $sessionId, lastN: $lastN) {
 		caseKey

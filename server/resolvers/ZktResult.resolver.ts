@@ -26,6 +26,7 @@ import {assertRoundTransition, revokeAdvancementCarry} from '../models/zkt_round
 import {ensureScramblesForRound, regenerateScramblesForRound} from '../models/zkt_scramble';
 import {checkAndApplyRecords, rebuildRecordsForEvent} from '../models/zkt_record';
 import ZktRoundFinishedNotification from '../resources/notification_types/zkt_round_finished';
+import ZktFollowRoundFinishedNotification from '../resources/notification_types/zkt_follow_round_finished';
 import {sendPushToUser} from '../services/push';
 import {emitZktResultUpdated, emitZktResultDeleted, emitZktRoundStatusChanged} from '../zkt_competition';
 
@@ -93,6 +94,42 @@ async function notifyZktRoundFinished(roundId: string): Promise<void> {
 			);
 			await notif.send().catch(() => {});
 			await sendPushToUser(r.user_id, notif.subject(), notif.inAppMessage()).catch(() => {});
+		}
+
+		// Notify Pro followers of each ranked competitor (account user OR ghost
+		// person). followed_name is denormalized on the follow row, so the
+		// competitor's display name is not re-derived here.
+		const rankedForFollows = await prisma.zktResult.findMany({
+			where: {round_id: roundId, ranking: {not: null}},
+			select: {user_id: true, person_id: true, ranking: true, proceeds: true},
+		});
+		for (const r of rankedForFollows) {
+			const followWhere = r.user_id
+				? {competition_id: round.comp_event.competition.id, followed_user_id: r.user_id}
+				: {competition_id: round.comp_event.competition.id, followed_person_id: r.person_id};
+			const follows = await prisma.zktCompetitionFollow.findMany({
+				where: followWhere,
+				include: {user: {include: {settings: true}}},
+			});
+			for (const f of follows) {
+				const fnotif = new ZktFollowRoundFinishedNotification(
+					{user: f.user as any, triggeringUser: f.user as any, sendEmail: false},
+					{
+						competitionId: round.comp_event.competition.id,
+						competitionName: round.comp_event.competition.name,
+						eventId,
+						eventName: ZKT_EVENT_NAMES[eventId] || eventId,
+						roundNumber: round.round_number,
+						ranking: r.ranking as number,
+						advancing: r.proceeds,
+						isFinal,
+						followedName: f.followed_name,
+						locale: (f.user as any)?.settings?.locale,
+					}
+				);
+				await fnotif.send().catch(() => {});
+				await sendPushToUser(f.user_id, fnotif.subject(), fnotif.inAppMessage()).catch(() => {});
+			}
 		}
 	} catch {
 		// Notifications are best-effort.

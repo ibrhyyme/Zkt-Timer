@@ -3381,6 +3381,13 @@
         "info_alt_sor": "Kinch Ranks es una forma alternativa de medir las habilidades all-round de un cuber. Diferentes métodos tienen diferentes trade-offs — por eso ofrecemos múltiples formas de medir tus habilidades."
     },
     "zkt_comp": {
+        "follow_competitor": "Seguir competidor",
+        "unfollow_competitor": "Dejar de seguir",
+        "follow_success": "Siguiendo a {{name}}",
+        "unfollow_success": "Dejaste de seguir a {{name}}",
+        "follow_limit_reached": "Puedes seguir como máximo a {{max}} competidores",
+        "follow_self_error": "No puedes seguirte a ti mismo",
+        "follow_error_generic": "La acción de seguir falló",
         "title": "Competiciones ZKT",
         "subtitle": "Competiciones no oficiales organizadas por Zeka Küpü Türkiye",
         "back": "Atrás",

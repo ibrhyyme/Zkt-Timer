@@ -3381,6 +3381,13 @@
         "info_alt_sor": "Kinch 排名是衡量魔方玩家全能能力的另一种方法。不同的方法会有不同的权衡 — 这就是为什么我们提供多种方法来衡量您的全能能力。"
     },
     "zkt_comp": {
+        "follow_competitor": "关注选手",
+        "unfollow_competitor": "取消关注",
+        "follow_success": "已关注 {{name}}",
+        "unfollow_success": "已取消关注 {{name}}",
+        "follow_limit_reached": "最多可关注 {{max}} 名选手",
+        "follow_self_error": "不能关注自己",
+        "follow_error_generic": "关注操作失败",
         "title": "ZKT 比赛",
         "subtitle": "由 Zeka Küpü Türkiye 组织的非官方比赛",
         "back": "返回",

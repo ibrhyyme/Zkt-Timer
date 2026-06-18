@@ -486,7 +486,21 @@ $zkt-info-green: #45d97c;
 		align-items: center;
 		padding: 0.6rem 0.9rem;
 		background: rgb(var(--module-color));
-		border-radius: 8px;
+		border: 1px solid rgba(var(--text-color), 0.08);
+		border-radius: 10px;
+		cursor: pointer;
+		color: rgb(var(--text-color));
+		transition: border-color 120ms ease, background 120ms ease;
+
+		&:hover {
+			border-color: rgba(var(--primary-color), 0.35);
+			background: rgba(var(--primary-color), 0.04);
+		}
+
+		&--me {
+			border-color: rgba(var(--primary-color), 0.5);
+			background: rgba(var(--primary-color), 0.07);
+		}
 	}
 
 	&__user-avatar {
@@ -877,8 +891,8 @@ $zkt-info-green: #45d97c;
 	}
 
 	&__competitor-list {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+		display: flex;
+		flex-direction: column;
 		gap: 0.5rem;
 	}
 
@@ -948,6 +962,46 @@ $zkt-info-green: #45d97c;
 		background: rgba(var(--primary-color), 0.25);
 		color: rgb(var(--primary-color));
 		letter-spacing: 0.5px;
+	}
+	// WCA-style external id under the name (full color per the no-faded rule;
+	// hierarchy via smaller size, not opacity)
+	&__competitor-id {
+		font-size: 12px;
+		font-weight: 600;
+		color: rgb(var(--text-color));
+		letter-spacing: 0.3px;
+		margin-top: 2px;
+	}
+
+	// Follow (notification) bell — right edge of each competitor row
+	&__follow-bell {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 34px;
+		height: 34px;
+		flex-shrink: 0;
+		border: 1px solid rgba(var(--text-color), 0.15);
+		border-radius: 8px;
+		background: rgb(var(--button-color));
+		color: rgb(var(--text-color));
+		cursor: pointer;
+		transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+
+		&:hover {
+			border-color: rgba(var(--primary-color), 0.5);
+			color: rgb(var(--primary-color));
+		}
+
+		&--active {
+			background: rgba(var(--primary-color), 0.15);
+			border-color: rgb(var(--primary-color));
+			color: rgb(var(--primary-color));
+		}
+
+		&:disabled {
+			cursor: default;
+		}
 	}
 
 	&__competitor-events {
