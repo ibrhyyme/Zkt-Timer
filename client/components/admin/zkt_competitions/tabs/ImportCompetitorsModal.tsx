@@ -102,6 +102,124 @@ function parseList(text: string): ParsedRow[] {
 	return rows.filter((r) => r.firstName || r.lastName);
 }
 
+// --- Per-row event format (the school-competition list shape) --------------
+// A row carries the competitor's name AND the events they will solve on the
+// same line, e.g.
+//   1; İbrahim İskender; Üç çarpı üç; İki çarpı iki
+//   2; İskender Aznavur; 3x3
+// Leading pure-number cell = registrant no (ignored). First text cell = name.
+// Remaining cells = events, recognised from Turkish spoken form / WCA code /
+// "NxN" short form. Unlike the common-events format, each row keeps its own
+// event set instead of one set shared by everyone.
+interface InlineRow {
+	firstName: string;
+	lastName: string;
+	eventIds: string[]; // comp_event.id values, already filtered to this competition
+	rawName: string;
+	unknownTokens: string[]; // cells that looked like an event but matched none
+}
+
+// Normalise a cell to a comparable token: lowercase, strip Turkish diacritics,
+// drop spaces/separators. "Üç Çarpı Üç" → "uccarpiuc", "3 x 3" → "3x3".
+function canon(s: string): string {
+	return (s || '')
+		.toLowerCase()
+		.replace(/ı/g, 'i')
+		.replace(/ş/g, 's')
+		.replace(/ç/g, 'c')
+		.replace(/ğ/g, 'g')
+		.replace(/ü/g, 'u')
+		.replace(/ö/g, 'o')
+		.replace(/[\s_\-.]/g, '')
+		.trim();
+}
+
+// WCA event_id → accepted aliases. Both sides are canon-normalised at lookup.
+const EVENT_ALIASES: Array<{id: string; aliases: string[]}> = [
+	{id: '222', aliases: ['222', '2x2', '2x2x2', 'iki', 'ikicarpiiki', '2carpi2']},
+	{id: '333', aliases: ['333', '3x3', '3x3x3', 'uc', 'uccarpiuc', '3carpi3']},
+	{id: '444', aliases: ['444', '4x4', '4x4x4', 'dort', 'dortcarpidort']},
+	{id: '555', aliases: ['555', '5x5', '5x5x5', 'bes', 'bescarpibes']},
+	{id: '666', aliases: ['666', '6x6', '6x6x6', 'alti', 'alticarpialti']},
+	{id: '777', aliases: ['777', '7x7', '7x7x7', 'yedi', 'yedicarpiyedi']},
+	{id: '333bf', aliases: ['333bf', '3x3bld', 'bld', 'korlemesine', 'korlame']},
+	{id: '333oh', aliases: ['333oh', 'oh', 'tekel', '3x3oh']},
+	{id: '333fm', aliases: ['333fm', 'fmc', 'enazhamle']},
+	{id: 'minx', aliases: ['minx', 'megaminx', 'mega']},
+	{id: 'pyram', aliases: ['pyram', 'pyraminx', 'piramit', 'piramid']},
+	{id: 'skewb', aliases: ['skewb']},
+	{id: 'sq1', aliases: ['sq1', 'square1', 'squareone']},
+	{id: 'clock', aliases: ['clock', 'saat']},
+	{id: '444bf', aliases: ['444bf', '4x4bld']},
+	{id: '555bf', aliases: ['555bf', '5x5bld']},
+	{id: '333mbf', aliases: ['333mbf', 'mbld', 'coklukor']},
+];
+
+// canon(alias) → event_id, precomputed once at module load.
+const ALIAS_TO_EVENT = new Map<string, string>();
+for (const ev of EVENT_ALIASES) {
+	for (const a of ev.aliases) ALIAS_TO_EVENT.set(canon(a), ev.id);
+}
+
+// Header rows whose first cell is one of these are skipped.
+const HEADER_FIRST_CELLS = new Set([
+	'no',
+	'sira',
+	'numara',
+	'ad',
+	'isim',
+	'name',
+	'adsoyad',
+	'sno',
+	'#',
+]);
+
+// Resolve a free-text cell to a comp_event.id of THIS competition, or null.
+// eventIdToCompId maps WCA event_id → comp_event.id.
+function resolveEventCell(cell: string, eventIdToCompId: Map<string, string>): string | null {
+	const eventId = ALIAS_TO_EVENT.get(canon(cell));
+	if (!eventId) return null;
+	return eventIdToCompId.get(eventId) || null;
+}
+
+function parseEventList(text: string, eventIdToCompId: Map<string, string>): InlineRow[] {
+	const lines = text.replace(/\r\n?/g, '\n').split('\n');
+	const rows: InlineRow[] = [];
+	let firstLine = true;
+	for (const line of lines) {
+		if (!line.trim()) continue;
+		const delim = line.includes('\t') ? '\t' : line.includes(';') ? ';' : ',';
+		// Drop empty cells so wide sheets with blank event columns collapse.
+		const cells = splitLine(line, delim).filter((c) => c !== '');
+		if (cells.length === 0) continue;
+		if (firstLine) {
+			firstLine = false;
+			if (HEADER_FIRST_CELLS.has(canon(cells[0]))) continue;
+		}
+		let idx = 0;
+		// A leading pure-number cell is the registrant no, not the name.
+		if (/^\d+$/.test(cells[0].trim())) idx = 1;
+		const rawName = (cells[idx] || '').trim();
+		idx++;
+		const eventIds: string[] = [];
+		const unknownTokens: string[] = [];
+		for (; idx < cells.length; idx++) {
+			const compId = resolveEventCell(cells[idx], eventIdToCompId);
+			if (compId) {
+				if (!eventIds.includes(compId)) eventIds.push(compId);
+			} else if (cells[idx].trim()) {
+				unknownTokens.push(cells[idx].trim());
+			}
+		}
+		const parts = rawName.split(/\s+/).filter(Boolean);
+		const firstName = parts.shift() || '';
+		const lastName = parts.join(' ');
+		if (!firstName && !lastName) continue;
+		rows.push({firstName, lastName, eventIds, rawName, unknownTokens});
+	}
+	return rows;
+}
+
 export default function ImportCompetitorsModal(props: Props) {
 	const {t} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
 	const [mode, setMode] = useState<'bulk' | 'single'>('bulk');
@@ -109,8 +227,22 @@ export default function ImportCompetitorsModal(props: Props) {
 
 	// Bulk state
 	const [raw, setRaw] = useState('');
+	// 'inline' = each row lists its own events (school list); 'common' = one
+	// event set chosen below applied to every imported row.
+	const [bulkFormat, setBulkFormat] = useState<'inline' | 'common'>('inline');
 	const [bulkEvents, setBulkEvents] = useState<Set<string>>(new Set());
 	const parsed = useMemo(() => parseList(raw), [raw]);
+
+	// WCA event_id → comp_event.id, for resolving per-row event tokens.
+	const eventIdToCompId = useMemo(() => {
+		const m = new Map<string, string>();
+		for (const ev of props.compEvents) m.set(ev.event_id, ev.id);
+		return m;
+	}, [props.compEvents]);
+	const parsedInline = useMemo(
+		() => parseEventList(raw, eventIdToCompId),
+		[raw, eventIdToCompId]
+	);
 
 	// Single state
 	const [form, setForm] = useState({
@@ -140,17 +272,35 @@ export default function ImportCompetitorsModal(props: Props) {
 	}
 
 	async function handleImport() {
-		if (parsed.length === 0) {
-			toastError(t('import_no_rows'));
-			return;
-		}
-		if (bulkEvents.size === 0) {
-			toastError(t('select_at_least_one_event'));
-			return;
-		}
-		setSubmitting(true);
-		try {
-			const rows = parsed.map((r) => ({
+		// Build rows for whichever bulk format is active.
+		let rows: Array<{
+			firstName: string;
+			lastName: string;
+			country?: string;
+			wcaId?: string;
+			externalId?: string;
+			eventIds: string[];
+		}>;
+		if (bulkFormat === 'inline') {
+			if (parsedInline.length === 0) {
+				toastError(t('import_no_rows'));
+				return;
+			}
+			rows = parsedInline.map((r) => ({
+				firstName: r.firstName,
+				lastName: r.lastName,
+				eventIds: r.eventIds,
+			}));
+		} else {
+			if (parsed.length === 0) {
+				toastError(t('import_no_rows'));
+				return;
+			}
+			if (bulkEvents.size === 0) {
+				toastError(t('select_at_least_one_event'));
+				return;
+			}
+			rows = parsed.map((r) => ({
 				firstName: r.firstName,
 				lastName: r.lastName,
 				country: r.country || undefined,
@@ -158,6 +308,9 @@ export default function ImportCompetitorsModal(props: Props) {
 				externalId: r.externalId || undefined,
 				eventIds: Array.from(bulkEvents),
 			}));
+		}
+		setSubmitting(true);
+		try {
 			await gqlMutate(IMPORT_COMPETITORS, {
 				input: {competitionId: props.competitionId, rows},
 			});
