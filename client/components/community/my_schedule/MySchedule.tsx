@@ -23,30 +23,30 @@ function MyScheduleInner() {
 	const history = useHistory();
 
 	const matchPersonalBests = useRouteMatch<{competitionId: string; wcaId: string}>(
-		'/community/competitions/:competitionId/personal-bests/:wcaId'
+		'/competitions/:competitionId/personal-bests/:wcaId'
 	);
 	const matchCompetitorResults = useRouteMatch<{competitionId: string; registrantId: string}>({
-		path: '/community/competitions/:competitionId/persons/:registrantId/results',
+		path: '/competitions/:competitionId/persons/:registrantId/results',
 		exact: true,
 	});
 	const matchPerson = useRouteMatch<{competitionId: string; registrantId: string}>({
-		path: '/community/competitions/:competitionId/persons/:registrantId',
+		path: '/competitions/:competitionId/persons/:registrantId',
 		exact: true,
 	});
 	const matchActivity = useRouteMatch<{competitionId: string; activityCode: string}>(
-		'/community/competitions/:competitionId/activities/:activityCode'
+		'/competitions/:competitionId/activities/:activityCode'
 	);
 	const matchWcaLiveRound = useRouteMatch<{competitionId: string; eventId: string; roundNumber: string}>(
-		'/community/competitions/:competitionId/wca-live/:eventId/:roundNumber'
+		'/competitions/:competitionId/wca-live/:eventId/:roundNumber'
 	);
 	const matchWcaLiveEvent = useRouteMatch<{competitionId: string; eventId: string}>(
-		'/community/competitions/:competitionId/wca-live/:eventId'
+		'/competitions/:competitionId/wca-live/:eventId'
 	);
 	const matchWcaLive = useRouteMatch<{competitionId: string}>(
-		'/community/competitions/:competitionId/wca-live'
+		'/competitions/:competitionId/wca-live'
 	);
 	const matchCompetition = useRouteMatch<{competitionId: string}>(
-		'/community/competitions/:competitionId'
+		'/competitions/:competitionId'
 	);
 
 	// Get competitionId from any match
@@ -80,7 +80,7 @@ function MyScheduleInner() {
 			child = (
 				<>
 					{isRoot ? (
-						<button className={b('back')} onClick={() => history.push(`/community/competitions/${competitionId}`)}>
+						<button className={b('back')} onClick={() => history.push(`/competitions/${competitionId}`)}>
 							<ArrowLeft size={18} />
 							{t('my_schedule.back_to_competition')}
 						</button>
@@ -106,7 +106,7 @@ function MyScheduleInner() {
 		} else {
 			child = (
 				<>
-					<button className={b('back')} onClick={() => history.push('/community/competitions')}>
+					<button className={b('back')} onClick={() => history.push('/competitions')}>
 						<ArrowLeft size={18} />
 						{t('my_schedule.back_to_list')}
 					</button>
@@ -117,7 +117,7 @@ function MyScheduleInner() {
 
 		return (
 			<div className={b()}>
-				<Header path="/community/competitions" title={t('my_schedule.page_title')} />
+				<Header path="/competitions" title={t('my_schedule.page_title')} />
 				<div className={b('content', {wide: !!matchCompetitorResults})}>
 					<CompetitionLoader competitionId={competitionId}>
 						{child}
@@ -130,7 +130,7 @@ function MyScheduleInner() {
 	// Competition list
 	return (
 		<div className={b()}>
-			<Header path="/community/competitions" title={t('my_schedule.page_title')} />
+			<Header path="/competitions" title={t('my_schedule.page_title')} />
 			<CompetitionList />
 		</div>
 	);

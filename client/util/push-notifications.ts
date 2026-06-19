@@ -23,7 +23,7 @@ function navigateFromPushData(data: any): boolean {
 		(data.type === 'wca_result_entered' || data.type === 'wca_round_finished') &&
 		data.competitionId && data.eventId && data.roundNumber
 	) {
-		window.location.href = `/community/competitions/${data.competitionId}/wca-live/${data.eventId}/${data.roundNumber}`;
+		window.location.href = `/competitions/${data.competitionId}/wca-live/${data.eventId}/${data.roundNumber}`;
 		return true;
 	}
 	return false;
@@ -181,9 +181,9 @@ async function initWebPush(): Promise<void> {
 				const directLink = typeof payload.data?.link === 'string' ? payload.data.link.trim() : '';
 				const link = directLink
 					|| ((payload.data?.competitionId && payload.data?.eventId && payload.data?.roundNumber)
-						? `/community/competitions/${payload.data.competitionId}/wca-live/${payload.data.eventId}/${payload.data.roundNumber}`
+						? `/competitions/${payload.data.competitionId}/wca-live/${payload.data.eventId}/${payload.data.roundNumber}`
 						: payload.data?.competitionId
-						? `/community/competitions/${payload.data.competitionId}/wca-live`
+						? `/competitions/${payload.data.competitionId}/wca-live`
 						: '/');
 
 				const notif = new Notification(title, {

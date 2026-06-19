@@ -23,7 +23,7 @@ export default function WcaLiveRecords({records, competitionId}: Props) {
 
 	function handleClick(rec: any) {
 		if (!rec.eventId || !rec.roundNumber) return;
-		history.push(`/community/competitions/${competitionId}/wca-live/${rec.eventId}/${rec.roundNumber}`);
+		history.push(`/competitions/${competitionId}/wca-live/${rec.eventId}/${rec.roundNumber}`);
 	}
 
 	return (

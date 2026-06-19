@@ -142,10 +142,10 @@ export default function ActivityDetail({activityCode}: ActivityDetailProps) {
 	useEffect(() => {
 		function handleKeydown(e: KeyboardEvent) {
 			if (e.key === 'ArrowLeft' && prevCode) {
-				history.push(`/community/competitions/${detail.competitionId}/activities/${prevCode}`);
+				history.push(`/competitions/${detail.competitionId}/activities/${prevCode}`);
 			}
 			if (e.key === 'ArrowRight' && nextCode) {
-				history.push(`/community/competitions/${detail.competitionId}/activities/${nextCode}`);
+				history.push(`/competitions/${detail.competitionId}/activities/${nextCode}`);
 			}
 		}
 		document.addEventListener('keydown', handleKeydown);
@@ -166,7 +166,7 @@ export default function ActivityDetail({activityCode}: ActivityDetailProps) {
 	}
 
 	function goToPerson(registrantId: number) {
-		history.push(`/community/competitions/${detail.competitionId}/persons/${registrantId}`);
+		history.push(`/competitions/${detail.competitionId}/persons/${registrantId}`);
 	}
 
 	return (
@@ -182,7 +182,7 @@ export default function ActivityDetail({activityCode}: ActivityDetailProps) {
 					<button
 						className={b('group-nav-btn', {disabled: !prevCode})}
 						disabled={!prevCode}
-						onClick={() => prevCode && history.push(`/community/competitions/${detail.competitionId}/activities/${prevCode}`)}
+						onClick={() => prevCode && history.push(`/competitions/${detail.competitionId}/activities/${prevCode}`)}
 					>
 						<ArrowLeft size={14} />
 						{navLabel === 'round' ? t('my_schedule.prev_round') : t('my_schedule.prev_group')}
@@ -190,7 +190,7 @@ export default function ActivityDetail({activityCode}: ActivityDetailProps) {
 					<button
 						className={b('group-nav-btn', {disabled: !nextCode})}
 						disabled={!nextCode}
-						onClick={() => nextCode && history.push(`/community/competitions/${detail.competitionId}/activities/${nextCode}`)}
+						onClick={() => nextCode && history.push(`/competitions/${detail.competitionId}/activities/${nextCode}`)}
 					>
 						{navLabel === 'round' ? t('my_schedule.next_round') : t('my_schedule.next_group')}
 						<ArrowRight size={14} />

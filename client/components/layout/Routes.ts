@@ -200,15 +200,15 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/account/support', App, Account, Support),
 
 	// Community - WCA Competitions (public for SEO, public data)
-	route('/community/competitions/:competitionId/personal-bests/:wcaId', App, Community, MySchedule, false),
-	route('/community/competitions/:competitionId/persons/:registrantId/results', App, Community, MySchedule, false),
-	route('/community/competitions/:competitionId/persons/:registrantId', App, Community, MySchedule, false),
-	route('/community/competitions/:competitionId/activities/:activityCode', App, Community, MySchedule, false),
-	route('/community/competitions/:competitionId/wca-live/:eventId/:roundNumber', App, Community, MySchedule, false),
-	route('/community/competitions/:competitionId/wca-live/:eventId', App, Community, MySchedule, false),
-	route('/community/competitions/:competitionId/wca-live', App, Community, MySchedule, false),
-	route('/community/competitions/:competitionId', App, Community, MySchedule, false),
-	route('/community/competitions', App, Community, MySchedule, false),
+	route('/competitions/:competitionId/personal-bests/:wcaId', App, Community, MySchedule, false),
+	route('/competitions/:competitionId/persons/:registrantId/results', App, Community, MySchedule, false),
+	route('/competitions/:competitionId/persons/:registrantId', App, Community, MySchedule, false),
+	route('/competitions/:competitionId/activities/:activityCode', App, Community, MySchedule, false),
+	route('/competitions/:competitionId/wca-live/:eventId/:roundNumber', App, Community, MySchedule, false),
+	route('/competitions/:competitionId/wca-live/:eventId', App, Community, MySchedule, false),
+	route('/competitions/:competitionId/wca-live', App, Community, MySchedule, false),
+	route('/competitions/:competitionId', App, Community, MySchedule, false),
+	route('/competitions', App, Community, MySchedule, false),
 
 	// ZKT Unofficial Competitions (public for SEO)
 	route('/zkt-competitions/:competitionId/competitors/:userId', App, Community, ZktCompetitorDetail, false),
@@ -259,6 +259,16 @@ export const routes: (PageContext | RedirectPath)[] = [
 	routeRedirect('/account', '/account/personal-info'),
 	routeRedirect('/account/pro', '/pro'),
 	routeRedirect('/account/password', '/account/personal-info'),
+	// Legacy /community/competitions/* (WCA) -> /competitions/* (param-preserving 301).
+	routeRedirect('/community/competitions/:competitionId/personal-bests/:wcaId', '/competitions/:competitionId/personal-bests/:wcaId'),
+	routeRedirect('/community/competitions/:competitionId/persons/:registrantId/results', '/competitions/:competitionId/persons/:registrantId/results'),
+	routeRedirect('/community/competitions/:competitionId/persons/:registrantId', '/competitions/:competitionId/persons/:registrantId'),
+	routeRedirect('/community/competitions/:competitionId/activities/:activityCode', '/competitions/:competitionId/activities/:activityCode'),
+	routeRedirect('/community/competitions/:competitionId/wca-live/:eventId/:roundNumber', '/competitions/:competitionId/wca-live/:eventId/:roundNumber'),
+	routeRedirect('/community/competitions/:competitionId/wca-live/:eventId', '/competitions/:competitionId/wca-live/:eventId'),
+	routeRedirect('/community/competitions/:competitionId/wca-live', '/competitions/:competitionId/wca-live'),
+	routeRedirect('/community/competitions/:competitionId', '/competitions/:competitionId'),
+	routeRedirect('/community/competitions', '/competitions'),
 	// Legacy /community/zkt-* links -> new /zkt-* (param-preserving 301 via SSR).
 	routeRedirect('/community/zkt-competitions/:competitionId/competitors/:userId', '/zkt-competitions/:competitionId/competitors/:userId'),
 	routeRedirect('/community/zkt-competitions/:competitionId/activities/:groupId', '/zkt-competitions/:competitionId/activities/:groupId'),
@@ -269,8 +279,8 @@ export const routes: (PageContext | RedirectPath)[] = [
 	routeRedirect('/community/zkt-competitions/:competitionId', '/zkt-competitions/:competitionId'),
 	routeRedirect('/community/zkt-records', '/zkt-records'),
 	routeRedirect('/community/zkt-rankings', '/zkt-rankings'),
-	routeRedirect('/community/friends', '/community/competitions'),
-	routeRedirect('/community', '/community/competitions'),
+	routeRedirect('/community/friends', '/competitions'),
+	routeRedirect('/community', '/competitions'),
 	routeRedirect('/admin', '/admin/dashboard'),
 	routeRedirect('/admin/competitions', '/organizer'),
 ];

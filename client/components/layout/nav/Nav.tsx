@@ -112,7 +112,7 @@ export const NAV_LINKS: NavLinkProps[] = [
 		name: 'nav.community',
 		icon: <Users weight="bold" />,
 		match: /^\/community/,
-		link: '/community/competitions',
+		link: '/competitions',
 		loginRequired: false,
 	},
 	{

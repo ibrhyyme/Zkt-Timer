@@ -238,7 +238,7 @@ export default function CompetitionList() {
 	}
 
 	function handleSelectCompetition(compId: string) {
-		history.push(`/community/competitions/${compId}`);
+		history.push(`/competitions/${compId}`);
 	}
 
 	const showSearchResults = compSearch.trim().length >= 3 && searchResults;
@@ -392,7 +392,7 @@ export default function CompetitionList() {
 									response_type: service.responseType,
 									scope: service.scope.join(' '),
 									redirect_uri: window.location.origin + (!me ? '/oauth/wca/login' : '/oauth/wca'),
-									state: '/community/competitions',
+									state: '/competitions',
 								});
 								window.location.href = `${service.authEndpoint}?${params.toString()}`;
 							}}

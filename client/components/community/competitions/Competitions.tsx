@@ -190,7 +190,7 @@ export default function Competitions() {
 
 	return (
 		<div className={b()}>
-			<Header path="/community/competitions" title={t('competitions.page_title')} />
+			<Header path="/competitions" title={t('competitions.page_title')} />
 			<div className={b('content')}>
 				<div className={b('search')}>
 					<input

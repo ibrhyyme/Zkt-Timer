@@ -17,7 +17,7 @@ export default function WcaLivePodiums({podiums, competitionId}: Props) {
 	if (!podiums || podiums.length === 0) return null;
 
 	function handleEventClick(eventId: string) {
-		history.push(`/community/competitions/${competitionId}/wca-live/${eventId}`);
+		history.push(`/competitions/${competitionId}/wca-live/${eventId}`);
 	}
 
 	return (

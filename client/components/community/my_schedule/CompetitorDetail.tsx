@@ -107,7 +107,7 @@ export default function CompetitorDetail({registrantId}: CompetitorDetailProps) 
 				{selected.wcaId && (
 					<button
 						className={b('wca-profile-btn')}
-						onClick={() => history.push(`/community/competitions/${detail.competitionId}/personal-bests/${selected.wcaId}`)}
+						onClick={() => history.push(`/competitions/${detail.competitionId}/personal-bests/${selected.wcaId}`)}
 					>
 						{t('my_schedule.view_personal_records')}
 					</button>
@@ -118,7 +118,7 @@ export default function CompetitorDetail({registrantId}: CompetitorDetailProps) 
 					return (
 						<button
 							className={b('wca-results-btn')}
-							onClick={() => history.push(`/community/competitions/${detail.competitionId}/persons/${registrantId}/results`)}
+							onClick={() => history.push(`/competitions/${detail.competitionId}/persons/${registrantId}/results`)}
 						>
 							{t('my_schedule.view_complete_results')}
 						</button>
@@ -251,7 +251,7 @@ function CompetitorDays({assignments, competitionId, locale, t}: any) {
 													current: isCurrent(a),
 													past: isPast(a) && !isCurrent(a),
 												})}
-												onClick={() => history.push(`/community/competitions/${competitionId}/activities/${a.activityCode}`)}
+												onClick={() => history.push(`/competitions/${competitionId}/activities/${a.activityCode}`)}
 											>
 												<td>
 													{a.eventName}

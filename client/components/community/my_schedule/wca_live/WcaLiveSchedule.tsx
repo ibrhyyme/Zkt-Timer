@@ -49,7 +49,7 @@ export default function WcaLiveSchedule({schedule, competitionId}: Props) {
 	function handleActivityClick(activityCode: string) {
 		const parsed = parseActivityCodeParts(activityCode);
 		if (parsed) {
-			history.push(`/community/competitions/${competitionId}/wca-live/${parsed.eventId}/${parsed.roundNumber}`);
+			history.push(`/competitions/${competitionId}/wca-live/${parsed.eventId}/${parsed.roundNumber}`);
 		}
 	}
 
