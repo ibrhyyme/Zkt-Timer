@@ -278,9 +278,9 @@ export default function ImportCompetitorsModal(props: Props) {
 			bulkFormat === 'inline'
 				? [
 						['No', 'Ad Soyad', 'Etkinlikler'],
-						['1', 'İbrahim İskender', 'Üç çarpı üç', 'İki çarpı iki'],
-						['2', 'İskender Aznavur', 'Üç çarpı üç'],
-						['3', 'Ayşe Yılmaz', 'Üç çarpı üç', 'İki çarpı iki', 'Beş çarpı beş'],
+						['1', 'İbrahim İskender', '3x3', '2x2'],
+						['2', 'İskender Aznavur', '3x3'],
+						['3', 'Ayşe Yılmaz', '3x3', '2x2', '5x5'],
 				  ]
 				: [
 						['Ad', 'Soyad', 'Ulke', 'WCA ID', 'Dis ID'],

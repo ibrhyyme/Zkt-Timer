@@ -17,6 +17,15 @@ const ROUND_ASSIGNMENTS = gql`
 			user_id
 			role
 			station_number
+			person_id
+			person {
+				id
+				first_name
+				last_name
+				country_code
+				wca_id
+				external_id
+			}
 			user {
 				id
 				username
@@ -107,7 +116,9 @@ interface AssignmentItem {
 	user_id: string;
 	role: string;
 	station_number?: number;
+	person_id?: string;
 	user?: {id: string; username: string; profile?: {pfp_image?: {url: string}}};
+	person?: {first_name?: string; last_name?: string; country_code?: string; wca_id?: string; external_id?: string};
 }
 
 export default function DashboardAssignments({
@@ -545,16 +556,16 @@ function RoleSection({
 							style={{width: 22, height: 22, borderRadius: '50%', objectFit: 'cover' as const}}
 						/>
 					)}
-					<span style={{flex: 1}}>{a.user?.username || a.user_id}</span>
+					<span style={{flex: 1}}>{a.user?.username || [a.person?.first_name, a.person?.last_name].filter(Boolean).join(' ') || a.user_id || a.person_id}</span>
 					{a.station_number && (
-						<span style={{fontSize: 11, color: 'rgba(var(--text-color), 0.6)'}}>#{a.station_number}</span>
+						<span style={{fontSize: 11, fontWeight: 700, color: 'rgb(var(--primary-color))'}}>#{a.station_number}</span>
 					)}
 					<button
 						onClick={() => onRemove(a.id)}
 						style={{
 							border: 'none',
 							background: 'transparent',
-							color: 'rgba(var(--text-color), 0.5)',
+							color: 'rgb(var(--text-color))',
 							cursor: 'pointer',
 							padding: '2px',
 							display: 'flex',
