@@ -50,7 +50,15 @@ function Editor({
 	}
 
 	return (
-		<div className={b('modal-content')}>
+		<div
+			className={b('modal-content')}
+			onKeyDown={(e) => {
+				if (e.key === 'Enter' && !e.shiftKey) {
+					e.preventDefault();
+					handleSave();
+				}
+			}}
+		>
 			<h2 className={b('modal-title')}>Zaman Limiti</h2>
 			<div className={b('field')}>
 				<label className={b('label')}>Limit (mm:ss.cc)</label>

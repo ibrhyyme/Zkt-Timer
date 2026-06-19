@@ -64,7 +64,15 @@ function Editor({
 	}
 
 	return (
-		<div className={b('modal-content')}>
+		<div
+			className={b('modal-content')}
+			onKeyDown={(e) => {
+				if (e.key === 'Enter' && !e.shiftKey) {
+					e.preventDefault();
+					handleSave();
+				}
+			}}
+		>
 			<h2 className={b('modal-title')}>Cutoff</h2>
 			<p style={{fontSize: 13, color: 'rgba(var(--text-color), 0.65)', margin: 0}}>
 				İlk N denemede verilen süreyi aşmayan ilerleme hakkı kazanır.
