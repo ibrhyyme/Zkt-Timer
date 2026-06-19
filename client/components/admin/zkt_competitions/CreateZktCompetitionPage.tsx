@@ -14,7 +14,7 @@ import LeafletMapPicker from './LeafletMapPicker';
 const CREATE_MUTATION = gql`
 	mutation CreateZktCompFull($input: CreateZktCompetitionInput!) {
 		createZktCompetition(input: $input) {
-			id
+			id			slug
 		}
 	}
 `;
@@ -213,8 +213,9 @@ export default function CreateZktCompetitionPage() {
 			} else {
 				const res: any = await gqlMutate(CREATE_MUTATION, {input});
 				const newId = res?.data?.createZktCompetition?.id;
+				const newSlug = res?.data?.createZktCompetition?.slug;
 				toastSuccess(t('created'));
-				history.push(newId ? `/organizer/${newId}` : '/organizer');
+				history.push(newId ? `/organizer/${newSlug || newId}` : '/organizer');
 			}
 		} catch (e: any) {
 			toastError(e?.message || t('error'));

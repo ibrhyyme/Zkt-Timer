@@ -32,6 +32,7 @@ const DETAIL_QUERY = gql`
 	query ZktCompDetail($id: String!) {
 		zktCompetitionForAdmin(id: $id) {
 			id
+			slug
 			name
 			description
 			date_start
@@ -260,7 +261,7 @@ export default function CompetitionDashboard() {
 						<button
 							type="button"
 							className={b('header-edit-btn')}
-							onClick={() => history.push(`/organizer/${detail.id}/edit`)}
+							onClick={() => history.push(`/organizer/${detail.slug || detail.id}/edit`)}
 							title={t('edit_competition')}
 						>
 							<PencilSimple weight="bold" /> {t('edit_competition')}

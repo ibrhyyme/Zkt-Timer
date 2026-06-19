@@ -59,8 +59,9 @@ export const zktCompetitionFullInclude = {
 };
 
 export async function getZktCompetitionById(id: string) {
-	return getPrisma().zktCompetition.findUnique({
-		where: {id},
+	// Accept slug or UUID so admin URLs and mutations work with the readable slug.
+	return getPrisma().zktCompetition.findFirst({
+		where: {OR: [{slug: id}, {id}]},
 	});
 }
 
