@@ -4,7 +4,7 @@ import {gqlMutate} from '../../../api';
 import {useTranslation} from 'react-i18next';
 import {toastSuccess, toastError} from '../../../../util/toast';
 import {b, getEventName} from '../shared';
-import {Check, X, Clock, UserPlus, DownloadSimple, UploadSimple} from 'phosphor-react';
+import {Check, X, Clock, UserPlus, DownloadSimple, UploadSimple, Trash} from 'phosphor-react';
 import fileDownload from 'js-file-download';
 import AddCompetitorModal from './AddCompetitorModal';
 import ImportCompetitorsModal from './ImportCompetitorsModal';
@@ -28,6 +28,12 @@ const BULK_UPDATE = gql`
 			status
 			waiting_list_position
 		}
+	}
+`;
+
+const DELETE_REGISTRATION = gql`
+	mutation DeleteZktRegistration($registrationId: String!) {
+		deleteZktRegistration(registrationId: $registrationId)
 	}
 `;
 
@@ -56,6 +62,17 @@ export default function DashboardRegistrations({
 		try {
 			await gqlMutate(UPDATE_STATUS, {input: {registrationId, status}});
 			toastSuccess(t('updated'));
+			onUpdated();
+		} catch (e: any) {
+			toastError(e?.message || t('error'));
+		}
+	}
+
+	async function deleteRow(registrationId: string) {
+		if (!window.confirm(t('delete_registration_confirm'))) return;
+		try {
+			await gqlMutate(DELETE_REGISTRATION, {registrationId});
+			toastSuccess(t('registration_deleted'));
 			onUpdated();
 		} catch (e: any) {
 			toastError(e?.message || t('error'));
@@ -300,6 +317,13 @@ export default function DashboardRegistrations({
 										<X weight="bold" />
 									</button>
 								)}
+								<button
+									className={b('action-btn', {delete: true})}
+									onClick={() => deleteRow(reg.id)}
+									title={t('delete_registration')}
+								>
+									<Trash weight="bold" />
+								</button>
 							</div>
 						</div>
 					))}

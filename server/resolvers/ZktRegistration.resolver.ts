@@ -188,6 +188,57 @@ export class ZktRegistrationResolver {
 	}
 
 	@Authorized([Role.LOGGED_IN])
+	@Mutation(() => Boolean)
+	async deleteZktRegistration(
+		@Ctx() context: GraphQLContext,
+		@Arg('registrationId') registrationId: string
+	) {
+		const reg = await getPrisma().zktRegistration.findUnique({
+			where: {id: registrationId},
+		});
+		if (!reg) throw new GraphQLError(ErrorCode.NOT_FOUND);
+
+		await assertCanModifyCompetition(context.user, reg.competition_id);
+
+		const compId = reg.competition_id;
+		const wasApproved = reg.status === 'APPROVED';
+		const wasWaitlisted = reg.status === 'WAITLISTED';
+		const personId = reg.person_id;
+
+		// Hard delete: remove the registration and its child rows. For a ghost
+		// (account-less) competitor the person row exists only for this comp, so
+		// delete it too — its assignments/results cascade.
+		await getPrisma().$transaction(async (tx) => {
+			await tx.zktRegistrationEvent.deleteMany({where: {registration_id: reg.id}});
+			await tx.zktRegistrationHistory.deleteMany({where: {registration_id: reg.id}});
+			await tx.zktRegistration.delete({where: {id: reg.id}});
+		});
+
+		// Ghost person cleanup is best-effort and OUTSIDE the tx: in Postgres a FK
+		// error inside a tx aborts the whole tx (would roll back the registration
+		// delete). The person's assignments/results cascade on delete anyway.
+		if (personId) {
+			await getPrisma().zktPerson.delete({where: {id: personId}}).catch(() => undefined);
+		}
+
+		emitZktRegistrationUpdated(compId, {registrationId: reg.id, status: 'DELETED'});
+
+		// Free an approved/waitlisted slot back to the queue.
+		if (wasWaitlisted) {
+			await normalizeWaitlistPositions(compId);
+		}
+		if (wasApproved) {
+			const promotedId = await promoteNextFromWaitlist(compId, context.user.id);
+			if (promotedId) {
+				emitZktRegistrationUpdated(compId, {registrationId: promotedId, status: 'APPROVED'});
+				await normalizeWaitlistPositions(compId);
+			}
+		}
+
+		return true;
+	}
+
+	@Authorized([Role.LOGGED_IN])
 	@Mutation(() => ZktRegistration)
 	async updateZktRegistrationStatus(
 		@Ctx() context: GraphQLContext,

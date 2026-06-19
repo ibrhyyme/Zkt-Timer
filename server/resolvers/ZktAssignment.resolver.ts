@@ -252,13 +252,13 @@ export class ZktAssignmentResolver {
 	}
 
 	/**
-	 * Automatic distribution: distribute approved competitors into N groups.
-	 * If round >= 2, use previous round's ranking for serpentine seeding
-	 * (best performers distributed evenly: #1→G1, #2→G2, ..., #N→GN,
-	 * then reverse next layer: #N+1→GN, ..., #2N→G1). For round 1, use
-	 * userIds order (stable fallback).
-	 * Station numbers are assigned within each group starting from 1 in seed order.
-	 * Existing groups + COMPETITOR assignments are deleted and recreated.
+	 * Automatic distribution: split competitors into groups sized by stationCount
+	 * (group count = ceil(competitors / stationCount)). Round >= 2 seeds by the
+	 * previous round's ranking (serpentine: best performers spread across groups,
+	 * direction reversed each layer); round 1 keeps the input competitor order.
+	 * Station numbers start at 1 within each group, in seed order. Works for both
+	 * registered users and account-less ghost persons. Existing groups +
+	 * COMPETITOR assignments are deleted and recreated.
 	 */
 	@Authorized([Role.LOGGED_IN])
 	@Mutation(() => [ZktAssignment])
@@ -271,17 +271,25 @@ export class ZktAssignmentResolver {
 
 		await assertCanModifyCompetition(context.user, round.comp_event.competition_id);
 
-		// Determine seed order. If this is a >1 round, pull ranked results
-		// from the previous round of the same comp_event. Fallback: input order.
-		const seededUserIds = await seedUsersForRound(
-			round.id,
+		// Normalise competitor refs to one key (userId XOR personId).
+		const refs = input.competitors
+			.map((c) => ({key: c.userId ?? c.personId ?? '', isPerson: !c.userId}))
+			.filter((c) => c.key);
+
+		// Derive group count from station capacity: ceil(competitors / stations).
+		const stationCount = Math.max(1, input.stationCount);
+		const groupCount = Math.max(1, Math.ceil(refs.length / stationCount));
+
+		// Seed order: round >1 uses previous-round ranking (competitor-key based),
+		// round 1 keeps input order.
+		const seededRefs = await seedCompetitorsForRound(
 			round.comp_event_id,
 			round.round_number,
-			input.userIds
+			refs
 		);
 
-		// Also compute a seed_result map (best time) for persisted tie-break info.
-		const seedResultByUser = await getPreviousRoundBestByUser(
+		// Best-time map for persisted seed_result (tie-break info).
+		const seedResultByCompetitor = await getPreviousRoundBestByCompetitor(
 			round.comp_event_id,
 			round.round_number
 		);
@@ -289,7 +297,7 @@ export class ZktAssignmentResolver {
 		await getPrisma().zktGroup.deleteMany({where: {round_id: input.roundId}});
 
 		const groups = await Promise.all(
-			Array.from({length: input.groupCount}).map((_, i) =>
+			Array.from({length: groupCount}).map((_, i) =>
 				getPrisma().zktGroup.create({
 					data: {round_id: input.roundId, group_number: i + 1},
 				})
@@ -303,13 +311,12 @@ export class ZktAssignmentResolver {
 		// Serpentine distribution — avoids stacking top seeds in the same group.
 		const assignments = [];
 		const stationByGroup = new Map<string, number>();
-		for (let i = 0; i < seededUserIds.length; i++) {
-			const layer = Math.floor(i / input.groupCount);
-			const posInLayer = i % input.groupCount;
-			const groupIdx =
-				layer % 2 === 0 ? posInLayer : input.groupCount - 1 - posInLayer;
+		for (let i = 0; i < seededRefs.length; i++) {
+			const layer = Math.floor(i / groupCount);
+			const posInLayer = i % groupCount;
+			const groupIdx = layer % 2 === 0 ? posInLayer : groupCount - 1 - posInLayer;
 			const groupId = groups[groupIdx].id;
-			const userId = seededUserIds[i];
+			const ref = seededRefs[i];
 			const nextStation = (stationByGroup.get(groupId) ?? 0) + 1;
 			stationByGroup.set(groupId, nextStation);
 
@@ -317,23 +324,23 @@ export class ZktAssignmentResolver {
 				data: {
 					round_id: input.roundId,
 					group_id: groupId,
-					user_id: userId,
+					user_id: ref.isPerson ? null : ref.key,
+					person_id: ref.isPerson ? ref.key : null,
 					role: 'COMPETITOR',
 					station_number: nextStation,
-					seed_result: seedResultByUser.get(userId) ?? null,
+					seed_result: seedResultByCompetitor.get(ref.key) ?? null,
 				},
-				include: {user: publicUserInclude},
+				include: {user: publicUserInclude, person: true},
 			});
 			assignments.push(a);
 		}
 
-		// One emit per user is noisy but consistent with per-assignment handler.
-		// For typical ~30 person distribute that's fine; consumers debounce.
+		// One emit per competitor — consumers debounce.
 		for (const a of assignments) {
 			emitZktAssignmentUpdated(round.comp_event.competition_id, {
 				roundId: input.roundId,
 				groupId: a.group_id ?? undefined,
-				userId: a.user_id,
+				userId: a.user_id ?? a.person_id ?? undefined,
 			});
 		}
 
@@ -342,17 +349,16 @@ export class ZktAssignmentResolver {
 }
 
 /**
- * Return userIds ordered by previous-round ranking (best first). Users without
- * a previous result stay in input order after ranked ones. Round 1 just returns
- * input unchanged.
+ * Return competitor refs ordered by previous-round ranking (best first).
+ * Refs without a previous result keep input order after ranked ones. Round 1
+ * returns input unchanged. Competitor identity = user_id ?? person_id.
  */
-async function seedUsersForRound(
-	_roundId: string,
+async function seedCompetitorsForRound(
 	compEventId: string,
 	roundNumber: number,
-	inputUserIds: string[]
-): Promise<string[]> {
-	if (roundNumber <= 1) return inputUserIds;
+	inputRefs: Array<{key: string; isPerson: boolean}>
+): Promise<Array<{key: string; isPerson: boolean}>> {
+	if (roundNumber <= 1) return inputRefs;
 
 	const prevRound = await getPrisma().zktRound.findUnique({
 		where: {
@@ -370,19 +376,28 @@ async function seedUsersForRound(
 			},
 		},
 	});
-	if (!prevRound) return inputUserIds;
+	if (!prevRound) return inputRefs;
 
-	const inputSet = new Set(inputUserIds);
-	const ranked = prevRound.results
-		.map((r) => r.user_id)
-		.filter((uid) => inputSet.has(uid));
-	const rankedSet = new Set(ranked);
-	const unranked = inputUserIds.filter((uid) => !rankedSet.has(uid));
-
+	const byKey = new Map(inputRefs.map((r) => [r.key, r]));
+	const ranked: Array<{key: string; isPerson: boolean}> = [];
+	const seen = new Set<string>();
+	for (const res of prevRound.results) {
+		const k = res.user_id ?? res.person_id;
+		if (!k) continue;
+		const ref = byKey.get(k);
+		if (ref && !seen.has(k)) {
+			ranked.push(ref);
+			seen.add(k);
+		}
+	}
+	const unranked = inputRefs.filter((r) => !seen.has(r.key));
 	return [...ranked, ...unranked];
 }
 
-async function getPreviousRoundBestByUser(
+/**
+ * Map competitor key (user_id ?? person_id) → previous-round best time.
+ */
+async function getPreviousRoundBestByCompetitor(
 	compEventId: string,
 	roundNumber: number
 ): Promise<Map<string, number>> {
@@ -401,8 +416,9 @@ async function getPreviousRoundBestByUser(
 	if (!prev) return map;
 
 	for (const r of prev.results) {
-		if (r.best !== null && r.best !== undefined) {
-			map.set(r.user_id, r.best);
+		const k = r.user_id ?? r.person_id;
+		if (k && r.best !== null && r.best !== undefined) {
+			map.set(k, r.best);
 		}
 	}
 	return map;

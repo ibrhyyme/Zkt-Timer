@@ -135,6 +135,7 @@ export default function DashboardAssignments({
 	const [selectedRoundId, setSelectedRoundId] = useState<string>('');
 	const [assignments, setAssignments] = useState<AssignmentItem[]>([]);
 	const [loading, setLoading] = useState(false);
+	const [stationCount, setStationCount] = useState(8);
 
 	const selectedEvent = detail.events.find((e: any) => e.id === selectedEventId);
 
@@ -211,15 +212,16 @@ export default function DashboardAssignments({
 
 	async function autoDist() {
 		if (!selectedRoundId || !selectedEvent) return;
-		const approved = detail.registrations
+		const competitors = detail.registrations
 			.filter(
 				(r: any) =>
 					r.status === 'APPROVED' &&
 					r.events.some((e: any) => e.comp_event_id === selectedEvent.id)
 			)
-			.map((r: any) => r.user_id);
+			.map((r: any) => ({userId: r.user_id || undefined, personId: r.person_id || undefined}))
+			.filter((c: any) => c.userId || c.personId);
 
-		if (approved.length === 0) {
+		if (competitors.length === 0) {
 			toastError(t('no_competitors'));
 			return;
 		}
@@ -227,10 +229,9 @@ export default function DashboardAssignments({
 		// Destructive: wipes existing groups + COMPETITOR assignments.
 		if (!window.confirm(t('auto_distribute_confirm'))) return;
 
-		const groupCount = Math.max(groups.length, 1);
 		try {
 			await gqlMutate(BULK_ASSIGN, {
-				input: {roundId: selectedRoundId, groupCount, userIds: approved},
+				input: {roundId: selectedRoundId, stationCount, competitors},
 			});
 			toastSuccess(t('auto_distributed'));
 			onUpdated();
@@ -289,7 +290,17 @@ export default function DashboardAssignments({
 			)}
 
 			{/* Actions bar */}
-			<div style={{display: 'flex', gap: '0.5rem', marginBottom: '0.75rem', flexWrap: 'wrap'}}>
+			<div style={{display: 'flex', gap: '0.5rem', marginBottom: '0.75rem', flexWrap: 'wrap', alignItems: 'center'}}>
+				<label style={{display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: 13, color: 'rgb(var(--text-color))'}}>
+					{t('station_count_label')}
+					<input
+						type="number"
+						min={1}
+						value={stationCount}
+						onChange={(e) => setStationCount(Math.max(1, parseInt(e.target.value, 10) || 1))}
+						style={{width: 64, padding: '0.4rem 0.5rem', borderRadius: 6, border: '1px solid rgba(var(--text-color), 0.15)', background: 'rgb(var(--button-color))', color: 'rgb(var(--text-color))'}}
+					/>
+				</label>
 				<button className={b('action-btn', {primary: true})} onClick={autoDist}>
 					<UsersThree weight="bold" /> {t('auto_distribute')}
 				</button>

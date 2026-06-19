@@ -1,4 +1,5 @@
 import {jsPDF} from 'jspdf';
+import {ensureRobotoFont} from './pdf_font';
 
 /**
  * One competitor's scorecard entry. Scorecards intentionally do NOT include
@@ -55,7 +56,8 @@ function drawScorecard(
 	x: number,
 	y: number,
 	w: number,
-	h: number
+	h: number,
+	font: string
 ): void {
 	const pad = 4;
 	const innerW = w - pad * 2;
@@ -74,7 +76,7 @@ function drawScorecard(
 	let cy = y + 6.5;
 
 	// Competition name (bold, centered)
-	pdf.setFont('helvetica', 'bold');
+	pdf.setFont(font, 'bold');
 	pdf.setFontSize(11);
 	pdf.setTextColor(ink);
 	pdf.text(truncate(pdf, opts.competitionName, innerW), x + w / 2, cy, {align: 'center'});
@@ -91,7 +93,7 @@ function drawScorecard(
 	const grX = rdX + roundW;
 	const stX = grX + groupW;
 
-	pdf.setFont('helvetica', 'normal');
+	pdf.setFont(font, 'normal');
 	pdf.setFontSize(6);
 	pdf.setTextColor(sub);
 	pdf.text('Event', exX + 1.5, cy + 2.6);
@@ -108,18 +110,18 @@ function drawScorecard(
 	pdf.rect(stX, cy, stationW, metaH);
 
 	pdf.setTextColor(ink);
-	pdf.setFont('helvetica', 'normal');
+	pdf.setFont(font, 'normal');
 	pdf.setFontSize(9);
 	const midY = cy + metaH / 2 + 1.6;
 	pdf.text(truncate(pdf, opts.eventName, eventW - 3), exX + 2, midY);
 	pdf.text(String(opts.roundNumber), rdX + roundW / 2, midY, {align: 'center'});
-	pdf.setFont('helvetica', 'bold');
+	pdf.setFont(font, 'bold');
 	pdf.text(entry?.group != null ? String(entry.group) : '', grX + groupW / 2, midY, {align: 'center'});
 	pdf.text(entry?.station != null ? String(entry.station) : '', stX + stationW / 2, midY, {align: 'center'});
 	cy += metaH + 1;
 
 	// --- ID + Name row (+ WCA id top-right) ---
-	pdf.setFont('helvetica', 'normal');
+	pdf.setFont(font, 'normal');
 	pdf.setFontSize(6);
 	pdf.setTextColor(sub);
 	pdf.text('ID', left + 1.5, cy + 2.6);
@@ -136,10 +138,10 @@ function drawScorecard(
 	pdf.rect(left, cy, idW, idNameH);
 	pdf.rect(left + idW, cy, innerW - idW, idNameH);
 	pdf.setTextColor(ink);
-	pdf.setFont('helvetica', 'bold');
+	pdf.setFont(font, 'bold');
 	pdf.setFontSize(9);
 	pdf.text(entry ? `${entry.registrantId}` : '', left + idW / 2, cy + idNameH / 2 + 1.6, {align: 'center'});
-	pdf.setFont('helvetica', 'normal');
+	pdf.setFont(font, 'normal');
 	pdf.text(
 		entry ? truncate(pdf, entry.name, innerW - idW - 4) : '',
 		left + idW + 2,
@@ -159,7 +161,7 @@ function drawScorecard(
 	const cComp = cJud + sigW;
 
 	// Header
-	pdf.setFont('helvetica', 'bold');
+	pdf.setFont(font, 'bold');
 	pdf.setFontSize(6.5);
 	pdf.setTextColor(sub);
 	pdf.text('Scr', cScr + scrW / 2, cy + 2.6, {align: 'center'});
@@ -184,7 +186,7 @@ function drawScorecard(
 		pdf.rect(cRes, cy, resultW, rowH);
 		pdf.rect(cJud, cy, sigW, rowH);
 		pdf.rect(cComp, cy, sigW, rowH);
-		pdf.setFont('helvetica', 'bold');
+		pdf.setFont(font, 'bold');
 		pdf.setFontSize(10);
 		pdf.setTextColor(ink);
 		pdf.text(r, cNum + numW / 2, cy + rowH / 2 + 1.5, {align: 'center'});
@@ -193,7 +195,7 @@ function drawScorecard(
 
 	// --- Extra attempt (delegate-signed) ---
 	cy += 2;
-	pdf.setFont('helvetica', 'normal');
+	pdf.setFont(font, 'normal');
 	pdf.setFontSize(6.5);
 	pdf.setTextColor(ink);
 	pdf.text('Extra attempt (Delegate initials ____)', left, cy + 2);
@@ -206,14 +208,14 @@ function drawScorecard(
 	pdf.rect(cRes, cy, resultW, exRowH);
 	pdf.rect(cJud, cy, sigW, exRowH);
 	pdf.rect(cComp, cy, sigW, exRowH);
-	pdf.setFont('helvetica', 'bold');
+	pdf.setFont(font, 'bold');
 	pdf.setFontSize(11);
 	pdf.text('–', cNum + numW / 2, cy + exRowH / 2 + 1.5, {align: 'center'});
 	cy += exRowH;
 
 	// --- Cutoff / time limit (bottom-right) ---
 	if (opts.cutoff || opts.timeLimit) {
-		pdf.setFont('helvetica', 'normal');
+		pdf.setFont(font, 'normal');
 		pdf.setFontSize(7);
 		pdf.setTextColor(sub);
 		const parts: string[] = [];
@@ -229,8 +231,9 @@ function drawScorecard(
  * else name-sorted) plus a couple of blank spares; if there are no competitors,
  * a sheet of blank cards.
  */
-export function generateScorecardsPdf(opts: ScorecardPdfOptions): void {
+export async function generateScorecardsPdf(opts: ScorecardPdfOptions): Promise<void> {
 	const pdf = new jsPDF({orientation: 'portrait', unit: 'mm', format: 'a4'});
+	const font = await ensureRobotoFont(pdf);
 	const pageWidth = 210;
 	const pageHeight = 297;
 	const margin = 10;
@@ -257,7 +260,7 @@ export function generateScorecardsPdf(opts: ScorecardPdfOptions): void {
 		const slotIndex = i % 4;
 		if (i > 0 && slotIndex === 0) pdf.addPage();
 		const slot = slots[slotIndex];
-		drawScorecard(pdf, opts, entry, slot.x, slot.y, cardW, cardH);
+		drawScorecard(pdf, opts, entry, slot.x, slot.y, cardW, cardH, font);
 	});
 
 	const safe = (s: string) => s.replace(/[^\w.-]+/g, '_');

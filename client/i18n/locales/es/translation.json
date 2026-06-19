@@ -3388,6 +3388,12 @@
         "info_alt_sor": "Kinch Ranks es una forma alternativa de medir las habilidades all-round de un cuber. Diferentes métodos tienen diferentes trade-offs — por eso ofrecemos múltiples formas de medir tus habilidades."
     },
     "zkt_comp": {
+        "registration_deleted": "Competidor eliminado",
+        "delete_registration_confirm": "¿Eliminar permanentemente a este competidor? Esta acción no se puede deshacer.",
+        "delete_registration": "Eliminar",
+        "distribution_hint_seeded": "Distribución: seeding serpentine equilibrado según la clasificación de la ronda anterior; el número de grupos se deriva del número de estaciones, las estaciones empiezan en 1 en cada grupo.",
+        "distribution_hint_round1": "Distribución: los competidores se dividen en grupos serpentine equilibrados según el número de estaciones; el número de grupos se calcula automáticamente, las estaciones empiezan en 1 en cada grupo.",
+        "station_count_label": "Número de estaciones",
         "previous": "Anterior",
         "attempts": "Intentos",
         "close": "Cerrar",
