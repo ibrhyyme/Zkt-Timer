@@ -19,6 +19,7 @@ const LIST_QUERY = gql`
 		zktCompetitionsForAdmin(page: $page, pageSize: $pageSize, searchQuery: $searchQuery, filter: $filter) {
 			items {
 				id
+				slug
 				name
 				date_start
 				date_end
@@ -45,6 +46,7 @@ const DELETE_MUTATION = gql`
 
 interface CompItem {
 	id: string;
+	slug?: string;
 	name: string;
 	date_start: string;
 	date_end: string;
@@ -156,7 +158,7 @@ export default function AdminZktCompetitions() {
 						<div
 							key={comp.id}
 							className={b('card')}
-							onClick={() => history.push(`/organizer/${comp.id}`)}
+							onClick={() => history.push(`/organizer/${comp.slug || comp.id}`)}
 						>
 							<div className={b('card-main')}>
 								<div className={b('card-title')}>{comp.name}</div>
@@ -182,7 +184,7 @@ export default function AdminZktCompetitions() {
 							<div className={b('card-actions')}>
 								<button
 									className={b('action-btn')}
-									onClick={(e) => {e.stopPropagation(); history.push(`/organizer/${comp.id}`);}}
+									onClick={(e) => {e.stopPropagation(); history.push(`/organizer/${comp.slug || comp.id}`);}}
 								>
 									<PencilSimple weight="bold" /> {t('manage')}
 								</button>
