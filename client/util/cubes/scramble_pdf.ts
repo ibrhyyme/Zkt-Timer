@@ -121,59 +121,70 @@ export async function generateScramblePdf(opts: ScramblePdfOptions): Promise<voi
 	pdf.setLineWidth(0.3);
 	pdf.line(margin, margin + 3, pageWidth - margin, margin + 3);
 
-	// Layout constants — keep scramble text and cube diagram clearly separated.
-	const numCol = 10; // mm, attempt number column
-	const cubeCol = cubeSize > 0 ? 45 : 0; // mm, cube net width on the right
-	const gap = 10; // mm, safe gap between scramble text and cube diagram
+	// Layout — SINGLE PAGE: derive row height, cube size and scramble font so
+	// every attempt (normal + extra) fits one A4. No pagination.
+	const numCol = 10;
+	const gap = 10;
+	const headerBottom = margin + 10;
+	const footerSpace = 10;
+	const available = pageHeight - margin - footerSpace - headerBottom;
+	const N = Math.max(1, opts.scrambles.length);
+	const rowHeight = available / N;
+	const vPad = rowHeight * 0.18;
+
+	// Cube net scaled to the row height (capped at the original 45mm).
+	const cubeCol = cubeSize > 0 ? Math.min(45, ((rowHeight - vPad) * 4) / 3) : 0;
+	const cubeHeight = (cubeCol * 3) / 4;
 	const scrambleCol = contentWidth - numCol - cubeCol - gap;
 
-	let cursorY = margin + 10;
+	// Largest scramble font (<=13) whose tallest wrapped block still fits a row,
+	// so long scrambles (big cubes) don't overflow on a packed single page.
+	let scrFont = 13;
+	const maxTextH = rowHeight - vPad;
+	while (scrFont > 7) {
+		pdf.setFont('courier', 'bold');
+		pdf.setFontSize(scrFont);
+		let tallest = 0;
+		for (const r of opts.scrambles) {
+			const w = pdf.splitTextToSize(r.scrambleString, scrambleCol);
+			tallest = Math.max(tallest, w.length * scrFont * 0.46);
+		}
+		if (tallest <= maxTextH) break;
+		scrFont -= 0.5;
+	}
+	const lineHeight = scrFont * 0.46;
 
+	let cursorY = headerBottom;
 	pdf.setTextColor('#000000');
 
+	const normalCount = opts.scrambles.filter((s) => !s.isExtra).length;
 	for (const row of opts.scrambles) {
-		// Cube net height = (3 face widths) × (cubeCol / (4 × size)) × size = 0.75 × cubeCol
-		const cubeHeight = cubeSize > 0 ? (cubeCol * 3) / 4 : 0;
-
-		// Scramble text: bold courier 13pt. Wrap to scramble column.
-		pdf.setFontSize(13);
 		pdf.setFont('courier', 'bold');
+		pdf.setFontSize(scrFont);
 		const wrapped = pdf.splitTextToSize(row.scrambleString, scrambleCol);
-		const lineHeight = 6; // mm @ 13pt
 		const textHeight = wrapped.length * lineHeight;
-
-		// Row tall enough for whichever is taller + 10mm vertical padding.
-		const rowHeight = Math.max(cubeHeight, textHeight) + 12;
-
-		if (cursorY + rowHeight > pageHeight - margin) {
-			pdf.addPage();
-			cursorY = margin + 10;
-		}
 
 		// Row divider on top
 		pdf.setDrawColor('#cccccc');
 		pdf.setLineWidth(0.25);
 		pdf.line(margin, cursorY, pageWidth - margin, cursorY);
 
-		// Vertically centre the row contents inside rowHeight.
-		const innerY = cursorY + 6;
-
-		// Attempt number (bigger, bolder)
-		pdf.setFontSize(18);
-		pdf.setFont(font, 'bold');
-		const normalCount = opts.scrambles.filter((s) => !s.isExtra).length;
-		const label = row.isExtra ? `E${row.attemptNumber - normalCount}` : String(row.attemptNumber);
-		// Centre number vertically in the row
+		const innerY = cursorY + vPad / 2;
 		const textBlockHeight = Math.max(cubeHeight, textHeight);
+
+		// Attempt number (scaled to the row)
+		pdf.setFontSize(Math.min(18, rowHeight * 0.45));
+		pdf.setFont(font, 'bold');
+		const label = row.isExtra ? `E${row.attemptNumber - normalCount}` : String(row.attemptNumber);
 		pdf.text(label, margin, innerY + textBlockHeight / 2);
 
-		// Scramble — bold courier, vertically centred
-		pdf.setFontSize(13);
+		// Scramble text (courier, ASCII)
+		pdf.setFontSize(scrFont);
 		pdf.setFont('courier', 'bold');
 		const textStartY = innerY + (textBlockHeight - textHeight) / 2 + lineHeight - 1;
 		pdf.text(wrapped, margin + numCol, textStartY);
 
-		// Cube diagram — strictly on the right edge, separated by `gap`
+		// Cube diagram on the right edge
 		if (cubeSize > 0) {
 			const state = applyScramble(cubeSize, row.scrambleString);
 			const cubeX = pageWidth - margin - cubeCol;

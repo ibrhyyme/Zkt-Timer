@@ -68,11 +68,8 @@ function drawScorecard(
 	const ink = '#222222';
 	const sub = '#666666';
 
-	// Outer border
-	pdf.setDrawColor(ink);
-	pdf.setLineWidth(0.4);
-	pdf.rect(x, y, w, h);
-
+	// No outer border — cards are separated by the page's center cut guides
+	// (drawCropMarks); cutting along them gives each card its own clean edge.
 	let cy = y + 6.5;
 
 	// Competition name (bold, centered)
@@ -231,6 +228,17 @@ function drawScorecard(
  * else name-sorted) plus a couple of blank spares; if there are no competitors,
  * a sheet of blank cards.
  */
+// Dashed center cross = scissor cut guides between the 2x2 cards. Cards carry no
+// outer border, so this is the only "where to cut" reference on the sheet.
+function drawCropMarks(pdf: jsPDF, pageWidth: number, pageHeight: number, margin: number): void {
+	pdf.setDrawColor('#999999');
+	pdf.setLineWidth(0.2);
+	pdf.setLineDashPattern([2, 2], 0);
+	pdf.line(pageWidth / 2, margin, pageWidth / 2, pageHeight - margin);
+	pdf.line(margin, pageHeight / 2, pageWidth - margin, pageHeight / 2);
+	pdf.setLineDashPattern([], 0);
+}
+
 export async function generateScorecardsPdf(opts: ScorecardPdfOptions): Promise<void> {
 	const pdf = new jsPDF({orientation: 'portrait', unit: 'mm', format: 'a4'});
 	const font = await ensureRobotoFont(pdf);
@@ -259,6 +267,8 @@ export async function generateScorecardsPdf(opts: ScorecardPdfOptions): Promise<
 	cards.forEach((entry, i) => {
 		const slotIndex = i % 4;
 		if (i > 0 && slotIndex === 0) pdf.addPage();
+		// Draw the cut guides once per page (before the cards on that page).
+		if (slotIndex === 0) drawCropMarks(pdf, pageWidth, pageHeight, margin);
 		const slot = slots[slotIndex];
 		drawScorecard(pdf, opts, entry, slot.x, slot.y, cardW, cardH, font);
 	});
