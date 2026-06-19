@@ -1286,6 +1286,7 @@ enum ZktAdvancementType {
 
 model ZktCompetition {
   id                         String             @id @default(uuid())
+  slug                       String?            @unique
   name                       String
   description                String?            @db.Text
   date_start                 DateTime           @db.Date

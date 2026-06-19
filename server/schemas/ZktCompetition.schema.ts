@@ -525,6 +525,10 @@ export class ZktCompetition {
 	@Field()
 	id: string;
 
+	// WCA-style readable id (e.g. BursaSummer2026) used in public URLs.
+	@Field({nullable: true})
+	slug?: string;
+
 	@Field()
 	name: string;
 

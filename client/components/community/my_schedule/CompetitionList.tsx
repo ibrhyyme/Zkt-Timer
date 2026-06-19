@@ -17,6 +17,7 @@ const ZKT_COMPETITIONS_QUERY = gql`
 		zktCompetitions(page: $page, pageSize: $pageSize, searchQuery: $searchQuery) {
 			items {
 				id
+				slug
 				name
 				date_start
 				date_end
@@ -256,6 +257,7 @@ export default function CompetitionList() {
 		return (zktComps || [])
 			.map((c: any) => ({
 				id: c.id,
+				slug: c.slug,
 				name: c.name,
 				start_date: c.date_start,
 				end_date: c.date_end,
@@ -284,7 +286,7 @@ export default function CompetitionList() {
 				className={b('comp-card', {finished: isFinished, ongoing: isOngoing, mine: opts.mine})}
 				onClick={() =>
 					comp.__zkt
-						? history.push(`/community/zkt-competitions/${comp.id}`)
+						? history.push(`/community/zkt-competitions/${comp.slug || comp.id}`)
 						: handleSelectCompetition(comp.id)
 				}
 				onMouseEnter={() => !comp.__zkt && handleHoverPrefetch(comp.id)}
@@ -335,7 +337,7 @@ export default function CompetitionList() {
 			<div
 				key={comp.id}
 				className={b('zkt-card', {finished: isFinished, ongoing: isOngoing})}
-				onClick={() => history.push(`/community/zkt-competitions/${comp.id}`)}
+				onClick={() => history.push(`/community/zkt-competitions/${comp.slug || comp.id}`)}
 			>
 				<span className={b('zkt-card-rail')} aria-hidden="true" />
 				<div className={b('zkt-card-main')}>
