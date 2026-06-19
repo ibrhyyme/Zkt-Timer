@@ -1265,16 +1265,30 @@ export class UpdateZktGroupScheduleInput {
 	endTime?: Date;
 }
 
+// One competitor reference: either a registered user OR an account-less ghost
+// person (exactly one of the two is set). Mirrors the user_id/person_id XOR
+// identity used throughout ZKT competitions.
+@InputType()
+export class CompetitorRefInput {
+	@Field({nullable: true})
+	userId?: string;
+
+	@Field({nullable: true})
+	personId?: string;
+}
+
 @InputType()
 export class BulkAssignCompetitorsInput {
 	@Field()
 	roundId: string;
 
+	// Physical station/timer count = per-group capacity. Group count is derived
+	// from this: ceil(competitors / stationCount).
 	@Field(() => Int)
-	groupCount: number;
+	stationCount: number;
 
-	@Field(() => [String])
-	userIds: string[];
+	@Field(() => [CompetitorRefInput])
+	competitors: CompetitorRefInput[];
 }
 
 @InputType()

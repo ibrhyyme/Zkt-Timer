@@ -338,9 +338,9 @@ export type BulkArchiveResult = {
 };
 
 export type BulkAssignCompetitorsInput = {
-  groupCount?: InputMaybe<Scalars['Int']>;
+  competitors?: InputMaybe<Array<InputMaybe<CompetitorRefInput>>>;
   roundId?: InputMaybe<Scalars['String']>;
-  userIds?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  stationCount?: InputMaybe<Scalars['Int']>;
 };
 
 export type BulkEmailResult = {
@@ -388,6 +388,11 @@ export type CompetitionFollow = {
   followed_registrant_id?: Maybe<Scalars['Int']>;
   followed_wca_id?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
+};
+
+export type CompetitorRefInput = {
+  personId?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type CreateAnnouncementInput = {
@@ -946,6 +951,7 @@ export type Mutation = {
   deleteZktCompTab?: Maybe<Scalars['Boolean']>;
   deleteZktGroup?: Maybe<Scalars['Boolean']>;
   deleteZktPerson?: Maybe<Scalars['Boolean']>;
+  deleteZktRegistration?: Maybe<Scalars['Boolean']>;
   deleteZktResult?: Maybe<Scalars['Boolean']>;
   deleteZktRound?: Maybe<Scalars['Boolean']>;
   deleteZktScheduleItem?: Maybe<Scalars['Boolean']>;
@@ -1389,6 +1395,11 @@ export type MutationDeleteZktGroupArgs = {
 
 export type MutationDeleteZktPersonArgs = {
   personId?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationDeleteZktRegistrationArgs = {
+  registrationId?: InputMaybe<Scalars['String']>;
 };
 
 

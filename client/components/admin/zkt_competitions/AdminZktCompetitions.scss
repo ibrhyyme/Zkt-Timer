@@ -302,6 +302,17 @@ $zkt-warn: #ffc107;
 			}
 		}
 
+		&--delete {
+			color: #fff;
+			background: rgba($errorColor, 0.85);
+			border-color: rgba($errorColor, 0.85);
+
+			&:hover {
+				background: $errorColor;
+				border-color: $errorColor;
+			}
+		}
+
 		&--primary {
 			background: rgb(var(--primary-color));
 			color: #fff;

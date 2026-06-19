@@ -1,4 +1,5 @@
 import {jsPDF} from 'jspdf';
+import {ensureRobotoFont} from './pdf_font';
 import {applyScramble, DEFAULT_FACE_COLORS, FACE_NAMES, CubeState} from './cube_state';
 
 export interface ScrambleRow {
@@ -95,8 +96,9 @@ function drawCubeNet(
 /**
  * Build & download the scramble PDF. File name based on competition + event + round.
  */
-export function generateScramblePdf(opts: ScramblePdfOptions): void {
+export async function generateScramblePdf(opts: ScramblePdfOptions): Promise<void> {
 	const pdf = new jsPDF({unit: 'mm', format: 'a4'});
+	const font = await ensureRobotoFont(pdf);
 	const pageWidth = 210;
 	const pageHeight = 297;
 	const margin = 15;
@@ -105,6 +107,7 @@ export function generateScramblePdf(opts: ScramblePdfOptions): void {
 	const cubeSize = cubeSizeForEvent(opts.eventId);
 
 	// Header
+	pdf.setFont(font, 'normal');
 	pdf.setFontSize(10);
 	pdf.setTextColor('#666666');
 	pdf.text(opts.competitionName, margin, margin);
@@ -157,7 +160,7 @@ export function generateScramblePdf(opts: ScramblePdfOptions): void {
 
 		// Attempt number (bigger, bolder)
 		pdf.setFontSize(18);
-		pdf.setFont('helvetica', 'bold');
+		pdf.setFont(font, 'bold');
 		const normalCount = opts.scrambles.filter((s) => !s.isExtra).length;
 		const label = row.isExtra ? `E${row.attemptNumber - normalCount}` : String(row.attemptNumber);
 		// Centre number vertically in the row
@@ -184,7 +187,7 @@ export function generateScramblePdf(opts: ScramblePdfOptions): void {
 	// Footer
 	pdf.setFontSize(8);
 	pdf.setTextColor('#999999');
-	pdf.setFont('helvetica', 'italic');
+	pdf.setFont(font, 'normal');
 	pdf.text(
 		`ZKT Unofficial · Generated ${new Date().toLocaleString()}`,
 		pageWidth / 2,

@@ -159,7 +159,7 @@ export default function DashboardRounds({
 				toastError(t('no_scrambles'));
 				return;
 			}
-			generateScramblePdf({
+			await generateScramblePdf({
 				competitionName: detail.name,
 				eventName: getEventName(eventId),
 				eventId,
@@ -193,7 +193,7 @@ export default function DashboardRounds({
 					(a: any, bx: any) =>
 						(a.ranking ?? Number.MAX_SAFE_INTEGER) - (bx.ranking ?? Number.MAX_SAFE_INTEGER)
 				);
-			generateResultsPdf({
+			await generateResultsPdf({
 				competitionName: detail.name,
 				eventName: getEventName(eventId),
 				roundNumber: round.round_number,
@@ -232,7 +232,7 @@ export default function DashboardRounds({
 	// at which table); when assigned, cards are sorted by group then station so
 	// they print in seating order. Scrambles print separately; result/signature
 	// cells are filled by hand on site.
-	function downloadScorecards(ev: any, round: any) {
+	async function downloadScorecards(ev: any, round: any) {
 		// competitor key (user_id || person_id) -> {group, station}
 		const assignMap = new Map<string, {group?: number; station?: number}>();
 		for (const a of round.assignments || []) {
@@ -286,7 +286,7 @@ export default function DashboardRounds({
 			station: c.station,
 		}));
 
-		generateScorecardsPdf({
+		await generateScorecardsPdf({
 			competitionName: detail.name,
 			eventName: getEventName(ev.event_id),
 			eventId: ev.event_id,

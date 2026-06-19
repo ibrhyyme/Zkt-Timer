@@ -1,4 +1,5 @@
 import {jsPDF} from 'jspdf';
+import {ensureRobotoFont} from './pdf_font';
 
 // Pre-formatted result row. The caller formats times/ranks (via shared helpers)
 // so this generator stays dependency-free and only handles layout/pagination.
@@ -24,8 +25,9 @@ export interface ResultsPdfOptions {
  * Render a round's results to an A4 portrait table (WCA-live style ordering:
  * rank, name, country, attempts, best, average) and trigger a download.
  */
-export function generateResultsPdf(opts: ResultsPdfOptions): void {
+export async function generateResultsPdf(opts: ResultsPdfOptions): Promise<void> {
 	const pdf = new jsPDF({orientation: 'portrait', unit: 'mm', format: 'a4'});
+	const font = await ensureRobotoFont(pdf);
 	const pageWidth = 210;
 	const pageHeight = 297;
 	const margin = 12;
@@ -50,11 +52,11 @@ export function generateResultsPdf(opts: ResultsPdfOptions): void {
 	let y = margin;
 
 	function header() {
-		pdf.setFont('helvetica', 'bold');
+		pdf.setFont(font, 'bold');
 		pdf.setFontSize(15);
 		pdf.text(opts.competitionName, margin, y);
 		y += 6.5;
-		pdf.setFont('helvetica', 'normal');
+		pdf.setFont(font, 'normal');
 		pdf.setFontSize(11);
 		pdf.text(`${opts.eventName} — Round ${opts.roundNumber}`, margin, y);
 		y += 7;
@@ -62,7 +64,7 @@ export function generateResultsPdf(opts: ResultsPdfOptions): void {
 	}
 
 	function columnHeader() {
-		pdf.setFont('helvetica', 'bold');
+		pdf.setFont(font, 'bold');
 		pdf.setFontSize(8.5);
 		pdf.setTextColor('#333333');
 		pdf.text('#', xRank, y);
@@ -83,7 +85,7 @@ export function generateResultsPdf(opts: ResultsPdfOptions): void {
 
 	header();
 
-	pdf.setFont('helvetica', 'normal');
+	pdf.setFont(font, 'normal');
 	pdf.setFontSize(9);
 
 	for (const row of opts.rows) {
@@ -92,7 +94,7 @@ export function generateResultsPdf(opts: ResultsPdfOptions): void {
 			pdf.addPage();
 			y = margin;
 			header();
-			pdf.setFont('helvetica', 'normal');
+			pdf.setFont(font, 'normal');
 			pdf.setFontSize(9);
 		}
 
@@ -103,9 +105,9 @@ export function generateResultsPdf(opts: ResultsPdfOptions): void {
 			const a = row.attempts[i] ?? '';
 			if (a) pdf.text(a, xAttempts + i * attemptW + attemptW - 2, y, {align: 'right'});
 		}
-		pdf.setFont('helvetica', 'bold');
+		pdf.setFont(font, 'bold');
 		pdf.text(row.best, xBest + bestW - 2, y, {align: 'right'});
-		pdf.setFont('helvetica', 'normal');
+		pdf.setFont(font, 'normal');
 		if (opts.hasAverage) pdf.text(row.average, xAvg + avgW - 2, y, {align: 'right'});
 
 		y += 5;

@@ -471,6 +471,7 @@ type Mutation {
   deleteZktCompetition(id: String): Boolean
   registerForZktCompetition(input: ZktRegistrationInput): ZktRegistration
   withdrawZktRegistration(competitionId: String): ZktRegistration
+  deleteZktRegistration(registrationId: String): Boolean
   updateZktRegistrationStatus(input: UpdateZktRegistrationStatusInput): ZktRegistration
   updateMyZktRegistration(input: UpdateMyZktRegistrationInput): ZktRegistration
   bulkUpdateZktRegistrations(input: BulkUpdateZktRegistrationsInput): [ZktRegistration]
@@ -2667,10 +2668,15 @@ input UpdateZktGroupScheduleInput {
   endTime: DateTime
 }
 
+input CompetitorRefInput {
+  userId: String
+  personId: String
+}
+
 input BulkAssignCompetitorsInput {
   roundId: String
-  groupCount: Int
-  userIds: [String]
+  stationCount: Int
+  competitors: [CompetitorRefInput]
 }
 
 input SubmitZktResultInput {

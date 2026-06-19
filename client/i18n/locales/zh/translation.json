@@ -3388,6 +3388,10 @@
         "info_alt_sor": "Kinch 排名是衡量魔方玩家全能能力的另一种方法。不同的方法会有不同的权衡 — 这就是为什么我们提供多种方法来衡量您的全能能力。"
     },
     "zkt_comp": {
+        "registration_deleted": "已删除选手",
+        "delete_registration_confirm": "永久删除此选手？此操作无法撤销。",
+        "delete_registration": "删除",
+        "station_count_label": "工位数量",
         "previous": "上一个",
         "attempts": "成绩",
         "close": "关闭",
@@ -3802,8 +3806,8 @@
         "auto_distributed": "参赛者已分配到组别",
         "auto_distribute_confirm": "这将清除现有组别和参赛者分配并重新分配。继续吗？",
         "cutoff_locked_hint": "已锁定：未达到晋级线",
-        "distribution_hint_round1": "分配：按报名顺序蛇形分布 + 每组站点编号从 1 开始",
-        "distribution_hint_seeded": "分配：按上一轮排名种子排序，蛇形分布 + 自动站点编号",
+        "distribution_hint_round1": "分配：根据工位数量将选手以平衡蛇形方式分组；组数自动计算，每组工位从 1 开始。",
+        "distribution_hint_seeded": "分配：根据上一轮排名进行平衡蛇形种子分配；组数由工位数量推导，每组工位从 1 开始。",
         "export_title": "导出",
         "export_wcif": "下载为 WCIF JSON",
         "export_wcif_hint": "WCA 比赛交换格式。比赛数据的标准副本，用于备份或迁移到其他系统。",
