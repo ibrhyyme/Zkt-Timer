@@ -65,8 +65,10 @@ export async function getZktCompetitionById(id: string) {
 }
 
 export async function getZktCompetitionWithDetails(id: string) {
-	return getPrisma().zktCompetition.findUnique({
-		where: {id},
+	// Accept either the readable slug (BursaSummer2026) or the raw UUID, so old
+	// UUID links keep working alongside the new slug URLs.
+	return getPrisma().zktCompetition.findFirst({
+		where: {OR: [{slug: id}, {id}]},
 		include: zktCompetitionFullInclude,
 	});
 }
@@ -168,6 +170,61 @@ export async function getMyZktCompetitions(userId: string) {
 	});
 }
 
+const MAX_SLUG_LENGTH = 32;
+// "Words YYYY" — WCA VALID_NAME_RE equivalent (unicode-aware for Turkish).
+const NAME_YEAR_RE = /^([-&.:'\s\p{L}\p{N}]+)\s+(\d{4})$/u;
+
+// ASCII transliteration of Turkish + accented letters, mirrors the WCA
+// monolith's ActiveSupport transliterate(:en) before id generation.
+function transliterateAscii(input: string): string {
+	return input
+		.replace(/ı/g, 'i').replace(/İ/g, 'I')
+		.replace(/ş/g, 's').replace(/Ş/g, 'S')
+		.replace(/ğ/g, 'g').replace(/Ğ/g, 'G')
+		.replace(/ç/g, 'c').replace(/Ç/g, 'C')
+		.replace(/ü/g, 'u').replace(/Ü/g, 'U')
+		.replace(/ö/g, 'o').replace(/Ö/g, 'O')
+		.normalize('NFD')
+		.replace(/[̀-ͯ]/g, '');
+}
+
+/**
+ * Build a WCA-style competition id from the name. Birebir port of the WCA
+ * monolith's Competition#create_id_and_cell_name
+ * (Referans/worldcubeassociation.org-main/app/models/competition.rb:755):
+ * strip the trailing year, transliterate to ASCII, drop every non-alphanumeric
+ * char (keeping letter case), truncate to leave room for the year, append the
+ * year. "Bursa Summer 2026" -> "BursaSummer2026". When the name has no trailing
+ * year, fall back to the start year (WCA requires it; ZKT stays lenient).
+ */
+export function slugifyCompetitionName(name: string, fallbackYear: number): string {
+	const m = name.trim().match(NAME_YEAR_RE);
+	const nameWithoutYear = m ? m[1] : name;
+	const year = m ? m[2] : String(fallbackYear);
+	const safe = transliterateAscii(nameWithoutYear).replace(/[^a-z0-9]+/gi, '');
+	return safe.slice(0, MAX_SLUG_LENGTH - year.length) + year;
+}
+
+/**
+ * Unique slug. Same name+year is rare, but the slug column is @unique, so on a
+ * collision append -2, -3, ... to avoid a create failure (safety net).
+ */
+export async function generateUniqueSlug(
+	prisma: ReturnType<typeof getPrisma>,
+	name: string,
+	fallbackYear: number
+): Promise<string> {
+	const base = slugifyCompetitionName(name, fallbackYear);
+	let slug = base;
+	let n = 1;
+	// eslint-disable-next-line no-await-in-loop
+	while (await prisma.zktCompetition.findFirst({where: {slug}, select: {id: true}})) {
+		n++;
+		slug = `${base}-${n}`;
+	}
+	return slug;
+}
+
 export async function createZktCompetitionWithEvents(params: {
 	createdById: string;
 	name: string;
@@ -195,9 +252,11 @@ export async function createZktCompetitionWithEvents(params: {
 	eventIds: string[];
 }) {
 	const prisma = getPrisma();
+	const slug = await generateUniqueSlug(prisma, params.name, params.dateStart.getFullYear());
 
 	return prisma.zktCompetition.create({
 		data: {
+			slug,
 			name: params.name,
 			description: params.description ?? null,
 			date_start: params.dateStart,

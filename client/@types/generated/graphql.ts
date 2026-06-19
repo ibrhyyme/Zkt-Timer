@@ -3725,6 +3725,7 @@ export type ZktCompetition = {
   results_published_at?: Maybe<Scalars['DateTime']>;
   schedule_items?: Maybe<Array<ZktScheduleItem>>;
   short_name?: Maybe<Scalars['String']>;
+  slug?: Maybe<Scalars['String']>;
   status?: Maybe<ZktCompStatus>;
   tabs?: Maybe<Array<ZktCompTab>>;
   updated_at?: Maybe<Scalars['DateTime']>;

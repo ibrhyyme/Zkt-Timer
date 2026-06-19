@@ -2019,6 +2019,7 @@ type ZktScheduleItem {
 
 type ZktCompetition {
   id: String
+  slug: String
   name: String
   description: String
   date_start: DateTime
