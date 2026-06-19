@@ -143,7 +143,7 @@ export default function WelcomeFooter() {
 					<Link to="/timer" className={b('nav-link')}>{t('seo.nav_timer_name')}</Link>
 					<Link to="/trainer" className={b('nav-link')}>{t('seo.nav_trainer_name')}</Link>
 					<Link to="/rooms" className={b('nav-link')}>{t('seo.nav_rooms_name')}</Link>
-					<Link to="/community/competitions" className={b('nav-link')}>{t('seo.nav_competitions_name')}</Link>
+					<Link to="/competitions" className={b('nav-link')}>{t('seo.nav_competitions_name')}</Link>
 					<Link to="/ranks" className={b('nav-link')}>{t('seo.nav_leaderboards_name')}</Link>
 					<Link to="/battle" className={b('nav-link')}>{t('seo.nav_battle_name')}</Link>
 					<Link to="/pro" className={b('nav-link')}>{t('seo.nav_pro_name')}</Link>

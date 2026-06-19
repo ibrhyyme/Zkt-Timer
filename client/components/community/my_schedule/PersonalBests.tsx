@@ -132,7 +132,7 @@ export default function PersonalBests({wcaId}: PersonalBestsProps) {
 				className={b('pb-assignments-btn')}
 				onClick={() => {
 					const comp = detail.competitors.find((c: any) => c.wcaId === wcaId);
-					if (comp) history.push(`/community/competitions/${detail.competitionId}/persons/${comp.registrantId}`);
+					if (comp) history.push(`/competitions/${detail.competitionId}/persons/${comp.registrantId}`);
 				}}
 			>
 				{t('my_schedule.view_assignments')}

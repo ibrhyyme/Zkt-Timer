@@ -244,7 +244,7 @@ export default function ZktCompetitionDetail() {
 	return (
 		<div className={b('detail-page')}>
 			<div className={b('detail-header')}>
-				<button className={b('back-btn')} onClick={() => history.push('/community/competitions')}>
+				<button className={b('back-btn')} onClick={() => history.push('/competitions')}>
 					{t('back')}
 				</button>
 				<h1 className={b('detail-title')}>{detail.name}</h1>

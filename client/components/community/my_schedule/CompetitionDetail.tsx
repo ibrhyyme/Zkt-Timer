@@ -38,7 +38,7 @@ export default function CompetitionDetail() {
 
 	function handleTabClick(tabId: TabId) {
 		if (tabId === 'wca-live') {
-			history.push(`/community/competitions/${detail.competitionId}/wca-live`);
+			history.push(`/competitions/${detail.competitionId}/wca-live`);
 			return;
 		}
 		setActiveTab(tabId);
@@ -159,7 +159,7 @@ function GroupsTab({competitors, myWcaId, myRegistrantId, competitionId, searchQ
 						<div
 							key={comp.registrantId}
 							className={b('competitor-card', {me: isMe})}
-							onClick={() => history.push(`/community/competitions/${competitionId}/persons/${comp.registrantId}`)}
+							onClick={() => history.push(`/competitions/${competitionId}/persons/${comp.registrantId}`)}
 						>
 							<span className={b('competitor-number')}>{comp.registrantId}</span>
 							<div className={b('competitor-info')}>
@@ -310,7 +310,7 @@ function RoundPanel({row, competitionId, locale, t}: any) {
 						<div
 							key={group.groupNumber}
 							className={b('group-card')}
-							onClick={() => history.push(`/community/competitions/${competitionId}/activities/${activityCode}`)}
+							onClick={() => history.push(`/competitions/${competitionId}/activities/${activityCode}`)}
 						>
 							<span className={b('group-card-title')}>{t('my_schedule.col_group')} {group.groupNumber}</span>
 							{group.startTime && (
@@ -395,7 +395,7 @@ function RankingsTab({allPersonalBests, competitionId, selectedEvent, setSelecte
 							<tr
 								key={idx}
 								className={b('assignment-row')}
-								onClick={() => row.wcaId && history.push(`/community/competitions/${competitionId}/personal-bests/${row.wcaId}`)}
+								onClick={() => row.wcaId && history.push(`/competitions/${competitionId}/personal-bests/${row.wcaId}`)}
 							>
 								<td className={b('rank-num')}>{idx + 1}</td>
 								<td>

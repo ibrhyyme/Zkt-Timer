@@ -45,9 +45,9 @@ export default function ResultModal({row, competitionId, onClose, t, showViewPro
 	function handleViewProfile() {
 		onClose();
 		if (row.personRegistrantId != null) {
-			history.push(`/community/competitions/${competitionId}/persons/${row.personRegistrantId}/results`);
+			history.push(`/competitions/${competitionId}/persons/${row.personRegistrantId}/results`);
 		} else if (row.personWcaId) {
-			history.push(`/community/competitions/${competitionId}/personal-bests/${row.personWcaId}`);
+			history.push(`/competitions/${competitionId}/personal-bests/${row.personWcaId}`);
 		}
 	}
 

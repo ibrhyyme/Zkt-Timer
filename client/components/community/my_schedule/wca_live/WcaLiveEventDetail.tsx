@@ -59,7 +59,7 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 	useEffect(() => {
 		if (!event?.rounds || event.rounds.length === 0) return;
 		if (!roundNumber && defaultRound) {
-			history.replace(`/community/competitions/${competitionId}/wca-live/${event.eventId}/${defaultRound.number}`);
+			history.replace(`/competitions/${competitionId}/wca-live/${event.eventId}/${defaultRound.number}`);
 		}
 	}, [roundNumber, defaultRound, event?.eventId, competitionId, history, event?.rounds]);
 
@@ -137,9 +137,9 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 	function handlePersonClick(personWcaId: string | null | undefined, personName: string | null | undefined) {
 		const registrantId = findRegistrantId(personWcaId, personName);
 		if (registrantId != null) {
-			history.push(`/community/competitions/${competitionId}/persons/${registrantId}/results`);
+			history.push(`/competitions/${competitionId}/persons/${registrantId}/results`);
 		} else if (personWcaId) {
-			history.push(`/community/competitions/${competitionId}/personal-bests/${personWcaId}`);
+			history.push(`/competitions/${competitionId}/personal-bests/${personWcaId}`);
 		}
 	}
 
@@ -173,7 +173,7 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 						<button
 							key={round.liveRoundId}
 							className={b('wca-live-round-tab', {active: isSelected})}
-							onClick={() => history.push(`/community/competitions/${competitionId}/wca-live/${event.eventId}/${round.number}`)}
+							onClick={() => history.push(`/competitions/${competitionId}/wca-live/${event.eventId}/${round.number}`)}
 						>
 							<span className={b('wca-live-round-name')}>{round.name}</span>
 							<span className={b('wca-live-status-badge', {[getRoundStatusModifier(round)]: true})}>

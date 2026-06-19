@@ -56,7 +56,7 @@ export default class WcaFollowResultEnteredNotification extends Notification {
 	}
 
 	link() {
-		return `${process.env.BASE_URI}/community/competitions/${this.meta.competitionId}/wca-live/${this.meta.eventId}/${this.meta.roundNumber}`;
+		return `${process.env.BASE_URI}/competitions/${this.meta.competitionId}/wca-live/${this.meta.eventId}/${this.meta.roundNumber}`;
 	}
 
 	linkText() {

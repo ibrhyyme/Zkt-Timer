@@ -234,7 +234,7 @@ export default function WcaSection() {
 					{competitions && competitions.slice(0, 4).map((c) => (
 						<motion.a
 							key={c.id}
-							href={`/community/competitions/${c.id}`}
+							href={`/competitions/${c.id}`}
 							className={b('card')}
 							initial={{opacity: 0, y: 20}}
 							animate={{opacity: 1, y: 0}}
@@ -296,7 +296,7 @@ export default function WcaSection() {
 						large
 						primary
 						glow
-						onClick={() => (window.location.href = '/community/competitions')}
+						onClick={() => (window.location.href = '/competitions')}
 					>
 						{t('welcome_wca.cta')}
 						<ArrowRight size={18} weight="bold" style={{marginLeft: '0.5rem'}} />

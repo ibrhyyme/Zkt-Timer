@@ -89,7 +89,7 @@ function WcaLiveTabInner({eventId, roundNumber}: Props) {
 	}
 
 	function handleEventClick(eid: string) {
-		history.push(`/community/competitions/${detail.competitionId}/wca-live/${eid}`);
+		history.push(`/competitions/${detail.competitionId}/wca-live/${eid}`);
 	}
 
 	return (
@@ -103,7 +103,7 @@ function WcaLiveTabInner({eventId, roundNumber}: Props) {
 						onChange={(e) => {
 							const val = e.target.value;
 							if (val) handleEventClick(val);
-							else history.push(`/community/competitions/${detail.competitionId}/wca-live`);
+							else history.push(`/competitions/${detail.competitionId}/wca-live`);
 						}}
 					>
 						<option value="">{t('my_schedule.wca_live_select_event')}</option>
@@ -172,7 +172,7 @@ function WcaLiveTabInner({eventId, roundNumber}: Props) {
 										<button
 											key={`${ar.eventId}-${ar.roundNumber}`}
 											className={b('wca-live-active-round-card')}
-											onClick={() => history.push(`/community/competitions/${detail.competitionId}/wca-live/${ar.eventId}/${ar.roundNumber}`)}
+											onClick={() => history.push(`/competitions/${detail.competitionId}/wca-live/${ar.eventId}/${ar.roundNumber}`)}
 										>
 											<EventIcon eventId={ar.eventId} size={22} />
 											<span className={b('wca-live-active-round-name')}>{ar.roundName}</span>

@@ -57,7 +57,7 @@ export default class WcaFollowCountdownNotification extends Notification {
 	}
 
 	link() {
-		return `${process.env.BASE_URI}/community/competitions/${this.meta.competitionId}`;
+		return `${process.env.BASE_URI}/competitions/${this.meta.competitionId}`;
 	}
 
 	linkText() {

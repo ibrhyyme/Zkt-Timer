@@ -148,7 +148,7 @@ async function uploadSiteMapToS3(fileName: string) {
 }
 
 function getChangeFrequency(path: string): SiteMapUrl['changeFrequency'] {
-	const hourlyPaths = ['/community/competitions'];
+	const hourlyPaths = ['/competitions'];
 	const dailyPaths = [
 		'/',
 		'/welcome',
@@ -172,7 +172,7 @@ function getPriorityForPath(path: string): number | null {
 		'/': 1.0,
 		'/welcome': 1.0,
 		'/timer': 1.0,
-		'/community/competitions': 0.95,
+		'/competitions': 0.95,
 		'/trainer': 0.9,
 		'/rooms': 0.85,
 		'/ranks': 0.85,

@@ -43,7 +43,7 @@ export function getPageKeywords(currentPath: string, t: TFunction): string {
 	if (currentPath === '/solves') return t('seo.solves_keywords', fallback);
 	if (currentPath === '/pro' || currentPath === '/account/pro') return t('seo.pro_keywords', fallback);
 	if (currentPath.startsWith('/user/')) return t('seo.user_profile_keywords', fallback);
-	if (currentPath.startsWith('/community/competitions')) return t('seo.wca_competitions_keywords', fallback);
+	if (currentPath.startsWith('/competitions')) return t('seo.wca_competitions_keywords', fallback);
 	if (currentPath.startsWith('/zkt-competitions')) return t('seo.zkt_competitions_keywords', fallback);
 	if (currentPath === '/zkt-records') return t('seo.zkt_records_keywords', fallback);
 	if (currentPath === '/zkt-rankings') return t('seo.zkt_rankings_keywords', fallback);
@@ -192,7 +192,7 @@ export const getStructuredData = (currentPath: string, finalTitle: string, final
 				'position': 2,
 				'name': t('seo.nav_competitions_name'),
 				'description': t('seo.nav_competitions_desc'),
-				'url': `${SITE_URL}/community/competitions`
+				'url': `${SITE_URL}/competitions`
 			},
 			{
 				'@type': 'SiteNavigationElement',
@@ -226,12 +226,12 @@ export const getStructuredData = (currentPath: string, finalTitle: string, final
 	};
 
 	// CollectionPage schema for competitions list page
-	const collectionPageSchema = currentPath === '/community/competitions' ? {
+	const collectionPageSchema = currentPath === '/competitions' ? {
 		'@context': 'https://schema.org',
 		'@type': 'CollectionPage',
 		'name': t('seo.wca_competitions_title'),
 		'description': t('seo.wca_competitions_description'),
-		'url': `${SITE_URL}/community/competitions`,
+		'url': `${SITE_URL}/competitions`,
 		'about': {
 			'@type': 'Thing',
 			'name': 'WCA Speedcubing Competitions',
@@ -337,7 +337,7 @@ export default function Header(props: Props) {
 		} else if (currentPath === '/community/leaderboards' || currentPath === '/ranks') {
 			pageTitle = t('seo.leaderboards_title');
 			pageDesc = t('seo.leaderboards_description');
-		} else if (currentPath === '/community/competitions') {
+		} else if (currentPath === '/competitions') {
 			pageTitle = t('seo.wca_competitions_title');
 			pageDesc = t('seo.wca_competitions_description');
 		} else if (/\/community\/competitions\/[^/]+\/wca-live/.test(currentPath)) {
@@ -352,7 +352,7 @@ export default function Header(props: Props) {
 		} else if (/\/community\/competitions\/[^/]+\/personal-bests/.test(currentPath)) {
 			pageTitle = t('seo.wca_personal_bests_title');
 			pageDesc = t('seo.wca_personal_bests_description');
-		} else if (currentPath.startsWith('/community/competitions/')) {
+		} else if (currentPath.startsWith('/competitions/')) {
 			pageTitle = t('seo.wca_competition_detail_title');
 			pageDesc = t('seo.wca_competition_detail_description');
 		} else if (/\/community\/zkt-competitions\/[^/]+\/live/.test(currentPath)) {
@@ -405,7 +405,7 @@ export default function Header(props: Props) {
 		'/zkt-competitions', '/zkt-records', '/zkt-rankings',
 	];
 	// WCA competition sub-pages — unlimited URLs, thin content risk (same strategy as WCA Live)
-	// Main competition page (`/community/competitions/:id`) and list remain indexable.
+	// Main competition page (`/competitions/:id`) and list remain indexable.
 	const noIndexPatterns = [
 		/^\/community\/competitions\/[^/]+\/wca-live\//,
 		/^\/community\/competitions\/[^/]+\/persons\//,
