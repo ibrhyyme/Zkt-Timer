@@ -327,6 +327,7 @@ type Query {
   zktCompetitionForAdmin(id: String): ZktCompetition
   exportZktCompetitionWcif(id: String): String
   zktCompetitionPodiums(id: String): [ZktPodium]
+  zktCompetitionParticipation(id: String): [ZktParticipation]
   zktAllTimeRankings(mode: String, limit: Float, recordType: String, eventId: String): [ZktAllTimeRanking]
   zktRegistrationHistory(registrationId: String): [ZktRegistrationHistory]
   zktRoundResults(roundId: String): [ZktResult]
@@ -2091,6 +2092,19 @@ type ZktPodium {
   event_id: String
   round_id: String
   results: [ZktResult]
+}
+
+type ZktParticipationResult {
+  event_id: String
+  value: Int
+  ranking: Int
+  has_average: Boolean
+}
+
+type ZktParticipation {
+  name: String
+  country: String
+  results: [ZktParticipationResult]
 }
 
 type ZktAllTimeRanking {

@@ -52,6 +52,71 @@ export async function getZktPodiums(competitionId: string) {
 }
 
 /**
+ * Participation data for certificates: every competitor (registered user OR ghost
+ * person) who has at least one valid result, grouped by competitor, each with
+ * their per-event final-round result (value + ranking). Only FINISHED rounds.
+ * Mirrors getZktPodiums' traversal but keeps ALL rankings (not just top 3).
+ */
+export async function getZktParticipation(competitionId: string) {
+	const prisma = getPrisma();
+	const compEvents = await prisma.zktCompEvent.findMany({
+		where: {competition_id: competitionId},
+		include: {
+			rounds: {
+				include: {
+					results: {
+						include: {
+							user: {select: {first_name: true, last_name: true, username: true, join_country: true}},
+							person: true,
+						},
+						where: {ranking: {not: null}},
+						orderBy: {ranking: 'asc'},
+					},
+				},
+				orderBy: {round_number: 'desc'},
+			},
+		},
+		orderBy: {event_order: 'asc'},
+	});
+
+	interface PRow {
+		event_id: string;
+		value: number;
+		ranking: number;
+		has_average: boolean;
+	}
+	const byCompetitor = new Map<string, {name: string; country: string; results: PRow[]}>();
+
+	for (const ce of compEvents) {
+		const finalRound = ce.rounds[0];
+		if (!finalRound || finalRound.status !== 'FINISHED') continue;
+		const hasAverage = finalRound.format === 'MO3' || finalRound.format === 'AO5';
+		for (const r of finalRound.results) {
+			if (r.ranking === null || r.ranking === undefined) continue;
+			const value = hasAverage ? r.average ?? r.best : r.best;
+			if (value === null || value === undefined || value <= 0) continue; // skip DNF/DNS/blank
+			const key = r.user_id ?? r.person_id;
+			if (!key) continue;
+			const u: any = r.user;
+			const p: any = r.person;
+			const name = u
+				? [u.first_name, u.last_name].filter(Boolean).join(' ').trim() || u.username || ''
+				: [p?.first_name, p?.last_name].filter(Boolean).join(' ').trim();
+			if (!name) continue;
+			const country = u?.join_country || p?.country_code || '';
+			let entry = byCompetitor.get(key);
+			if (!entry) {
+				entry = {name, country, results: []};
+				byCompetitor.set(key, entry);
+			}
+			entry.results.push({event_id: ce.event_id, value, ranking: r.ranking, has_average: hasAverage});
+		}
+	}
+
+	return Array.from(byCompetitor.values()).sort((a, b) => a.name.localeCompare(b.name, 'tr'));
+}
+
+/**
  * All-time ZKT rankings across all finalized rounds. Event + type (single|average).
  * Returns one row per user with their best-ever value for the event.
  */

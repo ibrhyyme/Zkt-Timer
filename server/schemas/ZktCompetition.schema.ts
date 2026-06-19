@@ -662,6 +662,35 @@ export class ZktPodium {
 	results: ZktResult[];
 }
 
+// One competitor's per-event result for the participation certificate.
+@ObjectType()
+export class ZktParticipationResult {
+	@Field()
+	event_id: string;
+
+	@Field(() => Int)
+	value: number; // centiseconds (average if has_average, else best)
+
+	@Field(() => Int)
+	ranking: number;
+
+	@Field()
+	has_average: boolean;
+}
+
+// One competitor (user or ghost person) grouped with all their event results.
+@ObjectType()
+export class ZktParticipation {
+	@Field()
+	name: string;
+
+	@Field({nullable: true})
+	country?: string;
+
+	@Field(() => [ZktParticipationResult])
+	results: ZktParticipationResult[];
+}
+
 @ObjectType()
 export class ZktAllTimeRanking {
 	@Field(() => Int)

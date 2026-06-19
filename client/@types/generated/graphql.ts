@@ -2116,6 +2116,7 @@ export type Query = {
   zktAllTimeRankings?: Maybe<Array<Maybe<ZktAllTimeRanking>>>;
   zktCompetition?: Maybe<ZktCompetition>;
   zktCompetitionForAdmin?: Maybe<ZktCompetition>;
+  zktCompetitionParticipation?: Maybe<Array<Maybe<ZktParticipation>>>;
   zktCompetitionPersons?: Maybe<Array<Maybe<ZktPerson>>>;
   zktCompetitionPodiums?: Maybe<Array<Maybe<ZktPodium>>>;
   zktCompetitions?: Maybe<PaginatedZktCompetitions>;
@@ -2365,6 +2366,11 @@ export type QueryZktCompetitionArgs = {
 
 
 export type QueryZktCompetitionForAdminArgs = {
+  id?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryZktCompetitionParticipationArgs = {
   id?: InputMaybe<Scalars['String']>;
 };
 
@@ -3826,6 +3832,21 @@ export type ZktGroup = {
   id?: Maybe<Scalars['String']>;
   round_id?: Maybe<Scalars['String']>;
   start_time?: Maybe<Scalars['DateTime']>;
+};
+
+export type ZktParticipation = {
+  __typename?: 'ZktParticipation';
+  country?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  results?: Maybe<Array<Maybe<ZktParticipationResult>>>;
+};
+
+export type ZktParticipationResult = {
+  __typename?: 'ZktParticipationResult';
+  event_id?: Maybe<Scalars['String']>;
+  has_average?: Maybe<Scalars['Boolean']>;
+  ranking?: Maybe<Scalars['Int']>;
+  value?: Maybe<Scalars['Int']>;
 };
 
 export type ZktPerson = {

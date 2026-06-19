@@ -3,8 +3,14 @@ import {gql} from '@apollo/client';
 import {gqlMutate} from '../../../api';
 import {useTranslation} from 'react-i18next';
 import {toastSuccess, toastError} from '../../../../util/toast';
-import {b, getEventName, formatCs, competitorDisplayName} from '../shared';
-import {generateCertificatesPdf} from '../../../../util/cubes/certificate_pdf';
+import {b, getEventName, formatCs, competitorDisplayName, formatDateRange} from '../shared';
+import {
+	generatePodiumCertificates,
+	generateParticipationCertificates,
+	CertCommon,
+	PodiumCert,
+	ParticipationCert,
+} from '../../../../util/cubes/certificate_pdf';
 
 const UPDATE_STATUS = gql`
 	mutation UpdateZktCompStatus($input: UpdateZktCompetitionStatusInput!) {
@@ -85,6 +91,25 @@ const PODIUMS_FOR_CERT = gql`
 					first_name
 					last_name
 				}
+				person {
+					first_name
+					last_name
+				}
+			}
+		}
+	}
+`;
+
+const PARTICIPATION_FOR_CERT = gql`
+	query ZktParticipationForCert($id: String!) {
+		zktCompetitionParticipation(id: $id) {
+			name
+			country
+			results {
+				event_id
+				value
+				ranking
+				has_average
 			}
 		}
 	}
@@ -198,46 +223,59 @@ export default function DashboardOverview({detail, onUpdated}: {detail: any; onU
 		}
 	}
 
-	// Podium certificates: top-3 of each event's final round → one A4 landscape
-	// certificate per page. i18n strings are built here; the generator is pure.
-	async function onDownloadCertificates() {
+	// Shared certificate meta + pre-translated strings (generator stays pure).
+	function buildCertCommon(): CertCommon {
+		const locale = i18n.language === 'tr' ? 'tr-TR' : i18n.language;
+		const organizerName =
+			competitorDisplayName(detail.organizers?.[0]?.user) ||
+			detail.organizers?.[0]?.user?.username ||
+			competitorDisplayName(detail.created_by) ||
+			detail.created_by?.username ||
+			'';
+		return {
+			competitionName: detail.name,
+			dateText: formatDateRange(detail.date_start, detail.date_end, locale),
+			locationText: detail.location || '',
+			organizerName,
+			titleParticipation: '',
+			certifyLine: t('cert_certify_line'),
+			organizerLabel: t('cert_organizer'),
+			sponsorLabel: t('cert_sponsor'),
+			participatedText: t('cert_participated'),
+			colEvent: t('cert_col_event'),
+			colResult: t('cert_col_result'),
+			colRanking: t('cert_col_ranking'),
+			placed: [t('cert_placed_1'), t('cert_placed_2'), t('cert_placed_3')],
+			podiumLine: t('cert_podium_line'),
+			footerNote: t('cert_footer'),
+		};
+	}
+
+	async function onDownloadPodium() {
 		if (working) return;
 		setWorking(true);
 		try {
 			const res: any = await gqlMutate(PODIUMS_FOR_CERT, {id: detail.id});
 			const podiums: any[] = res?.data?.zktCompetitionPodiums || [];
-			const certs: {name: string; place: number; lines: string[]}[] = [];
+			const certs: PodiumCert[] = [];
 			for (const p of podiums) {
 				const eventName = getEventName(p.event_id);
 				for (const r of p.results || []) {
 					if (r.ranking == null || r.ranking > 3) continue;
-					const name = competitorDisplayName(r.user) || r.user?.username || '';
-					const resultLine =
-						r.average && r.average > 0
-							? `${t('average')}: ${formatCs(r.average)}`
-							: `${t('best')}: ${formatCs(r.best)}`;
-					certs.push({
-						name,
-						place: r.ranking,
-						lines: [`${r.ranking}. — ${eventName}`, resultLine],
-					});
+					const name =
+						competitorDisplayName(r.user) ||
+						[r.person?.first_name, r.person?.last_name].filter(Boolean).join(' ').trim();
+					if (!name) continue;
+					const hasAvg = r.average && r.average > 0;
+					const result = `${hasAvg ? t('cert_average') : t('cert_best')}: ${formatCs(hasAvg ? r.average : r.best)}`;
+					certs.push({name, eventName, place: r.ranking, result});
 				}
 			}
 			if (certs.length === 0) {
 				toastError(t('no_podiums_for_certificate'));
 				return;
 			}
-			const locale = i18n.language === 'tr' ? 'tr-TR' : i18n.language;
-			const dateStr = new Date(detail.date_start).toLocaleDateString(locale);
-			await generateCertificatesPdf({
-				title: t('certificate_title'),
-				competitionName: detail.name,
-				subtitle: [dateStr, detail.location].filter(Boolean).join(' · '),
-				signerLabel: t('certificate_signer'),
-				signerName: detail.created_by?.username,
-				footerNote: t('certificate_footer'),
-				certificates: certs,
-			});
+			await generatePodiumCertificates(buildCertCommon(), certs);
 			toastSuccess(t('certificates_downloaded'));
 		} catch (e: any) {
 			toastError(e?.message || t('error'));
@@ -246,6 +284,32 @@ export default function DashboardOverview({detail, onUpdated}: {detail: any; onU
 		}
 	}
 
+	async function onDownloadParticipation() {
+		if (working) return;
+		setWorking(true);
+		try {
+			const res: any = await gqlMutate(PARTICIPATION_FOR_CERT, {id: detail.id});
+			const parts: any[] = res?.data?.zktCompetitionParticipation || [];
+			const certs: ParticipationCert[] = parts.map((pp: any) => ({
+				name: pp.name,
+				results: (pp.results || []).map((r: any) => ({
+					eventName: getEventName(r.event_id),
+					result: formatCs(r.value),
+					ranking: r.ranking,
+				})),
+			}));
+			if (certs.length === 0) {
+				toastError(t('no_results_for_certificate'));
+				return;
+			}
+			await generateParticipationCertificates(buildCertCommon(), certs);
+			toastSuccess(t('certificates_downloaded'));
+		} catch (e: any) {
+			toastError(e?.message || t('error'));
+		} finally {
+			setWorking(false);
+		}
+	}
 	return (
 		<div className={b('overview')}>
 			<div className={b('stat-grid')}>
@@ -405,11 +469,20 @@ export default function DashboardOverview({detail, onUpdated}: {detail: any; onU
 				<button
 					type="button"
 					className={b('status-btn')}
-					onClick={onDownloadCertificates}
+					onClick={onDownloadParticipation}
 					disabled={working}
 					style={{marginLeft: '0.5rem'}}
 				>
-					{t('download_certificates')}
+					{t('download_participation_certs')}
+				</button>
+				<button
+					type="button"
+					className={b('status-btn')}
+					onClick={onDownloadPodium}
+					disabled={working}
+					style={{marginLeft: '0.5rem'}}
+				>
+					{t('download_podium_certs')}
 				</button>
 				<p style={{fontSize: 13, opacity: 0.7, marginTop: '0.5rem'}}>
 					{t('export_wcif_hint')}
