@@ -206,9 +206,9 @@ function getDefaultSiteMapUrls() {
 		'/oauth',
 		'/admin',
 		// ZKT competitions are private — never expose to Google in any form
-		'/community/zkt-competitions',
-		'/community/zkt-records',
-		'/community/zkt-rankings',
+		'/zkt-competitions',
+		'/zkt-records',
+		'/zkt-rankings',
 	];
 
 	for (let i = 0; i < routes.length; i += 1) {

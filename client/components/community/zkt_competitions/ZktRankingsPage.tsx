@@ -193,7 +193,7 @@ export default function ZktRankingsPage() {
 										{row.competition && (
 											<Link
 												className={b('ranking-comp-link')}
-												to={`/community/zkt-competitions/${row.competition.id}`}
+												to={`/zkt-competitions/${row.competition.id}`}
 											>
 												{row.competition.name}
 											</Link>

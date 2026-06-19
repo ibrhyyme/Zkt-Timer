@@ -45,7 +45,7 @@ export default function ZktResultModal({row, competitionId, onClose, t, showAver
 	function handleViewProfile() {
 		onClose();
 		if (row.competitorId) {
-			history.push(`/community/zkt-competitions/${competitionId}/competitors/${row.competitorId}`);
+			history.push(`/zkt-competitions/${competitionId}/competitors/${row.competitorId}`);
 		}
 	}
 

@@ -115,7 +115,7 @@ export default function ZktRecordsPage() {
 					{rec.competition && (
 						<Link
 							className={b('record-comp-link')}
-							to={`/community/zkt-competitions/${rec.competition.id}`}
+							to={`/zkt-competitions/${rec.competition.id}`}
 						>
 							{rec.competition.name}
 						</Link>

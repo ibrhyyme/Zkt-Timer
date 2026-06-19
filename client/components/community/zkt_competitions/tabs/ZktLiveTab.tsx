@@ -14,7 +14,7 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 	const {competitionId} = useParams<{competitionId: string}>();
 	const history = useHistory();
 	const matchEvent = useRouteMatch<{eventId?: string; roundNumber?: string}>(
-		'/community/zkt-competitions/:competitionId/live/:eventId/:roundNumber?'
+		'/zkt-competitions/:competitionId/live/:eventId/:roundNumber?'
 	);
 
 	const urlEventId = matchEvent?.params.eventId;
@@ -55,7 +55,7 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 		setSelectedEventId(compEventId);
 		const ev = detail.events.find((e: any) => e.id === compEventId);
 		if (ev) {
-			history.push(`/community/zkt-competitions/${competitionId}/live/${ev.event_id}`);
+			history.push(`/zkt-competitions/${competitionId}/live/${ev.event_id}`);
 		}
 	}
 
@@ -64,7 +64,7 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 		const r = selectedEvent?.rounds.find((rr: any) => rr.id === roundId);
 		if (r && selectedEvent) {
 			history.push(
-				`/community/zkt-competitions/${competitionId}/live/${selectedEvent.event_id}/${r.round_number}`
+				`/zkt-competitions/${competitionId}/live/${selectedEvent.event_id}/${r.round_number}`
 			);
 		}
 	}
@@ -108,7 +108,7 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 												className={b('event-chip-btn', {active: true})}
 												onClick={() => {
 													setSelectedEventId(ev.id);
-													history.push(`/community/zkt-competitions/${competitionId}/live/${ev.event_id}/${r.round_number}`);
+													history.push(`/zkt-competitions/${competitionId}/live/${ev.event_id}/${r.round_number}`);
 												}}
 												style={{animation: 'zkt-pulse 1.4s ease-in-out infinite'}}
 											>
@@ -139,7 +139,7 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 										onClick={() => {
 											setSelectedEventId(ev.id);
 											history.push(
-												`/community/zkt-competitions/${competitionId}/live/${ev.event_id}/${r.round_number}`
+												`/zkt-competitions/${competitionId}/live/${ev.event_id}/${r.round_number}`
 											);
 										}}
 									>
@@ -208,7 +208,7 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 									className={b('refresh-btn')}
 									onClick={() =>
 										window.open(
-											`/community/zkt-competitions/${competitionId}/projector/${selectedEvent.event_id}/${selectedRound.round_number}`,
+											`/zkt-competitions/${competitionId}/projector/${selectedEvent.event_id}/${selectedRound.round_number}`,
 											'_blank'
 										)
 									}
@@ -312,7 +312,7 @@ function ResultsTable({
 								});
 							} else {
 								history.push(
-									`/community/zkt-competitions/${competitionId}/competitors/${competitorId}`
+									`/zkt-competitions/${competitionId}/competitors/${competitorId}`
 								);
 							}
 						};

@@ -44,9 +44,9 @@ export function getPageKeywords(currentPath: string, t: TFunction): string {
 	if (currentPath === '/pro' || currentPath === '/account/pro') return t('seo.pro_keywords', fallback);
 	if (currentPath.startsWith('/user/')) return t('seo.user_profile_keywords', fallback);
 	if (currentPath.startsWith('/community/competitions')) return t('seo.wca_competitions_keywords', fallback);
-	if (currentPath.startsWith('/community/zkt-competitions')) return t('seo.zkt_competitions_keywords', fallback);
-	if (currentPath === '/community/zkt-records') return t('seo.zkt_records_keywords', fallback);
-	if (currentPath === '/community/zkt-rankings') return t('seo.zkt_rankings_keywords', fallback);
+	if (currentPath.startsWith('/zkt-competitions')) return t('seo.zkt_competitions_keywords', fallback);
+	if (currentPath === '/zkt-records') return t('seo.zkt_records_keywords', fallback);
+	if (currentPath === '/zkt-rankings') return t('seo.zkt_rankings_keywords', fallback);
 	if (currentPath === '/login' || currentPath === '/signup' || currentPath === '/wca-signup' || currentPath === '/forgot') return t('seo.login_keywords', fallback);
 
 	return fallback;
@@ -364,13 +364,13 @@ export default function Header(props: Props) {
 		} else if (/\/community\/zkt-competitions\/[^/]+\/activities/.test(currentPath)) {
 			pageTitle = t('seo.zkt_activity_title');
 			pageDesc = t('seo.zkt_activity_description');
-		} else if (currentPath.startsWith('/community/zkt-competitions/')) {
+		} else if (currentPath.startsWith('/zkt-competitions/')) {
 			pageTitle = t('seo.zkt_competition_detail_title');
 			pageDesc = t('seo.zkt_competition_detail_description');
-		} else if (currentPath === '/community/zkt-records') {
+		} else if (currentPath === '/zkt-records') {
 			pageTitle = t('seo.zkt_records_title');
 			pageDesc = t('seo.zkt_records_description');
-		} else if (currentPath === '/community/zkt-rankings') {
+		} else if (currentPath === '/zkt-rankings') {
 			pageTitle = t('seo.zkt_rankings_title');
 			pageDesc = t('seo.zkt_rankings_description');
 		} else if (currentPath === '/pro' || currentPath === '/account/pro') {
@@ -402,7 +402,7 @@ export default function Header(props: Props) {
 	const noIndexPaths = [
 		'/settings', '/sessions', '/force-log-out', '/account', '/oauth', '/admin',
 		'/verify-email', '/wca-signup',
-		'/community/zkt-competitions', '/community/zkt-records', '/community/zkt-rankings',
+		'/zkt-competitions', '/zkt-records', '/zkt-rankings',
 	];
 	// WCA competition sub-pages — unlimited URLs, thin content risk (same strategy as WCA Live)
 	// Main competition page (`/community/competitions/:id`) and list remain indexable.

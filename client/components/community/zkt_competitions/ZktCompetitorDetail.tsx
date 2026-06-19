@@ -172,7 +172,7 @@ export default function ZktCompetitorDetail() {
 		<div className={b('detail-page')}>
 			<button
 				className={b('back-btn')}
-				onClick={() => history.push(`/community/zkt-competitions/${competitionId}`)}
+				onClick={() => history.push(`/zkt-competitions/${competitionId}`)}
 			>
 				<ArrowLeft weight="bold" /> {t('back')}
 			</button>

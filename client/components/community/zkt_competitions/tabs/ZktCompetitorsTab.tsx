@@ -118,7 +118,7 @@ export default function ZktCompetitorsTab({detail}: {detail: any}) {
 								className={b('competitor-row', {me: isMe})}
 								onClick={() =>
 									history.push(
-										`/community/zkt-competitions/${competitionId}/competitors/${r.user_id || r.person_id}`
+										`/zkt-competitions/${competitionId}/competitors/${r.user_id || r.person_id}`
 									)
 								}
 							>

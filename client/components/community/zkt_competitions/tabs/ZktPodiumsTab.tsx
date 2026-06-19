@@ -221,7 +221,7 @@ export default function ZktPodiumsTab({detail}: {detail: any}) {
 												style={tint ? {background: tint} : undefined}
 												onClick={() =>
 													history.push(
-														`/community/zkt-competitions/${detail.id}/competitors/${r.user_id || r.person_id}`
+														`/zkt-competitions/${detail.id}/competitors/${r.user_id || r.person_id}`
 													)
 												}
 											>

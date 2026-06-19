@@ -257,7 +257,7 @@ export default function ZktProjector() {
 		: '';
 
 	function exit() {
-		history.push(`/community/zkt-competitions/${competitionId}/live/${eventId}/${roundNumber}`);
+		history.push(`/zkt-competitions/${competitionId}/live/${eventId}/${roundNumber}`);
 	}
 
 	return (

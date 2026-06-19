@@ -173,7 +173,7 @@ export default function ZktActivityDetail() {
 	const goTo = useCallback(
 		(index: number) => {
 			if (index < 0 || index >= navGroups.length) return;
-			history.push(`/community/zkt-competitions/${competitionId}/activities/${navGroups[index].id}`);
+			history.push(`/zkt-competitions/${competitionId}/activities/${navGroups[index].id}`);
 		},
 		[navGroups, competitionId, history]
 	);
@@ -219,7 +219,7 @@ export default function ZktActivityDetail() {
 			<div className={b('activity-topbar')}>
 				<button
 					className={b('back-btn')}
-					onClick={() => history.push(`/community/zkt-competitions/${competitionId}`)}
+					onClick={() => history.push(`/zkt-competitions/${competitionId}`)}
 				>
 					{t('back')}
 				</button>
@@ -305,7 +305,7 @@ export default function ZktActivityDetail() {
 								key={a.id}
 								className={b('competitor-row', {clickable: true})}
 								onClick={() =>
-									history.push(`/community/zkt-competitions/${competitionId}/competitors/${a.user_id}`)
+									history.push(`/zkt-competitions/${competitionId}/competitors/${a.user_id}`)
 								}
 							>
 								{a.user?.profile?.pfp_image?.url && (

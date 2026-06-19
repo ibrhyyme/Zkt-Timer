@@ -330,7 +330,7 @@ export class ZktCompetitionResolver {
 				location: comp.location,
 				locationAddress: comp.location_address,
 				description: comp.description,
-				link: `https://zktimer.app/community/zkt-competitions/${comp.slug || comp.id}`,
+				link: `https://zktimer.app/zkt-competitions/${comp.slug || comp.id}`,
 			};
 			for (const user of recipients) {
 				sendEmailWithTemplate(

@@ -269,7 +269,7 @@ export default function CompetitionDashboard() {
 						<button
 							type="button"
 							className={b('icon-btn', {ghost: true})}
-							onClick={() => window.open(`/community/zkt-competitions/${detail.id}`, '_blank')}
+							onClick={() => window.open(`/zkt-competitions/${detail.id}`, '_blank')}
 							title={t('public_view')}
 							aria-label={t('public_view')}
 						>

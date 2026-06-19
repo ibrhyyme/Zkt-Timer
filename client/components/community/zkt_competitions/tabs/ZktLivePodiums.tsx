@@ -94,7 +94,7 @@ export default function ZktLivePodiums({detail}: {detail: any}) {
 							key={pod.event_id}
 							className={b('podium-card')}
 							onClick={() =>
-								history.push(`/community/zkt-competitions/${detail.id}/live/${pod.event_id}`)
+								history.push(`/zkt-competitions/${detail.id}/live/${pod.event_id}`)
 							}
 						>
 							<div className={b('podium-header')}>
