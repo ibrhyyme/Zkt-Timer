@@ -259,12 +259,11 @@ export default function CompetitionDashboard() {
 					<div className={b('sticky-header-actions')}>
 						<button
 							type="button"
-							className={b('icon-btn', {ghost: true})}
+							className={b('header-edit-btn')}
 							onClick={() => history.push(`/organizer/${detail.id}/edit`)}
 							title={t('edit_competition')}
-							aria-label={t('edit_competition')}
 						>
-							<PencilSimple weight="bold" />
+							<PencilSimple weight="bold" /> {t('edit_competition')}
 						</button>
 						<button
 							type="button"

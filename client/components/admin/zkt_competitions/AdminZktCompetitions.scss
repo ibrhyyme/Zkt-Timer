@@ -838,6 +838,26 @@ $zkt-warn: #ffc107;
 		gap: 0.3rem;
 	}
 
+	&__header-edit-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		padding: 0.5rem 0.9rem;
+		border: none;
+		border-radius: 8px;
+		background: rgb(var(--primary-color));
+		color: #fff;
+		font-weight: 600;
+		font-size: 14px;
+		white-space: nowrap;
+		cursor: pointer;
+		transition: filter 0.15s ease;
+
+		&:hover {
+			filter: brightness(1.08);
+		}
+	}
+
 	&__icon-btn {
 		width: 36px;
 		height: 36px;

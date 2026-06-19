@@ -218,11 +218,15 @@ export class ZktCompetitionResolver {
 	) {
 		const current = await getZktCompetitionById(id);
 		if (!current) throw new GraphQLError(ErrorCode.NOT_FOUND);
-		const editableStates = ['DRAFT', 'CONFIRMED', 'ANNOUNCED'];
-		if (!editableStates.includes(current.status)) {
+		// Finished/published/cancelled competitions are historical records and stay
+		// locked. Everything up to (and including) ONGOING is editable so organisers
+		// can still fix venue, competitor limit, contact, dates etc. after the
+		// registration has opened.
+		const lockedStates = ['FINISHED', 'PUBLISHED', 'CANCELLED'];
+		if (lockedStates.includes(current.status)) {
 			throw new GraphQLError(
 				ErrorCode.BAD_INPUT,
-				'Only DRAFT, CONFIRMED or ANNOUNCED competitions can be edited'
+				'Finished, published or cancelled competitions cannot be edited'
 			);
 		}
 
