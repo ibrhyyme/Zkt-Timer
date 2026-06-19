@@ -151,7 +151,7 @@ export default function ZktCompetitionDetail() {
 	const {t, i18n} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
 	const history = useHistory();
 	const liveMatch = useRouteMatch<{eventId?: string; roundNumber?: string}>(
-		'/community/zkt-competitions/:competitionId/live/:eventId?/:roundNumber?'
+		'/zkt-competitions/:competitionId/live/:eventId?/:roundNumber?'
 	);
 	const isLiveRoute = !!liveMatch;
 
@@ -235,9 +235,9 @@ export default function ZktCompetitionDetail() {
 	function handleTab(id: TabId) {
 		setTab(id);
 		if (id === 'live') {
-			history.push(`/community/zkt-competitions/${competitionId}/live`);
+			history.push(`/zkt-competitions/${competitionId}/live`);
 		} else {
-			history.push(`/community/zkt-competitions/${competitionId}`);
+			history.push(`/zkt-competitions/${competitionId}`);
 		}
 	}
 
@@ -305,7 +305,7 @@ export default function ZktCompetitionDetail() {
 								className={b('live-now-chip')}
 								onClick={() =>
 									history.push(
-										`/community/zkt-competitions/${competitionId}/live/${lr.eventId}/${lr.roundNumber}`
+										`/zkt-competitions/${competitionId}/live/${lr.eventId}/${lr.roundNumber}`
 									)
 								}
 							>

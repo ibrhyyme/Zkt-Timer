@@ -145,7 +145,7 @@ function RoundPanel({row}: {row: any}) {
 								className={b('group-card')}
 								onClick={() =>
 									history.push(
-										`/community/zkt-competitions/${competitionId}/activities/${g.id}`
+										`/zkt-competitions/${competitionId}/activities/${g.id}`
 									)
 								}
 							>

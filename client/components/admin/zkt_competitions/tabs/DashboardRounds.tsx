@@ -401,7 +401,7 @@ export default function DashboardRounds({
 													className={b('scramble-action-btn', {icon: true})}
 													onClick={() =>
 														window.open(
-															`/community/zkt-competitions/${detail.id}/projector/${ev.event_id}/${round.round_number}`,
+															`/zkt-competitions/${detail.id}/projector/${ev.event_id}/${round.round_number}`,
 															'_blank'
 														)
 													}

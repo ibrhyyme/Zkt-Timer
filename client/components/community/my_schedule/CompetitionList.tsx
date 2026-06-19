@@ -286,7 +286,7 @@ export default function CompetitionList() {
 				className={b('comp-card', {finished: isFinished, ongoing: isOngoing, mine: opts.mine})}
 				onClick={() =>
 					comp.__zkt
-						? history.push(`/community/zkt-competitions/${comp.slug || comp.id}`)
+						? history.push(`/zkt-competitions/${comp.slug || comp.id}`)
 						: handleSelectCompetition(comp.id)
 				}
 				onMouseEnter={() => !comp.__zkt && handleHoverPrefetch(comp.id)}
@@ -337,7 +337,7 @@ export default function CompetitionList() {
 			<div
 				key={comp.id}
 				className={b('zkt-card', {finished: isFinished, ongoing: isOngoing})}
-				onClick={() => history.push(`/community/zkt-competitions/${comp.slug || comp.id}`)}
+				onClick={() => history.push(`/zkt-competitions/${comp.slug || comp.id}`)}
 			>
 				<span className={b('zkt-card-rail')} aria-hidden="true" />
 				<div className={b('zkt-card-main')}>

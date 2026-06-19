@@ -63,7 +63,7 @@ export default class ZktRegistrationStatusNotification extends Notification {
 	}
 
 	link() {
-		return `${process.env.BASE_URI}/community/zkt-competitions/${this.meta.competitionId}`;
+		return `${process.env.BASE_URI}/zkt-competitions/${this.meta.competitionId}`;
 	}
 
 	linkText() {

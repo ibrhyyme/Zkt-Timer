@@ -211,16 +211,16 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/community/competitions', App, Community, MySchedule, false),
 
 	// ZKT Unofficial Competitions (public for SEO)
-	route('/community/zkt-competitions/:competitionId/competitors/:userId', App, Community, ZktCompetitorDetail, false),
-	route('/community/zkt-competitions/:competitionId/activities/:groupId', App, Community, ZktActivityDetail, false),
+	route('/zkt-competitions/:competitionId/competitors/:userId', App, Community, ZktCompetitorDetail, false),
+	route('/zkt-competitions/:competitionId/activities/:groupId', App, Community, ZktActivityDetail, false),
 	// Projector — fullscreen venue display (standalone, no nav)
-	route('/community/zkt-competitions/:competitionId/projector/:eventId/:roundNumber', null, App, ZktProjector, false, true, false, true),
-	route('/community/zkt-competitions/:competitionId/live/:eventId/:roundNumber', App, Community, ZktCompetitionDetail, false),
-	route('/community/zkt-competitions/:competitionId/live/:eventId', App, Community, ZktCompetitionDetail, false),
-	route('/community/zkt-competitions/:competitionId/live', App, Community, ZktCompetitionDetail, false),
-	route('/community/zkt-competitions/:competitionId', App, Community, ZktCompetitionDetail, false),
-	route('/community/zkt-records', App, Community, ZktRecordsPage, false),
-	route('/community/zkt-rankings', App, Community, ZktRankingsPage, false),
+	route('/zkt-competitions/:competitionId/projector/:eventId/:roundNumber', null, App, ZktProjector, false, true, false, true),
+	route('/zkt-competitions/:competitionId/live/:eventId/:roundNumber', App, Community, ZktCompetitionDetail, false),
+	route('/zkt-competitions/:competitionId/live/:eventId', App, Community, ZktCompetitionDetail, false),
+	route('/zkt-competitions/:competitionId/live', App, Community, ZktCompetitionDetail, false),
+	route('/zkt-competitions/:competitionId', App, Community, ZktCompetitionDetail, false),
+	route('/zkt-records', App, Community, ZktRecordsPage, false),
+	route('/zkt-rankings', App, Community, ZktRankingsPage, false),
 
 	// Rankings
 	route('/ranks', null, App, Rankings, false),
@@ -259,6 +259,16 @@ export const routes: (PageContext | RedirectPath)[] = [
 	routeRedirect('/account', '/account/personal-info'),
 	routeRedirect('/account/pro', '/pro'),
 	routeRedirect('/account/password', '/account/personal-info'),
+	// Legacy /community/zkt-* links -> new /zkt-* (param-preserving 301 via SSR).
+	routeRedirect('/community/zkt-competitions/:competitionId/competitors/:userId', '/zkt-competitions/:competitionId/competitors/:userId'),
+	routeRedirect('/community/zkt-competitions/:competitionId/activities/:groupId', '/zkt-competitions/:competitionId/activities/:groupId'),
+	routeRedirect('/community/zkt-competitions/:competitionId/projector/:eventId/:roundNumber', '/zkt-competitions/:competitionId/projector/:eventId/:roundNumber'),
+	routeRedirect('/community/zkt-competitions/:competitionId/live/:eventId/:roundNumber', '/zkt-competitions/:competitionId/live/:eventId/:roundNumber'),
+	routeRedirect('/community/zkt-competitions/:competitionId/live/:eventId', '/zkt-competitions/:competitionId/live/:eventId'),
+	routeRedirect('/community/zkt-competitions/:competitionId/live', '/zkt-competitions/:competitionId/live'),
+	routeRedirect('/community/zkt-competitions/:competitionId', '/zkt-competitions/:competitionId'),
+	routeRedirect('/community/zkt-records', '/zkt-records'),
+	routeRedirect('/community/zkt-rankings', '/zkt-rankings'),
 	routeRedirect('/community/friends', '/community/competitions'),
 	routeRedirect('/community', '/community/competitions'),
 	routeRedirect('/admin', '/admin/dashboard'),

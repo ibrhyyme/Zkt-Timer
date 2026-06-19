@@ -87,7 +87,7 @@ export default class ZktRoundFinishedNotification extends Notification {
 	}
 
 	link() {
-		return `${process.env.BASE_URI}/community/zkt-competitions/${this.meta.competitionId}/live/${this.meta.eventId}/${this.meta.roundNumber}`;
+		return `${process.env.BASE_URI}/zkt-competitions/${this.meta.competitionId}/live/${this.meta.eventId}/${this.meta.roundNumber}`;
 	}
 
 	linkText() {
