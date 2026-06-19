@@ -106,7 +106,7 @@ async function loadAssets(pdf: jsPDF): Promise<Assets> {
 		loadArrayBuffer('/public/fonts/Roboto-Bold.ttf'),
 		loadArrayBuffer('/public/fonts/ComicNeue-Bold.ttf'),
 		loadArrayBuffer('/public/fonts/ComicNeue-Regular.ttf'),
-		loadAsDataUrl('/public/images/zkt-logo.png'),
+		loadAsDataUrl('/public/images/zkt-logo-dark.png'),
 		loadAsDataUrl('/public/images/sponsors/beyoglu.png'),
 	]);
 
@@ -217,7 +217,7 @@ function drawFooter(pdf: jsPDF, a: Assets, opts: CertCommon, pageW: number, page
 	const leftX = 48;
 	if (a.zktLogo) {
 		try {
-			pdf.addImage(a.zktLogo, 'PNG', leftX - 13, baseY - 30, 26, 26);
+			pdf.addImage(a.zktLogo, 'PNG', leftX - 18, baseY - 44, 36, 36);
 		} catch {
 			/* ignore */
 		}
@@ -242,9 +242,9 @@ function drawFooter(pdf: jsPDF, a: Assets, opts: CertCommon, pageW: number, page
 	const rightX = pageW - 48;
 	if (a.sponsorLogo) {
 		try {
-			const h = 26;
+			const h = 38;
 			const w = h * (348 / 802); // keep aspect ratio
-			pdf.addImage(a.sponsorLogo, 'PNG', rightX - w / 2, baseY - 32, w, h);
+			pdf.addImage(a.sponsorLogo, 'PNG', rightX - w / 2, baseY - 46, w, h);
 		} catch {
 			/* ignore */
 		}

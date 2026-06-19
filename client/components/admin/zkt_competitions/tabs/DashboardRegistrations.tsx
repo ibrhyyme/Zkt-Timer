@@ -37,6 +37,12 @@ const DELETE_REGISTRATION = gql`
 	}
 `;
 
+const DELETE_ALL_REGISTRATIONS = gql`
+	mutation DeleteAllZktRegistrations($competitionId: String!) {
+		deleteAllZktRegistrations(competitionId: $competitionId)
+	}
+`;
+
 const STATUSES: Array<{id: string; key: string}> = [
 	{id: '', key: 'filter_all'},
 	{id: 'PENDING', key: 'registration_pending'},
@@ -73,6 +79,20 @@ export default function DashboardRegistrations({
 		try {
 			await gqlMutate(DELETE_REGISTRATION, {registrationId});
 			toastSuccess(t('registration_deleted'));
+			onUpdated();
+		} catch (e: any) {
+			toastError(e?.message || t('error'));
+		}
+	}
+
+	async function deleteAll() {
+		const total = detail.registrations.length;
+		if (total === 0) return;
+		if (!window.confirm(t('delete_all_confirm', {count: total}))) return;
+		try {
+			const res = await gqlMutate(DELETE_ALL_REGISTRATIONS, {competitionId: detail.id});
+			toastSuccess(t('all_deleted', {count: res?.data?.deleteAllZktRegistrations ?? total}));
+			setSelected(new Set());
 			onUpdated();
 		} catch (e: any) {
 			toastError(e?.message || t('error'));
@@ -232,6 +252,16 @@ export default function DashboardRegistrations({
 						<button className={b('create-btn', {ghost: true})} onClick={openImportModal}>
 							<UploadSimple weight="bold" /> {t('import_competitors')}
 						</button>
+						{totalCount > 0 && (
+							<button
+								className={b('action-btn', {delete: true})}
+								style={{marginLeft: 'auto'}}
+								onClick={deleteAll}
+								title={t('delete_all_competitors')}
+							>
+								<Trash weight="bold" /> {t('delete_all_competitors')}
+							</button>
+						)}
 					</>
 				)}
 			</div>

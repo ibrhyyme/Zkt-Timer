@@ -473,6 +473,7 @@ type Mutation {
   registerForZktCompetition(input: ZktRegistrationInput): ZktRegistration
   withdrawZktRegistration(competitionId: String): ZktRegistration
   deleteZktRegistration(registrationId: String): Boolean
+  deleteAllZktRegistrations(competitionId: String): Int
   updateZktRegistrationStatus(input: UpdateZktRegistrationStatusInput): ZktRegistration
   updateMyZktRegistration(input: UpdateMyZktRegistrationInput): ZktRegistration
   bulkUpdateZktRegistrations(input: BulkUpdateZktRegistrationsInput): [ZktRegistration]
