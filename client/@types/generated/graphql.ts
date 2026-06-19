@@ -930,6 +930,7 @@ export type Mutation = {
   deleteAllSolves?: Maybe<Scalars['Void']>;
   deleteAllSolvesInSession?: Maybe<Scalars['Void']>;
   deleteAllTrainingSolves?: Maybe<Scalars['Void']>;
+  deleteAllZktRegistrations?: Maybe<Scalars['Int']>;
   deleteAnnouncement?: Maybe<Scalars['Boolean']>;
   deleteBadgeType?: Maybe<BadgeType>;
   deleteCustomCubeType?: Maybe<CustomCubeType>;
@@ -1300,6 +1301,11 @@ export type MutationDeleteAlgorithmOverrideArgs = {
 
 export type MutationDeleteAllSolvesInSessionArgs = {
   sessionId?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationDeleteAllZktRegistrationsArgs = {
+  competitionId?: InputMaybe<Scalars['String']>;
 };
 
 

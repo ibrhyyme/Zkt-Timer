@@ -1,4 +1,4 @@
-import {Arg, Authorized, Ctx, Mutation, Query, Resolver} from 'type-graphql';
+import {Arg, Authorized, Ctx, Int, Mutation, Query, Resolver} from 'type-graphql';
 import {GraphQLContext} from '../@types/interfaces/server.interface';
 import {Role} from '../middlewares/auth';
 import GraphQLError from '../util/graphql_error';
@@ -236,6 +236,45 @@ export class ZktRegistrationResolver {
 		}
 
 		return true;
+	}
+
+	@Authorized([Role.LOGGED_IN])
+	@Mutation(() => Int)
+	async deleteAllZktRegistrations(
+		@Ctx() context: GraphQLContext,
+		@Arg('competitionId') competitionId: string
+	) {
+		await assertCanModifyCompetition(context.user, competitionId);
+
+		// Collect every registration (and any ghost person ids) up front.
+		const regs = await getPrisma().zktRegistration.findMany({
+			where: {competition_id: competitionId},
+			select: {id: true, person_id: true},
+		});
+		if (regs.length === 0) return 0;
+
+		const regIds = regs.map((r) => r.id);
+		const personIds = regs.map((r) => r.person_id).filter((p): p is string => !!p);
+
+		// Hard delete all registrations + their child rows in one transaction.
+		await getPrisma().$transaction(async (tx) => {
+			await tx.zktRegistrationEvent.deleteMany({where: {registration_id: {in: regIds}}});
+			await tx.zktRegistrationHistory.deleteMany({where: {registration_id: {in: regIds}}});
+			await tx.zktRegistration.deleteMany({where: {competition_id: competitionId}});
+		});
+
+		// Ghost (account-less) persons exist only for this comp — remove them too.
+		// Best-effort and OUTSIDE the tx: a FK error inside the tx would roll the
+		// whole delete back. Assignments/results cascade on person delete.
+		if (personIds.length > 0) {
+			await getPrisma()
+				.zktPerson.deleteMany({where: {id: {in: personIds}}})
+				.catch(() => undefined);
+		}
+
+		emitZktRegistrationUpdated(competitionId, {registrationId: '', status: 'DELETED'});
+
+		return regs.length;
 	}
 
 	@Authorized([Role.LOGGED_IN])
