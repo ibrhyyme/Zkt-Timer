@@ -153,7 +153,11 @@ export default function AdminZktCompetitions() {
 			) : (
 				<div className={b('list')}>
 					{items.map((comp) => (
-						<div key={comp.id} className={b('card')}>
+						<div
+							key={comp.id}
+							className={b('card')}
+							onClick={() => history.push(`/organizer/${comp.id}`)}
+						>
 							<div className={b('card-main')}>
 								<div className={b('card-title')}>{comp.name}</div>
 								<div className={b('card-meta')}>
@@ -178,13 +182,13 @@ export default function AdminZktCompetitions() {
 							<div className={b('card-actions')}>
 								<button
 									className={b('action-btn')}
-									onClick={() => history.push(`/organizer/${comp.id}`)}
+									onClick={(e) => {e.stopPropagation(); history.push(`/organizer/${comp.id}`);}}
 								>
 									<PencilSimple weight="bold" /> {t('manage')}
 								</button>
 								<button
 									className={b('action-btn', {danger: true})}
-									onClick={() => handleDelete(comp)}
+									onClick={(e) => {e.stopPropagation(); handleDelete(comp);}}
 									title={t('delete')}
 								>
 									<Trash weight="bold" />
