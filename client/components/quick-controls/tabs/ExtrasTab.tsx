@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useDispatch } from 'react-redux';
 import { setSetting, toggleSetting } from '../../../db/settings/update';
 import { useSettings } from '../../../util/hooks/useSettings';
 import { useGeneral } from '../../../util/hooks/useGeneral';
+import { useMe } from '../../../util/hooks/useMe';
+import { isProEnabled, isNotPro } from '../../../lib/pro';
+import { openProOnlyModal } from '../../common/pro_only/openProOnlyModal';
 import { isNative } from '../../../util/platform';
-import { CaretDown, CaretUp, Minus, Plus } from 'phosphor-react';
+import { CaretDown, CaretUp, Crown, Minus, Plus } from 'phosphor-react';
 import { TimerModuleType } from '../../timer/@types/enums';
 import { MOBILE_MODULE_OPTIONS } from '../../timer/@types/mobile_modules';
 import { useSlamStop } from '../../../util/slam-stop/settings';
@@ -205,11 +209,16 @@ export default function ExtrasTab({
 	const mobileMode = useGeneral('mobile_mode');
 	const manualEntry = useSettings('manual_entry');
 	const slamStop = useSlamStop();
+	const me = useMe();
+	const dispatch = useDispatch();
 
 	// Device-local setting (NOT a synced Redux setting) — only meaningful where
 	// the touch timer + KeyWatcher stop path is active. Availability check keeps
 	// it hidden on old binaries that don't ship the native plugin yet.
 	const slamVisible = isSlamDetectorAvailable() && timerType === 'keyboard' && !manualEntry && !hideSlamStop;
+	// Pro feature: shown to everyone (visible-but-locked), but non-Pro users get a
+	// "Pro" badge + upsell modal instead of the toggle. PRO_ENABLED=false → no gate.
+	const slamProGated = isProEnabled() && isNotPro(me);
 
 	const extrasOptions = [
 		{
@@ -291,13 +300,32 @@ export default function ExtrasTab({
 				/>
 			))}
 
-			<ExtrasOption
-				label={t('quick_controls.slam_to_stop')}
-				isActive={slamStop.enabled}
-				hidden={!slamVisible}
-				onClick={() => slamStop.setEnabled(!slamStop.enabled)}
-			/>
-			{slamVisible && slamStop.enabled && <SlamSensitivitySlider />}
+			{slamVisible && slamProGated ? (
+				// Visible-but-locked: tap anywhere on the row opens the Pro upsell modal
+				<button
+					type="button"
+					onClick={() => openProOnlyModal(dispatch, t, 'slam_to_stop')}
+					className="w-full group flex items-center justify-between py-4 px-4 rounded-xl bg-module border border-text/[0.08] hover:border-violet-500/40 transition-all duration-200"
+				>
+					<span className="font-medium text-text/80 group-hover:text-text transition-colors">
+						{t('quick_controls.slam_to_stop')}
+					</span>
+					<span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold text-white bg-gradient-to-br from-violet-600 to-purple-500 shadow-lg shadow-violet-500/30">
+						<Crown weight="fill" size={12} />
+						Pro
+					</span>
+				</button>
+			) : (
+				<>
+					<ExtrasOption
+						label={t('quick_controls.slam_to_stop')}
+						isActive={slamStop.enabled}
+						hidden={!slamVisible}
+						onClick={() => slamStop.setEnabled(!slamStop.enabled)}
+					/>
+					{slamVisible && slamStop.enabled && <SlamSensitivitySlider />}
+				</>
+			)}
 
 			<ExtrasNumberInput
 				label={t('quick_controls.freeze_time')}
