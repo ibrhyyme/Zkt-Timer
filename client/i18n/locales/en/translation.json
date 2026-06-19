@@ -3254,6 +3254,10 @@
             "competition_follow": {
                 "title": "Follow competitors",
                 "desc": "With Pro, follow up to 5 competitors in any WCA competition and receive real-time notifications for results, advancements, and podium finishes."
+            },
+            "slam_to_stop": {
+                "title": "Drop to Stop",
+                "desc": "Finish your solve and drop the cube — or your hands — on the table to stop the timer automatically. No need to reach for the screen, just like a StackMat."
             }
         },
         "highlights": {
@@ -3285,7 +3289,10 @@
             "pdf_alternatives": "Alternative algorithms included",
             "pdf_stats": "Export all or selected algorithms",
             "follow_realtime": "Notifications the moment results go live",
-            "follow_limit": "Up to 5 follows per competition"
+            "follow_limit": "Up to 5 follows per competition",
+            "slam_drop": "Stop by tapping the table, not the screen",
+            "slam_calibrate": "Sensitivity tuned to every table",
+            "slam_stackmat": "StackMat feel — no hardware needed"
         }
     },
     "battle": {

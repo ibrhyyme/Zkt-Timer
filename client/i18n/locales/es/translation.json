@@ -3254,6 +3254,10 @@
             "competition_follow": {
                 "title": "Seguir competidores",
                 "desc": "Con Pro, sigue hasta 5 competidores en cualquier competencia WCA y recibe notificaciones en tiempo real de resultados, avances y podios."
+            },
+            "slam_to_stop": {
+                "title": "Soltar para Detener",
+                "desc": "Termina tu resolución y suelta el cubo o las manos sobre la mesa para detener el cronómetro automáticamente. Sin tocar la pantalla, como un StackMat."
             }
         },
         "highlights": {
@@ -3285,7 +3289,10 @@
             "pdf_alternatives": "Algoritmos alternativos incluidos",
             "pdf_stats": "Exporta todos o los algoritmos seleccionados",
             "follow_realtime": "Notificaciones en cuanto se publican los resultados",
-            "follow_limit": "Hasta 5 seguidos por competencia"
+            "follow_limit": "Hasta 5 seguidos por competencia",
+            "slam_drop": "Detén golpeando la mesa, no la pantalla",
+            "slam_calibrate": "Sensibilidad ajustada a cada mesa",
+            "slam_stackmat": "Sensación StackMat — sin hardware"
         }
     },
     "battle": {

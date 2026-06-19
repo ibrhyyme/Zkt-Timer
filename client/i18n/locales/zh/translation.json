@@ -3254,6 +3254,10 @@
             "competition_follow": {
                 "title": "关注选手",
                 "desc": "通过 Pro 在任何 WCA 比赛中关注最多 5 名选手，实时接收成绩、晋级和领奖台通知。"
+            },
+            "slam_to_stop": {
+                "title": "放下停止",
+                "desc": "完成还原后，把魔方或双手放到桌上即可自动停止计时。无需触碰屏幕，就像 StackMat 一样。"
             }
         },
         "highlights": {
@@ -3285,7 +3289,10 @@
             "pdf_alternatives": "包含替代公式",
             "pdf_stats": "导出全部或选定公式",
             "follow_realtime": "结果发布即收到通知",
-            "follow_limit": "每个比赛最多 5 个关注"
+            "follow_limit": "每个比赛最多 5 个关注",
+            "slam_drop": "拍桌停止，无需触屏",
+            "slam_calibrate": "针对每张桌子调节灵敏度",
+            "slam_stackmat": "StackMat 手感 — 无需硬件"
         }
     },
     "battle": {

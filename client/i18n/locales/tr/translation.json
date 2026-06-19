@@ -3252,6 +3252,10 @@
             "competition_follow": {
                 "title": "Yarışmacıları Takip Et",
                 "desc": "Pro üyelikle her WCA yarışmasında 5 yarışmacıya kadar takibe al. Sonuçlar, üst tura geçişler ve podyum bildirimleri anlık olarak ulaşır."
+            },
+            "slam_to_stop": {
+                "title": "Bırakınca Durdur",
+                "desc": "Çözümü bitir, küpü ya da ellerini masaya bırak — timer otomatik dursun. Ellerini ekrana götürmene gerek yok, tıpkı StackMat gibi."
             }
         },
         "highlights": {
@@ -3283,7 +3287,10 @@
             "pdf_alternatives": "Alternatif algoritmalar dahil",
             "pdf_stats": "Toplu veya seçili algoritmaların çıktısı",
             "follow_realtime": "Sonuçlar yayınlanır yayınlanmaz bildirim",
-            "follow_limit": "Yarışma başına 5 takip hakkı"
+            "follow_limit": "Yarışma başına 5 takip hakkı",
+            "slam_drop": "Ekrana dokunmadan, masaya vurarak durdur",
+            "slam_calibrate": "Her masaya göre hassasiyet ayarı",
+            "slam_stackmat": "StackMat hissi — donanım gerekmez"
         }
     },
     "battle": {
