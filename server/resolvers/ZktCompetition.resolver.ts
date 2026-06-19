@@ -12,6 +12,7 @@ import {
 	ZktCompetitionFilterInput,
 	CancelZktCompetitionInput,
 	ZktPodium,
+	ZktParticipation,
 	ZktAllTimeRanking,
 	ZktScheduleItem,
 	CreateZktScheduleItemInput,
@@ -34,7 +35,7 @@ import {
 	unpublishZktResults as unpublishResults,
 } from '../models/zkt_competition';
 import {buildZktWcif} from '../models/zkt_wcif';
-import {getZktPodiums, getZktAllTimeRankings} from '../models/zkt_podium';
+import {getZktPodiums, getZktParticipation, getZktAllTimeRankings} from '../models/zkt_podium';
 import {emitZktCompStatusChanged, emitZktCompListChanged} from '../zkt_competition';
 import {sendEmailWithTemplate} from '../services/ses';
 
@@ -140,6 +141,12 @@ export class ZktCompetitionResolver {
 	@Query(() => [ZktPodium])
 	async zktCompetitionPodiums(@Arg('id') id: string) {
 		return getZktPodiums(id);
+	}
+
+	@Authorized([Role.LOGGED_IN])
+	@Query(() => [ZktParticipation])
+	async zktCompetitionParticipation(@Arg('id') id: string) {
+		return getZktParticipation(id);
 	}
 
 	@Authorized([Role.LOGGED_IN])
