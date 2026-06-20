@@ -60,6 +60,7 @@ const DETAIL_QUERY = gql`
 					cutoff_attempts
 					advancement_type
 					advancement_level
+					group_count
 					status
 					groups {
 						id
@@ -85,6 +86,7 @@ const DETAIL_QUERY = gql`
 				person_id
 				status
 				notes
+				registration_number
 				created_at
 				user {
 					id
@@ -269,7 +271,7 @@ export default function CompetitionDashboard() {
 						<button
 							type="button"
 							className={b('icon-btn', {ghost: true})}
-							onClick={() => window.open(`/zkt-competitions/${detail.id}`, '_blank')}
+							onClick={() => window.open(`/zkt-competitions/${detail.slug || detail.id}`, '_blank')}
 							title={t('public_view')}
 							aria-label={t('public_view')}
 						>

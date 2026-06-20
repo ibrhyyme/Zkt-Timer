@@ -62,6 +62,7 @@ export default function DashboardRegistrations({
 	const {t} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
 	const dispatch = useDispatch();
 	const [filter, setFilter] = useState<string>('');
+	const [eventFilter, setEventFilter] = useState<string>(''); // comp_event.id or ''
 	const [selected, setSelected] = useState<Set<string>>(new Set());
 
 	async function setStatus(registrationId: string, status: string) {
@@ -147,9 +148,12 @@ export default function DashboardRegistrations({
 		);
 	}
 
-	const filtered = filter
-		? detail.registrations.filter((r: any) => r.status === filter)
-		: detail.registrations;
+	const filtered = detail.registrations.filter((r: any) => {
+		if (filter && r.status !== filter) return false;
+		if (eventFilter && !(r.events || []).some((e: any) => e.comp_event_id === eventFilter))
+			return false;
+		return true;
+	});
 
 	// Count by status
 	const counts: Record<string, number> = {};
@@ -157,6 +161,18 @@ export default function DashboardRegistrations({
 		counts[r.status] = (counts[r.status] || 0) + 1;
 	}
 	const totalCount = detail.registrations.length;
+
+	// Count by event (how many competitors registered for each event) + how many
+	// are in 2+ events ("kaç tanesi her ikisinde de yarışıyor").
+	const eventCounts: Record<string, number> = {};
+	for (const r of detail.registrations) {
+		for (const e of r.events || []) {
+			eventCounts[e.comp_event_id] = (eventCounts[e.comp_event_id] || 0) + 1;
+		}
+	}
+	const multiEventCount = detail.registrations.filter(
+		(r: any) => (r.events || []).length >= 2
+	).length;
 
 	// Map compEventId -> event_id
 	const compEventMap = new Map<string, string>();
@@ -215,6 +231,41 @@ export default function DashboardRegistrations({
 					);
 				})}
 			</div>
+
+			{detail.events.length > 1 && (
+				<div className={b('filter-tabs')}>
+					<button
+						className={b('filter-pill', {active: eventFilter === ''})}
+						onClick={() => setEventFilter('')}
+					>
+						<span>{t('filter_all_events')}</span>
+						<span className={b('filter-pill-count')}>{totalCount}</span>
+					</button>
+					{detail.events.map((ev: any) => (
+						<button
+							key={ev.id}
+							className={b('filter-pill', {active: eventFilter === ev.id})}
+							onClick={() => setEventFilter(ev.id)}
+						>
+							<span className={`cubing-icon event-${ev.event_id}`} />
+							<span>{getEventName(ev.event_id)}</span>
+							<span className={b('filter-pill-count')}>{eventCounts[ev.id] || 0}</span>
+						</button>
+					))}
+				</div>
+			)}
+
+			{detail.events.length > 1 && multiEventCount > 0 && (
+				<div
+					style={{
+						fontSize: 13,
+						color: 'rgb(var(--text-color))',
+						margin: '0 0 0.75rem 0.25rem',
+					}}
+				>
+					{t('multi_event_summary', {count: multiEventCount})}
+				</div>
+			)}
 
 			<div className={b('toolbar')}>
 				<button className={b('action-btn')} onClick={exportCsv} title={t('export_csv')}>

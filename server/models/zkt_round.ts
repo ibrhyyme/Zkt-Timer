@@ -37,6 +37,32 @@ export function assertRoundTransition(from: ZktRoundStatus, to: ZktRoundStatus):
 }
 
 /**
+ * Make a round have exactly `count` groups (numbered 1..count) WITHOUT touching
+ * existing ones — preserves their schedule (start/end times) and assignments.
+ * Only extra high-numbered groups are deleted and missing numbers created. Set
+ * on the Rounds tab; auto-distribute then fills these groups.
+ */
+export async function syncRoundGroups(roundId: string, count: number): Promise<void> {
+	const prisma = getPrisma();
+	const target = Math.max(0, count);
+	const existing = await prisma.zktGroup.findMany({
+		where: {round_id: roundId},
+		orderBy: {group_number: 'asc'},
+	});
+	// Remove groups beyond the target count (highest numbers first).
+	for (const g of existing.filter((x) => x.group_number > target)) {
+		await prisma.zktGroup.delete({where: {id: g.id}});
+	}
+	// Create any missing group numbers in 1..target.
+	const present = new Set(existing.map((g) => g.group_number));
+	for (let n = 1; n <= target; n++) {
+		if (!present.has(n)) {
+			await prisma.zktGroup.create({data: {round_id: roundId, group_number: n}});
+		}
+	}
+}
+
+/**
  * Returns the next round in the same comp_event, or null if this is the last round.
  */
 export async function getNextRound(roundId: string) {

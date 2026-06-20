@@ -7,6 +7,7 @@ import {
 	ZktPerson,
 	ImportZktCompetitorsInput,
 	AddZktPersonInput,
+	AddZktStaffInput,
 	UpdateZktPersonInput,
 } from '../schemas/ZktCompetition.schema';
 import {getPrisma} from '../database';
@@ -23,9 +24,35 @@ export class ZktPersonResolver {
 	@Authorized([Role.LOGGED_IN])
 	@Query(() => [ZktPerson])
 	async zktCompetitionPersons(@Arg('competitionId') competitionId: string) {
+		// Competitor ghost persons only — staff pool members are excluded.
 		return getPrisma().zktPerson.findMany({
-			where: {competition_id: competitionId},
+			where: {competition_id: competitionId, is_staff: false},
 			orderBy: {created_at: 'asc'},
+		});
+	}
+
+	// Account-less staff pool (judges/scramblers/runners) for this competition.
+	@Authorized([Role.LOGGED_IN])
+	@Query(() => [ZktPerson])
+	async zktCompetitionStaff(@Arg('competitionId') competitionId: string) {
+		return getPrisma().zktPerson.findMany({
+			where: {competition_id: competitionId, is_staff: true},
+			orderBy: {created_at: 'asc'},
+		});
+	}
+
+	@Authorized([Role.LOGGED_IN])
+	@Mutation(() => ZktPerson)
+	async addZktStaff(@Ctx() context: GraphQLContext, @Arg('input') input: AddZktStaffInput) {
+		await assertCanModifyCompetition(context.user, input.competitionId);
+		return getPrisma().zktPerson.create({
+			data: {
+				competition_id: input.competitionId,
+				first_name: input.firstName.trim(),
+				last_name: input.lastName.trim(),
+				country_code: input.country?.trim() || 'TR',
+				is_staff: true,
+			},
 		});
 	}
 

@@ -135,6 +135,9 @@ export class ZktPerson {
 	date_of_birth?: Date;
 
 	@Field()
+	is_staff: boolean;
+
+	@Field()
 	created_at: Date;
 }
 
@@ -283,6 +286,9 @@ export class ZktRound {
 	@Field(() => Int, {nullable: true})
 	advancement_level?: number;
 
+	@Field(() => Int, {nullable: true})
+	group_count?: number;
+
 	@Field(() => ZktRoundStatus)
 	status: ZktRoundStatus;
 
@@ -373,6 +379,9 @@ export class ZktRegistration {
 
 	@Field(() => Int, {nullable: true})
 	waiting_list_position?: number;
+
+	@Field(() => Int, {nullable: true})
+	registration_number?: number;
 
 	@Field()
 	created_at: Date;
@@ -1115,6 +1124,23 @@ export class AddZktPersonInput {
 	eventIds: string[];
 }
 
+// Account-less staff member (judge/scrambler/runner pool). No registration, no
+// events — only assignable to rounds. Separate from competitor ghost persons.
+@InputType()
+export class AddZktStaffInput {
+	@Field()
+	competitionId: string;
+
+	@Field()
+	firstName: string;
+
+	@Field()
+	lastName: string;
+
+	@Field({nullable: true})
+	country?: string;
+}
+
 @InputType()
 export class UpdateZktPersonInput {
 	@Field()
@@ -1167,6 +1193,9 @@ export class CreateZktRoundInput {
 
 	@Field(() => Int, {nullable: true})
 	advancementLevel?: number;
+
+	@Field(() => Int, {nullable: true})
+	groupCount?: number;
 }
 
 @InputType()
@@ -1191,6 +1220,9 @@ export class UpdateZktRoundInput {
 
 	@Field(() => Int, {nullable: true})
 	advancementLevel?: number;
+
+	@Field(() => Int, {nullable: true})
+	groupCount?: number;
 }
 
 @InputType()
@@ -1267,8 +1299,13 @@ export class AssignUserInput {
 	@Field({nullable: true})
 	groupId?: string;
 
-	@Field()
-	userId: string;
+	// Exactly one of userId / personId: registered account vs account-less
+	// staff/ghost person from the competition pool.
+	@Field({nullable: true})
+	userId?: string;
+
+	@Field({nullable: true})
+	personId?: string;
 
 	@Field(() => ZktAssignmentRole)
 	role: ZktAssignmentRole;
@@ -1315,13 +1352,32 @@ export class BulkAssignCompetitorsInput {
 	@Field()
 	roundId: string;
 
-	// Physical station/timer count = per-group capacity. Group count is derived
-	// from this: ceil(competitors / stationCount).
+	// Physical station/timer count = per-group capacity. Used to derive the group
+	// count as ceil(competitors / stationCount) ONLY when groupCount is absent.
 	@Field(() => Int)
 	stationCount: number;
 
+	// Explicit group count (from the round's group_count set on the Rounds tab).
+	// Takes precedence over the stationCount-derived count when provided.
+	@Field(() => Int, {nullable: true})
+	groupCount?: number;
+
 	@Field(() => [CompetitorRefInput])
 	competitors: CompetitorRefInput[];
+}
+
+// Distribute a single staff role (JUDGE/SCRAMBLER/RUNNER) round-robin across the
+// round's groups. Replaces existing assignments of that role for the round.
+@InputType()
+export class BulkAssignStaffInput {
+	@Field()
+	roundId: string;
+
+	@Field(() => ZktAssignmentRole)
+	role: ZktAssignmentRole;
+
+	@Field(() => [CompetitorRefInput])
+	staff: CompetitorRefInput[];
 }
 
 @InputType()

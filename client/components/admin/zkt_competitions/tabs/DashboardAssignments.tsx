@@ -91,6 +91,35 @@ const USER_SEARCH = gql`
 	}
 `;
 
+const STAFF_LIST = gql`
+	query ZktCompStaff($competitionId: String!) {
+		zktCompetitionStaff(competitionId: $competitionId) {
+			id
+			first_name
+			last_name
+			country_code
+		}
+	}
+`;
+
+const ADD_STAFF = gql`
+	mutation AddZktStaffAdmin($input: AddZktStaffInput!) {
+		addZktStaff(input: $input) {
+			id
+			first_name
+			last_name
+		}
+	}
+`;
+
+const BULK_ASSIGN_STAFF = gql`
+	mutation BulkAssignStaffAdmin($input: BulkAssignStaffInput!) {
+		bulkAssignStaff(input: $input) {
+			id
+		}
+	}
+`;
+
 const ROLE_LABELS: Record<string, string> = {
 	COMPETITOR: 'Yarışmacı',
 	JUDGE: 'Hakem',
@@ -190,11 +219,45 @@ export default function DashboardAssignments({
 		}
 	}
 
-	async function assignUser(roundId: string, groupId: string | null, userId: string, role: string) {
+	async function assignUser(
+		roundId: string,
+		groupId: string | null,
+		identity: {userId?: string; personId?: string},
+		role: string
+	) {
 		try {
 			await gqlMutate(ASSIGN_USER, {
-				input: {roundId, groupId, userId, role},
+				input: {roundId, groupId, ...identity, role},
 			});
+			fetchAssignments();
+		} catch (e: any) {
+			toastError(e?.message || t('error'));
+		}
+	}
+
+	// Distribute the whole staff pool of a role round-robin across this round's
+	// groups (server replaces existing assignments of that role).
+	async function autoDistStaff(role: string) {
+		if (!selectedRoundId) return;
+		if (groups.length === 0) {
+			toastError(t('no_groups'));
+			return;
+		}
+		try {
+			const res: any = await gqlMutate(STAFF_LIST, {competitionId: detail.id});
+			const pool = res?.data?.zktCompetitionStaff || [];
+			if (pool.length === 0) {
+				toastError(t('no_staff_pool'));
+				return;
+			}
+			await gqlMutate(BULK_ASSIGN_STAFF, {
+				input: {
+					roundId: selectedRoundId,
+					role,
+					staff: pool.map((p: any) => ({personId: p.id})),
+				},
+			});
+			toastSuccess(t('staff_distributed'));
 			fetchAssignments();
 		} catch (e: any) {
 			toastError(e?.message || t('error'));
@@ -231,7 +294,13 @@ export default function DashboardAssignments({
 
 		try {
 			await gqlMutate(BULK_ASSIGN, {
-				input: {roundId: selectedRoundId, stationCount, competitors},
+				input: {
+					roundId: selectedRoundId,
+					stationCount,
+					// Prefer the round's configured group count (Rounds tab) when set.
+					groupCount: selectedRound?.group_count ?? undefined,
+					competitors,
+				},
 			});
 			toastSuccess(t('auto_distributed'));
 			onUpdated();
@@ -242,8 +311,22 @@ export default function DashboardAssignments({
 	}
 
 	function openUserSearch(roundId: string, groupId: string | null, role: string) {
+		// Competitors come from registered users; staff roles can also pull from
+		// the account-less staff pool (teachers etc.) or add a new one inline.
 		dispatch(
-			openModal(<UserSearchModal roundId={roundId} groupId={groupId} role={role} onAssign={assignUser} />)
+			openModal(
+				role === 'COMPETITOR' ? (
+					<UserSearchModal roundId={roundId} groupId={groupId} role={role} onAssign={assignUser} />
+				) : (
+					<StaffPickerModal
+						competitionId={detail.id}
+						roundId={roundId}
+						groupId={groupId}
+						role={role}
+						onAssign={assignUser}
+					/>
+				)
+			)
 		);
 	}
 
@@ -320,7 +403,37 @@ export default function DashboardAssignments({
 				{selectedRound && selectedRound.round_number > 1
 					? t('distribution_hint_seeded')
 					: t('distribution_hint_round1')}
+				{selectedRound?.group_count ? (
+					<span> {t('using_round_group_count', {count: selectedRound.group_count})}</span>
+				) : null}
 			</div>
+
+			{/* Staff pool auto-distribute (round-level): spreads the whole staff
+			    pool of a role round-robin across this round's groups. */}
+			{groups.length > 0 && (
+				<div
+					style={{
+						display: 'flex',
+						gap: '0.5rem',
+						flexWrap: 'wrap',
+						alignItems: 'center',
+						marginBottom: '1rem',
+						fontSize: 13,
+						color: 'rgb(var(--text-color))',
+					}}
+				>
+					<span style={{fontWeight: 600}}>{t('auto_distribute_staff')}:</span>
+					<button className={b('action-btn')} onClick={() => autoDistStaff('JUDGE')}>
+						{t('role_judge')}
+					</button>
+					<button className={b('action-btn')} onClick={() => autoDistStaff('SCRAMBLER')}>
+						{t('role_scrambler')}
+					</button>
+					<button className={b('action-btn')} onClick={() => autoDistStaff('RUNNER')}>
+						{t('role_runner')}
+					</button>
+				</div>
+			)}
 
 			{/* Groups grid */}
 			{groups.length === 0 ? (
@@ -590,6 +703,14 @@ function RoleSection({
 	);
 }
 
+type AssignIdentity = {userId?: string; personId?: string};
+type AssignFn = (
+	roundId: string,
+	groupId: string | null,
+	identity: AssignIdentity,
+	role: string
+) => void;
+
 function UserSearchModal({
 	roundId,
 	groupId,
@@ -599,7 +720,7 @@ function UserSearchModal({
 	roundId: string;
 	groupId: string | null;
 	role: string;
-	onAssign: (roundId: string, groupId: string | null, userId: string, role: string) => void;
+	onAssign: AssignFn;
 }) {
 	const {t} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
 	const [search, setSearch] = useState('');
@@ -624,7 +745,7 @@ function UserSearchModal({
 	}, [search]);
 
 	function handleSelect(userId: string) {
-		onAssign(roundId, groupId, userId, role);
+		onAssign(roundId, groupId, {userId}, role);
 	}
 
 	return (
@@ -649,6 +770,161 @@ function UserSearchModal({
 							type="button"
 							className={b('user-row')}
 							onClick={() => handleSelect(u.id)}
+						>
+							{u.profile?.pfp_image?.url && (
+								<img className={b('user-avatar')} src={u.profile.pfp_image.url} alt="" />
+							)}
+							<span className={b('user-name')}>{u.username}</span>
+						</button>
+					))}
+				</div>
+			)}
+		</div>
+	);
+}
+
+// Staff assignment for judge/scrambler/runner roles: pick from the account-less
+// staff pool, add a brand-new staff member inline, or search registered users.
+function StaffPickerModal({
+	competitionId,
+	roundId,
+	groupId,
+	role,
+	onAssign,
+}: {
+	competitionId: string;
+	roundId: string;
+	groupId: string | null;
+	role: string;
+	onAssign: AssignFn;
+}) {
+	const {t} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
+	const [pool, setPool] = useState<any[]>([]);
+	const [first, setFirst] = useState('');
+	const [last, setLast] = useState('');
+	const [userQuery, setUserQuery] = useState('');
+	const [users, setUsers] = useState<any[]>([]);
+
+	const loadPool = useCallback(async () => {
+		try {
+			const res: any = await gqlMutate(STAFF_LIST, {competitionId});
+			setPool(res?.data?.zktCompetitionStaff || []);
+		} catch {
+			// ignore
+		}
+	}, [competitionId]);
+
+	useEffect(() => {
+		loadPool();
+	}, [loadPool]);
+
+	useEffect(() => {
+		if (userQuery.length < 2) {
+			setUsers([]);
+			return;
+		}
+		const handle = setTimeout(async () => {
+			try {
+				const res = await gqlMutate(USER_SEARCH, {
+					pageArgs: {page: 0, pageSize: 10, searchQuery: userQuery},
+				});
+				setUsers(res?.data?.userSearch?.items || []);
+			} catch {
+				// ignore
+			}
+		}, 300);
+		return () => clearTimeout(handle);
+	}, [userQuery]);
+
+	async function addNewStaff() {
+		if (!first.trim() || !last.trim()) return;
+		try {
+			const res: any = await gqlMutate(ADD_STAFF, {
+				input: {competitionId, firstName: first.trim(), lastName: last.trim()},
+			});
+			const person = res?.data?.addZktStaff;
+			setFirst('');
+			setLast('');
+			await loadPool();
+			// Assign the just-created staff member straight away.
+			if (person?.id) onAssign(roundId, groupId, {personId: person.id}, role);
+		} catch (e: any) {
+			toastError(e?.message || t('error'));
+		}
+	}
+
+	return (
+		<div className={b('modal-content')}>
+			<h2 className={b('modal-title')}>
+				{ROLE_LABELS[role] || role} {t('assign')}
+			</h2>
+
+			{/* Add a new account-less staff member */}
+			<div className={b('field')}>
+				<label className={b('label')}>{t('add_staff_member')}</label>
+				<div style={{display: 'flex', gap: '0.5rem'}}>
+					<input
+						className={b('input')}
+						value={first}
+						onChange={(e) => setFirst(e.target.value)}
+						placeholder={t('csv_col_first')}
+					/>
+					<input
+						className={b('input')}
+						value={last}
+						onChange={(e) => setLast(e.target.value)}
+						placeholder={t('csv_col_last')}
+					/>
+					<button
+						type="button"
+						className={b('action-btn', {primary: true})}
+						onClick={addNewStaff}
+						disabled={!first.trim() || !last.trim()}
+					>
+						<Plus weight="bold" />
+					</button>
+				</div>
+			</div>
+
+			{/* Existing staff pool */}
+			{pool.length > 0 && (
+				<div className={b('field')}>
+					<label className={b('label')}>{t('staff_pool')}</label>
+					<div className={b('user-list')}>
+						{pool.map((p) => (
+							<button
+								key={p.id}
+								type="button"
+								className={b('user-row')}
+								onClick={() => onAssign(roundId, groupId, {personId: p.id}, role)}
+							>
+								<span className={b('user-name')}>
+									{[p.first_name, p.last_name].filter(Boolean).join(' ')}
+								</span>
+							</button>
+						))}
+					</div>
+				</div>
+			)}
+
+			{/* Or assign a registered user */}
+			<div className={b('field')}>
+				<label className={b('label')}>{t('search_registered_user')}</label>
+				<input
+					className={b('input')}
+					value={userQuery}
+					onChange={(e) => setUserQuery(e.target.value)}
+					placeholder={t('search_user_placeholder')}
+				/>
+			</div>
+			{users.length > 0 && (
+				<div className={b('user-list')}>
+					{users.map((u) => (
+						<button
+							key={u.id}
+							type="button"
+							className={b('user-row')}
+							onClick={() => onAssign(roundId, groupId, {userId: u.id}, role)}
 						>
 							{u.profile?.pfp_image?.url && (
 								<img className={b('user-avatar')} src={u.profile.pfp_image.url} alt="" />

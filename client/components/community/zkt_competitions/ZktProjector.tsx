@@ -124,7 +124,10 @@ export default function ZktProjector() {
 		[compEvent, roundNumber]
 	);
 
-	const {results} = useZktLiveResults(competitionId, round?.id || null);
+	// Join the socket room by the real UUID (from the loaded detail), not the
+	// route param which may be a slug. detail is null until loaded → no-op join,
+	// then re-joins the correct room once the UUID arrives.
+	const {results} = useZktLiveResults(detail?.id ?? null, round?.id || null);
 
 	const attemptCount = round ? getFormatAttempts(round.format) : 5;
 	const hasAverage = round ? formatHasAverage(round.format) : true;

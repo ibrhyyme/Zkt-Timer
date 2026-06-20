@@ -82,8 +82,13 @@ export interface LiveResult {
  * Subscribe to live round results.
  * Joins Socket.IO room `zkt_comp_{competitionId}` on mount.
  * Listens for RESULT_UPDATED events and refetches the round's results.
+ *
+ * `competitionId` MUST be the competition's real UUID, not a slug — the server
+ * always emits to `zkt_comp_{uuid}` (resolvers use comp_event.competition_id).
+ * Passing a slug (route param on a slug-based URL) joins the wrong room and
+ * misses live events. Pass `null` until the UUID is known (no-op join).
  */
-export function useZktLiveResults(competitionId: string, roundId: string | null) {
+export function useZktLiveResults(competitionId: string | null, roundId: string | null) {
 	const [results, setResults] = useState<LiveResult[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [lastUpdated, setLastUpdated] = useState<number>(0);

@@ -372,6 +372,39 @@ export async function markResultNoShow(input: {
 }
 
 /**
+ * Recompute and persist ranking + provisional proceeds for every result in a
+ * round WITHOUT finalizing it. Keeps the live leaderboard (admin scoretaker +
+ * ZKT Live + projector) up to date as each attempt is entered, instead of
+ * staying blank until finalize. No records, no advancement carry, no status
+ * change — those belong to finalizeRound only. Safe to call on an ACTIVE round.
+ */
+export async function recomputeRoundRankings(roundId: string): Promise<void> {
+	const prisma = getPrisma();
+	const round = await prisma.zktRound.findUnique({
+		where: {id: roundId},
+		include: {results: true},
+	});
+	if (!round) return;
+
+	const ranked = rankResults(round.results, round.format);
+	const withAdvancement = determineAdvancement(
+		ranked,
+		round.advancement_type,
+		round.advancement_level,
+		round.format
+	);
+
+	await Promise.all(
+		withAdvancement.map((r) =>
+			prisma.zktResult.update({
+				where: {id: r.id},
+				data: {ranking: r.ranking, proceeds: r.proceeds},
+			})
+		)
+	);
+}
+
+/**
  * Finalize a round: compute rankings, advancement, apply records, and
  * carry advancing competitors to the next round as empty result rows.
  * `enteredById` is the acting admin's id, used as entered_by for carry rows.

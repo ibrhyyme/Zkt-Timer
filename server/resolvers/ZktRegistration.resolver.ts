@@ -25,6 +25,7 @@ import {
 	assertCanModifyCompetition,
 	getZktCompetitionById,
 	publicUserInclude,
+	nextRegistrationNumber,
 } from '../models/zkt_competition';
 import {
 	appendRegistrationHistory,
@@ -85,6 +86,11 @@ export class ZktRegistrationResolver {
 						notes: input.notes ?? null,
 						guests: input.guests ?? 0,
 						waiting_list_position: null,
+						// Re-registering after a withdraw keeps the original number, but
+						// assign one if this row never had it (e.g. pre-backfill rows).
+						...(existing.registration_number == null
+							? {registration_number: await nextRegistrationNumber(input.competitionId)}
+							: {}),
 					},
 			  })
 			: await getPrisma().zktRegistration.create({
@@ -94,6 +100,7 @@ export class ZktRegistrationResolver {
 						status: 'PENDING',
 						notes: input.notes ?? null,
 						guests: input.guests ?? 0,
+						registration_number: await nextRegistrationNumber(input.competitionId),
 					},
 			  });
 
@@ -605,6 +612,7 @@ export class ZktRegistrationResolver {
 						competition_id: input.competitionId,
 						user_id: input.userId,
 						status: 'APPROVED',
+						registration_number: await nextRegistrationNumber(input.competitionId),
 					},
 			  });
 

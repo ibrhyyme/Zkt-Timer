@@ -170,6 +170,8 @@ interface Competitor {
 	last_name?: string | null;
 	join_country?: string | null;
 	avatarUrl?: string;
+	// Competition-local registrant id — lets the scoretaker jump by typing "3".
+	registrationNumber?: number | null;
 }
 
 // Stable competitor key: the account id when present, else the ghost-person id.
@@ -277,6 +279,17 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 		};
 	}, [selectedRoundId, fetchResults]);
 
+	// competitor key (user_id || person_id) -> registrant number, from the
+	// competition registrations (results rows don't carry it).
+	const regNumberByKey = useMemo(() => {
+		const m = new Map<string, number>();
+		for (const r of detail.registrations || []) {
+			const key = r.user_id || r.person_id;
+			if (key && r.registration_number != null) m.set(key, r.registration_number);
+		}
+		return m;
+	}, [detail.registrations]);
+
 	const competitors: Competitor[] = useMemo(() => {
 		if (!selectedRound || !selectedEvent) return [];
 		if (selectedRound.round_number === 1) {
@@ -295,6 +308,7 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 					last_name: r.user?.last_name ?? r.person?.last_name,
 					join_country: r.user?.join_country ?? r.person?.country_code,
 					avatarUrl: r.user?.profile?.pfp_image?.url,
+					registrationNumber: r.registration_number,
 				}));
 		}
 		return results.map((r) => ({
@@ -306,8 +320,9 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 			last_name: r.user?.last_name ?? r.person?.last_name,
 			join_country: r.user?.join_country ?? r.person?.country_code,
 			avatarUrl: r.user?.profile?.pfp_image?.url,
+			registrationNumber: regNumberByKey.get(r.user_id || r.person_id) ?? null,
 		}));
-	}, [selectedRound, selectedEvent, detail.registrations, results]);
+	}, [selectedRound, selectedEvent, detail.registrations, results, regNumberByKey]);
 
 	// Auto-pick the first competitor when loading the round.
 	useEffect(() => {
@@ -321,11 +336,13 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 
 	const filteredCompetitors = useMemo(() => {
 		if (!search.trim()) return competitors;
-		const q = search.toLowerCase();
+		const q = search.trim().toLowerCase();
 		return competitors.filter(
 			(c) =>
 				c.username.toLowerCase().includes(q) ||
-				competitorDisplayName(c).toLowerCase().includes(q)
+				competitorDisplayName(c).toLowerCase().includes(q) ||
+				// Registrant number: "3" → competitor #3 (exact or prefix).
+				(c.registrationNumber != null && String(c.registrationNumber).startsWith(q))
 		);
 	}, [competitors, search]);
 
@@ -1162,8 +1179,15 @@ function CompetitorQuickSelect({
 			.filter(
 				(c) =>
 					c.username.toLowerCase().includes(q) ||
-					competitorDisplayName(c).toLowerCase().includes(q)
+					competitorDisplayName(c).toLowerCase().includes(q) ||
+					(c.registrationNumber != null && String(c.registrationNumber).startsWith(q))
 			)
+			// Exact registrant-number match first, so typing "3" + Enter lands on #3.
+			.sort((a, b) => {
+				const aExact = String(a.registrationNumber ?? '') === q ? 0 : 1;
+				const bExact = String(b.registrationNumber ?? '') === q ? 0 : 1;
+				return aExact - bExact;
+			})
 			.slice(0, 6);
 	}, [competitors, query]);
 
@@ -1206,6 +1230,18 @@ function CompetitorQuickSelect({
 								pick(c);
 							}}
 						>
+							{c.registrationNumber != null && (
+								<span
+									style={{
+										fontWeight: 700,
+										fontSize: 12,
+										minWidth: 20,
+										color: 'rgb(var(--primary-color))',
+									}}
+								>
+									{c.registrationNumber}
+								</span>
+							)}
 							{competitorFlag(c) && <span className={b('flag')}>{competitorFlag(c)}</span>}
 							<span>{competitorDisplayName(c)}</span>
 						</button>
