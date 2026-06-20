@@ -149,6 +149,8 @@ export default function ZktProjector() {
 	// Join the socket room by the real UUID (from the loaded detail), not the
 	// route param which may be a slug. detail is null until loaded → no-op join,
 	// then re-joins the correct room once the UUID arrives.
+	const {results} = useZktLiveResults(detail?.id ?? null, round?.id || null);
+
 	// Total competitors expected this round: round 1 = APPROVED registrations
 	// for this event; round 2+ = carried result rows. Feeds the clinched
 	// (green/orange) math so people who haven't gone yet count as a threat.
@@ -162,8 +164,6 @@ export default function ZktProjector() {
 				(r.events || []).some((e: any) => e.comp_event_id === compEvent.id)
 		).length;
 	}, [round, results, detail, compEvent]);
-
-	const {results} = useZktLiveResults(detail?.id ?? null, round?.id || null);
 
 	const attemptCount = round ? getFormatAttempts(round.format) : 5;
 	const hasAverage = round ? formatHasAverage(round.format) : true;
