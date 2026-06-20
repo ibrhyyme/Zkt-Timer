@@ -313,6 +313,51 @@ export class ZktResultResolver {
 		return true;
 	}
 
+	// Clear ALL times in a round at once (wrong event / wrong group / mis-entry).
+	// Competitor rows are KEPT (so they stay in the round and can be re-entered) —
+	// only the attempts/results are wiped. updateMany (not deleteMany) preserves
+	// round 2+ advancement-carry rows.
+	@Authorized([Role.LOGGED_IN])
+	@Mutation(() => Boolean)
+	async clearZktRoundResults(
+		@Ctx() context: GraphQLContext,
+		@Arg('roundId') roundId: string
+	) {
+		const round = await getRoundWithCompetition(roundId);
+		if (!round) throw new GraphQLError(ErrorCode.NOT_FOUND);
+
+		const competitionId = round.comp_event.competition_id;
+		await assertCanModifyCompetition(context.user, competitionId);
+
+		await getPrisma().zktResult.updateMany({
+			where: {round_id: roundId},
+			data: {
+				attempt_1: null,
+				attempt_2: null,
+				attempt_3: null,
+				attempt_4: null,
+				attempt_5: null,
+				best: null,
+				average: null,
+				ranking: null,
+				no_show: false,
+				proceeds: false,
+				single_record_tag: null,
+				average_record_tag: null,
+			},
+		});
+
+		// Wiping a finalized round can drop NR/PR tags — rebuild from scratch.
+		if (round.status === 'FINISHED') {
+			await rebuildRecordsForEvent(round.comp_event.event_id);
+		}
+		await recomputeRoundRankings(roundId);
+
+		emitZktResultUpdated(competitionId, {roundId, resultId: '', userId: null});
+
+		return true;
+	}
+
 	@Authorized([Role.LOGGED_IN])
 	@Mutation(() => ZktRound)
 	async finalizeZktRound(

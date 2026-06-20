@@ -3388,6 +3388,9 @@
         "info_alt_sor": "Kinch 排名是衡量魔方玩家全能能力的另一种方法。不同的方法会有不同的权衡 — 这就是为什么我们提供多种方法来衡量您的全能能力。"
     },
     "zkt_comp": {
+        "clear_round_results": "清空本轮成绩",
+        "clear_round_results_confirm": "本轮所有成绩将被清空（参赛者保留）。确定吗？",
+        "round_results_cleared": "本轮成绩已清空",
         "normalize_names": "规范姓名",
         "names_normalized": "已规范 {{count}} 个姓名",
         "download_blank_scorecards": "下载空白计分卡",
