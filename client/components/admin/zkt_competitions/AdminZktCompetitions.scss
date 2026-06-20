@@ -2332,6 +2332,14 @@ $zkt-warn: #ffc107;
 			}
 		}
 
+		&--questionable {
+			background: rgba($warningColor, 0.14);
+
+			&:hover {
+				background: rgba($warningColor, 0.2);
+			}
+		}
+
 		&--no-show {
 			opacity: 0.55;
 			font-style: italic;

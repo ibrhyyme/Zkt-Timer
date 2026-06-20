@@ -12,6 +12,7 @@ $zkt-record-cr: #ffd600;
 $zkt-record-pr: #1976d2;
 $zkt-live: #ff5252;
 $zkt-advance: #00e676;
+$zkt-questionable: #ffb300;
 $zkt-warn: #ffa500;
 $zkt-info-blue: #6ea8ff;
 $zkt-info-green: #45d97c;
@@ -1616,6 +1617,10 @@ $zkt-info-green: #45d97c;
 			background: rgba($successColor, 0.08);
 		}
 
+		&--questionable td {
+			background: rgba($warningColor, 0.1);
+		}
+
 		&--me td {
 			background: rgba(var(--primary-color), 0.08);
 		}
@@ -2412,6 +2417,12 @@ $zkt-info-green: #45d97c;
 		&--advancing {
 			background: $zkt-advance;
 			color: #003915;
+			border-radius: 6px;
+		}
+
+		&--questionable {
+			background: $zkt-questionable;
+			color: #3a2600;
 			border-radius: 6px;
 		}
 	}

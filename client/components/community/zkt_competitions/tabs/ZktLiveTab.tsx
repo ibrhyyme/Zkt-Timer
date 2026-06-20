@@ -8,6 +8,8 @@ import {useIsMobile} from '../../../../util/hooks/useIsMobile';
 import {ArrowClockwise, Broadcast, MonitorPlay} from 'phosphor-react';
 import ZktLivePodiums from './ZktLivePodiums';
 import ZktResultModal, {ZktResultModalRow} from '../ZktResultModal';
+import {computeAdvancementStates} from '../../../../../shared/zkt_competition/advancement';
+import AdvancementLegend from '../AdvancementLegend';
 
 export default function ZktLiveTab({detail}: {detail: any}) {
 	const {t} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
@@ -225,6 +227,10 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 								format={selectedRound.format}
 								loading={loading}
 								roundStatus={selectedRound.status}
+								advancementType={selectedRound.advancement_type}
+								advancementLevel={selectedRound.advancement_level}
+								cutoffCs={selectedRound.cutoff_cs}
+								cutoffAttempts={selectedRound.cutoff_attempts}
 								eventId={selectedEvent.event_id}
 								competitionId={competitionId}
 							/>
@@ -243,6 +249,10 @@ function ResultsTable({
 	format,
 	loading,
 	roundStatus,
+	advancementType,
+	advancementLevel,
+	cutoffCs,
+	cutoffAttempts,
 	eventId,
 	competitionId,
 }: {
@@ -250,6 +260,10 @@ function ResultsTable({
 	format: string;
 	loading: boolean;
 	roundStatus?: string;
+	advancementType?: string | null;
+	advancementLevel?: number | null;
+	cutoffCs?: number | null;
+	cutoffAttempts?: number | null;
 	eventId: string;
 	competitionId: string;
 }) {
@@ -262,6 +276,20 @@ function ResultsTable({
 	const attemptCount = getFormatAttempts(format);
 	const hasAverage = formatHasAverage(format);
 	const isFinished = roundStatus === 'FINISHED';
+	// WCA-live three-state advancement (green=clinched, orange=questionable).
+	const advStates = React.useMemo(
+		() =>
+			computeAdvancementStates(
+				results as any,
+				(advancementType as any) ?? null,
+				advancementLevel ?? null,
+				format as any,
+				cutoffCs ?? null,
+				cutoffAttempts ?? null,
+				isFinished
+			),
+		[results, advancementType, advancementLevel, format, cutoffCs, cutoffAttempts, isFinished]
+	);
 
 	if (loading && results.length === 0) {
 		return <div className={b('empty')}>{t('loading')}</div>;
@@ -273,6 +301,7 @@ function ResultsTable({
 
 	return (
 		<div className={b('results-table-wrapper')}>
+			{advancementType && <AdvancementLegend />}
 			<table className={b('results-table', {mobile: isMobile})}>
 				<thead>
 					<tr>
@@ -321,7 +350,7 @@ function ResultsTable({
 						return (
 							<tr
 								key={r.id}
-								className={b('result-row', {advancing: r.proceeds, me: isMe, clickable: true})}
+								className={b('result-row', {advancing: (advStates.get(r.id)?.advancing ?? false) && !(advStates.get(r.id)?.questionable ?? false), questionable: advStates.get(r.id)?.questionable ?? false, me: isMe, clickable: true})}
 								onClick={openRow}
 							>
 								<td className={b('result-rank')}>
