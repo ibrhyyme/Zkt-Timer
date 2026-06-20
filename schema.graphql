@@ -1876,6 +1876,7 @@ type ZktResult {
   single_record_tag: String
   average_record_tag: String
   entered_by_id: String
+  entered_at: DateTime
   created_at: DateTime
   updated_at: DateTime
   user: ZktCompetitorUser

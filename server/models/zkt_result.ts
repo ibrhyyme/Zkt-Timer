@@ -305,14 +305,20 @@ export async function upsertZktResult(input: {
 		? {round_id_person_id: {round_id: input.round_id, person_id: input.person_id}}
 		: {round_id_user_id: {round_id: input.round_id, user_id: input.user_id!}};
 
+	// Stamp the first-entry time once; keep it on later edits so the double-check
+	// list follows true entry order, not the carry/create order.
+	const existing = await prisma.zktResult.findUnique({where, select: {entered_at: true}});
+	const enteredAt = existing?.entered_at ?? new Date();
+
 	return prisma.zktResult.upsert({
 		where,
 		create: {
 			round_id: input.round_id,
 			...identity,
 			...persisted,
+			entered_at: enteredAt,
 		},
-		update: persisted,
+		update: {...persisted, entered_at: enteredAt},
 	});
 }
 
@@ -360,14 +366,20 @@ export async function markResultNoShow(input: {
 		? {round_id_person_id: {round_id: input.round_id, person_id: input.person_id}}
 		: {round_id_user_id: {round_id: input.round_id, user_id: input.user_id!}};
 
+	// Stamp the first-entry time once; keep it on later edits so the double-check
+	// list follows true entry order, not the carry/create order.
+	const existing = await prisma.zktResult.findUnique({where, select: {entered_at: true}});
+	const enteredAt = existing?.entered_at ?? new Date();
+
 	return prisma.zktResult.upsert({
 		where,
 		create: {
 			round_id: input.round_id,
 			...identity,
 			...persisted,
+			entered_at: enteredAt,
 		},
-		update: persisted,
+		update: {...persisted, entered_at: enteredAt},
 	});
 }
 

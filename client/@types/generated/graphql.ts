@@ -4021,6 +4021,7 @@ export type ZktResult = {
   average_record_tag?: Maybe<Scalars['String']>;
   best?: Maybe<Scalars['Int']>;
   created_at?: Maybe<Scalars['DateTime']>;
+  entered_at?: Maybe<Scalars['DateTime']>;
   entered_by?: Maybe<PublicUserAccount>;
   entered_by_id?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;

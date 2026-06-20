@@ -37,6 +37,7 @@ const ROUND_RESULTS = gql`
 			no_show
 			single_record_tag
 			average_record_tag
+			entered_at
 			created_at
 			user {
 				id
@@ -1455,7 +1456,7 @@ function DoubleCheckView({
 			// Order by ENTRY order (created_at ascending) — the order the scoretaker
 			// typed them, so double-check follows the paper scorecard stack, not the
 			// ranking (which felt reversed/random to verify against).
-			.sort((a, bx) => String(a.created_at || '').localeCompare(String(bx.created_at || '')));
+			.sort((a, bx) => String(a.entered_at || a.created_at || '').localeCompare(String(bx.entered_at || bx.created_at || '')));
 	}, [results, scoretakerId]);
 
 	useEffect(() => {
