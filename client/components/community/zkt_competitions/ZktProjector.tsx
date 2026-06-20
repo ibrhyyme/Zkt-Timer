@@ -98,6 +98,17 @@ export default function ZktProjector() {
 	const [topResultIndex, setTopResultIndex] = useState(0);
 	const [forecast, setForecast] = useState(false);
 
+	// How many body rows fit on screen — MEASURED from the real DOM (the old
+	// fixed 58px/72/52 estimate over-counted on large screens, so the last row
+	// got clipped and the page never advanced). rowsPerPageRef mirrors the state
+	// so the status-machine effect (deps: [status]) reads the current value.
+	const rootRef = useRef<HTMLDivElement>(null);
+	const headRef = useRef<HTMLTableSectionElement>(null);
+	const firstRowRef = useRef<HTMLTableRowElement>(null);
+	const [rowsPerPage, setRowsPerPage] = useState(() => getNumberOfRows());
+	const rowsPerPageRef = useRef(rowsPerPage);
+	rowsPerPageRef.current = rowsPerPage;
+
 	useEffect(() => {
 		let cancelled = false;
 		(async () => {
@@ -204,12 +215,39 @@ export default function ZktProjector() {
 		forecastRef.current = forecastActive;
 	});
 
+	// Measure the real rows-per-page from the DOM: (projector height − toolbar −
+	// table header) / actual row height. Re-runs when the data/columns change and
+	// on any resize, so exactly the rows that FIT are shown and the rest paginate.
+	useEffect(() => {
+		const measure = () => {
+			const root = rootRef.current;
+			const row = firstRowRef.current;
+			if (!root || !row) return;
+			const rowH = row.offsetHeight;
+			if (rowH <= 0) return;
+			const barH = root.querySelector<HTMLElement>('[data-projector-bar]')?.offsetHeight ?? 0;
+			const headH = headRef.current?.offsetHeight ?? 0;
+			// Small safety margin so the last row is never half-cut.
+			const avail = root.clientHeight - barH - headH - 4;
+			const n = Math.max(3, Math.floor(avail / rowH));
+			setRowsPerPage((prev) => (prev !== n ? n : prev));
+		};
+		measure();
+		const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(measure) : null;
+		if (ro && rootRef.current) ro.observe(rootRef.current);
+		window.addEventListener('resize', measure);
+		return () => {
+			ro?.disconnect();
+			window.removeEventListener('resize', measure);
+		};
+	}, [displayRows.length, attemptCount, forecastActive]);
+
 	// wca-live status machine, verbatim timing (forecast pages hold longer).
 	useEffect(() => {
 		const list = displayRowsRef.current;
 		if (status === 'paused') return;
 		if (status === 'shown') {
-			if (list.length > getNumberOfRows()) {
+			if (list.length > rowsPerPageRef.current) {
 				const timeout = setTimeout(
 					() => setStatus('hiding'),
 					forecastRef.current ? DURATION.FORECAST_SHOWN : DURATION.SHOWN
@@ -227,7 +265,7 @@ export default function ZktProjector() {
 				setStatus('showing');
 				setTopResultIndex((top) => {
 					const list = displayRowsRef.current;
-					const next = top + getNumberOfRows();
+					const next = top + rowsPerPageRef.current;
 					// In forecast mode the focus is on advancing rows — show a single
 					// page of non-advancing results, then roll back to page one.
 					if (
@@ -248,7 +286,7 @@ export default function ZktProjector() {
 	}, [status]);
 
 	const rowsVisible = status === 'showing' || status === 'shown' || status === 'paused';
-	const pageRows = displayRows.slice(topResultIndex, topResultIndex + getNumberOfRows());
+	const pageRows = displayRows.slice(topResultIndex, topResultIndex + rowsPerPage);
 
 	const advancementLevelLabel =
 		round?.advancement_type === 'RANKING' && round.advancement_level
@@ -264,8 +302,8 @@ export default function ZktProjector() {
 	}
 
 	return (
-		<div className={b('projector')}>
-			<div className={b('projector-bar')}>
+		<div className={b('projector')} ref={rootRef}>
+			<div className={b('projector-bar')} data-projector-bar>
 				<div className={b('projector-title')}>
 					<span className={b('projector-comp')}>{detail?.name}</span>
 					<span>{title}</span>
@@ -316,7 +354,7 @@ export default function ZktProjector() {
 				<div className={b('projector-empty')}>{t('no_results_yet')}</div>
 			) : (
 				<table className={b('projector-table')}>
-					<thead>
+					<thead ref={headRef}>
 						<tr>
 							<th className={b('projector-rank-col')}>#</th>
 							<th className={b('projector-name-col')}>{t('col_name')}</th>
@@ -339,6 +377,7 @@ export default function ZktProjector() {
 							return (
 								<tr
 									key={row.id}
+									ref={index === 0 ? firstRowRef : undefined}
 									className={b('projector-row', {visible: rowsVisible})}
 									style={
 										status === 'showing'
