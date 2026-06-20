@@ -3388,6 +3388,7 @@
         "info_alt_sor": "Kinch Ranks is an alternative way to measure the all-round abilities of a cuber. Different methods will have different tradeoffs — that's why we provide multiple ways to measure your all-round abilities."
     },
     "zkt_comp": {
+        "download_blank_scorecards": "Download blank scorecards",
         "edit_competitor": "Edit competitor",
         "groups": "Groups",
         "group_count_hint": "Number of groups in this round (used by auto-distribute)",

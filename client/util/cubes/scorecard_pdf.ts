@@ -111,7 +111,8 @@ function drawScorecard(
 	pdf.setFontSize(9);
 	const midY = cy + metaH / 2 + 1.6;
 	pdf.text(truncate(pdf, opts.eventName, eventW - 3), exX + 2, midY);
-	pdf.text(String(opts.roundNumber), rdX + roundW / 2, midY, {align: 'center'});
+	// roundNumber 0 = blank spare card -> leave Round empty.
+	pdf.text(opts.roundNumber ? String(opts.roundNumber) : '', rdX + roundW / 2, midY, {align: 'center'});
 	pdf.setFont(font, 'bold');
 	pdf.text(entry?.group != null ? String(entry.group) : '', grX + groupW / 2, midY, {align: 'center'});
 	pdf.text(entry?.station != null ? String(entry.station) : '', stX + stationW / 2, midY, {align: 'center'});
@@ -275,4 +276,27 @@ export async function generateScorecardsPdf(opts: ScorecardPdfOptions): Promise<
 
 	const safe = (s: string) => s.replace(/[^\w.-]+/g, '_');
 	pdf.save(`${safe(opts.competitionName)}-${safe(opts.eventId)}-R${opts.roundNumber}-scorecards.pdf`);
+}
+
+/**
+ * Blank spare scorecards: only the competition name is printed; event, round,
+ * group, station, id, name and all results are left empty for handwriting.
+ * Defaults to a single A4 page (4 cards). Use for late/extra competitors or
+ * card replacements during the competition.
+ */
+export async function generateBlankScorecardsPdf(
+	competitionName: string,
+	count = 4
+): Promise<void> {
+	await generateScorecardsPdf({
+		competitionName,
+		eventName: '', // blank — written by hand
+		eventId: 'blank',
+		roundNumber: 0, // 0 → Round cell left empty
+		attemptCount: 5, // 5 attempt rows (generic)
+		cutoff: '',
+		timeLimit: '',
+		entries: [],
+		blankCount: Math.max(1, count),
+	});
 }
