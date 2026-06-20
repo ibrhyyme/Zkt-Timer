@@ -277,9 +277,25 @@ export class ZktAssignmentResolver {
 		await assertCanModifyCompetition(context.user, round.comp_event.competition_id);
 
 		// Normalise competitor refs to one key (userId XOR personId).
-		const refs = input.competitors
+		let refs = input.competitors
 			.map((c) => ({key: c.userId ?? c.personId ?? '', isPerson: !c.userId}))
 			.filter((c) => c.key);
+
+		// Round 2+: a competitor only belongs to this round if they ADVANCED from
+		// the previous one. finalizeRound carries advancing (proceeds=true) people
+		// here as empty ZktResult rows, so intersect the requested list with this
+		// round's existing results — guards against a client that sends every
+		// registration (which would wrongly assign all 80 instead of the 40 who passed).
+		if (round.round_number > 1) {
+			const carried = await getPrisma().zktResult.findMany({
+				where: {round_id: input.roundId},
+				select: {user_id: true, person_id: true},
+			});
+			const allowed = new Set(
+				carried.map((r) => r.user_id ?? r.person_id).filter(Boolean) as string[]
+			);
+			refs = refs.filter((r) => allowed.has(r.key));
+		}
 
 		// Group count: explicit input.groupCount → the round's configured
 		// group_count (set on the Rounds tab) → fall back to station capacity
