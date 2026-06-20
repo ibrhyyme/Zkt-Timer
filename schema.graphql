@@ -476,6 +476,7 @@ type Mutation {
   deleteZktRegistration(registrationId: String): Boolean
   deleteAllZktRegistrations(competitionId: String): Int
   updateZktRegistrationStatus(input: UpdateZktRegistrationStatusInput): ZktRegistration
+  adminUpdateZktRegistrationEvents(eventIds: [String], registrationId: String): ZktRegistration
   updateMyZktRegistration(input: UpdateMyZktRegistrationInput): ZktRegistration
   bulkUpdateZktRegistrations(input: BulkUpdateZktRegistrationsInput): [ZktRegistration]
   addZktCompetitorManually(input: AddZktCompetitorManuallyInput): ZktRegistration

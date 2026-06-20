@@ -97,7 +97,11 @@ export default function CompetitionList() {
 
 	useEffect(() => {
 		if (!getListCache()) fetchCompetitions();
-		if (!getZktCache()) fetchZktCompetitions();
+		// ZKT competitions are published/updated often, and an empty cache (from a
+		// visit before any comp existed, or a transient error) would otherwise stay
+		// stuck for 30 min and hide the section. Always refetch on mount — the
+		// cached value still renders instantly while fresh data lands (SWR).
+		fetchZktCompetitions();
 	}, []);
 
 	// Live refresh: when any ZKT competition is created/updated/deleted, refetch list

@@ -195,23 +195,31 @@ export default function CompetitionDashboard() {
 		);
 	}
 
-	const fetch = useCallback(async () => {
-		setLoading(true);
-		try {
-			const result = await gqlMutate(DETAIL_QUERY, {id: competitionId});
-			setDetail(result?.data?.zktCompetitionForAdmin);
-		} catch {
-			toastError('Yarisma yuklenemedi');
-		} finally {
-			setLoading(false);
-		}
-	}, [competitionId]);
+	// `silent` skips the full-page <Loading/> so a background refetch (after an
+	// assignment/result/registration change) does NOT unmount the active tab and
+	// reset its in-tab state (e.g. the selected event/round on the Görevler tab).
+	const fetch = useCallback(
+		async (silent = false) => {
+			if (!silent) setLoading(true);
+			try {
+				const result = await gqlMutate(DETAIL_QUERY, {id: competitionId});
+				setDetail(result?.data?.zktCompetitionForAdmin);
+			} catch {
+				toastError('Yarisma yuklenemedi');
+			} finally {
+				if (!silent) setLoading(false);
+			}
+		},
+		[competitionId]
+	);
 
 	useEffect(() => {
 		fetch();
 	}, [fetch]);
 
-	useZktCompRefetch(competitionId, fetch);
+	// Socket-driven refresh must be silent too — otherwise a remote change flashes
+	// the whole dashboard and drops the current tab's selection.
+	useZktCompRefetch(competitionId, () => fetch(true));
 
 	if (loading) return <Loading />;
 	if (!detail) return <div className={b('empty')}>{t('not_found')}</div>;
@@ -303,15 +311,15 @@ export default function CompetitionDashboard() {
 			</div>
 
 			<div className={b('tab-content')}>
-				{tab === 'overview' && <DashboardOverview detail={detail} onUpdated={fetch} />}
-				{tab === 'registrations' && <DashboardRegistrations detail={detail} onUpdated={fetch} />}
-				{tab === 'rounds' && <DashboardRounds detail={detail} onUpdated={fetch} />}
-				{tab === 'assignments' && <DashboardAssignments detail={detail} onUpdated={fetch} />}
-				{tab === 'schedule' && <DashboardSchedule detail={detail} onUpdated={fetch} />}
-				{tab === 'results' && <DashboardResults detail={detail} onUpdated={fetch} />}
-				{tab === 'delegates' && <DashboardDelegates detail={detail} onUpdated={fetch} />}
-				{tab === 'organizers' && <DashboardOrganizers detail={detail} onUpdated={fetch} />}
-				{tab === 'tabs_manager' && <ZktCompTabsManager detail={detail} onUpdated={fetch} />}
+				{tab === 'overview' && <DashboardOverview detail={detail} onUpdated={() => fetch(true)} />}
+				{tab === 'registrations' && <DashboardRegistrations detail={detail} onUpdated={() => fetch(true)} />}
+				{tab === 'rounds' && <DashboardRounds detail={detail} onUpdated={() => fetch(true)} />}
+				{tab === 'assignments' && <DashboardAssignments detail={detail} onUpdated={() => fetch(true)} />}
+				{tab === 'schedule' && <DashboardSchedule detail={detail} onUpdated={() => fetch(true)} />}
+				{tab === 'results' && <DashboardResults detail={detail} onUpdated={() => fetch(true)} />}
+				{tab === 'delegates' && <DashboardDelegates detail={detail} onUpdated={() => fetch(true)} />}
+				{tab === 'organizers' && <DashboardOrganizers detail={detail} onUpdated={() => fetch(true)} />}
+				{tab === 'tabs_manager' && <ZktCompTabsManager detail={detail} onUpdated={() => fetch(true)} />}
 			</div>
 		</div>
 	);

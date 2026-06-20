@@ -375,6 +375,53 @@ export class ZktRegistrationResolver {
 		return updated;
 	}
 
+	// Admin edit of a registered (account) competitor's events — no deadline
+	// guard (unlike updateMyZktRegistration). Ghost competitors are edited via
+	// updateZktPerson instead (name + country + events).
+	@Authorized([Role.LOGGED_IN])
+	@Mutation(() => ZktRegistration)
+	async adminUpdateZktRegistrationEvents(
+		@Ctx() context: GraphQLContext,
+		@Arg('registrationId') registrationId: string,
+		@Arg('eventIds', () => [String]) eventIds: string[]
+	) {
+		const reg = await getPrisma().zktRegistration.findUnique({where: {id: registrationId}});
+		if (!reg) throw new GraphQLError(ErrorCode.NOT_FOUND);
+		await assertCanModifyCompetition(context.user, reg.competition_id);
+
+		const compEvents = await getPrisma().zktCompEvent.findMany({
+			where: {competition_id: reg.competition_id},
+		});
+		const validEventIds = new Set(compEvents.map((e) => e.id));
+		for (const eid of eventIds) {
+			if (!validEventIds.has(eid)) {
+				throw new GraphQLError(ErrorCode.BAD_INPUT, `Invalid event: ${eid}`);
+			}
+		}
+
+		await getPrisma().zktRegistrationEvent.deleteMany({where: {registration_id: reg.id}});
+		await Promise.all(
+			eventIds.map((eid) =>
+				getPrisma().zktRegistrationEvent.create({
+					data: {registration_id: reg.id, comp_event_id: eid},
+				})
+			)
+		);
+
+		await appendRegistrationHistory(
+			reg.id,
+			context.user.id,
+			HISTORY_ACTIONS.EVENTS_CHANGED,
+			{eventIds}
+		);
+		emitZktRegistrationUpdated(reg.competition_id, {registrationId: reg.id, status: reg.status});
+
+		return getPrisma().zktRegistration.findUnique({
+			where: {id: reg.id},
+			include: {user: publicUserInclude, events: true},
+		});
+	}
+
 	@Authorized([Role.LOGGED_IN])
 	@Mutation(() => ZktRegistration)
 	async updateMyZktRegistration(
