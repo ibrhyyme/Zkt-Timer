@@ -46,6 +46,8 @@ const ROUND_RESULTS_FOR_PDF = gql`
 	query ZktRoundResultsForPdf($roundId: String!) {
 		zktRoundResults(roundId: $roundId) {
 			ranking
+			user_id
+			person_id
 			attempt_1
 			attempt_2
 			attempt_3
@@ -58,11 +60,13 @@ const ROUND_RESULTS_FOR_PDF = gql`
 				first_name
 				last_name
 				join_country
+				wca_id
 			}
 			person {
 				first_name
 				last_name
 				country_code
+				wca_id
 			}
 		}
 	}
@@ -272,7 +276,9 @@ export default function DashboardRounds({
 			}
 		}
 
-		const competitors = (detail.registrations || [])
+		let competitors: any[];
+		if (round.round_number === 1) {
+		competitors = (detail.registrations || [])
 			.filter(
 				(r: any) =>
 					r.status === 'APPROVED' &&
@@ -295,6 +301,33 @@ export default function DashboardRounds({
 				};
 			})
 			.filter((c: any) => c.name);
+		} else {
+			// Round 2+: only competitors who ADVANCED into this round (carry rows).
+			const res: any = await gqlMutate(ROUND_RESULTS_FOR_PDF, {roundId: round.id});
+			const rows: any[] = res?.data?.zktRoundResults || [];
+			const regByKey = new Map(
+				(detail.registrations || []).map((r: any) => [r.user_id || r.person_id, r])
+			);
+			competitors = rows
+				.map((rr: any) => {
+					const key = rr.user_id || rr.person_id;
+					const reg: any = regByKey.get(key);
+					const a = assignMap.get(key);
+					const name =
+						competitorDisplayName(rr.user) ||
+						[rr.person?.first_name, rr.person?.last_name].filter(Boolean).join(' ').trim() ||
+						rr.user?.username ||
+						'';
+					return {
+						name,
+						wcaId: rr.person?.wca_id || rr.user?.wca_id || '',
+						group: a?.group,
+						station: a?.station,
+						registrationNumber: reg?.registration_number,
+					};
+				})
+				.filter((c: any) => c.name);
+		}
 
 		// Seating order when assigned (group, then station); otherwise alphabetical.
 		competitors.sort((a: any, bx: any) => {

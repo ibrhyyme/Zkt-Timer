@@ -77,6 +77,15 @@ const BULK_ASSIGN = gql`
 	}
 `;
 
+const ROUND_RESULTS_Q = gql`
+	query ZktAssignRoundResults($roundId: String!) {
+		zktRoundResults(roundId: $roundId) {
+			user_id
+			person_id
+		}
+	}
+`;
+
 const USER_SEARCH = gql`
 	query AssignmentUserSearch($pageArgs: PaginationArgsInput) {
 		userSearch(pageArgs: $pageArgs) {
@@ -280,7 +289,9 @@ export default function DashboardAssignments({
 
 	async function autoDist() {
 		if (!selectedRoundId || !selectedEvent) return;
-		const competitors = detail.registrations
+		let competitors: Array<{userId?: string; personId?: string}>;
+		if ((selectedRound?.round_number || 1) === 1) {
+		competitors = detail.registrations
 			.filter(
 				(r: any) =>
 					r.status === 'APPROVED' &&
@@ -288,6 +299,14 @@ export default function DashboardAssignments({
 			)
 			.map((r: any) => ({userId: r.user_id || undefined, personId: r.person_id || undefined}))
 			.filter((c: any) => c.userId || c.personId);
+		} else {
+			// Round 2+: only competitors who ADVANCED into this round (carry rows).
+			const res: any = await gqlMutate(ROUND_RESULTS_Q, {roundId: selectedRoundId});
+			const rows: any[] = res?.data?.zktRoundResults || [];
+			competitors = rows
+				.map((rr: any) => ({userId: rr.user_id || undefined, personId: rr.person_id || undefined}))
+				.filter((c: any) => c.userId || c.personId);
+		}
 
 		if (competitors.length === 0) {
 			toastError(t('no_competitors'));
