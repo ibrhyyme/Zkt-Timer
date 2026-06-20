@@ -1,4 +1,4 @@
-import {Arg, Authorized, Ctx, Mutation, Query, Resolver} from 'type-graphql';
+import {Arg, Authorized, Ctx, Int, Mutation, Query, Resolver} from 'type-graphql';
 import {GraphQLContext} from '../@types/interfaces/server.interface';
 import {Role} from '../middlewares/auth';
 import GraphQLError from '../util/graphql_error';
@@ -17,6 +17,7 @@ import {
 	createZktPerson,
 	updateZktPerson,
 	deleteZktPerson,
+	titleCaseName,
 } from '../models/zkt_person';
 
 @Resolver()
@@ -91,6 +92,33 @@ export class ZktPersonResolver {
 		if (!person) throw new GraphQLError(ErrorCode.NOT_FOUND);
 		await assertCanModifyCompetition(context.user, person.competition_id);
 		return updateZktPerson(input.personId, input);
+	}
+
+	// One-shot cleanup: re-title-case every account-less competitor name in a
+	// competition (fixes ALL-CAPS / lowercase imports). Returns the count fixed.
+	@Authorized([Role.LOGGED_IN])
+	@Mutation(() => Int)
+	async normalizeZktCompetitionNames(
+		@Ctx() context: GraphQLContext,
+		@Arg('competitionId') competitionId: string
+	) {
+		await assertCanModifyCompetition(context.user, competitionId);
+		const persons = await getPrisma().zktPerson.findMany({
+			where: {competition_id: competitionId},
+		});
+		let updated = 0;
+		for (const p of persons) {
+			const fn = titleCaseName(p.first_name);
+			const ln = titleCaseName(p.last_name);
+			if (fn !== p.first_name || ln !== p.last_name) {
+				await getPrisma().zktPerson.update({
+					where: {id: p.id},
+					data: {first_name: fn, last_name: ln},
+				});
+				updated++;
+			}
+		}
+		return updated;
 	}
 
 	@Authorized([Role.LOGGED_IN])

@@ -3388,6 +3388,8 @@
         "info_alt_sor": "Kinch Ranks es una forma alternativa de medir las habilidades all-round de un cuber. Diferentes métodos tienen diferentes trade-offs — por eso ofrecemos múltiples formas de medir tus habilidades."
     },
     "zkt_comp": {
+        "normalize_names": "Corregir nombres",
+        "names_normalized": "{{count}} nombres corregidos",
         "download_blank_scorecards": "Descargar tarjetas en blanco",
         "edit_competitor": "Editar competidor",
         "groups": "Grupos",
