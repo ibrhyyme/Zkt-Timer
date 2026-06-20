@@ -1,6 +1,20 @@
 import {getPrisma} from '../database';
 import {nextRegistrationNumber} from './zkt_competition';
 
+/**
+ * Title-case a person name with TURKISH locale rules (so "ışık"→"Işık",
+ * "irem"→"İrem", "AHMET YILMAZ"→"Ahmet Yılmaz"). Each whitespace-separated word:
+ * first letter upper, the rest lower. Empty-safe.
+ */
+export function titleCaseName(s: string | null | undefined): string {
+	return (s || '')
+		.trim()
+		.split(/\s+/)
+		.filter(Boolean)
+		.map((w) => w.charAt(0).toLocaleUpperCase('tr') + w.slice(1).toLocaleLowerCase('tr'))
+		.join(' ');
+}
+
 export interface ZktPersonRow {
 	firstName: string;
 	lastName: string;
@@ -29,8 +43,8 @@ export async function importZktCompetitors(competitionId: string, rows: ZktPerso
 
 	const created = [];
 	for (const row of rows) {
-		const firstName = (row.firstName || '').trim();
-		const lastName = (row.lastName || '').trim();
+		const firstName = titleCaseName(row.firstName);
+		const lastName = titleCaseName(row.lastName);
 		if (!firstName && !lastName) continue; // skip empty rows (blank CSV lines)
 
 		const person = await prisma.zktPerson.create({
@@ -83,8 +97,8 @@ export async function updateZktPerson(
 ) {
 	const prisma = getPrisma();
 	const updates: any = {};
-	if (data.firstName !== undefined) updates.first_name = data.firstName.trim();
-	if (data.lastName !== undefined) updates.last_name = data.lastName.trim();
+	if (data.firstName !== undefined) updates.first_name = titleCaseName(data.firstName);
+	if (data.lastName !== undefined) updates.last_name = titleCaseName(data.lastName);
 	if (data.country !== undefined) updates.country_code = data.country?.trim() || 'TR';
 	if (data.wcaId !== undefined) updates.wca_id = data.wcaId?.trim() || null;
 	if (data.externalId !== undefined) updates.external_id = data.externalId?.trim() || null;

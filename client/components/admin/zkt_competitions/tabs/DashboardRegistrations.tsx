@@ -4,7 +4,7 @@ import {gqlMutate} from '../../../api';
 import {useTranslation} from 'react-i18next';
 import {toastSuccess, toastError} from '../../../../util/toast';
 import {b, getEventName} from '../shared';
-import {Check, X, Clock, UserPlus, UploadSimple, Trash, PencilSimple} from 'phosphor-react';
+import {Check, X, Clock, UserPlus, UploadSimple, Trash, PencilSimple, TextAa} from 'phosphor-react';
 import AddCompetitorModal from './AddCompetitorModal';
 import EditCompetitorModal from './EditCompetitorModal';
 import ImportCompetitorsModal from './ImportCompetitorsModal';
@@ -40,6 +40,12 @@ const DELETE_REGISTRATION = gql`
 const DELETE_ALL_REGISTRATIONS = gql`
 	mutation DeleteAllZktRegistrations($competitionId: String!) {
 		deleteAllZktRegistrations(competitionId: $competitionId)
+	}
+`;
+
+const NORMALIZE_NAMES = gql`
+	mutation NormalizeZktNames($competitionId: String!) {
+		normalizeZktCompetitionNames(competitionId: $competitionId)
 	}
 `;
 
@@ -80,6 +86,17 @@ export default function DashboardRegistrations({
 		try {
 			await gqlMutate(DELETE_REGISTRATION, {registrationId});
 			toastSuccess(t('registration_deleted'));
+			onUpdated();
+		} catch (e: any) {
+			toastError(e?.message || t('error'));
+		}
+	}
+
+	async function normalizeNames() {
+		try {
+			const res = await gqlMutate(NORMALIZE_NAMES, {competitionId: detail.id});
+			const n = res?.data?.normalizeZktCompetitionNames ?? 0;
+			toastSuccess(t('names_normalized', {count: n}));
 			onUpdated();
 		} catch (e: any) {
 			toastError(e?.message || t('error'));
@@ -277,6 +294,15 @@ export default function DashboardRegistrations({
 						<button className={b('create-btn', {ghost: true})} onClick={openImportModal}>
 							<UploadSimple weight="bold" /> {t('import_competitors')}
 						</button>
+						{totalCount > 0 && (
+							<button
+								className={b('create-btn', {ghost: true})}
+								onClick={normalizeNames}
+								title={t('normalize_names')}
+							>
+								<TextAa weight="bold" /> {t('normalize_names')}
+							</button>
+						)}
 						{totalCount > 0 && (
 							<button
 								className={b('action-btn', {delete: true})}

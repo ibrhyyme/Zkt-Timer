@@ -3386,6 +3386,8 @@
         "info_alt_sor": "Kinch Ranks, bir cuber'ın all-round yeteneğini ölçmenin alternatif bir yoludur. Farklı yöntemlerin farklı trade-off'ları vardır — bu yüzden birden fazla ölçüm sunuyoruz."
     },
     "zkt_comp": {
+        "normalize_names": "İsimleri Düzelt",
+        "names_normalized": "{{count}} isim düzeltildi",
         "download_blank_scorecards": "Boş Skor Kartı İndir",
         "edit_competitor": "Yarışmacıyı Düzenle",
         "groups": "Grup",
