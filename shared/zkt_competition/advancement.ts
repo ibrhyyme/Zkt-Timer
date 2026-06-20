@@ -248,7 +248,8 @@ export function computeAdvancementStates(
 	format: ZktFormat,
 	cutoffCs: number | null | undefined,
 	cutoffAttempts: number | null | undefined,
-	roundFinished: boolean
+	roundFinished: boolean,
+	totalExpected?: number
 ): Map<string, AdvancementState> {
 	const states = new Map<string, AdvancementState>();
 	if (results.length === 0) return states;
@@ -282,6 +283,16 @@ export function computeAdvancementStates(
 		const {best, average} = calculateBestAndAverage(filled, format);
 		return {id: r.id, best, average};
 	});
+	// Competitors who haven't entered a result yet are absent from `results`
+	// (ZKT creates result rows lazily). For the clinched scenario they are still
+	// a threat — represent each missing one as a best-possible competitor so the
+	// advancement cut-off can be "filled" by people who simply haven't gone yet.
+	// Without this, in an early round everyone currently entered looks clinched.
+	const expectedAvg = formatHasAverage(format) ? BEST_CASE_CS : null;
+	const extra = Math.max(0, (totalExpected ?? results.length) - results.length);
+	for (let i = 0; i < extra; i++) {
+		hypothetical.push({id: `__virtual_${i}`, best: BEST_CASE_CS, average: expectedAvg});
+	}
 	const hypotheticalAdvancing = advancingIds(
 		rankResults(hypothetical, format),
 		advancementType,
