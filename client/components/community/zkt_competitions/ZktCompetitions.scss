@@ -83,7 +83,7 @@ $zkt-info-green: #45d97c;
 		font-family: inherit;
 
 		&::placeholder {
-			color: rgba(var(--text-color), 0.45);
+			color: rgb(var(--text-color));
 		}
 	}
 
@@ -187,7 +187,7 @@ $zkt-info-green: #45d97c;
 	&__status {
 		&--draft {
 			background: rgba(var(--text-color), 0.12);
-			color: rgba(var(--text-color), 0.85);
+			color: rgb(var(--text-color));
 		}
 		&--announced {
 			background: rgba($infoColor, 0.18);
@@ -208,7 +208,7 @@ $zkt-info-green: #45d97c;
 		}
 		&--finished {
 			background: rgba(var(--text-color), 0.12);
-			color: rgba(var(--text-color), 0.8);
+			color: rgb(var(--text-color));
 		}
 		&--published {
 			background: rgba(var(--primary-color), 0.18);
@@ -608,7 +608,7 @@ $zkt-info-green: #45d97c;
 		font-size: 11px;
 		font-weight: 600;
 		background: rgba(var(--text-color), 0.07);
-		color: rgba(var(--text-color), 0.85);
+		color: rgb(var(--text-color));
 	}
 
 	&__round-panel-empty {
@@ -674,7 +674,7 @@ $zkt-info-green: #45d97c;
 		border-radius: 999px;
 		border: 1px solid rgba(var(--text-color), 0.12);
 		background: transparent;
-		color: rgba(var(--text-color), 0.85);
+		color: rgb(var(--text-color));
 		cursor: pointer;
 		font-size: 13px;
 		font-weight: 600;
@@ -1101,7 +1101,7 @@ $zkt-info-green: #45d97c;
 	&__description-text {
 		font-size: 13px;
 		line-height: 1.55;
-		color: rgba(var(--text-color), 0.85);
+		color: rgb(var(--text-color));
 		white-space: pre-wrap;
 		padding: 0.85rem 1rem;
 		background: rgb(var(--module-color));
@@ -1148,7 +1148,7 @@ $zkt-info-green: #45d97c;
 
 		.cubing-icon {
 			font-size: 22px;
-			color: rgba(var(--text-color), 0.85);
+			color: rgb(var(--text-color));
 		}
 	}
 
@@ -1200,7 +1200,7 @@ $zkt-info-green: #45d97c;
 		background: rgba($zkt-warn, 0.1);
 		border: 1px solid rgba($zkt-warn, 0.25);
 		border-radius: 8px;
-		color: rgba(var(--text-color), 0.85);
+		color: rgb(var(--text-color));
 		font-size: 12px;
 
 		svg {
@@ -1367,7 +1367,7 @@ $zkt-info-green: #45d97c;
 		}
 
 		.cubing-icon {
-			color: rgba(var(--text-color), 0.85);
+			color: rgb(var(--text-color));
 			flex-shrink: 0;
 		}
 	}
@@ -1455,7 +1455,7 @@ $zkt-info-green: #45d97c;
 
 		&--upcoming {
 			background: rgba(var(--text-color), 0.12);
-			color: rgba(var(--text-color), 0.8);
+			color: rgb(var(--text-color));
 		}
 		&--open {
 			background: rgba($infoColor, 0.2);
@@ -1539,7 +1539,7 @@ $zkt-info-green: #45d97c;
 		margin-bottom: 1rem;
 		flex-wrap: wrap;
 		font-size: 13px;
-		color: rgba(var(--text-color), 0.85);
+		color: rgb(var(--text-color));
 
 		strong {
 			color: rgb(var(--primary-color));
@@ -1718,7 +1718,7 @@ $zkt-info-green: #45d97c;
 
 	&__attempt-col {
 		font-family: 'SF Mono', 'Courier New', monospace;
-		color: rgba(var(--text-color), 0.85);
+		color: rgb(var(--text-color));
 	}
 
 	&__result-rank {

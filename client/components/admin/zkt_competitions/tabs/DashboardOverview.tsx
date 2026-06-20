@@ -484,7 +484,7 @@ export default function DashboardOverview({detail, onUpdated}: {detail: any; onU
 				>
 					{t('download_podium_certs')}
 				</button>
-				<p style={{fontSize: 13, opacity: 0.7, marginTop: '0.5rem'}}>
+				<p style={{fontSize: 13, color: 'rgb(var(--text-color))', marginTop: '0.5rem'}}>
 					{t('export_wcif_hint')}
 				</p>
 			</div>

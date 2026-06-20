@@ -192,7 +192,7 @@ $zkt-warn: #ffc107;
 	&__status {
 		&--draft {
 			background: rgba(var(--text-color), 0.12);
-			color: rgba(var(--text-color), 0.85);
+			color: rgb(var(--text-color));
 		}
 		&--confirmed {
 			background: rgba($infoColor, 0.14);
@@ -218,7 +218,7 @@ $zkt-warn: #ffc107;
 		}
 		&--finished {
 			background: rgba(var(--text-color), 0.12);
-			color: rgba(var(--text-color), 0.8);
+			color: rgb(var(--text-color));
 		}
 		&--published {
 			background: rgba(var(--primary-color), 0.18);
@@ -803,7 +803,7 @@ $zkt-warn: #ffc107;
 		font-weight: 700;
 		letter-spacing: 1.2px;
 		text-transform: uppercase;
-		color: rgba(var(--primary-color), 0.85);
+		color: rgb(var(--primary-color));
 		margin-bottom: 2px;
 	}
 
@@ -1565,7 +1565,7 @@ $zkt-warn: #ffc107;
 
 		&--upcoming {
 			background: rgba(var(--text-color), 0.12);
-			color: rgba(var(--text-color), 0.8);
+			color: rgb(var(--text-color));
 		}
 		&--open {
 			background: rgba($infoColor, 0.2);
@@ -2168,7 +2168,7 @@ $zkt-warn: #ffc107;
 	&__scramble-line {
 		font-family: 'SF Mono', Menlo, Consolas, monospace;
 		font-size: 12px;
-		color: rgba(var(--text-color), 0.85);
+		color: rgb(var(--text-color));
 		background: rgba(var(--primary-color), 0.07);
 		border-left: 3px solid rgba(var(--primary-color), 0.5);
 		padding: 0.35rem 0.55rem;
@@ -2369,7 +2369,7 @@ $zkt-warn: #ffc107;
 
 		&--avg {
 			font-family: 'SF Mono', Menlo, Consolas, monospace;
-			color: rgba(var(--text-color), 0.85);
+			color: rgb(var(--text-color));
 		}
 	}
 
@@ -2453,7 +2453,7 @@ $zkt-warn: #ffc107;
 	&__sub-section-title {
 		font-size: 14px;
 		font-weight: 700;
-		color: rgba(var(--text-color), 0.95);
+		color: rgb(var(--text-color));
 		text-transform: uppercase;
 		letter-spacing: 0.5px;
 	}

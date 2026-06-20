@@ -72,7 +72,7 @@ function Editor({
 			}}
 		>
 			<h2 className={b('modal-title')}>İlerleme Koşulu</h2>
-			<p style={{fontSize: 13, color: 'rgba(var(--text-color), 0.65)', margin: 0}}>
+			<p style={{fontSize: 13, color: 'rgb(var(--text-color))', margin: 0}}>
 				Bir sonraki tura kimler ilerleyebilir.
 			</p>
 
