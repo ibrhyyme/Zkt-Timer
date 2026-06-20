@@ -72,6 +72,7 @@ const ROUND_SCRAMBLES = gql`
 	query ZktRoundScramblesForPdf($roundId: String!) {
 		zktRoundScrambles(roundId: $roundId) {
 			id
+			group_id
 			attempt_number
 			is_extra
 			scramble_string
@@ -149,27 +150,55 @@ export default function DashboardRounds({
 
 	async function downloadScramblePdf(eventId: string, round: any) {
 		try {
-			// Lazy-ensure: server creates scrambles on first view if absent.
+			// Lazy-ensure: server creates scrambles on first view if absent. With
+			// groups present, each group gets its own distinct set (server-side).
 			await gqlMutate(ENSURE_SCRAMBLES, {roundId: round.id});
 			const res: any = await gqlMutate(ROUND_SCRAMBLES, {roundId: round.id});
-			const scrambles = (res?.data?.zktRoundScrambles || [])
-				.slice()
-				.sort((a: any, bx: any) => a.attempt_number - bx.attempt_number);
-			if (scrambles.length === 0) {
+			const all: any[] = res?.data?.zktRoundScrambles || [];
+			if (all.length === 0) {
 				toastError(t('no_scrambles'));
 				return;
 			}
-			await generateScramblePdf({
+
+			const toRow = (s: any) => ({
+				attemptNumber: s.attempt_number,
+				isExtra: s.is_extra,
+				scrambleString: s.scramble_string,
+			});
+			const byAttempt = (a: any, bx: any) => a.attempt_number - bx.attempt_number;
+
+			const base = {
 				competitionName: detail.name,
 				eventName: getEventName(eventId),
 				eventId,
 				roundNumber: round.round_number,
-				scrambles: scrambles.map((s: any) => ({
-					attemptNumber: s.attempt_number,
-					isExtra: s.is_extra,
-					scrambleString: s.scramble_string,
-				})),
-			});
+			};
+
+			// Per-group scrambles → one labelled page per group (WCA parity).
+			const hasGroups = all.some((s) => s.group_id);
+			if (hasGroups) {
+				const groupNumById = new Map<string, number>(
+					(round.groups || []).map((g: any) => [g.id, g.group_number])
+				);
+				const byGroup = new Map<string, any[]>();
+				for (const s of all) {
+					if (!s.group_id) continue;
+					if (!byGroup.has(s.group_id)) byGroup.set(s.group_id, []);
+					byGroup.get(s.group_id)!.push(s);
+				}
+				const groups = Array.from(byGroup.entries())
+					.sort((a, bx) => (groupNumById.get(a[0]) || 0) - (groupNumById.get(bx[0]) || 0))
+					.map(([gid, list]) => ({
+						label: t('group_n', {n: groupNumById.get(gid) || '?'}),
+						scrambles: list.slice().sort(byAttempt).map(toRow),
+					}));
+				await generateScramblePdf({...base, groups});
+			} else {
+				await generateScramblePdf({
+					...base,
+					scrambles: all.slice().sort(byAttempt).map(toRow),
+				});
+			}
 		} catch (e: any) {
 			toastError(e?.message || t('error'));
 		}

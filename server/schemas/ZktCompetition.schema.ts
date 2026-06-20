@@ -223,6 +223,9 @@ export class ZktScramble {
 	@Field()
 	round_id: string;
 
+	@Field({nullable: true})
+	group_id?: string;
+
 	@Field(() => Int)
 	attempt_number: number;
 

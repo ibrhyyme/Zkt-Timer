@@ -446,7 +446,7 @@ export class ZktResultResolver {
 	async zktRoundScrambles(@Arg('roundId') roundId: string) {
 		return getPrisma().zktScramble.findMany({
 			where: {round_id: roundId},
-			orderBy: {attempt_number: 'asc'},
+			orderBy: [{group_id: 'asc'}, {attempt_number: 'asc'}],
 		});
 	}
 
@@ -475,7 +475,7 @@ export class ZktResultResolver {
 		await regenerateScramblesForRound(roundId);
 		return getPrisma().zktScramble.findMany({
 			where: {round_id: roundId},
-			orderBy: {attempt_number: 'asc'},
+			orderBy: [{group_id: 'asc'}, {attempt_number: 'asc'}],
 		});
 	}
 
@@ -491,7 +491,7 @@ export class ZktResultResolver {
 		await ensureScramblesForRound(roundId);
 		return getPrisma().zktScramble.findMany({
 			where: {round_id: roundId},
-			orderBy: {attempt_number: 'asc'},
+			orderBy: [{group_id: 'asc'}, {attempt_number: 'asc'}],
 		});
 	}
 
