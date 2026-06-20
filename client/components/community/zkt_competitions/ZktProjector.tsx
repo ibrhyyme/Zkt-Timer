@@ -81,6 +81,8 @@ function formatForecastCs(v: number): string {
 	return formatCs(v);
 }
 
+const MEDALS = ['🥇', '🥈', '🥉'];
+
 interface DisplayRow {
 	id: string;
 	user: any;
@@ -165,6 +167,13 @@ export default function ZktProjector() {
 		).length;
 	}, [round, results, detail, compEvent]);
 
+	// Final round = the event's last round → medals on top 3 (live).
+	const isFinalRound = !!(
+		round &&
+		compEvent &&
+		round.round_number ===
+			Math.max(...(compEvent.rounds || []).map((r: any) => r.round_number))
+	);
 	const attemptCount = round ? getFormatAttempts(round.format) : 5;
 	const hasAverage = round ? formatHasAverage(round.format) : true;
 
@@ -430,7 +439,9 @@ export default function ZktProjector() {
 									}
 								>
 									<td className={b('projector-rank', {advancing: row.advancing, questionable: !!row.questionable})}>
-										{row.ranking ?? '-'}
+										{isFinalRound && row.ranking != null && row.ranking <= 3
+											? MEDALS[row.ranking - 1]
+											: row.ranking ?? '-'}
 									</td>
 									<td className={b('projector-name')}>
 										{competitorFlag(competitorOf(row.original)) ? competitorFlag(competitorOf(row.original)) + ' ' : ''}
