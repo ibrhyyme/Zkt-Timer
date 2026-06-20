@@ -96,8 +96,8 @@ export default function TimeField(props: Props) {
 		const raw = e.target.value;
 		const upper = raw.trim().toUpperCase();
 
-		// Special keys: D/F -> DNF, S -> DNS
-		if (upper === 'D' || upper === 'F' || upper === 'DF' || upper === 'DNF') {
+		// Shortcuts: D/F or numpad "/" -> DNF, S or numpad "*" -> DNS.
+		if (upper === 'D' || upper === 'F' || upper === 'DF' || upper === 'DNF' || raw.includes('/')) {
 			setDraft('DNF');
 			if (value !== DNF) {
 				lastValueRef.current = DNF;
@@ -105,7 +105,7 @@ export default function TimeField(props: Props) {
 			}
 			return;
 		}
-		if (upper === 'S' || upper === 'DNS') {
+		if (upper === 'S' || upper === 'DNS' || raw.includes('*')) {
 			setDraft('DNS');
 			if (value !== DNS) {
 				lastValueRef.current = DNS;
