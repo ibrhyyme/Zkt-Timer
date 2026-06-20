@@ -3386,6 +3386,12 @@
         "info_alt_sor": "Kinch Ranks, bir cuber'ın all-round yeteneğini ölçmenin alternatif bir yoludur. Farklı yöntemlerin farklı trade-off'ları vardır — bu yüzden birden fazla ölçüm sunuyoruz."
     },
     "zkt_comp": {
+        "remove_absentees": "Yarışmayanları sil ({{count}})",
+        "remove_absentees_confirm": "Süre girilmemiş {{count}} kişi kayıttan tamamen silinecek. Emin misin?",
+        "remove_competitor_confirm": "{{name}} kayıttan tamamen silinecek. Emin misin?",
+        "competitor_removed": "Yarışmacı silindi",
+        "absentees_removed": "{{count}} yarışmayan silindi",
+        "remove_competitor": "Sil",
         "legend_clinched": "Geçişi kesin",
         "legend_questionable": "Geçebilir, belli değil",
         "legend_out": "Şu an elenmiş",
