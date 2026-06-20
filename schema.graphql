@@ -491,6 +491,7 @@ type Mutation {
   submitZktResult(input: SubmitZktResultInput): ZktResult
   submitZktResultsBatch(input: SubmitZktResultsBatchInput): [ZktResult]
   deleteZktResult(resultId: String): Boolean
+  clearZktRoundResults(roundId: String): Boolean
   finalizeZktRound(roundId: String): ZktRound
   updateZktRoundStatus(input: UpdateZktRoundStatusInput): ZktRound
   regenerateZktScrambles(roundId: String): [ZktScramble]
@@ -513,6 +514,7 @@ type Mutation {
   importZktCompetitors(input: ImportZktCompetitorsInput): [ZktPerson]
   addZktPerson(input: AddZktPersonInput): ZktPerson
   updateZktPerson(input: UpdateZktPersonInput): ZktPerson
+  normalizeZktCompetitionNames(competitionId: String): Int
   deleteZktPerson(personId: String): Boolean
   linkRevenueCatUser: Boolean
   followCompetitor(input: FollowCompetitorInput): CompetitionFollow

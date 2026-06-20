@@ -159,6 +159,7 @@ export default function TimeField(props: Props) {
 				value={draft}
 				onChange={handleChange}
 				onBlur={handleBlur}
+				onFocus={(e) => e.currentTarget.select()}
 				onKeyDown={onKeyDown}
 				placeholder={placeholder || '0.00'}
 				disabled={disabled}

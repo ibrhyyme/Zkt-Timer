@@ -3388,6 +3388,12 @@
         "info_alt_sor": "Kinch Ranks is an alternative way to measure the all-round abilities of a cuber. Different methods will have different tradeoffs — that's why we provide multiple ways to measure your all-round abilities."
     },
     "zkt_comp": {
+        "remove_absentees": "Remove absentees ({{count}})",
+        "remove_absentees_confirm": "{{count}} competitor(s) with no time will be permanently removed from registration. Are you sure?",
+        "remove_competitor_confirm": "{{name}} will be permanently removed from registration. Are you sure?",
+        "competitor_removed": "Competitor removed",
+        "absentees_removed": "{{count}} absentee(s) removed",
+        "remove_competitor": "Remove",
         "legend_clinched": "Advancing (locked in)",
         "legend_questionable": "Could advance",
         "legend_out": "Currently out",

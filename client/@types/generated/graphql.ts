@@ -926,6 +926,7 @@ export type Mutation = {
   cancelZktCompetition?: Maybe<ZktCompetition>;
   changeSmartDeviceName?: Maybe<SmartDevice>;
   checkForgotPasswordCode?: Maybe<Scalars['Boolean']>;
+  clearZktRoundResults?: Maybe<Scalars['Boolean']>;
   completeWcaSignup?: Maybe<PublicUserAccount>;
   confirmEmailChange?: Maybe<PublicUserAccount>;
   confirmZktCompetition?: Maybe<ZktCompetition>;
@@ -988,6 +989,7 @@ export type Mutation = {
   markNotificationAsRead?: Maybe<Notification>;
   markZktNoShow?: Maybe<ZktResult>;
   mergeSessions?: Maybe<Session>;
+  normalizeZktCompetitionNames?: Maybe<Scalars['Int']>;
   publishTopAverages?: Maybe<TopAverage>;
   publishTopSolve?: Maybe<TopSolve>;
   publishWcaRecord?: Maybe<WcaRecord>;
@@ -1222,6 +1224,11 @@ export type MutationChangeSmartDeviceNameArgs = {
 export type MutationCheckForgotPasswordCodeArgs = {
   code?: InputMaybe<Scalars['String']>;
   email?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationClearZktRoundResultsArgs = {
+  roundId?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -1508,6 +1515,11 @@ export type MutationMarkZktNoShowArgs = {
 export type MutationMergeSessionsArgs = {
   newSessionId?: InputMaybe<Scalars['String']>;
   oldSessionId?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationNormalizeZktCompetitionNamesArgs = {
+  competitionId?: InputMaybe<Scalars['String']>;
 };
 
 

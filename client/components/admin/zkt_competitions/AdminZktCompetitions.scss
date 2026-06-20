@@ -2346,6 +2346,27 @@ $zkt-warn: #ffc107;
 		}
 	}
 
+	&__leaderboard-remove {
+		flex: 0 0 auto;
+		margin-left: 8px;
+		width: 22px;
+		height: 22px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 6px;
+		font-size: 1.15rem;
+		line-height: 1;
+		cursor: pointer;
+		color: rgb(var(--text-color));
+		background: rgba(var(--text-color), 0.06);
+
+		&:hover {
+			background: rgba(var(--error-color), 0.18);
+			color: rgb(var(--error-color));
+		}
+	}
+
 	&__leaderboard-col {
 		display: inline-flex;
 		align-items: center;

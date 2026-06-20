@@ -132,6 +132,12 @@ const DELETE_RESULT = gql`
 	}
 `;
 
+const DELETE_REGISTRATION = gql`
+	mutation DeleteZktRegistrationInline($registrationId: String!) {
+		deleteZktRegistration(registrationId: $registrationId)
+	}
+`;
+
 const CLEAR_ROUND = gql`
 	mutation ClearZktRoundResults($roundId: String!) {
 		clearZktRoundResults(roundId: $roundId)
@@ -582,6 +588,51 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 		}
 	}
 
+	// Remove a competitor entirely. Round 1: the competitor IS a registration
+	// (deleteZktRegistration cascades the ghost person, events, history,
+	// assignments and results). Round 2+: the competitor is a carried result row.
+	async function removeCompetitor(c: Competitor) {
+		const isRound1 = (selectedRound?.round_number || 1) === 1;
+		if (isRound1) {
+			await gqlMutate(DELETE_REGISTRATION, {registrationId: c.id});
+		} else {
+			await gqlMutate(DELETE_RESULT, {resultId: c.id});
+		}
+	}
+
+	async function handleRemoveCompetitor(c: Competitor) {
+		if (!window.confirm(t('remove_competitor_confirm', {name: competitorDisplayName(c)}))) return;
+		try {
+			await removeCompetitor(c);
+			if (idOf(c) === activeUserId) setActiveUserId(null);
+			toastSuccess(t('competitor_removed'));
+			await fetchResults();
+			onUpdated();
+		} catch (e: any) {
+			toastError(e?.message || t('error'));
+		}
+	}
+
+	// Competitors with no result entered yet (and not already marked no-show).
+	const absentees = competitors.filter((c) => {
+		const r = results.find((x) => idOf(x) === idOf(c));
+		return !r || (r.best == null && !r.no_show);
+	});
+
+	async function removeAbsentees() {
+		if (absentees.length === 0) return;
+		if (!window.confirm(t('remove_absentees_confirm', {count: absentees.length}))) return;
+		try {
+			for (const c of absentees) await removeCompetitor(c);
+			toastSuccess(t('absentees_removed', {count: absentees.length}));
+			setActiveUserId(null);
+			await fetchResults();
+			onUpdated();
+		} catch (e: any) {
+			toastError(e?.message || t('error'));
+		}
+	}
+
 	if (!selectedEvent) return <div className={b('empty')}>{t('no_events')}</div>;
 
 	return (
@@ -797,6 +848,7 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 							cutoffCs={selectedRound.cutoff_cs}
 							cutoffAttempts={selectedRound.cutoff_attempts}
 							roundFinished={selectedRound.status === 'FINISHED'}
+							onRemove={handleRemoveCompetitor}
 						/>
 					</div>
 				</div>
@@ -804,6 +856,15 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 
 			{selectedRound && selectedRound.status !== 'UPCOMING' && (
 				<div className={b('sticky-footer')}>
+					{absentees.length > 0 && selectedRound.status !== 'FINISHED' && (
+						<button
+							className={b('reopen-btn', {danger: true})}
+							style={{color: 'rgb(var(--error-color))'}}
+							onClick={removeAbsentees}
+						>
+							{t('remove_absentees', {count: absentees.length})}
+						</button>
+					)}
 					<button
 						className={b('reopen-btn', {danger: true})}
 						style={{marginRight: 'auto', color: 'rgb(var(--error-color))'}}
@@ -1081,6 +1142,7 @@ function LeaderboardTable({
 	onClear,
 	onNoShow,
 	onQuit,
+	onRemove,
 	batch,
 	format,
 	advancementType,
@@ -1096,6 +1158,7 @@ function LeaderboardTable({
 	onClear: (resultId: string) => void;
 	onNoShow: (key: string) => void;
 	onQuit: (userId: string | null) => void;
+	onRemove: (c: Competitor) => void;
 	batch: Record<string, (number | null)[]>;
 	format: string;
 	advancementType: string | null;
@@ -1196,6 +1259,18 @@ function LeaderboardTable({
 								)}
 							</span>
 						)}
+						<span
+							className={b('leaderboard-remove')}
+							role="button"
+							aria-label={t('remove_competitor')}
+							title={t('remove_competitor')}
+							onClick={(e) => {
+								e.stopPropagation();
+								onRemove(c);
+							}}
+						>
+							×
+						</span>
 					</button>
 				);
 			})}
