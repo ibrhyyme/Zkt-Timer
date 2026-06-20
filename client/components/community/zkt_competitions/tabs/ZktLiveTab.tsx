@@ -68,6 +68,15 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 		).length;
 	}, [selectedRound, detail, selectedEvent, results]);
 
+	// Final round = the event's last round. Medals (gold/silver/bronze) show
+	// on the top 3 throughout the final round (live), regardless of status.
+	const isFinalRound = !!(
+		selectedRound &&
+		selectedEvent &&
+		selectedRound.round_number ===
+			Math.max(...(selectedEvent.rounds || []).map((r: any) => r.round_number))
+	);
+
 	// Map comp_event_id -> event_id for route updates
 	function handleEventChange(compEventId: string) {
 		setSelectedEventId(compEventId);
@@ -248,6 +257,7 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 								eventId={selectedEvent.event_id}
 								competitionId={competitionId}
 								totalExpected={totalExpected}
+								isFinalRound={isFinalRound}
 							/>
 						</>
 					)}
@@ -271,6 +281,7 @@ function ResultsTable({
 	eventId,
 	competitionId,
 	totalExpected,
+	isFinalRound,
 }: {
 	results: LiveResult[];
 	format: string;
@@ -283,6 +294,7 @@ function ResultsTable({
 	eventId: string;
 	competitionId: string;
 	totalExpected?: number;
+	isFinalRound?: boolean;
 }) {
 	const {t} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
 	const history = useHistory();
@@ -341,7 +353,7 @@ function ResultsTable({
 						const displayName =
 							competitorDisplayName(competitorOf(r)) || competitorId;
 						const flag = competitorFlag(competitorOf(r));
-						const medal = isFinished ? MEDALS[(r.ranking || 0) - 1] || '' : '';
+						const medal = isFinalRound ? MEDALS[(r.ranking || 0) - 1] || '' : '';
 						const isMe = !!(me && r.user_id && me.id === r.user_id);
 						const attempts = formatAttempts(
 							[r.attempt_1, r.attempt_2, r.attempt_3, r.attempt_4, r.attempt_5],
