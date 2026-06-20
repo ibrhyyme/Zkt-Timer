@@ -18,7 +18,7 @@ import EditCutoffModal from '../modals/EditCutoffModal';
 import EditAdvancementModal from '../modals/EditAdvancementModal';
 import {generateScramblePdf} from '../../../../util/cubes/scramble_pdf';
 import {generateResultsPdf} from '../../../../util/cubes/results_pdf';
-import {generateScorecardsPdf} from '../../../../util/cubes/scorecard_pdf';
+import {generateScorecardsPdf, generateBlankScorecardsPdf} from '../../../../util/cubes/scorecard_pdf';
 
 const CREATE_ROUND = gql`
 	mutation CreateZktRound($input: CreateZktRoundInput!) {
@@ -331,9 +331,26 @@ export default function DashboardRounds({
 		});
 	}
 
+	// Blank spare scorecards (competition name only) — handwritten on site for
+	// late/extra competitors or card replacements. One A4 page, 4 cards.
+	async function downloadBlankScorecards() {
+		await generateBlankScorecardsPdf(detail.name, 4);
+	}
+
 	return (
-		<div className={b('event-card-grid')}>
-			{detail.events.map((ev: any) => {
+		<div>
+			<div className={b('rounds-toolbar')} style={{marginBottom: '1rem'}}>
+				<button
+					type="button"
+					className={b('action-btn')}
+					onClick={downloadBlankScorecards}
+					title={t('download_blank_scorecards')}
+				>
+					<IdentificationCard weight="bold" /> {t('download_blank_scorecards')}
+				</button>
+			</div>
+			<div className={b('event-card-grid')}>
+				{detail.events.map((ev: any) => {
 				const rounds = [...ev.rounds].sort(
 					(a: any, bx: any) => a.round_number - bx.round_number
 				);
@@ -502,6 +519,7 @@ export default function DashboardRounds({
 					</div>
 				);
 			})}
+		</div>
 		</div>
 	);
 }
