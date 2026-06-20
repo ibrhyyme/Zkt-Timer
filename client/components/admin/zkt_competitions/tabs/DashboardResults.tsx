@@ -939,6 +939,16 @@ function ActiveResultForm({
 		setAttempts(next);
 	}
 
+	// Focus an attempt cell AND scroll it into view — on small screens the
+	// lower cells fall below the fold, so without this the scoretaker can't
+	// see the value they just typed when advancing to the next attempt.
+	function focusAttempt(idx: number) {
+		const el = inputRefs.current[idx];
+		if (!el) return;
+		el.focus();
+		el.scrollIntoView({block: 'nearest'});
+	}
+
 	async function save() {
 		// Typo guard (wca-live attemptResultsWarning): a valid attempt that is
 		// 10x+ away from another usually means a misplaced digit (8.34 vs 83.40).
@@ -1001,7 +1011,7 @@ function ActiveResultForm({
 	useEffect(() => {
 		const firstEmpty = attempts.findIndex((v, i) => i < requiredCount && (v === null || v === undefined));
 		const target = firstEmpty === -1 ? 0 : firstEmpty;
-		requestAnimationFrame(() => inputRefs.current[target]?.focus());
+		requestAnimationFrame(() => focusAttempt(target));
 		// Intentionally on mount of a new competitor only.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
@@ -1022,12 +1032,12 @@ function ActiveResultForm({
 			// attempts, Escape leaves the field.
 			if (e.key === 'ArrowDown') {
 				e.preventDefault();
-				if (idx < requiredCount - 1) inputRefs.current[idx + 1]?.focus();
+				if (idx < requiredCount - 1) focusAttempt(idx + 1);
 				return;
 			}
 			if (e.key === 'ArrowUp') {
 				e.preventDefault();
-				if (idx > 0) inputRefs.current[idx - 1]?.focus();
+				if (idx > 0) focusAttempt(idx - 1);
 				return;
 			}
 			if (e.key === 'Escape') {
@@ -1039,7 +1049,7 @@ function ActiveResultForm({
 				// Next required attempt; if we're on the last one and everything is
 				// filled, submit. Otherwise jump to the first remaining empty.
 				if (idx < requiredCount - 1) {
-					inputRefs.current[idx + 1]?.focus();
+					focusAttempt(idx + 1);
 					return;
 				}
 				if (requiredFilled) {
@@ -1047,7 +1057,7 @@ function ActiveResultForm({
 					return;
 				}
 				const firstEmpty = attempts.findIndex((v, i) => i < requiredCount && (v === null || v === undefined));
-				if (firstEmpty !== -1) inputRefs.current[firstEmpty]?.focus();
+				if (firstEmpty !== -1) focusAttempt(firstEmpty);
 			}
 		};
 	}
