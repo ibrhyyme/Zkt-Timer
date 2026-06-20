@@ -41,6 +41,14 @@ const PROJECTOR_QUERY = gql`
 					status
 					advancement_type
 					advancement_level
+					cutoff_cs
+					cutoff_attempts
+				}
+			}
+			registrations {
+				status
+				events {
+					comp_event_id
 				}
 			}
 		}
@@ -141,6 +149,20 @@ export default function ZktProjector() {
 	// Join the socket room by the real UUID (from the loaded detail), not the
 	// route param which may be a slug. detail is null until loaded → no-op join,
 	// then re-joins the correct room once the UUID arrives.
+	// Total competitors expected this round: round 1 = APPROVED registrations
+	// for this event; round 2+ = carried result rows. Feeds the clinched
+	// (green/orange) math so people who haven't gone yet count as a threat.
+	const totalExpected = useMemo(() => {
+		if (!round) return undefined;
+		if (round.round_number !== 1) return (results || []).length;
+		if (!detail?.registrations || !compEvent) return undefined;
+		return detail.registrations.filter(
+			(r: any) =>
+				r.status === 'APPROVED' &&
+				(r.events || []).some((e: any) => e.comp_event_id === compEvent.id)
+		).length;
+	}, [round, results, detail, compEvent]);
+
 	const {results} = useZktLiveResults(detail?.id ?? null, round?.id || null);
 
 	const attemptCount = round ? getFormatAttempts(round.format) : 5;
@@ -205,7 +227,8 @@ export default function ZktProjector() {
 			(round?.format as any) ?? 'AO5',
 			round?.cutoff_cs ?? null,
 			round?.cutoff_attempts ?? null,
-			round?.status === 'FINISHED'
+			round?.status === 'FINISHED',
+			totalExpected
 		);
 		return nonempty.map((r: any) => {
 			const st = states.get(r.id);
@@ -218,7 +241,7 @@ export default function ZktProjector() {
 				questionable: st?.questionable ?? false,
 			};
 		});
-	}, [forecastActive, nonempty, attemptCount, round, advancingCount]);
+	}, [forecastActive, nonempty, attemptCount, round, advancingCount, totalExpected]);
 
 	const displayRowsRef = useRef(displayRows);
 	useEffect(() => {

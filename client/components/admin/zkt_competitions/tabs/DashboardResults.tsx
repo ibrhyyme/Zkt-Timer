@@ -1181,9 +1181,10 @@ function LeaderboardTable({
 				format as any,
 				cutoffCs,
 				cutoffAttempts,
-				roundFinished
+				roundFinished,
+				competitors.length
 			),
-		[results, advancementType, advancementLevel, format, cutoffCs, cutoffAttempts, roundFinished]
+		[results, advancementType, advancementLevel, format, cutoffCs, cutoffAttempts, roundFinished, competitors.length]
 	);
 
 	// Sort by ranking if available, then unranked after.

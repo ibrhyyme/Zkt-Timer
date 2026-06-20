@@ -54,6 +54,20 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 	// which may be a slug — the server emits to zkt_comp_{uuid}.
 	const {results, loading, refresh} = useZktLiveResults(detail.id, selectedRoundId);
 
+	// Expected competitors this round (round 1 = APPROVED registrations for the
+	// event, round 2+ = carried rows). Feeds the clinched green/orange math so
+	// people who haven't gone yet count as a threat.
+	const totalExpected = React.useMemo(() => {
+		if (!selectedRound) return undefined;
+		if (selectedRound.round_number !== 1) return (results || []).length;
+		if (!detail?.registrations || !selectedEvent) return undefined;
+		return detail.registrations.filter(
+			(r: any) =>
+				r.status === 'APPROVED' &&
+				(r.events || []).some((e: any) => e.comp_event_id === selectedEvent.id)
+		).length;
+	}, [selectedRound, detail, selectedEvent, results]);
+
 	// Map comp_event_id -> event_id for route updates
 	function handleEventChange(compEventId: string) {
 		setSelectedEventId(compEventId);
@@ -233,6 +247,7 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 								cutoffAttempts={selectedRound.cutoff_attempts}
 								eventId={selectedEvent.event_id}
 								competitionId={competitionId}
+								totalExpected={totalExpected}
 							/>
 						</>
 					)}
@@ -255,6 +270,7 @@ function ResultsTable({
 	cutoffAttempts,
 	eventId,
 	competitionId,
+	totalExpected,
 }: {
 	results: LiveResult[];
 	format: string;
@@ -266,6 +282,7 @@ function ResultsTable({
 	cutoffAttempts?: number | null;
 	eventId: string;
 	competitionId: string;
+	totalExpected?: number;
 }) {
 	const {t} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
 	const history = useHistory();
@@ -286,9 +303,10 @@ function ResultsTable({
 				format as any,
 				cutoffCs ?? null,
 				cutoffAttempts ?? null,
-				isFinished
+				isFinished,
+				totalExpected
 			),
-		[results, advancementType, advancementLevel, format, cutoffCs, cutoffAttempts, isFinished]
+		[results, advancementType, advancementLevel, format, cutoffCs, cutoffAttempts, isFinished, totalExpected]
 	);
 
 	if (loading && results.length === 0) {
