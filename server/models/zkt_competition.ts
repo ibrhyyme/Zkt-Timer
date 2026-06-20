@@ -81,8 +81,6 @@ export async function listZktCompetitions(params: {
 	status?: ZktCompStatus | null;
 	onlyPublic?: boolean;
 	viewerId?: string | null;
-	viewerCountry?: string | null;
-	viewerIsStaff?: boolean;
 }) {
 	const prisma = getPrisma();
 	const {page, pageSize, searchQuery, status, onlyPublic, viewerId} = params;

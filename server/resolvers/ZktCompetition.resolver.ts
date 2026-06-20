@@ -65,8 +65,6 @@ export class ZktCompetitionResolver {
 			status: filter?.status ?? null,
 			onlyPublic: true,
 			viewerId: context.user?.id ?? null,
-			viewerCountry: context.user?.join_country ?? null,
-			viewerIsStaff: !!(context.user?.admin || context.user?.mod),
 		});
 	}
 
@@ -91,10 +89,10 @@ export class ZktCompetitionResolver {
 		// Public (non-tied) access rules — mirror listZktCompetitions so the detail
 		// endpoint can't be used to bypass list filtering via direct ID lookup.
 		if (comp.status === 'DRAFT' || comp.status === 'CONFIRMED') return null;
-		// Country scoping: non-staff can't open competitions outside their country.
-		if (user?.join_country && comp.country_code && comp.country_code !== user.join_country) {
-			return null;
-		}
+		// NOTE: No country scoping. ZKT is TR-only and listZktCompetitions ignores
+		// join_country; applying it here too caused competitions to appear in the
+		// list but 404 ("Yarışma bulunamadı") on open for users whose account
+		// country wasn't exactly the comp's country_code. Detail mirrors the list.
 		// PRIVATE competitions: visible to registered competitors only (tied handled above).
 		if (comp.visibility === 'PRIVATE') {
 			const registrant = (comp.registrations || []).some((r: any) => r.user_id === user?.id);
