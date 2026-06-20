@@ -129,6 +129,12 @@ const DELETE_RESULT = gql`
 	}
 `;
 
+const CLEAR_ROUND = gql`
+	mutation ClearZktRoundResults($roundId: String!) {
+		clearZktRoundResults(roundId: $roundId)
+	}
+`;
+
 const CANDIDATES_QUERY = gql`
 	query ZktRoundAdvancementCandidates($roundId: String!) {
 		zktRoundAdvancementCandidates(roundId: $roundId) {
@@ -189,6 +195,9 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 	const [results, setResults] = useState<any[]>([]);
 	const [activeUserId, setActiveUserId] = useState<string | null>(null);
 	const [search, setSearch] = useState('');
+	// The ID quick-select input — focused after each save so the scoretaker can
+	// type the next competitor's number without touching the mouse.
+	const searchInputRef = useRef<HTMLInputElement>(null);
 
 	// Batch mode: collect entries locally, commit all at once (wca-live parity).
 	// Lets a delegate power through a stack of scorecards, then submit in one go.
@@ -210,9 +219,17 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 
 	useEffect(() => {
 		if (selectedEvent && selectedEvent.rounds.length > 0) {
-			const active = selectedEvent.rounds.find((r: any) => r.status !== 'FINISHED');
-			setSelectedRoundId(active?.id || selectedEvent.rounds[0].id);
+			// Keep the current round across silent refetches (detail is a new
+			// reference each time). Only re-pick when the selected round no longer
+			// belongs to this event (e.g. the event itself changed) — so entering a
+			// time never jumps from 3x3 R1 to another round/event.
+			const stillValid = selectedEvent.rounds.some((r: any) => r.id === selectedRoundId);
+			if (!stillValid) {
+				const active = selectedEvent.rounds.find((r: any) => r.status !== 'FINISHED');
+				setSelectedRoundId(active?.id || selectedEvent.rounds[0].id);
+			}
 		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [selectedEventId, selectedEvent]);
 
 	const selectedRound = selectedEvent?.rounds.find((r: any) => r.id === selectedRoundId);
@@ -542,6 +559,19 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 		}
 	}
 
+	// Wipe every time in this round (wrong event / mis-entry). Competitors stay.
+	async function clearRoundResults() {
+		if (!selectedRoundId) return;
+		if (!window.confirm(t('clear_round_results_confirm'))) return;
+		try {
+			await gqlMutate(CLEAR_ROUND, {roundId: selectedRoundId});
+			toastSuccess(t('round_results_cleared'));
+			await fetchResults();
+		} catch (e: any) {
+			toastError(e?.message || t('error'));
+		}
+	}
+
 	if (!selectedEvent) return <div className={b('empty')}>{t('no_events')}</div>;
 
 	return (
@@ -696,7 +726,11 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 					{/* LEFT: active competitor form */}
 					<div className={b('scoretake-left')}>
 						{competitors.length > 0 && (
-							<CompetitorQuickSelect competitors={competitors} onSelect={setActiveUserId} />
+							<CompetitorQuickSelect
+								competitors={competitors}
+								onSelect={setActiveUserId}
+								inputRef={searchInputRef}
+							/>
 						)}
 						{activeCompetitor ? (
 							<ActiveResultForm
@@ -712,18 +746,9 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 								onBatchAdd={handleBatchAdd}
 								onSaved={async () => {
 									if (!batchMode) await fetchResults();
-									// Advance to next competitor without a result (or pending batch entry).
-									const idx = competitors.findIndex((c) => idOf(c) === idOf(activeCompetitor));
-									for (let i = 1; i <= competitors.length; i++) {
-										const cand = competitors[(idx + i) % competitors.length];
-										const candRes = results.find((r) => idOf(r) === idOf(cand));
-										const pending = batch[idOf(cand)] !== undefined;
-										const empty = !candRes || (candRes.best === null || candRes.best === undefined);
-										if (empty && !pending) {
-											setActiveUserId(idOf(cand));
-											return;
-										}
-									}
+									// Back to the ID search box — the scoretaker picks the next
+									// competitor by number (random order), no mouse, no auto-advance.
+									requestAnimationFrame(() => searchInputRef.current?.focus());
 								}}
 								onPrev={() => goToAdjacent(-1)}
 								onNext={() => goToAdjacent(1)}
@@ -762,6 +787,13 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 
 			{selectedRound && selectedRound.status !== 'UPCOMING' && (
 				<div className={b('sticky-footer')}>
+					<button
+						className={b('reopen-btn', {danger: true})}
+						style={{marginRight: 'auto', color: 'rgb(var(--error-color))'}}
+						onClick={clearRoundResults}
+					>
+						{t('clear_round_results')}
+					</button>
 					{selectedRound.status === 'FINISHED' && (
 						<button className={b('reopen-btn')} onClick={reopenRound}>
 							{t('reopen_round')}
@@ -1164,9 +1196,11 @@ function LeaderboardTable({
 function CompetitorQuickSelect({
 	competitors,
 	onSelect,
+	inputRef,
 }: {
 	competitors: Competitor[];
 	onSelect: (userId: string) => void;
+	inputRef?: React.RefObject<HTMLInputElement>;
 }) {
 	const {t} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
 	const [query, setQuery] = useState('');
@@ -1195,12 +1229,16 @@ function CompetitorQuickSelect({
 		onSelect(idOf(c));
 		setQuery('');
 		setOpen(false);
+		// Release focus so the ActiveResultForm's mount-focus lands on the first
+		// attempt input (otherwise this search box keeps the caret).
+		inputRef?.current?.blur();
 	}
 
 	return (
 		<div className={b('quick-select')}>
 			<MagnifyingGlass weight="bold" />
 			<input
+				ref={inputRef}
 				type="text"
 				placeholder={t('quick_select_placeholder')}
 				value={query}
