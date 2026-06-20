@@ -909,6 +909,7 @@ export type Mutation = {
   adminDeleteTrainerAlternative?: Maybe<TrainerAlternative>;
   adminDeleteUserAccount?: Maybe<UserAccount>;
   adminSendPushToUser?: Maybe<AdminSendPushResult>;
+  adminUpdateZktRegistrationEvents?: Maybe<ZktRegistration>;
   announceZktCompetition?: Maybe<ZktCompetition>;
   assignUserToRound?: Maybe<ZktAssignment>;
   authenticateUser: PublicUserAccount;
@@ -1133,6 +1134,12 @@ export type MutationAdminSendPushToUserArgs = {
   body?: InputMaybe<Scalars['String']>;
   title?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationAdminUpdateZktRegistrationEventsArgs = {
+  eventIds?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  registrationId?: InputMaybe<Scalars['String']>;
 };
 
 

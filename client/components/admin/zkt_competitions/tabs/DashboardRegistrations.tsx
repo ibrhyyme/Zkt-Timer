@@ -4,8 +4,9 @@ import {gqlMutate} from '../../../api';
 import {useTranslation} from 'react-i18next';
 import {toastSuccess, toastError} from '../../../../util/toast';
 import {b, getEventName} from '../shared';
-import {Check, X, Clock, UserPlus, UploadSimple, Trash} from 'phosphor-react';
+import {Check, X, Clock, UserPlus, UploadSimple, Trash, PencilSimple} from 'phosphor-react';
 import AddCompetitorModal from './AddCompetitorModal';
+import EditCompetitorModal from './EditCompetitorModal';
 import ImportCompetitorsModal from './ImportCompetitorsModal';
 import {useDispatch} from 'react-redux';
 import {openModal} from '../../../../actions/general';
@@ -129,6 +130,19 @@ export default function DashboardRegistrations({
 				<AddCompetitorModal
 					competitionId={detail.id}
 					compEvents={detail.events}
+					onComplete={onUpdated}
+				/>
+			)
+		);
+	}
+
+	function openEditModal(reg: any) {
+		dispatch(
+			openModal(
+				<EditCompetitorModal
+					competitionId={detail.id}
+					compEvents={detail.events}
+					registration={reg}
 					onComplete={onUpdated}
 				/>
 			)
@@ -344,6 +358,13 @@ export default function DashboardRegistrations({
 							</span>
 
 							<div className={b('reg-actions')}>
+								<button
+									className={b('action-btn')}
+									onClick={() => openEditModal(reg)}
+									title={t('edit_competitor')}
+								>
+									<PencilSimple weight="bold" />
+								</button>
 								{reg.status !== 'APPROVED' && (
 									<button
 										className={b('action-btn', {approve: true})}

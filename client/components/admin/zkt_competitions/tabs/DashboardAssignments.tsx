@@ -170,8 +170,13 @@ export default function DashboardAssignments({
 
 	useEffect(() => {
 		if (selectedEvent && selectedEvent.rounds.length > 0) {
-			setSelectedRoundId(selectedEvent.rounds[0].id);
+			// Keep the current round selected across silent refetches (the detail
+			// object is a new reference each refetch, so only reset when the
+			// selected round no longer exists in this event).
+			const stillValid = selectedEvent.rounds.some((r: any) => r.id === selectedRoundId);
+			if (!stillValid) setSelectedRoundId(selectedEvent.rounds[0].id);
 		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [selectedEventId, selectedEvent]);
 
 	const selectedRound = selectedEvent?.rounds.find((r: any) => r.id === selectedRoundId);

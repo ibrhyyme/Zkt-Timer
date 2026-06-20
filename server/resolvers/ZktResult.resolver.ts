@@ -510,6 +510,27 @@ export class ZktResultResolver {
 		const competitionId = round.comp_event.competition_id;
 		await assertCanModifyCompetition(context.user, competitionId);
 
+		// Single active round per EVENT: reopening this round must close any other
+		// round of the same event that is still ACTIVE (e.g. reopen R1 → R2 closes),
+		// so the admin never sees two active rounds at once. Same rule as starting
+		// a round in updateZktRoundStatus.
+		const otherActive = await getPrisma().zktRound.findMany({
+			where: {
+				comp_event_id: round.comp_event_id,
+				status: 'ACTIVE',
+				id: {not: roundId},
+			},
+			select: {id: true},
+		});
+		for (const other of otherActive) {
+			await this.finalizeRoundWithRecords(
+				other.id,
+				context.user.id,
+				competitionId,
+				round.comp_event.event_id
+			);
+		}
+
 		// Remove untouched carry rows from the next round so rankings can be
 		// recomputed without phantom competitors once the admin re-finalizes.
 		await revokeAdvancementCarry(roundId);
