@@ -86,6 +86,7 @@ const DETAIL_QUERY = gql`
 				user_id
 				person_id
 				status
+				registration_number
 				user {
 					id
 					username
@@ -175,7 +176,10 @@ export default function ZktCompetitionDetail() {
 		fetch();
 	}, [fetch]);
 
-	useZktCompRefetch(competitionId, fetch);
+	// Live refetch socket room is keyed by the real UUID (detail.id); the route
+	// param may be a slug, which the server never broadcasts to. Falls back to
+	// the param until detail loads.
+	useZktCompRefetch(detail?.id ?? competitionId, fetch);
 
 	useEffect(() => {
 		if (isLiveRoute) setTab('live');

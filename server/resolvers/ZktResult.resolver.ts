@@ -21,8 +21,8 @@ import {
 	getRoundWithCompetition,
 	publicUserInclude,
 } from '../models/zkt_competition';
-import {upsertZktResult, finalizeRound, markResultNoShow} from '../models/zkt_result';
-import {assertRoundTransition, revokeAdvancementCarry} from '../models/zkt_round';
+import {upsertZktResult, finalizeRound, markResultNoShow, recomputeRoundRankings} from '../models/zkt_result';
+import {assertRoundTransition, revokeAdvancementCarry, syncRoundGroups} from '../models/zkt_round';
 import {ensureScramblesForRound, regenerateScramblesForRound} from '../models/zkt_scramble';
 import {checkAndApplyRecords, rebuildRecordsForEvent} from '../models/zkt_record';
 import ZktRoundFinishedNotification from '../resources/notification_types/zkt_round_finished';
@@ -208,6 +208,11 @@ export class ZktResultResolver {
 			await rebuildRecordsForEvent(round.comp_event.event_id);
 		}
 
+		// Live ranking: refresh placements + provisional advancement so the
+		// scoretaker leaderboard, ZKT Live and projector update the moment this
+		// attempt is entered (instead of staying blank until finalize).
+		await recomputeRoundRankings(input.roundId);
+
 		emitZktResultUpdated(competitionId, {
 			roundId: input.roundId,
 			resultId: result.id,
@@ -255,6 +260,11 @@ export class ZktResultResolver {
 			await rebuildRecordsForEvent(round.comp_event.event_id);
 		}
 
+		// Live ranking after the whole batch (one recompute, not per-row).
+		if (saved.length > 0) {
+			await recomputeRoundRankings(input.roundId);
+		}
+
 		for (const r of saved) {
 			emitZktResultUpdated(competitionId, {
 				roundId: input.roundId,
@@ -291,6 +301,9 @@ export class ZktResultResolver {
 		// record table only ever grows, so rebuild this event from scratch.
 		await rebuildRecordsForEvent(result.round.comp_event.event_id);
 
+		// Live ranking: a removed result shifts everyone below it up.
+		await recomputeRoundRankings(result.round_id);
+
 		emitZktResultDeleted(competitionId, {
 			roundId: result.round_id,
 			resultId: result.id,
@@ -312,47 +325,61 @@ export class ZktResultResolver {
 		const competitionId = round.comp_event.competition_id;
 		await assertCanModifyCompetition(context.user, competitionId);
 
-		const {alreadyFinalized} = await finalizeRound(roundId, context.user.id);
-
-		// Records, notifications and the socket broadcast run ONLY for the call
-		// that actually finalized the round. A concurrent second "finalize" lost
-		// the atomic claim (alreadyFinalized) → skip, so competitors don't get
-		// duplicate "round finished" notifications.
-		if (!alreadyFinalized) {
-			const results = await getPrisma().zktResult.findMany({where: {round_id: roundId}});
-			for (const r of results) {
-				// Ghost competitors (person, no account) don't hold global records — skip.
-				if (!r.user_id) continue;
-				const tags = await checkAndApplyRecords({
-					resultId: r.id,
-					userId: r.user_id,
-					eventId: round.comp_event.event_id,
-					competitionId,
-					best: r.best,
-					average: r.average,
-				});
-				if (tags.singleTag || tags.averageTag) {
-					await getPrisma().zktResult.update({
-						where: {id: r.id},
-						data: {
-							single_record_tag: tags.singleTag,
-							average_record_tag: tags.averageTag,
-						},
-					});
-				}
-			}
-
-			emitZktRoundStatusChanged(competitionId, {roundId, status: 'FINISHED'});
-
-			// Fire-and-forget: "you placed Nth / you advance / podium" to every
-			// ranked competitor. Must never delay or break the finalize response.
-			void notifyZktRoundFinished(roundId);
-		}
+		await this.finalizeRoundWithRecords(
+			roundId,
+			context.user.id,
+			competitionId,
+			round.comp_event.event_id
+		);
 
 		return getPrisma().zktRound.findUnique({
 			where: {id: roundId},
 			include: {results: {include: {user: publicUserInclude, person: true}}, groups: true},
 		});
+	}
+
+	// Shared finalize path: flip to FINISHED (atomic claim inside finalizeRound),
+	// then apply records + broadcast + notify ONLY for the call that actually
+	// finalized (a concurrent second finalize loses the claim → skip, so no
+	// duplicate "round finished" notifications). Reused by finalizeZktRound and
+	// by the single-active-round rule in updateZktRoundStatus.
+	private async finalizeRoundWithRecords(
+		roundId: string,
+		userId: string,
+		competitionId: string,
+		eventId: string
+	): Promise<void> {
+		const {alreadyFinalized} = await finalizeRound(roundId, userId);
+		if (alreadyFinalized) return;
+
+		const results = await getPrisma().zktResult.findMany({where: {round_id: roundId}});
+		for (const r of results) {
+			// Ghost competitors (person, no account) don't hold global records — skip.
+			if (!r.user_id) continue;
+			const tags = await checkAndApplyRecords({
+				resultId: r.id,
+				userId: r.user_id,
+				eventId,
+				competitionId,
+				best: r.best,
+				average: r.average,
+			});
+			if (tags.singleTag || tags.averageTag) {
+				await getPrisma().zktResult.update({
+					where: {id: r.id},
+					data: {
+						single_record_tag: tags.singleTag,
+						average_record_tag: tags.averageTag,
+					},
+				});
+			}
+		}
+
+		emitZktRoundStatusChanged(competitionId, {roundId, status: 'FINISHED'});
+
+		// Fire-and-forget: "you placed Nth / you advance / podium" to every
+		// ranked competitor. Must never delay or break the finalize response.
+		void notifyZktRoundFinished(roundId);
 	}
 
 	@Authorized([Role.LOGGED_IN])
@@ -368,6 +395,29 @@ export class ZktResultResolver {
 		await assertCanModifyCompetition(context.user, competitionId);
 
 		assertRoundTransition(round.status, input.status);
+
+		// Single active round per EVENT: starting a round auto-finalizes any other
+		// ACTIVE round of the same event (e.g. 333 R2 start → 333 R1 finalizes,
+		// with ranking + advancement carry). Other events are independent and may
+		// run in parallel. The admin can still reopen R1 afterwards to edit.
+		if (input.status === 'ACTIVE' && round.status !== 'ACTIVE') {
+			const otherActive = await getPrisma().zktRound.findMany({
+				where: {
+					comp_event_id: round.comp_event_id,
+					status: 'ACTIVE',
+					id: {not: input.roundId},
+				},
+				select: {id: true},
+			});
+			for (const other of otherActive) {
+				await this.finalizeRoundWithRecords(
+					other.id,
+					context.user.id,
+					competitionId,
+					round.comp_event.event_id
+				);
+			}
+		}
 
 		const updated = await getPrisma().zktRound.update({
 			where: {id: input.roundId},
@@ -564,6 +614,9 @@ export class ZktResultResolver {
 			});
 		}
 
+		// Keep live ranks consistent after a late addition.
+		await recomputeRoundRankings(roundId);
+
 		emitZktResultUpdated(competitionId, {roundId, resultId: result.id, userId});
 
 		return prisma.zktResult.findUnique({
@@ -612,6 +665,9 @@ export class ZktResultResolver {
 		if (round.status === 'FINISHED') {
 			await rebuildRecordsForEvent(round.comp_event.event_id);
 		}
+
+		// Removing a competitor shifts everyone below up — refresh live ranks.
+		await recomputeRoundRankings(roundId);
 
 		emitZktResultDeleted(competitionId, {
 			roundId,
@@ -685,6 +741,9 @@ export class ZktResultResolver {
 			entered_by_id: context.user.id,
 		});
 
+		// A no-show (DNF/DNS) drops the competitor to the bottom — refresh ranks.
+		await recomputeRoundRankings(input.roundId);
+
 		emitZktResultUpdated(competitionId, {
 			roundId: input.roundId,
 			resultId: result.id,
@@ -700,7 +759,7 @@ export class ZktResultResolver {
 	@Authorized([Role.MOD])
 	@Mutation(() => ZktRound)
 	async createZktRound(@Arg('input') input: CreateZktRoundInput) {
-		return getPrisma().zktRound.create({
+		const round = await getPrisma().zktRound.create({
 			data: {
 				comp_event_id: input.compEventId,
 				round_number: input.roundNumber,
@@ -710,8 +769,13 @@ export class ZktResultResolver {
 				cutoff_attempts: input.cutoffAttempts ?? null,
 				advancement_type: input.advancementType ?? null,
 				advancement_level: input.advancementLevel ?? null,
+				group_count: input.groupCount ?? null,
 			},
 		});
+		if (input.groupCount && input.groupCount > 0) {
+			await syncRoundGroups(round.id, input.groupCount);
+		}
+		return round;
 	}
 
 	@Authorized([Role.MOD])
@@ -724,10 +788,16 @@ export class ZktResultResolver {
 		if (input.cutoffAttempts !== undefined) data.cutoff_attempts = input.cutoffAttempts;
 		if (input.advancementType !== undefined) data.advancement_type = input.advancementType;
 		if (input.advancementLevel !== undefined) data.advancement_level = input.advancementLevel;
-		return getPrisma().zktRound.update({
+		if (input.groupCount !== undefined) data.group_count = input.groupCount;
+		const round = await getPrisma().zktRound.update({
 			where: {id: input.roundId},
 			data,
 		});
+		// Materialise the group rows so the Assignments tab + auto-distribute see them.
+		if (input.groupCount !== undefined && input.groupCount !== null) {
+			await syncRoundGroups(input.roundId, input.groupCount);
+		}
+		return round;
 	}
 
 	@Authorized([Role.MOD])

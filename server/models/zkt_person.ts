@@ -1,4 +1,5 @@
 import {getPrisma} from '../database';
+import {nextRegistrationNumber} from './zkt_competition';
 
 export interface ZktPersonRow {
 	firstName: string;
@@ -22,6 +23,10 @@ export async function importZktCompetitors(competitionId: string, rows: ZktPerso
 	});
 	const validEventIds = new Set(compEvents.map((e) => e.id));
 
+	// Assign registrant ids in file/import order: take the current max once, then
+	// hand out consecutive numbers as rows are created.
+	let nextNum = await nextRegistrationNumber(competitionId);
+
 	const created = [];
 	for (const row of rows) {
 		const firstName = (row.firstName || '').trim();
@@ -44,6 +49,7 @@ export async function importZktCompetitors(competitionId: string, rows: ZktPerso
 				competition_id: competitionId,
 				person_id: person.id,
 				status: 'APPROVED',
+				registration_number: nextNum++,
 			},
 		});
 		const eventIds = (row.eventIds || []).filter((e) => validEventIds.has(e));

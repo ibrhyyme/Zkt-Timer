@@ -9,10 +9,12 @@ import {
 	AssignUserInput,
 	CreateGroupInput,
 	BulkAssignCompetitorsInput,
+	BulkAssignStaffInput,
 	UpdateZktGroupScheduleInput,
 } from '../schemas/ZktCompetition.schema';
 import {getPrisma} from '../database';
 import {assertCanModifyCompetition, publicUserInclude, getRoundWithCompetition} from '../models/zkt_competition';
+import {syncRoundGroups} from '../models/zkt_round';
 import {emitZktAssignmentUpdated} from '../zkt_competition';
 
 @Resolver()
@@ -103,35 +105,37 @@ export class ZktAssignmentResolver {
 
 		await assertCanModifyCompetition(context.user, round.comp_event.competition_id);
 
-		// WCA-live parity: same user cannot have multiple roles within the same group
-		// (competitor cannot be judge in same group). Different roles in different groups are OK
-		// (COMPETITOR in group A, JUDGE in group B OK).
+		// Identity is user XOR person (account-less staff/ghost from the pool).
+		const userId = input.userId ?? null;
+		const personId = input.personId ?? null;
+		if (!userId && !personId) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'userId or personId required');
+		}
+		const idWhere = userId ? {user_id: userId} : {person_id: personId};
+
+		// WCA-live parity: same person cannot hold two roles within the same group
+		// (competitor cannot be judge in same group). Different roles in different
+		// groups are OK (COMPETITOR in group A, JUDGE in group B).
 		if (input.groupId) {
 			const conflicting = await getPrisma().zktAssignment.findFirst({
 				where: {
 					round_id: input.roundId,
-					user_id: input.userId,
 					group_id: input.groupId,
 					role: {not: input.role},
+					...idWhere,
 				},
 			});
 			if (conflicting) {
 				throw new GraphQLError(
 					ErrorCode.BAD_INPUT,
-					`User already assigned as ${conflicting.role} in this group`
+					`Already assigned as ${conflicting.role} in this group`
 				);
 			}
 		}
 
-		// Upsert: single record per (round, user, role)
-		const existing = await getPrisma().zktAssignment.findUnique({
-			where: {
-				round_id_user_id_role: {
-					round_id: input.roundId,
-					user_id: input.userId,
-					role: input.role,
-				},
-			},
+		// Upsert: single record per (round, identity, role).
+		const existing = await getPrisma().zktAssignment.findFirst({
+			where: {round_id: input.roundId, role: input.role, ...idWhere},
 		});
 
 		let result: any;
@@ -142,25 +146,26 @@ export class ZktAssignmentResolver {
 					group_id: input.groupId ?? null,
 					station_number: input.stationNumber ?? null,
 				},
-				include: {user: publicUserInclude},
+				include: {user: publicUserInclude, person: true},
 			});
 		} else {
 			result = await getPrisma().zktAssignment.create({
 				data: {
 					round_id: input.roundId,
 					group_id: input.groupId ?? null,
-					user_id: input.userId,
+					user_id: userId,
+					person_id: personId,
 					role: input.role,
 					station_number: input.stationNumber ?? null,
 				},
-				include: {user: publicUserInclude},
+				include: {user: publicUserInclude, person: true},
 			});
 		}
 
 		emitZktAssignmentUpdated(round.comp_event.competition_id, {
 			roundId: input.roundId,
 			groupId: input.groupId,
-			userId: input.userId,
+			userId: userId ?? personId ?? undefined,
 		});
 
 		return result;
@@ -276,9 +281,16 @@ export class ZktAssignmentResolver {
 			.map((c) => ({key: c.userId ?? c.personId ?? '', isPerson: !c.userId}))
 			.filter((c) => c.key);
 
-		// Derive group count from station capacity: ceil(competitors / stations).
+		// Group count: explicit input.groupCount → the round's configured
+		// group_count (set on the Rounds tab) → fall back to station capacity
+		// ceil(competitors / stations).
 		const stationCount = Math.max(1, input.stationCount);
-		const groupCount = Math.max(1, Math.ceil(refs.length / stationCount));
+		const groupCount =
+			input.groupCount && input.groupCount > 0
+				? input.groupCount
+				: round.group_count && round.group_count > 0
+				? round.group_count
+				: Math.max(1, Math.ceil(refs.length / stationCount));
 
 		// Seed order: round >1 uses previous-round ranking (competitor-key based),
 		// round 1 keeps input order.
@@ -294,15 +306,13 @@ export class ZktAssignmentResolver {
 			round.round_number
 		);
 
-		await getPrisma().zktGroup.deleteMany({where: {round_id: input.roundId}});
-
-		const groups = await Promise.all(
-			Array.from({length: groupCount}).map((_, i) =>
-				getPrisma().zktGroup.create({
-					data: {round_id: input.roundId, group_number: i + 1},
-				})
-			)
-		);
+		// Ensure exactly groupCount groups WITHOUT wiping existing ones (keeps
+		// their schedule). Only COMPETITOR assignments are re-distributed below.
+		await syncRoundGroups(input.roundId, groupCount);
+		const groups = await getPrisma().zktGroup.findMany({
+			where: {round_id: input.roundId},
+			orderBy: {group_number: 'asc'},
+		});
 
 		await getPrisma().zktAssignment.deleteMany({
 			where: {round_id: input.roundId, role: 'COMPETITOR'},
@@ -336,6 +346,66 @@ export class ZktAssignmentResolver {
 		}
 
 		// One emit per competitor — consumers debounce.
+		for (const a of assignments) {
+			emitZktAssignmentUpdated(round.comp_event.competition_id, {
+				roundId: input.roundId,
+				groupId: a.group_id ?? undefined,
+				userId: a.user_id ?? a.person_id ?? undefined,
+			});
+		}
+
+		return assignments;
+	}
+
+	/**
+	 * Distribute a single staff role (JUDGE/SCRAMBLER/RUNNER) round-robin across
+	 * the round's existing groups. Replaces all current assignments of that role
+	 * for the round. Staff may be registered users or account-less pool persons.
+	 */
+	@Authorized([Role.LOGGED_IN])
+	@Mutation(() => [ZktAssignment])
+	async bulkAssignStaff(
+		@Ctx() context: GraphQLContext,
+		@Arg('input') input: BulkAssignStaffInput
+	) {
+		const round = await getRoundWithCompetition(input.roundId);
+		if (!round) throw new GraphQLError(ErrorCode.NOT_FOUND);
+		await assertCanModifyCompetition(context.user, round.comp_event.competition_id);
+
+		const groups = await getPrisma().zktGroup.findMany({
+			where: {round_id: input.roundId},
+			orderBy: {group_number: 'asc'},
+		});
+		if (groups.length === 0) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'No groups to distribute staff into');
+		}
+
+		const refs = input.staff
+			.map((c) => ({key: c.userId ?? c.personId ?? '', isPerson: !c.userId}))
+			.filter((c) => c.key);
+
+		// Replace existing assignments of this role for the round.
+		await getPrisma().zktAssignment.deleteMany({
+			where: {round_id: input.roundId, role: input.role},
+		});
+
+		const assignments = [];
+		for (let i = 0; i < refs.length; i++) {
+			const groupId = groups[i % groups.length].id;
+			const ref = refs[i];
+			const a = await getPrisma().zktAssignment.create({
+				data: {
+					round_id: input.roundId,
+					group_id: groupId,
+					user_id: ref.isPerson ? null : ref.key,
+					person_id: ref.isPerson ? ref.key : null,
+					role: input.role,
+				},
+				include: {user: publicUserInclude, person: true},
+			});
+			assignments.push(a);
+		}
+
 		for (const a of assignments) {
 			emitZktAssignmentUpdated(round.comp_event.competition_id, {
 				roundId: input.roundId,

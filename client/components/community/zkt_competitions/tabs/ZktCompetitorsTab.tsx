@@ -73,6 +73,10 @@ export default function ZktCompetitorsTab({detail}: {detail: any}) {
 				if (a.user_id === me.id) return -1;
 				if (bx.user_id === me.id) return 1;
 			}
+			// Registrant number first (WCA-style), name as a fallback.
+			const na = a.registration_number ?? Number.MAX_SAFE_INTEGER;
+			const nb = bx.registration_number ?? Number.MAX_SAFE_INTEGER;
+			if (na !== nb) return na - nb;
 			return competitorDisplayName(competitorOf(a)).localeCompare(
 				competitorDisplayName(competitorOf(bx))
 			);
@@ -122,7 +126,9 @@ export default function ZktCompetitorsTab({detail}: {detail: any}) {
 									)
 								}
 							>
-								<span className={b('competitor-number')}>{idx + 1}</span>
+								<span className={b('competitor-number')}>
+									{r.registration_number ?? idx + 1}
+								</span>
 								<div className={b('competitor-info')}>
 									<span className={b('competitor-name-list')}>
 										{flag && <span className={b('flag')}>{flag}</span>}

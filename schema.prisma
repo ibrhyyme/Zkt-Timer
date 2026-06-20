@@ -1363,6 +1363,7 @@ model ZktRound {
   cutoff_attempts   Int?
   advancement_type  ZktAdvancementType?
   advancement_level Int?
+  group_count       Int?                // target number of groups (set on Rounds tab; drives auto-distribute)
   status            ZktRoundStatus      @default(UPCOMING)
   created_at        DateTime            @default(now())
   updated_at        DateTime            @updatedAt
@@ -1420,6 +1421,7 @@ model ZktRegistration {
   admin_comment         String?
   guests                Int                    @default(0)
   waiting_list_position Int?
+  registration_number   Int?                   // competition-local registrant id (WCA registrantId), assigned in registration/import order
   created_at            DateTime               @default(now())
   updated_at            DateTime               @updatedAt
 
@@ -1431,6 +1433,7 @@ model ZktRegistration {
 
   @@unique([competition_id, user_id])
   @@unique([competition_id, person_id])
+  @@unique([competition_id, registration_number])
   @@index([competition_id])
   @@index([user_id])
   @@index([status])
@@ -1630,6 +1633,7 @@ model ZktPerson {
   external_id    String?
   gender         String?
   date_of_birth  DateTime?
+  is_staff       Boolean   @default(false) // staff pool member (judge/scrambler/runner); no registration, assignment-only
   created_at     DateTime  @default(now())
 
   competition    ZktCompetition    @relation(fields: [competition_id], references: [id], onDelete: Cascade)

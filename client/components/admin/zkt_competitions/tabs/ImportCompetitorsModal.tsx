@@ -182,15 +182,80 @@ function resolveEventCell(cell: string, eventIdToCompId: Map<string, string>): s
 	return eventIdToCompId.get(eventId) || null;
 }
 
+// Per-line delimiter detection: Excel paste (tab), CSV (comma/semicolon).
+function detectDelim(line: string): string {
+	return line.includes('\t') ? '\t' : line.includes(';') ? ';' : ',';
+}
+
+// Cells that mark "this competitor IS in this event" in a matrix sheet.
+const MATRIX_TRUTHY = new Set(['1', 'x', '+', 'e', 'evet', 'yes', 'y', 'true', 'var']);
+
+function splitNameParts(rawName: string): {firstName: string; lastName: string} {
+	const parts = rawName.split(/\s+/).filter(Boolean);
+	const firstName = parts.shift() || '';
+	return {firstName, lastName: parts.join(' ')};
+}
+
+/**
+ * MATRIX format (the school list shape from the screenshot):
+ *   No, Ad Soyad, 333, 222, 444
+ *   1,  İbrahim İskender, 1, 0, 0
+ * The header row names event columns (WCA code / NxN / Turkish), and each data
+ * row marks 1/0 (or x / evet …) under each event the competitor solves. Column
+ * alignment matters, so blank cells are KEPT (not collapsed).
+ */
+function parseEventMatrix(
+	dataLines: string[],
+	eventCols: Array<{idx: number; compId: string}>
+): InlineRow[] {
+	const rows: InlineRow[] = [];
+	for (const line of dataLines) {
+		if (!line.trim()) continue;
+		const cells = splitLine(line, detectDelim(line));
+		// Name = first text cell; a leading pure-number cell is the registrant no.
+		let nameIdx = 0;
+		if (/^\d+$/.test((cells[0] || '').trim())) nameIdx = 1;
+		const rawName = (cells[nameIdx] || '').trim();
+		const eventIds: string[] = [];
+		for (const {idx, compId} of eventCols) {
+			const v = canon(cells[idx] || '');
+			if (MATRIX_TRUTHY.has(v) && !eventIds.includes(compId)) eventIds.push(compId);
+		}
+		const {firstName, lastName} = splitNameParts(rawName);
+		if (!firstName && !lastName) continue;
+		rows.push({firstName, lastName, eventIds, rawName, unknownTokens: []});
+	}
+	return rows;
+}
+
 function parseEventList(text: string, eventIdToCompId: Map<string, string>): InlineRow[] {
-	const lines = text.replace(/\r\n?/g, '\n').split('\n');
+	const allLines = text.replace(/\r\n?/g, '\n').split('\n');
+	const nonEmpty = allLines.filter((l) => l.trim());
+	if (nonEmpty.length === 0) return [];
+
+	// Matrix detection: the header row names event columns (1/0 grid). Two+ event
+	// columns is an unambiguous matrix. A SINGLE event column is only a matrix
+	// when the row is clearly a header (starts with No/Ad/isim…) — otherwise it
+	// would mis-read an inline data row ("1; İbrahim; 3x3") as a header and drop
+	// the first competitor.
+	const headerCells = splitLine(nonEmpty[0], detectDelim(nonEmpty[0]));
+	const eventCols: Array<{idx: number; compId: string}> = [];
+	headerCells.forEach((cell, idx) => {
+		const compId = resolveEventCell(cell, eventIdToCompId);
+		if (compId) eventCols.push({idx, compId});
+	});
+	const isHeaderRow = HEADER_FIRST_CELLS.has(canon(headerCells[0] || ''));
+	if (eventCols.length >= 2 || (isHeaderRow && eventCols.length >= 1)) {
+		return parseEventMatrix(nonEmpty.slice(1), eventCols);
+	}
+
+	// INLINE format: each row lists its own events written out as cells, e.g.
+	//   1; İbrahim İskender; 3x3; 2x2
 	const rows: InlineRow[] = [];
 	let firstLine = true;
-	for (const line of lines) {
-		if (!line.trim()) continue;
-		const delim = line.includes('\t') ? '\t' : line.includes(';') ? ';' : ',';
+	for (const line of nonEmpty) {
 		// Drop empty cells so wide sheets with blank event columns collapse.
-		const cells = splitLine(line, delim).filter((c) => c !== '');
+		const cells = splitLine(line, detectDelim(line)).filter((c) => c !== '');
 		if (cells.length === 0) continue;
 		if (firstLine) {
 			firstLine = false;
@@ -211,9 +276,7 @@ function parseEventList(text: string, eventIdToCompId: Map<string, string>): Inl
 				unknownTokens.push(cells[idx].trim());
 			}
 		}
-		const parts = rawName.split(/\s+/).filter(Boolean);
-		const firstName = parts.shift() || '';
-		const lastName = parts.join(' ');
+		const {firstName, lastName} = splitNameParts(rawName);
 		if (!firstName && !lastName) continue;
 		rows.push({firstName, lastName, eventIds, rawName, unknownTokens});
 	}
@@ -274,13 +337,18 @@ export default function ImportCompetitorsModal(props: Props) {
 	// Build a ready-to-fill CSV the organiser can open in Excel, matching the
 	// currently selected bulk format. UTF-8 BOM so Excel renders Turkish chars.
 	function downloadTemplate() {
+		// Matrix template: a column per event of THIS competition, 1 = solves it.
+		// Falls back to 333/222 if the competition has no events yet.
+		const evIds = props.compEvents.length
+			? props.compEvents.map((e) => e.event_id)
+			: ['333', '222'];
 		const rows =
 			bulkFormat === 'inline'
 				? [
-						['No', 'Ad Soyad', 'Etkinlikler'],
-						['1', 'İbrahim İskender', '3x3', '2x2'],
-						['2', 'İskender Aznavur', '3x3'],
-						['3', 'Ayşe Yılmaz', '3x3', '2x2', '5x5'],
+						['No', 'Ad Soyad', ...evIds],
+						['1', 'İbrahim İskender', ...evIds.map((_, i) => (i === 0 ? '1' : '0'))],
+						['2', 'İskender Aznavur', ...evIds.map(() => '1')],
+						['3', 'Ayşe Yılmaz', ...evIds.map((_, i) => (i % 2 === 0 ? '1' : '0'))],
 				  ]
 				: [
 						['Ad', 'Soyad', 'Ulke', 'WCA ID', 'Dis ID'],

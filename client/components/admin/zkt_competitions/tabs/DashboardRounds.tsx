@@ -262,6 +262,7 @@ export default function DashboardRounds({
 					wcaId: r.person?.wca_id || r.user?.wca_id || '',
 					group: a?.group,
 					station: a?.station,
+					registrationNumber: r.registration_number,
 				};
 			})
 			.filter((c: any) => c.name);
@@ -278,8 +279,11 @@ export default function DashboardRounds({
 			return a.name.localeCompare(bx.name);
 		});
 
+		// Print the real competition registrant id (import/registration order),
+		// NOT the seating index. Falls back to the seating index only for legacy
+		// rows that have no number yet (pre-backfill).
 		const entries = competitors.map((c: any, i: number) => ({
-			registrantId: i + 1,
+			registrantId: c.registrationNumber ?? i + 1,
 			name: c.name,
 			wcaId: c.wcaId,
 			group: c.group,
@@ -336,6 +340,7 @@ export default function DashboardRounds({
 									<span className={b('round-cell')}>{t('time_limit')}</span>
 									<span className={b('round-cell')}>{t('cutoff')}</span>
 									<span className={b('round-cell')}>{t('advancement')}</span>
+									<span className={b('round-cell')}>{t('groups')}</span>
 									<span className={b('round-cell', {actions: true})} />
 								</div>
 								{rounds.map((round: any) => (
@@ -392,6 +397,22 @@ export default function DashboardRounds({
 												}
 											/>
 										</span>
+										<span className={b('round-cell')}>
+											<select
+												className={b('round-field-btn')}
+												value={round.group_count ?? 0}
+												onChange={(e) =>
+													updateRound(round.id, {groupCount: Number(e.target.value)})
+												}
+												title={t('group_count_hint')}
+											>
+												{[0, 1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+													<option key={n} value={n}>
+														{n === 0 ? '—' : n}
+													</option>
+												))}
+											</select>
+										</span>
 										<span className={b('round-cell', {actions: true})}>
 											{(round.status === 'OPEN' ||
 												round.status === 'ACTIVE' ||
@@ -401,7 +422,7 @@ export default function DashboardRounds({
 													className={b('scramble-action-btn', {icon: true})}
 													onClick={() =>
 														window.open(
-															`/zkt-competitions/${detail.id}/projector/${ev.event_id}/${round.round_number}`,
+															`/zkt-competitions/${detail.slug || detail.id}/projector/${ev.event_id}/${round.round_number}`,
 															'_blank'
 														)
 													}

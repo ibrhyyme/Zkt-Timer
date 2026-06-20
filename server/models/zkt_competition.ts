@@ -582,3 +582,20 @@ export async function getRoundWithCompetition(roundId: string) {
 		},
 	});
 }
+
+/**
+ * Next competition-local registrant id (WCA registrantId): max existing + 1.
+ * Assigned in registration/import order so the number printed on scorecards,
+ * shown on the competitors list and searched in scoretaking is stable. The
+ * @@unique([competition_id, registration_number]) constraint guards against a
+ * rare concurrent-register collision (the second insert simply retries/fails).
+ */
+export async function nextRegistrationNumber(competitionId: string): Promise<number> {
+	const prisma = getPrisma();
+	const last = await prisma.zktRegistration.findFirst({
+		where: {competition_id: competitionId, registration_number: {not: null}},
+		orderBy: {registration_number: 'desc'},
+		select: {registration_number: true},
+	});
+	return (last?.registration_number ?? 0) + 1;
+}

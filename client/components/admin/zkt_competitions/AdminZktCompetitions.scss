@@ -1381,11 +1381,11 @@ $zkt-warn: #ffc107;
 	&__round-table-head,
 	&__round-table-row {
 		display: grid;
-		grid-template-columns: 56px 1.1fr 1.1fr 1.1fr 1.1fr auto;
+		grid-template-columns: 56px 1.1fr 1.1fr 1.1fr 1.1fr 0.7fr auto;
 		align-items: center;
 		gap: 0.6rem;
 		padding: 0.55rem 0.8rem;
-		min-width: 620px;
+		min-width: 680px;
 	}
 
 	&__round-table-head {

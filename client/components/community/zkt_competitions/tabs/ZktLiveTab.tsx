@@ -48,7 +48,9 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 		}
 	}, [selectedEventId, selectedEvent, selectedRoundId]);
 
-	const {results, loading, refresh} = useZktLiveResults(competitionId, selectedRoundId);
+	// Socket room key must be the real UUID (detail.id), not the route param
+	// which may be a slug — the server emits to zkt_comp_{uuid}.
+	const {results, loading, refresh} = useZktLiveResults(detail.id, selectedRoundId);
 
 	// Map comp_event_id -> event_id for route updates
 	function handleEventChange(compEventId: string) {
