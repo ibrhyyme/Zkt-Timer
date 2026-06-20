@@ -85,8 +85,7 @@ export async function listZktCompetitions(params: {
 	viewerIsStaff?: boolean;
 }) {
 	const prisma = getPrisma();
-	const {page, pageSize, searchQuery, status, onlyPublic, viewerId, viewerCountry, viewerIsStaff} =
-		params;
+	const {page, pageSize, searchQuery, status, onlyPublic, viewerId} = params;
 
 	const where: Prisma.ZktCompetitionWhereInput = {};
 
@@ -110,11 +109,10 @@ export async function listZktCompetitions(params: {
 			{OR: visibilityFilter},
 			{status: {notIn: ['DRAFT', 'CONFIRMED']}},
 		];
-		// Country scoping: non-staff viewers only see competitions in their own
-		// country (ZKT is TR-only today; this keeps it ready for multi-country).
-		if (!viewerIsStaff && viewerCountry) {
-			where.AND.push({country_code: viewerCountry});
-		}
+		// NOTE: No country scoping. ZKT is TR-only, and filtering by the viewer's
+		// join_country hid competitions from users whose account country wasn't
+		// exactly 'TR' (null/blank slipped through, others didn't) — every logged-in
+		// user must see all public competitions regardless of their profile country.
 	}
 
 	if (status) {
