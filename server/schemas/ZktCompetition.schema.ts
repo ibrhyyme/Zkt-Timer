@@ -194,6 +194,9 @@ export class ZktResult {
 	@Field()
 	entered_by_id: string;
 
+	@Field(() => Date, {nullable: true})
+	entered_at?: Date | null;
+
 	@Field()
 	created_at: Date;
 
