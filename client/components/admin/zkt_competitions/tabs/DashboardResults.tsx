@@ -35,6 +35,7 @@ const ROUND_RESULTS = gql`
 			no_show
 			single_record_tag
 			average_record_tag
+			created_at
 			user {
 				id
 				username
@@ -267,15 +268,22 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 		const onChanged = (payload: {roundId: string}) => {
 			if (payload.roundId === selectedRoundId) fetchResults();
 		};
+		// Registration changes (add/edit/import/delete competitor) carry no
+		// roundId — they affect the round-1 competitor list. Refresh the parent
+		// detail so a newly added/edited competitor appears here immediately,
+		// without a manual page reload.
+		const onRegistration = () => onUpdated();
 		socket.on(ZktCompServerEvent.RESULT_UPDATED, onChanged);
 		socket.on(ZktCompServerEvent.RESULT_DELETED, onChanged);
 		socket.on(ZktCompServerEvent.ROUND_STATUS_CHANGED, onChanged);
+		socket.on(ZktCompServerEvent.REGISTRATION_UPDATED, onRegistration);
 		return () => {
 			socket.off(ZktCompServerEvent.RESULT_UPDATED, onChanged);
 			socket.off(ZktCompServerEvent.RESULT_DELETED, onChanged);
 			socket.off(ZktCompServerEvent.ROUND_STATUS_CHANGED, onChanged);
+			socket.off(ZktCompServerEvent.REGISTRATION_UPDATED, onRegistration);
 		};
-	}, [selectedRoundId, fetchResults]);
+	}, [selectedRoundId, fetchResults, onUpdated]);
 
 	// Polling fallback — if a socket event is missed (proxy/disconnect/background
 	// throttle), a 10s refetch (only while visible) guarantees convergence.
@@ -341,13 +349,13 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 		}));
 	}, [selectedRound, selectedEvent, detail.registrations, results, regNumberByKey]);
 
-	// Auto-pick the first competitor when loading the round.
+	// NEVER auto-pick a competitor — the scoretaker always selects by ID so they
+	// never accidentally edit the wrong person. Only CLEAR the selection if the
+	// active competitor no longer exists in this round (round/event changed, or
+	// the competitor was removed) → form goes blank.
 	useEffect(() => {
-		if (!activeUserId && competitors.length > 0) {
-			setActiveUserId(idOf(competitors[0]));
-		}
 		if (activeUserId && !competitors.some((c) => idOf(c) === activeUserId)) {
-			setActiveUserId(competitors[0] ? idOf(competitors[0]) : null);
+			setActiveUserId(null);
 		}
 	}, [competitors, activeUserId]);
 
@@ -746,8 +754,10 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 								onBatchAdd={handleBatchAdd}
 								onSaved={async () => {
 									if (!batchMode) await fetchResults();
-									// Back to the ID search box — the scoretaker picks the next
-									// competitor by number (random order), no mouse, no auto-advance.
+									// Clear the form and return to the ID box — the scoretaker picks
+									// the next competitor by number (random order). Blank form means
+									// no risk of typing onto the previous/next competitor.
+									setActiveUserId(null);
 									requestAnimationFrame(() => searchInputRef.current?.focus());
 								}}
 								onPrev={() => goToAdjacent(-1)}
@@ -1322,10 +1332,10 @@ function DoubleCheckView({
 			.filter((r) => r.best !== null && r.best !== undefined)
 			.filter((r) => !scoretakerId || r.entered_by?.id === scoretakerId)
 			.slice()
-			.sort(
-				(a, bx) =>
-					(a.ranking ?? Number.MAX_SAFE_INTEGER) - (bx.ranking ?? Number.MAX_SAFE_INTEGER)
-			);
+			// Order by ENTRY order (created_at ascending) — the order the scoretaker
+			// typed them, so double-check follows the paper scorecard stack, not the
+			// ranking (which felt reversed/random to verify against).
+			.sort((a, bx) => String(a.created_at || '').localeCompare(String(bx.created_at || '')));
 	}, [results, scoretakerId]);
 
 	useEffect(() => {

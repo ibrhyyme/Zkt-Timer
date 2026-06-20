@@ -19,6 +19,7 @@ import {
 	deleteZktPerson,
 	titleCaseName,
 } from '../models/zkt_person';
+import {emitZktRegistrationUpdated} from '../zkt_competition';
 
 @Resolver()
 export class ZktPersonResolver {
@@ -64,14 +65,16 @@ export class ZktPersonResolver {
 		@Arg('input') input: ImportZktCompetitorsInput
 	) {
 		await assertCanModifyCompetition(context.user, input.competitionId);
-		return importZktCompetitors(input.competitionId, input.rows);
+		const created = await importZktCompetitors(input.competitionId, input.rows);
+		emitZktRegistrationUpdated(input.competitionId, {registrationId: '', status: 'UPDATED'});
+		return created;
 	}
 
 	@Authorized([Role.LOGGED_IN])
 	@Mutation(() => ZktPerson)
 	async addZktPerson(@Ctx() context: GraphQLContext, @Arg('input') input: AddZktPersonInput) {
 		await assertCanModifyCompetition(context.user, input.competitionId);
-		return createZktPerson(input.competitionId, {
+		const person = await createZktPerson(input.competitionId, {
 			firstName: input.firstName,
 			lastName: input.lastName,
 			country: input.country,
@@ -80,6 +83,8 @@ export class ZktPersonResolver {
 			gender: input.gender,
 			eventIds: input.eventIds,
 		});
+		emitZktRegistrationUpdated(input.competitionId, {registrationId: '', status: 'UPDATED'});
+		return person;
 	}
 
 	@Authorized([Role.LOGGED_IN])
@@ -91,7 +96,9 @@ export class ZktPersonResolver {
 		const person = await getPrisma().zktPerson.findUnique({where: {id: input.personId}});
 		if (!person) throw new GraphQLError(ErrorCode.NOT_FOUND);
 		await assertCanModifyCompetition(context.user, person.competition_id);
-		return updateZktPerson(input.personId, input);
+		const updated = await updateZktPerson(input.personId, input);
+		emitZktRegistrationUpdated(person.competition_id, {registrationId: '', status: 'UPDATED'});
+		return updated;
 	}
 
 	// One-shot cleanup: re-title-case every account-less competitor name in a
@@ -118,6 +125,9 @@ export class ZktPersonResolver {
 				updated++;
 			}
 		}
+		if (updated > 0) {
+			emitZktRegistrationUpdated(competitionId, {registrationId: '', status: 'UPDATED'});
+		}
 		return updated;
 	}
 
@@ -128,6 +138,7 @@ export class ZktPersonResolver {
 		if (!person) throw new GraphQLError(ErrorCode.NOT_FOUND);
 		await assertCanModifyCompetition(context.user, person.competition_id);
 		await deleteZktPerson(personId);
+		emitZktRegistrationUpdated(person.competition_id, {registrationId: '', status: 'DELETED'});
 		return true;
 	}
 }
