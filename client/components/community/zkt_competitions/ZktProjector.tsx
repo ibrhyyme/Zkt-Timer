@@ -1,4 +1,6 @@
 import React, {useEffect, useMemo, useRef, useState} from 'react';
+import {computeAdvancementStates} from '../../../../shared/zkt_competition/advancement';
+import AdvancementLegend from './AdvancementLegend';
 import './ZktCompetitions.scss';
 import {gql} from '@apollo/client';
 import {gqlMutate} from '../../api';
@@ -77,6 +79,7 @@ interface DisplayRow {
 	ranking: number | null;
 	original: any;
 	advancing: boolean;
+	questionable?: boolean;
 	projected?: number;
 	forFirst?: number;
 	forAdvance?: number;
@@ -195,15 +198,26 @@ export default function ZktProjector() {
 				wpa: f.worstPossibleAverage,
 			}));
 		}
-		return nonempty.map((r: any) => ({
-			id: r.id,
-			user: r.user,
-			ranking: r.ranking ?? null,
-			original: r,
-			advancing:
-				r.proceeds ||
-				(advancingCount > 0 && r.ranking != null && r.ranking <= advancingCount),
-		}));
+		const states = computeAdvancementStates(
+			nonempty as any,
+			(round?.advancement_type as any) ?? null,
+			round?.advancement_level ?? null,
+			(round?.format as any) ?? 'AO5',
+			round?.cutoff_cs ?? null,
+			round?.cutoff_attempts ?? null,
+			round?.status === 'FINISHED'
+		);
+		return nonempty.map((r: any) => {
+			const st = states.get(r.id);
+			return {
+				id: r.id,
+				user: r.user,
+				ranking: r.ranking ?? null,
+				original: r,
+				advancing: (st?.advancing ?? false) && !(st?.questionable ?? false),
+				questionable: st?.questionable ?? false,
+			};
+		});
 	}, [forecastActive, nonempty, attemptCount, round, advancingCount]);
 
 	const displayRowsRef = useRef(displayRows);
@@ -303,7 +317,8 @@ export default function ZktProjector() {
 
 	return (
 		<div className={b('projector')} ref={rootRef}>
-			<div className={b('projector-bar')} data-projector-bar>
+			<div data-projector-bar>
+			<div className={b('projector-bar')}>
 				<div className={b('projector-title')}>
 					<span className={b('projector-comp')}>{detail?.name}</span>
 					<span>{title}</span>
@@ -347,6 +362,12 @@ export default function ZktProjector() {
 					</button>
 				</div>
 			</div>
+			{round?.advancement_type && (
+				<div style={{padding: '0 28px 10px'}}>
+					<AdvancementLegend large />
+				</div>
+			)}
+			</div>
 
 			{!round ? (
 				<div className={b('projector-empty')}>{t('not_found')}</div>
@@ -385,7 +406,7 @@ export default function ZktProjector() {
 											: {transitionDelay: '0ms'}
 									}
 								>
-									<td className={b('projector-rank', {advancing: row.advancing})}>
+									<td className={b('projector-rank', {advancing: row.advancing, questionable: !!row.questionable})}>
 										{row.ranking ?? '-'}
 									</td>
 									<td className={b('projector-name')}>

@@ -16,6 +16,8 @@ import TimeField from '../TimeField';
 import {MagnifyingGlass, FloppyDisk, CaretLeft, CaretRight, UserPlus, Play} from 'phosphor-react';
 import {socketClient} from '../../../../util/socket/socketio';
 import {ZktCompClientEvent, ZktCompServerEvent} from '../../../../../shared/zkt_competition/events';
+import {computeAdvancementStates} from '../../../../../shared/zkt_competition/advancement';
+import AdvancementLegend from '../../../community/zkt_competitions/AdvancementLegend';
 
 const ROUND_RESULTS = gql`
 	query ZktRoundResults($roundId: String!) {
@@ -790,6 +792,11 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 							onQuit={handleQuit}
 							batch={batch}
 							format={selectedRound.format}
+							advancementType={selectedRound.advancement_type}
+							advancementLevel={selectedRound.advancement_level}
+							cutoffCs={selectedRound.cutoff_cs}
+							cutoffAttempts={selectedRound.cutoff_attempts}
+							roundFinished={selectedRound.status === 'FINISHED'}
 						/>
 					</div>
 				</div>
@@ -1076,6 +1083,11 @@ function LeaderboardTable({
 	onQuit,
 	batch,
 	format,
+	advancementType,
+	advancementLevel,
+	cutoffCs,
+	cutoffAttempts,
+	roundFinished,
 }: {
 	competitors: Competitor[];
 	results: any[];
@@ -1086,11 +1098,30 @@ function LeaderboardTable({
 	onQuit: (userId: string | null) => void;
 	batch: Record<string, (number | null)[]>;
 	format: string;
+	advancementType: string | null;
+	advancementLevel: number | null;
+	cutoffCs: number | null;
+	cutoffAttempts: number | null;
+	roundFinished: boolean;
 }) {
 	const {t} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
 	const attemptCount = getFormatAttempts(format);
 	const hasAverage = formatHasAverage(format);
 	const [menu, setMenu] = useState<{key: string; userId: string | null; resultId?: string; x: number; y: number} | null>(null);
+	// WCA-live three-state advancement: green=clinched, orange=questionable.
+	const advStates = React.useMemo(
+		() =>
+			computeAdvancementStates(
+				results,
+				advancementType as any,
+				advancementLevel,
+				format as any,
+				cutoffCs,
+				cutoffAttempts,
+				roundFinished
+			),
+		[results, advancementType, advancementLevel, format, cutoffCs, cutoffAttempts, roundFinished]
+	);
 
 	// Sort by ranking if available, then unranked after.
 	const sorted = [...competitors].sort((a, b) => {
@@ -1103,6 +1134,7 @@ function LeaderboardTable({
 
 	return (
 		<>
+		{advancementType && <AdvancementLegend />}
 		<div className={b('leaderboard')}>
 			<div className={b('leaderboard-head')}>
 				<span className={b('leaderboard-col', {rank: true})}>#</span>
@@ -1118,13 +1150,15 @@ function LeaderboardTable({
 			{sorted.map((c) => {
 				const r = results.find((x) => idOf(x) === idOf(c));
 				const isActive = idOf(c) === activeUserId;
-				const advancing = r?.proceeds;
+				const advState = r ? advStates.get(r.id) : undefined;
+				const advancing = advState?.advancing ?? false;
+				const questionable = advState?.questionable ?? false;
 				const pending = batch[idOf(c)] !== undefined;
 				return (
 					<button
 						key={idOf(c)}
 						type="button"
-						className={b('leaderboard-row', {active: isActive, advancing, 'no-show': !!r?.no_show, pending})}
+						className={b('leaderboard-row', {active: isActive, advancing: advancing && !questionable, questionable, 'no-show': !!r?.no_show, pending})}
 						onClick={() => onSelect(idOf(c))}
 						onContextMenu={(e) => {
 							e.preventDefault();
