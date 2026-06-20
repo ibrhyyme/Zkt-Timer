@@ -324,19 +324,32 @@ export default function ImportCompetitorsModal(props: Props) {
 		setter(next);
 	}
 
-	function onFile(e: React.ChangeEvent<HTMLInputElement>) {
+	async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
 		const file = e.target.files?.[0];
 		if (!file) return;
-		const reader = new FileReader();
-		reader.onload = () => setRaw(String(reader.result || ''));
-		reader.readAsText(file, 'utf-8');
+		const name = file.name.toLowerCase();
+		try {
+			if (name.endsWith('.xlsx') || name.endsWith('.xls')) {
+				// Read the filled-in Excel workbook and flatten its first sheet to
+				// CSV, which the parser below already understands (matrix or inline).
+				const XLSX = await import('xlsx');
+				const buf = await file.arrayBuffer();
+				const wb = XLSX.read(buf, {type: 'array'});
+				const ws = wb.Sheets[wb.SheetNames[0]];
+				setRaw(ws ? XLSX.utils.sheet_to_csv(ws) : '');
+			} else {
+				setRaw(await file.text());
+			}
+		} catch {
+			toastError(t('error'));
+		}
 		// Allow re-selecting the same file.
 		e.target.value = '';
 	}
 
-	// Build a ready-to-fill CSV the organiser can open in Excel, matching the
-	// currently selected bulk format. UTF-8 BOM so Excel renders Turkish chars.
-	function downloadTemplate() {
+	// Build a real .xlsx the organiser opens in Excel, edits, saves and uploads
+	// back — every field in its own column, no copy/paste and no format warning.
+	async function downloadTemplate() {
 		// Matrix template: a column per event of THIS competition, 1 = solves it.
 		// Falls back to 333/222 if the competition has no events yet.
 		const evIds = props.compEvents.length
@@ -346,8 +359,8 @@ export default function ImportCompetitorsModal(props: Props) {
 			bulkFormat === 'inline'
 				? [
 						['No', 'Ad Soyad', ...evIds],
-						['1', 'İbrahim İskender', ...evIds.map((_, i) => (i === 0 ? '1' : '0'))],
-						['2', 'İskender Aznavur', ...evIds.map(() => '1')],
+						['1', 'İbrahim Yıldız', ...evIds.map((_, i) => (i === 0 ? '1' : '0'))],
+						['2', 'Mehmet Demir', ...evIds.map(() => '1')],
 						['3', 'Ayşe Yılmaz', ...evIds.map((_, i) => (i % 2 === 0 ? '1' : '0'))],
 				  ]
 				: [
@@ -355,16 +368,15 @@ export default function ImportCompetitorsModal(props: Props) {
 						['Ahmet', 'Yılmaz', 'TR', '', '12345'],
 						['Elif', 'Demir', 'TR', '', '12346'],
 				  ];
-		const csv = rows.map((r) => r.join(',')).join('\r\n');
-		const blob = new Blob(['﻿' + csv], {type: 'text/csv;charset=utf-8;'});
-		const url = URL.createObjectURL(blob);
-		const a = document.createElement('a');
-		a.href = url;
-		a.download = bulkFormat === 'inline' ? 'ornek-liste.csv' : 'ornek-liste-ortak.csv';
-		document.body.appendChild(a);
-		a.click();
-		document.body.removeChild(a);
-		URL.revokeObjectURL(url);
+
+		const XLSX = await import('xlsx');
+		const ws = XLSX.utils.aoa_to_sheet(rows);
+		const wb = XLSX.utils.book_new();
+		XLSX.utils.book_append_sheet(wb, ws, 'Liste');
+		XLSX.writeFile(
+			wb,
+			bulkFormat === 'inline' ? 'ornek-liste.xlsx' : 'ornek-liste-ortak.xlsx'
+		);
 	}
 
 	async function handleImport() {
@@ -509,7 +521,7 @@ export default function ImportCompetitorsModal(props: Props) {
 							<UploadSimple weight="bold" /> {t('import_choose_file')}
 							<input
 								type="file"
-								accept=".csv,.txt,text/csv,text/plain"
+								accept=".xlsx,.xls,.csv,.txt,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv,text/plain"
 								onChange={onFile}
 								style={{display: 'none'}}
 							/>

@@ -167,6 +167,13 @@ export type AddZktPersonInput = {
   wcaId?: InputMaybe<Scalars['String']>;
 };
 
+export type AddZktStaffInput = {
+  competitionId?: InputMaybe<Scalars['String']>;
+  country?: InputMaybe<Scalars['String']>;
+  firstName?: InputMaybe<Scalars['String']>;
+  lastName?: InputMaybe<Scalars['String']>;
+};
+
 export type AdminActiveUsersResult = {
   __typename?: 'AdminActiveUsersResult';
   available_months?: Maybe<Array<Maybe<Scalars['String']>>>;
@@ -255,6 +262,7 @@ export type AnnouncementFilterInput = {
 
 export type AssignUserInput = {
   groupId?: InputMaybe<Scalars['String']>;
+  personId?: InputMaybe<Scalars['String']>;
   role?: InputMaybe<ZktAssignmentRole>;
   roundId?: InputMaybe<Scalars['String']>;
   stationNumber?: InputMaybe<Scalars['Int']>;
@@ -339,8 +347,15 @@ export type BulkArchiveResult = {
 
 export type BulkAssignCompetitorsInput = {
   competitors?: InputMaybe<Array<InputMaybe<CompetitorRefInput>>>;
+  groupCount?: InputMaybe<Scalars['Int']>;
   roundId?: InputMaybe<Scalars['String']>;
   stationCount?: InputMaybe<Scalars['Int']>;
+};
+
+export type BulkAssignStaffInput = {
+  role?: InputMaybe<ZktAssignmentRole>;
+  roundId?: InputMaybe<Scalars['String']>;
+  staff?: InputMaybe<Array<InputMaybe<CompetitorRefInput>>>;
 };
 
 export type BulkEmailResult = {
@@ -459,6 +474,7 @@ export type CreateZktRoundInput = {
   cutoffAttempts?: InputMaybe<Scalars['Int']>;
   cutoffCs?: InputMaybe<Scalars['Int']>;
   format?: InputMaybe<ZktRoundFormat>;
+  groupCount?: InputMaybe<Scalars['Int']>;
   roundNumber?: InputMaybe<Scalars['Int']>;
   timeLimitCs?: InputMaybe<Scalars['Int']>;
 };
@@ -889,6 +905,7 @@ export type Mutation = {
   addZktDelegate?: Maybe<ZktCompDelegate>;
   addZktOrganizer?: Maybe<ZktCompOrganizer>;
   addZktPerson?: Maybe<ZktPerson>;
+  addZktStaff?: Maybe<ZktPerson>;
   adminDeleteTrainerAlternative?: Maybe<TrainerAlternative>;
   adminDeleteUserAccount?: Maybe<UserAccount>;
   adminSendPushToUser?: Maybe<AdminSendPushResult>;
@@ -900,6 +917,7 @@ export type Mutation = {
   banUserAccount?: Maybe<BanLog>;
   bulkArchiveWcaCompetitions?: Maybe<BulkArchiveResult>;
   bulkAssignCompetitors?: Maybe<Array<Maybe<ZktAssignment>>>;
+  bulkAssignStaff?: Maybe<Array<Maybe<ZktAssignment>>>;
   bulkCreateSessions?: Maybe<Scalars['Void']>;
   bulkCreateSolves?: Maybe<Scalars['Void']>;
   bulkDeleteSessions?: Maybe<Scalars['Void']>;
@@ -1096,6 +1114,11 @@ export type MutationAddZktPersonArgs = {
 };
 
 
+export type MutationAddZktStaffArgs = {
+  input?: InputMaybe<AddZktStaffInput>;
+};
+
+
 export type MutationAdminDeleteTrainerAlternativeArgs = {
   id?: InputMaybe<Scalars['String']>;
 };
@@ -1150,6 +1173,11 @@ export type MutationBulkArchiveWcaCompetitionsArgs = {
 
 export type MutationBulkAssignCompetitorsArgs = {
   input?: InputMaybe<BulkAssignCompetitorsInput>;
+};
+
+
+export type MutationBulkAssignStaffArgs = {
+  input?: InputMaybe<BulkAssignStaffInput>;
 };
 
 
@@ -2127,6 +2155,7 @@ export type Query = {
   zktCompetitionPodiums?: Maybe<Array<Maybe<ZktPodium>>>;
   zktCompetitions?: Maybe<PaginatedZktCompetitions>;
   zktCompetitionsForAdmin?: Maybe<PaginatedZktCompetitions>;
+  zktCompetitionStaff?: Maybe<Array<Maybe<ZktPerson>>>;
   zktCompetitorResults?: Maybe<Array<Maybe<ZktResult>>>;
   zktGroupAssignments?: Maybe<Array<Maybe<ZktAssignment>>>;
   zktMyAssignments?: Maybe<Array<Maybe<ZktAssignment>>>;
@@ -2404,6 +2433,11 @@ export type QueryZktCompetitionsForAdminArgs = {
   page?: InputMaybe<Scalars['Int']>;
   pageSize?: InputMaybe<Scalars['Int']>;
   searchQuery?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryZktCompetitionStaffArgs = {
+  competitionId?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -3077,6 +3111,7 @@ export type UpdateZktRoundInput = {
   cutoffAttempts?: InputMaybe<Scalars['Int']>;
   cutoffCs?: InputMaybe<Scalars['Int']>;
   format?: InputMaybe<ZktRoundFormat>;
+  groupCount?: InputMaybe<Scalars['Int']>;
   roundId?: InputMaybe<Scalars['String']>;
   timeLimitCs?: InputMaybe<Scalars['Int']>;
 };
@@ -3865,6 +3900,7 @@ export type ZktPerson = {
   first_name?: Maybe<Scalars['String']>;
   gender?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
+  is_staff?: Maybe<Scalars['Boolean']>;
   last_name?: Maybe<Scalars['String']>;
   wca_id?: Maybe<Scalars['String']>;
 };
@@ -3913,6 +3949,7 @@ export type ZktRegistration = {
   notes?: Maybe<Scalars['String']>;
   person?: Maybe<ZktPerson>;
   person_id?: Maybe<Scalars['String']>;
+  registration_number?: Maybe<Scalars['Int']>;
   status?: Maybe<ZktRegistrationStatus>;
   updated_at?: Maybe<Scalars['DateTime']>;
   user?: Maybe<ZktCompetitorUser>;
@@ -3992,6 +4029,7 @@ export type ZktRound = {
   cutoff_attempts?: Maybe<Scalars['Int']>;
   cutoff_cs?: Maybe<Scalars['Int']>;
   format?: Maybe<ZktRoundFormat>;
+  group_count?: Maybe<Scalars['Int']>;
   groups?: Maybe<Array<ZktGroup>>;
   id?: Maybe<Scalars['String']>;
   results?: Maybe<Array<ZktResult>>;
@@ -4030,6 +4068,7 @@ export type ZktScramble = {
   __typename?: 'ZktScramble';
   attempt_number?: Maybe<Scalars['Int']>;
   created_at?: Maybe<Scalars['DateTime']>;
+  group_id?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
   is_extra?: Maybe<Scalars['Boolean']>;
   round_id?: Maybe<Scalars['String']>;

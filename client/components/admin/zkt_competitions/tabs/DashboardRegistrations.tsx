@@ -4,8 +4,7 @@ import {gqlMutate} from '../../../api';
 import {useTranslation} from 'react-i18next';
 import {toastSuccess, toastError} from '../../../../util/toast';
 import {b, getEventName} from '../shared';
-import {Check, X, Clock, UserPlus, DownloadSimple, UploadSimple, Trash} from 'phosphor-react';
-import fileDownload from 'js-file-download';
+import {Check, X, Clock, UserPlus, UploadSimple, Trash} from 'phosphor-react';
 import AddCompetitorModal from './AddCompetitorModal';
 import ImportCompetitorsModal from './ImportCompetitorsModal';
 import {useDispatch} from 'react-redux';
@@ -178,42 +177,6 @@ export default function DashboardRegistrations({
 	const compEventMap = new Map<string, string>();
 	detail.events.forEach((e: any) => compEventMap.set(e.id, e.event_id));
 
-	function exportCsv() {
-		const cell = (v: any) => {
-			const s = String(v ?? '');
-			return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-		};
-		const header = [
-			t('csv_username'),
-			t('csv_name'),
-			t('csv_country'),
-			t('csv_status'),
-			t('csv_registered'),
-			t('csv_events'),
-		];
-		const rows = detail.registrations.map((r: any) => {
-			const events = (r.events || [])
-				.map((e: any) => compEventMap.get(e.comp_event_id))
-				.filter(Boolean)
-				.map((eid: string) => getEventName(eid))
-				.join('; ');
-			const fullName =
-				[r.user?.first_name, r.user?.last_name].filter(Boolean).join(' ') ||
-				[r.person?.first_name, r.person?.last_name].filter(Boolean).join(' ');
-			return [
-				r.user?.username || '',
-				fullName,
-				r.user?.join_country || r.person?.country_code || '',
-				t(`registration_${r.status.toLowerCase()}`),
-				r.created_at ? new Date(r.created_at).toLocaleDateString() : '',
-				events,
-			];
-		});
-		const csv = [header, ...rows].map((row) => row.map(cell).join(',')).join('\n');
-		// Prepend BOM so Excel reads UTF-8 (Turkish chars) correctly.
-		fileDownload('﻿' + csv, `${detail.name.replace(/\s+/g, '_')}-kayitlar.csv`);
-	}
-
 	return (
 		<div className={b('registrations')}>
 			<div className={b('filter-tabs')}>
@@ -268,9 +231,6 @@ export default function DashboardRegistrations({
 			)}
 
 			<div className={b('toolbar')}>
-				<button className={b('action-btn')} onClick={exportCsv} title={t('export_csv')}>
-					<DownloadSimple weight="bold" /> {t('export_csv')}
-				</button>
 				{selected.size > 0 ? (
 					<>
 						<span style={{marginRight: 'auto', fontWeight: 600}}>
@@ -329,6 +289,19 @@ export default function DashboardRegistrations({
 									checked={selected.has(reg.id)}
 									onChange={() => toggleSelected(reg.id)}
 								/>
+								{reg.registration_number != null && (
+									<span
+										style={{
+											minWidth: 28,
+											fontWeight: 700,
+											fontSize: 14,
+											textAlign: 'right',
+											color: 'rgb(var(--text-color))',
+										}}
+									>
+										{reg.registration_number}
+									</span>
+								)}
 								{reg.user?.profile?.pfp_image?.url && (
 									<img
 										className={b('user-avatar')}

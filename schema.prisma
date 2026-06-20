@@ -1383,14 +1383,16 @@ model ZktRound {
 model ZktScramble {
   id              String   @id @default(uuid())
   round_id        String
+  group_id        String?  // per-group scramble set; null = round-level (legacy / no groups)
   attempt_number  Int      // 1-5 regular, 6+ extra
   is_extra        Boolean  @default(false)
   scramble_string String   @db.Text
   created_at      DateTime @default(now())
 
-  round           ZktRound @relation(fields: [round_id], references: [id], onDelete: Cascade)
+  round           ZktRound  @relation(fields: [round_id], references: [id], onDelete: Cascade)
+  group           ZktGroup? @relation(fields: [group_id], references: [id], onDelete: Cascade)
 
-  @@unique([round_id, attempt_number])
+  @@unique([round_id, group_id, attempt_number])
   @@index([round_id])
   @@map("zkt_scramble")
 }
@@ -1405,6 +1407,7 @@ model ZktGroup {
 
   round        ZktRound        @relation(fields: [round_id], references: [id], onDelete: Cascade)
   assignments  ZktAssignment[]
+  scrambles    ZktScramble[]
 
   @@unique([round_id, group_number])
   @@index([round_id])

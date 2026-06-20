@@ -78,11 +78,24 @@ function attemptCountForFormat(format: ZktRoundFormat): number {
 	}
 }
 
+interface ScrambleCreate {
+	round_id: string;
+	group_id: string | null;
+	attempt_number: number;
+	is_extra: boolean;
+	scramble_string: string;
+}
+
 /**
  * Idempotent: only creates scrambles that don't already exist for the round.
  * Generates `attemptCount` regular scrambles + 2 extras (used for replays /
- * +2 disputes per WCA regulations). Caller decides when to invoke — usually
- * on round open transition.
+ * +2 disputes per WCA regulations).
+ *
+ * Per-group scrambles (WCA parity): when the round has groups, EACH group gets
+ * its OWN distinct scramble set so no two groups share scrambles. When the round
+ * has no groups yet, a single round-level set is created (group_id = null),
+ * preserving the legacy behaviour. Caller decides when to invoke — usually on
+ * the round's start transition.
  */
 export async function ensureScramblesForRound(roundId: string): Promise<void> {
 	const prisma = getPrisma();
@@ -90,7 +103,8 @@ export async function ensureScramblesForRound(roundId: string): Promise<void> {
 		where: {id: roundId},
 		include: {
 			comp_event: true,
-			scrambles: {select: {attempt_number: true}},
+			groups: {orderBy: {group_number: 'asc'}, select: {id: true}},
+			scrambles: {select: {group_id: true, attempt_number: true}},
 		},
 	});
 	if (!round) return;
@@ -98,23 +112,31 @@ export async function ensureScramblesForRound(roundId: string): Promise<void> {
 	const eventId = round.comp_event.event_id;
 	const baseCount = attemptCountForFormat(round.format);
 	const totalNeeded = baseCount + 2; // +2 extras
-	const existing = new Set(round.scrambles.map((s) => s.attempt_number));
 
-	const toCreate: Array<{
-		round_id: string;
-		attempt_number: number;
-		is_extra: boolean;
-		scramble_string: string;
-	}> = [];
+	const toCreate: ScrambleCreate[] = [];
 
-	for (let i = 1; i <= totalNeeded; i++) {
-		if (existing.has(i)) continue;
-		toCreate.push({
-			round_id: roundId,
-			attempt_number: i,
-			is_extra: i > baseCount,
-			scramble_string: generateScrambleForEvent(eventId),
-		});
+	// Build the missing attempts for one "bucket" (a group, or the round-level
+	// null bucket), each with a freshly generated scramble.
+	const addBucket = (groupId: string | null) => {
+		const existing = new Set(
+			round.scrambles.filter((s) => s.group_id === groupId).map((s) => s.attempt_number)
+		);
+		for (let i = 1; i <= totalNeeded; i++) {
+			if (existing.has(i)) continue;
+			toCreate.push({
+				round_id: roundId,
+				group_id: groupId,
+				attempt_number: i,
+				is_extra: i > baseCount,
+				scramble_string: generateScrambleForEvent(eventId),
+			});
+		}
+	};
+
+	if (round.groups.length > 0) {
+		for (const g of round.groups) addBucket(g.id);
+	} else {
+		addBucket(null);
 	}
 
 	if (toCreate.length === 0) return;

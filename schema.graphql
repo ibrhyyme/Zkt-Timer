@@ -341,6 +341,7 @@ type Query {
   zktMyAssignments(competitionId: String): [ZktAssignment]
   zktUserAssignments(personId: String, userId: String, competitionId: String): [ZktAssignment]
   zktCompetitionPersons(competitionId: String): [ZktPerson]
+  zktCompetitionStaff(competitionId: String): [ZktPerson]
   landingStats: LandingStats
   getIapStatus: IapStatus
   myCompetitionFollows(competitionId: String): [CompetitionFollow]
@@ -506,6 +507,8 @@ type Mutation {
   deleteZktGroup(groupId: String): Boolean
   updateZktGroupSchedule(input: UpdateZktGroupScheduleInput): ZktGroup
   bulkAssignCompetitors(input: BulkAssignCompetitorsInput): [ZktAssignment]
+  bulkAssignStaff(input: BulkAssignStaffInput): [ZktAssignment]
+  addZktStaff(input: AddZktStaffInput): ZktPerson
   importZktCompetitors(input: ImportZktCompetitorsInput): [ZktPerson]
   addZktPerson(input: AddZktPersonInput): ZktPerson
   updateZktPerson(input: UpdateZktPersonInput): ZktPerson
@@ -1848,6 +1851,7 @@ type ZktPerson {
   external_id: String
   gender: String
   date_of_birth: DateTime
+  is_staff: Boolean
   created_at: DateTime
 }
 
@@ -1880,6 +1884,7 @@ type ZktResult {
 type ZktScramble {
   id: String
   round_id: String
+  group_id: String
   attempt_number: Int
   is_extra: Boolean
   scramble_string: String
@@ -1905,6 +1910,7 @@ type ZktRound {
   cutoff_attempts: Int
   advancement_type: ZktAdvancementType
   advancement_level: Int
+  group_count: Int
   status: ZktRoundStatus
   created_at: DateTime
   updated_at: DateTime
@@ -1961,6 +1967,7 @@ type ZktRegistration {
   admin_comment: String
   guests: Int
   waiting_list_position: Int
+  registration_number: Int
   created_at: DateTime
   updated_at: DateTime
   user: ZktCompetitorUser
@@ -2622,6 +2629,13 @@ input AddZktPersonInput {
   eventIds: [String]
 }
 
+input AddZktStaffInput {
+  competitionId: String
+  firstName: String
+  lastName: String
+  country: String
+}
+
 input UpdateZktPersonInput {
   personId: String
   firstName: String
@@ -2642,6 +2656,7 @@ input CreateZktRoundInput {
   cutoffAttempts: Int
   advancementType: ZktAdvancementType
   advancementLevel: Int
+  groupCount: Int
 }
 
 input UpdateZktRoundInput {
@@ -2652,6 +2667,7 @@ input UpdateZktRoundInput {
   cutoffAttempts: Int
   advancementType: ZktAdvancementType
   advancementLevel: Int
+  groupCount: Int
 }
 
 input UpdateZktRoundStatusInput {
@@ -2669,6 +2685,7 @@ input AssignUserInput {
   roundId: String
   groupId: String
   userId: String
+  personId: String
   role: ZktAssignmentRole
   stationNumber: Int
 }
@@ -2692,7 +2709,14 @@ input CompetitorRefInput {
 input BulkAssignCompetitorsInput {
   roundId: String
   stationCount: Int
+  groupCount: Int
   competitors: [CompetitorRefInput]
+}
+
+input BulkAssignStaffInput {
+  roundId: String
+  role: ZktAssignmentRole
+  staff: [CompetitorRefInput]
 }
 
 input SubmitZktResultInput {
