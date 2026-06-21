@@ -3386,6 +3386,17 @@
         "info_alt_sor": "Kinch Ranks, bir cuber'ın all-round yeteneğini ölçmenin alternatif bir yoludur. Farklı yöntemlerin farklı trade-off'ları vardır — bu yüzden birden fazla ölçüm sunuyoruz."
     },
     "zkt_comp": {
+        "clear_result_confirm": "Bu süreyi silmek istediğine emin misin?",
+        "processing": "İşleniyor…",
+        "preparing": "Hazırlanıyor…",
+        "live_badge": "CANLI",
+        "last_updated": "Son güncelleme: {{time}}",
+        "overwrite_result_confirm": "{{name}} için süre zaten girilmiş. Üzerine yazılsın mı?",
+        "warning_dns_then_time": "DNS'ten sonra geçerli bir süre var. Yine de kaydedilsin mi?",
+        "advancement_top_count": "ilk {{n}}",
+        "assignment_removed": "Görev kaldırıldı",
+        "round_updated": "Tur güncellendi",
+        "filtered_empty": "Filtreye uyan kayıt yok",
         "remove_absentees": "Yarışmayanları sil ({{count}})",
         "remove_absentees_confirm": "Süre girilmemiş {{count}} kişi kayıttan tamamen silinecek. Emin misin?",
         "remove_competitor_confirm": "{{name}} kayıttan tamamen silinecek. Emin misin?",

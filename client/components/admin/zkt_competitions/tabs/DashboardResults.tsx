@@ -465,6 +465,9 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 	// Double-check mode (wca-live RoundDoubleCheck): step through entered
 	// results one by one to verify against the paper scorecards.
 	const [checkMode, setCheckMode] = useState(false);
+	// Busy guard for long/bulk actions (finalize, clear, bulk delete, no-show)
+	// so the buttons disable + show progress and can't be double-fired.
+	const [actionBusy, setActionBusy] = useState(false);
 
 	// Bulk no-show (wca-live QuitNoShowsDialog) — round 1 only, where the bulk
 	// of no-shows happen. Lists competitors without any entered attempt.
@@ -528,11 +531,22 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 	}
 
 	async function handleClearResult(resultId: string) {
+		if (!window.confirm(t('clear_result_confirm'))) return;
 		try {
 			await gqlMutate(DELETE_RESULT, {resultId});
 			await fetchResults();
 		} catch (e: any) {
 			toastError(e?.message || t('error'));
+		}
+	}
+
+	async function runAction(fn: () => Promise<void>) {
+		if (actionBusy) return;
+		setActionBusy(true);
+		try {
+			await fn();
+		} finally {
+			setActionBusy(false);
 		}
 	}
 
@@ -743,10 +757,10 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 					<button
 						type="button"
 						className={b('batch-submit')}
-						onClick={submitBulkNoShow}
-						disabled={noShowSelection.size === 0}
+						onClick={() => runAction(submitBulkNoShow)}
+						disabled={actionBusy || noShowSelection.size === 0}
 					>
-						{t('bulk_no_show_submit', {count: noShowSelection.size})}
+						{actionBusy ? t('processing') : t('bulk_no_show_submit', {count: noShowSelection.size})}
 					</button>
 				</div>
 			)}
@@ -861,7 +875,8 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 						<button
 							className={b('reopen-btn', {danger: true})}
 							style={{color: 'rgb(var(--error-color))'}}
-							onClick={removeAbsentees}
+							disabled={actionBusy}
+							onClick={() => runAction(removeAbsentees)}
 						>
 							{t('remove_absentees', {count: absentees.length})}
 						</button>
@@ -869,21 +884,24 @@ export default function DashboardResults({detail, onUpdated}: {detail: any; onUp
 					<button
 						className={b('reopen-btn', {danger: true})}
 						style={{marginRight: 'auto', color: 'rgb(var(--error-color))'}}
-						onClick={clearRoundResults}
+						disabled={actionBusy}
+						onClick={() => runAction(clearRoundResults)}
 					>
 						{t('clear_round_results')}
 					</button>
 					{selectedRound.status === 'FINISHED' && (
-						<button className={b('reopen-btn')} onClick={reopenRound}>
+						<button className={b('reopen-btn')} disabled={actionBusy} onClick={() => runAction(reopenRound)}>
 							{t('reopen_round')}
 						</button>
 					)}
 					<button
 						className={b('finalize-btn')}
-						onClick={finalize}
-						disabled={selectedRound.status === 'FINISHED'}
+						onClick={() => runAction(finalize)}
+						disabled={actionBusy || selectedRound.status === 'FINISHED'}
 					>
-						{selectedRound.status === 'FINISHED'
+						{actionBusy
+							? t('processing')
+							: selectedRound.status === 'FINISHED'
 							? t('round_already_finalized')
 							: t('finalize_round')}
 					</button>
@@ -965,6 +983,14 @@ function ActiveResultForm({
 				);
 				if (!ok) return;
 			}
+		}
+
+		// Consistency guard: a valid time AFTER a DNS usually means a mis-entry
+		// (you don't keep solving after a DNS). Confirm before saving.
+		const relevant = attempts.slice(0, attemptCount);
+		const dnsIdx = relevant.findIndex((a) => a === -2);
+		if (dnsIdx !== -1 && relevant.slice(dnsIdx + 1).some((a) => a !== null && a > 0)) {
+			if (!window.confirm(t('warning_dns_then_time'))) return;
 		}
 
 		// Batch mode: stash locally and move on; parent commits everything later.
@@ -1101,7 +1127,10 @@ function ActiveResultForm({
 					return (
 						<div
 							key={idx}
-							className={b('active-form-attempt', {'cutoff-locked': locked})}
+							className={b('active-form-attempt', {
+								'cutoff-locked': locked,
+								'cutoff-edge': cutoffActive && idx === (cutoffAttempts as number) - 1,
+							})}
 						>
 							<label className={b('active-form-attempt-label')}>
 								{t('attempt_n', {n: idx + 1})}

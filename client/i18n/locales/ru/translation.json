@@ -3388,6 +3388,17 @@
         "info_alt_sor": "Kinch Ranks — альтернативный способ измерить all-round способности кубера. У разных методов разные trade-off'ы — поэтому мы предлагаем несколько способов измерения."
     },
     "zkt_comp": {
+        "clear_result_confirm": "Удалить это время?",
+        "processing": "Обработка…",
+        "preparing": "Подготовка…",
+        "live_badge": "В ЭФИРЕ",
+        "last_updated": "Обновлено: {{time}}",
+        "overwrite_result_confirm": "У {{name}} уже есть время. Перезаписать?",
+        "warning_dns_then_time": "После DNS есть действительное время. Всё равно сохранить?",
+        "advancement_top_count": "топ {{n}}",
+        "assignment_removed": "Назначение удалено",
+        "round_updated": "Раунд обновлён",
+        "filtered_empty": "Нет записей по фильтру",
         "remove_absentees": "Удалить неявившихся ({{count}})",
         "remove_absentees_confirm": "{{count}} участник(ов) без результата будут полностью удалены из регистрации. Вы уверены?",
         "remove_competitor_confirm": "{{name}} будет полностью удалён из регистрации. Вы уверены?",

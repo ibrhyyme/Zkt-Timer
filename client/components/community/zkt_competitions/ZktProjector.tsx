@@ -448,11 +448,11 @@ export default function ZktProjector() {
 										{competitorDisplayName(competitorOf(row.original)) || row.original?.user_id || row.original?.person_id}
 									</td>
 									{Array.from({length: attemptCount}).map((_, i) => (
-										<td key={i} className={b('projector-time')}>
+										<td key={i} className={b('projector-time', {bad: typeof r[`attempt_${i + 1}`] === 'number' && r[`attempt_${i + 1}`] < 0})}>
 											{formatCs(r[`attempt_${i + 1}`])}
 										</td>
 									))}
-									<td className={b('projector-time', {bold: true})}>
+									<td className={b('projector-time', {bold: true, bad: typeof r.best === 'number' && r.best < 0})}>
 										{formatCs(r.best)}
 										{r.single_record_tag && (
 											<span

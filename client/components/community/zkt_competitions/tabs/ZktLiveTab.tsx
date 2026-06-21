@@ -213,6 +213,9 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 					{selectedRound && (
 						<>
 							<div className={b('round-info-bar')}>
+								{selectedRound.status === 'ACTIVE' && (
+									<span className={b('live-badge')}>{t('live_badge')}</span>
+								)}
 								<span>{t('format')}: <strong>{formatName(selectedRound.format)}</strong></span>
 								{selectedRound.time_limit_cs && (
 									<span>{t('time_limit')}: {formatCs(selectedRound.time_limit_cs)}</span>
@@ -224,8 +227,10 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 									<span>
 										{t('advancement')}:{' '}
 										{selectedRound.advancement_type === 'PERCENT'
-											? `${selectedRound.advancement_level}%`
-											: `Top ${selectedRound.advancement_level}`}
+											? `${selectedRound.advancement_level}% · ${t('advancement_top_count', {
+													n: Math.floor((results.length * selectedRound.advancement_level) / 100),
+											  })}`
+											: t('advancement_top_count', {n: selectedRound.advancement_level})}
 									</span>
 								)}
 								<button className={b('refresh-btn')} onClick={refresh} title={t('refresh')}>
@@ -407,7 +412,7 @@ function ResultsTable({
 									</div>
 								</td>
 								{hasAverage && (
-									<td className={b('time-cell', {nr: !!r.average_record_tag})}>
+									<td className={b('time-cell', {nr: !!r.average_record_tag, bad: typeof r.average === 'number' && r.average < 0})}>
 										<span className={b('time-inner')}>
 											{formatCs(r.average)}
 											{r.average_record_tag && (
@@ -422,7 +427,7 @@ function ResultsTable({
 										</span>
 									</td>
 								)}
-								<td className={b('time-cell', {nr: !!r.single_record_tag})}>
+								<td className={b('time-cell', {nr: !!r.single_record_tag, bad: typeof r.best === 'number' && r.best < 0})}>
 									<span className={b('time-inner')}>
 										{formatCs(r.best)}
 										{r.single_record_tag && (
@@ -438,7 +443,7 @@ function ResultsTable({
 								</td>
 								{!isMobile &&
 									attempts.map((a, i) => (
-										<td key={i} className={b('result-attempt')}>
+										<td key={i} className={b('result-attempt', {bad: a === 'DNF' || a === 'DNS'})}>
 											{a}
 										</td>
 									))}

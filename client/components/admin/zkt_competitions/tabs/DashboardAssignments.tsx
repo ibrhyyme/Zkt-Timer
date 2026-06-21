@@ -174,6 +174,7 @@ export default function DashboardAssignments({
 	const [assignments, setAssignments] = useState<AssignmentItem[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [stationCount, setStationCount] = useState(8);
+	const [autoBusy, setAutoBusy] = useState(false);
 
 	const selectedEvent = detail.events.find((e: any) => e.id === selectedEventId);
 
@@ -281,6 +282,7 @@ export default function DashboardAssignments({
 	async function unassign(assignmentId: string) {
 		try {
 			await gqlMutate(UNASSIGN_USER, {assignmentId});
+			toastSuccess(t('assignment_removed'));
 			fetchAssignments();
 		} catch (e: any) {
 			toastError(e?.message || t('error'));
@@ -316,6 +318,7 @@ export default function DashboardAssignments({
 		// Destructive: wipes existing groups + COMPETITOR assignments.
 		if (!window.confirm(t('auto_distribute_confirm'))) return;
 
+		setAutoBusy(true);
 		try {
 			await gqlMutate(BULK_ASSIGN, {
 				input: {
@@ -331,6 +334,8 @@ export default function DashboardAssignments({
 			fetchAssignments();
 		} catch (e: any) {
 			toastError(e?.message || t('error'));
+		} finally {
+			setAutoBusy(false);
 		}
 	}
 
@@ -408,8 +413,8 @@ export default function DashboardAssignments({
 						style={{width: 64, padding: '0.4rem 0.5rem', borderRadius: 6, border: '1px solid rgba(var(--text-color), 0.15)', background: 'rgb(var(--button-color))', color: 'rgb(var(--text-color))'}}
 					/>
 				</label>
-				<button className={b('action-btn', {primary: true})} onClick={autoDist}>
-					<UsersThree weight="bold" /> {t('auto_distribute')}
+				<button className={b('action-btn', {primary: true})} disabled={autoBusy} onClick={autoDist}>
+					<UsersThree weight="bold" /> {autoBusy ? t('processing') : t('auto_distribute')}
 				</button>
 				<button className={b('action-btn')} onClick={addGroup}>
 					<Plus weight="bold" /> {t('add_group')}

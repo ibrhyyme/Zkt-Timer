@@ -146,6 +146,7 @@ export default function DashboardRounds({
 	async function updateRound(roundId: string, patch: Record<string, any>) {
 		try {
 			await gqlMutate(UPDATE_ROUND, {input: {roundId, ...patch}});
+			toastSuccess(t('round_updated'));
 			onUpdated();
 		} catch (e: any) {
 			toastError(e?.message || t('error'));
