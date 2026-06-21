@@ -1,9 +1,43 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor/IDE
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.iml
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
 # builds
-node_modules
-.next
-dist
-.out
-build
+node_modules/
+.next/
+dist/
+.out/
+build/
+
+# logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# caches
+.cache/
+.eslintcache
+.turbo/
+
+# coverage
+coverage/
+*.lcov
+
+# TypeScript
+*.tsbuildinfo
 
 # secrets
 .env
@@ -43,3 +77,7 @@ CLAUDE.md
 
 # Local dev tooling (adb, frida, sniffer, vs) — repo'ya commit edilmez
 .tools/
+
+# Next.js common (usually safe)
+.vercel/
+out/
