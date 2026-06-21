@@ -2578,3 +2578,42 @@ $zkt-info-green: #45d97c;
 		color: rgb(var(--text-color));
 	}
 }
+
+// DNF/DNS cells — full red so a bad result never gets missed in a busy table.
+.cd-zkt-comp__time-cell--bad,
+.cd-zkt-comp__result-attempt--bad,
+.cd-zkt-comp__projector-time--bad {
+	color: rgb(var(--error-color)) !important;
+	font-weight: 700;
+}
+
+// Projector title: keep long competition/event names on one line, ellipsize.
+.cd-zkt-comp__projector-title {
+	min-width: 0;
+	overflow: hidden;
+}
+.cd-zkt-comp__projector-comp {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 60vw;
+}
+
+// Live badge on the active round's info bar.
+.cd-zkt-comp__live-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	padding: 2px 11px;
+	border-radius: 999px;
+	background: rgba(var(--error-color), 0.15);
+	color: rgb(var(--error-color));
+	font-weight: 800;
+	font-size: 0.78rem;
+	letter-spacing: 0.5px;
+	animation: zkt-pulse 1.4s ease-in-out infinite;
+}
+.cd-zkt-comp__live-badge::before {
+	content: 'CF';
+	font-size: 0.7em;
+}

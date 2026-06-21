@@ -1476,6 +1476,23 @@ $zkt-warn: #ffc107;
 		&:hover {
 			background: rgba(var(--text-color), 0.12);
 		}
+
+		// Destructive actions (clear round / remove absentees): clearly red-outlined
+		// so they're visually distinct from the primary "Finalize" button.
+		&--danger {
+			border-color: rgba(var(--error-color), 0.5);
+			color: rgb(var(--error-color));
+			background: rgba(var(--error-color), 0.06);
+
+			&:hover {
+				background: rgba(var(--error-color), 0.16);
+			}
+		}
+
+		&:disabled {
+			opacity: 0.55;
+			cursor: not-allowed;
+		}
 	}
 
 	&__round-row-card {
@@ -2141,6 +2158,14 @@ $zkt-warn: #ffc107;
 
 		&--cutoff-locked {
 			opacity: 0.45;
+		}
+
+		// Visual cutoff line: dashed separator after the last cutoff attempt so the
+		// scoretaker sees "these decide whether the rest count".
+		&--cutoff-edge {
+			padding-bottom: 0.5rem;
+			border-bottom: 2px dashed rgba(var(--error-color), 0.6);
+			margin-bottom: 0.25rem;
 		}
 	}
 
