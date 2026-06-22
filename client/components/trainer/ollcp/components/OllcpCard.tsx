@@ -20,9 +20,10 @@ export default function OllcpCard({variant, active}: Props) {
 		<div className={b('card', {active: !!active})}>
 			<div className={b('card-top')}>
 				<div className={b('diagram')}>
-					{/* 'full' → every sticker in real colour (oriented = yellow); shows the top corner +
-					    edge colours so similarities across variants are visible (matches the reference). */}
-					<LLPatternView pattern={variant.pattern} topFace="D" frontFace="F" stickering="full" size={104} />
+					{/* Standard trainer OLLCP look with white-on-bottom (yellow last layer, how the user
+					    solves): topFace='D' (yellow top), frontFace='F', stickering='OLLCP' → corners
+					    coloured, edges grey (recognition-optimised; edges change with the EPLL). */}
+					<LLPatternView pattern={variant.pattern} topFace="D" frontFace="F" stickering="OLLCP" size={104} />
 				</div>
 				<div className={b('card-meta')}>
 					<span className={b('vlabel')}>{variant.n}</span>

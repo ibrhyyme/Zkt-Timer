@@ -2,7 +2,7 @@
  * OllcpRoot — admin-only OLLCP recognition mode root. Provider + shared TrainerModeHeader +
  * view router (list → detail → train). Mirrors RecognitionRoot/EfficiencyRoot structure.
  */
-import React, {useEffect} from 'react';
+import React, {useEffect, useRef} from 'react';
 import block from '../../../styles/bem';
 import './ollcp.scss';
 import {useMe} from '../../../util/hooks/useMe';
@@ -31,6 +31,13 @@ function OllcpRouter() {
 function OllcpInner() {
 	const {state, goList, backToDetail} = useOllcp();
 	const {dispatch} = useTrainerContext();
+	const scrollRef = useRef<HTMLDivElement>(null);
+
+	// Reset scroll to top whenever the view changes (e.g. tapping an OLL while the list is scrolled
+	// down must not land the detail view at the bottom).
+	useEffect(() => {
+		if (scrollRef.current) scrollRef.current.scrollTop = 0;
+	}, [state.view, state.currentOll]);
 
 	const onBack = () => {
 		if (state.view === 'train') backToDetail();
@@ -41,7 +48,7 @@ function OllcpInner() {
 	return (
 		<>
 			<TrainerModeHeader mode="ollcp" onBack={onBack} backToRoot={state.view === 'list'} />
-			<div className={b()}>
+			<div className={b()} ref={scrollRef}>
 				<OllcpRouter />
 			</div>
 		</>

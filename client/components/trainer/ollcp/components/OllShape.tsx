@@ -1,7 +1,6 @@
 /**
- * OllShape — the OLL orientation mini-diagram (yellow shape only) for the OLL list.
- * Reuses LLPatternView with OLL stickering. topFace='D'/frontFace='F' yields the
- * yellow-top / orange-right scheme (matches the standalone reco reference).
+ * OllShape — the OLL orientation mini-diagram for the OLL list. Reuses LLPatternView with OLL
+ * stickering, white-on-bottom orientation (topFace='D' → yellow last layer, how the user solves).
  */
 import React from 'react';
 import LLPatternView from '../../panels/LLPatternView';
