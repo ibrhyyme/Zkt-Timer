@@ -32,6 +32,7 @@ import {AllSettings} from '../../../../db/settings/query';
 import {is3x3CubeType} from '../../../timer/helpers/util';
 import {isPro} from '../../../../lib/pro';
 import ExtrasTab from '../../../quick-controls/tabs/ExtrasTab';
+import GoalsTab from '../../../quick-controls/tabs/GoalsTab';
 import block from '../../../../styles/bem';
 import './TimerTypeGrid.scss';
 
@@ -84,14 +85,21 @@ export default function TimerTypeGrid({
 	const dispatch = useDispatch();
 	const me = useMe();
 
-	// Drawer ic-icine gecisli sayfa: 'grid' = 8-kart, 'extras' = ExtrasTab paneli
+	// Drawer ic-icine gecisli sayfa: 'grid' = 8-kart, 'extras' = ExtrasTab/GoalsTab paneli
 	const [view, setView] = useState<'grid' | 'extras'>('grid');
+	// Extras view ic-sekme: 'extras' = Hizli Ayarlar (ExtrasTab), 'goals' = Hedefler (GoalsTab).
+	// Masaustu SettingsDropdown'daki Extras/Hedefler tab switcher'in mobil karsiligi.
+	const [extrasTab, setExtrasTab] = useState<'extras' | 'goals'>('extras');
 
 	// Drawer kapanirsa view'i sifirla (kullanici tekrar acsa once grid gozuksun).
+	// Extras ic-sekmeyi de 'extras'a al — tekrar acildiginda Hizli Ayarlar'da baslasin.
 	// Iki sinyal: (a) timerInteractionStart — kart seciminden/timer baslangicindan,
 	// (b) edgeDrawerClosed — backdrop tikla / swipe close / EdgeDrawer setOpen(false).
 	useEffect(() => {
-		const reset = () => setView('grid');
+		const reset = () => {
+			setView('grid');
+			setExtrasTab('extras');
+		};
 		window.addEventListener('timerInteractionStart', reset);
 		window.addEventListener('edgeDrawerClosed', reset);
 		return () => {
@@ -214,6 +222,9 @@ export default function TimerTypeGrid({
 	}
 
 	// === EXTRAS VIEW (drawer ic-icine gecisli sayfa) ===
+	// Header: geri butonu + iki sekme (Hizli Ayarlar / Hedefler). Content sabit
+	// en/boy kutusunda (TimerTypeGrid.scss __extras-content) — sekme degisince
+	// panel boyutu degismez, sadece ic icerik degisir (kutu icinde scroll).
 	if (view === 'extras') {
 		return (
 			<>
@@ -226,14 +237,33 @@ export default function TimerTypeGrid({
 					>
 						<CaretLeft weight="bold" size={18} />
 					</button>
-					<span className={b('extras-title')}>{t('quick_controls.extras')}</span>
+					<div className={b('extras-tabs')}>
+						<button
+							type="button"
+							className={b('extras-tab', {active: extrasTab === 'extras'})}
+							onClick={() => setExtrasTab('extras')}
+						>
+							{t('quick_controls.extras')}
+						</button>
+						<button
+							type="button"
+							className={b('extras-tab', {active: extrasTab === 'goals'})}
+							onClick={() => setExtrasTab('goals')}
+						>
+							{t('quick_controls.goals')}
+						</button>
+					</div>
 				</header>
 				<div className={b('extras-content')}>
-					<ExtrasTab
-						hideSmartCubeFeatures={hideSmartCubeFeatures}
-						hideMobileModules={hideMobileModules}
-						hideSlamStop={hideSlamStop}
-					/>
+					{extrasTab === 'extras' ? (
+						<ExtrasTab
+							hideSmartCubeFeatures={hideSmartCubeFeatures}
+							hideMobileModules={hideMobileModules}
+							hideSlamStop={hideSlamStop}
+						/>
+					) : (
+						<GoalsTab />
+					)}
 				</div>
 			</>
 		);

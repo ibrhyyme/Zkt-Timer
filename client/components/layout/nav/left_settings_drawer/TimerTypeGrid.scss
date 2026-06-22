@@ -87,6 +87,9 @@
 		}
 	}
 
+	// DEAD STYLE: extras-title artik TSX'te kullanilmiyor (header iki-sekmeli
+	// extras-tabs switcher'a cevrildi). Silinmedi — projedeki "dead-code'u sil
+	// degil bildir" kurali geregi burada birakildi.
 	&__extras-title {
 		font-size: 0.95rem;
 		font-weight: 700;
@@ -94,14 +97,55 @@
 		flex: 1;
 	}
 
-	// ExtrasTab kapsayicisi — drawer'i extras view'da hafifce genisletir (toggle'lar rahat sigsin)
+	// Extras view header'inda geri butonunun sagindaki iki-sekme switcher
+	// (Hizli Ayarlar / Hedefler) — masaustu SettingsDropdown __tab pattern'i.
+	&__extras-tabs {
+		flex: 1;
+		display: flex;
+		gap: 4px;
+		min-width: 0;
+	}
+
+	&__extras-tab {
+		all: unset;
+		box-sizing: border-box;
+		flex: 1;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 7px 10px;
+		font-size: 0.85rem;
+		font-weight: 600;
+		font-family: inherit;
+		color: rgba(var(--text-color), 0.6);
+		border-radius: 8px;
+		cursor: pointer;
+		transition:
+			background 0.18s ease,
+			color 0.18s ease;
+
+		&:hover:not(&--active) {
+			background: rgba(var(--text-color), 0.06);
+			color: rgba(var(--text-color), 0.9);
+		}
+
+		&--active {
+			background: rgba(var(--primary-color), 0.15);
+			color: rgb(var(--primary-color));
+			box-shadow: inset 0 0 0 1px rgba(var(--primary-color), 0.25);
+		}
+	}
+
+	// Extras/Hedefler ortak kapsayici — SABIT en + boy: sekme degisince panel
+	// boyutu birebir ayni kalir (kullanici sarti) ve EdgeDrawer'in icerik-boyut
+	// degisimine bagli reposition (ResizeObserver) mantigi tetiklenmez.
 	&__extras-content {
 		grid-column: 1 / -1;
-		min-width: 220px;
+		width: 248px;
+		height: min(440px, calc(100vh - 200px));
 		display: flex;
 		flex-direction: column;
 		gap: 8px;
-		max-height: calc(100vh - 200px);
 		overflow-y: auto;
 		padding-right: 2px;
 
