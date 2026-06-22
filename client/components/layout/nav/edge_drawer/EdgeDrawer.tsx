@@ -10,6 +10,7 @@
 
 import React, {useState, useEffect, useLayoutEffect, useRef} from 'react';
 import ReactDOM, {unstable_batchedUpdates} from 'react-dom';
+import {useSelector} from 'react-redux';
 import {useGeneral} from '../../../../util/hooks/useGeneral';
 import {isNative, updateGestureExclusion, clearGestureExclusion} from '../../../../util/platform';
 import block from '../../../../styles/bem';
@@ -69,6 +70,10 @@ export default function EdgeDrawer(props: Props) {
 	}
 
 	const mobileMode = useGeneral('mobile_mode');
+
+	// Timer calisirken (sure baslamis) notch'lari gizle — solve sirasinda dikkat
+	// dagitmasin / yanlislikla tutulmasin. Inspection dahil DEGIL (sadece solving).
+	const solving = useSelector((s: any) => s?.timer?.solving) as boolean;
 
 	const drawerRef = useRef<HTMLDivElement>(null);
 	const notchRef = useRef<HTMLDivElement>(null);
@@ -423,7 +428,7 @@ export default function EdgeDrawer(props: Props) {
 				<>
 					<div
 						ref={notchRef}
-						className={b('notch', {hidden: open, repositioning, hint: showHint && !open, [sideMod]: true})}
+						className={b('notch', {hidden: open || solving, repositioning, hint: showHint && !open && !solving, [sideMod]: true})}
 						style={{top: `${notchY}%`}}
 						onClick={() => {
 							if (repositioning) return;

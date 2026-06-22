@@ -33,3 +33,22 @@ export class AdminActiveUsersResult {
 	@Field(() => [String])
 	available_months: string[];
 }
+
+@ObjectType()
+export class UserPageActivityRow {
+	// Normalized page category (see shared/util/activity_path.ts)
+	@Field()
+	path: string;
+
+	@Field(() => Int)
+	minutes: number;
+}
+
+@ObjectType()
+export class UserDailyActivityResult {
+	@Field(() => [UserPageActivityRow])
+	rows: UserPageActivityRow[];
+
+	@Field(() => Int)
+	total_minutes: number;
+}

@@ -2,8 +2,15 @@ import {Arg, Authorized, Ctx, Mutation, Query, Resolver} from 'type-graphql';
 import {GraphQLContext} from '../@types/interfaces/server.interface';
 import {Role} from '../middlewares/auth';
 import {getPrisma} from '../database';
-import {ActiveUserRow, ActivityHeartbeatResult, AdminActiveUsersResult} from '../schemas/Activity.schema';
+import {
+	ActiveUserRow,
+	ActivityHeartbeatResult,
+	AdminActiveUsersResult,
+	UserDailyActivityResult,
+	UserPageActivityRow,
+} from '../schemas/Activity.schema';
 import {logger} from '../services/logger';
+import {normalizeActivityPath} from '../../shared/util/activity_path';
 import {
 	todayBoundsIstanbul,
 	thisWeekBoundsIstanbul,
@@ -33,24 +40,58 @@ async function listAvailableMonths(): Promise<string[]> {
 export class ActivityResolver {
 	@Authorized([Role.LOGGED_IN])
 	@Mutation(() => ActivityHeartbeatResult)
-	async recordActivityHeartbeat(@Ctx() context: GraphQLContext): Promise<ActivityHeartbeatResult> {
+	async recordActivityHeartbeat(
+		@Arg('path', {nullable: true}) path: string | undefined,
+		@Ctx() context: GraphQLContext,
+	): Promise<ActivityHeartbeatResult> {
 		const userId = context.user.id;
 		const bucket = currentMinuteBucket();
+		// Normalize server-side so a tampered client cannot bloat the category set.
+		const category = path ? normalizeActivityPath(path) : null;
 
 		try {
-			// Atomic insert — ON CONFLICT DO NOTHING avoids the race where two
-			// concurrent heartbeats for the same (user_id, minute_bucket) both
-			// pass Prisma's non-atomic upsert SELECT and then collide on INSERT.
+			// Atomic insert — ON CONFLICT avoids the race where two concurrent
+			// heartbeats for the same (user_id, minute_bucket) both pass Prisma's
+			// non-atomic upsert SELECT and then collide on INSERT. DO UPDATE keeps
+			// the latest page; COALESCE guards against a null path overwriting one.
 			await getPrisma().$executeRaw`
-				INSERT INTO user_activity_heartbeat (id, user_id, minute_bucket, created_at)
-				VALUES (gen_random_uuid(), ${userId}, ${bucket}, now())
-				ON CONFLICT (user_id, minute_bucket) DO NOTHING
+				INSERT INTO user_activity_heartbeat (id, user_id, minute_bucket, path, created_at)
+				VALUES (gen_random_uuid(), ${userId}, ${bucket}, ${category}, now())
+				ON CONFLICT (user_id, minute_bucket)
+				DO UPDATE SET path = COALESCE(EXCLUDED.path, user_activity_heartbeat.path)
 			`;
 		} catch (e) {
 			logger.error('[Heartbeat] upsert failed', {userId, error: (e as any)?.message});
 		}
 
 		return {success: true};
+	}
+
+	@Authorized([Role.ADMIN])
+	@Query(() => UserDailyActivityResult)
+	async adminUserDailyActivity(@Arg('userId') userId: string): Promise<UserDailyActivityResult> {
+		const {start, end} = todayBoundsIstanbul();
+		const sinceBucket = dateToMinuteBucket(start);
+		const untilBucket = dateToMinuteBucket(end);
+
+		const grouped = await getPrisma().userActivityHeartbeat.groupBy({
+			by: ['path'],
+			where: {
+				user_id: userId,
+				minute_bucket: {gte: sinceBucket, lt: untilBucket},
+				path: {not: null},
+			},
+			_count: {minute_bucket: true},
+			orderBy: {_count: {minute_bucket: 'desc'}},
+		});
+
+		const rows: UserPageActivityRow[] = grouped.map((g) => ({
+			path: g.path as string,
+			minutes: g._count.minute_bucket,
+		}));
+		const total_minutes = rows.reduce((sum, r) => sum + r.minutes, 0);
+
+		return {rows, total_minutes};
 	}
 
 	@Authorized([Role.ADMIN])

@@ -36,6 +36,7 @@ import {preloadInspectionSounds} from '../../util/native-audio';
 import {initRevenueCat, identifyUser as iapIdentifyUser, logoutRevenueCat} from '../../lib/iap';
 import {gqlMutate} from '../api';
 import {LinkRevenueCatUserDocument} from '../../@types/generated/graphql';
+import {notifyRouteChange} from '../../util/activity-heartbeat';
 
 interface Props {
 	path?: string;
@@ -59,6 +60,13 @@ export default function App(props: Props = {}) {
 
 	const [unseenAnnouncements, setUnseenAnnouncements] = useState<Announcement[]>([]);
 	const [loadingAnnouncements, setLoadingAnnouncements] = useState(false);
+
+	// Record a heartbeat for the page the user settles on (debounced in the helper),
+	// so short visits between 60s ticks still register in the admin daily breakdown.
+	useEffect(() => {
+		if (!me?.id) return;
+		notifyRouteChange();
+	}, [me?.id, location.pathname]);
 
 	function appInitiated() {
 		setBrowserSessionId(dispatch);

@@ -346,6 +346,7 @@ type Query {
   getIapStatus: IapStatus
   myCompetitionFollows(competitionId: String): [CompetitionFollow]
   myZktCompetitionFollows(competitionId: String): [ZktCompetitionFollow]
+  adminUserDailyActivity(userId: String): UserDailyActivityResult
   adminActiveUsers(monthYear: String, period: String): AdminActiveUsersResult
 }
 
@@ -521,7 +522,7 @@ type Mutation {
   unfollowCompetitor(id: String): Boolean
   followZktCompetitor(input: FollowZktCompetitorInput): ZktCompetitionFollow
   unfollowZktCompetitor(id: String): Boolean
-  recordActivityHeartbeat: ActivityHeartbeatResult
+  recordActivityHeartbeat(path: String): ActivityHeartbeatResult
 }
 
 type SmartDevice {
@@ -2221,6 +2222,16 @@ type AdminActiveUsersResult {
   total_active_users: Int
   total_active_minutes: Int
   available_months: [String]
+}
+
+type UserPageActivityRow {
+  path: String
+  minutes: Int
+}
+
+type UserDailyActivityResult {
+  rows: [UserPageActivityRow]
+  total_minutes: Int
 }
 
 type Notification {

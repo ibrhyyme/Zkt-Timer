@@ -1205,6 +1205,9 @@ model UserActivityHeartbeat {
   id            String      @id @default(uuid())
   user_id       String
   minute_bucket BigInt
+  // Normalized page category for that minute (admin daily activity breakdown).
+  // A snapshot, not a per-minute row multiplier — unique stays [user_id, minute_bucket].
+  path          String?
   created_at    DateTime    @default(now())
   user          UserAccount @relation("activity_heartbeat_user", fields: [user_id], references: [id], onDelete: Cascade)
 

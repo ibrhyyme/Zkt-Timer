@@ -9,6 +9,7 @@ import Empty from '../../common/empty/Empty';
 import {getDateFromNow} from '../../../util/dates';
 import block from '../../../styles/bem';
 import UserSummary from './user_summary/UserSummary';
+import UserDailyActivity from './user_daily_activity/UserDailyActivity';
 import {UserAccountForAdmin} from '../../../../server/schemas/UserAccount.schema';
 import {useTranslation} from 'react-i18next';
 
@@ -323,6 +324,7 @@ export default function ManageUser(props: Props) {
 
 			<div className={b('col')}>
 				<UserSummary summary={userData.summary} />
+				<UserDailyActivity userId={userId} />
 			</div>
 
 			<div className={b('col')}>

@@ -1550,6 +1550,11 @@ export type MutationQuitZktCompetitorFromRoundArgs = {
 };
 
 
+export type MutationRecordActivityHeartbeatArgs = {
+  path?: InputMaybe<Scalars['String']>;
+};
+
+
 export type MutationRedeemPromoCodeArgs = {
   code?: InputMaybe<Scalars['String']>;
 };
@@ -2100,6 +2105,7 @@ export type Query = {
   adminExportUserData?: Maybe<Scalars['String']>;
   adminMyPushTokens?: Maybe<Array<Maybe<PushTokenInfo>>>;
   adminTrainerAlternatives?: Maybe<PaginatedTrainerAlternatives>;
+  adminUserDailyActivity?: Maybe<UserDailyActivityResult>;
   adminUserSearch?: Maybe<PaginatedUserAccountsForAdmin>;
   algorithmOverrides?: Maybe<Array<Maybe<AlgorithmOverride>>>;
   badgeTypes?: Maybe<Array<Maybe<BadgeType>>>;
@@ -2205,6 +2211,11 @@ export type QueryAdminTrainerAlternativesArgs = {
   category?: InputMaybe<Scalars['String']>;
   page?: InputMaybe<Scalars['Int']>;
   pageSize?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type QueryAdminUserDailyActivityArgs = {
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -3245,6 +3256,18 @@ export type UserAccountSummary = {
   reports_for?: Maybe<Scalars['Int']>;
   solves?: Maybe<Scalars['Int']>;
   timer_solves?: Maybe<Array<Maybe<UserAccountSolvesSummary>>>;
+};
+
+export type UserDailyActivityResult = {
+  __typename?: 'UserDailyActivityResult';
+  rows?: Maybe<Array<Maybe<UserPageActivityRow>>>;
+  total_minutes?: Maybe<Scalars['Int']>;
+};
+
+export type UserPageActivityRow = {
+  __typename?: 'UserPageActivityRow';
+  minutes?: Maybe<Scalars['Int']>;
+  path?: Maybe<Scalars['String']>;
 };
 
 export type WcaAccount = {

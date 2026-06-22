@@ -2,8 +2,8 @@ import {gql} from '@apollo/client';
 import {gqlMutate} from '../components/api';
 
 const HEARTBEAT_MUTATION = gql`
-	mutation RecordActivityHeartbeat {
-		recordActivityHeartbeat {
+	mutation RecordActivityHeartbeat($path: String) {
+		recordActivityHeartbeat(path: $path) {
 			success
 		}
 	}
@@ -11,10 +11,14 @@ const HEARTBEAT_MUTATION = gql`
 
 const INTERVAL_MS = 60 * 1000;
 const IDLE_THRESHOLD_MS = 3 * 60 * 1000;
+// Route-change heartbeat debounce — only fire once the user settles on a page,
+// so rapid navigation doesn't spam mutations. Pages visited <5s are skipped.
+const ROUTE_SETTLE_MS = 5 * 1000;
 
 let timer: number | null = null;
 let started = false;
 let lastActivityAt = 0;
+let routeSettleTimer: number | null = null;
 
 function markActive() {
 	lastActivityAt = Date.now();
@@ -30,7 +34,8 @@ async function tick() {
 	if (!isUserEngaged()) return;
 
 	try {
-		await gqlMutate(HEARTBEAT_MUTATION, {});
+		const path = typeof window !== 'undefined' ? window.location.pathname : '';
+		await gqlMutate(HEARTBEAT_MUTATION, {path});
 	} catch {
 		// Sessizce gec — heartbeat best-effort
 	}
@@ -67,9 +72,28 @@ export function stopActivityHeartbeat() {
 		window.clearInterval(timer);
 		timer = null;
 	}
+	if (routeSettleTimer !== null) {
+		window.clearTimeout(routeSettleTimer);
+		routeSettleTimer = null;
+	}
 	started = false;
 }
 
 export function notifyUserActivity() {
 	markActive();
+}
+
+// Call on route change so short visits (<60s tick) still get recorded against the
+// page the user actually settled on. Debounced: only the page held for ROUTE_SETTLE_MS
+// fires a heartbeat, so rapid navigation doesn't spam the server.
+export function notifyRouteChange() {
+	if (typeof window === 'undefined') return;
+	markActive();
+	if (routeSettleTimer !== null) {
+		window.clearTimeout(routeSettleTimer);
+	}
+	routeSettleTimer = window.setTimeout(() => {
+		routeSettleTimer = null;
+		tick();
+	}, ROUTE_SETTLE_MS);
 }

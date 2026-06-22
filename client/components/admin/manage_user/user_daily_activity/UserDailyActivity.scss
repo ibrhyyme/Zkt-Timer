@@ -1,0 +1,72 @@
+@import '../../../../styles/config';
+
+.#{$namespace}-user-daily-activity {
+	padding: 10px;
+
+	&__head {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 8px;
+		margin-bottom: 10px;
+	}
+
+	&__title {
+		margin: 0;
+	}
+
+	&__total {
+		font-size: 0.95rem;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+		font-family: 'SF Mono', 'Roboto Mono', monospace;
+		font-variant-numeric: tabular-nums;
+	}
+
+	&__list {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+	}
+
+	&__row {
+		display: flex;
+		flex-direction: column;
+		gap: 5px;
+	}
+
+	&__row-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 8px;
+	}
+
+	&__label {
+		font-size: 0.9rem;
+		font-weight: 600;
+		color: rgb(var(--text-color));
+	}
+
+	&__value {
+		font-size: 0.85rem;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+		font-family: 'SF Mono', 'Roboto Mono', monospace;
+		font-variant-numeric: tabular-nums;
+	}
+
+	&__bar {
+		height: 6px;
+		background-color: rgba(var(--text-color), 0.08);
+		border-radius: 4px;
+		overflow: hidden;
+	}
+
+	&__bar-fill {
+		height: 100%;
+		min-width: 3px;
+		background-color: rgb(var(--primary-color));
+		border-radius: 4px;
+	}
+}
