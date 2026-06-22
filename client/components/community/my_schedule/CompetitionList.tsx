@@ -11,6 +11,7 @@ import {LINKED_SERVICES} from '../../../../shared/integration';
 import {b, I18N_LOCALE_MAP, formatDateRange} from './shared';
 import {prefetchCompetitionDetail} from './CompetitionLoader';
 import {useZktCompListRefetch} from '../zkt_competitions/useZktCompRefetch';
+import {prefetchZktCompetitionDetail} from '../zkt_competitions/ZktCompetitionDetail';
 
 const ZKT_COMPETITIONS_QUERY = gql`
 	query ZktCompetitionsForList($page: Int!, $pageSize: Int!, $searchQuery: String!) {
@@ -341,6 +342,7 @@ export default function CompetitionList() {
 			<div
 				key={comp.id}
 				className={b('zkt-card', {finished: isFinished, ongoing: isOngoing})}
+				onMouseEnter={() => prefetchZktCompetitionDetail(comp.slug || comp.id)}
 				onClick={() => history.push(`/zkt-competitions/${comp.slug || comp.id}`)}
 			>
 				<span className={b('zkt-card-rail')} aria-hidden="true" />

@@ -106,6 +106,11 @@ export async function listZktCompetitions(params: {
 		where.AND = [
 			{OR: visibilityFilter},
 			{status: {notIn: ['DRAFT', 'CONFIRMED']}},
+			// WCA-style recency: drop a finished competition from the public list once
+			// the month it ended in is over. It stays visible (faded) through the end
+			// of its month, then falls off. Detail + results remain reachable by
+			// slug/id forever — only the list is pruned, nothing is deleted.
+			{date_end: {gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1)}},
 		];
 		// NOTE: No country scoping. ZKT is TR-only, and filtering by the viewer's
 		// join_country hid competitions from users whose account country wasn't

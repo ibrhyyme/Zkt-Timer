@@ -3,7 +3,7 @@ import './ZktCompetitions.scss';
 import {gql} from '@apollo/client';
 import {gqlMutate} from '../../api';
 import {useTranslation} from 'react-i18next';
-import {useParams, useHistory, useRouteMatch} from 'react-router-dom';
+import {useParams, useHistory, useRouteMatch, useLocation} from 'react-router-dom';
 import Loading from '../../common/loading/Loading';
 import {b, formatDateRange, getEventName} from './shared';
 import {useSelector} from 'react-redux';
@@ -18,6 +18,7 @@ import {useZktCompRefetch} from './useZktCompRefetch';
 import {Users, ListBullets, Globe, Broadcast, UserPlus, ChartBar, FileText, CalendarBlank, MapPin, ShieldCheck} from 'phosphor-react';
 import MarkdownContent from './MarkdownContent';
 import {openInMaps} from '../../../util/external-link';
+import {toastError} from '../../../util/toast';
 
 const DETAIL_QUERY = gql`
 	query ZktCompetitionPublic($id: String!) {
@@ -145,28 +146,56 @@ const DETAIL_QUERY = gql`
 	}
 `;
 
+// Module-level SWR cache: revisits + tab switches render instantly from cache
+// while a background refetch keeps it fresh (mirrors WCA CompetitionLoader).
+const detailCache = new Map<string, {data: any; ts: number}>();
+const FRESH_TTL = 60 * 60 * 1000; // 1h
+
+export async function prefetchZktCompetitionDetail(id: string): Promise<void> {
+	if (!id) return;
+	const cached = detailCache.get(id);
+	if (cached && Date.now() - cached.ts < FRESH_TTL) return;
+	try {
+		const res = await gqlMutate(DETAIL_QUERY, {id});
+		const data = res?.data?.zktCompetition;
+		if (data) detailCache.set(id, {data, ts: Date.now()});
+	} catch {
+		// best-effort prefetch
+	}
+}
+
 type TabId = 'groups' | 'live' | 'events' | 'rankings' | 'info' | 'register' | string;
 
 export default function ZktCompetitionDetail() {
 	const {competitionId} = useParams<{competitionId: string}>();
 	const {t, i18n} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
 	const history = useHistory();
+	const location = useLocation();
 	const liveMatch = useRouteMatch<{eventId?: string; roundNumber?: string}>(
 		'/zkt-competitions/:competitionId/live/:eventId?/:roundNumber?'
 	);
 	const isLiveRoute = !!liveMatch;
 
 	const me = useSelector((state: any) => state.account.me);
-	const [detail, setDetail] = useState<any>(null);
-	const [loading, setLoading] = useState(true);
-	const [tab, setTab] = useState<TabId>(isLiveRoute ? 'live' : 'groups');
+	const [detail, setDetail] = useState<any>(() => detailCache.get(competitionId)?.data ?? null);
+	const [loading, setLoading] = useState(() => !detailCache.get(competitionId));
+	const [tab, setTab] = useState<TabId>(
+		isLiveRoute ? 'live' : ((new URLSearchParams(location.search).get('tab') as TabId) || 'groups')
+	);
 
 	const fetch = useCallback(async () => {
+		const cached = detailCache.get(competitionId);
+		if (cached) {
+			setDetail(cached.data);
+			setLoading(false);
+		}
 		try {
 			const res = await gqlMutate(DETAIL_QUERY, {id: competitionId});
-			setDetail(res?.data?.zktCompetition);
+			const data = res?.data?.zktCompetition;
+			if (data) detailCache.set(competitionId, {data, ts: Date.now()});
+			setDetail(data);
 		} catch {
-			// ignore
+			if (!detailCache.get(competitionId)) toastError(t('error'));
 		} finally {
 			setLoading(false);
 		}
@@ -182,8 +211,13 @@ export default function ZktCompetitionDetail() {
 	useZktCompRefetch(detail?.id ?? competitionId, fetch);
 
 	useEffect(() => {
-		if (isLiveRoute) setTab('live');
-	}, [isLiveRoute]);
+		if (isLiveRoute) {
+			setTab('live');
+			return;
+		}
+		const urlTab = new URLSearchParams(location.search).get('tab') as TabId | null;
+		setTab(urlTab || 'groups');
+	}, [isLiveRoute, location.search]);
 
 	if (loading) return <Loading />;
 	if (!detail) return <div className={b('empty')}>{t('not_found')}</div>;
@@ -241,7 +275,7 @@ export default function ZktCompetitionDetail() {
 		if (id === 'live') {
 			history.push(`/zkt-competitions/${competitionId}/live`);
 		} else {
-			history.push(`/zkt-competitions/${competitionId}`);
+			history.push(`/zkt-competitions/${competitionId}?tab=${id}`);
 		}
 	}
 

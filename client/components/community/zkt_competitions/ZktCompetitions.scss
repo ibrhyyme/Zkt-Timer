@@ -1545,6 +1545,14 @@ $zkt-info-green: #45d97c;
 		strong {
 			color: rgb(var(--primary-color));
 		}
+
+		// Narrow screens: tighter so format/cutoff/advancement chips wrap cleanly
+		// instead of cramming; refresh/projector buttons drop to their own row.
+		@media (max-width: 600px) {
+			gap: 0.4rem 0.7rem;
+			padding: 0.55rem 0.7rem;
+			font-size: 12px;
+		}
 	}
 
 	&__refresh-btn {
