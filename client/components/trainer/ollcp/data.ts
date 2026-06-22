@@ -4,7 +4,7 @@
  * real Kociemba scrambles). Imported directly like the recognition trainer imports its JSON.
  */
 import raw from '../../../../public/trainer/ollcp-recognition.json';
-import type {OllcpData, OllcpOll} from './types';
+import type {OllcpData, OllcpOll, SimilarInfo} from './types';
 
 export const OLLCP_DATA = raw as unknown as OllcpData;
 
@@ -13,4 +13,34 @@ export const OLL_NUMBERS: string[] = Object.keys(OLLCP_DATA).sort((a, b) => Numb
 
 export function getOll(ollNum: string): OllcpOll | undefined {
 	return OLLCP_DATA[ollNum];
+}
+
+/**
+ * For each variant of an OLL, the sibling variants it is confusable with + how to tell them apart.
+ * "Confusable" = they SHARE at least one positive (ON) check (the same "=" / "far" relationship) —
+ * that shared salient feature is why they look alike. `diff` lists the checks where they differ.
+ */
+function computeSimilar(oll: OllcpOll): SimilarInfo[][] {
+	const vs = oll.variants;
+	return vs.map((vi, i) => {
+		const out: SimilarInfo[] = [];
+		for (let j = 0; j < vs.length; j++) {
+			if (j === i) continue;
+			const vj = vs[j];
+			const sharesPositive = vi.checks.some((c, k) => c.on && vj.checks[k].on);
+			if (!sharesPositive) continue;
+			const diff: string[] = [];
+			vi.checks.forEach((c, k) => {
+				if (c.on !== vj.checks[k].on) diff.push(oll.checkList[k]);
+			});
+			out.push({n: vj.n, diff});
+		}
+		return out;
+	});
+}
+
+/** Per-OLL similarity map (computed once at module load). */
+export const OLLCP_SIMILAR: Record<string, SimilarInfo[][]> = {};
+for (const num of OLL_NUMBERS) {
+	OLLCP_SIMILAR[num] = computeSimilar(OLLCP_DATA[num]);
 }

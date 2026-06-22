@@ -5,7 +5,7 @@
 import React from 'react';
 import block from '../../../../styles/bem';
 import LLPatternView from '../../panels/LLPatternView';
-import type {OllcpVariant} from '../types';
+import type {OllcpVariant, SimilarInfo} from '../types';
 
 const b = block('trainer-ollcp');
 
@@ -13,9 +13,11 @@ interface Props {
 	variant: OllcpVariant;
 	/** Highlighted (e.g. revealed answer after a solve). */
 	active?: boolean;
+	/** Confusable sibling variants + how to tell them apart. */
+	similar?: SimilarInfo[];
 }
 
-export default function OllcpCard({variant, active}: Props) {
+export default function OllcpCard({variant, active, similar}: Props) {
 	return (
 		<div className={b('card', {active: !!active})}>
 			<div className={b('card-top')}>
@@ -40,6 +42,17 @@ export default function OllcpCard({variant, active}: Props) {
 					</span>
 				))}
 			</div>
+			{similar && similar.length > 0 && (
+				<div className={b('similar')}>
+					<b>⚠ Benzer:</b>{' '}
+					{similar.map((s, i) => (
+						<span key={s.n}>
+							{i > 0 && ' · '}
+							{s.n} <span className={b('similar-diff')}>(ayırt: {s.diff.join(' & ')})</span>
+						</span>
+					))}
+				</div>
+			)}
 		</div>
 	);
 }

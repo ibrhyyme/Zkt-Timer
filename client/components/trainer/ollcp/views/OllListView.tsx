@@ -8,7 +8,7 @@ import React from 'react';
 import block from '../../../../styles/bem';
 import {useGeneral} from '../../../../util/hooks/useGeneral';
 import {useOllcp} from '../OllcpContext';
-import {OLL_NUMBERS, OLLCP_DATA} from '../data';
+import {OLL_NUMBERS, OLLCP_DATA, OLLCP_SIMILAR} from '../data';
 import OllShape from '../components/OllShape';
 import OllcpCard from '../components/OllcpCard';
 
@@ -51,8 +51,8 @@ export default function OllListView() {
 							</span>
 						</div>
 						<div className={b('cards')}>
-							{oll.variants.map((v) => (
-								<OllcpCard key={v.n} variant={v} />
+							{oll.variants.map((v, i) => (
+								<OllcpCard key={v.n} variant={v} similar={OLLCP_SIMILAR[num][i]} />
 							))}
 						</div>
 					</section>

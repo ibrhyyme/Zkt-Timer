@@ -46,3 +46,11 @@ export interface OllcpOll {
 }
 
 export type OllcpData = Record<string, OllcpOll>;
+
+/** A confusable sibling variant + the check(s) that tell them apart. */
+export interface SimilarInfo {
+	/** Sibling label, e.g. "#6". */
+	n: string;
+	/** Distinguishing check labels (the features where the two differ). */
+	diff: string[];
+}

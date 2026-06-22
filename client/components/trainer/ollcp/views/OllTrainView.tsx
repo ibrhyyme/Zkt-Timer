@@ -7,7 +7,7 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import block from '../../../../styles/bem';
 import {useOllcp} from '../OllcpContext';
-import {OLLCP_DATA} from '../data';
+import {OLLCP_DATA, OLLCP_SIMILAR} from '../data';
 import {algToId} from '../../../../util/trainer/algorithm_engine';
 import {addTime} from '../../hooks/useAlgorithmData';
 import {useTrainerStats, formatTimeShort} from '../../hooks/useTrainerStats';
@@ -160,7 +160,7 @@ export default function OllTrainView() {
 						Bu <b>{revealedVariant.n}</b> idi — {revealedVariant.prioLabel} · {revealedVariant.moves}h
 					</div>
 					<div className={b('reveal-body')}>
-						<OllcpCard variant={revealedVariant} active />
+						<OllcpCard variant={revealedVariant} active similar={cur ? OLLCP_SIMILAR[num][cur.v - 1] : undefined} />
 						<div className={b('reveal-stats')}>
 							<div className={b('stat-row')}>
 								<span>En iyi</span>

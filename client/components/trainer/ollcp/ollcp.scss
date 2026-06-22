@@ -122,6 +122,16 @@
 		color: $muted;
 		&--on { color: #46cf72; font-weight: 600; }
 	}
+	&__similar {
+		margin-top: 9px;
+		padding-top: 8px;
+		border-top: 1px dashed $line;
+		font-size: 11.5px;
+		line-height: 1.45;
+		color: #e0a93a;
+		b { color: #e0a93a; font-weight: 700; }
+	}
+	&__similar-diff { color: rgb(var(--text-color)); font-weight: 600; }
 
 	/* ── Train button ── */
 	&__train-btn {
