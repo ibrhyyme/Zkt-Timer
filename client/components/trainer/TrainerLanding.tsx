@@ -13,7 +13,7 @@ import {useGeneral} from '../../util/hooks/useGeneral';
 import {isProEnabled, isPro} from '../../lib/pro';
 import {useTranslation} from 'react-i18next';
 import {useHistory} from 'react-router-dom';
-import {TRAINER_MODES} from './landing_modes';
+import {TRAINER_MODES, OLLCP_MODE} from './landing_modes';
 import TrainerLandingCoverflow from './landing_coverflow/TrainerLandingCoverflow';
 import type {TrainerMode} from './types';
 
@@ -26,6 +26,8 @@ export default function TrainerLanding() {
 	const history = useHistory();
 	const mobileMode = useGeneral('mobile_mode');
 	const smartLocked = isProEnabled() && !isPro(me);
+	// Admin-only OLLCP mode shows up FIRST (so coverflow opens on it, no swiping needed).
+	const modes = me?.admin ? [OLLCP_MODE, ...TRAINER_MODES] : TRAINER_MODES;
 
 	const selectMode = (mode: TrainerMode, locked: boolean) => {
 		// Landing is public for SEO, but actually training requires an account.
@@ -43,7 +45,7 @@ export default function TrainerLanding() {
 
 	// Mobil: Coverflow 3D carousel (app'in PageTitle header'i ustte kalir)
 	if (mobileMode) {
-		return <TrainerLandingCoverflow modes={TRAINER_MODES} smartLocked={smartLocked} onSelect={selectMode} />;
+		return <TrainerLandingCoverflow modes={modes} smartLocked={smartLocked} onSelect={selectMode} />;
 	}
 
 	// Masaustu: Solid Editorial grid
@@ -55,7 +57,7 @@ export default function TrainerLanding() {
 			</div>
 
 			<div className={b('landing-cards')}>
-				{TRAINER_MODES.map((mode, i) => {
+				{modes.map((mode, i) => {
 					const pro = !!mode.pro;
 					const locked = pro && smartLocked;
 					const num = String(i + 1).padStart(2, '0');

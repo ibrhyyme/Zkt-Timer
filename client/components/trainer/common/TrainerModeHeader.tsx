@@ -7,7 +7,7 @@
  * mod ikonu + mod adi. Sag: moda ozel aksiyonlar (ortak __btn stili).
  */
 import React, {ReactNode} from 'react';
-import {Timer, BluetoothConnected, Lightning, Eye, ArrowLeft} from 'phosphor-react';
+import {Timer, BluetoothConnected, Lightning, Eye, Target, ArrowLeft} from 'phosphor-react';
 import {useTranslation} from 'react-i18next';
 import block from '../../../styles/bem';
 import './TrainerModeHeader.scss';
@@ -15,13 +15,14 @@ import type {TrainerMode} from '../types';
 
 const b = block('trainer-header');
 
-type AccentColor = 'blue' | 'purple' | 'green' | 'orange';
+type AccentColor = 'blue' | 'purple' | 'green' | 'orange' | 'red';
 
 const MODE_META: Record<TrainerMode, {icon: ReactNode; color: AccentColor; titleKey: string}> = {
 	standard: {icon: <Timer size={18} weight="duotone" />, color: 'blue', titleKey: 'trainer.landing_standard_title'},
 	smart: {icon: <BluetoothConnected size={18} weight="duotone" />, color: 'purple', titleKey: 'trainer.landing_smart_title'},
 	efficiency: {icon: <Lightning size={18} weight="duotone" />, color: 'green', titleKey: 'trainer.landing_efficiency_title'},
 	recognition: {icon: <Eye size={18} weight="duotone" />, color: 'orange', titleKey: 'trainer.landing_recognition_title'},
+	ollcp: {icon: <Target size={18} weight="duotone" />, color: 'red', titleKey: 'trainer.landing_ollcp_title'},
 };
 
 interface Props {

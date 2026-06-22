@@ -11,7 +11,7 @@ import type {TrainerMode} from '../../../components/trainer/types';
 import type {RecognitionView} from '../../../components/trainer/recognition/types';
 import type {EfficiencyView} from '../../../components/trainer/efficiency/types';
 
-const TRAINER_MODES: readonly TrainerMode[] = ['standard', 'smart', 'recognition', 'efficiency'];
+const TRAINER_MODES: readonly TrainerMode[] = ['standard', 'smart', 'recognition', 'efficiency', 'ollcp'];
 
 export interface ParsedTrainerPath {
 	/** pathname `/trainer` ile basliyor mu */

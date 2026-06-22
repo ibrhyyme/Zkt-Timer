@@ -22,7 +22,7 @@ export interface CheckedAlgorithm {
 	subset: string;
 }
 
-export type TrainerMode = 'standard' | 'smart' | 'recognition' | 'efficiency';
+export type TrainerMode = 'standard' | 'smart' | 'recognition' | 'efficiency' | 'ollcp';
 export type TimerState = 'IDLE' | 'READY' | 'RUNNING' | 'STOPPED';
 export type LearnedStatus = 0 | 1 | 2; // 0=not learned, 1=learning, 2=learned
 

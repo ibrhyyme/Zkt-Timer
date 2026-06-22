@@ -90,7 +90,7 @@ export function useTrainerUrlSync() {
 			return;
 		}
 		const s = state;
-		if (s.mode === 'recognition' || s.mode === 'efficiency') return;
+		if (s.mode === 'recognition' || s.mode === 'efficiency' || s.mode === 'ollcp') return;
 
 		let path: string;
 		let search = '';

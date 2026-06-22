@@ -14,6 +14,7 @@ import TrainerToolbar from './toolbar/TrainerToolbar';
 import TrainerLanding from './TrainerLanding';
 import RecognitionRoot from './recognition/RecognitionRoot';
 import EfficiencyRoot from './efficiency/EfficiencyRoot';
+import OllcpRoot from './ollcp/OllcpRoot';
 import {ensureCubingReady} from '../../util/trainer/algorithm_engine';
 import {ensureKPuzzleReady} from '../../util/trainer/pattern_utils';
 import {loadLLPatterns} from '../../util/trainer/ll_patterns';
@@ -42,6 +43,11 @@ function TrainerContent() {
 	// Efficiency mode (cross/xcross/eocross) manages its own views
 	if (state.mode === 'efficiency') {
 		return <EfficiencyRoot />;
+	}
+
+	// OLLCP recognition mode (admin-only) manages its own views
+	if (state.mode === 'ollcp') {
+		return <OllcpRoot />;
 	}
 
 	if (state.view === 'training') {

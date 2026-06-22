@@ -451,6 +451,13 @@
         "landing_recognition_feat2": "Yanlışta iki taraflı tanıma rehberi devreye girer",
         "landing_recognition_feat3": "Adaptif kuyruk zayıf vakalarını öne alır",
         "landing_recognition_feat4": "13 adımlı rehberli quest moduyla öğren",
+        "landing_ollcp_title": "OLLCP Tanıma",
+        "landing_ollcp_desc": "OLL sonrası köşeleri de çözen OLLCP'yi tanımayı çalış: gerçek karıştırma gelir, hangi varyant olduğunu tanı, çöz, süreni tut.",
+        "landing_ollcp_features": "Özellikler",
+        "landing_ollcp_feat1": "57 OLL × 6 varyant, renksiz minimal ayırt edici ipuçları",
+        "landing_ollcp_feat2": "Önce / Orta / Sonra öncelik rozeti — neyi önce öğreneceğin belli",
+        "landing_ollcp_feat3": "Gerçek karıştırma (setup tersi değil) + rastgele AUF",
+        "landing_ollcp_feat4": "Çalış: süre tut, varyantı tanı, tam istatistik",
         "recognition": {
             "toolbar_home": "Anasayfa",
             "toolbar_history": "Geçmiş",

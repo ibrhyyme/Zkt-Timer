@@ -1,0 +1,243 @@
+/* OLLCP recognition mode (admin-only). Namespace: cd-trainer-ollcp.
+   Theme-driven (rgb/rgba var(--..)); priority tiers use fixed traffic-light colors. */
+
+.cd-trainer-ollcp {
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;
+	overscroll-behavior-y: contain;
+	padding: 16px;
+
+	$line: rgba(var(--text-color), 0.1);
+	$panel: rgb(var(--button-color));
+	$muted: rgba(var(--text-color), 0.6);
+
+	/* ── Mobile OLL list (2 columns) ── */
+	&__list {
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: 12px;
+	}
+	&__list-item {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 8px;
+		padding: 14px 8px;
+		background: $panel;
+		border: 1px solid $line;
+		border-radius: 12px;
+		cursor: pointer;
+		color: rgb(var(--text-color));
+		&:active { transform: translateY(1px); }
+	}
+	&__list-label { font-size: 14px; font-weight: 700; }
+
+	/* ── Web full reference ── */
+	&__web {
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+	}
+	&__oll {
+		padding: 14px 0 4px;
+		border-bottom: 1px solid $line;
+	}
+	&__oll-head {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 12px;
+		margin-bottom: 12px;
+	}
+	&__oll-shape {
+		background: $panel;
+		padding: 5px;
+		border-radius: 8px;
+		border: 1px solid $line;
+	}
+	&__oll-title { margin: 0; font-size: 17px; font-weight: 700; }
+	&__checklist {
+		flex: 1 1 260px;
+		min-width: 220px;
+		font-size: 12px;
+		color: $muted;
+		line-height: 1.45;
+		b { color: rgb(var(--text-color)); }
+	}
+
+	/* ── Cards grid ── */
+	&__cards {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(196px, 1fr));
+		gap: 12px;
+	}
+	&__card {
+		background: $panel;
+		border: 1px solid $line;
+		border-radius: 12px;
+		padding: 12px;
+		&--active {
+			border-color: #ef4444;
+			box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.4);
+		}
+	}
+	&__card-top { display: flex; align-items: center; gap: 10px; }
+	&__diagram {
+		background: rgba(var(--text-color), 0.04);
+		padding: 6px;
+		border-radius: 8px;
+	}
+	&__card-meta { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+	&__vlabel { font-size: 18px; font-weight: 700; color: $muted; }
+	&__prio {
+		font-size: 10.5px;
+		font-weight: 700;
+		padding: 3px 9px;
+		border-radius: 999px;
+		white-space: nowrap;
+		&--t1 { background: rgba(22, 163, 74, 0.16); color: #46cf72; border: 1px solid rgba(22, 163, 74, 0.5); }
+		&--t2 { background: rgba(217, 146, 10, 0.16); color: #e0a93a; border: 1px solid rgba(217, 146, 10, 0.5); }
+		&--t3 { background: rgba(192, 57, 46, 0.14); color: #e2685d; border: 1px solid rgba(192, 57, 46, 0.5); }
+	}
+	&__alg {
+		margin-top: 10px;
+		font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+		font-size: 13.5px;
+		font-weight: 500;
+		line-height: 1.55;
+		letter-spacing: 0.2px;
+		color: rgb(var(--text-color));
+		background: rgba(var(--text-color), 0.07);
+		border: 1px solid $line;
+		border-radius: 7px;
+		padding: 8px 10px;
+		word-spacing: 2px;
+	}
+	&__cue { display: flex; flex-direction: column; gap: 4px; margin-top: 9px; }
+	&__chk {
+		font-size: 12px;
+		line-height: 1.35;
+		color: $muted;
+		&--on { color: #46cf72; font-weight: 600; }
+	}
+
+	/* ── Train button ── */
+	&__train-btn {
+		font-size: 12px;
+		font-weight: 700;
+		color: #0e0f12;
+		background: #ef4444;
+		border: 1px solid #ef4444;
+		border-radius: 8px;
+		padding: 6px 16px;
+		cursor: pointer;
+		&:hover { filter: brightness(1.08); }
+		&:active { transform: translateY(1px); }
+		&--large { padding: 9px 22px; font-size: 14px; }
+	}
+
+	/* ── Detail (mobile drill) ── */
+	&__detail-head {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		flex-wrap: wrap;
+		margin-bottom: 14px;
+	}
+	&__detail-head-text { flex: 1 1 200px; }
+
+	/* ── Train view ── */
+	&__train {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 14px;
+		max-width: 640px;
+		margin: 0 auto;
+		text-align: center;
+	}
+	&__train-top {
+		display: flex;
+		justify-content: space-between;
+		width: 100%;
+		font-size: 13px;
+		color: $muted;
+	}
+	&__train-oll { font-weight: 700; color: rgb(var(--text-color)); }
+	&__scramble {
+		width: 100%;
+		font-family: 'SF Mono', ui-monospace, Menlo, Consolas, monospace;
+		font-size: 17px;
+		line-height: 1.6;
+		color: rgb(var(--text-color));
+		background: $panel;
+		border: 1px solid $line;
+		border-radius: 10px;
+		padding: 14px 16px;
+		word-spacing: 3px;
+		-webkit-user-select: all;
+		user-select: all;
+	}
+	&__timer {
+		width: 100%;
+		font-variant-numeric: tabular-nums;
+		font-size: 64px;
+		font-weight: 800;
+		padding: 28px 0;
+		border-radius: 14px;
+		background: rgba(var(--text-color), 0.04);
+		border: 1px solid $line;
+		cursor: pointer;
+		user-select: none;
+		touch-action: manipulation;
+		color: rgb(var(--text-color));
+		&--ready { color: #46cf72; }
+		&--running { color: rgb(var(--primary-color)); }
+	}
+	&__train-hint { font-size: 12.5px; color: $muted; line-height: 1.5; }
+
+	/* ── Reveal ── */
+	&__reveal {
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		gap: 12px;
+		padding-top: 8px;
+		border-top: 1px solid $line;
+	}
+	&__reveal-head { font-size: 15px; color: rgb(var(--text-color)); }
+	&__reveal-body {
+		display: grid;
+		grid-template-columns: minmax(180px, 240px) 1fr;
+		gap: 14px;
+		align-items: start;
+		@media (max-width: 560px) { grid-template-columns: 1fr; }
+	}
+	&__reveal-stats { display: flex; flex-direction: column; gap: 6px; }
+	&__stat-row {
+		display: flex;
+		justify-content: space-between;
+		font-size: 13px;
+		color: $muted;
+		padding: 5px 9px;
+		background: $panel;
+		border: 1px solid $line;
+		border-radius: 7px;
+		b { color: rgb(var(--text-color)); font-variant-numeric: tabular-nums; }
+	}
+	&__stat-chart { height: 70px; margin-top: 4px; }
+	&__next-btn {
+		align-self: center;
+		font-size: 14px;
+		font-weight: 700;
+		color: #0e0f12;
+		background: #ef4444;
+		border: none;
+		border-radius: 9px;
+		padding: 10px 26px;
+		cursor: pointer;
+		&:active { transform: translateY(1px); }
+	}
+}

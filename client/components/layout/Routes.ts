@@ -187,6 +187,9 @@ export const routes: (PageContext | RedirectPath)[] = [
 	trainerRoute('/trainer/recognition'),
 	trainerRoute('/trainer/efficiency/settings'),
 	trainerRoute('/trainer/efficiency'),
+	trainerRoute('/trainer/ollcp/train'),
+	trainerRoute('/trainer/ollcp/detail'),
+	trainerRoute('/trainer/ollcp'),
 	// Trainer landing (mode selection) is public for SEO — anon visitors see the cards,
 	// but selecting a mode requires login (handled in TrainerLanding + restricted sub-routes).
 	trainerRoute('/trainer', false),

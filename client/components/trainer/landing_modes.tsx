@@ -4,11 +4,11 @@
  * TrainerModeHeader ile paylasilir. Icon, boyutu cagirana birakmak icin component olarak
  * tutulur (instantiate edilmemis).
  */
-import {Timer, BluetoothConnected, Lightning, Eye} from 'phosphor-react';
+import {Timer, BluetoothConnected, Lightning, Eye, Target} from 'phosphor-react';
 import type {Icon} from 'phosphor-react';
 import type {TrainerMode} from './types';
 
-export type ModeAccent = 'blue' | 'purple' | 'green' | 'orange';
+export type ModeAccent = 'blue' | 'purple' | 'green' | 'orange' | 'red';
 
 export interface ModeConfig {
 	id: TrainerMode;
@@ -98,3 +98,24 @@ export const TRAINER_MODES: ModeConfig[] = [
 		],
 	},
 ];
+
+// Admin-only 5th mode. NOT in TRAINER_MODES so regular users never see it; TrainerLanding /
+// Coverflow prepend it to the displayed list when `me.admin` (so it shows up FIRST).
+export const OLLCP_MODE: ModeConfig = {
+	id: 'ollcp',
+	Icon: Target,
+	accent: 'red',
+	titleKey: 'trainer.landing_ollcp_title',
+	descKey: 'trainer.landing_ollcp_desc',
+	groups: [
+		{
+			labelKey: 'trainer.landing_ollcp_features',
+			itemKeys: [
+				'trainer.landing_ollcp_feat1',
+				'trainer.landing_ollcp_feat2',
+				'trainer.landing_ollcp_feat3',
+				'trainer.landing_ollcp_feat4',
+			],
+		},
+	],
+};
