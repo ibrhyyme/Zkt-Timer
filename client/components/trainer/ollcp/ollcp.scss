@@ -238,16 +238,60 @@
 		b { color: rgb(var(--text-color)); font-variant-numeric: tabular-nums; }
 	}
 	&__stat-chart { height: 70px; margin-top: 4px; }
-	&__next-btn {
-		align-self: center;
+
+	/* Session reset button (top bar) */
+	&__reset {
+		font-size: 11.5px;
+		font-weight: 600;
+		color: rgb(var(--text-color));
+		background: $panel;
+		border: 1px solid $line;
+		border-radius: 7px;
+		padding: 4px 11px;
+		cursor: pointer;
+		&:hover { border-color: var(--accent); }
+		&:active { transform: translateY(1px); }
+	}
+
+	/* Per-variant accuracy strip — which variants the user knows well vs poorly */
+	&__acc-strip {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 6px 12px;
+		width: 100%;
+		font-size: 12px;
+		font-variant-numeric: tabular-nums;
+	}
+	&__acc-cell {
+		font-weight: 700;
+		color: $muted;
+	}
+
+	/* Reveal: correct/wrong assessment */
+	&__reveal-acc { color: rgb(var(--text-color)); font-weight: 600; }
+	&__assess {
+		display: flex;
+		justify-content: center;
+		flex-wrap: wrap;
+		gap: 10px;
+	}
+	&__assess-yes,
+	&__assess-no,
+	&__assess-skip {
 		font-size: 14px;
 		font-weight: 700;
-		color: #0e0f12;
-		background: #ef4444;
 		border: none;
 		border-radius: 9px;
-		padding: 10px 26px;
+		padding: 10px 22px;
 		cursor: pointer;
 		&:active { transform: translateY(1px); }
+	}
+	&__assess-yes { color: #0e0f12; background: #46cf72; }
+	&__assess-no { color: #fff; background: #e2685d; }
+	&__assess-skip {
+		color: rgb(var(--text-color));
+		background: $panel;
+		border: 1px solid $line;
 	}
 }

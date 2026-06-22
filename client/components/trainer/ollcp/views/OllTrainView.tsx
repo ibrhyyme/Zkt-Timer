@@ -1,13 +1,16 @@
 /**
- * OllTrainView — timed recognition practice for one OLL.
- * Pulls a RANDOM real scramble from the OLL's pool (→ random one of the 6 variants), times the
- * solve (spacebar/touch like the main TrainerTimer), then reveals which variant it was and records
- * the time against that variant's algId so the existing trainer stats (best/Ao5/Ao12/history) apply.
+ * OllTrainView — recognition practice for one OLL.
+ * Pulls a RANDOM real scramble from the OLL's pool (→ random one of the 6 variants, never the same
+ * variant twice in a row), times the solve (spacebar/touch), reveals which variant it was, and lets
+ * the user mark ✓/✗ (recognised/solved correctly?). Accuracy is tracked per variant so the user can
+ * see which cases they know well vs poorly. Solve time is recorded against the variant's algId
+ * (reuses the existing trainer stats), accuracy in a separate store (ollcp/stats).
  */
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import block from '../../../../styles/bem';
 import {useOllcp} from '../OllcpContext';
 import {OLLCP_DATA, OLLCP_SIMILAR} from '../data';
+import {getAccuracy, recordAccuracy, accuracyPct} from '../stats';
 import {algToId} from '../../../../util/trainer/algorithm_engine';
 import {addTime} from '../../hooks/useAlgorithmData';
 import {useTrainerStats, formatTimeShort} from '../../hooks/useTrainerStats';
@@ -33,16 +36,21 @@ export default function OllTrainView() {
 	curRef.current = cur;
 	const [revealed, setRevealed] = useState(false);
 	const [session, setSession] = useState<number[]>([]);
-	const lastIdxRef = useRef(-1);
+	const [sessRight, setSessRight] = useState(0);
+	const [sessTotal, setSessTotal] = useState(0);
+	const [accVersion, setAccVersion] = useState(0); // bump → recompute accuracy strip
+	const lastVRef = useRef(-1); // last shown variant → never repeat the same variant consecutively
 
 	const pool = oll?.scrambles ?? [];
 
 	const pickNext = useCallback(() => {
 		if (!pool.length) return;
-		let i = Math.floor(Math.random() * pool.length);
-		if (pool.length > 1 && i === lastIdxRef.current) i = (i + 1) % pool.length;
-		lastIdxRef.current = i;
-		setCur(pool[i]);
+		const lastV = lastVRef.current;
+		const candidates = pool.length > 1 ? pool.filter((x) => x.v !== lastV) : pool;
+		const list = candidates.length ? candidates : pool;
+		const picked = list[Math.floor(Math.random() * list.length)];
+		lastVRef.current = picked.v;
+		setCur(picked);
 		setDisplay(0);
 		setRevealed(false);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
@@ -79,14 +87,32 @@ export default function OllTrainView() {
 		setSession((s) => [...s, t]);
 	}, [oll]);
 
-	// "Press while stopped" advances to the NEXT scramble and goes idle (does NOT auto-start) so you
-	// can read/recognise the new case first; a separate hold→release starts the next solve.
+	// Advance to the next scramble (idle → read/recognise, then hold to start).
 	const advance = useCallback(() => {
 		pickNext();
 		setPhase('idle');
 	}, [pickNext]);
 
-	// Keyboard: hold Space → ready, release → run, press → stop, press again → next.
+	// Mark the solved attempt right/wrong → record accuracy + advance.
+	const assess = useCallback(
+		(correct: boolean) => {
+			const c = curRef.current;
+			if (c && oll) recordAccuracy(algToId(oll.variants[c.v - 1].algorithm), correct);
+			setSessTotal((n) => n + 1);
+			if (correct) setSessRight((n) => n + 1);
+			setAccVersion((n) => n + 1);
+			advance();
+		},
+		[oll, advance],
+	);
+
+	const resetSession = () => {
+		setSession([]);
+		setSessRight(0);
+		setSessTotal(0);
+	};
+
+	// Keyboard: hold Space → ready, release → run, press → stop, press again → next (no mark).
 	useEffect(() => {
 		const onDown = (e: KeyboardEvent) => {
 			if (e.code !== 'Space' || e.repeat) return;
@@ -123,19 +149,49 @@ export default function OllTrainView() {
 	const revealedVariant = revealed && cur && oll ? oll.variants[cur.v - 1] : null;
 	const stats = useTrainerStats(revealedVariant ? revealedVariant.algorithm : null, revealedVariant?.moves);
 
+	// Per-variant accuracy strip (which variants the user knows well vs poorly). Memoised so it
+	// doesn't re-read localStorage on every timer frame.
+	const accStrip = useMemo(() => {
+		if (!oll) return [];
+		return oll.variants.map((v) => {
+			const a = getAccuracy(algToId(v.algorithm));
+			return {n: v.n, pct: accuracyPct(a), t: a.t};
+		});
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [oll, accVersion]);
+
+	const revealAcc = useMemo(() => {
+		if (!revealedVariant) return null;
+		return getAccuracy(algToId(revealedVariant.algorithm));
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [revealedVariant, accVersion]);
+
 	if (!num || !oll) return null;
 
 	const liveTime = (display / 1000).toFixed(2);
 	const sessionBest = session.length ? Math.min(...session) : null;
-	const sessionAvg = session.length ? session.reduce((a, c) => a + c, 0) / session.length : null;
+	const pctColor = (pct: number | null) =>
+		pct === null ? undefined : pct >= 80 ? '#46cf72' : pct >= 50 ? '#e0a93a' : '#e2685d';
 
 	return (
 		<div className={b('train')}>
 			<div className={b('train-top')}>
 				<span className={b('train-oll')}>OLL {num}</span>
 				<span className={b('train-session')}>
-					{session.length} çözüm · oturum en iyi {formatTimeShort(sessionBest)} · ort {formatTimeShort(sessionAvg)}
+					{sessTotal > 0 ? `${sessRight}/${sessTotal} doğru` : `${session.length} çözüm`}
+					{sessionBest !== null && ` · en iyi ${formatTimeShort(sessionBest)}`}
 				</span>
+				<button type="button" className={b('reset')} onClick={resetSession}>
+					Sıfırla
+				</button>
+			</div>
+
+			<div className={b('acc-strip')}>
+				{accStrip.map((a) => (
+					<span key={a.n} className={b('acc-cell')} style={{color: pctColor(a.pct)}}>
+						{a.n} {a.pct === null ? '—' : `%${a.pct}`}
+					</span>
+				))}
 			</div>
 
 			<div className={b('scramble')}>{cur ? cur.s : '…'}</div>
@@ -151,13 +207,18 @@ export default function OllTrainView() {
 			</div>
 
 			<div className={b('train-hint')}>
-				Boşluk (veya ekrana) <b>basılı tut → bırak → çöz → bas</b>. Çözünce hangi varyanttı görürsün.
+				Boşluk (veya ekrana) <b>basılı tut → bırak → çöz → bas</b>. Çözünce doğru mu yaptın işaretle.
 			</div>
 
 			{revealedVariant && (
 				<div className={b('reveal')}>
 					<div className={b('reveal-head')}>
 						Bu <b>{revealedVariant.n}</b> idi — {revealedVariant.prioLabel} · {revealedVariant.moves}h
+						{revealAcc && revealAcc.t > 0 && (
+							<span className={b('reveal-acc')}>
+								{' '}· doğruluk {revealAcc.c}/{revealAcc.t} (%{accuracyPct(revealAcc)})
+							</span>
+						)}
 					</div>
 					<div className={b('reveal-body')}>
 						<OllcpCard variant={revealedVariant} active similar={cur ? OLLCP_SIMILAR[num][cur.v - 1] : undefined} />
@@ -174,10 +235,6 @@ export default function OllTrainView() {
 								<span>Ao12</span>
 								<b>{formatTimeShort(stats.ao12)}</b>
 							</div>
-							<div className={b('stat-row')}>
-								<span>Toplam</span>
-								<b>{stats.totalSolves}</b>
-							</div>
 							{stats.lastTimes.length > 0 && (
 								<div className={b('stat-chart')}>
 									<TrainerBarChart times={stats.lastTimes.map((r) => r.t)} bestTime={stats.bestTime} />
@@ -185,9 +242,17 @@ export default function OllTrainView() {
 							)}
 						</div>
 					</div>
-					<button type="button" className={b('next-btn')} onClick={advance}>
-						Sonraki ↻
-					</button>
+					<div className={b('assess')}>
+						<button type="button" className={b('assess-yes')} onClick={() => assess(true)}>
+							✓ Doğru
+						</button>
+						<button type="button" className={b('assess-no')} onClick={() => assess(false)}>
+							✗ Yanlış
+						</button>
+						<button type="button" className={b('assess-skip')} onClick={advance}>
+							Atla →
+						</button>
+					</div>
 				</div>
 			)}
 		</div>
