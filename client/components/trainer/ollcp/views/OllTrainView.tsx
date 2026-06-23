@@ -206,12 +206,8 @@ export default function OllTrainView() {
 				{liveTime}
 			</div>
 
-			<div className={b('train-hint')}>
-				Boşluk (veya ekrana) <b>basılı tut → bırak → çöz → bas</b>. Çözünce doğru mu yaptın işaretle.
-			</div>
-
-			{revealedVariant && (
-				<div className={b('reveal')}>
+			{revealedVariant ? (
+				<div className={b('reveal-top')}>
 					<div className={b('reveal-head')}>
 						Bu <b>{revealedVariant.n}</b> idi — {revealedVariant.prioLabel} · {revealedVariant.moves}h
 						{revealAcc && revealAcc.t > 0 && (
@@ -219,28 +215,6 @@ export default function OllTrainView() {
 								{' '}· doğruluk {revealAcc.c}/{revealAcc.t} (%{accuracyPct(revealAcc)})
 							</span>
 						)}
-					</div>
-					<div className={b('reveal-body')}>
-						<OllcpCard variant={revealedVariant} active similar={cur ? OLLCP_SIMILAR[num][cur.v - 1] : undefined} />
-						<div className={b('reveal-stats')}>
-							<div className={b('stat-row')}>
-								<span>En iyi</span>
-								<b>{formatTimeShort(stats.bestTime)}</b>
-							</div>
-							<div className={b('stat-row')}>
-								<span>Ao5</span>
-								<b>{formatTimeShort(stats.ao5)}</b>
-							</div>
-							<div className={b('stat-row')}>
-								<span>Ao12</span>
-								<b>{formatTimeShort(stats.ao12)}</b>
-							</div>
-							{stats.lastTimes.length > 0 && (
-								<div className={b('stat-chart')}>
-									<TrainerBarChart times={stats.lastTimes.map((r) => r.t)} bestTime={stats.bestTime} />
-								</div>
-							)}
-						</div>
 					</div>
 					<div className={b('assess')}>
 						<button type="button" className={b('assess-yes')} onClick={() => assess(true)}>
@@ -252,6 +226,35 @@ export default function OllTrainView() {
 						<button type="button" className={b('assess-skip')} onClick={advance}>
 							Atla →
 						</button>
+					</div>
+				</div>
+			) : (
+				<div className={b('train-hint')}>
+					Boşluk (veya ekrana) <b>basılı tut → bırak → çöz → bas</b>. Çözünce doğru mu yaptın işaretle.
+				</div>
+			)}
+
+			{revealedVariant && (
+				<div className={b('reveal-body')}>
+					<OllcpCard variant={revealedVariant} active similar={cur ? OLLCP_SIMILAR[num][cur.v - 1] : undefined} />
+					<div className={b('reveal-stats')}>
+						<div className={b('stat-row')}>
+							<span>En iyi</span>
+							<b>{formatTimeShort(stats.bestTime)}</b>
+						</div>
+						<div className={b('stat-row')}>
+							<span>Ao5</span>
+							<b>{formatTimeShort(stats.ao5)}</b>
+						</div>
+						<div className={b('stat-row')}>
+							<span>Ao12</span>
+							<b>{formatTimeShort(stats.ao12)}</b>
+						</div>
+						{stats.lastTimes.length > 0 && (
+							<div className={b('stat-chart')}>
+								<TrainerBarChart times={stats.lastTimes.map((r) => r.t)} bestTime={stats.bestTime} />
+							</div>
+						)}
 					</div>
 				</div>
 			)}
