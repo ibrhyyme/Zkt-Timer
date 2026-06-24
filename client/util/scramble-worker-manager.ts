@@ -20,7 +20,8 @@ function getWorker(): Worker | null {
 
 	try {
 		console.log('[scramble-worker] Loading worker...');
-		worker = new Worker('/dist/scramble-worker.js');
+		const v = (window as any).__ASSET_VERSION__ || '';
+		worker = new Worker('/dist/scramble-worker.js' + (v ? '?v=' + v : ''));
 
 		worker.onmessage = (e: MessageEvent) => {
 			const data = e.data;

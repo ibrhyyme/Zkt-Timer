@@ -83,6 +83,7 @@ export default (payload: HtmlPagePayload) => {
 				window.__STORE__ = ${cleanState};
 				window.__REVENUECAT_IOS_KEY__ = ${JSON.stringify(process.env.REVENUECAT_IOS_KEY || '')};
 				window.__REVENUECAT_ANDROID_KEY__ = ${JSON.stringify(process.env.REVENUECAT_ANDROID_KEY || '')};
+				window.__ASSET_VERSION__ = ${JSON.stringify(version)};
 			</script>
 			<script src="${distBase}/${jsFileName}?v=${version}"></script>
 		</html>

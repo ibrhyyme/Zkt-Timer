@@ -26,7 +26,8 @@ function getWorker(): Worker | null {
 	if (typeof window === 'undefined' || typeof Worker === 'undefined') return null;
 
 	try {
-		worker = new Worker('/dist/solver-worker.js');
+		const v = (window as any).__ASSET_VERSION__ || '';
+		worker = new Worker('/dist/solver-worker.js' + (v ? '?v=' + v : ''));
 
 		worker.onmessage = (e: MessageEvent) => {
 			const data = e.data;

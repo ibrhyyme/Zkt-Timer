@@ -48,6 +48,13 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
+  // Worker bundle'lari (scramble/cross-solver/solver): SW intercept etme.
+  // Versiyonlu URL (?v=RELEASE) + browser cache tazeligi saglar; static handler
+  // cacheUrl=pathname oldugu icin ?v= burada ise yaramaz, o yuzden komple bypass.
+  if (url.pathname.endsWith('-worker.js')) {
+    return;
+  }
+
   // GraphQL API: Network-first, cache fallback
   if (url.pathname.startsWith('/graphql')) {
     e.respondWith(
