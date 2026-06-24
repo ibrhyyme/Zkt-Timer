@@ -199,6 +199,19 @@ export const SCRAMBLE_SUBSETS: Record<string, ScrambleSubset[]> = {
         { id: 'sq1t', label: 'scramble_subsets.twist_metric' },
     ],
 
+    // ==================== FTO (Face-Turning Octahedron) ====================
+    fto: [
+        { id: '', label: 'scramble_subsets.random_state_plain' },  // ftoso (cstimer "random state")
+        { id: 'fto', label: 'scramble_subsets.random_move' },       // megascramble random-move
+        { id: 'ftol3t', label: 'L3T' },
+        { id: 'ftol4t', label: 'L3T+LBT' },
+        { id: 'ftotcp', label: 'TCP' },
+        { id: 'ftoedge', label: 'scramble_subsets.edges_only' },
+        { id: 'ftocent', label: 'scramble_subsets.centers_only' },
+        { id: 'ftocorn', label: 'scramble_subsets.corners_only' },
+        { id: 'dmdso', label: 'scramble_subsets.diamond_random_state' },
+    ],
+
 };
 
 export const getSubsetsForCube = (cubeType: string): ScrambleSubset[] => {

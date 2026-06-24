@@ -34,7 +34,7 @@ const CUBE_TYPE_GROUPS: { header: string; types: string[] }[] = [
 	{ header: '3x3', types: ['333', '333cfop', '333roux', '333mehta'] },
 	{
 		header: 'cube_picker.other_puzzles',
-		types: ['222', '444', '444yau', '555', '666', '777', 'clock', 'minx', 'pyram', 'skewb', 'sq1'],
+		types: ['222', '444', '444yau', '555', '666', '777', 'clock', 'minx', 'pyram', 'skewb', 'sq1', 'fto'],
 	},
 	{ header: '', types: ['other'] },
 ];

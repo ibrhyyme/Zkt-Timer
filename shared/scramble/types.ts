@@ -43,6 +43,8 @@ export const ASYNC_SCRAMBLE_TYPES = new Set([
 	'444ctud', '444ud3c', '444l8e', '444ctrl', '444rlda', '444rlca',
 	'sqrs', 'sqrcsp', 'sq1pll',
 	'mgmso',
+	// FTO (Face-Turning Octahedron) — solver/grouplib-based subsets (random-move 'fto' excluded: cheap)
+	'ftoso', 'ftol3t', 'ftol4t', 'ftotcp', 'ftoedge', 'ftocent', 'ftocorn', 'dmdso',
 ]);
 
 export function isAsyncScrambleType(typeId: string): boolean {

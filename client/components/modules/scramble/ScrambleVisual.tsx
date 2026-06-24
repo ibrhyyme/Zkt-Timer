@@ -13,6 +13,8 @@ const TwistyPlayerWrapper = React.lazy(() => import('./TwistyPlayerWrapper'));
 const Sq1Renderer = React.lazy(() => import('./Sq1Renderer'));
 // Custom 2D canvas renderer for Clock (cstimer style)
 const ClockRenderer = React.lazy(() => import('./ClockRenderer'));
+// Custom 2D canvas net renderer for FTO / Diamond (cubing.js doesn't support FTO)
+const FtoRenderer = React.lazy(() => import('./FtoRenderer'));
 
 const b = block('scramble-visual');
 
@@ -59,10 +61,11 @@ interface Props {
 	width?: string;
 	frontFace?: boolean;
 	compact?: boolean;
+	subset?: string;
 }
 
 function ScrambleVisual(props: Props) {
-	const { cubeType, scramble, frontFace, compact } = props;
+	const { cubeType, scramble, frontFace, compact, subset } = props;
 	const { t } = useTranslation();
 	const [isExpanded, setIsExpanded] = useState(false);
 	const mobileMode = useGeneral('mobile_mode');
@@ -173,6 +176,21 @@ function ScrambleVisual(props: Props) {
 
 	// === Early returns (AFTER all hooks) ===
 
+	// FTO / Diamond: custom 2D net renderer (cubing.js doesn't support FTO).
+	// Diamond subset (dmdso) uses the vertex-up 'dmd' geometry; everything else uses 'fto'.
+	if (cubeType === 'fto') {
+		const ftoRenderType = subset === 'dmdso' ? 'dmd' : 'fto';
+		return (
+			<div className={`${b('wrapper', { clickable: false })} ${b()}`} style={{ width: width }}>
+				<div style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+					<Suspense fallback={<div className={b('loading')}>{t('common.loading')}</div>}>
+						<FtoRenderer scramble={scramble} renderType={ftoRenderType} className={b('fto-renderer')} />
+					</Suspense>
+				</div>
+			</div>
+		);
+	}
+
 	// Unsupported puzzle type
 	if (!VALID_TWISTY_PUZZLES.has(puzzleId)) {
 		return null;
@@ -233,6 +251,7 @@ export default React.memo(ScrambleVisual, (prevProps, nextProps) => {
 		prevProps.scramble === nextProps.scramble &&
 		prevProps.width === nextProps.width &&
 		prevProps.frontFace === nextProps.frontFace &&
-		prevProps.compact === nextProps.compact
+		prevProps.compact === nextProps.compact &&
+		prevProps.subset === nextProps.subset
 	);
 });

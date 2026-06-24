@@ -65,7 +65,7 @@ export default function TimerModule(props: Props) {
 			proOnly: false,
 		},
 		[TimerModuleType.SCRAMBLE]: {
-			module: <Scramble cubeType={visualCubeType} scramble={originalScramble || scramble} />,
+			module: <Scramble cubeType={visualCubeType} scramble={originalScramble || scramble} subset={scrambleSubset || undefined} />,
 			proOnly: false,
 		},
 		[TimerModuleType.SOLVE_GRAPH]: {

@@ -138,7 +138,7 @@ export default function NormalSolveLayout(props: SolveLayoutProps) {
 				<div className={b('inline-scramble')}>
 					<legend>{t('solve_info.scramble_label')}</legend>
 					<div className={b('inline-scramble-visual')}>
-						<ScrambleVisual cubeType={visualCubeType} scramble={scramble} />
+						<ScrambleVisual cubeType={visualCubeType} scramble={scramble} subset={solve.scramble_subset || undefined} />
 					</div>
 					{editMode ? (
 						<TextArea fullWidth autoSize value={scramble} name="scramble" onChange={handleChange} />

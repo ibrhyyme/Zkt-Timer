@@ -143,7 +143,7 @@ export default function SmartSolveLayout(props: SolveLayoutProps) {
 					</div>
 				</div>
 				<div className={bs('header-visual')}>
-					<ScrambleVisual cubeType={visualCubeType} scramble={scramble} />
+					<ScrambleVisual cubeType={visualCubeType} scramble={scramble} subset={solve.scramble_subset || undefined} />
 				</div>
 			</div>
 

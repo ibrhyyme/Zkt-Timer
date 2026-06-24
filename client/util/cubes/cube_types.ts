@@ -47,6 +47,9 @@ export const CUBE_TYPES: Record<string, CubeType> = {
 	// === 4x4 Methods ===
 	'444yau': getCubeType('444yau', '4x4 Yau/Hoya', '444yau', 4),
 
+	// === Other puzzles ===
+	fto: getCubeType('fto', 'FTO', 'fto'),
+
 	// === Other ===
 	other: getCubeType('other', 'Other', 'none'),
 };

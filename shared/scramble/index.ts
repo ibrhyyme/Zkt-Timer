@@ -30,3 +30,4 @@ import './generators/scramble-333';
 import './generators/scramble-444';
 import './generators/scramble-sq1';
 import './generators/scramble-megaminx';
+import './generators/scramble-fto';

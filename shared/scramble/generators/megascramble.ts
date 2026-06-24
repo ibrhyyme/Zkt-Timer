@@ -70,6 +70,7 @@ const args: Record<string, MegaArgs> = {
 	'777si': [[['U', 'D', 'u', 'd', '3u', '3d'], ['R', 'L', 'r', 'l', '3r', '3l'], ['F', 'B', 'f', 'b', '3f', '3b']], cubesuff],
 	'RrUu': [[['U', 'u'], ['R', 'r']], cubesuff],
 	'minx2g': [[['U'], ['R']], minxsuff],          // Megaminx 2-gen (R, U)
+	'fto': [[['U', 'D'], ['F', 'B'], ['L', 'BR'], ['R', 'BL']], ['', "'"]],  // FTO/Face-Turning Octahedron random-move
 };
 
 // Default lengths for mega-based scrambles
@@ -81,6 +82,7 @@ const defaultLengths: Record<string, number> = {
 	'777p': 100, '777wca': 100, '777si': 100,
 	'RrUu': 25,
 	'minx2g': 30,
+	'fto': 30,
 };
 
 function megascramble(type: string, len?: number): string {

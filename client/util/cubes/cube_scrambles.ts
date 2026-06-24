@@ -39,5 +39,7 @@ export const CUBE_SCRAMBLES: Record<string, ScrambleType> = {
 	'333roux': getCubeScramble('3x3 Roux', 20, '333roux', 3),
 	'333mehta': getCubeScramble('3x3 Mehta', 20, '333mehta', 3),
 	'444yau': getCubeScramble('4x4 Yau/Hoya', 46, '444yau', 4),
+	// FTO — random-state default (length unused by solver); random-move subset uses its own length
+	fto: getCubeScramble('FTO', 0, 'fto'),
 	none: getCubeScramble('None', 0, 'none'),
 };

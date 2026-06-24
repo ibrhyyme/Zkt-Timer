@@ -28,7 +28,7 @@ export default function ScrambleInfo(props: Props) {
 
 	const scrambleBody = (
 		<div className={b('body')}>
-			<ScrambleVisual cubeType={visualCubeType} scramble={scramble} />
+			<ScrambleVisual cubeType={visualCubeType} scramble={scramble} subset={solve.scramble_subset || undefined} />
 		</div>
 	);
 

@@ -21,5 +21,5 @@ export const FriendlyRoomConst = {
 
 export const ALLOWED_CUBE_TYPES = [
     '222', '333', '444', '555', '666', '777',
-    'clock', 'minx', 'pyram', 'skewb', 'sq1',
+    'clock', 'minx', 'pyram', 'skewb', 'sq1', 'fto',
 ];

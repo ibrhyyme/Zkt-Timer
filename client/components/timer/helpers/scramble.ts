@@ -39,6 +39,7 @@ const CUBE_TO_SCRAMBLE_TYPE: Record<string, string> = {
 	'sq1': 'sqrs',       // Square-1 random-state
 	'clock': 'clock',    // Clock
 	'minx': 'mgmp',      // Megaminx WCA (Pochmann)
+	'fto': 'ftoso',      // FTO (Face-Turning Octahedron) random-state
 	// Method-based cube types — same 3x3 scramble, different default subsets
 	'333cfop': '333',
 	'333roux': '333',

@@ -24,6 +24,7 @@ import '../../shared/scramble/generators/scramble-444';
 import '../../shared/scramble/generators/scramble-sq1';
 import '../../shared/scramble/generators/scramble-megaminx';
 import '../../shared/scramble/generators/scramble-222';
+import '../../shared/scramble/generators/scramble-fto';
 import { generateClockScramble } from '../../client/util/cubes/scramble_clock';
 
 // WCA cube type ID -> cstimer scramble type ID mapping (only WCA events)
@@ -39,6 +40,7 @@ const CUBE_TO_SCRAMBLE_TYPE: Record<string, string> = {
     'sq1': 'sqrs',
     'clock': 'clock',
     'minx': 'mgmp',
+    'fto': 'ftoso',
 };
 
 // Normalize invalid/old cube_types to default
