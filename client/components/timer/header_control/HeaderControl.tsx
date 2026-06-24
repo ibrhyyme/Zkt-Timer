@@ -162,7 +162,7 @@ export default function HeaderControl() {
 		: null;
 
 	const cubePicker = !headerOptions.hideCubeType && (
-		<div className="flex items-center gap-2">
+		<div className={`${b('cube-group')} flex items-center gap-2`}>
 			<CubePicker
 				dropdownProps={{ openLeft: true, noMargin: true }}
 				value={cubeType}

@@ -39,52 +39,32 @@
 		backdrop-filter: blur(10px);
 		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); // Slightly more prominent shadow
 		width: fit-content;
+		min-width: 0;
 
 		>* {
 			margin-right: 0 !important;
 		}
 
-		// CubePicker truncation (first child is always CubePicker)
-		> .cd-generic-input:first-child {
-			max-width: 140px;
+		// Cube group (CubePicker + SubsetPicker + CrossColorPicker) — kept as one
+		// unit; it is intrinsically narrow (logo/short label + capped subset + swatch),
+		// so it does NOT shrink. The session picker absorbs the squeeze instead.
+		.#{$namespace}-timer-header-control__cube-group {
+			display: flex;
+			align-items: center;
+			flex: 0 0 auto;
 			min-width: 0;
-
-			.cd-common-button {
-				max-width: 100%;
-
-				span {
-					display: block !important;
-					overflow: hidden;
-					text-overflow: ellipsis;
-					min-width: 0;
-				}
-			}
 		}
 
-		// Session name truncation
+		// Session name — the only wide, variable label. It is the part that shrinks
+		// (flex-shrink) and ellipsizes via FancyDropdown's own trigger-label rule.
 		.cd-session-picker {
-			max-width: 160px;
+			flex: 0 1 auto;
 			min-width: 0;
-
-			.cd-common-dropdown,
-			.cd-common-button__wrapper {
-				max-width: 100%;
-			}
-
-			.cd-common-button {
-				max-width: 100%;
-
-				span {
-					display: block !important;
-					overflow: hidden;
-					text-overflow: ellipsis;
-					min-width: 0;
-				}
-			}
+			max-width: 160px;
 		}
 
-		// Subset picker (FancyDropdown) — cap width so the inline subset label
-		// truncates with ellipsis instead of pushing the header row.
+		// Subset (FancyDropdown) — cap width so the inline subset label truncates
+		// with ellipsis instead of pushing the header row.
 		.subset-picker-trigger {
 			max-width: 120px;
 		}
@@ -109,10 +89,6 @@
 				background: rgba(var(--text-color), 0.1) !important;
 			}
 		}
-
-		// Note: .cd-common-dropdown overrides removed — all header dropdowns
-		// have migrated to FancyDropdown (Radix Select), each has its own SCSS.
-		// No overrides needed.
 	}
 
 	>div:first-of-type {
@@ -128,7 +104,9 @@
 @media (max-width: 1023px) {
 	.#{$namespace}-timer-header-control {
 		padding: calc(10px + env(safe-area-inset-top, 0px)) 12px 10px 12px !important;
-		grid-template-columns: 1fr 0px auto;
+		// minmax(0, 1fr) — without the 0 min, the grid item refuses to shrink below
+		// its intrinsic content width and the picker row overflows the viewport.
+		grid-template-columns: minmax(0, 1fr) 0px auto;
 		background: rgba(var(--background-color), 0.95);
 		backdrop-filter: blur(10px);
 		-webkit-backdrop-filter: blur(10px);
@@ -141,17 +119,18 @@
 			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 			padding: 3px;
 			gap: 3px;
+			// Fluid: never exceed the grid column; clip + let children shrink.
+			min-width: 0;
+			max-width: 100%;
+			overflow: hidden;
 
-			> .cd-generic-input:first-child {
-				max-width: 110px;
-			}
-
+			// Session shrinks first; width scales with viewport, ellipsis kicks in.
 			.cd-session-picker {
-				max-width: 100px;
+				max-width: clamp(64px, 30vw, 160px);
 			}
 
 			.subset-picker-trigger {
-				max-width: 80px;
+				max-width: clamp(56px, 22vw, 120px);
 			}
 		}
 
@@ -163,7 +142,8 @@
 	}
 }
 
-// Small screens (iPhone SE, iPhone 12 mini, etc.)
+// Small screens (iPhone SE, iPhone 12 mini, etc.) — only spacing tightens;
+// picker widths are already fluid via clamp() above, no fixed overrides needed.
 @media (max-width: 390px) {
 	.#{$namespace}-timer-header-control {
 		padding: calc(8px + env(safe-area-inset-top, 0px)) 10px 8px 10px !important;
@@ -171,18 +151,6 @@
 		&__left-controls {
 			padding: 2px;
 			gap: 2px;
-
-			> .cd-generic-input:first-child {
-				max-width: 90px;
-			}
-
-			.cd-session-picker {
-				max-width: 80px;
-			}
-
-			.subset-picker-trigger {
-				max-width: 64px;
-			}
 		}
 	}
 }
