@@ -26,7 +26,31 @@ const Cube = require('cubejs'); // Kociemba two-phase solver (build-time scrambl
 
 // ─── Scramble generation helpers ───
 const AUF = ['', 'U', 'U2', "U'"];
-const EPLL = ['', "M2 U M U2 M' U M2", "M2 U' M U2 M' U' M2", 'M2 U M2 U2 M2 U M2'];
+// All distinct EPLL edge states (12), enumerated at runtime by BFS over the Ua/Ub/H generators
+// (verified: 12 states, F2L always preserved). One real scramble per state → 12 per variant.
+let EPLL = [''];
+const EPLL_GENERATORS = ["M2 U M U2 M' U M2", "M2 U' M U2 M' U' M2", 'M2 U M2 U2 M2 U M2']; // Ua, Ub, H
+function enumerateEPLL(solved) {
+	const edgeKey = (p) => JSON.stringify([p.patternData.EDGES.pieces.slice(0, 4), p.patternData.EDGES.orientation.slice(0, 4)]);
+	const seen = new Map();
+	seen.set(edgeKey(solved), '');
+	let frontier = [{state: solved, alg: ''}];
+	while (frontier.length) {
+		const next = [];
+		for (const {state, alg} of frontier) {
+			for (const g of EPLL_GENERATORS) {
+				const ns = state.applyAlg(g);
+				const k = edgeKey(ns);
+				if (!seen.has(k)) {
+					seen.set(k, (alg + ' ' + g).trim());
+					next.push({state: ns, alg: seen.get(k)});
+				}
+			}
+		}
+		frontier = next;
+	}
+	return [...seen.values()];
+}
 const invMove = (m) => m.endsWith("'") ? m.slice(0, -1) : m.endsWith('2') ? m : m + "'";
 const invSolution = (s) => s.trim().split(/\s+/).reverse().map(invMove).join(' ');
 const invSolutionClean = (sol) => invSolution(sol).replace(/\s+/g, ' ').trim();
@@ -171,6 +195,9 @@ async function main() {
 	console.log('Kociemba initSolver...');
 	Cube.initSolver();
 
+	EPLL = enumerateEPLL(solved);
+	console.log(`EPLL states: ${EPLL.length} (scrambles per variant)`);
+
 	// Plain OLL move counts (priority baseline)
 	const ollMoves = {};
 	for (const sub of (data['OLL'] || [])) {
@@ -200,7 +227,7 @@ async function main() {
 			const delta = om !== undefined ? cpm - om : 0;
 			const prioTier = delta <= 1 ? 1 : delta <= 4 ? 2 : 3;
 			const v = idx + 1;
-			for (const s of genScrambles(solved, inv, 8)) scrambles.push({s, v});
+			for (const s of genScrambles(solved, inv, EPLL.length)) scrambles.push({s, v});
 			return {
 				n: '#' + v,
 				algorithm: entry.algorithm,

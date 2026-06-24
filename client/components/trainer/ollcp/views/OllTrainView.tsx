@@ -20,6 +20,14 @@ import OllcpCard from '../components/OllcpCard';
 const b = block('trainer-ollcp');
 type Phase = 'idle' | 'ready' | 'running' | 'stopped';
 
+function shuffle<T>(a: T[]): T[] {
+	for (let i = a.length - 1; i > 0; i--) {
+		const j = Math.floor(Math.random() * (i + 1));
+		[a[i], a[j]] = [a[j], a[i]];
+	}
+	return a;
+}
+
 export default function OllTrainView() {
 	const {state} = useOllcp();
 	const num = state.currentOll;
@@ -39,25 +47,42 @@ export default function OllTrainView() {
 	const [sessRight, setSessRight] = useState(0);
 	const [sessTotal, setSessTotal] = useState(0);
 	const [accVersion, setAccVersion] = useState(0); // bump → recompute accuracy strip
-	const lastVRef = useRef(-1); // last shown variant → never repeat the same variant consecutively
+	const lastVRef = useRef(-1); // last shown variant (avoid repeat at deck boundary)
+	const bagRef = useRef<number[]>([]); // shuffled deck of the 6 variants → even coverage
 
 	const pool = oll?.scrambles ?? [];
 
+	// Scrambles grouped by variant. A "deck" of the 6 variants is dealt out (reshuffled when empty)
+	// so every variant is shown once per cycle of 6 (even coverage); each time a RANDOM scramble of
+	// that variant is chosen (variety — 12 distinct scrambles per variant).
+	const byVariant = useMemo(() => {
+		const m: Record<number, {s: string; v: number}[]> = {};
+		for (const sc of pool) (m[sc.v] ||= []).push(sc);
+		return m;
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [oll]);
+
 	const pickNext = useCallback(() => {
-		if (!pool.length) return;
-		const lastV = lastVRef.current;
-		const candidates = pool.length > 1 ? pool.filter((x) => x.v !== lastV) : pool;
-		const list = candidates.length ? candidates : pool;
-		const picked = list[Math.floor(Math.random() * list.length)];
-		lastVRef.current = picked.v;
-		setCur(picked);
+		const vars = Object.keys(byVariant).map(Number);
+		if (!vars.length) return;
+		if (bagRef.current.length === 0) {
+			const bag = shuffle([...vars]);
+			if (bag.length > 1 && bag[0] === lastVRef.current) [bag[0], bag[1]] = [bag[1], bag[0]];
+			bagRef.current = bag;
+		}
+		const v = bagRef.current.shift() as number;
+		lastVRef.current = v;
+		const scrs = byVariant[v];
+		const sc = scrs[Math.floor(Math.random() * scrs.length)];
+		setCur(sc);
 		setDisplay(0);
 		setRevealed(false);
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [num]);
+	}, [byVariant]);
 
-	// First scramble on mount / OLL change.
+	// First scramble on mount / OLL change (fresh deck).
 	useEffect(() => {
+		bagRef.current = [];
+		lastVRef.current = -1;
 		pickNext();
 		setPhase('idle');
 		return () => {
