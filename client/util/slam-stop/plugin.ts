@@ -62,7 +62,8 @@ async function ensureListener(): Promise<void> {
  */
 export async function startSlamDetector(
 	threshold: number,
-	onSlam: (event: SlamEvent) => void
+	onSlam: (event: SlamEvent) => void,
+	refractoryOverride?: number
 ): Promise<symbol | null> {
 	if (!SlamDetector) return null;
 
@@ -72,7 +73,9 @@ export async function startSlamDetector(
 
 	try {
 		await ensureListener();
-		await SlamDetector.start({ threshold, refractoryMs: REFRACTORY_MS, deadband: DEADBAND });
+		// Double-tap consumers pass a lower refractory so two taps aren't merged
+		// into one event by the default 750ms grace window.
+		await SlamDetector.start({ threshold, refractoryMs: refractoryOverride ?? REFRACTORY_MS, deadband: DEADBAND });
 	} catch (e) {
 		// Accelerometer unavailable — feature silently disabled
 		if (activeOwner === owner) {
