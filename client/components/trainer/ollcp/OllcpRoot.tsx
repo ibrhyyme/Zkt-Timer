@@ -9,6 +9,7 @@ import {useMe} from '../../../util/hooks/useMe';
 import {useTrainerContext} from '../TrainerContext';
 import TrainerModeHeader from '../common/TrainerModeHeader';
 import {OllcpProvider, useOllcp} from './OllcpContext';
+import {loadOllcpStats} from './stats';
 import OllListView from './views/OllListView';
 import OllDetailView from './views/OllDetailView';
 import OllTrainView from './views/OllTrainView';
@@ -63,6 +64,12 @@ export default function OllcpRoot() {
 	useEffect(() => {
 		if (me && !me.admin) dispatch({type: 'SET_VIEW', payload: 'landing'});
 	}, [me, dispatch]);
+
+	// Pull server accuracy (and one-time-merge this device's legacy local data) on mode entry, so the
+	// user's two phones share one ✓/✗ tally.
+	useEffect(() => {
+		if (me?.admin) loadOllcpStats();
+	}, [me]);
 
 	if (me && !me.admin) return null;
 

@@ -30,6 +30,7 @@ export * from './WcaRecord.schema';
 export * from './CustomTrainer.schema';
 export * from './YouTubeSearch.schema';
 export * from './DailyGoal.schema';
+export * from './OllcpStat.schema';
 export * from './WcaCompetition.schema';
 export * from './WcaOAuthResult.schema';
 export * from './WcaResult.schema';

@@ -10,7 +10,7 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import block from '../../../../styles/bem';
 import {useOllcp} from '../OllcpContext';
 import {OLLCP_DATA, OLLCP_SIMILAR} from '../data';
-import {getAccuracy, recordAccuracy, accuracyPct} from '../stats';
+import {getAccuracy, recordAccuracy, accuracyPct, useOllcpStatsVersion} from '../stats';
 import {algToId} from '../../../../util/trainer/algorithm_engine';
 import {addTime} from '../../hooks/useAlgorithmData';
 import {useTrainerStats, formatTimeShort} from '../../hooks/useTrainerStats';
@@ -46,7 +46,7 @@ export default function OllTrainView() {
 	const [session, setSession] = useState<number[]>([]);
 	const [sessRight, setSessRight] = useState(0);
 	const [sessTotal, setSessTotal] = useState(0);
-	const [accVersion, setAccVersion] = useState(0); // bump → recompute accuracy strip
+	const accVersion = useOllcpStatsVersion(); // bumps when server accuracy changes → recompute strip
 	const lastVRef = useRef(-1); // last shown variant (avoid repeat at deck boundary)
 	const bagRef = useRef<number[]>([]); // shuffled deck of the 6 variants → even coverage
 
@@ -125,7 +125,6 @@ export default function OllTrainView() {
 			if (c && oll) recordAccuracy(algToId(oll.variants[c.v - 1].algorithm), correct);
 			setSessTotal((n) => n + 1);
 			if (correct) setSessRight((n) => n + 1);
-			setAccVersion((n) => n + 1);
 			advance();
 		},
 		[oll, advance],
@@ -161,14 +160,32 @@ export default function OllTrainView() {
 	}, [start, stop, advance]);
 
 	// Touch / pointer mirrors the keyboard machine.
-	const onPointerDown = () => {
+	const onPointerDown = (e: React.PointerEvent) => {
+		// Capture the pointer so the release (up/cancel) is delivered here even if the finger drifts
+		// off the timer before lifting — otherwise pointerup lands elsewhere and start() never runs.
+		try {
+			e.currentTarget.setPointerCapture(e.pointerId);
+		} catch {
+			/* unsupported → touch-action:none still keeps the gesture on this element */
+		}
 		const p = phaseRef.current;
 		if (p === 'running') stop();
 		else if (p === 'stopped') advance();
-		else if (p === 'idle') setPhase('ready');
+		else if (p === 'idle') {
+			setPhase('ready');
+			phaseRef.current = 'ready'; // authoritative now so an immediate release still starts
+		}
 	};
 	const onPointerUp = () => {
 		if (phaseRef.current === 'ready') start();
+	};
+	// If the OS/browser still steals the gesture mid-hold, fall back to idle instead of staying stuck
+	// on "ready" (the old bug: hold → green frozen, release → nothing).
+	const onPointerCancel = () => {
+		if (phaseRef.current === 'ready') {
+			setPhase('idle');
+			phaseRef.current = 'idle';
+		}
 	};
 
 	const revealedVariant = revealed && cur && oll ? oll.variants[cur.v - 1] : null;
@@ -225,6 +242,7 @@ export default function OllTrainView() {
 				className={b('timer', {[phase]: true})}
 				onPointerDown={onPointerDown}
 				onPointerUp={onPointerUp}
+				onPointerCancel={onPointerCancel}
 				role="button"
 				tabIndex={0}
 			>

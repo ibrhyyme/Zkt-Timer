@@ -113,6 +113,9 @@ model UserAccount {
   // Daily goals
   daily_goals                   DailyGoal[]
 
+  // OLLCP recognition accuracy (per case)
+  ollcp_stats                   OllcpStat[]
+
   // Promo codes
   promo_codes_created           PromoCode[]            @relation("promo_code_creator")
   promo_code_redemptions        PromoCodeRedemption[]   @relation("promo_redemption_user")
@@ -1036,6 +1039,20 @@ model DailyGoal {
   @@unique([user_id, cube_type, scramble_subset])
   @@index([user_id])
   @@map("daily_goal")
+}
+
+model OllcpStat {
+  id         String      @id @default(uuid())
+  user_id    String
+  alg_id     String
+  correct    Int         @default(0)
+  total      Int         @default(0)
+  updated_at DateTime    @updatedAt
+  user       UserAccount @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, alg_id])
+  @@index([user_id])
+  @@map("ollcp_stat")
 }
 
 model PushToken {

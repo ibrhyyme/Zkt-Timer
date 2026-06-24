@@ -308,6 +308,7 @@ type Query {
   youtubeSearch(input: YouTubeSearchInput): [YouTubeVideoResult]
   dailyGoals: [DailyGoalType]
   dailyGoalReminderStatus: DailyGoalReminderResult
+  myOllcpStats: [OllcpStatType]
   wcaCompetitions(filter: WcaCompetitionFilterInput): [WcaCompetition]
   wcaSearchCompetitions(query: String): [WcaCompetition]
   myWcaCompetitions: [WcaCompetition]
@@ -452,6 +453,8 @@ type Mutation {
   setDailyGoal(input: SetDailyGoalInput): DailyGoalType
   setDailyGoalReminder(enabled: Boolean): DailyGoalReminderResult
   removeDailyGoal(scrambleSubset: String, cubeType: String): Boolean
+  recordOllcpAttempt(correct: Boolean, algId: String): OllcpStatType
+  mergeOllcpStats(entries: [OllcpStatInput]): Boolean
   authenticateWithWca(code: String): WcaOAuthResult
   completeWcaSignup(acceptedTerms: Boolean!, username: String): PublicUserAccount
   createPromoCode(input: CreatePromoCodeInput): PromoCode
@@ -1441,6 +1444,12 @@ type DailyGoalType {
 
 type DailyGoalReminderResult {
   enabled: Boolean
+}
+
+type OllcpStatType {
+  alg_id: String
+  correct: Int
+  total: Int
 }
 
 type WcaCompetition {
@@ -2443,6 +2452,12 @@ input SetDailyGoalInput {
   scramble_subset: String
   target: Int
   enabled: Boolean
+}
+
+input OllcpStatInput {
+  alg_id: String
+  correct: Int
+  total: Int
 }
 
 input WcaCompetitionFilterInput {

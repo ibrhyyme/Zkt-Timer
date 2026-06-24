@@ -988,6 +988,7 @@ export type Mutation = {
   markAnnouncementAsViewed?: Maybe<Scalars['Boolean']>;
   markNotificationAsRead?: Maybe<Notification>;
   markZktNoShow?: Maybe<ZktResult>;
+  mergeOllcpStats?: Maybe<Scalars['Boolean']>;
   mergeSessions?: Maybe<Session>;
   normalizeZktCompetitionNames?: Maybe<Scalars['Int']>;
   publishTopAverages?: Maybe<TopAverage>;
@@ -997,6 +998,7 @@ export type Mutation = {
   quitZktCompetitorFromRound?: Maybe<Scalars['Boolean']>;
   recalculateAllRankings?: Maybe<Scalars['Boolean']>;
   recordActivityHeartbeat?: Maybe<ActivityHeartbeatResult>;
+  recordOllcpAttempt?: Maybe<OllcpStatType>;
   redeemPromoCode?: Maybe<RedeemPromoCodeResult>;
   regenerateZktScrambles?: Maybe<Array<Maybe<ZktScramble>>>;
   registerForZktCompetition?: Maybe<ZktRegistration>;
@@ -1512,6 +1514,11 @@ export type MutationMarkZktNoShowArgs = {
 };
 
 
+export type MutationMergeOllcpStatsArgs = {
+  entries?: InputMaybe<Array<InputMaybe<OllcpStatInput>>>;
+};
+
+
 export type MutationMergeSessionsArgs = {
   newSessionId?: InputMaybe<Scalars['String']>;
   oldSessionId?: InputMaybe<Scalars['String']>;
@@ -1552,6 +1559,12 @@ export type MutationQuitZktCompetitorFromRoundArgs = {
 
 export type MutationRecordActivityHeartbeatArgs = {
   path?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationRecordOllcpAttemptArgs = {
+  algId?: InputMaybe<Scalars['String']>;
+  correct?: InputMaybe<Scalars['Boolean']>;
 };
 
 
@@ -1955,6 +1968,19 @@ export type NotificationPreference = {
   user_id?: Maybe<Scalars['String']>;
 };
 
+export type OllcpStatInput = {
+  alg_id?: InputMaybe<Scalars['String']>;
+  correct?: InputMaybe<Scalars['Int']>;
+  total?: InputMaybe<Scalars['Int']>;
+};
+
+export type OllcpStatType = {
+  __typename?: 'OllcpStatType';
+  alg_id?: Maybe<Scalars['String']>;
+  correct?: Maybe<Scalars['Int']>;
+  total?: Maybe<Scalars['Int']>;
+};
+
 export type OnlineStats = {
   __typename?: 'OnlineStats';
   anonymous?: Maybe<Scalars['Int']>;
@@ -2130,6 +2156,7 @@ export type Query = {
   landingStats?: Maybe<LandingStats>;
   me: UserAccount;
   myCompetitionFollows?: Maybe<Array<Maybe<CompetitionFollow>>>;
+  myOllcpStats?: Maybe<Array<Maybe<OllcpStatType>>>;
   mySessionIds?: Maybe<Array<Maybe<Scalars['String']>>>;
   mySolveIds?: Maybe<Array<Maybe<Scalars['String']>>>;
   mySupportTickets?: Maybe<Array<Maybe<SupportTicket>>>;

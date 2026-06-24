@@ -201,7 +201,11 @@
 		border: 1px solid $line;
 		cursor: pointer;
 		user-select: none;
-		touch-action: manipulation;
+		-webkit-touch-callout: none;
+		/* none (not manipulation): the timer sits in a scrollable container, so any pan-allowing value
+		   lets the browser steal a hold as a scroll → pointercancel, and pointerup (release→start)
+		   never fires. none keeps the whole hold-release gesture on this element. */
+		touch-action: none;
 		color: rgb(var(--text-color));
 		&--ready { color: #46cf72; }
 		&--running { color: rgb(var(--primary-color)); }
