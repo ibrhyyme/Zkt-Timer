@@ -1,4 +1,4 @@
-const CACHE_VERSION = '1775955912824';
+const CACHE_VERSION = '__DEPLOY_VERSION__';
 const CACHE = 'zkt-' + CACHE_VERSION;
 const CORE = [
   '/',
