@@ -24,7 +24,6 @@ import { fetchLastSolve, buildBucketFilter } from '../../../db/solves/query';
 import { deleteAllSolvesInSessionDb, deleteSolveDb } from '../../../db/solves/update';
 import { toggleDnfSolveDb, togglePlusTwoSolveDb } from '../../../db/solves/operations';
 import { useSlamToStop } from '../../../util/slam-stop/useSlamToStop';
-import { useSlamToDeleteLast } from '../../../util/slam-stop/useSlamToDeleteLast';
 
 const timerClass = block('timer');
 
@@ -64,8 +63,6 @@ export default function KeyWatcher(props: Props) {
 
 	// Slam-to-stop: native-only extra stop trigger for the touch timer
 	useSlamToStop(context);
-	// Slam gesture: double-tap the table while idle → delete last solve
-	useSlamToDeleteLast(context);
 
 	useWindowListener('keyup', keyupSpace);
 	useWindowListener('keydown', keydownSpace);
