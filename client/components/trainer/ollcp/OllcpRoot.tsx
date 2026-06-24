@@ -41,7 +41,8 @@ function OllcpInner() {
 	}, [state.view, state.currentOll]);
 
 	const onBack = () => {
-		if (state.view === 'train') backToDetail();
+		// Multi-OLL mixed session has no single detail to return to → back to the list.
+		if (state.view === 'train') state.currentOll ? backToDetail() : goList();
 		else if (state.view === 'detail') goList();
 		else dispatch({type: 'SET_VIEW', payload: 'landing'}); // list → trainer landing
 	};

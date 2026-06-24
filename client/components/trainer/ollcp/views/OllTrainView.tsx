@@ -1,10 +1,10 @@
 /**
- * OllTrainView — recognition practice for one OLL.
- * Pulls a RANDOM real scramble from the OLL's pool (→ random one of the 6 variants, never the same
- * variant twice in a row), times the solve (spacebar/touch), reveals which variant it was, and lets
- * the user mark ✓/✗ (recognised/solved correctly?). Accuracy is tracked per variant so the user can
- * see which cases they know well vs poorly. Solve time is recorded against the variant's algId
- * (reuses the existing trainer stats), accuracy in a separate store (ollcp/stats).
+ * OllTrainView — recognition practice for one OLL or a mixed set of OLLs (multi-select).
+ * Pulls a RANDOM real scramble from the trained OLLs' pools (→ random one of their variants, never
+ * the same (OLL,variant) twice in a row, every pair shown once per cycle), times the solve
+ * (spacebar/touch), reveals which OLL+variant it was, and lets the user mark ✓/✗. Accuracy is
+ * tracked per variant (server-backed) so the user can see which cases they know well vs poorly.
+ * Solve time is recorded against the variant's algId (reuses the existing trainer stats).
  */
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import block from '../../../../styles/bem';
@@ -19,6 +19,7 @@ import OllcpCard from '../components/OllcpCard';
 
 const b = block('trainer-ollcp');
 type Phase = 'idle' | 'ready' | 'running' | 'stopped';
+type Pick = {oll: string; s: string; v: number};
 
 function shuffle<T>(a: T[]): T[] {
 	for (let i = a.length - 1; i > 0; i--) {
@@ -30,8 +31,8 @@ function shuffle<T>(a: T[]): T[] {
 
 export default function OllTrainView() {
 	const {state} = useOllcp();
-	const num = state.currentOll;
-	const oll = num ? OLLCP_DATA[num] : undefined;
+	const olls = state.trainOlls;
+	const multi = olls.length > 1;
 
 	const [phase, setPhase] = useState<Phase>('idle');
 	const phaseRef = useRef<Phase>('idle');
@@ -39,7 +40,7 @@ export default function OllTrainView() {
 	const [display, setDisplay] = useState(0);
 	const startRef = useRef(0);
 	const rafRef = useRef<number | null>(null);
-	const [cur, setCur] = useState<{s: string; v: number} | null>(null);
+	const [cur, setCur] = useState<Pick | null>(null);
 	const curRef = useRef(cur);
 	curRef.current = cur;
 	const [revealed, setRevealed] = useState(false);
@@ -47,49 +48,50 @@ export default function OllTrainView() {
 	const [sessRight, setSessRight] = useState(0);
 	const [sessTotal, setSessTotal] = useState(0);
 	const accVersion = useOllcpStatsVersion(); // bumps when server accuracy changes → recompute strip
-	const lastVRef = useRef(-1); // last shown variant (avoid repeat at deck boundary)
-	const bagRef = useRef<number[]>([]); // shuffled deck of the 6 variants → even coverage
+	const lastKeyRef = useRef(''); // last shown (oll,variant) key (avoid repeat at deck boundary)
+	const bagRef = useRef<string[]>([]); // shuffled deck of (oll,variant) keys → even coverage
 
-	const pool = oll?.scrambles ?? [];
-
-	// Scrambles grouped by variant. A "deck" of the 6 variants is dealt out (reshuffled when empty)
-	// so every variant is shown once per cycle of 6 (even coverage); each time a RANDOM scramble of
-	// that variant is chosen (variety — 12 distinct scrambles per variant).
-	const byVariant = useMemo(() => {
-		const m: Record<number, {s: string; v: number}[]> = {};
-		for (const sc of pool) (m[sc.v] ||= []).push(sc);
+	// All scrambles of every trained OLL, tagged with their OLL. A "deck" of (OLL,variant) pairs is
+	// dealt out (reshuffled when empty) so every case appears once per cycle (even coverage); each
+	// time a RANDOM scramble of that pair is chosen (variety — 12 distinct scrambles per pair).
+	const byPair = useMemo(() => {
+		const m: Record<string, Pick[]> = {};
+		for (const o of olls) {
+			const data = OLLCP_DATA[o];
+			if (!data) continue;
+			for (const sc of data.scrambles) (m[`${o}:${sc.v}`] ||= []).push({oll: o, s: sc.s, v: sc.v});
+		}
 		return m;
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [oll]);
+	}, [olls]);
 
 	const pickNext = useCallback(() => {
-		const vars = Object.keys(byVariant).map(Number);
-		if (!vars.length) return;
+		const keys = Object.keys(byPair);
+		if (!keys.length) return;
 		if (bagRef.current.length === 0) {
-			const bag = shuffle([...vars]);
-			if (bag.length > 1 && bag[0] === lastVRef.current) [bag[0], bag[1]] = [bag[1], bag[0]];
+			const bag = shuffle([...keys]);
+			if (bag.length > 1 && bag[0] === lastKeyRef.current) [bag[0], bag[1]] = [bag[1], bag[0]];
 			bagRef.current = bag;
 		}
-		const v = bagRef.current.shift() as number;
-		lastVRef.current = v;
-		const scrs = byVariant[v];
+		const key = bagRef.current.shift() as string;
+		lastKeyRef.current = key;
+		const scrs = byPair[key];
 		const sc = scrs[Math.floor(Math.random() * scrs.length)];
 		setCur(sc);
 		setDisplay(0);
 		setRevealed(false);
-	}, [byVariant]);
+	}, [byPair]);
 
-	// First scramble on mount / OLL change (fresh deck).
+	// First scramble on mount / trained-set change (fresh deck).
 	useEffect(() => {
 		bagRef.current = [];
-		lastVRef.current = -1;
+		lastKeyRef.current = '';
 		pickNext();
 		setPhase('idle');
 		return () => {
 			if (rafRef.current) cancelAnimationFrame(rafRef.current);
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [num]);
+	}, [olls]);
 
 	const start = useCallback(() => {
 		startRef.current = Date.now();
@@ -108,9 +110,9 @@ export default function OllTrainView() {
 		setPhase('stopped');
 		setRevealed(true);
 		const c = curRef.current;
-		if (c && oll) addTime(algToId(oll.variants[c.v - 1].algorithm), t);
+		if (c) addTime(algToId(OLLCP_DATA[c.oll].variants[c.v - 1].algorithm), t);
 		setSession((s) => [...s, t]);
-	}, [oll]);
+	}, []);
 
 	// Advance to the next scramble (idle → read/recognise, then hold to start).
 	const advance = useCallback(() => {
@@ -122,12 +124,12 @@ export default function OllTrainView() {
 	const assess = useCallback(
 		(correct: boolean) => {
 			const c = curRef.current;
-			if (c && oll) recordAccuracy(algToId(oll.variants[c.v - 1].algorithm), correct);
+			if (c) recordAccuracy(algToId(OLLCP_DATA[c.oll].variants[c.v - 1].algorithm), correct);
 			setSessTotal((n) => n + 1);
 			if (correct) setSessRight((n) => n + 1);
 			advance();
 		},
-		[oll, advance],
+		[advance],
 	);
 
 	const resetSession = () => {
@@ -188,19 +190,21 @@ export default function OllTrainView() {
 		}
 	};
 
-	const revealedVariant = revealed && cur && oll ? oll.variants[cur.v - 1] : null;
+	const revealedVariant = revealed && cur ? OLLCP_DATA[cur.oll].variants[cur.v - 1] : null;
+	const revealOll = revealedVariant && cur ? cur.oll : null;
 	const stats = useTrainerStats(revealedVariant ? revealedVariant.algorithm : null, revealedVariant?.moves);
 
-	// Per-variant accuracy strip (which variants the user knows well vs poorly). Memoised so it
-	// doesn't re-read localStorage on every timer frame.
+	// Per-variant accuracy strip — only for a single OLL (the 6 cells are that OLL's variants).
+	// Memoised so it doesn't re-read on every timer frame.
+	const singleOll = !multi && olls.length ? OLLCP_DATA[olls[0]] : undefined;
 	const accStrip = useMemo(() => {
-		if (!oll) return [];
-		return oll.variants.map((v) => {
+		if (!singleOll) return [];
+		return singleOll.variants.map((v) => {
 			const a = getAccuracy(algToId(v.algorithm));
 			return {n: v.n, pct: accuracyPct(a), t: a.t};
 		});
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [oll, accVersion]);
+	}, [singleOll, accVersion]);
 
 	const revealAcc = useMemo(() => {
 		if (!revealedVariant) return null;
@@ -208,7 +212,7 @@ export default function OllTrainView() {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [revealedVariant, accVersion]);
 
-	if (!num || !oll) return null;
+	if (!olls.length) return null;
 
 	const liveTime = (display / 1000).toFixed(2);
 	const sessionBest = session.length ? Math.min(...session) : null;
@@ -218,7 +222,7 @@ export default function OllTrainView() {
 	return (
 		<div className={b('train')}>
 			<div className={b('train-top')}>
-				<span className={b('train-oll')}>OLL {num}</span>
+				<span className={b('train-oll')}>{multi ? `Karışık · ${olls.join(', ')}` : `OLL ${olls[0]}`}</span>
 				<span className={b('train-session')}>
 					{sessTotal > 0 ? `${sessRight}/${sessTotal} doğru` : `${session.length} çözüm`}
 					{sessionBest !== null && ` · en iyi ${formatTimeShort(sessionBest)}`}
@@ -228,13 +232,15 @@ export default function OllTrainView() {
 				</button>
 			</div>
 
-			<div className={b('acc-strip')}>
-				{accStrip.map((a) => (
-					<span key={a.n} className={b('acc-cell')} style={{color: pctColor(a.pct)}}>
-						{a.n} {a.pct === null ? '—' : `%${a.pct}`}
-					</span>
-				))}
-			</div>
+			{!multi && (
+				<div className={b('acc-strip')}>
+					{accStrip.map((a) => (
+						<span key={a.n} className={b('acc-cell')} style={{color: pctColor(a.pct)}}>
+							{a.n} {a.pct === null ? '—' : `%${a.pct}`}
+						</span>
+					))}
+				</div>
+			)}
 
 			<div className={b('scramble')}>{cur ? cur.s : '…'}</div>
 
@@ -252,7 +258,8 @@ export default function OllTrainView() {
 			{revealedVariant ? (
 				<div className={b('reveal-top')}>
 					<div className={b('reveal-head')}>
-						Bu <b>{revealedVariant.n}</b> idi — {revealedVariant.prioLabel} · {revealedVariant.moves}h
+						Bu <b>{multi ? `OLL ${revealOll} ${revealedVariant.n}` : revealedVariant.n}</b> idi —{' '}
+						{revealedVariant.prioLabel} · {revealedVariant.moves}h
 						{revealAcc && revealAcc.t > 0 && (
 							<span className={b('reveal-acc')}>
 								{' '}· doğruluk {revealAcc.c}/{revealAcc.t} (%{accuracyPct(revealAcc)})
@@ -279,7 +286,11 @@ export default function OllTrainView() {
 
 			{revealedVariant && (
 				<div className={b('reveal-body')}>
-					<OllcpCard variant={revealedVariant} active similar={cur ? OLLCP_SIMILAR[num][cur.v - 1] : undefined} />
+					<OllcpCard
+						variant={revealedVariant}
+						active
+						similar={cur ? OLLCP_SIMILAR[cur.oll][cur.v - 1] : undefined}
+					/>
 					<div className={b('reveal-stats')}>
 						<div className={b('stat-row')}>
 							<span>En iyi</span>
