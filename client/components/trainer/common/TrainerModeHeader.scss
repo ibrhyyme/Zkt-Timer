@@ -145,6 +145,51 @@
 		}
 	}
 
+	// Etiketli CTA pill (ollcp "Çalış" gibi) — dolu, ikon + metin + sayaç rozeti
+	&__cta {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		padding: 0.45rem 0.85rem;
+		border-radius: 10px;
+		border: none;
+		background: rgb(var(--error-color));
+		color: #fff;
+		cursor: pointer;
+		font-size: 0.85rem;
+		font-weight: 700;
+		white-space: nowrap;
+		box-shadow: 0 4px 14px rgba(var(--error-color), 0.35);
+		transition: filter 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
+
+		&:hover {
+			filter: brightness(1.08);
+			box-shadow: 0 6px 18px rgba(var(--error-color), 0.45);
+		}
+		&:active {
+			transform: scale(0.97);
+		}
+		&:disabled {
+			opacity: 0.5;
+			cursor: not-allowed;
+			box-shadow: none;
+			transform: none;
+		}
+	}
+	&__cta-count {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 18px;
+		height: 18px;
+		padding: 0 5px;
+		border-radius: 9px;
+		background: rgba(255, 255, 255, 0.25);
+		font-size: 0.72rem;
+		font-weight: 800;
+		line-height: 1;
+	}
+
 	// BLE bagla butonu (smart) — etiketli pill
 	&__ble {
 		display: flex;
