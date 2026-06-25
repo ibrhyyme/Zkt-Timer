@@ -179,14 +179,24 @@ export default function Timer(props: TimerProps) {
 		</div>
 	);
 
-	// In mobile mode, TimeBar should always be at top, Footer at bottom
-	const renderFirst = (mobileMode || timerLayout !== 'left') ? timeBar : <TimerFooter />;
-	const renderSecond = (mobileMode || timerLayout !== 'left') ? <TimerFooter /> : timeBar;
+	// Desktop: timer + daily-goal bar travel together as a single "timer side" so the
+	// row layouts (left/right) stay a clean 2-column flex (timer-side | footer) and the
+	// full-width daily-goal bar never wedges itself between the columns.
+	const timerSide = (
+		<div className={b('timer-side')}>
+			{timeBar}
+			<DailyGoalProgressBar cubeType={cubeType} scrambleSubset={scrambleSubset} />
+		</div>
+	);
+
+	// In mobile mode, TimeBar should always be at top, Footer at bottom.
+	// In 'left' layout the footer column comes first (left), timer side second (right).
+	const renderFirst = (mobileMode || timerLayout !== 'left') ? timerSide : <TimerFooter />;
+	const renderSecond = (mobileMode || timerLayout !== 'left') ? <TimerFooter /> : timerSide;
 
 	let body = (
 		<>
 			{renderFirst}
-			<DailyGoalProgressBar cubeType={cubeType} scrambleSubset={scrambleSubset} />
 			{renderSecond}
 		</>
 	);
@@ -212,6 +222,8 @@ export default function Timer(props: TimerProps) {
 					started: !!context.timeStartedAt,
 					mobile: mobileMode && !props.inModal,
 					streamerMode: streamerMode && canUseStreamerMode(me),
+					// 'left' layout mirrors the header selectors to the right (above the timer column)
+					layoutLeft: timerLayout === 'left' && !mobileMode && !props.inModal,
 				})}
 			>
 				<TimerContext.Provider value={context}>

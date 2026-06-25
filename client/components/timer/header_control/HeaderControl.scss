@@ -154,3 +154,16 @@
 		}
 	}
 }
+
+// 'left' layout (desktop 2-column only): mirror the selectors to the right grid cell
+// so they sit above the timer column (right) instead of over the left footer column.
+// Gated to >1100px because below that the side layout collapses to a stacked column
+// (timer on top, full width) where top-left selectors are already correct.
+@media (min-width: 1101px) {
+	.#{$namespace}-timer--layoutLeft .#{$namespace}-timer-header-control {
+		> div:first-of-type {
+			grid-column: 3;
+			justify-content: flex-end;
+		}
+	}
+}

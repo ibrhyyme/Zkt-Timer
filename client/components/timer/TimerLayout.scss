@@ -5,6 +5,17 @@
 
 	justify-content: flex-end;
 
+	// Timer + daily-goal bar move together as one column so the row layouts stay a
+	// clean 2-column flex (timer-side | footer) and the full-width daily-goal bar
+	// never wedges between the columns.
+	&__timer-side {
+		display: flex;
+		flex-direction: column;
+		box-sizing: border-box;
+		min-width: 0;
+		min-height: 0;
+	}
+
 	&__wrapper {
 		$gridGap: 1rem;
 
@@ -48,8 +59,13 @@
 		&--bottom:not(#{$self}__wrapper--mobileNewLayout) {
 			height: calc(100vh - var(--nav-h));
 
-			#{$self}__main {
+			#{$self}__timer-side {
 				flex: 3;
+				min-height: 0;
+			}
+
+			#{$self}__main {
+				flex: 1;
 				min-height: 0;
 				overflow: hidden;
 			}
@@ -62,6 +78,9 @@
 			}
 		}
 
+		// Desktop side layouts (left/right): 2-column flex. Column SIZES come from
+		// explicit class targeting (timer-side = flex:1, footer = fixed 22rem); the
+		// SIDE (which column is left/right) comes from JSX render order in Timer.tsx.
 		&--right,
 		&--left {
 			padding: 0 0.667rem 0.667rem !important;
@@ -69,83 +88,50 @@
 			gap: $gridGap;
 			height: calc(100vh - var(--nav-h));
 
-			#{$self}__main {
-				&-center {
-					margin-top: 0;
-					padding-top: var(--nav-h);
-				}
-			}
-
-			// Tarayıcı çok küçüldüğünde bottom layout'a geç
-			@media (max-width: 1100px) {
-				flex-direction: column !important;
-
-				>*:first-child,
-				>*:last-child {
-					width: 100% !important;
-					flex: none !important;
-				}
-
-				>*:last-child {
-					height: 20rem !important;
-					max-height: 20rem !important;
-				}
-
-				#{$self}__main {
-					&-center {
-						padding-top: 1.333rem !important;
-					}
-				}
-			}
-
-			>*:first-child {
+			// Header clearance lives on the timer column so __main truly centers in the
+			// area below the absolute HeaderControl (instead of being pushed down).
+			#{$self}__timer-side {
 				flex: 1;
 				height: 100%;
 				max-height: calc(100vh - var(--nav-h));
+				padding-top: var(--nav-h);
 			}
 
-			>*:last-child {
+			.#{$namespace}-timer-footer,
+			.cd-timer-footer {
+				flex: 0 0 22rem;
 				width: 22rem;
 				height: 100%;
 				max-height: calc(100vh - var(--nav-h));
+			}
+
+			// Narrow desktop viewports → collapse to stacked layout (timer top, footer
+			// bottom) regardless of left/right. Mobile (<768px) takes its own path.
+			@media (max-width: 1100px) {
+				flex-direction: column !important;
+
+				#{$self}__timer-side {
+					order: 1 !important;
+					flex: none !important;
+					width: 100% !important;
+					max-height: none !important;
+					padding-top: 1.333rem !important;
+				}
+
+				.#{$namespace}-timer-footer,
+				.cd-timer-footer {
+					order: 2 !important;
+					flex: none !important;
+					width: 100% !important;
+					height: 20rem !important;
+					max-height: 20rem !important;
+				}
 			}
 		}
 
+		// Left layout: footer hugs the left edge, timer the right.
 		&--left {
 			padding: 0 0 0.667rem 0.667rem !important;
-
-			// Tarayıcı çok küçüldüğünde bottom layout'a geç
-			@media (max-width: 1100px) {
-				flex-direction: column !important;
-
-				>*:first-child,
-				>*:last-child {
-					width: 100% !important;
-					flex: none !important;
-				}
-
-				>*:first-child {
-					height: 20rem !important;
-					max-height: 20rem !important;
-					order: 2 !important; // Footer'ı alta taşı
-				}
-
-				>*:last-child {
-					order: 1 !important; // Timer'ı üste taşı
-				}
-			}
-
-			>*:first-child {
-				width: 22rem;
-				height: 100%;
-				max-height: calc(100vh - var(--nav-h));
-			}
-
-			>*:last-child {
-				flex: 1;
-				height: 100%;
-				max-height: calc(100vh - var(--nav-h));
-			}
 		}
 	}
 }
