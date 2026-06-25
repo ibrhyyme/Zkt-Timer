@@ -15,6 +15,7 @@ const SECONDARY_TABS = [
 	{id: 'reports', link: '/admin/reports', value: 'Reports'},
 	{id: 'users', link: '/admin/users', value: 'Users'},
 	{id: 'pro-users', link: '/admin/pro-users', value: 'Pro Users'},
+	{id: 'smart-device-logs', link: '/admin/smart-device-logs', value: 'Cube Logs'},
 	{id: 'announcements', link: '/admin/announcements', value: 'Announcements'},
 	{id: 'email', link: '/admin/email', value: 'Mail'},
 	{id: 'algorithms', link: '/admin/algorithms', value: 'Algorithms'},

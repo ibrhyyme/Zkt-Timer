@@ -45,3 +45,4 @@ export * from './IAP.resolver';
 export * from './CompetitionFollow.resolver';
 export * from './ZktCompetitionFollow.resolver';
 export * from './Activity.resolver';
+export * from './SmartDeviceLog.resolver';

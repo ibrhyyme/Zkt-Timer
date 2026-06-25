@@ -1,3 +1,21 @@
+query AdminSmartDeviceLogs($deviceType: String, $reason: String, $event: String, $userEmail: String, $limit: Int) {
+	smartDeviceLogs(deviceType: $deviceType, reason: $reason, event: $event, userEmail: $userEmail, limit: $limit) {
+		id
+		user_email
+		device_type
+		device_name
+		hardware_name
+		generation
+		platform
+		event
+		reason
+		solve_count
+		last_serial
+		extra
+		created_at
+	}
+}
+
 query AdminSupportTickets($resolved: Boolean) {
 	supportTickets(resolved: $resolved) {
 		id

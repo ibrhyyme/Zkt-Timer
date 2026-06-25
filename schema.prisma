@@ -82,6 +82,7 @@ model UserAccount {
   sessions                      Session[]
   settings                      Setting?
   smart_device                  SmartDevice[]
+  smart_device_logs             SmartDeviceLog[]
   solves                        Solve[]
   solve_views                   SolveView[]             @relation("solve_view_user")
   viewed_solve                  SolveView[]             @relation("solve_view_viewer")
@@ -238,6 +239,31 @@ model MetricLog {
   @@index([metric_type])
   @@index([user_email])
   @@map("metric_log")
+}
+
+// Smart cube / BLE timer connection telemetry. One row per connect/disconnect/error event,
+// so we can see server-side who connects a smart device and WHY their connection drops
+// (reason code). user_email nullable: anonymous (logged-out) sessions still log.
+model SmartDeviceLog {
+  id            String       @id @default(uuid())
+  user_email    String?
+  device_type   String // 'gan' | 'qiyi_timer' | 'moyu' | 'giiker' | 'particula' | ...
+  device_name   String? // advertised BLE name (e.g. "GAN12uiM")
+  hardware_name String? // name from the HARDWARE handshake, when available
+  generation    String? // 'gen2' | 'gen3' | 'gen4' (GAN only)
+  platform      String // 'web' | 'ios' | 'android'
+  event         String // 'connect' | 'disconnect' | 'error'
+  reason        String? // disconnect/error reason code (see shared/smart_cube/telemetry.ts)
+  solve_count   Int? // solves completed in this connection session
+  last_serial   Int? // last Gen4 move serial seen (debug for the 255->0 wrap)
+  extra         Json? // free-form debug context: buffer_len, hw/sw version, error message
+  created_at    DateTime     @default(now())
+  user          UserAccount? @relation(fields: [user_email], references: [email], onDelete: Cascade)
+
+  @@index([created_at])
+  @@index([device_type, reason])
+  @@index([user_email])
+  @@map("smart_device_log")
 }
 
 model NotificationPreference {

@@ -202,9 +202,14 @@ export default class Connect extends SmartCube {
 		}
 	};
 
-	disconnect = async () => {
+	disconnect = async (reason = 'manual') => {
 		if (!this.device || !this.adapter) {
 			return;
+		}
+		// Stamp the reason so the resulting DISCONNECT event is logged correctly (e.g. manual /
+		// timer_type_change) rather than defaulting to an unexpected gatt_self drop.
+		if (this.activeCube && typeof this.activeCube.setDisconnectReason === 'function') {
+			this.activeCube.setDisconnectReason(reason);
 		}
 		await this.adapter.disconnect(this.device);
 		this.device = null;

@@ -349,6 +349,7 @@ type Query {
   myZktCompetitionFollows(competitionId: String): [ZktCompetitionFollow]
   adminUserDailyActivity(userId: String): UserDailyActivityResult
   adminActiveUsers(monthYear: String, period: String): AdminActiveUsersResult
+  smartDeviceLogs(limit: Int, userEmail: String, event: String, reason: String, deviceType: String): [SmartDeviceLog]
 }
 
 type Mutation {
@@ -526,6 +527,7 @@ type Mutation {
   followZktCompetitor(input: FollowZktCompetitorInput): ZktCompetitionFollow
   unfollowZktCompetitor(id: String): Boolean
   recordActivityHeartbeat(path: String): ActivityHeartbeatResult
+  logSmartDeviceEvent(input: LogSmartDeviceEventInput): Boolean
 }
 
 type SmartDevice {
@@ -2243,6 +2245,22 @@ type UserDailyActivityResult {
   total_minutes: Int
 }
 
+type SmartDeviceLog {
+  id: String
+  user_email: String
+  device_type: String
+  device_name: String
+  hardware_name: String
+  generation: String
+  platform: String
+  event: String
+  reason: String
+  solve_count: Int
+  last_serial: Int
+  extra: String
+  created_at: DateTime
+}
+
 type Notification {
   id: String
   user_id: String
@@ -2787,6 +2805,19 @@ input FollowZktCompetitorInput {
   followed_user_id: String
   followed_person_id: String
   name: String
+}
+
+input LogSmartDeviceEventInput {
+  device_type: String
+  device_name: String
+  hardware_name: String
+  generation: String
+  platform: String
+  event: String
+  reason: String
+  solve_count: Int
+  last_serial: Int
+  extra: String
 }
 
 input PaginationArgsInput {

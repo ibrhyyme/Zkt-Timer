@@ -5,6 +5,7 @@ import aes128 from './ae128';
 import { Subject } from 'rxjs';
 import { ModeOfOperation } from 'aes-js';
 import { isNative } from '../../../../util/platform';
+import { logSmartDeviceEvent } from '../../../../util/smart_device_telemetry';
 import Cube from 'cubejs';
 import { getStore } from '../../../store';
 import { setSmartSolveEndTime, setSmartCubeClockSkew, getSmartCubeClockSkew } from '../../helpers/events';
@@ -656,10 +657,17 @@ class GanGen4ProtocolDriver {
 				this.lastSerial = bufferHead.serial;
 			}
 		}
-		// Safety: disconnect if buffer grows too large (something went wrong)
-		if (conn && this.moveBuffer.length > 16) {
-			console.error('[ZKT:MOVEBUF] Gen4 buffer overflow! Disconnecting.', { bufferLen: this.moveBuffer.length });
-			conn.disconnect();
+		// Recovery instead of teardown: an overflow is almost always an unfillable gap at the
+		// 255->0 serial wrap (requestMoveHistory clamps count at the boundary). Dropping the
+		// connection here is what made GAN Gen4 cubes disconnect after ~6-7 solves. Instead,
+		// flush the buffer and emit BUFFER_OVERFLOW so the cube re-syncs from a full FACELETS state.
+		if (this.moveBuffer.length > 16) {
+			const bufferLen = this.moveBuffer.length;
+			const lastSerial = this.serial;
+			console.warn('[ZKT:MOVEBUF] Gen4 buffer overflow — recovering via FACELETS resync', { bufferLen });
+			this.moveBuffer = [];
+			this.lastSerial = -1; // force a clean re-sync on the next FACELETS event
+			evictedEvents.push({ type: 'BUFFER_OVERFLOW', bufferLen, lastSerial });
 		}
 		return evictedEvents;
 	}
@@ -1009,6 +1017,10 @@ export default class GAN extends SmartCube {
 		super();
 		this.device = device;
 		this.adapter = adapter;
+		// Telemetry identity (see smart_cube.js getTelemetryMeta). generationLabel is set once
+		// the protocol driver is resolved in connectWithExistingDevice.
+		this.deviceType = 'gan';
+		this.generationLabel = null;
 		this.gyroListeners = [];
 		// Move batching properties
 		this.moveQueue = [];
@@ -1132,18 +1144,21 @@ export default class GAN extends SmartCube {
 		for (const serviceUUID of services) {
 			const svcLower = serviceUUID.toLowerCase();
 			if (svcLower === GAN_GEN2_SERVICE) {
+				this.generationLabel = 'gen2';
 				const key = device.name?.startsWith('AiCube') ? GAN_ENCRYPTION_KEYS[1] : GAN_ENCRYPTION_KEYS[0];
 				const encrypter = new GanGen2CubeEncrypter(new Uint8Array(key.key), new Uint8Array(key.iv), salt);
 				const driver = new GanGen2ProtocolDriver();
 				conn = await GanCubeClassicConnection.create(this.adapter, device, svcLower, GAN_GEN2_COMMAND_CHARACTERISTIC, GAN_GEN2_STATE_CHARACTERISTIC, encrypter, driver);
 				break;
 			} else if (svcLower === GAN_GEN3_SERVICE) {
+				this.generationLabel = 'gen3';
 				const key = GAN_ENCRYPTION_KEYS[0];
 				const encrypter = new GanGen3CubeEncrypter(new Uint8Array(key.key), new Uint8Array(key.iv), salt);
 				const driver = new GanGen3ProtocolDriver();
 				conn = await GanCubeClassicConnection.create(this.adapter, device, svcLower, GAN_GEN3_COMMAND_CHARACTERISTIC, GAN_GEN3_STATE_CHARACTERISTIC, encrypter, driver);
 				break;
 			} else if (svcLower === GAN_GEN4_SERVICE) {
+				this.generationLabel = 'gen4';
 				const key = GAN_ENCRYPTION_KEYS[0];
 				const encrypter = new GanGen4CubeEncrypter(new Uint8Array(key.key), new Uint8Array(key.iv), salt);
 				const driver = new GanGen4ProtocolDriver();
@@ -1192,6 +1207,8 @@ export default class GAN extends SmartCube {
 			this._handshakeTimer = null;
 			console.warn('[GAN] handshake timeout — wrong MAC or cube unresponsive');
 			try { localStorage.removeItem(GAN_MAC_CACHE_KEY); } catch (e) { /* ignore */ }
+			// Stamp reason so the resulting DISCONNECT event is logged as wrong_mac, not gatt_self.
+			this.setDisconnectReason('wrong_mac');
 			try { this.adapter.disconnect(this.device); } catch (e) { /* ignore */ }
 			this.alertScanError('wrong_mac');
 		}, GAN_HANDSHAKE_TIMEOUT_MS);
@@ -1361,6 +1378,17 @@ export default class GAN extends SmartCube {
 			this.alertConnected(dummyServer);
 		} else if (event.type == 'BATTERY') {
 			this.alertBatteryLevel(event.batteryLevel);
+		} else if (event.type == 'BUFFER_OVERFLOW') {
+			// Gen4 move buffer overflowed (serial-wrap gap). Recover in place — log it for
+			// telemetry and pull a fresh FACELETS state instead of dropping the connection.
+			logSmartDeviceEvent({
+				event: 'error',
+				reason: 'buffer_overflow_recovered',
+				...this.getTelemetryMeta(),
+				last_serial: event.lastSerial ?? null,
+				extra: { bufferLen: event.bufferLen },
+			});
+			this.requestFaceletsResync(true);
 		} else if (event.type == 'DISCONNECT') {
 			if (this._handshakeTimer) {
 				clearTimeout(this._handshakeTimer);
