@@ -31,6 +31,10 @@
 		border-radius: 12px;
 		cursor: pointer;
 		color: rgb(var(--text-color));
+		/* Long-press enters select mode → block the native text/SVG selection + iOS copy callout. */
+		user-select: none;
+		-webkit-user-select: none;
+		-webkit-touch-callout: none;
 		&:active { transform: translateY(1px); }
 		&--selected {
 			border-color: #ef4444;
@@ -84,7 +88,11 @@
 		flex-wrap: wrap;
 		gap: 12px;
 		margin-bottom: 12px;
-		&--selectable { cursor: pointer; }
+		&--selectable {
+			cursor: pointer;
+			user-select: none;
+			-webkit-user-select: none;
+		}
 	}
 	&__oll-shape {
 		background: $panel;
