@@ -308,6 +308,7 @@ type Query {
   youtubeSearch(input: YouTubeSearchInput): [YouTubeVideoResult]
   dailyGoals: [DailyGoalType]
   dailyGoalReminderStatus: DailyGoalReminderResult
+  myRoomSolveEntries(sinceDays: Int): [RoomSolveEntry]
   myOllcpStats: [OllcpStatType]
   wcaCompetitions(filter: WcaCompetitionFilterInput): [WcaCompetition]
   wcaSearchCompetitions(query: String): [WcaCompetition]
@@ -452,6 +453,7 @@ type Mutation {
   unregisterPushToken(token: String): PushTokenResult
   setDailyGoal(input: SetDailyGoalInput): DailyGoalType
   setDailyGoalReminder(enabled: Boolean): DailyGoalReminderResult
+  setDailyGoalCountRoomSolves(enabled: Boolean): DailyGoalReminderResult
   removeDailyGoal(scrambleSubset: String, cubeType: String): Boolean
   recordOllcpAttempt(correct: Boolean, algId: String): OllcpStatType
   mergeOllcpStats(entries: [OllcpStatInput]): Boolean
@@ -1444,6 +1446,12 @@ type DailyGoalType {
 
 type DailyGoalReminderResult {
   enabled: Boolean
+  count_room_solves: Boolean
+}
+
+type RoomSolveEntry {
+  created_at: Float
+  cube_type: String
 }
 
 type OllcpStatType {

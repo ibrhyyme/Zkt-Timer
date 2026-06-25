@@ -3,6 +3,7 @@ import {getMe} from '../../store';
 import {DailyGoal, DailyGoalStorage} from '../@types/interfaces';
 import {emitEvent} from '../../../util/event_handler';
 import {gqlMutate, gqlQuery} from '../../api';
+import {fetchRoomSolveCounts} from './room-solves';
 
 const STORAGE_KEY = 'daily_goals';
 
@@ -10,6 +11,7 @@ const DEFAULT_STORAGE: DailyGoalStorage = {
 	goals: [],
 	reminder_enabled: false,
 	last_reminder_time: null,
+	count_room_solves: false,
 };
 
 function getStorageKey(): string {
@@ -85,6 +87,18 @@ export function setReminderEnabled(enabled: boolean): void {
 	syncReminderToServer(enabled);
 }
 
+export function setCountRoomSolves(enabled: boolean): void {
+	const storage = getDailyGoalStorage();
+	storage.count_room_solves = enabled;
+	setDailyGoalStorage(storage);
+	emitEvent('dailyGoalUpdatedEvent');
+	syncCountRoomSolvesToServer(enabled);
+	// Warm (or rely on) the room-solve cache so progress/activity update immediately.
+	if (enabled) {
+		fetchRoomSolveCounts();
+	}
+}
+
 // --- Server sync (fire-and-forget) ---
 
 function syncGoalToServer(cubeType: string, target: number, enabled: boolean, scrambleSubset?: string | null): void {
@@ -132,6 +146,23 @@ function syncReminderToServer(enabled: boolean): void {
 	});
 }
 
+function syncCountRoomSolvesToServer(enabled: boolean): void {
+	const me = getMe();
+	if (!me) return;
+
+	const mutation = gql`
+		mutation SetDailyGoalCountRoomSolves($enabled: Boolean!) {
+			setDailyGoalCountRoomSolves(enabled: $enabled) {
+				count_room_solves
+			}
+		}
+	`;
+
+	gqlMutate(mutation, {enabled}).catch((e) => {
+		console.error('Failed to sync count-room-solves setting to server', e);
+	});
+}
+
 function removeGoalFromServer(cubeType: string, scrambleSubset?: string | null): void {
 	const me = getMe();
 	if (!me) return;
@@ -162,6 +193,7 @@ export async function syncDailyGoalsFromServer(): Promise<void> {
 			}
 			dailyGoalReminderStatus {
 				enabled
+				count_room_solves
 			}
 		}
 	`;
@@ -169,13 +201,14 @@ export async function syncDailyGoalsFromServer(): Promise<void> {
 	try {
 		const res = await gqlQuery<{
 			dailyGoals: Array<{id: string; cube_type: string; scramble_subset?: string | null; target: number; enabled: boolean}>;
-			dailyGoalReminderStatus: {enabled: boolean};
+			dailyGoalReminderStatus: {enabled: boolean; count_room_solves: boolean};
 		}>(query);
 		const serverGoals = res.data.dailyGoals;
 		const storage = getDailyGoalStorage();
 
-		// Get reminder status from server
+		// Get reminder + count-room-solves status from server (server wins)
 		storage.reminder_enabled = res.data.dailyGoalReminderStatus.enabled;
+		storage.count_room_solves = !!res.data.dailyGoalReminderStatus.count_room_solves;
 
 		if (serverGoals.length === 0 && storage.goals.length > 0) {
 			// Migration: goal exists in localStorage but server is empty → push it
@@ -198,6 +231,12 @@ export async function syncDailyGoalsFromServer(): Promise<void> {
 
 		setDailyGoalStorage(storage);
 		emitEvent('dailyGoalUpdatedEvent');
+
+		// Room solves are a separate source; warm the cache when the toggle is on so
+		// progress + activity reflect them without a per-render network call.
+		if (storage.count_room_solves) {
+			fetchRoomSolveCounts();
+		}
 	} catch (e) {
 		console.error('Failed to sync daily goals from server', e);
 	}

@@ -47,6 +47,7 @@ model UserAccount {
   last_seen_at               DateTime?
   daily_goal_reminder        Boolean     @default(false)
   last_daily_goal_reminder   DateTime?
+  daily_goal_count_room_solves Boolean   @default(false)
   // Consent: timestamp when Privacy Policy + Terms of Service were accepted at signup,
   // and the policy version accepted. Null = legacy account created before consent gating.
   terms_accepted_at          DateTime?

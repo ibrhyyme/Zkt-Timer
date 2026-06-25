@@ -29,6 +29,22 @@ export function normalizeWcaEventBucket(
 	return { cube_type: cubeType, scramble_subset: scrambleSubset ?? null };
 }
 
+/**
+ * Coarse "which event is this" key for matching a daily-goal bucket against a room
+ * solve. Room solves carry no scramble subset, so matching is cube_type-only: a
+ * `333` room and a `wca::333` goal must collapse to the same key. WCA-event buckets
+ * (333/222/...) reduce to their event id; everything else (method variants like
+ * `333cfop`, non-WCA puzzles) keeps its cube_type.
+ */
+export function getBucketEventKey(
+	cubeType: string | null | undefined,
+	scrambleSubset?: string | null
+): string {
+	const n = normalizeWcaEventBucket(cubeType, scrambleSubset);
+	if (n.cube_type === 'wca' && n.scramble_subset) return n.scramble_subset;
+	return n.cube_type ?? '';
+}
+
 export function sanitizeSolve(s: Partial<Solve>): Partial<Solve> {
 	const solve = { ...s };
 

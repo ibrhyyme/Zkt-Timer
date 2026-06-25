@@ -8,10 +8,11 @@ import {
 	removeGoalForCubeType,
 	toggleGoalEnabled,
 	setReminderEnabled,
+	setCountRoomSolves,
 } from '../../daily-goal/helpers/storage';
 import {getDailyGoalProgress} from '../../daily-goal/helpers/progress';
 import {initPushNotifications} from '../../../util/push-notifications';
-import {Trash, Bell, BellSlash, Target} from 'phosphor-react';
+import {Trash, Bell, BellSlash, Target, UsersThree} from 'phosphor-react';
 
 function goalKey(g: {cube_type: string; scramble_subset?: string | null}): string {
 	return `${g.cube_type}::${g.scramble_subset ?? ''}`;
@@ -96,6 +97,40 @@ export default function GoalsTab() {
 					})}
 				</>
 			)}
+
+			{/* Count room solves toggle */}
+			<div className="mt-4">
+				<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-module border border-text/[0.08] hover:border-text/[0.15] transition-all duration-200">
+					<div className="flex items-center space-x-3">
+						<UsersThree
+							size={18}
+							weight={storage.count_room_solves ? 'fill' : 'regular'}
+							className={storage.count_room_solves ? 'text-primary' : 'text-text/30'}
+						/>
+						<span className="font-medium text-text/80 group-hover:text-text transition-colors">
+							{t('quick_controls.count_room_solves')}
+						</span>
+					</div>
+					<button
+						type="button"
+						className={`relative h-6 w-11 rounded-full border transition-all duration-300 transform hover:scale-105 ${
+							storage.count_room_solves
+								? 'bg-primary border-primary shadow-lg shadow-primary/30'
+								: 'bg-button border-text/[0.1] hover:bg-button'
+						} cursor-pointer`}
+						onClick={() => {
+							setCountRoomSolves(!storage.count_room_solves);
+							refresh();
+						}}
+					>
+						<div
+							className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-lg transition-all duration-300 ${
+								storage.count_room_solves ? 'translate-x-5 shadow-white/20' : 'translate-x-0.5'
+							}`}
+						/>
+					</button>
+				</div>
+			</div>
 
 			{/* Reminder toggle */}
 			<div className="mt-4">

@@ -2297,6 +2297,7 @@
         "remove_goal": "Eliminar meta",
         "other_goals": "Otras metas",
         "reminders": "Recordatorios",
+        "count_room_solves": "Contar resoluciones en salas",
         "goal_confetti": "Confeti de meta",
         "solves_progress": "{{current}}/{{target}} resoluciones"
     },

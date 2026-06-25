@@ -2297,6 +2297,7 @@
         "remove_goal": "移除目标",
         "other_goals": "其他目标",
         "reminders": "提醒",
+        "count_room_solves": "计入房间还原",
         "goal_confetti": "目标庆祝动画",
         "solves_progress": "{{current}}/{{target}} 次还原"
     },

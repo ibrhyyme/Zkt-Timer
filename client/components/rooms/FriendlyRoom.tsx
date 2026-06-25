@@ -16,6 +16,8 @@ import {
 } from '../../../shared/friendly_room';
 import Button from '../common/button/Button';
 import { useMe } from '../../util/hooks/useMe';
+import { getDailyGoalStorage } from '../daily-goal/helpers/storage';
+import { fetchRoomSolveCounts } from '../daily-goal/helpers/room-solves';
 import { useSettings } from '../../util/hooks/useSettings';
 import { setSetting } from '../../db/settings/update';
 import RoomParticipants from './RoomParticipants';
@@ -902,6 +904,12 @@ export default function FriendlyRoom() {
                         }),
                     };
                 });
+
+                // Own solve persisted server-side: refresh the room-solve cache so daily
+                // goals + activity reflect it (only when the user opted in).
+                if (data.user_id === me?.id && getDailyGoalStorage().count_room_solves) {
+                    fetchRoomSolveCounts();
+                }
             }
         });
 

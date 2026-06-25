@@ -2297,6 +2297,7 @@
         "remove_goal": "Remove Goal",
         "other_goals": "Other Goals",
         "reminders": "Reminders",
+        "count_room_solves": "Count room solves",
         "goal_confetti": "Goal Confetti",
         "solves_progress": "{{current}}/{{target}} solves"
     },

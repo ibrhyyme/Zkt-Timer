@@ -1,4 +1,4 @@
-import React, {useContext, useMemo} from 'react';
+import React, {useContext, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import dayjs from 'dayjs';
 import './ActivityHeatmap.scss';
@@ -6,6 +6,9 @@ import block from '../../../../styles/bem';
 import {getSolveCountByDateData} from '../../../../db/solves/stats/consistency';
 import {getSolveStreak} from '../../../../db/solves/stats/streak';
 import {useSolveDb} from '../../../../util/hooks/useSolveDb';
+import {useEventListener} from '../../../../util/event_handler';
+import {getDailyGoalStorage} from '../../../daily-goal/helpers/storage';
+import {getRoomDailyCounts} from '../../../daily-goal/helpers/room-solves';
 import {StatsContext} from '../../Stats';
 
 const b = block('activity-heatmap');
@@ -24,6 +27,20 @@ export default function ActivityHeatmap() {
 	const {t} = useTranslation();
 	const {filterOptions} = useContext(StatsContext);
 	const solveUpdate = useSolveDb();
+	const [goalVersion, setGoalVersion] = useState(0);
+
+	// Room-solve cache refreshes (fetch / toggle) emit dailyGoalUpdatedEvent.
+	useEventListener('dailyGoalUpdatedEvent', () => setGoalVersion((v) => v + 1), []);
+
+	// Friendly Room per-day counts to fold into the heatmap + streak, when opted in.
+	// Room solves have no session, so skip them when a session filter is active.
+	const roomExtra = useMemo(() => {
+		if (!getDailyGoalStorage().count_room_solves) return undefined;
+		if (filterOptions.session_id) return undefined;
+		const cubeType = typeof filterOptions.cube_type === 'string' ? filterOptions.cube_type : undefined;
+		const subset = typeof filterOptions.scramble_subset === 'string' ? filterOptions.scramble_subset : null;
+		return getRoomDailyCounts(cubeType, subset);
+	}, [filterOptions, solveUpdate, goalVersion]);
 
 	const {grid, activeDays, monthMarkers, max} = useMemo(() => {
 		const end = new Date();
@@ -36,7 +53,7 @@ export default function ActivityHeatmap() {
 			...filterOptions,
 			started_at: start.getTime(),
 			ended_at: end.getTime(),
-		});
+		}, roomExtra);
 
 		const dataMap = new Map<string, number>();
 		data.forEach((d) => dataMap.set(d.x, d.y));
@@ -98,9 +115,9 @@ export default function ActivityHeatmap() {
 		const active = data.filter((d) => d.y > 0).length;
 
 		return {grid: cells, activeDays: active, monthMarkers: markers, max: maxCount};
-	}, [filterOptions, solveUpdate]);
+	}, [filterOptions, solveUpdate, roomExtra]);
 
-	const streak = useMemo(() => getSolveStreak(filterOptions), [filterOptions, solveUpdate]);
+	const streak = useMemo(() => getSolveStreak(filterOptions, roomExtra), [filterOptions, solveUpdate, roomExtra]);
 
 	return (
 		<div className={b()}>

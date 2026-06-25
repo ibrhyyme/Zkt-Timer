@@ -1,6 +1,6 @@
-import { Resolver, Query, Mutation, Arg, Ctx, Authorized } from 'type-graphql';
+import { Resolver, Query, Mutation, Arg, Int, Ctx, Authorized } from 'type-graphql';
 import { GraphQLContext } from '../@types/interfaces/server.interface';
-import { DailyGoalType, SetDailyGoalInput, DailyGoalReminderResult } from '../schemas/DailyGoal.schema';
+import { DailyGoalType, SetDailyGoalInput, DailyGoalReminderResult, RoomSolveEntry } from '../schemas/DailyGoal.schema';
 import GraphQLError from '../util/graphql_error';
 import { ErrorCode } from '../constants/errors';
 import { Role } from '../middlewares/auth';
@@ -24,9 +24,40 @@ export class DailyGoalResolver {
 	async dailyGoalReminderStatus(@Ctx() context: GraphQLContext): Promise<DailyGoalReminderResult> {
 		const user = await context.prisma.userAccount.findUnique({
 			where: { id: context.user.id },
-			select: { daily_goal_reminder: true },
+			select: { daily_goal_reminder: true, daily_goal_count_room_solves: true },
 		});
-		return { enabled: user?.daily_goal_reminder ?? false };
+		return {
+			enabled: user?.daily_goal_reminder ?? false,
+			count_room_solves: user?.daily_goal_count_room_solves ?? false,
+		};
+	}
+
+	@Authorized([Role.LOGGED_IN])
+	@Query(() => [RoomSolveEntry])
+	async myRoomSolveEntries(
+		@Arg('sinceDays', () => Int) sinceDays: number,
+		@Ctx() context: GraphQLContext
+	): Promise<RoomSolveEntry[]> {
+		const since = new Date();
+		since.setHours(0, 0, 0, 0);
+		since.setDate(since.getDate() - (Math.max(1, sinceDays) - 1));
+
+		const solves = await context.prisma.friendlyRoomSolve.findMany({
+			where: {
+				dnf: false,
+				created_at: { gte: since },
+				participant: { user_id: context.user.id },
+			},
+			select: {
+				created_at: true,
+				room: { select: { cube_type: true } },
+			},
+		});
+
+		return solves.map((s) => ({
+			created_at: s.created_at.getTime(),
+			cube_type: s.room.cube_type,
+		}));
 	}
 
 	@Authorized([Role.LOGGED_IN])
@@ -73,6 +104,19 @@ export class DailyGoalResolver {
 			data: { daily_goal_reminder: enabled },
 		});
 		return { enabled };
+	}
+
+	@Authorized([Role.LOGGED_IN])
+	@Mutation(() => DailyGoalReminderResult)
+	async setDailyGoalCountRoomSolves(
+		@Arg('enabled') enabled: boolean,
+		@Ctx() context: GraphQLContext
+	): Promise<DailyGoalReminderResult> {
+		await context.prisma.userAccount.update({
+			where: { id: context.user.id },
+			data: { daily_goal_count_room_solves: enabled },
+		});
+		return { enabled, count_room_solves: enabled };
 	}
 
 	@Authorized([Role.LOGGED_IN])

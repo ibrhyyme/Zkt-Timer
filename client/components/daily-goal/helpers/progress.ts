@@ -1,17 +1,25 @@
 import {fetchSolveCount} from '../../../db/solves/query';
 import {GoalProgress} from '../@types/interfaces';
-import {getGoalForCubeType} from './storage';
+import {getGoalForCubeType, getDailyGoalStorage} from './storage';
+import {getRoomCountForBucketToday} from './room-solves';
 
 export function getTodaysSolveCount(cubeType: string, scrambleSubset?: string | null): number {
 	const today = new Date();
 	today.setHours(0, 0, 0, 0);
 
-	return fetchSolveCount({
+	const timerCount = fetchSolveCount({
 		cube_type: cubeType,
 		scramble_subset: scrambleSubset ?? null,
 		from_timer: true,
 		started_at: {$gte: today.getTime()},
 	});
+
+	// Add Friendly Room solves (DNF excluded server-side) when the user opted in.
+	if (getDailyGoalStorage().count_room_solves) {
+		return timerCount + getRoomCountForBucketToday(cubeType, scrambleSubset);
+	}
+
+	return timerCount;
 }
 
 export function getDailyGoalProgress(cubeType: string, scrambleSubset?: string | null): GoalProgress | null {

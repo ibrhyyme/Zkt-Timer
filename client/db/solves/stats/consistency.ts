@@ -2,7 +2,10 @@ import {fetchSolves, FilterSolvesOptions} from '../query';
 import {BarGraphData} from '../../../components/modules/bar_graph/BarGraph';
 import dayjs from 'dayjs';
 
-export function getSolveCountByDateData(filter: FilterSolvesOptions): BarGraphData[] {
+export function getSolveCountByDateData(
+	filter: FilterSolvesOptions,
+	extraDailyCounts?: Map<string, number>
+): BarGraphData[] {
 	const start = new Date(filter.started_at as number);
 	const end = new Date(filter.ended_at as number);
 
@@ -31,6 +34,13 @@ export function getSolveCountByDateData(filter: FilterSolvesOptions): BarGraphDa
 	for (const solve of solves) {
 		const key = dayjs(solve.started_at).format('YYYY-M-D');
 		counts.set(key, (counts.get(key) || 0) + 1);
+	}
+
+	// Optional extra per-day counts (e.g. Friendly Room solves) folded in by day key.
+	if (extraDailyCounts) {
+		for (const [key, val] of extraDailyCounts) {
+			counts.set(key, (counts.get(key) || 0) + val);
+		}
 	}
 
 	const data: BarGraphData[] = [];

@@ -1,4 +1,4 @@
-import { ObjectType, Field, InputType, Int } from 'type-graphql';
+import { ObjectType, Field, InputType, Int, Float } from 'type-graphql';
 
 @ObjectType()
 export class DailyGoalType {
@@ -37,4 +37,19 @@ export class SetDailyGoalInput {
 export class DailyGoalReminderResult {
 	@Field()
 	enabled: boolean;
+
+	// Whether room (Friendly Room) solves count toward daily goals + activity.
+	@Field({ nullable: true })
+	count_room_solves?: boolean;
+}
+
+@ObjectType()
+export class RoomSolveEntry {
+	// created_at as epoch milliseconds. Returned raw so the client buckets by day
+	// in its own timezone — matching how timer solves are grouped (consistency.ts).
+	@Field(() => Float)
+	created_at: number;
+
+	@Field()
+	cube_type: string;
 }

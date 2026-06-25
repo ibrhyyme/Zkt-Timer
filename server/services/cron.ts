@@ -8,6 +8,7 @@ import {initWcaCompetitionCountdownCronJob} from './cron_wca_countdown';
 import {initWcaBackfillCronJob} from './cron_wca_backfill';
 import {syncAllWorldRecords} from './WorldRecordSyncService';
 import {freezeOldArchives} from './CompetitionArchiveService';
+import {getBucketEventKey} from '../../shared/solve';
 
 const CUBE_NAMES: Record<string, string> = {
 	'222': '2x2', '333': '3x3', '444': '4x4', '555': '5x5',
@@ -329,6 +330,7 @@ async function checkDailyGoalReminders() {
 			},
 			select: {
 				id: true,
+				daily_goal_count_room_solves: true,
 				daily_goals: {where: {enabled: true}},
 			},
 		});
@@ -344,10 +346,29 @@ async function checkDailyGoalReminders() {
 		for (const user of users) {
 			if (user.daily_goals.length === 0) continue;
 
+			// When the user counts room solves toward goals, pre-bucket today's room
+			// solves (DNF excluded) by coarse event key so each goal can add its share.
+			let roomCountByKey: Record<string, number> | null = null;
+			if (user.daily_goal_count_room_solves) {
+				roomCountByKey = {};
+				const roomSolves = await prisma.friendlyRoomSolve.findMany({
+					where: {
+						dnf: false,
+						created_at: {gte: todayStart},
+						participant: {user_id: user.id},
+					},
+					select: {room: {select: {cube_type: true}}},
+				});
+				for (const rs of roomSolves) {
+					const key = getBucketEventKey(rs.room.cube_type, null);
+					roomCountByKey[key] = (roomCountByKey[key] || 0) + 1;
+				}
+			}
+
 			const incompleteGoals: Array<{cube_type: string; current: number; target: number}> = [];
 
 			for (const goal of user.daily_goals) {
-				const count = await prisma.solve.count({
+				let count = await prisma.solve.count({
 					where: {
 						user_id: user.id,
 						cube_type: goal.cube_type,
@@ -355,6 +376,10 @@ async function checkDailyGoalReminders() {
 						started_at: {gte: todayStartMs},
 					},
 				});
+
+				if (roomCountByKey) {
+					count += roomCountByKey[getBucketEventKey(goal.cube_type, goal.scramble_subset)] || 0;
+				}
 
 				if (count < goal.target) {
 					incompleteGoals.push({

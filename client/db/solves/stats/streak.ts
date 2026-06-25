@@ -13,7 +13,10 @@ interface SolveStreak {
 	avgSolvesPerSession: number;
 }
 
-export function getSolveStreak(filter: FilterSolvesOptions): SolveStreak {
+export function getSolveStreak(
+	filter: FilterSolvesOptions,
+	extraDailyCounts?: Map<string, number>
+): SolveStreak {
 	const solves = fetchSolves(
 		{
 			...filter,
@@ -42,6 +45,20 @@ export function getSolveStreak(filter: FilterSolvesOptions): SolveStreak {
 	for (const solve of solves) {
 		const key = dayjs(solve.started_at).format('YYYY-M-D');
 		dayCounts.set(key, (dayCounts.get(key) || 0) + 1);
+	}
+
+	// Optional extra per-day counts (e.g. Friendly Room solves) folded in by day key.
+	if (extraDailyCounts) {
+		for (const [key, val] of extraDailyCounts) {
+			dayCounts.set(key, (dayCounts.get(key) || 0) + val);
+		}
+		// A user may have only room solves (no timer solves) — extend the scan window
+		// back to the earliest active day so the streak isn't clipped to today.
+		for (const key of dayCounts.keys()) {
+			const [y, m, d] = key.split('-').map(Number);
+			const t = new Date(y, m - 1, d, 0, 0, 0, 0).getTime();
+			if (!Number.isNaN(t) && t < firstSolveTime) firstSolveTime = t;
+		}
 	}
 
 	let currentStreak = 0;

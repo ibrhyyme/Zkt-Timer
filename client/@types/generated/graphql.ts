@@ -541,6 +541,7 @@ export type CustomTrainerCreateInput = {
 
 export type DailyGoalReminderResult = {
   __typename?: 'DailyGoalReminderResult';
+  count_room_solves?: Maybe<Scalars['Boolean']>;
   enabled?: Maybe<Scalars['Boolean']>;
 };
 
@@ -1021,6 +1022,7 @@ export type Mutation = {
   sendBulkEmail?: Maybe<BulkEmailResult>;
   sendForgotPasswordCode?: Maybe<Scalars['Void']>;
   setDailyGoal?: Maybe<DailyGoalType>;
+  setDailyGoalCountRoomSolves?: Maybe<DailyGoalReminderResult>;
   setDailyGoalReminder?: Maybe<DailyGoalReminderResult>;
   setModStatus?: Maybe<UserAccount>;
   setPremiumStatus?: Maybe<UserAccount>;
@@ -1665,6 +1667,11 @@ export type MutationSetDailyGoalArgs = {
 };
 
 
+export type MutationSetDailyGoalCountRoomSolvesArgs = {
+  enabled?: InputMaybe<Scalars['Boolean']>;
+};
+
+
 export type MutationSetDailyGoalReminderArgs = {
   enabled?: InputMaybe<Scalars['Boolean']>;
 };
@@ -2157,6 +2164,7 @@ export type Query = {
   me: UserAccount;
   myCompetitionFollows?: Maybe<Array<Maybe<CompetitionFollow>>>;
   myOllcpStats?: Maybe<Array<Maybe<OllcpStatType>>>;
+  myRoomSolveEntries?: Maybe<Array<Maybe<RoomSolveEntry>>>;
   mySessionIds?: Maybe<Array<Maybe<Scalars['String']>>>;
   mySolveIds?: Maybe<Array<Maybe<Scalars['String']>>>;
   mySupportTickets?: Maybe<Array<Maybe<SupportTicket>>>;
@@ -2309,6 +2317,11 @@ export type QueryIpInfoArgs = {
 
 export type QueryMyCompetitionFollowsArgs = {
   competitionId?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryMyRoomSolveEntriesArgs = {
+  sinceDays?: InputMaybe<Scalars['Int']>;
 };
 
 
@@ -2627,6 +2640,12 @@ export type ReportSummary = {
   last_report?: Maybe<Scalars['DateTime']>;
   reports?: Maybe<Array<Maybe<Report>>>;
   user?: Maybe<PublicUserAccount>;
+};
+
+export type RoomSolveEntry = {
+  __typename?: 'RoomSolveEntry';
+  created_at?: Maybe<Scalars['Float']>;
+  cube_type?: Maybe<Scalars['String']>;
 };
 
 export type SendBulkEmailInput = {

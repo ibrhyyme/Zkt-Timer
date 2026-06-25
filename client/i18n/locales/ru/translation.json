@@ -2297,6 +2297,7 @@
         "remove_goal": "Удалить цель",
         "other_goals": "Другие цели",
         "reminders": "Напоминания",
+        "count_room_solves": "Считать сборки в комнатах",
         "goal_confetti": "Конфетти при достижении цели",
         "solves_progress": "{{current}}/{{target}} сборок"
     },

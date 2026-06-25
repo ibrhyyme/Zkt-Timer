@@ -2304,6 +2304,7 @@
         "remove_goal": "Hedefi Kaldır",
         "other_goals": "Diğer Hedefler",
         "reminders": "Hatırlatmalar",
+        "count_room_solves": "Odalardaki çözümleri say",
         "goal_confetti": "Hedefe Konfeti",
         "solves_progress": "{{current}}/{{target}} çözüm"
     },
