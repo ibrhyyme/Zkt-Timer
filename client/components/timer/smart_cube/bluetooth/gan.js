@@ -1021,6 +1021,8 @@ export default class GAN extends SmartCube {
 		// the protocol driver is resolved in connectWithExistingDevice.
 		this.deviceType = 'gan';
 		this.generationLabel = null;
+		// True once the first valid protocol packet confirms the connection (see _confirmConnectionOnce).
+		this._connectionConfirmed = false;
 		this.gyroListeners = [];
 		// Move batching properties
 		this.moveQueue = [];
@@ -1227,9 +1229,30 @@ export default class GAN extends SmartCube {
 		}
 	};
 
+	// Confirm the connection on the FIRST valid protocol packet — HARDWARE, FACELETS, or MOVE.
+	// GAN 12 UI Maglev (Gen4) firmware sometimes never emits the full 4-part HARDWARE bundle,
+	// which left the 7s handshake watchdog tearing down a healthy connection ("Cihaz yanıt
+	// vermedi / MAC yanlış" toast, drop after ~15s). Any decryptable packet already proves the
+	// MAC is correct, so it is enough to confirm — cstimer likewise never gates on HARDWARE.
+	_confirmConnectionOnce = () => {
+		if (this._connectionConfirmed) return;
+		this._connectionConfirmed = true;
+		this._confirmGanConnected(); // stop watchdog + persist the verified MAC
+		const deviceId = this.conn?.deviceMAC || this.device?.deviceId || 'unknown';
+		const dummyServer = {
+			device: {
+				name: this.hardwareName || this.device?.name || 'GAN Cube',
+				id: deviceId,
+			},
+		};
+		this.alertConnected(dummyServer);
+	};
+
 	handleCubeEvent = (event) => {
 		if (event.type == 'MOVE') {
 			if (event.move) {
+				// A decryptable MOVE proves the MAC is correct — confirm the connection.
+				this._confirmConnectionOnce();
 				// cubeTimestamp calibration: map cube internal clock to local time
 				if (event.cubeTimestamp != null) {
 					const localNow = Date.now();
@@ -1344,6 +1367,9 @@ export default class GAN extends SmartCube {
 
 			// NOTE: ganInitialFacelets removed — solved detection uses only smartSolvedState
 
+			// A valid FACELETS state confirms the connection (Gen4 may never send full HARDWARE).
+			this._confirmConnectionOnce();
+
 			// Report to Redux (safety net for SmartCube.tsx)
 			this.alertCubeState(event.facelets);
 		} else if (event.type == 'GYRO') {
@@ -1364,18 +1390,8 @@ export default class GAN extends SmartCube {
 			// Report gyroscope support status
 			this.alertGyroSupported(event.gyroSupported);
 
-			// HARDWARE event proves the MAC is correct — persist it and stop the watchdog.
-			this._confirmGanConnected();
-
-			// Complete connection after HARDWARE information received
-			const deviceId = this.conn?.deviceMAC || this.device?.deviceId || 'unknown';
-			const dummyServer = {
-				device: {
-					name: this.hardwareName || this.device?.name || 'GAN Cube',
-					id: deviceId,
-				},
-			};
-			this.alertConnected(dummyServer);
+			// Confirm with full hardware info when it arrives (Gen2/Gen3 always send it).
+			this._confirmConnectionOnce();
 		} else if (event.type == 'BATTERY') {
 			this.alertBatteryLevel(event.batteryLevel);
 		} else if (event.type == 'BUFFER_OVERFLOW') {
