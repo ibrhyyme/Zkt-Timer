@@ -1739,7 +1739,23 @@
         "view_details": "查看详情"
     },
     "admin_nav": {
-        "other_pages": "其他页面"
+        "other_pages": "其他页面",
+        "dashboard": "仪表盘",
+        "reports": "举报",
+        "users": "用户",
+        "pro_users": "Pro 用户",
+        "announcements": "公告",
+        "email": "邮件",
+        "algorithms": "算法",
+        "promo": "促销",
+        "site_config": "站点配置"
+    },
+    "feature_access": {
+        "title": "特殊访问",
+        "hint": "即使开关关闭，这些用户仍可访问",
+        "add_placeholder": "添加用户...",
+        "searching": "搜索中...",
+        "save_error": "保存错误"
     },
     "admin_dashboard": {
         "title": "管理面板",

@@ -9,17 +9,17 @@ import {useMe} from '../../util/hooks/useMe';
 
 const b = block('admin');
 
-const PANO_TAB = {id: 'dashboard', link: '/admin/dashboard', value: 'Pano'};
+const PANO_TAB = {id: 'dashboard', link: '/admin/dashboard', labelKey: 'admin_nav.dashboard'};
 
 const SECONDARY_TABS = [
-	{id: 'reports', link: '/admin/reports', value: 'Reports'},
-	{id: 'users', link: '/admin/users', value: 'Users'},
-	{id: 'pro-users', link: '/admin/pro-users', value: 'Pro Users'},
-	{id: 'announcements', link: '/admin/announcements', value: 'Announcements'},
-	{id: 'email', link: '/admin/email', value: 'Mail'},
-	{id: 'algorithms', link: '/admin/algorithms', value: 'Algorithms'},
-	{id: 'promo-codes', link: '/admin/promo-codes', value: 'Promo'},
-	{id: 'site-config', link: '/admin/site-config', value: 'Site Config'},
+	{id: 'reports', link: '/admin/reports', labelKey: 'admin_nav.reports'},
+	{id: 'users', link: '/admin/users', labelKey: 'admin_nav.users'},
+	{id: 'pro-users', link: '/admin/pro-users', labelKey: 'admin_nav.pro_users'},
+	{id: 'announcements', link: '/admin/announcements', labelKey: 'admin_nav.announcements'},
+	{id: 'email', link: '/admin/email', labelKey: 'admin_nav.email'},
+	{id: 'algorithms', link: '/admin/algorithms', labelKey: 'admin_nav.algorithms'},
+	{id: 'promo-codes', link: '/admin/promo-codes', labelKey: 'admin_nav.promo'},
+	{id: 'site-config', link: '/admin/site-config', labelKey: 'admin_nav.site_config'},
 ];
 
 interface Props {
@@ -61,7 +61,7 @@ export default function Admin(props: Props) {
 
 	const isPanoActive = page === PANO_TAB.id;
 	const activeSecondary = SECONDARY_TABS.find((tab) => tab.id === page);
-	const triggerLabel = activeSecondary?.value || t('admin_nav.other_pages');
+	const triggerLabel = activeSecondary ? t(activeSecondary.labelKey) : t('admin_nav.other_pages');
 
 	return (
 		<div className={b()}>
@@ -74,7 +74,7 @@ export default function Admin(props: Props) {
 						<div className={b('pano-icon')}>
 							<SquaresFour size={24} weight="bold" />
 						</div>
-						<div className={b('pano-label')}>{PANO_TAB.value}</div>
+						<div className={b('pano-label')}>{t(PANO_TAB.labelKey)}</div>
 					</Link>
 
 					<div className={b('dropdown')} ref={dropdownRef}>
@@ -102,7 +102,7 @@ export default function Admin(props: Props) {
 											className={b('dropdown-item', {active})}
 											onClick={() => setOpen(false)}
 										>
-											<span className={b('dropdown-item-label')}>{tab.value}</span>
+											<span className={b('dropdown-item-label')}>{t(tab.labelKey)}</span>
 											<CaretRight size={14} weight="bold" className={b('dropdown-item-caret')} />
 										</Link>
 									);

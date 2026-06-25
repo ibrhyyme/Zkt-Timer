@@ -39,6 +39,10 @@ export class PromoCodeResolver {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Invalid duration');
 		}
 
+		if (!Number.isInteger(input.max_uses) || input.max_uses < 1) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'max_uses must be a positive integer');
+		}
+
 		const existing = await getPrisma().promoCode.findUnique({where: {code}});
 		if (existing) {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'A promo code with this name already exists');

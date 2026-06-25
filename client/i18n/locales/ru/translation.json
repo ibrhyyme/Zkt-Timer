@@ -1739,7 +1739,23 @@
         "view_details": "Подробнее"
     },
     "admin_nav": {
-        "other_pages": "Другие страницы"
+        "other_pages": "Другие страницы",
+        "dashboard": "Панель",
+        "reports": "Жалобы",
+        "users": "Пользователи",
+        "pro_users": "Pro пользователи",
+        "announcements": "Объявления",
+        "email": "Почта",
+        "algorithms": "Алгоритмы",
+        "promo": "Промо",
+        "site_config": "Настройки сайта"
+    },
+    "feature_access": {
+        "title": "Особый доступ",
+        "hint": "эти пользователи имеют доступ даже при выключенном переключателе",
+        "add_placeholder": "Добавить пользователя...",
+        "searching": "Поиск...",
+        "save_error": "Ошибка сохранения"
     },
     "admin_dashboard": {
         "title": "Панель администратора",

@@ -1739,7 +1739,23 @@
         "view_details": "View Details"
     },
     "admin_nav": {
-        "other_pages": "Other Pages"
+        "other_pages": "Other Pages",
+        "dashboard": "Dashboard",
+        "reports": "Reports",
+        "users": "Users",
+        "pro_users": "Pro Users",
+        "announcements": "Announcements",
+        "email": "Mail",
+        "algorithms": "Algorithms",
+        "promo": "Promo",
+        "site_config": "Site Config"
+    },
+    "feature_access": {
+        "title": "Special access",
+        "hint": "these users have access even when the toggle is off",
+        "add_placeholder": "Add user...",
+        "searching": "Searching...",
+        "save_error": "Save error"
     },
     "admin_dashboard": {
         "title": "Admin Dashboard",

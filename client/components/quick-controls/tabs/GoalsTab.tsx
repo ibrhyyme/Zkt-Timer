@@ -10,6 +10,7 @@ import {
 	setReminderEnabled,
 } from '../../daily-goal/helpers/storage';
 import {getDailyGoalProgress} from '../../daily-goal/helpers/progress';
+import {initPushNotifications} from '../../../util/push-notifications';
 import {Trash, Bell, BellSlash, Target} from 'phosphor-react';
 
 function goalKey(g: {cube_type: string; scramble_subset?: string | null}): string {
@@ -118,8 +119,11 @@ export default function GoalsTab() {
 						} cursor-pointer`}
 						onClick={async () => {
 							const newVal = !storage.reminder_enabled;
-							if (newVal && typeof Notification !== 'undefined' && Notification.permission === 'default') {
-								await Notification.requestPermission();
+							// Turning on: ensure a push token is registered for this device in
+							// the same session. Boot-time registration is skipped if permission
+							// was denied/unasked, so without this the toggle is a no-op until reload.
+							if (newVal) {
+								await initPushNotifications();
 							}
 							setReminderEnabled(newVal);
 							refresh();

@@ -410,8 +410,18 @@ export default function AdminDashboard() {
 
 	React.useEffect(() => {
 		fetchStats();
-		const interval = setInterval(fetchStats, 60_000);
-		return () => clearInterval(interval);
+		// Skip the 60s poll while the tab is hidden; refetch once on the way back to visible.
+		const interval = setInterval(() => {
+			if (!document.hidden) fetchStats();
+		}, 60_000);
+		const handleVisibility = () => {
+			if (!document.hidden) fetchStats();
+		};
+		document.addEventListener('visibilitychange', handleVisibility);
+		return () => {
+			clearInterval(interval);
+			document.removeEventListener('visibilitychange', handleVisibility);
+		};
 	}, []);
 
 	async function fetchStats() {

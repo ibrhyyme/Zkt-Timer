@@ -4,6 +4,7 @@ import {Link} from 'react-router-dom';
 import {Warning, Wrench, Database, CaretDown, CaretUp} from 'phosphor-react';
 import {useQuery} from '@apollo/client';
 import {gqlMutate, gqlMutateTyped, gqlQueryTyped} from '../../api';
+import {toastError} from '../../../util/toast';
 import {
 	UpdateSiteConfigDocument,
 	SiteConfigDocument,
@@ -137,8 +138,7 @@ export default function SiteConfigPanel() {
 			if (config) {
 				setConfig({...config, [key]: currentValue} as SiteConfigData);
 			}
-			// eslint-disable-next-line no-alert
-			alert('Error: ' + (err as any)?.message);
+			toastError((err as any)?.message ?? 'Error');
 		} finally {
 			setSaving(null);
 		}

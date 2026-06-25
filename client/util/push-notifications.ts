@@ -142,7 +142,7 @@ async function initWebPush(): Promise<void> {
 	}
 
 	try {
-		const { initializeApp } = await import('firebase/app');
+		const { initializeApp, getApps, getApp } = await import('firebase/app');
 		const { getMessaging, getToken, onMessage } = await import('firebase/messaging');
 
 		const firebaseConfig = {
@@ -152,7 +152,9 @@ async function initWebPush(): Promise<void> {
 			appId: process.env.FIREBASE_APP_ID,
 		};
 
-		const app = initializeApp(firebaseConfig);
+		// Idempotent: initPushNotifications can be re-invoked (e.g. from the
+		// reminder toggle), and initializeApp throws if the default app already exists.
+		const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 		const messaging = getMessaging(app);
 
 		const swRegistration = await navigator.serviceWorker.ready;

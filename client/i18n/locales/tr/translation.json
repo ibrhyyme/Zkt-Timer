@@ -1746,7 +1746,23 @@
         "view_details": "Detayları Gör"
     },
     "admin_nav": {
-        "other_pages": "Diğer Sayfalar"
+        "other_pages": "Diğer Sayfalar",
+        "dashboard": "Pano",
+        "reports": "Raporlar",
+        "users": "Kullanıcılar",
+        "pro_users": "Pro Üyeler",
+        "announcements": "Duyurular",
+        "email": "Mail",
+        "algorithms": "Algoritmalar",
+        "promo": "Promo",
+        "site_config": "Site Ayarları"
+    },
+    "feature_access": {
+        "title": "Özel erişim",
+        "hint": "toggle kapalıyken de bu kullanıcılar erişebilir",
+        "add_placeholder": "Kullanıcı ekle...",
+        "searching": "Aranıyor...",
+        "save_error": "Kayıt hatası"
     },
     "admin_dashboard": {
         "title": "Yönetim Panosu",

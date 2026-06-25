@@ -1,7 +1,9 @@
 import React, {useState, useRef, useEffect} from 'react';
+import {useTranslation} from 'react-i18next';
 import {gqlQuery, gqlMutateTyped} from '../../api';
 import {UpdateSiteConfigDocument} from '../../../@types/generated/graphql';
 import {setSiteConfigCache, SiteConfigData} from '../../../util/hooks/useSiteConfig';
+import {toastError} from '../../../util/toast';
 import gql from 'graphql-tag';
 import block from '../../../styles/bem';
 import './FeatureAccessControl.scss';
@@ -48,6 +50,7 @@ function normalizeUsers(users?: (OverrideUser | null)[] | null): NormalizedUser[
 }
 
 export default function FeatureAccessControl({feature, currentOverride, onSaved}: Props) {
+	const {t} = useTranslation();
 	const [users, setUsers] = useState<NormalizedUser[]>(() => normalizeUsers(currentOverride?.users));
 	const [saving, setSaving] = useState(false);
 	const [searchQuery, setSearchQuery] = useState('');
@@ -74,7 +77,7 @@ export default function FeatureAccessControl({feature, currentOverride, onSaved}
 				onSaved(updated as SiteConfigData);
 			}
 		} catch (err) {
-			alert('Kayıt hatası: ' + (err as any)?.message);
+			toastError(`${t('feature_access.save_error')}: ${(err as any)?.message ?? ''}`);
 		} finally {
 			setSaving(false);
 		}
@@ -124,9 +127,9 @@ export default function FeatureAccessControl({feature, currentOverride, onSaved}
 	return (
 		<div className={b()}>
 			<div className={b('label')}>
-				Özel erişim
+				{t('feature_access.title')}
 				{users.length > 0 && (
-					<span className={b('label-hint')}>— toggle kapalıyken de bu kullanıcılar erişebilir</span>
+					<span className={b('label-hint')}>— {t('feature_access.hint')}</span>
 				)}
 			</div>
 			<div className={b('user-section')}>
@@ -149,12 +152,12 @@ export default function FeatureAccessControl({feature, currentOverride, onSaved}
 						className={b('search-input')}
 						value={searchQuery}
 						onChange={handleSearchChange}
-						placeholder="Kullanıcı ekle..."
+						placeholder={t('feature_access.add_placeholder')}
 					/>
 					{(searchResults.length > 0 || searching) && (
 						<div className={b('dropdown')}>
 							{searching ? (
-								<div className={b('dropdown-item', {loading: true})}>Aranıyor...</div>
+								<div className={b('dropdown-item', {loading: true})}>{t('feature_access.searching')}</div>
 							) : (
 								searchResults.map((u) => (
 									<button

@@ -1739,7 +1739,23 @@
         "view_details": "Ver detalles"
     },
     "admin_nav": {
-        "other_pages": "Otras páginas"
+        "other_pages": "Otras páginas",
+        "dashboard": "Panel",
+        "reports": "Informes",
+        "users": "Usuarios",
+        "pro_users": "Usuarios Pro",
+        "announcements": "Anuncios",
+        "email": "Correo",
+        "algorithms": "Algoritmos",
+        "promo": "Promo",
+        "site_config": "Configuración del sitio"
+    },
+    "feature_access": {
+        "title": "Acceso especial",
+        "hint": "estos usuarios tienen acceso incluso con el interruptor apagado",
+        "add_placeholder": "Añadir usuario...",
+        "searching": "Buscando...",
+        "save_error": "Error al guardar"
     },
     "admin_dashboard": {
         "title": "Panel de administración",

@@ -84,12 +84,12 @@ function startLabel(user: ProUserData): string {
 	return dayjs(user.iap_latest_event_at).format('DD MMM YYYY');
 }
 
-function ProUserRow({user}: {user: ProUserData}) {
+function ProUserRow({user, onUpdated}: {user: ProUserData; onUpdated: () => void}) {
 	const dispatch = useDispatch();
 	const type = subscriptionType(user);
 	const status = subscriptionStatus(user);
 
-	const handleManage = () => dispatch(openModal(<ManageUser userId={user.id} />, {width: 1100}));
+	const handleManage = () => dispatch(openModal(<ManageUser userId={user.id} onUserUpdated={onUpdated} />, {width: 1100}));
 
 	const [copied, setCopied] = React.useState(false);
 	function copyRcId() {
@@ -236,7 +236,7 @@ export default function AdminProUsers() {
 						) : users.length === 0 ? (
 							<tr><td colSpan={7} style={{textAlign: 'center', padding: '32px', color: '#666'}}>No pro users found</td></tr>
 						) : (
-							users.map((u) => <ProUserRow key={u.id} user={u} />)
+							users.map((u) => <ProUserRow key={u.id} user={u} onUpdated={() => fetchData(page)} />)
 						)}
 					</tbody>
 				</table>

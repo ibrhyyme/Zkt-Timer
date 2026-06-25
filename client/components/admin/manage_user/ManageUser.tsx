@@ -136,16 +136,24 @@ const GET_USER_FOR_ADMIN = gql`
 
 interface Props {
 	userId: string;
+	// Parent list (AdminUsers / AdminProUsers) passes this so a ban/pro/verify
+	// mutation inside the modal also refreshes the row behind it.
+	onUserUpdated?: () => void;
 }
 
 export default function ManageUser(props: Props) {
-	const {userId} = props;
+	const {userId, onUserUpdated} = props;
 	const {t} = useTranslation('translation', {keyPrefix: 'admin_users.manage_user'});
 
 	const {data, loading, refetch} = useQuery<{getUserAccountForAdmin: UserAccountForAdmin}>(GET_USER_FOR_ADMIN, {
 		variables: {userId},
 		fetchPolicy: NO_CACHE,
 	});
+
+	const handleUserUpdate = React.useCallback(() => {
+		refetch();
+		onUserUpdated?.();
+	}, [refetch, onUserUpdated]);
 
 	const [showIpDetail, setShowIpDetail] = useState(false);
 	const [fetchIpInfo, {data: ipData, loading: ipLoading}] = useLazyQuery<{ipInfo: any}>(GET_IP_INFO, {fetchPolicy: NO_CACHE});
@@ -318,7 +326,7 @@ export default function ManageUser(props: Props) {
 				</div>
 				{getInfoCards()}
 				<div className={b('actions')}>
-					<UserActions updateUser={refetch} user={userData} />
+					<UserActions updateUser={handleUserUpdate} user={userData} />
 				</div>
 			</div>
 

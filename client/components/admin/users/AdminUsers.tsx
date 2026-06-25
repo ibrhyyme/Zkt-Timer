@@ -81,7 +81,7 @@ const ADMIN_USER_SEARCH_QUERY = gql`
 	}
 `;
 
-function UserTableRow({user}: {user: UserAccountData}) {
+function UserTableRow({user, onUpdated}: {user: UserAccountData; onUpdated: () => void}) {
 	const dispatch = useDispatch();
 	const {t} = useTranslation();
 
@@ -101,7 +101,7 @@ function UserTableRow({user}: {user: UserAccountData}) {
 	platforms.forEach((p) => badges.push({label: p, color: platformColors[p] || 'gray'}));
 
 	const handleManage = () => {
-		dispatch(openModal(<ManageUser userId={user.id} />, {width: 1100}));
+		dispatch(openModal(<ManageUser userId={user.id} onUserUpdated={onUpdated} />, {width: 1100}));
 	};
 
 	return (
@@ -348,7 +348,7 @@ export default function AdminUsers() {
 								</thead>
 								<tbody>
 									{users.map((user) => (
-										<UserTableRow key={user.id} user={user} />
+										<UserTableRow key={user.id} user={user} onUpdated={() => fetchData(page)} />
 									))}
 								</tbody>
 							</table>

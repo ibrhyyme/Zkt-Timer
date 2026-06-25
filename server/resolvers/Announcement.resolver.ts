@@ -14,6 +14,37 @@ import { Role } from '../middlewares/auth';
 import { sendPushToAll, sendPushToPlatforms } from '../services/push';
 import { translateAnnouncement } from '../util/gemini';
 
+const ANNOUNCEMENT_CATEGORIES = ['FEATURE', 'BUGFIX', 'IMPORTANT', 'INFO'];
+const MAX_ANNOUNCEMENT_TITLE_LENGTH = 200;
+const MAX_ANNOUNCEMENT_CONTENT_LENGTH = 5000;
+
+// Shared by create (all fields present) and update (fields optional). A field is
+// only validated when provided, so partial updates skip absent fields.
+function validateAnnouncementFields(title?: string, content?: string, category?: string, priority?: number) {
+	if (title !== undefined) {
+		if (!title.trim()) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Title is required');
+		}
+		if (title.length > MAX_ANNOUNCEMENT_TITLE_LENGTH) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, `Title must be at most ${MAX_ANNOUNCEMENT_TITLE_LENGTH} characters`);
+		}
+	}
+	if (content !== undefined) {
+		if (!content.trim()) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Content is required');
+		}
+		if (content.length > MAX_ANNOUNCEMENT_CONTENT_LENGTH) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, `Content must be at most ${MAX_ANNOUNCEMENT_CONTENT_LENGTH} characters`);
+		}
+	}
+	if (category !== undefined && !ANNOUNCEMENT_CATEGORIES.includes(category)) {
+		throw new GraphQLError(ErrorCode.BAD_INPUT, 'Invalid category');
+	}
+	if (priority !== undefined && (!Number.isInteger(priority) || priority < 0 || priority > 1000)) {
+		throw new GraphQLError(ErrorCode.BAD_INPUT, 'Priority must be between 0 and 1000');
+	}
+}
+
 function getLocale(context: GraphQLContext): string {
 	return context.req.cookies?.zkt_language || 'en';
 }
@@ -189,6 +220,7 @@ export class AnnouncementResolver {
 		@Arg('input') input: CreateAnnouncementInput,
 		@Ctx() context: GraphQLContext
 	): Promise<Announcement> {
+		validateAnnouncementFields(input.title, input.content, input.category, input.priority);
 		try {
 			const announcement = await context.prisma.announcement.create({
 				data: {
@@ -263,6 +295,7 @@ export class AnnouncementResolver {
 		@Arg('input') input: UpdateAnnouncementInput,
 		@Ctx() context: GraphQLContext
 	): Promise<Announcement> {
+		validateAnnouncementFields(input.title, input.content, input.category, input.priority);
 		try {
 			const existing = await context.prisma.announcement.findUnique({ where: { id } });
 			if (!existing) {
