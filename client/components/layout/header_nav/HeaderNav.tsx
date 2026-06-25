@@ -23,6 +23,7 @@ import Button from '../../common/button/Button';
 import LoginNav from '../nav/LoginNav';
 import LanguageSwitcher from '../../common/language_switcher/LanguageSwitcher';
 import ThemeToggle from './ThemeToggle';
+import StreamerModeToggle from './StreamerModeToggle';
 import { resourceUri } from '../../../util/storage';
 import { isPro } from '../../../util/pro';
 import AnnouncementBell from '../../announcements/AnnouncementBell';
@@ -242,6 +243,7 @@ export default function HeaderNav() {
 					<AccountDropdown />
 					<LanguageSwitcher />
 					<ThemeToggle />
+					<StreamerModeToggle />
 					{me && <LoginNav collapsed={false} />}
 				</div>
 			</div>

@@ -12,6 +12,7 @@ import { CaretDown, CaretUp, Crown, Minus, Plus } from 'phosphor-react';
 import { TimerModuleType } from '../../timer/@types/enums';
 import { MOBILE_MODULE_OPTIONS } from '../../timer/@types/mobile_modules';
 import { useSlamStop } from '../../../util/slam-stop/settings';
+import { canUseStreamerMode } from '../../../lib/streamer-mode';
 import { isSlamDetectorAvailable } from '../../../util/slam-stop/plugin';
 import SlamSensitivitySlider from './SlamSensitivitySlider';
 
@@ -206,6 +207,7 @@ export default function ExtrasTab({
 	const analysisMode = useSettings('smart_cube_analysis_mode');
 	const showRecognition = useSettings('smart_cube_show_recognition');
 	const mobileModules = useSettings('mobile_timer_modules');
+	const streamerMode = useSettings('streamer_mode');
 	const mobileMode = useGeneral('mobile_mode');
 	const manualEntry = useSettings('manual_entry');
 	const slamStop = useSlamStop();
@@ -245,6 +247,13 @@ export default function ExtrasTab({
 			// Bu ozellik desktop-only (label "(masaustu)") — mobilde de gizle
 			hidden: timerType !== 'smart' || hideSmartCubeFeatures || mobileMode,
 			onClick: () => toggleSetting('smart_cube_show_recognition'),
+		},
+		{
+			label: t('quick_controls.streamer_mode'),
+			isActive: !!streamerMode,
+			// Desktop = header butonu; mobilde burada. Sadece izinli kullanicilara.
+			hidden: !canUseStreamerMode(me) || !mobileMode,
+			onClick: () => toggleSetting('streamer_mode'),
 		},
 	];
 

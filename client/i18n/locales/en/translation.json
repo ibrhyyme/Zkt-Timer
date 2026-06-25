@@ -2246,6 +2246,7 @@
         "extras_description": "Adjust quick settings",
         "full_screen": "Full Screen",
         "focus_mode": "Focus Mode",
+        "streamer_mode": "Streamer Mode",
         "inspection": "Inspection",
         "hide_time_when_solving": "Hide Time When Solving",
         "haptic_feedback": "Haptic Feedback",

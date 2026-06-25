@@ -1,0 +1,51 @@
+@import '../../../styles/config';
+
+// Streamer Mode toggle in the desktop header (next to ThemeToggle). Matches the
+// theme toggle's sizing and interaction states; the active state lights up in the
+// primary color so the streamer can tell at a glance that mirroring is on.
+.#{$namespace}-streamer-mode-toggle {
+	all: unset;
+	box-sizing: border-box;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	border-radius: 10px;
+	cursor: pointer;
+	color: rgb(var(--text-color));
+	background: rgba(var(--text-color), 0.06);
+	border: 1px solid rgba(var(--text-color), 0.08);
+	transition:
+		background 0.18s ease,
+		color 0.18s ease,
+		border-color 0.18s ease,
+		transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+
+	&:hover {
+		background: rgba(var(--text-color), 0.12);
+		border-color: rgba(var(--text-color), 0.2);
+		color: rgb(var(--primary-color));
+		transform: translateY(-1px);
+	}
+
+	&:active {
+		transform: translateY(0);
+	}
+
+	&:focus-visible {
+		outline: 2px solid rgba(var(--primary-color), 0.5);
+		outline-offset: 2px;
+	}
+
+	&--active {
+		color: rgb(var(--primary-color));
+		background: rgba(var(--primary-color), 0.14);
+		border-color: rgba(var(--primary-color), 0.35);
+
+		&:hover {
+			background: rgba(var(--primary-color), 0.2);
+			border-color: rgba(var(--primary-color), 0.45);
+		}
+	}
+}

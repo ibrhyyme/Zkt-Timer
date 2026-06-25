@@ -2246,6 +2246,7 @@
         "extras_description": "调整快捷设置",
         "full_screen": "全屏",
         "focus_mode": "专注模式",
+        "streamer_mode": "主播模式",
         "inspection": "观察",
         "hide_time_when_solving": "拧的时候隐藏时间",
         "haptic_feedback": "触觉反馈",

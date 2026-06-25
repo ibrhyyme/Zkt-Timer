@@ -11,6 +11,7 @@ import { getStorageURL } from '../../util/storage';
 import block from '../../styles/bem';
 import { useGeneral } from '../../util/hooks/useGeneral';
 import { useMe } from '../../util/hooks/useMe';
+import { canUseStreamerMode } from '../../lib/streamer-mode';
 import { initTimer } from './helpers/init';
 import { stopAllTimers, clearInspectionTimers } from './helpers/timers';
 import { endTimer } from './helpers/events';
@@ -48,6 +49,7 @@ export default function Timer(props: TimerProps) {
 	const useSpaceWithSmartCube = useSettings('use_space_with_smart_cube');
 	const scrambleSubset = useSettings('scramble_subset');
 	const scrambleTopColor = useSettings('scramble_top_color');
+	const streamerMode = useSettings('streamer_mode');
 	let timerLayout = props.timerLayout || useSettings('timer_layout');
 
 	const me = useMe();
@@ -209,6 +211,7 @@ export default function Timer(props: TimerProps) {
 				className={b({
 					started: !!context.timeStartedAt,
 					mobile: mobileMode && !props.inModal,
+					streamerMode: streamerMode && canUseStreamerMode(me),
 				})}
 			>
 				<TimerContext.Provider value={context}>

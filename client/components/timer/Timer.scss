@@ -17,6 +17,19 @@
 	}
 }
 
+// Streamer Mode: mirror ONLY the time display so a streamer's front camera flips
+// it back to readable. Covers desktop + mobile (TimeDisplay shares this root).
+//
+// NOTE: the root container <div> AND the big time <h1> both carry the same
+// `cd-time-display` base class (both call b() in TimeDisplay.tsx). Mirror the
+// container DIV only — if the h1 is also matched it gets flipped twice (parent +
+// self) and renders upright while the diff under it reads mirrored.
+.cd-timer--streamerMode {
+	div.cd-time-display {
+		transform: scaleX(-1);
+	}
+}
+
 .#{$namespace}-timer {
 	$self: &;
 	$gridGap: 1rem;

@@ -2246,6 +2246,7 @@
         "extras_description": "Ajustar configuración rápida",
         "full_screen": "Pantalla completa",
         "focus_mode": "Modo concentración",
+        "streamer_mode": "Modo Streamer",
         "inspection": "Inspección",
         "hide_time_when_solving": "Ocultar tiempo mientras resuelves",
         "haptic_feedback": "Vibración",

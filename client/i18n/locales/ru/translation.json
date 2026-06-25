@@ -2246,6 +2246,7 @@
         "extras_description": "Настройте быстрые параметры",
         "full_screen": "Полный экран",
         "focus_mode": "Режим фокусировки",
+        "streamer_mode": "Режим стримера",
         "inspection": "Инспекция",
         "hide_time_when_solving": "Скрывать время во время сборки",
         "haptic_feedback": "Вибрация",

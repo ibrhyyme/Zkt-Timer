@@ -67,6 +67,10 @@ export interface AllSettings {
 	smart_cube_analysis_mode: string;
 	smart_cube_show_recognition: boolean;
 
+	// Streamer Mode: mirror only the time display (scaleX(-1)) so a streamer's
+	// front camera flips it back to readable. Gated to admin + one streamer in UI.
+	streamer_mode: boolean;
+
 	// User's custom defaults — current value is saved here with "Set Default" button.
 	// "Reset" button returns to this first, or to factory default if not set.
 	timer_scramble_size_user_default: number | null;
@@ -144,6 +148,7 @@ const defaultSettings: AllSettings = {
 	scramble_top_color: null, // 'U' | 'D' | 'F' | 'B' | 'R' | 'L' | null (default white/U)
 	smart_cube_analysis_mode: 'cffffop', // 'none' | 'cfop' | 'cf_plus_op' | 'cffffop' | 'cffffoopp'
 	smart_cube_show_recognition: false,
+	streamer_mode: false,
 
 	timer_scramble_size_user_default: null,
 	timer_time_size_user_default: null,
