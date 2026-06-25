@@ -4,7 +4,6 @@ export * from './UserAccount.schema';
 export * from './Profile.schema';
 export * from './BadgeType.schema';
 export * from './SmartDevice.schema';
-export * from './SmartDeviceLog.schema';
 export * from './Session.schema';
 export * from './SiteConfig.schema';
 export * from './WcaAccount.schema';

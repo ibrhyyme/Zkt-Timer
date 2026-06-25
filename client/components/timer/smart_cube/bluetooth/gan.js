@@ -5,7 +5,6 @@ import aes128 from './ae128';
 import { Subject } from 'rxjs';
 import { ModeOfOperation } from 'aes-js';
 import { isNative } from '../../../../util/platform';
-import { logSmartDeviceEvent } from '../../../../util/smart_device_telemetry';
 import Cube from 'cubejs';
 import { getStore } from '../../../store';
 import { setSmartSolveEndTime, setSmartCubeClockSkew, getSmartCubeClockSkew } from '../../helpers/events';
@@ -662,12 +661,10 @@ class GanGen4ProtocolDriver {
 		// connection here is what made GAN Gen4 cubes disconnect after ~6-7 solves. Instead,
 		// flush the buffer and emit BUFFER_OVERFLOW so the cube re-syncs from a full FACELETS state.
 		if (this.moveBuffer.length > 16) {
-			const bufferLen = this.moveBuffer.length;
-			const lastSerial = this.serial;
-			console.warn('[ZKT:MOVEBUF] Gen4 buffer overflow — recovering via FACELETS resync', { bufferLen });
+			console.warn('[ZKT:MOVEBUF] Gen4 buffer overflow — recovering via FACELETS resync', { bufferLen: this.moveBuffer.length });
 			this.moveBuffer = [];
 			this.lastSerial = -1; // force a clean re-sync on the next FACELETS event
-			evictedEvents.push({ type: 'BUFFER_OVERFLOW', bufferLen, lastSerial });
+			evictedEvents.push({ type: 'BUFFER_OVERFLOW' });
 		}
 		return evictedEvents;
 	}
@@ -1017,10 +1014,6 @@ export default class GAN extends SmartCube {
 		super();
 		this.device = device;
 		this.adapter = adapter;
-		// Telemetry identity (see smart_cube.js getTelemetryMeta). generationLabel is set once
-		// the protocol driver is resolved in connectWithExistingDevice.
-		this.deviceType = 'gan';
-		this.generationLabel = null;
 		// True once the first valid protocol packet confirms the connection (see _confirmConnectionOnce).
 		this._connectionConfirmed = false;
 		this.gyroListeners = [];
@@ -1146,21 +1139,18 @@ export default class GAN extends SmartCube {
 		for (const serviceUUID of services) {
 			const svcLower = serviceUUID.toLowerCase();
 			if (svcLower === GAN_GEN2_SERVICE) {
-				this.generationLabel = 'gen2';
 				const key = device.name?.startsWith('AiCube') ? GAN_ENCRYPTION_KEYS[1] : GAN_ENCRYPTION_KEYS[0];
 				const encrypter = new GanGen2CubeEncrypter(new Uint8Array(key.key), new Uint8Array(key.iv), salt);
 				const driver = new GanGen2ProtocolDriver();
 				conn = await GanCubeClassicConnection.create(this.adapter, device, svcLower, GAN_GEN2_COMMAND_CHARACTERISTIC, GAN_GEN2_STATE_CHARACTERISTIC, encrypter, driver);
 				break;
 			} else if (svcLower === GAN_GEN3_SERVICE) {
-				this.generationLabel = 'gen3';
 				const key = GAN_ENCRYPTION_KEYS[0];
 				const encrypter = new GanGen3CubeEncrypter(new Uint8Array(key.key), new Uint8Array(key.iv), salt);
 				const driver = new GanGen3ProtocolDriver();
 				conn = await GanCubeClassicConnection.create(this.adapter, device, svcLower, GAN_GEN3_COMMAND_CHARACTERISTIC, GAN_GEN3_STATE_CHARACTERISTIC, encrypter, driver);
 				break;
 			} else if (svcLower === GAN_GEN4_SERVICE) {
-				this.generationLabel = 'gen4';
 				const key = GAN_ENCRYPTION_KEYS[0];
 				const encrypter = new GanGen4CubeEncrypter(new Uint8Array(key.key), new Uint8Array(key.iv), salt);
 				const driver = new GanGen4ProtocolDriver();
@@ -1201,16 +1191,19 @@ export default class GAN extends SmartCube {
 		this._startHandshakeWatchdog();
 	};
 
-	// Wrong MAC => packets never decrypt => no HARDWARE event. Tear the connection down,
+	// Wrong MAC => packets never decrypt => no valid event. Tear the connection down,
 	// drop the bad cached MAC, and surface a clear error.
+	//
+	// Race fix: a valid packet (HARDWARE/FACELETS/MOVE) can arrive during init's await chain,
+	// i.e. BEFORE this runs, confirming the connection already. In that case arming the watchdog
+	// at all is wrong — it would fire later with nothing left to cancel it. So bail if confirmed.
 	_startHandshakeWatchdog = () => {
+		if (this._connectionConfirmed) return;
 		if (this._handshakeTimer) clearTimeout(this._handshakeTimer);
 		this._handshakeTimer = setTimeout(() => {
 			this._handshakeTimer = null;
 			console.warn('[GAN] handshake timeout — wrong MAC or cube unresponsive');
 			try { localStorage.removeItem(GAN_MAC_CACHE_KEY); } catch (e) { /* ignore */ }
-			// Stamp reason so the resulting DISCONNECT event is logged as wrong_mac, not gatt_self.
-			this.setDisconnectReason('wrong_mac');
 			try { this.adapter.disconnect(this.device); } catch (e) { /* ignore */ }
 			this.alertScanError('wrong_mac');
 		}, GAN_HANDSHAKE_TIMEOUT_MS);
@@ -1395,15 +1388,8 @@ export default class GAN extends SmartCube {
 		} else if (event.type == 'BATTERY') {
 			this.alertBatteryLevel(event.batteryLevel);
 		} else if (event.type == 'BUFFER_OVERFLOW') {
-			// Gen4 move buffer overflowed (serial-wrap gap). Recover in place — log it for
-			// telemetry and pull a fresh FACELETS state instead of dropping the connection.
-			logSmartDeviceEvent({
-				event: 'error',
-				reason: 'buffer_overflow_recovered',
-				...this.getTelemetryMeta(),
-				last_serial: event.lastSerial ?? null,
-				extra: { bufferLen: event.bufferLen },
-			});
+			// Gen4 move buffer overflowed (serial-wrap gap). Recover in place — pull a fresh
+			// FACELETS state instead of dropping the connection.
 			this.requestFaceletsResync(true);
 		} else if (event.type == 'DISCONNECT') {
 			if (this._handshakeTimer) {

@@ -605,7 +605,7 @@ export default function SmartCube() {
 
 	useEffect(() => {
 		return () => {
-			connect.current.disconnect('manual');
+			connect.current.disconnect();
 			if (inactivityTimerRef.current) clearTimeout(inactivityTimerRef.current);
 		};
 	}, []);
@@ -632,7 +632,7 @@ export default function SmartCube() {
 	const prevTimerTypeRef = useRef<string | null>(null);
 	useEffect(() => {
 		if (prevTimerTypeRef.current === 'smart' && timerType !== 'smart') {
-			disconnectBluetooth('timer_type_change');
+			disconnectBluetooth();
 		}
 		prevTimerTypeRef.current = timerType;
 	}, [timerType]);
@@ -1078,8 +1078,8 @@ export default function SmartCube() {
 		connect.current.connect();
 	}
 
-	function disconnectBluetooth(reason: string = 'manual') {
-		connect.current.disconnect(reason);
+	function disconnectBluetooth() {
+		connect.current.disconnect();
 		setTimerParams({
 			smartCanStart: false,
 			smartCubeConnected: false,
@@ -1150,7 +1150,7 @@ export default function SmartCube() {
 					text: t('smart_cube.disconnect'),
 					hidden: !smartCubeConnected,
 					disabled: !!timeStartedAt,
-					onClick: () => disconnectBluetooth('manual'),
+					onClick: disconnectBluetooth,
 				},
 				{ text: t('smart_cube.manage_smart_cubes'), disabled: !!timeStartedAt, onClick: toggleManageSmartCubes },
 			]}

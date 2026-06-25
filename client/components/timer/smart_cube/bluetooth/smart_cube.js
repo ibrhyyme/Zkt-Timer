@@ -5,14 +5,8 @@ import { toastError } from '../../../../util/toast';
 import { gql } from '@apollo/client';
 import { gqlMutate } from '../../../api';
 import { closeModal } from '../../../../actions/general';
-import { logSmartDeviceEvent } from '../../../../util/smart_device_telemetry';
 
 export default class SmartCube {
-	// Telemetry: subclasses set `deviceType` (and, for GAN, `generationLabel`/`hardwareName`/`serial`).
-	deviceType = 'unknown';
-	// Reason stamped just before an intentional disconnect; alertDisconnected reads then clears it.
-	_pendingDisconnectReason = null;
-
 	alertScanning = () => {
 		setTimerParams({
 			smartCubeScanning: true,
@@ -39,26 +33,7 @@ export default class SmartCube {
 		});
 	};
 
-	// Stamp why the NEXT disconnect happens (manual, timer-type change, wrong MAC, ...).
-	// Absent reason => alertDisconnected treats it as an unexpected GATT/firmware drop.
-	setDisconnectReason = (reason) => {
-		this._pendingDisconnectReason = reason;
-	};
-
-	// Connection telemetry context. Fields are GAN-specific where present, null elsewhere.
-	getTelemetryMeta = () => ({
-		device_type: this.deviceType || 'unknown',
-		device_name: this.device?.name || null,
-		hardware_name: this.hardwareName || null,
-		generation: this.generationLabel || null,
-		last_serial: typeof this.serial === 'number' ? this.serial : null,
-	});
-
 	alertDisconnected = () => {
-		const reason = this._pendingDisconnectReason || 'gatt_self';
-		this._pendingDisconnectReason = null;
-		logSmartDeviceEvent({ event: 'disconnect', reason, ...this.getTelemetryMeta() });
-
 		toastError('Smart cube connection lost');
 
 		setTimerParams({
@@ -145,8 +120,6 @@ export default class SmartCube {
 	};
 
 	confirmConnected = (dev) => {
-		logSmartDeviceEvent({ event: 'connect', ...this.getTelemetryMeta() });
-
 		setTimerParams({
 			smartCubeConnecting: false,
 			smartCubeConnected: true,

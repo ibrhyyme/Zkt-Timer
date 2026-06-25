@@ -2,10 +2,6 @@ mutation linkRevenueCatUser {
 	linkRevenueCatUser
 }
 
-mutation LogSmartDeviceEvent($input: LogSmartDeviceEventInput!) {
-	logSmartDeviceEvent(input: $input)
-}
-
 mutation CreateSupportTicket($input: SupportTicketInput!) {
 	createSupportTicket(input: $input) {
 		id
