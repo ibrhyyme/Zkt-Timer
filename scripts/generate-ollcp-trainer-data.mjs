@@ -158,10 +158,12 @@ function canonicalizeY(T) {
 	return null;
 }
 function genScrambles(solved, invAlg, count) {
-	// No random AUF: the case is delivered at the SAME orientation as its diagram, so the physical
-	// cube visually matches the card. Variety comes from the leftover EPLL (edges), not from rotation.
+	// Random AUF × EPLL: the same case is delivered at a RANDOM of the 4 top angles, so its front
+	// colour changes each draw → trains relational recognition, not absolute-colour memory. The 48
+	// (EPLL × AUF) combos are shuffled and the first `count` distinct ones kept (slack absorbs any
+	// unsolvable facelet skips). The card diagram stays canonical — recognise relationally, AUF, exec.
 	const combos = [];
-	for (const e of EPLL) combos.push({a: '', e});
+	for (const e of EPLL) for (const a of AUF) combos.push({a, e});
 	shuffle(combos);
 	const out = [], seen = new Set();
 	for (const {a, e} of combos) {

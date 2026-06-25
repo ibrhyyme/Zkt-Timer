@@ -161,29 +161,30 @@ export default function OllTrainView() {
 		};
 	}, [start, stop, advance]);
 
-	// Touch / pointer mirrors the keyboard machine.
-	const onPointerDown = (e: React.PointerEvent) => {
-		// Capture the pointer so the release (up/cancel) is delivered here even if the finger drifts
-		// off the timer before lifting — otherwise pointerup lands elsewhere and start() never runs.
-		try {
-			e.currentTarget.setPointerCapture(e.pointerId);
-		} catch {
-			/* unsupported → touch-action:none still keeps the gesture on this element */
-		}
+	// Full-screen surface (mounted unless stopped) → hold ANYWHERE to start, tap ANYWHERE to stop,
+	// like the normal timer. Mirrors the keyboard machine.
+	const onSurfaceDown = (e: React.PointerEvent) => {
 		const p = phaseRef.current;
-		if (p === 'running') stop();
-		else if (p === 'stopped') advance();
-		else if (p === 'idle') {
+		if (p === 'running') {
+			stop();
+			return;
+		}
+		if (p === 'idle') {
+			// Capture so the release that starts is delivered here even if the finger drifts.
+			try {
+				e.currentTarget.setPointerCapture(e.pointerId);
+			} catch {
+				/* unsupported → touch-action:none still keeps the gesture on this element */
+			}
 			setPhase('ready');
 			phaseRef.current = 'ready'; // authoritative now so an immediate release still starts
 		}
 	};
-	const onPointerUp = () => {
+	const onSurfaceUp = () => {
 		if (phaseRef.current === 'ready') start();
 	};
-	// If the OS/browser still steals the gesture mid-hold, fall back to idle instead of staying stuck
-	// on "ready" (the old bug: hold → green frozen, release → nothing).
-	const onPointerCancel = () => {
+	// If the OS/browser steals the gesture mid-hold, fall back to idle (don't stay stuck on "ready").
+	const onSurfaceCancel = () => {
 		if (phaseRef.current === 'ready') {
 			setPhase('idle');
 			phaseRef.current = 'idle';
@@ -244,16 +245,20 @@ export default function OllTrainView() {
 
 			<div className={b('scramble')}>{cur ? cur.s : '…'}</div>
 
-			<div
-				className={b('timer', {[phase]: true})}
-				onPointerDown={onPointerDown}
-				onPointerUp={onPointerUp}
-				onPointerCancel={onPointerCancel}
-				role="button"
-				tabIndex={0}
-			>
-				{liveTime}
-			</div>
+			<div className={b('timer', {[phase]: true})}>{liveTime}</div>
+
+			{/* Full-screen invisible surface: hold ANYWHERE to start, tap ANYWHERE to stop (normal-timer
+			    feel). Not mounted while stopped, so the reveal buttons/card stay tappable. Sits below the
+			    sticky header (z20) and the reset button (z11), above everything else. */}
+			{phase !== 'stopped' && (
+				<div
+					className={b('surface')}
+					onPointerDown={onSurfaceDown}
+					onPointerUp={onSurfaceUp}
+					onPointerCancel={onSurfaceCancel}
+					aria-hidden="true"
+				/>
+			)}
 
 			{revealedVariant ? (
 				<div className={b('reveal-top')}>
