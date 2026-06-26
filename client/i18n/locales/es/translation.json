@@ -1050,7 +1050,12 @@
         "tab_language": "Idioma",
         "close": "Cerrar",
         "search_placeholder": "Buscar ajustes...",
-        "search_no_results": "No se encontraron resultados"
+        "search_no_results": "No se encontraron resultados",
+        "tab_scramble": "Mezcla",
+        "tab_hardware": "Hardware"
+    },
+    "scramble_settings": {
+        "category_general": "General"
     },
     "appearance": {
         "timer_modules": "Módulos del timer",

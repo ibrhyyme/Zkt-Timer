@@ -1057,7 +1057,12 @@
         "tab_language": "Dil",
         "close": "Kapat",
         "search_placeholder": "Ayarlarda ara...",
-        "search_no_results": "Sonuç bulunamadı"
+        "search_no_results": "Sonuç bulunamadı",
+        "tab_scramble": "Karıştırma",
+        "tab_hardware": "Donanım"
+    },
+    "scramble_settings": {
+        "category_general": "Genel"
     },
     "appearance": {
         "timer_modules": "Timer modülleri",

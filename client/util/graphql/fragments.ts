@@ -169,6 +169,8 @@ export const SETTING_FRAGMENT = gql`
 		cube_type
 		scramble_subset
 		scramble_top_color
+		desktop_prefs
+		mobile_prefs
 		custom_cube_types {
 			...CustomCubeTypeFragment
 		}

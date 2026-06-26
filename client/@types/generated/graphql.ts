@@ -2684,6 +2684,7 @@ export type Setting = {
   created_at?: Maybe<Scalars['DateTime']>;
   cube_type?: Maybe<Scalars['String']>;
   custom_cube_types?: Maybe<Array<Maybe<CustomCubeType>>>;
+  desktop_prefs?: Maybe<Scalars['String']>;
   focus_mode?: Maybe<Scalars['Boolean']>;
   freeze_time?: Maybe<Scalars['Float']>;
   hide_time_when_solving?: Maybe<Scalars['Boolean']>;
@@ -2692,6 +2693,7 @@ export type Setting = {
   inspection_delay?: Maybe<Scalars['Int']>;
   inverse_time_list?: Maybe<Scalars['Boolean']>;
   manual_entry?: Maybe<Scalars['Boolean']>;
+  mobile_prefs?: Maybe<Scalars['String']>;
   nav_collapsed?: Maybe<Scalars['Boolean']>;
   pb_confetti?: Maybe<Scalars['Boolean']>;
   play_inspection_sound?: Maybe<Scalars['Boolean']>;
@@ -2714,6 +2716,7 @@ export type SettingInput = {
   confirm_delete_season?: InputMaybe<Scalars['Boolean']>;
   confirm_delete_solve?: InputMaybe<Scalars['Boolean']>;
   cube_type?: InputMaybe<Scalars['String']>;
+  desktop_prefs?: InputMaybe<Scalars['String']>;
   focus_mode?: InputMaybe<Scalars['Boolean']>;
   freeze_time?: InputMaybe<Scalars['Float']>;
   hide_time_when_solving?: InputMaybe<Scalars['Boolean']>;
@@ -2722,6 +2725,7 @@ export type SettingInput = {
   inverse_time_list?: InputMaybe<Scalars['Boolean']>;
   locale?: InputMaybe<Scalars['String']>;
   manual_entry?: InputMaybe<Scalars['Boolean']>;
+  mobile_prefs?: InputMaybe<Scalars['String']>;
   nav_collapsed?: InputMaybe<Scalars['Boolean']>;
   pb_confetti?: InputMaybe<Scalars['Boolean']>;
   play_inspection_sound?: InputMaybe<Scalars['Boolean']>;

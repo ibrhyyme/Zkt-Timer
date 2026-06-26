@@ -780,6 +780,8 @@ model Setting {
   timer_scramble_size_user_default    Int?
   timer_time_size_user_default        Int?
   scramble_top_color                  String? // 'U' | 'D' | 'F' | 'B' | 'R' | 'L' | null (default U/beyaz)
+  desktop_prefs                       String? // JSON blob — platform-specific appearance+behavior prefs (desktop)
+  mobile_prefs                        String? // JSON blob — platform-specific appearance+behavior prefs (mobile)
   custom_cube_types                   CustomCubeType[] @relation("custom_cube_type_setting")
   user                                UserAccount      @relation(fields: [user_id], references: [id], onDelete: Cascade)
 

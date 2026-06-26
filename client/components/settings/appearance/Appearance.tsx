@@ -12,7 +12,6 @@ import {
 	TimerSettingsGroup,
 	TimerSettingsSelect,
 	TimerSettingsAction,
-	TimerSettingsPanel,
 	TimerSettingsSlider,
 } from '../timer/TimerSettingsRow';
 
@@ -35,13 +34,9 @@ export default function Appearance() {
 	const { t } = useTranslation();
 	const timerTimeSize = useSettings('timer_time_size');
 	const timerTimeSizeUserDefault = useSettings('timer_time_size_user_default');
-	const timerScrambleSize = useSettings('timer_scramble_size');
-	const timerScrambleSizeUserDefault = useSettings('timer_scramble_size_user_default');
 	const timerDecimalPoints = useSettings('timer_decimal_points');
 	const timerFontFamily = useSettings('timer_font_family');
 	const timerModuleCount = useSettings('timer_module_count');
-	const smartCubeSize = useSettings('smart_cube_size');
-	const smartCubeSizeUserDefault = useSettings('smart_cube_size_user_default');
 	const mobileMode = useGeneral('mobile_mode');
 
 	function updateSetting(name: keyof AllSettings, value: any) {
@@ -49,9 +44,7 @@ export default function Appearance() {
 	}
 
 	// Kullanicinin kayitli default'i varsa onu, yoksa factory/mobile default'i don
-	const scrambleSizeDefault = timerScrambleSizeUserDefault ?? getDefaultSetting('timer_scramble_size');
 	const timeSizeDefault = timerTimeSizeUserDefault ?? getDefaultSetting('timer_time_size');
-	const cubeSizeDefault = smartCubeSizeUserDefault ?? getDefaultSetting('smart_cube_size');
 
 	return (
 		<div className="space-y-2">
@@ -127,45 +120,6 @@ export default function Appearance() {
 						</span>
 					</div>
 				</TimerSettingsSlider>
-				<TimerSettingsSlider
-					label={t('appearance.scramble_font_size')}
-					description={t('appearance.scramble_font_size_desc')}
-					value={timerScrambleSize}
-					min={10}
-					max={40}
-					showReset={timerScrambleSize !== scrambleSizeDefault}
-					resetLabel={t('appearance.reset')}
-					onReset={() => updateSetting('timer_scramble_size', scrambleSizeDefault)}
-					restoreDefaultLabel={t('appearance.save_as_default')}
-					onRestoreDefault={() => updateSetting('timer_scramble_size_user_default', timerScrambleSize)}
-					onChange={(v) => updateSetting('timer_scramble_size', v)}
-				>
-					<div className="flex items-center justify-center py-2 rounded-lg bg-module overflow-hidden">
-						<span
-							style={{ fontSize: `${Math.min(timerScrambleSize, 24)}px` }}
-							className="text-text text-center leading-relaxed px-2"
-						>
-							D' R2 B2 R2 U' F2 R2 U' L2 U2 L2 R2 F' D' L D' F' D' F D' R' U
-						</span>
-					</div>
-				</TimerSettingsSlider>
-			</TimerSettingsGroup>
-
-			{/* Akıllı Küp */}
-			<TimerSettingsGroup id="appearance-smartcube" label={t('appearance.category_smart_cube')}>
-				<TimerSettingsSlider
-					label={t('appearance.smart_cube_size')}
-					description={t('appearance.smart_cube_size_desc')}
-					value={smartCubeSize}
-					min={100}
-					max={600}
-					showReset={smartCubeSize !== cubeSizeDefault}
-					resetLabel={t('appearance.reset')}
-					onReset={() => updateSetting('smart_cube_size', cubeSizeDefault)}
-					restoreDefaultLabel={t('appearance.save_as_default')}
-					onRestoreDefault={() => updateSetting('smart_cube_size_user_default', smartCubeSize)}
-					onChange={(v) => updateSetting('smart_cube_size', v)}
-				/>
 			</TimerSettingsGroup>
 		</div>
 	);

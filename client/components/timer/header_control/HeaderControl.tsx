@@ -17,7 +17,7 @@ import { useGeneral } from '../../../util/hooks/useGeneral';
 import { smartCubeSelected } from '../helpers/util';
 import block from '../../../styles/bem';
 import StackMatPicker from '../../settings/stackmat_picker/StackMatPicker';
-import { TIMER_INPUT_TYPE_KEYS } from '../../settings/timer/TimerSettings';
+import { TIMER_INPUT_TYPE_KEYS } from '../../settings/hardware/HardwareSettings';
 import { useSettings } from '../../../util/hooks/useSettings';
 import { AllSettings, getSetting } from '../../../db/settings/query';
 import { useMe } from '../../../util/hooks/useMe';

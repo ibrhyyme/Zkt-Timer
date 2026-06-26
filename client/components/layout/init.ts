@@ -10,7 +10,7 @@ import { ensureLocalDefaultSession, initSessionCollection, initSessionDb, reconc
 import { Dispatch } from 'redux';
 import { clearOfflineData, initOfflineData, setDbLoadDegraded, updateOfflineHash } from './offline';
 import { initSettingsDb, SettingValue } from '../../db/settings/init';
-import { getDefaultSettings, viewportDependentKeys, isMobileViewport, AllSettings } from '../../db/settings/query';
+import { getDefaultSettings, isMobileViewport, AllSettings, isGlobalSetting, isLocalOnlySetting } from '../../db/settings/query';
 import { getLokiDb, initLokiDb } from '../../db/lokijs';
 import { appendSolvesToDb, getSolveDb, initSolveDb, initSolvesCollection } from '../../db/solves/init';
 import { getNewScrambleAsync } from '../timer/helpers/scramble';
@@ -21,6 +21,7 @@ import { Session } from '../../../server/schemas/Session.schema';
 import { Setting } from '../../../server/schemas/Setting.schema';
 import { UserAccount } from '../../../server/schemas/UserAccount.schema';
 import { getAllLocalSettings } from '../../db/settings/local';
+import { syncPlatformPrefs } from '../../db/settings/update';
 import { deleteLocalStorage, getLocalStorage, setLocalStorageObject } from '../../util/data/local_storage';
 import { getStore } from '../store';
 import { setGeneral } from '../../actions/general';
@@ -676,36 +677,76 @@ async function getAllSettings(userId: string) {
 		console.warn('Offline: Could not fetch settings, using defaults', error);
 	}
 
+	// Active platform's prefs blob (desktop_prefs / mobile_prefs)
+	const platformPrefsKey = isMobileViewport() ? 'mobile_prefs' : 'desktop_prefs';
+	let platformPrefs: Record<string, any> | null = null;
+	const rawPrefs = backendSettings?.[platformPrefsKey];
+	if (rawPrefs) {
+		try {
+			platformPrefs = JSON.parse(rawPrefs);
+		} catch {
+			platformPrefs = null;
+		}
+	}
+	const hasBackend = backendSettings && Object.keys(backendSettings).length > 0;
+	// Old user whose prefs blob for THIS platform hasn't been seeded yet.
+	const needsPlatformMigration = hasBackend && !platformPrefs;
+
 	const settings: SettingValue[] = [];
 	const localSettings = getAllLocalSettings(userId);
 	const defaultSettings = { ...getDefaultSettings() };
 
 	for (const key of Object.keys(defaultSettings)) {
-		const setting = {
+		const setting: SettingValue = {
 			id: key,
 			local: true,
 			value: defaultSettings[key],
 		};
+		const k = key as keyof AllSettings;
+		const hasLocal = localSettings[key] !== undefined && localSettings[key] !== null;
+		const hasBackendCol = key in backendSettings && backendSettings[key] !== undefined && backendSettings[key] !== null;
 
-		if (key in backendSettings) {
-			// On mobile, don't use viewport-dependent settings from backend — keep device-specific
-			if (isMobileViewport() && viewportDependentKeys.has(key as keyof AllSettings)) {
-				if (localSettings[key] !== undefined && localSettings[key] !== null) {
-					setting.value = localSettings[key];
-				}
-				// else: mobile-aware default already loaded (from getDefaultSettings)
-			} else {
+		if (isLocalOnlySetting(k)) {
+			// Device-only transient state — never synced.
+			if (hasLocal) setting.value = localSettings[key];
+		} else if (isGlobalSetting(k)) {
+			// Shared across all devices — from backend column.
+			if (hasBackendCol) {
 				setting.value = backendSettings[key];
 				setting.local = false;
+			} else if (hasLocal) {
+				setting.value = localSettings[key];
 			}
-		} else if (localSettings[key] !== undefined && localSettings[key] !== null) {
-			setting.value = localSettings[key];
+		} else {
+			// Platform setting — from the active platform's prefs blob, with
+			// migration fallback to old column value, then device localStorage.
+			if (platformPrefs && key in platformPrefs && platformPrefs[key] !== undefined && platformPrefs[key] !== null) {
+				setting.value = platformPrefs[key];
+				setting.local = false;
+			} else if (hasBackendCol) {
+				setting.value = backendSettings[key];
+				setting.local = false;
+			} else if (hasLocal) {
+				setting.value = localSettings[key];
+				setting.local = false;
+			}
 		}
 
 		settings.push(setting);
 	}
 
 	initSettingsDb(settings);
+
+	// First-time platform migration: seed this platform's prefs on the server
+	// from the values just resolved (old columns + localStorage). Runs once per
+	// platform — guarded by the server-side null prefs check.
+	if (needsPlatformMigration) {
+		try {
+			await syncPlatformPrefs();
+		} catch (e) {
+			console.warn('Platform prefs migration failed (will retry next launch):', e);
+		}
+	}
 }
 
 /**

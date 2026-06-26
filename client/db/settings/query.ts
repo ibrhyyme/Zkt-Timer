@@ -226,3 +226,61 @@ export function getSetting<T extends keyof AllSettings>(key: T): AllSettings[T] 
 
 	return result?.value;
 }
+
+// --- Platform-aware settings sync ---
+//
+// Settings split into three buckets:
+//  - GLOBAL: one value shared across all devices (stored in Setting columns).
+//  - LOCAL_ONLY: never leaves the device (transient state, e.g. locked scramble).
+//  - PLATFORM (everything else): synced to the server BUT separated per platform
+//    (desktop_prefs / mobile_prefs JSON blobs). PC settings sync across PCs,
+//    mobile settings across mobiles.
+//
+// `getSetting`/`setSetting` signatures are unchanged — bucketing happens in the
+// load (getAllSettings) and write (setSettingApi) layers.
+
+// Shared across all devices — "state/data" rather than per-device preference.
+// NOTE: `locale` is NOT here because it isn't an AllSettings key (i18n handles it).
+export const GLOBAL_SETTING_KEYS = new Set<keyof AllSettings>([
+	'session_id',
+	'cube_type',
+	'scramble_subset',
+	'scramble_top_color',
+	'custom_cube_types',
+]);
+
+// Device-local transient state — never synced to the server.
+export const LOCAL_ONLY_SETTING_KEYS = new Set<keyof AllSettings>([
+	'locked_scramble',
+]);
+
+export function isGlobalSetting(key: keyof AllSettings): boolean {
+	return GLOBAL_SETTING_KEYS.has(key);
+}
+
+export function isLocalOnlySetting(key: keyof AllSettings): boolean {
+	return LOCAL_ONLY_SETTING_KEYS.has(key);
+}
+
+// A platform setting is anything that is neither global nor local-only.
+export function isPlatformSetting(key: keyof AllSettings): boolean {
+	return !GLOBAL_SETTING_KEYS.has(key) && !LOCAL_ONLY_SETTING_KEYS.has(key);
+}
+
+// Which JSON column the active platform writes to.
+export function getPlatformPrefsKey(): 'desktop_prefs' | 'mobile_prefs' {
+	return isMobileViewport() ? 'mobile_prefs' : 'desktop_prefs';
+}
+
+// Collect the current values of all PLATFORM settings from LokiJS into a plain
+// object, ready to be JSON-stringified into desktop_prefs / mobile_prefs.
+export function collectPlatformPrefs(): Record<string, any> {
+	const all = getSettings();
+	const prefs: Record<string, any> = {};
+	for (const key of Object.keys(all)) {
+		if (isPlatformSetting(key as keyof AllSettings)) {
+			prefs[key] = all[key];
+		}
+	}
+	return prefs;
+}

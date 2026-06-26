@@ -1050,7 +1050,12 @@
         "tab_language": "语言",
         "close": "关闭",
         "search_placeholder": "搜索设置...",
-        "search_no_results": "未找到结果"
+        "search_no_results": "未找到结果",
+        "tab_scramble": "打乱",
+        "tab_hardware": "硬件"
+    },
+    "scramble_settings": {
+        "category_general": "常规"
     },
     "appearance": {
         "timer_modules": "计时器模块",

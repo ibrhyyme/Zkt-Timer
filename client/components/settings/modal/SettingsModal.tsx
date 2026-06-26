@@ -6,7 +6,9 @@ import {useLocation} from 'react-router-dom';
 import './SettingsModal.scss';
 import {SettingsSearchProvider} from '../SettingsSearchContext';
 import TimerSettings from '../timer/TimerSettings';
+import ScrambleSettings from '../scramble/ScrambleSettings';
 import Appearance from '../appearance/Appearance';
+import HardwareSettings from '../hardware/HardwareSettings';
 import DataSettings from '../data/DataSettings';
 import LanguageSettings from '../language/LanguageSettings';
 import {useScrollSpy} from '../../../util/hooks/useScrollSpy';
@@ -20,14 +22,18 @@ interface SettingsSection {
 
 const SETTINGS_SECTIONS: SettingsSection[] = [
 	{id: 'section-timer', labelKey: 'settings.tab_timer'},
+	{id: 'section-scramble', labelKey: 'settings.tab_scramble'},
 	{id: 'section-appearance', labelKey: 'settings.tab_appearance'},
+	{id: 'section-hardware', labelKey: 'settings.tab_hardware'},
 	{id: 'section-data', labelKey: 'settings.tab_data'},
 	{id: 'section-language', labelKey: 'settings.tab_language'},
 ];
 
 const TAB_TO_SECTION: Record<string, string> = {
 	timer: 'section-timer',
+	scramble: 'section-scramble',
 	appearance: 'section-appearance',
+	hardware: 'section-hardware',
 	data: 'section-data',
 	language: 'section-language',
 };
@@ -175,15 +181,15 @@ export default function SettingsModal(props: Props) {
 						</button>
 					</div>
 
-					{/* Mobile nav pills */}
+					{/* Mobile nav pills — wrap to multiple rows so all sections stay visible */}
 					{!isDesktop && (
-						<div className="flex overflow-x-auto gap-1 bg-button rounded-full p-1 scrollbar-hide">
+						<div className="flex flex-wrap gap-1 bg-button rounded-2xl p-1">
 							{SETTINGS_SECTIONS.map((section) => (
 								<button
 									key={section.id}
 									type="button"
 									onClick={() => scrollToSection(section.id)}
-									className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200 shrink-0 ${
+									className={`px-3 py-1.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-200 ${
 										activeMainSection === section.id
 											? 'bg-primary text-text'
 											: 'text-text hover:bg-button/80'
@@ -235,6 +241,16 @@ export default function SettingsModal(props: Props) {
 									<TimerSettings />
 								</div>
 
+								{/* Scramble */}
+								<div id="section-scramble">
+									{!isSearching && (
+										<h2 className="text-lg font-semibold text-text mb-4">
+											{t('settings.tab_scramble')}
+										</h2>
+									)}
+									<ScrambleSettings />
+								</div>
+
 								{/* Appearance */}
 								<div id="section-appearance">
 									{!isSearching && (
@@ -243,6 +259,16 @@ export default function SettingsModal(props: Props) {
 										</h2>
 									)}
 									<Appearance />
+								</div>
+
+								{/* Hardware & Input */}
+								<div id="section-hardware">
+									{!isSearching && (
+										<h2 className="text-lg font-semibold text-text mb-4">
+											{t('settings.tab_hardware')}
+										</h2>
+									)}
+									<HardwareSettings />
 								</div>
 
 								{/* Data */}

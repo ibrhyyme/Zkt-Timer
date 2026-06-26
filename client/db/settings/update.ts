@@ -3,7 +3,15 @@ import {gql} from '@apollo/client';
 import {SETTING_FRAGMENT} from '../../util/graphql/fragments';
 import {gqlMutate, gqlQuery} from '../../components/api';
 import {snakeCase} from 'change-case';
-import {AllSettings, getSetting} from './query';
+import {
+	AllSettings,
+	getSetting,
+	isGlobalSetting,
+	isLocalOnlySetting,
+	isPlatformSetting,
+	getPlatformPrefsKey,
+	collectPlatformPrefs,
+} from './query';
 import {getSettingsDb, SettingValue} from './init';
 import {updateOfflineHash} from '../../components/layout/offline';
 import {emitEvent} from '../../util/event_handler';
@@ -45,18 +53,35 @@ export async function refreshSettings() {
 
 	const settingsDb = getSettingsDb();
 	const res = await gqlQuery<SettingsData>(query);
-	for (const key of Object.keys(res.data.settings)) {
-		const value = res.data.settings[key];
-		const setVal = settingsDb.findOne({
-			id: key,
-		});
+	const backend: any = res.data.settings;
 
-		if (!setVal) {
-			continue;
+	// Parse the active platform's prefs blob (desktop_prefs / mobile_prefs)
+	let platformPrefs: Record<string, any> = {};
+	const rawPrefs = backend?.[getPlatformPrefsKey()];
+	if (rawPrefs) {
+		try {
+			platformPrefs = JSON.parse(rawPrefs) || {};
+		} catch {
+			platformPrefs = {};
 		}
+	}
 
+	function applyValue(key: string, value: any) {
+		if (isLocalOnlySetting(key as keyof AllSettings)) return; // never overwrite device-local state
+		const setVal = settingsDb.findOne({id: key});
+		if (!setVal) return;
 		setVal.value = value;
 		settingsDb.update(setVal);
+	}
+
+	// Global settings come from columns; platform settings come from the prefs blob.
+	for (const key of Object.keys(backend)) {
+		if (key === 'desktop_prefs' || key === 'mobile_prefs') continue;
+		if (!isGlobalSetting(key as keyof AllSettings)) continue; // platform keys handled below
+		applyValue(key, backend[key]);
+	}
+	for (const key of Object.keys(platformPrefs)) {
+		applyValue(key, platformPrefs[key]);
 	}
 }
 
@@ -78,30 +103,41 @@ export function setSetting<T extends keyof AllSettings>(key: T, value: AllSettin
 async function updatePartialSettings(payload: Partial<AllSettings>) {
 	const settingsDb = getSettingsDb();
 
-	const localSettingUpdates = [];
-	const apiSettingUpdates = [];
+	const localSettingUpdates: SettingValue[] = [];
+	const globalPayload: Record<string, any> = {};
+	let platformChanged = false;
 
 	for (const key of Object.keys(payload)) {
 		const value = payload[key];
 
-		const setVal = settingsDb.findOne({
-			id: key,
-		});
-
+		const setVal = settingsDb.findOne({id: key});
 		const newVal = {...setVal};
 		newVal.value = value;
-
 		localSettingUpdates.push(newVal);
-		if (!newVal.local) {
-			apiSettingUpdates.push(newVal);
+
+		if (isLocalOnlySetting(key as keyof AllSettings)) {
+			// device-only — never synced
+			continue;
+		}
+		if (isGlobalSetting(key as keyof AllSettings)) {
+			globalPayload[snakeCase(key)] = value;
+		} else {
+			// platform setting — sent as a prefs blob (collected after LokiJS update)
+			platformChanged = true;
 		}
 	}
 
+	// Update local store first so collectPlatformPrefs() sees the new values.
 	setSettingLocal(localSettingUpdates);
 	emitSettingUpdateEvent(localSettingUpdates);
 
-	emitSettingUpdateEvent(apiSettingUpdates);
-	setSettingApi(apiSettingUpdates);
+	if (platformChanged) {
+		globalPayload[getPlatformPrefsKey()] = JSON.stringify(collectPlatformPrefs());
+	}
+
+	if (Object.keys(globalPayload).length) {
+		setSettingApi(globalPayload);
+	}
 }
 
 function setSettingLocal(setVals: SettingValue[]) {
@@ -113,13 +149,7 @@ function setSettingLocal(setVals: SettingValue[]) {
 	}
 }
 
-async function setSettingApi(setVals: SettingValue[]) {
-	const gqlPayload = {};
-
-	for (const setVal of setVals) {
-		gqlPayload[snakeCase(setVal.id)] = setVal.value;
-	}
-
+async function setSettingApi(gqlPayload: Record<string, any>) {
 	// Terminate if no keys to set
 	if (!Object.keys(gqlPayload).length) {
 		return;
@@ -148,4 +178,11 @@ function emitSettingUpdateEvent(setVals: SettingValue[]) {
 	for (const setVal of setVals) {
 		emitEvent('settingsDbUpdatedEvent', setVal);
 	}
+}
+
+// Push the active platform's full prefs blob to the server. Used by the
+// first-time platform migration to seed desktop_prefs / mobile_prefs from the
+// values resolved out of old columns + localStorage during initial load.
+export async function syncPlatformPrefs() {
+	await setSettingApi({[getPlatformPrefsKey()]: JSON.stringify(collectPlatformPrefs())});
 }

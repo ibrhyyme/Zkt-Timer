@@ -1050,7 +1050,12 @@
         "tab_language": "Язык",
         "close": "Закрыть",
         "search_placeholder": "Поиск настроек...",
-        "search_no_results": "Ничего не найдено"
+        "search_no_results": "Ничего не найдено",
+        "tab_scramble": "Скрамбл",
+        "tab_hardware": "Оборудование"
+    },
+    "scramble_settings": {
+        "category_general": "Основные"
     },
     "appearance": {
         "timer_modules": "Модули таймера",
