@@ -130,7 +130,7 @@ export default function SessionPicker(props: Props) {
 		}
 	}
 
-	let sessionName = 'Select Session';
+	let sessionName = t('sessions.select_session');
 	if (selectedSession && !hideSessionName) {
 		sessionName = selectedSession.name;
 	}
@@ -145,7 +145,7 @@ export default function SessionPicker(props: Props) {
 				onValueChange={handleValueChange}
 				groups={groups}
 				triggerLabel={sessionName}
-				ariaLabel="Session"
+				ariaLabel={t('sessions.select_session')}
 				maxHeight={400}
 				triggerMaxWidth={180}
 			/>

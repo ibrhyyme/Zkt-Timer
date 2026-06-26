@@ -9,6 +9,17 @@ import {GraphQLVoid} from 'graphql-scalars';
 import {getPrisma} from '../database';
 import {UserAccount} from '../schemas/UserAccount.schema';
 
+const MAX_SESSION_NAME_LENGTH = 255;
+const MAX_SESSION_ID_BATCH = 1000;
+
+// Server-side guard for session name — the client caps at 200 chars but the input is
+// otherwise unvalidated, so an oversized name could bloat the DB / memory.
+function validateSessionName(input: SessionInput) {
+	if (input.name != null && (typeof input.name !== 'string' || input.name.length > MAX_SESSION_NAME_LENGTH)) {
+		throw new GraphQLError(ErrorCode.BAD_INPUT, `Session name must be at most ${MAX_SESSION_NAME_LENGTH} characters`);
+	}
+}
+
 async function createSession(context: GraphQLContext, input: SessionInput) {
 	const {prisma} = context;
 
@@ -85,18 +96,28 @@ async function getSessionsByUser(user: UserAccount) {
 	});
 }
 
-async function mergeSessions(context: GraphQLContext, oldSession: Session, newSession: Session) {
+// Atomically move the old session's solves into the new session AND delete the old
+// (now empty) session. Doing both in one $transaction prevents a mid-way failure from
+// leaving solves moved while the empty old session lingers (or vice-versa).
+async function mergeAndDeleteSession(context: GraphQLContext, oldSession: Session, newSession: Session) {
 	const {prisma} = context;
 
-	return prisma.solve.updateMany({
-		where: {
-			user_id: context.user.id,
-			session_id: oldSession.id,
-		},
-		data: {
-			session_id: newSession.id,
-		},
-	});
+	return prisma.$transaction([
+		prisma.solve.updateMany({
+			where: {
+				user_id: context.user.id,
+				session_id: oldSession.id,
+			},
+			data: {
+				session_id: newSession.id,
+			},
+		}),
+		prisma.session.delete({
+			where: {
+				id: oldSession.id,
+			},
+		}),
+	]);
 }
 
 async function getSessionsByIds(user: UserAccount, ids: string[]) {
@@ -158,6 +179,8 @@ export class SessionResolver {
 	@Authorized([Role.LOGGED_IN])
 	@Mutation(() => Session)
 	async createSession(@Ctx() context: GraphQLContext, @Arg('input', () => SessionInput) input: SessionInput) {
+		validateSessionName(input);
+
 		const sessions = await getSessionsByUser(context.user);
 		input.order = sessions.length;
 
@@ -178,6 +201,8 @@ export class SessionResolver {
 		@Arg('id') id: string,
 		@Arg('input', () => SessionInput) input: SessionInput
 	) {
+		validateSessionName(input);
+
 		const session = await getSessionById(id);
 
 		if (!session || session.user_id !== context.user.id) {
@@ -190,6 +215,10 @@ export class SessionResolver {
 	@Authorized([Role.LOGGED_IN])
 	@Mutation(() => GraphQLVoid)
 	async reorderSessions(@Ctx() context: GraphQLContext, @Arg('ids', () => [String], {validate: false}) ids: string[]) {
+		if (ids.length > MAX_SESSION_ID_BATCH) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, `Cannot reorder more than ${MAX_SESSION_ID_BATCH} sessions at once`);
+		}
+
 		const sessions = await getSessionsByIds(context.user, ids);
 		if (sessions.length !== ids.length) {
 			throw new GraphQLError(ErrorCode.NOT_FOUND, 'Invalid session ID list');
@@ -247,8 +276,7 @@ export class SessionResolver {
 			throw new GraphQLError(ErrorCode.NOT_FOUND, 'Invalid session IDs');
 		}
 
-		await mergeSessions(context, oldSession, newSession);
-		await deleteSession(context, oldSession);
+		await mergeAndDeleteSession(context, oldSession, newSession);
 		await updateOrderOfSessionsForUser(user);
 
 		return newSession;
@@ -259,6 +287,10 @@ export class SessionResolver {
 	async bulkDeleteSessions(@Ctx() context: GraphQLContext, @Arg('ids', () => [String], {validate: false}) ids: string[]) {
 		if (!ids || !ids.length) {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Must include at least one session ID');
+		}
+
+		if (ids.length > MAX_SESSION_ID_BATCH) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, `Cannot delete more than ${MAX_SESSION_ID_BATCH} sessions at once`);
 		}
 
 		const sessions = await getSessionsByIds(context.user, ids);
