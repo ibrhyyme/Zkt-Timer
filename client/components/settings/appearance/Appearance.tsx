@@ -99,7 +99,7 @@ export default function Appearance() {
 					hidden={!!mobileMode}
 					value={timerTimeSize}
 					min={35}
-					max={150}
+					max={300}
 					showReset={timerTimeSize !== timeSizeDefault}
 					resetLabel={t('appearance.reset')}
 					onReset={() => updateSetting('timer_time_size', timeSizeDefault)}
