@@ -69,9 +69,9 @@ $radius-sm:   10px;
 		top: 0;
 		z-index: 100;
 		display: flex;
-		justify-content: flex-end;
+		justify-content: space-between;
 		align-items: center;
-		padding: calc(12px + env(safe-area-inset-top, 0px)) 20px 0;
+		padding: calc(8px + env(safe-area-inset-top, 0px)) 20px 8px;
 
 		@include md {
 			display: none;
@@ -84,11 +84,30 @@ $radius-sm:   10px;
 		z-index: 5;
 		max-width: 1280px;
 		margin: 0 auto;
-		padding: 24px 24px 28px;
+		padding: 8px 24px 28px;
 		text-align: center;
 
 		@include md {
 			padding: 60px 32px 36px;
+		}
+
+		// Brand aura behind the title
+		&::before {
+			content: '';
+			position: absolute;
+			top: -8%;
+			left: 50%;
+			transform: translateX(-50%);
+			width: min(640px, 120%);
+			height: 340px;
+			background: radial-gradient(ellipse at center, rgba(139, 120, 255, 0.22), transparent 70%);
+			pointer-events: none;
+			z-index: 0;
+		}
+
+		> * {
+			position: relative;
+			z-index: 1;
 		}
 	}
 
@@ -99,7 +118,11 @@ $radius-sm:   10px;
 		line-height: 0.95;
 		letter-spacing: -0.03em;
 		color: rgb(var(--text-color));
-		margin: 24px 0 0;
+		margin: 0;
+
+		@include md {
+			margin-top: 24px;
+		}
 
 		em {
 			font-style: italic;
@@ -118,10 +141,14 @@ $radius-sm:   10px;
 
 	&__hero-sub {
 		max-width: 560px;
-		margin: 24px auto 0;
+		margin: 16px auto 0;
 		color: rgba(var(--text-color), 0.62);
 		font-size: clamp(14px, 1.4vw, 16px);
 		line-height: 1.6;
+
+		@include md {
+			margin-top: 24px;
+		}
 	}
 
 	&__hero-meta {

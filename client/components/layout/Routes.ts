@@ -169,8 +169,9 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/user/:username', null, App, Profile, false, false, false, false, false, [prefetchProfileData]),
 	route('/unsub-emails', null, App, UnsubEmails, false, true, false, true, false),
 
-	// Pro — standalone page (not nested under Account)
-	route('/pro', null, App, ProPage),
+	// Pro — standalone page (not nested under Account). noPadding: ProPage manages its own
+	// safe-area in &__mobile-header; Wrapper padding would double-count the notch inset.
+	route('/pro', null, App, ProPage, true, false, false, false, true),
 
 	// Trainer — deep-linkable (her derinlik explicit, exact match; hepsi child=Trainer).
 	// Spesifik-once: client <Switch> ilk eslesen route'u render eder.

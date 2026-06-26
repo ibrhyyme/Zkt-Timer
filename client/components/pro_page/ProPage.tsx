@@ -421,15 +421,21 @@ function ProPageContent() {
 			{mobileMode && (
 				<div className={b('mobile-header')}>
 					<MobileNav />
+					<span className={b('eyebrow')}>
+						<span className={b('eyebrow-dot')} />
+						PRO
+					</span>
 					<AccountDropdown />
 				</div>
 			)}
 			{/* ── HERO ─────────────────────────────────────── */}
 			<section className={b('hero')}>
-				<span className={b('eyebrow')}>
-					<span className={b('eyebrow-dot')} />
-					PRO
-				</span>
+				{!mobileMode && (
+					<span className={b('eyebrow')}>
+						<span className={b('eyebrow-dot')} />
+						PRO
+					</span>
+				)}
 				<h1 className={b('hero-title')}>
 					{t('pro_page.hero_title_1')}<br />
 					<em>{t('pro_page.hero_title_em')}</em>
