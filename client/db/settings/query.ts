@@ -64,6 +64,13 @@ export interface AllSettings {
 	timer_avg_6: string;
 	scramble_subset: string | null;
 	scramble_top_color: string | null;
+	scramble_monospace: boolean;
+	scramble_alignment: 'left' | 'center' | 'right';
+	scramble_click_action: 'none' | 'copy' | 'next';
+	scramble_color_neutral: 'none' | 'dual' | 'six';
+	highlight_pbs: 'off' | 'color' | 'bold';
+	inspection_except_bld: boolean;
+	multi_phase_count: number;
 	smart_cube_analysis_mode: string;
 	smart_cube_show_recognition: boolean;
 
@@ -146,6 +153,13 @@ const defaultSettings: AllSettings = {
 	qiyi_auto_inspection_warning_shown: false,
 	scramble_subset: '333',
 	scramble_top_color: null, // 'U' | 'D' | 'F' | 'B' | 'R' | 'L' | null (default white/U)
+	scramble_monospace: true,
+	scramble_alignment: 'center',
+	scramble_click_action: 'none',
+	scramble_color_neutral: 'none',
+	highlight_pbs: 'color',
+	inspection_except_bld: false,
+	multi_phase_count: 1,
 	smart_cube_analysis_mode: 'cffffop', // 'none' | 'cfop' | 'cf_plus_op' | 'cffffop' | 'cffffoopp'
 	smart_cube_show_recognition: false,
 	streamer_mode: false,

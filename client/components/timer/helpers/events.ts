@@ -252,6 +252,12 @@ export function cancelInspection() {
 }
 
 export function startInspection(context: ITimerContext) {
+	// "Except BLD": on blind subsets (333ni/444bld/555bld/r3ni) skip inspection and start the timer directly.
+	if (getSetting('inspection_except_bld') && /(ni|bld)$/.test(context.scrambleSubset || '')) {
+		startTimer();
+		return;
+	}
+
 	// Close open dropdowns
 	window.dispatchEvent(new CustomEvent('timerInteractionStart'));
 	hapticImpact('medium');

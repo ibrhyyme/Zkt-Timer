@@ -9,6 +9,7 @@ import TimerSettings from '../timer/TimerSettings';
 import ScrambleSettings from '../scramble/ScrambleSettings';
 import Appearance from '../appearance/Appearance';
 import HardwareSettings from '../hardware/HardwareSettings';
+import StatsSettings from '../stats/StatsSettings';
 import DataSettings from '../data/DataSettings';
 import LanguageSettings from '../language/LanguageSettings';
 import {useScrollSpy} from '../../../util/hooks/useScrollSpy';
@@ -25,6 +26,7 @@ const SETTINGS_SECTIONS: SettingsSection[] = [
 	{id: 'section-scramble', labelKey: 'settings.tab_scramble'},
 	{id: 'section-appearance', labelKey: 'settings.tab_appearance'},
 	{id: 'section-hardware', labelKey: 'settings.tab_hardware'},
+	{id: 'section-stats', labelKey: 'settings.tab_stats'},
 	{id: 'section-data', labelKey: 'settings.tab_data'},
 	{id: 'section-language', labelKey: 'settings.tab_language'},
 ];
@@ -34,6 +36,7 @@ const TAB_TO_SECTION: Record<string, string> = {
 	scramble: 'section-scramble',
 	appearance: 'section-appearance',
 	hardware: 'section-hardware',
+	stats: 'section-stats',
 	data: 'section-data',
 	language: 'section-language',
 };
@@ -269,6 +272,16 @@ export default function SettingsModal(props: Props) {
 										</h2>
 									)}
 									<HardwareSettings />
+								</div>
+
+								{/* Stats */}
+								<div id="section-stats">
+									{!isSearching && (
+										<h2 className="text-lg font-semibold text-text mb-4">
+											{t('settings.tab_stats')}
+										</h2>
+									)}
+									<StatsSettings />
 								</div>
 
 								{/* Data */}

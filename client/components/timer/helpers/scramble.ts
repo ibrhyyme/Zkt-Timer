@@ -5,7 +5,8 @@ import { getSubsetsForCube } from '../../../util/cubes/scramble_subsets';
 import { generateScramble, hasGenerator } from '../../../../shared/scramble/registry';
 import { isAsyncScrambleType } from '../../../../shared/scramble/types';
 import { generateScrambleAsync, initScrambleWorker } from '../../../util/scramble-worker-manager';
-import { applyTopColorTransform, isTopColorAvailable, isTopColorFace, TopColorFace } from '../../../util/scramble_transform';
+import { applyTopColorTransform, applyColorNeutral, isTopColorAvailable, isTopColorFace, TopColorFace } from '../../../util/scramble_transform';
+import { getSetting } from '../../../db/settings/query';
 
 // Register generators — side-effect import
 // Only light generators enter main bundle
@@ -228,6 +229,16 @@ let _preGeneratedForType: string | null = null;
 let _preGeneratedForSubset: string | null = null;
 let _preGeneratedForTopColor: TopColorFace | null = null;
 
+// When color-neutral is enabled for 3x3, transform the scramble onto a random face;
+// otherwise apply the regular top-color transform. (Color-neutral overrides top color.)
+export async function applyScrambleColor(raw: string, scrambleTypeId: string, effectiveTopColor: TopColorFace | null): Promise<string> {
+	const colorNeutral = getSetting('scramble_color_neutral');
+	if (colorNeutral !== 'none' && scrambleTypeId === '333') {
+		return applyColorNeutral(raw, colorNeutral);
+	}
+	return applyTopColorTransform(raw, effectiveTopColor);
+}
+
 export function preGenerateScramble(cubeType: string, subset?: string, topColor?: string | null) {
 	const ct = getCubeTypeInfoById(cubeType);
 	if (!ct) return;
@@ -245,7 +256,7 @@ export function preGenerateScramble(cubeType: string, subset?: string, topColor?
 	// Async: generate in background via worker + apply transform
 	getNewScrambleAsync(ct.scramble, subset).then(async (rawScramble) => {
 		if (_preGeneratedForType !== cubeType || _preGeneratedForSubset !== (subset ?? null) || _preGeneratedForTopColor !== effectiveTopColor) return;
-		const scramble = await applyTopColorTransform(rawScramble, effectiveTopColor);
+		const scramble = await applyScrambleColor(rawScramble, ct.scramble, effectiveTopColor);
 		if (_preGeneratedForType !== cubeType || _preGeneratedForSubset !== (subset ?? null) || _preGeneratedForTopColor !== effectiveTopColor) return;
 		_preGeneratedScramble = scramble;
 	});
@@ -298,7 +309,7 @@ export function resetScramble(context: ITimerContext) {
 			: null;
 
 	getNewScrambleAsync(ct.scramble, scrambleSubset).then(async (rawScramble) => {
-		const newScramble = await applyTopColorTransform(rawScramble, effectiveTopColor);
+		const newScramble = await applyScrambleColor(rawScramble, ct.scramble, effectiveTopColor);
 		setTimerParams({ scramble: newScramble, originalScramble: newScramble, smartTurnOffset: 0 });
 	}).catch((e) => { console.error('[scramble] resetScramble failed:', e); });
 }

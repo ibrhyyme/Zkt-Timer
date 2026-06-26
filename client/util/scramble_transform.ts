@@ -90,3 +90,21 @@ export async function applyTopColorTransform(
 		return scramble;
 	}
 }
+
+// Color-neutral training: each scramble is transformed onto a random face from the
+// level's pool. Reuses applyTopColorTransform's conjugation so the cube stays in the
+// standard grip (smart-cube compatible). 'dual' = white/yellow, 'six' = all faces.
+const COLOR_NEUTRAL_POOLS: Record<string, TopColorFace[]> = {
+	dual: ['U', 'D'],
+	six: ['U', 'D', 'F', 'B', 'R', 'L'],
+};
+
+export async function applyColorNeutral(
+	scramble: string,
+	mode: string | null | undefined
+): Promise<string> {
+	const pool = mode ? COLOR_NEUTRAL_POOLS[mode] : null;
+	if (!scramble || !pool) return scramble;
+	const face = pool[Math.floor(Math.random() * pool.length)];
+	return applyTopColorTransform(scramble, face);
+}

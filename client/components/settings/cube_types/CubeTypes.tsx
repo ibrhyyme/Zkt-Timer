@@ -64,9 +64,9 @@ export default function CubeTypes() {
 						icon={<Trash />}
 						glow
 						confirmModalProps={{
-							title: 'Delete custom cube type',
-							description: `Are you sure you want to delete "${cubeType.name}"? This will also delete all of your solves for this cube type.`,
-							buttonText: 'Delete cube type',
+							title: t('timer_settings.cube_types_delete_title'),
+							description: t('timer_settings.cube_types_delete_desc', { name: cubeType.name }),
+							buttonText: t('timer_settings.cube_types_delete_button'),
 							triggerAction: () => deleteCubeType(cubeType),
 						}}
 					/>
@@ -84,9 +84,9 @@ export default function CubeTypes() {
 				<table className="cd-table">
 					<thead>
 						<tr>
-							<th>Cube Type</th>
-							<th>Scramble Type</th>
-							<th>Actions</th>
+							<th>{t('timer_settings.cube_types_col_cube')}</th>
+							<th>{t('timer_settings.cube_types_col_scramble')}</th>
+							<th>{t('timer_settings.cube_types_col_actions')}</th>
 						</tr>
 					</thead>
 					<tbody>{rows}</tbody>

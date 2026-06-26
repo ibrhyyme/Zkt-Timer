@@ -3,7 +3,7 @@ import {useTranslation} from 'react-i18next';
 import './TimerScramble.scss';
 import { ArrowClockwise, CaretLeft, CaretRight, Lock, LockSimple, PencilSimple } from 'phosphor-react';
 import TextareaAutosize from 'react-textarea-autosize';
-import CopyText from '../../../common/copy_text/CopyText';
+import CopyText, { copyText } from '../../../common/copy_text/CopyText';
 import { MOBILE_FONT_SIZE_MULTIPLIER } from '../../../../db/settings/update';
 import { useGeneral } from '../../../../util/hooks/useGeneral';
 import Button from '../../../common/button/Button';
@@ -42,6 +42,9 @@ export default function TimerScramble() {
 	const { editScramble, scrambleLocked, notification, hideScramble, timeStartedAt, matchMode } = context;
 	let scramble = context.scramble;
 	const lockedScramble = useSettings('locked_scramble');
+	const scrambleMonospace = useSettings('scramble_monospace');
+	const scrambleAlignment = useSettings('scramble_alignment');
+	const scrambleClickAction = useSettings('scramble_click_action');
 	const isSmart = smartCubeSelected(context);
 	const isSmartScrambling = isSmart && context.smartTurns && context.smartTurns.length > 0 && !timeStartedAt;
 
@@ -170,6 +173,18 @@ export default function TimerScramble() {
 		}
 	}, [currentIndex, scrambleHistory, timeStartedAt, scrambleLocked, isSmartScrambling, cubeType, scrambleSubset]);
 
+	// Click action on the scramble body (desktop) — copy or next scramble.
+	function handleScrambleClick() {
+		if (scrambleClickAction === 'none' || editScramble || scrambleLocked || timeStartedAt || isSmart) {
+			return;
+		}
+		if (scrambleClickAction === 'copy') {
+			copyText(scramble);
+		} else if (scrambleClickAction === 'next') {
+			handleNextScramble();
+		}
+	}
+
 	// Keyboard shortcuts (Left/Right arrow keys)
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
@@ -285,7 +300,11 @@ export default function TimerScramble() {
 				style={{
 					fontSize: timerScrambleSize + 'px',
 					lineHeight: timerScrambleSize * 1.6 + 'px',
+					fontFamily: scrambleMonospace ? "'Roboto Mono', monospace" : 'inherit',
+					textAlign: scrambleAlignment,
+					cursor: scrambleClickAction !== 'none' && !editScramble && !isSmart ? 'pointer' : undefined,
 				}}
+				onClick={handleScrambleClick}
 			>
 				{scrambleBody}
 			</div>

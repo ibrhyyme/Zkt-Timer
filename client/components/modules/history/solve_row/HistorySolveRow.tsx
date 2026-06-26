@@ -18,10 +18,12 @@ interface Props {
 	index: number;
 	disabled?: boolean;
 	solve: Solve;
+	isPb?: boolean;
+	highlightMode?: string;
 }
 
 function HistorySolveRow(props: Props) {
-	const { index, solve, disabled } = props;
+	const { index, solve, disabled, isPb, highlightMode } = props;
 	const mobileMode = useGeneral('mobile_mode');
 
 	const dispatch = useDispatch();
@@ -107,7 +109,7 @@ function HistorySolveRow(props: Props) {
 		<div className={b({ mobile: mobileMode })} key={id}>
 			<div className={b('index')}>{(index + 1).toLocaleString()}.</div>
 			<div>
-				<button className={b('time', { plusTwo, dnf })} onClick={openSolve}>
+				<button className={b('time', { plusTwo, dnf, pbColor: isPb && highlightMode === 'color', pbBold: isPb && highlightMode === 'bold' })} onClick={openSolve}>
 					<span>{time}</span>
 					{bluetoothIcon}
 				</button>

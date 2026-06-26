@@ -46,6 +46,8 @@ export default function MobileTimerScramble() {
     const { hideScramble, timeStartedAt, scrambleLocked } = context;
     let scramble = context.scramble;
     const lockedScramble = useSettings('locked_scramble');
+    const scrambleMonospace = useSettings('scramble_monospace');
+    const scrambleAlignment = useSettings('scramble_alignment');
 
     const isSmart = smartCubeSelected(context);
 
@@ -329,6 +331,8 @@ export default function MobileTimerScramble() {
                 style={{
                     fontSize: fontSize + 'px',
                     lineHeight: fontSize * 1.4 + 'px',
+                    fontFamily: scrambleMonospace ? "'Roboto Mono', monospace" : 'inherit',
+                    textAlign: scrambleAlignment,
                 }}
                 onClick={handleClick}
                 onTouchStart={handleTouchStart}

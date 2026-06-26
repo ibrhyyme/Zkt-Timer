@@ -108,6 +108,14 @@
 			color: rgb(var(--error-color)) !important;
 		}
 
+		&--pbColor {
+			color: rgb(var(--primary-color)) !important;
+		}
+
+		&--pbBold {
+			font-weight: 800;
+		}
+
 		>i {
 			color: rgb(var(--text-color));
 			opacity: 0.6;

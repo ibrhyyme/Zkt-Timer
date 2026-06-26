@@ -12,6 +12,7 @@ import { deleteSolveDb } from '../../../db/solves/update';
 import { useSolveDb } from '../../../util/hooks/useSolveDb';
 import { Solve } from '../../../../server/schemas/Solve.schema';
 import { useGeneral } from '../../../util/hooks/useGeneral';
+import { useSettings } from '../../../util/hooks/useSettings';
 import { publishScroll, subscribeScroll, HISTORY_SCROLL_CHANNEL, PHASE_ANALYSIS_SCROLL_CHANNEL } from '../../../util/scroll_sync';
 
 interface Props {
@@ -63,6 +64,26 @@ export default function History(props: Props) {
 		solves = fetchSolves(filterOptions);
 	}
 
+	// PB progression highlight: mark every solve that beat the running best (single PB).
+	const highlightPbs = useSettings('highlight_pbs');
+	const pbSolveIds = React.useMemo(() => {
+		const ids = new Set<string>();
+		if (highlightPbs === 'off') return ids;
+		const chrono = [...solves].sort(
+			(a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+		);
+		let best = Infinity;
+		for (const s of chrono) {
+			if (s.dnf) continue;
+			const t = s.time + (s.plus_two ? 2 : 0);
+			if (t > 0 && t < best) {
+				best = t;
+				ids.add(s.id);
+			}
+		}
+		return ids;
+	}, [solves, highlightPbs]);
+
 	function renderSolveRow(index: number) {
 		let solveIndex = index;
 		if (reverseOrder) {
@@ -75,7 +96,7 @@ export default function History(props: Props) {
 		}
 
 		const solve = solves[solveIndex];
-		return <HistorySolveRow disabled={disabled} key={solve.id} index={displayIndex} solve={solve} />;
+		return <HistorySolveRow disabled={disabled} key={solve.id} index={displayIndex} solve={solve} isPb={pbSolveIds.has(solve.id)} highlightMode={highlightPbs} />;
 	}
 
 	function getLastSolve() {

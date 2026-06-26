@@ -24,6 +24,7 @@ export default function TimerSettings() {
 	const inspectionDelay = useSettings('inspection_delay');
 	const playInspectionSound = useSettings('play_inspection_sound');
 	const inspectionAutoStart = useSettings('inspection_auto_start');
+	const inspectionExceptBld = useSettings('inspection_except_bld');
 
 	// Confirmations
 	const confirmDeleteSolve = useSettings('confirm_delete_solve');
@@ -101,6 +102,13 @@ export default function TimerSettings() {
 					isActive={inspectionAutoStart}
 					hidden={!inspection}
 					onClick={() => toggleSetting('inspection_auto_start')}
+				/>
+				<TimerSettingsToggle
+					label={t('timer_settings.inspection_except_bld')}
+					description={t('timer_settings.inspection_except_bld_desc')}
+					isActive={inspectionExceptBld}
+					hidden={!inspection}
+					onClick={() => toggleSetting('inspection_except_bld')}
 				/>
 			</TimerSettingsGroup>
 
