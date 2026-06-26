@@ -120,7 +120,7 @@ export default function CustomizeStats(props: Props) {
 			<div className="mb-4 table w-full">
 				<div className={className}>{blocks}</div>
 				<div className="mx-auto mt-4 flex gap-2 items-center justify-center flex-wrap">
-					<Button disabled={!canAddBlocks} glow small primary onClick={addBlockToGrid} text="Blok Ekle" />
+					<Button disabled={!canAddBlocks} glow small primary onClick={addBlockToGrid} text={t('timer_modules.add_block')} />
 					<Button small gray onClick={resetToDefaults} text={t('timer_modules.reset_to_defaults')} />
 				</div>
 			</div>

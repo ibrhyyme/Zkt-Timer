@@ -66,7 +66,7 @@ export default function QuickStats(props: Props) {
 		dispatch(
 			openModal(<CustomizeStats filterOptions={filterOptions} />, {
 				title: t('timer_modules.customize_stats'),
-				description: 'Customize here and see immediately',
+				description: t('timer_modules.customize_stats_desc'),
 			})
 		);
 	}

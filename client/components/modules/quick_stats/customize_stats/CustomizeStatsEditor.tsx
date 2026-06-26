@@ -75,7 +75,7 @@ export default function CustomizeStatsEditor(props: Props) {
 				await saveStatsModuleBlocks();
 				setSavedStatus('saved');
 			} catch (e) {
-				setError('Failed to save to server. Please try again later.');
+				setError(t('timer_modules.error_save_failed'));
 			}
 		}, 100);
 
@@ -111,13 +111,13 @@ export default function CustomizeStatsEditor(props: Props) {
 			const avgInt = parseInt(averageCount, 10);
 			setAverageCountInt(avgInt);
 		} catch (e) {
-			setError('Changes not saved. Average count must be a number between 3 and 10,000.');
+			setError(t('timer_modules.error_invalid_count'));
 		}
 	}
 
 	function onSelectColor(colorName: ColorName) {
 		if (!colorNames.includes(colorName)) {
-			setError('Changes not saved. Invalid color name.');
+			setError(t('timer_modules.error_invalid_color'));
 			return;
 		}
 
@@ -139,18 +139,18 @@ export default function CustomizeStatsEditor(props: Props) {
 
 		averageCountDiv = (
 			<FormSection>
-				<InputLegend text="Average Type" />
+				<InputLegend text={t('timer_modules.average_type')} />
 				<div>
-					<Checkbox text="Overall average" checked={averageAll} onChange={() => toggleSetAverageAll()} />
+					<Checkbox text={t('timer_modules.overall_average')} checked={averageAll} onChange={() => toggleSetAverageAll()} />
 				</div>
 				<div className="my-2 opacity-80">
-					<Tag text="OR" textColor="text" />
+					<Tag text={t('timer_modules.stat_or')} textColor="text" />
 				</div>
 				<div className={avgCountClasses.join(' ')}>
 					<Input
 						value={averageCount}
-						legend="Specific count"
-						info="Must be a number between 3 and 10,000"
+						legend={t('timer_modules.specific_count')}
+						info={t('timer_modules.count_info')}
 						type="number"
 						onChange={(e) => setAverageCount(e.target.value)}
 						onBlur={blurAverageCount}
@@ -182,9 +182,9 @@ export default function CustomizeStatsEditor(props: Props) {
 
 	let saveDiv = null;
 	if (savedStatus === 'saved') {
-		saveDiv = <Tag textColor="green" text="Saved" icon={<Check weight="bold" />} />;
+		saveDiv = <Tag textColor="green" text={t('timer_modules.saved')} icon={<Check weight="bold" />} />;
 	} else if (savedStatus === 'saving') {
-		saveDiv = <Tag textColor="orange" text="Saving..." />;
+		saveDiv = <Tag textColor="orange" text={t('timer_modules.saving')} />;
 	}
 
 	return (
@@ -202,8 +202,8 @@ export default function CustomizeStatsEditor(props: Props) {
 						tabId={statType}
 						onChange={(val) => selectStatType(val)}
 						tabs={[
-							{ id: 'single', value: 'Single' },
-							{ id: 'average', value: 'Average' },
+							{ id: 'single', value: t('timer_modules.stat_single') },
+							{ id: 'average', value: t('timer_modules.stat_average') },
 						]}
 					/>
 				</FormSection>
@@ -215,15 +215,15 @@ export default function CustomizeStatsEditor(props: Props) {
 						tabId={sortBy}
 						onChange={(val) => setSortBy(val as any)}
 						tabs={[
-							{ id: 'current', value: 'Current', skip: statType !== 'average' },
-							{ id: 'best', value: 'Best' },
-							{ id: 'worst', value: 'Worst' },
+							{ id: 'current', value: t('timer_modules.stat_current'), skip: statType !== 'average' },
+							{ id: 'best', value: t('timer_modules.stat_best') },
+							{ id: 'worst', value: t('timer_modules.stat_worst') },
 						]}
 					/>
 				</FormSection>
 				<FormSection>
-					<InputLegend text="Options" />
-					<Checkbox text="Session solves only" checked={session} onChange={() => toggleSession()} />
+					<InputLegend text={t('timer_modules.options')} />
+					<Checkbox text={t('timer_modules.session_solves_only')} checked={session} onChange={() => toggleSession()} />
 				</FormSection>
 				<FormSection proOnly>
 					<InputLegend text={t('timer_modules.stat_color')} />
@@ -233,7 +233,7 @@ export default function CustomizeStatsEditor(props: Props) {
 					<Button
 						hidden={hideRemoveButton}
 						flat
-						text="Remove"
+						text={t('timer_modules.remove')}
 						danger
 						onClick={(e) => {
 							e.stopPropagation();

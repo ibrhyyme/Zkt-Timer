@@ -10,6 +10,7 @@ import {getCurrentAverage} from '../../../db/solves/stats/solves/average/average
 import {getAveragePB} from '../../../db/solves/stats/solves/average/average_pb';
 import {gql} from '@apollo/client';
 import {gqlMutate} from '../../api';
+import i18n from '../../../i18n/i18n';
 
 export const STATS_GRID_SIZE = 4;
 
@@ -17,24 +18,25 @@ export function getStatsBlockDescription(statsOptions: StatsModuleBlock, filterO
 	const description = [];
 
 	if (statsOptions.sortBy === 'worst' && statsOptions.statType === 'single') {
-		description.push('worst');
+		description.push(i18n.t('timer_modules.stat_worst'));
 	} else if (statsOptions.sortBy === 'best') {
-		description.push('best');
+		description.push(i18n.t('timer_modules.stat_best'));
 	} else if (statsOptions.sortBy === 'current') {
-		description.push('current');
+		description.push(i18n.t('timer_modules.stat_current'));
 	}
 
 	if (statsOptions.session) {
-		description.push('session');
+		description.push(i18n.t('timer_modules.stat_session'));
 	}
 
 	if (statsOptions.statType === 'average') {
-		description.push('avg');
 		if (statsOptions.averageCount) {
-			description.push(`of ${statsOptions.averageCount}`);
+			description.push(i18n.t('timer_modules.stat_avg_of', {num: statsOptions.averageCount}));
+		} else {
+			description.push(i18n.t('timer_modules.stat_avg'));
 		}
 	} else {
-		description.push('solve');
+		description.push(i18n.t('timer_modules.stat_solve'));
 	}
 
 	return description.join(' ');
