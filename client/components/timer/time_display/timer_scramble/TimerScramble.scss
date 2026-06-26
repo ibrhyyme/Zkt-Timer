@@ -45,7 +45,11 @@
 		gap: 20px;
 		margin-bottom: 8px;
 		position: relative;
-		z-index: 35; // HeaderControl z-index: 30'un üstünde kal
+		// Local layering within the scramble only — this can't beat the HeaderControl
+		// bar (it lives in the wrapper's z-index:10 stacking context). The header is
+		// kept click-transparent over its empty regions via pointer-events instead
+		// (see HeaderControl.scss).
+		z-index: 35;
 	}
 
 	&__nav-btn {

@@ -13,8 +13,27 @@
 	z-index: 30;
 	position: absolute;
 
+	// The bar is an absolutely-positioned, full-width overlay (z-index 30) sitting in
+	// a stacking context ABOVE the timer content wrapper (z-index 10). At higher zoom
+	// its box grows / the vertically-centered scramble block rises into it, so its
+	// empty center spacer cell swallows clicks meant for the Önceki/Sonraki nav
+	// buttons beneath. Make the empty regions transparent to pointer events; only the
+	// real control clusters re-enable them below. Zoom-independent fix.
+	pointer-events: none;
+
 	&:focus-within {
 		z-index: 10000;
+	}
+
+	// Real control clusters stay interactive (left cluster + mobile right cluster).
+	&__left-controls,
+	&__right-controls {
+		pointer-events: auto;
+	}
+
+	// Desktop custom right-cell content (match/modal embeds) stays clickable.
+	> div:last-of-type {
+		pointer-events: auto;
 	}
 
 	>div {
@@ -98,6 +117,13 @@
 	>div:last-of-type {
 		justify-content: flex-end;
 	}
+}
+
+// While solving the whole bar is inert (Timer.scss sets pointer-events: none +
+// opacity: 0 on --started). Don't let the base auto rules above re-enable the now
+// invisible controls — keep every cell non-interactive during a solve.
+.#{$namespace}-timer--started .#{$namespace}-timer-header-control > div {
+	pointer-events: none;
 }
 
 // Mobile-specific styles
