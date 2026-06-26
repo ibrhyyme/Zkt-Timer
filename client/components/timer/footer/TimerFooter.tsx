@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { CaretUp, CaretDown } from 'phosphor-react';
 import { setSetting } from '../../../db/settings/update';
 import { TimerContext } from '../Timer';
@@ -12,6 +12,12 @@ import { TimerModuleType } from '../@types/enums';
 
 const b = block('timer-footer');
 
+// Minimum readable height (px) for one stacked module in the vertical (left/right)
+// footer column. Column height / this = how many modules fit. Tuned so a normal
+// desktop monitor (~1080p+) shows 3 modules at 100% zoom (no zooming needed); small
+// laptops naturally stay at 2. The user's timer_module_count is still the upper cap.
+const MIN_VERTICAL_MODULE_PX = 280;
+
 export default function TimerFooter() {
 	const context = useContext(TimerContext);
 	const { timerLayout, cubeType, scramble, matchMode } = context;
@@ -23,6 +29,27 @@ export default function TimerFooter() {
 	const customModules = context.timerCustomFooterModules;
 	const timerModules = useSettings('timer_modules');
 	const timerModuleCount = useSettings('timer_module_count');
+
+	// Desktop side layouts (left/right) stack modules vertically in a narrow column.
+	// Fit as many as the column height allows (min 2, capped at the user's module count)
+	// so zooming out / taller screens reveal more modules instead of a hard limit of 2.
+	const isDesktopVertical = !mobileMode && (timerLayout === 'right' || timerLayout === 'left');
+	const footerRef = useRef<HTMLDivElement>(null);
+	const [verticalFitCount, setVerticalFitCount] = useState(2);
+
+	useEffect(() => {
+		if (!isDesktopVertical || !footerRef.current) return;
+		const el = footerRef.current;
+		const recompute = () => {
+			const fit = Math.floor(el.clientHeight / MIN_VERTICAL_MODULE_PX);
+			const next = Math.min(timerModuleCount || 3, Math.max(2, fit));
+			setVerticalFitCount((prev) => (prev === next ? prev : next));
+		};
+		recompute();
+		const ro = new ResizeObserver(recompute);
+		ro.observe(el);
+		return () => ro.disconnect();
+	}, [isDesktopVertical, timerModuleCount]);
 
 	// Ensure mobile footer is hidden by default
 	useEffect(() => {
@@ -119,10 +146,10 @@ export default function TimerFooter() {
 		// Show normal modules on desktop version
 		// In right/left layout, vertical space is limited → max 2 modules
 		const isVerticalLayout = timerLayout === 'right' || timerLayout === 'left';
-		const moduleLimit = isVerticalLayout ? 2 : timerModuleCount;
+		const moduleLimit = isVerticalLayout ? verticalFitCount : timerModuleCount;
 
 		if (customModules && customModules?.length) {
-			const limit = isVerticalLayout ? Math.min(customModules.length, 2) : customModules.length;
+			const limit = isVerticalLayout ? Math.min(customModules.length, verticalFitCount) : customModules.length;
 			for (let i = 0; i < limit; i++) {
 				const customModule = customModules[i];
 				const moduleType = customModule.moduleType;
@@ -138,11 +165,18 @@ export default function TimerFooter() {
 	}
 
 	// Footer always visible in mobile mode
-	const body = <div className={b('body', { mobile: mobileMode, layout: timerLayout, match: matchMode })}>{modules}</div>;
+	const body = (
+		<div
+			className={b('body', { mobile: mobileMode, layout: timerLayout, match: matchMode })}
+			style={isDesktopVertical ? { gridTemplateRows: `repeat(${verticalFitCount}, minmax(0, 1fr))` } : undefined}
+		>
+			{modules}
+		</div>
+	);
 
 
 	return (
-		<div className={b({ layout: timerLayout, match: matchMode })}>
+		<div className={b({ layout: timerLayout, match: matchMode })} ref={footerRef}>
 			{body}
 		</div>
 	);

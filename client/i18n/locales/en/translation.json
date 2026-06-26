@@ -1048,7 +1048,9 @@
         "tab_appearance": "Appearance",
         "tab_data": "Data",
         "tab_language": "Language",
-        "close": "Close"
+        "close": "Close",
+        "search_placeholder": "Search settings...",
+        "search_no_results": "No results found"
     },
     "appearance": {
         "timer_modules": "Timer modules",
@@ -1070,7 +1072,8 @@
         "smart_cube_size_desc": "Adjust the size of the smart cube on the homepage.",
         "category_theme": "Theme",
         "category_layout": "Layout",
-        "category_typography": "Typography"
+        "category_typography": "Typography",
+        "category_smart_cube": "Smart Cube"
     },
     "timer_settings": {
         "decimal_points": "Timer decimal points",

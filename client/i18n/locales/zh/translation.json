@@ -1048,7 +1048,9 @@
         "tab_appearance": "外观",
         "tab_data": "数据",
         "tab_language": "语言",
-        "close": "关闭"
+        "close": "关闭",
+        "search_placeholder": "搜索设置...",
+        "search_no_results": "未找到结果"
     },
     "appearance": {
         "timer_modules": "计时器模块",
@@ -1070,7 +1072,8 @@
         "smart_cube_size_desc": "调整主页上智能魔方的尺寸。",
         "category_theme": "主题",
         "category_layout": "布局",
-        "category_typography": "排版"
+        "category_typography": "排版",
+        "category_smart_cube": "智能魔方"
     },
     "timer_settings": {
         "decimal_points": "计时器小数位数",

@@ -1048,7 +1048,9 @@
         "tab_appearance": "Внешний вид",
         "tab_data": "Данные",
         "tab_language": "Язык",
-        "close": "Закрыть"
+        "close": "Закрыть",
+        "search_placeholder": "Поиск настроек...",
+        "search_no_results": "Ничего не найдено"
     },
     "appearance": {
         "timer_modules": "Модули таймера",
@@ -1070,7 +1072,8 @@
         "smart_cube_size_desc": "Настройте размер умного куба на главной странице.",
         "category_theme": "Тема",
         "category_layout": "Расположение",
-        "category_typography": "Шрифт"
+        "category_typography": "Шрифт",
+        "category_smart_cube": "Смарт-куб"
     },
     "timer_settings": {
         "decimal_points": "Десятичные знаки таймера",

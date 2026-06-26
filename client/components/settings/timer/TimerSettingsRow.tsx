@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { CaretDown, CaretUp, Minus, Plus } from 'phosphor-react';
+import { useSettingsSearch, matchesSearch } from '../SettingsSearchContext';
 
 // --- Group ---
 
@@ -10,16 +11,34 @@ interface TimerSettingsGroupProps {
 }
 
 export function TimerSettingsGroup({ label, id, children }: TimerSettingsGroupProps) {
+	const { query } = useSettingsSearch();
+	const trimmed = query.trim();
+
+	let visibleChildren: React.ReactNode = children;
+	if (trimmed && !matchesSearch(trimmed, label)) {
+		// Group label itself doesn't match -> keep only rows whose label/description match.
+		const filtered = React.Children.toArray(children).filter((child) => {
+			if (!React.isValidElement(child)) return false;
+			const props = child.props as { label?: string; description?: string; hidden?: boolean };
+			if (props.hidden) return false;
+			// Rows without searchable text (custom content) only surface via a group-label match.
+			if (props.label === undefined && props.description === undefined) return false;
+			return matchesSearch(trimmed, props.label, props.description);
+		});
+		if (filtered.length === 0) return null;
+		visibleChildren = filtered;
+	}
+
 	return (
-		<div id={id} className="mt-6 first:mt-0">
+		<div id={id} data-settings-group className="mt-6 first:mt-0">
 			<div className="flex items-center space-x-1.5 mb-2">
 				<div className="h-1.5 w-1.5 bg-primary rounded-full"></div>
-				<span className="text-text/50 text-xs font-medium uppercase tracking-wider">
+				<span className="text-text text-xs font-semibold uppercase tracking-wider">
 					{label}
 				</span>
 			</div>
 			<div className="space-y-2">
-				{children}
+				{visibleChildren}
 			</div>
 		</div>
 	);
@@ -42,11 +61,11 @@ export function TimerSettingsToggle({ label, description, isActive, disabled = f
 	return (
 		<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-module border border-text/[0.08] hover:border-text/[0.15] transition-all duration-200">
 			<div className="flex flex-col mr-4">
-				<span className={`font-medium transition-colors ${disabled ? 'text-text/30' : 'text-text/80 group-hover:text-text'}`}>
+				<span className="font-medium transition-colors text-text">
 					{label}
 				</span>
 				{description && (
-					<span className="text-xs text-text/40 mt-0.5 leading-relaxed">{description}</span>
+					<span className="text-xs text-text mt-0.5 leading-relaxed">{description}</span>
 				)}
 			</div>
 			<button
@@ -100,11 +119,11 @@ export function TimerSettingsNumber({ label, description, value, step, min, max,
 	return (
 		<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-module border border-text/[0.08] hover:border-text/[0.15] transition-all duration-200">
 			<div className="flex flex-col mr-4">
-				<span className="font-medium text-text/80 group-hover:text-text transition-colors">
+				<span className="font-medium text-text transition-colors">
 					{label}
 				</span>
 				{description && (
-					<span className="text-xs text-text/40 mt-0.5 leading-relaxed">{description}</span>
+					<span className="text-xs text-text mt-0.5 leading-relaxed">{description}</span>
 				)}
 			</div>
 			<div className="flex items-center space-x-2 shrink-0">
@@ -114,7 +133,7 @@ export function TimerSettingsNumber({ label, description, value, step, min, max,
 					disabled={value <= min}
 					className={`h-7 w-7 rounded-lg flex items-center justify-center transition-all duration-200 border ${value <= min
 						? 'bg-button border-text/[0.05] text-text/30 cursor-not-allowed'
-						: 'bg-button border-text/[0.1] text-text/70 hover:bg-button hover:text-text hover:border-text/[0.15] cursor-pointer'
+						: 'bg-button border-text/[0.1] text-text hover:bg-button hover:border-text/[0.15] cursor-pointer'
 						}`}
 				>
 					<Minus weight="bold" size={12} />
@@ -128,7 +147,7 @@ export function TimerSettingsNumber({ label, description, value, step, min, max,
 					disabled={max !== undefined && value >= max}
 					className={`h-7 w-7 rounded-lg flex items-center justify-center transition-all duration-200 border ${max !== undefined && value >= max
 						? 'bg-button border-text/[0.05] text-text/30 cursor-not-allowed'
-						: 'bg-button border-text/[0.1] text-text/70 hover:bg-button hover:text-text hover:border-text/[0.15] cursor-pointer'
+						: 'bg-button border-text/[0.1] text-text hover:bg-button hover:border-text/[0.15] cursor-pointer'
 						}`}
 				>
 					<Plus weight="bold" size={12} />
@@ -174,11 +193,11 @@ export function TimerSettingsSelect({ label, description, value, placeholder, op
 	return (
 		<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-module border border-text/[0.08] hover:border-text/[0.15] transition-all duration-200">
 			<div className="flex flex-col mr-4">
-				<span className="font-medium text-text/80 group-hover:text-text transition-colors">
+				<span className="font-medium text-text transition-colors">
 					{label}
 				</span>
 				{description && (
-					<span className="text-xs text-text/40 mt-0.5 leading-relaxed">{description}</span>
+					<span className="text-xs text-text mt-0.5 leading-relaxed">{description}</span>
 				)}
 			</div>
 			<div className="relative shrink-0" ref={containerRef}>
@@ -187,11 +206,11 @@ export function TimerSettingsSelect({ label, description, value, placeholder, op
 					onClick={() => setIsOpen(!isOpen)}
 					className={`flex items-center space-x-2 rounded-lg px-3 py-1.5 text-sm transition-all duration-200 min-w-[120px] justify-between border ${isOpen
 						? 'bg-button border-primary/50 text-text'
-						: 'bg-button border-text/[0.1] text-text/70 hover:bg-button hover:text-text hover:border-text/[0.15]'
+						: 'bg-button border-text/[0.1] text-text hover:bg-button hover:border-text/[0.15]'
 						}`}
 				>
 					<span>{selectedLabel}</span>
-					{isOpen ? <CaretUp weight="bold" className="text-primary" /> : <CaretDown weight="bold" className="text-text/50" />}
+					{isOpen ? <CaretUp weight="bold" className="text-primary" /> : <CaretDown weight="bold" className="text-text" />}
 				</button>
 
 				{isOpen && (
@@ -202,7 +221,7 @@ export function TimerSettingsSelect({ label, description, value, placeholder, op
 									key={option.value}
 									className={`w-full text-left px-4 py-2.5 transition-colors flex items-center justify-between ${option.value === value
 										? 'bg-primary/10 text-primary font-medium'
-										: 'text-text/70 hover:bg-text/[0.05] hover:text-text'
+										: 'text-text hover:bg-text/[0.05]'
 										}`}
 									onClick={() => {
 										onChange(option.value);
@@ -236,11 +255,11 @@ export function TimerSettingsAction({ label, description, hidden, children }: Ti
 	return (
 		<div className="group flex items-center justify-between py-4 px-4 rounded-xl bg-module border border-text/[0.08] hover:border-text/[0.15] transition-all duration-200">
 			<div className="flex flex-col mr-4">
-				<span className="font-medium text-text/80 group-hover:text-text transition-colors">
+				<span className="font-medium text-text transition-colors">
 					{label}
 				</span>
 				{description && (
-					<span className="text-xs text-text/40 mt-0.5 leading-relaxed">{description}</span>
+					<span className="text-xs text-text mt-0.5 leading-relaxed">{description}</span>
 				)}
 			</div>
 			<div className="shrink-0">
@@ -269,9 +288,9 @@ export function TimerSettingsPanel({ label, description, hidden, onReset, resetL
 		<div className="py-4 px-4 rounded-xl bg-module border border-text/[0.08] hover:border-text/[0.15] transition-all duration-200">
 			<div className="flex items-center justify-between mb-3">
 				<div className="flex flex-col">
-					<span className="font-medium text-text/80">{label}</span>
+					<span className="font-medium text-text">{label}</span>
 					{description && (
-						<span className="text-xs text-text/40 mt-0.5 leading-relaxed">{description}</span>
+						<span className="text-xs text-text mt-0.5 leading-relaxed">{description}</span>
 					)}
 				</div>
 				{showReset && onReset && (
@@ -325,9 +344,9 @@ export function TimerSettingsSlider({ label, description, value, min, max, hidde
 		<div className="py-4 px-4 rounded-xl bg-module border border-text/[0.08] hover:border-text/[0.15] transition-all duration-200">
 			<div className="flex items-center justify-between mb-3">
 				<div className="flex flex-col">
-					<span className="font-medium text-text/80">{label}</span>
+					<span className="font-medium text-text">{label}</span>
 					{description && (
-						<span className="text-xs text-text/40 mt-0.5 leading-relaxed">{description}</span>
+						<span className="text-xs text-text mt-0.5 leading-relaxed">{description}</span>
 					)}
 				</div>
 				<div className="flex items-center space-x-3 shrink-0 ml-4">

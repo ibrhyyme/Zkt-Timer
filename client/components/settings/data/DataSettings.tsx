@@ -112,7 +112,7 @@ export default function DataSettings() {
 						<button
 							type="button"
 							onClick={hardReload}
-							className="px-3 py-1.5 rounded-lg text-sm font-medium bg-button border border-text/[0.1] text-text/70 hover:bg-button/70 hover:text-text hover:border-text/[0.15] transition-all duration-200 cursor-pointer"
+							className="px-3 py-1.5 rounded-lg text-sm font-medium bg-button border border-text/[0.1] text-text hover:bg-button/70 hover:border-text/[0.15] transition-all duration-200 cursor-pointer"
 						>
 							{t('data_settings.force_reload_button')}
 						</button>
@@ -127,7 +127,7 @@ export default function DataSettings() {
 							disabled={exportingData}
 							className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all duration-200 ${exportingData
 								? 'bg-button border-text/[0.05] text-text/30 cursor-not-allowed'
-								: 'bg-button border-text/[0.1] text-text/70 hover:bg-button/70 hover:text-text hover:border-text/[0.15] cursor-pointer'
+								: 'bg-button border-text/[0.1] text-text hover:bg-button/70 hover:border-text/[0.15] cursor-pointer'
 								}`}
 						>
 							{exportingData ? '...' : t('data_settings.export_button')}

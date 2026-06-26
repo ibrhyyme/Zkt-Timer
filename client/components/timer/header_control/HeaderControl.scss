@@ -163,6 +163,9 @@
 	.#{$namespace}-timer--layoutLeft .#{$namespace}-timer-header-control {
 		> div:first-of-type {
 			grid-column: 3;
+			// fit-content box won't stretch, so pin it to the right edge of the cell
+			// (mirror of the far-left position in the default layout).
+			justify-self: end;
 			justify-content: flex-end;
 		}
 	}

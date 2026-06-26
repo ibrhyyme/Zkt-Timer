@@ -214,7 +214,7 @@ export default function TimerSettings() {
 					<button
 						type="button"
 						onClick={toggleCubeTypes}
-						className="px-3 py-1.5 rounded-lg text-sm font-medium bg-button border border-text/[0.1] text-text/70 hover:bg-button hover:text-text hover:border-text/[0.15] transition-all duration-200 cursor-pointer"
+						className="px-3 py-1.5 rounded-lg text-sm font-medium bg-button border border-text/[0.1] text-text hover:bg-button hover:border-text/[0.15] transition-all duration-200 cursor-pointer"
 					>
 						{t('timer_settings.manage_cube_types')}
 					</button>
@@ -304,7 +304,7 @@ export default function TimerSettings() {
 						type="button"
 						onClick={openStackMatPickerModal}
 						className={`px-3 py-1.5 rounded-lg text-sm font-medium border transition-all duration-200 cursor-pointer ${stackMatId
-							? 'bg-button border-text/[0.1] text-text/70 hover:bg-button hover:text-text hover:border-text/[0.15]'
+							? 'bg-button border-text/[0.1] text-text hover:bg-button hover:border-text/[0.15]'
 							: 'bg-primary border-primary text-white hover:bg-primary/80'
 							}`}
 					>

@@ -55,7 +55,7 @@ export default function LanguageSettings() {
 								onClick={() => changeLanguage(lang.code)}
 								className={`w-full flex items-center justify-between py-4 px-4 rounded-xl border transition-all duration-200 cursor-pointer ${isActive
 									? 'bg-primary/10 border-primary text-text'
-									: 'bg-button border-text/[0.08] text-text/50 hover:border-text/[0.15] hover:text-text/80'
+									: 'bg-button border-text/[0.08] text-text hover:border-text/[0.15]'
 									}`}
 							>
 								<span className="font-medium">{lang.nativeName}</span>

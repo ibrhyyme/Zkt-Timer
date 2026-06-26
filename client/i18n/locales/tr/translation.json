@@ -1055,7 +1055,9 @@
         "tab_appearance": "Görünüm",
         "tab_data": "Veri",
         "tab_language": "Dil",
-        "close": "Kapat"
+        "close": "Kapat",
+        "search_placeholder": "Ayarlarda ara...",
+        "search_no_results": "Sonuç bulunamadı"
     },
     "appearance": {
         "timer_modules": "Timer modülleri",
@@ -1077,7 +1079,8 @@
         "smart_cube_size_desc": "Anasayfadaki akıllı küpün boyutunu ayarlayın.",
         "category_theme": "Tema",
         "category_layout": "Düzen",
-        "category_typography": "Yazı Tipi"
+        "category_typography": "Yazı Tipi",
+        "category_smart_cube": "Akıllı Küp"
     },
     "timer_settings": {
         "decimal_points": "Timer ondalık basamakları",

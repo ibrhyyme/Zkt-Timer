@@ -92,7 +92,7 @@
   }
 
   :global(p) {
-    color: rgba(var(--text-color), 0.5) !important;
+    color: rgb(var(--text-color)) !important;
   }
 
   // Upload Cover

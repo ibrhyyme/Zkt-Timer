@@ -1048,7 +1048,9 @@
         "tab_appearance": "Apariencia",
         "tab_data": "Datos",
         "tab_language": "Idioma",
-        "close": "Cerrar"
+        "close": "Cerrar",
+        "search_placeholder": "Buscar ajustes...",
+        "search_no_results": "No se encontraron resultados"
     },
     "appearance": {
         "timer_modules": "Módulos del timer",
@@ -1070,7 +1072,8 @@
         "smart_cube_size_desc": "Ajusta el tamaño del cubo inteligente en la página principal.",
         "category_theme": "Tema",
         "category_layout": "Diseño",
-        "category_typography": "Tipografía"
+        "category_typography": "Tipografía",
+        "category_smart_cube": "Cubo inteligente"
     },
     "timer_settings": {
         "decimal_points": "Puntos decimales del timer",

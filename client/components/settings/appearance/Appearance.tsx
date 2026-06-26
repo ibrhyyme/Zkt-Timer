@@ -143,7 +143,7 @@ export default function Appearance() {
 					<div className="flex items-center justify-center py-2 rounded-lg bg-module overflow-hidden">
 						<span
 							style={{ fontSize: `${Math.min(timerScrambleSize, 24)}px` }}
-							className="text-text/70 text-center leading-relaxed px-2"
+							className="text-text text-center leading-relaxed px-2"
 						>
 							D' R2 B2 R2 U' F2 R2 U' L2 U2 L2 R2 F' D' L D' F' D' F D' R' U
 						</span>
@@ -152,19 +152,21 @@ export default function Appearance() {
 			</TimerSettingsGroup>
 
 			{/* Akıllı Küp */}
-			<TimerSettingsSlider
-				label={t('appearance.smart_cube_size')}
-				description={t('appearance.smart_cube_size_desc')}
-				value={smartCubeSize}
-				min={100}
-				max={600}
-				showReset={smartCubeSize !== cubeSizeDefault}
-				resetLabel={t('appearance.reset')}
-				onReset={() => updateSetting('smart_cube_size', cubeSizeDefault)}
-				restoreDefaultLabel={t('appearance.save_as_default')}
-				onRestoreDefault={() => updateSetting('smart_cube_size_user_default', smartCubeSize)}
-				onChange={(v) => updateSetting('smart_cube_size', v)}
-			/>
+			<TimerSettingsGroup id="appearance-smartcube" label={t('appearance.category_smart_cube')}>
+				<TimerSettingsSlider
+					label={t('appearance.smart_cube_size')}
+					description={t('appearance.smart_cube_size_desc')}
+					value={smartCubeSize}
+					min={100}
+					max={600}
+					showReset={smartCubeSize !== cubeSizeDefault}
+					resetLabel={t('appearance.reset')}
+					onReset={() => updateSetting('smart_cube_size', cubeSizeDefault)}
+					restoreDefaultLabel={t('appearance.save_as_default')}
+					onRestoreDefault={() => updateSetting('smart_cube_size_user_default', smartCubeSize)}
+					onChange={(v) => updateSetting('smart_cube_size', v)}
+				/>
+			</TimerSettingsGroup>
 		</div>
 	);
 }
