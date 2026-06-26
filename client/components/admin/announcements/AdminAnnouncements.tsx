@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {useTranslation} from 'react-i18next';
-import { Plus, Trash, PencilSimple, Eye } from 'phosphor-react';
+import { Plus, Trash, PencilSimple, Eye, BellRinging } from 'phosphor-react';
 import { GetAllAnnouncementsDocument, DeleteAnnouncementDocument, Announcement } from '../../../@types/generated/graphql';
 import { gqlQueryTyped, gqlMutateTyped } from '../../api';
 import CreateAnnouncementModal from './CreateAnnouncementModal';
@@ -115,6 +115,7 @@ export default function AdminAnnouncements() {
 									<th className="p-5 font-semibold text-center">{t('admin_announcements.th_priority')}</th>
 									<th className="p-5 font-semibold">{t('admin_announcements.th_status')}</th>
 									<th className="p-5 font-semibold">{t('admin_announcements.th_views')}</th>
+									<th className="p-5 font-semibold">{t('admin_announcements.th_push')}</th>
 									<th className="p-5 font-semibold">{t('admin_announcements.th_date')}</th>
 									<th className="p-5 font-semibold text-right">{t('admin_announcements.th_actions')}</th>
 								</tr>
@@ -122,7 +123,7 @@ export default function AdminAnnouncements() {
 							<tbody className="divide-y divide-white/5">
 								{announcements.length === 0 ? (
 									<tr>
-										<td colSpan={7} className="p-12 text-center text-gray-500">
+										<td colSpan={8} className="p-12 text-center text-gray-500">
 											{t('admin_announcements.no_announcements')}
 										</td>
 									</tr>
@@ -167,6 +168,16 @@ export default function AdminAnnouncements() {
 													<Eye size={16} />
 													<span>{announcement.viewCount || 0}</span>
 												</div>
+											</td>
+											<td className="p-5">
+												{(announcement as any).pushSentAt ? (
+													<div className="flex items-center gap-2 text-gray-400">
+														<BellRinging size={16} />
+														<span>{(announcement as any).pushSuccessCount ?? 0} / {(announcement as any).pushTargetCount ?? 0}</span>
+													</div>
+												) : (
+													<span className="text-gray-600">—</span>
+												)}
 											</td>
 											<td className="p-5 text-sm text-gray-400 font-mono">
 												{new Date(announcement.createdAt).toLocaleDateString('tr-TR')}

@@ -274,6 +274,9 @@ query getAllAnnouncements($filter: AnnouncementFilterInput) {
 		createdAt
 		publishedAt
 		viewCount
+		pushSentAt
+		pushSuccessCount
+		pushTargetCount
 	}
 }
 

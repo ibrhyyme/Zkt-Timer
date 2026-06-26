@@ -203,6 +203,7 @@
         "th_priority": "Приоритет",
         "th_status": "Статус",
         "th_views": "Просмотры",
+        "th_push": "Уведомление",
         "th_date": "Дата",
         "th_actions": "Действия",
         "status_active": "Активно",

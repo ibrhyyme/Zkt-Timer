@@ -6,6 +6,14 @@ import { logger } from './logger';
 
 let firebaseInitialized = false;
 
+export interface PushResult {
+	successCount: number; // Devices FCM accepted delivery to
+	failureCount: number;
+	totalTokens: number; // Total target tokens at send time
+}
+
+const EMPTY_PUSH_RESULT: PushResult = { successCount: 0, failureCount: 0, totalTokens: 0 };
+
 export function initFirebase(): void {
 	const serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_PATH;
 	if (!serviceAccountPath) {
@@ -35,10 +43,10 @@ export function initFirebase(): void {
  * Send push notifications to all registered devices.
  * Fire-and-forget: on error, only log without blocking the notification process.
  */
-export async function sendPushToAll(title: string, body: string, data?: Record<string, string>): Promise<void> {
+export async function sendPushToAll(title: string, body: string, data?: Record<string, string>): Promise<PushResult> {
 	if (!firebaseInitialized) {
 		logger.warn('[Push] Firebase not initialized, skipping push notification');
-		return;
+		return EMPTY_PUSH_RESULT;
 	}
 
 	try {
@@ -49,7 +57,7 @@ export async function sendPushToAll(title: string, body: string, data?: Record<s
 
 		if (tokens.length === 0) {
 			logger.info('[Push] No registered tokens, skipping');
-			return;
+			return EMPTY_PUSH_RESULT;
 		}
 
 		const tokenStrings = tokens.map((t) => t.token);
@@ -111,23 +119,25 @@ export async function sendPushToAll(title: string, body: string, data?: Record<s
 		}
 
 		logger.info(`[Push] Sent: ${totalSuccess} success, ${totalFailure} failure, ${tokenStrings.length} total`);
+		return { successCount: totalSuccess, failureCount: totalFailure, totalTokens: tokenStrings.length };
 	} catch (error) {
 		logger.error('[Push] sendPushToAll error:', error);
+		return EMPTY_PUSH_RESULT;
 	}
 }
 
 /**
  * Send push notifications to devices on specific platforms.
  */
-export async function sendPushToPlatforms(platforms: string[], title: string, body: string, data?: Record<string, string>): Promise<void> {
+export async function sendPushToPlatforms(platforms: string[], title: string, body: string, data?: Record<string, string>): Promise<PushResult> {
 	if (!firebaseInitialized) {
 		logger.warn('[Push] Firebase not initialized, skipping push notification');
-		return;
+		return EMPTY_PUSH_RESULT;
 	}
 
 	if (!platforms || platforms.length === 0) {
 		logger.info('[Push] No platforms specified, skipping');
-		return;
+		return EMPTY_PUSH_RESULT;
 	}
 
 	try {
@@ -139,7 +149,7 @@ export async function sendPushToPlatforms(platforms: string[], title: string, bo
 
 		if (tokens.length === 0) {
 			logger.info(`[Push] No tokens for platforms [${platforms.join(', ')}], skipping`);
-			return;
+			return EMPTY_PUSH_RESULT;
 		}
 
 		const tokenStrings = tokens.map((t) => t.token);
@@ -197,8 +207,10 @@ export async function sendPushToPlatforms(platforms: string[], title: string, bo
 		}
 
 		logger.info(`[Push] Sent to [${platforms.join(', ')}]: ${totalSuccess} success, ${totalFailure} failure, ${tokenStrings.length} total`);
+		return { successCount: totalSuccess, failureCount: totalFailure, totalTokens: tokenStrings.length };
 	} catch (error) {
 		logger.error('[Push] sendPushToPlatforms error:', error);
+		return EMPTY_PUSH_RESULT;
 	}
 }
 

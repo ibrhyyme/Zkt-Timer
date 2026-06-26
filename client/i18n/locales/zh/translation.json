@@ -203,6 +203,7 @@
         "th_priority": "优先级",
         "th_status": "状态",
         "th_views": "浏览量",
+        "th_push": "通知",
         "th_date": "日期",
         "th_actions": "操作",
         "status_active": "激活",

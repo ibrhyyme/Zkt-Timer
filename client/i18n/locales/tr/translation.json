@@ -203,6 +203,7 @@
         "th_priority": "Öncelik",
         "th_status": "Durum",
         "th_views": "Görüntülenme",
+        "th_push": "Bildirim",
         "th_date": "Tarih",
         "th_actions": "İşlemler",
         "status_active": "Yayında",

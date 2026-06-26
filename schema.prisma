@@ -993,6 +993,11 @@ model Announcement {
   targetUrl   String?               @map("target_url")  // Bildirime tiklayinca yonlendirilecek sayfa: "/pro" veya "https://..."
   translations Json?                               // {"en": {"title":"...","content":"..."}, "es": {...}, "ru": {...}, "zh": {...}}
 
+  // Push delivery stats (written after fire-and-forget push completes)
+  pushSentAt       DateTime? @map("push_sent_at")       // When the push send finished
+  pushSuccessCount Int?      @map("push_success_count")  // Devices FCM accepted delivery to
+  pushTargetCount  Int?      @map("push_target_count")   // Total target tokens at send time
+
   views AnnouncementView[]
 
   @@index([isActive])

@@ -203,6 +203,7 @@
         "th_priority": "Prioridad",
         "th_status": "Estado",
         "th_views": "Vistas",
+        "th_push": "Notificación",
         "th_date": "Fecha",
         "th_actions": "Acciones",
         "status_active": "Activo",

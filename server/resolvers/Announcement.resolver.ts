@@ -249,15 +249,24 @@ export class AnnouncementResolver {
 				if (announcement.targetUrl) {
 					pushData.link = announcement.targetUrl;
 				}
-				if (input.notificationPlatforms && input.notificationPlatforms.length > 0) {
-					sendPushToPlatforms(input.notificationPlatforms, announcement.title, body, pushData).catch((err) => {
-						console.error('[Push] Failed to send push for announcement:', err);
+				const pushPromise = input.notificationPlatforms && input.notificationPlatforms.length > 0
+					? sendPushToPlatforms(input.notificationPlatforms, announcement.title, body, pushData)
+					: sendPushToAll(announcement.title, body, pushData);
+				// Persist delivery stats once the push finishes (still non-blocking)
+				pushPromise
+					.then((res) =>
+						context.prisma.announcement.update({
+							where: { id: announcement.id },
+							data: {
+								pushSentAt: new Date(),
+								pushSuccessCount: res.successCount,
+								pushTargetCount: res.totalTokens,
+							},
+						}),
+					)
+					.catch((err) => {
+						console.error('[Push] Failed to send/record push for announcement:', err);
 					});
-				} else {
-					sendPushToAll(announcement.title, body, pushData).catch((err) => {
-						console.error('[Push] Failed to send push for announcement:', err);
-					});
-				}
 			}
 
 			return {

@@ -43,6 +43,15 @@ export class Announcement {
 
 	@Field({ nullable: true })
 	translations?: string; // JSON string: {"en": {"title":"...","content":"..."}, ...}
+
+	@Field(() => Date, { nullable: true })
+	pushSentAt?: Date; // When the push send finished (null = not sent)
+
+	@Field(() => Int, { nullable: true })
+	pushSuccessCount?: number; // Devices the push reached
+
+	@Field(() => Int, { nullable: true })
+	pushTargetCount?: number; // Total target tokens at send time
 }
 
 @ObjectType()
