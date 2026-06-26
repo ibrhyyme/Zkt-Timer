@@ -1,4 +1,5 @@
 import {Request, Response} from 'express';
+import {timingSafeEqual} from 'crypto';
 import {logger} from '../services/logger';
 import {
 	applyIapPurchase,
@@ -37,6 +38,17 @@ interface RCWebhookBody {
 	api_version?: string;
 }
 
+// Constant-time secret comparison — avoids leaking the webhook secret via response
+// timing. Length-equality is checked first because timingSafeEqual throws on length mismatch.
+function secretsMatch(provided: string, expected: string): boolean {
+	const a = Buffer.from(provided);
+	const b = Buffer.from(expected);
+	if (a.length !== b.length) {
+		return false;
+	}
+	return timingSafeEqual(a, b);
+}
+
 function getPlatform(store?: string): IapPlatform | null {
 	if (store === 'APP_STORE' || store === 'MAC_APP_STORE') return 'ios';
 	if (store === 'PLAY_STORE') return 'android';
@@ -57,7 +69,7 @@ export async function revenueCatWebhookHandler(req: Request, res: Response): Pro
 	const authHeader = req.headers.authorization || '';
 	const providedSecret = authHeader.replace(/^Bearer\s+/i, '').trim();
 
-	if (!expectedSecret || providedSecret !== expectedSecret) {
+	if (!expectedSecret || !secretsMatch(providedSecret, expectedSecret)) {
 		logger.warn('[RC-Webhook] Unauthorized webhook attempt');
 		res.status(401).json({error: 'unauthorized'});
 		return;
