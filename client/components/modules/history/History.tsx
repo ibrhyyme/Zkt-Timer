@@ -64,25 +64,36 @@ export default function History(props: Props) {
 		solves = fetchSolves(filterOptions);
 	}
 
-	// PB progression highlight: mark every solve that beat the running best (single PB).
+	// PB highlight: mark only the all-time best (real PB) solve per (cube_type,
+	// scramble_subset) bucket. Computed over the FULL history rather than the limited
+	// on-screen window, so a non-record time is never flagged just because it happens
+	// to be the fastest of the currently visible page.
 	const highlightPbs = useSettings('highlight_pbs');
 	const pbSolveIds = React.useMemo(() => {
 		const ids = new Set<string>();
 		if (highlightPbs === 'off') return ids;
-		const chrono = [...solves].sort(
-			(a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-		);
-		let best = Infinity;
-		for (const s of chrono) {
+
+		// Use the unbounded history when we own the query; fall back to provided solves.
+		const source = filterOptions
+			? fetchSolves({ ...filterOptions, limit: undefined })
+			: (parentSolves || solves);
+
+		const bestByBucket = new Map<string, { time: number; id: string }>();
+		for (const s of source) {
 			if (s.dnf) continue;
 			const t = s.time + (s.plus_two ? 2 : 0);
-			if (t > 0 && t < best) {
-				best = t;
-				ids.add(s.id);
+			if (t <= 0) continue;
+			const key = `${s.cube_type}::${s.scramble_subset || ''}`;
+			const cur = bestByBucket.get(key);
+			if (!cur || t < cur.time) {
+				bestByBucket.set(key, { time: t, id: s.id });
 			}
 		}
+		for (const { id } of bestByBucket.values()) {
+			ids.add(id);
+		}
 		return ids;
-	}, [solves, highlightPbs]);
+	}, [solves, parentSolves, filterOptions, highlightPbs]);
 
 	function renderSolveRow(index: number) {
 		let solveIndex = index;
