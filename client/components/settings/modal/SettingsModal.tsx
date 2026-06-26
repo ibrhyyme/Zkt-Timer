@@ -150,7 +150,7 @@ export default function SettingsModal(props: Props) {
 			onClick={handleBackdropClick}
 		>
 			<div
-				className="max-w-4xl w-full h-[70vh] rounded-3xl bg-background border border-text/[0.08] shadow-2xl shadow-black/50 transform transition-all duration-300 flex flex-col"
+				className="max-w-4xl w-full h-[88vh] md:h-[70vh] rounded-3xl bg-background border border-text/[0.08] shadow-2xl shadow-black/50 transform transition-all duration-300 flex flex-col"
 				onClick={(e) => e.stopPropagation()}
 				style={swipePhase !== 'idle' ? {
 					transform: `translateX(${swipeX}px)`,
@@ -186,16 +186,16 @@ export default function SettingsModal(props: Props) {
 
 					{/* Mobile nav pills — wrap to multiple rows so all sections stay visible */}
 					{!isDesktop && (
-						<div className="flex flex-wrap gap-1 bg-button rounded-2xl p-1">
+						<div className="flex flex-wrap justify-center gap-2">
 							{SETTINGS_SECTIONS.map((section) => (
 								<button
 									key={section.id}
 									type="button"
 									onClick={() => scrollToSection(section.id)}
-									className={`px-3 py-1.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-200 ${
+									className={`px-3.5 py-1.5 rounded-lg border text-sm font-semibold whitespace-nowrap transition-all duration-200 ${
 										activeMainSection === section.id
-											? 'bg-primary text-text'
-											: 'text-text hover:bg-button/80'
+											? 'bg-primary text-white border-primary shadow-sm shadow-primary/30'
+											: 'bg-button text-text border-text/[0.1] hover:border-text/[0.25]'
 									}`}
 								>
 									{t(section.labelKey)}
