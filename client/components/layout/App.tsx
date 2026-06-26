@@ -1,4 +1,5 @@
 import React, { ReactNode, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import './App.scss';
@@ -51,6 +52,7 @@ export default function App(props: Props = {}) {
 	const { path, standalone, children, hideTopNav, restricted } = props;
 
 	const dispatch = useDispatch();
+	const { i18n } = useTranslation();
 	const location = useLocation();
 	const modals = useGeneral('modals');
 	const appLoaded = useGeneral('app_loaded');
@@ -263,7 +265,7 @@ export default function App(props: Props = {}) {
 		return () => {
 			mounted = false;
 		};
-	}, [me, appLoaded]);
+	}, [me, appLoaded, i18n.language]);
 
 	if (typeof window !== 'undefined') {
 		if (!me && restricted) {

@@ -10,7 +10,7 @@ interface AnnouncementDropdownProps {
 }
 
 export default function AnnouncementDropdown(props: AnnouncementDropdownProps) {
-	const {t} = useTranslation();
+	const {t, i18n} = useTranslation();
 	const { onClose, unreadCount } = props;
 	const [showCarousel, setShowCarousel] = useState(false);
 	const [announcements, setAnnouncements] = useState<Announcement[]>([]);
@@ -19,7 +19,7 @@ export default function AnnouncementDropdown(props: AnnouncementDropdownProps) {
 
 	useEffect(() => {
 		fetchAnnouncements();
-	}, []);
+	}, [i18n.language]);
 
 	const fetchAnnouncements = async () => {
 		try {

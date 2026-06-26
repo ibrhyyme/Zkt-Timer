@@ -5,7 +5,7 @@ import { gqlQueryTyped } from '../api';
 import AnnouncementModal from '../announcements/AnnouncementModal';
 
 export default function AnnouncementHistory() {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
 	const [announcements, setAnnouncements] = useState<Announcement[]>([]);
 	const [loading, setLoading] = useState(true);
@@ -15,7 +15,7 @@ export default function AnnouncementHistory() {
 
 	useEffect(() => {
 		fetchHistory();
-	}, [page]);
+	}, [page, i18n.language]);
 
 	const fetchHistory = async () => {
 		try {
