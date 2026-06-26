@@ -1,0 +1,83 @@
+@import '../../../styles/config';
+
+// Streamer Mode overlay: the only two UI pieces that stay on the clean stream
+// layout. Both sit above the timer (fixed) but below modals (z-index 1M) so the
+// SolveInfo modal still opens on top when a row's time is clicked. Neither is
+// mirrored — only the time display is — so they read normally on the monitor.
+.#{$namespace}-streamer-overlay {
+	// Floating toggle (top-right). The header toggle is hidden with the rest of
+	// the chrome in streamer mode, so this is the only switch left to turn the
+	// mode back off. Lit in the primary color since the mode is always active
+	// while it's visible.
+	&__toggle {
+		all: unset;
+		position: fixed;
+		top: calc(16px + env(safe-area-inset-top));
+		right: calc(16px + env(safe-area-inset-right));
+		z-index: 1000;
+		box-sizing: border-box;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 42px;
+		height: 42px;
+		border-radius: 12px;
+		cursor: pointer;
+		color: rgb(var(--primary-color));
+		background: rgba(var(--primary-color), 0.14);
+		border: 1px solid rgba(var(--primary-color), 0.35);
+		backdrop-filter: blur(8px);
+		box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+		transition:
+			background 0.18s ease,
+			border-color 0.18s ease,
+			transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+
+		&:hover {
+			background: rgba(var(--primary-color), 0.22);
+			border-color: rgba(var(--primary-color), 0.5);
+			transform: translateY(-1px);
+		}
+
+		&:active {
+			transform: translateY(0);
+		}
+
+		&:focus-visible {
+			outline: 2px solid rgba(var(--primary-color), 0.5);
+			outline-offset: 2px;
+		}
+	}
+
+	// Bottom-left mini-history. Theme-aware translucent surface so the row text
+	// (which uses the theme's text/secondary colors) keeps full contrast in any
+	// theme and over a custom timer background image.
+	&__history {
+		position: fixed;
+		left: calc(16px + env(safe-area-inset-left));
+		bottom: calc(16px + env(safe-area-inset-bottom));
+		z-index: 1000;
+		width: 300px;
+		max-width: calc(100vw - 32px);
+		display: flex;
+		flex-direction: column;
+		box-sizing: border-box;
+		padding: 6px 10px;
+		border-radius: 14px;
+		background: rgba(var(--background-color), 0.82);
+		border: 1px solid rgba(var(--text-color), 0.1);
+		backdrop-filter: blur(10px);
+		box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+
+		// Keep the index fully opaque here (project rule: no faded text) — the
+		// shared row dims it to 0.6 for the in-footer module, but on this small
+		// stream surface every digit should read cleanly.
+		.#{$namespace}-history-solve-row__index {
+			opacity: 1;
+		}
+
+		@media (max-width: 768px) {
+			width: 220px;
+		}
+	}
+}

@@ -27,6 +27,7 @@ import TimerControls from './TimerControls';
 import Dashboard from './Dashboard';
 import StatsBar from './StatsBar';
 import MobileTimerScramble from './MobileTimerScramble';
+import StreamerOverlay from './streamer/StreamerOverlay';
 
 const b = block('timer');
 
@@ -53,6 +54,12 @@ export default function Timer(props: TimerProps) {
 	let timerLayout = props.timerLayout || useSettings('timer_layout');
 
 	const me = useMe();
+
+	// Streamer Mode strips the page down to scramble + giant timer + corner
+	// mini-history. Gate the live flag once so the root class, the body class
+	// (used to hide chrome that lives OUTSIDE this component) and the overlay all
+	// agree.
+	const isStreamer = !!streamerMode && canUseStreamerMode(me);
 
 	// All default values from the settings should go here - Memoized to prevent re-renders
 	const context: ITimerContext = useMemo(() => ({
@@ -93,6 +100,16 @@ export default function Timer(props: TimerProps) {
 			html.style.overflow = value;
 		}
 	}
+
+	// Toggle a body class while Streamer Mode is on. The desktop header nav and the
+	// portaled mobile edge-drawers live OUTSIDE this component's DOM subtree, so a
+	// class on the timer root can't reach them — a body-level signal can.
+	useEffect(() => {
+		document.body.classList.toggle('streamer-mode-active', isStreamer);
+		return () => {
+			document.body.classList.remove('streamer-mode-active');
+		};
+	}, [isStreamer]);
 
 	const smartActive = timerType === 'smart' && is3x3CubeType(cubeType, scrambleSubset) && !manualEntry;
 
@@ -221,7 +238,7 @@ export default function Timer(props: TimerProps) {
 				className={b({
 					started: !!context.timeStartedAt,
 					mobile: mobileMode && !props.inModal,
-					streamerMode: streamerMode && canUseStreamerMode(me),
+					streamerMode: isStreamer,
 					// 'left' layout mirrors the header selectors to the right (above the timer column)
 					layoutLeft: timerLayout === 'left' && !mobileMode && !props.inModal,
 				})}
@@ -229,6 +246,7 @@ export default function Timer(props: TimerProps) {
 				<TimerContext.Provider value={context}>
 					<KeyWatcher>
 						<HeaderControl />
+						{isStreamer && <StreamerOverlay />}
 						{/* On mobile, while timer running, tap entire screen to stop or cancel Inspection */}
 						{mobileMode && (
 							<div
