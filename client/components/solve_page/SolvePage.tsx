@@ -6,12 +6,14 @@ import {SOLVE_WITH_USER_FRAGMENT} from '../../util/graphql/fragments';
 import {gqlQuery} from '../api';
 import SolveInfo from '../solve_info/SolveInfo';
 import Header from '../layout/header/Header';
+import Empty from '../common/empty/Empty';
 import {getTimeString} from '../../util/time';
 import {getCubeTypeInfoById} from '../../util/cubes/util';
 import {Store} from 'redux';
 import {Request} from 'express';
 import {useSsr} from '../../util/hooks/useSsr';
 import {useRouteMatch} from 'react-router-dom';
+import {useTranslation} from 'react-i18next';
 import block from '../../styles/bem';
 import {Solve} from '../../../server/schemas/Solve.schema';
 import {QuerySolveByShareCodeArgs} from '../../@types/generated/graphql';
@@ -41,15 +43,32 @@ async function fetchSolveData(shareCode: string) {
 
 export async function prefetchSolveData(store: Store<any>, req: Request) {
 	const shareCode: string = req.params.shareCode;
-	const solve = await fetchSolveData(shareCode);
-
-	return store.dispatch(setSsrValue(shareCode, solve));
+	// Invalid/unknown share codes (and rate-limit/NOT_FOUND) must not crash SSR —
+	// dispatch null so the page renders a "not found" state instead of a 500.
+	try {
+		const solve = await fetchSolveData(shareCode);
+		return store.dispatch(setSsrValue(shareCode, solve ?? null));
+	} catch {
+		return store.dispatch(setSsrValue(shareCode, null));
+	}
 }
 
 export default function SolvePage() {
+	const {t} = useTranslation();
 	const match = useRouteMatch<{shareCode: string}>();
 	const shareCode = match.params.shareCode;
 	const [solve] = useSsr<Solve>(shareCode);
+
+	if (!solve || !solve.user) {
+		return (
+			<div className={b()}>
+				<Header path={`/solve/${shareCode}`} title={t('solve_page.not_found')} />
+				<div className={b('body')}>
+					<Empty text={t('solve_page.not_found')} />
+				</div>
+			</div>
+		);
+	}
 
 	const ct = getCubeTypeInfoById(solve.cube_type);
 	const time = getTimeString(solve.time);

@@ -19,6 +19,8 @@ import {deleteSolveMethodSteps} from '../models/solve_method_step';
 import {generateRandomString} from '../../shared/code';
 import {createSolveView, deleteSolveViewsBySolveId} from '../models/solve_view';
 import {ErrorCode} from '../constants/errors';
+import {checkRateLimit} from '../services/rate_limit';
+import {extractIp} from '../util/request';
 
 export const gqlType = `
 	enum SolvesSortBy {
@@ -93,7 +95,17 @@ export const queryActions = {
 		return solve;
 	},
 
-	solveByShareCode: async (_, {shareCode}, {user}) => {
+	solveByShareCode: async (_, {shareCode}, {user, req}) => {
+		// Defense in depth: share_code is a strong capability token (36^8), but throttle
+		// per IP to deter enumeration attempts and createSolveView spam on the public route.
+		const ip = req ? extractIp(req) : null;
+		if (ip) {
+			const limit = await checkRateLimit(`solve_share:ip:${ip}`, 60, 60);
+			if (!limit.allowed) {
+				throw new GraphQLError(ErrorCode.BAD_INPUT, 'Cok fazla istek. Lutfen biraz bekleyin.');
+			}
+		}
+
 		const solve = await getSolveByShareCode(shareCode);
 
 		if (!solve) {
@@ -144,6 +156,14 @@ export const mutateActions = {
 
 		const solve = await getSolve(id);
 
+		// Ownership check MUST run before the cascade deletes below. getSolve() has no
+		// owner filter, so checking ownership later would let any logged-in user wipe
+		// another user's top_solve / method_steps / solve_views by passing their id
+		// (the id leaks via the public share payload).
+		if (!solve || solve.user_id !== user.id) {
+			throw new GraphQLError(ErrorCode.NOT_FOUND);
+		}
+
 		if (solve?.top_solve?.length) {
 			for (const top of solve.top_solve) {
 				await deleteTopSolveById(top.id);
@@ -166,10 +186,6 @@ export const mutateActions = {
 
 		if (solve.solve_views) {
 			await deleteSolveViewsBySolveId(solve.id);
-		}
-
-		if (!solve || solve.user_id !== user.id) {
-			throw new GraphQLError(ErrorCode.NOT_FOUND);
 		}
 
 		return await deleteSolve(solve);

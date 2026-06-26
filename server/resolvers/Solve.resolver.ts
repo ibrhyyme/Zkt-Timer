@@ -22,6 +22,17 @@ function getSolvesByUserId(context: GraphQLContext, userId: string) {
 	});
 }
 
+// Reject impossible solve times (negative / non-finite) before they reach the DB and
+// corrupt stats aggregation. Only validates fields that are actually provided.
+function assertValidSolveTimes(input: Partial<SolveInput>) {
+	for (const field of ['time', 'raw_time'] as const) {
+		const value = input[field];
+		if (value != null && (typeof value !== 'number' || !Number.isFinite(value) || value < 0)) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, `Invalid solve ${field}`);
+		}
+	}
+}
+
 @Resolver()
 export class SolveResolver {
 	@Authorized([Role.LOGGED_IN, Role.PRO])
@@ -124,6 +135,8 @@ export class SolveResolver {
 	@Mutation(() => Solve)
 	async createSolve(@Ctx() context: GraphQLContext, @Arg('input') input: SolveInput) {
 		const { user } = context;
+
+		assertValidSolveTimes(input);
 
 		input.bulk = false;
 		// cube_type='wca' requires subset (cube-subset-bucket rule) — defense in depth
@@ -232,6 +245,8 @@ export class SolveResolver {
 		if (solves.length > 500) {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Cannot import more than 500 solves per request');
 		}
+
+		solves.forEach(assertValidSolveTimes);
 
 		// Use existing model function
 		await bulkCreateSolves(user, solves);

@@ -313,7 +313,17 @@ export async function deleteMultipleSolvesDb(solves: Solve[], confirmed: boolean
 	solveDb.removeWhere(s => ids.includes(s.id));
 
 	if (solves.length > 0) {
-		postProcessDbUpdate(solves[0], false);
+		// Group deleted solves by bucket (session + cube_type + subset) and refresh
+		// EVERY affected bucket's PB/avg/worst/stat cache. Passing only solves[0] left
+		// other buckets stale when deleting across multiple cube types/subsets at once.
+		const buckets = new Map<string, Solve>();
+		for (const s of solves) {
+			const key = `${s.session_id}::${s.cube_type}::${s.scramble_subset ?? ''}`;
+			if (!buckets.has(key)) buckets.set(key, s);
+		}
+		for (const representative of buckets.values()) {
+			postProcessDbUpdate(representative, false);
+		}
 
 		const newLastSolve = fetchLastSolve(
 			buildBucketFilter({
