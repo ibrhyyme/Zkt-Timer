@@ -1102,6 +1102,8 @@
         "scramble_font_size_desc": "El tamaño de fuente de la mezcla que ves en la página del timer",
         "smart_cube_size": "Tamaño del cubo inteligente",
         "smart_cube_size_desc": "Ajusta el tamaño del cubo inteligente en la página principal.",
+        "smart_cube_show": "Mostrar cubo inteligente",
+        "smart_cube_show_desc": "Muestra u oculta el cubo inteligente 3D en la pantalla del temporizador.",
         "category_theme": "Tema",
         "category_layout": "Diseño",
         "category_typography": "Tipografía",

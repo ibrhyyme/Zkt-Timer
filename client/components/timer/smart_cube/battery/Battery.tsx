@@ -10,9 +10,9 @@ interface Props {
 
 export default function Battery(props: Props) {
 	const {level} = props;
-	let percent = '0%';
-	if (typeof level === 'number') {
-		percent = level + '%';
+
+	if (typeof level !== 'number') {
+		return null;
 	}
 
 	return (
@@ -22,10 +22,7 @@ export default function Battery(props: Props) {
 				red: level <= 10,
 			})}
 		>
-			<div className={b('body')}>
-				<div style={{width: percent}} className={b('bar')} />
-			</div>
-			<div className={b('tip')} />
+			{level}%
 		</div>
 	);
 }

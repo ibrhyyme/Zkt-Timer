@@ -73,6 +73,7 @@ export interface AllSettings {
 	multi_phase_count: number;
 	smart_cube_analysis_mode: string;
 	smart_cube_show_recognition: boolean;
+	smart_cube_show: boolean;
 
 	// Streamer Mode: mirror only the time display (scaleX(-1)) so a streamer's
 	// front camera flips it back to readable. Gated to admin + one streamer in UI.
@@ -162,6 +163,7 @@ const defaultSettings: AllSettings = {
 	multi_phase_count: 1,
 	smart_cube_analysis_mode: 'cffffop', // 'none' | 'cfop' | 'cf_plus_op' | 'cffffop' | 'cffffoopp'
 	smart_cube_show_recognition: false,
+	smart_cube_show: true,
 	streamer_mode: false,
 
 	timer_scramble_size_user_default: null,

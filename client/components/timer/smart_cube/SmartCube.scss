@@ -10,6 +10,19 @@
 		zoom: 0.4;
 		margin-top: -8%;
 		margin-bottom: -8%;
+
+		// Kept in the DOM (TwistyPlayer stays initialized) but collapsed so the
+		// cube slot takes no space when the user disables it via settings.
+		&--hidden {
+			display: none;
+		}
+	}
+
+	// Charge percentage centered directly under the cube.
+	&__battery {
+		margin-top: 4px;
+		display: flex;
+		justify-content: center;
 	}
 
 	>div:last-child {

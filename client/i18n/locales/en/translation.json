@@ -1102,6 +1102,8 @@
         "scramble_font_size_desc": "The font size of the scramble you see on the timer page",
         "smart_cube_size": "Smart Cube Size",
         "smart_cube_size_desc": "Adjust the size of the smart cube on the homepage.",
+        "smart_cube_show": "Show Smart Cube",
+        "smart_cube_show_desc": "Show or hide the 3D smart cube visual on the timer screen.",
         "category_theme": "Theme",
         "category_layout": "Layout",
         "category_typography": "Typography",

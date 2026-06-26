@@ -106,6 +106,7 @@ export default function SmartCube() {
 	const userIsPro = isPro(me);
 
 	const smartCubeSize = useSettings('smart_cube_size');
+	const smartCubeShow = useSettings('smart_cube_show');
 
 	// Limit cube size on mobile based on viewport (prevent timer/dashboard from being squeezed on small phones)
 	const [viewportH, setViewportH] = useState(typeof window !== 'undefined' ? window.innerHeight : 800);
@@ -1194,12 +1195,23 @@ export default function SmartCube() {
 	return (
 		<div className={b({ mobile: mobileMode })}>
 			<div className={b('wrapper')}>
-				<div className={b('cube')}>
+				{/* Keep the ref mounted even when hidden — the TwistyPlayer must stay
+				    initialized because move application (and therefore scramble/solve
+				    detection) is coupled to twistyPlayerRef. We only collapse it
+				    visually via the --hidden modifier. */}
+				<div className={b('cube', { hidden: !smartCubeShow })}>
 					<div
 						ref={containerRef}
 						style={{ width: effectiveCubeSize, height: effectiveCubeSize }}
 					/>
 				</div>
+				{/* Charge percentage right under the cube — plain coloured text, no
+				    battery glyph. Hidden when the cube visual is off. */}
+				{smartCubeShow && battery && (
+					<div className={b('battery')}>
+						{battery}
+					</div>
+				)}
 				{!mobileMode && (
 					<div className={b('stats-container')}>
 						<LiveAnalysisOverlay startState={startState || (cubejs.current ? cubejs.current.asString() : null)} />
@@ -1222,7 +1234,6 @@ export default function SmartCube() {
 					document.getElementById('mobile-smart-phases-container') || document.body
 				)}
 				<div className={b('info')}>
-					{battery}
 					{emblem}
 					{dropdown}
 				</div>

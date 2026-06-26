@@ -48,6 +48,7 @@ export default function HardwareSettings() {
 	const qiyiAutoInspectionWarningShown = useSettings('qiyi_auto_inspection_warning_shown');
 
 	// Smart Cube
+	const smartCubeShow = useSettings('smart_cube_show');
 	const smartCubeSize = useSettings('smart_cube_size');
 	const smartCubeSizeUserDefault = useSettings('smart_cube_size_user_default');
 	const cubeSizeDefault = smartCubeSizeUserDefault ?? getDefaultSetting('smart_cube_size');
@@ -224,19 +225,27 @@ export default function HardwareSettings() {
 
 			{/* Smart Cube */}
 			<TimerSettingsGroup id="hardware-smartcube" label={t('appearance.category_smart_cube')}>
-				<TimerSettingsSlider
-					label={t('appearance.smart_cube_size')}
-					description={t('appearance.smart_cube_size_desc')}
-					value={smartCubeSize}
-					min={100}
-					max={600}
-					showReset={smartCubeSize !== cubeSizeDefault}
-					resetLabel={t('appearance.reset')}
-					onReset={() => updateSetting('smart_cube_size', cubeSizeDefault)}
-					restoreDefaultLabel={t('appearance.save_as_default')}
-					onRestoreDefault={() => updateSetting('smart_cube_size_user_default', smartCubeSize)}
-					onChange={(v) => updateSetting('smart_cube_size', v)}
+				<TimerSettingsToggle
+					label={t('appearance.smart_cube_show')}
+					description={t('appearance.smart_cube_show_desc')}
+					isActive={smartCubeShow}
+					onClick={() => updateSetting('smart_cube_show', !smartCubeShow)}
 				/>
+				{smartCubeShow && (
+					<TimerSettingsSlider
+						label={t('appearance.smart_cube_size')}
+						description={t('appearance.smart_cube_size_desc')}
+						value={smartCubeSize}
+						min={100}
+						max={600}
+						showReset={smartCubeSize !== cubeSizeDefault}
+						resetLabel={t('appearance.reset')}
+						onReset={() => updateSetting('smart_cube_size', cubeSizeDefault)}
+						restoreDefaultLabel={t('appearance.save_as_default')}
+						onRestoreDefault={() => updateSetting('smart_cube_size_user_default', smartCubeSize)}
+						onChange={(v) => updateSetting('smart_cube_size', v)}
+					/>
+				)}
 			</TimerSettingsGroup>
 		</div>
 	);

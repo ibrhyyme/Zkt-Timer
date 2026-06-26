@@ -28,6 +28,64 @@
 	div.cd-time-display {
 		transform: scaleX(-1);
 	}
+
+	// Strip the page to its essentials: only the scramble text and the giant timer
+	// stay. Everything else — in-page controls, footer modules, daily-goal bar,
+	// mobile control/dashboard/stats bars, and the scramble's own nav/action
+	// buttons — is hidden. (Chrome that lives OUTSIDE this subtree is hidden via
+	// the body.streamer-mode-active rule below.)
+	.#{$namespace}-timer-header-control,
+	.#{$namespace}-timer-footer,
+	.#{$namespace}-daily-goal-progress,
+	.#{$namespace}-timer-controls,
+	.#{$namespace}-timer-dashboard,
+	.#{$namespace}-stats-bar,
+	.#{$namespace}-timer-scramble__nav,
+	.#{$namespace}-timer-scramble__actions {
+		display: none !important;
+	}
+}
+
+// Desktop only: the footer/modules are gone, so let the timer fill the entire
+// viewport and center the scramble + giant timer block dead-center (vertical +
+// horizontal). On mobile the existing mobileNewLayout already fills + centers and
+// the time auto-scales to fit, so we leave it alone (forcing a huge font there
+// would overflow long times like "1:05.50").
+.cd-timer--streamerMode:not(.cd-timer--mobile) {
+	// !important beats the inline fontSize the h1 carries (timerTimeSize px).
+	h1.#{$namespace}-time-display {
+		font-size: clamp(5rem, 16vw, 15rem) !important;
+		line-height: 1 !important;
+	}
+
+	.#{$namespace}-timer__wrapper {
+		height: 100vh !important;
+		min-height: 100vh !important;
+		padding: 0 !important;
+	}
+
+	.#{$namespace}-timer__timer-side {
+		flex: 1 !important;
+		padding-top: 0 !important;
+		justify-content: center;
+	}
+
+	.#{$namespace}-timer__main {
+		flex: 1 !important;
+	}
+}
+
+// Streamer Mode chrome that lives OUTSIDE the timer's DOM subtree: the desktop
+// header nav and the portaled mobile edge-drawers (notch/backdrop/drawer render
+// straight into <body>). Hidden via the body class the Timer toggles while the
+// mode is active.
+body.streamer-mode-active {
+	.#{$namespace}-header-nav,
+	.#{$namespace}-edge-drawer__notch,
+	.#{$namespace}-edge-drawer__backdrop,
+	.#{$namespace}-edge-drawer__drawer {
+		display: none !important;
+	}
 }
 
 .#{$namespace}-timer {
@@ -92,14 +150,31 @@
 		&-time {
 			&--smart {
 				width: 95%;
-				max-width: 38.667rem;
 				display: flex;
 				flex-direction: row;
-				justify-content: space-between;
+				// Keep the timer + cube centered together as a single pair. Both
+				// children are sized to their own content, so as the timer font
+				// grows the text box widens and pushes the cube further right —
+				// they slide apart instead of overlapping. The gap guarantees
+				// breathing room so the digits and cube never touch.
+				justify-content: center;
 				align-items: center;
+				gap: 2rem;
 
-				>div {
-					width: 50% !important;
+				// Override the base `width: 100%` so the timer box hugs the digits
+				// (otherwise flex-basis:auto would make it fill the row and shove
+				// the cube off to the side).
+				> .cd-time-display {
+					flex: 0 0 auto;
+					width: auto;
+					min-width: 0;
+				}
+
+				// Cube paints above the timer (defensive) and keeps its own slot.
+				> .cd-smart-cube {
+					flex: 0 0 auto;
+					position: relative;
+					z-index: 2;
 				}
 			}
 		}

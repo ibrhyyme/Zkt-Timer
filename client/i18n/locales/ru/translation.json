@@ -1102,6 +1102,8 @@
         "scramble_font_size_desc": "Размер шрифта скрамбла, который вы видите на странице таймера",
         "smart_cube_size": "Размер умного куба",
         "smart_cube_size_desc": "Настройте размер умного куба на главной странице.",
+        "smart_cube_show": "Показывать умный куб",
+        "smart_cube_show_desc": "Показать или скрыть 3D-модель умного куба на экране таймера.",
         "category_theme": "Тема",
         "category_layout": "Расположение",
         "category_typography": "Шрифт",

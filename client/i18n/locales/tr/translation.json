@@ -1109,6 +1109,8 @@
         "scramble_font_size_desc": "Timer sayfasında gördüğünüz karıştırmanın yazı boyutu",
         "smart_cube_size": "Akıllı Küp Boyutu",
         "smart_cube_size_desc": "Anasayfadaki akıllı küpün boyutunu ayarlayın.",
+        "smart_cube_show": "Akıllı Küpü Göster",
+        "smart_cube_show_desc": "Timer ekranındaki 3D akıllı küp görselini açar veya kapatır.",
         "category_theme": "Tema",
         "category_layout": "Düzen",
         "category_typography": "Yazı Tipi",

@@ -1102,6 +1102,8 @@
         "scramble_font_size_desc": "您在计时器页面上看到的打乱的字体大小",
         "smart_cube_size": "智能魔方尺寸",
         "smart_cube_size_desc": "调整主页上智能魔方的尺寸。",
+        "smart_cube_show": "显示智能魔方",
+        "smart_cube_show_desc": "在计时器界面显示或隐藏 3D 智能魔方。",
         "category_theme": "主题",
         "category_layout": "布局",
         "category_typography": "排版",
