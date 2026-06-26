@@ -1631,6 +1631,7 @@
         "music_rate_limit": "请稍后再试"
     },
     "profile": {
+        "remove": "移除",
         "share_text": "在 Zkt Timer 上查看 {{username}} 的速拧资料",
         "about_me": "关于我",
         "socials": "社交媒体",

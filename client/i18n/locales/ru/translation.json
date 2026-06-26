@@ -1631,6 +1631,7 @@
         "music_rate_limit": "Подождите перед повторным поиском"
     },
     "profile": {
+        "remove": "Удалить",
         "share_text": "Профиль спидкубера {{username}} на Zkt Timer",
         "about_me": "Обо мне",
         "socials": "Соцсети",

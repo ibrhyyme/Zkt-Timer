@@ -5,6 +5,11 @@ import {Report, ReportSummary} from '../schemas/Report.schema';
 import GraphQLError from '../util/graphql_error';
 import {ErrorCode} from '../constants/errors';
 import {getUserById, publicUserInclude} from '../models/user_account';
+import {checkRateLimit} from '../services/rate_limit';
+import {extractIp} from '../util/request';
+import {logger} from '../services/logger';
+
+const MAX_REPORT_REASON_LENGTH = 1000;
 
 async function getUnresolvedReports(context: GraphQLContext) {
 	const {prisma} = context;
@@ -87,6 +92,29 @@ export class ReportResolver {
 	@Authorized([Role.LOGGED_IN])
 	@Mutation(() => Report)
 	async reportProfile(@Ctx() context: GraphQLContext, @Arg('userId') userId: string, @Arg('reason') reason: string) {
+		// Rate limit: report spam / abuse guard (per reporter + per IP).
+		const reporterId = context.user.id;
+		const userLimit = await checkRateLimit(`report:user:${reporterId}`, 20, 3600);
+		if (!userLimit.allowed) {
+			logger.warn('Report rate limit (user)', {reporterId, count: userLimit.count});
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Cok fazla rapor gonderdiniz. Lutfen daha sonra tekrar deneyin.');
+		}
+		const ip = extractIp(context.req);
+		if (ip) {
+			const ipLimit = await checkRateLimit(`report:ip:${ip}`, 40, 3600);
+			if (!ipLimit.allowed) {
+				logger.warn('Report rate limit (ip)', {ip, count: ipLimit.count});
+				throw new GraphQLError(ErrorCode.BAD_INPUT, 'Cok fazla rapor gonderdiniz. Lutfen daha sonra tekrar deneyin.');
+			}
+		}
+
+		if (!reason || !reason.trim()) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Report reason is required');
+		}
+		if (reason.length > MAX_REPORT_REASON_LENGTH) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, `Report reason must be at most ${MAX_REPORT_REASON_LENGTH} characters`);
+		}
+
 		const user = await getUserById(userId);
 
 		if (!user) {

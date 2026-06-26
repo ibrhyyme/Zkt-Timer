@@ -91,7 +91,7 @@ export default function WcaRecords({userId}: WcaRecordsProps) {
 	}
 
 	if (loading) {
-		return <div className="wca-records loading">WCA rekorları yükleniyor...</div>;
+		return <div className="wca-records loading">{t('profile.wca_records_loading')}</div>;
 	}
 
 	if (!records.length) {
@@ -113,14 +113,14 @@ export default function WcaRecords({userId}: WcaRecordsProps) {
 				<div className="records-row">
 					{hasSingle && (
 						<div className="record-item">
-							<div className="record-type">Single</div>
+							<div className="record-type">{t('profile.single')}</div>
 							<div className="record-time">
 								{formatTime(record.single_record!)}
 								{getRankIcon(record.single_country_rank)}
 							</div>
 							{record.single_country_rank && (
 								<div className="record-rank">
-									#{record.single_country_rank} Türkiye
+									#{record.single_country_rank} {t('profile.wca_country_short')}
 								</div>
 							)}
 						</div>
@@ -128,14 +128,14 @@ export default function WcaRecords({userId}: WcaRecordsProps) {
 					
 					{hasAverage && (
 						<div className="record-item">
-							<div className="record-type">Average</div>
+							<div className="record-type">{t('profile.average')}</div>
 							<div className="record-time">
 								{formatTime(record.average_record!)}
 								{getRankIcon(record.average_country_rank)}
 							</div>
 							{record.average_country_rank && (
 								<div className="record-rank">
-									#{record.average_country_rank} Türkiye
+									#{record.average_country_rank} {t('profile.wca_country_short')}
 								</div>
 							)}
 						</div>
@@ -151,7 +151,7 @@ export default function WcaRecords({userId}: WcaRecordsProps) {
 
 	return (
 		<div className="wca-records">
-			<h2>WCA Resmi Rekorları</h2>
+			<h2>{t('profile.wca_official_records')}</h2>
 			<div className="wca-records-grid">
 				{recordCards}
 			</div>

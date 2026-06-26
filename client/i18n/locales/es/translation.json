@@ -1631,6 +1631,7 @@
         "music_rate_limit": "Espere antes de buscar de nuevo"
     },
     "profile": {
+        "remove": "Quitar",
         "share_text": "Mira el perfil de speedcubing de {{username}} en Zkt Timer",
         "about_me": "Sobre mí",
         "socials": "Redes sociales",

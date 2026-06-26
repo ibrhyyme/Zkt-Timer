@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import './PbCard.scss';
 import { getTimeString } from '../../../util/time';
 import Scramble from '../../modules/scramble/ScrambleVisual';
@@ -53,6 +54,7 @@ export default function PbCard(props: Props) {
 	const scramble = firstSolve.scramble;
 
 	const dispatch = useDispatch();
+	const { t } = useTranslation();
 	const me = useMe();
 	const [deleted, setDeleted] = useState(false);
 
@@ -120,7 +122,7 @@ export default function PbCard(props: Props) {
 			<div className={b('actions')}>
 				<Button
 					loading={deleteAvgMutData.loading || deleteSolveMutData.loading}
-					text="Remove"
+					text={t('profile.remove')}
 					danger
 					flat
 					onClick={deletePb}

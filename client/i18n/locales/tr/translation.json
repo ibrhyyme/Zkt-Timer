@@ -1638,6 +1638,7 @@
         "music_rate_limit": "Tekrar aramadan önce bekleyin"
     },
     "profile": {
+        "remove": "Kaldır",
         "share_text": "{{username}} kullanıcısının Zkt Timer speedcubing profilini gör",
         "about_me": "Hakkımda",
         "socials": "Socials",
