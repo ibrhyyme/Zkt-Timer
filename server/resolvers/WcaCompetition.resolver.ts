@@ -4,6 +4,10 @@ import {WcaApiService} from '../services/WcaApiService';
 import {createRedisKey, RedisNamespace, getValueFromRedis, setKeyInRedis} from '../services/redis';
 import {GraphQLContext} from '../@types/interfaces/server.interface';
 import {getAuthToken} from '../integrations/oauth';
+import {checkRateLimit} from '../services/rate_limit';
+import {extractIp} from '../util/request';
+import GraphQLError from '../util/graphql_error';
+import {ErrorCode} from '../constants/errors';
 
 const CACHE_TTL_SECONDS = 2 * 60 * 60; // 2 hours
 
@@ -56,9 +60,19 @@ export class WcaCompetitionResolver {
 
 	@Query(() => [WcaCompetition])
 	async wcaSearchCompetitions(
+		@Ctx() ctx: GraphQLContext,
 		@Arg('query') query: string
 	): Promise<WcaCompetition[]> {
 		if (!query || query.trim().length < 2) return [];
+
+		// Public, uncached WCA API proxy — throttle per IP to prevent search amplification.
+		const ip = extractIp(ctx.req);
+		if (ip) {
+			const limit = await checkRateLimit(`wca_search:ip:${ip}`, 15, 60);
+			if (!limit.allowed) {
+				throw new GraphQLError(ErrorCode.BAD_INPUT, 'Cok fazla arama. Lutfen biraz bekleyin.');
+			}
+		}
 
 		const raw = await WcaApiService.searchCompetitions(query.trim());
 		return raw.map((c) => ({

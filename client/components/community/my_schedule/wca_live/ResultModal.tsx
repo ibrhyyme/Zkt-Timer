@@ -67,7 +67,12 @@ export default function ResultModal({row, competitionId, onClose, t, showViewPro
 							<div className={b('wca-live-modal-subtitle')}>{row.subtitle}</div>
 						)}
 					</div>
-					<button className={b('wca-live-modal-close')} onClick={onClose}>
+					<button
+						className={b('wca-live-modal-close')}
+						onClick={onClose}
+						aria-label={t('common.close')}
+						title={t('common.close')}
+					>
 						<X size={20} />
 					</button>
 				</div>

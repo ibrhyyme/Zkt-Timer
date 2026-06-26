@@ -18,6 +18,9 @@ import {logger} from '../services/logger';
 import {getWcaLiveData as wcaLiveGetData, fetchLiveRoundResults as wcaLiveFetchRound} from '../services/WcaLiveService';
 import {ensureNotificationState} from '../services/WcaNotificationState';
 import {getArchivedCompetition, archiveCompetition, isStaleArchive, isCompetitionFinished} from '../services/CompetitionArchiveService';
+import {checkRateLimit} from '../services/rate_limit';
+import GraphQLError from '../util/graphql_error';
+import {ErrorCode} from '../constants/errors';
 
 function getErrorType(err: any): string {
 	if (!err) return 'unknown';
@@ -45,6 +48,13 @@ export class WcaScheduleResolver {
 		@Arg('input') input: WcaScheduleInput,
 		@Ctx() ctx: GraphQLContext
 	): Promise<WcaCompetitionDetail | null> {
+		// Login-gated, but a logged-in user could spam random competitionIds, each
+		// triggering a WCA API fetch (cache miss). Throttle per user.
+		const detailLimit = await checkRateLimit(`wca_detail:user:${ctx.user.id}`, 30, 60);
+		if (!detailLimit.allowed) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Cok fazla istek. Lutfen biraz bekleyin.');
+		}
+
 		const integration = await getIntegration(ctx.user, 'wca');
 		const wcaId = integration?.wca_id || '';
 		const wcaUserId = integration?.wca_user_id || '';

@@ -227,12 +227,20 @@ export function useLiveRoundResults(
 		if (!enabled || !data?.active || data?.finished) return;
 
 		intervalRef.current = setInterval(() => {
+			// Skip polling while the tab is hidden — socket.io still pushes updates when
+			// visible, and a backgrounded tab shouldn't drain battery/network.
+			if (typeof document !== 'undefined' && document.hidden) return;
+
+			// Guard against a slow/stale poll response overwriting fresher data: bump the
+			// shared request id and ignore this response if a newer fetch/poll superseded it.
+			const myRequestId = ++requestIdRef.current;
 			gqlQueryTyped(
 				WcaLiveRoundResultsDocument,
 				{input: {competitionId, liveRoundId: liveRoundId!}},
 				{fetchPolicy: 'no-cache'}
 			)
 				.then((res) => {
+					if (myRequestId !== requestIdRef.current) return;
 					const result = res?.data?.wcaLiveRoundResults || null;
 					if (result) {
 						setData(result);
@@ -241,6 +249,7 @@ export function useLiveRoundResults(
 					}
 				})
 				.catch(() => {
+					if (myRequestId !== requestIdRef.current) return;
 					setLastError(Date.now());
 				});
 		}, ROUND_POLL_INTERVAL);
