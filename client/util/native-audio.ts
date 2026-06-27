@@ -12,10 +12,10 @@ const NativeAudio =
 /** Preload basarili olan asset ID'leri */
 const loadedAssets = new Set<string>();
 
-export function preloadInspectionSounds(): void {
+export function preloadTimerSounds(): void {
 	if (!NativeAudio) return;
 
-	const assets = ['8_sec', '12_sec'];
+	const assets = ['8_sec', '12_sec', 'success'];
 	for (const id of assets) {
 		NativeAudio.preload({ assetId: id, fileName: id })
 			.then(() => {

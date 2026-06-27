@@ -39,12 +39,27 @@ import BleScanningModal from './ble_scanning_modal/BleScanningModal';
 import {showBleConnectInfo} from '../common/showBleConnectInfo';
 import { isNative } from '../../../util/platform';
 import { resourceUri } from '../../../util/storage';
+import { playNativeSound } from '../../../util/native-audio';
 import { onVisibilityChange } from '../../../util/app-visibility';
 import type { TwistyPlayer } from 'cubing/twisty';
 import * as THREE from 'three';
 
 const b = block('smart-cube');
 const DEFAULT_SOLVED_STATE = 'UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB';
+
+// Scramble-complete beep. On iOS, route through the native AVAudioPlayer
+// (.ambient + .mixWithOthers) so background music keeps playing; fall back to
+// web Audio when the native plugin is unavailable (Android/web).
+function playScrambleCompleteSound() {
+	if (playNativeSound('success')) return;
+	try {
+		const audio = new Audio(resourceUri('audio/success.mp3'));
+		audio.volume = 1.0;
+		audio.play().catch(e => console.warn('Audio play failed:', e));
+	} catch (err) {
+		// Audio error — not critical
+	}
+}
 
 // ── DEBUG LOGGING ──
 // Runtime activation: set `window.__SMART_DEBUG__ = true` in browser console
@@ -506,13 +521,7 @@ export default function SmartCube() {
 			if (!audioThrottleRef.current) {
 				audioThrottleRef.current = true;
 				setTimeout(() => { audioThrottleRef.current = false; }, 2000);
-				try {
-					const audio = new Audio(resourceUri('audio/success.mp3'));
-					audio.volume = 1.0;
-					audio.play().catch(e => console.warn('Audio play failed:', e));
-				} catch (err) {
-					// Audio error — not critical
-				}
+				playScrambleCompleteSound();
 			}
 
 			resetMoves(false, true);
@@ -743,13 +752,7 @@ export default function SmartCube() {
 			if (!audioThrottleRef.current) {
 				audioThrottleRef.current = true;
 				setTimeout(() => { audioThrottleRef.current = false; }, 2000);
-				try {
-					const audio = new Audio(resourceUri('audio/success.mp3'));
-					audio.volume = 1.0;
-					audio.play().catch(e => console.warn('Audio play failed:', e));
-				} catch (err) {
-					console.error('Audio init error:', err);
-				}
+				playScrambleCompleteSound();
 			}
 
 			resetMoves(false, true);
@@ -799,13 +802,7 @@ export default function SmartCube() {
 			if (!audioThrottleRef.current) {
 				audioThrottleRef.current = true;
 				setTimeout(() => { audioThrottleRef.current = false; }, 2000);
-				try {
-					const audio = new Audio(resourceUri('audio/success.mp3'));
-					audio.volume = 1.0;
-					audio.play().catch(e => console.warn('Audio play failed:', e));
-				} catch (err) {
-					console.error('Audio init error:', err);
-				}
+				playScrambleCompleteSound();
 			}
 
 			resetMoves(false, true);

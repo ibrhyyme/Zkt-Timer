@@ -33,7 +33,7 @@ import SwipeBackIndicator from '../common/swipe_back_indicator/SwipeBackIndicato
 import {useSiteConfig} from '../../util/hooks/useSiteConfig';
 import MaintenancePage from '../maintenance/MaintenancePage';
 import {showNativeToast} from '../../util/native-plugins';
-import {preloadInspectionSounds} from '../../util/native-audio';
+import {preloadTimerSounds} from '../../util/native-audio';
 import {initRevenueCat, identifyUser as iapIdentifyUser, logoutRevenueCat} from '../../lib/iap';
 import {gqlMutate} from '../api';
 import {LinkRevenueCatUserDocument} from '../../@types/generated/graphql';
@@ -89,7 +89,7 @@ export default function App(props: Props = {}) {
 			if (Capacitor.getPlatform() === 'ios') {
 				document.addEventListener('gesturestart', (e) => e.preventDefault());
 				document.addEventListener('gesturechange', (e) => e.preventDefault());
-				preloadInspectionSounds();
+				preloadTimerSounds();
 			}
 
 			let lastBackPress = 0;
