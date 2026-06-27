@@ -12,10 +12,10 @@ if (typeof window !== 'undefined') {
 const b = block('welcome-mobile-grid');
 
 const MOBILE_SCREENS = [
-	{ src: '/public/welcome/mobile/timer_mobile.png', labelKey: 'welcome_mobile.label_timer' },
-	{ src: '/public/welcome/mobile/solves_mobile.png', labelKey: 'welcome_mobile.label_solves' },
-	{ src: '/public/welcome/mobile/smartcube_timer_mobile.png', labelKey: 'welcome_mobile.label_smart_cube' },
-	{ src: '/public/welcome/mobile/setting_mobile.png', labelKey: 'welcome_mobile.label_settings' },
+	{ src: '/public/welcome/mobile/Timer.png', labelKey: 'welcome_mobile.label_timer' },
+	{ src: '/public/welcome/mobile/Solves.png', labelKey: 'welcome_mobile.label_solves' },
+	{ src: '/public/welcome/mobile/Trainer.png', labelKey: 'seo.nav_trainer_name' },
+	{ src: '/public/welcome/mobile/Competitions.png', labelKey: 'seo.nav_competitions_name' },
 ];
 
 const TILT_MAX = 15; // degrees
