@@ -3295,9 +3295,7 @@
         "title": "Always By Your Side",
         "description": "Use Zkt Timer from anywhere with its mobile-friendly interface. No app download needed.",
         "label_timer": "Timer",
-        "label_solves": "Solves",
-        "label_smart_cube": "Smart Cube",
-        "label_settings": "Settings"
+        "label_solves": "Solves"
     },
     "welcome_partners": {
         "title": "Professional Integrations",

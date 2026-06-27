@@ -3295,9 +3295,7 @@
         "title": "Всегда Рядом",
         "description": "Используйте Zkt Timer откуда угодно с мобильным интерфейсом. Скачивание приложения не требуется.",
         "label_timer": "Таймер",
-        "label_solves": "Сборки",
-        "label_smart_cube": "Smart Cube",
-        "label_settings": "Настройки"
+        "label_solves": "Сборки"
     },
     "welcome_partners": {
         "title": "Профессиональные Интеграции",

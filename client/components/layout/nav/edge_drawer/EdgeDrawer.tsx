@@ -8,7 +8,8 @@
 // Bagimsiz localStorage: her side kendi `storageKeyY` + `storageKeyUsed` ile gelir.
 // __notchTouchingLeft / __notchTouchingRight globalleri ayri tutulur (Android back).
 
-import React, {useState, useEffect, useLayoutEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
+import useIsomorphicLayoutEffect from '../../../../util/hooks/useIsomorphicLayoutEffect';
 import ReactDOM, {unstable_batchedUpdates} from 'react-dom';
 import {useSelector} from 'react-redux';
 import {useGeneral} from '../../../../util/hooks/useGeneral';
@@ -110,7 +111,7 @@ export default function EdgeDrawer(props: Props) {
 
 	// Drawer acildiginda spacer yuksekligini bir kere olc + kilitle. Icerik
 	// degisikligi (toggle vb.) yeniden olcmeyi tetiklemez — sadece open/notchY.
-	useLayoutEffect(() => {
+	useIsomorphicLayoutEffect(() => {
 		if (open) {
 			setLockedTop(gridTop());
 		} else {

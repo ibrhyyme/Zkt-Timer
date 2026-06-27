@@ -3295,9 +3295,7 @@
         "title": "Siempre a Tu Lado",
         "description": "Usa Zkt Timer desde cualquier lugar con su interfaz optimizada para móviles. No necesitas descargar ninguna aplicación.",
         "label_timer": "Cronómetro",
-        "label_solves": "Resoluciones",
-        "label_smart_cube": "Smart Cube",
-        "label_settings": "Ajustes"
+        "label_solves": "Resoluciones"
     },
     "welcome_partners": {
         "title": "Integraciones Profesionales",

@@ -3295,9 +3295,7 @@
         "title": "永远在你身边",
         "description": "使用Zkt计时器，随时随地，界面友好。无需下载App。",
         "label_timer": "计时器",
-        "label_solves": "还原记录",
-        "label_smart_cube": "智能魔方",
-        "label_settings": "设置"
+        "label_solves": "还原记录"
     },
     "welcome_partners": {
         "title": "专业集成",

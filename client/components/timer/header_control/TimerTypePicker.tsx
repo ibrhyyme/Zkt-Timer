@@ -4,7 +4,8 @@
 // Architecture note: TimerTab.tsx (modal) and this picker share the same state (timer_type + manual_entry settings).
 // Mobile uses modal Timer tab, desktop uses this picker — UI is separate, logic is shared.
 
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
+import useIsomorphicLayoutEffect from '../../../util/hooks/useIsomorphicLayoutEffect';
 import { useTranslation } from 'react-i18next';
 import * as Select from '@radix-ui/react-select';
 import {
@@ -74,7 +75,7 @@ export default function TimerTypePicker({ allowedTimerTypes, requireProForSmart 
 	const [open, setOpen] = useState(false);
 	const viewportRef = useRef<HTMLDivElement>(null);
 
-	useLayoutEffect(() => {
+	useIsomorphicLayoutEffect(() => {
 		if (!open) return;
 		const raf = requestAnimationFrame(() => {
 			const viewport = viewportRef.current;

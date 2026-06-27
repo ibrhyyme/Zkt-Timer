@@ -3300,9 +3300,7 @@
         "title": "Her Zaman Yanınızda",
         "description": "Mobil uyumlu arayüzü ile Zkt Timer'ı her yerden kullanabilirsiniz. Uygulama indirmeye gerek yok.",
         "label_timer": "Zamanlayıcı",
-        "label_solves": "Çözümler",
-        "label_smart_cube": "Smart Cube",
-        "label_settings": "Ayarlar"
+        "label_solves": "Çözümler"
     },
     "welcome_partners": {
         "title": "Profesyonel Entegrasyonlar",
