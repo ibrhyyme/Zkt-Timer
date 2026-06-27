@@ -10,8 +10,14 @@ const CORE = [
 
 self.addEventListener('install', (e) => {
   console.log('[SW] Installing...');
-  // skipWaiting yok: yeni SW kullanici uygulamayi tamamen kapatip acana kadar bekler.
-  // Mid-session reload olmasini engeller.
+  // skipWaiting is REQUIRED here: iOS WKWebView (Capacitor server.url) never closes the
+  // controlled client — backgrounding only suspends the WebView, it is not destroyed.
+  // Without skipWaiting the new SW stays "waiting" forever, the activate handler never
+  // runs, the old cache generation is never purged, and stale app.min.js/app.min.css are
+  // served indefinitely (the iOS-only "updates don't show up" bug). Android WebView and
+  // desktop browsers tear down the client, so their new SW activated normally — which is
+  // why the symptom looked iOS-specific.
+  self.skipWaiting();
   e.waitUntil(
     caches.open(CACHE).then(c =>
       // Cache each asset individually so one failure doesn't prevent others
@@ -24,9 +30,15 @@ self.addEventListener('install', (e) => {
 
 self.addEventListener('activate', (e) => {
   e.waitUntil(
-    caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
+      // Take control of already-open clients so the cache purge and the corrected cache
+      // key take effect right away. Safe to claim mid-session: the app ships as a single
+      // bundle (worker bundles are bypassed below), so there is no risk of a chunk-version
+      // mismatch. We intentionally do NOT force a reload — fresh JS/CSS load naturally on
+      // the next cold start, avoiding a jarring mid-session refresh.
+      .then(() => self.clients.claim())
   );
-  // clients.claim() yok: yeni SW ancak tum client'lar kapandiktan sonra devralir.
 });
 
 self.addEventListener('fetch', (e) => {
@@ -107,10 +119,15 @@ self.addEventListener('fetch', (e) => {
   }
 
   // Static assets (JS, CSS, images): Cache-first, arka planda güncelle
-  // Yeni deploy'larda RELEASE_NAME degisince CACHE_VERSION de degisir,
-  // eski cache activate event'inde silinir.
+  // Cache key MUST include the query string. The app shell ships under a STABLE filename
+  // (app.min.js / app.min.css) and is busted solely by ?v=<RELEASE_NAME>. Keying on
+  // pathname alone made every deploy a cache HIT on the old bundle, so the ?v= bump was
+  // silently ignored and stale JS/CSS were served. pathname+search makes each deploy a
+  // fresh URL → cache miss → fresh fetch. Query-less assets (images) are unaffected
+  // (empty search). Old ?v= entries are dropped wholesale when the cache generation
+  // rotates in the activate handler.
   if (req.method === 'GET') {
-    const cacheUrl = url.pathname;
+    const cacheUrl = url.pathname + url.search;
     e.respondWith(
       caches.match(cacheUrl).then(hit => {
         const fetchPromise = fetch(req).then(res => {
