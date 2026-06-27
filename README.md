@@ -1,8 +1,8 @@
 <div align="center">
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="public/images/zkt-logo-white.png">
-  <img src="public/images/zkt-logo-dark.png" alt="Zkt Timer" width="300">
+  <source media="(prefers-color-scheme: dark)" srcset="public/images/zkt-logo.png">
+  <img src="public/images/zkt-logo-white.png" alt="Zkt Timer" width="300">
 </picture>
 
 ### A complete speedcubing ecosystem, all in one place
