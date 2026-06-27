@@ -1,1 +1,0 @@
-npx cap open android
