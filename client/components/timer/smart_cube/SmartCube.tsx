@@ -1174,7 +1174,12 @@ export default function SmartCube() {
 		);
 		battery = null;
 	} else if (smartCubeConnected) {
-		emblem = <Emblem small green icon={<Bluetooth />} />;
+		// Connection is already conveyed by the battery percentage shown under the
+		// cube, so the bluetooth glyph is redundant and only crowds the timer on
+		// short screens. Keep the emblem as a fallback indicator only when the
+		// battery readout is hidden (cube visual off or level unavailable).
+		const batteryVisible = smartCubeShow && typeof smartCubeBatteryLevel === 'number';
+		emblem = batteryVisible ? null : <Emblem small green icon={<Bluetooth />} />;
 	} else {
 		emblem = <Emblem small red icon={<Bluetooth />} />;
 		actionButton = (
