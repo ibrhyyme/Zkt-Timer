@@ -2530,6 +2530,11 @@
         "solving": "正在还原",
         "finished": "已完成"
     },
+    "whatsapp_community": {
+        "title": "WhatsApp 社区",
+        "description": "不要错过更新、新功能和每日技巧。加入我们的 WhatsApp 社区。",
+        "join": "加入社区"
+    },
     "integration": {
         "disconnect": "断开连接",
         "disconnect_title": "断开 {{name}} 账户",

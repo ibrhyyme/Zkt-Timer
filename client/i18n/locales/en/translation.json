@@ -2530,6 +2530,11 @@
         "solving": "Solving",
         "finished": "Finished"
     },
+    "whatsapp_community": {
+        "title": "WhatsApp Community",
+        "description": "Don't miss updates, new features, and daily tips. Join our WhatsApp community.",
+        "join": "Join the Community"
+    },
     "integration": {
         "disconnect": "Disconnect",
         "disconnect_title": "Disconnect {{name}} account",

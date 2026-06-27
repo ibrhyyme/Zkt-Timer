@@ -2537,6 +2537,11 @@
         "solving": "Çözüyor",
         "finished": "Bitirdi"
     },
+    "whatsapp_community": {
+        "title": "WhatsApp Topluluğu",
+        "description": "Güncellemeleri, yeni özellikleri ve günlük ipuçlarını kaçırma. WhatsApp topluluğumuza katıl.",
+        "join": "Topluluğa Katıl"
+    },
     "integration": {
         "disconnect": "Bağlantıyı kes",
         "disconnect_title": "{{name}} hesabının bağlantısını kes",

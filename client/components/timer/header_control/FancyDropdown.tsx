@@ -5,10 +5,11 @@
 // "New Session +"), virtual values (e.g. "__action__new_session") are used —
 // parent component's handleValueChange catches these with switch statement.
 
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import * as Select from '@radix-ui/react-select';
 import { CaretDown, Check } from 'phosphor-react';
 import block from '../../../styles/bem';
+import useIsomorphicLayoutEffect from '../../../util/hooks/useIsomorphicLayoutEffect';
 import './FancyDropdown.scss';
 
 const b = block('fancy-dropdown');
@@ -82,7 +83,7 @@ export default function FancyDropdown(props: FancyDropdownProps) {
 
 	// When panel opens, scroll selected item to viewport center
 	// (Radix default only makes it visible, manual scroll needed to center)
-	useLayoutEffect(() => {
+	useIsomorphicLayoutEffect(() => {
 		if (!open) return;
 		const raf = requestAnimationFrame(() => {
 			const viewport = viewportRef.current;

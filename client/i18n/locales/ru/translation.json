@@ -2530,6 +2530,11 @@
         "solving": "Собирает",
         "finished": "Завершил"
     },
+    "whatsapp_community": {
+        "title": "Сообщество в WhatsApp",
+        "description": "Не пропускайте обновления, новые функции и ежедневные советы. Присоединяйтесь к нашему сообществу в WhatsApp.",
+        "join": "Присоединиться"
+    },
     "integration": {
         "disconnect": "Отвязать",
         "disconnect_title": "Отвязать аккаунт {{name}}",

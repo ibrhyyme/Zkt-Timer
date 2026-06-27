@@ -1,8 +1,13 @@
 @import '../../../styles/config';
 
 .#{$namespace}-account-linked-accounts {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+	gap: 25px;
+
 	> * {
+		flex: 0 1 300px;
 		max-width: 300px;
-		margin-bottom: 25px;
 	}
 }
