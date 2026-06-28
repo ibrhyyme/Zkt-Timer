@@ -1781,6 +1781,7 @@
         "detail_section": "Detalles del Cubo Inteligente"
     },
     "common": {
+        "offline_mode": "Modo sin conexión",
         "results_count": "{{count}} resultados",
         "results_count_for": "{{count}} resultados para '{{query}}'",
         "no_results": "No se encontraron resultados",
@@ -2402,6 +2403,14 @@
         "place_hands_on_moyu": "Coloca las manos en el timer MoYu para comenzar"
     },
     "smart_cube": {
+        "bt_unavailable_title": "¡Bluetooth no disponible!",
+        "bt_check_enabled": "Comprueba si el Bluetooth está activado en tu sistema.",
+        "bt_browser_hint": "Es posible que tu navegador no sea compatible con la API Web Bluetooth. Considera usar un navegador compatible; las mejores opciones son:",
+        "bt_browser_chrome": "Chrome en macOS, Linux, Android o Windows",
+        "bt_browser_bluefy": "Bluefy en iOS",
+        "bt_status_link_pre": "Para ver la lista completa de navegadores y funciones compatibles de la API Web Bluetooth, consulta la",
+        "bt_status_link_text": "estado de implementación del Grupo Comunitario Web Bluetooth",
+        "bt_status_link_post": "página.",
         "select_device": "Elige tu dispositivo",
         "select_device_desc": "Selecciona el tuyo de la lista — el más cercano suele estar arriba.",
         "searching_devices": "Buscando dispositivos…",

@@ -1781,6 +1781,7 @@
         "detail_section": "Детали умного куба"
     },
     "common": {
+        "offline_mode": "Автономный режим",
         "results_count": "{{count}} результатов",
         "results_count_for": "{{count}} результатов по запросу '{{query}}'",
         "no_results": "Результаты не найдены",
@@ -2402,6 +2403,14 @@
         "place_hands_on_moyu": "Положите руки на MoYu таймер, чтобы начать"
     },
     "smart_cube": {
+        "bt_unavailable_title": "Bluetooth недоступен!",
+        "bt_check_enabled": "Проверьте, включён ли Bluetooth в вашей системе.",
+        "bt_browser_hint": "Ваш браузер может не поддерживать Web Bluetooth API. Используйте совместимый браузер; лучшие варианты:",
+        "bt_browser_chrome": "Chrome на macOS, Linux, Android или Windows",
+        "bt_browser_bluefy": "Bluefy на iOS",
+        "bt_status_link_pre": "Полный список браузеров и поддерживаемых функций Web Bluetooth API смотрите на странице",
+        "bt_status_link_text": "статус реализации Web Bluetooth Community Group",
+        "bt_status_link_post": ".",
         "select_device": "Выберите своё устройство",
         "select_device_desc": "Выберите своё из списка — ближайшее обычно вверху.",
         "searching_devices": "Поиск устройств…",

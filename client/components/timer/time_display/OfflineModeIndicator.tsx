@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export default function OfflineModeIndicator() {
+	const { t } = useTranslation();
 	const [isOffline, setIsOffline] = useState(
 		typeof navigator !== 'undefined' ? !navigator.onLine : false
 	);
@@ -24,7 +26,7 @@ export default function OfflineModeIndicator() {
 
 	return (
 		<div className="offline-mode-indicator">
-			Offline Mode
+			{t('common.offline_mode')}
 		</div>
 	);
 }

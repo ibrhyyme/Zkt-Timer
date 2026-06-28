@@ -1788,6 +1788,7 @@
         "detail_section": "Akıllı Küp Detayları"
     },
     "common": {
+        "offline_mode": "Çevrimdışı Mod",
         "results_count": "{{count}} sonuç",
         "results_count_for": "{{count}} sonuç '{{query}}' için",
         "no_results": "Herhangi bir kayıt bulunamadı",
@@ -2409,6 +2410,14 @@
         "place_hands_on_moyu": "MoYu timer'a ellerinizi koyarak başlayın"
     },
     "smart_cube": {
+        "bt_unavailable_title": "Bluetooth kullanılamıyor!",
+        "bt_check_enabled": "Sisteminizde Bluetooth'un etkin olup olmadığını kontrol edin.",
+        "bt_browser_hint": "Tarayıcınız Web Bluetooth API'sini desteklemiyor olabilir. Uyumlu bir tarayıcı kullanmayı düşünün, en iyi seçenekler:",
+        "bt_browser_chrome": "macOS, Linux, Android veya Windows üzerinde Chrome",
+        "bt_browser_bluefy": "iOS üzerinde Bluefy",
+        "bt_status_link_pre": "Ayrıca farklı tarayıcıların ve desteklenen Web Bluetooth API özelliklerinin tam listesi için",
+        "bt_status_link_text": "Web Bluetooth Topluluk Grubu uygulama durumu",
+        "bt_status_link_post": "sayfasını kontrol edebilirsiniz.",
         "select_device": "Cihazını seç",
         "select_device_desc": "Listeden kendi cihazını seç — en yakın olan genelde en üsttedir.",
         "searching_devices": "Cihazlar aranıyor…",

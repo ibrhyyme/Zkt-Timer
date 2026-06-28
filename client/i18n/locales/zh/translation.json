@@ -1781,6 +1781,7 @@
         "detail_section": "智能魔方详情"
     },
     "common": {
+        "offline_mode": "离线模式",
         "results_count": "{{count}} 条结果",
         "results_count_for": "'{{query}}' 的 {{count}} 条结果",
         "no_results": "未找到结果",
@@ -2402,6 +2403,14 @@
         "place_hands_on_moyu": "将双手放在 MoYu 计时器上开始"
     },
     "smart_cube": {
+        "bt_unavailable_title": "蓝牙不可用！",
+        "bt_check_enabled": "请检查您的系统是否已启用蓝牙。",
+        "bt_browser_hint": "您的浏览器可能不支持 Web Bluetooth API。请考虑使用兼容的浏览器，最佳选择为：",
+        "bt_browser_chrome": "macOS、Linux、Android 或 Windows 上的 Chrome",
+        "bt_browser_bluefy": "iOS 上的 Bluefy",
+        "bt_status_link_pre": "有关浏览器及受支持的 Web Bluetooth API 功能的完整列表，请参阅",
+        "bt_status_link_text": "Web Bluetooth 社区组实现状态",
+        "bt_status_link_post": "页面。",
         "select_device": "选择你的设备",
         "select_device_desc": "从列表中选择你的设备 — 最近的通常在最上面。",
         "searching_devices": "正在搜索设备…",
