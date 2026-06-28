@@ -223,6 +223,7 @@
         "field_image_url": "Resim URL (Opsiyonel)",
         "field_content": "İçerik",
         "content_placeholder": "Duyuru içeriğini yazın...",
+        "link_hint": "Bağlantı: [metin](https://...) ya da düz URL yapıştırın.",
         "save_as_draft": "Taslak olarak kaydet",
         "send_notification": "Bildirim olarak da gönder",
         "draft_notification_warning": "(Taslak duyurular için bildirim gönderilemez)",

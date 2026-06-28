@@ -223,6 +223,7 @@
         "field_image_url": "图片 URL (可选)",
         "field_content": "内容",
         "content_placeholder": "在此撰写公告内容...",
+        "link_hint": "链接：[文字](https://...) 或直接粘贴网址。",
         "save_as_draft": "保存为草稿",
         "send_notification": "同时发送通知",
         "draft_notification_warning": "(草稿公告无法发送通知)",

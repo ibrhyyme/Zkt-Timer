@@ -6,6 +6,7 @@ import { gql } from '@apollo/client';
 import { gqlMutate } from '../../api';
 import Checkbox from '../../common/checkbox/Checkbox';
 import { toastError, toastSuccess } from '../../../util/toast';
+import { renderRichText } from '../../../util/rich_text';
 
 const CREATE_ANNOUNCEMENT = gql`
 	mutation CreateAnnouncement($input: CreateAnnouncementInput) {
@@ -351,6 +352,7 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 									: t('create_announcement.content_placeholder')
 							}
 						/>
+						<p className="text-xs text-zinc-500 mt-1">{t('create_announcement.link_hint')}</p>
 					</div>
 
 					{/* Translate button - only on TR tab */}
@@ -484,7 +486,7 @@ export default function CreateAnnouncementModal(props: CreateAnnouncementModalPr
 								/>
 							)}
 							<p className="text-sm text-zinc-300 whitespace-pre-wrap leading-relaxed">
-								{activeContent || t('create_announcement.preview_content_placeholder')}
+								{activeContent ? renderRichText(activeContent) : t('create_announcement.preview_content_placeholder')}
 							</p>
 						</div>
 					</div>

@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 import { X, CaretRight, ArrowRight } from 'phosphor-react';
 import { Announcement } from '../../@types/generated/graphql';
 import { openInAppBrowser } from '../../util/external-link';
+import { renderRichText } from '../../util/rich_text';
 
 interface AnnouncementModalProps {
 	announcement: Announcement;
@@ -152,7 +153,7 @@ export default function AnnouncementModal(props: AnnouncementModalProps) {
 				{/* Content */}
 				<div className="px-7 py-6 overflow-y-auto max-h-[55vh]">
 					<div className="text-[15px] leading-relaxed text-zinc-300 whitespace-pre-wrap space-y-1">
-						{announcement.content}
+						{renderRichText(announcement.content)}
 					</div>
 				</div>
 

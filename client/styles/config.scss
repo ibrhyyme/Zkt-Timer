@@ -22,6 +22,9 @@ $buttonColor: #313438;
 $primaryOrange: #ef6c00;
 $primaryBackground: #1a1d21;
 $primaryRed: #e53935;
+// Contrast color for smart-cube matched moves on green-based themes (e.g. Cyberpunk),
+// where the default $primaryGreen blends into the green scramble text.
+$primaryBlue: #4f8cff;
 $searchHeight: 4rem;
 $navWidth: 18rem;
 

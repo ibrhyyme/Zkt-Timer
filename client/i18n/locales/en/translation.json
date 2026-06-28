@@ -223,6 +223,7 @@
         "field_image_url": "Image URL (Optional)",
         "field_content": "Content",
         "content_placeholder": "Write announcement content...",
+        "link_hint": "Link: [text](https://...) or paste a plain URL.",
         "save_as_draft": "Save as draft",
         "send_notification": "Also send as notification",
         "draft_notification_warning": "(Notifications cannot be sent for draft announcements)",

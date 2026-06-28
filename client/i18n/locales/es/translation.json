@@ -223,6 +223,7 @@
         "field_image_url": "URL de imagen (Opcional)",
         "field_content": "Contenido",
         "content_placeholder": "Escribe el contenido del anuncio...",
+        "link_hint": "Enlace: [texto](https://...) o pega una URL simple.",
         "save_as_draft": "Guardar como borrador",
         "send_notification": "Enviar también como notificación",
         "draft_notification_warning": "(No se pueden enviar notificaciones para anuncios en borrador)",

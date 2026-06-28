@@ -216,6 +216,13 @@
 			-webkit-text-fill-color: $primaryGreen !important;
 		}
 
+		// Used instead of --green on green-based themes (e.g. Cyberpunk) so matched
+		// moves stay readable against green scramble text. Selected in SmartScramble.tsx.
+		&--blue {
+			color: $primaryBlue !important;
+			-webkit-text-fill-color: $primaryBlue !important;
+		}
+
 		&--red {
 			color: $primaryRed !important;
 			-webkit-text-fill-color: $primaryRed !important;
