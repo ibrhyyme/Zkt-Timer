@@ -18,7 +18,8 @@ export class RankingResolver {
 			: 'kinch';
 
 		if (search && search.trim().length > 0) {
-			const rows = await searchRankedUsers(search.trim(), rankingMode);
+			// Cap search length — guards against expensive DB string-match on oversized input.
+			const rows = await searchRankedUsers(search.trim().slice(0, 100), rankingMode);
 			return {
 				rows,
 				total_count: rows.length,

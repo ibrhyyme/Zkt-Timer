@@ -9,6 +9,7 @@ import {getTimeString} from '../../../../util/time';
 import {useDispatch} from 'react-redux';
 import HistoryModal from '../../../modules/history/history_modal/HistoryModal';
 import {openModal} from '../../../../actions/general';
+import {useTranslation} from 'react-i18next';
 
 const b = block('avg-row');
 
@@ -19,6 +20,7 @@ interface Props {
 
 export default function AvgRow(props: Props) {
 	const dispatch = useDispatch();
+	const {t} = useTranslation();
 
 	const context = useContext(StatsContext);
 	const filter = context.filterOptions;
@@ -38,17 +40,14 @@ export default function AvgRow(props: Props) {
 			return;
 		}
 
-		const descPrefix = pb ? 'Best ' : '';
-		const desc = descPrefix + `Average of ${localCount}`;
+		const desc = pb ? t('stats.avg.best_of', {value: localCount}) : t('stats.avg.of', {value: localCount});
 		dispatch(openModal(<HistoryModal solves={avg.solves} time={avg.time} description={desc} />));
 	}
-
-	const bestSpan = pb ? <span className={b('blue')}>Best</span> : null;
 
 	return (
 		<div className={b()}>
 			<p className={b('desc')}>
-				{bestSpan} {pb ? 'a' : 'A'}verage of <span className={b('blue')}>{count.toLocaleString()}</span>
+				{pb ? t('stats.avg.best_of', {value: localCount}) : t('stats.avg.of', {value: localCount})}
 			</p>
 			<button onClick={openSolveModal} className={b('value')}>
 				{getTimeString(avg?.time)}

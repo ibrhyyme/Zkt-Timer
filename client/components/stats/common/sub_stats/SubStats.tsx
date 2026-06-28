@@ -78,7 +78,7 @@ export default function SubStats(props: Props) {
 				small
 				center
 				icon={<WarningOctagon weight="bold" />}
-				title="DNFs"
+				title={t('stats.sub_stats.dnfs')}
 				value={`${subStats.dnfCount} (${subStats.dnfPercent}%)`}
 				color={subStats.dnfCount > 0 ? ROSE : NEUTRAL}
 			/>
@@ -86,7 +86,7 @@ export default function SubStats(props: Props) {
 				small
 				center
 				icon={<Warning weight="bold" />}
-				title="+2s"
+				title={t('stats.sub_stats.plus_twos')}
 				value={`${subStats.plusTwoCount} (${subStats.plusTwoPercent}%)`}
 				color={subStats.plusTwoCount > 0 ? AMBER : NEUTRAL}
 			/>

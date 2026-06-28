@@ -114,7 +114,13 @@
         },
         "avg": {
             "subtitle": "Últimas {{value}} resoluciones",
-            "best_block": "★ Bloque más consistente"
+            "best_block": "★ Bloque más consistente",
+            "of": "Promedio de {{value}}",
+            "best_of": "Mejor promedio de {{value}}"
+        },
+        "sub_stats": {
+            "dnfs": "DNFs",
+            "plus_twos": "+2s"
         },
         "last_n": {
             "all": "Todos",
@@ -3215,7 +3221,7 @@
         "feature_smart_cube_desc": "GAN, MoYu, Giiker — detección automática de resolución.",
         "feature_stackmat_title": "StackMat y GAN Timer",
         "feature_stackmat_desc": "Compatibilidad total con hardware profesional, listo para competir.",
-        "cta": "Pruébalo gratis"
+        "cta": "Pruébalo ahora"
     },
     "welcome_comparison": {
         "eyebrow": "Comparación",

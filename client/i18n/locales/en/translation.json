@@ -114,7 +114,13 @@
         },
         "avg": {
             "subtitle": "Last {{value}} solves",
-            "best_block": "★ Most consistent block"
+            "best_block": "★ Most consistent block",
+            "of": "Average of {{value}}",
+            "best_of": "Best average of {{value}}"
+        },
+        "sub_stats": {
+            "dnfs": "DNFs",
+            "plus_twos": "+2s"
         },
         "last_n": {
             "all": "All",
@@ -3215,7 +3221,7 @@
         "feature_smart_cube_desc": "GAN, MoYu, Giiker — automatic solve detection.",
         "feature_stackmat_title": "StackMat & GAN Timer",
         "feature_stackmat_desc": "Full compatibility with pro hardware, competition-ready.",
-        "cta": "Try it free"
+        "cta": "Try it now"
     },
     "welcome_comparison": {
         "eyebrow": "Comparison",

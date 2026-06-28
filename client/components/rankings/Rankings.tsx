@@ -338,6 +338,7 @@ export default function Rankings() {
 						className={b('search-input')}
 						placeholder={t('ranks.search_placeholder')}
 						value={search}
+						maxLength={100}
 						onChange={(e) => { setSearch(e.target.value); setPage(0); }}
 					/>
 				</div>

@@ -114,7 +114,13 @@
         },
         "avg": {
             "subtitle": "Son {{value}} çözüm",
-            "best_block": "★ En tutarlı blok"
+            "best_block": "★ En tutarlı blok",
+            "of": "{{value}} ortalaması",
+            "best_of": "En iyi {{value}} ortalaması"
+        },
+        "sub_stats": {
+            "dnfs": "DNF'ler",
+            "plus_twos": "+2'ler"
         },
         "last_n": {
             "all": "Tümü",
@@ -3220,7 +3226,7 @@
         "feature_smart_cube_desc": "GAN, MoYu, Giiker — otomatik çözüm algılama.",
         "feature_stackmat_title": "StackMat & GAN Timer",
         "feature_stackmat_desc": "Profesyonel donanımla tam uyumlu, yarışma hazır.",
-        "cta": "Ücretsiz dene"
+        "cta": "Hemen Dene"
     },
     "welcome_comparison": {
         "eyebrow": "Karşılaştırma",

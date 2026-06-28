@@ -47,7 +47,7 @@ export default function MicAccess() {
 	} else if (status === 'granted') {
 		disabled = true;
 		info = t('stackmat.permission_granted');
-	} else if (status === 'denied' || status === 'denied') {
+	} else if (status === 'denied' || status === 'restricted') {
 		disabled = true;
 		error = t('stackmat.permission_denied');
 	} else if (status === 'not-determined') {

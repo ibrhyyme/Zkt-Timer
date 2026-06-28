@@ -114,7 +114,13 @@
         },
         "avg": {
             "subtitle": "Последние {{value}} решений",
-            "best_block": "★ Самый стабильный блок"
+            "best_block": "★ Самый стабильный блок",
+            "of": "Среднее из {{value}}",
+            "best_of": "Лучшее среднее из {{value}}"
+        },
+        "sub_stats": {
+            "dnfs": "DNF",
+            "plus_twos": "+2"
         },
         "last_n": {
             "all": "Все",
@@ -3215,7 +3221,7 @@
         "feature_smart_cube_desc": "GAN, MoYu, Giiker — автоматическое определение сборки.",
         "feature_stackmat_title": "StackMat и GAN Timer",
         "feature_stackmat_desc": "Полная совместимость с профессиональным оборудованием, готов к соревнованиям.",
-        "cta": "Попробовать бесплатно"
+        "cta": "Попробовать сейчас"
     },
     "welcome_comparison": {
         "eyebrow": "Сравнение",

@@ -35,6 +35,9 @@ const DEFAULT_OPTIONS: TrainerOptions = {
 };
 
 function loadOptions(): TrainerOptions {
+	// SSR guard: /trainer landing is public and server-rendered; localStorage is
+	// undefined there. loadMode() already guards — keep this consistent.
+	if (typeof window === 'undefined') return DEFAULT_OPTIONS;
 	try {
 		const raw = localStorage.getItem('trainer_options');
 		if (raw) return {...DEFAULT_OPTIONS, ...JSON.parse(raw)};

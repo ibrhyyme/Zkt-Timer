@@ -114,7 +114,13 @@
         },
         "avg": {
             "subtitle": "最近 {{value}} 次还原",
-            "best_block": "★ 最稳定的块"
+            "best_block": "★ 最稳定的块",
+            "of": "{{value}} 次平均",
+            "best_of": "最佳 {{value}} 次平均"
+        },
+        "sub_stats": {
+            "dnfs": "DNF",
+            "plus_twos": "+2"
         },
         "last_n": {
             "all": "全部",
@@ -3215,7 +3221,7 @@
         "feature_smart_cube_desc": "GAN、魔方格、Giiker — 自动还原检测。",
         "feature_stackmat_title": "StackMat和GAN计时器",
         "feature_stackmat_desc": "完全兼容专业硬件，为比赛做好准备。",
-        "cta": "免费试用"
+        "cta": "立即试用"
     },
     "welcome_comparison": {
         "eyebrow": "对比",

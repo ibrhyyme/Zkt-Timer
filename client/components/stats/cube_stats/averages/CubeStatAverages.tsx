@@ -47,7 +47,7 @@ export default function CubeStatAverages() {
 				<HistoryModal
 					solves={item.avg.solves}
 					time={item.avg.time}
-					description={`Average of ${count.toLocaleString()}`}
+					description={t('stats.avg.of', {value: count.toLocaleString()})}
 				/>
 			)
 		);

@@ -1,5 +1,5 @@
 import React, {createContext, useEffect, useMemo, useState} from 'react';
-import {useHistory} from 'react-router-dom';
+import {useHistory, useLocation} from 'react-router-dom';
 import './Stats.scss';
 import block from '../../styles/bem';
 import {useSolveDb} from '../../util/hooks/useSolveDb';
@@ -68,7 +68,10 @@ export default function Stats() {
 		skip: !me,
 	});
 
-	const urlParams = new URLSearchParams(window.location.search);
+	// useLocation (not window.location) — SSR-safe via StaticRouter and hydration-safe;
+	// window is undefined during server render of this login-gated, SSR'd page.
+	const {search} = useLocation();
+	const urlParams = new URLSearchParams(search);
 	const tabCubeType = urlParams.get(CUBE_TYPE_QUERY_PARAM);
 	const tabSubset = urlParams.get(SCRAMBLE_SUBSET_QUERY_PARAM);
 	const tabSession = urlParams.get(SESSION_QUERY_PARAM);
