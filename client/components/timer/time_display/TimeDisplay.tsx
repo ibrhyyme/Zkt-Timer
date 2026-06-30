@@ -16,7 +16,6 @@ import StartInstructions from './start_instructions/StartInstructions';
 import StackMat from './stackmat/StackMat';
 import GanTimer from './gantimer/GanTimer';
 import QiyiTimer from './qiyitimer/QiyiTimer';
-import MoYuTimer from './moyutimer/MoYuTimer';
 import SolveDiff from './SolveDiff';
 import OfflineModeIndicator from './OfflineModeIndicator';
 
@@ -55,7 +54,8 @@ export default function TimeDisplay() {
 	const stackMatOn = timerType === 'stackmat';
 	const ganTimerOn = timerType === 'gantimer';
 	const qiyiTimerOn = timerType === 'qiyitimer';
-	const moyuTimerOn = timerType === 'moyutimer';
+	// QiYi wired (QYtoys) uses the standard StackMat audio protocol (mode '')
+	const qiyiWiredOn = timerType === 'qiyiwired';
 	const zeroOutTimeAfterSolve = useSettings('zero_out_time_after_solve');
 
 	const mobileMode = useGeneral('mobile_mode');
@@ -238,10 +238,8 @@ export default function TimeDisplay() {
 		}
 	}
 
-	if (stackMatOn) {
+	if (stackMatOn || qiyiWiredOn) {
 		bottomInfo = <StackMat />;
-	} else if (moyuTimerOn) {
-		bottomInfo = <MoYuTimer />;
 	} else if (ganTimerOn) {
 		bottomInfo = <GanTimer />;
 	} else if (qiyiTimerOn) {

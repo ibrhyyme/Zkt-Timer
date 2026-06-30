@@ -53,8 +53,8 @@ export default function KeyWatcher(props: Props) {
 
 	const modals = useGeneral('modals');
 	const timerType = useSettings('timer_type');
-	// stackmat + moyutimer share common audio path (vendor/stackmat.js), keyboard interaction same
-	const stackMatOn = timerType === 'stackmat' || timerType === 'moyutimer';
+	// stackmat + qiyiwired share common audio path (vendor/stackmat.js), keyboard interaction same
+	const stackMatOn = timerType === 'stackmat' || timerType === 'qiyiwired';
 	// Hardware timers (GAN Timer + QiYi Timer) disable keyboard
 	const ganTimerOn = timerType === 'gantimer' || timerType === 'qiyitimer';
 	const inspection = useSettings('inspection');

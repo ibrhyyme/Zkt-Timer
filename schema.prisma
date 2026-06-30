@@ -867,7 +867,7 @@ model FriendlyRoom {
   max_players      Int                       @default(8)
   created_by_id    String
   is_private       Boolean                   @default(false)
-  allowed_timer_types String[]               @default(["keyboard", "stackmat", "smart", "gantimer", "qiyitimer", "moyutimer", "manual"])
+  allowed_timer_types String[]               @default(["keyboard", "stackmat", "smart", "gantimer", "qiyitimer", "qiyiwired", "manual"])
   original_creator_id String?
   current_scramble String?
   scramble_subset  String?

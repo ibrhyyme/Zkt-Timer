@@ -15,7 +15,7 @@ import { isNative } from '../../util/platform';
 import { hapticImpact } from '../../util/native-plugins';
 import { playNativeSound } from '../../util/native-audio';
 import { resourceUri } from '../../util/storage';
-import StackMatPicker from '../settings/stackmat_picker/StackMatPicker';
+import StackMatPicker, { getAudioPickerModalProps } from '../settings/stackmat_picker/StackMatPicker';
 import SmartStats from '../timer/smart_cube/stats/SmartStats';
 import { is3x3CubeType } from '../timer/helpers/util';
 import './RoomTimerOverlay.scss';
@@ -519,7 +519,7 @@ export default function RoomTimerOverlay({
     }, [onRedo]);
 
     const connectStackmat = useCallback(async () => {
-        if (timerType !== 'stackmat' && timerType !== 'moyutimer') return;
+        if (timerType !== 'stackmat' && timerType !== 'qiyiwired') return;
         if (!isActive) return;
 
         // Ensure stackmat instance exists
@@ -527,8 +527,8 @@ export default function RoomTimerOverlay({
             stackmatRef.current = new Stackmat();
         }
 
-        // MoYu Timer = StackMat audio protocol mode='m' (8 kHz BCD), StackMat mode=''
-        const stackmatMode = timerType === 'moyutimer' ? 'm' : '';
+        // QYtoys (QiYi wired) and StackMat both use the standard StackMat audio protocol (mode '')
+        const stackmatMode = '';
 
         try {
             await stackmatRef.current.init(stackmatMode, stackmatId || '', false, (timerState) => {
@@ -559,7 +559,7 @@ export default function RoomTimerOverlay({
 
     // Auto-connect attempts logic
     useEffect(() => {
-        const isStackmatLike = timerType === 'stackmat' || timerType === 'moyutimer';
+        const isStackmatLike = timerType === 'stackmat' || timerType === 'qiyiwired';
         if (isStackmatLike && isActive && !stackmatConnected && stackmatId) {
             const timeout = setTimeout(() => {
                 connectStackmat().catch(err => console.error("Auto connect failed", err));
@@ -568,7 +568,7 @@ export default function RoomTimerOverlay({
         }
     }, [timerType, isActive, stackmatId, connectStackmat, stackmatConnected]);
 
-    // Mode degisiminde (StackMat <-> MoYu) reinit gerek — stackmatRef'i sifirla
+    // Mode degisiminde (StackMat <-> QYtoys) reinit gerek — stackmatRef'i sifirla
     useEffect(() => {
         if (stackmatRef.current) {
             stackmatRef.current = null;
@@ -583,7 +583,7 @@ export default function RoomTimerOverlay({
         // STRICT timer type enforcement: Only keyboard mode allows keyboard/touch input
         // Other modes should ONLY work with their respective devices
         if (timerType === 'stackmat') return; // Stackmat mode: only stackmat works
-        if (timerType === 'moyutimer') return; // MoYu mode: only MoYu (audio jack) works
+        if (timerType === 'qiyiwired') return; // QYtoys mode: only QiYi wired (audio jack) works
         if (timerType === 'gantimer') return; // GAN Timer mode: only GAN timer works
         if (timerType === 'qiyitimer') return; // QiYi Timer mode: only QiYi timer works
         if (timerType === 'smart') return; // Smart cube mode: only smart cube works
@@ -649,7 +649,7 @@ export default function RoomTimerOverlay({
 
         // STRICT timer type enforcement
         if (timerType === 'stackmat') return;
-        if (timerType === 'moyutimer') return;
+        if (timerType === 'qiyiwired') return;
         if (timerType === 'gantimer') return;
         if (timerType === 'qiyitimer') return;
         if (timerType === 'smart') return;
@@ -771,8 +771,8 @@ export default function RoomTimerOverlay({
             // Anasayfa hizalamasi: TIMING'de Space disinda herhangi bir tus timer'i durdurur
             // (Space zaten asagidaki keydown bloku ile simulateSpaceDown'a gidiyor — SUBMITTING_DOWN ara durumu uzerinden)
             if (currentStatus === STATUS.TIMING && e.keyCode !== 32) {
-                // Cihaz bazli modlarda (stackmat / moyutimer / gantimer / qiyitimer / smart) klavye ile durdurma yok
-                if (timerType === 'stackmat' || timerType === 'moyutimer' || timerType === 'gantimer' || timerType === 'qiyitimer' || timerType === 'smart') {
+                // Cihaz bazli modlarda (stackmat / qiyiwired / gantimer / qiyitimer / smart) klavye ile durdurma yok
+                if (timerType === 'stackmat' || timerType === 'qiyiwired' || timerType === 'gantimer' || timerType === 'qiyitimer' || timerType === 'smart') {
                     return;
                 }
                 e.preventDefault();
@@ -1229,7 +1229,9 @@ export default function RoomTimerOverlay({
 
     // Open Stackmat picker
     const openStackmatPicker = () => {
-        dispatch(openModal(<StackMatPicker />, { width: 400, compact: true, title: t('stackmat.select_input'), description: t('stackmat.description'), closeButtonText: t('solve_info.done') }));
+        const target = timerType === 'qiyiwired' ? 'qiyiwired' : 'stackmat';
+        const { title, description } = getAudioPickerModalProps(target, t);
+        dispatch(openModal(<StackMatPicker targetTimerType={target} />, { width: 400, compact: true, title, description, closeButtonText: t('solve_info.done') }));
     };
 
     // Format time for display
@@ -1570,10 +1572,10 @@ export default function RoomTimerOverlay({
             );
         }
 
-        if (timerType === 'stackmat' || timerType === 'moyutimer') {
-            const isMoYu = timerType === 'moyutimer';
-            const label = isMoYu ? t('room_timer.moyu_timer') : 'StackMat Timer';
-            const handsOnHint = isMoYu ? t('room_timer.place_hands_on_moyu') : t('room_timer.place_hands_on_stackmat');
+        if (timerType === 'stackmat' || timerType === 'qiyiwired') {
+            const isQiyiWired = timerType === 'qiyiwired';
+            const label = isQiyiWired ? t('room_timer.qytoys') : 'StackMat Timer';
+            const handsOnHint = isQiyiWired ? t('room_timer.place_hands_on_qytoys') : t('room_timer.place_hands_on_stackmat');
             return (
                 <div className="room-timer-overlay__device">
                     <div className="room-timer-overlay__device-icon">

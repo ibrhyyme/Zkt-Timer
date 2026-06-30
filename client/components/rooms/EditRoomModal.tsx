@@ -28,7 +28,7 @@ export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate,
     const [password, setPassword] = useState('');
 
     // Default all allowed if undefined
-    const allTypes = ['keyboard', 'stackmat', 'gantimer', 'qiyitimer', 'moyutimer', 'smart', 'manual'];
+    const allTypes = ['keyboard', 'stackmat', 'gantimer', 'qiyitimer', 'qiyiwired', 'smart', 'manual'];
     const proTypes = ['gantimer', 'qiyitimer', 'smart'];
     const [allowedTypes, setAllowedTypes] = useState<string[]>(
         currentAllowedTypes && currentAllowedTypes.length > 0 ? currentAllowedTypes : allTypes
@@ -51,7 +51,7 @@ export default function EditRoomModal({ isOpen, onClose, currentName, isPrivate,
             case 'stackmat': return 'StackMat';
             case 'gantimer': return 'GAN Timer';
             case 'qiyitimer': return t('rooms.qiyi_timer');
-            case 'moyutimer': return t('rooms.moyu_timer');
+            case 'qiyiwired': return t('rooms.qytoys');
             case 'smart': return t('rooms.smart_cube');
             case 'manual': return t('rooms.manual_entry');
             default: return type;

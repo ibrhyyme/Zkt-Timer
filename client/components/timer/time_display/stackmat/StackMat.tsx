@@ -7,18 +7,14 @@ import Stackmat from '../../../../util/vendor/stackmat';
 import { endTimer, startTimer, startInspection } from '../../helpers/events';
 import { setTimerParams } from '../../helpers/params';
 
-interface Props {
-	// cstimer mode: '' = StackMat (1200 Hz), 'm' = MoYu Timer (8000 Hz BCD)
-	// MoYu Timer is exposed as a separate timer_type; shares common audio processing path —
-	// only sample rate + bit analyzer differ (vendor/stackmat.js).
-	mode?: '' | 'm';
-}
-
-export default function StackMat({mode = ''}: Props = {}) {
+// Renders the audio-jack timer input. Used by both the StackMat timer type and the
+// QYtoys (QiYi wired) timer type — both speak the standard StackMat audio protocol.
+export default function StackMat() {
 	const { t } = useTranslation();
 	const stackMatId = useSettings('stackmat_id');
 	const stackMatAutoInspection = useSettings('stackmat_auto_inspection');
 	const inspectionEnabled = useSettings('inspection');
+	const timerType = useSettings('timer_type');
 
 	const context = useContext(TimerContext);
 	const localContext = useRef<ITimerContext>(context);
@@ -33,6 +29,9 @@ export default function StackMat({mode = ''}: Props = {}) {
 	const stackMatStarted = useRef(false);
 	const prevTime = useRef(0);
 	const inspectionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	// Tracks the on-screen "ready/green" state so we only dispatch on change, not every audio packet.
+	const readyRef = useRef(false);
+	const [handsReady, setHandsReady] = useState(false);
 
 	useEffect(() => {
 		localContext.current = context;
@@ -82,8 +81,9 @@ export default function StackMat({mode = ''}: Props = {}) {
 		}
 
 		stackMat.current = new Stackmat();
-		// cstimer init(timer, deviceId, force): '' (empty = standard) vs 'm' (MoYu)
-		return stackMat.current.init(mode, stackMatId, false, (timer) => {
+		// cstimer init(timer, deviceId, force): '' = standard StackMat protocol (1200 Hz).
+		// StackMat and QYtoys (QiYi wired) both use this standard mode.
+		return stackMat.current.init('', stackMatId, false, (timer) => {
 			if (timerInitCounter.current < 2) {
 				timerInitCounter.current++;
 				return;
@@ -97,10 +97,26 @@ export default function StackMat({mode = ''}: Props = {}) {
 					clearTimeout(inspectionTimeoutRef.current);
 					inspectionTimeoutRef.current = null;
 				}
+				// Clear the on-screen "ready/green" indicator once the solve actually begins
+				readyRef.current = false;
+				setHandsReady(false);
+				setTimerParams({ canStart: false });
 				startTimer();
 			} else if (!timer.running && stackMatStarted.current) {
 				stackMatStarted.current = false;
 				endTimer(localContext.current, timer.time_milli);
+			}
+
+			// On-screen "ready" feedback mirroring the physical timer's green light:
+			// head 'A' => both hands on + green. Drive the green time display while idle,
+			// so StackMat/QYtoys users can tell on screen that the timer is armed.
+			if (!timer.running && !stackMatStarted.current && !localContext.current.inInspection) {
+				const ready = !!timer.greenLight;
+				if (ready !== readyRef.current) {
+					readyRef.current = ready;
+					setHandsReady(ready);
+					setTimerParams({ canStart: ready });
+				}
 			}
 
 			// When mat is reset
@@ -118,6 +134,10 @@ export default function StackMat({mode = ''}: Props = {}) {
 
 					inspectionTimeoutRef.current = setTimeout(() => {
 						inspectionTimeoutRef.current = null;
+						// Clear any lingering ready-green before inspection's gray countdown takes over
+						readyRef.current = false;
+						setHandsReady(false);
+						setTimerParams({ canStart: false });
 						startInspection(localContext.current);
 					}, delaySeconds * 1000);
 				}
@@ -134,9 +154,13 @@ export default function StackMat({mode = ''}: Props = {}) {
 		});
 	}
 
+	const deviceLabel = timerType === 'qiyiwired' ? 'QYtoys' : 'StackMat';
+
 	return (
 		<StartInstructions>
-			{t('timer_modules.stackmat_place_hands')}
+			{handsReady
+				? t('timer_modules.audio_ready')
+				: t('timer_modules.audio_place_hands', { device: deviceLabel })}
 		</StartInstructions>
 	);
 }

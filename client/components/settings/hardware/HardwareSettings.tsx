@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
 import MicAccess from '../mic_access/MicAccess';
-import StackMatPicker from '../stackmat_picker/StackMatPicker';
+import StackMatPicker, { getAudioPickerModalProps } from '../stackmat_picker/StackMatPicker';
 import CubeTypes from '../cube_types/CubeTypes';
 import { openModal } from '../../../actions/general';
 import { setSetting, toggleSetting } from '../../../db/settings/update';
@@ -26,7 +26,7 @@ export const TIMER_INPUT_TYPE_KEYS = {
 	smart: 'timer_settings.input_smart',
 	gantimer: 'timer_settings.input_gantimer',
 	qiyitimer: 'timer_settings.input_qiyitimer',
-	moyutimer: 'timer_settings.input_moyutimer',
+	qiyiwired: 'timer_settings.input_qytoys',
 };
 
 export default function HardwareSettings() {
@@ -133,7 +133,9 @@ export default function HardwareSettings() {
 	}
 
 	function openStackMatPickerModal() {
-		dispatch(openModal(<StackMatPicker />, { width: 400, compact: true, title: t('stackmat.select_input'), description: t('stackmat.description'), closeButtonText: t('solve_info.done') }));
+		const target = timerType === 'qiyiwired' ? 'qiyiwired' : 'stackmat';
+		const { title, description } = getAudioPickerModalProps(target, t);
+		dispatch(openModal(<StackMatPicker targetTimerType={target} />, { width: 400, compact: true, title, description, closeButtonText: t('solve_info.done') }));
 	}
 
 	function getTimerTypeName(tt: string) {
@@ -151,11 +153,11 @@ export default function HardwareSettings() {
 					label={t('timer_settings.input_type')}
 					description={t('timer_settings.input_type_desc')}
 					value={timerType}
-					options={['keyboard', 'stackmat', 'moyutimer', 'smart', 'gantimer', 'qiyitimer'].map((c) => ({
+					options={['keyboard', 'stackmat', 'qiyiwired', 'smart', 'gantimer', 'qiyitimer'].map((c) => ({
 						label: getTimerTypeName(c),
 						value: c,
 					}))}
-					onChange={(v) => setSetting('timer_type', v as 'keyboard' | 'smart' | 'stackmat' | 'gantimer' | 'qiyitimer' | 'moyutimer')}
+					onChange={(v) => setSetting('timer_type', v as 'keyboard' | 'smart' | 'stackmat' | 'gantimer' | 'qiyitimer' | 'qiyiwired')}
 				/>
 				<TimerSettingsAction
 					label={t('timer_settings.cube_types')}

@@ -150,7 +150,6 @@
 		"json-stable-stringify": "^1.0.1",
 		"jsonwebtoken": "^9.0.0",
 		"jspdf": "^4.2.1",
-		"xlsx": "^0.18.5",
 		"lodash": "^4.17.21",
 		"lokijs": "^1.5.12",
 		"memoizee": "^0.4.15",
@@ -204,7 +203,8 @@
 		"uniqid": "^5.3.0",
 		"uuid": "^8.3.2",
 		"winston": "^3.7.2",
-		"winston-elasticsearch": "^0.17.1"
+		"winston-elasticsearch": "^0.17.1",
+		"xlsx": "^0.18.5"
 	},
 	"devDependencies": {
 		"@babel/cli": "^7.12.16",

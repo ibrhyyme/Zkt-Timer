@@ -176,8 +176,8 @@ export default function FriendlyRoom() {
         // Check if allowed
         if (room.allowed_timer_types.length > 0 && !room.allowed_timer_types.includes(currentTypeKey)) {
             // Find first allowed valid type to switch to
-            // Priority: keyboard -> manual -> stackmat -> moyutimer -> smart -> gantimer -> qiyitimer
-            const allTypes = ['keyboard', 'manual', 'stackmat', 'moyutimer', 'smart', 'gantimer', 'qiyitimer'];
+            // Priority: keyboard -> manual -> stackmat -> qiyiwired -> smart -> gantimer -> qiyitimer
+            const allTypes = ['keyboard', 'manual', 'stackmat', 'qiyiwired', 'smart', 'gantimer', 'qiyitimer'];
             const targetType = allTypes.find(t => room.allowed_timer_types.includes(t)) || room.allowed_timer_types[0];
 
             if (targetType === 'manual') {

@@ -16,7 +16,7 @@ import { useDispatch } from 'react-redux';
 import { useGeneral } from '../../../util/hooks/useGeneral';
 import { smartCubeSelected } from '../helpers/util';
 import block from '../../../styles/bem';
-import StackMatPicker from '../../settings/stackmat_picker/StackMatPicker';
+import StackMatPicker, { getAudioPickerModalProps } from '../../settings/stackmat_picker/StackMatPicker';
 import { TIMER_INPUT_TYPE_KEYS } from '../../settings/hardware/HardwareSettings';
 import { useSettings } from '../../../util/hooks/useSettings';
 import { AllSettings, getSetting } from '../../../db/settings/query';
@@ -130,7 +130,9 @@ export default function HeaderControl() {
 	}
 
 	function openStackMat() {
-		dispatch(openModal(<StackMatPicker />, { width: 400, compact: true, title: t('stackmat.select_input'), description: t('stackmat.description'), closeButtonText: t('solve_info.done') }));
+		const target = timerType === 'qiyiwired' ? 'qiyiwired' : 'stackmat';
+		const { title, description } = getAudioPickerModalProps(target, t);
+		dispatch(openModal(<StackMatPicker targetTimerType={target} />, { width: 400, compact: true, title, description, closeButtonText: t('solve_info.done') }));
 	}
 
 	const handlers = {

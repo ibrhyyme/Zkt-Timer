@@ -28,7 +28,7 @@ interface Props {
 	onOpenChange?: (open: boolean) => void;
 }
 
-const ALL_TYPES = ['keyboard', 'stackmat', 'gantimer', 'qiyitimer', 'moyutimer', 'smart', 'manual'];
+const ALL_TYPES = ['keyboard', 'stackmat', 'gantimer', 'qiyitimer', 'qiyiwired', 'smart', 'manual'];
 const PRO_TYPES = ['gantimer', 'qiyitimer', 'smart'];
 
 export default function EditRoomDropdown({
@@ -84,7 +84,7 @@ export default function EditRoomDropdown({
 			case 'stackmat': return 'StackMat';
 			case 'gantimer': return 'GAN Timer';
 			case 'qiyitimer': return t('rooms.qiyi_timer');
-			case 'moyutimer': return t('rooms.moyu_timer');
+			case 'qiyiwired': return t('rooms.qytoys');
 			case 'smart': return t('rooms.smart_cube');
 			case 'manual': return t('rooms.manual_entry');
 			default: return type;

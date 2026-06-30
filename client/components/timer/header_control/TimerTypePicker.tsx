@@ -25,7 +25,7 @@ import { useGeneral } from '../../../util/hooks/useGeneral';
 import { useMe } from '../../../util/hooks/useMe';
 import { useDispatch } from 'react-redux';
 import { openModal } from '../../../actions/general';
-import StackMatPicker from '../../settings/stackmat_picker/StackMatPicker';
+import StackMatPicker, { getAudioPickerModalProps } from '../../settings/stackmat_picker/StackMatPicker';
 import { AllSettings } from '../../../db/settings/query';
 import { is3x3CubeType } from '../helpers/util';
 import { isPro } from '../../../lib/pro';
@@ -34,7 +34,7 @@ import './TimerTypePicker.scss';
 
 const b = block('timer-type-picker');
 
-type TypeKey = 'keyboard' | 'stackmat' | 'smart' | 'gantimer' | 'qiyitimer' | 'moyutimer' | 'manual';
+type TypeKey = 'keyboard' | 'stackmat' | 'smart' | 'gantimer' | 'qiyitimer' | 'qiyiwired' | 'manual';
 
 type TimerOption = {
 	typeKey: TypeKey;
@@ -93,14 +93,15 @@ export default function TimerTypePicker({ allowedTimerTypes, requireProForSmart 
 		setSetting('timer_type', newTimerType);
 	}
 
-	function openStackMatPicker() {
+	function openStackMatPicker(targetTimerType: 'stackmat' | 'qiyiwired' = 'stackmat') {
+		const { title, description } = getAudioPickerModalProps(targetTimerType, t);
 		dispatch(openModal(
-			<StackMatPicker />,
+			<StackMatPicker targetTimerType={targetTimerType} />,
 			{
 				width: 400,
 				compact: true,
-				title: t('stackmat.select_input'),
-				description: t('stackmat.description'),
+				title,
+				description,
 				closeButtonText: t('solve_info.done'),
 			},
 		));
@@ -120,7 +121,12 @@ export default function TimerTypePicker({ allowedTimerTypes, requireProForSmart 
 
 		switch (opt.typeKey) {
 			case 'stackmat':
-				openStackMatPicker();
+				openStackMatPicker('stackmat');
+				break;
+			case 'qiyiwired':
+				// QYtoys (QiYi kablolu) ses-jack picker'i gerektirir (cihaz secimi + mic izni); stackmat gibi ac.
+				// timer_type'i picker save'i set eder (id'den sonra) — onceden set ETME.
+				openStackMatPicker('qiyiwired');
 				break;
 			case 'manual':
 				toggleManualEntry();
@@ -167,11 +173,11 @@ export default function TimerTypePicker({ allowedTimerTypes, requireProForSmart 
 			isActive: timerType === 'qiyitimer' && !manualEntry,
 		},
 		{
-			typeKey: 'moyutimer',
-			label: t('quick_controls.moyu_timer'),
-			shortLabel: 'MoYu',
+			typeKey: 'qiyiwired',
+			label: t('quick_controls.qytoys'),
+			shortLabel: 'QYtoys',
 			icon: <Microphone weight="bold" size={16} />,
-			isActive: timerType === 'moyutimer' && !manualEntry,
+			isActive: timerType === 'qiyiwired' && !manualEntry,
 		},
 		{
 			typeKey: 'manual',

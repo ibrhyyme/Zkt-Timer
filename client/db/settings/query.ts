@@ -37,7 +37,7 @@ export interface AllSettings {
 
 	// Local
 	haptic_feedback: boolean;
-	timer_type: 'keyboard' | 'smart' | 'stackmat' | 'gantimer' | 'qiyitimer' | 'moyutimer';
+	timer_type: 'keyboard' | 'smart' | 'stackmat' | 'gantimer' | 'qiyitimer' | 'qiyiwired';
 	timer_layout: TimerLayoutPosition;
 	timer_module_count: number;
 	stackmat_id: string;
@@ -217,6 +217,11 @@ export function getSettings(): AllSettings {
 		settings[setting.id] = setting.value;
 	});
 
+	// Migration: 'moyutimer' timer type removed (replaced by 'qiyiwired' / QYtoys) — coerce legacy value.
+	if (settings.timer_type === ('moyutimer' as AllSettings['timer_type'])) {
+		settings.timer_type = 'keyboard';
+	}
+
 	return settings as AllSettings;
 }
 
@@ -238,6 +243,12 @@ export function getSetting<T extends keyof AllSettings>(key: T): AllSettings[T] 
 
 	if (!result) {
 		return defaultValue;
+	}
+
+	// Migration: the 'moyutimer' timer type was removed (replaced by 'qiyiwired' / QYtoys).
+	// Coerce any legacy stored value to 'keyboard' on read so old users aren't stuck on a dead type.
+	if (key === 'timer_type' && result.value === 'moyutimer') {
+		return 'keyboard' as AllSettings[T];
 	}
 
 	return result?.value;
