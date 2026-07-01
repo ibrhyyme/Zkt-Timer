@@ -2481,6 +2481,8 @@
         "connecting_desc": "Cihazınızla eşleştiriliyor...",
         "connect": "Bağlan",
         "no_smart_cubes_yet": "Henüz akıllı küp bağlamadın",
+        "added_on": "Eklendi: {{date}}",
+        "device_solve_count": "{{count}} çözüm",
         "ble_scan_title": "Cihaz Bağla",
         "scanning": "Cihaz aranıyor...",
         "scanning_short": "Aranıyor...",

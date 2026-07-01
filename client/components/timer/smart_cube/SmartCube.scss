@@ -18,11 +18,42 @@
 		}
 	}
 
-	// Charge percentage centered directly under the cube.
+	// Charge percentage sits inline within the status row.
 	&__battery {
-		margin-top: 4px;
 		display: flex;
+		align-items: center;
+	}
+
+	// Status row directly under the cube: optional BT glyph + charge % + gear menu.
+	// Centered on both desktop and mobile.
+	&__status {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
 		justify-content: center;
+		gap: 8px;
+		margin-top: 4px;
+
+		.cd-common__emblem--small {
+			padding: 0 !important;
+			width: 23px;
+			height: 23px;
+			border-radius: 50%;
+			display: flex;
+			justify-content: center;
+			align-content: center;
+		}
+	}
+
+	// Icon-only gear trigger (no fill) sitting next to the battery percentage.
+	// Full text colour, no faded state.
+	&__gear-btn {
+		padding: 3px !important;
+		min-width: 0 !important;
+		display: flex !important;
+		align-items: center;
+		justify-content: center;
+		color: rgb(var(--text-color)) !important;
 	}
 
 	>div:last-child {
@@ -48,69 +79,11 @@
 		pointer-events: none;
 	}
 
-	&__info {
-		position: absolute;
-		top: 7px;
-		right: 25px;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-
-		.cd-common__emblem--small {
-			padding: 0 !important;
-			width: 23px;
-			height: 23px;
-			border-radius: 50%;
-			display: flex;
-			justify-content: center;
-			align-content: center;
-		}
-
-		>*:not(:last-child) {
-			margin-bottom: 10px;
-		}
-
-		&__dropdown-handle {
-			width: 23px;
-			height: 23px;
-			border-radius: 50%;
-			display: flex;
-			justify-content: center;
-			color: rgb(var(--text-color));
-			align-items: center;
-			font-size: 0.8rem;
-			background-color: rgb(var(--button-color));
-
-			i {
-				margin-top: 3px;
-				margin-left: 1px;
-			}
-		}
-	}
-
-
 	&--mobile {
-		.#{ $namespace }-smart-cube__info {
-			position: relative;
-			top: auto;
-			right: auto;
-			flex-direction: row;
-			justify-content: center;
-			width: 100%;
-			margin-top: -10px;
-			gap: 15px;
-
-			>*:not(:last-child) {
-				margin-bottom: 0;
-			}
-
-			.cd-dropdown__content {
-				top: 100%;
-				bottom: auto;
-				left: 50%;
-				transform: translateX(-50%);
-				margin-top: 10px;
-			}
+		// Pull the status row a touch closer to the cube on mobile where vertical
+		// space is tight.
+		.#{ $namespace }-smart-cube__status {
+			margin-top: -6px;
 		}
 	}
 }

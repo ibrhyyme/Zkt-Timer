@@ -7,7 +7,7 @@ import Emblem from '../../common/emblem/Emblem';
 import Battery from './battery/Battery';
 import Connect from './bluetooth/connect';
 import { setTimerParams } from '../helpers/params';
-import { Bluetooth, DotsThree } from 'phosphor-react';
+import { Bluetooth, Gear } from 'phosphor-react';
 
 import { openModal, closeModal } from '../../../actions/general';
 import ManageSmartCubes from './manage_smart_cubes/ManageSmartCubes';
@@ -1129,8 +1129,9 @@ export default function SmartCube() {
 	let actionButton = null;
 	const dropdown = (
 		<Dropdown
-			dropdownButtonProps={{ transparent: true }}
-			icon={<DotsThree />}
+			openUp={!mobileMode}
+			dropdownButtonProps={{ transparent: true, className: 'cd-smart-cube__gear-btn', noMargin: true }}
+			icon={<Gear size={18} />}
 			options={[
 				{
 					text: t('smart_cube.mark_as_solved'),
@@ -1207,13 +1208,19 @@ export default function SmartCube() {
 						style={{ width: effectiveCubeSize, height: effectiveCubeSize }}
 					/>
 				</div>
-				{/* Charge percentage right under the cube — plain coloured text, no
-				    battery glyph. Hidden when the cube visual is off. */}
-				{smartCubeShow && battery && (
-					<div className={b('battery')}>
-						{battery}
-					</div>
-				)}
+				{/* Status row directly under the cube: connection glyph (only shown as a
+				    fallback when the battery readout is unavailable), charge percentage,
+				    and the gear menu. Centered on both desktop and mobile so the menu is
+				    discoverable next to the battery. */}
+				<div className={b('status')}>
+					{emblem}
+					{smartCubeShow && battery && (
+						<div className={b('battery')}>
+							{battery}
+						</div>
+					)}
+					{dropdown}
+				</div>
 				{!mobileMode && (
 					<div className={b('stats-container')}>
 						<LiveAnalysisOverlay startState={startState || (cubejs.current ? cubejs.current.asString() : null)} />
@@ -1235,10 +1242,6 @@ export default function SmartCube() {
 					</>,
 					document.getElementById('mobile-smart-phases-container') || document.body
 				)}
-				<div className={b('info')}>
-					{emblem}
-					{dropdown}
-				</div>
 			</div>
 			{!mobileMode && actionButton}
 			{domReady && ReactDOM.createPortal(

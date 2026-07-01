@@ -2474,6 +2474,8 @@
         "connecting_desc": "Emparejando con tu dispositivo...",
         "connect": "Conectar",
         "no_smart_cubes_yet": "Aún no has conectado un cubo inteligente",
+        "added_on": "Añadido: {{date}}",
+        "device_solve_count": "{{count}} resoluciones",
         "ble_scan_title": "Conectar dispositivo",
         "scanning": "Buscando dispositivo...",
         "scanning_short": "Escaneando...",

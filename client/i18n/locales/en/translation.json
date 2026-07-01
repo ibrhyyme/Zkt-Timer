@@ -2474,6 +2474,8 @@
         "connecting_desc": "Pairing with your device...",
         "connect": "Connect",
         "no_smart_cubes_yet": "You haven't connected a smart cube yet",
+        "added_on": "Added: {{date}}",
+        "device_solve_count": "{{count}} solves",
         "ble_scan_title": "Connect Device",
         "scanning": "Searching for device...",
         "scanning_short": "Scanning...",

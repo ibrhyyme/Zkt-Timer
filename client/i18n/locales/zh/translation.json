@@ -2474,6 +2474,8 @@
         "connecting_desc": "正在与您的设备配对...",
         "connect": "连接",
         "no_smart_cubes_yet": "您尚未连接智能魔方",
+        "added_on": "添加于：{{date}}",
+        "device_solve_count": "{{count}} 次还原",
         "ble_scan_title": "连接设备",
         "scanning": "正在搜索设备...",
         "scanning_short": "搜索中...",

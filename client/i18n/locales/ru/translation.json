@@ -2474,6 +2474,8 @@
         "connecting_desc": "Сопряжение с вашим устройством...",
         "connect": "Подключить",
         "no_smart_cubes_yet": "Вы ещё не подключали умный куб",
+        "added_on": "Добавлено: {{date}}",
+        "device_solve_count": "{{count}} сборок",
         "ble_scan_title": "Подключение устройства",
         "scanning": "Поиск устройства...",
         "scanning_short": "Сканирование...",
