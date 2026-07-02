@@ -40,7 +40,7 @@ jobs:
           ignore-unfixed: true
 
       - name: Upload results to Security tab
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         if: always()
         continue-on-error: true   # repo public olana kadar upload başarısız olabilir; workflow'u bozmasın
         with:
