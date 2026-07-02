@@ -24,7 +24,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # 1) Tam tarama -> SARIF -> Security sekmesi (bilgilendirme, bloke etmez)
       - name: Trivy scan (report)
