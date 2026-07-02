@@ -7,13 +7,11 @@ name: Security Scan (Trivy)
 
 on:
   push:
-    branches: [ main, Zkt_dev ]
-  pull_request:
-    branches: [ main ]
+    branches: [ main ]        # deploy gibi: sadece main'e merge edilince tarar
   schedule:
     # Her Pazartesi 06:00 UTC — kod değişmese de yeni CVE'ler için haftalık tarama
     - cron: '0 6 * * 1'
-  workflow_dispatch:
+  workflow_dispatch:          # GitHub'dan elle tetikleme
 
 permissions:
   contents: read
@@ -30,7 +28,7 @@ jobs:
 
       # 1) Tam tarama -> SARIF -> Security sekmesi (bilgilendirme, bloke etmez)
       - name: Trivy scan (report)
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: fs
           scan-ref: .
@@ -50,7 +48,7 @@ jobs:
 
       # 2) Secret gate -> sızmış secret varsa iş BAŞARISIZ olsun ("ruslar" senaryosu)
       - name: Trivy secret gate (hard fail)
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: fs
           scan-ref: .
