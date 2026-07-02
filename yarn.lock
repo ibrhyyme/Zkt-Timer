@@ -6730,12 +6730,14 @@ aws4@^1.8.0:
   resolved "https://registry.npmjs.org/aws4/-/aws4-1.13.2.tgz"
   integrity sha512-lHe62zvbTB5eEABUVi/AwVh0ZKY9rMMDhmm+eeyuuUQbQ3+J+fONVQOZyj+DdrvD4BY33uYniyRJ4UJIaSKAfw==
 
-axios@^0.21.1:
-  version "0.21.4"
-  resolved "https://registry.npmjs.org/axios/-/axios-0.21.4.tgz"
-  integrity sha512-ut5vewkiu8jjGBdqpM44XxjuCjq9LAKeHVmoVfHVzy8eHgxxq8SbAVQNovDA8mVi05kP0Ea/n/UzcSHcTJQfNg==
+axios@^0.32.0:
+  version "0.32.0"
+  resolved "https://registry.yarnpkg.com/axios/-/axios-0.32.0.tgz#7859220c955272a72df8c0789ebd1219aba6d1d9"
+  integrity sha512-sGQArzERW2SI8IRkjuJ5y91Sm9QjiRq4Ay4kOLqpbBt5CeKDNq4g6nirJdyD+palK3yEDXnJiVXsesX66AjwyA==
   dependencies:
-    follow-redirects "^1.14.0"
+    follow-redirects "^1.15.4"
+    form-data "^4.0.4"
+    proxy-from-env "^1.1.0"
 
 babel-code-frame@^6.26.0:
   version "6.26.0"
@@ -10377,10 +10379,10 @@ fn.name@1.x.x:
   resolved "https://registry.npmjs.org/fn.name/-/fn.name-1.1.0.tgz"
   integrity sha512-GRnmB5gPyJpAhTQdSZTSp9uaPSvl09KoYcMQtsB9rQoOmzs9dH6ffeccH+Z+cv6P68Hu5bC6JjRh4Ah/mHSNRw==
 
-follow-redirects@^1.14.0, follow-redirects@^1.15.6:
-  version "1.15.9"
-  resolved "https://registry.npmjs.org/follow-redirects/-/follow-redirects-1.15.9.tgz"
-  integrity sha512-gew4GsXizNgdoRyqmyfMHyAmXsZDk6mHkSxZFCzW9gwlbtOW44CDtYavM+y+72qD/Vq2l550kMF52DT8fOLJqQ==
+follow-redirects@^1.15.4, follow-redirects@^1.15.6:
+  version "1.16.0"
+  resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.16.0.tgz#28474a159d3b9d11ef62050a14ed60e4df6d61bc"
+  integrity sha512-y5rN/uOsadFT/JfYwhxRS5R7Qce+g3zG97+JrtFZlC9klX/W5hD7iiLzScI4nZqUS7DNUdhPgw4xI8W2LuXlUw==
 
 for-each@^0.3.3, for-each@^0.3.5:
   version "0.3.5"
@@ -10424,15 +10426,16 @@ form-data@^3.0.0:
     es-set-tostringtag "^2.1.0"
     mime-types "^2.1.35"
 
-form-data@^4.0.0:
-  version "4.0.2"
-  resolved "https://registry.npmjs.org/form-data/-/form-data-4.0.2.tgz"
-  integrity sha512-hGfm/slu0ZabnNt4oaRZ6uREyfCj6P4fT/n6A1rGV+Z0VdGXjfOhVUpkn6qVQONHGIFwmveGXyDs75+nr6FM8w==
+form-data@^4.0.0, form-data@^4.0.4:
+  version "4.0.6"
+  resolved "https://registry.yarnpkg.com/form-data/-/form-data-4.0.6.tgz#28e864e1b786dbebb68db1f452f9635278665827"
+  integrity sha512-vKatAh4SlVfgbv+YtmhiRjhEMJsYpsG1Y2rMQtR+SVSbytsSD1YGzDIcrAJmdFec88u/+VoGmxnl+80gL1tRCQ==
   dependencies:
     asynckit "^0.4.0"
     combined-stream "^1.0.8"
     es-set-tostringtag "^2.1.0"
-    mime-types "^2.1.12"
+    hasown "^2.0.4"
+    mime-types "^2.1.35"
 
 form-data@~2.3.2:
   version "2.3.3"
@@ -11154,6 +11157,13 @@ hasown@^2.0.2:
   version "2.0.2"
   resolved "https://registry.npmjs.org/hasown/-/hasown-2.0.2.tgz"
   integrity sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==
+  dependencies:
+    function-bind "^1.1.2"
+
+hasown@^2.0.4:
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/hasown/-/hasown-2.0.4.tgz#8c62d8cb90beb2aad5d0a5b67581ad9854c3f003"
+  integrity sha512-T2UbfbBEF32wiepXIsMlTW9+dDYC6wMh/t/vYA4tuOMKqWz/n3vr1NFSxQiyP+zk2mXsoMA/i/7qV6LKut1t1A==
   dependencies:
     function-bind "^1.1.2"
 
@@ -16422,6 +16432,11 @@ proxy-addr@~2.0.7:
   dependencies:
     forwarded "0.2.0"
     ipaddr.js "1.9.1"
+
+proxy-from-env@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/proxy-from-env/-/proxy-from-env-1.1.0.tgz#e102f16ca355424865755d2c9e8ea4f24d58c3e2"
+  integrity sha512-D+zkORCbA9f1tdWRK0RaCR3GPv50cMxcrz4X8k5LTSUD1Dkw47mKJEZQNunItRTkWwgtaUSo1RVFRIG9ZXiFYg==
 
 prr@~1.0.1:
   version "1.0.1"
