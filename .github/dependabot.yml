@@ -1,0 +1,28 @@
+# Dependabot — bağımlılıkları güvenli şekilde güncel tutar.
+# Felsefe: küçük (patch/minor) güncellemeler tek gruplu PR olarak gelir; major
+# (ilk sayı değişen) güncellemeler OTOMATİK AÇILMAZ, çünkü cubing.js / Capacitor /
+# React ekosistemi sürüm kilitli ve major bump build'i kırar. Major'ları elle yaparız.
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    groups:
+      # Tüm güvenli patch + minor güncellemeleri tek PR'da topla (spam olmasın, kolay incele)
+      npm-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
+    ignore:
+      # Major bump'ları otomatik açma — bunlar kilitli ekosistemi kırar, elle yönetilir
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  # CI workflow action'larını (trivy-action, checkout, upload-sarif) güncel tut
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 3

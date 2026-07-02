@@ -5,7 +5,7 @@ WORKDIR /app
 
 # Sistem bağımlılıkları (Python, make, g++ gerekebilir node-gyp için)
 RUN apt-get update && \
-    apt-get install -y openssl python3 make g++ && \
+    apt-get install -y --no-install-recommends openssl python3 make g++ && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -48,7 +48,7 @@ WORKDIR /app
 
 # Runtime için gerekli sistem kütüphaneleri (Prisma için openssl şart)
 RUN apt-get update && \
-    apt-get install -y openssl && \
+    apt-get install -y --no-install-recommends openssl && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
