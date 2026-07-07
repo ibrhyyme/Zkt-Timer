@@ -85,7 +85,7 @@ export async function initSafeArea(): Promise<void> {
 		const { SafeArea } = await import('@capacitor-community/safe-area');
 		await SafeArea.enable({
 			config: {
-				customColorsForSystemBars: false,
+				customColorsForSystemBars: true,
 				statusBarColor: '#12141C',
 				statusBarContent: 'light',
 				navigationBarColor: '#12141C',

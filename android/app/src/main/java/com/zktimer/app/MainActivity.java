@@ -63,6 +63,28 @@ public class MainActivity extends BridgeActivity {
         // Login sonrasi session cookie'nin disk'e garantili yazilmasi icin
         // CookieManager'i acik tut. Default'ta acik ama emniyet icin set ediyoruz.
         CookieManager.getInstance().setAcceptCookie(true);
+
+        disableSystemBarContrast();
+    }
+
+    /**
+     * API 29+ draws an automatic contrast scrim behind transparent system bars.
+     * Combined with the safe-area plugin's IME handling, that scrim can get stuck
+     * as a black strip at the keyboard boundary. Disable it; bar colors are managed
+     * explicitly by the SafeArea/StatusBar plugins. No-op when bars are opaque.
+     */
+    private void disableSystemBarContrast() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            getWindow().setStatusBarContrastEnforced(false);
+            getWindow().setNavigationBarContrastEnforced(false);
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Re-assert in case the system or a plugin reset the window flags.
+        disableSystemBarContrast();
     }
 
     /**
