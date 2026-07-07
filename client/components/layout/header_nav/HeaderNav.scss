@@ -217,3 +217,17 @@
 		display: block;
 	}
 }
+
+// Desktop immersive background (Pro timer bg): make the nav bar transparent with a soft
+// top-to-bottom scrim so the timer background image (bled up behind it via Timer.scss)
+// shows through, while the nav text/icons stay legible over bright images. Toggled by
+// Timer via body.timer-immersive-bg (desktop only, and only when a bg image exists).
+body.timer-immersive-bg .#{$namespace}-header-nav {
+	background-color: transparent;
+	background-image: linear-gradient(
+		to bottom,
+		rgba(var(--background-color), 0.9) 0%,
+		rgba(var(--background-color), 0.5) 55%,
+		rgba(var(--background-color), 0) 100%
+	);
+}

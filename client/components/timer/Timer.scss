@@ -88,6 +88,22 @@ body.streamer-mode-active {
 	}
 }
 
+// Desktop immersive background (Pro timer bg): bleed the background image up behind the
+// global header nav so it covers the full screen. `.cd-timer` has no overflow:hidden on
+// desktop, so the absolutely-positioned image can overflow above its box into the nav
+// region; the nav itself is made transparent + scrimmed in HeaderNav.scss. Scoped to the
+// body class Timer toggles only on desktop when a bg image exists — no other page, and no
+// mobile, is affected.
+body.timer-immersive-bg {
+	.#{$namespace}-timer__background {
+		// Anchor to the top and pull up by the nav height (+2rem buffer) so the image
+		// reaches the viewport top behind the nav. object-fit: cover reframes cleanly.
+		top: calc(-1 * (var(--nav-h) + 2rem));
+		transform: translateX(-50%);
+		height: calc(100% + var(--nav-h) + 4rem);
+	}
+}
+
 .#{$namespace}-timer {
 	$self: &;
 	$gridGap: 1rem;

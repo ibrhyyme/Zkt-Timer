@@ -133,9 +133,19 @@
 		// minmax(0, 1fr) — without the 0 min, the grid item refuses to shrink below
 		// its intrinsic content width and the picker row overflows the viewport.
 		grid-template-columns: minmax(0, 1fr) 0px auto;
-		background: rgba(var(--background-color), 0.95);
-		backdrop-filter: blur(10px);
-		-webkit-backdrop-filter: blur(10px);
+		// Full-bar opaque background yerine top-to-bottom ince scrim: en ust (status
+		// bar bolgesi) en korumali, asagi indikce seffaflasir ki Pro kullanicinin timer
+		// arka plan resmi header'da da gorunsun. Ayni --background-color'in degisen
+		// alpha'si oldugu icin resimsiz kullanicida duz renk header ile birebir ayni
+		// gorunur (regresyon yok). Full-bar backdrop-filter kaldirildi: aksi halde resim
+		// yalnizca serit icinde bulaniklasip alt kenarda dikis izi olusurdu; pill'lerin
+		// kendi backdrop-filter'i (__left-controls) korunuyor.
+		background: linear-gradient(
+			to bottom,
+			rgba(var(--background-color), 0.92) 0%,
+			rgba(var(--background-color), 0.55) 45%,
+			rgba(var(--background-color), 0) 100%
+		);
 
 		&__left-controls {
 			background: rgba(var(--module-color), 0.9);

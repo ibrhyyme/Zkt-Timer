@@ -48,6 +48,10 @@ export function initApollo() {
 		credentials,
 		uri,
 		fetch: fetchType,
+		// apollo-upload-client v15 does NOT auto-add this header. Without it, multipart
+		// uploads (e.g. timer background) carry none of the headers the server CSRF
+		// middleware accepts and get 403'd on web. Harmless on JSON ops (already CSRF-safe).
+		headers: {'Apollo-Require-Preflight': 'true'},
 	});
 
 	client = new ApolloClient({

@@ -111,6 +111,20 @@ export default function Timer(props: TimerProps) {
 		};
 	}, [isStreamer]);
 
+	// Desktop-only immersive background: when the user has a Pro timer background image,
+	// let it bleed up behind the global HeaderNav (which lives OUTSIDE this component's
+	// subtree, so only a body-level class can reach it) — makes the whole screen feel
+	// covered instead of the image starting below the nav bar. Mobile is handled
+	// separately by the timer's own in-subtree header, so scope this to desktop.
+	const hasBackgroundImage = !!me?.timer_background?.storage_path;
+	useEffect(() => {
+		const immersive = hasBackgroundImage && !mobileMode;
+		document.body.classList.toggle('timer-immersive-bg', immersive);
+		return () => {
+			document.body.classList.remove('timer-immersive-bg');
+		};
+	}, [hasBackgroundImage, mobileMode]);
+
 	const smartActive = timerType === 'smart' && is3x3CubeType(cubeType, scrambleSubset) && !manualEntry;
 
 	let smartCubeVisual: ReactNode = null;

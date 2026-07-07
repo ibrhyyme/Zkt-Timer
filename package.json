@@ -47,7 +47,8 @@
 		"handlebars": "4.7.9",
 		"socket.io-parser": "4.2.6",
 		"validator": "^13.15.22",
-		"node-forge": "^1.4.0"
+		"node-forge": "^1.4.0",
+		"@types/minimatch": "5.1.2"
 	},
 	"private": true,
 	"author": "ZKT Timer Team",
