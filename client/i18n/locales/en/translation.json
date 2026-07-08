@@ -1091,6 +1091,11 @@
         "highlight_color": "Color",
         "highlight_bold": "Bold"
     },
+    "upload": {
+        "invalid_file": "Invalid file. Must be a PNG or JPEG",
+        "file_too_large": "File is too large. Maximum size is {{size}} MB",
+        "failed": "Upload failed. Please try again"
+    },
     "appearance": {
         "timer_modules": "Timer modules",
         "timer_modules_desc": "Change the number of modules shown on the timer page. Note that this is the *maximum* number of modules shown (based on your window size).",

@@ -1098,6 +1098,11 @@
         "highlight_color": "Renk",
         "highlight_bold": "Kalın"
     },
+    "upload": {
+        "invalid_file": "Geçersiz dosya. PNG veya JPEG olmalı",
+        "file_too_large": "Dosya çok büyük. En fazla {{size}} MB olabilir",
+        "failed": "Yükleme başarısız oldu. Lütfen tekrar deneyin"
+    },
     "appearance": {
         "timer_modules": "Timer modülleri",
         "timer_modules_desc": "Timer sayfasında gösterilen modül sayısını değiştirin. Bunun gösterilen *maksimum* modül sayısı olduğunu unutmayın (pencere boyutunuza göre).",

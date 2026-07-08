@@ -1091,6 +1091,11 @@
         "highlight_color": "颜色",
         "highlight_bold": "加粗"
     },
+    "upload": {
+        "invalid_file": "文件无效。必须是 PNG 或 JPEG 格式",
+        "file_too_large": "文件过大。最大 {{size}} MB",
+        "failed": "上传失败，请重试"
+    },
     "appearance": {
         "timer_modules": "计时器模块",
         "timer_modules_desc": "更改计时器页面上显示的模块数量。请注意，这是显示的*最大*模块数量（取决于您的窗口大小）。",

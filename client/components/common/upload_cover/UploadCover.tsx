@@ -2,11 +2,16 @@ import React, {useState} from 'react';
 import Dropzone from 'react-dropzone';
 import './UploadCover.scss';
 import {CloudArrowUp} from 'phosphor-react';
+import {useTranslation} from 'react-i18next';
 import block from '../../../styles/bem';
 import {toastError} from '../../../util/toast';
 import LoadingIcon from '../LoadingIcon';
 
 const b = block('common-upload-cover');
+
+// Must stay in sync with graphqlUploadExpress maxFileSize in server/app.ts
+const MAX_FILE_SIZE_MB = 30;
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
 interface Props {
 	allowGif?: boolean;
@@ -15,6 +20,7 @@ interface Props {
 
 export default function UploadCover(props: Props) {
 	const {allowGif, upload} = props;
+	const {t} = useTranslation();
 	const [loading, setLoading] = useState(false);
 
 	async function onDrop(files) {
@@ -23,18 +29,31 @@ export default function UploadCover(props: Props) {
 		}
 
 		if (!files.length) {
-			toastError('Invalid file. Must be a PNG or JPEG');
+			toastError(t('upload.invalid_file'));
+			return;
+		}
+
+		const file = files[0];
+
+		// Pre-check size so oversized files fail fast with a clear message instead of
+		// being rejected mid-stream by the server (which surfaces as a silent failure)
+		if (file.size > MAX_FILE_SIZE_BYTES) {
+			toastError(t('upload.file_too_large', {size: MAX_FILE_SIZE_MB}));
 			return;
 		}
 
 		setLoading(true);
 
-		const file = files[0];
-		await upload({
-			file,
-		});
-
-		setLoading(false);
+		try {
+			await upload({
+				file,
+			});
+		} catch (e) {
+			console.error('Upload failed:', e);
+			toastError(t('upload.failed'));
+		} finally {
+			setLoading(false);
+		}
 	}
 
 	let coverIcon = <CloudArrowUp weight="bold" />;
