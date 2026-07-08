@@ -83,6 +83,30 @@ export default function Manual() {
 		};
 	}, []);
 
+	// Android: when the keyboard opens, the WebView shrinks and Chromium scrolls the
+	// nearest scrollable ancestor (mobile-layout) to keep the focused input in view,
+	// sliding the whole page up and leaving it shifted after the keyboard closes.
+	// overflow-y:hidden alone doesn't stop programmatic scrolls (the element is still
+	// a scroll container), so hard-pin scrollTop to 0 while manual mode is mounted.
+	useEffect(() => {
+		if (!isAndroidNative() || !mobileMode) return;
+
+		const container =
+			(manualInput.current?.closest('.cd-timer__mobile-layout') as HTMLElement | null) ??
+			document.querySelector<HTMLElement>('.cd-timer__mobile-layout');
+		if (!container) return;
+
+		const pinScroll = () => {
+			if (container.scrollTop !== 0) {
+				container.scrollTop = 0;
+			}
+		};
+
+		pinScroll();
+		container.addEventListener('scroll', pinScroll);
+		return () => container.removeEventListener('scroll', pinScroll);
+	}, [mobileMode]);
+
 	useElementListener(manualInput.current, 'keydown', addManualTime, [manualInput?.current, manualTime]);
 
 	function submitTime() {

@@ -15,7 +15,7 @@ export function getStorageURL(path: string) {
 		return `/public/uploads/${path}`;
 	}
 
-	return `${Consts.STORAGE_ORIGIN}/${path}`;
+	return `${Consts.STORAGE_ORIGIN}/public/uploads/${path}`;
 }
 
 export function resourceUri(path: string) {

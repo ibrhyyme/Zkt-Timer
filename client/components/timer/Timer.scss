@@ -506,6 +506,14 @@ body.timer-immersive-bg {
 		&--manual {
 			gap: 0.5rem;
 
+			// Manual entry: block scrolling entirely. This is the only scrollable
+			// ancestor of the manual input; on Android the IME "scroll focused input
+			// into view" pass scrolls it when the keyboard opens, sliding the whole
+			// page up and leaving it shifted after the keyboard closes. Same intent
+			// as the legacy __main--manual overflow:hidden plug.
+			overflow-y: hidden;
+			overscroll-behavior: none;
+
 			.cd-mobile-timer-scramble {
 				flex: 0 0 auto;
 				min-height: 60px;
