@@ -29,6 +29,8 @@ import { SplashScreen } from '@capacitor/splash-screen';
 import { App as CapApp } from '@capacitor/app';
 import { initPushNotifications } from '../../util/push-notifications';
 import { initStatusBar, lockTextZoom, initSafeArea } from '../../util/native-plugins';
+import { setBackButtonHandle, releaseNativeBackButton } from '../../util/native-back';
+import { openInAppBrowser } from '../../util/external-link';
 import SwipeBackIndicator from '../common/swipe_back_indicator/SwipeBackIndicator';
 import {useSiteConfig} from '../../util/hooks/useSiteConfig';
 import MaintenancePage from '../maintenance/MaintenancePage';
@@ -118,7 +120,43 @@ export default function App(props: Props = {}) {
 						showNativeToast('Press back again to exit');
 					}
 				}
-			});
+			}).then(setBackButtonHandle);
+
+			// Route external links through openInAppBrowser instead of letting the
+			// WebView navigate away from the app shell: hosts in allowNavigation
+			// (e.g. WCA) would replace the app in-place with no way back. Capture
+			// phase + stopPropagation so per-component handlers don't double-open.
+			document.addEventListener(
+				'click',
+				(e) => {
+					const anchor = (e.target as Element | null)?.closest?.('a[href]') as HTMLAnchorElement | null;
+					if (!anchor || anchor.hasAttribute('download')) return;
+
+					const href = anchor.href;
+					if (!/^https?:/i.test(href)) return; // keep native handling for mailto:, tel:, etc.
+
+					let url: URL;
+					try {
+						url = new URL(href);
+					} catch (err) {
+						return;
+					}
+					if (url.origin === window.location.origin) return; // in-app links untouched
+
+					// WCA OAuth must keep navigating the WebView itself (the redirect lands
+					// back in the app), but drop the backButton listener so bailing out
+					// mid-login still leaves a working hardware back.
+					if (url.hostname.endsWith('worldcubeassociation.org') && url.pathname.startsWith('/oauth/authorize')) {
+						void releaseNativeBackButton();
+						return;
+					}
+
+					e.preventDefault();
+					e.stopPropagation();
+					openInAppBrowser(href);
+				},
+				true
+			);
 		}
 	}
 
