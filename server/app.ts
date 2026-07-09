@@ -659,8 +659,14 @@ app.post('/api/ota/latest', (req, res) => {
 		return;
 	}
 
-	const nativeVersion = String(req.body?.version_name || '');
-	if (manifest.min_native && nativeVersion && compareAppVersions(nativeVersion, manifest.min_native) < 0) {
+	// min_native compares against the NATIVE app version, which the plugin sends in
+	// `version_build`. NOT `version_name` — that is the currently applied WEB BUNDLE
+	// version ("builtin" on fresh installs, then "1.0.<epoch>"); gating on it rejected
+	// fresh installs and froze every device after its first update. Fail-open on
+	// non-numeric values: only bundle-capable binaries call this endpoint at all.
+	const nativeVersion = String(req.body?.version_build || '');
+	const isNumericVersion = /^\d+(\.\d+)*$/.test(nativeVersion);
+	if (manifest.min_native && isNumericVersion && compareAppVersions(nativeVersion, manifest.min_native) < 0) {
 		res.json({ message: 'native app too old for this bundle', version: '' });
 		return;
 	}
