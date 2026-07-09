@@ -87,17 +87,28 @@ export function initApollo() {
 	});
 
 	let link: ApolloLink = uploadLink as unknown as ApolloLink;
-	if (typeof window !== 'undefined' && isNative()) {
+	// Attach the auth links in ANY browser context (not gated on a build-time
+	// isNative() check). initApollo() runs at bootstrap, before the Capacitor bridge
+	// is guaranteed ready, so a build-time isNative() could be false and drop these
+	// links entirely — then the native app never sends the Bearer token nor captures
+	// it on login (the login-bounce bug). The per-request setContext below re-checks
+	// isNative() at call time, when it is reliable; on web both links no-op.
+	if (typeof window !== 'undefined') {
 		// Bearer auth for the local-bundle shell: attach the stored session JWT on the
-		// way out, capture a fresh one from X-Session-Token on the way in (set by
-		// every login mutation server-side). No-ops while no token is stored, so the
-		// cookie path of old remote-loading binaries keeps working unchanged.
+		// way out, capture a fresh one on the way in (login mutations return it in the
+		// body + X-Session-Token header). No-ops while no token is stored / on web.
 		let warnedNoToken = false;
 		const authLink = setContext(async (_operation, prevContext) => {
+			const native = isNative();
+			if (!native) {
+				// Web: never mark as native (would flip server-side isWebView and break
+				// the sameSite=lax CSRF posture) and never send a Bearer token.
+				return {};
+			}
 			const token = await getSessionToken();
 			// X-ZKT-Native marks this request as the native app regardless of whether
 			// the cross-origin fetch UA carries the ZktTimerApp suffix. The server keys
-			// isWebView (and thus the session-token emission) off it. Always sent.
+			// isWebView (and thus the session-token emission) off it. Always sent on native.
 			const headers: Record<string, string> = {
 				...(prevContext.headers || {}),
 				'X-ZKT-Native': '1',
