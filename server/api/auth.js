@@ -61,13 +61,14 @@ const mutateActions = {
 		return {...sanitizeUser(user), session_token: sessionTokenForBody(req, jwt)};
 	},
 	logOut: async (_, params, { req, res, user }) => {
-		// Token revocation: cookie'den JWT'yi cikar, jti'yi Redis'e blacklist et.
-		// Native local-bundle clients carry the JWT as a Bearer header instead of the
-		// cookie — revoke whichever one authenticated this request.
+		// Token revocation: blacklist the jti of EVERY session credential on this
+		// request. Native local-bundle clients can carry both a (possibly stale)
+		// cookie AND a Bearer token — revoking only the first would leave the other
+		// session alive after logout.
 		const authHeader = req?.headers?.authorization || '';
 		const bearer = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
-		const session = req?.cookies?.session || bearer;
-		if (session) {
+		const sessions = [req?.cookies?.session, bearer].filter(Boolean);
+		for (const session of sessions) {
 			try {
 				const decoded = jwtLib.decode(session);
 				if (decoded && typeof decoded === 'object' && decoded.jti) {

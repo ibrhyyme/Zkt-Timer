@@ -68,13 +68,28 @@ function getBearerToken(req: Request): string | null {
 }
 
 export async function getMe(req: Request) {
-	const session = req.cookies.session || getBearerToken(req);
+	// Try the cookie first (web), then the Bearer token (native local bundle). Both
+	// are attempted INDEPENDENTLY: a stale/revoked cookie left over from an earlier
+	// session must not shadow a freshly issued Bearer token (the native app can carry
+	// both after the Faz 2 transition).
+	const cookieSession = req.cookies.session;
+	const bearerToken = getBearerToken(req);
 
-	if (!session) {
-		// User not logged in
-		return null;
+	const candidates: string[] = [];
+	if (cookieSession) candidates.push(cookieSession);
+	if (bearerToken && bearerToken !== cookieSession) candidates.push(bearerToken);
+
+	for (const session of candidates) {
+		const me = await resolveMeFromSessionJwt(session);
+		if (me) {
+			return me;
+		}
 	}
 
+	return null;
+}
+
+async function resolveMeFromSessionJwt(session: string) {
 	try {
 		const output: any = jwt.verify(session, jwtSecret);
 
