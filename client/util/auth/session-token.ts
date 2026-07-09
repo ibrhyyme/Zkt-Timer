@@ -5,17 +5,42 @@ import {isNative} from '../platform';
 //
 // The httpOnly session cookie is unreadable/unsendable from the local-bundle origin
 // (iOS ITP blocks third-party cookies), so the server hands the same JWT to native
-// clients via the X-Session-Token response header and we persist it in
-// @capacitor/preferences, sending it back as Authorization: Bearer.
+// clients via the X-Session-Token response header and we persist it, sending it back
+// as Authorization: Bearer.
 //
-// Old binaries don't ship the Preferences plugin: every call here degrades to a
-// silent no-op there (they keep using the same-origin cookie).
+// Storage: @capacitor/preferences primary, localStorage fallback. The fallback is
+// deliberate: the shell's localStorage lives inside the app sandbox (same exposure
+// class), and a login that silently evaporates because the Preferences plugin is
+// missing/broken is strictly worse than the marginal storage-hardening difference.
+//
+// Old binaries don't ship the Preferences plugin: they land on the localStorage path,
+// which is harmless there (they keep using the same-origin cookie anyway).
 const TOKEN_KEY = 'zkt_session_token';
 
 let cachedToken: string | null | undefined = undefined; // undefined = not loaded yet
 
 function preferencesAvailable(): boolean {
 	return isNative() && Capacitor.isPluginAvailable('Preferences');
+}
+
+function readLocalStorageToken(): string | null {
+	try {
+		return localStorage.getItem(TOKEN_KEY) || null;
+	} catch (e) {
+		return null;
+	}
+}
+
+function writeLocalStorageToken(token: string | null): void {
+	try {
+		if (token) {
+			localStorage.setItem(TOKEN_KEY, token);
+		} else {
+			localStorage.removeItem(TOKEN_KEY);
+		}
+	} catch (e) {
+		// Storage unavailable — nothing else to do
+	}
 }
 
 export async function getSessionToken(): Promise<string | null> {
@@ -27,38 +52,51 @@ export async function getSessionToken(): Promise<string | null> {
 		return cachedToken;
 	}
 
-	if (!preferencesAvailable()) {
-		cachedToken = null;
-		return null;
+	if (preferencesAvailable()) {
+		try {
+			const {Preferences} = await import('@capacitor/preferences');
+			const {value} = await Preferences.get({key: TOKEN_KEY});
+			if (value) {
+				cachedToken = value;
+				return cachedToken;
+			}
+		} catch (e) {
+			// console.error survives the prod build (console.log/warn are stripped)
+			console.error('[session-token] Preferences read failed:', (e as any)?.message);
+		}
+	} else {
+		console.error('[session-token] Preferences plugin unavailable, using localStorage fallback');
 	}
 
-	try {
-		const {Preferences} = await import('@capacitor/preferences');
-		const {value} = await Preferences.get({key: TOKEN_KEY});
-		cachedToken = value || null;
-	} catch (e) {
-		cachedToken = null;
-	}
-
+	cachedToken = readLocalStorageToken();
 	return cachedToken;
 }
 
 export async function setSessionToken(token: string): Promise<void> {
-	if (!token || !preferencesAvailable()) {
+	if (!token || !isNative()) {
 		return;
 	}
 
 	cachedToken = token;
+	// Always mirror to localStorage: survives even if the Preferences write fails.
+	writeLocalStorageToken(token);
+
+	if (!preferencesAvailable()) {
+		return;
+	}
+
 	try {
 		const {Preferences} = await import('@capacitor/preferences');
 		await Preferences.set({key: TOKEN_KEY, value: token});
 	} catch (e) {
-		// Persist failure: token stays in memory for this session only
+		console.error('[session-token] Preferences write failed:', (e as any)?.message);
 	}
 }
 
 export async function clearSessionToken(): Promise<void> {
 	cachedToken = null;
+	writeLocalStorageToken(null);
+
 	if (!preferencesAvailable()) {
 		return;
 	}

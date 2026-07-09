@@ -88,10 +88,13 @@ export function initApollo() {
 					const {response} = operation.getContext();
 					const headerToken = response?.headers?.get?.('x-session-token');
 					if (headerToken) {
+						// console.error survives the prod build (log/warn are stripped);
+						// fires only on login responses, so it stays quiet in normal use.
+						console.error('[auth] X-Session-Token captured, persisting');
 						void setSessionToken(headerToken);
 					}
 				} catch (e) {
-					// Header capture is best-effort
+					console.error('[auth] token capture failed:', (e as any)?.message);
 				}
 				return result;
 			})
