@@ -16,4 +16,8 @@ export class WcaOAuthResult {
 
 	@Field({nullable: true})
 	wcaId?: string;
+
+	// Faz 2 native auth: session JWT in the response body for the local-bundle client.
+	@Field({nullable: true})
+	sessionToken?: string;
 }

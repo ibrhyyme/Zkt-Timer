@@ -16,6 +16,7 @@ const AUTHENTICATE_USER_MUTATION = gql`
 	mutation Mutate($email: String!, $password: String!, $remember: Boolean) {
 		authenticateUser(email: $email, password: $password, remember: $remember) {
 			id
+			session_token
 		}
 	}
 `;

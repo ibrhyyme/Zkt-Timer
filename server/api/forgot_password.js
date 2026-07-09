@@ -6,7 +6,7 @@ import {
 import { sendEmail, sendEmailWithTemplate } from '../services/ses';
 import { claimForgotPassword, createForgotPassword, getForgotPassword } from '../models/forgot_password';
 import GraphQLError from '../util/graphql_error';
-import { getJwtString, setSessionCookie } from '../util/auth';
+import { getJwtString, setSessionCookie, sessionTokenForBody } from '../util/auth';
 import { getEmailStrings, buildForgotEmailData } from '../util/email_translations';
 import { checkRateLimit } from '../services/rate_limit';
 import { extractIp } from '../util/request';
@@ -137,6 +137,6 @@ export const mutateActions = {
 		const jwt = getJwtString(user);
 		setSessionCookie(req, res, jwt);
 
-		return sanitizeUser(user);
+		return {...sanitizeUser(user), session_token: sessionTokenForBody(req, jwt)};
 	},
 };

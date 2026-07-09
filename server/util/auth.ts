@@ -249,6 +249,14 @@ export function setSessionCookie(req: any, res: any, jwtToken: string, opts: {re
 	}
 }
 
+// Faz 2 native auth: returns the session JWT to embed in a login mutation's response
+// body for WebView clients (undefined for web, so the field is null in the GraphQL
+// response). Pairs with the X-Session-Token header emitted by setSessionCookie — body
+// is the reliable channel, header is the fallback.
+export function sessionTokenForBody(req: any, jwtToken: string): string | undefined {
+	return (req as any)?.isWebView ? jwtToken : undefined;
+}
+
 export function clearSessionCookie(req: any, res: any) {
 	const isProduction = process.env.NODE_ENV === 'production';
 	const sameSite: 'none' | 'lax' = isProduction ? getSameSitePolicy(req) : 'lax';

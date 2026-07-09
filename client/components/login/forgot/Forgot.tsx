@@ -46,6 +46,7 @@ const UPDATE_FORGOT_PASSWORD_MUTATION = gql`
 	mutation Mutate($email: String!, $code: String!, $password: String!) {
 		updateForgotPassword(email: $email, code: $code, password: $password) {
 			id
+			session_token
 		}
 	}
 `;

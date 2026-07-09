@@ -1,4 +1,4 @@
-import { getJwtString, setSessionCookie, clearSessionCookie, revokeJwt } from '../util/auth';
+import { getJwtString, setSessionCookie, clearSessionCookie, revokeJwt, sessionTokenForBody } from '../util/auth';
 import jwtLib from 'jsonwebtoken';
 import GraphQLError from '../util/graphql_error';
 import { checkPassword } from '../util/password';
@@ -58,7 +58,7 @@ const mutateActions = {
 		const jwt = getJwtString(user);
 		setSessionCookie(req, res, jwt, {remember: !!remember});
 
-		return sanitizeUser(user);
+		return {...sanitizeUser(user), session_token: sessionTokenForBody(req, jwt)};
 	},
 	logOut: async (_, params, { req, res, user }) => {
 		// Token revocation: cookie'den JWT'yi cikar, jti'yi Redis'e blacklist et.

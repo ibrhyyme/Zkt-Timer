@@ -9,7 +9,7 @@ import {createIntegration, getIntegration, getIntegrationByWcaId, getIntegration
 import {createSetting} from '../models/settings';
 import {createNotificationPreference} from '../models/notification_preference';
 import {createDefaultSession} from '../models/session';
-import {getJwtString, setSessionCookie} from '../util/auth';
+import {getJwtString, setSessionCookie, sessionTokenForBody} from '../util/auth';
 import GraphQLError from '../util/graphql_error';
 import {ErrorCode} from '../constants/errors';
 import {getPrisma} from '../database';
@@ -85,6 +85,7 @@ export class WcaAuthResolver {
 					return {
 						success: true,
 						needsUsername: false,
+						sessionToken: sessionTokenForBody(req, jwtToken),
 					};
 				}
 			}
@@ -304,6 +305,6 @@ export class WcaAuthResolver {
 			console.error('[AdminNotification] WCA signup notification failed:', err)
 		);
 
-		return sanitizeUser(user) as PublicUserAccount;
+		return {...sanitizeUser(user), session_token: sessionTokenForBody(req, jwtToken)} as PublicUserAccount;
 	}
 }

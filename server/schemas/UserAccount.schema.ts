@@ -217,7 +217,13 @@ class IInternalUserAccount extends IUserAccountForAdmin {
 }
 
 @ObjectType({ implements: IPublicUserAccount })
-export class PublicUserAccount extends IPublicUserAccount { }
+export class PublicUserAccount extends IPublicUserAccount {
+	// Faz 2 native auth: login mutations return the session JWT in the response BODY
+	// (not just the X-Session-Token header) so the local-bundle client can read it
+	// reliably. Populated only for WebView requests; null for web. See setSessionCookie.
+	@Field({ nullable: true })
+	session_token?: string;
+}
 
 @ObjectType({ implements: [IPublicUserAccount, IUserAccount] })
 export class UserAccount extends IUserAccount { }

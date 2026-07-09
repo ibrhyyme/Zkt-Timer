@@ -95,7 +95,12 @@ app.use(cookieParser());
 // CSRF and cookie sameSite differentiation depend on this flag — should arrive first.
 app.use((req, _res, next) => {
 	const ua = req.headers['user-agent'] || '';
-	(req as any).isWebView = ua.includes('ZktTimerApp');
+	// UA marker (appendUserAgent) is the primary signal, but the Faz 2 local-bundle
+	// app calls the API cross-origin where the UA may not carry the suffix. The client
+	// also sends an explicit X-ZKT-Native header, so trust either. Load-bearing for
+	// the Bearer session-token path (setSessionCookie only emits the token when this
+	// flag is true).
+	(req as any).isWebView = ua.includes('ZktTimerApp') || req.headers['x-zkt-native'] === '1';
 	next();
 });
 
@@ -129,6 +134,7 @@ app.use(cors({
 		'Apollo-Require-Preflight',
 		'X-Apollo-Operation-Name',
 		'X-Requested-With',
+		'X-ZKT-Native',
 	],
 	methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 }));

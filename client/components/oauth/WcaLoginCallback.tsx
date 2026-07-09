@@ -16,6 +16,7 @@ const AUTHENTICATE_WITH_WCA = gql`
 			wcaName
 			wcaEmail
 			wcaId
+			sessionToken
 		}
 	}
 `;

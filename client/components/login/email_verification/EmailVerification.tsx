@@ -16,6 +16,7 @@ const VERIFY_EMAIL_CODE_MUTATION = gql`
 	mutation Mutate($email: String!, $code: String!, $language: String) {
 		verifyEmailCode(email: $email, code: $code, language: $language) {
 			id
+			session_token
 		}
 	}
 `;

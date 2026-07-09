@@ -16,6 +16,7 @@ const COMPLETE_WCA_SIGNUP = gql`
 	mutation Mutate($username: String!, $acceptedTerms: Boolean!) {
 		completeWcaSignup(username: $username, acceptedTerms: $acceptedTerms) {
 			id
+			session_token
 		}
 	}
 `;

@@ -3,7 +3,7 @@ import {getUserByEmail, getUserById, sanitizeUser} from '../models/user_account'
 import {updateUserAccountWithParams} from '../models/user_account';
 import {createEmailVerification, getEmailVerification, claimEmailVerification} from '../models/email_verification';
 import {sendEmailWithTemplate} from '../services/ses';
-import {getJwtString, setSessionCookie} from '../util/auth';
+import {getJwtString, setSessionCookie, sessionTokenForBody} from '../util/auth';
 import {checkLoggedIn} from '../util/auth';
 import {ErrorCode} from '../constants/errors';
 import {GraphQLContext} from '../@types/interfaces/server.interface';
@@ -104,7 +104,7 @@ export const mutateActions = {
 		const jwt = getJwtString(user);
 		setSessionCookie(req, res, jwt);
 
-		return sanitizeUser(user);
+		return {...sanitizeUser(user), session_token: sessionTokenForBody(req, jwt)};
 	},
 
 	confirmEmailChange: async (_: any, {code}: {code: string}, {user}: GraphQLContext) => {

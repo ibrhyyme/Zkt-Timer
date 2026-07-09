@@ -29,6 +29,26 @@ let client: ApolloClient<NormalizedCacheObject>;
 
 export const NO_CACHE = 'no-cache';
 
+// Native login mutations return the session JWT inside their result object
+// (authenticateUser/verifyEmailCode/updateForgotPassword/completeWcaSignup expose
+// `session_token`; authenticateWithWca exposes `sessionToken`). Scan the top-level
+// mutation fields of a GraphQL result for either key.
+function extractSessionTokenFromData(data: any): string | null {
+	if (!data || typeof data !== 'object') {
+		return null;
+	}
+	for (const key of Object.keys(data)) {
+		const value = data[key];
+		if (value && typeof value === 'object') {
+			const token = value.session_token || value.sessionToken;
+			if (typeof token === 'string' && token) {
+				return token;
+			}
+		}
+	}
+	return null;
+}
+
 export function initApollo() {
 	type FetchType = (url: RequestInfo, init?: RequestInit) => Promise<Response>;
 
@@ -71,27 +91,33 @@ export function initApollo() {
 		// cookie path of old remote-loading binaries keeps working unchanged.
 		const authLink = setContext(async (_operation, prevContext) => {
 			const token = await getSessionToken();
-			if (!token) {
-				return {};
-			}
-			return {
-				headers: {
-					...(prevContext.headers || {}),
-					Authorization: `Bearer ${token}`,
-				},
+			// X-ZKT-Native marks this request as the native app regardless of whether
+			// the cross-origin fetch UA carries the ZktTimerApp suffix. The server keys
+			// isWebView (and thus the session-token emission) off it. Always sent.
+			const headers: Record<string, string> = {
+				...(prevContext.headers || {}),
+				'X-ZKT-Native': '1',
 			};
+			if (token) {
+				headers.Authorization = `Bearer ${token}`;
+			}
+			return {headers};
 		});
 
 		const tokenCaptureLink = new ApolloLink((operation, forward) =>
 			forward(operation).map((result) => {
 				try {
+					// Primary channel: the session JWT in the response BODY (reliable —
+					// the mutation data always reaches the client). Header is the fallback.
+					const bodyToken = extractSessionTokenFromData((result as any)?.data);
 					const {response} = operation.getContext();
 					const headerToken = response?.headers?.get?.('x-session-token');
-					if (headerToken) {
+					const token = bodyToken || headerToken;
+					if (token) {
 						// console.error survives the prod build (log/warn are stripped);
 						// fires only on login responses, so it stays quiet in normal use.
-						console.error('[auth] X-Session-Token captured, persisting');
-						void setSessionToken(headerToken);
+						console.error('[auth] session token captured (' + (bodyToken ? 'body' : 'header') + '), persisting');
+						void setSessionToken(token);
 					}
 				} catch (e) {
 					console.error('[auth] token capture failed:', (e as any)?.message);
