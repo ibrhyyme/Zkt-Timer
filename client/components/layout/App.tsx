@@ -41,6 +41,7 @@ import {gqlMutate} from '../api';
 import {LinkRevenueCatUserDocument} from '../../@types/generated/graphql';
 import {notifyRouteChange} from '../../util/activity-heartbeat';
 import {saveCachedMe, getCachedMe, clearCachedMe} from '../../util/auth/cached-me';
+import {clearSessionToken} from '../../util/auth/session-token';
 import {isLocalShell} from '../../util/api-base';
 import {initDeepLinkHandler} from '../../util/deep-link';
 import {initNativeShellBoot} from '../../util/native-shell-boot';
@@ -216,6 +217,10 @@ export default function App(props: Props = {}) {
 						if (!getMeFromStore()) {
 							localStorage.removeItem('zkt_has_auth');
 							clearCachedMe();
+							// Also drop the stored Bearer token: a stale/revoked token left
+							// behind would poison every subsequent boot with the same
+							// rejection (the login-bounce loop).
+							void clearSessionToken();
 							// Only redirect to login if we had a flag. If we were just checking standalone, maybe go to welcome?
 							if (hasAuth) {
 								window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
@@ -257,6 +262,7 @@ export default function App(props: Props = {}) {
 
 						localStorage.removeItem('zkt_has_auth');
 						clearCachedMe();
+						void clearSessionToken();
 						// If we had a flag and failed, force login.
 						if (hasAuth) {
 							window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);

@@ -52,12 +52,24 @@ export async function getSessionToken(): Promise<string | null> {
 		return cachedToken;
 	}
 
+	// localStorage FIRST: it is written synchronously on every capture, so it always
+	// holds the freshest token. Preferences is an async mirror that can lag behind or
+	// carry a stale token from an earlier session — reading it first let a dead token
+	// shadow a fresh one and poison every boot (the login-bounce bug).
+	const localToken = readLocalStorageToken();
+	if (localToken) {
+		cachedToken = localToken;
+		return cachedToken;
+	}
+
 	if (preferencesAvailable()) {
 		try {
 			const {Preferences} = await import('@capacitor/preferences');
 			const {value} = await Preferences.get({key: TOKEN_KEY});
 			if (value) {
 				cachedToken = value;
+				// Heal the mirror so the next boot finds it in localStorage too
+				writeLocalStorageToken(value);
 				return cachedToken;
 			}
 		} catch (e) {
@@ -68,7 +80,7 @@ export async function getSessionToken(): Promise<string | null> {
 		console.error('[session-token] Preferences plugin unavailable, using localStorage fallback');
 	}
 
-	cachedToken = readLocalStorageToken();
+	cachedToken = null;
 	return cachedToken;
 }
 
