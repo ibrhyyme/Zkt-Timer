@@ -1,5 +1,9 @@
 ext {
-    minSdkVersion = 22
+    // 23 required by androidx.savedstate 1.4.0 (transitive dep of the Faz 2 plugins,
+    // capgo updater/preferences). API 22 = Android 5.1 (2015), negligible user base;
+    // Capacitor 7+ requires 23 anyway. Existing API-22 installs simply keep the old
+    // version on Play, they are not broken.
+    minSdkVersion = 23
     compileSdkVersion = 35
     targetSdkVersion = 35
     androidxActivityVersion = '1.8.0'

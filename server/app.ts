@@ -477,7 +477,12 @@ if (!isDev) {
 
 	// Support ticket attachments: 30MB / 4 files. Profile picture + other uploads also count toward this limit.
 	app.use(graphqlUploadExpress({ maxFileSize: 30 * 1024 * 1024, maxFiles: 4 }));
-	server.applyMiddleware({ app, path });
+	// cors: false is load-bearing. Apollo v2 otherwise mounts its OWN cors on /graphql
+	// and overwrites our global middleware's header with Allow-Origin: * — which,
+	// combined with credentialed requests from the native shell (capacitor://localhost),
+	// is an illegal pair that WebKit rejects as "Load failed". Same-origin web traffic
+	// needs no ACAO at all; cross-origin is fully handled by the global cors above.
+	server.applyMiddleware({ app, path, cors: false });
 
 	// Setup code
 	initLLStates();
