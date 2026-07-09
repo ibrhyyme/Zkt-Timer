@@ -65,7 +65,10 @@ export function initApollo() {
 		// bundle the WebView origin is capacitor://localhost, so origin-relative URIs
 		// would miss the server. Old remote-loading binaries resolve to the same value.
 		hostname = getApiBase();
-		fetchType = fetch as FetchType;
+		// Late-bound on purpose: resolves window.fetch at CALL time, so debug tooling
+		// that wraps fetch after bootstrap (eruda network panel) still sees Apollo
+		// traffic. A direct `fetch` reference would freeze the unwrapped function.
+		fetchType = ((input: RequestInfo, init?: RequestInit) => fetch(input, init)) as FetchType;
 	}
 
 	const uri = `${hostname}/graphql`;
@@ -89,6 +92,7 @@ export function initApollo() {
 		// way out, capture a fresh one from X-Session-Token on the way in (set by
 		// every login mutation server-side). No-ops while no token is stored, so the
 		// cookie path of old remote-loading binaries keeps working unchanged.
+		let warnedNoToken = false;
 		const authLink = setContext(async (_operation, prevContext) => {
 			const token = await getSessionToken();
 			// X-ZKT-Native marks this request as the native app regardless of whether
@@ -100,6 +104,11 @@ export function initApollo() {
 			};
 			if (token) {
 				headers.Authorization = `Bearer ${token}`;
+			} else if (!warnedNoToken) {
+				warnedNoToken = true;
+				// One-shot diagnostic (console.error survives the prod build): tells us
+				// this boot has no stored session token before the first request.
+				console.error('[auth] no stored session token at first request');
 			}
 			return {headers};
 		});

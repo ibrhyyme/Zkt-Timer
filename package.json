@@ -269,6 +269,7 @@
 		"concurrently": "^8.2.0",
 		"css-loader": "^6.5.1",
 		"cssnano": "^5.1.12",
+		"eruda": "^3.4.3",
 		"esbuild": "^0.15.16",
 		"esbuild-sass-plugin": "^2.6.0",
 		"esbuild-style-plugin": "^1.6.3",

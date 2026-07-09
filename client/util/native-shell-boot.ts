@@ -9,6 +9,16 @@ export function initNativeShellBoot(): void {
 		return;
 	}
 
+	// TEMPORARY (internal testing): on-device DevTools for debugging the native shell
+	// without USB/Mac. Floating gear button opens console + network panels. REMOVE
+	// (or gate behind a hidden toggle) before the public store rollout.
+	import('eruda')
+		.then((mod) => {
+			const eruda = (mod as any).default || mod;
+			eruda.init();
+		})
+		.catch(() => {});
+
 	// Capgo: confirm this bundle boots successfully — if this call never arrives
 	// within appReadyTimeout after an OTA update, the plugin rolls back to the
 	// previous bundle (the guard against shipping a broken update).
