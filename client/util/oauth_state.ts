@@ -1,6 +1,8 @@
 // OAuth CSRF korumasi — state parameter generate, store, validate.
 // Saldirganin kurbani kendi OAuth code'una yonlendirmesini engeller.
 
+import {markNativeOAuthState} from './oauth-native';
+
 const STATE_KEY = 'zkt_wca_oauth_state';
 
 function randomState(): string {
@@ -16,7 +18,10 @@ function randomState(): string {
 
 // Yeni state olustur, sessionStorage'a yaz, geri don
 export function createAndStoreOAuthState(): string {
-	const state = randomState();
+	// In the local shell the state gets a 'zktnative.' prefix: the site-side callback
+	// page relays the code back into the app via the zkttimer:// deep link. The
+	// prefixed value is what gets stored, so the round-trip comparison matches 1:1.
+	const state = markNativeOAuthState(randomState());
 	try {
 		sessionStorage.setItem(STATE_KEY, state);
 	} catch {

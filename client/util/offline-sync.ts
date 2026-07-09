@@ -11,6 +11,7 @@ import { toastSuccess, toastError, toastInfo } from './toast';
 import { emitEvent } from './event_handler';
 import { deleteLocalStorage } from './data/local_storage';
 import { getNetworkStatus } from './native-plugins';
+import { getApiBase } from './api-base';
 
 const MAX_RETRIES = 3;
 
@@ -19,7 +20,9 @@ const MAX_RETRIES = 3;
  */
 async function isReallyOnline(): Promise<boolean> {
     try {
-        const res = await fetch('/graphql', {
+        // Absolute base: in the native local bundle a relative /graphql would hit the
+        // bundle origin (always "up"), making the probe lie about connectivity.
+        const res = await fetch(`${getApiBase()}/graphql`, {
             method: 'POST',
             credentials: 'same-origin',
             headers: { 'Content-Type': 'application/json' },

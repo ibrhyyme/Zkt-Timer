@@ -75,7 +75,11 @@ export const mutateActions = {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Devam etmek icin Gizlilik Politikasi ve Kullanim Kosullari kabul edilmelidir.');
 		}
 
-		if (process.env.NODE_ENV === 'production' && turnstile_token !== 'NATIVE_APP') {
+		// Native app is exempt from Turnstile (widget can't run on the local-bundle
+		// origin). The sentinel only counts when the WebView UA marker is present,
+		// so a plain web bot can't skip the captcha by sending the magic string.
+		const isNativeCaptchaExempt = turnstile_token === 'NATIVE_APP' && (req as any)?.isWebView;
+		if (process.env.NODE_ENV === 'production' && !isNativeCaptchaExempt) {
 			try {
 				const verifyRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
 					method: 'POST',

@@ -49,10 +49,16 @@
 	<array>
 		<string>remote-notification</string>
 	</array>
-	<key>WKAppBoundDomains</key>
+	<key>CFBundleURLTypes</key>
 	<array>
-		<string>zktimer.app</string>
-		<string>worldcubeassociation.org</string>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.zktimer.app</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>zkttimer</string>
+			</array>
+		</dict>
 	</array>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>Zkt Timer needs Bluetooth to connect to your smart cube for real-time solve tracking.</string>

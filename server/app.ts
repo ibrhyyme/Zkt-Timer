@@ -27,6 +27,7 @@ import * as resolverList from './resolvers/_resolvers';
 import * as schemaList from './schemas/_schemas';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
 import helmet from 'helmet';
 import * as models from './api/_index';
 import bodyParser from 'body-parser';
@@ -38,7 +39,7 @@ import { ErrorCode, ErrorMessage } from './constants/errors';
 import { printSchema } from 'graphql';
 import depthLimit from 'graphql-depth-limit';
 import { getComplexity, simpleEstimator } from 'graphql-query-complexity';
-import { initRedisClient } from './services/redis';
+import { initRedisClient, createRedisKey, RedisNamespace, setKeyInRedis, getValueFromRedis, deleteKeyInRedis } from './services/redis';
 import { updateLastSeen } from './services/last_seen';
 
 import { initCronJobs } from './services/cron';
@@ -98,6 +99,40 @@ app.use((req, _res, next) => {
 	next();
 });
 
+// CORS: the native local-bundle app (Faz 2) calls the API cross-origin from
+// capacitor://localhost (iOS) / https://localhost (Android). Same allowlist as
+// Socket.IO (services/socket.ts). Must be mounted BEFORE the origin-fallback shim
+// below (which fabricates origin from host) and before CSRF so OPTIONS preflights
+// are answered here. Same-origin web requests carry no Origin header cross-check
+// and are unaffected.
+const ALLOWED_HTTP_ORIGINS = [
+	'https://zktimer.app',
+	'https://www.zktimer.app',
+	'capacitor://localhost',
+	'http://localhost',
+	'https://localhost',
+	'ionic://localhost',
+];
+app.use(cors({
+	origin: (origin, callback) => {
+		// No Origin header (same-origin navigations, curl, server-to-server) → allow
+		if (!origin) return callback(null, true);
+		// Dev: allow any origin (localhost:3000 web dev, device testing over LAN)
+		if (isDev) return callback(null, true);
+		return callback(null, ALLOWED_HTTP_ORIGINS.includes(origin));
+	},
+	credentials: true,
+	exposedHeaders: ['X-Session-Token'],
+	allowedHeaders: [
+		'Content-Type',
+		'Authorization',
+		'Apollo-Require-Preflight',
+		'X-Apollo-Operation-Name',
+		'X-Requested-With',
+	],
+	methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+}));
+
 // Helmet: HTTP security headers (X-Frame-Options, HSTS, X-Content-Type-Options, etc.)
 // CSP: Layered defense against XSS. SSR inline script (window.__STORE__) requires 'unsafe-inline'.
 app.use(helmet({
@@ -153,6 +188,9 @@ app.use(helmet({
 	},
 	// Capacitor WebView compatibility: disable COEP (allow cross-origin assets)
 	crossOriginEmbedderPolicy: false,
+	// Local-bundle native app (Faz 2) loads /public/uploads images cross-origin;
+	// helmet's default CORP 'same-origin' would block them in the WebView.
+	crossOriginResourcePolicy: {policy: 'cross-origin'},
 	// HSTS: production already has it via Cloudflare, defensively added here too
 	hsts: {maxAge: 31536000, includeSubDomains: true, preload: true},
 }));
@@ -598,6 +636,109 @@ app.post('/api/iap/sync', iapSyncHandler);
 app.get('/api/version', (req, res) => {
 	res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
 	res.json({ version: process.env.RELEASE_NAME || '1.0' });
+});
+
+// OTA update check (Faz 2 local bundle): the @capgo/capacitor-updater plugin POSTs
+// device info here and expects {version, url} (semver!) or {message} for no-update.
+// Artifacts are produced by `yarn bundle:ota` into dist/ota/ (latest.json + zip) and
+// served via the existing /dist static mount. min_native gates incompatible bundles
+// away from binaries whose native plugin set is too old.
+app.post('/api/ota/latest', (req, res) => {
+	res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+
+	let manifest: { version: string; file: string; min_native?: string } | null = null;
+	try {
+		manifest = JSON.parse(fs.readFileSync(`${__dirname}/../dist/ota/latest.json`, 'utf8'));
+	} catch (e) {
+		res.json({ message: 'no bundle available', version: '' });
+		return;
+	}
+
+	const nativeVersion = String(req.body?.version_name || '');
+	if (manifest.min_native && nativeVersion && compareAppVersions(nativeVersion, manifest.min_native) < 0) {
+		res.json({ message: 'native app too old for this bundle', version: '' });
+		return;
+	}
+
+	// The plugin itself skips the download when the offered version matches the one
+	// it is already running, so we always answer with the latest.
+	res.json({
+		version: manifest.version,
+		url: `https://zktimer.app/dist/ota/${manifest.file}`,
+	});
+});
+
+// Numeric dotted version compare ("1.5.14" vs "1.6.0") — returns -1/0/1
+function compareAppVersions(a: string, b: string): number {
+	const pa = a.split('.').map((n) => parseInt(n, 10) || 0);
+	const pb = b.split('.').map((n) => parseInt(n, 10) || 0);
+	const len = Math.max(pa.length, pb.length);
+	for (let i = 0; i < len; i++) {
+		const diff = (pa[i] || 0) - (pb[i] || 0);
+		if (diff !== 0) return diff < 0 ? -1 : 1;
+	}
+	return 0;
+}
+
+// One-time anonymous data bridge for the Faz 2 origin switch (see
+// client/util/native-migrate.ts). The OLD-origin page stashes the exported data
+// under a client-generated 128-bit id; the local shell consumes it once. Short TTL,
+// size-capped by the JSON body limit, WebView-only, rate limited per IP.
+const NATIVE_MIGRATE_TTL_SECONDS = 10 * 60;
+const MIGRATE_MID_REGEX = /^[a-f0-9]{32}$/;
+
+app.post('/api/native-migrate/stash', async (req, res) => {
+	if (!(req as any).isWebView) {
+		res.status(403).json({ error: 'forbidden' });
+		return;
+	}
+
+	const ip = requestIp.getClientIp(req) || 'unknown';
+	const rate = await checkRateLimit(`native_migrate:${ip}`, 10, 3600);
+	if (!rate.allowed) {
+		res.status(429).json({ error: 'rate limited' });
+		return;
+	}
+
+	const { mid, payload } = req.body || {};
+	if (typeof mid !== 'string' || !MIGRATE_MID_REGEX.test(mid) || !payload || typeof payload !== 'object') {
+		res.status(400).json({ error: 'bad request' });
+		return;
+	}
+
+	await setKeyInRedis(
+		createRedisKey(RedisNamespace.NATIVE_MIGRATE_STASH, mid),
+		JSON.stringify(payload),
+		NATIVE_MIGRATE_TTL_SECONDS
+	);
+	res.json({ ok: true });
+});
+
+app.get('/api/native-migrate/stash/:mid', async (req, res) => {
+	res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+
+	if (!(req as any).isWebView) {
+		res.status(403).json({ error: 'forbidden' });
+		return;
+	}
+
+	const mid = String(req.params.mid || '');
+	if (!MIGRATE_MID_REGEX.test(mid)) {
+		res.status(400).json({ error: 'bad request' });
+		return;
+	}
+
+	const redisKey = createRedisKey(RedisNamespace.NATIVE_MIGRATE_STASH, mid);
+	const value = await getValueFromRedis(redisKey);
+	if (!value) {
+		res.status(404).json({ error: 'not found' });
+		return;
+	}
+
+	// One-time read: consume immediately so the stash can't be replayed.
+	await deleteKeyInRedis(redisKey);
+	res.setHeader('Content-Type', 'application/json');
+	res.send(value);
 });
 
 app.use((req, res, next) => {

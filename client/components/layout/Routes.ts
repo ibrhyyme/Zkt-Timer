@@ -28,6 +28,7 @@ import SettingsRedirect from '../settings/redirect/SettingsRedirect';
 import LinkedAccounts from '../account/linked_accounts/LinkedAccounts';
 import OAuthService from '../oauth/OAuthService';
 import WcaLoginCallback from '../oauth/WcaLoginCallback';
+import NativeMigrate from '../native_migrate/NativeMigrate';
 import ForceSignOut from '../login/force_sign_out/ForceSignOut';
 import AnnouncementHistory from '../profile/AnnouncementHistory';
 import Support from '../account/support/Support';
@@ -256,7 +257,12 @@ export const routes: (PageContext | RedirectPath)[] = [
 
 	// OAuth
 	route('/oauth/wca/login', null, App, WcaLoginCallback, false, true, false, true),
-	route('/oauth/:integrationType', null, App, OAuthService, true, true, false, true),
+	// NOT restricted: the native relay renders this page in the EXTERNAL browser with
+	// no session — SSR 401 would eat the OAuth code. createIntegration enforces auth
+	// server-side, so an unauthenticated web visitor still can't link anything.
+	route('/oauth/:integrationType', null, App, OAuthService, false, true, false, true),
+	// One-time Faz 2 data bridge: runs on the old origin inside the app WebView
+	route('/native-migrate', null, NativeMigrate, null, false, true, false, true),
 
 	// Redirects
 	routeRedirect('/settings', '/settings/timer'),

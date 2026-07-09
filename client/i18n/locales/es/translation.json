@@ -1796,6 +1796,11 @@
     },
     "common": {
         "offline_mode": "Modo sin conexión",
+        "webview_update_required": "Para habilitar el soporte sin conexión, actualiza la aplicación Android System WebView desde Google Play.",
+        "oauth_relay_returning": "Volviendo a la aplicación...",
+        "oauth_relay_open_app": "Abrir la aplicación",
+        "native_migrate_title": "Trasladando tus datos a la aplicación...",
+        "native_migrate_back": "Volver a la aplicación",
         "results_count": "{{count}} resultados",
         "results_count_for": "{{count}} resultados para '{{query}}'",
         "no_results": "No se encontraron resultados",

@@ -1803,6 +1803,11 @@
     },
     "common": {
         "offline_mode": "Çevrimdışı Mod",
+        "webview_update_required": "Çevrimdışı desteği için Google Play'den Android System WebView uygulamasını güncelleyin.",
+        "oauth_relay_returning": "Uygulamaya dönülüyor...",
+        "oauth_relay_open_app": "Uygulamayı Aç",
+        "native_migrate_title": "Verilerin uygulamaya taşınıyor...",
+        "native_migrate_back": "Uygulamaya Dön",
         "results_count": "{{count}} sonuç",
         "results_count_for": "{{count}} sonuç '{{query}}' için",
         "no_results": "Herhangi bir kayıt bulunamadı",

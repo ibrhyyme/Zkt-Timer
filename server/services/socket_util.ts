@@ -1,7 +1,7 @@
 import { getSocketIO } from './socket';
 import { RemoteSocket, Socket } from 'socket.io';
 import { createRedisKey, getValueFromRedis, keyExistsInRedis, RedisNamespace, setKeyInRedis } from './redis';
-import { getMeWithCookieString } from '../util/auth';
+import { getMeWithCookieString, getMeWithSessionToken } from '../util/auth';
 import { PublicUserAccount } from '../schemas/UserAccount.schema';
 import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 
@@ -123,7 +123,12 @@ export async function getUserFromClient(client: SocketType): Promise<PublicUserA
 
 	// Set the user in Redis if it doesn't exist
 	if (!existsInRedis) {
-		const user = await getMeWithCookieString(client.handshake.headers.cookie);
+		// Cookie is the web path; the native local-bundle client connects cross-origin
+		// (no cookie) and passes the session JWT via the Socket.IO auth payload instead.
+		let user = await getMeWithCookieString(client.handshake.headers.cookie);
+		if (!user) {
+			user = await getMeWithSessionToken((client.handshake as any)?.auth?.token);
+		}
 		if (!user) {
 			return null;
 		}

@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { gqlMutate } from '../api';
 import { toastError } from '../../util/toast';
 import { consumeAndValidateOAuthState } from '../../util/oauth_state';
+import { isNativeRelayState, buildNativeRelayDeepLink } from '../../util/oauth-native';
+import { isNative } from '../../util/platform';
 import ZktAuthScene from '../login/zkt_auth/ZktAuthScene';
 
 const AUTHENTICATE_WITH_WCA = gql`
@@ -24,6 +26,7 @@ const AUTO_ADVANCE_MS = 1400;
 export default function WcaLoginCallback() {
 	const { t } = useTranslation();
 	const [step, setStep] = useState(0);
+	const [relayLink, setRelayLink] = useState<string | null>(null);
 	const advancedToFinalRef = useRef(false);
 
 	useEffect(() => {
@@ -34,6 +37,18 @@ export default function WcaLoginCallback() {
 		if (!code) {
 			toastError(t('wca_signup.session_expired'));
 			window.location.href = '/login';
+			return;
+		}
+
+		// Native relay: this page is running in the EXTERNAL browser on behalf of the
+		// local-bundle app (state carries the zktnative marker). Hand code+state back
+		// via the zkttimer:// deep link; the shell re-runs this route natively with
+		// its sessionStorage (and thus the stored state) intact. Must run BEFORE the
+		// state validation — this browser context has no stored state.
+		if (!isNative() && isNativeRelayState(state)) {
+			const link = buildNativeRelayDeepLink('/oauth/wca/login', urlParams);
+			setRelayLink(link);
+			window.location.href = link;
 			return;
 		}
 
@@ -95,6 +110,48 @@ export default function WcaLoginCallback() {
 
 		return () => clearInterval(interval);
 	}, [t]);
+
+	if (relayLink) {
+		// Relay page shown in the external browser: auto-redirect already fired above;
+		// the button is the user-gesture fallback for browsers that block scheme
+		// navigation without interaction.
+		return (
+			<div
+				style={{
+					minHeight: '100vh',
+					display: 'flex',
+					flexDirection: 'column',
+					alignItems: 'center',
+					justifyContent: 'center',
+					gap: '20px',
+					background: '#12141C',
+					color: '#ffffff',
+					padding: '2rem',
+					textAlign: 'center',
+				}}
+			>
+				<span style={{fontSize: '1.05rem', fontWeight: 600}}>{t('common.oauth_relay_returning')}</span>
+				<button
+					type="button"
+					onClick={() => {
+						window.location.href = relayLink;
+					}}
+					style={{
+						backgroundColor: '#6C63FF',
+						color: '#ffffff',
+						border: 'none',
+						padding: '0.85rem 2.25rem',
+						borderRadius: '10px',
+						fontSize: '1rem',
+						fontWeight: 600,
+						cursor: 'pointer',
+					}}
+				>
+					{t('common.oauth_relay_open_app')}
+				</button>
+			</div>
+		);
+	}
 
 	return <ZktAuthScene initialMode="wca-callback" wcaStep={step} />;
 }

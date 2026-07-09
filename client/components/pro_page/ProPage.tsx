@@ -20,6 +20,7 @@ import {useMe} from '../../util/hooks/useMe';
 import {isPro} from '../../lib/pro';
 import FeatureGuard from '../common/page_disabled/FeatureGuard';
 import {isNative, isAndroidNative} from '../../util/platform';
+import {getApiBase} from '../../util/api-base';
 import {getOfferings, purchasePackage, restorePurchases, showManageSubscriptions} from '../../lib/iap';
 import {openInAppBrowser} from '../../util/external-link';
 import {GetIapStatusDocument, GetIapStatusQuery} from '../../@types/generated/graphql';
@@ -310,7 +311,7 @@ function ProPageContent() {
 
 	async function syncWithServer() {
 		try {
-			await fetch('/api/iap/sync', {method: 'POST', credentials: 'include'});
+			await fetch(`${getApiBase()}/api/iap/sync`, {method: 'POST', credentials: 'include'});
 		} catch {}
 	}
 

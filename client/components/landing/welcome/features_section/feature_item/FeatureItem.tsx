@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import './FeatureItem.scss';
 import block from '../../../../../styles/bem';
+import { landingAsset } from '../../../../../util/api-base';
 import type { Icon } from 'phosphor-react';
 
 if (typeof window !== 'undefined') {
@@ -108,8 +109,9 @@ export default function FeatureItem(props: FeatureItemProps) {
 			)
 		);
 
-		// Staggered bullets
-		const bulletEls = textEl.querySelectorAll(`.${b('bullet').split(' ').join('.')}`);
+		// Staggered bullets — String() unwraps bem-cn's BemItem hybrid so newer TS
+		// versions resolve split/join on plain string
+		const bulletEls = textEl.querySelectorAll(`.${String(b('bullet')).split(' ').join('.')}`);
 		if (bulletEls.length) {
 			tweens.push(
 				gsap.fromTo(
@@ -169,7 +171,7 @@ export default function FeatureItem(props: FeatureItemProps) {
 					style={{ background: `radial-gradient(circle,${color}40,transparent)` }}
 				/>
 				<img
-					src={image}
+					src={landingAsset(image)}
 					alt={imageAlt}
 					className={b('image')}
 					loading="lazy"

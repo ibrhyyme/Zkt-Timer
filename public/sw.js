@@ -3,10 +3,79 @@ const CACHE = 'zkt-' + CACHE_VERSION;
 const CORE = [
   '/',
   '/timer',
+  // App shell bundles: html_template.ts references them as /dist/app.min.*?v=<RELEASE_NAME>
+  // and stamp-sw writes the SAME RELEASE_NAME into CACHE_VERSION, so these URLs are
+  // deterministic at install time. Without them, a cached HTML page could reference
+  // bundles that were never cached -> offline white screen right after a deploy.
+  // (Unstamped dev builds fail these adds harmlessly via Promise.allSettled.)
+  '/dist/app.min.js?v=' + CACHE_VERSION,
+  '/dist/app.min.css?v=' + CACHE_VERSION,
+  '/public/cubing-icons/cubing-icons.css',
   '/public/manifest.webmanifest',
   '/public/images/apple-touch-icon.png',
   '/public/images/zkt-logo.png'
 ];
+
+// Last-resort offline page for navigations with an empty cache (e.g. first
+// launch ever while offline). Served by the SW itself -> versioned with the
+// deploy, can never go stale. Default text is Turkish (app fallback locale);
+// the inline script swaps strings from localStorage zkt_language.
+const OFFLINE_HTML = `<!DOCTYPE html>
+<html lang="tr"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0F142B">
+<title>Zkt Timer</title>
+<style>
+  html,body{margin:0;height:100%}
+  body{background:#12141C;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    display:flex;justify-content:center;align-items:center;min-height:100vh;text-align:center;
+    padding:env(safe-area-inset-top) 1.5rem env(safe-area-inset-bottom);-webkit-tap-highlight-color:transparent}
+  .wrap{max-width:22rem}
+  .logo{width:4.5rem;height:4.5rem;margin:0 auto 1.5rem;display:block}
+  h1{font-size:1.25rem;font-weight:700;margin:0 0 .5rem}
+  p{color:#9aa0b4;font-size:.95rem;line-height:1.5;margin:0 0 1.75rem}
+  button{background:#6C63FF;color:#fff;border:none;padding:.85rem 2.25rem;border-radius:10px;font-size:1rem;font-weight:600}
+  button:active{opacity:.8}
+  .hint{margin-top:1rem;font-size:.8rem;color:#5a6072}
+</style></head><body>
+<div class="wrap">
+  <svg class="logo" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <rect x="4" y="4" width="40" height="40" rx="8" fill="#1B1E2B" stroke="#2A2E40" stroke-width="2"/>
+    <rect x="11" y="11" width="8" height="8" rx="2" fill="#6C63FF"/><rect x="20" y="11" width="8" height="8" rx="2" fill="#3A3F57"/><rect x="29" y="11" width="8" height="8" rx="2" fill="#6C63FF"/>
+    <rect x="11" y="20" width="8" height="8" rx="2" fill="#3A3F57"/><rect x="20" y="20" width="8" height="8" rx="2" fill="#6C63FF"/><rect x="29" y="20" width="8" height="8" rx="2" fill="#3A3F57"/>
+    <rect x="11" y="29" width="8" height="8" rx="2" fill="#6C63FF"/><rect x="20" y="29" width="8" height="8" rx="2" fill="#3A3F57"/><rect x="29" y="29" width="8" height="8" rx="2" fill="#6C63FF"/>
+  </svg>
+  <h1 id="t">Bağlantı kurulamadı</h1>
+  <p id="m">İnternet bağlantınızı kontrol edin. Bağlantı geri geldiğinde uygulama otomatik olarak açılacak.</p>
+  <button id="b" onclick="location.reload()">Tekrar Dene</button>
+  <div class="hint" id="h">Bağlantı bekleniyor…</div>
+</div>
+<script>
+  var STR={
+    en:['No connection','Check your internet connection. The app will open automatically when the connection is back.','Try Again','Waiting for connection…'],
+    es:['Sin conexión','Comprueba tu conexión a internet. La aplicación se abrirá automáticamente cuando vuelva la conexión.','Reintentar','Esperando conexión…'],
+    ru:['Нет подключения','Проверьте подключение к интернету. Приложение откроется автоматически, когда соединение восстановится.','Повторить','Ожидание подключения…'],
+    zh:['无法连接','请检查您的网络连接。连接恢复后，应用将自动打开。','重试','正在等待连接…']
+  };
+  try{
+    var lang=(localStorage.getItem('zkt_language')||'tr').replace(/"/g,'');
+    var s=STR[lang];
+    if(s){document.getElementById('t').textContent=s[0];document.getElementById('m').textContent=s[1];
+      document.getElementById('b').textContent=s[2];document.getElementById('h').textContent=s[3];
+      document.documentElement.lang=lang;}
+  }catch(e){}
+  window.addEventListener('online',function(){location.reload();});
+  setInterval(function(){if(navigator.onLine)location.reload();},3000);
+</script>
+</body></html>`;
+
+function offlineFallbackResponse() {
+  return new Response(OFFLINE_HTML, {
+    status: 503,
+    headers: { 'Content-Type': 'text/html; charset=utf-8' }
+  });
+}
 
 self.addEventListener('install', (e) => {
   console.log('[SW] Installing...');
@@ -99,11 +168,15 @@ self.addEventListener('fetch', (e) => {
           return res;
         })
         .catch(() => caches.match(req)
+          // Fallback chain: exact page -> /timer (usable app shell) -> / (welcome for
+          // anonymous users). /timer is preferred over / because the cached '/' entry
+          // is whatever the auth-dependent 302 resolved to and may be a marketing page.
+          .then(cached => cached || caches.match('/timer'))
           .then(cached => cached || caches.match('/'))
           .then(res => {
             // Geçerli bir response yoksa veya status 0 ise (network error) offline dön
             if (!res || res.status < 200 || res.status > 599) {
-              return new Response('Offline', { status: 503 });
+              return offlineFallbackResponse();
             }
             // iOS WKWebView redirected flag'li SW response'lari reddeder.
             // Temiz bir response olustur.

@@ -7,6 +7,8 @@ import {useMe} from '../../util/hooks/useMe';
 import {useTranslation} from 'react-i18next';
 import {LINKED_SERVICES} from '../../../shared/integration';
 import {IntegrationType} from '../../../shared/integration';
+import {isNativeRelayState, buildNativeRelayDeepLink, stripNativeOAuthState} from '../../util/oauth-native';
+import {isNative} from '../../util/platform';
 import ZktAuthScene from '../login/zkt_auth/ZktAuthScene';
 
 interface ConflictData {
@@ -20,6 +22,7 @@ export default function OAuthService() {
 	const integrationType = match?.params?.integrationType as IntegrationType;
 	const service = LINKED_SERVICES[integrationType];
 	const [conflict, setConflict] = useState<ConflictData | null>(null);
+	const [relayLink, setRelayLink] = useState<string | null>(null);
 
 	// Only allow internal-path redirects from the OAuth `state` param — an attacker can craft
 	// the authorize URL with state=https://evil.com (or javascript:...) and the victim's own
@@ -36,6 +39,16 @@ export default function OAuthService() {
 		const urlParams = new URLSearchParams(window.location.search);
 		const code = urlParams.get('code');
 
+		// Native relay: linking flow started from the local-bundle app; this page runs
+		// in the external browser. Hand code+state back via the deep link (the shell
+		// re-runs this route and unwraps the state below).
+		if (!isNative() && isNativeRelayState(urlParams.get('state'))) {
+			const link = buildNativeRelayDeepLink(`/oauth/${integrationType}`, urlParams);
+			setRelayLink(link);
+			window.location.href = link;
+			return;
+		}
+
 		const query = gql`
 			mutation Mutate($code: String!, $integrationType: IntegrationType) {
 				createIntegration(code: $code, integrationType: $integrationType) {
@@ -49,7 +62,7 @@ export default function OAuthService() {
 			integrationType,
 		})
 			.then(() => {
-				window.location.href = safeRedirectTarget(urlParams.get('state'));
+				window.location.href = safeRedirectTarget(stripNativeOAuthState(urlParams.get('state')));
 			})
 			.catch((e) => {
 				const msg = e?.graphQLErrors?.[0]?.message || e?.message || '';
@@ -67,7 +80,7 @@ export default function OAuthService() {
 
 				// If already linked, silently redirect
 				if (msg.includes('already linked')) {
-					window.location.href = safeRedirectTarget(urlParams.get('state'));
+					window.location.href = safeRedirectTarget(stripNativeOAuthState(urlParams.get('state')));
 					return;
 				}
 				toastError(msg || t('integration.oauth_error'));
@@ -77,6 +90,45 @@ export default function OAuthService() {
 				}, 2000);
 			});
 	}, []);
+
+	if (relayLink) {
+		return (
+			<div
+				style={{
+					minHeight: '100vh',
+					display: 'flex',
+					flexDirection: 'column',
+					alignItems: 'center',
+					justifyContent: 'center',
+					gap: '20px',
+					background: '#12141C',
+					color: '#ffffff',
+					padding: '2rem',
+					textAlign: 'center',
+				}}
+			>
+				<span style={{fontSize: '1.05rem', fontWeight: 600}}>{t('common.oauth_relay_returning')}</span>
+				<button
+					type="button"
+					onClick={() => {
+						window.location.href = relayLink;
+					}}
+					style={{
+						backgroundColor: '#6C63FF',
+						color: '#ffffff',
+						border: 'none',
+						padding: '0.85rem 2.25rem',
+						borderRadius: '10px',
+						fontSize: '1rem',
+						fontWeight: 600,
+						cursor: 'pointer',
+					}}
+				>
+					{t('common.oauth_relay_open_app')}
+				</button>
+			</div>
+		);
+	}
 
 	if (conflict) {
 		return <ZktAuthScene initialMode="wca-conflict" wcaConflictData={conflict} />;

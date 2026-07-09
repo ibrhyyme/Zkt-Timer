@@ -40,6 +40,10 @@ import {initRevenueCat, identifyUser as iapIdentifyUser, logoutRevenueCat} from 
 import {gqlMutate} from '../api';
 import {LinkRevenueCatUserDocument} from '../../@types/generated/graphql';
 import {notifyRouteChange} from '../../util/activity-heartbeat';
+import {saveCachedMe, getCachedMe, clearCachedMe} from '../../util/auth/cached-me';
+import {isLocalShell} from '../../util/api-base';
+import {initDeepLinkHandler} from '../../util/deep-link';
+import {initNativeShellBoot} from '../../util/native-shell-boot';
 
 interface Props {
 	path?: string;
@@ -72,6 +76,19 @@ export default function App(props: Props = {}) {
 		notifyRouteChange();
 	}, [me?.id, location.pathname]);
 
+	// Persist the identity snapshot on every successful auth (SSR boot or getMe)
+	// so an offline cold start can restore the session from localStorage. The flag
+	// keeps future boots on the authenticated path (matters after the Faz 2 session
+	// carryover, where login pages never ran on this origin).
+	useEffect(() => {
+		if (me) {
+			saveCachedMe(me);
+			try {
+				localStorage.setItem('zkt_has_auth', 'true');
+			} catch (e) {}
+		}
+	}, [me]);
+
 	function appInitiated() {
 		setBrowserSessionId(dispatch);
 		initPageTitleBlink();
@@ -86,6 +103,8 @@ export default function App(props: Props = {}) {
 			lockTextZoom();
 			initSafeArea();
 			initRevenueCat(); // Prepare RevenueCat IAP SDK
+			initDeepLinkHandler(); // zkttimer:// OAuth relay + migrate bridge (local shell)
+			initNativeShellBoot(); // Capgo notifyAppReady + one-time migration checks
 
 			// Block iOS WKWebView pinch-to-zoom
 			if (Capacitor.getPlatform() === 'ios') {
@@ -143,10 +162,12 @@ export default function App(props: Props = {}) {
 					}
 					if (url.origin === window.location.origin) return; // in-app links untouched
 
-					// WCA OAuth must keep navigating the WebView itself (the redirect lands
-					// back in the app), but drop the backButton listener so bailing out
-					// mid-login still leaves a working hardware back.
-					if (url.hostname.endsWith('worldcubeassociation.org') && url.pathname.startsWith('/oauth/authorize')) {
+					// Remote-mode binaries: WCA OAuth must keep navigating the WebView itself
+					// (the redirect lands back in the app), but drop the backButton listener
+					// so bailing out mid-login still leaves a working hardware back.
+					// Local shell: OAuth goes through the external browser + deep link relay,
+					// so fall through to openInAppBrowser like any external link.
+					if (!isLocalShell() && url.hostname.endsWith('worldcubeassociation.org') && url.pathname.startsWith('/oauth/authorize')) {
 						void releaseNativeBackButton();
 						return;
 					}
@@ -176,13 +197,25 @@ export default function App(props: Props = {}) {
 			// Only try to fetch if we have a flag OR if we are in standalone mode (where flag might be lost)
 			const isStandalone = typeof window !== 'undefined' && ((window.navigator as any).standalone || window.matchMedia('(display-mode: standalone)').matches);
 
-			if (hasAuth || isStandalone) {
+			// Faz 2 session carryover: the local shell's FIRST boot has an empty
+			// localStorage (new origin), but on Android the old zktimer.app session
+			// cookie usually still rides along (Apollo credentials:'include'). Try
+			// getMe once — success silently restores the account and mints a Bearer
+			// token via X-Session-Token. iOS ITP typically blocks the cookie, so
+			// those users fall through to anonymous and log in once.
+			const carryoverEligible = isLocalShell() && !hasAuth && !localStorage.getItem('zkt_session_carryover_done');
+			if (carryoverEligible) {
+				localStorage.setItem('zkt_session_carryover_done', '1');
+			}
+
+			if (hasAuth || isStandalone || carryoverEligible) {
 				// Server couldn't authenticate on SSR, try fetching via API
 				dispatch(getMe() as any)
 					.then(() => {
 						// If me is still null after fetch, auth truly failed
 						if (!getMeFromStore()) {
 							localStorage.removeItem('zkt_has_auth');
+							clearCachedMe();
 							// Only redirect to login if we had a flag. If we were just checking standalone, maybe go to welcome?
 							if (hasAuth) {
 								window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
@@ -201,8 +234,29 @@ export default function App(props: Props = {}) {
 						}
 						// If me exists, useEffect will re-run (me dependency changed)
 					})
-					.catch(() => {
+					.catch((err) => {
+						// A network failure (offline, or the SW's synthesized 503) is NOT an
+						// auth rejection: keep the session flag and boot from the cached
+						// identity + local DB instead of bouncing the user to /login.
+						const isNetworkError =
+							Boolean(err?.networkError) || (typeof navigator !== 'undefined' && navigator.onLine === false);
+
+						if (isNetworkError && hasAuth) {
+							const cachedMe = getCachedMe();
+							if (cachedMe) {
+								// useEffect([me]) re-runs into initAppData, whose offline
+								// fallbacks load settings/sessions/solves from local storage.
+								dispatch({type: 'SET_ME', payload: {me: cachedMe}});
+							} else {
+								// Offline with no snapshot yet: boot anonymous but KEEP the
+								// flag so the account is restored on the next online launch.
+								initAnonymousAppData(appInitiated);
+							}
+							return;
+						}
+
 						localStorage.removeItem('zkt_has_auth');
+						clearCachedMe();
 						// If we had a flag and failed, force login.
 						if (hasAuth) {
 							window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);

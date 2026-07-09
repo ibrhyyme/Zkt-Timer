@@ -55,9 +55,11 @@ export async function initRevenueCat(): Promise<void> {
 	const mod = await loadPurchases();
 	if (!mod) return;
 
+	// Remote mode: keys arrive via the SSR-injected globals. Local-bundle shell has no
+	// SSR script, so fall back to the build-time inlined env (esbuild define).
 	const apiKey = isAndroidNative()
-		? (window as any).__REVENUECAT_ANDROID_KEY__ || ''
-		: (window as any).__REVENUECAT_IOS_KEY__ || '';
+		? (window as any).__REVENUECAT_ANDROID_KEY__ || process.env.REVENUECAT_ANDROID_KEY || ''
+		: (window as any).__REVENUECAT_IOS_KEY__ || process.env.REVENUECAT_IOS_KEY || '';
 
 	if (!apiKey) {
 		console.warn('[IAP] RevenueCat API key missing (platform=' + Capacitor.getPlatform() + ')');

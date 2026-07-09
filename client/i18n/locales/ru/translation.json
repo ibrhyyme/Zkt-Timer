@@ -1796,6 +1796,11 @@
     },
     "common": {
         "offline_mode": "Автономный режим",
+        "webview_update_required": "Чтобы включить автономный режим, обновите приложение Android System WebView в Google Play.",
+        "oauth_relay_returning": "Возвращаемся в приложение...",
+        "oauth_relay_open_app": "Открыть приложение",
+        "native_migrate_title": "Переносим ваши данные в приложение...",
+        "native_migrate_back": "Вернуться в приложение",
         "results_count": "{{count}} результатов",
         "results_count_for": "{{count}} результатов по запросу '{{query}}'",
         "no_results": "Результаты не найдены",

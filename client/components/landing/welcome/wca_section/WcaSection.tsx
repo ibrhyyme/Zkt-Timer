@@ -14,6 +14,7 @@ import {
 	ArrowRight,
 } from 'phosphor-react';
 import {gqlQueryTyped} from '../../../api';
+import {landingAsset} from '../../../../util/api-base';
 import {
 	WcaCompetitionsDocument,
 	LandingStatsDocument,
@@ -169,7 +170,7 @@ export default function WcaSection() {
 						transition={{duration: 0.7, ease: [0.22, 1, 0.36, 1]}}
 					>
 						<img
-							src="/public/welcome/web/wca_comp.jpg"
+							src={landingAsset('/public/welcome/web/wca_comp.jpg')}
 							alt={t('welcome_wca.image_alt')}
 							className={b('image')}
 							loading="lazy"

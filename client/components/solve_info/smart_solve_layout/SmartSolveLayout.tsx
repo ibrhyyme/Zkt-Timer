@@ -14,6 +14,7 @@ import CopyText from '../../common/copy_text/CopyText';
 import block from '../../../styles/bem';
 import { getFullFormattedDate } from '../../../util/dates';
 import { SolveLayoutProps } from '../SolveInfo';
+import { getApiBase } from '../../../util/api-base';
 import { useMe } from '../../../util/hooks/useMe';
 import { isPro, isProEnabled } from '../../../lib/pro';
 import ProBlurOverlay from '../../common/pro_blur_overlay/ProBlurOverlay';
@@ -49,7 +50,7 @@ export default function SmartSolveLayout(props: SolveLayoutProps) {
 		shareLink = (
 			<CopyText
 				buttonProps={{ text: t('solve_info.share_link') }}
-				text={window.location.origin + '/solve/' + solve.share_code}
+				text={getApiBase() + '/solve/' + solve.share_code}
 			/>
 		);
 	}

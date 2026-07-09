@@ -91,6 +91,10 @@ require('esbuild')
 			'process.env.FIREBASE_APP_ID': JSON.stringify(process.env.FIREBASE_APP_ID || ''),
 			'process.env.FIREBASE_VAPID_KEY': JSON.stringify(process.env.FIREBASE_VAPID_KEY || ''),
 			'process.env.WCA_CLIENT_ID': JSON.stringify(process.env.WCA_CLIENT_ID || ''),
+			// Native local-bundle shell has no SSR-injected globals; RevenueCat public
+			// keys are inlined at build time as a fallback (see client/lib/iap.ts).
+			'process.env.REVENUECAT_IOS_KEY': JSON.stringify(process.env.REVENUECAT_IOS_KEY || ''),
+			'process.env.REVENUECAT_ANDROID_KEY': JSON.stringify(process.env.REVENUECAT_ANDROID_KEY || ''),
 		},
 		pure: !dev ? ['console.log', 'console.warn', 'console.info'] : [],
 		loader: {'.js': 'jsx'},

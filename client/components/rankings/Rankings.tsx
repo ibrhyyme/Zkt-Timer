@@ -8,6 +8,7 @@ import gql from 'graphql-tag';
 import {useMe} from '../../util/hooks/useMe';
 import {resourceUri, getStorageURL} from '../../util/storage';
 import {LINKED_SERVICES} from '../../../shared/integration';
+import {wcaRedirectUri, openWcaAuthorize, markNativeOAuthState} from '../../util/oauth-native';
 import {countryFlag} from '../community/my_schedule/shared';
 import PageTitle from '../common/page_title/PageTitle';
 import FeatureGuard from '../common/page_disabled/FeatureGuard';
@@ -131,10 +132,10 @@ export default function Rankings() {
 			client_id: service.clientId,
 			response_type: service.responseType,
 			scope: service.scope.join(' '),
-			redirect_uri: window.location.origin + (!me ? '/oauth/wca/login' : '/oauth/wca'),
-			state: '/ranks',
+			redirect_uri: wcaRedirectUri(!me ? '/oauth/wca/login' : '/oauth/wca'),
+			state: markNativeOAuthState('/ranks'),
 		});
-		window.location.href = `${service.authEndpoint}?${wcaParams.toString()}`;
+		openWcaAuthorize(`${service.authEndpoint}?${wcaParams.toString()}`);
 	}
 
 	function getUserInitial(username: string): string {

@@ -16,6 +16,7 @@ import Header from '../layout/header/Header';
 import WCA from './wca/WCA';
 import Avatar from '../common/avatar/Avatar';
 import { getStorageURL, resourceUri } from '../../util/storage';
+import { getApiBase } from '../../util/api-base';
 import { Image, Profile as ProfileSchema, PublicUserAccount, TopAverage, TopSolve } from '../../@types/generated/graphql';
 import { safeExternalUrl } from '../../../shared/util/url';
 import { useRouteMatch } from 'react-router-dom';
@@ -351,7 +352,7 @@ export default function Profile() {
 	}
 
 	function shareProfile() {
-		const url = `${window.location.origin}/user/${username}`;
+		const url = `${getApiBase()}/user/${username}`;
 		shareContent({
 			title: `${username} - Zkt Timer`,
 			text: t('profile.share_text', { username }) as string,

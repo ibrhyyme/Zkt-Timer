@@ -18,6 +18,7 @@ node_modules/
 dist/
 .out/
 build/
+native-bundle/
 
 # logs
 logs/

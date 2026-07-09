@@ -28,6 +28,15 @@
                       android:host="zktimer.app"
                       android:pathPrefix="/oauth/wca" />
             </intent-filter>
+            <!-- Custom scheme deep link: OAuth relay + native-migrate bridge return path
+                 (Faz 2 local bundle). External browser redirects to zkttimer://... which
+                 fires the Capacitor appUrlOpen listener in the app shell. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="zkttimer" />
+            </intent-filter>
         </activity>
 
         <provider

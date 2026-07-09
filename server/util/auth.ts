@@ -55,8 +55,20 @@ export async function revokeJwt(jti: string | undefined, exp: number | undefined
 	}
 }
 
+// Native local-bundle clients (Faz 2) cannot use the cross-origin httpOnly cookie
+// (iOS ITP blocks third-party cookies), so they send the SAME session JWT as a
+// Bearer header. Cookie stays the primary carrier for web.
+function getBearerToken(req: Request): string | null {
+	const header = (req.headers?.authorization || '') as string;
+	if (!header.startsWith('Bearer ')) {
+		return null;
+	}
+	const token = header.slice('Bearer '.length).trim();
+	return token || null;
+}
+
 export async function getMe(req: Request) {
-	const session = req.cookies.session;
+	const session = req.cookies.session || getBearerToken(req);
 
 	if (!session) {
 		// User not logged in
@@ -137,8 +149,13 @@ export async function getMeWithCookieString(cookies: string | any): Promise<User
 		cookieMap[kv[0]] = kv[1];
 	}
 
-	const session = cookieMap.session;
-	if (!session || !session.trim()) {
+	return getMeWithSessionToken(cookieMap.session);
+}
+
+// Shared with the Socket.IO auth path: resolves a user from a raw session JWT,
+// whether it came from a cookie header or a handshake auth token.
+export async function getMeWithSessionToken(session: string | null | undefined): Promise<UserAccount> {
+	if (!session || typeof session !== 'string' || !session.trim()) {
 		return null;
 	}
 
@@ -169,6 +186,7 @@ export async function getMeWithCookieString(cookies: string | any): Promise<User
 	} catch (e) {
 		return null;
 	}
+	return null;
 }
 
 export function checkLoggedIn(user: UserAccount, admin: boolean = false) {
@@ -216,6 +234,19 @@ export function setSessionCookie(req: any, res: any, jwtToken: string, opts: {re
 		// sameSite='none' requires secure — always true on native/production
 		secure: isProduction || sameSite === 'none',
 	});
+
+	// Native app (WebView UA) also receives the JWT as a response header: the local
+	// bundle context can't read the httpOnly cookie, so it stores this token and sends
+	// it back as Authorization: Bearer. Covers every login path in one place (email,
+	// WCA login/signup, email verify, forgot password). Requires the CORS middleware
+	// to expose the header. Web browsers never see it (UA-gated).
+	if ((req as any)?.isWebView) {
+		try {
+			res.setHeader('X-Session-Token', jwtToken);
+		} catch (e) {
+			// Header emission is best-effort; cookie path still works for remote mode
+		}
+	}
 }
 
 export function clearSessionCookie(req: any, res: any) {

@@ -15,6 +15,7 @@ import { useInput } from '../../../util/hooks/useInput';
 import { getFullFormattedDate } from '../../../util/dates';
 import { SolveLayoutProps } from '../SolveInfo';
 import { shareContent } from '../../../util/native-plugins';
+import { getApiBase } from '../../../util/api-base';
 import { canReadSync } from '../../../lib/sync-gate';
 import './NormalSolveLayout.scss';
 
@@ -37,7 +38,7 @@ export default function NormalSolveLayout(props: SolveLayoutProps) {
 	const visualCubeType = (cubeType === 'wca' && solve.scramble_subset) ? solve.scramble_subset : cubeType;
 
 	function handleShare() {
-		const solveUrl = window.location.origin + '/solve/' + solve.share_code;
+		const solveUrl = getApiBase() + '/solve/' + solve.share_code;
 		shareContent({
 			title: `${cubeTypeInfo.name} - ${time} | Zkt Timer`,
 			text: `⚡ ${time} on ${cubeTypeInfo.name} — solved on Zkt Timer`,
@@ -51,7 +52,7 @@ export default function NormalSolveLayout(props: SolveLayoutProps) {
 			<>
 				<CopyText
 					buttonProps={{ text: t('solve_info.share_link') }}
-					text={window.location.origin + '/solve/' + solve.share_code}
+					text={getApiBase() + '/solve/' + solve.share_code}
 				/>
 				<Button
 					gray

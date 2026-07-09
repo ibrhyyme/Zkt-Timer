@@ -1796,6 +1796,11 @@
     },
     "common": {
         "offline_mode": "Offline Mode",
+        "webview_update_required": "To enable offline support, update the Android System WebView app from Google Play.",
+        "oauth_relay_returning": "Returning to the app...",
+        "oauth_relay_open_app": "Open App",
+        "native_migrate_title": "Moving your data into the app...",
+        "native_migrate_back": "Back to App",
         "results_count": "{{count}} results",
         "results_count_for": "{{count}} results for '{{query}}'",
         "no_results": "No results found",

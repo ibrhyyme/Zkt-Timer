@@ -2,6 +2,8 @@ import React from 'react';
 import './WCA.scss';
 import LinkButton from '../../common/button/LinkButton';
 import { useTranslation } from 'react-i18next';
+import { LINKED_SERVICES } from '../../../../shared/integration';
+import { wcaRedirectUri, markNativeOAuthState } from '../../../util/oauth-native';
 
 export default function WCA({ myProfile, user }) {
 	const { t } = useTranslation();
@@ -15,13 +17,13 @@ export default function WCA({ myProfile, user }) {
 
 	if (!myProfile) return null;
 
-	const redirectUri = window.location.origin + '/oauth/wca';
-	const clientId = 'wY1dbmwDjPLkRtZVzLJXAcIGWkap1QNbVnuK-ulkDSY'; // Must match WCA_CLIENT_ID from .docker.env
 	const u = new URL('https://www.worldcubeassociation.org/oauth/authorize');
-	u.searchParams.set('client_id', clientId);
-	u.searchParams.set('redirect_uri', redirectUri);
+	u.searchParams.set('client_id', LINKED_SERVICES.wca.clientId);
+	u.searchParams.set('redirect_uri', wcaRedirectUri('/oauth/wca'));
 	u.searchParams.set('response_type', 'code');
 	u.searchParams.set('scope', 'public');
+	// Native relay marker + return path for the linking flow (OAuthService unwraps it)
+	u.searchParams.set('state', markNativeOAuthState('/account/linked-accounts'));
 
 	return (
 		<div className="cd-profile__wca">

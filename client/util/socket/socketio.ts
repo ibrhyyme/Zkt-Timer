@@ -1,13 +1,40 @@
 import {io, Socket} from 'socket.io-client';
 import {toastError} from '../toast';
 import {onVisibilityChange} from '../app-visibility';
+import {isNative} from '../platform';
+import {getApiBase} from '../api-base';
+import {getSessionToken} from '../auth/session-token';
 
 const CLIENT_RECONNECT_BEFORE_ALERT_TIMEOUT_MS = 5000;
+
+// Native connects cross-origin from the local bundle: needs the absolute server URL,
+// cookies where they still exist (old binaries), and the session JWT via the Socket.IO
+// auth payload (server falls back to it when the handshake has no cookie). On web this
+// resolves to the page origin with default options — behavior unchanged.
+function socketTarget(): string {
+	return getApiBase();
+}
+
+function socketOptions(extra: Record<string, any> = {}): Record<string, any> {
+	if (typeof window === 'undefined' || !isNative()) {
+		return extra;
+	}
+
+	return {
+		...extra,
+		withCredentials: true,
+		auth: (cb: (data: Record<string, any>) => void) => {
+			getSessionToken()
+				.then((token) => cb(token ? {token} : {}))
+				.catch(() => cb({}));
+		},
+	};
+}
 
 // Guard module-scope socket creation: this file is imported on the server via the
 // SSR route table (Routes.ts -> FriendlyRoom -> socketio), and io() would open a stray
 // client connection during server render. socketClient() is only called in the browser.
-let socket: Socket = typeof window !== 'undefined' ? io() : (null as any);
+let socket: Socket = typeof window !== 'undefined' ? io(socketTarget(), socketOptions()) : (null as any);
 let initiated = false;
 let rooms = [];
 let backgroundTimer: ReturnType<typeof setTimeout> | null = null;
@@ -40,9 +67,7 @@ export function initSocketIO() {
 		return;
 	}
 
-	socket = io(null, {
-		forceNew: true,
-	});
+	socket = io(socketTarget(), socketOptions({forceNew: true}));
 
 	socketClient().on('myRoomsUpdated', updateRooms);
 	socketClient().on('connect', onReconnect);

@@ -8,6 +8,7 @@ import {useMe} from '../../../util/hooks/useMe';
 import {MagnifyingGlass, Trophy} from 'phosphor-react';
 import {resourceUri} from '../../../util/storage';
 import {LINKED_SERVICES} from '../../../../shared/integration';
+import {wcaRedirectUri, openWcaAuthorize, markNativeOAuthState} from '../../../util/oauth-native';
 import {b, I18N_LOCALE_MAP, formatDateRange} from './shared';
 import {prefetchCompetitionDetail} from './CompetitionLoader';
 import {useZktCompListRefetch} from '../zkt_competitions/useZktCompRefetch';
@@ -397,10 +398,10 @@ export default function CompetitionList() {
 									client_id: service.clientId,
 									response_type: service.responseType,
 									scope: service.scope.join(' '),
-									redirect_uri: window.location.origin + (!me ? '/oauth/wca/login' : '/oauth/wca'),
-									state: '/competitions',
+									redirect_uri: wcaRedirectUri(!me ? '/oauth/wca/login' : '/oauth/wca'),
+									state: markNativeOAuthState('/competitions'),
 								});
-								window.location.href = `${service.authEndpoint}?${params.toString()}`;
+								openWcaAuthorize(`${service.authEndpoint}?${params.toString()}`);
 							}}
 						>
 							{!me ? t('my_schedule.wca_login') : t('my_schedule.connect_wca_btn')}

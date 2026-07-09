@@ -61,8 +61,12 @@ const mutateActions = {
 		return sanitizeUser(user);
 	},
 	logOut: async (_, params, { req, res, user }) => {
-		// Token revocation: cookie'den JWT'yi cikar, jti'yi Redis'e blacklist et
-		const session = req?.cookies?.session;
+		// Token revocation: cookie'den JWT'yi cikar, jti'yi Redis'e blacklist et.
+		// Native local-bundle clients carry the JWT as a Bearer header instead of the
+		// cookie — revoke whichever one authenticated this request.
+		const authHeader = req?.headers?.authorization || '';
+		const bearer = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
+		const session = req?.cookies?.session || bearer;
 		if (session) {
 			try {
 				const decoded = jwtLib.decode(session);

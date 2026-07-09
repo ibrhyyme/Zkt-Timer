@@ -8,6 +8,10 @@ import { processQueue, registerBackgroundSync, isOnline } from '../../util/offli
 import { getPendingCount } from '../../util/offline-queue';
 import { initNetworkListener, getNetworkStatus } from '../../util/native-plugins';
 import { isNative } from '../../util/platform';
+import { isLocalShell } from '../../util/api-base';
+import { Capacitor } from '@capacitor/core';
+import { toastWarning } from '../../util/toast';
+import i18n from '../../i18n/i18n';
 
 let syncInProgress = false;
 
@@ -67,6 +71,13 @@ async function handleOnline() {
  * Register Service Worker
  */
 async function registerServiceWorker() {
+    // Faz 2 local-bundle shell: assets ship inside the binary and OTA handles updates,
+    // so the SW adds nothing but cache-staleness risk. Old remote-loading binaries
+    // return false here and keep their Faz 1 SW offline behavior.
+    if (isLocalShell()) {
+        return;
+    }
+
     // Dev / localhost: never register the SW. Its cache-first strategy serves a stale
     // app.min.css/js during development, which hides every rebuild (the "design won't
     // update" trap). Also tear down any SW + cache left from a previous session so the
@@ -95,6 +106,17 @@ async function registerServiceWorker() {
     console.log('[SW-DEBUG] serviceWorker in navigator:', 'serviceWorker' in navigator);
     console.log('[SW-DEBUG] protocol:', window.location.protocol);
     console.log('[SW-DEBUG] origin:', window.location.origin);
+
+    // Old Android System WebViews have no Service Worker support, so offline
+    // boot can never work there. Tell the user once how to fix it (update the
+    // WebView via Play Store) instead of failing silently.
+    if (!('serviceWorker' in navigator)) {
+        if (isNative() && Capacitor.getPlatform() === 'android' && !localStorage.getItem('zkt_sw_unsupported_notified')) {
+            localStorage.setItem('zkt_sw_unsupported_notified', '1');
+            toastWarning(i18n.t('common.webview_update_required'));
+        }
+        return;
+    }
 
     if ('serviceWorker' in navigator) {
         try {

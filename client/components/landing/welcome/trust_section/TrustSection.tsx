@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import './TrustSection.scss';
 import block from '../../../../styles/bem';
+import { landingAsset } from '../../../../util/api-base';
 import { useTranslation } from 'react-i18next';
 
 if (typeof window !== 'undefined') {
@@ -135,7 +136,7 @@ export default function TrustSection() {
 	return (
 		<section ref={sectionRef} className={b()}>
 			<div ref={bgRef} className={b('background')}>
-				<img src="/public/welcome/web/wca_records.jpeg" alt="WCA Records" loading="lazy" />
+				<img src={landingAsset('/public/welcome/web/wca_records.jpeg')} alt="WCA Records" loading="lazy" />
 				<div className={b('overlay')} />
 			</div>
 

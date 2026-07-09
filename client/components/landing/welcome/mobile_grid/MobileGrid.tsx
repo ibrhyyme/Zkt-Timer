@@ -4,6 +4,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import './MobileGrid.scss';
 import block from '../../../../styles/bem';
+import { landingAsset } from '../../../../util/api-base';
 
 if (typeof window !== 'undefined') {
 	gsap.registerPlugin(ScrollTrigger);
@@ -129,7 +130,7 @@ export default function MobileGrid() {
 								onMouseMove={handleMouseMove}
 								onMouseLeave={handleMouseLeave}
 							>
-								<img src={screen.src} alt={t(screen.labelKey)} loading="lazy" />
+								<img src={landingAsset(screen.src)} alt={t(screen.labelKey)} loading="lazy" />
 							</div>
 							<p className={b('label')}>{t(screen.labelKey)}</p>
 						</div>

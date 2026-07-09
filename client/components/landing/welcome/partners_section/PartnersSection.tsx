@@ -5,6 +5,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import './PartnersSection.scss';
 import block from '../../../../styles/bem';
+import { landingAsset } from '../../../../util/api-base';
 import { hoverLift, tapScale } from '../motion-variants';
 
 if (typeof window !== 'undefined') {
@@ -146,7 +147,7 @@ export default function PartnersSection() {
 							</div>
 							<div className={b('card-logo')}>
 								<img
-									src={partner.logo}
+									src={landingAsset(partner.logo)}
 									alt={`${partner.name} - ${t(partner.descriptionKey)} - Zkt Timer`}
 									loading="lazy"
 								/>

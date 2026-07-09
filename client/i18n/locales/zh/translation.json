@@ -1796,6 +1796,11 @@
     },
     "common": {
         "offline_mode": "离线模式",
+        "webview_update_required": "要启用离线支持，请从 Google Play 更新 Android System WebView 应用。",
+        "oauth_relay_returning": "正在返回应用...",
+        "oauth_relay_open_app": "打开应用",
+        "native_migrate_title": "正在将您的数据迁移到应用...",
+        "native_migrate_back": "返回应用",
         "results_count": "{{count}} 条结果",
         "results_count_for": "'{{query}}' 的 {{count}} 条结果",
         "no_results": "未找到结果",

@@ -17,7 +17,14 @@ import { initApollo } from './api';
 
 import 'react-toastify/dist/ReactToastify.css';
 
-const preloadedState = JSON.parse(window.__STORE__);
+// Guard the parse: a shell served without SSR state (e.g. the SW's offline
+// fallback page) must still boot the app instead of crashing the bundle.
+let preloadedState = {};
+try {
+	preloadedState = JSON.parse(window.__STORE__ || '{}');
+} catch (e) {
+	console.warn('Invalid __STORE__, booting with empty state');
+}
 const store = createStore(reducers, preloadedState, applyMiddleware(promise(), thunk));
 
 const apolloClient = initApollo();

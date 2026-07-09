@@ -26,6 +26,8 @@ export enum RedisNamespace {
 	IAP_EVENTS = 'cd:iap:events',
 	FRIENDLY_ROOM_SESSION = 'cd:friendly_room:session',
 	SUPPORT_TICKET_RATE = 'cd:support:rate',
+	NATIVE_MIGRATE_STASH = 'cd:native_migrate:stash',
+	NATIVE_MIGRATE_RATE = 'cd:native_migrate:rate',
 }
 
 export type generatedRedisKey = {

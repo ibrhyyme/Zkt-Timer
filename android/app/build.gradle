@@ -10,8 +10,12 @@ android {
         applicationId "com.zktimer.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 25
-        versionName "1.5.14"
+        // versionCode is auto-bumped on CI (fastlane: 1000 + GITHUB_RUN_NUMBER); the
+        // value here only matters for local builds. versionName 1.6.0 marks the Faz 2
+        // local-bundle architecture and must stay >= the OTA min_native gate
+        // (build-ota-zip.js OTA_MIN_NATIVE_VERSION).
+        versionCode 26
+        versionName "1.6.0"
         buildConfigField "String", "FIREBASE_APP_ID", '"1:872286317632:android:2954aeeeff1bdc904a03a5"'
         buildConfigField "String", "FIREBASE_SENDER_ID", '"872286317632"'
         buildConfigField "String", "FIREBASE_PROJECT_ID", '"zkt-timer-59c59"'
