@@ -70,6 +70,14 @@ export default function App(props: Props = {}) {
 	const [unseenAnnouncements, setUnseenAnnouncements] = useState<Announcement[]>([]);
 	const [loadingAnnouncements, setLoadingAnnouncements] = useState(false);
 
+	// Whether the client-side boot auth attempt (the getMe dispatched in the effect
+	// below) has settled. The native local shell boots WITHOUT SSR, so `me` is always
+	// null on the first render even for a logged-in user; the restricted-route guard
+	// must not redirect to /login while that verdict is still pending. Seeded from
+	// appLoaded: App remounts on route changes, and if a previous mount already booted
+	// (redux state survives) there is no pending attempt to wait for.
+	const [authResolved, setAuthResolved] = useState<boolean>(() => Boolean(appLoaded));
+
 	// Record a heartbeat for the page the user settles on (debounced in the helper),
 	// so short visits between 60s ticks still register in the admin daily breakdown.
 	useEffect(() => {
@@ -269,14 +277,17 @@ export default function App(props: Props = {}) {
 						} else {
 							initAnonymousAppData(appInitiated);
 						}
-					});
+					})
+					.finally(() => setAuthResolved(true));
 				return;
 			}
 
+			setAuthResolved(true);
 			initAnonymousAppData(appInitiated);
 			return;
 		}
 
+		setAuthResolved(true);
 		initSocketIO();
 		initAppData(me, dispatch, appInitiated);
 	}, [me]);
@@ -367,8 +378,15 @@ export default function App(props: Props = {}) {
 
 	if (typeof window !== 'undefined') {
 		if (!me && restricted) {
+			// Boot auth attempt still in flight (no SSR on the native local shell, so a
+			// logged-in user's first render always has me=null). Redirecting here before
+			// the attempt settles bounced every post-login navigation straight back to
+			// /login; hold rendering until there is a real verdict.
+			if (!authResolved) {
+				return null;
+			}
 			window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
-			return;
+			return null;
 		}
 	}
 
