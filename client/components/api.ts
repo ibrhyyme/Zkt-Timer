@@ -8,7 +8,6 @@ import {
 	NormalizedCacheObject,
 	QueryOptions,
 } from '@apollo/client';
-import { setContext } from '@apollo/client/link/context';
 import _ from 'lodash';
 import { TypedDocumentNode } from '@graphql-typed-document-node/core';
 import { createUploadLink } from 'apollo-upload-client';
@@ -65,10 +64,28 @@ export function initApollo() {
 		// bundle the WebView origin is capacitor://localhost, so origin-relative URIs
 		// would miss the server. Old remote-loading binaries resolve to the same value.
 		hostname = getApiBase();
-		// Late-bound on purpose: resolves window.fetch at CALL time, so debug tooling
-		// that wraps fetch after bootstrap (eruda network panel) still sees Apollo
-		// traffic. A direct `fetch` reference would freeze the unwrapped function.
-		fetchType = ((input: RequestInfo, init?: RequestInit) => fetch(input, init)) as FetchType;
+		// Auth is injected HERE, at the fetch layer, NOT via an Apollo authLink. The
+		// setContext→context.headers→createUploadLink chain silently dropped the
+		// Authorization header on native (token was stored + valid, yet getMe still
+		// bounced — proven via on-device debugging). Setting it on the final RequestInit
+		// is the exact path the working manual fetch used, so it is bypass-proof. Also
+		// late-bound (resolves window.fetch at call time) so eruda's network panel sees it.
+		fetchType = (async (input: RequestInfo, init?: RequestInit) => {
+			try {
+				if (isNative()) {
+					const token = await getSessionToken();
+					const headers = new Headers((init && init.headers) || undefined);
+					headers.set('X-ZKT-Native', '1');
+					if (token) {
+						headers.set('Authorization', `Bearer ${token}`);
+					}
+					init = {...(init || {}), headers};
+				}
+			} catch (e) {
+				// Never block a request over auth-header injection
+			}
+			return fetch(input, init);
+		}) as FetchType;
 	}
 
 	const uri = `${hostname}/graphql`;
@@ -87,43 +104,10 @@ export function initApollo() {
 	});
 
 	let link: ApolloLink = uploadLink as unknown as ApolloLink;
-	// Attach the auth links in ANY browser context (not gated on a build-time
-	// isNative() check). initApollo() runs at bootstrap, before the Capacitor bridge
-	// is guaranteed ready, so a build-time isNative() could be false and drop these
-	// links entirely — then the native app never sends the Bearer token nor captures
-	// it on login (the login-bounce bug). The per-request setContext below re-checks
-	// isNative() at call time, when it is reliable; on web both links no-op.
+	// Only a response-side link now: the REQUEST-side auth (Bearer + X-ZKT-Native) is
+	// injected at the fetch layer above, which is bypass-proof. This link just captures
+	// the session token from login responses. No-ops on web / when no token present.
 	if (typeof window !== 'undefined') {
-		// Bearer auth for the local-bundle shell: attach the stored session JWT on the
-		// way out, capture a fresh one on the way in (login mutations return it in the
-		// body + X-Session-Token header). No-ops while no token is stored / on web.
-		let warnedNoToken = false;
-		const authLink = setContext(async (_operation, prevContext) => {
-			const native = isNative();
-			if (!native) {
-				// Web: never mark as native (would flip server-side isWebView and break
-				// the sameSite=lax CSRF posture) and never send a Bearer token.
-				return {};
-			}
-			const token = await getSessionToken();
-			// X-ZKT-Native marks this request as the native app regardless of whether
-			// the cross-origin fetch UA carries the ZktTimerApp suffix. The server keys
-			// isWebView (and thus the session-token emission) off it. Always sent on native.
-			const headers: Record<string, string> = {
-				...(prevContext.headers || {}),
-				'X-ZKT-Native': '1',
-			};
-			if (token) {
-				headers.Authorization = `Bearer ${token}`;
-			} else if (!warnedNoToken) {
-				warnedNoToken = true;
-				// One-shot diagnostic (console.error survives the prod build): tells us
-				// this boot has no stored session token before the first request.
-				console.error('[auth] no stored session token at first request');
-			}
-			return {headers};
-		});
-
 		const tokenCaptureLink = new ApolloLink((operation, forward) =>
 			forward(operation).map((result) => {
 				try {
@@ -146,7 +130,7 @@ export function initApollo() {
 			})
 		);
 
-		link = ApolloLink.from([authLink, tokenCaptureLink, link]);
+		link = ApolloLink.from([tokenCaptureLink, link]);
 	}
 
 	client = new ApolloClient({
