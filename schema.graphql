@@ -827,6 +827,7 @@ type PublicUserAccount implements IPublicUserAccount {
   badges: [Badge]
   top_solves: [TopSolve]
   top_averages: [TopAverage]
+  session_token: String
 }
 
 interface IPublicUserAccount {
@@ -1484,6 +1485,7 @@ type WcaOAuthResult {
   wcaName: String
   wcaEmail: String
   wcaId: String
+  sessionToken: String
 }
 
 type WcaResult {
@@ -1859,6 +1861,7 @@ type ZktCompetitorUser implements IPublicUserAccount {
   badges: [Badge]
   top_solves: [TopSolve]
   top_averages: [TopAverage]
+  session_token: String
   first_name: String
   last_name: String
   join_country: String

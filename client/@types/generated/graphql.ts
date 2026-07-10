@@ -2118,6 +2118,7 @@ export type PublicUserAccount = IPublicUserAccount & {
   premium_expires_at?: Maybe<Scalars['DateTime']>;
   pro_expires_at?: Maybe<Scalars['DateTime']>;
   profile?: Maybe<Profile>;
+  session_token?: Maybe<Scalars['String']>;
   top_averages?: Maybe<Array<Maybe<TopAverage>>>;
   top_solves?: Maybe<Array<Maybe<TopSolve>>>;
   username?: Maybe<Scalars['String']>;
@@ -3627,6 +3628,7 @@ export type WcaLiveTimeLimit = {
 export type WcaOAuthResult = {
   __typename?: 'WcaOAuthResult';
   needsUsername?: Maybe<Scalars['Boolean']>;
+  sessionToken?: Maybe<Scalars['String']>;
   success?: Maybe<Scalars['Boolean']>;
   wcaEmail?: Maybe<Scalars['String']>;
   wcaId?: Maybe<Scalars['String']>;
@@ -3909,6 +3911,7 @@ export type ZktCompetitorUser = IPublicUserAccount & {
   premium_expires_at?: Maybe<Scalars['DateTime']>;
   pro_expires_at?: Maybe<Scalars['DateTime']>;
   profile?: Maybe<Profile>;
+  session_token?: Maybe<Scalars['String']>;
   top_averages?: Maybe<Array<Maybe<TopAverage>>>;
   top_solves?: Maybe<Array<Maybe<TopSolve>>>;
   username?: Maybe<Scalars['String']>;
