@@ -16,11 +16,11 @@ export function initDeepLinkHandler(): void {
 	}
 
 	CapApp.addListener('appUrlOpen', ({url}) => {
-		handleDeepLink(url);
+		void handleDeepLink(url);
 	});
 }
 
-function handleDeepLink(rawUrl: string): void {
+async function handleDeepLink(rawUrl: string): Promise<void> {
 	let parsed: URL;
 	try {
 		parsed = new URL(rawUrl);
@@ -43,7 +43,11 @@ function handleDeepLink(rawUrl: string): void {
 
 	// zkttimer://oauth/wca/login?... parses as host='oauth', pathname='/wca/login'
 	const path = '/' + parsed.host + parsed.pathname;
-	closeInAppBrowser();
+	// AWAIT the sheet dismissal before any full-page navigation: navigateShell tears
+	// down this JS context, and a fire-and-forget Browser.close() bridge call that
+	// hasn't reached native yet dies with it — the iOS Safari sheet then stays open
+	// on top of the app forever.
+	await closeInAppBrowser();
 
 	// Hidden debug switch: eruda is off by default and there is no console to set the
 	// flag from, so typing zkttimer://debug (or zkttimer://debug-off) in the device
@@ -71,13 +75,14 @@ function navigateShell(pathWithSearch: string): void {
 	window.location.href = pathWithSearch;
 }
 
-function closeInAppBrowser(): void {
+async function closeInAppBrowser(): Promise<void> {
 	if (!Capacitor.isPluginAvailable('Browser')) {
 		return;
 	}
-	import('@capacitor/browser')
-		.then(({Browser}) => Browser.close())
-		.catch(() => {
-			// Browser.close is a no-op/unimplemented on Android Custom Tabs
-		});
+	try {
+		const {Browser} = await import('@capacitor/browser');
+		await Browser.close();
+	} catch (e) {
+		// Browser.close is a no-op/unimplemented on Android Custom Tabs
+	}
 }

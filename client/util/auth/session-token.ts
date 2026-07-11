@@ -84,6 +84,14 @@ export async function getSessionToken(): Promise<string | null> {
 	return cachedToken;
 }
 
+// Bypass the sticky-null cache and re-read both stores. For the boot getMe when a
+// token is EXPECTED (zkt_has_auth set) but the first read came back empty: a fresh
+// login's async Preferences write may have landed only after that first read.
+export async function refreshSessionTokenCache(): Promise<string | null> {
+	cachedToken = undefined;
+	return getSessionToken();
+}
+
 export async function setSessionToken(token: string): Promise<void> {
 	if (!token || !isNative()) {
 		return;

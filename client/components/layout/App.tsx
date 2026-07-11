@@ -219,64 +219,76 @@ export default function App(props: Props = {}) {
 			}
 
 			if (hasAuth || isStandalone || carryoverEligible) {
-				// Server couldn't authenticate on SSR, try fetching via API
-				dispatch(getMe() as any)
-					.then(() => {
+				// Server couldn't authenticate on SSR, try fetching via API. A network
+				// failure with NO cached identity yet (i.e. right after a first login)
+				// is retried before falling back: bouncing that user to /login over a
+				// one-off fetch hiccup was the iOS post-login bounce. authResolved stays
+				// false during retries, so the restricted-route guard keeps waiting.
+				const BOOT_RETRY_DELAYS_MS = [1200, 2400];
+				const bootAuth = async () => {
+					for (let attempt = 0; ; attempt++) {
+						try {
+							await dispatch(getMe() as any);
+						} catch (err) {
+							// A network failure (offline, or the SW's synthesized 503) is
+							// NOT an auth rejection: keep the session flag and boot from
+							// the cached identity + local DB instead of bouncing to /login.
+							if (isNetworkError(err) && hasAuth) {
+								const cachedMe = getCachedMe();
+								if (cachedMe) {
+									// useEffect([me]) re-runs into initAppData, whose offline
+									// fallbacks load settings/sessions/solves from local storage.
+									dispatch({type: 'SET_ME', payload: {me: cachedMe}});
+									return;
+								}
+								if (attempt < BOOT_RETRY_DELAYS_MS.length) {
+									await new Promise((resolve) => setTimeout(resolve, BOOT_RETRY_DELAYS_MS[attempt]));
+									continue;
+								}
+								// Offline with no snapshot yet: boot anonymous but KEEP the
+								// flag so the account is restored on the next online launch.
+								initAnonymousAppData(appInitiated);
+								return;
+							}
+
+							localStorage.removeItem('zkt_has_auth');
+							clearCachedMe();
+							// AWAIT the wipe: a redirect right after a fire-and-forget clear
+							// can cancel the async Preferences.remove and leave a half-wiped
+							// zombie state behind.
+							await clearSessionToken();
+							// If we had a flag and failed, force login.
+							if (hasAuth) {
+								window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
+							} else {
+								initAnonymousAppData(appInitiated);
+							}
+							return;
+						}
+
 						// If me is still null after fetch, auth truly failed
 						if (!getMeFromStore()) {
 							localStorage.removeItem('zkt_has_auth');
 							clearCachedMe();
 							// Also drop the stored Bearer token: a stale/revoked token left
 							// behind would poison every subsequent boot with the same
-							// rejection (the login-bounce loop).
-							void clearSessionToken();
+							// rejection (the login-bounce loop). Awaited for the same
+							// navigation-cancels-async reason as above.
+							await clearSessionToken();
 							// Only redirect to login if we had a flag. If we were just checking standalone, maybe go to welcome?
 							if (hasAuth) {
 								window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
-							} else {
-								// If init failed in PWA without flag, go to welcome (or login)
-								// But App.tsx handles general auth state.
-								// We'll let initAnonymousAppData handle the fallback if this promise resolves empty?
-								// Actually getMe() usually throws or returns null.
-								if (window.location.pathname !== '/welcome') {
-									// window.location.href = '/welcome';
-									// Let's just fall through to anonymous init?
-									// No, getMeFromStore being null means we are NOT logged in.
-									initAnonymousAppData(appInitiated);
-								}
+							} else if (window.location.pathname !== '/welcome') {
+								// getMeFromStore being null means we are NOT logged in.
+								initAnonymousAppData(appInitiated);
 							}
 						}
 						// If me exists, useEffect will re-run (me dependency changed)
-					})
-					.catch((err) => {
-						// A network failure (offline, or the SW's synthesized 503) is NOT an
-						// auth rejection: keep the session flag and boot from the cached
-						// identity + local DB instead of bouncing the user to /login.
-						if (isNetworkError(err) && hasAuth) {
-							const cachedMe = getCachedMe();
-							if (cachedMe) {
-								// useEffect([me]) re-runs into initAppData, whose offline
-								// fallbacks load settings/sessions/solves from local storage.
-								dispatch({type: 'SET_ME', payload: {me: cachedMe}});
-							} else {
-								// Offline with no snapshot yet: boot anonymous but KEEP the
-								// flag so the account is restored on the next online launch.
-								initAnonymousAppData(appInitiated);
-							}
-							return;
-						}
+						return;
+					}
+				};
 
-						localStorage.removeItem('zkt_has_auth');
-						clearCachedMe();
-						void clearSessionToken();
-						// If we had a flag and failed, force login.
-						if (hasAuth) {
-							window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
-						} else {
-							initAnonymousAppData(appInitiated);
-						}
-					})
-					.finally(() => setAuthResolved(true));
+				void bootAuth().finally(() => setAuthResolved(true));
 				return;
 			}
 
