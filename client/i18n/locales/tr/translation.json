@@ -861,6 +861,10 @@
         "go_to_timer": "Timer'a dön",
         "admin_disabled_banner": "{{page}} sayfası şu an kapalı — sadece admin (sen) görebilirsin"
     },
+    "offline": {
+        "page_title": "İnternet bağlantısı yok",
+        "page_description": "Bu sayfa için internet bağlantısı gerekiyor. Bağlantı geri geldiğinde sayfa otomatik olarak yüklenecek."
+    },
     "my_schedule": {
         "page_title": "Yarışma Programım",
         "login_description": "WCA hesabınızla giriş yaparak yarışma listenizi ve kişiselleştirilmiş programınızı yükleyebilirsiniz.",

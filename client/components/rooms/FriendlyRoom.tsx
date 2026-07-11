@@ -20,6 +20,7 @@ import { getDailyGoalStorage } from '../daily-goal/helpers/storage';
 import { fetchRoomSolveCounts } from '../daily-goal/helpers/room-solves';
 import { useSettings } from '../../util/hooks/useSettings';
 import { setSetting } from '../../db/settings/update';
+import OfflineGuard from '../common/offline_guard/OfflineGuard';
 import RoomParticipants from './RoomParticipants';
 import RoomChat from './RoomChat';
 import PasswordModal from './PasswordModal';
@@ -80,6 +81,14 @@ function connectButtonClass(connected: boolean, connecting: boolean): string {
 const STATUS_THROTTLE_MS = 100;
 
 export default function FriendlyRoom() {
+    return (
+        <OfflineGuard>
+            <FriendlyRoomContent />
+        </OfflineGuard>
+    );
+}
+
+function FriendlyRoomContent() {
     const { t } = useTranslation();
     const { roomId } = useParams<ParamsType>();
     const history = useHistory();

@@ -854,6 +854,10 @@
         "go_to_timer": "Back to Timer",
         "admin_disabled_banner": "{{page}} is currently disabled — only admin (you) can see this"
     },
+    "offline": {
+        "page_title": "No internet connection",
+        "page_description": "This page requires an internet connection. It will load automatically once you're back online."
+    },
     "my_schedule": {
         "page_title": "My Competition Schedule",
         "login_description": "Sign in with your WCA account to load your competition list and personalized schedule.",

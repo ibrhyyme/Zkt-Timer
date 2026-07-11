@@ -12,6 +12,7 @@ import {wcaRedirectUri, openWcaAuthorize, markNativeOAuthState} from '../../util
 import {countryFlag} from '../community/my_schedule/shared';
 import PageTitle from '../common/page_title/PageTitle';
 import FeatureGuard from '../common/page_disabled/FeatureGuard';
+import OfflineGuard from '../common/offline_guard/OfflineGuard';
 import block from '../../styles/bem';
 import './Rankings.scss';
 
@@ -41,6 +42,14 @@ const MODES: {key: RankingMode; label: string}[] = [
 ];
 
 export default function Rankings() {
+	return (
+		<OfflineGuard>
+			<RankingsContent />
+		</OfflineGuard>
+	);
+}
+
+function RankingsContent() {
 	const {t} = useTranslation();
 	const me = useMe();
 	const history = useHistory();

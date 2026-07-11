@@ -1,0 +1,187 @@
+.cd-offline-guard {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 60vh;
+	padding: 2rem 1.5rem;
+
+	&__content {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+		max-width: 440px;
+		animation: cd-offline-enter 0.45s ease-out both;
+	}
+
+	// Radar wrapper: expanding rings say "searching for a signal", so the state
+	// reads as transient rather than a dead end.
+	&__signal {
+		position: relative;
+		width: 150px;
+		height: 150px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin-bottom: 1.75rem;
+	}
+
+	&__ring {
+		position: absolute;
+		inset: 0;
+		border-radius: 50%;
+		border: 2px solid rgba(var(--primary-color), 0.45);
+		animation: cd-offline-ring 2.4s ease-out infinite;
+
+		&:nth-of-type(2) {
+			animation-delay: 0.8s;
+		}
+
+		&:nth-of-type(3) {
+			animation-delay: 1.6s;
+		}
+	}
+
+	&__icon-wrapper {
+		width: 92px;
+		height: 92px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: radial-gradient(
+			circle at 30% 25%,
+			rgba(var(--primary-color), 0.3),
+			rgba(var(--primary-color), 0.08) 72%
+		);
+		border: 2px solid rgba(var(--primary-color), 0.4);
+		border-radius: 50%;
+		animation: cd-offline-breathe 3.2s ease-in-out infinite;
+	}
+
+	&__icon {
+		color: rgb(var(--primary-color));
+	}
+
+	&__title {
+		font-size: 1.75rem;
+		font-weight: 800;
+		color: rgb(var(--text-color));
+		letter-spacing: -0.02em;
+		margin: 0 0 0.75rem 0;
+	}
+
+	&__description {
+		font-size: 0.98rem;
+		color: rgb(var(--text-color));
+		line-height: 1.55;
+		margin: 0 0 1.6rem 0;
+	}
+
+	// Same shimmer family as the maintenance page: "waiting, not broken".
+	&__progress {
+		position: relative;
+		width: 220px;
+		height: 4px;
+		background: rgba(var(--text-color), 0.08);
+		border-radius: 999px;
+		overflow: hidden;
+		margin-bottom: 1.75rem;
+	}
+
+	&__progress-fill {
+		position: absolute;
+		top: 0;
+		left: 0;
+		height: 100%;
+		width: 35%;
+		background: linear-gradient(
+			90deg,
+			rgba(var(--primary-color), 0) 0%,
+			rgb(var(--primary-color)) 50%,
+			rgba(var(--primary-color), 0) 100%
+		);
+		border-radius: 999px;
+		box-shadow: 0 0 12px rgba(var(--primary-color), 0.7);
+		animation: cd-offline-progress 1.6s ease-in-out infinite;
+	}
+
+	&__back-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.75rem 1.6rem;
+		background: rgba(var(--primary-color), 0.16);
+		border: 1px solid rgba(var(--primary-color), 0.45);
+		border-radius: 999px;
+		color: rgb(var(--text-color));
+		font-size: 0.92rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition: background 0.15s, box-shadow 0.15s, transform 0.15s;
+
+		&:hover {
+			background: rgba(var(--primary-color), 0.28);
+			box-shadow: 0 0 18px rgba(var(--primary-color), 0.35);
+			transform: translateY(-1px);
+		}
+
+		&:active {
+			transform: translateY(0);
+		}
+	}
+}
+
+@keyframes cd-offline-enter {
+	from {
+		opacity: 0;
+		transform: translateY(14px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes cd-offline-ring {
+	0% {
+		transform: scale(0.62);
+		opacity: 0.9;
+	}
+	70% {
+		opacity: 0.25;
+	}
+	100% {
+		transform: scale(1.15);
+		opacity: 0;
+	}
+}
+
+@keyframes cd-offline-breathe {
+	0%,
+	100% {
+		box-shadow: 0 0 22px rgba(var(--primary-color), 0.22);
+	}
+	50% {
+		box-shadow: 0 0 40px rgba(var(--primary-color), 0.42);
+	}
+}
+
+@keyframes cd-offline-progress {
+	0% {
+		left: -35%;
+	}
+	100% {
+		left: 100%;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.cd-offline-guard {
+		&__content,
+		&__ring,
+		&__icon-wrapper,
+		&__progress-fill {
+			animation: none;
+		}
+	}
+}

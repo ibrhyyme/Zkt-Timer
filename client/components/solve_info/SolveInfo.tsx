@@ -23,6 +23,7 @@ import { emitEvent } from '../../util/event_handler';
 import { toastError } from '../../util/toast';
 import { useTranslation } from 'react-i18next';
 import { canReadSync } from '../../lib/sync-gate';
+import { isNetworkError } from '../../util/network-error';
 
 const b = block('solve-info');
 
@@ -114,13 +115,17 @@ export default function SolveInfo(props: Props) {
 			setSolve(res.data.solve);
 			setLoading(false);
 		}).catch((err) => {
-			// If offline/network error, don't delete solve — just show local data
-			const isOffline = err?.networkError?.statusCode === 503
-				|| err?.message?.includes('Offline')
-				|| err?.message?.includes('Failed to fetch')
-				|| err?.message?.includes('Network request failed');
+			// Delete ONLY on an authoritative server verdict: the request reached the
+			// GraphQL layer and the server explicitly said NOT_FOUND. Every ambiguous
+			// failure (offline, 5xx, auth hiccup, engine-specific fetch errors) must
+			// fall back to local data — treating "unknown" as "deleted" wiped solves
+			// on offline iOS, where WebKit's fetch failure message ("Load failed")
+			// didn't match the old Chromium-only "Failed to fetch" check.
+			const isNotFoundVerdict =
+				!isNetworkError(err) &&
+				(err?.graphQLErrors || []).some((e: any) => e?.extensions?.code === 'NOT_FOUND');
 
-			if (isOffline) {
+			if (!isNotFoundVerdict) {
 				const localSolve = fetchSolve(id);
 				if (localSolve) {
 					setDbSolve(localSolve);
@@ -128,6 +133,10 @@ export default function SolveInfo(props: Props) {
 					setLoading(false);
 					return;
 				}
+				// Nothing local to show either: close quietly, never delete on ambiguity
+				setLoading(false);
+				onComplete ? onComplete() : dispatch(closeModal());
+				return;
 			}
 
 			// Actual NOT_FOUND: deleted from another device

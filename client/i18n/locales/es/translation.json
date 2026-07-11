@@ -854,6 +854,10 @@
         "go_to_timer": "Volver al Timer",
         "admin_disabled_banner": "{{page}} está desactivado — solo el admin (tú) puede ver esto"
     },
+    "offline": {
+        "page_title": "Sin conexión a internet",
+        "page_description": "Esta página necesita conexión a internet. Se cargará automáticamente cuando vuelvas a estar en línea."
+    },
     "my_schedule": {
         "page_title": "Mi Programa de Competencia",
         "login_description": "Inicia sesión con tu cuenta WCA para cargar tu lista de competencias y programa personalizado.",

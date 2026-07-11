@@ -30,6 +30,12 @@ export default function FeatureGuard({feature, pageNameKey, children}: Props) {
 
 	// Don't show content if config not yet loaded (SSR + first client render)
 	if (!config) {
+		// Offline with no cached config (fresh install, never fetched): fail open.
+		// Blocking would blank every guarded page — battle/trainer are fully local.
+		// The kill switches re-apply as soon as a config fetch succeeds again.
+		if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+			return <>{children}</>;
+		}
 		return null;
 	}
 

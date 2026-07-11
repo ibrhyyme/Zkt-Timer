@@ -19,6 +19,7 @@ import PromoSuccessModal from './PromoSuccessModal';
 import {useMe} from '../../util/hooks/useMe';
 import {isPro} from '../../lib/pro';
 import FeatureGuard from '../common/page_disabled/FeatureGuard';
+import OfflineGuard from '../common/offline_guard/OfflineGuard';
 import {isNative, isAndroidNative} from '../../util/platform';
 import {getApiBase} from '../../util/api-base';
 import {getOfferings, purchasePackage, restorePurchases, showManageSubscriptions} from '../../lib/iap';
@@ -780,8 +781,10 @@ function ProPageContent() {
 
 export default function ProPage() {
 	return (
-		<FeatureGuard feature="pro_enabled" pageNameKey="pro_page.hero_title">
-			<ProPageContent />
-		</FeatureGuard>
+		<OfflineGuard>
+			<FeatureGuard feature="pro_enabled" pageNameKey="pro_page.hero_title">
+				<ProPageContent />
+			</FeatureGuard>
+		</OfflineGuard>
 	);
 }

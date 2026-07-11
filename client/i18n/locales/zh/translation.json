@@ -854,6 +854,10 @@
         "go_to_timer": "返回计时器",
         "admin_disabled_banner": "{{page}} 当前已禁用 — 只有管理员（您）可以看到此信息"
     },
+    "offline": {
+        "page_title": "没有网络连接",
+        "page_description": "此页面需要网络连接。恢复联网后将自动加载。"
+    },
     "my_schedule": {
         "page_title": "我的比赛日程",
         "login_description": "使用您的 WCA 账户登录，以加载您的比赛列表和个性化日程。",

@@ -45,6 +45,21 @@ function handleDeepLink(rawUrl: string): void {
 	const path = '/' + parsed.host + parsed.pathname;
 	closeInAppBrowser();
 
+	// Hidden debug switch: eruda is off by default and there is no console to set the
+	// flag from, so typing zkttimer://debug (or zkttimer://debug-off) in the device
+	// browser toggles it. Exposes nothing sensitive — only the on-device DevTools.
+	if (path === '/debug' || path === '/debug-off') {
+		try {
+			if (path === '/debug') {
+				localStorage.setItem('zkt_debug', '1');
+			} else {
+				localStorage.removeItem('zkt_debug');
+			}
+		} catch (e) {}
+		navigateShell('/timer');
+		return;
+	}
+
 	if (path.startsWith('/oauth/')) {
 		navigateShell(path + parsed.search);
 	}

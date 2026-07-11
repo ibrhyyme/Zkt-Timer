@@ -42,6 +42,7 @@ import {LinkRevenueCatUserDocument} from '../../@types/generated/graphql';
 import {notifyRouteChange} from '../../util/activity-heartbeat';
 import {saveCachedMe, getCachedMe, clearCachedMe} from '../../util/auth/cached-me';
 import {clearSessionToken} from '../../util/auth/session-token';
+import {isNetworkError} from '../../util/network-error';
 import {isLocalShell} from '../../util/api-base';
 import {initDeepLinkHandler} from '../../util/deep-link';
 import {initNativeShellBoot} from '../../util/native-shell-boot';
@@ -251,10 +252,7 @@ export default function App(props: Props = {}) {
 						// A network failure (offline, or the SW's synthesized 503) is NOT an
 						// auth rejection: keep the session flag and boot from the cached
 						// identity + local DB instead of bouncing the user to /login.
-						const isNetworkError =
-							Boolean(err?.networkError) || (typeof navigator !== 'undefined' && navigator.onLine === false);
-
-						if (isNetworkError && hasAuth) {
+						if (isNetworkError(err) && hasAuth) {
 							const cachedMe = getCachedMe();
 							if (cachedMe) {
 								// useEffect([me]) re-runs into initAppData, whose offline

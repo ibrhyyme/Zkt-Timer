@@ -17,9 +17,18 @@ import { openModal } from '../../actions/general';
 import { useMe } from '../../util/hooks/useMe';
 import PageTitle from '../common/page_title/PageTitle';
 import FeatureGuard from '../common/page_disabled/FeatureGuard';
+import OfflineGuard from '../common/offline_guard/OfflineGuard';
 import './RoomsList.scss';
 
 export default function RoomsList() {
+    return (
+        <OfflineGuard>
+            <RoomsListContent />
+        </OfflineGuard>
+    );
+}
+
+function RoomsListContent() {
     const { t } = useTranslation();
     const [rooms, setRooms] = useState<FriendlyRoomData[]>([]);
     const [loading, setLoading] = useState(true);

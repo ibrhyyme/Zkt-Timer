@@ -9,15 +9,22 @@ export function initNativeShellBoot(): void {
 		return;
 	}
 
-	// TEMPORARY (internal testing): on-device DevTools for debugging the native shell
-	// without USB/Mac. Floating gear button opens console + network panels. REMOVE
-	// (or gate behind a hidden toggle) before the public store rollout.
-	import('eruda')
-		.then((mod) => {
-			const eruda = (mod as any).default || mod;
-			eruda.init();
-		})
-		.catch(() => {});
+	// On-device DevTools (console + network panels), hidden behind a manual flag so
+	// end users never see it. To enable on a device, run in any in-app console (or
+	// have the app evaluate): localStorage.setItem('zkt_debug', '1') and restart;
+	// remove the key to disable. Loaded dynamically, so it costs nothing when off.
+	let debugEnabled = false;
+	try {
+		debugEnabled = localStorage.getItem('zkt_debug') === '1';
+	} catch (e) {}
+	if (debugEnabled) {
+		import('eruda')
+			.then((mod) => {
+				const eruda = (mod as any).default || mod;
+				eruda.init();
+			})
+			.catch(() => {});
+	}
 
 	// Capgo: confirm this bundle boots successfully — if this call never arrives
 	// within appReadyTimeout after an OTA update, the plugin rolls back to the

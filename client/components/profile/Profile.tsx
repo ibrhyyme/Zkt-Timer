@@ -32,6 +32,7 @@ import PublishWcaRecords from './publish_wca_records/PublishWcaRecords';
 import WcaPbCard from './wca_pb_card/WcaPbCard';
 import Button from '../common/button/Button';
 import LoadingIcon from '../common/LoadingIcon';
+import OfflineGuard from '../common/offline_guard/OfflineGuard';
 import MobileNav from '../layout/nav/mobile_nav/MobileNav';
 import WcaSummary from './wca_summary/WcaSummary';
 import WcaResults from './wca_results/WcaResults';
@@ -176,6 +177,14 @@ function SocialIcons({ profile }: { profile: ProfileSchema }) {
 }
 
 export default function Profile() {
+	return (
+		<OfflineGuard>
+			<ProfileContent />
+		</OfflineGuard>
+	);
+}
+
+function ProfileContent() {
 	const { t } = useTranslation();
 	const dispatch = useDispatch();
 	const match = useRouteMatch() as any;
