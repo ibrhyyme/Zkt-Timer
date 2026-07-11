@@ -99,4 +99,61 @@
 		color: var(--danger-color, #ff4444);
 		padding: 4px 0;
 	}
+
+	&--desktop {
+		font-size: 1.05rem;
+
+		.cd-cross-solver__toolbar {
+			gap: 10px;
+			margin-bottom: 10px;
+		}
+
+		.cd-cross-solver__select {
+			font-size: 0.95rem;
+			padding: 6px 12px;
+			border-radius: 6px;
+
+			&--small {
+				min-width: 64px;
+			}
+		}
+
+		.cd-cross-solver__results {
+			display: flex;
+			flex-direction: column;
+		}
+
+		// Rows grow to share the module height; content stays vertically centered per row.
+		// flex-grow only distributes FREE space, so when content overflows the rows keep
+		// natural height and overflow-y: auto scrolling still works from the top
+		// (unlike justify-content: center/space-evenly which clips the top on overflow).
+		.cd-cross-solver__row {
+			flex: 1 0 auto;
+			align-items: center;
+			padding: 2px 10px;
+			line-height: 1.4;
+
+			&--best {
+				border-radius: 6px;
+			}
+		}
+
+		.cd-cross-solver__face {
+			min-width: 2em;
+			padding-right: 8px;
+		}
+
+		.cd-cross-solver__rot {
+			min-width: 2.4em;
+			padding-right: 8px;
+		}
+
+		.cd-cross-solver__moves {
+			gap: 0 6px;
+		}
+
+		.cd-cross-solver__empty {
+			font-size: 1rem;
+		}
+	}
 }
