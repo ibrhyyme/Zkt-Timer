@@ -2,6 +2,8 @@ import React, {useContext, useEffect, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import './CrossSolverModule.scss';
 import block from '../../../styles/bem';
+import {useGeneral} from '../../../util/hooks/useGeneral';
+import useIsomorphicLayoutEffect from '../../../util/hooks/useIsomorphicLayoutEffect';
 import {TimerContext} from '../../timer/Timer';
 import {solveCrossAsync, isCrossSolverAvailable} from '../../../util/cross-solver/worker-manager';
 import {SolverResult, SolverType, STEP_SOLVER_TYPES, CUBE_ORIENTATIONS} from '../../../util/cross-solver/types';
@@ -57,6 +59,7 @@ export default function CrossSolverModule() {
 	const {t} = useTranslation();
 	const context = useContext(TimerContext);
 	const {scramble, cubeType, scrambleSubset} = context;
+	const mobileMode = useGeneral('mobile_mode');
 
 	const [solverType, setSolverType] = useState<SolverType>('cross');
 	const [orientation, setOrientation] = useState('z2');
@@ -64,6 +67,7 @@ export default function CrossSolverModule() {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const reqIdRef = useRef(0);
+	const resultsRef = useRef<HTMLDivElement>(null);
 
 	const resolvedPuzzle = useMemo(
 		() => resolvePuzzle(cubeType || '', scrambleSubset),
@@ -110,6 +114,33 @@ export default function CrossSolverModule() {
 			});
 	}, [scramble, solverType, orientation, hasAnySolver, needsOrientation]);
 
+	// Desktop only: long solutions (e.g. EOCross) can wrap and overflow the module cell.
+	// Shrink the result text step by step until everything fits, instead of scrolling.
+	useIsomorphicLayoutEffect(() => {
+		const el = resultsRef.current;
+		if (!el) return;
+		if (mobileMode) {
+			el.style.fontSize = '';
+			return;
+		}
+
+		const fit = () => {
+			el.style.fontSize = '';
+			let scale = 1;
+			// scrollHeight/clientHeight are rounded ints; 1px tolerance avoids false shrinks
+			while (el.scrollHeight - el.clientHeight > 1 && scale > 0.7) {
+				scale -= 0.05;
+				el.style.fontSize = `${scale}em`;
+			}
+		};
+
+		fit();
+		// Font changes don't alter the element's own box (flex: 1), so no observer loop
+		const ro = new ResizeObserver(fit);
+		ro.observe(el);
+		return () => ro.disconnect();
+	}, [results, loading, error, mobileMode]);
+
 	const minMoveCount = useMemo(() => {
 		if (!results) return Infinity;
 		const counts = results.filter((r) => r.moveCount > 0).map((r) => r.moveCount);
@@ -118,14 +149,14 @@ export default function CrossSolverModule() {
 
 	if (!hasAnySolver) {
 		return (
-			<div className={b()}>
+			<div className={b({desktop: !mobileMode})}>
 				<div className={b('empty')}>{t('cross_solver.not_supported')}</div>
 			</div>
 		);
 	}
 
 	return (
-		<div className={b()}>
+		<div className={b({desktop: !mobileMode})}>
 			<div className={b('toolbar')}>
 				<select
 					className={b('select')}
@@ -149,7 +180,7 @@ export default function CrossSolverModule() {
 				)}
 			</div>
 
-			<div className={b('results')}>
+			<div className={b('results')} ref={resultsRef}>
 				{loading && <div className={b('empty')}>{t('cross_solver.solving')}</div>}
 				{error && <div className={b('error')}>{error}</div>}
 				{!loading && !error && results && results.map((r, i) => (
