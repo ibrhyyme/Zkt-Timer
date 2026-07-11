@@ -9,6 +9,13 @@ jobs:
     runs-on: macos-15
     timeout-minutes: 45
 
+    env:
+      # Default for the runtime flag set via $GITHUB_ENV in the keychain step when
+      # BUILD_CERTIFICATE_BASE64 exists ('true' there overrides this ''). Declared
+      # here so `env.SKIP_FASTLANE_CERT` is statically known — without it the
+      # VS Code Actions linter flags "Context access might be invalid".
+      SKIP_FASTLANE_CERT: ''
+
     steps:
       - name: Checkout
         uses: actions/checkout@v7
