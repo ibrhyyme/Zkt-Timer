@@ -30,8 +30,12 @@ async function handleDeepLink(rawUrl: string): Promise<void> {
 
 	if (parsed.protocol === 'https:') {
 		// Universal/App Link (e.g. https://zktimer.app/oauth/wca?...) — route the path
-		// into the shell; the SPA router takes it from there.
+		// into the shell; the SPA router takes it from there. iOS can intercept the
+		// WCA -> zktimer.app redirect while the OAuth sheet is still presented, so the
+		// sheet must be dismissed here too (same rule as the zkttimer: branch below),
+		// otherwise it stays open on top of the already-logged-in app.
 		if (parsed.hostname.endsWith('zktimer.app')) {
+			await closeInAppBrowser();
 			navigateShell(parsed.pathname + parsed.search);
 		}
 		return;
