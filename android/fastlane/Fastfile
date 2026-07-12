@@ -9,11 +9,13 @@ platform :android do
 
     # Auto-bump versionCode without touching build.gradle (was manual → easy to
     # forget → "duplicate versionCode" rejection). Derived from the CI run number
-    # (monotonic, well above any existing Play code) and injected via AGP's
-    # android.injected.version.code.
+    # (monotonic, well above any existing Play code) and passed as the custom
+    # -PciVersionCode gradle property, which build.gradle reads in defaultConfig.
+    # NOT android.injected.version.code: modern AGP silently ignores it (proven
+    # 2026-07-13: AAB shipped with the static versionCode and Play rejected it).
     # Deliberately NOT google_play_track_version_codes (nil flat_map bug on this
-    # fastlane) and NOT project.findProperty (clashes with the gradle versionCode
-    # DSL keyword) — see the github-actions-deploy skill for both traps.
+    # fastlane) and NOT a property literally named versionCode (clashes with the
+    # gradle DSL keyword) — see the github-actions-deploy skill for these traps.
     next_version_code = 1000 + (ENV["GITHUB_RUN_NUMBER"] || "0").to_i
     UI.message("Bumping versionCode -> #{next_version_code}")
 
@@ -21,7 +23,7 @@ platform :android do
       task: "clean bundleRelease",
       project_dir: ".",
       properties: {
-        "android.injected.version.code" => next_version_code,
+        "ciVersionCode" => next_version_code,
         "android.injected.signing.store.file" => ENV["ANDROID_KEYSTORE_PATH"],
         "android.injected.signing.store.password" => ENV["ANDROID_KEYSTORE_PASSWORD"],
         "android.injected.signing.key.alias" => ENV["ANDROID_KEY_ALIAS"],
