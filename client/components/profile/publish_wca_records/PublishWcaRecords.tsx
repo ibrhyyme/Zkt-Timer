@@ -7,6 +7,7 @@ import Button from '../../common/button/Button';
 import {toastError, toastSuccess} from '../../../util/toast';
 import {Eye, EyeSlash} from 'phosphor-react';
 import block from '../../../styles/bem';
+import {formatResult} from '../../community/my_schedule/shared';
 import './PublishWcaRecords.scss';
 
 const b = block('publish-wca-records');
@@ -191,17 +192,6 @@ export default function PublishWcaRecords(props: IModalProps) {
 		}
 	}
 
-	function formatTime(centiseconds: number): string {
-		if (!centiseconds) return '—';
-		const minutes = Math.floor(centiseconds / 6000);
-		const seconds = Math.floor((centiseconds % 6000) / 100);
-		const cs = centiseconds % 100;
-		if (minutes > 0) {
-			return `${minutes}:${seconds.toString().padStart(2, '0')}.${cs.toString().padStart(2, '0')}`;
-		}
-		return `${seconds}.${cs.toString().padStart(2, '0')}`;
-	}
-
 	function getEventName(eventCode: string): string {
 		const key = `wca_events.${eventCode}`;
 		const translated = t(key);
@@ -226,11 +216,11 @@ export default function PublishWcaRecords(props: IModalProps) {
 			<div className={b('card-records')}>
 				<div className={b('card-stat')}>
 					<span className={b('card-stat-label')}>{t('profile.single_pb')}</span>
-					<span className={b('card-stat-value')}>{record.single_record ? formatTime(record.single_record) : '—'}</span>
+					<span className={b('card-stat-value')}>{record.single_record ? formatResult(record.single_record, record.wca_event, false) : '—'}</span>
 				</div>
 				<div className={b('card-stat')}>
 					<span className={b('card-stat-label')}>{t('profile.average_pb')}</span>
-					<span className={b('card-stat-value')}>{record.average_record ? formatTime(record.average_record) : '—'}</span>
+					<span className={b('card-stat-value')}>{record.average_record ? formatResult(record.average_record, record.wca_event, true) : '—'}</span>
 				</div>
 			</div>
 			<div className={b('card-action')}>

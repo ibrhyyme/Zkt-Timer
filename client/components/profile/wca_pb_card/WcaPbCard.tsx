@@ -3,7 +3,7 @@ import {useTranslation} from 'react-i18next';
 import './WcaPbCard.scss';
 import block from '../../../styles/bem';
 import {Trophy, Medal, Crown} from 'phosphor-react';
-import {EventIcon} from '../../community/my_schedule/shared';
+import {EventIcon, formatResult} from '../../community/my_schedule/shared';
 
 const b = block('profile-wca-pb-card');
 
@@ -31,20 +31,6 @@ export default function WcaPbCard(props: Props) {
 		const key = `wca_events.${eventCode}`;
 		const translated = t(key);
 		return translated !== key ? translated : eventCode;
-	}
-
-	function formatTime(centiseconds: number): string {
-		if (!centiseconds) return '—';
-
-		const minutes = Math.floor(centiseconds / 6000);
-		const seconds = Math.floor((centiseconds % 6000) / 100);
-		const cs = centiseconds % 100;
-
-		if (minutes > 0) {
-			return `${minutes}:${seconds.toString().padStart(2, '0')}.${cs.toString().padStart(2, '0')}`;
-		} else {
-			return `${seconds}.${cs.toString().padStart(2, '0')}`;
-		}
 	}
 
 	function getRankIcon(rank?: number) {
@@ -76,7 +62,7 @@ export default function WcaPbCard(props: Props) {
 				{record.average_record ? (
 					<>
 						<div className={b('time-container')}>
-							<span className={b('time-value')}>{formatTime(record.average_record)}</span>
+							<span className={b('time-value')}>{formatResult(record.average_record, record.wca_event, true)}</span>
 							{getRankIcon(record.average_country_rank)}
 						</div>
 						<div className={b('ranks')}>
@@ -99,7 +85,7 @@ export default function WcaPbCard(props: Props) {
 				{record.single_record ? (
 					<>
 						<div className={b('time-container')}>
-							<span className={b('time-value')}>{formatTime(record.single_record)}</span>
+							<span className={b('time-value')}>{formatResult(record.single_record, record.wca_event, false)}</span>
 							{getRankIcon(record.single_country_rank)}
 						</div>
 						<div className={b('ranks')}>

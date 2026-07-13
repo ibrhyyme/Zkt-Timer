@@ -4,6 +4,7 @@ import {gql} from '@apollo/client';
 import {gqlQuery} from '../../api';
 import Emblem from '../../common/emblem/Emblem';
 import {Trophy, Medal, Crown} from 'phosphor-react';
+import {formatResult} from '../../community/my_schedule/shared';
 import './WcaRecords.scss';
 
 interface WcaRecord {
@@ -61,20 +62,6 @@ export default function WcaRecords({userId}: WcaRecordsProps) {
 		}
 	}
 
-	function formatTime(centiseconds: number): string {
-		if (!centiseconds) return '—';
-
-		const minutes = Math.floor(centiseconds / 6000);
-		const seconds = Math.floor((centiseconds % 6000) / 100);
-		const cs = centiseconds % 100;
-
-		if (minutes > 0) {
-			return `${minutes}:${seconds.toString().padStart(2, '0')}.${cs.toString().padStart(2, '0')}`;
-		} else {
-			return `${seconds}.${cs.toString().padStart(2, '0')}`;
-		}
-	}
-
 	function getEventName(eventCode: string): string {
 		const key = `wca_events.${eventCode}`;
 		const translated = t(key);
@@ -115,7 +102,7 @@ export default function WcaRecords({userId}: WcaRecordsProps) {
 						<div className="record-item">
 							<div className="record-type">{t('profile.single')}</div>
 							<div className="record-time">
-								{formatTime(record.single_record!)}
+								{formatResult(record.single_record!, record.wca_event, false)}
 								{getRankIcon(record.single_country_rank)}
 							</div>
 							{record.single_country_rank && (
@@ -130,7 +117,7 @@ export default function WcaRecords({userId}: WcaRecordsProps) {
 						<div className="record-item">
 							<div className="record-type">{t('profile.average')}</div>
 							<div className="record-time">
-								{formatTime(record.average_record!)}
+								{formatResult(record.average_record!, record.wca_event, true)}
 								{getRankIcon(record.average_country_rank)}
 							</div>
 							{record.average_country_rank && (

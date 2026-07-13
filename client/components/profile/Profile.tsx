@@ -248,47 +248,49 @@ function ProfileContent() {
 						single_country_rank
 						average_country_rank
 						published
-						integration {
-							wca_id
-							wca_country_iso2
-							wca_competition_count
-							wca_medal_gold
-							wca_medal_silver
-							wca_medal_bronze
-							wca_record_nr
-							wca_record_cr
-							wca_record_wr
-							wca_show_competitions
-							wca_show_medals
-							wca_show_records
-							wca_show_rank
-							wca_show_results
-						}
+					}
+					publicWcaProfile(userId: $userId) {
+						wca_id
+						wca_country_iso2
+						wca_competition_count
+						wca_medal_gold
+						wca_medal_silver
+						wca_medal_bronze
+						wca_record_nr
+						wca_record_cr
+						wca_record_wr
+						wca_show_competitions
+						wca_show_medals
+						wca_show_records
+						wca_show_rank
+						wca_show_results
+						best_world_rank
+						best_world_rank_event
 					}
 				}
 			`;
 
 			const res = await gqlQuery(query, { userId: user?.id });
 			const records = (res.data as any).wcaRecords || [];
+			const wcaProfile = (res.data as any).publicWcaProfile || null;
 			setWcaRecords(records);
 
-			// If no PB but WCA records exist, change the default tab
-			if (Object.keys(pbs || {}).length === 0 && records.length > 0) {
-				setRecordsTab('wca');
-			}
-
-			// Get integration metadata from first record
-			if (records.length > 0 && records[0].integration) {
-				const int = records[0].integration;
-				setWcaIntegration(int);
+			// WCA summary metadata is independent of published records — driven by
+			// visibility toggles, not by whether any event is published.
+			if (wcaProfile) {
+				setWcaIntegration(wcaProfile);
 
 				// Also fetch WCA results data here (to prevent remount on tab change)
-				if (int.wca_id && int.wca_show_results !== false) {
-					loadWcaResultsData(int.wca_id);
+				if (wcaProfile.wca_id && wcaProfile.wca_show_results !== false) {
+					loadWcaResultsData(wcaProfile.wca_id);
 				}
+			}
 
-				// If no PB and no WCA records but results exist
-				if (Object.keys(pbs || {}).length === 0 && records.length === 0 && int.wca_id && int.wca_show_results !== false) {
+			// Default tab: prefer WCA records, else results, when there are no PBs
+			if (Object.keys(pbs || {}).length === 0) {
+				if (records.length > 0) {
+					setRecordsTab('wca');
+				} else if (wcaProfile?.wca_id && wcaProfile.wca_show_results !== false) {
 					setRecordsTab('results');
 				}
 			}
@@ -446,19 +448,10 @@ function ProfileContent() {
 	const pbCount = topCubeTypes.length;
 	const wcaCount = wcaRecords.length;
 
-	// Calculate best world rank
-	let bestWorldRank: number | undefined;
-	let bestWorldRankEvent: string | undefined;
-	for (const rec of wcaRecords as any[]) {
-		if (rec.single_world_rank && (!bestWorldRank || rec.single_world_rank < bestWorldRank)) {
-			bestWorldRank = rec.single_world_rank;
-			bestWorldRankEvent = rec.wca_event;
-		}
-		if (rec.average_world_rank && (!bestWorldRank || rec.average_world_rank < bestWorldRank)) {
-			bestWorldRank = rec.average_world_rank;
-			bestWorldRankEvent = rec.wca_event;
-		}
-	}
+	// Best world rank comes from the server (computed across all records,
+	// independent of publish state and gated by wca_show_rank)
+	const bestWorldRank: number | undefined = wcaIntegration?.best_world_rank ?? undefined;
+	const bestWorldRankEvent: string | undefined = wcaIntegration?.best_world_rank_event ?? undefined;
 
 	// Default tab: if no PB switch to WCA, if no WCA switch to results
 	const hasResults = wcaIntegration?.wca_id && wcaIntegration.wca_show_results !== false;

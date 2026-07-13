@@ -3,7 +3,7 @@ import {useTranslation} from 'react-i18next';
 import {useHistory} from 'react-router-dom';
 import {ArrowLeft, Info} from 'phosphor-react';
 import {useCompetitionData} from './CompetitionLoader';
-import {b, formatWcaTime, getEventShortName} from './shared';
+import {b, formatResult, getEventShortName} from './shared';
 
 interface PersonalBestsProps {
 	wcaId: string;
@@ -105,7 +105,7 @@ export default function PersonalBests({wcaId}: PersonalBestsProps) {
 									{ev.single && (
 										<tr>
 											<td className={b('pb-type')}>single</td>
-											<td className={b('pb-best')}>{formatWcaTime(ev.single.best)}</td>
+											<td className={b('pb-best')}>{formatResult(ev.single.best, ev.eventId, false)}</td>
 											<td className={b('pb-rank')}>{ev.single.worldRanking}</td>
 											<td className={b('pb-rank')}>{ev.single.continentalRanking}</td>
 											<td className={b('pb-rank', {top: ev.single.nationalRanking === 1})}>{ev.single.nationalRanking}</td>
@@ -114,7 +114,7 @@ export default function PersonalBests({wcaId}: PersonalBestsProps) {
 									{ev.average && (
 										<tr>
 											<td className={b('pb-type')}>average</td>
-											<td className={b('pb-best')}>{formatWcaTime(ev.average.best)}</td>
+											<td className={b('pb-best')}>{formatResult(ev.average.best, ev.eventId, true)}</td>
 											<td className={b('pb-rank')}>{ev.average.worldRanking}</td>
 											<td className={b('pb-rank')}>{ev.average.continentalRanking}</td>
 											<td className={b('pb-rank', {top: ev.average.nationalRanking === 1})}>{ev.average.nationalRanking}</td>

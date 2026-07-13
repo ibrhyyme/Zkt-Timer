@@ -1,5 +1,6 @@
 import {PrismaClient} from '@prisma/client';
 import {WcaRecord} from '../schemas/WcaRecord.schema';
+import {PublicWcaProfile} from '../schemas/PublicWcaProfile.schema';
 import {InternalUserAccount} from '../schemas/UserAccount.schema';
 import {Integration} from '../schemas/Integration.schema';
 import {WcaApiService, WcaPerson} from '../services/WcaApiService';
@@ -138,6 +139,77 @@ export async function getPublishedWcaRecords(userId: string): Promise<WcaRecord[
 			wca_event: 'asc'
 		}
 	}) as Promise<WcaRecord[]>;
+}
+
+/**
+ * Get public WCA summary metadata for a user's profile.
+ *
+ * Independent of published WcaRecord rows: the visibility toggles decide what
+ * is shown, not whether any event record is published. Best world rank is
+ * computed from ALL of the user's records (world rank is public on WCA anyway).
+ * Values whose visibility toggle is off are nulled out server-side.
+ */
+export async function getPublicWcaProfile(userId: string): Promise<PublicWcaProfile | null> {
+	if (!userId) {
+		return null;
+	}
+
+	const integration = await prisma.integration.findFirst({
+		where: {
+			user_id: userId,
+			service_name: 'wca',
+		},
+	});
+
+	if (!integration) {
+		return null;
+	}
+
+	const showCompetitions = integration.wca_show_competitions !== false;
+	const showMedals = integration.wca_show_medals !== false;
+	const showRecords = integration.wca_show_records !== false;
+	const showRank = integration.wca_show_rank !== false;
+
+	// Best world rank across all records (published or not) — min single/average rank
+	let bestWorldRank: number | null = null;
+	let bestWorldRankEvent: string | null = null;
+
+	if (showRank) {
+		const records = await prisma.wcaRecord.findMany({
+			where: {user_id: userId},
+			select: {wca_event: true, single_world_rank: true, average_world_rank: true},
+		});
+
+		for (const rec of records) {
+			if (rec.single_world_rank && (bestWorldRank === null || rec.single_world_rank < bestWorldRank)) {
+				bestWorldRank = rec.single_world_rank;
+				bestWorldRankEvent = rec.wca_event;
+			}
+			if (rec.average_world_rank && (bestWorldRank === null || rec.average_world_rank < bestWorldRank)) {
+				bestWorldRank = rec.average_world_rank;
+				bestWorldRankEvent = rec.wca_event;
+			}
+		}
+	}
+
+	return {
+		wca_id: integration.wca_id ?? null,
+		wca_country_iso2: integration.wca_country_iso2 ?? null,
+		wca_competition_count: showCompetitions ? integration.wca_competition_count ?? null : null,
+		wca_medal_gold: showMedals ? integration.wca_medal_gold ?? null : null,
+		wca_medal_silver: showMedals ? integration.wca_medal_silver ?? null : null,
+		wca_medal_bronze: showMedals ? integration.wca_medal_bronze ?? null : null,
+		wca_record_nr: showRecords ? integration.wca_record_nr ?? null : null,
+		wca_record_cr: showRecords ? integration.wca_record_cr ?? null : null,
+		wca_record_wr: showRecords ? integration.wca_record_wr ?? null : null,
+		wca_show_competitions: integration.wca_show_competitions,
+		wca_show_medals: integration.wca_show_medals,
+		wca_show_records: integration.wca_show_records,
+		wca_show_rank: integration.wca_show_rank,
+		wca_show_results: integration.wca_show_results,
+		best_world_rank: bestWorldRank,
+		best_world_rank_event: bestWorldRankEvent,
+	};
 }
 
 /**

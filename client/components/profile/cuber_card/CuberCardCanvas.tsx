@@ -2,7 +2,7 @@ import React from 'react';
 import {useTranslation} from 'react-i18next';
 import {Trophy, Medal, Crown, Calendar} from 'phosphor-react';
 import block from '../../../styles/bem';
-import {EventIcon} from '../../community/my_schedule/shared';
+import {EventIcon, formatResult} from '../../community/my_schedule/shared';
 import {getStorageURL, resourceUri} from '../../../util/storage';
 import './CuberCardCanvas.scss';
 
@@ -47,16 +47,6 @@ interface Props {
 	records: WcaRecord[];
 }
 
-function formatTime(centiseconds?: number): string {
-	if (!centiseconds) return '—';
-	const minutes = Math.floor(centiseconds / 6000);
-	const seconds = Math.floor((centiseconds % 6000) / 100);
-	const cs = centiseconds % 100;
-	if (minutes > 0) {
-		return `${minutes}:${seconds.toString().padStart(2, '0')}.${cs.toString().padStart(2, '0')}`;
-	}
-	return `${seconds}.${cs.toString().padStart(2, '0')}`;
-}
 
 function countryFlag(iso2?: string | null): string {
 	if (!iso2 || iso2.length !== 2) return '';
@@ -185,7 +175,7 @@ export default function CuberCardCanvas({user, integration, records}: Props) {
 								<div className={b('record-stat-col')}>
 									<span className={b('record-stat-label')}>AVERAGE</span>
 									<span className={b('record-stat-value', {empty: !r.average_record})}>
-										{formatTime(r.average_record)}
+										{formatResult(r.average_record ?? 0, r.wca_event, true)}
 									</span>
 									{r.average_record && showRank && (
 										<div className={b('record-ranks')}>
@@ -204,7 +194,7 @@ export default function CuberCardCanvas({user, integration, records}: Props) {
 								<div className={b('record-stat-col')}>
 									<span className={b('record-stat-label')}>SINGLE</span>
 									<span className={b('record-stat-value', {empty: !r.single_record})}>
-										{formatTime(r.single_record)}
+										{formatResult(r.single_record ?? 0, r.wca_event, false)}
 									</span>
 									{r.single_record && showRank && (
 										<div className={b('record-ranks')}>

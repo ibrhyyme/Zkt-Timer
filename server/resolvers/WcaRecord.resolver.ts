@@ -1,10 +1,12 @@
 import {Resolver, Query, Mutation, Arg, Ctx, Authorized} from 'type-graphql';
 import {WcaRecord} from '../schemas/WcaRecord.schema';
+import {PublicWcaProfile} from '../schemas/PublicWcaProfile.schema';
 import {GraphQLContext} from '../@types/interfaces/server.interface';
 import {
 	fetchAndSaveWcaRecords,
 	getWcaRecords,
 	getPublishedWcaRecords,
+	getPublicWcaProfile,
 	publishWcaRecord,
 	unpublishWcaRecord
 } from '../models/wca_record';
@@ -23,6 +25,20 @@ export class WcaRecordResolver {
 		}
 
 		return getPublishedWcaRecords(userId);
+	}
+
+	/**
+	 * Get public WCA summary metadata for a user (competitions, medals, WCA ID,
+	 * records, best world rank + visibility flags). Independent of whether any
+	 * event record is published.
+	 */
+	@Query(() => PublicWcaProfile, {nullable: true})
+	async publicWcaProfile(@Arg('userId', {nullable: true}) userId?: string): Promise<PublicWcaProfile | null> {
+		if (!userId) {
+			return null;
+		}
+
+		return getPublicWcaProfile(userId);
 	}
 
 	/**

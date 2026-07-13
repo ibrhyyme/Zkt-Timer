@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import './WcaResults.scss';
 import block from '../../../styles/bem';
 import LoadingIcon from '../../common/LoadingIcon';
+import {formatResult} from '../../community/my_schedule/shared';
 
 const b = block('wca-results');
 
@@ -25,21 +26,7 @@ interface Props {
 	data?: WcaResultItem[];
 }
 
-function formatTime(cs: number): string {
-	if (cs <= 0 || cs === -1) return 'DNF';
-	if (cs === -2) return 'DNS';
-
-	const minutes = Math.floor(cs / 6000);
-	const seconds = Math.floor((cs % 6000) / 100);
-	const centis = cs % 100;
-
-	if (minutes > 0) {
-		return `${minutes}:${seconds.toString().padStart(2, '0')}.${centis.toString().padStart(2, '0')}`;
-	}
-	return `${seconds}.${centis.toString().padStart(2, '0')}`;
-}
-
-function formatAttempts(attempts: number[], bestIndex?: number, worstIndex?: number): React.ReactNode[] {
+function formatAttempts(attempts: number[], eventId?: string): React.ReactNode[] {
 	if (!attempts || !attempts.length) return [];
 
 	// Find best and worst indices (parenthesized for average)
@@ -60,7 +47,7 @@ function formatAttempts(attempts: number[], bestIndex?: number, worstIndex?: num
 	}
 
 	return attempts.map((a, i) => {
-		const time = formatTime(a);
+		const time = formatResult(a, eventId, false);
 		const isBest = i === best;
 		const isWorst = i === worst;
 		const showParens = attempts.length === 5 && (isBest || isWorst);
@@ -189,7 +176,7 @@ export default function WcaResults({ wcaId, data }: Props) {
 										<td>{getRoundName(r.round_type_id, t)}</td>
 										<td className={b('pos-cell')}>{r.pos}</td>
 										<td className={b('time-cell')}>
-											{formatTime(r.best)}
+											{formatResult(r.best, r.event_id, false)}
 											{r.regional_single_record && (
 												<span className={b('record-tag', { [r.regional_single_record.toLowerCase()]: true })}>
 													{r.regional_single_record}
@@ -197,7 +184,7 @@ export default function WcaResults({ wcaId, data }: Props) {
 											)}
 										</td>
 										<td className={b('time-cell')}>
-											{formatTime(r.average)}
+											{formatResult(r.average, r.event_id, true)}
 											{r.regional_average_record && (
 												<span className={b('record-tag', { [r.regional_average_record.toLowerCase()]: true })}>
 													{r.regional_average_record}
@@ -205,7 +192,7 @@ export default function WcaResults({ wcaId, data }: Props) {
 											)}
 										</td>
 										<td className={b('solves-cell')}>
-											{formatAttempts(r.attempts)}
+											{formatAttempts(r.attempts, r.event_id)}
 										</td>
 									</tr>
 								))}
