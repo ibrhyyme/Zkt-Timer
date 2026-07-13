@@ -12,4 +12,5 @@ export enum Consts {
 	INVITE_CODE_LENGTH = 7,
 
 	MAX_COMPETITION_FOLLOWS = 5,
+	MAX_RECORD_WATCHES = 20,
 }

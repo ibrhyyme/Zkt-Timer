@@ -212,6 +212,9 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/competitions/:competitionId/wca-live/:eventId/:roundNumber', App, Community, MySchedule, false),
 	route('/competitions/:competitionId/wca-live/:eventId', App, Community, MySchedule, false),
 	route('/competitions/:competitionId/wca-live', App, Community, MySchedule, false),
+	// Record radar — must precede the :competitionId param route so "records" is
+	// not treated as a competition id.
+	route('/competitions/records', App, Community, MySchedule, false),
 	route('/competitions/:competitionId', App, Community, MySchedule, false),
 	route('/competitions', App, Community, MySchedule, false),
 

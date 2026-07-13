@@ -899,6 +899,38 @@
         "tab_schedule": "Takvim",
         "tab_rankings": "Sıralama",
         "search_competitions": "Yarışma ara",
+        "filter_by_event": "Etkinliğe göre filtrele",
+        "filter_clear": "Temizle",
+        "radar_entry_title": "Rekorlar",
+        "radar_entry_sub": "Son kırılan rekorlar ve bildirimlerin",
+        "radar_title": "Rekorlar",
+        "radar_desc": "Seçtiğin etkinliklerde herhangi bir canlı yarışmada WR, CR veya NR kırılınca anında bildirim al.",
+        "radar_pro_hint": "Bildirim eklemek ve almak Pro özelliğidir. Ayrıntı için dokun.",
+        "radar_select_events": "Etkinlikler",
+        "radar_select_scope": "Rekor türü",
+        "radar_scope_wr": "Dünya (WR)",
+        "radar_scope_cr": "Kıta (CR)",
+        "radar_scope_nr": "Ulusal (NR)",
+        "radar_select_country": "Ülke seç",
+        "radar_add": "Bildirim ekle",
+        "radar_my_watches": "Bildirimlerim",
+        "radar_empty": "Henüz bildirim eklemedin. Yukarıdan bir tane oluştur.",
+        "radar_delete": "Sil",
+        "radar_login_required": "Rekor bildirimlerini kullanmak için giriş yap.",
+        "radar_no_events": "En az bir etkinlik seç.",
+        "radar_no_region": "Bir bölge seç.",
+        "radar_limit_reached": "En fazla {{max}} bildirim ekleyebilirsin.",
+        "radar_saved": "Bildirim eklendi.",
+        "radar_save_error": "Bir şeyler ters gitti. Lütfen tekrar dene.",
+        "tab_recent": "Geçmiş",
+        "tab_watches": "Bildirimler",
+        "feed_single_of": "tekli",
+        "feed_average_of": "ortalama",
+        "feed_empty": "Yakın zamanda kırılan rekor yok.",
+        "radar_test_send": "Deneme bildirimi gönder",
+        "radar_test_sent": "Deneme bildirimi gönderildi, birazdan gelir.",
+        "notif_record_title": "Yeni {{tag}} · {{eventName}}",
+        "notif_record_body": "{{personName}}, {{eventName}} etkinliğinde {{tag}} kırdı: {{resultText}}",
         "competition_count": "{{count}} yarışma",
         "search_competitors": "Yarışmacı ara",
         "competitor_count": "{{count}} yarışmacı",
@@ -2972,6 +3004,10 @@
                 "title": "Yarışmacı takip et",
                 "desc": "WCA yarışmalarında 5 yarışmacıya kadar takibe al. Sonuçlar, tur geçişleri ve podyum başarıları anlık bildirim olarak telefonuna ulaşır."
             },
+            "record_alerts": {
+                "title": "Rekor bildirimleri",
+                "desc": "Seçtiğin etkinliklerde dünya, kıta veya ulusal rekor herhangi bir canlı yarışmada kırıldığı an anında bildirim al."
+            },
             "ai_analysis": {
                 "title": "Akıllı küp AI analizi",
                 "desc": "Akıllı küp verilerini yapay zeka ile analiz et. Hangi aşamada zaman kaybettiğini, hangi algoritmaları geliştirmen gerektiğini otomatik olarak öğren."
@@ -3382,6 +3418,10 @@
             }
         },
         "modal": {
+            "competition_watch": {
+                "title": "Rekor Bildirimleri",
+                "desc": "Önemsediğin etkinliklerdeki rekorları takip et. Herhangi bir canlı WCA yarışmasında WR, CR veya NR kırıldığı an bildirim al."
+            },
             "room_music": {
                 "title": "Odalarda Müzik Dinle",
                 "desc": "Odada küp çözerken istediğin müziği reklamsız dinle. Pro ile müzik deneyimini yaşa."
@@ -3424,6 +3464,9 @@
             }
         },
         "highlights": {
+            "watch_records": "Rekor kırılınca uyarı",
+            "watch_scope": "Dünya, kıta veya ulusal kapsam",
+            "watch_push": "Anlık push bildirimleri",
             "sync": "Tüm cihazlarda otomatik senkronizasyon",
             "themes": "6 özel tema ile tam kişiselleştirme",
             "advanced_stats": "Detaylı grafikler ve trend analizi",

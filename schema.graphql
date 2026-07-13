@@ -295,6 +295,7 @@ type Query {
   wcaStats: WcaStats
   statsModule: StatsModule
   wcaRecords(userId: String): [WcaRecord]
+  publicWcaProfile(userId: String): PublicWcaProfile
   myWcaRecords: [WcaRecord]
   getActiveAnnouncements: [Announcement]
   getUnreadAnnouncementCount: UnreadAnnouncementCount
@@ -314,6 +315,7 @@ type Query {
   wcaSearchCompetitions(query: String): [WcaCompetition]
   myWcaCompetitions: [WcaCompetition]
   wcaResults(wcaId: String): [WcaResult]
+  wcaRecentRecords: [WcaRecentRecord]
   wcaCompetitionDetail(input: WcaScheduleInput): WcaCompetitionDetail
   wcaLiveCompetitionOverview(input: WcaLiveOverviewInput): WcaLiveCompetitionOverview
   wcaLiveRoundResults(input: WcaLiveRoundInput): WcaLiveRoundResults
@@ -347,6 +349,7 @@ type Query {
   landingStats: LandingStats
   getIapStatus: IapStatus
   myCompetitionFollows(competitionId: String): [CompetitionFollow]
+  myRecordWatches: [RecordWatch]
   myZktCompetitionFollows(competitionId: String): [ZktCompetitionFollow]
   adminUserDailyActivity(userId: String): UserDailyActivityResult
   adminActiveUsers(monthYear: String, period: String): AdminActiveUsersResult
@@ -525,6 +528,10 @@ type Mutation {
   linkRevenueCatUser: Boolean
   followCompetitor(input: FollowCompetitorInput): CompetitionFollow
   unfollowCompetitor(id: String): Boolean
+  saveRecordWatch(input: SaveRecordWatchInput): RecordWatch
+  setRecordWatchEnabled(enabled: Boolean, id: String): RecordWatch
+  sendTestRecordNotification(locale: String): Boolean
+  deleteRecordWatch(id: String): Boolean
   followZktCompetitor(input: FollowZktCompetitorInput): ZktCompetitionFollow
   unfollowZktCompetitor(id: String): Boolean
   recordActivityHeartbeat(path: String): ActivityHeartbeatResult
@@ -1361,6 +1368,25 @@ type WcaRecord {
   user: PublicUserAccount
 }
 
+type PublicWcaProfile {
+  wca_id: String
+  wca_country_iso2: String
+  wca_competition_count: Float
+  wca_medal_gold: Float
+  wca_medal_silver: Float
+  wca_medal_bronze: Float
+  wca_record_nr: Float
+  wca_record_cr: Float
+  wca_record_wr: Float
+  wca_show_competitions: Boolean
+  wca_show_medals: Boolean
+  wca_show_records: Boolean
+  wca_show_rank: Boolean
+  wca_show_results: Boolean
+  best_world_rank: Float
+  best_world_rank_event: String
+}
+
 type TranslatedText {
   en: String
   es: String
@@ -1716,6 +1742,20 @@ type WcaLiveRecord {
   attemptResult: Int
   personName: String
   personCountryIso2: String
+  roundNumber: Int
+}
+
+type WcaRecentRecord {
+  id: String
+  tag: String
+  type: String
+  eventId: String
+  eventName: String
+  attemptResult: Int
+  personName: String
+  personCountryIso2: String
+  competitionId: String
+  competitionName: String
   roundNumber: Int
 }
 
@@ -2217,6 +2257,15 @@ type CompetitionFollow {
   followed_registrant_id: Int
   followed_wca_id: String
   followed_name: String
+  created_at: DateTime
+}
+
+type RecordWatch {
+  id: String
+  events: [String]
+  scope: String
+  region: String
+  enabled: Boolean
   created_at: DateTime
 }
 
@@ -2795,6 +2844,12 @@ input FollowCompetitorInput {
   registrant_id: Int
   wca_id: String
   name: String
+}
+
+input SaveRecordWatchInput {
+  events: [String]
+  scope: String
+  region: String
 }
 
 input FollowZktCompetitorInput {

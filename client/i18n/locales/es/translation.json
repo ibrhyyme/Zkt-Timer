@@ -892,6 +892,38 @@
         "tab_schedule": "Programa",
         "tab_rankings": "Clasificación",
         "search_competitions": "Buscar competencias",
+        "filter_by_event": "Filtrar por evento",
+        "filter_clear": "Limpiar",
+        "radar_entry_title": "Récords",
+        "radar_entry_sub": "Récords recientes y tus alertas",
+        "radar_title": "Récords",
+        "radar_desc": "Recibe una notificación cuando se rompa un WR, CR o NR en los eventos que elijas, en cualquier competencia en vivo.",
+        "radar_pro_hint": "Añadir alertas y recibir notificaciones es una función Pro. Toca para saber más.",
+        "radar_select_events": "Eventos",
+        "radar_select_scope": "Tipo de récord",
+        "radar_scope_wr": "Mundial (WR)",
+        "radar_scope_cr": "Continental (CR)",
+        "radar_scope_nr": "Nacional (NR)",
+        "radar_select_country": "Selecciona un país",
+        "radar_add": "Añadir alerta",
+        "radar_my_watches": "Mis alertas",
+        "radar_empty": "Aún no tienes alertas. Crea una arriba.",
+        "radar_delete": "Eliminar",
+        "radar_login_required": "Inicia sesión para usar las alertas de récords.",
+        "radar_no_events": "Selecciona al menos un evento.",
+        "radar_no_region": "Selecciona una región.",
+        "radar_limit_reached": "Puedes tener hasta {{max}} alertas.",
+        "radar_saved": "Alerta añadida.",
+        "radar_save_error": "Algo salió mal. Inténtalo de nuevo.",
+        "tab_recent": "Recientes",
+        "tab_watches": "Alertas",
+        "feed_single_of": "single de",
+        "feed_average_of": "promedio de",
+        "feed_empty": "No hay récords recientes.",
+        "radar_test_send": "Enviar notificación de prueba",
+        "radar_test_sent": "Notificación de prueba enviada. Llegará en breve.",
+        "notif_record_title": "Nuevo {{tag}} · {{eventName}}",
+        "notif_record_body": "{{personName}} logró un {{tag}} en {{eventName}}: {{resultText}}",
         "competition_count": "{{count}} competencias",
         "search_competitors": "Buscar competidores",
         "competitor_count": "{{count}} competidores",
@@ -2965,6 +2997,10 @@
                 "title": "Seguir competidores",
                 "desc": "Sigue hasta 5 competidores en cualquier competencia WCA. Recibe notificaciones en tiempo real de resultados, avances de ronda y podios."
             },
+            "record_alerts": {
+                "title": "Alertas de récords",
+                "desc": "Recibe una notificación en el momento en que se rompa un récord mundial, continental o nacional en los eventos que elijas, en cualquier competencia en vivo."
+            },
             "ai_analysis": {
                 "title": "Análisis AI de cubo inteligente",
                 "desc": "Analiza los datos de tu cubo inteligente con IA. Aprende automáticamente dónde pierdes tiempo y qué algoritmos necesitas mejorar."
@@ -3377,6 +3413,10 @@
             }
         },
         "modal": {
+            "competition_watch": {
+                "title": "Alertas de récords",
+                "desc": "Sigue los récords de los eventos que te importan. Recibe un aviso en el momento en que se rompa un WR, CR o NR en cualquier competencia en vivo de la WCA."
+            },
             "room_music": {
                 "title": "Música en las Salas",
                 "desc": "Escucha tu música favorita sin anuncios mientras resuelves en salas. Desbloquea la experiencia musical con Pro."
@@ -3419,6 +3459,9 @@
             }
         },
         "highlights": {
+            "watch_records": "Avisos cuando se rompe un récord",
+            "watch_scope": "Alcance mundial, continental o nacional",
+            "watch_push": "Notificaciones push en tiempo real",
             "sync": "Sincronización automática en todos tus dispositivos",
             "themes": "6 temas exclusivos para personalización total",
             "advanced_stats": "Gráficos detallados y análisis de tendencias",

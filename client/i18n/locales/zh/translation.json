@@ -892,6 +892,38 @@
         "tab_schedule": "日程",
         "tab_rankings": "排名",
         "search_competitions": "搜索比赛",
+        "filter_by_event": "按项目筛选",
+        "filter_clear": "清除",
+        "radar_entry_title": "记录",
+        "radar_entry_sub": "最近的记录和你的提醒",
+        "radar_title": "记录",
+        "radar_desc": "当你选择的项目在任何直播比赛中打破 WR、CR 或 NR 时，即时收到推送通知。",
+        "radar_pro_hint": "添加提醒并接收通知是 Pro 功能。点击了解更多。",
+        "radar_select_events": "项目",
+        "radar_select_scope": "记录类型",
+        "radar_scope_wr": "世界纪录 (WR)",
+        "radar_scope_cr": "洲纪录 (CR)",
+        "radar_scope_nr": "国家纪录 (NR)",
+        "radar_select_country": "选择国家",
+        "radar_add": "添加提醒",
+        "radar_my_watches": "我的提醒",
+        "radar_empty": "你还没有提醒。在上方创建一个。",
+        "radar_delete": "删除",
+        "radar_login_required": "登录后即可使用破纪录提醒。",
+        "radar_no_events": "至少选择一个项目。",
+        "radar_no_region": "请选择地区。",
+        "radar_limit_reached": "你最多可以有 {{max}} 个提醒。",
+        "radar_saved": "已添加提醒。",
+        "radar_save_error": "出了点问题，请重试。",
+        "tab_recent": "最近",
+        "tab_watches": "提醒",
+        "feed_single_of": "单次",
+        "feed_average_of": "平均",
+        "feed_empty": "暂无最近记录。",
+        "radar_test_send": "发送测试通知",
+        "radar_test_sent": "测试通知已发送，稍后送达。",
+        "notif_record_title": "新的 {{tag}} · {{eventName}}",
+        "notif_record_body": "{{personName}} 在 {{eventName}} 创造了 {{tag}}：{{resultText}}",
         "competition_count": "{{count}} 场比赛",
         "search_competitors": "搜索选手",
         "competitor_count": "{{count}} 名选手",
@@ -2965,6 +2997,10 @@
                 "title": "关注选手",
                 "desc": "在任何 WCA 比赛中关注最多 5 名选手。实时接收成绩、晋级和领奖台结果的推送通知。"
             },
+            "record_alerts": {
+                "title": "破纪录提醒",
+                "desc": "当你选择的项目在任何直播比赛中打破世界、洲际或国家纪录时，第一时间收到推送通知。"
+            },
             "ai_analysis": {
                 "title": "智能魔方 AI 分析",
                 "desc": "通过 AI 分析您的智能魔方数据。自动了解您在哪里浪费时间以及哪些公式需要改进。"
@@ -3377,6 +3413,10 @@
             }
         },
         "modal": {
+            "competition_watch": {
+                "title": "破纪录提醒",
+                "desc": "关注你在意的项目的记录。任何 WCA 直播比赛中一旦打破 WR、CR 或 NR，立即收到推送。"
+            },
             "room_music": {
                 "title": "在房间内听音乐",
                 "desc": "在房间内玩魔方时，无广告收听您喜爱的音乐。通过Pro解锁音乐体验。"
@@ -3419,6 +3459,9 @@
             }
         },
         "highlights": {
+            "watch_records": "破纪录时提醒",
+            "watch_scope": "世界、洲际或国家范围",
+            "watch_push": "实时推送通知",
             "sync": "跨所有设备自动同步",
             "themes": "6款专属主题，完全自定义",
             "advanced_stats": "详细图表和趋势分析",

@@ -111,6 +111,9 @@ model UserAccount {
   // WCA competition competitor follows (Pro feature)
   competition_follows           CompetitionFollow[]
 
+  // Record radar watches (Pro feature)
+  record_watches                RecordWatch[]
+
   // Daily goals
   daily_goals                   DailyGoal[]
 
@@ -1191,6 +1194,48 @@ model WcaCompetitionNotifiedRound {
 
   @@unique([state_id, activity_code])
   @@map("wca_competition_notified_round")
+}
+
+// Record radar: a user's GLOBAL watch rule (not tied to a competition). The
+// record-radar cron notifies when a matching WR/CR/NR is set in any live comp.
+model RecordWatch {
+  id         String   @id @default(uuid())
+  user_id    String
+  events     String[] @default([]) // WCA event ids, e.g. ['333','333fm']
+  scope      String // 'WR' | 'CR' | 'NR'
+  region     String   @default("") // NR -> country iso2, CR -> continent id, WR -> ''
+  enabled    Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user UserAccount @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([enabled])
+  @@map("record_watch")
+}
+
+// Record radar dedup: marks a competition as "seeded" so the first scan does NOT
+// notify for records that already existed (retroactive-spam suppression).
+model WcaRecordScanState {
+  competition_id   String   @id
+  first_scanned_at DateTime @default(now())
+  last_scanned_at  DateTime @updatedAt
+
+  @@map("wca_record_scan_state")
+}
+
+// Record radar baseline: the set of record signatures already seen per comp.
+// A record is "just broken" only the first scan its signature is absent here.
+model WcaRecordSeen {
+  id             String   @id @default(uuid())
+  competition_id String
+  signature      String
+  created_at     DateTime @default(now())
+
+  @@unique([competition_id, signature])
+  @@index([competition_id])
+  @@map("wca_record_seen")
 }
 
 model PromoCode {

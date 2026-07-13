@@ -496,6 +496,42 @@ export class WcaLiveRecord {
 }
 
 @ObjectType()
+export class WcaRecentRecord {
+	@Field()
+	id: string;
+
+	@Field()
+	tag: string;
+
+	@Field()
+	type: string;
+
+	@Field()
+	eventId: string;
+
+	@Field()
+	eventName: string;
+
+	@Field(() => Int)
+	attemptResult: number;
+
+	@Field()
+	personName: string;
+
+	@Field({nullable: true})
+	personCountryIso2?: string;
+
+	@Field({nullable: true})
+	competitionId?: string;
+
+	@Field()
+	competitionName: string;
+
+	@Field(() => Int, {nullable: true})
+	roundNumber?: number;
+}
+
+@ObjectType()
 export class WcaLivePodiumEntry {
 	@Field(() => Int, {nullable: true})
 	ranking?: number;

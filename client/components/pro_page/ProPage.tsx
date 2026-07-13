@@ -5,7 +5,7 @@ import {
 	Crown, Check, CaretDown, Info, Ticket, CheckCircle, Sparkle, Warning,
 	CloudArrowUp, ChartBar, Lightning, FilePdf, PaintBrush, FrameCorners,
 	MusicNote, Users, Medal, Sliders, ShareNetwork, Rocket, Brain, BookOpen, Crosshair,
-	ArrowRight, BellRinging,
+	ArrowRight, BellRinging, Trophy,
 } from 'phosphor-react';
 import CountUp from '../stats/common/count_up/CountUp';
 import {useDispatch} from 'react-redux';
@@ -88,6 +88,7 @@ const PRO_FEATURES = [
 	'room_music',
 	'room_smart_cube',
 	'competition_follow',
+	'record_alerts',
 	'pro_badge',
 	'stats_customization',
 	'solve_sharing',
@@ -107,6 +108,7 @@ const FEATURE_ICONS: Record<string, React.ElementType> = {
 	room_music: MusicNote,
 	room_smart_cube: Users,
 	competition_follow: BellRinging,
+	record_alerts: Trophy,
 	pro_badge: Medal,
 	stats_customization: Sliders,
 	solve_sharing: ShareNetwork,

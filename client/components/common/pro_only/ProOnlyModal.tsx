@@ -21,6 +21,7 @@ const FEATURE_HIGHLIGHTS: Record<string, readonly string[]> = {
 	trainer: ['trainer_ble', 'trainer_feedback', 'trainer_speed'],
 	trainer_pdf: ['pdf_professional', 'pdf_alternatives', 'pdf_stats'],
 	competition_follow: ['follow_realtime', 'follow_limit'],
+	competition_watch: ['watch_records', 'watch_scope', 'watch_push'],
 	slam_to_stop: ['slam_drop', 'slam_calibrate', 'slam_stackmat'],
 };
 

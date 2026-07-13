@@ -741,6 +741,449 @@
 		animation: cd-search-progress 1.1s linear infinite;
 	}
 
+	// Event filter (competition list discovery)
+	&__event-filter {
+		margin-bottom: 1rem;
+	}
+
+	&__event-filter-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: 0.5rem;
+	}
+
+	&__event-filter-label {
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: rgb(var(--text-color));
+	}
+
+	&__event-filter-clear {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.25rem;
+		background: none;
+		border: none;
+		cursor: pointer;
+		font-size: 0.75rem;
+		font-weight: 600;
+		color: rgb(var(--primary-color));
+
+		svg {
+			color: rgb(var(--primary-color));
+		}
+	}
+
+	&__event-filter-chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+	}
+
+	&__event-chip {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.1rem;
+		height: 2.1rem;
+		padding: 0;
+		border-radius: 0.45rem;
+		border: 2px solid rgba(var(--text-color), 0.15);
+		background: rgb(var(--module-color));
+		color: rgb(var(--text-color));
+		cursor: pointer;
+		transition: border-color 0.12s ease, background 0.12s ease;
+
+		// Never override .cubing-icon color — the puzzle glyph is multi-colored and
+		// forcing a color turns it into a solid block. Selection is shown via the
+		// box (border + tint) only, matching the ZKT event-option pattern.
+		&:hover {
+			border-color: rgba(var(--primary-color), 0.5);
+		}
+
+		&--active {
+			border-color: rgb(var(--primary-color));
+			background: rgba(var(--primary-color), 0.15);
+		}
+	}
+
+	// Record radar entry (on competition list)
+	&__radar-entry {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		width: 100%;
+		margin-bottom: 1rem;
+		padding: 0.85rem 1rem;
+		border-radius: 0.6rem;
+		border: 1px solid rgba(var(--primary-color), 0.35);
+		background: rgba(var(--primary-color), 0.08);
+		color: rgb(var(--text-color));
+		cursor: pointer;
+		text-align: left;
+		transition: border-color 0.12s ease, background 0.12s ease;
+
+		&:hover {
+			border-color: rgb(var(--primary-color));
+			background: rgba(var(--primary-color), 0.14);
+		}
+	}
+
+	&__radar-entry-icon {
+		color: rgb(var(--primary-color));
+		flex-shrink: 0;
+	}
+
+	&__radar-entry-body {
+		display: flex;
+		flex-direction: column;
+		gap: 0.1rem;
+		flex: 1;
+		min-width: 0;
+	}
+
+	&__radar-entry-title {
+		font-size: 0.95rem;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+	}
+
+	&__radar-entry-sub {
+		font-size: 0.8rem;
+		font-weight: 500;
+		color: rgb(var(--text-color));
+	}
+
+	// Record radar page
+	&__radar-title {
+		display: flex;
+		align-items: center;
+		font-size: 1.35rem;
+		font-weight: 800;
+		color: rgb(var(--text-color));
+		margin: 0.5rem 0 0.35rem;
+	}
+
+	&__radar-desc {
+		font-size: 0.9rem;
+		font-weight: 500;
+		color: rgb(var(--text-color));
+		margin-bottom: 1rem;
+		line-height: 1.4;
+	}
+
+	&__radar-pro-banner {
+		padding: 0.7rem 0.9rem;
+		border-radius: 0.5rem;
+		border: 1px solid rgba(var(--primary-color), 0.4);
+		background: rgba(var(--primary-color), 0.1);
+		color: rgb(var(--text-color));
+		font-size: 0.85rem;
+		font-weight: 600;
+		cursor: pointer;
+		margin-bottom: 1rem;
+	}
+
+	&__radar-builder {
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+		padding: 1rem;
+		border-radius: 0.6rem;
+		border: 1px solid rgba(var(--text-color), 0.15);
+		background: rgb(var(--module-color));
+		margin-bottom: 1.5rem;
+	}
+
+	&__radar-builder-label {
+		font-size: 0.8rem;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+		margin-top: 0.35rem;
+	}
+
+	&__radar-scope-seg {
+		display: flex;
+		gap: 0.4rem;
+	}
+
+	&__radar-scope-btn {
+		flex: 1;
+		padding: 0.5rem 0.4rem;
+		border-radius: 0.45rem;
+		border: 1px solid rgba(var(--text-color), 0.25);
+		background: transparent;
+		color: rgb(var(--text-color));
+		font-size: 0.82rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition: border-color 0.12s ease, background 0.12s ease;
+
+		&:hover {
+			border-color: rgb(var(--primary-color));
+		}
+
+		&--active {
+			border-color: rgb(var(--primary-color));
+			background: rgba(var(--primary-color), 0.15);
+			color: rgb(var(--primary-color));
+		}
+	}
+
+	&__radar-region-select {
+		width: 100%;
+		padding: 0.55rem 0.7rem;
+		border-radius: 0.45rem;
+		border: 1px solid rgba(var(--text-color), 0.25);
+		background: rgb(var(--module-color));
+		color: rgb(var(--text-color));
+		font-size: 0.9rem;
+
+		&:focus {
+			outline: none;
+			border-color: rgb(var(--primary-color));
+		}
+	}
+
+	&__radar-save-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.4rem;
+		margin-top: 0.5rem;
+		padding: 0.6rem 1rem;
+		border-radius: 0.5rem;
+		border: none;
+		background: rgb(var(--primary-color));
+		color: #fff;
+		font-size: 0.9rem;
+		font-weight: 700;
+		cursor: pointer;
+
+		&:disabled {
+			cursor: default;
+			opacity: 0.7;
+		}
+	}
+
+	&__radar-list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+	}
+
+	&__radar-item {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+		padding: 0.7rem 0.85rem;
+		border-radius: 0.5rem;
+		border: 1px solid rgba(var(--text-color), 0.15);
+		background: rgb(var(--module-color));
+
+		&--disabled {
+			border-style: dashed;
+		}
+	}
+
+	&__radar-item-main {
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+		min-width: 0;
+	}
+
+	&__radar-item-events {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.3rem;
+		color: rgb(var(--text-color));
+	}
+
+	&__radar-item-scope {
+		font-size: 0.82rem;
+		font-weight: 600;
+		color: rgb(var(--text-color));
+	}
+
+	&__radar-item-actions {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+		flex-shrink: 0;
+	}
+
+	&__radar-toggle {
+		position: relative;
+		display: inline-block;
+		width: 2.2rem;
+		height: 1.25rem;
+		cursor: pointer;
+
+		input {
+			position: absolute;
+			opacity: 0;
+			width: 0;
+			height: 0;
+		}
+
+		input:checked + .cd-my-schedule__radar-toggle-track {
+			background: rgb(var(--primary-color));
+		}
+
+		input:checked + .cd-my-schedule__radar-toggle-track::before {
+			transform: translateX(0.95rem);
+		}
+	}
+
+	&__radar-toggle-track {
+		position: absolute;
+		inset: 0;
+		border-radius: 1rem;
+		background: rgba(var(--text-color), 0.3);
+		transition: background 0.15s ease;
+
+		&::before {
+			content: '';
+			position: absolute;
+			top: 0.15rem;
+			left: 0.15rem;
+			width: 0.95rem;
+			height: 0.95rem;
+			border-radius: 50%;
+			background: #fff;
+			transition: transform 0.15s ease;
+		}
+	}
+
+	&__radar-item-delete {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2rem;
+		height: 2rem;
+		border-radius: 0.4rem;
+		border: none;
+		background: transparent;
+		color: rgb(var(--text-color));
+		cursor: pointer;
+
+		&:hover {
+			background: rgba(239, 83, 80, 0.15);
+			color: #ef5350;
+		}
+	}
+
+	// Records page tabs
+	&__radar-tabs {
+		display: flex;
+		gap: 0.25rem;
+		margin: 0.25rem 0 1rem;
+		border-bottom: 1px solid rgba(var(--text-color), 0.12);
+	}
+
+	&__radar-tab {
+		flex: 1;
+		padding: 0.6rem 0.5rem;
+		background: none;
+		border: none;
+		border-bottom: 2px solid transparent;
+		color: rgb(var(--text-color));
+		font-size: 0.9rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition: color 0.12s ease, border-color 0.12s ease;
+
+		&--active {
+			color: rgb(var(--primary-color));
+			border-bottom-color: rgb(var(--primary-color));
+		}
+	}
+
+	&__radar-test-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+		margin-bottom: 1rem;
+		padding: 0.5rem 0.85rem;
+		border-radius: 0.45rem;
+		border: 1px dashed rgba(var(--primary-color), 0.6);
+		background: none;
+		color: rgb(var(--primary-color));
+		font-size: 0.82rem;
+		font-weight: 600;
+		cursor: pointer;
+
+		&:hover {
+			background: rgba(var(--primary-color), 0.1);
+		}
+	}
+
+	// Recent records feed
+	&__radar-feed {
+		display: flex;
+		flex-direction: column;
+	}
+
+	&__radar-feed-row {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		width: 100%;
+		padding: 0.7rem 0.4rem;
+		background: none;
+		border: none;
+		border-bottom: 1px solid rgba(var(--text-color), 0.08);
+		text-align: left;
+		cursor: pointer;
+		color: rgb(var(--text-color));
+
+		&:hover:not(:disabled) {
+			background: rgba(var(--text-color), 0.04);
+		}
+
+		&:disabled {
+			cursor: default;
+		}
+	}
+
+	&__radar-feed-tag {
+		flex-shrink: 0;
+		min-width: 2.1rem;
+		text-align: center;
+		padding: 0.2rem 0.35rem;
+		border-radius: 0.3rem;
+		color: #fff;
+		font-size: 0.7rem;
+		font-weight: 800;
+		letter-spacing: 0.02em;
+	}
+
+	&__radar-feed-body {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+		min-width: 0;
+	}
+
+	&__radar-feed-title {
+		font-size: 0.9rem;
+		font-weight: 500;
+		color: rgb(var(--text-color));
+
+		strong {
+			font-weight: 800;
+		}
+	}
+
+	&__radar-feed-person {
+		font-size: 0.8rem;
+		font-weight: 500;
+		color: rgb(var(--text-color));
+	}
+
 	// Groups tab search (smaller)
 	&__search {
 		display: flex;

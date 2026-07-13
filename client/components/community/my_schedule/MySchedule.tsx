@@ -10,6 +10,7 @@ import CompetitorDetail from './CompetitorDetail';
 import ActivityDetail from './ActivityDetail';
 import PersonalBests from './PersonalBests';
 import CompetitorLiveResults from './wca_live/CompetitorLiveResults';
+import RecordRadar from './RecordRadar';
 import {resourceUri} from '../../../util/storage';
 
 // Code splitting: WCA Live tab should load only when used
@@ -45,9 +46,21 @@ function MyScheduleInner() {
 	const matchWcaLive = useRouteMatch<{competitionId: string}>(
 		'/competitions/:competitionId/wca-live'
 	);
+	const matchRecords = useRouteMatch({path: '/competitions/records', exact: true});
 	const matchCompetition = useRouteMatch<{competitionId: string}>(
 		'/competitions/:competitionId'
 	);
+
+	// Record radar is global (not competition-scoped) — render before the
+	// :competitionId branch so "records" is not resolved as a competition id.
+	if (matchRecords) {
+		return (
+			<div className={b()}>
+				<Header path="/competitions" title={t('my_schedule.page_title')} />
+				<RecordRadar />
+			</div>
+		);
+	}
 
 	// Get competitionId from any match
 	const competitionId = matchPersonalBests?.params.competitionId

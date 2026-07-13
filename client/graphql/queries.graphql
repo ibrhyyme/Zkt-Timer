@@ -330,6 +330,7 @@ query wcaSearchCompetitions($query: String!) {
 		country_iso2
 		start_date
 		end_date
+		event_ids
 		url
 	}
 }
@@ -342,6 +343,7 @@ query myWcaCompetitions {
 		country_iso2
 		start_date
 		end_date
+		event_ids
 		url
 	}
 }

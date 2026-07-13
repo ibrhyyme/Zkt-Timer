@@ -8,6 +8,7 @@ import {
 	WcaLiveOverviewInput,
 	WcaLiveCompetitorResults,
 	WcaLiveCompetitorInput,
+	WcaRecentRecord,
 } from '../schemas/WcaSchedule.schema';
 import {GraphQLContext} from '../@types/interfaces/server.interface';
 import {getIntegration} from '../models/integration';
@@ -15,7 +16,7 @@ import {WcaApiService} from '../services/WcaApiService';
 import {buildCompetitionDetail} from '../services/WcifTransformer';
 import {fetchDataFromCache, createRedisKey, RedisNamespace, deleteKeyInRedis, getValueFromRedis, setKeyInRedis} from '../services/redis';
 import {logger} from '../services/logger';
-import {getWcaLiveData as wcaLiveGetData, fetchLiveRoundResults as wcaLiveFetchRound} from '../services/WcaLiveService';
+import {getWcaLiveData as wcaLiveGetData, fetchLiveRoundResults as wcaLiveFetchRound, fetchRecentRecords} from '../services/WcaLiveService';
 import {ensureNotificationState} from '../services/WcaNotificationState';
 import {getArchivedCompetition, archiveCompetition, isStaleArchive, isCompetitionFinished} from '../services/CompetitionArchiveService';
 import {checkRateLimit} from '../services/rate_limit';
@@ -40,8 +41,26 @@ const WCA_LIVE_COMPETITOR_TTL = 60;
 
 const WCA_LIVE_ENDPOINT = process.env.WCA_LIVE_API_URL || 'https://live.worldcubeassociation.org/api';
 
+const WCA_RECENT_RECORDS_TTL = 3 * 60; // 3 minutes
+
 @Resolver()
 export class WcaScheduleResolver {
+	// Public global "recent records" feed (WCA Live homepage source). No auth so
+	// free/anon users can browse it. Cached 3 min — the source changes slowly.
+	@Query(() => [WcaRecentRecord])
+	async wcaRecentRecords(): Promise<WcaRecentRecord[]> {
+		try {
+			return await fetchDataFromCache(
+				createRedisKey(RedisNamespace.WCA_WORLD_RECORDS, 'recent'),
+				() => fetchRecentRecords(),
+				WCA_RECENT_RECORDS_TTL,
+			) as WcaRecentRecord[];
+		} catch (err: any) {
+			logger.warn('[WcaRecentRecords] fetch failed', {err: err?.message});
+			return [];
+		}
+	}
+
 	@Authorized()
 	@Query(() => WcaCompetitionDetail, {nullable: true})
 	async wcaCompetitionDetail(

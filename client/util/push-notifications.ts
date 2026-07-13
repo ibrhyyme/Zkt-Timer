@@ -20,7 +20,9 @@ function navigateFromPushData(data: any): boolean {
 	}
 	// Geriye donuk uyumluluk: WCA hardcoded routing
 	if (
-		(data.type === 'wca_result_entered' || data.type === 'wca_round_finished') &&
+		(data.type === 'wca_result_entered' ||
+			data.type === 'wca_round_finished' ||
+			data.type === 'wca_record_broken') &&
 		data.competitionId && data.eventId && data.roundNumber
 	) {
 		window.location.href = `/competitions/${data.competitionId}/wca-live/${data.eventId}/${data.roundNumber}`;

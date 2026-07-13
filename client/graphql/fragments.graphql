@@ -163,6 +163,7 @@ fragment PublicUserFragment on IPublicUserAccount {
 	integrations {
 		id
 		service_name
+		wca_country_iso2
 	}
 	profile {
 		pfp_image {

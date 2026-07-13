@@ -5,11 +5,13 @@ import {gql} from '@apollo/client';
 import {gqlQueryTyped, gqlMutate} from '../../api';
 import {WcaCompetitionsDocument, WcaSearchCompetitionsDocument, MyWcaCompetitionsDocument} from '../../../@types/generated/graphql';
 import {useMe} from '../../../util/hooks/useMe';
-import {MagnifyingGlass, Trophy} from 'phosphor-react';
+import {MagnifyingGlass, Trophy, Bell, CaretRight} from 'phosphor-react';
 import {resourceUri} from '../../../util/storage';
 import {LINKED_SERVICES} from '../../../../shared/integration';
 import {wcaRedirectUri, openWcaAuthorize, markNativeOAuthState} from '../../../util/oauth-native';
 import {b, I18N_LOCALE_MAP, formatDateRange} from './shared';
+import CompEventFilter from './CompEventFilter';
+import {getEventFilter, setEventFilter} from './eventFilterStorage';
 import {prefetchCompetitionDetail} from './CompetitionLoader';
 import {useZktCompListRefetch} from '../zkt_competitions/useZktCompRefetch';
 import {prefetchZktCompetitionDetail} from '../zkt_competitions/ZktCompetitionDetail';
@@ -74,6 +76,28 @@ export default function CompetitionList() {
 	const [myComps, setMyComps] = useState<any[] | null>(getMyCache());
 	const [zktComps, setZktComps] = useState<any[] | null>(getZktCache());
 	const [loadError, setLoadError] = useState<string | null>(null);
+	const [eventFilter, setEventFilterState] = useState<string[]>(() => getEventFilter());
+
+	// Union match: a comp passes when it holds at least one of the selected events.
+	// Empty selection means no filtering.
+	function matchesEventFilter(comp: any): boolean {
+		if (eventFilter.length === 0) return true;
+		const ids: string[] = comp.event_ids || [];
+		return ids.some((id) => eventFilter.includes(id));
+	}
+
+	function toggleEventFilter(code: string) {
+		setEventFilterState((prev) => {
+			const next = prev.includes(code) ? prev.filter((e) => e !== code) : [...prev, code];
+			setEventFilter(next);
+			return next;
+		});
+	}
+
+	function clearEventFilter() {
+		setEventFilterState([]);
+		setEventFilter([]);
+	}
 
 	const filteredCompetitions = useMemo(() => {
 		if (!competitions) return [];
@@ -84,13 +108,16 @@ export default function CompetitionList() {
 				(c: any) => c.name.toLowerCase().includes(q) || c.city?.toLowerCase().includes(q)
 			);
 		}
+		if (eventFilter.length > 0) {
+			list = list.filter(matchesEventFilter);
+		}
 		// Display ongoing competitions first, then others
 		const now = new Date();
 		const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 		const ongoing = list.filter((c: any) => c.start_date <= today && c.end_date >= today);
 		const rest = list.filter((c: any) => !(c.start_date <= today && c.end_date >= today));
 		return [...ongoing, ...rest];
-	}, [competitions, compSearch]);
+	}, [competitions, compSearch, eventFilter]);
 
 	const mountedRef = useRef(true);
 	useEffect(() => () => {
@@ -248,7 +275,9 @@ export default function CompetitionList() {
 	}
 
 	const showSearchResults = compSearch.trim().length >= 3 && searchResults;
-	const displayList = showSearchResults ? searchResults : filteredCompetitions;
+	const displayList = showSearchResults
+		? (eventFilter.length > 0 ? searchResults.filter(matchesEventFilter) : searchResults)
+		: filteredCompetitions;
 
 	const todayStr = useMemo(() => {
 		const n = new Date();
@@ -379,6 +408,20 @@ export default function CompetitionList() {
 	return (
 		<div className={b('content')}>
 			<h1 className="sr-only">{t('seo.wca_competitions_title')}</h1>
+
+			{/* Record radar entry */}
+			<button
+				className={b('radar-entry')}
+				onClick={() => history.push('/competitions/records')}
+			>
+				<Bell size={20} weight="fill" className={b('radar-entry-icon')} />
+				<span className={b('radar-entry-body')}>
+					<span className={b('radar-entry-title')}>{t('my_schedule.radar_entry_title')}</span>
+					<span className={b('radar-entry-sub')}>{t('my_schedule.radar_entry_sub')}</span>
+				</span>
+				<CaretRight size={16} weight="bold" />
+			</button>
+
 			{/* WCA banner — show only when WCA is not linked */}
 			{!compSearch.trim() && !me?.integrations?.some((i: any) => i.service_name === 'wca') && (
 				<div className={b('wca-banner')}>
@@ -453,6 +496,15 @@ export default function CompetitionList() {
 				/>
 				{searching && <div className={b('search-progress')} />}
 			</div>
+
+			{/* Event filter — discovery tool for the WCA list + search results.
+			    My Competitions / ZKT sections above are intentionally NOT filtered:
+			    they are curated/personal lists that should stay visible. */}
+			<CompEventFilter
+				selected={eventFilter}
+				onToggle={toggleEventFilter}
+				onClear={clearEventFilter}
+			/>
 
 			{competitions === null && !searching && !loadError && (
 				<div className={b('wca-loading')}>
