@@ -61,90 +61,125 @@ export class WcaAuthResolver {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'WCA hesabinizdan e-posta bilgisi alinamadi. Lutfen WCA hesabinizda e-posta adresinizin tanimli oldugundan emin olun.');
 		}
 
-		// 2. First search Integration table by wca_id — this account is already linked to WCA
-		if (wcaData.wcaId) {
-			const existingIntegration = await getIntegrationByWcaId(wcaData.wcaId);
-			if (existingIntegration) {
-				const user = await getUserById(existingIntegration.user_id);
-				if (user) {
-					// Refresh profile and tokens — do not block login (best-effort)
-					try {
-						const refreshed = await updateIntegration(existingIntegration, {
-							auth_token: wcaData.accessToken,
-							refresh_token: wcaData.refreshToken,
-							auth_expires_at: wcaData.expiresAt,
-						});
-						await syncWcaProfileToIntegration(refreshed, (wcaData as any).rawWcaData);
-					} catch (e: any) {
-						console.warn('[WcaAuth] Profile sync on login failed:', e?.message);
-					}
-
-					const jwtToken = getJwtString(user);
-					setSessionCookie(req, res, jwtToken);
-
-					return {
-						success: true,
-						needsUsername: false,
-						sessionToken: sessionTokenForBody(req, jwtToken),
-					};
+		// 2. Find the linked Integration. Match by wca_id for competitors, then fall back to
+		// wca_user_id for newcomers — WCA account holders who never competed have no wca_id,
+		// only a numeric user id. Matching by wca_id alone deadlocks these accounts on login:
+		// the email fallback below throws "log in with password", but they signed up
+		// passwordless via WCA, so the password path throws "use WCA". wca_user_id is always
+		// present (it is the primary identity the signup/link paths already conflict-check on).
+		let linkedIntegration = wcaData.wcaId ? await getIntegrationByWcaId(wcaData.wcaId) : null;
+		if (!linkedIntegration && wcaData.wcaUserId) {
+			linkedIntegration = await getIntegrationByWcaUserId(wcaData.wcaUserId);
+		}
+		if (linkedIntegration) {
+			const user = await getUserById(linkedIntegration.user_id);
+			if (user) {
+				// Refresh profile and tokens — do not block login (best-effort).
+				// Also backfills wca_id the first time a newcomer competes.
+				try {
+					const refreshed = await updateIntegration(linkedIntegration, {
+						auth_token: wcaData.accessToken,
+						refresh_token: wcaData.refreshToken,
+						auth_expires_at: wcaData.expiresAt,
+					});
+					await syncWcaProfileToIntegration(refreshed, (wcaData as any).rawWcaData);
+				} catch (e: any) {
+					console.warn('[WcaAuth] Profile sync on login failed:', e?.message);
 				}
+
+				const jwtToken = getJwtString(user);
+				setSessionCookie(req, res, jwtToken);
+
+				return {
+					success: true,
+					needsUsername: false,
+					sessionToken: sessionTokenForBody(req, jwtToken),
+				};
 			}
 		}
 
-		// 3. Not found by wca_id, search by email — automatic linking NOT allowed
-		// An attacker can create a local account with the victim's email; automatic linking
-		// would bind the victim's WCA data to the attacker. This is why we always throw
-		// an error on email match; the user must manually link (Settings > Linked Accounts).
+		// 3. Not linked by WCA identity (wca_id / wca_user_id). Fall back to email match.
+		// Auto-linking a WCA login to an email-matched account is normally unsafe: an attacker
+		// could pre-create a local (password) account with the victim's email, and auto-linking
+		// would bind the victim's WCA data to the attacker. So password-holding accounts still
+		// throw and must link manually (Settings > Linked Accounts).
 		//
-		// EXCEPTION: User is already logged in and the email-matched account is their own.
-		// This is the manual link scenario — they log in with their password and click the
-		// WCA link button in Settings. On OAuth return, this mutation is called. They've
-		// proven ownership, so linking is allowed.
+		// It IS safe to heal + log in when the matched account is:
+		//  - a manual link: the user is already logged in as this account (proven ownership), or
+		//  - passwordless: password IS NULL means (invariant) the account was created via WCA
+		//    signup, so its integration is merely missing or lost its wca_user_id/wca_id at
+		//    signup — the identity lookups above missed it. This WCA OAuth proves ownership.
+		//    Without this branch such accounts deadlock: WCA login says "log in with password"
+		//    but they have none, and the password path says "use WCA".
 		const existingUser = await getUserByEmail(wcaData.email);
 		const loggedInUser = context.user;
 
 		if (existingUser) {
 			const isManualLink = loggedInUser && loggedInUser.id === existingUser.id;
+			const isPasswordless = !(existingUser as any).password;
 
-			if (!isManualLink) {
-				if ((existingUser as any).email_verified) {
-					throw new GraphQLError(
-						ErrorCode.BAD_INPUT,
-						'Bu e-posta zaten kullanimda. Lutfen sifrenizle giris yapin, ardindan Ayarlar > Bagli Hesaplar bolumunden WCA hesabinizi baglayabilirsiniz.'
+			if (isManualLink || isPasswordless) {
+				// Find-or-create the WCA integration on this account, refresh its tokens, and
+				// backfill identity (wca_user_id/wca_id) from the WCA profile. Collision-free:
+				// reaching here means the identity lookups returned nothing, so no other row
+				// holds this wca_user_id/wca_id (both are @unique).
+				let integration = await getIntegration(existingUser, 'wca');
+				if (!integration) {
+					integration = await createIntegration(
+						existingUser,
+						'wca',
+						wcaData.accessToken,
+						wcaData.refreshToken,
+						wcaData.expiresAt
 					);
 				} else {
-					throw new GraphQLError(
-						ErrorCode.BAD_INPUT,
-						'Bu e-posta ile dogrulanmamis bir kayit var. Lutfen onceki kaydinizi tamamlayin veya farkli bir e-posta kullanin.'
-					);
+					integration = await updateIntegration(integration, {
+						auth_token: wcaData.accessToken,
+						refresh_token: wcaData.refreshToken,
+						auth_expires_at: wcaData.expiresAt,
+					});
 				}
-			}
-
-			// Manual link — create Integration, user is already logged in
-			const existingIntegration = await getIntegration(existingUser, 'wca');
-			if (!existingIntegration) {
-				let integration = await createIntegration(
-					existingUser,
-					'wca',
-					wcaData.accessToken,
-					wcaData.refreshToken,
-					wcaData.expiresAt
-				);
 				integration = await syncWcaProfileToIntegration(integration, (wcaData as any).rawWcaData);
 				if (wcaData.wcaId) {
 					fetchAndSaveWcaRecords(existingUser, integration as any).catch((err) => {
-						console.error('[Rankings] Auto-fetch on manual link failed:', err?.message);
+						console.error('[Rankings] Auto-fetch on WCA login heal failed:', err?.message);
 					});
 				}
+
+				// Manual link: the user already carries a session cookie, so keep the original
+				// response shape (no new session token).
+				if (isManualLink) {
+					return {
+						success: true,
+						needsUsername: false,
+					};
+				}
+
+				// Passwordless heal: issue a fresh session so the user is logged in.
+				const jwtToken = getJwtString(existingUser);
+				setSessionCookie(req, res, jwtToken);
+				return {
+					success: true,
+					needsUsername: false,
+					sessionToken: sessionTokenForBody(req, jwtToken),
+				};
 			}
 
-			return {
-				success: true,
-				needsUsername: false,
-			};
+			// Password-holding account, not a manual link — preserve the security throw.
+			if ((existingUser as any).email_verified) {
+				throw new GraphQLError(
+					ErrorCode.BAD_INPUT,
+					'Bu e-posta zaten kullanimda. Lutfen sifrenizle giris yapin, ardindan Ayarlar > Bagli Hesaplar bolumunden WCA hesabinizi baglayabilirsiniz.'
+				);
+			} else {
+				throw new GraphQLError(
+					ErrorCode.BAD_INPUT,
+					'Bu e-posta ile dogrulanmamis bir kayit var. Lutfen onceki kaydinizi tamamlayin veya farkli bir e-posta kullanin.'
+				);
+			}
 		}
 
-		// 3. Account does not exist — write information to wca_pending cookie
+		// 4. Account does not exist — write information to wca_pending cookie
 		// Trim avatar URL to 500 chars; safety measure to not exceed 4KB cookie limit
 		const pendingPayload: WcaPendingPayload = {
 			email: wcaData.email,
