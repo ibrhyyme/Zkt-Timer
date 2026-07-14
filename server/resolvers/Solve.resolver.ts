@@ -76,8 +76,47 @@ export class SolveResolver {
 		});
 	}
 
+	// Recovery read: returns the caller's OWN solves, gated [LOGGED_IN] (NOT Pro).
+	// Basic users write to the server (canWriteSync) but READ is Pro-gated (`solves`),
+	// so a wiped local IndexedDB shows empty even though the data is safe on the
+	// server. This lets the client repopulate local from the server when it is empty
+	// (see client init.ts recoverBasicDataFromServer). `solves` stays Pro-gated so
+	// the live cross-device sync experience remains a Pro feature; this is the narrow
+	// recovery door only.
+	@Authorized([Role.LOGGED_IN])
+	@Query(() => [Solve])
+	async recoverMySolves(@Ctx() context: GraphQLContext) {
+		const { prisma } = context;
 
-
+		return prisma.solve.findMany({
+			where: {
+				user_id: context.user.id,
+			},
+			select: {
+				id: true,
+				time: true,
+				raw_time: true,
+				cube_type: true,
+				scramble_subset: true,
+				session_id: true,
+				trainer_name: true,
+				bulk: true,
+				from_timer: true,
+				training_session_id: true,
+				dnf: true,
+				plus_two: true,
+				scramble: true,
+				is_smart_cube: true,
+				created_at: true,
+				started_at: true,
+				ended_at: true,
+				solve_method_steps: true,
+			},
+			orderBy: {
+				created_at: 'desc',
+			},
+		});
+	}
 
 	@Authorized([Role.LOGGED_IN, Role.PRO])
 	@Query(() => [Solve])

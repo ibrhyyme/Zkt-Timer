@@ -8,7 +8,7 @@ import {
 import { gqlQuery, removeTypename } from '../api';
 import { ensureLocalDefaultSession, initSessionCollection, initSessionDb, reconcileSessionDb } from '../../db/sessions/init';
 import { Dispatch } from 'redux';
-import { clearOfflineData, initOfflineData, setDbLoadDegraded, updateOfflineHash } from './offline';
+import { clearOfflineData, initOfflineData, saveLokiDb, setDbLoadDegraded, updateOfflineHash } from './offline';
 import { initSettingsDb, SettingValue } from '../../db/settings/init';
 import { getDefaultSettings, isMobileViewport, AllSettings, isGlobalSetting, isLocalOnlySetting } from '../../db/settings/query';
 import { getLokiDb, initLokiDb } from '../../db/lokijs';
@@ -103,9 +103,11 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 		let hasLocalData = false;
 
 		if (!passed) {
-			// Delta sync: fetch only diff while preserving existing data in IndexedDB
+			// Delta sync: fetch only diff while preserving existing data in IndexedDB.
+			// Attempt the local reload for EVERY user (Basic included) before deciding
+			// to clear — a Basic user's local snapshot is their only in-app copy.
 			let loadResult: LocalDbLoadResult = 'empty';
-			if (canSyncUser && !needsMigration) {
+			if (!needsMigration) {
 				loadResult = await tryLoadExistingDb();
 			}
 			hasLocalData = loadResult === 'loaded';
@@ -116,7 +118,11 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 					// intact, lock persistence for this session and refetch into a
 					// fresh in-memory instance.
 					setDbLoadDegraded(true);
-				} else if (!migrationSkipped) {
+				} else if (!migrationSkipped && canSyncUser) {
+					// Pro: clearing is safe — the server refetch below repopulates.
+					// Basic users are intentionally NOT cleared: their local snapshot is
+					// the only in-app copy and the server data is pulled back by
+					// recoverBasicDataFromServer() below.
 					// migrationSkipped: don't clear local IndexedDB (data will be retried next launch)
 					try {
 						await clearOfflineData();
@@ -136,8 +142,10 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 		const criticalPromises: Promise<any>[] = [];
 		if (!passed && canSyncUser) {
 			criticalPromises.push(getAllSessions());
-		} else if (!passed) {
-			// Basic user: create empty session collection
+		} else if (!passed && !hasLocalData) {
+			// Basic with no local data — start empty; recoverBasicDataFromServer()
+			// below pulls sessions + solves back from the server. A Basic user that
+			// DID reload local (hasLocalData) keeps its sessions untouched.
 			initSessionDb([]);
 		}
 
@@ -167,6 +175,18 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 				} else {
 					// First launch or corrupted DB: fetch all solves
 					await initAllSolves();
+				}
+			}
+
+			// Basic recovery: Basic users write to the server (canWriteSync) but do
+			// NOT read from it, so a wiped/empty local IndexedDB shows no solves even
+			// though the data is safe on the server. When local is empty, pull the
+			// user's own sessions + solves back. Covers both a failed load this launch
+			// and users whose local was already wiped by a prior bad launch.
+			if (!canSyncUser && me?.id) {
+				const solveDb = getSolveDb();
+				if (!solveDb || solveDb.count() === 0) {
+					await recoverBasicDataFromServer();
 				}
 			}
 
@@ -568,6 +588,47 @@ export async function initAllSolves() {
 		// here would let the next save overwrite the disk with an empty set.
 		setDbLoadDegraded(true);
 		initSolvesCollection();
+	}
+}
+
+/**
+ * Basic-tier recovery: repopulate local from the server when local is empty.
+ * Basic users write to the server (canWriteSync) but the READ path is Pro-gated, so
+ * a wiped local IndexedDB shows nothing even though the data is safe server-side.
+ * Sessions use the [LOGGED_IN] `sessions` query; solves use the [LOGGED_IN]
+ * `recoverMySolves` query (`solves` stays Pro-gated for the live cross-device
+ * feature). Only ever invoked when local has 0 solves, so no overwrite/duplication.
+ */
+async function recoverBasicDataFromServer() {
+	try {
+		await getAllSessions();
+	} catch (e) {
+		console.error('[BasicRecovery] session recovery failed:', e);
+	}
+
+	const query = gql`
+		${MICRO_SOLVE_FRAGMENT}
+
+		query Query {
+			recoverMySolves {
+				...MicroSolveFragment
+			}
+		}
+	`;
+
+	try {
+		const res = await gqlQuery<{ recoverMySolves: Solve[] }>(query);
+		const solves = res.data?.recoverMySolves || [];
+		if (solves.length) {
+			appendSolvesToDb(solves);
+			// Full dataset is in RAM — safe to persist to IndexedDB again.
+			setDbLoadDegraded(false);
+			await saveLokiDb();
+			emitEvent('solveDbUpdatedEvent');
+			console.log(`[BasicRecovery] restored ${solves.length} solves from server`);
+		}
+	} catch (e) {
+		console.error('[BasicRecovery] solve recovery failed:', e);
 	}
 }
 
