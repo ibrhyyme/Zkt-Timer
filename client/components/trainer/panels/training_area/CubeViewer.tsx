@@ -23,9 +23,11 @@ interface CubeViewerProps {
 	backView?: boolean | TrainerBackView;
 	topFace?: CubeFace;
 	frontFace?: CubeFace;
+	/** Random AUF gibi durumlarda LL pattern JSON'da yoksa runtime uretilmis 21-char pattern (2D korunur) */
+	llPatternOverride?: string | null;
 }
 
-export default function CubeViewer({ algorithm, category, backView, topFace = 'U', frontFace = 'F' }: CubeViewerProps) {
+export default function CubeViewer({ algorithm, category, backView, topFace = 'U', frontFace = 'F', llPatternOverride = null }: CubeViewerProps) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const playerRef = useRef<TwistyPlayer | null>(null);
 
@@ -41,9 +43,9 @@ export default function CubeViewer({ algorithm, category, backView, topFace = 'U
 	const isometricPatternsLoaded = isIsometricPatternsLoaded();
 	const isometricPattern = isIsometric ? getIsometricPattern(algorithm) : null;
 
-	// LL pattern (3x3)
+	// LL pattern (3x3) — override varsa (AUF'lu runtime pattern) onu kullan, yoksa JSON lookup
 	const llPatternsLoaded = isLLPatternsLoaded();
-	const llPattern = isLL ? getLLPattern(algorithm) : null;
+	const llPattern = isLL ? (llPatternOverride ?? getLLPattern(algorithm)) : null;
 
 	// Puzzle pattern (2x2, 4x4, pyraminx, skewb, sq1)
 	const is2DPuzzle = is2DPatternCategory(category);

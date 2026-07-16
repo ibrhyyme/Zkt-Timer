@@ -2,7 +2,8 @@ import React, {useState, useEffect, useMemo, useCallback} from 'react';
 import block from '../../../../styles/bem';
 import {useTrainerContext} from '../../TrainerContext';
 import {useLLPatternsReady} from '../../../../util/trainer/ll_patterns';
-import {isLLCategory, getDefaultFrontFace, getPuzzleType, algToId, expandNotation, computeSetupInverse, getEffectiveOrientation} from '../../../../util/trainer/algorithm_engine';
+import {isLLCategory, getDefaultFrontFace, getPuzzleType, algToId, expandNotation, computeSetupInverse, getEffectiveOrientation, buildRandomAUFAlg, cleanAlgorithmForCubing, ensureCubingReady} from '../../../../util/trainer/algorithm_engine';
+import {generateLLPattern} from '../../../../util/trainer/pattern_utils';
 import {fetchDefaultAlgs, getLastTimes, getEffectiveTime, deleteTrainerSolve} from '../../hooks/useAlgorithmData';
 import {useTrainerDb} from '../../../../util/hooks/useTrainerDb';
 import CubeViewer from './CubeViewer';
@@ -32,25 +33,57 @@ export default function TrainingArea() {
 	const hasMultipleAlgorithms = state.checkedAlgorithms.length > 1;
 
 	const [setupAlg, setSetupAlg] = useState<string | null>(null);
+	// Random AUF acikken fiilen calisilan (AUF eklenmis) alg + LL pattern override.
+	// baseAlg/category ile eslesme kontrolu yapilarak kart degisiminde eski AUF sizmaz.
+	const [aufState, setAufState] = useState<{baseAlg: string; category: string; alg: string; pattern: string | null} | null>(null);
 	const [showMobileAlts, setShowMobileAlts] = useState(false);
 
+	// Setup algoritmasi + random AUF. currentAlgorithm obje referansina bagli:
+	// her ADVANCE (tek kart spread dahil) yeni AUF atar (cubedex davranisi).
 	useEffect(() => {
 		if (!currentAlgorithm) {
 			setSetupAlg(null);
+			setAufState(null);
 			return;
 		}
 
 		let cancelled = false;
+		// AUF sadece 3x3 kategorilerinde anlamli (U-yuzu ayari)
+		const useAUF = options.randomizeAUF && getPuzzleType(currentAlgorithm.category) === '3x3x3';
 
-		fetchDefaultAlgs().then(async (defaults) => {
+		const run = async () => {
+			if (useAUF) {
+				await ensureCubingReady();
+				if (cancelled) return;
+				const cleaned = cleanAlgorithmForCubing(currentAlgorithm.algorithm);
+				const algMoves = buildRandomAUFAlg(cleaned.split(/\s+/), currentAlgorithm.category, true);
+				const effAlg = algMoves.join(' ');
+				const inverse = await computeSetupInverse(effAlg);
+				if (cancelled) return;
+				setSetupAlg(inverse);
+				// LL kategorilerde AUF'lu alg pattern JSON'unda bulunmaz — runtime uret ki 2D korunsun
+				const pattern = isLLCategory(currentAlgorithm.category)
+					? await generateLLPattern(effAlg)
+					: null;
+				if (cancelled) return;
+				setAufState({
+					baseAlg: currentAlgorithm.algorithm,
+					category: currentAlgorithm.category,
+					alg: effAlg,
+					pattern,
+				});
+				return;
+			}
+
+			// AUF kapali: mevcut davranis (primary → entry.setup, alt → runtime inverse)
+			setAufState(null);
+			const defaults = await fetchDefaultAlgs();
 			if (cancelled) return;
-
 			const subsets = defaults[currentAlgorithm.category];
 			if (!subsets) {
 				setSetupAlg(null);
 				return;
 			}
-
 			for (const sub of subsets) {
 				const entry = sub.algorithms.find((a: any) => a.name === currentAlgorithm.name);
 				if (entry) {
@@ -66,10 +99,11 @@ export default function TrainingArea() {
 				}
 			}
 			if (!cancelled) setSetupAlg(null);
-		});
+		};
 
+		run();
 		return () => { cancelled = true; };
-	}, [currentAlgorithm?.name, currentAlgorithm?.category, currentAlgorithm?.algorithm]);
+	}, [currentAlgorithm, options.randomizeAUF]);
 
 	// Algoritma degistiginde mobil alternatifleri kapat
 	useEffect(() => {
@@ -118,6 +152,16 @@ export default function TrainingArea() {
 	const cubeViewerFrontFace = isLLCategory(currentAlgorithm.category)
 		? getDefaultFrontFace(cubeViewerTopFace)
 		: effectiveOrientation.frontFace;
+
+	// Random AUF acikken gosterilecek alg + LL pattern override.
+	// aufState yalniz mevcut karta aitse gecerli (kart degisiminde eski AUF gosterilmez).
+	const aufActive =
+		options.randomizeAUF &&
+		aufState != null &&
+		aufState.baseAlg === currentAlgorithm.algorithm &&
+		aufState.category === currentAlgorithm.category;
+	const displayAlg = aufActive ? aufState!.alg : currentAlgorithm.algorithm;
+	const llPatternOverride = aufActive ? aufState!.pattern : null;
 
 	// Mobilde training-area'nin herhangi bir yerine dokunarak timer baslatma/durdurma
 	const handleAreaTouch = useCallback((e: React.MouseEvent) => {
@@ -197,11 +241,12 @@ export default function TrainingArea() {
 				<div className={b('training-info-header')}>
 					<div className={b('smart-pattern-preview')}>
 						<CubeViewer
-							algorithm={currentAlgorithm.algorithm}
+							algorithm={displayAlg}
 							category={currentAlgorithm.category}
 							topFace={cubeViewerTopFace}
 							frontFace={cubeViewerFrontFace}
 							backView={options.backView}
+							llPatternOverride={llPatternOverride}
 						/>
 					</div>
 					{options.showCaseName && (
@@ -225,16 +270,17 @@ export default function TrainingArea() {
 						)}
 						<div className={b('training-cube')}>
 							<CubeViewer
-								algorithm={currentAlgorithm.algorithm}
+								algorithm={displayAlg}
 								category={currentAlgorithm.category}
 								topFace={cubeViewerTopFace}
 								frontFace={cubeViewerFrontFace}
 								backView={options.backView}
+								llPatternOverride={llPatternOverride}
 							/>
 						</div>
 						{!state.isMoveMasked && (
 							<div className={b('training-main-alg')}>
-								<code>{currentAlgorithm.algorithm}</code>
+								<code>{displayAlg}</code>
 							</div>
 						)}
 					</>

@@ -534,10 +534,18 @@ export function cleanAlgorithmForCubing(alg: string): string {
 
 /**
  * Compute setup algorithm as inverse of the given algorithm.
- * Uses cubing.js Alg.invert() for correctness (handles groupings).
+ * Uses cubing.js Alg.invert() for correctness (handles groupings), then
+ * expand() to flatten group notation into plain, human-executable moves.
+ * Without expand, invert emits ugly nested "(R' F R F')'" group-inverse
+ * notation that a human cannot reliably execute by reading it.
  */
 export async function computeSetupInverse(algorithm: string): Promise<string> {
 	await ensureCubingReady();
 	const cleaned = cleanAlgorithmForCubing(algorithm);
-	return _Alg.fromString(cleaned).invert().toString();
+	const inverse = _Alg.fromString(cleaned).invert();
+	try {
+		return inverse.expand().toString();
+	} catch {
+		return inverse.toString();
+	}
 }
