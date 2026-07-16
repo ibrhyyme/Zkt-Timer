@@ -10,6 +10,7 @@ import { Gear } from 'phosphor-react';
 import ExtrasTab from './tabs/ExtrasTab';
 import GoalsTab from './tabs/GoalsTab';
 import block from '../../styles/bem';
+import useExclusiveDropdown from '../../util/hooks/useExclusiveDropdown';
 import './SettingsDropdown.scss';
 
 const b = block('settings-dropdown');
@@ -38,7 +39,8 @@ export default function SettingsDropdown({
 }: Props) {
 	const { t } = useTranslation();
 	const [tab, setTab] = useState<Tab>('extras');
-	const [open, setOpen] = useState(false);
+	// useExclusiveDropdown: opening this closes any other header dropdown.
+	const [open, setOpen] = useExclusiveDropdown();
 
 	// Close panel when timer starts (same pattern as Dropdown.tsx)
 	useEffect(() => {

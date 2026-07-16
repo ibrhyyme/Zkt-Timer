@@ -2228,6 +2228,7 @@ export type Query = {
   profile: Profile;
   publicWcaProfile?: Maybe<PublicWcaProfile>;
   rankings?: Maybe<RankingsPage>;
+  recoverMySolves?: Maybe<Array<Maybe<Solve>>>;
   reports?: Maybe<Array<Maybe<ReportSummary>>>;
   sessions?: Maybe<Array<Maybe<Session>>>;
   settings?: Maybe<Setting>;

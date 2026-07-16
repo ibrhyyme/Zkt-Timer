@@ -2,7 +2,7 @@
 // Mevcut Dropdown (legacy) yerine fancy panel: blur + soft border + stagger entrance,
 // hover sol-stripe + translateX, Pro item icin koyu mor glow korunur.
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import * as Popover from '@radix-ui/react-popover';
 import { useHistory } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
@@ -15,6 +15,7 @@ import { useMe } from '../../../../util/hooks/useMe';
 import { useGeneral } from '../../../../util/hooks/useGeneral';
 import { setGeneral } from '../../../../actions/general';
 import { isPro } from '../../../../lib/pro';
+import useExclusiveDropdown from '../../../../util/hooks/useExclusiveDropdown';
 import './AccountDropdown.scss';
 
 const b = block('nav-account-dropdown');
@@ -34,7 +35,8 @@ export default function AccountDropdown() {
 	const dispatch = useDispatch();
 	const { t } = useTranslation();
 	const mobileMode = useGeneral('mobile_mode');
-	const [open, setOpen] = useState(false);
+	// useExclusiveDropdown: opening this closes any other header dropdown.
+	const [open, setOpen] = useExclusiveDropdown();
 
 	// Timer baslarsa paneli kapat (header dropdown'lariyla ayni davranis)
 	useEffect(() => {

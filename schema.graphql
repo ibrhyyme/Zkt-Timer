@@ -266,6 +266,7 @@ type Query {
   badgeTypes: [BadgeType]
   userSearch(pageArgs: PaginationArgsInput): PaginatedUserAccounts
   solves(skip: Int, take: Int): [Solve]
+  recoverMySolves: [Solve]
   solvesByIds(ids: [String]): [Solve]
   mySolveIds: [String]
   sessions: [Session]

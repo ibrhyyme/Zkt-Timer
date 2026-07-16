@@ -5,11 +5,12 @@
 // "New Session +"), virtual values (e.g. "__action__new_session") are used —
 // parent component's handleValueChange catches these with switch statement.
 
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import * as Select from '@radix-ui/react-select';
 import { CaretDown, Check } from 'phosphor-react';
 import block from '../../../styles/bem';
 import useIsomorphicLayoutEffect from '../../../util/hooks/useIsomorphicLayoutEffect';
+import useExclusiveDropdown from '../../../util/hooks/useExclusiveDropdown';
 import './FancyDropdown.scss';
 
 const b = block('fancy-dropdown');
@@ -77,8 +78,9 @@ export default function FancyDropdown(props: FancyDropdownProps) {
 		noTriggerStyles,
 	} = props;
 
-	// Open control — scroll selected item to center of panel
-	const [open, setOpen] = useState(false);
+	// Open control — scroll selected item to center of panel.
+	// useExclusiveDropdown: opening this closes any other header dropdown.
+	const [open, setOpen] = useExclusiveDropdown();
 	const viewportRef = useRef<HTMLDivElement>(null);
 
 	// When panel opens, scroll selected item to viewport center
