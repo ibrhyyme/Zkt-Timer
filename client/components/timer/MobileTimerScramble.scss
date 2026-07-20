@@ -16,6 +16,10 @@
 
     overflow: hidden; // No overflow since font auto-shrinks
 
+    &--overflow {
+        overflow-y: auto; // Extreme edge case: even the floor font size doesn't fit — scroll instead of clipping data
+    }
+
     display: flex;
     flex-direction: column;
     justify-content: flex-start; // Text starts at top (right below header)

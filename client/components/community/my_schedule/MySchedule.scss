@@ -1464,9 +1464,33 @@
 		margin: 0;
 	}
 
-	&__competitor-wca-id {
-		font-size: 0.85rem;
-		color: rgba(var(--text-color), 0.5);
+	// Clickable WCA ID (opens the WCA profile externally). Styled as an explicit
+	// link — underline + external icon — so the affordance is obvious on both the
+	// competitor page and the results page.
+	&__wca-id-link {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
+		font-family: 'SF Mono', Menlo, Consolas, monospace;
+		color: rgb(var(--primary-color));
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		text-decoration-thickness: 1px;
+		cursor: pointer;
+		font-size: 0.8rem;
+
+		&--md {
+			font-size: 0.9rem;
+		}
+
+		&:hover {
+			color: rgb(var(--primary-color));
+			filter: brightness(1.2);
+		}
+
+		&:active {
+			opacity: 0.75;
+		}
 	}
 
 	&__events-badges {

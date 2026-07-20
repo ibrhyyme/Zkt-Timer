@@ -1,5 +1,7 @@
 import React from 'react';
+import {ArrowSquareOut} from 'phosphor-react';
 import block from '../../../styles/bem';
+import {openInAppBrowser} from '../../../util/external-link';
 
 export const b = block('my-schedule');
 
@@ -198,6 +200,29 @@ export function getEventShortName(eventId: string): string {
 
 export function EventIcon({eventId, size = 16}: {eventId: string; size?: number}) {
 	return <span className={`cubing-icon event-${eventId}`} style={{fontSize: `${size}px`}} title={getEventShortName(eventId)} />;
+}
+
+// Clickable WCA ID — opens the person's WCA profile in the external browser.
+// Rendered as an <a> so it looks and behaves like a link (hover, middle-click,
+// copy link address on web) while still routing through openInAppBrowser on native.
+export function WcaIdLink({wcaId, size = 'sm'}: {wcaId: string; size?: 'sm' | 'md'}) {
+	const url = `https://www.worldcubeassociation.org/persons/${wcaId}`;
+	return (
+		<a
+			className={b('wca-id-link', {[size]: true})}
+			href={url}
+			target="_blank"
+			rel="noopener noreferrer"
+			onClick={(e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				openInAppBrowser(url);
+			}}
+		>
+			<span>{wcaId}</span>
+			<ArrowSquareOut size={size === 'md' ? 14 : 12} weight="bold" />
+		</a>
+	);
 }
 
 export function getRoleLabel(assignmentCode: string, t: any): string {

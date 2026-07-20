@@ -2,7 +2,7 @@ import React, {useEffect, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useHistory} from 'react-router-dom';
 import {ArrowLeft, ArrowClockwise, Warning, Info} from 'phosphor-react';
-import {b, formatResult, formatAttempts, formatTimeAgo, countryFlag, EventIcon, RecordTag} from '../shared';
+import {b, formatResult, formatAttempts, formatTimeAgo, countryFlag, EventIcon, RecordTag, WcaIdLink} from '../shared';
 import {useCompetitionData} from '../CompetitionLoader';
 import {useCompetitorLiveResults} from '../useLiveResults';
 import {useIsMobile} from '../../../../util/hooks/useIsMobile';
@@ -139,7 +139,7 @@ export default function CompetitorLiveResults({registrantId}: Props) {
 				</div>
 				{(data?.personWcaId || selected.wcaId) && (
 					<div className={b('competitor-results-subtitle')}>
-						{data?.personWcaId || selected.wcaId}
+						<WcaIdLink wcaId={data?.personWcaId || selected.wcaId} />
 					</div>
 				)}
 			</div>

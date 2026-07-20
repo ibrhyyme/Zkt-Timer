@@ -3,7 +3,7 @@ import {useTranslation} from 'react-i18next';
 import {useHistory} from 'react-router-dom';
 import {ArrowLeft, Info} from 'phosphor-react';
 import {useCompetitionData} from './CompetitionLoader';
-import {b, formatResult, getEventShortName} from './shared';
+import {b, formatResult, getEventShortName, WcaIdLink} from './shared';
 
 interface PersonalBestsProps {
 	wcaId: string;
@@ -75,7 +75,7 @@ export default function PersonalBests({wcaId}: PersonalBestsProps) {
 			{/* Header */}
 			<div className={b('pb-header')}>
 				<span className={b('pb-name')}>{person.name}</span>
-				{person.wcaId && <span className={b('pb-wca-id')}>{person.wcaId}</span>}
+				{person.wcaId && <WcaIdLink wcaId={person.wcaId} />}
 			</div>
 
 			{eventData.length === 0 ? (

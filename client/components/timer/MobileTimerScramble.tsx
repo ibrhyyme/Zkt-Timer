@@ -1,10 +1,11 @@
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import {useTranslation} from 'react-i18next';
 import { Check, Copy, FloppyDisk, PencilSimple, X } from 'phosphor-react';
 import { copyText } from '../common/copy_text/CopyText';
 import { TimerContext } from './Timer';
 import { useSettings } from '../../util/hooks/useSettings';
+import { useFitTextToBox } from '../../util/hooks/useFitTextToBox';
 import { smartCubeSelected } from './helpers/util';
 import SmartScramble from './time_display/timer_scramble/smart_scramble/SmartScramble';
 import block from '../../styles/bem';
@@ -27,14 +28,11 @@ export default function MobileTimerScramble() {
     const scrambleSubset = context.scrambleSubset;
     const isMegaminx = cubeType === 'minx';
     const [copied, setCopied] = useState(false);
-    const [adjustedFontSize, setAdjustedFontSize] = useState<number | null>(null);
     const [expanded, setExpanded] = useState(false);
     const [expandedCopied, setExpandedCopied] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [editValue, setEditValue] = useState('');
     const editTextareaRef = useRef<HTMLTextAreaElement>(null);
-    const containerRef = useRef<HTMLDivElement>(null);
-    const textRef = useRef<HTMLDivElement>(null);
 
     // Long-press state: tap (short) opens modal, long press copies
     const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -61,71 +59,6 @@ export default function MobileTimerScramble() {
         }
     }, [cubeType, scrambleSubset]);
 
-    // Auto-shrink font size if scramble doesn't fit container (binary search)
-    const runFit = useCallback(() => {
-        const container = containerRef.current;
-        const text = textRef.current;
-        if (!container || !text) {
-            setAdjustedFontSize(null);
-            return;
-        }
-
-        // First check at full size
-        setAdjustedFontSize(null);
-
-        requestAnimationFrame(() => {
-            if (!containerRef.current || !textRef.current) return;
-
-            const setFontOnElement = (size: number) => {
-                text.style.fontSize = size + 'px';
-                text.style.lineHeight = size * 1.4 + 'px';
-            };
-
-            // Does full size fit?
-            setFontOnElement(timerScrambleSize);
-            const containerH = container.clientHeight;
-
-            if (text.scrollHeight <= containerH) {
-                setAdjustedFontSize(null);
-                return;
-            }
-
-            // Binary search: find largest font that fits
-            let lo = 8;
-            let hi = timerScrambleSize;
-
-            while (hi - lo > 1) {
-                const mid = Math.floor((lo + hi) / 2);
-                setFontOnElement(mid);
-
-                if (text.scrollHeight <= containerH) {
-                    lo = mid;
-                } else {
-                    hi = mid;
-                }
-            }
-
-            setAdjustedFontSize(lo);
-        });
-    }, [timerScrambleSize]);
-
-    // Re-fit on scramble/cubeType/font setting change
-    useEffect(() => {
-        runFit();
-    }, [scramble, cubeType, timerScrambleSize, isSmart, runFit]);
-
-    // Re-fit if container height changes (SmartCube async loads, keyboard opens, etc)
-    useEffect(() => {
-        const container = containerRef.current;
-        if (!container || typeof ResizeObserver === 'undefined') return;
-
-        const ro = new ResizeObserver(() => {
-            runFit();
-        });
-        ro.observe(container);
-        return () => ro.disconnect();
-    }, [runFit]);
-
     if (hideScramble) {
         scramble = '';
     } else if (isMegaminx && scramble) {
@@ -140,6 +73,16 @@ export default function MobileTimerScramble() {
     if (cubeType === 'sq1' && scramble) {
         scramble = scramble.replace(/ \/ /g, ' / ');
     }
+
+    // Auto-shrink font size if scramble doesn't fit the container (canvas-measured, no DOM flash)
+    const { containerRef, textRef, fontSize, overflowing } = useFitTextToBox({
+        text: scramble,
+        maxFontSize: timerScrambleSize,
+        minFontSize: 8,
+        lineHeightRatio: 1.4,
+        enabled: !!scramble,
+        deps: [cubeType, isSmart],
+    });
 
     // Copy scramble (long press)
     function handleCopy(showInExpanded = false) {
@@ -235,12 +178,10 @@ export default function MobileTimerScramble() {
         openExpanded();
     }
 
-    const fontSize = adjustedFontSize || timerScrambleSize;
-
     // If smart cube, show SmartScramble
     if (isSmart && scramble) {
         return (
-            <div className={b()} ref={containerRef}>
+            <div className={b({ overflow: overflowing })} ref={containerRef}>
                 <div
                     className={b('smart-scramble')}
                     ref={textRef}
@@ -324,7 +265,7 @@ export default function MobileTimerScramble() {
         : null;
 
     return (
-        <div className={b()} ref={containerRef}>
+        <div className={b({ overflow: overflowing })} ref={containerRef}>
             <div
                 className={b('text', { megaminx: isMegaminx, copied })}
                 ref={textRef}

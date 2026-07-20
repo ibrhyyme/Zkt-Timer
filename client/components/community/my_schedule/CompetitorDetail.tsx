@@ -3,11 +3,10 @@ import {useTranslation} from 'react-i18next';
 import {useHistory} from 'react-router-dom';
 import {ArrowLeft, CalendarBlank, Users, Info, Warning} from 'phosphor-react';
 import {useCompetitionData} from './CompetitionLoader';
-import {openInAppBrowser} from '../../../util/external-link';
 import FollowBellButton from './FollowBellButton';
 import {
 	b, I18N_LOCALE_MAP, ROLE_COLORS, formatTime, formatDayHeader, getRoleLabel,
-	EventIcon, countryFlag,
+	EventIcon, countryFlag, WcaIdLink,
 } from './shared';
 import {useNow} from '../../../util/hooks/useNow';
 
@@ -65,18 +64,7 @@ export default function CompetitorDetail({registrantId}: CompetitorDetailProps) 
 						{selected.name}
 					</h3>
 					<div className={b('competitor-meta')}>
-						{selected.wcaId && (
-							<span
-								className={b('competitor-wca-id')}
-								onClick={(e) => {
-									e.stopPropagation();
-									openInAppBrowser(`https://www.worldcubeassociation.org/persons/${selected.wcaId}`);
-								}}
-								style={{cursor: 'pointer'}}
-							>
-								{selected.wcaId}
-							</span>
-						)}
+						{selected.wcaId && <WcaIdLink wcaId={selected.wcaId} size="md" />}
 						{selected.country && (
 							<span className={b('competitor-country-code')}>{selected.country}</span>
 						)}
