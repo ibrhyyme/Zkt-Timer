@@ -950,12 +950,24 @@ export async function generateTrainerPdf({category, categoryDescription, algorit
 	const safeName = category.replace(/[^a-zA-Z0-9]/g, '_');
 	const fileName = `Zkt_Timer_${safeName}.pdf`;
 
-	const blob = doc.output('blob');
-	const file = new File([blob], fileName, {type: 'application/pdf'});
+	// Only mobile gets the share sheet. Desktop Chrome/Edge also implements
+	// canShare({files}), which would pop the OS share dialog instead of downloading.
+	const isMobile = typeof navigator !== 'undefined' &&
+		/iPhone|iPad|iPod|Android/i.test(navigator.userAgent || '');
 
-	if (navigator.canShare?.({files: [file]})) {
-		await navigator.share({files: [file], title: fileName});
-	} else {
-		doc.save(fileName);
+	if (isMobile) {
+		const blob = doc.output('blob');
+		const file = new File([blob], fileName, {type: 'application/pdf'});
+
+		if (navigator.canShare?.({files: [file]})) {
+			try {
+				await navigator.share({files: [file], title: fileName});
+				return;
+			} catch {
+				// Share cancelled or failed: fall through to download
+			}
+		}
 	}
+
+	doc.save(fileName);
 }
