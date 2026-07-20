@@ -42,8 +42,11 @@ export function useFitTextToBox(options: UseFitTextToBoxOptions): UseFitTextToBo
 		const container = containerRef.current;
 		const textEl = textRef.current;
 
+		// Keep the last fitted size while the text is briefly empty (the next/prev
+		// scramble buttons blank it before the new one is generated). Resetting to
+		// maxFontSize here would render the next scramble oversized for a frame
+		// whenever the refit below is skipped for a not-yet-laid-out container.
 		if (!enabled || !container || !textEl || !text) {
-			setFontSize(maxFontSize);
 			setOverflowing(false);
 			return;
 		}
