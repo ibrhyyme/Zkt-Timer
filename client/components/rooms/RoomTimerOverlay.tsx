@@ -1,21 +1,15 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useSettings } from '../../util/hooks/useSettings';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { convertTimeStringToSeconds } from '../../util/time';
-import { openModal, closeModal } from '../../actions/general';
-import { Bluetooth, Timer, Keyboard, X, Check } from 'phosphor-react';
 import Stackmat from '../../util/vendor/stackmat';
-import { GanTimerConnection, GanTimerEvent, GanTimerState, connectGanTimer } from '../timer/time_display/gantimer/ganTimerConnection';
-import { QiyiTimerConnection, QiyiTimerEvent, QiyiTimerState, connectQiyiTimer } from '../timer/time_display/qiyitimer/qiyiTimerConnection';
-import BluetoothErrorMessage from '../timer/common/BluetoothErrorMessage';
-import BleScanningModal from '../timer/smart_cube/ble_scanning_modal/BleScanningModal';
-import { isNative } from '../../util/platform';
+import { GanTimerConnection, GanTimerEvent, GanTimerState } from '../timer/time_display/gantimer/ganTimerConnection';
+import { QiyiTimerConnection, QiyiTimerEvent, QiyiTimerState } from '../timer/time_display/qiyitimer/qiyiTimerConnection';
 import { hapticImpact } from '../../util/native-plugins';
 import { playNativeSound } from '../../util/native-audio';
 import { resourceUri } from '../../util/storage';
-import StackMatPicker, { getAudioPickerModalProps } from '../settings/stackmat_picker/StackMatPicker';
 import SmartStats from '../timer/smart_cube/stats/SmartStats';
 import { is3x3CubeType } from '../timer/helpers/util';
 import './RoomTimerOverlay.scss';
@@ -88,7 +82,6 @@ export default function RoomTimerOverlay({
     qiyiTimerRef: parentQiyiTimerRef,
     qiyiTimerConnected: parentQiyiTimerConnected = false,
 }: RoomTimerOverlayProps) {
-    const dispatch = useDispatch();
     const { t } = useTranslation();
 
     const [status, setStatus] = useState(STATUS.RESTING);
@@ -114,7 +107,6 @@ export default function RoomTimerOverlay({
     // Device connection states
     const [ganTimerConnected, setGanTimerConnected] = useState(false);
     // QiYi connected state'i parent (FriendlyRoom) yonetiyor — prop ile alinir
-    const qiyiTimerConnected = parentQiyiTimerConnected;
     const [stackmatConnected, setStackmatConnected] = useState(false);
     const ganTimerRef = useRef<GanTimerConnection | null>(null);
     // QiYi Timer connection ref'i: parent'tan (FriendlyRoom) prop ile geliyorsa onu kullan,
@@ -1097,143 +1089,6 @@ export default function RoomTimerOverlay({
         };
     }, [isActive, alreadySolvedThisRound, effectiveInspection, submitTime, simulateSpaceDown, simulateSpaceUp, isManualMode, isMobile, focusedButtonIndex, penalties]);
 
-    // Connect GAN Timer
-    const connectGanTimerDevice = async () => {
-        try {
-            let bluetoothAvailable = false;
-
-            if (isNative()) {
-                bluetoothAvailable = true;
-            } else if (navigator.bluetooth) {
-                // Check if getAvailability exists
-                if (typeof navigator.bluetooth.getAvailability === 'function') {
-                    bluetoothAvailable = await navigator.bluetooth.getAvailability();
-                } else {
-                    // Assert true provided navigator.bluetooth exists
-                    bluetoothAvailable = true;
-                }
-            }
-
-            if (bluetoothAvailable) {
-                if (isNative()) {
-                    dispatch(openModal(
-                        <BleScanningModal
-                            mode="gantimer"
-                            onCancel={() => dispatch(closeModal())}
-                        />,
-                        {
-                            position: 'bottom',
-                            hideCloseButton: true,
-                            disableBackdropClick: true,
-                        }
-                    ));
-                }
-                try {
-                    const conn = await connectGanTimer();
-                    if (isNative()) {
-                        dispatch(closeModal());
-                    }
-                    ganTimerRef.current = conn;
-
-                    conn.events$.subscribe((evt) => {
-                        if (evt.state === GanTimerState.DISCONNECT) {
-                            ganTimerRef.current = null;
-                            setGanTimerConnected(false);
-                        }
-                    });
-                    conn.events$.subscribe(handleGanTimerEvent);
-                    setGanTimerConnected(true);
-                } catch (e) {
-                    console.error('GAN Timer connection error:', e);
-                    if (isNative()) {
-                        dispatch(closeModal());
-                    }
-                }
-            } else {
-                dispatch(openModal(<BluetoothErrorMessage />));
-            }
-        } catch (e) {
-            console.error('GAN Timer connection error:', e);
-        }
-    };
-
-    const disconnectGanTimer = () => {
-        ganTimerRef.current?.disconnect();
-        ganTimerRef.current = null;
-        setGanTimerConnected(false);
-    };
-
-    // Connect QiYi Timer (GAN pattern bire bir)
-    const connectQiyiTimerDevice = async () => {
-        try {
-            let bluetoothAvailable = false;
-
-            if (isNative()) {
-                bluetoothAvailable = true;
-            } else if (navigator.bluetooth) {
-                if (typeof navigator.bluetooth.getAvailability === 'function') {
-                    bluetoothAvailable = await navigator.bluetooth.getAvailability();
-                } else {
-                    bluetoothAvailable = true;
-                }
-            }
-
-            if (bluetoothAvailable) {
-                if (isNative()) {
-                    dispatch(openModal(
-                        <BleScanningModal
-                            mode="qiyitimer"
-                            onCancel={() => dispatch(closeModal())}
-                        />,
-                        {
-                            position: 'bottom',
-                            hideCloseButton: true,
-                            disableBackdropClick: true,
-                        }
-                    ));
-                }
-                try {
-                    const conn = await connectQiyiTimer();
-                    if (isNative()) {
-                        dispatch(closeModal());
-                    }
-                    qiyiTimerRef.current = conn;
-
-                    conn.events$.subscribe((evt) => {
-                        if (evt.state === QiyiTimerState.DISCONNECT) {
-                            qiyiTimerRef.current = null;
-                        }
-                    });
-                    conn.events$.subscribe(handleQiyiTimerEvent);
-                    // qiyiTimerConnected state'i parent (FriendlyRoom) yonetiyor — bu blok dead code
-                    // (renderDeviceConnect'ten cagriliyor ama o da render edilmiyor)
-                } catch (e) {
-                    console.error('QiYi Timer connection error:', e);
-                    if (isNative()) {
-                        dispatch(closeModal());
-                    }
-                }
-            } else {
-                dispatch(openModal(<BluetoothErrorMessage />));
-            }
-        } catch (e) {
-            console.error('QiYi Timer connection error:', e);
-        }
-    };
-
-    const disconnectQiyiTimer = () => {
-        qiyiTimerRef.current?.disconnect();
-        qiyiTimerRef.current = null;
-        // qiyiTimerConnected state'i parent yonetiyor
-    };
-
-    // Open Stackmat picker
-    const openStackmatPicker = () => {
-        const target = timerType === 'qiyiwired' ? 'qiyiwired' : 'stackmat';
-        const { title, description } = getAudioPickerModalProps(target, t);
-        dispatch(openModal(<StackMatPicker targetTimerType={target} />, { width: 400, compact: true, title, description, closeButtonText: t('solve_info.done') }));
-    };
-
     // Format time for display
     const dp = timerDecimalPoints ?? 2;
 
@@ -1535,141 +1390,6 @@ export default function RoomTimerOverlay({
                 </button>
             </div>
         );
-    };
-
-    // Render device connection UI
-    const renderDeviceConnect = () => {
-        if (timerType === 'gantimer') {
-            return (
-                <div className="room-timer-overlay__device">
-                    <div className="room-timer-overlay__device-icon">
-                        <Timer size={48} weight={ganTimerConnected ? 'fill' : 'regular'} />
-                    </div>
-                    <h3>{t('room_timer.gan_smart_timer')}</h3>
-                    {ganTimerConnected ? (
-                        <>
-                            <p className="room-timer-overlay__device-status room-timer-overlay__device-status--connected">
-                                <Bluetooth size={16} weight="fill" /> {t('room_timer.connected')}
-                            </p>
-                            <button className="room-timer-overlay__btn room-timer-overlay__btn--secondary" onClick={disconnectGanTimer}>
-                                {t('room_timer.disconnect')}
-                            </button>
-                            <p className="room-timer-overlay__hint">
-                                {t('room_timer.place_hands_on_timer')}
-                            </p>
-                        </>
-                    ) : (
-                        <>
-                            <p className="room-timer-overlay__device-status">
-                                {t('room_timer.not_connected')}
-                            </p>
-                            <button className="room-timer-overlay__btn" onClick={connectGanTimerDevice}>
-                                <Bluetooth size={18} /> {t('room_timer.connect')}
-                            </button>
-                        </>
-                    )}
-                </div>
-            );
-        }
-
-        if (timerType === 'stackmat' || timerType === 'qiyiwired') {
-            const isQiyiWired = timerType === 'qiyiwired';
-            const label = isQiyiWired ? t('room_timer.qytoys') : 'StackMat Timer';
-            const handsOnHint = isQiyiWired ? t('room_timer.place_hands_on_qytoys') : t('room_timer.place_hands_on_stackmat');
-            return (
-                <div className="room-timer-overlay__device">
-                    <div className="room-timer-overlay__device-icon">
-                        <Keyboard size={48} weight={stackmatConnected ? 'fill' : 'regular'} />
-                    </div>
-                    <h3>{label}</h3>
-                    {stackmatConnected ? (
-                        <>
-                            <p className="room-timer-overlay__device-status room-timer-overlay__device-status--connected">
-                                {t('room_timer.connected')}
-                            </p>
-                            <p className="room-timer-overlay__hint">
-                                {handsOnHint}
-                            </p>
-                        </>
-                    ) : (
-                        <>
-                            <p className="room-timer-overlay__device-status">
-                                {stackmatId ? t('room_timer.connecting') : t('room_timer.not_configured')}
-                            </p>
-                            {stackmatId && (
-                                <button className="room-timer-overlay__btn room-timer-overlay__btn--primary" onClick={() => connectStackmat()} style={{ marginBottom: '0.5rem' }}>
-                                    {t('room_timer.connect_stackmat')}
-                                </button>
-                            )}
-                            <button className="room-timer-overlay__btn" onClick={openStackmatPicker}>
-                                {t('room_timer.setup_stackmat')}
-                            </button>
-                        </>
-                    )}
-                </div>
-            );
-        }
-
-        if (timerType === 'qiyitimer') {
-            return (
-                <div className="room-timer-overlay__device">
-                    <div className="room-timer-overlay__device-icon">
-                        <Timer size={48} weight={qiyiTimerConnected ? 'fill' : 'regular'} />
-                    </div>
-                    <h3>{t('room_timer.qiyi_smart_timer')}</h3>
-                    {qiyiTimerConnected ? (
-                        <>
-                            <p className="room-timer-overlay__device-status room-timer-overlay__device-status--connected">
-                                <Bluetooth size={16} weight="fill" /> {t('room_timer.connected')}
-                            </p>
-                            <button className="room-timer-overlay__btn room-timer-overlay__btn--secondary" onClick={disconnectQiyiTimer}>
-                                {t('room_timer.disconnect')}
-                            </button>
-                            <p className="room-timer-overlay__hint">
-                                {t('room_timer.place_hands_on_qiyi')}
-                            </p>
-                        </>
-                    ) : (
-                        <>
-                            <p className="room-timer-overlay__device-status">
-                                {t('room_timer.not_connected')}
-                            </p>
-                            <button className="room-timer-overlay__btn" onClick={connectQiyiTimerDevice}>
-                                <Bluetooth size={18} /> {t('room_timer.connect')}
-                            </button>
-                        </>
-                    )}
-                </div>
-            );
-        }
-
-        if (timerType === 'smart') {
-            const isSupported = is3x3CubeType(cubeType, scrambleSubset);
-            return (
-                <div className="room-timer-overlay__device">
-                    <div className="room-timer-overlay__device-icon">
-                        <Bluetooth size={48} />
-                    </div>
-                    <h3>{t('room_timer.smart_cube')}</h3>
-                    {!isSupported ? (
-                        <p className="room-timer-overlay__device-status room-timer-overlay__device-status--error">
-                            {t('room_timer.smart_cube_3x3_only')}
-                        </p>
-                    ) : (
-                        <>
-                            <p className="room-timer-overlay__device-status">
-                                {t('room_timer.not_supported_in_room')}
-                            </p>
-                            <p className="room-timer-overlay__hint">
-                                {t('room_timer.use_keyboard_or_manual')}
-                            </p>
-                        </>
-                    )}
-                </div>
-            );
-        }
-
-        return null;
     };
 
     // Determine what to render

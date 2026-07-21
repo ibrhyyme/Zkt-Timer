@@ -56,6 +56,7 @@ import NotificationLog, { NotificationItem } from './NotificationLog';
 import AbortSolveOverlay from '../timer/smart_cube/abort_solve/AbortSolveOverlay';
 import ReactDOM from 'react-dom';
 import { isPro } from '../../lib/pro';
+import { PRO_GATED_TIMER_TYPES } from '../timer/helpers/pro_timer_types';
 import './FriendlyRoom.scss';
 
 interface ParamsType {
@@ -93,6 +94,7 @@ function FriendlyRoomContent() {
     const { roomId } = useParams<ParamsType>();
     const history = useHistory();
     const me = useMe();
+    const userIsPro = isPro(me);
     const dispatch = useDispatch();
 
     const [room, setRoom] = useState<FriendlyRoomData | null>(null);
@@ -187,7 +189,13 @@ function FriendlyRoomContent() {
             // Find first allowed valid type to switch to
             // Priority: keyboard -> manual -> stackmat -> qiyiwired -> smart -> gantimer -> qiyitimer
             const allTypes = ['keyboard', 'manual', 'stackmat', 'qiyiwired', 'smart', 'gantimer', 'qiyitimer'];
-            const targetType = allTypes.find(t => room.allowed_timer_types.includes(t)) || room.allowed_timer_types[0];
+            // Never auto-select a Pro-gated type for a free user: the Pro effect below
+            // would immediately push it back to keyboard, and the two would ping-pong.
+            const selectable = userIsPro ? allTypes : allTypes.filter(t => !PRO_GATED_TIMER_TYPES.has(t));
+            const targetType = selectable.find(t => room.allowed_timer_types.includes(t));
+            // Room only allows types this user cannot use — leave the setting alone
+            // rather than fighting the Pro guard.
+            if (!targetType) return;
 
             if (targetType === 'manual') {
                 setSetting('manual_entry', true);
@@ -198,7 +206,28 @@ function FriendlyRoomContent() {
             // Notify user once
             // toastError(`Timer türü bu oda için "${targetType}" olarak değiştirildi.`);
         }
-    }, [room?.allowed_timer_types, timerType, manualEntry]);
+    }, [room?.allowed_timer_types, timerType, manualEntry, userIsPro]);
+
+    // Enforce Pro gating at runtime, not only in the timer type picker.
+    // The picker disables smart/gantimer/qiyitimer for non-Pro users inside rooms,
+    // but `timer_type` is a global setting: a free user could pick "smart" on the
+    // timer page (where it is not gated) and carry it into a room. Downgrade here.
+    useEffect(() => {
+        if (userIsPro) return;
+        if (!PRO_GATED_TIMER_TYPES.has(timerType)) return;
+
+        // Drop the live BLE connection too — switching the type alone hides the UI
+        // but would leave the device paired and draining battery.
+        if (timerType === 'smart') {
+            disconnectSmartCube();
+        } else if (timerType === 'gantimer') {
+            disconnectGanTimer();
+        } else if (timerType === 'qiyitimer') {
+            disconnectQiyiTimer();
+        }
+        setSetting('manual_entry', false);
+        setSetting('timer_type', 'keyboard');
+    }, [userIsPro, timerType]);
 
     // When room cube type changes, check smart cube compatibility
     useEffect(() => {
@@ -225,6 +254,11 @@ function FriendlyRoomContent() {
         // QiYi: disconnect on type change
         if (prevTimerTypeRef.current === 'qiyitimer' && timerType !== 'qiyitimer') {
             disconnectQiyiTimer();
+        }
+
+        // GAN: same cleanup — without this the timer stayed paired after switching away.
+        if (prevTimerTypeRef.current === 'gantimer' && timerType !== 'gantimer') {
+            disconnectGanTimer();
         }
 
         // Save current timer type

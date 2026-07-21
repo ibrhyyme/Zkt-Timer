@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useSettings } from '../hooks/useSettings';
+import { useMe } from '../hooks/useMe';
+import { isPro, isProEnabled } from '../../lib/pro';
 import { startSlamDetector, stopSlamDetector, isSlamDetectorAvailable, SlamEvent } from './plugin';
 import { useSlamStop, sensitivityToThreshold } from './settings';
 import { endTimer } from '../../components/timer/helpers/events';
@@ -19,6 +21,11 @@ export function useSlamToStop(context: ITimerContext) {
 	const { enabled, sensitivity } = useSlamStop();
 	const timerType = useSettings('timer_type');
 	const manualEntry = useSettings('manual_entry');
+	// The enabled flag lives in localStorage, so a user who turned it on while Pro
+	// would keep it working after the subscription expired. Gate at arm time,
+	// mirroring the ExtrasTab toggle condition (`isProEnabled() && isNotPro(me)`).
+	const me = useMe();
+	const proAllowed = !isProEnabled() || isPro(me);
 
 	// Context identity changes every render — keep the callback fresh via ref
 	// so the effect only restarts on meaningful flag changes.
@@ -29,6 +36,7 @@ export function useSlamToStop(context: ITimerContext) {
 	const active =
 		isSlamDetectorAvailable() &&
 		enabled &&
+		proAllowed &&
 		timerType === 'keyboard' &&
 		!manualEntry &&
 		!smartCubeSelected(context) &&

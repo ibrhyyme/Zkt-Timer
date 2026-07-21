@@ -30,6 +30,7 @@ import {openModal} from '../../../../actions/general';
 import StackMatPicker, { getAudioPickerModalProps } from '../../../settings/stackmat_picker/StackMatPicker';
 import {AllSettings} from '../../../../db/settings/query';
 import {is3x3CubeType} from '../../../timer/helpers/util';
+import {PRO_GATED_TIMER_TYPES} from '../../../timer/helpers/pro_timer_types';
 import {isPro} from '../../../../lib/pro';
 import ExtrasTab from '../../../quick-controls/tabs/ExtrasTab';
 import GoalsTab from '../../../quick-controls/tabs/GoalsTab';
@@ -54,7 +55,6 @@ interface TimerOption {
 	notAllowed: boolean;
 }
 
-const PRO_GATED_KEYS = new Set<TypeKey>(['smart', 'gantimer', 'qiyitimer']);
 const ICON_SIZE = 24;
 
 interface Props {
@@ -169,7 +169,7 @@ export default function TimerTypeGrid({
 	const isProGated = !!requireProForSmart && !userIsPro;
 
 	const options: TimerOption[] = baseOptions.map((opt) => {
-		const proGated = isProGated && PRO_GATED_KEYS.has(opt.typeKey);
+		const proGated = isProGated && PRO_GATED_TIMER_TYPES.has(opt.typeKey);
 		const smartUnsupported = opt.typeKey === 'smart' && !smartSupported;
 		// Oda host'unun izin verdigi timer turleri disindaki kartlar disable + kirmizi Lock badge.
 		// `allowedTimerTypes` undefined/null veya bos array ise filter atlanir (tum kartlar acik).

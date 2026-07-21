@@ -29,6 +29,7 @@ import { openModal } from '../../../actions/general';
 import StackMatPicker, { getAudioPickerModalProps } from '../../settings/stackmat_picker/StackMatPicker';
 import { AllSettings } from '../../../db/settings/query';
 import { is3x3CubeType } from '../helpers/util';
+import { PRO_GATED_TIMER_TYPES } from '../helpers/pro_timer_types';
 import { isPro } from '../../../lib/pro';
 import block from '../../../styles/bem';
 import './TimerTypePicker.scss';
@@ -55,8 +56,6 @@ interface Props {
 	allowedTimerTypes?: string[];
 	requireProForSmart?: boolean;
 }
-
-const PRO_GATED_KEYS = new Set<TypeKey>(['smart', 'gantimer', 'qiyitimer']);
 
 export default function TimerTypePicker({ allowedTimerTypes, requireProForSmart }: Props) {
 	const { t } = useTranslation();
@@ -191,7 +190,7 @@ export default function TimerTypePicker({ allowedTimerTypes, requireProForSmart 
 	];
 
 	const options: TimerOption[] = baseOptions.map((opt) => {
-		const proGated = isProGated && PRO_GATED_KEYS.has(opt.typeKey);
+		const proGated = isProGated && PRO_GATED_TIMER_TYPES.has(opt.typeKey);
 		const notAllowed = !!allowedTimerTypes && !allowedTimerTypes.includes(opt.typeKey);
 		const smartUnsupported = opt.typeKey === 'smart' && !smartSupported;
 		const disabled = proGated || notAllowed || smartUnsupported;
