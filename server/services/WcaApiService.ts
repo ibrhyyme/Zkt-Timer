@@ -347,16 +347,30 @@ export class WcaApiService {
 	}
 
 	/**
-	 * Fetch public WCIF data for a competition
+	 * Tracks the last logged WCIF error per competition to avoid log spam when
+	 * a cron retries the same failing fetch on every tick.
+	 */
+	private static readonly lastWcifError = new Map<string, string>();
+
+	/**
+	 * Fetch public WCIF data for a competition.
+	 * WCIF payloads for large competitions (e.g. continental championships) can be
+	 * several MB, so this uses a longer timeout than other WCA API calls.
 	 */
 	static async fetchCompetitionWcif(competitionId: string): Promise<any | null> {
 		try {
 			const response = await axios.get(`${this.BASE_URL}/competitions/${competitionId}/wcif/public`, {
-				timeout: 15000,
+				timeout: 45000,
 			});
+			this.lastWcifError.delete(competitionId);
 			return response.data;
 		} catch (error) {
-			console.error(`Failed to fetch WCIF for competition ${competitionId}:`, error.message);
+			// Only log when the error message changes, so repeated cron failures
+			// for the same competition don't flood the logs.
+			if (this.lastWcifError.get(competitionId) !== error.message) {
+				this.lastWcifError.set(competitionId, error.message);
+				console.error(`Failed to fetch WCIF for competition ${competitionId}:`, error.message);
+			}
 			return null;
 		}
 	}
