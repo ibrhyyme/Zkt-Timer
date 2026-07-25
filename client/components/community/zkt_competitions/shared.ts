@@ -6,56 +6,49 @@ export const b = block('zkt-comp');
 // Re-export so competition screens pull identity helpers from one place.
 export {countryFlag};
 
-export interface CompetitorIdentity {
-	username?: string | null;
-	first_name?: string | null;
-	last_name?: string | null;
-	join_country?: string | null;
-	// Present only for registered users (the ghost-person branch leaves it
-	// undefined, so the UI falls back to an avatar placeholder).
-	profile?: {pfp_image?: {url?: string | null} | null} | null;
-}
-
-/** Display name: "First Last" when available, else username, else empty. */
-export function competitorDisplayName(user?: CompetitorIdentity | null): string {
-	if (!user) return '';
-	const full = [user.first_name, user.last_name].filter(Boolean).join(' ').trim();
-	return full || user.username || '';
-}
-
-/** Country flag emoji for a competitor; empty string when no country. */
-export function competitorFlag(user?: CompetitorIdentity | null): string {
-	return countryFlag(user?.join_country);
-}
-
-/** Ghost person identity shape (mirror of ZktPerson scalar fields). */
-export interface PersonIdentity {
-	first_name?: string | null;
-	last_name?: string | null;
-	country_code?: string | null;
-	wca_id?: string | null;
-	external_id?: string | null;
+/**
+ * A competitor as delivered by the federation public API: opaque-keyed identity
+ * (no internal user/person id ever leaves the federation), display name already
+ * resolved (registration override applied upstream), country as ISO-2, avatar
+ * url, and a ghost flag. This is the single competitor shape every ZKT view
+ * consumes now that Zkt-Timer is a read-only viewer of the federation.
+ */
+export interface PublicCompetitor {
+	id: string; // opaque stable key (routing + cross-round correlation)
+	name: string;
+	wcaId?: string | null;
+	externalId?: string | null;
+	country?: string | null; // ISO-2
+	avatarUrl?: string | null;
+	isGhost?: boolean;
 }
 
 /**
- * Resolve a competitor row (result / registration / assignment) to one identity:
- * the registered user, or the account-less person mapped to the same shape so
- * competitorDisplayName/competitorFlag work unchanged.
+ * Resolve a row to its competitor identity. Result / assignment / podium rows
+ * nest the competitor under `competitor`; the detail competitor-list rows ARE
+ * the competitor (flat). Handles both so call sites stay uniform.
  */
 export function competitorOf(
-	row?: {user?: CompetitorIdentity | null; person?: PersonIdentity | null} | null
-): CompetitorIdentity | null {
+	row?: {competitor?: PublicCompetitor | null} | PublicCompetitor | null
+): PublicCompetitor | null {
 	if (!row) return null;
-	if (row.user) return row.user;
-	if (row.person) {
-		return {
-			username: null,
-			first_name: row.person.first_name,
-			last_name: row.person.last_name,
-			join_country: row.person.country_code,
-		};
-	}
-	return null;
+	const nested = (row as {competitor?: PublicCompetitor | null}).competitor;
+	return nested ?? (row as PublicCompetitor);
+}
+
+/** Display name (already override-resolved upstream), empty string when absent. */
+export function competitorDisplayName(c?: PublicCompetitor | null): string {
+	return c?.name || '';
+}
+
+/** Country flag emoji for a competitor; empty string when no country. */
+export function competitorFlag(c?: PublicCompetitor | null): string {
+	return countryFlag(c?.country ?? undefined);
+}
+
+/** External id shown WCA-style under the name: WCA id, else ghost external id. */
+export function competitorExtId(c?: PublicCompetitor | null): string | null {
+	return c?.wcaId || c?.externalId || null;
 }
 
 /**

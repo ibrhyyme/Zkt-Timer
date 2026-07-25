@@ -5,68 +5,57 @@ import {gqlMutate} from '../../api';
 import {useTranslation} from 'react-i18next';
 import {useParams, useHistory} from 'react-router-dom';
 import Loading from '../../common/loading/Loading';
-import {b, getEventName, formatCs, formatName, formatTimeRange, competitorDisplayName, competitorFlag, ZKT_ROLE_COLORS} from './shared';
+import {b, getEventName, formatCs, formatName, formatTimeRange, competitorDisplayName, competitorFlag, PublicCompetitor, ZKT_ROLE_COLORS} from './shared';
 import {CaretLeft, CaretRight} from 'phosphor-react';
 
+// One group's assignments (the "görevler" activity detail) served by the
+// federation public API: competitors are opaque-keyed, roles/stations/seed
+// times come pre-resolved. A second lightweight query pulls the flat group list
+// for prev/next paging across the whole competition.
 const GROUP_ASSIGNMENTS_QUERY = gql`
-	query ZktGroupAssignmentsPublic($groupId: String!) {
-		zktGroupAssignments(groupId: $groupId) {
-			id
-			round_id
-			group_id
-			user_id
-			role
-			station_number
-			seed_result
-			user {
-				id
-				username
-				first_name
-				last_name
-				join_country
-				profile {
-					pfp_image {
-						id
-						url
-					}
-				}
-			}
-			group {
-				id
-				group_number
-				start_time
-				end_time
-			}
+	query ZktPublicGroupAssignments($competitionId: String!, $groupId: String!) {
+		zktPublicGroupAssignments(competitionId: $competitionId, groupId: $groupId) {
+			groupId
+			groupNumber
+			startTime
+			endTime
 			round {
-				id
-				round_number
+				roundId
+				roundNumber
 				format
 				status
-				comp_event {
+				eventId
+				eventName
+			}
+			assignments {
+				competitor {
 					id
-					event_id
+					name
+					wcaId
+					externalId
+					country
+					avatarUrl
+					isGhost
 				}
+				role
+				stationNumber
+				seedResult
 			}
 		}
 	}
 `;
 
-// All groups across the competition, ordered, for prev/next navigation — the
-// WCA ActivityDetail lets you page through every group/round with arrows.
 const COMP_GROUPS_QUERY = gql`
-	query ZktCompGroupsForNav($id: String!) {
-		zktCompetition(id: $id) {
+	query ZktPublicCompGroupsNav($id: String!) {
+		zktPublicCompetition(id: $id) {
 			id
 			events {
-				id
-				event_id
-				event_order
+				eventId
 				rounds {
-					id
-					round_number
+					roundNumber
 					groups {
-						id
-						group_number
+						groupId
+						groupNumber
 					}
 				}
 			}
@@ -79,24 +68,14 @@ const ROLE_ORDER = ['COMPETITOR', 'SCRAMBLER', 'RUNNER', 'JUDGE', 'ORGANIZER', '
 const ROLE_HEADER_COLORS = ZKT_ROLE_COLORS;
 
 interface Assignment {
-	id: string;
-	user_id: string;
+	competitor: PublicCompetitor;
 	role: string;
-	station_number?: number;
-	seed_result?: number;
-	user?: {id: string; username: string; profile?: {pfp_image?: {url: string}}};
-	group?: {id: string; group_number: number; start_time?: string | null; end_time?: string | null};
-	round?: {
-		id: string;
-		round_number: number;
-		format: string;
-		status?: string;
-		comp_event?: {id: string; event_id: string};
-	};
+	stationNumber?: number | null;
+	seedResult?: number | null;
 }
 
 interface NavGroup {
-	id: string;
+	groupId: string;
 	eventId: string;
 	eventOrder: number;
 	roundNumber: number;
@@ -108,47 +87,49 @@ export default function ZktActivityDetail() {
 	const {t} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
 	const history = useHistory();
 
-	const [assignments, setAssignments] = useState<Assignment[]>([]);
+	const [groupData, setGroupData] = useState<any>(null);
 	const [loading, setLoading] = useState(true);
 	const [navGroups, setNavGroups] = useState<NavGroup[]>([]);
 
 	const fetch = useCallback(async () => {
 		try {
-			const res = await gqlMutate(GROUP_ASSIGNMENTS_QUERY, {groupId});
-			setAssignments(res?.data?.zktGroupAssignments || []);
+			const res = await gqlMutate(GROUP_ASSIGNMENTS_QUERY, {competitionId, groupId});
+			setGroupData(res?.data?.zktPublicGroupAssignments || null);
 		} catch {
-			setAssignments([]);
+			setGroupData(null);
 		} finally {
 			setLoading(false);
 		}
-	}, [groupId]);
+	}, [competitionId, groupId]);
 
 	useEffect(() => {
 		fetch();
 	}, [fetch]);
 
-	// Build the flat ordered group list once for prev/next navigation.
+	// Build the flat ordered group list once for prev/next navigation. Events are
+	// already event-order sorted by the federation, so the array index is the
+	// event order.
 	useEffect(() => {
 		let cancelled = false;
 		(async () => {
 			try {
 				const res = await gqlMutate(COMP_GROUPS_QUERY, {id: competitionId});
 				if (cancelled) return;
-				const events = res?.data?.zktCompetition?.events || [];
+				const events = res?.data?.zktPublicCompetition?.events || [];
 				const flat: NavGroup[] = [];
-				for (const ev of events) {
+				events.forEach((ev: any, evIdx: number) => {
 					for (const rd of ev.rounds || []) {
 						for (const g of rd.groups || []) {
 							flat.push({
-								id: g.id,
-								eventId: ev.event_id,
-								eventOrder: ev.event_order ?? 0,
-								roundNumber: rd.round_number,
-								groupNumber: g.group_number,
+								groupId: g.groupId,
+								eventId: ev.eventId,
+								eventOrder: evIdx,
+								roundNumber: rd.roundNumber,
+								groupNumber: g.groupNumber,
 							});
 						}
 					}
-				}
+				});
 				flat.sort(
 					(a, b) =>
 						a.eventOrder - b.eventOrder ||
@@ -166,14 +147,14 @@ export default function ZktActivityDetail() {
 	}, [competitionId]);
 
 	const currentIndex = useMemo(
-		() => navGroups.findIndex((g) => g.id === groupId),
+		() => navGroups.findIndex((g) => g.groupId === groupId),
 		[navGroups, groupId]
 	);
 
 	const goTo = useCallback(
 		(index: number) => {
 			if (index < 0 || index >= navGroups.length) return;
-			history.push(`/zkt-competitions/${competitionId}/activities/${navGroups[index].id}`);
+			history.push(`/zkt-competitions/${competitionId}/activities/${navGroups[index].groupId}`);
 		},
 		[navGroups, competitionId, history]
 	);
@@ -192,6 +173,8 @@ export default function ZktActivityDetail() {
 
 	if (loading) return <Loading />;
 
+	const assignments: Assignment[] = groupData?.assignments || [];
+
 	const byRole: Record<string, Assignment[]> = {};
 	for (const a of assignments) {
 		if (!byRole[a.role]) byRole[a.role] = [];
@@ -203,14 +186,12 @@ export default function ZktActivityDetail() {
 		.map((r) => `${t(`role_${r.toLowerCase()}`)} ${byRole[r].length}`)
 		.join(' · ');
 
-	const first = assignments[0];
-	const eventId = first?.round?.comp_event?.event_id;
-	const roundNumber = first?.round?.round_number;
-	const groupNumber = first?.group?.group_number;
-	const format = first?.round?.format;
-	const startTime = first?.group?.start_time;
-	const endTime = first?.group?.end_time;
-	const timeRange = startTime ? formatTimeRange(startTime, endTime) : '';
+	const round = groupData?.round;
+	const eventId = round?.eventId;
+	const roundNumber = round?.roundNumber;
+	const groupNumber = groupData?.groupNumber;
+	const format = round?.format;
+	const timeRange = groupData?.startTime ? formatTimeRange(groupData.startTime, groupData.endTime) : '';
 
 	const hasNav = navGroups.length > 1 && currentIndex >= 0;
 
@@ -252,7 +233,7 @@ export default function ZktActivityDetail() {
 			</div>
 
 			{/* Activity header — etkinlik + round + grup ana bilgisi */}
-			{first && (
+			{round && (
 				<div className={b('activity-header')}>
 					{eventId && (
 						<span className={`cubing-icon event-${eventId}`} style={{fontSize: 28}} />
@@ -266,7 +247,7 @@ export default function ZktActivityDetail() {
 							{groupNumber !== undefined && (
 								<span className={b('activity-group')}> · {t('col_group')} {groupNumber}</span>
 							)}
-							{(first.round?.status === 'OPEN' || first.round?.status === 'ACTIVE') && (
+							{(round.status === 'OPEN' || round.status === 'ACTIVE') && (
 								<span className={b('live-now-chip', {static: true})}>{t('live_now')}</span>
 							)}
 						</h1>
@@ -302,30 +283,30 @@ export default function ZktActivityDetail() {
 					<div className={b('competitor-list')}>
 						{byRole[role].map((a) => (
 							<div
-								key={a.id}
+								key={`${a.competitor.id}-${a.role}`}
 								className={b('competitor-row', {clickable: true})}
 								onClick={() =>
-									history.push(`/zkt-competitions/${competitionId}/competitors/${a.user_id}`)
+									history.push(`/zkt-competitions/${competitionId}/competitors/${a.competitor.id}`)
 								}
 							>
-								{a.user?.profile?.pfp_image?.url && (
+								{a.competitor.avatarUrl && (
 									<img
 										className={b('user-avatar')}
-										src={a.user.profile.pfp_image.url}
+										src={a.competitor.avatarUrl}
 										alt=""
 									/>
 								)}
 								<span className={b('user-name')}>
-									{competitorFlag(a.user) && (
-										<span className={b('flag')}>{competitorFlag(a.user)}</span>
+									{competitorFlag(a.competitor) && (
+										<span className={b('flag')}>{competitorFlag(a.competitor)}</span>
 									)}
-									{competitorDisplayName(a.user) || a.user_id}
+									{competitorDisplayName(a.competitor) || a.competitor.id}
 								</span>
-								{a.station_number && (
-									<span className={b('activity-station')}>#{a.station_number}</span>
+								{a.stationNumber && (
+									<span className={b('activity-station')}>#{a.stationNumber}</span>
 								)}
-								{a.seed_result && a.seed_result > 0 && (
-									<span className={b('activity-seed')}>{formatCs(a.seed_result)}</span>
+								{a.seedResult && a.seedResult > 0 && (
+									<span className={b('activity-seed')}>{formatCs(a.seedResult)}</span>
 								)}
 							</div>
 						))}

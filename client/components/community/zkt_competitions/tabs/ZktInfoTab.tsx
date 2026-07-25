@@ -1,7 +1,7 @@
 import React from 'react';
 import {useTranslation} from 'react-i18next';
 import {b, getEventName} from '../shared';
-import {MapPin, Users, CalendarBlank, Trophy} from 'phosphor-react';
+import {MapPin, Users, Trophy} from 'phosphor-react';
 import MarkdownContent from '../MarkdownContent';
 
 function openInMaps(query: string) {
@@ -16,44 +16,26 @@ function mapEmbedSrc(lat: number, lng: number): string {
 	return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat}%2C${lng}`;
 }
 
-function PersonRow({user}: {user: any}) {
-	const {t} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
-	const avatar = user?.profile?.pfp_image?.url;
+function PersonRow({name}: {name: string}) {
 	return (
 		<div className={b('info-person')}>
-			{avatar ? (
-				<img src={avatar} alt="" className={b('info-avatar')} />
-			) : (
-				<div className={b('info-avatar-placeholder')}>
-					<Users size={16} />
-				</div>
-			)}
+			<div className={b('info-avatar-placeholder')}>
+				<Users size={16} />
+			</div>
 			<div className={b('info-person-text')}>
-				<span className={b('info-name')}>{user?.username || t('unknown')}</span>
+				<span className={b('info-name')}>{name}</span>
 			</div>
 		</div>
 	);
 }
 
 export default function ZktInfoTab({detail}: {detail: any}) {
-	const {t, i18n} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
-	const locale = i18n.language === 'tr' ? 'tr-TR' : i18n.language;
-	const locationFull = [detail.location, detail.location_address].filter(Boolean).join(', ');
+	const {t} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
+	const locationFull = [detail.location, detail.locationAddress].filter(Boolean).join(', ');
 
 	const lat = detail.latitude;
 	const lng = detail.longitude;
 	const hasCoords = typeof lat === 'number' && typeof lng === 'number';
-
-	const fmtDateTime = (iso?: string | null) =>
-		iso ? new Date(iso).toLocaleString(locale, {dateStyle: 'medium', timeStyle: 'short'}) : '';
-
-	const hasRegInfo =
-		detail.registration_opens_at ||
-		detail.registration_closes_at ||
-		detail.registration_edit_deadline ||
-		detail.on_spot_registration ||
-		detail.cancellation_policy ||
-		detail.guests_enabled === false;
 
 	return (
 		<div className={b('info-tab')}>
@@ -79,8 +61,8 @@ export default function ZktInfoTab({detail}: {detail: any}) {
 						<MapPin size={18} />
 						<div>
 							<span className={b('info-name')}>{detail.location}</span>
-							{detail.location_address && (
-								<span className={b('info-sub')}>{detail.location_address}</span>
+							{detail.locationAddress && (
+								<span className={b('info-sub')}>{detail.locationAddress}</span>
 							)}
 						</div>
 					</button>
@@ -98,75 +80,24 @@ export default function ZktInfoTab({detail}: {detail: any}) {
 			)}
 
 			{/* Main event */}
-			{detail.main_event_id && (
+			{detail.mainEventId && (
 				<div className={b('info-section')}>
 					<h4 className={b('info-section-title')}>{t('main_event')}</h4>
 					<div className={b('info-main-event')}>
 						<Trophy weight="fill" size={18} />
-						<span className={`cubing-icon event-${detail.main_event_id}`} />
-						<span className={b('info-name')}>{getEventName(detail.main_event_id)}</span>
+						<span className={`cubing-icon event-${detail.mainEventId}`} />
+						<span className={b('info-name')}>{getEventName(detail.mainEventId)}</span>
 					</div>
 				</div>
 			)}
 
-			{/* Registration info */}
-			{hasRegInfo && (
-				<div className={b('info-section')}>
-					<h4 className={b('info-section-title')}>{t('registration_info')}</h4>
-					<div className={b('info-reg-list')}>
-						{detail.registration_opens_at && (
-							<div className={b('info-reg-row')}>
-								<CalendarBlank size={15} />
-								<span>{t('registration_opens')}: {fmtDateTime(detail.registration_opens_at)}</span>
-							</div>
-						)}
-						{detail.registration_closes_at && (
-							<div className={b('info-reg-row')}>
-								<CalendarBlank size={15} />
-								<span>{t('registration_closes')}: {fmtDateTime(detail.registration_closes_at)}</span>
-							</div>
-						)}
-						{detail.registration_edit_deadline && (
-							<div className={b('info-reg-row')}>
-								<CalendarBlank size={15} />
-								<span>
-									{t('registration_edit_deadline')}: {fmtDateTime(detail.registration_edit_deadline)}
-								</span>
-							</div>
-						)}
-						{detail.on_spot_registration && (
-							<div className={b('info-reg-row')}>{t('on_spot_allowed')}</div>
-						)}
-						{detail.guests_enabled === false && (
-							<div className={b('info-reg-row')}>{t('guests_not_allowed')}</div>
-						)}
-					</div>
-					{detail.cancellation_policy && (
-						<div className={b('description-text')} style={{marginTop: '0.5rem'}}>
-							<strong>{t('cancellation_policy')}:</strong> {detail.cancellation_policy}
-						</div>
-					)}
-				</div>
-			)}
-
-			{/* Extra registration requirements (markdown) */}
-			{detail.extra_requirements && (
-				<div className={b('info-section')}>
-					<h4 className={b('info-section-title')}>{t('extra_requirements')}</h4>
-					<div className={b('description-text')}>
-						<MarkdownContent content={detail.extra_requirements} />
-					</div>
-				</div>
-			)}
-
-			{/* Organizers (creator + added organizers) */}
-			{(detail.created_by || (detail.organizers && detail.organizers.length > 0)) && (
+			{/* Organizers */}
+			{detail.organizers && detail.organizers.length > 0 && (
 				<div className={b('info-section')}>
 					<h4 className={b('info-section-title')}>{t('organizers')}</h4>
 					<div className={b('info-people-grid')}>
-						{detail.created_by && <PersonRow user={detail.created_by} />}
-						{(detail.organizers || []).map((o: any) => (
-							<PersonRow key={o.id} user={o.user} />
+						{detail.organizers.map((o: any, i: number) => (
+							<PersonRow key={i} name={o.name} />
 						))}
 					</div>
 				</div>
@@ -177,8 +108,8 @@ export default function ZktInfoTab({detail}: {detail: any}) {
 				<div className={b('info-section')}>
 					<h4 className={b('info-section-title')}>{t('delegates')}</h4>
 					<div className={b('info-people-grid')}>
-						{detail.delegates.map((d: any) => (
-							<PersonRow key={d.id} user={d.user} />
+						{detail.delegates.map((d: any, i: number) => (
+							<PersonRow key={i} name={d.name} />
 						))}
 					</div>
 				</div>

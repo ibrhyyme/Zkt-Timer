@@ -27,7 +27,14 @@ export default function CompetitionDetail() {
 	];
 
 	if (detail.wcaLiveCompId) {
-		TABS.push({id: 'wca-live', label: t('my_schedule.wca_live'), icon: Broadcast});
+		// A ZKT competition uses the SAME live components; only the label reads
+		// "ZKT Live" instead of "WCA Live".
+		const isZkt = detail.competitionId?.startsWith('zkt-');
+		TABS.push({
+			id: 'wca-live',
+			label: isZkt ? t('my_schedule.zkt_live') : t('my_schedule.wca_live'),
+			icon: Broadcast,
+		});
 	}
 
 	TABS.push(

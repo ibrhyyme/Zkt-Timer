@@ -2273,6 +2273,11 @@ export type Query = {
   zktGroupAssignments?: Maybe<Array<Maybe<ZktAssignment>>>;
   zktMyAssignments?: Maybe<Array<Maybe<ZktAssignment>>>;
   zktMyCompetitions?: Maybe<Array<Maybe<ZktCompetition>>>;
+  zktPublicCompetition?: Maybe<ZktPublicCompetitionDetail>;
+  zktPublicCompetitions?: Maybe<ZktPublicCompetitionList>;
+  zktPublicCompetitor?: Maybe<ZktPublicCompetitorDetail>;
+  zktPublicGroupAssignments?: Maybe<ZktPublicGroupAssignments>;
+  zktPublicRoundResults?: Maybe<ZktPublicRoundResults>;
   zktRecords?: Maybe<Array<Maybe<ZktRecord>>>;
   zktRecordsForEvent?: Maybe<Array<Maybe<ZktRecord>>>;
   zktRegistrationHistory?: Maybe<Array<Maybe<ZktRegistrationHistory>>>;
@@ -2583,6 +2588,36 @@ export type QueryZktGroupAssignmentsArgs = {
 
 export type QueryZktMyAssignmentsArgs = {
   competitionId?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryZktPublicCompetitionArgs = {
+  id?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryZktPublicCompetitionsArgs = {
+  page?: InputMaybe<Scalars['Int']>;
+  pageSize?: InputMaybe<Scalars['Int']>;
+  q?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryZktPublicCompetitorArgs = {
+  competitionId?: InputMaybe<Scalars['String']>;
+  key?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryZktPublicGroupAssignmentsArgs = {
+  competitionId?: InputMaybe<Scalars['String']>;
+  groupId?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryZktPublicRoundResultsArgs = {
+  competitionId?: InputMaybe<Scalars['String']>;
+  roundId?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -4103,6 +4138,245 @@ export type ZktPodium = {
   event_id?: Maybe<Scalars['String']>;
   results?: Maybe<Array<Maybe<ZktResult>>>;
   round_id?: Maybe<Scalars['String']>;
+};
+
+export type ZktPublicAttemptResult = {
+  __typename?: 'ZktPublicAttemptResult';
+  advancing?: Maybe<Scalars['Boolean']>;
+  attempts?: Maybe<Array<Maybe<Scalars['Int']>>>;
+  average?: Maybe<Scalars['Int']>;
+  best?: Maybe<Scalars['Int']>;
+  clinched?: Maybe<Scalars['Boolean']>;
+  competitor?: Maybe<ZktPublicCompetitor>;
+  questionable?: Maybe<Scalars['Boolean']>;
+  ranking?: Maybe<Scalars['Int']>;
+  recordTags?: Maybe<ZktPublicRecordTags>;
+};
+
+export type ZktPublicCompetitionDetail = {
+  __typename?: 'ZktPublicCompetitionDetail';
+  championshipType?: Maybe<Scalars['String']>;
+  competitors?: Maybe<Array<Maybe<ZktPublicRegisteredCompetitor>>>;
+  contact?: Maybe<Scalars['String']>;
+  country?: Maybe<Scalars['String']>;
+  delegates?: Maybe<Array<Maybe<ZktPublicNamed>>>;
+  description?: Maybe<Scalars['String']>;
+  endDate?: Maybe<Scalars['String']>;
+  events?: Maybe<Array<Maybe<ZktPublicDetailEvent>>>;
+  id?: Maybe<Scalars['String']>;
+  latitude?: Maybe<Scalars['Float']>;
+  location?: Maybe<Scalars['String']>;
+  locationAddress?: Maybe<Scalars['String']>;
+  longitude?: Maybe<Scalars['Float']>;
+  mainEventId?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  organizers?: Maybe<Array<Maybe<ZktPublicNamed>>>;
+  podiums?: Maybe<Array<Maybe<ZktPublicPodium>>>;
+  registrationCount?: Maybe<Scalars['Int']>;
+  schedule?: Maybe<Array<Maybe<ZktPublicScheduleEntry>>>;
+  slug?: Maybe<Scalars['String']>;
+  startDate?: Maybe<Scalars['String']>;
+  status?: Maybe<Scalars['String']>;
+  tabs?: Maybe<Array<Maybe<ZktPublicTab>>>;
+};
+
+export type ZktPublicCompetitionList = {
+  __typename?: 'ZktPublicCompetitionList';
+  hasMore?: Maybe<Scalars['Boolean']>;
+  items?: Maybe<Array<Maybe<ZktPublicListItem>>>;
+  page?: Maybe<Scalars['Int']>;
+  pageSize?: Maybe<Scalars['Int']>;
+  total?: Maybe<Scalars['Int']>;
+};
+
+export type ZktPublicCompetitor = {
+  __typename?: 'ZktPublicCompetitor';
+  avatarUrl?: Maybe<Scalars['String']>;
+  country?: Maybe<Scalars['String']>;
+  externalId?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  isGhost?: Maybe<Scalars['Boolean']>;
+  name?: Maybe<Scalars['String']>;
+  wcaId?: Maybe<Scalars['String']>;
+};
+
+export type ZktPublicCompetitorDetail = {
+  __typename?: 'ZktPublicCompetitorDetail';
+  assignments?: Maybe<Array<Maybe<ZktPublicScheduleItemRow>>>;
+  competitor?: Maybe<ZktPublicCompetitor>;
+  registeredEventIds?: Maybe<Array<Maybe<Scalars['String']>>>;
+  results?: Maybe<Array<Maybe<ZktPublicCompetitorResult>>>;
+};
+
+export type ZktPublicCompetitorResult = {
+  __typename?: 'ZktPublicCompetitorResult';
+  attempts?: Maybe<Array<Maybe<Scalars['Int']>>>;
+  average?: Maybe<Scalars['Int']>;
+  best?: Maybe<Scalars['Int']>;
+  eventId?: Maybe<Scalars['String']>;
+  eventName?: Maybe<Scalars['String']>;
+  format?: Maybe<Scalars['String']>;
+  proceeds?: Maybe<Scalars['Boolean']>;
+  ranking?: Maybe<Scalars['Int']>;
+  recordTags?: Maybe<ZktPublicRecordTags>;
+  roundId?: Maybe<Scalars['String']>;
+  roundNumber?: Maybe<Scalars['Int']>;
+};
+
+export type ZktPublicDetailEvent = {
+  __typename?: 'ZktPublicDetailEvent';
+  eventId?: Maybe<Scalars['String']>;
+  eventName?: Maybe<Scalars['String']>;
+  rounds?: Maybe<Array<Maybe<ZktPublicDetailRound>>>;
+};
+
+export type ZktPublicDetailRound = {
+  __typename?: 'ZktPublicDetailRound';
+  advancementLevel?: Maybe<Scalars['Int']>;
+  advancementType?: Maybe<Scalars['String']>;
+  cutoffAttempts?: Maybe<Scalars['Int']>;
+  cutoffCs?: Maybe<Scalars['Int']>;
+  format?: Maybe<Scalars['String']>;
+  groups?: Maybe<Array<Maybe<ZktPublicRoundGroup>>>;
+  roundId?: Maybe<Scalars['String']>;
+  roundNumber?: Maybe<Scalars['Int']>;
+  status?: Maybe<Scalars['String']>;
+  timeLimitCs?: Maybe<Scalars['Int']>;
+};
+
+export type ZktPublicGroupAssignmentRow = {
+  __typename?: 'ZktPublicGroupAssignmentRow';
+  competitor?: Maybe<ZktPublicCompetitor>;
+  role?: Maybe<Scalars['String']>;
+  seedResult?: Maybe<Scalars['Int']>;
+  stationNumber?: Maybe<Scalars['Int']>;
+};
+
+export type ZktPublicGroupAssignments = {
+  __typename?: 'ZktPublicGroupAssignments';
+  assignments?: Maybe<Array<Maybe<ZktPublicGroupAssignmentRow>>>;
+  endTime?: Maybe<Scalars['String']>;
+  groupId?: Maybe<Scalars['String']>;
+  groupNumber?: Maybe<Scalars['Int']>;
+  round?: Maybe<ZktPublicMiniRound>;
+  startTime?: Maybe<Scalars['String']>;
+};
+
+export type ZktPublicListItem = {
+  __typename?: 'ZktPublicListItem';
+  championshipType?: Maybe<Scalars['String']>;
+  country?: Maybe<Scalars['String']>;
+  endDate?: Maybe<Scalars['String']>;
+  eventIds?: Maybe<Array<Maybe<Scalars['String']>>>;
+  id?: Maybe<Scalars['String']>;
+  location?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  registrationCount?: Maybe<Scalars['Int']>;
+  shortName?: Maybe<Scalars['String']>;
+  slug?: Maybe<Scalars['String']>;
+  startDate?: Maybe<Scalars['String']>;
+  status?: Maybe<Scalars['String']>;
+};
+
+export type ZktPublicMiniRound = {
+  __typename?: 'ZktPublicMiniRound';
+  eventId?: Maybe<Scalars['String']>;
+  eventName?: Maybe<Scalars['String']>;
+  format?: Maybe<Scalars['String']>;
+  roundId?: Maybe<Scalars['String']>;
+  roundNumber?: Maybe<Scalars['Int']>;
+  status?: Maybe<Scalars['String']>;
+};
+
+export type ZktPublicNamed = {
+  __typename?: 'ZktPublicNamed';
+  name?: Maybe<Scalars['String']>;
+};
+
+export type ZktPublicPodium = {
+  __typename?: 'ZktPublicPodium';
+  entries?: Maybe<Array<Maybe<ZktPublicPodiumEntry>>>;
+  eventId?: Maybe<Scalars['String']>;
+  eventName?: Maybe<Scalars['String']>;
+};
+
+export type ZktPublicPodiumEntry = {
+  __typename?: 'ZktPublicPodiumEntry';
+  attempts: Array<Maybe<Scalars['Int']>>;
+  average?: Maybe<Scalars['Int']>;
+  best?: Maybe<Scalars['Int']>;
+  competitor?: Maybe<ZktPublicCompetitor>;
+  ranking?: Maybe<Scalars['Int']>;
+  recordTags?: Maybe<ZktPublicRecordTags>;
+};
+
+export type ZktPublicRecordTags = {
+  __typename?: 'ZktPublicRecordTags';
+  average?: Maybe<Scalars['String']>;
+  single?: Maybe<Scalars['String']>;
+};
+
+export type ZktPublicRegisteredCompetitor = {
+  __typename?: 'ZktPublicRegisteredCompetitor';
+  avatarUrl?: Maybe<Scalars['String']>;
+  country?: Maybe<Scalars['String']>;
+  externalId?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  isGhost?: Maybe<Scalars['Boolean']>;
+  name?: Maybe<Scalars['String']>;
+  registeredEventIds?: Maybe<Array<Maybe<Scalars['String']>>>;
+  registrationNumber?: Maybe<Scalars['Int']>;
+  wcaId?: Maybe<Scalars['String']>;
+};
+
+export type ZktPublicRoundGroup = {
+  __typename?: 'ZktPublicRoundGroup';
+  endTime?: Maybe<Scalars['String']>;
+  groupId?: Maybe<Scalars['String']>;
+  groupNumber?: Maybe<Scalars['Int']>;
+  startTime?: Maybe<Scalars['String']>;
+};
+
+export type ZktPublicRoundResults = {
+  __typename?: 'ZktPublicRoundResults';
+  advancementLevel?: Maybe<Scalars['Int']>;
+  advancementType?: Maybe<Scalars['String']>;
+  cutoffAttempts?: Maybe<Scalars['Int']>;
+  cutoffCs?: Maybe<Scalars['Int']>;
+  eventId?: Maybe<Scalars['String']>;
+  eventName?: Maybe<Scalars['String']>;
+  format?: Maybe<Scalars['String']>;
+  results?: Maybe<Array<Maybe<ZktPublicAttemptResult>>>;
+  roundId?: Maybe<Scalars['String']>;
+  roundNumber?: Maybe<Scalars['Int']>;
+  status?: Maybe<Scalars['String']>;
+  timeLimitCs?: Maybe<Scalars['Int']>;
+};
+
+export type ZktPublicScheduleEntry = {
+  __typename?: 'ZktPublicScheduleEntry';
+  endTime?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  startTime?: Maybe<Scalars['String']>;
+  title?: Maybe<Scalars['String']>;
+};
+
+export type ZktPublicScheduleItemRow = {
+  __typename?: 'ZktPublicScheduleItemRow';
+  endTime?: Maybe<Scalars['String']>;
+  groupNumber?: Maybe<Scalars['Int']>;
+  role?: Maybe<Scalars['String']>;
+  round?: Maybe<ZktPublicMiniRound>;
+  startTime?: Maybe<Scalars['String']>;
+  stationNumber?: Maybe<Scalars['Int']>;
+};
+
+export type ZktPublicTab = {
+  __typename?: 'ZktPublicTab';
+  content?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  order?: Maybe<Scalars['Int']>;
+  title?: Maybe<Scalars['String']>;
 };
 
 export type ZktRecord = {

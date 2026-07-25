@@ -1,92 +1,63 @@
 import {useEffect, useRef, useState, useCallback} from 'react';
 import {gql} from '@apollo/client';
 import {gqlMutate} from '../../api';
-import {socketClient} from '../../../util/socket/socketio';
-import {
-	ZktCompClientEvent,
-	ZktCompServerEvent,
-} from '../../../../shared/zkt_competition/events';
+import {PublicCompetitor} from './shared';
 
+// Live round results from the federation public API. Each row already carries
+// ranking + record tags + the three-state advancement (advancing / clinched /
+// questionable) computed by the federation — the single source of truth — so the
+// consumer only renders. Competitors are opaque-keyed.
 const ROUND_RESULTS = gql`
-	query ZktLiveRoundResults($roundId: String!) {
-		zktRoundResults(roundId: $roundId) {
-			id
-			user_id
-			person_id
-			attempt_1
-			attempt_2
-			attempt_3
-			attempt_4
-			attempt_5
-			best
-			average
-			ranking
-			proceeds
-			single_record_tag
-			average_record_tag
-			user {
-				id
-				username
-				first_name
-				last_name
-				join_country
-				profile {
-					pfp_image {
-						id
-						url
-					}
+	query ZktPublicRoundResults($competitionId: String!, $roundId: String!) {
+		zktPublicRoundResults(competitionId: $competitionId, roundId: $roundId) {
+			roundId
+			status
+			results {
+				competitor {
+					id
+					name
+					wcaId
+					externalId
+					country
+					avatarUrl
+					isGhost
 				}
-			}
-			person {
-				id
-				first_name
-				last_name
-				country_code
+				ranking
+				attempts
+				best
+				average
+				recordTags {
+					single
+					average
+				}
+				advancing
+				clinched
+				questionable
 			}
 		}
 	}
 `;
 
 export interface LiveResult {
-	id: string;
-	user_id: string | null;
-	person_id?: string | null;
-	attempt_1?: number;
-	attempt_2?: number;
-	attempt_3?: number;
-	attempt_4?: number;
-	attempt_5?: number;
-	best?: number;
-	average?: number;
-	ranking?: number;
-	proceeds: boolean;
-	single_record_tag?: string;
-	average_record_tag?: string;
-	user?: {
-		id: string;
-		username: string;
-		first_name?: string | null;
-		last_name?: string | null;
-		join_country?: string | null;
-		profile?: {pfp_image?: {url: string}};
-	} | null;
-	person?: {
-		id: string;
-		first_name?: string | null;
-		last_name?: string | null;
-		country_code?: string | null;
-	} | null;
+	competitor: PublicCompetitor;
+	ranking?: number | null;
+	attempts: number[]; // raw cs (DNF=-1, DNS=-2, empty=0), length = format attempt count
+	best?: number | null;
+	average?: number | null;
+	recordTags?: {single?: string | null; average?: string | null};
+	advancing: boolean;
+	clinched: boolean;
+	questionable: boolean;
 }
 
 /**
- * Subscribe to live round results.
- * Joins Socket.IO room `zkt_comp_{competitionId}` on mount.
- * Listens for RESULT_UPDATED events and refetches the round's results.
+ * Subscribe to a round's live results. The federation real-time socket push is a
+ * later phase; until then a 10-second polling interval (only while a round is
+ * selected and the tab is visible) keeps the scoreboard converging. The server
+ * Redis-caches live rounds ~15s so this stays cheap.
  *
- * `competitionId` MUST be the competition's real UUID, not a slug — the server
- * always emits to `zkt_comp_{uuid}` (resolvers use comp_event.competition_id).
- * Passing a slug (route param on a slug-based URL) joins the wrong room and
- * misses live events. Pass `null` until the UUID is known (no-op join).
+ * `competitionId` may be the competition slug or UUID — the federation accepts
+ * either. Pass `null` until it is known (no-op).
  */
 export function useZktLiveResults(competitionId: string | null, roundId: string | null) {
 	const [results, setResults] = useState<LiveResult[]>([]);
@@ -94,30 +65,24 @@ export function useZktLiveResults(competitionId: string | null, roundId: string 
 	const [lastUpdated, setLastUpdated] = useState<number>(0);
 	const currentRoundId = useRef<string | null>(null);
 
-	const fetchResults = useCallback(async (rid: string) => {
-		setLoading(true);
-		try {
-			const res = await gqlMutate(ROUND_RESULTS, {roundId: rid});
-			if (currentRoundId.current === rid) {
-				setResults(res?.data?.zktRoundResults || []);
-				setLastUpdated(Date.now());
+	const fetchResults = useCallback(
+		async (rid: string) => {
+			if (!competitionId) return;
+			setLoading(true);
+			try {
+				const res = await gqlMutate(ROUND_RESULTS, {competitionId, roundId: rid});
+				if (currentRoundId.current === rid) {
+					setResults((res?.data?.zktPublicRoundResults?.results || []) as LiveResult[]);
+					setLastUpdated(Date.now());
+				}
+			} catch {
+				// ignore — a transient failure just keeps the last snapshot
+			} finally {
+				if (currentRoundId.current === rid) setLoading(false);
 			}
-		} catch {
-			// ignore
-		} finally {
-			if (currentRoundId.current === rid) setLoading(false);
-		}
-	}, []);
-
-	// Join/leave competition room
-	useEffect(() => {
-		if (!competitionId) return;
-		const socket = socketClient();
-		socket.emit(ZktCompClientEvent.JOIN_COMP, competitionId);
-		return () => {
-			socket.emit(ZktCompClientEvent.LEAVE_COMP, competitionId);
-		};
-	}, [competitionId]);
+		},
+		[competitionId]
+	);
 
 	// Initial fetch + refetch on round change
 	useEffect(() => {
@@ -129,44 +94,7 @@ export function useZktLiveResults(competitionId: string | null, roundId: string 
 		fetchResults(roundId);
 	}, [roundId, fetchResults]);
 
-	// Socket listeners
-	useEffect(() => {
-		if (!roundId) return;
-		const socket = socketClient();
-
-		const onResultUpdated = (payload: {roundId: string}) => {
-			if (payload.roundId === roundId) {
-				fetchResults(roundId);
-			}
-		};
-
-		const onResultDeleted = (payload: {roundId: string}) => {
-			if (payload.roundId === roundId) {
-				fetchResults(roundId);
-			}
-		};
-
-		const onRoundStatusChanged = (payload: {roundId: string}) => {
-			if (payload.roundId === roundId) {
-				fetchResults(roundId);
-			}
-		};
-
-		socket.on(ZktCompServerEvent.RESULT_UPDATED, onResultUpdated);
-		socket.on(ZktCompServerEvent.RESULT_DELETED, onResultDeleted);
-		socket.on(ZktCompServerEvent.ROUND_STATUS_CHANGED, onRoundStatusChanged);
-
-		return () => {
-			socket.off(ZktCompServerEvent.RESULT_UPDATED, onResultUpdated);
-			socket.off(ZktCompServerEvent.RESULT_DELETED, onResultDeleted);
-			socket.off(ZktCompServerEvent.ROUND_STATUS_CHANGED, onRoundStatusChanged);
-		};
-	}, [roundId, fetchResults]);
-
-	// Polling fallback — if Socket.IO misses an event (disconnect, proxy
-	// issue, browser background throttling), a 10-second interval guarantees
-	// results still converge. Only runs while a round is selected and the
-	// tab is visible, so idle traffic stays low.
+	// Polling fallback (10s), visibility-gated so idle traffic stays low.
 	useEffect(() => {
 		if (!roundId) return;
 		let active = document.visibilityState === 'visible';

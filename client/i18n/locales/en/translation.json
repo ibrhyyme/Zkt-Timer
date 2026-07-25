@@ -980,6 +980,7 @@
         "no_competitor_results": "No results entered yet.",
         "results_error": "Failed to load results.",
         "wca_live": "WCA Live",
+        "zkt_live": "ZKT Live",
         "wca_live_select_event": "Select an event",
         "wca_live_unavailable": "This competition is not available on WCA Live",
         "wca_live_no_events": "This competition has no events yet",

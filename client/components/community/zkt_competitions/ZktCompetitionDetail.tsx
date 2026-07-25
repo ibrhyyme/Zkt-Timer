@@ -6,141 +6,113 @@ import {useTranslation} from 'react-i18next';
 import {useParams, useHistory, useRouteMatch, useLocation} from 'react-router-dom';
 import Loading from '../../common/loading/Loading';
 import {b, formatDateRange, getEventName} from './shared';
-import {useSelector} from 'react-redux';
 import ZktInfoTab from './tabs/ZktInfoTab';
 import ZktCompetitorsTab from './tabs/ZktCompetitorsTab';
 import ZktEventsTab from './tabs/ZktEventsTab';
 import ZktLiveTab from './tabs/ZktLiveTab';
 import ZktPodiumsTab from './tabs/ZktPodiumsTab';
-import ZktRegistrationForm from './tabs/ZktRegistrationForm';
 import ZktScheduleTab from './tabs/ZktScheduleTab';
-import {useZktCompRefetch} from './useZktCompRefetch';
-import {Users, ListBullets, Globe, Broadcast, UserPlus, ChartBar, FileText, CalendarBlank, MapPin, ShieldCheck} from 'phosphor-react';
+import {Users, ListBullets, Globe, Broadcast, ChartBar, FileText, CalendarBlank, MapPin, ShieldCheck} from 'phosphor-react';
 import MarkdownContent from './MarkdownContent';
 import {openInMaps} from '../../../util/external-link';
 import {toastError} from '../../../util/toast';
 
+// Read-only view of a competition owned by the Zeka Kupu Turkiye federation.
+// Data comes from the federation public API (proxied + Redis-cached by
+// ZktPublic.resolver), so competitors are opaque-keyed and every result already
+// carries ranking + record tags + advancement. Registration / follow / "my
+// results" live on the federation site, not here (view-only consumer).
 const DETAIL_QUERY = gql`
-	query ZktCompetitionPublic($id: String!) {
-		zktCompetition(id: $id) {
+	query ZktPublicCompetition($id: String!) {
+		zktPublicCompetition(id: $id) {
 			id
+			slug
 			name
 			description
-			date_start
-			date_end
+			startDate
+			endDate
 			location
-			location_address
-			short_name
+			locationAddress
 			latitude
 			longitude
-			registration_opens_at
-			registration_closes_at
-			registration_edit_deadline
-			on_spot_registration
-			cancellation_policy
-			guests_enabled
-			force_comment
-			extra_requirements
-			contact
-			main_event_id
-			competitor_limit
+			country
 			status
-			visibility
-			created_by_id
-			created_by {
+			championshipType
+			mainEventId
+			contact
+			registrationCount
+			competitors {
 				id
-				username
-			}
-			events {
-				id
-				competition_id
-				event_id
-				event_order
-				rounds {
-					id
-					round_number
-					format
-					time_limit_cs
-					cutoff_cs
-					advancement_type
-					advancement_level
-					status
-					groups {
-						id
-						group_number
-						start_time
-						end_time
-					}
-					assignments {
-						id
-						user_id
-						person_id
-						role
-						group {
-							group_number
-						}
-					}
-				}
-			}
-			registrations {
-				id
-				user_id
-				person_id
-				status
-				registration_number
-				user {
-					id
-					username
-					first_name
-					last_name
-					join_country
-					profile {
-						pfp_image {
-							id
-							url
-						}
-					}
-				}
-				person {
-					id
-					first_name
-					last_name
-					country_code
-					wca_id
-					external_id
-				}
-				events {
-					id
-					comp_event_id
-				}
+				name
+				wcaId
+				externalId
+				country
+				avatarUrl
+				isGhost
+				registrationNumber
+				registeredEventIds
 			}
 			delegates {
-				id
-				user_id
-				user {
-					id
-					username
-				}
+				name
 			}
 			organizers {
-				id
-				user_id
-				user {
-					id
-					username
-				}
+				name
 			}
 			tabs {
 				id
 				title
 				content
-				tab_order
+				order
 			}
-			schedule_items {
+			events {
+				eventId
+				eventName
+				rounds {
+					roundId
+					roundNumber
+					format
+					status
+					advancementType
+					advancementLevel
+					cutoffCs
+					cutoffAttempts
+					timeLimitCs
+					groups {
+						groupId
+						groupNumber
+						startTime
+						endTime
+					}
+				}
+			}
+			schedule {
 				id
 				title
-				start_time
-				end_time
+				startTime
+				endTime
+			}
+			podiums {
+				eventId
+				eventName
+				entries {
+					competitor {
+						id
+						name
+						wcaId
+						externalId
+						country
+						avatarUrl
+						isGhost
+					}
+					ranking
+					best
+					average
+					recordTags {
+						single
+						average
+					}
+					attempts
+				}
 			}
 		}
 	}
@@ -157,14 +129,14 @@ export async function prefetchZktCompetitionDetail(id: string): Promise<void> {
 	if (cached && Date.now() - cached.ts < FRESH_TTL) return;
 	try {
 		const res = await gqlMutate(DETAIL_QUERY, {id});
-		const data = res?.data?.zktCompetition;
+		const data = res?.data?.zktPublicCompetition;
 		if (data) detailCache.set(id, {data, ts: Date.now()});
 	} catch {
 		// best-effort prefetch
 	}
 }
 
-type TabId = 'groups' | 'live' | 'events' | 'rankings' | 'info' | 'register' | string;
+type TabId = 'groups' | 'live' | 'events' | 'rankings' | 'info' | 'schedule' | string;
 
 export default function ZktCompetitionDetail() {
 	const {competitionId} = useParams<{competitionId: string}>();
@@ -176,7 +148,6 @@ export default function ZktCompetitionDetail() {
 	);
 	const isLiveRoute = !!liveMatch;
 
-	const me = useSelector((state: any) => state.account.me);
 	const [detail, setDetail] = useState<any>(() => detailCache.get(competitionId)?.data ?? null);
 	const [loading, setLoading] = useState(() => !detailCache.get(competitionId));
 	const [tab, setTab] = useState<TabId>(
@@ -191,7 +162,7 @@ export default function ZktCompetitionDetail() {
 		}
 		try {
 			const res = await gqlMutate(DETAIL_QUERY, {id: competitionId});
-			const data = res?.data?.zktCompetition;
+			const data = res?.data?.zktPublicCompetition;
 			if (data) detailCache.set(competitionId, {data, ts: Date.now()});
 			setDetail(data);
 		} catch {
@@ -205,10 +176,15 @@ export default function ZktCompetitionDetail() {
 		fetch();
 	}, [fetch]);
 
-	// Live refetch socket room is keyed by the real UUID (detail.id); the route
-	// param may be a slug, which the server never broadcasts to. Falls back to
-	// the param until detail loads.
-	useZktCompRefetch(detail?.id ?? competitionId, fetch);
+	// Live refresh: the federation socket push is a later phase; while a
+	// competition is ONGOING, poll the detail every 60s so "happening now" chips
+	// and podiums stay current without a manual reload. Round-level live results
+	// poll faster inside the Live tab.
+	useEffect(() => {
+		if (detail?.status !== 'ONGOING') return;
+		const id = window.setInterval(fetch, 60000);
+		return () => window.clearInterval(id);
+	}, [detail?.status, fetch]);
 
 	useEffect(() => {
 		if (isLiveRoute) {
@@ -223,43 +199,30 @@ export default function ZktCompetitionDetail() {
 	if (!detail) return <div className={b('empty')}>{t('not_found')}</div>;
 
 	const locale = i18n.language === 'tr' ? 'tr-TR' : i18n.language;
-	const myRegistration = detail.registrations.find((r: any) => r.user_id === me?.id);
-	const canRegister =
-		detail.status === 'REGISTRATION_OPEN' &&
-		detail.visibility === 'PUBLIC' &&
-		me &&
-		(!myRegistration || myRegistration.status === 'WITHDRAWN');
-
-	const approvedCount = detail.registrations.filter((r: any) => r.status === 'APPROVED').length;
 
 	// "Happening now" — rounds currently OPEN/ACTIVE (Competitor-groups style
-	// live highlight, driven purely by round status; socket refetch keeps it hot).
+	// live highlight, driven purely by round status).
 	const liveRounds: Array<{eventId: string; roundNumber: number}> = [];
 	for (const ev of detail.events) {
 		for (const r of ev.rounds) {
 			if (r.status === 'OPEN' || r.status === 'ACTIVE') {
-				liveRounds.push({eventId: ev.event_id, roundNumber: r.round_number});
+				liveRounds.push({eventId: ev.eventId, roundNumber: r.roundNumber});
 			}
 		}
 	}
 
-	// Tab order matches the WCA competitions page so users feel at home
-	// switching between WCA + ZKT competitions. "Rankings" replaces the
-	// stand-alone "Podiums" tab — final-round top 3 is the natural top of
-	// the rankings table.
+	const hasSchedule =
+		(detail.schedule || []).length > 0 ||
+		detail.events.some((ev: any) => (ev.rounds || []).some((r: any) => (r.groups || []).some((g: any) => g.startTime)));
+
+	// Tab order matches the WCA competitions page so users feel at home switching
+	// between WCA + ZKT competitions.
 	const TABS: Array<{id: TabId; label: string; icon: any; show?: boolean; count?: number}> = [
-		{id: 'groups', label: t('tab_competitors'), icon: Users, show: true, count: approvedCount},
+		{id: 'groups', label: t('tab_competitors'), icon: Users, show: true, count: detail.competitors.length},
 		{id: 'live', label: t('tab_live'), icon: Broadcast, show: detail.status !== 'DRAFT'},
 		{id: 'events', label: t('tab_events'), icon: ListBullets, show: true, count: detail.events.length},
 		{id: 'rankings', label: t('tab_rankings'), icon: ChartBar, show: detail.status !== 'DRAFT'},
-		{
-			id: 'schedule',
-			label: t('tab_schedule'),
-			icon: CalendarBlank,
-			show:
-				(detail.schedule_items || []).length > 0 ||
-				detail.events.some((ev: any) => (ev.rounds || []).some((r: any) => (r.groups || []).some((g: any) => g.start_time))),
-		},
+		{id: 'schedule', label: t('tab_schedule'), icon: CalendarBlank, show: hasSchedule},
 		{id: 'info', label: t('tab_info'), icon: Globe, show: true},
 		...(detail.tabs || []).map((tb: any) => ({
 			id: `custom_${tb.id}`,
@@ -267,7 +230,6 @@ export default function ZktCompetitionDetail() {
 			icon: FileText,
 			show: true,
 		})),
-		{id: 'register', label: t('tab_register'), icon: UserPlus, show: canRegister},
 	];
 
 	function handleTab(id: TabId) {
@@ -289,7 +251,7 @@ export default function ZktCompetitionDetail() {
 				<div className={b('detail-meta')}>
 					<span className={b('meta-item')}>
 						<CalendarBlank size={15} weight="bold" />
-						{formatDateRange(detail.date_start, detail.date_end, locale)}
+						{formatDateRange(detail.startDate, detail.endDate, locale)}
 					</span>
 					<button
 						type="button"
@@ -298,7 +260,7 @@ export default function ZktCompetitionDetail() {
 							openInMaps(
 								detail.latitude && detail.longitude
 									? `${detail.latitude},${detail.longitude}`
-									: [detail.location, detail.location_address].filter(Boolean).join(' ')
+									: [detail.location, detail.locationAddress].filter(Boolean).join(' ')
 							)
 						}
 					>
@@ -311,13 +273,13 @@ export default function ZktCompetitionDetail() {
 						{detail.delegates?.length > 0 && (
 							<span className={b('detail-people-item')}>
 								<ShieldCheck size={14} weight="bold" />
-								{t('delegates')}: {detail.delegates.map((d: any) => d.user.username).join(', ')}
+								{t('delegates')}: {detail.delegates.map((d: any) => d.name).join(', ')}
 							</span>
 						)}
 						{detail.organizers?.length > 0 && (
 							<span className={b('detail-people-item')}>
 								<Users size={14} weight="bold" />
-								{t('organizers')}: {detail.organizers.map((o: any) => o.user.username).join(', ')}
+								{t('organizers')}: {detail.organizers.map((o: any) => o.name).join(', ')}
 							</span>
 						)}
 					</div>
@@ -326,11 +288,6 @@ export default function ZktCompetitionDetail() {
 					<span className={b('status', {[detail.status.toLowerCase()]: true})}>
 						{t(`status_${detail.status.toLowerCase()}`)}
 					</span>
-					{myRegistration && (
-						<span className={b('my-status', {[myRegistration.status.toLowerCase()]: true})}>
-							{t('my_status')}: {t(`registration_${myRegistration.status.toLowerCase()}`)}
-						</span>
-					)}
 				</div>
 
 				{liveRounds.length > 0 && (
@@ -381,7 +338,6 @@ export default function ZktCompetitionDetail() {
 				{tab === 'rankings' && <ZktPodiumsTab detail={detail} />}
 				{tab === 'schedule' && <ZktScheduleTab detail={detail} />}
 				{tab === 'info' && <ZktInfoTab detail={detail} />}
-				{tab === 'register' && <ZktRegistrationForm detail={detail} onDone={fetch} />}
 				{typeof tab === 'string' &&
 					tab.startsWith('custom_') &&
 					(() => {

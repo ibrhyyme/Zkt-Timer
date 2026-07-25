@@ -18,39 +18,39 @@ export interface ScheduleRow {
 export function buildScheduleRows(detail: any, roundLabel: (n: number) => string): ScheduleRow[] {
 	const rows: ScheduleRow[] = [];
 
-	for (const item of detail.schedule_items || []) {
+	for (const item of detail.schedule || []) {
 		rows.push({
 			id: item.id,
 			title: item.title,
-			start: item.start_time || null,
-			end: item.end_time || null,
+			start: item.startTime || null,
+			end: item.endTime || null,
 			isRound: false,
 		});
 	}
 
 	for (const ev of detail.events || []) {
 		for (const r of ev.rounds || []) {
-			const timed = (r.groups || []).filter((g: any) => g.start_time);
+			const timed = (r.groups || []).filter((g: any) => g.startTime);
 			let start: string | null = null;
 			let end: string | null = null;
 			if (timed.length > 0) {
 				start = timed.reduce(
-					(min: string, g: any) => (g.start_time < min ? g.start_time : min),
-					timed[0].start_time
+					(min: string, g: any) => (g.startTime < min ? g.startTime : min),
+					timed[0].startTime
 				);
 				end = timed.reduce((max: string | null, g: any) => {
-					const e = g.end_time || g.start_time;
+					const e = g.endTime || g.startTime;
 					return max === null || e > max ? e : max;
 				}, null as string | null);
 			}
 			rows.push({
-				id: r.id,
-				title: `${getEventName(ev.event_id)} — ${roundLabel(r.round_number)}`,
+				id: r.roundId,
+				title: `${getEventName(ev.eventId)} — ${roundLabel(r.roundNumber)}`,
 				start,
 				end,
 				isRound: true,
-				eventId: ev.event_id,
-				roundNumber: r.round_number,
+				eventId: ev.eventId,
+				roundNumber: r.roundNumber,
 			});
 		}
 	}

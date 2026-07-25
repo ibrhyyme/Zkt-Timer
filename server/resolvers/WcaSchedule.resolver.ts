@@ -19,6 +19,15 @@ import {logger} from '../services/logger';
 import {getWcaLiveData as wcaLiveGetData, fetchLiveRoundResults as wcaLiveFetchRound, fetchRecentRecords} from '../services/WcaLiveService';
 import {ensureNotificationState} from '../services/WcaNotificationState';
 import {getArchivedCompetition, archiveCompetition, isStaleArchive, isCompetitionFinished} from '../services/CompetitionArchiveService';
+import {ZktFederationService} from '../services/ZktFederationService';
+import {
+	isZktCompetitionId,
+	zktSlugOf,
+	zktWcifLiveFields,
+	zktDetailToLiveOverview,
+	zktRoundToWcaLiveResults,
+	zktCompetitorToWcaLive,
+} from '../services/ZktWcaAdapter';
 import {checkRateLimit} from '../services/rate_limit';
 import GraphQLError from '../util/graphql_error';
 import {ErrorCode} from '../constants/errors';
@@ -77,6 +86,31 @@ export class WcaScheduleResolver {
 		const integration = await getIntegration(ctx.user, 'wca');
 		const wcaId = integration?.wca_id || '';
 		const wcaUserId = integration?.wca_user_id || '';
+
+		// ZKT (Zeka Kupu Turkiye federation) competition: render through the SAME
+		// WCA components by feeding the federation's WCIF into WcifTransformer, then
+		// wiring the live surfaces to the federation. No WCA API/archive involved.
+		// Pass the viewer's WCA identity so they get pinned to the top + a "me"
+		// badge exactly like a WCA competition: a WCA-login user who registered on
+		// the federation with the same WCA account matches by wcaId.
+		if (isZktCompetitionId(input.competitionId)) {
+			const slug = zktSlugOf(input.competitionId);
+			const wcif = await ZktFederationService.fetchWcif(slug);
+			if (!wcif) return null;
+			const detail = buildCompetitionDetail(wcif as any, wcaId, wcaUserId);
+			if (!detail) return null;
+			detail.competitionId = input.competitionId; // keep the prefixed id for sub-routes
+			const live = zktWcifLiveFields(
+				wcif,
+				input.competitionId,
+				detail.competitors.map((c) => ({wcaId: c.wcaId, registrantId: c.registrantId, name: c.name}))
+			);
+			detail.wcaLiveCompId = live.wcaLiveCompId;
+			detail.wcaLiveRoundMap = live.wcaLiveRoundMap;
+			detail.wcaLiveCompetitors = live.wcaLiveCompetitors;
+			if (detail.info) detail.info.wcaUrl = `https://zekakuputurkiye.com/competitions/zkt/${slug}`;
+			return detail;
+		}
 
 		// 1. First check archive DB — if found and not active, use archived data
 		// BUT: if the competition is currently active (live), skip the archive
@@ -189,6 +223,12 @@ export class WcaScheduleResolver {
 		@Arg('input') input: WcaLiveOverviewInput
 	): Promise<WcaLiveCompetitionOverview | null> {
 		try {
+			if (isZktCompetitionId(input.competitionId)) {
+				const d = await ZktFederationService.fetchCompetitionDetail(zktSlugOf(input.competitionId));
+				if (!d) return null;
+				return zktDetailToLiveOverview(d, input.competitionId) as WcaLiveCompetitionOverview;
+			}
+
 			const cacheKey = createRedisKey(
 				RedisNamespace.WCA_WCIF,
 				`liveoverview:${input.competitionId}`
@@ -215,6 +255,15 @@ export class WcaScheduleResolver {
 		@Arg('input') input: WcaLiveRoundInput
 	): Promise<WcaLiveRoundResults | null> {
 		try {
+			if (isZktCompetitionId(input.competitionId)) {
+				const r = await ZktFederationService.fetchRoundResults(
+					zktSlugOf(input.competitionId),
+					input.liveRoundId
+				);
+				if (!r) return null;
+				return zktRoundToWcaLiveResults(r) as WcaLiveRoundResults;
+			}
+
 			const cacheKey = createRedisKey(
 				RedisNamespace.WCA_WCIF,
 				`liveround:${input.competitionId}:${input.liveRoundId}`
@@ -260,6 +309,17 @@ export class WcaScheduleResolver {
 		@Arg('input') input: WcaLiveCompetitorInput
 	): Promise<WcaLiveCompetitorResults | null> {
 		try {
+			if (isZktCompetitionId(input.competitionId)) {
+				// personLiveId here is the competition-local registrantId (the WCIF
+				// registrantId == federation registration_number), not a WCA Live id.
+				const c = await ZktFederationService.fetchCompetitorDetail(
+					zktSlugOf(input.competitionId),
+					input.personLiveId
+				);
+				if (!c) return null;
+				return zktCompetitorToWcaLive(c) as WcaLiveCompetitorResults;
+			}
+
 			// personLiveId must be numeric (WCA Live person ID), sanitize for safety
 			const sanitizedId = String(parseInt(input.personLiveId, 10));
 			if (sanitizedId === 'NaN') return null;

@@ -13,24 +13,24 @@ export default function ZktEventsTab({detail}: {detail: any}) {
 		const out: any[] = [];
 		for (const ev of detail.events) {
 			const sorted = [...(ev.rounds || [])].sort(
-				(a: any, bx: any) => a.round_number - bx.round_number
+				(a: any, bx: any) => a.roundNumber - bx.roundNumber
 			);
 			sorted.forEach((r: any, i: number) => {
 				out.push({
-					roundId: r.id,
-					eventId: ev.event_id,
-					eventName: getEventName(ev.event_id),
-					roundNumber: r.round_number,
+					roundId: r.roundId,
+					eventId: ev.eventId,
+					eventName: getEventName(ev.eventId),
+					roundNumber: r.roundNumber,
 					format: r.format,
-					timeLimitCs: r.time_limit_cs,
-					cutoffCs: r.cutoff_cs,
-					cutoffAttempts: r.cutoff_attempts,
-					advancementType: r.advancement_type,
-					advancementLevel: r.advancement_level,
+					timeLimitCs: r.timeLimitCs,
+					cutoffCs: r.cutoffCs,
+					cutoffAttempts: r.cutoffAttempts,
+					advancementType: r.advancementType,
+					advancementLevel: r.advancementLevel,
 					status: r.status,
 					groups: r.groups || [],
 					isFirstRound: i === 0,
-					roundKey: `${ev.event_id}-r${r.round_number}`,
+					roundKey: `${ev.eventId}-r${r.roundNumber}`,
 				});
 			});
 		}
@@ -137,24 +137,24 @@ function RoundPanel({row}: {row: any}) {
 			) : (
 				<div className={b('group-cards')}>
 					{[...row.groups]
-						.sort((a: any, bx: any) => a.group_number - bx.group_number)
+						.sort((a: any, bx: any) => a.groupNumber - bx.groupNumber)
 						.map((g: any) => (
 							<button
-								key={g.id}
+								key={g.groupId}
 								type="button"
 								className={b('group-card')}
 								onClick={() =>
 									history.push(
-										`/zkt-competitions/${competitionId}/activities/${g.id}`
+										`/zkt-competitions/${competitionId}/activities/${g.groupId}`
 									)
 								}
 							>
 								<span className={b('group-card-title')}>
-									{t('col_group')} {g.group_number}
+									{t('col_group')} {g.groupNumber}
 								</span>
-								{g.start_time && (
+								{g.startTime && (
 									<span className={b('group-card-time')}>
-										{formatTimeRange(g.start_time, g.end_time)}
+										{formatTimeRange(g.startTime, g.endTime)}
 									</span>
 								)}
 							</button>

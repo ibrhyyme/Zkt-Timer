@@ -23,6 +23,14 @@ export enum RedisNamespace {
 	ZKT_COMP_LIST = 'cd:zktcomp:list',
 	ZKT_COMP_DETAIL = 'cd:zktcomp:detail',
 	ZKT_RECORDS = 'cd:zktcomp:records',
+	// Federation (zekakuputurkiye) public-read consumer cache — separate from the
+	// legacy local management namespaces above so both can coexist during Phase A.
+	ZKT_FED_LIST = 'cd:zktfed:list',
+	ZKT_FED_WCIF = 'cd:zktfed:wcif',
+	ZKT_FED_DETAIL = 'cd:zktfed:detail',
+	ZKT_FED_RESULTS = 'cd:zktfed:results',
+	ZKT_FED_GROUP = 'cd:zktfed:group',
+	ZKT_FED_COMPETITOR = 'cd:zktfed:competitor',
 	IAP_EVENTS = 'cd:iap:events',
 	FRIENDLY_ROOM_SESSION = 'cd:friendly_room:session',
 	SUPPORT_TICKET_RATE = 'cd:support:rate',

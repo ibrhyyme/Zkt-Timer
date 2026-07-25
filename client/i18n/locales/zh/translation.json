@@ -980,6 +980,7 @@
         "no_competitor_results": "暂无成绩记录。",
         "results_error": "加载成绩失败。",
         "wca_live": "WCA Live",
+        "zkt_live": "ZKT Live",
         "wca_live_select_event": "选择项目",
         "wca_live_unavailable": "此比赛在 WCA Live 上不可用",
         "wca_live_no_events": "此比赛暂无项目",

@@ -980,6 +980,7 @@
         "no_competitor_results": "Результаты ещё не введены.",
         "results_error": "Не удалось загрузить результаты.",
         "wca_live": "WCA Live",
+        "zkt_live": "ZKT Live",
         "wca_live_select_event": "Выберите дисциплину",
         "wca_live_unavailable": "Это соревнование недоступно на WCA Live",
         "wca_live_no_events": "В этом соревновании пока нет дисциплин",

@@ -1,16 +1,19 @@
 import React, {useState, useEffect} from 'react';
 import {useParams, useHistory, useRouteMatch} from 'react-router-dom';
-import {useSelector} from 'react-redux';
 import {useTranslation} from 'react-i18next';
-import {b, getEventName, formatCs, formatName, formatHasAverage, getFormatAttempts, formatAttempts, competitorDisplayName, competitorFlag, competitorOf} from '../shared';
+import {b, getEventName, formatCs, formatName, formatHasAverage, getFormatAttempts, formatAttempts, competitorDisplayName, competitorFlag} from '../shared';
 import {useZktLiveResults, LiveResult} from '../useZktLiveResults';
 import {useIsMobile} from '../../../../util/hooks/useIsMobile';
-import {ArrowClockwise, Broadcast, MonitorPlay} from 'phosphor-react';
+import {ArrowClockwise, Broadcast} from 'phosphor-react';
 import ZktLivePodiums from './ZktLivePodiums';
 import ZktResultModal, {ZktResultModalRow} from '../ZktResultModal';
-import {computeAdvancementStates} from '../../../../../shared/zkt_competition/advancement';
 import AdvancementLegend from '../AdvancementLegend';
 
+// Live results for a federation competition. Rounds/advancement/records all come
+// pre-computed from the federation public API; this view selects an event+round
+// and renders. Round metadata (format/limits/status) is read from the already
+// loaded competition detail; the per-attempt rows poll every 10s via
+// useZktLiveResults.
 export default function ZktLiveTab({detail}: {detail: any}) {
 	const {t} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
 	const {competitionId} = useParams<{competitionId: string}>();
@@ -24,74 +27,57 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 		? parseInt(matchEvent.params.roundNumber, 10)
 		: null;
 
-	// If no eventId in URL, show welcome screen
+	// selectedEventId is the WCA event id (e.g. "333"); "" = welcome screen.
 	const [selectedEventId, setSelectedEventId] = useState<string>(
-		urlEventId
-			? detail.events.find((e: any) => e.event_id === urlEventId)?.id || ''
-			: ''
+		urlEventId && detail.events.some((e: any) => e.eventId === urlEventId) ? urlEventId : ''
 	);
-	const selectedEvent = detail.events.find((e: any) => e.id === selectedEventId);
+	const selectedEvent = detail.events.find((e: any) => e.eventId === selectedEventId);
 
-	const defaultRound = selectedEvent?.rounds.find((r: any) => r.status === 'ACTIVE')
-		|| selectedEvent?.rounds.find((r: any) => r.status === 'FINISHED')
-		|| selectedEvent?.rounds[0];
+	const defaultRound =
+		selectedEvent?.rounds.find((r: any) => r.status === 'ACTIVE') ||
+		selectedEvent?.rounds.find((r: any) => r.status === 'FINISHED') ||
+		selectedEvent?.rounds[0];
 	const [selectedRoundId, setSelectedRoundId] = useState<string>(
 		urlRoundNumber && selectedEvent
-			? selectedEvent.rounds.find((r: any) => r.round_number === urlRoundNumber)?.id || defaultRound?.id || ''
-			: defaultRound?.id || ''
+			? selectedEvent.rounds.find((r: any) => r.roundNumber === urlRoundNumber)?.roundId ||
+					defaultRound?.roundId ||
+					''
+			: defaultRound?.roundId || ''
 	);
-	const selectedRound = selectedEvent?.rounds.find((r: any) => r.id === selectedRoundId);
+	const selectedRound = selectedEvent?.rounds.find((r: any) => r.roundId === selectedRoundId);
 
 	useEffect(() => {
 		// Reset round selection when event changes
-		if (selectedEvent && !selectedEvent.rounds.some((r: any) => r.id === selectedRoundId)) {
+		if (selectedEvent && !selectedEvent.rounds.some((r: any) => r.roundId === selectedRoundId)) {
 			const d = selectedEvent.rounds[0];
-			setSelectedRoundId(d?.id || '');
+			setSelectedRoundId(d?.roundId || '');
 		}
 	}, [selectedEventId, selectedEvent, selectedRoundId]);
 
-	// Socket room key must be the real UUID (detail.id), not the route param
-	// which may be a slug — the server emits to zkt_comp_{uuid}.
+	// competitionId param may be a slug; detail.id is the federation UUID. The
+	// results endpoint accepts either, so pass the UUID for stability.
 	const {results, loading, refresh} = useZktLiveResults(detail.id, selectedRoundId);
 
-	// Expected competitors this round (round 1 = APPROVED registrations for the
-	// event, round 2+ = carried rows). Feeds the clinched green/orange math so
-	// people who haven't gone yet count as a threat.
-	const totalExpected = React.useMemo(() => {
-		if (!selectedRound) return undefined;
-		if (selectedRound.round_number !== 1) return (results || []).length;
-		if (!detail?.registrations || !selectedEvent) return undefined;
-		return detail.registrations.filter(
-			(r: any) =>
-				r.status === 'APPROVED' &&
-				(r.events || []).some((e: any) => e.comp_event_id === selectedEvent.id)
-		).length;
-	}, [selectedRound, detail, selectedEvent, results]);
-
-	// Final round = the event's last round. Medals (gold/silver/bronze) show
-	// on the top 3 throughout the final round (live), regardless of status.
+	// Final round = the event's last round. Medals (gold/silver/bronze) show on
+	// the top 3 throughout the final round (live), regardless of status.
 	const isFinalRound = !!(
 		selectedRound &&
 		selectedEvent &&
-		selectedRound.round_number ===
-			Math.max(...(selectedEvent.rounds || []).map((r: any) => r.round_number))
+		selectedRound.roundNumber ===
+			Math.max(...(selectedEvent.rounds || []).map((r: any) => r.roundNumber))
 	);
 
-	// Map comp_event_id -> event_id for route updates
-	function handleEventChange(compEventId: string) {
-		setSelectedEventId(compEventId);
-		const ev = detail.events.find((e: any) => e.id === compEventId);
-		if (ev) {
-			history.push(`/zkt-competitions/${competitionId}/live/${ev.event_id}`);
-		}
+	function handleEventChange(eventId: string) {
+		setSelectedEventId(eventId);
+		history.push(`/zkt-competitions/${competitionId}/live/${eventId}`);
 	}
 
 	function handleRoundChange(roundId: string) {
 		setSelectedRoundId(roundId);
-		const r = selectedEvent?.rounds.find((rr: any) => rr.id === roundId);
+		const r = selectedEvent?.rounds.find((rr: any) => rr.roundId === roundId);
 		if (r && selectedEvent) {
 			history.push(
-				`/zkt-competitions/${competitionId}/live/${selectedEvent.event_id}/${r.round_number}`
+				`/zkt-competitions/${competitionId}/live/${selectedEvent.eventId}/${r.roundNumber}`
 			);
 		}
 	}
@@ -105,12 +91,12 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 			<div className={b('event-chips')}>
 				{detail.events.map((ev: any) => (
 					<button
-						key={ev.id}
-						className={b('event-chip-btn', {active: selectedEventId === ev.id})}
-						onClick={() => handleEventChange(ev.id)}
+						key={ev.eventId}
+						className={b('event-chip-btn', {active: selectedEventId === ev.eventId})}
+						onClick={() => handleEventChange(ev.eventId)}
 					>
-						<span className={`cubing-icon event-${ev.event_id}`} />
-						<span>{getEventName(ev.event_id)}</span>
+						<span className={`cubing-icon event-${ev.eventId}`} />
+						<span>{getEventName(ev.eventId)}</span>
 					</button>
 				))}
 			</div>
@@ -131,16 +117,16 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 										.filter((r: any) => r.status === 'ACTIVE')
 										.map((r: any) => (
 											<button
-												key={r.id}
+												key={r.roundId}
 												className={b('event-chip-btn', {active: true})}
 												onClick={() => {
-													setSelectedEventId(ev.id);
-													history.push(`/zkt-competitions/${competitionId}/live/${ev.event_id}/${r.round_number}`);
+													setSelectedEventId(ev.eventId);
+													history.push(`/zkt-competitions/${competitionId}/live/${ev.eventId}/${r.roundNumber}`);
 												}}
 												style={{animation: 'zkt-pulse 1.4s ease-in-out infinite'}}
 											>
-												<span className={`cubing-icon event-${ev.event_id}`} />
-												<span>{getEventName(ev.event_id)} {t('round_n', {n: r.round_number})}</span>
+												<span className={`cubing-icon event-${ev.eventId}`} />
+												<span>{getEventName(ev.eventId)} {t('round_n', {n: r.roundNumber})}</span>
 												<span className={b('round-chip-status', {active: true})}>CANLI</span>
 											</button>
 										))
@@ -152,31 +138,31 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 					{/* Podiums */}
 					<ZktLivePodiums detail={detail} />
 
-					{/* Tüm turlar — schedule benzeri liste, schedule modeli yokken
-					    her event için round'ların durumunu özet kart olarak gösterir */}
+					{/* Tum turlar — schedule benzeri liste, her event icin round'larin
+					    durumunu ozet kart olarak gosterir */}
 					<div style={{marginTop: '2rem'}}>
 						<h3 className={b('section-title')}>{t('all_rounds')}</h3>
 						<div className={b('all-rounds-grid')}>
 							{detail.events.map((ev: any) =>
 								ev.rounds.map((r: any) => (
 									<button
-										key={r.id}
+										key={r.roundId}
 										type="button"
 										className={b('all-rounds-card', {[r.status.toLowerCase()]: true})}
 										onClick={() => {
-											setSelectedEventId(ev.id);
+											setSelectedEventId(ev.eventId);
 											history.push(
-												`/zkt-competitions/${competitionId}/live/${ev.event_id}/${r.round_number}`
+												`/zkt-competitions/${competitionId}/live/${ev.eventId}/${r.roundNumber}`
 											);
 										}}
 									>
-										<span className={`cubing-icon event-${ev.event_id}`} style={{fontSize: 22}} />
+										<span className={`cubing-icon event-${ev.eventId}`} style={{fontSize: 22}} />
 										<div className={b('all-rounds-card-text')}>
 											<span className={b('all-rounds-card-event')}>
-												{getEventName(ev.event_id)}
+												{getEventName(ev.eventId)}
 											</span>
 											<span className={b('all-rounds-card-round')}>
-												{t('round_n', {n: r.round_number})}
+												{t('round_n', {n: r.roundNumber})}
 											</span>
 										</div>
 										<span className={b('round-chip-status', {[r.status.toLowerCase()]: true})}>
@@ -195,14 +181,14 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 					<div className={b('round-chips')}>
 						{selectedEvent.rounds.map((r: any) => (
 							<button
-								key={r.id}
+								key={r.roundId}
 								className={b('round-chip', {
-									active: selectedRoundId === r.id,
+									active: selectedRoundId === r.roundId,
 									[r.status.toLowerCase()]: true,
 								})}
-								onClick={() => handleRoundChange(r.id)}
+								onClick={() => handleRoundChange(r.roundId)}
 							>
-								{t('round_n', {n: r.round_number})}
+								{t('round_n', {n: r.roundNumber})}
 								<span className={b('round-chip-status', {[r.status.toLowerCase()]: true})}>
 									{t(`round_status_${r.status.toLowerCase()}`)}
 								</span>
@@ -217,36 +203,24 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 									<span className={b('live-badge')}>{t('live_badge')}</span>
 								)}
 								<span>{t('format')}: <strong>{formatName(selectedRound.format)}</strong></span>
-								{selectedRound.time_limit_cs && (
-									<span>{t('time_limit')}: {formatCs(selectedRound.time_limit_cs)}</span>
+								{selectedRound.timeLimitCs && (
+									<span>{t('time_limit')}: {formatCs(selectedRound.timeLimitCs)}</span>
 								)}
-								{selectedRound.cutoff_cs && (
-									<span>{t('cutoff')}: {formatCs(selectedRound.cutoff_cs)}</span>
+								{selectedRound.cutoffCs && (
+									<span>{t('cutoff')}: {formatCs(selectedRound.cutoffCs)}</span>
 								)}
-								{selectedRound.advancement_type && selectedRound.advancement_level && (
+								{selectedRound.advancementType && selectedRound.advancementLevel && (
 									<span>
 										{t('advancement')}:{' '}
-										{selectedRound.advancement_type === 'PERCENT'
-											? `${selectedRound.advancement_level}% · ${t('advancement_top_count', {
-													n: Math.floor((results.length * selectedRound.advancement_level) / 100),
+										{selectedRound.advancementType === 'PERCENT'
+											? `${selectedRound.advancementLevel}% · ${t('advancement_top_count', {
+													n: Math.floor((results.length * selectedRound.advancementLevel) / 100),
 											  })}`
-											: t('advancement_top_count', {n: selectedRound.advancement_level})}
+											: t('advancement_top_count', {n: selectedRound.advancementLevel})}
 									</span>
 								)}
 								<button className={b('refresh-btn')} onClick={refresh} title={t('refresh')}>
 									<ArrowClockwise weight="bold" />
-								</button>
-								<button
-									className={b('refresh-btn')}
-									onClick={() =>
-										window.open(
-											`/zkt-competitions/${competitionId}/projector/${selectedEvent.event_id}/${selectedRound.round_number}`,
-											'_blank'
-										)
-									}
-									title={t('open_projector')}
-								>
-									<MonitorPlay weight="bold" />
 								</button>
 							</div>
 
@@ -254,14 +228,8 @@ export default function ZktLiveTab({detail}: {detail: any}) {
 								results={results}
 								format={selectedRound.format}
 								loading={loading}
-								roundStatus={selectedRound.status}
-								advancementType={selectedRound.advancement_type}
-								advancementLevel={selectedRound.advancement_level}
-								cutoffCs={selectedRound.cutoff_cs}
-								cutoffAttempts={selectedRound.cutoff_attempts}
-								eventId={selectedEvent.event_id}
+								advancementType={selectedRound.advancementType}
 								competitionId={competitionId}
-								totalExpected={totalExpected}
 								isFinalRound={isFinalRound}
 							/>
 						</>
@@ -278,53 +246,24 @@ function ResultsTable({
 	results,
 	format,
 	loading,
-	roundStatus,
 	advancementType,
-	advancementLevel,
-	cutoffCs,
-	cutoffAttempts,
-	eventId,
 	competitionId,
-	totalExpected,
 	isFinalRound,
 }: {
 	results: LiveResult[];
 	format: string;
 	loading: boolean;
-	roundStatus?: string;
 	advancementType?: string | null;
-	advancementLevel?: number | null;
-	cutoffCs?: number | null;
-	cutoffAttempts?: number | null;
-	eventId: string;
 	competitionId: string;
-	totalExpected?: number;
 	isFinalRound?: boolean;
 }) {
 	const {t} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
 	const history = useHistory();
 	const isMobile = useIsMobile();
-	const me = useSelector((state: any) => state.account.me);
 	const [modalRow, setModalRow] = useState<(ZktResultModalRow & {competitorId: string}) | null>(null);
 
 	const attemptCount = getFormatAttempts(format);
 	const hasAverage = formatHasAverage(format);
-	const isFinished = roundStatus === 'FINISHED';
-	// WCA-live three-state advancement (green=clinched, orange=questionable).
-	const advStates = React.useMemo(
-		() =>
-			computeAdvancementStates(
-				results as any,
-				(advancementType as any) ?? null,
-				advancementLevel ?? null,
-				format as any,
-				cutoffCs ?? null,
-				cutoffAttempts ?? null,
-				isFinished,
-				totalExpected
-			),
-		[results, advancementType, advancementLevel, format, cutoffCs, cutoffAttempts, isFinished, totalExpected]
-	);
 
 	if (loading && results.length === 0) {
 		return <div className={b('empty')}>{t('loading')}</div>;
@@ -354,26 +293,23 @@ function ResultsTable({
 				</thead>
 				<tbody>
 					{results.map((r) => {
-						const competitorId = (r.user_id || r.person_id) as string;
-						const displayName =
-							competitorDisplayName(competitorOf(r)) || competitorId;
-						const flag = competitorFlag(competitorOf(r));
+						const competitorId = r.competitor.id;
+						const displayName = competitorDisplayName(r.competitor) || competitorId;
+						const flag = competitorFlag(r.competitor);
 						const medal = isFinalRound ? MEDALS[(r.ranking || 0) - 1] || '' : '';
-						const isMe = !!(me && r.user_id && me.id === r.user_id);
-						const attempts = formatAttempts(
-							[r.attempt_1, r.attempt_2, r.attempt_3, r.attempt_4, r.attempt_5],
-							attemptCount
-						);
+						const singleTag = r.recordTags?.single;
+						const averageTag = r.recordTags?.average;
+						const attempts = formatAttempts(r.attempts || [], attemptCount);
 						const openRow = () => {
 							if (isMobile) {
 								setModalRow({
 									title: displayName,
 									ranking: r.ranking,
-									best: r.best,
-									average: r.average,
+									best: r.best ?? undefined,
+									average: r.average ?? undefined,
 									attempts,
-									averageRecordTag: r.average_record_tag,
-									singleRecordTag: r.single_record_tag,
+									averageRecordTag: averageTag,
+									singleRecordTag: singleTag,
 									competitorId,
 								});
 							} else {
@@ -384,8 +320,8 @@ function ResultsTable({
 						};
 						return (
 							<tr
-								key={r.id}
-								className={b('result-row', {advancing: (advStates.get(r.id)?.advancing ?? false) && !(advStates.get(r.id)?.questionable ?? false), questionable: advStates.get(r.id)?.questionable ?? false, me: isMe, clickable: true})}
+								key={competitorId}
+								className={b('result-row', {advancing: r.clinched, questionable: r.questionable, clickable: true})}
 								onClick={openRow}
 							>
 								<td className={b('result-rank')}>
@@ -397,10 +333,10 @@ function ResultsTable({
 								</td>
 								<td>
 									<div className={b('result-name')}>
-										{r.user?.profile?.pfp_image?.url && (
+										{r.competitor.avatarUrl && (
 											<img
 												className={b('tiny-avatar')}
-												src={r.user.profile.pfp_image.url}
+												src={r.competitor.avatarUrl}
 												alt=""
 											/>
 										)}
@@ -408,35 +344,26 @@ function ResultsTable({
 											{flag && <span className={b('flag')}>{flag}</span>}
 											{displayName}
 										</span>
-										{isMe && <span className={b('me-badge')}>{t('you')}</span>}
 									</div>
 								</td>
 								{hasAverage && (
-									<td className={b('time-cell', {nr: !!r.average_record_tag, bad: typeof r.average === 'number' && r.average < 0})}>
+									<td className={b('time-cell', {nr: !!averageTag, bad: typeof r.average === 'number' && r.average < 0})}>
 										<span className={b('time-inner')}>
 											{formatCs(r.average)}
-											{r.average_record_tag && (
-												<span
-													className={b('record-tag', {
-														[r.average_record_tag.toLowerCase()]: true,
-													})}
-												>
-													{r.average_record_tag}
+											{averageTag && (
+												<span className={b('record-tag', {[averageTag.toLowerCase()]: true})}>
+													{averageTag}
 												</span>
 											)}
 										</span>
 									</td>
 								)}
-								<td className={b('time-cell', {nr: !!r.single_record_tag, bad: typeof r.best === 'number' && r.best < 0})}>
+								<td className={b('time-cell', {nr: !!singleTag, bad: typeof r.best === 'number' && r.best < 0})}>
 									<span className={b('time-inner')}>
 										{formatCs(r.best)}
-										{r.single_record_tag && (
-											<span
-												className={b('record-tag', {
-													[r.single_record_tag.toLowerCase()]: true,
-												})}
-											>
-												{r.single_record_tag}
+										{singleTag && (
+											<span className={b('record-tag', {[singleTag.toLowerCase()]: true})}>
+												{singleTag}
 											</span>
 										)}
 									</span>

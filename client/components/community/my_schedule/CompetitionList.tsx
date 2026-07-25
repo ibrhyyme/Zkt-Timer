@@ -13,25 +13,22 @@ import {b, I18N_LOCALE_MAP, formatDateRange} from './shared';
 import CompEventFilter from './CompEventFilter';
 import {getEventFilter, setEventFilter} from './eventFilterStorage';
 import {prefetchCompetitionDetail} from './CompetitionLoader';
-import {useZktCompListRefetch} from '../zkt_competitions/useZktCompRefetch';
-import {prefetchZktCompetitionDetail} from '../zkt_competitions/ZktCompetitionDetail';
 
+// ZKT competitions are owned by the Zeka Kupu Turkiye federation; Zkt-Timer reads
+// them (view-only) through the federation public API proxied by ZktPublic.resolver.
 const ZKT_COMPETITIONS_QUERY = gql`
-	query ZktCompetitionsForList($page: Int!, $pageSize: Int!, $searchQuery: String!) {
-		zktCompetitions(page: $page, pageSize: $pageSize, searchQuery: $searchQuery) {
+	query ZktPublicCompetitionsForList($page: Int!, $pageSize: Int!) {
+		zktPublicCompetitions(page: $page, pageSize: $pageSize) {
 			items {
 				id
 				slug
 				name
-				date_start
-				date_end
+				startDate
+				endDate
 				location
 				status
-				country_code
-				events {
-					id
-					event_id
-				}
+				country
+				eventIds
 			}
 		}
 	}
@@ -133,9 +130,6 @@ export default function CompetitionList() {
 		fetchZktCompetitions();
 	}, []);
 
-	// Live refresh: when any ZKT competition is created/updated/deleted, refetch list
-	useZktCompListRefetch(fetchZktCompetitions);
-
 	useEffect(() => {
 		if (me && !getMyCache()) fetchMyCompetitions();
 	}, [me]);
@@ -145,9 +139,8 @@ export default function CompetitionList() {
 			const res = await gqlMutate(ZKT_COMPETITIONS_QUERY, {
 				page: 0,
 				pageSize: 50,
-				searchQuery: '',
 			});
-			const data = res?.data?.zktCompetitions?.items || [];
+			const data = res?.data?.zktPublicCompetitions?.items || [];
 			cachedZktComps = {data, ts: Date.now()};
 			if (mountedRef.current) setZktComps(data);
 		} catch (err) {
@@ -294,12 +287,14 @@ export default function CompetitionList() {
 				id: c.id,
 				slug: c.slug,
 				name: c.name,
-				start_date: c.date_start,
-				end_date: c.date_end,
+				// Federation dates are full ISO; card date math compares against a
+				// YYYY-MM-DD "today", so normalize to a plain date string.
+				start_date: (c.startDate || '').slice(0, 10),
+				end_date: (c.endDate || '').slice(0, 10),
 				city: c.location,
-				country_iso2: c.country_code || 'TR',
+				country_iso2: c.country || 'TR',
 				status: c.status,
-				events: c.events || [],
+				events: (c.eventIds || []).map((id: string) => ({id, event_id: id})),
 				__zkt: true,
 			}))
 			.sort((a: any, b: any) => (b.start_date || '').localeCompare(a.start_date || ''));
@@ -321,7 +316,7 @@ export default function CompetitionList() {
 				className={b('comp-card', {finished: isFinished, ongoing: isOngoing, mine: opts.mine})}
 				onClick={() =>
 					comp.__zkt
-						? history.push(`/zkt-competitions/${comp.slug || comp.id}`)
+						? handleSelectCompetition(`zkt-${comp.slug || comp.id}`)
 						: handleSelectCompetition(comp.id)
 				}
 				onMouseEnter={() => !comp.__zkt && handleHoverPrefetch(comp.id)}
@@ -372,8 +367,8 @@ export default function CompetitionList() {
 			<div
 				key={comp.id}
 				className={b('zkt-card', {finished: isFinished, ongoing: isOngoing})}
-				onMouseEnter={() => prefetchZktCompetitionDetail(comp.slug || comp.id)}
-				onClick={() => history.push(`/zkt-competitions/${comp.slug || comp.id}`)}
+				onMouseEnter={() => prefetchCompetitionDetail(`zkt-${comp.slug || comp.id}`)}
+				onClick={() => handleSelectCompetition(`zkt-${comp.slug || comp.id}`)}
 			>
 				<span className={b('zkt-card-rail')} aria-hidden="true" />
 				<div className={b('zkt-card-main')}>

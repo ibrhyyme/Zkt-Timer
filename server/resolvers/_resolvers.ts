@@ -40,6 +40,7 @@ export * from './ZktResult.resolver';
 export * from './ZktRecord.resolver';
 export * from './ZktAssignment.resolver';
 export * from './ZktPerson.resolver';
+export * from './ZktPublic.resolver';
 export * from './LandingStats.resolver';
 export * from './IAP.resolver';
 export * from './CompetitionFollow.resolver';

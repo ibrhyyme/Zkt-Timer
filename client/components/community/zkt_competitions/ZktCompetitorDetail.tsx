@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useCallback, useMemo} from 'react';
+import React, {useEffect, useState, useCallback} from 'react';
 import './ZktCompetitions.scss';
 import {gql} from '@apollo/client';
 import {gqlMutate} from '../../api';
@@ -6,89 +6,54 @@ import {useTranslation} from 'react-i18next';
 import {useParams, useHistory} from 'react-router-dom';
 import {ArrowLeft, Trophy, ListBullets, Warning} from 'phosphor-react';
 import Loading from '../../common/loading/Loading';
-import {b, getEventName, formatCs, formatName, formatTimeRange, formatAttempts, formatHasAverage, getFormatAttempts, competitorDisplayName, competitorFlag, competitorOf, ZKT_ROLE_COLORS} from './shared';
+import {b, getEventName, formatCs, formatName, formatTimeRange, formatAttempts, formatHasAverage, getFormatAttempts, competitorDisplayName, competitorFlag, ZKT_ROLE_COLORS} from './shared';
 import {useIsMobile} from '../../../util/hooks/useIsMobile';
 import ZktResultModal from './ZktResultModal';
 
+// One competitor's personal view (schedule/assignments + results) from the
+// federation public API. The route param is the opaque competitor key emitted by
+// the list/results payloads — no internal user/person id is ever exposed.
 const COMPETITOR_DETAIL_QUERY = gql`
-	query ZktCompetitorDetailPublic($competitionId: String!, $userId: String!) {
-		zktCompetition(id: $competitionId) {
-			id
-			name
-			date_start
-			date_end
-			events {
+	query ZktPublicCompetitor($competitionId: String!, $key: String!) {
+		zktPublicCompetitor(competitionId: $competitionId, key: $key) {
+			competitor {
 				id
-				event_id
+				name
+				wcaId
+				externalId
+				country
+				avatarUrl
+				isGhost
 			}
-			registrations {
-				id
-				user_id
-				person_id
-				status
-				user {
-					id
-					username
-					first_name
-					last_name
-					join_country
-					profile {
-						pfp_image {
-							url
-						}
-					}
-				}
-				person {
-					id
-					first_name
-					last_name
-					country_code
-				}
-				events {
-					comp_event_id
+			registeredEventIds
+			assignments {
+				role
+				stationNumber
+				groupNumber
+				startTime
+				endTime
+				round {
+					roundNumber
+					format
+					status
+					eventId
+					eventName
 				}
 			}
-		}
-		zktUserAssignments(competitionId: $competitionId, userId: $userId) {
-			id
-			round_id
-			group_id
-			user_id
-			role
-			station_number
-			round {
-				round_number
+			results {
+				roundId
+				eventId
+				eventName
+				roundNumber
 				format
-				status
-				comp_event {
-					event_id
-				}
-			}
-			group {
-				group_number
-				start_time
-				end_time
-			}
-		}
-		zktCompetitorResults(competitionId: $competitionId, userId: $userId) {
-			id
-			round_id
-			attempt_1
-			attempt_2
-			attempt_3
-			attempt_4
-			attempt_5
-			best
-			average
-			ranking
-			proceeds
-			single_record_tag
-			average_record_tag
-			round {
-				round_number
-				format
-				comp_event {
-					event_id
+				attempts
+				best
+				average
+				ranking
+				proceeds
+				recordTags {
+					single
+					average
 				}
 			}
 		}
@@ -109,7 +74,8 @@ const ROLE_TINT = ZKT_ROLE_COLORS;
 type Mode = 'schedule' | 'results';
 
 export default function ZktCompetitorDetail() {
-	const {competitionId, userId} = useParams<{competitionId: string; userId: string}>();
+	// `userId` route param is really the opaque competitor key.
+	const {competitionId, userId: key} = useParams<{competitionId: string; userId: string}>();
 	const {t} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
 	const history = useHistory();
 
@@ -119,45 +85,19 @@ export default function ZktCompetitorDetail() {
 
 	const fetch = useCallback(async () => {
 		try {
-			const res: any = await gqlMutate(COMPETITOR_DETAIL_QUERY, {competitionId, userId});
-			setData(res?.data || null);
+			const res: any = await gqlMutate(COMPETITOR_DETAIL_QUERY, {competitionId, key});
+			setData(res?.data?.zktPublicCompetitor || null);
 		} finally {
 			setLoading(false);
 		}
-	}, [competitionId, userId]);
+	}, [competitionId, key]);
 
 	useEffect(() => {
 		fetch();
 	}, [fetch]);
 
-	const competitor = useMemo(() => {
-		if (!data) return null;
-		// userId route param is a competitorId: either a user id or a ghost id.
-		const reg = (data.zktCompetition?.registrations || []).find(
-			(r: any) => r.user_id === userId || r.person_id === userId
-		);
-		return competitorOf(reg) || null;
-	}, [data, userId]);
-
-	const competitorEvents = useMemo(() => {
-		if (!data) return [] as string[];
-		const reg = (data.zktCompetition?.registrations || []).find(
-			(r: any) => r.user_id === userId || r.person_id === userId
-		);
-		const compEventMap = new Map<string, string>();
-		(data.zktCompetition?.events || []).forEach((e: any) =>
-			compEventMap.set(e.id, e.event_id)
-		);
-		const ids: string[] = [];
-		for (const ev of reg?.events || []) {
-			const eid = compEventMap.get(ev.comp_event_id);
-			if (eid) ids.push(eid);
-		}
-		return ids;
-	}, [data, userId]);
-
 	if (loading) return <Loading />;
-	if (!data || !competitor) {
+	if (!data || !data.competitor) {
 		return (
 			<div className={b('detail-page')}>
 				<div className={b('empty')}>{t('competitor_not_found')}</div>
@@ -165,8 +105,10 @@ export default function ZktCompetitorDetail() {
 		);
 	}
 
-	const assignments = data.zktUserAssignments || [];
-	const results = data.zktCompetitorResults || [];
+	const competitor = data.competitor;
+	const competitorEvents: string[] = data.registeredEventIds || [];
+	const assignments = data.assignments || [];
+	const results = data.results || [];
 
 	return (
 		<div className={b('detail-page')}>
@@ -179,12 +121,8 @@ export default function ZktCompetitorDetail() {
 
 			{/* Person header — WCA Person paritesi */}
 			<div className={b('person-header')}>
-				{competitor.profile?.pfp_image?.url ? (
-					<img
-						className={b('person-avatar')}
-						src={competitor.profile.pfp_image.url}
-						alt=""
-					/>
+				{competitor.avatarUrl ? (
+					<img className={b('person-avatar')} src={competitor.avatarUrl} alt="" />
 				) : (
 					<div className={b('person-avatar-placeholder')} />
 				)}
@@ -192,11 +130,11 @@ export default function ZktCompetitorDetail() {
 					{competitorFlag(competitor) && (
 						<span className={b('flag')}>{competitorFlag(competitor)}</span>
 					)}
-					{competitorDisplayName(competitor) || competitor.username}
+					{competitorDisplayName(competitor) || competitor.id}
 				</h1>
 			</div>
 
-			{/* Cubing icon strip — yarışmacının kayıtlı olduğu eventler */}
+			{/* Cubing icon strip — yarismacinin kayitli oldugu eventler */}
 			{competitorEvents.length > 0 && (
 				<div className={b('person-events-strip')}>
 					{competitorEvents.map((eid) => (
@@ -209,7 +147,7 @@ export default function ZktCompetitorDetail() {
 				</div>
 			)}
 
-			{/* Mode toggle butonları */}
+			{/* Mode toggle butonlari */}
 			<div className={b('person-mode-buttons')}>
 				<button
 					type="button"
@@ -253,13 +191,13 @@ function ScheduleTable({assignments, t}: {assignments: any[]; t: any}) {
 
 	// Sort by event then round then group
 	const sorted = [...assignments].sort((a, bx) => {
-		const ea = a.round?.comp_event?.event_id || '';
-		const eb = bx.round?.comp_event?.event_id || '';
+		const ea = a.round?.eventId || '';
+		const eb = bx.round?.eventId || '';
 		if (ea !== eb) return ea.localeCompare(eb);
-		const ra = a.round?.round_number || 0;
-		const rb = bx.round?.round_number || 0;
+		const ra = a.round?.roundNumber || 0;
+		const rb = bx.round?.roundNumber || 0;
 		if (ra !== rb) return ra - rb;
-		return (a.group?.group_number || 0) - (bx.group?.group_number || 0);
+		return (a.groupNumber || 0) - (bx.groupNumber || 0);
 	});
 
 	return (
@@ -276,17 +214,14 @@ function ScheduleTable({assignments, t}: {assignments: any[]; t: any}) {
 					</tr>
 				</thead>
 				<tbody>
-					{sorted.map((a) => {
-						const eventId = a.round?.comp_event?.event_id || '';
+					{sorted.map((a, i) => {
+						const eventId = a.round?.eventId || '';
 						const role = a.role || 'STAFF';
 						const tint = ROLE_TINT[role] || '#888';
-						const timeRange = a.group?.start_time
-							? formatTimeRange(a.group.start_time, a.group.end_time)
-							: '';
-						const isLive =
-							(a.round as any)?.status === 'OPEN' || (a.round as any)?.status === 'ACTIVE';
+						const timeRange = a.startTime ? formatTimeRange(a.startTime, a.endTime) : '';
+						const isLive = a.round?.status === 'OPEN' || a.round?.status === 'ACTIVE';
 						return (
-							<tr key={a.id} className={isLive ? b('schedule-row-live') : undefined}>
+							<tr key={i} className={isLive ? b('schedule-row-live') : undefined}>
 								<td>
 									<span className={`cubing-icon event-${eventId}`} style={{marginRight: 8, fontSize: 16, verticalAlign: 'middle'}} />
 									{getEventName(eventId)}
@@ -294,7 +229,7 @@ function ScheduleTable({assignments, t}: {assignments: any[]; t: any}) {
 										<span className={b('live-now-chip', {static: true})}>{t('live_now')}</span>
 									)}
 								</td>
-								<td>R{a.round?.round_number}</td>
+								<td>R{a.round?.roundNumber}</td>
 								<td className={b('schedule-cell-time')}>{timeRange || '-'}</td>
 								<td>
 									<span
@@ -309,10 +244,10 @@ function ScheduleTable({assignments, t}: {assignments: any[]; t: any}) {
 									</span>
 								</td>
 								<td className={b('schedule-cell-center')}>
-									{a.group?.group_number ?? '-'}
+									{a.groupNumber ?? '-'}
 								</td>
 								<td className={b('schedule-cell-center')}>
-									{a.station_number ?? '-'}
+									{a.stationNumber ?? '-'}
 								</td>
 							</tr>
 						);
@@ -342,7 +277,7 @@ function ResultsList({
 	// Group by event
 	const byEvent = new Map<string, any[]>();
 	for (const r of results) {
-		const eid = r.round?.comp_event?.event_id || 'unknown';
+		const eid = r.eventId || 'unknown';
 		if (!byEvent.has(eid)) byEvent.set(eid, []);
 		byEvent.get(eid)!.push(r);
 	}
@@ -351,12 +286,12 @@ function ResultsList({
 		<div className={b('person-results')}>
 			{Array.from(byEvent.entries()).map(([eventId, rounds]) => {
 				const maxAttempts = rounds.reduce(
-					(m: number, r: any) => Math.max(m, getFormatAttempts(r.round?.format || 'AO5')),
+					(m: number, r: any) => Math.max(m, getFormatAttempts(r.format || 'AO5')),
 					0
 				);
-				const hasAvg = rounds.some((r: any) => formatHasAverage(r.round?.format || 'AO5'));
+				const hasAvg = rounds.some((r: any) => formatHasAverage(r.format || 'AO5'));
 				const sorted = [...rounds].sort(
-					(a, bx) => (a.round?.round_number || 0) - (bx.round?.round_number || 0)
+					(a, bx) => (a.roundNumber || 0) - (bx.roundNumber || 0)
 				);
 				return (
 					<div key={eventId} className={b('person-results-event')}>
@@ -382,49 +317,48 @@ function ResultsList({
 								</thead>
 								<tbody>
 									{sorted.map((r) => {
-										const attempts = formatAttempts(
-											[r.attempt_1, r.attempt_2, r.attempt_3, r.attempt_4, r.attempt_5],
-											maxAttempts
-										);
+										const attempts = formatAttempts(r.attempts || [], maxAttempts);
+										const singleTag = r.recordTags?.single;
+										const averageTag = r.recordTags?.average;
 										const openRow = () => {
 											if (!isMobile) return;
 											setModalRow({
-												title: `${getEventName(eventId)} — R${r.round?.round_number}`,
+												title: `${getEventName(eventId)} — R${r.roundNumber}`,
 												ranking: r.ranking,
 												best: r.best,
 												average: r.average,
 												attempts,
-												averageRecordTag: r.average_record_tag,
-												singleRecordTag: r.single_record_tag,
+												averageRecordTag: averageTag,
+												singleRecordTag: singleTag,
 												competitorId: null,
 											});
 										};
 										return (
 											<tr
-												key={r.id}
+												key={r.roundId}
 												className={b('result-row', {advancing: r.proceeds, clickable: isMobile})}
 												onClick={openRow}
 											>
-												<td>R{r.round?.round_number}</td>
+												<td>R{r.roundNumber}</td>
 												<td className={b('result-rank')}>{r.ranking ?? '-'}</td>
 												{hasAvg && (
-													<td className={b('time-cell', {nr: !!r.average_record_tag})}>
+													<td className={b('time-cell', {nr: !!averageTag})}>
 														<span className={b('time-inner')}>
 															{formatCs(r.average)}
-															{r.average_record_tag && (
-																<span className={b('record-tag', {[r.average_record_tag.toLowerCase()]: true})}>
-																	{r.average_record_tag}
+															{averageTag && (
+																<span className={b('record-tag', {[averageTag.toLowerCase()]: true})}>
+																	{averageTag}
 																</span>
 															)}
 														</span>
 													</td>
 												)}
-												<td className={b('time-cell', {nr: !!r.single_record_tag})}>
+												<td className={b('time-cell', {nr: !!singleTag})}>
 													<span className={b('time-inner')}>
 														{formatCs(r.best)}
-														{r.single_record_tag && (
-															<span className={b('record-tag', {[r.single_record_tag.toLowerCase()]: true})}>
-																{r.single_record_tag}
+														{singleTag && (
+															<span className={b('record-tag', {[singleTag.toLowerCase()]: true})}>
+																{singleTag}
 															</span>
 														)}
 													</span>
