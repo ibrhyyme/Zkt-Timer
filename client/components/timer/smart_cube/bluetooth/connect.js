@@ -9,6 +9,44 @@ import { getBleAdapter } from '../../../../util/ble';
 import { isNative } from '../../../../util/platform';
 import { setTimerParams } from '../../helpers/params';
 
+/**
+ * Maps an advertised device name to its cube protocol class.
+ *
+ * Single source of truth for the routing table: Connect._initCube and every caller that
+ * overrides _initCube (the trainer wires its own callbacks before init) must use this, or the
+ * two tables silently drift and whole cube brands stop working in one place but not the other.
+ *
+ * Returns a `cube` of null when the name matches no known protocol.
+ */
+export function createCubeForDevice(device, adapter) {
+	const name = device.name || '';
+	const nameLower = name.toLowerCase();
+
+	// cstimer routing order: most specific prefix first
+	if (name.startsWith('Gi') || name.startsWith('Mi Smart Magic Cube') || name.startsWith('Hi-')) {
+		return { cube: new Giiker(device, adapter), cubeType: 'Giiker' };
+	}
+	if (nameLower.startsWith('gan') || name.startsWith('MG') || name.startsWith('AiCube')) {
+		// GAN family: GAN cube, Monster Go AI (MG), AiCube all use GAN protocol
+		// (differentiation in key selection inside gan.js)
+		return { cube: new GAN(device, adapter), cubeType: 'GAN' };
+	}
+	if (name.startsWith('GoCube') || name.startsWith('Rubiks')) {
+		return { cube: new Particula(device, adapter), cubeType: 'Particula' };
+	}
+	if (name.startsWith('MHC')) {
+		return { cube: new MoYu(device, adapter), cubeType: 'MoYu MHC' };
+	}
+	if (name.startsWith('WCU_MY3')) {
+		return { cube: new MoYu32(device, adapter), cubeType: 'MoYu WeiLong AI' };
+	}
+	if (name.startsWith('QY-QYSC') || name.startsWith('XMD-TornadoV4-i')) {
+		return { cube: new QiYi(device, adapter), cubeType: 'QiYi' };
+	}
+
+	return { cube: null, cubeType: 'unknown' };
+}
+
 export default class Connect extends SmartCube {
 	device = null;
 	adapter = null;
@@ -68,32 +106,7 @@ export default class Connect extends SmartCube {
 	};
 
 	_initCube = async (device) => {
-		let cube;
-		let cubeType = 'unknown';
-		const name = device.name || '';
-		const nameLower = name.toLowerCase();
-
-		// cstimer routing order: most specific prefix first
-		if (name.startsWith('Gi') || name.startsWith('Mi Smart Magic Cube') || name.startsWith('Hi-')) {
-			cube = new Giiker(device, this.adapter);
-			cubeType = 'Giiker';
-		} else if (nameLower.startsWith('gan') || name.startsWith('MG') || name.startsWith('AiCube')) {
-			// GAN family: GAN cube, Monster Go AI (MG), AiCube all use GAN protocol (differentiation in key selection inside gan.js)
-			cube = new GAN(device, this.adapter);
-			cubeType = 'GAN';
-		} else if (name.startsWith('GoCube') || name.startsWith('Rubiks')) {
-			cube = new Particula(device, this.adapter);
-			cubeType = 'Particula';
-		} else if (name.startsWith('MHC')) {
-			cube = new MoYu(device, this.adapter);
-			cubeType = 'MoYu MHC';
-		} else if (name.startsWith('WCU_MY3')) {
-			cube = new MoYu32(device, this.adapter);
-			cubeType = 'MoYu WeiLong AI';
-		} else if (name.startsWith('QY-QYSC') || name.startsWith('XMD-TornadoV4-i')) {
-			cube = new QiYi(device, this.adapter);
-			cubeType = 'QiYi';
-		}
+		const { cube, cubeType } = createCubeForDevice(device, this.adapter);
 
 		console.log(`[BLE-CONNECT] _initCube | type: ${cubeType} | name: ${device.name} | id: ${device.deviceId}`);
 
