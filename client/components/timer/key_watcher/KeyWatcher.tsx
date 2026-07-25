@@ -20,6 +20,7 @@ import { useDocumentListener, useWindowListener } from '../../../util/hooks/useL
 import { useSettings } from '../../../util/hooks/useSettings';
 import { useGeneral } from '../../../util/hooks/useGeneral';
 import { getSettings } from '../../../db/settings/query';
+import { getTimerStore } from '../../../util/store/getTimer';
 import { fetchLastSolve, buildBucketFilter } from '../../../db/solves/query';
 import { deleteAllSolvesInSessionDb, deleteSolveDb } from '../../../db/solves/update';
 import { toggleDnfSolveDb, togglePlusTwoSolveDb } from '../../../db/solves/operations';
@@ -79,6 +80,17 @@ export default function KeyWatcher(props: Props) {
 
 	const touchStartX = React.useRef<number | null>(null);
 	const touchStartY = React.useRef<number | null>(null);
+
+	// True from the moment a key press stops the timer until every key is released again.
+	// Without it, the same physical press that stopped the timer keeps producing keydown
+	// events (OS auto-repeat, or a second key still held down), which re-primes the timer
+	// and restarts it on release.
+	const stopKeyHeldRef = React.useRef(false);
+
+	// Window blur (alt-tab) swallows the keyup, so clear the flag defensively
+	useWindowListener('blur', () => {
+		stopKeyHeldRef.current = false;
+	});
 
 	function handleContextMenu(e) {
 		let target = e.target;
@@ -232,6 +244,9 @@ export default function KeyWatcher(props: Props) {
 
 		if (e.key === 'Escape') return;
 
+		// OS auto-repeat while a key stays held down — never a new user intent
+		if (e.repeat) return;
+
 		const solveOpen = modals.length > 1 || (!inModal && modals.length);
 
 		// Checking for various conditions where we don't want to start the timer
@@ -253,6 +268,10 @@ export default function KeyWatcher(props: Props) {
 
 		if (timeStartedAt) {
 			e.preventDefault();
+			// Block re-priming until the key that stopped the timer is released
+			if (!touch) {
+				stopKeyHeldRef.current = true;
+			}
 			endTimer(context, undefined, undefined, eventTimestamp);
 
 			if (inspection) {
@@ -272,6 +291,9 @@ export default function KeyWatcher(props: Props) {
 			return;
 		}
 		if (stackMatOn) return;
+
+		// A key from the press that just stopped the timer is still down — ignore it
+		if (!touch && stopKeyHeldRef.current) return;
 
 		e.preventDefault();
 
@@ -296,6 +318,15 @@ export default function KeyWatcher(props: Props) {
 			setTimer(
 				START_TIMEOUT,
 				setTimeout(() => {
+					// Priming may have been cancelled while this was pending (timer stopped,
+					// escape, swipe cancel). Reading Redux instead of the captured closure keeps
+					// canStart from ever going green without a live spaceTimerStarted — keyup
+					// bails out on !spaceTimerStarted, so that combination is a green light
+					// that can never start the timer.
+					if (!getTimerStore('spaceTimerStarted')) {
+						return;
+					}
+
 					setTimerParams({
 						canStart: true,
 					});
@@ -306,6 +337,9 @@ export default function KeyWatcher(props: Props) {
 
 	function keyupSpace(e, touch = false, eventTimestamp?: number) {
 		const freezeTime = getSettings().freeze_time;
+
+		// Any key release ends the "stopped the timer with this press" block
+		stopKeyHeldRef.current = false;
 
 		// Don't trigger if user is typing in an input
 		const target = e.target as HTMLElement;
