@@ -152,13 +152,18 @@ export function getFormatAttempts(format: string): number {
 			return 3;
 		case 'AO5':
 			return 5;
+		// ZKT-only long average (unofficial finals). It reaches us as the raw ZKT
+		// format string, so it must be listed here or a 12-attempt round renders
+		// with five columns and the last seven attempts disappear.
+		case 'AO12':
+			return 12;
 		default:
 			return 5;
 	}
 }
 
 export function formatHasAverage(format: string): boolean {
-	return format === 'MO3' || format === 'AO5';
+	return format === 'MO3' || format === 'AO5' || format === 'AO12';
 }
 
 /**
@@ -189,6 +194,8 @@ export function formatName(format: string): string {
 			return 'Mo3';
 		case 'AO5':
 			return 'Ao5';
+		case 'AO12':
+			return 'Ao12';
 		default:
 			return format;
 	}

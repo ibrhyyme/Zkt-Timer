@@ -493,9 +493,15 @@ function buildEventDetails(wcifData: WcifData, activityMap: Map<number, Activity
 				groups.sort((a, b) => a.groupNumber - b.groupNumber);
 			}
 
+			// A ZKT-only format (Ao12) has no WCIF letter, so the federation ships
+			// the real one in a round extension. Without this the round shows up as
+			// "Ao5" everywhere the WCIF drives the UI.
+			const zktRoundExt = (round as any).extensions?.find(
+				(e: any) => e?.id === 'org.zktimer.zktRound.v1'
+			);
 			return {
 				roundNumber,
-				format: round.format || '',
+				format: zktRoundExt?.data?.zktFormat || round.format || '',
 				timeLimit: round.timeLimit?.centiseconds || null,
 				cutoff: round.cutoff?.attemptResult || null,
 				cutoffAttempts: round.cutoff?.numberOfAttempts || null,

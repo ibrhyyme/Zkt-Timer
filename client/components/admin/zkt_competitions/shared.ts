@@ -129,11 +129,14 @@ export function getFormatAttempts(format: string): number {
 			return 3;
 		case 'AO5':
 			return 5;
+		// ZKT-only long average; without this an Ao12 round renders five columns.
+		case 'AO12':
+			return 12;
 		default:
 			return 5;
 	}
 }
 
 export function formatHasAverage(format: string): boolean {
-	return format === 'MO3' || format === 'AO5';
+	return format === 'MO3' || format === 'AO5' || format === 'AO12';
 }

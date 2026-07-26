@@ -2850,11 +2850,54 @@
 		}
 	}
 
+	// Mirror of the table's horizontal scrollbar, placed above it. Styled
+	// explicitly: the default dark-theme scrollbar is nearly invisible, and this
+	// bar is the only hint that a long round scrolls sideways.
+	&__wca-live-results-scrollbar {
+		overflow-x: scroll;
+		overflow-y: hidden;
+		height: 10px;
+		margin-bottom: 4px;
+		border-radius: 5px;
+		background: rgba(var(--text-color), 0.07);
+		scrollbar-width: thin;
+		scrollbar-color: rgba(var(--text-color), 0.45) transparent;
+
+		div {
+			height: 1px;
+		}
+
+		&::-webkit-scrollbar {
+			height: 10px;
+		}
+
+		&::-webkit-scrollbar-track {
+			background: transparent;
+		}
+
+		&::-webkit-scrollbar-thumb {
+			background: rgba(var(--text-color), 0.35);
+			border-radius: 5px;
+
+			&:hover {
+				background: rgba(var(--text-color), 0.55);
+			}
+		}
+	}
+
 	&__wca-live-results-wrapper {
 		width: 100%;
 		max-width: 100%;
-		overflow: hidden;
+		// Scroll, never clip: a WCA round's five attempts always fit, but a ZKT
+		// Ao12 round has twelve and `overflow: hidden` silently swallowed the
+		// last columns (attempts 7-12, and on narrow screens Average/Best).
+		overflow-x: auto;
+		overflow-y: hidden;
 		border-radius: 0.5rem;
+
+		// A long-format round (ZKT Ao12) has twelve attempt columns, which do not
+		// fit the 600px reading column this view is built around. Only that case
+		// breaks out of the column, so every WCA round keeps its current layout.
 		border: 1px solid rgba(var(--text-color), 0.1);
 		background: rgba(var(--text-color), 0.03);
 	}

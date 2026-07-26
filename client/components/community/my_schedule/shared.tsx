@@ -264,6 +264,9 @@ const FORMAT_MAP: Record<string, string> = {
 	'1': 'Bo1',
 	'2': 'Bo2',
 	'3': 'Bo3',
+	// ZKT-only format: it has no WCIF letter, so it arrives as the raw ZKT name
+	// via the federation's round extension.
+	AO12: 'Ao12',
 };
 
 export function formatRoundFormat(format: string): string {

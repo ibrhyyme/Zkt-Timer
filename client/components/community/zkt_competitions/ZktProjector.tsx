@@ -189,7 +189,8 @@ export default function ZktProjector() {
 	// Only rows with at least one attempt, ranking order (wca-live nonemptyResults).
 	const nonempty = useMemo(() => {
 		const filled = (results || []).filter((r: any) =>
-			[r.attempt_1, r.attempt_2, r.attempt_3, r.attempt_4, r.attempt_5]
+			// Twelve columns: Ao12 rounds (ZKT-only long average) use all of them.
+			Array.from({length: 12}, (_, i) => r[`attempt_${i + 1}`])
 				.slice(0, attemptCount)
 				.some((a: any) => a !== null && a !== undefined)
 		);

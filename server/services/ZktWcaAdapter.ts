@@ -13,9 +13,14 @@ export const ZKT_PREFIX = 'zkt-';
 export const isZktCompetitionId = (id: string): boolean => id.startsWith(ZKT_PREFIX);
 export const zktSlugOf = (id: string): string => id.slice(ZKT_PREFIX.length);
 
-const ATTEMPTS: Record<string, number> = {BO1: 1, BO2: 2, BO3: 3, MO3: 3, AO5: 5};
+// AO12 is the ZKT-only long-average format (12 attempts). It has to be listed
+// here as well: falling through to the default made a twelve-attempt round come
+// out as a five-attempt one sorted by single, which is why the live view showed
+// "Mo5" and dropped attempts 6-12.
+const ATTEMPTS: Record<string, number> = {BO1: 1, BO2: 2, BO3: 3, MO3: 3, AO5: 5, AO12: 12};
 const attemptsOf = (f: string): number => ATTEMPTS[f] ?? 5;
-const sortByOf = (f: string): string => (f === 'AO5' || f === 'MO3' ? 'average' : 'best');
+const AVERAGE_FORMATS = new Set(['AO5', 'MO3', 'AO12']);
+const sortByOf = (f: string): string => (AVERAGE_FORMATS.has(f) ? 'average' : 'best');
 const advTypeOf = (t: string | null | undefined): string => (t === 'PERCENT' ? 'percent' : 'ranking');
 const roundName = (n: number): string => `${n}. Tur`;
 

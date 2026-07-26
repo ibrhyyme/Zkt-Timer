@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useHistory} from 'react-router-dom';
 import {ArrowClockwise, Warning} from 'phosphor-react';
@@ -75,6 +75,39 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 	useEffect(() => {
 		const id = setInterval(() => forceTick((x) => x + 1), 30000);
 		return () => clearInterval(id);
+	}, []);
+
+	// A second scrollbar ABOVE the table. A long round (ZKT Ao12 has twelve
+	// attempt columns) scrolls sideways; on a phone that is a swipe, but on a
+	// desktop the only handle is the bar at the very bottom of the table, which
+	// is easy to miss — so mirror it on top and keep the two in sync.
+	const wrapperRef = useRef<HTMLDivElement>(null);
+	const topBarRef = useRef<HTMLDivElement>(null);
+	const syncingRef = useRef(false);
+	const [scrollWidth, setScrollWidth] = useState(0);
+
+	useEffect(() => {
+		const el = wrapperRef.current;
+		if (!el) return;
+		const measure = () => setScrollWidth(el.scrollWidth > el.clientWidth ? el.scrollWidth : 0);
+		measure();
+		const ro = new ResizeObserver(measure);
+		ro.observe(el);
+		return () => ro.disconnect();
+	});
+
+	// Guard against the two handlers echoing each other into a scroll loop.
+	const syncFromTable = useCallback(() => {
+		if (syncingRef.current || !topBarRef.current || !wrapperRef.current) return;
+		syncingRef.current = true;
+		topBarRef.current.scrollLeft = wrapperRef.current.scrollLeft;
+		syncingRef.current = false;
+	}, []);
+	const syncFromTop = useCallback(() => {
+		if (syncingRef.current || !topBarRef.current || !wrapperRef.current) return;
+		syncingRef.current = true;
+		wrapperRef.current.scrollLeft = topBarRef.current.scrollLeft;
+		syncingRef.current = false;
 	}, []);
 
 	if (!event?.rounds || event.rounds.length === 0) {
@@ -235,7 +268,17 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 			{/* Results table */}
 			{roundResults && (roundResults.results?.length || 0) > 0 && numAttempts > 0 ? (
 				<>
-					<div className={b('wca-live-results-wrapper')}>
+					{scrollWidth > 0 && (
+						<div
+							className={b('wca-live-results-scrollbar')}
+							ref={topBarRef}
+							onScroll={syncFromTop}
+							aria-hidden="true"
+						>
+							<div style={{width: scrollWidth}} />
+						</div>
+					)}
+					<div className={b('wca-live-results-wrapper')} ref={wrapperRef} onScroll={syncFromTable}>
 						<table className={b('wca-live-results-table', {mobile: isMobile})}>
 							<thead>
 								<tr>
