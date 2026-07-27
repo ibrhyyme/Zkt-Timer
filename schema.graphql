@@ -348,6 +348,7 @@ type Query {
   zktCompetitionPersons(competitionId: String): [ZktPerson]
   zktCompetitionStaff(competitionId: String): [ZktPerson]
   zktPublicCompetitions(q: String, pageSize: Int, page: Int): ZktPublicCompetitionList
+  zktPublicMyCompetitions: [ZktPublicMyListItem]
   zktPublicCompetition(id: String): ZktPublicCompetitionDetail
   zktPublicRoundResults(roundId: String, competitionId: String): ZktPublicRoundResults
   zktPublicGroupAssignments(groupId: String, competitionId: String): ZktPublicGroupAssignments
@@ -2289,6 +2290,8 @@ type ZktPublicDetailRound {
   cutoffCs: Int
   cutoffAttempts: Int
   timeLimitCs: Int
+  numEntered: Int
+  totalExpected: Int
   groups: [ZktPublicRoundGroup]
 }
 
@@ -2370,6 +2373,23 @@ type ZktPublicListItem {
   championshipType: String
   eventIds: [String]
   registrationCount: Int
+}
+
+type ZktPublicMyListItem {
+  id: String
+  slug: String
+  name: String
+  shortName: String
+  startDate: String
+  endDate: String
+  location: String
+  country: String
+  status: String
+  championshipType: String
+  eventIds: [String]
+  registrationCount: Int
+  registrationStatus: String
+  registrationNumber: Int
 }
 
 type ZktPublicCompetitionList {

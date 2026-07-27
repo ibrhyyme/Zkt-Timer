@@ -178,6 +178,12 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 
 	const allResults = roundResults?.results || [];
 	const isFinished = selectedRound.finished;
+
+	// Scoring progress. The live results are the freshest count of who has been
+	// scored, so prefer them over the overview's snapshot; the field size only
+	// exists on the overview.
+	const enteredCount = allResults.length || selectedRound.numEntered || 0;
+	const expectedCount = selectedRound.numResults || 0;
 	const showStaleBanner = lastError && lastUpdated && (lastError - lastUpdated > 0) && (Date.now() - lastError < 5 * 60 * 1000);
 
 	return (
@@ -234,6 +240,23 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 					{formatAdvancementLabel() && (
 						<span className={b('wca-live-round-info-item')}>{formatAdvancementLabel()}</span>
 					)}
+				</div>
+			)}
+
+			{/* Entry progress — how much of the round has been scored so far. Only
+			    meaningful while the round is still being scored, so it disappears
+			    once the round is finished. */}
+			{!isFinished && enteredCount > 0 && expectedCount > 0 && (
+				<div className={b('wca-live-progress')}>
+					<div className={b('wca-live-progress-bar')}>
+						<div
+							className={b('wca-live-progress-fill')}
+							style={{width: `${Math.min(100, Math.round((enteredCount / expectedCount) * 100))}%`}}
+						/>
+					</div>
+					<span className={b('wca-live-progress-label')}>
+						{t('my_schedule.live_entered_progress', {entered: enteredCount, total: expectedCount})}
+					</span>
 				</div>
 			)}
 

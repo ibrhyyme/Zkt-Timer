@@ -2277,6 +2277,7 @@ export type Query = {
   zktPublicCompetitions?: Maybe<ZktPublicCompetitionList>;
   zktPublicCompetitor?: Maybe<ZktPublicCompetitorDetail>;
   zktPublicGroupAssignments?: Maybe<ZktPublicGroupAssignments>;
+  zktPublicMyCompetitions?: Maybe<Array<Maybe<ZktPublicMyListItem>>>;
   zktPublicRoundResults?: Maybe<ZktPublicRoundResults>;
   zktRecords?: Maybe<Array<Maybe<ZktRecord>>>;
   zktRecordsForEvent?: Maybe<Array<Maybe<ZktRecord>>>;
@@ -4238,10 +4239,12 @@ export type ZktPublicDetailRound = {
   cutoffCs?: Maybe<Scalars['Int']>;
   format?: Maybe<Scalars['String']>;
   groups?: Maybe<Array<Maybe<ZktPublicRoundGroup>>>;
+  numEntered?: Maybe<Scalars['Int']>;
   roundId?: Maybe<Scalars['String']>;
   roundNumber?: Maybe<Scalars['Int']>;
   status?: Maybe<Scalars['String']>;
   timeLimitCs?: Maybe<Scalars['Int']>;
+  totalExpected?: Maybe<Scalars['Int']>;
 };
 
 export type ZktPublicGroupAssignmentRow = {
@@ -4285,6 +4288,24 @@ export type ZktPublicMiniRound = {
   format?: Maybe<Scalars['String']>;
   roundId?: Maybe<Scalars['String']>;
   roundNumber?: Maybe<Scalars['Int']>;
+  status?: Maybe<Scalars['String']>;
+};
+
+export type ZktPublicMyListItem = {
+  __typename?: 'ZktPublicMyListItem';
+  championshipType?: Maybe<Scalars['String']>;
+  country?: Maybe<Scalars['String']>;
+  endDate?: Maybe<Scalars['String']>;
+  eventIds?: Maybe<Array<Maybe<Scalars['String']>>>;
+  id?: Maybe<Scalars['String']>;
+  location?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  registrationCount?: Maybe<Scalars['Int']>;
+  registrationNumber?: Maybe<Scalars['Int']>;
+  registrationStatus?: Maybe<Scalars['String']>;
+  shortName?: Maybe<Scalars['String']>;
+  slug?: Maybe<Scalars['String']>;
+  startDate?: Maybe<Scalars['String']>;
   status?: Maybe<Scalars['String']>;
 };
 

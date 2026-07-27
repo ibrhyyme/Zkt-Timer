@@ -63,7 +63,7 @@ export async function ensureNotificationState(
 			if (liveData) {
 				for (const rm of liveData.roundMap) {
 					try {
-						const round = await fetchLiveRoundResults(rm.liveRoundId);
+						const round = await fetchLiveRoundResults(rm.liveRoundId, competitionId);
 						if (!round) continue;
 
 						// Does user have a result in this round?

@@ -1056,7 +1056,8 @@
         "notif_follow_podium_3rd_body": "{{name}} terminó 3º en la final de {{eventName}}",
         "notif_follow_countdown_title_days": "En {{days}} días: {{competitionName}}",
         "notif_follow_countdown_title_tomorrow": "Mañana: {{competitionName}}",
-        "notif_follow_countdown_body": "Sigues a {{count}} competidor(es). Recibirás resultados en vivo."
+        "notif_follow_countdown_body": "Sigues a {{count}} competidor(es). Recibirás resultados en vivo.",
+        "live_entered_progress": "{{entered}}/{{total}} resultados introducidos"
     },
     "competitions": {
         "page_title": "Competencias WCA",

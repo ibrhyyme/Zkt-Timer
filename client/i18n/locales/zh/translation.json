@@ -1056,7 +1056,8 @@
         "notif_follow_podium_3rd_body": "{{name}} 在 {{eventName}} 决赛中获得第 3 名",
         "notif_follow_countdown_title_days": "{{days}} 天后：{{competitionName}}",
         "notif_follow_countdown_title_tomorrow": "明天：{{competitionName}}",
-        "notif_follow_countdown_body": "你正在关注 {{count}} 名选手。你将实时收到结果。"
+        "notif_follow_countdown_body": "你正在关注 {{count}} 名选手。你将实时收到结果。",
+        "live_entered_progress": "已录入 {{entered}}/{{total}} 个成绩"
     },
     "competitions": {
         "page_title": "WCA 比赛",

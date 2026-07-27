@@ -97,6 +97,13 @@ export class ZktPublicDetailRound {
 	@Field(() => Int, {nullable: true})
 	timeLimitCs?: number;
 
+	// Live progress, mirroring WCA Live's numEnteredResults / field size.
+	@Field(() => Int, {nullable: true})
+	numEntered?: number;
+
+	@Field(() => Int, {nullable: true})
+	totalExpected?: number;
+
 	@Field(() => [ZktPublicRoundGroup])
 	groups: ZktPublicRoundGroup[];
 }
@@ -291,6 +298,19 @@ export class ZktPublicListItem {
 
 	@Field(() => Int)
 	registrationCount: number;
+}
+
+// A list item enriched with the viewer's own registration, returned by
+// zktPublicMyCompetitions. Same shape as the public list plus the two fields
+// that only make sense for "my" competitions.
+@ObjectType()
+export class ZktPublicMyListItem extends ZktPublicListItem {
+	/** APPROVED | PENDING | WAITLISTED */
+	@Field({nullable: true})
+	registrationStatus?: string;
+
+	@Field(() => Int, {nullable: true})
+	registrationNumber?: number;
 }
 
 @ObjectType()

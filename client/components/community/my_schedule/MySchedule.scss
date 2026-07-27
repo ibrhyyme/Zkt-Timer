@@ -2759,6 +2759,36 @@
 		border-radius: 0.3rem;
 	}
 
+	&__wca-live-progress {
+		display: flex;
+		align-items: center;
+		gap: 0.65rem;
+		margin-bottom: 1rem;
+	}
+
+	&__wca-live-progress-bar {
+		flex: 1;
+		height: 0.4rem;
+		background: rgba(var(--text-color), 0.1);
+		border-radius: 0.2rem;
+		overflow: hidden;
+	}
+
+	&__wca-live-progress-fill {
+		height: 100%;
+		background: rgb(var(--primary-color));
+		border-radius: 0.2rem;
+		transition: width 0.4s ease;
+	}
+
+	&__wca-live-progress-label {
+		flex-shrink: 0;
+		font-size: 0.75rem;
+		font-weight: 600;
+		color: rgb(var(--text-color));
+		font-variant-numeric: tabular-nums;
+	}
+
 	&__wca-live-result-row--questionable {
 		.cd-my-schedule__wca-live-rank {
 			background: rgba(234, 179, 8, 0.85);

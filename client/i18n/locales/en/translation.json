@@ -1056,7 +1056,8 @@
         "notif_follow_podium_3rd_body": "{{name}} finished 3rd in the {{eventName}} final",
         "notif_follow_countdown_title_days": "In {{days}} days: {{competitionName}}",
         "notif_follow_countdown_title_tomorrow": "Tomorrow: {{competitionName}}",
-        "notif_follow_countdown_body": "You're following {{count}} competitor(s). You'll receive live results."
+        "notif_follow_countdown_body": "You're following {{count}} competitor(s). You'll receive live results.",
+        "live_entered_progress": "{{entered}}/{{total}} results entered"
     },
     "competitions": {
         "page_title": "WCA Competitions",

@@ -96,7 +96,7 @@ export class CompetitionFollowResolver {
 			if (liveData?.roundMap?.length) {
 				await Promise.allSettled(
 					liveData.roundMap.map(async (rm: {activityCode: string; liveRoundId: string}) => {
-						const round = await fetchLiveRoundResults(rm.liveRoundId).catch(() => null);
+						const round = await fetchLiveRoundResults(rm.liveRoundId, competitionId).catch(() => null);
 						if (!round) return;
 						const hasResults = round.results?.some((r: {best: number}) => r.best && r.best > 0);
 						// Round finished OR has existing results → mark notification as sent

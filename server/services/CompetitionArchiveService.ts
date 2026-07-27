@@ -3,6 +3,8 @@ import {logger} from './logger';
 import {WcaApiService} from './WcaApiService';
 import {getWcaLiveData, fetchLiveRoundResults, WcaLiveData, WcaLiveRoundData} from './WcaLiveService';
 import {getSearchClient, ARCHIVED_COMP_INDEX} from './search';
+import {ZktFederationService} from './ZktFederationService';
+import {isZktCompetitionId, zktSlugOf} from './ZktWcaAdapter';
 
 const STALE_THRESHOLD_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 const FREEZE_AGE_DAYS = 30; // freeze competition 30 days after end_date
@@ -85,7 +87,13 @@ export async function archiveCompetition(
 	let wcifData: any = prefetchedWcif;
 	if (!wcifData) {
 		try {
-			wcifData = await WcaApiService.fetchCompetitionWcif(competitionId);
+			// A ZKT competition's WCIF comes from the federation, not from WCA. The
+			// rest of the archive pipeline is source-agnostic: both produce a WCIF
+			// document, and getWcaLiveData/fetchLiveRoundResults already know how to
+			// resolve a ZKT competition id.
+			wcifData = isZktCompetitionId(competitionId)
+				? await ZktFederationService.fetchWcif(zktSlugOf(competitionId))
+				: await WcaApiService.fetchCompetitionWcif(competitionId);
 		} catch (err: any) {
 			logger.warn('[Archive] WCIF fetch failed', {competitionId, err: err?.message});
 			return {success: false, error: 'wcif_fetch_failed'};
@@ -103,7 +111,7 @@ export async function archiveCompetition(
 			await Promise.all(
 				liveData.roundMap.map(async (rm) => {
 					try {
-						const round = await fetchLiveRoundResults(rm.liveRoundId);
+						const round = await fetchLiveRoundResults(rm.liveRoundId, competitionId);
 						rounds[rm.activityCode] = round;
 					} catch {
 						rounds[rm.activityCode] = null;
@@ -120,7 +128,9 @@ export async function archiveCompetition(
 	const name = meta?.name || wcifData.name || competitionId;
 	const startDate = meta?.start_date || extractStartDate(wcifData);
 	const endDate = meta?.end_date || extractEndDate(wcifData);
-	const countryIso2 = meta?.country_iso2 ?? null;
+	// ZKT is a Turkey-only federation, so a ZKT snapshot always carries TR rather
+	// than the null a WCIF-only extraction would leave behind.
+	const countryIso2 = meta?.country_iso2 ?? (isZktCompetitionId(competitionId) ? 'TR' : null);
 	const city = meta?.city ?? null;
 
 	if (!startDate || !endDate) {

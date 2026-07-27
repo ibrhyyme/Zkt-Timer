@@ -27,6 +27,8 @@ import {
 	zktDetailToLiveOverview,
 	zktRoundToWcaLiveResults,
 	zktCompetitorToWcaLive,
+	zktRecordsToWcaLive,
+	zktRecordsToRecentFeed,
 } from '../services/ZktWcaAdapter';
 import {checkRateLimit} from '../services/rate_limit';
 import GraphQLError from '../util/graphql_error';
@@ -58,16 +60,33 @@ export class WcaScheduleResolver {
 	// free/anon users can browse it. Cached 3 min — the source changes slowly.
 	@Query(() => [WcaRecentRecord])
 	async wcaRecentRecords(): Promise<WcaRecentRecord[]> {
-		try {
-			return await fetchDataFromCache(
+		// Two independent feeds, merged. Either source failing must not take the
+		// other down — a WCA outage should still show ZKT records and vice versa.
+		const [wca, zkt] = await Promise.all([
+			fetchDataFromCache(
 				createRedisKey(RedisNamespace.WCA_WORLD_RECORDS, 'recent'),
 				() => fetchRecentRecords(),
 				WCA_RECENT_RECORDS_TTL,
-			) as WcaRecentRecord[];
-		} catch (err: any) {
-			logger.warn('[WcaRecentRecords] fetch failed', {err: err?.message});
-			return [];
-		}
+			).catch((err: any) => {
+				logger.warn('[WcaRecentRecords] WCA fetch failed', {err: err?.message});
+				return [] as any[];
+			}),
+			// Deliberately small: ZKT records lead the feed, and a single competition
+			// can set dozens of them at once (a national federation's first events
+			// break records in every round). A larger slice pushed the WCA records
+			// off the visible part of the list entirely.
+			ZktFederationService.fetchRecentRecords(10).catch((err: any) => {
+				logger.warn('[WcaRecentRecords] ZKT fetch failed', {err: err?.message});
+				return null;
+			}),
+		]);
+
+		// ZKT records lead the feed: this is a Turkish federation's own app, so a
+		// national record set at a ZKT competition is the more relevant headline.
+		// The WCA feed carries no timestamp, so the two cannot be interleaved by
+		// date — a stable "ours first" order beats a fabricated one.
+		const zktEntries = zktRecordsToRecentFeed((zkt as any)?.items || []);
+		return [...zktEntries, ...(wca as any[])] as WcaRecentRecord[];
 	}
 
 	@Authorized()
@@ -89,27 +108,12 @@ export class WcaScheduleResolver {
 
 		// ZKT (Zeka Kupu Turkiye federation) competition: render through the SAME
 		// WCA components by feeding the federation's WCIF into WcifTransformer, then
-		// wiring the live surfaces to the federation. No WCA API/archive involved.
+		// wiring the live surfaces to the federation.
 		// Pass the viewer's WCA identity so they get pinned to the top + a "me"
 		// badge exactly like a WCA competition: a WCA-login user who registered on
 		// the federation with the same WCA account matches by wcaId.
 		if (isZktCompetitionId(input.competitionId)) {
-			const slug = zktSlugOf(input.competitionId);
-			const wcif = await ZktFederationService.fetchWcif(slug);
-			if (!wcif) return null;
-			const detail = buildCompetitionDetail(wcif as any, wcaId, wcaUserId);
-			if (!detail) return null;
-			detail.competitionId = input.competitionId; // keep the prefixed id for sub-routes
-			const live = zktWcifLiveFields(
-				wcif,
-				input.competitionId,
-				detail.competitors.map((c) => ({wcaId: c.wcaId, registrantId: c.registrantId, name: c.name}))
-			);
-			detail.wcaLiveCompId = live.wcaLiveCompId;
-			detail.wcaLiveRoundMap = live.wcaLiveRoundMap;
-			detail.wcaLiveCompetitors = live.wcaLiveCompetitors;
-			if (detail.info) detail.info.wcaUrl = `https://zekakuputurkiye.com/competitions/zkt/${slug}`;
-			return detail;
+			return this.buildZktCompetitionDetail(input.competitionId, wcaId, wcaUserId, ctx.user.id);
 		}
 
 		// 1. First check archive DB — if found and not active, use archived data
@@ -224,9 +228,18 @@ export class WcaScheduleResolver {
 	): Promise<WcaLiveCompetitionOverview | null> {
 		try {
 			if (isZktCompetitionId(input.competitionId)) {
-				const d = await ZktFederationService.fetchCompetitionDetail(zktSlugOf(input.competitionId));
+				const slug = zktSlugOf(input.competitionId);
+				// Records live on their own federation endpoint; fetch alongside the
+				// detail so the overview arrives complete in one round trip. A record
+				// fetch failure must not blank the whole overview.
+				const [d, recordsPayload] = await Promise.all([
+					ZktFederationService.fetchCompetitionDetail(slug),
+					ZktFederationService.fetchCompetitionRecords(slug).catch(() => null),
+				]);
 				if (!d) return null;
-				return zktDetailToLiveOverview(d, input.competitionId) as WcaLiveCompetitionOverview;
+				const overview = zktDetailToLiveOverview(d, input.competitionId);
+				overview.records = zktRecordsToWcaLive((recordsPayload as any)?.items || []);
+				return overview as WcaLiveCompetitionOverview;
 			}
 
 			const cacheKey = createRedisKey(
@@ -353,6 +366,102 @@ export class WcaScheduleResolver {
 			});
 			return null;
 		}
+	}
+
+	/**
+	 * Build a ZKT competition detail, archive-first for finished competitions.
+	 *
+	 * Mirrors the WCA path deliberately: a finished competition is served from
+	 * the local snapshot (so it keeps opening even when the federation is down or
+	 * slow), an upcoming/live one always goes to the federation because its
+	 * registrant list and results are still moving. If the federation is
+	 * unreachable and a snapshot exists, the snapshot is used regardless of age —
+	 * stale data beats an empty page.
+	 */
+	private async buildZktCompetitionDetail(
+		competitionId: string,
+		wcaId: string,
+		wcaUserId: string,
+		userId: string
+	): Promise<WcaCompetitionDetail | null> {
+		const slug = zktSlugOf(competitionId);
+
+		const finishWith = (wcif: any, liveOverride?: any): WcaCompetitionDetail | null => {
+			const detail = buildCompetitionDetail(wcif, wcaId, wcaUserId);
+			if (!detail) return null;
+			detail.competitionId = competitionId; // keep the prefixed id for sub-routes
+			if (liveOverride) {
+				detail.wcaLiveCompId = liveOverride.compId;
+				detail.wcaLiveCompetitors = liveOverride.competitors;
+				detail.wcaLiveRoundMap = liveOverride.roundMap;
+			} else {
+				const live = zktWcifLiveFields(
+					wcif,
+					competitionId,
+					detail.competitors.map((c) => ({wcaId: c.wcaId, registrantId: c.registrantId, name: c.name}))
+				);
+				detail.wcaLiveCompId = live.wcaLiveCompId;
+				detail.wcaLiveRoundMap = live.wcaLiveRoundMap;
+				detail.wcaLiveCompetitors = live.wcaLiveCompetitors;
+			}
+			if (detail.info) detail.info.wcaUrl = `https://zekakuputurkiye.com/competitions/zkt/${slug}`;
+
+			// Same round/result notification wiring a WCA competition gets. Without
+			// this a user registered for a ZKT competition had no notification state
+			// row, so the cron never had anything to notify them about.
+			if (wcaId && detail.myRegistrationStatus === 'accepted') {
+				const myPerson = wcif?.persons?.find((p: any) => p.wcaId === wcaId);
+				ensureNotificationState(
+					userId,
+					competitionId,
+					wcaId,
+					myPerson?.name || '',
+					wcif?.schedule?.startDate || '',
+					wcif?.schedule?.numberOfDays || 1,
+				).catch((err: any) => {
+					logger.warn('[WcaNotify] ZKT ensureNotificationState failed', {
+						competitionId,
+						err: err?.message,
+					});
+				});
+			}
+			return detail;
+		};
+
+		const archive = await getArchivedCompetition(competitionId).catch(() => null);
+
+		if (archive && isCompetitionFinished(archive)) {
+			if (isStaleArchive(archive)) {
+				archiveCompetition(competitionId).catch((err: any) => {
+					logger.warn('[Archive] ZKT background re-sync failed', {competitionId, err: err?.message});
+				});
+			}
+			return finishWith(archive.wcif_data as any, (archive.live_data as any)?.wcaLiveData);
+		}
+
+		let wcif: any = null;
+		try {
+			wcif = await ZktFederationService.fetchWcif(slug);
+		} catch (err: any) {
+			logger.warn('[Zkt] WCIF fetch failed', {competitionId, err: err?.message});
+		}
+
+		if (!wcif) {
+			// Federation unavailable: fall back to whatever snapshot exists, even a
+			// stale one, rather than showing nothing.
+			if (archive) {
+				return finishWith(archive.wcif_data as any, (archive.live_data as any)?.wcaLiveData);
+			}
+			return null;
+		}
+
+		// Lazy archive, same policy as WCA: only snapshot once the competition is
+		// over, so an in-progress registrant list never gets frozen.
+		archiveCompetition(competitionId, undefined, wcif, {onlyIfFinished: true}).catch((err: any) => {
+			logger.warn('[Archive] ZKT lazy archive failed', {competitionId, err: err?.message});
+		});
+
+		return finishWith(wcif);
 	}
 
 	private async fetchPodiumsForRounds(rounds: {liveRoundId: string; eventId: string; eventName: string; sortBy: string}[]): Promise<any[]> {

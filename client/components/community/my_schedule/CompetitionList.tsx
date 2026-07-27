@@ -17,8 +17,8 @@ import {prefetchCompetitionDetail} from './CompetitionLoader';
 // ZKT competitions are owned by the Zeka Kupu Turkiye federation; Zkt-Timer reads
 // them (view-only) through the federation public API proxied by ZktPublic.resolver.
 const ZKT_COMPETITIONS_QUERY = gql`
-	query ZktPublicCompetitionsForList($page: Int!, $pageSize: Int!) {
-		zktPublicCompetitions(page: $page, pageSize: $pageSize) {
+	query ZktPublicCompetitionsForList($page: Int!, $pageSize: Int!, $q: String) {
+		zktPublicCompetitions(page: $page, pageSize: $pageSize, q: $q) {
 			items {
 				id
 				slug
@@ -34,6 +34,26 @@ const ZKT_COMPETITIONS_QUERY = gql`
 	}
 `;
 
+// The viewer's own ZKT registrations. Matched on the linked WCA account server
+// side, so it only returns something once WCA is connected — same precondition
+// as the WCA "my competitions" list it sits next to.
+const ZKT_MY_COMPETITIONS_QUERY = gql`
+	query ZktPublicMyCompetitionsForList {
+		zktPublicMyCompetitions {
+			id
+			slug
+			name
+			startDate
+			endDate
+			location
+			status
+			country
+			eventIds
+			registrationStatus
+		}
+	}
+`;
+
 let cachedZktComps: {data: any[]; ts: number} | null = null;
 function getZktCache(): any[] | null {
 	if (!cachedZktComps) return null;
@@ -42,6 +62,36 @@ function getZktCache(): any[] | null {
 		return null;
 	}
 	return cachedZktComps.data;
+}
+
+let cachedMyZktComps: {data: any[]; ts: number} | null = null;
+function getMyZktCache(): any[] | null {
+	if (!cachedMyZktComps) return null;
+	if (Date.now() - cachedMyZktComps.ts > 30 * 60 * 1000) {
+		cachedMyZktComps = null;
+		return null;
+	}
+	return cachedMyZktComps.data;
+}
+
+// Federation list item → the field names the WCA competition card reads.
+// Federation dates are full ISO; the card's date math compares against a
+// YYYY-MM-DD "today", so normalize to a plain date string.
+function normalizeZktComp(c: any): any {
+	return {
+		id: c.id,
+		slug: c.slug,
+		name: c.name,
+		start_date: (c.startDate || '').slice(0, 10),
+		end_date: (c.endDate || '').slice(0, 10),
+		city: c.location,
+		country_iso2: c.country || 'TR',
+		status: c.status,
+		registration_status: c.registrationStatus,
+		events: (c.eventIds || []).map((id: string) => ({id, event_id: id})),
+		event_ids: c.eventIds || [],
+		__zkt: true,
+	};
 }
 
 // Module-level cache with TTL
@@ -72,6 +122,7 @@ export default function CompetitionList() {
 	const [searching, setSearching] = useState(false);
 	const [myComps, setMyComps] = useState<any[] | null>(getMyCache());
 	const [zktComps, setZktComps] = useState<any[] | null>(getZktCache());
+	const [myZktComps, setMyZktComps] = useState<any[] | null>(getMyZktCache());
 	const [loadError, setLoadError] = useState<string | null>(null);
 	const [eventFilter, setEventFilterState] = useState<string[]>(() => getEventFilter());
 
@@ -116,6 +167,18 @@ export default function CompetitionList() {
 		return [...ongoing, ...rest];
 	}, [competitions, compSearch, eventFilter]);
 
+	// "My competitions" is one list across both federations: a WCA registration
+	// and a ZKT registration are the same thing to the person reading it. Sorted
+	// by start date so the next competition is on top regardless of who runs it.
+	// Declared here because the prefetch effect below depends on it.
+	const myAllComps = useMemo(() => {
+		const zkt = (myZktComps || []).map(normalizeZktComp);
+		if (zkt.length === 0) return myComps;
+		return [...(myComps || []), ...zkt].sort((a: any, b: any) =>
+			(a.start_date || '').localeCompare(b.start_date || '')
+		);
+	}, [myComps, myZktComps]);
+
 	const mountedRef = useRef(true);
 	useEffect(() => () => {
 		mountedRef.current = false;
@@ -132,6 +195,9 @@ export default function CompetitionList() {
 
 	useEffect(() => {
 		if (me && !getMyCache()) fetchMyCompetitions();
+		// Same SWR reasoning as the ZKT list: a registration made minutes ago must
+		// not be hidden behind a 30-minute cache.
+		if (me) fetchMyZktCompetitions();
 	}, [me]);
 
 	async function fetchZktCompetitions() {
@@ -146,6 +212,18 @@ export default function CompetitionList() {
 		} catch (err) {
 			// silent — if no ZKT competitions or not logged in, empty list will be shown anyway
 			if (mountedRef.current) setZktComps([]);
+		}
+	}
+
+	async function fetchMyZktCompetitions() {
+		try {
+			const res = await gqlMutate(ZKT_MY_COMPETITIONS_QUERY, {});
+			const data = res?.data?.zktPublicMyCompetitions || [];
+			cachedMyZktComps = {data, ts: Date.now()};
+			if (mountedRef.current) setMyZktComps(data);
+		} catch (err) {
+			// Silent: no WCA link (or no ZKT registration) is the normal empty case.
+			if (mountedRef.current) setMyZktComps([]);
 		}
 	}
 
@@ -176,13 +254,14 @@ export default function CompetitionList() {
 
 	// Prefetch: user's competitions + next 3 upcoming competitions
 	useEffect(() => {
-		if (!myComps || myComps.length === 0) return;
+		if (!myAllComps || myAllComps.length === 0) return;
 		// Once user competitions load, prefetch first 3
-		const targets = myComps.slice(0, 3);
+		const targets = myAllComps.slice(0, 3);
 		targets.forEach((c: any, i: number) => {
-			setTimeout(() => prefetchCompetitionDetail(c.competitionId || c.id), 500 + i * 200);
+			const id = c.__zkt ? `zkt-${c.slug || c.id}` : c.competitionId || c.id;
+			setTimeout(() => prefetchCompetitionDetail(id), 500 + i * 200);
 		});
-	}, [myComps]);
+	}, [myAllComps]);
 
 	useEffect(() => {
 		if (!competitions || competitions.length === 0) return;
@@ -252,12 +331,21 @@ export default function CompetitionList() {
 			clearTimeout(searchTimerRef.current);
 			searchTimerRef.current = setTimeout(async () => {
 				setSearching(true);
-				try {
-					const res = await gqlQueryTyped(WcaSearchCompetitionsDocument, {query: value.trim()}, {fetchPolicy: 'no-cache'});
-					setSearchResults(res.data?.wcaSearchCompetitions || []);
-				} catch {
-					setSearchResults([]);
-				}
+				const q = value.trim();
+				// Search both federations at once. Typing a query used to hide the ZKT
+				// section entirely, so a ZKT competition was unfindable by name — the
+				// one place a user is most likely to look for it.
+				const [wcaRes, zktRes] = await Promise.all([
+					gqlQueryTyped(WcaSearchCompetitionsDocument, {query: q}, {fetchPolicy: 'no-cache'})
+						.then((r) => r.data?.wcaSearchCompetitions || [])
+						.catch(() => []),
+					gqlMutate(ZKT_COMPETITIONS_QUERY, {page: 0, pageSize: 30, q})
+						.then((r: any) => r?.data?.zktPublicCompetitions?.items || [])
+						.catch(() => []),
+				]);
+				// ZKT results lead: a Turkish user searching in Zkt-Timer is far more
+				// likely to mean the ZKT competition than a same-named WCA one.
+				setSearchResults([...zktRes.map(normalizeZktComp), ...wcaRes]);
 				setSearching(false);
 			}, 300);
 		}
@@ -283,20 +371,7 @@ export default function CompetitionList() {
 	const zktCards = useMemo(() => {
 		if (showSearchResults) return [];
 		return (zktComps || [])
-			.map((c: any) => ({
-				id: c.id,
-				slug: c.slug,
-				name: c.name,
-				// Federation dates are full ISO; card date math compares against a
-				// YYYY-MM-DD "today", so normalize to a plain date string.
-				start_date: (c.startDate || '').slice(0, 10),
-				end_date: (c.endDate || '').slice(0, 10),
-				city: c.location,
-				country_iso2: c.country || 'TR',
-				status: c.status,
-				events: (c.eventIds || []).map((id: string) => ({id, event_id: id})),
-				__zkt: true,
-			}))
+			.map(normalizeZktComp)
 			.sort((a: any, b: any) => (b.start_date || '').localeCompare(a.start_date || ''));
 	}, [showSearchResults, zktComps, todayStr]);
 
@@ -452,13 +527,13 @@ export default function CompetitionList() {
 			{!compSearch.trim() && me?.integrations?.some((i: any) => i.service_name === 'wca') && (
 				<div className={b('my-competitions')}>
 					<h3 className={b('section-title')}>{t('my_schedule.my_competitions')}</h3>
-					{!myComps ? (
+					{!myAllComps ? (
 						<p className={b('my-competitions-empty')}>{t('my_schedule.my_competitions_loading')}</p>
-					) : myComps.length === 0 ? (
+					) : myAllComps.length === 0 ? (
 						<p className={b('my-competitions-empty')}>{t('my_schedule.my_competitions_empty')}</p>
 					) : (
 						<div className={b('comp-list')}>
-							{myComps.map((comp: any) => renderCompCard(comp, {mine: true}))}
+							{myAllComps.map((comp: any) => renderCompCard(comp, {mine: true}))}
 						</div>
 					)}
 				</div>

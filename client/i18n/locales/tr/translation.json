@@ -1063,7 +1063,8 @@
         "notif_follow_podium_3rd_body": "{{name}} {{eventName}} finalini üçüncü sırada tamamladı",
         "notif_follow_countdown_title_days": "{{days}} gün sonra: {{competitionName}}",
         "notif_follow_countdown_title_tomorrow": "Yarın yarışma: {{competitionName}}",
-        "notif_follow_countdown_body": "Takip listende {{count}} yarışmacı var. Sonuçları anlık alacaksın."
+        "notif_follow_countdown_body": "Takip listende {{count}} yarışmacı var. Sonuçları anlık alacaksın.",
+        "live_entered_progress": "{{entered}}/{{total}} sonuç girildi"
     },
     "competitions": {
         "page_title": "WCA Yarışmaları",

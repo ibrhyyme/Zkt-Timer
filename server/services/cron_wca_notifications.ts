@@ -183,7 +183,7 @@ async function processCompetition(compId: string, states: StateRow[]): Promise<n
 	for (const rm of liveData.roundMap) {
 		let round: WcaLiveRoundData | null;
 		try {
-			round = await fetchLiveRoundResults(rm.liveRoundId);
+			round = await fetchLiveRoundResults(rm.liveRoundId, compId);
 		} catch (err: any) {
 			logger.warn('[WcaNotify] round fetch failed', {
 				compId,

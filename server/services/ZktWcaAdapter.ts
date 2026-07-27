@@ -58,6 +58,48 @@ export function zktWcifLiveFields(
 	};
 }
 
+/**
+ * federation PublicRecordEntry[] → WcaLiveCompetitionOverview.records.
+ *
+ * The overview's record list is what the "records broken here" section renders.
+ * A ZKT record is always national, so `tag` comes through as 'NR'; `type` is
+ * 'single' | 'average', matching the WCA Live field the component reads.
+ */
+export function zktRecordsToWcaLive(items: any[]): any[] {
+	return (items || []).map((r: any) => ({
+		type: r.type || 'single',
+		tag: r.tag || 'NR',
+		eventId: r.eventId || '',
+		eventName: r.eventName || WcaApiService.getEventName(r.eventId),
+		attemptResult: r.attemptResult ?? 0,
+		personName: r.personName || '',
+		personCountryIso2: r.personCountryIso2 || undefined,
+		roundNumber: r.roundNumber ?? undefined,
+	}));
+}
+
+/**
+ * federation PublicRecordEntry[] → WcaRecentRecord[] (the record radar feed).
+ *
+ * `competitionId` goes out prefixed so the feed's deep link lands on the ZKT
+ * competition route rather than being read as a WCA competition id.
+ */
+export function zktRecordsToRecentFeed(items: any[]): any[] {
+	return (items || []).map((r: any) => ({
+		id: `zkt:${r.id}`,
+		tag: r.tag || 'NR',
+		type: r.type || 'single',
+		eventId: r.eventId || '',
+		eventName: r.eventName || WcaApiService.getEventName(r.eventId),
+		attemptResult: r.attemptResult ?? 0,
+		personName: r.personName || '',
+		personCountryIso2: r.personCountryIso2 || 'TR',
+		competitionId: `${ZKT_PREFIX}${r.competitionSlug || r.competitionId}`,
+		competitionName: r.competitionName || '',
+		roundNumber: r.roundNumber ?? undefined,
+	}));
+}
+
 /** federation PublicCompetitionDetail → WcaLiveCompetitionOverview */
 export function zktDetailToLiveOverview(d: any, compId: string): any {
 	const events = (d.events || []).map((ev: any) => ({
@@ -70,8 +112,11 @@ export function zktDetailToLiveOverview(d: any, compId: string): any {
 			open: r.status === 'OPEN',
 			finished: r.status === 'FINISHED',
 			active: r.status === 'ACTIVE',
-			numEntered: 0,
-			numResults: 0,
+			// WCA Live semantics: numEntered = results typed in so far, numResults =
+			// the round's field size. The federation ships both; hardcoding 0 made
+			// every ZKT round render its progress as "0/0".
+			numEntered: r.numEntered ?? 0,
+			numResults: r.totalExpected ?? 0,
 			format: {numberOfAttempts: attemptsOf(r.format), sortBy: sortByOf(r.format)},
 			timeLimit: r.timeLimitCs ? {centiseconds: r.timeLimitCs, cumulativeRoundWcifIds: []} : undefined,
 			cutoff: r.cutoffCs && r.cutoffAttempts ? {attemptResult: r.cutoffCs, numberOfAttempts: r.cutoffAttempts} : undefined,

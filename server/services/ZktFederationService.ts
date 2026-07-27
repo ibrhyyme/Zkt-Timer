@@ -10,7 +10,7 @@
 // resolver returns these results verbatim.
 
 import axios from 'axios';
-import {RedisNamespace, createRedisKey, fetchDataFromCache} from './redis';
+import {RedisNamespace, createRedisKey, fetchDataFromCache, setKeyInRedis} from './redis';
 import {logger} from './logger';
 
 // Base URL of the federation public API. Overridable via env so ops can point at
@@ -31,6 +31,7 @@ const TTL_DETAIL = 45;
 const TTL_RESULTS = 15;
 const TTL_GROUP = 45;
 const TTL_COMPETITOR = 20;
+const TTL_RECENT_RECORDS = 3 * 60;
 
 /**
  * GET a federation endpoint. Returns null on 404 (competition/round/competitor
@@ -107,6 +108,31 @@ export class ZktFederationService {
 		);
 	}
 
+	/**
+	 * Cache-bypassing round read used by the live poller. The poller runs faster
+	 * than TTL_RESULTS, so going through the cache would pin it to the cache
+	 * interval instead of its own — the push would arrive no sooner than a plain
+	 * client poll. It writes the fresh payload back so the resolver (and every
+	 * other viewer) reads the same value the push carried.
+	 */
+	static async fetchRoundResultsFresh(idOrSlug: string, roundId: string): Promise<unknown | null> {
+		const data = await fetchJson(
+			`/competitions/${encodeURIComponent(idOrSlug)}/rounds/${encodeURIComponent(roundId)}/results/`
+		);
+		if (data) {
+			try {
+				await setKeyInRedis(
+					createRedisKey(RedisNamespace.ZKT_FED_RESULTS, `${idOrSlug}:${roundId}`),
+					JSON.stringify(data),
+					TTL_RESULTS
+				);
+			} catch (error) {
+				logger.warn('[ZktFederation] cache write failed', {idOrSlug, roundId});
+			}
+		}
+		return data;
+	}
+
 	static async fetchGroupAssignments(idOrSlug: string, groupId: string): Promise<unknown | null> {
 		return fetchDataFromCache(
 			createRedisKey(RedisNamespace.ZKT_FED_GROUP, `${idOrSlug}:${groupId}`),
@@ -115,6 +141,36 @@ export class ZktFederationService {
 					`/competitions/${encodeURIComponent(idOrSlug)}/groups/${encodeURIComponent(groupId)}/`
 				),
 			TTL_GROUP
+		);
+	}
+
+	// Competitions one person is registered for, keyed by WCA id (the identity
+	// both sides share). Short TTL: a fresh registration should surface quickly.
+	static async fetchPersonCompetitions(wcaId: string): Promise<unknown | null> {
+		return fetchDataFromCache(
+			createRedisKey(RedisNamespace.ZKT_FED_MY_COMPS, wcaId),
+			() => fetchJson(`/persons/${encodeURIComponent(wcaId)}/competitions/`),
+			TTL_DETAIL
+		);
+	}
+
+	// National records set at one competition — the ZKT counterpart of WCA Live's
+	// competitionRecords. Structural surface, so it tolerates the detail TTL.
+	static async fetchCompetitionRecords(idOrSlug: string): Promise<unknown | null> {
+		return fetchDataFromCache(
+			createRedisKey(RedisNamespace.ZKT_FED_COMP_RECORDS, idOrSlug),
+			() => fetchJson(`/competitions/${encodeURIComponent(idOrSlug)}/records/`),
+			TTL_DETAIL
+		);
+	}
+
+	// Global "recently set NR" feed behind the record radar. Changes slowly, so
+	// it gets the longest TTL here.
+	static async fetchRecentRecords(limit = 25): Promise<unknown | null> {
+		return fetchDataFromCache(
+			createRedisKey(RedisNamespace.ZKT_FED_RECENT_RECORDS, String(limit)),
+			() => fetchJson(`/records/recent/?limit=${limit}`),
+			TTL_RECENT_RECORDS
 		);
 	}
 

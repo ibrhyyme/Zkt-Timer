@@ -1056,7 +1056,8 @@
         "notif_follow_podium_3rd_body": "{{name}} занял 3-е место в финале {{eventName}}",
         "notif_follow_countdown_title_days": "Через {{days}} дн.: {{competitionName}}",
         "notif_follow_countdown_title_tomorrow": "Завтра: {{competitionName}}",
-        "notif_follow_countdown_body": "Вы отслеживаете {{count}} участник(ов). Вы получите результаты в реальном времени."
+        "notif_follow_countdown_body": "Вы отслеживаете {{count}} участник(ов). Вы получите результаты в реальном времени.",
+        "live_entered_progress": "Введено результатов: {{entered}}/{{total}}"
     },
     "competitions": {
         "page_title": "Соревнования WCA",

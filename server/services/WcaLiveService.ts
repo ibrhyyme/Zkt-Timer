@@ -1,8 +1,13 @@
 import {fetchDataFromCache, createRedisKey, RedisNamespace} from './redis';
 import {logger} from './logger';
+import {ZktFederationService} from './ZktFederationService';
+import {isZktCompetitionId, zktSlugOf, zktRoundToWcaLiveResults} from './ZktWcaAdapter';
 
 const WCA_LIVE_ENDPOINT = process.env.WCA_LIVE_API_URL || 'https://live.worldcubeassociation.org/api';
 const WCA_LIVE_CACHE_TTL = 60 * 60; // 1 saat
+// Shorter than the WCA one: a ZKT competition's rounds are created/edited during
+// the event itself, so a stale hour-long map would hide rounds from the cron.
+const ZKT_LIVE_DATA_CACHE_TTL = 2 * 60;
 
 export interface WcaLiveData {
 	compId: string;
@@ -36,11 +41,57 @@ export interface WcaLiveRoundData {
 }
 
 export async function getWcaLiveData(competitionId: string): Promise<WcaLiveData | null> {
+	// A ZKT competition has no WCA Live counterpart — its rounds and competitors
+	// live on the federation. Resolving it here (rather than at each call site)
+	// is what makes the notification cron and the follow backfill work for ZKT
+	// competitions too; both reach live data exclusively through this function.
+	if (isZktCompetitionId(competitionId)) {
+		return fetchDataFromCache(
+			createRedisKey(RedisNamespace.ZKT_FED_DETAIL, `livedata:${competitionId}`),
+			() => fetchZktLiveData(competitionId),
+			ZKT_LIVE_DATA_CACHE_TTL
+		);
+	}
+
 	return fetchDataFromCache(
 		createRedisKey(RedisNamespace.WCA_WCIF, `live:${competitionId}`),
 		() => fetchWcaLiveData(competitionId),
 		WCA_LIVE_CACHE_TTL
 	);
+}
+
+/**
+ * ZKT counterpart of fetchWcaLiveData: the federation competition detail already
+ * carries every round (with its federation round id) and every approved
+ * competitor, so one request covers both halves.
+ *
+ * `liveId` is the competition-local registration number, matching what the ZKT
+ * WCIF uses as registrantId — that is the id the competitor live-results lookup
+ * is keyed on.
+ */
+async function fetchZktLiveData(competitionId: string): Promise<WcaLiveData | null> {
+	const detail: any = await ZktFederationService.fetchCompetitionDetail(zktSlugOf(competitionId));
+	if (!detail) return null;
+
+	const roundMap: {activityCode: string; liveRoundId: string}[] = [];
+	for (const ev of detail.events || []) {
+		for (const round of ev.rounds || []) {
+			roundMap.push({
+				activityCode: `${ev.eventId}-r${round.roundNumber}`,
+				liveRoundId: String(round.roundId),
+			});
+		}
+	}
+
+	return {
+		compId: competitionId,
+		competitors: (detail.competitors || []).map((c: any) => ({
+			wcaId: c.wcaId || null,
+			liveId: String(c.registrationNumber ?? ''),
+			name: c.name || '',
+		})),
+		roundMap,
+	};
 }
 
 async function fetchWcaLiveData(competitionId: string): Promise<WcaLiveData | null> {
@@ -187,7 +238,24 @@ export async function fetchRecentRecords(): Promise<WcaRecentRecordEntry[]> {
 		.filter((r: WcaRecentRecordEntry) => r.eventId && r.tag);
 }
 
-export async function fetchLiveRoundResults(liveRoundId: string): Promise<WcaLiveRoundData | null> {
+/**
+ * One round's live results.
+ *
+ * `competitionId` is optional only for backwards compatibility with WCA call
+ * sites: a WCA Live round id is globally unique, but a ZKT round id means
+ * nothing without knowing which federation competition it belongs to. Pass it
+ * whenever it is known — omitting it for a ZKT round sends the id to WCA Live,
+ * which answers with nothing.
+ */
+export async function fetchLiveRoundResults(
+	liveRoundId: string,
+	competitionId?: string
+): Promise<WcaLiveRoundData | null> {
+	if (competitionId && isZktCompetitionId(competitionId)) {
+		const raw = await ZktFederationService.fetchRoundResults(zktSlugOf(competitionId), liveRoundId);
+		return raw ? (zktRoundToWcaLiveResults(raw) as WcaLiveRoundData) : null;
+	}
+
 	const axios = (await import('axios')).default;
 
 	const res = await axios.post(WCA_LIVE_ENDPOINT, {
