@@ -370,9 +370,18 @@ export default function CompetitionList() {
 	// page stays visually consistent. Normalize to the WCA card fields here.
 	const zktCards = useMemo(() => {
 		if (showSearchResults) return [];
-		return (zktComps || [])
-			.map(normalizeZktComp)
-			.sort((a: any, b: any) => (b.start_date || '').localeCompare(a.start_date || ''));
+		return (
+			(zktComps || [])
+				.map(normalizeZktComp)
+				// Finished competitions drop out, the same rule the WCA section above
+				// follows: this list is what is still ahead, not an archive. A comp
+				// stays until the day after it ends, so results are still one tap away
+				// on the last day. Past ZKT competitions remain reachable by search
+				// and from the federation site.
+				.filter((c: any) => !c.end_date || c.end_date >= todayStr)
+				// Soonest first — the next competition is the one people look for.
+				.sort((a: any, b: any) => (a.start_date || '').localeCompare(b.start_date || ''))
+		);
 	}, [showSearchResults, zktComps, todayStr]);
 
 	function renderCompCard(comp: any, opts: {mine?: boolean} = {}) {

@@ -375,13 +375,18 @@ function RankingsTab({allPersonalBests, competitionId, selectedEvent, setSelecte
 	return (
 		<div className={b('rankings-tab')}>
 			<div className={b('ranking-events')}>
+				{/* Cubing icons rather than names: event names wrap and collide at this
+				    width, and the puzzle glyph is what cubers actually scan for. */}
 				{eventIds.map((eid) => (
 					<button
 						key={eid}
-						className={b('event-chip', {active: eid === activeEvent})}
+						className={b('ranking-event-chip', {active: eid === activeEvent})}
 						onClick={() => setSelectedEvent(eid)}
+						title={getEventShortName(eid)}
+						aria-label={getEventShortName(eid)}
+						aria-pressed={eid === activeEvent}
 					>
-						{getEventShortName(eid)}
+						<span className={`cubing-icon event-${eid}`} aria-hidden="true" />
 					</button>
 				))}
 			</div>
