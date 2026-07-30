@@ -36,13 +36,19 @@ export default function ZktLivePodiums({detail}: {detail: any}) {
 					if (top3.length === 0) return null;
 					return (
 						<div
-							key={pod.eventId}
+							// A separate-final day-split event crowns a champion per day, so
+							// two podium cards for the same event are correct and the key
+							// cannot be the event alone.
+							key={`${pod.eventId}-${pod.dayLabel || ''}`}
 							className={b('podium-card')}
 							onClick={() => history.push(`/zkt-competitions/${detail.id}/live/${pod.eventId}`)}
 						>
 							<div className={b('podium-header')}>
 								<span className={`cubing-icon event-${pod.eventId}`} style={{fontSize: 20}} />
-								<span className={b('podium-event-name')}>{getEventName(pod.eventId)}</span>
+								<span className={b('podium-event-name')}>
+									{getEventName(pod.eventId)}
+									{pod.dayLabel ? ` · ${pod.dayLabel}` : ''}
+								</span>
 							</div>
 							<div className={b('podium-entries')}>
 								{top3.map((e: any) => {

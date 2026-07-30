@@ -17,6 +17,7 @@ const GROUP_ASSIGNMENTS_QUERY = gql`
 		zktPublicGroupAssignments(competitionId: $competitionId, groupId: $groupId) {
 			groupId
 			groupNumber
+			dayLabel
 			startTime
 			endTime
 			round {
@@ -246,6 +247,12 @@ export default function ZktActivityDetail() {
 							)}
 							{groupNumber !== undefined && (
 								<span className={b('activity-group')}> · {t('col_group')} {groupNumber}</span>
+							)}
+							{/* On a day-split competition two groups of the same round run on
+							    different mornings at the same clock time; only the day
+							    separates this page from its twin. */}
+							{groupData?.dayLabel && (
+								<span className={b('activity-day')}> · {groupData.dayLabel}</span>
 							)}
 							{(round.status === 'OPEN' || round.status === 'ACTIVE') && (
 								<span className={b('live-now-chip', {static: true})}>{t('live_now')}</span>

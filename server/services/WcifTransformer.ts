@@ -152,6 +152,12 @@ export interface CompetitorEntry {
 	registeredEvents: string[];
 	assignments: CompetitorAssignment[];
 	personalBests: PersonalBestEntry[];
+	/**
+	 * Day-split competitions (a ZKT concept WCIF has no field for, carried as a
+	 * person extension): which day of the competition this person attends. Null
+	 * on every WCA competition and on ordinary ZKT ones.
+	 */
+	dayLabel?: string | null;
 }
 
 // --- Event types (Tab 2) ---
@@ -211,6 +217,14 @@ export interface CompetitionDetail {
 	myRegistrantId: number | null;
 	myRegistrationStatus: string | null;
 	myRegisteredEvents: string[];
+	/**
+	 * The days of a day-split ZKT competition, empty everywhere else. Non-empty
+	 * changes how the whole schedule reads: each competitor attends exactly one
+	 * of them.
+	 */
+	days: {position: number; label: string; date: string}[];
+	/** The viewer's own day, when they are registered for such a competition. */
+	myDayLabel: string | null;
 	competitors: CompetitorEntry[];
 	events: EventDetailEntry[];
 	schedule: ScheduleDay[];
@@ -222,6 +236,27 @@ export interface CompetitionDetail {
 }
 
 // --- Helpers ---
+
+/**
+ * The day a person attends, from the ZKT registration extension. WCIF itself has
+ * no field for it: a day-split competition is a federation concept, so it rides
+ * along as `org.zktimer.zktRegistration.v1` and is simply absent everywhere else.
+ */
+function zktPersonDayLabel(person: any): string | null {
+	const ext = (person?.extensions || []).find(
+		(e: any) => e?.id === 'org.zktimer.zktRegistration.v1'
+	);
+	return (ext?.data?.dayLabel as string) || null;
+}
+
+/** The competition's days, from the ZKT competition extension. */
+function zktCompetitionDays(wcif: any): {position: number; label: string; date: string}[] {
+	const ext = (wcif?.extensions || []).find(
+		(e: any) => e?.id === 'org.zktimer.zktCompetition.v1'
+	);
+	const days = ext?.data?.days;
+	return Array.isArray(days) ? days : [];
+}
 
 const ACTIVITY_CODE_REGEX = /^(\w+)-r(\d+)(?:-g(\d+))?(?:-a(\d+))?$/;
 
@@ -358,6 +393,7 @@ function buildCompetitorsList(persons: WcifPerson[], activityMap: Map<number, Ac
 				registrantId: person.registrantId,
 				wcaUserId: person.wcaUserId || null,
 				registeredEvents: person.registration?.eventIds || [],
+				dayLabel: zktPersonDayLabel(person),
 				assignments,
 				personalBests: (person.personalBests || []).map((pb) => ({
 					eventId: pb.eventId,
@@ -606,6 +642,8 @@ export function buildCompetitionDetail(wcifData: WcifData, myWcaId: string, myWc
 		myRegistrantId: myPerson?.registrantId ?? null,
 		myRegistrationStatus: myPerson?.registration?.status || null,
 		myRegisteredEvents: myPerson?.registration?.eventIds || [],
+		days: zktCompetitionDays(wcifData),
+		myDayLabel: zktPersonDayLabel(myPerson),
 		competitors: buildCompetitorsList(persons, activityMap),
 		events: buildEventDetails(wcifData, activityMap),
 		schedule: buildSchedule(wcifData),

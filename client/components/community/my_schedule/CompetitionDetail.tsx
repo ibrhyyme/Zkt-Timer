@@ -55,6 +55,34 @@ export default function CompetitionDetail() {
 		<div className={b('detail')}>
 			<div className={b('detail-header')}>
 				<h2 className={b('comp-name')}>{detail.competitionName}</h2>
+				{/* Day-split competition (ZKT): every competitor attends exactly ONE of
+				    these days, so the schedule below is not "the competition" for any
+				    one person — and turning up on the wrong morning is not fixable. */}
+				{detail.days && detail.days.length >= 2 && (
+					<div className={b('day-split')}>
+						<strong>{t('zkt_comp.day_split_title', {count: detail.days.length})}</strong>
+						<div className={b('day-split-days')}>
+							{detail.days.map((d: any) => (
+								<span key={d.position} className={b('day-split-day')}>
+									{d.label}
+									{d.date
+										? `: ${new Date(d.date).toLocaleDateString(locale, {
+												day: 'numeric',
+												month: 'long',
+											})}`
+										: ''}
+									{detail.myDayLabel === d.label ? ` — ${t('zkt_comp.your_day')}` : ''}
+								</span>
+							))}
+						</div>
+						{detail.myDayLabel && (
+							<span className={b('day-split-mine')}>
+								{t('zkt_comp.attending_day')}: <strong>{detail.myDayLabel}</strong>
+							</span>
+						)}
+						<span className={b('day-split-note')}>{t('zkt_comp.day_split_note')}</span>
+					</div>
+				)}
 				{detail.myRegistrationStatus && (
 					<div className={b('my-status')}>
 						<span className={b('status', {type: detail.myRegistrationStatus})}>
@@ -173,6 +201,11 @@ function GroupsTab({competitors, myWcaId, myRegistrantId, competitionId, searchQ
 								<span className={b('competitor-name-list')}>
 									{comp.name}
 									{isMe && <span className={b('me-badge')}>{t('my_schedule.you')}</span>}
+									{/* Two competitors of the same competition can be there on
+									    different mornings; the list is where that shows first. */}
+									{comp.dayLabel && (
+										<span className={b('competitor-day')}>{comp.dayLabel}</span>
+									)}
 								</span>
 								{comp.wcaId && <span className={b('competitor-id')}>{comp.wcaId}</span>}
 							</div>

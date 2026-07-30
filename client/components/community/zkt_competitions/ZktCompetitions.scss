@@ -910,6 +910,113 @@ $zkt-info-green: #45d97c;
 		margin-top: 2px;
 	}
 
+	// Day-split competitions ("A günü / B günü"). Every surface below answers one
+	// question the competitor cannot get wrong: which morning is theirs. Full
+	// colour throughout — hierarchy comes from size and weight, never opacity.
+	&__competitor-day {
+		margin-left: auto;
+		padding: 2px 8px;
+		border-radius: 6px;
+		font-size: 12px;
+		font-weight: 700;
+		white-space: nowrap;
+		color: rgb(var(--primary-color));
+		background: rgba(var(--primary-color), 0.12);
+	}
+
+	&__competitor-day-card {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		margin: 12px 0 16px;
+		padding: 10px 14px;
+		border-radius: 10px;
+		border-left: 3px solid rgb(var(--primary-color));
+		background: rgba(var(--primary-color), 0.08);
+		font-size: 15px;
+	}
+
+	&__competitor-day-date {
+		font-size: 13px;
+		font-weight: 600;
+	}
+
+	&__day-split-note {
+		margin-bottom: 14px;
+		padding: 12px 14px;
+		border-radius: 10px;
+		border-left: 3px solid rgb(var(--primary-color));
+		background: rgba(var(--primary-color), 0.08);
+	}
+
+	&__day-split-days {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 14px;
+		margin: 6px 0;
+		font-size: 13px;
+		font-weight: 600;
+	}
+
+	&__day-split-text {
+		margin: 0;
+		font-size: 13px;
+	}
+
+	&__schedule-item-day,
+	&__activity-day {
+		font-weight: 700;
+		color: rgb(var(--primary-color));
+	}
+
+	// A row on a day the competitor was NOT accepted for (an event pinned to the
+	// other day, or a shared final). Marked, not hidden: they do have to come.
+	&__schedule-cell-day {
+		font-size: 12px;
+		font-weight: 700;
+		margin-top: 2px;
+
+		&_foreign {
+			color: rgb(var(--red-color, 220 38 38));
+		}
+	}
+
+	// Load / refresh failure. The organizer has to be able to tell "this
+	// competition does not exist" from "the federation is unreachable", so the
+	// server's own sentence (and the address it tried) stays on screen.
+	&__load-error {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		margin: 24px auto;
+		max-width: 720px;
+		padding: 16px 18px;
+		border-radius: 12px;
+		border-left: 4px solid rgb(var(--red-color, 220 38 38));
+		background: rgba(var(--red-color, 220 38 38), 0.1);
+		color: rgb(var(--text-color));
+		font-size: 15px;
+
+		&_inline {
+			margin: 0 0 16px;
+			max-width: none;
+		}
+	}
+
+	&__load-error-detail {
+		display: block;
+		padding: 8px 10px;
+		border-radius: 8px;
+		background: rgba(var(--text-color), 0.08);
+		font-family: 'Space Mono', monospace;
+		font-size: 12px;
+		word-break: break-word;
+	}
+
+	&__load-error-hint {
+		font-size: 13px;
+	}
+
 	// Follow (notification) bell — right edge of each competitor row
 	&__follow-bell {
 		display: inline-flex;

@@ -356,6 +356,12 @@ query wcaCompetitionDetail($input: WcaScheduleInput!) {
 		myRegistrantId
 		myRegistrationStatus
 		myRegisteredEvents
+		days {
+			position
+			label
+			date
+		}
+		myDayLabel
 		competitors {
 			name
 			wcaId
@@ -364,6 +370,7 @@ query wcaCompetitionDetail($input: WcaScheduleInput!) {
 			registrantId
 			wcaUserId
 			registeredEvents
+			dayLabel
 			assignments {
 				activityCode
 				eventName

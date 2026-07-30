@@ -50,9 +50,27 @@ async function fetchJson<T>(path: string): Promise<T | null> {
 		if (axios.isAxiosError(error) && error.response?.status === 404) {
 			return null;
 		}
-		const message = axios.isAxiosError(error) ? error.message : String(error);
-		logger.warn('[ZktFederation] fetch failed', {path, message});
-		throw new Error(`ZKT federation fetch failed: ${message}`);
+		// The message travels to the screen, so it says WHAT broke and WHERE in
+		// Turkish. "Bir hata oluştu" sends the organizer to the developer; the
+		// address plus the reason lets them see for themselves whether the
+		// federation is down, unreachable, or answering with an error.
+		const address = `${BASE_URL}${path}`;
+		let reason: string;
+		if (axios.isAxiosError(error)) {
+			if (error.code === 'ECONNABORTED') {
+				reason = 'federasyon sunucusu 15 saniye içinde yanıt vermedi (zaman aşımı)';
+			} else if (error.response) {
+				reason = `federasyon sunucusu ${error.response.status} hatası döndürdü`;
+			} else if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
+				reason = 'federasyon sunucusuna bağlanılamadı (sunucu kapalı veya adres yanlış)';
+			} else {
+				reason = `bağlantı hatası: ${error.code || error.message}`;
+			}
+		} else {
+			reason = String(error);
+		}
+		logger.warn('[ZktFederation] fetch failed', {path, reason});
+		throw new Error(`ZKT yarışma verisi alınamadı — ${reason}. Adres: ${address}`);
 	}
 }
 

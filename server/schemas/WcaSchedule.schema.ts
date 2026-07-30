@@ -98,6 +98,20 @@ export class WcaPersonalBest {
 	nationalRanking: number;
 }
 
+/** One day of a day-split ZKT competition (federation concept, not WCA). */
+@ObjectType()
+export class WcaCompetitionDay {
+	@Field(() => Int)
+	position: number;
+
+	@Field()
+	label: string;
+
+	/** YYYY-MM-DD. */
+	@Field()
+	date: string;
+}
+
 @ObjectType()
 export class WcaCompetitor {
 	@Field()
@@ -120,6 +134,14 @@ export class WcaCompetitor {
 
 	@Field(() => [String])
 	registeredEvents: string[];
+
+	/**
+	 * Day-split ZKT competitions ("A günü / B günü"): the day this competitor
+	 * attends. Null on every WCA competition — WCIF has no such concept, so it
+	 * arrives as a person extension and is simply absent elsewhere.
+	 */
+	@Field({nullable: true})
+	dayLabel?: string;
 
 	@Field(() => [WcaCompetitorAssignment])
 	assignments: WcaCompetitorAssignment[];
@@ -694,6 +716,17 @@ export class WcaCompetitionDetail {
 
 	@Field(() => [String])
 	myRegisteredEvents: string[];
+
+	/**
+	 * Days of a day-split ZKT competition; empty on everything else. Non-empty
+	 * means each competitor attends exactly ONE of these days.
+	 */
+	@Field(() => [WcaCompetitionDay], {nullable: true})
+	days?: WcaCompetitionDay[];
+
+	/** The viewer's own day on such a competition. */
+	@Field({nullable: true})
+	myDayLabel?: string;
 
 	// Tab 1
 	@Field(() => [WcaCompetitor])

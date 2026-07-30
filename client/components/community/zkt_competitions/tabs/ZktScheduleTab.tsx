@@ -7,8 +7,14 @@ export default function ZktScheduleTab({detail}: {detail: any}) {
 	const {t, i18n} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
 	const locale = i18n.language === 'tr' ? 'tr-TR' : i18n.language;
 
-	const rows = buildScheduleRows(detail, (n) => t('round_n', {n}));
+	const rows = buildScheduleRows(detail, (n) => t('round_n', {n}), t('round_final'));
 	const days = groupRowsByDay(rows, locale);
+	// Day-split competition: every competitor attends exactly one of these days,
+	// so the schedule is read differently and has to say so before it is read.
+	// Which of these days is the viewer's own is answered on "my competitions",
+	// where the federation returns the viewer's accepted day; the public detail
+	// payload has no viewer identity to match on.
+	const compDays: Array<{position: number; label: string; date?: string}> = detail.days || [];
 
 	if (rows.length === 0) {
 		return <div className={b('empty')}>{t('no_schedule_yet')}</div>;
@@ -16,9 +22,36 @@ export default function ZktScheduleTab({detail}: {detail: any}) {
 
 	return (
 		<div className={b('schedule-tab')}>
+			{compDays.length >= 2 && (
+				<div className={b('day-split-note')}>
+					<strong>{t('day_split_title', {count: compDays.length})}</strong>
+					<div className={b('day-split-days')}>
+						{compDays.map((d) => (
+							<span key={d.position} className={b('day-split-day')}>
+								{d.label}
+								{d.date
+									? `: ${new Date(d.date).toLocaleDateString(locale, {
+											day: 'numeric',
+											month: 'long',
+										})}`
+									: ''}
+							</span>
+						))}
+					</div>
+					<p className={b('day-split-text')}>{t('day_split_note')}</p>
+				</div>
+			)}
 			{days.map(({day, rows: dayRows}) => (
 				<div key={day || 'untimed'} className={b('schedule-day')}>
-					<h3 className={b('schedule-day-title')}>{day || t('schedule_untimed')}</h3>
+					<h3 className={b('schedule-day-title')}>
+						{day || t('schedule_untimed')}
+						{/* The competitor knows their day by NAME ("A Günü"), not by date, so
+						    the heading carries both and the rows stay clean. */}
+						{(() => {
+							const name = dayRows.find((r) => r.dayName)?.dayName;
+							return name ? <span className={b('schedule-day-name')}> · {name}</span> : null;
+						})()}
+					</h3>
 					<div className={b('schedule-rows')}>
 						{dayRows.map((row) => (
 							<div key={row.id} className={b('schedule-item', {round: row.isRound})}>
@@ -33,6 +66,9 @@ export default function ZktScheduleTab({detail}: {detail: any}) {
 										/>
 									)}
 									{row.title}
+									{row.dayLabel && (
+										<span className={b('schedule-item-day')}> · {row.dayLabel}</span>
+									)}
 								</span>
 							</div>
 						))}

@@ -26,18 +26,27 @@ const COMPETITOR_DETAIL_QUERY = gql`
 				isGhost
 			}
 			registeredEventIds
+			dayLabel
+			days {
+				position
+				label
+				date
+			}
 			assignments {
 				role
 				stationNumber
 				groupNumber
 				startTime
 				endTime
+				dayLabel
 				round {
 					roundNumber
 					format
 					status
 					eventId
 					eventName
+					isFinal
+					dayLabel
 				}
 			}
 			results {
@@ -76,7 +85,7 @@ type Mode = 'schedule' | 'results';
 export default function ZktCompetitorDetail() {
 	// `userId` route param is really the opaque competitor key.
 	const {competitionId, userId: key} = useParams<{competitionId: string; userId: string}>();
-	const {t} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
+	const {t, i18n} = useTranslation('translation', {keyPrefix: 'zkt_comp'});
 	const history = useHistory();
 
 	const [data, setData] = useState<any>(null);
@@ -148,6 +157,28 @@ export default function ZktCompetitorDetail() {
 			)}
 
 			{/* Mode toggle butonlari */}
+			{/* On a day-split competition this is the headline of the page: which
+			    morning is theirs. It sits above the schedule, not inside it. */}
+			{data.dayLabel && (
+				<div className={b('competitor-day-card')}>
+					<strong>
+						{t('attending_day')}: {data.dayLabel}
+					</strong>
+					{(() => {
+						const day = (data.days || []).find((d: any) => d.label === data.dayLabel);
+						if (!day?.date) return null;
+						return (
+							<span className={b('competitor-day-date')}>
+								{new Date(day.date).toLocaleDateString(
+									i18n.language === 'tr' ? 'tr-TR' : i18n.language,
+									{day: 'numeric', month: 'long', year: 'numeric', weekday: 'long'}
+								)}
+							</span>
+						);
+					})()}
+				</div>
+			)}
+
 			<div className={b('person-mode-buttons')}>
 				<button
 					type="button"
@@ -173,7 +204,7 @@ export default function ZktCompetitorDetail() {
 							<span>{t('schedule_warning')}</span>
 						</div>
 					)}
-					<ScheduleTable assignments={assignments} t={t} />
+					<ScheduleTable assignments={assignments} t={t} myDayLabel={data.dayLabel} />
 				</>
 			)}
 
@@ -184,7 +215,16 @@ export default function ZktCompetitorDetail() {
 	);
 }
 
-function ScheduleTable({assignments, t}: {assignments: any[]; t: any}) {
+function ScheduleTable({
+	assignments,
+	t,
+	myDayLabel,
+}: {
+	assignments: any[];
+	t: any;
+	/** The day this competitor was accepted onto; null unless the comp is split. */
+	myDayLabel?: string | null;
+}) {
 	if (assignments.length === 0) {
 		return <div className={b('empty')}>{t('no_assignments')}</div>;
 	}
@@ -229,8 +269,29 @@ function ScheduleTable({assignments, t}: {assignments: any[]; t: any}) {
 										<span className={b('live-now-chip', {static: true})}>{t('live_now')}</span>
 									)}
 								</td>
-								<td>R{a.round?.roundNumber}</td>
-								<td className={b('schedule-cell-time')}>{timeRange || '-'}</td>
+								<td>
+									{a.round?.isFinal ? t('round_final') : `R${a.round?.roundNumber}`}
+									{a.round?.dayLabel ? ` · ${a.round.dayLabel}` : ''}
+								</td>
+								<td className={b('schedule-cell-time')}>
+									{timeRange || '-'}
+									{/* The row shows a clock time only. On a day-split competition an
+									    event pinned to the other day, or a shared final, runs outside
+									    the day this competitor was accepted for — saying just "09:37"
+									    is how someone turns up on the wrong morning. */}
+									{a.dayLabel && (
+										<div
+											className={b('schedule-cell-day', {
+												foreign: !!myDayLabel && a.dayLabel !== myDayLabel,
+											})}
+										>
+											{a.dayLabel}
+											{myDayLabel && a.dayLabel !== myDayLabel
+												? ` (${t('not_your_day')})`
+												: ''}
+										</div>
+									)}
+								</td>
 								<td>
 									<span
 										className={b('role-pill')}

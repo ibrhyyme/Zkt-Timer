@@ -485,6 +485,14 @@
 		color: rgba(var(--text-color), 0.5);
 	}
 
+	// Day-split competition: the one day this viewer attends. The card shows the
+	// whole date range, so this is the only place their own morning appears.
+	&__comp-day {
+		font-size: 0.8rem;
+		font-weight: 700;
+		color: rgb(var(--primary-color));
+	}
+
 	// Back button
 	&__back {
 		display: inline-flex;
@@ -543,6 +551,32 @@
 			padding: 0.5rem 0.75rem;
 			font-size: 0.85rem;
 		}
+
+		// Failure, not information: the organizer has to be able to tell the two
+		// apart across a room.
+		&_error {
+			align-items: flex-start;
+			border-left: 3px solid rgb(var(--red-color, 220 38 38));
+			background: rgba(var(--red-color, 220 38 38), 0.1);
+		}
+	}
+
+	&__info-banner-body {
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
+		min-width: 0;
+	}
+
+	// The server's own words, verbatim.
+	&__info-banner-detail {
+		display: block;
+		padding: 0.4rem 0.5rem;
+		border-radius: 0.4rem;
+		background: rgba(var(--text-color), 0.08);
+		font-family: 'Space Mono', monospace;
+		font-size: 0.72rem;
+		word-break: break-word;
 	}
 
 	// Detail header
@@ -1258,6 +1292,55 @@
 		&--me {
 			border-left: 3px solid rgb(var(--primary-color));
 		}
+	}
+
+	// Day-split ZKT competition. Full colour, weight for hierarchy — the day is
+	// the one line on this screen a competitor must not misread.
+	&__day-split {
+		display: flex;
+		flex-direction: column;
+		gap: 0.35rem;
+		margin-top: 0.75rem;
+		padding: 0.75rem 0.9rem;
+		border-radius: 0.6rem;
+		border-left: 3px solid rgb(var(--primary-color));
+		background: rgba(var(--primary-color), 0.1);
+		font-size: 0.85rem;
+		// Full colour, never inherited dimming: this block answers "which morning
+		// is mine", and a washed-out answer is worse than none.
+		color: rgb(var(--text-color));
+
+		strong {
+			font-size: 0.95rem;
+		}
+	}
+
+	&__day-split-days {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.9rem;
+		font-weight: 600;
+	}
+
+	&__day-split-mine {
+		color: rgb(var(--primary-color));
+		font-weight: 700;
+	}
+
+	&__day-split-note {
+		font-size: 0.8rem;
+		color: rgb(var(--text-color));
+	}
+
+	&__competitor-day {
+		margin-left: 0.5rem;
+		padding: 0.1rem 0.45rem;
+		border-radius: 0.4rem;
+		font-size: 0.7rem;
+		font-weight: 700;
+		white-space: nowrap;
+		color: rgb(var(--primary-color));
+		background: rgba(var(--primary-color), 0.12);
 	}
 
 	&__competitor-number {

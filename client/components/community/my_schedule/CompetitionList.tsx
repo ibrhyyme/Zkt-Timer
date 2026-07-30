@@ -50,6 +50,8 @@ const ZKT_MY_COMPETITIONS_QUERY = gql`
 			country
 			eventIds
 			registrationStatus
+			dayLabel
+			dayDate
 		}
 	}
 `;
@@ -88,6 +90,10 @@ function normalizeZktComp(c: any): any {
 		country_iso2: c.country || 'TR',
 		status: c.status,
 		registration_status: c.registrationStatus,
+		// Day-split competition: the day this viewer was accepted onto. Their own
+		// list is the one place they will actually look for it.
+		zkt_day_label: c.dayLabel || null,
+		zkt_day_date: c.dayDate || null,
 		events: (c.eventIds || []).map((id: string) => ({id, event_id: id})),
 		event_ids: c.eventIds || [],
 		__zkt: true,
@@ -423,6 +429,20 @@ export default function CompetitionList() {
 						{formatDateRange(comp.start_date, comp.end_date, locale)}
 						{comp.city && ` \u2013 ${comp.city}`}
 					</span>
+					{/* A day-split competition runs over two days but this viewer attends
+					    exactly one of them. The card shows the whole date range, so
+					    without this line their own day is nowhere on the screen. */}
+					{comp.zkt_day_label && (
+						<span className={b('comp-day')}>
+							{t('zkt_comp.attending_day')}: {comp.zkt_day_label}
+							{comp.zkt_day_date
+								? ` (${new Date(comp.zkt_day_date).toLocaleDateString(locale, {
+										day: 'numeric',
+										month: 'long',
+									})})`
+								: ''}
+						</span>
+					)}
 				</div>
 				{isOngoing ? (
 					<span className={b('ongoing-badge')}>{t('my_schedule.ongoing')}</span>

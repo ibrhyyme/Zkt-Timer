@@ -12,8 +12,11 @@ export default function ZktEventsTab({detail}: {detail: any}) {
 	const rows = useMemo(() => {
 		const out: any[] = [];
 		for (const ev of detail.events) {
+			// Day first: a SEPARATE day-split event has one chain per day, so two
+			// "round 1"s, and a flat sort interleaves them.
 			const sorted = [...(ev.rounds || [])].sort(
-				(a: any, bx: any) => a.roundNumber - bx.roundNumber
+				(a: any, bx: any) =>
+					(a.dayIndex || 0) - (bx.dayIndex || 0) || a.roundNumber - bx.roundNumber
 			);
 			sorted.forEach((r: any, i: number) => {
 				out.push({
@@ -30,7 +33,9 @@ export default function ZktEventsTab({detail}: {detail: any}) {
 					status: r.status,
 					groups: r.groups || [],
 					isFirstRound: i === 0,
-					roundKey: `${ev.eventId}-r${r.roundNumber}`,
+					isFinal: !!r.isFinal,
+					dayLabel: r.dayLabel || null,
+					roundKey: `${ev.eventId}-r${r.roundNumber}-d${r.dayIndex || 0}`,
 				});
 			});
 		}
@@ -74,7 +79,10 @@ export default function ZktEventsTab({detail}: {detail: any}) {
 											</span>
 										) : ''}
 									</td>
-									<td className={b('events-cell-center')}>{row.roundNumber}</td>
+									<td className={b('events-cell-center')}>
+										{row.isFinal ? t('round_final') : row.roundNumber}
+										{row.dayLabel ? ` · ${row.dayLabel}` : ''}
+									</td>
 									<td className={b('events-cell-center')}>{formatName(row.format)}</td>
 									<td className={b('events-cell-center')}>{row.groups.length}</td>
 									<td className={b('events-cell-view')}>

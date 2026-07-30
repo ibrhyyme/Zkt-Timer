@@ -42,6 +42,32 @@ export class ZktPublicRegisteredCompetitor extends ZktPublicCompetitor {
 
 	@Field(() => [String])
 	registeredEventIds: string[];
+
+	/**
+	 * Day-split competitions ("A günü / B günü"): the day this competitor was
+	 * accepted onto. 0/null on every ordinary competition. The venue cannot hold
+	 * the whole field at once, so each competitor attends exactly one day and
+	 * showing up on the other one is not a recoverable mistake.
+	 */
+	@Field(() => Int, {nullable: true})
+	dayIndex?: number;
+
+	@Field({nullable: true})
+	dayLabel?: string;
+}
+
+/** One day of a day-split competition, as published by the federation. */
+@ObjectType()
+export class ZktPublicCompetitionDay {
+	@Field(() => Int)
+	position: number;
+
+	@Field()
+	label: string;
+
+	/** ISO date of that day, so the consumer can print "A Günü: 3 Temmuz Cuma". */
+	@Field({nullable: true})
+	date?: string;
 }
 
 @ObjectType()
@@ -66,6 +92,17 @@ export class ZktPublicRoundGroup {
 
 	@Field({nullable: true})
 	endTime?: string;
+
+	/**
+	 * Day this group runs on. A SHARED day-split round holds groups on BOTH days
+	 * under one round, and the schedule shows clock times only — without the day
+	 * the two 09:00 groups are indistinguishable.
+	 */
+	@Field(() => Int, {nullable: true})
+	dayIndex?: number;
+
+	@Field({nullable: true})
+	dayLabel?: string;
 }
 
 @ObjectType()
@@ -103,6 +140,26 @@ export class ZktPublicDetailRound {
 
 	@Field(() => Int, {nullable: true})
 	totalExpected?: number;
+
+	/**
+	 * Day-chain this round belongs to. Only a SEPARATE day-split event sets it:
+	 * that event runs a whole chain per day, so it has two "round 1"s and two
+	 * finals. 0/null everywhere else, including the SHARED rounds that run on
+	 * both days at once.
+	 */
+	@Field(() => Int, {nullable: true})
+	dayIndex?: number;
+
+	@Field({nullable: true})
+	dayLabel?: string;
+
+	/**
+	 * Last round of ITS OWN chain — what the consumer prints as "Final". Not
+	 * derivable from the round list alone: with SEPARATE days the event's highest
+	 * round number belongs to only one of the two chains.
+	 */
+	@Field({nullable: true})
+	isFinal?: boolean;
 
 	@Field(() => [ZktPublicRoundGroup])
 	groups: ZktPublicRoundGroup[];
@@ -185,6 +242,14 @@ export class ZktPublicPodium {
 	@Field()
 	eventName: string;
 
+	/**
+	 * Set when the event's days each hold their own final: that competition
+	 * crowns a champion per day, so two podiums for the same event are correct
+	 * and only this tells them apart.
+	 */
+	@Field({nullable: true})
+	dayLabel?: string;
+
 	@Field(() => [ZktPublicPodiumEntry])
 	entries: ZktPublicPodiumEntry[];
 }
@@ -238,6 +303,19 @@ export class ZktPublicCompetitionDetail {
 
 	@Field(() => Int)
 	registrationCount: number;
+
+	/**
+	 * The competition's days — empty on an ordinary competition. Non-empty means
+	 * every competitor attends exactly ONE of these days, which changes how the
+	 * schedule, the competitor list and the viewer's own registration read.
+	 *
+	 * Nullable on purpose: a federation that has not been deployed yet simply
+	 * omits the key, and a non-nullable field would turn that into "Cannot return
+	 * null for non-nullable field" — taking the whole competition page down over
+	 * a feature the old federation does not have.
+	 */
+	@Field(() => [ZktPublicCompetitionDay], {nullable: true})
+	days?: ZktPublicCompetitionDay[];
 
 	@Field(() => [ZktPublicRegisteredCompetitor])
 	competitors: ZktPublicRegisteredCompetitor[];
@@ -311,6 +389,17 @@ export class ZktPublicMyListItem extends ZktPublicListItem {
 
 	@Field(() => Int, {nullable: true})
 	registrationNumber?: number;
+
+	/**
+	 * On a day-split competition, the day this viewer was accepted onto. Null on
+	 * an ordinary competition — and also while the entry is still pending, since
+	 * the day is part of the organizer's acceptance decision.
+	 */
+	@Field({nullable: true})
+	dayLabel?: string;
+
+	@Field({nullable: true})
+	dayDate?: string;
 }
 
 @ObjectType()
@@ -419,6 +508,14 @@ export class ZktPublicMiniRound {
 
 	@Field()
 	eventName: string;
+
+	/** Last round of its own day-chain — printed as "Final". */
+	@Field({nullable: true})
+	isFinal?: boolean;
+
+	/** Day-chain of the round (SEPARATE day-split only); null otherwise. */
+	@Field({nullable: true})
+	dayLabel?: string;
 }
 
 @ObjectType()
@@ -450,6 +547,10 @@ export class ZktPublicGroupAssignments {
 	@Field({nullable: true})
 	endTime?: string;
 
+	/** Day this group runs on; null when the competition is not split. */
+	@Field({nullable: true})
+	dayLabel?: string;
+
 	@Field(() => ZktPublicMiniRound)
 	round: ZktPublicMiniRound;
 
@@ -473,6 +574,14 @@ export class ZktPublicScheduleItemRow {
 
 	@Field({nullable: true})
 	endTime?: string;
+
+	/**
+	 * Day this row actually runs on — the GROUP's day, not the competitor's. An
+	 * event pinned to the other day, or a shared final, legitimately sits outside
+	 * the day they were accepted for, and the row shows a clock time only.
+	 */
+	@Field({nullable: true})
+	dayLabel?: string;
 
 	@Field(() => ZktPublicMiniRound)
 	round: ZktPublicMiniRound;
@@ -521,6 +630,14 @@ export class ZktPublicCompetitorDetail {
 
 	@Field(() => [String])
 	registeredEventIds: string[];
+
+	/** The day this competitor attends; null when the competition is not split. */
+	@Field({nullable: true})
+	dayLabel?: string;
+
+	/** The competition's days, so the date can be printed next to the label. */
+	@Field(() => [ZktPublicCompetitionDay], {nullable: true})
+	days?: ZktPublicCompetitionDay[];
 
 	@Field(() => [ZktPublicScheduleItemRow])
 	assignments: ZktPublicScheduleItemRow[];

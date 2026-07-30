@@ -1575,6 +1575,12 @@ type WcaPersonalBest {
   nationalRanking: Int
 }
 
+type WcaCompetitionDay {
+  position: Int
+  label: String
+  date: String
+}
+
 type WcaCompetitor {
   name: String
   wcaId: String
@@ -1583,6 +1589,7 @@ type WcaCompetitor {
   registrantId: Int
   wcaUserId: Int
   registeredEvents: [String]
+  dayLabel: String
   assignments: [WcaCompetitorAssignment]
   personalBests: [WcaPersonalBest]
 }
@@ -1832,6 +1839,8 @@ type WcaCompetitionDetail {
   myRegistrantId: Int
   myRegistrationStatus: String
   myRegisteredEvents: [String]
+  days: [WcaCompetitionDay!]
+  myDayLabel: String
   competitors: [WcaCompetitor]
   events: [WcaEventDetail]
   schedule: [WcaScheduleDay]
@@ -2266,6 +2275,14 @@ type ZktPublicRegisteredCompetitor {
   isGhost: Boolean
   registrationNumber: Int
   registeredEventIds: [String]
+  dayIndex: Int
+  dayLabel: String
+}
+
+type ZktPublicCompetitionDay {
+  position: Int
+  label: String
+  date: String
 }
 
 type ZktPublicRecordTags {
@@ -2278,6 +2295,8 @@ type ZktPublicRoundGroup {
   groupNumber: Int
   startTime: String
   endTime: String
+  dayIndex: Int
+  dayLabel: String
 }
 
 type ZktPublicDetailRound {
@@ -2292,6 +2311,9 @@ type ZktPublicDetailRound {
   timeLimitCs: Int
   numEntered: Int
   totalExpected: Int
+  dayIndex: Int
+  dayLabel: String
+  isFinal: Boolean
   groups: [ZktPublicRoundGroup]
 }
 
@@ -2331,6 +2353,7 @@ type ZktPublicPodiumEntry {
 type ZktPublicPodium {
   eventId: String
   eventName: String
+  dayLabel: String
   entries: [ZktPublicPodiumEntry]
 }
 
@@ -2351,6 +2374,7 @@ type ZktPublicCompetitionDetail {
   mainEventId: String
   contact: String
   registrationCount: Int
+  days: [ZktPublicCompetitionDay!]
   competitors: [ZktPublicRegisteredCompetitor]
   delegates: [ZktPublicNamed]
   organizers: [ZktPublicNamed]
@@ -2390,6 +2414,8 @@ type ZktPublicMyListItem {
   registrationCount: Int
   registrationStatus: String
   registrationNumber: Int
+  dayLabel: String
+  dayDate: String
 }
 
 type ZktPublicCompetitionList {
@@ -2434,6 +2460,8 @@ type ZktPublicMiniRound {
   status: String
   eventId: String
   eventName: String
+  isFinal: Boolean
+  dayLabel: String
 }
 
 type ZktPublicGroupAssignmentRow {
@@ -2448,6 +2476,7 @@ type ZktPublicGroupAssignments {
   groupNumber: Int
   startTime: String
   endTime: String
+  dayLabel: String
   round: ZktPublicMiniRound
   assignments: [ZktPublicGroupAssignmentRow]
 }
@@ -2458,6 +2487,7 @@ type ZktPublicScheduleItemRow {
   groupNumber: Int
   startTime: String
   endTime: String
+  dayLabel: String
   round: ZktPublicMiniRound
 }
 
@@ -2478,6 +2508,8 @@ type ZktPublicCompetitorResult {
 type ZktPublicCompetitorDetail {
   competitor: ZktPublicCompetitor
   registeredEventIds: [String]
+  dayLabel: String
+  days: [ZktPublicCompetitionDay!]
   assignments: [ZktPublicScheduleItemRow]
   results: [ZktPublicCompetitorResult]
 }

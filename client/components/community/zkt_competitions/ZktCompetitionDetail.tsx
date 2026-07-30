@@ -41,6 +41,11 @@ const DETAIL_QUERY = gql`
 			mainEventId
 			contact
 			registrationCount
+			days {
+				position
+				label
+				date
+			}
 			competitors {
 				id
 				name
@@ -51,6 +56,8 @@ const DETAIL_QUERY = gql`
 				isGhost
 				registrationNumber
 				registeredEventIds
+				dayIndex
+				dayLabel
 			}
 			delegates {
 				name
@@ -77,11 +84,16 @@ const DETAIL_QUERY = gql`
 					cutoffCs
 					cutoffAttempts
 					timeLimitCs
+					dayIndex
+					dayLabel
+					isFinal
 					groups {
 						groupId
 						groupNumber
 						startTime
 						endTime
+						dayIndex
+						dayLabel
 					}
 				}
 			}
@@ -94,6 +106,7 @@ const DETAIL_QUERY = gql`
 			podiums {
 				eventId
 				eventName
+				dayLabel
 				entries {
 					competitor {
 						id
@@ -150,6 +163,10 @@ export default function ZktCompetitionDetail() {
 
 	const [detail, setDetail] = useState<any>(() => detailCache.get(competitionId)?.data ?? null);
 	const [loading, setLoading] = useState(() => !detailCache.get(competitionId));
+	// The reason the page is empty, kept on screen rather than in a toast that
+	// disappears: "not found" and "the federation is down" look identical to the
+	// organizer otherwise, and only one of them is their problem.
+	const [loadError, setLoadError] = useState<string | null>(null);
 	const [tab, setTab] = useState<TabId>(
 		isLiveRoute ? 'live' : ((new URLSearchParams(location.search).get('tab') as TabId) || 'groups')
 	);
@@ -165,7 +182,16 @@ export default function ZktCompetitionDetail() {
 			const data = res?.data?.zktPublicCompetition;
 			if (data) detailCache.set(competitionId, {data, ts: Date.now()});
 			setDetail(data);
-		} catch {
+			setLoadError(null);
+		} catch (e: any) {
+			// The server already phrases this in Turkish and names the address it
+			// could not reach; show it verbatim instead of a generic failure.
+			const message =
+				e?.graphQLErrors?.[0]?.message ||
+				e?.networkError?.result?.errors?.[0]?.message ||
+				e?.message ||
+				String(e);
+			setLoadError(message);
 			if (!detailCache.get(competitionId)) toastError(t('error'));
 		} finally {
 			setLoading(false);
@@ -196,8 +222,15 @@ export default function ZktCompetitionDetail() {
 	}, [isLiveRoute, location.search]);
 
 	if (loading) return <Loading />;
-	if (!detail) return <div className={b('empty')}>{t('not_found')}</div>;
-
+	if (!detail) {
+		return (
+			<div className={b('load-error')}>
+				<strong>{loadError ? t('load_failed') : t('not_found')}</strong>
+				{loadError && <code className={b('load-error-detail')}>{loadError}</code>}
+				{loadError && <span className={b('load-error-hint')}>{t('load_failed_hint')}</span>}
+			</div>
+		);
+	}
 	const locale = i18n.language === 'tr' ? 'tr-TR' : i18n.language;
 
 	// "Happening now" — rounds currently OPEN/ACTIVE (Competitor-groups style
@@ -243,6 +276,15 @@ export default function ZktCompetitionDetail() {
 
 	return (
 		<div className={b('detail-page')}>
+			{/* Data on screen but the refresh failed: what is shown is the last good
+			    copy, which on competition day is the difference between a stale
+			    schedule and a live one. Say so instead of pretending it is current. */}
+			{loadError && (
+				<div className={b('load-error', {inline: true})}>
+					<strong>{t('refresh_failed')}</strong>
+					<code className={b('load-error-detail')}>{loadError}</code>
+				</div>
+			)}
 			<div className={b('detail-header')}>
 				<button className={b('back-btn')} onClick={() => history.push('/competitions')}>
 					{t('back')}

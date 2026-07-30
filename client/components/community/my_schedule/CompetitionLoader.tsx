@@ -96,6 +96,10 @@ export default function CompetitionLoader({competitionId, children}: Competition
 	const [detail, setDetail] = useState<any>(initialCached?.data || null);
 	const [loading, setLoading] = useState(!initialCached);
 	const [error, setError] = useState<string | null>(null);
+	// The server's own sentence, kept alongside the generic key. "Program verisi
+	// yüklenemedi" alone sends the organizer to a developer; the actual reason
+	// (not signed in, federation unreachable, 500) lets them act on it.
+	const [errorDetail, setErrorDetail] = useState<string | null>(null);
 	const [follows, setFollows] = useState<FollowEntry[]>([]);
 
 	const refetchFollows = useCallback(async () => {
@@ -168,8 +172,15 @@ export default function CompetitionLoader({competitionId, children}: Competition
 					setDetail(data);
 				}
 			})
-			.catch(() => {
-				if (!cancelled) setError('fetch_error');
+			.catch((e: any) => {
+				if (cancelled) return;
+				const message =
+					e?.graphQLErrors?.[0]?.message ||
+					e?.networkError?.result?.errors?.[0]?.message ||
+					e?.message ||
+					'';
+				setError('fetch_error');
+				setErrorDetail(message || null);
 			})
 			.finally(() => {
 				if (!cancelled) setLoading(false);
@@ -214,9 +225,12 @@ export default function CompetitionLoader({competitionId, children}: Competition
 
 	if (error) {
 		return (
-			<div className={b('info-banner')}>
+			<div className={b('info-banner', {error: true})}>
 				<Info size={20} />
-				<span>{t(`my_schedule.${error}`)}</span>
+				<div className={b('info-banner-body')}>
+					<span>{t(`my_schedule.${error}`)}</span>
+					{errorDetail && <code className={b('info-banner-detail')}>{errorDetail}</code>}
+				</div>
 			</div>
 		);
 	}

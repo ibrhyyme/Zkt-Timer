@@ -449,10 +449,16 @@ if (!isDev) {
 			// Production: don't leak stack traces and internal details, send to Sentry
 			const code = err?.extensions?.code;
 			if (code === 'INTERNAL_SERVER_ERROR' || !code) {
-				try { Sentry.captureException(err); } catch { /* ignore */ }
+				let traceId = '';
+				try { traceId = Sentry.captureException(err) || ''; } catch { /* ignore */ }
+				// The message reaches a screen, so it is Turkish and carries a code the
+				// organizer can read out. Details stay hidden; the trace id is what
+				// connects their screenshot to the server log.
 				return {
-					message: 'Internal server error',
-					extensions: { code: 'INTERNAL_SERVER_ERROR' },
+					message: traceId
+						? `Sunucu hatası oluştu. Hata kodu: ${traceId}`
+						: 'Sunucu hatası oluştu. Lütfen tekrar deneyin.',
+					extensions: { code: 'INTERNAL_SERVER_ERROR', traceId },
 				};
 			}
 			// Expected errors (BAD_INPUT, FORBIDDEN, NOT_FOUND, etc.) are delivered to user,

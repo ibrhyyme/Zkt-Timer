@@ -8,6 +8,23 @@ export interface ScheduleRow {
 	isRound: boolean;
 	eventId?: string;
 	roundNumber?: number;
+	/**
+	 * Day-chain of the ROUND ("A Günü"), set only by a SEPARATE day-split event
+	 * where each day runs its own chain. Shown on the row itself, since two such
+	 * rounds are otherwise identical.
+	 */
+	dayLabel?: string | null;
+	/**
+	 * Day this block physically runs on. Every row of a given calendar day shares
+	 * it, so it belongs in the day heading rather than repeated on each row.
+	 */
+	dayName?: string | null;
+}
+
+/** Local calendar date of an ISO instant, for bucketing a round by day. */
+function dateKeyOf(iso: string): string {
+	const d = new Date(iso);
+	return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
 }
 
 /**
@@ -15,7 +32,12 @@ export interface ScheduleRow {
  * single chronological list. Round rows span min(group start) → max(group end).
  * Rows without any time sort to the end (so untimed rounds still show up).
  */
-export function buildScheduleRows(detail: any, roundLabel: (n: number) => string): ScheduleRow[] {
+export function buildScheduleRows(
+	detail: any,
+	roundLabel: (n: number) => string,
+	/** Name of a chain's last round; without it a final reads as "Tur 3". */
+	finalLabel?: string
+): ScheduleRow[] {
 	const rows: ScheduleRow[] = [];
 
 	for (const item of detail.schedule || []) {
@@ -31,27 +53,57 @@ export function buildScheduleRows(detail: any, roundLabel: (n: number) => string
 	for (const ev of detail.events || []) {
 		for (const r of ev.rounds || []) {
 			const timed = (r.groups || []).filter((g: any) => g.startTime);
-			let start: string | null = null;
-			let end: string | null = null;
-			if (timed.length > 0) {
-				start = timed.reduce(
-					(min: string, g: any) => (g.startTime < min ? g.startTime : min),
-					timed[0].startTime
-				);
-				end = timed.reduce((max: string | null, g: any) => {
-					const e = g.endTime || g.startTime;
-					return max === null || e > max ? e : max;
-				}, null as string | null);
+			// A round of a day-split competition runs on BOTH days: its groups sit on
+			// different dates. Collapsing them into one min→max row produced a block
+			// spanning "Saturday 09:00 – Sunday 11:00", a session that never happens.
+			// One row per calendar day instead, exactly like the federation's own
+			// schedule builder.
+			const byDay = new Map<string, {start: string; end: string | null; dayLabel: string | null}>();
+			for (const g of timed) {
+				const key = dateKeyOf(g.startTime);
+				const end = g.endTime || g.startTime;
+				const cur = byDay.get(key);
+				if (!cur) {
+					byDay.set(key, {start: g.startTime, end, dayLabel: g.dayLabel ?? null});
+				} else {
+					if (g.startTime < cur.start) cur.start = g.startTime;
+					if (cur.end === null || end > cur.end) cur.end = end;
+				}
 			}
-			rows.push({
-				id: r.roundId,
-				title: `${getEventName(ev.eventId)} — ${roundLabel(r.roundNumber)}`,
-				start,
-				end,
-				isRound: true,
-				eventId: ev.eventId,
-				roundNumber: r.roundNumber,
-			});
+
+			// A chain's last round is a final wherever it runs; the day comes from the
+			// round for a SEPARATE chain and from the group block otherwise.
+			const name = `${getEventName(ev.eventId)} — ${
+				r.isFinal && finalLabel ? finalLabel : roundLabel(r.roundNumber)
+			}`;
+
+			if (byDay.size === 0) {
+				rows.push({
+					id: r.roundId,
+					title: name,
+					start: null,
+					end: null,
+					isRound: true,
+					eventId: ev.eventId,
+					roundNumber: r.roundNumber,
+					dayLabel: r.dayLabel ?? null,
+					dayName: r.dayLabel ?? null,
+				});
+				continue;
+			}
+			for (const [key, d] of byDay) {
+				rows.push({
+					id: byDay.size > 1 ? `${r.roundId}-${key}` : r.roundId,
+					title: name,
+					start: d.start,
+					end: d.end,
+					isRound: true,
+					eventId: ev.eventId,
+					roundNumber: r.roundNumber,
+					dayLabel: r.dayLabel ?? null,
+					dayName: d.dayLabel ?? r.dayLabel ?? null,
+				});
+			}
 		}
 	}
 

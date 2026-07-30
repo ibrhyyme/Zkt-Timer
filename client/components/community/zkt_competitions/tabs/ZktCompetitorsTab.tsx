@@ -69,6 +69,10 @@ export default function ZktCompetitorsTab({detail}: {detail: any}) {
 									</span>
 									{extId && <span className={b('competitor-id')}>{extId}</span>}
 								</div>
+								{/* Which day they attend, on a day-split competition. Two
+								    competitors of the same competition can be there on different
+								    mornings, and the list is where that first becomes visible. */}
+								{c.dayLabel && <span className={b('competitor-day')}>{c.dayLabel}</span>}
 							</div>
 						);
 					})}
