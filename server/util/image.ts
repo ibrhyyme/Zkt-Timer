@@ -57,6 +57,15 @@ export async function getImageBufferFromFileStream(
 	// For WebP, Jimp re-encodes as PNG — safe
 
 	const img = await Jimp.read(bufferStream);
+
+	// Jimp already rotates the pixels to match the EXIF orientation while reading, but
+	// jpeg-js writes the original EXIF block straight back out (encoder writeAPP1). The
+	// orientation tag then tells the viewer to rotate a second time, which is why photos
+	// taken on a phone came out on their side. Dropping the block keeps the rotation Jimp
+	// applied and, as a bonus, strips GPS/device metadata from a publicly served image.
+	(img as any)._exif = null;
+	delete (img.bitmap as any).exifBuffer;
+
 	return await img
 		.scaleToFit(options.width, options.height)
 		.quality(options.quality || 80)
