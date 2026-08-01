@@ -11,10 +11,19 @@
  * (images/, timer_backgrounds/). Support ticket attachments are stored raw, their
  * orientation tag is still load-bearing, and they are deliberately left alone.
  *
- * Usage (run on the host - public/uploads is a bind-mounted volume, no container needed):
+ * Usage - run from the project root (public/uploads is a bind mount, so the files are
+ * on the host and no container needs to be touched):
  *   node scripts/fix-sideways-images.js                 # dry run, reports only
  *   node scripts/fix-sideways-images.js --apply         # writes, after backing up
- *   node scripts/fix-sideways-images.js --apply --dir /srv/zkt/public/uploads
+ *
+ * If the host has no node, borrow one from Docker (mount the whole project so the
+ * backup lands on the host too):
+ *   docker run --rm -v "$(pwd)":/work -w /work node:20-slim \
+ *     node scripts/fix-sideways-images.js --apply
+ *
+ * Options:
+ *   --dir <path>         uploads directory (default: ./public/uploads)
+ *   --backup-dir <path>  where originals are copied (default: ./exif-backup-<timestamp>)
  */
 
 const fs = require('fs');
@@ -25,11 +34,19 @@ const JPEG_EXTENSIONS = new Set(['.jpg', '.jpeg']);
 
 const args = process.argv.slice(2);
 const apply = args.includes('--apply');
-const dirFlagIndex = args.indexOf('--dir');
-const uploadsRoot =
-	dirFlagIndex !== -1 && args[dirFlagIndex + 1]
-		? args[dirFlagIndex + 1]
-		: path.join(process.cwd(), 'public', 'uploads');
+
+function flagValue(name) {
+	const index = args.indexOf(name);
+	return index !== -1 && args[index + 1] && !args[index + 1].startsWith('--') ? args[index + 1] : null;
+}
+
+const uploadsRoot = flagValue('--dir') || path.join(process.cwd(), 'public', 'uploads');
+
+// Backups must NOT live under public/: that directory is served statically, and the
+// originals are precisely the files that still carry GPS/device metadata.
+const backupRoot =
+	flagValue('--backup-dir') ||
+	path.join(process.cwd(), `exif-backup-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '')}`);
 
 /** Reads the EXIF Orientation value, or null when the file carries no orientation tag. */
 function readOrientation(exifSegment) {
@@ -117,10 +134,13 @@ function main() {
 		process.exit(1);
 	}
 
-	const backupDir = path.join(
-		path.dirname(uploadsRoot),
-		`exif-backup-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, '')}`
-	);
+	const backupDir = backupRoot;
+
+	if (apply && path.resolve(backupDir).startsWith(path.resolve(uploadsRoot))) {
+		console.error('refusing to write backups inside the uploads directory (it is served publicly)');
+		console.error('pass a different --backup-dir');
+		process.exit(1);
+	}
 
 	console.log(`uploads root : ${uploadsRoot}`);
 	console.log(`mode         : ${apply ? 'APPLY (files will be rewritten)' : 'dry run'}`);
