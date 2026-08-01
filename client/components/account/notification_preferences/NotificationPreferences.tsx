@@ -54,6 +54,10 @@ export default function NotificationPreferences() {
 			key: 'marketing_emails',
 			label: t('notification_prefs.marketing_emails'),
 		},
+		{
+			key: 'support_ticket_reply',
+			label: t('notification_prefs.support_ticket_reply'),
+		},
 	];
 
 	const checkboxes = [];

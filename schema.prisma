@@ -250,6 +250,7 @@ model NotificationPreference {
   created_at            DateTime    @default(now())
   marketing_emails      Boolean     @default(true)
   membership_granted    Boolean     @default(true)
+  support_ticket_reply  Boolean     @default(true)
   user                  UserAccount @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([user_id])
@@ -514,6 +515,9 @@ model SupportTicket {
   subject       String
   message       String
   resolved_at   DateTime?
+  // Last time each side opened the conversation — drives the unread badges.
+  user_read_at  DateTime?
+  admin_read_at DateTime?
   created_by_id String
   created_by    UserAccount            @relation("support_ticket_created_by", fields: [created_by_id], references: [id], onDelete: Cascade)
   messages      SupportTicketMessage[]

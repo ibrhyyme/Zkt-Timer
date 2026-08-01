@@ -417,8 +417,10 @@ type Mutation {
   reportProfile(reason: String, userId: String): Report
   resolveReports(userId: String): Float
   createSupportTicket(input: SupportTicketInput): SupportTicket
+  markSupportTicketRead(id: String): SupportTicket
   addSupportTicketMessage(attachments: [Upload!], body: String, ticketId: String): SupportTicketMessage
   resolveSupportTicket(id: String): SupportTicket
+  reopenSupportTicket(id: String): SupportTicket
   publishTopSolve(solveId: String): TopSolve
   publishTopAverages(solveIds: [String]): TopAverage
   deleteTopSolve(id: String): TopSolve
@@ -799,6 +801,7 @@ type NotificationPreference {
   id: String
   user_id: String
   marketing_emails: Boolean
+  support_ticket_reply: Boolean
   created_at: DateTime
 }
 
@@ -1214,6 +1217,8 @@ type SupportTicket {
   subject: String
   message: String
   resolved_at: DateTime
+  user_read_at: DateTime
+  admin_read_at: DateTime
   created_by_id: String
   created_by: PublicUserAccount
   messages: [SupportTicketMessage!]

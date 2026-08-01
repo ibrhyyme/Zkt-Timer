@@ -808,7 +808,14 @@
         "attach_invalid_type": "Sadece resim ve video yüklenebilir",
         "attach_too_large": "Dosya çok büyük (en fazla {{size}})",
         "attachments": "Ekler",
-        "remove_attachment": "Eki kaldır"
+        "remove_attachment": "Eki kaldır",
+        "today": "Bugün",
+        "yesterday": "Dün",
+        "new_reply": "Yeni cevap",
+        "attachment_open": "Eki aç",
+        "mark_solved": "Sorunum Çözüldü",
+        "reopen": "Yeniden Aç",
+        "attach_hint": "Talebi gönderdikten sonra sohbete ekran görüntüsü veya video ekleyebilirsin."
     },
     "admin_reports": {
         "tab_reports": "Kullanıcı Raporları",
@@ -816,7 +823,13 @@
         "ticket_resolve": "Çözüldü Olarak İşaretle",
         "no_tickets": "Açık destek talebi yok",
         "ticket_message_count": "{{count}} mesaj",
-        "ticket_awaiting_reply": "Cevap bekleniyor"
+        "ticket_awaiting_reply": "Cevap bekleniyor",
+        "ticket_filter_open": "Açık",
+        "ticket_filter_resolved": "Çözülen",
+        "ticket_filter_all": "Tümü",
+        "no_tickets_resolved": "Çözülmüş destek talebi yok",
+        "no_tickets_all": "Hiç destek talebi yok",
+        "ticket_unread": "Okunmadı"
     },
     "personal_info": {
         "first_name": "Ad",
@@ -1081,7 +1094,8 @@
     },
     "notification_prefs": {
         "email_notifications": "E-posta Bildirimleri",
-        "marketing_emails": "Zkt Timer'dan ipucu, güncellemeler ve diğer e-postalar"
+        "marketing_emails": "Zkt Timer'dan ipucu, güncellemeler ve diğer e-postalar",
+        "support_ticket_reply": "Destek talebime cevap geldiğinde e-posta gönder"
     },
     "announcement_dropdown": {
         "title": "Duyurular",
@@ -4189,5 +4203,21 @@
         "loading": "Yükleniyor...",
         "empty_state": "Henüz smart cube ile yeterli OLL/PLL kaydı yok",
         "sort_recent": "En Son"
+    },
+    "support_error": {
+        "empty_fields": "Konu ve mesaj boş olamaz",
+        "subject_too_long": "Konu çok uzun",
+        "message_too_long": "Mesaj çok uzun",
+        "ticket_rate_limited": "Çok fazla destek talebi gönderdin, biraz bekle",
+        "message_rate_limited": "Çok fazla mesaj gönderdin, biraz bekle",
+        "attachment_rate_limited": "Çok fazla dosya yükledin, biraz bekle",
+        "ticket_attachment_limit": "Bu talepte dosya sınırına ulaştın",
+        "too_many_attachments": "Aynı anda tek dosya gönderebilirsin",
+        "empty_message": "Mesaj boş olamaz",
+        "ticket_closed": "Bu talep çözüldü, yazmak için yeniden aç",
+        "not_found": "Destek talebi bulunamadı",
+        "no_access": "Bu destek talebine erişim yetkin yok",
+        "no_reply_access": "Bu destek talebine yanıt yazma yetkin yok",
+        "attachment_failed": "Dosya yüklenemedi, tekrar dene"
     }
 }

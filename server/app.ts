@@ -173,6 +173,7 @@ app.use(helmet({
 				"https://www.google-analytics.com",
 				"https://www.google.com",                // Google Ads collect endpoints
 				"https://googleads.g.doubleclick.net",
+				"https://ad.doubleclick.net",            // Google Ads conversion collect (was CSP-blocked)
 				"https://static.cloudflareinsights.com", // Cloudflare Insights beacon
 				"https://firebaseinstallations.googleapis.com", // FCM web push - installation token
 				"https://fcmregistrations.googleapis.com",      // FCM web push - registration
@@ -462,10 +463,13 @@ if (!isDev) {
 				};
 			}
 			// Expected errors (BAD_INPUT, FORBIDDEN, NOT_FOUND, etc.) are delivered to user,
-			// stack trace cleaned up
+			// stack trace cleaned up. `i18nKey` is forwarded when a resolver set one so the
+			// client can render the message in the user's language instead of the raw
+			// server string; everything else in extensions stays server-side.
+			const i18nKey = err?.extensions?.i18nKey;
 			return {
 				message: err.message,
-				extensions: { code },
+				extensions: i18nKey ? { code, i18nKey } : { code },
 				path: err.path,
 			};
 		},

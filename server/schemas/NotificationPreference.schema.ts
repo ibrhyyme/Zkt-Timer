@@ -12,5 +12,8 @@ export class NotificationPreference {
 	marketing_emails: boolean;
 
 	@Field()
+	support_ticket_reply: boolean;
+
+	@Field()
 	created_at: Date;
 }

@@ -57,6 +57,12 @@
 		color: rgb(var(--text-color));
 	}
 
+	&__hint {
+		font-size: 0.82rem;
+		font-weight: 600;
+		color: rgb(var(--text-color));
+	}
+
 	&__history {
 		margin-top: 20px;
 		display: flex;
@@ -126,5 +132,14 @@
 	&__history-item-time {
 		font-size: 0.8rem;
 		color: rgb(var(--text-color));
+	}
+
+	&__history-item-tags {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		flex-shrink: 0;
+		flex-wrap: wrap;
+		justify-content: flex-end;
 	}
 }

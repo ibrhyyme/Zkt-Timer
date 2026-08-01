@@ -801,7 +801,14 @@
         "attach_invalid_type": "Можно загружать только изображения и видео",
         "attach_too_large": "Файл слишком большой (макс {{size}})",
         "attachments": "Вложения",
-        "remove_attachment": "Удалить вложение"
+        "remove_attachment": "Удалить вложение",
+        "today": "Сегодня",
+        "yesterday": "Вчера",
+        "new_reply": "Новый ответ",
+        "attachment_open": "Открыть вложение",
+        "mark_solved": "Моя проблема решена",
+        "reopen": "Открыть заново",
+        "attach_hint": "После отправки обращения можно приложить скриншот или видео в переписке."
     },
     "admin_reports": {
         "tab_reports": "Жалобы пользователей",
@@ -809,7 +816,13 @@
         "ticket_resolve": "Отметить как решённое",
         "no_tickets": "Нет открытых запросов в поддержку",
         "ticket_message_count": "{{count}} сообщений",
-        "ticket_awaiting_reply": "Ожидает ответа"
+        "ticket_awaiting_reply": "Ожидает ответа",
+        "ticket_filter_open": "Открытые",
+        "ticket_filter_resolved": "Решённые",
+        "ticket_filter_all": "Все",
+        "no_tickets_resolved": "Нет решённых обращений",
+        "no_tickets_all": "Обращений пока нет",
+        "ticket_unread": "Не прочитано"
     },
     "personal_info": {
         "first_name": "Имя",
@@ -1074,7 +1087,8 @@
     },
     "notification_prefs": {
         "email_notifications": "Уведомления по почте",
-        "marketing_emails": "Советы, обновления и другие письма от Zkt Timer"
+        "marketing_emails": "Советы, обновления и другие письма от Zkt Timer",
+        "support_ticket_reply": "Присылать письмо, когда на моё обращение ответят"
     },
     "announcement_dropdown": {
         "title": "Объявления",
@@ -4099,5 +4113,21 @@
         "loading": "Загрузка...",
         "empty_state": "Пока нет записей OLL/PLL со smart cube",
         "sort_recent": "Недавние"
+    },
+    "support_error": {
+        "empty_fields": "Тема и сообщение не могут быть пустыми",
+        "subject_too_long": "Тема слишком длинная",
+        "message_too_long": "Сообщение слишком длинное",
+        "ticket_rate_limited": "Слишком много обращений, подождите немного",
+        "message_rate_limited": "Слишком много сообщений, подождите немного",
+        "attachment_rate_limited": "Слишком много загруженных файлов, подождите немного",
+        "ticket_attachment_limit": "В этом обращении достигнут лимит файлов",
+        "too_many_attachments": "Можно отправить только один файл за раз",
+        "empty_message": "Сообщение не может быть пустым",
+        "ticket_closed": "Обращение решено, откройте его заново, чтобы написать",
+        "not_found": "Обращение не найдено",
+        "no_access": "У вас нет доступа к этому обращению",
+        "no_reply_access": "Вы не можете отвечать в этом обращении",
+        "attachment_failed": "Не удалось загрузить файл, попробуйте снова"
     }
 }

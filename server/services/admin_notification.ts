@@ -117,7 +117,8 @@ export async function notifyAdminsOfProCancellation(
 
 export async function notifyAdminsOfSupportTicket(
 	sender: InternalUserAccount,
-	ticketSubject: string
+	ticketSubject: string,
+	ticketId: string
 ): Promise<void> {
 	const admins = await getPrisma().userAccount.findMany({
 		where: {admin: true},
@@ -127,7 +128,8 @@ export async function notifyAdminsOfSupportTicket(
 		try {
 			const notification = new AdminSupportTicketNotification(
 				{user: admin as UserAccount, triggeringUser: sender, sendEmail: false},
-				ticketSubject
+				ticketSubject,
+				ticketId
 			);
 			await notification.send();
 			await sendPushToUser(admin.id, 'Zkt Timer', notification.inAppMessage());
@@ -168,8 +170,11 @@ export async function notifyUserOfTicketReply(
 	ticketId: string
 ): Promise<void> {
 	try {
+		// Email is on for this one: the reporter is not necessarily in the app when the
+		// answer lands, and a support reply nobody sees is a support reply that failed.
+		// Opt-out lives in notification preferences (`support_ticket_reply`).
 		const notification = new SupportTicketReplyNotification(
-			{user: user as UserAccount, triggeringUser: admin, sendEmail: false},
+			{user: user as UserAccount, triggeringUser: admin, sendEmail: true},
 			ticketSubject,
 			ticketId
 		);

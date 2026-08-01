@@ -33,7 +33,8 @@ export default class AdminSupportTicketReplyNotification extends Notification {
 	}
 
 	link() {
-		return `${process.env.BASE_URI}/admin/reports?tab=support`;
+		// Deep link opens the conversation directly instead of the queue.
+		return `${process.env.BASE_URI}/admin/reports?tab=support&ticket=${this.ticketId}`;
 	}
 
 	linkText() {

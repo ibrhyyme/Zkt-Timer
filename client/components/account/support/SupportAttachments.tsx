@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import {X} from 'phosphor-react';
+import {FileArrowDown, X} from 'phosphor-react';
 import block from '../../../styles/bem';
 import {getStorageURL} from '../../../util/storage';
 import './SupportAttachments.scss';
@@ -34,6 +34,9 @@ interface DragState {
 export default function SupportAttachments({attachments}: Props) {
 	const {t} = useTranslation();
 	const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+	// Attachment ids whose media element reported a load error — rendered as a link
+	// instead of a silently blank slot.
+	const [brokenIds, setBrokenIds] = useState<string[]>([]);
 	const [scale, setScale] = useState(1);
 	const [pos, setPos] = useState({x: 0, y: 0});
 	const lightboxRef = useRef<HTMLDivElement>(null);
@@ -132,6 +135,10 @@ export default function SupportAttachments({attachments}: Props) {
 		resetView();
 	}
 
+	function markBroken(id: string) {
+		setBrokenIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
+	}
+
 	if (!attachments || attachments.length === 0) return null;
 
 	const isDragging = !!dragRef.current;
@@ -144,6 +151,21 @@ export default function SupportAttachments({attachments}: Props) {
 					const url = getStorageURL(att.storage_path);
 					if (!url) return null;
 
+					if (brokenIds.includes(att.id)) {
+						return (
+							<a
+								key={att.id}
+								className={b('fallback')}
+								href={url}
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								<FileArrowDown weight="bold" />
+								<span>{att.original_name || t('support.attachment_open')}</span>
+							</a>
+						);
+					}
+
 					if (att.kind === 'video') {
 						return (
 							<video
@@ -152,6 +174,7 @@ export default function SupportAttachments({attachments}: Props) {
 								controls
 								preload="metadata"
 								src={url}
+								onError={() => markBroken(att.id)}
 							/>
 						);
 					}
@@ -165,7 +188,12 @@ export default function SupportAttachments({attachments}: Props) {
 							title={att.original_name || ''}
 							aria-label={att.original_name || 'attachment'}
 						>
-							<img className={b('image')} src={url} alt={att.original_name || 'attachment'} />
+							<img
+								className={b('image')}
+								src={url}
+								alt={att.original_name || 'attachment'}
+								onError={() => markBroken(att.id)}
+							/>
 						</button>
 					);
 				})}

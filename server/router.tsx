@@ -87,9 +87,13 @@ function createComponents(req, store) {
 	const helmet = Helmet.renderStatic();
 	const preloaded = store.getState();
 
-	// Get html and minify it
+	// Get html and minify it.
+	// minifyCSS stays OFF on purpose: it rewrites inline `style` attributes too
+	// (`rect(0, 0, 0, 0)` -> `rect(0,0,0,0)`), which no longer matches what React
+	// renders on the client. Every SSR'd component with an inline style then fails
+	// hydration with a "Prop `style` did not match" warning and gets re-rendered.
 	const fullHtml = renderFullPage(markup, helmet, preloaded, lng);
-	return minify(fullHtml, { collapseWhitespace: true, minifyJS: true, minifyCSS: true });
+	return minify(fullHtml, { collapseWhitespace: true, minifyJS: true, minifyCSS: false });
 }
 
 function appUseRouteForPage(routePath, route: PageContext) {

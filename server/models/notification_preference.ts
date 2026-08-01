@@ -76,7 +76,7 @@ export async function createNotificationPreference(user: UserAccount) {
 
 // Only user-toggleable boolean preference columns. The key is client-supplied, so it must
 // be whitelisted before reaching the Prisma `data` object (don't pass arbitrary input through).
-const ALLOWED_PREFERENCE_KEYS = ['marketing_emails', 'membership_granted'];
+const ALLOWED_PREFERENCE_KEYS = ['marketing_emails', 'membership_granted', 'support_ticket_reply'];
 
 export async function setNotificationPreference(user: UserAccount, key: string, value: boolean) {
 	if (!ALLOWED_PREFERENCE_KEYS.includes(key)) {

@@ -33,7 +33,9 @@ export default class SupportTicketReplyNotification extends Notification {
 	}
 
 	link() {
-		return `${process.env.BASE_URI}/account/support`;
+		// Deep link straight into the conversation — landing on the list and hunting for
+		// the right ticket is the same as not linking at all.
+		return `${process.env.BASE_URI}/account/support?ticket=${this.ticketId}`;
 	}
 
 	linkText() {

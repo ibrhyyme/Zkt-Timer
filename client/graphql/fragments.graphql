@@ -193,6 +193,7 @@ fragment SolveWithUserFragment on Solve {
 
 fragment NotificationPreferenceFragment on NotificationPreference {
 	marketing_emails
+	support_ticket_reply
 }
 
 fragment NotificationFragment on Notification {

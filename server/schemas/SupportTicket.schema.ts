@@ -19,6 +19,12 @@ export class SupportTicket {
 	@Field({nullable: true})
 	resolved_at?: Date;
 
+	@Field({nullable: true})
+	user_read_at?: Date;
+
+	@Field({nullable: true})
+	admin_read_at?: Date;
+
 	@Field()
 	created_by_id: string;
 

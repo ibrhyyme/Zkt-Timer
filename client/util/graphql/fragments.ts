@@ -234,6 +234,7 @@ export const SOLVE_WITH_USER_FRAGMENT = gql`
 export const NOTIFICATION_PREFERENCE_FRAGMENT = gql`
 	fragment NotificationPreferenceFragment on NotificationPreference {
 		marketing_emails
+		support_ticket_reply
 	}
 `;
 

@@ -5,11 +5,46 @@
 	flex-direction: column;
 	gap: 14px;
 
-	&--loading,
-	&--empty {
+	&__filters {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		flex-wrap: wrap;
+	}
+
+	&__filter {
+		padding: 7px 16px;
+		border-radius: 999px;
+		border: 1px solid rgba(var(--text-color), 0.15);
+		background-color: transparent;
+		color: rgb(var(--text-color));
+		font-family: inherit;
+		font-size: 0.85rem;
+		font-weight: 700;
+		cursor: pointer;
+		transition: background-color 120ms ease, border-color 120ms ease;
+
+		&:hover {
+			border-color: rgba(var(--primary-color), 0.5);
+		}
+
+		&--active {
+			background-color: rgb(var(--primary-color));
+			border-color: rgb(var(--primary-color));
+			color: rgb(var(--background-color));
+		}
+	}
+
+	&__state {
 		padding: 40px 0;
 		display: flex;
 		justify-content: center;
+	}
+
+	&__list {
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
 	}
 
 	&__ticket {
@@ -26,6 +61,17 @@
 		&:hover {
 			background-color: rgba(var(--text-color), 0.03);
 			border-color: rgba(var(--text-color), 0.15);
+		}
+
+		// Closed tickets stay readable — marked with a side accent, not dimmed text.
+		// Matches the green Tag used for the resolved status.
+		&--resolved {
+			border-left: 3px solid #22c55e;
+		}
+
+		// Unread wins over resolved: it is the state that needs action.
+		&--unread {
+			border-left: 3px solid rgb(var(--primary-color));
 		}
 	}
 

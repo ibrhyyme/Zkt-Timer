@@ -801,7 +801,14 @@
         "attach_invalid_type": "Solo se pueden subir imágenes y vídeos",
         "attach_too_large": "El archivo es demasiado grande (máx {{size}})",
         "attachments": "Adjuntos",
-        "remove_attachment": "Quitar adjunto"
+        "remove_attachment": "Quitar adjunto",
+        "today": "Hoy",
+        "yesterday": "Ayer",
+        "new_reply": "Nueva respuesta",
+        "attachment_open": "Abrir adjunto",
+        "mark_solved": "Mi problema está resuelto",
+        "reopen": "Reabrir",
+        "attach_hint": "Después de enviar el ticket puedes adjuntar una captura o un vídeo en la conversación."
     },
     "admin_reports": {
         "tab_reports": "Reportes de usuarios",
@@ -809,7 +816,13 @@
         "ticket_resolve": "Marcar como resuelto",
         "no_tickets": "No hay tickets de soporte abiertos",
         "ticket_message_count": "{{count}} mensajes",
-        "ticket_awaiting_reply": "Esperando respuesta"
+        "ticket_awaiting_reply": "Esperando respuesta",
+        "ticket_filter_open": "Abiertos",
+        "ticket_filter_resolved": "Resueltos",
+        "ticket_filter_all": "Todos",
+        "no_tickets_resolved": "No hay tickets de soporte resueltos",
+        "no_tickets_all": "Todavía no hay tickets de soporte",
+        "ticket_unread": "No leído"
     },
     "personal_info": {
         "first_name": "Nombre",
@@ -1074,7 +1087,8 @@
     },
     "notification_prefs": {
         "email_notifications": "Notificaciones por correo electrónico",
-        "marketing_emails": "Consejos, actualizaciones y otros correos de Zkt Timer"
+        "marketing_emails": "Consejos, actualizaciones y otros correos de Zkt Timer",
+        "support_ticket_reply": "Enviarme un correo cuando respondan a mi ticket de soporte"
     },
     "announcement_dropdown": {
         "title": "Anuncios",
@@ -4099,5 +4113,21 @@
         "loading": "Cargando...",
         "empty_state": "Aún no hay registros OLL/PLL con smart cube",
         "sort_recent": "Más reciente"
+    },
+    "support_error": {
+        "empty_fields": "El asunto y el mensaje no pueden estar vacíos",
+        "subject_too_long": "El asunto es demasiado largo",
+        "message_too_long": "El mensaje es demasiado largo",
+        "ticket_rate_limited": "Enviaste demasiados tickets, espera un poco",
+        "message_rate_limited": "Enviaste demasiados mensajes, espera un poco",
+        "attachment_rate_limited": "Subiste demasiados archivos, espera un poco",
+        "ticket_attachment_limit": "Este ticket alcanzó su límite de archivos",
+        "too_many_attachments": "Puedes enviar un archivo a la vez",
+        "empty_message": "El mensaje no puede estar vacío",
+        "ticket_closed": "Este ticket está resuelto, reábrelo para escribir",
+        "not_found": "Ticket de soporte no encontrado",
+        "no_access": "No tienes acceso a este ticket de soporte",
+        "no_reply_access": "No puedes responder a este ticket de soporte",
+        "attachment_failed": "No se pudo subir el archivo, inténtalo de nuevo"
     }
 }

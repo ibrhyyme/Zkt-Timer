@@ -4,10 +4,12 @@ import {NotificationType} from '../../@types/enums';
 
 export default class AdminSupportTicketNotification extends Notification {
 	private ticketSubject: string;
+	private ticketId: string;
 
-	constructor(input: NotificationInput, ticketSubject: string) {
+	constructor(input: NotificationInput, ticketSubject: string, ticketId: string) {
 		super(input);
 		this.ticketSubject = ticketSubject;
+		this.ticketId = ticketId;
 	}
 
 	notificationType() {
@@ -31,7 +33,8 @@ export default class AdminSupportTicketNotification extends Notification {
 	}
 
 	link() {
-		return `${process.env.BASE_URI}/admin/reports?tab=support`;
+		// Deep link opens the conversation directly instead of the queue.
+		return `${process.env.BASE_URI}/admin/reports?tab=support&ticket=${this.ticketId}`;
 	}
 
 	linkText() {
@@ -45,6 +48,7 @@ export default class AdminSupportTicketNotification extends Notification {
 	customData(): object {
 		return {
 			ticketSubject: this.ticketSubject,
+			ticketId: this.ticketId,
 		};
 	}
 }

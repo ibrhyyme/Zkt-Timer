@@ -801,7 +801,14 @@
         "attach_invalid_type": "仅可上传图片和视频",
         "attach_too_large": "文件过大(最大 {{size}})",
         "attachments": "附件",
-        "remove_attachment": "移除附件"
+        "remove_attachment": "移除附件",
+        "today": "今天",
+        "yesterday": "昨天",
+        "new_reply": "新回复",
+        "attachment_open": "打开附件",
+        "mark_solved": "我的问题已解决",
+        "reopen": "重新打开",
+        "attach_hint": "提交请求后，可以在对话中附上截图或视频。"
     },
     "admin_reports": {
         "tab_reports": "用户举报",
@@ -809,7 +816,13 @@
         "ticket_resolve": "标记为已解决",
         "no_tickets": "没有打开的支持工单",
         "ticket_message_count": "{{count}} 条消息",
-        "ticket_awaiting_reply": "等待回复"
+        "ticket_awaiting_reply": "等待回复",
+        "ticket_filter_open": "进行中",
+        "ticket_filter_resolved": "已解决",
+        "ticket_filter_all": "全部",
+        "no_tickets_resolved": "没有已解决的支持请求",
+        "no_tickets_all": "还没有支持请求",
+        "ticket_unread": "未读"
     },
     "personal_info": {
         "first_name": "名字",
@@ -1074,7 +1087,8 @@
     },
     "notification_prefs": {
         "email_notifications": "电子邮件通知",
-        "marketing_emails": "来自 Zkt Timer 的技巧、更新和其他电子邮件"
+        "marketing_emails": "来自 Zkt Timer 的技巧、更新和其他电子邮件",
+        "support_ticket_reply": "我的支持请求收到回复时发送邮件"
     },
     "announcement_dropdown": {
         "title": "公告",
@@ -4184,5 +4198,21 @@
         "loading": "加载中...",
         "empty_state": "尚无智能魔方 OLL/PLL 记录",
         "sort_recent": "最近"
+    },
+    "support_error": {
+        "empty_fields": "主题和内容不能为空",
+        "subject_too_long": "主题过长",
+        "message_too_long": "内容过长",
+        "ticket_rate_limited": "提交的请求过多，请稍等",
+        "message_rate_limited": "发送的消息过多，请稍等",
+        "attachment_rate_limited": "上传的文件过多，请稍等",
+        "ticket_attachment_limit": "此请求已达到文件数量上限",
+        "too_many_attachments": "一次只能发送一个文件",
+        "empty_message": "内容不能为空",
+        "ticket_closed": "此请求已解决，重新打开后才能发送消息",
+        "not_found": "未找到支持请求",
+        "no_access": "你没有访问此支持请求的权限",
+        "no_reply_access": "你无法回复此支持请求",
+        "attachment_failed": "文件上传失败，请重试"
     }
 }

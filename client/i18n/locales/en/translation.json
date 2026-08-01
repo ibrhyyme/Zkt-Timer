@@ -801,7 +801,14 @@
         "attach_invalid_type": "Only images and videos can be uploaded",
         "attach_too_large": "File is too large (max {{size}})",
         "attachments": "Attachments",
-        "remove_attachment": "Remove attachment"
+        "remove_attachment": "Remove attachment",
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "new_reply": "New reply",
+        "attachment_open": "Open attachment",
+        "mark_solved": "My Issue Is Solved",
+        "reopen": "Reopen",
+        "attach_hint": "After sending the ticket you can attach a screenshot or video in the conversation."
     },
     "admin_reports": {
         "tab_reports": "User Reports",
@@ -809,7 +816,13 @@
         "ticket_resolve": "Mark as Resolved",
         "no_tickets": "No open support tickets",
         "ticket_message_count": "{{count}} messages",
-        "ticket_awaiting_reply": "Awaiting reply"
+        "ticket_awaiting_reply": "Awaiting reply",
+        "ticket_filter_open": "Open",
+        "ticket_filter_resolved": "Resolved",
+        "ticket_filter_all": "All",
+        "no_tickets_resolved": "No resolved support tickets",
+        "no_tickets_all": "No support tickets yet",
+        "ticket_unread": "Unread"
     },
     "personal_info": {
         "first_name": "First Name",
@@ -1074,7 +1087,8 @@
     },
     "notification_prefs": {
         "email_notifications": "Email Notifications",
-        "marketing_emails": "Tips, updates, and other emails from Zkt Timer"
+        "marketing_emails": "Tips, updates, and other emails from Zkt Timer",
+        "support_ticket_reply": "Email me when my support ticket gets a reply"
     },
     "announcement_dropdown": {
         "title": "Announcements",
@@ -4184,5 +4198,21 @@
         "loading": "Loading...",
         "empty_state": "No smart cube OLL/PLL records yet",
         "sort_recent": "Most Recent"
+    },
+    "support_error": {
+        "empty_fields": "Subject and message cannot be empty",
+        "subject_too_long": "Subject is too long",
+        "message_too_long": "Message is too long",
+        "ticket_rate_limited": "You sent too many tickets, please wait a bit",
+        "message_rate_limited": "You sent too many messages, please wait a bit",
+        "attachment_rate_limited": "You uploaded too many files, please wait a bit",
+        "ticket_attachment_limit": "This ticket reached its file limit",
+        "too_many_attachments": "You can send one file at a time",
+        "empty_message": "Message cannot be empty",
+        "ticket_closed": "This ticket is resolved, reopen it to write",
+        "not_found": "Support ticket not found",
+        "no_access": "You do not have access to this support ticket",
+        "no_reply_access": "You cannot reply to this support ticket",
+        "attachment_failed": "File could not be uploaded, please try again"
     }
 }

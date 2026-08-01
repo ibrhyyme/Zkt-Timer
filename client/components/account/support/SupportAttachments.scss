@@ -1,13 +1,17 @@
 @import '../../../styles/config';
 
 .#{$namespace}-support-attachments {
-	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(180px, 240px));
+	// Flex wrap instead of a fixed grid: inside a chat bubble the available width is
+	// narrow and a min-width track would push the bubble past the screen edge.
+	display: flex;
+	flex-wrap: wrap;
 	gap: 8px;
-	margin-top: 8px;
+	max-width: 100%;
 
 	&__image-button {
 		display: block;
+		width: 100%;
+		max-width: 220px;
 		padding: 0;
 		line-height: 0;
 		background: transparent;
@@ -32,10 +36,43 @@
 
 	&__video {
 		width: 100%;
-		max-width: 320px;
+		max-width: 260px;
 		border-radius: 10px;
 		background: #000;
 		border: 1px solid rgba(var(--text-color), 0.1);
+	}
+
+	// Shown when the media itself cannot be loaded — never leave a blank gap where
+	// an attachment should be.
+	&__fallback {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		max-width: 100%;
+		padding: 8px 12px;
+		border-radius: 10px;
+		background-color: rgb(var(--module-background));
+		border: 1px solid rgba(var(--text-color), 0.15);
+		color: rgb(var(--text-color));
+		font-size: 0.82rem;
+		font-weight: 600;
+		text-decoration: none;
+
+		svg {
+			flex: 0 0 auto;
+			width: 16px;
+			height: 16px;
+		}
+
+		span {
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+
+		&:hover {
+			border-color: rgba(var(--primary-color), 0.5);
+		}
 	}
 
 	&__lightbox {
@@ -123,11 +160,14 @@
 	}
 
 	@media (max-width: 600px) {
-		grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
 		gap: 6px;
 
 		&__image {
 			max-height: 180px;
+		}
+
+		&__image-button {
+			max-width: 180px;
 		}
 
 		&__video {
