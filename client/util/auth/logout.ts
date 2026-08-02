@@ -3,6 +3,7 @@ import { gqlMutate } from '../../components/api';
 import { clearOfflineData } from '../../components/layout/offline';
 import { clearCachedMe } from './cached-me';
 import { clearSessionToken } from './session-token';
+import { clearAllSolveTombstones } from '../solve-tombstones';
 
 export async function logOut() {
 	const query = gql`
@@ -24,6 +25,9 @@ export async function logOut() {
 	localStorage.removeItem('rememberedEmail');
 	localStorage.removeItem('wasBasicUser');
 	localStorage.removeItem('offlineHash');
+	// Tombstones are per-account: the next account on this browser must not inherit
+	// deletions it never made.
+	clearAllSolveTombstones();
 	clearOfflineData().catch(() => {});
 
 	window.location.href = '/welcome';

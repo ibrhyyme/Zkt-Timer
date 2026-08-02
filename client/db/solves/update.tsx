@@ -19,6 +19,7 @@ import { setTimerParam } from '../../components/timer/helpers/params';
 import { addToQueue } from '../../util/offline-queue';
 import { toastInfo } from '../../util/toast';
 import { canReadSync, canWriteSync } from '../../lib/sync-gate';
+import { addSolveTombstones } from '../../util/solve-tombstones';
 
 let offlineToastShown = false;
 if (typeof window !== 'undefined') {
@@ -120,6 +121,9 @@ export async function deleteSolveDb(solve: Solve, confirmed: boolean = false) {
 	const solveDb = getSolveDb();
 
 	solveDb.remove(solve);
+	// Record the intent before the network call: another device still holding this
+	// solve locally would otherwise re-upload it through its backfill pass.
+	addSolveTombstones([solve.id]);
 	postProcessDbUpdate(solve, false);
 
 	// Silme sonrası timer'daki son süreyi güncelle — yalnizca silinen çözümün ait
@@ -257,6 +261,7 @@ export async function deleteAllSolvesInSessionDb(sessionId: string, confirmed: b
 	const solvesToRemove = solveDb.find({ session_id: sessionId });
 
 	solveDb.removeWhere({ session_id: sessionId });
+	addSolveTombstones(solvesToRemove.map((s) => s.id));
 
 	clearSolveStatCacheForSession(sessionId);
 	emitEvent('solveDbUpdatedEvent', null);
@@ -311,6 +316,7 @@ export async function deleteMultipleSolvesDb(solves: Solve[], confirmed: boolean
 
 	// Remove from local DB
 	solveDb.removeWhere(s => ids.includes(s.id));
+	addSolveTombstones(ids);
 
 	if (solves.length > 0) {
 		// Group deleted solves by bucket (session + cube_type + subset) and refresh

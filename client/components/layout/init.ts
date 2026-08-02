@@ -5,7 +5,7 @@ import {
 	SETTING_FRAGMENT,
 	STATS_MODULE_BLOCK_FRAGMENT,
 } from '../../util/graphql/fragments';
-import { gqlQuery, removeTypename } from '../api';
+import { gqlMutate, gqlQuery, removeTypename } from '../api';
 import { ensureLocalDefaultSession, initSessionCollection, initSessionDb, reconcileSessionDb } from '../../db/sessions/init';
 import { Dispatch } from 'redux';
 import { clearOfflineData, initOfflineData, saveLokiDb, setDbLoadDegraded, updateOfflineHash } from './offline';
@@ -33,6 +33,7 @@ import { isPro, isProEnabled } from '../../lib/pro';
 import { canReadSync, canWriteSync } from '../../lib/sync-gate';
 import { importSessionsInChunks, importSolvesInChunks } from '../settings/data/import_data/review_import/chunked_import';
 import { getAllQueued } from '../../util/offline-queue';
+import { getSolveTombstones } from '../../util/solve-tombstones';
 
 export function initAnonymousAppData(callback) {
 	if (typeof window === 'undefined') {
@@ -218,7 +219,9 @@ async function loadNonCriticalData(_me: UserAccount, dispatch: Dispatch<any>, pa
 			// empty server and delete ALL local solves as "stale" — skip it.
 			// syncNewSessions is safe and continues working.
 			if (!migrationSkipped) {
-				bgPromises.push(syncNewSolves());
+				// Launch is the right moment for a full reconcile: deletes made on
+				// other devices land here, and the id fetch is paid once per session.
+				bgPromises.push(syncNewSolves(true));
 			}
 			bgPromises.push(syncNewSessions());
 		}
@@ -259,6 +262,10 @@ async function initNewScramble() {
 const SYNC_SOLVE_COUNT = 500;
 const DELTA_SYNC_BATCH_SIZE = 500;
 const VISIBILITY_SYNC_DEBOUNCE_MS = 10_000;
+// Reconcile pulls the full server id list, so it runs far less often than the
+// lightweight "fetch recent solves" pass that every tab focus triggers.
+const RECONCILE_INTERVAL_MS = 5 * 60_000;
+const RECENT_SOLVE_GRACE_MS = 2 * 60_000;
 
 type LocalDbLoadResult = 'loaded' | 'empty' | 'error';
 
@@ -331,33 +338,27 @@ async function deltaSyncSolves(): Promise<boolean> {
 		}
 
 		// 3. Get pending mutations from offline queue (race condition prevention)
-		let pendingCreateIds = new Set<string>();
-		let pendingDeleteIds = new Set<string>();
-		try {
-			const pendingMutations = await getAllQueued();
-			for (const m of pendingMutations) {
-				if (m.mutationName === 'createSolve' && m.variables?.input?.id) {
-					pendingCreateIds.add(m.variables.input.id);
-				}
-				if (m.mutationName === 'deleteSolve' && m.variables?.id) {
-					pendingDeleteIds.add(m.variables.id);
-				}
-				if (m.mutationName === 'deleteSolves' && m.variables?.ids) {
-					for (const id of m.variables.ids) {
-						pendingDeleteIds.add(id);
-					}
-				}
-			}
-		} catch (e) {
-			// If offline queue can't be read, continue without pending protection
-		}
+		const {pendingCreateIds, pendingDeleteIds} = await getPendingSolveMutationIds();
+
+		// Solves this device deleted must not be pulled back in: another device that
+		// hasn't reconciled yet can re-upload them via its own backfill.
+		const tombstoned = getSolveTombstones();
 
 		// 4. Calculate diff
 		const toFetch: string[] = [];
+		const resurrected: string[] = [];
 		for (const id of serverIds) {
-			if (!localIds.has(id) && !pendingDeleteIds.has(id)) {
-				toFetch.push(id);
+			if (localIds.has(id) || pendingDeleteIds.has(id)) continue;
+			if (tombstoned.has(id)) {
+				resurrected.push(id);
+				continue;
 			}
+			toFetch.push(id);
+		}
+
+		// Re-issue the delete for anything that came back from the dead.
+		if (resurrected.length) {
+			void redeleteResurrectedSolves(resurrected);
 		}
 
 		const toRemove: string[] = [];
@@ -376,23 +377,7 @@ async function deltaSyncSolves(): Promise<boolean> {
 
 		// 6. Fetch new solves in batches (solvesByIds query)
 		if (toFetch.length > 0) {
-			const fetchQuery = gql`
-				${MICRO_SOLVE_FRAGMENT}
-
-				query Query($ids: [String]!) {
-					solvesByIds(ids: $ids) {
-						...MicroSolveFragment
-					}
-				}
-			`;
-
-			for (let i = 0; i < toFetch.length; i += DELTA_SYNC_BATCH_SIZE) {
-				const batch = toFetch.slice(i, i + DELTA_SYNC_BATCH_SIZE);
-				const res = await gqlQuery<{ solvesByIds: Solve[] }>(fetchQuery, { ids: batch });
-				if (res.data.solvesByIds.length) {
-					appendSolvesToDb(res.data.solvesByIds, true);
-				}
-			}
+			await fetchSolvesByIds(toFetch);
 		}
 
 		// 7. Emit event if changes occurred
@@ -430,6 +415,7 @@ async function initAdapterCatalog(): Promise<void> {
 
 let visibilityListenerRegistered = false;
 let lastSyncTime = 0;
+let lastReconcileTime = Date.now(); // launch already reconciles
 
 function initVisibilitySyncListener() {
 	if (visibilityListenerRegistered) return;
@@ -443,13 +429,79 @@ function initVisibilitySyncListener() {
 		if (now - lastSyncTime < VISIBILITY_SYNC_DEBOUNCE_MS) return;
 		lastSyncTime = now;
 
-		Promise.all([syncNewSolves(), syncNewSessions()])
+		const reconcile = now - lastReconcileTime >= RECONCILE_INTERVAL_MS;
+		if (reconcile) {
+			lastReconcileTime = now;
+		}
+
+		Promise.all([syncNewSolves(reconcile), syncNewSessions()])
 			.then(() => updateOfflineHash())
 			.catch(() => {});
 	});
 }
 
-async function syncNewSolves() {
+/**
+ * Reads the offline queue and returns the solve ids with an unsent create/delete.
+ * Reconciliation must never act on these: a pending create doesn't exist server-side
+ * yet (deleting it locally loses the solve), and a pending delete still exists
+ * server-side (fetching it back resurrects it).
+ */
+async function getPendingSolveMutationIds(): Promise<{pendingCreateIds: Set<string>; pendingDeleteIds: Set<string>}> {
+	const pendingCreateIds = new Set<string>();
+	const pendingDeleteIds = new Set<string>();
+
+	try {
+		const pendingMutations = await getAllQueued();
+		for (const m of pendingMutations) {
+			if (m.mutationName === 'createSolve' && m.variables?.input?.id) {
+				pendingCreateIds.add(m.variables.input.id);
+			}
+			if (m.mutationName === 'deleteSolve' && m.variables?.id) {
+				pendingDeleteIds.add(m.variables.id);
+			}
+			if (m.mutationName === 'deleteSolves' && m.variables?.ids) {
+				for (const id of m.variables.ids) {
+					pendingDeleteIds.add(id);
+				}
+			}
+		}
+	} catch (e) {
+		// If offline queue can't be read, continue without pending protection
+	}
+
+	return {pendingCreateIds, pendingDeleteIds};
+}
+
+/**
+ * A tombstoned solve that is still on the server was re-uploaded by a device that
+ * hadn't reconciled yet. Push the delete again so it actually sticks.
+ */
+async function redeleteResurrectedSolves(ids: string[]): Promise<void> {
+	const mutation = gql`
+		mutation Mutate($ids: [String!]!) {
+			deleteSolves(ids: $ids)
+		}
+	`;
+
+	try {
+		await gqlMutate(mutation, { ids });
+		console.log(`[Sync] Re-deleted ${ids.length} resurrected solves`);
+	} catch (e) {
+		console.error('[Sync] Failed to re-delete resurrected solves', e);
+	}
+}
+
+/**
+ * Pulls solves created on other devices and (when `reconcile`) removes the ones
+ * deleted elsewhere.
+ *
+ * Reconciliation compares the FULL server id set, not a recency window. The old
+ * window used `started_at` while the server orders by `created_at` — a single solve
+ * whose two timestamps disagree (offline queue replay, imported data) widened the
+ * window by months, and every local solve inside it that wasn't in the last 500
+ * was deleted as "stale" even though the server still had it.
+ */
+async function syncNewSolves(reconcile = false) {
 	const query = gql`
 		${MICRO_SOLVE_FRAGMENT}
 
@@ -464,31 +516,47 @@ async function syncNewSolves() {
 		const res = await gqlQuery<{ solves: Solve[] }>(query, { take: SYNC_SOLVE_COUNT, skip: 0 });
 		const serverSolves = res.data.solves;
 
-		if (serverSolves.length) {
-			appendSolvesToDb(serverSolves);
+		const {pendingCreateIds, pendingDeleteIds} = await getPendingSolveMutationIds();
+		const tombstoned = getSolveTombstones();
+
+		// Don't re-insert a solve this device deleted or is about to delete.
+		const incoming = serverSolves.filter((s) => !pendingDeleteIds.has(s.id) && !tombstoned.has(s.id));
+		if (incoming.length) {
+			appendSolvesToDb(incoming);
 		}
 
-		// Detect and delete stale solves (may have been deleted from another device)
+		const resurrected = serverSolves.filter((s) => tombstoned.has(s.id)).map((s) => s.id);
+		if (resurrected.length) {
+			void redeleteResurrectedSolves(resurrected);
+		}
+
+		if (!reconcile) return;
+
 		const solveDb = getSolveDb();
 		if (!solveDb) return;
 
+		// Full id set — the only way to detect a solve deleted on another device
+		// without guessing at a time window.
+		const idsRes = await gqlQuery<{ mySolveIds: string[] }>(gql`
+			query Query {
+				mySolveIds
+			}
+		`);
+		const serverIds = new Set(idsRes.data?.mySolveIds || []);
+
 		// An empty response is indistinguishable from a failed/partial one —
 		// never treat it as "server has no solves" and wipe local data.
-		if (serverSolves.length === 0) return;
+		if (serverIds.size === 0) return;
 
-		const serverIds = new Set(serverSolves.map((s) => s.id));
-
-		let stale: Solve[];
-		if (serverSolves.length < SYNC_SOLVE_COUNT) {
-			// Server has fewer than 500 solves — check all local solves
-			stale = solveDb.find().filter((s) => !serverIds.has(s.id));
-		} else {
-			// Server has 500+ solves — only check the recent window. The list is
-			// ordered by created_at (not started_at), so take the true minimum.
-			const oldestServerTime = Math.min(...serverSolves.map((s) => parseInt(String(s.started_at), 10)));
-			const recentLocal = solveDb.find({ started_at: { $gte: oldestServerTime } });
-			stale = recentLocal.filter((s) => !serverIds.has(s.id));
-		}
+		// A solve finished seconds ago can still have its createSolve mutation in
+		// flight: not on the server yet, not in the offline queue either. Give recent
+		// solves a grace period so reconciliation never deletes a solve mid-upload.
+		const graceCutoff = Date.now() - RECENT_SOLVE_GRACE_MS;
+		const stale = solveDb.find().filter((s) => {
+			if (serverIds.has(s.id) || pendingCreateIds.has(s.id)) return false;
+			const startedAt = parseInt(String(s.started_at), 10);
+			return !(startedAt >= graceCutoff);
+		});
 
 		// Guard against partial server responses: deleting a large share of the
 		// local DB in one sweep is almost certainly a bad payload, not real deletes.
@@ -502,8 +570,48 @@ async function syncNewSolves() {
 			stale.forEach((s) => solveDb.remove(s));
 			emitEvent('solveDbUpdatedEvent');
 		}
+
+		// The id set also reveals server solves this device is missing OUTSIDE the
+		// most-recent-500 window — e.g. rows a previous buggy reconcile deleted, or
+		// old solves synced from another device. Pull them back.
+		const localIds = new Set(solveDb.find().map((s) => s.id));
+		const missing: string[] = [];
+		for (const id of serverIds) {
+			if (!localIds.has(id) && !pendingDeleteIds.has(id) && !tombstoned.has(id)) {
+				missing.push(id);
+			}
+		}
+
+		if (missing.length > 0) {
+			await fetchSolvesByIds(missing);
+			emitEvent('solveDbUpdatedEvent');
+		}
 	} catch (e) {
 		console.error('Failed to sync new solves', e);
+	}
+}
+
+/**
+ * Batch-fetches full solve rows by id and appends them to LokiJS. Shared by delta
+ * sync and reconciliation; callers emit `solveDbUpdatedEvent` themselves.
+ */
+async function fetchSolvesByIds(ids: string[]): Promise<void> {
+	const fetchQuery = gql`
+		${MICRO_SOLVE_FRAGMENT}
+
+		query Query($ids: [String]!) {
+			solvesByIds(ids: $ids) {
+				...MicroSolveFragment
+			}
+		}
+	`;
+
+	for (let i = 0; i < ids.length; i += DELTA_SYNC_BATCH_SIZE) {
+		const batch = ids.slice(i, i + DELTA_SYNC_BATCH_SIZE);
+		const res = await gqlQuery<{ solvesByIds: Solve[] }>(fetchQuery, { ids: batch });
+		if (res.data.solvesByIds.length) {
+			appendSolvesToDb(res.data.solvesByIds, true);
+		}
 	}
 }
 
@@ -966,8 +1074,11 @@ async function backfillLocalDataToServer(): Promise<void> {
 		}
 	}
 
-	// Upload missing solves (only SolveInput fields)
-	const missingSolves = localSolves.filter((s) => !serverSolveIds.has(s.id));
+	// Upload missing solves (only SolveInput fields).
+	// Tombstoned ids are excluded: "local but not on server" is ambiguous, and without
+	// this check a solve deleted on another device gets re-uploaded here forever.
+	const tombstoned = getSolveTombstones();
+	const missingSolves = localSolves.filter((s) => !serverSolveIds.has(s.id) && !tombstoned.has(s.id));
 	if (missingSolves.length > 0) {
 		const solveInputs = missingSolves.map((s) => ({
 			id: s.id,

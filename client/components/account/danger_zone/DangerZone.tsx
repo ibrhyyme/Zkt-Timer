@@ -6,6 +6,7 @@ import Button from '../../common/button/Button';
 import { toastError } from '../../../util/toast';
 import { deleteLocalStorage } from '../../../util/data/local_storage';
 import { clearOfflineData } from '../../layout/offline';
+import { clearAllSolveTombstones } from '../../../util/solve-tombstones';
 
 export default function DangerZone() {
 	const {t} = useTranslation();
@@ -39,6 +40,7 @@ export default function DangerZone() {
 		await gqlMutate(query);
 		deleteLocalStorage('wasBasicUser');
 		deleteLocalStorage('offlineHash');
+		clearAllSolveTombstones();
 		try { await clearOfflineData(); } catch (e) { /* ignore */ }
 		window.location.href = '/';
 	}
