@@ -65,9 +65,17 @@ export class ZktPublicCompetitionDay {
 	@Field()
 	label: string;
 
-	/** ISO date of that day, so the consumer can print "A Günü: 3 Temmuz Cuma". */
+	/** ISO date of that day, so the consumer can print the date alongside a name. */
 	@Field({nullable: true})
 	date?: string;
+
+	/**
+	 * True only when the organizer gave the day its own name. A day they left
+	 * alone is labelled by its date, so a heading that already shows the date
+	 * must not repeat it as a suffix.
+	 */
+	@Field({nullable: true})
+	named?: boolean;
 }
 
 @ObjectType()

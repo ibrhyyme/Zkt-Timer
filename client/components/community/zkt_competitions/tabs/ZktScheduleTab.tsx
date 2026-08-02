@@ -14,7 +14,12 @@ export default function ZktScheduleTab({detail}: {detail: any}) {
 	// Which of these days is the viewer's own is answered on "my competitions",
 	// where the federation returns the viewer's accepted day; the public detail
 	// payload has no viewer identity to match on.
-	const compDays: Array<{position: number; label: string; date?: string}> = detail.days || [];
+	const compDays: Array<{position: number; label: string; date?: string; named?: boolean}> =
+		detail.days || [];
+	// A day the organizer did not name is called by its own date, and every day
+	// heading here already IS that date. Appending it would read "3 Temmuz
+	// Perşembe · 3 Tem Per".
+	const daysAreNamed = compDays.some((d) => d.named);
 
 	if (rows.length === 0) {
 		return <div className={b('empty')}>{t('no_schedule_yet')}</div>;
@@ -29,7 +34,7 @@ export default function ZktScheduleTab({detail}: {detail: any}) {
 						{compDays.map((d) => (
 							<span key={d.position} className={b('day-split-day')}>
 								{d.label}
-								{d.date
+								{d.date && d.named
 									? `: ${new Date(d.date).toLocaleDateString(locale, {
 											day: 'numeric',
 											month: 'long',
@@ -45,12 +50,13 @@ export default function ZktScheduleTab({detail}: {detail: any}) {
 				<div key={day || 'untimed'} className={b('schedule-day')}>
 					<h3 className={b('schedule-day-title')}>
 						{day || t('schedule_untimed')}
-						{/* The competitor knows their day by NAME ("A Günü"), not by date, so
-						    the heading carries both and the rows stay clean. */}
-						{(() => {
-							const name = dayRows.find((r) => r.dayName)?.dayName;
-							return name ? <span className={b('schedule-day-name')}> · {name}</span> : null;
-						})()}
+						{/* Only a day with its own name adds anything here; an unnamed day
+						    is labelled by the very date this heading already shows. */}
+						{daysAreNamed &&
+							(() => {
+								const name = dayRows.find((r) => r.dayName)?.dayName;
+								return name ? <span className={b('schedule-day-name')}> · {name}</span> : null;
+							})()}
 					</h3>
 					<div className={b('schedule-rows')}>
 						{dayRows.map((row) => (

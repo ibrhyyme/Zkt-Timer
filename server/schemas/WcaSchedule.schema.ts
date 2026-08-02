@@ -110,6 +110,13 @@ export class WcaCompetitionDay {
 	/** YYYY-MM-DD. */
 	@Field()
 	date: string;
+
+	/**
+	 * True only when the organizer gave the day its own name. Otherwise `label`
+	 * IS the date, and printing "label: date" would say it twice.
+	 */
+	@Field({nullable: true})
+	named?: boolean;
 }
 
 @ObjectType()

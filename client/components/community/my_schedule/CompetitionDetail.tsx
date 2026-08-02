@@ -65,7 +65,9 @@ export default function CompetitionDetail() {
 							{detail.days.map((d: any) => (
 								<span key={d.position} className={b('day-split-day')}>
 									{d.label}
-									{d.date
+									{/* An unnamed day is already called by its date; only a day
+									    the organizer named needs the date spelled out beside it. */}
+									{d.date && d.named
 										? `: ${new Date(d.date).toLocaleDateString(locale, {
 												day: 'numeric',
 												month: 'long',

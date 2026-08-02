@@ -45,6 +45,7 @@ const DETAIL_QUERY = gql`
 				position
 				label
 				date
+				named
 			}
 			competitors {
 				id

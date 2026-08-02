@@ -1606,6 +1606,7 @@ type WcaCompetitionDay {
   position: Int
   label: String
   date: String
+  named: Boolean
 }
 
 type WcaCompetitor {
@@ -2310,6 +2311,7 @@ type ZktPublicCompetitionDay {
   position: Int
   label: String
   date: String
+  named: Boolean
 }
 
 type ZktPublicRecordTags {

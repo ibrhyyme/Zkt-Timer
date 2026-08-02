@@ -222,7 +222,7 @@ export interface CompetitionDetail {
 	 * changes how the whole schedule reads: each competitor attends exactly one
 	 * of them.
 	 */
-	days: {position: number; label: string; date: string}[];
+	days: {position: number; label: string; date: string; named: boolean}[];
 	/** The viewer's own day, when they are registered for such a competition. */
 	myDayLabel: string | null;
 	competitors: CompetitorEntry[];
@@ -250,7 +250,9 @@ function zktPersonDayLabel(person: any): string | null {
 }
 
 /** The competition's days, from the ZKT competition extension. */
-function zktCompetitionDays(wcif: any): {position: number; label: string; date: string}[] {
+function zktCompetitionDays(
+	wcif: any
+): {position: number; label: string; date: string; named: boolean}[] {
 	const ext = (wcif?.extensions || []).find(
 		(e: any) => e?.id === 'org.zktimer.zktCompetition.v1'
 	);

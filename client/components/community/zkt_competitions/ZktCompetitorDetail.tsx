@@ -31,6 +31,7 @@ const COMPETITOR_DETAIL_QUERY = gql`
 				position
 				label
 				date
+				named
 			}
 			assignments {
 				role
@@ -159,25 +160,31 @@ export default function ZktCompetitorDetail() {
 			{/* Mode toggle butonlari */}
 			{/* On a day-split competition this is the headline of the page: which
 			    morning is theirs. It sits above the schedule, not inside it. */}
-			{data.dayLabel && (
-				<div className={b('competitor-day-card')}>
-					<strong>
-						{t('attending_day')}: {data.dayLabel}
-					</strong>
-					{(() => {
-						const day = (data.days || []).find((d: any) => d.label === data.dayLabel);
-						if (!day?.date) return null;
-						return (
-							<span className={b('competitor-day-date')}>
-								{new Date(day.date).toLocaleDateString(
-									i18n.language === 'tr' ? 'tr-TR' : i18n.language,
-									{day: 'numeric', month: 'long', year: 'numeric', weekday: 'long'}
-								)}
-							</span>
-						);
-					})()}
-				</div>
-			)}
+			{data.dayLabel &&
+				(() => {
+					const day = (data.days || []).find((d: any) => d.label === data.dayLabel);
+					// The federation labels an unnamed day by its own (Turkish) date. For
+					// this card the viewer's locale does it better, so the date REPLACES
+					// the label there; a day the organizer named keeps its name and gets
+					// the date underneath.
+					const fullDate = day?.date
+						? new Date(day.date).toLocaleDateString(
+								i18n.language === 'tr' ? 'tr-TR' : i18n.language,
+								{day: 'numeric', month: 'long', year: 'numeric', weekday: 'long'}
+							)
+						: null;
+					const named = !!day?.named;
+					return (
+						<div className={b('competitor-day-card')}>
+							<strong>
+								{t('attending_day')}: {!named && fullDate ? fullDate : data.dayLabel}
+							</strong>
+							{named && fullDate && (
+								<span className={b('competitor-day-date')}>{fullDate}</span>
+							)}
+						</div>
+					);
+				})()}
 
 			<div className={b('person-mode-buttons')}>
 				<button
