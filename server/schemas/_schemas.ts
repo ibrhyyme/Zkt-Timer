@@ -18,6 +18,7 @@ export * from './Report.schema';
 export * from './SupportTicket.schema';
 export * from './SupportTicketMessage.schema';
 export * from './SupportTicketAttachment.schema';
+export * from './MediaAsset.schema';
 export * from './CustomCubeType.schema';
 export * from './Store.schema';
 export * from './NotificationPreference.schema';

@@ -1894,7 +1894,8 @@
         "email": "Correo",
         "algorithms": "Algoritmos",
         "promo": "Promo",
-        "site_config": "Configuración del sitio"
+        "site_config": "Configuración del sitio",
+        "media": "Medios"
     },
     "feature_access": {
         "title": "Acceso especial",
@@ -4129,5 +4130,26 @@
         "no_access": "No tienes acceso a este ticket de soporte",
         "no_reply_access": "No puedes responder a este ticket de soporte",
         "attachment_failed": "No se pudo subir el archivo, inténtalo de nuevo"
+    },
+    "admin_media": {
+        "title": "Gestión de medios",
+        "filter_all": "Todos",
+        "filter_pfp": "Foto de perfil",
+        "filter_header": "Cabecera de perfil",
+        "filter_background": "Fondo del timer",
+        "search_placeholder": "Buscar usuario",
+        "total_count": "{{count}} archivos",
+        "empty": "No se encontraron imágenes",
+        "preview": "Ampliar",
+        "delete": "Eliminar",
+        "deleted": "Imagen eliminada",
+        "delete_failed": "No se pudo eliminar la imagen",
+        "delete_confirm_title": "Eliminar imagen",
+        "delete_confirm_description": "Esta imagen se eliminará permanentemente y desaparecerá del perfil de {{username}}. No se puede deshacer.",
+        "file_missing": "Archivo no está en el disco",
+        "unknown_user": "Sin usuario",
+        "previous": "Anterior",
+        "next": "Siguiente",
+        "page_of": "{{current}} / {{total}}"
     }
 }

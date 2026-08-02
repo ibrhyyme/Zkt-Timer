@@ -888,6 +888,28 @@ export type MarkZktNoShowInput = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type MediaAsset = {
+  __typename?: 'MediaAsset';
+  created_at?: Maybe<Scalars['DateTime']>;
+  id?: Maybe<Scalars['String']>;
+  kind?: Maybe<MediaAssetKind>;
+  size_bytes?: Maybe<Scalars['Int']>;
+  storage_path?: Maybe<Scalars['String']>;
+  user?: Maybe<PublicUserAccount>;
+};
+
+export enum MediaAssetKind {
+  ProfileHeader = 'PROFILE_HEADER',
+  ProfilePicture = 'PROFILE_PICTURE',
+  TimerBackground = 'TIMER_BACKGROUND'
+}
+
+export type MediaAssetPage = {
+  __typename?: 'MediaAssetPage';
+  items?: Maybe<Array<Maybe<MediaAsset>>>;
+  total?: Maybe<Scalars['Int']>;
+};
+
 export type MethodStepsBackfillResult = {
   __typename?: 'MethodStepsBackfillResult';
   downgraded?: Maybe<Scalars['Int']>;
@@ -960,6 +982,7 @@ export type Mutation = {
   deleteCustomCubeType?: Maybe<CustomCubeType>;
   deleteCustomTrainer?: Maybe<CustomTrainer>;
   deleteIntegration?: Maybe<Integration>;
+  deleteMediaAsset?: Maybe<Scalars['Boolean']>;
   deleteNotification?: Maybe<Notification>;
   deletePromoCode?: Maybe<Scalars['Boolean']>;
   deleteRecordWatch?: Maybe<Scalars['Boolean']>;
@@ -1386,6 +1409,12 @@ export type MutationDeleteCustomTrainerArgs = {
 
 export type MutationDeleteIntegrationArgs = {
   integrationType?: InputMaybe<IntegrationType>;
+};
+
+
+export type MutationDeleteMediaAssetArgs = {
+  id?: InputMaybe<Scalars['String']>;
+  kind?: InputMaybe<MediaAssetKind>;
 };
 
 
@@ -2224,6 +2253,7 @@ export type Query = {
   ipInfo?: Maybe<IpInfo>;
   landingStats?: Maybe<LandingStats>;
   me: UserAccount;
+  mediaAssets?: Maybe<MediaAssetPage>;
   myCompetitionFollows?: Maybe<Array<Maybe<CompetitionFollow>>>;
   myOllcpStats?: Maybe<Array<Maybe<OllcpStatType>>>;
   myRecordWatches?: Maybe<Array<Maybe<RecordWatch>>>;
@@ -2384,6 +2414,14 @@ export type QueryIntegrationArgs = {
 
 export type QueryIpInfoArgs = {
   ip?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryMediaAssetsArgs = {
+  kind?: InputMaybe<MediaAssetKind>;
+  limit?: InputMaybe<Scalars['Int']>;
+  page?: InputMaybe<Scalars['Int']>;
+  search?: InputMaybe<Scalars['String']>;
 };
 
 

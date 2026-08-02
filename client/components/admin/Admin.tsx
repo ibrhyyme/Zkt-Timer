@@ -19,6 +19,7 @@ const SECONDARY_TABS = [
 	{id: 'email', link: '/admin/email', labelKey: 'admin_nav.email'},
 	{id: 'algorithms', link: '/admin/algorithms', labelKey: 'admin_nav.algorithms'},
 	{id: 'promo-codes', link: '/admin/promo-codes', labelKey: 'admin_nav.promo'},
+	{id: 'media', link: '/admin/media', labelKey: 'admin_nav.media'},
 	{id: 'site-config', link: '/admin/site-config', labelKey: 'admin_nav.site_config'},
 ];
 

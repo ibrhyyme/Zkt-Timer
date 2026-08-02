@@ -1901,7 +1901,8 @@
         "email": "Mail",
         "algorithms": "Algoritmalar",
         "promo": "Promo",
-        "site_config": "Site Ayarları"
+        "site_config": "Site Ayarları",
+        "media": "Medya"
     },
     "feature_access": {
         "title": "Özel erişim",
@@ -4219,5 +4220,26 @@
         "no_access": "Bu destek talebine erişim yetkin yok",
         "no_reply_access": "Bu destek talebine yanıt yazma yetkin yok",
         "attachment_failed": "Dosya yüklenemedi, tekrar dene"
+    },
+    "admin_media": {
+        "title": "Medya Yönetimi",
+        "filter_all": "Tümü",
+        "filter_pfp": "Profil Fotoğrafı",
+        "filter_header": "Profil Başlığı",
+        "filter_background": "Timer Arka Planı",
+        "search_placeholder": "Kullanıcı adı ara",
+        "total_count": "{{count}} dosya",
+        "empty": "Görsel bulunamadı",
+        "preview": "Büyüt",
+        "delete": "Sil",
+        "deleted": "Görsel silindi",
+        "delete_failed": "Görsel silinemedi",
+        "delete_confirm_title": "Görseli sil",
+        "delete_confirm_description": "Bu görsel kalıcı olarak silinecek ve {{username}} kullanıcısının profilinden kaldırılacak. Bu işlem geri alınamaz.",
+        "file_missing": "Dosya diskte yok",
+        "unknown_user": "Kullanıcı yok",
+        "previous": "Önceki",
+        "next": "Sonraki",
+        "page_of": "{{current}} / {{total}}"
     }
 }

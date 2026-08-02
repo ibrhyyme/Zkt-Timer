@@ -9,6 +9,7 @@ export * from './CaseStats.resolver';
 export * from './Integration.resolver';
 export * from './Report.resolver';
 export * from './SupportTicket.resolver';
+export * from './AdminMedia.resolver';
 export * from './Leaderboards.resolver';
 export * from './CustomCubeType.resolver';
 export * from './UserAccount.resolver';

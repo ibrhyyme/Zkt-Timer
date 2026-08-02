@@ -1894,7 +1894,8 @@
         "email": "邮件",
         "algorithms": "算法",
         "promo": "促销",
-        "site_config": "站点配置"
+        "site_config": "站点配置",
+        "media": "媒体"
     },
     "feature_access": {
         "title": "特殊访问",
@@ -4214,5 +4215,26 @@
         "no_access": "你没有访问此支持请求的权限",
         "no_reply_access": "你无法回复此支持请求",
         "attachment_failed": "文件上传失败，请重试"
+    },
+    "admin_media": {
+        "title": "媒体管理",
+        "filter_all": "全部",
+        "filter_pfp": "头像",
+        "filter_header": "资料页横幅",
+        "filter_background": "计时器背景",
+        "search_placeholder": "搜索用户名",
+        "total_count": "{{count}} 个文件",
+        "empty": "未找到图片",
+        "preview": "放大",
+        "delete": "删除",
+        "deleted": "图片已删除",
+        "delete_failed": "无法删除图片",
+        "delete_confirm_title": "删除图片",
+        "delete_confirm_description": "该图片将被永久删除，并从 {{username}} 的资料页移除。此操作无法撤销。",
+        "file_missing": "磁盘上没有该文件",
+        "unknown_user": "无用户",
+        "previous": "上一页",
+        "next": "下一页",
+        "page_of": "{{current}} / {{total}}"
     }
 }

@@ -281,6 +281,7 @@ type Query {
   supportTickets(resolved: Boolean): [SupportTicket]
   mySupportTickets: [SupportTicket]
   supportTicket(id: String): SupportTicket
+  mediaAssets(limit: Int, page: Int, search: String, kind: MediaAssetKind): MediaAssetPage
   topSolves(scrambleSubset: String, page: Int, cubeType: String): [TopSolve]
   topAverages(scrambleSubset: String, page: Int, cubeType: String): [TopAverage]
   customCubeTypes: [CustomCubeType]
@@ -421,6 +422,7 @@ type Mutation {
   addSupportTicketMessage(attachments: [Upload!], body: String, ticketId: String): SupportTicketMessage
   resolveSupportTicket(id: String): SupportTicket
   reopenSupportTicket(id: String): SupportTicket
+  deleteMediaAsset(kind: MediaAssetKind, id: String): Boolean
   publishTopSolve(solveId: String): TopSolve
   publishTopAverages(solveIds: [String]): TopAverage
   deleteTopSolve(id: String): TopSolve
@@ -1222,6 +1224,26 @@ type SupportTicket {
   created_by_id: String
   created_by: PublicUserAccount
   messages: [SupportTicketMessage!]
+}
+
+type MediaAsset {
+  id: String
+  kind: MediaAssetKind
+  storage_path: String
+  created_at: DateTime
+  size_bytes: Int
+  user: PublicUserAccount
+}
+
+enum MediaAssetKind {
+  PROFILE_PICTURE
+  PROFILE_HEADER
+  TIMER_BACKGROUND
+}
+
+type MediaAssetPage {
+  items: [MediaAsset]
+  total: Int
 }
 
 type FeatureOverrideUser {

@@ -1894,7 +1894,8 @@
         "email": "Mail",
         "algorithms": "Algorithms",
         "promo": "Promo",
-        "site_config": "Site Config"
+        "site_config": "Site Config",
+        "media": "Media"
     },
     "feature_access": {
         "title": "Special access",
@@ -4214,5 +4215,26 @@
         "no_access": "You do not have access to this support ticket",
         "no_reply_access": "You cannot reply to this support ticket",
         "attachment_failed": "File could not be uploaded, please try again"
+    },
+    "admin_media": {
+        "title": "Media Management",
+        "filter_all": "All",
+        "filter_pfp": "Profile Picture",
+        "filter_header": "Profile Header",
+        "filter_background": "Timer Background",
+        "search_placeholder": "Search username",
+        "total_count": "{{count}} files",
+        "empty": "No images found",
+        "preview": "Enlarge",
+        "delete": "Delete",
+        "deleted": "Image deleted",
+        "delete_failed": "Could not delete the image",
+        "delete_confirm_title": "Delete image",
+        "delete_confirm_description": "This image will be permanently deleted and removed from {{username}}’s profile. This cannot be undone.",
+        "file_missing": "File missing on disk",
+        "unknown_user": "No user",
+        "previous": "Previous",
+        "next": "Next",
+        "page_of": "{{current}} / {{total}}"
     }
 }

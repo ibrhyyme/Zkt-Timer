@@ -1894,7 +1894,8 @@
         "email": "Почта",
         "algorithms": "Алгоритмы",
         "promo": "Промо",
-        "site_config": "Настройки сайта"
+        "site_config": "Настройки сайта",
+        "media": "Медиа"
     },
     "feature_access": {
         "title": "Особый доступ",
@@ -4129,5 +4130,26 @@
         "no_access": "У вас нет доступа к этому обращению",
         "no_reply_access": "Вы не можете отвечать в этом обращении",
         "attachment_failed": "Не удалось загрузить файл, попробуйте снова"
+    },
+    "admin_media": {
+        "title": "Управление медиа",
+        "filter_all": "Все",
+        "filter_pfp": "Аватар",
+        "filter_header": "Шапка профиля",
+        "filter_background": "Фон таймера",
+        "search_placeholder": "Поиск по имени",
+        "total_count": "{{count}} файлов",
+        "empty": "Изображения не найдены",
+        "preview": "Увеличить",
+        "delete": "Удалить",
+        "deleted": "Изображение удалено",
+        "delete_failed": "Не удалось удалить изображение",
+        "delete_confirm_title": "Удалить изображение",
+        "delete_confirm_description": "Изображение будет удалено навсегда и исчезнет из профиля {{username}}. Отменить нельзя.",
+        "file_missing": "Файла нет на диске",
+        "unknown_user": "Без пользователя",
+        "previous": "Назад",
+        "next": "Вперёд",
+        "page_of": "{{current}} / {{total}}"
     }
 }
