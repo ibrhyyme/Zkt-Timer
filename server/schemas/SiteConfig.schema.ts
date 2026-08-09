@@ -88,6 +88,12 @@ export class SiteConfig {
 	battle_enabled: boolean;
 
 	@Field()
+	messaging_enabled: boolean;
+
+	@Field({nullable: true})
+	presence_enabled: boolean;
+
+	@Field()
 	pro_enabled: boolean;
 
 	@Field()
@@ -281,6 +287,12 @@ export class UpdateSiteConfigInput {
 
 	@Field({nullable: true})
 	battle_enabled?: boolean;
+
+	@Field({nullable: true})
+	messaging_enabled?: boolean;
+
+	@Field({nullable: true})
+	presence_enabled?: boolean;
 
 	@Field({nullable: true})
 	pro_enabled?: boolean;

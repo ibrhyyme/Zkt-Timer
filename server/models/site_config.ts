@@ -24,6 +24,8 @@ export interface SiteConfigData {
 	leaderboards_enabled: boolean;
 	rooms_enabled: boolean;
 	battle_enabled: boolean;
+	messaging_enabled: boolean;
+	presence_enabled: boolean;
 	pro_enabled: boolean;
 	wca_backfill_enabled: boolean;
 	feature_overrides: Record<string, {mode: string; users: FeatureOverrideUserData[]}>;
@@ -38,6 +40,8 @@ const DEFAULT_CONFIG: Omit<SiteConfigData, 'id' | 'updated_at' | 'featureOverrid
 	leaderboards_enabled: true,
 	rooms_enabled: true,
 	battle_enabled: true,
+	messaging_enabled: true,
+	presence_enabled: true,
 	pro_enabled: false,
 	wca_backfill_enabled: true,
 	feature_overrides: {},
@@ -54,6 +58,8 @@ export async function getSiteConfig(): Promise<SiteConfigData> {
 			leaderboards_enabled: false,
 			rooms_enabled: false,
 			battle_enabled: false,
+			messaging_enabled: false,
+			presence_enabled: false,
 			pro_enabled: false,
 			wca_backfill_enabled: false,
 			feature_overrides: {},

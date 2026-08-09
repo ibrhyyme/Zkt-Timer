@@ -12,7 +12,6 @@ import block from '../../../../styles/bem';
 import AvatarImage from '../../../common/avatar/avatar_image/AvatarImage';
 import { logOut } from '../../../../util/auth/logout';
 import { useMe } from '../../../../util/hooks/useMe';
-import { useGeneral } from '../../../../util/hooks/useGeneral';
 import { setGeneral } from '../../../../actions/general';
 import { isPro } from '../../../../lib/pro';
 import useExclusiveDropdown from '../../../../util/hooks/useExclusiveDropdown';
@@ -34,7 +33,6 @@ export default function AccountDropdown() {
 	const history = useHistory();
 	const dispatch = useDispatch();
 	const { t } = useTranslation();
-	const mobileMode = useGeneral('mobile_mode');
 	// useExclusiveDropdown: opening this closes any other header dropdown.
 	const [open, setOpen] = useExclusiveDropdown();
 
@@ -57,15 +55,14 @@ export default function AccountDropdown() {
 	const userIsPro = isPro(me);
 	const items: Item[] = [];
 
-	// Mobile'da Profile sag drawer'da bulunuyor, burada gizli
-	if (!mobileMode) {
-		items.push({
-			key: 'profile',
-			label: t('account_dropdown.profile'),
-			icon: <User weight="bold" />,
-			link: `/user/${me.username}`,
-		});
-	}
+	// Profil her iki platformda da burada. Mobilde sag drawer'dan cikarildi: avatar
+	// zaten profilin kendisi ve cekmecedeki yeri Mesajlar'a devredildi.
+	items.push({
+		key: 'profile',
+		label: t('account_dropdown.profile'),
+		icon: <User weight="bold" />,
+		link: `/user/${me.username}`,
+	});
 	items.push({
 		key: 'pro',
 		label: userIsPro ? t('account_dropdown.pro_subscription') : t('account_dropdown.pro_subscription_cta'),

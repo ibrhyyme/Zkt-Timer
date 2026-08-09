@@ -70,6 +70,17 @@ function requestConfig(): Promise<void> {
 }
 
 // Force fresh fetch — doesn't break cache, just re-requests; distributes result to subscribers when it arrives
+/**
+ * The last config we saw, however old, including the snapshot restored at boot.
+ *
+ * Only for decisions where being 30 seconds behind is harmless, such as whether to
+ * bother asking for presence. Anything that gates access must use `useSiteConfig`,
+ * which respects the TTL and refetches.
+ */
+export function getLastKnownSiteConfig(): SiteConfigData | null {
+	return cachedConfig?.data ?? null;
+}
+
 export function refreshSiteConfig() {
 	void requestConfig();
 }

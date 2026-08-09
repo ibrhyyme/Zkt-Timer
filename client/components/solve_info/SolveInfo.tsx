@@ -197,6 +197,15 @@ export default function SolveInfo(props: Props) {
 	}
 
 	function handleDone() {
+		// SolveInfo is not always inside a modal: the shared /solve/:code page embeds it
+		// directly, and there closeModal() has nothing to close, so Done did nothing at
+		// all. Every other exit path in this file already prefers onComplete; this one
+		// was the exception.
+		if (onComplete) {
+			onComplete();
+			return;
+		}
+
 		dispatch(closeModal());
 	}
 

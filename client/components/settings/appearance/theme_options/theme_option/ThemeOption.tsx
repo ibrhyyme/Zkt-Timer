@@ -3,7 +3,7 @@ import './ThemeOption.scss';
 import block from '../../../../../styles/bem';
 import jsonStr from 'json-stable-stringify';
 import {useDispatch} from 'react-redux';
-import {setSetting} from '../../../../../db/settings/update';
+import {setSettings} from '../../../../../db/settings/update';
 import {useMe} from '../../../../../util/hooks/useMe';
 import Tag from '../../../../common/tag/Tag';
 import {Lock} from 'phosphor-react';
@@ -43,10 +43,9 @@ export default function ThemeOption(props: Props) {
 			history.push('/pro');
 			return;
 		}
-		for (const key of Object.keys(theme.values)) {
-			const col = theme.values[key];
-			setSetting(key as any, col);
-		}
+		// One write: the colours share a single prefs blob server-side, so writing them
+		// key by key raced and could persist a half-applied preset.
+		setSettings(theme.values);
 	}
 
 	return (

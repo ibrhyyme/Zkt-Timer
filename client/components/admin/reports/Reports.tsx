@@ -10,6 +10,7 @@ import Empty from '../../common/empty/Empty';
 import ReportSummary from './report_summary/ReportSummary';
 import HorizontalNav from '../../common/horizontal_nav/HorizontalNav';
 import SupportTickets from './support_tickets/SupportTickets';
+import MessageReports from './message_reports/MessageReports';
 
 const b = block('admin-report-list');
 
@@ -23,7 +24,7 @@ const REPORTS_QUERY = gql`
 	}
 `;
 
-type Tab = 'reports' | 'support';
+type Tab = 'reports' | 'support' | 'messages';
 
 export default function Reports() {
 	const {t} = useTranslation();
@@ -40,12 +41,15 @@ export default function Reports() {
 	const TABS = [
 		{id: 'reports', value: t('admin_reports.tab_reports')},
 		{id: 'support', value: t('admin_reports.tab_support')},
+		{id: 'messages', value: t('admin_reports.tab_messages')},
 	];
 
 	return (
 		<div className={b()}>
 			<HorizontalNav tabs={TABS} tabId={activeTab} onChange={(id) => setActiveTab(id as Tab)} />
-			{activeTab === 'reports' ? <ReportsList /> : <SupportTickets />}
+			{activeTab === 'reports' && <ReportsList />}
+			{activeTab === 'support' && <SupportTickets />}
+			{activeTab === 'messages' && <MessageReports />}
 		</div>
 	);
 }

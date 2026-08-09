@@ -7,6 +7,7 @@ import {initWcaCompetitionNotificationCronJob} from './cron_wca_notifications';
 import {initWcaCompetitionCountdownCronJob} from './cron_wca_countdown';
 import {initWcaRecordRadarCronJob} from './cron_wca_records';
 import {initWcaBackfillCronJob} from './cron_wca_backfill';
+import {initMessageRetentionCronJob} from './cron_message_retention';
 import {syncAllWorldRecords} from './WorldRecordSyncService';
 import {freezeOldArchives} from './CompetitionArchiveService';
 import {getBucketEventKey} from '../../shared/solve';
@@ -34,6 +35,7 @@ export function initCronJobs() {
 	initCompetitionFollowCleanupCronJob();
 	initArchiveFreezeCronJob();
 	initActivityHeartbeatCleanupCronJob();
+	initMessageRetentionCronJob();
 }
 
 function initActivityHeartbeatCleanupCronJob() {

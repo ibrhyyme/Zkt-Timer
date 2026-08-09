@@ -3,10 +3,11 @@ import thunk from 'redux-thunk';
 import ReactDOM from 'react-dom/server';
 import promise from 'redux-promise-middleware';
 import { applyMiddleware, createStore, Store } from 'redux';
+import type { Request } from 'express';
 import { Provider } from 'react-redux';
 import { StaticRouter, Switch } from 'react-router-dom';
 import { minify } from 'html-minifier';
-import { PageContext, routes } from '../client/components/layout/Routes';
+import { PageContext, routes, SsrMeta } from '../client/components/layout/Routes';
 import htmlTemplate, { HtmlPagePayload } from './html_template';
 import reducers from '../client/reducers/reducers';
 import { initUserAccount } from './models/store';
@@ -55,7 +56,40 @@ function renderFullPage(html, helmet, preloadedState, lang: string = 'en') {
 	return htmlTemplate(payload);
 }
 
-function createComponents(req, store) {
+const SITE_URL = 'https://zktimer.app';
+
+/**
+ * Emits a route's own <head> tags during SSR.
+ *
+ * Rendered AFTER the router so react-helmet's last-one-wins resolution lets it
+ * override the site-wide defaults that App's own <Header> produces. Needed because
+ * App hides its route children behind `appLoaded`, which never becomes true on the
+ * server, so the page component's Helmet never runs. Crawlers don't execute JS, so
+ * this is the only copy of these tags they will ever see.
+ */
+function SsrMetaTags({meta, path}: {meta: SsrMeta; path: string}) {
+	const url = `${SITE_URL}${path}`;
+	const image = meta.image
+		? (meta.image.startsWith('http') ? meta.image : `${SITE_URL}${meta.image}`)
+		: null;
+
+	return (
+		<Helmet>
+			{meta.title ? <title>{meta.title}</title> : null}
+			{meta.title ? <meta property="og:title" content={meta.title} /> : null}
+			{meta.title ? <meta name="twitter:title" content={meta.title} /> : null}
+			{meta.description ? <meta name="description" content={meta.description} /> : null}
+			{meta.description ? <meta property="og:description" content={meta.description} /> : null}
+			{meta.description ? <meta name="twitter:description" content={meta.description} /> : null}
+			{image ? <meta property="og:image" content={image} /> : null}
+			{image ? <meta property="og:image:secure_url" content={image} /> : null}
+			{image ? <meta name="twitter:image" content={image} /> : null}
+			<meta property="og:url" content={url} />
+		</Helmet>
+	);
+}
+
+function createComponents(req, store, route?: PageContext) {
 	// Detect language from cookie for SSR
 	const lng = req.cookies?.zkt_language || 'en';
 	const i18nInstance = createI18nInstance(lng);
@@ -83,7 +117,26 @@ function createComponents(req, store) {
 		</StaticRouter>
 	);
 
-	const markup = ReactDOM.renderToString(staticRouter);
+	let ssrMeta: SsrMeta | null = null;
+	if (route?.ssrMeta) {
+		try {
+			ssrMeta = route.ssrMeta(store, req, i18nInstance.t.bind(i18nInstance));
+		} catch (e) {
+			// A broken meta builder must never take the page down with it.
+			logger.warn('SSR meta builder failed', {path: route.path, error: e?.message || e});
+		}
+	}
+
+	const tree = ssrMeta ? (
+		<>
+			{staticRouter}
+			<SsrMetaTags meta={ssrMeta} path={req.url.split('?')[0]} />
+		</>
+	) : (
+		staticRouter
+	);
+
+	const markup = ReactDOM.renderToString(tree);
 	const helmet = Helmet.renderStatic();
 	const preloaded = store.getState();
 
@@ -184,7 +237,7 @@ function appUseRouteForPage(routePath, route: PageContext) {
 		}
 
 		// Initiates the whole store
-		const html = createComponents(req, store);
+		const html = createComponents(req, store, route);
 
 		if (!code) {
 			code = 500;

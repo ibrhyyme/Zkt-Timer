@@ -653,6 +653,11 @@ app.post('/api/iap/revenuecat-webhook', revenueCatWebhookHandler);
 import { iapSyncHandler } from './api/iap_sync';
 app.post('/api/iap/sync', iapSyncHandler);
 
+// Cover images for YouTube links shared in DMs. Routed through us so the reader's IP
+// and the video someone sent them privately never reach Google. See the handler.
+import { youtubeThumbnailHandler } from './api/youtube_thumbnail';
+app.get('/api/yt-thumb/:id', youtubeThumbnailHandler);
+
 // Cache-busting: Capacitor and web clients check for updated version
 app.get('/api/version', (req, res) => {
 	res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');

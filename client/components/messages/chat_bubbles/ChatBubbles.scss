@@ -1,0 +1,492 @@
+@import '../../../styles/config';
+
+// Bottom-right, above everything except modals. The timer page is the one that matters:
+// the stack sits clear of the scramble, the time, and the stat row underneath it.
+.#{$namespace}-chat-bubbles {
+	// Kept in one place because ChatBubbles.tsx works the window's height budget out
+	// from the same number (BUBBLE_SIZE_PX). They have to agree.
+	$bubbleAvatarSize: 45px;
+
+	position: fixed;
+	// Either `top` or `bottom` comes from the component, never both: the stack hangs
+	// off whichever edge keeps the bubble itself still when the window opens.
+	z-index: 9000;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	pointer-events: none;
+	// Carries the release: the component parks the stack back at the spot the finger
+	// left it, and this glides it to the edge. Decelerating curve with no overshoot,
+	// so it reads as something heavy coming to rest rather than a bouncing widget.
+	transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+
+	&--right {
+		right: 16px;
+		align-items: flex-end;
+	}
+
+	&--left {
+		left: 16px;
+		align-items: flex-start;
+	}
+
+	// Parked in the upper half: bubbles first, window below them. In the default
+	// (lower half) case the source order already puts the window above the stack.
+	&--down {
+		flex-direction: column-reverse;
+
+		.#{$namespace}-chat-bubbles__window {
+			transform-origin: top var(--chat-origin-x, right);
+		}
+	}
+
+	&--right {
+		--chat-origin-x: right;
+	}
+
+	&--left {
+		--chat-origin-x: left;
+	}
+
+	// Default (lower half): the window grows upward out of the bubble.
+	.#{$namespace}-chat-bubbles__window {
+		transform-origin: bottom var(--chat-origin-x, right);
+	}
+
+	// Mid-drag the stack is positioned by raw coordinates, not pinned to an edge, so
+	// it must be centred on the pointer in both axes and follow it without easing.
+	&--dragging {
+		// No easing while the finger is down, or the stack lags behind the pointer.
+		transition: none;
+		transform: translate(-50%, -50%);
+
+		.#{$namespace}-chat-bubbles__bubble-handle {
+			transition: none;
+			transform: scale(1.1);
+		}
+	}
+
+	// Only the controls take clicks; the container itself must never swallow a tap
+	// meant for the timer behind it.
+	> * {
+		pointer-events: auto;
+	}
+
+	&__stack {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+	}
+
+	// Anchors for the presence dot.
+	&__window-avatar {
+		position: relative;
+		display: inline-flex;
+		flex-shrink: 0;
+	}
+
+	&__bubble {
+		position: relative;
+		// Overshoots slightly on arrival: a bubble that just fades in is easy to miss
+		// while you are looking at the timer, and this is the only cue that someone
+		// wrote to you.
+		animation: chatBubbleIn 0.34s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+		// The dismiss cross only shows on hover so the resting state stays clean.
+		&:hover .#{$namespace}-chat-bubbles__bubble-dismiss {
+			opacity: 1;
+			transform: scale(1);
+		}
+	}
+
+	&__bubble-handle {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0;
+		border: none;
+		border-radius: 50%;
+		background: transparent;
+		cursor: grab;
+		// Without this a drag on touch scrolls the page instead of moving the bubble.
+		touch-action: none;
+		user-select: none;
+		box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+		transition: transform 0.15s ease;
+
+		// Half again the 30px avatar the rest of the app uses in lists. A chat head is
+		// not a list row: it floats alone over the timer and has to be both noticeable
+		// at a glance and big enough to grab with a thumb. Overridden here rather than
+		// in AvatarImage so no other screen changes size.
+		.#{$namespace}-avatar-image__body {
+			width: $bubbleAvatarSize !important;
+			height: $bubbleAvatarSize !important;
+		}
+
+		&:hover {
+			transform: scale(1.06);
+		}
+
+		&--active {
+			outline: 2px solid rgb(var(--primary-color));
+			outline-offset: 2px;
+		}
+	}
+
+	&__bubble-badge {
+		position: absolute;
+		top: -3px;
+		right: -3px;
+		min-width: 20px;
+		height: 20px;
+		padding: 0 6px;
+		border-radius: 10px;
+		background: rgb(var(--primary-color));
+		color: #fff;
+		font-size: 0.7rem;
+		font-weight: 700;
+		line-height: 20px;
+		text-align: center;
+		font-variant-numeric: tabular-nums;
+		box-shadow: 0 0 0 2px rgb(var(--background-color));
+		// Re-keyed on every increment, so each new message re-runs the pop even when
+		// the bubble itself is already sitting there.
+		animation: chatBadgePop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+	}
+
+	&__bubble-dismiss {
+		position: absolute;
+		top: -6px;
+		left: -6px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 18px;
+		height: 18px;
+		padding: 0;
+		border: none;
+		border-radius: 50%;
+		background: rgb(var(--module-color));
+		color: rgb(var(--text-color));
+		font-size: 10px;
+		cursor: pointer;
+		opacity: 0;
+		transform: scale(0.8);
+		transition: opacity 0.12s ease, transform 0.12s ease;
+		box-shadow: 0 0 0 1px rgba(var(--text-color), 0.2);
+
+		// No hover on touch, so the cross is always reachable there.
+		@media (hover: none) {
+			opacity: 1;
+			transform: scale(1);
+		}
+	}
+
+	&__window {
+		// Grows out of the bubble rather than appearing: transform-origin is set per
+		// direction below so it expands away from the corner it is anchored to.
+		animation: chatWindowIn 0.2s cubic-bezier(0.32, 0.72, 0, 1);
+		display: flex;
+		flex-direction: column;
+		width: 320px;
+		max-width: calc(100vw - 32px);
+		height: 380px;
+		// The component measures the room between the bubble and the edge the window
+		// grows towards and publishes it as --chat-window-max-h. A fixed viewport cap
+		// is not enough on its own: with a full stack of bubbles on a short screen
+		// there is less room above them than the viewport suggests.
+		max-height: min(var(--chat-window-max-h, 380px), calc(100vh - 32px));
+		border-radius: 14px;
+		overflow: hidden;
+		background: rgb(var(--module-color));
+		border: 1px solid rgba(var(--text-color), 0.12);
+		box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+	}
+
+	&__window-head {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 10px 12px;
+		box-shadow: inset 0 -1px 0 rgba(var(--text-color), 0.08);
+	}
+
+	&__window-name {
+		flex: 1;
+		font-size: 13px;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	&__window-action {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 26px;
+		height: 26px;
+		padding: 0;
+		border: none;
+		border-radius: 7px;
+		background: transparent;
+		color: rgb(var(--text-color));
+		font-size: 14px;
+		cursor: pointer;
+
+		&:hover {
+			background: rgba(var(--text-color), 0.1);
+		}
+	}
+
+	&__window-body {
+		flex: 1;
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		padding: 12px;
+		overflow-y: auto;
+	}
+
+	&__window-loading {
+		margin: auto;
+		font-size: 12px;
+		color: rgb(var(--text-color));
+	}
+
+	&__msg {
+		animation: chatMsgIn 0.2s ease-out;
+		display: flex;
+		flex-direction: column;
+		align-self: flex-start;
+		max-width: 78%;
+		padding: 7px 10px;
+		border-radius: 12px;
+		background: rgb(var(--button-color));
+
+		&--mine {
+			align-self: flex-end;
+			background: rgb(var(--primary-color));
+
+			.#{$namespace}-chat-bubbles__msg-body,
+			.#{$namespace}-chat-bubbles__msg-time {
+				color: #fff;
+			}
+		}
+	}
+
+	&__msg-body {
+		font-size: 13px;
+		font-weight: 400;
+		line-height: 1.4;
+		color: rgb(var(--text-color));
+		white-space: pre-wrap;
+		word-break: break-word;
+	}
+
+	&__msg-solve {
+		display: block;
+		margin-top: 2px;
+		padding: 8px 10px;
+		border-radius: 9px;
+		background: rgb(var(--background-color));
+		text-decoration: none;
+	}
+
+	&__msg-solve-time {
+		display: block;
+		font-size: 17px;
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+		color: rgb(var(--text-color));
+	}
+
+	&__msg-solve-meta {
+		display: block;
+		margin-top: 1px;
+		font-size: 11px;
+		font-weight: 500;
+		color: rgb(var(--text-color));
+	}
+
+	&__msg-time {
+		margin-top: 2px;
+		font-size: 10px;
+		font-weight: 400;
+		color: rgb(var(--text-color));
+	}
+
+
+	&__msg-edited {
+		margin-left: 5px;
+		font-style: italic;
+	}
+
+	&__window-composer {
+		display: flex;
+		align-items: flex-end;
+		gap: 8px;
+		padding: 10px 12px;
+		box-shadow: inset 0 1px 0 rgba(var(--text-color), 0.08);
+	}
+
+	&__window-input {
+		flex: 1;
+		min-height: 34px;
+		max-height: 90px;
+		padding: 8px 10px;
+		box-sizing: border-box;
+		border-radius: 10px;
+		border: 1px solid rgba(var(--text-color), 0.15);
+		background: rgb(var(--background-color));
+		color: rgb(var(--text-color));
+		font-family: inherit;
+		font-size: 13px;
+		line-height: 1.35;
+		resize: none;
+	}
+
+	&__window-send {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 34px;
+		height: 34px;
+		flex-shrink: 0;
+		padding: 0;
+		border: none;
+		border-radius: 10px;
+		background: rgb(var(--primary-color));
+		color: #fff;
+		font-size: 15px;
+		cursor: pointer;
+
+		&:disabled {
+			background: rgb(var(--button-color));
+			color: rgb(var(--text-color));
+			cursor: default;
+		}
+	}
+
+	// Phones: a floating panel with air around it reads as a widget stuck on top of the
+	// app. Every messenger goes full screen here instead, so the conversation is the
+	// screen rather than a card hovering over one.
+	@media (max-width: 600px) {
+		&.#{$namespace}-chat-bubbles--right {
+			right: 12px;
+		}
+
+		&.#{$namespace}-chat-bubbles--left {
+			left: 12px;
+		}
+
+		.#{$namespace}-chat-bubbles__window {
+			position: fixed;
+			inset: 0;
+			width: 100vw;
+			height: 100vh;
+			// dvh accounts for the browser chrome that appears and disappears while
+			// scrolling; without it the composer hides under the address bar.
+			height: 100dvh;
+			max-width: none;
+			max-height: none;
+			border: none;
+			border-radius: 0;
+			padding-top: var(--safe-area-inset-top);
+			padding-bottom: var(--safe-area-inset-bottom);
+			box-sizing: border-box;
+			animation: chatSheetUp 0.26s cubic-bezier(0.32, 0.72, 0, 1);
+		}
+
+		// The stack would sit on top of its own full-screen window.
+		&--open .#{$namespace}-chat-bubbles__stack {
+			display: none;
+		}
+	}
+}
+
+@keyframes chatBubbleIn {
+	from {
+		opacity: 0;
+		transform: scale(0.4);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+
+@keyframes chatBadgePop {
+	0% {
+		transform: scale(0.5);
+	}
+	60% {
+		transform: scale(1.25);
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+
+@keyframes chatWindowIn {
+	from {
+		opacity: 0;
+		transform: scale(0.9);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+
+@keyframes chatMsgIn {
+	from {
+		opacity: 0;
+		transform: translateY(6px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes chatSheetUp {
+	from {
+		transform: translateY(100%);
+	}
+	to {
+		transform: translateY(0);
+	}
+}
+
+@keyframes chatFadeIn {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+// "Reduce motion" means no springing, sliding or scaling; it does not mean elements
+// should snap into place with no transition at all. Killing the animation outright
+// also hid the arrival cue from anyone with the OS setting on, which is the one thing
+// this bubble exists to provide. So: same fade, none of the movement.
+@media (prefers-reduced-motion: reduce) {
+	// The component skips the measurement too, so this only guarantees that nothing
+	// slides if the two ever disagree.
+	.#{$namespace}-chat-bubbles {
+		transition: none;
+	}
+
+	.#{$namespace}-chat-bubbles__bubble,
+	.#{$namespace}-chat-bubbles__bubble-badge,
+	.#{$namespace}-chat-bubbles__window,
+	.#{$namespace}-chat-bubbles__msg {
+		animation-name: chatFadeIn;
+		animation-duration: 0.18s;
+		animation-timing-function: ease-out;
+	}
+}

@@ -200,6 +200,15 @@ export type OnlineUserEntry = {
 
 export const ADMIN_ONLINE_WATCHERS_ROOM = 'admin:online-watchers';
 
+/**
+ * Personal room every authenticated socket joins, used to target a user rather
+ * than a single tab. Lives here so socket.ts and dm_delivery.ts can both use it
+ * without importing each other (that cycle left getSocketIO unresolved).
+ */
+export function userRoom(userId: string): string {
+	return `user:${userId}`;
+}
+
 // Disconnects all socket connections for a user. Used during logout / ban / account deletion flows
 // to prevent "ghost online user" states. Best-effort, does not throw errors.
 export async function disconnectUserSockets(userId: string): Promise<void> {

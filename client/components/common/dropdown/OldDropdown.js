@@ -13,6 +13,22 @@ export default class OldDropdown extends React.Component {
 		};
 	}
 
+	/**
+	 * Closes without an originating click. Needed by panels that act on an inner
+	 * click and must then get out of the way, which preventCloseOnInnerClick would
+	 * otherwise stop from ever happening.
+	 */
+	close = () => {
+		if (this.props.onClose) {
+			this.props.onClose();
+		}
+
+		this.setState({
+			open: false,
+		});
+		window.removeEventListener('click', this.closeDropdown);
+	};
+
 	closeDropdown = (e) => {
 		if (this.props.preventCloseOnInnerClick) {
 			let target = e.target;
@@ -25,14 +41,7 @@ export default class OldDropdown extends React.Component {
 			}
 		}
 
-		if (this.props.onClose) {
-			this.props.onClose();
-		}
-
-		this.setState({
-			open: false,
-		});
-		window.removeEventListener('click', this.closeDropdown);
+		this.close();
 	};
 
 	openDropdown = (e) => {

@@ -27,9 +27,12 @@ interface Props {
 	storageKeyUsed: string;
 	notchHintText: string;
 	notchHintSubText: string;
-	// Sabit grid yuksekligi (sag drawer NAV_LINKS+profile icin 310). Verilmezse
+	// Sabit grid yuksekligi (sag drawer NAV_LINKS icin 310). Verilmezse
 	// auto-measure (drawerRef icindeki .edge-drawer__grid clientHeight'i okunur).
 	gridHeightPx?: number;
+	// Centige "iceride yeni bir sey var" noktasi koyar. Centik 8px genisliginde,
+	// oraya rakam sigmaz; sayi cekmece acildiginda ilgili oge uzerinde gosterilir.
+	notchBadge?: boolean;
 	children: React.ReactNode;
 }
 
@@ -47,7 +50,7 @@ function loadNotchY(key: string): number {
 }
 
 export default function EdgeDrawer(props: Props) {
-	const {side, storageKeyY, storageKeyUsed, notchHintText, notchHintSubText, gridHeightPx, children} = props;
+	const {side, storageKeyY, storageKeyUsed, notchHintText, notchHintSubText, gridHeightPx, notchBadge, children} = props;
 	const isLeft = side === 'left';
 
 	const [open, setOpen] = useState(false);
@@ -437,6 +440,7 @@ export default function EdgeDrawer(props: Props) {
 							setOpen(true);
 						}}
 					>
+						{notchBadge && <span className={b('notch-dot', {[sideMod]: true})} />}
 						{showHint && !open && (
 							<div className={b('notch-tooltip', {[sideMod]: true})}>
 								<span>{notchHintText}</span>

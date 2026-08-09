@@ -361,6 +361,14 @@ type Query {
   myZktCompetitionFollows(competitionId: String): [ZktCompetitionFollow]
   adminUserDailyActivity(userId: String): UserDailyActivityResult
   adminActiveUsers(monthYear: String, period: String): AdminActiveUsersResult
+  conversations(requests: Boolean, page: Int): ConversationList
+  messageRecipientSearch(query: String): [PublicUserAccount]
+  inboxSummary: InboxSummary
+  messages(before: DateTime, conversationId: String): MessageList
+  blockedUsers: [BlockedUser]
+  socialPreference: SocialPreference
+  dmPresence(userIds: [String]): [String]
+  messageReports(page: Int, status: ReportStatus): MessageReportList
 }
 
 type Mutation {
@@ -546,6 +554,20 @@ type Mutation {
   followZktCompetitor(input: FollowZktCompetitorInput): ZktCompetitionFollow
   unfollowZktCompetitor(id: String): Boolean
   recordActivityHeartbeat(path: String): ActivityHeartbeatResult
+  sendMessage(solveId: String, conversationId: String, recipientId: String, body: String): Message
+  markConversationRead(conversationId: String): Boolean
+  setTyping(typing: Boolean, conversationId: String): Boolean
+  acceptConversationRequest(conversationId: String): Boolean
+  setConversationMuted(muted: Boolean, conversationId: String): Boolean
+  archiveConversation(conversationId: String): Boolean
+  editMessage(body: String, messageId: String): Message
+  unsendMessage(messageId: String): Boolean
+  clearConversation(conversationId: String): Boolean
+  reportConversation(reason: String, conversationId: String): Boolean
+  blockUser(userId: String): Boolean
+  unblockUser(userId: String): Boolean
+  updateSocialPreference(input: UpdateSocialPreferenceInput): SocialPreference
+  resolveMessageReport(note: String, action: ReportStatus, reportId: String): Boolean
 }
 
 type SmartDevice {
@@ -1276,6 +1298,8 @@ type SiteConfig {
   leaderboards_enabled: Boolean
   rooms_enabled: Boolean
   battle_enabled: Boolean
+  messaging_enabled: Boolean
+  presence_enabled: Boolean
   pro_enabled: Boolean
   wca_backfill_enabled: Boolean
   featureOverrides: [FeatureOverrideEntry]
@@ -2609,6 +2633,102 @@ type UserDailyActivityResult {
   total_minutes: Int
 }
 
+type Message {
+  id: String
+  conversation_id: String
+  sender_id: String
+  body: String
+  sender: PublicUserAccount
+  solve: Solve
+  edited_at: DateTime
+  created_at: DateTime
+}
+
+type ConversationView {
+  id: String
+  other_user: PublicUserAccount
+  last_message: Message
+  unread_count: Int
+  accepted: Boolean
+  muted: Boolean
+  last_message_at: DateTime
+}
+
+type ConversationList {
+  conversations: [ConversationView]
+  more_results: Boolean
+}
+
+type MessageList {
+  messages: [Message]
+  more_results: Boolean
+  accepted: Boolean
+  awaiting_accept: Boolean
+  muted: Boolean
+}
+
+type InboxSummary {
+  unread_total: Int
+  request_count: Int
+}
+
+type SocialPreference {
+  dm_policy: DmPolicy
+  searchable: Boolean
+  dm_push: Boolean
+  read_receipts: Boolean
+  typing_indicator: Boolean
+  online_status: Boolean
+}
+
+"""Who may start a new conversation with this user"""
+enum DmPolicy {
+  EVERYONE
+  KNOWN
+  NOBODY
+}
+
+type ReportSnapshotMessage {
+  id: String
+  sender_id: String
+  sender_username: String
+  body: String
+  has_solve: Boolean
+  created_at: String
+}
+
+type MessageReportView {
+  id: String
+  reporter: PublicUserAccount
+  reported: PublicUserAccount
+  reason: String
+  snapshot: [ReportSnapshotMessage]
+  status: ReportStatus
+  moderator_note: String
+  reviewed_at: DateTime
+  reviewed_by: PublicUserAccount
+  created_at: DateTime
+}
+
+"""Moderation state of a conversation report"""
+enum ReportStatus {
+  OPEN
+  ACTIONED
+  DISMISSED
+}
+
+type MessageReportList {
+  reports: [MessageReportView]
+  open_count: Int
+  more_results: Boolean
+}
+
+type BlockedUser {
+  id: String
+  user: PublicUserAccount
+  created_at: DateTime
+}
+
 type Notification {
   id: String
   user_id: String
@@ -2767,6 +2887,8 @@ input UpdateSiteConfigInput {
   leaderboards_enabled: Boolean
   rooms_enabled: Boolean
   battle_enabled: Boolean
+  messaging_enabled: Boolean
+  presence_enabled: Boolean
   pro_enabled: Boolean
   wca_backfill_enabled: Boolean
   featureOverrides: [FeatureOverrideEntryInput!]
@@ -3161,6 +3283,15 @@ input FollowZktCompetitorInput {
   followed_user_id: String
   followed_person_id: String
   name: String
+}
+
+input UpdateSocialPreferenceInput {
+  dm_policy: DmPolicy
+  searchable: Boolean
+  dm_push: Boolean
+  read_receipts: Boolean
+  typing_indicator: Boolean
+  online_status: Boolean
 }
 
 input PaginationArgsInput {

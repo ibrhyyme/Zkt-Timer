@@ -623,3 +623,45 @@ fragment ZktAssignmentFragment on ZktAssignment {
 		...PublicUserFragment
 	}
 }
+
+fragment DmSolveFragment on Solve {
+	id
+	time
+	dnf
+	plus_two
+	cube_type
+	scramble_subset
+	scramble
+	share_code
+	is_smart_cube
+	created_at
+}
+
+fragment MessageFragment on Message {
+	id
+	conversation_id
+	sender_id
+	body
+	created_at
+	edited_at
+	sender {
+		...PublicUserFragment
+	}
+	solve {
+		...DmSolveFragment
+	}
+}
+
+fragment ConversationViewFragment on ConversationView {
+	id
+	unread_count
+	accepted
+	muted
+	last_message_at
+	other_user {
+		...PublicUserFragment
+	}
+	last_message {
+		...MessageFragment
+	}
+}

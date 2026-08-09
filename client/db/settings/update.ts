@@ -97,10 +97,15 @@ export function setSetting<T extends keyof AllSettings>(key: T, value: AllSettin
 		[key]: value,
 	};
 
-	updatePartialSettings(payload);
+	setSettings(payload);
 }
 
-async function updatePartialSettings(payload: Partial<AllSettings>) {
+// Write several settings as ONE update. Platform settings are persisted as a whole
+// `desktop_prefs` / `mobile_prefs` JSON blob and the server overwrites that column
+// without merging, so N separate setSetting calls are N racing whole-blob writes and
+// whichever lands last wins. Any caller changing more than one setting at a time
+// (theme presets, resets) must go through here so the blob is written exactly once.
+export async function setSettings(payload: Partial<AllSettings>) {
 	const settingsDb = getSettingsDb();
 
 	const localSettingUpdates: SettingValue[] = [];
@@ -149,13 +154,51 @@ function setSettingLocal(setVals: SettingValue[]) {
 	}
 }
 
+// updateOfflineHash() serialises the entire LokiJS DB into IndexedDB and fires a
+// second mutation of its own. Running that once per settings write is wasted work when
+// settings change in bursts, and the main-thread cost of back-to-back serialisations
+// delays the writes it is bookkeeping for. Collapse a burst into a single trailing
+// update, flushed on pagehide so closing the tab mid-burst can't drop it.
+const OFFLINE_HASH_DEBOUNCE_MS = 400;
+let offlineHashTimer: ReturnType<typeof setTimeout> | null = null;
+let offlineHashFlushBound = false;
+
+function flushOfflineHashUpdate() {
+	if (!offlineHashTimer) {
+		return;
+	}
+	clearTimeout(offlineHashTimer);
+	offlineHashTimer = null;
+	void updateOfflineHash();
+}
+
+function scheduleOfflineHashUpdate() {
+	if (typeof window === 'undefined') {
+		void updateOfflineHash();
+		return;
+	}
+
+	if (!offlineHashFlushBound) {
+		offlineHashFlushBound = true;
+		window.addEventListener('pagehide', flushOfflineHashUpdate);
+	}
+
+	if (offlineHashTimer) {
+		clearTimeout(offlineHashTimer);
+	}
+	offlineHashTimer = setTimeout(() => {
+		offlineHashTimer = null;
+		void updateOfflineHash();
+	}, OFFLINE_HASH_DEBOUNCE_MS);
+}
+
 async function setSettingApi(gqlPayload: Record<string, any>) {
 	// Terminate if no keys to set
 	if (!Object.keys(gqlPayload).length) {
 		return;
 	}
 
-	const promises: Promise<any>[] = [updateOfflineHash()];
+	scheduleOfflineHashUpdate();
 
 	const query = gql`
 		mutation Mutate($input: SettingInput) {
@@ -165,13 +208,9 @@ async function setSettingApi(gqlPayload: Record<string, any>) {
 		}
 	`;
 
-	promises.push(
-		gqlMutate(query, {
-			input: gqlPayload,
-		})
-	);
-
-	await Promise.all(promises);
+	await gqlMutate(query, {
+		input: gqlPayload,
+	});
 }
 
 function emitSettingUpdateEvent(setVals: SettingValue[]) {

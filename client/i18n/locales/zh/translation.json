@@ -9,6 +9,7 @@
         "sessions": "阶段",
         "battle": "对战",
         "ranks": "排名",
+        "messages": "消息",
         "collapse": "折叠",
         "login": "登录",
         "signup": "注册",
@@ -771,7 +772,8 @@
         "linked_accounts": "关联账户",
         "announcements": "公告",
         "support": "支持",
-        "danger_zone": "危险区域"
+        "danger_zone": "危险区域",
+        "social": "社交"
     },
     "support": {
         "page_title": "支持",
@@ -822,7 +824,8 @@
         "ticket_filter_all": "全部",
         "no_tickets_resolved": "没有已解决的支持请求",
         "no_tickets_all": "还没有支持请求",
-        "ticket_unread": "未读"
+        "ticket_unread": "未读",
+        "tab_messages": "消息举报"
     },
     "personal_info": {
         "first_name": "名字",
@@ -1423,7 +1426,9 @@
         "slot_right": "右侧模块"
     },
     "solve_page": {
-        "not_found": "未找到此还原"
+        "not_found": "未找到此还原",
+        "share_title": "{{time}} · {{cubeType}} · {{user}} | Zkt Timer",
+        "share_description": "逐步观看 {{user}} 的 {{cubeType}} 还原，用时 {{time}}。打乱、成绩与完整还原详情尽在 Zkt Timer。"
     },
     "solve_info": {
         "solve_tab": "还原",
@@ -1490,7 +1495,18 @@
             "pro_required_title": "智能魔方回放",
             "pro_required_desc": "升级到 Pro 以 3D 形式逐步观看您的解决过程。",
             "upgrade_cta": "升级到 Pro"
-        }
+        },
+        "send": "发送",
+        "send_title": "发送解法",
+        "send_search": "搜索用户",
+        "send_hint": "输入要发送给的用户名",
+        "send_none": "未找到用户",
+        "send_note": "添加留言（可选）",
+        "send_action": "发送",
+        "send_cancel": "取消",
+        "send_change": "更改",
+        "send_sent": "解法已发送给 {{name}}",
+        "send_recent": "最近聊天"
     },
     "sessions": {
         "page_title": "阶段",
@@ -1799,7 +1815,8 @@
         "cuber_card_stat_gold": "金牌",
         "cuber_card_stat_silver": "银牌",
         "cuber_card_stat_bronze": "铜牌",
-        "cuber_card_records": "记录"
+        "cuber_card_records": "记录",
+        "send_message": "发送消息"
     },
     "stats_page": {
         "more_stats": "更多统计数据",
@@ -2150,6 +2167,7 @@
         "send_complete": "发送完成",
         "success_count": "{{count}} 成功",
         "fail_count": "{{count}} 失败",
+        "skipped_count": "{{count}} 已跳过（已退订营销邮件）",
         "new_email": "创建新邮件",
         "recipients": "收件人",
         "send_to_all": "发送给所有用户",
@@ -2646,7 +2664,13 @@
         "password_updated": "密码已更新，正在跳转…",
         "forgot_email_sub": "输入账户邮箱，我们将发送 6 位恢复验证码。",
         "code_verified": "验证码已确认",
-        "pw_levels": ["非常弱", "弱", "一般", "良好", "强"]
+        "pw_levels": [
+            "非常弱",
+            "弱",
+            "一般",
+            "良好",
+            "强"
+        ]
     },
     "email_verification": {
         "title": "邮箱验证",
@@ -3172,7 +3196,8 @@
         "inspiration_recordranks": "<strong>Deni Mintsaev</strong> 的项目让我了解了如何构建特定于速拧运动的记录和排名架构。ZKT 全局排名和记录表的布局（选手+旗帜、成绩、日期、比赛列）改编自该项目的表格结构。",
         "inspiration_rubikcube": "一个关于如何在 Web 环境中设计简单而流畅的魔方交互的有用参考。",
         "inspiration_pllrecognition": "PLL Recognition Trainer 模块的直接来源。键盘驱动的 PLL 识别练习、双面识别指南以及自适应重复逻辑均从 <strong>Roman Strakhov</strong> 的项目移植并适配到 Zkt Timer。",
-        "inspiration_fivetimer": "放下停止（Drop to Stop）功能背后的加速度计算法参考自 <strong>The Six Sides</strong> 的 FiveTimer 应用并适配到 Zkt Timer。",        "libraries_title": "使用的库",
+        "inspiration_fivetimer": "放下停止（Drop to Stop）功能背后的加速度计算法参考自 <strong>The Six Sides</strong> 的 FiveTimer 应用并适配到 Zkt Timer。",
+        "libraries_title": "使用的库",
         "libraries_desc": "直接用于 Zkt Timer 基础设施的核心速拧库。",
         "libraries_cubingjs": "用于智能魔方状态跟踪、WCA 符号和 KPattern 匹配的核心库。由 <strong>Lucas Garron</strong> 和 cubing.js 贡献者开发。",
         "libraries_ganweb": "提供 GAN 智能魔方的蓝牙连接管理和陀螺仪/运动逻辑的库。智能魔方模块构建在此库之上。",
@@ -3276,7 +3301,14 @@
         "cookie_section_3_title": "3. 管理Cookie",
         "cookie_section_3_text": "您可以通过更改浏览器设置来拒绝或删除Cookie。但是，禁用Cookie可能会导致我们网站的某些功能（例如，保持登录状态）无法正常运行。",
         "cookie_contact": "如需更多信息或有疑问，请发送电子邮件至<a href=\"mailto:ibrhyyme@icloud.com\">ibrhyyme@icloud.com</a>。",
-        "legal_notice": "本文件的法律约束版本为土耳其语。"
+        "legal_notice": "本文件的法律约束版本为土耳其语。",
+        "messaging_title": "7. 消息数据",
+        "messaging_text": "应用内私信遵循与其他数据不同的规则：",
+        "messaging_item_1": "我们不阅读你的消息内容。后台没有打开用户聊天的页面。",
+        "messaging_item_2": "工作人员能看到消息文本的唯一情况是参与者举报该聊天。仅审核举报时附带的最后 5 条消息。",
+        "messaging_item_3": "消息将在 365 天后自动删除。",
+        "messaging_item_4": "撤回消息会从数据库中删除其内容；删除聊天仅对你生效。",
+        "messaging_item_5": "删除账号时，你发送的所有消息也会被删除。"
     },
     "welcome_live_timer": {
         "eyebrow": "实时预览",
@@ -4236,5 +4268,130 @@
         "previous": "上一页",
         "next": "下一页",
         "page_of": "{{current}} / {{total}}"
+    },
+    "inbox": {
+        "title": "收件箱",
+        "no_messages": "还没有消息",
+        "sent_a_solve": "发送了一个还原",
+        "empty": "暂无新内容",
+        "announcement": "公告",
+        "new_message": "新消息",
+        "clear_all": "全部清除",
+        "clear_confirm": "要清除全部 {{count}} 项吗？",
+        "swipe_hint": "向左拖动以删除",
+        "request_line_other": "{{count}} 人想给你发消息",
+        "back": "返回",
+        "open_full": "打开消息页面",
+        "search_people": "搜索用户",
+        "search_hint": "输入用户名以发送消息",
+        "no_people": "未找到任何人"
+    },
+    "messages": {
+        "page_title": "消息",
+        "requests": "请求",
+        "pick_a_conversation": "请在左侧选择一个会话",
+        "placeholder": "输入消息...",
+        "block": "屏蔽",
+        "block_confirm": "要屏蔽 {{name}} 吗？对方将无法再给你发消息。",
+        "view_solve": "查看还原",
+        "no_requests": "没有待处理的请求",
+        "back_to_messages": "返回消息",
+        "new_message": "新消息",
+        "recipient_placeholder": "搜索用户名",
+        "recipient_hint": "开始输入，至少 2 个字符",
+        "no_recipients": "未找到用户",
+        "attach_solve": "发送还原",
+        "pick_solve": "选择一次还原",
+        "filter_solves": "搜索成绩或项目",
+        "no_solves": "未找到还原",
+        "close": "关闭",
+        "pick_recipient_first": "请先选择联系人",
+        "change_recipient": "更换收件人",
+        "requests_with_count": "请求 ({{count}})",
+        "requests_note": "这些人是第一次给你发消息。回复后会话会移到收件箱；否则可以划走或屏蔽。",
+        "more_actions": "更多",
+        "unsend": "撤回",
+        "unsend_confirm": "撤回这条消息？对方那里也会删除。",
+        "clear_chat": "删除聊天",
+        "clear_confirm": "从你这边删除这个聊天？对方仍保留副本。",
+        "report": "举报",
+        "report_title": "举报此聊天",
+        "report_explain": "举报时将随附最后 {{count}} 条消息的副本。您的其他消息不会被查看。",
+        "report_placeholder": "简要说明发生了什么",
+        "report_send": "举报",
+        "report_sent_title": "已收到举报",
+        "report_sent_body": "我们会尽快处理。如果不想再收到消息，可以在菜单中拉黑对方。",
+        "cancel": "取消",
+        "done": "完成",
+        "privacy_note": "Zkt Timer 不会阅读您的消息。仅审核您举报的消息。",
+        "search_placeholder": "搜索",
+        "clear_search": "清除搜索",
+        "filter_all": "全部",
+        "filter_unread": "未读",
+        "no_unread": "没有未读消息",
+        "no_search_results": "无结果",
+        "solve_preview": "发送了 {{time}} 的解法",
+        "typing": "{{name}} 正在输入...",
+        "seen": "已读",
+        "watch_on_youtube": "在 YouTube 上观看",
+        "edit": "编辑",
+        "edited": "已编辑",
+        "edit_save": "保存",
+        "edit_cancel": "取消",
+        "request_intro": "{{name}} 第一次给你发消息。接受后即可继续对话。",
+        "request_accept": "接受",
+        "request_delete": "删除",
+        "awaiting_accept": "等待对方接受你的请求",
+        "error_request_pending": "在对方接受请求之前，你无法再发送消息。",
+        "mute": "静音",
+        "unmute": "取消静音"
+    },
+    "social": {
+        "who_can_message": "谁可以给我发消息",
+        "policy_everyone": "所有人",
+        "policy_everyone_hint": "任何人都能直接发到你的收件箱",
+        "policy_known": "仅我认识的人",
+        "policy_known_hint": "陌生人的第一条消息会进入请求",
+        "policy_nobody": "没有人",
+        "policy_nobody_hint": "不能发起新会话；现有会话仍可使用",
+        "visibility": "可见性",
+        "searchable": "在消息搜索中显示我",
+        "notifications": "通知",
+        "dm_push": "新消息时通知我",
+        "blocked": "已屏蔽的人",
+        "no_blocked": "你还没有屏蔽任何人",
+        "unblock": "移除",
+        "footnote": "在这里查看你的会话：",
+        "read_receipts": "已读回执",
+        "read_receipts_desc": "关闭后，对方看不到你是否已读。你也看不到对方的。",
+        "typing_indicator": "输入提示",
+        "typing_indicator_desc": "关闭后，对方看不到你在输入。你也看不到对方的。",
+        "online": "在线",
+        "online_status": "在线状态",
+        "online_status_desc": "开启后，与你聊天的人在你在线时会看到绿点，你也能看到他们的。关闭后双方都看不到。最后上线时间不会被记录。"
+    },
+    "admin_message_reports": {
+        "open_count": "待处理举报：{{count}}",
+        "show_all": "显示全部",
+        "show_open": "仅待处理",
+        "scope_note": "此处仅显示举报人附带的消息。无法查看完整聊天，这是刻意设计。",
+        "empty": "没有待处理的举报",
+        "reported": "被举报人",
+        "reporter": "举报人",
+        "reason": "理由",
+        "no_snapshot": "未附带消息",
+        "solve_only": "（仅有解法卡片）",
+        "dismiss": "忽略",
+        "actioned": "已处理",
+        "resolved_by": "{{status}} — {{name}}"
+    },
+    "chat_bubbles": {
+        "placeholder": "写消息",
+        "send": "发送",
+        "close": "关闭",
+        "dismiss": "移除气泡",
+        "open_full": "打开完整对话",
+        "loading": "加载中",
+        "start_with": "与 {{name}} 开始聊天"
     }
 }

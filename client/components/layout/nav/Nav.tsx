@@ -6,6 +6,7 @@ import { setSetting } from '../../../db/settings/update';
 import { setGeneral } from '../../../actions/general';
 import {
 	ArrowLeft,
+	ChatCircleDots,
 	Handshake,
 	ChartPie,
 	LadderSimple,
@@ -121,6 +122,16 @@ export const NAV_LINKS: NavLinkProps[] = [
 		match: /^\/ranks/,
 		link: '/ranks',
 		loginRequired: false,
+	},
+	// Mobile only: the desktop header carries its own inbox icon, but HeaderNav renders
+	// nothing in mobile mode, which left messages with no entry point on phones at all.
+	{
+		name: 'nav.messages',
+		icon: <ChatCircleDots weight="bold" />,
+		match: /^\/messages/,
+		link: '/messages',
+		loginRequired: true,
+		mobileOnly: true,
 	},
 ];
 

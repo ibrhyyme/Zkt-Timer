@@ -9,6 +9,7 @@
         "sessions": "Sezonlar",
         "battle": "Mücadele",
         "ranks": "Sıralama",
+        "messages": "Mesajlar",
         "collapse": "Daralt",
         "login": "Log in",
         "signup": "Sign up",
@@ -778,7 +779,8 @@
         "linked_accounts": "Bağlı Hesaplar",
         "announcements": "Duyurular",
         "support": "Destek",
-        "danger_zone": "Riskli Alan"
+        "danger_zone": "Riskli Alan",
+        "social": "Sosyal"
     },
     "support": {
         "page_title": "Destek",
@@ -829,7 +831,8 @@
         "ticket_filter_all": "Tümü",
         "no_tickets_resolved": "Çözülmüş destek talebi yok",
         "no_tickets_all": "Hiç destek talebi yok",
-        "ticket_unread": "Okunmadı"
+        "ticket_unread": "Okunmadı",
+        "tab_messages": "Mesaj şikayetleri"
     },
     "personal_info": {
         "first_name": "Ad",
@@ -1430,7 +1433,9 @@
         "slot_right": "Sağ Modül"
     },
     "solve_page": {
-        "not_found": "Çözüm bulunamadı"
+        "not_found": "Çözüm bulunamadı",
+        "share_title": "{{time}} · {{cubeType}} · {{user}} | Zkt Timer",
+        "share_description": "{{user}} adlı kullanıcının {{time}} süreli {{cubeType}} çözümünü adım adım izle. Karıştırma, süre ve çözüm detayları Zkt Timer'da."
     },
     "solve_info": {
         "solve_tab": "Çözüm",
@@ -1497,7 +1502,18 @@
             "pro_required_title": "Akıllı Küp Replay",
             "pro_required_desc": "Pro üyelikle çözümünü adım adım 3D olarak izle.",
             "upgrade_cta": "Pro'ya Geç"
-        }
+        },
+        "send": "Gönder",
+        "send_title": "Çözümü gönder",
+        "send_search": "Kişi ara",
+        "send_hint": "Göndermek istediğin kişinin kullanıcı adını yaz",
+        "send_none": "Kimse bulunamadı",
+        "send_note": "Mesaj ekle (isteğe bağlı)",
+        "send_action": "Gönder",
+        "send_cancel": "Vazgeç",
+        "send_change": "Değiştir",
+        "send_sent": "Çözüm {{name}} adlı kişiye gönderildi",
+        "send_recent": "Son sohbetler"
     },
     "sessions": {
         "page_title": "Sezonlar",
@@ -1806,7 +1822,8 @@
         "cuber_card_stat_gold": "Altın",
         "cuber_card_stat_silver": "Gümüş",
         "cuber_card_stat_bronze": "Bronz",
-        "cuber_card_records": "Rekorlar"
+        "cuber_card_records": "Rekorlar",
+        "send_message": "Mesaj gönder"
     },
     "stats_page": {
         "more_stats": "Daha Fazla İstatistik",
@@ -2157,6 +2174,7 @@
         "send_complete": "Gönderim Tamamlandı",
         "success_count": "{{count}} başarılı",
         "fail_count": "{{count}} başarısız",
+        "skipped_count": "{{count}} atlandı (pazarlama izni kapalı)",
         "new_email": "Yeni mail oluştur",
         "recipients": "Alıcılar",
         "send_to_all": "Tüm kullanıcılara gönder",
@@ -2653,7 +2671,13 @@
         "password_updated": "Şifren güncellendi, yönlendiriliyorsun…",
         "forgot_email_sub": "Hesabının e-posta adresini gir, sana 6 haneli bir kurtarma kodu gönderelim.",
         "code_verified": "Kod doğrulandı",
-        "pw_levels": ["Çok zayıf", "Zayıf", "Orta", "İyi", "Güçlü"]
+        "pw_levels": [
+            "Çok zayıf",
+            "Zayıf",
+            "Orta",
+            "İyi",
+            "Güçlü"
+        ]
     },
     "email_verification": {
         "title": "E-posta Doğrulama",
@@ -3179,7 +3203,8 @@
         "inspiration_recordranks": "Sport cubing'e özgü rekor ve sıralama mimarisinin nasıl kurulabileceği konusunda <strong>Deni Mintsaev</strong>'in bu projesinden faydalanılmıştır. ZKT global sıralama ve rekor tablolarının düzeni (yarışmacı+bayrak, sonuç, tarih, yarışma kolonları) bu projenin tablo yapısından uyarlanmıştır.",
         "inspiration_rubikcube": "Web ortamında basit ama akıcı küp etkileşimlerinin nasıl tasarlanabileceği konusunda faydalı bir referans olmuştur.",
         "inspiration_pllrecognition": "PLL Recognition Trainer modülünün doğrudan çıkış noktasıdır. Klavyeyle PLL tanıma pratiği, two-sided recognition guide ve adaptif tekrar mantığı, <strong>Roman Strakhov</strong> tarafından geliştirilen bu projeden port edilerek Zkt Timer'a uyarlanmıştır.",
-        "inspiration_fivetimer": "Bırakınca Durdur (Drop to Stop) özelliğinin ivmeölçer algoritması, <strong>The Six Sides</strong> tarafından geliştirilen FiveTimer uygulamasından referans alınarak Zkt Timer'a uyarlanmıştır.",        "libraries_title": "Kullanılan Kütüphaneler",
+        "inspiration_fivetimer": "Bırakınca Durdur (Drop to Stop) özelliğinin ivmeölçer algoritması, <strong>The Six Sides</strong> tarafından geliştirilen FiveTimer uygulamasından referans alınarak Zkt Timer'a uyarlanmıştır.",
+        "libraries_title": "Kullanılan Kütüphaneler",
         "libraries_desc": "Zkt Timer'ın altyapısında doğrudan kullanılan temel cubing kütüphaneleri.",
         "libraries_cubingjs": "Akıllı küp durum takibi, WCA notasyonu ve KPattern eşleştirme için kullanılan temel kütüphanedir. <strong>Lucas Garron</strong> ve cubing.js katkıcıları tarafından geliştirilmektedir.",
         "libraries_ganweb": "GAN smart cube'lar için Bluetooth bağlantı yönetimi ve jiroskop/hareket mantığını sağlayan kütüphanedir. Smart Cube modülünün temelini bu kütüphane oluşturmaktadır.",
@@ -3281,7 +3306,14 @@
         "cookie_section_2_item_3": "<strong>İşlevsellik Çerezleri:</strong> Dil tercihleri veya kullanıcı ayarlarını hatırlamak için kullanılır.",
         "cookie_section_3_title": "3. Çerezlerin Yönetimi",
         "cookie_section_3_text": "Tarayıcı ayarlarınızı değiştirerek çerezleri reddedebilir veya silebilirsiniz. Ancak, çerezleri devre dışı bırakmanız durumunda sitemizin bazı özellikleri (örn. oturum açık kalma) düzgün çalışmayabilir.",
-        "cookie_contact": "Daha fazla bilgi veya sorularınız için <a href=\"mailto:ibrhyyme@icloud.com\">ibrhyyme@icloud.com</a> adresine e-posta gönderebilirsiniz."
+        "cookie_contact": "Daha fazla bilgi veya sorularınız için <a href=\"mailto:ibrhyyme@icloud.com\">ibrhyyme@icloud.com</a> adresine e-posta gönderebilirsiniz.",
+        "messaging_title": "7. Mesajlaşma Verileri",
+        "messaging_text": "Uygulama içi mesajlaşma verileri, diğer verilerden farklı kurallara tabidir:",
+        "messaging_item_1": "Mesaj içerikleriniz okunmaz. Yönetim panelinde kullanıcı sohbetlerini açan bir ekran bulunmamaktadır.",
+        "messaging_item_2": "Mesaj içeriğinin bir çalışan tarafından görülebileceği tek durum, taraflardan birinin sohbeti şikayet etmesidir. Bu durumda yalnızca şikayet anında şikayet edenin eklediği son 5 mesaj incelenir.",
+        "messaging_item_3": "Mesajlar 365 gün sonra otomatik olarak silinir. Bu süre saklama ve imha politikamızın bir parçasıdır.",
+        "messaging_item_4": "Bir mesajı geri aldığınızda içeriği veritabanından silinir. Sohbeti sildiğinizde sohbet yalnızca sizin tarafınızdan kaldırılır, karşı tarafın kopyası korunur.",
+        "messaging_item_5": "Hesabınızı sildiğinizde gönderdiğiniz tüm mesajlar da silinir."
     },
     "welcome_live_timer": {
         "eyebrow": "Canlı Deneyim",
@@ -4241,5 +4273,131 @@
         "previous": "Önceki",
         "next": "Sonraki",
         "page_of": "{{current}} / {{total}}"
+    },
+    "inbox": {
+        "title": "Gelen kutusu",
+        "no_messages": "Henüz mesajın yok",
+        "sent_a_solve": "Bir çözüm gönderdi",
+        "empty": "Yeni bir şey yok",
+        "announcement": "Duyuru",
+        "new_message": "Yeni mesaj",
+        "clear_all": "Tümünü sil",
+        "clear_confirm": "{{count}} öğenin hepsi silinsin mi?",
+        "swipe_hint": "Silmek için sola sürükle",
+        "request_line_one": "{{count}} kişi sana mesaj göndermek istiyor",
+        "request_line_other": "{{count}} kişi sana mesaj göndermek istiyor",
+        "back": "Geri",
+        "open_full": "Mesajlar sayfasını aç",
+        "search_people": "Kişi ara",
+        "search_hint": "Mesaj göndermek için bir kullanıcı adı yaz",
+        "no_people": "Kimse bulunamadı"
+    },
+    "messages": {
+        "page_title": "Mesajlar",
+        "requests": "İstekler",
+        "pick_a_conversation": "Soldan bir sohbet seç",
+        "placeholder": "Mesaj yaz...",
+        "block": "Engelle",
+        "block_confirm": "{{name}} adlı kullanıcıyı engellemek istiyor musun? Sana bir daha yazamaz.",
+        "view_solve": "Çözümü gör",
+        "no_requests": "Bekleyen istek yok",
+        "back_to_messages": "Mesajlara dön",
+        "new_message": "Yeni mesaj",
+        "recipient_placeholder": "Kullanıcı adı ara",
+        "recipient_hint": "Yazmaya başla, en az 2 harf",
+        "no_recipients": "Kimse bulunamadı",
+        "attach_solve": "Çözüm gönder",
+        "pick_solve": "Çözüm seç",
+        "filter_solves": "Süre veya küp ara",
+        "no_solves": "Çözüm bulunamadı",
+        "close": "Kapat",
+        "pick_recipient_first": "Önce bir kişi seç",
+        "change_recipient": "Kişiyi değiştir",
+        "requests_with_count": "İstekler ({{count}})",
+        "requests_note": "Bu kişiler sana ilk kez yazıyor. Cevap verirsen sohbet gelen kutuna taşınır, istemiyorsan sola kaydırıp silebilir veya engelleyebilirsin.",
+        "more_actions": "Daha fazla",
+        "unsend": "Geri al",
+        "unsend_confirm": "Bu mesajı geri almak istiyor musun? Karşı taraftan da silinir.",
+        "clear_chat": "Sohbeti sil",
+        "clear_confirm": "Bu sohbet senin tarafından silinsin mi? Karşı tarafta kalmaya devam eder.",
+        "report": "Şikayet et",
+        "report_title": "Bu sohbeti şikayet et",
+        "report_explain": "Son {{count}} mesajın bir kopyası şikayetinizle birlikte iletilir. Başka hiçbir mesajınız görülmez.",
+        "report_placeholder": "Ne olduğunu kısaca anlat",
+        "report_send": "Şikayet et",
+        "report_sent_title": "Şikayetin bize ulaştı",
+        "report_sent_body": "En kısa sürede inceleyeceğiz. Bu kişiyle yazışmak istemiyorsan menüden engelleyebilirsin.",
+        "cancel": "Vazgeç",
+        "done": "Bitti",
+        "privacy_note": "Zkt Timer mesajlarınızı okumaz. Yalnızca şikayet ettiğiniz mesajlar incelenir.",
+        "search_placeholder": "Ara",
+        "clear_search": "Aramayı temizle",
+        "filter_all": "Tümü",
+        "filter_unread": "Okunmamış",
+        "no_unread": "Okunmamış mesaj yok",
+        "no_search_results": "Sonuç bulunamadı",
+        "solve_preview": "{{time}} çözümünü gönderdi",
+        "typing": "{{name}} yazıyor...",
+        "seen": "Görüldü",
+        "watch_on_youtube": "YouTube'da izle",
+        "edit": "Düzenle",
+        "edited": "düzenlendi",
+        "edit_save": "Kaydet",
+        "edit_cancel": "Vazgeç",
+        "request_intro": "{{name}} sana ilk kez yazıyor. Kabul edersen sohbete devam edebilirsiniz.",
+        "request_accept": "Kabul et",
+        "request_delete": "Sil",
+        "awaiting_accept": "İsteğin kabul edilmesini bekliyorsun",
+        "error_request_pending": "Bu kişi isteğini kabul edene kadar yeni mesaj gönderemezsin.",
+        "mute": "Sessize al",
+        "unmute": "Sesi aç"
+    },
+    "social": {
+        "who_can_message": "Bana kim mesaj atabilir",
+        "policy_everyone": "Herkes",
+        "policy_everyone_hint": "Herkes doğrudan gelen kutuna yazabilir",
+        "policy_known": "Sadece tanıdıklarım",
+        "policy_known_hint": "Tanımadığın kişilerin ilk mesajı istek kutusuna düşer",
+        "policy_nobody": "Kimse",
+        "policy_nobody_hint": "Yeni sohbet açılamaz, mevcut sohbetler çalışmaya devam eder",
+        "visibility": "Görünürlük",
+        "searchable": "Mesaj aramasında görüneyim",
+        "notifications": "Bildirimler",
+        "dm_push": "Yeni mesaj bildirimi al",
+        "blocked": "Engellediklerim",
+        "no_blocked": "Kimseyi engellemedin",
+        "unblock": "Kaldır",
+        "footnote": "Sohbetlerini burada görebilirsin:",
+        "read_receipts": "Okundu bilgisi",
+        "read_receipts_desc": "Kapatırsan karşı taraf mesajını okuduğunu göremez. Sen de kimsenin okuduğunu göremezsin.",
+        "typing_indicator": "Yazıyor göstergesi",
+        "typing_indicator_desc": "Kapatırsan yazdığın görünmez. Sen de kimsenin yazdığını göremezsin.",
+        "online": "Çevrimiçi",
+        "online_status": "Çevrimiçi durumu",
+        "online_status_desc": "Açıkken, sohbet ettiğin kişiler çevrimiçi olduğunda yeşil nokta görürsün ve onlar da seni görür. Kapatırsan iki taraf da göremez. Son görülme bilgisi hiçbir yerde tutulmaz."
+    },
+    "admin_message_reports": {
+        "open_count": "Açık şikayet: {{count}}",
+        "show_all": "Tümünü göster",
+        "show_open": "Sadece açık olanlar",
+        "scope_note": "Burada sadece şikayet eden kişinin şikayetine eklediği mesajlar görünür. Sohbetin tamamına ulaşılamaz, bu bilinçli bir tasarımdır.",
+        "empty": "Bekleyen şikayet yok",
+        "reported": "Şikayet edilen",
+        "reporter": "Şikayet eden",
+        "reason": "Gerekçe",
+        "no_snapshot": "Şikayete mesaj eklenmemiş",
+        "solve_only": "(sadece çözüm kartı)",
+        "dismiss": "Yoksay",
+        "actioned": "İşlem yapıldı",
+        "resolved_by": "{{status}} — {{name}}"
+    },
+    "chat_bubbles": {
+        "placeholder": "Mesaj yaz",
+        "send": "Gönder",
+        "close": "Kapat",
+        "dismiss": "Balonu kaldır",
+        "open_full": "Sohbeti tam ekran aç",
+        "loading": "Yükleniyor",
+        "start_with": "{{name}} ile sohbeti başlat"
     }
 }

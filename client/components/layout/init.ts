@@ -312,16 +312,25 @@ async function tryLoadExistingDb(): Promise<LocalDbLoadResult> {
  */
 async function deltaSyncSolves(): Promise<boolean> {
 	try {
-		// 1. Fetch all solve IDs from server (only id field)
+		// 1. Fetch all solve IDs from server (only id field).
+		// `mySolveIds` selects nothing but the id column. The `solves` query used to
+		// stand here: it always reads every solve column plus the whole
+		// solve_method_steps relation, and its `take: 0` was falsy so no limit was
+		// ever applied. The entire dataset was read from the DB on every launch
+		// only for GraphQL to discard it and return the ids.
 		const idsQuery = gql`
-			query Query($take: Int, $skip: Int) {
-				solves(take: $take, skip: $skip) {
-					id
-				}
+			query Query {
+				mySolveIds
 			}
 		`;
-		const idsRes = await gqlQuery<{ solves: { id: string }[] }>(idsQuery, { take: 0, skip: 0 });
-		const serverIds = new Set(idsRes.data.solves.map((s) => s.id));
+		const idsRes = await gqlQuery<{ mySolveIds: string[] }>(idsQuery);
+		// A missing payload is a failed read, not "the server has no solves". Coercing
+		// it to [] here would let step 5 below delete local solves. Bail out instead
+		// so the caller falls back to a full fetch, matching the previous behaviour
+		// where a malformed response threw.
+		const serverIdList = idsRes.data?.mySolveIds;
+		if (!serverIdList) return false;
+		const serverIds = new Set(serverIdList);
 
 		// 2. Get local solve IDs
 		const solveDb = getSolveDb();
@@ -944,13 +953,22 @@ async function migrateLocalDataToServer(): Promise<boolean> {
 	// Don't check session count — server-side default created on signup,
 	// checking sessions would accidentally skip migration (data loss).
 	try {
+		// Id-only existence check. `mySolveIds` reads just the id column instead of
+		// pulling every solve with its method steps (see deltaSyncSolves).
 		const query = gql`
-			query Query($take: Int, $skip: Int) {
-				solves(take: $take, skip: $skip) { id }
+			query Query {
+				mySolveIds
 			}
 		`;
-		const res = await gqlQuery<{ solves: { id: string }[] }>(query, { take: 0, skip: 0 });
-		if (res.data.solves && res.data.solves.length > 0) {
+		const res = await gqlQuery<{ mySolveIds: string[] }>(query);
+		// Same rule as deltaSyncSolves: an absent list means the check did not run.
+		// Treating it as "server is empty" would start a migration that duplicates
+		// data already on the server, so abort and retry on the next launch.
+		if (!res.data?.mySolveIds) {
+			console.error('[Migration] Server solve check returned no data, aborting');
+			return false;
+		}
+		if (res.data.mySolveIds.length > 0) {
 			console.log('[Migration] Server already has solves, skipping (incorrect wasBasicUser flag)');
 			return true;
 		}

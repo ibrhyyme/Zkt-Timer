@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Cube, Bluetooth, Timer, ArrowCounterClockwise, ArrowsClockwise } from 'phosphor-react';
+import { Cube, Bluetooth, Timer, ArrowCounterClockwise, ArrowsClockwise, PaperPlaneRight } from 'phosphor-react';
 import HorizontalNav from '../../common/horizontal_nav/HorizontalNav';
 import ScrambleVisual from '../../modules/scramble/ScrambleVisual';
 import SolutionInfo from '../solution_info/SolutionInfo';
@@ -9,6 +9,7 @@ import StepsTable from '../stats_info/steps_table/StepsTable';
 import NotesInfo from '../notes_info/NotesInfo';
 import Avatar from '../../common/avatar/Avatar';
 import Button from '../../common/button/Button';
+import SendSolveModal from '../send_solve/SendSolveModal';
 import Tag from '../../common/tag/Tag';
 import CopyText from '../../common/copy_text/CopyText';
 import block from '../../../styles/bem';
@@ -32,6 +33,7 @@ export default function SmartSolveLayout(props: SolveLayoutProps) {
 	} = props;
 
 	const { t } = useTranslation();
+	const [sendOpen, setSendOpen] = useState(false);
 	const me = useMe();
 	const [page, setPage] = useState('overview');
 	const showProOverlay = isProEnabled() && !isPro(me);
@@ -115,12 +117,26 @@ export default function SmartSolveLayout(props: SolveLayoutProps) {
 				<div className={b('web-done')} onClick={handleDone}>{t('solve_info.done')}</div>
 			)}
 			<div className={b('top-actions')}>
-				<div>{shareLink}</div>
+				<div>
+					{shareLink}
+					{/* Same action as the normal layout: which timer someone solved on is
+					    not a reason for the send button to be somewhere else. */}
+					{me && solve?.user_id === me.id && (
+						<Button
+							gray
+							icon={<PaperPlaneRight weight="bold" />}
+							title={t('solve_info.send_title')}
+							text={t('solve_info.send')}
+							onClick={() => setSendOpen(true)}
+						/>
+					)}
+				</div>
 				<div>
 					{deleteButton}
 					{editButton}
 				</div>
 			</div>
+			{sendOpen && <SendSolveModal solveId={solve.id} onClose={() => setSendOpen(false)} />}
 
 			<h2 className={bs('time')}>{time}</h2>
 			<div className={b('date-info')}>

@@ -9,6 +9,7 @@
         "sessions": "Sesiones",
         "battle": "Batalla",
         "ranks": "Clasificación",
+        "messages": "Mensajes",
         "collapse": "Colapsar",
         "login": "Iniciar sesión",
         "signup": "Registrarse",
@@ -771,7 +772,8 @@
         "linked_accounts": "Cuentas vinculadas",
         "announcements": "Anuncios",
         "support": "Soporte",
-        "danger_zone": "Zona de peligro"
+        "danger_zone": "Zona de peligro",
+        "social": "Social"
     },
     "support": {
         "page_title": "Soporte",
@@ -822,7 +824,8 @@
         "ticket_filter_all": "Todos",
         "no_tickets_resolved": "No hay tickets de soporte resueltos",
         "no_tickets_all": "Todavía no hay tickets de soporte",
-        "ticket_unread": "No leído"
+        "ticket_unread": "No leído",
+        "tab_messages": "Denuncias de mensajes"
     },
     "personal_info": {
         "first_name": "Nombre",
@@ -1423,7 +1426,9 @@
         "slot_right": "Módulo derecho"
     },
     "solve_page": {
-        "not_found": "Solución no encontrada"
+        "not_found": "Solución no encontrada",
+        "share_title": "{{time}} · {{cubeType}} · {{user}} | Zkt Timer",
+        "share_description": "Mira paso a paso la solución de {{cubeType}} de {{user}} en {{time}}. Mezcla, tiempo y detalles completos en Zkt Timer."
     },
     "solve_info": {
         "solve_tab": "Solución",
@@ -1490,7 +1495,18 @@
             "pro_required_title": "Reproducción del Cubo Inteligente",
             "pro_required_desc": "Actualiza a Pro para ver tu resolución paso a paso en 3D.",
             "upgrade_cta": "Actualizar a Pro"
-        }
+        },
+        "send": "Enviar",
+        "send_title": "Enviar resolucion",
+        "send_search": "Buscar personas",
+        "send_hint": "Escribe el nombre de usuario de la persona a la que quieres enviarlo",
+        "send_none": "No se encontro a nadie",
+        "send_note": "Anadir un mensaje (opcional)",
+        "send_action": "Enviar",
+        "send_cancel": "Cancelar",
+        "send_change": "Cambiar",
+        "send_sent": "Resolucion enviada a {{name}}",
+        "send_recent": "Chats recientes"
     },
     "sessions": {
         "page_title": "Sesiones",
@@ -1799,7 +1815,8 @@
         "cuber_card_stat_gold": "Oro",
         "cuber_card_stat_silver": "Plata",
         "cuber_card_stat_bronze": "Bronce",
-        "cuber_card_records": "Récords"
+        "cuber_card_records": "Récords",
+        "send_message": "Enviar mensaje"
     },
     "stats_page": {
         "more_stats": "Más estadísticas",
@@ -2150,6 +2167,7 @@
         "send_complete": "Envío completado",
         "success_count": "{{count}} exitosos",
         "fail_count": "{{count}} fallidos",
+        "skipped_count": "{{count}} omitidos (sin consentimiento de marketing)",
         "new_email": "Crear nuevo correo",
         "recipients": "Destinatarios",
         "send_to_all": "Enviar a todos los usuarios",
@@ -2646,7 +2664,13 @@
         "password_updated": "Tu contraseña se ha actualizado, redirigiendo…",
         "forgot_email_sub": "Introduce el correo de tu cuenta y te enviaremos un código de recuperación de 6 caracteres.",
         "code_verified": "Código verificado",
-        "pw_levels": ["Muy débil", "Débil", "Media", "Buena", "Fuerte"]
+        "pw_levels": [
+            "Muy débil",
+            "Débil",
+            "Media",
+            "Buena",
+            "Fuerte"
+        ]
     },
     "email_verification": {
         "title": "Verificación de correo",
@@ -3172,7 +3196,8 @@
         "inspiration_recordranks": "El proyecto de <strong>Deni Mintsaev</strong> sirvió para entender cómo pueden construirse arquitecturas de récords y rankings específicas para el sport cubing. El diseño de las tablas de rankings y récords globales de ZKT (columnas de competidor+bandera, resultado, fecha, competición) se adaptó de la estructura de tablas de este proyecto.",
         "inspiration_rubikcube": "Una referencia útil sobre cómo pueden diseñarse interacciones de cubo simples pero fluidas en un entorno web.",
         "inspiration_pllrecognition": "La base directa del módulo PLL Recognition Trainer. La práctica de reconocimiento de PLL con teclado, la guía de reconocimiento de dos lados y la lógica de repetición adaptativa se portaron y adaptaron a Zkt Timer a partir del proyecto de <strong>Roman Strakhov</strong>.",
-        "inspiration_fivetimer": "El algoritmo del acelerómetro tras la función Soltar para Detener (Drop to Stop) se tomó como referencia y se adaptó a Zkt Timer desde la aplicación FiveTimer de <strong>The Six Sides</strong>.",        "libraries_title": "Bibliotecas Utilizadas",
+        "inspiration_fivetimer": "El algoritmo del acelerómetro tras la función Soltar para Detener (Drop to Stop) se tomó como referencia y se adaptó a Zkt Timer desde la aplicación FiveTimer de <strong>The Six Sides</strong>.",
+        "libraries_title": "Bibliotecas Utilizadas",
         "libraries_desc": "Bibliotecas centrales de cubing utilizadas directamente en la infraestructura de Zkt Timer.",
         "libraries_cubingjs": "La biblioteca central utilizada para el seguimiento del estado del smart cube, la notación WCA y la coincidencia KPattern. Desarrollada por <strong>Lucas Garron</strong> y los colaboradores de cubing.js.",
         "libraries_ganweb": "La biblioteca que proporciona la gestión de conexión Bluetooth y la lógica de giroscopio/movimiento para los smart cubes GAN. El módulo Smart Cube se construye sobre esta biblioteca.",
@@ -3276,7 +3301,14 @@
         "cookie_section_3_title": "3. Gestión de Cookies",
         "cookie_section_3_text": "Puede rechazar o eliminar cookies cambiando la configuración de su navegador. Sin embargo, deshabilitar las cookies puede causar que algunas funciones de nuestro sitio (ej. mantener la sesión iniciada) no funcionen correctamente.",
         "cookie_contact": "Para más información o consultas, puede enviar un correo electrónico a <a href=\"mailto:ibrhyyme@icloud.com\">ibrhyyme@icloud.com</a>.",
-        "legal_notice": "La versión legalmente vinculante de este documento está en turco."
+        "legal_notice": "La versión legalmente vinculante de este documento está en turco.",
+        "messaging_title": "7. Datos de mensajeria",
+        "messaging_text": "Los mensajes directos dentro de la aplicacion siguen reglas distintas al resto de los datos:",
+        "messaging_item_1": "No leemos el contenido de tus mensajes. No existe ninguna pantalla de administracion que abra conversaciones.",
+        "messaging_item_2": "El unico caso en que el personal puede ver texto de mensajes es cuando uno de los participantes denuncia la conversacion. Solo se revisan los ultimos 5 mensajes adjuntados en ese momento.",
+        "messaging_item_3": "Los mensajes se eliminan automaticamente tras 365 dias, como parte de nuestra politica de conservacion.",
+        "messaging_item_4": "Al deshacer el envio de un mensaje, su contenido se elimina de la base de datos. Al eliminar un chat, se elimina solo de tu lado.",
+        "messaging_item_5": "Al eliminar tu cuenta se eliminan tambien todos los mensajes que enviaste."
     },
     "welcome_live_timer": {
         "eyebrow": "Vista en vivo",
@@ -4151,5 +4183,131 @@
         "previous": "Anterior",
         "next": "Siguiente",
         "page_of": "{{current}} / {{total}}"
+    },
+    "inbox": {
+        "title": "Bandeja",
+        "no_messages": "Aún no tienes mensajes",
+        "sent_a_solve": "Envió una solución",
+        "empty": "Nada nuevo",
+        "announcement": "Anuncio",
+        "new_message": "Mensaje nuevo",
+        "clear_all": "Borrar todo",
+        "clear_confirm": "¿Eliminar los {{count}} elementos?",
+        "swipe_hint": "Arrastra a la izquierda para eliminar",
+        "request_line_one": "{{count}} persona quiere escribirte",
+        "request_line_other": "{{count}} personas quieren escribirte",
+        "back": "Atrás",
+        "open_full": "Abrir la página de mensajes",
+        "search_people": "Buscar personas",
+        "search_hint": "Escribe un nombre de usuario para enviar un mensaje",
+        "no_people": "No se encontró a nadie"
+    },
+    "messages": {
+        "page_title": "Mensajes",
+        "requests": "Solicitudes",
+        "pick_a_conversation": "Elige una conversación a la izquierda",
+        "placeholder": "Escribe un mensaje...",
+        "block": "Bloquear",
+        "block_confirm": "¿Bloquear a {{name}}? No podrá volver a escribirte.",
+        "view_solve": "Ver solución",
+        "no_requests": "No hay solicitudes pendientes",
+        "back_to_messages": "Volver a mensajes",
+        "new_message": "Mensaje nuevo",
+        "recipient_placeholder": "Buscar un usuario",
+        "recipient_hint": "Empieza a escribir, mínimo 2 letras",
+        "no_recipients": "No se encontró a nadie",
+        "attach_solve": "Enviar una solución",
+        "pick_solve": "Elige una solución",
+        "filter_solves": "Buscar tiempo o evento",
+        "no_solves": "No se encontraron soluciones",
+        "close": "Cerrar",
+        "pick_recipient_first": "Elige a alguien primero",
+        "change_recipient": "Cambiar destinatario",
+        "requests_with_count": "Solicitudes ({{count}})",
+        "requests_note": "Estas personas te escriben por primera vez. Si respondes, la conversación pasa a tu bandeja; si no, deslízala o bloquéalas.",
+        "more_actions": "Mas",
+        "unsend": "Deshacer envio",
+        "unsend_confirm": "Retirar este mensaje? Tambien se elimina para la otra persona.",
+        "clear_chat": "Eliminar chat",
+        "clear_confirm": "Eliminar este chat de tu lado? La otra persona conserva su copia.",
+        "report": "Denunciar",
+        "report_title": "Denunciar este chat",
+        "report_explain": "Con su denuncia se envia una copia de los ultimos {{count}} mensajes. Ningun otro mensaje suyo se ve.",
+        "report_placeholder": "Describe brevemente lo ocurrido",
+        "report_send": "Denunciar",
+        "report_sent_title": "Denuncia recibida",
+        "report_sent_body": "La revisaremos en breve. Si no quieres saber mas de esta persona, puedes bloquearla desde el menu.",
+        "cancel": "Cancelar",
+        "done": "Listo",
+        "privacy_note": "Zkt Timer no lee sus mensajes. Solo se revisan los mensajes que usted denuncia.",
+        "search_placeholder": "Buscar",
+        "clear_search": "Borrar busqueda",
+        "filter_all": "Todos",
+        "filter_unread": "No leidos",
+        "no_unread": "No hay mensajes sin leer",
+        "no_search_results": "Sin resultados",
+        "solve_preview": "Envio un tiempo de {{time}}",
+        "typing": "{{name}} esta escribiendo...",
+        "seen": "Visto",
+        "watch_on_youtube": "Ver en YouTube",
+        "edit": "Editar",
+        "edited": "editado",
+        "edit_save": "Guardar",
+        "edit_cancel": "Cancelar",
+        "request_intro": "{{name}} te escribe por primera vez. Acepta para continuar la conversación.",
+        "request_accept": "Aceptar",
+        "request_delete": "Eliminar",
+        "awaiting_accept": "Esperando a que acepten tu solicitud",
+        "error_request_pending": "No puedes enviar otro mensaje hasta que acepten tu solicitud.",
+        "mute": "Silenciar",
+        "unmute": "Activar sonido"
+    },
+    "social": {
+        "who_can_message": "Quién puede escribirme",
+        "policy_everyone": "Todos",
+        "policy_everyone_hint": "Cualquiera puede escribir directo a tu bandeja",
+        "policy_known": "Solo mis conocidos",
+        "policy_known_hint": "El primer mensaje de un desconocido va a solicitudes",
+        "policy_nobody": "Nadie",
+        "policy_nobody_hint": "Sin conversaciones nuevas; las actuales siguen funcionando",
+        "visibility": "Visibilidad",
+        "searchable": "Aparecer en la búsqueda de mensajes",
+        "notifications": "Notificaciones",
+        "dm_push": "Avisarme de mensajes nuevos",
+        "blocked": "Bloqueados",
+        "no_blocked": "No has bloqueado a nadie",
+        "unblock": "Quitar",
+        "footnote": "Mira tus conversaciones aquí:",
+        "read_receipts": "Confirmaciones de lectura",
+        "read_receipts_desc": "Si lo desactivas, nadie vera cuando lees sus mensajes. Tu tampoco veras los suyos.",
+        "typing_indicator": "Indicador de escritura",
+        "typing_indicator_desc": "Si lo desactivas, nadie te vera escribir. Tu tampoco los veras a ellos.",
+        "online": "En línea",
+        "online_status": "Estado en línea",
+        "online_status_desc": "Cuando está activado, las personas con las que hablas ven un punto verde mientras estás en línea, y tú ves el suyo. Si lo desactivas, ninguna de las dos partes lo ve. La última conexión nunca se guarda."
+    },
+    "admin_message_reports": {
+        "open_count": "Denuncias abiertas: {{count}}",
+        "show_all": "Mostrar todas",
+        "show_open": "Solo abiertas",
+        "scope_note": "Aqui solo se muestran los mensajes que adjunto quien denuncio. No se puede acceder a la conversacion completa, es intencional.",
+        "empty": "No hay denuncias pendientes",
+        "reported": "Denunciado",
+        "reporter": "Denunciante",
+        "reason": "Motivo",
+        "no_snapshot": "Sin mensajes adjuntos",
+        "solve_only": "(solo tarjeta de resolucion)",
+        "dismiss": "Descartar",
+        "actioned": "Resuelto",
+        "resolved_by": "{{status}} por {{name}}"
+    },
+    "chat_bubbles": {
+        "placeholder": "Escribe un mensaje",
+        "send": "Enviar",
+        "close": "Cerrar",
+        "dismiss": "Quitar burbuja",
+        "open_full": "Abrir conversacion completa",
+        "loading": "Cargando",
+        "start_with": "Inicia un chat con {{name}}"
     }
 }

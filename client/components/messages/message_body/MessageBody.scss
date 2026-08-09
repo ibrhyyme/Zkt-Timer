@@ -1,0 +1,108 @@
+@import '../../../styles/config';
+
+.#{$namespace}-message-body {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	min-width: 0;
+
+	&__text {
+		// A pasted address can be longer than the bubble is wide. Without this it
+		// stretches the bubble across the thread instead of wrapping.
+		overflow-wrap: anywhere;
+		white-space: pre-wrap;
+	}
+
+	&__link {
+		color: inherit;
+		font-weight: 600;
+		// Underlined rather than recoloured: inside a sent bubble the background is
+		// already the primary colour, so a primary-coloured link would vanish.
+		text-decoration: underline;
+		text-underline-offset: 2px;
+		text-decoration-thickness: 1px;
+		cursor: pointer;
+
+		&:hover {
+			text-decoration-thickness: 2px;
+		}
+	}
+
+	&__video {
+		position: relative;
+		display: block;
+		width: 100%;
+		max-width: 320px;
+		border-radius: 12px;
+		overflow: hidden;
+		background: rgba(0, 0, 0, 0.35);
+		// The cover is a picture of someone else's page, so it needs its own frame to
+		// not read as part of our interface.
+		box-shadow: 0 0 0 1px rgba(var(--text-color), 0.15);
+		transition: transform 0.16s ease, box-shadow 0.16s ease;
+
+		&:hover {
+			transform: translateY(-1px);
+			box-shadow: 0 0 0 1px rgba(var(--text-color), 0.3), 0 6px 16px rgba(0, 0, 0, 0.28);
+
+			.#{$namespace}-message-body__video-play {
+				transform: translate(-50%, -50%) scale(1.08);
+			}
+		}
+
+		&--compact {
+			max-width: 220px;
+			border-radius: 10px;
+		}
+	}
+
+	&__video-cover {
+		display: block;
+		width: 100%;
+		// YouTube pads hqdefault to 4:3 with black bars. Cropping to the real frame
+		// removes them instead of shipping a letterboxed picture.
+		aspect-ratio: 16 / 9;
+		object-fit: cover;
+	}
+
+	&__video-play {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		display: flex;
+		font-size: 46px;
+		color: #fff;
+		filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.55));
+		pointer-events: none;
+		transition: transform 0.16s ease;
+
+		.#{$namespace}-message-body__video--compact & {
+			font-size: 34px;
+		}
+	}
+
+	&__video-source {
+		position: absolute;
+		right: 6px;
+		bottom: 6px;
+		padding: 2px 7px;
+		border-radius: 6px;
+		background: rgba(0, 0, 0, 0.75);
+		color: #fff;
+		font-size: 11px;
+		font-weight: 700;
+		pointer-events: none;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.#{$namespace}-message-body__video,
+	.#{$namespace}-message-body__video-play {
+		transition: none;
+	}
+
+	.#{$namespace}-message-body__video:hover {
+		transform: none;
+	}
+}

@@ -139,6 +139,16 @@ model UserAccount {
   zkt_registration_history      ZktRegistrationHistory[] @relation("zkt_registration_history_actor")
   zkt_competition_follows       ZktCompetitionFollow[]
 
+  // Direct messaging
+  conversation_participations   ConversationParticipant[]
+  messages_sent                 Message[]                 @relation("message_sender")
+  blocks_made                   UserBlock[]               @relation("user_block_blocker")
+  blocks_received               UserBlock[]               @relation("user_block_blocked")
+  social_preference             SocialPreference?
+  message_reports_made          MessageReport[]           @relation("message_report_reporter")
+  message_reports_received      MessageReport[]           @relation("message_report_reported")
+  message_reports_reviewed      MessageReport[]           @relation("message_report_reviewer")
+
   @@map("user_account")
 }
 
@@ -265,6 +275,13 @@ model SiteConfig {
   leaderboards_enabled Boolean  @default(true)
   rooms_enabled        Boolean  @default(true)
   battle_enabled       Boolean  @default(true)
+  messaging_enabled    Boolean  @default(true)
+  /// Separate from messaging_enabled on purpose. Presence is the part of a chat system
+  /// that scales worst: Matrix turned it off on their flagship server and shipped a
+  /// dedicated switch for exactly this reason. If the live dot ever becomes the thing
+  /// hurting the server, it has to be possible to drop it without taking messaging
+  /// down with it.
+  presence_enabled     Boolean  @default(true)
   pro_enabled          Boolean  @default(false)
   wca_backfill_enabled Boolean  @default(true)
   feature_overrides    Json     @default("{}")
@@ -393,6 +410,7 @@ model Solve {
   top_average_4        TopAverage[]      @relation("solve_4")
   top_average_5        TopAverage[]      @relation("solve_5")
   top_solve            TopSolve[]
+  messages             Message[]
 
   @@index([created_at])
   @@index([session_id])
@@ -1749,3 +1767,175 @@ model ZktCompetitionFollow {
   @@map("zkt_competition_follow")
 }
 
+
+// ==========================================
+// DIRECT MESSAGING
+// ==========================================
+
+// Who may open a conversation with this user.
+enum DmPolicy {
+  EVERYONE // any account can land straight in the inbox
+  KNOWN    // strangers go to the request box first (default)
+  NOBODY   // no new conversations at all
+}
+
+model Conversation {
+  id              String   @id @default(uuid())
+  created_at      DateTime @default(now())
+  // Denormalised so the inbox can sort without touching the message table.
+  last_message_at DateTime @default(now())
+
+  participants ConversationParticipant[]
+  messages     Message[]
+
+  @@index([last_message_at])
+  @@map("conversation")
+}
+
+model ConversationParticipant {
+  id              String    @id @default(uuid())
+  conversation_id String
+  user_id         String
+  // Null while the conversation is still sitting in this user's request box.
+  // The opener is accepted immediately; the recipient accepts by replying.
+  accepted_at     DateTime?
+  last_read_at    DateTime?
+  // "Delete chat" is one-sided, exactly like every other messenger: messages older
+  // than this are hidden from this participant only, and the other person's copy is
+  // untouched. Deleting the row instead would take the thread away from both sides.
+  cleared_at      DateTime?
+  // Denormalised counter: the inbox badge must not COUNT() the message table,
+  // which will be the largest table in the schema.
+  unread_count    Int       @default(0)
+  archived        Boolean   @default(false)
+  /// Silences notifications for this one conversation, for this participant only.
+  ///
+  /// The step that was missing between putting up with someone and blocking them.
+  /// Muting is invisible to the other side by design: they keep writing normally and
+  /// are never told, which is the whole reason it is safer to offer than a block.
+  muted           Boolean   @default(false)
+  created_at      DateTime  @default(now())
+
+  conversation Conversation @relation(fields: [conversation_id], references: [id], onDelete: Cascade)
+  user         UserAccount  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([conversation_id, user_id])
+  @@index([user_id, accepted_at])
+  @@index([user_id, archived])
+  @@map("conversation_participant")
+}
+
+model Message {
+  id              String    @id @default(uuid())
+  conversation_id String
+  sender_id       String
+  body            String
+  // Optional attached solve: the cubing-specific payload a generic chat app cannot
+  // render. SetNull so deleting a solve leaves the message text intact.
+  solve_id        String?
+  // Soft delete: the row stays so the other side's unread counter stays consistent.
+  deleted_at      DateTime?
+  /// Set the first time the text is changed, and shown to both sides as "edited".
+  ///
+  /// Only the timestamp is kept, never the previous text. Storing old versions would
+  /// build a private archive of things people deliberately took back, sitting right
+  /// next to the promise on the messages screen that we do not read their messages.
+  /// A report already captures a frozen copy at the moment it is filed, so moderation
+  /// does not need edit history either.
+  edited_at       DateTime?
+  created_at      DateTime  @default(now())
+
+  conversation Conversation @relation(fields: [conversation_id], references: [id], onDelete: Cascade)
+  sender       UserAccount  @relation("message_sender", fields: [sender_id], references: [id], onDelete: Cascade)
+  solve        Solve?       @relation(fields: [solve_id], references: [id], onDelete: SetNull)
+
+  // Cursor pagination reads newest-first within one conversation.
+  @@index([conversation_id, created_at])
+  @@index([sender_id])
+  @@map("message")
+}
+
+model UserBlock {
+  id         String   @id @default(uuid())
+  blocker_id String
+  blocked_id String
+  created_at DateTime @default(now())
+
+  blocker UserAccount @relation("user_block_blocker", fields: [blocker_id], references: [id], onDelete: Cascade)
+  blocked UserAccount @relation("user_block_blocked", fields: [blocked_id], references: [id], onDelete: Cascade)
+
+  @@unique([blocker_id, blocked_id])
+  @@index([blocked_id])
+  @@map("user_block")
+}
+
+enum ReportStatus {
+  OPEN
+  ACTIONED
+  DISMISSED
+}
+
+/// A user-submitted report about a conversation.
+///
+/// Moderation deliberately works on a copy, not on the live thread. There is no admin
+/// screen that opens someone's inbox, and there never should be: the only message text
+/// a moderator ever sees is what the reporter chose to hand over at the moment they
+/// pressed report. That keeps the promise made on the messages screen honest, and it is
+/// the same shape WhatsApp uses to stay moderatable without reading conversations.
+model MessageReport {
+  id              String       @id @default(uuid())
+  conversation_id String
+  reporter_id     String
+  reported_id     String
+  reason          String
+  /// Frozen plain-text copy of the last few messages, captured at report time.
+  /// Immutable on purpose: later edits or deletions must not rewrite the evidence.
+  snapshot        Json
+  status          ReportStatus @default(OPEN)
+  moderator_note  String?
+  reviewed_at     DateTime?
+  reviewed_by_id  String?
+  created_at      DateTime     @default(now())
+
+  reporter    UserAccount  @relation("message_report_reporter", fields: [reporter_id], references: [id], onDelete: Cascade)
+  reported    UserAccount  @relation("message_report_reported", fields: [reported_id], references: [id], onDelete: Cascade)
+  reviewed_by UserAccount? @relation("message_report_reviewer", fields: [reviewed_by_id], references: [id], onDelete: SetNull)
+
+  // One open report per reporter per conversation; re-reporting an already open
+  // thread should not flood the queue.
+  @@index([status, created_at])
+  @@index([reporter_id])
+  @@index([reported_id])
+  @@map("message_report")
+}
+
+// Privacy knobs for /account/social. Separate from Setting (timer behaviour) and
+// NotificationPreference (email opt-outs) because this governs who may reach you.
+model SocialPreference {
+  id         String   @id @default(uuid())
+  user_id    String   @unique
+  dm_policy  DmPolicy @default(KNOWN)
+  // Opt out of the user search so nobody can look you up by name.
+  searchable Boolean  @default(true)
+  dm_push    Boolean  @default(true)
+  /// All three of these are RECIPROCAL, the way WhatsApp treats read receipts: turning
+  /// one off hides your state from others AND hides theirs from you. Making it
+  /// one-sided would turn a privacy control into a surveillance advantage for whoever
+  /// switched it off, which is exactly what the reciprocity rule exists to prevent.
+  /// Never gate any of them behind Pro for the same reason.
+  read_receipts     Boolean @default(true)
+  typing_indicator  Boolean @default(true)
+  /// Whether a live green dot is shown to people you have an accepted conversation
+  /// with. Deliberately online/offline only: there is no "last seen" anywhere in this
+  /// schema and there should not be. A stored timestamp of when someone stopped using
+  /// the app reveals sleep and work patterns, and it turns an ephemeral signal into
+  /// retained personal data with a retention question attached. Presence here is read
+  /// from live socket connections and never written down.
+  online_status     Boolean @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt @default(now())
+
+  user UserAccount @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("social_preference")
+}

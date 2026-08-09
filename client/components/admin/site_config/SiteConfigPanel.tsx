@@ -29,13 +29,15 @@ const WCA_STATS = gql`query { wcaStats { totalUsers wcaConnected wcaWithId wcaWi
 const TEST_WCA_NOTIFICATION = gql`mutation TestWcaNotification($wcaId: String!) { testWcaNotification(wcaId: $wcaId) }`;
 const MY_PUSH_TOKENS = gql`query { adminMyPushTokens { platform } }`;
 
-type FeatureKey = 'maintenance_mode' | 'trainer_enabled' | 'community_enabled' | 'leaderboards_enabled' | 'rooms_enabled' | 'battle_enabled' | 'pro_enabled' | 'wca_backfill_enabled';
+type FeatureKey = 'maintenance_mode' | 'trainer_enabled' | 'community_enabled' | 'leaderboards_enabled' | 'rooms_enabled' | 'battle_enabled' | 'messaging_enabled' | 'presence_enabled' | 'pro_enabled' | 'wca_backfill_enabled';
 
 const PAGE_TOGGLES: {key: FeatureKey; label: string; description: string}[] = [
 	{key: 'trainer_enabled', label: 'Trainer', description: 'Algorithm trainer page'},
 	{key: 'community_enabled', label: 'Competitions', description: 'WCA competitions page + WCA Live'},
 	{key: 'rooms_enabled', label: 'Rooms', description: 'Multiplayer rooms page'},
 	{key: 'battle_enabled', label: 'Battle', description: '1v1 battle mode (mobile)'},
+	{key: 'messaging_enabled', label: 'Messaging', description: 'Direct messages. Off blocks sending and hides the inbox; existing messages are kept.'},
+	{key: 'presence_enabled', label: 'Online status', description: 'The green dot in messages. Off keeps messaging fully working and only drops the live presence traffic. First thing to shed if the server is struggling.'},
 	{key: 'leaderboards_enabled', label: 'Rankings', description: 'Kinch Ranks + Sum of Ranks leaderboard page'},
 	{key: 'pro_enabled', label: 'Pro Membership', description: 'Pro subscription sales page + paywall. Keep off if payment not ready.'},
 ];

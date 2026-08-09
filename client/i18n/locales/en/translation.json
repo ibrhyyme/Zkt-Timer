@@ -9,6 +9,7 @@
         "sessions": "Sessions",
         "battle": "Battle",
         "ranks": "Rankings",
+        "messages": "Messages",
         "collapse": "Collapse",
         "login": "Log in",
         "signup": "Sign up",
@@ -771,7 +772,8 @@
         "linked_accounts": "Linked Accounts",
         "announcements": "Announcements",
         "support": "Support",
-        "danger_zone": "Danger Zone"
+        "danger_zone": "Danger Zone",
+        "social": "Social"
     },
     "support": {
         "page_title": "Support",
@@ -822,7 +824,8 @@
         "ticket_filter_all": "All",
         "no_tickets_resolved": "No resolved support tickets",
         "no_tickets_all": "No support tickets yet",
-        "ticket_unread": "Unread"
+        "ticket_unread": "Unread",
+        "tab_messages": "Message reports"
     },
     "personal_info": {
         "first_name": "First Name",
@@ -1423,7 +1426,9 @@
         "slot_right": "Right Module"
     },
     "solve_page": {
-        "not_found": "Solve not found"
+        "not_found": "Solve not found",
+        "share_title": "{{time}} · {{cubeType}} · {{user}} | Zkt Timer",
+        "share_description": "Watch {{user}}'s {{time}} {{cubeType}} solve step by step. Scramble, time and full solve breakdown on Zkt Timer."
     },
     "solve_info": {
         "solve_tab": "Solution",
@@ -1490,7 +1495,18 @@
             "pro_required_title": "Smart Cube Replay",
             "pro_required_desc": "Upgrade to Pro to watch your solve step-by-step in 3D.",
             "upgrade_cta": "Upgrade to Pro"
-        }
+        },
+        "send": "Send",
+        "send_title": "Send solve",
+        "send_search": "Search people",
+        "send_hint": "Type the username of the person you want to send this to",
+        "send_none": "Nobody found",
+        "send_note": "Add a message (optional)",
+        "send_action": "Send",
+        "send_cancel": "Cancel",
+        "send_change": "Change",
+        "send_sent": "Solve sent to {{name}}",
+        "send_recent": "Recent chats"
     },
     "sessions": {
         "page_title": "Sessions",
@@ -1799,7 +1815,8 @@
         "cuber_card_stat_gold": "Gold",
         "cuber_card_stat_silver": "Silver",
         "cuber_card_stat_bronze": "Bronze",
-        "cuber_card_records": "Records"
+        "cuber_card_records": "Records",
+        "send_message": "Send message"
     },
     "stats_page": {
         "more_stats": "More Stats",
@@ -2150,6 +2167,7 @@
         "send_complete": "Sending Complete",
         "success_count": "{{count}} successful",
         "fail_count": "{{count}} failed",
+        "skipped_count": "{{count}} skipped (marketing opt-out)",
         "new_email": "Create new email",
         "recipients": "Recipients",
         "send_to_all": "Send to all users",
@@ -2646,7 +2664,13 @@
         "password_updated": "Your password has been updated, redirecting…",
         "forgot_email_sub": "Enter your account email and we'll send you a 6-character recovery code.",
         "code_verified": "Code verified",
-        "pw_levels": ["Very weak", "Weak", "Fair", "Good", "Strong"]
+        "pw_levels": [
+            "Very weak",
+            "Weak",
+            "Fair",
+            "Good",
+            "Strong"
+        ]
     },
     "email_verification": {
         "title": "Email Verification",
@@ -3172,7 +3196,8 @@
         "inspiration_recordranks": "<strong>Deni Mintsaev</strong>'s project provided insight into how records and ranking architectures specific to sport cubing can be built. The layout of ZKT's global rankings and records tables (competitor+flag, result, date, competition columns) was adapted from this project's table structure.",
         "inspiration_rubikcube": "A useful reference for how simple yet fluid cube interactions can be designed in a web environment.",
         "inspiration_pllrecognition": "The direct basis for the PLL Recognition Trainer module. The keyboard-driven PLL recognition practice, two-sided recognition guide, and adaptive repetition logic were ported and adapted to Zkt Timer from <strong>Roman Strakhov</strong>'s project.",
-        "inspiration_fivetimer": "The accelerometer algorithm behind the Drop to Stop feature was referenced and adapted to Zkt Timer from the FiveTimer app by <strong>The Six Sides</strong>.",        "libraries_title": "Libraries Used",
+        "inspiration_fivetimer": "The accelerometer algorithm behind the Drop to Stop feature was referenced and adapted to Zkt Timer from the FiveTimer app by <strong>The Six Sides</strong>.",
+        "libraries_title": "Libraries Used",
         "libraries_desc": "Core cubing libraries used directly in Zkt Timer's infrastructure.",
         "libraries_cubingjs": "The core library used for smart cube state tracking, WCA notation, and KPattern matching. Developed by <strong>Lucas Garron</strong> and the cubing.js contributors.",
         "libraries_ganweb": "The library that provides Bluetooth connection management and gyroscope/motion logic for GAN smart cubes. The Smart Cube module is built on top of this library.",
@@ -3276,7 +3301,14 @@
         "cookie_section_3_title": "3. Managing Cookies",
         "cookie_section_3_text": "You can reject or delete cookies by changing your browser settings. However, disabling cookies may cause some features of our site (e.g., staying logged in) to not function properly.",
         "cookie_contact": "For more information or questions, you may send an email to <a href=\"mailto:ibrhyyme@icloud.com\">ibrhyyme@icloud.com</a>.",
-        "legal_notice": "The legally binding version of this document is in Turkish."
+        "legal_notice": "The legally binding version of this document is in Turkish.",
+        "messaging_title": "7. Messaging Data",
+        "messaging_text": "In-app direct messages follow different rules from the rest of the data we hold:",
+        "messaging_item_1": "We do not read your message content. There is no admin screen that opens user conversations.",
+        "messaging_item_2": "The only case in which staff can see message text is when one of the participants reports the conversation. Only the last 5 messages, as attached by the reporter at that moment, are reviewed.",
+        "messaging_item_3": "Messages are deleted automatically after 365 days, as part of our retention and disposal policy.",
+        "messaging_item_4": "Unsending a message removes its content from the database. Deleting a chat removes it from your side only; the other person keeps their copy.",
+        "messaging_item_5": "Deleting your account also deletes every message you sent."
     },
     "welcome_live_timer": {
         "eyebrow": "Live Preview",
@@ -4236,5 +4268,131 @@
         "previous": "Previous",
         "next": "Next",
         "page_of": "{{current}} / {{total}}"
+    },
+    "inbox": {
+        "title": "Inbox",
+        "no_messages": "No messages yet",
+        "sent_a_solve": "Sent a solve",
+        "empty": "Nothing new",
+        "announcement": "Announcement",
+        "new_message": "New message",
+        "clear_all": "Clear all",
+        "clear_confirm": "Remove all {{count}} items?",
+        "swipe_hint": "Drag left to remove",
+        "request_line_one": "{{count}} person wants to message you",
+        "request_line_other": "{{count}} people want to message you",
+        "back": "Back",
+        "open_full": "Open messages page",
+        "search_people": "Search people",
+        "search_hint": "Type a username to start a message",
+        "no_people": "No one found"
+    },
+    "messages": {
+        "page_title": "Messages",
+        "requests": "Requests",
+        "pick_a_conversation": "Pick a conversation on the left",
+        "placeholder": "Write a message...",
+        "block": "Block",
+        "block_confirm": "Block {{name}}? They will not be able to message you again.",
+        "view_solve": "View solve",
+        "no_requests": "No pending requests",
+        "back_to_messages": "Back to messages",
+        "new_message": "New message",
+        "recipient_placeholder": "Search a username",
+        "recipient_hint": "Start typing, at least 2 letters",
+        "no_recipients": "No one found",
+        "attach_solve": "Send a solve",
+        "pick_solve": "Pick a solve",
+        "filter_solves": "Search time or event",
+        "no_solves": "No solves found",
+        "close": "Close",
+        "pick_recipient_first": "Pick someone first",
+        "change_recipient": "Change recipient",
+        "requests_with_count": "Requests ({{count}})",
+        "requests_note": "These people are writing to you for the first time. Reply and the thread moves to your inbox; otherwise swipe it away or block them.",
+        "more_actions": "More",
+        "unsend": "Unsend",
+        "unsend_confirm": "Take this message back? It is removed for the other person too.",
+        "clear_chat": "Delete chat",
+        "clear_confirm": "Delete this chat from your side? The other person keeps their copy.",
+        "report": "Report",
+        "report_title": "Report this chat",
+        "report_explain": "A copy of the last {{count}} messages is sent with your report. No other message of yours is seen.",
+        "report_placeholder": "Briefly describe what happened",
+        "report_send": "Report",
+        "report_sent_title": "Report received",
+        "report_sent_body": "We will review it shortly. If you do not want to hear from this person, you can block them from the menu.",
+        "cancel": "Cancel",
+        "done": "Done",
+        "privacy_note": "Zkt Timer does not read your messages. Only messages you report are reviewed.",
+        "search_placeholder": "Search",
+        "clear_search": "Clear search",
+        "filter_all": "All",
+        "filter_unread": "Unread",
+        "no_unread": "No unread messages",
+        "no_search_results": "No results",
+        "solve_preview": "Sent a {{time}} solve",
+        "typing": "{{name}} is typing...",
+        "seen": "Seen",
+        "watch_on_youtube": "Watch on YouTube",
+        "edit": "Edit",
+        "edited": "edited",
+        "edit_save": "Save",
+        "edit_cancel": "Cancel",
+        "request_intro": "{{name}} is writing to you for the first time. Accept to continue the conversation.",
+        "request_accept": "Accept",
+        "request_delete": "Delete",
+        "awaiting_accept": "Waiting for your request to be accepted",
+        "error_request_pending": "You cannot send another message until they accept your request.",
+        "mute": "Mute",
+        "unmute": "Unmute"
+    },
+    "social": {
+        "who_can_message": "Who can message me",
+        "policy_everyone": "Everyone",
+        "policy_everyone_hint": "Anyone can write straight to your inbox",
+        "policy_known": "Only people I know",
+        "policy_known_hint": "A stranger's first message lands in your requests",
+        "policy_nobody": "Nobody",
+        "policy_nobody_hint": "No new conversations; existing ones keep working",
+        "visibility": "Visibility",
+        "searchable": "Show me in message search",
+        "notifications": "Notifications",
+        "dm_push": "Notify me about new messages",
+        "blocked": "Blocked people",
+        "no_blocked": "You have not blocked anyone",
+        "unblock": "Remove",
+        "footnote": "See your conversations here:",
+        "read_receipts": "Read receipts",
+        "read_receipts_desc": "Turn this off and nobody sees when you read their message. You also stop seeing theirs.",
+        "typing_indicator": "Typing indicator",
+        "typing_indicator_desc": "Turn this off and nobody sees you typing. You also stop seeing them type.",
+        "online": "Online",
+        "online_status": "Online status",
+        "online_status_desc": "When on, people you chat with see a green dot while you are online, and you see theirs. Turn it off and neither side sees it. Last seen is never recorded anywhere."
+    },
+    "admin_message_reports": {
+        "open_count": "Open reports: {{count}}",
+        "show_all": "Show all",
+        "show_open": "Open only",
+        "scope_note": "Only the messages the reporter attached are shown here. The full conversation is not reachable, by design.",
+        "empty": "No pending reports",
+        "reported": "Reported",
+        "reporter": "Reporter",
+        "reason": "Reason",
+        "no_snapshot": "No messages attached",
+        "solve_only": "(solve card only)",
+        "dismiss": "Dismiss",
+        "actioned": "Actioned",
+        "resolved_by": "{{status}} by {{name}}"
+    },
+    "chat_bubbles": {
+        "placeholder": "Write a message",
+        "send": "Send",
+        "close": "Close",
+        "dismiss": "Remove bubble",
+        "open_full": "Open full conversation",
+        "loading": "Loading",
+        "start_with": "Start a chat with {{name}}"
     }
 }

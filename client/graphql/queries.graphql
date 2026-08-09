@@ -151,6 +151,8 @@ query siteConfig {
 		leaderboards_enabled
 		rooms_enabled
 		battle_enabled
+		messaging_enabled
+		presence_enabled
 		pro_enabled
 		wca_backfill_enabled
 		featureOverrides {
@@ -830,5 +832,96 @@ query adminActiveUsers($period: String!, $monthYear: String) {
 		total_active_users
 		total_active_minutes
 		available_months
+	}
+}
+
+query conversations($page: Int, $requests: Boolean) {
+	conversations(page: $page, requests: $requests) {
+		conversations {
+			...ConversationViewFragment
+		}
+		more_results
+	}
+}
+
+query dmMessages($conversationId: String!, $before: DateTime) {
+	messages(conversationId: $conversationId, before: $before) {
+		messages {
+			...MessageFragment
+		}
+		more_results
+		accepted
+		awaiting_accept
+		muted
+	}
+}
+
+query dmPresence($userIds: [String!]!) {
+	dmPresence(userIds: $userIds)
+}
+
+query inboxSummary {
+	inboxSummary {
+		unread_total
+		request_count
+	}
+}
+
+query messageReports($status: ReportStatus, $page: Int) {
+	messageReports(status: $status, page: $page) {
+		open_count
+		more_results
+		reports {
+			id
+			reason
+			status
+			moderator_note
+			reviewed_at
+			created_at
+			reporter {
+				...PublicUserFragment
+			}
+			reported {
+				...PublicUserFragment
+			}
+			reviewed_by {
+				...PublicUserFragment
+			}
+			snapshot {
+				id
+				sender_id
+				sender_username
+				body
+				has_solve
+				created_at
+			}
+		}
+	}
+}
+
+query socialPreference {
+	socialPreference {
+		dm_policy
+		read_receipts
+		typing_indicator
+		online_status
+		searchable
+		dm_push
+	}
+}
+
+query blockedUsers {
+	blockedUsers {
+		id
+		created_at
+		user {
+			...PublicUserFragment
+		}
+	}
+}
+
+query messageRecipientSearch($query: String!) {
+	messageRecipientSearch(query: $query) {
+		...PublicUserFragment
 	}
 }

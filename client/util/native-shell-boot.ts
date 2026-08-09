@@ -1,22 +1,62 @@
 import {Capacitor} from '@capacitor/core';
 import type {CapacitorUpdaterPlugin} from '@capgo/capacitor-updater';
 import {isLocalShell} from './api-base';
+import {getStore} from '../components/store';
 
-// Remembers the bundle version we last tried to apply. A version that fails to boot
-// (rollback) or fails to download must not be retried on every launch — that would
-// reload-loop the app.
+// Remembers the bundle version that was downloaded and handed to the plugin. A bundle
+// that fails to boot gets rolled back by Capgo, and without this guard the next launch
+// would fetch and apply it again, reload-looping the app.
+//
+// It is written AFTER the download, not before. Those are two different failures: a
+// download cut short by the user closing the app is worth retrying immediately, while a
+// bundle that crashes on boot is not. Marking before the download conflated them and
+// left anyone who backgrounded the app mid-download stranded on the old bundle until
+// the next deploy, which is the opposite of what an updater is for.
 const OTA_ATTEMPT_KEY = 'zkt_ota_attempted_version';
+
+// How long to keep waiting for a solve to finish before reloading anyway. Bounded so
+// a stuck flag can never park an update forever; the bundle is applied either way.
+const RELOAD_WAIT_TIMEOUT_MS = 60 * 1000;
+const RELOAD_POLL_MS = 1000;
+
+/**
+ * Holds the reload until the timer is idle.
+ *
+ * The bundle swap reloads the WebView, and doing that under someone mid-solve destroys
+ * the one thing this app exists to measure. Everything else about the reload stays as
+ * it was: this only moves it by a few seconds, never cancels it.
+ */
+async function waitUntilNotSolving(): Promise<void> {
+	const deadline = Date.now() + RELOAD_WAIT_TIMEOUT_MS;
+
+	while (Date.now() < deadline) {
+		let solving = false;
+		try {
+			solving = Boolean(getStore()?.getState()?.timer?.solving);
+		} catch (e) {
+			// No store yet: nothing is being timed, so there is nothing to protect.
+		}
+		if (!solving) return;
+
+		await new Promise((resolve) => setTimeout(resolve, RELOAD_POLL_MS));
+	}
+}
 
 /**
  * Applies a pending OTA bundle at boot instead of waiting for the next cold start.
  *
  * With plain `autoUpdate`, Capgo downloads in the background and only swaps the bundle on
  * the FOLLOWING launch, so a device can sit a full deploy behind while the user is looking
- * at it — the source of "it works on iOS but not on Android" after a web-only fix. Doing
- * download -> set -> reload here is the JS equivalent of the plugin's `directUpdate`
- * config flag, without needing a new native binary to turn it on.
+ * at it, which is where "it works on iOS but not on Android" after a web-only fix came
+ * from. Doing download -> set -> reload here is the JS equivalent of the plugin's
+ * `directUpdate` config flag, without needing a new native binary to turn it on.
+ *
+ * The cost is a reload a few seconds into a session, which is worth revisiting: applying
+ * on the next return-from-background would be gentler. That change needs to be verified
+ * on a real device before it ships, because getting it wrong means updates stop arriving
+ * and the fix for that cannot be delivered either.
  */
-async function applyLatestBundleAtBoot(updater: CapacitorUpdaterPlugin): Promise<void> {
+export async function armLatestBundle(updater: CapacitorUpdaterPlugin): Promise<void> {
 	const [current, latest] = await Promise.all([updater.current(), updater.getLatest()]);
 
 	if (!latest?.version || latest.error || !latest.url) {
@@ -24,7 +64,7 @@ async function applyLatestBundleAtBoot(updater: CapacitorUpdaterPlugin): Promise
 	}
 
 	if (current?.bundle?.version === latest.version) {
-		// Running the newest bundle — clear the guard so the next version can be attempted.
+		// Running the newest bundle: clear the guard so the next version can be tried.
 		try {
 			localStorage.removeItem(OTA_ATTEMPT_KEY);
 		} catch (e) {}
@@ -38,9 +78,6 @@ async function applyLatestBundleAtBoot(updater: CapacitorUpdaterPlugin): Promise
 	if (attempted === latest.version) {
 		return;
 	}
-	try {
-		localStorage.setItem(OTA_ATTEMPT_KEY, latest.version);
-	} catch (e) {}
 
 	const bundle = await updater.download({
 		url: latest.url,
@@ -48,7 +85,15 @@ async function applyLatestBundleAtBoot(updater: CapacitorUpdaterPlugin): Promise
 		checksum: latest.checksum,
 		sessionKey: latest.sessionKey,
 	});
+
+	// Downloaded successfully, so from here a failure is the bundle's fault and must
+	// not be retried on the next launch.
+	try {
+		localStorage.setItem(OTA_ATTEMPT_KEY, latest.version);
+	} catch (e) {}
+
 	await updater.set({id: bundle.id});
+	await waitUntilNotSolving();
 	await updater.reload();
 }
 
@@ -84,7 +129,7 @@ export function initNativeShellBoot(): void {
 		import('@capgo/capacitor-updater')
 			.then(async ({CapacitorUpdater}) => {
 				await CapacitorUpdater.notifyAppReady();
-				await applyLatestBundleAtBoot(CapacitorUpdater);
+				await armLatestBundle(CapacitorUpdater);
 			})
 			.catch(() => {});
 	}

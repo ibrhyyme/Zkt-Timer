@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import Dropdown, {DropdownProps} from '../../inputs/dropdown/Dropdown';
 import {copyText} from '../../copy_text/CopyText';
-import {CaretDown, User, Copy, Flag, Pen, GearSix} from 'phosphor-react';
+import {CaretDown, User, Copy, Flag, Pen, GearSix, ChatCircleDots} from 'phosphor-react';
 import {toastSuccess} from '../../../../util/toast';
 import {openModal} from '../../../../actions/general';
 import UserView from '../../../admin/manage_user/ManageUser';
@@ -11,6 +11,8 @@ import {PublicUserAccount, UserAccount, UserAccountForAdmin} from '../../../../.
 import ReportUser from '../../../profile/report/ReportUser';
 import EditProfile from '../../../profile/edit_profile/EditProfile';
 import {useMe} from '../../../../util/hooks/useMe';
+import {useHistory} from 'react-router-dom';
+import {useSiteConfig} from '../../../../util/hooks/useSiteConfig';
 
 interface Props {
 	mini?: boolean;
@@ -24,10 +26,19 @@ export default function AvatarDropdown(props: Props) {
 
 	const me = useMe();
 	const dispatch = useDispatch();
+	const history = useHistory();
+	const siteConfig = useSiteConfig();
 
 	const amAdmin = me?.admin;
 	const profile = user.profile;
 	const myProfile = me?.id === user.id;
+	const messagingOff = siteConfig ? !siteConfig.messaging_enabled : false;
+
+	// Straight from "I see this person" to "I am writing to them": the compose screen
+	// opens with their name already in the recipient field.
+	function messageUser() {
+		history.push('/messages/new?to=' + encodeURIComponent(user.username || ''));
+	}
 
 	function copyProfileLink() {
 		const link = window.location.href;
@@ -68,6 +79,12 @@ export default function AvatarDropdown(props: Props) {
 			}}
 			options={[
 				{text: t('profile.view_profile'), link: `/user/${user.username}`, icon: <User weight="bold" />},
+				{
+					text: t('profile.send_message'),
+					onClick: messageUser,
+					icon: <ChatCircleDots weight="bold" />,
+					hidden: myProfile || !me || messagingOff,
+				},
 				{text: t('profile.copy_profile_link'), onClick: copyProfileLink, icon: <Copy weight="bold" />},
 				{text: t('profile.report'), onClick: reportProfile, icon: <Flag weight="bold" />, hidden: myProfile || !me},
 				{text: t('profile.edit'), onClick: editProfile, icon: <Pen weight="bold" />, hidden: !myProfile},

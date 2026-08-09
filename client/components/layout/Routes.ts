@@ -11,10 +11,12 @@ import PersonalInfo from '../account/personal_info/PersonalInfo';
 import Community from '../community/Community';
 
 import Solves from '../solves/SolvesList';
+import Messages from '../messages/Messages';
 import Profile, { prefetchProfileData } from '../profile/Profile';
 import Admin from '../admin/Admin';
-import SolvePage, { prefetchSolveData } from '../solve_page/SolvePage';
+import SolvePage, { prefetchSolveData, solveSsrMeta } from '../solve_page/SolvePage';
 import NotificationPreferences from '../account/notification_preferences/NotificationPreferences';
+import SocialSettings from '../account/social/SocialSettings';
 
 import Privacy from '../landing/legal/Privacy';
 import Terms from '../landing/legal/Terms';
@@ -33,6 +35,10 @@ import ForceSignOut from '../login/force_sign_out/ForceSignOut';
 import AnnouncementHistory from '../profile/AnnouncementHistory';
 import Support from '../account/support/Support';
 import type { Store } from 'redux';
+// Type-only: without this `Request` resolved to the DOM's global Request, which has
+// no `params`, so every prefetch/ssrMeta signature was silently wrong. Erased at
+// build time, so express never enters the client bundle.
+import type { Request } from 'express';
 import Reports from '../admin/reports/Reports';
 import AdminDashboard from '../admin/dashboard/AdminDashboard';
 import DefaultTimer from '../timer/DefaultTimer';
@@ -64,6 +70,23 @@ import Battle from '../battle/Battle';
 import MySchedule from '../community/my_schedule/MySchedule';
 import Rankings from '../rankings/Rankings';
 
+/**
+ * Page-specific tags for the server-rendered <head>.
+ *
+ * App gates its route children behind `appLoaded`, which is always false on the
+ * server, so a page's own <Header> never runs during SSR and its Helmet tags never
+ * reach the HTML. Link-preview crawlers (WhatsApp, Facebook, X) do not execute JS,
+ * so without this they only ever see the site-wide defaults. Routes that prefetch
+ * data can return their real title/description/image here instead.
+ */
+export interface SsrMeta {
+	title?: string;
+	description?: string;
+	image?: string;
+}
+
+export type SsrMetaFn = (store: Store<any>, req: Request, t: (key: string, vars?: any) => string) => SsrMeta | null;
+
 interface PageOptions {
 	restricted: boolean;
 	standalone: boolean;
@@ -71,6 +94,7 @@ interface PageOptions {
 	hideTopNav: boolean;
 	noPadding: boolean;
 	prefetchData: ((store: Store<any>, req: Request) => Promise<any>)[];
+	ssrMeta?: SsrMetaFn;
 }
 
 export interface PageContext extends PageOptions {
@@ -102,7 +126,8 @@ function route(
 	admin = false,
 	hideTopNav = false,
 	noPadding = false,
-	prefetchData = null
+	prefetchData = null,
+	ssrMeta: SsrMetaFn = null
 ): PageContext {
 	return {
 		path,
@@ -115,6 +140,7 @@ function route(
 		hideTopNav,
 		noPadding,
 		prefetchData,
+		ssrMeta,
 	};
 }
 
@@ -150,6 +176,8 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/sessions', null, App, Sessions),
 	route('/solves', null, App, Solves, false),
 	route('/stats', null, App, Stats),
+	route('/messages', null, App, Messages),
+	route('/messages/:conversationId', null, App, Messages),
 	route('/force-log-out', null, App, ForceSignOut, false, true, false, true),
 
 	// Settings - Redirect to modal
@@ -167,7 +195,7 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/welcome', null, Landing, Welcome, false, true),
 
 	// Public
-	route('/solve/:shareCode', null, App, SolvePage, false, false, false, false, false, [prefetchSolveData]),
+	route('/solve/:shareCode', null, App, SolvePage, false, false, false, false, false, [prefetchSolveData], solveSsrMeta),
 	route('/user/:username', null, App, Profile, false, false, false, false, false, [prefetchProfileData]),
 	route('/unsub-emails', null, App, UnsubEmails, false, true, false, true, false),
 
@@ -202,6 +230,7 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/account/danger-zone', App, Account, DangerZone),
 	route('/account/linked-accounts', App, Account, LinkedAccounts),
 	route('/account/notifications', App, Account, NotificationPreferences),
+	route('/account/social', App, Account, SocialSettings),
 	route('/account/announcements', App, Account, AnnouncementHistory),
 	route('/account/support', App, Account, Support),
 

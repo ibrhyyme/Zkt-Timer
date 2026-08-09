@@ -7,6 +7,12 @@
 	$aviSizeLarge: 150px;
 
 	position: relative;
+	// Must wrap its own content. As a plain block the width came from whatever the
+	// parent happened to be while the height came from the avatar, so the Pro ring
+	// (a ::before pinned to inset: 0) was drawn as an ellipse rather than a circle,
+	// and a narrow parent clipped the avatar off-centre.
+	display: inline-flex;
+	flex-shrink: 0;
 
 	&__body {
 		position: relative;

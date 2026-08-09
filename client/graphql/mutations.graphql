@@ -47,6 +47,8 @@ mutation updateSiteConfig($input: UpdateSiteConfigInput!) {
 		leaderboards_enabled
 		rooms_enabled
 		battle_enabled
+		messaging_enabled
+		presence_enabled
 		pro_enabled
 		wca_backfill_enabled
 		featureOverrides {
@@ -406,5 +408,72 @@ mutation unfollowZktCompetitor($id: String!) {
 mutation recordActivityHeartbeat {
 	recordActivityHeartbeat {
 		success
+	}
+}
+
+mutation sendMessage($body: String!, $recipientId: String, $conversationId: String, $solveId: String) {
+	sendMessage(body: $body, recipientId: $recipientId, conversationId: $conversationId, solveId: $solveId) {
+		...MessageFragment
+	}
+}
+
+mutation markConversationRead($conversationId: String!) {
+	markConversationRead(conversationId: $conversationId)
+}
+
+mutation archiveConversation($conversationId: String!) {
+	archiveConversation(conversationId: $conversationId)
+}
+
+mutation setConversationMuted($conversationId: String!, $muted: Boolean!) {
+	setConversationMuted(conversationId: $conversationId, muted: $muted)
+}
+
+mutation acceptConversationRequest($conversationId: String!) {
+	acceptConversationRequest(conversationId: $conversationId)
+}
+
+mutation editMessage($messageId: String!, $body: String!) {
+	editMessage(messageId: $messageId, body: $body) {
+		...MessageFragment
+	}
+}
+
+mutation unsendMessage($messageId: String!) {
+	unsendMessage(messageId: $messageId)
+}
+
+mutation clearConversation($conversationId: String!) {
+	clearConversation(conversationId: $conversationId)
+}
+
+mutation setTyping($conversationId: String!, $typing: Boolean!) {
+	setTyping(conversationId: $conversationId, typing: $typing)
+}
+
+mutation reportConversation($conversationId: String!, $reason: String!) {
+	reportConversation(conversationId: $conversationId, reason: $reason)
+}
+
+mutation resolveMessageReport($reportId: String!, $action: ReportStatus!, $note: String) {
+	resolveMessageReport(reportId: $reportId, action: $action, note: $note)
+}
+
+mutation blockUser($userId: String!) {
+	blockUser(userId: $userId)
+}
+
+mutation unblockUser($userId: String!) {
+	unblockUser(userId: $userId)
+}
+
+mutation updateSocialPreference($input: UpdateSocialPreferenceInput!) {
+	updateSocialPreference(input: $input) {
+		dm_policy
+		searchable
+		dm_push
+		read_receipts
+		typing_indicator
+		online_status
 	}
 }

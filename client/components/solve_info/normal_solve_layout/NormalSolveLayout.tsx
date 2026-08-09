@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useDispatch } from 'react-redux';
-import { Cube, ShareNetwork } from 'phosphor-react';
+import { Cube, ShareNetwork, PaperPlaneRight } from 'phosphor-react';
 import { openModal } from '../../../actions/general';
 import ScrambleVisual from '../../modules/scramble/ScrambleVisual';
 import TextArea from '../../common/inputs/textarea/TextArea';
@@ -17,6 +17,8 @@ import { SolveLayoutProps } from '../SolveInfo';
 import { shareContent } from '../../../util/native-plugins';
 import { getApiBase } from '../../../util/api-base';
 import { canReadSync } from '../../../lib/sync-gate';
+import { useMe } from '../../../util/hooks/useMe';
+import SendSolveModal from '../send_solve/SendSolveModal';
 import './NormalSolveLayout.scss';
 
 const b = block('solve-info');
@@ -31,7 +33,9 @@ export default function NormalSolveLayout(props: SolveLayoutProps) {
 
 	const { t } = useTranslation();
 	const dispatch = useDispatch();
+	const me = useMe();
 	const [notes, setNotes] = useInput(effSolve.notes);
+	const [sendOpen, setSendOpen] = useState(false);
 
 	const scramble = solve.scramble;
 	const cubeType = solve.cube_type;
@@ -60,6 +64,22 @@ export default function NormalSolveLayout(props: SolveLayoutProps) {
 					onClick={handleShare}
 				/>
 			</>
+		);
+	}
+
+	// Only your own solve, because the server refuses to attach anyone else's, and only
+	// when signed in. Sitting next to Share Link is deliberate: both are "show this to
+	// someone", one publicly and one to a single person.
+	let sendButton = null;
+	if (me && solve?.user_id === me.id) {
+		sendButton = (
+			<Button
+				gray
+				icon={<PaperPlaneRight weight="bold" />}
+				title={t('solve_info.send_title')}
+				text={t('solve_info.send')}
+				onClick={() => setSendOpen(true)}
+			/>
 		);
 	}
 
@@ -116,12 +136,16 @@ export default function NormalSolveLayout(props: SolveLayoutProps) {
 				<div className={b('web-done')} onClick={handleDone}>{t('solve_info.done')}</div>
 			)}
 			<div className={b('top-actions')}>
-				<div>{shareLink}</div>
+				<div>
+					{shareLink}
+					{sendButton}
+				</div>
 				<div>
 					{deleteButton}
 					{editButton}
 				</div>
 			</div>
+			{sendOpen && <SendSolveModal solveId={solve.id} onClose={() => setSendOpen(false)} />}
 			<div className={b('body')}>
 				<h2>{time}</h2>
 				<div className={b('sub')}>

@@ -4,21 +4,22 @@ import tinycolor from 'tinycolor2';
 import block from '../../../styles/bem';
 import './ThemeToggle.scss';
 import { useSettings } from '../../../util/hooks/useSettings';
-import { setSetting } from '../../../db/settings/update';
+import { setSettings } from '../../../db/settings/update';
 import { APP_THEME_PRESETS } from '../../../util/themes/theme_consts';
 import { getAnyColorStringAsRgbString } from '../../../util/themes/theme_util';
 
 const b = block('theme-toggle');
 
 // Quick light/dark switch for the desktop header. Applies the free `light`/`dark`
-// presets through the SAME path as the settings page (setSetting per color), so the
-// change is live (updateThemeColors listens on settingsDbUpdatedEvent) and global
-// (setSetting persists to the server). Mirrors ThemeOption.selectTheme().
+// presets through the SAME path as the settings page, so the change is live
+// (updateThemeColors listens on settingsDbUpdatedEvent) and global (persists to the
+// server). Mirrors ThemeOption.selectTheme().
+//
+// All six colours go out as ONE setSettings call: they share a single prefs blob on
+// the server, so writing them one by one raced and could persist half a preset (dark
+// background with the light preset's near-black text = an unreadable page).
 function applyPreset(preset: 'light' | 'dark') {
-	const values = APP_THEME_PRESETS[preset].values;
-	for (const key of Object.keys(values)) {
-		setSetting(key as any, (values as any)[key]);
-	}
+	setSettings(APP_THEME_PRESETS[preset].values);
 }
 
 export default function ThemeToggle() {

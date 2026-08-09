@@ -17,7 +17,10 @@ export const DEFAULT_TITLE = "Zkt Timer | Online Rubik's Cube Timer, WCA Competi
 export const DEFAULT_DESCRIPTION =
 	"The most advanced online Rubik's cube timer with live WCA competitions, live race rooms, algorithm trainer, smart cube support, and global leaderboards. All WCA events: 3x3, 2x2, 4x4, Pyraminx, Megaminx & more.";
 export const DEFAULT_KEYWORDS = "rubiks cube timer, cube timer, speedcubing timer, online cube timer, WCA timer, WCA competitions, speedcubing competitions, cube competition, WCA live, 3x3 timer, 2x2 timer, 4x4 timer, 5x5 timer, rubik cube, speedcubing, cubing, puzzle timer, zeka küpü timer, rubik küp, küp zamanlayıcı, zeka küpü yarışması, WCA yarışma, кубик рубика таймер, спидкубинг, соревнования WCA, cronómetro cubo rubik, cubo rubik, competiciones WCA, rubik's cube solver, algorithm trainer, cube racing, cube records, world records";
-export const DEFAULT_FEATURED_IMAGE = resourceUri('/public/images/zkt-logo.png');
+// resourceUri's base already ends in /public — repeating it here produced
+// /public/public/images/zkt-logo.png, so every page without its own featuredImage
+// was serving a 404 as its Open Graph preview.
+export const DEFAULT_FEATURED_IMAGE = resourceUri('/images/zkt-logo.png');
 export const SITE_URL = 'https://zktimer.app';
 export const LOGO_URL = `${SITE_URL}/public/images/zkt-logo.png`;
 

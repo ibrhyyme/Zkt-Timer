@@ -23,6 +23,11 @@ export default function AccountNav() {
 			value: t('account_nav.notifications'),
 		},
 		{
+			id: 'social',
+			link: '/account/social',
+			value: t('account_nav.social'),
+		},
+		{
 			id: 'linked-accounts',
 			link: '/account/linked-accounts',
 			value: t('account_nav.linked_accounts'),

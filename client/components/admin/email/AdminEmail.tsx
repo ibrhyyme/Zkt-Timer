@@ -11,6 +11,7 @@ const SEND_BULK_EMAIL_MUTATION = gql`
 		sendBulkEmail(input: $input) {
 			successCount
 			failCount
+			skippedCount
 		}
 	}
 `;
@@ -18,6 +19,7 @@ const SEND_BULK_EMAIL_MUTATION = gql`
 interface BulkEmailResult {
 	successCount: number;
 	failCount: number;
+	skippedCount: number;
 }
 
 export default function AdminEmail() {
@@ -104,6 +106,11 @@ export default function AdminEmail() {
 						{result.failCount > 0 && (
 							<span className="text-red-400">
 								{t('admin_email.fail_count', { count: result.failCount })}
+							</span>
+						)}
+						{result.skippedCount > 0 && (
+							<span className="text-amber-400">
+								{t('admin_email.skipped_count', { count: result.skippedCount })}
 							</span>
 						)}
 					</div>

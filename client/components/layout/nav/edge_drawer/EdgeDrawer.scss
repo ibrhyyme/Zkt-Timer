@@ -62,6 +62,30 @@
 			background-clip: content-box;
 		}
 
+		// "Iceride yeni bir sey var" noktasi. Centigin disina tasar, cunku centik
+		// sadece 8px genisliginde ve nokta onun icinde kalirsa gorunmez.
+		&-dot {
+			position: absolute;
+			top: 50%;
+			width: 10px;
+			height: 10px;
+			border-radius: 50%;
+			background: rgb(var(--primary-color));
+			// Koyu arka planda kenardan ayrilsin
+			box-shadow: 0 0 0 2px rgb(var(--background-color));
+			pointer-events: none;
+
+			&--right {
+				right: 12px;
+				transform: translateY(-50%);
+			}
+
+			&--left {
+				left: 12px;
+				transform: translateY(-50%);
+			}
+		}
+
 		&-tooltip {
 			position: absolute;
 			background: rgb(var(--background-color));
@@ -201,6 +225,7 @@
 	}
 
 	&__item-icon {
+		position: relative;
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -210,6 +235,32 @@
 		.#{$namespace}-edge-drawer__item--active & {
 			color: #fff;
 			opacity: 1;
+		}
+	}
+
+	// Okunmamis sayisi. Ikonun sag ustune oturur; kart aktifken de okunur kalmasi
+	// icin rengini karttan bagimsiz tutar.
+	&__item-badge {
+		position: absolute;
+		top: -6px;
+		right: -10px;
+		min-width: 17px;
+		height: 17px;
+		padding: 0 4px;
+		border-radius: 9px;
+		background: rgb(var(--primary-color));
+		color: #fff;
+		font-size: 0.62rem;
+		font-weight: 700;
+		line-height: 17px;
+		text-align: center;
+		font-variant-numeric: tabular-nums;
+		box-shadow: 0 0 0 2px rgb(var(--button-color));
+
+		.#{$namespace}-edge-drawer__item--active & {
+			background: #fff;
+			color: rgb(var(--primary-color));
+			box-shadow: none;
 		}
 	}
 

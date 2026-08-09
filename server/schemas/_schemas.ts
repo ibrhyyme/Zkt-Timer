@@ -48,3 +48,4 @@ export * from './ZktCompetitionFollow.schema';
 export * from './ArchiveAdmin.schema';
 export * from './Translation.schema';
 export * from './Activity.schema';
+export * from './Messaging.schema';

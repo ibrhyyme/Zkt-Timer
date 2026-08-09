@@ -3,8 +3,9 @@ import { getRedisPubClient, getRedisSubClient } from './redis';
 import { createAdapter } from '@socket.io/redis-adapter';
 import { listenForFriendlyRoomEvents } from '../friendly_room';
 import { listenForZktCompEvents } from '../zkt_competition';
-import { getUserFromClient, broadcastOnlineUsersChanged, ADMIN_ONLINE_WATCHERS_ROOM, getOnlineUsers } from './socket_util';
+import { getUserFromClient, broadcastOnlineUsersChanged, ADMIN_ONLINE_WATCHERS_ROOM, getOnlineUsers, userRoom } from './socket_util';
 import { subscribeRound, unsubscribeRound, unsubscribeAllRounds, setPollerIOGetter } from './WcaLivePoller';
+import { handleSocketTransition } from './dm_presence';
 
 let io: Server;
 
@@ -53,7 +54,14 @@ export function initSocket(server: any) {
 			if (user) {
 				(client as any).userId = user.id;
 				client.data.userId = user.id;
+				// Personal room: DM delivery targets the user, not a single tab, so
+				// every open tab receives the message and the push fallback can tell
+				// whether the user is reachable in-app at all.
+				client.join(userRoom(user.id));
 				broadcastOnlineUsersChanged();
+
+				// Fire and forget: presence must never delay or break a connection.
+				void handleSocketTransition(user.id, 'connect');
 			}
 		} catch (err) {
 			// Auth fail durumunda anonymous olarak devam
@@ -101,8 +109,11 @@ export function initSocket(server: any) {
 
 		client.on('disconnect', () => {
 			unsubscribeAllRounds(client.id);
-			if ((client as any).userId) {
+			const userId = (client as any).userId;
+			if (userId) {
 				broadcastOnlineUsersChanged();
+
+				void handleSocketTransition(userId, 'disconnect');
 			}
 		});
 	});

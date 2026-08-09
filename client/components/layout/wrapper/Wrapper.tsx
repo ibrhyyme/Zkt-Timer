@@ -7,6 +7,7 @@ import {useGeneral} from '../../../util/hooks/useGeneral';
 import {useSettings} from '../../../util/hooks/useSettings';
 import {updateThemeColors} from '../themes';
 import ScrollReset from '../scroll_reset/ScrollReset';
+import ChatBubbles from '../../messages/chat_bubbles/ChatBubbles';
 
 const b = block('body');
 
@@ -56,6 +57,9 @@ export default function Wrapper(props: Props) {
 					{props.children}
 				</div>
 			</div>
+			{/* Lives at the layout level so a message can reach you on any screen,
+			    including the timer. Hides itself while a solve is running. */}
+			<ChatBubbles />
 		</div>
 	);
 }

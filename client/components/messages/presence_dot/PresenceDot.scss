@@ -1,0 +1,23 @@
+@import '../../../styles/config';
+
+// Sits on the bottom-right of whatever avatar it is placed next to, so the parent needs
+// position: relative. Every mount point in the messages screens already has one.
+.#{$namespace}-presence-dot {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	width: 13px;
+	height: 13px;
+	border-radius: 50%;
+	background: #2ecc71;
+	// A ring in the surrounding colour, so the dot reads as a separate object rather
+	// than a green patch on the photo underneath it.
+	box-shadow: 0 0 0 2px rgb(var(--module-color));
+	pointer-events: none;
+
+	&--small {
+		width: 10px;
+		height: 10px;
+		box-shadow: 0 0 0 2px rgb(var(--module-color));
+	}
+}

@@ -55,14 +55,30 @@ export class BulkEmailResolver {
 			throw new Error('At least one recipient is required');
 		}
 
+		const recipientFilter = sendToAll
+			? { banned_forever: false }
+			: { id: { in: userIds }, banned_forever: false };
+
+		// Marketing consent is binding: users who unchecked "marketing emails" in
+		// account settings, or unsubscribed via the email footer link, are skipped.
+		// Accounts with no preference row yet count as opted in, matching the
+		// `marketing_emails` schema default.
+		const candidateCount = await getPrisma().userAccount.count({ where: recipientFilter });
+
 		const users = await getPrisma().userAccount.findMany({
-			where: sendToAll
-				? { banned_forever: false }
-				: { id: { in: userIds }, banned_forever: false },
+			where: {
+				...recipientFilter,
+				OR: [
+					{ notification_preferences: { is: null } },
+					{ notification_preferences: { marketing_emails: true } },
+				],
+			},
 		});
 
+		const skippedCount = candidateCount - users.length;
+
 		if (users.length === 0) {
-			return { successCount: 0, failCount: 0, skippedCount: 0 };
+			return { successCount: 0, failCount: 0, skippedCount };
 		}
 
 		const { successCount, failCount } = await sendBulkEmailDirect(
@@ -71,6 +87,6 @@ export class BulkEmailResolver {
 			content
 		);
 
-		return { successCount, failCount, skippedCount: 0 };
+		return { successCount, failCount, skippedCount };
 	}
 }

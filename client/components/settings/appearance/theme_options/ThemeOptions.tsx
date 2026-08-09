@@ -6,7 +6,7 @@ import SettingRow from '../../setting/row/SettingRow';
 import ColorPicker from '../../../common/color_picker/ColorPicker';
 import ThemeOption from './theme_option/ThemeOption';
 import {useSettings} from '../../../../util/hooks/useSettings';
-import {setSetting} from '../../../../db/settings/update';
+import {setSetting, setSettings} from '../../../../db/settings/update';
 import {AllSettings, getDefaultSetting} from '../../../../db/settings/query';
 import {APP_THEME_PRESETS, Preset} from '../../../../util/themes/theme_consts';
 import Button from '../../../common/button/Button';
@@ -71,11 +71,11 @@ export default function ThemeOptions() {
 		}));
 	}
 
+	// Colours live in one prefs blob server-side, so they go out as a single write.
+	// Writing them key by key raced and could persist a half-applied theme.
 	function applyChanges() {
 		setActiveColorPicker(null);
-		Object.keys(tempColors).forEach(key => {
-			setSetting(key as keyof AllSettings, tempColors[key]);
-		});
+		setSettings(tempColors as Partial<AllSettings>);
 	}
 
 	function resetToDefaults() {
@@ -88,9 +88,7 @@ export default function ThemeOptions() {
 			button_color: defaultTheme.button_color,
 		};
 		setTempColors(resetValues);
-		Object.keys(resetValues).forEach(key => {
-			setSetting(key as keyof AllSettings, resetValues[key]);
-		});
+		setSettings(resetValues);
 	}
 
 	return (

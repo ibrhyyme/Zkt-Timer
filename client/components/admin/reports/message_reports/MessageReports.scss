@@ -1,0 +1,154 @@
+@import '../../../../styles/config';
+
+.#{$namespace}-admin-message-reports {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding: 16px 0;
+
+	&__head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+	}
+
+	&__count {
+		font-size: 14px;
+		font-weight: 700;
+		color: rgb(var(--text-color));
+	}
+
+	&__toggle {
+		border: none;
+		background: transparent;
+		color: rgb(var(--primary-color));
+		font-size: 13px;
+		font-weight: 600;
+		cursor: pointer;
+	}
+
+	// States the guarantee in the panel itself, so nobody later assumes a full
+	// conversation view is just missing and goes off to build one.
+	&__scope {
+		margin: 0;
+		font-size: 12px;
+		font-weight: 400;
+		line-height: 1.5;
+		color: rgb(var(--text-color));
+	}
+
+	&__card {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		padding: 14px;
+		border-radius: 12px;
+		background: rgb(var(--module-color));
+		border: 1px solid rgba(var(--text-color), 0.1);
+	}
+
+	&__card-head {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 14px;
+	}
+
+	&__party {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+	}
+
+	&__party-label {
+		font-size: 11px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		color: rgb(var(--text-color));
+	}
+
+	&__party-name {
+		font-size: 13px;
+		font-weight: 600;
+		color: rgb(var(--text-color));
+	}
+
+	&__date {
+		margin-left: auto;
+		font-size: 12px;
+		font-weight: 500;
+		color: rgb(var(--text-color));
+	}
+
+	&__reason {
+		font-size: 13px;
+		font-weight: 400;
+		line-height: 1.45;
+		color: rgb(var(--text-color));
+	}
+
+	&__reason-label {
+		display: block;
+		margin-bottom: 3px;
+		font-size: 11px;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+	}
+
+	&__snapshot {
+		display: flex;
+		flex-direction: column;
+		gap: 6px;
+		padding: 10px 12px;
+		border-radius: 10px;
+		background: rgb(var(--background-color));
+		border: 1px solid rgba(var(--text-color), 0.08);
+	}
+
+	&__snapshot-row {
+		display: flex;
+		gap: 8px;
+		font-size: 13px;
+		line-height: 1.4;
+		color: rgb(var(--text-color));
+
+		// The person being reported is what a moderator is scanning for.
+		&--reported {
+			.#{$namespace}-admin-message-reports__snapshot-sender {
+				color: rgb(var(--danger-color));
+			}
+		}
+	}
+
+	&__snapshot-sender {
+		flex-shrink: 0;
+		min-width: 90px;
+		font-weight: 700;
+	}
+
+	&__snapshot-body {
+		word-break: break-word;
+	}
+
+	&__snapshot-empty {
+		margin: 0;
+		font-size: 12px;
+		color: rgb(var(--text-color));
+	}
+
+	&__actions {
+		display: flex;
+		justify-content: flex-end;
+		gap: 8px;
+	}
+
+	&__resolved {
+		font-size: 12px;
+		font-weight: 600;
+		text-align: right;
+		color: rgb(var(--text-color));
+	}
+}

@@ -11,7 +11,7 @@ import {
 	X,
 	Cube,
 } from 'phosphor-react';
-import Notifications from '../nav/notifications/Notifications';
+import InboxPanel from './inbox/InboxPanel';
 import Logo from '../../common/logo/Logo';
 import { useGeneral } from '../../../util/hooks/useGeneral';
 import { useWindowListener } from '../../../util/hooks/useListener';
@@ -26,7 +26,6 @@ import ThemeToggle from './ThemeToggle';
 import StreamerModeToggle from './StreamerModeToggle';
 import { resourceUri } from '../../../util/storage';
 import { isPro } from '../../../util/pro';
-import AnnouncementBell from '../../announcements/AnnouncementBell';
 
 const b = block('header-nav');
 
@@ -169,7 +168,7 @@ export default function HeaderNav() {
 		return () => window.removeEventListener('resize', measureActive);
 	}, [pathname, measureActive]);
 
-	let notifications = <Notifications />;
+	let notifications = <InboxPanel />;
 	if (!me) {
 		notifications = null;
 	}
@@ -239,7 +238,7 @@ export default function HeaderNav() {
 				{/* Right side - Pro button, notifications, account */}
 				<div className={b('right')}>
 					{getPro}
-					{me && <AnnouncementBell />}
+					{notifications}
 					<AccountDropdown />
 					<LanguageSwitcher />
 					<ThemeToggle />

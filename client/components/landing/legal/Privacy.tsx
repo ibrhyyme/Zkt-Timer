@@ -91,6 +91,19 @@ export default function Privacy() {
 			</ul>
 			<p dangerouslySetInnerHTML={{__html: t('privacy.section_6_contact')}} />
 
+			{/* Direct messages get their own section because the rules differ from the rest
+			    of the data we hold: nobody reads them, they expire, and the only route by
+			    which staff ever see message text is a report the user files themselves. */}
+			<h2>{t('privacy.messaging_title')}</h2>
+			<p>{t('privacy.messaging_text')}</p>
+			<ul>
+				<li>{t('privacy.messaging_item_1')}</li>
+				<li>{t('privacy.messaging_item_2')}</li>
+				<li>{t('privacy.messaging_item_3')}</li>
+				<li>{t('privacy.messaging_item_4')}</li>
+				<li>{t('privacy.messaging_item_5')}</li>
+			</ul>
+
 			<hr />
 
 			<h1>{t('privacy.cookie_title')}</h1>

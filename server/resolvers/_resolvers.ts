@@ -48,3 +48,4 @@ export * from './CompetitionFollow.resolver';
 export * from './RecordWatch.resolver';
 export * from './ZktCompetitionFollow.resolver';
 export * from './Activity.resolver';
+export * from './Messaging.resolver';
