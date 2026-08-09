@@ -554,11 +554,12 @@ type Mutation {
   followZktCompetitor(input: FollowZktCompetitorInput): ZktCompetitionFollow
   unfollowZktCompetitor(id: String): Boolean
   recordActivityHeartbeat(path: String): ActivityHeartbeatResult
-  sendMessage(solveId: String, conversationId: String, recipientId: String, body: String): Message
+  sendMessage(replyToId: String, solveId: String, conversationId: String, recipientId: String, body: String): Message
   markConversationRead(conversationId: String): Boolean
   setTyping(typing: Boolean, conversationId: String): Boolean
   acceptConversationRequest(conversationId: String): Boolean
   setConversationMuted(muted: Boolean, conversationId: String): Boolean
+  setMessageReaction(emoji: String, messageId: String): Boolean
   archiveConversation(conversationId: String): Boolean
   editMessage(body: String, messageId: String): Message
   unsendMessage(messageId: String): Boolean
@@ -2633,6 +2634,24 @@ type UserDailyActivityResult {
   total_minutes: Int
 }
 
+type MessageReaction {
+  user_id: String
+  emoji: String
+}
+
+type ReplyPreviewSender {
+  username: String
+}
+
+type ReplyPreview {
+  id: String
+  sender_id: String
+  body: String
+  deleted_at: DateTime
+  solve_id: String
+  sender: ReplyPreviewSender
+}
+
 type Message {
   id: String
   conversation_id: String
@@ -2641,6 +2660,8 @@ type Message {
   sender: PublicUserAccount
   solve: Solve
   edited_at: DateTime
+  reactions: [MessageReaction!]
+  reply_to: ReplyPreview
   created_at: DateTime
 }
 

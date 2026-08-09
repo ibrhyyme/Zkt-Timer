@@ -23,13 +23,73 @@ export interface DmGateResult {
 }
 
 /**
- * The shape a message leaves this module in. Shared by create and edit so the socket
- * payload is identical whichever path produced it.
+ * The shape a message leaves this module in. Shared by every path that returns one
+ * (list, create, edit) so a message renders identically whether it came from the
+ * initial query or over the socket.
  */
 const messageInclude = {
 	sender: publicUserInclude,
 	solve: true,
+	reactions: {select: {user_id: true, emoji: true}},
+	// One level only. A reply to a reply shows the line it answers, not the whole
+	// chain, which is what every messenger does and what keeps this query flat.
+	reply_to: {
+		select: {
+			id: true,
+			sender_id: true,
+			body: true,
+			deleted_at: true,
+			solve_id: true,
+			sender: {select: {username: true}},
+		},
+	},
 };
+
+/**
+ * The reactions a message may carry.
+ *
+ * A fixed set, validated on the server. Letting people store arbitrary unicode would
+ * mean rendering whatever anyone sends, which is a moderation problem with no upside:
+ * six emojis cover what reactions are for.
+ */
+export const ALLOWED_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
+
+/**
+ * Sets, replaces or clears one person's reaction to a message.
+ *
+ * Passing the emoji already on the message removes it, so the same tap toggles. That
+ * is the behaviour the UI implies: the emoji you picked is highlighted, and pressing a
+ * highlighted thing turns it off.
+ */
+export async function setMessageReaction(messageId: string, userId: string, emoji: string | null) {
+	const existing = await getPrisma().messageReaction.findUnique({
+		where: {message_id_user_id: {message_id: messageId, user_id: userId}},
+		select: {emoji: true},
+	});
+
+	if (!emoji || existing?.emoji === emoji) {
+		if (existing) {
+			await getPrisma().messageReaction.delete({
+				where: {message_id_user_id: {message_id: messageId, user_id: userId}},
+			});
+		}
+		return;
+	}
+
+	await getPrisma().messageReaction.upsert({
+		where: {message_id_user_id: {message_id: messageId, user_id: userId}},
+		update: {emoji},
+		create: {message_id: messageId, user_id: userId, emoji},
+	});
+}
+
+/** Every reaction on a message, for rebroadcasting after a change. */
+export async function reactionsFor(messageId: string) {
+	return getPrisma().messageReaction.findMany({
+		where: {message_id: messageId},
+		select: {user_id: true, emoji: true},
+	});
+}
 
 export function conversationInclude(viewerId: string) {
 	return {
@@ -143,8 +203,9 @@ export async function insertMessage(params: {
 	senderId: string;
 	body: string;
 	solveId?: string | null;
+	replyToId?: string | null;
 }) {
-	const {conversationId, senderId, body, solveId} = params;
+	const {conversationId, senderId, body, solveId, replyToId} = params;
 	const now = new Date();
 
 	const [message] = await getPrisma().$transaction([
@@ -154,6 +215,7 @@ export async function insertMessage(params: {
 				sender_id: senderId,
 				body,
 				solve_id: solveId || null,
+				reply_to_id: replyToId || null,
 			},
 			include: messageInclude,
 		}),
@@ -434,9 +496,10 @@ export async function listMessages(conversationId: string, before?: Date | null,
 		},
 		orderBy: {created_at: 'desc'},
 		take: MESSAGE_PAGE_SIZE,
-		include: {
-			sender: publicUserInclude,
-			solve: true,
-		},
+		// The shared shape, so a message looks the same whether it arrived from this
+		// query or over the socket. Its own include used to be a second, shorter copy,
+		// which meant quotes and reactions existed on newly sent messages and vanished
+		// the moment the thread was reloaded.
+		include: messageInclude,
 	});
 }

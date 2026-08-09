@@ -9,6 +9,7 @@ export const DM_MESSAGE_EVENT = 'dm:message';
 export const DM_INBOX_EVENT = 'dm:inbox_changed';
 export const DM_UNSEND_EVENT = 'dm:unsent';
 export const DM_EDIT_EVENT = 'dm:edited';
+export const DM_REACTION_EVENT = 'dm:reaction';
 export const DM_TYPING_EVENT = 'dm:typing';
 export const DM_READ_EVENT = 'dm:read';
 export const DM_PRESENCE_EVENT = 'dm:presence';
@@ -138,6 +139,26 @@ export function useDmEditListener(onEdit: (payload: {conversation_id: string; me
 		socket.on(DM_EDIT_EVENT, handler);
 		return () => {
 			socket.off(DM_EDIT_EVENT, handler);
+		};
+	}, [handler]);
+}
+
+/**
+ * Subscribes to reaction changes. Carries the full set for that message rather than a
+ * delta, so a client that missed an event cannot drift out of sync.
+ */
+export function useDmReactionListener(
+	onReaction: (payload: {conversation_id: string; message_id: string; reactions: {user_id: string; emoji: string}[]}) => void
+) {
+	const handler = useCallback(onReaction, [onReaction]);
+
+	useEffect(() => {
+		const socket = socketClient();
+		if (!socket) return;
+
+		socket.on(DM_REACTION_EVENT, handler);
+		return () => {
+			socket.off(DM_REACTION_EVENT, handler);
 		};
 	}, [handler]);
 }

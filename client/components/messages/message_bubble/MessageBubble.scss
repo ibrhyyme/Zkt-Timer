@@ -1,0 +1,168 @@
+@import '../../../styles/config';
+
+.#{$namespace}-msg-bubble {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	max-width: 78%;
+	align-self: flex-start;
+
+	&--mine {
+		align-self: flex-end;
+		align-items: flex-end;
+	}
+
+	&__body {
+		// Follows the finger while dragging, springs back on release.
+		transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+		// Vertical scrolling still belongs to the thread; only sideways is ours.
+		touch-action: pan-y;
+
+		&--dragging {
+			transition: none;
+		}
+	}
+
+	// Sits behind the bubble and is uncovered as it slides right.
+	&__reply-hint {
+		position: absolute;
+		left: -30px;
+		top: 50%;
+		transform: translateY(-50%) scale(0.8);
+		display: flex;
+		font-size: 15px;
+		color: rgb(var(--text-color));
+		opacity: 0.45;
+		pointer-events: none;
+		transition: opacity 0.14s ease, transform 0.14s ease;
+
+		// Past the threshold, so the gesture says "let go now" before you do.
+		&--armed {
+			opacity: 1;
+			transform: translateY(-50%) scale(1.15);
+			color: rgb(var(--primary-color));
+		}
+	}
+
+	&__bar {
+		position: absolute;
+		bottom: calc(100% - 6px);
+		z-index: 3;
+		display: flex;
+		align-items: center;
+		gap: 2px;
+		padding: 4px 6px;
+		border-radius: 999px;
+		background: rgb(var(--module-color));
+		// The ring is what separates the bar from the page; the shadow only adds depth,
+		// so it stays subtle enough not to look like a smudge on a light theme.
+		box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(var(--text-color), 0.18);
+		animation: msgBarIn 0.16s ease-out;
+
+		.#{$namespace}-msg-bubble--mine & {
+			right: 0;
+		}
+	}
+
+	&__bar-emoji {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 30px;
+		height: 30px;
+		padding: 0;
+		border: none;
+		border-radius: 50%;
+		background: none;
+		font-size: 17px;
+		line-height: 1;
+		cursor: pointer;
+		transition: transform 0.12s ease, background-color 0.12s ease;
+
+		&:hover {
+			transform: scale(1.25);
+		}
+
+		&--active {
+			background: rgba(var(--primary-color), 0.25);
+		}
+	}
+
+	&__bar-reply {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 30px;
+		height: 30px;
+		margin-left: 2px;
+		padding: 0;
+		border: none;
+		border-radius: 50%;
+		background: rgb(var(--button-color));
+		color: rgb(var(--text-color));
+		font-size: 15px;
+		cursor: pointer;
+
+		&:hover {
+			background: rgb(var(--primary-color));
+			color: rgb(var(--theme-primary-opposite));
+		}
+	}
+
+	// Chips overlap the bubble's bottom edge, the way every messenger draws them.
+	&__reactions {
+		display: flex;
+		gap: 4px;
+		margin-top: -8px;
+		margin-right: 4px;
+		z-index: 2;
+	}
+
+	&__reaction {
+		display: flex;
+		align-items: center;
+		gap: 3px;
+		padding: 2px 7px;
+		border: none;
+		border-radius: 999px;
+		background: rgb(var(--module-color));
+		box-shadow: 0 0 0 1px rgba(var(--text-color), 0.15);
+		color: rgb(var(--text-color));
+		font-size: 12px;
+		line-height: 1.4;
+		cursor: pointer;
+
+		&--mine {
+			box-shadow: 0 0 0 1px rgb(var(--primary-color));
+		}
+	}
+
+	&__reaction-count {
+		font-size: 11px;
+		font-weight: 700;
+		font-variant-numeric: tabular-nums;
+	}
+}
+
+@keyframes msgBarIn {
+	from {
+		opacity: 0;
+		transform: translateY(4px) scale(0.94);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.#{$namespace}-msg-bubble__body,
+	.#{$namespace}-msg-bubble__reply-hint {
+		transition: none;
+	}
+
+	.#{$namespace}-msg-bubble__bar {
+		animation: none;
+	}
+}

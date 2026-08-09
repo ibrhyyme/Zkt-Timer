@@ -9,7 +9,9 @@
 	width: 13px;
 	height: 13px;
 	border-radius: 50%;
-	background: #2ecc71;
+	// The shared success green, so "online" matches every other positive signal in the
+	// app instead of being its own shade.
+	background: rgb(var(--success-color));
 	// A ring in the surrounding colour, so the dot reads as a separate object rather
 	// than a green patch on the photo underneath it.
 	box-shadow: 0 0 0 2px rgb(var(--module-color));

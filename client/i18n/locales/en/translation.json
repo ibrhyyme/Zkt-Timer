@@ -4345,7 +4345,10 @@
         "awaiting_accept": "Waiting for your request to be accepted",
         "error_request_pending": "You cannot send another message until they accept your request.",
         "mute": "Mute",
-        "unmute": "Unmute"
+        "unmute": "Unmute",
+        "reply": "Reply",
+        "reply_to_self": "Yourself",
+        "quote_removed": "Message removed"
     },
     "social": {
         "who_can_message": "Who can message me",

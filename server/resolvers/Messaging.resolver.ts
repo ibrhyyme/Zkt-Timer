@@ -7,7 +7,7 @@ import {PublicUserAccount} from '../schemas/UserAccount.schema';
 import {DmPolicy} from '@prisma/client';
 import {getSiteConfig} from '../models/site_config';
 import {checkRateLimit} from '../services/rate_limit';
-import {broadcastEdit, broadcastRead, broadcastTyping, broadcastUnsend, deliverMessage} from '../services/dm_delivery';
+import {broadcastEdit, broadcastReaction, broadcastRead, broadcastTyping, broadcastUnsend, deliverMessage} from '../services/dm_delivery';
 import {broadcastPresence, forcePresenceOff, visibleOnlineUsers} from '../services/dm_presence';
 import GraphQLError from '../util/graphql_error';
 import {ErrorCode} from '../constants/errors';
@@ -16,6 +16,7 @@ import {
 	CONVERSATION_PAGE_SIZE,
 	MESSAGE_PAGE_SIZE,
 	MAX_REPORT_REASON_LENGTH,
+	ALLOWED_REACTIONS,
 	acceptConversation,
 	checkDmGate,
 	clearConversation,
@@ -29,8 +30,10 @@ import {
 	isBlockedBetween,
 	listConversations,
 	listMessages,
+	reactionsFor,
 	requestQuotaUsed,
 	setConversationMuted,
+	setMessageReaction,
 	markConversationRead,
 	totalUnread,
 	unsendMessage,
@@ -211,7 +214,8 @@ export class MessagingResolver {
 		@Arg('body') body: string,
 		@Arg('recipientId', {nullable: true}) recipientId?: string,
 		@Arg('conversationId', {nullable: true}) conversationId?: string,
-		@Arg('solveId', {nullable: true}) solveId?: string
+		@Arg('solveId', {nullable: true}) solveId?: string,
+		@Arg('replyToId', {nullable: true}) replyToId?: string
 	): Promise<Message> {
 		await assertMessagingEnabled(context);
 		const senderId = context.user.id;
@@ -302,11 +306,23 @@ export class MessagingResolver {
 			);
 		}
 
+		// A quote can only point at a line from the same thread; anything else would
+		// let someone paste a stranger's message into a conversation they are not in.
+		let safeReplyToId: string | null = null;
+		if (replyToId) {
+			const parent = await getPrisma().message.findFirst({
+				where: {id: replyToId, conversation_id: targetConversationId},
+				select: {id: true},
+			});
+			safeReplyToId = parent?.id || null;
+		}
+
 		const message = await insertMessage({
 			conversationId: targetConversationId,
 			senderId,
 			body: trimmed,
 			solveId,
+			replyToId: safeReplyToId,
 		});
 
 		// Fire and forget: the message is already persisted, so a socket or push
@@ -433,6 +449,58 @@ export class MessagingResolver {
 		if (!changed) {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Conversation not found');
 		}
+
+		return true;
+	}
+
+	/**
+	 * Adds, swaps or clears the caller's reaction to a message.
+	 *
+	 * Membership is checked against the message's own conversation, so a message id
+	 * guessed from somewhere else cannot be reacted to. Passing null clears.
+	 */
+	@Authorized([Role.LOGGED_IN])
+	@Mutation(() => Boolean)
+	async setMessageReaction(
+		@Ctx() context: GraphQLContext,
+		@Arg('messageId') messageId: string,
+		@Arg('emoji', {nullable: true}) emoji?: string
+	): Promise<boolean> {
+		await assertMessagingEnabled(context);
+
+		if (emoji && !ALLOWED_REACTIONS.includes(emoji)) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Unsupported reaction');
+		}
+
+		const message = await getPrisma().message.findFirst({
+			where: {id: messageId, deleted_at: null},
+			select: {id: true, conversation_id: true},
+		});
+		if (!message) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Message not found');
+		}
+
+		const participant = await getParticipant(message.conversation_id, context.user.id);
+		if (!participant) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Message not found');
+		}
+
+		await setMessageReaction(messageId, context.user.id, emoji || null);
+
+		const [reactions, participants] = await Promise.all([
+			reactionsFor(messageId),
+			getPrisma().conversationParticipant.findMany({
+				where: {conversation_id: message.conversation_id},
+				select: {user_id: true},
+			}),
+		]);
+
+		void broadcastReaction({
+			conversationId: message.conversation_id,
+			messageId,
+			reactions,
+			participantIds: participants.map((p) => p.user_id),
+		});
 
 		return true;
 	}

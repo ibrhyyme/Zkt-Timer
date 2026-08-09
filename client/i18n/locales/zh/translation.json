@@ -4344,7 +4344,10 @@
         "awaiting_accept": "等待对方接受你的请求",
         "error_request_pending": "在对方接受请求之前，你无法再发送消息。",
         "mute": "静音",
-        "unmute": "取消静音"
+        "unmute": "取消静音",
+        "reply": "回复",
+        "reply_to_self": "你自己",
+        "quote_removed": "消息已删除"
     },
     "social": {
         "who_can_message": "谁可以给我发消息",

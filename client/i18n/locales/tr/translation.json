@@ -4350,7 +4350,10 @@
         "awaiting_accept": "İsteğin kabul edilmesini bekliyorsun",
         "error_request_pending": "Bu kişi isteğini kabul edene kadar yeni mesaj gönderemezsin.",
         "mute": "Sessize al",
-        "unmute": "Sesi aç"
+        "unmute": "Sesi aç",
+        "reply": "Yanıtla",
+        "reply_to_self": "Kendine",
+        "quote_removed": "Mesaj kaldırıldı"
     },
     "social": {
         "who_can_message": "Bana kim mesaj atabilir",

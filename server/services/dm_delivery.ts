@@ -10,6 +10,7 @@ export const DM_MESSAGE_EVENT = 'dm:message';
 export const DM_INBOX_EVENT = 'dm:inbox_changed';
 export const DM_UNSEND_EVENT = 'dm:unsent';
 export const DM_EDIT_EVENT = 'dm:edited';
+export const DM_REACTION_EVENT = 'dm:reaction';
 export const DM_TYPING_EVENT = 'dm:typing';
 export const DM_READ_EVENT = 'dm:read';
 
@@ -118,6 +119,36 @@ export async function broadcastEdit(params: {
  * that was only true after they reloaded: the row was already wiped server-side but
  * their screen kept showing text that no longer exists anywhere.
  */
+/**
+ * Pushes a reaction change to everyone in the thread.
+ *
+ * Sends the whole set for that message rather than a delta: it is a handful of rows,
+ * and a client that missed an earlier event would otherwise drift out of sync forever.
+ */
+export async function broadcastReaction(params: {
+	conversationId: string;
+	messageId: string;
+	reactions: {user_id: string; emoji: string}[];
+	participantIds: string[];
+}): Promise<void> {
+	const {conversationId, messageId, reactions, participantIds} = params;
+
+	try {
+		const io = getSocketIO();
+		if (!io) return;
+
+		for (const userId of participantIds) {
+			io.to(userRoom(userId)).emit(DM_REACTION_EVENT, {
+				conversation_id: conversationId,
+				message_id: messageId,
+				reactions,
+			});
+		}
+	} catch (e) {
+		logger.warn('[DM] reaction broadcast failed', {error: (e as Error)?.message});
+	}
+}
+
 export async function broadcastUnsend(params: {
 	conversationId: string;
 	messageId: string;
@@ -225,6 +256,21 @@ function toWireMessage(message: any) {
 		created_at: message.created_at,
 		// Null on everything that has never been touched, which is almost every message.
 		edited_at: message.edited_at ?? null,
+		reactions: (message.reactions || []).map((r: any) => ({user_id: r.user_id, emoji: r.emoji})),
+		// The quoted line. Deliberately the same shape the GraphQL query returns, so a
+		// client renders a quote identically whether it arrived over the socket or in
+		// the initial page load. Only the fields the quote draws: never the full
+		// message, which would drag another sender row through the socket.
+		reply_to: message.reply_to
+			? {
+					id: message.reply_to.id,
+					sender_id: message.reply_to.sender_id,
+					body: message.reply_to.body,
+					deleted_at: message.reply_to.deleted_at ?? null,
+					solve_id: message.reply_to.solve_id ?? null,
+					sender: {username: message.reply_to.sender?.username ?? null},
+			  }
+			: null,
 		sender: sender
 			? {
 					id: sender.id,

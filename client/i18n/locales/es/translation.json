@@ -4260,7 +4260,10 @@
         "awaiting_accept": "Esperando a que acepten tu solicitud",
         "error_request_pending": "No puedes enviar otro mensaje hasta que acepten tu solicitud.",
         "mute": "Silenciar",
-        "unmute": "Activar sonido"
+        "unmute": "Activar sonido",
+        "reply": "Responder",
+        "reply_to_self": "Tú mismo",
+        "quote_removed": "Mensaje eliminado"
     },
     "social": {
         "who_can_message": "Quién puede escribirme",

@@ -22,6 +22,8 @@ import MobileNav from '../layout/nav/mobile_nav/MobileNav';
 import Avatar from '../common/avatar/Avatar';
 import AvatarImage from '../common/avatar/avatar_image/AvatarImage';
 import PresenceDot from './presence_dot/PresenceDot';
+import SwipeRow, {SwipeAction} from './swipe_row/SwipeRow';
+import MessageBubble from './message_bubble/MessageBubble';
 import Loading from '../common/loading/Loading';
 import Empty from '../common/empty/Empty';
 import Button from '../common/button/Button';
@@ -44,8 +46,9 @@ import {
 	EditMessageDocument,
 	AcceptConversationRequestDocument,
 	SetConversationMutedDocument,
+	SetMessageReactionDocument,
 } from '../../@types/generated/graphql';
-import {useDmEditListener, useDmMessageListener, useDmPresence, useDmUnsendListener, useTypingIndicator, useReadReceipt, refreshInbox, decrementInbox, useInbox} from '../../util/hooks/useInbox';
+import {useDmEditListener, useDmMessageListener, useDmReactionListener, useDmPresence, useDmUnsendListener, useTypingIndicator, useReadReceipt, refreshInbox, decrementInbox, useInbox} from '../../util/hooks/useInbox';
 import {useMe} from '../../util/hooks/useMe';
 import {getDateFromNow, getFullFormattedDate} from '../../util/dates';
 import {getTimeString} from '../../util/time';
@@ -90,6 +93,27 @@ function SolveCard({solve}: {solve: any}) {
 	);
 }
 
+/**
+ * The quoted line shown above a reply.
+ *
+ * Reads the quoted message's own state rather than a snapshot: if the original was
+ * unsent, the quote says so instead of preserving text the sender took back.
+ */
+function QuotedMessage({quote, mine}: {quote: any; mine: boolean}) {
+	const {t} = useTranslation();
+
+	const text = quote.deleted_at
+		? t('messages.quote_removed')
+		: quote.body || (quote.solve_id ? t('inbox.sent_a_solve') : '');
+
+	return (
+		<div className={b('quote', {mine})}>
+			<span className={b('quote-name')}>{quote.sender?.username || ''}</span>
+			<span className={b('quote-text')}>{text}</span>
+		</div>
+	);
+}
+
 function MessagesPage() {
 	const {t} = useTranslation();
 	const me = useMe();
@@ -123,6 +147,10 @@ function MessagesPage() {
 	const [awaitingAccept, setAwaitingAccept] = useState(false);
 	const [threadMuted, setThreadMuted] = useState(false);
 	const [accepting, setAccepting] = useState(false);
+	// Only one row may sit open; the list owns that, not the row.
+	const [swipedRow, setSwipedRow] = useState<string | null>(null);
+	// The message the composer is currently answering, or null for a normal message.
+	const [replyTo, setReplyTo] = useState<DmMessage | null>(null);
 	const [draft, setDraft] = useState('');
 	// Arriving from a profile's "Send message" carries the username, so the search is
 	// already filled in and the person is one click away.
@@ -200,6 +228,7 @@ function MessagesPage() {
 		setThreadAccepted(false);
 		setAwaitingAccept(false);
 		setThreadMuted(false);
+		setReplyTo(null);
 		try {
 			const res = await gqlQueryTyped(
 				DmMessagesDocument,
@@ -318,6 +347,15 @@ function MessagesPage() {
 		}, [])
 	);
 
+	useDmReactionListener(
+		useCallback((payload: {message_id: string; reactions: {user_id: string; emoji: string}[]}) => {
+			if (!payload?.message_id) return;
+			setMessages((prev) =>
+				prev.map((m) => (m.id === payload.message_id ? ({...m, reactions: payload.reactions} as DmMessage) : m))
+			);
+		}, [])
+	);
+
 	useDmUnsendListener((payload) => {
 		setMessages((prev) => prev.filter((m) => m.id !== payload.message_id));
 		void loadConversations(showRequests);
@@ -404,12 +442,17 @@ function MessagesPage() {
 
 		setSending(true);
 		try {
-			const res = await gqlMutateTyped(SendMessageDocument, {body, conversationId: activeId});
+			const res = await gqlMutateTyped(SendMessageDocument, {
+				body,
+				conversationId: activeId,
+				replyToId: replyTo?.id,
+			});
 			const sent = res?.data?.sendMessage as DmMessage;
 			if (sent) {
 				setMessages((prev) => (prev.some((m) => m.id === sent.id) ? prev : [...prev, sent]));
 			}
 			setDraft('');
+			setReplyTo(null);
 			void loadConversations(showRequests);
 			void refreshInbox();
 		} catch (e) {
@@ -462,6 +505,121 @@ function MessagesPage() {
 			void refreshInbox();
 		} catch (e) {
 			setThreadMuted(!next);
+			toastError(e as Error);
+		}
+	}
+
+	/**
+	 * The four actions a swiped row offers.
+	 *
+	 * The same four that live behind the menu inside a conversation. Having them only
+	 * there meant opening a thread you wanted to mute or delete, which is exactly what
+	 * someone avoiding that person does not want to do.
+	 */
+	function rowActions(c: Conversation): SwipeAction[] {
+		const other = c.other_user as any;
+
+		return [
+			{
+				key: 'mute',
+				label: c.muted ? t('messages.unmute') : t('messages.mute'),
+				icon: c.muted ? <BellSimple weight="bold" /> : <BellSimpleSlash weight="bold" />,
+				onSelect: () => void muteConversation(c.id, !c.muted),
+			},
+			{
+				key: 'report',
+				label: t('messages.report'),
+				icon: <Flag weight="bold" />,
+				onSelect: () => {
+					setSwipedRow(null);
+					history.push(`/messages/${c.id}`);
+					setReportOpen(true);
+				},
+			},
+			{
+				key: 'block',
+				label: t('messages.block'),
+				icon: <Prohibit weight="bold" />,
+				tone: 'danger',
+				onSelect: () => void blockFromRow(c.id, other),
+			},
+			{
+				key: 'delete',
+				label: t('messages.clear_chat'),
+				icon: <Trash weight="bold" />,
+				tone: 'danger',
+				onSelect: () => void clearFromRow(c.id),
+			},
+		];
+	}
+
+	async function muteConversation(conversationId: string, muted: boolean) {
+		setSwipedRow(null);
+		setConversations((prev) => prev.map((c) => (c.id === conversationId ? {...c, muted} : c)));
+		if (conversationId === activeId) setThreadMuted(muted);
+		try {
+			await gqlMutateTyped(SetConversationMutedDocument, {conversationId, muted});
+			void refreshInbox();
+		} catch (e) {
+			setConversations((prev) => prev.map((c) => (c.id === conversationId ? {...c, muted: !muted} : c)));
+			toastError(e as Error);
+		}
+	}
+
+	async function clearFromRow(conversationId: string) {
+		if (!window.confirm(t('messages.clear_confirm'))) return;
+
+		setSwipedRow(null);
+		try {
+			await gqlMutateTyped(ClearConversationDocument, {conversationId});
+			setConversations((prev) => prev.filter((c) => c.id !== conversationId));
+			if (conversationId === activeId) history.push('/messages');
+			void refreshInbox();
+		} catch (e) {
+			toastError(e as Error);
+		}
+	}
+
+	async function blockFromRow(conversationId: string, other: any) {
+		if (!other?.id) return;
+		if (!window.confirm(t('messages.block_confirm', {name: other.username}))) return;
+
+		setSwipedRow(null);
+		try {
+			await gqlMutateTyped(BlockUserDocument, {userId: other.id});
+			setConversations((prev) => prev.filter((c) => c.id !== conversationId));
+			if (conversationId === activeId) history.push('/messages');
+			void refreshInbox();
+		} catch (e) {
+			toastError(e as Error);
+		}
+	}
+
+	/**
+	 * Toggles the caller's reaction. Optimistic, because a reaction that waits for a
+	 * round trip before appearing feels broken on a tap.
+	 */
+	async function handleReact(messageId: string, emoji: string) {
+		const meId = me?.id;
+		if (!meId) return;
+
+		const before = messages;
+		setMessages((prev) =>
+			prev.map((m) => {
+				if (m.id !== messageId) return m;
+				const list = ((m as any).reactions || []) as {user_id: string; emoji: string}[];
+				const existing = list.find((r) => r.user_id === meId);
+				const without = list.filter((r) => r.user_id !== meId);
+				// Same emoji again means "take it back".
+				const next = existing?.emoji === emoji ? without : [...without, {user_id: meId, emoji}];
+				return {...m, reactions: next} as DmMessage;
+			})
+		);
+
+		try {
+			await gqlMutateTyped(SetMessageReactionDocument, {messageId, emoji});
+		} catch (e) {
+			setMessages(before);
 			toastError(e as Error);
 		}
 	}
@@ -642,10 +800,14 @@ function MessagesPage() {
 		// A button, not a Link: Avatar renders its own anchor, and an <a> inside an <a>
 		// is invalid HTML that browsers resolve inconsistently.
 		listBody = visibleConversations.map((c) => (
-			<button
+			<SwipeRow
 				key={c.id}
-				type="button"
-				onClick={() => history.push(`/messages/${c.id}`)}
+				open={swipedRow === c.id}
+				onSwipeOpen={() => setSwipedRow(swipedRow === c.id ? null : c.id)}
+				onOpen={() => history.push(`/messages/${c.id}`)}
+				actions={rowActions(c)}
+			>
+			<div
 				className={b('row', {active: c.id === activeId, unread: c.unread_count > 0})}
 			>
 				<span className={b('row-avatar')}>
@@ -665,7 +827,8 @@ function MessagesPage() {
 						)}
 					</div>
 				</div>
-			</button>
+			</div>
+			</SwipeRow>
 		));
 	}
 
@@ -809,11 +972,20 @@ function MessagesPage() {
 					{messages.map((m) => {
 						const mine = m.sender_id === me?.id;
 						return (
-							<div key={m.id} className={b('bubble', {mine})}>
-								<div
-									className={b('bubble-inner', {clickable: mine})}
-									onClick={mine ? () => setSelectedMessage(selectedMessage === m.id ? null : m.id) : undefined}
-								>
+							<MessageBubble
+								key={m.id}
+								mine={mine}
+								myUserId={me?.id}
+								reactions={(m as any).reactions || []}
+								onReply={() => setReplyTo(m)}
+								onReact={(emoji) => void handleReact(m.id, emoji)}
+								onSelect={() => {
+									if (mine) setSelectedMessage(selectedMessage === m.id ? null : m.id);
+								}}
+							>
+								<div className={b('bubble-inner', {mine, clickable: mine})}>
+									{/* The quoted line, above the reply's own text. */}
+									{(m as any).reply_to && <QuotedMessage quote={(m as any).reply_to} mine={mine} />}
 									{editingId === m.id ? (
 										<div className={b('bubble-edit')} onClick={(e) => e.stopPropagation()}>
 											<textarea
@@ -886,7 +1058,7 @@ function MessagesPage() {
 										</button>
 									</div>
 								)}
-							</div>
+							</MessageBubble>
 						);
 					})}
 					{/* Sits inside the scroll area so it is pinned to the newest message
@@ -921,6 +1093,30 @@ function MessagesPage() {
 								{t('messages.block')}
 							</button>
 						</div>
+					</div>
+				)}
+
+				{/* Answering something specific: the quote sits directly above the box you
+				    type into, so it is obvious what the reply attaches to. */}
+				{replyTo && (
+					<div className={b('reply-bar')}>
+						<div className={b('reply-bar-body')}>
+							<span className={b('reply-bar-name')}>
+								{replyTo.sender_id === me?.id ? t('messages.reply_to_self') : threadOther?.username}
+							</span>
+							<span className={b('reply-bar-text')}>
+								{replyTo.body || (replyTo.solve ? t('inbox.sent_a_solve') : '')}
+							</span>
+						</div>
+						<button
+							type="button"
+							className={b('reply-bar-close')}
+							title={t('messages.edit_cancel')}
+							aria-label={t('messages.edit_cancel')}
+							onClick={() => setReplyTo(null)}
+						>
+							<X weight="bold" />
+						</button>
 					</div>
 				)}
 

@@ -411,8 +411,8 @@ mutation recordActivityHeartbeat {
 	}
 }
 
-mutation sendMessage($body: String!, $recipientId: String, $conversationId: String, $solveId: String) {
-	sendMessage(body: $body, recipientId: $recipientId, conversationId: $conversationId, solveId: $solveId) {
+mutation sendMessage($body: String!, $recipientId: String, $conversationId: String, $solveId: String, $replyToId: String) {
+	sendMessage(body: $body, recipientId: $recipientId, conversationId: $conversationId, solveId: $solveId, replyToId: $replyToId) {
 		...MessageFragment
 	}
 }
@@ -423,6 +423,10 @@ mutation markConversationRead($conversationId: String!) {
 
 mutation archiveConversation($conversationId: String!) {
 	archiveConversation(conversationId: $conversationId)
+}
+
+mutation setMessageReaction($messageId: String!, $emoji: String) {
+	setMessageReaction(messageId: $messageId, emoji: $emoji)
 }
 
 mutation setConversationMuted($conversationId: String!, $muted: Boolean!) {

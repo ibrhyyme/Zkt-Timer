@@ -644,6 +644,20 @@ fragment MessageFragment on Message {
 	body
 	created_at
 	edited_at
+	reactions {
+		user_id
+		emoji
+	}
+	reply_to {
+		id
+		sender_id
+		body
+		deleted_at
+		solve_id
+		sender {
+			username
+		}
+	}
 	sender {
 		...PublicUserFragment
 	}

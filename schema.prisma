@@ -148,6 +148,7 @@ model UserAccount {
   message_reports_made          MessageReport[]           @relation("message_report_reporter")
   message_reports_received      MessageReport[]           @relation("message_report_reported")
   message_reports_reviewed      MessageReport[]           @relation("message_report_reviewer")
+  message_reactions             MessageReaction[]
 
   @@map("user_account")
 }
@@ -1843,16 +1844,48 @@ model Message {
   /// A report already captures a frozen copy at the moment it is filed, so moderation
   /// does not need edit history either.
   edited_at       DateTime?
+  /// The message this one answers, WhatsApp style. SetNull rather than Cascade: a
+  /// reply is its own message and must survive the retention sweep deleting the line
+  /// it was answering. Soft-deleted (unsent) parents keep their row, so the quote can
+  /// still render "message removed" instead of vanishing.
+  reply_to_id     String?
   created_at      DateTime  @default(now())
 
   conversation Conversation @relation(fields: [conversation_id], references: [id], onDelete: Cascade)
   sender       UserAccount  @relation("message_sender", fields: [sender_id], references: [id], onDelete: Cascade)
   solve        Solve?       @relation(fields: [solve_id], references: [id], onDelete: SetNull)
+  reply_to     Message?     @relation("message_reply", fields: [reply_to_id], references: [id], onDelete: SetNull)
+  replies      Message[]    @relation("message_reply")
+  reactions    MessageReaction[]
 
   // Cursor pagination reads newest-first within one conversation.
   @@index([conversation_id, created_at])
   @@index([sender_id])
   @@map("message")
+}
+
+/// One emoji reaction on a message.
+///
+/// Unique per (message, user) rather than per emoji: a person has one reaction on a
+/// message, and picking another replaces it. That is how WhatsApp and Instagram behave,
+/// and it keeps a single tap from turning into a pile of six emojis from one person.
+///
+/// The emoji itself is validated against a fixed set on the server. Storing arbitrary
+/// user-supplied unicode would mean rendering whatever anyone types, which is a
+/// moderation surface nobody asked for.
+model MessageReaction {
+  id         String   @id @default(uuid())
+  message_id String
+  user_id    String
+  emoji      String
+  created_at DateTime @default(now())
+
+  message Message     @relation(fields: [message_id], references: [id], onDelete: Cascade)
+  user    UserAccount @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([message_id, user_id])
+  @@index([message_id])
+  @@map("message_reaction")
 }
 
 model UserBlock {

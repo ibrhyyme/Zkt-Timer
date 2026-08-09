@@ -1,0 +1,75 @@
+@import '../../../styles/config';
+
+.#{$namespace}-swipe-row {
+	position: relative;
+	// Clips the strip while the row sits over it, so nothing peeks out at rest.
+	overflow: hidden;
+
+	&__actions {
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		display: flex;
+	}
+
+	&__action {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 4px;
+		flex: 1;
+		padding: 0 6px;
+		border: none;
+		background: rgb(var(--button-color));
+		color: rgb(var(--text-color));
+		cursor: pointer;
+
+		&:hover {
+			filter: brightness(1.15);
+		}
+
+		// Destructive actions carry the warning, the rest stay neutral. Colouring all
+		// four red would make muting look as final as blocking.
+		//
+		// The one place a fixed white is right: it sits on the error red in every
+		// theme, and red is a signal that must not shift with the palette.
+		&--danger {
+			background: rgb(var(--error-color));
+			color: #fff;
+		}
+	}
+
+	&__action-icon {
+		display: flex;
+		font-size: 19px;
+	}
+
+	&__action-label {
+		font-size: 11px;
+		font-weight: 600;
+		line-height: 1.1;
+		text-align: center;
+	}
+
+	&__front {
+		position: relative;
+		background: rgb(var(--module-color));
+		// Eases back into place on release, but follows the finger without lag while
+		// the drag is happening.
+		transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+		// Without this a horizontal drag scrolls the list instead of moving the row.
+		touch-action: pan-y;
+
+		&--dragging {
+			transition: none;
+		}
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.#{$namespace}-swipe-row__front {
+		transition: none;
+	}
+}

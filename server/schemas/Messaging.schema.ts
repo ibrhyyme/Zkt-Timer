@@ -13,6 +13,50 @@ registerEnumType(DmPolicySchema, {
 	description: 'Who may start a new conversation with this user',
 });
 
+/** One person's reaction. The emoji is always from the server's fixed set. */
+@ObjectType()
+export class MessageReaction {
+	@Field()
+	user_id: string;
+
+	@Field()
+	emoji: string;
+}
+
+@ObjectType()
+export class ReplyPreviewSender {
+	@Field({nullable: true})
+	username?: string;
+}
+
+/**
+ * The message a reply points at, reduced to what the quote draws.
+ *
+ * Not a full Message on purpose: a quote does not need the sender's avatar, badges or
+ * attached solve, and returning them would pull a second user row per message.
+ */
+@ObjectType()
+export class ReplyPreview {
+	@Field()
+	id: string;
+
+	@Field()
+	sender_id: string;
+
+	@Field()
+	body: string;
+
+	/** Set when the quoted line was unsent; the quote then reads "message removed". */
+	@Field({nullable: true})
+	deleted_at?: Date;
+
+	@Field({nullable: true})
+	solve_id?: string;
+
+	@Field(() => ReplyPreviewSender, {nullable: true})
+	sender?: ReplyPreviewSender;
+}
+
 @ObjectType()
 export class Message {
 	@Field()
@@ -37,6 +81,12 @@ export class Message {
 	/** Set once the sender changed the text. Null on everything untouched. */
 	@Field({nullable: true})
 	edited_at?: Date;
+
+	@Field(() => [MessageReaction], {nullable: true})
+	reactions?: MessageReaction[];
+
+	@Field(() => ReplyPreview, {nullable: true})
+	reply_to?: ReplyPreview;
 
 	@Field()
 	created_at: Date;
