@@ -1,5 +1,6 @@
 import {checkLoggedIn} from '../util/auth';
 import {
+	deleteAllNotifications,
 	deleteNotification,
 	getNotificationById,
 	getNotifications,
@@ -15,6 +16,7 @@ export const gqlQuery = `
 
 export const gqlMutation = `
 	deleteNotification(id: String): Notification
+	deleteAllNotifications: Int
 	markNotificationAsRead(id: String): Notification
 `;
 
@@ -44,6 +46,11 @@ export const mutateActions = {
 		}
 
 		return await readNotification(notif);
+	},
+
+	deleteAllNotifications: async (_, params, {user}) => {
+		checkLoggedIn(user);
+		return await deleteAllNotifications(user);
 	},
 
 	deleteNotification: async (_, {id}, {user}) => {

@@ -64,3 +64,18 @@ export async function deleteNotification(notification: NotificationSchema) {
 		},
 	});
 }
+
+/**
+ * Clears every notification a user has, not just the page in front of them.
+ *
+ * The inbox loads ten at a time, so "clear all" used to loop over the loaded page and
+ * delete those; the next page then slid up and the list looked like it refused to
+ * empty. Anyone with more than ten notifications had to press it over and over.
+ */
+export async function deleteAllNotifications(user: UserAccount): Promise<number> {
+	const result = await getPrisma().notification.deleteMany({
+		where: {user_id: user.id},
+	});
+
+	return result.count;
+}

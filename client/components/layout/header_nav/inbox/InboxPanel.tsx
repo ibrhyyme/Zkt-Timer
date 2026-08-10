@@ -19,6 +19,7 @@ import {
 	MessageRecipientSearchQuery,
 } from '../../../../@types/generated/graphql';
 import {bubblesAvailable, openChatBubble} from '../../../../util/chat-bubbles';
+import {openInAppBrowser} from '../../../../util/external-link';
 import {NOTIFICATION_FRAGMENT} from '../../../../util/graphql/fragments';
 import {useInbox, refreshInbox, useDmMessageListener, useDmPresence} from '../../../../util/hooks/useInbox';
 import {useMe} from '../../../../util/hooks/useMe';
@@ -51,6 +52,34 @@ function hideAnnouncement(id: string) {
 		localStorage.setItem(HIDDEN_ANNOUNCEMENTS_KEY, JSON.stringify([...next]));
 	} catch {
 		// storage unavailable — the row simply comes back next session
+	}
+}
+
+/**
+ * Turns a stored notification link into something the router understands.
+ *
+ * Notifications are written with absolute URLs (https://zktimer.app/admin/users), and
+ * history.push treats anything it is given as a path, so those became
+ * /https://zktimer.app/admin/users. Old rows in the database still hold absolute URLs,
+ * so this has to be fixed where they are read, not only where they are written.
+ *
+ * A link pointing somewhere else entirely is returned as-is for the caller to open
+ * externally rather than being forced through the router.
+ */
+function toRoutePath(link: string): {path: string; external: boolean} {
+	if (!link) return {path: '', external: false};
+	if (!/^https?:\/\//i.test(link)) {
+		return {path: link.startsWith('/') ? link : `/${link}`, external: false};
+	}
+
+	try {
+		const url = new URL(link);
+		if (typeof window !== 'undefined' && url.host === window.location.host) {
+			return {path: `${url.pathname}${url.search}${url.hash}`, external: false};
+		}
+		return {path: link, external: true};
+	} catch {
+		return {path: link, external: false};
 	}
 }
 
@@ -95,6 +124,14 @@ const DELETE_NOTIFICATION = gql`
 		deleteNotification(id: $id) {
 			id
 		}
+	}
+`;
+
+// One call for the whole lot. Looping over the loaded page left everything past the
+// first ten in place, so the list appeared to refill itself every time it was cleared.
+const DELETE_ALL_NOTIFICATIONS = gql`
+	mutation Mutate {
+		deleteAllNotifications
 	}
 `;
 
@@ -384,7 +421,11 @@ export default function InboxPanel() {
 			if (row.unread) {
 				void gqlMutate(MARK_NOTIFICATION_READ, {id: notif.id}).catch(() => {});
 			}
-			if (notif.link) history.push(notif.link);
+			if (notif.link) {
+				const {path, external} = toRoutePath(notif.link);
+				if (external) openInAppBrowser(path);
+				else history.push(path);
+			}
 			void load();
 			return;
 		}
@@ -393,7 +434,11 @@ export default function InboxPanel() {
 		if (row.unread) {
 			void gqlMutate(MarkAnnouncementAsViewedDocument as any, {announcementId: announcement.id}).catch(() => {});
 		}
-		if (announcement.targetUrl) history.push(announcement.targetUrl);
+		if (announcement.targetUrl) {
+			const {path, external} = toRoutePath(announcement.targetUrl);
+			if (external) openInAppBrowser(path);
+			else history.push(path);
+		}
 		void load();
 	}
 
@@ -429,15 +474,43 @@ export default function InboxPanel() {
 		}
 	}
 
+	/**
+	 * Empties the notification side of the inbox.
+	 *
+	 * Two deliberate choices. It goes through one server call rather than looping over
+	 * what happens to be loaded, because the list only holds ten at a time and the old
+	 * loop left everything past the first page untouched: the panel refilled itself and
+	 * looked broken.
+	 *
+	 * And it leaves conversations alone. They share this panel, but archiving somebody's
+	 * entire chat list behind a button labelled "clear" is not something anyone means to
+	 * press, and it is not what a notification centre does.
+	 */
 	async function dismissAll() {
-		if (rows.length === 0) return;
-		if (!window.confirm(t('inbox.clear_confirm', {count: rows.length}))) return;
+		const clearable = rows.filter((r) => r.kind !== 'message');
+		if (clearable.length === 0) return;
+		if (!window.confirm(t('inbox.clear_confirm'))) return;
 
-		const snapshot = [...rows];
-		setRows([]);
-		for (const row of snapshot) {
-			await dismissRow(row);
+		setRows((prev) => prev.filter((r) => r.kind === 'message'));
+
+		try {
+			await gqlMutate(DELETE_ALL_NOTIFICATIONS);
+		} catch {
+			// Put the list back if the server refused, so it never lies about being empty.
+			void load();
+			return;
 		}
+
+		// Announcements are global, so "clearing" one is a per-device preference.
+		for (const row of clearable) {
+			if (row.kind !== 'announcement') continue;
+			hideAnnouncement(row.data.id);
+			if (row.unread) {
+				await gqlMutateTyped(MarkAnnouncementAsViewedDocument, {announcementId: row.data.id}).catch(() => {});
+			}
+		}
+
+		setExtraUnread(0);
 		void load();
 	}
 
@@ -626,7 +699,12 @@ export default function InboxPanel() {
 							</button>
 						)}
 						<div className={b('body')}>{body}</div>
-						<button type="button" className={b('footer')} onClick={dismissAll} disabled={rows.length === 0}>
+						<button
+							type="button"
+							className={b('footer')}
+							onClick={dismissAll}
+							disabled={rows.every((r) => r.kind === 'message')}
+						>
 							{t('inbox.clear_all')}
 						</button>
 					</>

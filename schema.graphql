@@ -395,6 +395,7 @@ type Mutation {
   uploadTimerBackground(file: Upload): TimerBackground!
   setTimerBackgroundHex(hex: String): TimerBackground!
   deleteNotification(id: String): Notification
+  deleteAllNotifications: Int
   markNotificationAsRead(id: String): Notification
   createBadgeType(input: BadgeTypeInput): BadgeType
   editBadgeType(id: String, input: BadgeTypeInput): BadgeType
