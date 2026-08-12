@@ -11,7 +11,7 @@ export default function LinkedAccounts() {
 	return (
 		<div className={b()}>
 			{/* ZKT first: it is the federation that runs the competitions these
-			    accounts are for, and the identity Zkt-Timer matches them on. */}
+			    accounts are for, and the identity Zkt Timer matches them on. */}
 			<Module>
 				<IntegrationService integrationType="zkt" />
 			</Module>

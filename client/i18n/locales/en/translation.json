@@ -2652,7 +2652,7 @@
         "wca_connecting": "Connecting to WCA...",
         "linking_account": "Linking account...",
         "oauth_error": "An error occurred during OAuth connection",
-        "zkt_description": "Link your ZKT account to see your ZKT competitions, results and records inside Zkt-Timer."
+        "zkt_description": "Link your ZKT account to see your ZKT competitions, results and records inside Zkt Timer."
     },
     "otp": {
         "verifying": "Verifying…",
@@ -4439,7 +4439,7 @@
     "auth_email_taken": {
         "title": "This email is already registered",
         "subtitle": "Sign-in could not be completed",
-        "subtitle_with_email": "You already have a Zkt-Timer account with {{email}}",
+        "subtitle_with_email": "You already have a Zkt Timer account with {{email}}",
         "description": "For your security we do not merge accounts automatically. Sign in with your password first, then link your {{provider}} account under <strong>Settings > Linked Accounts</strong>. After that you can sign in with {{provider}} too.",
         "login_button": "Sign in with password",
         "forgot_button": "I forgot my password"

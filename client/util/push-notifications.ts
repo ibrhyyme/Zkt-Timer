@@ -108,7 +108,7 @@ async function initNativePush(): Promise<void> {
 
 	PushNotifications.addListener('pushNotificationReceived', (notification) => {
 		console.log('[Push] Notification received in foreground:', notification);
-		const title = notification.title || 'Zkt-Timer';
+		const title = notification.title || 'Zkt Timer';
 		const body = notification.body || '';
 		showLocalNotification(title, body, notification.data);
 	});
@@ -177,7 +177,7 @@ async function initWebPush(): Promise<void> {
 			try {
 				if (Notification.permission !== 'granted') return;
 
-				const title = payload.notification?.title || 'Zkt-Timer';
+				const title = payload.notification?.title || 'Zkt Timer';
 				const body = payload.notification?.body || '';
 				const tag = (payload.data?.type as string) || 'default';
 

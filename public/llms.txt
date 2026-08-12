@@ -11,7 +11,7 @@
 - **Puzzle solvers**: IDA*-based solvers for Cross, XCross, EOLine, EOCross, Roux FB, F2L, Petrus, ZZ, EODR, 2x2x2, SQ1, Pyraminx, Skewb
 - **Competitions**: WCA competition tracking with live results, schedule, competitor assignments, personal bests
 - **Multiplayer**: Real-time race rooms via Socket.IO, 1v1 battle mode, friend system
-- **Data**: LokiJS local-first storage with IndexedDB, server sync, offline support, import/export (csTimer, Twisty Timer, Zkt-Timer formats)
+- **Data**: LokiJS local-first storage with IndexedDB, server sync, offline support, import/export (csTimer, Twisty Timer, Zkt Timer formats)
 - **Stats**: Per-session and all-time statistics, averages, graphs, personal bests, cube-type buckets
 - **Pro membership**: Advanced stats, unlimited sessions, PDF export, premium trainers
 

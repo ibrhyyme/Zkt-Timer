@@ -1,5 +1,5 @@
 export enum Consts {
-	APP_NAME = 'Zkt-Timer',
+	APP_NAME = 'Zkt Timer',
 	DOMAIN_NAME = 'zkt-timer.io',
 	S3_BUCKET_NAME = 'zkttimer',
 	S3_IMAGE_FOLDER = 'images/',

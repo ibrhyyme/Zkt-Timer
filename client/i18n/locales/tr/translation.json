@@ -2659,7 +2659,7 @@
         "wca_connecting": "WCA'ya bağlanılıyor...",
         "linking_account": "Hesap bağlanıyor...",
         "oauth_error": "OAuth bağlantısı sırasında hata oluştu",
-        "zkt_description": "ZKT hesabını bağla; ZKT yarışmaların, derecelerin ve rekorların Zkt-Timer içinde görünsün."
+        "zkt_description": "ZKT hesabını bağla; ZKT yarışmaların, derecelerin ve rekorların Zkt Timer içinde görünsün."
     },
     "otp": {
         "verifying": "Doğrulanıyor…",
@@ -4444,7 +4444,7 @@
     "auth_email_taken": {
         "title": "Bu e-posta zaten kayıtlı",
         "subtitle": "Giriş tamamlanamadı",
-        "subtitle_with_email": "{{email}} adresiyle bir Zkt-Timer hesabın zaten var",
+        "subtitle_with_email": "{{email}} adresiyle bir Zkt Timer hesabın zaten var",
         "description": "Güvenlik için hesapları kendiliğinden birleştirmiyoruz. Önce şifrenle giriş yap, sonra <strong>Ayarlar > Bağlı Hesaplar</strong> bölümünden {{provider}} hesabını bağla. Bundan sonra {{provider}} ile de giriş yapabilirsin.",
         "login_button": "Şifremle giriş yap",
         "forgot_button": "Şifremi unuttum"

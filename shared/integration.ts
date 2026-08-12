@@ -78,14 +78,14 @@ export const LINKED_SERVICES: Record<IntegrationType, LinkedServiceData> = {
 		scope: ['public', 'email'],
 	},
 	// The federation's own OAuth. Members sign in with the ZKT account they
-	// already use to enter competitions, and Zkt-Timer learns their ZKT ID —
+	// already use to enter competitions, and Zkt Timer learns their ZKT ID —
 	// which is what its competition surfaces are keyed on now that WCA is no
 	// longer the shared identity between the two sites.
 	zkt: {
 		id: 'zkt',
 		name: 'Zeka Küpü Türkiye',
 		description:
-			'ZKT hesabını bağlayarak ZKT yarışmalarını, derecelerini ve rekorlarını Zkt-Timer içinde gör.',
+			'ZKT hesabını bağlayarak ZKT yarışmalarını, derecelerini ve rekorlarını Zkt Timer içinde gör.',
 		// PNG, not SVG: an <img> pointing at an external SVG does not render in the
 		// native shell (see the WCA logo's history), and 160px is plenty for the
 		// 48px slots this appears in.

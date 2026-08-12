@@ -2652,7 +2652,7 @@
         "wca_connecting": "Conectando con WCA...",
         "linking_account": "Vinculando cuenta...",
         "oauth_error": "Se produjo un error durante la conexión OAuth",
-        "zkt_description": "Vincula tu cuenta de ZKT para ver tus competencias, resultados y récords de ZKT en Zkt-Timer."
+        "zkt_description": "Vincula tu cuenta de ZKT para ver tus competencias, resultados y récords de ZKT en Zkt Timer."
     },
     "otp": {
         "verifying": "Verificando…",
@@ -4354,7 +4354,7 @@
     "auth_email_taken": {
         "title": "Este correo ya está registrado",
         "subtitle": "No se pudo completar el inicio de sesión",
-        "subtitle_with_email": "Ya tienes una cuenta de Zkt-Timer con {{email}}",
+        "subtitle_with_email": "Ya tienes una cuenta de Zkt Timer con {{email}}",
         "description": "Por seguridad no combinamos cuentas automáticamente. Inicia sesión con tu contraseña y luego vincula tu cuenta de {{provider}} en <strong>Ajustes > Cuentas Vinculadas</strong>. Después podrás iniciar sesión con {{provider}} también.",
         "login_button": "Iniciar sesión con contraseña",
         "forgot_button": "Olvidé mi contraseña"
