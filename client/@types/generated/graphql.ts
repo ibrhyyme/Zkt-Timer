@@ -742,10 +742,17 @@ export type Integration = {
   wca_show_records?: Maybe<Scalars['Boolean']>;
   wca_show_results?: Maybe<Scalars['Boolean']>;
   wca_user_id?: Maybe<Scalars['String']>;
+  zkt_avatar_url?: Maybe<Scalars['String']>;
+  zkt_country_iso2?: Maybe<Scalars['String']>;
+  zkt_id?: Maybe<Scalars['String']>;
+  zkt_member_no?: Maybe<Scalars['Float']>;
+  zkt_name?: Maybe<Scalars['String']>;
+  zkt_user_id?: Maybe<Scalars['String']>;
 };
 
 export enum IntegrationType {
-  Wca = 'wca'
+  Wca = 'wca',
+  Zkt = 'zkt'
 }
 
 export type InternalUserAccount = IInternalUserAccount & IPublicUserAccount & IUserAccount & IUserAccountForAdmin & {
@@ -1029,6 +1036,7 @@ export type Mutation = {
   assignUserToRound?: Maybe<ZktAssignment>;
   authenticateUser: PublicUserAccount;
   authenticateWithWca?: Maybe<WcaOAuthResult>;
+  authenticateWithZkt?: Maybe<ZktOAuthResult>;
   backfillWcaIds?: Maybe<BackfillResult>;
   banUserAccount?: Maybe<BanLog>;
   blockUser?: Maybe<Scalars['Boolean']>;
@@ -1045,6 +1053,7 @@ export type Mutation = {
   clearConversation?: Maybe<Scalars['Boolean']>;
   clearZktRoundResults?: Maybe<Scalars['Boolean']>;
   completeWcaSignup?: Maybe<PublicUserAccount>;
+  completeZktSignup?: Maybe<PublicUserAccount>;
   confirmEmailChange?: Maybe<PublicUserAccount>;
   confirmZktCompetition?: Maybe<ZktCompetition>;
   createAnnouncement?: Maybe<Announcement>;
@@ -1064,6 +1073,7 @@ export type Mutation = {
   createZktRound?: Maybe<ZktRound>;
   createZktScheduleItem?: Maybe<ZktScheduleItem>;
   deleteAlgorithmOverride?: Maybe<AlgorithmOverride>;
+  deleteAllNotifications?: Maybe<Scalars['Int']>;
   deleteAllSolves?: Maybe<Scalars['Void']>;
   deleteAllSolvesInSession?: Maybe<Scalars['Void']>;
   deleteAllTrainingSolves?: Maybe<Scalars['Void']>;
@@ -1315,6 +1325,11 @@ export type MutationAuthenticateWithWcaArgs = {
 };
 
 
+export type MutationAuthenticateWithZktArgs = {
+  code?: InputMaybe<Scalars['String']>;
+};
+
+
 export type MutationBanUserAccountArgs = {
   input?: InputMaybe<BanUserInput>;
 };
@@ -1391,6 +1406,12 @@ export type MutationClearZktRoundResultsArgs = {
 
 
 export type MutationCompleteWcaSignupArgs = {
+  acceptedTerms: Scalars['Boolean'];
+  username?: InputMaybe<Scalars['String']>;
+};
+
+
+export type MutationCompleteZktSignupArgs = {
   acceptedTerms: Scalars['Boolean'];
   username?: InputMaybe<Scalars['String']>;
 };
@@ -4435,6 +4456,17 @@ export type ZktGroup = {
   id?: Maybe<Scalars['String']>;
   round_id?: Maybe<Scalars['String']>;
   start_time?: Maybe<Scalars['DateTime']>;
+};
+
+export type ZktOAuthResult = {
+  __typename?: 'ZktOAuthResult';
+  needsUsername?: Maybe<Scalars['Boolean']>;
+  sessionToken?: Maybe<Scalars['String']>;
+  success?: Maybe<Scalars['Boolean']>;
+  zktEmail?: Maybe<Scalars['String']>;
+  zktId?: Maybe<Scalars['String']>;
+  zktMemberNo?: Maybe<Scalars['Float']>;
+  zktName?: Maybe<Scalars['String']>;
 };
 
 export type ZktParticipation = {

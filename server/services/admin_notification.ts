@@ -1,6 +1,6 @@
 import {getPrisma} from '../database';
 import {UserAccount, InternalUserAccount} from '../schemas/UserAccount.schema';
-import NewUserSignupNotification from '../resources/notification_types/new_user_signup';
+import NewUserSignupNotification, {RegistrationMethod} from '../resources/notification_types/new_user_signup';
 import AdminProPurchaseNotification from '../resources/notification_types/admin_pro_purchase';
 import AdminProCancellationNotification from '../resources/notification_types/admin_pro_cancellation';
 import AdminSupportTicketNotification from '../resources/notification_types/admin_support_ticket';
@@ -31,7 +31,7 @@ async function shouldNotifyForUser(userEmail: string): Promise<boolean> {
 
 export async function notifyAdminsOfNewUser(
 	newUser: InternalUserAccount,
-	registrationMethod: 'local' | 'wca',
+	registrationMethod: RegistrationMethod,
 	pending: boolean = false
 ): Promise<void> {
 	// Cooldown check: ayni email icin 24 saatte tekrar bildirim gonderme

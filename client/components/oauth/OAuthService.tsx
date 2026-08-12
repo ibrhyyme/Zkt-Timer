@@ -13,6 +13,7 @@ import ZktAuthScene from '../login/zkt_auth/ZktAuthScene';
 
 interface ConflictData {
 	ownerUsername: string | null;
+	provider: 'wca' | 'zkt';
 }
 
 export default function OAuthService() {
@@ -70,8 +71,14 @@ export default function OAuthService() {
 				// Structured conflict payload — show dedicated scene, don't redirect
 				try {
 					const parsed = JSON.parse(msg);
-					if (parsed?.code === 'WCA_ACCOUNT_ALREADY_LINKED') {
-						setConflict({ownerUsername: parsed.ownerUsername ?? null});
+					if (
+						parsed?.code === 'WCA_ACCOUNT_ALREADY_LINKED' ||
+						parsed?.code === 'ZKT_ACCOUNT_ALREADY_LINKED'
+					) {
+						setConflict({
+							ownerUsername: parsed.ownerUsername ?? null,
+							provider: parsed.code === 'ZKT_ACCOUNT_ALREADY_LINKED' ? 'zkt' : 'wca',
+						});
 						return;
 					}
 				} catch {
@@ -131,7 +138,11 @@ export default function OAuthService() {
 	}
 
 	if (conflict) {
-		return <ZktAuthScene initialMode="wca-conflict" wcaConflictData={conflict} />;
+		return conflict.provider === 'zkt' ? (
+			<ZktAuthScene initialMode="zkt-conflict" zktConflictData={conflict} />
+		) : (
+			<ZktAuthScene initialMode="wca-conflict" wcaConflictData={conflict} />
+		);
 	}
 
 	return (

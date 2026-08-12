@@ -482,6 +482,8 @@ type Mutation {
   mergeOllcpStats(entries: [OllcpStatInput]): Boolean
   authenticateWithWca(code: String): WcaOAuthResult
   completeWcaSignup(acceptedTerms: Boolean!, username: String): PublicUserAccount
+  authenticateWithZkt(code: String): ZktOAuthResult
+  completeZktSignup(acceptedTerms: Boolean!, username: String): PublicUserAccount
   createPromoCode(input: CreatePromoCodeInput): PromoCode
   redeemPromoCode(code: String): RedeemPromoCodeResult
   togglePromoCodeActive(isActive: Boolean, id: String): PromoCode
@@ -730,6 +732,12 @@ type Integration {
   wca_show_records: Boolean
   wca_show_rank: Boolean
   wca_show_results: Boolean
+  zkt_user_id: String
+  zkt_id: String
+  zkt_member_no: Float
+  zkt_name: String
+  zkt_avatar_url: String
+  zkt_country_iso2: String
   revoked_at: DateTime
   last_synced_at: DateTime
   created_at: DateTime
@@ -738,6 +746,7 @@ type Integration {
 
 enum IntegrationType {
   wca
+  zkt
 }
 
 type BadgeType {
@@ -1571,6 +1580,16 @@ type WcaOAuthResult {
   wcaName: String
   wcaEmail: String
   wcaId: String
+  sessionToken: String
+}
+
+type ZktOAuthResult {
+  success: Boolean
+  needsUsername: Boolean
+  zktName: String
+  zktEmail: String
+  zktId: String
+  zktMemberNo: Float
   sessionToken: String
 }
 

@@ -167,9 +167,15 @@ export class WcaAuthResolver {
 
 			// Password-holding account, not a manual link — preserve the security throw.
 			if ((existingUser as any).email_verified) {
+				// Structured so the callback screen can explain the two steps out of
+				// here. As prose it was a toast that a redirect ate two seconds later.
 				throw new GraphQLError(
 					ErrorCode.BAD_INPUT,
-					'Bu e-posta zaten kullanimda. Lutfen sifrenizle giris yapin, ardindan Ayarlar > Bagli Hesaplar bolumunden WCA hesabinizi baglayabilirsiniz.'
+					JSON.stringify({
+						code: 'EMAIL_ALREADY_REGISTERED',
+						provider: 'wca',
+						email: wcaData.email,
+					})
 				);
 			} else {
 				throw new GraphQLError(

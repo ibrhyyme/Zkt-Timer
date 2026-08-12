@@ -143,7 +143,15 @@ export class IntegrationResolver {
 			}
 		}
 
-		await revokeIntegration(integrationType, user);
+		// Best-effort: telling the provider is courtesy, removing the link is the
+		// thing the member asked for. A provider that is down, or an access token
+		// that already expired (the ZKT one lives an hour), must not leave them
+		// stuck with a connection they cannot drop.
+		try {
+			await revokeIntegration(integrationType, user);
+		} catch (err: any) {
+			console.warn(`[Integration] remote revoke failed for ${integrationType}:`, err?.message);
+		}
 		return deleteIntegrationById(context, integration.id);
 	}
 }

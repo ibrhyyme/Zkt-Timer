@@ -3,7 +3,7 @@ import {useTranslation} from 'react-i18next';
 import {LINKED_SERVICES} from '../../../../shared/integration';
 import {resourceUri} from '../../../util/storage';
 import {createAndStoreOAuthState} from '../../../util/oauth_state';
-import {wcaRedirectUri, openWcaAuthorize} from '../../../util/oauth-native';
+import {oauthRedirectUri, openOAuthAuthorize} from '../../../util/oauth-native';
 
 export default function WcaLoginButton() {
 	const {t} = useTranslation();
@@ -21,11 +21,11 @@ export default function WcaLoginButton() {
 			client_id: service.clientId,
 			response_type: service.responseType,
 			scope: service.scope.join(' '),
-			redirect_uri: wcaRedirectUri('/oauth/wca/login'),
+			redirect_uri: oauthRedirectUri('/oauth/wca/login'),
 			state: oauthState,
 		});
 
-		openWcaAuthorize(`${service.authEndpoint}?${params.toString()}`);
+		openOAuthAuthorize(`${service.authEndpoint}?${params.toString()}`);
 	}
 
 	return (

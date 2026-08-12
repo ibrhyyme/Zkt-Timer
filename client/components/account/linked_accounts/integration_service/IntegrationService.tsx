@@ -10,6 +10,12 @@ import {INTEGRATION_FRAGMENT} from '../../../../util/graphql/fragments';
 import Loading from '../../../common/loading/Loading';
 import {IntegrationType, LINKED_SERVICES, LinkedServiceData} from '../../../../../shared/integration';
 import {toastError} from '../../../../util/toast';
+import {
+	oauthRedirectUri,
+	openOAuthAuthorize,
+	markNativeOAuthState,
+	OAuthCallbackPath,
+} from '../../../../util/oauth-native';
 import {useMe} from '../../../../util/hooks/useMe';
 
 const b = block('integration');
@@ -58,30 +64,34 @@ export default function IntegrationService(props: Props) {
 	}, [integrationType]);
 
 	function getServiceUri(ser: LinkedServiceData) {
-		const base = ser.authEndpoint;
-		const scope = ser.scope.join(' ');
-		// Guard window for SSR — restricted account routes are rendered server-side via renderToString
-		const origin = typeof window !== 'undefined' ? window.origin : '';
-		const redirectUri = `${origin}/oauth/${integrationType}`;
+		// oauthRedirectUri, NOT window.origin: in the native shell the origin is
+		// capacitor://localhost (or the local bundle server), which is not a
+		// registered redirect at either provider — linking then dead-ends on a page
+		// the phone cannot reach. getApiBase() is the public site either way.
+		const redirectUri = oauthRedirectUri(`/oauth/${integrationType}` as OAuthCallbackPath);
 
 		const data = {
 			client_id: ser.clientId,
 			response_type: ser.responseType,
-			scope,
+			scope: ser.scope.join(' '),
 			redirect_uri: redirectUri,
+			// The callback reads `state` as the path to return to, and the native
+			// marker tells the site-side page to relay the code back into the app.
+			state: markNativeOAuthState('/account/linked-accounts'),
 		};
 
 		const queryParams = Object.keys(data)
 			.map((key) => key + '=' + encodeURIComponent(data[key]))
 			.join('&');
 
-		return `${base}?${queryParams}`;
+		return `${ser.authEndpoint}?${queryParams}`;
 	}
 
 	function handleLink() {
 		if (linking || integration) return;
 		setLinking(true);
-		window.location.href = serviceUri;
+		// External browser sheet in the native shell, plain navigation on the web.
+		openOAuthAuthorize(serviceUri);
 	}
 
 	async function handleConfirmDisconnect() {

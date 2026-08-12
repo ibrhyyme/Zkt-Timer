@@ -449,6 +449,28 @@
 			}
 		}
 
+		/* Same shape as the WCA button; the ZKT one carries a faint brand tint so
+		   the two providers are distinguishable without reading the label. */
+		&--zkt {
+			background: linear-gradient(
+					135deg,
+					rgba(var(--primary-color), 0.14),
+					rgba(var(--primary-color), 0.04) 60%
+				),
+				rgba(var(--auth-module-elevated), 0.85);
+			border: 1px solid rgba(var(--primary-color), 0.4);
+			box-shadow:
+				0 8px 24px -10px rgba(0, 0, 0, 0.6),
+				0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+
+			&:hover:not(:disabled) {
+				border-color: rgba(var(--primary-color), 0.75);
+				box-shadow:
+					0 0 0 4px rgba(var(--primary-color), 0.14),
+					0 8px 24px -10px rgba(0, 0, 0, 0.6);
+			}
+		}
+
 		&--wca {
 			background: rgba(var(--auth-module-elevated), 0.85);
 			border: 1px solid rgba(var(--auth-module-border-strong), 1);
@@ -503,12 +525,24 @@
 		margin-bottom: 14px;
 	}
 
+	/* WCA's mark is dark line-art drawn for a light background, so on this card
+	   it needs a white tile under it to stay legible. */
 	&__wca-logo-img {
 		width: 22px;
 		height: 22px;
 		border-radius: 5px;
 		background: white;
 		padding: 2px;
+	}
+
+	/* The ZKT mark already carries its own dark ground and full-colour cubies.
+	   Putting it on the same white tile framed it in a bright box that fought
+	   the card and buried the logo — it needs nothing behind it. */
+	&__zkt-logo-img {
+		width: 24px;
+		height: 24px;
+		border-radius: 6px;
+		object-fit: contain;
 	}
 
 	/* ── Checkbox ──────────────────────────────── */

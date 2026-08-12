@@ -8,7 +8,10 @@ import LoginPane from './LoginPane';
 import SignupPane from './SignupPane';
 import WcaCallbackPane from './WcaCallbackPane';
 import WcaConflictPane from './WcaConflictPane';
+import EmailTakenPane from './EmailTakenPane';
+import AuthFailurePane from './AuthFailurePane';
 import WcaSection from './WcaSection';
+import ZktSection from './ZktSection';
 import { useChoreography } from './useChoreography';
 import './zkt_auth.scss';
 
@@ -18,6 +21,13 @@ interface Props {
 	initialMode: AuthMode;
 	wcaStep?: number;
 	wcaConflictData?: { ownerUsername: string | null };
+	/** Progress step for the ZKT sign-in callback, mirroring wcaStep. */
+	zktStep?: number;
+	zktConflictData?: { ownerUsername: string | null };
+	/** Payload for the shared "this email already has an account" screen. */
+	emailTakenData?: { email: string | null; provider: 'wca' | 'zkt' };
+	/** Reason for a sign-in that failed with no dedicated screen. */
+	failureData?: { detail: string | null; provider: 'wca' | 'zkt' };
 	legacyChild?: ReactNode;
 	legacyTitle?: string;
 }
@@ -26,12 +36,27 @@ export default function ZktAuthScene({
 	initialMode,
 	wcaStep = 0,
 	wcaConflictData,
+	zktStep = 0,
+	zktConflictData,
+	emailTakenData,
+	failureData,
 	legacyChild,
 	legacyTitle,
 }: Props) {
 	const { t } = useTranslation();
 	const [mode, setMode] = useState<AuthMode>(initialMode);
 	const choreography = useChoreography();
+
+	// `mode` is state because the login/signup tabs flip it from inside. That
+	// makes `initialMode` a first-render-only value, which silently broke every
+	// caller that swaps screens by re-rendering this component with a new one:
+	// the OAuth callbacks render <ZktAuthScene initialMode="zkt-callback"> and
+	// then, on failure, <ZktAuthScene initialMode="auth-failure">. React reuses
+	// the instance, the state keeps the old mode, and the error screen never
+	// appears — the flow just sits on the progress steps forever.
+	useEffect(() => {
+		setMode(initialMode);
+	}, [initialMode]);
 
 	// URL sync for login/signup tab toggle — replaceState (no back-stack churn)
 	useEffect(() => {
@@ -93,6 +118,24 @@ export default function ZktAuthScene({
 		body = <WcaCallbackPane activeStep={wcaStep} />;
 	} else if (mode === 'wca-conflict') {
 		body = <WcaConflictPane ownerUsername={wcaConflictData?.ownerUsername ?? null} />;
+	} else if (mode === 'zkt-callback') {
+		body = <WcaCallbackPane activeStep={zktStep} provider="zkt" />;
+	} else if (mode === 'email-taken') {
+		body = (
+			<EmailTakenPane
+				email={emailTakenData?.email ?? null}
+				provider={emailTakenData?.provider ?? 'zkt'}
+			/>
+		);
+	} else if (mode === 'auth-failure') {
+		body = (
+			<AuthFailurePane
+				detail={failureData?.detail ?? null}
+				provider={failureData?.provider ?? 'zkt'}
+			/>
+		);
+	} else if (mode === 'zkt-conflict') {
+		body = <WcaConflictPane ownerUsername={zktConflictData?.ownerUsername ?? null} provider="zkt" />;
 	} else {
 		body = legacyChild;
 	}
@@ -152,7 +195,13 @@ export default function ZktAuthScene({
 				) : (
 					<AuthCard mode={mode} setMode={handleModeChange}>
 						{isFormMode && (
-							<WcaSection onTrigger={choreography.onWcaTrigger} />
+							<>
+								{/* ZKT first: it is the identity the federation issues now,
+								    and the one a Turkish competitor's results hang off.
+								    WCA keeps the divider so the pair reads as one block. */}
+								<ZktSection onTrigger={choreography.onWcaTrigger} />
+								<WcaSection onTrigger={choreography.onWcaTrigger} />
+							</>
 						)}
 						{body}
 					</AuthCard>

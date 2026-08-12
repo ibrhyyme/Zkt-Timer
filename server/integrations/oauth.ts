@@ -1,4 +1,5 @@
-import { createIntegration, getIntegration, getIntegrationByWcaId, getIntegrationByWcaUserId, updateIntegration } from '../models/integration';
+import { createIntegration, getIntegration, getIntegrationByWcaId, getIntegrationByWcaUserId, getIntegrationByZktId, getIntegrationByZktUserId, updateIntegration } from '../models/integration';
+import { exchangeZktLinkCode, fetchZktProfile, syncZktProfileToIntegration } from './zkt_oauth';
 import axios from 'axios';
 import { InternalUserAccount, UserAccount } from '../schemas/UserAccount.schema';
 import { IntegrationType, LINKED_SERVICES, LinkedServiceData, getWcaRedirectUri, getWcaLoginRedirectUri } from '../../shared/integration';
@@ -49,6 +50,13 @@ export async function syncWcaProfileToIntegration(
 
 
 export async function linkOAuthAccount(intType: IntegrationType, user: InternalUserAccount, code: string) {
+	// ZKT owns its own exchange: the federation compares redirect_uri byte for
+	// byte and the linking callback differs from the login one, which the generic
+	// `${BASE_URI}/oauth/${type}` path below cannot express.
+	if (intType === 'zkt') {
+		return linkZktAccountForUser(user, code);
+	}
+
 	const int = await getIntegration(user, intType);
 	const service = LINKED_SERVICES[intType];
 
@@ -118,6 +126,57 @@ export async function linkOAuthAccount(intType: IntegrationType, user: InternalU
 	}
 
 	return await createIntegration(user, intType, accessToken, refreshToken, createdAt + expiresIn * 1000);
+}
+
+/**
+ * Attach a Zeka Kupu Turkiye account to the signed-in Zkt-Timer user.
+ *
+ * Refuses when the federation identity already belongs to somebody else rather
+ * than moving the link: two Zkt-Timer accounts claiming one ZKT ID would make
+ * the competition surfaces show one member another member's results. The error
+ * is the same JSON envelope the WCA path uses, so the callback screen can show
+ * the same conflict UI.
+ */
+async function linkZktAccountForUser(user: InternalUserAccount, code: string) {
+	const tokens = await exchangeZktLinkCode(code);
+	const profile = await fetchZktProfile(tokens.accessToken);
+	if (!profile.sub) {
+		throw new Error('ZKT hesabindan kimlik bilgisi alinamadi.');
+	}
+
+	let conflict = await getIntegrationByZktUserId(profile.sub);
+	if (conflict && conflict.user_id === user.id) conflict = null;
+	if (!conflict && profile.zktId) {
+		const byZktId = await getIntegrationByZktId(profile.zktId);
+		if (byZktId && byZktId.user_id !== user.id) conflict = byZktId;
+	}
+	if (conflict) {
+		const owner = await getUserById(conflict.user_id);
+		throw new Error(
+			JSON.stringify({
+				code: 'ZKT_ACCOUNT_ALREADY_LINKED',
+				ownerUsername: owner?.username ?? null,
+			})
+		);
+	}
+
+	let integration = await getIntegration(user, 'zkt');
+	if (!integration) {
+		integration = await createIntegration(
+			user,
+			'zkt',
+			tokens.accessToken,
+			tokens.refreshToken ?? '',
+			tokens.expiresAt
+		);
+	} else {
+		integration = await updateIntegration(integration, {
+			auth_token: tokens.accessToken,
+			refresh_token: tokens.refreshToken ?? integration.refresh_token,
+			auth_expires_at: tokens.expiresAt,
+		});
+	}
+	return syncZktProfileToIntegration(integration, profile);
 }
 
 export async function getOAuthPostRequest(

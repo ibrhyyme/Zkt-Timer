@@ -2,11 +2,27 @@ import Notification from './notification';
 import {NotificationInput} from '../../@types/interfaces/server.interface';
 import {NotificationType} from '../../@types/enums';
 
+// How the account was created. Kept next to its labels so adding a provider is
+// one edit: the union, and the two strings an admin reads in the notification.
+export type RegistrationMethod = 'local' | 'wca' | 'zkt';
+
+const METHOD_LABEL: Record<RegistrationMethod, string> = {
+	local: 'E-posta',
+	wca: 'WCA',
+	zkt: 'ZKT',
+};
+
+const METHOD_ACCOUNT_LABEL: Record<RegistrationMethod, string> = {
+	local: 'e-posta',
+	wca: 'WCA hesabi',
+	zkt: 'ZKT hesabi',
+};
+
 export default class NewUserSignupNotification extends Notification {
-	private registrationMethod: 'local' | 'wca';
+	private registrationMethod: RegistrationMethod;
 	private pending: boolean;
 
-	constructor(input: NotificationInput, registrationMethod: 'local' | 'wca', pending: boolean = false) {
+	constructor(input: NotificationInput, registrationMethod: RegistrationMethod, pending: boolean = false) {
 		super(input);
 		this.registrationMethod = registrationMethod;
 		this.pending = pending;
@@ -24,7 +40,7 @@ export default class NewUserSignupNotification extends Notification {
 	}
 
 	inAppMessage() {
-		const method = this.registrationMethod === 'wca' ? 'WCA' : 'E-posta';
+		const method = METHOD_LABEL[this.registrationMethod] ?? METHOD_LABEL.local;
 		if (this.pending) {
 			return `${this.input.triggeringUser.username} kayit oldu, dogrulama bekleniyor (${method})`;
 		}
@@ -32,7 +48,7 @@ export default class NewUserSignupNotification extends Notification {
 	}
 
 	message() {
-		const method = this.registrationMethod === 'wca' ? 'WCA hesabi' : 'e-posta';
+		const method = METHOD_ACCOUNT_LABEL[this.registrationMethod] ?? METHOD_ACCOUNT_LABEL.local;
 		if (this.pending) {
 			return `${this.input.triggeringUser.username} kullanicisi ${method} ile kayit oldu, e-posta dogrulaması bekleniyor.`;
 		}

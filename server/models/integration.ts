@@ -56,3 +56,27 @@ export async function getIntegrationByWcaUserId(wcaUserId: string): Promise<Inte
 		},
 	});
 }
+
+/**
+ * Find a ZKT link by the federation's OAuth subject. This is the identity that
+ * is always present — zkt_id only exists once the member has competed — so it
+ * is the lookup every ZKT login path starts from.
+ */
+export async function getIntegrationByZktUserId(zktUserId: string): Promise<Integration> {
+	return getPrisma().integration.findFirst({
+		where: {
+			zkt_user_id: zktUserId,
+			service_name: 'zkt',
+		},
+	});
+}
+
+/** Find a ZKT link by competition identity (e.g. 2013ISAZ01). */
+export async function getIntegrationByZktId(zktId: string): Promise<Integration> {
+	return getPrisma().integration.findFirst({
+		where: {
+			zkt_id: zktId,
+			service_name: 'zkt',
+		},
+	});
+}

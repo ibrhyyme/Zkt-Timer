@@ -4,6 +4,7 @@ import {GraphQLBigInt} from 'graphql-scalars';
 
 export enum IntegrationTypeSchema {
 	wca = 'wca',
+	zkt = 'zkt',
 }
 
 registerEnumType(IntegrationTypeSchema, {
@@ -80,6 +81,27 @@ export class Integration {
 
 	@Field(() => Boolean, { nullable: true })
 	wca_show_results?: boolean;
+
+	// --- Zeka Kupu Turkiye federation link (service_name = 'zkt') ------------
+	/** Federation OAuth subject; always present once linked. */
+	@Field(() => String, { nullable: true })
+	zkt_user_id?: string;
+
+	/** Competition identity (e.g. 2013ISAZ01); null until they have competed. */
+	@Field(() => String, { nullable: true })
+	zkt_id?: string;
+
+	@Field(() => Number, { nullable: true })
+	zkt_member_no?: number;
+
+	@Field(() => String, { nullable: true })
+	zkt_name?: string;
+
+	@Field(() => String, { nullable: true })
+	zkt_avatar_url?: string;
+
+	@Field(() => String, { nullable: true })
+	zkt_country_iso2?: string;
 
 	@Field(() => Date, { nullable: true })
 	revoked_at?: Date;

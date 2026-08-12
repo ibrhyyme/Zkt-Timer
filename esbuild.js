@@ -91,6 +91,12 @@ require('esbuild')
 			'process.env.FIREBASE_APP_ID': JSON.stringify(process.env.FIREBASE_APP_ID || ''),
 			'process.env.FIREBASE_VAPID_KEY': JSON.stringify(process.env.FIREBASE_VAPID_KEY || ''),
 			'process.env.WCA_CLIENT_ID': JSON.stringify(process.env.WCA_CLIENT_ID || ''),
+			// ZKT federation OAuth. Both are read at module scope by
+			// shared/integration.ts, so leaving them undefined here does not degrade
+			// gracefully — the bundle throws "process is not defined" on load and no
+			// page renders at all. The secret is NOT here and must never be.
+			'process.env.ZKT_CLIENT_ID': JSON.stringify(process.env.ZKT_CLIENT_ID || 'zkt-timer'),
+			'process.env.ZKT_FEDERATION_ORIGIN': JSON.stringify(process.env.ZKT_FEDERATION_ORIGIN || ''),
 			// Native local-bundle shell has no SSR-injected globals; RevenueCat public
 			// keys are inlined at build time as a fallback (see client/lib/iap.ts).
 			'process.env.REVENUECAT_IOS_KEY': JSON.stringify(process.env.REVENUECAT_IOS_KEY || ''),

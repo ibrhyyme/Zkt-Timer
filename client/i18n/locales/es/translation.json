@@ -2651,7 +2651,8 @@
         "disconnect_no_password": "Para desvincular, primero establece una contrasena desde la pagina de Informacion Personal.",
         "wca_connecting": "Conectando con WCA...",
         "linking_account": "Vinculando cuenta...",
-        "oauth_error": "Se produjo un error durante la conexión OAuth"
+        "oauth_error": "Se produjo un error durante la conexión OAuth",
+        "zkt_description": "Vincula tu cuenta de ZKT para ver tus competencias, resultados y récords de ZKT en Zkt-Timer."
     },
     "otp": {
         "verifying": "Verificando…",
@@ -2735,6 +2736,27 @@
             "subtitle": "No se pudo completar la acción",
             "description_with_username": "Esta cuenta WCA ya está vinculada a <strong>{{username}}</strong>. Inicia sesión en esa cuenta primero, desvincula WCA en Ajustes > Cuentas Vinculadas, luego vuelve aquí e inténtalo de nuevo.",
             "description_no_username": "Esta cuenta WCA ya está vinculada a otra cuenta. Inicia sesión en esa cuenta primero, desvincula WCA en Ajustes > Cuentas Vinculadas, luego vuelve aquí e inténtalo de nuevo.",
+            "go_to_other_account_button": "Ir a la otra cuenta",
+            "cancel_button": "Cancelar"
+        },
+        "continue_with_zkt": "Iniciar sesión con ZKT",
+        "zkt_callback": {
+            "title": "Conectando ZKT",
+            "subtitle": "Vinculando tu perfil con tu cuenta de Zeka Küpü Türkiye.",
+            "step1_title": "Redirigido a ZKT",
+            "step1_sub": "Se abrió la pantalla de autorización.",
+            "step2_title": "Autorizado",
+            "step2_sub": "Aprobaste tu cuenta de ZKT.",
+            "step3_title": "Creando tu perfil",
+            "step3_sub": "Sincronizando tus competencias y resultados de ZKT.",
+            "step4_title": "Listo",
+            "step4_sub": "Abriendo el temporizador."
+        },
+        "zkt_conflict": {
+            "title": "Esta cuenta de ZKT está vinculada a otra cuenta",
+            "subtitle": "No se pudo completar",
+            "description_with_username": "Esta cuenta de ZKT ya está vinculada a <strong>{{username}}</strong>. Inicia sesión en esa cuenta, desvincula ZKT en Ajustes > Cuentas Vinculadas y vuelve a intentarlo.",
+            "description_no_username": "Esta cuenta de ZKT ya está vinculada a otra cuenta. Inicia sesión en esa cuenta, desvincula ZKT en Ajustes > Cuentas Vinculadas y vuelve a intentarlo.",
             "go_to_other_account_button": "Ir a la otra cuenta",
             "cancel_button": "Cancelar"
         }
@@ -4200,7 +4222,8 @@
         "open_full": "Abrir la página de mensajes",
         "search_people": "Buscar personas",
         "search_hint": "Escribe un nombre de usuario para enviar un mensaje",
-        "no_people": "No se encontró a nadie"
+        "no_people": "No se encontró a nadie",
+        "recent_people": "Chats recientes"
     },
     "messages": {
         "page_title": "Mensajes",
@@ -4312,5 +4335,35 @@
         "open_full": "Abrir conversacion completa",
         "loading": "Cargando",
         "start_with": "Inicia un chat con {{name}}"
+    },
+    "zkt_signup": {
+        "title": "Elige un Nombre de Usuario",
+        "description": "Te estás registrando con tu cuenta de Zeka Küpü Türkiye. Elige un nombre de usuario.",
+        "first_name": "Nombre",
+        "last_name": "Apellido",
+        "email": "Correo electrónico",
+        "zkt_id": "ZKT ID",
+        "username_label": "Nombre de usuario",
+        "submit": "Crear Cuenta",
+        "username_too_short": "El nombre de usuario debe tener al menos 2 caracteres",
+        "username_too_long": "El nombre de usuario puede tener como máximo 18 caracteres",
+        "username_invalid": "El nombre de usuario solo puede contener letras, números y guiones bajos",
+        "session_expired": "Tu sesión expiró. Inicia sesión con ZKT de nuevo.",
+        "loading": "Iniciando sesión con ZKT..."
+    },
+    "auth_email_taken": {
+        "title": "Este correo ya está registrado",
+        "subtitle": "No se pudo completar el inicio de sesión",
+        "subtitle_with_email": "Ya tienes una cuenta de Zkt-Timer con {{email}}",
+        "description": "Por seguridad no combinamos cuentas automáticamente. Inicia sesión con tu contraseña y luego vincula tu cuenta de {{provider}} en <strong>Ajustes > Cuentas Vinculadas</strong>. Después podrás iniciar sesión con {{provider}} también.",
+        "login_button": "Iniciar sesión con contraseña",
+        "forgot_button": "Olvidé mi contraseña"
+    },
+    "auth_failure": {
+        "title": "No se pudo completar el inicio de sesión con {{provider}}",
+        "subtitle": "El servidor dio este motivo",
+        "state_mismatch": "La verificación de sesión no coincidió. Suele pasar al recargar la página o volver a un enlace antiguo. Empieza de nuevo desde la página de inicio de sesión.",
+        "retry_button": "Volver al inicio de sesión",
+        "access_denied": "No diste permiso, así que el inicio de sesión no se completó. Puedes intentarlo de nuevo cuando quieras."
     }
 }

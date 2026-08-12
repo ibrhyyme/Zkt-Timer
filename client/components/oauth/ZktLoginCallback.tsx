@@ -1,20 +1,24 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { gql } from '@apollo/client';
-import { useTranslation } from 'react-i18next';
-import { gqlMutate } from '../api';
-import { consumeAndValidateOAuthState } from '../../util/oauth_state';
-import { isNativeRelayState, buildNativeRelayDeepLink } from '../../util/oauth-native';
-import { isNative } from '../../util/platform';
+import React, {useEffect, useRef, useState} from 'react';
+import {gql} from '@apollo/client';
+import {useTranslation} from 'react-i18next';
+import {gqlMutate} from '../api';
+import {consumeAndValidateOAuthState} from '../../util/oauth_state';
+import {isNativeRelayState, buildNativeRelayDeepLink} from '../../util/oauth-native';
+import {isNative} from '../../util/platform';
 import ZktAuthScene from '../login/zkt_auth/ZktAuthScene';
 
-const AUTHENTICATE_WITH_WCA = gql`
+// Landing page for "sign in with Zeka Kupu Turkiye". Structurally the twin of
+// WcaLoginCallback — same native relay hop, same state validation, same staged
+// progress display — because it solves the same problem for the other provider.
+
+const AUTHENTICATE_WITH_ZKT = gql`
 	mutation Mutate($code: String!) {
-		authenticateWithWca(code: $code) {
+		authenticateWithZkt(code: $code) {
 			success
 			needsUsername
-			wcaName
-			wcaEmail
-			wcaId
+			zktName
+			zktEmail
+			zktId
 			sessionToken
 		}
 	}
@@ -23,15 +27,16 @@ const AUTHENTICATE_WITH_WCA = gql`
 const STEP_COUNT = 4;
 const AUTO_ADVANCE_MS = 1400;
 
-export default function WcaLoginCallback() {
-	const { t } = useTranslation();
+export default function ZktLoginCallback() {
+	const {t} = useTranslation();
 	const [step, setStep] = useState(0);
 	const [relayLink, setRelayLink] = useState<string | null>(null);
-	// Same refusal as the ZKT flow: a password-holding account with this email
-	// must link manually, and that has to be explained rather than toasted.
+	// Set when the federation email already belongs to a password-holding
+	// Zkt-Timer account. Renders an explanation instead of bouncing to /login.
 	const [emailTaken, setEmailTaken] = useState<{email: string | null} | null>(null);
-	// Same reasoning as the ZKT callback: show the reason instead of toasting it
-	// and redirecting, which read as an unexplained bounce back to /login.
+	// Any other failure. Rendered rather than toasted: a toast followed by a
+	// redirect to /login is invisible, and left the flow looking like it simply
+	// bounced the member back to the start for no reason.
 	const [failure, setFailure] = useState<string | null>(null);
 	const advancedToFinalRef = useRef(false);
 	// `t` in a ref, and the effect below runs on an EMPTY dependency list.
@@ -50,6 +55,8 @@ export default function WcaLoginCallback() {
 		const code = urlParams.get('code');
 		const state = urlParams.get('state');
 
+		// The member declined on the federation's consent screen, or the request
+		// was malformed. `error_description` is the federation's own wording.
 		const oauthError = urlParams.get('error');
 		if (oauthError) {
 			// `access_denied` is not a fault, it is the member pressing "Vazgeç" on
@@ -63,52 +70,53 @@ export default function WcaLoginCallback() {
 			return;
 		}
 		if (!code) {
-			setFailure(tRef.current('wca_signup.session_expired'));
+			setFailure(tRef.current('zkt_signup.session_expired'));
 			return;
 		}
 
-		// Native relay: this page is running in the EXTERNAL browser on behalf of the
-		// local-bundle app (state carries the zktnative marker). Hand code+state back
-		// via the zkttimer:// deep link; the shell re-runs this route natively with
-		// its sessionStorage (and thus the stored state) intact. Must run BEFORE the
-		// state validation — this browser context has no stored state.
+		// Native relay: this page is running in the EXTERNAL browser on behalf of
+		// the local-bundle app. Hand code+state back over the deep link; the shell
+		// re-runs this route with its own sessionStorage (and thus the stored
+		// state) intact. Must run BEFORE state validation — this browser context
+		// never stored one.
 		if (!isNative() && isNativeRelayState(state)) {
-			const link = buildNativeRelayDeepLink('/oauth/wca/login', urlParams);
+			const link = buildNativeRelayDeepLink('/oauth/zkt/login', urlParams);
 			setRelayLink(link);
 			window.location.href = link;
 			return;
 		}
 
 		if (!consumeAndValidateOAuthState(state)) {
+			// The one-shot CSRF state did not match what this tab stored. Reloading
+			// the callback URL or coming back to it later both land here, and the
+			// old silent redirect made that indistinguishable from a server error.
 			setFailure(tRef.current('auth_failure.state_mismatch'));
 			return;
 		}
 
-		// Auto-advance fallback: backend tek mutation yapar, gercek 4 sinyal yok.
-		// 1400ms araliklarla step ilerlet, gercek sonuc geldiginde clear.
 		// Scrub the authorization code out of the address bar before doing anything
 		// with it. It is single-use and short-lived, but until this runs it sits in
 		// the browser history and in anything the member screenshots while the
 		// progress steps are on screen.
 		try {
-			window.history.replaceState(null, '', '/oauth/wca/login');
+			window.history.replaceState(null, '', '/oauth/zkt/login');
 		} catch {
 			// Non-fatal: an unsupported history API just leaves the URL as it was.
 		}
 
+		// The backend does this in a single call, so there are no real per-step
+		// signals; advance on a timer and jump to the last step on the answer.
 		const interval = setInterval(() => {
 			setStep((s) => {
 				if (advancedToFinalRef.current) return s;
 				return Math.min(s + 1, STEP_COUNT - 2);
 			});
 		}, AUTO_ADVANCE_MS);
-
-		// Mutation baslat → step 1 (Yetki alindi) hizla
 		setStep(1);
 
-		gqlMutate(AUTHENTICATE_WITH_WCA, { code })
+		gqlMutate(AUTHENTICATE_WITH_ZKT, {code})
 			.then((res) => {
-				const result = res?.data?.authenticateWithWca;
+				const result = res?.data?.authenticateWithZkt;
 				clearInterval(interval);
 				advancedToFinalRef.current = true;
 				setStep(STEP_COUNT - 1);
@@ -119,24 +127,25 @@ export default function WcaLoginCallback() {
 						window.location.href = '/timer';
 					} else if (result?.needsUsername) {
 						const params = new URLSearchParams();
-						if (result.wcaName) params.set('name', result.wcaName);
-						if (result.wcaEmail) params.set('email', result.wcaEmail);
-						if (result.wcaId) params.set('wcaId', result.wcaId);
-						window.location.href = `/wca-signup?${params.toString()}`;
+						if (result.zktName) params.set('name', result.zktName);
+						if (result.zktEmail) params.set('email', result.zktEmail);
+						if (result.zktId) params.set('zktId', result.zktId);
+						window.location.href = `/zkt-signup?${params.toString()}`;
 					} else {
 						window.location.href = '/login';
 					}
 				}, 800);
 			})
 			.catch((e) => {
-				console.error('WCA login error:', e);
 				clearInterval(interval);
 				const errorMessage =
 					e?.graphQLErrors?.[0]?.extensions?.exception?.message ||
 					e?.graphQLErrors?.[0]?.message ||
 					e?.message ||
-					tRef.current('wca_signup.session_expired');
+					tRef.current('zkt_signup.session_expired');
 
+				// Structured refusal: the member has an account, they just cannot be
+				// merged into it automatically. That needs a page, not a toast.
 				try {
 					const parsed = JSON.parse(errorMessage);
 					if (parsed?.code === 'EMAIL_ALREADY_REGISTERED') {
@@ -158,7 +167,7 @@ export default function WcaLoginCallback() {
 		return (
 			<ZktAuthScene
 				initialMode="auth-failure"
-				failureData={{detail: failure, provider: 'wca'}}
+				failureData={{detail: failure, provider: 'zkt'}}
 			/>
 		);
 	}
@@ -167,15 +176,15 @@ export default function WcaLoginCallback() {
 		return (
 			<ZktAuthScene
 				initialMode="email-taken"
-				emailTakenData={{email: emailTaken.email, provider: 'wca'}}
+				emailTakenData={{email: emailTaken.email, provider: 'zkt'}}
 			/>
 		);
 	}
 
 	if (relayLink) {
-		// Relay page shown in the external browser: auto-redirect already fired above;
-		// the button is the user-gesture fallback for browsers that block scheme
-		// navigation without interaction.
+		// Shown in the external browser: the redirect above already fired, and the
+		// button is the fallback for browsers that block scheme navigation without
+		// a user gesture.
 		return (
 			<div
 				style={{
@@ -214,5 +223,5 @@ export default function WcaLoginCallback() {
 		);
 	}
 
-	return <ZktAuthScene initialMode="wca-callback" wcaStep={step} />;
+	return <ZktAuthScene initialMode="zkt-callback" zktStep={step} />;
 }

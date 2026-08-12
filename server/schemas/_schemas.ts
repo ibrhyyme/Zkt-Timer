@@ -35,6 +35,7 @@ export * from './DailyGoal.schema';
 export * from './OllcpStat.schema';
 export * from './WcaCompetition.schema';
 export * from './WcaOAuthResult.schema';
+export * from './ZktOAuthResult.schema';
 export * from './WcaResult.schema';
 export * from './WcaSchedule.schema';
 export * from './PromoCode.schema';

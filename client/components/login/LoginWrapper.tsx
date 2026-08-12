@@ -5,6 +5,7 @@ import Header from '../layout/header/Header';
 import Forgot from './forgot/Forgot';
 import EmailVerification from './email_verification/EmailVerification';
 import WcaSignup from './wca_signup/WcaSignup';
+import ZktSignup from './zkt_signup/ZktSignup';
 import ZktAuthScene from './zkt_auth/ZktAuthScene';
 import { AuthMode } from './zkt_auth/AuthCard';
 
@@ -36,6 +37,10 @@ export default function LoginWrapper() {
 		mode = 'legacy';
 		legacyChild = <WcaSignup />;
 		legacyTitle = t('wca_signup.title');
+	} else if (path.startsWith('/zkt-signup')) {
+		mode = 'legacy';
+		legacyChild = <ZktSignup />;
+		legacyTitle = t('zkt_signup.title');
 	} else {
 		mode = 'login';
 	}

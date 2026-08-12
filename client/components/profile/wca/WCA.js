@@ -3,7 +3,7 @@ import './WCA.scss';
 import LinkButton from '../../common/button/LinkButton';
 import { useTranslation } from 'react-i18next';
 import { LINKED_SERVICES } from '../../../../shared/integration';
-import { wcaRedirectUri, markNativeOAuthState } from '../../../util/oauth-native';
+import { oauthRedirectUri, markNativeOAuthState } from '../../../util/oauth-native';
 
 export default function WCA({ myProfile, user }) {
 	const { t } = useTranslation();
@@ -19,7 +19,7 @@ export default function WCA({ myProfile, user }) {
 
 	const u = new URL('https://www.worldcubeassociation.org/oauth/authorize');
 	u.searchParams.set('client_id', LINKED_SERVICES.wca.clientId);
-	u.searchParams.set('redirect_uri', wcaRedirectUri('/oauth/wca'));
+	u.searchParams.set('redirect_uri', oauthRedirectUri('/oauth/wca'));
 	u.searchParams.set('response_type', 'code');
 	u.searchParams.set('scope', 'public');
 	// Native relay marker + return path for the linking flow (OAuthService unwraps it)

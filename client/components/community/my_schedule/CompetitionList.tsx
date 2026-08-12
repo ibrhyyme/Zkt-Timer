@@ -8,7 +8,7 @@ import {useMe} from '../../../util/hooks/useMe';
 import {MagnifyingGlass, Trophy, Bell, CaretRight} from 'phosphor-react';
 import {resourceUri} from '../../../util/storage';
 import {LINKED_SERVICES} from '../../../../shared/integration';
-import {wcaRedirectUri, openWcaAuthorize, markNativeOAuthState} from '../../../util/oauth-native';
+import {oauthRedirectUri, openOAuthAuthorize, markNativeOAuthState} from '../../../util/oauth-native';
 import {b, I18N_LOCALE_MAP, formatDateRange} from './shared';
 import CompEventFilter from './CompEventFilter';
 import {getEventFilter, setEventFilter} from './eventFilterStorage';
@@ -376,8 +376,14 @@ export default function CompetitionList() {
 	// page stays visually consistent. Normalize to the WCA card fields here.
 	const zktCards = useMemo(() => {
 		if (showSearchResults) return [];
+		// A competition the viewer is registered for already has its own card in My
+		// Competitions above, with their day and countdown on it. Repeating it here
+		// as a plain "discover this" card is pure noise now that both sections draw
+		// the same shape.
+		const registeredIds = new Set((myZktComps || []).map((c: any) => c.id));
 		return (
 			(zktComps || [])
+				.filter((c: any) => !registeredIds.has(c.id))
 				.map(normalizeZktComp)
 				// Finished competitions drop out, the same rule the WCA section above
 				// follows: this list is what is still ahead, not an archive. A comp
@@ -388,22 +394,18 @@ export default function CompetitionList() {
 				// Soonest first — the next competition is the one people look for.
 				.sort((a: any, b: any) => (a.start_date || '').localeCompare(b.start_date || ''))
 		);
-	}, [showSearchResults, zktComps, todayStr]);
+	}, [showSearchResults, zktComps, myZktComps, todayStr]);
 
-	function renderCompCard(comp: any, opts: {mine?: boolean} = {}) {
+	// Compact row for the long discovery lists (upcoming + search results), where
+	// dozens of competitions have to stay scannable. Cards the viewer has a stake
+	// in use renderShowcaseCard below instead.
+	function renderCompCard(comp: any) {
 		const isFinished = comp.end_date < todayStr;
 		const isOngoing = comp.start_date <= todayStr && comp.end_date >= todayStr;
-		const daysUntil = (() => {
-			if (!opts.mine || isOngoing || isFinished) return null;
-			const start = new Date(comp.start_date + 'T00:00:00');
-			const today = new Date(todayStr + 'T00:00:00');
-			const diff = Math.round((start.getTime() - today.getTime()) / (24 * 3600 * 1000));
-			return diff;
-		})();
 		return (
 			<div
 				key={comp.id}
-				className={b('comp-card', {finished: isFinished, ongoing: isOngoing, mine: opts.mine})}
+				className={b('comp-card', {finished: isFinished, ongoing: isOngoing})}
 				onClick={() =>
 					comp.__zkt
 						? handleSelectCompetition(`zkt-${comp.slug || comp.id}`)
@@ -412,74 +414,77 @@ export default function CompetitionList() {
 				onMouseEnter={() => !comp.__zkt && handleHoverPrefetch(comp.id)}
 				onMouseLeave={handleHoverLeave}
 			>
-				{opts.mine && <span className={b('mine-glow')} aria-hidden="true" />}
 				{comp.country_iso2 && (
 					<span className={b('country-code')}>{comp.country_iso2}</span>
 				)}
 				<div className={b('comp-info')}>
 					{comp.__zkt && <span className={b('zkt-badge')}>ZKT</span>}
-					{opts.mine && (
-						<span className={b('mine-tag')}>
-							<Trophy weight="fill" size={11} style={{marginRight: 4}} />
-							{t('my_schedule.registered')}
-						</span>
-					)}
 					<span className={b('comp-title')}>{comp.name}</span>
 					<span className={b('comp-sub')}>
 						{formatDateRange(comp.start_date, comp.end_date, locale)}
 						{comp.city && ` \u2013 ${comp.city}`}
 					</span>
-					{/* A day-split competition runs over two days but this viewer attends
-					    exactly one of them. The card shows the whole date range, so
-					    without this line their own day is nowhere on the screen. */}
-					{comp.zkt_day_label && (
-						<span className={b('comp-day')}>
-							{t('zkt_comp.attending_day')}: {comp.zkt_day_label}
-							{comp.zkt_day_date
-								? ` (${new Date(comp.zkt_day_date).toLocaleDateString(locale, {
-										day: 'numeric',
-										month: 'long',
-									})})`
-								: ''}
-						</span>
-					)}
 				</div>
-				{isOngoing ? (
+				{isOngoing && (
 					<span className={b('ongoing-badge')}>{t('my_schedule.ongoing')}</span>
-				) : daysUntil !== null && daysUntil >= 0 ? (
-					<span className={b('countdown-badge', {imminent: daysUntil <= 3})}>
-						<span className={b('countdown-num')}>{daysUntil === 0 ? t('my_schedule.starts_today') : daysUntil}</span>
-						{daysUntil > 0 && (
-							<span className={b('countdown-label')}>
-								{t('my_schedule.days_left', {count: daysUntil})}
-							</span>
-						)}
-					</span>
-				) : null}
+				)}
 			</div>
 		);
 	}
 
-	// ZKT competitions get their OWN distinctive card (gradient rail + ZKT
-	// monogram + event-icon strip) — intentionally NOT the WCA/mine card shape.
-	function renderZktCard(comp: any) {
-		const isFinished = comp.end_date < todayStr;
+	// The showcase card: one shape for every competition the viewer has a stake
+	// in — their own registrations (WCA or ZKT alike) and the ZKT section below.
+	// The federation only swaps the rail colour and the monogram; `mine` adds the
+	// registered pill, the attending-day line and the countdown. Keeping both
+	// sections on one component is what stops the two designs drifting apart.
+	function renderShowcaseCard(comp: any, opts: {mine?: boolean} = {}) {
+		const isZkt = !!comp.__zkt;
+		const isFinished = !!comp.end_date && comp.end_date < todayStr;
 		const isOngoing = comp.start_date <= todayStr && comp.end_date >= todayStr;
-		const statusKey = (comp.status || '').toLowerCase();
-		const events = comp.events || [];
+		// WCA competitions carry no lifecycle status, and on a "mine" card the
+		// registered pill already owns that slot.
+		const statusKey = isZkt && !opts.mine ? (comp.status || '').toLowerCase() : '';
+		// WCA payloads carry event_ids; the federation normalizer also builds
+		// `events`. Accept either so both sources render the icon strip.
+		const eventIds: string[] = (
+			comp.event_ids?.length
+				? comp.event_ids
+				: (comp.events || []).map((e: any) => e.event_id || e.id)
+		).filter(Boolean);
+		const detailId = isZkt ? `zkt-${comp.slug || comp.id}` : comp.id;
+		const daysUntil = (() => {
+			if (!opts.mine || isOngoing || isFinished || !comp.start_date) return null;
+			const start = new Date(comp.start_date + 'T00:00:00');
+			const today = new Date(todayStr + 'T00:00:00');
+			return Math.round((start.getTime() - today.getTime()) / (24 * 3600 * 1000));
+		})();
+		const showAside = !!opts.mine && (isOngoing || (daysUntil !== null && daysUntil >= 0));
+
 		return (
 			<div
-				key={comp.id}
-				className={b('zkt-card', {finished: isFinished, ongoing: isOngoing})}
-				onMouseEnter={() => prefetchCompetitionDetail(`zkt-${comp.slug || comp.id}`)}
-				onClick={() => handleSelectCompetition(`zkt-${comp.slug || comp.id}`)}
+				key={`${isZkt ? 'zkt' : 'wca'}-${comp.id}`}
+				className={b('zkt-card', {
+					finished: isFinished,
+					ongoing: isOngoing,
+					mine: opts.mine,
+					wca: !isZkt,
+				})}
+				onMouseEnter={() => handleHoverPrefetch(detailId)}
+				onMouseLeave={handleHoverLeave}
+				onClick={() => handleSelectCompetition(detailId)}
 			>
 				<span className={b('zkt-card-rail')} aria-hidden="true" />
 				<div className={b('zkt-card-main')}>
 					<div className={b('zkt-card-top')}>
-						<span className={b('zkt-card-mark')}>ZKT</span>
+						<span className={b('zkt-card-mark', {wca: !isZkt})}>{isZkt ? 'ZKT' : 'WCA'}</span>
 						{comp.country_iso2 && (
 							<span className={b('zkt-card-flag')}>{comp.country_iso2}</span>
+						)}
+						{opts.mine && (
+							<span className={b('zkt-card-mine-tag')}>
+								<Trophy weight="fill" size={11} style={{marginRight: 4}} />
+								{t('my_schedule.registered')}
+							</span>
 						)}
 						{statusKey && (
 							<span className={b('zkt-status', {[statusKey]: true})}>
@@ -492,14 +497,46 @@ export default function CompetitionList() {
 						{formatDateRange(comp.start_date, comp.end_date, locale)}
 						{comp.city && ` · ${comp.city}`}
 					</span>
-					{events.length > 0 && (
+					{/* A day-split competition runs over two days but this viewer attends
+					    exactly one of them. The card shows the whole date range, so
+					    without this line their own day is nowhere on the screen. */}
+					{comp.zkt_day_label && (
+						<span className={b('zkt-card-day')}>
+							{t('zkt_comp.attending_day')}: {comp.zkt_day_label}
+							{comp.zkt_day_date
+								? ` (${new Date(comp.zkt_day_date).toLocaleDateString(locale, {
+										day: 'numeric',
+										month: 'long',
+									})})`
+								: ''}
+						</span>
+					)}
+					{eventIds.length > 0 && (
 						<div className={b('zkt-card-events')}>
-							{events.slice(0, 10).map((e: any) => (
-								<span key={e.id} className={`cubing-icon event-${e.event_id}`} />
+							{eventIds.slice(0, 10).map((id: string) => (
+								<span key={id} className={`cubing-icon event-${id}`} />
 							))}
 						</div>
 					)}
 				</div>
+				{showAside && (
+					<div className={b('zkt-card-aside')}>
+						{isOngoing ? (
+							<span className={b('ongoing-badge')}>{t('my_schedule.ongoing')}</span>
+						) : (
+							<span className={b('countdown-badge', {imminent: daysUntil <= 3})}>
+								<span className={b('countdown-num')}>
+									{daysUntil === 0 ? t('my_schedule.starts_today') : daysUntil}
+								</span>
+								{daysUntil > 0 && (
+									<span className={b('countdown-label')}>
+										{t('my_schedule.days_left', {count: daysUntil})}
+									</span>
+								)}
+							</span>
+						)}
+					</div>
+				)}
 			</div>
 		);
 	}
@@ -540,10 +577,10 @@ export default function CompetitionList() {
 									client_id: service.clientId,
 									response_type: service.responseType,
 									scope: service.scope.join(' '),
-									redirect_uri: wcaRedirectUri(!me ? '/oauth/wca/login' : '/oauth/wca'),
+									redirect_uri: oauthRedirectUri(!me ? '/oauth/wca/login' : '/oauth/wca'),
 									state: markNativeOAuthState('/competitions'),
 								});
-								openWcaAuthorize(`${service.authEndpoint}?${params.toString()}`);
+								openOAuthAuthorize(`${service.authEndpoint}?${params.toString()}`);
 							}}
 						>
 							{!me ? t('my_schedule.wca_login') : t('my_schedule.connect_wca_btn')}
@@ -552,8 +589,12 @@ export default function CompetitionList() {
 				</div>
 			)}
 
-			{/* My Competitions — show only if WCA is linked */}
-			{!compSearch.trim() && me?.integrations?.some((i: any) => i.service_name === 'wca') && (
+			{/* My Competitions — needs a linked federation account to hold anything.
+			     WCA link is the usual gate, but a viewer with ZKT registrations must
+			     see the section too, whichever way that match was made. */}
+			{!compSearch.trim() &&
+				(me?.integrations?.some((i: any) => i.service_name === 'wca') ||
+					(myZktComps?.length ?? 0) > 0) && (
 				<div className={b('my-competitions')}>
 					<h3 className={b('section-title')}>{t('my_schedule.my_competitions')}</h3>
 					{!myAllComps ? (
@@ -562,14 +603,14 @@ export default function CompetitionList() {
 						<p className={b('my-competitions-empty')}>{t('my_schedule.my_competitions_empty')}</p>
 					) : (
 						<div className={b('comp-list')}>
-							{myAllComps.map((comp: any) => renderCompCard(comp, {mine: true}))}
+							{myAllComps.map((comp: any) => renderShowcaseCard(comp, {mine: true}))}
 						</div>
 					)}
 				</div>
 			)}
 
 			{/* ZKT competitions — their OWN section (not WCA comps, avoid confusion),
-			     reusing the WCA card style so the page stays consistent. */}
+			     on the same showcase card as My Competitions above. */}
 			{!compSearch.trim() && zktCards.length > 0 && (
 				<div className={b('zkt-competitions')}>
 					<h3 className={b('section-title')}>
@@ -577,7 +618,7 @@ export default function CompetitionList() {
 						{t('my_schedule.zkt_competitions')}
 					</h3>
 					<div className={b('comp-list')}>
-						{zktCards.map((comp: any) => renderZktCard(comp))}
+						{zktCards.map((comp: any) => renderShowcaseCard(comp))}
 					</div>
 				</div>
 			)}

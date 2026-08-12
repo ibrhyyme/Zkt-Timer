@@ -189,6 +189,18 @@ model Integration {
   wca_show_records       Boolean     @default(true)
   wca_show_rank          Boolean     @default(true)
   wca_show_results       Boolean     @default(false)
+  // --- Zeka Kupu Turkiye federation identity (service_name = 'zkt') ---------
+  // Filled from the federation's /api/oauth/userinfo. zkt_user_id is the OAuth
+  // subject and always present; zkt_id is the competition identity and stays
+  // null until the member's first ZKT result is published, which is exactly why
+  // both are stored — the subject is what links the accounts, the ZKT ID is what
+  // the federation's public API is keyed on.
+  zkt_user_id            String?     @unique
+  zkt_id                 String?     @unique
+  zkt_member_no          Int?
+  zkt_name               String?
+  zkt_avatar_url         String?
+  zkt_country_iso2       String?
   kinch_score            Float?
   sor_single             Int?
   sor_average            Int?
@@ -204,6 +216,7 @@ model Integration {
   @@index([sor_single])
   @@index([sor_average])
   @@index([revoked_at])
+  @@index([service_name])
   @@map("integration")
 }
 

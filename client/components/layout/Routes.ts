@@ -30,6 +30,7 @@ import SettingsRedirect from '../settings/redirect/SettingsRedirect';
 import LinkedAccounts from '../account/linked_accounts/LinkedAccounts';
 import OAuthService from '../oauth/OAuthService';
 import WcaLoginCallback from '../oauth/WcaLoginCallback';
+import ZktLoginCallback from '../oauth/ZktLoginCallback';
 import NativeMigrate from '../native_migrate/NativeMigrate';
 import ForceSignOut from '../login/force_sign_out/ForceSignOut';
 import AnnouncementHistory from '../profile/AnnouncementHistory';
@@ -173,6 +174,7 @@ export const routes: (PageContext | RedirectPath)[] = [
 	route('/forgot', null, App, LoginWrapper, false, true, false, true),
 	route('/verify-email', null, App, LoginWrapper, false, true, false, true),
 	route('/wca-signup', null, App, LoginWrapper, false, true, false, true),
+	route('/zkt-signup', null, App, LoginWrapper, false, true, false, true),
 	route('/sessions', null, App, Sessions),
 	route('/solves', null, App, Solves, false),
 	route('/stats', null, App, Stats),
@@ -291,6 +293,9 @@ export const routes: (PageContext | RedirectPath)[] = [
 
 	// OAuth
 	route('/oauth/wca/login', null, App, WcaLoginCallback, false, true, false, true),
+	// Must stay ABOVE /oauth/:integrationType — that wildcard would otherwise
+	// swallow this path and try to LINK an account instead of signing one in.
+	route('/oauth/zkt/login', null, App, ZktLoginCallback, false, true, false, true),
 	// NOT restricted: the native relay renders this page in the EXTERNAL browser with
 	// no session — SSR 401 would eat the OAuth code. createIntegration enforces auth
 	// server-side, so an unauthenticated web visitor still can't link anything.

@@ -141,6 +141,9 @@ type Recipient = MessageRecipientSearchQuery['messageRecipientSearch'][number];
 
 const SEARCH_DEBOUNCE_MS = 250;
 const MIN_SEARCH_LENGTH = 2;
+// Enough to cover who anyone actually writes to; past this, searching is quicker
+// than scrolling.
+const RECENT_PEOPLE_LIMIT = 6;
 
 type Row =
 	| {kind: 'message'; id: string; date: number; unread: boolean; data: Conversation}
@@ -555,13 +558,48 @@ export default function InboxPanel() {
 	}
 
 	/**
-	 * The compose list. Nothing is shown before two characters are typed: search is the
-	 * only way to reach someone on purpose, so that people cannot be browsed as a
-	 * directory. Anyone who set their profile to unlisted never appears here.
+	 * People already in the loaded inbox, newest conversation first.
+	 *
+	 * Derived from `rows`, so this costs nothing: the conversations are already here.
+	 * Deliberately ignores the searchable preference, which governs whether strangers
+	 * can find you, not whether someone you have already spoken to still appears in
+	 * your own list.
+	 */
+	const recentPeople = rows
+		.filter((r): r is Extract<Row, {kind: 'message'}> => r.kind === 'message')
+		.map((r) => r.data.other_user as any)
+		.filter((u) => u?.id)
+		.slice(0, RECENT_PEOPLE_LIMIT);
+
+	/**
+	 * The compose list.
+	 *
+	 * Typing searches; before that it offers the people you actually talk to. Search
+	 * stays the only way to reach someone new, so the member list still cannot be
+	 * browsed, but nobody has to type out the name of the person they messaged an hour
+	 * ago.
 	 */
 	let composeBody = null;
 	if (query.trim().length < MIN_SEARCH_LENGTH) {
-		composeBody = <Empty text={t('inbox.search_hint')} />;
+		composeBody =
+			recentPeople.length > 0 ? (
+				<>
+					<div className={b('section')}>{t('inbox.recent_people')}</div>
+					{recentPeople.map((person) => (
+						<button
+							key={person.id}
+							type="button"
+							className={b('person')}
+							onClick={() => openRecipient(person)}
+						>
+							<AvatarImage tiny user={person} profile={person.profile} />
+							<span className={b('person-name')}>{person.username}</span>
+						</button>
+					))}
+				</>
+			) : (
+				<Empty text={t('inbox.search_hint')} />
+			);
 	} else if (searching) {
 		composeBody = <Loading />;
 	} else if (results.length === 0) {

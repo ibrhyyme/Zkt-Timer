@@ -2658,7 +2658,8 @@
         "disconnect_no_password": "Bağlantıyı kesmek için önce Kişisel Bilgiler sayfasından bir şifre oluşturun.",
         "wca_connecting": "WCA'ya bağlanılıyor...",
         "linking_account": "Hesap bağlanıyor...",
-        "oauth_error": "OAuth bağlantısı sırasında hata oluştu"
+        "oauth_error": "OAuth bağlantısı sırasında hata oluştu",
+        "zkt_description": "ZKT hesabını bağla; ZKT yarışmaların, derecelerin ve rekorların Zkt-Timer içinde görünsün."
     },
     "otp": {
         "verifying": "Doğrulanıyor…",
@@ -2742,6 +2743,27 @@
             "subtitle": "İşlem tamamlanamadı",
             "description_with_username": "Bu WCA hesabı zaten <strong>{{username}}</strong> adlı hesabına bağlı. Önce o hesaba giriş yap, Ayarlar > Bağlı Hesaplar bölümünden WCA bağlantısını kopart, sonra bu hesaba dönüp tekrar dene.",
             "description_no_username": "Bu WCA hesabı zaten başka bir hesaba bağlı. Önce o hesaba giriş yap, Ayarlar > Bağlı Hesaplar bölümünden WCA bağlantısını kopart, sonra bu hesaba dönüp tekrar dene.",
+            "go_to_other_account_button": "Diğer hesaba git",
+            "cancel_button": "Vazgeç"
+        },
+        "continue_with_zkt": "ZKT ile giriş yap",
+        "zkt_callback": {
+            "title": "ZKT bağlanıyor",
+            "subtitle": "Zeka Küpü Türkiye hesabınla profilini eşliyoruz.",
+            "step1_title": "ZKT sitesine yönlendirildin",
+            "step1_sub": "Yetki ekranı açıldı.",
+            "step2_title": "Yetki alındı",
+            "step2_sub": "ZKT hesabını onayladın.",
+            "step3_title": "Profil oluşturuluyor",
+            "step3_sub": "ZKT yarışmaların ve derecelerin eşleniyor.",
+            "step4_title": "Hazır",
+            "step4_sub": "Timer açılıyor."
+        },
+        "zkt_conflict": {
+            "title": "Bu ZKT hesabı başka bir hesaba bağlı",
+            "subtitle": "İşlem tamamlanamadı",
+            "description_with_username": "Bu ZKT hesabı zaten <strong>{{username}}</strong> adlı hesabına bağlı. Önce o hesaba giriş yap, Ayarlar > Bağlı Hesaplar bölümünden ZKT bağlantısını kopart, sonra bu hesaba dönüp tekrar dene.",
+            "description_no_username": "Bu ZKT hesabı zaten başka bir hesaba bağlı. Önce o hesaba giriş yap, Ayarlar > Bağlı Hesaplar bölümünden ZKT bağlantısını kopart, sonra bu hesaba dönüp tekrar dene.",
             "go_to_other_account_button": "Diğer hesaba git",
             "cancel_button": "Vazgeç"
         }
@@ -4290,7 +4312,8 @@
         "open_full": "Mesajlar sayfasını aç",
         "search_people": "Kişi ara",
         "search_hint": "Mesaj göndermek için bir kullanıcı adı yaz",
-        "no_people": "Kimse bulunamadı"
+        "no_people": "Kimse bulunamadı",
+        "recent_people": "Son sohbetler"
     },
     "messages": {
         "page_title": "Mesajlar",
@@ -4402,5 +4425,35 @@
         "open_full": "Sohbeti tam ekran aç",
         "loading": "Yükleniyor",
         "start_with": "{{name}} ile sohbeti başlat"
+    },
+    "zkt_signup": {
+        "title": "Kullanıcı Adı Belirle",
+        "description": "Zeka Küpü Türkiye hesabınla kayıt oluyorsun. Bir kullanıcı adı seç.",
+        "first_name": "Ad",
+        "last_name": "Soyad",
+        "email": "E-posta",
+        "zkt_id": "ZKT ID",
+        "username_label": "Kullanıcı Adı",
+        "submit": "Hesap Oluştur",
+        "username_too_short": "Kullanıcı adı en az 2 karakter olmalıdır",
+        "username_too_long": "Kullanıcı adı en fazla 18 karakter olabilir",
+        "username_invalid": "Kullanıcı adı sadece harf, rakam ve alt çizgi içerebilir",
+        "session_expired": "Oturum süresi doldu. Lütfen tekrar ZKT ile giriş yap.",
+        "loading": "ZKT ile giriş yapılıyor..."
+    },
+    "auth_email_taken": {
+        "title": "Bu e-posta zaten kayıtlı",
+        "subtitle": "Giriş tamamlanamadı",
+        "subtitle_with_email": "{{email}} adresiyle bir Zkt-Timer hesabın zaten var",
+        "description": "Güvenlik için hesapları kendiliğinden birleştirmiyoruz. Önce şifrenle giriş yap, sonra <strong>Ayarlar > Bağlı Hesaplar</strong> bölümünden {{provider}} hesabını bağla. Bundan sonra {{provider}} ile de giriş yapabilirsin.",
+        "login_button": "Şifremle giriş yap",
+        "forgot_button": "Şifremi unuttum"
+    },
+    "auth_failure": {
+        "title": "{{provider}} ile giriş tamamlanamadı",
+        "subtitle": "Aşağıdaki neden sunucudan geldi",
+        "state_mismatch": "Oturum doğrulaması eşleşmedi. Bu genelde sayfayı yenilediğinde veya eski bir bağlantıya geri döndüğünde olur. Giriş sayfasından baştan dene.",
+        "retry_button": "Giriş sayfasına dön",
+        "access_denied": "İzin vermedin, bu yüzden giriş tamamlanmadı. Fikrini değiştirirsen tekrar deneyebilirsin."
     }
 }

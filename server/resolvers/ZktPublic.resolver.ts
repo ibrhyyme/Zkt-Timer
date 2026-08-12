@@ -31,19 +31,30 @@ export class ZktPublicResolver {
 
 	/**
 	 * The viewer's own ZKT registrations. Requires login (unlike the other
-	 * queries here) because the answer depends on who is asking: the WCA id
-	 * comes from the viewer's own linked WCA integration, never from an
-	 * argument — otherwise anyone could enumerate another person's schedule.
-	 * Without a linked WCA account there is no identity to match on yet, so the
-	 * list is empty rather than an error.
+	 * queries here) because the answer depends on who is asking: the identity
+	 * comes from the viewer's own linked integrations, never from an argument —
+	 * otherwise anyone could enumerate another person's schedule.
+	 *
+	 * ZKT id first, WCA id only as a fallback. The federation dropped WCA as an
+	 * identity, so a member who signed up there with email/phone has no WCA id at
+	 * all and used to be invisible here; their ZKT link is the only thing that
+	 * finds them. The WCA fallback stays for members who linked WCA on both sides
+	 * and have not connected ZKT yet.
+	 *
+	 * With neither link there is nothing to match on, so the list is empty rather
+	 * than an error.
 	 */
 	@Authorized()
 	@Query(() => [ZktPublicMyListItem])
 	async zktPublicMyCompetitions(@Ctx() ctx: GraphQLContext): Promise<ZktPublicMyListItem[]> {
-		const integration = await getIntegration(ctx.user, 'wca');
-		const wcaId = integration?.wca_id;
-		if (!wcaId) return [];
-		const payload = (await ZktFederationService.fetchPersonCompetitions(wcaId).catch(
+		const zktIntegration = await getIntegration(ctx.user, 'zkt');
+		let personKey = zktIntegration?.zkt_id || null;
+		if (!personKey) {
+			const wcaIntegration = await getIntegration(ctx.user, 'wca');
+			personKey = wcaIntegration?.wca_id || null;
+		}
+		if (!personKey) return [];
+		const payload = (await ZktFederationService.fetchPersonCompetitions(personKey).catch(
 			() => null
 		)) as {items?: ZktPublicMyListItem[]} | null;
 		return payload?.items || [];

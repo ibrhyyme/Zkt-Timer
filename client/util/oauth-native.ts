@@ -13,8 +13,16 @@ import {openInAppBrowser} from './external-link';
 // (isLocalShell() false) and keep their in-webview flow untouched.
 export const NATIVE_OAUTH_STATE_PREFIX = 'zktnative.';
 
-// Absolute redirect_uri — must byte-match what is registered at WCA.
-export function wcaRedirectUri(path: '/oauth/wca/login' | '/oauth/wca'): string {
+// Absolute redirect_uri — must byte-match what the provider has registered.
+// Both providers are driven from here: WCA, and the Zeka Kupu Turkiye
+// federation, which runs its own authorization server.
+export type OAuthCallbackPath =
+	| '/oauth/wca/login'
+	| '/oauth/wca'
+	| '/oauth/zkt/login'
+	| '/oauth/zkt';
+
+export function oauthRedirectUri(path: OAuthCallbackPath): string {
 	return getApiBase() + path;
 }
 
@@ -38,7 +46,7 @@ export function stripNativeOAuthState(state: string | null): string | null {
 
 // Start the authorize flow: external browser sheet in the local shell (deep link
 // brings the user back), plain navigation everywhere else (web + old binaries).
-export function openWcaAuthorize(url: string): void {
+export function openOAuthAuthorize(url: string): void {
 	if (isLocalShell()) {
 		void openInAppBrowser(url);
 		return;

@@ -2651,7 +2651,8 @@
         "disconnect_no_password": "To disconnect, first set a password from the Personal Info page.",
         "wca_connecting": "Connecting to WCA...",
         "linking_account": "Linking account...",
-        "oauth_error": "An error occurred during OAuth connection"
+        "oauth_error": "An error occurred during OAuth connection",
+        "zkt_description": "Link your ZKT account to see your ZKT competitions, results and records inside Zkt-Timer."
     },
     "otp": {
         "verifying": "Verifying…",
@@ -2736,6 +2737,27 @@
             "description_with_username": "This WCA account is already linked to <strong>{{username}}</strong>. Sign in to that account first, unlink WCA from Settings > Linked Accounts, then come back here and try again.",
             "description_no_username": "This WCA account is already linked to another account. Sign in to that account first, unlink WCA from Settings > Linked Accounts, then come back here and try again.",
             "go_to_other_account_button": "Go to other account",
+            "cancel_button": "Cancel"
+        },
+        "continue_with_zkt": "Sign in with ZKT",
+        "zkt_callback": {
+            "title": "Connecting ZKT",
+            "subtitle": "Matching your profile with your Zeka Küpü Türkiye account.",
+            "step1_title": "Redirected to ZKT",
+            "step1_sub": "Authorization screen opened.",
+            "step2_title": "Authorized",
+            "step2_sub": "You approved your ZKT account.",
+            "step3_title": "Building your profile",
+            "step3_sub": "Syncing your ZKT competitions and results.",
+            "step4_title": "Ready",
+            "step4_sub": "Opening the timer."
+        },
+        "zkt_conflict": {
+            "title": "This ZKT account is linked to another account",
+            "subtitle": "Could not complete",
+            "description_with_username": "This ZKT account is already linked to <strong>{{username}}</strong>. Sign in to that account first, unlink ZKT under Settings > Linked Accounts, then come back and try again.",
+            "description_no_username": "This ZKT account is already linked to another account. Sign in to that account first, unlink ZKT under Settings > Linked Accounts, then come back and try again.",
+            "go_to_other_account_button": "Go to the other account",
             "cancel_button": "Cancel"
         }
     },
@@ -4285,7 +4307,8 @@
         "open_full": "Open messages page",
         "search_people": "Search people",
         "search_hint": "Type a username to start a message",
-        "no_people": "No one found"
+        "no_people": "No one found",
+        "recent_people": "Recent chats"
     },
     "messages": {
         "page_title": "Messages",
@@ -4397,5 +4420,35 @@
         "open_full": "Open full conversation",
         "loading": "Loading",
         "start_with": "Start a chat with {{name}}"
+    },
+    "zkt_signup": {
+        "title": "Choose a Username",
+        "description": "You are signing up with your Zeka Küpü Türkiye account. Pick a username.",
+        "first_name": "First name",
+        "last_name": "Last name",
+        "email": "Email",
+        "zkt_id": "ZKT ID",
+        "username_label": "Username",
+        "submit": "Create Account",
+        "username_too_short": "Username must be at least 2 characters",
+        "username_too_long": "Username can be at most 18 characters",
+        "username_invalid": "Username can only contain letters, numbers and underscores",
+        "session_expired": "Your session expired. Please sign in with ZKT again.",
+        "loading": "Signing in with ZKT..."
+    },
+    "auth_email_taken": {
+        "title": "This email is already registered",
+        "subtitle": "Sign-in could not be completed",
+        "subtitle_with_email": "You already have a Zkt-Timer account with {{email}}",
+        "description": "For your security we do not merge accounts automatically. Sign in with your password first, then link your {{provider}} account under <strong>Settings > Linked Accounts</strong>. After that you can sign in with {{provider}} too.",
+        "login_button": "Sign in with password",
+        "forgot_button": "I forgot my password"
+    },
+    "auth_failure": {
+        "title": "Could not finish signing in with {{provider}}",
+        "subtitle": "The server gave this reason",
+        "state_mismatch": "Session check did not match. This usually happens after refreshing the page or returning to an old link. Start again from the login page.",
+        "retry_button": "Back to login",
+        "access_denied": "You did not grant permission, so sign-in was not completed. You can try again any time."
     }
 }

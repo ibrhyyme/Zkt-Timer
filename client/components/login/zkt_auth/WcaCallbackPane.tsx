@@ -7,21 +7,24 @@ const b = block('zkt-auth');
 
 interface Props {
 	activeStep: number;
+	/** Which provider's copy to show. The step layout is identical for both. */
+	provider?: 'wca' | 'zkt';
 }
 
-export default function WcaCallbackPane({ activeStep }: Props) {
+export default function WcaCallbackPane({ activeStep, provider = 'wca' }: Props) {
 	const { t } = useTranslation();
 
+	const ns = provider === 'zkt' ? 'zkt_auth.zkt_callback' : 'zkt_auth.wca_callback';
 	const steps = [
-		{ title: t('zkt_auth.wca_callback.step1_title'), sub: t('zkt_auth.wca_callback.step1_sub') },
-		{ title: t('zkt_auth.wca_callback.step2_title'), sub: t('zkt_auth.wca_callback.step2_sub') },
-		{ title: t('zkt_auth.wca_callback.step3_title'), sub: t('zkt_auth.wca_callback.step3_sub') },
-		{ title: t('zkt_auth.wca_callback.step4_title'), sub: t('zkt_auth.wca_callback.step4_sub') },
+		{ title: t(`${ns}.step1_title`), sub: t(`${ns}.step1_sub`) },
+		{ title: t(`${ns}.step2_title`), sub: t(`${ns}.step2_sub`) },
+		{ title: t(`${ns}.step3_title`), sub: t(`${ns}.step3_sub`) },
+		{ title: t(`${ns}.step4_title`), sub: t(`${ns}.step4_sub`) },
 	];
 
 	return (
 		<div className={b('wca-callback')}>
-			<p className={b('subtitle')}>{t('zkt_auth.wca_callback.subtitle')}</p>
+			<p className={b('subtitle')}>{t(`${ns}.subtitle`)}</p>
 			<ul className={b('steps')}>
 				{steps.map((s, i) => {
 					const done = i < activeStep;

@@ -7,27 +7,30 @@ const b = block('zkt-auth');
 
 interface Props {
 	ownerUsername: string | null;
+	/** Which provider's account is already taken. Layout is identical. */
+	provider?: 'wca' | 'zkt';
 }
 
-export default function WcaConflictPane({ ownerUsername }: Props) {
+export default function WcaConflictPane({ ownerUsername, provider = 'wca' }: Props) {
 	const { t } = useTranslation();
+	const ns = provider === 'zkt' ? 'zkt_auth.zkt_conflict' : 'zkt_auth.wca_conflict';
 
 	return (
 		<div className={b('wca-conflict')}>
 			<div className={b('wca-conflict-icon')}>
 				<Warning size={36} weight="fill" />
 			</div>
-			<h2 className={b('wca-conflict-title')}>{t('zkt_auth.wca_conflict.title')}</h2>
-			<p className={b('wca-conflict-subtitle')}>{t('zkt_auth.wca_conflict.subtitle')}</p>
+			<h2 className={b('wca-conflict-title')}>{t(`${ns}.title`)}</h2>
+			<p className={b('wca-conflict-subtitle')}>{t(`${ns}.subtitle`)}</p>
 			<p className={b('wca-conflict-description')}>
 				{ownerUsername ? (
 					<Trans
-						i18nKey="zkt_auth.wca_conflict.description_with_username"
+						i18nKey={`${ns}.description_with_username`}
 						values={{ username: ownerUsername }}
 						components={{ strong: <strong /> }}
 					/>
 				) : (
-					t('zkt_auth.wca_conflict.description_no_username')
+					t(`${ns}.description_no_username`)
 				)}
 			</p>
 			<div className={b('wca-conflict-actions')}>
@@ -38,7 +41,7 @@ export default function WcaConflictPane({ ownerUsername }: Props) {
 						window.location.href = '/login';
 					}}
 				>
-					{t('zkt_auth.wca_conflict.go_to_other_account_button')}
+					{t(`${ns}.go_to_other_account_button`)}
 				</button>
 				<button
 					type="button"
@@ -47,7 +50,7 @@ export default function WcaConflictPane({ ownerUsername }: Props) {
 						window.location.href = '/account/linked-accounts';
 					}}
 				>
-					{t('zkt_auth.wca_conflict.cancel_button')}
+					{t(`${ns}.cancel_button`)}
 				</button>
 			</div>
 		</div>
