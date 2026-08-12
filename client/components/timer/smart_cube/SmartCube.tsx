@@ -557,6 +557,13 @@ export default function SmartCube() {
 
 		// If the active cube supports direct subscription (added in gan.js)
 		if (activeCube && typeof activeCube.subscribeGyro === 'function') {
+			// Announced here rather than when the first packet arrives. A stationary
+			// cube sends nothing, so waiting for data would hide the reset action until
+			// the user happened to move the cube, which is the opposite of when they
+			// need it. Resetting the gyro on a cube that has none is harmless: it only
+			// clears a basis that was never set.
+			setTimerParams({ smartGyroSupported: true });
+
 			const unsubscribe = activeCube.subscribeGyro((event: any) => {
 				if (event.type === 'GYRO' && event.quaternion) {
 					const { x: qx, y: qy, z: qz, w: qw } = event.quaternion;
@@ -576,6 +583,12 @@ export default function SmartCube() {
 				unsubscribe();
 			};
 		}
+
+		// No gyro on this connection. Stated rather than left alone: a Bluetooth drop
+		// does not run the disconnect handler, so without this a cube with a gyroscope
+		// followed by one without would leave the reset action showing for a cube that
+		// cannot use it. The effect owns the answer for the current connection.
+		setTimerParams({ smartGyroSupported: false });
 	}, [smartCubeConnected]); // Re-subscribe if connection changes
 
 	// ── Initial Sync: when cube connects, read physical state and calculate scramble ──
@@ -1085,6 +1098,7 @@ export default function SmartCube() {
 			smartTurns: [],
 			smartDeviceId: '',
 			smartCurrentState: null,
+			smartGyroSupported: false,
 		});
 	}
 

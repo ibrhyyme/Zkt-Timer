@@ -3,7 +3,13 @@ import jwt from 'jsonwebtoken';
 import {GraphQLContext} from '../@types/interfaces/server.interface';
 import {ZktOAuthResult} from '../schemas/ZktOAuthResult.schema';
 import {PublicUserAccount} from '../schemas/UserAccount.schema';
-import {exchangeZktLoginCode, fetchZktProfile, syncZktProfileToIntegration, ZktProfile} from '../integrations/zkt_oauth';
+import {
+	exchangeZktLoginCode,
+	fetchZktProfile,
+	revokeZktGrant,
+	syncZktProfileToIntegration,
+	ZktProfile,
+} from '../integrations/zkt_oauth';
 import {createUserAccount, getUserByEmail, getUserById, getUserByUsername, sanitizeUser} from '../models/user_account';
 import {
 	createIntegration,
@@ -102,6 +108,7 @@ export class ZktAuthResolver {
 		const profile = await fetchZktProfile(tokens.accessToken);
 
 		if (!profile.sub) {
+			await revokeZktGrant(tokens.accessToken);
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'ZKT hesabindan kimlik bilgisi alinamadi.');
 		}
 
@@ -174,6 +181,12 @@ export class ZktAuthResolver {
 				};
 			}
 
+			// Refusing the sign-in means giving the grant back. Otherwise the member
+			// approves here, gets turned away, signs in with their password, and then
+			// finds that connecting ZKT from Settings asks nothing — the consent they
+			// gave to a rejected login is still standing.
+			await revokeZktGrant(tokens.accessToken);
+
 			// Structured, not prose: the callback screen turns this into a page that
 			// explains the next two steps. A bare message was shown as a toast and
 			// then replaced by a redirect to /login two seconds later, so nobody
@@ -191,6 +204,7 @@ export class ZktAuthResolver {
 		// 3. Brand new. Park the profile in a short-lived signed cookie and ask for
 		// a username; nothing is written until they finish.
 		if (!profile.email) {
+			await revokeZktGrant(tokens.accessToken);
 			throw new GraphQLError(
 				ErrorCode.BAD_INPUT,
 				'ZKT hesabinizda e-posta adresi bulunamadi. Lutfen zekakuputurkiye.com uzerinden e-posta adresinizi ekleyin.'

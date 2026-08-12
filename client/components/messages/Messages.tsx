@@ -76,6 +76,9 @@ const REPORT_SNAPSHOT_SIZE = 5;
 // decides whether to draw a button; the server is still the one that enforces it.
 const EDIT_WINDOW_MS = 15 * 60 * 1000;
 
+// Matches the inbox panel's compose list, so the two surfaces stay the same shape.
+const RECENT_PEOPLE_LIMIT = 6;
+
 type ListFilter = 'all' | 'unread' | 'requests';
 
 function SolveCard({solve}: {solve: any}) {
@@ -205,6 +208,15 @@ function MessagesPage() {
 	const onlineIds = useDmPresence(
 		conversations.map((c) => (c.other_user as any)?.id).filter(Boolean)
 	);
+
+	/**
+	 * People already in the loaded inbox, newest first. Derived from state that is
+	 * already here, so offering the list costs no extra request.
+	 */
+	const recentPeople = conversations
+		.map((c) => c.other_user as any)
+		.filter((u) => u?.id)
+		.slice(0, RECENT_PEOPLE_LIMIT);
 
 	const loadConversations = useCallback(async (requests: boolean) => {
 		setListLoading(true);
@@ -877,20 +889,44 @@ function MessagesPage() {
 							{!searching && recipientQuery.trim().length >= 2 && recipients.length === 0 && (
 								<p className={b('compose-hint')}>{t('messages.no_recipients')}</p>
 							)}
+
+							{/* Before anything is typed, offer the people already in the inbox.
+							    This screen is the only compose surface a phone can reach, and it
+							    was the one still demanding a name be typed out in full while the
+							    desktop panel and the solve-share sheet both offered the list. */}
 							{!searching && recipientQuery.trim().length < 2 && (
-								<p className={b('compose-hint')}>{t('messages.recipient_hint')}</p>
+								recentPeople.length > 0 ? (
+									<>
+										<div className={b('compose-section')}>{t('inbox.recent_people')}</div>
+										{recentPeople.map((user) => (
+											<button
+												key={user.id}
+												type="button"
+												className={b('compose-hit')}
+												onClick={() => setPicked(user)}
+											>
+												<AvatarImage small user={user} profile={user?.profile} />
+												<span>{user.username}</span>
+											</button>
+										))}
+									</>
+								) : (
+									<p className={b('compose-hint')}>{t('messages.recipient_hint')}</p>
+								)
 							)}
-							{recipients.map((user) => (
-								<button
-									key={user.id}
-									type="button"
-									className={b('compose-hit')}
-									onClick={() => setPicked(user)}
-								>
-									<AvatarImage small user={user as any} profile={(user as any)?.profile} />
-									<span>{user.username}</span>
-								</button>
-							))}
+
+							{recipientQuery.trim().length >= 2 &&
+								recipients.map((user) => (
+									<button
+										key={user.id}
+										type="button"
+										className={b('compose-hit')}
+										onClick={() => setPicked(user)}
+									>
+										<AvatarImage small user={user as any} profile={(user as any)?.profile} />
+										<span>{user.username}</span>
+									</button>
+								))}
 						</div>
 					</>
 				)}

@@ -1,5 +1,5 @@
 import { createIntegration, getIntegration, getIntegrationByWcaId, getIntegrationByWcaUserId, getIntegrationByZktId, getIntegrationByZktUserId, updateIntegration } from '../models/integration';
-import { exchangeZktLinkCode, fetchZktProfile, syncZktProfileToIntegration } from './zkt_oauth';
+import { exchangeZktLinkCode, fetchZktProfile, revokeZktGrant, syncZktProfileToIntegration } from './zkt_oauth';
 import axios from 'axios';
 import { InternalUserAccount, UserAccount } from '../schemas/UserAccount.schema';
 import { IntegrationType, LINKED_SERVICES, LinkedServiceData, getWcaRedirectUri, getWcaLoginRedirectUri } from '../../shared/integration';
@@ -141,6 +141,7 @@ async function linkZktAccountForUser(user: InternalUserAccount, code: string) {
 	const tokens = await exchangeZktLinkCode(code);
 	const profile = await fetchZktProfile(tokens.accessToken);
 	if (!profile.sub) {
+		await revokeZktGrant(tokens.accessToken);
 		throw new Error('ZKT hesabindan kimlik bilgisi alinamadi.');
 	}
 
@@ -151,6 +152,10 @@ async function linkZktAccountForUser(user: InternalUserAccount, code: string) {
 		if (byZktId && byZktId.user_id !== user.id) conflict = byZktId;
 	}
 	if (conflict) {
+		// The ZKT account belongs to somebody else here, so this link is refused and
+		// the grant we just obtained has no owner on our side. Give it back rather
+		// than leaving the federation showing an app that is not connected.
+		await revokeZktGrant(tokens.accessToken);
 		const owner = await getUserById(conflict.user_id);
 		throw new Error(
 			JSON.stringify({

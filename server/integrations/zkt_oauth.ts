@@ -102,6 +102,40 @@ export function refreshZktToken(refreshToken: string): Promise<ZktTokenSet> {
 	);
 }
 
+/**
+ * Hand a grant straight back to the federation.
+ *
+ * Every abandoned login path has to call this. The flow reaches them AFTER the
+ * member approved on the consent screen and after the code was exchanged, so
+ * the federation already believes this app holds a live grant — while we, having
+ * refused the sign-in, keep no record of it at all. Two things then go wrong:
+ * the token sits there unreachable until it expires, and `hasLiveGrant` treats
+ * it as standing approval, so the NEXT connection skips the consent screen
+ * entirely. The member approved a sign-in that never happened and the approval
+ * outlived it.
+ *
+ * One call is enough to kill the whole grant: access and refresh hashes live on
+ * the same row, and the endpoint revokes on either (RFC 7009).
+ *
+ * Best-effort and never throws. Callers are already on their way to reporting a
+ * different, more useful error, and losing that error to a network blip on the
+ * cleanup would be a bad trade.
+ */
+export async function revokeZktGrant(accessToken: string | null | undefined): Promise<void> {
+	if (!accessToken) return;
+	const service = LINKED_SERVICES.zkt;
+	const {clientId, clientSecret} = clientCredentials();
+	try {
+		await axios.post(
+			service.revokeEndpoint,
+			new URLSearchParams({token: accessToken, client_id: clientId, client_secret: clientSecret}),
+			{headers: {'Content-Type': 'application/x-www-form-urlencoded'}, timeout: 10000}
+		);
+	} catch (error: any) {
+		logger.warn('[ZktOAuth] grant revoke failed', {status: error?.response?.status});
+	}
+}
+
 export async function fetchZktProfile(accessToken: string): Promise<ZktProfile> {
 	const service = LINKED_SERVICES.zkt;
 	const res = await axios.get(service.meEndpoint, {
