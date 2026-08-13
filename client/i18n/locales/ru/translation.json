@@ -773,7 +773,8 @@
         "announcements": "Объявления",
         "support": "Поддержка",
         "danger_zone": "Опасная зона",
-        "social": "Соцiальное"
+        "social": "Соцiальное",
+        "back_to_account": "Аккаунт"
     },
     "support": {
         "page_title": "Поддержка",
@@ -847,7 +848,9 @@
         "new_password": "Новый пароль",
         "change_password_button": "Изменить пароль",
         "set_password_button": "Создать пароль",
-        "password_success": "Пароль успешно обновлён"
+        "password_success": "Пароль успешно обновлён",
+        "profile_title": "Данные профиля",
+        "profile_description": "Ваше имя, имя пользователя и адрес электронной почты."
     },
     "password_page": {
         "current_password": "Текущий пароль",
@@ -1095,7 +1098,8 @@
     "notification_prefs": {
         "email_notifications": "Уведомления по почте",
         "marketing_emails": "Советы, обновления и другие письма от Zkt Timer",
-        "support_ticket_reply": "Присылать письмо, когда на моё обращение ответят"
+        "support_ticket_reply": "Присылать письмо, когда на моё обращение ответят",
+        "email_notifications_description": "Выберите, когда вы хотите получать письма от нас."
     },
     "announcement_dropdown": {
         "title": "Объявления",

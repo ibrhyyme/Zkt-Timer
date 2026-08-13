@@ -4,6 +4,8 @@ import {useDispatch} from 'react-redux';
 import {gql, useMutation, useQuery} from '@apollo/client';
 import Input from '../../common/inputs/input/Input';
 import Button from '../../common/button/Button';
+import {Lifebuoy, ClockCounterClockwise} from 'phosphor-react';
+import SettingsCard from '../common/settings_card/SettingsCard';
 import Tag from '../../common/tag/Tag';
 import {toastError, toastSuccess} from '../../../util/toast';
 import {getGqlErrorMessage} from '../../../util/gql-error';
@@ -121,9 +123,21 @@ export default function Support() {
 
 	return (
 		<div className={b()}>
-			<h2 className={b('title')}>{t('support.title')}</h2>
-			<p className={b('description')}>{t('support.description')}</p>
-
+			<SettingsCard
+				title={t('support.title')}
+				description={t('support.description')}
+				icon={<Lifebuoy weight="fill" />}
+				footer={
+					<Button
+						text={loading ? t('support.sending') : t('support.send')}
+						primary
+						large
+						glow
+						disabled={!canSubmit}
+						onClick={handleSubmit}
+					/>
+				}
+			>
 			<div className={b('field')}>
 				<label className={b('label')}>{t('support.subject')}</label>
 				<Input
@@ -149,16 +163,10 @@ export default function Support() {
 				<div className={b('hint')}>{t('support.attach_hint')}</div>
 			</div>
 
-			<Button
-				text={loading ? t('support.sending') : t('support.send')}
-				primary
-				glow
-				disabled={!canSubmit}
-				onClick={handleSubmit}
-			/>
+			</SettingsCard>
 
-			<div className={b('history')}>
-				<h3 className={b('history-title')}>{t('support.history_title')}</h3>
+			<SettingsCard title={t('support.history_title')} icon={<ClockCounterClockwise weight="bold" />}>
+				<div className={b('history')}>
 				{tickets.length === 0 ? (
 					<div className={b('history-empty')}>{t('support.no_history')}</div>
 				) : (
@@ -207,7 +215,8 @@ export default function Support() {
 						})}
 					</div>
 				)}
-			</div>
+				</div>
+			</SettingsCard>
 		</div>
 	);
 }

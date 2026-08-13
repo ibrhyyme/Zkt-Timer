@@ -1,10 +1,12 @@
 import React, {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
-import Checkbox from '../../common/checkbox/Checkbox';
+import {EnvelopeSimple} from 'phosphor-react';
+import Switch from '../../common/switch/Switch';
 import {NOTIFICATION_PREFERENCE_FRAGMENT} from '../../../util/graphql/fragments';
 import {gqlMutate} from '../../api';
 import {gql, useQuery} from '@apollo/client';
-import InputLegend from '../../common/inputs/input/input_legend/InputLegend';
+import SettingsCard from '../common/settings_card/SettingsCard';
+import SettingsRow from '../common/settings_row/SettingsRow';
 import {NotificationPreference} from '../../../@types/generated/graphql';
 
 const NOTIFICATION_PREFERENCES_QUERY = gql`
@@ -28,10 +30,8 @@ export default function NotificationPreferences() {
 		setPrefs(data.notificationPreferences);
 	}, [data]);
 
-	function handleChange(e) {
-		const newPrefs = {...prefs};
-		newPrefs[e.target.name] = e.target.checked;
-		setPrefs(newPrefs);
+	function setPreference(key: string, value: boolean) {
+		setPrefs({...prefs, [key]: value});
 
 		gqlMutate(
 			gql`
@@ -43,8 +43,8 @@ export default function NotificationPreferences() {
 				}
 			`,
 			{
-				key: e.target.name,
-				value: e.target.checked,
+				key,
+				value,
 			}
 		);
 	}
@@ -60,22 +60,28 @@ export default function NotificationPreferences() {
 		},
 	];
 
-	const checkboxes = [];
-	for (const notifTypeName of notificationTypeNames) {
-		const pref = notifTypeName.key;
-		const label = notifTypeName.label;
-
-		if (pref in prefs) {
-			checkboxes.push(
-				<Checkbox key={pref} name={pref} text={label} onChange={handleChange} checked={prefs[pref]} />
-			);
-		}
-	}
+	const rows = notificationTypeNames
+		.filter((notifType) => notifType.key in prefs)
+		.map((notifType) => (
+			<SettingsRow
+				key={notifType.key}
+				label={notifType.label}
+				control={
+					<Switch
+						on={!!prefs[notifType.key]}
+						onChange={(on) => setPreference(notifType.key, on)}
+					/>
+				}
+			/>
+		));
 
 	return (
-		<div>
-			<InputLegend text={t('notification_prefs.email_notifications')} />
-			{checkboxes}
-		</div>
+		<SettingsCard
+			title={t('notification_prefs.email_notifications')}
+			description={t('notification_prefs.email_notifications_description')}
+			icon={<EnvelopeSimple weight="fill" />}
+		>
+			{rows}
+		</SettingsCard>
 	);
 }

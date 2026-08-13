@@ -1,13 +1,14 @@
 @import '../../../styles/config';
 
 .#{$namespace}-account-linked-accounts {
-	display: flex;
-	flex-wrap: wrap;
-	align-items: flex-start;
-	gap: 25px;
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+	align-items: start;
+	gap: 16px;
 
-	> * {
-		flex: 0 1 300px;
-		max-width: 300px;
+	// Cards space themselves through the grid gap here, not their own margin.
+	.#{$namespace}-settings-card {
+		margin-bottom: 0;
+		height: 100%;
 	}
 }

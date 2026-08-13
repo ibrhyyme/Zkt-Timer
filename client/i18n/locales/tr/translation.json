@@ -780,7 +780,8 @@
         "announcements": "Duyurular",
         "support": "Destek",
         "danger_zone": "Riskli Alan",
-        "social": "Sosyal"
+        "social": "Sosyal",
+        "back_to_account": "Hesap"
     },
     "support": {
         "page_title": "Destek",
@@ -854,7 +855,9 @@
         "new_password": "Yeni Şifre",
         "change_password_button": "Şifre Değiştir",
         "set_password_button": "Şifre Oluştur",
-        "password_success": "Şifre başarıyla güncellendi"
+        "password_success": "Şifre başarıyla güncellendi",
+        "profile_title": "Profil Bilgileri",
+        "profile_description": "Adın, kullanıcı adın ve e-posta adresin."
     },
     "password_page": {
         "current_password": "Mevcut Şifre",
@@ -1102,7 +1105,8 @@
     "notification_prefs": {
         "email_notifications": "E-posta Bildirimleri",
         "marketing_emails": "Zkt Timer'dan ipucu, güncellemeler ve diğer e-postalar",
-        "support_ticket_reply": "Destek talebime cevap geldiğinde e-posta gönder"
+        "support_ticket_reply": "Destek talebime cevap geldiğinde e-posta gönder",
+        "email_notifications_description": "Hangi durumlarda e-posta almak istediğini seç."
     },
     "announcement_dropdown": {
         "title": "Duyurular",

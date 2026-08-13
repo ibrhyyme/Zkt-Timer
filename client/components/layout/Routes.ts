@@ -228,6 +228,10 @@ export const routes: (PageContext | RedirectPath)[] = [
 	trainerRoute('/trainer', false),
 
 	// Account
+	// `/account` is the section index. On mobile the layout shows only the nav list
+	// there; on desktop it renders the first section alongside the sidebar, so it
+	// mounts the same child as /account/personal-info rather than redirecting.
+	route('/account', App, Account, PersonalInfo),
 	route('/account/personal-info', App, Account, PersonalInfo),
 	route('/account/danger-zone', App, Account, DangerZone),
 	route('/account/linked-accounts', App, Account, LinkedAccounts),
@@ -305,7 +309,6 @@ export const routes: (PageContext | RedirectPath)[] = [
 
 	// Redirects
 	routeRedirect('/settings', '/settings/timer'),
-	routeRedirect('/account', '/account/personal-info'),
 	routeRedirect('/account/pro', '/pro'),
 	routeRedirect('/account/password', '/account/personal-info'),
 	// Legacy /community/competitions/* (WCA) -> /competitions/* (param-preserving 301).

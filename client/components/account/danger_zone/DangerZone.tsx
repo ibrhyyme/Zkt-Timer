@@ -7,6 +7,12 @@ import { toastError } from '../../../util/toast';
 import { deleteLocalStorage } from '../../../util/data/local_storage';
 import { clearOfflineData } from '../../layout/offline';
 import { clearAllSolveTombstones } from '../../../util/solve-tombstones';
+import { ArrowCounterClockwise, Trash } from 'phosphor-react';
+import SettingsCard from '../common/settings_card/SettingsCard';
+import block from '../../../styles/bem';
+import './DangerZone.scss';
+
+const b = block('danger-zone');
 
 export default function DangerZone() {
 	const {t} = useTranslation();
@@ -46,37 +52,54 @@ export default function DangerZone() {
 	}
 
 	return (
-		<div>
-			<div className="mb-8 border border-green-500/30 bg-green-500/10 rounded-xl p-6">
-				<h3 className="text-xl font-bold text-green-400 mb-2">{t('danger_zone.reset_settings_title')}</h3>
-				<p className="text-gray-300 mb-4" dangerouslySetInnerHTML={{ __html: t('danger_zone.reset_settings_desc') }} />
-				<Button
-					success
-					text={t('danger_zone.reset_settings_button')}
-					confirmModalProps={{
-						title: t('danger_zone.reset_settings_confirm_title'),
-						description: t('danger_zone.reset_settings_confirm_desc'),
-						triggerAction: resetSettings,
-						buttonText: t('danger_zone.reset_settings_button'),
-					}}
+		<>
+			{/* Resetting settings is not destructive to data, but it is not a "safe green"
+			    action either — it throws away every preference. Amber, not green. */}
+			<SettingsCard
+				warning
+				title={t('danger_zone.reset_settings_title')}
+				icon={<ArrowCounterClockwise weight="bold" />}
+				footer={
+					<Button
+						warning
+						large
+						text={t('danger_zone.reset_settings_button')}
+						confirmModalProps={{
+							title: t('danger_zone.reset_settings_confirm_title'),
+							description: t('danger_zone.reset_settings_confirm_desc'),
+							triggerAction: resetSettings,
+							buttonText: t('danger_zone.reset_settings_button'),
+						}}
+					/>
+				}
+			>
+				<p
+					className={b('text')}
+					dangerouslySetInnerHTML={{__html: t('danger_zone.reset_settings_desc')}}
 				/>
-			</div>
+			</SettingsCard>
 
-			<p>
-				{t('danger_zone.delete_account_warning')}
-			</p>
-			<Button
+			<SettingsCard
 				danger
-				large
-				glow
-				text={t('danger_zone.delete_account_button')}
-				confirmModalProps={{
-					title: t('danger_zone.delete_account_title'),
-					description: t('danger_zone.delete_account_confirm_desc'),
-					triggerAction: deleteAccount,
-					buttonText: t('danger_zone.delete_account_confirm_button'),
-				}}
-			/>
-		</div>
+				title={t('danger_zone.delete_account_title')}
+				icon={<Trash weight="fill" />}
+				footer={
+					<Button
+						danger
+						large
+						glow
+						text={t('danger_zone.delete_account_button')}
+						confirmModalProps={{
+							title: t('danger_zone.delete_account_title'),
+							description: t('danger_zone.delete_account_confirm_desc'),
+							triggerAction: deleteAccount,
+							buttonText: t('danger_zone.delete_account_confirm_button'),
+						}}
+					/>
+				}
+			>
+				<p className={b('text')}>{t('danger_zone.delete_account_warning')}</p>
+			</SettingsCard>
+		</>
 	);
 }

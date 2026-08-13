@@ -2,18 +2,128 @@
 
 .#{$namespace}-account {
 	width: 100%;
+	position: relative;
 
-	> div {
-		margin-top: 15px;
+	// Field labels borrow the timer's mono face. Every precise value in this app —
+	// solve times, scrambles, the Pro badge — is set in it, so settings labels reading
+	// the same way ties the page to the product instead of to a generic form kit.
+	.#{$namespace}-common-input-legend {
+		font-family: 'Roboto Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+		font-size: 0.68rem;
+		font-weight: 500;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+	}
+
+	&__layout {
+		display: grid;
+		grid-template-columns: 244px minmax(0, 1fr);
+		gap: 2.5rem;
+		align-items: start;
 		width: 100%;
-		max-width: 820px;
+		// Without a ceiling the sidebar hugs the left edge of a wide monitor and leaves
+		// a dead column on the right; centring the pair keeps the page balanced.
+		max-width: 1180px;
+		margin: 0 auto;
+	}
 
-		&:has(.#{$namespace}-pro-page) {
+	&__content {
+		min-width: 0;
+	}
+
+	// Drill-down header: back arrow plus the section name on one line. The page title
+	// above already says "Hesap", so repeating it in the back button would be noise.
+	&__section-header {
+		display: none;
+		align-items: center;
+		gap: 8px;
+		margin-bottom: 1.1rem;
+	}
+
+	&__section-title {
+		font-family: Kontora, Poppins, Arial, 'Helvetica Neue', Helvetica, sans-serif;
+		font-size: 1.7rem;
+		font-weight: 500;
+		line-height: 1.2;
+		margin: 0;
+		min-width: 0;
+		color: rgb(var(--text-color));
+	}
+
+	&__back {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		width: 38px;
+		height: 38px;
+		border-radius: 10px;
+		background: rgba(var(--text-color), 0.06);
+		color: rgb(var(--text-color));
+
+		svg {
+			width: 17px;
+			height: 17px;
+		}
+
+		&:hover {
+			background: rgba(var(--text-color), 0.1);
+		}
+	}
+
+	// The Pro page reuses this shell but lays itself out full width.
+	&:has(.#{$namespace}-pro-page) {
+		&::before {
+			display: none;
+		}
+
+		.#{$namespace}-account__layout {
+			display: block;
 			max-width: unset;
 		}
 	}
 
-	&-nav {
-		max-width: unset !important;
+	// ------------------------------------------------------------------
+	// Mobile: nav list and section content become two separate screens.
+	// ------------------------------------------------------------------
+	@media (max-width: 768px) {
+		// Field labels borrow the timer's mono face. Every precise value in this app —
+	// solve times, scrambles, the Pro badge — is set in it, so settings labels reading
+	// the same way ties the page to the product instead of to a generic form kit.
+	.#{$namespace}-common-input-legend {
+		font-family: 'Roboto Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+		font-size: 0.68rem;
+		font-weight: 500;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+	}
+
+	&__layout {
+			display: block;
+		}
+
+		&__section-header {
+			display: flex;
+		}
+
+		// The title block owns a lot of bottom padding for pages that need breathing
+		// room; here the nav list follows immediately, so tighten it.
+		.#{$namespace}-page-title {
+			padding-bottom: 1.4rem;
+		}
+
+		// Index route: only the list.
+		&--index {
+			.#{$namespace}-account__content {
+				display: none;
+			}
+		}
+
+		// Section route: only the content.
+		&:not(.#{$namespace}-account--index) {
+			.#{$namespace}-account-nav {
+				display: none;
+			}
+		}
 	}
 }

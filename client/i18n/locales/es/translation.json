@@ -773,7 +773,8 @@
         "announcements": "Anuncios",
         "support": "Soporte",
         "danger_zone": "Zona de peligro",
-        "social": "Social"
+        "social": "Social",
+        "back_to_account": "Cuenta"
     },
     "support": {
         "page_title": "Soporte",
@@ -847,7 +848,9 @@
         "new_password": "Nueva Contrasena",
         "change_password_button": "Cambiar Contrasena",
         "set_password_button": "Crear Contrasena",
-        "password_success": "Contrasena actualizada correctamente"
+        "password_success": "Contrasena actualizada correctamente",
+        "profile_title": "Información del perfil",
+        "profile_description": "Tu nombre, nombre de usuario y correo electrónico."
     },
     "password_page": {
         "current_password": "Contraseña actual",
@@ -1095,7 +1098,8 @@
     "notification_prefs": {
         "email_notifications": "Notificaciones por correo electrónico",
         "marketing_emails": "Consejos, actualizaciones y otros correos de Zkt Timer",
-        "support_ticket_reply": "Enviarme un correo cuando respondan a mi ticket de soporte"
+        "support_ticket_reply": "Enviarme un correo cuando respondan a mi ticket de soporte",
+        "email_notifications_description": "Elige cuándo quieres recibir correos nuestros."
     },
     "announcement_dropdown": {
         "title": "Anuncios",

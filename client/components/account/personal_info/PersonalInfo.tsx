@@ -7,13 +7,15 @@ import {useInput} from '../../../util/hooks/useInput';
 import {useMutation} from '@apollo/client';
 import {UserAccount} from '../../../@types/generated/graphql';
 import Button from '../../common/button/Button';
+import {IdentificationCard, Lock, Warning} from 'phosphor-react';
 import {toastError, toastSuccess} from '../../../util/toast';
 import {validateStrongPassword} from '../../../util/auth/password';
 import PasswordStrength from '../../common/password_strength/PasswordStrength';
+import SettingsCard from '../common/settings_card/SettingsCard';
 import block from '../../../styles/bem';
 import './PersonalInfo.scss';
 
-const b = block('pending-email');
+const b = block('personal-info');
 
 const UPDATE_ME_MUTATION = gql`
 	mutation Mutate($firstName: String!, $lastName: String!, $email: String!, $username: String!, $language: String) {
@@ -150,33 +152,26 @@ export default function PersonalInfo() {
 	const passwordLoading = updatePasswordData?.loading || setPasswordData?.loading;
 
 	return (
-		<div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', alignItems: 'start'}} className="personal-info-grid">
-			{/* Sol: Kisisel Bilgiler */}
-			<div>
+		<>
+			<SettingsCard
+				title={t('personal_info.profile_title')}
+				description={t('personal_info.profile_description')}
+				icon={<IdentificationCard weight="bold" />}
+				footer={<Button primary large glow text={t('personal_info.update_button')} onClick={clickUpdate} />}
+			>
 				<Input value={firstName} legend={t('personal_info.first_name')} onChange={setFirstName} name="firstName" />
 				<Input value={lastName} legend={t('personal_info.last_name')} onChange={setLastName} name="lastName" />
 				<Input value={username} legend={t('personal_info.username')} onChange={setUsername} name="username" />
 				<Input value={email} legend={t('personal_info.email')} onChange={setEmail} name="email" />
+			</SettingsCard>
 
-				{pendingEmail && (
-					<div className={b()}>
-						<div className={b('title')}>
-							<span className={b('icon')}>!</span>
-							{t('personal_info.email_change_title')}
-						</div>
-						<div className={b('description')}>
-							{t('personal_info.email_change_description')}
-						</div>
-						<div className={b('email')}>{pendingEmail}</div>
-						<Input
-							value={emailChangeCode}
-							legend={t('personal_info.email_change_code')}
-							onChange={setEmailChangeCode}
-							name="emailChangeCode"
-						/>
-						{emailChangeError && (
-							<div className={b('error')}>{emailChangeError}</div>
-						)}
+			{pendingEmail && (
+				<SettingsCard
+					warning
+					title={t('personal_info.email_change_title')}
+					description={t('personal_info.email_change_description')}
+					icon={<Warning weight="bold" />}
+					footer={
 						<Button
 							primary
 							large
@@ -185,24 +180,35 @@ export default function PersonalInfo() {
 							loading={confirmEmailChangeData?.loading}
 							onClick={clickConfirmEmailChange}
 						/>
-					</div>
-				)}
+					}
+				>
+					<div className={b('email')}>{pendingEmail}</div>
+					<Input
+						value={emailChangeCode}
+						legend={t('personal_info.email_change_code')}
+						onChange={setEmailChangeCode}
+						name="emailChangeCode"
+					/>
+					{emailChangeError && <div className={b('error')}>{emailChangeError}</div>}
+				</SettingsCard>
+			)}
 
-				<Button primary large glow text={t('personal_info.update_button')} onClick={clickUpdate} />
-			</div>
-
-			{/* Sag: Sifre Bolumu */}
-			<div>
-				<h3 style={{marginBottom: '1rem', fontSize: '1.1rem'}}>
-					{hasPassword ? t('personal_info.change_password') : t('personal_info.set_password')}
-				</h3>
-
-				{!hasPassword && (
-					<p style={{marginBottom: '1rem', fontSize: '0.85rem'}}>
-						{t('personal_info.set_password_description')}
-					</p>
-				)}
-
+			<SettingsCard
+				title={hasPassword ? t('personal_info.change_password') : t('personal_info.set_password')}
+				description={hasPassword ? undefined : t('personal_info.set_password_description')}
+				icon={<Lock weight="bold" />}
+				footer={
+					<Button
+						primary
+						large
+						glow
+						text={hasPassword ? t('personal_info.change_password_button') : t('personal_info.set_password_button')}
+						error={passwordError}
+						loading={passwordLoading}
+						onClick={handlePasswordSubmit}
+					/>
+				}
+			>
 				{hasPassword && (
 					<Input
 						type="password"
@@ -220,26 +226,7 @@ export default function PersonalInfo() {
 				/>
 
 				<PasswordStrength password={newPassword} />
-
-				<Button
-					primary
-					large
-					glow
-					text={hasPassword ? t('personal_info.change_password_button') : t('personal_info.set_password_button')}
-					error={passwordError}
-					loading={passwordLoading}
-					onClick={handlePasswordSubmit}
-				/>
-			</div>
-
-			{/* Responsive: mobilde tek kolon */}
-			<style>{`
-				@media (max-width: 768px) {
-					.personal-info-grid {
-						grid-template-columns: 1fr !important;
-					}
-				}
-			`}</style>
-		</div>
+			</SettingsCard>
+		</>
 	);
 }

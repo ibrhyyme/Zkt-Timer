@@ -1,9 +1,11 @@
 import React, {useEffect, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {Link} from 'react-router-dom';
-import Checkbox from '../../common/checkbox/Checkbox';
-import InputLegend from '../../common/inputs/input/input_legend/InputLegend';
+import {ChatCircle, Eye, BellRinging, Prohibit} from 'phosphor-react';
+import Switch from '../../common/switch/Switch';
 import Loading from '../../common/loading/Loading';
+import SettingsCard from '../common/settings_card/SettingsCard';
+import SettingsRow from '../common/settings_row/SettingsRow';
 import Button from '../../common/button/Button';
 import AvatarImage from '../../common/avatar/avatar_image/AvatarImage';
 import {gqlMutateTyped, gqlQueryTyped} from '../../api';
@@ -89,85 +91,93 @@ export default function SocialSettings() {
 	];
 
 	return (
-		<div className={b()}>
-			<InputLegend text={t('social.who_can_message')} />
-			<div className={b('policies')}>
-				{policies.map((policy) => (
-					<button
-						key={policy.value}
-						type="button"
-						className={b('policy', {active: prefs.dm_policy === policy.value})}
-						onClick={() => update({dm_policy: policy.value})}
-					>
-						<span className={b('policy-label')}>{policy.label}</span>
-						<span className={b('policy-hint')}>{policy.hint}</span>
-					</button>
-				))}
-			</div>
-
-			<InputLegend text={t('social.visibility')} />
-			<Checkbox
-				name="searchable"
-				text={t('social.searchable')}
-				checked={prefs.searchable}
-				onChange={(e: any) => update({searchable: e.target.checked})}
-			/>
-
-			{/* Both are reciprocal on the server: switching one off stops your state
-			    being sent AND stops theirs reaching you. The descriptions say so out
-			    loud, because a privacy switch that quietly keeps taking from others
-			    would be a surveillance feature wearing a privacy label. */}
-			<InputLegend text={t('social.read_receipts')} />
-			<Checkbox
-				name="read_receipts"
-				text={t('social.read_receipts')}
-				checked={prefs.read_receipts}
-				onChange={(e: any) => update({read_receipts: e.target.checked})}
-			/>
-			<p className={b('hint')}>{t('social.read_receipts_desc')}</p>
-
-			<Checkbox
-				name="typing_indicator"
-				text={t('social.typing_indicator')}
-				checked={prefs.typing_indicator}
-				onChange={(e: any) => update({typing_indicator: e.target.checked})}
-			/>
-			<p className={b('hint')}>{t('social.typing_indicator_desc')}</p>
-
-			<Checkbox
-				name="online_status"
-				text={t('social.online_status')}
-				checked={prefs.online_status}
-				onChange={(e: any) => update({online_status: e.target.checked})}
-			/>
-			<p className={b('hint')}>{t('social.online_status_desc')}</p>
-
-			<InputLegend text={t('social.notifications')} />
-			<Checkbox
-				name="dm_push"
-				text={t('social.dm_push')}
-				checked={prefs.dm_push}
-				onChange={(e: any) => update({dm_push: e.target.checked})}
-			/>
-
-			<InputLegend text={t('social.blocked')} />
-			{blocked.length === 0 ? (
-				<p className={b('empty')}>{t('social.no_blocked')}</p>
-			) : (
-				<div className={b('blocked')}>
-					{blocked.map((row) => (
-						<div key={row.id} className={b('blocked-row')}>
-							<AvatarImage small user={row.user as any} profile={(row.user as any)?.profile} />
-							<span className={b('blocked-name')}>{row.user?.username}</span>
-							<Button gray small text={t('social.unblock')} onClick={() => unblock(row.user?.id)} />
-						</div>
+		<>
+			<SettingsCard
+				title={t('social.who_can_message')}
+				icon={<ChatCircle weight="fill" />}
+			>
+				<div className={b('policies')}>
+					{policies.map((policy) => (
+						<button
+							key={policy.value}
+							type="button"
+							className={b('policy', {active: prefs.dm_policy === policy.value})}
+							onClick={() => update({dm_policy: policy.value})}
+						>
+							<span className={b('policy-label')}>{policy.label}</span>
+							<span className={b('policy-hint')}>{policy.hint}</span>
+						</button>
 					))}
 				</div>
-			)}
+			</SettingsCard>
 
-			<p className={b('footnote')}>
-				{t('social.footnote')} <Link to="/messages">{t('messages.page_title')}</Link>
-			</p>
-		</div>
+			{/* Read receipts, typing and presence are reciprocal on the server: switching
+			    one off stops your state being sent AND stops theirs reaching you. The
+			    descriptions say so out loud, because a privacy switch that quietly keeps
+			    taking from others would be a surveillance feature wearing a privacy label. */}
+			<SettingsCard title={t('social.visibility')} icon={<Eye weight="fill" />}>
+				<SettingsRow
+					label={t('social.searchable')}
+					control={
+						<Switch on={!!prefs.searchable} onChange={(on) => update({searchable: on})} />
+					}
+				/>
+				<SettingsRow
+					label={t('social.read_receipts')}
+					description={t('social.read_receipts_desc')}
+					control={
+						<Switch on={!!prefs.read_receipts} onChange={(on) => update({read_receipts: on})} />
+					}
+				/>
+				<SettingsRow
+					label={t('social.typing_indicator')}
+					description={t('social.typing_indicator_desc')}
+					control={
+						<Switch
+							on={!!prefs.typing_indicator}
+							onChange={(on) => update({typing_indicator: on})}
+						/>
+					}
+				/>
+				<SettingsRow
+					label={t('social.online_status')}
+					description={t('social.online_status_desc')}
+					control={
+						<Switch on={!!prefs.online_status} onChange={(on) => update({online_status: on})} />
+					}
+				/>
+			</SettingsCard>
+
+			<SettingsCard title={t('social.notifications')} icon={<BellRinging weight="fill" />}>
+				<SettingsRow
+					label={t('social.dm_push')}
+					control={<Switch on={!!prefs.dm_push} onChange={(on) => update({dm_push: on})} />}
+				/>
+			</SettingsCard>
+
+			<SettingsCard
+				title={t('social.blocked')}
+				icon={<Prohibit weight="bold" />}
+				footer={
+					<p className={b('footnote')}>
+						{t('social.footnote')} <Link to="/messages">{t('messages.page_title')}</Link>
+					</p>
+				}
+			>
+				{blocked.length === 0 ? (
+					<p className={b('empty')}>{t('social.no_blocked')}</p>
+				) : (
+					<div className={b('blocked')}>
+						{blocked.map((row) => (
+							<div key={row.id} className={b('blocked-row')}>
+								<AvatarImage small user={row.user as any} profile={(row.user as any)?.profile} />
+								<span className={b('blocked-name')}>{row.user?.username}</span>
+								<Button gray small text={t('social.unblock')} onClick={() => unblock(row.user?.id)} />
+							</div>
+						))}
+					</div>
+				)}
+			</SettingsCard>
+		</>
 	);
 }

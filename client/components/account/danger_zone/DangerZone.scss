@@ -1,0 +1,18 @@
+@import '../../../styles/config';
+
+.#{$namespace}-danger-zone {
+	// Explanatory copy inside the cards. Full-strength colour, sized down instead of
+	// faded out — the previous Tailwind classes hardcoded grey and broke on themes.
+	&__text {
+		font-size: 0.92rem;
+		font-weight: 400;
+		line-height: 1.5;
+		margin: 0;
+		color: rgb(var(--text-color));
+
+		strong,
+		b {
+			font-weight: 700;
+		}
+	}
+}

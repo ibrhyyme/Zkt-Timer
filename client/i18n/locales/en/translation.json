@@ -773,7 +773,8 @@
         "announcements": "Announcements",
         "support": "Support",
         "danger_zone": "Danger Zone",
-        "social": "Social"
+        "social": "Social",
+        "back_to_account": "Account"
     },
     "support": {
         "page_title": "Support",
@@ -847,7 +848,9 @@
         "new_password": "New Password",
         "change_password_button": "Change Password",
         "set_password_button": "Set Password",
-        "password_success": "Password updated successfully"
+        "password_success": "Password updated successfully",
+        "profile_title": "Profile Information",
+        "profile_description": "Your name, username and email address."
     },
     "password_page": {
         "current_password": "Current Password",
@@ -1095,7 +1098,8 @@
     "notification_prefs": {
         "email_notifications": "Email Notifications",
         "marketing_emails": "Tips, updates, and other emails from Zkt Timer",
-        "support_ticket_reply": "Email me when my support ticket gets a reply"
+        "support_ticket_reply": "Email me when my support ticket gets a reply",
+        "email_notifications_description": "Choose when you want to hear from us by email."
     },
     "announcement_dropdown": {
         "title": "Announcements",

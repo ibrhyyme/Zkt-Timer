@@ -3,7 +3,7 @@ import './LinkedAccounts.scss';
 import block from '../../../styles/bem';
 import IntegrationService from './integration_service/IntegrationService';
 import WhatsappCommunityCard from './whatsapp_community/WhatsappCommunityCard';
-import Module from '../../common/module/Module';
+import SettingsCard from '../common/settings_card/SettingsCard';
 
 const b = block('account-linked-accounts');
 
@@ -12,15 +12,15 @@ export default function LinkedAccounts() {
 		<div className={b()}>
 			{/* ZKT first: it is the federation that runs the competitions these
 			    accounts are for, and the identity Zkt Timer matches them on. */}
-			<Module>
+			<SettingsCard>
 				<IntegrationService integrationType="zkt" />
-			</Module>
-			<Module>
+			</SettingsCard>
+			<SettingsCard>
 				<IntegrationService integrationType="wca" />
-			</Module>
-			<Module>
+			</SettingsCard>
+			<SettingsCard>
 				<WhatsappCommunityCard />
-			</Module>
+			</SettingsCard>
 		</div>
 	);
 }

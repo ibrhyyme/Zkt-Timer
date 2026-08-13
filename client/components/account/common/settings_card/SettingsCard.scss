@@ -1,0 +1,120 @@
+@import '../../../../styles/config';
+
+// One flat surface, one rule, one type scale. The effects this used to carry
+// (gradient fill, backdrop blur, glowing icon chip, accent hairline, staggered
+// entrance) each read as reasonable alone and as generated template when stacked.
+// Hierarchy now comes from type and spacing instead.
+.#{$namespace}-settings-card {
+	position: relative;
+	background: rgba(var(--text-color), 0.035);
+	border: 1px solid rgba(var(--text-color), 0.09);
+	border-radius: 14px;
+	padding: 26px;
+	margin-bottom: 14px;
+
+	&:last-child {
+		margin-bottom: 0;
+	}
+
+	@media (max-width: 768px) {
+		padding: 20px;
+	}
+
+	&__header {
+		display: flex;
+		flex-direction: row;
+		align-items: flex-start;
+		gap: 12px;
+		margin-bottom: 20px;
+	}
+
+	// Bare icon in the section's colour. No chip, no glow — it labels the block, it
+	// isn't the block's decoration.
+	&__icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		margin-top: 2px;
+		color: rgb(var(--active-tone, var(--primary-color)));
+
+		svg {
+			width: 21px;
+			height: 21px;
+		}
+	}
+
+	&__heading {
+		min-width: 0;
+	}
+
+	// Kontora is the app's display face (page titles already use it); reusing it here
+	// ties the settings pages to the rest of the product rather than to a default UI font.
+	&__title {
+		font-family: Kontora, Poppins, Arial, 'Helvetica Neue', Helvetica, sans-serif;
+		font-size: 1.5rem;
+		font-weight: 500;
+		letter-spacing: -0.01em;
+		line-height: 1.15;
+		margin: 0;
+		color: rgb(var(--text-color));
+	}
+
+	&__description {
+		font-size: 0.9rem;
+		font-weight: 400;
+		line-height: 1.5;
+		margin: 6px 0 0 0;
+		color: rgb(var(--text-color));
+	}
+
+	&__body {
+		display: flex;
+		flex-direction: column;
+
+		// Text fields stop growing well before the card does. A single-line input
+		// stretched across a wide monitor is hard to scan and looks unfinished; other
+		// content (grids, toggle rows) still uses the full width.
+		.#{$namespace}-common-generic-input {
+			max-width: 620px;
+		}
+	}
+
+	&__footer {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 10px;
+		margin-top: 20px;
+		padding-top: 18px;
+		border-top: 1px solid rgba(var(--text-color), 0.08);
+	}
+
+	// Destructive and pending states earn colour; nothing else on the card does.
+	&--danger {
+		border-color: rgba(var(--error-color), 0.4);
+		background: rgba(var(--error-color), 0.05);
+
+		.#{$namespace}-settings-card__icon {
+			color: rgb(var(--error-color));
+		}
+
+		.#{$namespace}-settings-card__footer {
+			border-top-color: rgba(var(--error-color), 0.22);
+		}
+	}
+
+	&--warning {
+		border-color: rgba(var(--warning-color), 0.4);
+		background: rgba(var(--warning-color), 0.05);
+
+		.#{$namespace}-settings-card__icon {
+			color: rgb(var(--warning-color));
+		}
+
+		.#{$namespace}-settings-card__footer {
+			border-top-color: rgba(var(--warning-color), 0.24);
+		}
+	}
+}

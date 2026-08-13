@@ -1,43 +1,8 @@
 @import '../../../styles/config';
 
-.#{$namespace}-pending-email {
-	margin: 13px 0;
-	padding: 18px 20px;
-	border-radius: 15px;
-	background: rgb(var(--module-color));
-	border: 1px solid rgba(var(--warning-color), 0.45);
-
-	&__title {
-		font-size: 1rem;
-		font-weight: 700;
-		color: rgb(var(--text-color));
-		margin-bottom: 6px;
-		display: flex;
-		align-items: center;
-		gap: 8px;
-	}
-
-	&__icon {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 22px;
-		height: 22px;
-		border-radius: 50%;
-		background: rgb(var(--warning-color));
-		color: white;
-		font-size: 0.75rem;
-		font-weight: 800;
-	}
-
-	&__description {
-		font-size: 0.9rem;
-		font-weight: 500;
-		color: rgb(var(--text-color));
-		margin-bottom: 8px;
-		line-height: 1.4;
-	}
-
+// The pending-email block moved into SettingsCard's warning variant; only the two
+// bits of content that card doesn't cover live here.
+.#{$namespace}-personal-info {
 	&__email {
 		font-size: 0.95rem;
 		font-weight: 700;
@@ -51,6 +16,5 @@
 		font-weight: 600;
 		color: rgb(var(--error-color));
 		margin-top: 4px;
-		margin-bottom: 8px;
 	}
 }
