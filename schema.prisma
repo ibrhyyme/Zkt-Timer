@@ -201,6 +201,14 @@ model Integration {
   zkt_name               String?
   zkt_avatar_url         String?
   zkt_country_iso2       String?
+  // Which parts of the member's ZKT career their profile shows, mirroring the
+  // wca_show_* switches above. There is no ZKT equivalent of wca_show_rank
+  // (a world ranking is a WCA fact) and no separate "results" switch: the
+  // federation publishes career totals, not a result-by-result history.
+  zkt_show_competitions  Boolean     @default(true)
+  zkt_show_medals        Boolean     @default(true)
+  zkt_show_records       Boolean     @default(true)
+  zkt_show_pbs           Boolean     @default(true)
   kinch_score            Float?
   sor_single             Int?
   sor_average            Int?

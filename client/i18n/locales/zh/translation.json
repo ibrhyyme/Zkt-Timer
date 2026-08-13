@@ -1073,7 +1073,11 @@
         "notif_follow_countdown_title_days": "{{days}} 天后：{{competitionName}}",
         "notif_follow_countdown_title_tomorrow": "明天：{{competitionName}}",
         "notif_follow_countdown_body": "你正在关注 {{count}} 名选手。你将实时收到结果。",
-        "live_entered_progress": "已录入 {{entered}}/{{total}} 个成绩"
+        "live_entered_progress": "已录入 {{entered}}/{{total}} 个成绩",
+        "zkt_live_unavailable": "此比赛在 ZKT Live 上不可用",
+        "zkt_live_error": "加载 ZKT Live 失败。请刷新页面。",
+        "view_zkt_page": "查看 ZKT 比赛页面",
+        "day_filter_all": "全部选手"
     },
     "competitions": {
         "page_title": "WCA 比赛",
@@ -1816,7 +1820,25 @@
         "cuber_card_stat_silver": "银牌",
         "cuber_card_stat_bronze": "铜牌",
         "cuber_card_records": "记录",
-        "send_message": "发送消息"
+        "send_message": "发送消息",
+        "zkt_manage_data": "管理 ZKT 数据",
+        "zkt_manage_data_desc": "选择个人资料中显示哪些 Zeka Küpü Türkiye 成绩。",
+        "zkt_visibility_title": "个人资料显示内容",
+        "zkt_toggle_competitions": "比赛次数",
+        "zkt_toggle_medals": "奖牌",
+        "zkt_toggle_records": "ZKT 纪录",
+        "zkt_toggle_pbs": "ZKT 个人最佳",
+        "zkt_your_data": "你的 ZKT 数据",
+        "zkt_competitions": "ZKT 比赛",
+        "zkt_medals": "奖牌",
+        "zkt_records": "ZKT 纪录",
+        "zkt_official_records": "ZKT 官方纪录",
+        "zkt_records_short": "ZKT",
+        "zkt_loading": "正在加载 ZKT 数据…",
+        "zkt_not_linked": "此个人资料尚未关联 Zeka Küpü Türkiye 账号。",
+        "zkt_link_account": "关联账号",
+        "zkt_no_results_yet": "你还没有已公布的 ZKT 成绩。ZKT ID 会在首个成绩公布时发放。",
+        "zkt_data_info": "这些数据实时来自 Zeka Küpü Türkiye，每场比赛后自动更新。"
     },
     "stats_page": {
         "more_stats": "更多统计数据",
@@ -2419,7 +2441,10 @@
         ],
         "nav_timer_name": "计时器",
         "nav_battle_name": "对战模式",
-        "nav_pro_name": "Zkt Timer Pro"
+        "nav_pro_name": "Zkt Timer Pro",
+        "wca_records_title": "WCA 纪录 - 最新打破的纪录 | Zkt Timer",
+        "wca_records_description": "最新打破的 WCA 世界、洲际和国家纪录，并可为关注的项目开启纪录提醒。",
+        "wca_records_keywords": "wca 纪录, 魔方世界纪录, 国家纪录, 纪录提醒, 速拧纪录"
     },
     "quick_controls": {
         "timer": "计时器",
@@ -2710,6 +2735,8 @@
     "zkt_auth": {
         "divider_or_email": "或使用邮箱",
         "continue_with_wca": "使用 WCA 登录",
+        "signup_with_wca": "使用 WCA 注册",
+        "signup_with_zkt": "使用 ZKT 注册",
         "connecting": "连接中…",
         "submit_login": "登录",
         "submit_signup": "创建账户",
@@ -4209,7 +4236,8 @@
         "holder": "保持者",
         "result": "成绩",
         "competition": "比赛",
-        "record_type_col": "类型"
+        "record_type_col": "类型",
+        "day_filter_all": "全部选手"
     },
     "password_strength": {
         "lowercase": "小写字母",

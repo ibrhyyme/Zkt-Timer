@@ -14,16 +14,38 @@ export default function ZktCompetitorsTab({detail}: {detail: any}) {
 	const history = useHistory();
 	const {competitionId} = useParams<{competitionId: string}>();
 	const [search, setSearch] = useState('');
+	const [dayFilter, setDayFilter] = useState<string | null>(null);
+
+	// Day-split competition: one filter above the list instead of a badge on every
+	// row. The day is something you look for, not something you read on every name.
+	const dayChips = useMemo(() => {
+		const counts = new Map<string, number>();
+		for (const c of detail.competitors || []) {
+			if (!c.dayLabel) continue;
+			counts.set(c.dayLabel, (counts.get(c.dayLabel) || 0) + 1);
+		}
+		if (counts.size < 2) return [];
+		const ordered = (detail.days || [])
+			.map((d: any) => d.label)
+			.filter((label: string) => counts.has(label));
+		for (const label of counts.keys()) {
+			if (!ordered.includes(label)) ordered.push(label);
+		}
+		return ordered.map((label: string) => ({label, count: counts.get(label) || 0}));
+	}, [detail.competitors, detail.days]);
 
 	const filtered = useMemo(() => {
-		const all = detail.competitors || [];
+		let all = detail.competitors || [];
+		if (dayFilter) {
+			all = all.filter((c: any) => c.dayLabel === dayFilter);
+		}
 		const q = search.trim().toLowerCase();
 		if (!q) return all;
 		return all.filter((c: any) => {
 			const extId = (competitorExtId(c) || '').toLowerCase();
 			return competitorDisplayName(c).toLowerCase().includes(q) || extId.includes(q);
 		});
-	}, [detail.competitors, search]);
+	}, [detail.competitors, search, dayFilter]);
 
 	return (
 		<div className={b('competitors-tab')}>
@@ -38,6 +60,28 @@ export default function ZktCompetitorsTab({detail}: {detail: any}) {
 					onChange={(e) => setSearch(e.target.value)}
 				/>
 			</div>
+
+			{dayChips.length > 0 && (
+				<div className={b('day-filter')}>
+					<button
+						className={b('day-chip', {active: dayFilter === null})}
+						onClick={() => setDayFilter(null)}
+					>
+						{t('day_filter_all')}
+						<span className={b('day-chip-count')}>{(detail.competitors || []).length}</span>
+					</button>
+					{dayChips.map((chip: any) => (
+						<button
+							key={chip.label}
+							className={b('day-chip', {active: dayFilter === chip.label})}
+							onClick={() => setDayFilter(dayFilter === chip.label ? null : chip.label)}
+						>
+							{chip.label}
+							<span className={b('day-chip-count')}>{chip.count}</span>
+						</button>
+					))}
+				</div>
+			)}
 
 			<span className={b('competitor-count')}>
 				{t('total_competitors', {count: filtered.length})}
@@ -69,10 +113,7 @@ export default function ZktCompetitorsTab({detail}: {detail: any}) {
 									</span>
 									{extId && <span className={b('competitor-id')}>{extId}</span>}
 								</div>
-								{/* Which day they attend, on a day-split competition. Two
-								    competitors of the same competition can be there on different
-								    mornings, and the list is where that first becomes visible. */}
-								{c.dayLabel && <span className={b('competitor-day')}>{c.dayLabel}</span>}
+								{/* No per-row day badge — the filter above carries that. */}
 							</div>
 						);
 					})}

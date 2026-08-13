@@ -1332,6 +1332,48 @@
 		color: rgb(var(--text-color));
 	}
 
+	// Day filter for a day-split competition — one control above the list instead
+	// of the same two labels repeated on every row.
+	&__day-filter {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+		margin-bottom: 0.75rem;
+	}
+
+	&__day-chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		padding: 0.35rem 0.7rem;
+		border: 1px solid rgba(var(--text-color), 0.12);
+		border-radius: 999px;
+		background: transparent;
+		color: rgb(var(--text-color));
+		font-size: 0.78rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition: background 0.15s ease, border-color 0.15s ease;
+
+		&:hover {
+			border-color: rgba(var(--primary-color), 0.5);
+		}
+
+		&--active {
+			border-color: rgb(var(--primary-color));
+			background: rgba(var(--primary-color), 0.14);
+			color: rgb(var(--primary-color));
+		}
+	}
+
+	&__day-chip-count {
+		padding: 0.05rem 0.35rem;
+		border-radius: 0.35rem;
+		background: rgba(var(--text-color), 0.1);
+		font-size: 0.7rem;
+		font-weight: 700;
+	}
+
 	&__competitor-day {
 		margin-left: 0.5rem;
 		padding: 0.1rem 0.45rem;

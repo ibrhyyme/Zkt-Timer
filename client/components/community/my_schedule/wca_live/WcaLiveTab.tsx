@@ -17,8 +17,11 @@ interface Props {
 	roundNumber: number | null;
 }
 
-// Error Boundary: crash isolation for WCA Live tab
-class WcaLiveErrorBoundary extends Component<{children: ReactNode}, {hasError: boolean}> {
+// Error Boundary: crash isolation for the live tab
+class WcaLiveErrorBoundary extends Component<
+	{children: ReactNode; isZkt?: boolean},
+	{hasError: boolean}
+> {
 	state = {hasError: false};
 
 	static getDerivedStateFromError(): {hasError: boolean} {
@@ -35,7 +38,11 @@ class WcaLiveErrorBoundary extends Component<{children: ReactNode}, {hasError: b
 			return (
 				<div className={b('info-banner')}>
 					<Warning size={18} />
-					<span>{i18n.t('my_schedule.wca_live_error')}</span>
+					<span>
+						{i18n.t(
+							this.props.isZkt ? 'my_schedule.zkt_live_error' : 'my_schedule.wca_live_error'
+						)}
+					</span>
 				</div>
 			);
 		}
@@ -50,6 +57,9 @@ function WcaLiveTabInner({eventId, roundNumber}: Props) {
 	const isMobile = useIsMobile();
 
 	const enabled = !!detail?.wcaLiveCompId;
+	// Same components serve both federations; only the wording differs.
+	const isZkt = !!detail?.competitionId?.startsWith('zkt-');
+	const unavailableKey = isZkt ? 'my_schedule.zkt_live_unavailable' : 'my_schedule.wca_live_unavailable';
 	const {data: overview, loading, lastUpdated, refresh} = useWcaLiveOverview(detail?.competitionId || '', enabled);
 
 	const selectedEvent = useMemo(() => {
@@ -61,7 +71,7 @@ function WcaLiveTabInner({eventId, roundNumber}: Props) {
 		return (
 			<div className={b('info-banner')}>
 				<Info size={18} />
-				<span>{t('my_schedule.wca_live_unavailable')}</span>
+				<span>{t(unavailableKey)}</span>
 			</div>
 		);
 	}
@@ -74,7 +84,7 @@ function WcaLiveTabInner({eventId, roundNumber}: Props) {
 		return (
 			<div className={b('info-banner')}>
 				<Info size={18} />
-				<span>{t('my_schedule.wca_live_unavailable')}</span>
+				<span>{t(unavailableKey)}</span>
 			</div>
 		);
 	}
@@ -195,8 +205,10 @@ function WcaLiveTabInner({eventId, roundNumber}: Props) {
 }
 
 export default function WcaLiveTab(props: Props) {
+	const {detail} = useCompetitionData();
+	const isZkt = !!detail?.competitionId?.startsWith('zkt-');
 	return (
-		<WcaLiveErrorBoundary>
+		<WcaLiveErrorBoundary isZkt={isZkt}>
 			<WcaLiveTabInner {...props} />
 		</WcaLiveErrorBoundary>
 	);

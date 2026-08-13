@@ -35,12 +35,19 @@ export default function WcaLiveEventDetail({event, competitionId, roundNumber, i
 		};
 	}, [detail?.competitors]);
 
-	// Find logged-in user's name in WCIF (for highlighting even if WCA ID doesn't match)
+	// Find logged-in user's name in WCIF (for highlighting even if WCA ID doesn't match).
+	// registrantId is checked too: on a ZKT competition nobody carries a wcaId, so
+	// keying on it alone left the viewer's own row unhighlighted in their own
+	// competition.
 	const myName = useMemo(() => {
-		if (!detail?.myWcaId || !detail?.competitors) return null;
-		const me = detail.competitors.find((c: any) => c.wcaId === detail.myWcaId);
+		if (!detail?.competitors) return null;
+		const me = detail.competitors.find(
+			(c: any) =>
+				(detail.myWcaId && c.wcaId === detail.myWcaId) ||
+				(detail.myRegistrantId != null && c.registrantId === detail.myRegistrantId)
+		);
 		return me?.name || null;
-	}, [detail?.myWcaId, detail?.competitors]);
+	}, [detail?.myWcaId, detail?.myRegistrantId, detail?.competitors]);
 
 	const defaultRound = useMemo(() => {
 		if (!event?.rounds || event.rounds.length === 0) return null;

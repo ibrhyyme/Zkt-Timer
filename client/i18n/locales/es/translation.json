@@ -1073,7 +1073,11 @@
         "notif_follow_countdown_title_days": "En {{days}} días: {{competitionName}}",
         "notif_follow_countdown_title_tomorrow": "Mañana: {{competitionName}}",
         "notif_follow_countdown_body": "Sigues a {{count}} competidor(es). Recibirás resultados en vivo.",
-        "live_entered_progress": "{{entered}}/{{total}} resultados introducidos"
+        "live_entered_progress": "{{entered}}/{{total}} resultados introducidos",
+        "zkt_live_unavailable": "Esta competición no está disponible en ZKT Live",
+        "zkt_live_error": "Error al cargar ZKT Live. Actualiza la página.",
+        "view_zkt_page": "Ver página ZKT de la competencia",
+        "day_filter_all": "Todos los competidores"
     },
     "competitions": {
         "page_title": "Competencias WCA",
@@ -1816,7 +1820,25 @@
         "cuber_card_stat_silver": "Plata",
         "cuber_card_stat_bronze": "Bronce",
         "cuber_card_records": "Récords",
-        "send_message": "Enviar mensaje"
+        "send_message": "Enviar mensaje",
+        "zkt_manage_data": "Gestionar datos ZKT",
+        "zkt_manage_data_desc": "Elige qué muestra tu perfil de tu trayectoria en Zeka Küpü Türkiye.",
+        "zkt_visibility_title": "Lo que muestra tu perfil",
+        "zkt_toggle_competitions": "Número de competiciones",
+        "zkt_toggle_medals": "Medallas",
+        "zkt_toggle_records": "Récords ZKT",
+        "zkt_toggle_pbs": "Mejores marcas ZKT",
+        "zkt_your_data": "Tus datos ZKT",
+        "zkt_competitions": "Competiciones ZKT",
+        "zkt_medals": "Medallas",
+        "zkt_records": "Récords ZKT",
+        "zkt_official_records": "Récords oficiales ZKT",
+        "zkt_records_short": "ZKT",
+        "zkt_loading": "Cargando datos ZKT…",
+        "zkt_not_linked": "Este perfil aún no tiene una cuenta de Zeka Küpü Türkiye vinculada.",
+        "zkt_link_account": "Vincular cuenta",
+        "zkt_no_results_yet": "Aún no tienes resultados ZKT publicados. Tu ZKT ID se emite con tu primer resultado publicado.",
+        "zkt_data_info": "Estos datos vienen en vivo de Zeka Küpü Türkiye y se actualizan solos tras cada competición."
     },
     "stats_page": {
         "more_stats": "Más estadísticas",
@@ -2419,7 +2441,10 @@
         ],
         "nav_timer_name": "Temporizador",
         "nav_battle_name": "Modo Battle",
-        "nav_pro_name": "Zkt Timer Pro"
+        "nav_pro_name": "Zkt Timer Pro",
+        "wca_records_title": "Récords WCA - Récords recién batidos | Zkt Timer",
+        "wca_records_description": "Últimos récords mundiales, continentales y nacionales de la WCA, con alertas para las pruebas que sigues.",
+        "wca_records_keywords": "records wca, record mundial cubo, record nacional, alertas de records, records speedcubing"
     },
     "quick_controls": {
         "timer": "Timer",
@@ -2710,6 +2735,8 @@
     "zkt_auth": {
         "divider_or_email": "o con email",
         "continue_with_wca": "Iniciar sesión con WCA",
+        "signup_with_wca": "Regístrate con WCA",
+        "signup_with_zkt": "Regístrate con ZKT",
         "connecting": "Conectando…",
         "submit_login": "Iniciar sesión",
         "submit_signup": "Crear cuenta",
@@ -4124,7 +4151,8 @@
         "holder": "Titular",
         "result": "Resultado",
         "competition": "Competición",
-        "record_type_col": "Tipo"
+        "record_type_col": "Tipo",
+        "day_filter_all": "Todos los competidores"
     },
     "password_strength": {
         "lowercase": "Letra minúscula",

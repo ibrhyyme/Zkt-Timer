@@ -127,6 +127,14 @@ export class WcaCompetitor {
 	@Field({nullable: true})
 	wcaId?: string;
 
+	/**
+	 * Federation competitor id, present only on ZKT competitions (and only for
+	 * members who have already competed). It takes the place `wcaId` holds on a
+	 * WCA competition: the id printed under the person's name.
+	 */
+	@Field({nullable: true})
+	zktId?: string;
+
 	@Field({nullable: true})
 	country?: string;
 
@@ -228,6 +236,10 @@ export class WcaEventDetail {
 
 	@Field()
 	eventName: string;
+
+	/** Day-split ZKT competitions: the single day this event runs on, if pinned. */
+	@Field({nullable: true})
+	dayLabel?: string;
 
 	@Field(() => [WcaRound])
 	rounds: WcaRound[];

@@ -368,6 +368,7 @@ query wcaCompetitionDetail($input: WcaScheduleInput!) {
 		competitors {
 			name
 			wcaId
+			zktId
 			country
 			avatar
 			registrantId
@@ -397,6 +398,7 @@ query wcaCompetitionDetail($input: WcaScheduleInput!) {
 		events {
 			eventId
 			eventName
+			dayLabel
 			rounds {
 				roundNumber
 				format

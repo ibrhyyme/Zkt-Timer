@@ -120,6 +120,38 @@ export class IntegrationResolver {
 		});
 	}
 
+	/**
+	 * Which parts of the member's ZKT career their profile shows. Same shape as
+	 * updateWcaVisibility; there is no ZKT "rank" switch because a world ranking
+	 * is a WCA fact.
+	 */
+	@Authorized([Role.LOGGED_IN])
+	@Mutation(() => Integration)
+	async updateZktVisibility(
+		@Ctx() context: GraphQLContext,
+		@Arg('showCompetitions', {nullable: true}) showCompetitions?: boolean,
+		@Arg('showMedals', {nullable: true}) showMedals?: boolean,
+		@Arg('showRecords', {nullable: true}) showRecords?: boolean,
+		@Arg('showPbs', {nullable: true}) showPbs?: boolean
+	) {
+		const {user, prisma} = context;
+		const integration = await getIntegration(user, 'zkt');
+		if (!integration) {
+			throw new GraphQLError(ErrorCode.FORBIDDEN, 'ZKT account is not linked');
+		}
+
+		const data: any = {};
+		if (showCompetitions !== undefined) data.zkt_show_competitions = showCompetitions;
+		if (showMedals !== undefined) data.zkt_show_medals = showMedals;
+		if (showRecords !== undefined) data.zkt_show_records = showRecords;
+		if (showPbs !== undefined) data.zkt_show_pbs = showPbs;
+
+		return prisma.integration.update({
+			where: {id: integration.id},
+			data,
+		});
+	}
+
 	@Authorized([Role.LOGGED_IN])
 	@Mutation(() => Integration)
 	async deleteIntegration(

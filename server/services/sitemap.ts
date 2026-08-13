@@ -201,10 +201,14 @@ function getDefaultSiteMapUrls() {
 		'/forgot',
 		'/verify-email',
 		'/wca-signup',
+		'/zkt-signup',
 		'/unsub-emails',
 		'/account',
 		'/oauth',
 		'/admin',
+		// Private conversations + the competition organizer console
+		'/messages',
+		'/organizer',
 		// ZKT competitions are private — never expose to Google in any form
 		'/zkt-competitions',
 		'/zkt-records',

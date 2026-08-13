@@ -199,8 +199,14 @@ export default function ZktAuthScene({
 								{/* ZKT first: it is the identity the federation issues now,
 								    and the one a Turkish competitor's results hang off.
 								    WCA keeps the divider so the pair reads as one block. */}
-								<ZktSection onTrigger={choreography.onWcaTrigger} />
-								<WcaSection onTrigger={choreography.onWcaTrigger} />
+								<ZktSection
+									onTrigger={choreography.onWcaTrigger}
+									mode={mode === 'signup' ? 'signup' : 'login'}
+								/>
+								<WcaSection
+									onTrigger={choreography.onWcaTrigger}
+									mode={mode === 'signup' ? 'signup' : 'login'}
+								/>
 							</>
 						)}
 						{body}

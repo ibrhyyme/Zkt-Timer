@@ -212,9 +212,17 @@ export default function CompetitionLoader({competitionId, children}: Competition
 	}, [competitionId]);
 
 	if (loading) {
+		// The loading screen wears the badge of whichever federation owns the
+		// competition being opened; a ZKT competition showing the WCA mark reads
+		// as if the wrong page is loading.
+		const loadingIsZkt = competitionId?.startsWith('zkt-');
 		return (
 			<div className={b('wca-loading')}>
-				<img src={resourceUri('/images/logos/wca_logo.svg')} alt="WCA" className={b('wca-loading-logo')} />
+				<img
+					src={resourceUri(loadingIsZkt ? '/images/logos/zkt_logo.png' : '/images/logos/wca_logo.svg')}
+					alt={loadingIsZkt ? 'ZKT' : 'WCA'}
+					className={b('wca-loading-logo')}
+				/>
 				<div className={b('wca-loading-bar')}>
 					<div className={b('wca-loading-bar-fill')} />
 				</div>

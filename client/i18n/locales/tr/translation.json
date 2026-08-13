@@ -1024,7 +1024,7 @@
         "wca_live_active_rounds": "Aktif Turlar",
         "wca_live_schedule": "Takvim",
         "wca_live_records": "Rekorlar",
-        "wca_live_no_results": "Bu round için henüz sonuç yok",
+        "wca_live_no_results": "Bu tur için henüz sonuç yok",
         "round_status_done": "Tamamlandı",
         "round_status_live": "Canlı",
         "round_status_open": "Açık",
@@ -1032,10 +1032,10 @@
         "back_to_competition": "Yarışmaya dön",
         "back": "Geri",
         "loading": "Yükleniyor...",
-        "notif_result_title": "{{eventName}} Round {{roundNumber}} Sonucun Yayınlandı",
-        "notif_result_body_avg_single": "Avg: {{avg}} · Single: {{single}}",
-        "notif_result_body_single_only": "Single: {{single}}",
-        "notif_round_finished_title": "{{eventName}} Round {{roundNumber}} Tamamlandı",
+        "notif_result_title": "{{eventName}} {{roundNumber}}. Tur Sonucun Yayınlandı",
+        "notif_result_body_avg_single": "Ortalama: {{avg}} · Tekli: {{single}}",
+        "notif_result_body_single_only": "Tekli: {{single}}",
+        "notif_round_finished_title": "{{eventName}} {{roundNumber}}. Tur Tamamlandı",
         "notif_final_finished_title": "{{eventName}} Finali Tamamlandı",
         "notif_advancing": "Tebrikler! {{ranking}}. Sırayla üst tura yükseldin!",
         "notif_advancing_questionable": "Tebrikler! {{ranking}}. Sırayla üst tura yükseldin (ön sıralama, değişebilir)",
@@ -1080,7 +1080,11 @@
         "notif_follow_countdown_title_days": "{{days}} gün sonra: {{competitionName}}",
         "notif_follow_countdown_title_tomorrow": "Yarın yarışma: {{competitionName}}",
         "notif_follow_countdown_body": "Takip listende {{count}} yarışmacı var. Sonuçları anlık alacaksın.",
-        "live_entered_progress": "{{entered}}/{{total}} sonuç girildi"
+        "live_entered_progress": "{{entered}}/{{total}} sonuç girildi",
+        "zkt_live_unavailable": "Bu yarışma ZKT Live'da bulunamadı",
+        "zkt_live_error": "ZKT Live yüklenirken bir sorun oluştu. Sayfayı yenileyin.",
+        "view_zkt_page": "ZKT yarışma sayfasını görüntüle",
+        "day_filter_all": "Tüm yarışmacılar"
     },
     "competitions": {
         "page_title": "WCA Yarışmaları",
@@ -1823,7 +1827,25 @@
         "cuber_card_stat_silver": "Gümüş",
         "cuber_card_stat_bronze": "Bronz",
         "cuber_card_records": "Rekorlar",
-        "send_message": "Mesaj gönder"
+        "send_message": "Mesaj gönder",
+        "zkt_manage_data": "ZKT Verilerini Yönet",
+        "zkt_manage_data_desc": "Zeka Küpü Türkiye geçmişinin profilinde nelerin görüneceğini seç.",
+        "zkt_visibility_title": "Profilinde görünenler",
+        "zkt_toggle_competitions": "Yarışma sayısı",
+        "zkt_toggle_medals": "Madalyalar",
+        "zkt_toggle_records": "ZKT rekorları",
+        "zkt_toggle_pbs": "ZKT kişisel rekorları",
+        "zkt_your_data": "ZKT verilerin",
+        "zkt_competitions": "ZKT yarışması",
+        "zkt_medals": "Madalya",
+        "zkt_records": "ZKT rekoru",
+        "zkt_official_records": "ZKT Resmi Rekorlar",
+        "zkt_records_short": "ZKT",
+        "zkt_loading": "ZKT verileri yükleniyor…",
+        "zkt_not_linked": "Bu profile bağlı bir Zeka Küpü Türkiye hesabı yok.",
+        "zkt_link_account": "Hesap bağla",
+        "zkt_no_results_yet": "Henüz yayınlanmış ZKT sonucun yok. ZKT ID'n ilk sonucun yayınlandığında verilir.",
+        "zkt_data_info": "Bu veriler Zeka Küpü Türkiye'den canlı gelir ve her yarışmadan sonra kendiliğinden güncellenir."
     },
     "stats_page": {
         "more_stats": "Daha Fazla İstatistik",
@@ -2426,7 +2448,10 @@
         ],
         "nav_timer_name": "Zamanlayıcı",
         "nav_battle_name": "Battle Modu",
-        "nav_pro_name": "Zkt Timer Pro"
+        "nav_pro_name": "Zkt Timer Pro",
+        "wca_records_title": "WCA Rekorları - Son Kırılan Rekorlar | Zkt Timer",
+        "wca_records_description": "Son kırılan WCA dünya, kıta ve ülke rekorları; takip ettiğin etkinlikler için rekor bildirimleri.",
+        "wca_records_keywords": "wca rekorları, dünya rekoru küp, ülke rekoru, rekor bildirimi, speedcubing rekorları"
     },
     "quick_controls": {
         "timer": "Timer",
@@ -2717,6 +2742,8 @@
     "zkt_auth": {
         "divider_or_email": "veya email ile",
         "continue_with_wca": "WCA ile giriş yap",
+        "signup_with_wca": "WCA ile kayıt ol",
+        "signup_with_zkt": "ZKT ile kayıt ol",
         "connecting": "Bağlanıyor…",
         "submit_login": "Giriş Yap",
         "submit_signup": "Hesap Oluştur",
@@ -4214,7 +4241,8 @@
         "holder": "Sahibi",
         "result": "Sonuç",
         "competition": "Yarışma",
-        "record_type_col": "Tür"
+        "record_type_col": "Tür",
+        "day_filter_all": "Tüm yarışmacılar"
     },
     "password_strength": {
         "lowercase": "Küçük harf",

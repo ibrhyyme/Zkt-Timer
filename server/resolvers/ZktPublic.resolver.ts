@@ -9,6 +9,8 @@ import {Resolver, Query, Arg, Int, Ctx, Authorized} from 'type-graphql';
 import {ZktFederationService} from '../services/ZktFederationService';
 import {GraphQLContext} from '../@types/interfaces/server.interface';
 import {getIntegration} from '../models/integration';
+import {getMyZktProfile, getPublicZktProfile} from '../models/zkt_profile';
+import {PublicZktProfile} from '../schemas/PublicZktProfile.schema';
 import {
 	ZktPublicCompetitionDetail,
 	ZktPublicCompetitionList,
@@ -35,29 +37,48 @@ export class ZktPublicResolver {
 	 * comes from the viewer's own linked integrations, never from an argument —
 	 * otherwise anyone could enumerate another person's schedule.
 	 *
-	 * ZKT id first, WCA id only as a fallback. The federation dropped WCA as an
-	 * identity, so a member who signed up there with email/phone has no WCA id at
-	 * all and used to be invisible here; their ZKT link is the only thing that
-	 * finds them. The WCA fallback stays for members who linked WCA on both sides
-	 * and have not connected ZKT yet.
+	 * The ZKT link is the ONLY identity accepted here, mirroring how the WCA list
+	 * needs a WCA link. There used to be a WCA-id fallback, and it made unlinking
+	 * a no-op: the viewer disconnected ZKT and their registrations kept showing up
+	 * under "My competitions" because the WCA id still matched federation-side.
+	 * Linking is the switch that turns this list on, unlinking turns it off.
 	 *
-	 * With neither link there is nothing to match on, so the list is empty rather
+	 * Without the link there is nothing to match on, so the list is empty rather
 	 * than an error.
 	 */
 	@Authorized()
 	@Query(() => [ZktPublicMyListItem])
 	async zktPublicMyCompetitions(@Ctx() ctx: GraphQLContext): Promise<ZktPublicMyListItem[]> {
 		const zktIntegration = await getIntegration(ctx.user, 'zkt');
-		let personKey = zktIntegration?.zkt_id || null;
-		if (!personKey) {
-			const wcaIntegration = await getIntegration(ctx.user, 'wca');
-			personKey = wcaIntegration?.wca_id || null;
-		}
+		const personKey = zktIntegration?.zkt_id || null;
 		if (!personKey) return [];
 		const payload = (await ZktFederationService.fetchPersonCompetitions(personKey).catch(
 			() => null
 		)) as {items?: ZktPublicMyListItem[]} | null;
 		return payload?.items || [];
+	}
+
+	/**
+	 * A user's public ZKT career summary for their profile — the federation
+	 * counterpart of `publicWcaProfile`. Sections the owner switched off come
+	 * back null, so hidden data never reaches another viewer's browser.
+	 */
+	@Query(() => PublicZktProfile, {nullable: true})
+	async publicZktProfile(
+		@Arg('userId', {nullable: true}) userId?: string
+	): Promise<PublicZktProfile | null> {
+		if (!userId) return null;
+		return getPublicZktProfile(userId);
+	}
+
+	/**
+	 * The viewer's OWN ZKT profile with every section present regardless of its
+	 * switch — the manage panel has to show what a hidden section holds.
+	 */
+	@Authorized()
+	@Query(() => PublicZktProfile, {nullable: true})
+	async myZktProfile(@Ctx() ctx: GraphQLContext): Promise<PublicZktProfile | null> {
+		return getMyZktProfile(ctx.user.id);
 	}
 
 	@Query(() => ZktPublicCompetitionDetail, {nullable: true})

@@ -913,6 +913,47 @@ $zkt-info-green: #45d97c;
 	// Day-split competitions ("A günü / B günü"). Every surface below answers one
 	// question the competitor cannot get wrong: which morning is theirs. Full
 	// colour throughout — hierarchy comes from size and weight, never opacity.
+	// Day filter above the competitor list — replaces a badge on every row.
+	&__day-filter {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+		margin-bottom: 12px;
+	}
+
+	&__day-chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		padding: 6px 12px;
+		border: 1px solid rgba(var(--text-color), 0.12);
+		border-radius: 999px;
+		background: transparent;
+		color: rgb(var(--text-color));
+		font-size: 13px;
+		font-weight: 600;
+		cursor: pointer;
+		transition: background 0.15s ease, border-color 0.15s ease;
+
+		&:hover {
+			border-color: rgba(var(--primary-color), 0.5);
+		}
+
+		&--active {
+			border-color: rgb(var(--primary-color));
+			background: rgba(var(--primary-color), 0.14);
+			color: rgb(var(--primary-color));
+		}
+	}
+
+	&__day-chip-count {
+		padding: 1px 6px;
+		border-radius: 5px;
+		background: rgba(var(--text-color), 0.1);
+		font-size: 12px;
+		font-weight: 700;
+	}
+
 	&__competitor-day {
 		margin-left: auto;
 		padding: 2px 8px;

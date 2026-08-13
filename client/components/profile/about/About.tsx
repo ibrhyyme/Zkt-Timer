@@ -10,9 +10,21 @@ interface Props {
 	profile: Profile;
 }
 
+/**
+ * A bio worth rendering. Some rows carry the literal strings "undefined"/"null"
+ * (an old import wrote the result of String(undefined) into the column), and
+ * those printed straight onto the profile as the word `undefined`.
+ */
+export function meaningfulBio(bio?: string | null): string | null {
+	const trimmed = (bio || '').trim();
+	if (!trimmed || trimmed === 'undefined' || trimmed === 'null') return null;
+	return trimmed;
+}
+
 export default function About(props: Props) {
 	const { t } = useTranslation();
 	const { profile } = props;
+	const bio = meaningfulBio(profile.bio);
 
 	const chips: { label: string; value: string }[] = [];
 	if (profile.main_three_cube) {
@@ -24,8 +36,8 @@ export default function About(props: Props) {
 
 	return (
 		<div className={b()}>
-			{profile.bio && <p className={b('bio')}>{profile.bio}</p>}
-			{!profile.bio && <p className={b('bio', { empty: true })}>{t('profile.no_bio')}</p>}
+			{bio && <p className={b('bio')}>{bio}</p>}
+			{!bio && <p className={b('bio', { empty: true })}>{t('profile.no_bio')}</p>}
 			{chips.length > 0 && (
 				<div className={b('chips')}>
 					{chips.map((chip) => (

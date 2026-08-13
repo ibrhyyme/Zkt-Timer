@@ -10,7 +10,7 @@ import { PROFILE_FRAGMENT } from '../../util/graphql/fragments';
 import PbCard from './pb_card/PbCard';
 import PFP from './pfp/PFP';
 import UploadCover from '../common/upload_cover/UploadCover';
-import About from './about/About';
+import About, {meaningfulBio} from './about/About';
 import { setSsrValue } from '../../actions/ssr';
 import Header from '../layout/header/Header';
 import WCA from './wca/WCA';
@@ -35,6 +35,9 @@ import LoadingIcon from '../common/LoadingIcon';
 import OfflineGuard from '../common/offline_guard/OfflineGuard';
 import MobileNav from '../layout/nav/mobile_nav/MobileNav';
 import WcaSummary from './wca_summary/WcaSummary';
+import ZktSummary from './zkt_summary/ZktSummary';
+import ZktPbCard from './zkt_pb_card/ZktPbCard';
+import ManageZktData from './manage_zkt_data/ManageZktData';
 import WcaResults from './wca_results/WcaResults';
 import CuberCardCanvas from './cuber_card/CuberCardCanvas';
 import {captureCuberCard, shareOrDownloadCuberCard} from '../../util/cuber_card';
@@ -78,21 +81,29 @@ export async function getProfileData(username: string): Promise<IProfileData> {
 		(ta) => !(ta.cube_type === 'wca' && !ta.scramble_subset)
 	);
 
+	// Keyed on the BUCKET — (cube_type, scramble_subset) — not on cube_type alone.
+	// Keying on the type collapsed every subset of the same puzzle into one slot,
+	// so publishing six records showed three: each new subset overwrote the last.
+	// An average also used to be dropped unless a single existed in the same
+	// bucket, which silently hid average-only records.
 	const pbs = {};
+	const bucketKey = (cubeType: string, subset?: string | null) => `${cubeType}::${subset ?? ''}`;
 
 	for (const topSolve of topSolves) {
 		const solve = topSolve.solve;
-		const cubeType = solve.cube_type;
-		if (!pbs[cubeType]) {
-			pbs[cubeType] = {};
+		const key = bucketKey(solve.cube_type, solve.scramble_subset);
+		if (!pbs[key]) {
+			pbs[key] = {};
 		}
-		pbs[cubeType].single = topSolve;
+		pbs[key].single = topSolve;
 	}
 
 	for (const topAverage of topAverages) {
-		if (pbs[topAverage.cube_type]) {
-			pbs[topAverage.cube_type].average = topAverage;
+		const key = bucketKey(topAverage.cube_type, topAverage.scramble_subset);
+		if (!pbs[key]) {
+			pbs[key] = {};
 		}
+		pbs[key].average = topAverage;
 	}
 
 	return {
@@ -197,9 +208,13 @@ function ProfileContent() {
 	const [ssrProfile, setSsrProfile] = useSsr<IProfileData>(matchUsername);
 	const [loading, setLoading] = useState(!ssrProfile);
 	const [profileData, setProfileData] = useState<IProfileData>(ssrProfile);
-	const [recordsTab, setRecordsTab] = useState<'pb' | 'wca' | 'results'>('pb');
+	const [recordsTab, setRecordsTab] = useState<'pb' | 'wca' | 'zkt' | 'results'>('pb');
 	const [wcaRecords, setWcaRecords] = useState([]);
 	const [wcaIntegration, setWcaIntegration] = useState<any>(null);
+	// The federation counterpart of wcaIntegration. Read live from the federation
+	// through our server, so it is fetched separately rather than served from the
+	// profile payload.
+	const [zktProfile, setZktProfile] = useState<any>(null);
 	const [wcaResultsData, setWcaResultsData] = useState<any[]>(null);
 	const [fabOpen, setFabOpen] = useState(false);
 	const [cuberCardOpen, setCuberCardOpen] = useState(false);
@@ -231,8 +246,41 @@ function ProfileContent() {
 	useEffect(() => {
 		if (user?.id) {
 			loadWcaRecords();
+			loadZktProfile();
 		}
 	}, [user?.id]);
+
+	async function loadZktProfile() {
+		try {
+			const query = gql`
+				query PublicZktProfile($userId: String) {
+					publicZktProfile(userId: $userId) {
+						zkt_id
+						zkt_member_no
+						zkt_competition_count
+						zkt_medal_gold
+						zkt_medal_silver
+						zkt_medal_bronze
+						zkt_record_count
+						zkt_personal_bests {
+							event_id
+							single
+							average
+						}
+						zkt_show_competitions
+						zkt_show_medals
+						zkt_show_records
+						zkt_show_pbs
+					}
+				}
+			`;
+			const res = await gqlQuery(query, {userId: user?.id});
+			setZktProfile((res.data as any)?.publicZktProfile || null);
+		} catch (error) {
+			// No linked ZKT account is the normal empty case, not a failure.
+			setZktProfile(null);
+		}
+	}
 
 	async function loadWcaRecords() {
 		try {
@@ -382,6 +430,17 @@ function ProfileContent() {
 		);
 	}
 
+	function openManageZktData() {
+		dispatch(
+			openModal(<ManageZktData />, {
+				title: t('profile.zkt_manage_data'),
+				description: t('profile.zkt_manage_data_desc'),
+				hideCloseButton: true,
+				onComplete: () => window.location.reload(),
+			})
+		);
+	}
+
 	async function handleCreateCuberCard() {
 		if (cuberCardGenerating) return;
 		setCuberCardOpen(true);
@@ -418,24 +477,26 @@ function ProfileContent() {
 		);
 	}
 
-	const topCubeTypes = Object.keys(pbs);
+	const pbBuckets = Object.keys(pbs);
 
+	// One card per published record, not per bucket: a bucket holding both a
+	// single and an average is two records, and the old `else if` drew only the
+	// single — the average was published server-side but never shown.
 	const pbCards = [];
-	for (const ct of topCubeTypes) {
-		let solves = [];
-		const pb = pbs[ct];
+	for (const key of pbBuckets) {
+		const pb = pbs[key];
 
-		let topRecord = null;
-		if (pb?.single) {
-			solves = [pb.single.solve];
-			topRecord = pb.single;
-		} else if (pb.average) {
-			const avg = pb.average;
-			solves = [avg.solve_1, avg.solve_2, avg.solve_3, avg.solve_4, avg.solve_5];
-			topRecord = pb.average;
+		if (pb.single) {
+			const singleSolves: any[] = [pb.single.solve];
+			pbCards.push(
+				<PbCard key={pb.single.id} solves={singleSolves} topRecord={pb.single} user={user} />
+			);
 		}
-
-		pbCards.push(<PbCard key={pb.single?.id || pb.average?.id || ct} solves={solves} topRecord={topRecord} user={user} />);
+		if (pb.average) {
+			const avg = pb.average;
+			const avgSolves: any[] = [avg.solve_1, avg.solve_2, avg.solve_3, avg.solve_4, avg.solve_5];
+			pbCards.push(<PbCard key={avg.id} solves={avgSolves} topRecord={avg} user={user} />);
+		}
 	}
 
 	const myProfile = user.id === me?.id;
@@ -444,8 +505,13 @@ function ProfileContent() {
 		<WcaPbCard key={record.id} record={record} />
 	));
 
+	// ZKT competition bests. Null when the owner hid the section server-side, so
+	// the tab simply does not appear for a viewer.
+	const zktPbs: any[] = zktProfile?.zkt_personal_bests || [];
+	const zktCards = zktPbs.map((pb: any) => <ZktPbCard key={pb.event_id} pb={pb} />);
+
 	// Stats bar data
-	const pbCount = topCubeTypes.length;
+	const pbCount = pbCards.length;
 	const wcaCount = wcaRecords.length;
 
 	// Best world rank comes from the server (computed across all records,
@@ -455,7 +521,7 @@ function ProfileContent() {
 
 	// Default tab: if no PB switch to WCA, if no WCA switch to results
 	const hasResults = wcaIntegration?.wca_id && wcaIntegration.wca_show_results !== false;
-	const showTabs = pbCards.length > 0 || wcaCards.length > 0 || hasResults;
+	const showTabs = pbCards.length > 0 || wcaCards.length > 0 || zktCards.length > 0 || hasResults;
 
 	let recordsSection = null;
 	if (showTabs) {
@@ -485,6 +551,20 @@ function ProfileContent() {
 							<span className={b('tab-count')}>{wcaCards.length}</span>
 						</button>
 					)}
+					{zktCards.length > 0 && (
+						<button
+							className={b('tab', { active: recordsTab === 'zkt' })}
+							onClick={() => setRecordsTab('zkt')}
+						>
+							<img
+								src={resourceUri('/images/logos/zkt_logo.png')}
+								alt="ZKT"
+								className={b('tab-wca-logo')}
+							/>
+							{t(mobileMode ? 'profile.zkt_records_short' : 'profile.zkt_official_records')}
+							<span className={b('tab-count')}>{zktCards.length}</span>
+						</button>
+					)}
 					{hasResults && (
 						<button
 							className={b('tab', { active: recordsTab === 'results' })}
@@ -500,6 +580,9 @@ function ProfileContent() {
 					)}
 					{recordsTab === 'wca' && (
 						<div className={b('pbs')}>{wcaCards}</div>
+					)}
+					{recordsTab === 'zkt' && (
+						<div className={b('pbs')}>{zktCards}</div>
 					)}
 					{recordsTab === 'results' && wcaIntegration?.wca_id && (
 						<WcaResults wcaId={wcaIntegration.wca_id} data={wcaResultsData} />
@@ -528,6 +611,17 @@ function ProfileContent() {
 					onClick={openPublishWcaRecords}
 					small
 				/>
+				{/* Only offered once a ZKT account is actually linked — an empty panel
+				    is not a feature. */}
+				{zktProfile && (
+					<Button
+						primary
+						icon={<Plus weight="bold" />}
+						text={t('profile.zkt_manage_data')}
+						onClick={openManageZktData}
+						small
+					/>
+				)}
 				<Button
 					primary
 					icon={<ShareNetwork weight="bold" />}
@@ -553,6 +647,11 @@ function ProfileContent() {
 						<button className={b('fab-item')} onClick={() => { openPublishWcaRecords(); setFabOpen(false); }}>
 							{t('profile.wca_manage_data')}
 						</button>
+						{zktProfile && (
+							<button className={b('fab-item')} onClick={() => { openManageZktData(); setFabOpen(false); }}>
+								{t('profile.zkt_manage_data')}
+							</button>
+						)}
 						<button
 							className={b('fab-item')}
 							onClick={() => { handleCreateCuberCard(); setFabOpen(false); }}
@@ -655,8 +754,8 @@ function ProfileContent() {
 					{/* Desktop publish buttons */}
 					{desktopPublishButtons}
 
-					{/* Bio Card — at the top, hidden if empty */}
-					{profile.bio && <About profile={profile} />}
+					{/* Bio Card — at the top, hidden if empty (or a junk "undefined" row) */}
+					{meaningfulBio(profile.bio) && <About profile={profile} />}
 
 					{/* WCA Summary Card */}
 					{wcaIntegration && (
@@ -666,6 +765,9 @@ function ProfileContent() {
 							bestWorldRankEvent={bestWorldRankEvent}
 						/>
 					)}
+
+					{/* ZKT Summary Card — same shape, other federation */}
+					{zktProfile && <ZktSummary profile={zktProfile} />}
 
 					{/* Stats Bar */}
 					<div className={b('stats-bar', { mobile: mobileMode })}>

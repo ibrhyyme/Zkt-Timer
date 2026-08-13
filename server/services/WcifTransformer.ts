@@ -47,6 +47,15 @@ interface WcifPerson {
 	registrantId: number;
 	wcaUserId: number;
 	wcaId: string;
+	/**
+	 * Federation identities, present only on ZKT WCIF (the WCA export has no such
+	 * fields). `zktUserId` is the account and is always set for a member;
+	 * `zktId` is the competitor identity and only exists once they have competed.
+	 * The viewer is matched on these — the federation dropped WCA as an identity,
+	 * so `wcaId` is null for everyone there.
+	 */
+	zktId?: string | null;
+	zktUserId?: string | null;
 	name: string;
 	countryIso2?: string;
 	roles: string[];
@@ -145,6 +154,8 @@ export interface PersonalBestEntry {
 export interface CompetitorEntry {
 	name: string;
 	wcaId: string | null;
+	/** ZKT competitions only — the id shown where a WCA competition shows wcaId. */
+	zktId?: string | null;
 	country: string | null;
 	avatar: string | null;
 	registrantId: number;
@@ -192,6 +203,13 @@ export interface RoundEntry {
 export interface EventDetailEntry {
 	eventId: string;
 	eventName: string;
+	/**
+	 * Day-split ZKT competitions: the day this event is pinned to, when the
+	 * organizer pinned it to one. Null on every WCA competition and on a ZKT
+	 * event that runs on both days. Turning up on the wrong morning means
+	 * missing the event, so this belongs next to the event name.
+	 */
+	dayLabel?: string | null;
 	rounds: RoundEntry[];
 }
 
@@ -247,6 +265,16 @@ function zktPersonDayLabel(person: any): string | null {
 		(e: any) => e?.id === 'org.zktimer.zktRegistration.v1'
 	);
 	return (ext?.data?.dayLabel as string) || null;
+}
+
+/**
+ * The day a ZKT event is pinned to, from the event extension. Empty for an
+ * event that runs on both days (and for every WCA competition, which has no
+ * such extension at all).
+ */
+function zktEventDayLabel(event: any): string | null {
+	const ext = (event?.extensions || []).find((e: any) => e?.id === 'org.zktimer.zktEvent.v1');
+	return (ext?.data?.fixedDayLabel as string) || null;
 }
 
 /** The competition's days, from the ZKT competition extension. */
@@ -390,6 +418,7 @@ function buildCompetitorsList(persons: WcifPerson[], activityMap: Map<number, Ac
 			return {
 				name: person.name,
 				wcaId: person.wcaId || null,
+				zktId: person.zktId || null,
 				country: person.countryIso2 || null,
 				avatar: (person as any).avatar?.thumb_url || (person as any).avatar?.url || null,
 				registrantId: person.registrantId,
@@ -552,6 +581,7 @@ function buildEventDetails(wcifData: WcifData, activityMap: Map<number, Activity
 		return {
 			eventId: event.id,
 			eventName: WcaApiService.getEventName(event.id),
+			dayLabel: zktEventDayLabel(event),
 			rounds,
 		};
 	});
@@ -624,7 +654,18 @@ function buildInfo(wcifData: WcifData): any {
 
 // --- Master builder ---
 
-export function buildCompetitionDetail(wcifData: WcifData, myWcaId: string, myWcaUserId?: string): CompetitionDetail | null {
+/** Who is looking, in federation terms. Empty on every WCA competition. */
+export interface ZktViewerIdentity {
+	zktUserId?: string | null;
+	zktId?: string | null;
+}
+
+export function buildCompetitionDetail(
+	wcifData: WcifData,
+	myWcaId: string,
+	myWcaUserId?: string,
+	myZkt?: ZktViewerIdentity
+): CompetitionDetail | null {
 	if (!wcifData) {
 		return null;
 	}
@@ -636,11 +677,28 @@ export function buildCompetitionDetail(wcifData: WcifData, myWcaId: string, myWc
 	if (!myPerson && myWcaUserId) {
 		myPerson = persons.find((p) => p.wcaUserId && String(p.wcaUserId) === myWcaUserId) || null;
 	}
+	// ZKT competitions: nobody in the WCIF carries a wcaId, so the two lookups
+	// above can never hit and the viewer stays anonymous on their own
+	// competition page. The account id is checked first because every member has
+	// one; the competitor id only exists after they have competed. Both are
+	// compared as non-empty strings — two nulls are not a match.
+	if (!myPerson && (myZkt?.zktUserId || myZkt?.zktId)) {
+		const wantUser = myZkt.zktUserId || null;
+		const wantComp = myZkt.zktId || null;
+		myPerson =
+			persons.find((p) => wantUser && p.zktUserId && String(p.zktUserId) === String(wantUser)) ||
+			persons.find((p) => wantComp && p.zktId && String(p.zktId) === String(wantComp)) ||
+			null;
+	}
 
 	return {
 		competitionId: wcifData.id,
 		competitionName: wcifData.name,
-		myWcaId: myPerson?.wcaId || myWcaId || null,
+		// Once the person is found, THEIR wcaId is the answer, even when it is null
+		// (ZKT). Falling back to the viewer's own id here used to make the client
+		// believe it had a usable match key and skip the registrantId comparison,
+		// so a ZKT competitor was never recognised in their own competitor list.
+		myWcaId: myPerson ? myPerson.wcaId || null : myWcaId || null,
 		myRegistrantId: myPerson?.registrantId ?? null,
 		myRegistrationStatus: myPerson?.registration?.status || null,
 		myRegisteredEvents: myPerson?.registration?.eventIds || [],

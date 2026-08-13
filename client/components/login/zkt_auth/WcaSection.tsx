@@ -10,9 +10,11 @@ const b = block('zkt-auth');
 
 interface Props {
 	onTrigger?: () => void;
+	/** Signup tab says "sign up", not "log in" — same button, different promise. */
+	mode?: 'login' | 'signup';
 }
 
-export default function WcaSection({ onTrigger }: Props) {
+export default function WcaSection({ onTrigger, mode = 'login' }: Props) {
 	const { t } = useTranslation();
 	const [loading, setLoading] = useState(false);
 
@@ -47,7 +49,11 @@ export default function WcaSection({ onTrigger }: Props) {
 					alt="WCA"
 					className={b('wca-logo-img')}
 				/>
-				<span>{loading ? t('zkt_auth.connecting') : t('zkt_auth.continue_with_wca')}</span>
+				<span>
+					{loading
+						? t('zkt_auth.connecting')
+						: t(mode === 'signup' ? 'zkt_auth.signup_with_wca' : 'zkt_auth.continue_with_wca')}
+				</span>
 			</button>
 			<div className={b('divider')}>
 				<span>{t('zkt_auth.divider_or_email')}</span>

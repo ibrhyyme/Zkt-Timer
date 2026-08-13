@@ -103,6 +103,18 @@ export class Integration {
 	@Field(() => String, { nullable: true })
 	zkt_country_iso2?: string;
 
+	@Field(() => Boolean, { nullable: true })
+	zkt_show_competitions?: boolean;
+
+	@Field(() => Boolean, { nullable: true })
+	zkt_show_medals?: boolean;
+
+	@Field(() => Boolean, { nullable: true })
+	zkt_show_records?: boolean;
+
+	@Field(() => Boolean, { nullable: true })
+	zkt_show_pbs?: boolean;
+
 	@Field(() => Date, { nullable: true })
 	revoked_at?: Date;
 

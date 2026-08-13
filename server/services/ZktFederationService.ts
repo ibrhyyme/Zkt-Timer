@@ -172,6 +172,17 @@ export class ZktFederationService {
 		);
 	}
 
+	// One member's ZKT career summary (competitions, medals, records, PBs) —
+	// what the profile's "ZKT data" panel renders, the counterpart of the WCA
+	// numbers stored on the integration row. Keyed by ZKT id.
+	static async fetchPersonSummary(zktId: string): Promise<unknown | null> {
+		return fetchDataFromCache(
+			createRedisKey(RedisNamespace.ZKT_FED_PERSON, zktId),
+			() => fetchJson(`/persons/${encodeURIComponent(zktId)}/`),
+			TTL_DETAIL
+		);
+	}
+
 	// National records set at one competition — the ZKT counterpart of WCA Live's
 	// competitionRecords. Structural surface, so it tolerates the detail TTL.
 	static async fetchCompetitionRecords(idOrSlug: string): Promise<unknown | null> {

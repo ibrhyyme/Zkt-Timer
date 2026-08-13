@@ -46,11 +46,21 @@ export function getPageKeywords(currentPath: string, t: TFunction): string {
 	if (currentPath === '/solves') return t('seo.solves_keywords', fallback);
 	if (currentPath === '/pro' || currentPath === '/account/pro') return t('seo.pro_keywords', fallback);
 	if (currentPath.startsWith('/user/')) return t('seo.user_profile_keywords', fallback);
+	if (currentPath === '/competitions/records') return t('seo.wca_records_keywords', fallback);
+	if (currentPath.startsWith('/competitions/zkt-')) return t('seo.zkt_competitions_keywords', fallback);
 	if (currentPath.startsWith('/competitions')) return t('seo.wca_competitions_keywords', fallback);
 	if (currentPath.startsWith('/zkt-competitions')) return t('seo.zkt_competitions_keywords', fallback);
 	if (currentPath === '/zkt-records') return t('seo.zkt_records_keywords', fallback);
 	if (currentPath === '/zkt-rankings') return t('seo.zkt_rankings_keywords', fallback);
-	if (currentPath === '/login' || currentPath === '/signup' || currentPath === '/wca-signup' || currentPath === '/forgot') return t('seo.login_keywords', fallback);
+	if (
+		currentPath === '/login' ||
+		currentPath === '/signup' ||
+		currentPath === '/wca-signup' ||
+		currentPath === '/zkt-signup' ||
+		currentPath === '/forgot'
+	) {
+		return t('seo.login_keywords', fallback);
+	}
 
 	return fallback;
 }
@@ -343,28 +353,36 @@ export default function Header(props: Props) {
 		} else if (currentPath === '/competitions') {
 			pageTitle = t('seo.wca_competitions_title');
 			pageDesc = t('seo.wca_competitions_description');
-		} else if (/\/community\/competitions\/[^/]+\/wca-live/.test(currentPath)) {
+		} else if (currentPath.startsWith('/competitions/zkt-')) {
+			// A ZKT competition rendered through the WCA components — same route
+			// prefix, different federation, so it must not read "WCA competition".
+			pageTitle = t('seo.zkt_competition_detail_title');
+			pageDesc = t('seo.zkt_competition_detail_description');
+		} else if (currentPath === '/competitions/records') {
+			pageTitle = t('seo.wca_records_title');
+			pageDesc = t('seo.wca_records_description');
+		} else if (/^\/competitions\/[^/]+\/wca-live/.test(currentPath)) {
 			pageTitle = t('seo.wca_live_title');
 			pageDesc = t('seo.wca_live_description');
-		} else if (/\/community\/competitions\/[^/]+\/persons/.test(currentPath)) {
+		} else if (/^\/competitions\/[^/]+\/persons/.test(currentPath)) {
 			pageTitle = t('seo.wca_person_title');
 			pageDesc = t('seo.wca_person_description');
-		} else if (/\/community\/competitions\/[^/]+\/activities/.test(currentPath)) {
+		} else if (/^\/competitions\/[^/]+\/activities/.test(currentPath)) {
 			pageTitle = t('seo.wca_activity_title');
 			pageDesc = t('seo.wca_activity_description');
-		} else if (/\/community\/competitions\/[^/]+\/personal-bests/.test(currentPath)) {
+		} else if (/^\/competitions\/[^/]+\/personal-bests/.test(currentPath)) {
 			pageTitle = t('seo.wca_personal_bests_title');
 			pageDesc = t('seo.wca_personal_bests_description');
 		} else if (currentPath.startsWith('/competitions/')) {
 			pageTitle = t('seo.wca_competition_detail_title');
 			pageDesc = t('seo.wca_competition_detail_description');
-		} else if (/\/community\/zkt-competitions\/[^/]+\/live/.test(currentPath)) {
+		} else if (/^\/zkt-competitions\/[^/]+\/live/.test(currentPath)) {
 			pageTitle = t('seo.zkt_live_title');
 			pageDesc = t('seo.zkt_live_description');
-		} else if (/\/community\/zkt-competitions\/[^/]+\/competitors/.test(currentPath)) {
+		} else if (/^\/zkt-competitions\/[^/]+\/competitors/.test(currentPath)) {
 			pageTitle = t('seo.zkt_competitor_title');
 			pageDesc = t('seo.zkt_competitor_description');
-		} else if (/\/community\/zkt-competitions\/[^/]+\/activities/.test(currentPath)) {
+		} else if (/^\/zkt-competitions\/[^/]+\/activities/.test(currentPath)) {
 			pageTitle = t('seo.zkt_activity_title');
 			pageDesc = t('seo.zkt_activity_description');
 		} else if (currentPath.startsWith('/zkt-competitions/')) {
@@ -404,16 +422,24 @@ export default function Header(props: Props) {
 	// ZKT competitions private — accessible only to registered users
 	const noIndexPaths = [
 		'/settings', '/sessions', '/force-log-out', '/account', '/oauth', '/admin',
-		'/verify-email', '/wca-signup',
+		'/verify-email', '/wca-signup', '/zkt-signup',
+		// Private conversations and the organizer console — never a search result.
+		'/messages', '/organizer',
 		'/zkt-competitions', '/zkt-records', '/zkt-rankings',
 	];
 	// WCA competition sub-pages — unlimited URLs, thin content risk (same strategy as WCA Live)
 	// Main competition page (`/competitions/:id`) and list remain indexable.
+	// These patterns match the REAL routes: `/competitions/...`, with no
+	// `/community` prefix (Routes.ts). The old prefixed patterns matched nothing,
+	// so every one of these pages was being served as indexable.
 	const noIndexPatterns = [
-		/^\/community\/competitions\/[^/]+\/wca-live\//,
-		/^\/community\/competitions\/[^/]+\/persons\//,
-		/^\/community\/competitions\/[^/]+\/activities\//,
-		/^\/community\/competitions\/[^/]+\/personal-bests\//,
+		// ZKT competitions stay private wherever they are rendered — including the
+		// WCA-shaped route `/competitions/zkt-<slug>`.
+		/^\/competitions\/zkt-/,
+		/^\/competitions\/[^/]+\/wca-live/,
+		/^\/competitions\/[^/]+\/persons/,
+		/^\/competitions\/[^/]+\/activities/,
+		/^\/competitions\/[^/]+\/personal-bests/,
 	];
 	const shouldNoIndex =
 		noIndexPaths.some((p) => currentPath.startsWith(p)) ||

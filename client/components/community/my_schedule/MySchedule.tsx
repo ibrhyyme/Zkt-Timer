@@ -2,7 +2,6 @@ import React, {Suspense} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useRouteMatch, useHistory} from 'react-router-dom';
 import {ArrowLeft} from 'phosphor-react';
-import Header from '../../layout/header/Header';
 import CompetitionLoader from './CompetitionLoader';
 import CompetitionList from './CompetitionList';
 import CompetitionDetail from './CompetitionDetail';
@@ -56,7 +55,6 @@ function MyScheduleInner() {
 	if (matchRecords) {
 		return (
 			<div className={b()}>
-				<Header path="/competitions" title={t('my_schedule.page_title')} />
 				<RecordRadar />
 			</div>
 		);
@@ -130,7 +128,6 @@ function MyScheduleInner() {
 
 		return (
 			<div className={b()}>
-				<Header path="/competitions" title={t('my_schedule.page_title')} />
 				<div className={b('content', {wide: !!matchCompetitorResults})}>
 					<CompetitionLoader competitionId={competitionId}>
 						{child}
@@ -143,7 +140,6 @@ function MyScheduleInner() {
 	// Competition list
 	return (
 		<div className={b()}>
-			<Header path="/competitions" title={t('my_schedule.page_title')} />
 			<CompetitionList />
 		</div>
 	);

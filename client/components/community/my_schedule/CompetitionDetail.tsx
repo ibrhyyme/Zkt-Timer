@@ -22,6 +22,10 @@ export default function CompetitionDetail() {
 	const [searchQuery, setSearchQuery] = useState('');
 	const [selectedRankingEvent, setSelectedRankingEvent] = useState<string | null>(null);
 
+	// Which federation runs this competition. Every "WCA …" label on the page is
+	// keyed off this — the components are shared, the wording must not be.
+	const isZktCompetition = !!detail.competitionId?.startsWith('zkt-');
+
 	const TABS: {id: TabId; label: string; icon: any; count?: number}[] = [
 		{id: 'groups', label: t('my_schedule.tab_groups'), icon: Users, count: detail.competitors.length},
 	];
@@ -29,10 +33,9 @@ export default function CompetitionDetail() {
 	if (detail.wcaLiveCompId) {
 		// A ZKT competition uses the SAME live components; only the label reads
 		// "ZKT Live" instead of "WCA Live".
-		const isZkt = detail.competitionId?.startsWith('zkt-');
 		TABS.push({
 			id: 'wca-live',
-			label: isZkt ? t('my_schedule.zkt_live') : t('my_schedule.wca_live'),
+			label: isZktCompetition ? t('my_schedule.zkt_live') : t('my_schedule.wca_live'),
 			icon: Broadcast,
 		});
 	}
@@ -119,6 +122,7 @@ export default function CompetitionDetail() {
 						myWcaId={detail.myWcaId}
 						myRegistrantId={detail.myRegistrantId}
 						competitionId={detail.competitionId}
+						days={detail.days}
 						searchQuery={searchQuery}
 						setSearchQuery={setSearchQuery}
 						t={t}
@@ -133,11 +137,12 @@ export default function CompetitionDetail() {
 						competitionId={detail.competitionId}
 						selectedEvent={selectedRankingEvent}
 						setSelectedEvent={setSelectedRankingEvent}
+						isZkt={isZktCompetition}
 						t={t}
 					/>
 				)}
 				{activeTab === 'info' && (
-					<InfoTab info={detail.info} t={t} />
+					<InfoTab info={detail.info} isZkt={isZktCompetition} t={t} />
 				)}
 			</div>
 		</div>
@@ -146,11 +151,35 @@ export default function CompetitionDetail() {
 
 // --- Tab 1: Groups ---
 
-function GroupsTab({competitors, myWcaId, myRegistrantId, competitionId, searchQuery, setSearchQuery, t}: any) {
+function GroupsTab({competitors, myWcaId, myRegistrantId, competitionId, days, searchQuery, setSearchQuery, t}: any) {
 	const history = useHistory();
+	const [dayFilter, setDayFilter] = useState<string | null>(null);
+
+	// Day-split competition: which days actually appear in this list, with their
+	// counts. One control at the top replaces a badge on every single row — the
+	// day matters when you are looking for it, not while reading names.
+	const dayChips = useMemo(() => {
+		const counts = new Map<string, number>();
+		for (const c of competitors || []) {
+			if (!c.dayLabel) continue;
+			counts.set(c.dayLabel, (counts.get(c.dayLabel) || 0) + 1);
+		}
+		if (counts.size < 2) return [];
+		// Competition day order, not first-seen order.
+		const ordered = (days || [])
+			.map((d: any) => d.label)
+			.filter((label: string) => counts.has(label));
+		for (const label of counts.keys()) {
+			if (!ordered.includes(label)) ordered.push(label);
+		}
+		return ordered.map((label: string) => ({label, count: counts.get(label) || 0}));
+	}, [competitors, days]);
 
 	const filtered = useMemo(() => {
 		let list = competitors;
+		if (dayFilter) {
+			list = list.filter((c: any) => c.dayLabel === dayFilter);
+		}
 		if (searchQuery.trim()) {
 			const q = searchQuery.toLowerCase();
 			list = list.filter((c: any) =>
@@ -159,17 +188,20 @@ function GroupsTab({competitors, myWcaId, myRegistrantId, competitionId, searchQ
 				String(c.registrantId).includes(q)
 			);
 		}
+		// Both keys are tried on every row instead of picking one up front: on a ZKT
+		// competition the viewer can hold a WCA id while nobody in the list carries
+		// one, and the old `if (myWcaId) … else if` shape then never reached the
+		// registrantId comparison — the person stayed unpinned in their own list.
+		const isMine = (c: any) =>
+			(!!myWcaId && c.wcaId === myWcaId) ||
+			(myRegistrantId != null && c.registrantId === myRegistrantId);
 		return [...list].sort((a: any, bx: any) => {
-			if (myWcaId) {
-				if (a.wcaId === myWcaId) return -1;
-				if (bx.wcaId === myWcaId) return 1;
-			} else if (myRegistrantId) {
-				if (a.registrantId === myRegistrantId) return -1;
-				if (bx.registrantId === myRegistrantId) return 1;
-			}
+			const aMine = isMine(a);
+			const bMine = isMine(bx);
+			if (aMine !== bMine) return aMine ? -1 : 1;
 			return a.registrantId - bx.registrantId;
 		});
-	}, [competitors, searchQuery, myWcaId, myRegistrantId]);
+	}, [competitors, searchQuery, dayFilter, myWcaId, myRegistrantId]);
 
 	return (
 		<div className={b('groups-tab')}>
@@ -183,6 +215,28 @@ function GroupsTab({competitors, myWcaId, myRegistrantId, competitionId, searchQ
 					onChange={(e) => setSearchQuery(e.target.value)}
 				/>
 			</div>
+
+			{dayChips.length > 0 && (
+				<div className={b('day-filter')}>
+					<button
+						className={b('day-chip', {active: dayFilter === null})}
+						onClick={() => setDayFilter(null)}
+					>
+						{t('my_schedule.day_filter_all')}
+						<span className={b('day-chip-count')}>{competitors.length}</span>
+					</button>
+					{dayChips.map((chip: any) => (
+						<button
+							key={chip.label}
+							className={b('day-chip', {active: dayFilter === chip.label})}
+							onClick={() => setDayFilter(dayFilter === chip.label ? null : chip.label)}
+						>
+							{chip.label}
+							<span className={b('day-chip-count')}>{chip.count}</span>
+						</button>
+					))}
+				</div>
+			)}
 
 			<span className={b('competitor-count')}>
 				{t('my_schedule.competitor_count', {count: filtered.length})}
@@ -200,16 +254,18 @@ function GroupsTab({competitors, myWcaId, myRegistrantId, competitionId, searchQ
 						>
 							<span className={b('competitor-number')}>{comp.registrantId}</span>
 							<div className={b('competitor-info')}>
+								{/* No per-row day badge: the day filter above answers "who is
+								    here on which morning" without repeating the same two labels
+								    down the whole list. */}
 								<span className={b('competitor-name-list')}>
 									{comp.name}
 									{isMe && <span className={b('me-badge')}>{t('my_schedule.you')}</span>}
-									{/* Two competitors of the same competition can be there on
-									    different mornings; the list is where that shows first. */}
-									{comp.dayLabel && (
-										<span className={b('competitor-day')}>{comp.dayLabel}</span>
-									)}
 								</span>
-								{comp.wcaId && <span className={b('competitor-id')}>{comp.wcaId}</span>}
+								{/* One slot, two federations: a ZKT competitor has no WCA id,
+								    and their ZKT id is the identity that belongs here. */}
+								{(comp.wcaId || comp.zktId) && (
+									<span className={b('competitor-id')}>{comp.wcaId || comp.zktId}</span>
+								)}
 							</div>
 							{!isMe && (
 								<FollowBellButton
@@ -242,6 +298,10 @@ function EventsTab({events, competitionId, locale, t}: any) {
 				result.push({
 					eventId: event.eventId,
 					eventName: event.eventName,
+					// Day-split competition: an event pinned to one day is the fact a
+					// competitor cannot afford to miss — they would come on the wrong
+					// morning and the event would be over.
+					dayLabel: event.dayLabel || null,
 					roundNumber: round.roundNumber,
 					format: round.format,
 					groupCount: round.groups.length,
@@ -280,6 +340,9 @@ function EventsTab({events, competitionId, locale, t}: any) {
 								>
 									<td className={b('events-cell-event')}>
 										{row.isFirstRound ? row.eventName : ''}
+										{row.isFirstRound && row.dayLabel && (
+											<span className={b('competitor-day')}>{row.dayLabel}</span>
+										)}
 									</td>
 									<td className={b('events-cell-center')}>{row.roundNumber}</td>
 									<td className={b('events-cell-center')}>{row.groupCount}</td>
@@ -371,7 +434,7 @@ function RoundPanel({row, competitionId, locale, t}: any) {
 
 // --- Tab 3: Rankings ---
 
-function RankingsTab({allPersonalBests, competitionId, selectedEvent, setSelectedEvent, t}: any) {
+function RankingsTab({allPersonalBests, competitionId, selectedEvent, setSelectedEvent, isZkt, t}: any) {
 	const history = useHistory();
 
 	const eventIds = useMemo(() => {
@@ -434,7 +497,9 @@ function RankingsTab({allPersonalBests, competitionId, selectedEvent, setSelecte
 							<th>{t('my_schedule.col_name')}</th>
 							<th>Single</th>
 							<th>Average</th>
-							<th>WR</th>
+							{/* World ranking is a WCA fact. On a ZKT competition the column
+							    exists only to print a dash on every row. */}
+							{!isZkt && <th>WR</th>}
 						</tr>
 					</thead>
 					<tbody>
@@ -453,7 +518,7 @@ function RankingsTab({allPersonalBests, competitionId, selectedEvent, setSelecte
 								</td>
 								<td className={b('rank-time')}>{row.single ? formatWcaTime(row.single) : '-'}</td>
 								<td className={b('rank-time')}>{row.average ? formatWcaTime(row.average) : '-'}</td>
-								<td className={b('rank-wr')}>{row.singleWorldRank || '-'}</td>
+								{!isZkt && <td className={b('rank-wr')}>{row.singleWorldRank || '-'}</td>}
 							</tr>
 						))}
 					</tbody>
@@ -465,7 +530,7 @@ function RankingsTab({allPersonalBests, competitionId, selectedEvent, setSelecte
 
 // --- Tab 5: Info ---
 
-function InfoTab({info, t}: any) {
+function InfoTab({info, isZkt, t}: any) {
 	function renderPerson(p: any, i: number) {
 		const content = (
 			<>
@@ -499,10 +564,13 @@ function InfoTab({info, t}: any) {
 
 	return (
 		<div className={b('info-tab')}>
+			{/* The link goes to whichever federation runs this competition — on a ZKT
+			    competition it opens zekakuputurkiye.com, so calling it "the WCA page"
+			    was simply wrong. */}
 			{info.wcaUrl && (
 				<button className={b('wca-link')} onClick={() => openInAppBrowser(info.wcaUrl)}>
 					<Globe size={16} />
-					{t('my_schedule.view_wca_page')}
+					{t(isZkt ? 'my_schedule.view_zkt_page' : 'my_schedule.view_wca_page')}
 				</button>
 			)}
 

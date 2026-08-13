@@ -13,7 +13,7 @@ import {
 import {GraphQLContext} from '../@types/interfaces/server.interface';
 import {getIntegration} from '../models/integration';
 import {WcaApiService} from '../services/WcaApiService';
-import {buildCompetitionDetail} from '../services/WcifTransformer';
+import {buildCompetitionDetail, ZktViewerIdentity} from '../services/WcifTransformer';
 import {fetchDataFromCache, createRedisKey, RedisNamespace, deleteKeyInRedis, getValueFromRedis, setKeyInRedis} from '../services/redis';
 import {logger} from '../services/logger';
 import {getWcaLiveData as wcaLiveGetData, fetchLiveRoundResults as wcaLiveFetchRound, fetchRecentRecords} from '../services/WcaLiveService';
@@ -109,11 +109,15 @@ export class WcaScheduleResolver {
 		// ZKT (Zeka Kupu Turkiye federation) competition: render through the SAME
 		// WCA components by feeding the federation's WCIF into WcifTransformer, then
 		// wiring the live surfaces to the federation.
-		// Pass the viewer's WCA identity so they get pinned to the top + a "me"
-		// badge exactly like a WCA competition: a WCA-login user who registered on
-		// the federation with the same WCA account matches by wcaId.
+		// The viewer is matched on their LINKED ZKT account, which is the only
+		// identity the federation publishes now — matching on wcaId alone left the
+		// competitor anonymous on their own competition page.
 		if (isZktCompetitionId(input.competitionId)) {
-			return this.buildZktCompetitionDetail(input.competitionId, wcaId, wcaUserId, ctx.user.id);
+			const zktIntegration = await getIntegration(ctx.user, 'zkt');
+			return this.buildZktCompetitionDetail(input.competitionId, wcaId, wcaUserId, ctx.user.id, {
+				zktUserId: zktIntegration?.zkt_user_id || null,
+				zktId: zktIntegration?.zkt_id || null,
+			});
 		}
 
 		// 1. First check archive DB — if found and not active, use archived data
@@ -382,12 +386,13 @@ export class WcaScheduleResolver {
 		competitionId: string,
 		wcaId: string,
 		wcaUserId: string,
-		userId: string
+		userId: string,
+		zkt?: ZktViewerIdentity
 	): Promise<WcaCompetitionDetail | null> {
 		const slug = zktSlugOf(competitionId);
 
 		const finishWith = (wcif: any, liveOverride?: any): WcaCompetitionDetail | null => {
-			const detail = buildCompetitionDetail(wcif, wcaId, wcaUserId);
+			const detail = buildCompetitionDetail(wcif, wcaId, wcaUserId, zkt);
 			if (!detail) return null;
 			detail.competitionId = competitionId; // keep the prefixed id for sub-routes
 			if (liveOverride) {
@@ -409,12 +414,22 @@ export class WcaScheduleResolver {
 			// Same round/result notification wiring a WCA competition gets. Without
 			// this a user registered for a ZKT competition had no notification state
 			// row, so the cron never had anything to notify them about.
-			if (wcaId && detail.myRegistrationStatus === 'accepted') {
-				const myPerson = wcif?.persons?.find((p: any) => p.wcaId === wcaId);
+			// Gated on the RESOLVED person, not on wcaId: federation members have no
+			// WCA id, so the old `wcaId &&` guard silently skipped every one of them.
+			// The cron matches on wca_id OR person_name, and the name is what a ZKT
+			// row can supply.
+			if (detail.myRegistrantId != null && detail.myRegistrationStatus === 'accepted') {
+				const myPerson = wcif?.persons?.find(
+					(p: any) => p.registrantId === detail.myRegistrantId
+				);
 				ensureNotificationState(
 					userId,
 					competitionId,
-					wcaId,
+					// No WCA id on a ZKT row: the federation publishes none, so storing
+					// the viewer's own would be a key that matches nothing here and
+					// reads as if the person competed under it. The cron falls back to
+					// person_name, which is what a ZKT result carries.
+					'',
 					myPerson?.name || '',
 					wcif?.schedule?.startDate || '',
 					wcif?.schedule?.numberOfDays || 1,

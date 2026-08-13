@@ -8,7 +8,7 @@ import {getAveragePB} from '../../../db/solves/stats/solves/average/average_pb';
 import {IModalProps} from '../../common/modal/Modal';
 import {getTimeString} from '../../../util/time';
 import block from '../../../styles/bem';
-import {getCubeTypeBucketLabel} from '../../../util/cubes/util';
+import {getBucketShortLabel} from '../../../util/cubes/util';
 import Button from '../../common/button/Button';
 import {fetchAllCubeTypesSolved, FilterSolvesOptions} from '../../../db/solves/query';
 import {toastError, toastSuccess} from '../../../util/toast';
@@ -115,7 +115,10 @@ export default function PublishSolves(props: IModalProps) {
 			continue;
 		}
 
-		const label = getCubeTypeBucketLabel(type.cube_type, type.scramble_subset);
+		// Short label on purpose: inside this modal every row IS a bucket, so the
+		// category prefix ("3x3 CFOP > Cross Solved") repeats what the row already
+		// says. A WCA event shows as "3x3x3", a subset shows as its own name.
+		const label = getBucketShortLabel(type.cube_type, type.scramble_subset);
 		const bucketKey = `${type.cube_type}::${type.scramble_subset ?? ''}`;
 
 		rows.push(

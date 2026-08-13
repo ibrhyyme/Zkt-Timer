@@ -12,6 +12,8 @@ interface Props {
 	onTrigger?: () => void;
 	/** Rendered above WcaSection, which draws the "or e-mail" divider. */
 	showDivider?: boolean;
+	/** Signup tab says "sign up", not "log in" — same button, different promise. */
+	mode?: 'login' | 'signup';
 }
 
 /**
@@ -21,7 +23,7 @@ interface Props {
  * Turkish competitor now (it is what their competition results are keyed on),
  * and WCA is the older door.
  */
-export default function ZktSection({ onTrigger, showDivider = false }: Props) {
+export default function ZktSection({ onTrigger, showDivider = false, mode = 'login' }: Props) {
 	const { t } = useTranslation();
 	const [loading, setLoading] = useState(false);
 
@@ -56,7 +58,11 @@ export default function ZktSection({ onTrigger, showDivider = false }: Props) {
 					alt="Zeka Küpü Türkiye"
 					className={b('zkt-logo-img')}
 				/>
-				<span>{loading ? t('zkt_auth.connecting') : t('zkt_auth.continue_with_zkt')}</span>
+				<span>
+					{loading
+						? t('zkt_auth.connecting')
+						: t(mode === 'signup' ? 'zkt_auth.signup_with_zkt' : 'zkt_auth.continue_with_zkt')}
+				</span>
 			</button>
 			{showDivider && (
 				<div className={b('divider')}>

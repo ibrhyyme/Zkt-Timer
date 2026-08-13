@@ -21,8 +21,10 @@ Allow: /privacy
 Allow: /credits
 
 # Yarisma sayfalari - Izin ver (sadece WCA, ZKT ozel)
-Allow: /community/competitions
-Allow: /community/competitions/
+# NOT: rotalar /community onekiyle DEGIL, dogrudan /competitions altinda yasiyor
+# (Routes.ts). Eski /community/... kurallari hicbir URL ile eslesmiyordu.
+Allow: /competitions
+Allow: /competitions/
 
 # Kullanici profilleri - Izin ver
 Allow: /user/
@@ -42,23 +44,30 @@ Disallow: /forgot
 Disallow: /unsub-emails
 Disallow: /verify-email
 Disallow: /wca-signup
+Disallow: /zkt-signup
+Disallow: /messages
+Disallow: /messages/
+Disallow: /organizer
+Disallow: /organizer/
 
 # Trainer landing (/trainer) public; alt modlar (standard/smart/recognition/efficiency) login arkasinda
 Disallow: /trainer/
 
 # Yarisma alt sayfalari - Engelle (sınırsız URL, thin content riski; WCA Live ile ayni strateji)
-Disallow: /community/competitions/*/personal-bests/
-Disallow: /community/competitions/*/persons/
-Disallow: /community/competitions/*/wca-live/
-Disallow: /community/competitions/*/activities/
+Disallow: /competitions/*/personal-bests/
+Disallow: /competitions/*/persons/
+Disallow: /competitions/*/wca-live/
+Disallow: /competitions/*/activities/
 
 # ZKT yarismalari - Tamamen ozel, hicbir yerde gozukmesin
-Disallow: /community/zkt-competitions
-Disallow: /community/zkt-competitions/
-Disallow: /community/zkt-records
-Disallow: /community/zkt-records/
-Disallow: /community/zkt-rankings
-Disallow: /community/zkt-rankings/
+# WCA gorunumlu rota da ayni kapsamda: /competitions/zkt-<slug>
+Disallow: /competitions/zkt-
+Disallow: /zkt-competitions
+Disallow: /zkt-competitions/
+Disallow: /zkt-records
+Disallow: /zkt-records/
+Disallow: /zkt-rankings
+Disallow: /zkt-rankings/
 
 # Teknik ve API endpointleri - Engelle
 Disallow: /api/

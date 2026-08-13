@@ -350,6 +350,8 @@ type Query {
   zktCompetitionStaff(competitionId: String): [ZktPerson]
   zktPublicCompetitions(q: String, pageSize: Int, page: Int): ZktPublicCompetitionList
   zktPublicMyCompetitions: [ZktPublicMyListItem]
+  publicZktProfile(userId: String): PublicZktProfile
+  myZktProfile: PublicZktProfile
   zktPublicCompetition(id: String): ZktPublicCompetitionDetail
   zktPublicRoundResults(roundId: String, competitionId: String): ZktPublicRoundResults
   zktPublicGroupAssignments(groupId: String, competitionId: String): ZktPublicGroupAssignments
@@ -423,6 +425,7 @@ type Mutation {
   resetSettings: Setting
   createIntegration(code: String, integrationType: IntegrationType): Integration
   updateWcaVisibility(showResults: Boolean, showRank: Boolean, showRecords: Boolean, showMedals: Boolean, showCompetitions: Boolean): Integration
+  updateZktVisibility(showPbs: Boolean, showRecords: Boolean, showMedals: Boolean, showCompetitions: Boolean): Integration
   deleteIntegration(integrationType: IntegrationType): Integration
   reportProfile(reason: String, userId: String): Report
   resolveReports(userId: String): Float
@@ -738,6 +741,10 @@ type Integration {
   zkt_name: String
   zkt_avatar_url: String
   zkt_country_iso2: String
+  zkt_show_competitions: Boolean
+  zkt_show_medals: Boolean
+  zkt_show_records: Boolean
+  zkt_show_pbs: Boolean
   revoked_at: DateTime
   last_synced_at: DateTime
   created_at: DateTime
@@ -1657,6 +1664,7 @@ type WcaCompetitionDay {
 type WcaCompetitor {
   name: String
   wcaId: String
+  zktId: String
   country: String
   avatar: String
   registrantId: Int
@@ -1697,6 +1705,7 @@ type WcaRound {
 type WcaEventDetail {
   eventId: String
   eventName: String
+  dayLabel: String
   rounds: [WcaRound]
 }
 
@@ -2326,6 +2335,29 @@ enum ZktAssignmentRole {
   RUNNER
   ORGANIZER
   STAFF
+}
+
+type ZktEventPb {
+  event_id: String
+  single: String
+  average: String
+}
+
+type PublicZktProfile {
+  zkt_id: String
+  zkt_name: String
+  zkt_country_iso2: String
+  zkt_member_no: Float
+  zkt_competition_count: Float
+  zkt_medal_gold: Float
+  zkt_medal_silver: Float
+  zkt_medal_bronze: Float
+  zkt_record_count: Float
+  zkt_personal_bests: [ZktEventPb!]
+  zkt_show_competitions: Boolean
+  zkt_show_medals: Boolean
+  zkt_show_records: Boolean
+  zkt_show_pbs: Boolean
 }
 
 type ZktPublicCompetitor {
