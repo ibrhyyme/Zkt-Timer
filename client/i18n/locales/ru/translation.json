@@ -1981,7 +1981,8 @@
         "day_ago": "{{count}} дн назад",
         "no_active_users": "Нет активных пользователей за этот период",
         "tbl_tabs": "Вкладки",
-        "online_empty": "Сейчас нет пользователей онлайн"
+        "online_empty": "Сейчас нет пользователей онлайн",
+        "zkt_connected": "ZKT привязан"
     },
     "admin_users": {
         "page_title": "Управление пользователями",
@@ -2132,7 +2133,10 @@
             "pro_forever": "Бессрочно (без ограничений)",
             "forever": "Бессрочно",
             "set_pro_button": "Сделать {{type}}",
-            "pro_set_success": "{{username}} получил {{type}} на {{duration}}"
+            "pro_set_success": "{{username}} получил {{type}} на {{duration}}",
+            "group_roles": "Роли и статус",
+            "group_tools": "Инструменты",
+            "group_danger": "Опасная зона"
         }
     },
     "admin_promo_codes": {

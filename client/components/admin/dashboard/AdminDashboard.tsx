@@ -26,6 +26,7 @@ interface DashboardStats {
 	pending_support_tickets_count: number;
 	online_users: number;
 	wca_connected: number;
+	zkt_connected: number;
 }
 
 const STATS_QUERY = gql`
@@ -45,6 +46,7 @@ const STATS_QUERY = gql`
 			pending_support_tickets_count
 			online_users
 			wca_connected
+			zkt_connected
 		}
 	}
 `;
@@ -525,6 +527,15 @@ export default function AdminDashboard() {
 							label={t('admin_dashboard.wca_connected')}
 							value={stats.wca_connected}
 							color="#14b8a6"
+							to="/admin/users"
+						/>
+						{/* The federation is the second identity provider now; its link
+						    count belongs next to the WCA one, not buried in site-config. */}
+						<StatCard
+							icon={<Globe size={28} weight="bold" />}
+							label={t('admin_dashboard.zkt_connected')}
+							value={stats.zkt_connected}
+							color="#3b82f6"
 							to="/admin/users"
 						/>
 					</div>

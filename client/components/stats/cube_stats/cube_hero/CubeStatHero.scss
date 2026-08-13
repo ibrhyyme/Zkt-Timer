@@ -101,21 +101,15 @@
 			display: block;
 		}
 
-		.#{$namespace}-nav-account-dropdown {
+		// Radix's Popover.Root emits no node, so the block-level selector never
+		// matched — target handle and pfp directly.
+		.#{$namespace}-nav-account-dropdown__handle {
 			padding: 0;
-			height: auto;
-			border-left: none;
-			margin-left: 0;
+		}
 
-			&__handle {
-				padding: 0;
-			}
-
-			&__pfp {
-				margin-right: 0;
-				width: 32px;
-				height: 32px;
-			}
+		.#{$namespace}-nav-account-dropdown__pfp {
+			--pfp-size: 32px;
+			margin-right: 0;
 		}
 	}
 

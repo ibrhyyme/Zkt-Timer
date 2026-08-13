@@ -199,8 +199,7 @@
 
 	&__mobile-header {
 		.#{$namespace}-nav-account-dropdown__pfp {
-			width: 48px;
-			height: 48px;
+			--pfp-size: 48px;
 		}
 	}
 }

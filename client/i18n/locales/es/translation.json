@@ -1981,7 +1981,8 @@
         "day_ago": "Hace {{count}} días",
         "no_active_users": "No hay usuarios activos en este período",
         "tbl_tabs": "Pestañas",
-        "online_empty": "No hay usuarios en línea ahora mismo"
+        "online_empty": "No hay usuarios en línea ahora mismo",
+        "zkt_connected": "ZKT vinculado"
     },
     "admin_users": {
         "page_title": "Gestión de usuarios",
@@ -2132,7 +2133,10 @@
             "pro_forever": "Ilimitado (sin expiración)",
             "forever": "Ilimitado",
             "set_pro_button": "Hacer {{type}}",
-            "pro_set_success": "Se ha dado {{type}} a {{username}} por {{duration}}"
+            "pro_set_success": "Se ha dado {{type}} a {{username}} por {{duration}}",
+            "group_roles": "Roles y estado",
+            "group_tools": "Herramientas",
+            "group_danger": "Zona peligrosa"
         }
     },
     "admin_promo_codes": {

@@ -1988,7 +1988,8 @@
         "day_ago": "{{count}} gün önce",
         "no_active_users": "Bu dönemde aktif kullanıcı yok",
         "tbl_tabs": "Sekme",
-        "online_empty": "Şu an online kullanıcı yok"
+        "online_empty": "Şu an online kullanıcı yok",
+        "zkt_connected": "ZKT Bağlı"
     },
     "admin_users": {
         "page_title": "Kullanıcı Yönetimi",
@@ -2139,7 +2140,10 @@
             "pro_forever": "Süresiz (sınırsız)",
             "forever": "Süresiz",
             "set_pro_button": "{{type}} Yap",
-            "pro_set_success": "{{username}} kullanıcısına {{duration}} süreyle {{type}} verildi"
+            "pro_set_success": "{{username}} kullanıcısına {{duration}} süreyle {{type}} verildi",
+            "group_roles": "Roller ve durum",
+            "group_tools": "Araçlar",
+            "group_danger": "Tehlikeli bölge"
         }
     },
     "admin_promo_codes": {

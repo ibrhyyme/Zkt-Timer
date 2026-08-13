@@ -221,6 +221,27 @@ export class WcaStats {
 
 	@Field(() => Int)
 	wcaBackfillPending: number;
+
+	// --- Zeka Kupu Turkiye federation ---------------------------------------
+	// Same panel, second identity provider. A member is "connected" as soon as
+	// they link, but only gets a ZKT ID once their first result is published, so
+	// the two numbers are read together: the gap is people who linked and have
+	// not competed yet.
+	@Field(() => Int)
+	zktConnected: number;
+
+	@Field(() => Int)
+	zktWithId: number;
+
+	@Field(() => Int)
+	zktWithoutId: number;
+
+	@Field(() => Int)
+	zktRevoked: number;
+
+	/** Members holding BOTH links — the overlap between the two federations. */
+	@Field(() => Int)
+	bothConnected: number;
 }
 
 @ObjectType()
@@ -266,6 +287,10 @@ export class AdminDashboardStats {
 
 	@Field(() => Int)
 	wca_connected: number;
+
+	/** Members with a linked Zeka Kupu Turkiye account. */
+	@Field(() => Int)
+	zkt_connected: number;
 }
 
 @InputType()

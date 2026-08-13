@@ -1,15 +1,68 @@
 @import '../../../../styles/config';
 
+// Grouped action stack. The buttons used to be one wrapping row where a "make
+// Pro" landed next to "delete user" depending on label width — the same click
+// target moved between sessions, which is exactly what you don't want above a
+// destructive action.
 .#{$namespace}-manage-user-actions {
 	display: flex;
-	flex-direction: row;
+	flex-direction: column;
+	gap: 14px;
 	margin: 15px 0;
-	flex-wrap: wrap;
-	align-items: flex-start;
 	width: 100%;
 
-	> * {
-		margin-right: 7px;
-		margin-bottom: 7px;
+	&__group {
+		display: flex;
+		flex-direction: column;
+		gap: 7px;
+
+		&--danger {
+			padding-top: 12px;
+			border-top: 1px solid rgba(var(--text-color), 0.1);
+		}
+	}
+
+	&__group-label {
+		font-size: 0.7rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: rgba(var(--text-color), 0.55);
+	}
+
+	// Two equal columns: every button gets the same width regardless of label
+	// length, so the block reads as a grid instead of a ragged pile.
+	&__grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 7px;
+
+		> * {
+			width: 100%;
+			min-width: 0;
+		}
+
+		// Labels wrap instead of overflowing: in a 280px sidebar "Yarışma
+		// Yöneticisi Yap" cannot fit one line, and text spilling outside a button
+		// that changes someone's role is worse than a two-line button.
+		//
+		// Two things have to be overridden together, and missing either one keeps
+		// the spill: Button renders its label inside a <span> that sets
+		// `white-space: nowrap` itself, and the button has a fixed 29px height,
+		// so a wrapped second line would escape the box anyway.
+		button {
+			width: 100%;
+			height: auto;
+			min-height: 40px;
+			padding: 8px 10px;
+			text-align: center;
+
+			span {
+				display: block;
+				white-space: normal;
+				line-height: 1.25;
+				word-break: break-word;
+			}
+		}
 	}
 }

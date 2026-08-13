@@ -99,6 +99,9 @@ export class AdminResolver {
 			if (filters.has_wca) {
 				conditions.push({integrations: {some: {service_name: 'wca'}}});
 			}
+			if (filters.has_zkt) {
+				conditions.push({integrations: {some: {service_name: 'zkt'}}});
+			}
 		}
 
 		const where = conditions.length === 0 ? {} : conditions.length === 1 ? conditions[0] : {AND: conditions};
@@ -416,6 +419,7 @@ export class AdminResolver {
 			pending_support_tickets_count,
 			online,
 			wca_connected,
+			zkt_connected,
 		] = await Promise.all([
 			prisma.userAccount.count(),
 			prisma.userAccount.count({ where: { last_seen_at: { gte: todayStart } } }),
@@ -431,6 +435,7 @@ export class AdminResolver {
 			prisma.supportTicket.count({ where: { resolved_at: null } }),
 			getOnlineCounts(),
 			prisma.integration.count({ where: { service_name: 'wca' } }),
+			prisma.integration.count({ where: { service_name: 'zkt' } }),
 		]);
 
 		return {
@@ -448,6 +453,7 @@ export class AdminResolver {
 			pending_support_tickets_count,
 			online_users: online.uniqueUsers,
 			wca_connected,
+			zkt_connected,
 		};
 	}
 
@@ -593,13 +599,37 @@ export class AdminResolver {
 	@Query(() => WcaStats)
 	async wcaStats(): Promise<WcaStats> {
 		const prisma = getPrisma();
-		const [totalUsers, wcaConnected, wcaWithId, wcaWithoutUserId, wcaRevoked, wcaBackfillPending] = await Promise.all([
+		const [
+			totalUsers,
+			wcaConnected,
+			wcaWithId,
+			wcaWithoutUserId,
+			wcaRevoked,
+			wcaBackfillPending,
+			zktConnected,
+			zktWithId,
+			zktRevoked,
+			bothConnected,
+		] = await Promise.all([
 			prisma.userAccount.count(),
 			prisma.integration.count({where: {service_name: 'wca'}}),
 			prisma.integration.count({where: {service_name: 'wca', wca_id: {not: null}}}),
 			prisma.integration.count({where: {service_name: 'wca', wca_user_id: null}}),
 			prisma.integration.count({where: {service_name: 'wca', revoked_at: {not: null}} as any}),
 			prisma.integration.count({where: {service_name: 'wca', revoked_at: null, OR: [{wca_user_id: null}, {wca_id: null}]} as any}),
+			prisma.integration.count({where: {service_name: 'zkt'}}),
+			// A ZKT ID only exists after the member's first published result, so
+			// this is "linked AND has competed", not "linked".
+			prisma.integration.count({where: {service_name: 'zkt', zkt_id: {not: null}} as any}),
+			prisma.integration.count({where: {service_name: 'zkt', revoked_at: {not: null}} as any}),
+			prisma.userAccount.count({
+				where: {
+					AND: [
+						{integrations: {some: {service_name: 'wca'}}},
+						{integrations: {some: {service_name: 'zkt'}}},
+					],
+				},
+			}),
 		]);
 		return {
 			totalUsers,
@@ -609,6 +639,11 @@ export class AdminResolver {
 			wcaWithoutUserId,
 			wcaRevoked,
 			wcaBackfillPending,
+			zktConnected,
+			zktWithId,
+			zktWithoutId: zktConnected - zktWithId,
+			zktRevoked,
+			bothConnected,
 		};
 	}
 

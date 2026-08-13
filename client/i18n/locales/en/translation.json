@@ -1981,7 +1981,8 @@
         "day_ago": "{{count}} days ago",
         "no_active_users": "No active users in this period",
         "tbl_tabs": "Tabs",
-        "online_empty": "No online users right now"
+        "online_empty": "No online users right now",
+        "zkt_connected": "ZKT Linked"
     },
     "admin_users": {
         "page_title": "User Management",
@@ -2132,7 +2133,10 @@
             "pro_forever": "Unlimited (no expiry)",
             "forever": "Unlimited",
             "set_pro_button": "Make {{type}}",
-            "pro_set_success": "{{username}} has been given {{type}} for {{duration}}"
+            "pro_set_success": "{{username}} has been given {{type}} for {{duration}}",
+            "group_roles": "Roles & status",
+            "group_tools": "Tools",
+            "group_danger": "Danger zone"
         }
     },
     "admin_promo_codes": {

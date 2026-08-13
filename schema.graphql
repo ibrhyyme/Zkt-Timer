@@ -1369,6 +1369,11 @@ type WcaStats {
   wcaWithoutUserId: Int
   wcaRevoked: Int
   wcaBackfillPending: Int
+  zktConnected: Int
+  zktWithId: Int
+  zktWithoutId: Int
+  zktRevoked: Int
+  bothConnected: Int
 }
 
 type AdminDashboardStats {
@@ -1386,6 +1391,7 @@ type AdminDashboardStats {
   pending_support_tickets_count: Int
   online_users: Int
   wca_connected: Int
+  zkt_connected: Int
 }
 
 type BulkArchiveResult {
@@ -3382,6 +3388,7 @@ input AdminUserFiltersInput {
   banned: Boolean
   platforms: [String!]
   has_wca: Boolean
+  has_zkt: Boolean
 }
 
 type Announcement {

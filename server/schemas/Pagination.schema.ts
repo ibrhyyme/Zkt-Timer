@@ -60,6 +60,10 @@ export class AdminUserFiltersInput {
 
 	@Field(() => Boolean, {nullable: true})
 	has_wca?: boolean;
+
+	/** Members with a linked Zeka Kupu Turkiye account. */
+	@Field(() => Boolean, {nullable: true})
+	has_zkt?: boolean;
 }
 
 export interface PaginationOutput<T> {

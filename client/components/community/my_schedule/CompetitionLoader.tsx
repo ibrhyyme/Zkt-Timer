@@ -10,6 +10,7 @@ import {Info} from 'phosphor-react';
 import {useTranslation} from 'react-i18next';
 import {prefetchWcaLiveOverview} from './useLiveResults';
 import {useMe} from '../../../util/hooks/useMe';
+import {useTheme} from '../../../util/hooks/useTheme';
 import {isPro} from '../../../lib/pro';
 
 interface FollowEntry {
@@ -92,6 +93,9 @@ export function prefetchCompetitionDetail(competitionId: string): void {
 export default function CompetitionLoader({competitionId, children}: CompetitionLoaderProps) {
 	const {t} = useTranslation();
 	const me = useMe();
+	// The ZKT loading mark ships in two versions because its lettering has to
+	// invert with the surface behind it.
+	const loaderIsDark = useTheme('module_color')?.isDark !== false;
 	const initialCached = getCached(competitionId);
 	const [detail, setDetail] = useState<any>(initialCached?.data || null);
 	const [loading, setLoading] = useState(!initialCached);
@@ -219,7 +223,13 @@ export default function CompetitionLoader({competitionId, children}: Competition
 		return (
 			<div className={b('wca-loading')}>
 				<img
-					src={resourceUri(loadingIsZkt ? '/images/logos/zkt_logo.png' : '/images/logos/wca_logo.svg')}
+					src={resourceUri(
+					loadingIsZkt
+						? loaderIsDark
+							? '/images/zkt-logo.png'
+							: '/images/zkt-logo-white.png'
+						: '/images/logos/wca_logo.svg'
+				)}
 					alt={loadingIsZkt ? 'ZKT' : 'WCA'}
 					className={b('wca-loading-logo')}
 				/>

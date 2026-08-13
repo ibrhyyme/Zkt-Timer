@@ -3,6 +3,7 @@ import {useTranslation} from 'react-i18next';
 import {Trophy, Medal, Crown} from 'phosphor-react';
 import block from '../../../styles/bem';
 import {resourceUri} from '../../../util/storage';
+import {useTheme} from '../../../util/hooks/useTheme';
 import {getZktOrigin} from '../../../../shared/integration';
 import './ZktSummary.scss';
 
@@ -36,6 +37,7 @@ interface Props {
  */
 export default function ZktSummary({profile}: Props) {
 	const {t} = useTranslation();
+	const isDarkTheme = useTheme('module_color')?.isDark !== false;
 
 	if (!profile) return null;
 
@@ -55,8 +57,10 @@ export default function ZktSummary({profile}: Props) {
 	return (
 		<div className={b()}>
 			<div className={b('header')}>
+				{/* Two files, one per theme: the ZKT artwork carries lettering that
+				    has to invert with the surface. Same pair the header logo uses. */}
 				<img
-					src={resourceUri('/images/logos/zkt_logo.png')}
+					src={resourceUri(isDarkTheme ? '/images/zkt-logo.png' : '/images/zkt-logo-white.png')}
 					alt="Zeka Küpü Türkiye"
 					className={b('logo')}
 				/>

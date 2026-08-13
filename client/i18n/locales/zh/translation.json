@@ -1981,7 +1981,8 @@
         "day_ago": "{{count}} 天前",
         "no_active_users": "此期间无活跃用户",
         "tbl_tabs": "标签页",
-        "online_empty": "目前没有在线用户"
+        "online_empty": "目前没有在线用户",
+        "zkt_connected": "ZKT 已关联"
     },
     "admin_users": {
         "page_title": "用户管理",
@@ -2132,7 +2133,10 @@
             "pro_forever": "无限期 (无到期)",
             "forever": "无限期",
             "set_pro_button": "设为 {{type}}",
-            "pro_set_success": "已授予 {{username}} {{type}} {{duration}}"
+            "pro_set_success": "已授予 {{username}} {{type}} {{duration}}",
+            "group_roles": "角色与状态",
+            "group_tools": "工具",
+            "group_danger": "危险操作"
         }
     },
     "admin_promo_codes": {

@@ -96,6 +96,11 @@ function UserTableRow({user, onUpdated}: {user: UserAccountData; onUpdated: () =
 	const hasWca = (user as any).integrations?.some((i: any) => i.service_name === 'wca');
 	if (hasWca) badges.push({label: 'WCA', color: 'teal'});
 
+	// Second federation, same treatment: which identity a member carries is the
+	// thing you scan this list for.
+	const hasZkt = (user as any).integrations?.some((i: any) => i.service_name === 'zkt');
+	if (hasZkt) badges.push({label: 'ZKT', color: 'blue'});
+
 	const platforms = user.pushTokens ? [...new Set(user.pushTokens.map((pt) => pt.platform))] : [];
 	const platformColors: Record<string, string> = {WEB: 'blue', ANDROID: 'green', IOS: 'gray'};
 	platforms.forEach((p) => badges.push({label: p, color: platformColors[p] || 'gray'}));
@@ -159,6 +164,7 @@ const FILTERS = [
 	{key: 'APPROVED', label: 'Onayli', color: '#3b82f6'},
 	{key: 'BANNED', label: 'Banned', color: '#6b7280'},
 	{key: 'WCA', label: 'WCA', color: '#14b8a6'},
+	{key: 'ZKT', label: 'ZKT', color: '#3b82f6'},
 	{key: 'WEB', label: 'Web', color: '#3b82f6'},
 	{key: 'ANDROID', label: 'Android', color: '#22c55e'},
 	{key: 'IOS', label: 'iOS', color: '#6b7280'},
@@ -179,6 +185,7 @@ function buildServerFilters(activeFilters: string[]) {
 			case 'APPROVED': filters.verified = true; break;
 			case 'BANNED': filters.banned = true; break;
 			case 'WCA': filters.has_wca = true; break;
+			case 'ZKT': filters.has_zkt = true; break;
 			case 'WEB': platforms.push('WEB'); break;
 			case 'ANDROID': platforms.push('ANDROID'); break;
 			case 'IOS': platforms.push('IOS'); break;

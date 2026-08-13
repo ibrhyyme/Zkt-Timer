@@ -2,7 +2,10 @@
 
 .#{$namespace}-manage-user {
 	display: grid;
-	grid-template-columns: 260px 1fr 1fr;
+	// Identity + actions on the left, everything worth reading on the right. The
+	// old third column held the user's own timer preferences, which told a
+	// moderator nothing and stole half the width from the solve breakdown.
+	grid-template-columns: 280px minmax(0, 1fr);
 	gap: 0;
 	padding: 16px;
 	box-sizing: border-box;
@@ -154,20 +157,17 @@
 		color: rgba(var(--text-color), 0.55);
 	}
 
-	&__settings-grid {
+	// Bans and reports, side by side under the numbers. Both are empty for almost
+	// every user, so stacking them wasted a screen of vertical space.
+	&__meta-row {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
-		gap: 8px;
-	}
+		gap: 20px;
+		align-items: start;
 
-	&__setting-card {
-		background: rgb(var(--button-color));
-		border: 1px solid rgba(var(--text-color), 0.08);
-		border-radius: 12px;
-		padding: 10px 14px;
-		display: flex;
-		flex-direction: column;
-		gap: 5px;
+		@media (max-width: 900px) {
+			grid-template-columns: 1fr;
+		}
 	}
 
 	&__card-ip-header {

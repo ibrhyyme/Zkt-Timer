@@ -198,6 +198,7 @@ export type AdminDashboardStats = {
   total_users?: Maybe<Scalars['Int']>;
   wau?: Maybe<Scalars['Int']>;
   wca_connected?: Maybe<Scalars['Int']>;
+  zkt_connected?: Maybe<Scalars['Int']>;
 };
 
 export type AdminSendPushResult = {
@@ -210,6 +211,7 @@ export type AdminUserFiltersInput = {
   banned?: InputMaybe<Scalars['Boolean']>;
   email_verified?: InputMaybe<Scalars['Boolean']>;
   has_wca?: InputMaybe<Scalars['Boolean']>;
+  has_zkt?: InputMaybe<Scalars['Boolean']>;
   is_pro?: InputMaybe<Scalars['Boolean']>;
   mod?: InputMaybe<Scalars['Boolean']>;
   platforms?: InputMaybe<Array<Scalars['String']>>;
@@ -4266,6 +4268,7 @@ export type WcaScheduleInput = {
 
 export type WcaStats = {
   __typename?: 'WcaStats';
+  bothConnected?: Maybe<Scalars['Int']>;
   totalUsers?: Maybe<Scalars['Int']>;
   wcaBackfillPending?: Maybe<Scalars['Int']>;
   wcaConnected?: Maybe<Scalars['Int']>;
@@ -4273,6 +4276,10 @@ export type WcaStats = {
   wcaWithId?: Maybe<Scalars['Int']>;
   wcaWithoutId?: Maybe<Scalars['Int']>;
   wcaWithoutUserId?: Maybe<Scalars['Int']>;
+  zktConnected?: Maybe<Scalars['Int']>;
+  zktRevoked?: Maybe<Scalars['Int']>;
+  zktWithId?: Maybe<Scalars['Int']>;
+  zktWithoutId?: Maybe<Scalars['Int']>;
 };
 
 export type WcaVenueInfo = {

@@ -172,43 +172,65 @@ export default function UserActions(props: Props) {
 		}
 	}
 
+	// Grouped, not one long wrapping row. Three kinds of action live here and
+	// they were interleaved: granting a role sat between banning and deleting,
+	// so the destructive buttons had no visual weight of their own.
 	return (
 		<div className={b()}>
-			<Button text={banned ? t('unban_user') : t('ban_user')} onClick={toggleBan} danger />
-			<Button
-				text={user.verified ? t('unverify_user') : t('verify_user')}
-				primary={!user.verified}
-				warning={user.verified}
-				onClick={toggleVerifyUser}
-			/>
-			<Button
-				text={user.mod ? t('remove_mod') : t('make_mod')}
-				primary={!user.mod}
-				warning={user.mod}
-				onClick={toggleModStatus}
-			/>
-			<Button
-				text={user.is_pro ? t('remove_pro') : t('make_pro')}
-				primary={!user.is_pro}
-				warning={user.is_pro}
-				onClick={toggleProStatus}
-			/>
-			<Button
-				text={user.is_premium ? t('remove_premium') : t('make_premium')}
-				primary={!user.is_premium}
-				warning={user.is_premium}
-				onClick={togglePremiumStatus}
-			/>
-			<Button text={t('delete_user')} danger onClick={deleteUser} />
-			<Button
-				text={t('send_push')}
-				primary
-				onClick={() => dispatch(openModal(
-					<SendPushModal userId={user.id} username={user.username} />,
-					{title: t('send_push'), width: 400}
-				))}
-			/>
-			<Button text={t('export_user_data')} onClick={exportUserData} />
+			<div className={b('group')}>
+				<span className={b('group-label')}>{t('group_roles')}</span>
+				<div className={b('grid')}>
+					<Button
+						text={user.verified ? t('unverify_user') : t('verify_user')}
+						primary={!user.verified}
+						warning={user.verified}
+						onClick={toggleVerifyUser}
+					/>
+					<Button
+						text={user.mod ? t('remove_mod') : t('make_mod')}
+						primary={!user.mod}
+						warning={user.mod}
+						onClick={toggleModStatus}
+					/>
+					<Button
+						text={user.is_pro ? t('remove_pro') : t('make_pro')}
+						primary={!user.is_pro}
+						warning={user.is_pro}
+						onClick={toggleProStatus}
+					/>
+					<Button
+						text={user.is_premium ? t('remove_premium') : t('make_premium')}
+						primary={!user.is_premium}
+						warning={user.is_premium}
+						onClick={togglePremiumStatus}
+					/>
+				</div>
+			</div>
+
+			<div className={b('group')}>
+				<span className={b('group-label')}>{t('group_tools')}</span>
+				<div className={b('grid')}>
+					<Button
+						text={t('send_push')}
+						primary
+						onClick={() => dispatch(openModal(
+							<SendPushModal userId={user.id} username={user.username} />,
+							{title: t('send_push'), width: 400}
+						))}
+					/>
+					<Button text={t('export_user_data')} onClick={exportUserData} />
+				</div>
+			</div>
+
+			{/* Ban and delete last, under their own heading: they are the two that
+			    cannot be undone with the button next to them. */}
+			<div className={b('group', {danger: true})}>
+				<span className={b('group-label')}>{t('group_danger')}</span>
+				<div className={b('grid')}>
+					<Button text={banned ? t('unban_user') : t('ban_user')} onClick={toggleBan} danger />
+					<Button text={t('delete_user')} danger onClick={deleteUser} />
+				</div>
+			</div>
 		</div>
 	);
 }

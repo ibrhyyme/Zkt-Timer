@@ -48,6 +48,10 @@ const GET_USER_FOR_ADMIN = gql`
 				wca_user_id
 				wca_name
 				wca_avatar_url
+				zkt_id
+				zkt_member_no
+				zkt_name
+				zkt_avatar_url
 			}
 			profile {
 				id
@@ -70,25 +74,6 @@ const GET_USER_FOR_ADMIN = gql`
 					user_id
 					storage_path
 				}
-			}
-			settings {
-				id
-				focus_mode
-				freeze_time
-				inspection
-				manual_entry
-				inspection_delay
-				inverse_time_list
-				hide_time_when_solving
-				nav_collapsed
-				timer_decimal_points
-				pb_confetti
-				play_inspection_sound
-				zero_out_time_after_solve
-				confirm_delete_solve
-				use_space_with_smart_cube
-				require_period_in_manual_time_entry
-				cube_type
 			}
 			reports_for {
 				id
@@ -164,12 +149,17 @@ export default function ManageUser(props: Props) {
 	if (!userData) return <Empty text={t('user_not_found')} />;
 
 	const wcaIntegration = userData.integrations?.find((int) => int.service_name === 'wca');
-
-	function formatSettingValue(value: any): string {
-		if (typeof value === 'boolean') return value ? t('bool_true') : t('bool_false');
-		if (value === null || value === undefined) return '—';
-		return String(value);
-	}
+	const zktIntegration = userData.integrations?.find((int) => int.service_name === 'zkt') as any;
+	// The two providers name the same person; show it once. WCA leads because it
+	// is the older identity and the one most rows already carry.
+	const identityName = wcaIntegration?.wca_name || zktIntegration?.zkt_name || null;
+	const identityAvatar = wcaIntegration?.wca_avatar_url || zktIntegration?.zkt_avatar_url || null;
+	const differingName =
+		wcaIntegration?.wca_name &&
+		zktIntegration?.zkt_name &&
+		wcaIntegration.wca_name !== zktIntegration.zkt_name
+			? zktIntegration.zkt_name
+			: null;
 
 	function handleIpDetail() {
 		if (!showIpDetail && userData.join_ip) {
@@ -188,28 +178,58 @@ export default function ManageUser(props: Props) {
 
 		return (
 			<div className={b('list')}>
-				{wcaIntegration && (
+				{/* One "linked accounts" card, one row per federation. They used to be
+				    two separate cards, which repeated the person's name twice and made
+				    you read the field labels to tell which card was which. The name is
+				    shown once, and again only if the two providers disagree on it —
+				    that disagreement is worth an admin's attention. */}
+				{(wcaIntegration || zktIntegration) && (
 					<div className={b('card', {wca: true})}>
-						{(wcaIntegration.wca_avatar_url || wcaIntegration.wca_name) && (
+						{identityName && (
 							<div className={b('card-wca-identity')}>
-								{wcaIntegration.wca_avatar_url && (
-									<img src={wcaIntegration.wca_avatar_url} alt="" className={b('wca-avatar')} />
+								{identityAvatar && (
+									<img src={identityAvatar} alt="" className={b('wca-avatar')} />
 								)}
-								{wcaIntegration.wca_name && (
-									<span className={b('wca-name')}>{wcaIntegration.wca_name}</span>
-								)}
+								<span className={b('wca-name')}>{identityName}</span>
 							</div>
 						)}
-						<div className={b('card-stats')}>
-							<div className={b('card-stat')}>
-								<span className={b('card-stat-label')}>WCA ID</span>
-								<span className={b('card-stat-value')}>{wcaIntegration.wca_id || '—'}</span>
+						{wcaIntegration && (
+							<div className={b('card-stats')}>
+								<div className={b('card-stat')}>
+									<span className={b('card-stat-label')}>WCA ID</span>
+									<span className={b('card-stat-value')}>{wcaIntegration.wca_id || '—'}</span>
+								</div>
+								<div className={b('card-stat')}>
+									<span className={b('card-stat-label')}>WCA User ID</span>
+									<span className={b('card-stat-value')}>{wcaIntegration.wca_user_id || '—'}</span>
+								</div>
 							</div>
-							<div className={b('card-stat')}>
-								<span className={b('card-stat-label')}>User ID</span>
-								<span className={b('card-stat-value')}>{wcaIntegration.wca_user_id || '—'}</span>
+						)}
+						{/* A member number exists from signup; the ZKT ID only after their
+						    first published result, so "—" there means "linked, has not
+						    competed yet". */}
+						{zktIntegration && (
+							<div className={b('card-stats')}>
+								<div className={b('card-stat')}>
+									<span className={b('card-stat-label')}>ZKT ID</span>
+									<span className={b('card-stat-value')}>{zktIntegration.zkt_id || '—'}</span>
+								</div>
+								<div className={b('card-stat')}>
+									<span className={b('card-stat-label')}>ZKT Üye No</span>
+									<span className={b('card-stat-value')}>
+										{zktIntegration.zkt_member_no ?? '—'}
+									</span>
+								</div>
 							</div>
-						</div>
+						)}
+						{differingName && (
+							<div className={b('card-stats')}>
+								<div className={b('card-stat')}>
+									<span className={b('card-stat-label')}>ZKT adı</span>
+									<span className={b('card-stat-value')}>{differingName}</span>
+								</div>
+							</div>
+						)}
 					</div>
 				)}
 				{rows.map((row) => (
@@ -298,29 +318,13 @@ export default function ManageUser(props: Props) {
 		);
 	}
 
-	function getSettings() {
-		const settings = userData.settings;
-		if (!settings) return null;
-		const settingKeys = Object.keys(settings).filter((key) => !key.startsWith('_'));
-
-		return (
-			<div className={b('section')}>
-				<div className={b('section-title')}>{t('settings')}</div>
-				<div className={b('settings-grid')}>
-					{settingKeys.map((key) => (
-						<div key={key} className={b('setting-card')}>
-							<span className={b('card-stat-label')}>{t(`setting_${key}`, key.replace(/_/g, ' '))}</span>
-							<span className={b('card-stat-value')}>{formatSettingValue(settings[key])}</span>
-						</div>
-					))}
-				</div>
-			</div>
-		);
-	}
-
+	// Two columns, not three: the third used to hold the user's timer preferences
+	// (inspection delay, confetti, decimal places…), which tell an admin nothing
+	// about the person they are moderating. Dropping it gives the solve breakdown
+	// and the activity chart the width they actually need.
 	return (
 		<div className={b()}>
-			<div className={b('col')}>
+			<div className={b('col', {side: true})}>
 				<div className={b('header')}>
 					<Avatar target="_blank" user={userData} showEmail profile={userData.profile} />
 				</div>
@@ -330,15 +334,15 @@ export default function ManageUser(props: Props) {
 				</div>
 			</div>
 
-			<div className={b('col')}>
+			<div className={b('col', {main: true})}>
 				<UserSummary summary={userData.summary} />
 				<UserDailyActivity userId={userId} />
-			</div>
-
-			<div className={b('col')}>
-				{getSection(t('bans_title'), userData.bans, 'reason', 'banned_until')}
-				{getSection(t('reports_title'), userData.reports_for, 'reason', null)}
-				{getSettings()}
+				{/* Moderation history sits below the numbers and shares one row:
+				    both lists are empty for almost every user. */}
+				<div className={b('meta-row')}>
+					{getSection(t('bans_title'), userData.bans, 'reason', 'banned_until')}
+					{getSection(t('reports_title'), userData.reports_for, 'reason', null)}
+				</div>
 			</div>
 		</div>
 	);

@@ -87,22 +87,17 @@
 			display: block;
 		}
 
-		// Adjust inner dropdown styles for this context if needed
-		.#{$namespace}-nav-account-dropdown {
+		// The .cd-nav-account-dropdown block element does not exist in the DOM —
+		// Radix's Popover.Root renders nothing, so the handle is the outermost node.
+		// Target the elements directly; nesting them under the block selector
+		// silently matched nothing.
+		.#{$namespace}-nav-account-dropdown__handle {
 			padding: 0;
-			height: auto;
-			border-left: none;
-			margin-left: 0;
+		}
 
-			&__handle {
-				padding: 0;
-			}
-
-			&__pfp {
-				margin-right: 0;
-				width: 32px;
-				height: 32px;
-			}
+		.#{$namespace}-nav-account-dropdown__pfp {
+			--pfp-size: 32px;
+			margin-right: 0;
 		}
 	}
 

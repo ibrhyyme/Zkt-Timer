@@ -5,6 +5,7 @@ import {gql} from '@apollo/client';
 import {gqlQueryTyped, gqlMutate} from '../../api';
 import {WcaCompetitionsDocument, WcaSearchCompetitionsDocument, MyWcaCompetitionsDocument} from '../../../@types/generated/graphql';
 import {useMe} from '../../../util/hooks/useMe';
+import {useTheme} from '../../../util/hooks/useTheme';
 import {MagnifyingGlass, Trophy, Bell, CaretRight} from 'phosphor-react';
 import {resourceUri} from '../../../util/storage';
 import {LINKED_SERVICES} from '../../../../shared/integration';
@@ -121,6 +122,10 @@ export default function CompetitionList() {
 	const me = useMe();
 	const history = useHistory();
 	const locale = I18N_LOCALE_MAP[i18n.language] || i18n.language;
+	// The card watermark is a fixed piece of artwork, so how visible it is
+	// depends on what is behind it. The theme is only a set of colour variables
+	// in CSS — there is no "light mode" selector — so the decision is made here.
+	const isDarkTheme = useTheme('module_color')?.isDark !== false;
 
 	const [competitions, setCompetitions] = useState<any[] | null>(getListCache());
 	const [compSearch, setCompSearch] = useState('');
@@ -474,9 +479,28 @@ export default function CompetitionList() {
 				onClick={() => handleSelectCompetition(detailId)}
 			>
 				<span className={b('zkt-card-rail')} aria-hidden="true" />
+				{/* Federation watermark instead of a text badge: the logo says the
+				    same thing without spending a line of the card on it.
+				    The ZKT artwork carries lettering, so it ships as two files and the
+				    theme picks one — the same pair `Logo.tsx` uses for the header.
+				    (A CSS mask was tried first and flattened both logos into a grey
+				    blob: a mask keeps the shape and throws the colours away.) The WCA
+				    mark is just the coloured cube, so one file serves every theme.
+				    Decorative, so hidden from screen readers. */}
+				<img
+					src={resourceUri(
+						isZkt
+							? isDarkTheme
+								? '/images/zkt-logo.png'
+								: '/images/zkt-logo-white.png'
+							: '/images/logos/wca_logo.svg'
+					)}
+					alt=""
+					aria-hidden="true"
+					className={b('zkt-card-watermark', {light: !isDarkTheme})}
+				/>
 				<div className={b('zkt-card-main')}>
 					<div className={b('zkt-card-top')}>
-						<span className={b('zkt-card-mark', {wca: !isZkt})}>{isZkt ? 'ZKT' : 'WCA'}</span>
 						{comp.country_iso2 && (
 							<span className={b('zkt-card-flag')}>{comp.country_iso2}</span>
 						)}

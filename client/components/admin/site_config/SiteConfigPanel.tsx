@@ -25,7 +25,7 @@ const b = block('site-config-panel');
 const BACKFILL_WCA_IDS = gql`mutation { backfillWcaIds { total filled tokenFailed revoked noWcaId rateLimited error recordsTotal recordsFilled recordsError } }`;
 const REINDEX_METHOD_STEPS = gql`mutation { reindexSmartCubeMethodSteps { totalCandidates processed filled skippedNoTurns downgraded error } }`;
 const REINDEX_LL_CASE_KEYS = gql`mutation { reindexLLCaseKeys { total scanned ollUpdated pllUpdated failed } }`;
-const WCA_STATS = gql`query { wcaStats { totalUsers wcaConnected wcaWithId wcaWithoutId wcaWithoutUserId wcaRevoked wcaBackfillPending } }`;
+const WCA_STATS = gql`query { wcaStats { totalUsers wcaConnected wcaWithId wcaWithoutId wcaWithoutUserId wcaRevoked wcaBackfillPending zktConnected zktWithId zktWithoutId zktRevoked bothConnected } }`;
 const TEST_WCA_NOTIFICATION = gql`mutation TestWcaNotification($wcaId: String!) { testWcaNotification(wcaId: $wcaId) }`;
 const MY_PUSH_TOKENS = gql`query { adminMyPushTokens { platform } }`;
 
@@ -64,7 +64,22 @@ export default function SiteConfigPanel() {
 	const [tokenCheckLoading, setTokenCheckLoading] = useState(false);
 	const [tokenCheckResult, setTokenCheckResult] = useState<string | null>(null);
 
-	const {data: wcaStatsData, refetch: refetchWcaStats, loading: wcaStatsLoading} = useQuery<{wcaStats: {totalUsers: number; wcaConnected: number; wcaWithId: number; wcaWithoutId: number; wcaWithoutUserId: number; wcaRevoked: number; wcaBackfillPending: number}}>(WCA_STATS, {fetchPolicy: 'no-cache'});
+	const {data: wcaStatsData, refetch: refetchWcaStats, loading: wcaStatsLoading} = useQuery<{
+		wcaStats: {
+			totalUsers: number;
+			wcaConnected: number;
+			wcaWithId: number;
+			wcaWithoutId: number;
+			wcaWithoutUserId: number;
+			wcaRevoked: number;
+			wcaBackfillPending: number;
+			zktConnected: number;
+			zktWithId: number;
+			zktWithoutId: number;
+			zktRevoked: number;
+			bothConnected: number;
+		};
+	}>(WCA_STATS, {fetchPolicy: 'no-cache'});
 
 	// Live online counter — poll every 10 seconds
 	const {data: onlineData} = useQuery<OnlineStatsQuery>(OnlineStatsDocument, {
@@ -300,11 +315,13 @@ export default function SiteConfigPanel() {
 				})}
 			</div>
 
-			{/* WCA Statistics */}
+			{/* Identity statistics — both federations in one grid. They answer the
+			    same question ("how many members can we key results on") and reading
+			    them apart hid the interesting number: the overlap. */}
 			<div className={b('section')}>
 				<div className={b('section-header')}>
 					<Database size={20} weight="fill" />
-					<h3>WCA Statistics</h3>
+					<h3>Identity Statistics</h3>
 				</div>
 				<div className={b('stats-grid')}>
 					{[
@@ -313,8 +330,15 @@ export default function SiteConfigPanel() {
 						{label: 'With WCA ID', value: wcaStatsData?.wcaStats?.wcaWithId},
 						{label: 'Without WCA ID', value: wcaStatsData?.wcaStats?.wcaWithoutId},
 						{label: 'Without User ID', value: wcaStatsData?.wcaStats?.wcaWithoutUserId},
-						{label: 'Revoked', value: wcaStatsData?.wcaStats?.wcaRevoked},
+						{label: 'WCA Revoked', value: wcaStatsData?.wcaStats?.wcaRevoked},
 						{label: 'Backfill Pending', value: wcaStatsData?.wcaStats?.wcaBackfillPending},
+						{label: 'ZKT Linked', value: wcaStatsData?.wcaStats?.zktConnected},
+						// A ZKT ID is issued with the member's first published result,
+						// so this is "linked AND has competed".
+						{label: 'With ZKT ID', value: wcaStatsData?.wcaStats?.zktWithId},
+						{label: 'ZKT, Not Competed', value: wcaStatsData?.wcaStats?.zktWithoutId},
+						{label: 'ZKT Revoked', value: wcaStatsData?.wcaStats?.zktRevoked},
+						{label: 'WCA + ZKT', value: wcaStatsData?.wcaStats?.bothConnected},
 					].map(({label, value}) => (
 						<div key={label} className={b('stat-card')}>
 							<div className={b('stat-label')}>{label}</div>

@@ -38,16 +38,43 @@
 	}
 
 	&__pfp {
-		width: 40px;
-		height: 40px;
+		// Single source of truth for avatar size — hosts override --pfp-size only.
+		// The inner boxes are pinned to that pixel value instead of chaining
+		// height:100% through every descendant: a percentage chain collapses the
+		// avatar to zero as soon as any link resolves to auto, which is what made
+		// the picture render as a thin sliver on page headers.
+		--pfp-size: 40px;
+		width: var(--pfp-size);
+		height: var(--pfp-size);
+		aspect-ratio: 1;
 		border-radius: 50%;
 		overflow: hidden;
 		flex-shrink: 0;
+		// Flex, not block: AvatarImage is inline-flex, so a block parent puts it on a
+		// line box and sits it on the baseline. The strut comes from the inherited
+		// font-size (the handle's `all: unset` pulls the page heading's 2.7rem down
+		// here), which pushed the avatar below the 32px box and `overflow: hidden`
+		// clipped it into a sliver.
+		display: flex;
+		align-items: center;
+		justify-content: center;
 
-		img,
-		div {
+		.#{$namespace}-avatar-image {
+			width: var(--pfp-size);
+			height: var(--pfp-size);
+		}
+
+		// Body fills the (now definite) avatar box; the Pro ring's 3px padding
+		// still shrinks it, keeping the gradient border visible.
+		.#{$namespace}-avatar-image__body {
 			width: 100%;
 			height: 100%;
+		}
+
+		img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
 		}
 	}
 
