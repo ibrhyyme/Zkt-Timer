@@ -1345,7 +1345,10 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 0.35rem;
-		padding: 0.35rem 0.7rem;
+		// 40px tall on touch: a 29px chip is under every mobile tap-target
+		// guideline, and this one sits right above a list people scroll fast.
+		min-height: 2.5rem;
+		padding: 0.5rem 0.85rem;
 		border: 1px solid rgba(var(--text-color), 0.12);
 		border-radius: 999px;
 		background: transparent;

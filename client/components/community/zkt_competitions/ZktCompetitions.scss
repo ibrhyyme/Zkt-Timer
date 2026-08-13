@@ -925,7 +925,9 @@ $zkt-info-green: #45d97c;
 		display: inline-flex;
 		align-items: center;
 		gap: 6px;
-		padding: 6px 12px;
+		// Same 40px touch floor as the WCA-view chip.
+		min-height: 40px;
+		padding: 8px 14px;
 		border: 1px solid rgba(var(--text-color), 0.12);
 		border-radius: 999px;
 		background: transparent;

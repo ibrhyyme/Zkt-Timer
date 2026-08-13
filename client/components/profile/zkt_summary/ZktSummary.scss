@@ -63,12 +63,21 @@
 			border-right: 1px solid rgba(var(--text-color), 0.06);
 		}
 
+		// A member with no medals and no records has ONE stat left. In the mobile
+		// two-column grid that left a half-width cell with a divider hanging under
+		// it, so the lone number gets the full row and no rules at all.
+		&:only-child {
+			grid-column: 1 / -1;
+			border-right: none;
+			border-bottom: none;
+		}
+
 		@media (max-width: 768px) {
 			&:nth-child(2) {
 				border-right: none;
 			}
 
-			&:nth-child(1),
+			&:nth-child(1):not(:only-child),
 			&:nth-child(2) {
 				border-bottom: 1px solid rgba(var(--text-color), 0.06);
 			}

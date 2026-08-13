@@ -359,6 +359,17 @@
 		@media (max-width: 768px) {
 			display: flex;
 			width: 100%;
+			// Four tabs (PBs / WCA / ZKT / results) no longer fit a 390px screen:
+			// the last one used to hang outside the card. Scroll sideways instead
+			// of shrinking labels into ambiguity — and it keeps working if a fifth
+			// tab ever shows up.
+			overflow-x: auto;
+			-webkit-overflow-scrolling: touch;
+			scrollbar-width: none;
+
+			&::-webkit-scrollbar {
+				display: none;
+			}
 		}
 	}
 
@@ -379,7 +390,9 @@
 		white-space: nowrap;
 
 		@media (max-width: 768px) {
-			flex: 1;
+			// Natural width, no shrinking: a squeezed tab drops its label mid-word.
+			// The bar scrolls instead.
+			flex: 0 0 auto;
 			justify-content: center;
 			padding: 10px 12px;
 			font-size: 0.8rem;
