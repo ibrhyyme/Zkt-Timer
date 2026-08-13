@@ -33,6 +33,10 @@ export class PublicZktProfile {
 	@Field(() => String, {nullable: true})
 	zkt_country_iso2?: string;
 
+	/** Federation profile photo. Only a fallback: a photo uploaded here wins. */
+	@Field(() => String, {nullable: true})
+	zkt_avatar_url?: string;
+
 	@Field(() => Number, {nullable: true})
 	zkt_member_no?: number;
 

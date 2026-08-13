@@ -256,6 +256,9 @@ function ProfileContent() {
 				query PublicZktProfile($userId: String) {
 					publicZktProfile(userId: $userId) {
 						zkt_id
+						zkt_name
+						zkt_avatar_url
+						zkt_country_iso2
 						zkt_member_no
 						zkt_competition_count
 						zkt_medal_gold
@@ -820,6 +823,7 @@ function ProfileContent() {
 						}}
 						integration={wcaIntegration}
 						records={wcaRecords}
+						zktProfile={zktProfile}
 					/>
 				</div>
 			)}

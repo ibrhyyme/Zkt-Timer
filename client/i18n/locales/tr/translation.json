@@ -886,11 +886,11 @@
     },
     "my_schedule": {
         "page_title": "Yarışma Programım",
-        "login_description": "WCA hesabınızla giriş yaparak yarışma listenizi ve kişiselleştirilmiş programınızı yükleyebilirsiniz.",
-        "wca_login": "WCA ile Giriş Yap",
+        "login_description": "Yarışmalarını ve programını görmek için giriş yap.",
+        "wca_login": "WCA ile giriş yap",
         "connect_wca": "WCA hesabını bağla",
-        "connect_wca_description": "Kayıtlı olduğun yarışmaları görmek için WCA hesabını bağla.",
-        "connect_wca_btn": "Hesap Bağla",
+        "connect_wca_description": "Kayıtlı olduğun WCA yarışmaları burada görünsün.",
+        "connect_wca_btn": "WCA hesabını bağla",
         "back_to_list": "Yarışmalara dön",
         "back_to_competitors": "Geri Dön",
         "ongoing": "Devam Ediyor",
@@ -1087,7 +1087,10 @@
         "zkt_live_unavailable": "Bu yarışma ZKT Live'da bulunamadı",
         "zkt_live_error": "ZKT Live yüklenirken bir sorun oluştu. Sayfayı yenileyin.",
         "view_zkt_page": "ZKT yarışma sayfasını görüntüle",
-        "day_filter_all": "Tüm yarışmacılar"
+        "day_filter_all": "Tüm yarışmacılar",
+        "zkt_login": "ZKT ile giriş yap",
+        "connect_zkt_btn": "ZKT hesabını bağla",
+        "connect_zkt_description": "Kayıtlı olduğun ZKT yarışmaları burada görünsün."
     },
     "competitions": {
         "page_title": "WCA Yarışmaları",
@@ -1922,7 +1925,10 @@
         "clear": "Temizle",
         "create_new": "Yeni Oluştur",
         "copied": "Kopyalandı",
-        "coming_soon": "Yakında"
+        "coming_soon": "Yakında",
+        "boot_stuck_title": "Uygulama açılamadı",
+        "boot_stuck_message": "Sunucuya bağlanılamıyor. İnternet bağlantını kontrol edip tekrar dene.",
+        "boot_stuck_retry": "Yeniden Dene"
     },
     "announcement_modal": {
         "feature": "🎉 Yenilik",

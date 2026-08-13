@@ -704,44 +704,64 @@
 	}
 
 	// WCA banner
-	&__wca-banner {
+	// Compact "connect your account" row. Replaces a card that stacked a 48px
+	// logo, a heading, a paragraph and a button — fine as the only thing on the
+	// page, far too tall once there are two of them (ZKT and WCA) above the list
+	// people actually came for. Two lines, action implied by the whole row being
+	// the button.
+	&__connect-row {
 		display: flex;
 		align-items: center;
-		gap: 1.25rem;
-		padding: 1.25rem 1.5rem;
-		margin-bottom: 1.5rem;
-		border-radius: 0.75rem;
-		background: linear-gradient(135deg, rgba(30, 60, 114, 0.4) 0%, rgba(42, 82, 152, 0.2) 100%);
-		border: 1px solid rgba(100, 150, 255, 0.12);
+		gap: 0.75rem;
+		width: 100%;
+		padding: 0.7rem 0.9rem;
+		margin-bottom: 0.6rem;
+		border-radius: 0.7rem;
+		text-align: left;
+		cursor: pointer;
+		background: rgb(var(--module-color));
+		border: 1px solid rgba(var(--text-color), 0.1);
+		transition: border-color 0.15s ease, background 0.15s ease;
 
-		@media (max-width: 640px) {
-			flex-direction: column;
-			text-align: center;
+		&:hover {
+			border-color: rgba(var(--text-color), 0.24);
+			background: rgba(var(--text-color), 0.03);
 		}
 	}
 
-	&__wca-banner-logo {
-		width: 48px;
-		height: 48px;
+	&__connect-row-logo {
+		width: 26px;
+		height: 26px;
+		object-fit: contain;
 		flex-shrink: 0;
 	}
 
-	&__wca-banner-body {
+	&__connect-row-body {
 		flex: 1;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.1rem;
 	}
 
-	&__wca-banner-title {
-		font-size: 1rem;
+	&__connect-row-title {
+		font-size: 0.88rem;
 		font-weight: 700;
 		color: rgb(var(--text-color));
-		margin: 0 0 0.25rem;
 	}
 
-	&__wca-banner-desc {
-		font-size: 0.82rem;
+	// One line, ellipsised: the sentence is a nudge, not documentation.
+	&__connect-row-desc {
+		font-size: 0.75rem;
 		color: rgba(var(--text-color), 0.7);
-		margin: 0 0 0.75rem;
-		line-height: 1.4;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	&__connect-row-caret {
+		flex-shrink: 0;
+		color: rgba(var(--text-color), 0.5);
 	}
 
 	&__wca-banner-btn {

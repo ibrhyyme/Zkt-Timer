@@ -565,6 +565,58 @@ export default function CompetitionList() {
 		);
 	}
 
+	const hasWcaLink = !!me?.integrations?.some((i: any) => i.service_name === 'wca');
+	const hasZktLink = !!me?.integrations?.some((i: any) => i.service_name === 'zkt');
+
+	/**
+	 * "Connect your account" row for one federation. Deliberately two lines —
+	 * a title and one sentence with the action inline — because two of these can
+	 * be on screen at once and the page's job is to show competitions.
+	 */
+	function renderConnectBanner(service: 'zkt' | 'wca') {
+		const isZktService = service === 'zkt';
+		const logo = isZktService
+			? isDarkTheme
+				? '/images/zkt-logo.png'
+				: '/images/zkt-logo-white.png'
+			: '/images/logos/wca_logo.svg';
+		const label = !me
+			? t(isZktService ? 'my_schedule.zkt_login' : 'my_schedule.wca_login')
+			: t(isZktService ? 'my_schedule.connect_zkt_btn' : 'my_schedule.connect_wca_btn');
+		const desc = !me
+			? t('my_schedule.login_description')
+			: t(isZktService ? 'my_schedule.connect_zkt_description' : 'my_schedule.connect_wca_description');
+
+		function start() {
+			const oauth = isZktService ? LINKED_SERVICES.zkt : LINKED_SERVICES.wca;
+			const loginPath = isZktService ? '/oauth/zkt/login' : '/oauth/wca/login';
+			const linkPath = isZktService ? '/oauth/zkt' : '/oauth/wca';
+			const params = new URLSearchParams({
+				client_id: oauth.clientId,
+				response_type: oauth.responseType,
+				scope: oauth.scope.join(' '),
+				redirect_uri: oauthRedirectUri(!me ? loginPath : linkPath),
+				state: markNativeOAuthState('/competitions'),
+			});
+			openOAuthAuthorize(`${oauth.authEndpoint}?${params.toString()}`);
+		}
+
+		return (
+			<button
+				key={service}
+				className={b('connect-row', {[service]: true})}
+				onClick={start}
+			>
+				<img src={resourceUri(logo)} alt="" aria-hidden="true" className={b('connect-row-logo')} />
+				<span className={b('connect-row-body')}>
+					<span className={b('connect-row-title')}>{label}</span>
+					<span className={b('connect-row-desc')}>{desc}</span>
+				</span>
+				<CaretRight size={15} weight="bold" className={b('connect-row-caret')} />
+			</button>
+		);
+	}
+
 	return (
 		<div className={b('content')}>
 			<h1 className="sr-only">{t('seo.wca_competitions_title')}</h1>
@@ -582,43 +634,17 @@ export default function CompetitionList() {
 				<CaretRight size={16} weight="bold" />
 			</button>
 
-			{/* WCA banner — show only when WCA is not linked */}
-			{!compSearch.trim() && !me?.integrations?.some((i: any) => i.service_name === 'wca') && (
-				<div className={b('wca-banner')}>
-					<img src={resourceUri('/images/logos/wca_logo.svg')} alt="WCA" className={b('wca-banner-logo')} />
-					<div className={b('wca-banner-body')}>
-						<h3 className={b('wca-banner-title')}>
-							{!me ? t('my_schedule.wca_login') : t('my_schedule.connect_wca_btn')}
-						</h3>
-						<p className={b('wca-banner-desc')}>
-							{!me ? t('my_schedule.login_description') : t('my_schedule.connect_wca_description')}
-						</p>
-						<button
-							className={b('wca-banner-btn')}
-							onClick={() => {
-								const service = LINKED_SERVICES.wca;
-								const params = new URLSearchParams({
-									client_id: service.clientId,
-									response_type: service.responseType,
-									scope: service.scope.join(' '),
-									redirect_uri: oauthRedirectUri(!me ? '/oauth/wca/login' : '/oauth/wca'),
-									state: markNativeOAuthState('/competitions'),
-								});
-								openOAuthAuthorize(`${service.authEndpoint}?${params.toString()}`);
-							}}
-						>
-							{!me ? t('my_schedule.wca_login') : t('my_schedule.connect_wca_btn')}
-						</button>
-					</div>
-				</div>
-			)}
+			{/* Connect prompts, one per federation, ZKT first: a Turkish competitor's
+			    results hang off their ZKT account now. Both are one compact row —
+			    two full-size cards stacked would push the actual competition list
+			    below the fold. */}
+			{!compSearch.trim() && !hasZktLink && renderConnectBanner('zkt')}
+			{!compSearch.trim() && !hasWcaLink && renderConnectBanner('wca')}
 
 			{/* My Competitions — needs a linked federation account to hold anything.
 			     WCA link is the usual gate, but a viewer with ZKT registrations must
 			     see the section too, whichever way that match was made. */}
-			{!compSearch.trim() &&
-				(me?.integrations?.some((i: any) => i.service_name === 'wca') ||
-					(myZktComps?.length ?? 0) > 0) && (
+			{!compSearch.trim() && (hasWcaLink || (myZktComps?.length ?? 0) > 0) && (
 				<div className={b('my-competitions')}>
 					<h3 className={b('section-title')}>{t('my_schedule.my_competitions')}</h3>
 					{!myAllComps ? (

@@ -879,11 +879,11 @@
     },
     "my_schedule": {
         "page_title": "Mi Programa de Competencia",
-        "login_description": "Inicia sesión con tu cuenta WCA para cargar tu lista de competencias y programa personalizado.",
+        "login_description": "Inicia sesión para ver tus competiciones y tu horario.",
         "wca_login": "Iniciar sesión con WCA",
         "connect_wca": "Vincula tu cuenta WCA",
-        "connect_wca_description": "Vincula tu cuenta WCA para ver tus competencias registradas.",
-        "connect_wca_btn": "Vincular Cuenta",
+        "connect_wca_description": "Ve las competiciones WCA en las que estás inscrito.",
+        "connect_wca_btn": "Vincula tu cuenta WCA",
         "back_to_list": "Volver a competencias",
         "back_to_competitors": "Volver",
         "ongoing": "En Vivo",
@@ -1080,7 +1080,10 @@
         "zkt_live_unavailable": "Esta competición no está disponible en ZKT Live",
         "zkt_live_error": "Error al cargar ZKT Live. Actualiza la página.",
         "view_zkt_page": "Ver página ZKT de la competencia",
-        "day_filter_all": "Todos los competidores"
+        "day_filter_all": "Todos los competidores",
+        "zkt_login": "Iniciar sesión con ZKT",
+        "connect_zkt_btn": "Vincula tu cuenta ZKT",
+        "connect_zkt_description": "Ve las competiciones ZKT en las que estás inscrito."
     },
     "competitions": {
         "page_title": "Competencias WCA",
@@ -1915,7 +1918,10 @@
         "clear": "Limpiar",
         "create_new": "Crear nuevo",
         "copied": "Copiado",
-        "coming_soon": "Próximamente"
+        "coming_soon": "Próximamente",
+        "boot_stuck_title": "La aplicación no pudo iniciarse",
+        "boot_stuck_message": "No podemos conectar con el servidor. Comprueba tu conexión a internet e inténtalo de nuevo.",
+        "boot_stuck_retry": "Reintentar"
     },
     "announcement_modal": {
         "feature": "🎉 Novedad",

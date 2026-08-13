@@ -879,11 +879,11 @@
     },
     "my_schedule": {
         "page_title": "Моё расписание соревнований",
-        "login_description": "Войдите с аккаунтом WCA, чтобы загрузить список соревнований и персонализированное расписание.",
+        "login_description": "Войдите, чтобы увидеть свои соревнования и расписание.",
         "wca_login": "Войти через WCA",
         "connect_wca": "Привяжите аккаунт WCA",
-        "connect_wca_description": "Привяжите аккаунт WCA, чтобы увидеть свои зарегистрированные соревнования.",
-        "connect_wca_btn": "Привязать",
+        "connect_wca_description": "Показывать соревнования WCA, на которые вы зарегистрированы.",
+        "connect_wca_btn": "Привязать аккаунт WCA",
         "back_to_list": "К соревнованиям",
         "back_to_competitors": "Назад",
         "ongoing": "Идёт",
@@ -1080,7 +1080,10 @@
         "zkt_live_unavailable": "Это соревнование недоступно на ZKT Live",
         "zkt_live_error": "Не удалось загрузить ZKT Live. Обновите страницу.",
         "view_zkt_page": "Страница соревнования на ZKT",
-        "day_filter_all": "Все участники"
+        "day_filter_all": "Все участники",
+        "zkt_login": "Войти через ZKT",
+        "connect_zkt_btn": "Привязать аккаунт ZKT",
+        "connect_zkt_description": "Показывать соревнования ZKT, на которые вы зарегистрированы."
     },
     "competitions": {
         "page_title": "Соревнования WCA",
@@ -1915,7 +1918,10 @@
         "clear": "Очистить",
         "create_new": "Создать новый",
         "copied": "Скопировано",
-        "coming_soon": "Скоро"
+        "coming_soon": "Скоро",
+        "boot_stuck_title": "Приложение не запустилось",
+        "boot_stuck_message": "Не удается подключиться к серверу. Проверьте подключение к интернету и повторите попытку.",
+        "boot_stuck_retry": "Повторить"
     },
     "announcement_modal": {
         "feature": "🎉 Новая функция",

@@ -164,6 +164,7 @@ fragment PublicUserFragment on IPublicUserAccount {
 		id
 		service_name
 		wca_country_iso2
+		zkt_country_iso2
 	}
 	profile {
 		pfp_image {

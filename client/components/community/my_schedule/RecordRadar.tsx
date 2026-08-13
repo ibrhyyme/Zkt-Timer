@@ -23,11 +23,17 @@ import RecentRecordsFeed from './RecentRecordsFeed';
 type Scope = 'WR' | 'CR' | 'NR';
 type Tab = 'recent' | 'watches';
 
+/**
+ * Country used to preselect a national-record watch. WCA first, then the ZKT
+ * link — a member who only connected ZKT used to get an empty country here, so
+ * the "NR" scope opened with nothing chosen and looked broken to them.
+ */
 function useMyWcaCountry(): string {
 	const me = useMe();
 	return useMemo(() => {
 		const wca = me?.integrations?.find((i: any) => i.service_name === 'wca');
-		return (wca?.wca_country_iso2 || '').toUpperCase();
+		const zkt = me?.integrations?.find((i: any) => i.service_name === 'zkt');
+		return (wca?.wca_country_iso2 || zkt?.zkt_country_iso2 || '').toUpperCase();
 	}, [me]);
 }
 

@@ -278,8 +278,11 @@ export default function App(props: Props = {}) {
 							// Only redirect to login if we had a flag. If we were just checking standalone, maybe go to welcome?
 							if (hasAuth) {
 								window.location.href = '/login?redirect=' + encodeURIComponent(window.location.pathname);
-							} else if (window.location.pathname !== '/welcome') {
+							} else {
 								// getMeFromStore being null means we are NOT logged in.
+								// This runs unconditionally: skipping it on /welcome left
+								// app_loaded false forever, and any route that mounts the
+								// LoadingCover would spin with nothing left to finish it.
 								initAnonymousAppData(appInitiated);
 							}
 						}

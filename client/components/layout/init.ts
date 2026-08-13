@@ -34,6 +34,62 @@ import { canReadSync, canWriteSync } from '../../lib/sync-gate';
 import { importSessionsInChunks, importSolvesInChunks } from '../settings/data/import_data/review_import/chunked_import';
 import { getAllQueued } from '../../util/offline-queue';
 import { getSolveTombstones } from '../../util/solve-tombstones';
+import * as Sentry from '@sentry/browser';
+
+// Every boot fetcher below already falls back to local data when its request
+// FAILS. What none of them survive is a request that never settles at all: a
+// mobile connection that keeps the socket open and answers nothing leaves the
+// await pending forever, `callback()` is never reached, and the LoadingCover
+// spins with no escape (Sentry sees nothing, because nothing threw). Racing
+// every boot-path query against a deadline turns that dead end into the
+// already-written offline path.
+const BOOT_QUERY_TIMEOUT_MS = 20_000;
+// Full solve/session payloads are legitimately large on a slow connection, so
+// they get a longer leash than the small metadata queries.
+const BOOT_BULK_TIMEOUT_MS = 45_000;
+
+class BootTimeoutError extends Error {
+	constructor(label: string, ms: number) {
+		super(`[Boot] ${label} timed out after ${ms}ms`);
+		this.name = 'BootTimeoutError';
+	}
+}
+
+function withBootTimeout<T>(promise: Promise<T>, label: string, ms: number = BOOT_QUERY_TIMEOUT_MS): Promise<T> {
+	return new Promise<T>((resolve, reject) => {
+		const timer = setTimeout(() => {
+			reportBootTimeout(label, ms);
+			reject(new BootTimeoutError(label, ms));
+		}, ms);
+		promise.then(
+			(value) => {
+				clearTimeout(timer);
+				resolve(value);
+			},
+			(err) => {
+				clearTimeout(timer);
+				reject(err);
+			}
+		);
+	});
+}
+
+// A boot timeout is invisible in the current telemetry: the app simply hangs.
+// Report it so the real-world frequency of this failure becomes measurable
+// instead of depending on users reporting it by hand.
+function reportBootTimeout(label: string, ms: number) {
+	console.warn(`[Boot] ${label} timed out after ${ms}ms — falling back to local data`);
+	if (typeof window === 'undefined') return;
+	try {
+		Sentry.withScope((scope) => {
+			scope.setLevel(Sentry.Severity.Warning);
+			scope.setTag('boot_stage', label);
+			scope.setExtra('timeout_ms', ms);
+			scope.setExtra('online', navigator.onLine);
+			Sentry.captureMessage(`[Boot] ${label} timed out`);
+		});
+	} catch (e) {}
+}
 
 export function initAnonymousAppData(callback) {
 	if (typeof window === 'undefined') {
@@ -255,8 +311,16 @@ async function loadNonCriticalData(_me: UserAccount, dispatch: Dispatch<any>, pa
  * (with everything else)
  */
 async function initNewScramble() {
-	// Load via Worker in background on main thread — prevents blocking
-	await getNewScrambleAsync('333');
+	// Load via Worker in background on main thread — prevents blocking.
+	// The async generators run inside a web worker whose script is fetched over
+	// the network; if that fetch stalls the promise never settles, so this must
+	// not be able to hold the boot chain. The timer generates its own scramble
+	// on mount anyway, making this purely a warm-up.
+	try {
+		await withBootTimeout(getNewScrambleAsync('333'), 'initial_scramble');
+	} catch (e) {
+		console.warn('[Boot] initial scramble warm-up skipped:', e);
+	}
 }
 
 const SYNC_SOLVE_COUNT = 500;
@@ -323,7 +387,7 @@ async function deltaSyncSolves(): Promise<boolean> {
 				mySolveIds
 			}
 		`;
-		const idsRes = await gqlQuery<{ mySolveIds: string[] }>(idsQuery);
+		const idsRes = await withBootTimeout(gqlQuery<{ mySolveIds: string[] }>(idsQuery), 'delta_solve_ids');
 		// A missing payload is a failed read, not "the server has no solves". Coercing
 		// it to [] here would let step 5 below delete local solves. Bail out instead
 		// so the caller falls back to a full fetch, matching the previous behaviour
@@ -386,7 +450,7 @@ async function deltaSyncSolves(): Promise<boolean> {
 
 		// 6. Fetch new solves in batches (solvesByIds query)
 		if (toFetch.length > 0) {
-			await fetchSolvesByIds(toFetch);
+			await withBootTimeout(fetchSolvesByIds(toFetch), 'delta_solve_fetch', BOOT_BULK_TIMEOUT_MS);
 		}
 
 		// 7. Emit event if changes occurred
@@ -682,6 +746,17 @@ async function backfillMissingMethodSteps(): Promise<void> {
 	}
 }
 
+// Solves are pulled a page at a time rather than in one request. `take: 0` was
+// falsy server-side, so this query used to mean "every solve, with every method
+// step, in a single response" — tens of megabytes for a heavy user, which the
+// server had to buffer whole and a phone had to parse whole. Paging keeps each
+// response small enough to succeed and lets a late failure keep the pages that
+// already arrived.
+const SOLVE_PAGE_SIZE = 2500;
+// Hard ceiling so a server that keeps returning full pages can never spin here
+// forever. 400 pages is far beyond any real account (the largest today is ~40k).
+const MAX_SOLVE_PAGES = 400;
+
 export async function initAllSolves() {
 	const query = gql`
 		${MICRO_SOLVE_FRAGMENT}
@@ -693,10 +768,20 @@ export async function initAllSolves() {
 		}
 	`;
 
+	const all: Solve[] = [];
 	try {
-		const res = await gqlQuery<{ solves: Solve[] }>(query, { take: 0, skip: 0 });
-		const solves = res.data.solves;
-		initSolveDb(solves);
+		for (let page = 0; page < MAX_SOLVE_PAGES; page++) {
+			const res = await withBootTimeout(
+				gqlQuery<{ solves: Solve[] }>(query, { take: SOLVE_PAGE_SIZE, skip: page * SOLVE_PAGE_SIZE }),
+				'all_solves',
+				BOOT_BULK_TIMEOUT_MS
+			);
+			const batch = res.data?.solves || [];
+			all.push(...batch);
+			if (batch.length < SOLVE_PAGE_SIZE) break;
+		}
+
+		initSolveDb(all);
 		// Full dataset is in RAM — safe to persist again.
 		setDbLoadDegraded(false);
 	} catch (e) {
@@ -726,26 +811,46 @@ async function recoverBasicDataFromServer() {
 	const query = gql`
 		${MICRO_SOLVE_FRAGMENT}
 
-		query Query {
-			recoverMySolves {
+		query Query($take: Int, $skip: Int) {
+			recoverMySolves(take: $take, skip: $skip) {
 				...MicroSolveFragment
 			}
 		}
 	`;
 
+	// Paged for the same reason as initAllSolves: this query selects every method
+	// step alongside every solve, so an unpaged recovery on a heavy account was the
+	// single largest response the app ever asked for. Each page is appended as it
+	// lands, so a failure halfway still leaves the user with real data.
+	let restored = 0;
 	try {
-		const res = await gqlQuery<{ recoverMySolves: Solve[] }>(query);
-		const solves = res.data?.recoverMySolves || [];
-		if (solves.length) {
-			appendSolvesToDb(solves);
-			// Full dataset is in RAM — safe to persist to IndexedDB again.
-			setDbLoadDegraded(false);
-			await saveLokiDb();
-			emitEvent('solveDbUpdatedEvent');
-			console.log(`[BasicRecovery] restored ${solves.length} solves from server`);
+		for (let page = 0; page < MAX_SOLVE_PAGES; page++) {
+			const res = await withBootTimeout(
+				gqlQuery<{ recoverMySolves: Solve[] }>(query, { take: SOLVE_PAGE_SIZE, skip: page * SOLVE_PAGE_SIZE }),
+				'basic_recovery',
+				BOOT_BULK_TIMEOUT_MS
+			);
+			const batch = res.data?.recoverMySolves || [];
+			if (batch.length) {
+				appendSolvesToDb(batch);
+				restored += batch.length;
+			}
+			if (batch.length < SOLVE_PAGE_SIZE) break;
 		}
 	} catch (e) {
 		console.error('[BasicRecovery] solve recovery failed:', e);
+	}
+
+	if (restored > 0) {
+		// Data is in RAM — safe to persist to IndexedDB again.
+		setDbLoadDegraded(false);
+		try {
+			await saveLokiDb();
+		} catch (e) {
+			console.error('[BasicRecovery] persist failed:', e);
+		}
+		emitEvent('solveDbUpdatedEvent');
+		console.log(`[BasicRecovery] restored ${restored} solves from server`);
 	}
 }
 
@@ -772,7 +877,7 @@ async function getAllSessions() {
 	`;
 
 	try {
-		const res = await gqlQuery<{ sessions: Session[] }>(query);
+		const res = await withBootTimeout(gqlQuery<{ sessions: Session[] }>(query), 'sessions');
 		initSessionCollection();
 		reconcileSessionDb(res.data.sessions);
 		emitEvent('sessionsDbUpdatedEvent');
@@ -837,7 +942,7 @@ async function getAllSettings(userId: string) {
 
 	let backendSettings: any = {};
 	try {
-		const res = await gqlQuery<{ settings: Setting }>(query);
+		const res = await withBootTimeout(gqlQuery<{ settings: Setting }>(query), 'settings');
 		backendSettings = res.data.settings;
 
 		// Back up server settings to localStorage (offline fallback)
@@ -960,7 +1065,7 @@ async function migrateLocalDataToServer(): Promise<boolean> {
 				mySolveIds
 			}
 		`;
-		const res = await gqlQuery<{ mySolveIds: string[] }>(query);
+		const res = await withBootTimeout(gqlQuery<{ mySolveIds: string[] }>(query), 'migration_solve_check');
 		// Same rule as deltaSyncSolves: an absent list means the check did not run.
 		// Treating it as "server is empty" would start a migration that duplicates
 		// data already on the server, so abort and retry on the next launch.

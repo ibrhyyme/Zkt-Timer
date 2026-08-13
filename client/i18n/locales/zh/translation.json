@@ -879,11 +879,11 @@
     },
     "my_schedule": {
         "page_title": "我的比赛日程",
-        "login_description": "使用您的 WCA 账户登录，以加载您的比赛列表和个性化日程。",
+        "login_description": "登录后查看你的比赛和个人日程。",
         "wca_login": "使用 WCA 登录",
         "connect_wca": "关联您的 WCA 账户",
-        "connect_wca_description": "关联您的 WCA 账户以查看您已报名参加的比赛。",
-        "connect_wca_btn": "关联账户",
+        "connect_wca_description": "显示你已报名的 WCA 比赛。",
+        "connect_wca_btn": "关联 WCA 账号",
         "back_to_list": "返回比赛列表",
         "back_to_competitors": "返回",
         "ongoing": "进行中",
@@ -1080,7 +1080,10 @@
         "zkt_live_unavailable": "此比赛在 ZKT Live 上不可用",
         "zkt_live_error": "加载 ZKT Live 失败。请刷新页面。",
         "view_zkt_page": "查看 ZKT 比赛页面",
-        "day_filter_all": "全部选手"
+        "day_filter_all": "全部选手",
+        "zkt_login": "使用 ZKT 登录",
+        "connect_zkt_btn": "关联 ZKT 账号",
+        "connect_zkt_description": "显示你已报名的 ZKT 比赛。"
     },
     "competitions": {
         "page_title": "WCA 比赛",
@@ -1915,7 +1918,10 @@
         "clear": "清除",
         "create_new": "新建",
         "copied": "已复制",
-        "coming_soon": "敬请期待"
+        "coming_soon": "敬请期待",
+        "boot_stuck_title": "应用无法启动",
+        "boot_stuck_message": "无法连接到服务器。请检查您的网络连接后重试。",
+        "boot_stuck_retry": "重试"
     },
     "announcement_modal": {
         "feature": "🎉 功能",

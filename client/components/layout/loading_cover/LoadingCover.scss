@@ -10,9 +10,12 @@
 	background-color: rgb(var(--background-color));
 	height: 100vh;
 	display: flex;
+	flex-direction: column;
 	transition: background-color 0.1s ease-in-out, opacity 0.15s 0.4s ease-in-out;
 	justify-content: center;
 	align-items: center;
+	padding: 0 1.5rem;
+	box-sizing: border-box;
 
 	i {
 		font-size: 1.7rem;
@@ -23,5 +26,45 @@
 		opacity: 0;
 		pointer-events: none;
 		transition: opacity 0.15s 0.4s ease-in-out;
+	}
+
+	// Shown only after the boot has visibly stalled — see STUCK_THRESHOLD_MS.
+	&__stuck {
+		margin-top: 1.5rem;
+		max-width: 24rem;
+		text-align: center;
+	}
+
+	&__stuck-title {
+		font-size: 1.1rem;
+		font-weight: 700;
+		color: inherit;
+		margin-bottom: 0.5rem;
+	}
+
+	&__stuck-message {
+		font-size: 0.95rem;
+		font-weight: 400;
+		line-height: 1.5;
+		color: inherit;
+		margin-bottom: 1.5rem;
+	}
+
+	&__stuck-button {
+		background-color: rgb(var(--primary-color));
+		// Never hardcode a contrast colour here: the primary is theme-driven and can
+		// be light (cyberpunk yellow), which would swallow white text.
+		color: rgb(var(--theme-primary-opposite));
+		border: none;
+		border-radius: 0.6rem;
+		padding: 0.8rem 2rem;
+		font-size: 1rem;
+		font-weight: 600;
+		font-family: inherit;
+		cursor: pointer;
+
+		&:active {
+			opacity: 0.8;
+		}
 	}
 }

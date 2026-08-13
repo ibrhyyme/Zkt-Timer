@@ -879,11 +879,11 @@
     },
     "my_schedule": {
         "page_title": "My Competition Schedule",
-        "login_description": "Sign in with your WCA account to load your competition list and personalized schedule.",
+        "login_description": "Sign in to see your competitions and personal schedule.",
         "wca_login": "Sign in with WCA",
         "connect_wca": "Link your WCA account",
-        "connect_wca_description": "Link your WCA account to see your registered competitions.",
-        "connect_wca_btn": "Link Account",
+        "connect_wca_description": "See the WCA competitions you are registered for.",
+        "connect_wca_btn": "Link your WCA account",
         "back_to_list": "Back to competitions",
         "back_to_competitors": "Go Back",
         "ongoing": "Live",
@@ -1080,7 +1080,10 @@
         "zkt_live_unavailable": "This competition is not available on ZKT Live",
         "zkt_live_error": "Failed to load ZKT Live. Please refresh the page.",
         "view_zkt_page": "View ZKT competition page",
-        "day_filter_all": "All competitors"
+        "day_filter_all": "All competitors",
+        "zkt_login": "Sign in with ZKT",
+        "connect_zkt_btn": "Link your ZKT account",
+        "connect_zkt_description": "See the ZKT competitions you are registered for."
     },
     "competitions": {
         "page_title": "WCA Competitions",
@@ -1915,7 +1918,10 @@
         "clear": "Clear",
         "create_new": "Create New",
         "copied": "Copied",
-        "coming_soon": "Coming Soon"
+        "coming_soon": "Coming Soon",
+        "boot_stuck_title": "The app could not start",
+        "boot_stuck_message": "We cannot reach the server. Check your internet connection and try again.",
+        "boot_stuck_retry": "Try Again"
     },
     "announcement_modal": {
         "feature": "🎉 Feature",

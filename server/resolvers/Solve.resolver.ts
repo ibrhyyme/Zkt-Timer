@@ -68,9 +68,10 @@ export class SolveResolver {
 				ended_at: true,
 				solve_method_steps: true,
 			},
-			orderBy: {
-				created_at: 'desc',
-			},
+			// Deterministic tie-break: created_at alone is not unique (a bulk import
+			// writes thousands of rows within the same instant), so paging by it
+			// would drop or repeat rows between pages.
+			orderBy: [{ created_at: 'desc' }, { id: 'desc' }],
 			...(take ? { take } : {}),
 			...(skip ? { skip } : {}),
 		});
@@ -85,7 +86,11 @@ export class SolveResolver {
 	// recovery door only.
 	@Authorized([Role.LOGGED_IN])
 	@Query(() => [Solve])
-	async recoverMySolves(@Ctx() context: GraphQLContext) {
+	async recoverMySolves(
+		@Ctx() context: GraphQLContext,
+		@Arg('take', () => Int, { nullable: true }) take?: number,
+		@Arg('skip', () => Int, { nullable: true }) skip?: number
+	) {
 		const { prisma } = context;
 
 		return prisma.solve.findMany({
@@ -112,9 +117,12 @@ export class SolveResolver {
 				ended_at: true,
 				solve_method_steps: true,
 			},
-			orderBy: {
-				created_at: 'desc',
-			},
+			// Deterministic tie-break: created_at alone is not unique (a bulk import
+			// writes thousands of rows within the same instant), so paging by it
+			// would drop or repeat rows between pages.
+			orderBy: [{ created_at: 'desc' }, { id: 'desc' }],
+			...(take ? { take } : {}),
+			...(skip ? { skip } : {}),
 		});
 	}
 

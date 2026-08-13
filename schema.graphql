@@ -266,7 +266,7 @@ type Query {
   badgeTypes: [BadgeType]
   userSearch(pageArgs: PaginationArgsInput): PaginatedUserAccounts
   solves(skip: Int, take: Int): [Solve]
-  recoverMySolves: [Solve]
+  recoverMySolves(skip: Int, take: Int): [Solve]
   solvesByIds(ids: [String]): [Solve]
   mySolveIds: [String]
   sessions: [Session]
@@ -2353,6 +2353,7 @@ type PublicZktProfile {
   zkt_id: String
   zkt_name: String
   zkt_country_iso2: String
+  zkt_avatar_url: String
   zkt_member_no: Float
   zkt_competition_count: Float
   zkt_medal_gold: Float
