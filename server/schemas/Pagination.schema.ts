@@ -1,4 +1,4 @@
-import {ArgsType, ClassType, Field, InputType, Int, ObjectType} from 'type-graphql';
+import {ArgsType, ClassType, Field, InputType, Int, ObjectType, registerEnumType} from 'type-graphql';
 import {Max, MaxLength, Min, MinLength} from 'class-validator';
 
 @InputType()
@@ -64,6 +64,30 @@ export class AdminUserFiltersInput {
 	/** Members with a linked Zeka Kupu Turkiye account. */
 	@Field(() => Boolean, {nullable: true})
 	has_zkt?: boolean;
+}
+
+/** Columns the admin user table can be sorted by. */
+export enum AdminUserSortField {
+	created_at = 'created_at',
+	last_seen_at = 'last_seen_at',
+}
+
+registerEnumType(AdminUserSortField, {name: 'AdminUserSortField'});
+
+export enum AdminUserSortDirection {
+	asc = 'asc',
+	desc = 'desc',
+}
+
+registerEnumType(AdminUserSortDirection, {name: 'AdminUserSortDirection'});
+
+@InputType()
+export class AdminUserSortInput {
+	@Field(() => AdminUserSortField)
+	field: AdminUserSortField;
+
+	@Field(() => AdminUserSortDirection)
+	direction: AdminUserSortDirection;
 }
 
 export interface PaginationOutput<T> {

@@ -79,6 +79,29 @@
 		color: rgba(var(--text-color), 0.7);
 	}
 
+	&__sort-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		padding: 0;
+		border: none;
+		background: none;
+		font: inherit;
+		text-transform: inherit;
+		letter-spacing: inherit;
+		color: rgba(var(--text-color), 0.7);
+		cursor: pointer;
+		transition: color 0.2s ease;
+
+		&:hover {
+			color: rgb(var(--text-color));
+		}
+
+		&--active {
+			color: rgb(var(--primary-color));
+		}
+	}
+
 	&__row {
 		border-bottom: 1px solid rgba(var(--text-color), 0.05);
 		transition: background-color 0.2s ease;

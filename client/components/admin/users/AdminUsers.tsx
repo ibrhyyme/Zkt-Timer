@@ -13,7 +13,7 @@ import {openModal} from '../../../actions/general';
 import ManageUser from '../manage_user/ManageUser';
 import {useTranslation} from 'react-i18next';
 import SendFilteredEmailModal from './SendFilteredEmailModal';
-import {EnvelopeSimple} from 'phosphor-react';
+import {ArrowDown, ArrowsDownUp, ArrowUp, EnvelopeSimple} from 'phosphor-react';
 
 dayjs.extend(relativeTime);
 dayjs.locale('tr');
@@ -45,8 +45,8 @@ interface UserAccountData {
 }
 
 const ADMIN_USER_SEARCH_QUERY = gql`
-	query AdminUserSearch($pageArgs: PaginationArgsInput, $filters: AdminUserFiltersInput) {
-		adminUserSearch(pageArgs: $pageArgs, filters: $filters) {
+	query AdminUserSearch($pageArgs: PaginationArgsInput, $filters: AdminUserFiltersInput, $sort: AdminUserSortInput) {
+		adminUserSearch(pageArgs: $pageArgs, filters: $filters, sort: $sort) {
 			hasMore
 			total
 			items {
@@ -156,6 +156,42 @@ function UserTableRow({user, onUpdated}: {user: UserAccountData; onUpdated: () =
 	);
 }
 
+type SortField = 'created_at' | 'last_seen_at';
+type SortDirection = 'asc' | 'desc';
+
+interface SortState {
+	field: SortField;
+	direction: SortDirection;
+}
+
+function SortableHeaderCell({
+	label,
+	field,
+	sort,
+	onToggle,
+}: {
+	label: string;
+	field: SortField;
+	sort: SortState | null;
+	onToggle: (field: SortField) => void;
+}) {
+	const active = sort?.field === field;
+	const Icon = !active ? ArrowsDownUp : sort?.direction === 'asc' ? ArrowUp : ArrowDown;
+
+	return (
+		<th className="cd-admin-users__header-cell">
+			<button
+				type="button"
+				className={`cd-admin-users__sort-btn${active ? ' cd-admin-users__sort-btn--active' : ''}`}
+				onClick={() => onToggle(field)}
+			>
+				{label}
+				<Icon size={13} weight="bold" />
+			</button>
+		</th>
+	);
+}
+
 const FILTERS = [
 	{key: 'ADMIN', label: 'Admin', color: '#ef4444'},
 	{key: 'MOD', label: 'Mod', color: '#f97316'},
@@ -205,12 +241,16 @@ export default function AdminUsers() {
 	const [hasMore, setHasMore] = React.useState(true);
 	const [total, setTotal] = React.useState(0);
 	const [activeFilters, setActiveFilters] = React.useState<string[]>([]);
+	const [sort, setSort] = React.useState<SortState | null>(null);
 	const [showEmailModal, setShowEmailModal] = React.useState(false);
 
 	const filtersRef = React.useRef(activeFilters);
 	filtersRef.current = activeFilters;
 
-	async function fetchData(currentPage: number, currentFilters?: string[]) {
+	const sortRef = React.useRef(sort);
+	sortRef.current = sort;
+
+	async function fetchData(currentPage: number, currentFilters?: string[], currentSort?: SortState) {
 		setLoading(true);
 		try {
 			const filters = buildServerFilters(currentFilters ?? filtersRef.current);
@@ -223,6 +263,7 @@ export default function AdminUsers() {
 						pageSize: 50,
 					},
 					filters,
+					sort: currentSort ?? sortRef.current ?? undefined,
 				},
 				{
 					fetchPolicy: 'network-only',
@@ -254,6 +295,20 @@ export default function AdminUsers() {
 		setActiveFilters(next);
 		setPage(0);
 		fetchData(0, next);
+	}
+
+	// First click on a column sorts oldest-first, clicking the same column again flips to
+	// newest-first. Switching columns always restarts at oldest-first.
+	function toggleSort(field: SortField) {
+		const current = sortRef.current;
+		const next: SortState =
+			current?.field === field
+				? {field, direction: current.direction === 'asc' ? 'desc' : 'asc'}
+				: {field, direction: 'asc'};
+
+		setSort(next);
+		setPage(0);
+		fetchData(0, undefined, next);
 	}
 
 	const handlePrevPage = () => {
@@ -339,8 +394,18 @@ export default function AdminUsers() {
 								<thead>
 									<tr className="cd-admin-users__header-row">
 										<th className="cd-admin-users__header-cell">{t('admin_users.user')}</th>
-										<th className="cd-admin-users__header-cell">{t('admin_users.register_date')}</th>
-										<th className="cd-admin-users__header-cell">{t('admin_users.last_seen')}</th>
+										<SortableHeaderCell
+											label={t('admin_users.register_date')}
+											field="created_at"
+											sort={sort}
+											onToggle={toggleSort}
+										/>
+										<SortableHeaderCell
+											label={t('admin_users.last_seen')}
+											field="last_seen_at"
+											sort={sort}
+											onToggle={toggleSort}
+										/>
 										<th className="cd-admin-users__header-cell">{t('admin_users.country')}</th>
 										<th className="cd-admin-users__header-cell">IP</th>
 										<th className="cd-admin-users__header-cell">{t('admin_users.status')}</th>

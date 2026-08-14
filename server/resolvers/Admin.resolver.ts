@@ -27,7 +27,7 @@ import { deleteAllPublishedSolves } from '../models/top_solve';
 import MembershipGrantedNotification from '../resources/notification_types/membership_granted';
 import { createBanLog, deactivateAllBanLogs } from '../models/ban_log';
 import { resolveReportsOfUserId } from './Report.resolver';
-import { PaginationArgsInput, AdminUserFiltersInput } from '../schemas/Pagination.schema';
+import { PaginationArgsInput, AdminUserFiltersInput, AdminUserSortInput, AdminUserSortField } from '../schemas/Pagination.schema';
 import { getPaginatedResponse, PaginatedRequestInput } from '../util/pagination/paginated_response';
 import { sendPushToUser } from '../services/push';
 import { AdminSendPushResult, PushTokenInfo } from '../schemas/PushToken.schema';
@@ -57,7 +57,8 @@ export class AdminResolver {
 	async adminUserSearch(
 		@Ctx() context: GraphQLContext,
 		@Arg('pageArgs', () => PaginationArgsInput) pageArgs: PaginationArgsInput,
-		@Arg('filters', () => AdminUserFiltersInput, {nullable: true}) filters?: AdminUserFiltersInput
+		@Arg('filters', () => AdminUserFiltersInput, {nullable: true}) filters?: AdminUserFiltersInput,
+		@Arg('sort', () => AdminUserSortInput, {nullable: true}) sort?: AdminUserSortInput
 	) {
 		const conditions: any[] = [];
 
@@ -106,6 +107,21 @@ export class AdminResolver {
 
 		const where = conditions.length === 0 ? {} : conditions.length === 1 ? conditions[0] : {AND: conditions};
 
+		// Explicit column sort replaces the admins-first default entirely: pinning staff to the
+		// top would defeat "show me the oldest signups". A `last_seen_at` of null means the
+		// account has never been seen, so it sorts as infinitely old (first when ascending).
+		let orderBy: any[] = [{admin: 'desc'}, {created_at: 'desc'}];
+		if (sort) {
+			const direction = sort.direction === 'asc' ? 'asc' : 'desc';
+			if (sort.field === AdminUserSortField.last_seen_at) {
+				orderBy = [{last_seen_at: {sort: direction, nulls: direction === 'asc' ? 'first' : 'last'}}];
+			} else {
+				orderBy = [{created_at: direction}];
+			}
+			// Tie-breaker so rows with identical timestamps keep a stable order across pages.
+			orderBy.push({id: 'asc'});
+		}
+
 		const requestInput: PaginatedRequestInput = {
 			paginationArgs: pageArgs,
 			tableName: 'userAccount',
@@ -149,10 +165,7 @@ export class AdminResolver {
 						},
 					},
 				},
-				orderBy: [
-					{ admin: 'desc' },
-					{ created_at: 'desc' },
-				],
+				orderBy,
 			},
 		};
 
