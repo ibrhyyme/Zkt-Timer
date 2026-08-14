@@ -269,6 +269,7 @@ type Query {
   recoverMySolves(skip: Int, take: Int): [Solve]
   solvesByIds(ids: [String]): [Solve]
   mySolveIds: [String]
+  mySolveFingerprints: [String]
   sessions: [Session]
   mySessionIds: [String]
   settings: Setting

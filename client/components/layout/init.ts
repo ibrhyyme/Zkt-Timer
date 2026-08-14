@@ -22,7 +22,7 @@ import { Setting } from '../../../server/schemas/Setting.schema';
 import { UserAccount } from '../../../server/schemas/UserAccount.schema';
 import { getAllLocalSettings } from '../../db/settings/local';
 import { syncPlatformPrefs } from '../../db/settings/update';
-import { deleteLocalStorage, getLocalStorage, setLocalStorageObject } from '../../util/data/local_storage';
+import { deleteLocalStorage, getLocalStorage, setLocalStorage, setLocalStorageObject } from '../../util/data/local_storage';
 import { getStore } from '../store';
 import { setGeneral } from '../../actions/general';
 import { generateId } from '../../../shared/code';
@@ -240,10 +240,23 @@ export async function initAppData(me: UserAccount, dispatch: Dispatch<any>, call
 			// though the data is safe on the server. When local is empty, pull the
 			// user's own sessions + solves back. Covers both a failed load this launch
 			// and users whose local was already wiped by a prior bad launch.
+			// An "is it empty" check alone was not enough: a recovery that dies partway
+			// (dropped connection on a large account) leaves a non-empty local DB, and
+			// this condition then never fires again — the user is stranded with whatever
+			// fraction arrived. The marker below records that a recovery started, so an
+			// interrupted one resumes on the next launch. Re-running is safe:
+			// appendSolvesToDb skips ids that are already present.
 			if (!canSyncUser && me?.id) {
 				const solveDb = getSolveDb();
-				if (!solveDb || solveDb.count() === 0) {
+				const localEmpty = !solveDb || solveDb.count() === 0;
+				const marker = getLocalStorage(BASIC_RECOVERY_KEY);
+
+				if (localEmpty || marker === BASIC_RECOVERY_IN_PROGRESS) {
 					await recoverBasicDataFromServer();
+				} else if (!marker) {
+					// Healthy existing account with local data and no marker: nothing to
+					// recover, just record that so later launches skip this branch.
+					setLocalStorage(BASIC_RECOVERY_KEY, BASIC_RECOVERY_DONE);
 				}
 			}
 
@@ -753,6 +766,11 @@ async function backfillMissingMethodSteps(): Promise<void> {
 // response small enough to succeed and lets a late failure keep the pages that
 // already arrived.
 const SOLVE_PAGE_SIZE = 2500;
+// Tracks whether a Basic-tier restore ran to completion, so one interrupted
+// halfway resumes instead of leaving the account permanently short.
+const BASIC_RECOVERY_KEY = 'zkt_basic_recovery';
+const BASIC_RECOVERY_IN_PROGRESS = 'in_progress';
+const BASIC_RECOVERY_DONE = 'done';
 // Hard ceiling so a server that keeps returning full pages can never spin here
 // forever. 400 pages is far beyond any real account (the largest today is ~40k).
 const MAX_SOLVE_PAGES = 400;
@@ -778,6 +796,7 @@ export async function initAllSolves() {
 			);
 			const batch = res.data?.solves || [];
 			all.push(...batch);
+			emitEvent('bootProgressEvent', { loadedSolves: all.length });
 			if (batch.length < SOLVE_PAGE_SIZE) break;
 		}
 
@@ -823,6 +842,8 @@ async function recoverBasicDataFromServer() {
 	// single largest response the app ever asked for. Each page is appended as it
 	// lands, so a failure halfway still leaves the user with real data.
 	let restored = 0;
+	let completed = false;
+	setLocalStorage(BASIC_RECOVERY_KEY, BASIC_RECOVERY_IN_PROGRESS);
 	try {
 		for (let page = 0; page < MAX_SOLVE_PAGES; page++) {
 			const res = await withBootTimeout(
@@ -834,11 +855,20 @@ async function recoverBasicDataFromServer() {
 			if (batch.length) {
 				appendSolvesToDb(batch);
 				restored += batch.length;
+				emitEvent('bootProgressEvent', { loadedSolves: restored });
 			}
-			if (batch.length < SOLVE_PAGE_SIZE) break;
+			if (batch.length < SOLVE_PAGE_SIZE) {
+				// A short page is the end of the data, i.e. the whole set arrived.
+				completed = true;
+				break;
+			}
 		}
 	} catch (e) {
 		console.error('[BasicRecovery] solve recovery failed:', e);
+	}
+
+	if (completed) {
+		setLocalStorage(BASIC_RECOVERY_KEY, BASIC_RECOVERY_DONE);
 	}
 
 	if (restored > 0) {

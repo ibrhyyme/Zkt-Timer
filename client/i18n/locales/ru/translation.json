@@ -1366,7 +1366,9 @@
         "import_failed_chunks_header": "Неудачные фрагменты:",
         "import_items_range": "Элементы: {{range}}",
         "import_retry_failed_btn": "Повторить неудачные фрагменты",
-        "import_continue_anyway": "Продолжить в любом случае"
+        "import_continue_anyway": "Продолжить в любом случае",
+        "import_duplicates_skipped": "{{count}} сборок уже сохранены, пропущены.",
+        "import_nothing_new": "Импортировать нечего, все эти записи уже есть в вашем аккаунте."
     },
     "language": {
         "label": "Язык",
@@ -1921,7 +1923,8 @@
         "coming_soon": "Скоро",
         "boot_stuck_title": "Приложение не запустилось",
         "boot_stuck_message": "Не удается подключиться к серверу. Проверьте подключение к интернету и повторите попытку.",
-        "boot_stuck_retry": "Повторить"
+        "boot_stuck_retry": "Повторить",
+        "boot_downloading_solves": "Загрузка ваших сборок... {{count}}"
     },
     "announcement_modal": {
         "feature": "🎉 Новая функция",

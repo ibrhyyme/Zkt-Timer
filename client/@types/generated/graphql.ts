@@ -2438,6 +2438,7 @@ export type PublicWcaProfile = {
 
 export type PublicZktProfile = {
   __typename?: 'PublicZktProfile';
+  zkt_avatar_url?: Maybe<Scalars['String']>;
   zkt_competition_count?: Maybe<Scalars['Float']>;
   zkt_country_iso2?: Maybe<Scalars['String']>;
   zkt_id?: Maybe<Scalars['String']>;
@@ -2744,6 +2745,12 @@ export type QueryRankingsArgs = {
   mode?: InputMaybe<Scalars['String']>;
   page?: InputMaybe<Scalars['Int']>;
   search?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryRecoverMySolvesArgs = {
+  skip?: InputMaybe<Scalars['Int']>;
+  take?: InputMaybe<Scalars['Int']>;
 };
 
 

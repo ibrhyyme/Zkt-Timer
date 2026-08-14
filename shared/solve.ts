@@ -106,3 +106,36 @@ export function sanitizeSolve(s: Partial<Solve>): Partial<Solve> {
 
 	return solve;
 }
+
+/**
+ * Content identity of a solve, independent of its id.
+ *
+ * Import assigns a fresh id to every parsed row, so re-importing the same backup
+ * writes the same solves again under new ids and the database's own duplicate
+ * check (which only knows about ids) cannot see it. That is how one account
+ * reached 114k rows for 39k real solves. Comparing content instead of ids is the
+ * only way to recognise a row that is already stored.
+ *
+ * Kept in shared/ deliberately: the fingerprint the server publishes and the one
+ * the importer computes must be produced by the exact same code, or every solve
+ * looks new and the check silently passes everything through.
+ */
+export interface SolveFingerprintFields {
+	time?: number | null;
+	scramble?: string | null;
+	started_at?: number | bigint | string | null;
+}
+
+export function solveFingerprint(solve: SolveFingerprintFields): string {
+	// Milliseconds as an integer: `time` is a float that survives a JSON round
+	// trip on one side and a Prisma decode on the other, and comparing raw floats
+	// across those two paths is not reliable.
+	const time =
+		typeof solve.time === 'number' && Number.isFinite(solve.time)
+			? String(Math.round(solve.time * 1000))
+			: '';
+	// Whitespace in a scramble is formatting, not content.
+	const scramble = (solve.scramble || '').trim().replace(/\s+/g, ' ');
+	const startedAt = solve.started_at === null || solve.started_at === undefined ? '' : String(solve.started_at);
+	return `${time}|${scramble}|${startedAt}`;
+}

@@ -11,6 +11,7 @@ import { GraphQLVoid } from 'graphql-scalars';
 import GraphQLError from '../util/graphql_error';
 import { ErrorCode } from '../constants/errors';
 import { parseSmartTurns } from '../../shared/smart_cube/parse_turns';
+import { solveFingerprint } from '../../shared/solve';
 
 function getSolvesByUserId(context: GraphQLContext, userId: string) {
 	const { prisma } = context;
@@ -176,6 +177,25 @@ export class SolveResolver {
 			select: { id: true },
 		});
 		return solves.map((s) => s.id);
+	}
+
+	// Content fingerprints of the caller's own solves, used by the importer to skip
+	// rows that are already stored. Import gives every parsed row a fresh id, so an
+	// id-based check (mySolveIds above) cannot recognise a re-imported backup — that
+	// blind spot is how an account ended up with 114k rows for 39k real solves.
+	//
+	// Deliberately not derived from `mySolveIds`: this returns no ids and no notes,
+	// only the three fields the fingerprint needs, so a Basic user can run the check
+	// without the Pro-gated read of full solve content being opened up.
+	@Authorized([Role.LOGGED_IN])
+	@Query(() => [String])
+	async mySolveFingerprints(@Ctx() context: GraphQLContext): Promise<string[]> {
+		const { prisma, user } = context;
+		const solves = await prisma.solve.findMany({
+			where: { user_id: user.id },
+			select: { time: true, scramble: true, started_at: true },
+		});
+		return solves.map((s) => solveFingerprint(s));
 	}
 
 	@Authorized([Role.LOGGED_IN])

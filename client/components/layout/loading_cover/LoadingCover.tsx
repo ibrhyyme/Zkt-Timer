@@ -5,6 +5,7 @@ import { getLocalStorage } from '../../../util/data/local_storage';
 import CSS from 'csstype';
 import { useTranslation } from 'react-i18next';
 import * as Sentry from '@sentry/browser';
+import { addEventListener, removeEventListener } from '../../../util/event_handler';
 
 const b = block('loading-cover');
 
@@ -25,6 +26,10 @@ export default function LoadingCover(props: Props) {
 
 	const [style, setStyle] = React.useState<CSS.Properties>({});
 	const [stuck, setStuck] = React.useState(false);
+	const [loadedSolves, setLoadedSolves] = React.useState(0);
+	// Mirrored in a ref so the Sentry report can read the latest count without the
+	// timer effect having to re-run (and restart the countdown) on every page.
+	const loadedSolvesRef = React.useRef(0);
 
 	useEffect(() => {
 		if (fadeOut || typeof localStorage === 'undefined') return;
@@ -47,24 +52,49 @@ export default function LoadingCover(props: Props) {
 	// thrown, so nothing reached Sentry and the only signal was a user writing in
 	// to say the logo spins forever. Report it once so the real frequency of this
 	// failure can be measured.
+	//
+	// The countdown restarts on every progress event. A first launch on a large
+	// account downloads tens of thousands of solves page by page and legitimately
+	// runs for minutes; offering a retry button in the middle of that is actively
+	// harmful, since retrying starts the download over from zero.
 	useEffect(() => {
 		if (fadeOut) return;
 
-		const timer = setTimeout(() => {
-			setStuck(true);
-			try {
-				Sentry.withScope((scope) => {
-					scope.setLevel(Sentry.Severity.Warning);
-					scope.setTag('boot_stage', 'loading_cover_stuck');
-					scope.setExtra('threshold_ms', STUCK_THRESHOLD_MS);
-					scope.setExtra('online', navigator.onLine);
-					scope.setExtra('path', window.location.pathname);
-					Sentry.captureMessage('[Boot] LoadingCover still visible after threshold');
-				});
-			} catch (e) {}
-		}, STUCK_THRESHOLD_MS);
+		let timer: ReturnType<typeof setTimeout>;
 
-		return () => clearTimeout(timer);
+		const arm = () => {
+			clearTimeout(timer);
+			timer = setTimeout(() => {
+				setStuck(true);
+				try {
+					Sentry.withScope((scope) => {
+						scope.setLevel(Sentry.Severity.Warning);
+						scope.setTag('boot_stage', 'loading_cover_stuck');
+						scope.setExtra('threshold_ms', STUCK_THRESHOLD_MS);
+						scope.setExtra('online', navigator.onLine);
+						scope.setExtra('path', window.location.pathname);
+						scope.setExtra('loaded_solves', loadedSolvesRef.current);
+						Sentry.captureMessage('[Boot] LoadingCover still visible after threshold');
+					});
+				} catch (e) {}
+			}, STUCK_THRESHOLD_MS);
+		};
+
+		const onProgress = (data: { loadedSolves: number }) => {
+			loadedSolvesRef.current = data?.loadedSolves ?? 0;
+			setLoadedSolves(loadedSolvesRef.current);
+			// Progress means the boot is alive, so it is not stuck after all.
+			setStuck(false);
+			arm();
+		};
+
+		addEventListener('bootProgressEvent', onProgress);
+		arm();
+
+		return () => {
+			clearTimeout(timer);
+			removeEventListener('bootProgressEvent', onProgress);
+		};
 	}, [fadeOut]);
 
 	return (
@@ -78,6 +108,16 @@ export default function LoadingCover(props: Props) {
 				<img className="cd-logo__img cd-logo__img--dark" src="/public/images/zkt-logo.png" alt="" />
 				<img className="cd-logo__img cd-logo__img--light" src="/public/images/zkt-logo-white.png" alt="" />
 			</span>
+			{!fadeOut && loadedSolves > 0 && !stuck && (
+				// A restore in flight. Shown instead of the retry prompt so a user
+				// watching a long first launch can see it is working, and is not
+				// nudged into a reload that would start the download over.
+				<div className={b('stuck')}>
+					<div className={b('stuck-message')}>
+						{t('common.boot_downloading_solves', { count: loadedSolves })}
+					</div>
+				</div>
+			)}
 			{stuck && !fadeOut && (
 				<div className={b('stuck')}>
 					<div className={b('stuck-title')}>{t('common.boot_stuck_title')}</div>

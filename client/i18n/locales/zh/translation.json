@@ -1366,7 +1366,9 @@
         "import_failed_chunks_header": "失败的块：",
         "import_items_range": "项目：{{range}}",
         "import_retry_failed_btn": "重试失败的块",
-        "import_continue_anyway": "仍然继续"
+        "import_continue_anyway": "仍然继续",
+        "import_duplicates_skipped": "{{count}} 个复原记录已存在，已跳过。",
+        "import_nothing_new": "没有可导入的新内容，这些记录已全部在您的账户中。"
     },
     "language": {
         "label": "语言",
@@ -1921,7 +1923,8 @@
         "coming_soon": "敬请期待",
         "boot_stuck_title": "应用无法启动",
         "boot_stuck_message": "无法连接到服务器。请检查您的网络连接后重试。",
-        "boot_stuck_retry": "重试"
+        "boot_stuck_retry": "重试",
+        "boot_downloading_solves": "正在下载你的复原记录... {{count}}"
     },
     "announcement_modal": {
         "feature": "🎉 功能",

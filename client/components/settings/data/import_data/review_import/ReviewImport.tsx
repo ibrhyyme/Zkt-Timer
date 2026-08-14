@@ -18,7 +18,9 @@ import InputLegend from '../../../../common/inputs/input/input_legend/InputLegen
 import { VARIANT_MAP } from '../parse_data/normalize-bucket';
 import { getSubsetsForCube } from '../../../../../util/cubes/scramble_subsets';
 import { getCubeTypeBucketLabel } from '../../../../../util/cubes/util';
-import { SessionInput } from '../../../../../@types/generated/graphql';
+import { SessionInput, SolveInput } from '../../../../../@types/generated/graphql';
+import { fetchServerSolveFingerprints } from './chunked_import';
+import { solveFingerprint } from '../../../../../../shared/solve';
 
 // Import only registers WCA events (cube_type='wca' + this subset).
 // Method-based cube_type's (333cfop/roux/mehta/zz, 444yau, other, wca parent) are not shown.
@@ -63,6 +65,12 @@ export default function ReviewImport() {
 	const { t } = useTranslation();
 	const context = useContext(ImportDataContext);
 
+	// The exact list the last run uploaded, which is `data.solves` minus whatever
+	// the account already had. Retry slices by chunk index, so it must slice the
+	// same list the indices were produced from — slicing the unfiltered original
+	// would re-upload the wrong rows.
+	const importedSolvesRef = React.useRef<SolveInput[] | null>(null);
+
 	const data = context.importableData;
 	if (!data) {
 		return null;
@@ -74,6 +82,33 @@ export default function ReviewImport() {
 		context.setImportResults(null);
 
 		try {
+			// Phase 0: Drop solves the account already has.
+			// Every parsed row gets a fresh id, so re-importing the same backup writes
+			// the same solves again and the server's id-based duplicate check cannot
+			// see it. One account reached 114k rows for 39k real solves this way.
+			// The comparison is by content (see solveFingerprint), and it is skipped
+			// entirely when the check could not run — refusing to import on a failed
+			// lookup would be worse than the duplicate it prevents.
+			let solvesToImport = data.solves;
+			const serverFingerprints = await fetchServerSolveFingerprints();
+			if (serverFingerprints && serverFingerprints.size > 0) {
+				const fresh = data.solves.filter((s) => !serverFingerprints.has(solveFingerprint(s)));
+				const skipped = data.solves.length - fresh.length;
+				if (skipped > 0) {
+					console.log(`[Import] ${skipped} solves already on the server, skipping them`);
+					toastWarning(t('data_settings.import_duplicates_skipped', { count: skipped }));
+					solvesToImport = fresh;
+				}
+			}
+
+			if (solvesToImport.length === 0 && data.sessions.length === 0) {
+				context.setImporting(false);
+				toastWarning(t('data_settings.import_nothing_new'));
+				return;
+			}
+
+			importedSolvesRef.current = solvesToImport;
+
 			// Phase 1: Import sessions in chunks
 			console.log(`[Import] Importing ${data.sessions.length} sessions in chunks...`);
 			const sessionResult = await importSessionsInChunks(
@@ -93,9 +128,9 @@ export default function ReviewImport() {
 			}
 
 			// Phase 2: Import solves in chunks
-			console.log(`[Import] Importing ${data.solves.length} solves in chunks...`);
+			console.log(`[Import] Importing ${solvesToImport.length} solves in chunks...`);
 			const solveResult = await importSolvesInChunks(
-				data.solves,
+				solvesToImport,
 				(progress) => context.setImportProgress(progress)
 			);
 
@@ -115,7 +150,7 @@ export default function ReviewImport() {
 				// Complete success
 				console.log('[Import] All chunks imported successfully!');
 				await clearOfflineData();
-				toastSuccess(t('data_settings.import_success', { sessions: data.sessions.length, solves: data.solves.length }));
+				toastSuccess(t('data_settings.import_success', { sessions: data.sessions.length, solves: solvesToImport.length }));
 				setTimeout(() => {
 					window.location.href = '/sessions';
 				}, 1500);
@@ -144,6 +179,9 @@ export default function ReviewImport() {
 		try {
 			const sessionErrors = results.errors.filter((e) => e.type === 'sessions');
 			const solveErrors = results.errors.filter((e) => e.type === 'solves');
+			// Chunk indices in `results.errors` refer to the list the failed run
+			// uploaded, not to the raw parsed file.
+			const retrySolves = importedSolvesRef.current || data.solves;
 
 			let retryResult = {
 				successCount: results.successCount,
@@ -175,7 +213,7 @@ export default function ReviewImport() {
 				}
 
 				// Sessions succeeded, now import all solves
-				const solveResult = await importSolvesInChunks(data.solves, (progress) =>
+				const solveResult = await importSolvesInChunks(retrySolves, (progress) =>
 					context.setImportProgress(progress)
 				);
 
@@ -187,7 +225,7 @@ export default function ReviewImport() {
 				for (const err of solveErrors) {
 					const start = err.chunkIndex * CHUNK_SIZE;
 					const end = start + CHUNK_SIZE;
-					failedSolves.push(...data.solves.slice(start, end));
+					failedSolves.push(...retrySolves.slice(start, end));
 				}
 
 				const solveResult = await importSolvesInChunks(failedSolves, (progress) =>

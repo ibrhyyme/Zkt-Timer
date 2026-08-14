@@ -1,6 +1,33 @@
 import { gql } from '@apollo/client';
 import { SessionInput, SolveInput } from '../../../../../@types/generated/graphql';
-import { gqlMutate } from '../../../../api';
+import { gqlMutate, gqlQuery } from '../../../../api';
+
+/**
+ * Content fingerprints of everything already stored server-side, so the importer
+ * can drop rows the account already has.
+ *
+ * Returns null when the check could not run. That distinction matters: an empty
+ * set means "you have nothing stored, import everything", while a failed request
+ * means "we do not know", and silently treating the latter as the former is what
+ * would let a duplicate import through unnoticed.
+ */
+export async function fetchServerSolveFingerprints(): Promise<Set<string> | null> {
+	const query = gql`
+		query Query {
+			mySolveFingerprints
+		}
+	`;
+
+	try {
+		const res = await gqlQuery<{ mySolveFingerprints: string[] }>(query);
+		const list = res.data?.mySolveFingerprints;
+		if (!list) return null;
+		return new Set(list);
+	} catch (e) {
+		console.error('[Import] Could not fetch server fingerprints:', e);
+		return null;
+	}
+}
 
 export interface ImportProgress {
 	type: 'sessions' | 'solves';

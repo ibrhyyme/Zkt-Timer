@@ -1373,7 +1373,9 @@
         "import_failed_chunks_header": "Başarısız Chunk'lar:",
         "import_items_range": "Öğeler: {{range}}",
         "import_retry_failed_btn": "Başarısız Chunk'ları Tekrar Dene",
-        "import_continue_anyway": "Yine de Devam Et"
+        "import_continue_anyway": "Yine de Devam Et",
+        "import_duplicates_skipped": "{{count}} çözüm zaten kayıtlı, atlandı.",
+        "import_nothing_new": "İçe aktarılacak yeni bir şey yok, bu kayıtların hepsi zaten hesabında."
     },
     "language": {
         "label": "Dil",
@@ -1928,7 +1930,8 @@
         "coming_soon": "Yakında",
         "boot_stuck_title": "Uygulama açılamadı",
         "boot_stuck_message": "Sunucuya bağlanılamıyor. İnternet bağlantını kontrol edip tekrar dene.",
-        "boot_stuck_retry": "Yeniden Dene"
+        "boot_stuck_retry": "Yeniden Dene",
+        "boot_downloading_solves": "Çözümlerin indiriliyor... {{count}}"
     },
     "announcement_modal": {
         "feature": "🎉 Yenilik",

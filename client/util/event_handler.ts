@@ -24,6 +24,11 @@ export interface ClientEvent {
 	trainerDbUpdatedEvent: void;
 	trainerDbDeletedEvent: void;
 	dailyGoalUpdatedEvent: void;
+	// Emitted after each page of a paged boot download. A first launch on a large
+	// account legitimately takes minutes, and without this signal the loading
+	// screen cannot tell "still working" apart from "hung" — it would offer a
+	// retry button mid-download, and retrying restarts the whole thing.
+	bootProgressEvent: { loadedSolves: number };
 }
 
 export function addEventListener<T extends keyof ClientEvent>(

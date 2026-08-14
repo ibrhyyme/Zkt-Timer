@@ -1366,7 +1366,9 @@
         "import_failed_chunks_header": "Failed Chunks:",
         "import_items_range": "Items: {{range}}",
         "import_retry_failed_btn": "Retry Failed Chunks",
-        "import_continue_anyway": "Continue Anyway"
+        "import_continue_anyway": "Continue Anyway",
+        "import_duplicates_skipped": "{{count}} solves are already saved, skipped.",
+        "import_nothing_new": "Nothing new to import, your account already has all of these."
     },
     "language": {
         "label": "Language",
@@ -1921,7 +1923,8 @@
         "coming_soon": "Coming Soon",
         "boot_stuck_title": "The app could not start",
         "boot_stuck_message": "We cannot reach the server. Check your internet connection and try again.",
-        "boot_stuck_retry": "Try Again"
+        "boot_stuck_retry": "Try Again",
+        "boot_downloading_solves": "Downloading your solves... {{count}}"
     },
     "announcement_modal": {
         "feature": "🎉 Feature",

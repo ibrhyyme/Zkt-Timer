@@ -1366,7 +1366,9 @@
         "import_failed_chunks_header": "Fragmentos fallidos:",
         "import_items_range": "Elementos: {{range}}",
         "import_retry_failed_btn": "Reintentar fragmentos fallidos",
-        "import_continue_anyway": "Continuar de todas formas"
+        "import_continue_anyway": "Continuar de todas formas",
+        "import_duplicates_skipped": "{{count}} resoluciones ya están guardadas, omitidas.",
+        "import_nothing_new": "No hay nada nuevo que importar, tu cuenta ya tiene todo esto."
     },
     "language": {
         "label": "Idioma",
@@ -1921,7 +1923,8 @@
         "coming_soon": "Próximamente",
         "boot_stuck_title": "La aplicación no pudo iniciarse",
         "boot_stuck_message": "No podemos conectar con el servidor. Comprueba tu conexión a internet e inténtalo de nuevo.",
-        "boot_stuck_retry": "Reintentar"
+        "boot_stuck_retry": "Reintentar",
+        "boot_downloading_solves": "Descargando tus resoluciones... {{count}}"
     },
     "announcement_modal": {
         "feature": "🎉 Novedad",
