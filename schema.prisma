@@ -374,6 +374,7 @@ model ForgotPassword {
   user_id    String
   code       String
   claimed    Boolean     @default(false)
+  attempts   Int         @default(0)
   created_at DateTime    @default(now())
   user       UserAccount @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
@@ -386,6 +387,7 @@ model EmailVerification {
   user_id    String
   code       String
   claimed    Boolean     @default(false)
+  attempts   Int         @default(0)
   created_at DateTime    @default(now())
   user       UserAccount @relation(fields: [user_id], references: [id], onDelete: Cascade)
 

@@ -1,7 +1,14 @@
 import GraphQLError from '../util/graphql_error';
 import {getUserByEmail, getUserById, sanitizeUser} from '../models/user_account';
 import {updateUserAccountWithParams} from '../models/user_account';
-import {createEmailVerification, getEmailVerification, claimEmailVerification} from '../models/email_verification';
+import {
+	createEmailVerification,
+	getEmailVerification,
+	claimEmailVerification,
+	registerFailedEmailVerificationAttempt,
+	MAX_WRONG_CODES_PER_DAY,
+	WRONG_CODE_WINDOW_SECONDS,
+} from '../models/email_verification';
 import {sendEmailWithTemplate} from '../services/ses';
 import {getJwtString, setSessionCookie, sessionTokenForBody} from '../util/auth';
 import {checkLoggedIn} from '../util/auth';
@@ -9,7 +16,7 @@ import {ErrorCode} from '../constants/errors';
 import {GraphQLContext} from '../@types/interfaces/server.interface';
 import {getEmailStrings, buildVerificationEmailData} from '../util/email_translations';
 import {notifyAdminsOfNewUser} from '../services/admin_notification';
-import {checkRateLimit} from '../services/rate_limit';
+import {checkRateLimit, peekRateLimit} from '../services/rate_limit';
 import {extractIp} from '../util/request';
 import {logger} from '../services/logger';
 import {getPrisma} from '../database';
@@ -74,6 +81,13 @@ export const mutateActions = {
 			}
 		}
 
+		// Long-window budget spent by wrong guesses only — see MAX_WRONG_CODES_PER_DAY
+		const wrongToday = await peekRateLimit(`verify_ev_wrong:${emailKey}`);
+		if (wrongToday >= MAX_WRONG_CODES_PER_DAY) {
+			logger.warn('Verify EV wrong-code budget exhausted', {email: emailKey, count: wrongToday});
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Cok fazla hatali deneme. Lutfen daha sonra tekrar deneyin.');
+		}
+
 		const user = await getUserByEmail(email);
 
 		if (!user) {
@@ -89,8 +103,15 @@ export const mutateActions = {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Geçersiz kod');
 		}
 
-		const valid = ev.code === code && !ev.claimed && verificationLessThan30Min(ev);
-		if (!valid) {
+		// Same message for every failure mode so the response can't be used as an
+		// oracle for "the code exists but you guessed wrong".
+		if (ev.claimed || !verificationLessThan30Min(ev)) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Geçersiz veya süresi dolmuş kod');
+		}
+
+		if (ev.code !== code) {
+			await registerFailedEmailVerificationAttempt(ev);
+			await checkRateLimit(`verify_ev_wrong:${emailKey}`, MAX_WRONG_CODES_PER_DAY, WRONG_CODE_WINDOW_SECONDS);
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Geçersiz veya süresi dolmuş kod');
 		}
 
@@ -123,8 +144,12 @@ export const mutateActions = {
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Geçersiz kod');
 		}
 
-		const valid = ev.code === code && !ev.claimed && verificationLessThan30Min(ev);
-		if (!valid) {
+		if (ev.claimed || !verificationLessThan30Min(ev)) {
+			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Geçersiz veya süresi dolmuş kod');
+		}
+
+		if (ev.code !== code) {
+			await registerFailedEmailVerificationAttempt(ev);
 			throw new GraphQLError(ErrorCode.BAD_INPUT, 'Geçersiz veya süresi dolmuş kod');
 		}
 

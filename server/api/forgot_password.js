@@ -4,11 +4,18 @@ import {
 	updateUserAccountPassword
 } from '../models/user_account';
 import { sendEmail, sendEmailWithTemplate } from '../services/ses';
-import { claimForgotPassword, createForgotPassword, getForgotPassword } from '../models/forgot_password';
+import {
+	claimForgotPassword,
+	createForgotPassword,
+	getForgotPassword,
+	registerFailedForgotPasswordAttempt,
+	MAX_WRONG_CODES_PER_DAY,
+	WRONG_CODE_WINDOW_SECONDS
+} from '../models/forgot_password';
 import GraphQLError from '../util/graphql_error';
 import { getJwtString, setSessionCookie, sessionTokenForBody } from '../util/auth';
 import { getEmailStrings, buildForgotEmailData } from '../util/email_translations';
-import { checkRateLimit } from '../services/rate_limit';
+import { checkRateLimit, peekRateLimit } from '../services/rate_limit';
 import { extractIp } from '../util/request';
 import { logger } from '../services/logger';
 
@@ -73,6 +80,13 @@ export const mutateActions = {
 			}
 		}
 
+		// Long-window budget spent by wrong guesses only — see MAX_WRONG_CODES_PER_DAY
+		const wrongToday = await peekRateLimit(`forgot_wrong:${emailKey}`);
+		if (wrongToday >= MAX_WRONG_CODES_PER_DAY) {
+			logger.warn('Forgot wrong-code budget exhausted', {email: emailKey, count: wrongToday});
+			return false;
+		}
+
 		const user = await getUserByEmail(email);
 
 		if (!user) {
@@ -81,11 +95,19 @@ export const mutateActions = {
 
 		const fp = (await getForgotPassword(user))[0];
 
-		if (!fp) {
+		// claimed covers both "already used to reset a password" and "burned by
+		// too many wrong guesses"
+		if (!fp || fp.claimed || !forgotPasswordLessThan15Min(fp)) {
 			return false;
 		}
 
-		return fp && fp.code === code && forgotPasswordLessThan15Min(fp);
+		if (fp.code !== code) {
+			await registerFailedForgotPasswordAttempt(fp);
+			await checkRateLimit(`forgot_wrong:${emailKey}`, MAX_WRONG_CODES_PER_DAY, WRONG_CODE_WINDOW_SECONDS);
+			return false;
+		}
+
+		return true;
 	},
 	updateForgotPassword: async (_, { email, code, password }, { req, res }) => {
 		const ip = extractIp(req);
@@ -105,6 +127,12 @@ export const mutateActions = {
 			}
 		}
 
+		const wrongToday = await peekRateLimit(`forgot_wrong:${emailKey}`);
+		if (wrongToday >= MAX_WRONG_CODES_PER_DAY) {
+			logger.warn('Forgot update wrong-code budget exhausted', {email: emailKey, count: wrongToday});
+			throw new GraphQLError(400, 'Cok fazla hatali deneme. Lutfen daha sonra tekrar deneyin.');
+		}
+
 		const user = await getUserByEmail(email);
 
 		if (!user) {
@@ -122,12 +150,13 @@ export const mutateActions = {
 		}
 
 		const fp = (await getForgotPassword(user))[0];
-		if (!fp) {
+		if (!fp || fp.claimed || !forgotPasswordLessThan15Min(fp)) {
 			throw new GraphQLError(400, 'Invalid code');
 		}
 
-		const passed = fp && fp.code === code && forgotPasswordLessThan15Min(fp);
-		if (!passed) {
+		if (fp.code !== code) {
+			await registerFailedForgotPasswordAttempt(fp);
+			await checkRateLimit(`forgot_wrong:${emailKey}`, MAX_WRONG_CODES_PER_DAY, WRONG_CODE_WINDOW_SECONDS);
 			throw new GraphQLError(400, 'Invalid code');
 		}
 

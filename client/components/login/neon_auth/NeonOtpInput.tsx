@@ -19,12 +19,13 @@ interface Props {
 	ariaLabel?: string;
 }
 
-// Server codes are 6-char UPPERCASE alphanumeric (shared/code.ts → A-Z0-9),
-// so the boxes accept letters + digits and normalise to upper case.
-const NON_CODE = /[^0-9a-zA-Z]/g;
+// Server codes are 6 digits (shared/code.ts → generateRandomNumericCode), so the
+// boxes take digits only. That also lets mobile open the numeric keypad instead
+// of a full keyboard.
+const NON_CODE = /[^0-9]/g;
 
 function collapse(arr: string[], length: number): string {
-	return arr.join('').replace(NON_CODE, '').toUpperCase().slice(0, length);
+	return arr.join('').replace(NON_CODE, '').slice(0, length);
 }
 
 /**
@@ -74,7 +75,7 @@ export default function NeonOtpInput({
 
 	function handleChange(e: React.ChangeEvent<HTMLInputElement>, i: number) {
 		if (locked) return;
-		const chars = e.target.value.replace(NON_CODE, '').toUpperCase();
+		const chars = e.target.value.replace(NON_CODE, '');
 		if (!chars) return; // deletion is handled in onKeyDown
 
 		const arr = digits.slice();
@@ -132,7 +133,7 @@ export default function NeonOtpInput({
 	function handlePaste(e: React.ClipboardEvent<HTMLInputElement>) {
 		if (locked) return;
 		e.preventDefault();
-		const chars = e.clipboardData.getData('text').replace(NON_CODE, '').toUpperCase().slice(0, length);
+		const chars = e.clipboardData.getData('text').replace(NON_CODE, '').slice(0, length);
 		if (!chars) return;
 		commit(chars);
 		focusIdx(Math.min(chars.length, length - 1));
@@ -190,8 +191,8 @@ export default function NeonOtpInput({
 								ref={(el) => (refs.current[i] = el)}
 								className={b('input')}
 								type="text"
-								inputMode="text"
-								autoCapitalize="characters"
+								inputMode="numeric"
+								pattern="[0-9]*"
 								autoComplete={i === 0 ? 'one-time-code' : 'off'}
 								spellCheck={false}
 								maxLength={1}

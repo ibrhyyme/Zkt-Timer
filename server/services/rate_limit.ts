@@ -7,6 +7,25 @@ export type RateLimitResult = {
 	ttl: number;
 };
 
+// Reads a counter without consuming from it. Use when the budget should only be
+// spent on specific outcomes (e.g. only wrong OTP guesses, not correct ones).
+// Fails closed like checkRateLimit does when Redis is unreachable.
+export async function peekRateLimit(key: string): Promise<number> {
+	try {
+		const client = getRedisPubClient();
+		if (!client) {
+			logger.warn('Rate limit peek skipped: Redis not available, blocking request', {key});
+			return Number.MAX_SAFE_INTEGER;
+		}
+
+		const raw = await client.get(`cd:ratelimit:${key}`);
+		return raw ? parseInt(raw, 10) || 0 : 0;
+	} catch (e) {
+		logger.error('Rate limit peek failed, blocking request as safety measure', {key, error: e});
+		return Number.MAX_SAFE_INTEGER;
+	}
+}
+
 export async function checkRateLimit(
 	key: string,
 	max: number,

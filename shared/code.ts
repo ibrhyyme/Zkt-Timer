@@ -32,6 +32,13 @@ export function generateRandomCode(length: number): string {
 	return secureRandomChars(`${UPPER_ALPHABET}${NUMBER_ALPHABET}`, length);
 }
 
+// Digits only — used for the OTP codes users retype by hand (email verification,
+// forgot password). Lower entropy than the alphanumeric variant, so callers must
+// pair it with a per-code attempt limit (see MAX_CODE_ATTEMPTS).
+export function generateRandomNumericCode(length: number): string {
+	return secureRandomChars(NUMBER_ALPHABET, length);
+}
+
 export function generateRandomString(length: number): string {
 	return secureRandomChars(`${LOWER_ALPHABET}${NUMBER_ALPHABET}`, length);
 }
