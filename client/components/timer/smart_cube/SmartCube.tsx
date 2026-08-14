@@ -123,6 +123,9 @@ export default function SmartCube() {
 
 	const smartCubeSize = useSettings('smart_cube_size');
 	const smartCubeShow = useSettings('smart_cube_show');
+	// Post-solve phase analysis only feeds LiveAnalysisOverlay; when the overlay is
+	// off there is nothing to compute for.
+	const analysisMode = useSettings('smart_cube_analysis_mode') || 'cffffop';
 
 	// Limit cube size on mobile based on viewport (prevent timer/dashboard from being squeezed on small phones)
 	const [viewportH, setViewportH] = useState(typeof window !== 'undefined' ? window.innerHeight : 800);
@@ -857,6 +860,19 @@ export default function SmartCube() {
 				return;
 			}
 
+			// The cube reports FACELETS and MOVE as separate packets, and moves are
+			// handed to Redux in batches. A FACELETS packet can therefore complete the
+			// scramble while the final scramble move is still queued; that move then
+			// arrives here and looks like the first move of the solve. Measured on a
+			// GAN 12 UI: 3 of 12 solves started the timer on the last scramble move.
+			// A real first solve move always takes the cube AWAY from the scramble
+			// target, so if the cube is still sitting on the target this turn belonged
+			// to the scramble.
+			if (targetFaceletsRef.current && cubejs.current.asString() === targetFaceletsRef.current) {
+				dbgTimer(`CHECK_START | turn ${firstSolveTurn.turn} left the cube ON the scramble target — treating it as a late scramble move, timer NOT started`);
+				return;
+			}
+
 			const msSinceScrambleEnd = Date.now() - scrambleCompletedAtRef.current.getTime();
 			// [CHECK_START] detailed context BEFORE startTimer call — is it first solve move or part of scramble batch?
 			dbgTimer(`!!! TIMER START triggered | firstSolveTurn=${firstSolveTurn?.turn} (completedAt=${firstSolveTurn?.completedAt}) | scramble finished=${msSinceScrambleEnd}ms ago | currentTurns.length=${currentTurns.length} | appliedTurnsRef=${appliedTurnsRef.current} | last 3 moves=[${currentTurns.slice(-3).map((t: any) => t.turn).join(' ')}]`);
@@ -1023,22 +1039,36 @@ export default function SmartCube() {
 				smart_turns: smartTurnsToSave,
 			});
 
+			const tps = finalTimeMilli && finalTimeMilli > 0
+				? Number((htmCount / (finalTimeMilli / 1000)).toFixed(2))
+				: 0;
+
+			// Move count and TPS are cheap, so they go out with the time.
+			setTimerParams({ lastSmartSolveStats: { turns: htmCount, tps } });
+
 			// Corrected phase analysis: so LiveAnalysisOverlay shows correct times
-			// correctedMoves.completedAt corrected via linear fit — more accurate than raw timestamps
-			dbgCorr(`CORR_ANALYSIS start | corrected.length=${correctedMoves.length} | htm=${htmCount} | startState=${startState?.length === 54 ? startState.slice(0, 27) + '...' : `INVALID(len=${startState?.length})`} | first3=${correctedMoves.slice(0, 3).map((m: any) => m.turn).join(' ')} | last3=${correctedMoves.slice(-3).map((m: any) => m.turn).join(' ')}`);
-			try {
+			// correctedMoves.completedAt corrected via linear fit — more accurate than raw timestamps.
+			//
+			// Deferred by a tick on purpose. Running it inline costs ~75ms of blocked
+			// main thread (measured over 26 solves) BEFORE React can paint the final
+			// time, so the timer visibly hangs on the frozen value. The overlay it
+			// feeds sits below the timer and does not need the same frame.
+			if (analysisMode !== 'none') {
 				const correctedTurns = correctedMoves.map(m => ({ ...m, time: m.completedAt }));
-				const correctedAnalysis = analyzeCurrentState(correctedTurns, startState);
-				const tps = finalTimeMilli && finalTimeMilli > 0
-					? Number((htmCount / (finalTimeMilli / 1000)).toFixed(2))
-					: 0;
-				dbgCorr(`CORR_ANALYSIS success | phase=${correctedAnalysis.currentPhase} | crossSolved=${correctedAnalysis.crossSolved} | isSolved=${correctedAnalysis.isSolved} | oll=${correctedAnalysis.ollIdentified || '-'} | pll=${correctedAnalysis.pllIdentified || '-'} | times=${JSON.stringify(correctedAnalysis.times)}`);
-				setTimerParams({
-					lastSmartSolveStats: { turns: htmCount, tps, correctedAnalysis }
-				});
-			} catch (e: any) {
-				// If analysis fails, simple stats from endTimer are sufficient
-				dbgCorr(`CORR_ANALYSIS FAIL | message=${e?.message} | startStateLen=${startState?.length} | corrLen=${correctedMoves.length} | stack=${e?.stack?.slice(0, 200)}`);
+				const analysisStartState = startState;
+				dbgCorr(`CORR_ANALYSIS scheduled | corrected.length=${correctedMoves.length} | htm=${htmCount} | startState=${analysisStartState?.length === 54 ? analysisStartState.slice(0, 27) + '...' : `INVALID(len=${analysisStartState?.length})`}`);
+				setTimeout(() => {
+					try {
+						const correctedAnalysis = analyzeCurrentState(correctedTurns, analysisStartState);
+						dbgCorr(`CORR_ANALYSIS success | phase=${correctedAnalysis.currentPhase} | crossSolved=${correctedAnalysis.crossSolved} | isSolved=${correctedAnalysis.isSolved} | oll=${correctedAnalysis.ollIdentified || '-'} | pll=${correctedAnalysis.pllIdentified || '-'} | times=${JSON.stringify(correctedAnalysis.times)}`);
+						setTimerParams({
+							lastSmartSolveStats: { turns: htmCount, tps, correctedAnalysis }
+						});
+					} catch (e: any) {
+						// If analysis fails, simple stats from endTimer are sufficient
+						dbgCorr(`CORR_ANALYSIS FAIL | message=${e?.message} | startStateLen=${analysisStartState?.length} | corrLen=${correctedTurns.length} | stack=${e?.stack?.slice(0, 200)}`);
+					}
+				}, 0);
 			}
 		}
 

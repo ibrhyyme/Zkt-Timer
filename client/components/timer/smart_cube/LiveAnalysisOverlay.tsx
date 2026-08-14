@@ -46,7 +46,13 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
     // Works for all 3x3 variants (333, 333cfop, 333roux, 333mehta, and wca+333).
     // Also active for subsets (OLL, PLL, ZBLL) — user preference: analysis on all 3x3 solves.
     const is3x3 = is3x3CubeType(cubeType, scrambleSubset);
-    const shouldRun = (!!timeStartedAt || (smartTurns && smartTurns.length > 0)) && is3x3;
+    // Rendering bails out below when the mode is 'none', so running the analysis in
+    // that case is pure waste: it re-analyses the whole solve on every move and then
+    // throws the result away. Users who switch the panel off do it for performance,
+    // so the setting has to actually stop the work.
+    const shouldRun = analysisMode !== 'none'
+        && (!!timeStartedAt || (smartTurns && smartTurns.length > 0))
+        && is3x3;
 
     const [cachedAnalysis, setCachedAnalysis] = React.useState<any>(null);
     const prevStartState = React.useRef(startState);
@@ -118,7 +124,7 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
         // Only update cache if we have turns and it's different from current cache
         // CRITICAL: Only update while timer is RUNNING (timeStartedAt).
         // If we update during scrambling (timeStartedAt is null), we overwrite the previous result with empty scramble data.
-        if (timeStartedAt && analysis.steps) {
+        if (shouldRun && timeStartedAt && analysis.steps) {
             setCachedAnalysis(prev => {
                 if (JSON.stringify(prev) !== JSON.stringify(analysis)) {
                     return analysis;
@@ -126,7 +132,7 @@ export default function LiveAnalysisOverlay({ startState, mobile }: { startState
                 return prev;
             });
         }
-    }, [analysis, timeStartedAt]);
+    }, [analysis, timeStartedAt, shouldRun]);
 
     // Display Logic:
     // If Timer is RUNNING, show live 'analysis'.

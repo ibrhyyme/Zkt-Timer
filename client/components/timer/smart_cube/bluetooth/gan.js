@@ -1020,7 +1020,12 @@ export default class GAN extends SmartCube {
 		// Move batching properties
 		this.moveQueue = [];
 		this.moveFlushTimeout = null;
-		this.BATCH_FLUSH_DELAY = 8; // 8ms - more responsive (for live analysis)
+		// Moves are queued for this long before being dispatched as one batch.
+		// Measured turn rate peaks around 4 moves/sec (~240ms apart), so a wide window
+		// almost never coalesces anything and only adds latency: it accounted for
+		// roughly half of the 17ms BLE-to-screen delay. Kept non-zero so a genuine
+		// burst (gap recovery replaying several moves) still arrives as one dispatch.
+		this.BATCH_FLUSH_DELAY = 2;
 		// FACELETS resync flag
 		this._resyncPending = false;
 		// Cube state tracking
