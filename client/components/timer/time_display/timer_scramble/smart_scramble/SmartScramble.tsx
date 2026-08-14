@@ -26,7 +26,7 @@ export default function SmartScramble() {
 	const { t } = useTranslation();
 	const context = useContext(TimerContext);
 
-	const { smartTurns, scramble, smartCanStart, smartTurnOffset, smartUndoMoves, smartNeedsCubeReset } = context;
+	const { smartTurns, scramble, smartCanStart, smartTurnOffset, smartUndoMoves, smartNeedsCubeReset, smartOutOfSync } = context;
 
 	// Only consider turns after the offset (turns before offset are from pre-correction history)
 	const offset = smartTurnOffset || 0;
@@ -40,6 +40,13 @@ export default function SmartScramble() {
 
 	// Green-based themes: render matched moves in blue so they stand out from green text.
 	const useBlueMatch = isGreenBaseColor(useSettings('text_color'));
+
+	// Cube reports a state that is neither solved nor the scramble target (usually a
+	// reconnect after the cube was turned with Bluetooth off). Matching moves against
+	// the scramble is meaningless until the two agree again, so point at the fix.
+	if (smartOutOfSync) {
+		return <span className={b('turn', { orange: true })}>{t('smart_scramble.out_of_sync')}</span>;
+	}
 
 	// 8+ wrong moves — reset cube message (fallback — if correction fails)
 	if (smartUndoMoves?.length === 1 && smartUndoMoves[0] === 'TOO_MANY') {

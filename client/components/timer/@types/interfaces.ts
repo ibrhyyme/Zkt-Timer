@@ -113,4 +113,7 @@ export interface TimerStore {
 	smartStateSeq?: number;
 	smartPhysicallySolved?: boolean;
 	smartNeedsCubeReset?: boolean;
+	// Cube reports a state that is neither solved nor the current scramble target
+	// (typically after reconnecting to a cube that was turned with Bluetooth off).
+	smartOutOfSync?: boolean;
 }

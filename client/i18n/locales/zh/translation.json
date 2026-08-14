@@ -2638,7 +2638,8 @@
     },
     "smart_scramble": {
         "ready": "准备开始",
-        "too_many_wrong": "还原魔方以开始"
+        "too_many_wrong": "还原魔方以开始",
+        "out_of_sync": "魔方状态不符，请标记为已还原"
     },
     "stackmat": {
         "select_stackmat": "选择StackMat",

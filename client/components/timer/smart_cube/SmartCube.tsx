@@ -14,7 +14,8 @@ import ManageSmartCubes from './manage_smart_cubes/ManageSmartCubes';
 import Cube from 'cubejs';
 import block from '../../../styles/bem';
 import { initSmartSolver, IncrementalCompressor, matchScrambleWithCommutative, invertMove } from '../../../util/smart_scramble';
-import { initSolverWorker } from '../../../util/solver_worker_manager';
+import { initSolverWorker, solveAsync } from '../../../util/solver_worker_manager';
+import { getReverseTurns } from '../../../util/solve/turns';
 import { TimerContext } from '../Timer';
 import { useSettings } from '../../../util/hooks/useSettings';
 import LiveAnalysisOverlay from './LiveAnalysisOverlay';
@@ -158,6 +159,7 @@ export default function SmartCube() {
 		smartAbortVisible,
 		smartStateSeq,
 		smartPhysicallySolved,
+		smartOutOfSync,
 		dnfTime,
 	} = context;
 
@@ -355,6 +357,100 @@ export default function SmartCube() {
 		lastValidatedLength: 0,
 		lastMatchedIndex: 0,
 	});
+
+	// ── Logical tracker (cubejs) synchronisation ──
+	// Solve detection compares the tracker against smartSolvedState, so the tracker
+	// must mirror the physical cube at all times. Rebuilding it only from the
+	// smartTurns effect below is not enough: that path is gated on
+	// appliedTurnsRef > 0 and never runs when a scramble completes without a single
+	// BLE move (cube already sitting at the target state, e.g. after a reconnect).
+	// The tracker then stays solved and any cancelling pair like R R' registers as a
+	// finished solve.
+	function resetTrackerBookkeeping() {
+		// Mark every turn recorded so far as already accounted for. Zeroing this
+		// instead would make the smartTurns effect replay the whole backlog onto the
+		// freshly built tracker — a real case after a Bluetooth drop, where the turns
+		// from before the drop are still in Redux.
+		appliedTurnsRef.current = smartTurnsRef.current?.length || 0;
+		validationCacheRef.current.lastValidatedLength = 0;
+		validationCacheRef.current.lastMatchedIndex = 0;
+		compressorRef.current.reset();
+	}
+
+	function setTrackerFromScramble(scrambleStr: string): boolean {
+		const moves = (scrambleStr || '').split(' ').filter(m => m.trim());
+		if (!moves.length) return false;
+		try {
+			const fresh = new Cube();
+			for (const move of moves) fresh.move(move);
+			cubejs.current = fresh;
+			resetTrackerBookkeeping();
+			return true;
+		} catch (e) {
+			console.warn('[SmartCube] tracker rebuild from scramble failed:', e);
+			return false;
+		}
+	}
+
+	function setTrackerToSolved() {
+		cubejs.current = new Cube();
+		resetTrackerBookkeeping();
+		if (twistyPlayerRef.current) {
+			twistyPlayerRef.current.alg = '';
+			// Scene changed — reset refs
+			twistySceneRef.current = null;
+			twistyVantageRef.current = null;
+		}
+	}
+
+	// A FACELETS payload can be malformed (byte-offset differences between GAN
+	// firmware revisions). Verify it describes a real cube before trusting it over
+	// the tracker we already have.
+	function isValidFacelets(facelets: string): boolean {
+		if (!facelets || facelets.length !== 54) return false;
+		const counts: Record<string, number> = {};
+		for (const ch of facelets) counts[ch] = (counts[ch] || 0) + 1;
+		return ['U', 'R', 'F', 'D', 'L', 'B'].every(f => counts[f] === 9);
+	}
+
+	// Bring the 3D view to a given facelets state. The player is driven by moves,
+	// so the state is reached by replaying the inverse of its solution.
+	async function syncVisualToFacelets(facelets: string) {
+		const twisty = twistyPlayerRef.current;
+		if (!twisty) return;
+		try {
+			twisty.alg = '';
+			twistySceneRef.current = null;
+			twistyVantageRef.current = null;
+			if (facelets === DEFAULT_SOLVED_STATE) return;
+			const solution = await solveAsync(Cube.fromString(facelets).toJSON());
+			// The solve runs in a worker; if the cube moved meanwhile, replaying the
+			// setup would fight with the moves already applied by the turns effect.
+			if (smartCurrentStateRef.current !== facelets) return;
+			const setupMoves = getReverseTurns((solution || '').trim());
+			for (const move of setupMoves) {
+				(twisty as any).experimentalAddMove(move, { cancel: false });
+			}
+		} catch (e) {
+			console.warn('[SmartCube] visual sync to physical state failed:', e);
+		}
+	}
+
+	function syncTrackerToFacelets(facelets: string): boolean {
+		if (!isValidFacelets(facelets)) {
+			console.warn('[SmartCube] ignoring malformed FACELETS during sync');
+			return false;
+		}
+		try {
+			cubejs.current = Cube.fromString(facelets);
+		} catch (e) {
+			console.warn('[SmartCube] FACELETS parse failed during sync:', e);
+			return false;
+		}
+		resetTrackerBookkeeping();
+		void syncVisualToFacelets(facelets);
+		return true;
+	}
 
 	useEffect(() => {
 		if (smartTurns.length > appliedTurnsRef.current && twistyPlayerRef.current) {
@@ -598,26 +694,52 @@ export default function SmartCube() {
 		if (!smartCubeConnected || !smartCurrentState || !scramble) return;
 		if (timeStartedAt) return; // Do not run during solve
 		if (initialSyncDoneRef.current) return;
-		// If reconnect during correction mode, should not run again
-		// BLE disconnect/reconnect resets initialSyncDoneRef but this guard prevents new correction
-		if (originalScramble && scramble !== originalScramble) return;
 		initialSyncDoneRef.current = true;
 
 		const SOLVED = DEFAULT_SOLVED_STATE;
 		const currentFacelets = smartCurrentState;
 
-		// If cube is solved — use original scramble as is, TwistyPlayer solved (alg='')
 		if (currentFacelets === SOLVED) {
-			dbgSync('Cube SOLVED when connected — no sync needed');
-
+			dbgSync('Cube SOLVED when connected — tracker reset to solved');
+			setTrackerToSolved();
+			setTimerParams({ smartOutOfSync: false });
 			return;
 		}
-		// FACELETS not solved — might be mixed cube connected OR FACELETS parsing error.
-		// On some GAN models (e.g. GAN 12) FACELETS byte offsets differ,
-		// which shows solved cube as mixed. Instead of computing correction path,
-		// continue as solved. If truly mixed, user can use "Mark as solved" button.
-		dbgSync(`FACELETS ≠ SOLVED (${currentFacelets.slice(0, 18)}...) — skipping correction path`);
+
+		// Cube reports a scrambled state. This is the normal situation after a
+		// reconnect: the cube keeps its own state and never saw the moves made while
+		// Bluetooth was off, so it can disagree with the cube in the user's hands.
+		// Mirror what the cube reports instead of assuming solved — a tracker that
+		// starts solved turns any cancelling pair into a bogus finished solve.
+		if (!syncTrackerToFacelets(currentFacelets)) {
+			dbgSync(`FACELETS unusable (${currentFacelets.slice(0, 18)}...) — tracker left untouched`);
+			return;
+		}
+
+		const atTarget = !!targetFaceletsRef.current && currentFacelets === targetFaceletsRef.current;
+		dbgSync(`Connected with scrambled cube — tracker synced | atScrambleTarget: ${atTarget}`);
+
+		if (atTarget) {
+			// Cube is exactly at the scramble target; the normal completion path can
+			// take over from here.
+			setTimerParams({ smartOutOfSync: false });
+			return;
+		}
+
+		// Neither solved nor at the scramble target. Any "scramble done" stamp left
+		// from before the disconnect belongs to a state we can no longer vouch for.
+		scrambleCompletedAtRef.current = null;
+		setTimerParams({ smartCanStart: false, smartOutOfSync: true });
 	}, [smartCubeConnected, smartCurrentState]);
+
+	// Clear the out-of-sync warning once the cube reports a state we can work with
+	// again (user solved it, or marked it solved).
+	useEffect(() => {
+		if (!smartOutOfSync || !smartCurrentState) return;
+		if (smartCurrentState === DEFAULT_SOLVED_STATE || smartCurrentState === targetFaceletsRef.current) {
+			setTimerParams({ smartOutOfSync: false });
+		}
+	}, [smartStateSeq, smartOutOfSync]);
 
 	// Reset initial sync when disconnected (so it runs again on reconnect)
 	useEffect(() => {
@@ -928,12 +1050,25 @@ export default function SmartCube() {
 			// (which might be just a short correction path).
 			preservedScrambleRef.current = originalScrambleRef.current || scramble;
 
+			// Rebuild the tracker from the scramble here rather than leaving it to the
+			// smartTurns effect: that effect skips the rebuild when no BLE move was ever
+			// applied (cube already at the target state), which used to leave the tracker
+			// solved and let R R' end the solve instantly.
+			setTrackerFromScramble(preservedScrambleRef.current);
+
 			// For phase tracking: save cube state when scramble finishes
 			// This allows LiveAnalysisOverlay to analyze from correct starting state
 			const scrambledState = cubejs.current.asString();
 			setStartState(scrambledState);
+
+			if (targetFaceletsRef.current && scrambledState !== targetFaceletsRef.current) {
+				console.warn('[SmartCube] tracker does not match the scramble target after rebuild — solve detection may be unreliable');
+			}
 		} else {
 			preservedScrambleRef.current = null;
+			// "Mark as solved" / "reset cube state": the tracker must follow, otherwise
+			// it keeps the pre-reset state and the next solve never registers as done.
+			if (markSolved) setTrackerToSolved();
 		}
 
 		setTimerParams({
@@ -1099,6 +1234,7 @@ export default function SmartCube() {
 			smartDeviceId: '',
 			smartCurrentState: null,
 			smartGyroSupported: false,
+			smartOutOfSync: false,
 		});
 	}
 
@@ -1106,13 +1242,26 @@ export default function SmartCube() {
 		dispatch(openModal(<ManageSmartCubes />, { title: t('smart_cube.manage_smart_cubes') }));
 	}
 
-	function markCubeAsSolved() {
+	async function markCubeAsSolved() {
+		// The cube keeps its own state in firmware. Without telling it to reset, it
+		// keeps reporting the stale (scrambled) facelets and overwrites everything we
+		// set here on its very next FACELETS packet — which is why marking a solved
+		// cube as solved appeared to do nothing after a reconnect.
+		const activeCube = (connect.current as any)?.activeCube;
+		if (activeCube?.resetCubeState) {
+			const done = await activeCube.resetCubeState();
+			if (!done) {
+				console.warn('[SmartCube] hardware state reset failed — cube may keep reporting the old state');
+			}
+		}
+
 		resetMoves(true);
 
 		// Force state to solved
 		setTimerParams({
 			smartCurrentState: DEFAULT_SOLVED_STATE,
 			smartPhysicallySolved: true,
+			smartOutOfSync: false,
 		});
 
 		// If in correction mode, restore original scramble
@@ -1130,7 +1279,6 @@ export default function SmartCube() {
 		}
 
 		// Also reset _trackerCube to solved
-		const activeCube = (connect.current as any)?.activeCube;
 		if (activeCube && activeCube._trackerCube) {
 			activeCube._trackerCube = new Cube();
 		}

@@ -2645,7 +2645,8 @@
     },
     "smart_scramble": {
         "ready": "Başlamaya Hazırsın",
-        "too_many_wrong": "Başlamak için küpü çöz"
+        "too_many_wrong": "Başlamak için küpü çöz",
+        "out_of_sync": "Küp eşleşmiyor, çözülmüş olarak işaretle"
     },
     "stackmat": {
         "select_stackmat": "StackMat Seç",

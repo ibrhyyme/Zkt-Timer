@@ -2638,7 +2638,8 @@
     },
     "smart_scramble": {
         "ready": "Готов к старту",
-        "too_many_wrong": "Соберите куб для начала"
+        "too_many_wrong": "Соберите куб для начала",
+        "out_of_sync": "Куб не совпадает, отметьте как собранный"
     },
     "stackmat": {
         "select_stackmat": "Выбрать StackMat",

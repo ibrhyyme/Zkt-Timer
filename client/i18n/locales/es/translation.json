@@ -2638,7 +2638,8 @@
     },
     "smart_scramble": {
         "ready": "Listo para Comenzar",
-        "too_many_wrong": "Resuelve el cubo para comenzar"
+        "too_many_wrong": "Resuelve el cubo para comenzar",
+        "out_of_sync": "El cubo no coincide, márcalo como resuelto"
     },
     "stackmat": {
         "select_stackmat": "Seleccionar StackMat",

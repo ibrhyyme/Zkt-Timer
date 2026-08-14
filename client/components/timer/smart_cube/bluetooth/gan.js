@@ -1412,6 +1412,26 @@ export default class GAN extends SmartCube {
 		this.alertTurnCubeBatch(batch);
 	};
 
+	// Tell the cube to treat its current physical position as solved. The cube tracks
+	// its own state in firmware and never sees moves made while Bluetooth is off, so
+	// after a reconnect it can insist on a state the cube in the user's hands left
+	// long ago. Resetting app-side state alone does not survive: the next FACELETS
+	// packet overwrites it with the cube's stale view.
+	resetCubeState = async () => {
+		if (!this.conn) return false;
+		try {
+			await this.conn.sendCubeCommand({ type: 'REQUEST_RESET' });
+			this._trackerCube = new Cube();
+			// Pull a fresh state so Redux reflects the reset without waiting for the
+			// cube's next periodic packet.
+			setTimeout(() => this.requestFaceletsResync(true), 100);
+			return true;
+		} catch (e) {
+			console.error('[ZKT:GAN] cube state reset failed:', e?.message);
+			return false;
+		}
+	};
+
 	requestFaceletsResync = async (force = false) => {
 		if (this._resyncPending && !force) return;
 		this._resyncPending = true;
